@@ -1,0 +1,174 @@
+/**
+ * WooCommerce Donation Modal Popup Admin Styles
+ */
+
+/* Genel konteyner stilleri */
+.wdp-settings-container {
+  margin-top: 20px;
+  max-width: 100%;
+}
+
+/* Tablo stilleri */
+.wdp-products-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.wdp-products-table th {
+  text-align: left;
+  padding: 10px;
+}
+
+.wdp-products-table td {
+  padding: 12px 10px;
+  vertical-align: middle;
+}
+
+/* Toggle switch stilleri */
+.wdp-switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 24px;
+}
+
+.wdp-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.wdp-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: .4s;
+  border-radius: 24px;
+}
+
+.wdp-slider:before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+}
+
+input:checked + .wdp-slider {
+  background-color: #2196f3;
+}
+
+input:focus + .wdp-slider {
+  box-shadow: 0 0 1px #2196f3;
+}
+
+input:checked + .wdp-slider:before {
+  transform: translateX(26px);
+}
+
+/* Input stilleri */
+.wdp-products-table input[type="number"] {
+  width: 70px;
+}
+
+/* Shortcode stilleri - Yeni stil ekleyin */
+.wdp-shortcodes {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.wdp-shortcode-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.wdp-shortcode-item label {
+  font-weight: 500;
+  min-width: 45px;
+}
+
+.wdp-shortcode {
+  display: inline-block;
+  padding: 5px 8px;
+  background-color: #f0f0f0;
+  border-radius: 3px;
+  margin-right: 5px;
+  font-size: 12px;
+  border: 1px solid #ddd;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 200px;
+}
+
+.wdp-copy-shortcode {
+  vertical-align: middle;
+}
+
+/* Spinner stilleri */
+.wdp-products-table .spinner {
+  float: none;
+  margin: 0 0 0 5px;
+  vertical-align: middle;
+}
+
+/* Toplu işlem alanı */
+.wdp-bulk-actions {
+  margin-top: 15px;
+  padding: 10px 0;
+  display: flex;
+  align-items: center;
+}
+
+.wdp-bulk-actions .spinner {
+  float: none;
+  margin: 0 0 0 10px;
+}
+
+/* Başarı ve hata mesajları */
+.wdp-success {
+  background-color: #dff0d8;
+  border-color: #d6e9c6;
+  color: #3c763d;
+}
+
+.wdp-error {
+  background-color: #f2dede;
+  border-color: #ebccd1;
+  color: #a94442;
+}
+
+/* Responsive düzenlemeler */
+@media screen and (max-width: 782px) {
+  .wdp-shortcode-item {
+    flex-wrap: wrap;
+  }
+
+  .wdp-shortcode {
+    max-width: 120px;
+    margin-bottom: 5px;
+  }
+
+  .wdp-products-table th,
+  .wdp-products-table td {
+    padding: 8px 5px;
+  }
+
+  .wdp-shortcode {
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
