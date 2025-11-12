@@ -237,3 +237,16 @@ Bu plugin GPL v2 veya üzeri lisansı altında dağıtılmaktadır.
 ---
 
 **WooCommerce Donation Modal Popup** - Tüm WordPress sitelerinde mükemmel çalışan bağış sistemi. # Donation-Popup
+
+## 🧱 Tasarım Sistemi
+- Tüm bileşenler `.wdp-scope` alanında normalize edilir; eklenti stilleri temadan izole çalışır.
+- Temel tasarım token'ları (`--wdp-primary`, `--wdp-button-primary`, `--wdp-radius-*`, `--wdp-space-*`) ile renk/spacing tutarlılığı sağlanır.
+- Popup ve gömülü formlar aynı markup'ı paylaşır; `wdp-modal-content` genişliği masaüstü/mobilde otomatik adapte olur.
+- Form gridleri (`wdp-price-quantity-row`, `wdp-button-group`, `wdp-shareholder-form`) hem masaüstü hem mobilde aynı layout prensipleriyle çalışır.
+
+## ✅ Hızlı QA Kontrol Listesi
+1. Popup ve gömülü formu masaüstü/mobilde açın; hisseli / özel fiyatlı / sabit ürünleri tek tek kontrol edin.
+2. Sayaçları (+/−) deneyin, minimum fiyat uyarısını tetikleyin; alert görseli ve `aria-live` duyurusunun çıktığını doğrulayın.
+3. Modalı overlay'e tıklayarak, ESC ile ve kapat butonuyla kapatıp arka planın yeniden etkileşimli olduğunu teyit edin.
+4. Başarılı ekleme sonrasında “Yeni Bağış Ekle” butonuyla form reset’inin ve success ekranının render edildiğini kontrol edin.
+5. Farklı tema / sayfa şablonlarında formları yerleştirip overflow, taşma, font veya buton hizası sapması olup olmadığına bakın.

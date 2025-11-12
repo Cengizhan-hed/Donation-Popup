@@ -1,0 +1,341 @@
+/* ============ Shared Section Layouts ============ */
+
+:where(.wdp-modal, .wdp-donation-form) .wdp-shares-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--wdp-space-3);
+  margin: var(--wdp-space-3) 0 0;
+  min-height: 0;
+  flex: 0 1 auto;
+}
+
+:where(.wdp-modal, .wdp-donation-form) .wdp-shares-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--wdp-space-3);
+  flex-wrap: wrap;
+}
+
+:where(.wdp-modal, .wdp-donation-form) .wdp-shares-header label {
+  margin: 0;
+  font-size: var(--wdp-text-base);
+  font-weight: 600;
+  color: var(--wdp-gray-700);
+  white-space: nowrap;
+}
+
+/* ============ Share Counter (Stepper) ============ */
+
+:where(.wdp-modal, .wdp-donation-form) .wdp-share-counter,
+:where(.wdp-modal, .wdp-donation-form) .wdp-share-quantity {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--wdp-gray-300);
+  border-radius: var(--wdp-radius-md);
+  background: var(--wdp-white);
+  min-height: 48px;
+  padding: 0 var(--wdp-space-1);
+  gap: 0;
+  flex: 0 0 auto;
+}
+
+:where(.wdp-modal, .wdp-donation-form) .wdp-share-counter button,
+:where(.wdp-modal, .wdp-donation-form) .wdp-share-quantity button {
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--wdp-gray-600);
+  font-size: 20px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+:where(.wdp-modal, .wdp-donation-form) .wdp-share-counter button:focus,
+:where(.wdp-modal, .wdp-donation-form) .wdp-share-quantity button:focus,
+:where(.wdp-modal, .wdp-donation-form) .wdp-share-counter button:active,
+:where(.wdp-modal, .wdp-donation-form) .wdp-share-quantity button:active {
+  outline: none;
+  box-shadow: none;
+  border: none;
+  border-radius: 0;
+}
+
+:where(.wdp-modal, .wdp-donation-form) .wdp-share-counter button:hover,
+:where(.wdp-modal, .wdp-donation-form) .wdp-share-counter button:focus,
+:where(.wdp-modal, .wdp-donation-form) .wdp-share-quantity button:hover,
+:where(.wdp-modal, .wdp-donation-form) .wdp-share-quantity button:focus {
+  color: var(--wdp-primary);
+  outline: none;
+  border: none;
+  border-radius: 0;
+}
+
+:where(.wdp-modal, .wdp-donation-form) .wdp-share-counter input[type="number"],
+:where(.wdp-modal, .wdp-donation-form) .wdp-share-quantity input[type="number"] {
+  width: 72px;
+  text-align: center;
+  border: none;
+  background: transparent;
+  font-size: var(--wdp-text-lg);
+  font-weight: 600;
+  color: var(--wdp-gray-800);
+  padding: 0;
+  margin: 0;
+  height: 48px;
+  line-height: 48px;
+  box-shadow: none;
+}
+
+:where(.wdp-modal, .wdp-donation-form) .wdp-share-counter input[type="number"]:focus,
+:where(.wdp-modal, .wdp-donation-form) .wdp-share-quantity input[type="number"]:focus {
+  outline: none;
+}
+
+/* ============ Shareholder Container & Scroll ============ */
+
+:where(.wdp-modal, .wdp-donation-form) .wdp-shareholders-area {
+  --wdp-share-area-padding-x: 0;
+  --wdp-share-area-padding-y: 0;
+  display: flex;
+  flex-direction: column;
+  padding: var(--wdp-share-area-padding-y) var(--wdp-share-area-padding-x);
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  flex: 0 1 auto;
+  width: 100%;
+  min-height: 0;
+  max-height: clamp(360px, 60vh, 460px);
+  overflow: hidden;
+}
+
+:where(.wdp-modal, .wdp-donation-form) .wdp-shareholders-area.scrollable {
+  flex: 1 1 auto;
+  min-height: var(--wdp-shareholders-height, clamp(360px, 60vh, 460px));
+  height: var(--wdp-shareholders-height, clamp(360px, 60vh, 460px));
+  max-height: var(--wdp-shareholders-height, clamp(360px, 60vh, 460px));
+}
+
+:where(.wdp-modal, .wdp-donation-form) .wdp-shareholders-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  position: relative;
+  flex: 1 1 auto;
+  overflow: hidden;
+  width: 100%;
+  max-width: 100%;
+}
+
+:where(.wdp-modal, .wdp-donation-form) .wdp-shareholders-scroll {
+  display: flex;
+  flex-direction: column;
+  gap: var(--wdp-space-3);
+  min-height: 0;
+  width: 100%;
+  flex: 1 1 auto;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 0;
+  margin-right: 0;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  position: relative;
+}
+
+:where(.wdp-modal, .wdp-donation-form) .wdp-shareholders-scroll::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+  background: transparent;
+}
+
+:where(.wdp-modal, .wdp-donation-form) .wdp-shareholders-area.scrollable .wdp-shareholders-container,
+:where(.wdp-modal, .wdp-donation-form) .wdp-shareholders-area.scrollable .wdp-shareholders-container.scrollable {
+  height: 100%;
+  max-height: 100%;
+}
+
+:where(.wdp-modal, .wdp-donation-form) .wdp-shareholders-area.scrollable .wdp-shareholders-scroll {
+  height: 100%;
+  max-height: 100%;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: var(--wdp-gray-300) transparent;
+  padding-right: 0;
+  margin-right: 0;
+}
+
+:where(.wdp-modal, .wdp-donation-form) .wdp-shareholders-area.scrollable .wdp-shareholders-scroll::-webkit-scrollbar {
+  display: block;
+  width: 8px;
+}
+
+:where(.wdp-modal, .wdp-donation-form) .wdp-shareholders-area.scrollable .wdp-shareholders-scroll::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 0;
+}
+
+:where(.wdp-modal, .wdp-donation-form) .wdp-shareholders-area.scrollable .wdp-shareholders-scroll::-webkit-scrollbar-thumb {
+  background: var(--wdp-gray-400);
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+:where(.wdp-modal, .wdp-donation-form) .wdp-shareholders-area.scrollable .wdp-shareholders-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--wdp-gray-400);
+}
+
+/* ============ Individual Shareholder Cards ============ */
+
+:where(.wdp-modal, .wdp-donation-form) .wdp-shareholder-form {
+  border: 1px solid var(--wdp-gray-200);
+  border-radius: var(--wdp-radius-lg);
+  background: var(--wdp-white);
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
+  margin-top: var(--wdp-space-3);
+  width: 100%;
+  max-width: 100%;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+
+:where(.wdp-modal, .wdp-donation-form) .wdp-shareholder-form:first-of-type {
+  margin-top: 0;
+}
+
+:where(.wdp-modal, .wdp-donation-form) .wdp-shareholder-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--wdp-space-2);
+  padding: var(--wdp-space-3);
+  background: var(--wdp-gray-50);
+  border-bottom: 1px solid var(--wdp-gray-200);
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+:where(.wdp-modal, .wdp-donation-form) .wdp-shareholder-header:hover {
+  background: var(--wdp-gray-100);
+}
+
+:where(.wdp-modal, .wdp-donation-form) .wdp-shareholder-header h3 {
+  margin: 0;
+  font-size: var(--wdp-text-base);
+  font-weight: 600;
+  color: var(--wdp-gray-800);
+  line-height: 1.35;
+}
+
+:where(.wdp-modal, .wdp-donation-form) .wdp-shareholder-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--wdp-space-2);
+  font-size: var(--wdp-text-sm);
+  font-weight: 500;
+  color: var(--wdp-gray-600);
+  border: none;
+  background: transparent;
+  padding: var(--wdp-space-1) var(--wdp-space-2);
+  outline: none;
+  box-shadow: none;
+}
+
+:where(.wdp-modal, .wdp-donation-form) .wdp-shareholder-toggle:focus,
+:where(.wdp-modal, .wdp-donation-form) .wdp-shareholder-toggle:active {
+  outline: none;
+  box-shadow: none;
+  border: none;
+  border-radius: 0;
+}
+
+:where(.wdp-modal, .wdp-donation-form) .wdp-shareholder-toggle span {
+  display: inline-block;
+  font-size: 12px;
+  transition: transform 0.15s ease;
+}
+
+:where(.wdp-modal, .wdp-donation-form) .wdp-shareholder-content {
+  padding: var(--wdp-space-3);
+  display: grid;
+  gap: var(--wdp-space-3);
+  background: var(--wdp-white);
+}
+
+:where(.wdp-modal, .wdp-donation-form) .wdp-shareholder-form.collapsed .wdp-shareholder-content {
+  display: none;
+}
+
+:where(.wdp-modal, .wdp-donation-form) .wdp-shareholder-form.collapsed .wdp-shareholder-toggle span {
+  transform: rotate(0deg);
+}
+
+/* ============ Responsive Tweaks ============ */
+
+@media (max-width: 768px) {
+  :where(.wdp-modal, .wdp-donation-form) .wdp-share-counter,
+  :where(.wdp-modal, .wdp-donation-form) .wdp-share-quantity {
+    min-height: 44px;
+  }
+
+  :where(.wdp-modal, .wdp-donation-form) .wdp-share-counter button,
+  :where(.wdp-modal, .wdp-donation-form) .wdp-share-quantity button {
+    width: 36px;
+    height: 36px;
+    font-size: 18px;
+  }
+
+  :where(.wdp-modal, .wdp-donation-form) .wdp-share-counter input[type="number"],
+  :where(.wdp-modal, .wdp-donation-form) .wdp-share-quantity input[type="number"] {
+    width: 64px;
+    height: 44px;
+    line-height: 44px;
+    font-size: var(--wdp-text-base);
+  }
+
+  :where(.wdp-modal, .wdp-donation-form) .wdp-shareholders-area.scrollable {
+    min-height: var(--wdp-shareholders-height, clamp(240px, 65vh, 360px));
+    height: var(--wdp-shareholders-height, clamp(240px, 65vh, 360px));
+    max-height: var(--wdp-shareholders-height, clamp(240px, 65vh, 360px));
+  }
+
+  :where(.wdp-modal, .wdp-donation-form) .wdp-shareholders-area.scrollable .wdp-shareholders-scroll {
+    padding-right: 0;
+    margin-right: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  :where(.wdp-modal, .wdp-donation-form) .wdp-shares-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--wdp-space-2);
+  }
+
+  :where(.wdp-modal, .wdp-donation-form) .wdp-share-counter,
+  :where(.wdp-modal, .wdp-donation-form) .wdp-share-quantity {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  :where(.wdp-modal, .wdp-donation-form) .wdp-share-counter input[type="number"],
+  :where(.wdp-modal, .wdp-donation-form) .wdp-share-quantity input[type="number"] {
+    width: 100%;
+  }
+}
+

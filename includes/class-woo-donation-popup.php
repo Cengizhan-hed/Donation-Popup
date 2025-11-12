@@ -9,7 +9,21 @@ class Woo_Donation_Popup {
   *
   * @var bool
   */
- private $debug_enabled = false;
+    private $debug_enabled = false;
+
+    /**
+     * Flag indicating that assets must be enqueued regardless of shortcode detection.
+     *
+     * @var bool
+     */
+    private static $force_enqueue_assets = false;
+
+    /**
+     * Track whether inline styles were already attached to the main stylesheet.
+     *
+     * @var bool
+     */
+    private static $inline_style_attached = false;
  
  /**
   * Eklenti etkinleştirildiğinde çalışacak fonksiyon
@@ -162,7 +176,7 @@ class Woo_Donation_Popup {
   */
  public function get_product_info() {
      // Güvenlik kontrolü
-     check_ajax_referer('wdp_ajax_nonce', 'security');
+     check_ajax_referer('wdp_get_product_info', 'security');
      
     $product_id = isset($_POST['product_id']) ? absint(wp_unslash($_POST['product_id'])) : 0;
 
@@ -211,7 +225,7 @@ class Woo_Donation_Popup {
   */
  public function get_product_name() {
      // Güvenlik kontrolü
-     check_ajax_referer('wdp_ajax_nonce', 'security');
+     check_ajax_referer('wdp_get_product_name', 'security');
      
     $product_id = isset($_POST['product_id']) ? absint(wp_unslash($_POST['product_id'])) : 0;
      
@@ -235,7 +249,7 @@ class Woo_Donation_Popup {
   * AJAX ile sepete ekleme işlemi
   */
 public function ajax_add_to_cart() {
-  if (!check_ajax_referer('wdp_ajax_nonce', 'security', false)) {
+  if (!check_ajax_referer('wdp_ajax_add_to_cart', 'security', false)) {
       $this->log('Security check failed for ajax_add_to_cart.');
       $this->json_error(__('Güvenlik doğrulaması başarısız oldu. Lütfen sayfayı yenileyip tekrar deneyin.', 'woo-donation-popup'));
   }
@@ -494,7 +508,7 @@ public function ajax_add_to_cart() {
   */
  public function get_cart_count() {
      // Güvenlik kontrolü
-     check_ajax_referer('wdp_ajax_nonce', 'security');
+     check_ajax_referer('wdp_get_cart_count', 'security');
      
     if (!function_exists('WC') || !isset(WC()->cart)) {
         $this->json_error(__('WooCommerce cart not available', 'woo-donation-popup'));
@@ -510,7 +524,7 @@ public function ajax_add_to_cart() {
   */
  public function get_cart_contents() {
      // Güvenlik kontrolü
-     check_ajax_referer('wdp_ajax_nonce', 'security');
+     check_ajax_referer('wdp_get_cart_contents', 'security');
      
     if (!function_exists('WC') || !isset(WC()->cart)) {
         $this->json_error(__('WooCommerce cart not available', 'woo-donation-popup'));
@@ -521,114 +535,177 @@ public function ajax_add_to_cart() {
     ));
  }
  
- /**
-  * Eklenti CSS ve JS dosyalarını kaydet ve yükle.
+    /**
+     * Retrieve inline CSS rules used to enforce modal stacking order.
+     *
+     * @return string
+     */
+    private function get_inline_css() {
+        return "
+        /* Modal kapalıyken kesinlikle sayfa düzenini etkilememeli */
+        .wdp-modal:not(.show) { 
+            position: static; 
+            z-index: auto; 
+            left: auto; 
+            top: auto; 
+            right: auto; 
+            bottom: auto; 
+            width: 0; 
+            height: 0; 
+            min-width: 0; 
+            min-height: 0; 
+            max-width: 0; 
+            max-height: 0; 
+            visibility: hidden; 
+            opacity: 0; 
+            pointer-events: none; 
+            clip: rect(0, 0, 0, 0); 
+            clip-path: inset(100%); 
+        }
+        /* Modal açıkken normal görünüm */
+        .wdp-modal.show { 
+            position: fixed; 
+            z-index: 999999; 
+            left: 0; 
+            top: 0; 
+            right: 0; 
+            bottom: 0; 
+            width: 100vw; 
+            height: 100vh; 
+            clip: auto; 
+            clip-path: none; 
+        }
+        .wdp-modal-content { 
+            z-index: 1000000; 
+        }
+        .wdp-modal-close { 
+            z-index: 1000001; 
+        }
+        .wdp-modal * { 
+            box-sizing: border-box; 
+        }
+        .wdp-modal-content * { 
+            box-sizing: border-box; 
+        }
+        .wdp-donation-form * { 
+            box-sizing: border-box; 
+        }
+        @media (max-width: 768px) {
+            .wdp-modal.show .wdp-modal-content { 
+                width: 95%; 
+                max-width: 95%; 
+                margin: 10px auto; 
+            }
+        }
+        ";
+    }
+
+    /**
+     * Attach inline CSS once per request.
+     */
+    private function maybe_enqueue_inline_style() {
+        if (self::$inline_style_attached) {
+            return;
+        }
+
+        wp_add_inline_style('wdp-donation-modal-css', $this->get_inline_css());
+        self::$inline_style_attached = true;
+    }
+
+    /**
+     * Eklenti CSS ve JS dosyalarını kaydet ve sadece ihtiyaç duyulduğunda yükle.
   */
  public function enqueue_assets() {
-    // Conditional enqueue: Sadece shortcode veya modal trigger varsa yükle
-    global $post;
-    $should_enqueue = false;
-    
-    // Shortcode kontrolü
-    if (is_a($post, 'WP_Post')) {
-        if (has_shortcode($post->post_content, 'wdp_donation_button') || 
-            has_shortcode($post->post_content, 'wdp_donation_form')) {
-            $should_enqueue = true;
-        }
-    }
-    
-    // WooCommerce ürün sayfalarında yükle
-    if (!$should_enqueue && function_exists('is_product') && is_product()) {
-        $should_enqueue = true;
-    }
-    
-    // Eğer hiçbir koşul sağlanmazsa, yine de yükle (geriye dönük uyumluluk için)
-    // Ama gelecekte bu kısım kaldırılabilir
-    if (!$should_enqueue) {
-        $should_enqueue = true; // Geçici olarak her zaman yükle
-    }
-    
-    if (!$should_enqueue) {
-        return;
-    }
-    
-    // Asset base path/url (constants fallback)
-    $plugin_dir = defined('WDP_PLUGIN_PATH') ? WDP_PLUGIN_PATH : plugin_dir_path(dirname(__FILE__));
-    $plugin_url = defined('WDP_PLUGIN_URL') ? WDP_PLUGIN_URL : plugin_dir_url(dirname(__FILE__));
+        global $post;
 
-    // Asset versioning: filemtime kullan (cache busting için)
-    $js_file = $plugin_dir . 'assets/js/donation-modal.js';
-    $css_file = $plugin_dir . 'assets/css/donation-modal.css';
-    
-    $js_version = file_exists($js_file) ? filemtime($js_file) : WDP_ASSET_VERSION;
-    $css_version = file_exists($css_file) ? filemtime($css_file) : WDP_ASSET_VERSION;
-    
-    // Debug modunda her zaman yeni versiyon
-    if (defined('SCRIPT_DEBUG') && SCRIPT_DEBUG) {
-        $js_version = time();
-        $css_version = time();
-    }
-    
-     wp_deregister_script('wdp-donation-modal-js');
-     wp_deregister_style('wdp-donation-modal-css');
-    
-     // Sadece ana JS ve CSS dosyalarını yükle
-     $dependencies = array();
-     if (!wp_script_is('jquery', 'enqueued')) {
-         wp_enqueue_script('jquery');
-     }
-     $dependencies[] = 'jquery';
+        // Asset base path/url (constants fallback)
+        $plugin_dir = defined('WDP_PLUGIN_PATH') ? WDP_PLUGIN_PATH : plugin_dir_path(dirname(__FILE__));
+        $plugin_url = defined('WDP_PLUGIN_URL') ? WDP_PLUGIN_URL : plugin_dir_url(dirname(__FILE__));
+
+        // Asset versioning: filemtime kullan (cache busting için)
+        $js_file  = $plugin_dir . 'assets/js/donation-modal.js';
+        $css_file = $plugin_dir . 'assets/css/donation-modal.css';
+
+        $js_version  = file_exists($js_file) ? filemtime($js_file) : WDP_ASSET_VERSION;
+        $css_version = file_exists($css_file) ? filemtime($css_file) : WDP_ASSET_VERSION;
+
+        if (defined('SCRIPT_DEBUG') && SCRIPT_DEBUG) {
+            $js_version  = time();
+            $css_version = time();
+        }
+
+        $dependencies = array('jquery');
      if (wp_script_is('wc-add-to-cart', 'enqueued')) {
          $dependencies[] = 'wc-add-to-cart';
      }
-     wp_enqueue_script(
+
+        wp_register_script(
          'wdp-donation-modal-js', 
-        $plugin_url . 'assets/js/donation-modal.js', 
+            $plugin_url . 'assets/js/donation-modal.js',
          $dependencies, 
-        $js_version, 
+            $js_version,
          true
      );
-     wp_localize_script('wdp-donation-modal-js', 'wdp_ajax', array(
-         'ajax_url' => admin_url('admin-ajax.php'),
-         'nonce' => wp_create_nonce('wdp_ajax_nonce'),
-         'checkout_url' => wc_get_checkout_url(),
-         'cart_url' => wc_get_cart_url(),
-         'version' => WDP_VERSION,
-         'debug' => defined('WP_DEBUG') && WP_DEBUG,
-         'jquery_loaded' => wp_script_is('jquery', 'enqueued'),
-         'wc_loaded' => class_exists('WooCommerce'),
-         'home_url' => home_url(),
-         'site_url' => site_url(),
-         'ajax_nonce' => wp_create_nonce('wdp_ajax_nonce'),
-         'strings' => array(
-             'loading' => __('Yükleniyor...', 'woo-donation-popup'),
-             'error' => __('Bir hata oluştu', 'woo-donation-popup'),
-             'success' => __('Başarılı', 'woo-donation-popup'),
-             'required_field' => __('Bu alan zorunludur', 'woo-donation-popup'),
-             'invalid_price' => __('Geçersiz fiyat', 'woo-donation-popup'),
-             'min_price_error' => __('Minimum fiyat: ', 'woo-donation-popup'),
-             'max_shares_error' => __('Maksimum hisse sayısı: ', 'woo-donation-popup')
-         )
-     ));
-     wp_enqueue_style(
+
+        wp_register_style(
          'wdp-donation-modal-css', 
-         $plugin_url . 'assets/css/donation-modal.css', 
+            $plugin_url . 'assets/css/donation-modal.css',
          array(), 
-         $css_version
-     );
-     // Temaya özel CSS/JS yükleme ve theme_slug, theme_name gibi değişkenler kaldırıldı
-     $inline_css = "
-     .wdp-modal { z-index: 999999 !important; }
-     .wdp-modal-content { z-index: 1000000 !important; }
-     .wdp-modal-close { z-index: 1000001 !important; }
-     .wdp-modal * { box-sizing: border-box !important; }
-     .wdp-modal-content * { box-sizing: border-box !important; }
-     .wdp-donation-form * { box-sizing: border-box !important; }
-     @media (max-width: 768px) {
-         .wdp-modal-content { width: 95% !important; max-width: 95% !important; margin: 10px auto !important; }
-     }
-     ";
-     wp_add_inline_style('wdp-donation-modal-css', $inline_css);
+            $css_version
+        );
+
+        wp_localize_script('wdp-donation-modal-js', 'wdp_ajax', array(
+            'ajax_url'        => admin_url('admin-ajax.php'),
+            'nonces'          => array(
+                'ajax_add_to_cart'     => wp_create_nonce('wdp_ajax_add_to_cart'),
+                'get_product_info'     => wp_create_nonce('wdp_get_product_info'),
+                'get_product_name'     => wp_create_nonce('wdp_get_product_name'),
+                'get_cart_count'       => wp_create_nonce('wdp_get_cart_count'),
+                'get_cart_contents'    => wp_create_nonce('wdp_get_cart_contents'),
+                'render_button'        => wp_create_nonce('wdp_render_donation_button'),
+            ),
+            'nonce'           => wp_create_nonce('wdp_ajax_add_to_cart'),
+            'checkout_url'    => wc_get_checkout_url(),
+            'cart_url'        => wc_get_cart_url(),
+            'version'         => WDP_VERSION,
+            'debug'           => defined('WP_DEBUG') && WP_DEBUG,
+            'jquery_loaded'   => wp_script_is('jquery', 'enqueued'),
+            'wc_loaded'       => class_exists('WooCommerce'),
+            'home_url'        => home_url(),
+            'site_url'        => site_url(),
+            'strings'         => array(
+                'loading'          => __('Yükleniyor...', 'woo-donation-popup'),
+                'error'            => __('Bir hata oluştu', 'woo-donation-popup'),
+                'success'          => __('Başarılı', 'woo-donation-popup'),
+                'required_field'   => __('Bu alan zorunludur', 'woo-donation-popup'),
+                'invalid_price'    => __('Geçersiz fiyat', 'woo-donation-popup'),
+                'min_price_error'  => __('Minimum fiyat: ', 'woo-donation-popup'),
+                'max_shares_error' => __('Maksimum hisse sayısı: ', 'woo-donation-popup'),
+            ),
+        ));
+
+        $should_enqueue = self::$force_enqueue_assets;
+
+        if (!$should_enqueue && is_a($post, 'WP_Post')) {
+            if (has_shortcode($post->post_content, 'wdp_donation_button') || has_shortcode($post->post_content, 'wdp_donation_form')) {
+                $should_enqueue = true;
+            }
+        }
+
+        if (!$should_enqueue && function_exists('is_product') && is_product()) {
+            $should_enqueue = true;
+        }
+
+        /**
+         * Allow third-parties to force asset loading.
+         */
+        $should_enqueue = apply_filters('wdp_should_enqueue_assets', $should_enqueue, $post);
+
+        if ($should_enqueue) {
+            wp_enqueue_script('wdp-donation-modal-js');
+            wp_enqueue_style('wdp-donation-modal-css');
+            $this->maybe_enqueue_inline_style();
+        }
  }
  
  /**
@@ -1190,7 +1267,7 @@ public function donation_form_shortcode($atts) {
             <h2 class="wdp-form-title"><?php echo esc_html($title); ?></h2>
             <?php endif; ?>
             
-            <form method="post" action="">
+            <form method="post" action="" class="<?php echo esc_attr($allow_multiple_shares ? 'wdp-donation-form-fields wdp-has-shareholders' : 'wdp-donation-form-fields'); ?>">
                 <div class="wdp-form-error" style="display: none;"></div>
                 
                 <?php if ($allow_multiple_shares): ?>
@@ -1204,8 +1281,12 @@ public function donation_form_shortcode($atts) {
                             <button type="button" class="wdp-share-btn increase"><span>+</span></button>
                         </div>
                     </div>
-                    <div class="wdp-shareholders-container">
-                        <!-- Hissedar formları JavaScript ile eklenecek -->
+                    <div class="wdp-shareholders-area">
+                        <div class="wdp-shareholders-container">
+                            <div class="wdp-shareholders-scroll">
+                            <!-- Hissedar formları JavaScript ile eklenecek -->
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <?php else: ?>
@@ -1324,17 +1405,25 @@ public function render_donation_modal($product_id, $button_text = '', $custom_cl
     }
     
     // Modal HTML'ini oluştur
+    self::$force_enqueue_assets = true;
+
+    if (did_action('wp_enqueue_scripts')) {
+        wp_enqueue_script('wdp-donation-modal-js');
+        wp_enqueue_style('wdp-donation-modal-css');
+        $this->maybe_enqueue_inline_style();
+    }
+
     ob_start();
     ?>
     <!-- Modal -->
-    <div id="<?php echo esc_attr($modal_id); ?>" class="wdp-modal <?php echo esc_attr($custom_class); ?>" role="dialog" aria-modal="true" aria-labelledby="<?php echo esc_attr($modal_id); ?>-title" aria-describedby="<?php echo esc_attr($modal_id); ?>-description">
+    <div id="<?php echo esc_attr($modal_id); ?>" class="wdp-modal <?php echo esc_attr($custom_class); ?>" role="dialog" aria-modal="true" aria-labelledby="<?php echo esc_attr($modal_id); ?>-title" aria-describedby="<?php echo esc_attr($modal_id); ?>-description" style="display:none;visibility:hidden;opacity:0;">
         <div class="wdp-modal-content">
             <div class="wdp-modal-header">
                 <span id="<?php echo esc_attr($modal_id); ?>-title" class="wdp-modal-title"><?php echo esc_html($product_name); ?></span>
                 <button type="button" class="wdp-modal-close" aria-label="<?php echo esc_attr__('Modalı Kapat', 'woo-donation-popup'); ?>">&times;</button>
             </div>
             <div id="<?php echo esc_attr($modal_id); ?>-description" class="screen-reader-text"><?php echo esc_html(sprintf(__('%s için bağış formu', 'woo-donation-popup'), $product_name)); ?></div>
-            <form method="post" action="">
+            <form method="post" action="" class="<?php echo esc_attr($allow_multiple_shares ? 'wdp-donation-form-fields wdp-has-shareholders' : 'wdp-donation-form-fields'); ?>">
                 <div class="wdp-form-error" style="display: none;"></div>
                 
                 <?php if ($allow_multiple_shares): ?>
@@ -1348,8 +1437,12 @@ public function render_donation_modal($product_id, $button_text = '', $custom_cl
                             <button type="button" class="wdp-share-btn increase"><span>+</span></button>
                         </div>
                     </div>
-                    <div class="wdp-shareholders-container">
-                        <!-- Hissedar formları JavaScript ile eklenecek -->
+                    <div class="wdp-shareholders-area">
+                        <div class="wdp-shareholders-container">
+                            <div class="wdp-shareholders-scroll">
+                            <!-- Hissedar formları JavaScript ile eklenecek -->
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <?php else: ?>

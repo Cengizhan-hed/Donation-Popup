@@ -1,0 +1,89 @@
+/* ==================== */
+/* ACCESSIBILITY SUPPORT */
+/* ==================== */
+
+.screen-reader-text {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+.wdp-modal-content button:focus,
+.wdp-modal-content input:focus,
+.wdp-modal-content textarea:focus {
+  outline: 2px solid var(--wdp-primary);
+  outline-offset: 2px;
+}
+
+.wdp-modal-header .wdp-modal-close:focus,
+.wdp-modal-header .wdp-modal-close:active,
+.wdp-modal-content .wdp-modal-close:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+@media (prefers-contrast: high) {
+  .wdp-modal-content {
+    border: 2px solid var(--wdp-gray-900);
+  }
+}
+
+/* Custom scrollbars */
+.wdp-modal-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.wdp-modal-content::-webkit-scrollbar-track {
+  background: var(--wdp-gray-100);
+  border-radius: 3px;
+}
+
+.wdp-modal-content::-webkit-scrollbar-thumb {
+  background: var(--wdp-gray-300);
+  border-radius: 3px;
+}
+
+.wdp-modal-content::-webkit-scrollbar-thumb:hover {
+  background: var(--wdp-gray-400);
+}
+
+/* Focus trap */
+.wdp-modal:focus-within,
+.wdp-modal-content:focus-within {
+  outline: none;
+}
+
+/* RTL support */
+[dir="rtl"] .wdp-modal-content {
+  text-align: right;
+}
+
+[dir="rtl"] .wdp-input-group label {
+  right: 16px;
+  left: auto;
+}
+
+[dir="rtl"] .wdp-input-group input,
+[dir="rtl"] .wdp-input-group textarea {
+  text-align: right;
+}
+
+[dir="rtl"] .wdp-price-suggestions {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .wdp-toast {
+  right: auto;
+  left: 20px;
+  transform: translateX(-100%);
+}
+
+[dir="rtl"] .wdp-toast.show {
+  transform: translateX(0);
+}

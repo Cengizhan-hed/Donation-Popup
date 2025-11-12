@@ -1,0 +1,275 @@
+/* ==================== */
+/* SUCCESS SCREEN & MINI CART */
+/* ==================== */
+
+.wdp-cart-animation {
+  animation: wdpCartBump 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transform-origin: center;
+}
+
+@keyframes wdpCartBump {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+.wdp-cart-actions,
+.wdp-cart-actions a {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--wdp-space-3);
+  margin-top: var(--wdp-space-4);
+  justify-content: center;
+  align-items: center;
+}
+
+.wdp-cart-actions a,
+.wdp-cart-actions button {
+  background: var(--wdp-primary);
+  color: var(--wdp-white);
+  border: none;
+  border-radius: var(--wdp-radius-md);
+  padding: var(--wdp-space-3) var(--wdp-space-6);
+  font-size: var(--wdp-text-base);
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.2s ease, color 0.2s ease;
+  margin: 0;
+  min-width: 120px;
+  text-align: center;
+}
+
+.wdp-cart-actions a:hover,
+.wdp-cart-actions button:hover {
+  background: var(--wdp-primary-hover);
+  color: var(--wdp-white);
+}
+
+.wdp-cart-actions a.wdp-accent,
+.wdp-cart-actions button.wdp-accent {
+  background: var(--wdp-accent);
+  color: var(--wdp-white);
+}
+
+.wdp-cart-actions a.wdp-accent:hover,
+.wdp-cart-actions button.wdp-accent:hover {
+  background: var(--wdp-accent-hover);
+}
+
+.wdp-modal .wdp-success-screen .wdp-success-buttons,
+.wdp-donation-form .wdp-success-screen .wdp-success-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.wdp-modal .wdp-success-screen .wdp-success-buttons .wdp-success-button,
+.wdp-donation-form .wdp-success-screen .wdp-success-buttons .wdp-success-button {
+  display: inline-block;
+  width: 100%;
+  background: #1e73be;
+  background-image: none;
+  color: #fff;
+  border: none;
+  border-radius: 24px;
+  padding: 12px 20px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: none;
+  transition: background 0.2s ease, transform 0.1s ease;
+  text-decoration: none;
+  text-align: center;
+}
+
+.wdp-modal .wdp-success-screen .wdp-success-buttons .wdp-success-button:hover,
+.wdp-modal .wdp-success-screen .wdp-success-buttons .wdp-success-button:focus,
+.wdp-donation-form .wdp-success-screen .wdp-success-buttons .wdp-success-button:hover,
+.wdp-donation-form .wdp-success-screen .wdp-success-buttons .wdp-success-button:focus {
+  background: #185d98;
+  background-image: none;
+  box-shadow: none;
+  transform: translateY(-1px);
+  color: #fff;
+}
+
+.wdp-modal .wdp-success-screen .wdp-success-buttons .wdp-new-donation,
+.wdp-donation-form .wdp-success-screen .wdp-success-buttons .wdp-new-donation {
+  grid-column: 1 / -1;
+}
+
+.wdp-modal .wdp-success-screen .wdp-success-message,
+.wdp-donation-form .wdp-success-screen .wdp-success-message {
+  font-size: var(--wdp-text-lg);
+  font-weight: 600;
+  color: var(--wdp-success);
+  text-align: center;
+  margin: 0 0 var(--wdp-space-6) 0;
+  padding: var(--wdp-space-4);
+  background: rgba(72, 187, 120, 0.1);
+  border: 1px solid rgba(72, 187, 120, 0.2);
+  border-radius: var(--wdp-radius-md);
+}
+
+.wdp-modal .wdp-success-screen .wdp-mini-cart,
+.wdp-donation-form .wdp-success-screen .wdp-mini-cart {
+  margin-bottom: var(--wdp-space-6);
+  background: var(--wdp-gray-50);
+  border: 1px solid var(--wdp-gray-200);
+  border-radius: var(--wdp-radius-md);
+  padding: var(--wdp-space-4);
+}
+
+.wdp-modal .wdp-mini-cart-header h4,
+.wdp-donation-form .wdp-mini-cart-header h4 {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0 0 10px 0;
+  color: #1e73be;
+  letter-spacing: 0.5px;
+}
+
+.wdp-modal .wdp-mini-cart-items,
+.wdp-donation-form .wdp-mini-cart-items {
+  max-height: 180px;
+  overflow-y: auto;
+  padding-right: 4px;
+  margin-bottom: 10px;
+  scrollbar-width: thin;
+  scrollbar-color: #1e73be #f2f2f2;
+}
+
+.wdp-modal .wdp-mini-cart-items::-webkit-scrollbar,
+.wdp-donation-form .wdp-mini-cart-items::-webkit-scrollbar {
+  width: 6px;
+  background: #f2f2f2;
+}
+
+.wdp-modal .wdp-mini-cart-items::-webkit-scrollbar-thumb,
+.wdp-donation-form .wdp-mini-cart-items::-webkit-scrollbar-thumb {
+  background: #1e73be;
+  border-radius: 4px;
+}
+
+.wdp-modal .wdp-mini-cart-items table,
+.wdp-donation-form .wdp-mini-cart-items table,
+.wdp-modal .wdp-mini-cart-items .wdp-cart-item-table,
+.wdp-donation-form .wdp-mini-cart-items .wdp-cart-item-table {
+  width: 100%;
+  margin-bottom: 10px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
+  border-collapse: collapse;
+}
+
+.wdp-modal .wdp-mini-cart-items table td,
+.wdp-donation-form .wdp-mini-cart-items table td {
+  padding: 10px;
+  vertical-align: top;
+}
+
+.wdp-modal .wdp-mini-cart-items table td:first-child,
+.wdp-donation-form .wdp-mini-cart-items table td:first-child,
+.wdp-modal .wdp-mini-cart-items .wdp-cart-item-info,
+.wdp-donation-form .wdp-mini-cart-items .wdp-cart-item-info {
+  width: 70%;
+  text-align: left;
+}
+
+.wdp-modal .wdp-mini-cart-items table td:last-child,
+.wdp-donation-form .wdp-mini-cart-items table td:last-child,
+.wdp-modal .wdp-mini-cart-items .wdp-cart-item-details,
+.wdp-donation-form .wdp-mini-cart-items .wdp-cart-item-details {
+  width: 30%;
+  text-align: right;
+}
+
+.wdp-modal .wdp-mini-cart-items table div,
+.wdp-donation-form .wdp-mini-cart-items table div {
+  margin-bottom: 4px;
+}
+
+.wdp-modal .wdp-mini-cart-items table td:first-child > div:first-child,
+.wdp-donation-form .wdp-mini-cart-items table td:first-child > div:first-child,
+.wdp-modal .wdp-mini-cart-items .wdp-cart-item-name,
+.wdp-donation-form .wdp-mini-cart-items .wdp-cart-item-name {
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--wdp-gray-800);
+  margin-top: 0;
+  margin-bottom: 4px;
+  line-height: 1.4;
+}
+
+.wdp-modal .wdp-mini-cart-items .wdp-cart-item-meta,
+.wdp-donation-form .wdp-mini-cart-items .wdp-cart-item-meta {
+  font-size: 13px;
+  color: #666;
+}
+
+.wdp-modal .wdp-mini-cart-items .wdp-cart-item-meta-item,
+.wdp-donation-form .wdp-mini-cart-items .wdp-cart-item-meta-item {
+  margin-bottom: 2px;
+}
+
+.wdp-modal .wdp-mini-cart-items .wdp-cart-item-quantity,
+.wdp-donation-form .wdp-mini-cart-items .wdp-cart-item-quantity {
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 3px;
+}
+
+.wdp-modal .wdp-mini-cart-items .wdp-cart-item-price,
+.wdp-donation-form .wdp-mini-cart-items .wdp-cart-item-price {
+  font-size: 14px;
+  color: #1e73be;
+}
+
+.wdp-modal .wdp-mini-cart-items .wdp-cart-empty,
+.wdp-donation-form .wdp-mini-cart-items .wdp-cart-empty {
+  padding: 15px;
+  text-align: center;
+  color: var(--wdp-gray-600);
+}
+
+@media (max-width: 600px) {
+  .wdp-modal .wdp-success-screen .wdp-success-message,
+  .wdp-donation-form .wdp-success-screen .wdp-success-message {
+    font-size: 13px;
+    padding: var(--wdp-space-2);
+    margin-bottom: var(--wdp-space-3);
+  }
+
+  .wdp-modal .wdp-success-screen .wdp-mini-cart,
+  .wdp-donation-form .wdp-success-screen .wdp-mini-cart {
+    padding: var(--wdp-space-2);
+    margin-bottom: var(--wdp-space-3);
+  }
+
+  .wdp-modal .wdp-mini-cart-header h4,
+  .wdp-donation-form .wdp-mini-cart-header h4 {
+    font-size: 15px;
+    margin-bottom: 6px;
+  }
+
+  .wdp-modal .wdp-success-screen .wdp-success-buttons,
+  .wdp-donation-form .wdp-success-screen .wdp-success-buttons {
+    gap: var(--wdp-space-1);
+    margin-top: var(--wdp-space-2);
+  }
+
+  .wdp-modal .wdp-success-screen .wdp-success-buttons .wdp-success-button,
+  .wdp-donation-form .wdp-success-screen .wdp-success-buttons .wdp-success-button {
+    padding: 10px 12px;
+    font-size: 13px;
+    border-radius: 14px;
+  }
+
+  .wdp-modal .wdp-mini-cart-items table td:first-child > div:first-child,
+  .wdp-donation-form .wdp-mini-cart-items table td:first-child > div:first-child {
+    font-size: 14px;
+    font-weight: 600;
+  }
+}

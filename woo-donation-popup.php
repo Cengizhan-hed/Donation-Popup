@@ -196,7 +196,7 @@ function wdp_add_js_helpers() {
                }
            }
        };
-       xhr.send('action=wdp_render_donation_button&product_id=' + productId + '&security=<?php echo wp_create_nonce('wdp_ajax_nonce'); ?>');
+      xhr.send('action=wdp_render_donation_button&product_id=' + productId + '&security=<?php echo wp_create_nonce('wdp_render_donation_button'); ?>');
    };
    
    // Hata mesajlarını gizlemek için yardımcı fonksiyon
@@ -315,7 +315,7 @@ add_action('wp_ajax_wdp_render_donation_button', 'wdp_ajax_render_donation_butto
 add_action('wp_ajax_nopriv_wdp_render_donation_button', 'wdp_ajax_render_donation_button');
 
 function wdp_ajax_render_donation_button() {
-   check_ajax_referer('wdp_ajax_nonce', 'security');
+   check_ajax_referer('wdp_render_donation_button', 'security');
    
    $product_id = isset($_POST['product_id']) ? absint($_POST['product_id']) : 0;
    $button_text = isset($_POST['button_text']) ? sanitize_text_field($_POST['button_text']) : 'Bağış Yap';

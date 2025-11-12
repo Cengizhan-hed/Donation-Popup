@@ -1,0 +1,31 @@
+/* ==================== */
+/* SMART PRICE SUGGESTIONS */
+/* ==================== */
+
+.wdp-price-suggestions {
+  display: flex;
+  gap: var(--wdp-space-2);
+  margin-bottom: var(--wdp-space-4);
+  flex-wrap: wrap;
+}
+
+.wdp-price-suggestion {
+  padding: 8px 16px;
+  border: 2px solid var(--wdp-gray-200);
+  border-radius: var(--wdp-radius-lg);
+  background: var(--wdp-white);
+  color: var(--wdp-gray-700);
+  font-size: var(--wdp-text-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  user-select: none;
+}
+
+.wdp-price-suggestion:hover,
+.wdp-price-suggestion.active {
+  border-color: var(--wdp-primary);
+  background: var(--wdp-primary);
+  color: var(--wdp-white);
+  transform: translateY(-1px);
+}

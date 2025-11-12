@@ -1,0 +1,379 @@
+:where(.wdp-modal-header) {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  width: 100%;
+  gap: var(--wdp-space-3);
+  margin-bottom: var(--wdp-space-2);
+}
+
+:where(.wdp-modal-close) {
+  position: absolute;
+  top: 0;
+  right: var(--wdp-space-4);
+  width: 32px;
+  height: 32px;
+  margin: 0;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--wdp-gray-500);
+  font-size: 2.1rem;
+  line-height: 1;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s ease;
+  transform: translateY(0);
+}
+
+:where(.wdp-modal-close:hover,
+       .wdp-modal-close:focus) {
+  color: var(--wdp-gray-700);
+  outline: none;
+  background: none;
+}
+
+:where(.wdp-modal-title,
+       .wdp-form-title) {
+  font-size: 1.7rem;
+  font-weight: 600;
+  color: var(--wdp-gray-800);
+  line-height: 1.4;
+  margin: 0 36px var(--wdp-space-4) 0;
+  padding-bottom: var(--wdp-space-3);
+  border-bottom: 1px solid var(--wdp-gray-200);
+}
+
+.wdp-modal .wdp-modal-content h2,
+.wdp-donation-form .wdp-modal-content h2,
+.wdp-modal .wdp-modal-content .wdp-form-title,
+.wdp-donation-form .wdp-modal-content .wdp-form-title {
+  border-bottom: 1px solid var(--wdp-gray-200);
+}
+
+:where(.wdp-price-quantity-row) {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--wdp-space-3);
+  align-items: stretch;
+}
+
+:where(.wdp-price-quantity-row > *) {
+  width: 100%;
+}
+
+:where(.wdp-modal, .wdp-donation-form) .wdp-price-quantity-row:has(> input[type="hidden"]:only-child) {
+  display: none;
+}
+
+:where(.wdp-quantity-counter) {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 1px solid var(--wdp-gray-300);
+  border-radius: var(--wdp-radius-md);
+  background: var(--wdp-white);
+  min-height: 48px;
+  padding: 0 var(--wdp-space-2);
+}
+
+:where(.wdp-quantity-counter input[type="number"]) {
+  width: 64px;
+  text-align: center;
+  border: none;
+  background: transparent;
+  font-size: var(--wdp-text-base);
+  padding: 0;
+  margin: 0;
+}
+
+:where(.wdp-product-quantity-btn,
+       .wdp-share-btn,
+       .wdp-share-quantity-btn) {
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--wdp-gray-600);
+  font-size: 20px;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+:where(.wdp-product-quantity-btn:hover,
+       .wdp-product-quantity-btn:focus,
+       .wdp-share-btn:hover,
+       .wdp-share-btn:focus,
+       .wdp-share-quantity-btn:hover,
+       .wdp-share-quantity-btn:focus) {
+  color: var(--wdp-primary);
+  outline: none;
+}
+
+:where(.wdp-modal, .wdp-donation-form) .wdp-modal-content {
+  width: min(540px, 96vw);
+}
+
+:where(.wdp-modal, .wdp-donation-form) .wdp-modal-content form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--wdp-space-4);
+  width: 100%;
+  min-height: 0;
+}
+
+:where(.wdp-modal, .wdp-donation-form) .wdp-modal-content form.wdp-has-shareholders {
+  gap: 0;
+}
+
+:where(.wdp-modal, .wdp-donation-form) .wdp-modal-content form.wdp-has-shareholders > :where(:not([hidden], input[type="hidden"])) + :where(:not([hidden], input[type="hidden"])) {
+  margin-top: var(--wdp-space-4);
+}
+
+:where(.wdp-modal, .wdp-donation-form) .wdp-modal-content form.wdp-has-shareholders > .wdp-shares-section + * {
+  margin-top: 0;
+}
+
+:where(.wdp-modal, .wdp-donation-form) .wdp-modal-content form.wdp-has-shareholders > .wdp-shares-section + .wdp-price-quantity-row {
+  margin-top: var(--wdp-space-4);
+}
+
+:where(.wdp-modal, .wdp-donation-form) .wdp-modal-content form.wdp-has-shareholders > .wdp-shares-section + .wdp-button-group {
+  margin-top: var(--wdp-space-4);
+}
+
+:where(.wdp-modal, .wdp-donation-form) .wdp-modal-content form.wdp-has-shareholders > .wdp-price-quantity-row:has(> input[type="hidden"]:only-child) + .wdp-button-group {
+  margin-top: var(--wdp-space-4);
+}
+
+:where(.wdp-modal, .wdp-donation-form) .wdp-modal-content form.wdp-has-shareholders .wdp-button-group {
+  margin-top: var(--wdp-space-4);
+}
+
+:where(.wdp-modal, .wdp-donation-form) .wdp-modal-content form.wdp-has-shareholders > .wdp-shares-section:has(.wdp-shareholders-area:not(.scrollable)) + .wdp-button-group {
+  margin-top: var(--wdp-space-4);
+}
+
+:where(.wdp-modal, .wdp-donation-form) .wdp-modal-content form > * {
+  width: 100%;
+  min-height: 0;
+  flex-shrink: 0;
+}
+
+.wdp-modal .wdp-modal-content label,
+.wdp-donation-form .wdp-modal-content label {
+  font-size: var(--wdp-text-sm);
+  font-weight: 600;
+  color: var(--wdp-gray-700);
+  display: block;
+  margin-bottom: var(--wdp-space-2);
+}
+
+:where(.wdp-modal, .wdp-donation-form) button {
+  border-radius: var(--wdp-button-radius);
+}
+
+.wdp-modal .wdp-modal-content input,
+.wdp-modal .wdp-modal-content select,
+.wdp-modal .wdp-modal-content textarea,
+.wdp-donation-form .wdp-modal-content input,
+.wdp-donation-form .wdp-modal-content select,
+.wdp-donation-form .wdp-modal-content textarea {
+  width: 100%;
+  min-height: 48px;
+  padding: var(--wdp-space-3) var(--wdp-space-4);
+  border: 1px solid var(--wdp-gray-300);
+  border-radius: var(--wdp-radius-md);
+  background: var(--wdp-white);
+  color: var(--wdp-gray-800);
+  font-size: var(--wdp-text-base);
+  font-weight: 400;
+  line-height: 1.5;
+  box-sizing: border-box;
+  font-family: inherit;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  margin: 0;
+}
+
+.wdp-modal .wdp-modal-content textarea,
+.wdp-donation-form .wdp-modal-content textarea {
+  min-height: 96px;
+  resize: vertical;
+}
+
+.wdp-modal .wdp-modal-content input:focus,
+.wdp-modal .wdp-modal-content select:focus,
+.wdp-modal .wdp-modal-content textarea:focus,
+.wdp-donation-form .wdp-modal-content input:focus,
+.wdp-donation-form .wdp-modal-content select:focus,
+.wdp-donation-form .wdp-modal-content textarea:focus {
+  border-color: var(--wdp-primary);
+  outline: none;
+  box-shadow: none;
+  background-color: var(--wdp-white);
+}
+
+.wdp-modal .wdp-modal-content input::placeholder,
+.wdp-modal .wdp-modal-content textarea::placeholder,
+.wdp-donation-form .wdp-modal-content input::placeholder,
+.wdp-donation-form .wdp-modal-content textarea::placeholder {
+  color: var(--wdp-gray-500);
+  opacity: 1;
+}
+
+@media (max-width: 600px) {
+  .wdp-donation-form form,
+  .wdp-donation-form form > *,
+  .wdp-donation-form input,
+  .wdp-donation-form textarea,
+  .wdp-donation-form button,
+  .wdp-donation-form .wdp-button-group,
+  .wdp-donation-form .wdp-price-quantity-row {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  :where(.wdp-price-quantity-row) {
+    grid-template-columns: 1fr;
+  }
+
+  :where(.wdp-product-quantity-btn,
+         .wdp-share-btn,
+         .wdp-share-quantity-btn) {
+    width: 36px;
+    height: 36px;
+    font-size: 18px;
+  }
+
+  .wdp-modal-header .wdp-modal-close {
+    font-size: 1.6rem;
+    width: 28px;
+    height: 28px;
+    right: var(--wdp-space-4);
+    transform: translateY(0);
+  }
+
+  .wdp-modal-header .wdp-modal-title,
+  .wdp-donation-form .wdp-modal-header .wdp-modal-title,
+  .wdp-modal .wdp-modal-content h2,
+  .wdp-donation-form .wdp-modal-content h2,
+  .wdp-modal .wdp-modal-content .wdp-form-title,
+  .wdp-donation-form .wdp-modal-content .wdp-form-title {
+    font-size: 1.25rem;
+    margin-right: 28px;
+    padding-bottom: var(--wdp-space-2);
+  }
+
+  .wdp-modal .wdp-modal-content form input[type="text"],
+  .wdp-modal .wdp-modal-content form input[type="tel"],
+  .wdp-modal .wdp-modal-content form input[type="email"],
+  .wdp-modal .wdp-modal-content form textarea,
+  .wdp-donation-form .wdp-modal-content form input[type="text"],
+  .wdp-donation-form .wdp-modal-content form input[type="tel"],
+  .wdp-donation-form .wdp-modal-content form input[type="email"],
+  .wdp-donation-form .wdp-modal-content form textarea {
+    font-size: 16px;
+    padding: var(--wdp-space-3) var(--wdp-space-3);
+    margin-bottom: var(--wdp-space-3);
+    border-radius: var(--wdp-radius-md);
+    min-height: 44px;
+  }
+
+  .wdp-modal .wdp-modal-content form input[type="number"],
+  .wdp-donation-form .wdp-modal-content form input[type="number"] {
+    font-size: 16px;
+    padding: var(--wdp-space-3) var(--wdp-space-3);
+    margin-bottom: var(--wdp-space-3);
+    border-radius: var(--wdp-radius-md);
+    min-height: 44px;
+  }
+
+  .wdp-modal .wdp-modal-content .wdp-button-group,
+  .wdp-donation-form .wdp-modal-content .wdp-button-group {
+    gap: var(--wdp-space-3);
+    margin-top: var(--wdp-space-4);
+  }
+
+  .wdp-modal .wdp-modal-content .wdp-button-group button,
+  .wdp-donation-form .wdp-modal-content .wdp-button-group button {
+    min-height: 48px;
+    padding: var(--wdp-space-3) var(--wdp-space-4);
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: var(--wdp-radius-md);
+    flex: 1 1 0;
+  }
+
+  .wdp-modal .wdp-modal-content form .wdp-price-quantity-row,
+  .wdp-donation-form .wdp-modal-content form .wdp-price-quantity-row {
+    margin-bottom: var(--wdp-space-4);
+    gap: var(--wdp-space-3);
+  }
+
+  .wdp-modal .wdp-modal-content form .wdp-price-quantity-row > input[name="custom_price"],
+  .wdp-donation-form .wdp-modal-content form .wdp-price-quantity-row > input[name="custom_price"],
+  .wdp-modal .wdp-modal-content form .wdp-price-quantity-row > .wdp-price-field input,
+  .wdp-donation-form .wdp-modal-content form .wdp-price-quantity-row > .wdp-price-field input {
+    height: 44px;
+    font-size: 16px;
+  }
+
+  .wdp-modal .wdp-modal-content form .wdp-quantity-counter,
+  .wdp-donation-form .wdp-modal-content form .wdp-quantity-counter {
+    height: 44px;
+  }
+
+  .wdp-modal .wdp-modal-content form .wdp-quantity-counter input[type="number"],
+  .wdp-donation-form .wdp-modal-content form .wdp-quantity-counter input[type="number"] {
+    height: 44px;
+    line-height: 44px;
+    font-size: 16px;
+    border: none;
+    border-color: transparent;
+    border-width: 0;
+    border-style: none;
+    padding: 0;
+    margin: 0;
+    background: transparent;
+    background-color: transparent;
+  }
+
+  .wdp-modal .wdp-modal-content label,
+  .wdp-donation-form .wdp-modal-content label {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: var(--wdp-space-2);
+    color: var(--wdp-gray-700);
+  }
+
+  .wdp-modal .wdp-success-screen,
+  .wdp-donation-form .wdp-success-screen {
+    padding: var(--wdp-space-4) var(--wdp-space-3);
+    gap: var(--wdp-space-4);
+  }
+
+  .wdp-modal .wdp-success-screen h3,
+  .wdp-donation-form .wdp-success-screen h3 {
+    font-size: 1.25rem;
+    font-weight: 700;
+  }
+
+  .wdp-modal .wdp-success-screen .wdp-success-buttons .wdp-success-button,
+  .wdp-donation-form .wdp-success-screen .wdp-success-buttons .wdp-success-button {
+    min-height: 48px;
+    padding: var(--wdp-space-3) var(--wdp-space-4);
+    font-size: 16px;
+  }
+}

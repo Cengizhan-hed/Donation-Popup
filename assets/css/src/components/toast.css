@@ -1,0 +1,63 @@
+/* ==================== */
+/* NOTIFICATION TOAST */
+/* ==================== */
+
+.wdp-toast {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: var(--wdp-white);
+  border: 1px solid var(--wdp-gray-200);
+  border-radius: var(--wdp-radius-lg);
+  padding: var(--wdp-space-4) var(--wdp-space-5);
+  box-shadow: none;
+  z-index: 1000003;
+  max-width: 300px;
+  transform: translateX(100%);
+  transition: transform 0.3s ease;
+}
+
+.wdp-toast.show {
+  transform: translateX(0);
+}
+
+.wdp-toast.error {
+  border-left: 4px solid var(--wdp-error);
+}
+
+.wdp-toast.warning {
+  border-left: 4px solid var(--wdp-warning);
+}
+
+.wdp-toast-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--wdp-space-2);
+}
+
+.wdp-toast-title {
+  font-weight: 600;
+  font-size: var(--wdp-text-sm);
+  color: var(--wdp-gray-800);
+}
+
+.wdp-toast-close {
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  color: var(--wdp-gray-500);
+  padding: 0;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.wdp-toast-message {
+  font-size: var(--wdp-text-sm);
+  color: var(--wdp-gray-600);
+  line-height: 1.4;
+}

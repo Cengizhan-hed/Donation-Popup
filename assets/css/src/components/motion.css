@@ -1,0 +1,71 @@
+/* ==================== */
+/* MOTION & TRANSITIONS */
+/* ==================== */
+
+.wdp-modal {
+  will-change: opacity;
+}
+
+.wdp-modal-content {
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wdp-modal,
+  .wdp-modal-content,
+  .wdp-modal-content form input,
+  .wdp-modal-content form textarea,
+  .wdp-modal-content form button {
+    transition: none;
+    animation: none;
+  }
+}
+
+@keyframes wdpSlideOut {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+}
+
+.wdp-modal.show .wdp-modal-content {
+  animation: none;
+}
+
+.wdp-modal.closing .wdp-modal-content {
+  animation: wdpSlideOut 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Input focus animasyonları kaldırıldı */
+
+.wdp-shareholder-form.collapsed .wdp-shareholder-content,
+.wdp-shareholders-container {
+  transition: none;
+}
+
+.wdp-shareholder-form,
+.wdp-shareholder-header,
+.wdp-shareholders-container {
+  transition: none;
+}
+@media (max-width: 600px) {
+  .wdp-modal .wdp-modal-content,
+  .wdp-donation-form .wdp-modal-content,
+  .wdp-modal .wdp-modal-content form,
+  .wdp-donation-form .wdp-modal-content form,
+  .wdp-modal .wdp-modal-content form > *,
+  .wdp-donation-form .wdp-modal-content form > * {
+    animation: none;
+    transition: none;
+    opacity: 1;
+    transform: none;
+    visibility: visible;
+  }
+}

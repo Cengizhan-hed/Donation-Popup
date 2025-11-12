@@ -1,0 +1,119 @@
+/* Base resets and typography scope for Woo Donation Popup */
+.wdp-scope,
+:where(.wdp-modal, .wdp-donation-form) {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  line-height: 1.5;
+  color: var(--wdp-gray-800);
+  font-size: var(--wdp-text-base);
+  font-weight: 400;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+:where(.wdp-modal *, .wdp-donation-form *) {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:where(.wdp-modal, .wdp-donation-form) a {
+  color: inherit;
+  text-decoration: none;
+}
+
+:where(.wdp-modal, .wdp-donation-form) a:hover,
+:where(.wdp-modal, .wdp-donation-form) a:focus {
+  text-decoration: underline;
+}
+
+:where(.wdp-modal, .wdp-donation-form) h1,
+:where(.wdp-modal, .wdp-donation-form) h2,
+:where(.wdp-modal, .wdp-donation-form) h3,
+:where(.wdp-modal, .wdp-donation-form) h4,
+:where(.wdp-modal, .wdp-donation-form) h5,
+:where(.wdp-modal, .wdp-donation-form) h6 {
+  font-family: inherit;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--wdp-gray-800);
+  margin: 0;
+}
+
+:where(.wdp-modal, .wdp-donation-form) p,
+:where(.wdp-modal, .wdp-donation-form) ul,
+:where(.wdp-modal, .wdp-donation-form) ol {
+  margin: 0 0 var(--wdp-space-3);
+  color: var(--wdp-gray-700);
+}
+
+:where(.wdp-modal, .wdp-donation-form) ul,
+:where(.wdp-modal, .wdp-donation-form) ol {
+  padding-left: var(--wdp-space-4);
+}
+
+:where(.wdp-modal, .wdp-donation-form) button,
+:where(.wdp-modal, .wdp-donation-form) input,
+:where(.wdp-modal, .wdp-donation-form) select,
+:where(.wdp-modal, .wdp-donation-form) textarea {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  background: transparent;
+  border: none;
+  outline: none;
+}
+
+:where(.wdp-modal, .wdp-donation-form) button {
+  cursor: pointer;
+  border-radius: var(--wdp-button-radius);
+}
+
+:where(.wdp-modal, .wdp-donation-form) button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Remove native number input controls across browsers */
+.wdp-quantity-counter input[type="number"]::-webkit-outer-spin-button,
+.wdp-quantity-counter input[type="number"]::-webkit-inner-spin-button,
+.wdp-share-counter input[type="number"]::-webkit-outer-spin-button,
+.wdp-share-counter input[type="number"]::-webkit-inner-spin-button,
+.wdp-share-quantity input[type="number"]::-webkit-outer-spin-button,
+.wdp-share-quantity input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+  display: none;
+}
+
+.wdp-quantity-counter input[type="number"],
+.wdp-share-counter input[type="number"],
+.wdp-share-quantity input[type="number"] {
+  -webkit-appearance: none;
+  -moz-appearance: textfield;
+  appearance: none;
+  background-clip: padding-box;
+}
+
+@media (max-width: 600px) {
+  body .wdp-quantity-counter input[type="number"]::-webkit-outer-spin-button,
+  body .wdp-quantity-counter input[type="number"]::-webkit-inner-spin-button,
+  body .wdp-share-counter input[type="number"]::-webkit-outer-spin-button,
+  body .wdp-share-counter input[type="number"]::-webkit-inner-spin-button,
+  body .wdp-share-quantity input[type="number"]::-webkit-outer-spin-button,
+  body .wdp-share-quantity input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+    display: none;
+  }
+
+  body .wdp-quantity-counter input[type="number"],
+  body .wdp-share-counter input[type="number"],
+  body .wdp-share-quantity input[type="number"] {
+    -webkit-appearance: none;
+    -moz-appearance: textfield;
+    appearance: none;
+    background-clip: padding-box;
+  }
+}
+

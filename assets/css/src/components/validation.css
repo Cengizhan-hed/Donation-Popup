@@ -1,0 +1,33 @@
+/* ==================== */
+/* FORM VALIDATION STATES */
+/* ==================== */
+
+.wdp-modal-content form input[type="text"]:required:invalid,
+.wdp-modal-content form input[type="tel"]:required:invalid,
+.wdp-modal-content form input[type="email"]:required:invalid,
+.wdp-modal-content form textarea:required:invalid {
+  border-left: 4px solid var(--wdp-error);
+}
+
+.wdp-modal-content form input[type="text"]:focus:invalid,
+.wdp-modal-content form input[type="tel"]:focus:invalid,
+.wdp-modal-content form input[type="email"]:focus:invalid,
+.wdp-modal-content form textarea:focus:invalid {
+  border-color: var(--wdp-error);
+  box-shadow: none;
+}
+
+.wdp-modal-content form input[type="text"]:invalid:not(:placeholder-shown),
+.wdp-modal-content form input[type="tel"]:invalid:not(:placeholder-shown),
+.wdp-modal-content form input[type="email"]:invalid:not(:placeholder-shown),
+.wdp-modal-content form textarea:invalid:not(:placeholder-shown) {
+  border-color: var(--wdp-error);
+  background-color: rgba(229, 62, 62, 0.05);
+}
+
+.wdp-modal-content form input.wdp-error,
+.wdp-modal-content form textarea.wdp-error {
+  border-color: var(--wdp-error);
+  box-shadow: none;
+  animation: wdpShake 0.5s ease-in-out;
+}

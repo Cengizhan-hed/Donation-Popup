@@ -1,0 +1,253 @@
+/* ==================== */
+/* BUTTON STYLES */
+/* ==================== */
+
+.wdp-donate-button,
+.wdp-open-modal {
+  display: inline-block;
+  min-width: 140px;
+  min-height: 48px;
+  padding: 0 var(--wdp-space-6);
+  background-color: var(--wdp-primary);
+  color: var(--wdp-white);
+  border: none;
+  border-radius: var(--wdp-button-radius);
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+  line-height: 1.4;
+  text-align: center;
+  box-shadow: none;
+  font-family: inherit;
+  letter-spacing: 0.01em;
+}
+
+.wdp-donate-button:hover,
+.wdp-open-modal:hover {
+  background-color: var(--wdp-primary-hover);
+  color: var(--wdp-white);
+}
+
+.wdp-donate-button:active,
+.wdp-open-modal:active {
+  background-color: var(--wdp-primary-hover);
+}
+
+.wdp-donate-button:focus,
+.wdp-open-modal:focus {
+  outline: 2px solid var(--wdp-primary);
+  outline-offset: 2px;
+}
+
+/* Form action buttons */
+.wdp-modal-content form .wdp-button-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--wdp-space-3);
+  width: 100%;
+  margin-top: var(--wdp-space-2);
+}
+
+.wdp-modal .wdp-modal-content form .wdp-button-group,
+.wdp-donation-form .wdp-button-group {
+  margin-top: 0;
+}
+
+.wdp-modal .wdp-modal-content form .wdp-button-group {
+  margin-bottom: 0;
+}
+
+.wdp-modal .wdp-modal-content form > .wdp-button-group,
+.wdp-donation-form > .wdp-button-group {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+@media (max-width: 600px) {
+  .wdp-modal .wdp-modal-content form .wdp-button-group,
+  .wdp-donation-form .wdp-button-group,
+  .wdp-modal .wdp-modal-content form > .wdp-button-group,
+  .wdp-donation-form > .wdp-button-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--wdp-space-3);
+    width: 100%;
+    margin-top: 0;
+    margin-bottom: 0;
+  }
+}
+
+@media (min-width: 601px) {
+  .wdp-modal .wdp-modal-content form .wdp-button-group,
+  .wdp-donation-form .wdp-modal-content form .wdp-button-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    width: 100%;
+    margin-top: var(--wdp-space-2);
+  }
+}
+
+.wdp-modal-content form .wdp-button-group button {
+  flex: 1;
+  padding: var(--wdp-space-3) var(--wdp-space-5);
+  background-color: var(--wdp-button-primary);
+  color: var(--wdp-white);
+  border: none;
+  border-radius: var(--wdp-button-radius);
+  font-size: var(--wdp-text-base);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+  text-align: center;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  line-height: 1.4;
+  font-family: inherit;
+}
+
+.wdp-modal-content form .wdp-button-group button:hover {
+  background-color: var(--wdp-button-primary-hover);
+}
+
+.wdp-modal-content form .wdp-button-group button:active {
+  background-color: var(--wdp-button-primary-hover);
+}
+
+.wdp-modal-content form .wdp-button-group button[name="donation_go_checkout"] {
+  background-color: var(--wdp-accent);
+}
+
+.wdp-modal-content form .wdp-button-group button[name="donation_go_checkout"]:hover {
+  background-color: var(--wdp-accent-hover);
+}
+
+.wdp-modal-content form .wdp-button-group button.wdp-loading {
+  position: relative;
+  color: transparent;
+  pointer-events: none;
+}
+
+.wdp-modal-content form .wdp-button-group button.wdp-loading::after {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  top: 50%;
+  left: 50%;
+  margin-left: -8px;
+  margin-top: -8px;
+  border: 2px solid transparent;
+  border-top-color: var(--wdp-white);
+  border-radius: 50%;
+  animation: wdpSpin 1s linear infinite;
+}
+
+.wdp-modal-content form .wdp-button-group button:disabled {
+  background-color: var(--wdp-gray-400);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Auxiliary form actions */
+.wdp-copy-form-btn {
+  width: 100%;
+  padding: var(--wdp-space-3) var(--wdp-space-4);
+  background-color: var(--wdp-primary);
+  color: var(--wdp-white);
+  border: none;
+  border-radius: var(--wdp-button-radius);
+  font-size: var(--wdp-text-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease, opacity 0.15s ease;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  margin-top: var(--wdp-space-2);
+  box-shadow: none;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.wdp-copy-form-btn:hover {
+  background-color: var(--wdp-primary-hover);
+}
+
+.wdp-copy-form-btn:active {
+  background-color: var(--wdp-primary-hover);
+}
+
+.wdp-copy-form-btn.is-active {
+  display: inline-flex;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.wdp-copy-form-btn:focus {
+  outline: 2px solid var(--wdp-primary);
+  outline-offset: 2px;
+}
+
+/* Generic loading helper */
+.wdp-loading-button {
+  position: relative;
+  color: transparent;
+}
+
+.wdp-loading-button::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  margin: -10px 0 0 -10px;
+  border: 2px solid transparent;
+  border-top: 2px solid currentColor;
+  border-radius: 50%;
+  animation: wdpSpin 1s linear infinite;
+}
+
+@keyframes wdpSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@media (prefers-contrast: high) {
+  .wdp-donate-button,
+  .wdp-open-modal {
+    border: 2px solid var(--wdp-white);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wdp-donate-button,
+  .wdp-open-modal,
+  .wdp-modal-content form .wdp-button-group button {
+    transition: none;
+    animation: none;
+  }
+}
+
+@media (max-width: 280px) {
+  .wdp-donate-button,
+  .wdp-open-modal {
+    min-width: 120px;
+    min-height: 40px;
+    font-size: 14px;
+    padding: 10px 16px;
+  }
+}
+
+@media print {
+  .wdp-donate-button,
+  .wdp-open-modal {
+    display: none;
+  }
+}
