@@ -1,0 +1,337 @@
+<?php
+/**
+ * Templates class
+ * Handles template rendering (modal, forms)
+ * 
+ * @package WooCommerce\Donation_Popup
+ */
+
+if (!defined('ABSPATH')) {
+    exit;
+}
+
+/**
+ * Class WDP_Templates
+ */
+class WDP_Templates {
+
+    /**
+     * Render donation modal
+     *
+     * @param int    $product_id    Product ID.
+     * @param string $button_text   Button text.
+     * @param string $custom_class  Custom CSS class.
+     * @param string $custom_style  Custom CSS style.
+     * @return string
+     */
+    public static function render_donation_modal($product_id, $button_text = '', $custom_class = '', $custom_style = '') {
+        // Ürün ID'sini integer'a çevir
+        $product_id = intval($product_id);
+
+        // Ürünün varlığını kontrol et
+        $product = wc_get_product($product_id);
+        if (!$product) {
+            if (current_user_can('manage_options')) {
+                return '<p style="color:red;">Ürün bulunamadı (ID: ' . esc_html($product_id) . '). Lütfen ürün ID\'sini kontrol edin.</p>';
+            }
+            return '';
+        }
+
+        // Buton metni boşsa varsayılan değeri kullan
+        if (empty($button_text)) {
+            $button_text = __('Bağış Yap', 'woo-donation-popup');
+        }
+
+        // Ürün adını al
+        $product_name = $product->get_name();
+
+        // Benzersiz bir ID oluştur
+        $modal_id = 'wdp-modal-' . $product_id;
+
+        // Özel fiyat seçeneğinin aktif olup olmadığını kontrol et
+        $allow_custom_price = get_post_meta($product_id, '_allow_custom_price', true) === 'yes';
+        $min_price = get_post_meta($product_id, '_min_custom_price', true);
+
+        // Eğer minimum fiyat yoksa ve özel fiyat aktifse, varsayılan olarak 0 kullan
+        if ($allow_custom_price && $min_price === '') {
+            $min_price = '0';
+        }
+
+        // Çoklu hisse seçeneğinin aktif olup olmadığını kontrol et
+        $allow_multiple_shares = get_post_meta($product_id, '_allow_multiple_shares', true) === 'yes';
+        $max_shares = get_post_meta($product_id, '_max_shares', true);
+
+        // Eğer maksimum hisse sayısı yoksa ve çoklu hisse aktifse, varsayılan olarak 7 kullan
+        if ($allow_multiple_shares && $max_shares === '') {
+            $max_shares = '7';
+        }
+
+        // Assets'i zorla yükle
+        WDP_Assets::force_enqueue();
+
+        ob_start();
+        ?>
+        <!-- Modal -->
+        <div id="<?php echo esc_attr($modal_id); ?>" class="wdp-modal <?php echo esc_attr($custom_class); ?>" role="dialog" aria-modal="true" aria-labelledby="<?php echo esc_attr($modal_id); ?>-title" aria-describedby="<?php echo esc_attr($modal_id); ?>-description" style="display:none;visibility:hidden;opacity:0;">
+            <div class="wdp-modal-content">
+                <div class="wdp-modal-header">
+                    <span id="<?php echo esc_attr($modal_id); ?>-title" class="wdp-modal-title"><?php echo wp_kses_post($product_name); ?></span>
+                    <button type="button" class="wdp-modal-close" aria-label="<?php echo esc_attr__('Modalı Kapat', 'woo-donation-popup'); ?>">&times;</button>
+                </div>
+                <div id="<?php echo esc_attr($modal_id); ?>-description" class="screen-reader-text"><?php echo esc_html(sprintf(__('%s için bağış formu', 'woo-donation-popup'), $product_name)); ?></div>
+                <form method="post" action="" class="<?php echo esc_attr($allow_multiple_shares ? 'wdp-donation-form-fields wdp-has-shareholders' : 'wdp-donation-form-fields'); ?>">
+                    <div class="wdp-form-error" style="display: none;"></div>
+
+                    <?php if ($allow_multiple_shares): ?>
+                    <!-- Çoklu Hisse Alanı -->
+                    <div class="wdp-shares-section">
+                        <div class="wdp-shares-header">
+                            <label>Hisse Adedi:</label>
+                            <div class="wdp-share-counter">
+                                <button type="button" class="wdp-share-btn decrease"><span>-</span></button>
+                                <input type="number" name="share_count" value="1" min="1" max="<?php echo esc_attr($max_shares); ?>" readonly>
+                                <button type="button" class="wdp-share-btn increase"><span>+</span></button>
+                            </div>
+                        </div>
+                        <div class="wdp-shareholders-area">
+                            <div class="wdp-shareholders-container">
+                                <div class="wdp-shareholders-scroll">
+                                <!-- Hissedar formları JavaScript ile eklenecek -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <?php else: ?>
+                    <!-- Bağışçı Bilgileri -->
+                    <input type="text" name="donation_full_name" placeholder="Ad Soyad *" required autocomplete="name">
+                    <input type="tel" name="donation_phone" placeholder="Telefon Numarası *" required autocomplete="tel">
+                    <textarea name="donation_note" rows="2" placeholder="Not (isteğe bağlı)"></textarea>
+                    <?php endif; ?>
+
+                    <!-- Fiyat ve Adet Alanları -->
+                    <div class="wdp-price-quantity-row">
+                        <?php if ($allow_custom_price): ?>
+                        <input type="number" name="custom_price" placeholder="Fiyat (TL)" min="<?php echo esc_attr($min_price); ?>" step="1" required>
+                        <?php endif; ?>
+
+                        <?php if (!$allow_multiple_shares): // Sadece hisse özelliği olmayan formlarda göster ?>
+                        <div class="wdp-quantity-counter">
+                            <button type="button" class="wdp-product-quantity-btn wdp-product-quantity-decrease" aria-label="Azalt">-</button>
+                            <input type="number" name="quantity" value="1" min="1" max="99" readonly>
+                            <button type="button" class="wdp-product-quantity-btn wdp-product-quantity-increase" aria-label="Arttır">+</button>
+                        </div>
+                        <?php else: // Hisse özelliği olan formlarda gizli input ekle ?>
+                        <input type="hidden" name="quantity" value="1">
+                        <?php endif; ?>
+                    </div>
+
+                    <!-- Butonlar -->
+                    <div class="wdp-button-group">
+                        <button type="submit" name="donation_add_to_cart">Sepete Ekle</button>
+                        <button type="submit" name="donation_go_checkout">Ödemeye Git</button>
+                    </div>
+
+                    <!-- Gizli Alanlar -->
+                    <input type="hidden" name="add-to-cart" value="<?php echo esc_attr($product_id); ?>">
+                    <input type="hidden" name="donation_modal" value="1">
+                </form>
+            </div>
+        </div>
+        <?php
+        return ob_get_clean();
+    }
+
+    /**
+     * Render donation form (direct, no modal)
+     *
+     * @param int   $product_id Product ID.
+     * @param array $atts       Shortcode attributes.
+     * @return string
+     */
+    public static function render_donation_form($product_id, $atts = array()) {
+        // Ürün ID'sini integer'a çevir
+        $product_id = intval($product_id);
+
+        // Varsayılan değerler
+        $defaults = array(
+            'button_text' => __('Bağış Yap', 'woo-donation-popup'),
+            'title' => '',
+            'show_title' => 'yes',
+            'class' => '',
+        );
+
+        $atts = wp_parse_args($atts, $defaults);
+
+        // Ürünün varlığını kontrol et
+        $product = wc_get_product($product_id);
+        if (!$product) {
+            if (current_user_can('manage_options')) {
+                return '<p style="color:red;">Ürün bulunamadı (ID: ' . esc_html($product_id) . '). Lütfen ürün ID\'sini kontrol edin.</p>';
+            }
+            return '';
+        }
+
+        // Ürün adını al
+        $product_name = $product->get_name();
+
+        // Özel başlık varsa onu kullan
+        $title = !empty($atts['title']) ? sanitize_text_field($atts['title']) : $product_name;
+        $show_title = ($atts['show_title'] === 'yes');
+
+        // Benzersiz bir ID oluştur - popup ile aynı format
+        $form_id = 'wdp-modal-' . $product_id . '-direct';
+        $custom_class = sanitize_text_field($atts['class']);
+
+        // Özel fiyat seçeneğinin aktif olup olmadığını kontrol et
+        $allow_custom_price = get_post_meta($product_id, '_allow_custom_price', true) === 'yes';
+        $min_price = get_post_meta($product_id, '_min_custom_price', true);
+
+        // Eğer minimum fiyat yoksa ve özel fiyat aktifse, varsayılan olarak 0 kullan
+        if ($allow_custom_price && $min_price === '') {
+            $min_price = '0';
+        }
+
+        // Çoklu hisse seçeneğinin aktif olup olmadığını kontrol et
+        $allow_multiple_shares = get_post_meta($product_id, '_allow_multiple_shares', true) === 'yes';
+        $max_shares = get_post_meta($product_id, '_max_shares', true);
+
+        // Eğer maksimum hisse sayısı yoksa ve çoklu hisse aktifse, varsayılan olarak 7 kullan
+        if ($allow_multiple_shares && $max_shares === '') {
+            $max_shares = '7';
+        }
+
+        // Form HTML'ini oluştur - popup ile aynı yapıyı kullan
+        ob_start();
+        ?>
+        <div id="<?php echo esc_attr($form_id); ?>" class="wdp-donation-form <?php echo esc_attr($custom_class); ?>" data-product-id="<?php echo esc_attr($product_id); ?>">
+            <div class="wdp-modal-content">
+                <?php if ($show_title): ?>
+                <h2 class="wdp-form-title"><?php echo wp_kses_post($title); ?></h2>
+                <?php endif; ?>
+
+                <form method="post" action="" class="<?php echo esc_attr($allow_multiple_shares ? 'wdp-donation-form-fields wdp-has-shareholders' : 'wdp-donation-form-fields'); ?>">
+                    <div class="wdp-form-error" style="display: none;"></div>
+
+                    <?php if ($allow_multiple_shares): ?>
+                    <!-- Çoklu Hisse Alanı -->
+                    <div class="wdp-shares-section">
+                        <div class="wdp-shares-header">
+                            <label>Hisse Adedi:</label>
+                            <div class="wdp-share-counter">
+                                <button type="button" class="wdp-share-btn decrease"><span>-</span></button>
+                                <input type="number" name="share_count" value="1" min="1" max="<?php echo esc_attr($max_shares); ?>" readonly>
+                                <button type="button" class="wdp-share-btn increase"><span>+</span></button>
+                            </div>
+                        </div>
+                        <div class="wdp-shareholders-area">
+                            <div class="wdp-shareholders-container">
+                                <div class="wdp-shareholders-scroll">
+                                <!-- Hissedar formları JavaScript ile eklenecek -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <?php else: ?>
+                    <!-- Bağışçı Bilgileri -->
+                    <input type="text" name="donation_full_name" placeholder="Ad Soyad *" required autocomplete="name">
+                    <input type="tel" name="donation_phone" placeholder="Telefon Numarası *" required autocomplete="tel">
+                    <textarea name="donation_note" rows="2" placeholder="Not (isteğe bağlı)"></textarea>
+                    <?php endif; ?>
+
+                    <!-- Fiyat ve Adet Alanları -->
+                    <div class="wdp-price-quantity-row">
+                        <?php if ($allow_custom_price): ?>
+                        <input type="number" name="custom_price" placeholder="Fiyat (TL)" min="<?php echo esc_attr($min_price); ?>" step="1" required>
+                        <?php endif; ?>
+
+                        <?php if (!$allow_multiple_shares): // Sadece hisse özelliği olmayan formlarda göster ?>
+                        <div class="wdp-quantity-counter">
+                            <button type="button" class="wdp-product-quantity-btn wdp-product-quantity-decrease" aria-label="Azalt">-</button>
+                            <input type="number" name="quantity" value="1" min="1" max="99" readonly>
+                            <button type="button" class="wdp-product-quantity-btn wdp-product-quantity-increase" aria-label="Arttır">+</button>
+                        </div>
+                        <?php else: // Hisse özelliği olan formlarda gizli input ekle ?>
+                        <input type="hidden" name="quantity" value="1">
+                        <?php endif; ?>
+                    </div>
+
+                    <!-- Butonlar -->
+                    <div class="wdp-button-group">
+                        <button type="submit" name="donation_add_to_cart">Sepete Ekle</button>
+                        <button type="submit" name="donation_go_checkout">Ödemeye Git</button>
+                    </div>
+
+                    <!-- Gizli Alanlar -->
+                    <input type="hidden" name="add-to-cart" value="<?php echo esc_attr($product_id); ?>">
+                    <input type="hidden" name="donation_modal" value="1">
+                </form>
+            </div>
+        </div>
+
+        <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Form elementini bul
+            var formContainer = document.getElementById('<?php echo esc_js($form_id); ?>');
+            if (!formContainer) return;
+
+            var form = formContainer.querySelector('form');
+            if (!form) return;
+
+            // Ürün bilgilerini al
+            var productId = formContainer.getAttribute('data-product-id');
+
+            // Modülleri güncelle (eğer henüz yüklenmişse)
+            var currentForm = window.WDPApp && window.WDPApp.form;
+            var currentShareholder = window.WDPApp && window.WDPApp.shareholder;
+            
+            var setupFormSubmission = (currentForm && typeof currentForm.setup === 'function') ? currentForm.setup : null;
+            var setupShareholderForms = (currentShareholder && typeof currentShareholder.setup === 'function') ? currentShareholder.setup : null;
+
+            // Popup ile aynı JavaScript işleme mantığını kullan
+            if (setupShareholderForms && typeof setupShareholderForms === 'function') {
+                setupShareholderForms(formContainer, productId);
+            } else {
+                console.log('WDP: setupShareholderForms not available yet, will retry...');
+                // Modüller yüklenene kadar bekle (max 5 saniye)
+                var attempts = 0;
+                var checkInterval = setInterval(function() {
+                    attempts++;
+                    currentShareholder = window.WDPApp && window.WDPApp.shareholder;
+                    if (currentShareholder && typeof currentShareholder.setup === 'function') {
+                        setupShareholderForms = currentShareholder.setup;
+                        setupShareholderForms(formContainer, productId);
+                        clearInterval(checkInterval);
+                    } else if (attempts >= 50) {
+                        console.log('WDP: setupShareholderForms timeout after 5 seconds');
+                        clearInterval(checkInterval);
+                    }
+                }, 100);
+            }
+
+            // Form gönderim olayını ayarla - popup ile aynı
+            if (setupFormSubmission && typeof setupFormSubmission === 'function') {
+                setupFormSubmission(form);
+            } else {
+                console.log('WDP: setupFormSubmission not available yet, will retry...');
+                // Modüller yüklenene kadar bekle (max 5 saniye)
+                var attempts2 = 0;
+                var checkInterval2 = setInterval(function() {
+                    attempts2++;
+                    currentForm = window.WDPApp && window.WDPApp.form;
+                    if (currentForm && typeof currentForm.setup === 'function') {
+                        setupFormSubmission = currentForm.setup;
+                        setupFormSubmission(form);
+                        clearInterval(checkInterval2);
+                    } else if (attempts2 >= 50) {
+                        console.log('WDP: setupFormSubmission timeout after 5 seconds');
+                        clearInterval(checkInterval2);
+                    }
+                }, 100);
+            }
+        });
+        </script>
+        <?php
+        return ob_get_clean();
+    }
+}
+

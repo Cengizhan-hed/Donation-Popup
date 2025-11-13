@@ -1,0 +1,64 @@
+# WordPress
+.DS_Store
+Thumbs.db
+*.log
+*.tmp
+*.temp
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.project
+.settings/
+*.sublime-project
+*.sublime-workspace
+
+# Node (if used in future)
+node_modules/
+npm-debug.log
+yarn-error.log
+package-lock.json
+yarn.lock
+
+# Build files (if needed in future)
+dist/
+build/
+
+# OS Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# WordPress specific
+wp-config.php
+.htaccess
+wp-content/uploads/
+wp-content/cache/
+wp-content/backups/
+
+# Plugin specific
+*.backup
+*.bak
+*.old
+
+# Development
+.env
+.env.local
+.env.*.local
+
+# Testing
+/tests/
+phpunit.xml
+.phpunit.result.cache
+coverage/
+
+# Documentation build
+/docs/build/
+

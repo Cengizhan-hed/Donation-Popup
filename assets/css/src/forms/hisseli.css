@@ -679,146 +679,23 @@ html body .wdp-donation-form .wdp-shareholder-form.collapsed .wdp-shareholder-to
 }
 
 /* Mobile responsive styles with high specificity */
-/* CRITICAL: Mobile optimizations for touch-friendly interface */
+/* CRITICAL: Mobile should look identical to desktop - only viewport height fixes for iOS Safari */
 @media (max-width: 480px) {
-  /* Shares header - mobile layout */
-  html body .wdp-modal .wdp-shares-header,
-  html body .wdp-donation-form .wdp-shares-header {
-    grid-template-columns: 1fr auto;
-    grid-template-rows: auto auto;
-    justify-content: space-between;
-    gap: 12px;
-    row-gap: 8px;
-  }
-
-  html body .wdp-modal .wdp-shares-header label,
-  html body .wdp-donation-form .wdp-shares-header label {
-    grid-column: 1;
-    grid-row: 1;
-    font-size: 15px;
-    line-height: 1.4;
-  }
-
-  html body .wdp-modal .wdp-shares-header .wdp-share-counter,
-  html body .wdp-modal .wdp-shares-header .wdp-share-quantity,
-  html body .wdp-donation-form .wdp-shares-header .wdp-share-counter,
-  html body .wdp-donation-form .wdp-shares-header .wdp-share-quantity {
-    grid-column: 2;
-    grid-row: 1;
-    width: auto;
-    justify-self: end;
-    min-height: 44px;
-    height: 44px;
-    border: 1px solid #d1d5db;
-  }
-
-  html body .wdp-modal .wdp-shares-header.has-badge .wdp-collapsed-count,
-  html body .wdp-donation-form .wdp-shares-header.has-badge .wdp-collapsed-count {
-    grid-column: 1 / -1;
-    grid-row: 2;
-    font-size: 11px;
-    padding: 4px 10px;
-    line-height: 1.3;
-  }
-
-  html body .wdp-modal .wdp-share-counter input[type="number"],
-  html body .wdp-modal .wdp-share-quantity input[type="number"],
-  html body .wdp-donation-form .wdp-share-counter input[type="number"],
-  html body .wdp-donation-form .wdp-share-quantity input[type="number"] {
-    width: 64px;
-    min-width: 64px;
-    max-width: 64px;
-    height: 44px;
-    line-height: 44px;
-    font-size: 16px;
-    /* Touch-friendly - prevent zoom on iOS */
-    -webkit-appearance: none;
-    appearance: none;
-  }
-
-  /* Shareholder area - mobile height constraints */
+  /* Shareholder area - mobile height constraints ONLY (iOS Safari viewport fix) */
+  /* CRITICAL: Use dvh units for iOS Safari compatibility, but keep desktop height values */
   html body .wdp-modal .wdp-shareholders-area,
   html body .wdp-donation-form .wdp-shareholders-area {
-    max-height: clamp(180px, 45vh, 260px);
-    height: clamp(180px, 45vh, 260px);
-    margin-bottom: 12px;
+    /* CRITICAL: Keep desktop height - clamp(220px, 40vh, 320px) but use dvh for iOS */
+    max-height: clamp(220px, min(40vh, 40dvh), 320px);
+    height: auto;
+    margin-bottom: 16px;
   }
 
   html body .wdp-modal .wdp-shareholders-area.scrollable,
   html body .wdp-donation-form .wdp-shareholders-area.scrollable {
-    min-height: clamp(180px, 45vh, 260px);
-    height: clamp(180px, 45vh, 260px);
-    max-height: clamp(180px, 45vh, 260px);
-    margin-bottom: 12px;
-  }
-
-  /* Shareholder form inputs - touch-friendly */
-  html body .wdp-modal .wdp-shareholder-form input[type="text"],
-  html body .wdp-modal .wdp-shareholder-form input[type="tel"],
-  html body .wdp-donation-form .wdp-shareholder-form input[type="text"],
-  html body .wdp-donation-form .wdp-shareholder-form input[type="tel"] {
-    font-size: 16px;
-    min-height: 44px;
-    padding: 12px 16px;
-    /* Touch-friendly - prevent zoom on iOS */
-    -webkit-appearance: none;
-    appearance: none;
-  }
-
-  /* Shareholder form textarea - touch-friendly */
-  html body .wdp-modal .wdp-shareholder-form textarea,
-  html body .wdp-donation-form .wdp-shareholder-form textarea {
-    font-size: 16px;
-    min-height: 80px;
-    padding: 12px 16px;
-    /* Touch-friendly - prevent zoom on iOS */
-    -webkit-appearance: none;
-    appearance: none;
-  }
-
-  /* Shareholder form header - touch-friendly */
-  html body .wdp-modal .wdp-shareholder-header,
-  html body .wdp-donation-form .wdp-shareholder-header {
-    min-height: 48px;
-    padding: 12px 16px;
-    font-size: 15px;
-    line-height: 1.4;
-  }
-
-  /* Shareholder toggle button - touch-friendly */
-  html body .wdp-modal .wdp-shareholder-toggle,
-  html body .wdp-donation-form .wdp-shareholder-toggle {
-    min-width: 44px;
-    min-height: 44px;
-    width: 44px;
-    height: 44px;
-  }
-
-  /* Modal content - mobile padding */
-  html body .wdp-modal .wdp-modal-content,
-  html body .wdp-donation-form .wdp-modal-content {
-    padding: 24px 16px;
-  }
-
-  /* Modal header - mobile padding */
-  html body .wdp-modal .wdp-modal-header {
-    padding-bottom: 12px;
-    margin-bottom: 8px;
-  }
-
-  /* Modal title - mobile font size */
-  html body .wdp-modal .wdp-modal-header .wdp-modal-title {
-    font-size: 1.5rem;
-    line-height: 1.3;
-    padding-right: 36px;
-  }
-
-  /* Modal close button - mobile size */
-  html body .wdp-modal .wdp-modal-header .wdp-modal-close {
-    width: 36px;
-    height: 36px;
-    font-size: 1.8rem;
-    top: -2px;
-    right: -2px;
+    min-height: clamp(220px, min(40vh, 40dvh), 320px);
+    height: clamp(220px, min(40vh, 40dvh), 320px);
+    max-height: clamp(220px, min(40vh, 40dvh), 320px);
+    margin-bottom: 16px;
   }
 }

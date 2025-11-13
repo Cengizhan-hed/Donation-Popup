@@ -64,29 +64,15 @@
   margin-bottom: 0;
 }
 
-@media (max-width: 600px) {
-  .wdp-modal .wdp-modal-content form .wdp-button-group,
-  .wdp-donation-form .wdp-button-group,
-  .wdp-modal .wdp-modal-content form > .wdp-button-group,
-  .wdp-donation-form > .wdp-button-group {
-    display: flex;
-    flex-direction: column;
-    gap: var(--wdp-space-3);
-    width: 100%;
-    margin-top: 0;
-    margin-bottom: 0;
-  }
-}
-
-@media (min-width: 601px) {
-  .wdp-modal .wdp-modal-content form .wdp-button-group,
-  .wdp-donation-form .wdp-modal-content form .wdp-button-group {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    width: 100%;
-    margin-top: var(--wdp-space-2);
-  }
+/* CRITICAL: Mobile should look identical to desktop - use same grid layout */
+/* Desktop and mobile use same button group layout */
+.wdp-modal .wdp-modal-content form .wdp-button-group,
+.wdp-donation-form .wdp-modal-content form .wdp-button-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  width: 100%;
+  margin-top: var(--wdp-space-2);
 }
 
 .wdp-modal-content form .wdp-button-group button {
