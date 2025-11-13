@@ -1,17 +1,46 @@
-:where(.wdp-modal-header) {
+/* Modal header with high specificity - Clean CSS without */
+/* CRITICAL: Popup modal header - title should span full width with underline, close button on underline */
+body .wdp-modal .wdp-modal-header {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  position: relative;
+  display: block;
+  width: 100%;
+  margin-bottom: 0;
+  margin-top: 0;
+  margin-left: 0;
+  margin-right: 0;
+  padding: 0;
+  padding-bottom: 12px;
+  box-sizing: border-box;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+/* In-page form header - no underline, title inline-block */
+body .wdp-donation-form .wdp-modal-header {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   position: relative;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   width: 100%;
-  gap: var(--wdp-space-3);
-  margin-bottom: var(--wdp-space-2);
+  gap: 12px;
+  margin-bottom: 0;
+  margin-top: 0;
+  margin-left: 0;
+  margin-right: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-:where(.wdp-modal-close) {
+/* Modal close button with high specificity - Clean CSS without */
+/* CRITICAL: Popup modal close button - position on underline */
+body .wdp-modal .wdp-modal-header .wdp-modal-close,
+body .wdp-modal .wdp-modal-content .wdp-modal-close,
+body .wdp-modal .wdp-modal-close {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   position: absolute;
   top: 0;
-  right: var(--wdp-space-4);
+  right: 0;
   width: 32px;
   height: 32px;
   margin: 0;
@@ -19,7 +48,7 @@
   border: none;
   border-radius: 50%;
   background: transparent;
-  color: var(--wdp-gray-500);
+  color: #6b7280;
   font-size: 2.1rem;
   line-height: 1;
   cursor: pointer;
@@ -28,72 +57,324 @@
   justify-content: center;
   transition: color 0.2s ease;
   transform: translateY(0);
+  outline: none;
+  box-shadow: none;
+  text-align: center;
+  text-transform: none;
+  letter-spacing: normal;
+  word-spacing: normal;
+  box-sizing: border-box;
+  z-index: 1;
 }
 
-:where(.wdp-modal-close:hover,
-       .wdp-modal-close:focus) {
-  color: var(--wdp-gray-700);
+/* In-page form close button - normal positioning */
+body .wdp-donation-form .wdp-modal-header .wdp-modal-close,
+body .wdp-donation-form .wdp-modal-content .wdp-modal-close,
+body .wdp-donation-form .wdp-modal-close {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  position: absolute;
+  top: 0;
+  right: 16px;
+  width: 32px;
+  height: 32px;
+  margin: 0;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: #6b7280;
+  font-size: 2.1rem;
+  line-height: 1;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s ease;
+  transform: translateY(0);
+  outline: none;
+  box-shadow: none;
+  text-align: center;
+  text-transform: none;
+  letter-spacing: normal;
+  word-spacing: normal;
+  box-sizing: border-box;
+}
+
+/* Popup modal close button hover/focus */
+body .wdp-modal .wdp-modal-header .wdp-modal-close:hover,
+body .wdp-modal .wdp-modal-header .wdp-modal-close:focus,
+body .wdp-modal .wdp-modal-content .wdp-modal-close:hover,
+body .wdp-modal .wdp-modal-content .wdp-modal-close:focus,
+body .wdp-modal .wdp-modal-close:hover,
+body .wdp-modal .wdp-modal-close:focus {
+  color: #374151;
   outline: none;
   background: none;
+  border: none;
+  box-shadow: none;
 }
 
-:where(.wdp-modal-title,
-       .wdp-form-title) {
+/* In-page form close button hover/focus */
+body .wdp-donation-form .wdp-modal-header .wdp-modal-close:hover,
+body .wdp-donation-form .wdp-modal-header .wdp-modal-close:focus,
+body .wdp-donation-form .wdp-modal-content .wdp-modal-close:hover,
+body .wdp-donation-form .wdp-modal-content .wdp-modal-close:focus,
+body .wdp-donation-form .wdp-modal-close:hover,
+body .wdp-donation-form .wdp-modal-close:focus {
+  color: #374151;
+  outline: none;
+  background: none;
+  border: none;
+  box-shadow: none;
+}
+
+/* Title styles with high specificity - GiveWP benzeri yaklaşım */
+/* CRITICAL: Popup modal title - block display for full-width underline, header has border */
+html body .wdp-modal .wdp-modal-header .wdp-modal-title {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   font-size: 1.7rem;
   font-weight: 600;
-  color: var(--wdp-gray-800);
-  line-height: 1.4;
-  margin: 0 36px var(--wdp-space-4) 0;
-  padding-bottom: var(--wdp-space-3);
-  border-bottom: 1px solid var(--wdp-gray-200);
+  line-height: 1.2;
+  color: #1f2937;
+  margin: 0;
+  padding: 0;
+  padding-right: 40px;
+  margin-bottom: 0;
+  border-bottom: none;
+  text-align: left;
+  text-transform: none;
+  letter-spacing: normal;
+  word-spacing: normal;
+  text-shadow: none;
+  box-shadow: none;
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  float: none;
+  clear: none;
+  position: relative;
+  box-sizing: border-box;
 }
 
-.wdp-modal .wdp-modal-content h2,
-.wdp-donation-form .wdp-modal-content h2,
-.wdp-modal .wdp-modal-content .wdp-form-title,
-.wdp-donation-form .wdp-modal-content .wdp-form-title {
-  border-bottom: 1px solid var(--wdp-gray-200);
+/* In-page form title - inline-block for title-width underline */
+html body .wdp-donation-form .wdp-modal-header .wdp-modal-title,
+html body .wdp-modal .wdp-modal-content .wdp-form-title,
+html body .wdp-donation-form .wdp-modal-content .wdp-form-title,
+html body .wdp-modal .wdp-modal-content h2,
+html body .wdp-donation-form .wdp-modal-content h2,
+html body .wdp-modal .wdp-modal-content h2.wdp-form-title,
+html body .wdp-donation-form .wdp-modal-content h2.wdp-form-title {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-size: 1.7rem;
+  font-weight: 600;
+  line-height: 1.2;
+  color: #1f2937;
+  margin: 0;
+  padding: 0;
+  padding-bottom: 0;
+  margin-bottom: 0;
+  border-bottom: 1px solid #e5e7eb;
+  text-align: left;
+  text-transform: none;
+  letter-spacing: normal;
+  word-spacing: normal;
+  text-shadow: none;
+  box-shadow: none;
+  display: inline-block;
+  width: auto;
+  max-width: 100%;
+  vertical-align: top;
+  float: none;
+  clear: none;
+  position: relative;
 }
 
-:where(.wdp-price-quantity-row) {
+/* Specific selector for forms with shareholders */
+/* Border-bottom should only span title width, not full container width */
+/* Force inline-block behavior to prevent full-width border */
+html body .wdp-modal .wdp-modal-content form.wdp-has-shareholders > .wdp-form-title,
+html body .wdp-donation-form .wdp-modal-content form.wdp-has-shareholders > .wdp-form-title,
+html body .wdp-modal .wdp-modal-content form.wdp-has-shareholders > h2,
+html body .wdp-donation-form .wdp-modal-content form.wdp-has-shareholders > h2,
+html body .wdp-modal .wdp-modal-content form.wdp-has-shareholders > h2.wdp-form-title,
+html body .wdp-donation-form .wdp-modal-content form.wdp-has-shareholders > h2.wdp-form-title {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-size: 1.7rem;
+  font-weight: 600;
+  line-height: 1.2;
+  color: #1f2937;
+  margin: 0;
+  padding: 0;
+  padding-bottom: 0;
+  margin-bottom: 0;
+  border-bottom: 1px solid #e5e7eb;
+  text-align: left;
+  text-transform: none;
+  letter-spacing: normal;
+  word-spacing: normal;
+  text-shadow: none;
+  box-shadow: none;
+  display: inline-block;
+  width: auto;
+  max-width: 100%;
+  vertical-align: top;
+  /* Force inline-block behavior - prevent any block-level override */
+  float: none;
+  clear: none;
+  /* Prevent any theme override */
+  position: relative;
+}
+
+/* Price quantity row with high specificity */
+body .wdp-modal .wdp-price-quantity-row,
+body .wdp-donation-form .wdp-price-quantity-row,
+body .wdp-modal .wdp-modal-content form .wdp-price-quantity-row,
+body .wdp-donation-form .wdp-modal-content form .wdp-price-quantity-row {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--wdp-space-3);
+  gap: 12px;
   align-items: stretch;
-}
-
-:where(.wdp-price-quantity-row > *) {
   width: 100%;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-:where(.wdp-modal, .wdp-donation-form) .wdp-price-quantity-row:has(> input[type="hidden"]:only-child) {
+/* CRITICAL: Exclude custom price inputs from padding reset - they have their own padding */
+/* Use :not() to exclude custom price inputs and price field inputs */
+body .wdp-modal .wdp-price-quantity-row > *:not(input[name="custom_price"]):not(.wdp-price-field),
+body .wdp-donation-form .wdp-price-quantity-row > *:not(input[name="custom_price"]):not(.wdp-price-field),
+body .wdp-modal .wdp-modal-content form .wdp-price-quantity-row > *:not(input[name="custom_price"]):not(.wdp-price-field),
+body .wdp-donation-form .wdp-modal-content form .wdp-price-quantity-row > *:not(input[name="custom_price"]):not(.wdp-price-field) {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body .wdp-modal .wdp-price-quantity-row:has(> input[type="hidden"]:only-child),
+body .wdp-donation-form .wdp-price-quantity-row:has(> input[type="hidden"]:only-child) {
   display: none;
 }
 
-:where(.wdp-quantity-counter) {
+/* Shares section layout - High specificity without */
+body .wdp-modal .wdp-modal-content .wdp-shares-section,
+body .wdp-donation-form .wdp-modal-content .wdp-shares-section,
+body .wdp-modal .wdp-shares-section,
+body .wdp-donation-form .wdp-shares-section {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+  min-height: 0;
+  flex: 0 1 auto;
+  box-sizing: border-box;
+}
+
+/* Shares header layout - High specificity without */
+body .wdp-modal .wdp-modal-content .wdp-shares-section .wdp-shares-header,
+body .wdp-donation-form .wdp-modal-content .wdp-shares-section .wdp-shares-header,
+body .wdp-modal .wdp-shares-header,
+body .wdp-donation-form .wdp-shares-header {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: auto;
+  align-items: center;
+  gap: 12px;
+  row-gap: 8px;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body .wdp-modal .wdp-modal-content .wdp-shares-section .wdp-shares-header.has-badge,
+body .wdp-donation-form .wdp-modal-content .wdp-shares-section .wdp-shares-header.has-badge,
+body .wdp-modal .wdp-shares-header.has-badge,
+body .wdp-donation-form .wdp-shares-header.has-badge {
+  grid-template-rows: auto auto;
+}
+
+body .wdp-modal .wdp-modal-content .wdp-shares-section .wdp-shares-header label,
+body .wdp-donation-form .wdp-modal-content .wdp-shares-section .wdp-shares-header label,
+body .wdp-modal .wdp-shares-header label,
+body .wdp-donation-form .wdp-shares-header label {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #374151;
+  white-space: nowrap;
+  grid-column: 1;
+  grid-row: 1;
+  text-align: left;
+  text-transform: none;
+  letter-spacing: normal;
+  word-spacing: normal;
+  line-height: 1.5;
+  box-shadow: none;
+  text-shadow: none;
+  display: block;
+  align-self: center;
+}
+
+/* Quantity counter with high specificity - override base.css reset */
+body .wdp-modal .wdp-quantity-counter,
+body .wdp-donation-form .wdp-quantity-counter {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border: 1px solid var(--wdp-gray-300);
-  border-radius: var(--wdp-radius-md);
-  background: var(--wdp-white);
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #ffffff;
   min-height: 48px;
-  padding: 0 var(--wdp-space-2);
+  height: 48px;
+  padding: 0 8px;
+  margin: 0;
+  box-sizing: border-box;
+  gap: 0;
+  position: relative;
 }
 
-:where(.wdp-quantity-counter input[type="number"]) {
-  width: 64px;
+/* Quantity counter input with high specificity - perfect center alignment */
+body .wdp-modal .wdp-quantity-counter input[type="number"],
+body .wdp-donation-form .wdp-quantity-counter input[type="number"] {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  flex: 1 1 0;
+  min-width: 40px;
+  max-width: 100%;
   text-align: center;
   border: none;
   background: transparent;
-  font-size: var(--wdp-text-base);
+  font-size: 18px;
+  font-weight: 600;
+  color: #1f2937;
   padding: 0;
-  margin: 0;
+  margin: 0 auto;
+  height: 48px;
+  line-height: 48px;
+  box-shadow: none;
+  outline: none;
+  box-sizing: border-box;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: textfield;
+  display: block;
 }
 
-:where(.wdp-product-quantity-btn,
-       .wdp-share-btn,
-       .wdp-share-quantity-btn) {
+/* Product quantity buttons with high specificity - override base.css reset */
+/* NOTE: These are legacy selectors - actual quantity counter buttons are styled in components/quantity.css */
+body .wdp-modal .wdp-product-quantity-btn,
+body .wdp-modal .wdp-share-btn,
+body .wdp-modal .wdp-share-quantity-btn,
+body .wdp-donation-form .wdp-product-quantity-btn,
+body .wdp-donation-form .wdp-share-btn,
+body .wdp-donation-form .wdp-share-quantity-btn {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   width: 40px;
   height: 40px;
   display: inline-flex;
@@ -101,103 +382,245 @@
   justify-content: center;
   border: none;
   background: transparent;
-  color: var(--wdp-gray-600);
+  color: #4b5563;
   font-size: 20px;
   cursor: pointer;
   transition: color 0.2s ease;
-}
-
-:where(.wdp-product-quantity-btn:hover,
-       .wdp-product-quantity-btn:focus,
-       .wdp-share-btn:hover,
-       .wdp-share-btn:focus,
-       .wdp-share-quantity-btn:hover,
-       .wdp-share-quantity-btn:focus) {
-  color: var(--wdp-primary);
+  margin: 0;
+  padding: 0;
   outline: none;
+  box-shadow: none;
+  text-align: center;
+  text-transform: none;
+  letter-spacing: normal;
+  word-spacing: normal;
+  box-sizing: border-box;
 }
 
-:where(.wdp-modal, .wdp-donation-form) .wdp-modal-content {
-  width: min(540px, 96vw);
+body .wdp-modal .wdp-product-quantity-btn:hover,
+body .wdp-modal .wdp-product-quantity-btn:focus,
+body .wdp-modal .wdp-share-btn:hover,
+body .wdp-modal .wdp-share-btn:focus,
+body .wdp-modal .wdp-share-quantity-btn:hover,
+body .wdp-modal .wdp-share-quantity-btn:focus,
+body .wdp-donation-form .wdp-product-quantity-btn:hover,
+body .wdp-donation-form .wdp-product-quantity-btn:focus,
+body .wdp-donation-form .wdp-share-btn:hover,
+body .wdp-donation-form .wdp-share-btn:focus,
+body .wdp-donation-form .wdp-share-quantity-btn:hover,
+body .wdp-donation-form .wdp-share-quantity-btn:focus {
+  color: #4a90e2;
+  outline: none;
+  border: none;
+  box-shadow: none;
+  background: transparent;
 }
 
-:where(.wdp-modal, .wdp-donation-form) .wdp-modal-content form {
+/* Modal content - Do not override layout.css padding */
+/* Layout.css handles padding: 32px 24px (desktop), 16px 12px (mobile) */
+/* This rule only sets font-family and width, padding is managed by layout.css */
+html body .wdp-modal .wdp-modal-content,
+html body .wdp-donation-form .wdp-modal-content {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  box-sizing: border-box;
+}
+
+/* Modal form with high specificity - override base.css reset */
+/* CRITICAL: Prevent form from expanding modal - absolute constraints */
+html body .wdp-modal .wdp-modal-content form,
+html body .wdp-donation-form .wdp-modal-content form {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   display: flex;
   flex-direction: column;
-  gap: var(--wdp-space-4);
+  gap: 16px;
   width: 100%;
   min-height: 0;
+  /* CRITICAL: Form must never exceed parent height */
+  max-height: 100%;
+  height: auto;
+  flex: 1 1 auto;
+  flex-shrink: 1;
+  flex-grow: 0;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  position: relative;
+  /* Prevent expansion */
+  contain: layout style;
 }
 
-:where(.wdp-modal, .wdp-donation-form) .wdp-modal-content form.wdp-has-shareholders {
+/* CRITICAL: Forms with shareholders must not expand modal - absolute constraints */
+/* ABSOLUTE FIX: Use overflow: hidden and strict flex constraints to prevent modal expansion */
+html body .wdp-modal .wdp-modal-content form.wdp-has-shareholders,
+html body .wdp-donation-form .wdp-modal-content form.wdp-has-shareholders {
   gap: 0;
+  min-height: 0;
+  /* CRITICAL: Form must never exceed parent height - use flex to fill available space */
+  max-height: 100%;
+  height: auto;
+  /* CRITICAL: Use overflow: hidden to prevent modal expansion */
+  overflow: hidden;
+  /* CRITICAL: Use flex to fill available space but never grow beyond parent */
+  flex: 1 1 auto;
+  flex-shrink: 1;
+  flex-grow: 0;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  /* Remove contain to allow content to be visible in shareholder area */
+  contain: none;
+  /* CRITICAL: Ensure form and content are visible */
+  visibility: visible;
+  opacity: 1;
 }
 
-:where(.wdp-modal, .wdp-donation-form) .wdp-modal-content form.wdp-has-shareholders > :where(:not([hidden], input[type="hidden"])) + :where(:not([hidden], input[type="hidden"])) {
-  margin-top: var(--wdp-space-4);
+/* CRITICAL: Shares section must not cause form expansion */
+html body .wdp-modal .wdp-modal-content form.wdp-has-shareholders .wdp-shares-section,
+html body .wdp-donation-form .wdp-modal-content form.wdp-has-shareholders .wdp-shares-section {
+  min-height: 0;
+  max-height: none;
+  flex: 0 1 auto;
+  flex-shrink: 1;
+  flex-grow: 0;
+  overflow: visible;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  visibility: visible;
+  opacity: 1;
 }
 
-:where(.wdp-modal, .wdp-donation-form) .wdp-modal-content form.wdp-has-shareholders > .wdp-shares-section + * {
+body .wdp-modal .wdp-modal-content form.wdp-has-shareholders > :not([hidden]):not(input[type="hidden"]) + :not([hidden]):not(input[type="hidden"]),
+body .wdp-donation-form .wdp-modal-content form.wdp-has-shareholders > :not([hidden]):not(input[type="hidden"]) + :not([hidden]):not(input[type="hidden"]) {
   margin-top: 0;
 }
 
-:where(.wdp-modal, .wdp-donation-form) .wdp-modal-content form.wdp-has-shareholders > .wdp-shares-section + .wdp-price-quantity-row {
-  margin-top: var(--wdp-space-4);
+/* Reduce spacing between title and shares section */
+/* Minimized spacing for tighter layout - remove gap completely */
+html body .wdp-modal .wdp-modal-content form.wdp-has-shareholders > .wdp-form-title + .wdp-shares-section,
+html body .wdp-modal .wdp-modal-content form.wdp-has-shareholders > h2 + .wdp-shares-section,
+html body .wdp-donation-form .wdp-modal-content form.wdp-has-shareholders > .wdp-form-title + .wdp-shares-section,
+html body .wdp-donation-form .wdp-modal-content form.wdp-has-shareholders > h2 + .wdp-shares-section,
+html body .wdp-modal .wdp-modal-content form.wdp-has-shareholders > h2.wdp-form-title + .wdp-shares-section,
+html body .wdp-donation-form .wdp-modal-content form.wdp-has-shareholders > h2.wdp-form-title + .wdp-shares-section {
+  margin-top: 0;
 }
 
-:where(.wdp-modal, .wdp-donation-form) .wdp-modal-content form.wdp-has-shareholders > .wdp-shares-section + .wdp-button-group {
-  margin-top: var(--wdp-space-4);
+body .wdp-modal .wdp-modal-content form.wdp-has-shareholders > .wdp-shares-section + *,
+body .wdp-donation-form .wdp-modal-content form.wdp-has-shareholders > .wdp-shares-section + * {
+  margin-top: 0;
 }
 
-:where(.wdp-modal, .wdp-donation-form) .wdp-modal-content form.wdp-has-shareholders > .wdp-price-quantity-row:has(> input[type="hidden"]:only-child) + .wdp-button-group {
-  margin-top: var(--wdp-space-4);
+body .wdp-modal .wdp-modal-content form.wdp-has-shareholders > .wdp-shares-section + .wdp-price-quantity-row,
+body .wdp-donation-form .wdp-modal-content form.wdp-has-shareholders > .wdp-shares-section + .wdp-price-quantity-row {
+  margin-top: 0;
 }
 
-:where(.wdp-modal, .wdp-donation-form) .wdp-modal-content form.wdp-has-shareholders .wdp-button-group {
-  margin-top: var(--wdp-space-4);
+/* Button group after shares section - always maintain spacing with shareholder area */
+/* CRITICAL: Shareholder area always has margin-bottom: 16px, so button-group margin-top is 0 */
+html body .wdp-modal .wdp-modal-content form.wdp-has-shareholders > .wdp-shares-section + .wdp-button-group,
+html body .wdp-donation-form .wdp-modal-content form.wdp-has-shareholders > .wdp-shares-section + .wdp-button-group {
+  margin-top: 0;
 }
 
-:where(.wdp-modal, .wdp-donation-form) .wdp-modal-content form.wdp-has-shareholders > .wdp-shares-section:has(.wdp-shareholders-area:not(.scrollable)) + .wdp-button-group {
-  margin-top: var(--wdp-space-4);
+body .wdp-modal .wdp-modal-content form.wdp-has-shareholders > .wdp-price-quantity-row:has(> input[type="hidden"]:only-child) + .wdp-button-group,
+body .wdp-donation-form .wdp-modal-content form.wdp-has-shareholders > .wdp-price-quantity-row:has(> input[type="hidden"]:only-child) + .wdp-button-group {
+  margin-top: 16px;
 }
 
-:where(.wdp-modal, .wdp-donation-form) .wdp-modal-content form > * {
+/* Button group margin is now handled by scrollable/not-scrollable rules above */
+
+body .wdp-modal .wdp-modal-content form > *,
+body .wdp-donation-form .wdp-modal-content form > * {
   width: 100%;
   min-height: 0;
   flex-shrink: 0;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-.wdp-modal .wdp-modal-content label,
-.wdp-donation-form .wdp-modal-content label {
-  font-size: var(--wdp-text-sm);
+/* Label styles with high specificity - GiveWP benzeri yaklaşım */
+body .wdp-modal .wdp-modal-content label,
+body .wdp-donation-form .wdp-modal-content label,
+body .wdp-modal .wdp-modal-content form label,
+body .wdp-donation-form .wdp-modal-content form label {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-size: 14px;
   font-weight: 600;
-  color: var(--wdp-gray-700);
+  color: #374151;
   display: block;
-  margin-bottom: var(--wdp-space-2);
+  margin: 0;
+  margin-bottom: 0;
+  padding: 0;
+  text-align: left;
+  text-transform: none;
+  letter-spacing: normal;
+  word-spacing: normal;
+  line-height: 1.5;
 }
 
-:where(.wdp-modal, .wdp-donation-form) button {
-  border-radius: var(--wdp-button-radius);
+/* Button border radius with high specificity - override base.css reset */
+body .wdp-modal button,
+body .wdp-donation-form button {
+  border-radius: 8px;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  box-sizing: border-box;
 }
 
-.wdp-modal .wdp-modal-content input,
-.wdp-modal .wdp-modal-content select,
-.wdp-modal .wdp-modal-content textarea,
-.wdp-donation-form .wdp-modal-content input,
-.wdp-donation-form .wdp-modal-content select,
-.wdp-donation-form .wdp-modal-content textarea {
+/* Exception: quantity counter buttons and share counter buttons should have no border-radius */
+body .wdp-modal .wdp-quantity-counter button,
+body .wdp-donation-form .wdp-quantity-counter button,
+body .wdp-modal .wdp-share-counter button,
+body .wdp-donation-form .wdp-share-counter button,
+body .wdp-modal .wdp-share-quantity button,
+body .wdp-donation-form .wdp-share-quantity button {
+  border-radius: 0;
+}
+
+/* Input styles with high specificity - GiveWP benzeri yaklaşım */
+/* CRITICAL: Apply default styles to all inputs except custom price inputs */
+body .wdp-modal .wdp-modal-content input[type="text"],
+body .wdp-modal .wdp-modal-content input[type="tel"],
+body .wdp-modal .wdp-modal-content input[type="email"],
+body .wdp-modal .wdp-modal-content input[type="password"],
+body .wdp-modal .wdp-modal-content input[type="search"],
+body .wdp-modal .wdp-modal-content select,
+body .wdp-modal .wdp-modal-content textarea,
+body .wdp-donation-form .wdp-modal-content input[type="text"],
+body .wdp-donation-form .wdp-modal-content input[type="tel"],
+body .wdp-donation-form .wdp-modal-content input[type="email"],
+body .wdp-donation-form .wdp-modal-content input[type="password"],
+body .wdp-donation-form .wdp-modal-content input[type="search"],
+body .wdp-donation-form .wdp-modal-content select,
+body .wdp-donation-form .wdp-modal-content textarea,
+body .wdp-modal .wdp-modal-content form input[type="text"],
+body .wdp-modal .wdp-modal-content form input[type="tel"],
+body .wdp-modal .wdp-modal-content form input[type="email"],
+body .wdp-modal .wdp-modal-content form input[type="password"],
+body .wdp-modal .wdp-modal-content form input[type="search"],
+body .wdp-modal .wdp-modal-content form select,
+body .wdp-modal .wdp-modal-content form textarea,
+body .wdp-donation-form .wdp-modal-content form input[type="text"],
+body .wdp-donation-form .wdp-modal-content form input[type="tel"],
+body .wdp-donation-form .wdp-modal-content form input[type="email"],
+body .wdp-donation-form .wdp-modal-content form input[type="password"],
+body .wdp-donation-form .wdp-modal-content form input[type="search"],
+body .wdp-donation-form .wdp-modal-content form select,
+body .wdp-donation-form .wdp-modal-content form textarea {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   width: 100%;
   min-height: 48px;
-  padding: var(--wdp-space-3) var(--wdp-space-4);
-  border: 1px solid var(--wdp-gray-300);
-  border-radius: var(--wdp-radius-md);
-  background: var(--wdp-white);
-  color: var(--wdp-gray-800);
-  font-size: var(--wdp-text-base);
+  padding: 12px 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #1f2937;
+  font-size: 16px;
   font-weight: 400;
   line-height: 1.5;
   box-sizing: border-box;
-  font-family: inherit;
   transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
   -webkit-appearance: none;
   -moz-appearance: none;
@@ -205,31 +628,52 @@
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
   margin: 0;
+  text-align: left;
+  text-transform: none;
+  letter-spacing: normal;
+  word-spacing: normal;
+  text-shadow: none;
+  box-shadow: none;
 }
 
-.wdp-modal .wdp-modal-content textarea,
-.wdp-donation-form .wdp-modal-content textarea {
+/* Textarea styles with high specificity */
+body .wdp-modal .wdp-modal-content textarea,
+body .wdp-donation-form .wdp-modal-content textarea,
+body .wdp-modal .wdp-modal-content form textarea,
+body .wdp-donation-form .wdp-modal-content form textarea {
   min-height: 96px;
   resize: vertical;
 }
 
-.wdp-modal .wdp-modal-content input:focus,
-.wdp-modal .wdp-modal-content select:focus,
-.wdp-modal .wdp-modal-content textarea:focus,
-.wdp-donation-form .wdp-modal-content input:focus,
-.wdp-donation-form .wdp-modal-content select:focus,
-.wdp-donation-form .wdp-modal-content textarea:focus {
-  border-color: var(--wdp-primary);
+/* Focus styles with high specificity */
+body .wdp-modal .wdp-modal-content input:focus,
+body .wdp-modal .wdp-modal-content select:focus,
+body .wdp-modal .wdp-modal-content textarea:focus,
+body .wdp-donation-form .wdp-modal-content input:focus,
+body .wdp-donation-form .wdp-modal-content select:focus,
+body .wdp-donation-form .wdp-modal-content textarea:focus,
+body .wdp-modal .wdp-modal-content form input:focus,
+body .wdp-modal .wdp-modal-content form select:focus,
+body .wdp-modal .wdp-modal-content form textarea:focus,
+body .wdp-donation-form .wdp-modal-content form input:focus,
+body .wdp-donation-form .wdp-modal-content form select:focus,
+body .wdp-donation-form .wdp-modal-content form textarea:focus {
+  border-color: #4a90e2;
   outline: none;
   box-shadow: none;
-  background-color: var(--wdp-white);
+  background-color: #ffffff;
 }
 
-.wdp-modal .wdp-modal-content input::placeholder,
-.wdp-modal .wdp-modal-content textarea::placeholder,
-.wdp-donation-form .wdp-modal-content input::placeholder,
-.wdp-donation-form .wdp-modal-content textarea::placeholder {
-  color: var(--wdp-gray-500);
+/* Placeholder styles with high specificity */
+body .wdp-modal .wdp-modal-content input::placeholder,
+body .wdp-modal .wdp-modal-content textarea::placeholder,
+body .wdp-donation-form .wdp-modal-content input::placeholder,
+body .wdp-donation-form .wdp-modal-content textarea::placeholder,
+body .wdp-modal .wdp-modal-content form input::placeholder,
+body .wdp-modal .wdp-modal-content form textarea::placeholder,
+body .wdp-donation-form .wdp-modal-content form input::placeholder,
+body .wdp-donation-form .wdp-modal-content form textarea::placeholder {
+  color: #6b7280;
   opacity: 1;
 }
 
@@ -245,13 +689,21 @@
     max-width: 100%;
   }
 
-  :where(.wdp-price-quantity-row) {
+  /* Mobile: Price quantity row - single column layout with high specificity */
+  body .wdp-modal .wdp-price-quantity-row,
+  body .wdp-donation-form .wdp-price-quantity-row,
+  body .wdp-modal .wdp-modal-content form .wdp-price-quantity-row,
+  body .wdp-donation-form .wdp-modal-content form .wdp-price-quantity-row {
     grid-template-columns: 1fr;
   }
 
-  :where(.wdp-product-quantity-btn,
-         .wdp-share-btn,
-         .wdp-share-quantity-btn) {
+  /* Mobile: Product quantity buttons with high specificity */
+  body .wdp-modal .wdp-product-quantity-btn,
+  body .wdp-modal .wdp-share-btn,
+  body .wdp-modal .wdp-share-quantity-btn,
+  body .wdp-donation-form .wdp-product-quantity-btn,
+  body .wdp-donation-form .wdp-share-btn,
+  body .wdp-donation-form .wdp-share-quantity-btn {
     width: 36px;
     height: 36px;
     font-size: 18px;
@@ -265,15 +717,86 @@
     transform: translateY(0);
   }
 
-  .wdp-modal-header .wdp-modal-title,
-  .wdp-donation-form .wdp-modal-header .wdp-modal-title,
-  .wdp-modal .wdp-modal-content h2,
-  .wdp-donation-form .wdp-modal-content h2,
-  .wdp-modal .wdp-modal-content .wdp-form-title,
-  .wdp-donation-form .wdp-modal-content .wdp-form-title {
+  /* Mobile title styles with high specificity */
+  /* Border-bottom should only span title width, not full container width */
+  /* Force inline-block behavior to prevent full-width border */
+  html body .wdp-modal .wdp-modal-header .wdp-modal-title,
+  html body .wdp-donation-form .wdp-modal-header .wdp-modal-title,
+  html body .wdp-modal .wdp-modal-content h2,
+  html body .wdp-donation-form .wdp-modal-content h2,
+  html body .wdp-modal .wdp-modal-content .wdp-form-title,
+  html body .wdp-donation-form .wdp-modal-content .wdp-form-title,
+  html body .wdp-modal .wdp-modal-content h2.wdp-form-title,
+  html body .wdp-donation-form .wdp-modal-content h2.wdp-form-title {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
     font-size: 1.25rem;
+    font-weight: 600;
+    line-height: 1.2;
+    color: #1f2937;
+    margin: 0;
     margin-right: 28px;
-    padding-bottom: var(--wdp-space-2);
+    margin-bottom: 0;
+    padding: 0;
+    padding-bottom: 0;
+    border-bottom: 1px solid #e5e7eb;
+    text-align: left;
+    text-transform: none;
+    letter-spacing: normal;
+    word-spacing: normal;
+    text-shadow: none;
+    box-shadow: none;
+    display: inline-block;
+    width: auto;
+    max-width: calc(100% - 28px);
+    vertical-align: top;
+    /* Force inline-block behavior - prevent any block-level override */
+    float: none;
+    clear: none;
+    /* Prevent any theme override */
+    position: relative;
+  }
+  
+  html body .wdp-modal .wdp-modal-content form.wdp-has-shareholders > .wdp-form-title,
+  html body .wdp-donation-form .wdp-modal-content form.wdp-has-shareholders > .wdp-form-title,
+  html body .wdp-modal .wdp-modal-content form.wdp-has-shareholders > h2,
+  html body .wdp-donation-form .wdp-modal-content form.wdp-has-shareholders > h2,
+  html body .wdp-modal .wdp-modal-content form.wdp-has-shareholders > h2.wdp-form-title,
+  html body .wdp-donation-form .wdp-modal-content form.wdp-has-shareholders > h2.wdp-form-title {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    font-size: 1.25rem;
+    font-weight: 600;
+    line-height: 1.2;
+    color: #1f2937;
+    margin: 0;
+    padding: 0;
+    padding-bottom: 0;
+    margin-bottom: 0;
+    border-bottom: 1px solid #e5e7eb;
+    text-align: left;
+    text-transform: none;
+    letter-spacing: normal;
+    word-spacing: normal;
+    text-shadow: none;
+    box-shadow: none;
+    display: inline-block;
+    width: auto;
+    max-width: 100%;
+    vertical-align: top;
+    /* Force inline-block behavior - prevent any block-level override */
+    float: none;
+    clear: none;
+    /* Prevent any theme override */
+    position: relative;
+  }
+  
+  /* Reduce spacing between title and shares section on mobile - remove gap completely */
+  html body .wdp-modal .wdp-modal-content form.wdp-has-shareholders > .wdp-form-title + .wdp-shares-section,
+  html body .wdp-modal .wdp-modal-content form.wdp-has-shareholders > h2 + .wdp-shares-section,
+  html body .wdp-donation-form .wdp-modal-content form.wdp-has-shareholders > .wdp-form-title + .wdp-shares-section,
+  html body .wdp-donation-form .wdp-modal-content form.wdp-has-shareholders > h2 + .wdp-shares-section,
+  html body .wdp-modal .wdp-modal-content form.wdp-has-shareholders > h2.wdp-form-title + .wdp-shares-section,
+  html body .wdp-donation-form .wdp-modal-content form.wdp-has-shareholders > h2.wdp-form-title + .wdp-shares-section {
+    margin-top: 0;
   }
 
   .wdp-modal .wdp-modal-content form input[type="text"],
@@ -350,12 +873,23 @@
     background-color: transparent;
   }
 
-  .wdp-modal .wdp-modal-content label,
-  .wdp-donation-form .wdp-modal-content label {
+  /* Mobile label styles with high specificity */
+  body .wdp-modal .wdp-modal-content label,
+  body .wdp-donation-form .wdp-modal-content label,
+  body .wdp-modal .wdp-modal-content form label,
+  body .wdp-donation-form .wdp-modal-content form label {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
     font-size: 14px;
     font-weight: 600;
-    margin-bottom: var(--wdp-space-2);
-    color: var(--wdp-gray-700);
+    margin: 0;
+    margin-bottom: 0;
+    padding: 0;
+    color: #374151;
+    text-align: left;
+    text-transform: none;
+    letter-spacing: normal;
+    word-spacing: normal;
+    line-height: 1.5;
   }
 
   .wdp-modal .wdp-success-screen,
