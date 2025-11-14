@@ -83,7 +83,7 @@
   }
 
   function validateForm(form) {
-    console.log("validateForm called");
+    safeLog("validateForm called");
     let isValid = true;
     let errorMessages = [];
 
@@ -100,13 +100,13 @@
     const shareCountInput = form.querySelector('input[name="share_count"]');
     if (shareCountInput) {
       const shareCount = Number.parseInt(shareCountInput.value, 10) || 1;
-      console.log("Checking shareholder forms for count:", shareCount);
+      safeLog("Checking shareholder forms for count:", shareCount);
       
       for (let i = 1; i <= shareCount; i++) {
         const nameField = form.querySelector(`input[name="shareholder_name_${i}"]`);
         const phoneField = form.querySelector(`input[name="shareholder_phone_${i}"]`);
         
-        console.log(`Checking form ${i}:`, {
+        safeLog(`Checking form ${i}:`, {
           nameField: !!nameField,
           nameValue: nameField?.value,
           phoneField: !!phoneField,
@@ -115,7 +115,7 @@
         
         // Ad alanı kontrolü
         if (nameField && !nameField.value.trim()) {
-          console.log(`Name field ${i} is empty`);
+          safeLog(`Name field ${i} is empty`);
           showInputError(nameField, `${i}. Hissedar Adı zorunludur`);
           errorMessages.push(`${i}. Hissedar Adı`);
           isValid = false;
@@ -123,7 +123,7 @@
         
         // Telefon alanı kontrolü
         if (phoneField && !phoneField.value.trim()) {
-          console.log(`Phone field ${i} is empty`);
+          safeLog(`Phone field ${i} is empty`);
           showInputError(phoneField, `${i}. Hissedar Telefonu zorunludur`);
           errorMessages.push(`${i}. Hissedar Telefonu`);
           isValid = false;
@@ -205,11 +205,11 @@
     }
 
     errorMessages = Array.from(new Set(errorMessages));
-    console.log("Form validation result:", { isValid, errorMessages });
+    safeLog("Form validation result:", { isValid, errorMessages });
 
     // Form geçersizse popup göster
     if (!isValid) {
-      console.log("Form is invalid, showing popup error");
+      safeLog("Form is invalid, showing popup error");
       showAlert(errorMessages, {
         type: 'error',
         title: 'Lütfen aşağıdaki alanları kontrol edin'
@@ -220,7 +220,7 @@
   }
 
   function handleAjaxResponse(data, form, isCheckout, addToCartBtn, checkoutBtn) {
-    console.log("Handling AJAX response:", data);
+    safeLog("Handling AJAX response:", data);
 
     // Başarı durumunda
     if (data.success) {
@@ -240,12 +240,12 @@
       // Başarı mesajını göster
       if (isCheckout) {
         // Ödeme sayfasına yönlendir
-        console.log("Redirecting to checkout:", data.checkout_url);
+        safeLog("Redirecting to checkout:", data.checkout_url);
         announceStatus('Ödeme adımına yönlendiriliyorsunuz.', 'assertive');
         window.location.href = data.checkout_url || wdp_ajax.checkout_url || "/odeme-sayfasi/";
       } else {
         // Sepete Ekle için başarı mesajını göster
-        console.log("Showing success message", data);
+        safeLog("Showing success message", data);
         announceStatus('Bağışınız sepete eklendi.', 'polite');
 
         // Form içeriğini sakla (tamamen silmek yerine)
@@ -296,7 +296,7 @@ ${createCartItemsHTML(cartItems)}
               setupContinueShoppingButton(form);
             })
             .catch((error) => {
-              console.error("Error fetching cart contents:", error);
+              safeLog("Error fetching cart contents:", error);
               successScreen.innerHTML = `
 <div class="wdp-success-message">Bağışınız sepete eklendi!</div>
 ${createCartItemsHTML([])}
@@ -343,7 +343,7 @@ ${createCartItemsHTML([])}
   }
 
   function handleAjaxError(error, form, addToCartBtn, checkoutBtn) {
-    console.error("AJAX error:", error);
+    safeLog("AJAX error:", error);
 
     clearAlerts();
     showAlert(['Bağlantı hatası oluştu. Lütfen tekrar deneyin.'], {
@@ -375,16 +375,19 @@ ${createCartItemsHTML([])}
   }
 
   function submitFormData(form, isCheckout) {
-    console.log("Submitting form data...", isCheckout ? "Ödemeye Git" : "Sepete Ekle");
+    // ✅ GÜVENLİ: Fonksiyon scope içinde helper (fonksiyon bitince otomatik temizlenir)
+    const $form = (sel) => form.querySelector(sel);
+    
+    safeLog("Submitting form data...", isCheckout ? "Ödemeye Git" : "Sepete Ekle");
     clearAlerts();
     const formData = new FormData(form);
-    const shareCountInput = form.querySelector('input[name="share_count"]');
+    const shareCountInput = $form('input[name="share_count"]');
     if (shareCountInput) {
       const shareCount = Number.parseInt(shareCountInput.value, 10) || 1;
       for (let i = 1; i <= shareCount; i++) {
-        const name = form.querySelector(`[name='shareholder_name_${i}']`);
-        const phone = form.querySelector(`[name='shareholder_phone_${i}']`);
-        const note = form.querySelector(`[name='shareholder_note_${i}']`);
+        const name = $form(`[name='shareholder_name_${i}']`);
+        const phone = $form(`[name='shareholder_phone_${i}']`);
+        const note = $form(`[name='shareholder_note_${i}']`);
         if (name) formData.set(`shareholder_name_${i}`, name.value);
         if (phone) formData.set(`shareholder_phone_${i}`, phone.value);
         if (note) formData.set(`shareholder_note_${i}`, note.value);
@@ -402,23 +405,23 @@ ${createCartItemsHTML([])}
     formData.append("timestamp", Date.now());
 
     // Butonları bul
-    const addToCartBtn = form.querySelector('button[name="donation_add_to_cart"]');
-    const checkoutBtn = form.querySelector('button[name="donation_go_checkout"]');
+    const addToCartBtn = $form('button[name="donation_add_to_cart"]');
+    const checkoutBtn = $form('button[name="donation_go_checkout"]');
 
     // Form verilerini URL kodlamasına dönüştür
     const formDataUrlEncoded = new URLSearchParams();
     for (const pair of formData.entries()) {
-      console.log(pair[0] + ": " + pair[1]); // Debug için form verilerini logla
+      safeLog("Form data: " + pair[0] + ": " + pair[1]); // Debug için form verilerini logla
       formDataUrlEncoded.append(pair[0], pair[1]);
     }
 
     // Mevcut side cart elementlerini kaydet
     saveSideCartElements();
 
-    console.log("AJAX isteği gönderiliyor:", wdp_ajax.ajax_url);
+    safeLog("AJAX isteği gönderiliyor:", wdp_ajax.ajax_url);
 
-    // Hata mesajı alanını bul ve gizle - Başlangıçta hata mesajını gizle
-    const errorMsg = form.querySelector(".wdp-form-error");
+    // Hata mesajı alanını bul ve gizle - Başlangıçta hata mesajını gizle (fonksiyon scope içindeki $form helper kullan)
+    const errorMsg = $form(".wdp-form-error");
     if (errorMsg) {
       errorMsg.style.display = "none";
       errorMsg.textContent = "";
@@ -426,7 +429,7 @@ ${createCartItemsHTML([])}
 
     // Alternatif olarak jQuery AJAX kullan (daha güvenilir olabilir)
     if (typeof jQuery !== "undefined") {
-      console.log("Using jQuery AJAX");
+      safeLog("Using jQuery AJAX");
       jQuery.ajax({
         url: wdp_ajax.ajax_url,
         type: "POST",
@@ -434,14 +437,14 @@ ${createCartItemsHTML([])}
         contentType: "application/x-www-form-urlencoded",
         dataType: "json",
         beforeSend: () => {
-          console.log("jQuery AJAX request starting...");
+          safeLog("jQuery AJAX request starting...");
         },
         success: (data) => {
-          console.log("jQuery AJAX success:", data);
+          safeLog("jQuery AJAX success:", data);
           handleAjaxResponse(data, form, isCheckout, addToCartBtn, checkoutBtn);
         },
         error: (jqXHR, textStatus, errorThrown) => {
-          console.error("jQuery AJAX error:", textStatus, errorThrown);
+          safeLog("jQuery AJAX error:", { textStatus, errorThrown, status: jqXHR.status });
 
           // Gerçek bir hata olup olmadığını kontrol et
           if (jqXHR.status !== 200) {
@@ -449,7 +452,7 @@ ${createCartItemsHTML([])}
           } else {
             // HTTP 200 yanıtı ama JSON parse hatası olabilir
             // Bu durumda işlemi başarılı kabul et ve hata mesajını gösterme
-            console.log("Ignoring non-critical error, continuing with checkout");
+            safeLog("Ignoring non-critical error, continuing with checkout");
             if (isCheckout) {
               window.location.href = wdp_ajax.checkout_url || "/odeme-sayfasi/";
             } else {
@@ -466,7 +469,7 @@ ${createCartItemsHTML([])}
           }
         },
         complete: () => {
-          console.log("jQuery AJAX request completed");
+          safeLog("jQuery AJAX request completed");
           // İşlem her durumda tamamlandıktan sonra bayrağı sıfırla
           state.isProcessing = false;
 
@@ -490,7 +493,7 @@ ${createCartItemsHTML([])}
       });
     } else {
       // Fetch API ile AJAX isteği gönder
-      console.log("Using Fetch API");
+      safeLog("Using Fetch API");
       fetch(wdp_ajax.ajax_url, {
         method: "POST",
         headers: {
@@ -504,16 +507,16 @@ ${createCartItemsHTML([])}
         cache: "no-cache",
       })
         .then((response) => {
-          console.log("Fetch response received:", response);
+          safeLog("Fetch response received:", { status: response.status, ok: response.ok });
           if (!response.ok && response.status !== 200) {
             throw new Error(`HTTP error! Status: ${response.status}`);
           }
           return response.text().then((text) => {
-            console.log("Response text:", text);
+            safeLog("Response text:", text.substring(0, 200)); // İlk 200 karakter
             try {
               return JSON.parse(text);
             } catch (e) {
-              console.error("JSON parse error:", e);
+              safeLog("JSON parse error:", e);
               // JSON parse hatası olsa bile işlemi başarılı kabul et
               return {
                 success: true,
@@ -528,13 +531,13 @@ ${createCartItemsHTML([])}
           handleAjaxResponse(data, form, isCheckout, addToCartBtn, checkoutBtn);
         })
         .catch((error) => {
-          console.error("Fetch error:", error);
+          safeLog("Fetch error:", error);
           // Gerçek bir ağ hatası olduğunda hata mesajını göster
           if (error.name !== "SyntaxError") {
             handleAjaxError(error, form, addToCartBtn, checkoutBtn);
           } else {
             // JSON parse hatası - işlemi başarılı kabul et
-            console.log("Ignoring JSON parse error, continuing with checkout");
+            safeLog("Ignoring JSON parse error, continuing with checkout");
             if (isCheckout) {
               window.location.href = wdp_ajax.checkout_url || "/odeme-sayfasi/";
             }
@@ -565,11 +568,11 @@ ${createCartItemsHTML([])}
   }
 
   function directFormSubmit(form, isCheckout) {
-    console.log("Direct form submit:", isCheckout ? "Checkout" : "Add to Cart");
+    safeLog("Direct form submit:", isCheckout ? "Checkout" : "Add to Cart");
 
     // Form doğrulama
     if (!validateForm(form)) {
-      console.log("Form validation failed");
+      safeLog("Form validation failed");
       return false;
     }
 
@@ -618,19 +621,19 @@ ${createCartItemsHTML([])}
     form.appendChild(timestampInput);
 
     // Formu gönder
-    console.log("Submitting form directly");
+    safeLog("Submitting form directly");
     form.submit();
 
     return true;
   }
 
   function setupFormSubmission(form) {
-    console.log("Form submission setup for:", form);
+    safeLog("Form submission setup for:", form);
 
     // Form submit olayını doğrudan ele al
     form.addEventListener("submit", (e) => {
       e.preventDefault();
-      console.log("Form submitted");
+      safeLog("Form submitted");
 
       // Önce tüm hata mesajlarını gizle
       if (typeof window.WDP !== "undefined" && typeof window.WDP.hideErrorMessages === "function") {
@@ -652,17 +655,17 @@ ${createCartItemsHTML([])}
 
       // Hangi butonun tıklandığını belirle
       const isCheckout = e.submitter && e.submitter.name === "donation_go_checkout";
-      console.log("Is checkout:", isCheckout);
+      safeLog("Is checkout:", isCheckout);
 
       // Form doğrulama
       if (!validateForm(form)) {
-        console.log("Form validation failed");
+        safeLog("Form validation failed");
         return false;
       }
 
       // Eğer işlem zaten devam ediyorsa, yeni bir istek gönderme
       if (state.isProcessing) {
-        console.log("Processing already in progress");
+        safeLog("Processing already in progress");
         return false;
       }
 

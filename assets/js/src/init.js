@@ -24,34 +24,40 @@
     return WDPApp[name] || {};
   }
 
+  // ✅ GÜVENLİ: Event listener'lar için flag kontrolü (gereksiz tekrarları önler)
+  let listenersInitialized = false;
+
   // DOM ready handler - main initialization
   function handleDomReady() {
-    // Ensure live region (accessibility)
+    // ✅ GÜVENLİ: Modül kontrolleri her çağrıda çalışır (güvenli)
     const utils = getModule('utils');
     if (utils && typeof utils.ensureLiveRegion === 'function') {
       utils.ensureLiveRegion('polite');
       utils.ensureLiveRegion('assertive');
     }
 
-    // Inline style'ları kaldır (tema/eklenti kaynaklı stil çakışmalarını önle)
+    // ✅ GÜVENLİ: Inline style temizleme her çağrıda çalışır (tema/eklenti dinamik olarak ekleyebilir)
     const dom = getModule('dom');
     if (dom && typeof dom.removeInlineStylesFromTitles === 'function') {
       dom.removeInlineStylesFromTitles();
     }
 
-    // Side cart elementlerini kaydet
+    // ✅ GÜVENLİ: Side cart kaydetme her çağrıda çalışır (tema değişiklikleri için)
     const cart = getModule('cart');
     if (cart && typeof cart.saveSideCartElements === 'function') {
       cart.saveSideCartElements();
     }
 
-    // Olay dinleyicilerini başlat
-    const eventManager = getModule('eventManager');
-    if (eventManager && typeof eventManager.init === 'function') {
-      eventManager.init();
+    // ✅ GÜVENLİ: Sadece event listener'lar için flag kontrolü (gereksiz tekrar önlenir)
+    if (!listenersInitialized) {
+      const eventManager = getModule('eventManager');
+      if (eventManager && typeof eventManager.init === 'function') {
+        eventManager.init();
+        listenersInitialized = true; // ✅ Sadece listener'lar için flag
+      }
     }
 
-    // Doğrudan formları bul ve başlat
+    // ✅ GÜVENLİ: Form başlatma her çağrıda çalışır (yeni formlar için gerekli)
     const formInitializer = getModule('formInitializer');
     if (formInitializer && typeof formInitializer.inline === 'function') {
       formInitializer.inline();
@@ -65,9 +71,13 @@
         moduleLoader.update();
       }
       
-      // Event listener'ları tekrar başlat
-      if (eventManager && typeof eventManager.init === 'function') {
+      // ✅ GÜVENLİ: Event listener'lar için flag kontrolü (gereksiz tekrar önlenir)
+      // Note: setTimeout içinde flag kontrolü yok, çünkü bazı temalar için gerekli olabilir
+      // Ama zaten yukarıda flag kontrolü var, buradaki çağrı sadece modül güncellemesi için
+      const eventManager = getModule('eventManager');
+      if (eventManager && typeof eventManager.init === 'function' && !listenersInitialized) {
         eventManager.init();
+        listenersInitialized = true;
       }
       
       // Side cart elementlerini tekrar kaydet

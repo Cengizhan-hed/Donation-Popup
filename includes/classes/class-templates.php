@@ -48,18 +48,18 @@ class WDP_Templates {
         // Benzersiz bir ID oluştur
         $modal_id = 'wdp-modal-' . $product_id;
 
-        // Özel fiyat seçeneğinin aktif olup olmadığını kontrol et
-        $allow_custom_price = get_post_meta($product_id, '_allow_custom_price', true) === 'yes';
-        $min_price = get_post_meta($product_id, '_min_custom_price', true);
+        // OPTIMIZATION: WooCommerce get_meta() kullan (cache'lenmiş, daha hızlı)
+        $allow_custom_price = $product->get_meta('_allow_custom_price') === 'yes';
+        $min_price = $product->get_meta('_min_custom_price');
 
         // Eğer minimum fiyat yoksa ve özel fiyat aktifse, varsayılan olarak 0 kullan
         if ($allow_custom_price && $min_price === '') {
             $min_price = '0';
         }
 
-        // Çoklu hisse seçeneğinin aktif olup olmadığını kontrol et
-        $allow_multiple_shares = get_post_meta($product_id, '_allow_multiple_shares', true) === 'yes';
-        $max_shares = get_post_meta($product_id, '_max_shares', true);
+        // OPTIMIZATION: WooCommerce get_meta() kullan (cache'lenmiş, daha hızlı)
+        $allow_multiple_shares = $product->get_meta('_allow_multiple_shares') === 'yes';
+        $max_shares = $product->get_meta('_max_shares');
 
         // Eğer maksimum hisse sayısı yoksa ve çoklu hisse aktifse, varsayılan olarak 7 kullan
         if ($allow_multiple_shares && $max_shares === '') {
@@ -182,18 +182,18 @@ class WDP_Templates {
         $form_id = 'wdp-modal-' . $product_id . '-direct';
         $custom_class = sanitize_text_field($atts['class']);
 
-        // Özel fiyat seçeneğinin aktif olup olmadığını kontrol et
-        $allow_custom_price = get_post_meta($product_id, '_allow_custom_price', true) === 'yes';
-        $min_price = get_post_meta($product_id, '_min_custom_price', true);
+        // OPTIMIZATION: WooCommerce get_meta() kullan (cache'lenmiş, daha hızlı)
+        $allow_custom_price = $product->get_meta('_allow_custom_price') === 'yes';
+        $min_price = $product->get_meta('_min_custom_price');
 
         // Eğer minimum fiyat yoksa ve özel fiyat aktifse, varsayılan olarak 0 kullan
         if ($allow_custom_price && $min_price === '') {
             $min_price = '0';
         }
 
-        // Çoklu hisse seçeneğinin aktif olup olmadığını kontrol et
-        $allow_multiple_shares = get_post_meta($product_id, '_allow_multiple_shares', true) === 'yes';
-        $max_shares = get_post_meta($product_id, '_max_shares', true);
+        // OPTIMIZATION: WooCommerce get_meta() kullan (cache'lenmiş, daha hızlı)
+        $allow_multiple_shares = $product->get_meta('_allow_multiple_shares') === 'yes';
+        $max_shares = $product->get_meta('_max_shares');
 
         // Eğer maksimum hisse sayısı yoksa ve çoklu hisse aktifse, varsayılan olarak 7 kullan
         if ($allow_multiple_shares && $max_shares === '') {

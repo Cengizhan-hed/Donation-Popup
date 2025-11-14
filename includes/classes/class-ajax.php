@@ -73,10 +73,11 @@ class WDP_Ajax {
                 throw new WDP_Product_Not_Found_Exception($product_id);
             }
 
-        $allow_custom_price = get_post_meta($product_id, '_allow_custom_price', true) === 'yes';
-        $min_price = get_post_meta($product_id, '_min_custom_price', true);
-        $allow_multiple_shares = get_post_meta($product_id, '_allow_multiple_shares', true) === 'yes';
-        $max_shares = get_post_meta($product_id, '_max_shares', true);
+        // OPTIMIZATION: WooCommerce get_meta() kullan (cache'lenmiş, daha hızlı)
+        $allow_custom_price = $product->get_meta('_allow_custom_price') === 'yes';
+        $min_price = $product->get_meta('_min_custom_price');
+        $allow_multiple_shares = $product->get_meta('_allow_multiple_shares') === 'yes';
+        $max_shares = $product->get_meta('_max_shares');
 
         if ($allow_custom_price && '' === $min_price) {
             $min_price = '0';
@@ -265,7 +266,13 @@ class WDP_Ajax {
             }
         }
 
-        $allow_custom_price = get_post_meta($product_id, '_allow_custom_price', true) === 'yes';
+        // OPTIMIZATION: WooCommerce get_meta() kullan (cache'lenmiş, daha hızlı)
+        $product = wc_get_product($product_id);
+        if (!$product) {
+            throw new WDP_Product_Not_Found_Exception($product_id);
+        }
+
+        $allow_custom_price = $product->get_meta('_allow_custom_price') === 'yes';
         $custom_price_value = null;
 
             if ($allow_custom_price) {
@@ -280,7 +287,8 @@ class WDP_Ajax {
                     throw new WDP_Validation_Exception(__('Geçersiz fiyat değeri.', 'woo-donation-popup'), array('custom_price'));
                 }
 
-                $min_price = get_post_meta($product_id, '_min_custom_price', true);
+                // OPTIMIZATION: WooCommerce get_meta() kullan (cache'lenmiş, daha hızlı)
+                $min_price = $product->get_meta('_min_custom_price');
                 $max_price = 999999; // Reasonable maximum
 
                 if ($min_price !== '' && $custom_price_value < (float) $min_price) {

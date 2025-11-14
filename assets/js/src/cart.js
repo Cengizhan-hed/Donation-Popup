@@ -74,7 +74,7 @@
           });
         }
       } catch (jQueryError) {
-        console.error("jQuery error:", jQueryError);
+        safeLog("jQuery error:", jQueryError);
         // jQuery hatası durumunda fallback yöntemini kullan
         fallbackCartUpdate();
       }
@@ -85,13 +85,13 @@
   }
 
   function fallbackCartUpdate() {
-    console.log("Fallback cart update triggered");
+    safeLog("Fallback cart update triggered");
     // Refresh the page as a last resort
     window.location.reload();
   }
 
   function showSideCarts() {
-    console.log("Showing side carts");
+    safeLog("Showing side carts");
 
     // Yaygın side cart sınıf ve ID'lerini kontrol et
     const sideCartSelectors = [
@@ -126,23 +126,23 @@
       try {
         const elements = document.querySelectorAll(selector);
         if (elements.length > 0) {
-          console.log(`Found ${elements.length} elements with selector: ${selector}`);
+          safeLog(`Found ${elements.length} elements with selector: ${selector}`);
           elements.forEach((element) => {
             // Display none ise görünür yap
             if (window.getComputedStyle(element).display === "none") {
-              console.log(`Making visible: ${selector}`);
+              safeLog(`Making visible: ${selector}`);
               element.style.display = "";
             }
 
             // Opacity 0 ise görünür yap
             if (window.getComputedStyle(element).opacity === "0") {
-              console.log(`Setting opacity: ${selector}`);
+              safeLog(`Setting opacity: ${selector}`);
               element.style.opacity = "1";
             }
 
             // Visibility hidden ise görünür yap
             if (window.getComputedStyle(element).visibility === "hidden") {
-              console.log(`Setting visibility: ${selector}`);
+              safeLog(`Setting visibility: ${selector}`);
               element.style.visibility = "visible";
             }
 
@@ -158,7 +158,7 @@
           });
         }
       } catch (e) {
-        console.error(`Error with selector ${selector}:`, e);
+        safeLog(`Error with selector ${selector}:`, e);
       }
     });
 
@@ -187,7 +187,7 @@
         }
       }
     } catch (e) {
-      console.error("Error checking theme-specific cart icons:", e);
+      safeLog("Error checking theme-specific cart icons:", e);
     }
 
     // Sayfadaki tüm sepet ikonlarını ve side cart'ları görünür yapmak için
@@ -425,7 +425,7 @@
           try {
             return JSON.parse(text);
           } catch (e) {
-            console.error("Error parsing JSON response:", e);
+            safeLog("Error parsing JSON response:", e);
             throw new Error("Invalid JSON response from server");
           }
         })
@@ -433,12 +433,12 @@
           if (data.success) {
             resolve(data.items);
           } else {
-            console.error("Error fetching cart contents:", data.message);
+            safeLog("Error fetching cart contents:", data.message);
             reject(data.message);
           }
         })
         .catch((error) => {
-          console.error("Error in AJAX request for cart contents:", error);
+          safeLog("Error in AJAX request for cart contents:", error);
           reject(error);
         });
     });
@@ -488,7 +488,7 @@
       }
     });
 
-    console.log("Cart item styles fixed:", cartItems.length);
+    safeLog("Cart item styles fixed:", cartItems.length);
   }
 
   // Export

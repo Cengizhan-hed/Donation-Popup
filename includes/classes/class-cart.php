@@ -185,7 +185,12 @@ class WDP_Cart {
             }
 
             // Özel fiyat kontrolü
-            $allow_custom_price = get_post_meta($product_id, '_allow_custom_price', true) === 'yes';
+            // OPTIMIZATION: WooCommerce get_meta() kullan (cache'lenmiş, daha hızlı)
+            $product = wc_get_product($product_id);
+            if (!$product) {
+                return;
+            }
+            $allow_custom_price = $product->get_meta('_allow_custom_price') === 'yes';
 
             if ($allow_custom_price) {
                 if (!isset($_POST['custom_price']) || empty($_POST['custom_price'])) {
@@ -194,7 +199,8 @@ class WDP_Cart {
                 }
 
                 // Minimum fiyat kontrolü
-                $min_price = get_post_meta($product_id, '_min_custom_price', true);
+                // OPTIMIZATION: WooCommerce get_meta() kullan (cache'lenmiş, daha hızlı)
+                $min_price = $product->get_meta('_min_custom_price');
                 if ($min_price !== '' && floatval($_POST['custom_price']) < floatval($min_price)) {
                     wc_add_notice(sprintf(__('Lütfen %s TL ve üstü değerler girin.', 'woo-donation-popup'), wc_format_decimal($min_price)), 'error');
                     return false;

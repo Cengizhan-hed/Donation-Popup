@@ -610,8 +610,12 @@
 
   // Update shareholder forms (internal function used by setupShareQuantityButtons)
   function updateShareholderFormsInternal(modal) {
+    // ✅ GÜVENLİ: Fonksiyon scope içinde helper (fonksiyon bitince otomatik temizlenir)
+    const $modal = (sel) => modal.querySelector(sel);
+    
     // Güncel share count input'unu bul
-    const currentShareCountInput = modal.querySelector('input[name="share_count"]');
+    const currentShareCountInput = $modal('input[name="share_count"]');
+    if (!currentShareCountInput) return;
     const shareCount = Number.parseInt(currentShareCountInput.value, 10) || 1;
     safeLog("Updating shareholder forms for count:", shareCount);
 
@@ -622,7 +626,7 @@
     }
 
     // Hissedar formları konteynerini bul
-    const shareholdersContainer = modal.querySelector(".wdp-shareholders-container");
+    const shareholdersContainer = $modal(".wdp-shareholders-container");
     if (!shareholdersContainer) return;
     const shareholdersList = ensureShareholderList(shareholdersContainer);
     if (!shareholdersList) return;
@@ -671,14 +675,17 @@
 
   // Setup share quantity buttons
   function setupShareQuantityButtons(modal, shareCountInput, baseProductPrice, priceInput) {
+    // ✅ GÜVENLİ: Fonksiyon scope içinde helper (fonksiyon bitince otomatik temizlenir)
+    const $modal = (sel) => modal.querySelector(sel);
+    
     safeLog("Setting up share quantity buttons for modal:", modal.id);
     
     // Hisse adedi artırma/azaltma butonlarını bul
-    const decreaseBtn = modal.querySelector(".wdp-share-btn.decrease");
-    const increaseBtn = modal.querySelector(".wdp-share-btn.increase");
+    const decreaseBtn = $modal(".wdp-share-btn.decrease");
+    const increaseBtn = $modal(".wdp-share-btn.increase");
 
     // Quantity input'unu bul
-    const quantityInput = modal.querySelector('input[name="quantity"]');
+    const quantityInput = $modal('input[name="quantity"]');
     
     safeLog("Found buttons:", {
       decreaseBtn: !!decreaseBtn,
@@ -690,7 +697,7 @@
     let activeShareCountInput =
       shareCountInput && shareCountInput.parentNode
         ? shareCountInput
-        : modal.querySelector('input[name="share_count"]');
+        : $modal('input[name="share_count"]');
     if (!activeShareCountInput) {
       safeLog("Share count input not found for setupShareQuantityButtons");
       return;
@@ -702,7 +709,7 @@
     }
     
     // Yeni input referansını güncelle
-    const updatedShareCountInput = modal.querySelector('input[name="share_count"]');
+    const updatedShareCountInput = $modal('input[name="share_count"]');
     
     // Event listener'ları temizleme fonksiyonu
     function removeAllEventListeners(element) {
@@ -809,8 +816,9 @@
     function updatePriceBasedOnShareCount() {
       if (!priceInput) return;
 
-      // Güncel hisse adedini al
-      const currentShareCountInput = modal.querySelector('input[name="share_count"]');
+      // Güncel hisse adedini al (fonksiyon scope içindeki $modal helper kullan)
+      const currentShareCountInput = $modal('input[name="share_count"]');
+      if (!currentShareCountInput) return;
       const shareCount = Number.parseInt(currentShareCountInput.value, 10) || 1;
 
       const baseMinValue = Number.parseFloat((priceInput.dataset.baseMin || '').toString().trim());
@@ -856,8 +864,9 @@
       }
     }
 
-    // Başlangıç değerlerini ayarla
-    const currentShareCountInput = modal.querySelector('input[name="share_count"]');
+    // Başlangıç değerlerini ayarla (fonksiyon scope içindeki $modal helper kullan)
+    const currentShareCountInput = $modal('input[name="share_count"]');
+    if (!currentShareCountInput) return;
     const initialShareCount = Number.parseInt(currentShareCountInput.value, 10) || 1;
     if (quantityInput) {
       quantityInput.value = initialShareCount;
