@@ -249,6 +249,7 @@ html body .wdp-donation-form .wdp-shareholders-area {
   /* ABSOLUTE FIX: When NOT scrollable, use visible overflow to show all content */
   overflow: visible;
   margin: 0;
+  /* FIX: Add margin-bottom for spacing between shareholder area and buttons */
   margin-bottom: 16px;
   box-sizing: border-box;
   position: relative;
@@ -275,7 +276,7 @@ html body .wdp-donation-form .wdp-shareholders-area.scrollable {
   height: clamp(280px, 40vh, 360px);
   max-height: clamp(280px, 40vh, 360px);
   overflow: hidden;
-  /* CRITICAL: Always maintain margin-bottom for spacing with buttons */
+  /* FIX: Add margin-bottom for spacing between scrollable area and buttons */
   margin-bottom: 16px;
   /* Critical: Force height constraint - prevent any expansion */
   position: relative;
@@ -285,7 +286,7 @@ html body .wdp-donation-form .wdp-shareholders-area.scrollable {
 }
 
 /* Shareholders container - fills area height when scrollable, auto when not scrollable */
-/* CRITICAL: Always use fixed height to prevent expansion, prevent 2nd form header from being visible */
+/* CRITICAL: When NOT scrollable, use auto height to prevent empty space */
 html body .wdp-modal .wdp-shareholders-container,
 html body .wdp-donation-form .wdp-shareholders-container {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
@@ -293,14 +294,17 @@ html body .wdp-donation-form .wdp-shareholders-container {
   flex-direction: column;
   min-height: 0;
   position: relative;
-  flex: 1 1 auto;
+  /* FIX: Use auto height when NOT scrollable - prevents empty space */
+  flex: 0 1 auto;
+  flex-shrink: 1;
+  flex-grow: 0;
   /* CRITICAL: Use overflow: hidden to prevent 2nd form header from being visible */
   overflow: hidden;
   width: 100%;
   max-width: 100%;
-  /* CRITICAL: Always use fixed height to prevent expansion - same as parent height */
-  height: 100%;
-  max-height: 100%;
+  /* FIX: Auto height when NOT scrollable - no empty space */
+  height: auto;
+  max-height: none;
   margin: 0;
   padding: 0;
   box-sizing: border-box;
@@ -317,7 +321,7 @@ html body .wdp-donation-form .wdp-shareholders-area.scrollable .wdp-shareholders
 }
 
 /* Shareholders scroll container - default: use overflow-y: auto with hidden scrollbar when not scrollable */
-/* CRITICAL: Always use fixed height to prevent expansion, hide scrollbar when content fits */
+/* FIX: When NOT scrollable, use auto height to prevent empty space */
 html body .wdp-modal .wdp-shareholders-scroll,
 html body .wdp-donation-form .wdp-shareholders-scroll {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
@@ -326,13 +330,14 @@ html body .wdp-donation-form .wdp-shareholders-scroll {
   gap: 12px;
   min-height: 0;
   width: 100%;
-  flex: 1 1 auto;
+  /* FIX: Use auto flex when NOT scrollable - prevents empty space */
+  flex: 0 1 auto;
   flex-shrink: 1;
   flex-grow: 0;
-  /* CRITICAL: Always use fixed height to prevent expansion - same as parent max-height */
-  height: 100%;
-  max-height: 100%;
-  overflow-y: auto;
+  /* FIX: Auto height when NOT scrollable - no empty space */
+  height: auto;
+  max-height: none;
+  overflow-y: visible;
   overflow-x: hidden;
   padding-right: 0;
   margin-right: 0;
@@ -755,6 +760,8 @@ html body .wdp-donation-form .wdp-shareholder-form.collapsed .wdp-shareholder-to
     max-height: none;
     height: auto;
     overflow: visible;
+    /* FIX: Add margin-bottom for spacing between shareholder area and buttons */
+    margin-bottom: 16px;
   }
   
   /* ABSOLUTE FIX: When scrollable (2+ forms), increase height to show textarea bottom */
@@ -763,6 +770,8 @@ html body .wdp-donation-form .wdp-shareholder-form.collapsed .wdp-shareholder-to
     min-height: clamp(280px, 50vh, 360px);
     height: clamp(280px, 50vh, 360px);
     max-height: clamp(280px, 50vh, 360px);
+    /* FIX: Add margin-bottom for spacing between scrollable area and buttons */
+    margin-bottom: 16px;
   }
 
   html body .wdp-modal .wdp-shareholders-area.scrollable .wdp-shareholders-scroll,
@@ -783,6 +792,7 @@ html body .wdp-donation-form .wdp-shareholder-form.collapsed .wdp-shareholder-to
     max-height: none;
     height: auto;
     overflow: visible;
+    /* FIX: Add margin-bottom for spacing between shareholder area and buttons */
     margin-bottom: 16px;
   }
 
@@ -792,6 +802,7 @@ html body .wdp-donation-form .wdp-shareholder-form.collapsed .wdp-shareholder-to
     min-height: clamp(280px, min(40vh, 40dvh), 360px);
     height: clamp(280px, min(40vh, 40dvh), 360px);
     max-height: clamp(280px, min(40vh, 40dvh), 360px);
+    /* FIX: Add margin-bottom for spacing between scrollable area and buttons */
     margin-bottom: 16px;
   }
 }

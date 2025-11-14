@@ -107,7 +107,10 @@ html body .wdp-donation-form .wdp-modal-content {
   max-height: 90vh;
   height: auto;
   min-height: 0;
-  padding: 32px 24px;
+  /* CRITICAL: Use individual padding properties - NOT shorthand (allows override) */
+  padding-top: 32px;
+  padding-left: 24px;
+  padding-right: 24px;
   padding-bottom: 24px;
   position: relative;
   z-index: 2147483646;
@@ -136,18 +139,24 @@ html body .wdp-donation-form .wdp-modal-content {
 /* ABSOLUTE FIX: Force max-height constraint - allow content to be visible */
 html body .wdp-modal .wdp-modal-content:has(form.wdp-has-shareholders),
 html body .wdp-donation-form .wdp-modal-content:has(form.wdp-has-shareholders) {
-  /* CRITICAL: Max height constraint - never exceed 90vh */
+  /* CRITICAL: Same as non-shareholder forms - auto height with max-height constraint */
   max-height: 90vh;
-  height: auto;
-  min-height: 0;
+  height: auto; /* FIX: Same as non-shareholder forms - auto height */
+  min-height: 0; /* FIX: Same as non-shareholder forms - no min-height */
   overflow: hidden;
   /* CRITICAL: Prevent any content from forcing expansion */
   display: flex;
   flex-direction: column;
-  flex-shrink: 1;
-  flex-grow: 0;
+  flex-shrink: 1; /* FIX: Same as non-shareholder forms - allow shrinking */
+  flex-grow: 0; /* FIX: Prevent growing */
   /* CRITICAL: Ensure padding is included in box-sizing */
   box-sizing: border-box;
+  /* FIX: Same padding-bottom as non-shareholder forms - 24px desktop */
+  /* CRITICAL: Use individual padding properties to override shorthand - NO !important */
+  padding-top: 32px;
+  padding-left: 24px;
+  padding-right: 24px;
+  padding-bottom: 24px; /* FIX: Same as non-shareholder forms */
 }
 
 /* Mobile responsive styles with high specificity - Highest specificity */
@@ -162,9 +171,12 @@ html body .wdp-donation-form .wdp-modal-content:has(form.wdp-has-shareholders) {
     /* CRITICAL: Use 100dvh for iOS Safari compatibility (dynamic viewport height) */
     max-height: min(90vh, 90dvh);
     height: auto;
-    /* CRITICAL: Keep desktop padding - 32px 24px, but reduce bottom padding */
-    padding: 32px 24px;
-    padding-bottom: 24px;
+    /* FIX: Reduce padding slightly for mobile - borders closer to content */
+    /* CRITICAL: Use individual padding properties - NOT shorthand (allows override) */
+    padding-top: 28px;
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-bottom: 20px;
     margin: 0;
     border: 1px solid #e5e7eb;
     border-radius: 12px;
@@ -177,15 +189,15 @@ html body .wdp-donation-form .wdp-modal-content:has(form.wdp-has-shareholders) {
     flex-grow: 0;
   }
 
-  /* CRITICAL: In-page form container - ADD padding for safe margins */
+  /* CRITICAL: In-page form container - REDUCE padding for borders closer to screen edges */
   html body .wdp-donation-form {
     margin: 24px 0;
     width: 100%;
     max-width: 100%;
     box-sizing: border-box;
     padding: 0;
-    padding-left: 8px;
-    padding-right: 8px;
+    padding-left: 4px;
+    padding-right: 4px;
     overflow-x: hidden;
     overflow-y: visible;
     position: relative;
@@ -202,9 +214,12 @@ html body .wdp-donation-form .wdp-modal-content:has(form.wdp-has-shareholders) {
     /* CRITICAL: Use 100dvh for iOS Safari compatibility (dynamic viewport height) */
     max-height: min(90vh, 90dvh);
     height: auto;
-    /* CRITICAL: Keep desktop padding - 32px 24px (SAME AS POPUP), but reduce bottom padding */
-    padding: 32px 24px;
-    padding-bottom: 24px;
+    /* FIX: Reduce padding slightly for mobile - borders closer to content */
+    /* CRITICAL: Use individual padding properties - NOT shorthand (allows override) */
+    padding-top: 28px;
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-bottom: 20px;
     margin: 0 auto;
     border: 1px solid #e5e7eb;
     border-radius: 12px;
@@ -225,17 +240,17 @@ html body .wdp-donation-form .wdp-modal-content:has(form.wdp-has-shareholders) {
     opacity: 1;
   }
 
-  /* CRITICAL: Forms with shareholders on mobile - FIX height and width to prevent expansion and overflow */
+  /* CRITICAL: Forms with shareholders on mobile - Same as non-shareholder forms */
   html body .wdp-modal .wdp-modal-content:has(form.wdp-has-shareholders),
   html body .wdp-donation-form .wdp-modal-content:has(form.wdp-has-shareholders) {
     max-height: min(90vh, 90dvh);
-    height: min(90vh, 90dvh);
-    min-height: 0;
+    height: auto; /* FIX: Same as non-shareholder forms - auto height */
+    min-height: 0; /* FIX: Same as non-shareholder forms - no min-height */
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    flex-shrink: 0;
-    flex-grow: 0;
+    flex-shrink: 1; /* FIX: Same as non-shareholder forms - allow shrinking */
+    flex-grow: 0; /* FIX: Prevent growing */
     box-sizing: border-box;
     visibility: visible;
     opacity: 1;
@@ -243,6 +258,12 @@ html body .wdp-donation-form .wdp-modal-content:has(form.wdp-has-shareholders) {
     /* FIX: Hisseli form için width kontrolü - border taşmasını önle */
     width: min(540px, 96vw);
     max-width: min(540px, 96vw);
+    /* FIX: Same padding-bottom as non-shareholder forms - 20px mobile */
+    /* CRITICAL: Use individual padding properties to override shorthand - NO !important */
+    padding-top: 28px;
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-bottom: 20px; /* FIX: Same as non-shareholder forms */
   }
   
   /* FIX: In-page form için hissedarlı form width */
@@ -260,24 +281,26 @@ html body .wdp-donation-form .wdp-modal-content:has(form.wdp-has-shareholders) {
     /* CRITICAL: iOS Safari viewport fix - use dvh units */
     max-height: min(90vh, 90dvh, calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom)));
     height: auto;
-    /* CRITICAL: Keep desktop padding - only adjust for safe area if needed */
-    padding: 32px 24px;
-    padding-left: max(24px, env(safe-area-inset-left));
-    padding-right: max(24px, env(safe-area-inset-right));
+    /* FIX: Reduce padding slightly for mobile - borders closer to content */
+    /* CRITICAL: Use individual padding properties - NOT shorthand (allows override) */
+    padding-top: 28px;
+    padding-left: max(20px, env(safe-area-inset-left));
+    padding-right: max(20px, env(safe-area-inset-right));
+    padding-bottom: 20px;
     /* CRITICAL: Standard width - same as popup */
     width: min(540px, 96vw);
     max-width: min(540px, 96vw);
     box-sizing: border-box;
   }
 
-  /* CRITICAL: In-page form container - ADD padding for safe margins */
+  /* CRITICAL: In-page form container - REDUCE padding for borders closer to screen edges */
   html body .wdp-donation-form {
     width: 100%;
     max-width: 100%;
     margin: 24px 0;
     padding: 0;
-    padding-left: max(8px, env(safe-area-inset-left));
-    padding-right: max(8px, env(safe-area-inset-right));
+    padding-left: max(4px, env(safe-area-inset-left));
+    padding-right: max(4px, env(safe-area-inset-right));
     box-sizing: border-box;
     overflow-x: hidden;
     overflow-y: visible;
@@ -291,10 +314,11 @@ html body .wdp-donation-form .wdp-modal-content:has(form.wdp-has-shareholders) {
   html body .wdp-donation-form .wdp-modal-content {
     max-height: min(90vh, 90dvh, calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom)));
     height: auto;
-    padding: 32px 24px;
-    padding-bottom: 24px;
-    padding-left: max(24px, env(safe-area-inset-left));
-    padding-right: max(24px, env(safe-area-inset-right));
+    /* CRITICAL: Use individual padding properties - NOT shorthand (allows override) */
+    padding-top: 28px;
+    padding-left: max(20px, env(safe-area-inset-left));
+    padding-right: max(20px, env(safe-area-inset-right));
+    padding-bottom: 20px;
     width: calc(100% - 0px);
     max-width: 100%;
     box-sizing: border-box;
@@ -318,17 +342,17 @@ html body .wdp-donation-form .wdp-modal-content:has(form.wdp-has-shareholders) {
     opacity: 1;
   }
 
-  /* CRITICAL: Forms with shareholders on true mobile - FIX height and width to prevent expansion and overflow */
+  /* CRITICAL: Forms with shareholders on true mobile - Same as non-shareholder forms */
   html body .wdp-modal .wdp-modal-content:has(form.wdp-has-shareholders),
   html body .wdp-donation-form .wdp-modal-content:has(form.wdp-has-shareholders) {
     max-height: min(90vh, 90dvh, calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom)));
-    height: min(90vh, 90dvh, calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom)));
-    min-height: 0;
+    height: auto; /* FIX: Same as non-shareholder forms - auto height */
+    min-height: 0; /* FIX: Same as non-shareholder forms - no min-height */
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    flex-shrink: 0;
-    flex-grow: 0;
+    flex-shrink: 1; /* FIX: Same as non-shareholder forms - allow shrinking */
+    flex-grow: 0; /* FIX: Prevent growing */
     box-sizing: border-box;
     visibility: visible;
     opacity: 1;
@@ -336,6 +360,12 @@ html body .wdp-donation-form .wdp-modal-content:has(form.wdp-has-shareholders) {
     /* FIX: Hisseli form için width kontrolü - border taşmasını önle */
     width: min(540px, 96vw);
     max-width: min(540px, 96vw);
+    /* FIX: Same padding-bottom as non-shareholder forms - 20px mobile */
+    /* CRITICAL: Use individual padding properties to override shorthand - NO !important */
+    padding-top: 28px;
+    padding-left: max(20px, env(safe-area-inset-left));
+    padding-right: max(20px, env(safe-area-inset-right));
+    padding-bottom: 20px; /* FIX: Same as non-shareholder forms */
   }
   
   /* FIX: In-page form için hissedarlı form width */
