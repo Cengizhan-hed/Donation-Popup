@@ -54,12 +54,15 @@
   margin-top: 0;
 }
 
-.wdp-modal .wdp-modal-content form .wdp-button-group {
+html body .wdp-modal .wdp-modal-content form .wdp-button-group,
+html body .wdp-donation-form .wdp-modal-content form .wdp-button-group {
   margin-bottom: 0;
 }
 
-.wdp-modal .wdp-modal-content form > .wdp-button-group,
-.wdp-donation-form > .wdp-button-group {
+html body .wdp-modal .wdp-modal-content form > .wdp-button-group,
+html body .wdp-donation-form .wdp-modal-content > .wdp-button-group,
+html body .wdp-modal .wdp-modal-content form > .wdp-button-group:last-child,
+html body .wdp-donation-form .wdp-modal-content form > .wdp-button-group:last-child {
   margin-top: 0;
   margin-bottom: 0;
 }

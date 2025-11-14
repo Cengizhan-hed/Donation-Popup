@@ -8,24 +8,20 @@
 
   const WDPApp = window.WDPApp || (window.WDPApp = {});
   
-  // Utils'i güvenli bir şekilde al (henüz yüklenmemişse boş obje)
-  const utils = WDPApp.utils || {};
-  const { escapeHtml } = utils;
+  // Use centralized module dependency helper
+  const utilsCheck = (WDPApp.utils && WDPApp.utils.ensureModule)
+    ? WDPApp.utils.ensureModule('utils', ['escapeHtml'], {
+        escapeHtml: function(str) {
+          if (typeof str !== 'string') return '';
+          const div = document.createElement('div');
+          div.textContent = str;
+          return div.innerHTML;
+        },
+      })
+    : { module: WDPApp.utils || {}, isValid: false, missingMethods: [] };
   
-  // Utils henüz yüklenmemişse hata ver
-  if (!WDPApp.utils || typeof utils.escapeHtml !== 'function') {
-    console.error('WDP ERROR: utils.js must be loaded before alerts.js!');
-    console.error('WDP: WDPApp.utils:', WDPApp.utils);
-    // Fallback: basit bir escapeHtml fonksiyonu
-    if (typeof escapeHtml === 'undefined') {
-      utils.escapeHtml = function(str) {
-        if (typeof str !== 'string') return '';
-        const div = document.createElement('div');
-        div.textContent = str;
-        return div.innerHTML;
-      };
-    }
-  }
+  const utils = utilsCheck.module;
+  const { escapeHtml } = utils;
 
   const WDP_ALERT_AUTO_DISMISS = 7000;
   const WDP_ALERT_TEMPLATES = {

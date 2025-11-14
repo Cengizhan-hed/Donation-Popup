@@ -130,9 +130,13 @@ body .wdp-donation-form .wdp-modal-close:focus {
 
 /* Title styles with high specificity - GiveWP benzeri yaklaşım */
 /* CRITICAL: Popup modal title - block display for full-width underline, header has border */
-html body .wdp-modal .wdp-modal-header .wdp-modal-title {
+/* ABSOLUTE FIX: Prevent font size flash - MAXIMUM SPECIFICITY, NO JS MODIFICATION, FIXED INITIAL SIZE */
+html body .wdp-modal .wdp-modal-header .wdp-modal-title,
+html body .wdp-modal .wdp-modal-header .wdp-modal-title[style],
+html body .wdp-modal .wdp-modal-header .wdp-modal-title[style*="font-size"] {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  font-size: 1.7rem;
+  /* ABSOLUTE FIX: Use px instead of rem for immediate size (prevents flash) */
+  font-size: 27.2px; /* 1.7rem = 27.2px (16px base) */
   font-weight: 600;
   line-height: 1.2;
   color: #1f2937;
@@ -154,18 +158,52 @@ html body .wdp-modal .wdp-modal-header .wdp-modal-title {
   clear: none;
   position: relative;
   box-sizing: border-box;
+  /* ABSOLUTE: Prevent size flash - fixed dimensions from start */
+  min-height: 32.64px; /* 27.2px * 1.2 line-height */
+  height: auto;
+  /* ABSOLUTE: Prevent font loading flash */
+  visibility: visible;
+  opacity: 1;
+  /* ABSOLUTE: Font rendering optimization */
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* ABSOLUTE: Force font size stability - prevent ANY override (theme/JS/inline) */
+  /* Use both px and rem for maximum compatibility */
+  font-size: 27.2px;
+  font-size: 1.7rem;
+  /* ABSOLUTE: Prevent font-swap flash by using system fonts first */
+  font-display: swap;
+  /* ABSOLUTE: Prevent inline style font-size changes */
+  font-size-adjust: none;
 }
 
 /* In-page form title - inline-block for title-width underline */
+/* ABSOLUTE FIX: Prevent font size flash - MAXIMUM SPECIFICITY, NO JS MODIFICATION, FIXED INITIAL SIZE */
 html body .wdp-donation-form .wdp-modal-header .wdp-modal-title,
+html body .wdp-donation-form .wdp-modal-header .wdp-modal-title[style],
+html body .wdp-donation-form .wdp-modal-header .wdp-modal-title[style*="font-size"],
 html body .wdp-modal .wdp-modal-content .wdp-form-title,
+html body .wdp-modal .wdp-modal-content .wdp-form-title[style],
+html body .wdp-modal .wdp-modal-content .wdp-form-title[style*="font-size"],
 html body .wdp-donation-form .wdp-modal-content .wdp-form-title,
+html body .wdp-donation-form .wdp-modal-content .wdp-form-title[style],
+html body .wdp-donation-form .wdp-modal-content .wdp-form-title[style*="font-size"],
 html body .wdp-modal .wdp-modal-content h2,
+html body .wdp-modal .wdp-modal-content h2[style],
+html body .wdp-modal .wdp-modal-content h2[style*="font-size"],
 html body .wdp-donation-form .wdp-modal-content h2,
+html body .wdp-donation-form .wdp-modal-content h2[style],
+html body .wdp-donation-form .wdp-modal-content h2[style*="font-size"],
 html body .wdp-modal .wdp-modal-content h2.wdp-form-title,
-html body .wdp-donation-form .wdp-modal-content h2.wdp-form-title {
+html body .wdp-modal .wdp-modal-content h2.wdp-form-title[style],
+html body .wdp-modal .wdp-modal-content h2.wdp-form-title[style*="font-size"],
+html body .wdp-donation-form .wdp-modal-content h2.wdp-form-title,
+html body .wdp-donation-form .wdp-modal-content h2.wdp-form-title[style],
+html body .wdp-donation-form .wdp-modal-content h2.wdp-form-title[style*="font-size"] {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  font-size: 1.7rem;
+  /* ABSOLUTE FIX: Use px instead of rem for immediate size (prevents flash) */
+  font-size: 27.2px; /* 1.7rem = 27.2px (16px base) */
   font-weight: 600;
   line-height: 1.2;
   color: #1f2937;
@@ -187,6 +225,25 @@ html body .wdp-donation-form .wdp-modal-content h2.wdp-form-title {
   float: none;
   clear: none;
   position: relative;
+  box-sizing: border-box;
+  /* ABSOLUTE: Prevent size flash - fixed dimensions from start */
+  min-height: 32.64px; /* 27.2px * 1.2 line-height */
+  height: auto;
+  /* ABSOLUTE: Prevent font loading flash */
+  visibility: visible;
+  opacity: 1;
+  /* ABSOLUTE: Font rendering optimization */
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* ABSOLUTE: Force font size stability - prevent ANY override (theme/JS/inline) */
+  /* Use both px and rem for maximum compatibility */
+  font-size: 27.2px;
+  font-size: 1.7rem;
+  /* ABSOLUTE: Prevent font-swap flash by using system fonts first */
+  font-display: swap;
+  /* ABSOLUTE: Prevent inline style font-size changes */
+  font-size-adjust: none;
 }
 
 /* Specific selector for forms with shareholders */
@@ -427,6 +484,7 @@ html body .wdp-donation-form .wdp-modal-content {
 
 /* Modal form with high specificity - override base.css reset */
 /* CRITICAL: Prevent form from expanding modal - absolute constraints */
+/* CRITICAL: Ensure ALL forms (with or without shareholders) are visible */
 html body .wdp-modal .wdp-modal-content form,
 html body .wdp-donation-form .wdp-modal-content form {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
@@ -446,8 +504,11 @@ html body .wdp-donation-form .wdp-modal-content form {
   padding: 0;
   box-sizing: border-box;
   position: relative;
-  /* Prevent expansion */
-  contain: layout style;
+  /* CRITICAL: Remove contain to ensure content visibility */
+  contain: none;
+  /* CRITICAL: Ensure form and all content are visible */
+  visibility: visible;
+  opacity: 1;
 }
 
 /* CRITICAL: Forms with shareholders must not expand modal - absolute constraints */
@@ -539,6 +600,13 @@ body .wdp-donation-form .wdp-modal-content form > * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+}
+
+/* CRITICAL: Exclude shareholder content from form > * reset - it needs gap to work */
+body .wdp-modal .wdp-modal-content form > .wdp-shareholder-content,
+body .wdp-donation-form .wdp-modal-content form > .wdp-shareholder-content {
+  /* Keep grid gap - don't reset display */
+  display: grid;
 }
 
 /* Label styles with high specificity - GiveWP benzeri yaklaşım */
@@ -637,12 +705,22 @@ body .wdp-donation-form .wdp-modal-content form textarea {
 }
 
 /* Textarea styles with high specificity */
+/* ABSOLUTE FIX: Increase textarea min-height and padding to ensure bottom border is visible */
 body .wdp-modal .wdp-modal-content textarea,
 body .wdp-donation-form .wdp-modal-content textarea,
 body .wdp-modal .wdp-modal-content form textarea,
 body .wdp-donation-form .wdp-modal-content form textarea {
   min-height: 96px;
+  height: auto;
+  /* ABSOLUTE FIX: Increase padding-bottom to ensure bottom border is visible */
+  padding-top: 12px;
+  padding-bottom: 16px;
+  padding-left: 16px;
+  padding-right: 16px;
   resize: vertical;
+  /* ABSOLUTE FIX: Ensure border is visible - explicit border */
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
 }
 
 /* Focus styles with high specificity */

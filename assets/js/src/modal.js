@@ -8,24 +8,24 @@
 
   const WDPApp = window.WDPApp || (window.WDPApp = {});
   
-  // Utils ve state'i güvenli bir şekilde al (henüz yüklenmemişse boş obje)
-  const utils = WDPApp.utils || {};
-  const state = WDPApp.state || {};
-  const { safeLog, focusFirstElement, activateFocusTrap, announceStatus } = utils;
+  // Use centralized module dependency helper
+  const utilsCheck = (WDPApp.utils && WDPApp.utils.ensureModule) 
+    ? WDPApp.utils.ensureModule('utils', ['safeLog', 'focusFirstElement', 'activateFocusTrap', 'announceStatus'], {
+        safeLog: function(...args) {
+          if (typeof console !== 'undefined' && console.log) {
+            console.log.apply(console, args);
+          }
+        },
+      })
+    : { module: WDPApp.utils || {}, isValid: false, missingMethods: [] };
   
-  // Utils henüz yüklenmemişse hata ver
-  if (!WDPApp.utils || typeof utils.safeLog !== 'function') {
-    console.error('WDP ERROR: utils.js must be loaded before modal.js!');
-    console.error('WDP: WDPApp.utils:', WDPApp.utils);
-    // Fallback: basit bir safeLog fonksiyonu
-    if (typeof safeLog === 'undefined') {
-      utils.safeLog = function(...args) {
-        if (typeof console !== 'undefined' && console.log) {
-          console.log.apply(console, args);
-        }
-      };
-    }
-  }
+  const stateCheck = (WDPApp.utils && WDPApp.utils.ensureModule)
+    ? WDPApp.utils.ensureModule('state', [])
+    : { module: WDPApp.state || {}, isValid: false, missingMethods: [] };
+  
+  const utils = utilsCheck.module;
+  const state = stateCheck.module;
+  const { safeLog, focusFirstElement, activateFocusTrap, announceStatus } = utils;
 
   // Tüm formların orijinal içeriğini sakla
   function saveOriginalForms() {
@@ -43,12 +43,8 @@
   // Modal'ı aç fonksiyonunu düzelt - scroll pozisyonunu koru
   function openModal(productId) {
     try {
-      safeLog("=== OPEN MODAL DEBUG START ===")
-      safeLog("Product ID:", productId)
-      
       // Ürün ID'sini integer'a çevir
       productId = Number.parseInt(productId, 10)
-      safeLog("Parsed Product ID:", productId)
 
       const modal = document.getElementById("wdp-modal-" + productId)
       safeLog("Modal element found:", modal)
@@ -167,7 +163,9 @@
           if (setupFunc && typeof setupFunc === 'function') {
             safeLog("Setting up shareholder forms for modal:", modal.id);
             // DOM'un tamamen hazır olması için biraz bekle
-            setTimeout(function() {
+                const constants = WDPApp.constants || {};
+                const modalDelay = constants.TIMING ? constants.TIMING.MODAL_OPEN_DELAY : 50;
+                setTimeout(function() {
               try {
                 setupFunc(modal, productId);
                 safeLog("Shareholder forms setup completed");
@@ -183,16 +181,16 @@
                     safeLog("ERROR on retry setting up shareholder forms:", retryError);
                   }
                 }, 200);
+                  }
+                }, modalDelay);
+              } else {
+                safeLog("ERROR: setupShareholderForms function not found in WDPApp.shareholder");
               }
-            }, 50);
-          } else {
-            safeLog("ERROR: setupShareholderForms function not found in WDPApp.shareholder");
-            safeLog("WDPApp.shareholder:", WDPApp.shareholder);
-          }
-        } else {
-          safeLog("WARNING: WDPApp.shareholder module not loaded yet");
-          // Modül henüz yüklenmemişse, biraz bekle ve tekrar dene
-          setTimeout(function() {
+            } else {
+              // Modül henüz yüklenmemişse, biraz bekle ve tekrar dene
+              const constants = WDPApp.constants || {};
+              const retryDelay = constants.TIMING ? constants.TIMING.RETRY_DELAY * 2 : 200;
+              setTimeout(function() {
             if (WDPApp.shareholder) {
               const setupFunc = WDPApp.shareholder.setup || WDPApp.shareholder.setupShareholderForms;
               if (setupFunc && typeof setupFunc === 'function') {
@@ -230,7 +228,6 @@
       }
       
       safeLog("Modal opened successfully for product ID:", productId)
-      safeLog("=== OPEN MODAL DEBUG END ===")
     } catch (error) {
       safeLog("ERROR in openModal:", error)
       safeLog("Error stack:", error.stack)
@@ -356,8 +353,6 @@
     handleEscKeyPress,
   }
 
-  console.log('✅ WDP: modal.js loaded');
-  console.log('📦 WDP: WDPApp.modal exported:', !!WDPApp.modal);
-  console.log('🔧 WDP: openModal function:', typeof WDPApp.modal.open);
+  // Export modal module
 
 })(window);

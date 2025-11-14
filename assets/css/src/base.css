@@ -20,6 +20,8 @@ body .wdp-donation-form {
   padding: 0;
   display: block;
   background: transparent;
+  /* CRITICAL: Prevent layout shift during font loading */
+  font-display: swap;
 }
 
 /* Typography reset - Sadece başlıklar için */

@@ -8,17 +8,19 @@
 
   const WDPApp = window.WDPApp || (window.WDPApp = {});
   
-  // Utils ve state'i güvenli bir şekilde al (henüz yüklenmemişse boş obje)
-  const utils = WDPApp.utils || {};
-  const state = WDPApp.state || {};
+  // Use centralized module dependency helper
+  const utilsCheck = (WDPApp.utils && WDPApp.utils.ensureModule)
+    ? WDPApp.utils.ensureModule('utils', ['safeLog', 'getAjaxNonce', 'formatCurrency', 'announceStatus'])
+    : { module: WDPApp.utils || {}, isValid: false, missingMethods: [] };
+  
+  const stateCheck = (WDPApp.utils && WDPApp.utils.ensureModule)
+    ? WDPApp.utils.ensureModule('state', [])
+    : { module: WDPApp.state || {}, isValid: false, missingMethods: [] };
+  
+  const utils = utilsCheck.module;
+  const state = stateCheck.module;
   const { safeLog, getAjaxNonce, formatCurrency, announceStatus } = utils;
   const { productPrices, productDataCache, productInfoRequests } = state;
-  
-  // Utils henüz yüklenmemişse hata ver
-  if (!WDPApp.utils || typeof utils.safeLog !== 'function') {
-    console.error('WDP ERROR: utils.js must be loaded before product.js!');
-    console.error('WDP: WDPApp.utils:', WDPApp.utils);
-  }
   const wdp_ajax = window.wdp_ajax || {};
 
   function getProductInfoData(productId) {

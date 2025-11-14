@@ -13,19 +13,25 @@
 
   const WDPApp = window.WDPApp || (window.WDPApp = {});
   
-  // Utils, state ve product'i güvenli bir şekilde al (henüz yüklenmemişse boş obje)
-  const utils = WDPApp.utils || {};
-  const state = WDPApp.state || {};
-  const product = WDPApp.product || {};
+  // Use centralized module dependency helper
+  const utilsCheck = (WDPApp.utils && WDPApp.utils.ensureModule)
+    ? WDPApp.utils.ensureModule('utils', ['safeLog', 'formatCurrency'])
+    : { module: WDPApp.utils || {}, isValid: false, missingMethods: [] };
+  
+  const stateCheck = (WDPApp.utils && WDPApp.utils.ensureModule)
+    ? WDPApp.utils.ensureModule('state', [])
+    : { module: WDPApp.state || {}, isValid: false, missingMethods: [] };
+  
+  const productCheck = (WDPApp.utils && WDPApp.utils.ensureModule)
+    ? WDPApp.utils.ensureModule('product', ['getData'])
+    : { module: WDPApp.product || {}, isValid: false, missingMethods: [] };
+  
+  const utils = utilsCheck.module;
+  const state = stateCheck.module;
+  const product = productCheck.module;
   const { safeLog, formatCurrency } = utils;
   const { productPrices, shareholdersResizeBound } = state;
   const { getData: getProductInfoData } = product;
-  
-  // Utils henüz yüklenmemişse hata ver
-  if (!WDPApp.utils || typeof utils.safeLog !== 'function') {
-    console.error('WDP ERROR: utils.js must be loaded before shareholder.js!');
-    console.error('WDP: WDPApp.utils:', WDPApp.utils);
-  }
 
   // Constants
   const SHAREHOLDER_SCROLL_CONFIG = {
@@ -38,10 +44,20 @@
   function ensureShareholderList(container) {
     if (!container) return null;
     let list = container.querySelector(".wdp-shareholders-scroll");
-    if (list) return list;
+    if (list) {
+      // Mevcut listeyi görünür yap
+      list.style.display = '';
+      list.style.visibility = 'visible';
+      list.style.opacity = '1';
+      return list;
+    }
 
     list = document.createElement("div");
     list.className = "wdp-shareholders-scroll";
+    // Yeni listeyi görünür yap
+    list.style.display = '';
+    list.style.visibility = 'visible';
+    list.style.opacity = '1';
 
     while (container.firstChild) {
       list.appendChild(container.firstChild);
@@ -858,21 +874,18 @@
   // Setup shareholder forms
   async function setupShareholderForms(modal, productId) {
     try {
-      safeLog("=== SETUP SHAREHOLDER FORMS START ===");
-      safeLog("Modal ID:", modal.id);
-      safeLog("Product ID:", productId);
+      // Setup shareholder forms
       
       // Ürün ID'sini integer'a çevir
       productId = Number.parseInt(productId, 10);
 
-      // Hisse adedi input'unu bul
-      const shareCountInput = modal.querySelector('input[name="share_count"]');
+      // Hisse adedi input'unu bul - DOM query caching kullan
+      const $modal = (sel) => modal.querySelector(sel);
+      const shareCountInput = $modal('input[name="share_count"]');
       if (!shareCountInput) {
         safeLog("ERROR: Share count input not found in modal:", modal.id);
-        safeLog("Modal HTML preview:", modal.innerHTML.substring(0, 300));
         return;
       }
-      safeLog("Share count input found:", shareCountInput);
 
       const hostForm =
         typeof modal.matches === 'function' && modal.matches('form')
@@ -883,22 +896,40 @@
       }
 
       // Hissedar formları konteynerini bul - Eğer bulunamazsa bir kez daha dene
-      let shareholdersContainer = modal.querySelector(".wdp-shareholders-container");
+      // DOM query caching kullan (üstte tanımlı $modal)
+      let shareholdersContainer = $modal(".wdp-shareholders-container");
       if (!shareholdersContainer) {
-        safeLog("Shareholders container not found on first try, retrying...");
         // Biraz bekle ve tekrar dene (DOM henüz hazır olmayabilir)
-        await new Promise(resolve => setTimeout(resolve, 50));
-        shareholdersContainer = modal.querySelector(".wdp-shareholders-container");
+        const constants = WDPApp.constants || {};
+        const timing = constants.TIMING || {};
+        const domCheckDelay = timing.DOM_CHECK_DELAY || 50;
+        await new Promise(resolve => setTimeout(resolve, domCheckDelay));
+        shareholdersContainer = $modal(".wdp-shareholders-container");
         if (!shareholdersContainer) {
-          safeLog("ERROR: Shareholders container not found in modal after retry:", modal.id);
-          safeLog("Modal HTML:", modal.innerHTML.substring(0, 500));
-          safeLog("Searching for .wdp-shares-section:", modal.querySelector(".wdp-shares-section"));
+          safeLog("ERROR: Shareholders container not found in modal/form after retry:", modal.id || modal.className);
           return;
         }
       }
-      safeLog("Shareholders container found:", shareholdersContainer);
+      
+      // Container'ı görünür yap
+      shareholdersContainer.style.display = '';
+      shareholdersContainer.style.visibility = 'visible';
+      shareholdersContainer.style.opacity = '1';
+      
+      // Hissedar alanını da görünür yap
+      const shareholdersArea = shareholdersContainer.closest('.wdp-shareholders-area');
+      if (shareholdersArea) {
+        shareholdersArea.style.display = '';
+        shareholdersArea.style.visibility = 'visible';
+        shareholdersArea.style.opacity = '1';
+      }
+      
+      // Hissedar listesini oluştur veya bul
       const shareholdersList = ensureShareholderList(shareholdersContainer);
-      safeLog("Shareholders list ensured:", shareholdersList);
+      if (!shareholdersList) {
+        safeLog("ERROR: Could not ensure shareholder list in container");
+        return;
+      }
 
       // Başlangıç değerini 1 olarak ayarla ve event'leri tetikle
       shareCountInput.value = "1";
@@ -911,8 +942,25 @@
 
       // İlk hissedar formunu hemen oluştur
       const firstForm = createShareholderForm(1);
-      shareholdersList.appendChild(firstForm);
-      safeLog("First shareholder form created");
+      if (firstForm) {
+        shareholdersList.appendChild(firstForm);
+        safeLog("First shareholder form created and appended");
+        
+        // Form görünürlüğünü garanti et
+        firstForm.style.display = '';
+        firstForm.style.visibility = 'visible';
+        firstForm.style.opacity = '1';
+        
+        const content = firstForm.querySelector('.wdp-shareholder-content');
+        if (content) {
+          content.style.display = 'block';
+          content.style.visibility = 'visible';
+          content.style.opacity = '1';
+        }
+      } else {
+        safeLog("ERROR: Failed to create first shareholder form");
+        return;
+      }
       
       cacheShareholdersBaseHeight(shareholdersContainer);
 
@@ -1145,9 +1193,7 @@
     updateForms: updateShareholderForms,
   };
 
-  console.log('✅ WDP: shareholder.js loaded');
-  console.log('📦 WDP: WDPApp.shareholder exported:', !!WDPApp.shareholder);
-  console.log('🔧 WDP: setupShareholderForms function:', typeof WDPApp.shareholder.setup);
+  // Export shareholder module
 
 })(window);
 

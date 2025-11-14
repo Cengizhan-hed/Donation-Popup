@@ -113,7 +113,11 @@ class WDP_Assets {
             wp_register_script('wdp-form-js', $plugin_url . 'assets/js/src/form.js', array('wdp-utils-js', 'wdp-state-js', 'wdp-alerts-js', 'wdp-cart-js'), $js_module_version, true);
             wp_register_script('wdp-shareholder-js', $plugin_url . 'assets/js/src/shareholder.js', array('wdp-utils-js', 'wdp-state-js', 'wdp-dom-js', 'wdp-product-js', 'wdp-form-js'), $js_module_version, true);
             wp_register_script('wdp-modal-js', $plugin_url . 'assets/js/src/modal.js', array('wdp-utils-js', 'wdp-state-js', 'wdp-form-js', 'wdp-shareholder-js'), $js_module_version, true);
-            wp_register_script('wdp-init-js', $plugin_url . 'assets/js/src/init.js', array('wdp-utils-js', 'wdp-state-js', 'wdp-dom-js', 'wdp-modal-js', 'wdp-form-js', 'wdp-shareholder-js', 'wdp-cart-js'), $js_module_version, true);
+                wp_register_script('wdp-form-initializer-js', $plugin_url . 'assets/js/src/form-initializer.js', array('wdp-utils-js', 'wdp-form-js', 'wdp-shareholder-js'), $js_module_version, true);
+                wp_register_script('wdp-event-manager-js', $plugin_url . 'assets/js/src/event-manager.js', array('wdp-utils-js', 'wdp-modal-js', 'wdp-form-js'), $js_module_version, true);
+                wp_register_script('wdp-module-loader-js', $plugin_url . 'assets/js/src/module-loader.js', array('wdp-utils-js'), $js_module_version, true);
+                wp_register_script('wdp-constants-js', $plugin_url . 'assets/js/src/constants.js', array(), $js_module_version, true);
+                wp_register_script('wdp-init-js', $plugin_url . 'assets/js/src/init.js', array('wdp-utils-js', 'wdp-state-js', 'wdp-dom-js', 'wdp-modal-js', 'wdp-form-js', 'wdp-shareholder-js', 'wdp-cart-js', 'wdp-form-initializer-js', 'wdp-event-manager-js', 'wdp-module-loader-js', 'wdp-constants-js'), $js_module_version, true);
             wp_register_style('wdp-donation-modal-css', $plugin_url . 'assets/css/donation-modal.css', array(), $css_version);
             
             // Localize script (sadece bir kez)
@@ -152,6 +156,7 @@ class WDP_Assets {
         }
         
         // Script'leri enqueue et (WordPress dependency sistemine güven)
+        wp_enqueue_script('wdp-constants-js'); // Load first (no dependencies)
         wp_enqueue_script('wdp-utils-js');
         wp_enqueue_script('wdp-state-js');
         wp_enqueue_script('wdp-dom-js');
@@ -161,6 +166,9 @@ class WDP_Assets {
         wp_enqueue_script('wdp-form-js');
         wp_enqueue_script('wdp-shareholder-js');
         wp_enqueue_script('wdp-modal-js');
+        wp_enqueue_script('wdp-form-initializer-js');
+        wp_enqueue_script('wdp-event-manager-js');
+        wp_enqueue_script('wdp-module-loader-js');
         wp_enqueue_script('wdp-init-js');
         
         // Style'ı enqueue et
@@ -179,6 +187,22 @@ class WDP_Assets {
      */
     private static function get_inline_css() {
         return "
+        /* CRITICAL: Prevent font flash - apply font-size immediately before CSS loads */
+        /* ABSOLUTE FIX: Set font-size in px for immediate application (no rem calculation delay) */
+        /* Inline CSS has highest specificity - no !important needed */
+        html body .wdp-modal-title,
+        html body .wdp-form-title,
+        html body .wdp-modal .wdp-modal-content h2,
+        html body .wdp-donation-form .wdp-modal-content h2,
+        html body .wdp-modal .wdp-modal-content .wdp-form-title,
+        html body .wdp-donation-form .wdp-modal-content .wdp-form-title,
+        html body .wdp-modal .wdp-modal-content h2.wdp-form-title,
+        html body .wdp-donation-form .wdp-modal-content h2.wdp-form-title {
+            font-size: 27.2px;
+            font-size: 1.7rem;
+            min-height: 32.64px;
+            line-height: 1.2;
+        }
         /* Modal kapalıyken kesinlikle sayfa düzenini etkilememeli */
         .wdp-modal:not(.show) { 
             position: static; 
@@ -416,13 +440,37 @@ class WDP_Assets {
             true
         );
 
-        wp_register_script(
-            'wdp-init-js',
-            $plugin_url . 'assets/js/src/init.js',
-            array('wdp-utils-js', 'wdp-state-js', 'wdp-dom-js', 'wdp-modal-js', 'wdp-form-js', 'wdp-shareholder-js', 'wdp-cart-js'),
-            $js_module_version,
-            true
-        );
+            wp_register_script(
+                'wdp-form-initializer-js',
+                $plugin_url . 'assets/js/src/form-initializer.js',
+                array('wdp-utils-js', 'wdp-form-js', 'wdp-shareholder-js'),
+                $js_module_version,
+                true
+            );
+
+            wp_register_script(
+                'wdp-event-manager-js',
+                $plugin_url . 'assets/js/src/event-manager.js',
+                array('wdp-utils-js', 'wdp-modal-js', 'wdp-form-js'),
+                $js_module_version,
+                true
+            );
+
+            wp_register_script(
+                'wdp-module-loader-js',
+                $plugin_url . 'assets/js/src/module-loader.js',
+                array('wdp-utils-js'),
+                $js_module_version,
+                true
+            );
+
+            wp_register_script(
+                'wdp-init-js',
+                $plugin_url . 'assets/js/src/init.js',
+                array('wdp-utils-js', 'wdp-state-js', 'wdp-dom-js', 'wdp-modal-js', 'wdp-form-js', 'wdp-shareholder-js', 'wdp-cart-js', 'wdp-form-initializer-js', 'wdp-event-manager-js', 'wdp-module-loader-js'),
+                $js_module_version,
+                true
+            );
 
         wp_register_style(
             'wdp-donation-modal-css',

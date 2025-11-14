@@ -242,12 +242,12 @@ html body .wdp-donation-form .wdp-shareholders-area {
   flex-grow: 0;
   width: 100%;
   min-height: 0;
-  /* CRITICAL: Absolute max-height - never exceed this value */
-  /* CRITICAL: Use smaller height to ensure 2nd form header is never visible */
-  max-height: clamp(220px, 40vh, 320px);
+  /* ABSOLUTE FIX: When NOT scrollable (1 form only), use auto height to show all content */
+  /* CRITICAL: Only use max-height when scrollable (2+ forms) */
+  max-height: none;
   height: auto;
-  /* CRITICAL: Use overflow: hidden to prevent 2nd form header from being visible */
-  overflow: hidden;
+  /* ABSOLUTE FIX: When NOT scrollable, use visible overflow to show all content */
+  overflow: visible;
   margin: 0;
   margin-bottom: 16px;
   box-sizing: border-box;
@@ -261,17 +261,19 @@ html body .wdp-donation-form .wdp-shareholders-area {
 
 /* When scrollable (2+ forms), CRITICAL: fix height immediately to prevent modal expansion */
 /* ABSOLUTE FIX: Force fixed height - never allow expansion, container handles scrolling */
+/* ABSOLUTE FIX: Increase height to ensure textarea bottom is visible */
 html body .wdp-modal .wdp-shareholders-area.scrollable,
 html body .wdp-donation-form .wdp-shareholders-area.scrollable {
   /* CRITICAL: Use flex to fill available space but never grow beyond constraints */
   flex: 1 1 auto;
   flex-shrink: 1;
   flex-grow: 0;
+  /* ABSOLUTE FIX: Increased height to ensure textarea bottom is visible */
   /* CRITICAL: Fixed height - same as max-height to prevent expansion */
-  /* CRITICAL: Use smaller height to ensure 2nd form header is never visible */
-  min-height: clamp(220px, 40vh, 320px);
-  height: clamp(220px, 40vh, 320px);
-  max-height: clamp(220px, 40vh, 320px);
+  /* ABSOLUTE FIX: Increased from 220px to 280px minimum to show textarea bottom */
+  min-height: clamp(280px, 40vh, 360px);
+  height: clamp(280px, 40vh, 360px);
+  max-height: clamp(280px, 40vh, 360px);
   overflow: hidden;
   /* CRITICAL: Always maintain margin-bottom for spacing with buttons */
   margin-bottom: 16px;
@@ -433,6 +435,7 @@ html body .wdp-donation-form .wdp-shareholder-form:first-of-type {
 }
 
 /* Shareholder header with high specificity - override base.css reset */
+/* CRITICAL: Ensure popup and in-page forms have identical layout */
 html body .wdp-modal .wdp-shareholder-header,
 html body .wdp-donation-form .wdp-shareholder-header {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
@@ -458,6 +461,9 @@ html body .wdp-donation-form .wdp-shareholder-header {
   box-shadow: none;
   outline: none;
   width: 100%;
+  /* CRITICAL: Force identical flexbox behavior */
+  flex-wrap: nowrap;
+  min-width: 0;
 }
 
 /* Shareholder header hover with high specificity */
@@ -532,6 +538,7 @@ html body .wdp-donation-form .wdp-shareholder-form.collapsed .wdp-shareholder-he
 }
 
 /* Shareholder header h3 with high specificity */
+/* CRITICAL: Ensure popup and in-page forms have identical h3 positioning */
 html body .wdp-modal .wdp-shareholder-header h3,
 html body .wdp-donation-form .wdp-shareholder-header h3 {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
@@ -547,14 +554,28 @@ html body .wdp-donation-form .wdp-shareholder-header h3 {
   word-spacing: normal;
   box-shadow: none;
   text-shadow: none;
+  /* CRITICAL: Force identical flexbox behavior */
+  flex: 1 1 auto;
+  flex-grow: 1;
+  flex-shrink: 1;
+  flex-basis: auto;
+  min-width: 0;
+  display: block;
+  width: auto;
+  max-width: 100%;
+  overflow: hidden;
+  word-wrap: break-word;
+  word-break: break-word;
 }
 
 /* Shareholder toggle with high specificity - override base.css reset */
+/* CRITICAL: Ensure popup and in-page forms have identical toggle positioning */
 html body .wdp-modal .wdp-shareholder-toggle,
 html body .wdp-donation-form .wdp-shareholder-toggle {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   display: inline-flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 8px;
   font-size: 14px;
   font-weight: 500;
@@ -565,6 +586,7 @@ html body .wdp-donation-form .wdp-shareholder-toggle {
   outline: none;
   box-shadow: none;
   margin: 0;
+  margin-left: auto;
   cursor: pointer;
   transition: color 0.15s ease;
   text-align: left;
@@ -573,6 +595,14 @@ html body .wdp-donation-form .wdp-shareholder-toggle {
   word-spacing: normal;
   line-height: 1.5;
   box-sizing: border-box;
+  /* CRITICAL: Force identical flexbox behavior */
+  flex: 0 0 auto;
+  flex-grow: 0;
+  flex-shrink: 0;
+  flex-basis: auto;
+  min-width: 0;
+  width: auto;
+  max-width: none;
 }
 
 html body .wdp-modal .wdp-shareholder-toggle:focus,
@@ -603,10 +633,71 @@ html body .wdp-donation-form .wdp-shareholder-content {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   padding: 12px;
   margin: 0;
-  display: grid;
-  gap: 12px;
+  display: flex;
+  flex-direction: column;
   background: #ffffff;
   box-sizing: border-box;
+  width: 100%;
+}
+
+/* Shareholder content input and textarea with high specificity - ensure spacing */
+/* CRITICAL: Use margin-top for spacing instead of gap (more reliable) */
+/* ABSOLUTE FIX: Increase textarea padding-bottom to ensure bottom border is visible */
+html body .wdp-modal .wdp-shareholder-content > input[type="text"],
+html body .wdp-modal .wdp-shareholder-content > input[type="tel"],
+html body .wdp-modal .wdp-shareholder-content > textarea,
+html body .wdp-modal .wdp-shareholder-content > button,
+html body .wdp-donation-form .wdp-shareholder-content > input[type="text"],
+html body .wdp-donation-form .wdp-shareholder-content > input[type="tel"],
+html body .wdp-donation-form .wdp-shareholder-content > textarea,
+html body .wdp-donation-form .wdp-shareholder-content > button {
+  margin: 0;
+  margin-left: 0;
+  margin-right: 0;
+  margin-bottom: 0;
+  margin-top: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* ABSOLUTE FIX: Textarea bottom border visibility - increase padding and explicit border */
+html body .wdp-modal .wdp-shareholder-content > textarea,
+html body .wdp-donation-form .wdp-shareholder-content > textarea {
+  min-height: 96px;
+  height: auto;
+  /* ABSOLUTE FIX: Increase padding to ensure bottom border is visible */
+  padding-top: 12px;
+  padding-bottom: 16px;
+  padding-left: 16px;
+  padding-right: 16px;
+  resize: vertical;
+  /* ABSOLUTE FIX: Ensure border is visible - explicit border */
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+}
+
+/* CRITICAL: Add margin-top to all elements except the first one - More specific selector */
+html body .wdp-modal .wdp-shareholder-content > input[type="text"] ~ *,
+html body .wdp-modal .wdp-shareholder-content > input[type="tel"] ~ *,
+html body .wdp-modal .wdp-shareholder-content > input[type="text"] ~ input[type="tel"],
+html body .wdp-modal .wdp-shareholder-content > input[type="tel"] ~ textarea,
+html body .wdp-modal .wdp-shareholder-content > textarea ~ button,
+html body .wdp-donation-form .wdp-shareholder-content > input[type="text"] ~ *,
+html body .wdp-donation-form .wdp-shareholder-content > input[type="tel"] ~ *,
+html body .wdp-donation-form .wdp-shareholder-content > input[type="text"] ~ input[type="tel"],
+html body .wdp-donation-form .wdp-shareholder-content > input[type="tel"] ~ textarea,
+html body .wdp-donation-form .wdp-shareholder-content > textarea ~ button {
+  margin-top: 12px;
+}
+
+/* Alternative: Direct sibling selector for more reliable spacing */
+html body .wdp-modal .wdp-shareholder-content > input[type="text"] + input[type="tel"],
+html body .wdp-modal .wdp-shareholder-content > input[type="tel"] + textarea,
+html body .wdp-modal .wdp-shareholder-content > textarea + button,
+html body .wdp-donation-form .wdp-shareholder-content > input[type="text"] + input[type="tel"],
+html body .wdp-donation-form .wdp-shareholder-content > input[type="tel"] + textarea,
+html body .wdp-donation-form .wdp-shareholder-content > textarea + button {
+  margin-top: 12px;
 }
 
 html body .wdp-modal .wdp-shareholder-form.collapsed .wdp-shareholder-content,
@@ -658,17 +749,20 @@ html body .wdp-donation-form .wdp-shareholder-form.collapsed .wdp-shareholder-to
     font-size: 16px;
   }
 
-  html body .wdp-modal .wdp-shareholders-area.scrollable,
-  html body .wdp-donation-form .wdp-shareholders-area.scrollable {
-    min-height: clamp(200px, 50vh, 280px);
-    height: clamp(200px, 50vh, 280px);
-    max-height: clamp(200px, 50vh, 280px);
+  /* ABSOLUTE FIX: When NOT scrollable (1 form only), use auto height */
+  html body .wdp-modal .wdp-shareholders-area:not(.scrollable),
+  html body .wdp-donation-form .wdp-shareholders-area:not(.scrollable) {
+    max-height: none;
+    height: auto;
+    overflow: visible;
   }
   
-  html body .wdp-modal .wdp-shareholders-area,
-  html body .wdp-donation-form .wdp-shareholders-area {
-    max-height: clamp(200px, 50vh, 280px);
-    height: clamp(200px, 50vh, 280px);
+  /* ABSOLUTE FIX: When scrollable (2+ forms), increase height to show textarea bottom */
+  html body .wdp-modal .wdp-shareholders-area.scrollable,
+  html body .wdp-donation-form .wdp-shareholders-area.scrollable {
+    min-height: clamp(280px, 50vh, 360px);
+    height: clamp(280px, 50vh, 360px);
+    max-height: clamp(280px, 50vh, 360px);
   }
 
   html body .wdp-modal .wdp-shareholders-area.scrollable .wdp-shareholders-scroll,
@@ -683,19 +777,21 @@ html body .wdp-donation-form .wdp-shareholder-form.collapsed .wdp-shareholder-to
 @media (max-width: 480px) {
   /* Shareholder area - mobile height constraints ONLY (iOS Safari viewport fix) */
   /* CRITICAL: Use dvh units for iOS Safari compatibility, but keep desktop height values */
-  html body .wdp-modal .wdp-shareholders-area,
-  html body .wdp-donation-form .wdp-shareholders-area {
-    /* CRITICAL: Keep desktop height - clamp(220px, 40vh, 320px) but use dvh for iOS */
-    max-height: clamp(220px, min(40vh, 40dvh), 320px);
+  /* ABSOLUTE FIX: When NOT scrollable (1 form only), use auto height */
+  html body .wdp-modal .wdp-shareholders-area:not(.scrollable),
+  html body .wdp-donation-form .wdp-shareholders-area:not(.scrollable) {
+    max-height: none;
     height: auto;
+    overflow: visible;
     margin-bottom: 16px;
   }
 
+  /* ABSOLUTE FIX: When scrollable (2+ forms), increase height to show textarea bottom */
   html body .wdp-modal .wdp-shareholders-area.scrollable,
   html body .wdp-donation-form .wdp-shareholders-area.scrollable {
-    min-height: clamp(220px, min(40vh, 40dvh), 320px);
-    height: clamp(220px, min(40vh, 40dvh), 320px);
-    max-height: clamp(220px, min(40vh, 40dvh), 320px);
+    min-height: clamp(280px, min(40vh, 40dvh), 360px);
+    height: clamp(280px, min(40vh, 40dvh), 360px);
+    max-height: clamp(280px, min(40vh, 40dvh), 360px);
     margin-bottom: 16px;
   }
 }

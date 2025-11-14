@@ -79,9 +79,7 @@
     },
   }
 
+  // Export state module
   WDPApp.state = state
-
-  console.log('✅ WDP: state.js loaded');
-  console.log('📦 WDP: WDPApp.state exported:', !!WDPApp.state);
 
 })(window);

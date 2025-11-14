@@ -131,7 +131,8 @@
 
   // Güvenli console.log fonksiyonu
   function safeLog(message, data = null) {
-    if (wdp_ajax.debug || true) { // Debug'ı her zaman açık tut
+    // Sadece debug modu açıksa logla (production'da kapalı)
+    if (wdp_ajax && wdp_ajax.debug) {
       if (data) {
         console.log('WDP:', message, data)
       } else {
@@ -260,12 +261,50 @@
       clearTimeout(WDPApp.liveRegionTimers[type])
     }
 
+    const constants = WDPApp.constants || {};
+    const timing = constants.TIMING || {};
+    const liveRegionDelay = timing.LIVE_REGION_DELAY || 30;
     WDPApp.liveRegionTimers[type] = window.setTimeout(() => {
       region.textContent = message
-    }, 30)
+    }, liveRegionDelay)
   }
 
-  // Export
+  // Module dependency helper - centralized module loading
+  function ensureModule(moduleName, requiredMethods = [], fallbacks = {}) {
+    const module = WDPApp[moduleName] || {};
+    let isValid = true;
+    const missingMethods = [];
+
+    // Check if module exists
+    if (!WDPApp[moduleName]) {
+      isValid = false;
+    }
+
+    // Check required methods
+    requiredMethods.forEach((methodName) => {
+      if (!module[methodName] || typeof module[methodName] !== 'function') {
+        isValid = false;
+        missingMethods.push(methodName);
+      }
+    });
+
+    // If module is not valid, use fallbacks
+    if (!isValid && Object.keys(fallbacks).length > 0) {
+      requiredMethods.forEach((methodName) => {
+        if (missingMethods.includes(methodName) && fallbacks[methodName]) {
+          module[methodName] = fallbacks[methodName];
+        }
+      });
+    }
+
+    return {
+      module,
+      isValid,
+      missingMethods,
+    };
+  }
+
+  // Export utils module
   const utils = {
     formatPrice,
     formatCurrency,
@@ -276,21 +315,9 @@
     focusFirstElement,
     activateFocusTrap,
     announceStatus,
+    ensureModule, // Export module helper
   }
 
-  // Hemen export et (modüller bekliyor)
   WDPApp.utils = utils;
-  
-  // Export'un başarılı olduğunu logla
-  console.log('✅ WDP: utils.js loaded - Version 10.0');
-  console.log('📦 WDP: WDPApp.utils exported:', !!WDPApp.utils);
-  console.log('🔧 WDP: utils object keys:', Object.keys(utils));
-  console.log('🔧 WDP: utils functions:', {
-    formatPrice: typeof formatPrice,
-    formatCurrency: typeof formatCurrency,
-    escapeHtml: typeof escapeHtml,
-    safeLog: typeof safeLog,
-    getAjaxNonce: typeof getAjaxNonce,
-  });
 
 })(window);

@@ -1,22 +1,25 @@
 /* Layout rules shared across popup modal and embedded form - GiveWP benzeri yaklaşım */
+/* CRITICAL: Desktop - in-page forms should match popup width */
+/* CRITICAL: Desktop - in-page forms container */
+/* This rule only sets container width - modal-content rules are handled below */
 body .wdp-donation-form {
   max-width: 100%;
-  width: min(540px, 96vw);
+  width: min(540px, calc(100vw - 48px));
   margin: 24px auto;
   padding: 0;
   display: block;
   position: relative;
   box-sizing: border-box;
+  /* Prevent horizontal overflow */
+  overflow-x: hidden;
+  /* CRITICAL: Ensure visibility */
+  visibility: visible;
+  opacity: 1;
 }
 
-body .wdp-donation-form .wdp-modal-content {
-  width: 100%;
-  margin: 0;
-  padding: 0;
-  display: block;
-  position: relative;
-  box-sizing: border-box;
-}
+/* REMOVED: body .wdp-donation-form .wdp-modal-content rule */
+/* This rule was overriding modal-content styles and is no longer needed */
+/* Modal-content styles are handled by html body .wdp-modal .wdp-modal-content rule below */
 
 /* Modal states with high specificity */
 body .wdp-modal:not(.show) {
@@ -105,6 +108,7 @@ html body .wdp-donation-form .wdp-modal-content {
   height: auto;
   min-height: 0;
   padding: 32px 24px;
+  padding-bottom: 24px;
   position: relative;
   z-index: 2147483646;
   animation: none;
@@ -147,18 +151,20 @@ html body .wdp-donation-form .wdp-modal-content:has(form.wdp-has-shareholders) {
 }
 
 /* Mobile responsive styles with high specificity - Highest specificity */
-/* CRITICAL: Mobile should look identical to desktop - only viewport height fixes */
+/* CRITICAL: Mobile - all forms (popup and in-page) must have equal width */
+/* CRITICAL: In-page forms should stick to screen edges with minimal spacing */
 @media (max-width: 600px) {
-  html body .wdp-modal .wdp-modal-content,
-  html body .wdp-donation-form .wdp-modal-content {
-    /* CRITICAL: Keep desktop width - min(540px, 96vw) */
+  /* CRITICAL: Popup modal content - standard width for all forms */
+  html body .wdp-modal .wdp-modal-content {
+    /* CRITICAL: Standard width - min(540px, 96vw) */
     width: min(540px, 96vw);
     max-width: min(540px, 96vw);
     /* CRITICAL: Use 100dvh for iOS Safari compatibility (dynamic viewport height) */
     max-height: min(90vh, 90dvh);
     height: auto;
-    /* CRITICAL: Keep desktop padding - 32px 24px */
+    /* CRITICAL: Keep desktop padding - 32px 24px, but reduce bottom padding */
     padding: 32px 24px;
+    padding-bottom: 24px;
     margin: 0;
     border: 1px solid #e5e7eb;
     border-radius: 12px;
@@ -171,36 +177,86 @@ html body .wdp-donation-form .wdp-modal-content:has(form.wdp-has-shareholders) {
     flex-grow: 0;
   }
 
-  /* CRITICAL: Forms with shareholders on mobile - use dynamic viewport height for iOS */
-  html body .wdp-modal .wdp-modal-content:has(form.wdp-has-shareholders),
-  html body .wdp-donation-form .wdp-modal-content:has(form.wdp-has-shareholders) {
+  /* CRITICAL: In-page form container - ADD padding for safe margins */
+  html body .wdp-donation-form {
+    margin: 24px 0;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    padding: 0;
+    padding-left: 8px;
+    padding-right: 8px;
+    overflow-x: hidden;
+    overflow-y: visible;
+    position: relative;
+    display: block;
+    visibility: visible;
+    opacity: 1;
+  }
+
+  /* CRITICAL: In-page form modal content - FIX width to prevent overflow */
+  html body .wdp-donation-form .wdp-modal-content {
+    width: calc(100% - 0px);
+    max-width: 100%;
+    box-sizing: border-box;
+    /* CRITICAL: Use 100dvh for iOS Safari compatibility (dynamic viewport height) */
     max-height: min(90vh, 90dvh);
     height: auto;
-    min-height: 0;
+    /* CRITICAL: Keep desktop padding - 32px 24px (SAME AS POPUP), but reduce bottom padding */
+    padding: 32px 24px;
+    padding-bottom: 24px;
+    margin: 0 auto;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    box-sizing: border-box;
     overflow: hidden;
+    min-height: 0;
     display: flex;
     flex-direction: column;
     flex-shrink: 1;
     flex-grow: 0;
-    box-sizing: border-box;
+    /* CRITICAL: Same as popup - allow content visibility */
+    position: relative;
+    /* CRITICAL: Same contain as popup */
+    contain: layout style;
+    isolation: isolate;
+    /* CRITICAL: Ensure visibility */
+    visibility: visible;
+    opacity: 1;
   }
 
-  html body .wdp-donation-form {
-    margin: 24px auto;
+  /* CRITICAL: Forms with shareholders on mobile - FIX height and width to prevent expansion and overflow */
+  html body .wdp-modal .wdp-modal-content:has(form.wdp-has-shareholders),
+  html body .wdp-donation-form .wdp-modal-content:has(form.wdp-has-shareholders) {
+    max-height: min(90vh, 90dvh);
+    height: min(90vh, 90dvh);
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    flex-grow: 0;
+    box-sizing: border-box;
+    visibility: visible;
+    opacity: 1;
+    contain: layout style;
+    /* FIX: Hisseli form için width kontrolü - border taşmasını önle */
     width: min(540px, 96vw);
     max-width: min(540px, 96vw);
   }
-
-  html body .wdp-donation-form .wdp-modal-content {
-    border-radius: 12px;
-    margin: 0;
+  
+  /* FIX: In-page form için hissedarlı form width */
+  html body .wdp-donation-form .wdp-modal-content:has(form.wdp-has-shareholders) {
+    width: calc(100% - 0px);
+    max-width: 100%;
   }
 }
 
 /* CRITICAL: True mobile devices (480px and below) - iOS Safari specific fixes ONLY */
+/* CRITICAL: All forms must have equal width, in-page forms stick to edges */
 @media (max-width: 480px) {
-  html body .wdp-modal .wdp-modal-content,
-  html body .wdp-donation-form .wdp-modal-content {
+  /* CRITICAL: Popup modal content - standard width for all forms */
+  html body .wdp-modal .wdp-modal-content {
     /* CRITICAL: iOS Safari viewport fix - use dvh units */
     max-height: min(90vh, 90dvh, calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom)));
     height: auto;
@@ -208,12 +264,83 @@ html body .wdp-donation-form .wdp-modal-content:has(form.wdp-has-shareholders) {
     padding: 32px 24px;
     padding-left: max(24px, env(safe-area-inset-left));
     padding-right: max(24px, env(safe-area-inset-right));
+    /* CRITICAL: Standard width - same as popup */
+    width: min(540px, 96vw);
+    max-width: min(540px, 96vw);
+    box-sizing: border-box;
   }
 
-  /* CRITICAL: Forms with shareholders on true mobile */
+  /* CRITICAL: In-page form container - ADD padding for safe margins */
+  html body .wdp-donation-form {
+    width: 100%;
+    max-width: 100%;
+    margin: 24px 0;
+    padding: 0;
+    padding-left: max(8px, env(safe-area-inset-left));
+    padding-right: max(8px, env(safe-area-inset-right));
+    box-sizing: border-box;
+    overflow-x: hidden;
+    overflow-y: visible;
+    position: relative;
+    display: block;
+    visibility: visible;
+    opacity: 1;
+  }
+
+  /* CRITICAL: In-page form modal content - FIX width to prevent overflow */
+  html body .wdp-donation-form .wdp-modal-content {
+    max-height: min(90vh, 90dvh, calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom)));
+    height: auto;
+    padding: 32px 24px;
+    padding-bottom: 24px;
+    padding-left: max(24px, env(safe-area-inset-left));
+    padding-right: max(24px, env(safe-area-inset-right));
+    width: calc(100% - 0px);
+    max-width: 100%;
+    box-sizing: border-box;
+    margin: 0 auto;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    box-sizing: border-box;
+    overflow: hidden;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 1;
+    flex-grow: 0;
+    /* CRITICAL: Same as popup - allow content visibility */
+    position: relative;
+    /* CRITICAL: Same contain as popup */
+    contain: layout style;
+    isolation: isolate;
+    /* CRITICAL: Ensure visibility */
+    visibility: visible;
+    opacity: 1;
+  }
+
+  /* CRITICAL: Forms with shareholders on true mobile - FIX height and width to prevent expansion and overflow */
   html body .wdp-modal .wdp-modal-content:has(form.wdp-has-shareholders),
   html body .wdp-donation-form .wdp-modal-content:has(form.wdp-has-shareholders) {
     max-height: min(90vh, 90dvh, calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom)));
-    height: auto;
+    height: min(90vh, 90dvh, calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom)));
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    flex-grow: 0;
+    box-sizing: border-box;
+    visibility: visible;
+    opacity: 1;
+    contain: layout style;
+    /* FIX: Hisseli form için width kontrolü - border taşmasını önle */
+    width: min(540px, 96vw);
+    max-width: min(540px, 96vw);
+  }
+  
+  /* FIX: In-page form için hissedarlı form width */
+  html body .wdp-donation-form .wdp-modal-content:has(form.wdp-has-shareholders) {
+    width: calc(100% - 0px);
+    max-width: 100%;
   }
 }

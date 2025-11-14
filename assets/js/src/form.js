@@ -9,20 +9,30 @@
 
   const WDPApp = window.WDPApp || (window.WDPApp = {});
   
-  // Utils, state, alerts ve cart'i güvenli bir şekilde al (henüz yüklenmemişse boş obje)
-  const utils = WDPApp.utils || {};
-  const state = WDPApp.state || {};
-  const alerts = WDPApp.alerts || {};
-  const cart = WDPApp.cart || {};
+  // Use centralized module dependency helper
+  const utilsCheck = (WDPApp.utils && WDPApp.utils.ensureModule)
+    ? WDPApp.utils.ensureModule('utils', ['formatCurrency', 'getAjaxNonce', 'announceStatus', 'safeLog'])
+    : { module: WDPApp.utils || {}, isValid: false, missingMethods: [] };
+  
+  const stateCheck = (WDPApp.utils && WDPApp.utils.ensureModule)
+    ? WDPApp.utils.ensureModule('state', [])
+    : { module: WDPApp.state || {}, isValid: false, missingMethods: [] };
+  
+  const alertsCheck = (WDPApp.utils && WDPApp.utils.ensureModule)
+    ? WDPApp.utils.ensureModule('alerts', ['clear', 'show'])
+    : { module: WDPApp.alerts || {}, isValid: false, missingMethods: [] };
+  
+  const cartCheck = (WDPApp.utils && WDPApp.utils.ensureModule)
+    ? WDPApp.utils.ensureModule('cart', ['fetchContents', 'updateCountElements', 'createItemsHTML', 'setupContinueShoppingButton', 'updateWooCommerce', 'saveSideCartElements', 'showSideCarts'])
+    : { module: WDPApp.cart || {}, isValid: false, missingMethods: [] };
+  
+  const utils = utilsCheck.module;
+  const state = stateCheck.module;
+  const alerts = alertsCheck.module;
+  const cart = cartCheck.module;
   const { formatCurrency, getAjaxNonce, announceStatus, safeLog } = utils;
   const { clear: clearAlerts, show: showAlert } = alerts;
   const { fetchContents: fetchCartContents, updateCountElements: updateCartCountElements, createItemsHTML: createCartItemsHTML, setupContinueShoppingButton, updateWooCommerce: updateWooCommerceCart, saveSideCartElements, showSideCarts } = cart;
-  
-  // Utils henüz yüklenmemişse hata ver
-  if (!WDPApp.utils || typeof utils.formatCurrency !== 'function') {
-    console.error('WDP ERROR: utils.js must be loaded before form.js!');
-    console.error('WDP: WDPApp.utils:', WDPApp.utils);
-  }
   const wdp_ajax = window.wdp_ajax || {};
   const jQuery = window.jQuery || null;
 
@@ -822,9 +832,7 @@ ${createCartItemsHTML([])}
     directSubmit: directFormSubmit,
   };
 
-  console.log('✅ WDP: form.js loaded');
-  console.log('📦 WDP: WDPApp.form exported:', !!WDPApp.form);
-  console.log('🔧 WDP: setupFormSubmission function:', typeof WDPApp.form.setup);
+  // Export form module
 
 })(window);
 

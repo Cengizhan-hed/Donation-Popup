@@ -8,26 +8,27 @@
 
   const WDPApp = window.WDPApp || (window.WDPApp = {});
   
-  // Utils ve state'i güvenli bir şekilde al (henüz yüklenmemişse boş obje)
-  const utils = WDPApp.utils || {};
-  const state = WDPApp.state || {};
-  const { safeLog } = utils;
+  // Use centralized module dependency helper
+  const utilsCheck = (WDPApp.utils && WDPApp.utils.ensureModule)
+    ? WDPApp.utils.ensureModule('utils', ['safeLog'], {
+        safeLog: function(...args) {
+          if (typeof console !== 'undefined' && console.log) {
+            console.log.apply(console, args);
+          }
+        },
+      })
+    : { module: WDPApp.utils || {}, isValid: false, missingMethods: [] };
   
-  // Utils henüz yüklenmemişse hata ver
-  if (!WDPApp.utils || typeof utils.safeLog !== 'function') {
-    console.error('WDP ERROR: utils.js must be loaded before dom.js!');
-    console.error('WDP: WDPApp.utils:', WDPApp.utils);
-    // Fallback: basit bir safeLog fonksiyonu
-    if (typeof safeLog === 'undefined') {
-      utils.safeLog = function(...args) {
-        if (typeof console !== 'undefined' && console.log) {
-          console.log.apply(console, args);
-        }
-      };
-    }
-  }
+  const stateCheck = (WDPApp.utils && WDPApp.utils.ensureModule)
+    ? WDPApp.utils.ensureModule('state', [])
+    : { module: WDPApp.state || {}, isValid: false, missingMethods: [] };
+  
+  const utils = utilsCheck.module;
+  const state = stateCheck.module;
+  const { safeLog } = utils;
 
   // Inline style'ları kaldırarak tema/eklenti kaynaklı stil çakışmalarını önle
+  // FONT-SIZE İLE İLGİLİ KOD KALDIRILDI - Inline CSS yeterli, gereksiz JS kodu flash yapıyor
   function removeInlineStylesFromTitles() {
     const titleSelectors = [
       '.wdp-form-title',
@@ -49,80 +50,21 @@
     titleSelectors.forEach(selector => {
       const elements = document.querySelectorAll(selector)
       elements.forEach(element => {
-        // Font-size ve line-height gibi stil çakışmalarına neden olan inline style'ları kaldır
-        if (element.style.fontSize) {
-          element.style.removeProperty('font-size')
-        }
-        if (element.style.lineHeight) {
-          element.style.removeProperty('line-height')
-        }
-        if (element.style.fontWeight) {
-          element.style.removeProperty('font-weight')
-        }
-        if (element.style.color) {
-          element.style.removeProperty('color')
-        }
-        if (element.style.margin) {
-          element.style.removeProperty('margin')
-        }
-        if (element.style.marginBottom) {
-          element.style.removeProperty('margin-bottom')
-        }
-        if (element.style.paddingBottom) {
-          element.style.removeProperty('padding-bottom')
-        }
-        // CSS custom property'leri de kontrol et
-        if (element.style.getPropertyValue('--fontSize')) {
-          element.style.removeProperty('--fontSize')
-        }
-        // CRITICAL: Check if element is in popup modal header - if so, allow block display for full-width underline
-        // Otherwise, force inline-block for in-page forms to prevent full-width border
+        // Sadece display ve width - font-size inline CSS'te handle ediliyor
         const isPopupModalTitle = element.closest('.wdp-modal') && element.closest('.wdp-modal-header');
         
         if (!isPopupModalTitle) {
-          // For in-page forms, aggressively force inline-block to prevent full-width border
-          // Remove display: block and width: 100% if theme added them
-          if (element.style.display) {
+          // In-page forms: inline-block için sadece display
+          if (element.style.display === 'block') {
             element.style.removeProperty('display');
           }
-          if (element.style.width) {
+          if (element.style.width === '100%') {
             element.style.removeProperty('width');
           }
-          if (element.style.maxWidth) {
-            element.style.removeProperty('max-width');
-          }
-          // Force inline-block immediately and verify
-          requestAnimationFrame(() => {
-            const computedStyle = window.getComputedStyle(element);
-            // Always force inline-block, width: auto, max-width: 100% for title elements in in-page forms
-            if (computedStyle.display !== 'inline-block') {
-              element.style.setProperty('display', 'inline-block', '');
-            }
-            if (computedStyle.width === '100%' || computedStyle.width === element.parentElement?.offsetWidth + 'px') {
-              element.style.setProperty('width', 'auto', '');
-            }
-            if (!element.style.maxWidth || element.style.maxWidth !== '100%') {
-              element.style.setProperty('max-width', '100%', '');
-            }
-            // Verify after a frame
-            requestAnimationFrame(() => {
-              const finalStyle = window.getComputedStyle(element);
-              if (finalStyle.display !== 'inline-block') {
-                element.style.setProperty('display', 'inline-block', '');
-              }
-              if (finalStyle.width === '100%') {
-                element.style.setProperty('width', 'auto', '');
-              }
-            });
-          });
         } else {
-          // For popup modal titles, allow block display for full-width underline
-          // Remove any inline styles that might interfere with CSS
+          // Popup modal titles: block display için
           if (element.style.display && element.style.display !== 'block') {
             element.style.removeProperty('display');
-          }
-          if (element.style.width && element.style.width !== '100%') {
-            element.style.removeProperty('width');
           }
         }
       })
@@ -221,7 +163,6 @@
     // initializeDirectForms init.js'de tanımlı
   }
 
-  console.log('✅ WDP: dom.js loaded');
-  console.log('📦 WDP: WDPApp.dom exported:', !!WDPApp.dom);
+  // Export dom module
 
 })(window);
