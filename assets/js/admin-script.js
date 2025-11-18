@@ -202,5 +202,125 @@
       // Geçici textarea'yı kaldır
       $temp.remove()
     }
+
+    // Tab geçişi
+    $(".nav-tab").on("click", function (e) {
+      e.preventDefault()
+      var $tab = $(this)
+      var targetTab = $tab.data("tab")
+
+      // Tüm tab'ları gizle
+      $(".wdp-tab-content").removeClass("wdp-tab-active")
+      $(".nav-tab").removeClass("nav-tab-active")
+
+      // Seçili tab'ı göster
+      $tab.addClass("nav-tab-active")
+      $("#wdp-" + targetTab + "-tab").addClass("wdp-tab-active")
+    })
+
+    // Normal form ayarlarını kaydet
+    $("#wdp-normal-form-settings-form").on("submit", function (e) {
+      e.preventDefault()
+      var $form = $(this)
+      var $button = $("#wdp-save-normal-form-settings")
+      var $spinner = $button.next(".spinner")
+
+      // Spinner'ı göster
+      $spinner.css("visibility", "visible")
+
+      // Form verilerini al
+      var formData = $form.serialize()
+
+      // AJAX isteği gönder
+      $.ajax({
+        url: wdp_admin.ajax_url,
+        type: "POST",
+        data: formData + "&action=wdp_save_normal_form_settings&nonce=" + wdp_admin.nonce,
+        success: (response) => {
+          if (response.success) {
+            showSuccessMessage(response.data.message)
+          } else {
+            showErrorMessage(response.data.message)
+          }
+        },
+        error: () => {
+          showErrorMessage(wdp_admin.save_error)
+        },
+        complete: () => {
+          // Spinner'ı gizle
+          $spinner.css("visibility", "hidden")
+        },
+      })
+    })
+
+    // Hisseli form ayarlarını kaydet
+    $("#wdp-shareholder-form-settings-form").on("submit", function (e) {
+      e.preventDefault()
+      var $form = $(this)
+      var $button = $("#wdp-save-shareholder-form-settings")
+      var $spinner = $button.next(".spinner")
+
+      // Spinner'ı göster
+      $spinner.css("visibility", "visible")
+
+      // Form verilerini al
+      var formData = $form.serialize()
+
+      // AJAX isteği gönder
+      $.ajax({
+        url: wdp_admin.ajax_url,
+        type: "POST",
+        data: formData + "&action=wdp_save_shareholder_form_settings&nonce=" + wdp_admin.nonce,
+        success: (response) => {
+          if (response.success) {
+            showSuccessMessage(response.data.message)
+          } else {
+            showErrorMessage(response.data.message)
+          }
+        },
+        error: () => {
+          showErrorMessage(wdp_admin.save_error)
+        },
+        complete: () => {
+          // Spinner'ı gizle
+          $spinner.css("visibility", "hidden")
+        },
+      })
+    })
+
+    // Başarı ekranı ayarlarını kaydet
+    $("#wdp-success-screen-settings-form").on("submit", function (e) {
+      e.preventDefault()
+      var $form = $(this)
+      var $button = $("#wdp-save-success-screen-settings")
+      var $spinner = $button.next(".spinner")
+
+      // Spinner'ı göster
+      $spinner.css("visibility", "visible")
+
+      // Form verilerini al
+      var formData = $form.serialize()
+
+      // AJAX isteği gönder
+      $.ajax({
+        url: wdp_admin.ajax_url,
+        type: "POST",
+        data: formData + "&action=wdp_save_success_screen_settings&nonce=" + wdp_admin.nonce,
+        success: (response) => {
+          if (response.success) {
+            showSuccessMessage(response.data.message)
+          } else {
+            showErrorMessage(response.data.message)
+          }
+        },
+        error: () => {
+          showErrorMessage(wdp_admin.save_error)
+        },
+        complete: () => {
+          // Spinner'ı gizle
+          $spinner.css("visibility", "hidden")
+        },
+      })
+    })
   })
 })(window, document, jQuery)

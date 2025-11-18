@@ -149,6 +149,61 @@ input:checked + .wdp-slider:before {
   color: #a94442;
 }
 
+/* Tab stilleri */
+.wdp-tab-content {
+  display: none;
+  margin-top: 20px;
+}
+
+.wdp-tab-content.wdp-tab-active {
+  display: block;
+}
+
+.wdp-button-settings-container {
+  max-width: 800px;
+  margin-top: 20px;
+}
+
+.wdp-button-settings-container h2 {
+  margin-top: 30px;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #ddd;
+}
+
+.wdp-button-settings-container h2:first-child {
+  margin-top: 0;
+}
+
+.wdp-button-settings-container .form-table th {
+  width: 200px;
+  padding: 20px 10px 20px 0;
+}
+
+.wdp-button-settings-container .form-table td {
+  padding: 20px 10px;
+}
+
+.wdp-button-settings-container input[type="color"] {
+  width: 80px;
+  height: 40px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.wdp-button-settings-container .submit {
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid #ddd;
+}
+
+.wdp-button-settings-container .submit .spinner {
+  float: none;
+  margin: 0 0 0 10px;
+  vertical-align: middle;
+}
+
 /* Responsive düzenlemeler */
 @media screen and (max-width: 782px) {
   .wdp-shortcode-item {
@@ -170,5 +225,16 @@ input:checked + .wdp-slider:before {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+
+  .wdp-button-settings-container .form-table th,
+  .wdp-button-settings-container .form-table td {
+    display: block;
+    width: 100%;
+    padding: 10px 0;
+  }
+
+  .wdp-button-settings-container .form-table th {
+    padding-bottom: 5px;
   }
 }

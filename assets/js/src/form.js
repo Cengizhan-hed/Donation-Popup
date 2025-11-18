@@ -11,7 +11,7 @@
   
   // Use centralized module dependency helper
   const utilsCheck = (WDPApp.utils && WDPApp.utils.ensureModule)
-    ? WDPApp.utils.ensureModule('utils', ['formatCurrency', 'getAjaxNonce', 'announceStatus', 'safeLog'])
+    ? WDPApp.utils.ensureModule('utils', ['formatCurrency', 'getAjaxNonce', 'announceStatus', 'safeLog', 'escapeHtml'])
     : { module: WDPApp.utils || {}, isValid: false, missingMethods: [] };
   
   const stateCheck = (WDPApp.utils && WDPApp.utils.ensureModule)
@@ -30,7 +30,7 @@
   const state = stateCheck.module;
   const alerts = alertsCheck.module;
   const cart = cartCheck.module;
-  const { formatCurrency, getAjaxNonce, announceStatus, safeLog } = utils;
+  const { formatCurrency, getAjaxNonce, announceStatus, safeLog, escapeHtml } = utils;
   const { clear: clearAlerts, show: showAlert } = alerts;
   const { fetchContents: fetchCartContents, updateCountElements: updateCartCountElements, createItemsHTML: createCartItemsHTML, setupContinueShoppingButton, updateWooCommerce: updateWooCommerceCart, saveSideCartElements, showSideCarts } = cart;
   const wdp_ajax = window.wdp_ajax || {};
@@ -280,9 +280,9 @@
   </div>
 </div>
 <div class="wdp-success-buttons">
-  <a href="${wdp_ajax.cart_url || "/sepet/"}" class="wdp-success-button wdp-view-cart">Sepeti Görüntüle</a>
-  <a href="${wdp_ajax.checkout_url || "/odeme-sayfasi/"}" class="wdp-success-button wdp-checkout">Ödemeye Git</a>
-  <a href="#" class="wdp-success-button wdp-continue-shopping wdp-new-donation">Yeni Bağış Ekle</a>
+  <a href="${wdp_ajax.cart_url || "/sepet/"}" class="wdp-success-button wdp-view-cart">${(wdp_ajax && wdp_ajax.button_texts && wdp_ajax.button_texts.success_view_cart) ? escapeHtml(wdp_ajax.button_texts.success_view_cart) : "Sepeti Görüntüle"}</a>
+  <a href="${wdp_ajax.checkout_url || "/odeme-sayfasi/"}" class="wdp-success-button wdp-checkout">${(wdp_ajax && wdp_ajax.button_texts && wdp_ajax.button_texts.success_go_checkout) ? escapeHtml(wdp_ajax.button_texts.success_go_checkout) : "Ödemeye Git"}</a>
+  <a href="#" class="wdp-success-button wdp-continue-shopping wdp-new-donation">${(wdp_ajax && wdp_ajax.button_texts && wdp_ajax.button_texts.success_new_donation) ? escapeHtml(wdp_ajax.button_texts.success_new_donation) : "Yeni Bağış Ekle"}</a>
 </div>
 `;
 

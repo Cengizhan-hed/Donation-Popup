@@ -2,7 +2,7 @@
 /* LOADING STATES */
 /* ==================== */
 
-.wdp-loading-overlay {
+html body .wdp-loading-overlay {
   position: absolute;
   top: 0;
   left: 0;
@@ -16,7 +16,7 @@
   border-radius: inherit;
 }
 
-.wdp-loading-spinner {
+html body .wdp-loading-spinner {
   width: 32px;
   height: 32px;
   border: 3px solid var(--wdp-gray-200);

@@ -324,11 +324,17 @@
       html += `<div class="wdp-cart-empty">Sepetinizde ürün bulunmuyor.</div>`;
     }
 
+    // Başarı ekranı buton metinlerini ayarlardan al
+    const buttonTexts = (wdp_ajax && wdp_ajax.button_texts) ? wdp_ajax.button_texts : {};
+    const viewCartText = buttonTexts.success_view_cart || "Sepeti Görüntüle";
+    const goCheckoutText = buttonTexts.success_go_checkout || "Ödemeye Git";
+    const newDonationText = buttonTexts.success_new_donation || "Yeni Bağış Ekle";
+
     html += `</div></div>
  <div class="wdp-success-buttons">
-   <a href="${wdp_ajax.cart_url || "/sepet/"}" class="wdp-success-button wdp-view-cart">Sepeti Görüntüle</a>
-   <a href="${wdp_ajax.checkout_url || "/odeme-sayfasi/"}" class="wdp-success-button wdp-checkout">Ödemeye Git</a>
-   <a href="#" class="wdp-success-button wdp-continue-shopping wdp-new-donation">Yeni Bağış Ekle</a>
+   <a href="${wdp_ajax.cart_url || "/sepet/"}" class="wdp-success-button wdp-view-cart">${escapeHtml(viewCartText)}</a>
+   <a href="${wdp_ajax.checkout_url || "/odeme-sayfasi/"}" class="wdp-success-button wdp-checkout">${escapeHtml(goCheckoutText)}</a>
+   <a href="#" class="wdp-success-button wdp-continue-shopping wdp-new-donation">${escapeHtml(newDonationText)}</a>
  </div>`;
 
     return html;

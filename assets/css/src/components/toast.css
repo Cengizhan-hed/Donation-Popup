@@ -2,7 +2,7 @@
 /* NOTIFICATION TOAST */
 /* ==================== */
 
-.wdp-toast {
+html body .wdp-toast {
   position: fixed;
   top: 20px;
   right: 20px;
@@ -17,32 +17,32 @@
   transition: transform 0.3s ease;
 }
 
-.wdp-toast.show {
+html body .wdp-toast.show {
   transform: translateX(0);
 }
 
-.wdp-toast.error {
+html body .wdp-toast.error {
   border-left: 4px solid var(--wdp-error);
 }
 
-.wdp-toast.warning {
+html body .wdp-toast.warning {
   border-left: 4px solid var(--wdp-warning);
 }
 
-.wdp-toast-header {
+html body .wdp-toast-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: var(--wdp-space-2);
 }
 
-.wdp-toast-title {
+html body .wdp-toast-title {
   font-weight: 600;
   font-size: var(--wdp-text-sm);
   color: var(--wdp-gray-800);
 }
 
-.wdp-toast-close {
+html body .wdp-toast-close {
   background: none;
   border: none;
   font-size: 18px;
@@ -56,7 +56,7 @@
   justify-content: center;
 }
 
-.wdp-toast-message {
+html body .wdp-toast-message {
   font-size: var(--wdp-text-sm);
   color: var(--wdp-gray-600);
   line-height: 1.4;

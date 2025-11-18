@@ -14,16 +14,16 @@
   border-width: 0;
 }
 
-.wdp-modal-content button:focus,
-.wdp-modal-content input:focus,
-.wdp-modal-content textarea:focus {
+html body .wdp-modal-content button:focus,
+html body .wdp-modal-content input:focus,
+html body .wdp-modal-content textarea:focus {
   outline: 2px solid var(--wdp-primary);
   outline-offset: 2px;
 }
 
-.wdp-modal-header .wdp-modal-close:focus,
-.wdp-modal-header .wdp-modal-close:active,
-.wdp-modal-content .wdp-modal-close:focus {
+html body .wdp-modal-header .wdp-modal-close:focus,
+html body .wdp-modal-header .wdp-modal-close:active,
+html body .wdp-modal-content .wdp-modal-close:focus {
   outline: none;
   box-shadow: none;
 }
@@ -35,47 +35,33 @@
 }
 
 /* Custom scrollbars */
-.wdp-modal-content::-webkit-scrollbar {
+html body .wdp-modal-content::-webkit-scrollbar {
   width: 6px;
 }
 
-.wdp-modal-content::-webkit-scrollbar-track {
+html body .wdp-modal-content::-webkit-scrollbar-track {
   background: var(--wdp-gray-100);
   border-radius: 3px;
 }
 
-.wdp-modal-content::-webkit-scrollbar-thumb {
+html body .wdp-modal-content::-webkit-scrollbar-thumb {
   background: var(--wdp-gray-300);
   border-radius: 3px;
 }
 
-.wdp-modal-content::-webkit-scrollbar-thumb:hover {
+html body .wdp-modal-content::-webkit-scrollbar-thumb:hover {
   background: var(--wdp-gray-400);
 }
 
 /* Focus trap */
-.wdp-modal:focus-within,
-.wdp-modal-content:focus-within {
+html body .wdp-modal:focus-within,
+html body .wdp-modal-content:focus-within {
   outline: none;
 }
 
 /* RTL support */
 [dir="rtl"] .wdp-modal-content {
   text-align: right;
-}
-
-[dir="rtl"] .wdp-input-group label {
-  right: 16px;
-  left: auto;
-}
-
-[dir="rtl"] .wdp-input-group input,
-[dir="rtl"] .wdp-input-group textarea {
-  text-align: right;
-}
-
-[dir="rtl"] .wdp-price-suggestions {
-  flex-direction: row-reverse;
 }
 
 [dir="rtl"] .wdp-toast {

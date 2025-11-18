@@ -2,7 +2,7 @@
 /* FORM FEEDBACK STATES */
 /* ==================== */
 
-.wdp-form-error {
+html body .wdp-form-error {
   background-color: #fed7d7;
   border: 1px solid #feb2b2;
   color: #c53030;
@@ -14,7 +14,7 @@
   animation: wdpFadeIn 0.3s ease;
 }
 
-.wdp-form-success {
+html body .wdp-form-success {
   background-color: #c6f6d5;
   border: 1px solid #9ae6b4;
   color: #22543d;
@@ -26,7 +26,7 @@
   animation: wdpFadeInDown 0.3s ease;
 }
 
-.wdp-input-error {
+html body .wdp-input-error {
   position: absolute;
   top: calc(100% + 4px);
   left: 0;
@@ -44,11 +44,11 @@
   pointer-events: none;
 }
 
-.wdp-form-success {
+html body .wdp-form-success {
   animation: wdpSuccessPulse 2s infinite;
 }
 
-.wdp-form-error {
+html body .wdp-form-error {
   animation: wdpErrorShake 0.6s ease-in-out;
 }
 

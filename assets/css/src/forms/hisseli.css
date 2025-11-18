@@ -1,361 +1,241 @@
-/* ============ Shared Section Layouts ============ */
-/* High specificity - override base.css reset without !important */
+/* ============================================
+   SHAREHOLDER FORM SYSTEM - GIVEWP BENZERİ YAKLAŞIM
+   Tema-agnostic, !important kullanmadan, yüksek specificity ile
+   Mükemmel hizalama, tutarlı spacing, popup ve sayfa içi form birebir aynı
+   ============================================ */
 
-/* Share counter grid positioning with high specificity */
-/* CRITICAL: Position counter next to label (grid-column: 2) */
-html body .wdp-modal .wdp-shares-header .wdp-share-counter,
-html body .wdp-modal .wdp-shares-header .wdp-share-quantity,
-html body .wdp-donation-form .wdp-shares-header .wdp-share-counter,
-html body .wdp-donation-form .wdp-shares-header .wdp-share-quantity {
-  grid-column: 2;
-  grid-row: 1;
-  justify-self: end;
-  margin: 0;
-  padding: 0;
-}
-
-/* Badge styles with high specificity - override base.css reset */
-html body .wdp-modal .wdp-collapsed-count,
-html body .wdp-donation-form .wdp-collapsed-count {
+/* ============ SHARE COUNTER - Quantity.css ile uyumlu ============ */
+/* CRITICAL: Share counter quantity.css stillerini inherit etmeli */
+html body .wdp-modal .wdp-shares-section .wdp-share-counter,
+html body .wdp-donation-form .wdp-shares-section .wdp-share-counter,
+html body .wdp-modal .wdp-shares-section .wdp-share-quantity,
+html body .wdp-donation-form .wdp-shares-section .wdp-share-quantity {
+  isolation: auto;
+  contain: none;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  font-size: 12px;
-  color: #ffffff;
-  padding: 4px 10px;
-  background: #4a90e2;
-  border-radius: 16px;
-  font-weight: 500;
-  white-space: nowrap;
-  display: none;
+  display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 4px;
-  animation: fadeInScale 0.3s ease;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  grid-column: 1 / -1;
-  grid-row: 2;
-  justify-self: start;
-  margin: 0;
-  margin-top: 2px;
-  border: none;
-  outline: none;
-  text-align: left;
-  text-transform: none;
-  letter-spacing: normal;
-  word-spacing: normal;
-  line-height: 1.5;
-  box-sizing: border-box;
-  visibility: hidden;
-  opacity: 0;
-}
-
-/* Badge display when has-badge class is present - highest specificity */
-html body .wdp-modal .wdp-shares-header.has-badge .wdp-collapsed-count,
-html body .wdp-donation-form .wdp-shares-header.has-badge .wdp-collapsed-count,
-html body .wdp-modal .wdp-shares-header.has-badge .wdp-collapsed-count:not([style*="display: none"]),
-html body .wdp-donation-form .wdp-shares-header.has-badge .wdp-collapsed-count:not([style*="display: none"]) {
-  display: inline-flex;
-  visibility: visible;
-  opacity: 1;
-  background: #4a90e2;
-  padding: 4px 10px;
-  border-radius: 16px;
-  color: #ffffff;
-  font-size: 12px;
-  font-weight: 500;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  white-space: nowrap;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  animation: fadeInScale 0.3s ease;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  border: none;
-  outline: none;
-  text-align: left;
-  text-transform: none;
-  letter-spacing: normal;
-  word-spacing: normal;
-  line-height: 1.5;
-  box-sizing: border-box;
-  grid-column: 1 / -1;
-  grid-row: 2;
-  justify-self: start;
-  margin: 0;
-  margin-top: 2px;
-}
-
-@keyframes fadeInScale {
-  from {
-    opacity: 0;
-    transform: scale(0.9);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-/* ============ Share Counter (Stepper) ============ */
-/* High specificity to override base.css reset */
-
-/* Share counter with high specificity - override base.css reset */
-html body .wdp-modal .wdp-share-counter,
-html body .wdp-modal .wdp-share-quantity,
-html body .wdp-donation-form .wdp-share-counter,
-html body .wdp-donation-form .wdp-share-quantity {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid #d1d5db;
+  justify-content: space-between;
+  border: 1px solid var(--wdp-share-counter-border, #d1d5db);
   border-radius: 8px;
-  background: #ffffff;
+  background: var(--wdp-share-counter-bg, #ffffff);
   min-height: 48px;
   height: 48px;
-  padding: 0 4px;
-  gap: 0;
-  flex: 0 0 auto;
-  flex-shrink: 0;
-  box-sizing: border-box;
+  padding: 0 8px;
   margin: 0;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  box-sizing: border-box;
+  gap: 0;
   position: relative;
 }
 
-/* Share counter buttons with high specificity - override base.css reset */
-html body .wdp-modal .wdp-share-counter button,
-html body .wdp-modal .wdp-share-quantity button,
-html body .wdp-donation-form .wdp-share-counter button,
-html body .wdp-donation-form .wdp-share-quantity button {
-  width: 40px;
-  height: 40px;
-  min-width: 40px;
-  min-height: 40px;
-  display: inline-flex;
+html body .wdp-modal .wdp-shares-section .wdp-share-counter button,
+html body .wdp-donation-form .wdp-shares-section .wdp-share-counter button,
+html body .wdp-modal .wdp-shares-section .wdp-share-quantity button,
+html body .wdp-donation-form .wdp-shares-section .wdp-share-quantity button {
+  isolation: auto;
+  contain: none;
+  width: 44px;
+  min-width: 44px;
+  height: 100%;
+  min-height: 48px;
+  border: none;
+  background: transparent;
+  color: var(--wdp-share-counter-button-color, #888888);
+  font-size: 28px;
+  font-weight: 700;
+  display: flex;
   align-items: center;
   justify-content: center;
-  border: none;
-  background: transparent;
-  color: #4b5563;
-  font-size: 20px;
-  font-weight: 700;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   cursor: pointer;
-  transition: color 0.15s ease;
+  border-radius: 0;
   padding: 0;
   margin: 0;
-  outline: none;
-  box-shadow: none;
-  text-shadow: none;
-  text-align: center;
-  line-height: 1;
   box-sizing: border-box;
   flex-shrink: 0;
+  align-self: center;
+  vertical-align: middle;
 }
 
-/* Share counter button states with high specificity */
-html body .wdp-modal .wdp-share-counter button:focus,
-html body .wdp-modal .wdp-share-quantity button:focus,
-html body .wdp-modal .wdp-share-counter button:active,
-html body .wdp-modal .wdp-share-quantity button:active,
-html body .wdp-donation-form .wdp-share-counter button:focus,
-html body .wdp-donation-form .wdp-share-quantity button:focus,
-html body .wdp-donation-form .wdp-share-counter button:active,
-html body .wdp-donation-form .wdp-share-quantity button:active {
-  outline: none;
-  box-shadow: none;
-  border: none;
-  border-radius: 0;
-  background: transparent;
-}
-
-html body .wdp-modal .wdp-share-counter button:hover,
-html body .wdp-modal .wdp-share-counter button:focus,
-html body .wdp-modal .wdp-share-quantity button:hover,
-html body .wdp-modal .wdp-share-quantity button:focus,
-html body .wdp-donation-form .wdp-share-counter button:hover,
-html body .wdp-donation-form .wdp-share-counter button:focus,
-html body .wdp-donation-form .wdp-share-quantity button:hover,
-html body .wdp-donation-form .wdp-share-quantity button:focus {
-  color: #4a90e2;
-  outline: none;
-  border: none;
-  border-radius: 0;
-  background: transparent;
-}
-
-/* Share counter input with high specificity - perfect center alignment */
-html body .wdp-modal .wdp-share-counter input[type="number"],
-html body .wdp-modal .wdp-share-quantity input[type="number"],
-html body .wdp-donation-form .wdp-share-counter input[type="number"],
-html body .wdp-donation-form .wdp-share-quantity input[type="number"] {
-  width: 72px;
-  min-width: 72px;
-  max-width: 72px;
-  text-align: center;
+html body .wdp-modal .wdp-shares-section .wdp-share-counter input[type="number"],
+html body .wdp-donation-form .wdp-shares-section .wdp-share-counter input[type="number"],
+html body .wdp-modal .wdp-shares-section .wdp-share-quantity input[type="number"],
+html body .wdp-donation-form .wdp-shares-section .wdp-share-quantity input[type="number"] {
+  isolation: auto;
+  contain: none;
+  flex: 1 1 0;
+  min-width: 40px;
+  max-width: 100%;
   border: none;
   background: transparent;
+  color: #1f2937;
   font-size: 18px;
   font-weight: 600;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  color: #1f2937;
-  padding: 0;
-  margin: 0 auto;
+  text-align: center;
+  outline: none;
   height: 48px;
   line-height: 48px;
-  box-shadow: none;
-  outline: none;
+  margin: 0 auto;
+  padding: 0;
+  display: block;
   box-sizing: border-box;
   appearance: none;
   -webkit-appearance: none;
   -moz-appearance: textfield;
-  display: block;
-  flex: 0 0 72px;
+  width: 100%;
+  align-self: center;
 }
 
-html body .wdp-modal .wdp-share-counter input[type="number"]:focus,
-html body .wdp-modal .wdp-share-quantity input[type="number"]:focus,
-html body .wdp-donation-form .wdp-share-counter input[type="number"]:focus,
-html body .wdp-donation-form .wdp-share-quantity input[type="number"]:focus {
-  outline: none;
-  border: none;
-  box-shadow: none;
-  background: transparent;
-}
-
-/* ============ Shareholder Container & Scroll ============ */
-
-/* Shareholders area with high specificity - override base.css reset */
-/* CRITICAL: Always constrain height to prevent modal expansion - even with 1 form */
-/* ABSOLUTE FIX: Use fixed height - prevent 2nd form header from being visible, force strict height constraint */
-html body .wdp-modal .wdp-shareholders-area,
-html body .wdp-donation-form .wdp-shareholders-area {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+/* ============ SHAREHOLDERS AREA CONTAINER - Modern Card Design ============ */
+/* GIVEWP BENZERİ: Yüksek specificity, isolation, containment */
+html body .wdp-modal .wdp-modal-content form.wdp-has-shareholders .wdp-shares-section .wdp-shareholders-area,
+html body .wdp-donation-form .wdp-modal-content form.wdp-has-shareholders .wdp-shares-section .wdp-shareholders-area,
+html body .wdp-modal .wdp-shares-section .wdp-shareholders-area,
+html body .wdp-donation-form .wdp-shares-section .wdp-shareholders-area {
+  /* Modern, elegant container - Material Design 3 inspired */
+  background: var(--wdp-shareholders-area-bg, linear-gradient(to bottom, #ffffff 0%, #fafbfc 100%));
+  border: 1px solid var(--wdp-shareholders-area-border, #e1e5e9);
+  border-radius: var(--wdp-shareholders-area-radius, 16px);
+  padding: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  
+  /* GIVEWP BENZERİ: Complete style isolation */
+  isolation: isolate;
+  contain: layout style paint;
+  
+  /* Layout system */
   display: flex;
   flex-direction: column;
-  padding: 0;
-  border: none;
-  border-radius: 0;
-  background: transparent;
-  /* CRITICAL: Use flex to fill available space but never grow beyond constraints */
   flex: 0 1 auto;
   flex-shrink: 1;
   flex-grow: 0;
-  width: 100%;
   min-height: 0;
-  /* ABSOLUTE FIX: When NOT scrollable (1 form only), use auto height to show all content */
-  /* CRITICAL: Only use max-height when scrollable (2+ forms) */
+  width: 100%;
+  box-sizing: border-box;
+  
+  /* When NOT scrollable (1 form only) */
   max-height: none;
   height: auto;
-  /* ABSOLUTE FIX: When NOT scrollable, use visible overflow to show all content */
   overflow: visible;
-  margin: 0;
-  /* FIX: Add margin-bottom for spacing between shareholder area and buttons */
+  
+  /* Fixed spacing - container ile butonlar arası her zaman 16px */
   margin-bottom: 16px;
-  box-sizing: border-box;
+  margin-top: 0;
+  margin-left: 0;
+  margin-right: 0;
+  
   position: relative;
-  /* Remove contain to allow content to be visible */
-  contain: none;
-  /* CRITICAL: Ensure area and content are visible */
   visibility: visible;
   opacity: 1;
 }
 
-/* When scrollable (2+ forms), CRITICAL: fix height immediately to prevent modal expansion */
-/* ABSOLUTE FIX: Force fixed height - never allow expansion, container handles scrolling */
-/* ABSOLUTE FIX: Increase height to ensure textarea bottom is visible */
-html body .wdp-modal .wdp-shareholders-area.scrollable,
-html body .wdp-donation-form .wdp-shareholders-area.scrollable {
-  /* CRITICAL: Use flex to fill available space but never grow beyond constraints */
+/* When scrollable (2+ forms) - Fixed height system */
+html body .wdp-modal .wdp-modal-content form.wdp-has-shareholders .wdp-shares-section .wdp-shareholders-area.scrollable,
+html body .wdp-donation-form .wdp-modal-content form.wdp-has-shareholders .wdp-shares-section .wdp-shareholders-area.scrollable,
+html body .wdp-modal .wdp-shares-section .wdp-shareholders-area.scrollable,
+html body .wdp-donation-form .wdp-shares-section .wdp-shareholders-area.scrollable {
+  background: var(--wdp-shareholders-area-bg, linear-gradient(to bottom, #ffffff 0%, #fafbfc 100%));
+  border: 1px solid var(--wdp-shareholders-area-border, #e1e5e9);
+  border-radius: 16px;
+  padding: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  
+  isolation: isolate;
+  contain: layout style paint;
+  
   flex: 1 1 auto;
   flex-shrink: 1;
   flex-grow: 0;
-  /* ABSOLUTE FIX: Increased height to ensure textarea bottom is visible */
-  /* CRITICAL: Fixed height - same as max-height to prevent expansion */
-  /* ABSOLUTE FIX: Increased from 220px to 280px minimum to show textarea bottom */
+  
   min-height: clamp(280px, 40vh, 360px);
   height: clamp(280px, 40vh, 360px);
   max-height: clamp(280px, 40vh, 360px);
   overflow: hidden;
-  /* FIX: Add margin-bottom for spacing between scrollable area and buttons */
+  
   margin-bottom: 16px;
-  /* Critical: Force height constraint - prevent any expansion */
+  margin-top: 0;
+  margin-left: 0;
+  margin-right: 0;
+  
   position: relative;
   box-sizing: border-box;
-  /* Remove contain to allow content to be visible in scroll container */
-  contain: none;
 }
 
-/* Shareholders container - fills area height when scrollable, auto when not scrollable */
-/* CRITICAL: When NOT scrollable, use auto height to prevent empty space */
-html body .wdp-modal .wdp-shareholders-container,
-html body .wdp-donation-form .wdp-shareholders-container {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+/* ============ SHAREHOLDERS CONTAINER ============ */
+html body .wdp-modal .wdp-shareholders-area .wdp-shareholders-container,
+html body .wdp-donation-form .wdp-shareholders-area .wdp-shareholders-container {
+  isolation: isolate;
+  contain: layout style paint;
+  
   display: flex;
   flex-direction: column;
   min-height: 0;
   position: relative;
-  /* FIX: Use auto height when NOT scrollable - prevents empty space */
+  
   flex: 0 1 auto;
   flex-shrink: 1;
   flex-grow: 0;
-  /* CRITICAL: Use overflow: hidden to prevent 2nd form header from being visible */
   overflow: hidden;
+  
   width: 100%;
   max-width: 100%;
-  /* FIX: Auto height when NOT scrollable - no empty space */
   height: auto;
   max-height: none;
+  
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  visibility: visible;
+  opacity: 1;
 }
 
-/* When scrollable, container must have fixed height immediately */
 html body .wdp-modal .wdp-shareholders-area.scrollable .wdp-shareholders-container,
 html body .wdp-donation-form .wdp-shareholders-area.scrollable .wdp-shareholders-container {
+  isolation: isolate;
+  contain: layout style paint;
   height: 100%;
   max-height: 100%;
   min-height: 0;
   flex: 1 1 auto;
   overflow: hidden;
+  margin: 0;
+  padding: 0;
 }
 
-/* Shareholders scroll container - default: use overflow-y: auto with hidden scrollbar when not scrollable */
-/* FIX: When NOT scrollable, use auto height to prevent empty space */
-html body .wdp-modal .wdp-shareholders-scroll,
-html body .wdp-donation-form .wdp-shareholders-scroll {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+/* ============ SHAREHOLDERS SCROLL CONTAINER ============ */
+html body .wdp-modal .wdp-shareholders-container .wdp-shareholders-scroll,
+html body .wdp-donation-form .wdp-shareholders-container .wdp-shareholders-scroll {
+  isolation: isolate;
+  contain: layout style paint;
+  
   display: flex;
   flex-direction: column;
   gap: 12px;
   min-height: 0;
   width: 100%;
-  /* FIX: Use auto flex when NOT scrollable - prevents empty space */
+  
   flex: 0 1 auto;
   flex-shrink: 1;
   flex-grow: 0;
-  /* FIX: Auto height when NOT scrollable - no empty space */
   height: auto;
   max-height: none;
   overflow-y: visible;
   overflow-x: hidden;
-  padding-right: 0;
-  margin-right: 0;
+  
+  margin: 0;
+  padding: 0;
   position: relative;
   box-sizing: border-box;
-  /* Hide scrollbar when not scrollable (content fits within max-height) */
+  
   scrollbar-width: none;
   -ms-overflow-style: none;
-  /* Remove contain to allow content to be visible */
-  contain: none;
-  /* Ensure content is visible */
   visibility: visible;
   opacity: 1;
 }
 
-/* CRITICAL: When scrollable, scroll container must be constrained immediately to prevent expansion */
 html body .wdp-modal .wdp-shareholders-area.scrollable .wdp-shareholders-scroll,
 html body .wdp-donation-form .wdp-shareholders-area.scrollable .wdp-shareholders-scroll {
+  isolation: isolate;
+  contain: layout style paint;
   height: 100%;
   max-height: 100%;
   min-height: 0;
@@ -366,14 +246,12 @@ html body .wdp-donation-form .wdp-shareholders-area.scrollable .wdp-shareholders
   -webkit-overflow-scrolling: touch;
   scrollbar-width: thin;
   scrollbar-color: #4a90e2 transparent;
-  padding-right: 0;
-  margin-right: 0;
+  padding-bottom: 1px;
   flex: 1 1 auto;
-  box-sizing: border-box;
   position: relative;
 }
 
-/* Hide scrollbar by default (when not scrollable) */
+/* Scrollbar styles */
 html body .wdp-modal .wdp-shareholders-scroll::-webkit-scrollbar,
 html body .wdp-donation-form .wdp-shareholders-scroll::-webkit-scrollbar {
   display: none;
@@ -382,7 +260,6 @@ html body .wdp-donation-form .wdp-shareholders-scroll::-webkit-scrollbar {
   background: transparent;
 }
 
-/* Scrollable scrollbar styles */
 html body .wdp-modal .wdp-shareholders-area.scrollable .wdp-shareholders-scroll::-webkit-scrollbar,
 html body .wdp-donation-form .wdp-shareholders-area.scrollable .wdp-shareholders-scroll::-webkit-scrollbar {
   display: block;
@@ -397,7 +274,7 @@ html body .wdp-donation-form .wdp-shareholders-area.scrollable .wdp-shareholders
 
 html body .wdp-modal .wdp-shareholders-area.scrollable .wdp-shareholders-scroll::-webkit-scrollbar-thumb,
 html body .wdp-donation-form .wdp-shareholders-area.scrollable .wdp-shareholders-scroll::-webkit-scrollbar-thumb {
-  background: #4a90e2;
+  background: var(--wdp-shareholders-scrollbar-color, #4a90e2);
   border-radius: 10px;
   border: 2px solid transparent;
   background-clip: padding-box;
@@ -407,22 +284,22 @@ html body .wdp-donation-form .wdp-shareholders-area.scrollable .wdp-shareholders
 
 html body .wdp-modal .wdp-shareholders-area.scrollable .wdp-shareholders-scroll::-webkit-scrollbar-thumb:hover,
 html body .wdp-donation-form .wdp-shareholders-area.scrollable .wdp-shareholders-scroll::-webkit-scrollbar-thumb:hover {
-  background: #4a90e2;
+  background: var(--wdp-shareholders-scrollbar-color, #4a90e2);
   opacity: 1;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
 }
 
-/* ============ Individual Shareholder Cards ============ */
-
-/* Shareholder form with high specificity - override base.css reset */
-html body .wdp-modal .wdp-shareholder-form,
-html body .wdp-donation-form .wdp-shareholder-form {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  background: #ffffff;
+/* ============ INDIVIDUAL SHAREHOLDER CARDS ============ */
+html body .wdp-modal .wdp-shareholders-scroll .wdp-shareholder-form,
+html body .wdp-donation-form .wdp-shareholders-scroll .wdp-shareholder-form {
+  isolation: isolate;
+  contain: layout style paint;
+  
+  border: 1px solid var(--wdp-shareholder-card-border, #f0f2f5);
+  border-radius: var(--wdp-shareholder-card-radius, 10px);
+  background: var(--wdp-shareholder-card-bg, #ffffff);
   overflow: hidden;
-  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
+  box-shadow: var(--wdp-shareholder-card-shadow, 0 1px 3px rgba(0, 0, 0, 0.05));
   margin-top: 12px;
   width: 100%;
   max-width: 100%;
@@ -432,222 +309,124 @@ html body .wdp-donation-form .wdp-shareholder-form {
   margin-right: 0;
   margin-bottom: 0;
   padding: 0;
+  display: block;
+  visibility: visible;
+  opacity: 1;
 }
 
-html body .wdp-modal .wdp-shareholder-form:first-of-type,
-html body .wdp-donation-form .wdp-shareholder-form:first-of-type {
+html body .wdp-modal .wdp-shareholders-scroll .wdp-shareholder-form:first-of-type,
+html body .wdp-donation-form .wdp-shareholders-scroll .wdp-shareholder-form:first-of-type {
   margin-top: 0;
 }
 
-/* Shareholder header with high specificity - override base.css reset */
-/* CRITICAL: Ensure popup and in-page forms have identical layout */
-html body .wdp-modal .wdp-shareholder-header,
-html body .wdp-donation-form .wdp-shareholder-header {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+/* ============ SHAREHOLDER HEADER - Perfect Alignment ============ */
+html body .wdp-modal .wdp-shareholder-form .wdp-shareholder-header,
+html body .wdp-donation-form .wdp-shareholder-form .wdp-shareholder-header {
+  isolation: isolate;
+  contain: layout style paint;
+  
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  padding: 12px 16px;
+  
+  padding: 10px 16px;
+  height: auto;
+  min-height: 0;
+  max-height: none;
+  
   margin: 0;
-  background: #f9fafb;
-  border-bottom: 1px solid #e5e7eb;
+  background: var(--wdp-shareholder-header-bg, #f9fafb);
   border-top: none;
   border-left: none;
   border-right: none;
   cursor: pointer;
-  transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+  transition: background-color 0.15s ease;
+  
   position: relative;
   box-sizing: border-box;
+  width: 100%;
+  flex-wrap: nowrap;
+  min-width: 0;
+  overflow: hidden;
+  
   text-align: left;
   text-transform: none;
   letter-spacing: normal;
   word-spacing: normal;
   box-shadow: none;
   outline: none;
-  width: 100%;
-  /* CRITICAL: Force identical flexbox behavior */
-  flex-wrap: nowrap;
-  min-width: 0;
 }
 
-/* Shareholder header hover with high specificity */
 html body .wdp-modal .wdp-shareholder-header:hover,
 html body .wdp-donation-form .wdp-shareholder-header:hover {
   background: #f3f4f6;
 }
 
-/* Kapalı formların header'larında görsel ipucu - High specificity */
-html body .wdp-modal .wdp-shareholder-form.collapsed .wdp-shareholder-header,
-html body .wdp-donation-form .wdp-shareholder-form.collapsed .wdp-shareholder-header {
-  background: linear-gradient(to right, #f9fafb 0%, rgba(255, 255, 255, 0.8) 100%);
-  border-left: 3px solid #4a90e2;
-  border-bottom: 1px solid #e5e7eb;
-  border-top: none;
-  border-right: none;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-  position: relative;
-  padding: 12px 16px;
-  margin: 0;
-}
-
-html body .wdp-modal .wdp-shareholder-form.collapsed .wdp-shareholder-header::before,
-html body .wdp-donation-form .wdp-shareholder-form.collapsed .wdp-shareholder-header::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 3px;
-  background: #4a90e2;
-  opacity: 0.8;
-  z-index: 1;
-}
-
-html body .wdp-modal .wdp-shareholder-form.collapsed .wdp-shareholder-header:hover,
-html body .wdp-donation-form .wdp-shareholder-form.collapsed .wdp-shareholder-header:hover {
-  background: linear-gradient(to right, #f3f4f6 0%, rgba(255, 255, 255, 0.9) 100%);
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
-  border-left-color: #4a90e2;
-}
-
-html body .wdp-modal .wdp-shareholder-form.collapsed .wdp-shareholder-header:hover::before,
-html body .wdp-donation-form .wdp-shareholder-form.collapsed .wdp-shareholder-header:hover::before {
-  opacity: 1;
-}
-
-/* Collapsed header hint text with high specificity */
-html body .wdp-modal .wdp-shareholder-form.collapsed .wdp-shareholder-header h3::after,
-html body .wdp-donation-form .wdp-shareholder-form.collapsed .wdp-shareholder-header h3::after {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  content: ' • Tıklayarak açabilirsiniz';
-  font-size: 14px;
-  font-weight: 400;
-  color: #4b5563;
-  margin-left: 8px;
-  opacity: 0.8;
-  font-style: italic;
-  text-align: left;
-  text-transform: none;
-  letter-spacing: normal;
-  word-spacing: normal;
-}
-
-@media (max-width: 480px) {
-  html body .wdp-modal .wdp-shareholder-form.collapsed .wdp-shareholder-header h3::after,
-  html body .wdp-donation-form .wdp-shareholder-form.collapsed .wdp-shareholder-header h3::after {
-    content: ' • Tıklayın';
-    font-size: 12px;
-    margin-left: 4px;
-  }
-}
-
-/* Shareholder header h3 with high specificity */
-/* CRITICAL: Ensure popup and in-page forms have identical h3 positioning */
+/* ============ SHAREHOLDER HEADER H3 - Perfect Vertical Centering ============ */
 html body .wdp-modal .wdp-shareholder-header h3,
 html body .wdp-donation-form .wdp-shareholder-header h3 {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  isolation: isolate;
+  contain: layout style paint;
+  
   margin: 0;
   padding: 0;
+  
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   font-size: 16px;
   font-weight: 600;
-  color: #1f2937;
+  color: var(--wdp-shareholder-header-color, #1f2937);
   line-height: 1.35;
-  text-align: left;
-  text-transform: none;
-  letter-spacing: normal;
-  word-spacing: normal;
-  box-shadow: none;
-  text-shadow: none;
-  /* CRITICAL: Force identical flexbox behavior */
+  
   flex: 1 1 auto;
   flex-grow: 1;
   flex-shrink: 1;
   flex-basis: auto;
   min-width: 0;
+  
   display: block;
   width: auto;
   max-width: 100%;
   overflow: hidden;
   word-wrap: break-word;
   word-break: break-word;
-}
-
-/* Shareholder toggle with high specificity - override base.css reset */
-/* CRITICAL: Ensure popup and in-page forms have identical toggle positioning */
-html body .wdp-modal .wdp-shareholder-toggle,
-html body .wdp-donation-form .wdp-shareholder-toggle {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  display: inline-flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 8px;
-  font-size: 14px;
-  font-weight: 500;
-  color: #4b5563;
-  border: none;
-  background: transparent;
-  padding: 4px 8px;
-  outline: none;
-  box-shadow: none;
-  margin: 0;
-  margin-left: auto;
-  cursor: pointer;
-  transition: color 0.15s ease;
+  
+  align-self: center;
+  
+  position: relative;
+  top: auto;
+  bottom: auto;
+  transform: none;
+  
   text-align: left;
   text-transform: none;
   letter-spacing: normal;
   word-spacing: normal;
-  line-height: 1.5;
-  box-sizing: border-box;
-  /* CRITICAL: Force identical flexbox behavior */
-  flex: 0 0 auto;
-  flex-grow: 0;
-  flex-shrink: 0;
-  flex-basis: auto;
-  min-width: 0;
-  width: auto;
-  max-width: none;
-}
-
-html body .wdp-modal .wdp-shareholder-toggle:focus,
-html body .wdp-modal .wdp-shareholder-toggle:active,
-html body .wdp-donation-form .wdp-shareholder-toggle:focus,
-html body .wdp-donation-form .wdp-shareholder-toggle:active {
-  outline: none;
   box-shadow: none;
-  border: none;
-  border-radius: 0;
-  background: transparent;
+  text-shadow: none;
+  
+  height: auto;
+  min-height: 0;
+  max-height: none;
 }
 
-/* Shareholder toggle and content with high specificity */
-html body .wdp-modal .wdp-shareholder-toggle span,
-html body .wdp-donation-form .wdp-shareholder-toggle span {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  display: inline-block;
-  font-size: 12px;
-  transition: transform 0.15s ease;
-  margin: 0;
-  padding: 0;
-  color: inherit;
-}
-
-html body .wdp-modal .wdp-shareholder-content,
-html body .wdp-donation-form .wdp-shareholder-content {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  padding: 12px;
+/* ============ SHAREHOLDER CONTENT ============ */
+html body .wdp-modal .wdp-shareholder-form .wdp-shareholder-content,
+html body .wdp-donation-form .wdp-shareholder-form .wdp-shareholder-content {
+  isolation: isolate;
+  contain: layout style paint;
+  
+  padding: var(--wdp-shareholder-content-padding, 12px);
   margin: 0;
   display: flex;
   flex-direction: column;
   background: #ffffff;
   box-sizing: border-box;
   width: 100%;
+  visibility: visible;
+  opacity: 1;
 }
 
-/* Shareholder content input and textarea with high specificity - ensure spacing */
-/* CRITICAL: Use margin-top for spacing instead of gap (more reliable) */
-/* ABSOLUTE FIX: Increase textarea padding-bottom to ensure bottom border is visible */
 html body .wdp-modal .wdp-shareholder-content > input[type="text"],
 html body .wdp-modal .wdp-shareholder-content > input[type="tel"],
 html body .wdp-modal .wdp-shareholder-content > textarea,
@@ -657,31 +436,26 @@ html body .wdp-donation-form .wdp-shareholder-content > input[type="tel"],
 html body .wdp-donation-form .wdp-shareholder-content > textarea,
 html body .wdp-donation-form .wdp-shareholder-content > button {
   margin: 0;
-  margin-left: 0;
-  margin-right: 0;
-  margin-bottom: 0;
-  margin-top: 0;
   width: 100%;
   box-sizing: border-box;
+  display: block;
+  visibility: visible;
+  opacity: 1;
+  position: relative;
 }
 
-/* ABSOLUTE FIX: Textarea bottom border visibility - increase padding and explicit border */
 html body .wdp-modal .wdp-shareholder-content > textarea,
 html body .wdp-donation-form .wdp-shareholder-content > textarea {
   min-height: 96px;
   height: auto;
-  /* ABSOLUTE FIX: Increase padding to ensure bottom border is visible */
-  padding-top: 12px;
+  padding: 12px 16px;
   padding-bottom: 16px;
-  padding-left: 16px;
-  padding-right: 16px;
   resize: vertical;
-  /* ABSOLUTE FIX: Ensure border is visible - explicit border */
   border: 1px solid #d1d5db;
   border-radius: 8px;
 }
 
-/* CRITICAL: Add margin-top to all elements except the first one - More specific selector */
+/* Fixed spacing system - 12px between elements */
 html body .wdp-modal .wdp-shareholder-content > input[type="text"] ~ *,
 html body .wdp-modal .wdp-shareholder-content > input[type="tel"] ~ *,
 html body .wdp-modal .wdp-shareholder-content > input[type="text"] ~ input[type="tel"],
@@ -695,7 +469,6 @@ html body .wdp-donation-form .wdp-shareholder-content > textarea ~ button {
   margin-top: 12px;
 }
 
-/* Alternative: Direct sibling selector for more reliable spacing */
 html body .wdp-modal .wdp-shareholder-content > input[type="text"] + input[type="tel"],
 html body .wdp-modal .wdp-shareholder-content > input[type="tel"] + textarea,
 html body .wdp-modal .wdp-shareholder-content > textarea + button,
@@ -710,42 +483,63 @@ html body .wdp-donation-form .wdp-shareholder-form.collapsed .wdp-shareholder-co
   display: none;
 }
 
-html body .wdp-modal .wdp-shareholder-form.collapsed .wdp-shareholder-toggle span,
-html body .wdp-donation-form .wdp-shareholder-form.collapsed .wdp-shareholder-toggle span {
-  transform: rotate(0deg);
+/* ============ COLLAPSED COUNT BADGE ============ */
+html body .wdp-modal .wdp-shares-header .wdp-collapsed-count,
+html body .wdp-donation-form .wdp-shares-header .wdp-collapsed-count {
+  display: inline-block;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  color: #4a90e2;
+  background: #e8f4fd;
+  border: 1px solid #b8d9f5;
+  border-radius: 6px;
+  padding: 4px 10px;
+  margin-top: 6px;
+  margin-bottom: 0;
+  margin-left: 0;
+  margin-right: 0;
+  line-height: 1.4;
+  white-space: nowrap;
+  box-sizing: border-box;
+  grid-column: 1;
+  grid-row: 2;
+  align-self: flex-start;
+  visibility: visible;
+  opacity: 1;
+  position: relative;
+  z-index: 1;
 }
 
-/* ============ Responsive Tweaks ============ */
-
-/* Tablet responsive styles with high specificity */
+/* ============ RESPONSIVE DESIGN ============ */
 @media (max-width: 768px) {
-  html body .wdp-modal .wdp-collapsed-count,
-  html body .wdp-donation-form .wdp-collapsed-count {
+  html body .wdp-modal .wdp-shares-header .wdp-collapsed-count,
+  html body .wdp-donation-form .wdp-shares-header .wdp-collapsed-count {
     font-size: 10px;
     padding: 3px 8px;
   }
   
-  html body .wdp-modal .wdp-share-counter,
-  html body .wdp-modal .wdp-share-quantity,
-  html body .wdp-donation-form .wdp-share-counter,
-  html body .wdp-donation-form .wdp-share-quantity {
+  html body .wdp-modal .wdp-shares-section .wdp-share-counter,
+  html body .wdp-modal .wdp-shares-section .wdp-share-quantity,
+  html body .wdp-donation-form .wdp-shares-section .wdp-share-counter,
+  html body .wdp-donation-form .wdp-shares-section .wdp-share-quantity {
     min-height: 44px;
     height: 44px;
   }
 
-  html body .wdp-modal .wdp-share-counter button,
-  html body .wdp-modal .wdp-share-quantity button,
-  html body .wdp-donation-form .wdp-share-counter button,
-  html body .wdp-donation-form .wdp-share-quantity button {
+  html body .wdp-modal .wdp-shares-section .wdp-share-counter button,
+  html body .wdp-modal .wdp-shares-section .wdp-share-quantity button,
+  html body .wdp-donation-form .wdp-shares-section .wdp-share-counter button,
+  html body .wdp-donation-form .wdp-shares-section .wdp-share-quantity button {
     width: 36px;
     height: 36px;
     font-size: 18px;
   }
 
-  html body .wdp-modal .wdp-share-counter input[type="number"],
-  html body .wdp-modal .wdp-share-quantity input[type="number"],
-  html body .wdp-donation-form .wdp-share-counter input[type="number"],
-  html body .wdp-donation-form .wdp-share-quantity input[type="number"] {
+  html body .wdp-modal .wdp-shares-section .wdp-share-counter input[type="number"],
+  html body .wdp-modal .wdp-shares-section .wdp-share-quantity input[type="number"],
+  html body .wdp-donation-form .wdp-shares-section .wdp-share-counter input[type="number"],
+  html body .wdp-donation-form .wdp-shares-section .wdp-share-quantity input[type="number"] {
     width: 64px;
     min-width: 64px;
     max-width: 64px;
@@ -754,55 +548,59 @@ html body .wdp-donation-form .wdp-shareholder-form.collapsed .wdp-shareholder-to
     font-size: 16px;
   }
 
-  /* ABSOLUTE FIX: When NOT scrollable (1 form only), use auto height */
-  html body .wdp-modal .wdp-shareholders-area:not(.scrollable),
-  html body .wdp-donation-form .wdp-shareholders-area:not(.scrollable) {
+  html body .wdp-modal .wdp-modal-content form.wdp-has-shareholders .wdp-shares-section .wdp-shareholders-area:not(.scrollable),
+  html body .wdp-donation-form .wdp-modal-content form.wdp-has-shareholders .wdp-shares-section .wdp-shareholders-area:not(.scrollable) {
     max-height: none;
     height: auto;
     overflow: visible;
-    /* FIX: Add margin-bottom for spacing between shareholder area and buttons */
     margin-bottom: 16px;
+    margin-top: 0;
+    margin-left: 0;
+    margin-right: 0;
   }
   
-  /* ABSOLUTE FIX: When scrollable (2+ forms), increase height to show textarea bottom */
-  html body .wdp-modal .wdp-shareholders-area.scrollable,
-  html body .wdp-donation-form .wdp-shareholders-area.scrollable {
+  html body .wdp-modal .wdp-modal-content form.wdp-has-shareholders .wdp-shares-section .wdp-shareholders-area.scrollable,
+  html body .wdp-donation-form .wdp-modal-content form.wdp-has-shareholders .wdp-shares-section .wdp-shareholders-area.scrollable {
     min-height: clamp(280px, 50vh, 360px);
     height: clamp(280px, 50vh, 360px);
     max-height: clamp(280px, 50vh, 360px);
-    /* FIX: Add margin-bottom for spacing between scrollable area and buttons */
     margin-bottom: 16px;
+    margin-top: 0;
+    margin-left: 0;
+    margin-right: 0;
   }
 
   html body .wdp-modal .wdp-shareholders-area.scrollable .wdp-shareholders-scroll,
   html body .wdp-donation-form .wdp-shareholders-area.scrollable .wdp-shareholders-scroll {
-    padding-right: 0;
-    margin-right: 0;
+    padding-bottom: 1px;
   }
 }
 
-/* Mobile responsive styles with high specificity */
-/* CRITICAL: Mobile should look identical to desktop - only viewport height fixes for iOS Safari */
 @media (max-width: 480px) {
-  /* Shareholder area - mobile height constraints ONLY (iOS Safari viewport fix) */
-  /* CRITICAL: Use dvh units for iOS Safari compatibility, but keep desktop height values */
-  /* ABSOLUTE FIX: When NOT scrollable (1 form only), use auto height */
-  html body .wdp-modal .wdp-shareholders-area:not(.scrollable),
-  html body .wdp-donation-form .wdp-shareholders-area:not(.scrollable) {
+  html body .wdp-modal .wdp-modal-content form.wdp-has-shareholders .wdp-shares-section .wdp-shareholders-area:not(.scrollable),
+  html body .wdp-donation-form .wdp-modal-content form.wdp-has-shareholders .wdp-shares-section .wdp-shareholders-area:not(.scrollable) {
     max-height: none;
     height: auto;
     overflow: visible;
-    /* FIX: Add margin-bottom for spacing between shareholder area and buttons */
     margin-bottom: 16px;
+    margin-top: 0;
+    margin-left: 0;
+    margin-right: 0;
   }
 
-  /* ABSOLUTE FIX: When scrollable (2+ forms), increase height to show textarea bottom */
-  html body .wdp-modal .wdp-shareholders-area.scrollable,
-  html body .wdp-donation-form .wdp-shareholders-area.scrollable {
+  html body .wdp-modal .wdp-modal-content form.wdp-has-shareholders .wdp-shares-section .wdp-shareholders-area.scrollable,
+  html body .wdp-donation-form .wdp-modal-content form.wdp-has-shareholders .wdp-shares-section .wdp-shareholders-area.scrollable {
     min-height: clamp(280px, min(40vh, 40dvh), 360px);
     height: clamp(280px, min(40vh, 40dvh), 360px);
     max-height: clamp(280px, min(40vh, 40dvh), 360px);
-    /* FIX: Add margin-bottom for spacing between scrollable area and buttons */
     margin-bottom: 16px;
+    margin-top: 0;
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  html body .wdp-modal .wdp-shareholders-area.scrollable .wdp-shareholders-scroll,
+  html body .wdp-donation-form .wdp-shareholders-area.scrollable .wdp-shareholders-scroll {
+    padding-bottom: 1px;
   }
 }

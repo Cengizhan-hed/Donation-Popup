@@ -1,8 +1,7 @@
 /**
  * Shareholder - Hissedar formları yönetimi
  * ensureShareholderList, setupShareholderForms, setupShareQuantityButtons,
- * createShareholderForm, toggleShareholderForm, setupShareholderToggles,
- * setupCopyFormButton, duplicateShareholderForm, updateShareholdersScrollable,
+ * createShareholderForm, setupCopyFormButton, duplicateShareholderForm, updateShareholdersScrollable,
  * updateCollapsedFormsCount, applyShareholderScrollStyles, cacheShareholdersBaseHeight,
  * bindShareholderResizeListener, calculateShareholderMaxHeight, setupDirectShareholderForms,
  * updateShareholderForms
@@ -166,19 +165,116 @@
     if (!shareholdersContainer) return;
     const shareholdersList = ensureShareholderList(shareholdersContainer);
     if (!shareholdersList) return;
+    
+    // CRITICAL: shareCount'u kontrol et - görünür form sayısını değil
+    // Çünkü sadece 1. form görünür ama shareCount > 1 ise scroll olmalı
+    const shareCountInput = modal.querySelector('input[name="share_count"]');
+    const shareCount = shareCountInput ? Number.parseInt(shareCountInput.value, 10) || 1 : 1;
     const forms = shareholdersList.querySelectorAll('.wdp-shareholder-form');
     // Scroll sadece hisse adedi 1'den fazla olduğunda aktif olsun (scrollbar görünsün)
-    const shouldScroll = forms.length > 1;
+    // CRITICAL: shareCount'u kontrol et, görünür form sayısını değil
+    const shouldScroll = shareCount > 1;
     
     // CRITICAL: Immediately add/remove scrollable class to prevent modal expansion
     // CSS will handle height constraints through scrollable class
     const shareholdersArea = shareholdersContainer.closest('.wdp-shareholders-area');
     if (shareholdersArea) {
+      // ABSOLUTE FIX: Modal ilk açıldığında shareholders-area'nın height'ını kaydet
+      // Böylece scrollable olduğunda aynı height'ı kullanabiliriz
+      if (!shareholdersArea.dataset.initialHeight) {
+        // İlk açılışta height'ı kaydet (1 form için)
+        requestAnimationFrame(() => {
+          const initialHeight = shareholdersArea.offsetHeight;
+          if (initialHeight > 0) {
+            shareholdersArea.dataset.initialHeight = initialHeight + 'px';
+          }
+        });
+      }
+      
       if (shouldScroll) {
         // Immediately add scrollable class - CSS will apply height constraints
         shareholdersArea.classList.add('scrollable');
+        
+        // ABSOLUTE FIX: Modal yüksekliği sabit kalacak - ilk açıldığındaki height'ı kullan
+        // CRITICAL: Scroll container'ın height'ını 1. formun yüksekliği kadar yap
+        // Böylece 2. formun header'ı görünmez, sadece scroll yapınca görünür
+        requestAnimationFrame(() => {
+          if (shareholdersList && shareholdersArea) {
+            // 1. formun yüksekliğini al
+            const firstForm = shareholdersList.querySelector('.wdp-shareholder-form[data-index="1"]');
+            if (!firstForm) return;
+            
+            // ABSOLUTE FIX: Modal ilk açıldığında kaydedilen height'ı kullan
+            // CRITICAL: Popup ve sayfa içi form için aynı height hesaplama mantığı
+            // Eğer kaydedilmemişse, scrollable class'ını geçici olarak kaldırıp height'ı ölç
+            let areaHeightValue;
+            if (shareholdersArea.dataset.initialHeight) {
+              areaHeightValue = parseFloat(shareholdersArea.dataset.initialHeight);
+            } else {
+              // CRITICAL: Scrollable class'ını geçici olarak kaldır, height'ı ölç
+              const wasScrollable = shareholdersArea.classList.contains('scrollable');
+              if (wasScrollable) {
+                shareholdersArea.classList.remove('scrollable');
+              }
+              
+              // Height'ı hemen ölç (scrollable olmadan)
+              const currentHeight = shareholdersArea.offsetHeight;
+              if (currentHeight > 0) {
+                shareholdersArea.dataset.initialHeight = currentHeight + 'px';
+                areaHeightValue = currentHeight;
+              } else {
+                // Fallback: CSS'teki clamp() değerini kullan
+                const computedAreaHeight = window.getComputedStyle(shareholdersArea).height;
+                areaHeightValue = parseFloat(computedAreaHeight) || 280;
+                shareholdersArea.dataset.initialHeight = areaHeightValue + 'px';
+              }
+              
+              // Scrollable class'ını geri ekle
+              if (wasScrollable) {
+                shareholdersArea.classList.add('scrollable');
+              }
+            }
+            
+            // ABSOLUTE FIX: Shareholders-area'nın height'ını ilk açıldığındaki height'a sabitle
+            // CRITICAL: Modal yüksekliği hiç değişmeyecek - sadece scroll container içinde scroll olacak
+            shareholdersArea.style.height = areaHeightValue + 'px';
+            shareholdersArea.style.maxHeight = areaHeightValue + 'px';
+            shareholdersArea.style.minHeight = areaHeightValue + 'px';
+            
+            // CRITICAL: Scroll container'ın height'ını 1. formun yüksekliği kadar yap
+            // Böylece 2. formun header'ı görünmez, sadece scroll yapınca görünür
+            // ABSOLUTE FIX: Formun border'ı dahil tüm yüksekliği al (border görünür olsun)
+            const firstFormHeight = firstForm.offsetHeight;
+            // CRITICAL: Formun border'ı görünür olsun - scrollHeight'e 1px ekle (border için)
+            // Böylece 1. formun alt border'ı scroll container içinde görünür
+            const scrollHeight = Math.min(firstFormHeight + 1, areaHeightValue);
+            shareholdersList.style.maxHeight = scrollHeight + 'px';
+            shareholdersList.style.height = scrollHeight + 'px';
+            
+            // CRITICAL: Shareholders-container'ın height'ını da ayarla (boşluk olmasın)
+            const shareholdersContainer = shareholdersList.closest('.wdp-shareholders-container');
+            if (shareholdersContainer) {
+              shareholdersContainer.style.height = scrollHeight + 'px';
+              shareholdersContainer.style.maxHeight = scrollHeight + 'px';
+            }
+          }
+        });
       } else {
         shareholdersArea.classList.remove('scrollable');
+        // Scroll container'ın height'ını sıfırla
+        shareholdersList.style.maxHeight = '';
+        shareholdersList.style.height = '';
+        // Shareholders-container'ın height'ını da sıfırla
+        const shareholdersContainer = shareholdersList.closest('.wdp-shareholders-container');
+        if (shareholdersContainer) {
+          shareholdersContainer.style.height = '';
+          shareholdersContainer.style.maxHeight = '';
+        }
+        // Shareholders-area'nın inline style'larını da temizle (CSS'e geri dön)
+        shareholdersArea.style.height = '';
+        shareholdersArea.style.maxHeight = '';
+        shareholdersArea.style.minHeight = '';
+        // ABSOLUTE FIX: initialHeight'ı temizleme - bir sonraki scrollable için kullanılabilir
       }
     }
     
@@ -222,6 +318,7 @@
       const countBadge = header.querySelector('.wdp-collapsed-count');
       if (countBadge) {
         countBadge.textContent = '';
+        countBadge.style.display = 'none'; // CRITICAL: Badge'i tamamen gizle
       }
       return;
     }
@@ -239,19 +336,21 @@
         countBadge = document.createElement('span');
         countBadge.className = 'wdp-collapsed-count';
         header.appendChild(countBadge);
-        
-        // Window resize event listener ekle (sadece bir kez)
-        if (!countBadge.dataset.resizeListenerAdded) {
-          countBadge.dataset.resizeListenerAdded = 'true';
-          let resizeTimeout;
-          const handleResize = () => {
-            clearTimeout(resizeTimeout);
-            resizeTimeout = setTimeout(() => {
-              updateCollapsedFormsCount(modal, scrollElement);
-            }, 150);
-          };
-          window.addEventListener('resize', handleResize, { passive: true });
-        }
+      }
+      // CRITICAL: Badge'i göster
+      countBadge.style.display = 'inline-block';
+      
+      // Window resize event listener ekle (sadece bir kez)
+      if (!countBadge.dataset.resizeListenerAdded) {
+        countBadge.dataset.resizeListenerAdded = 'true';
+        let resizeTimeout;
+        const handleResize = () => {
+          clearTimeout(resizeTimeout);
+          resizeTimeout = setTimeout(() => {
+            updateCollapsedFormsCount(modal, scrollElement);
+          }, 150);
+        };
+        window.addEventListener('resize', handleResize, { passive: true });
       }
       
       // Mobilde kısaltılmış metin
@@ -268,6 +367,7 @@
       header.classList.remove('has-badge');
       if (countBadge) {
         countBadge.textContent = '';
+        countBadge.style.display = 'none'; // CRITICAL: Badge'i tamamen gizle
       }
     }
   }
@@ -288,9 +388,6 @@
     form.innerHTML = `
       <div class="wdp-shareholder-header">
         <h3>${index}. Hissedar Bilgileri <span class='wdp-shareholder-icon'></span></h3>
-        <button type="button" class="wdp-shareholder-toggle">
-          <span>${isFirst ? "▼" : "▶"}</span>
-        </button>
       </div>
       <div class="wdp-shareholder-content" ${!isFirst ? 'style="display: none;"' : ''}>
         <input type="text" name="shareholder_name_${index}" placeholder="Ad Soyad *" autocomplete="name" required />
@@ -325,128 +422,70 @@
     return form;
   }
 
-  // Toggle shareholder form (accordion logic)
+
+  // Toggle shareholder form content
   function toggleShareholderForm(form) {
     if (!form) return;
-
-    safeLog('Toggle form called for:', form.getAttribute('data-index'));
-
-    // Tüm formları bul
-    const container = form.closest('.wdp-shareholders-scroll') || form.closest('.wdp-shareholders-container');
-    if (!container) return;
-
-    const allForms = container.querySelectorAll('.wdp-shareholder-form');
     
-    // Tıklanan formun mevcut durumunu kontrol et
-    const isCurrentlyCollapsed = form.classList.contains('collapsed');
-    const clickedFormIndex = parseInt(form.getAttribute('data-index'), 10);
-
-    // Accordion mantığı: Sadece bir form açık olabilir
-    if (isCurrentlyCollapsed) {
-      // Form kapalıysa: Tüm formları kapat, tıklanan formu aç
+    const content = form.querySelector('.wdp-shareholder-content');
+    if (!content) return;
+    
+    const isCollapsed = form.classList.contains('collapsed');
+    
+    // CRITICAL: Accordion davranışı - bir form açıldığında diğer tüm formlar kapanmalı
+    const shareholdersList = form.closest('.wdp-shareholders-scroll');
+    if (shareholdersList && isCollapsed) {
+      // Tüm formları kapat
+      const allForms = shareholdersList.querySelectorAll('.wdp-shareholder-form');
       allForms.forEach((otherForm) => {
-        if (otherForm === form) {
-          // Tıklanan formu aç
-          otherForm.classList.remove('collapsed');
-          const contentEl = otherForm.querySelector('.wdp-shareholder-content');
-          const toggleSpanEl = otherForm.querySelector('.wdp-shareholder-toggle span');
-          if (contentEl) {
-            contentEl.style.display = 'grid';
-          }
-          if (toggleSpanEl) {
-            toggleSpanEl.textContent = '▼';
-          }
-        } else {
-          // Diğer formları kapat
+        if (otherForm !== form) {
           otherForm.classList.add('collapsed');
-          const contentEl = otherForm.querySelector('.wdp-shareholder-content');
-          const toggleSpanEl = otherForm.querySelector('.wdp-shareholder-toggle span');
-          if (contentEl) {
-            contentEl.style.display = 'none';
-          }
-          if (toggleSpanEl) {
-            toggleSpanEl.textContent = '▶';
+          const otherContent = otherForm.querySelector('.wdp-shareholder-content');
+          if (otherContent) {
+            otherContent.style.display = 'none';
           }
         }
       });
-    } else {
-      // Form açıksa: Eğer ilk form değilse, ilk formu aç
-      if (clickedFormIndex !== 1) {
-        const firstForm = container.querySelector('.wdp-shareholder-form[data-index="1"]');
-        if (firstForm) {
-          // Tüm formları kapat
-          allForms.forEach((otherForm) => {
-            otherForm.classList.add('collapsed');
-            const contentEl = otherForm.querySelector('.wdp-shareholder-content');
-            const toggleSpanEl = otherForm.querySelector('.wdp-shareholder-toggle span');
-            if (contentEl) {
-              contentEl.style.display = 'none';
-            }
-            if (toggleSpanEl) {
-              toggleSpanEl.textContent = '▶';
-            }
-          });
-          // İlk formu aç
-          firstForm.classList.remove('collapsed');
-          const contentEl = firstForm.querySelector('.wdp-shareholder-content');
-          const toggleSpanEl = firstForm.querySelector('.wdp-shareholder-toggle span');
-          if (contentEl) {
-            contentEl.style.display = 'grid';
-          }
-          if (toggleSpanEl) {
-            toggleSpanEl.textContent = '▼';
-          }
-        }
-      }
-      // İlk form açıksa hiçbir şey yapma
     }
-
-    const root = form.closest('.wdp-modal, .wdp-donation-form');
-    if (root) {
-      updateShareholdersScrollable(root);
-      // Kapalı form sayısını güncelle
-      const shareholdersList = form.closest('.wdp-shareholders-scroll') || container.querySelector('.wdp-shareholders-scroll');
-      updateCollapsedFormsCount(root, shareholdersList);
+    
+    if (isCollapsed) {
+      // Formu aç
+      form.classList.remove('collapsed');
+      content.style.display = 'flex';
+      
+      // Scroll container'ı bul ve scroll yap
+      if (shareholdersList) {
+        requestAnimationFrame(() => {
+          form.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        });
+      }
+    } else {
+      // Formu kapat
+      form.classList.add('collapsed');
+      content.style.display = 'none';
+    }
+    
+    // Badge'i güncelle
+    const modal = form.closest('.wdp-modal') || form.closest('.wdp-donation-form');
+    if (modal && shareholdersList) {
+      updateCollapsedFormsCount(modal, shareholdersList);
     }
   }
 
-  // Setup shareholder toggles
-  function setupShareholderToggles() {
-    const shareholderForms = document.querySelectorAll(".wdp-shareholder-form");
-
-    shareholderForms.forEach((form) => {
-      const header = form.querySelector(".wdp-shareholder-header");
-      const toggle = form.querySelector(".wdp-shareholder-toggle");
-
-      if (header && toggle) {
-        // Önceki event listener'ları temizle
-        const newHeader = header.cloneNode(true);
-        const newToggle = newHeader.querySelector(".wdp-shareholder-toggle");
-        header.parentNode.replaceChild(newHeader, header);
-        
-        // Yeni referansları al
-        const updatedHeader = form.querySelector(".wdp-shareholder-header");
-        const updatedToggle = form.querySelector(".wdp-shareholder-toggle");
-
-        // Header'a tıklama event'i ekle
-        updatedHeader.addEventListener("click", (e) => {
-          // Eğer tıklanan element toggle butonu veya onun içindeki bir element ise
-          if (e.target === updatedToggle || updatedToggle.contains(e.target)) {
-            return;
-          }
-          toggleShareholderForm(form);
-        });
-
-        // Toggle butonuna tıklama event'i ekle
-        updatedToggle.addEventListener("click", (e) => {
-          e.preventDefault();
-          e.stopPropagation(); // Event'in header'a yayılmasını engelle
-          toggleShareholderForm(form);
-        });
-      }
-
-      // Kopyasını oluştur butonu için event listener'ları ekle
-      setupCopyFormButton(form);
+  // Setup shareholder header click handler
+  function setupShareholderHeaderClick(form) {
+    const header = form.querySelector('.wdp-shareholder-header');
+    if (!header) return;
+    
+    // Önceki event listener'ları temizle
+    const newHeader = header.cloneNode(true);
+    header.parentNode.replaceChild(newHeader, header);
+    
+    // Click event listener ekle
+    newHeader.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      toggleShareholderForm(form);
     });
   }
 
@@ -534,15 +573,15 @@
     if (newPhoneInput) newPhoneInput.value = phoneValue;
     if (newNoteTextarea) newNoteTextarea.value = noteValue;
 
-    // Yeni formu listeye ekle ve toggle'ları yeniden bağla
+    // Yeni formu listeye ekle
     list.appendChild(newForm);
-    setupShareholderToggles();
+    setupCopyFormButton(newForm);
+    setupShareholderHeaderClick(newForm);
     
     const contextRoot = container.closest('.wdp-modal') || container.closest('.wdp-donation-form');
     updateShareholdersScrollable(contextRoot);
     
     requestAnimationFrame(() => {
-      toggleShareholderForm(newForm);
       newForm.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     });
 
@@ -636,10 +675,15 @@
     const existingCount = existingForms.length;
     safeLog("Existing forms:", existingCount, "New count:", shareCount);
 
+    // CRITICAL: Sadece 1. form gösterilsin - diğer formlar oluşturulur ama gizlenir
     if (shareCount > existingCount) {
       // Yeni formlar ekle
       for (let i = existingCount + 1; i <= shareCount; i++) {
         const newForm = createShareholderForm(i);
+        // Sadece 1. form görünür, diğerleri gizli
+        if (i > 1) {
+          newForm.style.display = 'none';
+        }
         shareholdersList.appendChild(newForm);
       }
     } else if (shareCount < existingCount) {
@@ -652,9 +696,41 @@
         }
       }
     }
+    
+    // CRITICAL: Sadece 1. form görünür olsun - ama scroll için tüm formlar DOM'da görünür olmalı
+    // Scroll çalışması için tüm formlar görünür olmalı, sadece içerikleri gizli olmalı
+    const allForms = shareholdersList.querySelectorAll('.wdp-shareholder-form');
+    allForms.forEach((form, idx) => {
+      const formIndex = parseInt(form.getAttribute('data-index'), 10);
+      if (formIndex === 1) {
+        // CRITICAL: Hisse adedi 1'e düştüğünde 1. form kapalıysa otomatik aç
+        form.style.display = '';
+        form.style.visibility = 'visible';
+        form.style.opacity = '1';
+        form.classList.remove('collapsed');
+        const content = form.querySelector('.wdp-shareholder-content');
+        if (content) {
+          content.style.display = 'flex';
+        }
+      } else {
+        // Scroll için form görünür olmalı ama içeriği gizli
+        form.style.display = '';
+        form.style.visibility = 'visible';
+        form.style.opacity = '1';
+        form.classList.add('collapsed');
+        const content = form.querySelector('.wdp-shareholder-content');
+        if (content) {
+          content.style.display = 'none';
+        }
+      }
+    });
 
-    // Form toggle olaylarını yeniden ayarla
-    setupShareholderToggles();
+    // Copy button ve header click event listener'larını ekle
+    const allFormsForCopy = shareholdersList.querySelectorAll('.wdp-shareholder-form');
+    allFormsForCopy.forEach((form) => {
+      setupCopyFormButton(form);
+      setupShareholderHeaderClick(form);
+    });
     
     // CRITICAL: Update scrollable class immediately - BEFORE browser renders
     // This prevents modal expansion by applying height constraints instantly
@@ -809,8 +885,11 @@
       });
     }
 
-    // Form toggle olaylarını ekle
-    setupShareholderToggles();
+    // Copy button event listener'larını ekle
+    const allFormsForCopy = document.querySelectorAll(".wdp-shareholder-form");
+    allFormsForCopy.forEach((form) => {
+      setupCopyFormButton(form);
+    });
 
     // Hisse adedine göre fiyatı güncelle
     function updatePriceBasedOnShareCount() {
@@ -883,6 +962,8 @@
   // Setup shareholder forms
   async function setupShareholderForms(modal, productId) {
     try {
+      safeLog("setupShareholderForms called with modal:", modal?.id || modal?.className, "productId:", productId);
+      
       // Setup shareholder forms
       
       // Ürün ID'sini integer'a çevir
@@ -892,9 +973,11 @@
       const $modal = (sel) => modal.querySelector(sel);
       const shareCountInput = $modal('input[name="share_count"]');
       if (!shareCountInput) {
-        safeLog("ERROR: Share count input not found in modal:", modal.id);
+        safeLog("ERROR: Share count input not found in modal:", modal.id || modal.className);
+        safeLog("Modal HTML:", modal.outerHTML.substring(0, 500));
         return;
       }
+      safeLog("Share count input found:", shareCountInput);
 
       const hostForm =
         typeof modal.matches === 'function' && modal.matches('form')
@@ -920,10 +1003,22 @@
         }
       }
       
-      // Container'ı görünür yap
-      shareholdersContainer.style.display = '';
-      shareholdersContainer.style.visibility = 'visible';
-      shareholdersContainer.style.opacity = '1';
+      // CRITICAL: Tüm container'ları görünür yap - önce en üst seviyeden başla
+      const sharesSection = shareholdersContainer.closest('.wdp-shares-section');
+      if (sharesSection) {
+        sharesSection.style.display = '';
+        sharesSection.style.visibility = 'visible';
+        sharesSection.style.opacity = '1';
+        safeLog("Shares section made visible");
+      }
+      
+      const sharesHeader = $modal('.wdp-shares-header');
+      if (sharesHeader) {
+        sharesHeader.style.display = '';
+        sharesHeader.style.visibility = 'visible';
+        sharesHeader.style.opacity = '1';
+        safeLog("Shares header made visible");
+      }
       
       // Hissedar alanını da görünür yap
       const shareholdersArea = shareholdersContainer.closest('.wdp-shareholders-area');
@@ -931,7 +1026,14 @@
         shareholdersArea.style.display = '';
         shareholdersArea.style.visibility = 'visible';
         shareholdersArea.style.opacity = '1';
+        safeLog("Shareholders area made visible");
       }
+      
+      // Container'ı görünür yap
+      shareholdersContainer.style.display = '';
+      shareholdersContainer.style.visibility = 'visible';
+      shareholdersContainer.style.opacity = '1';
+      safeLog("Shareholders container made visible");
       
       // Hissedar listesini oluştur veya bul
       const shareholdersList = ensureShareholderList(shareholdersContainer);
@@ -939,6 +1041,12 @@
         safeLog("ERROR: Could not ensure shareholder list in container");
         return;
       }
+      
+      // CRITICAL: Shareholders list'i görünür yap
+      shareholdersList.style.display = '';
+      shareholdersList.style.visibility = 'visible';
+      shareholdersList.style.opacity = '1';
+      safeLog("Shareholders list made visible");
 
       // Başlangıç değerini 1 olarak ayarla ve event'leri tetikle
       shareCountInput.value = "1";
@@ -953,18 +1061,41 @@
       const firstForm = createShareholderForm(1);
       if (firstForm) {
         shareholdersList.appendChild(firstForm);
-        safeLog("First shareholder form created and appended");
+        safeLog("First shareholder form created and appended to DOM");
         
         // Form görünürlüğünü garanti et
         firstForm.style.display = '';
         firstForm.style.visibility = 'visible';
         firstForm.style.opacity = '1';
+        firstForm.style.position = 'relative';
+        safeLog("First form visibility set");
+        
+        // Form header'ı görünür yap
+        const header = firstForm.querySelector('.wdp-shareholder-header');
+        if (header) {
+          header.style.display = '';
+          header.style.visibility = 'visible';
+          header.style.opacity = '1';
+          safeLog("First form header made visible");
+        }
         
         const content = firstForm.querySelector('.wdp-shareholder-content');
         if (content) {
-          content.style.display = 'block';
+          content.style.display = 'flex';
           content.style.visibility = 'visible';
           content.style.opacity = '1';
+          safeLog("First form content made visible with flex display");
+          
+          // Input'ları da görünür yap
+          const inputs = content.querySelectorAll('input, textarea, button');
+          inputs.forEach((input, idx) => {
+            input.style.display = '';
+            input.style.visibility = 'visible';
+            input.style.opacity = '1';
+            safeLog(`Input ${idx + 1} made visible:`, input.name || input.type);
+          });
+        } else {
+          safeLog("ERROR: First form content not found");
         }
       } else {
         safeLog("ERROR: Failed to create first shareholder form");
@@ -973,8 +1104,22 @@
       
       cacheShareholdersBaseHeight(shareholdersContainer);
 
-      // Hemen event listener'ları ekle
-      setupShareholderToggles();
+      // Hemen copy button ve header click event listener'larını ekle
+      setupCopyFormButton(firstForm);
+      setupShareholderHeaderClick(firstForm);
+      
+      // ABSOLUTE FIX: Modal ilk açıldığında shareholders-area'nın height'ını kaydet
+      // Böylece scrollable olduğunda aynı height'ı kullanabiliriz
+      if (shareholdersArea) {
+        requestAnimationFrame(() => {
+          // İlk form oluşturulduktan sonra height'ı kaydet (1 form için)
+          const initialHeight = shareholdersArea.offsetHeight;
+          if (initialHeight > 0 && !shareholdersArea.dataset.initialHeight) {
+            shareholdersArea.dataset.initialHeight = initialHeight + 'px';
+            safeLog("Initial shareholders-area height saved:", initialHeight + 'px');
+          }
+        });
+      }
       
       // Scrollable class'ını güncelle
       updateShareholdersScrollable(modal);
@@ -1104,6 +1249,8 @@
     if (shareCount > existingCount) {
       for (let i = existingCount + 1; i <= shareCount; i++) {
         var newForm = createShareholderForm(i);
+        // CRITICAL: Scroll için tüm formlar görünür olmalı, sadece içerikleri gizli
+        // Form görünür olacak ama içeriği gizli olacak (scroll için gerekli)
         shareholdersList.appendChild(newForm);
         // Yeni form için event listener'ları ekle
         setupCopyFormButton(newForm);
@@ -1134,36 +1281,33 @@
       }
       // Event listener'ları tekrar ekle (gerekirse)
       setupCopyFormButton(form);
+      setupShareholderHeaderClick(form);
     }
 
-    // Form toggle olaylarını ekle (sadece yeni eklenenler için)
-    setupShareholderToggles();
-
-    // Accordion mantığı: Sadece ilk form açık olsun, diğerleri kapalı
+    // CRITICAL: Sadece 1. form görünür olsun - ama scroll için tüm formlar DOM'da görünür olmalı
+    // Scroll çalışması için tüm formlar görünür olmalı, sadece içerikleri gizli olmalı
     var allForms = shareholdersList.querySelectorAll(".wdp-shareholder-form");
-    allForms.forEach((form, index) => {
+    allForms.forEach((form) => {
       const formIndex = parseInt(form.getAttribute('data-index'), 10);
       if (formIndex === 1) {
-        // İlk form açık
+        // CRITICAL: Hisse adedi 1'e düştüğünde 1. form kapalıysa otomatik aç
+        form.style.display = '';
+        form.style.visibility = 'visible';
+        form.style.opacity = '1';
         form.classList.remove("collapsed");
         var contentEl = form.querySelector(".wdp-shareholder-content");
-        var toggleSpanEl = form.querySelector(".wdp-shareholder-toggle span");
         if (contentEl) {
-          contentEl.style.display = "grid";
-        }
-        if (toggleSpanEl) {
-          toggleSpanEl.textContent = "▼";
+          contentEl.style.display = "flex";
         }
       } else {
-        // Diğer formlar kapalı
+        // Scroll için form görünür olmalı ama içeriği gizli
+        form.style.display = '';
+        form.style.visibility = 'visible';
+        form.style.opacity = '1';
         form.classList.add("collapsed");
         var contentEl = form.querySelector(".wdp-shareholder-content");
-        var toggleSpanEl = form.querySelector(".wdp-shareholder-toggle span");
         if (contentEl) {
           contentEl.style.display = "none";
-        }
-        if (toggleSpanEl) {
-          toggleSpanEl.textContent = "▶";
         }
       }
     });
@@ -1188,8 +1332,6 @@
     setup: setupShareholderForms,
     setupQuantityButtons: setupShareQuantityButtons,
     createForm: createShareholderForm,
-    toggleForm: toggleShareholderForm,
-    setupToggles: setupShareholderToggles,
     setupCopyButton: setupCopyFormButton,
     duplicateForm: duplicateShareholderForm,
     updateScrollable: updateShareholdersScrollable,

@@ -2,11 +2,11 @@
 /* MOTION & TRANSITIONS */
 /* ==================== */
 
-.wdp-modal {
+html body .wdp-modal {
   will-change: opacity;
 }
 
-.wdp-modal-content {
+html body .wdp-modal-content {
   will-change: transform;
   transform: translateZ(0);
   backface-visibility: hidden;
@@ -35,24 +35,24 @@
   }
 }
 
-.wdp-modal.show .wdp-modal-content {
+html body .wdp-modal.show .wdp-modal-content {
   animation: none;
 }
 
-.wdp-modal.closing .wdp-modal-content {
+html body .wdp-modal.closing .wdp-modal-content {
   animation: wdpSlideOut 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Input focus animasyonları kaldırıldı */
 
-.wdp-shareholder-form.collapsed .wdp-shareholder-content,
-.wdp-shareholders-container {
+html body .wdp-shareholder-form.collapsed .wdp-shareholder-content,
+html body .wdp-shareholders-container {
   transition: none;
 }
 
-.wdp-shareholder-form,
-.wdp-shareholder-header,
-.wdp-shareholders-container {
+html body .wdp-shareholder-form,
+html body .wdp-shareholder-header,
+html body .wdp-shareholders-container {
   transition: none;
 }
 @media (max-width: 600px) {

@@ -151,6 +151,7 @@ class WDP_Assets {
                         'min_price_error' => __('Minimum fiyat: ', 'woo-donation-popup'),
                         'max_shares_error' => __('Maksimum hisse sayısı: ', 'woo-donation-popup'),
                     ),
+                    'button_texts' => self::get_button_texts(),
                 ));
             }
         }
@@ -181,12 +182,189 @@ class WDP_Assets {
     }
 
     /**
+     * Get button texts from settings
+     *
+     * @return array Button texts.
+     */
+    private static function get_button_texts() {
+        // Buton ayarlarını al
+        $button_settings = get_option('wdp_button_settings', array());
+        
+        // Varsayılan değerler
+        $defaults = array(
+            'button_text_donate' => __('Bağış Yap', 'woo-donation-popup'),
+            'button_text_add_to_cart' => __('Sepete Ekle', 'woo-donation-popup'),
+            'button_text_go_checkout' => __('Ödemeye Git', 'woo-donation-popup'),
+        );
+        
+        $settings = wp_parse_args($button_settings, $defaults);
+        
+        $result = array(
+            'donate' => $settings['button_text_donate'],
+            'add_to_cart' => $settings['button_text_add_to_cart'],
+            'go_checkout' => $settings['button_text_go_checkout'],
+        );
+        
+        // Başarı ekranı buton metinleri (başarı ekranı ayarlarından al)
+        $success_settings = get_option('wdp_success_settings', array());
+        if (isset($success_settings['success_text_view_cart'])) {
+            $result['success_view_cart'] = $success_settings['success_text_view_cart'];
+        } else {
+            $result['success_view_cart'] = __('Sepeti Görüntüle', 'woo-donation-popup');
+        }
+        
+        if (isset($success_settings['success_text_go_checkout'])) {
+            $result['success_go_checkout'] = $success_settings['success_text_go_checkout'];
+        } else {
+            $result['success_go_checkout'] = __('Ödemeye Git', 'woo-donation-popup');
+        }
+        
+        if (isset($success_settings['success_text_new_donation'])) {
+            $result['success_new_donation'] = $success_settings['success_text_new_donation'];
+        } else {
+            $result['success_new_donation'] = __('Yeni Bağış Ekle', 'woo-donation-popup');
+        }
+        
+        return $result;
+    }
+    
+    /**
+     * Get button customization CSS variables
+     *
+     * @return string CSS variables.
+     */
+    private static function get_button_customization_css() {
+        // Normal form ayarlarını al
+        $button_settings = get_option('wdp_button_settings', array());
+        
+        // Varsayılan değerler
+        $defaults = array(
+            'button_primary_color' => '#1e73be',
+            'button_primary_hover' => '#185d98',
+            'button_border_radius' => '10',
+            'modal_background_color' => '#ffffff',
+            'modal_border_radius' => '12',
+            'input_border_color' => '#d1d5db',
+            'input_border_radius' => '8',
+            'title_color' => '#1f2937',
+            'title_font_size' => '27',
+            'close_button_color' => '#6b7280',
+            'button_checkout_color' => '#48bb78',
+            'button_checkout_hover' => '#38a169',
+        );
+        
+        $settings = wp_parse_args($button_settings, $defaults);
+        
+        // CSS değişkenlerini oluştur
+        $css = ":root {\n";
+        
+        // Normal form değişkenleri
+        $css .= "  --wdp-button-primary: " . esc_attr($settings['button_primary_color']) . ";\n";
+        $css .= "  --wdp-button-primary-hover: " . esc_attr($settings['button_primary_hover']) . ";\n";
+        $css .= "  --wdp-button-radius: " . esc_attr($settings['button_border_radius']) . "px;\n";
+        $css .= "  --wdp-modal-bg: " . esc_attr($settings['modal_background_color']) . ";\n";
+        $css .= "  --wdp-modal-radius: " . esc_attr($settings['modal_border_radius']) . "px;\n";
+        $css .= "  --wdp-input-border: " . esc_attr($settings['input_border_color']) . ";\n";
+        $css .= "  --wdp-input-radius: " . esc_attr($settings['input_border_radius']) . "px;\n";
+        $css .= "  --wdp-title-color: " . esc_attr($settings['title_color']) . ";\n";
+        $css .= "  --wdp-title-size: " . esc_attr($settings['title_font_size']) . "px;\n";
+        $css .= "  --wdp-close-color: " . esc_attr($settings['close_button_color']) . ";\n";
+        
+        // Ödeme Yap butonu renkleri
+        if (isset($settings['button_checkout_color'])) {
+            $css .= "  --wdp-accent: " . esc_attr($settings['button_checkout_color']) . ";\n";
+        } else {
+            $css .= "  --wdp-accent: #48bb78;\n";
+        }
+        if (isset($settings['button_checkout_hover'])) {
+            $css .= "  --wdp-accent-hover: " . esc_attr($settings['button_checkout_hover']) . ";\n";
+        } else {
+            $css .= "  --wdp-accent-hover: #38a169;\n";
+        }
+        
+        // Hisseli form ayarlarını al
+        $shareholder_settings = get_option('wdp_shareholder_settings', array());
+        $shareholder_defaults = array(
+            'shareholder_card_bg' => '#ffffff',
+            'shareholder_card_border' => '#f0f2f5',
+            'shareholder_card_radius' => '10',
+            'shareholder_card_shadow' => '0 1px 3px rgba(0, 0, 0, 0.05)',
+            'shareholder_header_bg' => '#f9fafb',
+            'shareholder_header_color' => '#1f2937',
+            'shareholder_content_padding' => '12',
+            'shareholders_area_bg' => 'linear-gradient(to bottom, #ffffff 0%, #fafbfc 100%)',
+            'shareholders_area_border' => '#e1e5e9',
+            'shareholders_area_radius' => '16',
+            'shareholders_scrollbar_color' => '#4a90e2',
+            'share_counter_border' => '#d1d5db',
+            'share_counter_bg' => '#ffffff',
+            'share_counter_button_color' => '#888888',
+        );
+        $shareholder_settings = wp_parse_args($shareholder_settings, $shareholder_defaults);
+        
+        // Hisseli form değişkenleri
+        $css .= "  --wdp-shareholder-card-bg: " . esc_attr($shareholder_settings['shareholder_card_bg']) . ";\n";
+        $css .= "  --wdp-shareholder-card-border: " . esc_attr($shareholder_settings['shareholder_card_border']) . ";\n";
+        $css .= "  --wdp-shareholder-card-radius: " . esc_attr($shareholder_settings['shareholder_card_radius']) . "px;\n";
+        $css .= "  --wdp-shareholder-card-shadow: " . esc_attr($shareholder_settings['shareholder_card_shadow']) . ";\n";
+        $css .= "  --wdp-shareholder-header-bg: " . esc_attr($shareholder_settings['shareholder_header_bg']) . ";\n";
+        $css .= "  --wdp-shareholder-header-color: " . esc_attr($shareholder_settings['shareholder_header_color']) . ";\n";
+        $css .= "  --wdp-shareholder-content-padding: " . esc_attr($shareholder_settings['shareholder_content_padding']) . "px;\n";
+        $css .= "  --wdp-shareholders-area-bg: " . esc_attr($shareholder_settings['shareholders_area_bg']) . ";\n";
+        $css .= "  --wdp-shareholders-area-border: " . esc_attr($shareholder_settings['shareholders_area_border']) . ";\n";
+        $css .= "  --wdp-shareholders-area-radius: " . esc_attr($shareholder_settings['shareholders_area_radius']) . "px;\n";
+        $css .= "  --wdp-shareholders-scrollbar-color: " . esc_attr($shareholder_settings['shareholders_scrollbar_color']) . ";\n";
+        $css .= "  --wdp-share-counter-border: " . esc_attr($shareholder_settings['share_counter_border']) . ";\n";
+        $css .= "  --wdp-share-counter-bg: " . esc_attr($shareholder_settings['share_counter_bg']) . ";\n";
+        $css .= "  --wdp-share-counter-button-color: " . esc_attr($shareholder_settings['share_counter_button_color']) . ";\n";
+        
+        // Başarı ekranı ayarlarını al
+        $success_settings = get_option('wdp_success_settings', array());
+        $success_defaults = array(
+            'success_button_color' => '#1e73be',
+            'success_button_hover' => '#185d98',
+            'success_button_radius' => '24',
+            'success_message_bg' => 'rgba(72, 187, 120, 0.1)',
+            'success_message_color' => '#48bb78',
+            'success_message_border' => 'rgba(72, 187, 120, 0.2)',
+            'success_message_radius' => '8',
+            'mini_cart_bg' => '#f9fafb',
+            'mini_cart_border' => '#e5e7eb',
+            'mini_cart_radius' => '8',
+            'cart_item_name_color' => '#1f2937',
+            'cart_item_price_color' => '#1e73be',
+        );
+        $success_settings = wp_parse_args($success_settings, $success_defaults);
+        
+        // Başarı ekranı değişkenleri
+        $css .= "  --wdp-success-button-color: " . esc_attr($success_settings['success_button_color']) . ";\n";
+        $css .= "  --wdp-success-button-hover: " . esc_attr($success_settings['success_button_hover']) . ";\n";
+        $css .= "  --wdp-success-button-radius: " . esc_attr($success_settings['success_button_radius']) . "px;\n";
+        $css .= "  --wdp-success-message-bg: " . esc_attr($success_settings['success_message_bg']) . ";\n";
+        $css .= "  --wdp-success-message-color: " . esc_attr($success_settings['success_message_color']) . ";\n";
+        $css .= "  --wdp-success-message-border: " . esc_attr($success_settings['success_message_border']) . ";\n";
+        $css .= "  --wdp-success-message-radius: " . esc_attr($success_settings['success_message_radius']) . "px;\n";
+        $css .= "  --wdp-mini-cart-bg: " . esc_attr($success_settings['mini_cart_bg']) . ";\n";
+        $css .= "  --wdp-mini-cart-border: " . esc_attr($success_settings['mini_cart_border']) . ";\n";
+        $css .= "  --wdp-mini-cart-radius: " . esc_attr($success_settings['mini_cart_radius']) . "px;\n";
+        $css .= "  --wdp-cart-item-name-color: " . esc_attr($success_settings['cart_item_name_color']) . ";\n";
+        $css .= "  --wdp-cart-item-price-color: " . esc_attr($success_settings['cart_item_price_color']) . ";\n";
+        
+        $css .= "}\n";
+        
+        return $css;
+    }
+    
+    /**
      * Get inline CSS for modal visibility
      *
      * @return string Inline CSS.
      */
     private static function get_inline_css() {
-        return "
+        // Buton özelleştirme CSS'ini ekle
+        $button_css = self::get_button_customization_css();
+        
+        return $button_css . "
         /* CRITICAL: Prevent font flash - apply font-size immediately before CSS loads */
         /* ABSOLUTE FIX: Set font-size in px for immediate application (no rem calculation delay) */
         /* Inline CSS has highest specificity - no !important needed */
@@ -499,16 +677,17 @@ class WDP_Assets {
             'wc_loaded' => class_exists('WooCommerce'),
             'home_url' => home_url(),
             'site_url' => site_url(),
-            'strings' => array(
-                'loading' => __('Yükleniyor...', 'woo-donation-popup'),
-                'error' => __('Bir hata oluştu', 'woo-donation-popup'),
-                'success' => __('Başarılı', 'woo-donation-popup'),
-                'required_field' => __('Bu alan zorunludur', 'woo-donation-popup'),
-                'invalid_price' => __('Geçersiz fiyat', 'woo-donation-popup'),
-                'min_price_error' => __('Minimum fiyat: ', 'woo-donation-popup'),
-                'max_shares_error' => __('Maksimum hisse sayısı: ', 'woo-donation-popup'),
-            ),
-        ));
+                    'strings' => array(
+                        'loading' => __('Yükleniyor...', 'woo-donation-popup'),
+                        'error' => __('Bir hata oluştu', 'woo-donation-popup'),
+                        'success' => __('Başarılı', 'woo-donation-popup'),
+                        'required_field' => __('Bu alan zorunludur', 'woo-donation-popup'),
+                        'invalid_price' => __('Geçersiz fiyat', 'woo-donation-popup'),
+                        'min_price_error' => __('Minimum fiyat: ', 'woo-donation-popup'),
+                        'max_shares_error' => __('Maksimum hisse sayısı: ', 'woo-donation-popup'),
+                    ),
+                    'button_texts' => self::get_button_texts(),
+                ));
 
         // Önce force flag'i kontrol et
         $should_enqueue = self::$force_enqueue_assets;

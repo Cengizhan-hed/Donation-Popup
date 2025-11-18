@@ -10,13 +10,7 @@
   
   // Use centralized module dependency helper
   const utilsCheck = (WDPApp.utils && WDPApp.utils.ensureModule)
-    ? WDPApp.utils.ensureModule('utils', ['safeLog'], {
-        safeLog: function(...args) {
-          if (typeof console !== 'undefined' && console.log) {
-            console.log.apply(console, args);
-          }
-        },
-      })
+    ? WDPApp.utils.ensureModule('utils', ['safeLog'])
     : { module: WDPApp.utils || {}, isValid: false, missingMethods: [] };
   
   const stateCheck = (WDPApp.utils && WDPApp.utils.ensureModule)

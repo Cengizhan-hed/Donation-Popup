@@ -1,7 +1,7 @@
 /* ==================== */
 /* FİYAT + SAYAÇ FLEX SATIRI */
 /* ==================== */
-.wdp-price-quantity-row {
+html body .wdp-price-quantity-row {
   display: grid;
   grid-template-columns: minmax(0,1fr) minmax(0,1fr);
   column-gap: var(--wdp-space-3);
@@ -10,10 +10,10 @@
 }
 
 /* Equal columns for price and counters */
-.wdp-price-quantity-row > .wdp-price-field,
-.wdp-price-quantity-row > .wdp-quantity-counter,
-.wdp-price-quantity-row > .wdp-product-quantity,
-.wdp-price-quantity-row > input[name="custom_price"] {
+html body .wdp-price-quantity-row > .wdp-price-field,
+html body .wdp-price-quantity-row > .wdp-quantity-counter,
+html body .wdp-price-quantity-row > .wdp-product-quantity,
+html body .wdp-price-quantity-row > input[name="custom_price"] {
   width: 100%;
   min-width: 0;
   max-width: 100%;
@@ -21,9 +21,9 @@
   justify-self: stretch;
 }
 
-.wdp-price-quantity-row > .wdp-price-field input,
-.wdp-price-quantity-row > .wdp-quantity-counter input,
-.wdp-price-quantity-row > input[name="custom_price"] {
+html body .wdp-price-quantity-row > .wdp-price-field input,
+html body .wdp-price-quantity-row > .wdp-quantity-counter input,
+html body .wdp-price-quantity-row > input[name="custom_price"] {
   width: 100%;
   min-width: 0;
   max-width: 100%;
@@ -101,7 +101,7 @@ html body .wdp-donation-form .wdp-modal-content .wdp-price-quantity-row > input[
 }
 
 /* Güvenlik: fiyat alanı wrapper'ı her zaman tam genişlik kaplasın */
-.wdp-price-field { display: block; width: 100%; }
+html body .wdp-price-field { display: block; width: 100%; }
 
 /* Popup içinde kesin eşitleme: iki sütun yarı yarıya - High specificity */
 body .wdp-modal .wdp-modal-content form .wdp-price-quantity-row,
@@ -129,14 +129,24 @@ body .wdp-donation-form .wdp-modal-content form .wdp-price-quantity-row > *:not(
 }
 
 /* Quantity counter with high specificity - override base.css reset */
+/* CRITICAL: Elementor override koruması - mükemmel dikey hizalama */
+html body .wdp-modal .wdp-quantity-counter,
+html body .wdp-donation-form .wdp-quantity-counter,
+html body .wdp-donation-form .wdp-modal-content .wdp-quantity-counter,
+html body .wdp-donation-form .wdp-modal-content form .wdp-quantity-counter,
+html body.elementor-page .wdp-donation-form .wdp-quantity-counter,
+html body.elementor-page .wdp-donation-form .wdp-modal-content .wdp-quantity-counter,
+html body.elementor-page .wdp-donation-form .wdp-modal-content form .wdp-quantity-counter,
 body .wdp-modal .wdp-quantity-counter,
 body .wdp-donation-form .wdp-quantity-counter {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  align-content: center;
   min-height: 48px;
   height: 48px;
+  max-height: 48px;
   border: 1px solid #d1d5db;
   border-radius: 8px;
   background: #ffffff;
@@ -146,8 +156,19 @@ body .wdp-donation-form .wdp-quantity-counter {
   overflow: hidden;
   gap: 0;
   position: relative;
+  /* CRITICAL: Force alignment - override any theme styles including Elementor */
+  transform: none;
+  vertical-align: middle;
 }
 
+/* CRITICAL: Elementor override koruması - mükemmel dikey hizalama */
+html body .wdp-modal .wdp-quantity-counter input[type="number"],
+html body .wdp-donation-form .wdp-quantity-counter input[type="number"],
+html body .wdp-donation-form .wdp-modal-content .wdp-quantity-counter input[type="number"],
+html body .wdp-donation-form .wdp-modal-content form .wdp-quantity-counter input[type="number"],
+html body.elementor-page .wdp-donation-form .wdp-quantity-counter input[type="number"],
+html body.elementor-page .wdp-donation-form .wdp-modal-content .wdp-quantity-counter input[type="number"],
+html body.elementor-page .wdp-donation-form .wdp-modal-content form .wdp-quantity-counter input[type="number"],
 body .wdp-modal .wdp-quantity-counter input[type="number"],
 body .wdp-donation-form .wdp-quantity-counter input[type="number"] {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
@@ -177,6 +198,13 @@ body .wdp-donation-form .wdp-quantity-counter input[type="number"] {
   box-shadow: none;
   width: 100%;
   text-shadow: none;
+  /* CRITICAL: Force alignment - override any theme styles including Elementor */
+  transform: none;
+  top: auto;
+  bottom: auto;
+  left: auto;
+  right: auto;
+  align-self: center;
 }
 
 /* Sayaç number input'u: tema success/hata kenarlık ve gölgelerini kapat - High specificity */
@@ -202,6 +230,14 @@ body .wdp-donation-form .wdp-quantity-counter input[type="number"]:invalid {
 }
 
 /* Quantity counter buttons with high specificity - override base.css reset */
+/* CRITICAL: Elementor override koruması - mükemmel dikey hizalama */
+html body .wdp-modal .wdp-quantity-counter .wdp-product-quantity-btn,
+html body .wdp-donation-form .wdp-quantity-counter .wdp-product-quantity-btn,
+html body .wdp-donation-form .wdp-modal-content .wdp-quantity-counter .wdp-product-quantity-btn,
+html body .wdp-donation-form .wdp-modal-content form .wdp-quantity-counter .wdp-product-quantity-btn,
+html body.elementor-page .wdp-donation-form .wdp-quantity-counter .wdp-product-quantity-btn,
+html body.elementor-page .wdp-donation-form .wdp-modal-content .wdp-quantity-counter .wdp-product-quantity-btn,
+html body.elementor-page .wdp-donation-form .wdp-modal-content form .wdp-quantity-counter .wdp-product-quantity-btn,
 body .wdp-modal .wdp-quantity-counter .wdp-product-quantity-btn,
 body .wdp-donation-form .wdp-quantity-counter .wdp-product-quantity-btn {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
@@ -211,12 +247,14 @@ body .wdp-donation-form .wdp-quantity-counter .wdp-product-quantity-btn {
   min-height: 48px;
   border: none;
   background: transparent;
+  background-color: transparent;
   color: #888888;
   font-size: 28px;
   font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
+  align-content: center;
   cursor: pointer;
   border-radius: 0;
   transition: none;
@@ -228,6 +266,20 @@ body .wdp-donation-form .wdp-quantity-counter .wdp-product-quantity-btn {
   line-height: 1;
   box-sizing: border-box;
   flex-shrink: 0;
+  flex-grow: 0;
+  flex-basis: auto;
+  position: relative;
+  vertical-align: middle;
+  /* CRITICAL: Force alignment - override any theme styles including Elementor */
+  transform: none;
+  top: auto;
+  bottom: auto;
+  left: auto;
+  right: auto;
+  /* CRITICAL: Elementor override - force perfect center alignment */
+  align-self: center;
+  margin-top: auto;
+  margin-bottom: auto;
 }
 
 /* Tüm etkileşim durumlarında görsel değişiklik yok */
@@ -312,4 +364,3 @@ body .wdp-donation-form .wdp-price-quantity-row > input[name="custom_price"] {
 
 /* Mobile responsive styles with high specificity */
 /* CRITICAL: Mobile should look identical to desktop - no visual changes */
-/* Removed all mobile-specific visual overrides - desktop styles apply on all devices */

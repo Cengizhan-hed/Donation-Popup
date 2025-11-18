@@ -127,8 +127,14 @@ class WDP_Templates {
 
                     <!-- Butonlar -->
                     <div class="wdp-button-group">
-                        <button type="submit" name="donation_add_to_cart">Sepete Ekle</button>
-                        <button type="submit" name="donation_go_checkout">Ödemeye Git</button>
+                        <?php
+                        // Buton metinlerini ayarlardan al
+                        $button_settings = get_option('wdp_button_settings', array());
+                        $button_text_add_to_cart = !empty($button_settings['button_text_add_to_cart']) ? $button_settings['button_text_add_to_cart'] : __('Sepete Ekle', 'woo-donation-popup');
+                        $button_text_go_checkout = !empty($button_settings['button_text_go_checkout']) ? $button_settings['button_text_go_checkout'] : __('Ödemeye Git', 'woo-donation-popup');
+                        ?>
+                        <button type="submit" name="donation_add_to_cart"><?php echo esc_html($button_text_add_to_cart); ?></button>
+                        <button type="submit" name="donation_go_checkout"><?php echo esc_html($button_text_go_checkout); ?></button>
                     </div>
 
                     <!-- Gizli Alanlar -->
@@ -257,8 +263,14 @@ class WDP_Templates {
 
                     <!-- Butonlar -->
                     <div class="wdp-button-group">
-                        <button type="submit" name="donation_add_to_cart">Sepete Ekle</button>
-                        <button type="submit" name="donation_go_checkout">Ödemeye Git</button>
+                        <?php
+                        // Buton metinlerini ayarlardan al
+                        $button_settings = get_option('wdp_button_settings', array());
+                        $button_text_add_to_cart = !empty($button_settings['button_text_add_to_cart']) ? $button_settings['button_text_add_to_cart'] : __('Sepete Ekle', 'woo-donation-popup');
+                        $button_text_go_checkout = !empty($button_settings['button_text_go_checkout']) ? $button_settings['button_text_go_checkout'] : __('Ödemeye Git', 'woo-donation-popup');
+                        ?>
+                        <button type="submit" name="donation_add_to_cart"><?php echo esc_html($button_text_add_to_cart); ?></button>
+                        <button type="submit" name="donation_go_checkout"><?php echo esc_html($button_text_go_checkout); ?></button>
                     </div>
 
                     <!-- Gizli Alanlar -->

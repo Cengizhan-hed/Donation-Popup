@@ -12,13 +12,6 @@
   }
   const WDPApp = window.WDPApp;
   
-  // Güvenli log fonksiyonu (modüller yüklenmeden önce de çalışabilmeli)
-  function safeLog(...args) {
-    if (typeof console !== 'undefined' && console.log) {
-      console.log.apply(console, args);
-    }
-  }
-  
   // Modülleri güvenli bir şekilde al
   function getModule(name) {
     return WDPApp[name] || {};

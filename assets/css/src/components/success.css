@@ -2,7 +2,7 @@
 /* SUCCESS SCREEN & MINI CART */
 /* ==================== */
 
-.wdp-cart-animation {
+html body .wdp-cart-animation {
   animation: wdpCartBump 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   transform-origin: center;
 }
@@ -13,8 +13,8 @@
   100% { transform: scale(1); }
 }
 
-.wdp-cart-actions,
-.wdp-cart-actions a {
+html body .wdp-cart-actions,
+html body .wdp-cart-actions a {
   display: flex;
   flex-wrap: wrap;
   gap: var(--wdp-space-3);
@@ -23,12 +23,12 @@
   align-items: center;
 }
 
-.wdp-cart-actions a,
-.wdp-cart-actions button {
-  background: var(--wdp-primary);
+html body .wdp-cart-actions a,
+html body .wdp-cart-actions button {
+  background: var(--wdp-button-primary, var(--wdp-primary));
   color: var(--wdp-white);
   border: none;
-  border-radius: var(--wdp-radius-md);
+  border-radius: var(--wdp-button-radius, var(--wdp-radius-md));
   padding: var(--wdp-space-3) var(--wdp-space-6);
   font-size: var(--wdp-text-base);
   font-weight: 500;
@@ -40,40 +40,40 @@
   text-align: center;
 }
 
-.wdp-cart-actions a:hover,
-.wdp-cart-actions button:hover {
-  background: var(--wdp-primary-hover);
+html body .wdp-cart-actions a:hover,
+html body .wdp-cart-actions button:hover {
+  background: var(--wdp-button-primary-hover, var(--wdp-primary-hover));
   color: var(--wdp-white);
 }
 
-.wdp-cart-actions a.wdp-accent,
-.wdp-cart-actions button.wdp-accent {
+html body .wdp-cart-actions a.wdp-accent,
+html body .wdp-cart-actions button.wdp-accent {
   background: var(--wdp-accent);
   color: var(--wdp-white);
 }
 
-.wdp-cart-actions a.wdp-accent:hover,
-.wdp-cart-actions button.wdp-accent:hover {
+html body .wdp-cart-actions a.wdp-accent:hover,
+html body .wdp-cart-actions button.wdp-accent:hover {
   background: var(--wdp-accent-hover);
 }
 
-.wdp-modal .wdp-success-screen .wdp-success-buttons,
-.wdp-donation-form .wdp-success-screen .wdp-success-buttons {
+html body .wdp-modal .wdp-success-screen .wdp-success-buttons,
+html body .wdp-donation-form .wdp-success-screen .wdp-success-buttons {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
   margin-top: 12px;
 }
 
-.wdp-modal .wdp-success-screen .wdp-success-buttons .wdp-success-button,
-.wdp-donation-form .wdp-success-screen .wdp-success-buttons .wdp-success-button {
+html body .wdp-modal .wdp-success-screen .wdp-success-buttons .wdp-success-button,
+html body .wdp-donation-form .wdp-success-screen .wdp-success-buttons .wdp-success-button {
   display: inline-block;
   width: 100%;
-  background: #1e73be;
+  background: var(--wdp-success-button-color, #1e73be);
   background-image: none;
   color: #fff;
   border: none;
-  border-radius: 24px;
+  border-radius: var(--wdp-success-button-radius, 24px);
   padding: 12px 20px;
   font-size: 16px;
   font-weight: 600;
@@ -84,46 +84,46 @@
   text-align: center;
 }
 
-.wdp-modal .wdp-success-screen .wdp-success-buttons .wdp-success-button:hover,
-.wdp-modal .wdp-success-screen .wdp-success-buttons .wdp-success-button:focus,
-.wdp-donation-form .wdp-success-screen .wdp-success-buttons .wdp-success-button:hover,
-.wdp-donation-form .wdp-success-screen .wdp-success-buttons .wdp-success-button:focus {
-  background: #185d98;
+html body .wdp-modal .wdp-success-screen .wdp-success-buttons .wdp-success-button:hover,
+html body .wdp-modal .wdp-success-screen .wdp-success-buttons .wdp-success-button:focus,
+html body .wdp-donation-form .wdp-success-screen .wdp-success-buttons .wdp-success-button:hover,
+html body .wdp-donation-form .wdp-success-screen .wdp-success-buttons .wdp-success-button:focus {
+  background: var(--wdp-success-button-hover, #185d98);
   background-image: none;
   box-shadow: none;
   transform: translateY(-1px);
   color: #fff;
 }
 
-.wdp-modal .wdp-success-screen .wdp-success-buttons .wdp-new-donation,
-.wdp-donation-form .wdp-success-screen .wdp-success-buttons .wdp-new-donation {
+html body .wdp-modal .wdp-success-screen .wdp-success-buttons .wdp-new-donation,
+html body .wdp-donation-form .wdp-success-screen .wdp-success-buttons .wdp-new-donation {
   grid-column: 1 / -1;
 }
 
-.wdp-modal .wdp-success-screen .wdp-success-message,
-.wdp-donation-form .wdp-success-screen .wdp-success-message {
+html body .wdp-modal .wdp-success-screen .wdp-success-message,
+html body .wdp-donation-form .wdp-success-screen .wdp-success-message {
   font-size: var(--wdp-text-lg);
   font-weight: 600;
-  color: var(--wdp-success);
+  color: var(--wdp-success-message-color, #48bb78);
   text-align: center;
   margin: 0 0 var(--wdp-space-6) 0;
   padding: var(--wdp-space-4);
-  background: rgba(72, 187, 120, 0.1);
-  border: 1px solid rgba(72, 187, 120, 0.2);
-  border-radius: var(--wdp-radius-md);
+  background: var(--wdp-success-message-bg, rgba(72, 187, 120, 0.1));
+  border: 1px solid var(--wdp-success-message-border, rgba(72, 187, 120, 0.2));
+  border-radius: var(--wdp-success-message-radius, 8px);
 }
 
-.wdp-modal .wdp-success-screen .wdp-mini-cart,
-.wdp-donation-form .wdp-success-screen .wdp-mini-cart {
+html body .wdp-modal .wdp-success-screen .wdp-mini-cart,
+html body .wdp-donation-form .wdp-success-screen .wdp-mini-cart {
   margin-bottom: var(--wdp-space-6);
-  background: var(--wdp-gray-50);
-  border: 1px solid var(--wdp-gray-200);
-  border-radius: var(--wdp-radius-md);
+  background: var(--wdp-mini-cart-bg, #f9fafb);
+  border: 1px solid var(--wdp-mini-cart-border, #e5e7eb);
+  border-radius: var(--wdp-mini-cart-radius, 8px);
   padding: var(--wdp-space-4);
 }
 
-.wdp-modal .wdp-mini-cart-header h4,
-.wdp-donation-form .wdp-mini-cart-header h4 {
+html body .wdp-modal .wdp-mini-cart-header h4,
+html body .wdp-donation-form .wdp-mini-cart-header h4 {
   font-size: 20px;
   font-weight: 700;
   margin: 0 0 10px 0;
@@ -131,8 +131,8 @@
   letter-spacing: 0.5px;
 }
 
-.wdp-modal .wdp-mini-cart-items,
-.wdp-donation-form .wdp-mini-cart-items {
+html body .wdp-modal .wdp-mini-cart-items,
+html body .wdp-donation-form .wdp-mini-cart-items {
   max-height: 180px;
   overflow-y: auto;
   padding-right: 4px;
@@ -141,22 +141,22 @@
   scrollbar-color: #1e73be #f2f2f2;
 }
 
-.wdp-modal .wdp-mini-cart-items::-webkit-scrollbar,
-.wdp-donation-form .wdp-mini-cart-items::-webkit-scrollbar {
+html body .wdp-modal .wdp-mini-cart-items::-webkit-scrollbar,
+html body .wdp-donation-form .wdp-mini-cart-items::-webkit-scrollbar {
   width: 6px;
   background: #f2f2f2;
 }
 
-.wdp-modal .wdp-mini-cart-items::-webkit-scrollbar-thumb,
-.wdp-donation-form .wdp-mini-cart-items::-webkit-scrollbar-thumb {
+html body .wdp-modal .wdp-mini-cart-items::-webkit-scrollbar-thumb,
+html body .wdp-donation-form .wdp-mini-cart-items::-webkit-scrollbar-thumb {
   background: #1e73be;
   border-radius: 4px;
 }
 
-.wdp-modal .wdp-mini-cart-items table,
-.wdp-donation-form .wdp-mini-cart-items table,
-.wdp-modal .wdp-mini-cart-items .wdp-cart-item-table,
-.wdp-donation-form .wdp-mini-cart-items .wdp-cart-item-table {
+html body .wdp-modal .wdp-mini-cart-items table,
+html body .wdp-donation-form .wdp-mini-cart-items table,
+html body .wdp-modal .wdp-mini-cart-items .wdp-cart-item-table,
+html body .wdp-donation-form .wdp-mini-cart-items .wdp-cart-item-table {
   width: 100%;
   margin-bottom: 10px;
   border-bottom: 1px solid #eee;
@@ -164,71 +164,71 @@
   border-collapse: collapse;
 }
 
-.wdp-modal .wdp-mini-cart-items table td,
-.wdp-donation-form .wdp-mini-cart-items table td {
+html body .wdp-modal .wdp-mini-cart-items table td,
+html body .wdp-donation-form .wdp-mini-cart-items table td {
   padding: 10px;
   vertical-align: top;
 }
 
-.wdp-modal .wdp-mini-cart-items table td:first-child,
-.wdp-donation-form .wdp-mini-cart-items table td:first-child,
-.wdp-modal .wdp-mini-cart-items .wdp-cart-item-info,
-.wdp-donation-form .wdp-mini-cart-items .wdp-cart-item-info {
+html body .wdp-modal .wdp-mini-cart-items table td:first-child,
+html body .wdp-donation-form .wdp-mini-cart-items table td:first-child,
+html body .wdp-modal .wdp-mini-cart-items .wdp-cart-item-info,
+html body .wdp-donation-form .wdp-mini-cart-items .wdp-cart-item-info {
   width: 70%;
   text-align: left;
 }
 
-.wdp-modal .wdp-mini-cart-items table td:last-child,
-.wdp-donation-form .wdp-mini-cart-items table td:last-child,
-.wdp-modal .wdp-mini-cart-items .wdp-cart-item-details,
-.wdp-donation-form .wdp-mini-cart-items .wdp-cart-item-details {
+html body .wdp-modal .wdp-mini-cart-items table td:last-child,
+html body .wdp-donation-form .wdp-mini-cart-items table td:last-child,
+html body .wdp-modal .wdp-mini-cart-items .wdp-cart-item-details,
+html body .wdp-donation-form .wdp-mini-cart-items .wdp-cart-item-details {
   width: 30%;
   text-align: right;
 }
 
-.wdp-modal .wdp-mini-cart-items table div,
-.wdp-donation-form .wdp-mini-cart-items table div {
+html body .wdp-modal .wdp-mini-cart-items table div,
+html body .wdp-donation-form .wdp-mini-cart-items table div {
   margin-bottom: 4px;
 }
 
-.wdp-modal .wdp-mini-cart-items table td:first-child > div:first-child,
-.wdp-donation-form .wdp-mini-cart-items table td:first-child > div:first-child,
-.wdp-modal .wdp-mini-cart-items .wdp-cart-item-name,
-.wdp-donation-form .wdp-mini-cart-items .wdp-cart-item-name {
+html body .wdp-modal .wdp-mini-cart-items table td:first-child > div:first-child,
+html body .wdp-donation-form .wdp-mini-cart-items table td:first-child > div:first-child,
+html body .wdp-modal .wdp-mini-cart-items .wdp-cart-item-name,
+html body .wdp-donation-form .wdp-mini-cart-items .wdp-cart-item-name {
   font-weight: 600;
   font-size: 15px;
-  color: var(--wdp-gray-800);
+  color: var(--wdp-cart-item-name-color, #1f2937);
   margin-top: 0;
   margin-bottom: 4px;
   line-height: 1.4;
 }
 
-.wdp-modal .wdp-mini-cart-items .wdp-cart-item-meta,
-.wdp-donation-form .wdp-mini-cart-items .wdp-cart-item-meta {
+html body .wdp-modal .wdp-mini-cart-items .wdp-cart-item-meta,
+html body .wdp-donation-form .wdp-mini-cart-items .wdp-cart-item-meta {
   font-size: 13px;
   color: #666;
 }
 
-.wdp-modal .wdp-mini-cart-items .wdp-cart-item-meta-item,
-.wdp-donation-form .wdp-mini-cart-items .wdp-cart-item-meta-item {
+html body .wdp-modal .wdp-mini-cart-items .wdp-cart-item-meta-item,
+html body .wdp-donation-form .wdp-mini-cart-items .wdp-cart-item-meta-item {
   margin-bottom: 2px;
 }
 
-.wdp-modal .wdp-mini-cart-items .wdp-cart-item-quantity,
-.wdp-donation-form .wdp-mini-cart-items .wdp-cart-item-quantity {
+html body .wdp-modal .wdp-mini-cart-items .wdp-cart-item-quantity,
+html body .wdp-donation-form .wdp-mini-cart-items .wdp-cart-item-quantity {
   font-size: 13px;
   color: #666;
   margin-bottom: 3px;
 }
 
-.wdp-modal .wdp-mini-cart-items .wdp-cart-item-price,
-.wdp-donation-form .wdp-mini-cart-items .wdp-cart-item-price {
+html body .wdp-modal .wdp-mini-cart-items .wdp-cart-item-price,
+html body .wdp-donation-form .wdp-mini-cart-items .wdp-cart-item-price {
   font-size: 14px;
-  color: #1e73be;
+  color: var(--wdp-cart-item-price-color, #1e73be);
 }
 
-.wdp-modal .wdp-mini-cart-items .wdp-cart-empty,
-.wdp-donation-form .wdp-mini-cart-items .wdp-cart-empty {
+html body .wdp-modal .wdp-mini-cart-items .wdp-cart-empty,
+html body .wdp-donation-form .wdp-mini-cart-items .wdp-cart-empty {
   padding: 15px;
   text-align: center;
   color: var(--wdp-gray-600);
@@ -264,7 +264,7 @@
   .wdp-donation-form .wdp-success-screen .wdp-success-buttons .wdp-success-button {
     padding: 10px 12px;
     font-size: 13px;
-    border-radius: 14px;
+    border-radius: var(--wdp-success-button-radius, 24px);
   }
 
   .wdp-modal .wdp-mini-cart-items table td:first-child > div:first-child,
