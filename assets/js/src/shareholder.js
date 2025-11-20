@@ -42,6 +42,20 @@
   // Helper: Ensure shareholder list container exists
   function ensureShareholderList(container) {
     if (!container) return null;
+    
+    // CRITICAL: Container'ın görünürlüğünü garanti et
+    container.style.display = '';
+    container.style.visibility = 'visible';
+    container.style.opacity = '1';
+    
+    // CRITICAL: Parent area'nın da görünür olduğundan emin ol
+    const shareholdersArea = container.closest('.wdp-shareholders-area');
+    if (shareholdersArea) {
+      shareholdersArea.style.display = 'flex';
+      shareholdersArea.style.visibility = 'visible';
+      shareholdersArea.style.opacity = '1';
+    }
+    
     let list = container.querySelector(".wdp-shareholders-scroll");
     if (list) {
       // Mevcut listeyi görünür yap
@@ -377,6 +391,11 @@
     const form = document.createElement("div");
     form.className = "wdp-shareholder-form";
     form.setAttribute("data-index", index);
+
+    // CRITICAL: Form'un görünürlüğünü garanti et
+    form.style.display = '';
+    form.style.visibility = 'visible';
+    form.style.opacity = '1';
 
     // İlk form açık, diğerleri kapalı
     const isFirst = index === 1;
@@ -794,6 +813,21 @@
     const existingCount = existingForms.length;
     safeLog("Existing forms:", existingCount, "New count:", shareCount);
 
+    // CRITICAL: Container'ların görünürlüğünü garanti et
+    shareholdersContainer.style.display = '';
+    shareholdersContainer.style.visibility = 'visible';
+    shareholdersContainer.style.opacity = '1';
+    shareholdersList.style.display = '';
+    shareholdersList.style.visibility = 'visible';
+    shareholdersList.style.opacity = '1';
+    
+    const shareholdersArea = shareholdersContainer.closest('.wdp-shareholders-area');
+    if (shareholdersArea) {
+      shareholdersArea.style.display = 'flex';
+      shareholdersArea.style.visibility = 'visible';
+      shareholdersArea.style.opacity = '1';
+    }
+    
     // CRITICAL: Sadece 1. form gösterilsin - diğer formlar oluşturulur ama gizlenir
     if (shareCount > existingCount) {
       // Yeni formlar ekle
@@ -801,7 +835,14 @@
         const newForm = createShareholderForm(i);
         // Sadece 1. form görünür, diğerleri gizli
         if (i > 1) {
-          newForm.style.display = 'none';
+          newForm.style.display = '';
+          newForm.style.visibility = 'visible';
+          newForm.style.opacity = '1';
+          newForm.classList.add('collapsed');
+          const content = newForm.querySelector('.wdp-shareholder-content');
+          if (content) {
+            content.style.display = 'none';
+          }
         }
         shareholdersList.appendChild(newForm);
       }
@@ -830,6 +871,8 @@
         const content = form.querySelector('.wdp-shareholder-content');
         if (content) {
           content.style.display = 'flex';
+          content.style.visibility = 'visible';
+          content.style.opacity = '1';
         }
       } else {
         // Scroll için form görünür olmalı ama içeriği gizli
@@ -853,7 +896,7 @@
     
     // CRITICAL: Update scrollable class immediately - BEFORE browser renders
     // This prevents modal expansion by applying height constraints instantly
-    const shareholdersArea = shareholdersContainer.closest('.wdp-shareholders-area');
+    // shareholdersArea'yı yukarıda zaten tanımladık, tekrar tanımlamaya gerek yok
     if (shareholdersArea && shareCount > 1) {
       // Immediately add scrollable class before updateShareholdersScrollable
       shareholdersArea.classList.add('scrollable');
@@ -862,6 +905,16 @@
       // Remove scrollable class when count is 1
       shareholdersArea.classList.remove('scrollable');
       shareholdersContainer.classList.remove('scrollable');
+      // CRITICAL: ShareCount 1'e düştüğünde container'ların görünürlüğünü garanti et
+      shareholdersArea.style.display = 'flex';
+      shareholdersArea.style.visibility = 'visible';
+      shareholdersArea.style.opacity = '1';
+      shareholdersContainer.style.display = '';
+      shareholdersContainer.style.visibility = 'visible';
+      shareholdersContainer.style.opacity = '1';
+      shareholdersList.style.display = '';
+      shareholdersList.style.visibility = 'visible';
+      shareholdersList.style.opacity = '1';
     }
     
     // Then update scrollable state (this will clean up and ensure consistency)

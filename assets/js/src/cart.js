@@ -268,6 +268,18 @@
           }
         }
         
+        // Fiyat gösterimi: Eğer price_html varsa onu kullan (Currency eklentisi desteği için)
+        // Aksi halde formatPrice kullan ama para birimi sembolü ekleme (price_html zaten içeriyor)
+        let priceDisplay = '';
+        if (item.price_html && typeof item.price_html === 'string' && item.price_html.trim() !== '') {
+          // price_html zaten formatlanmış HTML içeriyor (Currency eklentisi desteği ile)
+          priceDisplay = item.price_html;
+        } else {
+          // Fallback: Eğer price_html yoksa, formatPrice kullan ve para birimi sembolü ekle
+          const currencySymbol = (wdp_ajax && wdp_ajax.currency && wdp_ajax.currency.symbol) ? wdp_ajax.currency.symbol : '₺';
+          priceDisplay = formatPrice(totalPrice) + ' ' + currencySymbol;
+        }
+        
         // Ürün adını al (product_name veya name)
         const productName = item.product_name || item.name || 'Ürün';
         
@@ -290,10 +302,11 @@
           price: item.price,
           parsedPrice: itemPrice,
           line_total: item.line_total,
+          price_html: item.price_html,
           quantity: item.quantity,
           parsedQuantity: itemQuantity,
           totalPrice: totalPrice,
-          formattedPrice: formatPrice(totalPrice)
+          priceDisplay: priceDisplay
         });
 
         // Temiz HTML yapısı - CSS class'ları kullanıyor
@@ -314,7 +327,7 @@
           </td>
           <td class="wdp-cart-item-details">
             <div class="wdp-cart-item-quantity">${itemQuantity} adet</div>
-            <div class="wdp-cart-item-price">${formatPrice(totalPrice)} TL</div>
+            <div class="wdp-cart-item-price">${priceDisplay}</div>
           </td>
         </tr>
       </table>

@@ -122,6 +122,10 @@ class WDP_Assets {
             
             // Localize script (sadece bir kez)
             if (!did_action('wp_localize_script_wdp-utils-js')) {
+                // Get current currency (supports Currency switcher plugins)
+                $current_currency = function_exists('get_woocommerce_currency') ? get_woocommerce_currency() : 'TRY';
+                $currency_symbol = function_exists('get_woocommerce_currency_symbol') ? get_woocommerce_currency_symbol($current_currency) : '₺';
+                
                 wp_localize_script('wdp-utils-js', 'wdp_ajax', array(
                     'ajax_url' => admin_url('admin-ajax.php'),
                     'plugin_url' => $plugin_url,
@@ -142,6 +146,10 @@ class WDP_Assets {
                     'wc_loaded' => class_exists('WooCommerce'),
                     'home_url' => home_url(),
                     'site_url' => site_url(),
+                    'currency' => array(
+                        'code' => $current_currency,
+                        'symbol' => $currency_symbol,
+                    ),
                     'strings' => array(
                         'loading' => __('Yükleniyor...', 'woo-donation-popup'),
                         'error' => __('Bir hata oluştu', 'woo-donation-popup'),
@@ -753,6 +761,10 @@ class WDP_Assets {
             $css_version
         );
 
+        // Get current currency (supports Currency switcher plugins)
+        $current_currency = function_exists('get_woocommerce_currency') ? get_woocommerce_currency() : 'TRY';
+        $currency_symbol = function_exists('get_woocommerce_currency_symbol') ? get_woocommerce_currency_symbol($current_currency) : '₺';
+        
         wp_localize_script('wdp-utils-js', 'wdp_ajax', array(
             'ajax_url' => admin_url('admin-ajax.php'),
             'plugin_url' => $plugin_url,
@@ -773,6 +785,10 @@ class WDP_Assets {
             'wc_loaded' => class_exists('WooCommerce'),
             'home_url' => home_url(),
             'site_url' => site_url(),
+            'currency' => array(
+                'code' => $current_currency,
+                'symbol' => $currency_symbol,
+            ),
                     'strings' => array(
                         'loading' => __('Yükleniyor...', 'woo-donation-popup'),
                         'error' => __('Bir hata oluştu', 'woo-donation-popup'),

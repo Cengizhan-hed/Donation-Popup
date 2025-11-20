@@ -92,19 +92,33 @@
     const numericValue = Number((typeof amount === 'string' ? amount.replace(/\s+/g, '').replace(/\./g, '').replace(',', '.') : amount))
 
     if (!Number.isFinite(numericValue)) {
-      return '₺0,00'
+      // Para birimi bilgisini al (Currency eklentisi desteği için)
+      const currencySymbol = (wdp_ajax && wdp_ajax.currency && wdp_ajax.currency.symbol) ? wdp_ajax.currency.symbol : '₺'
+      return currencySymbol + '0,00'
+    }
+
+    // Para birimi bilgisini al (Currency eklentisi desteği için)
+    const currencyCode = (wdp_ajax && wdp_ajax.currency && wdp_ajax.currency.code) ? wdp_ajax.currency.code : 'TRY'
+    const currencySymbol = (wdp_ajax && wdp_ajax.currency && wdp_ajax.currency.symbol) ? wdp_ajax.currency.symbol : '₺'
+    
+    // Locale belirle (para birimine göre)
+    let locale = 'tr-TR'
+    if (currencyCode === 'USD') {
+      locale = 'en-US'
+    } else if (currencyCode === 'EUR') {
+      locale = 'de-DE'
     }
 
     try {
-      return new Intl.NumberFormat('tr-TR', Object.assign({
+      return new Intl.NumberFormat(locale, Object.assign({
         style: 'currency',
-        currency: 'TRY',
+        currency: currencyCode,
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
       }, options)).format(numericValue)
     } catch (error) {
       // Intl desteklemezse basit formata geri dön
-      return `${formatPrice(numericValue)} TL`
+      return `${formatPrice(numericValue)} ${currencySymbol}`
     }
   }
 
