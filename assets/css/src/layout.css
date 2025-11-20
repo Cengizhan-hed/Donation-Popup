@@ -128,8 +128,17 @@ body .wdp-modal.show {
   box-shadow: none;
 }
 
+/* CRITICAL: Prevent body scroll when modal is open - without position: fixed */
+/* This prevents page movement while keeping scroll position intact */
 body.wdp-modal-open {
   overflow: hidden;
+  /* Prevent layout shift when scrollbar disappears */
+  padding-right: var(--wdp-scrollbar-width, 0px);
+}
+
+/* Calculate scrollbar width and store it as CSS variable */
+html {
+  --wdp-scrollbar-width: calc(100vw - 100%);
 }
 
 /* Modal content with high specificity - Highest specificity to ensure padding is preserved */

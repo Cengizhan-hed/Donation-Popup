@@ -56,38 +56,41 @@
       formInitializer.inline();
     }
 
-    // Sayfa yüklendikten sonra da bir kez daha kontrol et (bazı temalar için)
-    setTimeout(() => {
-      // Modülleri tekrar güncelle
-      const moduleLoader = getModule('moduleLoader');
-      if (moduleLoader && typeof moduleLoader.update === 'function') {
-        moduleLoader.update();
-      }
-      
-      // ✅ GÜVENLİ: Event listener'lar için flag kontrolü (gereksiz tekrar önlenir)
-      // Note: setTimeout içinde flag kontrolü yok, çünkü bazı temalar için gerekli olabilir
-      // Ama zaten yukarıda flag kontrolü var, buradaki çağrı sadece modül güncellemesi için
-      const eventManager = getModule('eventManager');
-      if (eventManager && typeof eventManager.init === 'function' && !listenersInitialized) {
-        eventManager.init();
-        listenersInitialized = true;
-      }
-      
-      // Side cart elementlerini tekrar kaydet
-      if (cart && typeof cart.saveSideCartElements === 'function') {
-        cart.saveSideCartElements();
-      }
-      
-      // Inline style'ları tekrar kaldır (tema/eklenti dinamik olarak ekleyebilir)
-      if (dom && typeof dom.removeInlineStylesFromTitles === 'function') {
-        dom.removeInlineStylesFromTitles();
-      }
-      
-      // Formları tekrar başlat
-      if (formInitializer && typeof formInitializer.inline === 'function') {
-        formInitializer.inline();
-      }
-    }, (WDPApp.constants && WDPApp.constants.TIMING && WDPApp.constants.TIMING.FALLBACK_CHECK_DELAY) || 1000);
+    // Sayfa yüklendikten sonra da bir kez daha kontrol et (bazı temalar için) - Optimized delay
+    const fallbackDelay = (WDPApp.constants && WDPApp.constants.TIMING && WDPApp.constants.TIMING.FALLBACK_CHECK_DELAY) || 100;
+    if (fallbackDelay > 0) {
+      setTimeout(() => {
+        // Modülleri tekrar güncelle
+        const moduleLoader = getModule('moduleLoader');
+        if (moduleLoader && typeof moduleLoader.update === 'function') {
+          moduleLoader.update();
+        }
+        
+        // ✅ GÜVENLİ: Event listener'lar için flag kontrolü (gereksiz tekrar önlenir)
+        // Note: setTimeout içinde flag kontrolü yok, çünkü bazı temalar için gerekli olabilir
+        // Ama zaten yukarıda flag kontrolü var, buradaki çağrı sadece modül güncellemesi için
+        const eventManager = getModule('eventManager');
+        if (eventManager && typeof eventManager.init === 'function' && !listenersInitialized) {
+          eventManager.init();
+          listenersInitialized = true;
+        }
+        
+        // Side cart elementlerini tekrar kaydet
+        if (cart && typeof cart.saveSideCartElements === 'function') {
+          cart.saveSideCartElements();
+        }
+        
+        // Inline style'ları tekrar kaldır (tema/eklenti dinamik olarak ekleyebilir)
+        if (dom && typeof dom.removeInlineStylesFromTitles === 'function') {
+          dom.removeInlineStylesFromTitles();
+        }
+        
+        // Formları tekrar başlat
+        if (formInitializer && typeof formInitializer.inline === 'function') {
+          formInitializer.inline();
+        }
+      }, fallbackDelay);
+    }
   }
 
   // Modüllerin yüklenmesini bekle ve başlat
@@ -103,15 +106,15 @@
     }
   }
 
-  // Initialization strategy - simplified single approach
+  // Initialization strategy - simplified single approach - INSTANT execution
   function startInitialization() {
     // Check if DOM is ready
     if (document.readyState === 'loading') {
       // Wait for DOMContentLoaded
       document.addEventListener("DOMContentLoaded", initialize);
     } else {
-      // DOM already ready, initialize immediately
-      setTimeout(initialize, 100);
+      // DOM already ready, initialize immediately (no delay)
+      initialize();
     }
     
     // Fallback: Window load event (ensures all scripts are loaded)

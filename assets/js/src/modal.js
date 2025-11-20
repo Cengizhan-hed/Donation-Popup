@@ -77,10 +77,6 @@
       safeLog("Modal found, current display:", modal.style.display)
       safeLog("Modal current classes:", modal.className)
 
-      // Mevcut scroll pozisyonunu kaydet
-      const scrollPosition = window.pageYOffset || document.documentElement.scrollTop
-      safeLog("Scroll position:", scrollPosition)
-
       state.lastFocusedElement = document.activeElement instanceof HTMLElement ? document.activeElement : null
 
       if (state.focusTrapCleanup) {
@@ -120,71 +116,55 @@
       safeLog("Modal classes after show:", modal.className)
       safeLog("Modal display after show:", modal.style.display)
 
-      // Body'yi sabitle ama scroll pozisyonunu koru
-      // SADECE masaüstünde position: fixed uygula, mobilde uygulama!
-      if (window.innerWidth > 600) {
-        document.body.style.position = "fixed"
-        document.body.style.top = `-${scrollPosition}px`
-        document.body.style.width = "100%"
-        document.body.style.overflow = "hidden"
-      } else {
-        document.body.style.position = ""
-        document.body.style.top = ""
-        document.body.style.width = ""
-        document.body.style.overflow = "hidden"
+      // CRITICAL: Sadece overflow: hidden kullan - position: fixed kullanma
+      // Bu şekilde scroll pozisyonu korunur ve sayfa hareket etmez
+      // Scrollbar genişliğini hesapla ve padding ekle (layout shift önlemek için)
+      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth
+      if (scrollbarWidth > 0) {
+        document.documentElement.style.setProperty('--wdp-scrollbar-width', scrollbarWidth + 'px')
       }
-      document.body.dataset.scrollPosition = scrollPosition
-
+      document.body.style.overflow = "hidden"
       document.body.classList.add("wdp-modal-open")
       safeLog("Body classes after modal open:", document.body.className)
 
-      // Hissedar bölümünü kontrol et ve hemen ayarla
-      const sharesSection = modal.querySelector(".wdp-shares-section")
-      const shareCountInput = modal.querySelector('input[name="share_count"]')
-      
-      if (sharesSection || shareCountInput) {
-        safeLog("Shareholder form detected, setting up")
-        // Ürün adedi bölümünü gizle (Hisseli formda ürün adedi hissedar sayısına göre otomatik belirlenir)
-        const quantityRow = modal.querySelector(".wdp-product-quantity")
-        if (quantityRow) {
-          quantityRow.style.display = "none"
-        }
+        // Hissedar bölümünü kontrol et ve hemen ayarla - INSTANT (no delay)
+        const sharesSection = modal.querySelector(".wdp-shares-section")
+        const shareCountInput = modal.querySelector('input[name="share_count"]')
+        
+        if (sharesSection || shareCountInput) {
+          safeLog("Shareholder form detected, setting up")
+          // Ürün adedi bölümünü gizle (Hisseli formda ürün adedi hissedar sayısına göre otomatik belirlenir)
+          const quantityRow = modal.querySelector(".wdp-product-quantity")
+          if (quantityRow) {
+            quantityRow.style.display = "none"
+          }
 
-        // Hissedar formlarını oluştur - Modal açıldıktan sonra biraz bekle (DOM hazır olsun)
-        if (WDPApp.shareholder) {
-          // Önce setup fonksiyonunu kontrol et (export'ta setup olarak tanımlı)
-          const setupFunc = WDPApp.shareholder.setup || WDPApp.shareholder.setupShareholderForms;
-          if (setupFunc && typeof setupFunc === 'function') {
-            safeLog("Setting up shareholder forms for modal:", modal.id);
-            // DOM'un tamamen hazır olması için biraz bekle
-                const constants = WDPApp.constants || {};
-                const modalDelay = constants.TIMING ? constants.TIMING.MODAL_OPEN_DELAY : 50;
-                setTimeout(function() {
+          // Hissedar formlarını oluştur - INSTANT (no delay for maximum performance)
+          if (WDPApp.shareholder) {
+            // Önce setup fonksiyonunu kontrol et (export'ta setup olarak tanımlı)
+            const setupFunc = WDPApp.shareholder.setup || WDPApp.shareholder.setupShareholderForms;
+            if (setupFunc && typeof setupFunc === 'function') {
+              safeLog("Setting up shareholder forms for modal:", modal.id);
+              // INSTANT execution - no delay
               try {
                 setupFunc(modal, productId);
                 safeLog("Shareholder forms setup completed");
               } catch (error) {
                 safeLog("ERROR setting up shareholder forms:", error);
                 safeLog("Error stack:", error.stack);
-                // Retry once after a longer delay
-                setTimeout(function() {
-                  try {
-                    setupFunc(modal, productId);
-                    safeLog("Shareholder forms setup retry completed");
-                  } catch (retryError) {
-                    safeLog("ERROR on retry setting up shareholder forms:", retryError);
-                  }
-                }, 200);
-                  }
-                }, modalDelay);
-              } else {
-                safeLog("ERROR: setupShareholderForms function not found in WDPApp.shareholder");
+                // Retry once immediately (no delay)
+                try {
+                  setupFunc(modal, productId);
+                  safeLog("Shareholder forms setup retry completed");
+                } catch (retryError) {
+                  safeLog("ERROR on retry setting up shareholder forms:", retryError);
+                }
               }
             } else {
-              // Modül henüz yüklenmemişse, biraz bekle ve tekrar dene
-              const constants = WDPApp.constants || {};
-              const retryDelay = constants.TIMING ? constants.TIMING.RETRY_DELAY * 2 : 200;
-              setTimeout(function() {
+              safeLog("ERROR: setupShareholderForms function not found in WDPApp.shareholder");
+            }
+          } else {
+            // Modül henüz yüklenmemişse, immediate retry (no delay)
             if (WDPApp.shareholder) {
               const setupFunc = WDPApp.shareholder.setup || WDPApp.shareholder.setupShareholderForms;
               if (setupFunc && typeof setupFunc === 'function') {
@@ -192,9 +172,8 @@
                 setupFunc(modal, productId);
               }
             }
-          }, 200);
+          }
         }
-      }
 
       // Ürün bilgilerini AJAX ile al
       if (WDPApp.product && WDPApp.product.fetchProductInfo) {
@@ -270,9 +249,6 @@
   function closeModal(modal) {
     if (!modal) return
 
-    // Kaydedilmiş scroll pozisyonunu al
-    const scrollPosition = Number.parseInt(document.body.dataset.scrollPosition || "0", 10)
-
     // Modal'ı gizle - CSS class'ı da kaldır
     modal.classList.remove("show")
     modal.style.display = "none"
@@ -287,14 +263,10 @@
     
     document.body.classList.remove("wdp-modal-open")
 
-    // body'nin position ve width/height stillerini kaldır
-    document.body.style.position = ""
-    document.body.style.width = ""
+    // CRITICAL: Sadece overflow'u kaldır - position: fixed kullanmadığımız için scroll pozisyonu zaten korunuyor
     document.body.style.overflow = ""
-    document.body.style.top = ""
-
-    // Scroll pozisyonunu geri yükle (her zaman uygula)
-    window.scrollTo(0, scrollPosition)
+    // Scrollbar width CSS variable'ını da temizle
+    document.documentElement.style.removeProperty('--wdp-scrollbar-width')
 
     // Olay dinleyicilerini kaldır
     document.removeEventListener("mousedown", handleOutsideClick)

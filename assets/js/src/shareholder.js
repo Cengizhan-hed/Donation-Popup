@@ -584,101 +584,154 @@
       newCopyBtn.classList.add('is-active');
     }
 
-    // Hisse adedini güncelle - Global fonksiyonu kullan
+    // CRITICAL: Context root'u bir kez al (gereksiz tekrarı önle)
+    const contextRoot = container.closest('.wdp-modal') || container.closest('.wdp-donation-form');
+    
+    // CRITICAL: Tüm hissedar form yapısını görünür yap
+    const sharesSection = container.closest('.wdp-shares-section');
+    if (sharesSection) {
+      sharesSection.style.display = 'flex';
+      sharesSection.style.flexDirection = 'column';
+      sharesSection.style.visibility = 'visible';
+      sharesSection.style.opacity = '1';
+      sharesSection.removeAttribute('hidden');
+    }
+    
+    const sharesHeader = sharesSection ? sharesSection.querySelector('.wdp-shares-header') : null;
+    if (sharesHeader) {
+      sharesHeader.style.display = 'grid';
+      sharesHeader.style.visibility = 'visible';
+      sharesHeader.style.opacity = '1';
+      sharesHeader.removeAttribute('hidden');
+    }
+    
+    // CRITICAL: Share counter görünürlüğünü garanti et
+    const shareCounter = sharesSection ? sharesSection.querySelector('.wdp-share-counter') : (contextRoot ? contextRoot.querySelector('.wdp-share-counter') : null);
+    if (shareCounter) {
+      shareCounter.style.display = 'flex';
+      shareCounter.style.visibility = 'visible';
+      shareCounter.style.opacity = '1';
+      shareCounter.removeAttribute('hidden');
+      const shareCountInputInCounter = shareCounter.querySelector('input[name="share_count"]');
+      if (shareCountInputInCounter) {
+        shareCountInputInCounter.style.visibility = 'visible';
+        shareCountInputInCounter.style.opacity = '1';
+        shareCountInputInCounter.style.color = '#1f2937';
+        shareCountInputInCounter.style.display = 'block';
+        shareCountInputInCounter.removeAttribute('hidden');
+        // CRITICAL: Input değerinin görünür olmasını garanti et (WebKit için)
+        shareCountInputInCounter.style.webkitTextFillColor = '#1f2937';
+      }
+    }
+    
+    // CRITICAL: Shareholders area görünürlüğünü garanti et
+    const shareholdersArea = container.closest('.wdp-shareholders-area');
+    if (shareholdersArea) {
+      shareholdersArea.style.display = 'flex';
+      shareholdersArea.style.flexDirection = 'column';
+      shareholdersArea.style.visibility = 'visible';
+      shareholdersArea.style.opacity = '1';
+      shareholdersArea.removeAttribute('hidden');
+    }
+    
+    // CRITICAL: Container ve list görünürlüğünü garanti et
+    if (container) {
+      container.style.display = 'flex';
+      container.style.flexDirection = 'column';
+      container.style.visibility = 'visible';
+      container.style.opacity = '1';
+      container.removeAttribute('hidden');
+    }
+    
+    if (list) {
+      list.style.display = 'flex';
+      list.style.flexDirection = 'column';
+      list.style.visibility = 'visible';
+      list.style.opacity = '1';
+      list.removeAttribute('hidden');
+    }
+    
+    // CRITICAL: Tüm formları kapat, yeni formu aç (accordion davranışı)
+    const allForms = list.querySelectorAll('.wdp-shareholder-form');
+    allForms.forEach((form) => {
+      if (form === newForm) {
+        // Yeni formu aç
+        form.classList.remove('collapsed');
+        const content = form.querySelector('.wdp-shareholder-content');
+        if (content) {
+          content.style.display = 'flex';
+          content.style.visibility = 'visible';
+          content.style.opacity = '1';
+        }
+        // Form görünürlüğünü garanti et
+        form.style.display = '';
+        form.style.visibility = 'visible';
+        form.style.opacity = '1';
+      } else {
+        // Diğer tüm formları kapat
+        form.classList.add('collapsed');
+        const content = form.querySelector('.wdp-shareholder-content');
+        if (content) {
+          content.style.display = 'none';
+        }
+      }
+    });
+    
+    // CRITICAL: Hisse adedini güncelle
     safeLog(`Kopyalama sonrası hisse adedi güncelleniyor: ${newIndex}`);
     
-    // 1. Önce global fonksiyonu dene
-    if (typeof window.updateShareCountForModal === 'function') {
-      window.updateShareCountForModal(newIndex);
-      safeLog(`Global fonksiyon ile hisse adedi güncellendi: ${newIndex}`);
-    } else {
-      // 2. Fallback - Manuel güncelleme
-      const allShareCountInputs = document.querySelectorAll('input[name="share_count"]');
-      allShareCountInputs.forEach(input => {
-        input.value = newIndex;
-        // Event'leri tetikle
-        input.dispatchEvent(new Event('input', { bubbles: true }));
-        input.dispatchEvent(new Event('change', { bubbles: true }));
-        safeLog(`Manuel hisse adedi güncellendi: ${newIndex}`);
-      });
-    }
+    // CRITICAL: Tüm share_count input'larını güncelle ve görünür yap
+    const allShareCountInputs = contextRoot ? contextRoot.querySelectorAll('input[name="share_count"]') : document.querySelectorAll('input[name="share_count"]');
+    allShareCountInputs.forEach(input => {
+      input.value = newIndex;
+      // CRITICAL: Input görünürlüğünü garanti et
+      input.style.visibility = 'visible';
+      input.style.opacity = '1';
+      input.style.color = '#1f2937';
+      input.style.display = 'block';
+      input.style.webkitTextFillColor = '#1f2937';
+      input.removeAttribute('hidden');
+      // CRITICAL: Parent container'ı da görünür yap
+      const parentCounter = input.closest('.wdp-share-counter');
+      if (parentCounter) {
+        parentCounter.style.display = 'flex';
+        parentCounter.style.visibility = 'visible';
+        parentCounter.style.opacity = '1';
+        parentCounter.removeAttribute('hidden');
+      }
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      input.dispatchEvent(new Event('change', { bubbles: true }));
+    });
     
-    // 3. Ek güvenlik - Modal içindeki tüm input'ları kontrol et
-    const modal = container.closest('.wdp-modal');
-    if (modal) {
-      const modalShareInputs = modal.querySelectorAll('input[name="share_count"]');
-      modalShareInputs.forEach(input => {
-        input.value = newIndex;
-        input.dispatchEvent(new Event('input', { bubbles: true }));
-        input.dispatchEvent(new Event('change', { bubbles: true }));
-        safeLog(`Modal içi hisse adedi güncellendi: ${newIndex}`);
-      });
-    }
-    
-    // 4. Quantity input'unu da güncelle
-    const quantityInput = container.closest('.wdp-donation-form').querySelector('input[name="quantity"]');
+    // Quantity input'unu güncelle
+    const quantityInput = contextRoot ? contextRoot.querySelector('input[name="quantity"]') : null;
     if (quantityInput) {
       quantityInput.value = newIndex;
-      safeLog(`Quantity input güncellendi: ${newIndex}`);
     }
     
-    // Fiyat hesaplamasını manuel olarak yap
-    const priceInput = container.closest('.wdp-donation-form').querySelector('input[name="custom_price"]');
-    
-    if (priceInput) {
-      // Mevcut fiyatı al ve hisse başına düşen fiyatı hesapla
+    // Fiyat hesaplamasını yap
+    const priceInput = contextRoot ? contextRoot.querySelector('input[name="custom_price"]') : null;
+    if (priceInput && priceInput.value) {
       const currentPrice = parseFloat(priceInput.value) || 0;
-      const currentShares = parseFloat(newIndex) || 1;
-      const basePrice = currentPrice / currentShares;
-      
-      // Yeni toplam fiyatı hesapla
+      // CRITICAL: Mevcut hisse sayısını kullan (currentCount değil, mevcut share_count değeri)
+      const currentShareCount = currentCount > 0 ? currentCount : 1;
+      const basePrice = currentShareCount > 0 ? currentPrice / currentShareCount : currentPrice;
       const totalPrice = basePrice * newIndex;
       priceInput.value = totalPrice.toFixed(0);
       safeLog(`Fiyat güncellendi: ${totalPrice} TL (${basePrice} TL x ${newIndex} hisse)`);
     }
     
-    const contextRoot = container.closest('.wdp-modal') || container.closest('.wdp-donation-form');
+    // Scrollable durumunu güncelle
     updateShareholdersScrollable(contextRoot);
     
-    // CRITICAL: Tüm güncellemeler tamamlandıktan sonra form durumlarını ayarla
-    // Orijinal formu kapat, yeni formu aç
+    // Badge'i güncelle
+    if (contextRoot && list) {
+      updateCollapsedFormsCount(contextRoot, list);
+    }
+    
+    // Yeni formu görünür alana scroll et
     requestAnimationFrame(() => {
-      // Tüm formları bul
-      const allForms = list.querySelectorAll('.wdp-shareholder-form');
-      
-      // Orijinal formu kapat
-      originalForm.classList.add('collapsed');
-      const originalContent = originalForm.querySelector('.wdp-shareholder-content');
-      if (originalContent) {
-        originalContent.style.display = 'none';
-      }
-      
-      // Tüm diğer formları kapat (yeni form hariç)
-      allForms.forEach((form) => {
-        if (form !== newForm && form !== originalForm) {
-          form.classList.add('collapsed');
-          const content = form.querySelector('.wdp-shareholder-content');
-          if (content) {
-            content.style.display = 'none';
-          }
-        }
-      });
-      
-      // Yeni formu aç
-      newForm.classList.remove('collapsed');
-      const newContent = newForm.querySelector('.wdp-shareholder-content');
-      if (newContent) {
-        newContent.style.display = 'flex';
-      }
-      
-      // Badge'i güncelle
-      if (contextRoot) {
-        updateCollapsedFormsCount(contextRoot, list);
-      }
-      
-      // Yeni forma scroll yap
       newForm.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-      
       safeLog(`Hissedar formu kopyalandı: ${newIndex}. Hissedar (açık olarak)`);
     });
   }
@@ -1042,33 +1095,60 @@
       // CRITICAL: Tüm container'ları görünür yap - önce en üst seviyeden başla
       const sharesSection = shareholdersContainer.closest('.wdp-shares-section');
       if (sharesSection) {
-        sharesSection.style.display = '';
+        sharesSection.style.display = 'flex';
+        sharesSection.style.flexDirection = 'column';
         sharesSection.style.visibility = 'visible';
         sharesSection.style.opacity = '1';
-        safeLog("Shares section made visible");
+        sharesSection.removeAttribute('hidden');
+        safeLog("Shares section made visible with flex display");
       }
       
       const sharesHeader = $modal('.wdp-shares-header');
       if (sharesHeader) {
-        sharesHeader.style.display = '';
+        sharesHeader.style.display = 'grid';
         sharesHeader.style.visibility = 'visible';
         sharesHeader.style.opacity = '1';
-        safeLog("Shares header made visible");
+        sharesHeader.removeAttribute('hidden');
+        safeLog("Shares header made visible with grid display");
+      }
+      
+      // CRITICAL: Share counter input'unu görünür yap ve değeri göster
+      const shareCounter = $modal('.wdp-share-counter');
+      if (shareCounter) {
+        shareCounter.style.display = 'flex';
+        shareCounter.style.visibility = 'visible';
+        shareCounter.style.opacity = '1';
+        shareCounter.removeAttribute('hidden');
+        const shareCountInputInCounter = shareCounter.querySelector('input[name="share_count"]');
+        if (shareCountInputInCounter) {
+          shareCountInputInCounter.style.visibility = 'visible';
+          shareCountInputInCounter.style.opacity = '1';
+          shareCountInputInCounter.style.color = '#1f2937';
+          shareCountInputInCounter.style.display = 'block';
+          shareCountInputInCounter.removeAttribute('hidden');
+          // CRITICAL: Input değerinin görünür olmasını garanti et
+          shareCountInputInCounter.style.webkitTextFillColor = '#1f2937';
+          safeLog("Share counter input made visible");
+        }
       }
       
       // Hissedar alanını da görünür yap
       const shareholdersArea = shareholdersContainer.closest('.wdp-shareholders-area');
       if (shareholdersArea) {
-        shareholdersArea.style.display = '';
+        shareholdersArea.style.display = 'flex';
+        shareholdersArea.style.flexDirection = 'column';
         shareholdersArea.style.visibility = 'visible';
         shareholdersArea.style.opacity = '1';
+        shareholdersArea.removeAttribute('hidden');
         safeLog("Shareholders area made visible");
       }
       
       // Container'ı görünür yap
-      shareholdersContainer.style.display = '';
+      shareholdersContainer.style.display = 'flex';
+      shareholdersContainer.style.flexDirection = 'column';
       shareholdersContainer.style.visibility = 'visible';
       shareholdersContainer.style.opacity = '1';
+      shareholdersContainer.removeAttribute('hidden');
       safeLog("Shareholders container made visible");
       
       // Hissedar listesini oluştur veya bul
@@ -1079,13 +1159,22 @@
       }
       
       // CRITICAL: Shareholders list'i görünür yap
-      shareholdersList.style.display = '';
+      shareholdersList.style.display = 'flex';
+      shareholdersList.style.flexDirection = 'column';
       shareholdersList.style.visibility = 'visible';
       shareholdersList.style.opacity = '1';
+      shareholdersList.removeAttribute('hidden');
       safeLog("Shareholders list made visible");
 
       // Başlangıç değerini 1 olarak ayarla ve event'leri tetikle
       shareCountInput.value = "1";
+      // CRITICAL: Input görünürlüğünü garanti et
+      shareCountInput.style.visibility = 'visible';
+      shareCountInput.style.opacity = '1';
+      shareCountInput.style.color = '#1f2937';
+      shareCountInput.style.display = 'block';
+      shareCountInput.style.webkitTextFillColor = '#1f2937';
+      shareCountInput.removeAttribute('hidden');
       shareCountInput.dispatchEvent(new Event('input', { bubbles: true }));
       shareCountInput.dispatchEvent(new Event('change', { bubbles: true }));
       safeLog("Initial share count set to 1");

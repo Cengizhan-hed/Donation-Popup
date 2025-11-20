@@ -45,16 +45,13 @@
       if (setupFormSubmission && typeof setupFormSubmission === 'function') {
         setupFormSubmission(formElement);
       } else {
-        // Modül henüz yüklenmemişse, biraz bekle ve tekrar dene
-        const constants = WDPApp.constants || {};
-        const timing = constants.TIMING || {};
-        const retryDelay = timing.RETRY_DELAY || 100;
-        setTimeout(function() {
+        // INSTANT retry (no delay) - use requestAnimationFrame for next tick
+        requestAnimationFrame(function() {
           const retry = updateModuleFunctions();
           if (retry.setupFormSubmission && typeof retry.setupFormSubmission === 'function') {
             retry.setupFormSubmission(formElement);
           }
-        }, retryDelay);
+        });
       }
       
       // Hisseli form mu kontrol et - DOM query caching
@@ -67,11 +64,8 @@
             setupShareholderForms(formContainer, productId);
           }
         } else {
-          // Modül henüz yüklenmemişse, biraz bekle ve tekrar dene
-          const constants = WDPApp.constants || {};
-          const timing = constants.TIMING || {};
-          const retryDelay = timing.RETRY_DELAY || 100;
-          setTimeout(function() {
+          // INSTANT retry (no delay) - use requestAnimationFrame for next tick
+          requestAnimationFrame(function() {
             const retry = updateModuleFunctions();
             if (retry.setupShareholderForms && typeof retry.setupShareholderForms === 'function') {
               const productId = formContainer.getAttribute('data-product-id');
@@ -79,7 +73,7 @@
                 retry.setupShareholderForms(formContainer, productId);
               }
             }
-          }, retryDelay);
+          });
         }
       }
       formContainer.dataset.wdpInitialized = '1';

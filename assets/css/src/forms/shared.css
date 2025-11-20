@@ -325,7 +325,11 @@ html body .wdp-modal .wdp-price-quantity-row:has(> input[type="hidden"]:only-chi
 html body .wdp-donation-form .wdp-price-quantity-row:has(> input[type="hidden"]:only-child),
 html body.elementor-page .wdp-modal .wdp-price-quantity-row:has(> input[type="hidden"]:only-child),
 html body.elementor-page .wdp-donation-form .wdp-price-quantity-row:has(> input[type="hidden"]:only-child) {
-  display: none;
+  /* CRITICAL: Shares section should be visible when has-shareholders class is present */
+  display: flex;
+  flex-direction: column;
+  visibility: visible;
+  opacity: 1;
 }
 
 /* Shares section layout - High specificity without */
@@ -352,6 +356,9 @@ html body.elementor-page .wdp-donation-form .wdp-modal-content form .wdp-shares-
   min-height: 0;
   flex: 0 1 auto;
   box-sizing: border-box;
+  /* CRITICAL: Always visible */
+  visibility: visible;
+  opacity: 1;
 }
 
 /* Shares header layout - High specificity without */
@@ -382,6 +389,9 @@ html body.elementor-page .wdp-donation-form .wdp-modal-content form .wdp-shares-
   padding-left: 0;
   padding-right: 0;
   box-sizing: border-box;
+  /* CRITICAL: Always visible */
+  visibility: visible;
+  opacity: 1;
 }
 
 html body .wdp-modal .wdp-modal-content .wdp-shares-section .wdp-shares-header.has-badge,

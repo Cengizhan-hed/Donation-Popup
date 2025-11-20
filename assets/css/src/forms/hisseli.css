@@ -83,6 +83,12 @@ html body .wdp-donation-form .wdp-shares-section .wdp-share-quantity input[type=
   -moz-appearance: textfield;
   width: 100%;
   align-self: center;
+  /* CRITICAL: Ensure value is visible */
+  visibility: visible;
+  opacity: 1;
+  /* CRITICAL: Ensure text color is visible */
+  -webkit-text-fill-color: #1f2937;
+  color: #1f2937;
 }
 
 /* ============ SHAREHOLDERS AREA CONTAINER - Modern Card Design ============ */

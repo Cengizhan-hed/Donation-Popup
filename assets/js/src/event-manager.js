@@ -62,18 +62,18 @@
             const productId = button.getAttribute("data-product-id");
             
             if (productId) {
-              // Update module functions before use
+              // Update module functions before use - INSTANT execution
               const currentModal = getModule('modal');
               if (currentModal && typeof currentModal.open === 'function') {
                 currentModal.open(productId);
               } else {
-                // Retry after delay
-                setTimeout(function() {
+                // INSTANT retry (no delay) - use requestAnimationFrame for next tick
+                requestAnimationFrame(function() {
                   const retryModal = getModule('modal');
                   if (retryModal && typeof retryModal.open === 'function') {
                     retryModal.open(productId);
                   }
-                }, 100);
+                });
               }
             }
           }
@@ -114,13 +114,13 @@
             if (currentForm && typeof currentForm.setup === 'function') {
               currentForm.setup(formElement);
             } else {
-              // Retry after delay
-              setTimeout(function() {
+              // INSTANT retry (no delay) - use requestAnimationFrame for next tick
+              requestAnimationFrame(function() {
                 const retryForm = getModule('form');
                 if (retryForm && typeof retryForm.setup === 'function') {
                   retryForm.setup(formElement);
                 }
-              }, 100);
+              });
             }
           }
         }

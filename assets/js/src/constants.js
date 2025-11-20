@@ -8,17 +8,17 @@
 
   const WDPApp = window.WDPApp || (window.WDPApp = {});
 
-  // Timing constants (milliseconds)
+  // Timing constants (milliseconds) - Optimized for instant performance
   const TIMING = {
     MODULE_LOAD_TIMEOUT: 5000,        // Max wait time for modules (5 seconds)
-    RETRY_DELAY: 100,                 // Delay between retries
-    DOM_CHECK_DELAY: 50,              // Delay for DOM checks
-    INITIAL_CHECK_DELAY: 200,         // Initial check delay
-    DOM_READY_DELAY: 300,             // DOM ready execution delay
-    FALLBACK_CHECK_DELAY: 1000,       // Fallback check delay (for themes)
-    LIVE_REGION_DELAY: 30,            // Live region announcement delay
-    SHAREHOLDER_RETRY_DELAY: 200,     // Shareholder form setup retry delay
-    MODAL_OPEN_DELAY: 50,             // Modal open delay
+    RETRY_DELAY: 50,                  // Delay between retries (reduced from 100ms)
+    DOM_CHECK_DELAY: 0,               // Delay for DOM checks (removed - instant)
+    INITIAL_CHECK_DELAY: 0,           // Initial check delay (removed - instant)
+    DOM_READY_DELAY: 0,               // DOM ready execution delay (removed - instant)
+    FALLBACK_CHECK_DELAY: 100,       // Fallback check delay (reduced from 1000ms)
+    LIVE_REGION_DELAY: 0,            // Live region announcement delay (removed - instant)
+    SHAREHOLDER_RETRY_DELAY: 0,       // Shareholder form setup retry delay (removed - instant)
+    MODAL_OPEN_DELAY: 0,              // Modal open delay (removed - instant open)
   };
 
   // Module loading constants

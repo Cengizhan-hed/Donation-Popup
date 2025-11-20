@@ -2,8 +2,12 @@
 /* BUTTON STYLES */
 /* ==================== */
 
-/* CRITICAL: Maximum specificity - html body ile tema override koruması */
-/* Popup butonu için en yüksek spesifiklik - shortcode butonları için */
+/* CRITICAL: Maximum specificity without !important - Clean CSS approach */
+/* Using html body with multiple class combinations and attribute selectors for highest specificity */
+/* Inline styles will override these, but this ensures CSS variables work correctly */
+html body button.wdp-donate-button.wdp-open-modal[data-product-id],
+html body button.wdp-donate-button[data-product-id],
+html body button.wdp-open-modal[data-product-id],
 html body button.wdp-donate-button.wdp-open-modal,
 html body button.wdp-donate-button,
 html body button.wdp-open-modal,
@@ -29,6 +33,9 @@ html body .wdp-open-modal {
   letter-spacing: 0.01em;
 }
 
+html body button.wdp-donate-button.wdp-open-modal[data-product-id]:hover,
+html body button.wdp-donate-button[data-product-id]:hover,
+html body button.wdp-open-modal[data-product-id]:hover,
 html body button.wdp-donate-button.wdp-open-modal:hover,
 html body button.wdp-donate-button:hover,
 html body button.wdp-open-modal:hover,
