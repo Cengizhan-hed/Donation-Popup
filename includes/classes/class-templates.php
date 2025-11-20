@@ -37,9 +37,10 @@ class WDP_Templates {
             return '';
         }
 
-        // Buton metni boşsa varsayılan değeri kullan
+        // Buton metni boşsa ayarlardan veya varsayılan değeri kullan
         if (empty($button_text)) {
-            $button_text = __('Bağış Yap', 'woo-donation-popup');
+            $button_settings = get_option('wdp_button_settings', array());
+            $button_text = isset($button_settings['popup_button_text']) ? $button_settings['popup_button_text'] : __('Bağış Yap', 'woo-donation-popup');
         }
 
         // Ürün adını al

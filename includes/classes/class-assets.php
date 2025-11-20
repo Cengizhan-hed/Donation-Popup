@@ -251,12 +251,60 @@ class WDP_Assets {
             'close_button_color' => '#6b7280',
             'button_checkout_color' => '#48bb78',
             'button_checkout_hover' => '#38a169',
+            'popup_button_text' => 'Bağış Yap',
+            'popup_button_color' => '#1e73be',
+            'popup_button_hover' => '#185d98',
+            'popup_button_font_size' => '18',
+            'popup_button_font_weight' => '700',
+            'popup_button_font_family' => 'inherit',
+            'popup_button_custom_font' => '',
+            'popup_button_border_radius' => '10',
         );
         
         $settings = wp_parse_args($button_settings, $defaults);
         
         // CSS değişkenlerini oluştur
         $css = ":root {\n";
+        
+        // Popup butonu değişkenleri
+        if (isset($settings['popup_button_color'])) {
+            $css .= "  --wdp-primary: " . esc_attr($settings['popup_button_color']) . ";\n";
+        } else {
+            $css .= "  --wdp-primary: #1e73be;\n";
+        }
+        if (isset($settings['popup_button_hover'])) {
+            $css .= "  --wdp-primary-hover: " . esc_attr($settings['popup_button_hover']) . ";\n";
+        } else {
+            $css .= "  --wdp-primary-hover: #185d98;\n";
+        }
+        if (isset($settings['popup_button_font_size'])) {
+            $css .= "  --wdp-popup-button-font-size: " . esc_attr($settings['popup_button_font_size']) . "px;\n";
+        } else {
+            $css .= "  --wdp-popup-button-font-size: 18px;\n";
+        }
+        if (isset($settings['popup_button_font_weight'])) {
+            $css .= "  --wdp-popup-button-font-weight: " . esc_attr($settings['popup_button_font_weight']) . ";\n";
+        } else {
+            $css .= "  --wdp-popup-button-font-weight: 700;\n";
+        }
+        // Popup buton font-family
+        if (isset($settings['popup_button_font_family'])) {
+            if ($settings['popup_button_font_family'] === 'custom' && !empty($settings['popup_button_custom_font'])) {
+                $css .= "  --wdp-popup-button-font-family: " . esc_attr($settings['popup_button_custom_font']) . ";\n";
+            } elseif ($settings['popup_button_font_family'] !== 'inherit' && $settings['popup_button_font_family'] !== 'custom') {
+                $css .= "  --wdp-popup-button-font-family: " . esc_attr($settings['popup_button_font_family']) . ", sans-serif;\n";
+            } else {
+                $css .= "  --wdp-popup-button-font-family: inherit;\n";
+            }
+        } else {
+            $css .= "  --wdp-popup-button-font-family: inherit;\n";
+        }
+        // Popup buton border radius
+        if (isset($settings['popup_button_border_radius'])) {
+            $css .= "  --wdp-popup-button-radius: " . esc_attr($settings['popup_button_border_radius']) . "px;\n";
+        } else {
+            $css .= "  --wdp-popup-button-radius: 10px;\n";
+        }
         
         // Normal form değişkenleri
         $css .= "  --wdp-button-primary: " . esc_attr($settings['button_primary_color']) . ";\n";
@@ -349,6 +397,41 @@ class WDP_Assets {
         $css .= "  --wdp-mini-cart-radius: " . esc_attr($success_settings['mini_cart_radius']) . "px;\n";
         $css .= "  --wdp-cart-item-name-color: " . esc_attr($success_settings['cart_item_name_color']) . ";\n";
         $css .= "  --wdp-cart-item-price-color: " . esc_attr($success_settings['cart_item_price_color']) . ";\n";
+        
+        // Modal görünüm ayarlarını al
+        $modal_layout_settings = get_option('wdp_modal_layout_settings', array());
+        $modal_layout_defaults = array(
+            // Desktop
+            'popup_modal_width_desktop' => '540',
+            'inpage_form_width_desktop' => '480',
+            'modal_padding_top_desktop' => '32',
+            'modal_padding_right_desktop' => '24',
+            'modal_padding_bottom_desktop' => '24',
+            'modal_padding_left_desktop' => '24',
+            // Mobile
+            'popup_modal_width_mobile' => '540',
+            'inpage_form_width_mobile' => '480',
+            'modal_padding_top_mobile' => '28',
+            'modal_padding_right_mobile' => '20',
+            'modal_padding_bottom_mobile' => '20',
+            'modal_padding_left_mobile' => '20',
+        );
+        $modal_layout_settings = wp_parse_args($modal_layout_settings, $modal_layout_defaults);
+        
+        // Modal görünüm değişkenleri - Desktop
+        $css .= "  --wdp-popup-modal-width-desktop: " . esc_attr($modal_layout_settings['popup_modal_width_desktop']) . "px;\n";
+        $css .= "  --wdp-inpage-form-width-desktop: " . esc_attr($modal_layout_settings['inpage_form_width_desktop']) . "px;\n";
+        $css .= "  --wdp-modal-padding-top-desktop: " . esc_attr($modal_layout_settings['modal_padding_top_desktop']) . "px;\n";
+        $css .= "  --wdp-modal-padding-right-desktop: " . esc_attr($modal_layout_settings['modal_padding_right_desktop']) . "px;\n";
+        $css .= "  --wdp-modal-padding-bottom-desktop: " . esc_attr($modal_layout_settings['modal_padding_bottom_desktop']) . "px;\n";
+        $css .= "  --wdp-modal-padding-left-desktop: " . esc_attr($modal_layout_settings['modal_padding_left_desktop']) . "px;\n";
+        // Modal görünüm değişkenleri - Mobile
+        $css .= "  --wdp-popup-modal-width-mobile: " . esc_attr($modal_layout_settings['popup_modal_width_mobile']) . "px;\n";
+        $css .= "  --wdp-inpage-form-width-mobile: " . esc_attr($modal_layout_settings['inpage_form_width_mobile']) . "px;\n";
+        $css .= "  --wdp-modal-padding-top-mobile: " . esc_attr($modal_layout_settings['modal_padding_top_mobile']) . "px;\n";
+        $css .= "  --wdp-modal-padding-right-mobile: " . esc_attr($modal_layout_settings['modal_padding_right_mobile']) . "px;\n";
+        $css .= "  --wdp-modal-padding-bottom-mobile: " . esc_attr($modal_layout_settings['modal_padding_bottom_mobile']) . "px;\n";
+        $css .= "  --wdp-modal-padding-left-mobile: " . esc_attr($modal_layout_settings['modal_padding_left_mobile']) . "px;\n";
         
         $css .= "}\n";
         
@@ -447,7 +530,20 @@ class WDP_Assets {
             return;
         }
 
-        wp_add_inline_style('wdp-donation-modal-css', self::get_inline_css());
+        $inline_css = self::get_inline_css();
+        
+        // Cache busting için ayarların hash'ini ekle
+        $button_settings = get_option('wdp_button_settings', array());
+        $settings_hash = md5(serialize($button_settings));
+        
+        // Inline CSS'i ekle
+        wp_add_inline_style('wdp-donation-modal-css', $inline_css);
+        
+        // Cache'i temizlemek için style tag'ine data attribute ekle (debug için)
+        add_action('wp_head', function() use ($settings_hash) {
+            echo "<!-- WDP Button Settings Hash: " . esc_attr($settings_hash) . " -->\n";
+        }, 999);
+        
         self::$inline_style_attached = true;
     }
 

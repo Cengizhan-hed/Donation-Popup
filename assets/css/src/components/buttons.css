@@ -3,41 +3,58 @@
 /* ==================== */
 
 /* CRITICAL: Maximum specificity - html body ile tema override koruması */
+/* Popup butonu için en yüksek spesifiklik - shortcode butonları için */
+html body button.wdp-donate-button.wdp-open-modal,
+html body button.wdp-donate-button,
+html body button.wdp-open-modal,
+html body .wdp-donate-button.wdp-open-modal,
 html body .wdp-donate-button,
 html body .wdp-open-modal {
   display: inline-block;
   min-width: 140px;
   min-height: 48px;
   padding: 0 var(--wdp-space-6);
-  background-color: var(--wdp-primary);
-  color: var(--wdp-white);
+  background-color: var(--wdp-primary, #1e73be);
+  color: var(--wdp-white, #ffffff);
   border: none;
-  border-radius: var(--wdp-button-radius);
-  font-size: 18px;
-  font-weight: 700;
+  border-radius: var(--wdp-popup-button-radius, var(--wdp-button-radius, 10px));
+  font-size: var(--wdp-popup-button-font-size, 18px);
+  font-weight: var(--wdp-popup-button-font-weight, 700);
+  font-family: var(--wdp-popup-button-font-family, inherit);
   cursor: pointer;
   transition: background-color 0.15s ease, color 0.15s ease;
   line-height: 1.4;
   text-align: center;
   box-shadow: none;
-  font-family: inherit;
   letter-spacing: 0.01em;
 }
 
+html body button.wdp-donate-button.wdp-open-modal:hover,
+html body button.wdp-donate-button:hover,
+html body button.wdp-open-modal:hover,
+html body .wdp-donate-button.wdp-open-modal:hover,
 html body .wdp-donate-button:hover,
 html body .wdp-open-modal:hover {
-  background-color: var(--wdp-primary-hover);
-  color: var(--wdp-white);
+  background-color: var(--wdp-primary-hover, #185d98);
+  color: var(--wdp-white, #ffffff);
 }
 
+html body button.wdp-donate-button.wdp-open-modal:active,
+html body button.wdp-donate-button:active,
+html body button.wdp-open-modal:active,
+html body .wdp-donate-button.wdp-open-modal:active,
 html body .wdp-donate-button:active,
 html body .wdp-open-modal:active {
-  background-color: var(--wdp-primary-hover);
+  background-color: var(--wdp-primary-hover, #185d98);
 }
 
+html body button.wdp-donate-button.wdp-open-modal:focus,
+html body button.wdp-donate-button:focus,
+html body button.wdp-open-modal:focus,
+html body .wdp-donate-button.wdp-open-modal:focus,
 html body .wdp-donate-button:focus,
 html body .wdp-open-modal:focus {
-  outline: 2px solid var(--wdp-primary);
+  outline: 2px solid var(--wdp-primary, #1e73be);
   outline-offset: 2px;
 }
 
@@ -267,11 +284,15 @@ html body .wdp-loading-button::after {
 }
 
 @media (max-width: 280px) {
-  .wdp-donate-button,
-  .wdp-open-modal {
+  html body button.wdp-donate-button.wdp-open-modal,
+  html body button.wdp-donate-button,
+  html body button.wdp-open-modal,
+  html body .wdp-donate-button.wdp-open-modal,
+  html body .wdp-donate-button,
+  html body .wdp-open-modal {
     min-width: 120px;
     min-height: 40px;
-    font-size: 14px;
+    font-size: max(14px, calc(var(--wdp-popup-button-font-size, 18px) * 0.78));
     padding: 10px 16px;
   }
 }

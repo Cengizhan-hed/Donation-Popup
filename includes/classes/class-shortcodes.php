@@ -87,13 +87,45 @@ class WDP_Shortcodes {
             }
         }
 
+        // Buton ayarlarını al (CSS değişkenleri için)
+        $button_settings = get_option('wdp_button_settings', array());
+        
+        // Inline style oluştur - CSS değişkenlerini kullan
+        $inline_styles = array();
+        if (!empty($custom_style)) {
+            $inline_styles[] = $custom_style;
+        }
+        
+        // CSS değişkenlerini inline style olarak ekle (eğer ayarlarda varsa)
+        if (isset($button_settings['popup_button_color'])) {
+            $inline_styles[] = 'background-color: var(--wdp-primary, ' . esc_attr($button_settings['popup_button_color']) . ');';
+        }
+        if (isset($button_settings['popup_button_border_radius'])) {
+            $inline_styles[] = 'border-radius: var(--wdp-popup-button-radius, ' . esc_attr($button_settings['popup_button_border_radius']) . 'px);';
+        }
+        if (isset($button_settings['popup_button_font_size'])) {
+            $inline_styles[] = 'font-size: var(--wdp-popup-button-font-size, ' . esc_attr($button_settings['popup_button_font_size']) . 'px);';
+        }
+        if (isset($button_settings['popup_button_font_weight'])) {
+            $inline_styles[] = 'font-weight: var(--wdp-popup-button-font-weight, ' . esc_attr($button_settings['popup_button_font_weight']) . ');';
+        }
+        if (isset($button_settings['popup_button_font_family'])) {
+            if ($button_settings['popup_button_font_family'] === 'custom' && !empty($button_settings['popup_button_custom_font'])) {
+                $inline_styles[] = 'font-family: var(--wdp-popup-button-font-family, ' . esc_attr($button_settings['popup_button_custom_font']) . ');';
+            } elseif ($button_settings['popup_button_font_family'] !== 'inherit' && $button_settings['popup_button_font_family'] !== 'custom') {
+                $inline_styles[] = 'font-family: var(--wdp-popup-button-font-family, ' . esc_attr($button_settings['popup_button_font_family']) . ', sans-serif);';
+            }
+        }
+        
+        $combined_style = !empty($inline_styles) ? implode(' ', $inline_styles) : $custom_style;
+        
         // Sadece buton oluştur, modal ayrı oluşturulacak
         ob_start();
         ?>
         <!-- Bağış Butonu -->
         <button type="button" class="wdp-donate-button wdp-open-modal <?php echo esc_attr($custom_class); ?>"
                 data-product-id="<?php echo esc_attr($product_id); ?>"
-                style="<?php echo esc_attr($custom_style); ?>">
+                style="<?php echo esc_attr($combined_style); ?>">
             <?php echo esc_html($button_text); ?>
         </button>
 

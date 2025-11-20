@@ -323,4 +323,77 @@
       })
     })
   })
+
+  // Gradient checkbox değiştiğinde renk alanlarını göster/gizle
+  $("#shareholders_area_use_gradient").on("change", function () {
+    var isChecked = $(this).is(":checked")
+    if (isChecked) {
+      $(".shareholders-area-color-row").show()
+      $(".shareholders-area-solid-row").hide()
+    } else {
+      $(".shareholders-area-color-row").hide()
+      $(".shareholders-area-solid-row").show()
+    }
+  })
+
+  // Sayfa yüklendiğinde kontrol et
+  if ($("#shareholders_area_use_gradient").is(":checked")) {
+    $(".shareholders-area-color-row").show()
+    $(".shareholders-area-solid-row").hide()
+  } else {
+    $(".shareholders-area-color-row").hide()
+    $(".shareholders-area-solid-row").show()
+  }
+
+  // Popup buton font-family değiştiğinde özel font alanını göster/gizle
+  $("#popup_button_font_family").on("change", function () {
+    var selectedValue = $(this).val()
+    if (selectedValue === "custom") {
+      $("#popup_button_custom_font_row").show()
+    } else {
+      $("#popup_button_custom_font_row").hide()
+    }
+  })
+
+  // Sayfa yüklendiğinde kontrol et
+  if ($("#popup_button_font_family").val() === "custom") {
+    $("#popup_button_custom_font_row").show()
+  } else {
+    $("#popup_button_custom_font_row").hide()
+  }
+
+    // Modal görünüm ayarlarını kaydet
+    $("#wdp-modal-layout-settings-form").on("submit", function (e) {
+      e.preventDefault()
+      var $form = $(this)
+      var $button = $("#wdp-save-modal-layout-settings")
+      var $spinner = $button.next(".spinner")
+
+      // Spinner'ı göster
+      $spinner.css("visibility", "visible")
+
+      // Form verilerini al
+      var formData = $form.serialize()
+
+      // AJAX isteği gönder
+      $.ajax({
+        url: wdp_admin.ajax_url,
+        type: "POST",
+        data: formData + "&action=wdp_save_modal_layout_settings&nonce=" + wdp_admin.nonce,
+        success: (response) => {
+          if (response.success) {
+            showSuccessMessage(response.data.message)
+          } else {
+            showErrorMessage(response.data.message)
+          }
+        },
+        error: () => {
+          showErrorMessage(wdp_admin.save_error)
+        },
+        complete: () => {
+          // Spinner'ı gizle
+          $spinner.css("visibility", "hidden")
+        },
+      })
+    })
 })(window, document, jQuery)

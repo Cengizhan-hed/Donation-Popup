@@ -577,13 +577,6 @@
     list.appendChild(newForm);
     setupCopyFormButton(newForm);
     setupShareholderHeaderClick(newForm);
-    
-    const contextRoot = container.closest('.wdp-modal') || container.closest('.wdp-donation-form');
-    updateShareholdersScrollable(contextRoot);
-    
-    requestAnimationFrame(() => {
-      newForm.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    });
 
     const newCopyBtn = newForm.querySelector('.wdp-copy-form-btn');
     if (newCopyBtn) {
@@ -643,8 +636,51 @@
       priceInput.value = totalPrice.toFixed(0);
       safeLog(`Fiyat güncellendi: ${totalPrice} TL (${basePrice} TL x ${newIndex} hisse)`);
     }
-
-    safeLog(`Hissedar formu kopyalandı: ${newIndex}. Hissedar (açık olarak)`);
+    
+    const contextRoot = container.closest('.wdp-modal') || container.closest('.wdp-donation-form');
+    updateShareholdersScrollable(contextRoot);
+    
+    // CRITICAL: Tüm güncellemeler tamamlandıktan sonra form durumlarını ayarla
+    // Orijinal formu kapat, yeni formu aç
+    requestAnimationFrame(() => {
+      // Tüm formları bul
+      const allForms = list.querySelectorAll('.wdp-shareholder-form');
+      
+      // Orijinal formu kapat
+      originalForm.classList.add('collapsed');
+      const originalContent = originalForm.querySelector('.wdp-shareholder-content');
+      if (originalContent) {
+        originalContent.style.display = 'none';
+      }
+      
+      // Tüm diğer formları kapat (yeni form hariç)
+      allForms.forEach((form) => {
+        if (form !== newForm && form !== originalForm) {
+          form.classList.add('collapsed');
+          const content = form.querySelector('.wdp-shareholder-content');
+          if (content) {
+            content.style.display = 'none';
+          }
+        }
+      });
+      
+      // Yeni formu aç
+      newForm.classList.remove('collapsed');
+      const newContent = newForm.querySelector('.wdp-shareholder-content');
+      if (newContent) {
+        newContent.style.display = 'flex';
+      }
+      
+      // Badge'i güncelle
+      if (contextRoot) {
+        updateCollapsedFormsCount(contextRoot, list);
+      }
+      
+      // Yeni forma scroll yap
+      newForm.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      
+      safeLog(`Hissedar formu kopyalandı: ${newIndex}. Hissedar (açık olarak)`);
+    });
   }
 
   // Update shareholder forms (internal function used by setupShareQuantityButtons)
