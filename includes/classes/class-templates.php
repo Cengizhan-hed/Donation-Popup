@@ -45,6 +45,10 @@ class WDP_Templates {
 
         // Ürün adını al
         $product_name = $product->get_name();
+        
+        // Ürün fiyatını al
+        $product_price = $product->get_price();
+        $formatted_price = $product_price ? wc_price($product_price) : '';
 
         // Benzersiz bir ID oluştur
         $modal_id = 'wdp-modal-' . $product_id;
@@ -76,7 +80,12 @@ class WDP_Templates {
         <div id="<?php echo esc_attr($modal_id); ?>" class="wdp-modal <?php echo esc_attr($custom_class); ?>" role="dialog" aria-modal="true" aria-labelledby="<?php echo esc_attr($modal_id); ?>-title" aria-describedby="<?php echo esc_attr($modal_id); ?>-description" style="display:none;visibility:hidden;opacity:0;">
             <div class="wdp-modal-content">
                 <div class="wdp-modal-header">
-                    <span id="<?php echo esc_attr($modal_id); ?>-title" class="wdp-modal-title"><?php echo wp_kses_post($product_name); ?></span>
+                    <div class="wdp-modal-title-wrapper">
+                        <span id="<?php echo esc_attr($modal_id); ?>-title" class="wdp-modal-title"><?php echo wp_kses_post($product_name); ?></span>
+                        <?php if ($formatted_price): ?>
+                        <span class="wdp-product-price"><?php echo wp_kses_post($formatted_price); ?></span>
+                        <?php endif; ?>
+                    </div>
                     <button type="button" class="wdp-modal-close" aria-label="<?php echo esc_attr__('Modalı Kapat', 'woo-donation-popup'); ?>">&times;</button>
                 </div>
                 <div id="<?php echo esc_attr($modal_id); ?>-description" class="screen-reader-text"><?php echo esc_html(sprintf(__('%s için bağış formu', 'woo-donation-popup'), $product_name)); ?></div>
@@ -180,6 +189,10 @@ class WDP_Templates {
 
         // Ürün adını al
         $product_name = $product->get_name();
+        
+        // Ürün fiyatını al
+        $product_price = $product->get_price();
+        $formatted_price = $product_price ? wc_price($product_price) : '';
 
         // Özel başlık varsa onu kullan
         $title = !empty($atts['title']) ? sanitize_text_field($atts['title']) : $product_name;
@@ -213,7 +226,12 @@ class WDP_Templates {
         <div id="<?php echo esc_attr($form_id); ?>" class="wdp-donation-form <?php echo esc_attr($custom_class); ?>" data-product-id="<?php echo esc_attr($product_id); ?>">
             <div class="wdp-modal-content">
                 <?php if ($show_title): ?>
-                <h2 class="wdp-form-title"><?php echo wp_kses_post($title); ?></h2>
+                <div class="wdp-form-title-wrapper">
+                    <h2 class="wdp-form-title"><?php echo wp_kses_post($title); ?></h2>
+                    <?php if ($formatted_price): ?>
+                    <span class="wdp-product-price"><?php echo wp_kses_post($formatted_price); ?></span>
+                    <?php endif; ?>
+                </div>
                 <?php endif; ?>
 
                 <form method="post" action="" class="<?php echo esc_attr($allow_multiple_shares ? 'wdp-donation-form-fields wdp-has-shareholders' : 'wdp-donation-form-fields'); ?>">

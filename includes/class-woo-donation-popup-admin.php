@@ -1441,32 +1441,36 @@ class Woo_Donation_Popup_Admin {
      * Modal görünüm ayarlarını kaydet (AJAX)
      */
     public function save_modal_layout_settings() {
-        // Güvenlik kontrolü
-        check_ajax_referer('wdp_admin_nonce', 'nonce');
-        
-        // Yetki kontrolü
-        if (!current_user_can('manage_woocommerce')) {
-            wp_send_json_error(array('message' => __('Bu işlem için yetkiniz yok.', 'woo-donation-popup')));
-            wp_die();
-        }
-        
-        // Ayarları al ve temizle
-        $settings = array(
-            // Desktop
-            'popup_modal_width_desktop' => isset($_POST['popup_modal_width_desktop']) ? absint($_POST['popup_modal_width_desktop']) : 540,
-            'inpage_form_width_desktop' => isset($_POST['inpage_form_width_desktop']) ? absint($_POST['inpage_form_width_desktop']) : 480,
-            'modal_padding_top_desktop' => isset($_POST['modal_padding_top_desktop']) ? absint($_POST['modal_padding_top_desktop']) : 32,
-            'modal_padding_right_desktop' => isset($_POST['modal_padding_right_desktop']) ? absint($_POST['modal_padding_right_desktop']) : 24,
-            'modal_padding_bottom_desktop' => isset($_POST['modal_padding_bottom_desktop']) ? absint($_POST['modal_padding_bottom_desktop']) : 24,
-            'modal_padding_left_desktop' => isset($_POST['modal_padding_left_desktop']) ? absint($_POST['modal_padding_left_desktop']) : 24,
-            // Mobile
-            'popup_modal_width_mobile' => isset($_POST['popup_modal_width_mobile']) ? absint($_POST['popup_modal_width_mobile']) : 540,
-            'inpage_form_width_mobile' => isset($_POST['inpage_form_width_mobile']) ? absint($_POST['inpage_form_width_mobile']) : 480,
-            'modal_padding_top_mobile' => isset($_POST['modal_padding_top_mobile']) ? absint($_POST['modal_padding_top_mobile']) : 28,
-            'modal_padding_right_mobile' => isset($_POST['modal_padding_right_mobile']) ? absint($_POST['modal_padding_right_mobile']) : 20,
-            'modal_padding_bottom_mobile' => isset($_POST['modal_padding_bottom_mobile']) ? absint($_POST['modal_padding_bottom_mobile']) : 20,
-            'modal_padding_left_mobile' => isset($_POST['modal_padding_left_mobile']) ? absint($_POST['modal_padding_left_mobile']) : 20,
-        );
+        try {
+            // Güvenlik kontrolü
+            if (!check_ajax_referer('wdp_admin_nonce', 'nonce', false)) {
+                wp_send_json_error(array('message' => __('Güvenlik kontrolü başarısız.', 'woo-donation-popup')));
+                return;
+            }
+            
+            // Yetki kontrolü
+            if (!current_user_can('manage_woocommerce')) {
+                wp_send_json_error(array('message' => __('Bu işlem için yetkiniz yok.', 'woo-donation-popup')));
+                return;
+            }
+            
+            // Ayarları al ve temizle - güvenli değer kontrolü
+            $settings = array(
+                // Desktop
+                'popup_modal_width_desktop' => isset($_POST['popup_modal_width_desktop']) && $_POST['popup_modal_width_desktop'] !== '' ? absint($_POST['popup_modal_width_desktop']) : 540,
+                'inpage_form_width_desktop' => isset($_POST['inpage_form_width_desktop']) && $_POST['inpage_form_width_desktop'] !== '' ? absint($_POST['inpage_form_width_desktop']) : 480,
+                'modal_padding_top_desktop' => isset($_POST['modal_padding_top_desktop']) && $_POST['modal_padding_top_desktop'] !== '' ? absint($_POST['modal_padding_top_desktop']) : 32,
+                'modal_padding_right_desktop' => isset($_POST['modal_padding_right_desktop']) && $_POST['modal_padding_right_desktop'] !== '' ? absint($_POST['modal_padding_right_desktop']) : 24,
+                'modal_padding_bottom_desktop' => isset($_POST['modal_padding_bottom_desktop']) && $_POST['modal_padding_bottom_desktop'] !== '' ? absint($_POST['modal_padding_bottom_desktop']) : 24,
+                'modal_padding_left_desktop' => isset($_POST['modal_padding_left_desktop']) && $_POST['modal_padding_left_desktop'] !== '' ? absint($_POST['modal_padding_left_desktop']) : 24,
+                // Mobile
+                'popup_modal_width_mobile' => isset($_POST['popup_modal_width_mobile']) && $_POST['popup_modal_width_mobile'] !== '' ? absint($_POST['popup_modal_width_mobile']) : 540,
+                'inpage_form_width_mobile' => isset($_POST['inpage_form_width_mobile']) && $_POST['inpage_form_width_mobile'] !== '' ? absint($_POST['inpage_form_width_mobile']) : 480,
+                'modal_padding_top_mobile' => isset($_POST['modal_padding_top_mobile']) && $_POST['modal_padding_top_mobile'] !== '' ? absint($_POST['modal_padding_top_mobile']) : 28,
+                'modal_padding_right_mobile' => isset($_POST['modal_padding_right_mobile']) && $_POST['modal_padding_right_mobile'] !== '' ? absint($_POST['modal_padding_right_mobile']) : 20,
+                'modal_padding_bottom_mobile' => isset($_POST['modal_padding_bottom_mobile']) && $_POST['modal_padding_bottom_mobile'] !== '' ? absint($_POST['modal_padding_bottom_mobile']) : 20,
+                'modal_padding_left_mobile' => isset($_POST['modal_padding_left_mobile']) && $_POST['modal_padding_left_mobile'] !== '' ? absint($_POST['modal_padding_left_mobile']) : 20,
+            );
         
         // Sınırlamalar - Desktop
         if ($settings['popup_modal_width_desktop'] < 300) {
@@ -1524,14 +1528,21 @@ class Woo_Donation_Popup_Admin {
             $settings['modal_padding_left_mobile'] = 100;
         }
         
-        // Ayarları kaydet
-        update_option('wdp_modal_layout_settings', $settings);
-        
-        // Başarılı yanıt döndür
-        wp_send_json_success(array(
-            'message' => __('Modal görünüm ayarları başarıyla kaydedildi.', 'woo-donation-popup')
-        ));
-        
-        wp_die();
+            // Ayarları kaydet
+            $saved = update_option('wdp_modal_layout_settings', $settings);
+            
+            if ($saved === false) {
+                wp_send_json_error(array('message' => __('Ayarlar kaydedilirken bir hata oluştu.', 'woo-donation-popup')));
+                return;
+            }
+            
+            // Başarılı yanıt döndür
+            wp_send_json_success(array(
+                'message' => __('Modal görünüm ayarları başarıyla kaydedildi.', 'woo-donation-popup')
+            ));
+            
+        } catch (Exception $e) {
+            wp_send_json_error(array('message' => __('Bir hata oluştu: ', 'woo-donation-popup') . $e->getMessage()));
+        }
     }
 }

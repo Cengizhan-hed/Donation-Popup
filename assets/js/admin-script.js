@@ -361,39 +361,84 @@
   } else {
     $("#popup_button_custom_font_row").hide()
   }
+})(window, document, jQuery)
 
-    // Modal görünüm ayarlarını kaydet
-    $("#wdp-modal-layout-settings-form").on("submit", function (e) {
-      e.preventDefault()
-      var $form = $(this)
-      var $button = $("#wdp-save-modal-layout-settings")
-      var $spinner = $button.next(".spinner")
+// Modal görünüm ayarlarını kaydet - DOM ready dışında ama jQuery yüklendikten sonra
+jQuery(document).ready(function($) {
+  // Başarı mesajı göster
+  function showSuccessMessage(message) {
+    var $noticeContainer = $("#wdp-admin-notices")
+    if ($noticeContainer.length === 0) {
+      // Eğer notice container yoksa, formun üstüne ekle
+      $noticeContainer = $('<div id="wdp-admin-notices" class="notice"></div>')
+      $("#wdp-modal-layout-settings-form").before($noticeContainer)
+    }
+    $noticeContainer
+      .removeClass("notice-error")
+      .addClass("notice-success")
+      .html("<p>" + message + "</p>")
+      .show()
 
-      // Spinner'ı göster
+    // 3 saniye sonra mesajı gizle
+    setTimeout(() => {
+      $noticeContainer.fadeOut()
+    }, 3000)
+  }
+
+  // Hata mesajı göster
+  function showErrorMessage(message) {
+    var $noticeContainer = $("#wdp-admin-notices")
+    if ($noticeContainer.length === 0) {
+      // Eğer notice container yoksa, formun üstüne ekle
+      $noticeContainer = $('<div id="wdp-admin-notices" class="notice"></div>')
+      $("#wdp-modal-layout-settings-form").before($noticeContainer)
+    }
+    $noticeContainer
+      .removeClass("notice-success")
+      .addClass("notice-error")
+      .html("<p>" + message + "</p>")
+      .show()
+  }
+
+  // Modal görünüm ayarlarını kaydet
+  $("#wdp-modal-layout-settings-form").on("submit", function (e) {
+    e.preventDefault()
+    var $form = $(this)
+    var $button = $("#wdp-save-modal-layout-settings")
+    var $spinner = $button.next(".spinner")
+
+    // Spinner'ı göster
+    if ($spinner.length > 0) {
       $spinner.css("visibility", "visible")
+    }
 
-      // Form verilerini al
-      var formData = $form.serialize()
+    // Form verilerini al
+    var formData = $form.serialize()
 
-      // AJAX isteği gönder
-      $.ajax({
-        url: wdp_admin.ajax_url,
-        type: "POST",
-        data: formData + "&action=wdp_save_modal_layout_settings&nonce=" + wdp_admin.nonce,
-        success: (response) => {
-          if (response.success) {
-            showSuccessMessage(response.data.message)
-          } else {
-            showErrorMessage(response.data.message)
-          }
-        },
-        error: () => {
-          showErrorMessage(wdp_admin.save_error)
-        },
-        complete: () => {
-          // Spinner'ı gizle
+    // AJAX isteği gönder
+    $.ajax({
+      url: wdp_admin.ajax_url,
+      type: "POST",
+      data: formData + "&action=wdp_save_modal_layout_settings&nonce=" + wdp_admin.nonce,
+      dataType: "json",
+      success: function(response) {
+        if (response && response.success) {
+          showSuccessMessage(response.data && response.data.message ? response.data.message : "Ayarlar başarıyla kaydedildi.")
+        } else {
+          var errorMsg = response && response.data && response.data.message ? response.data.message : "Ayarlar kaydedilirken bir hata oluştu."
+          showErrorMessage(errorMsg)
+        }
+      },
+      error: function(xhr, status, error) {
+        console.error("AJAX Error:", status, error)
+        showErrorMessage(wdp_admin && wdp_admin.save_error ? wdp_admin.save_error : "Ayarlar kaydedilirken bir hata oluştu.")
+      },
+      complete: function() {
+        // Spinner'ı gizle
+        if ($spinner.length > 0) {
           $spinner.css("visibility", "hidden")
-        },
-      })
+        }
+      },
     })
+  })
 })(window, document, jQuery)

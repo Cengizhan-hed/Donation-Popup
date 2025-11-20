@@ -651,31 +651,42 @@
       list.removeAttribute('hidden');
     }
     
-    // CRITICAL: Tüm formları kapat, yeni formu aç (accordion davranışı)
+    // CRITICAL: ÖNCE orijinal formu kesinlikle kapat
+    originalForm.classList.add('collapsed');
+    const originalContent = originalForm.querySelector('.wdp-shareholder-content');
+    if (originalContent) {
+      originalContent.style.display = 'none';
+      originalContent.style.visibility = 'hidden';
+      originalContent.style.opacity = '0';
+    }
+    
+    // CRITICAL: Tüm diğer formları da kapat (yeni form hariç)
     const allForms = list.querySelectorAll('.wdp-shareholder-form');
     allForms.forEach((form) => {
-      if (form === newForm) {
-        // Yeni formu aç
-        form.classList.remove('collapsed');
-        const content = form.querySelector('.wdp-shareholder-content');
-        if (content) {
-          content.style.display = 'flex';
-          content.style.visibility = 'visible';
-          content.style.opacity = '1';
-        }
-        // Form görünürlüğünü garanti et
-        form.style.display = '';
-        form.style.visibility = 'visible';
-        form.style.opacity = '1';
-      } else {
-        // Diğer tüm formları kapat
+      if (form !== newForm) {
         form.classList.add('collapsed');
         const content = form.querySelector('.wdp-shareholder-content');
         if (content) {
           content.style.display = 'none';
+          content.style.visibility = 'hidden';
+          content.style.opacity = '0';
         }
       }
     });
+    
+    // CRITICAL: Yeni formu kesinlikle aç
+    newForm.classList.remove('collapsed');
+    const newContent = newForm.querySelector('.wdp-shareholder-content');
+    if (newContent) {
+      newContent.style.display = 'flex';
+      newContent.style.visibility = 'visible';
+      newContent.style.opacity = '1';
+    }
+    // Form görünürlüğünü garanti et
+    newForm.style.display = '';
+    newForm.style.visibility = 'visible';
+    newForm.style.opacity = '1';
+    newForm.removeAttribute('hidden');
     
     // CRITICAL: Hisse adedini güncelle
     safeLog(`Kopyalama sonrası hisse adedi güncelleniyor: ${newIndex}`);
@@ -729,10 +740,29 @@
       updateCollapsedFormsCount(contextRoot, list);
     }
     
-    // Yeni formu görünür alana scroll et
+    // CRITICAL: Son bir kez daha kontrol et ve garanti et
     requestAnimationFrame(() => {
+      // Orijinal formu kesinlikle kapat
+      originalForm.classList.add('collapsed');
+      const origContent = originalForm.querySelector('.wdp-shareholder-content');
+      if (origContent) {
+        origContent.style.display = 'none';
+        origContent.style.visibility = 'hidden';
+        origContent.style.opacity = '0';
+      }
+      
+      // Yeni formu kesinlikle aç
+      newForm.classList.remove('collapsed');
+      const newCont = newForm.querySelector('.wdp-shareholder-content');
+      if (newCont) {
+        newCont.style.display = 'flex';
+        newCont.style.visibility = 'visible';
+        newCont.style.opacity = '1';
+      }
+      
+      // Yeni formu görünür alana scroll et
       newForm.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-      safeLog(`Hissedar formu kopyalandı: ${newIndex}. Hissedar (açık olarak)`);
+      safeLog(`Hissedar formu kopyalandı: ${newIndex}. Hissedar (açık olarak), ${currentCount}. Hissedar (kapalı)`);
     });
   }
 
