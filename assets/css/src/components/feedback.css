@@ -6,78 +6,276 @@ html body .wdp-form-error {
   background-color: #fed7d7;
   border: 1px solid #feb2b2;
   color: #c53030;
-  padding: var(--wdp-space-3) var(--wdp-space-4);
-  border-radius: var(--wdp-radius-md);
-  margin-bottom: var(--wdp-space-4);
-  font-size: var(--wdp-text-sm);
-  font-weight: 500;
-  animation: wdpFadeIn 0.3s ease;
+  padding: var(--wdp-space-3, 12px) var(--wdp-space-4, 16px);
+  border-radius: var(--wdp-radius-md, 8px);
+  margin-bottom: var(--wdp-space-4, 16px);
+  font-size: var(--wdp-text-sm, 14px);
+  font-weight: var(--wdp-font-medium, 500);
+  animation: wdpFadeInSlide var(--wdp-duration-300, 300ms) var(--wdp-ease-out, cubic-bezier(0, 0, 0.2, 1)),
+             wdpErrorShake var(--wdp-duration-600, 600ms) var(--wdp-ease-in-out, cubic-bezier(0.4, 0, 0.2, 1)) 0.1s;
+  box-shadow: var(--wdp-shadow-sm, 0 1px 2px 0 rgba(0, 0, 0, 0.05));
+  position: relative;
+  overflow: hidden;
+}
+
+html body .wdp-form-error::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background-color: #c53030;
+  animation: wdpErrorPulse 2s ease-in-out infinite;
 }
 
 html body .wdp-form-success {
   background-color: #c6f6d5;
   border: 1px solid #9ae6b4;
   color: #22543d;
-  padding: var(--wdp-space-3) var(--wdp-space-4);
-  border-radius: var(--wdp-radius-md);
-  margin-bottom: var(--wdp-space-4);
-  font-size: var(--wdp-text-sm);
-  font-weight: 500;
-  animation: wdpFadeInDown 0.3s ease;
+  padding: var(--wdp-space-3, 12px) var(--wdp-space-4, 16px);
+  border-radius: var(--wdp-radius-md, 8px);
+  margin-bottom: var(--wdp-space-4, 16px);
+  font-size: var(--wdp-text-sm, 14px);
+  font-weight: var(--wdp-font-medium, 500);
+  animation: wdpFadeInSlide var(--wdp-duration-300, 300ms) var(--wdp-ease-out, cubic-bezier(0, 0, 0.2, 1)),
+             wdpSuccessPulse var(--wdp-duration-2000, 2000ms) var(--wdp-ease-in-out, cubic-bezier(0.4, 0, 0.2, 1)) infinite;
+  box-shadow: var(--wdp-shadow-sm, 0 1px 2px 0 rgba(0, 0, 0, 0.05));
+  position: relative;
+  overflow: hidden;
+}
+
+html body .wdp-form-success::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background-color: #22543d;
+  animation: wdpSuccessPulseBar 2s ease-in-out infinite;
 }
 
 html body .wdp-input-error {
   position: absolute;
-  top: calc(100% + 4px);
+  top: calc(100% + var(--wdp-space-1, 4px));
   left: 0;
   right: 0;
   background-color: #fed7d7;
   border: 1px solid #feb2b2;
   color: #c53030;
-  padding: var(--wdp-space-2) var(--wdp-space-3);
-  border-radius: var(--wdp-radius-sm);
-  font-size: 12px;
-  font-weight: 500;
+  padding: var(--wdp-space-2, 8px) var(--wdp-space-3, 12px);
+  border-radius: var(--wdp-radius-sm, 4px);
+  font-size: var(--wdp-text-xs, 12px);
+  font-weight: var(--wdp-font-medium, 500);
   z-index: 100;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  animation: wdpFadeIn 0.3s ease;
+  box-shadow: var(--wdp-shadow-md, 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06));
+  animation: wdpFadeInSlide var(--wdp-duration-300, 300ms) var(--wdp-ease-out, cubic-bezier(0, 0, 0.2, 1));
   pointer-events: none;
-}
-
-html body .wdp-form-success {
-  animation: wdpSuccessPulse 2s infinite;
-}
-
-html body .wdp-form-error {
-  animation: wdpErrorShake 0.6s ease-in-out;
+  transform-origin: top;
 }
 
 /* ==================== */
 /* FEEDBACK ANIMATIONS  */
 /* ==================== */
 @keyframes wdpFadeIn {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { 
+    opacity: 0; 
+  }
+  to { 
+    opacity: 1; 
+  }
+}
+
+@keyframes wdpFadeInSlide {
+  from { 
+    opacity: 0; 
+    transform: translateY(-10px) scale(0.95);
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0) scale(1);
+  }
 }
 
 @keyframes wdpFadeInDown {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { 
+    opacity: 0; 
+    transform: translateY(-10px);
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0);
+  }
 }
 
 @keyframes wdpShake {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-5px); }
-  75% { transform: translateX(5px); }
+  0%, 100% { 
+    transform: translateX(0); 
+  }
+  25% { 
+    transform: translateX(-5px); 
+  }
+  75% { 
+    transform: translateX(5px); 
+  }
 }
 
 @keyframes wdpSuccessPulse {
-  0%, 100% { box-shadow: none; }
-  50% { box-shadow: none; }
+  0%, 100% { 
+    box-shadow: 0 0 0 0 rgba(34, 84, 61, 0.4);
+  }
+  50% { 
+    box-shadow: 0 0 0 4px rgba(34, 84, 61, 0);
+  }
+}
+
+@keyframes wdpSuccessPulseBar {
+  0%, 100% {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scaleY(0.95);
+  }
+}
+
+@keyframes wdpErrorPulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scaleY(0.9);
+  }
 }
 
 @keyframes wdpErrorShake {
-  0%, 100% { transform: translateX(0); }
-  10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
-  20%, 40%, 60%, 80% { transform: translateX(5px); }
+  0%, 100% { 
+    transform: translateX(0); 
+  }
+  10%, 30%, 50%, 70%, 90% { 
+    transform: translateX(-5px); 
+  }
+  20%, 40%, 60%, 80% { 
+    transform: translateX(5px); 
+  }
+}
+
+/* Toast notification styles */
+html body .wdp-toast {
+  position: fixed;
+  bottom: var(--wdp-space-6, 24px);
+  right: var(--wdp-space-6, 24px);
+  background-color: var(--wdp-white, #ffffff);
+  border: 1px solid var(--wdp-gray-200, #e5e7eb);
+  border-radius: var(--wdp-radius-lg, 12px);
+  padding: var(--wdp-space-4, 16px) var(--wdp-space-5, 20px);
+  box-shadow: var(--wdp-shadow-lg, 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05));
+  z-index: calc(var(--wdp-z-modal-close, 2147483647) + 1);
+  animation: wdpToastSlideIn var(--wdp-duration-300, 300ms) var(--wdp-ease-out, cubic-bezier(0, 0, 0.2, 1));
+  max-width: 400px;
+  min-width: 300px;
+}
+
+html body .wdp-toast.wdp-toast-success {
+  border-left: 4px solid var(--wdp-success, #48bb78);
+}
+
+html body .wdp-toast.wdp-toast-error {
+  border-left: 4px solid var(--wdp-error, #e53e3e);
+}
+
+html body .wdp-toast.wdp-toast-warning {
+  border-left: 4px solid var(--wdp-warning, #ed8936);
+}
+
+html body .wdp-toast.wdp-toast-info {
+  border-left: 4px solid var(--wdp-primary, #1e73be);
+}
+
+@keyframes wdpToastSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(100%) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+html body .wdp-toast.wdp-toast-closing {
+  animation: wdpToastSlideOut var(--wdp-duration-200, 200ms) var(--wdp-ease-in, cubic-bezier(0.4, 0, 1, 1));
+}
+
+@keyframes wdpToastSlideOut {
+  from {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(100%) scale(0.95);
+  }
+}
+
+/* Mobile optimizations for feedback */
+@media (max-width: 600px) {
+  /* Mobilde toast notification */
+  html body .wdp-toast {
+    bottom: var(--wdp-space-4, 16px);
+    right: var(--wdp-space-4, 16px);
+    left: var(--wdp-space-4, 16px);
+    max-width: calc(100% - 32px);
+    min-width: auto;
+    width: auto;
+  }
+  
+  /* Mobilde form error/success padding */
+  html body .wdp-form-error,
+  html body .wdp-form-success {
+    padding: var(--wdp-space-2, 8px) var(--wdp-space-3, 12px);
+    font-size: var(--wdp-text-xs, 12px);
+  }
+  
+  /* Mobilde input error */
+  html body .wdp-input-error {
+    font-size: 11px;
+    padding: var(--wdp-space-1, 4px) var(--wdp-space-2, 8px);
+  }
+}
+
+@media (max-width: 480px) {
+  /* Küçük mobilde toast */
+  html body .wdp-toast {
+    bottom: var(--wdp-space-3, 12px);
+    right: var(--wdp-space-3, 12px);
+    left: var(--wdp-space-3, 12px);
+    max-width: calc(100% - 24px);
+    padding: var(--wdp-space-3, 12px) var(--wdp-space-4, 16px);
+  }
+  
+  html body .wdp-form-error,
+  html body .wdp-form-success {
+    padding: var(--wdp-space-2, 8px) var(--wdp-space-3, 12px);
+    font-size: 11px;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  html body .wdp-form-error,
+  html body .wdp-form-success,
+  html body .wdp-input-error,
+  html body .wdp-toast {
+    animation: none !important;
+  }
+  
+  html body .wdp-form-error::before,
+  html body .wdp-form-success::before {
+    animation: none !important;
+  }
 }

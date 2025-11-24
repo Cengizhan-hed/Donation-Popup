@@ -531,6 +531,44 @@ class WDP_Assets {
     }
 
     /**
+     * Get critical CSS for inline rendering (above-the-fold content)
+     * 
+     * @return string Critical CSS
+     */
+    private static function get_critical_css() {
+        // Critical CSS - only essential styles for initial render
+        return "
+        /* Critical CSS - Modal visibility and basic layout */
+        .wdp-modal:not(.show) { 
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
+        .wdp-modal.show { 
+            display: flex !important;
+            position: fixed !important;
+            z-index: 2147483645 !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+        }
+        .wdp-modal-content {
+            z-index: 2147483646 !important;
+            position: relative !important;
+        }
+        body.wdp-modal-open {
+            overflow: hidden !important;
+        }
+        ";
+    }
+    
+    /**
      * Attach inline CSS once per request.
      */
     private static function maybe_enqueue_inline_style() {
@@ -540,11 +578,24 @@ class WDP_Assets {
 
         $inline_css = self::get_inline_css();
         
+        // Critical CSS'i head'e ekle (inline, blocking)
+        $critical_css = self::get_critical_css();
+        add_action('wp_head', function() use ($critical_css) {
+            echo '<style id="wdp-critical-css">' . $critical_css . '</style>' . "\n";
+        }, 1);
+        
+        // Font preload for better performance
+        add_action('wp_head', function() {
+            // Preload Inter font if available
+            echo '<link rel="preconnect" href="https://fonts.googleapis.com">' . "\n";
+            echo '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>' . "\n";
+        }, 0);
+        
         // Cache busting için ayarların hash'ini ekle
         $button_settings = get_option('wdp_button_settings', array());
         $settings_hash = md5(serialize($button_settings));
         
-        // Inline CSS'i ekle
+        // Inline CSS'i ekle (non-critical, async)
         wp_add_inline_style('wdp-donation-modal-css', $inline_css);
         
         // Cache'i temizlemek için style tag'ine data attribute ekle (debug için)

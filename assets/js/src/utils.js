@@ -283,6 +283,48 @@
     }, liveRegionDelay)
   }
 
+  // Debounce function - delays function execution until after wait time
+  function debounce(func, wait = 300, immediate = false) {
+    let timeout;
+    return function executedFunction(...args) {
+      const later = () => {
+        timeout = null;
+        if (!immediate) func.apply(this, args);
+      };
+      const callNow = immediate && !timeout;
+      clearTimeout(timeout);
+      timeout = setTimeout(later, wait);
+      if (callNow) func.apply(this, args);
+    };
+  }
+
+  // Throttle function - limits function execution to once per wait time
+  function throttle(func, wait = 100) {
+    let inThrottle;
+    return function executedFunction(...args) {
+      if (!inThrottle) {
+        func.apply(this, args);
+        inThrottle = true;
+        setTimeout(() => {
+          inThrottle = false;
+        }, wait);
+      }
+    };
+  }
+
+  // Request Animation Frame throttle - for scroll/resize events
+  function rafThrottle(func) {
+    let rafId = null;
+    return function executedFunction(...args) {
+      if (rafId === null) {
+        rafId = requestAnimationFrame(() => {
+          func.apply(this, args);
+          rafId = null;
+        });
+      }
+    };
+  }
+
   // Module dependency helper - centralized module loading
   function ensureModule(moduleName, requiredMethods = [], fallbacks = {}) {
     const module = WDPApp[moduleName] || {};
@@ -329,6 +371,9 @@
     focusFirstElement,
     activateFocusTrap,
     announceStatus,
+    debounce, // Performance optimization
+    throttle, // Performance optimization
+    rafThrottle, // Performance optimization for scroll/resize
     ensureModule, // Export module helper
   }
 

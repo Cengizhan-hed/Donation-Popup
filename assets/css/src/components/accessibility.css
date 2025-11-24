@@ -14,11 +14,37 @@
   border-width: 0;
 }
 
+/* Enhanced focus styles for better accessibility */
 html body .wdp-modal-content button:focus,
 html body .wdp-modal-content input:focus,
-html body .wdp-modal-content textarea:focus {
-  outline: 2px solid var(--wdp-primary);
-  outline-offset: 2px;
+html body .wdp-modal-content textarea:focus,
+html body .wdp-donation-form button:focus,
+html body .wdp-donation-form input:focus,
+html body .wdp-donation-form textarea:focus {
+  outline: var(--wdp-focus-ring-width, 2px) solid var(--wdp-focus-ring-color, var(--wdp-primary, #1e73be));
+  outline-offset: var(--wdp-focus-ring-offset, 2px);
+}
+
+/* Focus-visible for keyboard navigation only */
+html body .wdp-modal-content button:focus-visible,
+html body .wdp-modal-content input:focus-visible,
+html body .wdp-modal-content textarea:focus-visible,
+html body .wdp-donation-form button:focus-visible,
+html body .wdp-donation-form input:focus-visible,
+html body .wdp-donation-form textarea:focus-visible {
+  outline: var(--wdp-focus-ring-width, 2px) solid var(--wdp-focus-ring-color, var(--wdp-primary, #1e73be));
+  outline-offset: var(--wdp-focus-ring-offset, 2px);
+  box-shadow: 0 0 0 var(--wdp-focus-ring-width, 2px) rgba(30, 115, 190, 0.2);
+}
+
+/* Remove focus outline for mouse users */
+html body .wdp-modal-content button:focus:not(:focus-visible),
+html body .wdp-modal-content input:focus:not(:focus-visible),
+html body .wdp-modal-content textarea:focus:not(:focus-visible),
+html body .wdp-donation-form button:focus:not(:focus-visible),
+html body .wdp-donation-form input:focus:not(:focus-visible),
+html body .wdp-donation-form textarea:focus:not(:focus-visible) {
+  outline: none;
 }
 
 html body .wdp-modal-header .wdp-modal-close:focus,
@@ -28,9 +54,31 @@ html body .wdp-modal-content .wdp-modal-close:focus {
   box-shadow: none;
 }
 
+/* High contrast mode support */
 @media (prefers-contrast: high) {
-  .wdp-modal-content {
-    border: 2px solid var(--wdp-gray-900);
+  html body .wdp-modal-content,
+  html body .wdp-donation-form .wdp-modal-content {
+    border: var(--wdp-border-2, 2px) solid var(--wdp-gray-900, #111827);
+  }
+  
+  html body .wdp-modal-content button,
+  html body .wdp-donation-form .wdp-modal-content button {
+    border: var(--wdp-border-1, 1px) solid var(--wdp-gray-900, #111827);
+  }
+  
+  html body .wdp-modal-content input,
+  html body .wdp-modal-content textarea,
+  html body .wdp-donation-form .wdp-modal-content input,
+  html body .wdp-donation-form .wdp-modal-content textarea {
+    border: var(--wdp-border-2, 2px) solid var(--wdp-gray-900, #111827);
+  }
+  
+  html body .wdp-form-error {
+    border: var(--wdp-border-2, 2px) solid #c53030;
+  }
+  
+  html body .wdp-form-success {
+    border: var(--wdp-border-2, 2px) solid #22543d;
   }
 }
 
@@ -72,4 +120,91 @@ html body .wdp-modal-content:focus-within {
 
 [dir="rtl"] .wdp-toast.show {
   transform: translateX(0);
+}
+
+/* Touch target size for mobile accessibility */
+html body .wdp-modal-content button,
+html body .wdp-donation-form .wdp-modal-content button,
+html body button.wdp-donate-button,
+html body .wdp-open-modal {
+  min-height: var(--wdp-touch-target-min, 44px);
+  min-width: var(--wdp-touch-target-min, 44px);
+}
+
+/* Skip link for keyboard navigation */
+html body .wdp-skip-link {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: var(--wdp-primary, #1e73be);
+  color: var(--wdp-white, #ffffff);
+  padding: var(--wdp-space-2, 8px) var(--wdp-space-4, 16px);
+  text-decoration: none;
+  z-index: calc(var(--wdp-z-modal-close, 2147483647) + 1);
+}
+
+html body .wdp-skip-link:focus {
+  top: 0;
+  outline: var(--wdp-focus-ring-width, 2px) solid var(--wdp-white, #ffffff);
+  outline-offset: var(--wdp-focus-ring-offset, 2px);
+}
+
+/* ARIA live region styling */
+html body #wdp-live-region,
+html body #wdp-live-region-assertive {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  border: 0;
+  padding: 0;
+  clip: rect(0, 0, 0, 0);
+  clip-path: inset(100%);
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+/* Mobile accessibility optimizations */
+@media (max-width: 600px) {
+  /* Mobilde focus ring'leri daha belirgin yap */
+  html body .wdp-modal-content button:focus-visible,
+  html body .wdp-donation-form .wdp-modal-content button:focus-visible,
+  html body .wdp-modal-content input:focus-visible,
+  html body .wdp-donation-form .wdp-modal-content input:focus-visible {
+    outline-width: 3px;
+    outline-offset: 3px;
+  }
+  
+  /* Mobilde touch target'ları garanti et */
+  html body .wdp-modal-content button,
+  html body .wdp-donation-form .wdp-modal-content button {
+    min-height: var(--wdp-touch-target-comfortable, 48px);
+    min-width: var(--wdp-touch-target-comfortable, 48px);
+  }
+}
+
+@media (max-width: 480px) {
+  /* Küçük mobilde touch target'lar */
+  html body .wdp-modal-content button,
+  html body .wdp-donation-form .wdp-modal-content button {
+    min-height: var(--wdp-touch-target-min, 44px);
+    min-width: var(--wdp-touch-target-min, 44px);
+  }
+  
+  /* Küçük mobilde focus ring */
+  html body .wdp-modal-content button:focus-visible,
+  html body .wdp-donation-form .wdp-modal-content button:focus-visible {
+    outline-width: 2px;
+    outline-offset: 2px;
+  }
+}
+
+/* Reduced motion support - already in motion.css but ensure consistency */
+@media (prefers-reduced-motion: reduce) {
+  html body .wdp-modal-content button,
+  html body .wdp-donation-form .wdp-modal-content button,
+  html body .wdp-modal-content input,
+  html body .wdp-donation-form .wdp-modal-content input {
+    transition: none !important;
+  }
 }

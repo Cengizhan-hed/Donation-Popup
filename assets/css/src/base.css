@@ -9,10 +9,10 @@
 html body .wdp-modal,
 html body .wdp-donation-form {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  font-size: 16px;
-  line-height: 1.5;
-  color: #1f2937;
-  font-weight: 400;
+  font-size: var(--wdp-text-base, 16px);
+  line-height: var(--wdp-leading-normal, 1.5);
+  color: var(--wdp-gray-800, #1f2937);
+  font-weight: var(--wdp-font-normal, 400);
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -23,6 +23,11 @@ html body .wdp-donation-form {
   background: transparent;
   /* CRITICAL: Prevent layout shift during font loading */
   font-display: swap;
+  /* Improved text rendering */
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: "kern" 1, "liga" 1;
 }
 
 /* Typography reset - Sadece başlıklar için */
@@ -41,11 +46,49 @@ html body .wdp-donation-form h4,
 html body .wdp-donation-form h5,
 html body .wdp-donation-form h6 {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  font-weight: 600;
-  line-height: 1.3;
-  color: #1f2937;
-  margin: 0;
+  font-weight: var(--wdp-font-semibold, 600);
+  line-height: var(--wdp-leading-tight, 1.25);
+  color: var(--wdp-gray-800, #1f2937);
+  margin: 0 0 var(--wdp-space-4, 16px) 0;
   padding: 0;
+  letter-spacing: var(--wdp-tracking-tight, -0.025em);
+}
+
+/* Heading size scale */
+html body .wdp-modal h1:not(.wdp-form-title):not(.wdp-modal-title),
+html body .wdp-donation-form h1:not(.wdp-form-title):not(.wdp-modal-title) {
+  font-size: var(--wdp-text-3xl, 30px);
+  line-height: var(--wdp-leading-tight, 1.25);
+}
+
+html body .wdp-modal h2:not(.wdp-form-title),
+html body .wdp-donation-form h2:not(.wdp-form-title) {
+  font-size: var(--wdp-text-2xl, 24px);
+  line-height: var(--wdp-leading-tight, 1.25);
+}
+
+html body .wdp-modal h3,
+html body .wdp-donation-form h3 {
+  font-size: var(--wdp-text-xl, 20px);
+  line-height: var(--wdp-leading-snug, 1.375);
+}
+
+html body .wdp-modal h4,
+html body .wdp-donation-form h4 {
+  font-size: var(--wdp-text-lg, 18px);
+  line-height: var(--wdp-leading-snug, 1.375);
+}
+
+html body .wdp-modal h5,
+html body .wdp-donation-form h5 {
+  font-size: var(--wdp-text-base, 16px);
+  line-height: var(--wdp-leading-normal, 1.5);
+}
+
+html body .wdp-modal h6,
+html body .wdp-donation-form h6 {
+  font-size: var(--wdp-text-sm, 14px);
+  line-height: var(--wdp-leading-normal, 1.5);
 }
 
 /* Link reset */
@@ -81,13 +124,17 @@ html body .wdp-donation-form li {
   padding: 0;
 }
 
-/* Paragraph reset */
+/* Paragraph reset with improved typography */
 /* CRITICAL: Maximum specificity - html body ile tema override koruması */
 html body .wdp-modal p,
 html body .wdp-donation-form p {
-  margin: 0 0 12px;
+  margin: 0 0 var(--wdp-space-3, 12px);
   padding: 0;
-  color: #374151;
+  color: var(--wdp-gray-700, #374151);
+  font-size: var(--wdp-text-base, 16px);
+  line-height: var(--wdp-leading-normal, 1.5);
+  letter-spacing: var(--wdp-tracking-normal, 0);
+  max-width: 65ch; /* Optimal line length for readability */
 }
 
 /* Image reset */

@@ -4,23 +4,37 @@
 
 html body .wdp-modal {
   will-change: opacity;
+  transition: opacity var(--wdp-duration-300, 300ms) var(--wdp-ease-in-out, cubic-bezier(0.4, 0, 0.2, 1));
 }
 
 html body .wdp-modal-content {
-  will-change: transform;
+  will-change: transform, opacity;
   transform: translateZ(0);
   backface-visibility: hidden;
   scroll-behavior: smooth;
+  transition: transform var(--wdp-duration-300, 300ms) var(--wdp-ease-out, cubic-bezier(0, 0, 0.2, 1)),
+              opacity var(--wdp-duration-300, 300ms) var(--wdp-ease-out, cubic-bezier(0, 0, 0.2, 1));
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .wdp-modal,
-  .wdp-modal-content,
-  .wdp-modal-content form input,
-  .wdp-modal-content form textarea,
-  .wdp-modal-content form button {
-    transition: none;
-    animation: none;
+/* Modal açılış animasyonu */
+html body .wdp-modal.show .wdp-modal-content {
+  animation: wdpModalSlideIn var(--wdp-duration-300, 300ms) var(--wdp-ease-out, cubic-bezier(0, 0, 0.2, 1));
+}
+
+/* Modal kapanış animasyonu */
+html body .wdp-modal.closing .wdp-modal-content {
+  animation: wdpSlideOut var(--wdp-duration-300, 300ms) var(--wdp-ease-in, cubic-bezier(0.4, 0, 1, 1));
+}
+
+/* Modal açılış animasyonu */
+@keyframes wdpModalSlideIn {
+  0% {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
   }
 }
 
@@ -35,37 +49,115 @@ html body .wdp-modal-content {
   }
 }
 
-html body .wdp-modal.show .wdp-modal-content {
-  animation: none;
+/* Backdrop fade in */
+html body .wdp-modal.show {
+  animation: wdpBackdropFadeIn var(--wdp-duration-200, 200ms) var(--wdp-ease-out, cubic-bezier(0, 0, 0.2, 1));
 }
 
-html body .wdp-modal.closing .wdp-modal-content {
-  animation: wdpSlideOut 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+@keyframes wdpBackdropFadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
 }
 
-/* Input focus animasyonları kaldırıldı */
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  html body .wdp-modal,
+  html body .wdp-modal-content,
+  html body .wdp-modal-content form input,
+  html body .wdp-modal-content form textarea,
+  html body .wdp-modal-content form button,
+  html body .wdp-donation-form,
+  html body .wdp-donation-form form input,
+  html body .wdp-donation-form form textarea,
+  html body .wdp-donation-form form button {
+    transition: none !important;
+    animation: none !important;
+  }
+  
+  html body .wdp-modal.show .wdp-modal-content {
+    animation: none !important;
+  }
+  
+  html body .wdp-modal.closing .wdp-modal-content {
+    animation: none !important;
+  }
+  
+  html body .wdp-modal.show {
+    animation: none !important;
+  }
+}
 
+/* Smooth transitions for interactive elements */
+html body .wdp-modal-content form input,
+html body .wdp-modal-content form textarea,
+html body .wdp-donation-form form input,
+html body .wdp-donation-form form textarea {
+  transition: border-color var(--wdp-duration-200, 200ms) var(--wdp-ease-in-out, cubic-bezier(0.4, 0, 0.2, 1)),
+              box-shadow var(--wdp-duration-200, 200ms) var(--wdp-ease-in-out, cubic-bezier(0.4, 0, 0.2, 1)),
+              background-color var(--wdp-duration-200, 200ms) var(--wdp-ease-in-out, cubic-bezier(0.4, 0, 0.2, 1));
+}
+
+html body .wdp-modal-content form input:focus,
+html body .wdp-modal-content form textarea:focus,
+html body .wdp-donation-form form input:focus,
+html body .wdp-donation-form form textarea:focus {
+  transition: border-color var(--wdp-duration-150, 150ms) var(--wdp-ease-out, cubic-bezier(0, 0, 0.2, 1)),
+              box-shadow var(--wdp-duration-150, 150ms) var(--wdp-ease-out, cubic-bezier(0, 0, 0.2, 1));
+}
+
+/* Shareholder form transitions */
 html body .wdp-shareholder-form.collapsed .wdp-shareholder-content,
 html body .wdp-shareholders-container {
-  transition: none;
+  transition: max-height var(--wdp-duration-300, 300ms) var(--wdp-ease-in-out, cubic-bezier(0.4, 0, 0.2, 1)),
+              opacity var(--wdp-duration-300, 300ms) var(--wdp-ease-in-out, cubic-bezier(0.4, 0, 0.2, 1));
 }
 
 html body .wdp-shareholder-form,
-html body .wdp-shareholder-header,
-html body .wdp-shareholders-container {
-  transition: none;
+html body .wdp-shareholder-header {
+  transition: background-color var(--wdp-duration-200, 200ms) var(--wdp-ease-in-out, cubic-bezier(0.4, 0, 0.2, 1)),
+              border-color var(--wdp-duration-200, 200ms) var(--wdp-ease-in-out, cubic-bezier(0.4, 0, 0.2, 1));
 }
+
+/* Mobile optimizations - keep animations but ensure performance */
 @media (max-width: 600px) {
-  .wdp-modal .wdp-modal-content,
-  .wdp-donation-form .wdp-modal-content,
-  .wdp-modal .wdp-modal-content form,
-  .wdp-donation-form .wdp-modal-content form,
-  .wdp-modal .wdp-modal-content form > *,
-  .wdp-donation-form .wdp-modal-content form > * {
-    animation: none;
-    transition: none;
+  html body .wdp-modal .wdp-modal-content,
+  html body .wdp-donation-form .wdp-modal-content {
+    /* Keep smooth transitions but optimize for mobile */
+    will-change: auto;
+  }
+  
+  /* Reduce animation complexity on mobile for better performance */
+  html body .wdp-modal.show .wdp-modal-content {
+    animation: wdpModalSlideInMobile var(--wdp-duration-200, 200ms) var(--wdp-ease-out, cubic-bezier(0, 0, 0.2, 1));
+  }
+  
+  html body .wdp-modal.closing .wdp-modal-content {
+    animation: wdpSlideOutMobile var(--wdp-duration-200, 200ms) var(--wdp-ease-in, cubic-bezier(0.4, 0, 1, 1));
+  }
+}
+
+@keyframes wdpModalSlideInMobile {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  100% {
     opacity: 1;
-    transform: none;
-    visibility: visible;
+    transform: translateY(0);
+  }
+}
+
+@keyframes wdpSlideOutMobile {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-10px);
   }
 }

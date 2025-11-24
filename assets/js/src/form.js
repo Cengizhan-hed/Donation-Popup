@@ -30,11 +30,20 @@
   const state = stateCheck.module;
   const alerts = alertsCheck.module;
   const cart = cartCheck.module;
-  const { formatCurrency, getAjaxNonce, announceStatus, safeLog, escapeHtml } = utils;
+  const { formatCurrency, getAjaxNonce, announceStatus, safeLog, escapeHtml, debounce, throttle } = utils;
   const { clear: clearAlerts, show: showAlert } = alerts;
   const { fetchContents: fetchCartContents, updateCountElements: updateCartCountElements, createItemsHTML: createCartItemsHTML, setupContinueShoppingButton, updateWooCommerce: updateWooCommerceCart, saveSideCartElements, showSideCarts } = cart;
   const wdp_ajax = window.wdp_ajax || {};
   const jQuery = window.jQuery || null;
+  
+  // Debounced validation function for input events
+  const debouncedValidateInput = debounce ? debounce((input) => {
+    if (input.classList.contains('wdp-error')) {
+      input.classList.remove('wdp-error');
+      const errorDiv = input.parentNode.querySelector('.wdp-input-error');
+      if (errorDiv) errorDiv.remove();
+    }
+  }, 300) : null;
 
   function showInputError(input, message) {
     input.classList.add('wdp-error');
@@ -49,15 +58,22 @@
     errorDiv.id = errorId;
     errorDiv.textContent = message;
     input.parentNode.appendChild(errorDiv);
-    // Remove error on focus/input
+    // Remove error on focus/input - optimized with debounce
     function clearError() {
       input.classList.remove('wdp-error');
       if (errorDiv) errorDiv.remove();
       input.removeEventListener('focus', clearError);
-      input.removeEventListener('input', clearError);
+      input.removeEventListener('input', clearErrorInput);
     }
+    
+    // Debounced input handler for better performance
+    const clearErrorInput = debouncedValidateInput ? debouncedValidateInput.bind(null, input) : function() {
+      input.classList.remove('wdp-error');
+      if (errorDiv) errorDiv.remove();
+    };
+    
     input.addEventListener('focus', clearError);
-    input.addEventListener('input', clearError);
+    input.addEventListener('input', clearErrorInput);
 
     announceStatus(message, 'assertive');
   }
@@ -727,8 +743,9 @@ ${createCartItemsHTML([])}
         }
       });
 
-      // Özel fiyat alanı için minimum değer kontrolü
+      // Özel fiyat alanı için minimum değer kontrolü - optimized with debounce
       if (input.name === "custom_price") {
+        // Focus handler - immediate
         input.addEventListener("focus", function () {
           this.classList.remove("wdp-error");
           const errorMsg = form.querySelector(".wdp-form-error");
@@ -741,7 +758,9 @@ ${createCartItemsHTML([])}
             inputError.remove();
           }
         });
-        input.addEventListener("blur", function () {
+        
+        // Blur handler - debounced for better performance
+        const debouncedBlurHandler = debounce ? debounce(function() {
           const minPrice = Number.parseFloat(this.getAttribute("min") || 0);
           const currentValue = Number.parseFloat(this.value || 0);
           if (this.value !== "" && minPrice > 0 && currentValue < minPrice) {
@@ -750,9 +769,9 @@ ${createCartItemsHTML([])}
             showAlert([`Lütfen ${minPrice} TL ve üstü değerler girin.`], {
               type: 'warning',
               title: 'Minimum tutar hatası',
-              autoClose: false, // Otomatik kapanma kapalı
-              nonClosable: false, // Kapatılabilir (çarpı, overlay, ESC ile)
-              persistent: false // Normal şekilde kapatılabilir
+              autoClose: false,
+              nonClosable: false,
+              persistent: false
             });
           } else {
             this.classList.remove("wdp-error");
@@ -761,7 +780,28 @@ ${createCartItemsHTML([])}
               inputError.remove();
             }
           }
-        });
+        }, 300) : function() {
+          const minPrice = Number.parseFloat(this.getAttribute("min") || 0);
+          const currentValue = Number.parseFloat(this.value || 0);
+          if (this.value !== "" && minPrice > 0 && currentValue < minPrice) {
+            this.classList.add("wdp-error");
+            showAlert([`Lütfen ${minPrice} TL ve üstü değerler girin.`], {
+              type: 'warning',
+              title: 'Minimum tutar hatası',
+              autoClose: false,
+              nonClosable: false,
+              persistent: false
+            });
+          } else {
+            this.classList.remove("wdp-error");
+            const inputError = this.parentNode.querySelector('.wdp-input-error');
+            if (inputError) {
+              inputError.remove();
+            }
+          }
+        };
+        
+        input.addEventListener("blur", debouncedBlurHandler);
         input.value = "";
         const minPrice = Number.parseFloat(input.getAttribute("min") || 0);
         input.placeholder = "Min: " + minPrice + " TL";

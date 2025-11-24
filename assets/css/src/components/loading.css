@@ -8,19 +8,215 @@ html body .wdp-loading-overlay {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 10;
   border-radius: inherit;
+  animation: wdpFadeIn var(--wdp-duration-200, 200ms) var(--wdp-ease-out, cubic-bezier(0, 0, 0.2, 1));
 }
 
 html body .wdp-loading-spinner {
-  width: 32px;
-  height: 32px;
-  border: 3px solid var(--wdp-gray-200);
-  border-top: 3px solid var(--wdp-primary);
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--wdp-gray-200, #e5e7eb);
+  border-top: 3px solid var(--wdp-primary, #1e73be);
+  border-right: 3px solid var(--wdp-primary, #1e73be);
   border-radius: 50%;
-  animation: wdpSpin 1s linear infinite;
+  animation: wdpSpin var(--wdp-duration-1000, 1000ms) linear infinite;
+  position: relative;
+}
+
+/* Skeleton loading for form fields */
+html body .wdp-skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--wdp-gray-100, #f3f4f6) 0%,
+    var(--wdp-gray-200, #e5e7eb) 50%,
+    var(--wdp-gray-100, #f3f4f6) 100%
+  );
+  background-size: 200% 100%;
+  animation: wdpSkeletonPulse 1.5s ease-in-out infinite;
+  border-radius: var(--wdp-radius-md, 8px);
+  min-height: 20px;
+}
+
+@keyframes wdpSkeletonPulse {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Skeleton input */
+html body .wdp-skeleton-input {
+  width: 100%;
+  height: 48px;
+  border-radius: var(--wdp-radius-md, 8px);
+}
+
+/* Skeleton button */
+html body .wdp-skeleton-button {
+  width: 100%;
+  height: 48px;
+  border-radius: var(--wdp-button-radius, 10px);
+}
+
+/* Progress indicator */
+html body .wdp-progress-bar {
+  width: 100%;
+  height: 4px;
+  background-color: var(--wdp-gray-200, #e5e7eb);
+  border-radius: 2px;
+  overflow: hidden;
+  position: relative;
+}
+
+html body .wdp-progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    var(--wdp-primary, #1e73be) 0%,
+    var(--wdp-primary-hover, #185d98) 100%
+  );
+  border-radius: 2px;
+  transition: width var(--wdp-duration-300, 300ms) var(--wdp-ease-out, cubic-bezier(0, 0, 0.2, 1));
+  animation: wdpProgressShimmer 2s ease-in-out infinite;
+}
+
+@keyframes wdpProgressShimmer {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+/* Loading dots animation */
+html body .wdp-loading-dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+html body .wdp-loading-dots span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--wdp-primary, #1e73be);
+  animation: wdpLoadingDots 1.4s ease-in-out infinite both;
+}
+
+html body .wdp-loading-dots span:nth-child(1) {
+  animation-delay: -0.32s;
+}
+
+html body .wdp-loading-dots span:nth-child(2) {
+  animation-delay: -0.16s;
+}
+
+@keyframes wdpLoadingDots {
+  0%, 80%, 100% {
+    transform: scale(0);
+    opacity: 0.5;
+  }
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Button loading state enhancement */
+html body .wdp-button-loading {
+  position: relative;
+  color: transparent !important;
+  pointer-events: none;
+  cursor: wait;
+}
+
+html body .wdp-button-loading::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  margin: -10px 0 0 -10px;
+  border: 2px solid transparent;
+  border-top-color: currentColor;
+  border-right-color: currentColor;
+  border-radius: 50%;
+  animation: wdpSpin var(--wdp-duration-1000, 1000ms) linear infinite;
+}
+
+/* Mobile optimizations for loading states */
+@media (max-width: 600px) {
+  /* Mobilde loading spinner boyutu */
+  html body .wdp-loading-spinner {
+    width: 32px;
+    height: 32px;
+    border-width: 2px;
+  }
+  
+  /* Mobilde skeleton animasyonunu optimize et */
+  html body .wdp-skeleton {
+    background-size: 150% 100%;
+  }
+  
+  /* Mobilde progress bar */
+  html body .wdp-progress-bar {
+    height: 3px;
+  }
+  
+  /* Mobilde loading dots */
+  html body .wdp-loading-dots span {
+    width: 6px;
+    height: 6px;
+  }
+  
+  /* Mobilde button loading */
+  html body .wdp-button-loading::after {
+    width: 18px;
+    height: 18px;
+    margin: -9px 0 0 -9px;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Küçük mobilde loading spinner */
+  html body .wdp-loading-spinner {
+    width: 28px;
+    height: 28px;
+    border-width: 2px;
+  }
+  
+  html body .wdp-button-loading::after {
+    width: 16px;
+    height: 16px;
+    margin: -8px 0 0 -8px;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  html body .wdp-loading-spinner,
+  html body .wdp-skeleton,
+  html body .wdp-progress-bar-fill,
+  html body .wdp-loading-dots span,
+  html body .wdp-button-loading::after {
+    animation: none !important;
+  }
+  
+  html body .wdp-skeleton {
+    background: var(--wdp-gray-200, #e5e7eb);
+  }
 }

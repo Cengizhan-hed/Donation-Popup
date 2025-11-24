@@ -73,11 +73,31 @@ class WDP_Ajax {
                 throw new WDP_Product_Not_Found_Exception($product_id);
             }
 
-        // OPTIMIZATION: WooCommerce get_meta() kullan (cache'lenmiş, daha hızlı)
-        $allow_custom_price = $product->get_meta('_allow_custom_price') === 'yes';
-        $min_price = $product->get_meta('_min_custom_price');
-        $allow_multiple_shares = $product->get_meta('_allow_multiple_shares') === 'yes';
-        $max_shares = $product->get_meta('_max_shares');
+        // OPTIMIZATION: Cache product meta data to avoid repeated queries
+        $cache_key = 'wdp_product_info_' . $product_id;
+        $cached_data = get_transient($cache_key);
+        
+        if (false !== $cached_data) {
+            // Use cached data
+            $allow_custom_price = $cached_data['allow_custom_price'];
+            $min_price = $cached_data['min_price'];
+            $allow_multiple_shares = $cached_data['allow_multiple_shares'];
+            $max_shares = $cached_data['max_shares'];
+        } else {
+            // OPTIMIZATION: WooCommerce get_meta() kullan (cache'lenmiş, daha hızlı)
+            $allow_custom_price = $product->get_meta('_allow_custom_price') === 'yes';
+            $min_price = $product->get_meta('_min_custom_price');
+            $allow_multiple_shares = $product->get_meta('_allow_multiple_shares') === 'yes';
+            $max_shares = $product->get_meta('_max_shares');
+            
+            // Cache for 1 hour
+            set_transient($cache_key, array(
+                'allow_custom_price' => $allow_custom_price,
+                'min_price' => $min_price,
+                'allow_multiple_shares' => $allow_multiple_shares,
+                'max_shares' => $max_shares,
+            ), HOUR_IN_SECONDS);
+        }
 
         if ($allow_custom_price && '' === $min_price) {
             $min_price = '0';
