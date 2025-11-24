@@ -347,7 +347,8 @@ html body .wdp-donation-form .wdp-shareholder-form .wdp-shareholder-header {
   border-left: none;
   border-right: none;
   cursor: pointer;
-  transition: background-color 0.15s ease;
+  /* Hover efekti kaldırıldı - sadece ikon renk değişimi olacak */
+  transition: none;
   
   position: relative;
   box-sizing: border-box;
@@ -364,10 +365,7 @@ html body .wdp-donation-form .wdp-shareholder-form .wdp-shareholder-header {
   outline: none;
 }
 
-html body .wdp-modal .wdp-shareholder-header:hover,
-html body .wdp-donation-form .wdp-shareholder-header:hover {
-  background: #f3f4f6;
-}
+/* Hover efekti kaldırıldı - sadece ikon renk değişimi olacak */
 
 /* ============ SHAREHOLDER HEADER H3 - Perfect Vertical Centering ============ */
 html body .wdp-modal .wdp-shareholder-header h3,
@@ -414,6 +412,110 @@ html body .wdp-donation-form .wdp-shareholder-header h3 {
   height: auto;
   min-height: 0;
   max-height: none;
+  
+  /* H3'ün sol tarafta olmasını garanti et */
+  order: 1;
+  margin-right: auto;
+}
+
+/* ============ SHAREHOLDER ICON - Collapse/Expand Indicator ============ */
+html body .wdp-modal .wdp-shareholder-form .wdp-shareholder-header .wdp-shareholder-icon,
+html body .wdp-donation-form .wdp-shareholder-form .wdp-shareholder-header .wdp-shareholder-icon {
+  isolation: isolate;
+  contain: layout style paint;
+  
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  flex-grow: 0;
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  margin-left: auto;
+  padding: 0;
+  box-sizing: border-box;
+  
+  font-size: 16px;
+  line-height: 1;
+  color: #6b7280;
+  transition: color 0.2s ease;
+  
+  position: relative;
+  vertical-align: middle;
+  visibility: visible;
+  opacity: 1;
+  
+  /* İkonun sağda olmasını garanti et */
+  order: 999;
+  align-self: center;
+}
+
+/* Genel ikon içeriği - varsayılan olarak açık durum (aşağı) */
+html body .wdp-modal .wdp-shareholder-form .wdp-shareholder-header .wdp-shareholder-icon::before,
+html body .wdp-donation-form .wdp-shareholder-form .wdp-shareholder-header .wdp-shareholder-icon::before {
+  content: '⌄';
+  display: block;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1;
+  color: #4a90e2;
+  width: 20px;
+  height: 20px;
+  text-align: center;
+  vertical-align: middle;
+}
+
+/* Kapalı durum - sola bakacak (chevron-left) */
+html body .wdp-modal .wdp-shareholder-form.collapsed .wdp-shareholder-header .wdp-shareholder-icon,
+html body .wdp-donation-form .wdp-shareholder-form.collapsed .wdp-shareholder-header .wdp-shareholder-icon {
+  color: #6b7280;
+}
+
+html body .wdp-modal .wdp-shareholder-form.collapsed .wdp-shareholder-header .wdp-shareholder-icon::before,
+html body .wdp-donation-form .wdp-shareholder-form.collapsed .wdp-shareholder-header .wdp-shareholder-icon::before {
+  content: '‹';
+  display: block;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1;
+  color: #6b7280;
+  width: 20px;
+  height: 20px;
+  text-align: center;
+  vertical-align: middle;
+}
+
+/* Açık durum - aşağı bakacak (chevron-down) */
+html body .wdp-modal .wdp-shareholder-form:not(.collapsed) .wdp-shareholder-header .wdp-shareholder-icon,
+html body .wdp-donation-form .wdp-shareholder-form:not(.collapsed) .wdp-shareholder-header .wdp-shareholder-icon {
+  color: #4a90e2;
+}
+
+html body .wdp-modal .wdp-shareholder-form:not(.collapsed) .wdp-shareholder-header .wdp-shareholder-icon::before,
+html body .wdp-donation-form .wdp-shareholder-form:not(.collapsed) .wdp-shareholder-header .wdp-shareholder-icon::before {
+  content: '⌄';
+  display: block;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1;
+  color: #4a90e2;
+  width: 20px;
+  height: 20px;
+  text-align: center;
+  vertical-align: middle;
+}
+
+/* Quantity butonlarına basınca TÜM ikonlar mavi olsun (sadece ikon renk değişimi) */
+html body .wdp-modal .wdp-shares-section.wdp-quantity-active .wdp-shareholder-header .wdp-shareholder-icon,
+html body .wdp-donation-form .wdp-shares-section.wdp-quantity-active .wdp-shareholder-header .wdp-shareholder-icon {
+  color: #4a90e2 !important;
+}
+
+/* Quantity butonlarına basınca kapalı formların ikonları da mavi olsun */
+html body .wdp-modal .wdp-shares-section.wdp-quantity-active .wdp-shareholder-form.collapsed .wdp-shareholder-header .wdp-shareholder-icon,
+html body .wdp-donation-form .wdp-shares-section.wdp-quantity-active .wdp-shareholder-form.collapsed .wdp-shareholder-header .wdp-shareholder-icon {
+  color: #4a90e2 !important;
 }
 
 /* ============ SHAREHOLDER CONTENT ============ */

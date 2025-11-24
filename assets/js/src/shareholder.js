@@ -406,7 +406,8 @@
     // Daha hızlı yükleme için basit HTML yapısı
     form.innerHTML = `
       <div class="wdp-shareholder-header">
-        <h3>${index}. Hissedar Bilgileri <span class='wdp-shareholder-icon'></span></h3>
+        <h3>${index}. Hissedar Bilgileri</h3>
+        <span class="wdp-shareholder-icon"></span>
       </div>
       <div class="wdp-shareholder-content" ${!isFirst ? 'style="display: none;"' : ''}>
         <input type="text" name="shareholder_name_${index}" placeholder="Ad Soyad *" autocomplete="name" required />
@@ -1005,6 +1006,15 @@
     
     // Decrease butonu event listener'ı
     if (newDecreaseBtn) {
+      newDecreaseBtn.addEventListener("mousedown", (e) => {
+        const sharesSection = modal.querySelector('.wdp-shares-section');
+        if (sharesSection) {
+          sharesSection.classList.add('wdp-quantity-active');
+          setTimeout(() => {
+            sharesSection.classList.remove('wdp-quantity-active');
+          }, 200);
+        }
+      });
       newDecreaseBtn.addEventListener("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -1019,6 +1029,15 @@
 
     // Increase butonu event listener'ı
     if (newIncreaseBtn) {
+      newIncreaseBtn.addEventListener("mousedown", (e) => {
+        const sharesSection = modal.querySelector('.wdp-shares-section');
+        if (sharesSection) {
+          sharesSection.classList.add('wdp-quantity-active');
+          setTimeout(() => {
+            sharesSection.classList.remove('wdp-quantity-active');
+          }, 200);
+        }
+      });
       newIncreaseBtn.addEventListener("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
