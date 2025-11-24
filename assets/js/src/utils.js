@@ -1,4 +1,51 @@
 /**
+ * ============================================================================
+ * UTILS.JS - YARDIMCI FONKSİYONLAR MODÜLÜ
+ * ============================================================================
+ * 
+ * DOSYA: utils.js
+ * KONUM: /assets/js/src/utils.js
+ * 
+ * AMAÇ:
+ * Tüm modüller tarafından kullanılan yardımcı fonksiyonları içerir.
+ * Utility functions library.
+ * 
+ * İÇERİK:
+ * 1. formatPrice - Fiyat formatlama (Türkçe format: 1.234,56)
+ * 2. formatCurrency - Para birimi formatlama
+ * 3. escapeHtml - HTML escape (XSS önleme)
+ * 4. safeLog - Güvenli console.log (debug modunda)
+ * 5. getAjaxNonce - AJAX nonce alma
+ * 6. getFocusableElements - Focusable elementleri bulma
+ * 7. focusFirstElement - İlk focusable elemente odaklanma
+ * 8. activateFocusTrap - Focus trap aktivasyonu (modal için)
+ * 9. announceStatus - Screen reader için mesaj duyurma
+ * 10. debounce - Debounce fonksiyonu (performans)
+ * 11. throttle - Throttle fonksiyonu (performans)
+ * 12. rafThrottle - RequestAnimationFrame throttle
+ * 13. ensureModule - Modül bağımlılık kontrolü
+ * 
+ * PERFORMANS FONKSİYONLARI:
+ * - debounce: Fonksiyon çağrılarını geciktirir (input events için)
+ * - throttle: Fonksiyon çağrılarını sınırlar (scroll/resize için)
+ * - rafThrottle: RequestAnimationFrame kullanarak optimize eder
+ * 
+ * ACCESSIBILITY:
+ * - ensureLiveRegion: ARIA live region oluşturma
+ * - announceStatus: Screen reader için mesaj duyurma
+ * - getFocusableElements: Keyboard navigation için
+ * - activateFocusTrap: Modal içinde focus trap
+ * 
+ * GÜVENLİK:
+ * - escapeHtml: XSS önleme
+ * - Input validation
+ * - Safe error handling
+ * 
+ * EXPORT:
+ * WDPApp.utils = { formatPrice, formatCurrency, ... }
+ * 
+ * ============================================================================
+ * 
  * Utils - Yardımcı fonksiyonlar
  * Format, log, ajax, accessibility yardımcıları
  */

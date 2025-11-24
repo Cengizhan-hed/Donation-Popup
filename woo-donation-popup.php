@@ -1,16 +1,56 @@
 <?php
 /**
-* Plugin Name: WooCommerce Donation Modal Popup
-* Description: WooCommerce ürünleri için bağış formu açılır penceresi oluşturur (Tüm temalarla uyumlu).
-* Author: Your Name
-* Version: 10.0
-* Requires at least: 5.0
-* Tested up to: 6.4
-* WC requires at least: 3.0
-* WC tested up to: 8.5
-* License: GPLv2 or later
-* Text Domain: woo-donation-popup
-* 
+ * ============================================================================
+ * WOOCOMMERCE DONATION MODAL POPUP - ANA PLUGIN DOSYASI
+ * ============================================================================
+ * 
+ * DOSYA: woo-donation-popup.php
+ * KONUM: /woo-donation-popup.php (Plugin root dizini)
+ * 
+ * AMAÇ:
+ * Bu dosya WordPress plugin sistemine eklentiyi tanıtan ana entry point'tir.
+ * WordPress bu dosyayı yükler ve eklentiyi başlatır.
+ * 
+ * ROL:
+ * - Plugin header bilgileri (WordPress admin panelinde görünür)
+ * - Güvenlik kontrolleri
+ * - Sabitler (constants) tanımlama
+ * - Sınıf dosyalarını dahil etme
+ * - Plugin başlatma fonksiyonları
+ * - Activation/deactivation hooks
+ * - Versiyon güncelleme sistemi
+ * - Cache yönetimi
+ * - PHP helper fonksiyonları
+ * - JavaScript helper fonksiyonları
+ * - AJAX endpoint'leri
+ * 
+ * BAĞIMLILIKLAR:
+ * - WordPress 5.0+
+ * - WooCommerce 3.0+
+ * - PHP 7.4+
+ * 
+ * KULLANIM:
+ * Bu dosya WordPress tarafından otomatik yüklenir.
+ * Manuel olarak çağrılmamalıdır.
+ * 
+ * GÜVENLİK:
+ * - ABSPATH kontrolü ile doğrudan erişim engellenir
+ * - Nonce doğrulaması AJAX isteklerinde
+ * - Input sanitization tüm kullanıcı girdilerinde
+ * 
+ * ============================================================================
+ * 
+ * Plugin Name: WooCommerce Donation Modal Popup
+ * Description: WooCommerce ürünleri için bağış formu açılır penceresi oluşturur (Tüm temalarla uyumlu).
+ * Author: Your Name
+ * Version: 10.0
+ * Requires at least: 5.0
+ * Tested up to: 6.4
+ * WC requires at least: 3.0
+ * WC tested up to: 8.5
+ * License: GPLv2 or later
+ * Text Domain: woo-donation-popup
+ * 
  * Woo: 12345:342928dfsfhsf8429842374wdf4234sfd
  * WooCommerce: true
  *

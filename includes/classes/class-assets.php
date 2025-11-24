@@ -1,5 +1,76 @@
 <?php
 /**
+ * ============================================================================
+ * WDP_ASSETS - ASSET YÖNETİM SINIFI
+ * ============================================================================
+ * 
+ * DOSYA: class-assets.php
+ * KONUM: /includes/classes/class-assets.php
+ * 
+ * AMAÇ:
+ * CSS ve JavaScript dosyalarını WordPress'e yükler (enqueue).
+ * Asset versioning, cache busting ve conditional loading yönetir.
+ * 
+ * ANA İŞLEVLER:
+ * 1. CSS/JS dosyalarını register etme
+ * 2. Dependency yönetimi (jQuery, WooCommerce)
+ * 3. Asset versioning (cache busting)
+ * 4. Conditional loading (sadece gerektiğinde yükle)
+ * 5. Inline CSS ekleme (critical CSS)
+ * 6. Font preload
+ * 7. Footer'da yükleme desteği
+ * 
+ * MODÜL YAPISI:
+ * - 13+ JavaScript modülü (modüler yapı)
+ * - 1 ana CSS dosyası (modüler import'lar)
+ * - Inline CSS (critical styles)
+ * 
+ * PERFORMANS OPTİMİZASYONLARI:
+ * - Transient cache ile version kontrolü (5 dakika)
+ * - File modification time kullanımı
+ * - Conditional enqueuing (shortcode kontrolü)
+ * - Force enqueue desteği (dinamik içerik için)
+ * 
+ * CACHE BUSTING:
+ * - CSS: donation-modal.css ve tüm src dosyalarının mtime'ı
+ * - JS: Tüm src dosyalarının mtime'ı
+ * - Transient cache: 5 dakika (performans için)
+ * 
+ * DEPENDENCY SIRASI (JavaScript):
+ * 1. wdp-constants-js (bağımlılık yok)
+ * 2. wdp-utils-js (jQuery bağımlı)
+ * 3. wdp-state-js (utils bağımlı)
+ * 4. wdp-dom-js (state bağımlı)
+ * 5. wdp-alerts-js (utils bağımlı)
+ * 6. wdp-product-js (utils, state bağımlı)
+ * 7. wdp-cart-js (utils, state bağımlı)
+ * 8. wdp-form-js (utils, state, alerts, cart bağımlı)
+ * 9. wdp-shareholder-js (utils, state, dom, product, form bağımlı)
+ * 10. wdp-modal-js (utils, state, form, shareholder bağımlı)
+ * 11. wdp-form-initializer-js (utils, form, shareholder bağımlı)
+ * 12. wdp-event-manager-js (utils, modal, form bağımlı)
+ * 13. wdp-module-loader-js (utils bağımlı)
+ * 14. wdp-init-js (tüm modüller bağımlı - son yüklenen)
+ * 
+ * CSS YAPISI:
+ * - donation-modal.css (ana dosya)
+ *   - @import tokens.css (design tokens)
+ *   - @import base.css (temel reset)
+ *   - @import layout.css (layout kuralları)
+ *   - @import forms/shared.css (form stilleri)
+ *   - @import forms/hisseli.css (hissedar form stilleri)
+ *   - @import components/*.css (bileşen stilleri)
+ * 
+ * INLINE CSS:
+ * - Critical CSS: Head'de inline (render blocking önlemek için)
+ * - Customization CSS: Ana stylesheet'e inline (CSS variables)
+ * 
+ * FONT PRELOAD:
+ * - Google Fonts preconnect
+ * - Font-display: swap (FOUT önleme)
+ * 
+ * ============================================================================
+ * 
  * Assets management class
  * Handles CSS and JS enqueuing
  * 

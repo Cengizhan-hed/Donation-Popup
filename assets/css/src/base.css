@@ -1,8 +1,49 @@
-/* ============================================
-   WOO DONATION POPUP - THEME ISOLATION BASE
-   GiveWP benzeri tema bağımsız CSS yapısı
-   Clean CSS - !important kullanmadan
-   ============================================ */
+/**
+ * ============================================================================
+ * BASE.CSS - TEMEL RESET VE NORMALIZE
+ * ============================================================================
+ * 
+ * DOSYA: base.css
+ * KONUM: /assets/css/src/base.css
+ * 
+ * AMAÇ:
+ * Tema stillerinden izole etmek için temel reset ve normalize kuralları.
+ * GiveWP benzeri bir yaklaşım kullanır.
+ * 
+ * YAKLAŞIM:
+ * - !important kullanmaz
+ * - Yüksek specificity ile tema override'larını önler
+ * - html body ile başlayan selector'ler kullanır
+ * - Minimal reset (sadece gerekli olanlar)
+ * 
+ * İÇERİK:
+ * 1. Modal ve form container reset
+ * 2. Typography reset (başlıklar, paragraflar)
+ * 3. Link reset
+ * 4. List reset
+ * 5. Image reset
+ * 6. Table reset
+ * 7. Number input spinner kontrolü
+ * 
+ * ÖZELLİKLER:
+ * - Font smoothing (webkit ve moz)
+ * - Font display: swap (FOUT önleme)
+ * - Font feature settings (kerning, ligatures)
+ * - Optimal line length (65ch)
+ * - Responsive typography scale
+ * 
+ * GÜVENLİK:
+ * - Tema stillerinden tamamen izole
+ * - Yüksek specificity (html body .wdp-*)
+ * - Tema override'larını önler
+ * 
+ * ============================================================================
+ * 
+ * WOO DONATION POPUP - THEME ISOLATION BASE
+ * GiveWP benzeri tema bağımsız CSS yapısı
+ * Clean CSS - !important kullanmadan
+ * ============================================
+ */
 
 /* CSS Isolation Layer - Minimal reset, sadece gerekli olanlar */
 /* CRITICAL: Maximum specificity - html body ile tema override koruması */

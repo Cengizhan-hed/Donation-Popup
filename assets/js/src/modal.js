@@ -1,4 +1,63 @@
 /**
+ * ============================================================================
+ * MODAL.JS - MODAL YÖNETİM MODÜLÜ
+ * ============================================================================
+ * 
+ * DOSYA: modal.js
+ * KONUM: /assets/js/src/modal.js
+ * 
+ * AMAÇ:
+ * Modal (popup) açma/kapama, form reset, focus trap, keyboard navigation.
+ * 
+ * ANA İŞLEVLER:
+ * 1. openModal - Modal açma
+ * 2. closeModal - Modal kapatma
+ * 3. resetForm - Form sıfırlama
+ * 4. handleOutsideClick - Dışarı tıklama ile kapatma
+ * 5. handleEscKeyPress - ESC tuşu ile kapatma
+ * 6. saveOriginalForms - Form orijinal içeriğini kaydetme
+ * 
+ * MODAL AÇMA:
+ * - Product ID ile modal bulma
+ * - Scroll pozisyonunu koruma
+ * - Body scroll lock
+ * - Focus trap aktivasyonu
+ * - ARIA live region duyurma
+ * - Animation trigger
+ * 
+ * MODAL KAPATMA:
+ * - Body scroll unlock
+ * - Focus trap deaktivasyonu
+ * - Form reset
+ * - Animation trigger
+ * - Focus'u açan butona geri döndürme
+ * 
+ * FOCUS MANAGEMENT:
+ * - Focus trap (modal içinde tutma)
+ * - First focusable element'e odaklanma
+ * - ESC tuşu ile kapatma
+ * - Tab navigation
+ * 
+ * ACCESSIBILITY:
+ * - ARIA attributes (aria-hidden, aria-modal)
+ * - Keyboard navigation
+ * - Screen reader announcements
+ * - Focus management
+ * 
+ * PERFORMANS:
+ * - Debounced event handlers
+ * - Cached DOM references
+ * - Optimized animations
+ * 
+ * DEPENDENCIES:
+ * - utils.js (focusFirstElement, activateFocusTrap, announceStatus)
+ * - state.js (form state, original forms)
+ * 
+ * EXPORT:
+ * WDPApp.modal = { open, close, reset, ... }
+ * 
+ * ============================================================================
+ * 
  * Modal - Modal işlemleri
  * openModal, closeModal, resetForm, handleOutsideClick, handleEscKeyPress
  */

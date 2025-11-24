@@ -1,5 +1,45 @@
 <?php
 /**
+ * ============================================================================
+ * WDP AUTOLOADER - OTOMATIK SINIF YÜKLEME SİSTEMİ
+ * ============================================================================
+ * 
+ * DOSYA: class-autoloader.php
+ * KONUM: /includes/class-autoloader.php
+ * 
+ * AMAÇ:
+ * WDP_ ile başlayan sınıfları otomatik olarak yükler.
+ * PSR-4 benzeri bir autoloading sistemi sağlar.
+ * 
+ * NASIL ÇALIŞIR:
+ * 1. PHP'de bir sınıf çağrıldığında (örn: new WDP_Assets())
+ * 2. PHP autoload sistemine kayıtlı olan bu fonksiyon çalışır
+ * 3. Sınıf adını dosya yoluna çevirir
+ * 4. Dosyayı yükler
+ * 
+ * DÖNÜŞÜM KURALLARI:
+ * - WDP_Assets → class-assets.php
+ * - WDP_Ajax → class-ajax.php
+ * - WDP_Cart → class-cart.php
+ * 
+ * DOSYA YOLU:
+ * /includes/classes/class-{küçük-harfli-sınıf-adı}.php
+ * 
+ * ÖRNEK:
+ * new WDP_Assets() çağrıldığında
+ * → /includes/classes/class-assets.php dosyası yüklenir
+ * 
+ * GÜVENLİK:
+ * - Sadece WDP_ ile başlayan sınıfları yükler
+ * - Dosya var mı kontrol eder
+ * - ABSPATH kontrolü ile güvenlik
+ * 
+ * PERFORMANS:
+ * - Sadece gerektiğinde yükler (lazy loading)
+ * - Her sınıf için sadece bir kez yükler
+ * 
+ * ============================================================================
+ * 
  * Autoloader for WDP classes
  * 
  * @package WooCommerce\Donation_Popup

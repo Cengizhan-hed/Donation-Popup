@@ -1,5 +1,55 @@
 <?php
 /**
+ * ============================================================================
+ * WDP_TEMPLATES - ŞABLON RENDER SINIFI
+ * ============================================================================
+ * 
+ * DOSYA: class-templates.php
+ * KONUM: /includes/classes/class-templates.php
+ * 
+ * AMAÇ:
+ * Modal ve form HTML şablonlarını render eder.
+ * PHP tarafında HTML oluşturma.
+ * 
+ * ANA İŞLEVLER:
+ * 1. render_donation_modal - Modal HTML render
+ * 2. render_donation_form - Form HTML render
+ * 3. render_button - Buton HTML render
+ * 4. get_form_fields - Form alanlarını oluşturma
+ * 5. get_shareholder_fields - Hissedar alanlarını oluşturma
+ * 
+ * MODAL YAPISI:
+ * - Modal container (.wdp-modal)
+ * - Modal backdrop (.wdp-modal-backdrop)
+ * - Modal content (.wdp-modal-content)
+ * - Form (.wdp-donation-form)
+ * - Close button
+ * 
+ * FORM YAPISI:
+ * - Product ID hidden input
+ * - Quantity selector
+ * - Custom price input (opsiyonel)
+ * - Shareholder form (opsiyonel)
+ * - Submit button
+ * 
+ * ÖZELLEŞTİRME:
+ * - Admin panelinden gelen ayarlar
+ * - Custom CSS class
+ * - Custom inline styles
+ * - Button text customization
+ * 
+ * GÜVENLİK:
+ * - Input sanitization
+ * - Output escaping (esc_html, esc_attr)
+ * - Nonce field ekleme
+ * 
+ * PERFORMANS:
+ * - Cached product data
+ * - Optimized HTML generation
+ * - Minimal DOM manipulation
+ * 
+ * ============================================================================
+ * 
  * Templates class
  * Handles template rendering (modal, forms)
  * 

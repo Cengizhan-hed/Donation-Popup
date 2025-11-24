@@ -1,8 +1,58 @@
-/* ============================================
-   SHAREHOLDER FORM SYSTEM - GIVEWP BENZERİ YAKLAŞIM
-   Tema-agnostic, !important kullanmadan, yüksek specificity ile
-   Mükemmel hizalama, tutarlı spacing, popup ve sayfa içi form birebir aynı
-   ============================================ */
+/**
+ * ============================================================================
+ * HISSELI.CSS - HİSSEDAR FORM STİLLERİ
+ * ============================================================================
+ * 
+ * DOSYA: hisseli.css
+ * KONUM: /assets/css/src/forms/hisseli.css
+ * 
+ * AMAÇ:
+ * Hissedar (shareholder) formlarının tüm stillerini içerir.
+ * Collapse/expand özelliği, icon stilleri, form alanları.
+ * 
+ * YAKLAŞIM:
+ * - GiveWP benzeri tema-agnostic yaklaşım
+ * - !important kullanmaz
+ * - Yüksek specificity (html body .wdp-*)
+ * - Popup ve sayfa içi form birebir aynı görünüm
+ * 
+ * İÇERİK:
+ * 1. Share Counter - Hisse sayacı stilleri
+ * 2. Shareholder Form Container - Form container
+ * 3. Shareholder Header - Başlık ve collapse/expand butonu
+ * 4. Shareholder Icon - Collapse/expand ikonu (⌄ ve ‹)
+ * 5. Shareholder Fields - Form alanları (ad, telefon, email)
+ * 6. Shareholder Collapse/Expand - Açılır/kapanır animasyonları
+ * 7. Mobile Optimizations - Mobil görünüm optimizasyonları
+ * 
+ * ICON SİSTEMİ:
+ * - Collapsed: ‹ (sol ok)
+ * - Expanded: ⌄ (aşağı ok)
+ * - ::before pseudo-element ile render edilir
+ * - Font-size ve color dinamik
+ * 
+ * RESPONSIVE:
+ * - Desktop: 24px icon
+ * - Tablet (≤768px): 22px icon
+ * - Mobile (≤480px): 20px icon
+ * 
+ * ANIMATIONS:
+ * - Collapse/expand transitions
+ * - Icon rotation
+ * - Smooth height transitions
+ * 
+ * ACCESSIBILITY:
+ * - Touch target sizes (min 44px)
+ * - Focus states
+ * - ARIA attributes
+ * 
+ * ============================================================================
+ * 
+ * SHAREHOLDER FORM SYSTEM - GIVEWP BENZERİ YAKLAŞIM
+ * Tema-agnostic, !important kullanmadan, yüksek specificity ile
+ * Mükemmel hizalama, tutarlı spacing, popup ve sayfa içi form birebir aynı
+ * ============================================
+ */
 
 /* ============ SHARE COUNTER - Quantity.css ile uyumlu ============ */
 /* CRITICAL: Share counter quantity.css stillerini inherit etmeli */

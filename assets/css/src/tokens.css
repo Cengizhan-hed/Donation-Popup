@@ -1,6 +1,64 @@
+/**
+ * ============================================================================
+ * TOKENS.CSS - DESIGN TOKENS (CSS VARIABLES)
+ * ============================================================================
+ * 
+ * DOSYA: tokens.css
+ * KONUM: /assets/css/src/tokens.css
+ * 
+ * AMAÇ:
+ * Tüm tasarım değişkenlerini (design tokens) tanımlar.
+ * CSS variables kullanarak tutarlı bir tasarım sistemi sağlar.
+ * 
+ * YAPISI:
+ * :root selector'ünde tüm değişkenler tanımlanır.
+ * Bu değişkenler tüm CSS dosyalarında kullanılabilir.
+ * 
+ * KATEGORİLER:
+ * 1. Primary Palette - Ana renkler
+ * 2. Neutral Palette - Gri tonları
+ * 3. Button Styles - Buton renkleri ve stilleri
+ * 4. Radii - Border radius değerleri
+ * 5. Shadows - Box shadow değerleri
+ * 6. Transitions - Transition tanımları
+ * 7. Spacing Scale - Boşluk değerleri (4px, 8px, 12px, ...)
+ * 8. Typography - Font size, line height, letter spacing
+ * 9. Font Weights - Font kalınlıkları
+ * 10. Border Widths - Kenarlık kalınlıkları
+ * 11. Animation Durations - Animasyon süreleri
+ * 12. Animation Easing - Animasyon easing fonksiyonları
+ * 13. Opacity Values - Opaklık değerleri
+ * 14. Focus Ring - Focus durumu stilleri
+ * 15. Touch Target Sizes - Erişilebilirlik için dokunma hedefi boyutları
+ * 16. Z-index Tokens - Katman sıralaması
+ * 
+ * KULLANIM:
+ * var(--wdp-primary) şeklinde kullanılır.
+ * Fallback değerler: var(--wdp-primary, #4a90e2)
+ * 
+ * ÖZELLEŞTİRME:
+ * Admin panelinden ayarlanan değerler bu değişkenleri override eder.
+ * class-assets.php dosyasında dinamik olarak güncellenir.
+ * 
+ * PERFORMANS:
+ * CSS variables browser tarafından optimize edilmiş şekilde işlenir.
+ * Runtime'da değiştirilebilir (JavaScript ile).
+ * 
+ * ============================================================================
+ */
+
 :root {
-  /* Primary Palette */
-  --wdp-primary: #4a90e2;
+  /* Primary Palette - Ana renk paleti */
+  /* Kullanım: Butonlar, linkler, vurgular */
+  --wdp-primary: #4a90e2;              /* Ana mavi renk */
+  --wdp-primary-hover: #3a7bc8;        /* Hover durumu için koyu mavi */
+  --wdp-secondary: #7b61ff;            /* İkincil mor renk */
+  --wdp-secondary-hover: #6550d8;       /* İkincil hover rengi */
+  --wdp-accent: #50e3c2;               /* Vurgu rengi (yeşilimsi) */
+  --wdp-accent-hover: #3dcfaf;        /* Vurgu hover rengi */
+  --wdp-success: #48bb78;              /* Başarı mesajları için yeşil */
+  --wdp-error: #e53e3e;                /* Hata mesajları için kırmızı */
+  --wdp-warning: #ed8936;              /* Uyarı mesajları için turuncu */
   --wdp-primary-hover: #3a7bc8;
   --wdp-secondary: #7b61ff;
   --wdp-secondary-hover: #6550d8;

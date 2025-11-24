@@ -1,4 +1,58 @@
 /**
+ * ============================================================================
+ * FORM.JS - FORM İŞLEMLERİ MODÜLÜ
+ * ============================================================================
+ * 
+ * DOSYA: form.js
+ * KONUM: /assets/js/src/form.js
+ * 
+ * AMAÇ:
+ * Bağış formlarının tüm işlemlerini yönetir.
+ * Form validation, submission, error handling.
+ * 
+ * ANA İŞLEVLER:
+ * 1. setupFormSubmission - Form submit event'lerini bağlama
+ * 2. validateForm - Form validasyonu
+ * 3. submitFormData - AJAX ile form gönderme
+ * 4. handleAjaxResponse - AJAX response işleme
+ * 5. handleAjaxError - AJAX hata işleme
+ * 6. directFormSubmit - Doğrudan form gönderme (non-AJAX)
+ * 7. showInputError - Input hata mesajı gösterme
+ * 8. showFormError - Form hata mesajı gösterme
+ * 
+ * VALIDATION:
+ * - Hissedar formları kontrolü (ad, telefon)
+ * - Minimum fiyat kontrolü
+ * - Maksimum hisse kontrolü
+ * - Zorunlu alan kontrolü
+ * - Sayısal değer kontrolü
+ * 
+ * PERFORMANS:
+ * - Debounce ile input validation (300ms)
+ * - Optimize edilmiş event handlers
+ * - Cache'lenmiş form referansları
+ * 
+ * GÜVENLİK:
+ * - Nonce doğrulaması
+ * - Input sanitization
+ * - XSS önleme
+ * 
+ * ACCESSIBILITY:
+ * - ARIA live regions
+ * - Error mesajları screen reader için
+ * - Focus management
+ * 
+ * DEPENDENCIES:
+ * - utils.js (formatCurrency, getAjaxNonce, announceStatus, debounce)
+ * - state.js (form state management)
+ * - alerts.js (error/success mesajları)
+ * - cart.js (sepet güncelleme)
+ * 
+ * EXPORT:
+ * WDPApp.form = { setup, submit, validate, showInputError, ... }
+ * 
+ * ============================================================================
+ * 
  * Form - Form işlemleri
  * setupFormSubmission, validateForm, submitFormData, handleAjaxResponse,
  * handleAjaxError, directFormSubmit, showInputError, showFormError

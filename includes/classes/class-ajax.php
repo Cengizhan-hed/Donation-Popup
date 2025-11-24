@@ -1,5 +1,55 @@
 <?php
 /**
+ * ============================================================================
+ * WDP_AJAX - AJAX İŞLEYİCİ SINIFI
+ * ============================================================================
+ * 
+ * DOSYA: class-ajax.php
+ * KONUM: /includes/classes/class-ajax.php
+ * 
+ * AMAÇ:
+ * Tüm AJAX isteklerini işler. Frontend'den gelen AJAX çağrılarını
+ * karşılar ve JSON response döner.
+ * 
+ * ANA İŞLEVLER:
+ * 1. Ürün bilgilerini getirme (get_product_info)
+ * 2. Ürün adını getirme (get_product_name)
+ * 3. Sepet sayısını getirme (get_cart_count)
+ * 4. Sepet içeriğini getirme (get_cart_contents)
+ * 5. AJAX ile sepete ekleme (ajax_add_to_cart)
+ * 
+ * GÜVENLİK:
+ * - Nonce doğrulaması (her istek için)
+ * - Input sanitization
+ * - Output escaping
+ * - Exception handling
+ * - Rate limiting (WDP_Security sınıfı ile)
+ * 
+ * PERFORMANS:
+ * - Product info cache (1 saat transient)
+ * - WooCommerce meta cache kullanımı
+ * - Optimize edilmiş database sorguları
+ * 
+ * AJAX ENDPOINT'LERİ:
+ * - wp_ajax_wdp_get_product_info (logged-in users)
+ * - wp_ajax_nopriv_wdp_get_product_info (non-logged-in users)
+ * - wp_ajax_wdp_get_product_name
+ * - wp_ajax_wdp_get_cart_count
+ * - wp_ajax_wdp_get_cart_contents
+ * - wp_ajax_wdp_ajax_add_to_cart
+ * 
+ * RESPONSE FORMAT:
+ * - Success: { success: true, data: {...} }
+ * - Error: { success: false, message: "..." }
+ * 
+ * EXCEPTION HANDLING:
+ * - WDP_Security_Exception: Nonce hatası
+ * - WDP_Validation_Exception: Geçersiz input
+ * - WDP_Product_Not_Found_Exception: Ürün bulunamadı
+ * - WDP_Exception: Genel hatalar
+ * 
+ * ============================================================================
+ * 
  * AJAX handlers class
  * 
  * @package WooCommerce\Donation_Popup
