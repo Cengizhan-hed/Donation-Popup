@@ -107,18 +107,25 @@ html body .wdp-modal-content:focus-within {
   outline: none;
 }
 
-/* RTL support */
-[dir="rtl"] .wdp-modal-content {
+/* RTL support - Maximum specificity */
+/* CRITICAL: Maximum specificity - html body ile tema override koruması */
+html body[dir="rtl"] .wdp-modal-content,
+html[dir="rtl"] body .wdp-modal-content,
+html body .wdp-modal-content[dir="rtl"] {
   text-align: right;
 }
 
-[dir="rtl"] .wdp-toast {
+html body[dir="rtl"] .wdp-toast,
+html[dir="rtl"] body .wdp-toast,
+html body .wdp-toast[dir="rtl"] {
   right: auto;
   left: 20px;
   transform: translateX(-100%);
 }
 
-[dir="rtl"] .wdp-toast.show {
+html body[dir="rtl"] .wdp-toast.show,
+html[dir="rtl"] body .wdp-toast.show,
+html body .wdp-toast[dir="rtl"].show {
   transform: translateX(0);
 }
 

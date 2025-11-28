@@ -167,13 +167,14 @@ html body .wdp-alert--info {
 }
 
 @media (max-width: 600px){
-  .wdp-alert {
+  /* CRITICAL: Maximum specificity - html body ile tema override koruması */
+  html body .wdp-alert {
     grid-template-columns: 1fr auto;
     padding: var(--wdp-space-5);
     gap: var(--wdp-space-3);
   }
 
-  .wdp-alert__icon {
+  html body .wdp-alert__icon {
     width: 48px;
     height: 48px;
     border-radius: 16px;
@@ -181,12 +182,13 @@ html body .wdp-alert--info {
 }
 
 @media (max-width: 420px){
-  .wdp-alert {
+  /* CRITICAL: Maximum specificity - html body ile tema override koruması */
+  html body .wdp-alert {
     grid-template-columns: 1fr;
     text-align: left;
   }
 
-  .wdp-alert__close {
+  html body .wdp-alert__close {
     justify-self: end;
   }
 }

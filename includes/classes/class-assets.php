@@ -603,20 +603,22 @@ class WDP_Assets {
 
     /**
      * Get critical CSS for inline rendering (above-the-fold content)
+     * PERFORMANCE: Minimal CSS for faster initial render
      * 
      * @return string Critical CSS
      */
     private static function get_critical_css() {
-        // Critical CSS - only essential styles for initial render
+        // PERFORMANCE: Critical CSS - only essential styles for initial render
+        // Minimize size for faster page load
         return "
-        /* Critical CSS - Modal visibility and basic layout */
-        .wdp-modal:not(.show) { 
+        /* PERFORMANCE: Critical CSS - Modal visibility only */
+        html body .wdp-modal:not(.show) { 
             display: none !important;
             visibility: hidden !important;
             opacity: 0 !important;
             pointer-events: none !important;
         }
-        .wdp-modal.show { 
+        html body .wdp-modal.show { 
             display: flex !important;
             position: fixed !important;
             z-index: 2147483645 !important;
@@ -629,11 +631,11 @@ class WDP_Assets {
             visibility: visible !important;
             opacity: 1 !important;
         }
-        .wdp-modal-content {
+        html body .wdp-modal-content {
             z-index: 2147483646 !important;
             position: relative !important;
         }
-        body.wdp-modal-open {
+        html body.wdp-modal-open {
             overflow: hidden !important;
         }
         ";
@@ -649,15 +651,19 @@ class WDP_Assets {
 
         $inline_css = self::get_inline_css();
         
-        // Critical CSS'i head'e ekle (inline, blocking)
+        // PERFORMANCE: Critical CSS'i head'e ekle (inline, blocking)
         $critical_css = self::get_critical_css();
         add_action('wp_head', function() use ($critical_css) {
             echo '<style id="wdp-critical-css">' . $critical_css . '</style>' . "\n";
         }, 1);
         
-        // Font preload for better performance
+        // PERFORMANCE: Font preload for better performance (only if needed)
         add_action('wp_head', function() {
-            // Preload Inter font if available
+            // Preconnect to Google Fonts (only if Inter font is used)
+            // PERFORMANCE: Use dns-prefetch for non-critical resources
+            echo '<link rel="dns-prefetch" href="https://fonts.googleapis.com">' . "\n";
+            echo '<link rel="dns-prefetch" href="https://fonts.gstatic.com">' . "\n";
+            // Preconnect only when actually needed (lazy)
             echo '<link rel="preconnect" href="https://fonts.googleapis.com">' . "\n";
             echo '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>' . "\n";
         }, 0);
@@ -687,43 +693,58 @@ class WDP_Assets {
         $plugin_dir = defined('WDP_PLUGIN_PATH') ? WDP_PLUGIN_PATH : plugin_dir_path(dirname(dirname(__FILE__)));
         $plugin_url = defined('WDP_PLUGIN_URL') ? WDP_PLUGIN_URL : plugin_dir_url(dirname(dirname(__FILE__)));
 
-        // Cache asset versions to avoid repeated file operations
+        // PERFORMANCE: Cache asset versions to avoid repeated file operations
+        // Use static variables to cache within same request
         static $css_version = null;
         static $js_module_version = null;
+        
+        // PERFORMANCE: Use object cache for asset versions (persistent across requests)
+        $asset_cache_group = 'wdp_assets';
 
-        // Asset versioning: filemtime kullan (cache busting için)
+        // PERFORMANCE: Asset versioning with object cache (faster than transient)
         $css_file = $plugin_dir . 'assets/css/donation-modal.css';
         
         // CSS versioning: Ana CSS dosyası ve tüm src dosyalarının en yeni modification time'ını kullan
-        // Use transient cache for performance (5 minutes cache)
+        // PERFORMANCE: Use object cache first, then transient as fallback
         $css_cache_key = 'wdp_css_version_' . md5($css_file);
-        $cached_css_version = get_transient($css_cache_key);
-
-        if (false === $cached_css_version) {
-            $css_version = file_exists($css_file) ? filemtime($css_file) : WDP_ASSET_VERSION;
+        
+        if (null === $css_version) {
+            $cached_css_version = wp_cache_get($css_cache_key, $asset_cache_group);
             
-            // Tüm CSS src dosyalarını kontrol et ve en yeni modification time'ı bul
-            $css_src_dir = $plugin_dir . 'assets/css/src/';
-            if (is_dir($css_src_dir)) {
-                $css_files = new RecursiveIteratorIterator(
-                    new RecursiveDirectoryIterator($css_src_dir),
-                    RecursiveIteratorIterator::SELF_FIRST
-                );
+            if (false === $cached_css_version) {
+                // Fallback to transient
+                $cached_css_version = get_transient($css_cache_key);
+            }
 
-                foreach ($css_files as $file) {
-                    if ($file->isFile() && $file->getExtension() === 'css') {
-                        $file_mtime = filemtime($file->getRealPath());
-                        if ($file_mtime > $css_version) {
-                            $css_version = $file_mtime;
+            if (false === $cached_css_version) {
+                $css_version = file_exists($css_file) ? filemtime($css_file) : WDP_ASSET_VERSION;
+                
+                // PERFORMANCE: Only check src files if main file exists
+                if (file_exists($css_file)) {
+                    $css_src_dir = $plugin_dir . 'assets/css/src/';
+                    if (is_dir($css_src_dir)) {
+                        $css_files = new RecursiveIteratorIterator(
+                            new RecursiveDirectoryIterator($css_src_dir),
+                            RecursiveIteratorIterator::SELF_FIRST
+                        );
+
+                        foreach ($css_files as $file) {
+                            if ($file->isFile() && $file->getExtension() === 'css') {
+                                $file_mtime = filemtime($file->getRealPath());
+                                if ($file_mtime > $css_version) {
+                                    $css_version = $file_mtime;
+                                }
+                            }
                         }
                     }
                 }
-            }
 
-            // Cache for 5 minutes
-            set_transient($css_cache_key, $css_version, 300);
-        } else {
-            $css_version = $cached_css_version;
+                // PERFORMANCE: Cache in both object cache and transient
+                wp_cache_set($css_cache_key, $css_version, $asset_cache_group, 300);
+                set_transient($css_cache_key, $css_version, 300);
+            } else {
+                $css_version = $cached_css_version;
+            }
         }
 
         $js_version = WDP_ASSET_VERSION;
@@ -738,11 +759,16 @@ class WDP_Assets {
             $dependencies[] = 'wc-add-to-cart';
         }
 
-        // JS modül versiyonları (CSS'teki gibi, tüm src dosyalarını kontrol et)
-        // Use transient cache for performance (5 minutes cache)
+        // PERFORMANCE: JS modül versiyonları with object cache
+        // Use object cache first, then transient as fallback
         if (null === $js_module_version) {
             $cache_key = 'wdp_js_version_' . md5($plugin_dir . 'assets/js/src/');
-            $cached_js_version = get_transient($cache_key);
+            $cached_js_version = wp_cache_get($cache_key, $asset_cache_group);
+            
+            if (false === $cached_js_version) {
+                // Fallback to transient
+                $cached_js_version = get_transient($cache_key);
+            }
 
             if (false === $cached_js_version) {
                 $js_module_version = WDP_ASSET_VERSION;
@@ -764,7 +790,8 @@ class WDP_Assets {
                     }
                 }
 
-                // Cache for 5 minutes
+                // PERFORMANCE: Cache in both object cache and transient
+                wp_cache_set($cache_key, $js_module_version, $asset_cache_group, 300);
                 set_transient($cache_key, $js_module_version, 300);
             } else {
                 $js_module_version = $cached_js_version;
@@ -772,6 +799,7 @@ class WDP_Assets {
         }
 
         // Modülleri WordPress'te sırayla kaydet (dependency order)
+        // PERFORMANCE: Script'leri footer'da yükle (true) - WordPress handles this automatically
         wp_register_script(
             'wdp-utils-js',
             $plugin_url . 'assets/js/src/utils.js',

@@ -44,7 +44,8 @@
       : (window.WDPApp._tempState ? window.WDPApp._tempState.listenersInitialized : false);
 
     if (!currentListenersInitialized) {
-      // Modal açma/ kapama event'leri
+      // PERFORMANCE: Use event delegation and passive listeners where possible
+      // Modal açma/ kapama event'leri - Event delegation for better performance
       document.addEventListener("click", function(e) {
         if (e.target.classList.contains("wdp-donate-button") || 
             e.target.classList.contains("wdp-open-modal") ||

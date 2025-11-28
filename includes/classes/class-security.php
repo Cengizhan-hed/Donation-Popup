@@ -158,6 +158,7 @@ class WDP_Security {
 
     /**
      * Get client IP address
+     * SECURITY: Enhanced IP detection with validation
      *
      * @return string
      */
@@ -177,6 +178,7 @@ class WDP_Security {
                 foreach (explode(',', $_SERVER[$key]) as $ip) {
                     $ip = trim($ip);
                     
+                    // SECURITY: Validate IP and filter out private/reserved ranges
                     if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) !== false) {
                         return $ip;
                     }
@@ -184,7 +186,72 @@ class WDP_Security {
             }
         }
 
-        return isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '0.0.0.0';
+        // SECURITY: Fallback to REMOTE_ADDR with validation
+        $fallback_ip = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '0.0.0.0';
+        return filter_var($fallback_ip, FILTER_VALIDATE_IP) !== false ? $fallback_ip : '0.0.0.0';
+    }
+    
+    /**
+     * Check user capability for AJAX operations
+     * SECURITY: Verify user permissions
+     *
+     * @param string $capability Capability to check.
+     * @return bool
+     */
+    public static function check_capability($capability = 'read') {
+        if (!is_user_logged_in()) {
+            // For non-logged-in users, only allow read operations
+            return 'read' === $capability;
+        }
+        
+        return current_user_can($capability);
+    }
+    
+    /**
+     * Validate and sanitize email address
+     * SECURITY: Enhanced email validation
+     *
+     * @param string $email Email address.
+     * @return string|false Sanitized email or false if invalid.
+     */
+    public static function sanitize_email($email) {
+        if (!is_string($email)) {
+            return false;
+        }
+        
+        $email = trim($email);
+        
+        // SECURITY: Length check before validation
+        if (strlen($email) > 254) {
+            return false;
+        }
+        
+        $email = sanitize_email($email);
+        
+        // SECURITY: Additional validation
+        if (!is_email($email)) {
+            return false;
+        }
+        
+        return $email;
+    }
+    
+    /**
+     * Validate request origin
+     * SECURITY: CSRF protection enhancement
+     *
+     * @return bool
+     */
+    public static function validate_request_origin() {
+        // Check referer
+        $referer = isset($_SERVER['HTTP_REFERER']) ? esc_url_raw($_SERVER['HTTP_REFERER']) : '';
+        $home_url = home_url();
+        
+        if (!empty($referer) && strpos($referer, $home_url) !== 0) {
+            return false;
+        }
+        
+        return true;
     }
 
     /**

@@ -1,8 +1,9 @@
 /* Layout rules shared across popup modal and embedded form - GiveWP benzeri yaklaşım */
 /* CRITICAL: Desktop - in-page forms should match popup width */
 /* CRITICAL: Desktop - in-page forms container */
+/* CRITICAL: Maximum specificity - html body ile tema override koruması */
 /* This rule only sets container width - modal-content rules are handled below */
-body .wdp-donation-form {
+html body .wdp-donation-form {
   max-width: 100%;
   width: min(var(--wdp-inpage-form-width-desktop, 480px), calc(100vw - 48px));
   margin: 24px auto;
@@ -18,14 +19,17 @@ body .wdp-donation-form {
 }
 
 /* CRITICAL: WooCommerce Single Product Page - Form ALWAYS fixed width (540px) */
+/* CRITICAL: Maximum specificity - html body ile tema override koruması */
 /* Form container should maintain fixed width but can be placed in columns */
 /* NOTE: To place form next to image, use flexbox/grid on parent container */
 /* Example: .product-images { display: flex; gap: 20px; } */
-body.woocommerce.single-product .wdp-donation-form,
-body.woocommerce-page.single-product .wdp-donation-form,
-body.single-product .wdp-donation-form,
-.woocommerce .single-product .wdp-donation-form,
-.woocommerce-page .single-product .wdp-donation-form {
+html body.woocommerce.single-product .wdp-donation-form,
+html body.woocommerce-page.single-product .wdp-donation-form,
+html body.single-product .wdp-donation-form,
+html body .woocommerce.single-product .wdp-donation-form,
+html body .woocommerce-page.single-product .wdp-donation-form,
+html .woocommerce .single-product .wdp-donation-form,
+html .woocommerce-page .single-product .wdp-donation-form {
   max-width: min(var(--wdp-inpage-form-width-desktop, 480px), 96vw);
   width: min(var(--wdp-inpage-form-width-desktop, 480px), 96vw);
   margin: 0 auto;
@@ -37,11 +41,14 @@ body.single-product .wdp-donation-form,
 }
 
 /* CRITICAL: Form content in WooCommerce single product - ALWAYS fixed width */
-body.woocommerce.single-product .wdp-donation-form .wdp-modal-content,
-body.woocommerce-page.single-product .wdp-donation-form .wdp-modal-content,
-body.single-product .wdp-donation-form .wdp-modal-content,
-.woocommerce .single-product .wdp-donation-form .wdp-modal-content,
-.woocommerce-page .single-product .wdp-donation-form .wdp-modal-content {
+/* CRITICAL: Maximum specificity - html body ile tema override koruması */
+html body.woocommerce.single-product .wdp-donation-form .wdp-modal-content,
+html body.woocommerce-page.single-product .wdp-donation-form .wdp-modal-content,
+html body.single-product .wdp-donation-form .wdp-modal-content,
+html body .woocommerce.single-product .wdp-donation-form .wdp-modal-content,
+html body .woocommerce-page.single-product .wdp-donation-form .wdp-modal-content,
+html .woocommerce .single-product .wdp-donation-form .wdp-modal-content,
+html .woocommerce-page .single-product .wdp-donation-form .wdp-modal-content {
   max-width: min(var(--wdp-inpage-form-width-desktop, 480px), 96vw);
   width: min(var(--wdp-inpage-form-width-desktop, 480px), 96vw);
   margin: 0;
@@ -50,11 +57,14 @@ body.single-product .wdp-donation-form .wdp-modal-content,
 }
 
 /* CRITICAL: Hisseli formlar için de aynı sabit genişlik - Single Product Page */
-body.woocommerce.single-product .wdp-donation-form .wdp-modal-content:has(form.wdp-has-shareholders),
-body.woocommerce-page.single-product .wdp-donation-form .wdp-modal-content:has(form.wdp-has-shareholders),
-body.single-product .wdp-donation-form .wdp-modal-content:has(form.wdp-has-shareholders),
-.woocommerce .single-product .wdp-donation-form .wdp-modal-content:has(form.wdp-has-shareholders),
-.woocommerce-page .single-product .wdp-donation-form .wdp-modal-content:has(form.wdp-has-shareholders) {
+/* CRITICAL: Maximum specificity - html body ile tema override koruması */
+html body.woocommerce.single-product .wdp-donation-form .wdp-modal-content:has(form.wdp-has-shareholders),
+html body.woocommerce-page.single-product .wdp-donation-form .wdp-modal-content:has(form.wdp-has-shareholders),
+html body.single-product .wdp-donation-form .wdp-modal-content:has(form.wdp-has-shareholders),
+html body .woocommerce.single-product .wdp-donation-form .wdp-modal-content:has(form.wdp-has-shareholders),
+html body .woocommerce-page.single-product .wdp-donation-form .wdp-modal-content:has(form.wdp-has-shareholders),
+html .woocommerce .single-product .wdp-donation-form .wdp-modal-content:has(form.wdp-has-shareholders),
+html .woocommerce-page .single-product .wdp-donation-form .wdp-modal-content:has(form.wdp-has-shareholders) {
   max-width: min(var(--wdp-inpage-form-width-desktop, 480px), 96vw);
   width: min(var(--wdp-inpage-form-width-desktop, 480px), 96vw);
   margin: 0;
@@ -62,8 +72,9 @@ body.single-product .wdp-donation-form .wdp-modal-content:has(form.wdp-has-share
   box-sizing: border-box;
 }
 
-/* Modal states with high specificity */
-body .wdp-modal:not(.show) {
+/* Modal states with maximum specificity */
+/* CRITICAL: Maximum specificity - html body ile tema override koruması */
+html body .wdp-modal:not(.show) {
   display: none;
   position: static;
   z-index: auto;
@@ -97,7 +108,7 @@ body .wdp-modal:not(.show) {
   clip-path: inset(100%);
 }
 
-body .wdp-modal.show {
+html body .wdp-modal.show {
   display: flex;
   position: fixed;
   z-index: 2147483645;
@@ -129,8 +140,9 @@ body .wdp-modal.show {
 }
 
 /* CRITICAL: Prevent body scroll when modal is open - without position: fixed */
+/* CRITICAL: Maximum specificity - html body ile tema override koruması */
 /* This prevents page movement while keeping scroll position intact */
-body.wdp-modal-open {
+html body.wdp-modal-open {
   overflow: hidden;
   /* Prevent layout shift when scrollbar disappears */
   padding-right: var(--wdp-scrollbar-width, 0px);
