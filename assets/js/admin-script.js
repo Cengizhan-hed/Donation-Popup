@@ -31,6 +31,41 @@
         .show()
     }
 
+    // Form tipi mutual exclusivity - bir form tipi açıldığında diğerleri kapansın
+    function handleFormTypeExclusivity($row, changedType) {
+      var allowCustomPrice = $row.find('input[name="allow_custom_price"]').is(":checked")
+      var allowMultipleShares = $row.find('input[name="allow_multiple_shares"]').is(":checked")
+      var enableProgressBar = $row.find('input[name="enable_progress_bar"]').is(":checked")
+
+      // Eğer bir form tipi açıldıysa diğerlerini kapat
+      if (changedType === 'custom_price' && allowCustomPrice) {
+        $row.find('input[name="allow_multiple_shares"]').prop('checked', false)
+        $row.find('input[name="enable_progress_bar"]').prop('checked', false)
+      } else if (changedType === 'multiple_shares' && allowMultipleShares) {
+        $row.find('input[name="allow_custom_price"]').prop('checked', false)
+        $row.find('input[name="enable_progress_bar"]').prop('checked', false)
+      } else if (changedType === 'progress_bar' && enableProgressBar) {
+        $row.find('input[name="allow_custom_price"]').prop('checked', false)
+        $row.find('input[name="allow_multiple_shares"]').prop('checked', false)
+      }
+    }
+
+    // Form tipi değişikliklerini dinle
+    $(document).on("change", 'input[name="allow_custom_price"]', function () {
+      var $row = $(this).closest("tr")
+      handleFormTypeExclusivity($row, 'custom_price')
+    })
+
+    $(document).on("change", 'input[name="allow_multiple_shares"]', function () {
+      var $row = $(this).closest("tr")
+      handleFormTypeExclusivity($row, 'multiple_shares')
+    })
+
+    $(document).on("change", 'input[name="enable_progress_bar"]', function () {
+      var $row = $(this).closest("tr")
+      handleFormTypeExclusivity($row, 'progress_bar')
+    })
+
     // Tek ürün ayarlarını kaydet
     $(".wdp-save-product").on("click", function () {
       var $button = $(this)
@@ -46,6 +81,8 @@
       var minCustomPrice = $row.find('input[name="min_custom_price"]').val()
       var allowMultipleShares = $row.find('input[name="allow_multiple_shares"]').is(":checked")
       var maxShares = $row.find('input[name="max_shares"]').val()
+      var enableProgressBar = $row.find('input[name="enable_progress_bar"]').is(":checked")
+      var progressBarLimit = $row.find('input[name="progress_bar_limit"]').val()
 
       // AJAX isteği gönder
       $.ajax({
@@ -59,6 +96,8 @@
           min_custom_price: minCustomPrice,
           allow_multiple_shares: allowMultipleShares,
           max_shares: maxShares,
+          enable_progress_bar: enableProgressBar,
+          progress_bar_limit: progressBarLimit,
         },
         success: (response) => {
           if (response.success) {
@@ -99,6 +138,8 @@
         var minCustomPrice = $row.find('input[name="min_custom_price"]').val()
         var allowMultipleShares = $row.find('input[name="allow_multiple_shares"]').is(":checked")
         var maxShares = $row.find('input[name="max_shares"]').val()
+        var enableProgressBar = $row.find('input[name="enable_progress_bar"]').is(":checked")
+        var progressBarLimit = $row.find('input[name="progress_bar_limit"]').val()
 
         // AJAX isteği gönder
         $.ajax({
@@ -112,6 +153,8 @@
             min_custom_price: minCustomPrice,
             allow_multiple_shares: allowMultipleShares,
             max_shares: maxShares,
+            enable_progress_bar: enableProgressBar,
+            progress_bar_limit: progressBarLimit,
           },
           success: (response) => {
             if (response.success) {

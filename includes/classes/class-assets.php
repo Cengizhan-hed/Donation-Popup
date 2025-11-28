@@ -245,6 +245,7 @@ class WDP_Assets {
         wp_enqueue_script('wdp-cart-js');
         wp_enqueue_script('wdp-form-js');
         wp_enqueue_script('wdp-shareholder-js');
+        wp_enqueue_script('wdp-progress-bar-js');
         wp_enqueue_script('wdp-modal-js');
         wp_enqueue_script('wdp-form-initializer-js');
         wp_enqueue_script('wdp-event-manager-js');
@@ -860,6 +861,14 @@ class WDP_Assets {
             'wdp-shareholder-js',
             $plugin_url . 'assets/js/src/shareholder.js',
             array('wdp-utils-js', 'wdp-state-js', 'wdp-dom-js', 'wdp-product-js', 'wdp-form-js'),
+            $js_module_version,
+            true
+        );
+
+        wp_register_script(
+            'wdp-progress-bar-js',
+            $plugin_url . 'assets/js/src/progress-bar.js',
+            array('wdp-utils-js'),
             $js_module_version,
             true
         );

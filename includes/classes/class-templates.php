@@ -121,6 +121,31 @@ class WDP_Templates {
             $max_shares = '7';
         }
 
+        // Progress bar ayarları
+        $enable_progress_bar = $product->get_meta('_enable_progress_bar') === 'yes';
+        $progress_bar_limit = $product->get_meta('_progress_bar_limit');
+        if ($progress_bar_limit === '') {
+            $progress_bar_limit = '100000';
+        }
+        $progress_bar_limit = floatval($progress_bar_limit);
+        
+        // Progress bar formunda minimum fiyat kontrolü (ürün fiyatı veya min_custom_price)
+        $progress_min_price = $min_price;
+        if ($enable_progress_bar) {
+            $product_base_price = floatval($product->get_price());
+            if ($product_base_price > 0) {
+                $progress_min_price = $min_price && floatval($min_price) > 0 ? min(floatval($min_price), $product_base_price) : $product_base_price;
+            } else {
+                $progress_min_price = $min_price && floatval($min_price) > 0 ? $min_price : '0';
+            }
+        }
+        
+        // Toplam bağış miktarını al
+        $total_donation = 0.0;
+        if ($enable_progress_bar) {
+            $total_donation = WDP_Utils::get_total_donation_amount($product_id);
+        }
+
         // Assets'i zorla yükle
         WDP_Assets::force_enqueue();
 
@@ -139,7 +164,12 @@ class WDP_Templates {
                     <button type="button" class="wdp-modal-close" aria-label="<?php echo esc_attr__('Modalı Kapat', 'woo-donation-popup'); ?>">&times;</button>
                 </div>
                 <div id="<?php echo esc_attr($modal_id); ?>-description" class="screen-reader-text"><?php echo esc_html(sprintf(__('%s için bağış formu', 'woo-donation-popup'), $product_name)); ?></div>
-                <form method="post" action="" class="<?php echo esc_attr($allow_multiple_shares ? 'wdp-donation-form-fields wdp-has-shareholders' : 'wdp-donation-form-fields'); ?>">
+                
+                <?php if ($enable_progress_bar): ?>
+                <?php echo WDP_Progress_Form::render_progress_bar($product_id, $progress_bar_limit, $total_donation, true, $progress_min_price); ?>
+                <?php endif; ?>
+                
+                <form method="post" action="" class="<?php echo esc_attr($allow_multiple_shares ? 'wdp-donation-form-fields wdp-has-shareholders' : ($enable_progress_bar ? 'wdp-donation-form-fields wdp-has-progress-bar' : 'wdp-donation-form-fields')); ?>">
                     <div class="wdp-form-error" style="display: none;"></div>
 
                     <?php if ($allow_multiple_shares): ?>
@@ -161,12 +191,13 @@ class WDP_Templates {
                             </div>
                         </div>
                     </div>
+                    <?php elseif ($enable_progress_bar): ?>
+                    <?php echo WDP_Progress_Form::render_form_fields(true, $progress_min_price); ?>
                     <?php else: ?>
                     <!-- Bağışçı Bilgileri -->
                     <input type="text" name="donation_full_name" placeholder="Ad Soyad *" required autocomplete="name">
                     <input type="tel" name="donation_phone" placeholder="Telefon Numarası *" required autocomplete="tel">
                     <textarea name="donation_note" rows="2" placeholder="Not (isteğe bağlı)"></textarea>
-                    <?php endif; ?>
 
                     <!-- Fiyat ve Adet Alanları -->
                     <div class="wdp-price-quantity-row">
@@ -174,16 +205,13 @@ class WDP_Templates {
                         <input type="number" name="custom_price" placeholder="Fiyat (TL)" min="<?php echo esc_attr($min_price); ?>" step="1" required>
                         <?php endif; ?>
 
-                        <?php if (!$allow_multiple_shares): // Sadece hisse özelliği olmayan formlarda göster ?>
                         <div class="wdp-quantity-counter">
                             <button type="button" class="wdp-product-quantity-btn wdp-product-quantity-decrease" aria-label="Azalt">-</button>
                             <input type="number" name="quantity" value="1" min="1" max="99" readonly>
                             <button type="button" class="wdp-product-quantity-btn wdp-product-quantity-increase" aria-label="Arttır">+</button>
                         </div>
-                        <?php else: // Hisse özelliği olan formlarda gizli input ekle ?>
-                        <input type="hidden" name="quantity" value="1">
-                        <?php endif; ?>
                     </div>
+                    <?php endif; ?>
 
                     <!-- Butonlar -->
                     <div class="wdp-button-group">
@@ -270,6 +298,31 @@ class WDP_Templates {
             $max_shares = '7';
         }
 
+        // Progress bar ayarları
+        $enable_progress_bar = $product->get_meta('_enable_progress_bar') === 'yes';
+        $progress_bar_limit = $product->get_meta('_progress_bar_limit');
+        if ($progress_bar_limit === '') {
+            $progress_bar_limit = '100000';
+        }
+        $progress_bar_limit = floatval($progress_bar_limit);
+        
+        // Progress bar formunda minimum fiyat kontrolü (ürün fiyatı veya min_custom_price)
+        $progress_min_price = $min_price;
+        if ($enable_progress_bar) {
+            $product_base_price = floatval($product->get_price());
+            if ($product_base_price > 0) {
+                $progress_min_price = $min_price && floatval($min_price) > 0 ? min(floatval($min_price), $product_base_price) : $product_base_price;
+            } else {
+                $progress_min_price = $min_price && floatval($min_price) > 0 ? $min_price : '0';
+            }
+        }
+        
+        // Toplam bağış miktarını al
+        $total_donation = 0.0;
+        if ($enable_progress_bar) {
+            $total_donation = WDP_Utils::get_total_donation_amount($product_id);
+        }
+
         // Form HTML'ini oluştur - popup ile aynı yapıyı kullan
         ob_start();
         ?>
@@ -284,7 +337,11 @@ class WDP_Templates {
                 </div>
                 <?php endif; ?>
 
-                <form method="post" action="" class="<?php echo esc_attr($allow_multiple_shares ? 'wdp-donation-form-fields wdp-has-shareholders' : 'wdp-donation-form-fields'); ?>">
+                <?php if ($enable_progress_bar): ?>
+                <?php echo WDP_Progress_Form::render_progress_bar($product_id, $progress_bar_limit, $total_donation, true, $progress_min_price); ?>
+                <?php endif; ?>
+
+                <form method="post" action="" class="<?php echo esc_attr($allow_multiple_shares ? 'wdp-donation-form-fields wdp-has-shareholders' : ($enable_progress_bar ? 'wdp-donation-form-fields wdp-has-progress-bar' : 'wdp-donation-form-fields')); ?>">
                     <div class="wdp-form-error" style="display: none;"></div>
 
                     <?php if ($allow_multiple_shares): ?>
@@ -306,12 +363,13 @@ class WDP_Templates {
                             </div>
                         </div>
                     </div>
+                    <?php elseif ($enable_progress_bar): ?>
+                    <?php echo WDP_Progress_Form::render_form_fields(true, $progress_min_price); ?>
                     <?php else: ?>
                     <!-- Bağışçı Bilgileri -->
                     <input type="text" name="donation_full_name" placeholder="Ad Soyad *" required autocomplete="name">
                     <input type="tel" name="donation_phone" placeholder="Telefon Numarası *" required autocomplete="tel">
                     <textarea name="donation_note" rows="2" placeholder="Not (isteğe bağlı)"></textarea>
-                    <?php endif; ?>
 
                     <!-- Fiyat ve Adet Alanları -->
                     <div class="wdp-price-quantity-row">
@@ -319,16 +377,13 @@ class WDP_Templates {
                         <input type="number" name="custom_price" placeholder="Fiyat (TL)" min="<?php echo esc_attr($min_price); ?>" step="1" required>
                         <?php endif; ?>
 
-                        <?php if (!$allow_multiple_shares): // Sadece hisse özelliği olmayan formlarda göster ?>
                         <div class="wdp-quantity-counter">
                             <button type="button" class="wdp-product-quantity-btn wdp-product-quantity-decrease" aria-label="Azalt">-</button>
                             <input type="number" name="quantity" value="1" min="1" max="99" readonly>
                             <button type="button" class="wdp-product-quantity-btn wdp-product-quantity-increase" aria-label="Arttır">+</button>
                         </div>
-                        <?php else: // Hisse özelliği olan formlarda gizli input ekle ?>
-                        <input type="hidden" name="quantity" value="1">
-                        <?php endif; ?>
                     </div>
+                    <?php endif; ?>
 
                     <!-- Butonlar -->
                     <div class="wdp-button-group">

@@ -76,6 +76,24 @@
           });
         }
       }
+      
+      // Progress bar'ı başlat
+      const progressBarContainer = formContainer.querySelector('.wdp-progress-bar-container');
+      if (progressBarContainer) {
+        const progressBar = getModule('progressBar');
+        if (progressBar && typeof progressBar.setup === 'function') {
+          progressBar.setup(progressBarContainer);
+        } else {
+          // INSTANT retry
+          requestAnimationFrame(function() {
+            const retryProgressBar = getModule('progressBar');
+            if (retryProgressBar && typeof retryProgressBar.setup === 'function') {
+              retryProgressBar.setup(progressBarContainer);
+            }
+          });
+        }
+      }
+      
       formContainer.dataset.wdpInitialized = '1';
     });
   }

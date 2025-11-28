@@ -154,6 +154,80 @@ class WDP_Utils {
         ));
         wp_die();
     }
+
+    /**
+     * Get total donation amount for a product from completed orders.
+     * 
+     * ÖNEMLİ: Bu fonksiyon SADECE belirtilen ürün ID'si için yapılan bağışları sayar.
+     * Her ürün için ayrı progress bar olduğundan, ürünler birbirine karışmaz.
+     *
+     * @since 10.2.0
+     * @param int $product_id Product ID. Sadece bu ürün için yapılan bağışlar sayılır.
+     * @return float Total donation amount for this specific product only.
+     */
+    public static function get_total_donation_amount($product_id) {
+        $product_id = absint($product_id);
+        
+        if (!$product_id) {
+            return 0.0;
+        }
+
+        // Cache key - her ürün için ayrı cache
+        $cache_key = 'wdp_total_donation_' . $product_id;
+        
+        // Try to get from cache first
+        $cached = wp_cache_get($cache_key, 'wdp_donations');
+        if (false !== $cached) {
+            return floatval($cached);
+        }
+
+        // Get total from completed orders ONLY (not from cart)
+        // SADECE bu ürün için yapılan bağışları say
+        $total = 0.0;
+
+        // Query completed orders containing this product
+        // Sadece tamamlanmış siparişlerden al (processing değil, sadece completed)
+        $orders = wc_get_orders(array(
+            'status' => array('wc-completed'), // Sadece completed orders
+            'limit' => -1,
+            'return' => 'ids',
+        ));
+
+        foreach ($orders as $order_id) {
+            $order = wc_get_order($order_id);
+            if (!$order) {
+                continue;
+            }
+
+            foreach ($order->get_items() as $item) {
+                // Product ID kontrolü - SADECE bu ürün için yapılan bağışları say
+                $item_product_id = $item->get_product_id();
+                
+                // ÖNEMLİ: Sadece ana ürün ID'si eşleşiyorsa say
+                // Variation varsa bile, ana ürün ID'si eşleşmeli (çünkü variation'lar aynı ana ürünün varyantlarıdır)
+                if ($item_product_id === $product_id) {
+                    // Get custom price if available (order item meta'dan)
+                    $custom_price = $item->get_meta('_custom_price');
+                    if ($custom_price && floatval($custom_price) > 0) {
+                        $total += floatval($custom_price) * $item->get_quantity();
+                    } else {
+                        // Custom price yoksa, item total'ını kullan
+                        $item_total = floatval($item->get_total());
+                        if ($item_total > 0) {
+                            $total += $item_total;
+                        }
+                    }
+                }
+            }
+        }
+
+        // Cache for 1 hour - her ürün için ayrı cache
+        wp_cache_set($cache_key, $total, 'wdp_donations', HOUR_IN_SECONDS);
+
+        // ÖNEMLİ: Sadece bu ürün için yapılan bağışların toplamını döndür
+        // Farklı ürünlerin bağışları birbirine karışmaz
+        return floatval($total);
+    }
 }
 
 // Note: init() is called by Woo_Donation_Popup::__construct()

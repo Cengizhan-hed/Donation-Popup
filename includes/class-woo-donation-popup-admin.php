@@ -121,6 +121,8 @@ class Woo_Donation_Popup_Admin {
         echo '<th>' . __('Min. Fiyat (₺)', 'woo-donation-popup') . '</th>';
         echo '<th>' . __('Çoklu Hisse', 'woo-donation-popup') . '</th>';
         echo '<th>' . __('Maks. Hisse', 'woo-donation-popup') . '</th>';
+        echo '<th>' . __('Progress Bar', 'woo-donation-popup') . '</th>';
+        echo '<th>' . __('Üst Limit (₺)', 'woo-donation-popup') . '</th>';
         echo '<th>' . __('Shortcode', 'woo-donation-popup') . '</th>';
         echo '<th>' . __('İşlemler', 'woo-donation-popup') . '</th>';
         echo '</tr>';
@@ -128,7 +130,7 @@ class Woo_Donation_Popup_Admin {
         echo '<tbody>';
         
         if (empty($products)) {
-            echo '<tr><td colspan="7">' . __('Hiç ürün bulunamadı.', 'woo-donation-popup') . '</td></tr>';
+            echo '<tr><td colspan="9">' . __('Hiç ürün bulunamadı.', 'woo-donation-popup') . '</td></tr>';
         } else {
             foreach ($products as $product) {
                 $this->render_product_row($product);
@@ -179,6 +181,8 @@ class Woo_Donation_Popup_Admin {
         $min_custom_price = get_post_meta($product->get_id(), '_min_custom_price', true);
         $allow_multiple_shares = get_post_meta($product->get_id(), '_allow_multiple_shares', true) === 'yes';
         $max_shares = get_post_meta($product->get_id(), '_max_shares', true);
+        $enable_progress_bar = get_post_meta($product->get_id(), '_enable_progress_bar', true) === 'yes';
+        $progress_bar_limit = get_post_meta($product->get_id(), '_progress_bar_limit', true);
         
         // Varsayılan değerler
         if ($min_custom_price === '') {
@@ -187,6 +191,10 @@ class Woo_Donation_Popup_Admin {
         
         if ($max_shares === '') {
             $max_shares = '7';
+        }
+        
+        if ($progress_bar_limit === '') {
+            $progress_bar_limit = '100000';
         }
         
         // Shortcode'lar
@@ -225,6 +233,19 @@ class Woo_Donation_Popup_Admin {
         // Maksimum hisse
         echo '<td>';
         echo '<input type="number" name="max_shares" value="' . esc_attr($max_shares) . '" min="1" max="20" class="small-text">';
+        echo '</td>';
+        
+        // Progress Bar
+        echo '<td>';
+        echo '<label class="wdp-switch">';
+        echo '<input type="checkbox" name="enable_progress_bar" ' . checked($enable_progress_bar, true, false) . '>';
+        echo '<span class="wdp-slider"></span>';
+        echo '</label>';
+        echo '</td>';
+        
+        // Üst Limit
+        echo '<td>';
+        echo '<input type="number" name="progress_bar_limit" value="' . esc_attr($progress_bar_limit) . '" min="0" step="1" class="small-text">';
         echo '</td>';
         
         // Shortcode'lar - Burada değişiklik yapıyoruz
@@ -305,12 +326,16 @@ class Woo_Donation_Popup_Admin {
         $min_custom_price = isset($_POST['min_custom_price']) ? wc_format_decimal($_POST['min_custom_price']) : '';
         $allow_multiple_shares = isset($_POST['allow_multiple_shares']) && $_POST['allow_multiple_shares'] === 'true' ? 'yes' : 'no';
         $max_shares = isset($_POST['max_shares']) ? absint($_POST['max_shares']) : '';
+        $enable_progress_bar = isset($_POST['enable_progress_bar']) && $_POST['enable_progress_bar'] === 'true' ? 'yes' : 'no';
+        $progress_bar_limit = isset($_POST['progress_bar_limit']) ? wc_format_decimal($_POST['progress_bar_limit']) : '';
         
         // Ayarları kaydet
         update_post_meta($product_id, '_allow_custom_price', $allow_custom_price);
         update_post_meta($product_id, '_min_custom_price', $min_custom_price);
         update_post_meta($product_id, '_allow_multiple_shares', $allow_multiple_shares);
         update_post_meta($product_id, '_max_shares', $max_shares);
+        update_post_meta($product_id, '_enable_progress_bar', $enable_progress_bar);
+        update_post_meta($product_id, '_progress_bar_limit', $progress_bar_limit);
         
         // Başarılı yanıt döndür
         wp_send_json_success(array(
@@ -354,6 +379,8 @@ class Woo_Donation_Popup_Admin {
         $min_custom_price = get_post_meta($product_id, '_min_custom_price', true);
         $allow_multiple_shares = get_post_meta($product_id, '_allow_multiple_shares', true) === 'yes';
         $max_shares = get_post_meta($product_id, '_max_shares', true);
+        $enable_progress_bar = get_post_meta($product_id, '_enable_progress_bar', true) === 'yes';
+        $progress_bar_limit = get_post_meta($product_id, '_progress_bar_limit', true);
         
         // Varsayılan değerler
         if ($min_custom_price === '') {
@@ -364,12 +391,18 @@ class Woo_Donation_Popup_Admin {
             $max_shares = '7';
         }
         
+        if ($progress_bar_limit === '') {
+            $progress_bar_limit = '100000';
+        }
+        
         // Başarılı yanıt döndür
         wp_send_json_success(array(
             'allow_custom_price' => $allow_custom_price,
             'min_custom_price' => $min_custom_price,
             'allow_multiple_shares' => $allow_multiple_shares,
-            'max_shares' => $max_shares
+            'max_shares' => $max_shares,
+            'enable_progress_bar' => $enable_progress_bar,
+            'progress_bar_limit' => $progress_bar_limit
         ));
         
         wp_die();

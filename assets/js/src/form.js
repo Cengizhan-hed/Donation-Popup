@@ -382,6 +382,21 @@ ${createCartItemsHTML([])}
         }
       }
 
+      // Progress bar'ı güncelle (eğer varsa)
+      if (data.total_donation !== undefined && data.product_id) {
+        const progressBarModule = WDPApp.progressBar;
+        if (progressBarModule && typeof progressBarModule.updateReal === 'function') {
+          const container = form.closest('.wdp-modal, .wdp-donation-form');
+          if (container) {
+            const progressContainer = container.querySelector('.wdp-progress-bar-container');
+            if (progressContainer) {
+              const limit = parseFloat(progressContainer.getAttribute('data-limit')) || 100000;
+              progressBarModule.updateReal(progressContainer, data.total_donation, limit);
+            }
+          }
+        }
+      }
+
       // WooCommerce sepet fragmentlerini güncelle
       updateWooCommerceCart();
     } else {

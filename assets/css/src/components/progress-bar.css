@@ -1,0 +1,234 @@
+/* ==================== */
+/* PROGRESS BAR */
+/* ==================== */
+
+html body .wdp-progress-bar-container {
+  margin: 16px 0;
+  padding: 14px 16px;
+  background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+html body .wdp-progress-bar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+html body .wdp-progress-bar-info,
+html body .wdp-progress-bar-limit {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+html body .wdp-progress-bar-label,
+html body .wdp-progress-bar-limit-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+html body .wdp-progress-bar-amount,
+html body .wdp-progress-bar-limit-amount {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1e293b;
+  line-height: 1.2;
+}
+
+html body .wdp-progress-bar-limit-amount {
+  color: #475569;
+}
+
+html body .wdp-progress-bar-wrapper {
+  position: relative;
+  margin-top: 8px;
+}
+
+html body .wdp-progress-bar {
+  width: 100%;
+  height: 10px;
+  background-color: #e2e8f0;
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.06);
+}
+
+html body .wdp-progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #3b82f6 0%, #2563eb 50%, #1d4ed8 100%);
+  border-radius: 10px;
+  position: relative;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+  z-index: 2;
+}
+
+html body .wdp-progress-bar-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.2) 50%,
+    transparent 100%
+  );
+  animation: wdpProgressShine 2s ease-in-out infinite;
+}
+
+html body .wdp-progress-bar-preview {
+  height: 100%;
+  background: linear-gradient(90deg, #94a3b8 0%, #64748b 50%, #475569 100%);
+  border-radius: 0 10px 10px 0; /* Sağ tarafta yuvarlak köşe */
+  position: absolute;
+  top: 0;
+  left: 0;
+  transition: width 0.3s ease-out, left 0.3s ease-out;
+  opacity: 0.6;
+  z-index: 1;
+  display: none;
+}
+
+html body .wdp-progress-bar-preview::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 4px,
+    rgba(255, 255, 255, 0.1) 4px,
+    rgba(255, 255, 255, 0.1) 8px
+  );
+}
+
+html body .wdp-progress-bar-percentage {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 3;
+  pointer-events: none;
+}
+
+html body .wdp-progress-bar-percentage-value {
+  font-size: 11px;
+  font-weight: 700;
+  color: #1e293b;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 2px 8px;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  white-space: nowrap;
+}
+
+@keyframes wdpProgressShine {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Mobil optimizasyonlar */
+@media (max-width: 600px) {
+  html body .wdp-progress-bar-container {
+    margin: 12px 0;
+    padding: 12px 14px;
+    border-radius: 10px;
+  }
+
+  html body .wdp-progress-bar-header {
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  html body .wdp-progress-bar-info,
+  html body .wdp-progress-bar-limit {
+    flex: 1;
+    min-width: 0;
+  }
+
+  html body .wdp-progress-bar-label,
+  html body .wdp-progress-bar-limit-label {
+    font-size: 10px;
+  }
+
+  html body .wdp-progress-bar-amount,
+  html body .wdp-progress-bar-limit-amount {
+    font-size: 16px;
+  }
+
+  html body .wdp-progress-bar {
+    height: 10px;
+  }
+
+  html body .wdp-progress-bar-percentage-value {
+    font-size: 9px;
+    padding: 2px 6px;
+  }
+}
+
+/* Küçük mobil */
+@media (max-width: 480px) {
+  html body .wdp-progress-bar-container {
+    margin: 10px 0;
+    padding: 10px 12px;
+  }
+
+  html body .wdp-progress-bar-header {
+    margin-bottom: 8px;
+    gap: 6px;
+  }
+
+  html body .wdp-progress-bar-label,
+  html body .wdp-progress-bar-limit-label {
+    font-size: 9px;
+  }
+
+  html body .wdp-progress-bar-amount,
+  html body .wdp-progress-bar-limit-amount {
+    font-size: 14px;
+  }
+
+  html body .wdp-progress-bar {
+    height: 8px;
+  }
+
+  html body .wdp-progress-bar-percentage-value {
+    font-size: 8px;
+    padding: 1px 4px;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  html body .wdp-progress-bar-fill,
+  html body .wdp-progress-bar-preview {
+    transition: width 0.2s linear;
+  }
+
+  html body .wdp-progress-bar-fill::after {
+    animation: none;
+  }
+}
+

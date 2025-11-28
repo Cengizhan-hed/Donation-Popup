@@ -413,6 +413,7 @@ class WDP_Ajax {
 
             $quantity = max(1, $share_count);
         } else {
+            // Ad Soyad alanını al
             $full_name = isset($_POST['donation_full_name']) ? WDP_Security::sanitize_text(wp_unslash($_POST['donation_full_name']), 100) : '';
             $phone = isset($_POST['donation_phone']) ? WDP_Security::sanitize_phone(wp_unslash($_POST['donation_phone'])) : '';
             // SECURITY: Limit note length to prevent abuse
@@ -566,12 +567,23 @@ class WDP_Ajax {
             // PERFORMANCE: Get cart count once
             $cart_count = (int) WC()->cart->get_cart_contents_count();
             
+            // Progress bar için toplam bağış miktarını hesapla
+            $total_donation = 0.0;
+            $enable_progress_bar = $product->get_meta('_enable_progress_bar') === 'yes';
+            if ($enable_progress_bar) {
+                // Cache'i temizle (yeni bağış eklendi)
+                wp_cache_delete('wdp_total_donation_' . $product_id, 'wdp_donations');
+                $total_donation = WDP_Utils::get_total_donation_amount($product_id);
+            }
+            
             WDP_Utils::json_success(array(
                 'message' => __('Ürün sepete eklendi.', 'woo-donation-popup'),
                 'cart_item_key' => $cart_item_key,
                 'cart_count' => $cart_count,
                 'checkout_url' => wc_get_checkout_url(),
                 'items' => self::get_cart_items(),
+                'total_donation' => $total_donation,
+                'product_id' => $product_id,
             ));
         } catch (WDP_Validation_Exception $e) {
             WDP_Utils::json_error($e);
