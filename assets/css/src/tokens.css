@@ -48,38 +48,53 @@
  */
 
 :root {
-  /* Primary Palette - Ana renk paleti */
+  /* Primary Palette - Ana renk paleti (Modern RGB format) */
   /* Kullanım: Butonlar, linkler, vurgular */
-  --wdp-primary: #4a90e2;              /* Ana mavi renk */
-  --wdp-primary-hover: #3a7bc8;        /* Hover durumu için koyu mavi */
-  --wdp-secondary: #7b61ff;            /* İkincil mor renk */
-  --wdp-secondary-hover: #6550d8;       /* İkincil hover rengi */
-  --wdp-accent: #50e3c2;               /* Vurgu rengi (yeşilimsi) */
-  --wdp-accent-hover: #3dcfaf;        /* Vurgu hover rengi */
-  --wdp-success: #48bb78;              /* Başarı mesajları için yeşil */
-  --wdp-error: #e53e3e;                /* Hata mesajları için kırmızı */
-  --wdp-warning: #ed8936;              /* Uyarı mesajları için turuncu */
-  --wdp-primary-hover: #3a7bc8;
-  --wdp-secondary: #7b61ff;
-  --wdp-secondary-hover: #6550d8;
-  --wdp-accent: #50e3c2;
-  --wdp-accent-hover: #3dcfaf;
-  --wdp-success: #48bb78;
-  --wdp-error: #e53e3e;
-  --wdp-warning: #ed8936;
+  --wdp-primary: rgb(74, 144, 226);              /* Ana mavi renk */
+  --wdp-primary-hover: rgb(58, 123, 200);         /* Hover durumu için koyu mavi */
+  --wdp-primary-alpha-10: rgba(74, 144, 226, 0.1);
+  --wdp-primary-alpha-20: rgba(74, 144, 226, 0.2);
+  --wdp-primary-alpha-50: rgba(74, 144, 226, 0.5);
+  
+  --wdp-secondary: rgb(123, 97, 255);            /* İkincil mor renk */
+  --wdp-secondary-hover: rgb(101, 80, 216);     /* İkincil hover rengi */
+  --wdp-secondary-alpha-10: rgba(123, 97, 255, 0.1);
+  
+  --wdp-accent: rgb(80, 227, 194);               /* Vurgu rengi (yeşilimsi) */
+  --wdp-accent-hover: rgb(61, 207, 175);         /* Vurgu hover rengi */
+  --wdp-accent-alpha-10: rgba(80, 227, 194, 0.1);
+  
+  --wdp-success: rgb(72, 187, 120);               /* Başarı mesajları için yeşil */
+  --wdp-success-alpha-10: rgba(72, 187, 120, 0.1);
+  
+  --wdp-error: rgb(229, 62, 62);                 /* Hata mesajları için kırmızı */
+  --wdp-error-alpha-10: rgba(229, 62, 62, 0.1);
+  
+  --wdp-warning: rgb(237, 137, 54);              /* Uyarı mesajları için turuncu */
+  --wdp-warning-alpha-10: rgba(237, 137, 54, 0.1);
 
-  /* Neutral Palette */
-  --wdp-white: #ffffff;
-  --wdp-gray-50: #f9fafb;
-  --wdp-gray-100: #f3f4f6;
-  --wdp-gray-200: #e5e7eb;
-  --wdp-gray-300: #d1d5db;
-  --wdp-gray-400: #9ca3af;
-  --wdp-gray-500: #6b7280;
-  --wdp-gray-600: #4b5563;
-  --wdp-gray-700: #374151;
-  --wdp-gray-800: #1f2937;
-  --wdp-gray-900: #111827;
+  /* Neutral Palette (Modern RGB format) */
+  --wdp-white: rgb(255, 255, 255);
+  --wdp-gray-50: rgb(249, 250, 251);
+  --wdp-gray-100: rgb(243, 244, 246);
+  --wdp-gray-200: rgb(229, 231, 235);
+  --wdp-gray-300: rgb(209, 213, 219);
+  --wdp-gray-400: rgb(156, 163, 175);
+  --wdp-gray-500: rgb(107, 114, 128);
+  --wdp-gray-600: rgb(75, 85, 99);
+  --wdp-gray-700: rgb(55, 65, 81);
+  --wdp-gray-800: rgb(31, 41, 55);
+  --wdp-gray-900: rgb(17, 24, 39);
+  
+  /* Modern color utilities */
+  --wdp-text-primary: var(--wdp-gray-900);
+  --wdp-text-secondary: var(--wdp-gray-700);
+  --wdp-text-tertiary: var(--wdp-gray-500);
+  --wdp-text-inverse: var(--wdp-white);
+  
+  --wdp-bg-primary: var(--wdp-white);
+  --wdp-bg-secondary: var(--wdp-gray-50);
+  --wdp-bg-tertiary: var(--wdp-gray-100);
 
   /* Button Styles */
   --wdp-button-primary: #1e73be;
@@ -92,36 +107,65 @@
   --wdp-radius-lg: 12px;
   --wdp-radius-xl: 16px;
 
-  /* Shadows */
+  /* Shadows (Modern with color-mix support) */
   --wdp-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --wdp-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   --wdp-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
   --wdp-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --wdp-shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  --wdp-shadow-inner: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+  
+  /* Modern elevation system */
+  --wdp-elevation-1: var(--wdp-shadow-sm);
+  --wdp-elevation-2: var(--wdp-shadow-md);
+  --wdp-elevation-3: var(--wdp-shadow-lg);
+  --wdp-elevation-4: var(--wdp-shadow-xl);
+  --wdp-elevation-5: var(--wdp-shadow-2xl);
 
   /* Transitions */
   --wdp-transition-colors: background-color 0.2s ease-in-out, color 0.2s ease-in-out, border-color 0.2s ease-in-out;
   --wdp-transition-transform: transform 0.2s ease-in-out;
 
-  /* Spacing Scale */
-  --wdp-space-1: 4px;
-  --wdp-space-2: 8px;
-  --wdp-space-3: 12px;
-  --wdp-space-4: 16px;
-  --wdp-space-5: 20px;
-  --wdp-space-6: 24px;
-  --wdp-space-8: 32px;
-  --wdp-space-10: 40px;
-  --wdp-space-12: 48px;
+  /* Spacing Scale (Modern with logical properties support) */
+  --wdp-space-1: 0.25rem;    /* 4px */
+  --wdp-space-2: 0.5rem;     /* 8px */
+  --wdp-space-3: 0.75rem;    /* 12px */
+  --wdp-space-4: 1rem;       /* 16px */
+  --wdp-space-5: 1.25rem;    /* 20px */
+  --wdp-space-6: 1.5rem;     /* 24px */
+  --wdp-space-8: 2rem;       /* 32px */
+  --wdp-space-10: 2.5rem;    /* 40px */
+  --wdp-space-12: 3rem;      /* 48px */
+  
+  /* Logical spacing (for RTL/LTR support) */
+  --wdp-space-inline-1: var(--wdp-space-1);
+  --wdp-space-inline-2: var(--wdp-space-2);
+  --wdp-space-inline-3: var(--wdp-space-3);
+  --wdp-space-inline-4: var(--wdp-space-4);
+  --wdp-space-block-1: var(--wdp-space-1);
+  --wdp-space-block-2: var(--wdp-space-2);
+  --wdp-space-block-3: var(--wdp-space-3);
+  --wdp-space-block-4: var(--wdp-space-4);
 
-  /* Typography */
-  --wdp-text-xs: 12px;
-  --wdp-text-sm: 14px;
-  --wdp-text-base: 16px;
-  --wdp-text-lg: 18px;
-  --wdp-text-xl: 20px;
-  --wdp-text-2xl: 24px;
-  --wdp-text-3xl: 30px;
-  --wdp-text-4xl: 36px;
+  /* Typography (Modern fluid typography with clamp) */
+  --wdp-text-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);      /* 12-14px */
+  --wdp-text-sm: clamp(0.875rem, 0.8rem + 0.375vw, 1rem);       /* 14-16px */
+  --wdp-text-base: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);      /* 16-18px */
+  --wdp-text-lg: clamp(1.125rem, 1.05rem + 0.375vw, 1.25rem);    /* 18-20px */
+  --wdp-text-xl: clamp(1.25rem, 1.15rem + 0.5vw, 1.5rem);        /* 20-24px */
+  --wdp-text-2xl: clamp(1.5rem, 1.35rem + 0.75vw, 1.875rem);     /* 24-30px */
+  --wdp-text-3xl: clamp(1.875rem, 1.65rem + 1.125vw, 2.25rem);    /* 30-36px */
+  --wdp-text-4xl: clamp(2.25rem, 1.95rem + 1.5vw, 3rem);         /* 36-48px */
+  
+  /* Fixed sizes (fallback for older browsers) */
+  --wdp-text-xs-fixed: 12px;
+  --wdp-text-sm-fixed: 14px;
+  --wdp-text-base-fixed: 16px;
+  --wdp-text-lg-fixed: 18px;
+  --wdp-text-xl-fixed: 20px;
+  --wdp-text-2xl-fixed: 24px;
+  --wdp-text-3xl-fixed: 30px;
+  --wdp-text-4xl-fixed: 36px;
 
   /* Typography Line Heights */
   --wdp-leading-none: 1;
@@ -170,12 +214,22 @@
   --wdp-duration-700: 700ms;
   --wdp-duration-1000: 1000ms;
 
-  /* Animation Easing */
+  /* Animation Easing (Modern easing functions) */
   --wdp-ease-linear: linear;
   --wdp-ease-in: cubic-bezier(0.4, 0, 1, 1);
   --wdp-ease-out: cubic-bezier(0, 0, 0.2, 1);
   --wdp-ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
   --wdp-ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+  
+  /* Modern easing functions (Material Design 3) */
+  --wdp-ease-emphasized: cubic-bezier(0.2, 0, 0, 1);
+  --wdp-ease-emphasized-decelerate: cubic-bezier(0.05, 0.7, 0.1, 1);
+  --wdp-ease-emphasized-accelerate: cubic-bezier(0.3, 0, 0.8, 0.15);
+  --wdp-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  
+  /* Spring-like animations */
+  --wdp-ease-spring: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  --wdp-ease-bounce: cubic-bezier(0.68, -0.6, 0.32, 1.6);
 
   /* Opacity Values */
   --wdp-opacity-0: 0;
@@ -197,5 +251,48 @@
   --wdp-z-modal: 2147483645;
   --wdp-z-modal-content: 2147483646;
   --wdp-z-modal-close: 2147483647;
+  
+  /* Modern viewport units (for better mobile support) */
+  --wdp-vh: 100vh;
+  --wdp-vw: 100vw;
+  --wdp-dvh: 100dvh;  /* Dynamic viewport height (iOS Safari) */
+  --wdp-dvw: 100dvw;  /* Dynamic viewport width */
+  --wdp-svh: 100svh;  /* Small viewport height */
+  --wdp-lvh: 100lvh;  /* Large viewport height */
+  
+  /* Container query support */
+  --wdp-container-type: inline-size;
+  --wdp-container-name: wdp-container;
+  
+  /* Modern border radius (using rem for scalability) */
+  --wdp-radius-sm: 0.25rem;   /* 4px */
+  --wdp-radius-md: 0.5rem;    /* 8px */
+  --wdp-radius-lg: 0.75rem;    /* 12px */
+  --wdp-radius-xl: 1rem;      /* 16px */
+  --wdp-radius-2xl: 1.5rem;   /* 24px */
+  --wdp-radius-full: 9999px;  /* Full circle */
+  
+  /* Modern backdrop filters */
+  --wdp-backdrop-blur-sm: blur(4px);
+  --wdp-backdrop-blur-md: blur(8px);
+  --wdp-backdrop-blur-lg: blur(16px);
+  --wdp-backdrop-blur-xl: blur(24px);
+  
+  /* Modern gradient utilities */
+  --wdp-gradient-primary: linear-gradient(135deg, var(--wdp-primary) 0%, var(--wdp-secondary) 100%);
+  --wdp-gradient-accent: linear-gradient(135deg, var(--wdp-accent) 0%, var(--wdp-primary) 100%);
+  
+  /* Modern aspect ratios */
+  --wdp-aspect-square: 1 / 1;
+  --wdp-aspect-video: 16 / 9;
+  --wdp-aspect-portrait: 3 / 4;
+  
+  /* Modern scroll behavior */
+  --wdp-scroll-behavior: smooth;
+  --wdp-scroll-padding-block: var(--wdp-space-4);
+  
+  /* Modern focus styles */
+  --wdp-focus-ring: 0 0 0 var(--wdp-focus-ring-width) var(--wdp-focus-ring-color);
+  --wdp-focus-ring-offset: var(--wdp-focus-ring-width);
 }
 

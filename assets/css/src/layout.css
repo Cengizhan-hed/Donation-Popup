@@ -2,11 +2,14 @@
 /* CRITICAL: Desktop - in-page forms should match popup width */
 /* CRITICAL: Desktop - in-page forms container */
 /* CRITICAL: Maximum specificity - html body ile tema override koruması */
-/* This rule only sets container width - modal-content rules are handled below */
+/* Modern container queries support */
 html body .wdp-donation-form {
+  container-type: inline-size;
+  container-name: wdp-donation-form;
   max-width: 100%;
   width: min(var(--wdp-inpage-form-width-desktop, 480px), calc(100vw - 48px));
-  margin: 24px auto;
+  margin-block: clamp(1rem, 1.5rem, 1.5rem);
+  margin-inline: auto;
   padding: 0;
   display: block;
   position: relative;
@@ -159,30 +162,30 @@ html {
 /* CRITICAL: Popup modal - ALWAYS fixed width (540px) */
 html body .wdp-modal.show .wdp-modal-content {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  background: var(--wdp-modal-bg, #ffffff);
-  border: 1px solid #e5e7eb;
-  border-radius: var(--wdp-modal-radius, 12px);
-  box-shadow: none;
+  background: var(--wdp-modal-bg, var(--wdp-bg-primary, rgb(255, 255, 255)));
+  border: var(--wdp-border-1, 1px) solid var(--wdp-gray-200, rgb(229, 231, 235));
+  border-radius: var(--wdp-modal-radius, var(--wdp-radius-lg, 0.75rem));
+  box-shadow: var(--wdp-elevation-3, var(--wdp-shadow-lg));
   width: min(var(--wdp-popup-modal-width-desktop, 540px), 96vw);
   max-width: min(var(--wdp-popup-modal-width-desktop, 540px), 96vw);
-  /* CRITICAL: Absolute max-height - never exceed 90vh */
-  max-height: 90vh;
+  /* CRITICAL: Absolute max-height - never exceed 90vh (modern dvh support) */
+  max-height: min(90vh, 90dvh);
   height: auto;
   min-height: 0;
-  /* CRITICAL: Use individual padding properties - NOT shorthand (allows override) */
-  padding-top: var(--wdp-modal-padding-top-desktop, 32px);
-  padding-left: var(--wdp-modal-padding-left-desktop, 24px);
-  padding-right: var(--wdp-modal-padding-right-desktop, 24px);
-  padding-bottom: var(--wdp-modal-padding-bottom-desktop, 24px);
+  /* CRITICAL: Use logical padding properties for better RTL support */
+  padding-block-start: var(--wdp-modal-padding-top-desktop, clamp(1.5rem, 2rem, 2rem));
+  padding-inline-start: var(--wdp-modal-padding-left-desktop, clamp(1rem, 1.5rem, 1.5rem));
+  padding-inline-end: var(--wdp-modal-padding-right-desktop, clamp(1rem, 1.5rem, 1.5rem));
+  padding-block-end: var(--wdp-modal-padding-bottom-desktop, clamp(1rem, 1.5rem, 1.5rem));
   position: relative;
   z-index: 2147483646;
   animation: none;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: clamp(0.5rem, 0.75rem, 0.75rem);
   margin: 0;
   box-sizing: border-box;
-  text-align: left;
+  text-align: start; /* Modern logical property */
   text-transform: none;
   letter-spacing: normal;
   word-spacing: normal;
@@ -192,9 +195,13 @@ html body .wdp-modal.show .wdp-modal-content {
   flex-shrink: 1;
   flex-grow: 0;
   /* Prevent any content from forcing expansion */
-  contain: layout style; /* CRITICAL: Popup modal için layout style - form expansion'ı önler */
+  contain: layout style paint; /* Modern contain with paint */
   /* Force layout isolation */
   isolation: isolate;
+  
+  /* Modern container queries support */
+  container-type: inline-size;
+  container-name: wdp-modal-content;
 }
 
 /* CRITICAL: In-page forms - default width (can be overridden for single product) */
