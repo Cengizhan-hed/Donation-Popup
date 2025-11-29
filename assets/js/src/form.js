@@ -175,6 +175,7 @@
       for (let i = 1; i <= shareCount; i++) {
         const nameField = form.querySelector(`input[name="shareholder_name_${i}"]`);
         const phoneField = form.querySelector(`input[name="shareholder_phone_${i}"]`);
+        const shareholderForm = nameField?.closest('.wdp-shareholder-form') || phoneField?.closest('.wdp-shareholder-form');
         
         safeLog(`Checking form ${i}:`, {
           nameField: !!nameField,
@@ -182,6 +183,19 @@
           phoneField: !!phoneField,
           phoneValue: phoneField?.value
         });
+        
+        // Eğer form kapalıysa aç (kullanıcı görebilsin)
+        if (shareholderForm && shareholderForm.classList.contains('collapsed')) {
+          shareholderForm.classList.remove('collapsed');
+          const content = shareholderForm.querySelector('.wdp-shareholder-content');
+          if (content) {
+            content.style.display = 'flex';
+          }
+          // Scroll yap
+          requestAnimationFrame(() => {
+            shareholderForm.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          });
+        }
         
         // Ad alanı kontrolü
         if (nameField && !nameField.value.trim()) {
@@ -465,10 +479,69 @@ ${createCartItemsHTML([])}
     
     safeLog("Submitting form data...", isCheckout ? "Ödemeye Git" : "Sepete Ekle");
     clearAlerts();
-    const formData = new FormData(form);
+    
+    // CRITICAL: Hissedar formlarında quantity'yi shareCount'a göre güncelle (FormData oluşturulmadan önce)
     const shareCountInput = $form('input[name="share_count"]');
     if (shareCountInput) {
       const shareCount = Number.parseInt(shareCountInput.value, 10) || 1;
+      const quantityInput = $form('input[name="quantity"]');
+      if (quantityInput && shareCount > 0) {
+        // Quantity değerini hisse adedi ile güncelle - hissedar sayısına göre otomatik ayarla
+        quantityInput.value = shareCount;
+        safeLog("Quantity güncellendi - ShareCount:", shareCount, "-> Quantity:", quantityInput.value);
+      }
+    }
+    
+    const formData = new FormData(form);
+    
+    // CRITICAL: Hissedar formlarında fiyatı hisse sayısına göre güncelle
+    if (shareCountInput) {
+      const shareCount = Number.parseInt(shareCountInput.value, 10) || 1;
+      const priceInput = $form('input[name="custom_price"]');
+      
+      if (priceInput) {
+        // Base price'ı al (dataset'ten veya mevcut fiyattan)
+        const baseMinValue = Number.parseFloat((priceInput.dataset.baseMin || '').toString().trim());
+        const currentPriceValue = Number.parseFloat((priceInput.value || '').toString().trim());
+        
+        let basePrice = baseMinValue;
+        
+        // Eğer baseMin yoksa, mevcut fiyatı hisse sayısına böl
+        if (!Number.isFinite(basePrice) || basePrice <= 0) {
+          if (Number.isFinite(currentPriceValue) && currentPriceValue > 0 && shareCount > 0) {
+            basePrice = currentPriceValue / shareCount;
+          }
+        }
+        
+        // CRITICAL: Hissedar formlarında base price'ı gönder (quantity ile çarpılacak)
+        // Form'da gösterilen fiyat toplam fiyat olabilir ama sepete base price gönderilmeli
+        // Dinamik: Kaç hissedar bilgisi doldurulduysa (shareCount), o kadar adet ürün sepete eklenecek
+        // Örnek: 7 hissedar = 7 adet ürün, fiyat = base_price × 7
+        if (Number.isFinite(basePrice) && basePrice > 0) {
+          // Form'da gösterilen toplam fiyatı güncelle (kullanıcı görsün)
+          // Dinamik hesaplama: basePrice × shareCount (hissedar sayısı)
+          const totalPrice = basePrice * shareCount;
+          const roundedTotalPrice = Number.isInteger(totalPrice) ? totalPrice.toFixed(0) : totalPrice.toFixed(2);
+          priceInput.value = roundedTotalPrice;
+          
+          // Ama sepete BASE PRICE gönder (quantity ile çarpılacak)
+          // PHP tarafında: subtotal = custom_price × quantity (quantity = shareCount)
+          const roundedBasePrice = Number.isInteger(basePrice) ? basePrice.toFixed(0) : basePrice.toFixed(2);
+          formData.set('custom_price', roundedBasePrice);
+          safeLog("Fiyat hesaplandı - Base:", basePrice, "x Quantity (ShareCount):", shareCount, "= Total:", totalPrice, "-> Sepete base price gönderiliyor:", roundedBasePrice);
+        } else if (shareCount > 1) {
+          // Base price bulunamadıysa ve hisse sayısı > 1 ise uyarı ver
+          safeLog("WARNING: Base price not found for share count:", shareCount);
+        }
+      }
+      
+      // CRITICAL: Quantity'yi shareCount olarak ayarla (sepette doğru miktar gösterilsin)
+      // Dinamik: Kaç hissedar bilgisi doldurulduysa, o kadar adet ürün sepete eklenecek
+      // Örnek: 7 hissedar = 7 adet ürün, fiyat = base_price × 7
+      formData.set('quantity', shareCount);
+      safeLog("FormData'ya quantity eklendi (ShareCount):", shareCount, "- Bu, sepette", shareCount, "adet ürün anlamına gelir");
+      
+      // Hissedar bilgilerini ekle
       for (let i = 1; i <= shareCount; i++) {
         const name = $form(`[name='shareholder_name_${i}']`);
         const phone = $form(`[name='shareholder_phone_${i}']`);
@@ -833,15 +906,30 @@ ${createCartItemsHTML([])}
           const minPrice = Number.parseFloat(this.getAttribute("min") || 0);
           const currentValue = Number.parseFloat(this.value || 0);
           if (this.value !== "" && minPrice > 0 && currentValue < minPrice) {
-            // Değeri otomatik düzeltme - sadece popup uyarısı göster
+            // Input alanının üzerinde küçük popup uyarısı göster
             this.classList.add("wdp-error");
-            showAlert([`Lütfen ${minPrice} TL ve üstü değerler girin.`], {
-              type: 'warning',
-              title: 'Minimum tutar hatası',
-              autoClose: false,
-              nonClosable: false,
-              persistent: false
-            });
+            
+            // Mevcut input-error'u kaldır
+            const existingError = this.parentNode.querySelector('.wdp-input-error');
+            if (existingError) {
+              existingError.remove();
+            }
+            
+            // Yeni input-error elementi oluştur
+            const inputError = document.createElement('div');
+            inputError.className = 'wdp-input-error';
+            inputError.textContent = `Lütfen ${minPrice} TL ve üstü değerler girin.`;
+            
+            // Input'un parent'ına ekle (position: relative olmalı)
+            const parentField = this.closest('.wdp-price-field') || this.parentNode;
+            if (parentField) {
+              // Parent'ın position'ını kontrol et ve gerekirse relative yap
+              const computedStyle = window.getComputedStyle(parentField);
+              if (computedStyle.position === 'static') {
+                parentField.style.position = 'relative';
+              }
+              parentField.appendChild(inputError);
+            }
           } else {
             this.classList.remove("wdp-error");
             const inputError = this.parentNode.querySelector('.wdp-input-error');
@@ -853,14 +941,30 @@ ${createCartItemsHTML([])}
           const minPrice = Number.parseFloat(this.getAttribute("min") || 0);
           const currentValue = Number.parseFloat(this.value || 0);
           if (this.value !== "" && minPrice > 0 && currentValue < minPrice) {
+            // Input alanının üzerinde küçük popup uyarısı göster
             this.classList.add("wdp-error");
-            showAlert([`Lütfen ${minPrice} TL ve üstü değerler girin.`], {
-              type: 'warning',
-              title: 'Minimum tutar hatası',
-              autoClose: false,
-              nonClosable: false,
-              persistent: false
-            });
+            
+            // Mevcut input-error'u kaldır
+            const existingError = this.parentNode.querySelector('.wdp-input-error');
+            if (existingError) {
+              existingError.remove();
+            }
+            
+            // Yeni input-error elementi oluştur
+            const inputError = document.createElement('div');
+            inputError.className = 'wdp-input-error';
+            inputError.textContent = `Lütfen ${minPrice} TL ve üstü değerler girin.`;
+            
+            // Input'un parent'ına ekle (position: relative olmalı)
+            const parentField = this.closest('.wdp-price-field') || this.parentNode;
+            if (parentField) {
+              // Parent'ın position'ını kontrol et ve gerekirse relative yap
+              const computedStyle = window.getComputedStyle(parentField);
+              if (computedStyle.position === 'static') {
+                parentField.style.position = 'relative';
+              }
+              parentField.appendChild(inputError);
+            }
           } else {
             this.classList.remove("wdp-error");
             const inputError = this.parentNode.querySelector('.wdp-input-error');

@@ -147,6 +147,9 @@
   --wdp-space-block-3: var(--wdp-space-3);
   --wdp-space-block-4: var(--wdp-space-4);
 
+  /* Font Family */
+  --wdp-font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  
   /* Typography (Modern fluid typography with clamp) */
   --wdp-text-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);      /* 12-14px */
   --wdp-text-sm: clamp(0.875rem, 0.8rem + 0.375vw, 1rem);       /* 14-16px */

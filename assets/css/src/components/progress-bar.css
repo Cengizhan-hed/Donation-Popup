@@ -1,7 +1,9 @@
 /* ==================== */
 /* PROGRESS BAR */
 /* ==================== */
+/* CRITICAL: Maximum specificity - html body ile tema override koruması */
 
+html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content, &) .wdp-progress-bar-container,
 html body .wdp-progress-bar-container {
   margin: 16px 0;
   padding: 14px 16px;
@@ -11,6 +13,7 @@ html body .wdp-progress-bar-container {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
+html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content, &) .wdp-progress-bar-header,
 html body .wdp-progress-bar-header {
   display: flex;
   justify-content: space-between;
@@ -20,15 +23,23 @@ html body .wdp-progress-bar-header {
   gap: 8px;
 }
 
-html body .wdp-progress-bar-info,
-html body .wdp-progress-bar-limit {
+html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content, &) :is(.wdp-progress-bar-info, .wdp-progress-bar-limit),
+html body :is(.wdp-progress-bar-info, .wdp-progress-bar-limit) {
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
 
 html body .wdp-progress-bar-label,
-html body .wdp-progress-bar-limit-label {
+html body .wdp-progress-bar-limit-label,
+html body .wdp-modal .wdp-progress-bar-label,
+html body .wdp-modal .wdp-progress-bar-limit-label,
+html body .wdp-donation-form .wdp-progress-bar-label,
+html body .wdp-donation-form .wdp-progress-bar-limit-label,
+html body .wdp-modal .wdp-modal-content .wdp-progress-bar-label,
+html body .wdp-modal .wdp-modal-content .wdp-progress-bar-limit-label,
+html body .wdp-donation-form .wdp-modal-content .wdp-progress-bar-label,
+html body .wdp-donation-form .wdp-modal-content .wdp-progress-bar-limit-label {
   font-size: 11px;
   font-weight: 500;
   color: #64748b;
@@ -36,23 +47,26 @@ html body .wdp-progress-bar-limit-label {
   letter-spacing: 0.5px;
 }
 
-html body .wdp-progress-bar-amount,
-html body .wdp-progress-bar-limit-amount {
+html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content, &) :is(.wdp-progress-bar-amount, .wdp-progress-bar-limit-amount),
+html body :is(.wdp-progress-bar-amount, .wdp-progress-bar-limit-amount) {
   font-size: 18px;
   font-weight: 700;
   color: #1e293b;
   line-height: 1.2;
 }
 
+html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content, &) .wdp-progress-bar-limit-amount,
 html body .wdp-progress-bar-limit-amount {
   color: #475569;
 }
 
+html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content, &) .wdp-progress-bar-wrapper,
 html body .wdp-progress-bar-wrapper {
   position: relative;
   margin-top: 8px;
 }
 
+html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content, &) .wdp-progress-bar,
 html body .wdp-progress-bar {
   width: 100%;
   height: 10px;
@@ -63,7 +77,11 @@ html body .wdp-progress-bar {
   box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.06);
 }
 
-html body .wdp-progress-bar-fill {
+html body .wdp-progress-bar-fill,
+html body .wdp-modal .wdp-progress-bar-fill,
+html body .wdp-donation-form .wdp-progress-bar-fill,
+html body .wdp-modal .wdp-modal-content .wdp-progress-bar-fill,
+html body .wdp-donation-form .wdp-modal-content .wdp-progress-bar-fill {
   height: 100%;
   background: linear-gradient(90deg, #3b82f6 0%, #2563eb 50%, #1d4ed8 100%);
   border-radius: 10px;
@@ -73,7 +91,11 @@ html body .wdp-progress-bar-fill {
   z-index: 2;
 }
 
-html body .wdp-progress-bar-fill::after {
+html body .wdp-progress-bar-fill::after,
+html body .wdp-modal .wdp-progress-bar-fill::after,
+html body .wdp-donation-form .wdp-progress-bar-fill::after,
+html body .wdp-modal .wdp-modal-content .wdp-progress-bar-fill::after,
+html body .wdp-donation-form .wdp-modal-content .wdp-progress-bar-fill::after {
   content: '';
   position: absolute;
   top: 0;
@@ -89,7 +111,11 @@ html body .wdp-progress-bar-fill::after {
   animation: wdpProgressShine 2s ease-in-out infinite;
 }
 
-html body .wdp-progress-bar-preview {
+html body .wdp-progress-bar-preview,
+html body .wdp-modal .wdp-progress-bar-preview,
+html body .wdp-donation-form .wdp-progress-bar-preview,
+html body .wdp-modal .wdp-modal-content .wdp-progress-bar-preview,
+html body .wdp-donation-form .wdp-modal-content .wdp-progress-bar-preview {
   height: 100%;
   background: linear-gradient(90deg, #94a3b8 0%, #64748b 50%, #475569 100%);
   border-radius: 0 10px 10px 0; /* Sağ tarafta yuvarlak köşe */
@@ -102,7 +128,11 @@ html body .wdp-progress-bar-preview {
   display: none;
 }
 
-html body .wdp-progress-bar-preview::after {
+html body .wdp-progress-bar-preview::after,
+html body .wdp-modal .wdp-progress-bar-preview::after,
+html body .wdp-donation-form .wdp-progress-bar-preview::after,
+html body .wdp-modal .wdp-modal-content .wdp-progress-bar-preview::after,
+html body .wdp-donation-form .wdp-modal-content .wdp-progress-bar-preview::after {
   content: '';
   position: absolute;
   top: 0;
@@ -118,7 +148,11 @@ html body .wdp-progress-bar-preview::after {
   );
 }
 
-html body .wdp-progress-bar-percentage {
+html body .wdp-progress-bar-percentage,
+html body .wdp-modal .wdp-progress-bar-percentage,
+html body .wdp-donation-form .wdp-progress-bar-percentage,
+html body .wdp-modal .wdp-modal-content .wdp-progress-bar-percentage,
+html body .wdp-donation-form .wdp-modal-content .wdp-progress-bar-percentage {
   position: absolute;
   top: 50%;
   left: 50%;
@@ -127,7 +161,11 @@ html body .wdp-progress-bar-percentage {
   pointer-events: none;
 }
 
-html body .wdp-progress-bar-percentage-value {
+html body .wdp-progress-bar-percentage-value,
+html body .wdp-modal .wdp-progress-bar-percentage-value,
+html body .wdp-donation-form .wdp-progress-bar-percentage-value,
+html body .wdp-modal .wdp-modal-content .wdp-progress-bar-percentage-value,
+html body .wdp-donation-form .wdp-modal-content .wdp-progress-bar-percentage-value {
   font-size: 11px;
   font-weight: 700;
   color: #1e293b;
@@ -148,14 +186,23 @@ html body .wdp-progress-bar-percentage-value {
 }
 
 /* Mobil optimizasyonlar */
+/* CRITICAL: Maximum specificity - html body ile tema override koruması */
 @media (max-width: 600px) {
-  html body .wdp-progress-bar-container {
+  html body .wdp-progress-bar-container,
+  html body .wdp-modal .wdp-progress-bar-container,
+  html body .wdp-donation-form .wdp-progress-bar-container,
+  html body .wdp-modal .wdp-modal-content .wdp-progress-bar-container,
+  html body .wdp-donation-form .wdp-modal-content .wdp-progress-bar-container {
     margin: 12px 0;
     padding: 12px 14px;
     border-radius: 10px;
   }
 
-  html body .wdp-progress-bar-header {
+  html body .wdp-progress-bar-header,
+  html body .wdp-modal .wdp-progress-bar-header,
+  html body .wdp-donation-form .wdp-progress-bar-header,
+  html body .wdp-modal .wdp-modal-content .wdp-progress-bar-header,
+  html body .wdp-donation-form .wdp-modal-content .wdp-progress-bar-header {
     flex-direction: row;
     align-items: center;
     gap: 8px;
@@ -163,71 +210,149 @@ html body .wdp-progress-bar-percentage-value {
   }
 
   html body .wdp-progress-bar-info,
-  html body .wdp-progress-bar-limit {
+  html body .wdp-progress-bar-limit,
+  html body .wdp-modal .wdp-progress-bar-info,
+  html body .wdp-modal .wdp-progress-bar-limit,
+  html body .wdp-donation-form .wdp-progress-bar-info,
+  html body .wdp-donation-form .wdp-progress-bar-limit,
+  html body .wdp-modal .wdp-modal-content .wdp-progress-bar-info,
+  html body .wdp-modal .wdp-modal-content .wdp-progress-bar-limit,
+  html body .wdp-donation-form .wdp-modal-content .wdp-progress-bar-info,
+  html body .wdp-donation-form .wdp-modal-content .wdp-progress-bar-limit {
     flex: 1;
     min-width: 0;
   }
 
   html body .wdp-progress-bar-label,
-  html body .wdp-progress-bar-limit-label {
+  html body .wdp-progress-bar-limit-label,
+  html body .wdp-modal .wdp-progress-bar-label,
+  html body .wdp-modal .wdp-progress-bar-limit-label,
+  html body .wdp-donation-form .wdp-progress-bar-label,
+  html body .wdp-donation-form .wdp-progress-bar-limit-label,
+  html body .wdp-modal .wdp-modal-content .wdp-progress-bar-label,
+  html body .wdp-modal .wdp-modal-content .wdp-progress-bar-limit-label,
+  html body .wdp-donation-form .wdp-modal-content .wdp-progress-bar-label,
+  html body .wdp-donation-form .wdp-modal-content .wdp-progress-bar-limit-label {
     font-size: 10px;
   }
 
   html body .wdp-progress-bar-amount,
-  html body .wdp-progress-bar-limit-amount {
+  html body .wdp-progress-bar-limit-amount,
+  html body .wdp-modal .wdp-progress-bar-amount,
+  html body .wdp-modal .wdp-progress-bar-limit-amount,
+  html body .wdp-donation-form .wdp-progress-bar-amount,
+  html body .wdp-donation-form .wdp-progress-bar-limit-amount,
+  html body .wdp-modal .wdp-modal-content .wdp-progress-bar-amount,
+  html body .wdp-modal .wdp-modal-content .wdp-progress-bar-limit-amount,
+  html body .wdp-donation-form .wdp-modal-content .wdp-progress-bar-amount,
+  html body .wdp-donation-form .wdp-modal-content .wdp-progress-bar-limit-amount {
     font-size: 16px;
   }
 
-  html body .wdp-progress-bar {
+  html body .wdp-progress-bar,
+  html body .wdp-modal .wdp-progress-bar,
+  html body .wdp-donation-form .wdp-progress-bar,
+  html body .wdp-modal .wdp-modal-content .wdp-progress-bar,
+  html body .wdp-donation-form .wdp-modal-content .wdp-progress-bar {
     height: 10px;
   }
 
-  html body .wdp-progress-bar-percentage-value {
+  html body .wdp-progress-bar-percentage-value,
+  html body .wdp-modal .wdp-progress-bar-percentage-value,
+  html body .wdp-donation-form .wdp-progress-bar-percentage-value,
+  html body .wdp-modal .wdp-modal-content .wdp-progress-bar-percentage-value,
+  html body .wdp-donation-form .wdp-modal-content .wdp-progress-bar-percentage-value {
     font-size: 9px;
     padding: 2px 6px;
   }
 }
 
 /* Küçük mobil */
+/* CRITICAL: Maximum specificity - html body ile tema override koruması */
 @media (max-width: 480px) {
-  html body .wdp-progress-bar-container {
+  html body .wdp-progress-bar-container,
+  html body .wdp-modal .wdp-progress-bar-container,
+  html body .wdp-donation-form .wdp-progress-bar-container,
+  html body .wdp-modal .wdp-modal-content .wdp-progress-bar-container,
+  html body .wdp-donation-form .wdp-modal-content .wdp-progress-bar-container {
     margin: 10px 0;
     padding: 10px 12px;
   }
 
-  html body .wdp-progress-bar-header {
+  html body .wdp-progress-bar-header,
+  html body .wdp-modal .wdp-progress-bar-header,
+  html body .wdp-donation-form .wdp-progress-bar-header,
+  html body .wdp-modal .wdp-modal-content .wdp-progress-bar-header,
+  html body .wdp-donation-form .wdp-modal-content .wdp-progress-bar-header {
     margin-bottom: 8px;
     gap: 6px;
   }
 
   html body .wdp-progress-bar-label,
-  html body .wdp-progress-bar-limit-label {
+  html body .wdp-progress-bar-limit-label,
+  html body .wdp-modal .wdp-progress-bar-label,
+  html body .wdp-modal .wdp-progress-bar-limit-label,
+  html body .wdp-donation-form .wdp-progress-bar-label,
+  html body .wdp-donation-form .wdp-progress-bar-limit-label,
+  html body .wdp-modal .wdp-modal-content .wdp-progress-bar-label,
+  html body .wdp-modal .wdp-modal-content .wdp-progress-bar-limit-label,
+  html body .wdp-donation-form .wdp-modal-content .wdp-progress-bar-label,
+  html body .wdp-donation-form .wdp-modal-content .wdp-progress-bar-limit-label {
     font-size: 9px;
   }
 
   html body .wdp-progress-bar-amount,
-  html body .wdp-progress-bar-limit-amount {
+  html body .wdp-progress-bar-limit-amount,
+  html body .wdp-modal .wdp-progress-bar-amount,
+  html body .wdp-modal .wdp-progress-bar-limit-amount,
+  html body .wdp-donation-form .wdp-progress-bar-amount,
+  html body .wdp-donation-form .wdp-progress-bar-limit-amount,
+  html body .wdp-modal .wdp-modal-content .wdp-progress-bar-amount,
+  html body .wdp-modal .wdp-modal-content .wdp-progress-bar-limit-amount,
+  html body .wdp-donation-form .wdp-modal-content .wdp-progress-bar-amount,
+  html body .wdp-donation-form .wdp-modal-content .wdp-progress-bar-limit-amount {
     font-size: 14px;
   }
 
-  html body .wdp-progress-bar {
+  html body .wdp-progress-bar,
+  html body .wdp-modal .wdp-progress-bar,
+  html body .wdp-donation-form .wdp-progress-bar,
+  html body .wdp-modal .wdp-modal-content .wdp-progress-bar,
+  html body .wdp-donation-form .wdp-modal-content .wdp-progress-bar {
     height: 8px;
   }
 
-  html body .wdp-progress-bar-percentage-value {
+  html body .wdp-progress-bar-percentage-value,
+  html body .wdp-modal .wdp-progress-bar-percentage-value,
+  html body .wdp-donation-form .wdp-progress-bar-percentage-value,
+  html body .wdp-modal .wdp-modal-content .wdp-progress-bar-percentage-value,
+  html body .wdp-donation-form .wdp-modal-content .wdp-progress-bar-percentage-value {
     font-size: 8px;
     padding: 1px 4px;
   }
 }
 
 /* Reduced motion support */
+/* CRITICAL: Maximum specificity - html body ile tema override koruması */
 @media (prefers-reduced-motion: reduce) {
   html body .wdp-progress-bar-fill,
-  html body .wdp-progress-bar-preview {
+  html body .wdp-progress-bar-preview,
+  html body .wdp-modal .wdp-progress-bar-fill,
+  html body .wdp-modal .wdp-progress-bar-preview,
+  html body .wdp-donation-form .wdp-progress-bar-fill,
+  html body .wdp-donation-form .wdp-progress-bar-preview,
+  html body .wdp-modal .wdp-modal-content .wdp-progress-bar-fill,
+  html body .wdp-modal .wdp-modal-content .wdp-progress-bar-preview,
+  html body .wdp-donation-form .wdp-modal-content .wdp-progress-bar-fill,
+  html body .wdp-donation-form .wdp-modal-content .wdp-progress-bar-preview {
     transition: width 0.2s linear;
   }
 
-  html body .wdp-progress-bar-fill::after {
+  html body .wdp-progress-bar-fill::after,
+  html body .wdp-modal .wdp-progress-bar-fill::after,
+  html body .wdp-donation-form .wdp-progress-bar-fill::after,
+  html body .wdp-modal .wdp-modal-content .wdp-progress-bar-fill::after,
+  html body .wdp-donation-form .wdp-modal-content .wdp-progress-bar-fill::after {
     animation: none;
   }
 }

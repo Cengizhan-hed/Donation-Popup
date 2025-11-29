@@ -1,8 +1,13 @@
 /* ==================== */
 /* SUCCESS SCREEN & MINI CART */
 /* ==================== */
+/* CRITICAL: Maximum specificity - html body ile tema override koruması */
 
-html body .wdp-cart-animation {
+html body .wdp-cart-animation,
+html body .wdp-modal .wdp-cart-animation,
+html body .wdp-donation-form .wdp-cart-animation,
+html body .wdp-modal .wdp-modal-content .wdp-cart-animation,
+html body .wdp-donation-form .wdp-modal-content .wdp-cart-animation {
   animation: wdpCartBump 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   transform-origin: center;
 }
@@ -14,7 +19,15 @@ html body .wdp-cart-animation {
 }
 
 html body .wdp-cart-actions,
-html body .wdp-cart-actions a {
+html body .wdp-cart-actions a,
+html body .wdp-modal .wdp-cart-actions,
+html body .wdp-modal .wdp-cart-actions a,
+html body .wdp-donation-form .wdp-cart-actions,
+html body .wdp-donation-form .wdp-cart-actions a,
+html body .wdp-modal .wdp-modal-content .wdp-cart-actions,
+html body .wdp-modal .wdp-modal-content .wdp-cart-actions a,
+html body .wdp-donation-form .wdp-modal-content .wdp-cart-actions,
+html body .wdp-donation-form .wdp-modal-content .wdp-cart-actions a {
   display: flex;
   flex-wrap: wrap;
   gap: var(--wdp-space-3);
@@ -24,7 +37,15 @@ html body .wdp-cart-actions a {
 }
 
 html body .wdp-cart-actions a,
-html body .wdp-cart-actions button {
+html body .wdp-cart-actions button,
+html body .wdp-modal .wdp-cart-actions a,
+html body .wdp-modal .wdp-cart-actions button,
+html body .wdp-donation-form .wdp-cart-actions a,
+html body .wdp-donation-form .wdp-cart-actions button,
+html body .wdp-modal .wdp-modal-content .wdp-cart-actions a,
+html body .wdp-modal .wdp-modal-content .wdp-cart-actions button,
+html body .wdp-donation-form .wdp-modal-content .wdp-cart-actions a,
+html body .wdp-donation-form .wdp-modal-content .wdp-cart-actions button {
   background: var(--wdp-button-primary, var(--wdp-primary));
   color: var(--wdp-white);
   border: none;
@@ -41,24 +62,50 @@ html body .wdp-cart-actions button {
 }
 
 html body .wdp-cart-actions a:hover,
-html body .wdp-cart-actions button:hover {
+html body .wdp-cart-actions button:hover,
+html body .wdp-modal .wdp-cart-actions a:hover,
+html body .wdp-modal .wdp-cart-actions button:hover,
+html body .wdp-donation-form .wdp-cart-actions a:hover,
+html body .wdp-donation-form .wdp-cart-actions button:hover,
+html body .wdp-modal .wdp-modal-content .wdp-cart-actions a:hover,
+html body .wdp-modal .wdp-modal-content .wdp-cart-actions button:hover,
+html body .wdp-donation-form .wdp-modal-content .wdp-cart-actions a:hover,
+html body .wdp-donation-form .wdp-modal-content .wdp-cart-actions button:hover {
   background: var(--wdp-button-primary-hover, var(--wdp-primary-hover));
   color: var(--wdp-white);
 }
 
 html body .wdp-cart-actions a.wdp-accent,
-html body .wdp-cart-actions button.wdp-accent {
+html body .wdp-cart-actions button.wdp-accent,
+html body .wdp-modal .wdp-cart-actions a.wdp-accent,
+html body .wdp-modal .wdp-cart-actions button.wdp-accent,
+html body .wdp-donation-form .wdp-cart-actions a.wdp-accent,
+html body .wdp-donation-form .wdp-cart-actions button.wdp-accent,
+html body .wdp-modal .wdp-modal-content .wdp-cart-actions a.wdp-accent,
+html body .wdp-modal .wdp-modal-content .wdp-cart-actions button.wdp-accent,
+html body .wdp-donation-form .wdp-modal-content .wdp-cart-actions a.wdp-accent,
+html body .wdp-donation-form .wdp-modal-content .wdp-cart-actions button.wdp-accent {
   background: var(--wdp-accent);
   color: var(--wdp-white);
 }
 
 html body .wdp-cart-actions a.wdp-accent:hover,
-html body .wdp-cart-actions button.wdp-accent:hover {
+html body .wdp-cart-actions button.wdp-accent:hover,
+html body .wdp-modal .wdp-cart-actions a.wdp-accent:hover,
+html body .wdp-modal .wdp-cart-actions button.wdp-accent:hover,
+html body .wdp-donation-form .wdp-cart-actions a.wdp-accent:hover,
+html body .wdp-donation-form .wdp-cart-actions button.wdp-accent:hover,
+html body .wdp-modal .wdp-modal-content .wdp-cart-actions a.wdp-accent:hover,
+html body .wdp-modal .wdp-modal-content .wdp-cart-actions button.wdp-accent:hover,
+html body .wdp-donation-form .wdp-modal-content .wdp-cart-actions a.wdp-accent:hover,
+html body .wdp-donation-form .wdp-modal-content .wdp-cart-actions button.wdp-accent:hover {
   background: var(--wdp-accent-hover);
 }
 
 html body .wdp-modal .wdp-success-screen .wdp-success-buttons,
-html body .wdp-donation-form .wdp-success-screen .wdp-success-buttons {
+html body .wdp-donation-form .wdp-success-screen .wdp-success-buttons,
+html body .wdp-modal .wdp-modal-content .wdp-success-screen .wdp-success-buttons,
+html body .wdp-donation-form .wdp-modal-content .wdp-success-screen .wdp-success-buttons {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
@@ -66,7 +113,9 @@ html body .wdp-donation-form .wdp-success-screen .wdp-success-buttons {
 }
 
 html body .wdp-modal .wdp-success-screen .wdp-success-buttons .wdp-success-button,
-html body .wdp-donation-form .wdp-success-screen .wdp-success-buttons .wdp-success-button {
+html body .wdp-donation-form .wdp-success-screen .wdp-success-buttons .wdp-success-button,
+html body .wdp-modal .wdp-modal-content .wdp-success-screen .wdp-success-buttons .wdp-success-button,
+html body .wdp-donation-form .wdp-modal-content .wdp-success-screen .wdp-success-buttons .wdp-success-button {
   display: inline-block;
   width: 100%;
   background: var(--wdp-success-button-color, #1e73be);
@@ -87,7 +136,11 @@ html body .wdp-donation-form .wdp-success-screen .wdp-success-buttons .wdp-succe
 html body .wdp-modal .wdp-success-screen .wdp-success-buttons .wdp-success-button:hover,
 html body .wdp-modal .wdp-success-screen .wdp-success-buttons .wdp-success-button:focus,
 html body .wdp-donation-form .wdp-success-screen .wdp-success-buttons .wdp-success-button:hover,
-html body .wdp-donation-form .wdp-success-screen .wdp-success-buttons .wdp-success-button:focus {
+html body .wdp-donation-form .wdp-success-screen .wdp-success-buttons .wdp-success-button:focus,
+html body .wdp-modal .wdp-modal-content .wdp-success-screen .wdp-success-buttons .wdp-success-button:hover,
+html body .wdp-modal .wdp-modal-content .wdp-success-screen .wdp-success-buttons .wdp-success-button:focus,
+html body .wdp-donation-form .wdp-modal-content .wdp-success-screen .wdp-success-buttons .wdp-success-button:hover,
+html body .wdp-donation-form .wdp-modal-content .wdp-success-screen .wdp-success-buttons .wdp-success-button:focus {
   background: var(--wdp-success-button-hover, #185d98);
   background-image: none;
   box-shadow: none;
@@ -96,12 +149,16 @@ html body .wdp-donation-form .wdp-success-screen .wdp-success-buttons .wdp-succe
 }
 
 html body .wdp-modal .wdp-success-screen .wdp-success-buttons .wdp-new-donation,
-html body .wdp-donation-form .wdp-success-screen .wdp-success-buttons .wdp-new-donation {
+html body .wdp-donation-form .wdp-success-screen .wdp-success-buttons .wdp-new-donation,
+html body .wdp-modal .wdp-modal-content .wdp-success-screen .wdp-success-buttons .wdp-new-donation,
+html body .wdp-donation-form .wdp-modal-content .wdp-success-screen .wdp-success-buttons .wdp-new-donation {
   grid-column: 1 / -1;
 }
 
 html body .wdp-modal .wdp-success-screen .wdp-success-message,
-html body .wdp-donation-form .wdp-success-screen .wdp-success-message {
+html body .wdp-donation-form .wdp-success-screen .wdp-success-message,
+html body .wdp-modal .wdp-modal-content .wdp-success-screen .wdp-success-message,
+html body .wdp-donation-form .wdp-modal-content .wdp-success-screen .wdp-success-message {
   font-size: var(--wdp-text-lg);
   font-weight: 600;
   color: var(--wdp-success-message-color, #48bb78);
@@ -114,7 +171,9 @@ html body .wdp-donation-form .wdp-success-screen .wdp-success-message {
 }
 
 html body .wdp-modal .wdp-success-screen .wdp-mini-cart,
-html body .wdp-donation-form .wdp-success-screen .wdp-mini-cart {
+html body .wdp-donation-form .wdp-success-screen .wdp-mini-cart,
+html body .wdp-modal .wdp-modal-content .wdp-success-screen .wdp-mini-cart,
+html body .wdp-donation-form .wdp-modal-content .wdp-success-screen .wdp-mini-cart {
   margin-bottom: var(--wdp-space-6);
   background: var(--wdp-mini-cart-bg, #f9fafb);
   border: 1px solid var(--wdp-mini-cart-border, #e5e7eb);
@@ -123,7 +182,9 @@ html body .wdp-donation-form .wdp-success-screen .wdp-mini-cart {
 }
 
 html body .wdp-modal .wdp-mini-cart-header h4,
-html body .wdp-donation-form .wdp-mini-cart-header h4 {
+html body .wdp-donation-form .wdp-mini-cart-header h4,
+html body .wdp-modal .wdp-modal-content .wdp-mini-cart-header h4,
+html body .wdp-donation-form .wdp-modal-content .wdp-mini-cart-header h4 {
   font-size: 20px;
   font-weight: 700;
   margin: 0 0 10px 0;
@@ -132,7 +193,9 @@ html body .wdp-donation-form .wdp-mini-cart-header h4 {
 }
 
 html body .wdp-modal .wdp-mini-cart-items,
-html body .wdp-donation-form .wdp-mini-cart-items {
+html body .wdp-donation-form .wdp-mini-cart-items,
+html body .wdp-modal .wdp-modal-content .wdp-mini-cart-items,
+html body .wdp-donation-form .wdp-modal-content .wdp-mini-cart-items {
   max-height: 180px;
   overflow-y: auto;
   padding-right: 4px;
@@ -142,13 +205,17 @@ html body .wdp-donation-form .wdp-mini-cart-items {
 }
 
 html body .wdp-modal .wdp-mini-cart-items::-webkit-scrollbar,
-html body .wdp-donation-form .wdp-mini-cart-items::-webkit-scrollbar {
+html body .wdp-donation-form .wdp-mini-cart-items::-webkit-scrollbar,
+html body .wdp-modal .wdp-modal-content .wdp-mini-cart-items::-webkit-scrollbar,
+html body .wdp-donation-form .wdp-modal-content .wdp-mini-cart-items::-webkit-scrollbar {
   width: 6px;
   background: #f2f2f2;
 }
 
 html body .wdp-modal .wdp-mini-cart-items::-webkit-scrollbar-thumb,
-html body .wdp-donation-form .wdp-mini-cart-items::-webkit-scrollbar-thumb {
+html body .wdp-donation-form .wdp-mini-cart-items::-webkit-scrollbar-thumb,
+html body .wdp-modal .wdp-modal-content .wdp-mini-cart-items::-webkit-scrollbar-thumb,
+html body .wdp-donation-form .wdp-modal-content .wdp-mini-cart-items::-webkit-scrollbar-thumb {
   background: #1e73be;
   border-radius: 4px;
 }
@@ -156,7 +223,11 @@ html body .wdp-donation-form .wdp-mini-cart-items::-webkit-scrollbar-thumb {
 html body .wdp-modal .wdp-mini-cart-items table,
 html body .wdp-donation-form .wdp-mini-cart-items table,
 html body .wdp-modal .wdp-mini-cart-items .wdp-cart-item-table,
-html body .wdp-donation-form .wdp-mini-cart-items .wdp-cart-item-table {
+html body .wdp-donation-form .wdp-mini-cart-items .wdp-cart-item-table,
+html body .wdp-modal .wdp-modal-content .wdp-mini-cart-items table,
+html body .wdp-donation-form .wdp-modal-content .wdp-mini-cart-items table,
+html body .wdp-modal .wdp-modal-content .wdp-mini-cart-items .wdp-cart-item-table,
+html body .wdp-donation-form .wdp-modal-content .wdp-mini-cart-items .wdp-cart-item-table {
   width: 100%;
   margin-bottom: 10px;
   border-bottom: 1px solid #eee;
@@ -165,7 +236,9 @@ html body .wdp-donation-form .wdp-mini-cart-items .wdp-cart-item-table {
 }
 
 html body .wdp-modal .wdp-mini-cart-items table td,
-html body .wdp-donation-form .wdp-mini-cart-items table td {
+html body .wdp-donation-form .wdp-mini-cart-items table td,
+html body .wdp-modal .wdp-modal-content .wdp-mini-cart-items table td,
+html body .wdp-donation-form .wdp-modal-content .wdp-mini-cart-items table td {
   padding: 10px;
   vertical-align: top;
 }
@@ -173,7 +246,11 @@ html body .wdp-donation-form .wdp-mini-cart-items table td {
 html body .wdp-modal .wdp-mini-cart-items table td:first-child,
 html body .wdp-donation-form .wdp-mini-cart-items table td:first-child,
 html body .wdp-modal .wdp-mini-cart-items .wdp-cart-item-info,
-html body .wdp-donation-form .wdp-mini-cart-items .wdp-cart-item-info {
+html body .wdp-donation-form .wdp-mini-cart-items .wdp-cart-item-info,
+html body .wdp-modal .wdp-modal-content .wdp-mini-cart-items table td:first-child,
+html body .wdp-donation-form .wdp-modal-content .wdp-mini-cart-items table td:first-child,
+html body .wdp-modal .wdp-modal-content .wdp-mini-cart-items .wdp-cart-item-info,
+html body .wdp-donation-form .wdp-modal-content .wdp-mini-cart-items .wdp-cart-item-info {
   width: 70%;
   text-align: left;
 }
@@ -181,20 +258,30 @@ html body .wdp-donation-form .wdp-mini-cart-items .wdp-cart-item-info {
 html body .wdp-modal .wdp-mini-cart-items table td:last-child,
 html body .wdp-donation-form .wdp-mini-cart-items table td:last-child,
 html body .wdp-modal .wdp-mini-cart-items .wdp-cart-item-details,
-html body .wdp-donation-form .wdp-mini-cart-items .wdp-cart-item-details {
+html body .wdp-donation-form .wdp-mini-cart-items .wdp-cart-item-details,
+html body .wdp-modal .wdp-modal-content .wdp-mini-cart-items table td:last-child,
+html body .wdp-donation-form .wdp-modal-content .wdp-mini-cart-items table td:last-child,
+html body .wdp-modal .wdp-modal-content .wdp-mini-cart-items .wdp-cart-item-details,
+html body .wdp-donation-form .wdp-modal-content .wdp-mini-cart-items .wdp-cart-item-details {
   width: 30%;
   text-align: right;
 }
 
 html body .wdp-modal .wdp-mini-cart-items table div,
-html body .wdp-donation-form .wdp-mini-cart-items table div {
+html body .wdp-donation-form .wdp-mini-cart-items table div,
+html body .wdp-modal .wdp-modal-content .wdp-mini-cart-items table div,
+html body .wdp-donation-form .wdp-modal-content .wdp-mini-cart-items table div {
   margin-bottom: 4px;
 }
 
 html body .wdp-modal .wdp-mini-cart-items table td:first-child > div:first-child,
 html body .wdp-donation-form .wdp-mini-cart-items table td:first-child > div:first-child,
 html body .wdp-modal .wdp-mini-cart-items .wdp-cart-item-name,
-html body .wdp-donation-form .wdp-mini-cart-items .wdp-cart-item-name {
+html body .wdp-donation-form .wdp-mini-cart-items .wdp-cart-item-name,
+html body .wdp-modal .wdp-modal-content .wdp-mini-cart-items table td:first-child > div:first-child,
+html body .wdp-donation-form .wdp-modal-content .wdp-mini-cart-items table td:first-child > div:first-child,
+html body .wdp-modal .wdp-modal-content .wdp-mini-cart-items .wdp-cart-item-name,
+html body .wdp-donation-form .wdp-modal-content .wdp-mini-cart-items .wdp-cart-item-name {
   font-weight: 600;
   font-size: 15px;
   color: var(--wdp-cart-item-name-color, #1f2937);
@@ -204,71 +291,94 @@ html body .wdp-donation-form .wdp-mini-cart-items .wdp-cart-item-name {
 }
 
 html body .wdp-modal .wdp-mini-cart-items .wdp-cart-item-meta,
-html body .wdp-donation-form .wdp-mini-cart-items .wdp-cart-item-meta {
+html body .wdp-donation-form .wdp-mini-cart-items .wdp-cart-item-meta,
+html body .wdp-modal .wdp-modal-content .wdp-mini-cart-items .wdp-cart-item-meta,
+html body .wdp-donation-form .wdp-modal-content .wdp-mini-cart-items .wdp-cart-item-meta {
   font-size: 13px;
   color: #666;
 }
 
 html body .wdp-modal .wdp-mini-cart-items .wdp-cart-item-meta-item,
-html body .wdp-donation-form .wdp-mini-cart-items .wdp-cart-item-meta-item {
+html body .wdp-donation-form .wdp-mini-cart-items .wdp-cart-item-meta-item,
+html body .wdp-modal .wdp-modal-content .wdp-mini-cart-items .wdp-cart-item-meta-item,
+html body .wdp-donation-form .wdp-modal-content .wdp-mini-cart-items .wdp-cart-item-meta-item {
   margin-bottom: 2px;
 }
 
 html body .wdp-modal .wdp-mini-cart-items .wdp-cart-item-quantity,
-html body .wdp-donation-form .wdp-mini-cart-items .wdp-cart-item-quantity {
+html body .wdp-donation-form .wdp-mini-cart-items .wdp-cart-item-quantity,
+html body .wdp-modal .wdp-modal-content .wdp-mini-cart-items .wdp-cart-item-quantity,
+html body .wdp-donation-form .wdp-modal-content .wdp-mini-cart-items .wdp-cart-item-quantity {
   font-size: 13px;
   color: #666;
   margin-bottom: 3px;
 }
 
 html body .wdp-modal .wdp-mini-cart-items .wdp-cart-item-price,
-html body .wdp-donation-form .wdp-mini-cart-items .wdp-cart-item-price {
+html body .wdp-donation-form .wdp-mini-cart-items .wdp-cart-item-price,
+html body .wdp-modal .wdp-modal-content .wdp-mini-cart-items .wdp-cart-item-price,
+html body .wdp-donation-form .wdp-modal-content .wdp-mini-cart-items .wdp-cart-item-price {
   font-size: 14px;
   color: var(--wdp-cart-item-price-color, #1e73be);
 }
 
 html body .wdp-modal .wdp-mini-cart-items .wdp-cart-empty,
-html body .wdp-donation-form .wdp-mini-cart-items .wdp-cart-empty {
+html body .wdp-donation-form .wdp-mini-cart-items .wdp-cart-empty,
+html body .wdp-modal .wdp-modal-content .wdp-mini-cart-items .wdp-cart-empty,
+html body .wdp-donation-form .wdp-modal-content .wdp-mini-cart-items .wdp-cart-empty {
   padding: 15px;
   text-align: center;
   color: var(--wdp-gray-600);
 }
 
 @media (max-width: 600px) {
-  .wdp-modal .wdp-success-screen .wdp-success-message,
-  .wdp-donation-form .wdp-success-screen .wdp-success-message {
+  /* CRITICAL: Maximum specificity - html body ile tema override koruması */
+  html body .wdp-modal .wdp-success-screen .wdp-success-message,
+  html body .wdp-donation-form .wdp-success-screen .wdp-success-message,
+  html body .wdp-modal .wdp-modal-content .wdp-success-screen .wdp-success-message,
+  html body .wdp-donation-form .wdp-modal-content .wdp-success-screen .wdp-success-message {
     font-size: 13px;
     padding: var(--wdp-space-2);
     margin-bottom: var(--wdp-space-3);
   }
 
-  .wdp-modal .wdp-success-screen .wdp-mini-cart,
-  .wdp-donation-form .wdp-success-screen .wdp-mini-cart {
+  html body .wdp-modal .wdp-success-screen .wdp-mini-cart,
+  html body .wdp-donation-form .wdp-success-screen .wdp-mini-cart,
+  html body .wdp-modal .wdp-modal-content .wdp-success-screen .wdp-mini-cart,
+  html body .wdp-donation-form .wdp-modal-content .wdp-success-screen .wdp-mini-cart {
     padding: var(--wdp-space-2);
     margin-bottom: var(--wdp-space-3);
   }
 
-  .wdp-modal .wdp-mini-cart-header h4,
-  .wdp-donation-form .wdp-mini-cart-header h4 {
+  html body .wdp-modal .wdp-mini-cart-header h4,
+  html body .wdp-donation-form .wdp-mini-cart-header h4,
+  html body .wdp-modal .wdp-modal-content .wdp-mini-cart-header h4,
+  html body .wdp-donation-form .wdp-modal-content .wdp-mini-cart-header h4 {
     font-size: 15px;
     margin-bottom: 6px;
   }
 
-  .wdp-modal .wdp-success-screen .wdp-success-buttons,
-  .wdp-donation-form .wdp-success-screen .wdp-success-buttons {
+  html body .wdp-modal .wdp-success-screen .wdp-success-buttons,
+  html body .wdp-donation-form .wdp-success-screen .wdp-success-buttons,
+  html body .wdp-modal .wdp-modal-content .wdp-success-screen .wdp-success-buttons,
+  html body .wdp-donation-form .wdp-modal-content .wdp-success-screen .wdp-success-buttons {
     gap: var(--wdp-space-1);
     margin-top: var(--wdp-space-2);
   }
 
-  .wdp-modal .wdp-success-screen .wdp-success-buttons .wdp-success-button,
-  .wdp-donation-form .wdp-success-screen .wdp-success-buttons .wdp-success-button {
+  html body .wdp-modal .wdp-success-screen .wdp-success-buttons .wdp-success-button,
+  html body .wdp-donation-form .wdp-success-screen .wdp-success-buttons .wdp-success-button,
+  html body .wdp-modal .wdp-modal-content .wdp-success-screen .wdp-success-buttons .wdp-success-button,
+  html body .wdp-donation-form .wdp-modal-content .wdp-success-screen .wdp-success-buttons .wdp-success-button {
     padding: 10px 12px;
     font-size: 13px;
     border-radius: var(--wdp-success-button-radius, 24px);
   }
 
-  .wdp-modal .wdp-mini-cart-items table td:first-child > div:first-child,
-  .wdp-donation-form .wdp-mini-cart-items table td:first-child > div:first-child {
+  html body .wdp-modal .wdp-mini-cart-items table td:first-child > div:first-child,
+  html body .wdp-donation-form .wdp-mini-cart-items table td:first-child > div:first-child,
+  html body .wdp-modal .wdp-modal-content .wdp-mini-cart-items table td:first-child > div:first-child,
+  html body .wdp-donation-form .wdp-modal-content .wdp-mini-cart-items table td:first-child > div:first-child {
     font-size: 14px;
     font-weight: 600;
   }

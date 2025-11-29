@@ -2,7 +2,12 @@
 /* ACCESSIBILITY SUPPORT */
 /* ==================== */
 
-.screen-reader-text {
+/* CRITICAL: Maximum specificity - html body ile tema override koruması */
+html body .screen-reader-text,
+html body .wdp-screen-reader-text,
+html body .wdp-modal .screen-reader-text,
+html body .wdp-donation-form .screen-reader-text,
+html body .wdp-modal-content .screen-reader-text {
   position: absolute;
   width: 1px;
   height: 1px;

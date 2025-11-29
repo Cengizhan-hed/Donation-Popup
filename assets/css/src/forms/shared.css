@@ -2,16 +2,12 @@
 /* CRITICAL: Popup modal header - title should span full width with underline, close button on underline */
 /* CRITICAL: Maximum specificity - html body ile tema override koruması */
 html body .wdp-modal .wdp-modal-header {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--wdp-font-family, 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif);
   position: relative;
   display: block;
   width: 100%;
-  margin-bottom: 0;
-  margin-top: 0;
-  margin-left: 0;
-  margin-right: 0;
-  padding: 0;
-  padding-bottom: 12px;
+  margin: 0;
+  padding: 0 0 12px;
   box-sizing: border-box;
 }
 
@@ -26,17 +22,14 @@ html body .wdp-modal .wdp-modal-header .wdp-modal-title-wrapper {
 /* In-page form header - no underline, title inline-block */
 /* CRITICAL: Maximum specificity - html body ile tema override koruması */
 html body .wdp-donation-form .wdp-modal-header {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--wdp-font-family, 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif);
   position: relative;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   width: 100%;
   gap: 12px;
-  margin-bottom: 0;
-  margin-top: 0;
-  margin-left: 0;
-  margin-right: 0;
+  margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
@@ -44,10 +37,9 @@ html body .wdp-donation-form .wdp-modal-header {
 /* Modal close button with high specificity - Clean CSS without */
 /* CRITICAL: Popup modal close button - position on underline */
 /* CRITICAL: Maximum specificity - html body ile tema override koruması */
-html body .wdp-modal .wdp-modal-header .wdp-modal-close,
-html body .wdp-modal .wdp-modal-content .wdp-modal-close,
+html body .wdp-modal :is(.wdp-modal-header, .wdp-modal-content) .wdp-modal-close,
 html body .wdp-modal .wdp-modal-close {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--wdp-font-family, 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif);
   position: absolute;
   top: 0;
   right: 0;
@@ -79,10 +71,9 @@ html body .wdp-modal .wdp-modal-close {
 
 /* In-page form close button - normal positioning */
 /* CRITICAL: Maximum specificity - html body ile tema override koruması */
-html body .wdp-donation-form .wdp-modal-header .wdp-modal-close,
-html body .wdp-donation-form .wdp-modal-content .wdp-modal-close,
+html body .wdp-donation-form :is(.wdp-modal-header, .wdp-modal-content) .wdp-modal-close,
 html body .wdp-donation-form .wdp-modal-close {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--wdp-font-family, 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif);
   position: absolute;
   top: 0;
   right: 16px;
@@ -111,27 +102,10 @@ html body .wdp-donation-form .wdp-modal-close {
   box-sizing: border-box;
 }
 
-/* Popup modal close button hover/focus */
+/* Close button hover/focus - unified */
 /* CRITICAL: Maximum specificity - html body ile tema override koruması */
-html body .wdp-modal .wdp-modal-header .wdp-modal-close:hover,
-html body .wdp-modal .wdp-modal-header .wdp-modal-close:focus,
-html body .wdp-modal .wdp-modal-content .wdp-modal-close:hover,
-html body .wdp-modal .wdp-modal-content .wdp-modal-close:focus,
 html body .wdp-modal .wdp-modal-close:hover,
-html body .wdp-modal .wdp-modal-close:focus {
-  color: #374151;
-  outline: none;
-  background: none;
-  border: none;
-  box-shadow: none;
-}
-
-/* In-page form close button hover/focus */
-/* CRITICAL: Maximum specificity - html body ile tema override koruması */
-html body .wdp-donation-form .wdp-modal-header .wdp-modal-close:hover,
-html body .wdp-donation-form .wdp-modal-header .wdp-modal-close:focus,
-html body .wdp-donation-form .wdp-modal-content .wdp-modal-close:hover,
-html body .wdp-donation-form .wdp-modal-content .wdp-modal-close:focus,
+html body .wdp-modal .wdp-modal-close:focus,
 html body .wdp-donation-form .wdp-modal-close:hover,
 html body .wdp-donation-form .wdp-modal-close:focus {
   color: #374151;
@@ -147,7 +121,7 @@ html body .wdp-donation-form .wdp-modal-close:focus {
 html body .wdp-modal .wdp-modal-header .wdp-modal-title,
 html body .wdp-modal .wdp-modal-header .wdp-modal-title[style],
 html body .wdp-modal .wdp-modal-header .wdp-modal-title[style*="font-size"] {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--wdp-font-family, 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif);
   /* ABSOLUTE FIX: Use px instead of rem for immediate size (prevents flash) */
   font-size: var(--wdp-title-size, 27.2px); /* 1.7rem = 27.2px (16px base) */
   font-weight: 600;
@@ -191,7 +165,7 @@ html body .wdp-modal .wdp-modal-header .wdp-modal-title[style*="font-size"] {
 /* Product price display - başlığın hemen sağında, küçük ve mavi renkte */
 html body .wdp-modal .wdp-modal-header .wdp-product-price,
 html body .wdp-donation-form .wdp-modal-content .wdp-product-price {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--wdp-font-family, 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif);
   font-size: 1rem; /* 16px - biraz daha büyük */
   font-weight: 400;
   line-height: 1.2;
@@ -1074,14 +1048,22 @@ html body .wdp-donation-form .wdp-modal-content form textarea {
 
 @media (max-width: 600px) {
   /* CRITICAL: Mobile should look identical to desktop - no visual changes */
+  /* CRITICAL: Maximum specificity - html body ile tema override koruması */
   /* Only keep width constraints for responsive behavior */
-  .wdp-donation-form form,
-  .wdp-donation-form form > *,
-  .wdp-donation-form input,
-  .wdp-donation-form textarea,
-  .wdp-donation-form button,
-  .wdp-donation-form .wdp-button-group,
-  .wdp-donation-form .wdp-price-quantity-row {
+  html body .wdp-donation-form form,
+  html body .wdp-donation-form form > *,
+  html body .wdp-donation-form input,
+  html body .wdp-donation-form textarea,
+  html body .wdp-donation-form button,
+  html body .wdp-donation-form .wdp-button-group,
+  html body .wdp-donation-form .wdp-price-quantity-row,
+  html body .wdp-donation-form .wdp-modal-content form,
+  html body .wdp-donation-form .wdp-modal-content form > *,
+  html body .wdp-donation-form .wdp-modal-content input,
+  html body .wdp-donation-form .wdp-modal-content textarea,
+  html body .wdp-donation-form .wdp-modal-content button,
+  html body .wdp-donation-form .wdp-modal-content .wdp-button-group,
+  html body .wdp-donation-form .wdp-modal-content .wdp-price-quantity-row {
     width: 100%;
     max-width: 100%;
   }

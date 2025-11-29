@@ -327,15 +327,6 @@ class WDP_Ajax {
             $is_direct_share_form = !empty($_POST['is_direct_share_form']) && '1' === wp_unslash($_POST['is_direct_share_form']);
             $custom_price_type = isset($_POST['custom_price_type']) ? WDP_Security::sanitize_text(wp_unslash($_POST['custom_price_type']), 50) : '';
 
-        WDP_Utils::log(array(
-            'event' => 'ajax_add_to_cart_request',
-            'product_id' => $product_id,
-            'quantity' => $quantity,
-            'custom_price' => $custom_price_raw,
-            'share_count' => isset($_POST['share_count']) ? wp_unslash($_POST['share_count']) : null,
-            'unique_submission_key' => $unique_submission_key,
-        ));
-
             if (!$product_id) {
                 throw new WDP_Validation_Exception(__('Geçersiz ürün ID.', 'woo-donation-popup'));
             }
@@ -411,7 +402,19 @@ class WDP_Ajax {
                 $donation_data['shareholders'] = $shareholders;
             }
 
+            // CRITICAL: Quantity'yi share_count olarak ayarla (hissedar sayısı = sepetteki miktar)
+            // Dinamik: Kaç hissedar bilgisi doldurulduysa, o kadar adet ürün sepete eklenecek
+            // Örnek: 7 hissedar = 7 adet ürün, fiyat = base_price × 7
             $quantity = max(1, $share_count);
+            
+            WDP_Utils::log(array(
+                'event' => 'ajax_add_to_cart_request_hisseli',
+                'product_id' => $product_id,
+                'quantity' => $quantity,
+                'share_count' => $share_count,
+                'custom_price' => $custom_price_raw,
+                'unique_submission_key' => $unique_submission_key,
+            ));
         } else {
             // Ad Soyad alanını al
             $full_name = isset($_POST['donation_full_name']) ? WDP_Security::sanitize_text(wp_unslash($_POST['donation_full_name']), 100) : '';
@@ -541,6 +544,8 @@ class WDP_Ajax {
         }
 
         if ($allow_custom_price && null !== $custom_price_value) {
+            // CRITICAL: Form'dan gelen custom_price zaten base price (form.js'te hesaplanıyor)
+            // Quantity = shareCount olacak ve subtotal = custom_price × quantity olarak hesaplanacak
             $cart_item_data['custom_price'] = $custom_price_value;
         }
 

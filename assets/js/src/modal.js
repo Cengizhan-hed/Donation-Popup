@@ -239,6 +239,29 @@
         WDPApp.product.fetchProductInfo(productId)
       }
 
+      // Progress bar'ı başlat (modal açıldığında)
+      const progressBarContainer = modal.querySelector('.wdp-progress-bar-container');
+      if (progressBarContainer) {
+        const progressBar = WDPApp.progressBar;
+        if (progressBar && typeof progressBar.setup === 'function') {
+          safeLog("Setting up progress bar for modal:", modal.id);
+          // Modal açıldıktan sonra progress bar'ı başlat
+          requestAnimationFrame(function() {
+            progressBar.setup(progressBarContainer);
+            safeLog("Progress bar setup completed for modal");
+          });
+        } else {
+          // Modül henüz yüklenmemişse, immediate retry
+          requestAnimationFrame(function() {
+            const retryProgressBar = WDPApp.progressBar;
+            if (retryProgressBar && typeof retryProgressBar.setup === 'function') {
+              retryProgressBar.setup(progressBarContainer);
+              safeLog("Progress bar setup retry completed for modal");
+            }
+          });
+        }
+      }
+
       // Aktif modal'ı kaydet
       state.activeModal = modal
       safeLog("Active modal set:", state.activeModal)
@@ -364,6 +387,18 @@
       // Form gönderim olayını bağla
       if (WDPApp.form && WDPApp.form.setup) {
         WDPApp.form.setup(form)
+      }
+      
+      // Progress bar'ı başlat (form reset edildiğinde)
+      const progressBarContainer = modal.querySelector('.wdp-progress-bar-container');
+      if (progressBarContainer) {
+        const progressBar = WDPApp.progressBar;
+        if (progressBar && typeof progressBar.setup === 'function') {
+          // Form reset edildikten sonra progress bar'ı başlat
+          requestAnimationFrame(function() {
+            progressBar.setup(progressBarContainer);
+          });
+        }
       }
     }
   }

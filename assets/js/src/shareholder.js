@@ -407,6 +407,7 @@
     form.innerHTML = `
       <div class="wdp-shareholder-header">
         <h3>${index}. Hissedar Bilgileri</h3>
+        <span class="wdp-shareholder-warning"></span>
         <span class="wdp-shareholder-icon"></span>
       </div>
       <div class="wdp-shareholder-content" ${!isFirst ? 'style="display: none;"' : ''}>
@@ -490,6 +491,81 @@
     if (modal && shareholdersList) {
       updateCollapsedFormsCount(modal, shareholdersList);
     }
+    
+    // Kapalı form uyarısını kontrol et
+    checkShareholderFormWarning(form);
+    
+    // Diğer formların uyarılarını da kontrol et (accordion davranışı nedeniyle)
+    if (shareholdersList) {
+      const allForms = shareholdersList.querySelectorAll('.wdp-shareholder-form');
+      allForms.forEach(otherForm => {
+        if (otherForm !== form) {
+          checkShareholderFormWarning(otherForm);
+        }
+      });
+    }
+  }
+  
+  // Kapalı formlarda zorunlu alan kontrolü ve uyarı gösterimi
+  function checkShareholderFormWarning(form) {
+    if (!form) return;
+    
+    const header = form.querySelector('.wdp-shareholder-header');
+    if (!header) return;
+    
+    let warningBadge = header.querySelector('.wdp-shareholder-warning');
+    if (!warningBadge) {
+      // Eğer badge yoksa oluştur
+      warningBadge = document.createElement('span');
+      warningBadge.className = 'wdp-shareholder-warning';
+      const icon = header.querySelector('.wdp-shareholder-icon');
+      if (icon && icon.parentNode) {
+        icon.parentNode.insertBefore(warningBadge, icon);
+      }
+    }
+    
+    const isCollapsed = form.classList.contains('collapsed');
+    
+    // Sadece kapalı formlarda kontrol et
+    if (!isCollapsed) {
+      warningBadge.classList.remove('show');
+      warningBadge.textContent = '';
+      return;
+    }
+    
+    // Zorunlu alanları kontrol et
+    const nameInput = form.querySelector('input[name^="shareholder_name_"]');
+    const phoneInput = form.querySelector('input[name^="shareholder_phone_"]');
+    
+    const nameEmpty = !nameInput || !nameInput.value.trim();
+    const phoneEmpty = !phoneInput || !phoneInput.value.trim();
+    
+    // Eğer zorunlu alanlar doldurulmamışsa uyarı göster
+    if (nameEmpty || phoneEmpty) {
+      const missingFields = [];
+      if (nameEmpty) missingFields.push('Ad Soyad');
+      if (phoneEmpty) missingFields.push('Telefon');
+      
+      warningBadge.classList.add('show');
+      warningBadge.textContent = missingFields.join(', ') + ' gerekli';
+    } else {
+      warningBadge.classList.remove('show');
+      warningBadge.textContent = '';
+    }
+  }
+  
+  // Tüm kapalı formları kontrol et
+  function checkAllShareholderFormWarnings(modal) {
+    if (!modal) return;
+    
+    const shareholdersList = modal.querySelector('.wdp-shareholders-scroll') || 
+                             modal.querySelector('.wdp-shareholders-container');
+    if (!shareholdersList) return;
+    
+    const collapsedForms = shareholdersList.querySelectorAll('.wdp-shareholder-form.collapsed');
+    collapsedForms.forEach(form => {
+      checkShareholderFormWarning(form);
+    });
   }
 
   // Setup shareholder header click handler
@@ -893,6 +969,7 @@
     allFormsForCopy.forEach((form) => {
       setupCopyFormButton(form);
       setupShareholderHeaderClick(form);
+      checkShareholderFormWarning(form);
     });
     
     // CRITICAL: Update scrollable class immediately - BEFORE browser renders
@@ -920,6 +997,12 @@
     
     // Then update scrollable state (this will clean up and ensure consistency)
     updateShareholdersScrollable(modal);
+    
+    // CRITICAL: Fiyatı güncelle (hisse adedi değiştiğinde)
+    // updatePriceBasedOnShareCount fonksiyonu setupShareQuantityButtons scope'unda tanımlı
+    if (typeof updatePriceBasedOnShareCount === 'function') {
+      updatePriceBasedOnShareCount();
+    }
   }
 
   // Setup share quantity buttons
@@ -1091,16 +1174,34 @@
       if (!currentShareCountInput) return;
       const shareCount = Number.parseInt(currentShareCountInput.value, 10) || 1;
 
+      // Base price'ı al - önce dataset'ten, sonra baseProductPrice'tan, sonra mevcut fiyattan
       const baseMinValue = Number.parseFloat((priceInput.dataset.baseMin || '').toString().trim());
-      const perShareFallback = Number.isFinite(baseMinValue) && baseMinValue > 0
-        ? baseMinValue
-        : Number.parseFloat((baseProductPrice || 0).toString());
+      let currentBasePrice = baseProductPrice;
+      
+      // Eğer baseProductPrice 0 veya geçersizse, dataset'ten veya mevcut fiyattan al
+      if (!Number.isFinite(currentBasePrice) || currentBasePrice <= 0) {
+        if (Number.isFinite(baseMinValue) && baseMinValue > 0) {
+          currentBasePrice = baseMinValue;
+        } else {
+          // Mevcut fiyatı hisse sayısına bölerek base price'ı hesapla
+          const currentPriceValue = Number.parseFloat((priceInput.value || '').toString().trim());
+          if (Number.isFinite(currentPriceValue) && currentPriceValue > 0 && shareCount > 0) {
+            currentBasePrice = currentPriceValue / shareCount;
+          } else {
+            currentBasePrice = 0;
+          }
+        }
+      }
+
+      const perShareFallback = Number.isFinite(currentBasePrice) && currentBasePrice > 0
+        ? currentBasePrice
+        : (Number.isFinite(baseMinValue) && baseMinValue > 0 ? baseMinValue : 0);
 
       const effectiveMin = Number.isFinite(perShareFallback) && perShareFallback > 0
         ? perShareFallback * shareCount
         : 0;
 
-      let totalPrice = Number.parseFloat((baseProductPrice || 0).toString()) * shareCount;
+      let totalPrice = Number.parseFloat((currentBasePrice || 0).toString()) * shareCount;
 
       if (!Number.isFinite(totalPrice) || totalPrice <= 0) {
         totalPrice = effectiveMin;
@@ -1110,7 +1211,7 @@
         totalPrice = effectiveMin;
       }
 
-      safeLog("Fiyat güncelleniyor:", baseProductPrice, "x", shareCount, "=", totalPrice, "(min:", effectiveMin, ")");
+      safeLog("Fiyat güncelleniyor:", currentBasePrice, "x", shareCount, "=", totalPrice, "(min:", effectiveMin, ", baseProductPrice:", baseProductPrice, ")");
 
       if (effectiveMin > 0) {
         priceInput.setAttribute('min', effectiveMin.toFixed(2));
@@ -1335,6 +1436,9 @@
       setupCopyFormButton(firstForm);
       setupShareholderHeaderClick(firstForm);
       
+      // İlk form için uyarı kontrolü (kapalı değilse uyarı göstermez)
+      checkShareholderFormWarning(firstForm);
+      
       // ABSOLUTE FIX: Modal ilk açıldığında shareholders-area'nın height'ını kaydet
       // Böylece scrollable olduğunda aynı height'ı kullanabiliriz
       if (shareholdersArea) {
@@ -1509,6 +1613,7 @@
       // Event listener'ları tekrar ekle (gerekirse)
       setupCopyFormButton(form);
       setupShareholderHeaderClick(form);
+      checkShareholderFormWarning(form);
     }
 
     // CRITICAL: Sadece 1. form görünür olsun - ama scroll için tüm formlar DOM'da görünür olmalı

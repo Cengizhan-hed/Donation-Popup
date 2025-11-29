@@ -1,8 +1,15 @@
 /* ==================== */
 /* FORM FEEDBACK STATES */
 /* ==================== */
+/* CRITICAL: Maximum specificity - html body ile tema override koruması */
 
-html body .wdp-form-error {
+html body .wdp-form-error,
+html body .wdp-modal .wdp-form-error,
+html body .wdp-donation-form .wdp-form-error,
+html body .wdp-modal .wdp-modal-content .wdp-form-error,
+html body .wdp-donation-form .wdp-modal-content .wdp-form-error,
+html body .wdp-modal .wdp-modal-content form .wdp-form-error,
+html body .wdp-donation-form .wdp-modal-content form .wdp-form-error {
   background-color: #fed7d7;
   border: 1px solid #feb2b2;
   color: #c53030;
@@ -18,7 +25,13 @@ html body .wdp-form-error {
   overflow: hidden;
 }
 
-html body .wdp-form-error::before {
+html body .wdp-form-error::before,
+html body .wdp-modal .wdp-form-error::before,
+html body .wdp-donation-form .wdp-form-error::before,
+html body .wdp-modal .wdp-modal-content .wdp-form-error::before,
+html body .wdp-donation-form .wdp-modal-content .wdp-form-error::before,
+html body .wdp-modal .wdp-modal-content form .wdp-form-error::before,
+html body .wdp-donation-form .wdp-modal-content form .wdp-form-error::before {
   content: '';
   position: absolute;
   top: 0;
@@ -29,7 +42,13 @@ html body .wdp-form-error::before {
   animation: wdpErrorPulse 2s ease-in-out infinite;
 }
 
-html body .wdp-form-success {
+html body .wdp-form-success,
+html body .wdp-modal .wdp-form-success,
+html body .wdp-donation-form .wdp-form-success,
+html body .wdp-modal .wdp-modal-content .wdp-form-success,
+html body .wdp-donation-form .wdp-modal-content .wdp-form-success,
+html body .wdp-modal .wdp-modal-content form .wdp-form-success,
+html body .wdp-donation-form .wdp-modal-content form .wdp-form-success {
   background-color: #c6f6d5;
   border: 1px solid #9ae6b4;
   color: #22543d;
@@ -45,7 +64,13 @@ html body .wdp-form-success {
   overflow: hidden;
 }
 
-html body .wdp-form-success::before {
+html body .wdp-form-success::before,
+html body .wdp-modal .wdp-form-success::before,
+html body .wdp-donation-form .wdp-form-success::before,
+html body .wdp-modal .wdp-modal-content .wdp-form-success::before,
+html body .wdp-donation-form .wdp-modal-content .wdp-form-success::before,
+html body .wdp-modal .wdp-modal-content form .wdp-form-success::before,
+html body .wdp-donation-form .wdp-modal-content form .wdp-form-success::before {
   content: '';
   position: absolute;
   top: 0;
@@ -56,23 +81,32 @@ html body .wdp-form-success::before {
   animation: wdpSuccessPulseBar 2s ease-in-out infinite;
 }
 
-html body .wdp-input-error {
+html body .wdp-input-error,
+html body .wdp-modal .wdp-input-error,
+html body .wdp-donation-form .wdp-input-error,
+html body .wdp-modal .wdp-modal-content .wdp-input-error,
+html body .wdp-donation-form .wdp-modal-content .wdp-input-error,
+html body .wdp-modal .wdp-modal-content form .wdp-input-error,
+html body .wdp-donation-form .wdp-modal-content form .wdp-input-error {
   position: absolute;
   top: calc(100% + var(--wdp-space-1, 4px));
   left: 0;
-  right: 0;
+  right: auto;
+  max-width: 100%;
   background-color: #fed7d7;
   border: 1px solid #feb2b2;
   color: #c53030;
-  padding: var(--wdp-space-2, 8px) var(--wdp-space-3, 12px);
-  border-radius: var(--wdp-radius-sm, 4px);
-  font-size: var(--wdp-text-xs, 12px);
-  font-weight: var(--wdp-font-medium, 500);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  line-height: 1.4;
+  font-weight: 500;
+  white-space: nowrap;
   z-index: 100;
-  box-shadow: var(--wdp-shadow-md, 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06));
+  box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.06);
   animation: wdpFadeInSlide var(--wdp-duration-300, 300ms) var(--wdp-ease-out, cubic-bezier(0, 0, 0.2, 1));
   pointer-events: none;
-  transform-origin: top;
+  transform-origin: top left;
 }
 
 /* ==================== */
@@ -165,7 +199,12 @@ html body .wdp-input-error {
 }
 
 /* Toast notification styles */
-html body .wdp-toast {
+/* CRITICAL: Maximum specificity - html body ile tema override koruması */
+html body .wdp-toast,
+html body .wdp-modal .wdp-toast,
+html body .wdp-donation-form .wdp-toast,
+html body .wdp-modal-content .wdp-toast,
+html body .wdp-donation-form .wdp-modal-content .wdp-toast {
   position: fixed;
   bottom: var(--wdp-space-6, 24px);
   right: var(--wdp-space-6, 24px);
@@ -180,19 +219,35 @@ html body .wdp-toast {
   min-width: 300px;
 }
 
-html body .wdp-toast.wdp-toast-success {
+html body .wdp-toast.wdp-toast-success,
+html body .wdp-modal .wdp-toast.wdp-toast-success,
+html body .wdp-donation-form .wdp-toast.wdp-toast-success,
+html body .wdp-modal-content .wdp-toast.wdp-toast-success,
+html body .wdp-donation-form .wdp-modal-content .wdp-toast.wdp-toast-success {
   border-left: 4px solid var(--wdp-success, #48bb78);
 }
 
-html body .wdp-toast.wdp-toast-error {
+html body .wdp-toast.wdp-toast-error,
+html body .wdp-modal .wdp-toast.wdp-toast-error,
+html body .wdp-donation-form .wdp-toast.wdp-toast-error,
+html body .wdp-modal-content .wdp-toast.wdp-toast-error,
+html body .wdp-donation-form .wdp-modal-content .wdp-toast.wdp-toast-error {
   border-left: 4px solid var(--wdp-error, #e53e3e);
 }
 
-html body .wdp-toast.wdp-toast-warning {
+html body .wdp-toast.wdp-toast-warning,
+html body .wdp-modal .wdp-toast.wdp-toast-warning,
+html body .wdp-donation-form .wdp-toast.wdp-toast-warning,
+html body .wdp-modal-content .wdp-toast.wdp-toast-warning,
+html body .wdp-donation-form .wdp-modal-content .wdp-toast.wdp-toast-warning {
   border-left: 4px solid var(--wdp-warning, #ed8936);
 }
 
-html body .wdp-toast.wdp-toast-info {
+html body .wdp-toast.wdp-toast-info,
+html body .wdp-modal .wdp-toast.wdp-toast-info,
+html body .wdp-donation-form .wdp-toast.wdp-toast-info,
+html body .wdp-modal-content .wdp-toast.wdp-toast-info,
+html body .wdp-donation-form .wdp-modal-content .wdp-toast.wdp-toast-info {
   border-left: 4px solid var(--wdp-primary, #1e73be);
 }
 
@@ -207,7 +262,11 @@ html body .wdp-toast.wdp-toast-info {
   }
 }
 
-html body .wdp-toast.wdp-toast-closing {
+html body .wdp-toast.wdp-toast-closing,
+html body .wdp-modal .wdp-toast.wdp-toast-closing,
+html body .wdp-donation-form .wdp-toast.wdp-toast-closing,
+html body .wdp-modal-content .wdp-toast.wdp-toast-closing,
+html body .wdp-donation-form .wdp-modal-content .wdp-toast.wdp-toast-closing {
   animation: wdpToastSlideOut var(--wdp-duration-200, 200ms) var(--wdp-ease-in, cubic-bezier(0.4, 0, 1, 1));
 }
 
@@ -223,9 +282,14 @@ html body .wdp-toast.wdp-toast-closing {
 }
 
 /* Mobile optimizations for feedback */
+/* CRITICAL: Maximum specificity - html body ile tema override koruması */
 @media (max-width: 600px) {
   /* Mobilde toast notification */
-  html body .wdp-toast {
+  html body .wdp-toast,
+  html body .wdp-modal .wdp-toast,
+  html body .wdp-donation-form .wdp-toast,
+  html body .wdp-modal-content .wdp-toast,
+  html body .wdp-donation-form .wdp-modal-content .wdp-toast {
     bottom: var(--wdp-space-4, 16px);
     right: var(--wdp-space-4, 16px);
     left: var(--wdp-space-4, 16px);
@@ -236,21 +300,44 @@ html body .wdp-toast.wdp-toast-closing {
   
   /* Mobilde form error/success padding */
   html body .wdp-form-error,
-  html body .wdp-form-success {
+  html body .wdp-form-success,
+  html body .wdp-modal .wdp-form-error,
+  html body .wdp-modal .wdp-form-success,
+  html body .wdp-donation-form .wdp-form-error,
+  html body .wdp-donation-form .wdp-form-success,
+  html body .wdp-modal .wdp-modal-content .wdp-form-error,
+  html body .wdp-modal .wdp-modal-content .wdp-form-success,
+  html body .wdp-donation-form .wdp-modal-content .wdp-form-error,
+  html body .wdp-donation-form .wdp-modal-content .wdp-form-success,
+  html body .wdp-modal .wdp-modal-content form .wdp-form-error,
+  html body .wdp-modal .wdp-modal-content form .wdp-form-success,
+  html body .wdp-donation-form .wdp-modal-content form .wdp-form-error,
+  html body .wdp-donation-form .wdp-modal-content form .wdp-form-success {
     padding: var(--wdp-space-2, 8px) var(--wdp-space-3, 12px);
     font-size: var(--wdp-text-xs, 12px);
   }
   
-  /* Mobilde input error */
-  html body .wdp-input-error {
-    font-size: 11px;
-    padding: var(--wdp-space-1, 4px) var(--wdp-space-2, 8px);
+  /* Mobilde input error - daha da kompakt */
+  html body .wdp-input-error,
+  html body .wdp-modal .wdp-input-error,
+  html body .wdp-donation-form .wdp-input-error,
+  html body .wdp-modal .wdp-modal-content .wdp-input-error,
+  html body .wdp-donation-form .wdp-modal-content .wdp-input-error,
+  html body .wdp-modal .wdp-modal-content form .wdp-input-error,
+  html body .wdp-donation-form .wdp-modal-content form .wdp-input-error {
+    font-size: 10px;
+    padding: 3px 6px;
+    line-height: 1.3;
   }
 }
 
 @media (max-width: 480px) {
   /* Küçük mobilde toast */
-  html body .wdp-toast {
+  html body .wdp-toast,
+  html body .wdp-modal .wdp-toast,
+  html body .wdp-donation-form .wdp-toast,
+  html body .wdp-modal-content .wdp-toast,
+  html body .wdp-donation-form .wdp-modal-content .wdp-toast {
     bottom: var(--wdp-space-3, 12px);
     right: var(--wdp-space-3, 12px);
     left: var(--wdp-space-3, 12px);
@@ -259,23 +346,70 @@ html body .wdp-toast.wdp-toast-closing {
   }
   
   html body .wdp-form-error,
-  html body .wdp-form-success {
+  html body .wdp-form-success,
+  html body .wdp-modal .wdp-form-error,
+  html body .wdp-modal .wdp-form-success,
+  html body .wdp-donation-form .wdp-form-error,
+  html body .wdp-donation-form .wdp-form-success,
+  html body .wdp-modal .wdp-modal-content .wdp-form-error,
+  html body .wdp-modal .wdp-modal-content .wdp-form-success,
+  html body .wdp-donation-form .wdp-modal-content .wdp-form-error,
+  html body .wdp-donation-form .wdp-modal-content .wdp-form-success,
+  html body .wdp-modal .wdp-modal-content form .wdp-form-error,
+  html body .wdp-modal .wdp-modal-content form .wdp-form-success,
+  html body .wdp-donation-form .wdp-modal-content form .wdp-form-error,
+  html body .wdp-donation-form .wdp-modal-content form .wdp-form-success {
     padding: var(--wdp-space-2, 8px) var(--wdp-space-3, 12px);
     font-size: 11px;
   }
 }
 
 /* Reduced motion support */
+/* CRITICAL: Maximum specificity - html body ile tema override koruması */
 @media (prefers-reduced-motion: reduce) {
   html body .wdp-form-error,
   html body .wdp-form-success,
   html body .wdp-input-error,
-  html body .wdp-toast {
+  html body .wdp-toast,
+  html body .wdp-modal .wdp-form-error,
+  html body .wdp-modal .wdp-form-success,
+  html body .wdp-modal .wdp-input-error,
+  html body .wdp-modal .wdp-toast,
+  html body .wdp-donation-form .wdp-form-error,
+  html body .wdp-donation-form .wdp-form-success,
+  html body .wdp-donation-form .wdp-input-error,
+  html body .wdp-donation-form .wdp-toast,
+  html body .wdp-modal .wdp-modal-content .wdp-form-error,
+  html body .wdp-modal .wdp-modal-content .wdp-form-success,
+  html body .wdp-modal .wdp-modal-content .wdp-input-error,
+  html body .wdp-modal .wdp-modal-content .wdp-toast,
+  html body .wdp-donation-form .wdp-modal-content .wdp-form-error,
+  html body .wdp-donation-form .wdp-modal-content .wdp-form-success,
+  html body .wdp-donation-form .wdp-modal-content .wdp-input-error,
+  html body .wdp-donation-form .wdp-modal-content .wdp-toast,
+  html body .wdp-modal .wdp-modal-content form .wdp-form-error,
+  html body .wdp-modal .wdp-modal-content form .wdp-form-success,
+  html body .wdp-modal .wdp-modal-content form .wdp-input-error,
+  html body .wdp-donation-form .wdp-modal-content form .wdp-form-error,
+  html body .wdp-donation-form .wdp-modal-content form .wdp-form-success,
+  html body .wdp-donation-form .wdp-modal-content form .wdp-input-error {
     animation: none !important;
   }
   
   html body .wdp-form-error::before,
-  html body .wdp-form-success::before {
+  html body .wdp-form-success::before,
+  html body .wdp-modal .wdp-form-error::before,
+  html body .wdp-modal .wdp-form-success::before,
+  html body .wdp-donation-form .wdp-form-error::before,
+  html body .wdp-donation-form .wdp-form-success::before,
+  html body .wdp-modal .wdp-modal-content .wdp-form-error::before,
+  html body .wdp-modal .wdp-modal-content .wdp-form-success::before,
+  html body .wdp-donation-form .wdp-modal-content .wdp-form-error::before,
+  html body .wdp-donation-form .wdp-modal-content .wdp-form-success::before,
+  html body .wdp-modal .wdp-modal-content form .wdp-form-error::before,
+  html body .wdp-modal .wdp-modal-content form .wdp-form-success::before,
+  html body .wdp-donation-form .wdp-modal-content form .wdp-form-error::before,
+  html body .wdp-donation-form .wdp-modal-content form .wdp-form-success::before {
     animation: none !important;
   }
 }
