@@ -214,15 +214,23 @@ class WDP_Templates {
                     <?php endif; ?>
 
                     <!-- Butonlar -->
-                    <div class="wdp-button-group">
-                        <?php
-                        // Buton metinlerini ayarlardan al
-                        $button_settings = get_option('wdp_button_settings', array());
-                        $button_text_add_to_cart = !empty($button_settings['button_text_add_to_cart']) ? $button_settings['button_text_add_to_cart'] : __('Sepete Ekle', 'woo-donation-popup');
-                        $button_text_go_checkout = !empty($button_settings['button_text_go_checkout']) ? $button_settings['button_text_go_checkout'] : __('Ödemeye Git', 'woo-donation-popup');
-                        ?>
-                        <button type="submit" name="donation_add_to_cart"><?php echo esc_html($button_text_add_to_cart); ?></button>
-                        <button type="submit" name="donation_go_checkout"><?php echo esc_html($button_text_go_checkout); ?></button>
+                    <?php
+                    // Buton metinlerini ve düzenini ayarlardan al
+                    $button_settings = get_option('wdp_button_settings', array());
+                    $button_text_add_to_cart = !empty($button_settings['button_text_add_to_cart']) ? $button_settings['button_text_add_to_cart'] : __('Sepete Ekle', 'woo-donation-popup');
+                    $button_text_go_checkout = !empty($button_settings['button_text_go_checkout']) ? $button_settings['button_text_go_checkout'] : __('Ödemeye Git', 'woo-donation-popup');
+                    $form_button_order = !empty($button_settings['form_button_order']) ? $button_settings['form_button_order'] : 'add_first';
+                    $form_button_alignment = !empty($button_settings['form_button_alignment']) ? $button_settings['form_button_alignment'] : 'left';
+                    $button_group_classes = 'wdp-button-group wdp-button-align-' . esc_attr($form_button_alignment);
+                    ?>
+                    <div class="<?php echo $button_group_classes; ?>">
+                        <?php if ($form_button_order === 'checkout_first') : ?>
+                            <button type="submit" name="donation_go_checkout"><?php echo esc_html($button_text_go_checkout); ?></button>
+                            <button type="submit" name="donation_add_to_cart"><?php echo esc_html($button_text_add_to_cart); ?></button>
+                        <?php else : ?>
+                            <button type="submit" name="donation_add_to_cart"><?php echo esc_html($button_text_add_to_cart); ?></button>
+                            <button type="submit" name="donation_go_checkout"><?php echo esc_html($button_text_go_checkout); ?></button>
+                        <?php endif; ?>
                     </div>
 
                     <!-- Gizli Alanlar -->
@@ -386,15 +394,23 @@ class WDP_Templates {
                     <?php endif; ?>
 
                     <!-- Butonlar -->
-                    <div class="wdp-button-group">
-                        <?php
-                        // Buton metinlerini ayarlardan al
-                        $button_settings = get_option('wdp_button_settings', array());
-                        $button_text_add_to_cart = !empty($button_settings['button_text_add_to_cart']) ? $button_settings['button_text_add_to_cart'] : __('Sepete Ekle', 'woo-donation-popup');
-                        $button_text_go_checkout = !empty($button_settings['button_text_go_checkout']) ? $button_settings['button_text_go_checkout'] : __('Ödemeye Git', 'woo-donation-popup');
-                        ?>
-                        <button type="submit" name="donation_add_to_cart"><?php echo esc_html($button_text_add_to_cart); ?></button>
-                        <button type="submit" name="donation_go_checkout"><?php echo esc_html($button_text_go_checkout); ?></button>
+                    <?php
+                    // Buton metinlerini ve düzenini ayarlardan al
+                    $button_settings = get_option('wdp_button_settings', array());
+                    $button_text_add_to_cart = !empty($button_settings['button_text_add_to_cart']) ? $button_settings['button_text_add_to_cart'] : __('Sepete Ekle', 'woo-donation-popup');
+                    $button_text_go_checkout = !empty($button_settings['button_text_go_checkout']) ? $button_settings['button_text_go_checkout'] : __('Ödemeye Git', 'woo-donation-popup');
+                    $form_button_order = !empty($button_settings['form_button_order']) ? $button_settings['form_button_order'] : 'add_first';
+                    $form_button_alignment = !empty($button_settings['form_button_alignment']) ? $button_settings['form_button_alignment'] : 'left';
+                    $button_group_classes = 'wdp-button-group wdp-button-align-' . esc_attr($form_button_alignment);
+                    ?>
+                    <div class="<?php echo $button_group_classes; ?>">
+                        <?php if ($form_button_order === 'checkout_first') : ?>
+                            <button type="submit" name="donation_go_checkout"><?php echo esc_html($button_text_go_checkout); ?></button>
+                            <button type="submit" name="donation_add_to_cart"><?php echo esc_html($button_text_add_to_cart); ?></button>
+                        <?php else : ?>
+                            <button type="submit" name="donation_add_to_cart"><?php echo esc_html($button_text_add_to_cart); ?></button>
+                            <button type="submit" name="donation_go_checkout"><?php echo esc_html($button_text_go_checkout); ?></button>
+                        <?php endif; ?>
                     </div>
 
                     <!-- Gizli Alanlar -->

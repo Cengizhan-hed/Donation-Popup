@@ -280,10 +280,32 @@
         type: "POST",
         data: formData + "&action=wdp_save_normal_form_settings&nonce=" + wdp_admin.nonce,
         success: (response) => {
+          var $inlineMsg = $button
+            .closest(".submit")
+            .find(".wdp-inline-save-message")
+
           if (response.success) {
             showSuccessMessage(response.data.message)
+            if ($inlineMsg.length) {
+              $inlineMsg
+                .text(response.data.message)
+                .addClass("is-visible")
+            }
           } else {
             showErrorMessage(response.data.message)
+            if ($inlineMsg.length) {
+              $inlineMsg
+                .text(response.data.message || wdp_admin.save_error)
+                .addClass("is-visible")
+            }
+          }
+
+          if ($inlineMsg && $inlineMsg.length) {
+            setTimeout(() => {
+              $inlineMsg.fadeOut(200, function () {
+                $(this).text("").removeClass("is-visible").show()
+              })
+            }, 2500)
           }
         },
         error: () => {
@@ -485,3 +507,68 @@ jQuery(document).ready(function($) {
     })
   })
 })(window, document, jQuery)
+
+// Progress bar ayarlarını kaydet
+jQuery(document).ready(function($) {
+  $("#wdp-progress-bar-settings-form").on("submit", function (e) {
+    e.preventDefault()
+    var $form = $(this)
+    var $button = $("#wdp-save-progress-bar-settings")
+    var $spinner = $button.next(".spinner")
+
+    $spinner.css("visibility", "visible")
+
+    var formData = $form.serialize()
+
+    $.ajax({
+      url: wdp_admin.ajax_url,
+      type: "POST",
+      data: formData + "&action=wdp_save_progress_bar_settings&nonce=" + wdp_admin.nonce,
+      success: function(response) {
+        if (response && response.success) {
+          var msg = response.data && response.data.message ? response.data.message : wdp_admin.save_success
+          var $noticeContainer = $("#wdp-admin-notices")
+          if ($noticeContainer.length === 0) {
+            $noticeContainer = $('<div id="wdp-admin-notices" class="notice"></div>')
+            $form.before($noticeContainer)
+          }
+          $noticeContainer
+            .removeClass("notice-error")
+            .addClass("notice-success")
+            .html("<p>" + msg + "</p>")
+            .show()
+          setTimeout(function() {
+            $noticeContainer.fadeOut()
+          }, 3000)
+        } else {
+          var errorMsg = response && response.data && response.data.message ? response.data.message : wdp_admin.save_error
+          var $noticeContainer = $("#wdp-admin-notices")
+          if ($noticeContainer.length === 0) {
+            $noticeContainer = $('<div id="wdp-admin-notices" class="notice"></div>')
+            $form.before($noticeContainer)
+          }
+          $noticeContainer
+            .removeClass("notice-success")
+            .addClass("notice-error")
+            .html("<p>" + errorMsg + "</p>")
+            .show()
+        }
+      },
+      error: function() {
+        var $noticeContainer = $("#wdp-admin-notices")
+        if ($noticeContainer.length === 0) {
+          $noticeContainer = $('<div id="wdp-admin-notices" class="notice"></div>')
+          $form.before($noticeContainer)
+        }
+        $noticeContainer
+          .removeClass("notice-success")
+          .addClass("notice-error")
+          .html("<p>" + wdp_admin.save_error + "</p>")
+          .show()
+      },
+      complete: function() {
+        $spinner.css("visibility", "hidden")
+      },
+    })
+  })
+})

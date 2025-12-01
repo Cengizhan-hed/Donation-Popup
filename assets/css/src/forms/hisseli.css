@@ -307,6 +307,12 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-form .wdp-shareho
   display: none;
 }
 
+/* Warning badge başlığın sağ tarafında, ikonun hemen solunda hizalansın */
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-form .wdp-shareholder-header .wdp-shareholder-warning {
+  margin-inline-start: auto;
+  order: 998;
+}
+
 /* Hover efekti kaldırıldı - sadece ikon renk değişimi olacak */
 
 /* ============ SHAREHOLDER HEADER H3 - Perfect Vertical Centering ============ */
@@ -442,6 +448,25 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-form .wdp-shareho
   width: 100%;
 }
 
+/* Düzen: İki sütun (Ad + Telefon yan yana, diğer alanlar tam genişlik) */
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-content.wdp-shareholder-layout-two-column {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 12px;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-content.wdp-shareholder-layout-two-column > input[name^="shareholder_name_"],
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-content.wdp-shareholder-layout-two-column > input[name^="shareholder_phone_"],
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-content.wdp-shareholder-layout-two-column > input[name^="shareholder_email_"] {
+  width: 100%;
+}
+
+/* Not alanı ve kopya butonu her zaman tam genişlik */
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-content.wdp-shareholder-layout-two-column > textarea[name^="shareholder_note_"],
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-content.wdp-shareholder-layout-two-column > .wdp-copy-form-btn {
+  grid-column: 1 / -1;
+}
+
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-content > :is(input[type="text"], input[type="tel"]) {
   margin: 0;
   /* Modern logical properties for RTL/LTR support */
@@ -495,6 +520,34 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-content > :is(inp
 
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-form.collapsed .wdp-shareholder-content {
   display: none;
+}
+
+/* Kart yoğunluğu: compact / normal / spacious */
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-form.wdp-shareholder-density-compact .wdp-shareholder-content {
+  padding-top: 6px;
+  padding-bottom: 8px;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-form.wdp-shareholder-density-spacious .wdp-shareholder-content {
+  padding-top: 16px;
+  padding-bottom: 16px;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-form.wdp-shareholder-density-compact .wdp-shareholder-header {
+  padding-block: 6px;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-form.wdp-shareholder-density-spacious .wdp-shareholder-header {
+  padding-block: 12px;
+}
+
+/* Yoğunluğa göre alanlar arası dikey boşluk */
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-form.wdp-shareholder-density-compact .wdp-shareholder-content > :is(input[type="text"], input[type="tel"]) ~ * {
+  margin-top: 6px;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-form.wdp-shareholder-density-spacious .wdp-shareholder-content > :is(input[type="text"], input[type="tel"]) ~ * {
+  margin-top: 16px;
 }
 
 /* ============ COLLAPSED COUNT BADGE ============ */

@@ -5,9 +5,9 @@
 
 html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content, .wdp-modal-content form) .wdp-form-error,
 html body .wdp-form-error {
-  background-color: #fed7d7;
-  border: 1px solid #feb2b2;
-  color: #c53030;
+  background-color: var(--wdp-form-error-bg, #fed7d7);
+  border: 1px solid var(--wdp-form-error-border, #feb2b2);
+  color: var(--wdp-form-error-text, #c53030);
   padding: var(--wdp-space-3, 12px) var(--wdp-space-4, 16px);
   border-radius: var(--wdp-radius-md, 8px);
   margin-bottom: var(--wdp-space-4, 16px);
@@ -28,7 +28,7 @@ html body .wdp-form-error::before {
   left: 0;
   width: 4px;
   height: 100%;
-  background-color: #c53030;
+  background-color: var(--wdp-form-error-text, #c53030);
   animation: wdpErrorPulse 2s ease-in-out infinite;
 }
 
@@ -68,9 +68,9 @@ html body .wdp-input-error {
   left: 0;
   right: auto;
   max-width: 100%;
-  background-color: #fed7d7;
-  border: 1px solid #feb2b2;
-  color: #c53030;
+  background-color: var(--wdp-input-error-bg, #fed7d7);
+  border: 1px solid var(--wdp-input-error-border, #feb2b2);
+  color: var(--wdp-input-error-text, #c53030);
   padding: 4px 8px;
   border-radius: 4px;
   font-size: 11px;

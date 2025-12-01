@@ -231,6 +231,7 @@ class WDP_Assets {
                         'max_shares_error' => __('Maksimum hisse sayısı: ', 'woo-donation-popup'),
                     ),
                     'button_texts' => self::get_button_texts(),
+                    'shareholder_texts' => self::get_shareholder_texts(),
                 ));
             }
         }
@@ -272,7 +273,7 @@ class WDP_Assets {
         
         // Varsayılan değerler
         $defaults = array(
-            'button_text_donate' => __('Bağış Yap', 'woo-donation-popup'),
+            'button_text_donate'      => __('Bağış Yap', 'woo-donation-popup'),
             'button_text_add_to_cart' => __('Sepete Ekle', 'woo-donation-popup'),
             'button_text_go_checkout' => __('Ödemeye Git', 'woo-donation-popup'),
         );
@@ -280,7 +281,7 @@ class WDP_Assets {
         $settings = wp_parse_args($button_settings, $defaults);
         
         $result = array(
-            'donate' => $settings['button_text_donate'],
+            'donate'      => $settings['button_text_donate'],
             'add_to_cart' => $settings['button_text_add_to_cart'],
             'go_checkout' => $settings['button_text_go_checkout'],
         );
@@ -307,6 +308,42 @@ class WDP_Assets {
         
         return $result;
     }
+
+    /**
+     * Get shareholder text customization settings for JS
+     *
+     * @return array
+     */
+    private static function get_shareholder_texts() {
+        $settings = get_option('wdp_shareholder_settings', array());
+        $defaults = array(
+            'shareholder_header_text'      => 'Hissedar Bilgileri',
+            'shareholder_name_placeholder' => 'Ad Soyad *',
+            'shareholder_phone_placeholder'=> 'Telefon Numarası *',
+            'shareholder_note_placeholder' => 'Not (isteğe bağlı)',
+            'shareholder_copy_button_text' => '📋 Kopyasını Oluştur',
+            'shareholder_enable_copy_button' => '1',
+            'shareholder_layout'           => 'single',
+            'shareholder_density'          => 'normal',
+            'shareholder_enable_email'     => '0',
+            'shareholder_email_placeholder'=> 'E-posta (isteğe bağlı)',
+        );
+
+        $settings = wp_parse_args($settings, $defaults);
+
+        return array(
+            'header'            => $settings['shareholder_header_text'],
+            'name_placeholder'  => $settings['shareholder_name_placeholder'],
+            'phone_placeholder' => $settings['shareholder_phone_placeholder'],
+            'note_placeholder'  => $settings['shareholder_note_placeholder'],
+            'copy_button'       => $settings['shareholder_copy_button_text'],
+            'enable_copy_button'=> !empty($settings['shareholder_enable_copy_button']) && $settings['shareholder_enable_copy_button'] !== '0',
+            'layout'            => !empty($settings['shareholder_layout']) ? $settings['shareholder_layout'] : 'single',
+            'density'           => !empty($settings['shareholder_density']) ? $settings['shareholder_density'] : 'normal',
+            'enable_email'      => !empty($settings['shareholder_enable_email']) && $settings['shareholder_enable_email'] !== '0',
+            'email_placeholder' => $settings['shareholder_email_placeholder'],
+        );
+    }
     
     /**
      * Get button customization CSS variables
@@ -328,6 +365,7 @@ class WDP_Assets {
             'input_border_radius' => '8',
             'title_color' => '#1f2937',
             'title_font_size' => '27',
+            'title_font_size_mobile' => '22',
             'close_button_color' => '#6b7280',
             'button_checkout_color' => '#48bb78',
             'button_checkout_hover' => '#38a169',
@@ -339,6 +377,17 @@ class WDP_Assets {
             'popup_button_font_family' => 'inherit',
             'popup_button_custom_font' => '',
             'popup_button_border_radius' => '10',
+            'label_color' => '#374151',
+            'label_font_size' => 14,
+            'label_font_weight' => '600',
+            'placeholder_color' => '#6b7280',
+            'form_gap' => 16,
+            'error_bg_color' => '#fed7d7',
+            'error_border_color' => '#feb2b2',
+            'error_text_color' => '#c53030',
+            'input_error_bg_color' => '#fed7d7',
+            'input_error_border_color' => '#feb2b2',
+            'input_error_text_color' => '#c53030',
         );
         
         $settings = wp_parse_args($button_settings, $defaults);
@@ -396,7 +445,46 @@ class WDP_Assets {
         $css .= "  --wdp-input-radius: " . esc_attr($settings['input_border_radius']) . "px;\n";
         $css .= "  --wdp-title-color: " . esc_attr($settings['title_color']) . ";\n";
         $css .= "  --wdp-title-size: " . esc_attr($settings['title_font_size']) . "px;\n";
+        if (!empty($settings['title_font_size_mobile'])) {
+            $css .= "  --wdp-title-size-mobile: " . esc_attr($settings['title_font_size_mobile']) . "px;\n";
+        }
         $css .= "  --wdp-close-color: " . esc_attr($settings['close_button_color']) . ";\n";
+        $css .= "  --wdp-label-color: " . esc_attr($settings['label_color']) . ";\n";
+        $css .= "  --wdp-label-font-size: " . esc_attr($settings['label_font_size']) . "px;\n";
+        $css .= "  --wdp-label-font-weight: " . esc_attr($settings['label_font_weight']) . ";\n";
+        $css .= "  --wdp-placeholder-color: " . esc_attr($settings['placeholder_color']) . ";\n";
+        $css .= "  --wdp-form-gap: " . esc_attr($settings['form_gap']) . "px;\n";
+        $css .= "  --wdp-form-error-bg: " . esc_attr($settings['error_bg_color']) . ";\n";
+        $css .= "  --wdp-form-error-border: " . esc_attr($settings['error_border_color']) . ";\n";
+        $css .= "  --wdp-form-error-text: " . esc_attr($settings['error_text_color']) . ";\n";
+        $css .= "  --wdp-input-error-bg: " . esc_attr($settings['input_error_bg_color']) . ";\n";
+        $css .= "  --wdp-input-error-border: " . esc_attr($settings['input_error_border_color']) . ";\n";
+        $css .= "  --wdp-input-error-text: " . esc_attr($settings['input_error_text_color']) . ";\n";
+
+        // Progress bar ayarlarını al
+        $progress_settings = get_option('wdp_progress_bar_settings', array());
+        $progress_defaults = array(
+            'container_bg' => '#f8fafc',
+            'container_border' => '#e2e8f0',
+            'track_bg' => '#e2e8f0',
+            'fill_start' => '#3b82f6',
+            'fill_mid' => '#2563eb',
+            'fill_end' => '#1d4ed8',
+            'preview_bg' => '#64748b',
+            'percentage_bg' => '#ffffff',
+            'percentage_text' => '#1e293b',
+        );
+        $progress_settings = wp_parse_args($progress_settings, $progress_defaults);
+
+        $css .= "  --wdp-progress-container-bg: " . esc_attr($progress_settings['container_bg']) . ";\n";
+        $css .= "  --wdp-progress-container-border: " . esc_attr($progress_settings['container_border']) . ";\n";
+        $css .= "  --wdp-progress-track-bg: " . esc_attr($progress_settings['track_bg']) . ";\n";
+        $css .= "  --wdp-progress-fill-start: " . esc_attr($progress_settings['fill_start']) . ";\n";
+        $css .= "  --wdp-progress-fill-mid: " . esc_attr($progress_settings['fill_mid']) . ";\n";
+        $css .= "  --wdp-progress-fill-end: " . esc_attr($progress_settings['fill_end']) . ";\n";
+        $css .= "  --wdp-progress-preview-bg: " . esc_attr($progress_settings['preview_bg']) . ";\n";
+        $css .= "  --wdp-progress-percentage-bg: " . esc_attr($progress_settings['percentage_bg']) . ";\n";
+        $css .= "  --wdp-progress-percentage-text: " . esc_attr($progress_settings['percentage_text']) . ";\n";
         
         // Ödeme Yap butonu renkleri
         if (isset($settings['button_checkout_color'])) {
@@ -514,6 +602,13 @@ class WDP_Assets {
         $css .= "  --wdp-modal-padding-left-mobile: " . esc_attr($modal_layout_settings['modal_padding_left_mobile']) . "px;\n";
         
         $css .= "}\n";
+
+        // Mobil için tipografi değişkenlerini override et
+        $css .= "@media (max-width: 600px) {\n";
+        $css .= "  :root {\n";
+        $css .= "    --wdp-title-size: var(--wdp-title-size-mobile, " . esc_attr($settings['title_font_size']) . "px);\n";
+        $css .= "  }\n";
+        $css .= "}\n";
         
         return $css;
     }
@@ -529,8 +624,7 @@ class WDP_Assets {
         
         return $button_css . "
         /* CRITICAL: Prevent font flash - apply font-size immediately before CSS loads */
-        /* ABSOLUTE FIX: Set font-size in px for immediate application (no rem calculation delay) */
-        /* Inline CSS has highest specificity - no !important needed */
+        /* IMPORTANT: Respect dynamic title size set via --wdp-title-size */
         html body .wdp-modal-title,
         html body .wdp-form-title,
         html body .wdp-modal .wdp-modal-content h2,
@@ -539,9 +633,7 @@ class WDP_Assets {
         html body .wdp-donation-form .wdp-modal-content .wdp-form-title,
         html body .wdp-modal .wdp-modal-content h2.wdp-form-title,
         html body .wdp-donation-form .wdp-modal-content h2.wdp-form-title {
-            font-size: 27.2px;
-            font-size: 1.7rem;
-            min-height: 32.64px;
+            font-size: var(--wdp-title-size, 27px);
             line-height: 1.2;
         }
         /* Modal kapalıyken kesinlikle sayfa düzenini etkilememeli */
@@ -958,6 +1050,7 @@ class WDP_Assets {
                         'max_shares_error' => __('Maksimum hisse sayısı: ', 'woo-donation-popup'),
                     ),
                     'button_texts' => self::get_button_texts(),
+                    'shareholder_texts' => self::get_shareholder_texts(),
                 ));
 
         // Önce force flag'i kontrol et

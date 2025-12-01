@@ -32,6 +32,18 @@
   const { productPrices, shareholdersResizeBound } = state;
   const { getData: getProductInfoData } = product;
 
+  // Shareholder metinlerini PHP'den al (wdp_ajax üzerinden)
+  const wdpAjax = window.wdp_ajax || {};
+  const shareholderTexts = (wdpAjax && wdpAjax.shareholder_texts) || {};
+  const enableCopyButton = (typeof shareholderTexts.enable_copy_button === 'boolean')
+    ? shareholderTexts.enable_copy_button
+    : true;
+  const layoutMode = typeof shareholderTexts.layout === 'string' ? shareholderTexts.layout : 'single';
+  const densityMode = typeof shareholderTexts.density === 'string' ? shareholderTexts.density : 'normal';
+  const enableEmailField = (typeof shareholderTexts.enable_email === 'boolean')
+    ? shareholderTexts.enable_email
+    : false;
+
   // Constants
   const SHAREHOLDER_SCROLL_CONFIG = {
     min: 260,
@@ -388,9 +400,32 @@
 
   // Create shareholder form element
   function createShareholderForm(index) {
+    const headerText = shareholderTexts.header || 'Hissedar Bilgileri';
+    const namePlaceholder = shareholderTexts.name_placeholder || 'Ad Soyad *';
+    const phonePlaceholder = shareholderTexts.phone_placeholder || 'Telefon Numarası *';
+    const notePlaceholder = shareholderTexts.note_placeholder || 'Not (isteğe bağlı)';
+    const emailPlaceholder = shareholderTexts.email_placeholder || 'E-posta (isteğe bağlı)';
+    const copyButtonText = shareholderTexts.copy_button || '📋 Kopyasını Oluştur';
+    const emailFieldHtml = enableEmailField
+      ? `<input type="email" name="shareholder_email_${index}" placeholder="${emailPlaceholder}" autocomplete="email" />`
+      : '';
+    const copyButtonHtml = enableCopyButton
+      ? `<button type="button" class="wdp-copy-form-btn">
+          ${copyButtonText}
+        </button>`
+      : '';
+
     const form = document.createElement("div");
     form.className = "wdp-shareholder-form";
     form.setAttribute("data-index", index);
+    // Kart yoğunluğu (compact / normal / spacious)
+    if (densityMode === 'compact') {
+      form.classList.add('wdp-shareholder-density-compact');
+    } else if (densityMode === 'spacious') {
+      form.classList.add('wdp-shareholder-density-spacious');
+    } else {
+      form.classList.add('wdp-shareholder-density-normal');
+    }
 
     // CRITICAL: Form'un görünürlüğünü garanti et
     form.style.display = '';
@@ -406,17 +441,16 @@
     // Daha hızlı yükleme için basit HTML yapısı
     form.innerHTML = `
       <div class="wdp-shareholder-header">
-        <h3>${index}. Hissedar Bilgileri</h3>
+        <h3>${index}. ${headerText}</h3>
         <span class="wdp-shareholder-warning"></span>
         <span class="wdp-shareholder-icon"></span>
       </div>
-      <div class="wdp-shareholder-content" ${!isFirst ? 'style="display: none;"' : ''}>
-        <input type="text" name="shareholder_name_${index}" placeholder="Ad Soyad *" autocomplete="name" required />
-        <input type="tel" name="shareholder_phone_${index}" placeholder="Telefon Numarası *" autocomplete="tel" required />
-        <textarea name="shareholder_note_${index}" rows="2" placeholder="Not (isteğe bağlı)"></textarea>
-        <button type="button" class="wdp-copy-form-btn">
-          📋 Kopyasını Oluştur
-        </button>
+      <div class="wdp-shareholder-content ${layoutMode === 'two-column' ? 'wdp-shareholder-layout-two-column' : 'wdp-shareholder-layout-single'}" ${!isFirst ? 'style="display: none;"' : ''}>
+        <input type="text" name="shareholder_name_${index}" placeholder="${namePlaceholder}" autocomplete="name" required />
+        <input type="tel" name="shareholder_phone_${index}" placeholder="${phonePlaceholder}" autocomplete="tel" required />
+        ${emailFieldHtml}
+        <textarea name="shareholder_note_${index}" rows="2" placeholder="${notePlaceholder}"></textarea>
+        ${copyButtonHtml}
       </div>
     `;
 

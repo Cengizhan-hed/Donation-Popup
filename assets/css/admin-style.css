@@ -1,5 +1,6 @@
 /**
  * WooCommerce Donation Modal Popup Admin Styles
+ * Modern, kart tabanlı ve okunaklı bir görünüm
  */
 
 /* Genel konteyner stilleri */
@@ -8,20 +9,70 @@
   max-width: 100%;
 }
 
+/* Sekme çubuğu - WooCommerce admin ile uyumlu modern görünüm */
+.wrap .nav-tab-wrapper {
+  margin-top: 20px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.wrap .nav-tab-wrapper .nav-tab {
+  border-radius: 8px 8px 0 0;
+  border: 1px solid transparent;
+  border-bottom: none;
+  background: #f9fafb;
+  color: #4b5563;
+  padding: 8px 14px;
+  margin-right: 4px;
+  font-weight: 500;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.wrap .nav-tab-wrapper .nav-tab:hover {
+  background: #eef2ff;
+  color: #111827;
+}
+
+.wrap .nav-tab-wrapper .nav-tab.nav-tab-active {
+  background: #ffffff;
+  color: #111827;
+  border-color: #e5e7eb #e5e7eb #ffffff;
+}
+
+/* Ürün ayarları tablo kartı */
+.wdp-settings-container {
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+  padding: 16px 18px 18px;
+}
+
 /* Tablo stilleri */
 .wdp-products-table {
   width: 100%;
   border-collapse: collapse;
 }
 
+.wdp-products-table thead tr {
+  background: #f9fafb;
+}
+
 .wdp-products-table th {
   text-align: left;
   padding: 10px;
+  font-weight: 600;
+  color: #374151;
+  border-bottom: 1px solid #e5e7eb;
 }
 
 .wdp-products-table td {
   padding: 12px 10px;
   vertical-align: middle;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.wdp-products-table tr:nth-child(even) td {
+  background-color: #f9fafb;
 }
 
 /* Toggle switch stilleri */
@@ -75,8 +126,20 @@ input:checked + .wdp-slider:before {
 }
 
 /* Input stilleri */
-.wdp-products-table input[type="number"] {
-  width: 70px;
+.wdp-products-table input[type="number"],
+.wdp-products-table input[type="text"] {
+  width: 80px;
+  padding: 4px 6px;
+  border-radius: 6px;
+  border: 1px solid #d1d5db;
+  font-size: 12px;
+}
+
+.wdp-products-table input[type="number"]:focus,
+.wdp-products-table input[type="text"]:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.3);
+  outline: none;
 }
 
 /* Shortcode stilleri - Yeni stil ekleyin */
@@ -129,6 +192,8 @@ input:checked + .wdp-slider:before {
   padding: 10px 0;
   display: flex;
   align-items: center;
+  justify-content: flex-start;
+  border-top: 1px solid #e5e7eb;
 }
 
 .wdp-bulk-actions .spinner {
@@ -160,15 +225,22 @@ input:checked + .wdp-slider:before {
 }
 
 .wdp-button-settings-container {
-  max-width: 800px;
+  max-width: 880px;
   margin-top: 20px;
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+  padding: 20px 22px 24px;
 }
 
 .wdp-button-settings-container h2 {
-  margin-top: 30px;
-  margin-bottom: 15px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid #ddd;
+  margin-top: 26px;
+  margin-bottom: 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #e5e7eb;
+  font-size: 15px;
+  color: #111827;
 }
 
 .wdp-button-settings-container h2:first-child {
@@ -178,6 +250,8 @@ input:checked + .wdp-slider:before {
 .wdp-button-settings-container .form-table th {
   width: 200px;
   padding: 20px 10px 20px 0;
+  font-weight: 600;
+  color: #374151;
 }
 
 .wdp-button-settings-container .form-table td {
@@ -195,13 +269,20 @@ input:checked + .wdp-slider:before {
 .wdp-button-settings-container .submit {
   margin-top: 30px;
   padding-top: 20px;
-  border-top: 1px solid #ddd;
+  border-top: 1px solid #e5e7eb;
 }
 
 .wdp-button-settings-container .submit .spinner {
   float: none;
   margin: 0 0 0 10px;
   vertical-align: middle;
+}
+
+.wdp-button-settings-container .submit .wdp-inline-save-message {
+  margin-left: 10px;
+  font-size: 13px;
+  color: #059669;
+  display: inline-block;
 }
 
 /* Responsive düzenlemeler */

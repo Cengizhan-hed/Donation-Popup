@@ -115,15 +115,12 @@ html body .wdp-donation-form .wdp-modal-close:focus {
   box-shadow: none;
 }
 
-/* Title styles with high specificity - GiveWP benzeri yaklaşım */
-/* CRITICAL: Popup modal title - block display for full-width underline, header has border */
-/* ABSOLUTE FIX: Prevent font size flash - MAXIMUM SPECIFICITY, NO JS MODIFICATION, FIXED INITIAL SIZE */
+/* Title styles with high specificity - popup header title */
 html body .wdp-modal .wdp-modal-header .wdp-modal-title,
 html body .wdp-modal .wdp-modal-header .wdp-modal-title[style],
 html body .wdp-modal .wdp-modal-header .wdp-modal-title[style*="font-size"] {
   font-family: var(--wdp-font-family, 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif);
-  /* ABSOLUTE FIX: Use px instead of rem for immediate size (prevents flash) */
-  font-size: var(--wdp-title-size, 27.2px); /* 1.7rem = 27.2px (16px base) */
+  font-size: var(--wdp-title-size, 27px);
   font-weight: 600;
   line-height: 1.2;
   color: var(--wdp-title-color, #1f2937);
@@ -142,24 +139,8 @@ html body .wdp-modal .wdp-modal-header .wdp-modal-title[style*="font-size"] {
   clear: none;
   position: relative;
   box-sizing: border-box;
-  /* ABSOLUTE: Prevent size flash - fixed dimensions from start */
-  min-height: 32.64px; /* 27.2px * 1.2 line-height */
+  min-height: calc(var(--wdp-title-size, 27px) * 1.2);
   height: auto;
-  /* ABSOLUTE: Prevent font loading flash */
-  visibility: visible;
-  opacity: 1;
-  /* ABSOLUTE: Font rendering optimization */
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  /* ABSOLUTE: Force font size stability - prevent ANY override (theme/JS/inline) */
-  /* Use both px and rem for maximum compatibility */
-  font-size: 27.2px;
-  font-size: 1.7rem;
-  /* ABSOLUTE: Prevent font-swap flash by using system fonts first */
-  font-display: swap;
-  /* ABSOLUTE: Prevent inline style font-size changes */
-  font-size-adjust: none;
 }
 
 html body :is(.wdp-modal .wdp-modal-header, .wdp-donation-form .wdp-modal-content) .wdp-product-price {
@@ -193,8 +174,8 @@ html body .wdp-donation-form .wdp-modal-header .wdp-modal-title,
 html body .wdp-donation-form .wdp-modal-header .wdp-modal-title[style],
 html body .wdp-donation-form .wdp-modal-header .wdp-modal-title[style*="font-size"] {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  /* ABSOLUTE FIX: Use px instead of rem for immediate size (prevents flash) */
-  font-size: var(--wdp-title-size, 27.2px); /* 1.7rem = 27.2px (16px base) */
+  /* Masaüstü / mobil için dinamik başlık boyutu */
+  font-size: var(--wdp-title-size, 27px);
   font-weight: 600;
   line-height: 1.2;
   color: var(--wdp-title-color, #1f2937);
@@ -214,24 +195,8 @@ html body .wdp-donation-form .wdp-modal-header .wdp-modal-title[style*="font-siz
   clear: none;
   position: relative;
   box-sizing: border-box;
-  /* ABSOLUTE: Prevent size flash - fixed dimensions from start */
-  min-height: 32.64px; /* 27.2px * 1.2 line-height */
+  min-height: calc(var(--wdp-title-size, 27px) * 1.2);
   height: auto;
-  /* ABSOLUTE: Prevent font loading flash */
-  visibility: visible;
-  opacity: 1;
-  /* ABSOLUTE: Font rendering optimization */
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  /* ABSOLUTE: Force font size stability - prevent ANY override (theme/JS/inline) */
-  /* Use both px and rem for maximum compatibility */
-  font-size: 27.2px;
-  font-size: 1.7rem;
-  /* ABSOLUTE: Prevent font-swap flash by using system fonts first */
-  font-display: swap;
-  /* ABSOLUTE: Prevent inline style font-size changes */
-  font-size-adjust: none;
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content form.wdp-has-shareholders > :is(.wdp-form-title, h2, h2.wdp-form-title) {
@@ -527,9 +492,9 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content form > .wdp-sha
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content label {
-  font-size: 14px;
-  font-weight: 600;
-  color: #374151;
+  font-size: var(--wdp-label-font-size, 14px);
+  font-weight: var(--wdp-label-font-weight, 600);
+  color: var(--wdp-label-color, #374151);
   display: block;
   margin: 0;
   padding: 0;
@@ -582,7 +547,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content :is(input, sele
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content :is(input, textarea)::placeholder {
-  color: #6b7280;
+  color: var(--wdp-placeholder-color, #6b7280);
   opacity: 1;
 }
 

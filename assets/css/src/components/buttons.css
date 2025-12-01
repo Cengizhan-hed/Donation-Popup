@@ -114,6 +114,37 @@ html body :is(.wdp-modal .wdp-modal-content form .wdp-button-group,
   container-type: inline-size;
 }
 
+/* Buton hizalama - opsiyonel düzenler */
+html body :is(.wdp-modal .wdp-modal-content form .wdp-button-group.wdp-button-align-left,
+              .wdp-donation-form .wdp-modal-content form .wdp-button-group.wdp-button-align-left,
+              .wdp-modal .wdp-modal-content .wdp-button-group.wdp-button-align-left,
+              .wdp-donation-form .wdp-modal-content .wdp-button-group.wdp-button-align-left,
+              .wdp-modal-content form .wdp-button-group.wdp-button-align-left) {
+  display: flex;
+  justify-content: flex-start;
+  gap: var(--wdp-space-3, 0.75rem);
+}
+
+html body :is(.wdp-modal .wdp-modal-content form .wdp-button-group.wdp-button-align-center,
+              .wdp-donation-form .wdp-modal-content form .wdp-button-group.wdp-button-align-center,
+              .wdp-modal .wdp-modal-content .wdp-button-group.wdp-button-align-center,
+              .wdp-donation-form .wdp-modal-content .wdp-button-group.wdp-button-align-center,
+              .wdp-modal-content form .wdp-button-group.wdp-button-align-center) {
+  display: flex;
+  justify-content: center;
+  gap: var(--wdp-space-3, 0.75rem);
+}
+
+html body :is(.wdp-modal .wdp-modal-content form .wdp-button-group.wdp-button-align-right,
+              .wdp-donation-form .wdp-modal-content form .wdp-button-group.wdp-button-align-right,
+              .wdp-modal .wdp-modal-content .wdp-button-group.wdp-button-align-right,
+              .wdp-donation-form .wdp-modal-content .wdp-button-group.wdp-button-align-right,
+              .wdp-modal-content form .wdp-button-group.wdp-button-align-right) {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--wdp-space-3, 0.75rem);
+}
+
 html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content form, .wdp-modal-content) .wdp-button-group {
   margin: 0;
 }
