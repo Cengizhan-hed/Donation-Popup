@@ -114,34 +114,17 @@ html body :is(.wdp-modal .wdp-modal-content form .wdp-button-group,
   container-type: inline-size;
 }
 
-html body .wdp-modal .wdp-modal-content form .wdp-button-group,
-html body .wdp-donation-form .wdp-button-group {
-  margin-top: 0;
+html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content form, .wdp-modal-content) .wdp-button-group {
+  margin: 0;
 }
 
-html body .wdp-modal .wdp-modal-content form .wdp-button-group,
-html body .wdp-donation-form .wdp-modal-content form .wdp-button-group {
-  margin-bottom: 0;
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content form:not(.wdp-has-shareholders) > .wdp-button-group {
+  margin: 0;
 }
 
-/* CRITICAL: Reset margin for button groups, BUT exclude shareholder forms */
-html body .wdp-modal .wdp-modal-content form:not(.wdp-has-shareholders) > .wdp-button-group,
-html body .wdp-donation-form .wdp-modal-content > .wdp-button-group,
-html body .wdp-modal .wdp-modal-content form:not(.wdp-has-shareholders) > .wdp-button-group:last-child,
-html body .wdp-donation-form .wdp-modal-content form:not(.wdp-has-shareholders) > .wdp-button-group:last-child {
-  margin-top: 0;
-  margin-bottom: 0;
-}
-
-/* CRITICAL: Mobile should look identical to desktop - use same grid layout */
-/* Desktop and mobile use same button group layout */
-html body .wdp-modal .wdp-modal-content form .wdp-button-group,
-html body .wdp-donation-form .wdp-modal-content form .wdp-button-group {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  width: 100%;
-  margin-top: var(--wdp-space-2);
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content form.wdp-has-shareholders > .wdp-button-group {
+  margin-block-start: 16px;
+  margin-top: 16px; /* Fallback for older browsers */
 }
 
 /* CRITICAL: GiveWP benzeri yaklaşım - yüksek specificity ile tema override koruması */
@@ -225,13 +208,13 @@ html body .wdp-modal-content form .wdp-button-group button[name="donation_go_che
   background-color: var(--wdp-accent-hover);
 }
 
-html body .wdp-modal-content form .wdp-button-group button.wdp-loading {
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content form .wdp-button-group button.wdp-loading {
   position: relative;
   color: transparent;
   pointer-events: none;
 }
 
-html body .wdp-modal-content form .wdp-button-group button.wdp-loading::after {
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content form .wdp-button-group button.wdp-loading::after {
   content: '';
   position: absolute;
   width: 16px;
@@ -246,7 +229,7 @@ html body .wdp-modal-content form .wdp-button-group button.wdp-loading::after {
   animation: wdpSpin 1s linear infinite;
 }
 
-html body .wdp-modal-content form .wdp-button-group button:disabled {
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content form .wdp-button-group button:disabled {
   background-color: var(--wdp-gray-400, #9ca3af);
   cursor: not-allowed;
   transform: none;

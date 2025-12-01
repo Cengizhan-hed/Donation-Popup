@@ -3,11 +3,8 @@
 /* ==================== */
 /* CRITICAL: Maximum specificity - html body ile tema override koruması */
 
-html body .wdp-loading-overlay,
-html body .wdp-modal .wdp-loading-overlay,
-html body .wdp-donation-form .wdp-loading-overlay,
-html body .wdp-modal .wdp-modal-content .wdp-loading-overlay,
-html body .wdp-donation-form .wdp-modal-content .wdp-loading-overlay {
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-loading-overlay,
+html body .wdp-loading-overlay {
   position: absolute;
   top: 0;
   left: 0;
@@ -24,11 +21,8 @@ html body .wdp-donation-form .wdp-modal-content .wdp-loading-overlay {
   animation: wdpFadeIn var(--wdp-duration-200, 200ms) var(--wdp-ease-out, cubic-bezier(0, 0, 0.2, 1));
 }
 
-html body .wdp-loading-spinner,
-html body .wdp-modal .wdp-loading-spinner,
-html body .wdp-donation-form .wdp-loading-spinner,
-html body .wdp-modal .wdp-modal-content .wdp-loading-spinner,
-html body .wdp-donation-form .wdp-modal-content .wdp-loading-spinner {
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-loading-spinner,
+html body .wdp-loading-spinner {
   width: 40px;
   height: 40px;
   border: 3px solid var(--wdp-gray-200, #e5e7eb);
@@ -40,11 +34,8 @@ html body .wdp-donation-form .wdp-modal-content .wdp-loading-spinner {
 }
 
 /* Skeleton loading for form fields */
-html body .wdp-skeleton,
-html body .wdp-modal .wdp-skeleton,
-html body .wdp-donation-form .wdp-skeleton,
-html body .wdp-modal .wdp-modal-content .wdp-skeleton,
-html body .wdp-donation-form .wdp-modal-content .wdp-skeleton {
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-skeleton,
+html body .wdp-skeleton {
   background: linear-gradient(
     90deg,
     var(--wdp-gray-100, #f3f4f6) 0%,
@@ -67,33 +58,24 @@ html body .wdp-donation-form .wdp-modal-content .wdp-skeleton {
 }
 
 /* Skeleton input */
-html body .wdp-skeleton-input,
-html body .wdp-modal .wdp-skeleton-input,
-html body .wdp-donation-form .wdp-skeleton-input,
-html body .wdp-modal .wdp-modal-content .wdp-skeleton-input,
-html body .wdp-donation-form .wdp-modal-content .wdp-skeleton-input {
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-skeleton-input,
+html body .wdp-skeleton-input {
   width: 100%;
   height: 48px;
   border-radius: var(--wdp-radius-md, 8px);
 }
 
 /* Skeleton button */
-html body .wdp-skeleton-button,
-html body .wdp-modal .wdp-skeleton-button,
-html body .wdp-donation-form .wdp-skeleton-button,
-html body .wdp-modal .wdp-modal-content .wdp-skeleton-button,
-html body .wdp-donation-form .wdp-modal-content .wdp-skeleton-button {
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-skeleton-button,
+html body .wdp-skeleton-button {
   width: 100%;
   height: 48px;
   border-radius: var(--wdp-button-radius, 10px);
 }
 
 /* Progress indicator */
-html body .wdp-progress-bar,
-html body .wdp-modal .wdp-progress-bar,
-html body .wdp-donation-form .wdp-progress-bar,
-html body .wdp-modal .wdp-modal-content .wdp-progress-bar,
-html body .wdp-donation-form .wdp-modal-content .wdp-progress-bar {
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-progress-bar,
+html body .wdp-progress-bar {
   width: 100%;
   height: 4px;
   background-color: var(--wdp-gray-200, #e5e7eb);
@@ -102,11 +84,8 @@ html body .wdp-donation-form .wdp-modal-content .wdp-progress-bar {
   position: relative;
 }
 
-html body .wdp-progress-bar-fill,
-html body .wdp-modal .wdp-progress-bar-fill,
-html body .wdp-donation-form .wdp-progress-bar-fill,
-html body .wdp-modal .wdp-modal-content .wdp-progress-bar-fill,
-html body .wdp-donation-form .wdp-modal-content .wdp-progress-bar-fill {
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-progress-bar-fill,
+html body .wdp-progress-bar-fill {
   height: 100%;
   background: linear-gradient(
     90deg,
@@ -131,21 +110,15 @@ html body .wdp-donation-form .wdp-modal-content .wdp-progress-bar-fill {
 }
 
 /* Loading dots animation */
-html body .wdp-loading-dots,
-html body .wdp-modal .wdp-loading-dots,
-html body .wdp-donation-form .wdp-loading-dots,
-html body .wdp-modal .wdp-modal-content .wdp-loading-dots,
-html body .wdp-donation-form .wdp-modal-content .wdp-loading-dots {
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-loading-dots,
+html body .wdp-loading-dots {
   display: inline-flex;
   align-items: center;
   gap: 4px;
 }
 
-html body .wdp-loading-dots span,
-html body .wdp-modal .wdp-loading-dots span,
-html body .wdp-donation-form .wdp-loading-dots span,
-html body .wdp-modal .wdp-modal-content .wdp-loading-dots span,
-html body .wdp-donation-form .wdp-modal-content .wdp-loading-dots span {
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-loading-dots span,
+html body .wdp-loading-dots span {
   width: 8px;
   height: 8px;
   border-radius: 50%;
@@ -153,19 +126,13 @@ html body .wdp-donation-form .wdp-modal-content .wdp-loading-dots span {
   animation: wdpLoadingDots 1.4s ease-in-out infinite both;
 }
 
-html body .wdp-loading-dots span:nth-child(1),
-html body .wdp-modal .wdp-loading-dots span:nth-child(1),
-html body .wdp-donation-form .wdp-loading-dots span:nth-child(1),
-html body .wdp-modal .wdp-modal-content .wdp-loading-dots span:nth-child(1),
-html body .wdp-donation-form .wdp-modal-content .wdp-loading-dots span:nth-child(1) {
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-loading-dots span:nth-child(1),
+html body .wdp-loading-dots span:nth-child(1) {
   animation-delay: -0.32s;
 }
 
-html body .wdp-loading-dots span:nth-child(2),
-html body .wdp-modal .wdp-loading-dots span:nth-child(2),
-html body .wdp-donation-form .wdp-loading-dots span:nth-child(2),
-html body .wdp-modal .wdp-modal-content .wdp-loading-dots span:nth-child(2),
-html body .wdp-donation-form .wdp-modal-content .wdp-loading-dots span:nth-child(2) {
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-loading-dots span:nth-child(2),
+html body .wdp-loading-dots span:nth-child(2) {
   animation-delay: -0.16s;
 }
 
@@ -181,26 +148,16 @@ html body .wdp-donation-form .wdp-modal-content .wdp-loading-dots span:nth-child
 }
 
 /* Button loading state enhancement */
-html body .wdp-button-loading,
-html body .wdp-modal .wdp-button-loading,
-html body .wdp-donation-form .wdp-button-loading,
-html body .wdp-modal .wdp-modal-content .wdp-button-loading,
-html body .wdp-donation-form .wdp-modal-content .wdp-button-loading,
-html body .wdp-modal .wdp-modal-content form .wdp-button-group button.wdp-button-loading,
-html body .wdp-donation-form .wdp-modal-content form .wdp-button-group button.wdp-button-loading {
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content :is(.wdp-button-loading, form .wdp-button-group button.wdp-button-loading),
+html body .wdp-button-loading {
   position: relative;
   color: transparent !important;
   pointer-events: none;
   cursor: wait;
 }
 
-html body .wdp-button-loading::after,
-html body .wdp-modal .wdp-button-loading::after,
-html body .wdp-donation-form .wdp-button-loading::after,
-html body .wdp-modal .wdp-modal-content .wdp-button-loading::after,
-html body .wdp-donation-form .wdp-modal-content .wdp-button-loading::after,
-html body .wdp-modal .wdp-modal-content form .wdp-button-group button.wdp-button-loading::after,
-html body .wdp-donation-form .wdp-modal-content form .wdp-button-group button.wdp-button-loading::after {
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content :is(.wdp-button-loading, form .wdp-button-group button.wdp-button-loading)::after,
+html body .wdp-button-loading::after {
   content: '';
   position: absolute;
   top: 50%;

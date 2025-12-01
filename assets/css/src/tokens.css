@@ -47,6 +47,9 @@
  * ============================================================================
  */
 
+/* Modern CSS Layers - Tema override yönetimi için */
+@layer reset, base, components, utilities;
+
 :root {
   /* Primary Palette - Ana renk paleti (Modern RGB format) */
   /* Kullanım: Butonlar, linkler, vurgular */
@@ -55,6 +58,10 @@
   --wdp-primary-alpha-10: rgba(74, 144, 226, 0.1);
   --wdp-primary-alpha-20: rgba(74, 144, 226, 0.2);
   --wdp-primary-alpha-50: rgba(74, 144, 226, 0.5);
+  
+  /* Modern color-mix() support (fallback to rgba) */
+  --wdp-primary-alpha-10-modern: color-mix(in srgb, var(--wdp-primary) 10%, transparent);
+  --wdp-primary-alpha-20-modern: color-mix(in srgb, var(--wdp-primary) 20%, transparent);
   
   --wdp-secondary: rgb(123, 97, 255);            /* İkincil mor renk */
   --wdp-secondary-hover: rgb(101, 80, 216);     /* İkincil hover rengi */

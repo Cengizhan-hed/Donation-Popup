@@ -162,9 +162,7 @@ html body .wdp-modal .wdp-modal-header .wdp-modal-title[style*="font-size"] {
   font-size-adjust: none;
 }
 
-/* Product price display - başlığın hemen sağında, küçük ve mavi renkte */
-html body .wdp-modal .wdp-modal-header .wdp-product-price,
-html body .wdp-donation-form .wdp-modal-content .wdp-product-price {
+html body :is(.wdp-modal .wdp-modal-header, .wdp-donation-form .wdp-modal-content) .wdp-product-price {
   font-family: var(--wdp-font-family, 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif);
   font-size: 1rem; /* 16px - biraz daha büyük */
   font-weight: 400;
@@ -188,29 +186,12 @@ html body .wdp-donation-form .wdp-modal-content .wdp-form-title-wrapper {
   box-sizing: border-box;
 }
 
-/* In-page form title - inline-block for title-width underline */
-/* ABSOLUTE FIX: Prevent font size flash - MAXIMUM SPECIFICITY, NO JS MODIFICATION, FIXED INITIAL SIZE */
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content :is(.wdp-form-title, h2, h2.wdp-form-title),
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content :is(.wdp-form-title, h2, h2.wdp-form-title)[style],
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content :is(.wdp-form-title, h2, h2.wdp-form-title)[style*="font-size"],
 html body .wdp-donation-form .wdp-modal-header .wdp-modal-title,
 html body .wdp-donation-form .wdp-modal-header .wdp-modal-title[style],
-html body .wdp-donation-form .wdp-modal-header .wdp-modal-title[style*="font-size"],
-html body .wdp-modal .wdp-modal-content .wdp-form-title,
-html body .wdp-modal .wdp-modal-content .wdp-form-title[style],
-html body .wdp-modal .wdp-modal-content .wdp-form-title[style*="font-size"],
-html body .wdp-donation-form .wdp-modal-content .wdp-form-title,
-html body .wdp-donation-form .wdp-modal-content .wdp-form-title[style],
-html body .wdp-donation-form .wdp-modal-content .wdp-form-title[style*="font-size"],
-html body .wdp-modal .wdp-modal-content h2,
-html body .wdp-modal .wdp-modal-content h2[style],
-html body .wdp-modal .wdp-modal-content h2[style*="font-size"],
-html body .wdp-donation-form .wdp-modal-content h2,
-html body .wdp-donation-form .wdp-modal-content h2[style],
-html body .wdp-donation-form .wdp-modal-content h2[style*="font-size"],
-html body .wdp-modal .wdp-modal-content h2.wdp-form-title,
-html body .wdp-modal .wdp-modal-content h2.wdp-form-title[style],
-html body .wdp-modal .wdp-modal-content h2.wdp-form-title[style*="font-size"],
-html body .wdp-donation-form .wdp-modal-content h2.wdp-form-title,
-html body .wdp-donation-form .wdp-modal-content h2.wdp-form-title[style],
-html body .wdp-donation-form .wdp-modal-content h2.wdp-form-title[style*="font-size"] {
+html body .wdp-donation-form .wdp-modal-header .wdp-modal-title[style*="font-size"] {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   /* ABSOLUTE FIX: Use px instead of rem for immediate size (prevents flash) */
   font-size: var(--wdp-title-size, 27.2px); /* 1.7rem = 27.2px (16px base) */
@@ -253,14 +234,7 @@ html body .wdp-donation-form .wdp-modal-content h2.wdp-form-title[style*="font-s
   font-size-adjust: none;
 }
 
-/* Specific selector for forms with shareholders */
-/* Force inline-block behavior */
-html body .wdp-modal .wdp-modal-content form.wdp-has-shareholders > .wdp-form-title,
-html body .wdp-donation-form .wdp-modal-content form.wdp-has-shareholders > .wdp-form-title,
-html body .wdp-modal .wdp-modal-content form.wdp-has-shareholders > h2,
-html body .wdp-donation-form .wdp-modal-content form.wdp-has-shareholders > h2,
-html body .wdp-modal .wdp-modal-content form.wdp-has-shareholders > h2.wdp-form-title,
-html body .wdp-donation-form .wdp-modal-content form.wdp-has-shareholders > h2.wdp-form-title {
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content form.wdp-has-shareholders > :is(.wdp-form-title, h2, h2.wdp-form-title) {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   font-size: 1.7rem;
   font-weight: 600;
@@ -287,16 +261,7 @@ html body .wdp-donation-form .wdp-modal-content form.wdp-has-shareholders > h2.w
   position: relative;
 }
 
-/* Price quantity row with high specificity */
-/* CRITICAL: Elementor için popup ve sayfa içi form birebir aynı görünüm */
-html body .wdp-modal .wdp-price-quantity-row,
-html body .wdp-donation-form .wdp-price-quantity-row,
-html body .wdp-modal .wdp-modal-content form .wdp-price-quantity-row,
-html body .wdp-donation-form .wdp-modal-content form .wdp-price-quantity-row,
-html body.elementor-page .wdp-modal .wdp-price-quantity-row,
-html body.elementor-page .wdp-donation-form .wdp-price-quantity-row,
-html body.elementor-page .wdp-modal .wdp-modal-content form .wdp-price-quantity-row,
-html body.elementor-page .wdp-donation-form .wdp-modal-content form .wdp-price-quantity-row {
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-price-quantity-row {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
@@ -307,109 +272,45 @@ html body.elementor-page .wdp-donation-form .wdp-modal-content form .wdp-price-q
   box-sizing: border-box;
 }
 
-/* CRITICAL: Exclude custom price inputs from padding reset - they have their own padding */
-/* Use :not() to exclude custom price inputs and price field inputs */
-/* CRITICAL: Elementor için popup ve sayfa içi form birebir aynı görünüm */
-html body .wdp-modal .wdp-price-quantity-row > *:not(input[name="custom_price"]):not(.wdp-price-field),
-html body .wdp-donation-form .wdp-price-quantity-row > *:not(input[name="custom_price"]):not(.wdp-price-field),
-html body .wdp-modal .wdp-modal-content form .wdp-price-quantity-row > *:not(input[name="custom_price"]):not(.wdp-price-field),
-html body .wdp-donation-form .wdp-modal-content form .wdp-price-quantity-row > *:not(input[name="custom_price"]):not(.wdp-price-field),
-html body.elementor-page .wdp-modal .wdp-price-quantity-row > *:not(input[name="custom_price"]):not(.wdp-price-field),
-html body.elementor-page .wdp-donation-form .wdp-price-quantity-row > *:not(input[name="custom_price"]):not(.wdp-price-field),
-html body.elementor-page .wdp-modal .wdp-modal-content form .wdp-price-quantity-row > *:not(input[name="custom_price"]):not(.wdp-price-field),
-html body.elementor-page .wdp-donation-form .wdp-modal-content form .wdp-price-quantity-row > *:not(input[name="custom_price"]):not(.wdp-price-field) {
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-price-quantity-row > *:not(input[name="custom_price"]):not(.wdp-price-field) {
   width: 100%;
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-/* CRITICAL: Elementor için popup ve sayfa içi form birebir aynı görünüm */
-html body .wdp-modal .wdp-price-quantity-row:has(> input[type="hidden"]:only-child),
-html body .wdp-donation-form .wdp-price-quantity-row:has(> input[type="hidden"]:only-child),
-html body.elementor-page .wdp-modal .wdp-price-quantity-row:has(> input[type="hidden"]:only-child),
-html body.elementor-page .wdp-donation-form .wdp-price-quantity-row:has(> input[type="hidden"]:only-child) {
-  /* CRITICAL: Shares section should be visible when has-shareholders class is present */
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-price-quantity-row:has(> input[type="hidden"]:only-child) {
   display: flex;
   flex-direction: column;
-  visibility: visible;
-  opacity: 1;
 }
 
-/* Shares section layout - High specificity without */
-/* CRITICAL: Sayfa içi form için maksimum specificity - tema override koruması */
-/* ABSOLUTE FIX: Elementor için gap kontrolü - boşluk sorununu çöz */
-html body .wdp-modal .wdp-modal-content .wdp-shares-section,
-html body .wdp-donation-form .wdp-modal-content .wdp-shares-section,
-html body .wdp-modal .wdp-shares-section,
-html body .wdp-donation-form .wdp-shares-section,
-html body .wdp-donation-form .wdp-modal-content form .wdp-shares-section,
-html body.elementor-page .wdp-donation-form .wdp-modal-content .wdp-shares-section,
-html body.elementor-page .wdp-donation-form .wdp-modal-content form .wdp-shares-section {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-shares-section {
   display: flex;
   flex-direction: column;
-  /* CRITICAL: Hisse adedi ile hissedar bilgileri arasındaki boşluk */
   gap: 12px;
-  /* CRITICAL: Popup ile birebir aynı boşluk - dengeli görünüm */
   margin: 0;
-  margin-bottom: 0;
-  margin-top: 0;
-  margin-left: 0;
-  margin-right: 0;
   min-height: 0;
   flex: 0 1 auto;
   box-sizing: border-box;
-  /* CRITICAL: Always visible */
-  visibility: visible;
-  opacity: 1;
 }
 
-/* Shares header layout - High specificity without */
-/* ABSOLUTE FIX: Elementor için margin kontrolü - boşluk sorununu çöz */
-html body .wdp-modal .wdp-modal-content .wdp-shares-section .wdp-shares-header,
-html body .wdp-donation-form .wdp-modal-content .wdp-shares-section .wdp-shares-header,
-html body .wdp-modal .wdp-shares-header,
-html body .wdp-donation-form .wdp-shares-header,
-html body.elementor-page .wdp-donation-form .wdp-modal-content .wdp-shares-section .wdp-shares-header,
-html body.elementor-page .wdp-donation-form .wdp-modal-content form .wdp-shares-section .wdp-shares-header {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-shares-header {
   display: grid;
   grid-template-columns: 1fr auto;
-  grid-template-rows: auto;
   align-items: center;
   gap: 12px;
   row-gap: 8px;
   width: 100%;
-  /* ABSOLUTE FIX: Elementor override - tüm margin değerlerini sıfırla */
   margin: 0;
-  margin-bottom: 0;
-  margin-top: 0;
-  margin-left: 0;
-  margin-right: 0;
   padding: 0;
-  padding-bottom: 0;
-  padding-top: 0;
-  padding-left: 0;
-  padding-right: 0;
   box-sizing: border-box;
-  /* CRITICAL: Always visible */
-  visibility: visible;
-  opacity: 1;
 }
 
-html body .wdp-modal .wdp-modal-content .wdp-shares-section .wdp-shares-header.has-badge,
-html body .wdp-donation-form .wdp-modal-content .wdp-shares-section .wdp-shares-header.has-badge,
-html body .wdp-modal .wdp-shares-header.has-badge,
-html body .wdp-donation-form .wdp-shares-header.has-badge {
+html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content .wdp-shares-section .wdp-shares-header, .wdp-shares-header).has-badge {
   grid-template-rows: auto auto;
 }
 
-html body .wdp-modal .wdp-modal-content .wdp-shares-section .wdp-shares-header label,
-html body .wdp-donation-form .wdp-modal-content .wdp-shares-section .wdp-shares-header label,
-html body .wdp-modal .wdp-shares-header label,
-html body .wdp-donation-form .wdp-shares-header label {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-shares-header label {
   margin: 0;
   padding: 0;
   font-size: 16px;
@@ -419,19 +320,12 @@ html body .wdp-donation-form .wdp-shares-header label {
   grid-column: 1;
   grid-row: 1;
   text-align: left;
-  text-transform: none;
-  letter-spacing: normal;
-  word-spacing: normal;
   line-height: 1.5;
-  box-shadow: none;
-  text-shadow: none;
   display: block;
   align-self: center;
 }
 
-/* Quantity counter with high specificity - override base.css reset */
-html body .wdp-modal .wdp-quantity-counter,
-html body .wdp-donation-form .wdp-quantity-counter {
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-quantity-counter {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   display: flex;
   align-items: center;
@@ -448,9 +342,7 @@ html body .wdp-donation-form .wdp-quantity-counter {
   position: relative;
 }
 
-/* Quantity counter input with high specificity - perfect center alignment */
-html body .wdp-modal .wdp-quantity-counter input[type="number"],
-html body .wdp-donation-form .wdp-quantity-counter input[type="number"] {
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-quantity-counter input[type="number"] {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   flex: 1 1 0;
   min-width: 40px;
@@ -474,14 +366,7 @@ html body .wdp-donation-form .wdp-quantity-counter input[type="number"] {
   display: block;
 }
 
-/* Product quantity buttons with high specificity - override base.css reset */
-/* NOTE: These are legacy selectors - actual quantity counter buttons are styled in components/quantity.css */
-html body .wdp-modal .wdp-product-quantity-btn,
-html body .wdp-modal .wdp-share-btn,
-html body .wdp-modal .wdp-share-quantity-btn,
-html body .wdp-donation-form .wdp-product-quantity-btn,
-html body .wdp-donation-form .wdp-share-btn,
-html body .wdp-donation-form .wdp-share-quantity-btn {
+html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-product-quantity-btn, .wdp-share-btn, .wdp-share-quantity-btn) {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   width: 40px;
   height: 40px;
@@ -505,18 +390,8 @@ html body .wdp-donation-form .wdp-share-quantity-btn {
   box-sizing: border-box;
 }
 
-html body .wdp-modal .wdp-product-quantity-btn:hover,
-html body .wdp-modal .wdp-product-quantity-btn:focus,
-html body .wdp-modal .wdp-share-btn:hover,
-html body .wdp-modal .wdp-share-btn:focus,
-html body .wdp-modal .wdp-share-quantity-btn:hover,
-html body .wdp-modal .wdp-share-quantity-btn:focus,
-html body .wdp-donation-form .wdp-product-quantity-btn:hover,
-html body .wdp-donation-form .wdp-product-quantity-btn:focus,
-html body .wdp-donation-form .wdp-share-btn:hover,
-html body .wdp-donation-form .wdp-share-btn:focus,
-html body .wdp-donation-form .wdp-share-quantity-btn:hover,
-html body .wdp-donation-form .wdp-share-quantity-btn:focus {
+html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-product-quantity-btn, .wdp-share-btn, .wdp-share-quantity-btn):hover,
+html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-product-quantity-btn, .wdp-share-btn, .wdp-share-quantity-btn):focus {
   color: #4a90e2;
   outline: none;
   border: none;
@@ -527,211 +402,76 @@ html body .wdp-donation-form .wdp-share-quantity-btn:focus {
 /* Modal content - Do not override layout.css padding */
 /* Layout.css handles padding: 32px 24px (desktop), 16px 12px (mobile) */
 /* This rule only sets font-family and width, padding is managed by layout.css */
-html body .wdp-modal .wdp-modal-content,
-html body .wdp-donation-form .wdp-modal-content {
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   box-sizing: border-box;
 }
 
-/* Modal form with high specificity - override base.css reset */
-/* CRITICAL: Prevent form from expanding modal - absolute constraints */
-/* CRITICAL: Ensure ALL forms (with or without shareholders) are visible */
-/* CRITICAL: Elementor için popup ve sayfa içi form birebir aynı görünüm */
-/* CRITICAL: Popup modal form - normal padding, overflow hidden */
-html body .wdp-modal .wdp-modal-content form,
-html body.elementor-page .wdp-modal .wdp-modal-content form {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content form {
   display: flex;
   flex-direction: column;
   gap: 16px;
   width: 100%;
   min-height: 0;
-  /* CRITICAL: Form must never exceed parent height */
   max-height: 100%;
   height: auto;
   flex: 1 1 auto;
-  flex-shrink: 1;
-  flex-grow: 0;
-  overflow: hidden; /* CRITICAL: Popup modal için hidden - modal-content padding ile boşluk sağlanıyor */
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  position: relative;
-  /* CRITICAL: Remove contain to ensure content visibility */
   contain: none;
-  /* CRITICAL: Ensure form and all content are visible */
-  visibility: visible;
-  opacity: 1;
 }
 
-/* CRITICAL: Sayfa içi form - overflow visible ve padding-bottom ile border görünürlüğü */
-html body .wdp-donation-form .wdp-modal-content form,
-html body.elementor-page .wdp-donation-form .wdp-modal-content form {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  width: 100%;
-  min-height: 0;
-  /* CRITICAL: Form must never exceed parent height */
-  max-height: 100%;
-  height: auto;
-  flex: 1 1 auto;
-  flex-shrink: 1;
-  flex-grow: 0;
-  overflow: visible; /* CRITICAL: Border görünürlüğü için visible - form expansion'ı max-height ile kontrol ediliyor */
-  margin: 0;
-  padding: 0;
-  padding-bottom: 2px; /* CRITICAL: Alt border için ekstra padding - border kesilmesini önle */
-  box-sizing: border-box;
-  position: relative;
-  /* CRITICAL: Remove contain to ensure content visibility */
-  contain: none;
-  /* CRITICAL: Ensure form and all content are visible */
-  visibility: visible;
-  opacity: 1;
-}
-
-/* CRITICAL: Forms with shareholders must not expand modal - absolute constraints */
-/* ABSOLUTE FIX: Use overflow: hidden and strict flex constraints to prevent modal expansion */
-/* CRITICAL: Elementor için popup ve sayfa içi form birebir aynı görünüm */
-html body .wdp-modal .wdp-modal-content form.wdp-has-shareholders,
-html body .wdp-donation-form .wdp-modal-content form.wdp-has-shareholders,
-html body.elementor-page .wdp-modal .wdp-modal-content form.wdp-has-shareholders,
-html body.elementor-page .wdp-donation-form .wdp-modal-content form.wdp-has-shareholders {
-  gap: 0; /* FIX: Remove gap (spacing handled by margin-bottom on shareholder-area) */
-  min-height: 0;
-  /* CRITICAL: Form must never exceed parent height - same as non-shareholder forms */
-  max-height: 100%;
-  /* FIX: Same as non-shareholder forms - auto height */
-  height: auto;
-  /* CRITICAL: Use overflow: hidden to prevent modal expansion */
+html body .wdp-modal .wdp-modal-content form {
   overflow: hidden;
-  /* CRITICAL: Same as non-shareholder forms - flex: 1 1 auto */
-  flex: 1 1 auto;
-  flex-shrink: 1;
-  flex-grow: 0;
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  /* Remove contain to allow content to be visible in shareholder area */
-  contain: none;
-  /* CRITICAL: Ensure form and content are visible */
-  visibility: visible;
-  opacity: 1;
 }
 
-/* CRITICAL: Shares section must not cause form expansion */
-/* CRITICAL: Elementor için popup ve sayfa içi form birebir aynı görünüm */
-html body .wdp-modal .wdp-modal-content form.wdp-has-shareholders .wdp-shares-section,
-html body .wdp-donation-form .wdp-modal-content form.wdp-has-shareholders .wdp-shares-section,
-html body.elementor-page .wdp-modal .wdp-modal-content form.wdp-has-shareholders .wdp-shares-section,
-html body.elementor-page .wdp-donation-form .wdp-modal-content form.wdp-has-shareholders .wdp-shares-section {
+html body .wdp-donation-form .wdp-modal-content form {
+  overflow: visible;
+  padding-bottom: 2px;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content form.wdp-has-shareholders {
+  gap: 0;
+  overflow: hidden;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content form.wdp-has-shareholders .wdp-shares-section {
   min-height: 0;
   max-height: none;
   flex: 0 1 auto;
-  flex-shrink: 1;
-  flex-grow: 0;
   overflow: visible;
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  visibility: visible;
-  opacity: 1;
 }
 
-/* CRITICAL: Elementor için popup ve sayfa içi form birebir aynı görünüm */
-html body .wdp-modal .wdp-modal-content form.wdp-has-shareholders > :not([hidden]):not(input[type="hidden"]) + :not([hidden]):not(input[type="hidden"]),
-html body .wdp-donation-form .wdp-modal-content form.wdp-has-shareholders > :not([hidden]):not(input[type="hidden"]) + :not([hidden]):not(input[type="hidden"]),
-html body.elementor-page .wdp-modal .wdp-modal-content form.wdp-has-shareholders > :not([hidden]):not(input[type="hidden"]) + :not([hidden]):not(input[type="hidden"]),
-html body.elementor-page .wdp-donation-form .wdp-modal-content form.wdp-has-shareholders > :not([hidden]):not(input[type="hidden"]) + :not([hidden]):not(input[type="hidden"]) {
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content form.wdp-has-shareholders > :not([hidden]):not(input[type="hidden"]) + :not([hidden]):not(input[type="hidden"]) {
   margin-top: 0;
 }
 
-/* Reduce spacing between title and shares section */
-/* Minimized spacing for tighter layout - remove gap completely */
-/* CRITICAL: Elementor için popup ve sayfa içi form birebir aynı görünüm */
-html body .wdp-modal .wdp-modal-content form.wdp-has-shareholders > .wdp-form-title + .wdp-shares-section,
-html body .wdp-modal .wdp-modal-content form.wdp-has-shareholders > h2 + .wdp-shares-section,
-html body .wdp-donation-form .wdp-modal-content form.wdp-has-shareholders > .wdp-form-title + .wdp-shares-section,
-html body .wdp-donation-form .wdp-modal-content form.wdp-has-shareholders > h2 + .wdp-shares-section,
-html body .wdp-modal .wdp-modal-content form.wdp-has-shareholders > h2.wdp-form-title + .wdp-shares-section,
-html body .wdp-donation-form .wdp-modal-content form.wdp-has-shareholders > h2.wdp-form-title + .wdp-shares-section,
-html body.elementor-page .wdp-modal .wdp-modal-content form.wdp-has-shareholders > .wdp-form-title + .wdp-shares-section,
-html body.elementor-page .wdp-modal .wdp-modal-content form.wdp-has-shareholders > h2 + .wdp-shares-section,
-html body.elementor-page .wdp-donation-form .wdp-modal-content form.wdp-has-shareholders > .wdp-form-title + .wdp-shares-section,
-html body.elementor-page .wdp-donation-form .wdp-modal-content form.wdp-has-shareholders > h2 + .wdp-shares-section,
-html body.elementor-page .wdp-modal .wdp-modal-content form.wdp-has-shareholders > h2.wdp-form-title + .wdp-shares-section,
-html body.elementor-page .wdp-donation-form .wdp-modal-content form.wdp-has-shareholders > h2.wdp-form-title + .wdp-shares-section {
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content form.wdp-has-shareholders > :is(.wdp-form-title, h2) + .wdp-shares-section {
   margin-top: 0;
 }
 
-/* CRITICAL: Reset margin-top for all elements after shares section, EXCEPT button-group (it needs spacing) */
-/* CRITICAL: Elementor için popup ve sayfa içi form birebir aynı görünüm */
-html body .wdp-modal .wdp-modal-content form.wdp-has-shareholders > .wdp-shares-section + *:not(.wdp-button-group),
-html body .wdp-donation-form .wdp-modal-content form.wdp-has-shareholders > .wdp-shares-section + *:not(.wdp-button-group),
-html body.elementor-page .wdp-modal .wdp-modal-content form.wdp-has-shareholders > .wdp-shares-section + *:not(.wdp-button-group),
-html body.elementor-page .wdp-donation-form .wdp-modal-content form.wdp-has-shareholders > .wdp-shares-section + *:not(.wdp-button-group) {
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content form.wdp-has-shareholders > .wdp-shares-section + *:not(.wdp-button-group) {
   margin-top: 0;
 }
 
-html body .wdp-modal .wdp-modal-content form.wdp-has-shareholders > .wdp-shares-section + .wdp-price-quantity-row,
-html body .wdp-donation-form .wdp-modal-content form.wdp-has-shareholders > .wdp-shares-section + .wdp-price-quantity-row,
-html body.elementor-page .wdp-modal .wdp-modal-content form.wdp-has-shareholders > .wdp-shares-section + .wdp-price-quantity-row,
-html body.elementor-page .wdp-donation-form .wdp-modal-content form.wdp-has-shareholders > .wdp-shares-section + .wdp-price-quantity-row {
-  margin-top: 0;
-  margin-bottom: 0;
-  /* ABSOLUTE FIX: Elementor için popup ve sayfa içi form birebir aynı boşluk */
-  padding-top: 0;
-  padding-bottom: 0;
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content form.wdp-has-shareholders > .wdp-shares-section + .wdp-price-quantity-row {
+  margin: 0;
+  padding: 0;
 }
 
-/* Button group after shares section - ADD spacing between shareholder area and buttons */
-/* FIX: Add margin-top for spacing between shareholder area and buttons */
-/* CRITICAL: HTML structure is: .wdp-shares-section > .wdp-price-quantity-row > .wdp-button-group */
-/* So we need to target .wdp-price-quantity-row ~ .wdp-button-group or directly .wdp-button-group */
-/* CRITICAL: Higher specificity to override form > * reset and buttons.css reset */
-/* CRITICAL: Elementor için popup ve sayfa içi form birebir aynı görünüm */
-html body .wdp-modal .wdp-modal-content form.wdp-has-shareholders > .wdp-shares-section ~ .wdp-button-group,
-html body .wdp-donation-form .wdp-modal-content form.wdp-has-shareholders > .wdp-shares-section ~ .wdp-button-group,
-html body .wdp-modal .wdp-modal-content form.wdp-has-shareholders > .wdp-price-quantity-row ~ .wdp-button-group,
-html body .wdp-donation-form .wdp-modal-content form.wdp-has-shareholders > .wdp-price-quantity-row ~ .wdp-button-group,
-html body .wdp-modal .wdp-modal-content form.wdp-has-shareholders > .wdp-price-quantity-row + .wdp-button-group,
-html body .wdp-donation-form .wdp-modal-content form.wdp-has-shareholders > .wdp-price-quantity-row + .wdp-button-group,
-html body .wdp-modal .wdp-modal-content form.wdp-has-shareholders .wdp-shares-section ~ .wdp-button-group,
-html body .wdp-donation-form .wdp-modal-content form.wdp-has-shareholders .wdp-shares-section ~ .wdp-button-group,
-html body .wdp-modal .wdp-modal-content form.wdp-has-shareholders .wdp-shareholders-area ~ .wdp-button-group,
-html body .wdp-donation-form .wdp-modal-content form.wdp-has-shareholders .wdp-shareholders-area ~ .wdp-button-group,
-html body.elementor-page .wdp-modal .wdp-modal-content form.wdp-has-shareholders > .wdp-shares-section ~ .wdp-button-group,
-html body.elementor-page .wdp-donation-form .wdp-modal-content form.wdp-has-shareholders > .wdp-shares-section ~ .wdp-button-group,
-html body.elementor-page .wdp-modal .wdp-modal-content form.wdp-has-shareholders > .wdp-price-quantity-row ~ .wdp-button-group,
-html body.elementor-page .wdp-donation-form .wdp-modal-content form.wdp-has-shareholders > .wdp-price-quantity-row ~ .wdp-button-group,
-html body.elementor-page .wdp-modal .wdp-modal-content form.wdp-has-shareholders > .wdp-price-quantity-row + .wdp-button-group,
-html body.elementor-page .wdp-donation-form .wdp-modal-content form.wdp-has-shareholders > .wdp-price-quantity-row + .wdp-button-group,
-html body.elementor-page .wdp-modal .wdp-modal-content form.wdp-has-shareholders .wdp-shares-section ~ .wdp-button-group,
-html body.elementor-page .wdp-donation-form .wdp-modal-content form.wdp-has-shareholders .wdp-shares-section ~ .wdp-button-group,
-html body.elementor-page .wdp-modal .wdp-modal-content form.wdp-has-shareholders .wdp-shareholders-area ~ .wdp-button-group,
-html body.elementor-page .wdp-donation-form .wdp-modal-content form.wdp-has-shareholders .wdp-shareholders-area ~ .wdp-button-group {
-  /* CRITICAL: Popup ile birebir aynı boşluk - dengeli görünüm */
-  margin-top: 0;
-  margin-bottom: 0;
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content form.wdp-has-shareholders .wdp-button-group {
+  margin: 0;
 }
 
-/* CRITICAL: Elementor için popup ve sayfa içi form birebir aynı görünüm */
-html body .wdp-modal .wdp-modal-content form.wdp-has-shareholders > .wdp-price-quantity-row:has(> input[type="hidden"]:only-child) + .wdp-button-group,
-html body .wdp-donation-form .wdp-modal-content form.wdp-has-shareholders > .wdp-price-quantity-row:has(> input[type="hidden"]:only-child) + .wdp-button-group,
-html body.elementor-page .wdp-modal .wdp-modal-content form.wdp-has-shareholders > .wdp-price-quantity-row:has(> input[type="hidden"]:only-child) + .wdp-button-group,
-html body.elementor-page .wdp-donation-form .wdp-modal-content form.wdp-has-shareholders > .wdp-price-quantity-row:has(> input[type="hidden"]:only-child) + .wdp-button-group {
-  margin-top: 16px;
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content form.wdp-has-shareholders > .wdp-price-quantity-row:has(> input[type="hidden"]:only-child) + .wdp-button-group {
+  margin-block-start: 16px;
+  margin-top: 16px; /* Fallback for older browsers */
 }
 
 /* Button group margin is now handled by scrollable/not-scrollable rules above */
 
-/* CRITICAL: Elementor için popup ve sayfa içi form birebir aynı görünüm */
-html body .wdp-modal .wdp-modal-content form > *,
-html body .wdp-donation-form .wdp-modal-content form > *,
-html body.elementor-page .wdp-modal .wdp-modal-content form > *,
-html body.elementor-page .wdp-donation-form .wdp-modal-content form > * {
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content form > * {
   width: 100%;
   min-height: 0;
   flex-shrink: 0;
@@ -740,167 +480,78 @@ html body.elementor-page .wdp-donation-form .wdp-modal-content form > * {
   box-sizing: border-box;
 }
 
-/* CRITICAL: Exclude button-group from form > * reset - it needs NO margin-top (spacing comes from shareholder-area margin-bottom) */
-/* FIX: Direct child selector with maximum specificity to override buttons.css */
-/* CRITICAL: Popup ve sayfa içi form için dengeli boşluklar - birebir aynı görünüm */
-/* ABSOLUTE FIX: Elementor için ultra-agresif override - boşluk sorununu çöz */
-html body .wdp-modal .wdp-modal-content form.wdp-has-shareholders > .wdp-button-group,
-html body .wdp-donation-form .wdp-modal-content form.wdp-has-shareholders > .wdp-button-group,
-html body .wdp-donation-form .wdp-modal-content form > .wdp-button-group,
-html body .wdp-modal .wdp-modal-content form > .wdp-button-group,
-html body.elementor-page .wdp-donation-form .wdp-modal-content form.wdp-has-shareholders > .wdp-button-group,
-html body.elementor-page .wdp-donation-form .wdp-modal-content form > .wdp-button-group {
+/* Genel tema CSS override - shareholders area margin-bottom koruma */
+/* Modern logical properties for RTL/LTR support */
+html body [class*="wdp-shareholders-area"] {
+  margin-block-end: 16px;
+  margin-bottom: 16px; /* Fallback for older browsers */
+}
+
+
+/* ============================================================================
+ * CRITICAL: GENEL TEMA/PLUGIN CSS İZOLASYONU - SÜRDÜRÜLEBİLİR ÇÖZÜM
+ * ============================================================================
+ * Her tema/plugin için ayrı class eklemek yerine, genel bir yaklaşım kullanıyoruz:
+ * 
+ * 1. CSS Isolation: isolation: isolate + contain: layout style paint (zaten var)
+ * 2. Genel :last-child override: Tüm .wdp-* elemanları için
+ * 3. Yüksek specificity: html body ile başlayan selector'ler
+ * 4. Tema/plugin class'larına bağımlı değil
+ * 
+ * Bu yaklaşım:
+ * - Herhangi bir tema/plugin CSS'inden etkilenmez
+ * - Sürdürülebilir (yeni tema eklemek gerekmez)
+ * - Performanslı (daha az CSS kuralı)
+ * - Temiz kod yapısı
+ * ============================================================================ */
+
+/* Last-child margin reset - shareholders area hariç */
+html body [class*="wdp-"]:last-child:not([class*="wdp-shareholders-area"]),
+html body [class*="wdp-"] *:last-child:not([class*="wdp-shareholders-area"]) {
   margin: 0;
-  margin-top: 0;
-  margin-bottom: 0;
-  margin-left: 0;
-  margin-right: 0;
+}
+
+html body .wdp-modal .wdp-shareholder-content *:last-child,
+html body .wdp-donation-form .wdp-shareholder-content *:last-child {
+  margin: 0;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content form > .wdp-button-group {
+  margin: 0;
   padding: 0;
-  padding-top: 0;
-  padding-bottom: 0;
-  padding-left: 0;
-  padding-right: 0;
-  /* CRITICAL: Override buttons.css rules and any theme styles */
   box-sizing: border-box;
 }
 
-/* CRITICAL: Exclude shareholder content from form > * reset - it needs gap to work */
-/* CRITICAL: Elementor için popup ve sayfa içi form birebir aynı görünüm */
-html body .wdp-modal .wdp-modal-content form > .wdp-shareholder-content,
-html body .wdp-donation-form .wdp-modal-content form > .wdp-shareholder-content,
-html body.elementor-page .wdp-modal .wdp-modal-content form > .wdp-shareholder-content,
-html body.elementor-page .wdp-donation-form .wdp-modal-content form > .wdp-shareholder-content {
-  /* Keep grid gap - don't reset display */
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content form > .wdp-shareholder-content {
   display: grid;
 }
 
-/* Label styles with high specificity - GiveWP benzeri yaklaşım */
-/* CRITICAL: Elementor için popup ve sayfa içi form birebir aynı görünüm */
-html body .wdp-modal .wdp-modal-content label,
-html body .wdp-donation-form .wdp-modal-content label,
-html body .wdp-modal .wdp-modal-content form label,
-html body .wdp-donation-form .wdp-modal-content form label,
-html body.elementor-page .wdp-modal .wdp-modal-content label,
-html body.elementor-page .wdp-donation-form .wdp-modal-content label,
-html body.elementor-page .wdp-modal .wdp-modal-content form label,
-html body.elementor-page .wdp-donation-form .wdp-modal-content form label {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content label {
   font-size: 14px;
   font-weight: 600;
   color: #374151;
   display: block;
   margin: 0;
-  margin-bottom: 0;
   padding: 0;
   text-align: left;
-  text-transform: none;
-  letter-spacing: normal;
-  word-spacing: normal;
   line-height: 1.5;
-}
-
-/* Button border radius with high specificity - override base.css reset */
-/* CRITICAL: Elementor için popup ve sayfa içi form birebir aynı görünüm */
-html body .wdp-modal button,
-html body .wdp-donation-form button,
-html body.elementor-page .wdp-modal button,
-html body.elementor-page .wdp-donation-form button {
-  border-radius: var(--wdp-input-radius, 8px);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   box-sizing: border-box;
 }
 
-/* Exception: quantity counter buttons and share counter buttons should have no border-radius */
-/* CRITICAL: Elementor için popup ve sayfa içi form birebir aynı görünüm */
-html body .wdp-modal .wdp-quantity-counter button,
-html body .wdp-donation-form .wdp-quantity-counter button,
-html body .wdp-modal .wdp-share-counter button,
-html body .wdp-donation-form .wdp-share-counter button,
-html body .wdp-modal .wdp-share-quantity button,
-html body .wdp-donation-form .wdp-share-quantity button,
-html body.elementor-page .wdp-modal .wdp-quantity-counter button,
-html body.elementor-page .wdp-donation-form .wdp-quantity-counter button,
-html body.elementor-page .wdp-modal .wdp-share-counter button,
-html body.elementor-page .wdp-donation-form .wdp-share-counter button,
-html body.elementor-page .wdp-modal .wdp-share-quantity button,
-html body.elementor-page .wdp-donation-form .wdp-share-quantity button {
+html body :is(.wdp-modal, .wdp-donation-form) button {
+  border-radius: var(--wdp-input-radius, 8px);
+  box-sizing: border-box;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-quantity-counter, .wdp-share-counter) button {
   border-radius: 0;
 }
 
-/* Input styles with high specificity - GiveWP benzeri yaklaşım */
-/* CRITICAL: Apply default styles to all inputs except custom price inputs */
-/* CRITICAL: Elementor için popup ve sayfa içi form birebir aynı görünüm */
-/* CRITICAL: Maximum specificity - html body ile tema override koruması */
-/* CRITICAL: Tüm border'ları açıkça belirt - tema override'larını önlemek için */
-html body .wdp-modal .wdp-modal-content input[type="text"],
-html body .wdp-modal .wdp-modal-content input[type="tel"],
-html body .wdp-modal .wdp-modal-content input[type="email"],
-html body .wdp-modal .wdp-modal-content input[type="password"],
-html body .wdp-modal .wdp-modal-content input[type="search"],
-html body .wdp-modal .wdp-modal-content select,
-html body .wdp-modal .wdp-modal-content textarea,
-html body .wdp-donation-form .wdp-modal-content input[type="text"],
-html body .wdp-donation-form .wdp-modal-content input[type="tel"],
-html body .wdp-donation-form .wdp-modal-content input[type="email"],
-html body .wdp-donation-form .wdp-modal-content input[type="password"],
-html body .wdp-donation-form .wdp-modal-content input[type="search"],
-html body .wdp-donation-form .wdp-modal-content select,
-html body .wdp-donation-form .wdp-modal-content textarea,
-html body .wdp-modal .wdp-modal-content form input[type="text"],
-html body .wdp-modal .wdp-modal-content form input[type="tel"],
-html body .wdp-modal .wdp-modal-content form input[type="email"],
-html body .wdp-modal .wdp-modal-content form input[type="password"],
-html body .wdp-modal .wdp-modal-content form input[type="search"],
-html body .wdp-modal .wdp-modal-content form select,
-html body .wdp-modal .wdp-modal-content form textarea,
-/* CRITICAL: Sayfa içi formlar için alt border görünürlüğü */
-html body .wdp-donation-form .wdp-modal-content form input[type="text"],
-html body .wdp-donation-form .wdp-modal-content form input[type="tel"],
-html body .wdp-donation-form .wdp-modal-content form input[type="email"],
-html body .wdp-donation-form .wdp-modal-content form input[type="password"],
-html body .wdp-donation-form .wdp-modal-content form input[type="search"],
-html body .wdp-donation-form .wdp-modal-content form select,
-html body .wdp-donation-form .wdp-modal-content form textarea,
-html body.elementor-page .wdp-modal .wdp-modal-content input[type="text"],
-html body.elementor-page .wdp-modal .wdp-modal-content input[type="tel"],
-html body.elementor-page .wdp-modal .wdp-modal-content input[type="email"],
-html body.elementor-page .wdp-modal .wdp-modal-content input[type="password"],
-html body.elementor-page .wdp-modal .wdp-modal-content input[type="search"],
-html body.elementor-page .wdp-modal .wdp-modal-content select,
-html body.elementor-page .wdp-modal .wdp-modal-content textarea,
-html body.elementor-page .wdp-donation-form .wdp-modal-content input[type="text"],
-html body.elementor-page .wdp-donation-form .wdp-modal-content input[type="tel"],
-html body.elementor-page .wdp-donation-form .wdp-modal-content input[type="email"],
-html body.elementor-page .wdp-donation-form .wdp-modal-content input[type="password"],
-html body.elementor-page .wdp-donation-form .wdp-modal-content input[type="search"],
-html body.elementor-page .wdp-donation-form .wdp-modal-content select,
-html body.elementor-page .wdp-donation-form .wdp-modal-content textarea,
-html body.elementor-page .wdp-modal .wdp-modal-content form input[type="text"],
-html body.elementor-page .wdp-modal .wdp-modal-content form input[type="tel"],
-html body.elementor-page .wdp-modal .wdp-modal-content form input[type="email"],
-html body.elementor-page .wdp-modal .wdp-modal-content form input[type="password"],
-html body.elementor-page .wdp-modal .wdp-modal-content form input[type="search"],
-html body.elementor-page .wdp-modal .wdp-modal-content form select,
-html body.elementor-page .wdp-modal .wdp-modal-content form textarea,
-html body.elementor-page .wdp-donation-form .wdp-modal-content form input[type="text"],
-html body.elementor-page .wdp-donation-form .wdp-modal-content form input[type="tel"],
-html body.elementor-page .wdp-donation-form .wdp-modal-content form input[type="email"],
-html body.elementor-page .wdp-donation-form .wdp-modal-content form input[type="password"],
-html body.elementor-page .wdp-donation-form .wdp-modal-content form input[type="search"],
-html body.elementor-page .wdp-donation-form .wdp-modal-content form select,
-html body.elementor-page .wdp-donation-form .wdp-modal-content form textarea {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content :is(input[type="text"], input[type="tel"], input[type="email"], input[type="password"], input[type="search"], select) {
   width: 100%;
   min-height: 48px;
-  padding-top: 12px;
-  padding-bottom: 16px;
-  padding-left: 16px;
-  padding-right: 16px;
+  padding: 12px 16px;
   border: 1px solid var(--wdp-input-border, #d1d5db);
-  border-top: 1px solid var(--wdp-input-border, #d1d5db);
-  border-right: 1px solid var(--wdp-input-border, #d1d5db);
-  border-left: 1px solid var(--wdp-input-border, #d1d5db);
-  border-bottom: 1px solid var(--wdp-input-border, #d1d5db);
   border-radius: var(--wdp-input-radius, 8px);
   background: #ffffff;
   color: #1f2937;
@@ -908,162 +559,47 @@ html body.elementor-page .wdp-donation-form .wdp-modal-content form textarea {
   font-weight: 400;
   line-height: 1.5;
   box-sizing: border-box;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  transition: border-color 0.2s ease;
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
-  -webkit-tap-highlight-color: transparent;
-  touch-action: manipulation;
   margin: 0;
   text-align: left;
-  text-transform: none;
-  letter-spacing: normal;
-  word-spacing: normal;
-  text-shadow: none;
-  box-shadow: none;
 }
 
-/* Textarea styles with high specificity */
-/* ABSOLUTE FIX: Increase textarea min-height and padding to ensure bottom border is visible */
-/* CRITICAL: Elementor için popup ve sayfa içi form birebir aynı görünüm */
-/* CRITICAL: Maximum specificity - html body ile tema override koruması */
-html body .wdp-modal .wdp-modal-content textarea,
-html body .wdp-donation-form .wdp-modal-content textarea,
-html body .wdp-modal .wdp-modal-content form textarea,
-html body .wdp-donation-form .wdp-modal-content form textarea,
-html body.elementor-page .wdp-modal .wdp-modal-content textarea,
-html body.elementor-page .wdp-donation-form .wdp-modal-content textarea,
-html body.elementor-page .wdp-modal .wdp-modal-content form textarea,
-html body.elementor-page .wdp-donation-form .wdp-modal-content form textarea {
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content textarea {
   min-height: 96px;
-  height: auto;
-  /* ABSOLUTE FIX: Increase padding-bottom to ensure bottom border is visible */
-  padding-top: 12px;
-  padding-bottom: 16px;
-  padding-left: 16px;
-  padding-right: 16px;
+  padding: 12px 16px;
   resize: vertical;
-  /* ABSOLUTE FIX: Ensure border is visible - explicit border */
   border: 1px solid var(--wdp-input-border, #d1d5db);
-  border-top: 1px solid var(--wdp-input-border, #d1d5db);
-  border-right: 1px solid var(--wdp-input-border, #d1d5db);
-  border-left: 1px solid var(--wdp-input-border, #d1d5db);
-  border-bottom: 1px solid var(--wdp-input-border, #d1d5db);
   border-radius: var(--wdp-input-radius, 8px);
 }
 
-/* Focus styles with high specificity */
-/* CRITICAL: Elementor için popup ve sayfa içi form birebir aynı görünüm */
-html body .wdp-modal .wdp-modal-content input:focus,
-html body .wdp-modal .wdp-modal-content select:focus,
-html body .wdp-modal .wdp-modal-content textarea:focus,
-html body .wdp-donation-form .wdp-modal-content input:focus,
-html body .wdp-donation-form .wdp-modal-content select:focus,
-html body .wdp-donation-form .wdp-modal-content textarea:focus,
-html body .wdp-modal .wdp-modal-content form input:focus,
-html body .wdp-modal .wdp-modal-content form select:focus,
-html body .wdp-modal .wdp-modal-content form textarea:focus,
-html body .wdp-donation-form .wdp-modal-content form input:focus,
-html body .wdp-donation-form .wdp-modal-content form select:focus,
-html body .wdp-donation-form .wdp-modal-content form textarea:focus,
-html body.elementor-page .wdp-modal .wdp-modal-content input:focus,
-html body.elementor-page .wdp-modal .wdp-modal-content select:focus,
-html body.elementor-page .wdp-modal .wdp-modal-content textarea:focus,
-html body.elementor-page .wdp-donation-form .wdp-modal-content input:focus,
-html body.elementor-page .wdp-donation-form .wdp-modal-content select:focus,
-html body.elementor-page .wdp-donation-form .wdp-modal-content textarea:focus,
-html body.elementor-page .wdp-modal .wdp-modal-content form input:focus,
-html body.elementor-page .wdp-modal .wdp-modal-content form select:focus,
-html body.elementor-page .wdp-modal .wdp-modal-content form textarea:focus,
-html body.elementor-page .wdp-donation-form .wdp-modal-content form input:focus,
-html body.elementor-page .wdp-donation-form .wdp-modal-content form select:focus,
-html body.elementor-page .wdp-donation-form .wdp-modal-content form textarea:focus {
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content :is(input, select, textarea):focus {
   border-color: #4a90e2;
   outline: none;
-  box-shadow: none;
   background-color: #ffffff;
 }
 
-/* Placeholder styles with high specificity */
-/* CRITICAL: Elementor için popup ve sayfa içi form birebir aynı görünüm */
-html body .wdp-modal .wdp-modal-content input::placeholder,
-html body .wdp-modal .wdp-modal-content textarea::placeholder,
-html body .wdp-donation-form .wdp-modal-content input::placeholder,
-html body .wdp-donation-form .wdp-modal-content textarea::placeholder,
-html body .wdp-modal .wdp-modal-content form input::placeholder,
-html body .wdp-modal .wdp-modal-content form textarea::placeholder,
-html body .wdp-donation-form .wdp-modal-content form input::placeholder,
-html body .wdp-donation-form .wdp-modal-content form textarea::placeholder,
-html body.elementor-page .wdp-modal .wdp-modal-content input::placeholder,
-html body.elementor-page .wdp-modal .wdp-modal-content textarea::placeholder,
-html body.elementor-page .wdp-donation-form .wdp-modal-content input::placeholder,
-html body.elementor-page .wdp-donation-form .wdp-modal-content textarea::placeholder,
-html body.elementor-page .wdp-modal .wdp-modal-content form input::placeholder,
-html body.elementor-page .wdp-modal .wdp-modal-content form textarea::placeholder,
-html body.elementor-page .wdp-donation-form .wdp-modal-content form input::placeholder,
-html body.elementor-page .wdp-donation-form .wdp-modal-content form textarea::placeholder {
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content :is(input, textarea)::placeholder {
   color: #6b7280;
   opacity: 1;
 }
 
-/* CRITICAL: Sayfa içi formlar için alt border görünürlüğü - özel stil */
-/* Yüksek specificity ile border-bottom'u açıkça belirt */
-/* ABSOLUTE FIX: min-height'ı padding + border dahil hesapla - border kesilmesini önle */
-html body .wdp-donation-form .wdp-modal-content form input[type="text"],
-html body .wdp-donation-form .wdp-modal-content form input[type="tel"],
-html body .wdp-donation-form .wdp-modal-content form input[type="email"],
-html body .wdp-donation-form .wdp-modal-content form input[type="password"],
-html body .wdp-donation-form .wdp-modal-content form input[type="search"],
-html body .wdp-donation-form .wdp-modal-content form select {
-  min-height: 52px; /* 48px content + 12px padding-top + 16px padding-bottom + 2px border = 78px total, ama min-height padding+border dahil 52px */
-  height: auto;
-  padding-top: 12px;
-  padding-bottom: 18px; /* Artırıldı - border görünürlüğü için */
-  padding-left: 16px;
-  padding-right: 16px;
-  border: 1px solid var(--wdp-input-border, #d1d5db);
-  border-top: 1px solid var(--wdp-input-border, #d1d5db);
-  border-right: 1px solid var(--wdp-input-border, #d1d5db);
-  border-left: 1px solid var(--wdp-input-border, #d1d5db);
-  border-bottom: 1px solid var(--wdp-input-border, #d1d5db);
-  line-height: 1.4; /* Line-height'ı düşür - border kesilmesini önle */
-  box-sizing: border-box;
+html body .wdp-donation-form .wdp-modal-content form :is(input[type="text"], input[type="tel"], input[type="email"], input[type="password"], input[type="search"], select) {
+  min-height: 52px;
+  padding-bottom: 18px;
+  line-height: 1.4;
 }
 
 html body .wdp-donation-form .wdp-modal-content form textarea {
-  min-height: 96px;
-  height: auto;
-  padding-top: 12px;
-  padding-bottom: 18px; /* Artırıldı - border görünürlüğü için */
-  padding-left: 16px;
-  padding-right: 16px;
-  border: 1px solid var(--wdp-input-border, #d1d5db);
-  border-top: 1px solid var(--wdp-input-border, #d1d5db);
-  border-right: 1px solid var(--wdp-input-border, #d1d5db);
-  border-left: 1px solid var(--wdp-input-border, #d1d5db);
-  border-bottom: 1px solid var(--wdp-input-border, #d1d5db);
-  line-height: 1.4; /* Line-height'ı düşür - border kesilmesini önle */
-  box-sizing: border-box;
+  padding-bottom: 18px;
+  line-height: 1.4;
 }
 
 @media (max-width: 600px) {
-  /* CRITICAL: Mobile should look identical to desktop - no visual changes */
-  /* CRITICAL: Maximum specificity - html body ile tema override koruması */
-  /* Only keep width constraints for responsive behavior */
-  html body .wdp-donation-form form,
-  html body .wdp-donation-form form > *,
-  html body .wdp-donation-form input,
-  html body .wdp-donation-form textarea,
-  html body .wdp-donation-form button,
-  html body .wdp-donation-form .wdp-button-group,
-  html body .wdp-donation-form .wdp-price-quantity-row,
   html body .wdp-donation-form .wdp-modal-content form,
-  html body .wdp-donation-form .wdp-modal-content form > *,
-  html body .wdp-donation-form .wdp-modal-content input,
-  html body .wdp-donation-form .wdp-modal-content textarea,
-  html body .wdp-donation-form .wdp-modal-content button,
-  html body .wdp-donation-form .wdp-modal-content .wdp-button-group,
-  html body .wdp-donation-form .wdp-modal-content .wdp-price-quantity-row {
+  html body .wdp-donation-form .wdp-modal-content form > * {
     width: 100%;
     max-width: 100%;
   }

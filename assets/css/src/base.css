@@ -45,8 +45,17 @@
  * ============================================
  */
 
+/* ============================================================================
+ * CSS ISOLATION LAYER - WOOCOMMERCE VE TEMA İZOLASYONU
+ * ============================================================================
+ * WooCommerce ve diğer tema/plugin CSS'lerinden tamamen izole etmek için
+ * Ultra-yüksek specificity ile tüm olası selector'leri override eder
+ * ============================================================================ */
+
 /* CSS Isolation Layer - Minimal reset, sadece gerekli olanlar */
 /* CRITICAL: Maximum specificity - html body ile tema override koruması */
+/* CRITICAL: Tema/plugin class'larına bağımlı değil - GENEL ÇÖZÜM */
+/* GiveWP benzeri maksimum specificity - WooCommerce ve tüm tema/plugin CSS'lerini override eder */
 html body .wdp-modal,
 html body .wdp-donation-form {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
@@ -62,13 +71,16 @@ html body .wdp-donation-form {
   padding: 0;
   display: block;
   background: transparent;
-  /* CRITICAL: Prevent layout shift during font loading */
+  isolation: isolate;
+  contain: layout style paint;
   font-display: swap;
-  /* Improved text rendering */
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
   font-feature-settings: "kern" 1, "liga" 1;
+}
+
+/* Genel tema/plugin CSS override - tüm .wdp-* elementleri için */
+html body [class*="wdp-"] {
+  isolation: isolate;
+  contain: layout style paint;
 }
 
 /* Typography reset - Sadece başlıklar için */

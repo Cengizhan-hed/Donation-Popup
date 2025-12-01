@@ -30,16 +30,8 @@ html body :is(.wdp-progress-bar-info, .wdp-progress-bar-limit) {
   gap: 2px;
 }
 
-html body .wdp-progress-bar-label,
-html body .wdp-progress-bar-limit-label,
-html body .wdp-modal .wdp-progress-bar-label,
-html body .wdp-modal .wdp-progress-bar-limit-label,
-html body .wdp-donation-form .wdp-progress-bar-label,
-html body .wdp-donation-form .wdp-progress-bar-limit-label,
-html body .wdp-modal .wdp-modal-content .wdp-progress-bar-label,
-html body .wdp-modal .wdp-modal-content .wdp-progress-bar-limit-label,
-html body .wdp-donation-form .wdp-modal-content .wdp-progress-bar-label,
-html body .wdp-donation-form .wdp-modal-content .wdp-progress-bar-limit-label {
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content :is(.wdp-progress-bar-label, .wdp-progress-bar-limit-label),
+html body :is(.wdp-progress-bar-label, .wdp-progress-bar-limit-label) {
   font-size: 11px;
   font-weight: 500;
   color: #64748b;

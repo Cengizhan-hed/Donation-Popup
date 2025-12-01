@@ -4,9 +4,8 @@
 /* MODERN UYARI BİLDİRİMLERİ */
 /* ==================== */
 /* CRITICAL: Maximum specificity - html body ile tema override koruması */
-html body .wdp-alert-overlay,
-html body .wdp-modal .wdp-alert-overlay,
-html body .wdp-donation-form .wdp-alert-overlay {
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-alert-overlay,
+html body .wdp-alert-overlay {
   position: fixed;
   inset: 0;
   z-index: calc(var(--wdp-z-modal) + 6);
@@ -22,18 +21,14 @@ html body .wdp-donation-form .wdp-alert-overlay {
   transition: opacity 0.25s ease;
 }
 
-html body .wdp-alert-overlay.show,
-html body .wdp-modal .wdp-alert-overlay.show,
-html body .wdp-donation-form .wdp-alert-overlay.show {
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-alert-overlay.show,
+html body .wdp-alert-overlay.show {
   opacity: 1;
   pointer-events: auto;
 }
 
-html body .wdp-alert,
-html body .wdp-modal .wdp-alert,
-html body .wdp-donation-form .wdp-alert,
-html body .wdp-modal-content .wdp-alert,
-html body .wdp-donation-form .wdp-modal-content .wdp-alert {
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-alert,
+html body .wdp-alert {
   /* variant variables with sensible defaults */
   --wdp-alert-border: rgba(148, 163, 184, 0.25);
   --wdp-alert-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(243, 244, 246, 0.95) 100%);
@@ -55,18 +50,15 @@ html body .wdp-donation-form .wdp-modal-content .wdp-alert {
   transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.32s ease;
 }
 
-html body .wdp-alert-overlay.show .wdp-alert,
-html body .wdp-modal .wdp-alert-overlay.show .wdp-alert,
-html body .wdp-donation-form .wdp-alert-overlay.show .wdp-alert {
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-alert-overlay.show .wdp-alert,
+html body .wdp-alert-overlay.show .wdp-alert {
   transform: translateY(0) scale(1);
   opacity: 1;
 }
 
 html body .wdp-alert__icon,
-html body .wdp-modal .wdp-alert__icon,
-html body .wdp-donation-form .wdp-alert__icon,
-html body .wdp-modal-content .wdp-alert__icon,
-html body .wdp-donation-form .wdp-modal-content .wdp-alert__icon {
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-alert__icon,
+html body .wdp-alert__icon {
   width: 56px;
   height: 56px;
   border-radius: 18px;
@@ -78,41 +70,29 @@ html body .wdp-donation-form .wdp-modal-content .wdp-alert__icon {
   color: var(--wdp-alert-icon-color);
 }
 
-html body .wdp-alert__icon svg,
-html body .wdp-modal .wdp-alert__icon svg,
-html body .wdp-donation-form .wdp-alert__icon svg,
-html body .wdp-modal-content .wdp-alert__icon svg,
-html body .wdp-donation-form .wdp-modal-content .wdp-alert__icon svg {
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-alert__icon svg,
+html body .wdp-alert__icon svg {
   width: 28px;
   height: 28px;
 }
 
-html body .wdp-alert__body,
-html body .wdp-modal .wdp-alert__body,
-html body .wdp-donation-form .wdp-alert__body,
-html body .wdp-modal-content .wdp-alert__body,
-html body .wdp-donation-form .wdp-modal-content .wdp-alert__body {
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-alert__body,
+html body .wdp-alert__body {
   display: flex;
   flex-direction: column;
   gap: var(--wdp-space-2);
 }
 
-html body .wdp-alert__title,
-html body .wdp-modal .wdp-alert__title,
-html body .wdp-donation-form .wdp-alert__title,
-html body .wdp-modal-content .wdp-alert__title,
-html body .wdp-donation-form .wdp-modal-content .wdp-alert__title {
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-alert__title,
+html body .wdp-alert__title {
   margin: 0;
   font-size: var(--wdp-text-lg);
   font-weight: 600;
   color: var(--wdp-gray-900);
 }
 
-html body .wdp-alert__list,
-html body .wdp-modal .wdp-alert__list,
-html body .wdp-donation-form .wdp-alert__list,
-html body .wdp-modal-content .wdp-alert__list,
-html body .wdp-donation-form .wdp-modal-content .wdp-alert__list {
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-alert__list,
+html body .wdp-alert__list {
   margin: 0;
   padding-left: 0;
   list-style: none;
@@ -123,21 +103,15 @@ html body .wdp-donation-form .wdp-modal-content .wdp-alert__list {
   color: var(--wdp-gray-600);
 }
 
-html body .wdp-alert__list li,
-html body .wdp-modal .wdp-alert__list li,
-html body .wdp-donation-form .wdp-alert__list li,
-html body .wdp-modal-content .wdp-alert__list li,
-html body .wdp-donation-form .wdp-modal-content .wdp-alert__list li {
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-alert__list li,
+html body .wdp-alert__list li {
   position: relative;
   padding-left: 18px;
   line-height: 1.55;
 }
 
-html body .wdp-alert__list li::before,
-html body .wdp-modal .wdp-alert__list li::before,
-html body .wdp-donation-form .wdp-alert__list li::before,
-html body .wdp-modal-content .wdp-alert__list li::before,
-html body .wdp-donation-form .wdp-modal-content .wdp-alert__list li::before {
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-alert__list li::before,
+html body .wdp-alert__list li::before {
   content: '';
   position: absolute;
   left: 0;
@@ -149,11 +123,8 @@ html body .wdp-donation-form .wdp-modal-content .wdp-alert__list li::before {
   opacity: 0.55;
 }
 
-html body .wdp-alert__close,
-html body .wdp-modal .wdp-alert__close,
-html body .wdp-donation-form .wdp-alert__close,
-html body .wdp-modal-content .wdp-alert__close,
-html body .wdp-donation-form .wdp-modal-content .wdp-alert__close {
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-alert__close,
+html body .wdp-alert__close {
   align-self: flex-start;
   border: none;
   background: rgba(15, 23, 42, 0.05);
@@ -185,11 +156,8 @@ html body .wdp-donation-form .wdp-modal-content .wdp-alert__close:focus-visible 
   outline: none;
 }
 
-html body .wdp-alert--error,
-html body .wdp-modal .wdp-alert--error,
-html body .wdp-donation-form .wdp-alert--error,
-html body .wdp-modal-content .wdp-alert--error,
-html body .wdp-donation-form .wdp-modal-content .wdp-alert--error {
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-alert--error,
+html body .wdp-alert--error {
   --wdp-alert-border: rgba(229, 62, 62, 0.35);
   --wdp-alert-bg: linear-gradient(135deg, rgba(254, 242, 242, 0.98), rgba(255, 255, 255, 0.96));
   --wdp-alert-icon-bg: rgba(229, 62, 62, 0.12);
@@ -197,11 +165,8 @@ html body .wdp-donation-form .wdp-modal-content .wdp-alert--error {
   --wdp-alert-icon-shadow: inset 0 0 0 1px rgba(229, 62, 62, 0.2);
 }
 
-html body .wdp-alert--warning,
-html body .wdp-modal .wdp-alert--warning,
-html body .wdp-donation-form .wdp-alert--warning,
-html body .wdp-modal-content .wdp-alert--warning,
-html body .wdp-donation-form .wdp-modal-content .wdp-alert--warning {
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-alert--warning,
+html body .wdp-alert--warning {
   --wdp-alert-border: rgba(237, 137, 54, 0.35);
   --wdp-alert-bg: linear-gradient(135deg, rgba(255, 247, 237, 0.98), rgba(255, 255, 255, 0.97));
   --wdp-alert-icon-bg: rgba(237, 137, 54, 0.16);
@@ -209,11 +174,8 @@ html body .wdp-donation-form .wdp-modal-content .wdp-alert--warning {
   --wdp-alert-icon-shadow: inset 0 0 0 1px rgba(237, 137, 54, 0.25);
 }
 
-html body .wdp-alert--success,
-html body .wdp-modal .wdp-alert--success,
-html body .wdp-donation-form .wdp-alert--success,
-html body .wdp-modal-content .wdp-alert--success,
-html body .wdp-donation-form .wdp-modal-content .wdp-alert--success {
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-alert--success,
+html body .wdp-alert--success {
   --wdp-alert-border: rgba(72, 187, 120, 0.35);
   --wdp-alert-bg: linear-gradient(135deg, rgba(236, 253, 245, 0.98), rgba(255, 255, 255, 0.97));
   --wdp-alert-icon-bg: rgba(72, 187, 120, 0.16);
@@ -221,11 +183,8 @@ html body .wdp-donation-form .wdp-modal-content .wdp-alert--success {
   --wdp-alert-icon-shadow: inset 0 0 0 1px rgba(72, 187, 120, 0.22);
 }
 
-html body .wdp-alert--info,
-html body .wdp-modal .wdp-alert--info,
-html body .wdp-donation-form .wdp-alert--info,
-html body .wdp-modal-content .wdp-alert--info,
-html body .wdp-donation-form .wdp-modal-content .wdp-alert--info {
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-alert--info,
+html body .wdp-alert--info {
   --wdp-alert-border: rgba(74, 144, 226, 0.35);
   --wdp-alert-bg: linear-gradient(135deg, rgba(235, 244, 255, 0.98), rgba(255, 255, 255, 0.97));
   --wdp-alert-icon-bg: rgba(74, 144, 226, 0.16);
@@ -245,11 +204,8 @@ html body .wdp-donation-form .wdp-modal-content .wdp-alert--info {
     gap: var(--wdp-space-3);
   }
 
-  html body .wdp-alert__icon,
-  html body .wdp-modal .wdp-alert__icon,
-  html body .wdp-donation-form .wdp-alert__icon,
-  html body .wdp-modal-content .wdp-alert__icon,
-  html body .wdp-donation-form .wdp-modal-content .wdp-alert__icon {
+  html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-alert__icon,
+  html body .wdp-alert__icon {
     width: 48px;
     height: 48px;
     border-radius: 16px;
@@ -267,11 +223,8 @@ html body .wdp-donation-form .wdp-modal-content .wdp-alert--info {
     text-align: left;
   }
 
-  html body .wdp-alert__close,
-  html body .wdp-modal .wdp-alert__close,
-  html body .wdp-donation-form .wdp-alert__close,
-  html body .wdp-modal-content .wdp-alert__close,
-  html body .wdp-donation-form .wdp-modal-content .wdp-alert__close {
+  html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-alert__close,
+  html body .wdp-alert__close {
     justify-self: end;
   }
 }
