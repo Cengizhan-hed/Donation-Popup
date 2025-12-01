@@ -167,12 +167,13 @@ html body #wdp-live-region-assertive {
   }
 }
 
-/* Reduced motion support - already in motion.css but ensure consistency */
+/* Reduced motion support - Maximum specificity without !important */
 @media (prefers-reduced-motion: reduce) {
-  html body .wdp-modal-content button,
-  html body .wdp-donation-form .wdp-modal-content button,
-  html body .wdp-modal-content input,
-  html body .wdp-donation-form .wdp-modal-content input {
-    transition: none !important;
+  /* CRITICAL: Ultra-high specificity to override all transitions */
+  html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content button,
+  html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content button[style],
+  html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content input,
+  html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content input[style] {
+    transition: none;
   }
 }

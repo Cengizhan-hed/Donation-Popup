@@ -257,7 +257,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content form .wdp-butto
   border: 2px solid transparent;
   border-top-color: var(--wdp-white);
   border-radius: 50%;
-  animation: wdpSpin 1s linear infinite;
+  /* Animation removed - Static spinner per user request */
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content form .wdp-button-group button:disabled {
@@ -316,7 +316,7 @@ html body .wdp-copy-form-btn:focus {
   outline-offset: 0;
 }
 
-/* Generic loading helper */
+/* Generic loading helper - Static, no animation */
 html body .wdp-loading-button {
   position: relative;
   color: transparent;
@@ -331,14 +331,9 @@ html body .wdp-loading-button::after {
   height: 20px;
   margin: -10px 0 0 -10px;
   border: 2px solid transparent;
-  border-top: 2px solid currentColor;
+  border-top-color: currentColor;
   border-radius: 50%;
-  animation: wdpSpin 1s linear infinite;
-}
-
-@keyframes wdpSpin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  /* Animation removed - Static spinner per user request */
 }
 
 @media (prefers-contrast: high) {
@@ -356,23 +351,7 @@ html body .wdp-loading-button::after {
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  /* CRITICAL: Maximum specificity - html body ile tema override koruması */
-  html body button.wdp-donate-button.wdp-open-modal[data-product-id],
-  html body button.wdp-donate-button[data-product-id],
-  html body button.wdp-open-modal[data-product-id],
-  html body button.wdp-donate-button.wdp-open-modal,
-  html body button.wdp-donate-button,
-  html body button.wdp-open-modal,
-  html body .wdp-donate-button.wdp-open-modal,
-  html body .wdp-donate-button,
-  html body .wdp-open-modal,
-  html body .wdp-modal-content form .wdp-button-group button,
-  html body .wdp-donation-form .wdp-modal-content form .wdp-button-group button {
-    transition: none;
-    animation: none;
-  }
-}
+/* No animations - All animations removed per user request */
 
 /* Mobile optimizations for buttons */
 @media (max-width: 600px) {

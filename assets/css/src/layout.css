@@ -137,7 +137,6 @@ html body .wdp-modal.show .wdp-modal-content {
   padding-block-end: var(--wdp-modal-padding-bottom-desktop, clamp(1rem, 1.5rem, 1.5rem));
   position: relative;
   z-index: 2147483646;
-  animation: none;
   display: flex;
   flex-direction: column;
   gap: clamp(0.5rem, 0.75rem, 0.75rem);
@@ -182,7 +181,6 @@ html body .wdp-donation-form .wdp-modal-content {
   padding-bottom: var(--wdp-modal-padding-bottom-desktop, 24px);
   position: relative;
   z-index: 2147483646;
-  animation: none;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -230,7 +228,6 @@ html body .wdp-modal.show .wdp-modal-content:has(form.wdp-has-shareholders) {
   padding-bottom: var(--wdp-modal-padding-bottom-desktop, 24px); /* FIX: Same as non-shareholder forms */
   position: relative;
   z-index: 2147483646;
-  animation: none;
   text-align: left;
   text-transform: none;
   letter-spacing: normal;

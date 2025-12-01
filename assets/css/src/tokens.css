@@ -304,5 +304,33 @@
   /* Modern focus styles */
   --wdp-focus-ring: 0 0 0 var(--wdp-focus-ring-width) var(--wdp-focus-ring-color);
   --wdp-focus-ring-offset: var(--wdp-focus-ring-width);
+
+  /* Semantic form & card tokens (görünümü bozmadan, mevcut değerlere eşit) */
+  --wdp-input-bg: #ffffff;
+  --wdp-input-border: #d1d5db;
+  --wdp-input-color: #1f2937;
+  --wdp-input-radius: 8px;
+  --wdp-label-color: #374151;
+  --wdp-placeholder-color: #6b7280;
+
+  --wdp-card-bg: #ffffff;
+  --wdp-card-border: #e5e7eb;
+  --wdp-card-radius: 12px;
+  --wdp-card-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+
+  --wdp-form-error-bg: #fed7d7;
+  --wdp-form-error-border: #feb2b2;
+  --wdp-form-error-text: #c53030;
+
+  --wdp-form-success-bg: #c6f6d5;
+  --wdp-form-success-border: #9ae6b4;
+  --wdp-form-success-text: #22543d;
+
+  --wdp-density: comfortable; /* compact | comfortable | spacious */
+  --wdp-field-gap-compact: 6px;
+  --wdp-field-gap-comfortable: 12px;
+  --wdp-field-gap-spacious: 16px;
+
+  --wdp-motion-scale: 1; /* 0 = minimum animasyon, 1 = varsayılan */
 }
 

@@ -2,108 +2,17 @@
 /* MOTION & TRANSITIONS */
 /* ==================== */
 
-/* Modern performance optimizations */
+/* Modern performance optimizations - No animations, only color transitions */
 html body .wdp-modal {
-  will-change: opacity;
   contain: layout style paint;
-  transition: opacity var(--wdp-duration-300, 300ms) var(--wdp-ease-emphasized-decelerate, cubic-bezier(0.05, 0.7, 0.1, 1));
 }
 
 html body .wdp-modal-content {
-  will-change: transform, opacity;
-  transform: translateZ(0);
-  backface-visibility: hidden;
   scroll-behavior: var(--wdp-scroll-behavior, smooth);
   contain: layout style paint;
-  transition: transform var(--wdp-duration-300, 300ms) var(--wdp-ease-emphasized-decelerate, cubic-bezier(0.05, 0.7, 0.1, 1)),
-              opacity var(--wdp-duration-300, 300ms) var(--wdp-ease-emphasized-decelerate, cubic-bezier(0.05, 0.7, 0.1, 1));
-  
-  /* Modern view transitions support */
-  view-transition-name: wdp-modal-content;
 }
 
-/* Modal açılış animasyonu (Modern with @starting-style support) */
-html body .wdp-modal.show .wdp-modal-content {
-  animation: wdpModalSlideIn var(--wdp-duration-300, 300ms) var(--wdp-ease-emphasized-decelerate, cubic-bezier(0.05, 0.7, 0.1, 1));
-}
-
-/* Modern @starting-style for smoother transitions */
-@starting-style {
-  html body .wdp-modal.show .wdp-modal-content {
-    opacity: 0;
-    transform: translateY(-20px) scale(0.95);
-  }
-}
-
-/* Modal kapanış animasyonu */
-html body .wdp-modal.closing .wdp-modal-content {
-  animation: wdpSlideOut var(--wdp-duration-300, 300ms) var(--wdp-ease-emphasized-accelerate, cubic-bezier(0.3, 0, 0.8, 0.15));
-}
-
-/* Modal açılış animasyonu (Modern with transform optimizations) */
-@keyframes wdpModalSlideIn {
-  from {
-    opacity: 0;
-    transform: translate3d(0, -20px, 0) scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: translate3d(0, 0, 0) scale(1);
-  }
-}
-
-@keyframes wdpSlideOut {
-  from {
-    opacity: 1;
-    transform: translate3d(0, 0, 0) scale(1);
-  }
-  to {
-    opacity: 0;
-    transform: translate3d(0, -20px, 0) scale(0.95);
-  }
-}
-
-/* Backdrop fade in */
-html body .wdp-modal.show {
-  animation: wdpBackdropFadeIn var(--wdp-duration-200, 200ms) var(--wdp-ease-out, cubic-bezier(0, 0, 0.2, 1));
-}
-
-@keyframes wdpBackdropFadeIn {
-  0% {
-    opacity: 0;
-  }
-  100% {
-    opacity: 1;
-  }
-}
-
-/* Reduced motion support */
-@media (prefers-reduced-motion: reduce) {
-  html body .wdp-modal,
-  html body .wdp-modal-content,
-  html body .wdp-modal-content form input,
-  html body .wdp-modal-content form textarea,
-  html body .wdp-modal-content form button,
-  html body .wdp-donation-form,
-  html body .wdp-donation-form form input,
-  html body .wdp-donation-form form textarea,
-  html body .wdp-donation-form form button {
-    transition: none !important;
-    animation: none !important;
-  }
-  
-  html body .wdp-modal.show .wdp-modal-content {
-    animation: none !important;
-  }
-  
-  html body .wdp-modal.closing .wdp-modal-content {
-    animation: none !important;
-  }
-  
-  html body .wdp-modal.show {
-    animation: none !important;
-  }
-}
+/* No animations - All animations removed per user request */
 
 /* Kullanıcı isteği: input/textarea focus durumlarında ek animasyon / outline olmasın */
 html body .wdp-modal-content form input,
@@ -126,73 +35,17 @@ html body .wdp-donation-form form textarea:focus {
   box-shadow: none;
 }
 
-/* Shareholder form transitions */
-html body .wdp-shareholder-form.collapsed .wdp-shareholder-content,
-html body .wdp-shareholders-container {
-  transition: max-height var(--wdp-duration-300, 300ms) var(--wdp-ease-in-out, cubic-bezier(0.4, 0, 0.2, 1)),
-              opacity var(--wdp-duration-300, 300ms) var(--wdp-ease-in-out, cubic-bezier(0.4, 0, 0.2, 1));
-}
-
+/* Shareholder form transitions - Only color transitions, no movement */
 html body .wdp-shareholder-form,
 html body .wdp-shareholder-header {
   transition: background-color var(--wdp-duration-200, 200ms) var(--wdp-ease-in-out, cubic-bezier(0.4, 0, 0.2, 1)),
               border-color var(--wdp-duration-200, 200ms) var(--wdp-ease-in-out, cubic-bezier(0.4, 0, 0.2, 1));
 }
 
-/* Mobile optimizations - keep animations but ensure performance */
+/* Mobile optimizations - No animations */
 @media (max-width: 600px) {
   html body .wdp-modal .wdp-modal-content,
   html body .wdp-donation-form .wdp-modal-content {
-    /* Keep smooth transitions but optimize for mobile */
-    will-change: auto;
-  }
-  
-  /* Reduce animation complexity on mobile for better performance */
-  html body .wdp-modal.show .wdp-modal-content {
-    animation: wdpModalSlideInMobile var(--wdp-duration-200, 200ms) var(--wdp-ease-out, cubic-bezier(0, 0, 0.2, 1));
-  }
-  
-  html body .wdp-modal.closing .wdp-modal-content {
-    animation: wdpSlideOutMobile var(--wdp-duration-200, 200ms) var(--wdp-ease-in, cubic-bezier(0.4, 0, 1, 1));
-  }
-}
-
-@keyframes wdpModalSlideInMobile {
-  from {
-    opacity: 0;
-    transform: translate3d(0, -10px, 0);
-  }
-  to {
-    opacity: 1;
-    transform: translate3d(0, 0, 0);
-  }
-}
-
-@keyframes wdpSlideOutMobile {
-  from {
-    opacity: 1;
-    transform: translate3d(0, 0, 0);
-  }
-  to {
-    opacity: 0;
-    transform: translate3d(0, -10px, 0);
-  }
-}
-
-/* Modern scroll animations (when supported) */
-@supports (animation-timeline: scroll()) {
-  html body .wdp-modal-content {
-    animation-timeline: scroll();
-  }
-}
-
-/* Modern view transitions API support */
-@supports (view-transition-name: none) {
-  html body .wdp-modal {
-    view-transition-name: wdp-modal;
-  }
-  
-  html body .wdp-modal-content {
-    view-transition-name: wdp-modal-content;
+    /* No animations on mobile */
   }
 }

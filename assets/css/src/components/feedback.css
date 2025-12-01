@@ -13,8 +13,6 @@ html body .wdp-form-error {
   margin-bottom: var(--wdp-space-4, 16px);
   font-size: var(--wdp-text-sm, 14px);
   font-weight: var(--wdp-font-medium, 500);
-  animation: wdpFadeInSlide var(--wdp-duration-300, 300ms) var(--wdp-ease-out, cubic-bezier(0, 0, 0.2, 1)),
-             wdpErrorShake var(--wdp-duration-600, 600ms) var(--wdp-ease-in-out, cubic-bezier(0.4, 0, 0.2, 1)) 0.1s;
   box-shadow: var(--wdp-shadow-sm, 0 1px 2px 0 rgba(0, 0, 0, 0.05));
   position: relative;
   overflow: hidden;
@@ -29,21 +27,18 @@ html body .wdp-form-error::before {
   width: 4px;
   height: 100%;
   background-color: var(--wdp-form-error-text, #c53030);
-  animation: wdpErrorPulse 2s ease-in-out infinite;
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content, .wdp-modal-content form) .wdp-form-success,
 html body .wdp-form-success {
-  background-color: #c6f6d5;
-  border: 1px solid #9ae6b4;
-  color: #22543d;
+  background-color: var(--wdp-form-success-bg, #c6f6d5);
+  border: 1px solid var(--wdp-form-success-border, #9ae6b4);
+  color: var(--wdp-form-success-text, #22543d);
   padding: var(--wdp-space-3, 12px) var(--wdp-space-4, 16px);
   border-radius: var(--wdp-radius-md, 8px);
   margin-bottom: var(--wdp-space-4, 16px);
   font-size: var(--wdp-text-sm, 14px);
   font-weight: var(--wdp-font-medium, 500);
-  animation: wdpFadeInSlide var(--wdp-duration-300, 300ms) var(--wdp-ease-out, cubic-bezier(0, 0, 0.2, 1)),
-             wdpSuccessPulse var(--wdp-duration-2000, 2000ms) var(--wdp-ease-in-out, cubic-bezier(0.4, 0, 0.2, 1)) infinite;
   box-shadow: var(--wdp-shadow-sm, 0 1px 2px 0 rgba(0, 0, 0, 0.05));
   position: relative;
   overflow: hidden;
@@ -57,8 +52,7 @@ html body .wdp-form-success::before {
   left: 0;
   width: 4px;
   height: 100%;
-  background-color: #22543d;
-  animation: wdpSuccessPulseBar 2s ease-in-out infinite;
+  background-color: var(--wdp-form-success-text, #22543d);
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content, .wdp-modal-content form) .wdp-input-error,
@@ -79,118 +73,11 @@ html body .wdp-input-error {
   white-space: nowrap;
   z-index: 100;
   box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.06);
-  animation: wdpFadeInSlide var(--wdp-duration-300, 300ms) var(--wdp-ease-out, cubic-bezier(0, 0, 0.2, 1));
   pointer-events: none;
-  transform-origin: top left;
 }
 
-/* ==================== */
-/* FEEDBACK ANIMATIONS  */
-/* ==================== */
-@keyframes wdpFadeIn {
-  from { 
-    opacity: 0; 
-  }
-  to { 
-    opacity: 1; 
-  }
-}
-
-@keyframes wdpFadeInSlide {
-  from { 
-    opacity: 0; 
-    transform: translateY(-10px) scale(0.95);
-  }
-  to { 
-    opacity: 1; 
-    transform: translateY(0) scale(1);
-  }
-}
-
-@keyframes wdpFadeInDown {
-  from { 
-    opacity: 0; 
-    transform: translateY(-10px);
-  }
-  to { 
-    opacity: 1; 
-    transform: translateY(0);
-  }
-}
-
-@keyframes wdpShake {
-  0%, 100% { 
-    transform: translateX(0); 
-  }
-  25% { 
-    transform: translateX(-5px); 
-  }
-  75% { 
-    transform: translateX(5px); 
-  }
-}
-
-@keyframes wdpSuccessPulse {
-  0%, 100% { 
-    box-shadow: 0 0 0 0 rgba(34, 84, 61, 0.4);
-  }
-  50% { 
-    box-shadow: 0 0 0 4px rgba(34, 84, 61, 0);
-  }
-}
-
-@keyframes wdpSuccessPulseBar {
-  0%, 100% {
-    opacity: 1;
-    transform: scaleY(1);
-  }
-  50% {
-    opacity: 0.8;
-    transform: scaleY(0.95);
-  }
-}
-
-@keyframes wdpErrorPulse {
-  0%, 100% {
-    opacity: 1;
-    transform: scaleY(1);
-  }
-  50% {
-    opacity: 0.7;
-    transform: scaleY(0.9);
-  }
-}
-
-@keyframes wdpErrorShake {
-  0%, 100% { 
-    transform: translateX(0); 
-  }
-  10%, 30%, 50%, 70%, 90% { 
-    transform: translateX(-5px); 
-  }
-  20%, 40%, 60%, 80% { 
-    transform: translateX(5px); 
-  }
-}
-
-/* Toast notification styles */
+/* Toast variant styles (konumlandırma ve temel görünüm toast.css tarafından yönetilir) */
 /* CRITICAL: Maximum specificity - html body ile tema override koruması */
-html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content) .wdp-toast,
-html body .wdp-toast {
-  position: fixed;
-  bottom: var(--wdp-space-6, 24px);
-  right: var(--wdp-space-6, 24px);
-  background-color: var(--wdp-white, #ffffff);
-  border: 1px solid var(--wdp-gray-200, #e5e7eb);
-  border-radius: var(--wdp-radius-lg, 12px);
-  padding: var(--wdp-space-4, 16px) var(--wdp-space-5, 20px);
-  box-shadow: var(--wdp-shadow-lg, 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05));
-  z-index: calc(var(--wdp-z-modal-close, 2147483647) + 1);
-  animation: wdpToastSlideIn var(--wdp-duration-300, 300ms) var(--wdp-ease-out, cubic-bezier(0, 0, 0.2, 1));
-  max-width: 400px;
-  min-width: 300px;
-}
-
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-toast.wdp-toast-success,
 html body .wdp-toast.wdp-toast-success {
   border-left: 4px solid var(--wdp-success, #48bb78);
@@ -211,32 +98,7 @@ html body .wdp-toast.wdp-toast-info {
   border-left: 4px solid var(--wdp-primary, #1e73be);
 }
 
-@keyframes wdpToastSlideIn {
-  from {
-    opacity: 0;
-    transform: translateX(100%) scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0) scale(1);
-  }
-}
-
-html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-toast.wdp-toast-closing,
-html body .wdp-toast.wdp-toast-closing {
-  animation: wdpToastSlideOut var(--wdp-duration-200, 200ms) var(--wdp-ease-in, cubic-bezier(0.4, 0, 1, 1));
-}
-
-@keyframes wdpToastSlideOut {
-  from {
-    opacity: 1;
-    transform: translateX(0) scale(1);
-  }
-  to {
-    opacity: 0;
-    transform: translateX(100%) scale(0.95);
-  }
-}
+/* Toast closing handled by JavaScript - no CSS animation needed */
 
 /* Mobile optimizations for feedback */
 /* CRITICAL: Maximum specificity - html body ile tema override koruması */
@@ -282,14 +144,4 @@ html body .wdp-toast.wdp-toast-closing {
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content, .wdp-modal-content form) :is(.wdp-form-error, .wdp-form-success, .wdp-input-error, .wdp-toast),
-  html body :is(.wdp-form-error, .wdp-form-success, .wdp-input-error, .wdp-toast) {
-    animation: none !important;
-  }
-  
-  html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content, .wdp-modal-content form) :is(.wdp-form-error, .wdp-form-success)::before,
-  html body :is(.wdp-form-error, .wdp-form-success)::before {
-    animation: none !important;
-  }
-}
+/* No animations - All animations removed per user request */
