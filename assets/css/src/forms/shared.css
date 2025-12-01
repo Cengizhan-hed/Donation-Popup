@@ -41,7 +41,8 @@ html body .wdp-modal :is(.wdp-modal-header, .wdp-modal-content) .wdp-modal-close
 html body .wdp-modal .wdp-modal-close {
   font-family: var(--wdp-font-family, 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif);
   position: absolute;
-  top: 0;
+  /* Kullanıcı isteği: popup çarpı butonu başlıkla yatayda hizalı ve biraz daha yukarıda olsun */
+  top: -2px;
   right: 0;
   width: 32px;
   height: 32px;
@@ -541,7 +542,8 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content textarea {
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content :is(input, select, textarea):focus {
-  border-color: #4a90e2;
+  /* Kullanıcı isteği: input'lara tıklayınca ek border / highlight olmasın */
+  border-color: var(--wdp-input-border, #d1d5db);
   outline: none;
   background-color: #ffffff;
 }

@@ -38,7 +38,8 @@ html body .wdp-cart-actions :is(a, button) {
   font-weight: 500;
   cursor: pointer;
   text-decoration: none;
-  transition: background 0.2s ease, color 0.2s ease;
+  /* Hafif renk geçişi serbest, hareket yok */
+  transition: background 0.15s ease, color 0.15s ease;
   margin: 0;
   min-width: 120px;
   text-align: center;
@@ -46,6 +47,7 @@ html body .wdp-cart-actions :is(a, button) {
 
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-cart-actions :is(a, button):hover,
 html body .wdp-cart-actions :is(a, button):hover {
+  /* Hover'da sadece hafif koyulaşma */
   background: var(--wdp-button-primary-hover, var(--wdp-primary-hover));
   color: var(--wdp-white);
 }
@@ -81,17 +83,19 @@ html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-success-screen, .wdp-moda
   font-weight: 600;
   cursor: pointer;
   box-shadow: none;
-  transition: background 0.2s ease, transform 0.1s ease;
+  /* Hafif renk geçişi serbest, hareket yok */
+  transition: background 0.15s ease, color 0.15s ease;
   text-decoration: none;
   text-align: center;
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-success-screen, .wdp-modal-content .wdp-success-screen) .wdp-success-buttons .wdp-success-button:hover,
 html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-success-screen, .wdp-modal-content .wdp-success-screen) .wdp-success-buttons .wdp-success-button:focus {
+  /* Hover'da / focus'ta sadece hafif koyulaşma, hareket yok */
   background: var(--wdp-success-button-hover, #185d98);
   background-image: none;
   box-shadow: none;
-  transform: translateY(-1px);
+  transform: none;
   color: #fff;
 }
 

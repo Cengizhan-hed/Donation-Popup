@@ -105,32 +105,25 @@ html body .wdp-modal.show {
   }
 }
 
-/* Smooth transitions for interactive elements (Modern with logical properties) */
+/* Kullanıcı isteği: input/textarea focus durumlarında ek animasyon / outline olmasın */
 html body .wdp-modal-content form input,
 html body .wdp-modal-content form textarea,
 html body .wdp-donation-form form input,
 html body .wdp-donation-form form textarea {
-  transition: border-color var(--wdp-duration-200, 200ms) var(--wdp-ease-standard, cubic-bezier(0.2, 0, 0, 1)),
-              box-shadow var(--wdp-duration-200, 200ms) var(--wdp-ease-standard, cubic-bezier(0.2, 0, 0, 1)),
-              background-color var(--wdp-duration-200, 200ms) var(--wdp-ease-standard, cubic-bezier(0.2, 0, 0, 1)),
-              outline-color var(--wdp-duration-200, 200ms) var(--wdp-ease-standard, cubic-bezier(0.2, 0, 0, 1));
+  transition: none;
 }
 
-/* Modern focus-visible support */
 html body .wdp-modal-content form input:focus-visible,
 html body .wdp-modal-content form textarea:focus-visible,
 html body .wdp-donation-form form input:focus-visible,
-html body .wdp-donation-form form textarea:focus-visible {
-  outline: var(--wdp-focus-ring-width, 2px) solid var(--wdp-focus-ring-color, var(--wdp-primary));
-  outline-offset: var(--wdp-focus-ring-offset, 2px);
-}
-
+html body .wdp-donation-form form textarea:focus-visible,
 html body .wdp-modal-content form input:focus,
 html body .wdp-modal-content form textarea:focus,
 html body .wdp-donation-form form input:focus,
 html body .wdp-donation-form form textarea:focus {
-  transition: border-color var(--wdp-duration-150, 150ms) var(--wdp-ease-emphasized-decelerate, cubic-bezier(0.05, 0.7, 0.1, 1)),
-              box-shadow var(--wdp-duration-150, 150ms) var(--wdp-ease-emphasized-decelerate, cubic-bezier(0.05, 0.7, 0.1, 1));
+  outline: none;
+  outline-offset: 0;
+  box-shadow: none;
 }
 
 /* Shareholder form transitions */

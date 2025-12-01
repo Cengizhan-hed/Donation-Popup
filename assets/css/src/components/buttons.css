@@ -26,9 +26,8 @@ html body :is(button.wdp-donate-button.wdp-open-modal[data-product-id],
   font-weight: var(--wdp-popup-button-font-weight, 700);
   font-family: var(--wdp-popup-button-font-family, inherit);
   cursor: pointer;
-  transition: background-color var(--wdp-duration-150, 150ms) var(--wdp-ease-emphasized-decelerate, cubic-bezier(0.05, 0.7, 0.1, 1)),
-              color var(--wdp-duration-150, 150ms) var(--wdp-ease-emphasized-decelerate, cubic-bezier(0.05, 0.7, 0.1, 1)),
-              transform var(--wdp-duration-150, 150ms) var(--wdp-ease-emphasized-decelerate, cubic-bezier(0.05, 0.7, 0.1, 1));
+  /* Kullanıcı isteği: butonlarda animasyon / hareket efekti olmasın (yalnızca hafif renk değişimi) */
+  transition: background-color 0.15s ease, color 0.15s ease;
   line-height: 1.4;
   text-align: center;
   box-shadow: var(--wdp-elevation-1, var(--wdp-shadow-sm));
@@ -51,10 +50,11 @@ html body :is(button.wdp-donate-button.wdp-open-modal[data-product-id],
               .wdp-donate-button.wdp-open-modal,
               .wdp-donate-button,
               .wdp-open-modal):hover {
+  /* Kullanıcı isteği: hover'da sadece hafif koyulaşma, hareket yok */
   background-color: var(--wdp-primary-hover, rgb(24, 93, 152));
   color: var(--wdp-text-inverse, var(--wdp-white, rgb(255, 255, 255)));
-  transform: translateY(-1px);
-  box-shadow: var(--wdp-elevation-2, var(--wdp-shadow-md));
+  transform: none;
+  box-shadow: var(--wdp-elevation-1, var(--wdp-shadow-sm));
 }
 
 /* Modern :is() selector for active states */
@@ -176,9 +176,8 @@ html body :is(.wdp-modal .wdp-modal-content form .wdp-button-group button,
   font-size: var(--wdp-text-base, clamp(1rem, 0.95rem + 0.25vw, 1.125rem));
   font-weight: var(--wdp-font-semibold, 600);
   cursor: pointer;
-  transition: background-color var(--wdp-duration-150, 150ms) var(--wdp-ease-emphasized-decelerate, cubic-bezier(0.05, 0.7, 0.1, 1)),
-              color var(--wdp-duration-150, 150ms) var(--wdp-ease-emphasized-decelerate, cubic-bezier(0.05, 0.7, 0.1, 1)),
-              transform var(--wdp-duration-150, 150ms) var(--wdp-ease-emphasized-decelerate, cubic-bezier(0.05, 0.7, 0.1, 1));
+  /* Kullanıcı isteği: form butonlarında animasyon / hareket efekti olmasın (yalnızca hafif renk değişimi) */
+  transition: background-color 0.15s ease, color 0.15s ease;
   text-align: center;
   text-decoration: none;
   display: inline-flex;
@@ -207,9 +206,10 @@ html body :is(.wdp-modal .wdp-modal-content form .wdp-button-group button,
               .wdp-modal .wdp-modal-content .wdp-button-group button,
               .wdp-donation-form .wdp-modal-content .wdp-button-group button,
               .wdp-modal-content form .wdp-button-group button):hover {
+  /* Kullanıcı isteği: hover'da sadece hafif koyulaşma, hareket yok */
   background-color: var(--wdp-button-primary-hover, rgb(24, 93, 152));
-  transform: translateY(-1px);
-  box-shadow: var(--wdp-elevation-2, var(--wdp-shadow-md));
+  transform: none;
+  box-shadow: var(--wdp-elevation-1, var(--wdp-shadow-sm));
 }
 
 html body .wdp-modal .wdp-modal-content form .wdp-button-group button:active,
@@ -269,12 +269,11 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content form .wdp-butto
   pointer-events: none;
 }
 
-/* Modern focus-visible for keyboard navigation */
+/* Kullanıcı isteği: form butonlarında ek focus/outline halkası olmasın */
 html body :is(.wdp-modal-content form .wdp-button-group button,
               .wdp-donation-form .wdp-modal-content form .wdp-button-group button):focus-visible {
-  outline: var(--wdp-focus-ring-width, 2px) solid var(--wdp-focus-ring-color, var(--wdp-primary, rgb(30, 115, 190)));
-  outline-offset: var(--wdp-focus-ring-offset, 2px);
-  box-shadow: var(--wdp-focus-ring, 0 0 0 var(--wdp-focus-ring-width) var(--wdp-focus-ring-color));
+  outline: none;
+  box-shadow: none;
 }
 
 /* Auxiliary form actions */
@@ -313,8 +312,8 @@ html body .wdp-copy-form-btn.is-active {
 }
 
 html body .wdp-copy-form-btn:focus {
-  outline: 2px solid var(--wdp-primary);
-  outline-offset: 2px;
+  outline: none;
+  outline-offset: 0;
 }
 
 /* Generic loading helper */
