@@ -38,7 +38,7 @@
   border-color: #e5e7eb #e5e7eb #ffffff;
 }
 
-/* Ürün ayarları tablo kartı */
+/* Ürün ayarları ana kartı */
 .wdp-settings-container {
   background: #ffffff;
   border-radius: 12px;
@@ -47,32 +47,164 @@
   padding: 16px 18px 18px;
 }
 
-/* Tablo stilleri */
-.wdp-products-table {
+/* Ürün liste üstü toolbar */
+.wdp-products-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.wdp-products-search {
+  position: relative;
+  max-width: 260px;
   width: 100%;
-  border-collapse: collapse;
 }
 
-.wdp-products-table thead tr {
-  background: #f9fafb;
+.wdp-products-search .dashicons {
+  position: absolute;
+  left: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 14px;
+  color: #9ca3af;
 }
 
-.wdp-products-table th {
-  text-align: left;
-  padding: 10px;
-  font-weight: 600;
-  color: #374151;
-  border-bottom: 1px solid #e5e7eb;
-}
-
-.wdp-products-table td {
-  padding: 12px 10px;
-  vertical-align: middle;
-  border-bottom: 1px solid #f3f4f6;
-}
-
-.wdp-products-table tr:nth-child(even) td {
+.wdp-products-search input[type="search"] {
+  width: 100%;
+  padding: 6px 8px 6px 26px;
+  border-radius: 999px;
+  border: 1px solid #d1d5db;
+  font-size: 12px;
   background-color: #f9fafb;
+}
+
+.wdp-products-search input[type="search"]:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.25);
+  background-color: #ffffff;
+}
+
+/* Ürün kartları grid'i */
+.wdp-products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 12px;
+}
+
+.wdp-products-empty {
+  padding: 16px 4px;
+  color: #6b7280;
+}
+
+/* Tekil ürün kartı */
+.wdp-product-card {
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
+  padding: 10px 12px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.wdp-product-main {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.wdp-product-title a {
+  font-weight: 600;
+  color: #111827;
+  text-decoration: none;
+}
+
+.wdp-product-title a:hover {
+  color: #1d4ed8;
+}
+
+.wdp-product-settings-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px 8px;
+}
+
+@media screen and (max-width: 1100px) {
+  .wdp-product-settings-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media screen and (max-width: 640px) {
+  .wdp-product-settings-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.wdp-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.wdp-field {
+  background: #f9fafb;
+  border-radius: 8px;
+  padding: 6px 8px;
+  border: 1px solid #e5e7eb;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.wdp-field-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #6b7280;
+}
+
+.wdp-field-control {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 6px;
+}
+
+.wdp-field-number input[type="number"] {
+  width: 100%;
+}
+
+.wdp-sub-field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.wdp-sub-field-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: #4b5563;
+}
+
+.wdp-product-shortcodes {
+  border-radius: 8px;
+  border: 1px dashed #d1d5db;
+  background: #f9fafb;
+  padding: 6px 8px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.wdp-product-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
 }
 
 /* Toggle switch stilleri */
@@ -126,8 +258,8 @@ input:checked + .wdp-slider:before {
 }
 
 /* Input stilleri */
-.wdp-products-table input[type="number"],
-.wdp-products-table input[type="text"] {
+.wdp-products-grid input[type="number"],
+.wdp-products-grid input[type="text"] {
   width: 80px;
   padding: 4px 6px;
   border-radius: 6px;
@@ -135,8 +267,8 @@ input:checked + .wdp-slider:before {
   font-size: 12px;
 }
 
-.wdp-products-table input[type="number"]:focus,
-.wdp-products-table input[type="text"]:focus {
+.wdp-products-grid input[type="number"]:focus,
+.wdp-products-grid input[type="text"]:focus {
   border-color: #2563eb;
   box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.3);
   outline: none;
@@ -151,28 +283,30 @@ input:checked + .wdp-slider:before {
 
 .wdp-shortcode-item {
   display: flex;
-  align-items: center;
-  gap: 5px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
 }
 
-.wdp-shortcode-item label {
-  font-weight: 500;
-  min-width: 45px;
+.wdp-shortcode-label {
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #6b7280;
 }
 
 .wdp-shortcode {
-  display: inline-block;
-  padding: 5px 8px;
-  background-color: #f0f0f0;
-  border-radius: 3px;
-  margin-right: 5px;
-  font-size: 12px;
-  border: 1px solid #ddd;
-  flex: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  max-width: 200px;
+  display: block;
+  width: 100%;
+  padding: 4px 6px;
+  background-color: #f3f4f6;
+  border-radius: 4px;
+  margin: 0;
+  font-size: 11px;
+  border: 1px solid #d1d5db;
+  white-space: normal;
+  word-break: break-all;
 }
 
 .wdp-copy-shortcode {
@@ -180,7 +314,8 @@ input:checked + .wdp-slider:before {
 }
 
 /* Spinner stilleri */
-.wdp-products-table .spinner {
+.wdp-products-grid .spinner,
+.wdp-product-actions .spinner {
   float: none;
   margin: 0 0 0 5px;
   vertical-align: middle;
@@ -296,9 +431,16 @@ input:checked + .wdp-slider:before {
     margin-bottom: 5px;
   }
 
-  .wdp-products-table th,
-  .wdp-products-table td {
-    padding: 8px 5px;
+  .wdp-product-card {
+    padding: 10px 10px 12px;
+  }
+
+  .wdp-product-settings-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .wdp-product-shortcodes {
+    margin-top: 4px;
   }
 
   .wdp-shortcode {

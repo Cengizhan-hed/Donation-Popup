@@ -7,6 +7,7 @@
     // Değişkenleri tanımla
     const wdp_admin = window.wdp_admin // Declare wdp_admin variable
     var $noticeContainer = $("#wdp-admin-notices")
+    var $productSearch = $("#wdp-product-search")
 
     // Başarı mesajı göster
     function showSuccessMessage(message) {
@@ -50,26 +51,45 @@
       }
     }
 
-    // Form tipi değişikliklerini dinle
+    // Ürün arama / filtreleme
+    if ($productSearch && $productSearch.length) {
+      $productSearch.on("input", function () {
+        var query = $(this).val().toLowerCase().trim()
+
+        $(".wdp-product-card").each(function () {
+          var $card = $(this)
+          var nameText = $card.find(".wdp-product-title a").text().toLowerCase()
+          var shortcodeText = $card.find(".wdp-shortcode").text().toLowerCase()
+
+          if (!query || nameText.indexOf(query) !== -1 || shortcodeText.indexOf(query) !== -1) {
+            $card.show()
+          } else {
+            $card.hide()
+          }
+        })
+      })
+    }
+
+    // Form tipi değişikliklerini dinle (kart tabanlı ürün satırları)
     $(document).on("change", 'input[name="allow_custom_price"]', function () {
-      var $row = $(this).closest("tr")
+      var $row = $(this).closest(".wdp-product-card")
       handleFormTypeExclusivity($row, 'custom_price')
     })
 
     $(document).on("change", 'input[name="allow_multiple_shares"]', function () {
-      var $row = $(this).closest("tr")
+      var $row = $(this).closest(".wdp-product-card")
       handleFormTypeExclusivity($row, 'multiple_shares')
     })
 
     $(document).on("change", 'input[name="enable_progress_bar"]', function () {
-      var $row = $(this).closest("tr")
+      var $row = $(this).closest(".wdp-product-card")
       handleFormTypeExclusivity($row, 'progress_bar')
     })
 
     // Tek ürün ayarlarını kaydet
     $(".wdp-save-product").on("click", function () {
       var $button = $(this)
-      var $row = $button.closest("tr")
+      var $row = $button.closest(".wdp-product-card")
       var productId = $row.data("product-id")
       var $spinner = $row.find(".spinner")
 
@@ -120,7 +140,7 @@
     $("#wdp-save-all").on("click", function () {
       var $button = $(this)
       var $spinner = $button.next(".spinner")
-      var $rows = $(".wdp-products-table tbody tr")
+      var $rows = $(".wdp-product-card")
       var totalRows = $rows.length
       var processedRows = 0
       var successCount = 0

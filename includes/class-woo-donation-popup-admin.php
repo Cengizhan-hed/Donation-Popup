@@ -118,42 +118,38 @@ class Woo_Donation_Popup_Admin {
         echo '<a href="#wdp-success-screen-tab" class="nav-tab" data-tab="success-screen">' . __('Başarı & Mini Sepet', 'woo-donation-popup') . '</a>';
         echo '</nav>';
         
-        // Ürün Ayarları Tab
+        // Ürün Ayarları Tab - kompakt, kart tabanlı modern görünüm
         echo '<div id="wdp-products-tab" class="wdp-tab-content wdp-tab-active">';
         echo '<div class="wdp-settings-container">';
-        echo '<table class="wp-list-table widefat fixed striped wdp-products-table">';
-        echo '<thead>';
-        echo '<tr>';
-        echo '<th>' . __('Ürün', 'woo-donation-popup') . '</th>';
-        echo '<th>' . __('Özel Fiyat', 'woo-donation-popup') . '</th>';
-        echo '<th>' . __('Min. Fiyat (₺)', 'woo-donation-popup') . '</th>';
-        echo '<th>' . __('Çoklu Hisse', 'woo-donation-popup') . '</th>';
-        echo '<th>' . __('Maks. Hisse', 'woo-donation-popup') . '</th>';
-        echo '<th>' . __('Progress Bar', 'woo-donation-popup') . '</th>';
-        echo '<th>' . __('Üst Limit (₺)', 'woo-donation-popup') . '</th>';
-        echo '<th>' . __('Shortcode', 'woo-donation-popup') . '</th>';
-        echo '<th>' . __('İşlemler', 'woo-donation-popup') . '</th>';
-        echo '</tr>';
-        echo '</thead>';
-        echo '<tbody>';
-        
+        // Ürün arama alanı
+        echo '<div class="wdp-products-toolbar">';
+        echo '<div class="wdp-products-search">';
+        echo '<span class="dashicons dashicons-search" aria-hidden="true"></span>';
+        echo '<input type="search" id="wdp-product-search" placeholder="' . esc_attr__('Ürün ara...', 'woo-donation-popup') . '" />';
+        echo '</div>';
+        echo '</div>';
+
+        // Ürün kartları grid'i
+        echo '<div class="wdp-products-grid">';
+
         if (empty($products)) {
-            echo '<tr><td colspan="9">' . __('Hiç ürün bulunamadı.', 'woo-donation-popup') . '</td></tr>';
+            echo '<div class="wdp-products-empty">';
+            echo '<p>' . __('Hiç ürün bulunamadı.', 'woo-donation-popup') . '</p>';
+            echo '</div>';
         } else {
             foreach ($products as $product) {
                 $this->render_product_row($product);
             }
         }
-        
-        echo '</tbody>';
-        echo '</table>';
-        
+
+        echo '</div>'; // .wdp-products-grid
+
         // Toplu güncelleme butonu
         echo '<div class="wdp-bulk-actions">';
         echo '<button id="wdp-save-all" class="button button-primary">' . __('Tüm Değişiklikleri Kaydet', 'woo-donation-popup') . '</button>';
         echo '<span class="spinner"></span>';
         echo '</div>';
-        
+
         echo '</div>'; // .wdp-settings-container
         echo '</div>'; // #wdp-products-tab
         
@@ -213,82 +209,108 @@ class Woo_Donation_Popup_Admin {
         // Shortcode'lar
         $button_shortcode = '[wdp_donation_button id="' . $product->get_id() . '"]';
         $form_shortcode = '[wdp_donation_form id="' . $product->get_id() . '"]';
-        
-        echo '<tr data-product-id="' . $product->get_id() . '">';
-        
-        // Ürün adı
-        echo '<td class="product-name">';
+
+        // Grid/kart tabanlı ürün bloğu
+        echo '<div class="wdp-product-card" data-product-id="' . $product->get_id() . '">';
+
+        // Üst kısım: Ürün adı
+        echo '<div class="wdp-product-main">';
+        echo '<div class="wdp-product-title">';
         echo '<a href="' . get_edit_post_link($product->get_id()) . '" target="_blank">' . $product->get_name() . '</a>';
+        echo '</div>';
         echo '<input type="hidden" name="product_id" value="' . $product->get_id() . '">';
-        echo '</td>';
-        
-        // Özel fiyat
-        echo '<td>';
-        echo '<label class="wdp-switch">';
-        echo '<input type="checkbox" name="allow_custom_price" ' . checked($allow_custom_price, true, false) . '>';
-        echo '<span class="wdp-slider"></span>';
-        echo '</label>';
-        echo '</td>';
-        
-        // Minimum fiyat
-        echo '<td>';
-        echo '<input type="number" name="min_custom_price" value="' . esc_attr($min_custom_price) . '" min="0" step="1" class="small-text">';
-        echo '</td>';
-        
-        // Çoklu hisse
-        echo '<td>';
+        echo '</div>'; // .wdp-product-main
+
+        // Orta kısım: ayar grid'i (her kolon altında ilgili alt ayar)
+        echo '<div class="wdp-product-settings-grid">';
+
+        // Çoklu hisse + Maks. hisse
+        echo '<div class="wdp-field-group">';
+        echo '<div class="wdp-field wdp-field-toggle">';
+        echo '<div class="wdp-field-label">' . __('Çoklu Hisse', 'woo-donation-popup') . '</div>';
+        echo '<div class="wdp-field-control">';
         echo '<label class="wdp-switch">';
         echo '<input type="checkbox" name="allow_multiple_shares" ' . checked($allow_multiple_shares, true, false) . '>';
         echo '<span class="wdp-slider"></span>';
         echo '</label>';
-        echo '</td>';
-        
-        // Maksimum hisse
-        echo '<td>';
+        echo '</div>';
+        echo '</div>';
+        echo '<div class="wdp-sub-field">';
+        echo '<div class="wdp-sub-field-label">' . __('Maks. Hisse', 'woo-donation-popup') . '</div>';
+        echo '<div class="wdp-field-control">';
         echo '<input type="number" name="max_shares" value="' . esc_attr($max_shares) . '" min="1" max="20" class="small-text">';
-        echo '</td>';
-        
-        // Progress Bar
-        echo '<td>';
+        echo '</div>';
+        echo '</div>';
+        echo '</div>';
+
+        // Özel fiyat + Min. fiyat
+        echo '<div class="wdp-field-group">';
+        echo '<div class="wdp-field wdp-field-toggle">';
+        echo '<div class="wdp-field-label">' . __('Özel Fiyat', 'woo-donation-popup') . '</div>';
+        echo '<div class="wdp-field-control">';
+        echo '<label class="wdp-switch">';
+        echo '<input type="checkbox" name="allow_custom_price" ' . checked($allow_custom_price, true, false) . '>';
+        echo '<span class="wdp-slider"></span>';
+        echo '</label>';
+        echo '</div>';
+        echo '</div>';
+        echo '<div class="wdp-sub-field">';
+        echo '<div class="wdp-sub-field-label">' . __('Min. Fiyat (₺)', 'woo-donation-popup') . '</div>';
+        echo '<div class="wdp-field-control">';
+        echo '<input type="number" name="min_custom_price" value="' . esc_attr($min_custom_price) . '" min="0" step="1" class="small-text">';
+        echo '</div>';
+        echo '</div>';
+        echo '</div>';
+
+        // Progress Bar + Üst Limit
+        echo '<div class="wdp-field-group">';
+        echo '<div class="wdp-field wdp-field-toggle">';
+        echo '<div class="wdp-field-label">' . __('Progress Bar', 'woo-donation-popup') . '</div>';
+        echo '<div class="wdp-field-control">';
         echo '<label class="wdp-switch">';
         echo '<input type="checkbox" name="enable_progress_bar" ' . checked($enable_progress_bar, true, false) . '>';
         echo '<span class="wdp-slider"></span>';
         echo '</label>';
-        echo '</td>';
-        
-        // Üst Limit
-        echo '<td>';
+        echo '</div>';
+        echo '</div>';
+        echo '<div class="wdp-sub-field">';
+        echo '<div class="wdp-sub-field-label">' . __('Üst Limit (₺)', 'woo-donation-popup') . '</div>';
+        echo '<div class="wdp-field-control">';
         echo '<input type="number" name="progress_bar_limit" value="' . esc_attr($progress_bar_limit) . '" min="0" step="1" class="small-text">';
-        echo '</td>';
-        
-        // Shortcode'lar - Burada değişiklik yapıyoruz
-        echo '<td>';
+        echo '</div>';
+        echo '</div>';
+        echo '</div>';
+
+        echo '</div>'; // .wdp-product-settings-grid
+
+        // Shortcode alanı
+        echo '<div class="wdp-product-shortcodes">';
         echo '<div class="wdp-shortcodes">';
-        
+
         // Buton Shortcode
         echo '<div class="wdp-shortcode-item">';
-        echo '<label>Buton:</label>';
+        echo '<label class="wdp-shortcode-label">Buton</label>';
         echo '<code class="wdp-shortcode">' . $button_shortcode . '</code>';
         echo '<button type="button" class="button button-small wdp-copy-shortcode" data-shortcode="' . esc_attr($button_shortcode) . '">' . __('Kopyala', 'woo-donation-popup') . '</button>';
         echo '</div>';
-        
+
         // Form Shortcode
         echo '<div class="wdp-shortcode-item">';
-        echo '<label>Form:</label>';
+        echo '<label class="wdp-shortcode-label">Form</label>';
         echo '<code class="wdp-shortcode">' . $form_shortcode . '</code>';
         echo '<button type="button" class="button button-small wdp-copy-shortcode" data-shortcode="' . esc_attr($form_shortcode) . '">' . __('Kopyala', 'woo-donation-popup') . '</button>';
         echo '</div>';
-        
-        echo '</div>';
-        echo '</td>';
-        
-        // İşlemler
-        echo '<td>';
+
+        echo '</div>'; // .wdp-shortcodes
+        echo '</div>'; // .wdp-product-shortcodes
+
+        // Alt kısım: işlem butonu
+        echo '<div class="wdp-product-actions">';
         echo '<button type="button" class="button wdp-save-product" data-product-id="' . $product->get_id() . '">' . __('Kaydet', 'woo-donation-popup') . '</button>';
         echo '<span class="spinner"></span>';
-        echo '</td>';
-        
-        echo '</tr>';
+        echo '</div>'; // .wdp-product-actions
+
+        echo '</div>'; // .wdp-product-card
     }
     
     /**
