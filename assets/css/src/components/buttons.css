@@ -238,11 +238,10 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content form .wdp-butto
   height: var(--wdp-space-4);
   top: 50%;
   left: 50%;
-  margin-left: calc(var(--wdp-space-2) * -1);
-  margin-top: calc(var(--wdp-space-2) * -1);
   border: 2px solid transparent;
   border-top-color: var(--wdp-white);
   border-radius: 50%;
+  animation: wdp-spin 0.7s linear infinite;
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content form .wdp-button-group button:disabled {
@@ -312,10 +311,19 @@ html body .wdp-loading-button::after {
   left: 50%;
   width: 20px;
   height: 20px;
-  margin: -10px 0 0 -10px;
   border: 2px solid transparent;
   border-top-color: currentColor;
   border-radius: 50%;
+  animation: wdp-spin 0.7s linear infinite;
+}
+
+@keyframes wdp-spin {
+  from {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
 }
 
 @media (prefers-contrast: high) {
