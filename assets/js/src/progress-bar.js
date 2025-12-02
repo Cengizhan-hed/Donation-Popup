@@ -93,6 +93,10 @@
       }
     });
 
+    // İlk renk kontrolünü yap
+    const initialPercentage = Math.min(100, (current / Math.max(1, limit)) * 100);
+    updatePercentageColor(percentageElement, initialPercentage);
+    
     safeLog('Progress bar initialized for product:', productId);
   }
 
@@ -144,6 +148,26 @@
 
     // Toplam yüzdeyi göster (limit aşıldıysa 100% göster)
     percentageElement.textContent = totalPercentage.toFixed(1) + '%';
+    
+    // Yüzde değerinin renk değişimini kontrol et (fill %50'den fazlaysa beyaz)
+    updatePercentageColor(percentageElement, currentPercentage);
+  }
+  
+  /**
+   * Yüzde değerinin renk değişimini güncelle
+   * Progress bar'ın ortası %50, eğer fill %50'den fazlaysa yüzde değeri fill üzerinde
+   * @param {HTMLElement} percentageElement - Yüzde değeri elementi
+   * @param {number} fillPercentage - Fill yüzdesi
+   */
+  function updatePercentageColor(percentageElement, fillPercentage) {
+    if (!percentageElement) return;
+    
+    // Yüzde değeri progress bar'ın ortasında, eğer fill %50'den fazlaysa beyaz renk
+    if (fillPercentage >= 50) {
+      percentageElement.classList.add('on-fill');
+    } else {
+      percentageElement.classList.remove('on-fill');
+    }
   }
 
   /**
@@ -171,6 +195,9 @@
 
     // Yüzdeyi güncelle
     percentageElement.textContent = percentage.toFixed(1) + '%';
+    
+    // Yüzde değerinin renk değişimini kontrol et
+    updatePercentageColor(percentageElement, percentage);
 
     // Preview'ı temizle
     if (previewBar) {
