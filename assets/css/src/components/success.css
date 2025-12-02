@@ -22,14 +22,14 @@ html body .wdp-cart-actions :is(a, button) {
   background: var(--wdp-button-primary, var(--wdp-primary));
   color: var(--wdp-white);
   border: none;
-  border-radius: var(--wdp-button-radius, var(--wdp-radius-md));
+  border-radius: var(--wdp-button-radius);
   padding: var(--wdp-space-3) var(--wdp-space-6);
   font-size: var(--wdp-text-base);
   font-weight: 500;
   cursor: pointer;
   text-decoration: none;
   /* Hafif renk geçişi serbest, hareket yok */
-  transition: background 0.15s ease, color 0.15s ease;
+  transition: var(--wdp-transition-button);
   margin: 0;
   min-width: 120px;
   text-align: center;
@@ -72,9 +72,8 @@ html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-success-screen, .wdp-moda
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
-  box-shadow: none;
   /* Hafif renk geçişi serbest, hareket yok */
-  transition: background 0.15s ease, color 0.15s ease;
+  transition: var(--wdp-transition-button);
   text-decoration: none;
   text-align: center;
 }
@@ -84,8 +83,6 @@ html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-success-screen, .wdp-moda
   /* Hover'da / focus'ta sadece hafif koyulaşma, hareket yok */
   background: var(--wdp-success-button-hover, #185d98);
   background-image: none;
-  box-shadow: none;
-  transform: none;
   color: #fff;
 }
 
@@ -107,9 +104,9 @@ html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-success-screen, .wdp-moda
 
 html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-success-screen, .wdp-modal-content .wdp-success-screen) .wdp-mini-cart {
   margin-bottom: var(--wdp-space-6);
-  background: var(--wdp-mini-cart-bg, #f9fafb);
-  border: 1px solid var(--wdp-mini-cart-border, #e5e7eb);
-  border-radius: var(--wdp-mini-cart-radius, 8px);
+  background: var(--wdp-mini-cart-bg, var(--wdp-card-bg, #f9fafb));
+  border: 1px solid var(--wdp-mini-cart-border, var(--wdp-card-border, #e5e7eb));
+  border-radius: var(--wdp-mini-cart-radius, var(--wdp-card-radius, 8px));
   padding: var(--wdp-space-4);
 }
 
@@ -117,7 +114,7 @@ html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-mini-cart-header, .wdp-mo
   font-size: 20px;
   font-weight: 700;
   margin: 0 0 10px 0;
-  color: #1e73be;
+  color: var(--wdp-button-primary, #1e73be);
   letter-spacing: 0.5px;
 }
 
@@ -127,7 +124,7 @@ html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-mini-cart-items, .wdp-mod
   padding-right: 4px;
   margin-bottom: 10px;
   scrollbar-width: thin;
-  scrollbar-color: #1e73be #f2f2f2;
+  scrollbar-color: var(--wdp-button-primary, #1e73be) #f2f2f2;
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-mini-cart-items, .wdp-modal-content .wdp-mini-cart-items)::-webkit-scrollbar {
@@ -202,7 +199,7 @@ html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-mini-cart-items, .wdp-mod
   color: var(--wdp-gray-600);
 }
 
-@media (max-width: 600px) {
+@media (max-width: var(--wdp-breakpoint-md)) {
   /* CRITICAL: Maximum specificity - html body ile tema override koruması */
   html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-success-screen, .wdp-modal-content .wdp-success-screen) .wdp-success-message {
     font-size: 13px;

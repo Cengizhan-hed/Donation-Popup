@@ -8,11 +8,11 @@ html body .wdp-toast {
   position: fixed;
   top: 20px;
   right: 20px;
-  background: var(--wdp-white);
-  border: 1px solid var(--wdp-gray-200);
-  border-radius: var(--wdp-radius-lg);
+  background: var(--wdp-card-bg, var(--wdp-white));
+  border: 1px solid var(--wdp-card-border, var(--wdp-gray-200));
+  border-radius: var(--wdp-card-radius);
   padding: var(--wdp-space-4) var(--wdp-space-5);
-  box-shadow: none;
+  box-shadow: var(--wdp-card-shadow, none);
   z-index: 1000003;
   max-width: 300px;
   transform: translateX(100%);
@@ -53,7 +53,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-toast-clos
 html body .wdp-toast-close {
   background: none;
   border: none;
-  font-size: 18px;
+  font-size: var(--wdp-font-size-lg, 18px);
   cursor: pointer;
   color: var(--wdp-gray-500);
   padding: 0;

@@ -36,10 +36,10 @@ html body .wdp-alert {
   --wdp-alert-icon-color: var(--wdp-error);
   --wdp-alert-icon-shadow: inset 0 0 0 1px rgba(229, 62, 62, 0.18);
   width: min(520px, 96vw);
-  background: var(--wdp-alert-bg);
-  border-radius: var(--wdp-radius-xl);
-  box-shadow: none;
-  border: 1px solid var(--wdp-alert-border);
+  background: var(--wdp-alert-bg, var(--wdp-card-bg, #ffffff));
+  border-radius: var(--wdp-radius-xl, var(--wdp-card-radius));
+  box-shadow: var(--wdp-card-shadow, none);
+  border: 1px solid var(--wdp-alert-border, var(--wdp-card-border, #e5e7eb));
   display: grid;
   grid-template-columns: auto 1fr auto;
   gap: var(--wdp-space-4);
@@ -192,7 +192,7 @@ html body .wdp-alert--info {
   --wdp-alert-icon-shadow: inset 0 0 0 1px rgba(74, 144, 226, 0.25);
 }
 
-@media (max-width: 600px){
+@media (max-width: var(--wdp-breakpoint-md)){
   /* CRITICAL: Maximum specificity - html body ile tema override koruması */
   html body .wdp-alert,
   html body .wdp-modal .wdp-alert,

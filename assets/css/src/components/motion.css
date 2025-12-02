@@ -12,7 +12,6 @@ html body .wdp-modal-content {
   contain: layout style paint;
 }
 
-/* No animations - All animations removed per user request */
 
 /* Kullanıcı isteği: input/textarea focus durumlarında ek animasyon / outline olmasın */
 html body .wdp-modal-content form input,
@@ -42,10 +41,7 @@ html body .wdp-shareholder-header {
               border-color var(--wdp-duration-200, 200ms) var(--wdp-ease-in-out, cubic-bezier(0.4, 0, 0.2, 1));
 }
 
-/* Mobile optimizations - No animations */
-@media (max-width: 600px) {
-  html body .wdp-modal .wdp-modal-content,
-  html body .wdp-donation-form .wdp-modal-content {
-    /* No animations on mobile */
-  }
+/* Mobile optimizations */
+@media (max-width: var(--wdp-breakpoint-md)) {
+  /* Mobile-specific styles if needed */
 }

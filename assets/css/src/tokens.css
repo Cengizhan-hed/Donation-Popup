@@ -102,6 +102,10 @@
   --wdp-bg-primary: var(--wdp-white);
   --wdp-bg-secondary: var(--wdp-gray-50);
   --wdp-bg-tertiary: var(--wdp-gray-100);
+  
+  /* Icon & button text colors */
+  --wdp-icon-color: #888888; /* Button icons, quantity counter buttons */
+  --wdp-icon-color-hover: var(--wdp-primary); /* Icon hover state */
 
   /* Button Styles */
   --wdp-button-primary: #1e73be;
@@ -132,6 +136,9 @@
   /* Transitions */
   --wdp-transition-colors: background-color 0.2s ease-in-out, color 0.2s ease-in-out, border-color 0.2s ease-in-out;
   --wdp-transition-transform: transform 0.2s ease-in-out;
+  --wdp-transition-color: color 0.2s ease; /* Single color transition */
+  --wdp-transition-button: background-color 0.15s ease, color 0.15s ease; /* Button transitions */
+  --wdp-transition-border: border-color 0.2s ease; /* Border color transition */
 
   /* Spacing Scale (Modern with logical properties support) */
   --wdp-space-1: 0.25rem;    /* 4px */
@@ -229,13 +236,13 @@
   --wdp-ease-in: cubic-bezier(0.4, 0, 1, 1);
   --wdp-ease-out: cubic-bezier(0, 0, 0.2, 1);
   --wdp-ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
-  --wdp-ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+  --wdp-ease-smooth: var(--wdp-ease-in-out); /* Alias for ease-in-out */
   
   /* Modern easing functions (Material Design 3) */
   --wdp-ease-emphasized: cubic-bezier(0.2, 0, 0, 1);
   --wdp-ease-emphasized-decelerate: cubic-bezier(0.05, 0.7, 0.1, 1);
   --wdp-ease-emphasized-accelerate: cubic-bezier(0.3, 0, 0.8, 0.15);
-  --wdp-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --wdp-ease-standard: var(--wdp-ease-emphasized); /* Alias for ease-emphasized */
   
   /* Spring-like animations */
   --wdp-ease-spring: cubic-bezier(0.68, -0.55, 0.265, 1.55);
@@ -274,6 +281,13 @@
   --wdp-container-type: inline-size;
   --wdp-container-name: wdp-container;
   
+  /* Breakpoints (for media queries) */
+  --wdp-breakpoint-xs: 280px;
+  --wdp-breakpoint-sm: 480px;
+  --wdp-breakpoint-md: 600px;
+  --wdp-breakpoint-lg: 768px;
+  --wdp-breakpoint-xl: 1024px;
+  
   /* Modern border radius (using rem for scalability) */
   --wdp-radius-sm: 0.25rem;   /* 4px */
   --wdp-radius-md: 0.5rem;    /* 8px */
@@ -306,17 +320,37 @@
   --wdp-focus-ring-offset: var(--wdp-focus-ring-width);
 
   /* Semantic form & card tokens (görünümü bozmadan, mevcut değerlere eşit) */
+  /* Form inputs */
   --wdp-input-bg: #ffffff;
   --wdp-input-border: #d1d5db;
   --wdp-input-color: #1f2937;
   --wdp-input-radius: 8px;
-  --wdp-label-color: #374151;
-  --wdp-placeholder-color: #6b7280;
+  --wdp-input-min-height: 48px;
+  --wdp-input-padding-y: 12px;
+  --wdp-input-padding-x: 16px;
+  --wdp-input-font-size: 16px;
+  --wdp-input-line-height: 1.5;
 
+  /* Labels & placeholders */
+  --wdp-label-color: #374151;
+  --wdp-label-font-size: 14px;
+  --wdp-label-font-weight: 600;
+  --wdp-placeholder-color: #6b7280;
+  
+  /* Common font sizes */
+  --wdp-font-size-lg: 18px; /* Button text, quantity counter, close button */
+
+  /* Card-like surfaces */
   --wdp-card-bg: #ffffff;
   --wdp-card-border: #e5e7eb;
   --wdp-card-radius: 12px;
+  --wdp-card-radius-sm: 10px; /* Smaller cards (shareholder cards) */
   --wdp-card-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+  --wdp-card-shadow-md: 0 2px 8px rgba(0, 0, 0, 0.04); /* Progress bar, shareholders area */
+  --wdp-card-padding-y: 14px; /* Progress bar container */
+  --wdp-card-padding-x: 16px; /* Progress bar container */
+  --wdp-card-header-padding-y: 10px; /* Shareholder header */
+  --wdp-card-header-padding-x: 16px; /* Shareholder header */
 
   --wdp-form-error-bg: #fed7d7;
   --wdp-form-error-border: #feb2b2;

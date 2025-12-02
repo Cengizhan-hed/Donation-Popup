@@ -121,9 +121,9 @@ html {
 html body .wdp-modal.show .wdp-modal-content {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   background: var(--wdp-modal-bg, var(--wdp-bg-primary, rgb(255, 255, 255)));
-  border: var(--wdp-border-1, 1px) solid var(--wdp-gray-200, rgb(229, 231, 235));
-  border-radius: var(--wdp-modal-radius, var(--wdp-radius-lg, 0.75rem));
-  box-shadow: var(--wdp-elevation-3, var(--wdp-shadow-lg));
+  border: var(--wdp-border-1) solid var(--wdp-gray-200);
+  border-radius: var(--wdp-modal-radius, var(--wdp-radius-lg));
+  box-shadow: var(--wdp-elevation-3);
   width: min(var(--wdp-popup-modal-width-desktop, 540px), 96vw);
   max-width: min(var(--wdp-popup-modal-width-desktop, 540px), 96vw);
   /* CRITICAL: Absolute max-height - never exceed 90vh (modern dvh support) */
@@ -163,7 +163,7 @@ html body .wdp-modal.show .wdp-modal-content {
 
 /* CRITICAL: In-page forms - default width (can be overridden for single product) */
 html body .wdp-donation-form .wdp-modal-content {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--wdp-font-family);
   background: var(--wdp-modal-bg, #ffffff);
   border: 1px solid #e5e7eb;
   border-radius: var(--wdp-modal-radius, 12px);
@@ -262,7 +262,7 @@ html body .wdp-donation-form .wdp-modal-content:has(form.wdp-has-shareholders) {
 /* Mobile responsive styles with high specificity - Highest specificity */
 /* CRITICAL: Mobile - all forms (popup and in-page) must have equal width */
 /* CRITICAL: In-page forms should stick to screen edges with minimal spacing */
-@media (max-width: 600px) {
+@media (max-width: var(--wdp-breakpoint-md)) {
   /* CRITICAL: Popup modal content - ALWAYS fixed width (540px) */
   html body .wdp-modal.show .wdp-modal-content {
     /* CRITICAL: Standard width - min(540px, 96vw) */
@@ -390,7 +390,7 @@ html body .wdp-donation-form .wdp-modal-content:has(form.wdp-has-shareholders) {
 
 /* CRITICAL: True mobile devices (480px and below) - iOS Safari specific fixes ONLY */
 /* CRITICAL: All forms must have equal width, in-page forms stick to edges */
-@media (max-width: 480px) {
+@media (max-width: var(--wdp-breakpoint-sm)) {
   /* CRITICAL: Popup modal content - Small Mobile - ALWAYS fixed width (540px) */
   html body .wdp-modal.show .wdp-modal-content {
     /* CRITICAL: iOS Safari viewport fix - use dvh units */

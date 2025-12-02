@@ -63,8 +63,8 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-shares-section .wdp-share-cou
   border: 1px solid var(--wdp-share-counter-border, #d1d5db);
   border-radius: 8px;
   background: var(--wdp-share-counter-bg, #ffffff);
-  min-height: 48px;
-  height: 48px;
+  min-height: var(--wdp-input-min-height);
+  height: var(--wdp-input-min-height);
   padding: 0 8px;
   margin: 0;
   box-sizing: border-box;
@@ -96,8 +96,8 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-shares-section .wdp-share-cou
   max-width: 100%;
   border: none;
   background: transparent;
-  color: #1f2937;
-  font-size: 18px;
+  color: var(--wdp-input-color, var(--wdp-text-primary, #1f2937));
+  font-size: var(--wdp-font-size-lg, 18px);
   font-weight: 600;
   text-align: center;
   outline: none;
@@ -111,15 +111,15 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-shares-section .wdp-share-cou
   -webkit-appearance: none;
   -moz-appearance: textfield;
   width: 100%;
-  -webkit-text-fill-color: #1f2937;
+  -webkit-text-fill-color: var(--wdp-input-color, var(--wdp-text-primary, #1f2937));
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-shares-section .wdp-shareholders-area {
-  background: var(--wdp-shareholders-area-bg, linear-gradient(to bottom, #ffffff 0%, #fafbfc 100%));
+  background: var(--wdp-shareholders-area-bg, linear-gradient(to bottom, var(--wdp-card-bg, #ffffff) 0%, #fafbfc 100%));
   border: 1px solid var(--wdp-shareholders-area-border, #e1e5e9);
   border-radius: var(--wdp-shareholders-area-radius, 16px);
-  padding: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  padding: var(--wdp-space-2);
+  box-shadow: var(--wdp-card-shadow-md, 0 2px 8px rgba(0, 0, 0, 0.06)), 0 1px 2px rgba(0, 0, 0, 0.04);
   display: flex;
   flex-direction: column;
   flex: 0 1 auto;
@@ -242,10 +242,10 @@ html body .wdp-donation-form .wdp-shareholders-area.scrollable .wdp-shareholders
 /* ============ INDIVIDUAL SHAREHOLDER CARDS ============ */
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholders-scroll .wdp-shareholder-form {
   border: 1px solid var(--wdp-shareholder-card-border, #f0f2f5);
-  border-radius: var(--wdp-shareholder-card-radius, 10px);
-  background: var(--wdp-shareholder-card-bg, #ffffff);
+  border-radius: var(--wdp-shareholder-card-radius, var(--wdp-card-radius-sm));
+  background: var(--wdp-shareholder-card-bg, var(--wdp-card-bg, #ffffff));
   overflow: hidden;
-  box-shadow: var(--wdp-shareholder-card-shadow, 0 1px 3px rgba(0, 0, 0, 0.05));
+  box-shadow: var(--wdp-shareholder-card-shadow, var(--wdp-card-shadow, 0 1px 3px rgba(0, 0, 0, 0.05)));
   margin: 12px 0 0 0;
   width: 100%;
   flex-shrink: 0;
@@ -265,7 +265,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-form .wdp-shareho
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  padding: 10px 16px;
+  padding: var(--wdp-card-header-padding-y, 10px) var(--wdp-card-header-padding-x, 16px);
   margin: 0;
   background: var(--wdp-shareholder-header-bg, #f9fafb);
   border: none;
@@ -366,7 +366,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-form .wdp-shareho
   margin: 0 0 0 auto;
   padding: 0;
   box-sizing: border-box;
-  font-size: 18px;
+  font-size: var(--wdp-font-size-lg, 18px);
   line-height: 1;
   color: #6b7280;
   transition: color var(--wdp-duration-200, 200ms) var(--wdp-ease-in-out, cubic-bezier(0.4, 0, 0.2, 1));
@@ -438,11 +438,11 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-shares-section.wdp-quantity-a
 
 /* ============ SHAREHOLDER CONTENT ============ */
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-form .wdp-shareholder-content {
-  padding: var(--wdp-shareholder-content-padding, 12px);
+  padding: var(--wdp-shareholder-content-padding, var(--wdp-space-3));
   margin: 0;
   display: flex;
   flex-direction: column;
-  background: #ffffff;
+  background: var(--wdp-card-bg, #ffffff);
   box-sizing: border-box;
   width: 100%;
 }
@@ -469,19 +469,19 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-content.wdp-share
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-content > :is(input[type="text"], input[type="tel"]) {
   margin: 0;
   /* Modern logical properties for RTL/LTR support */
-  padding-block: 12px;
-  padding-inline: 16px;
-  padding: 12px 16px; /* Fallback for older browsers */
+  padding-block: var(--wdp-input-padding-y);
+  padding-inline: var(--wdp-input-padding-x);
+  padding: var(--wdp-input-padding-y) var(--wdp-input-padding-x); /* Fallback for older browsers */
   width: 100%;
   box-sizing: border-box;
   display: block;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  background: #ffffff;
-  color: #1f2937;
-  font-size: 16px;
+  border: var(--wdp-border-1) solid var(--wdp-input-border);
+  border-radius: var(--wdp-input-radius);
+  background: var(--wdp-input-bg);
+  color: var(--wdp-input-color);
+  font-size: var(--wdp-input-font-size, 16px);
   font-weight: 400;
-  line-height: 1.5;
+  line-height: var(--wdp-input-line-height, 1.5);
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-content > button {
@@ -495,12 +495,12 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-content > button 
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-content > textarea {
   min-height: 96px;
   /* Modern logical properties for RTL/LTR support */
-  padding-block: 12px;
-  padding-inline: 16px;
-  padding: 12px 16px; /* Fallback for older browsers */
+  padding-block: var(--wdp-input-padding-y);
+  padding-inline: var(--wdp-input-padding-x);
+  padding: var(--wdp-input-padding-y) var(--wdp-input-padding-x); /* Fallback for older browsers */
   resize: vertical;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
+  border: var(--wdp-border-1) solid var(--wdp-input-border);
+  border-radius: var(--wdp-input-radius);
   margin: 0;
   box-sizing: border-box;
   /* Modern aspect ratio for consistent textarea sizing */
@@ -552,7 +552,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-form.wdp-sharehol
 /* ============ COLLAPSED COUNT BADGE ============ */
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-shares-header .wdp-collapsed-count {
   display: inline-block;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--wdp-font-family, 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif);
   font-size: 12px;
   font-weight: 500;
   color: #4a90e2;
@@ -596,7 +596,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-shares-header .wdp-collapsed-
   html body .wdp-donation-form .wdp-shares-section .wdp-share-quantity button {
     width: 36px;
     height: 36px;
-    font-size: 18px;
+    font-size: var(--wdp-font-size-lg, 18px);
   }
 
   html body .wdp-modal .wdp-shares-section .wdp-share-counter input[type="number"],
@@ -650,7 +650,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-shares-header .wdp-collapsed-
   }
   
   html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-form .wdp-shareholder-header {
-    padding: 12px 16px;
+    padding: var(--wdp-space-3) var(--wdp-space-4);
     min-height: 48px;
   }
   
@@ -680,7 +680,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-shares-header .wdp-collapsed-
   }
 }
 
-@media (max-width: 480px) {
+@media (max-width: var(--wdp-breakpoint-sm)) {
   html body .wdp-modal .wdp-modal-content form.wdp-has-shareholders .wdp-shares-section .wdp-shareholders-area:not(.scrollable),
   html body .wdp-donation-form .wdp-modal-content form.wdp-has-shareholders .wdp-shares-section .wdp-shareholders-area:not(.scrollable) {
     max-height: none;
@@ -744,7 +744,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-shares-header .wdp-collapsed-
   /* Küçük mobilde header padding */
   html body .wdp-modal .wdp-shareholder-form .wdp-shareholder-header,
   html body .wdp-donation-form .wdp-shareholder-form .wdp-shareholder-header {
-    padding: 10px 12px;
+    padding: var(--wdp-space-2) var(--wdp-space-3);
     min-height: 44px;
   }
   

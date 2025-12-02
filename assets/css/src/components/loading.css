@@ -24,19 +24,18 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-loading-sp
 html body .wdp-loading-spinner {
   width: 40px;
   height: 40px;
-  border: 3px solid var(--wdp-gray-200, #e5e7eb);
-  border-top: 3px solid var(--wdp-primary, #1e73be);
-  border-right: 3px solid var(--wdp-primary, #1e73be);
+  border: 3px solid var(--wdp-gray-200);
+  border-top: 3px solid var(--wdp-primary);
+  border-right: 3px solid var(--wdp-primary);
   border-radius: 50%;
   position: relative;
-  /* Animation removed - Static spinner per user request */
 }
 
 /* Skeleton loading for form fields - Static, no animation */
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-skeleton,
 html body .wdp-skeleton {
-  background: var(--wdp-gray-200, #e5e7eb);
-  border-radius: var(--wdp-radius-md, 8px);
+  background: var(--wdp-gray-200);
+  border-radius: var(--wdp-radius-md);
   min-height: 20px;
 }
 
@@ -45,7 +44,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-skeleton-i
 html body .wdp-skeleton-input {
   width: 100%;
   height: 48px;
-  border-radius: var(--wdp-radius-md, 8px);
+  border-radius: var(--wdp-radius-md);
 }
 
 /* Skeleton button */
@@ -61,7 +60,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-progress-b
 html body .wdp-progress-bar {
   width: 100%;
   height: 4px;
-  background-color: var(--wdp-gray-200, #e5e7eb);
+  background-color: var(--wdp-gray-200);
   border-radius: 2px;
   overflow: hidden;
   position: relative;
@@ -72,7 +71,7 @@ html body .wdp-progress-bar-fill {
   height: 100%;
   background: linear-gradient(
     90deg,
-    var(--wdp-primary, #1e73be) 0%,
+    var(--wdp-primary) 0%,
     var(--wdp-primary-hover, #185d98) 100%
   );
   border-radius: 2px;
@@ -93,7 +92,7 @@ html body .wdp-loading-dots span {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background-color: var(--wdp-primary, #1e73be);
+  background-color: var(--wdp-primary);
   /* Animation removed - Static dots per user request */
 }
 
@@ -121,12 +120,11 @@ html body .wdp-button-loading::after {
   border-top-color: currentColor;
   border-right-color: currentColor;
   border-radius: 50%;
-  /* Animation removed - Static spinner per user request */
 }
 
 /* Mobile optimizations for loading states */
 /* CRITICAL: Maximum specificity - html body ile tema override koruması */
-@media (max-width: 600px) {
+@media (max-width: var(--wdp-breakpoint-md)) {
   /* Mobilde loading spinner boyutu */
   html body .wdp-loading-spinner,
   html body .wdp-modal .wdp-loading-spinner,
@@ -173,7 +171,7 @@ html body .wdp-button-loading::after {
   }
 }
 
-@media (max-width: 480px) {
+@media (max-width: var(--wdp-breakpoint-sm)) {
   /* Küçük mobilde loading spinner */
   html body .wdp-loading-spinner,
   html body .wdp-modal .wdp-loading-spinner,
@@ -198,4 +196,3 @@ html body .wdp-button-loading::after {
   }
 }
 
-/* No animations - All animations removed per user request */
