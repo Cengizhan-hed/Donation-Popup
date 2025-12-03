@@ -32,7 +32,9 @@ html body .wdp-price-quantity-row > input[name="custom_price"] {
 /* Fiyat inputu görsel olarak sayaç ile aynı yükseklik ve dolguda olsun */
 /* Özel fiyat input'ları için spinner göster (sayaçlar için gizli) - Highest specificity */
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-price-quantity-row > :is(.wdp-price-field input[type="number"], input[name="custom_price"][type="number"]) {
-  min-height: 48px;
+  min-height: var(--wdp-input-min-height);
+  height: var(--wdp-input-min-height);
+  max-height: var(--wdp-input-min-height);
   display: block;
   box-sizing: border-box;
   max-width: 100%;
@@ -64,6 +66,8 @@ html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content form, .wdp-
   padding: var(--wdp-input-padding-y) var(--wdp-input-padding-x);
   box-sizing: border-box;
   min-height: var(--wdp-input-min-height);
+  height: var(--wdp-input-min-height);
+  max-height: var(--wdp-input-min-height);
   font-family: var(--wdp-font-family, 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif);
   font-size: var(--wdp-input-font-size, 16px);
   font-weight: 400;
@@ -85,6 +89,8 @@ html body :is(.wdp-modal, .wdp-donation-form) input.wdp-custom-price-input[type=
   padding: var(--wdp-input-padding-y) var(--wdp-input-padding-x);
   box-sizing: border-box;
   min-height: var(--wdp-input-min-height);
+  height: var(--wdp-input-min-height);
+  max-height: var(--wdp-input-min-height);
   font-family: var(--wdp-font-family, 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif);
   font-size: var(--wdp-input-font-size, 16px);
   font-weight: 400;
