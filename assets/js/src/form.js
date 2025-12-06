@@ -86,7 +86,7 @@
   const cart = cartCheck.module;
   const { formatCurrency, getAjaxNonce, announceStatus, safeLog, escapeHtml, debounce, throttle } = utils;
   const { clear: clearAlerts, show: showAlert } = alerts;
-  const { fetchContents: fetchCartContents, updateCountElements: updateCartCountElements, createItemsHTML: createCartItemsHTML, setupContinueShoppingButton, updateWooCommerce: updateWooCommerceCart, saveSideCartElements, showSideCarts } = cart;
+  const { fetchContents: fetchCartContents, updateCountElements: updateCartCountElements, createItemsHTML: createCartItemsHTML, setupContinueShoppingButton, setupRemoveCartItemButtons, updateWooCommerce: updateWooCommerceCart, saveSideCartElements, showSideCarts } = cart;
   const wdp_ajax = window.wdp_ajax || {};
   const jQuery = window.jQuery || null;
   
@@ -339,6 +339,28 @@
         // Form içeriğini temizle
         form.innerHTML = "";
 
+        // Modal header'ı gizle (popup için)
+        const modal = form.closest('.wdp-modal');
+        if (modal) {
+          const modalHeader = modal.querySelector('.wdp-modal-header');
+          if (modalHeader) {
+            modalHeader.classList.add('wdp-hidden-on-success');
+          }
+        }
+
+        // Sayfa içi form için progress bar ve başlıkları gizle
+        const inPageForm = form.closest('.wdp-donation-form');
+        if (inPageForm) {
+          const progressBar = inPageForm.querySelector('.wdp-progress-bar-container');
+          if (progressBar) {
+            progressBar.classList.add('wdp-hidden-on-success');
+          }
+          const formTitle = inPageForm.querySelector('.wdp-form-title-wrapper');
+          if (formTitle) {
+            formTitle.classList.add('wdp-hidden-on-success');
+          }
+        }
+
         // Başarı ekranı oluştur
         const successScreen = document.createElement("div");
         successScreen.className = "wdp-success-screen";
@@ -378,6 +400,7 @@
 ${createCartItemsHTML(cartItems)}
 `;
               setupContinueShoppingButton(form);
+              setupRemoveCartItemButtons(successScreen);
             })
             .catch((error) => {
               safeLog("Error fetching cart contents:", error);
@@ -386,6 +409,7 @@ ${createCartItemsHTML(cartItems)}
 ${createCartItemsHTML([])}
 `;
               setupContinueShoppingButton(form);
+              setupRemoveCartItemButtons(successScreen);
             });
         }
 
@@ -393,6 +417,7 @@ ${createCartItemsHTML([])}
         if (data.items && Array.isArray(data.items)) {
           successScreen.innerHTML = successContent;
           setupContinueShoppingButton(form);
+          setupRemoveCartItemButtons(successScreen);
         }
       }
 

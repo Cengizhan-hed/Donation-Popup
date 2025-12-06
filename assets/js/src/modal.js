@@ -331,6 +331,12 @@
   function closeModal(modal) {
     if (!modal) return
 
+    // Modal header'ı tekrar göster (eğer gizliyse) - sadece popup için
+    const modalHeader = modal.querySelector('.wdp-modal-header');
+    if (modalHeader) {
+      modalHeader.classList.remove('wdp-hidden-on-success');
+    }
+
     // Modal'ı gizle - CSS class'ı da kaldır
     modal.classList.remove("show")
     modal.style.display = "none"

@@ -225,7 +225,9 @@
   <div class="wdp-mini-cart-items">`;
 
     if (cartItems && cartItems.length > 0) {
-      cartItems.forEach((item) => {
+      // En son eklenen ürün en başta görünsün (reverse order)
+      const reversedItems = [...cartItems].reverse();
+      reversedItems.forEach((item) => {
         // Fiyat ve miktarı güvenli bir şekilde al
         let itemPrice = 0;
         let itemQuantity = 1;
@@ -309,7 +311,11 @@
           priceDisplay: priceDisplay
         });
 
+        // Cart item key for remove functionality
+        const cartItemKey = item.key || '';
+        
         // Temiz HTML yapısı - CSS class'ları kullanıyor
+        // Çarpı butonu en sağda, ürün başlığı ile aynı hizada
         html += `
       <table class="wdp-cart-item-table">
         <tr>
@@ -328,6 +334,11 @@
           <td class="wdp-cart-item-details">
             <div class="wdp-cart-item-quantity">${itemQuantity} adet</div>
             <div class="wdp-cart-item-price">${priceDisplay}</div>
+          </td>
+          <td class="wdp-cart-item-remove">
+            <button type="button" class="wdp-remove-cart-item" data-cart-item-key="${escapeHtml(cartItemKey)}" aria-label="Sepetten Kaldır">
+              <span aria-hidden="true">&times;</span>
+            </button>
           </td>
         </tr>
       </table>
@@ -353,6 +364,192 @@
     return html;
   }
 
+  function setupRemoveCartItemButtons(successScreen) {
+    if (!successScreen) {
+      safeLog("setupRemoveCartItemButtons: successScreen is null");
+      return;
+    }
+
+    // Event delegation kullan - daha güvenilir ve dinamik butonlar için
+    // Önce mevcut listener'ı kaldır (varsa)
+    const existingHandler = successScreen._removeCartItemHandler;
+    if (existingHandler) {
+      successScreen.removeEventListener("click", existingHandler);
+      delete successScreen._removeCartItemHandler;
+    }
+
+    // Yeni handler oluştur
+    const handler = async (e) => {
+      // Buton veya içindeki span'a tıklanabilir
+      let button = null;
+      const target = e.target;
+      
+      // Önce butonun kendisine tıklanmış mı kontrol et
+      if (target.classList && target.classList.contains("wdp-remove-cart-item")) {
+        button = target;
+      }
+      // Sonra closest ile kontrol et
+      else if (target.closest) {
+        button = target.closest(".wdp-remove-cart-item");
+      }
+      
+      // Eğer span'a tıklandıysa, parent butonunu bul
+      if (!button && target.tagName === "SPAN" && target.parentElement) {
+        const parent = target.parentElement;
+        if (parent.classList && parent.classList.contains("wdp-remove-cart-item")) {
+          button = parent;
+        }
+      }
+      
+      // Buton kontrolü
+      if (!button || !button.classList || !button.classList.contains("wdp-remove-cart-item") || button.disabled) {
+        return;
+      }
+
+      e.preventDefault();
+      e.stopPropagation();
+      
+      const cartItemKey = button.getAttribute("data-cart-item-key");
+      if (!cartItemKey) {
+        safeLog("No cart item key found for remove button", button);
+        return;
+      }
+
+      safeLog("Remove cart item clicked:", cartItemKey);
+
+      // Disable button during removal
+      button.disabled = true;
+      button.style.opacity = "0.5";
+      button.style.cursor = "wait";
+
+      try {
+        // Remove item via AJAX
+        // WooCommerce AJAX kullan (daha güvenilir)
+        const wcRemoveUrl = (typeof wc_add_to_cart_params !== 'undefined' && wc_add_to_cart_params.wc_ajax_url) 
+          ? wc_add_to_cart_params.wc_ajax_url.toString().replace("%%endpoint%%", "remove_from_cart")
+          : null;
+        
+        // Custom endpoint fallback
+        const nonce = getAjaxNonce("remove_cart_item");
+        safeLog("Remove cart item - cart_item_key:", cartItemKey, "nonce available:", !!nonce);
+        
+        const formData = new FormData();
+        formData.append("action", "wdp_remove_cart_item");
+        formData.append("cart_item_key", cartItemKey);
+        
+        // Nonce varsa ekle, yoksa referer kontrolü yeterli
+        if (nonce) {
+          formData.append("security", nonce);
+        }
+        
+        const ajaxUrl = wdp_ajax.ajax_url;
+
+        const response = await fetch(ajaxUrl, {
+          method: "POST",
+          body: formData,
+          credentials: "same-origin",
+          headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const text = await response.text();
+        safeLog("Remove cart item response:", text);
+        
+        let data;
+        try {
+          data = JSON.parse(text);
+        } catch (parseError) {
+          safeLog("Error parsing remove cart item response:", parseError, text);
+          throw new Error("Invalid JSON response");
+        }
+
+        safeLog("Remove cart item response data:", data);
+
+        if (data.success) {
+          // Update cart display
+          const cartItems = data.items || [];
+          safeLog("Cart items after removal:", cartItems);
+          
+          // Get the mini cart container
+          const miniCartContainer = successScreen.querySelector(".wdp-mini-cart");
+          if (miniCartContainer) {
+            // Extract only the mini cart HTML from the full HTML
+            const fullHTML = createCartItemsHTML(cartItems);
+            safeLog("Generated cart HTML:", fullHTML);
+            
+            const tempDiv = document.createElement("div");
+            tempDiv.innerHTML = fullHTML;
+            const newMiniCart = tempDiv.querySelector(".wdp-mini-cart");
+            
+            if (newMiniCart) {
+              // Mini cart items kısmını güncelle
+              const oldItems = miniCartContainer.querySelector(".wdp-mini-cart-items");
+              const newItems = newMiniCart.querySelector(".wdp-mini-cart-items");
+              
+              if (oldItems && newItems) {
+                oldItems.innerHTML = newItems.innerHTML;
+                safeLog("Cart items HTML updated successfully");
+              } else {
+                // Fallback: tüm mini cart'ı güncelle
+                miniCartContainer.innerHTML = newMiniCart.innerHTML;
+                safeLog("Cart container updated (full replace)");
+              }
+              
+              // Event delegation sayesinde yeni butonlar otomatik çalışacak
+              // Ama yine de setup'ı çağıralım (güvenlik için)
+              setupRemoveCartItemButtons(successScreen);
+              
+              safeLog("Cart updated, new items count:", cartItems.length);
+            } else {
+              safeLog("New mini cart element not found in generated HTML");
+            }
+          } else {
+            safeLog("Mini cart container not found in success screen");
+          }
+
+          // Update WooCommerce cart
+          updateWooCommerceCart();
+          
+          // Update cart count
+          if (data.cart_count !== undefined) {
+            updateCartCountElements(data.cart_count);
+          }
+        } else {
+          safeLog("Error removing cart item:", data.message || "Unknown error", data);
+          button.disabled = false;
+          button.style.opacity = "1";
+          button.style.cursor = "pointer";
+          
+          // Show error message to user
+          if (WDPApp.alerts && WDPApp.alerts.show) {
+            WDPApp.alerts.show([data.message || "Ürün sepetten kaldırılamadı"], {
+              type: 'error',
+              title: 'Hata'
+            });
+          }
+        }
+      } catch (error) {
+        safeLog("Error in remove cart item request:", error);
+        button.disabled = false;
+        button.style.opacity = "1";
+        button.style.cursor = "pointer";
+      }
+    };
+
+    // Handler'ı successScreen'e bağla ve kaydet
+    successScreen.addEventListener("click", handler);
+    successScreen._removeCartItemHandler = handler;
+    
+    // Debug: Kaç buton bulundu
+    const removeButtons = successScreen.querySelectorAll(".wdp-remove-cart-item");
+    safeLog("setupRemoveCartItemButtons: Found", removeButtons.length, "remove buttons");
+  }
+
   function setupContinueShoppingButton(form) {
     const continueShoppingBtn = form.querySelector(".wdp-continue-shopping");
     if (continueShoppingBtn) {
@@ -367,6 +564,28 @@
         } else {
           // Doğrudan form için - başarı ekranını kaldır ve formu sıfırla
           if (continueShoppingBtn.classList.contains("wdp-new-donation")) {
+            // Modal header'ı tekrar göster (popup için)
+            const modal = form.closest('.wdp-modal');
+            if (modal) {
+              const modalHeader = modal.querySelector('.wdp-modal-header');
+              if (modalHeader) {
+                modalHeader.classList.remove('wdp-hidden-on-success');
+              }
+            }
+            
+            // Sayfa içi form için progress bar ve başlıkları tekrar göster
+            const inPageForm = form.closest('.wdp-donation-form');
+            if (inPageForm) {
+              const progressBar = inPageForm.querySelector('.wdp-progress-bar-container');
+              if (progressBar) {
+                progressBar.classList.remove('wdp-hidden-on-success');
+              }
+              const formTitle = inPageForm.querySelector('.wdp-form-title-wrapper');
+              if (formTitle) {
+                formTitle.classList.remove('wdp-hidden-on-success');
+              }
+            }
+            
             // Form içeriğini geri yükle
             const formContainer = form.closest(".wdp-donation-form");
             const containerId = formContainer ? (formContainer.id || formContainer.getAttribute("data-product-id") || Math.random().toString(36).substr(2, 9)) : null;
@@ -518,6 +737,7 @@
     saveSideCartElements,
     createItemsHTML: createCartItemsHTML,
     setupContinueShoppingButton,
+    setupRemoveCartItemButtons,
     updateWooCommerce: updateWooCommerceCart,
     fallbackUpdate: fallbackCartUpdate,
     triggerUpdates: triggerSideCartUpdates,
