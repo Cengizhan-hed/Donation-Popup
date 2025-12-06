@@ -564,6 +564,8 @@
     if (!isCollapsed) {
       warningBadge.classList.remove('show');
       warningBadge.textContent = '';
+      warningBadge.removeAttribute('title');
+      warningBadge.removeAttribute('aria-label');
       return;
     }
     
@@ -580,11 +582,19 @@
       if (nameEmpty) missingFields.push('Ad Soyad');
       if (phoneEmpty) missingFields.push('Telefon');
       
+      const warningText = missingFields.join(', ') + ' gerekli';
+      
       warningBadge.classList.add('show');
-      warningBadge.textContent = missingFields.join(', ') + ' gerekli';
+      warningBadge.setAttribute('title', warningText);
+      warningBadge.setAttribute('aria-label', warningText);
+      
+      // Masaüstünde kompakt metin badge göster (CSS media query mobilde sadece ikon gösterir)
+      warningBadge.textContent = warningText;
     } else {
       warningBadge.classList.remove('show');
       warningBadge.textContent = '';
+      warningBadge.removeAttribute('title');
+      warningBadge.removeAttribute('aria-label');
     }
   }
   
