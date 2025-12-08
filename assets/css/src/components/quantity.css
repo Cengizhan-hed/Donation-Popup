@@ -100,6 +100,88 @@ html body :is(.wdp-modal, .wdp-donation-form) input.wdp-custom-price-input[type=
   margin: 0;
 }
 
+/* ==================== */
+/* PROGRESS BAR FORM - ÖZEL FİYAT FULL WIDTH */
+/* ==================== */
+/* Progress bar formunda quantity counter gizli, sadece custom price gösterilir */
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-price-quantity-row.wdp-progress-bar-price-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Progress bar formunda price field full width */
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-price-row .wdp-progress-bar-price-field {
+  width: 100%;
+  display: block;
+  position: relative;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Progress bar formunda placeholder ortada */
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-price-row .wdp-progress-bar-price-input::placeholder {
+  text-align: center;
+}
+
+/* Progress bar formunda quantity counter gizli */
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-price-row .wdp-quantity-counter {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  height: 0 !important;
+  width: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
+/* ==================== */
+/* ÖZEL FİYATLI FORM - SAYAÇ KALDIRILDI, FULL WIDTH */
+/* ==================== */
+/* Özel fiyatlı formda (progress bar olmayan) quantity counter gizli, sadece custom price gösterilir */
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-price-quantity-row.wdp-custom-price-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Özel fiyatlı formda price field full width */
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-custom-price-row .wdp-custom-price-field {
+  width: 100%;
+  display: block;
+  position: relative;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Özel fiyatlı formda placeholder ortada */
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-custom-price-row .wdp-custom-price-field .wdp-custom-price-input::placeholder {
+  text-align: center;
+}
+
+/* Özel fiyatlı formda quantity counter gizli (özel fiyat aktifken) */
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-custom-price-row:has(.wdp-custom-price-field) .wdp-quantity-counter {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  height: 0 !important;
+  width: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
 html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content form, .wdp-modal-content, &) .wdp-price-field {
   display: block;
   width: 100%;

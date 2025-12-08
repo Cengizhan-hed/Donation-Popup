@@ -8,7 +8,7 @@ html body .wdp-progress-bar-container {
   margin: 16px 0;
   padding: 18px 20px;
   background: var(--wdp-progress-container-bg, linear-gradient(135deg, #f8fafc 0%, #ffffff 50%, #f1f5f9 100%));
-  border-radius: var(--wdp-radius-lg, 14px);
+  border-radius: 10px;
   border: 1px solid var(--wdp-progress-container-border, rgba(226, 232, 240, 0.8));
   box-shadow: var(--wdp-card-shadow-md, 0 2px 8px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.03));
   position: relative;
@@ -269,7 +269,7 @@ html body .wdp-progress-bar-percentage-value.on-fill {
   html body .wdp-progress-bar-container {
     margin: 14px 0;
     padding: 16px 14px;
-    border-radius: var(--wdp-radius-md, 12px);
+    border-radius: 10px;
   }
 
   html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content, &) .wdp-progress-bar-header,
@@ -325,7 +325,7 @@ html body .wdp-progress-bar-percentage-value.on-fill {
   html body .wdp-progress-bar-container {
     margin: 12px 0;
     padding: 14px 12px;
-    border-radius: var(--wdp-radius-md, 10px);
+    border-radius: 10px;
   }
 
   html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content, &) .wdp-progress-bar-header,

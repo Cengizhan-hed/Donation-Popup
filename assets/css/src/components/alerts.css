@@ -61,7 +61,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-alert__ico
 html body .wdp-alert__icon {
   width: 56px;
   height: 56px;
-  border-radius: 18px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -208,7 +208,7 @@ html body .wdp-alert--info {
   html body .wdp-alert__icon {
     width: 48px;
     height: 48px;
-    border-radius: 16px;
+    border-radius: 10px;
   }
 }
 

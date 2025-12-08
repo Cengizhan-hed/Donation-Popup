@@ -67,7 +67,7 @@ html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-success-screen, .wdp-moda
   background-image: none;
   color: #fff;
   border: none;
-  border-radius: var(--wdp-success-button-radius, 24px);
+  border-radius: var(--wdp-success-button-radius, 10px);
   padding: 12px 20px;
   font-size: 16px;
   font-weight: 600;
@@ -104,60 +104,104 @@ html body .wdp-donation-form .wdp-form-title-wrapper.wdp-hidden-on-success {
 html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-success-screen, .wdp-modal-content .wdp-success-screen) .wdp-success-message {
   font-size: 15px;
   font-weight: 600;
-  color: var(--wdp-success-message-color, #48bb78);
+  color: var(--wdp-success-message-color, #059669);
   text-align: center;
   margin: 0 0 var(--wdp-space-4) 0;
-  padding: var(--wdp-space-2) var(--wdp-space-3);
-  background: var(--wdp-success-message-bg, rgba(72, 187, 120, 0.1));
-  border: 1px solid var(--wdp-success-message-border, rgba(72, 187, 120, 0.2));
-  border-radius: var(--wdp-success-message-radius, 8px);
+  padding: 12px 16px;
+  background: linear-gradient(135deg, rgba(72, 187, 120, 0.12) 0%, rgba(72, 187, 120, 0.08) 100%);
+  border: 1px solid rgba(72, 187, 120, 0.25);
+  border-radius: var(--wdp-success-message-radius, 10px);
+  box-shadow: 0 1px 3px 0 rgba(72, 187, 120, 0.1);
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-success-screen, .wdp-modal-content .wdp-success-screen) .wdp-mini-cart {
   margin-bottom: var(--wdp-space-6);
-  background: var(--wdp-mini-cart-bg, var(--wdp-card-bg, #f9fafb));
-  border: 1px solid var(--wdp-mini-cart-border, var(--wdp-card-border, #e5e7eb));
-  border-radius: var(--wdp-mini-cart-radius, var(--wdp-card-radius, 8px));
-  padding: var(--wdp-space-4);
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  border-radius: var(--wdp-mini-cart-radius, 10px);
+  padding: 20px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Subtle background pattern */
+html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-success-screen, .wdp-modal-content .wdp-success-screen) .wdp-mini-cart::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100%;
+  background: 
+    radial-gradient(circle at 20% 50%, rgba(30, 115, 190, 0.03) 0%, transparent 50%),
+    radial-gradient(circle at 80% 50%, rgba(72, 187, 120, 0.03) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-success-screen, .wdp-modal-content .wdp-success-screen) .wdp-mini-cart > * {
+  position: relative;
+  z-index: 1;
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-mini-cart-header, .wdp-modal-content .wdp-mini-cart-header) h4 {
   font-size: 20px;
   font-weight: 700;
-  margin: 0 0 10px 0;
+  margin: 0 0 16px 0;
   color: var(--wdp-button-primary, #1e73be);
-  letter-spacing: 0.5px;
+  letter-spacing: -0.3px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-mini-cart-header, .wdp-modal-content .wdp-mini-cart-header) h4::before {
+  content: '';
+  width: 4px;
+  height: 24px;
+  background: linear-gradient(180deg, #1e73be 0%, #48bb78 100%);
+  border-radius: 10px;
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-mini-cart-items, .wdp-modal-content .wdp-mini-cart-items) {
-  max-height: 180px;
+  max-height: 220px;
   overflow-y: auto;
-  padding-right: 4px;
-  margin-bottom: 10px;
+  padding-right: 8px;
+  margin-bottom: 0;
   scrollbar-width: thin;
   scrollbar-color: var(--wdp-button-primary, #1e73be) #f2f2f2;
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-mini-cart-items, .wdp-modal-content .wdp-mini-cart-items)::-webkit-scrollbar {
   width: 6px;
-  background: #f2f2f2;
+  background: #f1f5f9;
+  border-radius: 10px;
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-mini-cart-items, .wdp-modal-content .wdp-mini-cart-items)::-webkit-scrollbar-thumb {
-  background: #1e73be;
-  border-radius: 4px;
+  background: linear-gradient(180deg, #1e73be 0%, #48bb78 100%);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-mini-cart-items, .wdp-modal-content .wdp-mini-cart-items) :is(table, .wdp-cart-item-table) {
   width: 100%;
-  margin-bottom: 10px;
-  border-bottom: 1px solid #eee;
-  padding-bottom: 10px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.6);
+  padding-bottom: 12px;
   border-collapse: collapse;
+  transition: all 0.2s ease;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-mini-cart-items, .wdp-modal-content .wdp-mini-cart-items) :is(table, .wdp-cart-item-table):last-child {
+  margin-bottom: 0;
+  border-bottom: none;
+  padding-bottom: 0;
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-mini-cart-items, .wdp-modal-content .wdp-mini-cart-items) table td {
-  padding: 10px;
+  padding: 12px 10px;
   vertical-align: top;
 }
 
@@ -188,13 +232,16 @@ html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-mini-cart-items, .wdp-mod
   font-size: 15px;
   color: var(--wdp-cart-item-name-color, #1f2937);
   margin-top: 0;
-  margin-bottom: 4px;
-  line-height: 1.4;
+  margin-bottom: 6px;
+  line-height: 1.5;
+  letter-spacing: -0.2px;
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-mini-cart-items, .wdp-modal-content .wdp-mini-cart-items) .wdp-cart-item-meta {
   font-size: 13px;
-  color: #666;
+  color: #64748b;
+  line-height: 1.6;
+  margin-top: 4px;
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-mini-cart-items, .wdp-modal-content .wdp-mini-cart-items) .wdp-cart-item-meta-item {
@@ -203,30 +250,33 @@ html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-mini-cart-items, .wdp-mod
 
 html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-mini-cart-items, .wdp-modal-content .wdp-mini-cart-items) .wdp-cart-item-quantity {
   font-size: 13px;
-  color: #666;
-  margin-bottom: 3px;
+  color: #64748b;
+  margin-bottom: 6px;
+  font-weight: 500;
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-mini-cart-items, .wdp-modal-content .wdp-mini-cart-items) .wdp-cart-item-price {
-  font-size: 14px;
+  font-size: 16px;
+  font-weight: 700;
   color: var(--wdp-cart-item-price-color, #1e73be);
+  letter-spacing: -0.3px;
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-mini-cart-items, .wdp-modal-content .wdp-mini-cart-items) .wdp-remove-cart-item {
   background: transparent;
   border: none;
-  color: #6b7280;
-  font-size: 20px;
+  color: #94a3b8;
+  font-size: 22px;
   line-height: 1;
   cursor: pointer;
-  padding: 0;
-  border-radius: 4px;
+  padding: 2px;
+  border-radius: var(--wdp-button-radius, 10px);
   transition: all 0.2s ease;
   display: inline-flex;
   align-items: flex-start;
   justify-content: center;
-  min-width: 24px;
-  min-height: 24px;
+  min-width: 28px;
+  min-height: 28px;
   flex-shrink: 0;
   vertical-align: top;
   margin-top: 0;
@@ -235,8 +285,9 @@ html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-mini-cart-items, .wdp-mod
 html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-mini-cart-items, .wdp-modal-content .wdp-mini-cart-items) .wdp-remove-cart-item:hover,
 html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-mini-cart-items, .wdp-modal-content .wdp-mini-cart-items) .wdp-remove-cart-item:focus {
   color: #ef4444;
-  background: rgba(239, 68, 68, 0.1);
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.12) 0%, rgba(239, 68, 68, 0.08) 100%);
   outline: none;
+  transform: scale(1.1);
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-mini-cart-items, .wdp-modal-content .wdp-mini-cart-items) .wdp-remove-cart-item span {
@@ -261,6 +312,7 @@ html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-mini-cart-items, .wdp-mod
   html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-success-screen, .wdp-modal-content .wdp-success-screen) .wdp-mini-cart {
     padding: var(--wdp-space-2);
     margin-bottom: var(--wdp-space-3);
+    border-radius: var(--wdp-mini-cart-radius, 10px);
   }
 
   html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-mini-cart-header, .wdp-modal-content .wdp-mini-cart-header) h4 {
@@ -276,7 +328,7 @@ html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-mini-cart-items, .wdp-mod
   html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-success-screen, .wdp-modal-content .wdp-success-screen) .wdp-success-buttons .wdp-success-button {
     padding: 10px 12px;
     font-size: 13px;
-    border-radius: var(--wdp-success-button-radius, 24px);
+    border-radius: var(--wdp-success-button-radius, 10px);
   }
 
   html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-mini-cart-items, .wdp-modal-content .wdp-mini-cart-items) table td:first-child > div:first-child {

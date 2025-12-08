@@ -199,17 +199,22 @@ class WDP_Templates {
                     <input type="tel" name="donation_phone" placeholder="Telefon Numarası *" required autocomplete="tel">
                     <textarea name="donation_note" rows="2" placeholder="Not (isteğe bağlı)"></textarea>
 
-                    <!-- Fiyat ve Adet Alanları -->
-                    <div class="wdp-price-quantity-row">
+                    <!-- Fiyat Alanı - Özel fiyatlı formda sayaç yok, sadece özel fiyat -->
+                    <div class="wdp-price-quantity-row wdp-custom-price-row">
                         <?php if ($allow_custom_price): ?>
-                        <input type="number" name="custom_price" placeholder="Fiyat (TL)" min="<?php echo esc_attr($min_price); ?>" step="1" required>
-                        <?php endif; ?>
-
+                        <div class="wdp-price-field wdp-custom-price-field">
+                            <input type="number" name="custom_price" placeholder="<?php echo esc_attr($min_price > 0 ? 'Min: ' . wc_price($min_price) : 'Fiyat (TL) *'); ?>" min="<?php echo esc_attr($min_price); ?>" step="1" required class="wdp-custom-price-input">
+                        </div>
+                        <!-- Hidden quantity input for form submission -->
+                        <input type="hidden" name="quantity" value="1">
+                        <?php else: ?>
+                        <!-- Özel fiyat kapalıysa normal sayaç göster -->
                         <div class="wdp-quantity-counter">
                             <button type="button" class="wdp-product-quantity-btn wdp-product-quantity-decrease" aria-label="Azalt">-</button>
                             <input type="number" name="quantity" value="1" min="1" max="99" readonly>
                             <button type="button" class="wdp-product-quantity-btn wdp-product-quantity-increase" aria-label="Arttır">+</button>
                         </div>
+                        <?php endif; ?>
                     </div>
                     <?php endif; ?>
 
@@ -379,17 +384,22 @@ class WDP_Templates {
                     <input type="tel" name="donation_phone" placeholder="Telefon Numarası *" required autocomplete="tel">
                     <textarea name="donation_note" rows="2" placeholder="Not (isteğe bağlı)"></textarea>
 
-                    <!-- Fiyat ve Adet Alanları -->
-                    <div class="wdp-price-quantity-row">
+                    <!-- Fiyat Alanı - Özel fiyatlı formda sayaç yok, sadece özel fiyat -->
+                    <div class="wdp-price-quantity-row wdp-custom-price-row">
                         <?php if ($allow_custom_price): ?>
-                        <input type="number" name="custom_price" placeholder="Fiyat (TL)" min="<?php echo esc_attr($min_price); ?>" step="1" required>
-                        <?php endif; ?>
-
+                        <div class="wdp-price-field wdp-custom-price-field">
+                            <input type="number" name="custom_price" placeholder="<?php echo esc_attr($min_price > 0 ? 'Min: ' . wc_price($min_price) : 'Fiyat (TL) *'); ?>" min="<?php echo esc_attr($min_price); ?>" step="1" required class="wdp-custom-price-input">
+                        </div>
+                        <!-- Hidden quantity input for form submission -->
+                        <input type="hidden" name="quantity" value="1">
+                        <?php else: ?>
+                        <!-- Özel fiyat kapalıysa normal sayaç göster -->
                         <div class="wdp-quantity-counter">
                             <button type="button" class="wdp-product-quantity-btn wdp-product-quantity-decrease" aria-label="Azalt">-</button>
                             <input type="number" name="quantity" value="1" min="1" max="99" readonly>
                             <button type="button" class="wdp-product-quantity-btn wdp-product-quantity-increase" aria-label="Arttır">+</button>
                         </div>
+                        <?php endif; ?>
                     </div>
                     <?php endif; ?>
 

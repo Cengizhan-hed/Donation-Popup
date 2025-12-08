@@ -9,7 +9,7 @@ html body .wdp-form-error {
   border: 1px solid var(--wdp-form-error-border);
   color: var(--wdp-form-error-text);
   padding: var(--wdp-space-3) var(--wdp-space-4);
-  border-radius: var(--wdp-radius-md);
+  border-radius: 10px;
   margin-bottom: var(--wdp-space-4);
   font-size: var(--wdp-text-sm);
   font-weight: var(--wdp-font-medium);
@@ -35,7 +35,7 @@ html body .wdp-form-success {
   border: 1px solid var(--wdp-form-success-border);
   color: var(--wdp-form-success-text);
   padding: var(--wdp-space-3) var(--wdp-space-4);
-  border-radius: var(--wdp-radius-md);
+  border-radius: 10px;
   margin-bottom: var(--wdp-space-4);
   font-size: var(--wdp-text-sm);
   font-weight: var(--wdp-font-medium);
@@ -66,7 +66,7 @@ html body .wdp-input-error {
   border: 1px solid var(--wdp-input-error-border);
   color: var(--wdp-input-error-text);
   padding: var(--wdp-space-1) var(--wdp-space-2);
-  border-radius: var(--wdp-radius-sm);
+  border-radius: 10px;
   font-size: 11px;
   line-height: 1.4;
   font-weight: 500;

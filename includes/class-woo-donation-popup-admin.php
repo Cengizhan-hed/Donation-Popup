@@ -706,7 +706,7 @@ class Woo_Donation_Popup_Admin {
         echo '<tr>';
         echo '<th scope="row"><label for="modal_border_radius">' . __('Modal Border Radius (px)', 'woo-donation-popup') . '</label></th>';
         echo '<td>';
-        $modal_radius = isset($settings['modal_border_radius']) ? $settings['modal_border_radius'] : '12';
+        $modal_radius = isset($settings['modal_border_radius']) ? $settings['modal_border_radius'] : '10';
         echo '<input type="number" id="modal_border_radius" name="modal_border_radius" value="' . esc_attr($modal_radius) . '" min="0" max="50" step="1" class="small-text" />';
         echo '<p class="description">' . __('Modal köşe yuvarlaklığı (0-50px arası)', 'woo-donation-popup') . '</p>';
         echo '</td>';
@@ -730,7 +730,7 @@ class Woo_Donation_Popup_Admin {
         echo '<tr>';
         echo '<th scope="row"><label for="input_border_radius">' . __('Input Border Radius (px)', 'woo-donation-popup') . '</label></th>';
         echo '<td>';
-        $input_radius = isset($settings['input_border_radius']) ? $settings['input_border_radius'] : '8';
+        $input_radius = isset($settings['input_border_radius']) ? $settings['input_border_radius'] : '10';
         echo '<input type="number" id="input_border_radius" name="input_border_radius" value="' . esc_attr($input_radius) . '" min="0" max="50" step="1" class="small-text" />';
         echo '<p class="description">' . __('Input alanlarının köşe yuvarlaklığı (0-50px arası)', 'woo-donation-popup') . '</p>';
         echo '</td>';
@@ -925,7 +925,7 @@ class Woo_Donation_Popup_Admin {
             'shareholder_content_padding' => '12',
             'shareholders_area_bg' => 'linear-gradient(to bottom, #ffffff 0%, #fafbfc 100%)',
             'shareholders_area_border' => '#e1e5e9',
-            'shareholders_area_radius' => '16',
+            'shareholders_area_radius' => '10',
             'shareholders_scrollbar_color' => '#4a90e2',
             'share_counter_border' => '#d1d5db',
             'share_counter_bg' => '#ffffff',
@@ -1266,7 +1266,7 @@ class Woo_Donation_Popup_Admin {
             'success_message_radius' => '8',
             'mini_cart_bg' => '#f9fafb',
             'mini_cart_border' => '#e5e7eb',
-            'mini_cart_radius' => '8',
+            'mini_cart_radius' => '10',
             'cart_item_name_color' => '#1f2937',
             'cart_item_price_color' => '#1e73be',
         );
@@ -1561,9 +1561,9 @@ class Woo_Donation_Popup_Admin {
             'button_text_add_to_cart' => isset($_POST['button_text_add_to_cart']) ? sanitize_text_field($_POST['button_text_add_to_cart']) : 'Sepete Ekle',
             'button_text_go_checkout' => isset($_POST['button_text_go_checkout']) ? sanitize_text_field($_POST['button_text_go_checkout']) : 'Ödemeye Git',
             'modal_background_color' => isset($_POST['modal_background_color']) ? sanitize_hex_color($_POST['modal_background_color']) : '#ffffff',
-            'modal_border_radius' => isset($_POST['modal_border_radius']) ? absint($_POST['modal_border_radius']) : 12,
+            'modal_border_radius' => isset($_POST['modal_border_radius']) ? absint($_POST['modal_border_radius']) : 10,
             'input_border_color' => isset($_POST['input_border_color']) ? sanitize_hex_color($_POST['input_border_color']) : '#d1d5db',
-            'input_border_radius' => isset($_POST['input_border_radius']) ? absint($_POST['input_border_radius']) : 8,
+            'input_border_radius' => isset($_POST['input_border_radius']) ? absint($_POST['input_border_radius']) : 10,
             'title_color' => isset($_POST['title_color']) ? sanitize_hex_color($_POST['title_color']) : '#1f2937',
             'title_font_size' => isset($_POST['title_font_size']) ? absint($_POST['title_font_size']) : 27,
             'title_font_size_mobile' => isset($_POST['title_font_size_mobile']) && $_POST['title_font_size_mobile'] !== ''
@@ -1746,17 +1746,17 @@ class Woo_Donation_Popup_Admin {
         $settings = array(
             'success_button_color' => isset($_POST['success_button_color']) ? sanitize_hex_color($_POST['success_button_color']) : '#1e73be',
             'success_button_hover' => isset($_POST['success_button_hover']) ? sanitize_hex_color($_POST['success_button_hover']) : '#185d98',
-            'success_button_radius' => isset($_POST['success_button_radius']) ? absint($_POST['success_button_radius']) : 24,
+            'success_button_radius' => isset($_POST['success_button_radius']) ? absint($_POST['success_button_radius']) : 10,
             'success_text_view_cart' => isset($_POST['success_text_view_cart']) ? sanitize_text_field($_POST['success_text_view_cart']) : 'Sepeti Görüntüle',
             'success_text_go_checkout' => isset($_POST['success_text_go_checkout']) ? sanitize_text_field($_POST['success_text_go_checkout']) : 'Ödemeye Git',
             'success_text_new_donation' => isset($_POST['success_text_new_donation']) ? sanitize_text_field($_POST['success_text_new_donation']) : 'Yeni Bağış Ekle',
             'success_message_bg' => isset($_POST['success_message_bg']) ? sanitize_text_field($_POST['success_message_bg']) : 'rgba(72, 187, 120, 0.1)',
             'success_message_color' => isset($_POST['success_message_color']) ? sanitize_hex_color($_POST['success_message_color']) : '#48bb78',
             'success_message_border' => isset($_POST['success_message_border']) ? sanitize_text_field($_POST['success_message_border']) : 'rgba(72, 187, 120, 0.2)',
-            'success_message_radius' => isset($_POST['success_message_radius']) ? absint($_POST['success_message_radius']) : 8,
+            'success_message_radius' => isset($_POST['success_message_radius']) ? absint($_POST['success_message_radius']) : 10,
             'mini_cart_bg' => isset($_POST['mini_cart_bg']) ? sanitize_hex_color($_POST['mini_cart_bg']) : '#f9fafb',
             'mini_cart_border' => isset($_POST['mini_cart_border']) ? sanitize_hex_color($_POST['mini_cart_border']) : '#e5e7eb',
-            'mini_cart_radius' => isset($_POST['mini_cart_radius']) ? absint($_POST['mini_cart_radius']) : 8,
+            'mini_cart_radius' => isset($_POST['mini_cart_radius']) ? absint($_POST['mini_cart_radius']) : 10,
             'cart_item_name_color' => isset($_POST['cart_item_name_color']) ? sanitize_hex_color($_POST['cart_item_name_color']) : '#1f2937',
             'cart_item_price_color' => isset($_POST['cart_item_price_color']) ? sanitize_hex_color($_POST['cart_item_price_color']) : '#1e73be',
         );

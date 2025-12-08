@@ -68,12 +68,12 @@ html body .wdp-modal-content::-webkit-scrollbar {
 
 html body .wdp-modal-content::-webkit-scrollbar-track {
   background: var(--wdp-gray-100);
-  border-radius: 3px;
+  border-radius: 10px;
 }
 
 html body .wdp-modal-content::-webkit-scrollbar-thumb {
   background: var(--wdp-gray-300);
-  border-radius: 3px;
+  border-radius: 10px;
 }
 
 html body .wdp-modal-content::-webkit-scrollbar-thumb:hover {

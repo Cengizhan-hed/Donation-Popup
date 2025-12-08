@@ -113,10 +113,10 @@
   --wdp-button-radius: 10px;
 
   /* Radii */
-  --wdp-radius-sm: 4px;
-  --wdp-radius-md: 8px;
-  --wdp-radius-lg: 12px;
-  --wdp-radius-xl: 16px;
+  --wdp-radius-sm: 10px;
+  --wdp-radius-md: 10px;
+  --wdp-radius-lg: 10px;
+  --wdp-radius-xl: 10px;
 
   /* Shadows (Modern with color-mix support) */
   --wdp-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
@@ -289,12 +289,12 @@
   --wdp-breakpoint-xl: 1024px;
   
   /* Modern border radius (using rem for scalability) */
-  --wdp-radius-sm: 0.25rem;   /* 4px */
-  --wdp-radius-md: 0.5rem;    /* 8px */
-  --wdp-radius-lg: 0.75rem;    /* 12px */
-  --wdp-radius-xl: 1rem;      /* 16px */
-  --wdp-radius-2xl: 1.5rem;   /* 24px */
-  --wdp-radius-full: 9999px;  /* Full circle */
+  --wdp-radius-sm: 10px;   /* 10px */
+  --wdp-radius-md: 10px;    /* 10px */
+  --wdp-radius-lg: 10px;    /* 10px */
+  --wdp-radius-xl: 10px;      /* 10px */
+  --wdp-radius-2xl: 10px;   /* 10px */
+  --wdp-radius-full: 9999px;  /* Full circle - tam yuvarlak butonlar için */
   
   /* Modern backdrop filters */
   --wdp-backdrop-blur-sm: blur(4px);
@@ -324,7 +324,7 @@
   --wdp-input-bg: #ffffff;
   --wdp-input-border: #d1d5db;
   --wdp-input-color: #1f2937;
-  --wdp-input-radius: 8px;
+  --wdp-input-radius: 10px;
   --wdp-input-min-height: 48px;
   --wdp-input-padding-y: 12px;
   --wdp-input-padding-x: 16px;
@@ -343,7 +343,7 @@
   /* Card-like surfaces */
   --wdp-card-bg: #ffffff;
   --wdp-card-border: #e5e7eb;
-  --wdp-card-radius: 12px;
+  --wdp-card-radius: 10px;
   --wdp-card-radius-sm: 10px; /* Smaller cards (shareholder cards) */
   --wdp-card-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
   --wdp-card-shadow-md: 0 2px 8px rgba(0, 0, 0, 0.04); /* Progress bar, shareholders area */

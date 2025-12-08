@@ -16,7 +16,7 @@
 }
 
 .wrap .nav-tab-wrapper .nav-tab {
-  border-radius: 8px 8px 0 0;
+  border-radius: 10px 10px 0 0;
   border: 1px solid transparent;
   border-bottom: none;
   background: #f9fafb;
@@ -41,7 +41,7 @@
 /* Ürün ayarları ana kartı */
 .wdp-settings-container {
   background: #ffffff;
-  border-radius: 12px;
+  border-radius: 10px;
   border: 1px solid #e5e7eb;
   box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
   padding: 16px 18px 18px;
@@ -151,7 +151,7 @@
 
 .wdp-field {
   background: #f9fafb;
-  border-radius: 8px;
+  border-radius: 10px;
   padding: 6px 8px;
   border: 1px solid #e5e7eb;
   display: flex;
@@ -191,7 +191,7 @@
 }
 
 .wdp-product-shortcodes {
-  border-radius: 8px;
+  border-radius: 10px;
   border: 1px dashed #d1d5db;
   background: #f9fafb;
   padding: 6px 8px;
@@ -230,7 +230,7 @@
   bottom: 0;
   background-color: #ccc;
   transition: .4s;
-  border-radius: 24px;
+  border-radius: 10px;
 }
 
 .wdp-slider:before {
@@ -262,7 +262,7 @@ input:checked + .wdp-slider:before {
 .wdp-products-grid input[type="text"] {
   width: 80px;
   padding: 4px 6px;
-  border-radius: 6px;
+  border-radius: 10px;
   border: 1px solid #d1d5db;
   font-size: 12px;
 }
@@ -301,7 +301,7 @@ input:checked + .wdp-slider:before {
   width: 100%;
   padding: 4px 6px;
   background-color: #f3f4f6;
-  border-radius: 4px;
+  border-radius: 10px;
   margin: 0;
   font-size: 11px;
   border: 1px solid #d1d5db;
@@ -363,7 +363,7 @@ input:checked + .wdp-slider:before {
   max-width: 880px;
   margin-top: 20px;
   background: #ffffff;
-  border-radius: 12px;
+  border-radius: 10px;
   border: 1px solid #e5e7eb;
   box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
   padding: 20px 22px 24px;
@@ -397,7 +397,7 @@ input:checked + .wdp-slider:before {
   width: 80px;
   height: 40px;
   border: 1px solid #ddd;
-  border-radius: 4px;
+  border-radius: 10px;
   cursor: pointer;
 }
 

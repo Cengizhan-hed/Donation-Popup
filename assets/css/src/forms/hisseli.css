@@ -61,7 +61,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-shares-section .wdp-share-cou
   align-items: center;
   justify-content: space-between;
   border: 1px solid var(--wdp-share-counter-border, #d1d5db);
-  border-radius: 8px;
+  border-radius: 10px;
   background: var(--wdp-share-counter-bg, #ffffff);
   min-height: var(--wdp-input-min-height);
   height: var(--wdp-input-min-height);
@@ -117,7 +117,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-shares-section .wdp-share-cou
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-shares-section .wdp-shareholders-area {
   background: var(--wdp-shareholders-area-bg, linear-gradient(to bottom, var(--wdp-card-bg, #ffffff) 0%, #fafbfc 100%));
   border: 1px solid var(--wdp-shareholders-area-border, #e1e5e9);
-  border-radius: var(--wdp-shareholders-area-radius, 16px);
+  border-radius: 10px;
   padding: var(--wdp-space-2);
   box-shadow: var(--wdp-card-shadow-md, 0 2px 8px rgba(0, 0, 0, 0.06)), 0 1px 2px rgba(0, 0, 0, 0.04);
   display: flex;
@@ -285,7 +285,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-form.collapsed .w
   padding: 3px 8px;
   background-color: #fef3c7;
   border: 1.5px solid #fbbf24;
-  border-radius: 12px;
+  border-radius: 10px;
   margin-inline-start: 6px;
   flex-shrink: 0;
   box-shadow: 0 1px 3px rgba(251, 191, 36, 0.3);
@@ -622,7 +622,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-shares-header .wdp-collapsed-
   color: #4a90e2;
   background: #e8f4fd;
   border: 1px solid #b8d9f5;
-  border-radius: 6px;
+  border-radius: 10px;
   padding: 4px 10px;
   margin-top: 6px;
   margin-bottom: 0;

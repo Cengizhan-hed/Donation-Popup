@@ -519,6 +519,66 @@
           if (data.cart_count !== undefined) {
             updateCartCountElements(data.cart_count);
           }
+          
+          // CRITICAL: Progress bar preview'ı sıfırla ve yüzde değerini güncelle (mini cart'tan item silindiğinde)
+          // Tüm progress bar container'larını bul ve preview'ı sıfırla
+          const progressBarContainers = document.querySelectorAll('.wdp-progress-bar-container');
+          progressBarContainers.forEach(container => {
+            const previewBar = container.querySelector('.wdp-progress-bar-preview');
+            const fillBar = container.querySelector('.wdp-progress-bar-fill');
+            const percentageElement = container.querySelector('.wdp-progress-bar-percentage-value');
+            const amountElement = container.querySelector('.wdp-progress-bar-amount');
+            
+            // Preview bar'ı sıfırla
+            if (previewBar) {
+              previewBar.style.width = '0%';
+              previewBar.style.left = '0%';
+              previewBar.style.display = 'none';
+            }
+            
+            // Güncel toplam bağış miktarını al (data-current'dan)
+            const currentValue = parseFloat(container.getAttribute('data-current')) || 0;
+            const limit = parseFloat(container.getAttribute('data-limit')) || 100000;
+            
+            // Yüzde değerini hesapla (sadece gerçek bağış miktarına göre, preview olmadan)
+            const currentPercentage = Math.min(100, (currentValue / Math.max(1, limit)) * 100);
+            
+            // Fill bar'ı güncelle
+            if (fillBar) {
+              fillBar.style.width = currentPercentage + '%';
+            }
+            
+            // Yüzde değerini güncelle (preview olmadan, sadece gerçek bağış miktarına göre)
+            if (percentageElement) {
+              percentageElement.textContent = currentPercentage.toFixed(1) + '%';
+              // Yüzde değerinin renk değişimini kontrol et (%50'den fazlaysa beyaz)
+              if (currentPercentage >= 50) {
+                percentageElement.classList.add('on-fill');
+              } else {
+                percentageElement.classList.remove('on-fill');
+              }
+            }
+            
+            // Miktarı güncelle
+            if (amountElement && WDPApp.utils && WDPApp.utils.formatCurrency) {
+              amountElement.textContent = WDPApp.utils.formatCurrency(currentValue);
+            }
+            
+            // Custom price input'unu da temizle (eğer varsa)
+            const form = container.closest('.wdp-modal, .wdp-donation-form')?.querySelector('form');
+            if (form) {
+              const customPriceInput = form.querySelector('input[name="custom_price"]');
+              if (customPriceInput) {
+                customPriceInput.value = '';
+                // Preview'ı sıfırlamak için progress bar modülünü çağır (yüzde değerini de günceller)
+                if (WDPApp.progressBar && WDPApp.progressBar.updatePreview) {
+                  WDPApp.progressBar.updatePreview(container, currentValue, limit, 0);
+                }
+              }
+            }
+            
+            safeLog("Progress bar reset after cart item removal - percentage:", currentPercentage.toFixed(1) + '%');
+          });
         } else {
           safeLog("Error removing cart item:", data.message || "Unknown error", data);
           button.disabled = false;
@@ -600,6 +660,15 @@
               if (shareCountInput && WDPApp.shareholder && WDPApp.shareholder.setup && formContainer) {
                 const productId = formContainer.getAttribute("data-product-id");
                 WDPApp.shareholder.setup(formContainer, productId);
+              }
+              // CRITICAL: Progress bar'ı tekrar başlat (form reset edildiğinde event listener'lar yeniden bağlanmalı)
+              const progressBarContainer = (formContainer || form.closest('.wdp-modal'))?.querySelector('.wdp-progress-bar-container');
+              if (progressBarContainer && WDPApp.progressBar && WDPApp.progressBar.setup) {
+                // Form reset edildikten sonra progress bar'ı başlat
+                requestAnimationFrame(() => {
+                  WDPApp.progressBar.setup(progressBarContainer);
+                  safeLog("Progress bar reinitialized after form reset");
+                });
               }
               // Butonların durumunu hemen sıfırla
               const addToCartBtn = form.querySelector('button[name="donation_add_to_cart"]');

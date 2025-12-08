@@ -52,7 +52,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-skeleton-b
 html body .wdp-skeleton-button {
   width: 100%;
   height: 48px;
-  border-radius: var(--wdp-button-radius, 10px);
+  border-radius: 10px;
 }
 
 /* Progress indicator */
@@ -61,7 +61,7 @@ html body .wdp-progress-bar {
   width: 100%;
   height: 4px;
   background-color: var(--wdp-gray-200);
-  border-radius: 2px;
+  border-radius: 10px;
   overflow: hidden;
   position: relative;
 }
@@ -74,7 +74,7 @@ html body .wdp-progress-bar-fill {
     var(--wdp-primary) 0%,
     var(--wdp-primary-hover, #185d98) 100%
   );
-  border-radius: 2px;
+  border-radius: 10px;
   transition: width var(--wdp-duration-300, 300ms) var(--wdp-ease-out, cubic-bezier(0, 0, 0.2, 1));
   /* Animation removed - Static progress bar per user request */
 }
