@@ -187,7 +187,7 @@ html body :is(.wdp-modal .wdp-modal-content form .wdp-button-group button,
   height: var(--wdp-touch-target-comfortable);
   max-height: var(--wdp-touch-target-comfortable);
   line-height: 1.4;
-  font-family: var(--wdp-font-family, 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif);
+  font-family: var(--wdp-font-family);
   box-sizing: border-box;
   margin: 0;
   box-shadow: var(--wdp-elevation-1);

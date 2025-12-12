@@ -68,7 +68,7 @@ html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content form, .wdp-
   min-height: var(--wdp-input-min-height);
   height: var(--wdp-input-min-height);
   max-height: var(--wdp-input-min-height);
-  font-family: var(--wdp-font-family, 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif);
+  font-family: var(--wdp-font-family);
   font-size: var(--wdp-input-font-size, 16px);
   font-weight: 400;
   line-height: var(--wdp-input-line-height, 1.5);
@@ -91,7 +91,7 @@ html body :is(.wdp-modal, .wdp-donation-form) input.wdp-custom-price-input[type=
   min-height: var(--wdp-input-min-height);
   height: var(--wdp-input-min-height);
   max-height: var(--wdp-input-min-height);
-  font-family: var(--wdp-font-family, 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif);
+  font-family: var(--wdp-font-family);
   font-size: var(--wdp-input-font-size, 16px);
   font-weight: 400;
   line-height: var(--wdp-input-line-height, 1.5);
@@ -129,16 +129,20 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-price-row .wdp-p
   text-align: center;
 }
 
-/* Progress bar formunda quantity counter gizli */
-html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-price-row .wdp-quantity-counter {
-  display: none !important;
-  visibility: hidden !important;
-  opacity: 0 !important;
-  height: 0 !important;
-  width: 0 !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  overflow: hidden !important;
+/* Progress bar formunda quantity counter gizli - Maximum specificity without !important */
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-price-row .wdp-quantity-counter,
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-price-row .wdp-quantity-counter * {
+  display: none;
+  visibility: hidden;
+  opacity: 0;
+  height: 0;
+  width: 0;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  position: absolute;
+  clip: rect(0, 0, 0, 0);
+  clip-path: inset(100%);
 }
 
 /* ==================== */
@@ -170,16 +174,20 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-custom-price-row .wdp-custom-
   text-align: center;
 }
 
-/* Özel fiyatlı formda quantity counter gizli (özel fiyat aktifken) */
-html body :is(.wdp-modal, .wdp-donation-form) .wdp-custom-price-row:has(.wdp-custom-price-field) .wdp-quantity-counter {
-  display: none !important;
-  visibility: hidden !important;
-  opacity: 0 !important;
-  height: 0 !important;
-  width: 0 !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  overflow: hidden !important;
+/* Özel fiyatlı formda quantity counter gizli (özel fiyat aktifken) - Maximum specificity without !important */
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-custom-price-row:has(.wdp-custom-price-field) .wdp-quantity-counter,
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-custom-price-row:has(.wdp-custom-price-field) .wdp-quantity-counter * {
+  display: none;
+  visibility: hidden;
+  opacity: 0;
+  height: 0;
+  width: 0;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  position: absolute;
+  clip: rect(0, 0, 0, 0);
+  clip-path: inset(100%);
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content form, .wdp-modal-content, &) .wdp-price-field {
@@ -208,7 +216,7 @@ html body .wdp-donation-form .wdp-price-quantity-row > *:not(input[name="custom_
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-quantity-counter {
-  font-family: var(--wdp-font-family, 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif);
+  font-family: var(--wdp-font-family);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -229,7 +237,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-quantity-counter {
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-quantity-counter input[type="number"] {
-  font-family: var(--wdp-font-family, 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif);
+  font-family: var(--wdp-font-family);
   flex: 1 1 0;
   min-width: 40px;
   max-width: 100%;
@@ -267,7 +275,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-quantity-counter input[type="
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-quantity-counter .wdp-product-quantity-btn {
-  font-family: var(--wdp-font-family, 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif);
+  font-family: var(--wdp-font-family);
   width: 44px;
   min-width: 44px;
   height: 100%;
@@ -321,7 +329,7 @@ html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content form, .wdp-
 /* CRITICAL: DO NOT override padding here - it's set in the more specific rule above */
 /* This rule only sets layout properties, padding is handled by the specific rule */
 html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content form, .wdp-modal-content, &) .wdp-price-quantity-row > input[name="custom_price"] {
-  font-family: var(--wdp-font-family, 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif);
+  font-family: var(--wdp-font-family);
   flex: 1 1 0;
   min-width: 0;
   width: 100%;

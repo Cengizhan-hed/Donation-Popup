@@ -513,6 +513,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content :is(input[type=
   border-radius: var(--wdp-input-radius);
   background: var(--wdp-input-bg);
   color: var(--wdp-input-color);
+  font-family: var(--wdp-font-family);
   font-size: var(--wdp-input-font-size, 16px);
   font-weight: 400;
   line-height: var(--wdp-input-line-height, 1.5);
@@ -522,6 +523,20 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content :is(input[type=
   -moz-appearance: none;
   appearance: none;
   margin: 0;
+  text-align: left;
+}
+
+/* Ad soyad ve telefon numarası alanları - Metin sola dayalı, dikeyde ortalanmış */
+/* CRITICAL: Popup ve sayfa içi formlarda tutarlılık için yüksek specificity */
+html body .wdp-modal.show .wdp-modal-content form :is(input[type="text"], input[type="tel"]),
+html body .wdp-donation-form .wdp-modal-content form :is(input[type="text"], input[type="tel"]),
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content :is(input[type="text"], input[type="tel"]) {
+  text-align: left;
+  font-family: var(--wdp-font-family);
+}
+
+/* Email alanları için sol hizalama korunmalı */
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content input[type="email"] {
   text-align: left;
 }
 
@@ -547,13 +562,26 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content :is(input, text
 
 html body .wdp-donation-form .wdp-modal-content form :is(input[type="text"], input[type="tel"], input[type="email"], input[type="password"], input[type="search"], select) {
   min-height: 52px;
-  padding-bottom: 18px;
-  line-height: 1.4;
+  padding-top: var(--wdp-input-padding-y);
+  padding-bottom: var(--wdp-input-padding-y);
+  line-height: var(--wdp-input-line-height, 1.5);
+  font-family: var(--wdp-font-family);
+}
+
+/* Sayfa içi formlarda ad soyad ve telefon numarası sola dayalı, dikeyde ortalanmış */
+html body .wdp-donation-form .wdp-modal-content form :is(input[type="text"], input[type="tel"]) {
+  text-align: left;
+}
+
+/* Sayfa içi formlarda email ve diğer alanlar sol hizalı */
+html body .wdp-donation-form .wdp-modal-content form :is(input[type="email"], input[type="password"], input[type="search"], select) {
+  text-align: left;
 }
 
 html body .wdp-donation-form .wdp-modal-content form textarea {
-  padding-bottom: 18px;
-  line-height: 1.4;
+  padding-top: var(--wdp-input-padding-y);
+  padding-bottom: var(--wdp-input-padding-y);
+  line-height: var(--wdp-input-line-height, 1.5);
 }
 
 @media (max-width: var(--wdp-breakpoint-md)) {

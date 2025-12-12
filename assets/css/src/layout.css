@@ -119,7 +119,7 @@ html {
 /* ABSOLUTE FIX: Never allow modal to expand beyond 90vh */
 /* CRITICAL: Popup modal - ALWAYS fixed width (540px) */
 html body .wdp-modal.show .wdp-modal-content {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--wdp-font-family);
   background: var(--wdp-modal-bg, var(--wdp-bg-primary, rgb(255, 255, 255)));
   border: var(--wdp-border-1) solid var(--wdp-gray-200);
   border-radius: 10px;

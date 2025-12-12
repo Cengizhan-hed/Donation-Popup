@@ -90,15 +90,38 @@ html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-success-screen, .wdp-moda
   grid-column: 1 / -1;
 }
 
-/* Hide modal header when success screen is active */
+/* Hide modal header when success screen is active - Maximum specificity without !important */
+html body .wdp-modal.show .wdp-modal-content .wdp-modal-header.wdp-hidden-on-success,
 html body .wdp-modal .wdp-modal-header.wdp-hidden-on-success {
-  display: none !important;
+  display: none;
+  visibility: hidden;
+  opacity: 0;
+  height: 0;
+  width: 0;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  position: absolute;
+  clip: rect(0, 0, 0, 0);
+  clip-path: inset(100%);
 }
 
-/* Hide progress bar and form title in in-page forms when success screen is active */
+/* Hide progress bar and form title in in-page forms when success screen is active - Maximum specificity without !important */
+html body .wdp-donation-form .wdp-modal-content .wdp-progress-bar-container.wdp-hidden-on-success,
+html body .wdp-donation-form .wdp-modal-content .wdp-form-title-wrapper.wdp-hidden-on-success,
 html body .wdp-donation-form .wdp-progress-bar-container.wdp-hidden-on-success,
 html body .wdp-donation-form .wdp-form-title-wrapper.wdp-hidden-on-success {
-  display: none !important;
+  display: none;
+  visibility: hidden;
+  opacity: 0;
+  height: 0;
+  width: 0;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  position: absolute;
+  clip: rect(0, 0, 0, 0);
+  clip-path: inset(100%);
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-success-screen, .wdp-modal-content .wdp-success-screen) .wdp-success-message {
