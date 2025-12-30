@@ -466,6 +466,7 @@ class Woo_Donation_Popup_Admin {
             'popup_button_font_family' => 'inherit',
             'popup_button_custom_font' => '',
             'popup_button_border_radius' => '10',
+            'popup_button_full_width' => '0',
         );
         
         $settings = wp_parse_args($button_settings, $defaults);
@@ -576,6 +577,18 @@ class Woo_Donation_Popup_Admin {
         $popup_button_border_radius = isset($settings['popup_button_border_radius']) ? $settings['popup_button_border_radius'] : '10';
         echo '<input type="number" id="popup_button_border_radius" name="popup_button_border_radius" value="' . esc_attr($popup_button_border_radius) . '" min="0" max="50" step="1" class="small-text" />';
         echo '<p class="description">' . __('Popup butonunun köşe yuvarlaklığı (0-50px arası)', 'woo-donation-popup') . '</p>';
+        echo '</td>';
+        echo '</tr>';
+        
+        echo '<tr>';
+        echo '<th scope="row"><label for="popup_button_full_width">' . __('Buton Tam Genişlikte', 'woo-donation-popup') . '</label></th>';
+        echo '<td>';
+        $popup_button_full_width = isset($settings['popup_button_full_width']) ? $settings['popup_button_full_width'] : '0';
+        echo '<label class="wdp-switch">';
+        echo '<input type="checkbox" id="popup_button_full_width" name="popup_button_full_width" value="1" ' . checked($popup_button_full_width, '1', false) . ' />';
+        echo '<span class="wdp-slider"></span>';
+        echo '</label>';
+        echo '<p class="description">' . __('Aktif edildiğinde, "Bağış Yap" butonu tam genişlikte (full width) görüntülenir. Code block içinde kullanıldığında buton container\'ın tamamını kaplar.', 'woo-donation-popup') . '</p>';
         echo '</td>';
         echo '</tr>';
         
@@ -1580,6 +1593,7 @@ class Woo_Donation_Popup_Admin {
             'popup_button_font_family' => isset($_POST['popup_button_font_family']) ? sanitize_text_field($_POST['popup_button_font_family']) : 'inherit',
             'popup_button_custom_font' => isset($_POST['popup_button_custom_font']) ? sanitize_text_field($_POST['popup_button_custom_font']) : '',
             'popup_button_border_radius' => isset($_POST['popup_button_border_radius']) ? absint($_POST['popup_button_border_radius']) : 10,
+            'popup_button_full_width' => isset($_POST['popup_button_full_width']) && $_POST['popup_button_full_width'] === '1' ? '1' : '0',
             'label_color' => isset($_POST['label_color']) ? sanitize_hex_color($_POST['label_color']) : '#374151',
             'label_font_size' => isset($_POST['label_font_size']) ? absint($_POST['label_font_size']) : 14,
             'label_font_weight' => isset($_POST['label_font_weight']) ? sanitize_text_field($_POST['label_font_weight']) : '600',

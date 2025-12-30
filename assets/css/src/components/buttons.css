@@ -90,6 +90,18 @@ html body :is(button.wdp-donate-button.wdp-open-modal,
   box-shadow: var(--wdp-focus-ring, 0 0 0 var(--wdp-focus-ring-width, 2px) var(--wdp-focus-ring-color, var(--wdp-primary, rgb(74, 144, 226))));
 }
 
+/* Full width button - Buton tam genişlikte görüntüleme */
+html body :is(button.wdp-donate-button.wdp-donate-button-full-width,
+              button.wdp-donate-button.wdp-open-modal.wdp-donate-button-full-width,
+              .wdp-donate-button.wdp-donate-button-full-width,
+              .wdp-donate-button.wdp-open-modal.wdp-donate-button-full-width) {
+  display: block;
+  width: 100%;
+  min-width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
 /* Form action buttons */
 /* CRITICAL: GiveWP benzeri yaklaşım - yüksek specificity ile tema override koruması */
 /* Modern :is() selector for cleaner code */

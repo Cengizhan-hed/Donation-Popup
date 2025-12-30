@@ -121,11 +121,21 @@ class WDP_Shortcodes {
         
         $combined_style = !empty($inline_styles) ? implode(' ', $inline_styles) : $custom_style;
         
+        // Full width ayarını kontrol et
+        $is_full_width = isset($button_settings['popup_button_full_width']) && $button_settings['popup_button_full_width'] === '1';
+        $button_classes = 'wdp-donate-button wdp-open-modal';
+        if ($is_full_width) {
+            $button_classes .= ' wdp-donate-button-full-width';
+        }
+        if (!empty($custom_class)) {
+            $button_classes .= ' ' . esc_attr($custom_class);
+        }
+        
         // Sadece buton oluştur, modal ayrı oluşturulacak
         ob_start();
         ?>
         <!-- Bağış Butonu -->
-        <button type="button" class="wdp-donate-button wdp-open-modal <?php echo esc_attr($custom_class); ?>"
+        <button type="button" class="<?php echo esc_attr($button_classes); ?>"
                 data-product-id="<?php echo esc_attr($product_id); ?>"
                 style="<?php echo esc_attr($combined_style); ?>">
             <?php echo esc_html($button_text); ?>
