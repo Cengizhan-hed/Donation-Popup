@@ -194,7 +194,8 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholders-container .wdp-s
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholders-area.scrollable .wdp-shareholders-scroll {
-  height: 100%;
+  /* CRITICAL: Height JavaScript tarafından ayarlanacak - CSS'te height: 100% kaldırıldı */
+  /* height: 100%; */
   max-height: 100%;
   min-height: 0;
   overflow-y: scroll;

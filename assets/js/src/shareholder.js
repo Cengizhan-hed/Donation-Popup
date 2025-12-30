@@ -267,22 +267,22 @@
             shareholdersArea.style.maxHeight = areaHeightValue + 'px';
             shareholdersArea.style.minHeight = areaHeightValue + 'px';
             
-            // CRITICAL: Scroll container'ın height'ını 1. formun yüksekliği kadar yap
-            // Böylece 2. formun header'ı görünmez, sadece scroll yapınca görünür
-            // ABSOLUTE FIX: Formun border'ı dahil tüm yüksekliği al (border görünür olsun)
-            const firstFormHeight = firstForm.offsetHeight;
-            // CRITICAL: Formun border'ı görünür olsun - scrollHeight'e 1px ekle (border için)
-            // Böylece 1. formun alt border'ı scroll container içinde görünür
-            const scrollHeight = Math.min(firstFormHeight + 1, areaHeightValue);
-            shareholdersList.style.maxHeight = scrollHeight + 'px';
-            shareholdersList.style.height = scrollHeight + 'px';
-            
-            // CRITICAL: Shareholders-container'ın height'ını da ayarla (boşluk olmasın)
+            // CRITICAL: Shareholders-container'ın height'ını areaHeightValue kadar yap (boşluk olmasın)
             const shareholdersContainer = shareholdersList.closest('.wdp-shareholders-container');
             if (shareholdersContainer) {
-              shareholdersContainer.style.height = scrollHeight + 'px';
-              shareholdersContainer.style.maxHeight = scrollHeight + 'px';
+              shareholdersContainer.style.height = areaHeightValue + 'px';
+              shareholdersContainer.style.maxHeight = areaHeightValue + 'px';
+              shareholdersContainer.style.minHeight = '0';
             }
+            
+            // CRITICAL: Scroll container'ın height'ını areaHeightValue kadar yap
+            // Böylece scroll container areaHeightValue kadar yükseklikte olacak ve beyaz alan olmayacak
+            shareholdersList.style.height = areaHeightValue + 'px';
+            shareholdersList.style.maxHeight = areaHeightValue + 'px';
+            shareholdersList.style.minHeight = '0';
+            
+            // CRITICAL: Scroll pozisyonunu sıfırla (beyaz alan sorununu önlemek için)
+            shareholdersList.scrollTop = 0;
           }
         });
       } else {
@@ -906,6 +906,16 @@
     });
   }
 
+  // Helper: Check if a form is filled (has name and phone)
+  function isFormFilled(form) {
+    if (!form) return false;
+    const nameInput = form.querySelector('input[name^="shareholder_name_"]');
+    const phoneInput = form.querySelector('input[name^="shareholder_phone_"]');
+    const nameValue = nameInput ? nameInput.value.trim() : '';
+    const phoneValue = phoneInput ? phoneInput.value.trim() : '';
+    return nameValue.length > 0 && phoneValue.length > 0;
+  }
+
   // Update shareholder forms (internal function used by setupShareQuantityButtons)
   function updateShareholderFormsInternal(modal) {
     // ✅ GÜVENLİ: Fonksiyon scope içinde helper (fonksiyon bitince otomatik temizlenir)
@@ -949,23 +959,47 @@
       shareholdersArea.style.opacity = '1';
     }
     
-    // CRITICAL: Sadece 1. form gösterilsin - diğer formlar oluşturulur ama gizlenir
+    // CRITICAL: Yeni formlar eklenirken mevcut formların durumunu kontrol et
     if (shareCount > existingCount) {
+      // Mevcut formların dolu olup olmadığını kontrol et
+      let allPreviousFormsFilled = true;
+      for (let i = 0; i < existingCount; i++) {
+        const form = existingForms[i];
+        if (!isFormFilled(form)) {
+          allPreviousFormsFilled = false;
+          break;
+        }
+      }
+      
       // Yeni formlar ekle
       for (let i = existingCount + 1; i <= shareCount; i++) {
         const newForm = createShareholderForm(i);
-        // Sadece 1. form görünür, diğerleri gizli
-        if (i > 1) {
-          newForm.style.display = '';
-          newForm.style.visibility = 'visible';
-          newForm.style.opacity = '1';
-          newForm.classList.add('collapsed');
-          const content = newForm.querySelector('.wdp-shareholder-content');
+        // Yeni formlar başlangıçta kapalı olacak, accordion mantığında açılacak
+        newForm.style.display = '';
+        newForm.style.visibility = 'visible';
+        newForm.style.opacity = '1';
+        newForm.classList.add('collapsed');
+        const content = newForm.querySelector('.wdp-shareholder-content');
+        if (content) {
+          content.style.display = 'none';
+        }
+        shareholdersList.appendChild(newForm);
+        
+        // Yeni form için event listener'ları ekle
+        setupCopyFormButton(newForm);
+        setupShareholderHeaderClick(newForm);
+        checkShareholderFormWarning(newForm);
+      }
+      
+      // Eğer önceki formlar doluysa, mevcut açık formları kapat
+      if (allPreviousFormsFilled) {
+        existingForms.forEach((form) => {
+          form.classList.add('collapsed');
+          const content = form.querySelector('.wdp-shareholder-content');
           if (content) {
             content.style.display = 'none';
           }
-        }
-        shareholdersList.appendChild(newForm);
+        });
       }
     } else if (shareCount < existingCount) {
       // Fazla formları kaldır
@@ -978,16 +1012,82 @@
       }
     }
     
-    // CRITICAL: Sadece 1. form görünür olsun - ama scroll için tüm formlar DOM'da görünür olmalı
-    // Scroll çalışması için tüm formlar görünür olmalı, sadece içerikleri gizli olmalı
+    // CRITICAL: Form açık/kapalı durumunu belirle - accordion mantığı ile
+    // Mantık:
+    // 1. Accordion: Bir form açıksa diğerleri kapalı olmalı
+    // 2. Dolu formlar otomatik açılmamalı (kullanıcı açarsa açılır)
+    // 3. Yeni form eklendiğinde, eğer önceki formlar doluysa yeni form açık olmalı
+    // 4. Eğer önceki formlar boşsa, ilk boş form açık kalmalı
     const allForms = shareholdersList.querySelectorAll('.wdp-shareholder-form');
-    allForms.forEach((form, idx) => {
+    
+    // Önce tüm formların durumunu kontrol et
+    let firstEmptyFormIndex = null;
+    let allFormsBeforeNewAreFilled = true;
+    let currentlyOpenFormIndex = null;
+    let wasNewFormAdded = shareCount > existingCount;
+    
+    // Yeni form eklenmeden önceki formların dolu olup olmadığını kontrol et
+    if (wasNewFormAdded) {
+      for (let i = 0; i < existingCount; i++) {
+        const form = existingForms[i];
+        if (!isFormFilled(form)) {
+          allFormsBeforeNewAreFilled = false;
+          break;
+        }
+      }
+    }
+    
+    allForms.forEach((form) => {
       const formIndex = parseInt(form.getAttribute('data-index'), 10);
-      if (formIndex === 1) {
-        // CRITICAL: Hisse adedi 1'e düştüğünde 1. form kapalıysa otomatik aç
-        form.style.display = '';
-        form.style.visibility = 'visible';
-        form.style.opacity = '1';
+      const isFilled = isFormFilled(form);
+      const wasOpen = !form.classList.contains('collapsed');
+      
+      // Şu anda açık olan formu bul (ama sadece yeni form eklenmeden önce açık olanlar)
+      // Yeni form eklenirse, önceki açık formu görmezden gel
+      if (wasOpen && formIndex <= shareCount && (!wasNewFormAdded || formIndex <= existingCount)) {
+        // Yeni form eklenmediyse veya bu form yeni eklenen formlardan önceki bir form ise
+        currentlyOpenFormIndex = formIndex;
+      }
+      
+      // İlk boş formu bul
+      if (firstEmptyFormIndex === null && !isFilled && formIndex <= shareCount) {
+        firstEmptyFormIndex = formIndex;
+      }
+      
+      // Yeni eklenen formlardan önceki formların dolu olup olmadığını kontrol et
+      if (formIndex < shareCount && !isFilled) {
+        allFormsBeforeNewAreFilled = false;
+      }
+    });
+    
+    // Hangi formun açık olması gerektiğini belirle
+    let formToOpenIndex = null;
+    
+    // Eğer yeni form eklendiyse ve önceki formlar doluysa, yeni form açık olmalı
+    if (wasNewFormAdded && allFormsBeforeNewAreFilled) {
+      formToOpenIndex = shareCount; // Yeni eklenen form (en son eklenen)
+    } 
+    // Eğer şu anda açık bir form varsa ve o form hala geçerliyse, onu açık tut
+    else if (currentlyOpenFormIndex !== null && currentlyOpenFormIndex <= shareCount) {
+      formToOpenIndex = currentlyOpenFormIndex;
+    }
+    // Eğer hiç açık form yoksa, ilk boş formu veya 1. formu aç
+    else {
+      formToOpenIndex = firstEmptyFormIndex !== null ? firstEmptyFormIndex : 1;
+    }
+    
+    // Şimdi formların açık/kapalı durumunu belirle (accordion mantığı)
+    let formToScrollTo = null;
+    allForms.forEach((form) => {
+      const formIndex = parseInt(form.getAttribute('data-index'), 10);
+      
+      // Form görünürlüğünü garanti et
+      form.style.display = '';
+      form.style.visibility = 'visible';
+      form.style.opacity = '1';
+      
+      // Sadece belirlenen form açık olmalı (accordion mantığı)
+      if (formIndex === formToOpenIndex && formIndex <= shareCount) {
         form.classList.remove('collapsed');
         const content = form.querySelector('.wdp-shareholder-content');
         if (content) {
@@ -995,11 +1095,9 @@
           content.style.visibility = 'visible';
           content.style.opacity = '1';
         }
+        // Yeni açılan formu scroll için işaretle
+        formToScrollTo = form;
       } else {
-        // Scroll için form görünür olmalı ama içeriği gizli
-        form.style.display = '';
-        form.style.visibility = 'visible';
-        form.style.opacity = '1';
         form.classList.add('collapsed');
         const content = form.querySelector('.wdp-shareholder-content');
         if (content) {
@@ -1007,6 +1105,24 @@
         }
       }
     });
+    
+    // Yeni açılan formu görünür alana scroll et
+    if (formToScrollTo) {
+      requestAnimationFrame(() => {
+        // CRITICAL: Önce scroll pozisyonunu sıfırla (beyaz alan sorununu önlemek için)
+        if (shareholdersList.scrollTop > 0) {
+          shareholdersList.scrollTop = 0;
+        }
+        formToScrollTo.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      });
+    } else {
+      // Eğer scroll edilecek form yoksa, scroll pozisyonunu sıfırla
+      requestAnimationFrame(() => {
+        if (shareholdersList && shareholdersList.scrollTop > 0) {
+          shareholdersList.scrollTop = 0;
+        }
+      });
+    }
 
     // Copy button ve header click event listener'larını ekle
     const allFormsForCopy = shareholdersList.querySelectorAll('.wdp-shareholder-form');
@@ -1620,15 +1736,27 @@
       };
     }
 
+    // Mevcut formların dolu olup olmadığını kontrol et (yeni formlar eklenmeden önce)
+    var allPreviousFormsFilled = true;
+    for (let i = 0; i < existingCount; i++) {
+      const form = existingForms[i];
+      if (!isFormFilled(form)) {
+        allPreviousFormsFilled = false;
+        break;
+      }
+    }
+    
     // Form sayısı artarsa: sadece yeni form(lar) ekle
     if (shareCount > existingCount) {
       for (let i = existingCount + 1; i <= shareCount; i++) {
         var newForm = createShareholderForm(i);
         // CRITICAL: Scroll için tüm formlar görünür olmalı, sadece içerikleri gizli
         // Form görünür olacak ama içeriği gizli olacak (scroll için gerekli)
+        // Yeni formlar başlangıçta kapalı olacak, sonra mantık ile açılacak
         shareholdersList.appendChild(newForm);
         // Yeni form için event listener'ları ekle
         setupCopyFormButton(newForm);
+        setupShareholderHeaderClick(newForm);
       }
     }
     // Form sayısı azalırsa: sadece fazla formu kaldır
@@ -1660,26 +1788,71 @@
       checkShareholderFormWarning(form);
     }
 
-    // CRITICAL: Sadece 1. form görünür olsun - ama scroll için tüm formlar DOM'da görünür olmalı
-    // Scroll çalışması için tüm formlar görünür olmalı, sadece içerikleri gizli olmalı
+    // CRITICAL: Form açık/kapalı durumunu belirle - accordion mantığı ile (updateShareholderFormsInternal ile aynı)
+    // Mantık:
+    // 1. Accordion: Bir form açıksa diğerleri kapalı olmalı
+    // 2. Dolu formlar otomatik açılmamalı (kullanıcı açarsa açılır)
+    // 3. Yeni form eklendiğinde, eğer önceki formlar doluysa yeni form açık olmalı
+    // 4. Eğer önceki formlar boşsa, ilk boş form açık kalmalı
     var allForms = shareholdersList.querySelectorAll(".wdp-shareholder-form");
+    
+    // Önce tüm formların durumunu kontrol et
+    var firstEmptyFormIndex = null;
+    var currentlyOpenFormIndex = null;
+    var wasNewFormAdded = shareCount > existingCount;
+    
     allForms.forEach((form) => {
       const formIndex = parseInt(form.getAttribute('data-index'), 10);
-      if (formIndex === 1) {
-        // CRITICAL: Hisse adedi 1'e düştüğünde 1. form kapalıysa otomatik aç
-        form.style.display = '';
-        form.style.visibility = 'visible';
-        form.style.opacity = '1';
+      const isFilled = isFormFilled(form);
+      const wasOpen = !form.classList.contains('collapsed');
+      
+      // Şu anda açık olan formu bul (sadece yeni formlar eklenmeden önce açık olanlar)
+      if (wasOpen && formIndex <= shareCount && (!wasNewFormAdded || formIndex <= existingCount)) {
+        currentlyOpenFormIndex = formIndex;
+      }
+      
+      // İlk boş formu bul
+      if (firstEmptyFormIndex === null && !isFilled && formIndex <= shareCount) {
+        firstEmptyFormIndex = formIndex;
+      }
+    });
+    
+    // Hangi formun açık olması gerektiğini belirle
+    var formToOpenIndex = null;
+    
+    // Eğer yeni form eklendiyse ve önceki formlar doluysa, yeni form açık olmalı
+    if (wasNewFormAdded && allPreviousFormsFilled) {
+      formToOpenIndex = shareCount; // Yeni eklenen form
+    } 
+    // Eğer şu anda açık bir form varsa ve o form hala geçerliyse, onu açık tut
+    else if (currentlyOpenFormIndex !== null && currentlyOpenFormIndex <= shareCount) {
+      formToOpenIndex = currentlyOpenFormIndex;
+    }
+    // Eğer hiç açık form yoksa, ilk boş formu veya 1. formu aç
+    else {
+      formToOpenIndex = firstEmptyFormIndex !== null ? firstEmptyFormIndex : 1;
+    }
+    
+    // Şimdi formların açık/kapalı durumunu belirle (accordion mantığı)
+    var formToScrollTo = null;
+    allForms.forEach((form) => {
+      const formIndex = parseInt(form.getAttribute('data-index'), 10);
+      
+      // Form görünürlüğünü garanti et
+      form.style.display = '';
+      form.style.visibility = 'visible';
+      form.style.opacity = '1';
+      
+      // Sadece belirlenen form açık olmalı (accordion mantığı)
+      if (formIndex === formToOpenIndex && formIndex <= shareCount) {
         form.classList.remove("collapsed");
         var contentEl = form.querySelector(".wdp-shareholder-content");
         if (contentEl) {
           contentEl.style.display = "flex";
         }
+        // Yeni açılan formu scroll için işaretle
+        formToScrollTo = form;
       } else {
-        // Scroll için form görünür olmalı ama içeriği gizli
-        form.style.display = '';
-        form.style.visibility = 'visible';
-        form.style.opacity = '1';
         form.classList.add("collapsed");
         var contentEl = form.querySelector(".wdp-shareholder-content");
         if (contentEl) {
@@ -1687,6 +1860,13 @@
         }
       }
     });
+    
+    // Yeni açılan formu görünür alana scroll et
+    if (formToScrollTo) {
+      requestAnimationFrame(function() {
+        formToScrollTo.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      });
+    }
 
     // Scrollable class'ını güncelle
     const modal = container.closest('.wdp-modal') || container.closest('.wdp-donation-form');
