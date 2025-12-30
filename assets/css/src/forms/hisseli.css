@@ -117,11 +117,11 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-shares-section .wdp-share-cou
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-shares-section .wdp-shareholders-area {
-  background: var(--wdp-gradient-soft-white);
-  border: 1px solid var(--wdp-border-very-light);
-  border-radius: 20px;
-  padding: var(--wdp-space-2);
-  box-shadow: var(--wdp-shadow-smooth);
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  box-shadow: none;
   display: flex;
   flex-direction: column;
   flex: 0 1 auto;
@@ -140,6 +140,11 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-shares-section .wdp-sharehold
   height: clamp(280px, 40vh, 360px);
   max-height: clamp(280px, 40vh, 360px);
   overflow: hidden;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  box-shadow: none;
   /* Modern logical properties */
   margin: 0;
   margin-block-end: 16px;
