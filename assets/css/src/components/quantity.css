@@ -60,22 +60,22 @@ html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content form, .wdp-
   -webkit-appearance: textfield;
   -moz-appearance: textfield;
   appearance: textfield;
-  border: 1px solid var(--wdp-border-soft-gray);
+  border: 1px solid var(--wdp-border-soft-gray, #e8eaed);
   border-radius: 14px;
-  background: var(--wdp-bg-pure-white);
-  padding: var(--wdp-input-padding-y) var(--wdp-input-padding-x);
+  background: var(--wdp-bg-pure-white, #ffffff);
+  padding: var(--wdp-input-padding-y, 12px) var(--wdp-input-padding-x, 16px);
   box-sizing: border-box;
-  min-height: var(--wdp-input-min-height);
-  height: var(--wdp-input-min-height);
-  max-height: var(--wdp-input-min-height);
-  font-family: var(--wdp-font-family);
+  min-height: var(--wdp-input-min-height, 48px);
+  height: var(--wdp-input-min-height, 48px);
+  max-height: var(--wdp-input-min-height, 48px);
+  font-family: var(--wdp-font-family, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
   font-size: var(--wdp-input-font-size, 16px);
   font-weight: 400;
   line-height: var(--wdp-input-line-height, 1.5);
-  color: var(--wdp-input-color);
+  color: var(--wdp-input-color, #1f2937);
   width: 100%;
   margin: 0;
-  box-shadow: var(--wdp-shadow-subtle);
+  box-shadow: var(--wdp-shadow-subtle, 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03));
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -85,22 +85,22 @@ html body :is(.wdp-modal, .wdp-donation-form) input.wdp-custom-price-input[type=
   -webkit-appearance: textfield;
   -moz-appearance: textfield;
   appearance: textfield;
-  border: 1px solid var(--wdp-border-soft-gray);
+  border: 1px solid var(--wdp-border-soft-gray, #e8eaed);
   border-radius: 14px;
-  background: var(--wdp-bg-pure-white);
-  padding: var(--wdp-input-padding-y) var(--wdp-input-padding-x);
+  background: var(--wdp-bg-pure-white, #ffffff);
+  padding: var(--wdp-input-padding-y, 12px) var(--wdp-input-padding-x, 16px);
   box-sizing: border-box;
-  min-height: var(--wdp-input-min-height);
-  height: var(--wdp-input-min-height);
-  max-height: var(--wdp-input-min-height);
-  font-family: var(--wdp-font-family);
+  min-height: var(--wdp-input-min-height, 48px);
+  height: var(--wdp-input-min-height, 48px);
+  max-height: var(--wdp-input-min-height, 48px);
+  font-family: var(--wdp-font-family, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
   font-size: var(--wdp-input-font-size, 16px);
   font-weight: 400;
   line-height: var(--wdp-input-line-height, 1.5);
-  color: var(--wdp-input-color);
+  color: var(--wdp-input-color, #1f2937);
   width: 100%;
   margin: 0;
-  box-shadow: var(--wdp-shadow-subtle);
+  box-shadow: var(--wdp-shadow-subtle, 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03));
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -220,17 +220,17 @@ html body .wdp-donation-form .wdp-price-quantity-row > *:not(input[name="custom_
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-quantity-counter {
-  font-family: var(--wdp-font-family);
+  font-family: var(--wdp-font-family, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
   display: flex;
   align-items: center;
   justify-content: space-between;
   align-content: center;
-  min-height: var(--wdp-input-min-height);
-  height: var(--wdp-input-min-height);
-  max-height: var(--wdp-input-min-height);
-  border: 1px solid var(--wdp-border-soft-gray);
+  min-height: var(--wdp-input-min-height, 48px);
+  height: var(--wdp-input-min-height, 48px);
+  max-height: var(--wdp-input-min-height, 48px);
+  border: 1px solid var(--wdp-border-soft-gray, #e8eaed);
   border-radius: 14px;
-  background: var(--wdp-bg-pure-white);
+  background: var(--wdp-bg-pure-white, #ffffff);
   box-sizing: border-box;
   padding: 0 var(--wdp-space-2, 8px);
   margin: 0;
@@ -238,7 +238,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-quantity-counter {
   gap: 0;
   position: relative;
   vertical-align: middle;
-  box-shadow: var(--wdp-shadow-subtle);
+  box-shadow: var(--wdp-shadow-subtle, 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03));
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 

@@ -138,12 +138,12 @@ html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-success-screen, .wdp-moda
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-success-screen, .wdp-modal-content .wdp-success-screen) .wdp-mini-cart {
-  margin-bottom: var(--wdp-space-6);
-  background: var(--wdp-gradient-soft-white);
-  border: 1px solid var(--wdp-border-very-light);
+  margin-bottom: var(--wdp-space-6, 24px);
+  background: var(--wdp-gradient-soft-white, linear-gradient(135deg, #ffffff 0%, #fafbfc 50%, #f8f9fa 100%));
+  border: 1px solid var(--wdp-border-very-light, #f0f2f5);
   border-radius: 20px;
   padding: 20px;
-  box-shadow: var(--wdp-shadow-smooth);
+  box-shadow: var(--wdp-shadow-smooth, 0 4px 16px rgba(0, 0, 0, 0.06), 0 2px 6px rgba(0, 0, 0, 0.04));
   position: relative;
   overflow: hidden;
 }

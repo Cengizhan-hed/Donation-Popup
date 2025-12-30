@@ -33,10 +33,10 @@ html body.single-product .wdp-donation-form .wdp-modal-content {
   max-width: min(var(--wdp-inpage-form-width-desktop, 480px), 96vw);
   width: min(var(--wdp-inpage-form-width-desktop, 480px), 96vw);
   padding: 20px;
-  background: var(--wdp-gradient-pure-white);
-  border: 1px solid var(--wdp-border-very-light);
+  background: var(--wdp-gradient-pure-white, linear-gradient(135deg, #ffffff 0%, #fefefe 100%));
+  border: 1px solid var(--wdp-border-very-light, #f0f2f5);
   border-radius: 20px;
-  box-shadow: var(--wdp-shadow-smooth);
+  box-shadow: var(--wdp-shadow-smooth, 0 4px 16px rgba(0, 0, 0, 0.06), 0 2px 6px rgba(0, 0, 0, 0.04));
 }
 
 /* Modal states with maximum specificity */
@@ -121,11 +121,11 @@ html {
 /* ABSOLUTE FIX: Never allow modal to expand beyond 90vh */
 /* CRITICAL: Popup modal - ALWAYS fixed width (540px) */
 html body .wdp-modal.show .wdp-modal-content {
-  font-family: var(--wdp-font-family);
-  background: var(--wdp-gradient-soft-white);
-  border: 1px solid var(--wdp-border-very-light);
+  font-family: var(--wdp-font-family, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
+  background: var(--wdp-gradient-soft-white, linear-gradient(135deg, #ffffff 0%, #fafbfc 50%, #f8f9fa 100%));
+  border: 1px solid var(--wdp-border-very-light, #f0f2f5);
   border-radius: 20px;
-  box-shadow: var(--wdp-shadow-elegant);
+  box-shadow: var(--wdp-shadow-elegant, 0 8px 24px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.04));
   width: min(var(--wdp-popup-modal-width-desktop, 540px), 96vw);
   max-width: min(var(--wdp-popup-modal-width-desktop, 540px), 96vw);
   /* CRITICAL: Absolute max-height - never exceed 90vh (modern dvh support) */
@@ -165,11 +165,11 @@ html body .wdp-modal.show .wdp-modal-content {
 
 /* CRITICAL: In-page forms - default width (can be overridden for single product) */
 html body .wdp-donation-form .wdp-modal-content {
-  font-family: var(--wdp-font-family);
-  background: var(--wdp-gradient-pure-white);
-  border: 1px solid var(--wdp-border-very-light);
+  font-family: var(--wdp-font-family, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
+  background: var(--wdp-gradient-pure-white, linear-gradient(135deg, #ffffff 0%, #fefefe 100%));
+  border: 1px solid var(--wdp-border-very-light, #f0f2f5);
   border-radius: 20px;
-  box-shadow: var(--wdp-shadow-smooth);
+  box-shadow: var(--wdp-shadow-smooth, 0 4px 16px rgba(0, 0, 0, 0.06), 0 2px 6px rgba(0, 0, 0, 0.04));
   width: min(var(--wdp-inpage-form-width-desktop, 480px), 96vw);
   max-width: min(var(--wdp-inpage-form-width-desktop, 480px), 96vw);
   /* CRITICAL: Absolute max-height - never exceed 90vh */
@@ -253,10 +253,10 @@ html body .wdp-donation-form .wdp-modal-content:has(form.wdp-has-shareholders) {
   flex-grow: 0; /* FIX: Prevent growing */
   /* CRITICAL: Ensure padding is included in box-sizing */
   box-sizing: border-box;
-  background: var(--wdp-gradient-pure-white);
-  border: 1px solid var(--wdp-border-very-light);
+  background: var(--wdp-gradient-pure-white, linear-gradient(135deg, #ffffff 0%, #fefefe 100%));
+  border: 1px solid var(--wdp-border-very-light, #f0f2f5);
   border-radius: 20px;
-  box-shadow: var(--wdp-shadow-smooth);
+  box-shadow: var(--wdp-shadow-smooth, 0 4px 16px rgba(0, 0, 0, 0.06), 0 2px 6px rgba(0, 0, 0, 0.04));
   /* FIX: Same padding-bottom as non-shareholder forms - 24px desktop */
   /* CRITICAL: Use individual padding properties to override shorthand - NO !important */
   padding-top: 32px;
@@ -284,10 +284,10 @@ html body .wdp-donation-form .wdp-modal-content:has(form.wdp-has-shareholders) {
     padding-right: var(--wdp-modal-padding-right-mobile, 20px);
     padding-bottom: var(--wdp-modal-padding-bottom-mobile, 20px);
     margin: 0;
-    border: 1px solid var(--wdp-border-very-light);
+    border: 1px solid var(--wdp-border-very-light, #f0f2f5);
     border-radius: 20px;
-    background: var(--wdp-gradient-pure-white);
-    box-shadow: var(--wdp-shadow-smooth);
+    background: var(--wdp-gradient-pure-white, linear-gradient(135deg, #ffffff 0%, #fefefe 100%));
+    box-shadow: var(--wdp-shadow-smooth, 0 4px 16px rgba(0, 0, 0, 0.06), 0 2px 6px rgba(0, 0, 0, 0.04));
     box-sizing: border-box;
     overflow: hidden;
     min-height: 0;
@@ -327,12 +327,10 @@ html body .wdp-donation-form .wdp-modal-content:has(form.wdp-has-shareholders) {
     max-width: min(var(--wdp-inpage-form-width-mobile, 480px), 96vw);
     margin: 0;
     padding: 16px;
-    background: var(--wdp-gradient-glass-white);
-    backdrop-filter: var(--wdp-glass-blur);
-    -webkit-backdrop-filter: var(--wdp-glass-blur);
-    border: 1px solid var(--wdp-glass-border-white);
-    border-radius: 16px;
-    box-shadow: var(--wdp-glass-shadow-medium), 0 0 0 1px rgba(255, 255, 255, 0.2) inset;
+    background: var(--wdp-gradient-pure-white, linear-gradient(135deg, #ffffff 0%, #fefefe 100%));
+    border: 1px solid var(--wdp-border-very-light, #f0f2f5);
+    border-radius: 20px;
+    box-shadow: var(--wdp-shadow-smooth, 0 4px 16px rgba(0, 0, 0, 0.06), 0 2px 6px rgba(0, 0, 0, 0.04));
   }
 
   /* CRITICAL: In-page form modal content - FIX width to prevent overflow */
@@ -350,12 +348,10 @@ html body .wdp-donation-form .wdp-modal-content:has(form.wdp-has-shareholders) {
     padding-right: 20px;
     padding-bottom: 20px;
     margin: 0 auto;
-    background: var(--wdp-gradient-glass-white);
-    backdrop-filter: var(--wdp-glass-blur);
-    -webkit-backdrop-filter: var(--wdp-glass-blur);
-    border: 1px solid var(--wdp-glass-border-white);
-    border-radius: 16px;
-    box-shadow: var(--wdp-glass-shadow-medium), 0 0 0 1px rgba(255, 255, 255, 0.2) inset;
+    background: var(--wdp-gradient-pure-white, linear-gradient(135deg, #ffffff 0%, #fefefe 100%));
+    border: 1px solid var(--wdp-border-very-light, #f0f2f5);
+    border-radius: 20px;
+    box-shadow: var(--wdp-shadow-smooth, 0 4px 16px rgba(0, 0, 0, 0.06), 0 2px 6px rgba(0, 0, 0, 0.04));
     box-sizing: border-box;
     overflow: hidden;
     min-height: 0;
@@ -403,12 +399,10 @@ html body .wdp-donation-form .wdp-modal-content:has(form.wdp-has-shareholders) {
   html body .wdp-donation-form .wdp-modal-content:has(form.wdp-has-shareholders) {
     width: calc(100% - 0px);
     max-width: 100%;
-    background: var(--wdp-gradient-glass-white);
-    backdrop-filter: var(--wdp-glass-blur);
-    -webkit-backdrop-filter: var(--wdp-glass-blur);
-    border: 1px solid var(--wdp-glass-border-white);
-    border-radius: 16px;
-    box-shadow: var(--wdp-glass-shadow-medium), 0 0 0 1px rgba(255, 255, 255, 0.2) inset;
+    background: var(--wdp-gradient-pure-white, linear-gradient(135deg, #ffffff 0%, #fefefe 100%));
+    border: 1px solid var(--wdp-border-very-light, #f0f2f5);
+    border-radius: 20px;
+    box-shadow: var(--wdp-shadow-smooth, 0 4px 16px rgba(0, 0, 0, 0.06), 0 2px 6px rgba(0, 0, 0, 0.04));
   }
 }
 
@@ -462,12 +456,10 @@ html body .wdp-donation-form .wdp-modal-content:has(form.wdp-has-shareholders) {
     max-width: min(var(--wdp-inpage-form-width-mobile, 480px), 96vw);
     margin: 0;
     padding: 16px;
-    background: var(--wdp-gradient-glass-white);
-    backdrop-filter: var(--wdp-glass-blur);
-    -webkit-backdrop-filter: var(--wdp-glass-blur);
-    border: 1px solid var(--wdp-glass-border-white);
-    border-radius: 16px;
-    box-shadow: var(--wdp-glass-shadow-medium), 0 0 0 1px rgba(255, 255, 255, 0.2) inset;
+    background: var(--wdp-gradient-pure-white, linear-gradient(135deg, #ffffff 0%, #fefefe 100%));
+    border: 1px solid var(--wdp-border-very-light, #f0f2f5);
+    border-radius: 20px;
+    box-shadow: var(--wdp-shadow-smooth, 0 4px 16px rgba(0, 0, 0, 0.06), 0 2px 6px rgba(0, 0, 0, 0.04));
   }
 
   /* CRITICAL: In-page form modal content - FIX width to prevent overflow */
@@ -483,12 +475,10 @@ html body .wdp-donation-form .wdp-modal-content:has(form.wdp-has-shareholders) {
     max-width: 100%;
     box-sizing: border-box;
     margin: 0 auto;
-    background: var(--wdp-gradient-glass-white);
-    backdrop-filter: var(--wdp-glass-blur);
-    -webkit-backdrop-filter: var(--wdp-glass-blur);
-    border: 1px solid var(--wdp-glass-border-white);
-    border-radius: 16px;
-    box-shadow: var(--wdp-glass-shadow-medium), 0 0 0 1px rgba(255, 255, 255, 0.2) inset;
+    background: var(--wdp-gradient-pure-white, linear-gradient(135deg, #ffffff 0%, #fefefe 100%));
+    border: 1px solid var(--wdp-border-very-light, #f0f2f5);
+    border-radius: 20px;
+    box-shadow: var(--wdp-shadow-smooth, 0 4px 16px rgba(0, 0, 0, 0.06), 0 2px 6px rgba(0, 0, 0, 0.04));
     box-sizing: border-box;
     overflow: hidden;
     min-height: 0;
@@ -536,11 +526,9 @@ html body .wdp-donation-form .wdp-modal-content:has(form.wdp-has-shareholders) {
   html body .wdp-donation-form .wdp-modal-content:has(form.wdp-has-shareholders) {
     width: calc(100% - 0px);
     max-width: 100%;
-    background: var(--wdp-gradient-glass-white);
-    backdrop-filter: var(--wdp-glass-blur);
-    -webkit-backdrop-filter: var(--wdp-glass-blur);
-    border: 1px solid var(--wdp-glass-border-white);
-    border-radius: 16px;
-    box-shadow: var(--wdp-glass-shadow-medium), 0 0 0 1px rgba(255, 255, 255, 0.2) inset;
+    background: var(--wdp-gradient-pure-white, linear-gradient(135deg, #ffffff 0%, #fefefe 100%));
+    border: 1px solid var(--wdp-border-very-light, #f0f2f5);
+    border-radius: 20px;
+    box-shadow: var(--wdp-shadow-smooth, 0 4px 16px rgba(0, 0, 0, 0.06), 0 2px 6px rgba(0, 0, 0, 0.04));
   }
 }

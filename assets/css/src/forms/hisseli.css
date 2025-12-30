@@ -60,15 +60,15 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-shares-section .wdp-share-cou
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border: 1px solid var(--wdp-border-soft-gray);
+  border: 1px solid var(--wdp-border-soft-gray, #e8eaed);
   border-radius: 14px;
-  background: var(--wdp-bg-pure-white);
-  min-height: var(--wdp-input-min-height);
-  height: var(--wdp-input-min-height);
+  background: var(--wdp-bg-pure-white, #ffffff);
+  min-height: var(--wdp-input-min-height, 48px);
+  height: var(--wdp-input-min-height, 48px);
   padding: 0 8px;
   margin: 0;
   box-sizing: border-box;
-  box-shadow: var(--wdp-shadow-subtle);
+  box-shadow: var(--wdp-shadow-subtle, 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03));
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -249,11 +249,11 @@ html body .wdp-donation-form .wdp-shareholders-area.scrollable .wdp-shareholders
 
 /* ============ INDIVIDUAL SHAREHOLDER CARDS ============ */
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholders-scroll .wdp-shareholder-form {
-  border: 1px solid var(--wdp-border-soft-gray);
+  border: 1px solid var(--wdp-border-soft-gray, #e8eaed);
   border-radius: 16px;
-  background: var(--wdp-bg-pure-white);
+  background: var(--wdp-bg-pure-white, #ffffff);
   overflow: hidden;
-  box-shadow: var(--wdp-shadow-soft);
+  box-shadow: var(--wdp-shadow-soft, 0 2px 8px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.06));
   margin: 12px 0 0 0;
   width: 100%;
   flex-shrink: 0;
@@ -276,7 +276,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-form .wdp-shareho
   gap: 8px;
   padding: var(--wdp-card-header-padding-y, 10px) var(--wdp-card-header-padding-x, 16px);
   margin: 0;
-  background: var(--wdp-bg-cream);
+  background: var(--wdp-bg-cream, #fafbfc);
   border: none;
   cursor: pointer;
   box-sizing: border-box;
@@ -540,22 +540,22 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-content.wdp-share
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-content > :is(input[type="text"], input[type="tel"]) {
   margin: 0;
   /* Modern logical properties for RTL/LTR support */
-  padding-block: var(--wdp-input-padding-y);
-  padding-inline: var(--wdp-input-padding-x);
-  padding: var(--wdp-input-padding-y) var(--wdp-input-padding-x); /* Fallback for older browsers */
+  padding-block: var(--wdp-input-padding-y, 12px);
+  padding-inline: var(--wdp-input-padding-x, 16px);
+  padding: var(--wdp-input-padding-y, 12px) var(--wdp-input-padding-x, 16px); /* Fallback for older browsers */
   width: 100%;
   box-sizing: border-box;
   display: block;
-  border: 1px solid var(--wdp-border-soft-gray);
+  border: 1px solid var(--wdp-border-soft-gray, #e8eaed);
   border-radius: 14px;
-  background: var(--wdp-bg-pure-white);
-  color: var(--wdp-input-color);
-  font-family: var(--wdp-font-family);
+  background: var(--wdp-bg-pure-white, #ffffff);
+  color: var(--wdp-input-color, #1f2937);
+  font-family: var(--wdp-font-family, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
   font-size: var(--wdp-input-font-size, 16px);
   font-weight: 400;
   line-height: var(--wdp-input-line-height, 1.5);
   text-align: left;
-  box-shadow: var(--wdp-shadow-subtle);
+  box-shadow: var(--wdp-shadow-subtle, 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03));
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -575,16 +575,16 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-content > button 
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-content > textarea {
   min-height: 96px;
   /* Modern logical properties for RTL/LTR support */
-  padding-block: var(--wdp-input-padding-y);
-  padding-inline: var(--wdp-input-padding-x);
-  padding: var(--wdp-input-padding-y) var(--wdp-input-padding-x); /* Fallback for older browsers */
+  padding-block: var(--wdp-input-padding-y, 12px);
+  padding-inline: var(--wdp-input-padding-x, 16px);
+  padding: var(--wdp-input-padding-y, 12px) var(--wdp-input-padding-x, 16px); /* Fallback for older browsers */
   resize: vertical;
-  border: 1px solid var(--wdp-border-soft-gray);
+  border: 1px solid var(--wdp-border-soft-gray, #e8eaed);
   border-radius: 14px;
-  background: var(--wdp-bg-pure-white);
+  background: var(--wdp-bg-pure-white, #ffffff);
   margin: 0;
   box-sizing: border-box;
-  box-shadow: var(--wdp-shadow-subtle);
+  box-shadow: var(--wdp-shadow-subtle, 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03));
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   /* Modern aspect ratio for consistent textarea sizing */
   aspect-ratio: auto;

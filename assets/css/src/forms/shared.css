@@ -507,13 +507,13 @@ html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-quantity-counter, .wdp-sh
 
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content :is(input[type="text"], input[type="tel"], input[type="email"], input[type="password"], input[type="search"], select) {
   width: 100%;
-  min-height: var(--wdp-input-min-height);
-  padding: var(--wdp-input-padding-y) var(--wdp-input-padding-x);
-  border: 1px solid var(--wdp-border-soft-gray);
+  min-height: var(--wdp-input-min-height, 48px);
+  padding: var(--wdp-input-padding-y, 12px) var(--wdp-input-padding-x, 16px);
+  border: 1px solid var(--wdp-border-soft-gray, #e8eaed);
   border-radius: 14px;
-  background: var(--wdp-bg-pure-white);
-  color: var(--wdp-input-color);
-  font-family: var(--wdp-font-family);
+  background: var(--wdp-bg-pure-white, #ffffff);
+  color: var(--wdp-input-color, #1f2937);
+  font-family: var(--wdp-font-family, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
   font-size: var(--wdp-input-font-size, 16px);
   font-weight: 400;
   line-height: var(--wdp-input-line-height, 1.5);
@@ -524,7 +524,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content :is(input[type=
   appearance: none;
   margin: 0;
   text-align: left;
-  box-shadow: var(--wdp-shadow-subtle);
+  box-shadow: var(--wdp-shadow-subtle, 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03));
 }
 
 /* Ad soyad ve telefon numarası alanları - Metin sola dayalı, dikeyde ortalanmış */
@@ -543,21 +543,21 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content input[type="ema
 
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content textarea {
   min-height: 96px;
-  padding: var(--wdp-input-padding-y) var(--wdp-input-padding-x);
+  padding: var(--wdp-input-padding-y, 12px) var(--wdp-input-padding-x, 16px);
   resize: vertical;
-  border: 1px solid var(--wdp-border-soft-gray);
+  border: 1px solid var(--wdp-border-soft-gray, #e8eaed);
   border-radius: 14px;
-  background: var(--wdp-bg-pure-white);
-  box-shadow: var(--wdp-shadow-subtle);
+  background: var(--wdp-bg-pure-white, #ffffff);
+  box-shadow: var(--wdp-shadow-subtle, 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03));
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content :is(input, select, textarea):focus {
   /* Kullanıcı isteği: input'lara tıklayınca ek border / highlight olmasın */
-  border-color: var(--wdp-border-light-gray);
+  border-color: var(--wdp-border-light-gray, #e1e4e8);
   outline: none;
-  background-color: var(--wdp-bg-soft-white);
-  box-shadow: var(--wdp-shadow-soft);
+  background-color: var(--wdp-bg-soft-white, #fefefe);
+  box-shadow: var(--wdp-shadow-soft, 0 2px 8px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.06));
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content :is(input, textarea)::placeholder {
@@ -567,13 +567,13 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content :is(input, text
 
 html body .wdp-donation-form .wdp-modal-content form :is(input[type="text"], input[type="tel"], input[type="email"], input[type="password"], input[type="search"], select) {
   min-height: 52px;
-  padding-top: var(--wdp-input-padding-y);
-  padding-bottom: var(--wdp-input-padding-y);
+  padding-top: var(--wdp-input-padding-y, 12px);
+  padding-bottom: var(--wdp-input-padding-y, 12px);
   line-height: var(--wdp-input-line-height, 1.5);
-  font-family: var(--wdp-font-family);
-  background: var(--wdp-bg-pure-white);
-  border: 1px solid var(--wdp-border-soft-gray);
-  box-shadow: var(--wdp-shadow-subtle);
+  font-family: var(--wdp-font-family, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
+  background: var(--wdp-bg-pure-white, #ffffff);
+  border: 1px solid var(--wdp-border-soft-gray, #e8eaed);
+  box-shadow: var(--wdp-shadow-subtle, 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03));
 }
 
 /* Sayfa içi formlarda ad soyad ve telefon numarası sola dayalı, dikeyde ortalanmış */
@@ -587,12 +587,12 @@ html body .wdp-donation-form .wdp-modal-content form :is(input[type="email"], in
 }
 
 html body .wdp-donation-form .wdp-modal-content form textarea {
-  padding-top: var(--wdp-input-padding-y);
-  padding-bottom: var(--wdp-input-padding-y);
+  padding-top: var(--wdp-input-padding-y, 12px);
+  padding-bottom: var(--wdp-input-padding-y, 12px);
   line-height: var(--wdp-input-line-height, 1.5);
-  background: var(--wdp-bg-pure-white);
-  border: 1px solid var(--wdp-border-soft-gray);
-  box-shadow: var(--wdp-shadow-subtle);
+  background: var(--wdp-bg-pure-white, #ffffff);
+  border: 1px solid var(--wdp-border-soft-gray, #e8eaed);
+  box-shadow: var(--wdp-shadow-subtle, 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03));
 }
 
 @media (max-width: var(--wdp-breakpoint-md)) {
