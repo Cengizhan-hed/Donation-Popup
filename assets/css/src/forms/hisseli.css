@@ -60,14 +60,16 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-shares-section .wdp-share-cou
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border: 1px solid var(--wdp-share-counter-border, #d1d5db);
-  border-radius: 10px;
-  background: var(--wdp-share-counter-bg, #ffffff);
+  border: 1px solid var(--wdp-border-soft-gray);
+  border-radius: 14px;
+  background: var(--wdp-bg-pure-white);
   min-height: var(--wdp-input-min-height);
   height: var(--wdp-input-min-height);
   padding: 0 8px;
   margin: 0;
   box-sizing: border-box;
+  box-shadow: var(--wdp-shadow-subtle);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-shares-section .wdp-share-counter button {
@@ -115,11 +117,11 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-shares-section .wdp-share-cou
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-shares-section .wdp-shareholders-area {
-  background: var(--wdp-shareholders-area-bg, linear-gradient(to bottom, var(--wdp-card-bg, #ffffff) 0%, #fafbfc 100%));
-  border: 1px solid var(--wdp-shareholders-area-border, #e1e5e9);
-  border-radius: 10px;
+  background: var(--wdp-gradient-soft-white);
+  border: 1px solid var(--wdp-border-very-light);
+  border-radius: 20px;
   padding: var(--wdp-space-2);
-  box-shadow: var(--wdp-card-shadow-md, 0 2px 8px rgba(0, 0, 0, 0.06)), 0 1px 2px rgba(0, 0, 0, 0.04);
+  box-shadow: var(--wdp-shadow-smooth);
   display: flex;
   flex-direction: column;
   flex: 0 1 auto;
@@ -241,17 +243,18 @@ html body .wdp-donation-form .wdp-shareholders-area.scrollable .wdp-shareholders
 
 /* ============ INDIVIDUAL SHAREHOLDER CARDS ============ */
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholders-scroll .wdp-shareholder-form {
-  border: 1px solid var(--wdp-shareholder-card-border, #f0f2f5);
-  border-radius: var(--wdp-shareholder-card-radius, var(--wdp-card-radius-sm));
-  background: var(--wdp-shareholder-card-bg, var(--wdp-card-bg, #ffffff));
+  border: 1px solid var(--wdp-border-soft-gray);
+  border-radius: 16px;
+  background: var(--wdp-bg-pure-white);
   overflow: hidden;
-  box-shadow: var(--wdp-shareholder-card-shadow, var(--wdp-card-shadow, 0 1px 3px rgba(0, 0, 0, 0.05)));
+  box-shadow: var(--wdp-shadow-soft);
   margin: 12px 0 0 0;
   width: 100%;
   flex-shrink: 0;
   box-sizing: border-box;
   padding: 0;
   display: block;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholders-scroll .wdp-shareholder-form:first-of-type {
@@ -267,12 +270,13 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-form .wdp-shareho
   gap: 8px;
   padding: var(--wdp-card-header-padding-y, 10px) var(--wdp-card-header-padding-x, 16px);
   margin: 0;
-  background: var(--wdp-shareholder-header-bg, #f9fafb);
+  background: var(--wdp-bg-cream);
   border: none;
   cursor: pointer;
   box-sizing: border-box;
   width: 100%;
   min-width: 0;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* ============ SHAREHOLDER FORM WARNING BADGE - Modern Kompakt Uyarı ============ */
@@ -308,7 +312,6 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-form.collapsed .w
   background-color: #fde68a;
   border-color: #f59e0b;
   box-shadow: 0 2px 4px rgba(251, 191, 36, 0.4);
-  transform: translateY(-1px);
 }
 
 
@@ -537,15 +540,17 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-content > :is(inp
   width: 100%;
   box-sizing: border-box;
   display: block;
-  border: var(--wdp-border-1) solid var(--wdp-input-border);
-  border-radius: var(--wdp-input-radius);
-  background: var(--wdp-input-bg);
+  border: 1px solid var(--wdp-border-soft-gray);
+  border-radius: 14px;
+  background: var(--wdp-bg-pure-white);
   color: var(--wdp-input-color);
   font-family: var(--wdp-font-family);
   font-size: var(--wdp-input-font-size, 16px);
   font-weight: 400;
   line-height: var(--wdp-input-line-height, 1.5);
   text-align: left;
+  box-shadow: var(--wdp-shadow-subtle);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Hissedarlı formlarda email alanı sol hizalı kalmalı */
@@ -568,10 +573,13 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-content > textare
   padding-inline: var(--wdp-input-padding-x);
   padding: var(--wdp-input-padding-y) var(--wdp-input-padding-x); /* Fallback for older browsers */
   resize: vertical;
-  border: var(--wdp-border-1) solid var(--wdp-input-border);
-  border-radius: var(--wdp-input-radius);
+  border: 1px solid var(--wdp-border-soft-gray);
+  border-radius: 14px;
+  background: var(--wdp-bg-pure-white);
   margin: 0;
   box-sizing: border-box;
+  box-shadow: var(--wdp-shadow-subtle);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   /* Modern aspect ratio for consistent textarea sizing */
   aspect-ratio: auto;
 }

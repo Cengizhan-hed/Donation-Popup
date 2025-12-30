@@ -7,10 +7,10 @@ html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content, &) .wdp-pr
 html body .wdp-progress-bar-container {
   margin: 16px 0;
   padding: 18px 20px;
-  background: var(--wdp-progress-container-bg, linear-gradient(135deg, #f8fafc 0%, #ffffff 50%, #f1f5f9 100%));
-  border-radius: 10px;
-  border: 1px solid var(--wdp-progress-container-border, rgba(226, 232, 240, 0.8));
-  box-shadow: var(--wdp-card-shadow-md, 0 2px 8px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.03));
+  background: var(--wdp-gradient-soft-white);
+  border-radius: 20px;
+  border: 1px solid var(--wdp-border-very-light);
+  box-shadow: var(--wdp-shadow-smooth);
   position: relative;
   overflow: hidden;
 }
@@ -101,15 +101,15 @@ html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content, &) .wdp-pr
 html body .wdp-progress-bar {
   width: 100%;
   height: 20px;
-  background: var(--wdp-progress-track-bg, linear-gradient(to bottom, #e2e8f0, #e8edf3));
-  border-radius: 10px;
+  background: var(--wdp-bg-cream);
+  border-radius: 14px;
   overflow: hidden;
   position: relative;
   box-shadow: 
     inset 0 1px 3px rgba(0, 0, 0, 0.06),
-    inset 0 1px 1px rgba(0, 0, 0, 0.03),
-    0 1px 1px rgba(0, 0, 0, 0.04);
-  border: 1px solid rgba(226, 232, 240, 0.6);
+    inset 0 1px 1px rgba(0, 0, 0, 0.04),
+    0 1px 2px rgba(0, 0, 0, 0.04);
+  border: 1px solid var(--wdp-border-soft-gray);
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content, &) .wdp-progress-bar-fill,

@@ -509,21 +509,22 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content :is(input[type=
   width: 100%;
   min-height: var(--wdp-input-min-height);
   padding: var(--wdp-input-padding-y) var(--wdp-input-padding-x);
-  border: 1px solid var(--wdp-input-border);
-  border-radius: var(--wdp-input-radius);
-  background: var(--wdp-input-bg);
+  border: 1px solid var(--wdp-border-soft-gray);
+  border-radius: 14px;
+  background: var(--wdp-bg-pure-white);
   color: var(--wdp-input-color);
   font-family: var(--wdp-font-family);
   font-size: var(--wdp-input-font-size, 16px);
   font-weight: 400;
   line-height: var(--wdp-input-line-height, 1.5);
   box-sizing: border-box;
-  transition: var(--wdp-transition-border);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
   margin: 0;
   text-align: left;
+  box-shadow: var(--wdp-shadow-subtle);
 }
 
 /* Ad soyad ve telefon numarası alanları - Metin sola dayalı, dikeyde ortalanmış */
@@ -544,15 +545,19 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content textarea {
   min-height: 96px;
   padding: var(--wdp-input-padding-y) var(--wdp-input-padding-x);
   resize: vertical;
-  border: 1px solid var(--wdp-input-border);
-  border-radius: var(--wdp-input-radius);
+  border: 1px solid var(--wdp-border-soft-gray);
+  border-radius: 14px;
+  background: var(--wdp-bg-pure-white);
+  box-shadow: var(--wdp-shadow-subtle);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content :is(input, select, textarea):focus {
   /* Kullanıcı isteği: input'lara tıklayınca ek border / highlight olmasın */
-  border-color: var(--wdp-input-border);
+  border-color: var(--wdp-border-light-gray);
   outline: none;
-  background-color: #ffffff;
+  background-color: var(--wdp-bg-soft-white);
+  box-shadow: var(--wdp-shadow-soft);
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content :is(input, textarea)::placeholder {
@@ -566,6 +571,9 @@ html body .wdp-donation-form .wdp-modal-content form :is(input[type="text"], inp
   padding-bottom: var(--wdp-input-padding-y);
   line-height: var(--wdp-input-line-height, 1.5);
   font-family: var(--wdp-font-family);
+  background: var(--wdp-bg-pure-white);
+  border: 1px solid var(--wdp-border-soft-gray);
+  box-shadow: var(--wdp-shadow-subtle);
 }
 
 /* Sayfa içi formlarda ad soyad ve telefon numarası sola dayalı, dikeyde ortalanmış */
@@ -582,6 +590,9 @@ html body .wdp-donation-form .wdp-modal-content form textarea {
   padding-top: var(--wdp-input-padding-y);
   padding-bottom: var(--wdp-input-padding-y);
   line-height: var(--wdp-input-line-height, 1.5);
+  background: var(--wdp-bg-pure-white);
+  border: 1px solid var(--wdp-border-soft-gray);
+  box-shadow: var(--wdp-shadow-subtle);
 }
 
 @media (max-width: var(--wdp-breakpoint-md)) {

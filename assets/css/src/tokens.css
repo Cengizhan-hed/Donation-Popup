@@ -302,9 +302,38 @@
   --wdp-backdrop-blur-lg: blur(16px);
   --wdp-backdrop-blur-xl: blur(24px);
   
-  /* Modern gradient utilities */
+  /* Modern White & Light Color Tokens - Smooth & Beautiful */
+  --wdp-bg-pure-white: #ffffff;
+  --wdp-bg-soft-white: #fefefe;
+  --wdp-bg-cream: #fafbfc;
+  --wdp-bg-ivory: #f8f9fa;
+  --wdp-bg-pearl: #f5f6f7;
+  
+  /* Soft Border Colors */
+  --wdp-border-soft-gray: #e8eaed;
+  --wdp-border-light-gray: #e1e4e8;
+  --wdp-border-very-light: #f0f2f5;
+  --wdp-border-white: #ffffff;
+  
+  /* Beautiful Soft Shadows */
+  --wdp-shadow-soft: 0 2px 8px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.06);
+  --wdp-shadow-smooth: 0 4px 16px rgba(0, 0, 0, 0.06), 0 2px 6px rgba(0, 0, 0, 0.04);
+  --wdp-shadow-elegant: 0 8px 24px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.04);
+  --wdp-shadow-subtle: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
+  
+  /* Soft Pastel Colors - Very Light */
+  --wdp-pastel-blue: #e8f4fd;
+  --wdp-pastel-purple: #f3f0ff;
+  --wdp-pastel-green: #f0fdf4;
+  --wdp-pastel-pink: #fef2f2;
+  --wdp-pastel-yellow: #fffbeb;
+  
+  /* Modern gradient utilities - Soft & Beautiful */
   --wdp-gradient-primary: linear-gradient(135deg, var(--wdp-primary) 0%, var(--wdp-secondary) 100%);
   --wdp-gradient-accent: linear-gradient(135deg, var(--wdp-accent) 0%, var(--wdp-primary) 100%);
+  --wdp-gradient-soft-white: linear-gradient(135deg, #ffffff 0%, #fafbfc 50%, #f8f9fa 100%);
+  --wdp-gradient-pure-white: linear-gradient(135deg, #ffffff 0%, #fefefe 100%);
+  --wdp-gradient-cream: linear-gradient(135deg, #fafbfc 0%, #f8f9fa 100%);
   
   /* Modern aspect ratios */
   --wdp-aspect-square: 1 / 1;

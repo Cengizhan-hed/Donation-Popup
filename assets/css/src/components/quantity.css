@@ -60,9 +60,9 @@ html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content form, .wdp-
   -webkit-appearance: textfield;
   -moz-appearance: textfield;
   appearance: textfield;
-  border: var(--wdp-border-1) solid var(--wdp-input-border);
-  border-radius: var(--wdp-input-radius);
-  background: var(--wdp-input-bg);
+  border: 1px solid var(--wdp-border-soft-gray);
+  border-radius: 14px;
+  background: var(--wdp-bg-pure-white);
   padding: var(--wdp-input-padding-y) var(--wdp-input-padding-x);
   box-sizing: border-box;
   min-height: var(--wdp-input-min-height);
@@ -75,6 +75,8 @@ html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content form, .wdp-
   color: var(--wdp-input-color);
   width: 100%;
   margin: 0;
+  box-shadow: var(--wdp-shadow-subtle);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Progress bar özel fiyat input'u (wdp-custom-price-input) için garanti stil eşitleme */
@@ -83,9 +85,9 @@ html body :is(.wdp-modal, .wdp-donation-form) input.wdp-custom-price-input[type=
   -webkit-appearance: textfield;
   -moz-appearance: textfield;
   appearance: textfield;
-  border: var(--wdp-border-1) solid var(--wdp-input-border);
-  border-radius: var(--wdp-input-radius);
-  background: var(--wdp-input-bg);
+  border: 1px solid var(--wdp-border-soft-gray);
+  border-radius: 14px;
+  background: var(--wdp-bg-pure-white);
   padding: var(--wdp-input-padding-y) var(--wdp-input-padding-x);
   box-sizing: border-box;
   min-height: var(--wdp-input-min-height);
@@ -98,6 +100,8 @@ html body :is(.wdp-modal, .wdp-donation-form) input.wdp-custom-price-input[type=
   color: var(--wdp-input-color);
   width: 100%;
   margin: 0;
+  box-shadow: var(--wdp-shadow-subtle);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* ==================== */
@@ -224,9 +228,9 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-quantity-counter {
   min-height: var(--wdp-input-min-height);
   height: var(--wdp-input-min-height);
   max-height: var(--wdp-input-min-height);
-  border: var(--wdp-border-1) solid var(--wdp-input-border);
-  border-radius: var(--wdp-input-radius);
-  background: var(--wdp-input-bg);
+  border: 1px solid var(--wdp-border-soft-gray);
+  border-radius: 14px;
+  background: var(--wdp-bg-pure-white);
   box-sizing: border-box;
   padding: 0 var(--wdp-space-2, 8px);
   margin: 0;
@@ -234,6 +238,8 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-quantity-counter {
   gap: 0;
   position: relative;
   vertical-align: middle;
+  box-shadow: var(--wdp-shadow-subtle);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-quantity-counter input[type="number"] {
