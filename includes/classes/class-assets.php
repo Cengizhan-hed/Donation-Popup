@@ -604,10 +604,20 @@ class WDP_Assets {
         
         $css .= "}\n";
 
-        // Mobil için tipografi değişkenlerini override et
+        // Mobil için tipografi ve modal görünüm değişkenlerini override et
+        // CRITICAL: Desktop CSS değişkenlerini mobile değişkenleriyle override et
+        // Bu sayede desktop kuralları (media query dışında) mobilde mobile değişkenlerini kullanacak
+        // Breakpoint: --wdp-breakpoint-md (600px) ile uyumlu
         $css .= "@media (max-width: 600px) {\n";
         $css .= "  :root {\n";
         $css .= "    --wdp-title-size: var(--wdp-title-size-mobile, " . esc_attr($settings['title_font_size']) . "px);\n";
+        // Mobile modal görünüm değişkenlerini override et - desktop değişkenlerini mobile ile değiştir
+        $css .= "    --wdp-popup-modal-width-desktop: var(--wdp-popup-modal-width-mobile);\n";
+        $css .= "    --wdp-inpage-form-width-desktop: var(--wdp-inpage-form-width-mobile);\n";
+        $css .= "    --wdp-modal-padding-top-desktop: var(--wdp-modal-padding-top-mobile);\n";
+        $css .= "    --wdp-modal-padding-right-desktop: var(--wdp-modal-padding-right-mobile);\n";
+        $css .= "    --wdp-modal-padding-bottom-desktop: var(--wdp-modal-padding-bottom-mobile);\n";
+        $css .= "    --wdp-modal-padding-left-desktop: var(--wdp-modal-padding-left-mobile);\n";
         $css .= "  }\n";
         $css .= "}\n";
         
