@@ -127,17 +127,18 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-alert__clo
 html body .wdp-alert__close {
   align-self: flex-start;
   border: none;
-  background: rgba(15, 23, 42, 0.05);
+  background: transparent;
   color: var(--wdp-gray-500);
   width: 36px;
   height: 36px;
-  border-radius: 999px;
+  border-radius: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 20px;
   cursor: pointer;
   transition: var(--wdp-transition-colors);
+  padding: 0;
 }
 
 html body .wdp-alert__close:hover,
@@ -150,8 +151,8 @@ html body .wdp-modal-content .wdp-alert__close:hover,
 html body .wdp-modal-content .wdp-alert__close:focus-visible,
 html body .wdp-donation-form .wdp-modal-content .wdp-alert__close:hover,
 html body .wdp-donation-form .wdp-modal-content .wdp-alert__close:focus-visible {
-  background: rgba(15, 23, 42, 0.12);
-  color: var(--wdp-gray-700);
+  background: transparent;
+  color: var(--wdp-error);
   box-shadow: none;
   outline: none;
 }

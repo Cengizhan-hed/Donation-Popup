@@ -292,9 +292,9 @@ html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-mini-cart-items, .wdp-mod
   font-size: 22px;
   line-height: 1;
   cursor: pointer;
-  padding: 2px;
-  border-radius: var(--wdp-button-radius, 10px);
-  transition: all 0.2s ease;
+  padding: 0;
+  border-radius: 0;
+  transition: color 0.2s ease;
   display: inline-flex;
   align-items: flex-start;
   justify-content: center;
@@ -309,6 +309,7 @@ html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-mini-cart-items, .wdp-mod
 html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-mini-cart-items, .wdp-modal-content .wdp-mini-cart-items) .wdp-remove-cart-item:focus {
   color: #ef4444;
   outline: none;
+  background: transparent;
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-mini-cart-items, .wdp-modal-content .wdp-mini-cart-items) .wdp-remove-cart-item span {

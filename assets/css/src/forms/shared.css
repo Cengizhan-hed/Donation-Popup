@@ -49,7 +49,7 @@ html body .wdp-modal .wdp-modal-close {
   margin: 0;
   padding: 0;
   border: none;
-  border-radius: 50%;
+  border-radius: 0;
   background: transparent;
   color: var(--wdp-close-color, #6b7280);
   font-size: 2.1rem;
@@ -81,7 +81,7 @@ html body .wdp-donation-form .wdp-modal-close {
   margin: 0;
   padding: 0;
   border: none;
-  border-radius: 50%;
+  border-radius: 0;
   background: transparent;
   color: var(--wdp-close-color, #6b7280);
   font-size: 2.1rem;
