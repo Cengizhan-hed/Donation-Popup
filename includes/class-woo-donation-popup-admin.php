@@ -129,20 +129,110 @@ class Woo_Donation_Popup_Admin {
         echo '</div>';
         echo '</div>';
 
-        // Ürün kartları grid'i
-        echo '<div class="wdp-products-grid">';
-
+        // Ürün kartları - WooCommerce kategorilerine göre gruplanmış görünüm
         if (empty($products)) {
+            echo '<div class="wdp-products-grid">';
             echo '<div class="wdp-products-empty">';
             echo '<p>' . __('Hiç ürün bulunamadı.', 'woo-donation-popup') . '</p>';
             echo '</div>';
+            echo '</div>'; // .wdp-products-grid
         } else {
-            foreach ($products as $product) {
-                $this->render_product_row($product);
-            }
-        }
+            // Tüm ürünleri ilgili WooCommerce kategorileriyle eşle
+            $products_by_category = array();
+            $uncategorized_products = array();
 
-        echo '</div>'; // .wdp-products-grid
+            foreach ($products as $product) {
+                $product_id = $product->get_id();
+
+                // Ürünün kategorilerini al
+                $term_ids = wp_get_post_terms(
+                    $product_id,
+                    'product_cat',
+                    array(
+                        'fields' => 'ids',
+                    )
+                );
+
+                if (!is_wp_error($term_ids) && !empty($term_ids)) {
+                    foreach ($term_ids as $term_id) {
+                        if (!isset($products_by_category[$term_id])) {
+                            $products_by_category[$term_id] = array();
+                        }
+                        $products_by_category[$term_id][] = $product;
+                    }
+                } else {
+                    // Herhangi bir kategorisi olmayan ürünler
+                    $uncategorized_products[] = $product;
+                }
+            }
+
+            // WooCommerce ürün kategorilerini, mağazada göründüğü sırayla al
+            $categories = get_terms(
+                array(
+                    'taxonomy'   => 'product_cat',
+                    'hide_empty' => false,
+                    'orderby'    => 'menu_order', // WooCommerce kategori sıralamasını kullan
+                    'order'      => 'ASC',
+                )
+            );
+
+            echo '<div class="wdp-products-by-category">';
+
+            if (!is_wp_error($categories) && !empty($categories)) {
+                foreach ($categories as $category) {
+                    $term_id = $category->term_id;
+
+                    if (empty($products_by_category[$term_id])) {
+                        continue; // Bu kategoride ürün yoksa atla
+                    }
+
+                    $category_products = $products_by_category[$term_id];
+                    $category_count    = count($category_products);
+
+                    echo '<section class="wdp-category-section" data-category-id="' . esc_attr($term_id) . '">';
+
+                    // Kategori başlığı (isim + ürün sayısı)
+                    echo '<header class="wdp-category-header">';
+                    echo '<h2 class="wdp-category-title">' . esc_html($category->name) . '</h2>';
+                    echo '<span class="wdp-category-count">' . sprintf(_n('%d ürün', '%d ürün', $category_count, 'woo-donation-popup'), $category_count) . '</span>';
+                    echo '</header>';
+
+                    if (!empty($category->description)) {
+                        echo '<div class="wdp-category-description">' . esc_html($category->description) . '</div>';
+                    }
+
+                    // Bu kategoriye ait ürün kartları grid'i
+                    echo '<div class="wdp-products-grid">';
+                    foreach ($category_products as $product) {
+                        $this->render_product_row($product);
+                    }
+                    echo '</div>'; // .wdp-products-grid
+
+                    echo '</section>'; // .wdp-category-section
+                }
+            }
+
+            // Kategorisi olmayan ürünler için ayrı bir başlık
+            if (!empty($uncategorized_products)) {
+                $uncategorized_count = count($uncategorized_products);
+
+                echo '<section class="wdp-category-section wdp-category-uncategorized" data-category-id="uncategorized">';
+                echo '<header class="wdp-category-header">';
+                echo '<h2 class="wdp-category-title">' . esc_html__('Kategorisiz Ürünler', 'woo-donation-popup') . '</h2>';
+                echo '<span class="wdp-category-count">' . sprintf(_n('%d ürün', '%d ürün', $uncategorized_count, 'woo-donation-popup'), $uncategorized_count) . '</span>';
+                echo '</header>';
+                echo '<div class="wdp-products-grid">';
+
+                foreach ($uncategorized_products as $product) {
+                    $this->render_product_row($product);
+                }
+
+                echo '</div>'; // .wdp-products-grid
+                echo '</section>'; // .wdp-category-section
+            }
+
+            echo '</div>'; // .wdp-products-by-category
+        }
 
         // Toplu güncelleme butonu
         echo '<div class="wdp-bulk-actions">';

@@ -51,7 +51,7 @@
       }
     }
 
-    // Ürün arama / filtreleme
+    // Ürün arama / filtreleme (kategori başlıklarıyla uyumlu)
     if ($productSearch && $productSearch.length) {
       $productSearch.on("input", function () {
         var query = $(this).val().toLowerCase().trim()
@@ -65,6 +65,18 @@
             $card.show()
           } else {
             $card.hide()
+          }
+        })
+
+        // Kategori bölümlerini, içlerinde görünür ürün kartı olup olmamasına göre gizle/göster
+        $(".wdp-category-section").each(function () {
+          var $section = $(this)
+          var hasVisibleProducts = $section.find(".wdp-product-card:visible").length > 0
+
+          if (hasVisibleProducts || !query) {
+            $section.show()
+          } else {
+            $section.hide()
           }
         })
       })

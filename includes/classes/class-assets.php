@@ -101,12 +101,148 @@ class WDP_Assets {
     private static $inline_style_attached = false;
 
     /**
+     * CSS handle for frontend modal styles (used for optimizer exclusions).
+     */
+    const FRONTEND_CSS_HANDLE = 'wdp-donation-modal-css';
+
+    /**
      * Initialize
      */
     public static function init() {
         add_action('wp_enqueue_scripts', array(__CLASS__, 'enqueue_assets'));
         // wp_footer'da da kontrol et (eğer shortcode render edildiyse)
         add_action('wp_footer', array(__CLASS__, 'maybe_enqueue_in_footer'), 1);
+
+        // Hangi eklenti olursa olsun bu eklentinin CSS'ini combine/minify'dan korumak için
+        self::register_optimizer_exclusions();
+        add_filter('style_loader_tag', array(__CLASS__, 'style_loader_tag_add_no_optimize'), 10, 4);
+    }
+
+    /**
+     * Tüm yaygın hız eklentilerinde bu eklentinin CSS'ini hariç tutar
+     * (SiteGround, WP Rocket, LiteSpeed, Autoptimize, Breeze vb.).
+     */
+    private static function register_optimizer_exclusions() {
+        // SiteGround Speed Optimizer (handle ile)
+        add_filter('sgo_css_combine_exclude', array(__CLASS__, 'exclude_css_handle_only'));
+        add_filter('sgo_css_minify_exclude', array(__CLASS__, 'exclude_css_handle_only'));
+
+        // WP Rocket (path ile; minify ve combine exclude)
+        add_filter('pre_get_rocket_option_exclude_css', array(__CLASS__, 'exclude_css_wp_rocket'));
+        add_filter('pre_get_rocket_option_minify_css_exclude', array(__CLASS__, 'exclude_css_wp_rocket'));
+
+        // LiteSpeed Cache (path/regex ile)
+        add_filter('litespeed_optimize_css_excludes', array(__CLASS__, 'exclude_css_litespeed'));
+
+        // Autoptimize (URL/handle pattern ile; virgülle ayrılmış string)
+        add_filter('autoptimize_filter_css_exclude', array(__CLASS__, 'exclude_css_autoptimize'), 10, 1);
+
+        // Breeze (path pattern; filter adı eklenti sürümüne göre değişebilir)
+        add_filter('breeze_filter_css_exclude', array(__CLASS__, 'exclude_css_path_patterns'));
+
+        // Diğer eklentiler için genel filter (handle döndürür)
+        add_filter('wdp_optimizer_css_exclude_handles', array(__CLASS__, 'exclude_css_handle_only'));
+    }
+
+    /**
+     * style_loader_tag: Link etiketine data-no-optimize ekle; birçok eklenti bunu tanır.
+     */
+    public static function style_loader_tag_add_no_optimize($html, $handle, $href, $media) {
+        if ($handle !== self::FRONTEND_CSS_HANDLE) {
+            return $html;
+        }
+        $attr = ' data-no-optimize="1" data-noptimize="1" data-skip-optimize="1"';
+        if (strpos($html, ' data-no-optimize') === false) {
+            $html = str_replace('>', $attr . '>', $html);
+        }
+        return $html;
+    }
+
+    /**
+     * Exclude patterns (path) döndürür; path-based exclude kullanan eklentiler için.
+     *
+     * @return array { 'path' => ..., 'filename' => ..., 'path_slash' => ... }
+     */
+    private static function get_frontend_css_exclude_patterns() {
+        $plugin_dir = defined('WDP_PLUGIN_PATH') ? WDP_PLUGIN_PATH : plugin_dir_path(dirname(dirname(__FILE__)));
+        $path_from_root = str_replace(ABSPATH, '', $plugin_dir);
+        $path_from_root = trim($path_from_root, '/\\');
+        $rel_file = $path_from_root . '/assets/css/donation-modal.css';
+        return array(
+            'filename'   => 'donation-modal.css',
+            'path'       => $rel_file,
+            'path_slash' => '/' . $rel_file,
+        );
+    }
+
+    /**
+     * Handle ile exclude (SiteGround vb.).
+     *
+     * @param array $exclude_list
+     * @return array
+     */
+    public static function exclude_css_handle_only($exclude_list) {
+        if (!is_array($exclude_list)) {
+            $exclude_list = array();
+        }
+        $exclude_list[] = self::FRONTEND_CSS_HANDLE;
+        return $exclude_list;
+    }
+
+    /**
+     * Path pattern listesi (LiteSpeed, Breeze vb.).
+     *
+     * @param array $exclude_list
+     * @return array
+     */
+    public static function exclude_css_path_patterns($exclude_list) {
+        if (!is_array($exclude_list)) {
+            $exclude_list = array();
+        }
+        $p = self::get_frontend_css_exclude_patterns();
+        $exclude_list[] = $p['filename'];
+        $exclude_list[] = $p['path'];
+        $exclude_list[] = $p['path_slash'];
+        return $exclude_list;
+    }
+
+    /**
+     * LiteSpeed: path veya regex ile exclude.
+     */
+    public static function exclude_css_litespeed($exclude_list) {
+        return self::exclude_css_path_patterns(is_array($exclude_list) ? $exclude_list : array());
+    }
+
+    /**
+     * WP Rocket: exclude_css ve minify_css_exclude option'larına ekle.
+     * Değer string (newline) veya array olabilir.
+     */
+    public static function exclude_css_wp_rocket($value) {
+        $p = self::get_frontend_css_exclude_patterns();
+        $to_add = array($p['path_slash'], $p['filename']);
+        if (is_array($value)) {
+            return array_merge($value, $to_add);
+        }
+        if (is_string($value)) {
+            $lines = array_filter(array_map('trim', explode("\n", $value)));
+            $lines = array_merge($lines, $to_add);
+            return implode("\n", array_unique($lines));
+        }
+        return $value;
+    }
+
+    /**
+     * Autoptimize: exclude string'e ekle (virgülle ayrılmış veya array).
+     */
+    public static function exclude_css_autoptimize($exclude) {
+        $p = self::get_frontend_css_exclude_patterns();
+        $add = array(self::FRONTEND_CSS_HANDLE, $p['filename'], $p['path']);
+        if (is_array($exclude)) {
+            return array_merge($exclude, $add);
+        }
+        $s = is_string($exclude) ? $exclude : '';
+        $s = $s ? $s . ',' . implode(',', $add) : implode(',', $add);
+        return $s;
     }
     
     /**
