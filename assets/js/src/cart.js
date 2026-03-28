@@ -26,6 +26,13 @@
   const wdp_ajax = window.wdp_ajax || {};
   const jQuery = window.jQuery || null;
 
+  function getCartFragmentRetryDelayMs() {
+    const t = WDPApp.constants && WDPApp.constants.TIMING;
+    return t && typeof t.CART_FRAGMENT_RETRY_DELAY === "number" && t.CART_FRAGMENT_RETRY_DELAY >= 0
+      ? t.CART_FRAGMENT_RETRY_DELAY
+      : 800;
+  }
+
   function updateWooCommerceCart() {
     // jQuery varsa WooCommerce'in kendi AJAX işlemini çağır
     if (typeof jQuery !== "undefined") {
@@ -33,45 +40,49 @@
         // WooCommerce'in kendi AJAX işlemini çağır
         jQuery(document.body).trigger("wc_fragment_refresh");
 
-        // WooCommerce sepet fragmentlerini manuel olarak yenile
+        // WooCommerce sepet fragmentlerini manuel olarak yenile (bir kez yeniden dene, sonra sayfa yenileme)
         if (typeof wc_add_to_cart_params !== "undefined") {
-          jQuery.ajax({
-            url: wc_add_to_cart_params.wc_ajax_url.toString().replace("%%endpoint%%", "get_refreshed_fragments"),
-            type: "POST",
-            data: {
-              action: "woocommerce_get_refreshed_fragments",
-            },
-            success: (response) => {
-              if (response && response.fragments) {
-                // Fragment'leri güncelle
-                jQuery.each(response.fragments, (key, value) => {
-                  jQuery(key).replaceWith(value);
-                });
+          const maxFragmentAttempts = 2;
+          function requestRefreshedFragments(attempt) {
+            jQuery.ajax({
+              url: wc_add_to_cart_params.wc_ajax_url.toString().replace("%%endpoint%%", "get_refreshed_fragments"),
+              type: "POST",
+              data: {
+                action: "woocommerce_get_refreshed_fragments",
+              },
+              success: (response) => {
+                if (response && response.fragments) {
+                  jQuery.each(response.fragments, (key, value) => {
+                    jQuery(key).replaceWith(value);
+                  });
 
-                if (typeof sessionStorage !== "undefined") {
-                  sessionStorage.setItem("wc_fragments", JSON.stringify(response.fragments));
-                  sessionStorage.setItem("wc_cart_hash", response.cart_hash);
+                  if (typeof sessionStorage !== "undefined") {
+                    sessionStorage.setItem("wc_fragments", JSON.stringify(response.fragments));
+                    sessionStorage.setItem("wc_cart_hash", response.cart_hash);
+                  }
+
+                  jQuery(document.body).trigger("wc_fragments_refreshed");
                 }
 
-                jQuery(document.body).trigger("wc_fragments_refreshed");
-              }
-
-              // Side cart elementlerini geri yükle
-              setTimeout(() => {
-                showSideCarts();
-              }, 300);
-            },
-            error: () => {
-              // Hata durumunda fallback yöntemini kullan
-              fallbackCartUpdate();
-            },
-            complete: () => {
-              // İşlem tamamlandıktan sonra side cart'ı yeniden göster
-              setTimeout(() => {
-                showSideCarts();
-              }, 300);
-            },
-          });
+                setTimeout(() => {
+                  showSideCarts();
+                }, 300);
+              },
+              error: () => {
+                if (attempt + 1 < maxFragmentAttempts) {
+                  setTimeout(() => requestRefreshedFragments(attempt + 1), getCartFragmentRetryDelayMs());
+                } else {
+                  fallbackCartUpdate();
+                }
+              },
+              complete: () => {
+                setTimeout(() => {
+                  showSideCarts();
+                }, 300);
+              },
+            });
+          }
+          requestRefreshedFragments(0);
         }
       } catch (jQueryError) {
         safeLog("jQuery error:", jQueryError);

@@ -65,7 +65,7 @@
   
   // Use centralized module dependency helper
   const utilsCheck = (WDPApp.utils && WDPApp.utils.ensureModule)
-    ? WDPApp.utils.ensureModule('utils', ['formatCurrency', 'getAjaxNonce', 'announceStatus', 'safeLog', 'escapeHtml'])
+    ? WDPApp.utils.ensureModule('utils', ['formatCurrency', 'getAjaxNonce', 'announceStatus', 'safeLog', 'escapeHtml', 'mergeWdpAjaxNonces', 'refreshWdpAjaxNonces'])
     : { module: WDPApp.utils || {}, isValid: false, missingMethods: [] };
   
   const stateCheck = (WDPApp.utils && WDPApp.utils.ensureModule)
@@ -84,7 +84,7 @@
   const state = stateCheck.module;
   const alerts = alertsCheck.module;
   const cart = cartCheck.module;
-  const { formatCurrency, getAjaxNonce, announceStatus, safeLog, escapeHtml, debounce, throttle } = utils;
+  const { formatCurrency, getAjaxNonce, announceStatus, safeLog, escapeHtml, debounce, throttle, mergeWdpAjaxNonces, refreshWdpAjaxNonces } = utils;
   const { clear: clearAlerts, show: showAlert } = alerts;
   const { fetchContents: fetchCartContents, updateCountElements: updateCartCountElements, createItemsHTML: createCartItemsHTML, setupContinueShoppingButton, setupRemoveCartItemButtons, updateWooCommerce: updateWooCommerceCart, saveSideCartElements, showSideCarts } = cart;
   const wdp_ajax = window.wdp_ajax || {};
@@ -498,6 +498,122 @@ ${createCartItemsHTML([])}
     state.isProcessing = false;
   }
 
+  /**
+   * PHP uyarısı / BOM / HTML öncesi JSON gibi bozuk gövdelerde gerçek WDP yanıtını ayıklar.
+   */
+  function parseWdpAjaxResponseText(raw) {
+    if (!raw || typeof raw !== "string") {
+      return null;
+    }
+    const trimmed = raw.replace(/^\uFEFF/, "").trim();
+    let candidate = trimmed;
+    const firstBrace = trimmed.indexOf("{");
+    const lastBrace = trimmed.lastIndexOf("}");
+    if (firstBrace !== -1 && lastBrace > firstBrace) {
+      candidate = trimmed.slice(firstBrace, lastBrace + 1);
+    }
+    try {
+      const parsed = JSON.parse(candidate);
+      if (parsed && typeof parsed.success === "boolean") {
+        return parsed;
+      }
+    } catch (parseErr) {
+      safeLog("Loose JSON parse failed:", parseErr);
+    }
+    return null;
+  }
+
+  function shouldAttemptCartRecoveryFromJqXHR(jqXHR, textStatus) {
+    if (textStatus === "parsererror") {
+      return true;
+    }
+    const status = jqXHR && typeof jqXHR.status === "number" ? jqXHR.status : 0;
+    if (status === 0) {
+      return true;
+    }
+    if (status >= 500 && status <= 599) {
+      return true;
+    }
+    return false;
+  }
+
+  function shouldAttemptCartRecoveryFromFetchError(error) {
+    if (error && error.wdpRecoverCart) {
+      return true;
+    }
+    const status = error && typeof error.status === "number" ? error.status : null;
+    if (status === null || Number.isNaN(status)) {
+      return true;
+    }
+    if (status >= 500 && status <= 599) {
+      return true;
+    }
+    if (status === 0) {
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Sunucu isteği tamamlayıp yanıt düşmeden bağlantı koptuysa (veya nonce eskiyse) sepeti doğrular;
+   * ürün zaten eklenmişse başarı akışına geçer — gereksiz "bağlantı hatası" engellenir.
+   */
+  function tryRecoverCartAfterAjaxFailure(form, isCheckout, addToCartBtn, checkoutBtn, onFailure) {
+    if (typeof jQuery === "undefined") {
+      onFailure();
+      return;
+    }
+    const uniqueInput = form.querySelector('input[name="unique_submission_key"]');
+    const uniqueKey = uniqueInput && uniqueInput.value;
+    if (!uniqueKey) {
+      onFailure();
+      return;
+    }
+
+    const runVerify = () => {
+      jQuery.ajax({
+        url: wdp_ajax.ajax_url,
+        type: "POST",
+        data: {
+          action: "wdp_verify_submission_in_cart",
+          security: getAjaxNonce("ajax_add_to_cart"),
+          unique_submission_key: uniqueKey,
+        },
+        dataType: "json",
+        success: (verifyData) => {
+          if (verifyData && verifyData.success && verifyData.in_cart) {
+            handleAjaxResponse(
+              {
+                success: true,
+                message: verifyData.message,
+                cart_count: verifyData.cart_count,
+                items: verifyData.items,
+                checkout_url: verifyData.checkout_url,
+              },
+              form,
+              isCheckout,
+              addToCartBtn,
+              checkoutBtn
+            );
+          } else {
+            onFailure();
+          }
+        },
+        error: () => {
+          onFailure();
+        },
+      });
+    };
+
+    if (refreshWdpAjaxNonces && typeof refreshWdpAjaxNonces === "function") {
+      refreshWdpAjaxNonces({ force: true })
+        .then(() => runVerify())
+        .catch(() => runVerify());
+    } else {
+      runVerify();
+    }
+  }
+
   function submitFormData(form, isCheckout) {
     // ✅ GÜVENLİ: Fonksiyon scope içinde helper (fonksiyon bitince otomatik temizlenir)
     const $form = (sel) => form.querySelector(sel);
@@ -593,8 +709,20 @@ ${createCartItemsHTML([])}
 
     // Form verilerini URL kodlamasına dönüştür
     const formDataUrlEncoded = new URLSearchParams();
+    const debugPayload = wdp_ajax && (wdp_ajax.debug === true || wdp_ajax.debug === 1 || wdp_ajax.debug === "1");
+    const sensitiveField = (name) => {
+      const n = String(name).toLowerCase();
+      if (n.indexOf("shareholder_") === 0) {
+        return true;
+      }
+      return n === "donation_full_name" || n === "donation_phone" || n === "donation_note";
+    };
     for (const pair of formData.entries()) {
-      safeLog("Form data: " + pair[0] + ": " + pair[1]); // Debug için form verilerini logla
+      if (debugPayload) {
+        safeLog(
+          "Form data: " + pair[0] + ": " + (sensitiveField(pair[0]) ? "[gizlendi]" : pair[1])
+        );
+      }
       formDataUrlEncoded.append(pair[0], pair[1]);
     }
 
@@ -629,26 +757,23 @@ ${createCartItemsHTML([])}
         error: (jqXHR, textStatus, errorThrown) => {
           safeLog("jQuery AJAX error:", { textStatus, errorThrown, status: jqXHR.status });
 
-          // Gerçek bir hata olup olmadığını kontrol et
-          if (jqXHR.status !== 200) {
-            handleAjaxError(errorThrown, form, addToCartBtn, checkoutBtn);
+          const rescued = parseWdpAjaxResponseText(jqXHR.responseText);
+          if (rescued) {
+            handleAjaxResponse(rescued, form, isCheckout, addToCartBtn, checkoutBtn);
+            return;
+          }
+
+          const finishWithTransportError = () => {
+            safeLog("AJAX taşıma / yanıt hatası — kurtarma sonrası veya kurtarma atlandı", jqXHR.status, textStatus);
+            // Gerçek hata: sunucu mesajı (success:false) zaten success callback'te gösterilir.
+            // Burada yanıt okunamadı veya ağ kopması var — kullanıcıya mutlaka bildir (sessiz kalma).
+            handleAjaxError(errorThrown || new Error(textStatus || "error"), form, addToCartBtn, checkoutBtn);
+          };
+
+          if (shouldAttemptCartRecoveryFromJqXHR(jqXHR, textStatus)) {
+            tryRecoverCartAfterAjaxFailure(form, isCheckout, addToCartBtn, checkoutBtn, finishWithTransportError);
           } else {
-            // HTTP 200 yanıtı ama JSON parse hatası olabilir
-            // Bu durumda işlemi başarılı kabul et ve hata mesajını gösterme
-            safeLog("Ignoring non-critical error, continuing with checkout");
-            if (isCheckout) {
-              window.location.href = wdp_ajax.checkout_url || "/odeme-sayfasi/";
-            } else {
-              // Butonları tekrar aktif et
-              if (addToCartBtn) {
-                addToCartBtn.disabled = false;
-                addToCartBtn.classList.remove("wdp-loading");
-              }
-              if (checkoutBtn) {
-                checkoutBtn.disabled = false;
-                checkoutBtn.classList.remove("wdp-loading");
-              }
-            }
+            finishWithTransportError();
           }
         },
         complete: () => {
@@ -692,21 +817,24 @@ ${createCartItemsHTML([])}
         .then((response) => {
           safeLog("Fetch response received:", { status: response.status, ok: response.ok });
           if (!response.ok && response.status !== 200) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
+            const httpErr = new Error(`HTTP error! Status: ${response.status}`);
+            httpErr.status = response.status;
+            throw httpErr;
           }
           return response.text().then((text) => {
             safeLog("Response text:", text.substring(0, 200)); // İlk 200 karakter
+            const loose = parseWdpAjaxResponseText(text);
+            if (loose) {
+              return loose;
+            }
             try {
               return JSON.parse(text);
             } catch (e) {
               safeLog("JSON parse error:", e);
-              // JSON parse hatası olsa bile işlemi başarılı kabul et
-              return {
-                success: true,
-                message: "Ürün sepete eklendi",
-                checkout_url: wdp_ajax.checkout_url || "/odeme-sayfasi/",
-                items: [],
-              };
+              const parseErr = new Error("INVALID_JSON_RESPONSE");
+              parseErr.status = response.status;
+              parseErr.wdpRecoverCart = true;
+              throw parseErr;
             }
           });
         })
@@ -715,15 +843,14 @@ ${createCartItemsHTML([])}
         })
         .catch((error) => {
           safeLog("Fetch error:", error);
-          // Gerçek bir ağ hatası olduğunda hata mesajını göster
-          if (error.name !== "SyntaxError") {
+          const afterRecoverOrShowError = () => {
             handleAjaxError(error, form, addToCartBtn, checkoutBtn);
+          };
+
+          if (shouldAttemptCartRecoveryFromFetchError(error) && typeof jQuery !== "undefined") {
+            tryRecoverCartAfterAjaxFailure(form, isCheckout, addToCartBtn, checkoutBtn, afterRecoverOrShowError);
           } else {
-            // JSON parse hatası - işlemi başarılı kabul et
-            safeLog("Ignoring JSON parse error, continuing with checkout");
-            if (isCheckout) {
-              window.location.href = wdp_ajax.checkout_url || "/odeme-sayfasi/";
-            }
+            afterRecoverOrShowError();
           }
         })
         .finally(() => {
@@ -813,8 +940,13 @@ ${createCartItemsHTML([])}
   function setupFormSubmission(form) {
     safeLog("Form submission setup for:", form);
 
-    // Form submit olayını doğrudan ele al
-    form.addEventListener("submit", (e) => {
+    // Önceki dinleyiciyi kaldır (event-manager veya tekrar setup çağrıları çift AJAX üretmesin)
+    if (form._wdpSubmitHandler) {
+      form.removeEventListener("submit", form._wdpSubmitHandler);
+      form._wdpSubmitHandler = null;
+    }
+
+    function onWdpFormSubmit(e) {
       e.preventDefault();
       safeLog("Form submitted");
 
@@ -887,9 +1019,22 @@ ${createCartItemsHTML([])}
       }
       uniqueKeyInput.value = uniqueKey;
 
-      // Form verilerini gönder
-      submitFormData(form, isCheckout);
-    });
+      const proceedAjax = () => {
+        submitFormData(form, isCheckout);
+      };
+
+      // Sayfa uzun süre açık kaldığında (özellikle .wdp-donation-form) nonce / oturum güncelle, sonra gönder
+      if (refreshWdpAjaxNonces && typeof refreshWdpAjaxNonces === "function") {
+        refreshWdpAjaxNonces()
+          .then(() => proceedAjax())
+          .catch(() => proceedAjax());
+      } else {
+        proceedAjax();
+      }
+    }
+
+    form._wdpSubmitHandler = onWdpFormSubmit;
+    form.addEventListener("submit", form._wdpSubmitHandler);
 
     // Input alanlarına olay dinleyicileri ekle
     form.querySelectorAll('input[type="text"], input[type="tel"], input[type="number"]').forEach((input) => {

@@ -16,6 +16,10 @@
     INITIAL_CHECK_DELAY: 0,           // Initial check delay (removed - instant)
     DOM_READY_DELAY: 0,               // DOM ready execution delay (removed - instant)
     FALLBACK_CHECK_DELAY: 100,       // Fallback check delay (reduced from 1000ms)
+    /** Sepete eklemeden önce nonce yenileme isteğini en fazla bu kadar sıklıkla yap (ms) */
+    NONCE_REFRESH_TTL_MS: 180000,    // 3 dakika — gereksiz round-trip azaltır
+    /** Sepet fragment AJAX yeniden deneme gecikmesi (ms) */
+    CART_FRAGMENT_RETRY_DELAY: 800,
     LIVE_REGION_DELAY: 0,            // Live region announcement delay (removed - instant)
     SHAREHOLDER_RETRY_DELAY: 0,       // Shareholder form setup retry delay (removed - instant)
     MODAL_OPEN_DELAY: 0,              // Modal open delay (removed - instant open)

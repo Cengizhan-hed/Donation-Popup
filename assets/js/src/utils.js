@@ -215,6 +215,120 @@
     return ""
   }
 
+  /**
+   * Sunucudan gelen nonce haritasını window.wdp_ajax ile birleştirir (sayfa uzun süre açık kaldığında gerekli).
+   */
+  function mergeWdpAjaxNonces(nonces) {
+    if (!nonces || typeof window.wdp_ajax === "undefined") {
+      return;
+    }
+    window.wdp_ajax.nonces = Object.assign({}, window.wdp_ajax.nonces || {}, nonces);
+  }
+
+  const WDP_NONCE_STORAGE_KEY = "wdp_nonces_refreshed_at";
+
+  function getNonceRefreshTtlMs() {
+    const timing = window.WDPApp && window.WDPApp.constants && window.WDPApp.constants.TIMING;
+    return (timing && typeof timing.NONCE_REFRESH_TTL_MS === "number" && timing.NONCE_REFRESH_TTL_MS > 0)
+      ? timing.NONCE_REFRESH_TTL_MS
+      : 180000;
+  }
+
+  function markNoncesRefreshedNow() {
+    try {
+      if (typeof sessionStorage !== "undefined") {
+        sessionStorage.setItem(WDP_NONCE_STORAGE_KEY, String(Date.now()));
+      }
+    } catch (e) {
+      /* private / disabled storage */
+    }
+  }
+
+  function shouldSkipNonceNetworkRequest(force) {
+    if (force) {
+      return false;
+    }
+    try {
+      if (typeof sessionStorage === "undefined") {
+        return false;
+      }
+      const raw = sessionStorage.getItem(WDP_NONCE_STORAGE_KEY);
+      if (!raw) {
+        return false;
+      }
+      const last = parseInt(raw, 10);
+      if (Number.isNaN(last)) {
+        return false;
+      }
+      return Date.now() - last < getNonceRefreshTtlMs();
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /**
+   * Oturum için taze AJAX nonce'larını admin-ajax üzerinden alır (önceki nonce gerekmez).
+   * @param {{ force?: boolean }} options — force: TTL yok say (sekme görünür olunca / kurtarma)
+   */
+  function refreshWdpAjaxNonces(options) {
+    const force = options && options.force === true;
+    const ajaxUrl = window.wdp_ajax && window.wdp_ajax.ajax_url;
+    if (!ajaxUrl) {
+      return Promise.resolve(false);
+    }
+
+    if (shouldSkipNonceNetworkRequest(force)) {
+      return Promise.resolve(true);
+    }
+
+    if (typeof window.jQuery !== "undefined" && window.jQuery.ajax) {
+      return new Promise((resolve) => {
+        window.jQuery.ajax({
+          url: ajaxUrl,
+          type: "POST",
+          data: { action: "wdp_get_fresh_nonces" },
+          dataType: "json",
+          complete: function() {
+            resolve(true);
+          },
+          success: function(data) {
+            if (data && data.success && data.nonces) {
+              mergeWdpAjaxNonces(data.nonces);
+              markNoncesRefreshedNow();
+            }
+          },
+        });
+      });
+    }
+
+    const body = new URLSearchParams();
+    body.set("action", "wdp_get_fresh_nonces");
+
+    return fetch(ajaxUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: body.toString(),
+      credentials: "same-origin",
+    })
+      .then((r) => r.json())
+      .then((data) => {
+        if (data && data.success && data.nonces) {
+          mergeWdpAjaxNonces(data.nonces);
+          markNoncesRefreshedNow();
+        }
+        return true;
+      })
+      .catch(() => false);
+  }
+
+  if (typeof document !== "undefined" && document.addEventListener) {
+    document.addEventListener("visibilitychange", function wdpNonceRefreshOnVisible() {
+      if (document.visibilityState === "visible") {
+        refreshWdpAjaxNonces({ force: true }).catch(function() {});
+      }
+    });
+  }
+
   const FOCUSABLE_SELECTORS = [
     'a[href]',
     'button:not([disabled])',
@@ -414,6 +528,8 @@
     escapeHtml,
     safeLog,
     getAjaxNonce,
+    mergeWdpAjaxNonces,
+    refreshWdpAjaxNonces,
     getFocusableElements,
     focusFirstElement,
     activateFocusTrap,

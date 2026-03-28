@@ -43,11 +43,11 @@
  * Plugin Name: WooCommerce Donation Modal Popup
  * Description: WooCommerce ürünleri için bağış formu açılır penceresi oluşturur (Tüm temalarla uyumlu). Bu eklenti Hedef Derneği tarafından hazırlanmaktadır.
  * Author: Hedef Derneği
- * Version: 10.2.0
+ * Version: 10.2.1
  * Requires at least: 5.0
- * Tested up to: 6.4
+ * Tested up to: 6.7
  * WC requires at least: 3.0
- * WC tested up to: 8.5
+ * WC tested up to: 9.0
  * License: GPLv2 or later
  * Text Domain: woo-donation-popup
  * 
@@ -69,7 +69,7 @@ add_action('before_woocommerce_init', function() {
 });
 
 // Eklenti versiyonunu güncelle
-define('WDP_VERSION', '10.2.0');
+define('WDP_VERSION', '10.2.1');
 define('WDP_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('WDP_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('WDP_ASSET_VERSION', get_option('wdp_cache_version', WDP_VERSION));
@@ -301,8 +301,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Form gönderimlerini izle
     document.addEventListener('submit', function(e) {
         // Eğer form bir bağış formu ise
-        if (e.target.classList.contains('wdp-direct-form') || 
-            e.target.closest('.wdp-modal') !== null) {
+        if (e.target.classList.contains('wdp-direct-form') ||
+            e.target.closest('.wdp-modal') !== null ||
+            e.target.closest('.wdp-donation-form') !== null) {
             // Hata mesajlarını hemen gizle
             window.WDP.hideErrorMessages();
             
@@ -321,33 +322,50 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // AJAX tamamlandığında da kontrol et
+    // AJAX tamamlandığında (tüm site AJAX'larında aşırı tetiklenmesin diye throttle)
     if (typeof jQuery !== 'undefined') {
+        var wdpAjaxHideThrottleMs = 400;
+        var wdpAjaxHideLast = 0;
         jQuery(document).ajaxComplete(function() {
-            window.WDP.hideErrorMessages();
-        });
-        
-        // AJAX başladığında da kontrol et
-        jQuery(document).ajaxSend(function() {
+            var now = Date.now();
+            if (now - wdpAjaxHideLast < wdpAjaxHideThrottleMs) {
+                return;
+            }
+            wdpAjaxHideLast = now;
             window.WDP.hideErrorMessages();
         });
     }
-    
-    // MutationObserver kullanarak DOM değişikliklerini izle
-    var observer = new MutationObserver(function(mutations) {
-        mutations.forEach(function(mutation) {
-            if (mutation.addedNodes && mutation.addedNodes.length > 0) {
-                // Yeni eklenen elementler arasında hata mesajı olabilir
-                window.WDP.hideErrorMessages();
+
+    // Yalnızca bağış köklerinde DOM izle + debounce (checkout vb. WC uyarılarını gereksiz gizleme)
+    var wdpHideErrorsTimer = null;
+    function wdpScheduleHideErrorMessages() {
+        if (wdpHideErrorsTimer) {
+            clearTimeout(wdpHideErrorsTimer);
+        }
+        wdpHideErrorsTimer = setTimeout(function() {
+            wdpHideErrorsTimer = null;
+            window.WDP.hideErrorMessages();
+        }, 200);
+    }
+
+    var wdpObserveRoots = document.querySelectorAll('.wdp-modal, .wdp-donation-form');
+    if (wdpObserveRoots.length) {
+        var wdpDomObserver = new MutationObserver(function(mutations) {
+            var relevant = false;
+            for (var m = 0; m < mutations.length; m++) {
+                if (mutations[m].addedNodes && mutations[m].addedNodes.length) {
+                    relevant = true;
+                    break;
+                }
+            }
+            if (relevant) {
+                wdpScheduleHideErrorMessages();
             }
         });
-    });
-    
-    // Tüm body'yi izle
-    observer.observe(document.body, {
-        childList: true,
-        subtree: true
-    });
+        wdpObserveRoots.forEach(function(root) {
+            wdpDomObserver.observe(root, { childList: true, subtree: true });
+        });
+    }
 });
    </script>
    <?php

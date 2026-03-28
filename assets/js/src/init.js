@@ -24,8 +24,8 @@
  * 3. Live region oluşturma (accessibility)
  * 4. Inline style temizleme
  * 5. Side cart kaydetme
- * 6. Event listener'ları başlatma (bir kez)
- * 7. Form başlatma (her çağrıda)
+ * 6. Form başlatma (her çağrıda) — document submit yedeklerinden önce
+ * 7. Event listener'ları başlatma (bir kez)
  * 8. Fallback kontrol (100ms sonra)
  * 9. Window load event (tüm script'ler yüklendikten sonra)
  * 
@@ -98,6 +98,13 @@
       cart.saveSideCartElements();
     }
 
+    // ✅ Formları önce bağla (submit handler + _wdpSubmitHandler), sonra document dinleyicileri —
+    // böylece ilk gönderimde yedek listener gereksiz setup tetiklemez.
+    const formInitializer = getModule('formInitializer');
+    if (formInitializer && typeof formInitializer.inline === 'function') {
+      formInitializer.inline();
+    }
+
     // ✅ GÜVENLİ: Sadece event listener'lar için flag kontrolü (gereksiz tekrar önlenir)
     if (!listenersInitialized) {
       const eventManager = getModule('eventManager');
@@ -105,12 +112,6 @@
         eventManager.init();
         listenersInitialized = true; // ✅ Sadece listener'lar için flag
       }
-    }
-
-    // ✅ GÜVENLİ: Form başlatma her çağrıda çalışır (yeni formlar için gerekli)
-    const formInitializer = getModule('formInitializer');
-    if (formInitializer && typeof formInitializer.inline === 'function') {
-      formInitializer.inline();
     }
 
     // Sayfa yüklendikten sonra da bir kez daha kontrol et (bazı temalar için) - Optimized delay
@@ -123,15 +124,6 @@
           moduleLoader.update();
         }
         
-        // ✅ GÜVENLİ: Event listener'lar için flag kontrolü (gereksiz tekrar önlenir)
-        // Note: setTimeout içinde flag kontrolü yok, çünkü bazı temalar için gerekli olabilir
-        // Ama zaten yukarıda flag kontrolü var, buradaki çağrı sadece modül güncellemesi için
-        const eventManager = getModule('eventManager');
-        if (eventManager && typeof eventManager.init === 'function' && !listenersInitialized) {
-          eventManager.init();
-          listenersInitialized = true;
-        }
-        
         // Side cart elementlerini tekrar kaydet
         if (cart && typeof cart.saveSideCartElements === 'function') {
           cart.saveSideCartElements();
@@ -142,9 +134,15 @@
           dom.removeInlineStylesFromTitles();
         }
         
-        // Formları tekrar başlat
+        // Formları önce, event listener yedekleri sonra
         if (formInitializer && typeof formInitializer.inline === 'function') {
           formInitializer.inline();
+        }
+
+        const eventManager = getModule('eventManager');
+        if (eventManager && typeof eventManager.init === 'function' && !listenersInitialized) {
+          eventManager.init();
+          listenersInitialized = true;
         }
       }, fallbackDelay);
     }

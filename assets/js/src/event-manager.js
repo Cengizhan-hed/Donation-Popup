@@ -103,27 +103,33 @@
         }
       });
 
-      // Form submit event
+      // Form submit: yalnızca henüz bağlanmamış formlar için yedek (form.js zaten dinliyorsa dokunma —
+      // aksi halde her gönderimde setup tekrarlanır, çoklu dinleyici ve sahte "bağlantı hatası" oluşur)
       document.addEventListener("submit", function(e) {
-        if (e.target.closest(".wdp-modal") || e.target.closest(".wdp-donation-form")) {
-          e.preventDefault();
-          e.stopPropagation();
-          
-          const formElement = e.target;
-          if (formElement) {
-            const currentForm = getModule('form');
-            if (currentForm && typeof currentForm.setup === 'function') {
-              currentForm.setup(formElement);
-            } else {
-              // INSTANT retry (no delay) - use requestAnimationFrame for next tick
-              requestAnimationFrame(function() {
-                const retryForm = getModule('form');
-                if (retryForm && typeof retryForm.setup === 'function') {
-                  retryForm.setup(formElement);
-                }
-              });
+        const formElement = e.target;
+        if (!formElement || formElement.tagName !== "FORM") {
+          return;
+        }
+        if (!formElement.closest(".wdp-modal") && !formElement.closest(".wdp-donation-form")) {
+          return;
+        }
+        if (formElement._wdpSubmitHandler) {
+          return;
+        }
+
+        e.preventDefault();
+        e.stopPropagation();
+
+        const currentForm = getModule('form');
+        if (currentForm && typeof currentForm.setup === 'function') {
+          currentForm.setup(formElement);
+        } else {
+          requestAnimationFrame(function() {
+            const retryForm = getModule('form');
+            if (retryForm && typeof retryForm.setup === 'function') {
+              retryForm.setup(formElement);
             }
-          }
+          });
         }
       });
 
