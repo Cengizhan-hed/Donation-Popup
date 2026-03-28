@@ -355,10 +355,13 @@
   --wdp-input-color: #1f2937;
   --wdp-input-radius: 10px;
   --wdp-input-min-height: 48px;
-  --wdp-input-padding-y: 12px;
+  --wdp-input-padding-y: 10px;
   --wdp-input-padding-x: 16px;
+  /* Başlık yanı fiyat rozeti — mobil/masaüstü aynı tipometri */
+  --wdp-header-price-font-size: 15px;
   --wdp-input-font-size: 16px;
   --wdp-input-line-height: 1.5;
+  --wdp-textarea-min-height: 50px;
 
   /* Labels & placeholders */
   --wdp-label-color: #374151;

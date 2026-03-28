@@ -540,9 +540,9 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-content.wdp-share
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-content > :is(input[type="text"], input[type="tel"]) {
   margin: 0;
   /* Modern logical properties for RTL/LTR support */
-  padding-block: var(--wdp-input-padding-y, 12px);
+  padding-block: var(--wdp-input-padding-y, 10px);
   padding-inline: var(--wdp-input-padding-x, 16px);
-  padding: var(--wdp-input-padding-y, 12px) var(--wdp-input-padding-x, 16px); /* Fallback for older browsers */
+  padding: var(--wdp-input-padding-y, 10px) var(--wdp-input-padding-x, 16px); /* Fallback for older browsers */
   width: 100%;
   box-sizing: border-box;
   display: block;
@@ -573,11 +573,11 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-content > button 
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-content > textarea {
-  min-height: 96px;
+  min-height: var(--wdp-textarea-min-height, 50px);
   /* Modern logical properties for RTL/LTR support */
-  padding-block: var(--wdp-input-padding-y, 12px);
+  padding-block: var(--wdp-input-padding-y, 10px);
   padding-inline: var(--wdp-input-padding-x, 16px);
-  padding: var(--wdp-input-padding-y, 12px) var(--wdp-input-padding-x, 16px); /* Fallback for older browsers */
+  padding: var(--wdp-input-padding-y, 10px) var(--wdp-input-padding-x, 16px); /* Fallback for older browsers */
   resize: vertical;
   border: 1px solid var(--wdp-border-soft-gray, #e8eaed);
   border-radius: 14px;

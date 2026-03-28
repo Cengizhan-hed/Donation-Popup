@@ -63,7 +63,7 @@ html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content form, .wdp-
   border: 1px solid var(--wdp-border-soft-gray, #e8eaed);
   border-radius: 14px;
   background: var(--wdp-bg-pure-white, #ffffff);
-  padding: var(--wdp-input-padding-y, 12px) var(--wdp-input-padding-x, 16px);
+  padding: var(--wdp-input-padding-y, 10px) var(--wdp-input-padding-x, 16px);
   box-sizing: border-box;
   min-height: var(--wdp-input-min-height, 48px);
   height: var(--wdp-input-min-height, 48px);
@@ -88,7 +88,7 @@ html body :is(.wdp-modal, .wdp-donation-form) input.wdp-custom-price-input[type=
   border: 1px solid var(--wdp-border-soft-gray, #e8eaed);
   border-radius: 14px;
   background: var(--wdp-bg-pure-white, #ffffff);
-  padding: var(--wdp-input-padding-y, 12px) var(--wdp-input-padding-x, 16px);
+  padding: var(--wdp-input-padding-y, 10px) var(--wdp-input-padding-x, 16px);
   box-sizing: border-box;
   min-height: var(--wdp-input-min-height, 48px);
   height: var(--wdp-input-min-height, 48px);
