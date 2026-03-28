@@ -4,7 +4,10 @@
 html body .wdp-modal .wdp-modal-header {
   font-family: var(--wdp-font-family);
   position: relative;
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px;
   width: 100%;
   margin: 0;
   padding: 0 0 var(--wdp-space-3);
@@ -13,9 +16,15 @@ html body .wdp-modal .wdp-modal-header {
 
 /* Modal title wrapper - flexbox for title and price */
 html body .wdp-modal .wdp-modal-header .wdp-modal-title-wrapper {
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  flex: 1 1 auto;
+  min-width: 0;
   width: 100%;
-  padding-right: 40px; /* Close button için alan */
+  gap: 10px;
+  padding-right: 0; /* Close button artık akışta */
   box-sizing: border-box;
 }
 
@@ -34,16 +43,16 @@ html body .wdp-donation-form .wdp-modal-header {
   box-sizing: border-box;
 }
 
-/* Modal close button with high specificity - Clean CSS without */
-/* CRITICAL: Popup modal close button - position on underline */
-/* CRITICAL: Maximum specificity - html body ile tema override koruması */
-html body .wdp-modal :is(.wdp-modal-header, .wdp-modal-content) .wdp-modal-close,
-html body .wdp-modal .wdp-modal-close {
+/* Modal close: doğrudan .wdp-modal-content çocuğu (PHP) — flex/header içinde değil, konum her zaman kart köşesi */
+html body .wdp-modal .wdp-modal-content > .wdp-modal-close {
   font-family: var(--wdp-font-family);
   position: absolute;
-  /* Kullanıcı isteği: popup çarpı butonu başlıkla yatayda hizalı ve biraz daha yukarıda olsun */
-  top: -2px;
-  right: 0;
+  left: auto;
+  bottom: auto;
+  /* Kartın iç yüzeyinin gerçek sağ üstü (küçük inset; padding ile çakışmaz) */
+  top: max(6px, env(safe-area-inset-top, 0px));
+  right: max(6px, env(safe-area-inset-right, 0px));
+  flex: 0 0 auto;
   width: 32px;
   height: 32px;
   margin: 0;
@@ -52,20 +61,30 @@ html body .wdp-modal .wdp-modal-close {
   border-radius: 0;
   background: transparent;
   color: var(--wdp-close-color, #6b7280);
-  font-size: 2.1rem;
+  font-size: 22px;
   line-height: 1;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  transition: var(--wdp-transition-color);
+  transition: color 180ms ease, background-color 180ms ease, border-color 180ms ease, transform 180ms ease;
   outline: none;
   text-align: center;
   text-transform: none;
   letter-spacing: normal;
   word-spacing: normal;
   box-sizing: border-box;
-  z-index: 1;
+  z-index: 5;
+}
+
+/* Modal header: price should stay next to title (not pushed away) */
+html body .wdp-modal .wdp-modal-header .wdp-product-price {
+  margin-left: 10px;
+}
+
+/* Keep price from sliding under the absolute close button */
+html body .wdp-modal .wdp-modal-header .wdp-modal-title-wrapper {
+  padding-right: 48px;
 }
 
 /* In-page form close button - normal positioning */
@@ -112,6 +131,16 @@ html body .wdp-donation-form .wdp-modal-close:focus {
   box-shadow: none;
 }
 
+html body .wdp-modal .wdp-modal-close:active,
+html body .wdp-donation-form .wdp-modal-close:active {
+  transform: scale(0.98);
+}
+
+html body .wdp-modal .wdp-modal-close:focus-visible,
+html body .wdp-donation-form .wdp-modal-close:focus-visible {
+  box-shadow: 0 0 0 3px rgba(30, 115, 190, 0.25);
+}
+
 /* Title styles with high specificity - popup header title */
 html body .wdp-modal .wdp-modal-header .wdp-modal-title,
 html body .wdp-modal .wdp-modal-header .wdp-modal-title[style],
@@ -141,22 +170,40 @@ html body .wdp-modal .wdp-modal-header .wdp-modal-title[style*="font-size"] {
 
 html body :is(.wdp-modal .wdp-modal-header, .wdp-donation-form .wdp-modal-content) .wdp-product-price {
   font-family: var(--wdp-font-family);
-  font-size: 1rem; /* 16px - biraz daha büyük */
-  font-weight: 400;
+  font-size: 0.95rem;
+  font-weight: 700;
   line-height: 1.2;
-  color: var(--wdp-button-primary, #1e73be); /* Mavi renk */
+  color: var(--wdp-button-primary, #1e73be);
   margin: 0;
-  margin-left: 12px; /* Başlıktan biraz boşluk */
-  padding: 0;
-  display: inline;
+  margin-left: auto;
+  padding: 6px 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   white-space: nowrap;
   vertical-align: baseline;
   box-sizing: border-box;
+  background: rgba(30, 115, 190, 0.08);
+  border: 1px solid rgba(30, 115, 190, 0.18);
+  border-radius: 999px;
+}
+
+html body :is(.wdp-modal .wdp-modal-header, .wdp-donation-form .wdp-modal-content) .wdp-product-price :is(del, ins) {
+  text-decoration: none;
+}
+
+html body :is(.wdp-modal .wdp-modal-header, .wdp-donation-form .wdp-modal-content) .wdp-product-price del {
+  opacity: 0.7;
+  margin-right: 6px;
 }
 
 /* Form title wrapper - inline for title and price */
 html body .wdp-donation-form .wdp-modal-content .wdp-form-title-wrapper {
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  gap: 10px;
   width: 100%;
   margin: 0;
   padding: 0;

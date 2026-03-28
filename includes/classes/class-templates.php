@@ -154,6 +154,7 @@ class WDP_Templates {
         <!-- Modal -->
         <div id="<?php echo esc_attr($modal_id); ?>" class="wdp-modal <?php echo esc_attr($custom_class); ?>" role="dialog" aria-modal="true" aria-labelledby="<?php echo esc_attr($modal_id); ?>-title" aria-describedby="<?php echo esc_attr($modal_id); ?>-description" style="display:none;visibility:hidden;opacity:0;">
             <div class="wdp-modal-content">
+                <button type="button" class="wdp-modal-close" aria-label="<?php echo esc_attr__('Modalı Kapat', 'woo-donation-popup'); ?>">&times;</button>
                 <div class="wdp-modal-header">
                     <div class="wdp-modal-title-wrapper">
                         <span id="<?php echo esc_attr($modal_id); ?>-title" class="wdp-modal-title"><?php echo wp_kses_post($product_name); ?></span>
@@ -161,7 +162,6 @@ class WDP_Templates {
                         <span class="wdp-product-price"><?php echo wp_kses_post($formatted_price); ?></span>
                         <?php endif; ?>
                     </div>
-                    <button type="button" class="wdp-modal-close" aria-label="<?php echo esc_attr__('Modalı Kapat', 'woo-donation-popup'); ?>">&times;</button>
                 </div>
                 <div id="<?php echo esc_attr($modal_id); ?>-description" class="screen-reader-text"><?php echo esc_html(sprintf(__('%s için bağış formu', 'woo-donation-popup'), $product_name)); ?></div>
                 

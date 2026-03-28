@@ -117,6 +117,13 @@ html body .wdp-open-modal {
   min-width: var(--wdp-touch-target-min, 44px);
 }
 
+/* Popup kapatma: genel 44px touch kuralı × ikonunu büyütüp dikeyde aşağı kaydırır; konum shared.css ile köşededir */
+html body .wdp-modal .wdp-modal-content > button.wdp-modal-close {
+  min-height: 32px;
+  min-width: 32px;
+  padding: 0;
+}
+
 /* Skip link for keyboard navigation */
 html body .wdp-skip-link {
   position: absolute;
