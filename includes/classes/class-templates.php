@@ -89,7 +89,9 @@ class WDP_Templates {
 
         // Buton metni boşsa ayarlardan veya varsayılan değeri kullan
         if (empty($button_text)) {
-            $button_settings = get_option('wdp_button_settings', array());
+            $button_settings = WDP_Utils::normalize_legacy_popup_button_text(
+                get_option('wdp_button_settings', array())
+            );
             $button_text = isset($button_settings['popup_button_text']) ? $button_settings['popup_button_text'] : __('Bağış Yap', 'woo-donation-popup');
         }
 
@@ -221,7 +223,9 @@ class WDP_Templates {
                     <!-- Butonlar -->
                     <?php
                     // Buton metinlerini ve düzenini ayarlardan al
-                    $button_settings = get_option('wdp_button_settings', array());
+                    $button_settings = WDP_Utils::normalize_legacy_popup_button_text(
+                        get_option('wdp_button_settings', array())
+                    );
                     $button_text_add_to_cart = !empty($button_settings['button_text_add_to_cart']) ? $button_settings['button_text_add_to_cart'] : __('Sepete Ekle', 'woo-donation-popup');
                     $button_text_go_checkout = !empty($button_settings['button_text_go_checkout']) ? $button_settings['button_text_go_checkout'] : __('Ödemeye Git', 'woo-donation-popup');
                     $form_button_order = !empty($button_settings['form_button_order']) ? $button_settings['form_button_order'] : 'add_first';
@@ -406,7 +410,9 @@ class WDP_Templates {
                     <!-- Butonlar -->
                     <?php
                     // Buton metinlerini ve düzenini ayarlardan al
-                    $button_settings = get_option('wdp_button_settings', array());
+                    $button_settings = WDP_Utils::normalize_legacy_popup_button_text(
+                        get_option('wdp_button_settings', array())
+                    );
                     $button_text_add_to_cart = !empty($button_settings['button_text_add_to_cart']) ? $button_settings['button_text_add_to_cart'] : __('Sepete Ekle', 'woo-donation-popup');
                     $button_text_go_checkout = !empty($button_settings['button_text_go_checkout']) ? $button_settings['button_text_go_checkout'] : __('Ödemeye Git', 'woo-donation-popup');
                     $form_button_order = !empty($button_settings['form_button_order']) ? $button_settings['form_button_order'] : 'add_first';

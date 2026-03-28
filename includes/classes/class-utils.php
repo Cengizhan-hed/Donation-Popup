@@ -228,6 +228,19 @@ class WDP_Utils {
         // Farklı ürünlerin bağışları birbirine karışmaz
         return floatval($total);
     }
+
+    /**
+     * Eski kurulumlar: sadece button_text_donate kayıtlıysa popup buton metnine yansıtır.
+     *
+     * @param array $settings get_option('wdp_button_settings') ham dizisi.
+     * @return array
+     */
+    public static function normalize_legacy_popup_button_text( array $settings ) {
+        if (!array_key_exists('popup_button_text', $settings) && !empty($settings['button_text_donate'])) {
+            $settings['popup_button_text'] = $settings['button_text_donate'];
+        }
+        return $settings;
+    }
 }
 
 // Note: init() is called by Woo_Donation_Popup::__construct()

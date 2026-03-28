@@ -406,10 +406,13 @@ class WDP_Assets {
      */
     private static function get_button_texts() {
         // Buton ayarlarını al
-        $button_settings = get_option('wdp_button_settings', array());
+        $button_settings = WDP_Utils::normalize_legacy_popup_button_text(
+            get_option('wdp_button_settings', array())
+        );
         
-        // Varsayılan değerler
+        // Varsayılan değerler (popup_button_text: şablon + JS için tek bağış butonu metni kaynağı)
         $defaults = array(
+            'popup_button_text'       => __('Bağış Yap', 'woo-donation-popup'),
             'button_text_donate'      => __('Bağış Yap', 'woo-donation-popup'),
             'button_text_add_to_cart' => __('Sepete Ekle', 'woo-donation-popup'),
             'button_text_go_checkout' => __('Ödemeye Git', 'woo-donation-popup'),
@@ -418,7 +421,7 @@ class WDP_Assets {
         $settings = wp_parse_args($button_settings, $defaults);
         
         $result = array(
-            'donate'      => $settings['button_text_donate'],
+            'donate'      => $settings['popup_button_text'],
             'add_to_cart' => $settings['button_text_add_to_cart'],
             'go_checkout' => $settings['button_text_go_checkout'],
         );

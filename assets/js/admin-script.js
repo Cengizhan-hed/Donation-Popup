@@ -12,24 +12,28 @@
     // Başarı mesajı göster
     function showSuccessMessage(message) {
       $noticeContainer
-        .removeClass("notice-error")
-        .addClass("notice-success")
+        .removeClass("notice-error wdp-admin-notice--error")
+        .addClass("notice-success wdp-admin-notice--success")
         .html("<p>" + message + "</p>")
-        .show()
+        .stop(true, true)
+        .css({ opacity: 1, display: "block" })
+        .addClass("wdp-admin-notice--visible")
 
       // 3 saniye sonra mesajı gizle
       setTimeout(() => {
-        $noticeContainer.fadeOut()
-      }, 3000)
+        $noticeContainer.removeClass("wdp-admin-notice--visible").fadeOut()
+      }, 3200)
     }
 
     // Hata mesajı göster
     function showErrorMessage(message) {
       $noticeContainer
-        .removeClass("notice-success")
-        .addClass("notice-error")
+        .removeClass("notice-success wdp-admin-notice--success")
+        .addClass("notice-error wdp-admin-notice--error")
         .html("<p>" + message + "</p>")
-        .show()
+        .stop(true, true)
+        .css({ opacity: 1, display: "block" })
+        .addClass("wdp-admin-notice--visible")
     }
 
     // Form tipi mutual exclusivity - bir form tipi açıldığında diğerleri kapansın
@@ -278,20 +282,109 @@
       $temp.remove()
     }
 
-    // Tab geçişi
+    var WDP_TAB_KEYS = [
+      "products",
+      "modal-layout",
+      "normal-form",
+      "shareholder-form",
+      "progress-bar",
+      "success-screen",
+    ]
+
+    function normalizeTabHash(raw) {
+      if (!raw) {
+        return null
+      }
+      var h = String(raw).replace(/^#/, "")
+      if (WDP_TAB_KEYS.indexOf(h) !== -1) {
+        return h
+      }
+      var legacy = h.match(/^wdp-(.+)-tab$/)
+      if (legacy && WDP_TAB_KEYS.indexOf(legacy[1]) !== -1) {
+        return legacy[1]
+      }
+      return null
+    }
+
+    function wdpSyncMapCards(tabKey) {
+      $(".wdp-map-card").removeClass("is-active")
+      $(".wdp-map-card[data-tab=\"" + tabKey + "\"]").addClass("is-active")
+    }
+
+    function wdpActivateTab(tabKey, opts) {
+      opts = opts || {}
+      if (WDP_TAB_KEYS.indexOf(tabKey) === -1) {
+        return
+      }
+      $(".wdp-tab-content").removeClass("wdp-tab-active").attr("aria-hidden", "true")
+      $(".nav-tab")
+        .removeClass("nav-tab-active")
+        .attr("aria-selected", "false")
+
+      $(".nav-tab[data-tab=\"" + tabKey + "\"]")
+        .addClass("nav-tab-active")
+        .attr("aria-selected", "true")
+      $("#wdp-" + tabKey + "-tab")
+        .addClass("wdp-tab-active")
+        .attr("aria-hidden", "false")
+
+      wdpSyncMapCards(tabKey)
+
+      if (!opts.skipHistory) {
+        if (window.history && window.history.replaceState) {
+          window.history.replaceState(null, "", "#" + tabKey)
+        } else {
+          window.location.hash = tabKey
+        }
+      }
+
+      if (!opts.skipScroll) {
+        var $navWrap = $(".wdp-nav-tab-wrapper, .nav-tab-wrapper").first()
+        if ($navWrap.length && $navWrap[0].scrollIntoView) {
+          $navWrap[0].scrollIntoView({ block: "nearest", behavior: "smooth" })
+        }
+      }
+    }
+
+    // Tab geçişi (üst menü)
     $(".nav-tab").on("click", function (e) {
       e.preventDefault()
-      var $tab = $(this)
-      var targetTab = $tab.data("tab")
-
-      // Tüm tab'ları gizle
-      $(".wdp-tab-content").removeClass("wdp-tab-active")
-      $(".nav-tab").removeClass("nav-tab-active")
-
-      // Seçili tab'ı göster
-      $tab.addClass("nav-tab-active")
-      $("#wdp-" + targetTab + "-tab").addClass("wdp-tab-active")
+      wdpActivateTab($(this).data("tab"))
     })
+
+    // Sekme haritası kartları
+    $(document).on("click", ".wdp-map-card", function () {
+      var key = $(this).data("tab")
+      if (key) {
+        wdpActivateTab(key)
+      }
+    })
+
+    var wdpHashBoot = true
+
+    // Sayfa açılışında veya geri/ileri: hash ile sekme
+    function wdpApplyHashTab() {
+      var raw = window.location.hash || ""
+      var key = normalizeTabHash(raw)
+      if (key) {
+        wdpActivateTab(key, { skipScroll: wdpHashBoot })
+        wdpHashBoot = false
+        return
+      }
+      // Yalnızca hash tamamen boşaldığında ürün sekmesine dön (#wdp-normal-sec-* gibi iç anchor’lar ürün sekmesine atlama yapmaz)
+      var hashCleared = raw === "" || raw === "#"
+      if (!wdpHashBoot && hashCleared) {
+        wdpActivateTab("products", { skipHistory: true })
+      }
+      wdpHashBoot = false
+    }
+    wdpApplyHashTab()
+    $(window).on("hashchange", wdpApplyHashTab)
+
+    var $initialTab = $(".wdp-nav-tab-wrapper .nav-tab.nav-tab-active").first()
+    if ($initialTab.length) {
+      wdpSyncMapCards($initialTab.data("tab"))
+    }
 
     // Normal form ayarlarını kaydet
     $("#wdp-normal-form-settings-form").on("submit", function (e) {
@@ -467,7 +560,7 @@ jQuery(document).ready(function($) {
     var $noticeContainer = $("#wdp-admin-notices")
     if ($noticeContainer.length === 0) {
       // Eğer notice container yoksa, formun üstüne ekle
-      $noticeContainer = $('<div id="wdp-admin-notices" class="notice"></div>')
+      $noticeContainer = $('<div id="wdp-admin-notices" class="notice wdp-admin-notice"></div>')
       $("#wdp-modal-layout-settings-form").before($noticeContainer)
     }
     $noticeContainer
@@ -487,7 +580,7 @@ jQuery(document).ready(function($) {
     var $noticeContainer = $("#wdp-admin-notices")
     if ($noticeContainer.length === 0) {
       // Eğer notice container yoksa, formun üstüne ekle
-      $noticeContainer = $('<div id="wdp-admin-notices" class="notice"></div>')
+      $noticeContainer = $('<div id="wdp-admin-notices" class="notice wdp-admin-notice"></div>')
       $("#wdp-modal-layout-settings-form").before($noticeContainer)
     }
     $noticeContainer
@@ -561,7 +654,7 @@ jQuery(document).ready(function($) {
           var msg = response.data && response.data.message ? response.data.message : wdp_admin.save_success
           var $noticeContainer = $("#wdp-admin-notices")
           if ($noticeContainer.length === 0) {
-            $noticeContainer = $('<div id="wdp-admin-notices" class="notice"></div>')
+            $noticeContainer = $('<div id="wdp-admin-notices" class="notice wdp-admin-notice"></div>')
             $form.before($noticeContainer)
           }
           $noticeContainer
@@ -576,7 +669,7 @@ jQuery(document).ready(function($) {
           var errorMsg = response && response.data && response.data.message ? response.data.message : wdp_admin.save_error
           var $noticeContainer = $("#wdp-admin-notices")
           if ($noticeContainer.length === 0) {
-            $noticeContainer = $('<div id="wdp-admin-notices" class="notice"></div>')
+            $noticeContainer = $('<div id="wdp-admin-notices" class="notice wdp-admin-notice"></div>')
             $form.before($noticeContainer)
           }
           $noticeContainer
@@ -589,7 +682,7 @@ jQuery(document).ready(function($) {
       error: function() {
         var $noticeContainer = $("#wdp-admin-notices")
         if ($noticeContainer.length === 0) {
-          $noticeContainer = $('<div id="wdp-admin-notices" class="notice"></div>')
+          $noticeContainer = $('<div id="wdp-admin-notices" class="notice wdp-admin-notice"></div>')
           $form.before($noticeContainer)
         }
         $noticeContainer

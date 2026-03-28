@@ -58,6 +58,8 @@ class Woo_Donation_Popup_Admin {
         if ($hook != 'woocommerce_page_wdp-popup-settings') {
             return;
         }
+
+        wp_enqueue_style('dashicons');
         
         // Admin stil dosyasını yükle
         wp_enqueue_style(
@@ -88,6 +90,54 @@ class Woo_Donation_Popup_Admin {
             )
         );
     }
+
+    /**
+     * Ayarlar sayfası üst bilgi ve sekme haritası (ne nerede?)
+     */
+    private function render_admin_home_panel() {
+        echo '<div class="wdp-admin-home">';
+        echo '<div class="wdp-admin-map" role="navigation" aria-label="' . esc_attr__('Sekme kısayolları', 'woo-donation-popup') . '">';
+        $map_items = array(
+            array(
+                'tab'   => 'products',
+                'title' => __('Ürün Ayarları', 'woo-donation-popup'),
+                'desc'  => __('Form tipi (çoklu hisse / özel fiyat / progress bar), shortcode, tek veya toplu kayıt.', 'woo-donation-popup'),
+            ),
+            array(
+                'tab'   => 'modal-layout',
+                'title' => __('Modal & Form Görünümü', 'woo-donation-popup'),
+                'desc'  => __('Popup ve sayfa içi form genişliği; masaüstü ve mobil iç boşluklar (padding).', 'woo-donation-popup'),
+            ),
+            array(
+                'tab'   => 'normal-form',
+                'title' => __('Normal Form', 'woo-donation-popup'),
+                'desc'  => __('Modal içi akışa göre sıralı: başlık/kapat, kutu, alanlar, hatalar, form altı butonlar, sayfadaki açan buton.', 'woo-donation-popup'),
+            ),
+            array(
+                'tab'   => 'shareholder-form',
+                'title' => __('Hisseli Form', 'woo-donation-popup'),
+                'desc'  => __('Önce metinler ve düzen, sonra kart/alan renkleri ve sayaç (çoklu hisse açıkken).', 'woo-donation-popup'),
+            ),
+            array(
+                'tab'   => 'progress-bar',
+                'title' => __('Progress Bar Form', 'woo-donation-popup'),
+                'desc'  => __('Ürün kartında progress bar açıksa çubuğun renkleri ve kapsayıcı stili buradan.', 'woo-donation-popup'),
+            ),
+            array(
+                'tab'   => 'success-screen',
+                'title' => __('Başarı & Mini Sepet', 'woo-donation-popup'),
+                'desc'  => __('Bağış sonrası teşekkür ekranı butonları, mesaj kutusu ve mini sepet görünümü.', 'woo-donation-popup'),
+            ),
+        );
+        foreach ($map_items as $item) {
+            echo '<button type="button" class="wdp-map-card" data-tab="' . esc_attr($item['tab']) . '">';
+            echo '<span class="wdp-map-card__title">' . esc_html($item['title']) . '</span>';
+            echo '<span class="wdp-map-card__desc">' . esc_html($item['desc']) . '</span>';
+            echo '</button>';
+        }
+        echo '</div>';
+        echo '</div>';
+    }
     
     /**
      * Ayarlar sayfasını render et
@@ -96,30 +146,38 @@ class Woo_Donation_Popup_Admin {
         // Ürünleri al
         $products = $this->get_products();
         
-        // Sayfa başlığı ve açıklama
-        echo '<div class="wrap">';
-        echo '<h1>' . __('Bağış Popup Ayarları', 'woo-donation-popup') . '</h1>';
-        echo '<p>' . __('Bu sayfadan bağış popup\'ları için ürün ayarlarını ve buton özelleştirmelerini yönetebilirsiniz.', 'woo-donation-popup') . '</p>';
-        
+        echo '<div class="wrap wdp-admin-wrap">';
+        echo '<div class="wdp-admin-title-row">';
+        echo '<h1 class="wdp-admin-title">' . esc_html__('Bağış Popup Ayarları', 'woo-donation-popup') . '</h1>';
+        if (defined('WDP_VERSION')) {
+            echo '<span class="wdp-admin-version" title="' . esc_attr__('Eklenti sürümü', 'woo-donation-popup') . '">';
+            echo esc_html(sprintf(__('Sürüm %s', 'woo-donation-popup'), WDP_VERSION));
+            echo '</span>';
+        }
+        echo '</div>';
+
         // Başarı/hata mesajları için alan
-        echo '<div id="wdp-admin-notices" class="notice" style="display:none;"></div>';
+        echo '<div id="wdp-admin-notices" class="wdp-admin-notice notice" style="display:none;" role="status" aria-live="polite"></div>';
+
+        $this->render_admin_home_panel();
         
         // Tab navigasyonu - mantıksal gruplama ile yeniden sıralandı
-        echo '<nav class="nav-tab-wrapper">';
+        echo '<div class="wdp-admin-shell">';
+        echo '<nav class="nav-tab-wrapper wdp-nav-tab-wrapper" role="tablist" aria-label="' . esc_attr__('Bağış popup ayar sekmeleri', 'woo-donation-popup') . '">';
         // 1) Ürün bazlı fonksiyonellik
-        echo '<a href="#wdp-products-tab" class="nav-tab nav-tab-active" data-tab="products">' . __('Ürün Ayarları', 'woo-donation-popup') . '</a>';
+        echo '<a href="#products" class="nav-tab nav-tab-active" data-tab="products" role="tab" aria-selected="true">' . esc_html__('Ürün Ayarları', 'woo-donation-popup') . '</a>';
         // 2) Global görünüm / layout
-        echo '<a href="#wdp-modal-layout-tab" class="nav-tab" data-tab="modal-layout">' . __('Modal & Form Görünümü', 'woo-donation-popup') . '</a>';
+        echo '<a href="#modal-layout" class="nav-tab" data-tab="modal-layout" role="tab" aria-selected="false">' . esc_html__('Modal & Form Görünümü', 'woo-donation-popup') . '</a>';
         // 3) Form tipleri
-        echo '<a href="#wdp-normal-form-tab" class="nav-tab" data-tab="normal-form">' . __('Normal Form', 'woo-donation-popup') . '</a>';
-        echo '<a href="#wdp-shareholder-form-tab" class="nav-tab" data-tab="shareholder-form">' . __('Hisseli Form', 'woo-donation-popup') . '</a>';
-        echo '<a href="#wdp-progress-bar-tab" class="nav-tab" data-tab="progress-bar">' . __('Progress Bar Form', 'woo-donation-popup') . '</a>';
+        echo '<a href="#normal-form" class="nav-tab" data-tab="normal-form" role="tab" aria-selected="false">' . esc_html__('Normal Form', 'woo-donation-popup') . '</a>';
+        echo '<a href="#shareholder-form" class="nav-tab" data-tab="shareholder-form" role="tab" aria-selected="false">' . esc_html__('Hisseli Form', 'woo-donation-popup') . '</a>';
+        echo '<a href="#progress-bar" class="nav-tab" data-tab="progress-bar" role="tab" aria-selected="false">' . esc_html__('Progress Bar Form', 'woo-donation-popup') . '</a>';
         // 4) İşlem sonrası ekran
-        echo '<a href="#wdp-success-screen-tab" class="nav-tab" data-tab="success-screen">' . __('Başarı & Mini Sepet', 'woo-donation-popup') . '</a>';
+        echo '<a href="#success-screen" class="nav-tab" data-tab="success-screen" role="tab" aria-selected="false">' . esc_html__('Başarı & Mini Sepet', 'woo-donation-popup') . '</a>';
         echo '</nav>';
         
         // Ürün Ayarları Tab - kompakt, kart tabanlı modern görünüm
-        echo '<div id="wdp-products-tab" class="wdp-tab-content wdp-tab-active">';
+        echo '<div id="wdp-products-tab" class="wdp-tab-content wdp-tab-active" role="tabpanel" aria-hidden="false">';
         echo '<div class="wdp-settings-container">';
         // Ürün arama alanı
         echo '<div class="wdp-products-toolbar">';
@@ -127,6 +185,15 @@ class Woo_Donation_Popup_Admin {
         echo '<span class="dashicons dashicons-search" aria-hidden="true"></span>';
         echo '<input type="search" id="wdp-product-search" placeholder="' . esc_attr__('Ürün ara...', 'woo-donation-popup') . '" />';
         echo '</div>';
+        echo '</div>';
+
+        echo '<div class="wdp-tab-help" role="note">';
+        echo '<p class="wdp-tab-help__title">' . esc_html__('Bu sekmede ne yaparsınız?', 'woo-donation-popup') . '</p>';
+        echo '<ul class="wdp-tab-help__list">';
+        echo '<li>' . esc_html__('Her ürün için aynı anda yalnızca bir form modu seçilir: Çoklu Hisse, Özel Fiyat veya Progress Bar — biri açıkken diğerleri kapanır.', 'woo-donation-popup') . '</li>';
+        echo '<li>' . esc_html__('Buton ve Form shortcode’larını sayfaya veya bileşene yapıştırarak o ürünün popup’ını gösterirsiniz.', 'woo-donation-popup') . '</li>';
+        echo '<li>' . esc_html__('Kaydet tek kart için; Tüm Değişiklikleri Kaydet tüm ürünleri sırayla yazar.', 'woo-donation-popup') . '</li>';
+        echo '</ul>';
         echo '</div>';
 
         // Ürün kartları - WooCommerce kategorilerine göre gruplanmış görünüm
@@ -236,38 +303,41 @@ class Woo_Donation_Popup_Admin {
 
         // Toplu güncelleme butonu
         echo '<div class="wdp-bulk-actions">';
-        echo '<button id="wdp-save-all" class="button button-primary">' . __('Tüm Değişiklikleri Kaydet', 'woo-donation-popup') . '</button>';
+        echo '<p class="wdp-bulk-actions__hint">' . esc_html__('Kaydetmediğiniz değişiklikler sayfa yenilenince kaybolur.', 'woo-donation-popup') . '</p>';
+        echo '<div class="wdp-bulk-actions__buttons">';
+        echo '<button type="button" id="wdp-save-all" class="button button-primary button-large wdp-btn-save-all">' . esc_html__('Tüm Değişiklikleri Kaydet', 'woo-donation-popup') . '</button>';
         echo '<span class="spinner"></span>';
-        echo '</div>';
+        echo '</div></div>';
 
         echo '</div>'; // .wdp-settings-container
         echo '</div>'; // #wdp-products-tab
-        
+
+        // Modal Görünüm Ayarları Tab (sekme sırası ile aynı DOM sırası)
+        echo '<div id="wdp-modal-layout-tab" class="wdp-tab-content" role="tabpanel" aria-hidden="true">';
+        $this->render_modal_layout_customization_tab();
+        echo '</div>'; // #wdp-modal-layout-tab
+
         // Normal Form Özelleştirme Tab
-        echo '<div id="wdp-normal-form-tab" class="wdp-tab-content">';
+        echo '<div id="wdp-normal-form-tab" class="wdp-tab-content" role="tabpanel" aria-hidden="true">';
         $this->render_normal_form_customization_tab();
         echo '</div>'; // #wdp-normal-form-tab
         
         // Hisseli Form Özelleştirme Tab
-        echo '<div id="wdp-shareholder-form-tab" class="wdp-tab-content">';
+        echo '<div id="wdp-shareholder-form-tab" class="wdp-tab-content" role="tabpanel" aria-hidden="true">';
         $this->render_shareholder_form_customization_tab();
         echo '</div>'; // #wdp-shareholder-form-tab
-        
-        // Başarı Ekranı Özelleştirme Tab
-        echo '<div id="wdp-success-screen-tab" class="wdp-tab-content">';
-        $this->render_success_screen_customization_tab();
-        echo '</div>'; // #wdp-success-screen-tab
-        
-        // Modal Görünüm Ayarları Tab
-        echo '<div id="wdp-modal-layout-tab" class="wdp-tab-content">';
-        $this->render_modal_layout_customization_tab();
-        echo '</div>'; // #wdp-modal-layout-tab
 
         // Progress Bar Özelleştirme Tab
-        echo '<div id="wdp-progress-bar-tab" class="wdp-tab-content">';
+        echo '<div id="wdp-progress-bar-tab" class="wdp-tab-content" role="tabpanel" aria-hidden="true">';
         $this->render_progress_bar_customization_tab();
         echo '</div>'; // #wdp-progress-bar-tab
         
+        // Başarı Ekranı Özelleştirme Tab
+        echo '<div id="wdp-success-screen-tab" class="wdp-tab-content" role="tabpanel" aria-hidden="true">';
+        $this->render_success_screen_customization_tab();
+        echo '</div>'; // #wdp-success-screen-tab
+
+        echo '</div>'; // .wdp-admin-shell
         echo '</div>'; // .wrap
     }
     
@@ -537,8 +607,10 @@ class Woo_Donation_Popup_Admin {
      * Normal form özelleştirme tab'ını render et
      */
     private function render_normal_form_customization_tab() {
-        // Mevcut ayarları al
-        $button_settings = get_option('wdp_button_settings', array());
+        // Mevcut ayarları al (eski button_text_donate → popup metni admin alanında görünsün)
+        $button_settings = WDP_Utils::normalize_legacy_popup_button_text(
+            get_option('wdp_button_settings', array())
+        );
         
         // Varsayılan değerler
         $defaults = array(
@@ -563,127 +635,242 @@ class Woo_Donation_Popup_Admin {
         
         echo '<div class="wdp-button-settings-container">';
         echo '<form id="wdp-normal-form-settings-form">';
-        
-        // Popup Butonu
-        echo '<h2>' . __('Popup Butonu', 'woo-donation-popup') . '</h2>';
+        echo '<div class="wdp-tab-help" role="note">';
+        echo '<p class="wdp-tab-help__title">' . esc_html__('Bu sekmede ne yaparsınız?', 'woo-donation-popup') . '</p>';
+        echo '<ul class="wdp-tab-help__list">';
+        echo '<li>' . esc_html__('Aşağıdaki sıra, popup’ta kullanıcının gördüğü akışa göredir: önce üst başlık ve kapat, sonra kutu ve alanlar, en sonda form butonları ve sayfadaki açan buton.', 'woo-donation-popup') . '</li>';
+        echo '<li>' . esc_html__('Pencere genişliği ve padding “Modal & Form Görünümü” sekmesindedir; bu sekme modalın iç rengi, yazılar ve butonları kapsar.', 'woo-donation-popup') . '</li>';
+        echo '<li>' . esc_html__('Ürün kartında “Çoklu Hisse” veya “Progress Bar” açıksa bir kısım ayar hisse/progress sekmelerindedir.', 'woo-donation-popup') . '</li>';
+        echo '</ul>';
+        echo '</div>';
+
+        echo '<nav class="wdp-settings-toc" aria-label="' . esc_attr__('Normal form bölümleri', 'woo-donation-popup') . '">';
+        echo '<span class="wdp-settings-toc__label">' . esc_html__('Bu sayfada:', 'woo-donation-popup') . '</span>';
+        echo '<a href="#wdp-normal-sec-chrome">' . esc_html__('Başlık ve kapat', 'woo-donation-popup') . '</a>';
+        echo '<a href="#wdp-normal-sec-modal-inner">' . esc_html__('Modal içi kutu', 'woo-donation-popup') . '</a>';
+        echo '<a href="#wdp-normal-sec-fields">' . esc_html__('Alanlar ve etiketler', 'woo-donation-popup') . '</a>';
+        echo '<a href="#wdp-normal-sec-errors">' . esc_html__('Hata renkleri', 'woo-donation-popup') . '</a>';
+        echo '<a href="#wdp-normal-sec-form-buttons">' . esc_html__('Form altı butonları', 'woo-donation-popup') . '</a>';
+        echo '<a href="#wdp-normal-sec-trigger">' . esc_html__('Sayfadaki açan buton', 'woo-donation-popup') . '</a>';
+        echo '</nav>';
+
+        echo '<div id="wdp-normal-sec-chrome" class="wdp-settings-section">';
+        // Başlık Ayarları
+        echo '<h2>' . __('Başlık Ayarları', 'woo-donation-popup') . '</h2>';
         echo '<table class="form-table">';
         
         echo '<tr>';
-        echo '<th scope="row"><label for="popup_button_text">' . __('Buton Metni', 'woo-donation-popup') . '</label></th>';
+        echo '<th scope="row"><label for="title_color">' . __('Başlık Rengi', 'woo-donation-popup') . '</label></th>';
         echo '<td>';
-        $popup_button_text = isset($settings['popup_button_text']) ? $settings['popup_button_text'] : 'Bağış Yap';
-        echo '<input type="text" id="popup_button_text" name="popup_button_text" value="' . esc_attr($popup_button_text) . '" class="regular-text" />';
-        echo '<p class="description">' . __('Shortcode ile kopyalanan popup açan butonun metni', 'woo-donation-popup') . '</p>';
+        $title_color = isset($settings['title_color']) ? $settings['title_color'] : '#1f2937';
+        echo '<input type="color" id="title_color" name="title_color" value="' . esc_attr($title_color) . '" />';
+        echo '<p class="description">' . __('Modal başlığının rengi', 'woo-donation-popup') . '</p>';
         echo '</td>';
         echo '</tr>';
         
         echo '<tr>';
-        echo '<th scope="row"><label for="popup_button_color">' . __('Buton Rengi', 'woo-donation-popup') . '</label></th>';
+        echo '<th scope="row"><label for="title_font_size">' . __('Başlık Font Boyutu (Masaüstü, px)', 'woo-donation-popup') . '</label></th>';
         echo '<td>';
-        $popup_button_color = isset($settings['popup_button_color']) ? $settings['popup_button_color'] : '#1e73be';
-        echo '<input type="color" id="popup_button_color" name="popup_button_color" value="' . esc_attr($popup_button_color) . '" />';
-        echo '<p class="description">' . __('Popup açan butonun ana rengi', 'woo-donation-popup') . '</p>';
+        $title_size = isset($settings['title_font_size']) ? $settings['title_font_size'] : '27';
+        echo '<input type="number" id="title_font_size" name="title_font_size" value="' . esc_attr($title_size) . '" min="14" max="48" step="1" class="small-text" />';
+        echo '<p class="description">' . __('Modal başlığının masaüstü font boyutu (14-48px arası)', 'woo-donation-popup') . '</p>';
         echo '</td>';
         echo '</tr>';
-        
+
         echo '<tr>';
-        echo '<th scope="row"><label for="popup_button_hover">' . __('Buton Hover Rengi', 'woo-donation-popup') . '</label></th>';
+        echo '<th scope="row"><label for="title_font_size_mobile">' . __('Başlık Font Boyutu (Mobil, px)', 'woo-donation-popup') . '</label></th>';
         echo '<td>';
-        $popup_button_hover = isset($settings['popup_button_hover']) ? $settings['popup_button_hover'] : '#185d98';
-        echo '<input type="color" id="popup_button_hover" name="popup_button_hover" value="' . esc_attr($popup_button_hover) . '" />';
-        echo '<p class="description">' . __('Popup açan butonun hover rengi', 'woo-donation-popup') . '</p>';
-        echo '</td>';
-        echo '</tr>';
-        
-        echo '<tr>';
-        echo '<th scope="row"><label for="popup_button_font_size">' . __('Font Boyutu (px)', 'woo-donation-popup') . '</label></th>';
-        echo '<td>';
-        $popup_button_font_size = isset($settings['popup_button_font_size']) ? $settings['popup_button_font_size'] : '18';
-        echo '<input type="number" id="popup_button_font_size" name="popup_button_font_size" value="' . esc_attr($popup_button_font_size) . '" min="12" max="32" step="1" class="small-text" />';
-        echo '<p class="description">' . __('Popup butonunun font boyutu (12-32px arası)', 'woo-donation-popup') . '</p>';
-        echo '</td>';
-        echo '</tr>';
-        
-        echo '<tr>';
-        echo '<th scope="row"><label for="popup_button_font_weight">' . __('Font Kalınlığı', 'woo-donation-popup') . '</label></th>';
-        echo '<td>';
-        $popup_button_font_weight = isset($settings['popup_button_font_weight']) ? $settings['popup_button_font_weight'] : '700';
-        echo '<select id="popup_button_font_weight" name="popup_button_font_weight">';
-        echo '<option value="400" ' . selected($popup_button_font_weight, '400', false) . '>Normal (400)</option>';
-        echo '<option value="500" ' . selected($popup_button_font_weight, '500', false) . '>Orta (500)</option>';
-        echo '<option value="600" ' . selected($popup_button_font_weight, '600', false) . '>Yarı Kalın (600)</option>';
-        echo '<option value="700" ' . selected($popup_button_font_weight, '700', false) . '>Kalın (700)</option>';
-        echo '<option value="800" ' . selected($popup_button_font_weight, '800', false) . '>Çok Kalın (800)</option>';
-        echo '</select>';
-        echo '<p class="description">' . __('Popup butonunun font kalınlığı', 'woo-donation-popup') . '</p>';
-        echo '</td>';
-        echo '</tr>';
-        
-        echo '<tr>';
-        echo '<th scope="row"><label for="popup_button_font_family">' . __('Font Tipi', 'woo-donation-popup') . '</label></th>';
-        echo '<td>';
-        $popup_button_font_family = isset($settings['popup_button_font_family']) ? $settings['popup_button_font_family'] : 'inherit';
-        $popup_button_custom_font = isset($settings['popup_button_custom_font']) ? $settings['popup_button_custom_font'] : '';
-        
-        // Eğer özel font varsa, font_family'yi "custom" yap
-        if (!empty($popup_button_custom_font) && $popup_button_font_family !== 'custom') {
-            $popup_button_font_family = 'custom';
-        }
-        
-        echo '<select id="popup_button_font_family" name="popup_button_font_family">';
-        echo '<option value="inherit" ' . selected($popup_button_font_family, 'inherit', false) . '>Tema Varsayılanı</option>';
-        echo '<option value="Arial" ' . selected($popup_button_font_family, 'Arial', false) . '>Arial</option>';
-        echo '<option value="Helvetica" ' . selected($popup_button_font_family, 'Helvetica', false) . '>Helvetica</option>';
-        echo '<option value="Georgia" ' . selected($popup_button_font_family, 'Georgia', false) . '>Georgia</option>';
-        echo '<option value="Times New Roman" ' . selected($popup_button_font_family, 'Times New Roman', false) . '>Times New Roman</option>';
-        echo '<option value="Courier New" ' . selected($popup_button_font_family, 'Courier New', false) . '>Courier New</option>';
-        echo '<option value="Verdana" ' . selected($popup_button_font_family, 'Verdana', false) . '>Verdana</option>';
-        echo '<option value="Tahoma" ' . selected($popup_button_font_family, 'Tahoma', false) . '>Tahoma</option>';
-        echo '<option value="Trebuchet MS" ' . selected($popup_button_font_family, 'Trebuchet MS', false) . '>Trebuchet MS</option>';
-        echo '<option value="Impact" ' . selected($popup_button_font_family, 'Impact', false) . '>Impact</option>';
-        echo '<option value="Comic Sans MS" ' . selected($popup_button_font_family, 'Comic Sans MS', false) . '>Comic Sans MS</option>';
-        echo '<option value="Roboto" ' . selected($popup_button_font_family, 'Roboto', false) . '>Roboto</option>';
-        echo '<option value="Open Sans" ' . selected($popup_button_font_family, 'Open Sans', false) . '>Open Sans</option>';
-        echo '<option value="Lato" ' . selected($popup_button_font_family, 'Lato', false) . '>Lato</option>';
-        echo '<option value="Montserrat" ' . selected($popup_button_font_family, 'Montserrat', false) . '>Montserrat</option>';
-        echo '<option value="Poppins" ' . selected($popup_button_font_family, 'Poppins', false) . '>Poppins</option>';
-        echo '<option value="custom" ' . selected($popup_button_font_family, 'custom', false) . '>Özel Font</option>';
-        echo '</select>';
-        echo '<p class="description">' . __('Popup butonunun font tipi', 'woo-donation-popup') . '</p>';
-        echo '</td>';
-        echo '</tr>';
-        
-        echo '<tr id="popup_button_custom_font_row" style="' . ($popup_button_font_family === 'custom' ? '' : 'display:none;') . '">';
-        echo '<th scope="row"><label for="popup_button_custom_font">' . __('Özel Font Adı', 'woo-donation-popup') . '</label></th>';
-        echo '<td>';
-        echo '<input type="text" id="popup_button_custom_font" name="popup_button_custom_font" value="' . esc_attr($popup_button_custom_font) . '" class="regular-text" placeholder="Örn: \'Inter\', sans-serif" />';
-        echo '<p class="description">' . __('Özel font adını girin (CSS font-family formatında, örn: \'Inter\', sans-serif)', 'woo-donation-popup') . '</p>';
-        echo '</td>';
-        echo '</tr>';
-        
-        echo '<tr>';
-        echo '<th scope="row"><label for="popup_button_border_radius">' . __('Border Radius (px)', 'woo-donation-popup') . '</label></th>';
-        echo '<td>';
-        $popup_button_border_radius = isset($settings['popup_button_border_radius']) ? $settings['popup_button_border_radius'] : '10';
-        echo '<input type="number" id="popup_button_border_radius" name="popup_button_border_radius" value="' . esc_attr($popup_button_border_radius) . '" min="0" max="50" step="1" class="small-text" />';
-        echo '<p class="description">' . __('Popup butonunun köşe yuvarlaklığı (0-50px arası)', 'woo-donation-popup') . '</p>';
-        echo '</td>';
-        echo '</tr>';
-        
-        echo '<tr>';
-        echo '<th scope="row"><label for="popup_button_full_width">' . __('Buton Tam Genişlikte', 'woo-donation-popup') . '</label></th>';
-        echo '<td>';
-        $popup_button_full_width = isset($settings['popup_button_full_width']) ? $settings['popup_button_full_width'] : '0';
-        echo '<label class="wdp-switch">';
-        echo '<input type="checkbox" id="popup_button_full_width" name="popup_button_full_width" value="1" ' . checked($popup_button_full_width, '1', false) . ' />';
-        echo '<span class="wdp-slider"></span>';
-        echo '</label>';
-        echo '<p class="description">' . __('Aktif edildiğinde, "Bağış Yap" butonu tam genişlikte (full width) görüntülenir. Code block içinde kullanıldığında buton container\'ın tamamını kaplar.', 'woo-donation-popup') . '</p>';
+        $title_size_mobile = isset($settings['title_font_size_mobile']) ? $settings['title_font_size_mobile'] : $title_size;
+        echo '<input type="number" id="title_font_size_mobile" name="title_font_size_mobile" value="' . esc_attr($title_size_mobile) . '" min="12" max="40" step="1" class="small-text" />';
+        echo '<p class="description">' . __('Mobil cihazlarda modal başlığının font boyutu (12-40px arası). Boş bırakılırsa masaüstü değeri kullanılır.', 'woo-donation-popup') . '</p>';
         echo '</td>';
         echo '</tr>';
         
         echo '</table>';
         
+        // Kapat Butonu Ayarları
+        echo '<h2>' . __('Kapat Butonu Ayarları', 'woo-donation-popup') . '</h2>';
+        echo '<table class="form-table">';
+        
+        echo '<tr>';
+        echo '<th scope="row"><label for="close_button_color">' . __('Kapat Butonu Rengi', 'woo-donation-popup') . '</label></th>';
+        echo '<td>';
+        $close_color = isset($settings['close_button_color']) ? $settings['close_button_color'] : '#6b7280';
+        echo '<input type="color" id="close_button_color" name="close_button_color" value="' . esc_attr($close_color) . '" />';
+        echo '<p class="description">' . __('Modal kapat butonunun rengi', 'woo-donation-popup') . '</p>';
+        echo '</td>';
+        echo '</tr>';
+        
+        echo '</table>';
+        echo '</div>';
+
+        echo '<div id="wdp-normal-sec-modal-inner" class="wdp-settings-section">';
+        // Modal içi kutu (genişlik ayrı sekmede)
+        echo '<h2>' . __('Modal içi kutu (arka plan ve köşeler)', 'woo-donation-popup') . '</h2>';
+        echo '<p class="wdp-settings-section__hint">' . esc_html__('Pencere genişliği ve iç padding “Modal & Form Görünümü” sekmesindedir; burası yalnızca içerik kutusunun rengi ve köşe yuvarlaklığıdır.', 'woo-donation-popup') . '</p>';
+        echo '<table class="form-table">';
+        
+        echo '<tr>';
+        echo '<th scope="row"><label for="modal_background_color">' . __('Modal Arka Plan Rengi', 'woo-donation-popup') . '</label></th>';
+        echo '<td>';
+        $modal_bg = isset($settings['modal_background_color']) ? $settings['modal_background_color'] : '#ffffff';
+        echo '<input type="color" id="modal_background_color" name="modal_background_color" value="' . esc_attr($modal_bg) . '" />';
+        echo '<p class="description">' . __('Modal içeriğinin arka plan rengi', 'woo-donation-popup') . '</p>';
+        echo '</td>';
+        echo '</tr>';
+        
+        echo '<tr>';
+        echo '<th scope="row"><label for="modal_border_radius">' . __('Modal Border Radius (px)', 'woo-donation-popup') . '</label></th>';
+        echo '<td>';
+        $modal_radius = isset($settings['modal_border_radius']) ? $settings['modal_border_radius'] : '10';
+        echo '<input type="number" id="modal_border_radius" name="modal_border_radius" value="' . esc_attr($modal_radius) . '" min="0" max="50" step="1" class="small-text" />';
+        echo '<p class="description">' . __('Modal köşe yuvarlaklığı (0-50px arası)', 'woo-donation-popup') . '</p>';
+        echo '</td>';
+        echo '</tr>';
+        
+        echo '</table>';
+        echo '</div>';
+
+        echo '<div id="wdp-normal-sec-fields" class="wdp-settings-section">';
+        // Input Alanları Ayarları
+        echo '<h2>' . __('Input Alanları Ayarları', 'woo-donation-popup') . '</h2>';
+        echo '<table class="form-table">';
+        
+        echo '<tr>';
+        echo '<th scope="row"><label for="input_border_color">' . __('Input Border Rengi', 'woo-donation-popup') . '</label></th>';
+        echo '<td>';
+        $input_border = isset($settings['input_border_color']) ? $settings['input_border_color'] : '#d1d5db';
+        echo '<input type="color" id="input_border_color" name="input_border_color" value="' . esc_attr($input_border) . '" />';
+        echo '<p class="description">' . __('Input alanlarının kenarlık rengi', 'woo-donation-popup') . '</p>';
+        echo '</td>';
+        echo '</tr>';
+        
+        echo '<tr>';
+        echo '<th scope="row"><label for="input_border_radius">' . __('Input Border Radius (px)', 'woo-donation-popup') . '</label></th>';
+        echo '<td>';
+        $input_radius = isset($settings['input_border_radius']) ? $settings['input_border_radius'] : '10';
+        echo '<input type="number" id="input_border_radius" name="input_border_radius" value="' . esc_attr($input_radius) . '" min="0" max="50" step="1" class="small-text" />';
+        echo '<p class="description">' . __('Input alanlarının köşe yuvarlaklığı (0-50px arası)', 'woo-donation-popup') . '</p>';
+        echo '</td>';
+        echo '</tr>';
+
+        echo '<tr>';
+        echo '<th scope="row"><label for="label_color">' . __('Label Rengi', 'woo-donation-popup') . '</label></th>';
+        echo '<td>';
+        $label_color = isset($settings['label_color']) ? $settings['label_color'] : '#374151';
+        echo '<input type="color" id="label_color" name="label_color" value="' . esc_attr($label_color) . '" />';
+        echo '<p class="description">' . __('Form label (alan başlığı) metin rengi', 'woo-donation-popup') . '</p>';
+        echo '</td>';
+        echo '</tr>';
+
+        echo '<tr>';
+        echo '<th scope="row"><label for="label_font_size">' . __('Label Font Boyutu (px)', 'woo-donation-popup') . '</label></th>';
+        echo '<td>';
+        $label_font_size = isset($settings['label_font_size']) ? $settings['label_font_size'] : 14;
+        echo '<input type="number" id="label_font_size" name="label_font_size" value="' . esc_attr($label_font_size) . '" min="10" max="24" step="1" class="small-text" />';
+        echo '<p class="description">' . __('Form label metin boyutu (10-24px arası)', 'woo-donation-popup') . '</p>';
+        echo '</td>';
+        echo '</tr>';
+
+        echo '<tr>';
+        echo '<th scope="row"><label for="label_font_weight">' . __('Label Font Kalınlığı', 'woo-donation-popup') . '</label></th>';
+        echo '<td>';
+        $label_font_weight = isset($settings['label_font_weight']) ? $settings['label_font_weight'] : '600';
+        echo '<select id="label_font_weight" name="label_font_weight">';
+        echo '<option value="400" ' . selected($label_font_weight, '400', false) . '>Normal (400)</option>';
+        echo '<option value="500" ' . selected($label_font_weight, '500', false) . '>Orta (500)</option>';
+        echo '<option value="600" ' . selected($label_font_weight, '600', false) . '>Yarı Kalın (600)</option>';
+        echo '<option value="700" ' . selected($label_font_weight, '700', false) . '>Kalın (700)</option>';
+        echo '</select>';
+        echo '<p class="description">' . __('Form label metin kalınlığı', 'woo-donation-popup') . '</p>';
+        echo '</td>';
+        echo '</tr>';
+
+        echo '<tr>';
+        echo '<th scope="row"><label for="placeholder_color">' . __('Placeholder Rengi', 'woo-donation-popup') . '</label></th>';
+        echo '<td>';
+        $placeholder_color = isset($settings['placeholder_color']) ? $settings['placeholder_color'] : '#6b7280';
+        echo '<input type="color" id="placeholder_color" name="placeholder_color" value="' . esc_attr($placeholder_color) . '" />';
+        echo '<p class="description">' . __('Input ve textarea placeholder metin rengi', 'woo-donation-popup') . '</p>';
+        echo '</td>';
+        echo '</tr>';
+
+        echo '<tr>';
+        echo '<th scope="row"><label for="form_gap">' . __('Form Elemanları Arası Boşluk (px)', 'woo-donation-popup') . '</label></th>';
+        echo '<td>';
+        $form_gap = isset($settings['form_gap']) ? $settings['form_gap'] : 16;
+        echo '<input type="number" id="form_gap" name="form_gap" value="' . esc_attr($form_gap) . '" min="4" max="40" step="1" class="small-text" />';
+        echo '<p class="description">' . __('Form alanları arasındaki dikey boşluk (4-40px arası)', 'woo-donation-popup') . '</p>';
+        echo '</td>';
+        echo '</tr>';
+        
+        echo '</table>';
+        echo '</div>';
+
+        echo '<div id="wdp-normal-sec-errors" class="wdp-settings-section">';
+        // Hata Mesajı ve Uyarı Renkleri
+        echo '<h2>' . __('Hata / Uyarı Mesajı Renkleri', 'woo-donation-popup') . '</h2>';
+        echo '<table class="form-table">';
+
+        echo '<tr>';
+        echo '<th scope="row"><label for="error_bg_color">' . __('Form Hata Arka Plan Rengi', 'woo-donation-popup') . '</label></th>';
+        echo '<td>';
+        $error_bg = isset($settings['error_bg_color']) ? $settings['error_bg_color'] : '#fed7d7';
+        echo '<input type="color" id="error_bg_color" name="error_bg_color" value="' . esc_attr($error_bg) . '" />';
+        echo '<p class="description">' . __('Form üstündeki genel hata kutusunun arka plan rengi', 'woo-donation-popup') . '</p>';
+        echo '</td>';
+        echo '</tr>';
+
+        echo '<tr>';
+        echo '<th scope="row"><label for="error_border_color">' . __('Form Hata Border Rengi', 'woo-donation-popup') . '</label></th>';
+        echo '<td>';
+        $error_border = isset($settings['error_border_color']) ? $settings['error_border_color'] : '#feb2b2';
+        echo '<input type="color" id="error_border_color" name="error_border_color" value="' . esc_attr($error_border) . '" />';
+        echo '<p class="description">' . __('Form üstündeki genel hata kutusunun kenarlık rengi', 'woo-donation-popup') . '</p>';
+        echo '</td>';
+        echo '</tr>';
+
+        echo '<tr>';
+        echo '<th scope="row"><label for="error_text_color">' . __('Form Hata Metin Rengi', 'woo-donation-popup') . '</label></th>';
+        echo '<td>';
+        $error_text = isset($settings['error_text_color']) ? $settings['error_text_color'] : '#c53030';
+        echo '<input type="color" id="error_text_color" name="error_text_color" value="' . esc_attr($error_text) . '" />';
+        echo '<p class="description">' . __('Form üstündeki genel hata metninin rengi', 'woo-donation-popup') . '</p>';
+        echo '</td>';
+        echo '</tr>';
+
+        echo '<tr>';
+        echo '<th scope="row"><label for="input_error_bg_color">' . __('Input Hata Balonu Arka Plan Rengi', 'woo-donation-popup') . '</label></th>';
+        echo '<td>';
+        $input_error_bg = isset($settings['input_error_bg_color']) ? $settings['input_error_bg_color'] : '#fed7d7';
+        echo '<input type="color" id="input_error_bg_color" name="input_error_bg_color" value="' . esc_attr($input_error_bg) . '" />';
+        echo '<p class="description">' . __('Tek tek alanların altında çıkan küçük hata balonunun arka plan rengi', 'woo-donation-popup') . '</p>';
+        echo '</td>';
+        echo '</tr>';
+
+        echo '<tr>';
+        echo '<th scope="row"><label for="input_error_border_color">' . __('Input Hata Balonu Border Rengi', 'woo-donation-popup') . '</label></th>';
+        echo '<td>';
+        $input_error_border = isset($settings['input_error_border_color']) ? $settings['input_error_border_color'] : '#feb2b2';
+        echo '<input type="color" id="input_error_border_color" name="input_error_border_color" value="' . esc_attr($input_error_border) . '" />';
+        echo '<p class="description">' . __('Tek tek alanların altında çıkan küçük hata balonunun kenarlık rengi', 'woo-donation-popup') . '</p>';
+        echo '</td>';
+        echo '</tr>';
+
+        echo '<tr>';
+        echo '<th scope="row"><label for="input_error_text_color">' . __('Input Hata Balonu Metin Rengi', 'woo-donation-popup') . '</label></th>';
+        echo '<td>';
+        $input_error_text = isset($settings['input_error_text_color']) ? $settings['input_error_text_color'] : '#c53030';
+        echo '<input type="color" id="input_error_text_color" name="input_error_text_color" value="' . esc_attr($input_error_text) . '" />';
+        echo '<p class="description">' . __('Tek tek alanların altında çıkan küçük hata balonu metin rengi', 'woo-donation-popup') . '</p>';
+        echo '</td>';
+        echo '</tr>';
+        
+        echo '</table>';
+        echo '</div>';
+
+        echo '<div id="wdp-normal-sec-form-buttons" class="wdp-settings-section">';
+        echo '<p class="wdp-settings-section__hint">' . esc_html__('Modal içinde, formun altındaki “Sepete Ekle” ve “Ödemeye Git” alanı.', 'woo-donation-popup') . '</p>';
         // Buton Renkleri
         echo '<h2>' . __('Buton Renkleri', 'woo-donation-popup') . '</h2>';
         echo '<table class="form-table">';
@@ -792,212 +979,127 @@ class Woo_Donation_Popup_Admin {
         echo '</tr>';
         
         echo '</table>';
-        
-        // Modal Görünüm Ayarları
-        echo '<h2>' . __('Modal Görünüm Ayarları', 'woo-donation-popup') . '</h2>';
+        echo '</div>';
+
+        echo '<div id="wdp-normal-sec-trigger" class="wdp-settings-section">';
+        echo '<p class="wdp-settings-section__hint">' . esc_html__('Sayfada görünen shortcode butonu; tıklanınca popup açılır (modalın dışındadır).', 'woo-donation-popup') . '</p>';
+        echo '<h2>' . __('Sayfadaki açan buton (shortcode)', 'woo-donation-popup') . '</h2>';
         echo '<table class="form-table">';
         
         echo '<tr>';
-        echo '<th scope="row"><label for="modal_background_color">' . __('Modal Arka Plan Rengi', 'woo-donation-popup') . '</label></th>';
+        echo '<th scope="row"><label for="popup_button_text">' . __('Buton Metni', 'woo-donation-popup') . '</label></th>';
         echo '<td>';
-        $modal_bg = isset($settings['modal_background_color']) ? $settings['modal_background_color'] : '#ffffff';
-        echo '<input type="color" id="modal_background_color" name="modal_background_color" value="' . esc_attr($modal_bg) . '" />';
-        echo '<p class="description">' . __('Modal içeriğinin arka plan rengi', 'woo-donation-popup') . '</p>';
+        $popup_button_text = isset($settings['popup_button_text']) ? $settings['popup_button_text'] : 'Bağış Yap';
+        echo '<input type="text" id="popup_button_text" name="popup_button_text" value="' . esc_attr($popup_button_text) . '" class="regular-text" />';
+        echo '<p class="description">' . __('Shortcode ile kopyalanan popup açan butonun metni', 'woo-donation-popup') . '</p>';
         echo '</td>';
         echo '</tr>';
         
         echo '<tr>';
-        echo '<th scope="row"><label for="modal_border_radius">' . __('Modal Border Radius (px)', 'woo-donation-popup') . '</label></th>';
+        echo '<th scope="row"><label for="popup_button_color">' . __('Buton Rengi', 'woo-donation-popup') . '</label></th>';
         echo '<td>';
-        $modal_radius = isset($settings['modal_border_radius']) ? $settings['modal_border_radius'] : '10';
-        echo '<input type="number" id="modal_border_radius" name="modal_border_radius" value="' . esc_attr($modal_radius) . '" min="0" max="50" step="1" class="small-text" />';
-        echo '<p class="description">' . __('Modal köşe yuvarlaklığı (0-50px arası)', 'woo-donation-popup') . '</p>';
-        echo '</td>';
-        echo '</tr>';
-        
-        echo '</table>';
-        
-        // Input Alanları Ayarları
-        echo '<h2>' . __('Input Alanları Ayarları', 'woo-donation-popup') . '</h2>';
-        echo '<table class="form-table">';
-        
-        echo '<tr>';
-        echo '<th scope="row"><label for="input_border_color">' . __('Input Border Rengi', 'woo-donation-popup') . '</label></th>';
-        echo '<td>';
-        $input_border = isset($settings['input_border_color']) ? $settings['input_border_color'] : '#d1d5db';
-        echo '<input type="color" id="input_border_color" name="input_border_color" value="' . esc_attr($input_border) . '" />';
-        echo '<p class="description">' . __('Input alanlarının kenarlık rengi', 'woo-donation-popup') . '</p>';
+        $popup_button_color = isset($settings['popup_button_color']) ? $settings['popup_button_color'] : '#1e73be';
+        echo '<input type="color" id="popup_button_color" name="popup_button_color" value="' . esc_attr($popup_button_color) . '" />';
+        echo '<p class="description">' . __('Popup açan butonun ana rengi', 'woo-donation-popup') . '</p>';
         echo '</td>';
         echo '</tr>';
         
         echo '<tr>';
-        echo '<th scope="row"><label for="input_border_radius">' . __('Input Border Radius (px)', 'woo-donation-popup') . '</label></th>';
+        echo '<th scope="row"><label for="popup_button_hover">' . __('Buton Hover Rengi', 'woo-donation-popup') . '</label></th>';
         echo '<td>';
-        $input_radius = isset($settings['input_border_radius']) ? $settings['input_border_radius'] : '10';
-        echo '<input type="number" id="input_border_radius" name="input_border_radius" value="' . esc_attr($input_radius) . '" min="0" max="50" step="1" class="small-text" />';
-        echo '<p class="description">' . __('Input alanlarının köşe yuvarlaklığı (0-50px arası)', 'woo-donation-popup') . '</p>';
+        $popup_button_hover = isset($settings['popup_button_hover']) ? $settings['popup_button_hover'] : '#185d98';
+        echo '<input type="color" id="popup_button_hover" name="popup_button_hover" value="' . esc_attr($popup_button_hover) . '" />';
+        echo '<p class="description">' . __('Popup açan butonun hover rengi', 'woo-donation-popup') . '</p>';
         echo '</td>';
         echo '</tr>';
-
+        
         echo '<tr>';
-        echo '<th scope="row"><label for="label_color">' . __('Label Rengi', 'woo-donation-popup') . '</label></th>';
+        echo '<th scope="row"><label for="popup_button_font_size">' . __('Font Boyutu (px)', 'woo-donation-popup') . '</label></th>';
         echo '<td>';
-        $label_color = isset($settings['label_color']) ? $settings['label_color'] : '#374151';
-        echo '<input type="color" id="label_color" name="label_color" value="' . esc_attr($label_color) . '" />';
-        echo '<p class="description">' . __('Form label (alan başlığı) metin rengi', 'woo-donation-popup') . '</p>';
+        $popup_button_font_size = isset($settings['popup_button_font_size']) ? $settings['popup_button_font_size'] : '18';
+        echo '<input type="number" id="popup_button_font_size" name="popup_button_font_size" value="' . esc_attr($popup_button_font_size) . '" min="12" max="32" step="1" class="small-text" />';
+        echo '<p class="description">' . __('Popup butonunun font boyutu (12-32px arası)', 'woo-donation-popup') . '</p>';
         echo '</td>';
         echo '</tr>';
-
+        
         echo '<tr>';
-        echo '<th scope="row"><label for="label_font_size">' . __('Label Font Boyutu (px)', 'woo-donation-popup') . '</label></th>';
+        echo '<th scope="row"><label for="popup_button_font_weight">' . __('Font Kalınlığı', 'woo-donation-popup') . '</label></th>';
         echo '<td>';
-        $label_font_size = isset($settings['label_font_size']) ? $settings['label_font_size'] : 14;
-        echo '<input type="number" id="label_font_size" name="label_font_size" value="' . esc_attr($label_font_size) . '" min="10" max="24" step="1" class="small-text" />';
-        echo '<p class="description">' . __('Form label metin boyutu (10-24px arası)', 'woo-donation-popup') . '</p>';
-        echo '</td>';
-        echo '</tr>';
-
-        echo '<tr>';
-        echo '<th scope="row"><label for="label_font_weight">' . __('Label Font Kalınlığı', 'woo-donation-popup') . '</label></th>';
-        echo '<td>';
-        $label_font_weight = isset($settings['label_font_weight']) ? $settings['label_font_weight'] : '600';
-        echo '<select id="label_font_weight" name="label_font_weight">';
-        echo '<option value="400" ' . selected($label_font_weight, '400', false) . '>Normal (400)</option>';
-        echo '<option value="500" ' . selected($label_font_weight, '500', false) . '>Orta (500)</option>';
-        echo '<option value="600" ' . selected($label_font_weight, '600', false) . '>Yarı Kalın (600)</option>';
-        echo '<option value="700" ' . selected($label_font_weight, '700', false) . '>Kalın (700)</option>';
+        $popup_button_font_weight = isset($settings['popup_button_font_weight']) ? $settings['popup_button_font_weight'] : '700';
+        echo '<select id="popup_button_font_weight" name="popup_button_font_weight">';
+        echo '<option value="400" ' . selected($popup_button_font_weight, '400', false) . '>Normal (400)</option>';
+        echo '<option value="500" ' . selected($popup_button_font_weight, '500', false) . '>Orta (500)</option>';
+        echo '<option value="600" ' . selected($popup_button_font_weight, '600', false) . '>Yarı Kalın (600)</option>';
+        echo '<option value="700" ' . selected($popup_button_font_weight, '700', false) . '>Kalın (700)</option>';
+        echo '<option value="800" ' . selected($popup_button_font_weight, '800', false) . '>Çok Kalın (800)</option>';
         echo '</select>';
-        echo '<p class="description">' . __('Form label metin kalınlığı', 'woo-donation-popup') . '</p>';
+        echo '<p class="description">' . __('Popup butonunun font kalınlığı', 'woo-donation-popup') . '</p>';
         echo '</td>';
         echo '</tr>';
-
+        
         echo '<tr>';
-        echo '<th scope="row"><label for="placeholder_color">' . __('Placeholder Rengi', 'woo-donation-popup') . '</label></th>';
+        echo '<th scope="row"><label for="popup_button_font_family">' . __('Font Tipi', 'woo-donation-popup') . '</label></th>';
         echo '<td>';
-        $placeholder_color = isset($settings['placeholder_color']) ? $settings['placeholder_color'] : '#6b7280';
-        echo '<input type="color" id="placeholder_color" name="placeholder_color" value="' . esc_attr($placeholder_color) . '" />';
-        echo '<p class="description">' . __('Input ve textarea placeholder metin rengi', 'woo-donation-popup') . '</p>';
+        $popup_button_font_family = isset($settings['popup_button_font_family']) ? $settings['popup_button_font_family'] : 'inherit';
+        $popup_button_custom_font = isset($settings['popup_button_custom_font']) ? $settings['popup_button_custom_font'] : '';
+        if (!empty($popup_button_custom_font) && $popup_button_font_family !== 'custom') {
+            $popup_button_font_family = 'custom';
+        }
+        
+        echo '<select id="popup_button_font_family" name="popup_button_font_family">';
+        echo '<option value="inherit" ' . selected($popup_button_font_family, 'inherit', false) . '>Tema Varsayılanı</option>';
+        echo '<option value="Arial" ' . selected($popup_button_font_family, 'Arial', false) . '>Arial</option>';
+        echo '<option value="Helvetica" ' . selected($popup_button_font_family, 'Helvetica', false) . '>Helvetica</option>';
+        echo '<option value="Georgia" ' . selected($popup_button_font_family, 'Georgia', false) . '>Georgia</option>';
+        echo '<option value="Times New Roman" ' . selected($popup_button_font_family, 'Times New Roman', false) . '>Times New Roman</option>';
+        echo '<option value="Courier New" ' . selected($popup_button_font_family, 'Courier New', false) . '>Courier New</option>';
+        echo '<option value="Verdana" ' . selected($popup_button_font_family, 'Verdana', false) . '>Verdana</option>';
+        echo '<option value="Tahoma" ' . selected($popup_button_font_family, 'Tahoma', false) . '>Tahoma</option>';
+        echo '<option value="Trebuchet MS" ' . selected($popup_button_font_family, 'Trebuchet MS', false) . '>Trebuchet MS</option>';
+        echo '<option value="Impact" ' . selected($popup_button_font_family, 'Impact', false) . '>Impact</option>';
+        echo '<option value="Comic Sans MS" ' . selected($popup_button_font_family, 'Comic Sans MS', false) . '>Comic Sans MS</option>';
+        echo '<option value="Roboto" ' . selected($popup_button_font_family, 'Roboto', false) . '>Roboto</option>';
+        echo '<option value="Open Sans" ' . selected($popup_button_font_family, 'Open Sans', false) . '>Open Sans</option>';
+        echo '<option value="Lato" ' . selected($popup_button_font_family, 'Lato', false) . '>Lato</option>';
+        echo '<option value="Montserrat" ' . selected($popup_button_font_family, 'Montserrat', false) . '>Montserrat</option>';
+        echo '<option value="Poppins" ' . selected($popup_button_font_family, 'Poppins', false) . '>Poppins</option>';
+        echo '<option value="custom" ' . selected($popup_button_font_family, 'custom', false) . '>Özel Font</option>';
+        echo '</select>';
+        echo '<p class="description">' . __('Popup butonunun font tipi', 'woo-donation-popup') . '</p>';
         echo '</td>';
         echo '</tr>';
-
-        echo '<tr>';
-        echo '<th scope="row"><label for="form_gap">' . __('Form Elemanları Arası Boşluk (px)', 'woo-donation-popup') . '</label></th>';
+        
+        echo '<tr id="popup_button_custom_font_row" style="' . ($popup_button_font_family === 'custom' ? '' : 'display:none;') . '">';
+        echo '<th scope="row"><label for="popup_button_custom_font">' . __('Özel Font Adı', 'woo-donation-popup') . '</label></th>';
         echo '<td>';
-        $form_gap = isset($settings['form_gap']) ? $settings['form_gap'] : 16;
-        echo '<input type="number" id="form_gap" name="form_gap" value="' . esc_attr($form_gap) . '" min="4" max="40" step="1" class="small-text" />';
-        echo '<p class="description">' . __('Form alanları arasındaki dikey boşluk (4-40px arası)', 'woo-donation-popup') . '</p>';
+        echo '<input type="text" id="popup_button_custom_font" name="popup_button_custom_font" value="' . esc_attr($popup_button_custom_font) . '" class="regular-text" placeholder="Örn: \'Inter\', sans-serif" />';
+        echo '<p class="description">' . __('Özel font adını girin (CSS font-family formatında, örn: \'Inter\', sans-serif)', 'woo-donation-popup') . '</p>';
+        echo '</td>';
+        echo '</tr>';
+        
+        echo '<tr>';
+        echo '<th scope="row"><label for="popup_button_border_radius">' . __('Border Radius (px)', 'woo-donation-popup') . '</label></th>';
+        echo '<td>';
+        $popup_button_border_radius = isset($settings['popup_button_border_radius']) ? $settings['popup_button_border_radius'] : '10';
+        echo '<input type="number" id="popup_button_border_radius" name="popup_button_border_radius" value="' . esc_attr($popup_button_border_radius) . '" min="0" max="50" step="1" class="small-text" />';
+        echo '<p class="description">' . __('Popup butonunun köşe yuvarlaklığı (0-50px arası)', 'woo-donation-popup') . '</p>';
+        echo '</td>';
+        echo '</tr>';
+        
+        echo '<tr>';
+        echo '<th scope="row"><label for="popup_button_full_width">' . __('Buton Tam Genişlikte', 'woo-donation-popup') . '</label></th>';
+        echo '<td>';
+        $popup_button_full_width = isset($settings['popup_button_full_width']) ? $settings['popup_button_full_width'] : '0';
+        echo '<label class="wdp-switch">';
+        echo '<input type="checkbox" id="popup_button_full_width" name="popup_button_full_width" value="1" ' . checked($popup_button_full_width, '1', false) . ' />';
+        echo '<span class="wdp-slider"></span>';
+        echo '</label>';
+        echo '<p class="description">' . __('Aktif edildiğinde, "Bağış Yap" butonu tam genişlikte (full width) görüntülenir. Code block içinde kullanıldığında buton container\'ın tamamını kaplar.', 'woo-donation-popup') . '</p>';
         echo '</td>';
         echo '</tr>';
         
         echo '</table>';
-
-        // Hata Mesajı ve Uyarı Renkleri
-        echo '<h2>' . __('Hata / Uyarı Mesajı Renkleri', 'woo-donation-popup') . '</h2>';
-        echo '<table class="form-table">';
-
-        echo '<tr>';
-        echo '<th scope="row"><label for="error_bg_color">' . __('Form Hata Arka Plan Rengi', 'woo-donation-popup') . '</label></th>';
-        echo '<td>';
-        $error_bg = isset($settings['error_bg_color']) ? $settings['error_bg_color'] : '#fed7d7';
-        echo '<input type="color" id="error_bg_color" name="error_bg_color" value="' . esc_attr($error_bg) . '" />';
-        echo '<p class="description">' . __('Form üstündeki genel hata kutusunun arka plan rengi', 'woo-donation-popup') . '</p>';
-        echo '</td>';
-        echo '</tr>';
-
-        echo '<tr>';
-        echo '<th scope="row"><label for="error_border_color">' . __('Form Hata Border Rengi', 'woo-donation-popup') . '</label></th>';
-        echo '<td>';
-        $error_border = isset($settings['error_border_color']) ? $settings['error_border_color'] : '#feb2b2';
-        echo '<input type="color" id="error_border_color" name="error_border_color" value="' . esc_attr($error_border) . '" />';
-        echo '<p class="description">' . __('Form üstündeki genel hata kutusunun kenarlık rengi', 'woo-donation-popup') . '</p>';
-        echo '</td>';
-        echo '</tr>';
-
-        echo '<tr>';
-        echo '<th scope="row"><label for="error_text_color">' . __('Form Hata Metin Rengi', 'woo-donation-popup') . '</label></th>';
-        echo '<td>';
-        $error_text = isset($settings['error_text_color']) ? $settings['error_text_color'] : '#c53030';
-        echo '<input type="color" id="error_text_color" name="error_text_color" value="' . esc_attr($error_text) . '" />';
-        echo '<p class="description">' . __('Form üstündeki genel hata metninin rengi', 'woo-donation-popup') . '</p>';
-        echo '</td>';
-        echo '</tr>';
-
-        echo '<tr>';
-        echo '<th scope="row"><label for="input_error_bg_color">' . __('Input Hata Balonu Arka Plan Rengi', 'woo-donation-popup') . '</label></th>';
-        echo '<td>';
-        $input_error_bg = isset($settings['input_error_bg_color']) ? $settings['input_error_bg_color'] : '#fed7d7';
-        echo '<input type="color" id="input_error_bg_color" name="input_error_bg_color" value="' . esc_attr($input_error_bg) . '" />';
-        echo '<p class="description">' . __('Tek tek alanların altında çıkan küçük hata balonunun arka plan rengi', 'woo-donation-popup') . '</p>';
-        echo '</td>';
-        echo '</tr>';
-
-        echo '<tr>';
-        echo '<th scope="row"><label for="input_error_border_color">' . __('Input Hata Balonu Border Rengi', 'woo-donation-popup') . '</label></th>';
-        echo '<td>';
-        $input_error_border = isset($settings['input_error_border_color']) ? $settings['input_error_border_color'] : '#feb2b2';
-        echo '<input type="color" id="input_error_border_color" name="input_error_border_color" value="' . esc_attr($input_error_border) . '" />';
-        echo '<p class="description">' . __('Tek tek alanların altında çıkan küçük hata balonunun kenarlık rengi', 'woo-donation-popup') . '</p>';
-        echo '</td>';
-        echo '</tr>';
-
-        echo '<tr>';
-        echo '<th scope="row"><label for="input_error_text_color">' . __('Input Hata Balonu Metin Rengi', 'woo-donation-popup') . '</label></th>';
-        echo '<td>';
-        $input_error_text = isset($settings['input_error_text_color']) ? $settings['input_error_text_color'] : '#c53030';
-        echo '<input type="color" id="input_error_text_color" name="input_error_text_color" value="' . esc_attr($input_error_text) . '" />';
-        echo '<p class="description">' . __('Tek tek alanların altında çıkan küçük hata balonu metin rengi', 'woo-donation-popup') . '</p>';
-        echo '</td>';
-        echo '</tr>';
-        
-        echo '</table>';
-        
-        // Başlık Ayarları
-        echo '<h2>' . __('Başlık Ayarları', 'woo-donation-popup') . '</h2>';
-        echo '<table class="form-table">';
-        
-        echo '<tr>';
-        echo '<th scope="row"><label for="title_color">' . __('Başlık Rengi', 'woo-donation-popup') . '</label></th>';
-        echo '<td>';
-        $title_color = isset($settings['title_color']) ? $settings['title_color'] : '#1f2937';
-        echo '<input type="color" id="title_color" name="title_color" value="' . esc_attr($title_color) . '" />';
-        echo '<p class="description">' . __('Modal başlığının rengi', 'woo-donation-popup') . '</p>';
-        echo '</td>';
-        echo '</tr>';
-        
-        echo '<tr>';
-        echo '<th scope="row"><label for="title_font_size">' . __('Başlık Font Boyutu (Masaüstü, px)', 'woo-donation-popup') . '</label></th>';
-        echo '<td>';
-        $title_size = isset($settings['title_font_size']) ? $settings['title_font_size'] : '27';
-        echo '<input type="number" id="title_font_size" name="title_font_size" value="' . esc_attr($title_size) . '" min="14" max="48" step="1" class="small-text" />';
-        echo '<p class="description">' . __('Modal başlığının masaüstü font boyutu (14-48px arası)', 'woo-donation-popup') . '</p>';
-        echo '</td>';
-        echo '</tr>';
-
-        echo '<tr>';
-        echo '<th scope="row"><label for="title_font_size_mobile">' . __('Başlık Font Boyutu (Mobil, px)', 'woo-donation-popup') . '</label></th>';
-        echo '<td>';
-        $title_size_mobile = isset($settings['title_font_size_mobile']) ? $settings['title_font_size_mobile'] : $title_size;
-        echo '<input type="number" id="title_font_size_mobile" name="title_font_size_mobile" value="' . esc_attr($title_size_mobile) . '" min="12" max="40" step="1" class="small-text" />';
-        echo '<p class="description">' . __('Mobil cihazlarda modal başlığının font boyutu (12-40px arası). Boş bırakılırsa masaüstü değeri kullanılır.', 'woo-donation-popup') . '</p>';
-        echo '</td>';
-        echo '</tr>';
-        
-        echo '</table>';
-        
-        // Kapat Butonu Ayarları
-        echo '<h2>' . __('Kapat Butonu Ayarları', 'woo-donation-popup') . '</h2>';
-        echo '<table class="form-table">';
-        
-        echo '<tr>';
-        echo '<th scope="row"><label for="close_button_color">' . __('Kapat Butonu Rengi', 'woo-donation-popup') . '</label></th>';
-        echo '<td>';
-        $close_color = isset($settings['close_button_color']) ? $settings['close_button_color'] : '#6b7280';
-        echo '<input type="color" id="close_button_color" name="close_button_color" value="' . esc_attr($close_color) . '" />';
-        echo '<p class="description">' . __('Modal kapat butonunun rengi', 'woo-donation-popup') . '</p>';
-        echo '</td>';
-        echo '</tr>';
-        
-        echo '</table>';
+        echo '</div>';
         
         // Kaydet butonu
         echo '<p class="submit">';
@@ -1051,44 +1153,14 @@ class Woo_Donation_Popup_Admin {
         
         echo '<div class="wdp-button-settings-container">';
         echo '<form id="wdp-shareholder-form-settings-form">';
-        
-        // Hissedar Kartı Ayarları
-        echo '<h2>' . __('Hissedar Kartı Ayarları', 'woo-donation-popup') . '</h2>';
-        echo '<table class="form-table">';
-        
-        echo '<tr>';
-        echo '<th scope="row"><label for="shareholder_card_bg">' . __('Kart Arka Plan Rengi', 'woo-donation-popup') . '</label></th>';
-        echo '<td>';
-        echo '<input type="color" id="shareholder_card_bg" name="shareholder_card_bg" value="' . esc_attr($settings['shareholder_card_bg']) . '" />';
-        echo '<p class="description">' . __('Hissedar kartının arka plan rengi', 'woo-donation-popup') . '</p>';
-        echo '</td>';
-        echo '</tr>';
-        
-        echo '<tr>';
-        echo '<th scope="row"><label for="shareholder_card_border">' . __('Kart Border Rengi', 'woo-donation-popup') . '</label></th>';
-        echo '<td>';
-        echo '<input type="color" id="shareholder_card_border" name="shareholder_card_border" value="' . esc_attr($settings['shareholder_card_border']) . '" />';
-        echo '<p class="description">' . __('Hissedar kartının kenarlık rengi', 'woo-donation-popup') . '</p>';
-        echo '</td>';
-        echo '</tr>';
-        
-        echo '<tr>';
-        echo '<th scope="row"><label for="shareholder_card_radius">' . __('Kart Border Radius (px)', 'woo-donation-popup') . '</label></th>';
-        echo '<td>';
-        echo '<input type="number" id="shareholder_card_radius" name="shareholder_card_radius" value="' . esc_attr($settings['shareholder_card_radius']) . '" min="0" max="50" step="1" class="small-text" />';
-        echo '<p class="description">' . __('Hissedar kartının köşe yuvarlaklığı (0-50px)', 'woo-donation-popup') . '</p>';
-        echo '</td>';
-        echo '</tr>';
-        
-        echo '<tr>';
-        echo '<th scope="row"><label for="shareholder_card_shadow">' . __('Kart Gölge', 'woo-donation-popup') . '</label></th>';
-        echo '<td>';
-        echo '<input type="text" id="shareholder_card_shadow" name="shareholder_card_shadow" value="' . esc_attr($settings['shareholder_card_shadow']) . '" class="regular-text" placeholder="0 1px 3px rgba(0, 0, 0, 0.05)" />';
-        echo '<p class="description">' . __('Hissedar kartının box-shadow değeri (CSS formatında)', 'woo-donation-popup') . '</p>';
-        echo '</td>';
-        echo '</tr>';
-        
-        echo '</table>';
+        echo '<div class="wdp-tab-help" role="note">';
+        echo '<p class="wdp-tab-help__title">' . esc_html__('Bu sekmede ne yaparsınız?', 'woo-donation-popup') . '</p>';
+        echo '<ul class="wdp-tab-help__list">';
+        echo '<li>' . esc_html__('Önce metinler ve düzen, ardından kart ve alan renkleri: içerik ayarlarını üstte topladık.', 'woo-donation-popup') . '</li>';
+        echo '<li>' . esc_html__('Yalnızca ürün ayarlarında “Çoklu Hisse” açıkken bu ayarlar kullanılır.', 'woo-donation-popup') . '</li>';
+        echo '<li>' . esc_html__('Modal genişliği veya genel form buton renkleri “Modal & Form Görünümü” ve “Normal Form” sekmelerindedir.', 'woo-donation-popup') . '</li>';
+        echo '</ul>';
+        echo '</div>';
 
         // Hisseli Form Metinleri
         echo '<h2>' . __('Hisseli Form Metinleri', 'woo-donation-popup') . '</h2>';
@@ -1202,6 +1274,45 @@ class Woo_Donation_Popup_Admin {
         echo '</td>';
         echo '</tr>';
 
+        echo '</table>';
+
+        // Hissedar Kartı Ayarları (görünüm — metinlerden sonra)
+        echo '<h2>' . __('Hissedar Kartı Ayarları', 'woo-donation-popup') . '</h2>';
+        echo '<p class="wdp-settings-section__hint">' . esc_html__('Kartın çerçeve, arka plan ve gölge stilleri; üstteki metinler ne yazdığını belirler.', 'woo-donation-popup') . '</p>';
+        echo '<table class="form-table">';
+        
+        echo '<tr>';
+        echo '<th scope="row"><label for="shareholder_card_bg">' . __('Kart Arka Plan Rengi', 'woo-donation-popup') . '</label></th>';
+        echo '<td>';
+        echo '<input type="color" id="shareholder_card_bg" name="shareholder_card_bg" value="' . esc_attr($settings['shareholder_card_bg']) . '" />';
+        echo '<p class="description">' . __('Hissedar kartının arka plan rengi', 'woo-donation-popup') . '</p>';
+        echo '</td>';
+        echo '</tr>';
+        
+        echo '<tr>';
+        echo '<th scope="row"><label for="shareholder_card_border">' . __('Kart Border Rengi', 'woo-donation-popup') . '</label></th>';
+        echo '<td>';
+        echo '<input type="color" id="shareholder_card_border" name="shareholder_card_border" value="' . esc_attr($settings['shareholder_card_border']) . '" />';
+        echo '<p class="description">' . __('Hissedar kartının kenarlık rengi', 'woo-donation-popup') . '</p>';
+        echo '</td>';
+        echo '</tr>';
+        
+        echo '<tr>';
+        echo '<th scope="row"><label for="shareholder_card_radius">' . __('Kart Border Radius (px)', 'woo-donation-popup') . '</label></th>';
+        echo '<td>';
+        echo '<input type="number" id="shareholder_card_radius" name="shareholder_card_radius" value="' . esc_attr($settings['shareholder_card_radius']) . '" min="0" max="50" step="1" class="small-text" />';
+        echo '<p class="description">' . __('Hissedar kartının köşe yuvarlaklığı (0-50px)', 'woo-donation-popup') . '</p>';
+        echo '</td>';
+        echo '</tr>';
+        
+        echo '<tr>';
+        echo '<th scope="row"><label for="shareholder_card_shadow">' . __('Kart Gölge', 'woo-donation-popup') . '</label></th>';
+        echo '<td>';
+        echo '<input type="text" id="shareholder_card_shadow" name="shareholder_card_shadow" value="' . esc_attr($settings['shareholder_card_shadow']) . '" class="regular-text" placeholder="0 1px 3px rgba(0, 0, 0, 0.05)" />';
+        echo '<p class="description">' . __('Hissedar kartının box-shadow değeri (CSS formatında)', 'woo-donation-popup') . '</p>';
+        echo '</td>';
+        echo '</tr>';
+        
         echo '</table>';
         
         // Hissedar Başlık Ayarları
@@ -1378,9 +1489,103 @@ class Woo_Donation_Popup_Admin {
         
         echo '<div class="wdp-button-settings-container">';
         echo '<form id="wdp-success-screen-settings-form">';
+        echo '<div class="wdp-tab-help" role="note">';
+        echo '<p class="wdp-tab-help__title">' . esc_html__('Bu sekmede ne yaparsınız?', 'woo-donation-popup') . '</p>';
+        echo '<ul class="wdp-tab-help__list">';
+        echo '<li>' . esc_html__('Sıra ekrandaki akışa göre: önce teşekkür mesajı kutusu, mini sepet, sonra aksiyon butonlarının görünümü ve metinleri.', 'woo-donation-popup') . '</li>';
+        echo '<li>' . esc_html__('Sepet ve ödeme sayfası linkleri temanızın WooCommerce ayarlarına bağlıdır; burada yalnızca bu ekrandaki düğme metinleri ve görünüm ayarlanır.', 'woo-donation-popup') . '</li>';
+        echo '</ul>';
+        echo '</div>';
         
+        // Başarı Mesajı Ayarları
+        echo '<h2>' . __('Başarı Mesajı Ayarları', 'woo-donation-popup') . '</h2>';
+        echo '<p class="wdp-settings-section__hint">' . esc_html__('Kullanıcının önce gördüğü teşekkür / bilgi kutusu.', 'woo-donation-popup') . '</p>';
+        echo '<table class="form-table">';
+        
+        echo '<tr>';
+        echo '<th scope="row"><label for="success_message_bg">' . __('Mesaj Arka Plan Rengi', 'woo-donation-popup') . '</label></th>';
+        echo '<td>';
+        echo '<input type="text" id="success_message_bg" name="success_message_bg" value="' . esc_attr($settings['success_message_bg']) . '" class="regular-text" placeholder="rgba(72, 187, 120, 0.1)" />';
+        echo '<p class="description">' . __('Başarı mesajının arka plan rengi (renk veya rgba)', 'woo-donation-popup') . '</p>';
+        echo '</td>';
+        echo '</tr>';
+        
+        echo '<tr>';
+        echo '<th scope="row"><label for="success_message_color">' . __('Mesaj Metin Rengi', 'woo-donation-popup') . '</label></th>';
+        echo '<td>';
+        echo '<input type="color" id="success_message_color" name="success_message_color" value="' . esc_attr($settings['success_message_color']) . '" />';
+        echo '<p class="description">' . __('Başarı mesajının metin rengi', 'woo-donation-popup') . '</p>';
+        echo '</td>';
+        echo '</tr>';
+        
+        echo '<tr>';
+        echo '<th scope="row"><label for="success_message_border">' . __('Mesaj Border Rengi', 'woo-donation-popup') . '</label></th>';
+        echo '<td>';
+        echo '<input type="text" id="success_message_border" name="success_message_border" value="' . esc_attr($settings['success_message_border']) . '" class="regular-text" placeholder="rgba(72, 187, 120, 0.2)" />';
+        echo '<p class="description">' . __('Başarı mesajının kenarlık rengi (renk veya rgba)', 'woo-donation-popup') . '</p>';
+        echo '</td>';
+        echo '</tr>';
+        
+        echo '<tr>';
+        echo '<th scope="row"><label for="success_message_radius">' . __('Mesaj Border Radius (px)', 'woo-donation-popup') . '</label></th>';
+        echo '<td>';
+        echo '<input type="number" id="success_message_radius" name="success_message_radius" value="' . esc_attr($settings['success_message_radius']) . '" min="0" max="50" step="1" class="small-text" />';
+        echo '<p class="description">' . __('Başarı mesajının köşe yuvarlaklığı (0-50px)', 'woo-donation-popup') . '</p>';
+        echo '</td>';
+        echo '</tr>';
+        
+        echo '</table>';
+        
+        // Mini Sepet Ayarları
+        echo '<h2>' . __('Mini Sepet Ayarları', 'woo-donation-popup') . '</h2>';
+        echo '<p class="wdp-settings-section__hint">' . esc_html__('Mesajın hemen altında özetlenen sepet satırları.', 'woo-donation-popup') . '</p>';
+        echo '<table class="form-table">';
+        
+        echo '<tr>';
+        echo '<th scope="row"><label for="mini_cart_bg">' . __('Sepet Arka Plan Rengi', 'woo-donation-popup') . '</label></th>';
+        echo '<td>';
+        echo '<input type="color" id="mini_cart_bg" name="mini_cart_bg" value="' . esc_attr($settings['mini_cart_bg']) . '" />';
+        echo '<p class="description">' . __('Mini sepetin arka plan rengi', 'woo-donation-popup') . '</p>';
+        echo '</td>';
+        echo '</tr>';
+        
+        echo '<tr>';
+        echo '<th scope="row"><label for="mini_cart_border">' . __('Sepet Border Rengi', 'woo-donation-popup') . '</label></th>';
+        echo '<td>';
+        echo '<input type="color" id="mini_cart_border" name="mini_cart_border" value="' . esc_attr($settings['mini_cart_border']) . '" />';
+        echo '<p class="description">' . __('Mini sepetin kenarlık rengi', 'woo-donation-popup') . '</p>';
+        echo '</td>';
+        echo '</tr>';
+        
+        echo '<tr>';
+        echo '<th scope="row"><label for="mini_cart_radius">' . __('Sepet Border Radius (px)', 'woo-donation-popup') . '</label></th>';
+        echo '<td>';
+        echo '<input type="number" id="mini_cart_radius" name="mini_cart_radius" value="' . esc_attr($settings['mini_cart_radius']) . '" min="0" max="50" step="1" class="small-text" />';
+        echo '<p class="description">' . __('Mini sepetin köşe yuvarlaklığı (0-50px)', 'woo-donation-popup') . '</p>';
+        echo '</td>';
+        echo '</tr>';
+        
+        echo '<tr>';
+        echo '<th scope="row"><label for="cart_item_name_color">' . __('Ürün Adı Rengi', 'woo-donation-popup') . '</label></th>';
+        echo '<td>';
+        echo '<input type="color" id="cart_item_name_color" name="cart_item_name_color" value="' . esc_attr($settings['cart_item_name_color']) . '" />';
+        echo '<p class="description">' . __('Sepetteki ürün adının rengi', 'woo-donation-popup') . '</p>';
+        echo '</td>';
+        echo '</tr>';
+        
+        echo '<tr>';
+        echo '<th scope="row"><label for="cart_item_price_color">' . __('Ürün Fiyat Rengi', 'woo-donation-popup') . '</label></th>';
+        echo '<td>';
+        echo '<input type="color" id="cart_item_price_color" name="cart_item_price_color" value="' . esc_attr($settings['cart_item_price_color']) . '" />';
+        echo '<p class="description">' . __('Sepetteki ürün fiyatının rengi', 'woo-donation-popup') . '</p>';
+        echo '</td>';
+        echo '</tr>';
+        
+        echo '</table>';
+
         // Başarı Ekranı Butonları
         echo '<h2>' . __('Başarı Ekranı Butonları', 'woo-donation-popup') . '</h2>';
+        echo '<p class="wdp-settings-section__hint">' . esc_html__('Mesaj ve sepetin altındaki mavi / yeşil aksiyon düğmeleri.', 'woo-donation-popup') . '</p>';
         echo '<table class="form-table">';
         
         echo '<tr>';
@@ -1439,90 +1644,6 @@ class Woo_Donation_Popup_Admin {
         
         echo '</table>';
         
-        // Başarı Mesajı Ayarları
-        echo '<h2>' . __('Başarı Mesajı Ayarları', 'woo-donation-popup') . '</h2>';
-        echo '<table class="form-table">';
-        
-        echo '<tr>';
-        echo '<th scope="row"><label for="success_message_bg">' . __('Mesaj Arka Plan Rengi', 'woo-donation-popup') . '</label></th>';
-        echo '<td>';
-        echo '<input type="text" id="success_message_bg" name="success_message_bg" value="' . esc_attr($settings['success_message_bg']) . '" class="regular-text" placeholder="rgba(72, 187, 120, 0.1)" />';
-        echo '<p class="description">' . __('Başarı mesajının arka plan rengi (renk veya rgba)', 'woo-donation-popup') . '</p>';
-        echo '</td>';
-        echo '</tr>';
-        
-        echo '<tr>';
-        echo '<th scope="row"><label for="success_message_color">' . __('Mesaj Metin Rengi', 'woo-donation-popup') . '</label></th>';
-        echo '<td>';
-        echo '<input type="color" id="success_message_color" name="success_message_color" value="' . esc_attr($settings['success_message_color']) . '" />';
-        echo '<p class="description">' . __('Başarı mesajının metin rengi', 'woo-donation-popup') . '</p>';
-        echo '</td>';
-        echo '</tr>';
-        
-        echo '<tr>';
-        echo '<th scope="row"><label for="success_message_border">' . __('Mesaj Border Rengi', 'woo-donation-popup') . '</label></th>';
-        echo '<td>';
-        echo '<input type="text" id="success_message_border" name="success_message_border" value="' . esc_attr($settings['success_message_border']) . '" class="regular-text" placeholder="rgba(72, 187, 120, 0.2)" />';
-        echo '<p class="description">' . __('Başarı mesajının kenarlık rengi (renk veya rgba)', 'woo-donation-popup') . '</p>';
-        echo '</td>';
-        echo '</tr>';
-        
-        echo '<tr>';
-        echo '<th scope="row"><label for="success_message_radius">' . __('Mesaj Border Radius (px)', 'woo-donation-popup') . '</label></th>';
-        echo '<td>';
-        echo '<input type="number" id="success_message_radius" name="success_message_radius" value="' . esc_attr($settings['success_message_radius']) . '" min="0" max="50" step="1" class="small-text" />';
-        echo '<p class="description">' . __('Başarı mesajının köşe yuvarlaklığı (0-50px)', 'woo-donation-popup') . '</p>';
-        echo '</td>';
-        echo '</tr>';
-        
-        echo '</table>';
-        
-        // Mini Sepet Ayarları
-        echo '<h2>' . __('Mini Sepet Ayarları', 'woo-donation-popup') . '</h2>';
-        echo '<table class="form-table">';
-        
-        echo '<tr>';
-        echo '<th scope="row"><label for="mini_cart_bg">' . __('Sepet Arka Plan Rengi', 'woo-donation-popup') . '</label></th>';
-        echo '<td>';
-        echo '<input type="color" id="mini_cart_bg" name="mini_cart_bg" value="' . esc_attr($settings['mini_cart_bg']) . '" />';
-        echo '<p class="description">' . __('Mini sepetin arka plan rengi', 'woo-donation-popup') . '</p>';
-        echo '</td>';
-        echo '</tr>';
-        
-        echo '<tr>';
-        echo '<th scope="row"><label for="mini_cart_border">' . __('Sepet Border Rengi', 'woo-donation-popup') . '</label></th>';
-        echo '<td>';
-        echo '<input type="color" id="mini_cart_border" name="mini_cart_border" value="' . esc_attr($settings['mini_cart_border']) . '" />';
-        echo '<p class="description">' . __('Mini sepetin kenarlık rengi', 'woo-donation-popup') . '</p>';
-        echo '</td>';
-        echo '</tr>';
-        
-        echo '<tr>';
-        echo '<th scope="row"><label for="mini_cart_radius">' . __('Sepet Border Radius (px)', 'woo-donation-popup') . '</label></th>';
-        echo '<td>';
-        echo '<input type="number" id="mini_cart_radius" name="mini_cart_radius" value="' . esc_attr($settings['mini_cart_radius']) . '" min="0" max="50" step="1" class="small-text" />';
-        echo '<p class="description">' . __('Mini sepetin köşe yuvarlaklığı (0-50px)', 'woo-donation-popup') . '</p>';
-        echo '</td>';
-        echo '</tr>';
-        
-        echo '<tr>';
-        echo '<th scope="row"><label for="cart_item_name_color">' . __('Ürün Adı Rengi', 'woo-donation-popup') . '</label></th>';
-        echo '<td>';
-        echo '<input type="color" id="cart_item_name_color" name="cart_item_name_color" value="' . esc_attr($settings['cart_item_name_color']) . '" />';
-        echo '<p class="description">' . __('Sepetteki ürün adının rengi', 'woo-donation-popup') . '</p>';
-        echo '</td>';
-        echo '</tr>';
-        
-        echo '<tr>';
-        echo '<th scope="row"><label for="cart_item_price_color">' . __('Ürün Fiyat Rengi', 'woo-donation-popup') . '</label></th>';
-        echo '<td>';
-        echo '<input type="color" id="cart_item_price_color" name="cart_item_price_color" value="' . esc_attr($settings['cart_item_price_color']) . '" />';
-        echo '<p class="description">' . __('Sepetteki ürün fiyatının rengi', 'woo-donation-popup') . '</p>';
-        echo '</td>';
-        echo '</tr>';
-        
-        echo '</table>';
-        
         // Kaydet butonu
         echo '<p class="submit">';
         echo '<button type="submit" id="wdp-save-success-screen-settings" class="button button-primary">' . __('Ayarları Kaydet', 'woo-donation-popup') . '</button>';
@@ -1557,9 +1678,15 @@ class Woo_Donation_Popup_Admin {
 
         echo '<div class="wdp-button-settings-container">';
         echo '<form id="wdp-progress-bar-settings-form">';
+        echo '<div class="wdp-tab-help" role="note">';
+        echo '<p class="wdp-tab-help__title">' . esc_html__('Bu sekmede ne yaparsınız?', 'woo-donation-popup') . '</p>';
+        echo '<ul class="wdp-tab-help__list">';
+        echo '<li>' . esc_html__('Ürün Ayarları’nda ilgili ürün için “Progress Bar” açıksa, hedefe doğru dolan çubuğun renkleri ve kutusu buradan yönetilir.', 'woo-donation-popup') . '</li>';
+        echo '<li>' . esc_html__('Hedef tutar ürün kartındaki “Üst Limit” alanından; bu sekme yalnızca görsel stildir.', 'woo-donation-popup') . '</li>';
+        echo '</ul>';
+        echo '</div>';
 
         echo '<h2>' . __('Progress Bar Görünüm Ayarları', 'woo-donation-popup') . '</h2>';
-        echo '<p>' . __('Bu ayarlar sadece progress barlı bağış formlarındaki barın görünümünü etkiler.', 'woo-donation-popup') . '</p>';
 
         echo '<table class="form-table">';
 
@@ -1660,7 +1787,6 @@ class Woo_Donation_Popup_Admin {
             'button_primary_color' => isset($_POST['button_primary_color']) ? sanitize_hex_color($_POST['button_primary_color']) : '#1e73be',
             'button_primary_hover' => isset($_POST['button_primary_hover']) ? sanitize_hex_color($_POST['button_primary_hover']) : '#185d98',
             'button_border_radius' => isset($_POST['button_border_radius']) ? absint($_POST['button_border_radius']) : 10,
-            'button_text_donate' => isset($_POST['button_text_donate']) ? sanitize_text_field($_POST['button_text_donate']) : 'Bağış Yap',
             'button_text_add_to_cart' => isset($_POST['button_text_add_to_cart']) ? sanitize_text_field($_POST['button_text_add_to_cart']) : 'Sepete Ekle',
             'button_text_go_checkout' => isset($_POST['button_text_go_checkout']) ? sanitize_text_field($_POST['button_text_go_checkout']) : 'Ödemeye Git',
             'modal_background_color' => isset($_POST['modal_background_color']) ? sanitize_hex_color($_POST['modal_background_color']) : '#ffffff',
@@ -1752,6 +1878,9 @@ class Woo_Donation_Popup_Admin {
                 $settings['popup_button_border_radius'] = 50;
             }
         }
+
+        // Eski anahtar uyumluluğu + tek kaynak: admindeki "Popup buton metni" ile aynı (POST'ta alan yoktu, her kayıtta sıfırlanıyordu)
+        $settings['button_text_donate'] = $settings['popup_button_text'];
         
         // Ayarları kaydet
         update_option('wdp_button_settings', $settings);
@@ -1950,6 +2079,14 @@ class Woo_Donation_Popup_Admin {
         
         echo '<div class="wdp-button-settings-container">';
         echo '<form id="wdp-modal-layout-settings-form">';
+        echo '<div class="wdp-tab-help" role="note">';
+        echo '<p class="wdp-tab-help__title">' . esc_html__('Bu sekmede ne yaparsınız?', 'woo-donation-popup') . '</p>';
+        echo '<ul class="wdp-tab-help__list">';
+        echo '<li>' . esc_html__('Popup penceresinin ve sayfa içi (inline) formun piksel genişliği; masaüstü ve mobil için ayrı ayrı.', 'woo-donation-popup') . '</li>';
+        echo '<li>' . esc_html__('Padding, modal içeriğinin kenarlardan boşluğudur; renk veya buton stilleri diğer görünüm sekmelerindedir.', 'woo-donation-popup') . '</li>';
+        echo '<li>' . esc_html__('Modal kutusunun iç arka plan rengi ve iç köşe yuvarlaklığı “Normal Form” sekmesinde “Modal içi kutu” bölümündedir (bu sekme yalnızca ölçüler).', 'woo-donation-popup') . '</li>';
+        echo '</ul>';
+        echo '</div>';
         
         // Masaüstü Modal Genişlik Ayarları
         echo '<h2>' . __('Masaüstü Modal Genişlik Ayarları', 'woo-donation-popup') . '</h2>';
