@@ -380,7 +380,7 @@
       }
       
       // Mobilde kısaltılmış metin
-      const isMobile = window.innerWidth <= 768;
+      const isMobile = window.innerWidth <= 600;
       if (isMobile) {
         countBadge.textContent = `${collapsedCount} form • ⬇`;
       } else {

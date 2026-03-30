@@ -124,7 +124,7 @@ html body .wdp-button-loading::after {
 
 /* Mobile optimizations for loading states */
 /* CRITICAL: Maximum specificity - html body ile tema override koruması */
-@media (max-width: var(--wdp-breakpoint-md)) {
+@media (max-width: 600px) {
   /* Mobilde loading spinner boyutu */
   html body .wdp-loading-spinner,
   html body .wdp-modal .wdp-loading-spinner,
@@ -171,7 +171,7 @@ html body .wdp-button-loading::after {
   }
 }
 
-@media (max-width: var(--wdp-breakpoint-sm)) {
+@media (max-width: 480px) {
   /* Küçük mobilde loading spinner */
   html body .wdp-loading-spinner,
   html body .wdp-modal .wdp-loading-spinner,

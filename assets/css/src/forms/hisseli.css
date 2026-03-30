@@ -357,7 +357,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-form.collapsed .w
   }
 }
 
-@media (max-width: var(--wdp-breakpoint-sm)) {
+@media (max-width: 480px) {
   /* CRITICAL: Maximum specificity for small mobile warning badge - NO !important */
   html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-form.collapsed .wdp-shareholder-header .wdp-shareholder-warning {
     width: 16px;
@@ -781,7 +781,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-shares-header .wdp-collapsed-
   }
 }
 
-@media (max-width: var(--wdp-breakpoint-sm)) {
+@media (max-width: 480px) {
   html body .wdp-modal .wdp-modal-content form.wdp-has-shareholders .wdp-shares-section .wdp-shareholders-area:not(.scrollable),
   html body .wdp-donation-form .wdp-modal-content form.wdp-has-shareholders .wdp-shares-section .wdp-shareholders-area:not(.scrollable) {
     max-height: none;

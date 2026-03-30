@@ -834,7 +834,7 @@ class WDP_Assets {
         .wdp-donation-form * { 
             box-sizing: border-box; 
         }
-        @media (max-width: 768px) {
+        @media (max-width: 600px) {
             .wdp-modal.show .wdp-modal-content { 
                 width: 95%; 
                 max-width: 95%; 

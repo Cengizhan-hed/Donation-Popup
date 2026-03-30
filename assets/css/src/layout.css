@@ -271,7 +271,7 @@ html body .wdp-donation-form .wdp-modal-content:has(form.wdp-has-shareholders) {
 /* Mobile responsive styles with high specificity - Highest specificity */
 /* CRITICAL: Mobile - all forms (popup and in-page) must have equal width */
 /* CRITICAL: In-page forms should stick to screen edges with minimal spacing */
-@media (max-width: var(--wdp-breakpoint-md)) {
+@media (max-width: 600px) {
   /* CRITICAL: Popup modal content - ALWAYS fixed width (540px) */
   html body .wdp-modal.show .wdp-modal-content {
     /* CRITICAL: Standard width - min(540px, 96vw) */
@@ -414,7 +414,7 @@ html body .wdp-donation-form .wdp-modal-content:has(form.wdp-has-shareholders) {
 
 /* CRITICAL: True mobile devices (480px and below) - iOS Safari specific fixes ONLY */
 /* CRITICAL: All forms must have equal width, in-page forms stick to edges */
-@media (max-width: var(--wdp-breakpoint-sm)) {
+@media (max-width: 480px) {
   /* CRITICAL: Popup modal content - Small Mobile - ALWAYS fixed width (540px) */
   html body .wdp-modal.show .wdp-modal-content {
     /* CRITICAL: iOS Safari viewport fix - use dvh units */

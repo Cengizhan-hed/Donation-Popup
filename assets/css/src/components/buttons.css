@@ -357,7 +357,7 @@ html body .wdp-loading-button::after {
 
 
 /* Mobile optimizations for buttons */
-@media (max-width: var(--wdp-breakpoint-md)) {
+@media (max-width: 600px) {
   html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content form .wdp-button-group button {
     min-height: var(--wdp-touch-target-comfortable);
     height: var(--wdp-touch-target-comfortable);
@@ -365,7 +365,7 @@ html body .wdp-loading-button::after {
   }
 }
 
-@media (max-width: var(--wdp-breakpoint-sm)) {
+@media (max-width: 480px) {
   /* Küçük mobilde buton boyutları */
   html body button.wdp-donate-button.wdp-open-modal,
   html body button.wdp-donate-button,
@@ -385,7 +385,7 @@ html body .wdp-loading-button::after {
   }
 }
 
-@media (max-width: var(--wdp-breakpoint-xs)) {
+@media (max-width: 280px) {
   html body button.wdp-donate-button.wdp-open-modal,
   html body button.wdp-donate-button,
   html body button.wdp-open-modal,

@@ -102,7 +102,7 @@ html body .wdp-toast.wdp-toast-info {
 
 /* Mobile optimizations for feedback */
 /* CRITICAL: Maximum specificity - html body ile tema override koruması */
-@media (max-width: var(--wdp-breakpoint-md, 600px)) {
+@media (max-width: 600px) {
   html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-toast,
   html body .wdp-toast {
     bottom: var(--wdp-space-4);
@@ -127,7 +127,7 @@ html body .wdp-toast.wdp-toast-info {
   }
 }
 
-@media (max-width: var(--wdp-breakpoint-sm)) {
+@media (max-width: 480px) {
   html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-toast,
   html body .wdp-toast {
     bottom: var(--wdp-space-3);

@@ -653,7 +653,7 @@ html body .wdp-donation-form .wdp-modal-content form textarea {
   box-shadow: var(--wdp-shadow-subtle, 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03));
 }
 
-@media (max-width: var(--wdp-breakpoint-md)) {
+@media (max-width: 600px) {
   html body .wdp-donation-form .wdp-modal-content form,
   html body .wdp-donation-form .wdp-modal-content form > * {
     width: 100%;

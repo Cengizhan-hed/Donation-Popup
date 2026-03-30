@@ -264,7 +264,7 @@ html body .wdp-progress-bar-percentage-value.on-fill {
 
 /* Mobil optimizasyonlar */
 /* CRITICAL: Maximum specificity - html body ile tema override koruması */
-@media (max-width: var(--wdp-breakpoint-md)) {
+@media (max-width: 600px) {
   html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content, &) .wdp-progress-bar-container,
   html body .wdp-progress-bar-container {
     margin: 14px 0;
@@ -320,7 +320,7 @@ html body .wdp-progress-bar-percentage-value.on-fill {
 
 /* Küçük mobil */
 /* CRITICAL: Maximum specificity - html body ile tema override koruması */
-@media (max-width: var(--wdp-breakpoint-sm)) {
+@media (max-width: 480px) {
   html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content, &) .wdp-progress-bar-container,
   html body .wdp-progress-bar-container {
     margin: 12px 0;

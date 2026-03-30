@@ -193,7 +193,7 @@ html body .wdp-alert--info {
   --wdp-alert-icon-shadow: inset 0 0 0 1px rgba(74, 144, 226, 0.25);
 }
 
-@media (max-width: var(--wdp-breakpoint-md)){
+@media (max-width: 600px) {
   /* CRITICAL: Maximum specificity - html body ile tema override koruması */
   html body .wdp-alert,
   html body .wdp-modal .wdp-alert,

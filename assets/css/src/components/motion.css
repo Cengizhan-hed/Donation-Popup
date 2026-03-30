@@ -42,6 +42,6 @@ html body .wdp-shareholder-header {
 }
 
 /* Mobile optimizations */
-@media (max-width: var(--wdp-breakpoint-md)) {
+@media (max-width: 600px) {
   /* Mobile-specific styles if needed */
 }

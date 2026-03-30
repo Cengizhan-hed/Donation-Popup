@@ -158,7 +158,7 @@ html body #wdp-live-region-assertive {
 }
 
 /* Mobile accessibility optimizations - sadece touch target; focus ring yok */
-@media (max-width: var(--wdp-breakpoint-md)) {
+@media (max-width: 600px) {
   html body .wdp-modal-content button,
   html body .wdp-donation-form .wdp-modal-content button {
     min-height: var(--wdp-touch-target-comfortable);
@@ -166,7 +166,7 @@ html body #wdp-live-region-assertive {
   }
 }
 
-@media (max-width: var(--wdp-breakpoint-sm)) {
+@media (max-width: 480px) {
   html body .wdp-modal-content button,
   html body .wdp-donation-form .wdp-modal-content button {
     min-height: var(--wdp-touch-target-min, 44px);
