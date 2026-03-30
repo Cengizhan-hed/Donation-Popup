@@ -341,8 +341,8 @@ class WDP_Ajax {
             }
 
             // SECURITY: Rate limiting check
-            $client_ip = WDP_Security::get_client_ip();
-            if (!WDP_Security::check_rate_limit($client_ip, 20, 60)) {
+            $rate_limit_key = WDP_Security::get_rate_limit_key('add_to_cart');
+            if (!WDP_Security::check_rate_limit($rate_limit_key, 20, 60)) {
                 throw new WDP_Security_Exception(__('Çok fazla istek gönderildi. Lütfen bir süre bekleyip tekrar deneyin.', 'woo-donation-popup'));
             }
             
@@ -661,8 +661,8 @@ class WDP_Ajax {
                 throw new WDP_Security_Exception(__('Geçersiz istek kaynağı', 'woo-donation-popup'));
             }
 
-            $client_ip = WDP_Security::get_client_ip();
-            if (!WDP_Security::check_rate_limit($client_ip, 60, 60)) {
+            $rate_limit_key = WDP_Security::get_rate_limit_key('fresh_nonces');
+            if (!WDP_Security::check_rate_limit($rate_limit_key, 60, 60)) {
                 throw new WDP_Security_Exception(__('Çok fazla istek gönderildi. Lütfen bir süre bekleyip tekrar deneyin.', 'woo-donation-popup'));
             }
 
@@ -698,8 +698,8 @@ class WDP_Ajax {
                 throw new WDP_Security_Exception(__('Geçersiz istek kaynağı', 'woo-donation-popup'));
             }
 
-            $client_ip = WDP_Security::get_client_ip();
-            if (!WDP_Security::check_rate_limit($client_ip, 40, 60)) {
+            $rate_limit_key = WDP_Security::get_rate_limit_key('verify_submission');
+            if (!WDP_Security::check_rate_limit($rate_limit_key, 40, 60)) {
                 throw new WDP_Security_Exception(__('Çok fazla istek gönderildi. Lütfen bir süre bekleyip tekrar deneyin.', 'woo-donation-popup'));
             }
 

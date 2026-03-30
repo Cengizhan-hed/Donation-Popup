@@ -29,6 +29,10 @@ class WDP_Utils {
      */
     public static function init() {
         self::$debug_enabled = (bool) (defined('WP_DEBUG') && WP_DEBUG);
+
+        // Progress bar toplamlarını artımlı güncelle (büyük sipariş hacminde tam taramayı azaltır).
+        add_action('woocommerce_order_status_completed', array(__CLASS__, 'sync_order_donation_totals_on_complete'), 20, 1);
+        add_action('woocommerce_order_refunded', array(__CLASS__, 'sync_order_donation_totals_on_refund'), 20, 2);
     }
 
     /**
@@ -181,6 +185,13 @@ class WDP_Utils {
             return floatval($cached);
         }
 
+        $meta_total = get_post_meta($product_id, '_wdp_total_donation_amount', true);
+        if ($meta_total !== '' && is_numeric($meta_total)) {
+            $meta_total = max(0.0, floatval($meta_total));
+            wp_cache_set($cache_key, $meta_total, 'wdp_donations', HOUR_IN_SECONDS);
+            return $meta_total;
+        }
+
         // Get total from completed orders ONLY (not from cart)
         // SADECE bu ürün için yapılan bağışları say
         $total = 0.0;
@@ -228,12 +239,129 @@ class WDP_Utils {
             $page++;
         } while ($page <= (int) $order_query->max_num_pages);
 
+        update_post_meta($product_id, '_wdp_total_donation_amount', $total);
+
         // Cache for 1 hour - her ürün için ayrı cache
         wp_cache_set($cache_key, $total, 'wdp_donations', HOUR_IN_SECONDS);
 
         // ÖNEMLİ: Sadece bu ürün için yapılan bağışların toplamını döndür
         // Farklı ürünlerin bağışları birbirine karışmaz
         return floatval($total);
+    }
+
+    /**
+     * Sipariş tamamlandığında artımlı bağış toplamlarını güncelle.
+     *
+     * @param int $order_id WooCommerce order id.
+     * @return void
+     */
+    public static function sync_order_donation_totals_on_complete($order_id) {
+        $order_id = absint($order_id);
+        if (!$order_id) {
+            return;
+        }
+
+        $already_applied = get_post_meta($order_id, '_wdp_donation_totals_applied', true);
+        if ($already_applied === 'yes') {
+            return;
+        }
+
+        $order = wc_get_order($order_id);
+        if (!$order) {
+            return;
+        }
+
+        foreach ($order->get_items() as $item) {
+            $product_id = absint($item->get_product_id());
+            if (!$product_id) {
+                continue;
+            }
+
+            $line_total = self::resolve_donation_line_total($item);
+            if ($line_total <= 0) {
+                continue;
+            }
+
+            self::update_product_donation_total($product_id, $line_total);
+        }
+
+        update_post_meta($order_id, '_wdp_donation_totals_applied', 'yes');
+    }
+
+    /**
+     * Refund oluştuğunda ürün bazlı bağış toplamını azalt.
+     *
+     * @param int $order_id  Parent order id.
+     * @param int $refund_id Refund order id.
+     * @return void
+     */
+    public static function sync_order_donation_totals_on_refund($order_id, $refund_id) {
+        $refund_id = absint($refund_id);
+        if (!$refund_id) {
+            return;
+        }
+
+        $already_reverted = get_post_meta($refund_id, '_wdp_donation_totals_reverted', true);
+        if ($already_reverted === 'yes') {
+            return;
+        }
+
+        $refund = wc_get_order($refund_id);
+        if (!$refund || !is_a($refund, 'WC_Order_Refund')) {
+            return;
+        }
+
+        foreach ($refund->get_items() as $item) {
+            $product_id = absint($item->get_product_id());
+            if (!$product_id) {
+                continue;
+            }
+
+            // Refund satır toplamı negatif gelir; mevcut toplama delta olarak uygula.
+            $refund_total = floatval($item->get_total());
+            if ($refund_total === 0.0) {
+                continue;
+            }
+
+            self::update_product_donation_total($product_id, $refund_total);
+        }
+
+        update_post_meta($refund_id, '_wdp_donation_totals_reverted', 'yes');
+    }
+
+    /**
+     * Resolve effective donation total for an order line.
+     *
+     * @param WC_Order_Item_Product $item Order line item.
+     * @return float
+     */
+    private static function resolve_donation_line_total($item) {
+        $custom_price = $item->get_meta('_custom_price');
+        if ($custom_price !== '' && is_numeric($custom_price) && floatval($custom_price) > 0) {
+            return floatval($custom_price) * max(1, intval($item->get_quantity()));
+        }
+
+        return max(0.0, floatval($item->get_total()));
+    }
+
+    /**
+     * Update product donation total and invalidate relevant caches.
+     *
+     * @param int   $product_id Product id.
+     * @param float $delta      Delta amount (positive/negative).
+     * @return void
+     */
+    private static function update_product_donation_total($product_id, $delta) {
+        $product_id = absint($product_id);
+        if (!$product_id || !is_numeric($delta) || floatval($delta) == 0.0) {
+            return;
+        }
+
+        $current_total = floatval(get_post_meta($product_id, '_wdp_total_donation_amount', true));
+        $next_total = max(0.0, $current_total + floatval($delta));
+
+        update_post_meta($product_id, '_wdp_total_donation_amount', $next_total);
+        wp_cache_delete('wdp_total_donation_' . $product_id, 'wdp_donations');
     }
 
     /**

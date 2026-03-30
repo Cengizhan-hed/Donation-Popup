@@ -140,6 +140,10 @@ class WDP_Security {
      * @return bool
      */
     public static function check_rate_limit($key, $limit = 10, $period = 60) {
+        $key = (string) $key;
+        if ($key === '') {
+            $key = 'anonymous';
+        }
         $transient_key = 'wdp_rate_limit_' . md5($key);
         $current = get_transient($transient_key);
 
@@ -154,6 +158,30 @@ class WDP_Security {
 
         set_transient($transient_key, $current + 1, $period);
         return true;
+    }
+
+    /**
+     * Build a rate-limit key that is stable per visitor/session.
+     *
+     * @param string $action Action scope.
+     * @return string
+     */
+    public static function get_rate_limit_key($action = 'default') {
+        $action = sanitize_key((string) $action);
+
+        if (is_user_logged_in()) {
+            return 'u:' . get_current_user_id() . '|a:' . $action;
+        }
+
+        $session_id = '';
+        if (function_exists('WC') && isset(WC()->session)) {
+            $session_id = (string) WC()->session->get_customer_id();
+        }
+
+        $ip = self::get_client_ip();
+        $ua = isset($_SERVER['HTTP_USER_AGENT']) ? sanitize_text_field(wp_unslash($_SERVER['HTTP_USER_AGENT'])) : 'unknown';
+
+        return 'g:' . md5($session_id . '|' . $ip . '|' . $ua) . '|a:' . $action;
     }
 
     /**
