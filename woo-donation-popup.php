@@ -207,7 +207,36 @@ function wdp_render_donation_form($product_id, $args = array()) {
 // JavaScript için global fonksiyon ekle
 add_action('wp_footer', 'wdp_add_js_helpers');
 
+function wdp_should_render_js_helpers() {
+   if (is_admin()) {
+      return false;
+   }
+
+   if (wp_script_is('wdp-init-js', 'enqueued') || wp_script_is('wdp-module-loader-js', 'enqueued')) {
+      return true;
+   }
+
+   if (function_exists('is_product') && is_product()) {
+      return true;
+   }
+
+   if (is_singular()) {
+      $post = get_post();
+      if ($post && has_shortcode($post->post_content, 'wdp_donation_button')) {
+         return true;
+      }
+      if ($post && has_shortcode($post->post_content, 'wdp_donation_form')) {
+         return true;
+      }
+   }
+
+   return false;
+}
+
 function wdp_add_js_helpers() {
+   if (!wdp_should_render_js_helpers()) {
+      return;
+   }
    ?>
    <script>
    if (typeof window.WDP === 'undefined') {

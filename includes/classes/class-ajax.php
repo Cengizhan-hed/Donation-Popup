@@ -63,6 +63,41 @@ if (!defined('ABSPATH')) {
  * Class WDP_Ajax
  */
 class WDP_Ajax {
+    /**
+     * Build a cache suffix scoped to current cart session.
+     *
+     * @return string
+     */
+    private static function get_cart_cache_suffix() {
+        $user_id = get_current_user_id();
+        if ($user_id > 0) {
+            return 'user_' . $user_id;
+        }
+
+        if (function_exists('WC') && isset(WC()->session)) {
+            $customer_id = WC()->session->get_customer_id();
+            if (!empty($customer_id)) {
+                return 'guest_' . sanitize_key((string) $customer_id);
+            }
+        }
+
+        return 'guest_fallback_' . wp_hash(
+            (isset($_SERVER['REMOTE_ADDR']) ? wp_unslash($_SERVER['REMOTE_ADDR']) : '0.0.0.0') .
+            '|' .
+            (isset($_SERVER['HTTP_USER_AGENT']) ? wp_unslash($_SERVER['HTTP_USER_AGENT']) : 'unknown')
+        );
+    }
+
+    /**
+     * Delete short-lived cart caches for the active session.
+     *
+     * @return void
+     */
+    private static function clear_cart_cache() {
+        $suffix = self::get_cart_cache_suffix();
+        wp_cache_delete('wdp_cart_contents_' . $suffix, 'wdp_cart');
+        wp_cache_delete('wdp_cart_count_' . $suffix, 'wdp_cart');
+    }
 
     /**
      * Initialize AJAX handlers.
@@ -570,10 +605,7 @@ class WDP_Ajax {
         }
 
             // PERFORMANCE: Clear cart cache after adding item
-            $cache_key_cart = 'wdp_cart_contents_' . get_current_user_id();
-            $cache_key_count = 'wdp_cart_count_' . get_current_user_id();
-            wp_cache_delete($cache_key_cart, 'wdp_cart');
-            wp_cache_delete($cache_key_count, 'wdp_cart');
+            self::clear_cart_cache();
             
             $cart_item_key = WC()->cart->add_to_cart($product_id, $quantity, $variation_id, array(), $cart_item_data);
 
@@ -685,9 +717,7 @@ class WDP_Ajax {
 
             foreach (WC()->cart->get_cart() as $cart_item) {
                 if (!empty($cart_item['unique_submission_key']) && $cart_item['unique_submission_key'] === $key) {
-                    $uid = get_current_user_id();
-                    wp_cache_delete('wdp_cart_contents_' . $uid, 'wdp_cart');
-                    wp_cache_delete('wdp_cart_count_' . $uid, 'wdp_cart');
+                    self::clear_cart_cache();
 
                     WDP_Utils::json_success(array(
                         'in_cart' => true,
@@ -791,7 +821,7 @@ class WDP_Ajax {
         }
 
         // PERFORMANCE: Cache cart count for short period (5 seconds) to reduce database queries
-        $cache_key = 'wdp_cart_count_' . get_current_user_id();
+        $cache_key = 'wdp_cart_count_' . self::get_cart_cache_suffix();
         $cached_count = wp_cache_get($cache_key, 'wdp_cart');
         
         if (false === $cached_count) {
@@ -827,7 +857,7 @@ class WDP_Ajax {
         }
 
         // PERFORMANCE: Cache cart contents for short period (3 seconds)
-        $cache_key = 'wdp_cart_contents_' . get_current_user_id();
+        $cache_key = 'wdp_cart_contents_' . self::get_cart_cache_suffix();
         $cached_items = wp_cache_get($cache_key, 'wdp_cart');
         
         if (false === $cached_items) {
@@ -879,7 +909,7 @@ class WDP_Ajax {
             $item_data = array(
                 'key' => $cart_item_key,
                 'product_id' => $cart_item['product_id'],
-                'product_name' => $product->get_name(),
+                'product_name' => wp_strip_all_tags((string) $product->get_name()),
                 'quantity' => $quantity,
                 'price' => $product_price, // Numeric değer (JavaScript için)
                 'line_total' => $line_total, // Toplam fiyat (JavaScript için)
@@ -949,32 +979,17 @@ class WDP_Ajax {
      * @return void
      */
     public static function remove_cart_item() {
-        // SECURITY: Request origin validation (öncelikli)
-        $referer = isset($_SERVER['HTTP_REFERER']) ? esc_url_raw($_SERVER['HTTP_REFERER']) : '';
-        $home_url = home_url();
-        
-        // Referer kontrolü - eğer referer varsa ve aynı domain değilse reddet
-        if (!empty($referer) && strpos($referer, $home_url) !== 0) {
+        // SECURITY: Nonce verification (zorunlu)
+        if (!check_ajax_referer('wdp_remove_cart_item', 'security', false)) {
+            WDP_Utils::json_error(__('Güvenlik doğrulaması başarısız', 'woo-donation-popup'));
+            return;
+        }
+
+        // SECURITY: Request origin validation
+        if (!WDP_Security::validate_request_origin()) {
             WDP_Utils::json_error(__('Geçersiz istek kaynağı', 'woo-donation-popup'));
             return;
         }
-        
-        // SECURITY: Nonce verification (esnek - nonce yoksa sadece referer kontrolü yeterli)
-        $nonce = isset($_POST['security']) ? sanitize_text_field($_POST['security']) : '';
-        
-        // Nonce varsa kontrol et, yoksa referer kontrolü yeterli (aynı session, aynı domain)
-        if (!empty($nonce)) {
-            $nonce_valid = wp_verify_nonce($nonce, 'wdp_remove_cart_item');
-            if (!$nonce_valid) {
-                // Nonce doğrulaması başarısız - ama referer kontrolü geçtiyse devam et
-                // (Dinamik içerik için nonce süresi dolmuş olabilir)
-                if (defined('WP_DEBUG') && WP_DEBUG) {
-                    error_log('WDP Remove Cart Item: Nonce verification failed but referer is valid. Continuing...');
-                }
-            }
-        }
-        
-        // Eğer referer kontrolü geçtiyse ve kullanıcı aynı domain'deyse, işleme devam et
 
         if (!function_exists('WC') || !isset(WC()->cart)) {
             WDP_Utils::json_error(__('WooCommerce sepet nesnesi bulunamadı.', 'woo-donation-popup'));
@@ -984,7 +999,7 @@ class WDP_Ajax {
         try {
 
             // Get cart item key
-            $cart_item_key = isset($_POST['cart_item_key']) ? sanitize_text_field($_POST['cart_item_key']) : '';
+            $cart_item_key = isset($_POST['cart_item_key']) ? sanitize_text_field(wp_unslash($_POST['cart_item_key'])) : '';
 
             if (empty($cart_item_key)) {
                 throw new WDP_Validation_Exception(__('Sepet öğesi anahtarı bulunamadı.', 'woo-donation-popup'));
@@ -998,8 +1013,7 @@ class WDP_Ajax {
             }
 
             // Clear all cart cache variations
-            wp_cache_delete('wdp_cart_contents_' . get_current_user_id(), 'wdp_cart');
-            wp_cache_delete('wdp_cart_count_' . get_current_user_id(), 'wdp_cart');
+            self::clear_cart_cache();
             wp_cache_delete('wdp_cart_items_' . WC()->cart->get_cart_hash(), 'wdp_cart');
             wp_cache_delete('wdp_cart_count_' . WC()->cart->get_cart_hash(), 'wdp_cart');
 

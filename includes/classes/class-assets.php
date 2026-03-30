@@ -1232,7 +1232,13 @@ class WDP_Assets {
 
         // WooCommerce ürün sayfası kontrolü
         if (!$should_enqueue && function_exists('is_product') && is_product()) {
-            $should_enqueue = true;
+            $current_product_id = get_the_ID();
+            if ($current_product_id) {
+                $allow_custom_price = get_post_meta($current_product_id, '_allow_custom_price', true) === 'yes';
+                $allow_multiple_shares = get_post_meta($current_product_id, '_allow_multiple_shares', true) === 'yes';
+                $enable_progress_bar = get_post_meta($current_product_id, '_enable_progress_bar', true) === 'yes';
+                $should_enqueue = $allow_custom_price || $allow_multiple_shares || $enable_progress_bar;
+            }
         }
 
         // Tüm sayfalarda yükle (kullanıcı deneyimi için)

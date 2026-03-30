@@ -201,31 +201,7 @@
       safeLog("Error checking theme-specific cart icons:", e);
     }
 
-    // Sayfadaki tüm sepet ikonlarını ve side cart'ları görünür yapmak için
-    // CSS ekleyelim (son çare olarak)
-    const styleElement = document.createElement("style");
-    styleElement.textContent = `
-      .cart-contents, .cart-icon, .cart-link, #cart-icon, 
-      [class*="cart-icon"], [class*="cart-button"],
-      .xoo-wsc-container, .site-cart-sidebar, .widget_shopping_cart_content,
-      .cart-sidebar, .side-cart, .cart-drawer, #side-cart,
-      [class*="side-cart"], [class*="sidecart"], [class*="cart-sidebar"],
-      [class*="cart-drawer"], [class*="mini-cart"],
-      .fusion-icon-shopping-cart, .fusion-widget-cart, .fusion-main-menu-cart,
-      .fusion-custom-menu-item-contents, .fusion-menu-cart, .fusion-menu-cart-items {
-        display: block !important;
-        opacity: 1 !important;
-        visibility: visible !important;
-      }
-    `;
-    document.head.appendChild(styleElement);
-
-    // 5 saniye sonra stil elementini kaldır
-    setTimeout(() => {
-      if (document.head.contains(styleElement)) {
-        document.head.removeChild(styleElement);
-      }
-    }, 5000);
+    // Tema/eklenti stil çatışmalarını azaltmak için global !important CSS enjekte etmiyoruz.
   }
 
   function createCartItemsHTML(cartItems) {
@@ -293,25 +269,15 @@
           priceDisplay = formatPrice(totalPrice) + ' ' + currencySymbol;
         }
         
-        // Ürün adını al (product_name veya name)
+        // Ürün adını her zaman escape ederek render et (XSS'e karşı güvenli varsayılan)
         const productName = item.product_name || item.name || 'Ürün';
-        
-        // Ürün adında HTML varsa (ikon vb.) onu koru, yoksa escape et
-        let productNameHtml = productName;
-        // Eğer product_name içinde HTML tag'leri varsa (örn: <i class="icon-...">) olduğu gibi bırak
-        if (productName.includes('<') && productName.includes('>')) {
-          // HTML içeriyor, escape etme (zaten güvenli olmalı, WordPress'ten geliyor)
-          productNameHtml = productName;
-        } else {
-          // HTML içermiyor, güvenlik için escape et
-          productNameHtml = escapeHtml(productName);
-        }
+        const productNameHtml = escapeHtml(productName);
         
         safeLog("Cart item:", {
           name: productName,
           product_name: item.product_name,
           name_field: item.name,
-          hasHtml: productName.includes('<'),
+          hasHtml: false,
           price: item.price,
           parsedPrice: itemPrice,
           line_total: item.line_total,

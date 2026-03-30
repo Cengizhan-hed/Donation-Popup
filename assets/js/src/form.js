@@ -99,6 +99,17 @@
     }
   }, 300) : null;
 
+  function isFormProcessing(form) {
+    return form && form.dataset && form.dataset.wdpProcessing === "1";
+  }
+
+  function setFormProcessing(form, processing) {
+    if (!form || !form.dataset) {
+      return;
+    }
+    form.dataset.wdpProcessing = processing ? "1" : "0";
+  }
+
   function showInputError(input, message) {
     input.classList.add('wdp-error');
     // Remove previous error
@@ -494,8 +505,8 @@ ${createCartItemsHTML([])}
       checkoutBtn.classList.remove("wdp-loading");
     }
 
-    // İşlem bayrağını sıfırla
-    state.isProcessing = false;
+    // Yalnızca ilgili formun kilidini kaldır
+    setFormProcessing(form, false);
   }
 
   /**
@@ -779,7 +790,7 @@ ${createCartItemsHTML([])}
         complete: () => {
           safeLog("jQuery AJAX request completed");
           // İşlem her durumda tamamlandıktan sonra bayrağı sıfırla
-          state.isProcessing = false;
+          setFormProcessing(form, false);
 
           // Butonları tekrar aktif et (her ihtimale karşı)
           setTimeout(() => {
@@ -855,7 +866,7 @@ ${createCartItemsHTML([])}
         })
         .finally(() => {
           // İşlem her durumda tamamlandıktan sonra bayrağı sıfırla
-          state.isProcessing = false;
+          setFormProcessing(form, false);
 
           // Butonları tekrar aktif et (her ihtimale karşı)
           setTimeout(() => {
@@ -979,13 +990,13 @@ ${createCartItemsHTML([])}
       }
 
       // Eğer işlem zaten devam ediyorsa, yeni bir istek gönderme
-      if (state.isProcessing) {
+      if (isFormProcessing(form)) {
         safeLog("Processing already in progress");
         return false;
       }
 
       // İşlem başladığını işaretle
-      state.isProcessing = true;
+      setFormProcessing(form, true);
 
       // Butonları bul
       const addToCartBtn = form.querySelector('button[name="donation_add_to_cart"]');

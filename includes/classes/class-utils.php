@@ -185,33 +185,38 @@ class WDP_Utils {
         // SADECE bu ürün için yapılan bağışları say
         $total = 0.0;
 
-        // Query completed orders containing this product
-        // Sadece tamamlanmış siparişlerden al (processing değil, sadece completed)
-        $orders = wc_get_orders(array(
-            'status' => array('wc-completed'), // Sadece completed orders
-            'limit' => -1,
-            'return' => 'ids',
-        ));
+        // Büyük mağazalarda memory/CPU maliyetini azaltmak için siparişleri sayfalar halinde işle.
+        $page = 1;
+        $per_page = 200;
 
-        foreach ($orders as $order_id) {
-            $order = wc_get_order($order_id);
-            if (!$order) {
-                continue;
+        do {
+            $order_query = wc_get_orders(array(
+                'status' => array('wc-completed'),
+                'limit' => $per_page,
+                'page' => $page,
+                'paginate' => true,
+                'return' => 'objects',
+            ));
+
+            if (empty($order_query) || empty($order_query->orders)) {
+                break;
             }
 
-            foreach ($order->get_items() as $item) {
-                // Product ID kontrolü - SADECE bu ürün için yapılan bağışları say
-                $item_product_id = $item->get_product_id();
-                
-                // ÖNEMLİ: Sadece ana ürün ID'si eşleşiyorsa say
-                // Variation varsa bile, ana ürün ID'si eşleşmeli (çünkü variation'lar aynı ana ürünün varyantlarıdır)
-                if ($item_product_id === $product_id) {
-                    // Get custom price if available (order item meta'dan)
+            foreach ($order_query->orders as $order) {
+                if (!$order) {
+                    continue;
+                }
+
+                foreach ($order->get_items() as $item) {
+                    $item_product_id = (int) $item->get_product_id();
+                    if ($item_product_id !== $product_id) {
+                        continue;
+                    }
+
                     $custom_price = $item->get_meta('_custom_price');
                     if ($custom_price && floatval($custom_price) > 0) {
                         $total += floatval($custom_price) * $item->get_quantity();
                     } else {
-                        // Custom price yoksa, item total'ını kullan
                         $item_total = floatval($item->get_total());
                         if ($item_total > 0) {
                             $total += $item_total;
@@ -219,7 +224,9 @@ class WDP_Utils {
                     }
                 }
             }
-        }
+
+            $page++;
+        } while ($page <= (int) $order_query->max_num_pages);
 
         // Cache for 1 hour - her ürün için ayrı cache
         wp_cache_set($cache_key, $total, 'wdp_donations', HOUR_IN_SECONDS);

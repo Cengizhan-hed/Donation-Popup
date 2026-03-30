@@ -266,6 +266,10 @@
       state.activeModal = modal
       safeLog("Active modal set:", state.activeModal)
 
+      // Modal tekrar açılıyorsa aynı listener'ların birikmesini önle.
+      document.removeEventListener("mousedown", handleOutsideClick)
+      document.removeEventListener("keydown", handleEscKeyPress)
+
       // Modal dışına tıklama olayını ekle - Her modal açılışında yeniden ekle
       document.addEventListener("mousedown", handleOutsideClick)
 

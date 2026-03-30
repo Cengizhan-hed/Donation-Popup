@@ -243,15 +243,36 @@ class WDP_Security {
      * @return bool
      */
     public static function validate_request_origin() {
-        // Check referer
-        $referer = isset($_SERVER['HTTP_REFERER']) ? esc_url_raw($_SERVER['HTTP_REFERER']) : '';
-        $home_url = home_url();
-        
-        if (!empty($referer) && strpos($referer, $home_url) !== 0) {
+        $site_host = wp_parse_url(home_url(), PHP_URL_HOST);
+        if (empty($site_host)) {
             return false;
         }
-        
-        return true;
+
+        $referer = isset($_SERVER['HTTP_REFERER']) ? esc_url_raw(wp_unslash($_SERVER['HTTP_REFERER'])) : '';
+        $origin = isset($_SERVER['HTTP_ORIGIN']) ? esc_url_raw(wp_unslash($_SERVER['HTTP_ORIGIN'])) : '';
+
+        if (!empty($origin)) {
+            $origin_host = wp_parse_url($origin, PHP_URL_HOST);
+            if (empty($origin_host) || !hash_equals((string) $site_host, (string) $origin_host)) {
+                return false;
+            }
+            return true;
+        }
+
+        if (!empty($referer)) {
+            $referer_host = wp_parse_url($referer, PHP_URL_HOST);
+            if (empty($referer_host) || !hash_equals((string) $site_host, (string) $referer_host)) {
+                return false;
+            }
+            return true;
+        }
+
+        $fetch_site = isset($_SERVER['HTTP_SEC_FETCH_SITE']) ? strtolower(sanitize_text_field(wp_unslash($_SERVER['HTTP_SEC_FETCH_SITE']))) : '';
+        if (in_array($fetch_site, array('same-origin', 'same-site', 'none'), true)) {
+            return true;
+        }
+
+        return false;
     }
 
     /**

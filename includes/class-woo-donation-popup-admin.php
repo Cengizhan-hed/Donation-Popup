@@ -3,6 +3,20 @@
  * WooCommerce Donation Modal Popup Admin Class
  */
 class Woo_Donation_Popup_Admin {
+    /**
+     * Store settings in a non-autoload option to keep front bootstrap lean.
+     *
+     * @param string $option_name Option key.
+     * @param mixed  $value       Option value.
+     * @return bool
+     */
+    private function update_non_autoload_option($option_name, $value) {
+        if (false === get_option($option_name, false)) {
+            return add_option($option_name, $value, '', 'no');
+        }
+
+        return update_option($option_name, $value, false);
+    }
 
     /**
      * Constructor
@@ -371,14 +385,14 @@ class Woo_Donation_Popup_Admin {
         $form_shortcode = '[wdp_donation_form id="' . $product->get_id() . '"]';
 
         // Grid/kart tabanlı ürün bloğu
-        echo '<div class="wdp-product-card" data-product-id="' . $product->get_id() . '">';
+        echo '<div class="wdp-product-card" data-product-id="' . esc_attr($product->get_id()) . '">';
 
         // Üst kısım: Ürün adı
         echo '<div class="wdp-product-main">';
         echo '<div class="wdp-product-title">';
-        echo '<a href="' . get_edit_post_link($product->get_id()) . '" target="_blank">' . $product->get_name() . '</a>';
+        echo '<a href="' . esc_url(get_edit_post_link($product->get_id())) . '" target="_blank">' . esc_html($product->get_name()) . '</a>';
         echo '</div>';
-        echo '<input type="hidden" name="product_id" value="' . $product->get_id() . '">';
+        echo '<input type="hidden" name="product_id" value="' . esc_attr($product->get_id()) . '">';
         echo '</div>'; // .wdp-product-main
 
         // Orta kısım: ayar grid'i (her kolon altında ilgili alt ayar)
@@ -1883,7 +1897,7 @@ class Woo_Donation_Popup_Admin {
         $settings['button_text_donate'] = $settings['popup_button_text'];
         
         // Ayarları kaydet
-        update_option('wdp_button_settings', $settings);
+        $this->update_non_autoload_option('wdp_button_settings', $settings);
         
         // Başarılı yanıt döndür
         wp_send_json_success(array(
@@ -1952,7 +1966,7 @@ class Woo_Donation_Popup_Admin {
         }
         
         // Ayarları kaydet
-        update_option('wdp_shareholder_settings', $settings);
+        $this->update_non_autoload_option('wdp_shareholder_settings', $settings);
         
         // Başarılı yanıt döndür
         wp_send_json_success(array(
@@ -2006,7 +2020,7 @@ class Woo_Donation_Popup_Admin {
         }
         
         // Ayarları kaydet
-        update_option('wdp_success_settings', $settings);
+        $this->update_non_autoload_option('wdp_success_settings', $settings);
         
         // Başarılı yanıt döndür
         wp_send_json_success(array(
@@ -2041,7 +2055,7 @@ class Woo_Donation_Popup_Admin {
             'percentage_text' => isset($_POST['progress_percentage_text']) ? sanitize_hex_color($_POST['progress_percentage_text']) : '#1e293b',
         );
 
-        update_option('wdp_progress_bar_settings', $settings);
+        $this->update_non_autoload_option('wdp_progress_bar_settings', $settings);
 
         wp_send_json_success(array(
             'message' => __('Progress bar ayarları başarıyla kaydedildi.', 'woo-donation-popup'),
@@ -2310,7 +2324,7 @@ class Woo_Donation_Popup_Admin {
         }
         
             // Ayarları kaydet
-            $saved = update_option('wdp_modal_layout_settings', $settings);
+            $saved = $this->update_non_autoload_option('wdp_modal_layout_settings', $settings);
             
             if ($saved === false) {
                 wp_send_json_error(array('message' => __('Ayarlar kaydedilirken bir hata oluştu.', 'woo-donation-popup')));
@@ -2323,7 +2337,10 @@ class Woo_Donation_Popup_Admin {
             ));
             
         } catch (Exception $e) {
-            wp_send_json_error(array('message' => __('Bir hata oluştu: ', 'woo-donation-popup') . $e->getMessage()));
+            if (defined('WP_DEBUG') && WP_DEBUG) {
+                error_log('WDP modal layout save error: ' . $e->getMessage());
+            }
+            wp_send_json_error(array('message' => __('Bir hata oluştu. Lütfen tekrar deneyin.', 'woo-donation-popup')));
         }
     }
 }
