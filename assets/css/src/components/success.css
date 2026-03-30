@@ -130,11 +130,12 @@ html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-success-screen, .wdp-moda
   color: var(--wdp-success-message-color, #059669);
   text-align: center;
   margin: 0 0 var(--wdp-space-4) 0;
-  padding: 12px 16px;
-  background: linear-gradient(135deg, rgba(72, 187, 120, 0.12) 0%, rgba(72, 187, 120, 0.08) 100%);
-  border: 1px solid rgba(72, 187, 120, 0.25);
-  border-radius: var(--wdp-success-message-radius, 10px);
-  box-shadow: 0 1px 3px 0 rgba(72, 187, 120, 0.1);
+  padding: 0 40px;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  min-height: 32px;
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-success-screen, .wdp-modal-content .wdp-success-screen) .wdp-mini-cart {
@@ -327,7 +328,7 @@ html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-mini-cart-items, .wdp-mod
   /* CRITICAL: Maximum specificity - html body ile tema override koruması */
   html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-success-screen, .wdp-modal-content .wdp-success-screen) .wdp-success-message {
     font-size: 13px;
-    padding: var(--wdp-space-2);
+    padding: 0 36px;
     margin-bottom: var(--wdp-space-3);
   }
 
