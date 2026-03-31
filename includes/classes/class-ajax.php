@@ -954,6 +954,12 @@ class WDP_Ajax {
                                 'value' => $shareholder['name'] . (isset($shareholder['phone']) ? ' - ' . $shareholder['phone'] : ''),
                             );
                         }
+                        if (isset($shareholder['note']) && $shareholder['note'] !== '') {
+                            $meta[] = array(
+                                'key' => sprintf(__('%d. Hissedar Notu', 'woo-donation-popup'), $index),
+                                'value' => $shareholder['note'],
+                            );
+                        }
                     }
                 }
                 

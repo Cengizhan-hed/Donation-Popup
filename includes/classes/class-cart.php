@@ -238,6 +238,13 @@ class WDP_Cart {
                                 'value' => $shareholder['name'] . (!empty($shareholder['phone']) ? ' (' . $shareholder['phone'] . ')' : ''),
                             );
                         }
+
+                        if (isset($shareholder['note']) && $shareholder['note'] !== '') {
+                            $item_data[] = array(
+                                'key' => sprintf(__('%d. Hissedar Notu', 'woo-donation-popup'), $key),
+                                'value' => $shareholder['note'],
+                            );
+                        }
                     }
                 }
             } else {
@@ -246,6 +253,13 @@ class WDP_Cart {
                     $item_data[] = array(
                         'key' => __('Bağışçı', 'woo-donation-popup'),
                         'value' => $donation_data['full_name'] . (!empty($donation_data['phone']) ? ' (' . $donation_data['phone'] . ')' : ''),
+                    );
+                }
+
+                if (isset($donation_data['note']) && $donation_data['note'] !== '') {
+                    $item_data[] = array(
+                        'key' => __('Bağış Notu', 'woo-donation-popup'),
+                        'value' => $donation_data['note'],
                     );
                 }
             }
