@@ -855,31 +855,31 @@ class WDP_Assets {
         // Minimize size for faster page load
         return "
         /* PERFORMANCE: Critical CSS - Modal visibility only */
-        html body .wdp-modal:not(.show) { 
-            display: none !important;
-            visibility: hidden !important;
-            opacity: 0 !important;
-            pointer-events: none !important;
+        html body .wdp-modal.wdp-modal:not(.show) {
+            display: none;
+            visibility: hidden;
+            opacity: 0;
+            pointer-events: none;
         }
-        html body .wdp-modal.show { 
-            display: flex !important;
-            position: fixed !important;
-            z-index: 2147483645 !important;
-            top: 0 !important;
-            left: 0 !important;
-            right: 0 !important;
-            bottom: 0 !important;
-            width: 100vw !important;
-            height: 100vh !important;
-            visibility: visible !important;
-            opacity: 1 !important;
+        html body .wdp-modal.wdp-modal.show {
+            display: flex;
+            position: fixed;
+            z-index: 2147483645;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            width: 100vw;
+            height: 100vh;
+            visibility: visible;
+            opacity: 1;
         }
-        html body .wdp-modal-content {
-            z-index: 2147483646 !important;
-            position: relative !important;
+        html body .wdp-modal .wdp-modal-content.wdp-modal-content {
+            z-index: 2147483646;
+            position: relative;
         }
-        html body.wdp-modal-open {
-            overflow: hidden !important;
+        html body.wdp-modal-open.wdp-modal-open {
+            overflow: hidden;
         }
         ";
     }
