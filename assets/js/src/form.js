@@ -450,12 +450,30 @@ ${createCartItemsHTML([])}
       // WooCommerce sepet fragmentlerini güncelle
       updateWooCommerceCart();
     } else {
-      const fallbackMessage = data.message || "Bir hata oluştu. Lütfen tekrar deneyin.";
+      const rawMessage = data && data.message ? String(data.message) : "";
+      const normalizedMessage = rawMessage.toLowerCase();
+      const responseCode = data && data.code ? String(data.code) : "";
+      const isValidationError =
+        responseCode === "validation_error" ||
+        (data && Array.isArray(data.errors) && data.errors.length > 0);
+      const isTechnicalNoiseError =
+        responseCode === "security_error" ||
+        responseCode === "unknown_error" ||
+        normalizedMessage.includes("güvenlik") ||
+        normalizedMessage.includes("geçersiz istek") ||
+        normalizedMessage.includes("beklenmeyen bir hata") ||
+        normalizedMessage.includes("sepet nesnesi");
 
-      showAlert([fallbackMessage], {
-        type: 'error',
-        title: 'İşlem tamamlanamadı'
-      });
+      const fallbackMessage = rawMessage || "İşlem şu anda tamamlanamadı. Lütfen tekrar deneyin.";
+
+      // Sadece kullanıcının düzeltebileceği doğrulama hatalarında popup göster.
+      // Teknik/sistem hatalarında gereksiz UX gürültüsünü önlemek için popup gösterme.
+      if (isValidationError && !isTechnicalNoiseError) {
+        showAlert([fallbackMessage], {
+          type: 'error',
+          title: 'İşlem tamamlanamadı'
+        });
+      }
 
       const errorMsg = form.querySelector(".wdp-form-error");
       if (errorMsg) {
@@ -481,10 +499,6 @@ ${createCartItemsHTML([])}
     safeLog("AJAX error:", error);
 
     clearAlerts();
-    showAlert(['Bağlantı hatası oluştu. Lütfen tekrar deneyin.'], {
-      type: 'warning',
-      title: 'Bağlantı sorunu'
-    });
 
     const errorMsg = form.querySelector(".wdp-form-error");
     if (errorMsg) {

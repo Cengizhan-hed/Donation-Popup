@@ -399,35 +399,25 @@
       button.style.opacity = "0.5";
       button.style.cursor = "wait";
 
-      try {
-        // Remove item via AJAX
-        // WooCommerce AJAX kullan (daha güvenilir)
-        const wcRemoveUrl = (typeof wc_add_to_cart_params !== 'undefined' && wc_add_to_cart_params.wc_ajax_url) 
-          ? wc_add_to_cart_params.wc_ajax_url.toString().replace("%%endpoint%%", "remove_from_cart")
-          : null;
-        
-        // Custom endpoint fallback
+      const sendRemoveCartItemRequest = async () => {
         const nonce = getAjaxNonce("remove_cart_item");
         safeLog("Remove cart item - cart_item_key:", cartItemKey, "nonce available:", !!nonce);
-        
+
         const formData = new FormData();
         formData.append("action", "wdp_remove_cart_item");
         formData.append("cart_item_key", cartItemKey);
-        
-        // Nonce varsa ekle, yoksa referer kontrolü yeterli
         if (nonce) {
           formData.append("security", nonce);
         }
-        
-        const ajaxUrl = wdp_ajax.ajax_url;
 
+        const ajaxUrl = wdp_ajax.ajax_url;
         const response = await fetch(ajaxUrl, {
           method: "POST",
           body: formData,
           credentials: "same-origin",
           headers: {
-            'X-Requested-With': 'XMLHttpRequest'
-          }
+            "X-Requested-With": "XMLHttpRequest",
+          },
         });
 
         if (!response.ok) {
@@ -436,16 +426,29 @@
 
         const text = await response.text();
         safeLog("Remove cart item response:", text);
-        
-        let data;
+
         try {
-          data = JSON.parse(text);
+          return JSON.parse(text);
         } catch (parseError) {
           safeLog("Error parsing remove cart item response:", parseError, text);
           throw new Error("Invalid JSON response");
         }
+      };
 
+      try {
+        let data = await sendRemoveCartItemRequest();
         safeLog("Remove cart item response data:", data);
+
+        const responseCode = data && data.code ? String(data.code) : "";
+        const responseMessage = data && data.message ? String(data.message).toLowerCase() : "";
+        const isSecurityError = responseCode === "security_error" || responseMessage.includes("güvenlik");
+
+        // Nonce timeout / mismatch olursa kullanıcıya hata göstermeden nonce yenileyip bir kez daha dene.
+        if (!data.success && isSecurityError && WDPApp.utils && typeof WDPApp.utils.refreshWdpAjaxNonces === "function") {
+          await WDPApp.utils.refreshWdpAjaxNonces({ force: true });
+          data = await sendRemoveCartItemRequest();
+          safeLog("Remove cart item response after nonce refresh:", data);
+        }
 
         if (data.success) {
           // Update cart display
@@ -561,14 +564,6 @@
           button.disabled = false;
           button.style.opacity = "1";
           button.style.cursor = "pointer";
-          
-          // Show error message to user
-          if (WDPApp.alerts && WDPApp.alerts.show) {
-            WDPApp.alerts.show([data.message || "Ürün sepetten kaldırılamadı"], {
-              type: 'error',
-              title: 'Hata'
-            });
-          }
         }
       } catch (error) {
         safeLog("Error in remove cart item request:", error);
