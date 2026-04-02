@@ -161,6 +161,11 @@
   --wdp-space-block-3: var(--wdp-space-3);
   --wdp-space-block-4: var(--wdp-space-4);
 
+  /* Tüm bağış formları: dikey blok aralığı (popup + sayfa içi, mobil + masaüstü) */
+  --wdp-form-stack-gap: 0.375rem; /* 6px */
+  /* Geriye dönük eşanlamlı */
+  --wdp-hisse-stack-gap: var(--wdp-form-stack-gap);
+
   /* Font Family */
   --wdp-font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   

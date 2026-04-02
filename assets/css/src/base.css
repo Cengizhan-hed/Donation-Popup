@@ -11,7 +11,7 @@
  * GiveWP benzeri bir yaklaşım kullanır.
  * 
  * YAKLAŞIM:
- * - !important kullanmaz
+ * -  kullanmaz
  * - Yüksek specificity ile tema override'larını önler
  * - html body ile başlayan selector'ler kullanır
  * - Minimal reset (sadece gerekli olanlar)
@@ -41,7 +41,7 @@
  * 
  * WOO DONATION POPUP - THEME ISOLATION BASE
  * GiveWP benzeri tema bağımsız CSS yapısı
- * Clean CSS - !important kullanmadan
+ * Clean CSS -  kullanmadan
  * ============================================
  */
 

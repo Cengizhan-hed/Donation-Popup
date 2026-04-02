@@ -31,7 +31,6 @@ html body .wdp-donation-form form input:focus,
 html body .wdp-donation-form form textarea:focus {
   outline: none;
   outline-offset: 0;
-  box-shadow: none;
 }
 
 /* Shareholder form transitions - Only color transitions, no movement */

@@ -521,7 +521,7 @@ class WDP_Assets {
             'label_font_size' => 14,
             'label_font_weight' => '600',
             'placeholder_color' => '#6b7280',
-            'form_gap' => 16,
+            'form_gap' => 6,
             'error_bg_color' => '#fed7d7',
             'error_border_color' => '#feb2b2',
             'error_text_color' => '#c53030',
@@ -594,6 +594,7 @@ class WDP_Assets {
         $css .= "  --wdp-label-font-weight: " . esc_attr($settings['label_font_weight']) . ";\n";
         $css .= "  --wdp-placeholder-color: " . esc_attr($settings['placeholder_color']) . ";\n";
         $css .= "  --wdp-form-gap: " . esc_attr($settings['form_gap']) . "px;\n";
+        $css .= "  --wdp-form-stack-gap: clamp(4px, calc(var(--wdp-form-gap) - 2px), 6px);\n";
         $css .= "  --wdp-form-error-bg: " . esc_attr($settings['error_bg_color']) . ";\n";
         $css .= "  --wdp-form-error-border: " . esc_attr($settings['error_border_color']) . ";\n";
         $css .= "  --wdp-form-error-text: " . esc_attr($settings['error_text_color']) . ";\n";

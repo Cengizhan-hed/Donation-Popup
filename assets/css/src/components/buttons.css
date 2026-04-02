@@ -2,7 +2,7 @@
 /* BUTTON STYLES */
 /* ==================== */
 
-/* CRITICAL: Maximum specificity without !important - Clean CSS approach */
+/* CRITICAL: Maximum specificity without  - Clean CSS approach */
 /* Modern :is() selector for cleaner code and better maintainability */
 html body :is(button.wdp-donate-button.wdp-open-modal[data-product-id],
               button.wdp-donate-button[data-product-id],
@@ -30,7 +30,6 @@ html body :is(button.wdp-donate-button.wdp-open-modal[data-product-id],
   transition: var(--wdp-transition-button, background-color 0.15s ease, color 0.15s ease);
   line-height: 1.4;
   text-align: center;
-  box-shadow: var(--wdp-elevation-1, 0 1px 2px 0 rgba(0, 0, 0, 0.05));
   letter-spacing: var(--wdp-tracking-normal, 0);
   position: relative;
   overflow: hidden;
@@ -53,7 +52,6 @@ html body :is(button.wdp-donate-button.wdp-open-modal[data-product-id],
   /* Kullanıcı isteği: hover'da sadece hafif koyulaşma, hareket yok */
   background-color: var(--wdp-primary-hover, rgb(58, 123, 200));
   color: var(--wdp-text-inverse, #ffffff);
-  box-shadow: var(--wdp-elevation-1, 0 1px 2px 0 rgba(0, 0, 0, 0.05));
 }
 
 /* Modern :is() selector for active states */
@@ -64,7 +62,6 @@ html body :is(button.wdp-donate-button.wdp-open-modal,
               .wdp-donate-button,
               .wdp-open-modal):active {
   background-color: var(--wdp-primary-hover, rgb(58, 123, 200));
-  box-shadow: var(--wdp-elevation-1, 0 1px 2px 0 rgba(0, 0, 0, 0.05));
 }
 
 /* Modern :is() selector for focus states */
@@ -87,7 +84,6 @@ html body :is(button.wdp-donate-button.wdp-open-modal,
               .wdp-open-modal):focus-visible {
   outline: var(--wdp-focus-ring-width, 2px) solid var(--wdp-focus-ring-color, var(--wdp-primary, rgb(74, 144, 226)));
   outline-offset: var(--wdp-focus-ring-offset, 2px);
-  box-shadow: var(--wdp-focus-ring, 0 0 0 var(--wdp-focus-ring-width, 2px) var(--wdp-focus-ring-color, var(--wdp-primary, rgb(74, 144, 226))));
 }
 
 /* Full width button - Buton tam genişlikte görüntüleme */
@@ -201,7 +197,6 @@ html body :is(.wdp-modal .wdp-modal-content form .wdp-button-group button,
   font-family: var(--wdp-font-family, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
   box-sizing: border-box;
   margin: 0;
-  box-shadow: var(--wdp-shadow-soft, 0 2px 8px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.06));
   position: relative;
   overflow: hidden;
   
@@ -218,7 +213,6 @@ html body :is(.wdp-modal .wdp-modal-content form .wdp-button-group button,
               .wdp-modal-content form .wdp-button-group button):hover {
   /* Kullanıcı isteği: hover'da sadece hafif koyulaşma, hareket yok */
   background: linear-gradient(135deg, var(--wdp-button-primary-hover, rgb(24, 93, 152)) 0%, rgb(20, 80, 130) 100%);
-  box-shadow: var(--wdp-shadow-smooth, 0 4px 16px rgba(0, 0, 0, 0.06), 0 2px 6px rgba(0, 0, 0, 0.04));
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content form, .wdp-modal-content) .wdp-button-group button:active {
@@ -231,12 +225,10 @@ html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content form, .wdp-
   min-height: 48px;
   height: 48px;
   max-height: 48px;
-  box-shadow: var(--wdp-shadow-soft, 0 2px 8px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.06));
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content form, .wdp-modal-content) .wdp-button-group button[name="donation_go_checkout"]:hover {
   background: linear-gradient(135deg, var(--wdp-accent-hover, rgb(61, 207, 175)) 0%, rgb(50, 190, 160) 100%);
-  box-shadow: var(--wdp-shadow-smooth, 0 4px 16px rgba(0, 0, 0, 0.06), 0 2px 6px rgba(0, 0, 0, 0.04));
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content form .wdp-button-group button.wdp-loading {
@@ -269,7 +261,6 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content form .wdp-butto
 html body :is(.wdp-modal-content form .wdp-button-group button,
               .wdp-donation-form .wdp-modal-content form .wdp-button-group button):focus-visible {
   outline: none;
-  box-shadow: none;
 }
 
 /* Auxiliary form actions */
@@ -288,7 +279,6 @@ html body .wdp-copy-form-btn {
   align-items: center;
   justify-content: center;
   margin-top: var(--wdp-space-2, 8px);
-  box-shadow: none;
   opacity: 0;
   pointer-events: none;
 }

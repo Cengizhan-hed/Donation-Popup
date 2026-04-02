@@ -119,6 +119,9 @@
       var maxShares = $row.find('input[name="max_shares"]').val()
       var enableProgressBar = $row.find('input[name="enable_progress_bar"]').is(":checked")
       var progressBarLimit = $row.find('input[name="progress_bar_limit"]').val()
+      var enableProductNote = $row.find('input[name="enable_product_note"]').is(":checked")
+      var productNoteIcon = $row.find('select[name="product_note_icon"]').val()
+      var productNoteText = $row.find('textarea[name="product_note_text"]').val()
 
       // AJAX isteği gönder
       $.ajax({
@@ -134,6 +137,9 @@
           max_shares: maxShares,
           enable_progress_bar: enableProgressBar,
           progress_bar_limit: progressBarLimit,
+          enable_product_note: enableProductNote,
+          product_note_icon: productNoteIcon,
+          product_note_text: productNoteText,
         },
         success: (response) => {
           if (response.success) {
@@ -176,6 +182,9 @@
         var maxShares = $row.find('input[name="max_shares"]').val()
         var enableProgressBar = $row.find('input[name="enable_progress_bar"]').is(":checked")
         var progressBarLimit = $row.find('input[name="progress_bar_limit"]').val()
+        var enableProductNote = $row.find('input[name="enable_product_note"]').is(":checked")
+        var productNoteIcon = $row.find('select[name="product_note_icon"]').val()
+        var productNoteText = $row.find('textarea[name="product_note_text"]').val()
 
         // AJAX isteği gönder
         $.ajax({
@@ -191,6 +200,9 @@
             max_shares: maxShares,
             enable_progress_bar: enableProgressBar,
             progress_bar_limit: progressBarLimit,
+            enable_product_note: enableProductNote,
+            product_note_icon: productNoteIcon,
+            product_note_text: productNoteText,
           },
           success: (response) => {
             if (response.success) {

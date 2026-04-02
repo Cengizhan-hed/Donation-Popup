@@ -366,6 +366,12 @@ class Woo_Donation_Popup_Admin {
         $max_shares = get_post_meta($product->get_id(), '_max_shares', true);
         $enable_progress_bar = get_post_meta($product->get_id(), '_enable_progress_bar', true) === 'yes';
         $progress_bar_limit = get_post_meta($product->get_id(), '_progress_bar_limit', true);
+        $enable_product_note = get_post_meta($product->get_id(), '_enable_product_note', true) === 'yes';
+        $product_note_text = get_post_meta($product->get_id(), '_product_note_text', true);
+        $product_note_icon = get_post_meta($product->get_id(), '_product_note_icon', true);
+        if ($product_note_icon === '') {
+            $product_note_icon = 'info';
+        }
         
         // Varsayılan değerler
         if ($min_custom_price === '') {
@@ -455,6 +461,36 @@ class Woo_Donation_Popup_Admin {
         echo '</div>';
         echo '</div>';
 
+        // Ürün notu + Not metni
+        echo '<div class="wdp-field-group wdp-field-group-note">';
+        echo '<div class="wdp-field wdp-field-toggle">';
+        echo '<div class="wdp-field-label">' . __('Not Ekle', 'woo-donation-popup') . '</div>';
+        echo '<div class="wdp-field-control">';
+        echo '<label class="wdp-switch">';
+        echo '<input type="checkbox" name="enable_product_note" ' . checked($enable_product_note, true, false) . '>';
+        echo '<span class="wdp-slider"></span>';
+        echo '</label>';
+        echo '</div>';
+        echo '</div>';
+        echo '<div class="wdp-sub-field">';
+        echo '<div class="wdp-sub-field-label">' . __('Not İkonu', 'woo-donation-popup') . '</div>';
+        echo '<div class="wdp-field-control">';
+        echo '<select name="product_note_icon">';
+        echo '<option value="info" ' . selected($product_note_icon, 'info', false) . '>' . esc_html__('Bilgi', 'woo-donation-popup') . '</option>';
+        echo '<option value="video" ' . selected($product_note_icon, 'video', false) . '>' . esc_html__('Video', 'woo-donation-popup') . '</option>';
+        echo '<option value="delivery" ' . selected($product_note_icon, 'delivery', false) . '>' . esc_html__('Hizli Teslim', 'woo-donation-popup') . '</option>';
+        echo '<option value="heart" ' . selected($product_note_icon, 'heart', false) . '>' . esc_html__('Bagis', 'woo-donation-popup') . '</option>';
+        echo '</select>';
+        echo '</div>';
+        echo '</div>';
+        echo '<div class="wdp-sub-field">';
+        echo '<div class="wdp-sub-field-label">' . __('Ürün Alt Notu', 'woo-donation-popup') . '</div>';
+        echo '<div class="wdp-field-control">';
+        echo '<textarea name="product_note_text" rows="3" maxlength="400" placeholder="' . esc_attr__('Örn: Formda bilgilendirme amaçlı video gönderilecektir.', 'woo-donation-popup') . '">' . esc_textarea($product_note_text) . '</textarea>';
+        echo '</div>';
+        echo '</div>';
+        echo '</div>';
+
         echo '</div>'; // .wdp-product-settings-grid
 
         // Shortcode alanı
@@ -537,6 +573,12 @@ class Woo_Donation_Popup_Admin {
         $max_shares = isset($_POST['max_shares']) ? absint($_POST['max_shares']) : '';
         $enable_progress_bar = isset($_POST['enable_progress_bar']) && $_POST['enable_progress_bar'] === 'true' ? 'yes' : 'no';
         $progress_bar_limit = isset($_POST['progress_bar_limit']) ? wc_format_decimal($_POST['progress_bar_limit']) : '';
+        $enable_product_note = isset($_POST['enable_product_note']) && $_POST['enable_product_note'] === 'true' ? 'yes' : 'no';
+        $product_note_text = isset($_POST['product_note_text']) ? sanitize_textarea_field(wp_unslash($_POST['product_note_text'])) : '';
+        $product_note_icon = isset($_POST['product_note_icon']) ? sanitize_key(wp_unslash($_POST['product_note_icon'])) : 'info';
+        if (!in_array($product_note_icon, array('info', 'video', 'delivery', 'heart'), true)) {
+            $product_note_icon = 'info';
+        }
         
         // Ayarları kaydet
         update_post_meta($product_id, '_allow_custom_price', $allow_custom_price);
@@ -545,6 +587,9 @@ class Woo_Donation_Popup_Admin {
         update_post_meta($product_id, '_max_shares', $max_shares);
         update_post_meta($product_id, '_enable_progress_bar', $enable_progress_bar);
         update_post_meta($product_id, '_progress_bar_limit', $progress_bar_limit);
+        update_post_meta($product_id, '_enable_product_note', $enable_product_note);
+        update_post_meta($product_id, '_product_note_text', $product_note_text);
+        update_post_meta($product_id, '_product_note_icon', $product_note_icon);
         
         // Başarılı yanıt döndür
         wp_send_json_success(array(
@@ -590,6 +635,12 @@ class Woo_Donation_Popup_Admin {
         $max_shares = get_post_meta($product_id, '_max_shares', true);
         $enable_progress_bar = get_post_meta($product_id, '_enable_progress_bar', true) === 'yes';
         $progress_bar_limit = get_post_meta($product_id, '_progress_bar_limit', true);
+        $enable_product_note = get_post_meta($product_id, '_enable_product_note', true) === 'yes';
+        $product_note_text = get_post_meta($product_id, '_product_note_text', true);
+        $product_note_icon = get_post_meta($product_id, '_product_note_icon', true);
+        if ($product_note_icon === '') {
+            $product_note_icon = 'info';
+        }
         
         // Varsayılan değerler
         if ($min_custom_price === '') {
@@ -611,7 +662,10 @@ class Woo_Donation_Popup_Admin {
             'allow_multiple_shares' => $allow_multiple_shares,
             'max_shares' => $max_shares,
             'enable_progress_bar' => $enable_progress_bar,
-            'progress_bar_limit' => $progress_bar_limit
+            'progress_bar_limit' => $progress_bar_limit,
+            'enable_product_note' => $enable_product_note,
+            'product_note_text' => $product_note_text,
+            'product_note_icon' => $product_note_icon
         ));
         
         wp_die();

@@ -38,7 +38,6 @@ html body .wdp-alert {
   width: min(520px, 96vw);
   background: var(--wdp-alert-bg, var(--wdp-card-bg, #ffffff));
   border-radius: var(--wdp-radius-xl, var(--wdp-card-radius));
-  box-shadow: var(--wdp-card-shadow, none);
   border: 1px solid var(--wdp-alert-border, var(--wdp-card-border, #e5e7eb));
   display: grid;
   grid-template-columns: auto 1fr auto;
@@ -66,7 +65,6 @@ html body .wdp-alert__icon {
   align-items: center;
   justify-content: center;
   background: var(--wdp-alert-icon-bg);
-  box-shadow: none;
   color: var(--wdp-alert-icon-color);
 }
 
@@ -153,7 +151,6 @@ html body .wdp-donation-form .wdp-modal-content .wdp-alert__close:hover,
 html body .wdp-donation-form .wdp-modal-content .wdp-alert__close:focus-visible {
   background: transparent;
   color: var(--wdp-error);
-  box-shadow: none;
   outline: none;
 }
 

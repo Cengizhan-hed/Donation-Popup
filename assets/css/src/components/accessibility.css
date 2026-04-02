@@ -23,14 +23,12 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content :is(button, inp
 html body :is(.wdp-modal, .wdp-donation-form) :is(button, input, textarea):focus-visible {
   outline: none;
   outline-offset: 0;
-  box-shadow: none;
 }
 
 html body .wdp-modal-header .wdp-modal-close:focus,
 html body .wdp-modal-header .wdp-modal-close:active,
 html body .wdp-modal-content .wdp-modal-close:focus {
   outline: none;
-  box-shadow: none;
 }
 
 /* High contrast mode support */
@@ -174,7 +172,7 @@ html body #wdp-live-region-assertive {
   }
 }
 
-/* Reduced motion support - Maximum specificity without !important */
+/* Reduced motion support - Maximum specificity without  */
 @media (prefers-reduced-motion: reduce) {
   /* CRITICAL: Ultra-high specificity to override all transitions */
   html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content button,

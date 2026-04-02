@@ -75,7 +75,6 @@ html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content form, .wdp-
   color: var(--wdp-input-color, #1f2937);
   width: 100%;
   margin: 0;
-  box-shadow: var(--wdp-shadow-subtle, 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03));
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -100,7 +99,6 @@ html body :is(.wdp-modal, .wdp-donation-form) input.wdp-custom-price-input[type=
   color: var(--wdp-input-color, #1f2937);
   width: 100%;
   margin: 0;
-  box-shadow: var(--wdp-shadow-subtle, 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03));
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -133,7 +131,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-price-row .wdp-p
   text-align: center;
 }
 
-/* Progress bar formunda quantity counter gizli - Maximum specificity without !important */
+/* Progress bar formunda quantity counter gizli - Maximum specificity without  */
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-price-row .wdp-quantity-counter,
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-price-row .wdp-quantity-counter * {
   display: none;
@@ -178,7 +176,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-custom-price-row .wdp-custom-
   text-align: center;
 }
 
-/* Özel fiyatlı formda quantity counter gizli (özel fiyat aktifken) - Maximum specificity without !important */
+/* Özel fiyatlı formda quantity counter gizli (özel fiyat aktifken) - Maximum specificity without  */
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-custom-price-row:has(.wdp-custom-price-field) .wdp-quantity-counter,
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-custom-price-row:has(.wdp-custom-price-field) .wdp-quantity-counter * {
   display: none;
@@ -238,7 +236,6 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-quantity-counter {
   gap: 0;
   position: relative;
   vertical-align: middle;
-  box-shadow: var(--wdp-shadow-subtle, 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03));
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -268,14 +265,12 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-quantity-counter input[type="
   -webkit-appearance: none;
   -moz-appearance: textfield;
   width: 100%;
-  text-shadow: none;
   align-self: center;
 }
 
 /* Sayaç number input'u: tema success/hata kenarlık ve gölgelerini kapat - Maximum specificity */
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-quantity-counter input[type="number"]:is(:focus, :focus-visible) {
   border: none;
-  box-shadow: none;
   outline: none;
   background: transparent;
 }
@@ -299,7 +294,6 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-quantity-counter .wdp-product
   cursor: pointer;
   border-radius: 0;
   transition: none;
-  box-shadow: none;
   outline: none;
   padding: 0;
   margin: 0;

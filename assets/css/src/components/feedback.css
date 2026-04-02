@@ -13,7 +13,6 @@ html body .wdp-form-error {
   margin-bottom: var(--wdp-space-4);
   font-size: var(--wdp-text-sm);
   font-weight: var(--wdp-font-medium);
-  box-shadow: var(--wdp-shadow-sm);
   position: relative;
   overflow: hidden;
 }
@@ -39,7 +38,6 @@ html body .wdp-form-success {
   margin-bottom: var(--wdp-space-4);
   font-size: var(--wdp-text-sm);
   font-weight: var(--wdp-font-medium);
-  box-shadow: var(--wdp-shadow-sm);
   position: relative;
   overflow: hidden;
 }
@@ -72,7 +70,6 @@ html body .wdp-input-error {
   font-weight: 500;
   white-space: nowrap;
   z-index: 100;
-  box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.06);
   pointer-events: none;
 }
 

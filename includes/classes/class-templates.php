@@ -64,6 +64,51 @@ if (!defined('ABSPATH')) {
  * Class WDP_Templates
  */
 class WDP_Templates {
+    /**
+     * Render note icon SVG.
+     *
+     * @param string $icon Icon key.
+     * @return string
+     */
+    private static function render_note_icon_svg($icon) {
+        $svg_map = array(
+            'info' => '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"></circle><path d="M12 10.2v6.1"></path><circle cx="12" cy="7.6" r="1"></circle></svg>',
+            'video' => '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" data-wdp-note-icon="video"><circle cx="12" cy="12" r="8.75" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linejoin="round"></circle><path fill="currentColor" stroke="none" d="M10.15 8.45c0-.28.22-.5.5-.5.11 0 .22.04.31.11l4.85 3.18c.22.14.22.46 0 .6l-4.85 3.18c-.09.07-.2.11-.31.11-.28 0-.5-.22-.5-.5V8.95z"></path></svg>',
+            'delivery' => '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3.5 8h11v7h-11z"></path><path d="M14.5 11h3.2l2.3 2.6V15h-5.5z"></path><circle cx="8" cy="17.5" r="1.7"></circle><circle cx="17.5" cy="17.5" r="1.7"></circle></svg>',
+            'heart' => '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 20s-6.8-3.9-8.9-8A5.2 5.2 0 0 1 12 6a5.2 5.2 0 0 1 8.9 6c-2.1 4.1-8.9 8-8.9 8z"></path></svg>',
+        );
+
+        $icon = isset($svg_map[$icon]) ? $icon : 'info';
+        return $svg_map[$icon];
+    }
+
+    /**
+     * Get note tone class by icon.
+     *
+     * @param string $icon Icon key.
+     * @return string
+     */
+    private static function get_note_tone_class($icon) {
+        $map = array(
+            'video'    => 'wdp-product-note--video',
+            'delivery' => 'wdp-product-note--delivery',
+            'heart'    => 'wdp-product-note--heart',
+        );
+        return isset($map[$icon]) ? $map[$icon] : 'wdp-product-note--info';
+    }
+
+    /**
+     * Multibyte-safe string length.
+     *
+     * @param string $value Text value.
+     * @return int
+     */
+    private static function text_length($value) {
+        if (function_exists('mb_strlen')) {
+            return mb_strlen($value);
+        }
+        return strlen($value);
+    }
 
     /**
      * Render donation modal
@@ -101,6 +146,16 @@ class WDP_Templates {
         // Ürün fiyatını al
         $product_price = $product->get_price();
         $formatted_price = $product_price ? wc_price($product_price) : '';
+        $enable_product_note = $product->get_meta('_enable_product_note') === 'yes';
+        $product_note_text = trim((string) $product->get_meta('_product_note_text'));
+        $product_note_icon = $product->get_meta('_product_note_icon');
+        if ($product_note_icon === '') {
+            $product_note_icon = 'info';
+        }
+        $show_product_note = $enable_product_note && $product_note_text !== '';
+        $note_tone_class = self::get_note_tone_class($product_note_icon);
+        $is_long_note = self::text_length($product_note_text) > 110;
+        $modal_note_toggle_id = 'wdp-note-toggle-' . $product_id . '-modal';
 
         // Benzersiz bir ID oluştur
         $modal_id = 'wdp-modal-' . $product_id;
@@ -162,6 +217,25 @@ class WDP_Templates {
                         <span id="<?php echo esc_attr($modal_id); ?>-title" class="wdp-modal-title"><?php echo wp_kses_post($product_name); ?></span>
                         <?php if ($formatted_price): ?>
                         <span class="wdp-product-price"><?php echo wp_kses_post($formatted_price); ?></span>
+                        <?php endif; ?>
+                        <?php if ($show_product_note): ?>
+                        <div class="wdp-product-note <?php echo esc_attr($note_tone_class); ?>" role="note">
+                            <span class="wdp-product-note__content">
+                                <span class="wdp-product-note__icon" aria-hidden="true"><?php echo self::render_note_icon_svg($product_note_icon); ?></span>
+                                <span class="wdp-product-note__body">
+                                    <?php if ($is_long_note): ?>
+                                    <input type="checkbox" id="<?php echo esc_attr($modal_note_toggle_id); ?>" class="wdp-product-note__toggle">
+                                    <?php endif; ?>
+                                    <span class="wdp-product-note__text"><?php echo esc_html($product_note_text); ?></span>
+                                    <?php if ($is_long_note): ?>
+                                    <label for="<?php echo esc_attr($modal_note_toggle_id); ?>" class="wdp-product-note__more">
+                                        <span class="wdp-product-note__more-open"><?php echo esc_html__('Devamini Gor', 'woo-donation-popup'); ?></span>
+                                        <span class="wdp-product-note__more-close"><?php echo esc_html__('Daha Az Goster', 'woo-donation-popup'); ?></span>
+                                    </label>
+                                    <?php endif; ?>
+                                </span>
+                            </span>
+                        </div>
                         <?php endif; ?>
                     </div>
                 </div>
@@ -288,6 +362,16 @@ class WDP_Templates {
         // Ürün fiyatını al
         $product_price = $product->get_price();
         $formatted_price = $product_price ? wc_price($product_price) : '';
+        $enable_product_note = $product->get_meta('_enable_product_note') === 'yes';
+        $product_note_text = trim((string) $product->get_meta('_product_note_text'));
+        $product_note_icon = $product->get_meta('_product_note_icon');
+        if ($product_note_icon === '') {
+            $product_note_icon = 'info';
+        }
+        $show_product_note = $enable_product_note && $product_note_text !== '';
+        $note_tone_class = self::get_note_tone_class($product_note_icon);
+        $is_long_note = self::text_length($product_note_text) > 110;
+        $direct_note_toggle_id = 'wdp-note-toggle-' . $product_id . '-direct';
 
         // Özel başlık varsa onu kullan
         $title = !empty($atts['title']) ? sanitize_text_field($atts['title']) : $product_name;
@@ -350,6 +434,25 @@ class WDP_Templates {
                     <h2 class="wdp-form-title"><?php echo wp_kses_post($title); ?></h2>
                     <?php if ($formatted_price): ?>
                     <span class="wdp-product-price"><?php echo wp_kses_post($formatted_price); ?></span>
+                    <?php endif; ?>
+                    <?php if ($show_product_note): ?>
+                    <div class="wdp-product-note <?php echo esc_attr($note_tone_class); ?>" role="note">
+                        <span class="wdp-product-note__content">
+                            <span class="wdp-product-note__icon" aria-hidden="true"><?php echo self::render_note_icon_svg($product_note_icon); ?></span>
+                            <span class="wdp-product-note__body">
+                                <?php if ($is_long_note): ?>
+                                <input type="checkbox" id="<?php echo esc_attr($direct_note_toggle_id); ?>" class="wdp-product-note__toggle">
+                                <?php endif; ?>
+                                <span class="wdp-product-note__text"><?php echo esc_html($product_note_text); ?></span>
+                                <?php if ($is_long_note): ?>
+                                <label for="<?php echo esc_attr($direct_note_toggle_id); ?>" class="wdp-product-note__more">
+                                    <span class="wdp-product-note__more-open"><?php echo esc_html__('Devamini Gor', 'woo-donation-popup'); ?></span>
+                                    <span class="wdp-product-note__more-close"><?php echo esc_html__('Daha Az Goster', 'woo-donation-popup'); ?></span>
+                                </label>
+                                <?php endif; ?>
+                            </span>
+                        </span>
+                    </div>
                     <?php endif; ?>
                 </div>
                 <?php endif; ?>

@@ -96,7 +96,7 @@ html body .wdp-loading-dots span {
   /* Animation removed - Static dots per user request */
 }
 
-/* Button loading state enhancement - Maximum specificity without !important */
+/* Button loading state enhancement - Maximum specificity without  */
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content :is(.wdp-button-loading, form .wdp-button-group button.wdp-button-loading),
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content :is(.wdp-button-loading, form .wdp-button-group button.wdp-button-loading)[style],
 html body .wdp-button-loading,

@@ -12,7 +12,6 @@ html body .wdp-toast {
   border: 1px solid var(--wdp-card-border, var(--wdp-gray-200));
   border-radius: var(--wdp-card-radius);
   padding: var(--wdp-space-4) var(--wdp-space-5);
-  box-shadow: var(--wdp-card-shadow, none);
   z-index: 1000003;
   max-width: 300px;
   transform: translateX(100%);
