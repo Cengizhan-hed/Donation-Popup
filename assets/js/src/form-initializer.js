@@ -8,14 +8,6 @@
 
   const WDPApp = window.WDPApp || (window.WDPApp = {});
   
-  // Use centralized module dependency helper
-  const utilsCheck = (WDPApp.utils && WDPApp.utils.ensureModule)
-    ? WDPApp.utils.ensureModule('utils', ['safeLog'])
-    : { module: WDPApp.utils || {}, isValid: false, missingMethods: [] };
-  
-  const utils = utilsCheck.module;
-  const { safeLog } = utils;
-  
   // Module loader helper (from init.js)
   function getModule(name) {
     return WDPApp[name] || {};

@@ -274,6 +274,84 @@ class WDP_Assets {
         }
         // wp_enqueue_scripts geçmediyse, enqueue_assets() metodunda zaten kontrol edilecek
     }
+
+    /**
+     * Register frontend scripts/styles in a single canonical place.
+     *
+     * @param string $plugin_url Plugin URL.
+     * @param string|int $css_version CSS version.
+     * @param string|int $js_module_version JS version.
+     * @param array $dependencies Base dependencies for utils.js.
+     * @return void
+     */
+    private static function register_frontend_assets($plugin_url, $css_version, $js_module_version, $dependencies) {
+        wp_register_script('wdp-utils-js', $plugin_url . 'assets/js/src/utils.js', $dependencies, $js_module_version, true);
+        wp_register_script('wdp-state-js', $plugin_url . 'assets/js/src/state.js', array('wdp-utils-js'), $js_module_version, true);
+        wp_register_script('wdp-dom-js', $plugin_url . 'assets/js/src/dom.js', array('wdp-state-js'), $js_module_version, true);
+        wp_register_script('wdp-alerts-js', $plugin_url . 'assets/js/src/alerts.js', array('wdp-utils-js'), $js_module_version, true);
+        wp_register_script('wdp-product-js', $plugin_url . 'assets/js/src/product.js', array('wdp-utils-js', 'wdp-state-js'), $js_module_version, true);
+        wp_register_script('wdp-cart-js', $plugin_url . 'assets/js/src/cart.js', array('wdp-utils-js', 'wdp-state-js'), $js_module_version, true);
+        wp_register_script('wdp-form-js', $plugin_url . 'assets/js/src/form.js', array('wdp-utils-js', 'wdp-state-js', 'wdp-alerts-js', 'wdp-cart-js'), $js_module_version, true);
+        wp_register_script('wdp-shareholder-js', $plugin_url . 'assets/js/src/shareholder.js', array('wdp-utils-js', 'wdp-state-js', 'wdp-dom-js', 'wdp-product-js', 'wdp-form-js'), $js_module_version, true);
+        wp_register_script('wdp-progress-bar-js', $plugin_url . 'assets/js/src/progress-bar.js', array('wdp-utils-js'), $js_module_version, true);
+        wp_register_script('wdp-modal-js', $plugin_url . 'assets/js/src/modal.js', array('wdp-utils-js', 'wdp-state-js', 'wdp-form-js', 'wdp-shareholder-js'), $js_module_version, true);
+        wp_register_script('wdp-form-initializer-js', $plugin_url . 'assets/js/src/form-initializer.js', array('wdp-utils-js', 'wdp-form-js', 'wdp-shareholder-js'), $js_module_version, true);
+        wp_register_script('wdp-event-manager-js', $plugin_url . 'assets/js/src/event-manager.js', array('wdp-utils-js', 'wdp-modal-js', 'wdp-form-js'), $js_module_version, true);
+        wp_register_script('wdp-module-loader-js', $plugin_url . 'assets/js/src/module-loader.js', array('wdp-utils-js'), $js_module_version, true);
+        wp_register_script('wdp-constants-js', $plugin_url . 'assets/js/src/constants.js', array(), $js_module_version, true);
+        wp_register_script('wdp-init-js', $plugin_url . 'assets/js/src/init.js', array('wdp-utils-js', 'wdp-state-js', 'wdp-dom-js', 'wdp-modal-js', 'wdp-form-js', 'wdp-shareholder-js', 'wdp-cart-js', 'wdp-progress-bar-js', 'wdp-form-initializer-js', 'wdp-event-manager-js', 'wdp-module-loader-js', 'wdp-constants-js'), $js_module_version, true);
+        wp_register_style('wdp-donation-modal-css', $plugin_url . 'assets/css/donation-modal.css', array(), $css_version);
+    }
+
+    /**
+     * Localize frontend runtime data once per request.
+     *
+     * @param string $plugin_url Plugin URL.
+     * @return void
+     */
+    private static function localize_frontend_assets($plugin_url) {
+        // Get current currency (supports Currency switcher plugins)
+        $current_currency = function_exists('get_woocommerce_currency') ? get_woocommerce_currency() : 'TRY';
+        $currency_symbol = function_exists('get_woocommerce_currency_symbol') ? get_woocommerce_currency_symbol($current_currency) : '₺';
+
+        wp_localize_script('wdp-utils-js', 'wdp_ajax', array(
+            'ajax_url' => admin_url('admin-ajax.php'),
+            'plugin_url' => $plugin_url,
+            'nonces' => array(
+                'ajax_add_to_cart' => wp_create_nonce('wdp_ajax_add_to_cart'),
+                'get_product_info' => wp_create_nonce('wdp_get_product_info'),
+                'get_product_name' => wp_create_nonce('wdp_get_product_name'),
+                'get_cart_count' => wp_create_nonce('wdp_get_cart_count'),
+                'get_cart_contents' => wp_create_nonce('wdp_get_cart_contents'),
+                'remove_cart_item' => wp_create_nonce('wdp_remove_cart_item'),
+                'render_button' => wp_create_nonce('wdp_render_donation_button'),
+            ),
+            'nonce' => wp_create_nonce('wdp_ajax_add_to_cart'),
+            'checkout_url' => function_exists('wc_get_checkout_url') ? wc_get_checkout_url() : '',
+            'cart_url' => function_exists('wc_get_cart_url') ? wc_get_cart_url() : '',
+            'version' => WDP_VERSION,
+            'debug' => defined('WP_DEBUG') && WP_DEBUG,
+            'jquery_loaded' => wp_script_is('jquery', 'enqueued'),
+            'wc_loaded' => class_exists('WooCommerce'),
+            'home_url' => home_url(),
+            'site_url' => site_url(),
+            'currency' => array(
+                'code' => $current_currency,
+                'symbol' => $currency_symbol,
+            ),
+            'strings' => array(
+                'loading' => __('Yükleniyor...', 'woo-donation-popup'),
+                'error' => __('Bir hata oluştu', 'woo-donation-popup'),
+                'success' => __('Başarılı', 'woo-donation-popup'),
+                'required_field' => __('Bu alan zorunludur', 'woo-donation-popup'),
+                'invalid_price' => __('Geçersiz fiyat', 'woo-donation-popup'),
+                'min_price_error' => __('Minimum fiyat: ', 'woo-donation-popup'),
+                'max_shares_error' => __('Maksimum hisse sayısı: ', 'woo-donation-popup'),
+            ),
+            'button_texts' => self::get_button_texts(),
+            'shareholder_texts' => self::get_shareholder_texts(),
+        ));
+    }
     
     /**
      * Enqueue assets immediately (called by force_enqueue or wp_enqueue_scripts)
@@ -310,66 +388,11 @@ class WDP_Assets {
                 $dependencies[] = 'wc-add-to-cart';
             }
             
-            // Tüm script'leri register et
-            wp_register_script('wdp-utils-js', $plugin_url . 'assets/js/src/utils.js', $dependencies, $js_module_version, true);
-            wp_register_script('wdp-state-js', $plugin_url . 'assets/js/src/state.js', array('wdp-utils-js'), $js_module_version, true);
-            wp_register_script('wdp-dom-js', $plugin_url . 'assets/js/src/dom.js', array('wdp-state-js'), $js_module_version, true);
-            wp_register_script('wdp-alerts-js', $plugin_url . 'assets/js/src/alerts.js', array('wdp-utils-js'), $js_module_version, true);
-            wp_register_script('wdp-product-js', $plugin_url . 'assets/js/src/product.js', array('wdp-utils-js', 'wdp-state-js'), $js_module_version, true);
-            wp_register_script('wdp-cart-js', $plugin_url . 'assets/js/src/cart.js', array('wdp-utils-js', 'wdp-state-js'), $js_module_version, true);
-            wp_register_script('wdp-form-js', $plugin_url . 'assets/js/src/form.js', array('wdp-utils-js', 'wdp-state-js', 'wdp-alerts-js', 'wdp-cart-js'), $js_module_version, true);
-            wp_register_script('wdp-shareholder-js', $plugin_url . 'assets/js/src/shareholder.js', array('wdp-utils-js', 'wdp-state-js', 'wdp-dom-js', 'wdp-product-js', 'wdp-form-js'), $js_module_version, true);
-            wp_register_script('wdp-modal-js', $plugin_url . 'assets/js/src/modal.js', array('wdp-utils-js', 'wdp-state-js', 'wdp-form-js', 'wdp-shareholder-js'), $js_module_version, true);
-                wp_register_script('wdp-form-initializer-js', $plugin_url . 'assets/js/src/form-initializer.js', array('wdp-utils-js', 'wdp-form-js', 'wdp-shareholder-js'), $js_module_version, true);
-                wp_register_script('wdp-event-manager-js', $plugin_url . 'assets/js/src/event-manager.js', array('wdp-utils-js', 'wdp-modal-js', 'wdp-form-js'), $js_module_version, true);
-                wp_register_script('wdp-module-loader-js', $plugin_url . 'assets/js/src/module-loader.js', array('wdp-utils-js'), $js_module_version, true);
-                wp_register_script('wdp-constants-js', $plugin_url . 'assets/js/src/constants.js', array(), $js_module_version, true);
-                wp_register_script('wdp-init-js', $plugin_url . 'assets/js/src/init.js', array('wdp-utils-js', 'wdp-state-js', 'wdp-dom-js', 'wdp-modal-js', 'wdp-form-js', 'wdp-shareholder-js', 'wdp-cart-js', 'wdp-form-initializer-js', 'wdp-event-manager-js', 'wdp-module-loader-js', 'wdp-constants-js'), $js_module_version, true);
-            wp_register_style('wdp-donation-modal-css', $plugin_url . 'assets/css/donation-modal.css', array(), $css_version);
+            self::register_frontend_assets($plugin_url, $css_version, $js_module_version, $dependencies);
             
             // Localize script (sadece bir kez)
             if (!did_action('wp_localize_script_wdp-utils-js')) {
-                // Get current currency (supports Currency switcher plugins)
-                $current_currency = function_exists('get_woocommerce_currency') ? get_woocommerce_currency() : 'TRY';
-                $currency_symbol = function_exists('get_woocommerce_currency_symbol') ? get_woocommerce_currency_symbol($current_currency) : '₺';
-                
-                wp_localize_script('wdp-utils-js', 'wdp_ajax', array(
-                    'ajax_url' => admin_url('admin-ajax.php'),
-                    'plugin_url' => $plugin_url,
-                    'nonces' => array(
-                        'ajax_add_to_cart' => wp_create_nonce('wdp_ajax_add_to_cart'),
-                        'get_product_info' => wp_create_nonce('wdp_get_product_info'),
-                        'get_product_name' => wp_create_nonce('wdp_get_product_name'),
-                        'get_cart_count' => wp_create_nonce('wdp_get_cart_count'),
-                        'get_cart_contents' => wp_create_nonce('wdp_get_cart_contents'),
-                        'remove_cart_item' => wp_create_nonce('wdp_remove_cart_item'),
-                        'render_button' => wp_create_nonce('wdp_render_donation_button'),
-                    ),
-                    'nonce' => wp_create_nonce('wdp_ajax_add_to_cart'),
-                    'checkout_url' => function_exists('wc_get_checkout_url') ? wc_get_checkout_url() : '',
-                    'cart_url' => function_exists('wc_get_cart_url') ? wc_get_cart_url() : '',
-                    'version' => WDP_VERSION,
-                    'debug' => defined('WP_DEBUG') && WP_DEBUG,
-                    'jquery_loaded' => wp_script_is('jquery', 'enqueued'),
-                    'wc_loaded' => class_exists('WooCommerce'),
-                    'home_url' => home_url(),
-                    'site_url' => site_url(),
-                    'currency' => array(
-                        'code' => $current_currency,
-                        'symbol' => $currency_symbol,
-                    ),
-                    'strings' => array(
-                        'loading' => __('Yükleniyor...', 'woo-donation-popup'),
-                        'error' => __('Bir hata oluştu', 'woo-donation-popup'),
-                        'success' => __('Başarılı', 'woo-donation-popup'),
-                        'required_field' => __('Bu alan zorunludur', 'woo-donation-popup'),
-                        'invalid_price' => __('Geçersiz fiyat', 'woo-donation-popup'),
-                        'min_price_error' => __('Minimum fiyat: ', 'woo-donation-popup'),
-                        'max_shares_error' => __('Maksimum hisse sayısı: ', 'woo-donation-popup'),
-                    ),
-                    'button_texts' => self::get_button_texts(),
-                    'shareholder_texts' => self::get_shareholder_texts(),
-                ));
+                self::localize_frontend_assets($plugin_url);
             }
         }
         
@@ -1042,168 +1065,8 @@ class WDP_Assets {
             }
         }
 
-        // Modülleri WordPress'te sırayla kaydet (dependency order)
-        // PERFORMANCE: Script'leri footer'da yükle (true) - WordPress handles this automatically
-        wp_register_script(
-            'wdp-utils-js',
-            $plugin_url . 'assets/js/src/utils.js',
-            $dependencies,
-            $js_module_version,
-            true
-        );
-
-        wp_register_script(
-            'wdp-state-js',
-            $plugin_url . 'assets/js/src/state.js',
-            array('wdp-utils-js'),
-            $js_module_version,
-            true
-        );
-
-        wp_register_script(
-            'wdp-dom-js',
-            $plugin_url . 'assets/js/src/dom.js',
-            array('wdp-state-js'),
-            $js_module_version,
-            true
-        );
-
-        wp_register_script(
-            'wdp-alerts-js',
-            $plugin_url . 'assets/js/src/alerts.js',
-            array('wdp-utils-js'),
-            $js_module_version,
-            true
-        );
-
-        wp_register_script(
-            'wdp-product-js',
-            $plugin_url . 'assets/js/src/product.js',
-            array('wdp-utils-js', 'wdp-state-js'),
-            $js_module_version,
-            true
-        );
-
-        wp_register_script(
-            'wdp-cart-js',
-            $plugin_url . 'assets/js/src/cart.js',
-            array('wdp-utils-js', 'wdp-state-js'),
-            $js_module_version,
-            true
-        );
-
-        wp_register_script(
-            'wdp-form-js',
-            $plugin_url . 'assets/js/src/form.js',
-            array('wdp-utils-js', 'wdp-state-js', 'wdp-alerts-js', 'wdp-cart-js'),
-            $js_module_version,
-            true
-        );
-
-        wp_register_script(
-            'wdp-shareholder-js',
-            $plugin_url . 'assets/js/src/shareholder.js',
-            array('wdp-utils-js', 'wdp-state-js', 'wdp-dom-js', 'wdp-product-js', 'wdp-form-js'),
-            $js_module_version,
-            true
-        );
-
-        wp_register_script(
-            'wdp-progress-bar-js',
-            $plugin_url . 'assets/js/src/progress-bar.js',
-            array('wdp-utils-js'),
-            $js_module_version,
-            true
-        );
-
-        wp_register_script(
-            'wdp-modal-js',
-            $plugin_url . 'assets/js/src/modal.js',
-            array('wdp-utils-js', 'wdp-state-js', 'wdp-form-js', 'wdp-shareholder-js'),
-            $js_module_version,
-            true
-        );
-
-            wp_register_script(
-                'wdp-form-initializer-js',
-                $plugin_url . 'assets/js/src/form-initializer.js',
-                array('wdp-utils-js', 'wdp-form-js', 'wdp-shareholder-js'),
-                $js_module_version,
-                true
-            );
-
-            wp_register_script(
-                'wdp-event-manager-js',
-                $plugin_url . 'assets/js/src/event-manager.js',
-                array('wdp-utils-js', 'wdp-modal-js', 'wdp-form-js'),
-                $js_module_version,
-                true
-            );
-
-            wp_register_script(
-                'wdp-module-loader-js',
-                $plugin_url . 'assets/js/src/module-loader.js',
-                array('wdp-utils-js'),
-                $js_module_version,
-                true
-            );
-
-            wp_register_script(
-                'wdp-init-js',
-                $plugin_url . 'assets/js/src/init.js',
-                array('wdp-utils-js', 'wdp-state-js', 'wdp-dom-js', 'wdp-modal-js', 'wdp-form-js', 'wdp-shareholder-js', 'wdp-cart-js', 'wdp-form-initializer-js', 'wdp-event-manager-js', 'wdp-module-loader-js'),
-                $js_module_version,
-                true
-            );
-
-        wp_register_style(
-            'wdp-donation-modal-css',
-            $plugin_url . 'assets/css/donation-modal.css',
-            array(),
-            $css_version
-        );
-
-        // Get current currency (supports Currency switcher plugins)
-        $current_currency = function_exists('get_woocommerce_currency') ? get_woocommerce_currency() : 'TRY';
-        $currency_symbol = function_exists('get_woocommerce_currency_symbol') ? get_woocommerce_currency_symbol($current_currency) : '₺';
-        
-        wp_localize_script('wdp-utils-js', 'wdp_ajax', array(
-            'ajax_url' => admin_url('admin-ajax.php'),
-            'plugin_url' => $plugin_url,
-            'nonces' => array(
-                'ajax_add_to_cart' => wp_create_nonce('wdp_ajax_add_to_cart'),
-                'get_product_info' => wp_create_nonce('wdp_get_product_info'),
-                'get_product_name' => wp_create_nonce('wdp_get_product_name'),
-                'get_cart_count' => wp_create_nonce('wdp_get_cart_count'),
-                'get_cart_contents' => wp_create_nonce('wdp_get_cart_contents'),
-                'remove_cart_item' => wp_create_nonce('wdp_remove_cart_item'),
-                'render_button' => wp_create_nonce('wdp_render_donation_button'),
-            ),
-            'nonce' => wp_create_nonce('wdp_ajax_add_to_cart'),
-            'checkout_url' => wc_get_checkout_url(),
-            'cart_url' => wc_get_cart_url(),
-            'version' => WDP_VERSION,
-            'debug' => defined('WP_DEBUG') && WP_DEBUG,
-            'jquery_loaded' => wp_script_is('jquery', 'enqueued'),
-            'wc_loaded' => class_exists('WooCommerce'),
-            'home_url' => home_url(),
-            'site_url' => site_url(),
-            'currency' => array(
-                'code' => $current_currency,
-                'symbol' => $currency_symbol,
-            ),
-                    'strings' => array(
-                        'loading' => __('Yükleniyor...', 'woo-donation-popup'),
-                        'error' => __('Bir hata oluştu', 'woo-donation-popup'),
-                        'success' => __('Başarılı', 'woo-donation-popup'),
-                        'required_field' => __('Bu alan zorunludur', 'woo-donation-popup'),
-                        'invalid_price' => __('Geçersiz fiyat', 'woo-donation-popup'),
-                        'min_price_error' => __('Minimum fiyat: ', 'woo-donation-popup'),
-                        'max_shares_error' => __('Maksimum hisse sayısı: ', 'woo-donation-popup'),
-                    ),
-                    'button_texts' => self::get_button_texts(),
-                    'shareholder_texts' => self::get_shareholder_texts(),
-                ));
+        self::register_frontend_assets($plugin_url, $css_version, $js_module_version, $dependencies);
+        self::localize_frontend_assets($plugin_url);
 
         // Önce force flag'i kontrol et
         $should_enqueue = self::$force_enqueue_assets;
