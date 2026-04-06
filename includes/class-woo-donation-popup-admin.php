@@ -695,8 +695,22 @@ class Woo_Donation_Popup_Admin {
             'popup_button_font_weight' => '700',
             'popup_button_font_family' => 'inherit',
             'popup_button_custom_font' => '',
+            'popup_button_size' => 'large',
+            'popup_button_custom_min_width' => '140',
+            'popup_button_custom_min_height' => '48',
+            'popup_button_custom_padding_x' => '24',
             'popup_button_border_radius' => '10',
+            'popup_button_border_size' => '0',
             'popup_button_full_width' => '0',
+            'popup_button_use_gradient' => '1',
+            'popup_button_gradient_start' => '#ff8244',
+            'popup_button_gradient_end' => '#ff9860',
+            'popup_button_gradient_hover_start' => '#ff8244',
+            'popup_button_gradient_hover_end' => '#ff9860',
+            'popup_button_gradient_start_stop' => '0',
+            'popup_button_gradient_end_stop' => '100',
+            'popup_button_gradient_type' => 'linear',
+            'popup_button_gradient_angle' => '150',
         );
         
         $settings = wp_parse_args($button_settings, $defaults);
@@ -1080,7 +1094,136 @@ class Woo_Donation_Popup_Admin {
         echo '<p class="description">' . __('Popup açan butonun hover rengi', 'woo-donation-popup') . '</p>';
         echo '</td>';
         echo '</tr>';
+
+        echo '<tr>';
+        echo '<th scope="row"><label for="popup_button_use_gradient">' . __('Gradient Kullan', 'woo-donation-popup') . '</label></th>';
+        echo '<td>';
+        $popup_button_use_gradient = isset($settings['popup_button_use_gradient']) ? $settings['popup_button_use_gradient'] : '1';
+        echo '<label class="wdp-switch">';
+        echo '<input type="checkbox" id="popup_button_use_gradient" name="popup_button_use_gradient" value="1" ' . checked($popup_button_use_gradient, '1', false) . ' />';
+        echo '<span class="wdp-slider"></span>';
+        echo '</label>';
+        echo '<p class="description">' . __('Aktif olduğunda "Bağış Yap" butonu gradient renklerle gösterilir.', 'woo-donation-popup') . '</p>';
+        echo '</td>';
+        echo '</tr>';
+
+        echo '<tr>';
+        echo '<th scope="row"><label for="popup_button_gradient_start">' . __('Button Gradient Start Color', 'woo-donation-popup') . '</label></th>';
+        echo '<td>';
+        $popup_button_gradient_start = isset($settings['popup_button_gradient_start']) ? $settings['popup_button_gradient_start'] : '#ff8244';
+        echo '<input type="color" id="popup_button_gradient_start" name="popup_button_gradient_start" value="' . esc_attr($popup_button_gradient_start) . '" />';
+        echo '<p class="description">' . __('Gradient başlangıç rengi', 'woo-donation-popup') . '</p>';
+        echo '</td>';
+        echo '</tr>';
+
+        echo '<tr>';
+        echo '<th scope="row"><label for="popup_button_gradient_end">' . __('Button Gradient End Color', 'woo-donation-popup') . '</label></th>';
+        echo '<td>';
+        $popup_button_gradient_end = isset($settings['popup_button_gradient_end']) ? $settings['popup_button_gradient_end'] : '#ff9860';
+        echo '<input type="color" id="popup_button_gradient_end" name="popup_button_gradient_end" value="' . esc_attr($popup_button_gradient_end) . '" />';
+        echo '<p class="description">' . __('Gradient bitiş rengi', 'woo-donation-popup') . '</p>';
+        echo '</td>';
+        echo '</tr>';
+
+        echo '<tr>';
+        echo '<th scope="row"><label for="popup_button_gradient_hover_start">' . __('Button Gradient Start Hover Color', 'woo-donation-popup') . '</label></th>';
+        echo '<td>';
+        $popup_button_gradient_hover_start = isset($settings['popup_button_gradient_hover_start']) ? $settings['popup_button_gradient_hover_start'] : '#ff8244';
+        echo '<input type="color" id="popup_button_gradient_hover_start" name="popup_button_gradient_hover_start" value="' . esc_attr($popup_button_gradient_hover_start) . '" />';
+        echo '<p class="description">' . __('Hover durumunda gradient başlangıç rengi', 'woo-donation-popup') . '</p>';
+        echo '</td>';
+        echo '</tr>';
+
+        echo '<tr>';
+        echo '<th scope="row"><label for="popup_button_gradient_hover_end">' . __('Button Gradient End Hover Color', 'woo-donation-popup') . '</label></th>';
+        echo '<td>';
+        $popup_button_gradient_hover_end = isset($settings['popup_button_gradient_hover_end']) ? $settings['popup_button_gradient_hover_end'] : '#ff9860';
+        echo '<input type="color" id="popup_button_gradient_hover_end" name="popup_button_gradient_hover_end" value="' . esc_attr($popup_button_gradient_hover_end) . '" />';
+        echo '<p class="description">' . __('Hover durumunda gradient bitiş rengi', 'woo-donation-popup') . '</p>';
+        echo '</td>';
+        echo '</tr>';
+
+        echo '<tr>';
+        echo '<th scope="row"><label for="popup_button_gradient_start_stop">' . __('Button Gradient Start', 'woo-donation-popup') . '</label></th>';
+        echo '<td>';
+        $popup_button_gradient_start_stop = isset($settings['popup_button_gradient_start_stop']) ? $settings['popup_button_gradient_start_stop'] : '0';
+        echo '<input type="number" id="popup_button_gradient_start_stop" name="popup_button_gradient_start_stop" value="' . esc_attr($popup_button_gradient_start_stop) . '" min="0" max="100" step="1" class="small-text" />';
+        echo '<p class="description">' . __('Başlangıç renginin yüzde konumu (0-100)', 'woo-donation-popup') . '</p>';
+        echo '</td>';
+        echo '</tr>';
+
+        echo '<tr>';
+        echo '<th scope="row"><label for="popup_button_gradient_end_stop">' . __('Button Gradient End', 'woo-donation-popup') . '</label></th>';
+        echo '<td>';
+        $popup_button_gradient_end_stop = isset($settings['popup_button_gradient_end_stop']) ? $settings['popup_button_gradient_end_stop'] : '100';
+        echo '<input type="number" id="popup_button_gradient_end_stop" name="popup_button_gradient_end_stop" value="' . esc_attr($popup_button_gradient_end_stop) . '" min="0" max="100" step="1" class="small-text" />';
+        echo '<p class="description">' . __('Bitiş renginin yüzde konumu (0-100)', 'woo-donation-popup') . '</p>';
+        echo '</td>';
+        echo '</tr>';
+
+        echo '<tr>';
+        echo '<th scope="row"><label for="popup_button_gradient_type">' . __('Button Gradient Type', 'woo-donation-popup') . '</label></th>';
+        echo '<td>';
+        $popup_button_gradient_type = isset($settings['popup_button_gradient_type']) ? $settings['popup_button_gradient_type'] : 'linear';
+        echo '<select id="popup_button_gradient_type" name="popup_button_gradient_type">';
+        echo '<option value="linear" ' . selected($popup_button_gradient_type, 'linear', false) . '>' . __('Linear', 'woo-donation-popup') . '</option>';
+        echo '<option value="radial" ' . selected($popup_button_gradient_type, 'radial', false) . '>' . __('Radial', 'woo-donation-popup') . '</option>';
+        echo '</select>';
+        echo '<p class="description">' . __('Gradient tipi', 'woo-donation-popup') . '</p>';
+        echo '</td>';
+        echo '</tr>';
+
+        echo '<tr>';
+        echo '<th scope="row"><label for="popup_button_gradient_angle">' . __('Button Gradient Angle', 'woo-donation-popup') . '</label></th>';
+        echo '<td>';
+        $popup_button_gradient_angle = isset($settings['popup_button_gradient_angle']) ? $settings['popup_button_gradient_angle'] : '150';
+        echo '<input type="number" id="popup_button_gradient_angle" name="popup_button_gradient_angle" value="' . esc_attr($popup_button_gradient_angle) . '" min="0" max="360" step="1" class="small-text" />';
+        echo '<p class="description">' . __('Linear gradient açısı (0-360 derece)', 'woo-donation-popup') . '</p>';
+        echo '</td>';
+        echo '</tr>';
         
+        echo '<tr>';
+        echo '<th scope="row"><label for="popup_button_size">' . __('Button Size', 'woo-donation-popup') . '</label></th>';
+        echo '<td>';
+        $popup_button_size = isset($settings['popup_button_size']) ? $settings['popup_button_size'] : 'large';
+        echo '<select id="popup_button_size" name="popup_button_size">';
+        echo '<option value="custom" ' . selected($popup_button_size, 'custom', false) . '>Custom</option>';
+        echo '<option value="small" ' . selected($popup_button_size, 'small', false) . '>Small</option>';
+        echo '<option value="medium" ' . selected($popup_button_size, 'medium', false) . '>Medium</option>';
+        echo '<option value="large" ' . selected($popup_button_size, 'large', false) . '>Large</option>';
+        echo '<option value="xlarge" ' . selected($popup_button_size, 'xlarge', false) . '>XLarge</option>';
+        echo '</select>';
+        echo '<p class="description">' . __('Popup açan butonun genel boyut preset seçimi', 'woo-donation-popup') . '</p>';
+        echo '</td>';
+        echo '</tr>';
+
+        echo '<tr id="popup_button_custom_min_width_row" style="' . ($popup_button_size === 'custom' ? '' : 'display:none;') . '">';
+        echo '<th scope="row"><label for="popup_button_custom_min_width">' . __('Custom Min Width (px)', 'woo-donation-popup') . '</label></th>';
+        echo '<td>';
+        $popup_button_custom_min_width = isset($settings['popup_button_custom_min_width']) ? $settings['popup_button_custom_min_width'] : '140';
+        echo '<input type="number" id="popup_button_custom_min_width" name="popup_button_custom_min_width" value="' . esc_attr($popup_button_custom_min_width) . '" min="80" max="420" step="1" class="small-text" />';
+        echo '<p class="description">' . __('Sadece Custom seçiliyken kullanılır', 'woo-donation-popup') . '</p>';
+        echo '</td>';
+        echo '</tr>';
+
+        echo '<tr id="popup_button_custom_min_height_row" style="' . ($popup_button_size === 'custom' ? '' : 'display:none;') . '">';
+        echo '<th scope="row"><label for="popup_button_custom_min_height">' . __('Custom Min Height (px)', 'woo-donation-popup') . '</label></th>';
+        echo '<td>';
+        $popup_button_custom_min_height = isset($settings['popup_button_custom_min_height']) ? $settings['popup_button_custom_min_height'] : '48';
+        echo '<input type="number" id="popup_button_custom_min_height" name="popup_button_custom_min_height" value="' . esc_attr($popup_button_custom_min_height) . '" min="36" max="100" step="1" class="small-text" />';
+        echo '<p class="description">' . __('Sadece Custom seçiliyken kullanılır', 'woo-donation-popup') . '</p>';
+        echo '</td>';
+        echo '</tr>';
+
+        echo '<tr id="popup_button_custom_padding_x_row" style="' . ($popup_button_size === 'custom' ? '' : 'display:none;') . '">';
+        echo '<th scope="row"><label for="popup_button_custom_padding_x">' . __('Custom Horizontal Padding (px)', 'woo-donation-popup') . '</label></th>';
+        echo '<td>';
+        $popup_button_custom_padding_x = isset($settings['popup_button_custom_padding_x']) ? $settings['popup_button_custom_padding_x'] : '24';
+        echo '<input type="number" id="popup_button_custom_padding_x" name="popup_button_custom_padding_x" value="' . esc_attr($popup_button_custom_padding_x) . '" min="8" max="64" step="1" class="small-text" />';
+        echo '<p class="description">' . __('Sadece Custom seçiliyken kullanılır', 'woo-donation-popup') . '</p>';
+        echo '</td>';
+        echo '</tr>';
+
         echo '<tr>';
         echo '<th scope="row"><label for="popup_button_font_size">' . __('Font Boyutu (px)', 'woo-donation-popup') . '</label></th>';
         echo '<td>';
@@ -1151,6 +1294,15 @@ class Woo_Donation_Popup_Admin {
         $popup_button_border_radius = isset($settings['popup_button_border_radius']) ? $settings['popup_button_border_radius'] : '10';
         echo '<input type="number" id="popup_button_border_radius" name="popup_button_border_radius" value="' . esc_attr($popup_button_border_radius) . '" min="0" max="50" step="1" class="small-text" />';
         echo '<p class="description">' . __('Popup butonunun köşe yuvarlaklığı (0-50px arası)', 'woo-donation-popup') . '</p>';
+        echo '</td>';
+        echo '</tr>';
+
+        echo '<tr>';
+        echo '<th scope="row"><label for="popup_button_border_size">' . __('Button Border Size (px)', 'woo-donation-popup') . '</label></th>';
+        echo '<td>';
+        $popup_button_border_size = isset($settings['popup_button_border_size']) ? $settings['popup_button_border_size'] : '0';
+        echo '<input type="number" id="popup_button_border_size" name="popup_button_border_size" value="' . esc_attr($popup_button_border_size) . '" min="0" max="20" step="1" class="small-text" />';
+        echo '<p class="description">' . __('Popup butonunun kenarlık kalınlığı (0-20px arası)', 'woo-donation-popup') . '</p>';
         echo '</td>';
         echo '</tr>';
         
@@ -1876,8 +2028,26 @@ class Woo_Donation_Popup_Admin {
             'popup_button_font_weight' => isset($_POST['popup_button_font_weight']) ? sanitize_text_field($_POST['popup_button_font_weight']) : '700',
             'popup_button_font_family' => isset($_POST['popup_button_font_family']) ? sanitize_text_field($_POST['popup_button_font_family']) : 'inherit',
             'popup_button_custom_font' => isset($_POST['popup_button_custom_font']) ? sanitize_text_field($_POST['popup_button_custom_font']) : '',
+            'popup_button_size' => (isset($_POST['popup_button_size']) && in_array($_POST['popup_button_size'], array('custom', 'small', 'medium', 'large', 'xlarge'), true))
+                ? sanitize_text_field($_POST['popup_button_size'])
+                : 'large',
+            'popup_button_custom_min_width' => isset($_POST['popup_button_custom_min_width']) ? absint($_POST['popup_button_custom_min_width']) : 140,
+            'popup_button_custom_min_height' => isset($_POST['popup_button_custom_min_height']) ? absint($_POST['popup_button_custom_min_height']) : 48,
+            'popup_button_custom_padding_x' => isset($_POST['popup_button_custom_padding_x']) ? absint($_POST['popup_button_custom_padding_x']) : 24,
             'popup_button_border_radius' => isset($_POST['popup_button_border_radius']) ? absint($_POST['popup_button_border_radius']) : 10,
+            'popup_button_border_size' => isset($_POST['popup_button_border_size']) ? absint($_POST['popup_button_border_size']) : 0,
             'popup_button_full_width' => isset($_POST['popup_button_full_width']) && $_POST['popup_button_full_width'] === '1' ? '1' : '0',
+            'popup_button_use_gradient' => isset($_POST['popup_button_use_gradient']) && $_POST['popup_button_use_gradient'] === '1' ? '1' : '0',
+            'popup_button_gradient_start' => isset($_POST['popup_button_gradient_start']) ? sanitize_hex_color($_POST['popup_button_gradient_start']) : '#ff8244',
+            'popup_button_gradient_end' => isset($_POST['popup_button_gradient_end']) ? sanitize_hex_color($_POST['popup_button_gradient_end']) : '#ff9860',
+            'popup_button_gradient_hover_start' => isset($_POST['popup_button_gradient_hover_start']) ? sanitize_hex_color($_POST['popup_button_gradient_hover_start']) : '#ff8244',
+            'popup_button_gradient_hover_end' => isset($_POST['popup_button_gradient_hover_end']) ? sanitize_hex_color($_POST['popup_button_gradient_hover_end']) : '#ff9860',
+            'popup_button_gradient_start_stop' => isset($_POST['popup_button_gradient_start_stop']) ? absint($_POST['popup_button_gradient_start_stop']) : 0,
+            'popup_button_gradient_end_stop' => isset($_POST['popup_button_gradient_end_stop']) ? absint($_POST['popup_button_gradient_end_stop']) : 100,
+            'popup_button_gradient_type' => (isset($_POST['popup_button_gradient_type']) && in_array($_POST['popup_button_gradient_type'], array('linear', 'radial'), true))
+                ? sanitize_text_field($_POST['popup_button_gradient_type'])
+                : 'linear',
+            'popup_button_gradient_angle' => isset($_POST['popup_button_gradient_angle']) ? absint($_POST['popup_button_gradient_angle']) : 150,
             'label_color' => isset($_POST['label_color']) ? sanitize_hex_color($_POST['label_color']) : '#374151',
             'label_font_size' => isset($_POST['label_font_size']) ? absint($_POST['label_font_size']) : 14,
             'label_font_weight' => isset($_POST['label_font_weight']) ? sanitize_text_field($_POST['label_font_weight']) : '600',
@@ -1945,6 +2115,44 @@ class Woo_Donation_Popup_Admin {
             if ($settings['popup_button_border_radius'] > 50) {
                 $settings['popup_button_border_radius'] = 50;
             }
+        }
+        if (isset($settings['popup_button_border_size'])) {
+            if ($settings['popup_button_border_size'] > 20) {
+                $settings['popup_button_border_size'] = 20;
+            }
+        }
+        if (isset($settings['popup_button_custom_min_width'])) {
+            if ($settings['popup_button_custom_min_width'] < 80) {
+                $settings['popup_button_custom_min_width'] = 80;
+            }
+            if ($settings['popup_button_custom_min_width'] > 420) {
+                $settings['popup_button_custom_min_width'] = 420;
+            }
+        }
+        if (isset($settings['popup_button_custom_min_height'])) {
+            if ($settings['popup_button_custom_min_height'] < 36) {
+                $settings['popup_button_custom_min_height'] = 36;
+            }
+            if ($settings['popup_button_custom_min_height'] > 100) {
+                $settings['popup_button_custom_min_height'] = 100;
+            }
+        }
+        if (isset($settings['popup_button_custom_padding_x'])) {
+            if ($settings['popup_button_custom_padding_x'] < 8) {
+                $settings['popup_button_custom_padding_x'] = 8;
+            }
+            if ($settings['popup_button_custom_padding_x'] > 64) {
+                $settings['popup_button_custom_padding_x'] = 64;
+            }
+        }
+        if ($settings['popup_button_gradient_start_stop'] > 100) {
+            $settings['popup_button_gradient_start_stop'] = 100;
+        }
+        if ($settings['popup_button_gradient_end_stop'] > 100) {
+            $settings['popup_button_gradient_end_stop'] = 100;
+        }
+        if ($settings['popup_button_gradient_angle'] > 360) {
+            $settings['popup_button_gradient_angle'] = 360;
         }
 
         // Eski anahtar uyumluluğu + tek kaynak: admindeki "Popup buton metni" ile aynı (POST'ta alan yoktu, her kayıtta sıfırlanıyordu)

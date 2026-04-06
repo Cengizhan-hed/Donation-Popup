@@ -101,6 +101,13 @@ class WDP_Assets {
     private static $inline_style_attached = false;
 
     /**
+     * Track whether frontend runtime data was localized for this request.
+     *
+     * @var bool
+     */
+    private static $frontend_data_localized = false;
+
+    /**
      * CSS handle for frontend modal styles (used for optimizer exclusions).
      */
     const FRONTEND_CSS_HANDLE = 'wdp-donation-modal-css';
@@ -351,6 +358,7 @@ class WDP_Assets {
             'button_texts' => self::get_button_texts(),
             'shareholder_texts' => self::get_shareholder_texts(),
         ));
+        self::$frontend_data_localized = true;
     }
     
     /**
@@ -391,26 +399,12 @@ class WDP_Assets {
             self::register_frontend_assets($plugin_url, $css_version, $js_module_version, $dependencies);
             
             // Localize script (sadece bir kez)
-            if (!did_action('wp_localize_script_wdp-utils-js')) {
+            if (!self::$frontend_data_localized) {
                 self::localize_frontend_assets($plugin_url);
             }
         }
         
-        // Script'leri enqueue et (WordPress dependency sistemine güven)
-        wp_enqueue_script('wdp-constants-js'); // Load first (no dependencies)
-        wp_enqueue_script('wdp-utils-js');
-        wp_enqueue_script('wdp-state-js');
-        wp_enqueue_script('wdp-dom-js');
-        wp_enqueue_script('wdp-alerts-js');
-        wp_enqueue_script('wdp-product-js');
-        wp_enqueue_script('wdp-cart-js');
-        wp_enqueue_script('wdp-form-js');
-        wp_enqueue_script('wdp-shareholder-js');
-        wp_enqueue_script('wdp-progress-bar-js');
-        wp_enqueue_script('wdp-modal-js');
-        wp_enqueue_script('wdp-form-initializer-js');
-        wp_enqueue_script('wdp-event-manager-js');
-        wp_enqueue_script('wdp-module-loader-js');
+        // Sadece giriş script'ini enqueue et; dependency zinciri geri kalanını yükler.
         wp_enqueue_script('wdp-init-js');
         
         // Style'ı enqueue et
@@ -444,27 +438,27 @@ class WDP_Assets {
         $settings = wp_parse_args($button_settings, $defaults);
         
         $result = array(
-            'donate'      => $settings['popup_button_text'],
-            'add_to_cart' => $settings['button_text_add_to_cart'],
-            'go_checkout' => $settings['button_text_go_checkout'],
+            'donate'      => self::sanitize_plain_text($settings['popup_button_text'], __('Bağış Yap', 'woo-donation-popup')),
+            'add_to_cart' => self::sanitize_plain_text($settings['button_text_add_to_cart'], __('Sepete Ekle', 'woo-donation-popup')),
+            'go_checkout' => self::sanitize_plain_text($settings['button_text_go_checkout'], __('Ödemeye Git', 'woo-donation-popup')),
         );
         
         // Başarı ekranı buton metinleri (başarı ekranı ayarlarından al)
         $success_settings = get_option('wdp_success_settings', array());
         if (isset($success_settings['success_text_view_cart'])) {
-            $result['success_view_cart'] = $success_settings['success_text_view_cart'];
+            $result['success_view_cart'] = self::sanitize_plain_text($success_settings['success_text_view_cart'], __('Sepeti Görüntüle', 'woo-donation-popup'));
         } else {
             $result['success_view_cart'] = __('Sepeti Görüntüle', 'woo-donation-popup');
         }
         
         if (isset($success_settings['success_text_go_checkout'])) {
-            $result['success_go_checkout'] = $success_settings['success_text_go_checkout'];
+            $result['success_go_checkout'] = self::sanitize_plain_text($success_settings['success_text_go_checkout'], __('Ödemeye Git', 'woo-donation-popup'));
         } else {
             $result['success_go_checkout'] = __('Ödemeye Git', 'woo-donation-popup');
         }
         
         if (isset($success_settings['success_text_new_donation'])) {
-            $result['success_new_donation'] = $success_settings['success_text_new_donation'];
+            $result['success_new_donation'] = self::sanitize_plain_text($success_settings['success_text_new_donation'], __('Yeni Bağış Ekle', 'woo-donation-popup'));
         } else {
             $result['success_new_donation'] = __('Yeni Bağış Ekle', 'woo-donation-popup');
         }
@@ -495,17 +489,108 @@ class WDP_Assets {
         $settings = wp_parse_args($settings, $defaults);
 
         return array(
-            'header'            => $settings['shareholder_header_text'],
-            'name_placeholder'  => $settings['shareholder_name_placeholder'],
-            'phone_placeholder' => $settings['shareholder_phone_placeholder'],
-            'note_placeholder'  => $settings['shareholder_note_placeholder'],
-            'copy_button'       => $settings['shareholder_copy_button_text'],
+            'header'            => self::sanitize_plain_text($settings['shareholder_header_text'], $defaults['shareholder_header_text']),
+            'name_placeholder'  => self::sanitize_plain_text($settings['shareholder_name_placeholder'], $defaults['shareholder_name_placeholder']),
+            'phone_placeholder' => self::sanitize_plain_text($settings['shareholder_phone_placeholder'], $defaults['shareholder_phone_placeholder']),
+            'note_placeholder'  => self::sanitize_plain_text($settings['shareholder_note_placeholder'], $defaults['shareholder_note_placeholder']),
+            'copy_button'       => self::sanitize_plain_text($settings['shareholder_copy_button_text'], $defaults['shareholder_copy_button_text']),
             'enable_copy_button'=> !empty($settings['shareholder_enable_copy_button']) && $settings['shareholder_enable_copy_button'] !== '0',
-            'layout'            => !empty($settings['shareholder_layout']) ? $settings['shareholder_layout'] : 'single',
-            'density'           => !empty($settings['shareholder_density']) ? $settings['shareholder_density'] : 'normal',
+            'layout'            => self::sanitize_choice($settings['shareholder_layout'], array('single', 'two-column'), 'single'),
+            'density'           => self::sanitize_choice($settings['shareholder_density'], array('compact', 'normal', 'spacious'), 'normal'),
             'enable_email'      => !empty($settings['shareholder_enable_email']) && $settings['shareholder_enable_email'] !== '0',
-            'email_placeholder' => $settings['shareholder_email_placeholder'],
+            'email_placeholder' => self::sanitize_plain_text($settings['shareholder_email_placeholder'], $defaults['shareholder_email_placeholder']),
         );
+    }
+
+    /**
+     * Sanitize plain runtime text values.
+     *
+     * @param mixed $value Raw value.
+     * @param string $fallback Fallback value.
+     * @return string
+     */
+    private static function sanitize_plain_text($value, $fallback = '') {
+        if (!is_scalar($value)) {
+            return (string) $fallback;
+        }
+
+        $text = sanitize_text_field((string) $value);
+        return $text !== '' ? $text : (string) $fallback;
+    }
+
+    /**
+     * Sanitize enum-like values by whitelist.
+     *
+     * @param mixed $value Raw value.
+     * @param array $allowed Allowed values.
+     * @param string $fallback Fallback value.
+     * @return string
+     */
+    private static function sanitize_choice($value, $allowed, $fallback) {
+        if (!is_scalar($value)) {
+            return $fallback;
+        }
+        $value = trim((string) $value);
+        return in_array($value, $allowed, true) ? $value : $fallback;
+    }
+
+    /**
+     * Sanitize CSS scalar value to avoid style injection.
+     *
+     * @param mixed $value Raw value.
+     * @param string $fallback Fallback value.
+     * @return string
+     */
+    private static function sanitize_css_value($value, $fallback = '') {
+        if (!is_scalar($value)) {
+            return (string) $fallback;
+        }
+        $value = trim(wp_strip_all_tags((string) $value));
+        if ($value === '' || preg_match('/[{};<>`]/', $value)) {
+            return (string) $fallback;
+        }
+        return $value;
+    }
+
+    /**
+     * Sanitize integer values intended for px-based CSS variables.
+     *
+     * @param mixed $value Raw value.
+     * @param int $fallback Fallback integer.
+     * @param int $min Minimum allowed value.
+     * @param int $max Maximum allowed value.
+     * @return string
+     */
+    private static function sanitize_css_int($value, $fallback = 0, $min = 0, $max = 4000) {
+        if (!is_scalar($value) || !is_numeric($value)) {
+            return (string) $fallback;
+        }
+        $int_value = (int) $value;
+        if ($int_value < $min || $int_value > $max) {
+            return (string) $fallback;
+        }
+        return (string) $int_value;
+    }
+
+    /**
+     * Sanitize known CSS settings map.
+     *
+     * @param array $settings User settings.
+     * @param array $defaults Defaults map.
+     * @param array $numeric_keys Keys that must be integers.
+     * @return array
+     */
+    private static function sanitize_css_settings($settings, $defaults, $numeric_keys = array()) {
+        $sanitized = array();
+        foreach ($defaults as $key => $default_value) {
+            $raw_value = isset($settings[$key]) ? $settings[$key] : $default_value;
+            if (in_array($key, $numeric_keys, true)) {
+                $sanitized[$key] = self::sanitize_css_int($raw_value, (int) $default_value);
+                continue;
+            }
+            $sanitized[$key] = self::sanitize_css_value($raw_value, (string) $default_value);
+        }
+        return $sanitized;
     }
     
     /**
@@ -539,7 +624,21 @@ class WDP_Assets {
             'popup_button_font_weight' => '700',
             'popup_button_font_family' => 'inherit',
             'popup_button_custom_font' => '',
+            'popup_button_size' => 'large',
+            'popup_button_custom_min_width' => '140',
+            'popup_button_custom_min_height' => '48',
+            'popup_button_custom_padding_x' => '24',
             'popup_button_border_radius' => '10',
+            'popup_button_border_size' => '0',
+            'popup_button_use_gradient' => '1',
+            'popup_button_gradient_start' => '#ff8244',
+            'popup_button_gradient_end' => '#ff9860',
+            'popup_button_gradient_hover_start' => '#ff8244',
+            'popup_button_gradient_hover_end' => '#ff9860',
+            'popup_button_gradient_start_stop' => '0',
+            'popup_button_gradient_end_stop' => '100',
+            'popup_button_gradient_type' => 'linear',
+            'popup_button_gradient_angle' => '150',
             'label_color' => '#374151',
             'label_font_size' => 14,
             'label_font_weight' => '600',
@@ -554,18 +653,38 @@ class WDP_Assets {
         );
         
         $settings = wp_parse_args($button_settings, $defaults);
+        $settings = self::sanitize_css_settings($settings, $defaults, array(
+            'button_border_radius',
+            'modal_border_radius',
+            'input_border_radius',
+            'title_font_size',
+            'title_font_size_mobile',
+            'popup_button_font_size',
+            'popup_button_border_radius',
+            'popup_button_border_size',
+            'popup_button_custom_min_width',
+            'popup_button_custom_min_height',
+            'popup_button_custom_padding_x',
+            'popup_button_gradient_start_stop',
+            'popup_button_gradient_end_stop',
+            'popup_button_gradient_angle',
+            'label_font_size',
+            'form_gap',
+        ));
         
         // CSS değişkenlerini oluştur
         $css = ":root {\n";
         
         // Popup butonu değişkenleri
+        $popup_button_color = !empty($settings['popup_button_color']) ? $settings['popup_button_color'] : '#1e73be';
+        $popup_button_hover = !empty($settings['popup_button_hover']) ? $settings['popup_button_hover'] : '#185d98';
         if (isset($settings['popup_button_color'])) {
-            $css .= "  --wdp-primary: " . esc_attr($settings['popup_button_color']) . ";\n";
+            $css .= "  --wdp-primary: " . esc_attr($popup_button_color) . ";\n";
         } else {
             $css .= "  --wdp-primary: #1e73be;\n";
         }
         if (isset($settings['popup_button_hover'])) {
-            $css .= "  --wdp-primary-hover: " . esc_attr($settings['popup_button_hover']) . ";\n";
+            $css .= "  --wdp-primary-hover: " . esc_attr($popup_button_hover) . ";\n";
         } else {
             $css .= "  --wdp-primary-hover: #185d98;\n";
         }
@@ -597,6 +716,96 @@ class WDP_Assets {
         } else {
             $css .= "  --wdp-popup-button-radius: 10px;\n";
         }
+        if (isset($settings['popup_button_border_size'])) {
+            $css .= "  --wdp-popup-button-border-size: " . esc_attr($settings['popup_button_border_size']) . "px;\n";
+        } else {
+            $css .= "  --wdp-popup-button-border-size: 0px;\n";
+        }
+
+        $popup_button_size = isset($settings['popup_button_size']) ? $settings['popup_button_size'] : 'large';
+        $popup_size_presets = array(
+            'small' => array('min_width' => 112, 'min_height' => 42, 'padding_x' => 18),
+            'medium' => array('min_width' => 126, 'min_height' => 46, 'padding_x' => 21),
+            'large' => array('min_width' => 140, 'min_height' => 48, 'padding_x' => 24),
+            'xlarge' => array('min_width' => 156, 'min_height' => 54, 'padding_x' => 30),
+        );
+
+        $popup_button_min_width = 140;
+        $popup_button_min_height = 48;
+        $popup_button_padding_x = 24;
+
+        if ($popup_button_size === 'custom') {
+            $popup_button_min_width = isset($settings['popup_button_custom_min_width']) ? max(80, min(420, (int) $settings['popup_button_custom_min_width'])) : 140;
+            $popup_button_min_height = isset($settings['popup_button_custom_min_height']) ? max(36, min(100, (int) $settings['popup_button_custom_min_height'])) : 48;
+            $popup_button_padding_x = isset($settings['popup_button_custom_padding_x']) ? max(8, min(64, (int) $settings['popup_button_custom_padding_x'])) : 24;
+        } elseif (isset($popup_size_presets[$popup_button_size])) {
+            $popup_button_min_width = (int) $popup_size_presets[$popup_button_size]['min_width'];
+            $popup_button_min_height = (int) $popup_size_presets[$popup_button_size]['min_height'];
+            $popup_button_padding_x = (int) $popup_size_presets[$popup_button_size]['padding_x'];
+        }
+
+        $css .= "  --wdp-popup-button-min-width: " . $popup_button_min_width . "px;\n";
+        $css .= "  --wdp-popup-button-min-height: " . $popup_button_min_height . "px;\n";
+        $css .= "  --wdp-popup-button-padding-inline: " . $popup_button_padding_x . "px;\n";
+
+        $popup_button_use_gradient = isset($settings['popup_button_use_gradient']) && $settings['popup_button_use_gradient'] === '1';
+        $popup_gradient_type = (isset($settings['popup_button_gradient_type']) && in_array($settings['popup_button_gradient_type'], array('linear', 'radial'), true))
+            ? $settings['popup_button_gradient_type']
+            : 'linear';
+        $popup_gradient_start = !empty($settings['popup_button_gradient_start']) ? $settings['popup_button_gradient_start'] : '#ff8244';
+        $popup_gradient_end = !empty($settings['popup_button_gradient_end']) ? $settings['popup_button_gradient_end'] : '#ff9860';
+        $popup_gradient_hover_start = !empty($settings['popup_button_gradient_hover_start']) ? $settings['popup_button_gradient_hover_start'] : '#ff8244';
+        $popup_gradient_hover_end = !empty($settings['popup_button_gradient_hover_end']) ? $settings['popup_button_gradient_hover_end'] : '#ff9860';
+        $popup_gradient_start_stop = isset($settings['popup_button_gradient_start_stop']) ? max(0, min(100, (int) $settings['popup_button_gradient_start_stop'])) : 0;
+        $popup_gradient_end_stop = isset($settings['popup_button_gradient_end_stop']) ? max(0, min(100, (int) $settings['popup_button_gradient_end_stop'])) : 100;
+        $popup_gradient_angle = isset($settings['popup_button_gradient_angle']) ? max(0, min(360, (int) $settings['popup_button_gradient_angle'])) : 150;
+
+        if ($popup_gradient_type === 'radial') {
+            $popup_button_bg = sprintf(
+                'radial-gradient(circle, %1$s %2$d%%, %3$s %4$d%%)',
+                esc_attr($popup_gradient_start),
+                $popup_gradient_start_stop,
+                esc_attr($popup_gradient_end),
+                $popup_gradient_end_stop
+            );
+            $popup_button_bg_hover = sprintf(
+                'radial-gradient(circle, %1$s %2$d%%, %3$s %4$d%%)',
+                esc_attr($popup_gradient_hover_start),
+                $popup_gradient_start_stop,
+                esc_attr($popup_gradient_hover_end),
+                $popup_gradient_end_stop
+            );
+        } else {
+            $popup_button_bg = sprintf(
+                'linear-gradient(%1$ddeg, %2$s %3$d%%, %4$s %5$d%%)',
+                $popup_gradient_angle,
+                esc_attr($popup_gradient_start),
+                $popup_gradient_start_stop,
+                esc_attr($popup_gradient_end),
+                $popup_gradient_end_stop
+            );
+            $popup_button_bg_hover = sprintf(
+                'linear-gradient(%1$ddeg, %2$s %3$d%%, %4$s %5$d%%)',
+                $popup_gradient_angle,
+                esc_attr($popup_gradient_hover_start),
+                $popup_gradient_start_stop,
+                esc_attr($popup_gradient_hover_end),
+                $popup_gradient_end_stop
+            );
+        }
+
+        $css .= "  --wdp-popup-button-gradient-start: " . esc_attr($popup_gradient_start) . ";\n";
+        $css .= "  --wdp-popup-button-gradient-end: " . esc_attr($popup_gradient_end) . ";\n";
+        $css .= "  --wdp-popup-button-gradient-hover-start: " . esc_attr($popup_gradient_hover_start) . ";\n";
+        $css .= "  --wdp-popup-button-gradient-hover-end: " . esc_attr($popup_gradient_hover_end) . ";\n";
+        $css .= "  --wdp-popup-button-gradient-start-stop: " . $popup_gradient_start_stop . "%;\n";
+        $css .= "  --wdp-popup-button-gradient-end-stop: " . $popup_gradient_end_stop . "%;\n";
+        $css .= "  --wdp-popup-button-gradient-angle: " . $popup_gradient_angle . "deg;\n";
+        $css .= "  --wdp-popup-button-gradient-type: " . esc_attr($popup_gradient_type) . ";\n";
+        $css .= "  --wdp-popup-button-bg: " . ($popup_button_use_gradient ? $popup_button_bg : esc_attr($popup_button_color)) . ";\n";
+        $css .= "  --wdp-popup-button-bg-hover: " . ($popup_button_use_gradient ? $popup_button_bg_hover : esc_attr($popup_button_hover)) . ";\n";
+        $css .= "  --wdp-popup-button-border-color: " . esc_attr($popup_button_use_gradient ? $popup_gradient_start : $popup_button_color) . ";\n";
+        $css .= "  --wdp-popup-button-border-hover-color: " . esc_attr($popup_button_use_gradient ? $popup_gradient_hover_start : $popup_button_hover) . ";\n";
         
         // Normal form değişkenleri
         $css .= "  --wdp-button-primary: " . esc_attr($settings['button_primary_color']) . ";\n";
@@ -638,7 +847,10 @@ class WDP_Assets {
             'percentage_bg' => '#ffffff',
             'percentage_text' => '#1e293b',
         );
-        $progress_settings = wp_parse_args($progress_settings, $progress_defaults);
+        $progress_settings = self::sanitize_css_settings(
+            wp_parse_args($progress_settings, $progress_defaults),
+            $progress_defaults
+        );
 
         $css .= "  --wdp-progress-container-bg: " . esc_attr($progress_settings['container_bg']) . ";\n";
         $css .= "  --wdp-progress-container-border: " . esc_attr($progress_settings['container_border']) . ";\n";
@@ -680,7 +892,11 @@ class WDP_Assets {
             'share_counter_bg' => '#ffffff',
             'share_counter_button_color' => '#888888',
         );
-        $shareholder_settings = wp_parse_args($shareholder_settings, $shareholder_defaults);
+        $shareholder_settings = self::sanitize_css_settings(
+            wp_parse_args($shareholder_settings, $shareholder_defaults),
+            $shareholder_defaults,
+            array('shareholder_card_radius', 'shareholder_content_padding', 'shareholders_area_radius')
+        );
         
         // Hisseli form değişkenleri
         $css .= "  --wdp-shareholder-card-bg: " . esc_attr($shareholder_settings['shareholder_card_bg']) . ";\n";
@@ -714,7 +930,11 @@ class WDP_Assets {
             'cart_item_name_color' => '#1f2937',
             'cart_item_price_color' => '#1e73be',
         );
-        $success_settings = wp_parse_args($success_settings, $success_defaults);
+        $success_settings = self::sanitize_css_settings(
+            wp_parse_args($success_settings, $success_defaults),
+            $success_defaults,
+            array('success_button_radius', 'success_message_radius', 'mini_cart_radius')
+        );
         
         // Başarı ekranı değişkenleri
         $css .= "  --wdp-success-button-color: " . esc_attr($success_settings['success_button_color']) . ";\n";
@@ -748,7 +968,24 @@ class WDP_Assets {
             'modal_padding_bottom_mobile' => '20',
             'modal_padding_left_mobile' => '20',
         );
-        $modal_layout_settings = wp_parse_args($modal_layout_settings, $modal_layout_defaults);
+        $modal_layout_settings = self::sanitize_css_settings(
+            wp_parse_args($modal_layout_settings, $modal_layout_defaults),
+            $modal_layout_defaults,
+            array(
+                'popup_modal_width_desktop',
+                'inpage_form_width_desktop',
+                'modal_padding_top_desktop',
+                'modal_padding_right_desktop',
+                'modal_padding_bottom_desktop',
+                'modal_padding_left_desktop',
+                'popup_modal_width_mobile',
+                'inpage_form_width_mobile',
+                'modal_padding_top_mobile',
+                'modal_padding_right_mobile',
+                'modal_padding_bottom_mobile',
+                'modal_padding_left_mobile',
+            )
+        );
         
         // Modal görünüm değişkenleri - Desktop
         $css .= "  --wdp-popup-modal-width-desktop: " . esc_attr($modal_layout_settings['popup_modal_width_desktop']) . "px;\n";
@@ -960,6 +1197,16 @@ class WDP_Assets {
         $plugin_dir = defined('WDP_PLUGIN_PATH') ? WDP_PLUGIN_PATH : plugin_dir_path(dirname(dirname(__FILE__)));
         $plugin_url = defined('WDP_PLUGIN_URL') ? WDP_PLUGIN_URL : plugin_dir_url(dirname(dirname(__FILE__)));
 
+        // Önce gerçekten gerekli mi karar ver; gereksiz register/localize ve nonce üretimini önle.
+        $should_enqueue = self::should_enqueue_assets($post);
+        $should_enqueue = apply_filters('wdp_should_enqueue_assets', $should_enqueue, $post);
+        if (self::$force_enqueue_assets) {
+            $should_enqueue = true;
+        }
+        if (!$should_enqueue) {
+            return;
+        }
+
         // PERFORMANCE: Cache asset versions to avoid repeated file operations
         // Use static variables to cache within same request
         static $css_version = null;
@@ -1014,11 +1261,9 @@ class WDP_Assets {
             }
         }
 
-        $js_version = WDP_ASSET_VERSION;
-
         if (defined('SCRIPT_DEBUG') && SCRIPT_DEBUG) {
-            $js_version = time();
             $css_version = time();
+            $js_module_version = time();
         }
 
         $dependencies = array('jquery');
@@ -1066,9 +1311,20 @@ class WDP_Assets {
         }
 
         self::register_frontend_assets($plugin_url, $css_version, $js_module_version, $dependencies);
-        self::localize_frontend_assets($plugin_url);
+        if (!self::$frontend_data_localized) {
+            self::localize_frontend_assets($plugin_url);
+        }
 
-        // Önce force flag'i kontrol et
+        self::enqueue_assets_now();
+    }
+
+    /**
+     * Decide if frontend assets should be loaded for current request.
+     *
+     * @param WP_Post|null $post Current post.
+     * @return bool
+     */
+    private static function should_enqueue_assets($post) {
         $should_enqueue = self::$force_enqueue_assets;
 
         // Shortcode kontrolü - sayfa içeriğinde shortcode var mı?
@@ -1079,17 +1335,13 @@ class WDP_Assets {
         }
 
         // Widget'lar ve diğer içerik alanları için kontrol
-        if (!$should_enqueue) {
-            // Sidebar widget'ları, footer, header vb. kontrol et
-            if (is_active_widget(false, false, 'text', true)) {
-                // Widget içeriğinde shortcode olabilir
-                $widget_content = get_option('widget_text');
-                if (is_array($widget_content)) {
-                    foreach ($widget_content as $widget) {
-                        if (isset($widget['text']) && (has_shortcode($widget['text'], 'wdp_donation_button') || has_shortcode($widget['text'], 'wdp_donation_form'))) {
-                            $should_enqueue = true;
-                            break;
-                        }
+        if (!$should_enqueue && is_active_widget(false, false, 'text', true)) {
+            $widget_content = get_option('widget_text');
+            if (is_array($widget_content)) {
+                foreach ($widget_content as $widget) {
+                    if (isset($widget['text']) && (has_shortcode($widget['text'], 'wdp_donation_button') || has_shortcode($widget['text'], 'wdp_donation_form'))) {
+                        $should_enqueue = true;
+                        break;
                     }
                 }
             }
@@ -1106,37 +1358,16 @@ class WDP_Assets {
             }
         }
 
-        // Tüm sayfalarda yükle (kullanıcı deneyimi için)
-        // Alternatif: Sadece shortcode varsa yükle (performans için)
-        // Şimdilik her zaman yükleyelim çünkü shortcode dinamik olarak eklenebilir
-        if (!$should_enqueue) {
-            // Sayfa içeriğinde wdp-donate-button class'ı veya data-product-id attribute'u var mı?
-            if (is_a($post, 'WP_Post')) {
-                // Content içinde button veya form class'ları var mı?
-                if (strpos($post->post_content, 'wdp-donate-button') !== false || 
-                    strpos($post->post_content, 'wdp-donation-form') !== false ||
-                    strpos($post->post_content, 'wdp-open-modal') !== false) {
-                    $should_enqueue = true;
-                }
+        // İçerikte class bazlı fallback kontrolü.
+        if (!$should_enqueue && is_a($post, 'WP_Post')) {
+            if (strpos($post->post_content, 'wdp-donate-button') !== false ||
+                strpos($post->post_content, 'wdp-donation-form') !== false ||
+                strpos($post->post_content, 'wdp-open-modal') !== false) {
+                $should_enqueue = true;
             }
         }
 
-        /**
-         * Allow third-parties to force asset loading.
-         */
-        $should_enqueue = apply_filters('wdp_should_enqueue_assets', $should_enqueue, $post);
-
-        // Force flag set edilmişse her zaman yükle
-        if (self::$force_enqueue_assets) {
-            $should_enqueue = true;
-        }
-
-        // KRİTİK: Eğer shortcode render edildiyse (force_enqueue çağrıldıysa), kesinlikle yükle
-        // Ayrıca, her zaman yüklemeyi deneyelim (debug için)
-        if ($should_enqueue || self::$force_enqueue_assets) {
-            // enqueue_assets_now() metodunu kullan (aynı kod)
-            self::enqueue_assets_now();
-        }
+        return $should_enqueue;
     }
 }
 

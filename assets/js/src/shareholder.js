@@ -398,14 +398,20 @@
     }
   }
 
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = String(str == null ? '' : str);
+    return div.innerHTML;
+  }
+
   // Create shareholder form element
   function createShareholderForm(index) {
-    const headerText = shareholderTexts.header || 'Hissedar Bilgileri';
-    const namePlaceholder = shareholderTexts.name_placeholder || 'Ad Soyad *';
-    const phonePlaceholder = shareholderTexts.phone_placeholder || 'Telefon Numarası *';
-    const notePlaceholder = shareholderTexts.note_placeholder || 'Not (isteğe bağlı)';
-    const emailPlaceholder = shareholderTexts.email_placeholder || 'E-posta (isteğe bağlı)';
-    const copyButtonText = shareholderTexts.copy_button || '📋 Kopyasını Oluştur';
+    const headerText = escapeHtml(shareholderTexts.header || 'Hissedar Bilgileri');
+    const namePlaceholder = escapeHtml(shareholderTexts.name_placeholder || 'Ad Soyad *');
+    const phonePlaceholder = escapeHtml(shareholderTexts.phone_placeholder || 'Telefon Numarası *');
+    const notePlaceholder = escapeHtml(shareholderTexts.note_placeholder || 'Not (isteğe bağlı)');
+    const emailPlaceholder = escapeHtml(shareholderTexts.email_placeholder || 'E-posta (isteğe bağlı)');
+    const copyButtonText = escapeHtml(shareholderTexts.copy_button || '📋 Kopyasını Oluştur');
     const emailFieldHtml = enableEmailField
       ? `<input type="email" name="shareholder_email_${index}" placeholder="${emailPlaceholder}" autocomplete="email" />`
       : '';

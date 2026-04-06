@@ -563,6 +563,18 @@
   } else {
     $("#popup_button_custom_font_row").hide()
   }
+
+  // Popup button size "custom" seçildiğinde özel alanları göster/gizle
+  function togglePopupButtonSizeRows() {
+    var selectedSize = $("#popup_button_size").val()
+    var isCustom = selectedSize === "custom"
+    $("#popup_button_custom_min_width_row").toggle(isCustom)
+    $("#popup_button_custom_min_height_row").toggle(isCustom)
+    $("#popup_button_custom_padding_x_row").toggle(isCustom)
+  }
+
+  $("#popup_button_size").on("change", togglePopupButtonSizeRows)
+  togglePopupButtonSizeRows()
 })(window, document, jQuery)
 
 // Modal görünüm ayarlarını kaydet - DOM ready dışında ama jQuery yüklendikten sonra

@@ -14,20 +14,20 @@ html body :is(button.wdp-donate-button.wdp-open-modal[data-product-id],
               .wdp-donate-button,
               .wdp-open-modal) {
   display: inline-block;
-  min-width: clamp(120px, 8.75rem, 140px);
-  min-height: var(--wdp-touch-target-comfortable, 48px);
+  min-width: var(--wdp-popup-button-min-width, clamp(120px, 8.75rem, 140px));
+  min-height: var(--wdp-popup-button-min-height, var(--wdp-touch-target-comfortable, 48px));
   padding-block: 0;
-  padding-inline: var(--wdp-space-6, 24px);
-  background-color: var(--wdp-primary, rgb(74, 144, 226));
+  padding-inline: var(--wdp-popup-button-padding-inline, var(--wdp-space-6, 24px));
+  background: var(--wdp-popup-button-bg, var(--wdp-primary, rgb(74, 144, 226)));
   color: var(--wdp-text-inverse, #ffffff);
-  border: none;
+  border: var(--wdp-popup-button-border-size, 0px) solid var(--wdp-popup-button-border-color, transparent);
   border-radius: var(--wdp-popup-button-radius, var(--wdp-button-radius, 10px));
   font-size: var(--wdp-popup-button-font-size, clamp(1rem, 0.95rem + 0.25vw, 1.125rem));
   font-weight: var(--wdp-popup-button-font-weight, 700);
   font-family: var(--wdp-popup-button-font-family, inherit);
   cursor: pointer;
   /* Kullanıcı isteği: butonlarda animasyon / hareket efekti olmasın (yalnızca hafif renk değişimi) */
-  transition: var(--wdp-transition-button, background-color 0.15s ease, color 0.15s ease);
+  transition: var(--wdp-transition-button, background 0.15s ease, color 0.15s ease);
   line-height: 1.4;
   text-align: center;
   letter-spacing: var(--wdp-tracking-normal, 0);
@@ -50,7 +50,8 @@ html body :is(button.wdp-donate-button.wdp-open-modal[data-product-id],
               .wdp-donate-button,
               .wdp-open-modal):hover {
   /* Kullanıcı isteği: hover'da sadece hafif koyulaşma, hareket yok */
-  background-color: var(--wdp-primary-hover, rgb(58, 123, 200));
+  background: var(--wdp-popup-button-bg-hover, var(--wdp-primary-hover, rgb(58, 123, 200)));
+  border-color: var(--wdp-popup-button-border-hover-color, var(--wdp-popup-button-border-color, transparent));
   color: var(--wdp-text-inverse, #ffffff);
 }
 
@@ -61,7 +62,8 @@ html body :is(button.wdp-donate-button.wdp-open-modal,
               .wdp-donate-button.wdp-open-modal,
               .wdp-donate-button,
               .wdp-open-modal):active {
-  background-color: var(--wdp-primary-hover, rgb(58, 123, 200));
+  background: var(--wdp-popup-button-bg-hover, var(--wdp-primary-hover, rgb(58, 123, 200)));
+  border-color: var(--wdp-popup-button-border-hover-color, var(--wdp-popup-button-border-color, transparent));
 }
 
 /* Modern :is() selector for focus states */
