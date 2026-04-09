@@ -1,0 +1,7 @@
+/**
+ * Tutar / hızlı seçim stilleri (placeholder).
+ * Önceden donation-modal.css @import ile referans veriyordu; dosya yoksa zincir kırılıyordu.
+ */
+.wdp-amount-presets {
+  /* İleride preset chip / buton stilleri buraya */
+}

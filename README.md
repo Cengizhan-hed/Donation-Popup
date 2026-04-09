@@ -196,6 +196,18 @@ define('WP_DEBUG_LOG', true);
 3. Görsel optimizasyonu yapın
 4. Gereksiz eklentileri kaldırın
 
+### Frontend CSS Build (Hash'li Tek Dosya)
+- Üretim (production) için önerilen yöntem tek hash'li CSS bundle kullanmaktır.
+- Komut:
+```bash
+php tools/build-css-bundle.php
+```
+- Komut şu dosyaları üretir:
+  - `assets/css/build/donation-modal.<hash>.css`
+  - `assets/css/build/manifest.json`
+- Eklenti bu manifest dosyasını otomatik algılar ve varsa tek bundle dosyayı enqueue eder.
+- Manifest yoksa otomatik olarak katmanlı `assets/css/src/*` fallback yükleme çalışır.
+
 ## 🔄 Güncellemeler
 
 ### Versiyon 10.0

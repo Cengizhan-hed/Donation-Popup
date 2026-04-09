@@ -19,6 +19,16 @@ class Woo_Donation_Popup_Admin {
     }
 
     /**
+     * Ön yüz CSS/JS query string ve object cache anahtarlarını tazelemek için (CDN / SG vb.).
+     */
+    private function bump_wdp_asset_cache_version() {
+        update_option('wdp_cache_version', time());
+        if (class_exists('WDP_Assets') && method_exists('WDP_Assets', 'purge_known_page_caches')) {
+            WDP_Assets::purge_known_page_caches();
+        }
+    }
+
+    /**
      * Constructor
      */
     public function __construct() {
@@ -2160,6 +2170,7 @@ class Woo_Donation_Popup_Admin {
         
         // Ayarları kaydet
         $this->update_non_autoload_option('wdp_button_settings', $settings);
+        $this->bump_wdp_asset_cache_version();
         
         // Başarılı yanıt döndür
         wp_send_json_success(array(
@@ -2229,6 +2240,7 @@ class Woo_Donation_Popup_Admin {
         
         // Ayarları kaydet
         $this->update_non_autoload_option('wdp_shareholder_settings', $settings);
+        $this->bump_wdp_asset_cache_version();
         
         // Başarılı yanıt döndür
         wp_send_json_success(array(
@@ -2283,6 +2295,7 @@ class Woo_Donation_Popup_Admin {
         
         // Ayarları kaydet
         $this->update_non_autoload_option('wdp_success_settings', $settings);
+        $this->bump_wdp_asset_cache_version();
         
         // Başarılı yanıt döndür
         wp_send_json_success(array(
@@ -2318,6 +2331,7 @@ class Woo_Donation_Popup_Admin {
         );
 
         $this->update_non_autoload_option('wdp_progress_bar_settings', $settings);
+        $this->bump_wdp_asset_cache_version();
 
         wp_send_json_success(array(
             'message' => __('Progress bar ayarları başarıyla kaydedildi.', 'woo-donation-popup'),
@@ -2592,6 +2606,8 @@ class Woo_Donation_Popup_Admin {
                 wp_send_json_error(array('message' => __('Ayarlar kaydedilirken bir hata oluştu.', 'woo-donation-popup')));
                 return;
             }
+
+            $this->bump_wdp_asset_cache_version();
             
             // Başarılı yanıt döndür
             wp_send_json_success(array(
