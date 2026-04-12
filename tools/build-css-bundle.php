@@ -17,6 +17,7 @@ $stack = array(
     'src/base.css',
     'src/layout.css',
     'src/forms/shared.css',
+    'src/forms/field-stack.css',
     'src/forms/hisseli.css',
     'src/components/buttons.css',
     'src/components/alerts.css',

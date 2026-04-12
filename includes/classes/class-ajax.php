@@ -240,12 +240,14 @@ class WDP_Ajax {
             $max_shares = '7';
         }
 
+        $raw_price = $product->get_price();
         $response = array(
             'product_name' => $product->get_name(),
             'is_custom_price' => $allow_custom_price,
             'min_price' => $min_price,
             'regular_price' => $product->get_regular_price(),
-            'price' => $product->get_price(),
+            'price' => $raw_price,
+            'price_html' => ($raw_price !== '' && $raw_price !== null) ? WDP_Utils::format_price_html($raw_price) : '',
             'is_multiple_shares' => $allow_multiple_shares,
             'max_shares' => $max_shares,
         );
@@ -913,7 +915,7 @@ class WDP_Ajax {
                 'quantity' => $quantity,
                 'price' => $product_price, // Numeric değer (JavaScript için)
                 'line_total' => $line_total, // Toplam fiyat (JavaScript için)
-                'price_html' => wc_price($line_total), // Formatlanmış HTML (isteğe bağlı)
+                'price_html' => WDP_Utils::format_price_html($line_total), // Formatlanmış HTML (isteğe bağlı)
             );
 
             // Meta veriler (donation data vb.)

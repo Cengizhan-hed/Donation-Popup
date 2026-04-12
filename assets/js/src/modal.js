@@ -389,8 +389,12 @@
     if (originalForms.has(modalId) && form) {
       form.innerHTML = originalForms.get(modalId)
 
-      // Form alanlarını temizle
+      // Form alanlarını temizle. Readonly/disabled atlanır: quantity/share_count için .value="" atanabildiğinden
+      // (readonly sadece kullanıcı girişini keser) ilk açılışta sayaç boş kalıyor, +/- sonrası düzeliyordu.
       form.querySelectorAll('input[type="text"], input[type="tel"], input[type="number"], textarea').forEach((input) => {
+        if (input.readOnly || input.disabled) {
+          return
+        }
         input.value = ""
       })
 

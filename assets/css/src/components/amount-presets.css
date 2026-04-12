@@ -1,7 +1,107 @@
-/**
- * Tutar / hızlı seçim stilleri (placeholder).
- * Önceden donation-modal.css @import ile referans veriyordu; dosya yoksa zincir kırılıyordu.
- */
-.wdp-amount-presets {
-  /* İleride preset chip / buton stilleri buraya */
+/* ==================== */
+/* AMOUNT PRESET CHIPS */
+/* ==================== */
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-amount-presets,
+html body .wdp-amount-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-block: 4px;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-amount-preset,
+html body .wdp-amount-preset {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 18px;
+  background: var(--wdp-bg-pure-white, #ffffff);
+  border: 1.5px solid var(--wdp-border-soft-gray, #e8eaed);
+  border-radius: var(--wdp-radius-sm, 10px);
+  font-family: var(--wdp-font-family, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
+  font-size: 14px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--wdp-text-secondary, #475569);
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    color        0.15s ease,
+    background   0.15s ease;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  white-space: nowrap;
+  user-select: none;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-amount-preset:hover,
+html body .wdp-amount-preset:hover {
+  border-color: var(--wdp-color-primary, #4a90e2);
+  color: var(--wdp-color-primary, #4a90e2);
+  background: color-mix(in srgb, var(--wdp-color-primary, #4a90e2) 8%, #ffffff);
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-amount-preset:active,
+html body .wdp-amount-preset:active {
+  transition-duration: 0.08s;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-amount-preset.selected,
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-amount-preset[aria-pressed="true"],
+html body .wdp-amount-preset.selected,
+html body .wdp-amount-preset[aria-pressed="true"] {
+  background: linear-gradient(
+    135deg,
+    var(--wdp-color-primary, #4a90e2) 0%,
+    color-mix(in srgb, var(--wdp-color-primary, #4a90e2) 80%, #2563eb) 100%
+  );
+  border-color: transparent;
+  color: #ffffff;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-amount-preset:focus-visible,
+html body .wdp-amount-preset:focus-visible {
+  outline: none;
+  box-shadow: var(--wdp-focus-neutral-ring, inset 0 0 0 1px rgba(15, 23, 42, 0.1));
+  background: var(--wdp-input-focus-bg-tint, color-mix(in srgb, #64748b 5.5%, #ffffff));
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-amount-preset.selected:focus-visible,
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-amount-preset[aria-pressed="true"]:focus-visible,
+html body .wdp-amount-preset.selected:focus-visible,
+html body .wdp-amount-preset[aria-pressed="true"]:focus-visible {
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.5);
+  background: linear-gradient(
+    135deg,
+    var(--wdp-color-primary, #4a90e2) 0%,
+    color-mix(in srgb, var(--wdp-color-primary, #4a90e2) 80%, #2563eb) 100%
+  );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html body .wdp-amount-preset,
+  html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-amount-preset {
+    transition: border-color 0.1s ease, color 0.1s ease, background 0.1s ease;
+  }
+
+  html body .wdp-amount-preset:hover,
+  html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-amount-preset:hover {
+    transform: none;
+  }
+
+  html body .wdp-amount-preset.selected,
+  html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-amount-preset.selected {
+    transform: none;
+  }
+}
+
+@media (max-width: 480px) {
+  html body .wdp-amount-preset,
+  html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-amount-preset {
+    flex: 1 1 calc(33.333% - 6px);
+    min-width: 0;
+    padding: 8px 10px;
+    font-size: 13px;
+  }
 }

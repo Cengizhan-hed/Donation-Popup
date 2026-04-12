@@ -294,7 +294,7 @@ class WDP_Cart {
     public static function custom_cart_item_price($price, $cart_item, $cart_item_key) {
         if (isset($cart_item['custom_price'])) {
             $custom_price = floatval($cart_item['custom_price']);
-            return wc_price($custom_price);
+            return WDP_Utils::format_price_html($custom_price);
         }
 
         return $price;
@@ -312,7 +312,7 @@ class WDP_Cart {
         if (isset($cart_item['custom_price'])) {
             $custom_price = floatval($cart_item['custom_price']);
             $quantity = $cart_item['quantity'];
-            return wc_price($custom_price * $quantity);
+            return WDP_Utils::format_price_html($custom_price * $quantity);
         }
 
         return $price;

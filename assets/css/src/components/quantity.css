@@ -60,9 +60,9 @@ html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content form, .wdp-
   -webkit-appearance: textfield;
   -moz-appearance: textfield;
   appearance: textfield;
-  border: 1px solid var(--wdp-border-soft-gray, #e8eaed);
-  border-radius: 14px;
-  background: var(--wdp-bg-pure-white, #ffffff);
+  border: 1.5px solid var(--wdp-input-border, var(--wdp-border-soft-gray, #e8eaed));
+  border-radius: var(--wdp-input-radius);
+  background: var(--wdp-input-bg, var(--wdp-bg-pure-white, #ffffff));
   padding: var(--wdp-input-padding-y, 10px) var(--wdp-input-padding-x, 16px);
   box-sizing: border-box;
   min-height: var(--wdp-input-min-height, 48px);
@@ -75,7 +75,9 @@ html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content form, .wdp-
   color: var(--wdp-input-color, #1f2937);
   width: 100%;
   margin: 0;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition:
+    border-color 0.18s cubic-bezier(0.4, 0, 0.2, 1),
+    background   0.18s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Progress bar özel fiyat input'u (wdp-custom-price-input) için garanti stil eşitleme */
@@ -84,9 +86,9 @@ html body :is(.wdp-modal, .wdp-donation-form) input.wdp-custom-price-input[type=
   -webkit-appearance: textfield;
   -moz-appearance: textfield;
   appearance: textfield;
-  border: 1px solid var(--wdp-border-soft-gray, #e8eaed);
-  border-radius: 14px;
-  background: var(--wdp-bg-pure-white, #ffffff);
+  border: 1.5px solid var(--wdp-input-border, var(--wdp-border-soft-gray, #e8eaed));
+  border-radius: var(--wdp-input-radius);
+  background: var(--wdp-input-bg, var(--wdp-bg-pure-white, #ffffff));
   padding: var(--wdp-input-padding-y, 10px) var(--wdp-input-padding-x, 16px);
   box-sizing: border-box;
   min-height: var(--wdp-input-min-height, 48px);
@@ -99,7 +101,9 @@ html body :is(.wdp-modal, .wdp-donation-form) input.wdp-custom-price-input[type=
   color: var(--wdp-input-color, #1f2937);
   width: 100%;
   margin: 0;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition:
+    border-color 0.18s cubic-bezier(0.4, 0, 0.2, 1),
+    background   0.18s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* ==================== */
@@ -126,9 +130,9 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-price-row .wdp-p
   box-sizing: border-box;
 }
 
-/* Progress bar formunda placeholder ortada */
-html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-price-row .wdp-progress-bar-price-input::placeholder {
-  text-align: center;
+/* Para birimi öneki varken placeholder ve değer solda hizalı */
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-custom-price-shell .wdp-custom-price-input::placeholder {
+  text-align: left;
 }
 
 /* Progress bar formunda quantity counter gizli - Maximum specificity without  */
@@ -148,48 +152,148 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-price-row .wdp-q
 }
 
 /* ==================== */
-/* ÖZEL FİYATLI FORM - SAYAÇ KALDIRILDI, FULL WIDTH */
+/* SABİT FİYAT + SAYAÇ / ÖZEL FİYAT + GÖRÜNÜR SAYAÇ (50/50; dar ekranda alt alta) */
 /* ==================== */
-/* Özel fiyatlı formda (progress bar olmayan) quantity counter gizli, sadece custom price gösterilir */
-html body :is(.wdp-modal, .wdp-donation-form) .wdp-price-quantity-row.wdp-custom-price-row {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-price-quantity-row.wdp-fixed-price-counter-row,
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-price-quantity-row.wdp-custom-price-with-qty-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  column-gap: var(--wdp-space-3, 12px);
+  align-items: start;
   width: 100%;
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-/* Özel fiyatlı formda price field full width */
-html body :is(.wdp-modal, .wdp-donation-form) .wdp-custom-price-row .wdp-custom-price-field {
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-custom-price-with-qty-row .wdp-custom-price-field {
+  display: flex;
+  flex-direction: column;
   width: 100%;
-  display: block;
+  min-width: 0;
   position: relative;
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-/* Özel fiyatlı formda placeholder ortada */
-html body :is(.wdp-modal, .wdp-donation-form) .wdp-custom-price-row .wdp-custom-price-field .wdp-custom-price-input::placeholder {
-  text-align: center;
-}
-
-/* Özel fiyatlı formda quantity counter gizli (özel fiyat aktifken) - Maximum specificity without  */
-html body :is(.wdp-modal, .wdp-donation-form) .wdp-custom-price-row:has(.wdp-custom-price-field) .wdp-quantity-counter,
-html body :is(.wdp-modal, .wdp-donation-form) .wdp-custom-price-row:has(.wdp-custom-price-field) .wdp-quantity-counter * {
-  display: none;
-  visibility: hidden;
-  opacity: 0;
-  height: 0;
-  width: 0;
+/* Özel fiyat: sabit fiyat kutusu ile aynı çerçeve + solda sürekli para birimi */
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-custom-price-shell {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  width: 100%;
+  min-width: 0;
+  min-height: var(--wdp-input-min-height, 48px);
+  box-sizing: border-box;
   margin: 0;
   padding: 0;
-  overflow: hidden;
-  position: absolute;
-  clip: rect(0, 0, 0, 0);
-  clip-path: inset(100%);
+  border: 1.5px solid var(--wdp-input-border, var(--wdp-border-soft-gray, #e8eaed));
+  border-radius: var(--wdp-input-radius);
+  background: var(--wdp-input-bg, var(--wdp-bg-pure-white, #ffffff));
+  transition:
+    border-color 0.18s cubic-bezier(0.4, 0, 0.2, 1),
+    background   0.18s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-custom-price-shell:focus-within {
+  border-color: color-mix(in srgb, #64748b 18%, var(--wdp-input-border, var(--wdp-border-soft-gray, #e8eaed)));
+  background: var(--wdp-input-focus-bg-tint, color-mix(in srgb, #64748b 5.5%, #ffffff));
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.65) inset;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-custom-price-currency {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-inline-start: var(--wdp-input-padding-x, 16px);
+  padding-inline-end: 8px;
+  font-family: var(--wdp-font-family, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
+  font-size: var(--wdp-input-font-size, 16px);
+  font-weight: 600;
+  color: var(--wdp-input-color, #1f2937);
+  line-height: 1;
+  user-select: none;
+  pointer-events: none;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-custom-price-shell .wdp-custom-price-input[type="number"] {
+  flex: 1 1 0;
+  min-width: 0;
+  width: auto;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  margin: 0;
+  padding-block: var(--wdp-input-padding-y, 10px);
+  padding-inline-start: 0;
+  padding-inline-end: var(--wdp-input-padding-x, 16px);
+  min-height: 100%;
+  height: auto;
+  align-self: stretch;
+  text-align: left;
+  font-weight: 600;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-custom-price-shell .wdp-custom-price-input[type="number"]:focus {
+  outline: none;
+  box-shadow: none;
+  border: none;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-custom-price-shell .wdp-custom-price-input[type="number"]:focus-visible {
+  outline: none;
+  box-shadow: none;
+  border: none;
+  background: transparent;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-line-total-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--wdp-input-min-height, 48px);
+  height: var(--wdp-input-min-height, 48px);
+  max-height: var(--wdp-input-min-height, 48px);
+  padding: var(--wdp-input-padding-y, 10px) var(--wdp-input-padding-x, 16px);
+  box-sizing: border-box;
+  border: 1.5px solid var(--wdp-input-border, var(--wdp-border-soft-gray, #e8eaed));
+  border-radius: var(--wdp-input-radius);
+  background: var(--wdp-input-bg, var(--wdp-bg-pure-white, #ffffff));
+  user-select: none;
+  cursor: default;
+  width: 100%;
+  margin: 0;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-line-total-display .wdp-line-total-value {
+  font-family: var(--wdp-font-family);
+  font-size: var(--wdp-input-font-size, 16px);
+  font-weight: 600;
+  color: var(--wdp-input-color, #1f2937);
+  text-align: center;
+  width: 100%;
+  line-height: 1.3;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-line-total-display .wdp-line-total-value :where(.amount, .woocommerce-Price-amount, bdi, span) {
+  color: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+}
+
+/* Dar ekranda da fiyat + sayaç yan yana (buton grubu gibi); sıkışmayı azalt */
+@media (max-width: 480px) {
+  html body :is(.wdp-modal, .wdp-donation-form) .wdp-price-quantity-row.wdp-fixed-price-counter-row,
+  html body :is(.wdp-modal, .wdp-donation-form) .wdp-price-quantity-row.wdp-custom-price-with-qty-row {
+    column-gap: var(--wdp-space-2, 8px);
+  }
+
+  html body :is(.wdp-modal, .wdp-donation-form) .wdp-line-total-display .wdp-line-total-value {
+    font-size: clamp(14px, 3.8vw, 16px);
+  }
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content form, .wdp-modal-content, &) .wdp-price-field {
@@ -219,45 +323,51 @@ html body .wdp-donation-form .wdp-price-quantity-row > *:not(input[name="custom_
 
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-quantity-counter {
   font-family: var(--wdp-font-family, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
-  display: flex;
+  display: grid;
+  grid-template-columns: var(--wdp-counter-btn-col, 44px) minmax(3.125rem, 1fr) var(--wdp-counter-btn-col, 44px);
   align-items: center;
-  justify-content: space-between;
-  align-content: center;
-  min-height: var(--wdp-input-min-height, 48px);
-  height: var(--wdp-input-min-height, 48px);
-  max-height: var(--wdp-input-min-height, 48px);
-  border: 1px solid var(--wdp-border-soft-gray, #e8eaed);
-  border-radius: 14px;
-  background: var(--wdp-bg-pure-white, #ffffff);
+  justify-items: stretch;
+  min-height: var(--wdp-counter-min-height, var(--wdp-input-min-height, 48px));
+  height: var(--wdp-counter-min-height, var(--wdp-input-min-height, 48px));
+  max-height: var(--wdp-counter-min-height, var(--wdp-input-min-height, 48px));
+  border: 1px solid var(--wdp-input-border, var(--wdp-border-soft-gray, #e8eaed));
+  border-radius: var(--wdp-input-radius);
+  background: var(--wdp-input-bg, var(--wdp-bg-pure-white, #ffffff));
   box-sizing: border-box;
-  padding: 0 var(--wdp-space-2, 8px);
+  padding: 0 var(--wdp-counter-inner-padding-x, 8px);
   margin: 0;
   overflow: hidden;
   gap: 0;
   position: relative;
   vertical-align: middle;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: border-color 0.18s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-quantity-counter input[type="number"] {
   font-family: var(--wdp-font-family);
-  flex: 1 1 0;
-  min-width: 40px;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: var(--wdp-font-numeric, "tnum" 1, "zero" 1);
+  min-width: 2.5rem;
   max-width: 100%;
   border: none;
   border-color: transparent;
   border-width: 0;
   background: transparent;
   background-color: transparent;
-  color: var(--wdp-input-color);
-  font-size: var(--wdp-font-size-lg, 18px);
+  color: var(--wdp-input-color, #1f2937);
+  -webkit-text-fill-color: var(--wdp-input-color, #1f2937);
+  caret-color: var(--wdp-input-color, #1f2937);
+  font-size: var(--wdp-counter-value-font-size, var(--wdp-font-size-lg, 18px));
   font-weight: 600;
   text-align: center;
   outline: none;
-  height: var(--wdp-input-min-height);
-  line-height: var(--wdp-input-min-height);
-  margin: 0 auto;
-  padding: 0;
+  /* line-height ≈ satır yüksekliği: WebKit’te dikey ortalama ve “1” görünürlüğü */
+  height: 100%;
+  min-height: 0;
+  max-height: none;
+  line-height: var(--wdp-counter-min-height, var(--wdp-input-min-height, 48px));
+  margin: 0;
+  padding: 0 4px;
   opacity: 1;
   display: block;
   box-sizing: border-box;
@@ -265,7 +375,16 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-quantity-counter input[type="
   -webkit-appearance: none;
   -moz-appearance: textfield;
   width: 100%;
-  align-self: center;
+  align-self: stretch;
+  position: relative;
+  z-index: 2;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-quantity-counter input[type="number"][readonly] {
+  opacity: 1;
+  cursor: default;
+  color: var(--wdp-input-color, #1f2937);
+  -webkit-text-fill-color: var(--wdp-input-color, #1f2937);
 }
 
 /* Sayaç number input'u: tema success/hata kenarlık ve gölgelerini kapat - Maximum specificity */
@@ -277,44 +396,222 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-quantity-counter input[type="
 
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-quantity-counter .wdp-product-quantity-btn {
   font-family: var(--wdp-font-family);
-  width: 44px;
-  min-width: 44px;
+  width: 100%;
+  min-width: 0;
   height: 100%;
-  min-height: var(--wdp-input-min-height);
+  min-height: var(--wdp-counter-min-height, var(--wdp-input-min-height, 48px));
+  align-self: stretch;
   border: none;
   background: transparent;
-  background-color: transparent;
-  color: var(--wdp-icon-color, #888888);
-  font-size: 28px;
+  color: var(--wdp-icon-color, #9ca3af);
+  font-size: var(--wdp-counter-icon-font-size, 30px);
   font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
-  align-content: center;
   cursor: pointer;
-  border-radius: 0;
-  transition: none;
+  border-radius: 6px;
+  transition: color 0.15s ease;
   outline: none;
   padding: 0;
   margin: 0;
   text-align: center;
   line-height: 1;
   box-sizing: border-box;
-  flex-shrink: 0;
-  flex-grow: 0;
-  flex-basis: auto;
   position: relative;
-  vertical-align: middle;
-  align-self: center;
+  align-self: stretch;
 }
 
-/* Tüm etkileşim durumlarında görsel değişiklik yok - Maximum specificity */
-html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content, .wdp-modal-content form) .wdp-quantity-counter .wdp-product-quantity-btn:is(:hover, :active, :focus, :focus-visible) {
-  color: var(--wdp-icon-color, #888888);
+html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content, .wdp-modal-content form) .wdp-quantity-counter .wdp-product-quantity-btn:is(:hover, :focus-visible) {
+  color: var(--wdp-color-primary, var(--wdp-primary));
   background: transparent;
+  outline: none;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content, .wdp-modal-content form) .wdp-quantity-counter .wdp-product-quantity-btn:active {
+  color: var(--wdp-color-primary, var(--wdp-primary));
+  background: transparent;
+  transform: none;
+  outline: none;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Hisse Adedi (.wdp-share-counter) — .wdp-quantity-counter ile aynı düzen     */
+/* -------------------------------------------------------------------------- */
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-shares-section .wdp-share-counter {
+  font-family: var(--wdp-font-family, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
+  display: grid;
+  grid-template-columns: var(--wdp-hisse-counter-btn-col, 40px) minmax(2.875rem, 1fr) var(--wdp-hisse-counter-btn-col, 40px);
+  align-items: stretch;
+  justify-items: stretch;
+  min-height: var(--wdp-hisse-counter-min-height, var(--wdp-counter-min-height, 44px));
+  height: var(--wdp-hisse-counter-min-height, var(--wdp-counter-min-height, 44px));
+  max-height: var(--wdp-hisse-counter-min-height, var(--wdp-counter-min-height, 44px));
+  border: 1px solid var(--wdp-input-border, var(--wdp-border-soft-gray, #e8eaed));
+  border-radius: var(--wdp-input-radius);
+  background: var(--wdp-input-bg, var(--wdp-bg-pure-white, #ffffff));
+  box-sizing: border-box;
+  padding: 0 var(--wdp-hisse-counter-inner-padding-x, var(--wdp-counter-inner-padding-x, 6px));
+  margin: 0;
+  overflow: hidden;
+  gap: 0;
+  position: relative;
+  transition: border-color 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-shares-section .wdp-share-counter input[type="number"] {
+  font-family: var(--wdp-font-family);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: var(--wdp-font-numeric, "tnum" 1, "zero" 1);
+  min-width: 0;
+  max-width: 100%;
+  border: none;
+  background: transparent;
+  color: var(--wdp-input-color);
+  font-size: var(--wdp-hisse-counter-value-font-size, var(--wdp-counter-value-font-size, 15px));
+  font-weight: 600;
+  text-align: center;
+  outline: none;
+  height: 100%;
+  min-height: var(--wdp-hisse-counter-min-height, var(--wdp-counter-min-height));
+  line-height: var(--wdp-hisse-counter-min-height, var(--wdp-counter-min-height));
+  margin: 0;
+  padding: 0;
+  display: block;
+  box-sizing: border-box;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: textfield;
+  width: 100%;
+  align-self: stretch;
+  -webkit-text-fill-color: var(--wdp-input-color);
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-shares-section .wdp-share-counter input[type="number"]:is(:focus, :focus-visible) {
   border: none;
   outline: none;
-  border-radius: 0;
+  background: transparent;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-shares-section .wdp-share-counter .wdp-share-btn {
+  font-family: var(--wdp-font-family);
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  min-height: 0;
+  border: none;
+  background: transparent;
+  color: var(--wdp-icon-color, #9ca3af);
+  font-size: var(--wdp-hisse-counter-icon-font-size, var(--wdp-counter-icon-font-size, 22px));
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: color 0.15s ease;
+  outline: none;
+  padding: 0;
+  margin: 0;
+  line-height: 1;
+  box-sizing: border-box;
+  align-self: stretch;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-shares-section .wdp-share-counter .wdp-share-btn span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  line-height: 1;
+  pointer-events: none;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content, .wdp-modal-content form) .wdp-shares-section .wdp-share-counter .wdp-share-btn:is(:hover, :focus-visible) {
+  color: var(--wdp-color-primary, var(--wdp-primary));
+  background: transparent;
+  outline: none;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content, .wdp-modal-content form) .wdp-shares-section .wdp-share-counter .wdp-share-btn:active {
+  color: var(--wdp-color-primary, var(--wdp-primary));
+  background: transparent;
+  transform: none;
+  outline: none;
+}
+
+/* Hissedar kartı içi .wdp-share-quantity — aynı görünüm */
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-form .wdp-share-quantity {
+  font-family: var(--wdp-font-family, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
+  display: grid;
+  grid-template-columns: var(--wdp-counter-btn-col, 44px) minmax(3.125rem, 1fr) var(--wdp-counter-btn-col, 44px);
+  align-items: stretch;
+  justify-items: stretch;
+  min-height: var(--wdp-counter-min-height, var(--wdp-input-min-height, 48px));
+  height: var(--wdp-counter-min-height, var(--wdp-input-min-height, 48px));
+  max-height: var(--wdp-counter-min-height, var(--wdp-input-min-height, 48px));
+  border: 1px solid var(--wdp-input-border, var(--wdp-border-soft-gray, #e8eaed));
+  border-radius: var(--wdp-input-radius);
+  background: var(--wdp-input-bg, var(--wdp-bg-pure-white, #ffffff));
+  box-sizing: border-box;
+  padding: 0 var(--wdp-counter-inner-padding-x, 8px);
+  margin: 0;
+  overflow: hidden;
+  gap: 0;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-form .wdp-share-quantity .wdp-share-quantity-btn {
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--wdp-icon-color, #9ca3af);
+  font-size: var(--wdp-counter-icon-font-size, 30px);
+  font-weight: 700;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: color 0.15s ease;
+  margin: 0;
+  padding: 0;
+  align-self: stretch;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content, .wdp-modal-content form) .wdp-shareholder-form .wdp-share-quantity .wdp-share-quantity-btn:is(:hover, :focus-visible) {
+  color: var(--wdp-color-primary, var(--wdp-primary));
+  background: transparent;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content, .wdp-modal-content form) .wdp-shareholder-form .wdp-share-quantity .wdp-share-quantity-btn:active {
+  color: var(--wdp-color-primary, var(--wdp-primary));
+  background: transparent;
+  transform: none;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-form .wdp-share-quantity input[type="number"] {
+  min-width: 0;
+  width: 100%;
+  border: none;
+  background: transparent;
+  color: var(--wdp-input-color);
+  font-size: var(--wdp-counter-value-font-size, var(--wdp-font-size-lg, 18px));
+  font-weight: 600;
+  text-align: center;
+  height: 100%;
+  min-height: var(--wdp-counter-min-height, var(--wdp-input-min-height));
+  line-height: var(--wdp-counter-min-height, var(--wdp-input-min-height));
+  margin: 0;
+  padding: 0;
+  display: block;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: textfield;
+  align-self: stretch;
 }
 
 /* Güvenlik: fiyat alanının çevresini relative yap - Maximum specificity */

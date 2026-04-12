@@ -35,6 +35,12 @@
   // Shareholder metinlerini PHP'den al (wdp_ajax üzerinden)
   const wdpAjax = window.wdp_ajax || {};
   const shareholderTexts = (wdpAjax && wdpAjax.shareholder_texts) || {};
+
+  /* Field stack icons — same paths as PHP WDP_Templates (filled, matched weight) */
+  const FS_ICON_USER = '<svg class="wdp-field-stack__svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v1c0 .55.45 1 1 1h14c.55 0 1-.45 1-1v-1c0-2.66-5.33-4-8-4z"/></svg>';
+  const FS_ICON_PHONE = '<svg class="wdp-field-stack__svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>';
+  const FS_ICON_NOTE = '<svg class="wdp-field-stack__svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>';
+  const FS_ICON_EMAIL = '<svg class="wdp-field-stack__svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>';
   const enableCopyButton = (typeof shareholderTexts.enable_copy_button === 'boolean')
     ? shareholderTexts.enable_copy_button
     : true;
@@ -50,6 +56,11 @@
     max: 440,
     ratio: 0.6,
   };
+
+  /** @param {HTMLElement|null} form */
+  function getShareholderNoteTextarea(form) {
+    return form ? form.querySelector('textarea[name^="shareholder_note_"]') : null;
+  }
 
   // Helper: Ensure shareholder list container exists
   function ensureShareholderList(container) {
@@ -404,6 +415,42 @@
     return div.innerHTML;
   }
 
+  function syncShareholderUnitPrices(modal, unitNumeric) {
+    if (!modal) return;
+    const nodes = modal.querySelectorAll('.wdp-shareholder-unit-price');
+    if (!nodes.length) return;
+    const labelBase = (wdpAjax.strings && wdpAjax.strings.unit_price_label) ? String(wdpAjax.strings.unit_price_label) : 'Birim fiyat';
+    let text = '';
+    if (Number.isFinite(unitNumeric) && unitNumeric > 0) {
+      text = formatCurrency(unitNumeric);
+    }
+    nodes.forEach((el) => {
+      el.textContent = text;
+      if (text) {
+        el.removeAttribute('aria-hidden');
+        el.setAttribute('aria-label', `${labelBase} ${text}`);
+      } else {
+        el.setAttribute('aria-hidden', 'true');
+        el.removeAttribute('aria-label');
+      }
+    });
+  }
+
+  function syncShareholderUnitPricesFromModal(modal) {
+    if (!modal) return;
+    const idInput = modal.querySelector('input[name="add-to-cart"]');
+    const id = idInput ? Number.parseInt(idInput.value, 10) : 0;
+    let unit = 0;
+    if (id && productPrices && Number.isFinite(Number(productPrices[id]))) {
+      unit = Number(productPrices[id]);
+    }
+    if (!Number.isFinite(unit) || unit <= 0) {
+      const ds = modal.getAttribute('data-wdp-unit-price');
+      unit = ds ? Number.parseFloat(ds) : 0;
+    }
+    syncShareholderUnitPrices(modal, unit);
+  }
+
   // Create shareholder form element
   function createShareholderForm(index) {
     const headerText = escapeHtml(shareholderTexts.header || 'Hissedar Bilgileri');
@@ -412,9 +459,13 @@
     const notePlaceholder = escapeHtml(shareholderTexts.note_placeholder || 'Not (isteğe bağlı)');
     const emailPlaceholder = escapeHtml(shareholderTexts.email_placeholder || 'E-posta (isteğe bağlı)');
     const copyButtonText = escapeHtml(shareholderTexts.copy_button || '📋 Kopyasını Oluştur');
-    const emailFieldHtml = enableEmailField
-      ? `<input type="email" name="shareholder_email_${index}" placeholder="${emailPlaceholder}" autocomplete="email" />`
+    const emailRowHtml = enableEmailField
+      ? `<div class="wdp-field-stack__row">
+          <span class="wdp-field-stack__icon" aria-hidden="true">${FS_ICON_EMAIL}</span>
+          <input type="email" class="wdp-field-stack__input" name="shareholder_email_${index}" placeholder="${emailPlaceholder}" autocomplete="email" />
+        </div>`
       : '';
+    const fieldGroupLabel = escapeHtml(shareholderTexts.header || 'Hissedar Bilgileri');
     const copyButtonHtml = enableCopyButton
       ? `<button type="button" class="wdp-copy-form-btn">
           ${copyButtonText}
@@ -447,15 +498,29 @@
     // Daha hızlı yükleme için basit HTML yapısı
     form.innerHTML = `
       <div class="wdp-shareholder-header">
-        <h3>${index}. ${headerText}</h3>
+        <div class="wdp-shareholder-header__primary">
+          <h3>${index}. ${headerText}</h3>
+          <span class="wdp-shareholder-unit-price wdp-unit-price-badge" aria-hidden="true"></span>
+        </div>
         <span class="wdp-shareholder-warning"></span>
         <span class="wdp-shareholder-icon"></span>
       </div>
       <div class="wdp-shareholder-content ${layoutMode === 'two-column' ? 'wdp-shareholder-layout-two-column' : 'wdp-shareholder-layout-single'}" ${!isFirst ? 'style="display: none;"' : ''}>
-        <input type="text" name="shareholder_name_${index}" placeholder="${namePlaceholder}" autocomplete="name" required />
-        <input type="tel" name="shareholder_phone_${index}" placeholder="${phonePlaceholder}" autocomplete="tel" required />
-        ${emailFieldHtml}
-        <textarea name="shareholder_note_${index}" rows="2" placeholder="${notePlaceholder}"></textarea>
+        <div class="wdp-field-stack" role="group" aria-label="${fieldGroupLabel}">
+          <div class="wdp-field-stack__row">
+            <span class="wdp-field-stack__icon" aria-hidden="true">${FS_ICON_USER}</span>
+            <input type="text" class="wdp-field-stack__input" name="shareholder_name_${index}" placeholder="${namePlaceholder}" autocomplete="name" required />
+          </div>
+          <div class="wdp-field-stack__row">
+            <span class="wdp-field-stack__icon" aria-hidden="true">${FS_ICON_PHONE}</span>
+            <input type="tel" class="wdp-field-stack__input" name="shareholder_phone_${index}" placeholder="${phonePlaceholder}" autocomplete="tel" required inputmode="tel" />
+          </div>
+          ${emailRowHtml}
+          <div class="wdp-field-stack__row wdp-field-stack__row--textarea">
+            <span class="wdp-field-stack__icon" aria-hidden="true">${FS_ICON_NOTE}</span>
+            <textarea class="wdp-field-stack__textarea" name="shareholder_note_${index}" rows="2" placeholder="${notePlaceholder}"></textarea>
+          </div>
+        </div>
         ${copyButtonHtml}
       </div>
     `;
@@ -678,7 +743,8 @@
       // Mevcut form verilerini al
       const nameValue = nameInput.value.trim();
       const phoneValue = phoneInput.value.trim();
-      const noteValue = form.querySelector('textarea').value.trim();
+      const noteEl = getShareholderNoteTextarea(form);
+      const noteValue = noteEl ? noteEl.value.trim() : '';
       
       if (!nameValue || !phoneValue) {
         return;
@@ -713,7 +779,7 @@
     // Form verilerini doldur
     const newNameInput = newForm.querySelector('input[type="text"]');
     const newPhoneInput = newForm.querySelector('input[type="tel"]');
-    const newNoteTextarea = newForm.querySelector('textarea');
+    const newNoteTextarea = getShareholderNoteTextarea(newForm);
     
     if (newNameInput) newNameInput.value = nameValue;
     if (newPhoneInput) newPhoneInput.value = phoneValue;
@@ -723,6 +789,7 @@
     list.appendChild(newForm);
     setupCopyFormButton(newForm);
     setupShareholderHeaderClick(newForm);
+    syncShareholderUnitPricesFromModal(container.closest('.wdp-modal') || container.closest('.wdp-donation-form'));
 
     const newCopyBtn = newForm.querySelector('.wdp-copy-form-btn');
     if (newCopyBtn) {
@@ -1137,6 +1204,8 @@
       setupShareholderHeaderClick(form);
       checkShareholderFormWarning(form);
     });
+
+    syncShareholderUnitPricesFromModal(modal);
     
     // CRITICAL: Update scrollable class immediately - BEFORE browser renders
     // This prevents modal expansion by applying height constraints instantly
@@ -1604,6 +1673,8 @@
       
       // İlk form için uyarı kontrolü (kapalı değilse uyarı göstermez)
       checkShareholderFormWarning(firstForm);
+
+      syncShareholderUnitPricesFromModal(modal);
       
       // ABSOLUTE FIX: Modal ilk açıldığında shareholders-area'nın height'ını kaydet
       // Böylece scrollable olduğunda aynı height'ı kullanabiliriz
@@ -1658,6 +1729,7 @@
             }
 
             setupShareQuantityButtons(modal, modal.querySelector('input[name="share_count"]'), baseProductPrice, priceInput);
+            syncShareholderUnitPricesFromModal(modal);
             
             return;
           }
@@ -1697,6 +1769,7 @@
             }
 
             setupShareQuantityButtons(modal, modal.querySelector('input[name="share_count"]'), baseProductPrice, priceInput);
+            syncShareholderUnitPricesFromModal(modal);
           })
           .catch((error) => {
             safeLog("Error fetching product price:", error);
@@ -1738,7 +1811,7 @@
       values[i] = {
         name: form.querySelector('input[type="text"]')?.value || '',
         phone: form.querySelector('input[type="tel"]')?.value || '',
-        note: form.querySelector('textarea')?.value || ''
+        note: getShareholderNoteTextarea(form)?.value || ''
       };
     }
 
@@ -1782,7 +1855,7 @@
       if (!form) continue;
       const nameInput = form.querySelector('input[type="text"]');
       const phoneInput = form.querySelector('input[type="tel"]');
-      const noteInput = form.querySelector('textarea');
+      const noteInput = getShareholderNoteTextarea(form);
       if (values[i]) {
         if (nameInput) nameInput.value = values[i].name;
         if (phoneInput) phoneInput.value = values[i].phone;
@@ -1880,6 +1953,7 @@
     
     // Kapalı form sayısını güncelle
     updateCollapsedFormsCount(modal, shareholdersList);
+    syncShareholderUnitPricesFromModal(modal);
   }
 
   // Setup direct shareholder forms
@@ -1891,6 +1965,7 @@
   // Export
   WDPApp.shareholder = {
     ensureList: ensureShareholderList,
+    syncUnitPrices: syncShareholderUnitPricesFromModal,
     setup: setupShareholderForms,
     setupQuantityButtons: setupShareQuantityButtons,
     createForm: createShareholderForm,

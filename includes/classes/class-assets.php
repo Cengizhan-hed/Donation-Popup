@@ -121,6 +121,7 @@ class WDP_Assets {
             'src/base.css',
             'src/layout.css',
             'src/forms/shared.css',
+            'src/forms/field-stack.css',
             'src/forms/hisseli.css',
             'src/components/buttons.css',
             'src/components/alerts.css',
@@ -290,7 +291,7 @@ class WDP_Assets {
      * @return array { 'path' => ..., 'filename' => ..., 'path_slash' => ... }
      */
     private static function get_frontend_css_exclude_patterns() {
-        $plugin_dir = defined('WDP_PLUGIN_PATH') ? WDP_PLUGIN_PATH : plugin_dir_path(dirname(dirname(__FILE__)));
+        $plugin_dir = defined('WDP_PLUGIN_DIR') ? WDP_PLUGIN_DIR : plugin_dir_path(dirname(dirname(__FILE__)));
         $path_from_root = str_replace(ABSPATH, '', $plugin_dir);
         $path_from_root = trim($path_from_root, '/\\');
         $rel_file = $path_from_root . '/assets/css/donation-modal.css';
@@ -450,8 +451,27 @@ class WDP_Assets {
      * @param string|int $css_version Style version.
      * @return void
      */
+    /**
+     * Register Inter from Google Fonts so plugin UI typography matches design tokens.
+     *
+     * @return string Registered style handle.
+     */
+    private static function register_inter_font_handle() {
+        $handle = 'wdp-google-font-inter';
+        if (!wp_style_is($handle, 'registered')) {
+            wp_register_style(
+                $handle,
+                'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap',
+                array(),
+                null
+            );
+        }
+        return $handle;
+    }
+
     private static function register_frontend_style_stack($plugin_url, $css_version) {
-        $plugin_dir = defined('WDP_PLUGIN_PATH') ? WDP_PLUGIN_PATH : plugin_dir_path(dirname(dirname(__FILE__)));
+        $plugin_dir = defined('WDP_PLUGIN_DIR') ? WDP_PLUGIN_DIR : plugin_dir_path(dirname(dirname(__FILE__)));
+        $font_handle = self::register_inter_font_handle();
 
         // Preferred strategy: use single hashed build file when available.
         $built_manifest = self::get_built_css_manifest($plugin_dir);
@@ -459,7 +479,7 @@ class WDP_Assets {
             wp_register_style(
                 self::FRONTEND_CSS_HANDLE,
                 $plugin_url . 'assets/css/' . $built_manifest['file'],
-                array(),
+                array($font_handle),
                 $css_version
             );
             return;
@@ -478,7 +498,7 @@ class WDP_Assets {
             wp_register_style(
                 self::FRONTEND_CSS_HANDLE,
                 $plugin_url . 'assets/css/donation-modal.css',
-                array(),
+                array($font_handle),
                 $css_version
             );
             return;
@@ -488,7 +508,8 @@ class WDP_Assets {
         $last = count($existing) - 1;
         foreach ($existing as $i => $rel) {
             $handle = ($i === $last) ? self::FRONTEND_CSS_HANDLE : 'wdp-css-layer-' . $i;
-            wp_register_style($handle, $plugin_url . 'assets/css/' . $rel, $deps, $css_version);
+            $layer_deps = ($i === 0) ? array($font_handle) : $deps;
+            wp_register_style($handle, $plugin_url . 'assets/css/' . $rel, $layer_deps, $css_version);
             $deps = array($handle);
         }
     }
@@ -537,6 +558,7 @@ class WDP_Assets {
                 'invalid_price' => __('Geçersiz fiyat', 'woo-donation-popup'),
                 'min_price_error' => __('Minimum fiyat: ', 'woo-donation-popup'),
                 'max_shares_error' => __('Maksimum hisse sayısı: ', 'woo-donation-popup'),
+                'custom_price_placeholder_empty' => __('Bağış tutarı *', 'woo-donation-popup'),
             ),
             'button_texts' => self::get_button_texts(),
             'shareholder_texts' => self::get_shareholder_texts(),
@@ -664,7 +686,7 @@ class WDP_Assets {
             global $post;
             
             // Plugin path/url
-            $plugin_dir = defined('WDP_PLUGIN_PATH') ? WDP_PLUGIN_PATH : plugin_dir_path(dirname(dirname(__FILE__)));
+            $plugin_dir = defined('WDP_PLUGIN_DIR') ? WDP_PLUGIN_DIR : plugin_dir_path(dirname(dirname(__FILE__)));
             $plugin_url = defined('WDP_PLUGIN_URL') ? WDP_PLUGIN_URL : plugin_dir_url(dirname(dirname(__FILE__)));
             
             // CSS/JS versiyonlarını tek merkezli hesapla (cache-busting tutarlılığı).
@@ -925,7 +947,7 @@ class WDP_Assets {
             'label_font_size' => 14,
             'label_font_weight' => '600',
             'placeholder_color' => '#6b7280',
-            'form_gap' => 6,
+            'form_gap' => 16,
             'error_bg_color' => '#fed7d7',
             'error_border_color' => '#feb2b2',
             'error_text_color' => '#c53030',
@@ -1108,7 +1130,8 @@ class WDP_Assets {
         $css .= "  --wdp-label-font-weight: " . esc_attr($settings['label_font_weight']) . ";\n";
         $css .= "  --wdp-placeholder-color: " . esc_attr($settings['placeholder_color']) . ";\n";
         $css .= "  --wdp-form-gap: " . esc_attr($settings['form_gap']) . "px;\n";
-        $css .= "  --wdp-form-stack-gap: clamp(4px, calc(var(--wdp-form-gap) - 2px), 6px);\n";
+        /* Dikey form ritmi: admin form_gap ile orantılı; eski 6px üst sınırı kaldırıldı (parçalanmış düzen) */
+        $css .= "  --wdp-form-stack-gap: clamp(8px, calc(var(--wdp-form-gap) * 0.75), 18px);\n";
         $css .= "  --wdp-form-error-bg: " . esc_attr($settings['error_bg_color']) . ";\n";
         $css .= "  --wdp-form-error-border: " . esc_attr($settings['error_border_color']) . ";\n";
         $css .= "  --wdp-form-error-text: " . esc_attr($settings['error_text_color']) . ";\n";
@@ -1454,17 +1477,15 @@ class WDP_Assets {
             echo '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>' . "\n";
         }, 0);
         
-        // Cache busting için ayarların hash'ini ekle
-        $button_settings = get_option('wdp_button_settings', array());
-        $settings_hash = md5(serialize($button_settings));
-        
         // Inline CSS'i ekle (non-critical, async)
         wp_add_inline_style('wdp-donation-modal-css', $inline_css);
         
-        // Cache'i temizlemek için style tag'ine data attribute ekle (debug için)
-        add_action('wp_head', function() use ($settings_hash) {
-            echo "<!-- WDP Button Settings Hash: " . esc_attr($settings_hash) . " -->\n";
-        }, 999);
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            $settings_hash = md5(serialize(get_option('wdp_button_settings', array())));
+            add_action('wp_head', function() use ($settings_hash) {
+                echo "<!-- WDP Button Settings Hash: " . esc_attr($settings_hash) . " -->\n";
+            }, 999);
+        }
         
         self::$inline_style_attached = true;
     }
@@ -1476,7 +1497,7 @@ class WDP_Assets {
         global $post;
 
         // Asset base path/url (constants fallback)
-        $plugin_dir = defined('WDP_PLUGIN_PATH') ? WDP_PLUGIN_PATH : plugin_dir_path(dirname(dirname(__FILE__)));
+        $plugin_dir = defined('WDP_PLUGIN_DIR') ? WDP_PLUGIN_DIR : plugin_dir_path(dirname(dirname(__FILE__)));
         $plugin_url = defined('WDP_PLUGIN_URL') ? WDP_PLUGIN_URL : plugin_dir_url(dirname(dirname(__FILE__)));
 
         // Code-level CSS değişikliklerinde cache revision'ı otomatik yenile.

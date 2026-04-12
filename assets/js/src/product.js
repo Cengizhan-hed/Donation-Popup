@@ -10,7 +10,7 @@
   
   // Use centralized module dependency helper
   const utilsCheck = (WDPApp.utils && WDPApp.utils.ensureModule)
-    ? WDPApp.utils.ensureModule('utils', ['safeLog', 'getAjaxNonce', 'formatCurrency', 'announceStatus'])
+    ? WDPApp.utils.ensureModule('utils', ['safeLog', 'getAjaxNonce', 'formatCurrency', 'formatPrice', 'announceStatus'])
     : { module: WDPApp.utils || {}, isValid: false, missingMethods: [] };
   
   const stateCheck = (WDPApp.utils && WDPApp.utils.ensureModule)
@@ -19,7 +19,7 @@
   
   const utils = utilsCheck.module;
   const state = stateCheck.module;
-  const { safeLog, getAjaxNonce, formatCurrency, announceStatus } = utils;
+  const { safeLog, getAjaxNonce, formatCurrency, formatPrice, announceStatus } = utils;
   const { productPrices, productDataCache, productInfoRequests } = state;
   const wdp_ajax = window.wdp_ajax || {};
 
@@ -100,69 +100,109 @@
     }
   }
 
+  function getWdpProductRoots(productId) {
+    const id = Number.parseInt(productId, 10);
+    if (!Number.isFinite(id)) {
+      return [];
+    }
+    const roots = [];
+    const modal = document.getElementById("wdp-modal-" + id);
+    if (modal) {
+      roots.push(modal);
+    }
+    const direct = document.getElementById("wdp-modal-" + id + "-direct");
+    if (direct) {
+      roots.push(direct);
+    }
+    return roots;
+  }
+
   function applyProductInfo(productId, data) {
     const id = Number.parseInt(productId, 10);
     if (!Number.isFinite(id) || !data || !data.success) {
       return;
     }
 
-    productPrices[id] = Number.parseFloat(data.price);
+    const unitNumeric = Number.parseFloat(data.price);
+    productPrices[id] = Number.isFinite(unitNumeric) ? unitNumeric : 0;
 
-    const modal = document.getElementById("wdp-modal-" + id);
-    if (!modal) {
+    const roots = getWdpProductRoots(id);
+    if (!roots.length) {
       return;
     }
 
-    const priceField = modal.querySelector(".wdp-price-field");
-    if (priceField) {
-      safeLog("Özel fiyat durumu:", data.is_custom_price);
-      if (data.is_custom_price) {
-        priceField.style.display = "flex";
+    roots.forEach((root) => {
+      if (data.price !== undefined && data.price !== null && String(data.price) !== '') {
+        root.setAttribute("data-wdp-unit-price", String(data.price));
+      }
 
-        const priceInput = priceField.querySelector('input[name="custom_price"]');
-        if (priceInput) {
-          const minPriceNumeric = Number.parseFloat((data.min_price || '').toString().trim().replace(/\s+/g, '').replace(/\./g, '').replace(',', '.'));
-          const basePriceNumeric = Number.parseFloat((data.price || '').toString().trim().replace(/\s+/g, '').replace(/\./g, '').replace(',', '.'));
-          const resolvedMin = Number.isFinite(minPriceNumeric) && minPriceNumeric > 0 ? minPriceNumeric : basePriceNumeric;
+      const form = root.querySelector("form.wdp-donation-form-fields");
+      if (!form) {
+        return;
+      }
 
-          if (Number.isFinite(resolvedMin) && resolvedMin > 0) {
-            priceInput.setAttribute("min", resolvedMin.toString());
-            priceInput.dataset.baseMin = resolvedMin.toString();
-          } else {
-            priceInput.dataset.baseMin = '';
-            priceInput.removeAttribute("min");
+      const priceField = form.querySelector(".wdp-price-field.wdp-custom-price-field") || form.querySelector(".wdp-price-field");
+      if (priceField) {
+        safeLog("Özel fiyat durumu:", data.is_custom_price);
+        if (data.is_custom_price) {
+          priceField.style.display = "flex";
+
+          const priceInput = priceField.querySelector('input[name="custom_price"]');
+          if (priceInput) {
+            const currencyEl = priceField.querySelector(".wdp-custom-price-currency");
+            if (currencyEl && wdp_ajax.currency && wdp_ajax.currency.symbol) {
+              currencyEl.textContent = wdp_ajax.currency.symbol;
+            }
+
+            const minPriceNumeric = Number.parseFloat((data.min_price || '').toString().trim().replace(/\s+/g, '').replace(/\./g, '').replace(',', '.'));
+            const basePriceNumeric = Number.parseFloat((data.price || '').toString().trim().replace(/\s+/g, '').replace(/\./g, '').replace(',', '.'));
+            const resolvedMin = Number.isFinite(minPriceNumeric) && minPriceNumeric > 0 ? minPriceNumeric : basePriceNumeric;
+
+            if (Number.isFinite(resolvedMin) && resolvedMin > 0) {
+              priceInput.setAttribute("min", resolvedMin.toString());
+              priceInput.dataset.baseMin = resolvedMin.toString();
+            } else {
+              priceInput.dataset.baseMin = '';
+              priceInput.removeAttribute("min");
+            }
+
+            priceInput.setAttribute("step", "0.01");
+            priceInput.required = true;
+            priceInput.value = "";
+            delete priceInput.dataset.wdpCustomUnit;
+            const emptyPlaceholder = (wdp_ajax.strings && wdp_ajax.strings.custom_price_placeholder_empty) ? wdp_ajax.strings.custom_price_placeholder_empty : "Bağış tutarı *";
+            if (Number.isFinite(resolvedMin) && resolvedMin > 0) {
+              priceInput.placeholder = `min: ${formatPrice(resolvedMin)}`;
+            } else if (data.min_price) {
+              priceInput.placeholder = `min: ${data.min_price}`;
+            } else {
+              priceInput.placeholder = emptyPlaceholder;
+            }
           }
+        } else if (priceField) {
+          priceField.style.display = "none";
+        }
+      }
 
-          priceInput.setAttribute("step", "0.01");
-          priceInput.required = true;
-          priceInput.value = "";
-          if (Number.isFinite(resolvedMin) && resolvedMin > 0) {
-            priceInput.placeholder = `Min: ${formatCurrency(resolvedMin)}`;
-          } else if (data.min_price) {
-            priceInput.placeholder = `Min: ${data.min_price}`;
-          } else {
-            priceInput.placeholder = "Bağış tutarı";
-          }
+      if (data.is_multiple_shares) {
+        const quantityRow = form.querySelector(".wdp-product-quantity");
+        if (quantityRow) {
+          quantityRow.style.display = "none";
+        }
+        if (WDPApp.shareholder && WDPApp.shareholder.setup) {
+          WDPApp.shareholder.setup(root, id);
         }
       } else {
-        priceField.style.display = "none";
+        const quantityRow = form.querySelector(".wdp-product-quantity");
+        if (quantityRow) {
+          quantityRow.style.display = "flex";
+        }
       }
-    }
 
-    if (data.is_multiple_shares) {
-      const quantityRow = modal.querySelector(".wdp-product-quantity");
-      if (quantityRow) {
-        quantityRow.style.display = "none";
+      if (WDPApp.form && typeof WDPApp.form.updateLineTotals === "function") {
+        WDPApp.form.updateLineTotals(form);
       }
-      if (WDPApp.shareholder && WDPApp.shareholder.setup) {
-        WDPApp.shareholder.setup(modal, id);
-      }
-    } else {
-      const quantityRow = modal.querySelector(".wdp-product-quantity");
-      if (quantityRow) {
-        quantityRow.style.display = "flex";
-      }
-    }
+    });
   }
 
   function fetchProductInfo(productId) {

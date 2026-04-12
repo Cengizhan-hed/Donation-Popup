@@ -5,10 +5,10 @@
 
 html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content, &) .wdp-progress-bar-container,
 html body .wdp-progress-bar-container {
-  margin: 16px 0;
-  padding: 18px 20px;
+  margin: var(--wdp-form-stack-gap) 0;
+  padding: var(--wdp-space-3, 12px) var(--wdp-space-4, 16px);
   background: var(--wdp-gradient-soft-white, linear-gradient(135deg, #ffffff 0%, #fafbfc 50%, #f8f9fa 100%));
-  border-radius: 20px;
+  border-radius: var(--wdp-input-radius, 10px);
   border: 1px solid var(--wdp-border-very-light, #f0f2f5);
   position: relative;
   overflow: hidden;
@@ -23,9 +23,9 @@ html body .wdp-progress-bar-container::before {
   left: 0;
   right: 0;
   height: 100%;
-  background: 
-    radial-gradient(circle at 20% 50%, rgba(74, 144, 226, 0.03) 0%, transparent 50%),
-    radial-gradient(circle at 80% 50%, rgba(123, 97, 255, 0.03) 0%, transparent 50%);
+  background:
+    radial-gradient(circle at 20% 50%, rgba(74, 144, 226, 0.02) 0%, transparent 50%),
+    radial-gradient(circle at 80% 50%, rgba(123, 97, 255, 0.02) 0%, transparent 50%);
   pointer-events: none;
   z-index: 0;
 }
@@ -104,9 +104,6 @@ html body .wdp-progress-bar {
   border-radius: 14px;
   overflow: hidden;
   position: relative;
-    inset 0 1px 3px rgba(0, 0, 0, 0.06),
-    inset 0 1px 1px rgba(0, 0, 0, 0.04),
-    0 1px 2px rgba(0, 0, 0, 0.04);
   border: 1px solid var(--wdp-border-soft-gray, #e8eaed);
 }
 
@@ -122,9 +119,6 @@ html body .wdp-progress-bar-fill {
   border-radius: 10px;
   position: relative;
   transition: width calc(0.8s * var(--wdp-motion-scale, 1)) cubic-bezier(0.34, 1.56, 0.64, 1);
-    0 2px 8px rgba(74, 144, 226, 0.3),
-    0 0 12px rgba(74, 144, 226, 0.12),
-    inset 0 1px 0 rgba(255, 255, 255, 0.25);
   z-index: 2;
   border: 1px solid rgba(255, 255, 255, 0.2);
   overflow: hidden;
@@ -241,19 +235,12 @@ html body .wdp-progress-bar-percentage-value {
   font-family: var(--wdp-font-family);
   letter-spacing: 0.02em;
   backdrop-filter: none;
-  text-shadow:
-    0 1px 2px rgba(255, 255, 255, 0.9),
-    0 0 4px rgba(255, 255, 255, 0.6);
 }
 
 /* Progress bar fill üzerindeyse beyaz renk - JavaScript ile class eklenecek */
 html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content, &) .wdp-progress-bar-percentage-value.on-fill,
 html body .wdp-progress-bar-percentage-value.on-fill {
   color: var(--wdp-progress-percentage-text-light, #ffffff);
-  text-shadow:
-    0 1px 4px rgba(0, 0, 0, 0.4),
-    0 0 8px rgba(0, 0, 0, 0.3),
-    0 2px 6px rgba(0, 0, 0, 0.25);
   font-weight: 900;
 }
 

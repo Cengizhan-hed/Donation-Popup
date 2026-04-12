@@ -77,6 +77,12 @@ html body .wdp-donation-form {
   font-feature-settings: "kern" 1, "liga" 1;
 }
 
+/* Tüm plugin UI metni Inter zincirini kullansın (tema inherit/atayımlarını kırma) */
+html body .wdp-modal *,
+html body .wdp-donation-form * {
+  font-family: inherit;
+}
+
 /* Genel tema/plugin CSS override - tüm .wdp-* elementleri için */
 html body [class*="wdp-"] {
   isolation: isolate;

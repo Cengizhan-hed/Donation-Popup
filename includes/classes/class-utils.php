@@ -36,6 +36,74 @@ class WDP_Utils {
     }
 
     /**
+     * WooCommerce fiyat HTML'i; gereksiz sondaki ondalıkları kaldırır (ör. tam sayılarda ",00" yok).
+     *
+     * @param float|string $amount Ham tutar.
+     * @param array        $args   wc_price() için ek argümanlar.
+     * @return string Güvenli HTML.
+     */
+    public static function format_price_html($amount, array $args = array()) {
+        if ($amount === '' || $amount === null) {
+            return '';
+        }
+        if (!function_exists('wc_price')) {
+            return '';
+        }
+        $numeric = floatval($amount);
+        if (!is_finite($numeric)) {
+            return '';
+        }
+        $args = array_merge(
+            array(
+                'trim_zeros' => true,
+            ),
+            $args
+        );
+
+        return wp_kses_post(wc_price($numeric, $args));
+    }
+
+    /**
+     * Placeholder / düz metin için fiyat (HTML etiketleri yok).
+     *
+     * @param float|string $amount Ham tutar.
+     * @return string
+     */
+    public static function format_price_plain($amount) {
+        return wp_strip_all_tags(self::format_price_html($amount));
+    }
+
+    /**
+     * Minimum tutarı placeholder için sayısal gösterim (para birimi simgesi yok; ayırıcılar Woo ayarlarına uygun).
+     *
+     * @param float|string $amount Ham tutar.
+     * @return string
+     */
+    public static function format_amount_for_min_placeholder($amount) {
+        if ($amount === '' || $amount === null) {
+            return '';
+        }
+        $numeric = floatval($amount);
+        if (!is_finite($numeric)) {
+            return '';
+        }
+        if (!function_exists('wc_get_price_decimal_separator')) {
+            return (string) (abs($numeric - round($numeric)) < 0.0000001 ? (int) round($numeric) : round($numeric, 2));
+        }
+        $dec = wc_get_price_decimal_separator();
+        $thousands = wc_get_price_thousand_separator();
+        $dp = absint(wc_get_price_decimals());
+        $formatted = number_format($numeric, $dp, $dec, $thousands);
+        if ($dp > 0 && strpos($formatted, $dec) !== false) {
+            $parts = explode($dec, $formatted, 2);
+            $whole = $parts[0];
+            $frac = isset($parts[1]) ? rtrim($parts[1], '0') : '';
+            $formatted = $frac !== '' ? $whole . $dec . $frac : $whole;
+        }
+        return $formatted;
+    }
+
+    /**
      * Log debug message.
      * 
      * Only logs if WP_DEBUG is enabled. Supports arrays, objects, and strings.

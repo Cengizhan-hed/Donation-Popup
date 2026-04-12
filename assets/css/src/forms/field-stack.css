@@ -1,0 +1,194 @@
+/**
+ * Unified premium field stack — Ad Soyad, Telefon, Not (optional e-posta hissedar)
+ * Tek dış çerçeve, satır ayırıcıları, sol ikon bandı; textarea çok satırlı uyumlu.
+ */
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  border: var(--wdp-field-stack-border);
+  border-radius: var(--wdp-field-stack-radius);
+  background: var(--wdp-field-stack-bg);
+  overflow: hidden;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.75) inset,
+    0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__row {
+  display: grid;
+  grid-template-columns: var(--wdp-field-icon-zone-width) minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  align-items: center;
+  column-gap: var(--wdp-field-stack-gap-icon-text);
+  row-gap: 0;
+  min-height: calc(var(--wdp-input-min-height, 48px) - 2px);
+  padding: 0 var(--wdp-field-stack-pad-x);
+  margin: 0;
+  border: none;
+  border-radius: 0;
+  outline: none;
+  box-shadow: none;
+  /* Yalnızca ince ayırıcı; satır başına ayrı kutu yok */
+  border-bottom: var(--wdp-field-stack-row-divider);
+  box-sizing: border-box;
+  background: var(--wdp-field-stack-bg);
+  transition: background-color 0.15s ease;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__row:last-child {
+  border-bottom: none;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__row:focus-within {
+  background: var(--wdp-field-stack-row-focus-bg);
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__row--textarea {
+  align-items: start;
+  min-height: 0;
+  padding-top: var(--wdp-field-stack-textarea-icon-pad-top);
+  padding-bottom: var(--wdp-field-stack-input-pad-y);
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__icon {
+  grid-column: 1;
+  grid-row: 1;
+  width: var(--wdp-field-icon-zone-width);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--wdp-field-icon-color);
+  align-self: center;
+  pointer-events: none;
+  user-select: none;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__row--textarea .wdp-field-stack__icon {
+  align-self: start;
+  padding-top: 2px;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__svg {
+  display: block;
+  width: var(--wdp-field-icon-size);
+  height: var(--wdp-field-icon-size);
+  flex-shrink: 0;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__input,
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__textarea {
+  grid-column: 2;
+  grid-row: 1;
+  min-width: 0;
+  width: 100%;
+  margin: 0;
+  padding: var(--wdp-field-stack-input-pad-y) 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  font-family: var(--wdp-font-family, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
+  font-size: var(--wdp-input-font-size, 16px);
+  font-weight: 400;
+  line-height: 1.45;
+  color: var(--wdp-input-color, #1f2937);
+  text-align: left;
+  -webkit-appearance: none;
+  appearance: none;
+  box-sizing: border-box;
+  transition: color 0.15s ease;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__textarea {
+  min-height: var(--wdp-field-stack-textarea-min-height);
+  resize: vertical;
+  padding-top: 0;
+  padding-bottom: 0;
+  line-height: 1.5;
+  vertical-align: top;
+  align-self: start;
+}
+
+/* form.js doğrulama: .wdp-input-error satırın altına tam genişlikte */
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__row .wdp-input-error {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  margin: 0;
+  padding: 4px 0 6px 0;
+  font-size: 0.8125rem;
+  line-height: 1.35;
+  color: var(--wdp-error, #e53e3e);
+}
+
+/* Hata: ayrı çerçeveli mini-kutu yok — yalnızca satır zemini + mesaj */
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__row:has(.wdp-error) {
+  background: color-mix(in srgb, var(--wdp-error, #e53e3e) 4.5%, var(--wdp-field-stack-bg));
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__input::placeholder,
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__textarea::placeholder {
+  color: var(--wdp-field-stack-placeholder);
+  opacity: 1;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__input:focus,
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__textarea:focus {
+  outline: none;
+  border: none;
+  box-shadow: none;
+  background: transparent;
+}
+
+/* Klavye odağı: içte yuvarlak kutu görünümü yok (tek panel hissi) */
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__input:focus-visible,
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__textarea:focus-visible {
+  outline: none;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+}
+
+/* WebKit autofill: iç kenarlık / sarı kutu yok */
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__input:-webkit-autofill,
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__input:-webkit-autofill:hover,
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--wdp-input-color, #1f2937);
+  caret-color: var(--wdp-input-color, #1f2937);
+  transition: background-color 99999s ease-out;
+  box-shadow: 0 0 0 1000px var(--wdp-field-stack-bg) inset;
+  border: none;
+}
+
+/* Hissedar kartı içi aynı sistem */
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-content .wdp-field-stack {
+  border-color: color-mix(in srgb, var(--wdp-shareholder-card-border, #e8eaed) 85%, #9ca3af);
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-content .wdp-field-stack__row {
+  border-bottom-color: color-mix(in srgb, var(--wdp-shareholder-card-border, #e8eaed) 90%, #9ca3af);
+}
+
+@media (max-width: 480px) {
+  html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__row {
+    padding-inline: 12px;
+    column-gap: 8px;
+  }
+
+  html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__input,
+  html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__textarea {
+    font-size: max(16px, var(--wdp-input-font-size, 16px));
+  }
+}
+
+@media (prefers-contrast: more) {
+  html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack {
+    border-width: 2px;
+    border-color: var(--wdp-gray-900, #111827);
+  }
+}

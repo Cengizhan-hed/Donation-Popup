@@ -16,11 +16,9 @@ html body :is(.screen-reader-text, .wdp-screen-reader-text) {
   border-width: 0;
 }
 
-/* Kullanıcı isteği: plugin içindeki button/input/textarea elemanlarında ek focus halkası / border olmasın */
-html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content :is(button, input, textarea):focus,
-html body :is(.wdp-modal, .wdp-donation-form) :is(button, input, textarea):focus,
-html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content :is(button, input, textarea):focus-visible,
-html body :is(.wdp-modal, .wdp-donation-form) :is(button, input, textarea):focus-visible {
+/* Butonlarda tarayıcı varsayılan odak çerçevesi; giriş alanları shared.css + :focus-visible ile yönetilir */
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content button:focus,
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content button:focus-visible {
   outline: none;
   outline-offset: 0;
 }
@@ -43,11 +41,18 @@ html body .wdp-modal-content .wdp-modal-close:focus {
     border: var(--wdp-border-1) solid var(--wdp-gray-900);
   }
   
-  html body .wdp-modal-content input,
-  html body .wdp-modal-content textarea,
-  html body .wdp-donation-form .wdp-modal-content input,
-  html body .wdp-donation-form .wdp-modal-content textarea {
+  html body .wdp-modal-content input:not(.wdp-field-stack__input),
+  html body .wdp-modal-content textarea:not(.wdp-field-stack__textarea),
+  html body .wdp-donation-form .wdp-modal-content input:not(.wdp-field-stack__input),
+  html body .wdp-donation-form .wdp-modal-content textarea:not(.wdp-field-stack__textarea) {
     border: var(--wdp-border-2) solid var(--wdp-gray-900);
+  }
+
+  /* Gruplu alan: yalnızca dış .wdp-field-stack çerçevesi; iç kontroller çerçevesiz kalsın */
+  html body .wdp-modal-content .wdp-field-stack,
+  html body .wdp-donation-form .wdp-modal-content .wdp-field-stack {
+    border-width: var(--wdp-border-2);
+    border-color: var(--wdp-gray-900);
   }
   
   html body .wdp-form-error {

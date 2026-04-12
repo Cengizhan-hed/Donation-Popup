@@ -3,6 +3,15 @@
 /* ==================== */
 /* CRITICAL: Maximum specificity - html body ile tema override koruması */
 
+@keyframes wdp-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes wdp-skeleton-shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position:  200% center; }
+}
+
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-loading-overlay,
 html body .wdp-loading-overlay {
   position: absolute;
@@ -24,19 +33,27 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-loading-sp
 html body .wdp-loading-spinner {
   width: 40px;
   height: 40px;
-  border: 3px solid var(--wdp-gray-200);
-  border-top: 3px solid var(--wdp-primary);
-  border-right: 3px solid var(--wdp-primary);
+  border: 3px solid var(--wdp-gray-200, #e5e7eb);
+  border-top: 3px solid var(--wdp-primary, #4a90e2);
+  border-right: 3px solid var(--wdp-primary, #4a90e2);
   border-radius: 50%;
   position: relative;
+  animation: wdp-spin 0.7s linear infinite;
 }
 
-/* Skeleton loading for form fields - Static, no animation */
+/* Skeleton loading for form fields */
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-skeleton,
 html body .wdp-skeleton {
-  background: var(--wdp-gray-200);
-  border-radius: var(--wdp-radius-md);
+  background: linear-gradient(
+    90deg,
+    var(--wdp-gray-200, #e5e7eb) 25%,
+    var(--wdp-gray-100, #f3f4f6) 50%,
+    var(--wdp-gray-200, #e5e7eb) 75%
+  );
+  background-size: 200% 100%;
+  border-radius: var(--wdp-radius-md, 14px);
   min-height: 20px;
+  animation: wdp-skeleton-shimmer var(--wdp-skeleton-shimmer-duration, 1.6s) ease-in-out infinite;
 }
 
 /* Skeleton input */
@@ -113,13 +130,14 @@ html body .wdp-button-loading::after {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 20px;
-  height: 20px;
-  margin: -10px 0 0 -10px;
-  border: 2px solid transparent;
-  border-top-color: currentColor;
-  border-right-color: currentColor;
+  width: 18px;
+  height: 18px;
+  margin: -9px 0 0 -9px;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #ffffff;
+  border-right-color: #ffffff;
   border-radius: 50%;
+  animation: wdp-spin 0.7s linear infinite;
 }
 
 /* Mobile optimizations for loading states */
@@ -196,3 +214,20 @@ html body .wdp-button-loading::after {
   }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  html body .wdp-loading-spinner,
+  html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-loading-spinner {
+    animation-duration: 1.5s;
+  }
+
+  html body .wdp-skeleton,
+  html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-skeleton {
+    animation: none;
+    background: var(--wdp-gray-200, #e5e7eb);
+  }
+
+  html body .wdp-button-loading::after,
+  html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-button-loading::after {
+    animation-duration: 1.5s;
+  }
+}

@@ -40,11 +40,11 @@ class WDP_Progress_Form {
             <div class="wdp-progress-bar-header">
                 <div class="wdp-progress-bar-info">
                     <span class="wdp-progress-bar-label"><?php echo esc_html__('Toplanan Bağış', 'woo-donation-popup'); ?></span>
-                    <span class="wdp-progress-bar-amount"><?php echo wc_price($total_donation); ?></span>
+                    <span class="wdp-progress-bar-amount"><?php echo WDP_Utils::format_price_html($total_donation); ?></span>
                 </div>
                 <div class="wdp-progress-bar-limit">
                     <span class="wdp-progress-bar-limit-label"><?php echo esc_html__('Hedef', 'woo-donation-popup'); ?></span>
-                    <span class="wdp-progress-bar-limit-amount"><?php echo wc_price($progress_bar_limit); ?></span>
+                    <span class="wdp-progress-bar-limit-amount"><?php echo WDP_Utils::format_price_html($progress_bar_limit); ?></span>
                 </div>
             </div>
             <div class="wdp-progress-bar-wrapper">
@@ -71,19 +71,25 @@ class WDP_Progress_Form {
     public static function render_form_fields($allow_custom_price = false, $min_price = '0') {
         // Progress bar formunda özel fiyat her zaman aktif olmalı
         $allow_custom_price = true;
+
+        $wdp_currency_symbol = function_exists('get_woocommerce_currency_symbol') ? get_woocommerce_currency_symbol() : '₺';
+        $wdp_custom_price_placeholder = (floatval($min_price) > 0)
+            ? ('min: ' . WDP_Utils::format_amount_for_min_placeholder($min_price))
+            : __('Bağış tutarı *', 'woo-donation-popup');
         
         ob_start();
         ?>
         <!-- Bağışçı Bilgileri -->
-        <input type="text" name="donation_full_name" placeholder="Ad Soyad *" required autocomplete="name">
-        <input type="tel" name="donation_phone" placeholder="Telefon Numarası *" required autocomplete="tel">
-        <textarea name="donation_note" rows="2" placeholder="Not (isteğe bağlı)"></textarea>
+        <?php echo WDP_Templates::render_donor_contact_stack(); ?>
 
         <!-- Fiyat Alanı - Progress bar formunda sayaç yok, sadece özel fiyat -->
         <div class="wdp-price-quantity-row wdp-progress-bar-price-row">
             <!-- Progress bar formunda özel fiyat her zaman gösterilir, full width -->
             <div class="wdp-price-field wdp-progress-bar-price-field">
-                <input type="number" name="custom_price" placeholder="<?php echo esc_attr($min_price > 0 ? 'Min: ' . wc_price($min_price) : 'Bağış Tutarı (TL) *'); ?>" min="<?php echo esc_attr($min_price); ?>" step="1" required class="wdp-custom-price-input wdp-progress-bar-price-input" data-base-min="<?php echo esc_attr($min_price); ?>">
+                <div class="wdp-custom-price-shell">
+                    <span class="wdp-custom-price-currency" aria-hidden="true"><?php echo esc_html($wdp_currency_symbol); ?></span>
+                    <input type="number" name="custom_price" placeholder="<?php echo esc_attr($wdp_custom_price_placeholder); ?>" min="<?php echo esc_attr($min_price); ?>" step="1" required class="wdp-custom-price-input wdp-progress-bar-price-input" data-base-min="<?php echo esc_attr($min_price); ?>" inputmode="decimal" autocomplete="off">
+                </div>
             </div>
             <!-- Hidden quantity input for form submission -->
             <input type="hidden" name="quantity" value="1">

@@ -43,7 +43,7 @@
  * Plugin Name: WooCommerce Donation Modal Popup
  * Description: WooCommerce ürünleri için bağış formu açılır penceresi oluşturur (Tüm temalarla uyumlu). Bu eklenti Hedef Derneği tarafından hazırlanmaktadır.
  * Author: Hedef Derneği
- * Version: 10.2.3
+ * Version: 10.2.4
  * Requires at least: 5.0
  * Tested up to: 6.7
  * WC requires at least: 3.0
@@ -73,6 +73,19 @@ define('WDP_VERSION', '10.2.4');
 define('WDP_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('WDP_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('WDP_ASSET_VERSION', get_option('wdp_cache_version', WDP_VERSION));
+
+// Debug log (WP_DEBUG açıkken error_log; production'da sessiz)
+if (!function_exists('wdp_debug_log')) {
+   function wdp_debug_log($message) {
+       if (defined('WP_DEBUG') && WP_DEBUG === true) {
+           if (is_array($message) || is_object($message)) {
+               error_log(print_r($message, true));
+           } else {
+               error_log($message);
+           }
+       }
+   }
+}
 
 // Autoloader'ı dahil et (modüller için)
 require_once WDP_PLUGIN_DIR . 'includes/class-autoloader.php';
@@ -161,7 +174,7 @@ function wdp_render_donation_button($product_id, $button_text = 'Bağış Yap') 
    // Ürünün varlığını kontrol et
    $product = wc_get_product($product_id);
    if (!$product) {
-       error_log('WDP: Ürün bulunamadı - ID: ' . $product_id);
+       wdp_debug_log('WDP: Ürün bulunamadı - ID: ' . $product_id);
        return '<p style="color:red;">Ürün bulunamadı (ID: ' . esc_html($product_id) . '). Lütfen ürün ID\'sini kontrol edin.</p>';
    }
    
@@ -184,7 +197,7 @@ function wdp_render_donation_form($product_id, $args = array()) {
    // Ürünün varlığını kontrol et
    $product = wc_get_product($product_id);
    if (!$product) {
-       error_log('WDP: Ürün bulunamadı - ID: ' . $product_id);
+       wdp_debug_log('WDP: Ürün bulunamadı - ID: ' . $product_id);
        return '<p style="color:red;">Ürün bulunamadı (ID: ' . esc_html($product_id) . '). Lütfen ürün ID\'sini kontrol edin.</p>';
    }
    
@@ -426,17 +439,4 @@ function wdp_ajax_render_donation_button() {
    ));
    
    wp_die();
-}
-
-// Debug log fonksiyonu ekle
-if (!function_exists('wdp_debug_log')) {
-   function wdp_debug_log($message) {
-       if (defined('WP_DEBUG') && WP_DEBUG === true) {
-           if (is_array($message) || is_object($message)) {
-               error_log(print_r($message, true));
-           } else {
-               error_log($message);
-           }
-       }
-   }
 }

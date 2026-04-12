@@ -106,32 +106,35 @@
   function formatPrice(price) {
     // Null, undefined veya boş string kontrolü
     if (price === null || price === undefined || price === '') {
-      return '0,00'
+      return '0'
     }
-    
-    // String ise temizle (boşluk, nokta, virgül vb.)
+
     let numericPrice;
     if (typeof price === 'string') {
-      // Boşlukları, noktaları ve virgülleri temizle
       const cleaned = price.toString().trim().replace(/\s+/g, '').replace(/\./g, '').replace(',', '.');
       numericPrice = Number.parseFloat(cleaned);
     } else if (typeof price === 'number') {
       numericPrice = price;
     } else {
-      return '0,00'
+      return '0'
     }
-    
-    // NaN kontrolü
+
     if (!Number.isFinite(numericPrice) || isNaN(numericPrice)) {
-      return '0,00'
+      return '0'
     }
-    
-    // Negatif fiyat kontrolü (genellikle fiyat pozitif olmalı)
+
     if (numericPrice < 0) {
       numericPrice = 0;
     }
-    
-    return numericPrice.toFixed(2).replace(".", ",")
+
+    try {
+      return new Intl.NumberFormat('tr-TR', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2,
+      }).format(numericPrice)
+    } catch (e) {
+      return String(numericPrice)
+    }
   }
 
   // Modern para formatı
@@ -139,9 +142,8 @@
     const numericValue = Number((typeof amount === 'string' ? amount.replace(/\s+/g, '').replace(/\./g, '').replace(',', '.') : amount))
 
     if (!Number.isFinite(numericValue)) {
-      // Para birimi bilgisini al (Currency eklentisi desteği için)
       const currencySymbol = (wdp_ajax && wdp_ajax.currency && wdp_ajax.currency.symbol) ? wdp_ajax.currency.symbol : '₺'
-      return currencySymbol + '0,00'
+      return `${currencySymbol}${formatPrice(0)}`
     }
 
     // Para birimi bilgisini al (Currency eklentisi desteği için)
@@ -160,7 +162,7 @@
       return new Intl.NumberFormat(locale, Object.assign({
         style: 'currency',
         currency: currencyCode,
-        minimumFractionDigits: 2,
+        minimumFractionDigits: 0,
         maximumFractionDigits: 2,
       }, options)).format(numericValue)
     } catch (error) {

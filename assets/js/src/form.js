@@ -84,11 +84,126 @@
   const state = stateCheck.module;
   const alerts = alertsCheck.module;
   const cart = cartCheck.module;
-  const { formatCurrency, getAjaxNonce, announceStatus, safeLog, escapeHtml, debounce, throttle, mergeWdpAjaxNonces, refreshWdpAjaxNonces } = utils;
+  const { productPrices } = state;
+  const { formatCurrency, getAjaxNonce, announceStatus, safeLog, escapeHtml, debounce, mergeWdpAjaxNonces, refreshWdpAjaxNonces } = utils;
   const { clear: clearAlerts, show: showAlert } = alerts;
   const { fetchContents: fetchCartContents, updateCountElements: updateCartCountElements, createItemsHTML: createCartItemsHTML, setupContinueShoppingButton, setupRemoveCartItemButtons, updateWooCommerce: updateWooCommerceCart, saveSideCartElements, showSideCarts } = cart;
   const wdp_ajax = window.wdp_ajax || {};
   const jQuery = window.jQuery || null;
+
+  function getWdpFormRoot(form) {
+    if (!form) return null;
+    return form.closest(".wdp-modal") || form.closest(".wdp-donation-form");
+  }
+
+  function getWdpUnitPriceForForm(form) {
+    const root = getWdpFormRoot(form);
+    const idInput = form.querySelector('input[name="add-to-cart"]');
+    const pid = idInput ? Number.parseInt(idInput.value, 10) : 0;
+    if (pid && productPrices && Number.isFinite(Number(productPrices[pid]))) {
+      return Number(productPrices[pid]);
+    }
+    if (root && root.dataset && root.dataset.wdpUnitPrice !== undefined && root.dataset.wdpUnitPrice !== "") {
+      const v = Number.parseFloat(root.dataset.wdpUnitPrice);
+      if (Number.isFinite(v)) return v;
+    }
+    return 0;
+  }
+
+  function updateFixedPriceLineDisplay(form) {
+    const row = form.querySelector(".wdp-fixed-price-counter-row");
+    if (!row) return;
+    const qtyEl = row.querySelector('input[name="quantity"]');
+    const out = row.querySelector(".wdp-line-total-value");
+    if (!out || !qtyEl) return;
+    const qty = Number.parseInt(qtyEl.value, 10) || 1;
+    const unit = getWdpUnitPriceForForm(form);
+    if (unit > 0) {
+      out.textContent = formatCurrency(unit * qty);
+    }
+  }
+
+  function parseNormalizedAmount(raw) {
+    if (raw === null || raw === undefined) return NaN;
+    const s = String(raw).trim().replace(/\s+/g, "").replace(/\./g, "").replace(",", ".");
+    if (s === "") return NaN;
+    return Number.parseFloat(s);
+  }
+
+  function roundMoney(n) {
+    return Math.round(n * 100) / 100;
+  }
+
+  function formatPriceInputValue(n) {
+    if (!Number.isFinite(n) || n <= 0) return "";
+    const r = roundMoney(n);
+    if (Math.abs(r - Math.round(r)) < 0.0001) return String(Math.round(r));
+    return String(r);
+  }
+
+  function formatSubmitUnitPrice(unit) {
+    if (!Number.isFinite(unit) || unit <= 0) return "";
+    const r = roundMoney(unit);
+    return Number.isInteger(r) ? r.toFixed(0) : r.toFixed(2);
+  }
+
+  function getCustomPriceQtyRow(form) {
+    return form ? form.querySelector(".wdp-custom-price-with-qty-row") : null;
+  }
+
+  function ensureCustomUnitFromDisplayed(customIn, qty) {
+    if (!customIn) return NaN;
+    const q = Number.parseInt(String(qty), 10) || 1;
+    const total = parseNormalizedAmount(customIn.value);
+    if (Number.isFinite(total) && total > 0 && q > 0) {
+      const u = roundMoney(total / q);
+      customIn.dataset.wdpCustomUnit = String(u);
+      return u;
+    }
+    delete customIn.dataset.wdpCustomUnit;
+    return NaN;
+  }
+
+  function syncCustomPriceQtyRowDisplay(form) {
+    const row = getCustomPriceQtyRow(form);
+    if (!row) return;
+    const customIn = row.querySelector('input[name="custom_price"]');
+    const qtyEl = row.querySelector('input[name="quantity"]');
+    if (!customIn || !qtyEl) return;
+    const qty = Number.parseInt(qtyEl.value, 10) || 1;
+    const unit = Number.parseFloat(customIn.dataset.wdpCustomUnit);
+    if (Number.isFinite(unit) && unit > 0) {
+      customIn.value = formatPriceInputValue(unit * qty);
+    }
+  }
+
+  function updateLineTotals(form) {
+    updateFixedPriceLineDisplay(form);
+    syncCustomPriceQtyRowDisplay(form);
+  }
+
+  function patchSimpleCustomPriceQtyRowFormData(form, formData) {
+    if (!form || !formData) return;
+    if (form.querySelector('input[name="share_count"]')) return;
+    const row = getCustomPriceQtyRow(form);
+    if (!row) return;
+    const priceInput = row.querySelector('input[name="custom_price"]');
+    const qEl = row.querySelector('input[name="quantity"]');
+    if (!priceInput || !qEl) return;
+    const q = Number.parseInt(qEl.value, 10) || 1;
+    let unit = Number.parseFloat(priceInput.dataset.wdpCustomUnit);
+    if (!Number.isFinite(unit) || unit <= 0) {
+      const total = parseNormalizedAmount(priceInput.value);
+      if (Number.isFinite(total) && total > 0 && q > 0) {
+        unit = roundMoney(total / q);
+        priceInput.dataset.wdpCustomUnit = String(unit);
+      }
+    }
+    if (Number.isFinite(unit) && unit > 0) {
+      formData.set("custom_price", formatSubmitUnitPrice(unit));
+      formData.set("quantity", String(q));
+    }
+  }
   
   // Debounced validation function for input events
   const debouncedValidateInput = debounce ? debounce((input) => {
@@ -250,17 +365,31 @@
       const baseMinData = customPriceInput.dataset.baseMin;
       const shareCountValue = shareCountInput ? Number.parseInt(shareCountInput.value, 10) || 1 : 1;
       const perShareMin = Number.parseFloat((baseMinData || '').toString().trim().replace(/\s+/g, '').replace(/\./g, '').replace(',', '.'));
-      const effectiveMinCandidates = [];
+      const customPriceQtyRow = customPriceInput.closest('.wdp-custom-price-with-qty-row');
 
-      if (Number.isFinite(minValueFromAttr) && minValueFromAttr > 0) {
-        effectiveMinCandidates.push(minValueFromAttr);
+      let effectiveMin = 0;
+      if (customPriceQtyRow) {
+        const qEl = customPriceQtyRow.querySelector('input[name="quantity"]');
+        const qtyForMin = qEl ? Number.parseInt(qEl.value, 10) || 1 : 1;
+        const perUnitCandidates = [];
+        if (Number.isFinite(minValueFromAttr) && minValueFromAttr > 0) {
+          perUnitCandidates.push(minValueFromAttr);
+        }
+        if (Number.isFinite(perShareMin) && perShareMin > 0) {
+          perUnitCandidates.push(perShareMin);
+        }
+        const perUnitMin = perUnitCandidates.length > 0 ? Math.max.apply(null, perUnitCandidates) : 0;
+        effectiveMin = perUnitMin > 0 ? perUnitMin * qtyForMin : 0;
+      } else {
+        const effectiveMinCandidates = [];
+        if (Number.isFinite(minValueFromAttr) && minValueFromAttr > 0) {
+          effectiveMinCandidates.push(minValueFromAttr);
+        }
+        if (Number.isFinite(perShareMin) && perShareMin > 0) {
+          effectiveMinCandidates.push(perShareMin * shareCountValue);
+        }
+        effectiveMin = effectiveMinCandidates.length > 0 ? Math.max.apply(null, effectiveMinCandidates) : 0;
       }
-
-      if (Number.isFinite(perShareMin) && perShareMin > 0) {
-        effectiveMinCandidates.push(perShareMin * shareCountValue);
-      }
-
-      const effectiveMin = effectiveMinCandidates.length > 0 ? Math.max.apply(null, effectiveMinCandidates) : 0;
 
       const focusInput = () => {
           if (isValid) {
@@ -289,7 +418,9 @@
         focusInput();
         isValid = false;
       } else if (effectiveMin > 0 && numericValue + 0.0001 < effectiveMin) {
-        const minMessage = `Lütfen ${formatCurrency(effectiveMin)} ve üstü değerler girin.`;
+        const minMessage = customPriceQtyRow
+          ? `Lütfen ${formatCurrency(effectiveMin)} ve üstü toplam tutar girin.`
+          : `Lütfen ${formatCurrency(effectiveMin)} ve üstü değerler girin.`;
           showInputError(customPriceInput, minMessage);
           if (!errorMessages.includes(minMessage)) {
             errorMessages.push(minMessage);
@@ -659,7 +790,8 @@ ${createCartItemsHTML([])}
     }
     
     const formData = new FormData(form);
-    
+    patchSimpleCustomPriceQtyRowFormData(form, formData);
+
     // CRITICAL: Hissedar formlarında fiyatı hisse sayısına göre güncelle
     if (shareCountInput) {
       const shareCount = Number.parseInt(shareCountInput.value, 10) || 1;
@@ -818,10 +950,10 @@ ${createCartItemsHTML([])}
             }
           }, 2000);
 
-          // Side cart elementlerini geri yükle
-          setTimeout(() => {
+          // Side cart: gecikme yok — bir sonraki frame'de görünürlük (AJAX tamamı anında)
+          requestAnimationFrame(() => {
             showSideCarts();
-          }, 500);
+          });
         },
       });
     } else {
@@ -894,10 +1026,10 @@ ${createCartItemsHTML([])}
             }
           }, 2000);
 
-          // Side cart elementlerini geri yükle
-          setTimeout(() => {
+          // Side cart: gecikme yok — bir sonraki frame'de görünürlük (AJAX tamamı anında)
+          requestAnimationFrame(() => {
             showSideCarts();
-          }, 500);
+          });
         });
     }
   }
@@ -920,6 +1052,25 @@ ${createCartItemsHTML([])}
       if (quantityInput && shareCount > 0) {
         // Quantity değerini hisse adedi ile güncelle - hissedar sayısına göre otomatik ayarla
         quantityInput.value = shareCount;
+      }
+    }
+
+    const simpleCustomQtyRow = form.querySelector(".wdp-custom-price-with-qty-row");
+    if (simpleCustomQtyRow && !shareCountInput) {
+      const priceInput = simpleCustomQtyRow.querySelector('input[name="custom_price"]');
+      const qEl = simpleCustomQtyRow.querySelector('input[name="quantity"]');
+      if (priceInput && qEl) {
+        const q = Number.parseInt(qEl.value, 10) || 1;
+        let unit = Number.parseFloat(priceInput.dataset.wdpCustomUnit);
+        if (!Number.isFinite(unit) || unit <= 0) {
+          const total = parseNormalizedAmount(priceInput.value);
+          if (Number.isFinite(total) && total > 0 && q > 0) {
+            unit = roundMoney(total / q);
+          }
+        }
+        if (Number.isFinite(unit) && unit > 0) {
+          priceInput.value = formatSubmitUnitPrice(unit);
+        }
       }
     }
 
@@ -1082,43 +1233,91 @@ ${createCartItemsHTML([])}
 
       // Özel fiyat alanı için minimum değer kontrolü - optimized with debounce
       if (input.name === "custom_price") {
-        // Focus handler - immediate
+        const customQtyRow = input.closest(".wdp-custom-price-with-qty-row");
+        if (customQtyRow) {
+          input.addEventListener("focus", function () {
+            this.classList.remove("wdp-error");
+            const errorMsg = form.querySelector(".wdp-form-error");
+            if (errorMsg) {
+              errorMsg.style.display = "none";
+            }
+            const inputError = this.parentNode.querySelector(".wdp-input-error");
+            if (inputError) {
+              inputError.remove();
+            }
+          });
+          input.addEventListener("input", function () {
+            const row = this.closest(".wdp-custom-price-with-qty-row");
+            const qEl = row && row.querySelector('input[name="quantity"]');
+            const qty = qEl ? Number.parseInt(qEl.value, 10) || 1 : 1;
+            ensureCustomUnitFromDisplayed(this, qty);
+          });
+          function runCustomQtyRowBlur() {
+            const row = this.closest(".wdp-custom-price-with-qty-row");
+            const qEl = row && row.querySelector('input[name="quantity"]');
+            const qty = qEl ? Number.parseInt(qEl.value, 10) || 1 : 1;
+            ensureCustomUnitFromDisplayed(this, qty);
+            const minAttr = Number.parseFloat(this.getAttribute("min") || 0);
+            const baseMin = Number.parseFloat((this.dataset.baseMin || "").toString().trim());
+            const perUnitCandidates = [];
+            if (Number.isFinite(minAttr) && minAttr > 0) perUnitCandidates.push(minAttr);
+            if (Number.isFinite(baseMin) && baseMin > 0) perUnitCandidates.push(baseMin);
+            const perUnitMin = perUnitCandidates.length > 0 ? Math.max.apply(null, perUnitCandidates) : 0;
+            const minTotal = perUnitMin > 0 ? perUnitMin * qty : 0;
+            const total = parseNormalizedAmount(this.value);
+            if (this.value !== "" && minTotal > 0 && Number.isFinite(total) && total + 0.0001 < minTotal) {
+              this.classList.add("wdp-error");
+              const existingError = this.parentNode.querySelector(".wdp-input-error");
+              if (existingError) existingError.remove();
+              const inputError = document.createElement("div");
+              inputError.className = "wdp-input-error";
+              inputError.textContent = `Lütfen ${formatCurrency(minTotal)} ve üstü toplam tutar girin.`;
+              const parentField = this.closest(".wdp-price-field") || this.parentNode;
+              if (parentField) {
+                const computedStyle = window.getComputedStyle(parentField);
+                if (computedStyle.position === "static") {
+                  parentField.style.position = "relative";
+                }
+                parentField.appendChild(inputError);
+              }
+            } else {
+              this.classList.remove("wdp-error");
+              const inputError = this.parentNode.querySelector(".wdp-input-error");
+              if (inputError) inputError.remove();
+            }
+          }
+          const debouncedBlurQtyRow = debounce ? debounce(runCustomQtyRowBlur, 300) : runCustomQtyRowBlur;
+          input.addEventListener("blur", debouncedBlurQtyRow);
+          return;
+        }
+
+        // Progress / diğer tek sütun özel fiyat alanları
         input.addEventListener("focus", function () {
           this.classList.remove("wdp-error");
           const errorMsg = form.querySelector(".wdp-form-error");
           if (errorMsg) {
             errorMsg.style.display = "none";
           }
-          // Input-error mesajlarını temizle
           const inputError = this.parentNode.querySelector('.wdp-input-error');
           if (inputError) {
             inputError.remove();
           }
         });
         
-        // Blur handler - debounced for better performance
         const debouncedBlurHandler = debounce ? debounce(function() {
           const minPrice = Number.parseFloat(this.getAttribute("min") || 0);
           const currentValue = Number.parseFloat(this.value || 0);
           if (this.value !== "" && minPrice > 0 && currentValue < minPrice) {
-            // Input alanının üzerinde küçük popup uyarısı göster
             this.classList.add("wdp-error");
-            
-            // Mevcut input-error'u kaldır
             const existingError = this.parentNode.querySelector('.wdp-input-error');
             if (existingError) {
               existingError.remove();
             }
-            
-            // Yeni input-error elementi oluştur
             const inputError = document.createElement('div');
             inputError.className = 'wdp-input-error';
             inputError.textContent = `Lütfen ${minPrice} TL ve üstü değerler girin.`;
-            
-            // Input'un parent'ına ekle (position: relative olmalı)
             const parentField = this.closest('.wdp-price-field') || this.parentNode;
             if (parentField) {
-              // Parent'ın position'ını kontrol et ve gerekirse relative yap
               const computedStyle = window.getComputedStyle(parentField);
               if (computedStyle.position === 'static') {
                 parentField.style.position = 'relative';
@@ -1136,24 +1335,16 @@ ${createCartItemsHTML([])}
           const minPrice = Number.parseFloat(this.getAttribute("min") || 0);
           const currentValue = Number.parseFloat(this.value || 0);
           if (this.value !== "" && minPrice > 0 && currentValue < minPrice) {
-            // Input alanının üzerinde küçük popup uyarısı göster
             this.classList.add("wdp-error");
-            
-            // Mevcut input-error'u kaldır
             const existingError = this.parentNode.querySelector('.wdp-input-error');
             if (existingError) {
               existingError.remove();
             }
-            
-            // Yeni input-error elementi oluştur
             const inputError = document.createElement('div');
             inputError.className = 'wdp-input-error';
             inputError.textContent = `Lütfen ${minPrice} TL ve üstü değerler girin.`;
-            
-            // Input'un parent'ına ekle (position: relative olmalı)
             const parentField = this.closest('.wdp-price-field') || this.parentNode;
             if (parentField) {
-              // Parent'ın position'ını kontrol et ve gerekirse relative yap
               const computedStyle = window.getComputedStyle(parentField);
               if (computedStyle.position === 'static') {
                 parentField.style.position = 'relative';
@@ -1204,7 +1395,15 @@ ${createCartItemsHTML([])}
         e.stopPropagation();
         const currentValue = Number.parseInt(quantityInput.value, 10) || 1;
         if (currentValue > 1) {
+          const customRow = form.querySelector(".wdp-custom-price-with-qty-row");
+          if (customRow && customRow.contains(quantityInput)) {
+            const customIn = customRow.querySelector('input[name="custom_price"]');
+            if (customIn) {
+              ensureCustomUnitFromDisplayed(customIn, currentValue);
+            }
+          }
           quantityInput.value = currentValue - 1;
+          updateLineTotals(form);
         }
       });
 
@@ -1212,11 +1411,20 @@ ${createCartItemsHTML([])}
         e.preventDefault();
         e.stopPropagation();
         const currentValue = Number.parseInt(quantityInput.value, 10) || 1;
-        quantityInput.value = currentValue + 1;
+        const maxAttr = Number.parseInt(quantityInput.getAttribute("max") || "99", 10);
+        const maxAllowed = Number.isFinite(maxAttr) && maxAttr > 0 ? maxAttr : 99;
+        const customRow = form.querySelector(".wdp-custom-price-with-qty-row");
+        if (customRow && customRow.contains(quantityInput)) {
+          const customIn = customRow.querySelector('input[name="custom_price"]');
+          if (customIn) {
+            ensureCustomUnitFromDisplayed(customIn, currentValue);
+          }
+        }
+        quantityInput.value = String(Math.min(maxAllowed, currentValue + 1));
+        updateLineTotals(form);
       });
 
-      // Başlangıç değerini ayarla
-      quantityInput.value = "1";
+      updateLineTotals(form);
     }
 
     // Hisseli form için quantity alanını devre dışı bırak - hissedar sayısına göre otomatik ayarlanacak
@@ -1241,6 +1449,7 @@ ${createCartItemsHTML([])}
     handleAjaxResponse,
     handleAjaxError,
     directSubmit: directFormSubmit,
+    updateLineTotals,
   };
 
   // Export form module
