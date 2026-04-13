@@ -86,10 +86,58 @@
   const cart = cartCheck.module;
   const { productPrices } = state;
   const { formatCurrency, getAjaxNonce, announceStatus, safeLog, escapeHtml, debounce, mergeWdpAjaxNonces, refreshWdpAjaxNonces } = utils;
-  const { clear: clearAlerts, show: showAlert } = alerts;
+  const { clear: clearAlerts } = alerts;
   const { fetchContents: fetchCartContents, updateCountElements: updateCartCountElements, createItemsHTML: createCartItemsHTML, setupContinueShoppingButton, setupRemoveCartItemButtons, updateWooCommerce: updateWooCommerceCart, saveSideCartElements, showSideCarts } = cart;
   const wdp_ajax = window.wdp_ajax || {};
   const jQuery = window.jQuery || null;
+
+  function getInputErrorAnchor(input) {
+    if (!input) {
+      return null;
+    }
+    const row = input.closest('.wdp-field-stack__row');
+    if (row) {
+      return row;
+    }
+    return input.parentNode;
+  }
+
+  function getDonorNameRequiredMessage() {
+    const s = wdp_ajax && wdp_ajax.strings;
+    if (s && typeof s.donor_name_required === 'string' && s.donor_name_required.trim()) {
+      return s.donor_name_required.trim();
+    }
+    return 'Ad Soyad zorunludur.';
+  }
+
+  function getShareholderNameRequiredMessage() {
+    const s = wdp_ajax && wdp_ajax.strings;
+    if (s && typeof s.shareholder_name_required === 'string' && s.shareholder_name_required.trim()) {
+      return s.shareholder_name_required.trim();
+    }
+    return 'Hissedar adı zorunludur.';
+  }
+
+  function getRequiredFieldMessage(field) {
+    const s = wdp_ajax && wdp_ajax.strings;
+    const generic =
+      s && typeof s.required_field === 'string' && s.required_field.trim()
+        ? s.required_field.trim()
+        : 'Bu alan zorunludur';
+    if (!field || !field.name) {
+      return generic;
+    }
+    if (field.name === 'donation_full_name') {
+      return getDonorNameRequiredMessage();
+    }
+    return generic;
+  }
+
+  let wdpFieldErrorIdSeq = 0;
+  function nextFieldErrorId() {
+    wdpFieldErrorIdSeq += 1;
+    return 'wdp-field-err-' + wdpFieldErrorIdSeq;
+  }
 
   function getWdpFormRoot(form) {
     if (!form) return null;
@@ -209,8 +257,27 @@
   const debouncedValidateInput = debounce ? debounce((input) => {
     if (input.classList.contains('wdp-error')) {
       input.classList.remove('wdp-error');
-      const errorDiv = input.parentNode.querySelector('.wdp-input-error');
-      if (errorDiv) errorDiv.remove();
+      const anchor = getInputErrorAnchor(input);
+      const errorDiv = anchor && anchor.querySelector('.wdp-input-error');
+      if (errorDiv) {
+        const rid = errorDiv.id;
+        errorDiv.remove();
+        try {
+          input.removeAttribute('aria-invalid');
+          if (rid && input.getAttribute('aria-describedby') === rid) {
+            input.removeAttribute('aria-describedby');
+          }
+        } catch (eAriaDeb) {
+          /* ignore */
+        }
+      }
+      if (typeof input.setCustomValidity === 'function') {
+        try {
+          input.setCustomValidity('');
+        } catch (eCvDeb) {
+          /* ignore */
+        }
+      }
     }
   }, 300) : null;
 
@@ -227,32 +294,72 @@
 
   function showInputError(input, message) {
     input.classList.add('wdp-error');
+    const anchor = getInputErrorAnchor(input) || input.parentNode;
     // Remove previous error
-    let errorDiv = input.parentNode.querySelector('.wdp-input-error');
+    let errorDiv = anchor.querySelector('.wdp-input-error');
     if (errorDiv) errorDiv.remove();
     // Add new error
     errorDiv = document.createElement('div');
     errorDiv.className = 'wdp-input-error';
     errorDiv.setAttribute('role', 'alert');
-    const errorId = input.name + '-error';
+    const errorId = nextFieldErrorId();
     errorDiv.id = errorId;
     errorDiv.textContent = message;
-    input.parentNode.appendChild(errorDiv);
+    anchor.appendChild(errorDiv);
+    try {
+      input.setAttribute('aria-invalid', 'true');
+      input.setAttribute('aria-describedby', errorId);
+    } catch (eAria) {
+      /* ignore */
+    }
     // Remove error on focus/input - optimized with debounce
     function clearError() {
       input.classList.remove('wdp-error');
       if (errorDiv) errorDiv.remove();
-      input.removeEventListener('focus', clearError);
+      try {
+        input.removeAttribute('aria-invalid');
+        if (input.getAttribute('aria-describedby') === errorId) {
+          input.removeAttribute('aria-describedby');
+        }
+      } catch (eAria2) {
+        /* ignore */
+      }
+      if (typeof input.setCustomValidity === 'function') {
+        try {
+          input.setCustomValidity('');
+        } catch (eCvFocus) {
+          /* ignore */
+        }
+      }
       input.removeEventListener('input', clearErrorInput);
     }
     
     // Debounced input handler for better performance
-    const clearErrorInput = debouncedValidateInput ? debouncedValidateInput.bind(null, input) : function() {
-      input.classList.remove('wdp-error');
-      if (errorDiv) errorDiv.remove();
-    };
+    const clearErrorInput = debouncedValidateInput
+      ? debouncedValidateInput.bind(null, input)
+      : function () {
+          input.classList.remove('wdp-error');
+          if (errorDiv) {
+            const rid = errorDiv.id;
+            errorDiv.remove();
+            try {
+              input.removeAttribute('aria-invalid');
+              if (rid && input.getAttribute('aria-describedby') === rid) {
+                input.removeAttribute('aria-describedby');
+              }
+            } catch (eAriaIn) {
+              /* ignore */
+            }
+          }
+          if (typeof input.setCustomValidity === 'function') {
+            try {
+              input.setCustomValidity('');
+            } catch (eCvIn) {
+              /* ignore */
+            }
+          }
+        };
     
-    input.addEventListener('focus', clearError);
     input.addEventListener('input', clearErrorInput);
 
     announceStatus(message, 'assertive');
@@ -266,7 +373,9 @@
       form.insertBefore(formError, form.firstChild);
     }
     formError.setAttribute('role', 'alert');
+    formError.setAttribute('data-wdp-protected', 'true');
     formError.textContent = message;
+    formError.style.display = 'block';
     // Remove on any input focus
     form.querySelectorAll('input, textarea').forEach(input => {
       input.addEventListener('focus', function clearFormError() {
@@ -278,76 +387,263 @@
     announceStatus(message, 'assertive');
   }
 
+  /**
+   * Safety net: never leave CTA clicks without visible feedback.
+   * If field-level nodes fail to render for any reason, keep a compact form-level hint.
+   */
+  function ensureVisibleValidationFeedback(form, errorMessages) {
+    if (!form) {
+      return;
+    }
+    if (form.querySelector('.wdp-error')) {
+      return;
+    }
+    const fieldErrors = Array.prototype.slice.call(form.querySelectorAll('.wdp-input-error'));
+    const hasVisibleFieldErrors = fieldErrors.some((el) => {
+      if (!el) {
+        return false;
+      }
+      // offsetParent null olabilir (position:fixed vb.); getClientRects daha güvenilir.
+      if (el.getClientRects && el.getClientRects().length > 0) {
+        return true;
+      }
+      return false;
+    });
+    if (hasVisibleFieldErrors) {
+      return;
+    }
+    const msg = Array.isArray(errorMessages) && errorMessages.length
+      ? errorMessages[0]
+      : 'Lütfen işaretlenen alanları kontrol edin.';
+    showFormError(form, msg);
+  }
+
+  function getEffectiveShareCount(form) {
+    if (!form) {
+      return 1;
+    }
+    const renderedRows = form.querySelectorAll(".wdp-shareholder-form");
+    const renderedCount = renderedRows && renderedRows.length ? renderedRows.length : 0;
+    const shareCountInput = form.querySelector('input[name="share_count"]');
+    const inputCount = shareCountInput ? Number.parseInt(shareCountInput.value, 10) || 1 : 1;
+    const effective = Math.max(1, inputCount, renderedCount);
+    if (shareCountInput && renderedCount > inputCount && String(shareCountInput.value) !== String(effective)) {
+      shareCountInput.value = String(effective);
+    }
+    return Math.max(1, effective);
+  }
+
+  function ensureShareholderRowsReady(form) {
+    if (!form) {
+      return;
+    }
+    const shareCountInput = form.querySelector('input[name="share_count"]');
+    if (!shareCountInput) {
+      return;
+    }
+    const desired = Number.parseInt(shareCountInput.value, 10) || 1;
+    const existing = form.querySelectorAll(".wdp-shareholder-form").length;
+    if (desired <= existing) {
+      return;
+    }
+    const host = form.closest(".wdp-modal") || form.closest(".wdp-donation-form");
+    if (
+      host &&
+      WDPApp.shareholder &&
+      typeof WDPApp.shareholder.updateForms === "function"
+    ) {
+      try {
+        WDPApp.shareholder.updateForms(host, null);
+      } catch (eEnsureRows) {
+        safeLog("ensureShareholderRowsReady failed:", eEnsureRows);
+      }
+    }
+  }
+
+  function getOrderedShareholderRows(form) {
+    if (!form) {
+      return [];
+    }
+    const rows = Array.from(form.querySelectorAll(".wdp-shareholder-form"));
+    rows.sort((a, b) => {
+      const ai = Number.parseInt(a.getAttribute("data-index") || "0", 10) || 0;
+      const bi = Number.parseInt(b.getAttribute("data-index") || "0", 10) || 0;
+      return ai - bi;
+    });
+    return rows;
+  }
+
+  function focusShareholderIssue(issue) {
+    if (!issue || !issue.row) {
+      return false;
+    }
+    const row = issue.row;
+    const targetField = issue.field || null;
+    const content = row.querySelector(".wdp-shareholder-content");
+    const list = row.closest(".wdp-shareholders-scroll");
+    if (row.classList.contains("collapsed")) {
+      if (list) {
+        list.querySelectorAll(".wdp-shareholder-form").forEach((other) => {
+          if (other !== row) {
+            other.classList.add("collapsed");
+            const otherContent = other.querySelector(".wdp-shareholder-content");
+            if (otherContent) {
+              otherContent.style.display = "none";
+            }
+          }
+        });
+      }
+      row.classList.remove("collapsed");
+      if (content) {
+        content.style.display = "flex";
+      }
+      if (WDPApp.shareholder && typeof WDPApp.shareholder.updateCollapsedCount === "function") {
+        const host = row.closest(".wdp-modal") || row.closest(".wdp-donation-form");
+        if (host) {
+          WDPApp.shareholder.updateCollapsedCount(host);
+        }
+      }
+    }
+    window.requestAnimationFrame(() => {
+      const scrollParent = row.closest(".wdp-shareholders-scroll");
+      if (scrollParent) {
+        const rowBox = row.getBoundingClientRect();
+        const parentBox = scrollParent.getBoundingClientRect();
+        const delta = rowBox.top - parentBox.top - Math.max(8, parentBox.height * 0.2);
+        scrollParent.scrollTo({
+          top: Math.max(0, scrollParent.scrollTop + delta),
+          behavior: "smooth",
+        });
+      }
+      row.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
+      if (targetField && typeof targetField.focus === "function") {
+        try {
+          targetField.focus({ preventScroll: true });
+        } catch (e) {
+          targetField.focus();
+        }
+      }
+    });
+    return true;
+  }
+
+  function focusShareholderSection(form) {
+    if (!form) return;
+    const section = form.querySelector(".wdp-shares-section");
+    if (!section) return;
+    section.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
+
   function validateForm(form) {
     safeLog("validateForm called");
     let isValid = true;
     let errorMessages = [];
+    ensureShareholderRowsReady(form);
 
     // Önce tüm eski hata mesajlarını temizle
-    form.querySelectorAll('.wdp-error').forEach(input => {
+    form.querySelectorAll('.wdp-error').forEach((input) => {
       input.classList.remove('wdp-error');
     });
-    form.querySelectorAll('.wdp-form-error').forEach(error => error.remove());
-    
-    // Popup hata mesajlarını temizle
+    form.querySelectorAll('input[type="tel"][name="donation_phone"], input[type="tel"][name^="shareholder_phone_"]').forEach((tel) => {
+      if (typeof tel.setCustomValidity === 'function') {
+        try {
+          tel.setCustomValidity('');
+        } catch (eCvReset) {
+          /* ignore */
+        }
+      }
+    });
+    form.querySelectorAll('.wdp-input-error').forEach((el) => el.remove());
+    form.querySelectorAll('input[aria-describedby], textarea[aria-describedby]').forEach((inp) => {
+      const id = inp.getAttribute('aria-describedby');
+      if (id && !document.getElementById(id)) {
+        inp.removeAttribute('aria-describedby');
+        inp.removeAttribute('aria-invalid');
+      }
+    });
+    form.querySelectorAll('.wdp-form-error').forEach((error) => error.remove());
+
+    // Önceki merkezi alert overlay (artık doğrulama için kullanılmıyor)
     clearAlerts();
 
     // Hisse adedi kontrolü
     const shareCountInput = form.querySelector('input[name="share_count"]');
-    if (shareCountInput) {
-      const shareCount = Number.parseInt(shareCountInput.value, 10) || 1;
-      safeLog("Checking shareholder forms for count:", shareCount);
-      
-      for (let i = 1; i <= shareCount; i++) {
-        const nameField = form.querySelector(`input[name="shareholder_name_${i}"]`);
-        const phoneField = form.querySelector(`input[name="shareholder_phone_${i}"]`);
-        const shareholderForm = nameField?.closest('.wdp-shareholder-form') || phoneField?.closest('.wdp-shareholder-form');
+    const shareholderRows = getOrderedShareholderRows(form);
+    let firstShareholderIssue = null;
+    let incompleteShareholderCount = 0;
+    if (shareCountInput || (shareholderRows && shareholderRows.length > 0)) {
+      getEffectiveShareCount(form);
+      safeLog("Checking shareholder forms for count:", shareholderRows.length);
+
+      shareholderRows.forEach((shareholderForm, idx) => {
+        const rowIndex = Number.parseInt(shareholderForm.getAttribute("data-index") || "0", 10) || idx + 1;
+        const nameField = shareholderForm.querySelector('input[name^="shareholder_name_"]');
+        const phoneField = shareholderForm.querySelector('input[name^="shareholder_phone_"]');
         
-        safeLog(`Checking form ${i}:`, {
+        safeLog(`Checking form ${rowIndex}:`, {
           nameField: !!nameField,
           nameValue: nameField?.value,
           phoneField: !!phoneField,
           phoneValue: phoneField?.value
         });
         
-        // Eğer form kapalıysa aç (kullanıcı görebilsin)
-        if (shareholderForm && shareholderForm.classList.contains('collapsed')) {
-          shareholderForm.classList.remove('collapsed');
-          const content = shareholderForm.querySelector('.wdp-shareholder-content');
-          if (content) {
-            content.style.display = 'flex';
-          }
-          // Scroll yap
-          requestAnimationFrame(() => {
-            shareholderForm.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-          });
-        }
-        
         // Ad alanı kontrolü
+        let rowHasMissing = false;
+        let rowFirstField = null;
         if (nameField && !nameField.value.trim()) {
-          safeLog(`Name field ${i} is empty`);
-          showInputError(nameField, `${i}. Hissedar Adı zorunludur`);
-          errorMessages.push(`${i}. Hissedar Adı`);
+          safeLog(`Name field ${rowIndex} is empty`);
+          showInputError(nameField, `${rowIndex}. ${getShareholderNameRequiredMessage()}`);
+          errorMessages.push(`${rowIndex}. ${getShareholderNameRequiredMessage()}`);
           isValid = false;
+          rowHasMissing = true;
+          rowFirstField = rowFirstField || nameField;
         }
         
         // Telefon alanı kontrolü
         if (phoneField && !phoneField.value.trim()) {
-          safeLog(`Phone field ${i} is empty`);
-          showInputError(phoneField, `${i}. Hissedar Telefonu zorunludur`);
-          errorMessages.push(`${i}. Hissedar Telefonu`);
+          safeLog(`Phone field ${rowIndex} is empty`);
+          phoneField.classList.add("wdp-error");
           isValid = false;
+          rowHasMissing = true;
+          rowFirstField = rowFirstField || phoneField;
         }
-      }
+        if (rowHasMissing) {
+          incompleteShareholderCount += 1;
+          if (!firstShareholderIssue) {
+            firstShareholderIssue = {
+              row: shareholderForm,
+              field: rowFirstField,
+            };
+          }
+        }
+      });
+    }
+    if (WDPApp.shareholder && typeof WDPApp.shareholder.setValidationArmed === "function") {
+      const targetIndex =
+        firstShareholderIssue && firstShareholderIssue.row
+          ? Number.parseInt(firstShareholderIssue.row.getAttribute("data-index") || "0", 10) || 0
+          : 0;
+      WDPApp.shareholder.setValidationArmed(form, incompleteShareholderCount > 0, targetIndex);
+    } else if (WDPApp.shareholder && typeof WDPApp.shareholder.refreshGuidance === "function") {
+      WDPApp.shareholder.refreshGuidance(form);
+    }
+    if (incompleteShareholderCount > 1) {
+      errorMessages.push(`${incompleteShareholderCount} hissedar formu eksik.`);
     }
 
     // Diğer zorunlu alanlar (fiyat, vb.)
-    form.querySelectorAll('input[required], textarea[required]').forEach(field => {
+    form.querySelectorAll('input[required], textarea[required]').forEach((field) => {
       // Hissedar formları dışındaki alanları kontrol et
       if (!field.name.includes('shareholder_')) {
         if (!field.value.trim()) {
-          showInputError(field, 'Bu alan zorunludur');
-          errorMessages.push(field.placeholder || 'Zorunlu alan');
+          if (field.name === "donation_phone") {
+            field.classList.add("wdp-error");
+            isValid = false;
+            return;
+          }
+          const msg = getRequiredFieldMessage(field);
+          showInputError(field, msg);
+          errorMessages.push(field.placeholder || msg);
           isValid = false;
         }
       }
@@ -363,7 +659,7 @@
       const normalizedMin = (minAttr || '0').toString().trim().replace(/\s+/g, '').replace(/\./g, '').replace(',', '.');
       const minValueFromAttr = Number.parseFloat(normalizedMin);
       const baseMinData = customPriceInput.dataset.baseMin;
-      const shareCountValue = shareCountInput ? Number.parseInt(shareCountInput.value, 10) || 1 : 1;
+      const shareCountValue = shareCountInput ? getEffectiveShareCount(form) : 1;
       const perShareMin = Number.parseFloat((baseMinData || '').toString().trim().replace(/\s+/g, '').replace(/\./g, '').replace(',', '.'));
       const customPriceQtyRow = customPriceInput.closest('.wdp-custom-price-with-qty-row');
 
@@ -433,16 +729,129 @@
     errorMessages = Array.from(new Set(errorMessages));
     safeLog("Form validation result:", { isValid, errorMessages });
 
-    // Form geçersizse popup göster
     if (!isValid) {
-      safeLog("Form is invalid, showing popup error");
-      showAlert(errorMessages, {
-        type: 'error',
-        title: 'Lütfen aşağıdaki alanları kontrol edin'
-      });
+      safeLog("Form is invalid; showing field-anchored errors only");
+      if (firstShareholderIssue && incompleteShareholderCount > 0) {
+        const firstRowIndex =
+          Number.parseInt(firstShareholderIssue.row.getAttribute("data-index") || "0", 10) || 0;
+        const summaryMsg = incompleteShareholderCount > 1
+          ? `${incompleteShareholderCount} hissedar formu eksik.`
+          : (firstRowIndex > 0 ? `${firstRowIndex}. hissedar formu eksik.` : "1 hissedar formu eksik.");
+        if (!errorMessages.includes(summaryMsg)) {
+          errorMessages.push(summaryMsg);
+        }
+      }
+      const shareholderFocused = focusShareholderIssue(firstShareholderIssue);
+      if (!shareholderFocused) {
+        if (incompleteShareholderCount > 0) {
+          focusShareholderSection(form);
+        }
+        focusFirstInvalidField(form);
+      }
+      announceStatus(
+        errorMessages.length ? errorMessages[0] : "Lütfen işaretlenen alanları kontrol edin.",
+        "assertive"
+      );
+    } else if (WDPApp.shareholder && typeof WDPApp.shareholder.setValidationArmed === "function") {
+      WDPApp.shareholder.setValidationArmed(form, false, 0);
     }
-    
+
     return isValid;
+  }
+
+  function focusFirstInvalidField(form) {
+    if (!form) {
+      return;
+    }
+    const firstBad = form.querySelector(".wdp-error");
+    if (!firstBad || typeof firstBad.focus !== "function") {
+      return;
+    }
+    window.requestAnimationFrame(() => {
+      try {
+        firstBad.focus({ preventScroll: false });
+      } catch (e1) {
+        try {
+          firstBad.focus();
+        } catch (e2) {
+          /* ignore */
+        }
+      }
+      const anchor =
+        firstBad.closest(".wdp-field-stack__row") ||
+        firstBad.closest(".wdp-shareholder-form") ||
+        firstBad.closest(".wdp-modal-content") ||
+        form;
+      if (anchor && typeof anchor.scrollIntoView === "function") {
+        anchor.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }
+    });
+  }
+
+  /**
+   * Sunucu validation_error yanıtındaki alan anahtarlarını (ör. donation_phone) satır içi hataya çevirir.
+   */
+  function applyAjaxValidationFieldErrors(form, data, fallbackMessage) {
+    const keys = data && Array.isArray(data.errors) ? data.errors : [];
+    if (!keys.length) {
+      return false;
+    }
+    let count = 0;
+    let firstShareholderRowIndex = 0;
+    const fb = typeof fallbackMessage === "string" && fallbackMessage.trim() ? fallbackMessage.trim() : "";
+
+    keys.forEach((key) => {
+      if (typeof key !== "string" || !/^[a-zA-Z][a-zA-Z0-9_]*$/.test(key)) {
+        return;
+      }
+      let el = null;
+      try {
+        if (typeof CSS !== "undefined" && CSS.escape) {
+          el = form.querySelector('[name="' + CSS.escape(key) + '"]');
+        }
+      } catch (eCss) {
+        el = null;
+      }
+      if (!el) {
+        el = form.querySelector('input[name="' + key + '"], textarea[name="' + key + '"]');
+      }
+      if (!el) {
+        return;
+      }
+
+      let msg = fb;
+      if (key === "donation_phone" || /^shareholder_phone_\d+$/.test(key)) {
+        el.classList.add("wdp-error");
+        if (!firstShareholderRowIndex) {
+          const m = /^shareholder_phone_(\d+)$/.exec(key);
+          firstShareholderRowIndex = m ? Number.parseInt(m[1], 10) || 0 : firstShareholderRowIndex;
+        }
+        count += 1;
+        return;
+      } else if (key === "donation_full_name") {
+        msg = getDonorNameRequiredMessage();
+      } else if (/^shareholder_name_\d+$/.test(key)) {
+        const m = /^shareholder_name_(\d+)$/.exec(key);
+        if (!firstShareholderRowIndex) {
+          firstShareholderRowIndex = m ? Number.parseInt(m[1], 10) || 0 : firstShareholderRowIndex;
+        }
+        msg = m ? m[1] + ". " + getShareholderNameRequiredMessage() : getShareholderNameRequiredMessage();
+      } else if (key === "custom_price") {
+        msg = "Lütfen bağış tutarını giriniz.";
+      } else {
+        msg = getRequiredFieldMessage(el) || fb || "Bu alan zorunludur.";
+      }
+
+      showInputError(el, msg);
+      count += 1;
+    });
+
+    if (WDPApp.shareholder && typeof WDPApp.shareholder.setValidationArmed === "function") {
+      WDPApp.shareholder.setValidationArmed(form, firstShareholderRowIndex > 0, firstShareholderRowIndex);
+    } else if (count > 0 && WDPApp.shareholder && typeof WDPApp.shareholder.refreshGuidance === "function") {
+      WDPApp.shareholder.refreshGuidance(form);
+    }
+    return count > 0;
   }
 
   function handleAjaxResponse(data, form, isCheckout, addToCartBtn, checkoutBtn) {
@@ -597,20 +1006,24 @@ ${createCartItemsHTML([])}
 
       const fallbackMessage = rawMessage || "İşlem şu anda tamamlanamadı. Lütfen tekrar deneyin.";
 
-      // Sadece kullanıcının düzeltebileceği doğrulama hatalarında popup göster.
-      // Teknik/sistem hatalarında gereksiz UX gürültüsünü önlemek için popup gösterme.
-      if (isValidationError && !isTechnicalNoiseError) {
-        showAlert([fallbackMessage], {
-          type: 'error',
-          title: 'İşlem tamamlanamadı'
-        });
-      }
+      const shouldTryFieldAnchors = isValidationError && !isTechnicalNoiseError;
+      const validationAnchored =
+        shouldTryFieldAnchors && applyAjaxValidationFieldErrors(form, data, fallbackMessage);
 
       const errorMsg = form.querySelector(".wdp-form-error");
       if (errorMsg) {
-        errorMsg.textContent = fallbackMessage;
-        errorMsg.style.display = "block";
-        errorMsg.setAttribute('data-wdp-protected', 'true');
+        if (shouldTryFieldAnchors && validationAnchored) {
+          errorMsg.textContent = "";
+          errorMsg.style.display = "none";
+        } else {
+          errorMsg.textContent = fallbackMessage;
+          errorMsg.style.display = "block";
+          errorMsg.setAttribute("data-wdp-protected", "true");
+        }
+      }
+
+      if (validationAnchored) {
+        focusFirstInvalidField(form);
       }
 
       if (addToCartBtn) {
@@ -776,11 +1189,16 @@ ${createCartItemsHTML([])}
     
     safeLog("Submitting form data...", isCheckout ? "Ödemeye Git" : "Sepete Ekle");
     clearAlerts();
+
+    if (WDPApp.phoneInput && typeof WDPApp.phoneInput.syncE164FieldsInForm === 'function') {
+      WDPApp.phoneInput.syncE164FieldsInForm(form);
+    }
     
     // CRITICAL: Hissedar formlarında quantity'yi shareCount'a göre güncelle (FormData oluşturulmadan önce)
     const shareCountInput = $form('input[name="share_count"]');
+    const effectiveShareCount = shareCountInput ? getEffectiveShareCount(form) : 1;
     if (shareCountInput) {
-      const shareCount = Number.parseInt(shareCountInput.value, 10) || 1;
+      const shareCount = effectiveShareCount;
       const quantityInput = $form('input[name="quantity"]');
       if (quantityInput && shareCount > 0) {
         // Quantity değerini hisse adedi ile güncelle - hissedar sayısına göre otomatik ayarla
@@ -794,7 +1212,7 @@ ${createCartItemsHTML([])}
 
     // CRITICAL: Hissedar formlarında fiyatı hisse sayısına göre güncelle
     if (shareCountInput) {
-      const shareCount = Number.parseInt(shareCountInput.value, 10) || 1;
+      const shareCount = effectiveShareCount;
       const priceInput = $form('input[name="custom_price"]');
       
       if (priceInput) {
@@ -1043,10 +1461,14 @@ ${createCartItemsHTML([])}
       return false;
     }
 
+    if (WDPApp.phoneInput && typeof WDPApp.phoneInput.syncE164FieldsInForm === 'function') {
+      WDPApp.phoneInput.syncE164FieldsInForm(form);
+    }
+
     // Hisse adedi varsa, quantity değerini kontrol et ve güncelle
     const shareCountInput = form.querySelector('input[name="share_count"]');
     if (shareCountInput) {
-      const shareCount = Number.parseInt(shareCountInput.value, 10) || 1;
+      const shareCount = getEffectiveShareCount(form);
       const quantityInput = form.querySelector('input[name="quantity"]');
 
       if (quantityInput && shareCount > 0) {
@@ -1147,6 +1569,10 @@ ${createCartItemsHTML([])}
       // Hangi butonun tıklandığını belirle
       const isCheckout = e.submitter && e.submitter.name === "donation_go_checkout";
       safeLog("Is checkout:", isCheckout);
+
+      // Rendered shareholder rows are source-of-truth; sync share_count before validation.
+      ensureShareholderRowsReady(form);
+      getEffectiveShareCount(form);
 
       // Form doğrulama
       if (!validateForm(form)) {
@@ -1436,6 +1862,10 @@ ${createCartItemsHTML([])}
       if (quantityRow) {
         quantityRow.style.display = "none";
       }
+    }
+
+    if (WDPApp.phoneInput && typeof WDPApp.phoneInput.setupInRoot === 'function') {
+      WDPApp.phoneInput.setupInRoot(form);
     }
   }
 

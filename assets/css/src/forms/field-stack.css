@@ -81,7 +81,32 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stac
   flex-shrink: 0;
 }
 
-html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__input,
+/* Phone row: no duplicate phone icon — flag/+code live in intl-tel-input only */
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__row--phone {
+  grid-template-columns: minmax(0, 1fr);
+  column-gap: 0;
+}
+
+/* Phone: intl-tel-input wrapper fills the row */
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__phone {
+  grid-column: 2;
+  grid-row: 1;
+  min-width: 0;
+  width: 100%;
+  display: block;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__row--phone .wdp-field-stack__phone {
+  grid-column: 1;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__phone .iti {
+  width: 100%;
+  display: block;
+}
+
+/* intl-tel-input adds horizontal padding + flag zone; never zero padding-inline on .iti__tel-input */
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__input:not(.iti__tel-input),
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__textarea {
   grid-column: 2;
   grid-row: 1;
@@ -115,15 +140,41 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stac
   align-self: start;
 }
 
-/* form.js doğrulama: .wdp-input-error satırın altına tam genişlikte */
+/* form.js doğrulama: satır içi, grid akışında — tooltip/absolute yerine sakin alt satır */
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__row .wdp-field-stack__phone ~ .wdp-input-error,
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__row .wdp-input-error {
+  position: static;
   grid-column: 1 / -1;
   grid-row: 2;
-  margin: 0;
-  padding: 4px 0 6px 0;
+  margin: 4px 0 8px 0;
+  padding: 6px 10px;
   font-size: 0.8125rem;
-  line-height: 1.35;
-  color: var(--wdp-error, #e53e3e);
+  line-height: 1.4;
+  font-weight: 600;
+  white-space: normal;
+  word-break: break-word;
+  max-width: 100%;
+  width: 100%;
+  box-sizing: border-box;
+  pointer-events: auto;
+  z-index: 1;
+  background: rgba(220, 38, 38, 0.08);
+  border: 1px solid rgba(220, 38, 38, 0.22);
+  border-radius: 8px;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.45) inset;
+  color: #b42318;
+}
+
+/* Phone invalid state must not add red row/input outlines */
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__row--phone:has(.wdp-field-stack__input.wdp-error) {
+  background: var(--wdp-field-stack-bg);
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__row--phone:has(.wdp-field-stack__input.wdp-error) .iti__tel-input,
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__row--phone .iti__tel-input:invalid {
+  box-shadow: none;
+  background: transparent;
+  border: none;
 }
 
 /* Hata: ayrı çerçeveli mini-kutu yok — yalnızca satır zemini + mesaj */
@@ -131,13 +182,13 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stac
   background: color-mix(in srgb, var(--wdp-error, #e53e3e) 4.5%, var(--wdp-field-stack-bg));
 }
 
-html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__input::placeholder,
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__input:not(.iti__tel-input)::placeholder,
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__textarea::placeholder {
   color: var(--wdp-field-stack-placeholder);
   opacity: 1;
 }
 
-html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__input:focus,
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__input:not(.iti__tel-input):focus,
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__textarea:focus {
   outline: none;
   border: none;
@@ -146,7 +197,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stac
 }
 
 /* Klavye odağı: içte yuvarlak kutu görünümü yok (tek panel hissi) */
-html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__input:focus-visible,
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__input:not(.iti__tel-input):focus-visible,
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__textarea:focus-visible {
   outline: none;
   border-radius: 0;
@@ -155,9 +206,9 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stac
 }
 
 /* WebKit autofill: iç kenarlık / sarı kutu yok */
-html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__input:-webkit-autofill,
-html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__input:-webkit-autofill:hover,
-html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__input:-webkit-autofill:focus {
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__input:not(.iti__tel-input):-webkit-autofill,
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__input:not(.iti__tel-input):-webkit-autofill:hover,
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__input:not(.iti__tel-input):-webkit-autofill:focus {
   -webkit-text-fill-color: var(--wdp-input-color, #1f2937);
   caret-color: var(--wdp-input-color, #1f2937);
   transition: background-color 99999s ease-out;
@@ -180,7 +231,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-content .wdp-fiel
     column-gap: 8px;
   }
 
-  html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__input,
+  html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__input:not(.iti__tel-input),
   html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__textarea {
     font-size: max(16px, var(--wdp-input-font-size, 16px));
   }

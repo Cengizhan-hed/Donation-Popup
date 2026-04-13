@@ -73,6 +73,25 @@ html body .wdp-input-error {
   pointer-events: none;
 }
 
+/* Field-stack rows render validation inline for stable popup/mobile layout. */
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__row .wdp-input-error,
+html body .wdp-field-stack__row .wdp-input-error {
+  position: static;
+  top: auto;
+  left: auto;
+  right: auto;
+  grid-column: 1 / -1;
+  grid-row: 2;
+  margin: 4px 0 8px 0;
+  padding: 6px 10px;
+  width: 100%;
+  max-width: 100%;
+  white-space: normal;
+  word-break: break-word;
+  border-radius: 8px;
+  pointer-events: auto;
+}
+
 /* Toast variant styles (konumlandırma ve temel görünüm toast.css tarafından yönetilir) */
 /* CRITICAL: Maximum specificity - html body ile tema override koruması */
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-toast.wdp-toast-success,

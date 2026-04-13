@@ -397,6 +397,7 @@ class WDP_Ajax {
             $donation_data['share_count'] = $share_count;
             $shareholders = array();
             $missing_fields = array();
+            $missing_field_keys = array();
 
             // SECURITY: Limit maximum share count to prevent abuse
             if ($share_count > 50) {
@@ -415,10 +416,12 @@ class WDP_Ajax {
 
                 if ('' === $name) {
                     $missing_fields[] = sprintf(__('%d. Hissedar Adı', 'woo-donation-popup'), $i);
+                    $missing_field_keys[] = 'shareholder_name_' . $i;
                 }
 
                 if ('' === $phone) {
                     $missing_fields[] = sprintf(__('%d. Hissedar Telefonu', 'woo-donation-popup'), $i);
+                    $missing_field_keys[] = 'shareholder_phone_' . $i;
                 }
 
                 $shareholder = array();
@@ -443,7 +446,7 @@ class WDP_Ajax {
             if (!empty($missing_fields)) {
                 throw new WDP_Validation_Exception(
                     __('Lütfen tüm zorunlu alanları doldurun: ', 'woo-donation-popup') . implode(', ', $missing_fields),
-                    $missing_fields
+                    $missing_field_keys
                 );
             }
 

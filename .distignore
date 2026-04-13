@@ -1,0 +1,20 @@
+# Files and directories excluded from distribution ZIPs (see scripts/package-wp-plugin.sh).
+# Also reference for manual packaging — do NOT ship node_modules or VCS metadata.
+
+node_modules/
+.git/
+.cursor/
+.vscode/
+.github/
+.gitignore
+.distignore
+.DS_Store
+*.zip
+*.tar.gz
+*.log
+.env
+.env.*
+package.json
+package-lock.json
+yarn.lock
+pnpm-lock.yaml

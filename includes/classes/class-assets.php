@@ -426,13 +426,18 @@ class WDP_Assets {
      * @return void
      */
     private static function register_frontend_assets($plugin_url, $css_version, $js_module_version, $dependencies) {
+        $intl_tel_version = '18.5.3';
+        wp_register_script('wdp-intl-tel-utils-js', $plugin_url . 'assets/vendor/intl-tel-input/js/utils.js', array(), $intl_tel_version, true);
+        wp_register_script('wdp-intl-tel-input-js', $plugin_url . 'assets/vendor/intl-tel-input/js/intlTelInput.min.js', array('wdp-intl-tel-utils-js'), $intl_tel_version, true);
+
         wp_register_script('wdp-utils-js', $plugin_url . 'assets/js/src/utils.js', $dependencies, $js_module_version, true);
+        wp_register_script('wdp-phone-input-js', $plugin_url . 'assets/js/src/phone-input.js', array('wdp-intl-tel-input-js', 'wdp-utils-js'), $js_module_version, true);
         wp_register_script('wdp-state-js', $plugin_url . 'assets/js/src/state.js', array('wdp-utils-js'), $js_module_version, true);
         wp_register_script('wdp-dom-js', $plugin_url . 'assets/js/src/dom.js', array('wdp-state-js'), $js_module_version, true);
         wp_register_script('wdp-alerts-js', $plugin_url . 'assets/js/src/alerts.js', array('wdp-utils-js'), $js_module_version, true);
         wp_register_script('wdp-product-js', $plugin_url . 'assets/js/src/product.js', array('wdp-utils-js', 'wdp-state-js'), $js_module_version, true);
         wp_register_script('wdp-cart-js', $plugin_url . 'assets/js/src/cart.js', array('wdp-utils-js', 'wdp-state-js'), $js_module_version, true);
-        wp_register_script('wdp-form-js', $plugin_url . 'assets/js/src/form.js', array('wdp-utils-js', 'wdp-state-js', 'wdp-alerts-js', 'wdp-cart-js'), $js_module_version, true);
+        wp_register_script('wdp-form-js', $plugin_url . 'assets/js/src/form.js', array('wdp-utils-js', 'wdp-state-js', 'wdp-alerts-js', 'wdp-cart-js', 'wdp-phone-input-js'), $js_module_version, true);
         wp_register_script('wdp-shareholder-js', $plugin_url . 'assets/js/src/shareholder.js', array('wdp-utils-js', 'wdp-state-js', 'wdp-dom-js', 'wdp-product-js', 'wdp-form-js'), $js_module_version, true);
         wp_register_script('wdp-progress-bar-js', $plugin_url . 'assets/js/src/progress-bar.js', array('wdp-utils-js'), $js_module_version, true);
         wp_register_script('wdp-modal-js', $plugin_url . 'assets/js/src/modal.js', array('wdp-utils-js', 'wdp-state-js', 'wdp-form-js', 'wdp-shareholder-js'), $js_module_version, true);
@@ -442,6 +447,14 @@ class WDP_Assets {
         wp_register_script('wdp-constants-js', $plugin_url . 'assets/js/src/constants.js', array(), $js_module_version, true);
         wp_register_script('wdp-init-js', $plugin_url . 'assets/js/src/init.js', array('wdp-utils-js', 'wdp-state-js', 'wdp-dom-js', 'wdp-modal-js', 'wdp-form-js', 'wdp-shareholder-js', 'wdp-cart-js', 'wdp-progress-bar-js', 'wdp-form-initializer-js', 'wdp-event-manager-js', 'wdp-module-loader-js', 'wdp-constants-js'), $js_module_version, true);
         self::register_frontend_style_stack($plugin_url, $css_version);
+
+        wp_register_style('wdp-intl-tel-input-base', $plugin_url . 'assets/vendor/intl-tel-input/css/intlTelInput.css', array(), $intl_tel_version);
+        wp_register_style(
+            'wdp-intl-tel-input-wdp',
+            $plugin_url . 'assets/css/src/components/intl-tel-input-wdp.css',
+            array('wdp-intl-tel-input-base', self::FRONTEND_CSS_HANDLE),
+            $css_version
+        );
     }
 
     /**
@@ -559,6 +572,17 @@ class WDP_Assets {
                 'min_price_error' => __('Minimum fiyat: ', 'woo-donation-popup'),
                 'max_shares_error' => __('Maksimum hisse sayısı: ', 'woo-donation-popup'),
                 'custom_price_placeholder_empty' => __('Bağış tutarı *', 'woo-donation-popup'),
+                'phone_invalid' => __('Geçerli bir telefon numarası giriniz.', 'woo-donation-popup'),
+                'phone_required' => __('Telefon numarası eksik.', 'woo-donation-popup'),
+                'phone_incomplete' => __('Telefon numarasını eksiksiz giriniz.', 'woo-donation-popup'),
+                'donor_name_required' => __('Ad Soyad zorunludur.', 'woo-donation-popup'),
+                'shareholder_name_required' => __('Hissedar adı zorunludur.', 'woo-donation-popup'),
+                'phone_search_placeholder' => __('Ara', 'woo-donation-popup'),
+            ),
+            'phone' => array(
+                'default_country' => apply_filters('wdp_phone_default_country', 'tr'),
+                'preferred_countries' => apply_filters('wdp_phone_preferred_countries', array('tr', 'de', 'us', 'gb')),
+                'utils_url' => $plugin_url . 'assets/vendor/intl-tel-input/js/utils.js',
             ),
             'button_texts' => self::get_button_texts(),
             'shareholder_texts' => self::get_shareholder_texts(),
@@ -620,6 +644,17 @@ class WDP_Assets {
                 }
             }
 
+            $wdp_extra_css = array(
+                'assets/css/src/components/intl-tel-input-wdp.css',
+                'assets/vendor/intl-tel-input/css/intlTelInput.css',
+            );
+            foreach ($wdp_extra_css as $extra_rel) {
+                $extra_abs = $plugin_dir . $extra_rel;
+                if (file_exists($extra_abs)) {
+                    $max_mtime = max($max_mtime, filemtime($extra_abs));
+                }
+            }
+
             if ($max_mtime > 0) {
                 $css_version = $max_mtime;
             } else {
@@ -656,6 +691,20 @@ class WDP_Assets {
                         if ($file_mtime > $js_module_version) {
                             $js_module_version = $file_mtime;
                         }
+                    }
+                }
+            }
+
+            $wdp_extra_js = array(
+                'assets/vendor/intl-tel-input/js/intlTelInput.min.js',
+                'assets/vendor/intl-tel-input/js/utils.js',
+            );
+            foreach ($wdp_extra_js as $extra_js) {
+                $extra_js_abs = $plugin_dir . $extra_js;
+                if (file_exists($extra_js_abs)) {
+                    $jm = filemtime($extra_js_abs);
+                    if ($jm > $js_module_version) {
+                        $js_module_version = $jm;
                     }
                 }
             }
@@ -714,6 +763,9 @@ class WDP_Assets {
         // Style'ı enqueue et
         if (!wp_style_is('wdp-donation-modal-css', 'enqueued')) {
             wp_enqueue_style('wdp-donation-modal-css');
+        }
+        if (wp_style_is('wdp-intl-tel-input-wdp', 'registered') && !wp_style_is('wdp-intl-tel-input-wdp', 'enqueued')) {
+            wp_enqueue_style('wdp-intl-tel-input-wdp');
         }
         
         // Inline style ekle
@@ -788,6 +840,7 @@ class WDP_Assets {
             'shareholder_density'          => 'normal',
             'shareholder_enable_email'     => '0',
             'shareholder_email_placeholder'=> 'E-posta (isteğe bağlı)',
+            'shareholder_progress_status_label' => 'Hissedar Form Durumu',
         );
 
         $settings = wp_parse_args($settings, $defaults);
@@ -803,6 +856,7 @@ class WDP_Assets {
             'density'           => self::sanitize_choice($settings['shareholder_density'], array('compact', 'normal', 'spacious'), 'normal'),
             'enable_email'      => !empty($settings['shareholder_enable_email']) && $settings['shareholder_enable_email'] !== '0',
             'email_placeholder' => self::sanitize_plain_text($settings['shareholder_email_placeholder'], $defaults['shareholder_email_placeholder']),
+            'progress_status_label' => self::sanitize_plain_text($settings['shareholder_progress_status_label'], $defaults['shareholder_progress_status_label']),
         );
     }
 

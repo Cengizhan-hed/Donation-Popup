@@ -111,15 +111,49 @@
 
         e.preventDefault();
         e.stopPropagation();
+        const submitter = e.submitter || null;
+
+        function retrySubmitAfterSetup() {
+          // Avoid accidental loops; only retry once per missing-handler submit.
+          if (formElement.dataset && formElement.dataset.wdpRetryingSubmit === "1") {
+            return;
+          }
+          if (!formElement._wdpSubmitHandler) {
+            return;
+          }
+          if (formElement.dataset) {
+            formElement.dataset.wdpRetryingSubmit = "1";
+          }
+          requestAnimationFrame(function() {
+            try {
+              if (typeof formElement.requestSubmit === "function") {
+                if (submitter && submitter.form === formElement) {
+                  formElement.requestSubmit(submitter);
+                } else {
+                  formElement.requestSubmit();
+                }
+              } else {
+                // Legacy fallback
+                formElement.submit();
+              }
+            } finally {
+              if (formElement.dataset) {
+                delete formElement.dataset.wdpRetryingSubmit;
+              }
+            }
+          });
+        }
 
         const currentForm = getModule('form');
         if (currentForm && typeof currentForm.setup === 'function') {
           currentForm.setup(formElement);
+          retrySubmitAfterSetup();
         } else {
           requestAnimationFrame(function() {
             const retryForm = getModule('form');
             if (retryForm && typeof retryForm.setup === 'function') {
               retryForm.setup(formElement);
+              retrySubmitAfterSetup();
             }
           });
         }

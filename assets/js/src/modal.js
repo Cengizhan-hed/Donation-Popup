@@ -301,6 +301,15 @@
       if (e.target.closest('.wdp-alert-overlay')) {
         return;
       }
+
+      // Custom phone country panel + legacy iti portal (if any).
+      if (
+        e.target.closest('.wdp-phone-country-panel') ||
+        e.target.closest('.iti--container') ||
+        e.target.closest('.wdp-iti-dropdown-root')
+      ) {
+        return;
+      }
       
       const modalContent = modal.querySelector(".wdp-modal-content")
       if (

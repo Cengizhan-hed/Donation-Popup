@@ -23,18 +23,17 @@ yarn-error.log
 package-lock.json
 yarn.lock
 
-# Build files (if needed in future)
+# Build output (generate locally or in release CI; do not commit)
 dist/
 build/
-!assets/css/build/
-!assets/css/build/manifest.json
-!assets/css/build/donation-modal.*.css
+assets/css/build/
 
 # Compiled/minified files (should not be committed)
 assets/css/donation-modal.css
 assets/js/donation-modal.js
 *.min.css
 *.min.js
+!assets/vendor/**/*.min.js
 
 # OS Files
 .DS_Store
@@ -56,6 +55,9 @@ wp-content/backups/
 *.backup
 *.bak
 *.old
+*.zip
+*.tar.gz
+release/
 
 # Development
 .env
@@ -70,4 +72,7 @@ coverage/
 
 # Documentation build
 /docs/build/
+
+# Local release ZIP output (npm run pack)
+build/
 

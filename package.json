@@ -1,0 +1,15 @@
+{
+  "name": "donation-popup",
+  "version": "1.0.0",
+  "description": "WooCommerce donation popup — WordPress plugin (runtime assets live in assets/vendor; do not npm install intl-tel-input here).",
+  "private": true,
+  "scripts": {
+    "pack": "sh scripts/package-wp-plugin.sh"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Hedefdev/Donation-Popup.git"
+  },
+  "license": "ISC",
+  "type": "commonjs"
+}

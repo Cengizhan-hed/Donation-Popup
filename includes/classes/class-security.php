@@ -51,9 +51,9 @@ class WDP_Security {
         $phone = preg_replace('/[^0-9+\s\-()]/', '', $phone);
         $phone = sanitize_text_field($phone);
         
-        // Limit length
-        if (strlen($phone) > 20) {
-            $phone = substr($phone, 0, 20);
+        // E.164 / formatted international numbers (libphonenumber-safe headroom)
+        if (strlen($phone) > 28) {
+            $phone = substr($phone, 0, 28);
         }
 
         return trim($phone);

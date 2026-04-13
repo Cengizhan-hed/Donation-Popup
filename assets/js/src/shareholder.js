@@ -32,13 +32,19 @@
   const { productPrices, shareholdersResizeBound } = state;
   const { getData: getProductInfoData } = product;
 
+  function setupWdpPhoneFields(root) {
+    const phone = WDPApp.phoneInput;
+    if (root && phone && typeof phone.setupInRoot === 'function') {
+      phone.setupInRoot(root);
+    }
+  }
+
   // Shareholder metinlerini PHP'den al (wdp_ajax üzerinden)
   const wdpAjax = window.wdp_ajax || {};
   const shareholderTexts = (wdpAjax && wdpAjax.shareholder_texts) || {};
 
   /* Field stack icons — same paths as PHP WDP_Templates (filled, matched weight) */
   const FS_ICON_USER = '<svg class="wdp-field-stack__svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v1c0 .55.45 1 1 1h14c.55 0 1-.45 1-1v-1c0-2.66-5.33-4-8-4z"/></svg>';
-  const FS_ICON_PHONE = '<svg class="wdp-field-stack__svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>';
   const FS_ICON_NOTE = '<svg class="wdp-field-stack__svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>';
   const FS_ICON_EMAIL = '<svg class="wdp-field-stack__svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>';
   const enableCopyButton = (typeof shareholderTexts.enable_copy_button === 'boolean')
@@ -329,83 +335,20 @@
     }
     
     // Badge'i her zaman güncelle (hisse adedi 1'e düştüğünde de temizlemek için)
-    updateCollapsedFormsCount(modal, shareholdersList);
+    updateCollapsedFormsCount(modal);
   }
 
-  // Helper: Update collapsed forms count badge
-  function updateCollapsedFormsCount(modal, scrollElement) {
+  /** Kapalı form sayacı / mavi bilgi bandı kaldırıldı — üst özet tek satırda. */
+  function updateCollapsedFormsCount(modal) {
     if (!modal) return;
-    
-    // Modal'dan sharesSection'u bul (scrollElement olmasa bile)
     const sharesSection = modal.querySelector('.wdp-shares-section');
     if (!sharesSection) return;
-    
     const header = sharesSection.querySelector('.wdp-shares-header');
     if (!header) return;
-    
-    // Form sayısını kontrol et (scrollElement varsa ondan, yoksa modal'dan)
-    const allForms = scrollElement 
-      ? scrollElement.querySelectorAll('.wdp-shareholder-form')
-      : modal.querySelectorAll('.wdp-shareholder-form');
-    const totalForms = allForms.length;
-    
-    // Sadece 1 form varsa badge'i tamamen gizle veya kaldır
-    if (totalForms <= 1) {
-      header.classList.remove('has-badge');
-      const countBadge = header.querySelector('.wdp-collapsed-count');
-      if (countBadge) {
-        countBadge.textContent = '';
-        countBadge.style.display = 'none'; // CRITICAL: Badge'i tamamen gizle
-      }
-      return;
-    }
-    
-    // Kapalı form sayısını hesapla
-    const collapsedForms = scrollElement
-      ? scrollElement.querySelectorAll('.wdp-shareholder-form.collapsed')
-      : modal.querySelectorAll('.wdp-shareholder-form.collapsed');
-    const collapsedCount = collapsedForms.length;
-    
-    let countBadge = header.querySelector('.wdp-collapsed-count');
-    
-    if (collapsedCount > 0) {
-      if (!countBadge) {
-        countBadge = document.createElement('span');
-        countBadge.className = 'wdp-collapsed-count';
-        header.appendChild(countBadge);
-      }
-      // CRITICAL: Badge'i göster
-      countBadge.style.display = 'inline-block';
-      
-      // Window resize event listener ekle (sadece bir kez)
-      if (!countBadge.dataset.resizeListenerAdded) {
-        countBadge.dataset.resizeListenerAdded = 'true';
-        let resizeTimeout;
-        const handleResize = () => {
-          clearTimeout(resizeTimeout);
-          resizeTimeout = setTimeout(() => {
-            updateCollapsedFormsCount(modal, scrollElement);
-          }, 150);
-        };
-        window.addEventListener('resize', handleResize, { passive: true });
-      }
-      
-      // Mobilde kısaltılmış metin
-      const isMobile = window.innerWidth <= 600;
-      if (isMobile) {
-        countBadge.textContent = `${collapsedCount} form • ⬇`;
-      } else {
-        countBadge.textContent = `${collapsedCount} kapalı form var • Aşağı kaydırın`;
-      }
-      // Header'a badge class'ı ekle
-      header.classList.add('has-badge');
-    } else {
-      // Badge yoksa header'dan class'ı kaldır
-      header.classList.remove('has-badge');
-      if (countBadge) {
-        countBadge.textContent = '';
-        countBadge.style.display = 'none'; // CRITICAL: Badge'i tamamen gizle
-      }
+    header.classList.remove('has-badge');
+    const countBadge = header.querySelector('.wdp-collapsed-count');
+    if (countBadge) {
+      countBadge.remove();
     }
   }
 
@@ -413,6 +356,173 @@
     const div = document.createElement('div');
     div.textContent = String(str == null ? '' : str);
     return div.innerHTML;
+  }
+
+  function getShareholderForms(root) {
+    if (!root) return [];
+    return Array.from(root.querySelectorAll('.wdp-shareholder-form'));
+  }
+
+  function getRowRequiredState(form) {
+    if (!form) {
+      return { complete: true, missing: [] };
+    }
+    const nameInput = form.querySelector('input[name^="shareholder_name_"]');
+    const phoneInput = form.querySelector('input[name^="shareholder_phone_"]');
+    const missing = [];
+    if (!nameInput || !nameInput.value.trim()) {
+      missing.push('Ad Soyad');
+    }
+    if (!phoneInput || !phoneInput.value.trim()) {
+      missing.push('Telefon');
+    }
+    return {
+      complete: missing.length === 0,
+      missing: missing,
+    };
+  }
+
+  function stripShareholderRowStatusUI(form) {
+    if (!form) return;
+    form.querySelectorAll('.wdp-shareholder-status, .wdp-shareholder-status-note').forEach(function (el) {
+      el.remove();
+    });
+  }
+
+  function ensureShareholderOverview(root) {
+    if (!root) return null;
+    const sharesHeader = root.querySelector('.wdp-shares-header');
+    if (!sharesHeader) return null;
+    let overview = sharesHeader.querySelector('.wdp-shareholder-overview');
+    if (!overview) {
+      overview = document.createElement('div');
+      overview.className = 'wdp-shareholder-overview';
+      sharesHeader.appendChild(overview);
+    }
+    if (!overview.querySelector('.wdp-shareholder-micro__heading')) {
+      overview.innerHTML =
+        '<div class="wdp-shareholder-micro" role="status" aria-live="polite">' +
+        '<span class="wdp-shareholder-micro__heading"></span>' +
+        '<div class="wdp-shareholder-micro__row">' +
+        '<div class="wdp-shareholder-micro__track" role="progressbar" aria-valuemin="0">' +
+        '<div class="wdp-shareholder-micro__fill"></div>' +
+        '</div>' +
+        '<span class="wdp-shareholder-micro__label"></span>' +
+        '</div>' +
+        '</div>';
+    }
+    return overview;
+  }
+
+  function isShareValidationArmed(root) {
+    return !!(root && root.dataset && root.dataset.wdpShareValidationArmed === '1');
+  }
+
+  function setShareValidationArmed(root, armed, targetIndex) {
+    if (!root || !root.dataset) return;
+    root.dataset.wdpShareValidationArmed = armed ? '1' : '0';
+    if (armed && Number.isFinite(Number(targetIndex)) && Number(targetIndex) > 0) {
+      root.dataset.wdpShareValidationTarget = String(Number(targetIndex));
+    } else {
+      delete root.dataset.wdpShareValidationTarget;
+    }
+    refreshShareholderGuidance(root);
+  }
+
+  function refreshShareholderGuidance(root) {
+    if (!root) return;
+    const forms = getShareholderForms(root);
+    if (!forms.length) return;
+    const armed = isShareValidationArmed(root);
+    const targetIndex = Number.parseInt((root.dataset && root.dataset.wdpShareValidationTarget) || '0', 10) || 0;
+
+    let incompleteCount = 0;
+    let completeCount = 0;
+    const total = forms.length;
+
+    forms.forEach(function (form) {
+      stripShareholderRowStatusUI(form);
+      const state = getRowRequiredState(form);
+      const formIndex = Number.parseInt(form.getAttribute('data-index') || '0', 10) || 0;
+      form.classList.remove('is-complete', 'is-incomplete', 'is-incomplete-pending', 'is-targeted-incomplete');
+      if (state.complete) {
+        completeCount += 1;
+      } else {
+        incompleteCount += 1;
+      }
+      if (armed && !state.complete && targetIndex > 0 && formIndex === targetIndex) {
+        form.classList.add('is-targeted-incomplete');
+      }
+    });
+
+    const overview = ensureShareholderOverview(root);
+    if (overview) {
+      const shouldShow = incompleteCount > 0;
+      const heading = overview.querySelector('.wdp-shareholder-micro__heading');
+      const track = overview.querySelector('.wdp-shareholder-micro__track');
+      const fill = overview.querySelector('.wdp-shareholder-micro__fill');
+      const label = overview.querySelector('.wdp-shareholder-micro__label');
+      const pct = total > 0 ? (completeCount / total) * 100 : 0;
+      if (heading) {
+        heading.textContent =
+          (shareholderTexts.progress_status_label && String(shareholderTexts.progress_status_label).trim()) ||
+          'Hissedar Form Durumu';
+      }
+      if (fill) {
+        fill.style.width = pct + '%';
+      }
+      if (label) {
+        label.textContent =
+          incompleteCount === 1
+            ? '1 eksik'
+            : completeCount + '/' + total + ' tamamlandı';
+      }
+      if (track) {
+        track.setAttribute('aria-valuenow', String(completeCount));
+        track.setAttribute('aria-valuemax', String(total));
+        track.setAttribute(
+          'aria-label',
+          completeCount + ' of ' + total + ' complete, ' + incompleteCount + ' remaining'
+        );
+      }
+      if (shouldShow) {
+        overview.classList.add('wdp-shareholder-overview--active');
+        overview.setAttribute('aria-hidden', 'false');
+      } else {
+        overview.classList.remove('wdp-shareholder-overview--active');
+        overview.setAttribute('aria-hidden', 'true');
+      }
+    }
+
+    forms.forEach(function (form) {
+      checkShareholderFormWarning(form);
+    });
+  }
+
+  function attachGuidanceListeners(form) {
+    if (!form || form.dataset.wdpGuidanceBound === '1') {
+      return;
+    }
+    const refresh = (e) => {
+      const root = form.closest('.wdp-modal') || form.closest('.wdp-donation-form') || form.closest('form');
+      if (root) {
+        root.dataset.wdpShareValidationArmed = '0';
+        delete root.dataset.wdpShareValidationTarget;
+        if (e && e.target && e.target.classList && e.target.classList.contains('wdp-error')) {
+          e.target.classList.remove('wdp-error');
+        }
+        refreshShareholderGuidance(root);
+      }
+    };
+    const nameInput = form.querySelector('input[name^="shareholder_name_"]');
+    const phoneInput = form.querySelector('input[name^="shareholder_phone_"]');
+    if (nameInput) {
+      nameInput.addEventListener('input', refresh);
+    }
+    if (phoneInput) {
+      phoneInput.addEventListener('input', refresh);
+    }
+    form.dataset.wdpGuidanceBound = '1';
   }
 
   function syncShareholderUnitPrices(modal, unitNumeric) {
@@ -502,7 +612,6 @@
           <h3>${index}. ${headerText}</h3>
           <span class="wdp-shareholder-unit-price wdp-unit-price-badge" aria-hidden="true"></span>
         </div>
-        <span class="wdp-shareholder-warning"></span>
         <span class="wdp-shareholder-icon"></span>
       </div>
       <div class="wdp-shareholder-content ${layoutMode === 'two-column' ? 'wdp-shareholder-layout-two-column' : 'wdp-shareholder-layout-single'}" ${!isFirst ? 'style="display: none;"' : ''}>
@@ -511,14 +620,15 @@
             <span class="wdp-field-stack__icon" aria-hidden="true">${FS_ICON_USER}</span>
             <input type="text" class="wdp-field-stack__input" name="shareholder_name_${index}" placeholder="${namePlaceholder}" autocomplete="name" required />
           </div>
-          <div class="wdp-field-stack__row">
-            <span class="wdp-field-stack__icon" aria-hidden="true">${FS_ICON_PHONE}</span>
-            <input type="tel" class="wdp-field-stack__input" name="shareholder_phone_${index}" placeholder="${phonePlaceholder}" autocomplete="tel" required inputmode="tel" />
+          <div class="wdp-field-stack__row wdp-field-stack__row--phone">
+            <div class="wdp-field-stack__phone">
+              <input type="tel" class="wdp-field-stack__input" name="shareholder_phone_${index}" placeholder="${phonePlaceholder}" autocomplete="tel" required inputmode="tel" />
+            </div>
           </div>
           ${emailRowHtml}
           <div class="wdp-field-stack__row wdp-field-stack__row--textarea">
             <span class="wdp-field-stack__icon" aria-hidden="true">${FS_ICON_NOTE}</span>
-            <textarea class="wdp-field-stack__textarea" name="shareholder_note_${index}" rows="2" placeholder="${notePlaceholder}"></textarea>
+            <textarea class="wdp-field-stack__textarea" name="shareholder_note_${index}" rows="1" placeholder="${notePlaceholder}"></textarea>
           </div>
         </div>
         ${copyButtonHtml}
@@ -544,6 +654,9 @@
       phoneInput.removeAttribute('readonly');
       phoneInput.removeAttribute('disabled');
     }
+
+    attachGuidanceListeners(form);
+    refreshShareholderGuidance(form.closest('.wdp-modal') || form.closest('.wdp-donation-form') || form);
 
     return form;
   }
@@ -593,8 +706,8 @@
     
     // Badge'i güncelle
     const modal = form.closest('.wdp-modal') || form.closest('.wdp-donation-form');
-    if (modal && shareholdersList) {
-      updateCollapsedFormsCount(modal, shareholdersList);
+    if (modal) {
+      updateCollapsedFormsCount(modal);
     }
     
     // Kapalı form uyarısını kontrol et
@@ -609,64 +722,22 @@
         }
       });
     }
+    const root = form.closest('.wdp-modal') || form.closest('.wdp-donation-form');
+    if (root) {
+      refreshShareholderGuidance(root);
+    }
   }
   
-  // Kapalı formlarda zorunlu alan kontrolü ve uyarı gösterimi
+  /** Satır içi uyarı rozeti kaldırıldı; eski DOM kalıntılarını temizler. */
   function checkShareholderFormWarning(form) {
     if (!form) return;
-    
-    const header = form.querySelector('.wdp-shareholder-header');
-    if (!header) return;
-    
-    let warningBadge = header.querySelector('.wdp-shareholder-warning');
-    if (!warningBadge) {
-      // Eğer badge yoksa oluştur
-      warningBadge = document.createElement('span');
-      warningBadge.className = 'wdp-shareholder-warning';
-      const icon = header.querySelector('.wdp-shareholder-icon');
-      if (icon && icon.parentNode) {
-        icon.parentNode.insertBefore(warningBadge, icon);
-      }
-    }
-    
-    const isCollapsed = form.classList.contains('collapsed');
-    
-    // Sadece kapalı formlarda kontrol et
-    if (!isCollapsed) {
-      warningBadge.classList.remove('show');
-      warningBadge.textContent = '';
-      warningBadge.removeAttribute('title');
-      warningBadge.removeAttribute('aria-label');
-      return;
-    }
-    
-    // Zorunlu alanları kontrol et
-    const nameInput = form.querySelector('input[name^="shareholder_name_"]');
-    const phoneInput = form.querySelector('input[name^="shareholder_phone_"]');
-    
-    const nameEmpty = !nameInput || !nameInput.value.trim();
-    const phoneEmpty = !phoneInput || !phoneInput.value.trim();
-    
-    // Eğer zorunlu alanlar doldurulmamışsa uyarı göster
-    if (nameEmpty || phoneEmpty) {
-      const missingFields = [];
-      if (nameEmpty) missingFields.push('Ad Soyad');
-      if (phoneEmpty) missingFields.push('Telefon');
-      
-      const warningText = missingFields.join(', ') + ' gerekli';
-      
-      warningBadge.classList.add('show');
-      warningBadge.setAttribute('title', warningText);
-      warningBadge.setAttribute('aria-label', warningText);
-      
-      // Masaüstünde kompakt metin badge göster (CSS media query mobilde sadece ikon gösterir)
-      warningBadge.textContent = warningText;
-    } else {
-      warningBadge.classList.remove('show');
-      warningBadge.textContent = '';
-      warningBadge.removeAttribute('title');
-      warningBadge.removeAttribute('aria-label');
-    }
+    const warningBadge = form.querySelector('.wdp-shareholder-warning');
+    if (!warningBadge) return;
+    warningBadge.classList.remove('show');
+    warningBadge.textContent = '';
+    warningBadge.removeAttribute('title');
+    warningBadge.removeAttribute('aria-label');
+    warningBadge.remove();
   }
   
   // Tüm kapalı formları kontrol et
@@ -681,6 +752,7 @@
     collapsedForms.forEach(form => {
       checkShareholderFormWarning(form);
     });
+    refreshShareholderGuidance(modal);
   }
 
   // Setup shareholder header click handler
@@ -726,6 +798,10 @@
       newCopyBtn.style.display = isReady ? 'inline-flex' : 'none';
       newCopyBtn.style.opacity = isReady ? '1' : '0';
       newCopyBtn.style.pointerEvents = isReady ? 'auto' : 'none';
+      const root = form.closest('.wdp-modal') || form.closest('.wdp-donation-form');
+      if (root) {
+        refreshShareholderGuidance(root);
+      }
     };
 
     // Event listener'ları ekle
@@ -742,7 +818,9 @@
       
       // Mevcut form verilerini al
       const nameValue = nameInput.value.trim();
-      const phoneValue = phoneInput.value.trim();
+      const phoneValue = WDPApp.phoneInput && typeof WDPApp.phoneInput.getValueForCopy === 'function'
+        ? WDPApp.phoneInput.getValueForCopy(phoneInput)
+        : phoneInput.value.trim();
       const noteEl = getShareholderNoteTextarea(form);
       const noteValue = noteEl ? noteEl.value.trim() : '';
       
@@ -782,8 +860,6 @@
     const newNoteTextarea = getShareholderNoteTextarea(newForm);
     
     if (newNameInput) newNameInput.value = nameValue;
-    if (newPhoneInput) newPhoneInput.value = phoneValue;
-    if (newNoteTextarea) newNoteTextarea.value = noteValue;
 
     // Yeni formu listeye ekle
     list.appendChild(newForm);
@@ -796,6 +872,12 @@
       newCopyBtn.disabled = false;
       newCopyBtn.classList.add('is-active');
     }
+
+    setupWdpPhoneFields(newForm);
+    if (newPhoneInput && phoneValue && WDPApp.phoneInput && typeof WDPApp.phoneInput.applyPastedNumber === 'function') {
+      WDPApp.phoneInput.applyPastedNumber(newPhoneInput, phoneValue);
+    }
+    if (newNoteTextarea) newNoteTextarea.value = noteValue;
 
     // CRITICAL: Context root'u bir kez al (gereksiz tekrarı önle)
     const contextRoot = container.closest('.wdp-modal') || container.closest('.wdp-donation-form');
@@ -950,7 +1032,7 @@
     
     // Badge'i güncelle
     if (contextRoot && list) {
-      updateCollapsedFormsCount(contextRoot, list);
+      updateCollapsedFormsCount(contextRoot);
     }
     
     // CRITICAL: Son bir kez daha kontrol et ve garanti et
@@ -976,6 +1058,9 @@
       // Yeni formu görünür alana scroll et
       newForm.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       safeLog(`Hissedar formu kopyalandı: ${newIndex}. Hissedar (açık olarak), ${currentCount}. Hissedar (kapalı)`);
+      if (contextRoot) {
+        refreshShareholderGuidance(contextRoot);
+      }
     });
   }
 
@@ -1063,6 +1148,8 @@
         setupShareholderHeaderClick(newForm);
         checkShareholderFormWarning(newForm);
       }
+
+      setupWdpPhoneFields(shareholdersList);
       
       // Eğer önceki formlar doluysa, mevcut açık formları kapat
       if (allPreviousFormsFilled) {
@@ -1082,6 +1169,9 @@
         if (lastForm && lastForm.parentNode) {
           lastForm.parentNode.removeChild(lastForm);
         }
+      }
+      if (WDPApp.phoneInput && typeof WDPApp.phoneInput.refreshInRoot === 'function') {
+        WDPApp.phoneInput.refreshInRoot(shareholdersList);
       }
     }
     
@@ -1238,6 +1328,7 @@
     if (typeof updatePriceBasedOnShareCount === 'function') {
       updatePriceBasedOnShareCount();
     }
+    refreshShareholderGuidance(modal);
   }
 
   // Setup share quantity buttons
@@ -1674,6 +1765,8 @@
       // İlk form için uyarı kontrolü (kapalı değilse uyarı göstermez)
       checkShareholderFormWarning(firstForm);
 
+      setupWdpPhoneFields(shareholdersList);
+
       syncShareholderUnitPricesFromModal(modal);
       
       // ABSOLUTE FIX: Modal ilk açıldığında shareholders-area'nın height'ını kaydet
@@ -1691,6 +1784,7 @@
       
       // Scrollable class'ını güncelle
       updateShareholdersScrollable(modal);
+      refreshShareholderGuidance(modal);
 
       // Fiyat alanını bul
       const priceInput = modal.querySelector('input[name="custom_price"]');
@@ -1730,7 +1824,8 @@
 
             setupShareQuantityButtons(modal, modal.querySelector('input[name="share_count"]'), baseProductPrice, priceInput);
             syncShareholderUnitPricesFromModal(modal);
-            
+            setupWdpPhoneFields(modal);
+            refreshShareholderGuidance(modal);
             return;
           }
         } catch (e) {
@@ -1770,11 +1865,16 @@
 
             setupShareQuantityButtons(modal, modal.querySelector('input[name="share_count"]'), baseProductPrice, priceInput);
             syncShareholderUnitPricesFromModal(modal);
+            setupWdpPhoneFields(modal);
+            refreshShareholderGuidance(modal);
           })
           .catch((error) => {
             safeLog("Error fetching product price:", error);
           });
       }
+
+      setupWdpPhoneFields(modal);
+      refreshShareholderGuidance(modal);
 
     } catch (error) {
       safeLog("Error in setupShareholderForms:", error);
@@ -1808,9 +1908,14 @@
     var values = [];
     for (let i = 0; i < existingCount; i++) {
       const form = existingForms[i];
+      const telEl = form.querySelector('input[type="tel"]');
+      let phoneStored = telEl ? telEl.value : '';
+      if (telEl && WDPApp.phoneInput && typeof WDPApp.phoneInput.getValueForCopy === 'function') {
+        phoneStored = WDPApp.phoneInput.getValueForCopy(telEl) || phoneStored;
+      }
       values[i] = {
         name: form.querySelector('input[type="text"]')?.value || '',
-        phone: form.querySelector('input[type="tel"]')?.value || '',
+        phone: phoneStored,
         note: getShareholderNoteTextarea(form)?.value || ''
       };
     }
@@ -1865,6 +1970,20 @@
       setupCopyFormButton(form);
       setupShareholderHeaderClick(form);
       checkShareholderFormWarning(form);
+    }
+
+    if (WDPApp.phoneInput && typeof WDPApp.phoneInput.refreshInRoot === 'function') {
+      WDPApp.phoneInput.refreshInRoot(shareholdersList);
+    } else {
+      setupWdpPhoneFields(shareholdersList);
+    }
+    for (let ri = 0; ri < shareCount; ri++) {
+      const rf = updatedForms[ri];
+      if (!rf || !values[ri] || !values[ri].phone) continue;
+      const pIn = rf.querySelector('input[type="tel"]');
+      if (pIn && WDPApp.phoneInput && typeof WDPApp.phoneInput.applyPastedNumber === 'function') {
+        WDPApp.phoneInput.applyPastedNumber(pIn, values[ri].phone);
+      }
     }
 
     // CRITICAL: Form açık/kapalı durumunu belirle - accordion mantığı ile (updateShareholderFormsInternal ile aynı)
@@ -1952,8 +2071,9 @@
     updateShareholdersScrollable(modal);
     
     // Kapalı form sayısını güncelle
-    updateCollapsedFormsCount(modal, shareholdersList);
+    updateCollapsedFormsCount(modal);
     syncShareholderUnitPricesFromModal(modal);
+    refreshShareholderGuidance(modal);
   }
 
   // Setup direct shareholder forms
@@ -1979,6 +2099,8 @@
     calculateMaxHeight: calculateShareholderMaxHeight,
     setupDirect: setupDirectShareholderForms,
     updateForms: updateShareholderForms,
+    refreshGuidance: refreshShareholderGuidance,
+    setValidationArmed: setShareValidationArmed,
   };
 
   // Export shareholder module
