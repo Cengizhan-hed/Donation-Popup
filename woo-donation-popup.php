@@ -230,7 +230,15 @@ function wdp_should_render_js_helpers() {
    }
 
    if (function_exists('is_product') && is_product()) {
-      return true;
+      $product_id = get_the_ID();
+      if ($product_id) {
+         $allow_custom_price = get_post_meta($product_id, '_allow_custom_price', true) === 'yes';
+         $allow_multiple_shares = get_post_meta($product_id, '_allow_multiple_shares', true) === 'yes';
+         $enable_progress_bar = get_post_meta($product_id, '_enable_progress_bar', true) === 'yes';
+         if ($allow_custom_price || $allow_multiple_shares || $enable_progress_bar) {
+            return true;
+         }
+      }
    }
 
    if (is_singular()) {
@@ -256,33 +264,49 @@ function wdp_add_js_helpers() {
        window.WDP = {};
    }
    
-   // Bağış butonunu render etmek için JavaScript fonksiyonu
-   window.WDP.renderDonationButton = function(productId, containerId) {
-       var container = document.getElementById(containerId);
-       if (!container) return;
-       
-       // AJAX ile HTML'i al
-       var xhr = new XMLHttpRequest();
-       xhr.open('POST', '<?php echo admin_url('admin-ajax.php'); ?>', true);
-       xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-       xhr.onreadystatechange = function() {
-           if (xhr.readyState === 4 && xhr.status === 200) {
-               try {
-                   var response = JSON.parse(xhr.responseText);
-                   if (response.success && response.html) {
-                       container.innerHTML = response.html;
-                       // Olay dinleyicilerini yeniden bağla
-                       if (typeof window.WDP.refresh === 'function') {
-                           window.WDP.refresh();
-                       }
-                   }
-               } catch (e) {
-                   console.error('Error parsing donation button response:', e);
-               }
-           }
-       };
-      xhr.send('action=wdp_render_donation_button&product_id=' + productId + '&security=<?php echo wp_create_nonce('wdp_render_donation_button'); ?>');
-   };
+  // Bağış butonunu render etmek için JavaScript fonksiyonu
+  window.WDP.renderDonationButton = function(productId, containerId) {
+      var container = document.getElementById(containerId);
+      var parsedProductId = Number.parseInt(productId, 10);
+      if (!container || !Number.isFinite(parsedProductId) || parsedProductId <= 0) {
+          return;
+      }
+
+      var formData =
+        'action=wdp_render_donation_button' +
+        '&product_id=' + encodeURIComponent(String(parsedProductId)) +
+        '&security=' + encodeURIComponent('<?php echo esc_js(wp_create_nonce('wdp_render_donation_button')); ?>');
+
+      fetch('<?php echo esc_url(admin_url('admin-ajax.php')); ?>', {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: {
+              'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+              'X-Requested-With': 'XMLHttpRequest'
+          },
+          body: formData
+      })
+      .then(function(response) {
+          if (!response.ok) {
+              throw new Error('HTTP ' + response.status);
+          }
+          return response.json();
+      })
+      .then(function(response) {
+          if (response && response.success && typeof response.html === 'string') {
+              container.innerHTML = response.html;
+              // Olay dinleyicilerini yeniden bağla
+              if (typeof window.WDP.refresh === 'function') {
+                  window.WDP.refresh();
+              }
+          }
+      })
+      .catch(function(err) {
+          if (window.console && typeof window.console.error === 'function') {
+              window.console.error('Error rendering donation button:', err);
+          }
+      });
+  };
    
    // Hata mesajlarını gizlemek için yardımcı fonksiyon
    window.WDP.hideErrorMessages = function() {
@@ -419,24 +443,51 @@ add_action('wp_ajax_nopriv_wdp_render_donation_button', 'wdp_ajax_render_donatio
 
 function wdp_ajax_render_donation_button() {
    check_ajax_referer('wdp_render_donation_button', 'security');
-   
-   $product_id = isset($_POST['product_id']) ? absint($_POST['product_id']) : 0;
-   $button_text = isset($_POST['button_text']) ? sanitize_text_field($_POST['button_text']) : 'Bağış Yap';
-   
+
+   if (class_exists('WDP_Security')) {
+      if (!WDP_Security::validate_request_origin()) {
+         wp_send_json(array(
+            'success' => false,
+            'message' => __('Geçersiz istek kaynağı', 'woo-donation-popup'),
+         ));
+         wp_die();
+      }
+
+      $rate_key = WDP_Security::get_rate_limit_key('render_donation_button');
+      if (!WDP_Security::check_rate_limit($rate_key, 40, 60)) {
+         wp_send_json(array(
+            'success' => false,
+            'message' => __('Çok fazla istek gönderildi. Lütfen kısa süre sonra tekrar deneyin.', 'woo-donation-popup'),
+         ));
+         wp_die();
+      }
+   }
+
+   $product_id = isset($_POST['product_id']) ? absint(wp_unslash($_POST['product_id'])) : 0;
+   $button_text = isset($_POST['button_text']) ? sanitize_text_field(wp_unslash($_POST['button_text'])) : __('Bağış Yap', 'woo-donation-popup');
+
    if (!$product_id) {
        wp_send_json(array(
            'success' => false,
-           'message' => 'Geçersiz ürün ID'
+           'message' => __('Geçersiz ürün ID', 'woo-donation-popup'),
        ));
        wp_die();
    }
-   
+
+   if (class_exists('WDP_Security') && !WDP_Security::validate_product_id($product_id)) {
+      wp_send_json(array(
+         'success' => false,
+         'message' => __('Ürün bulunamadı veya görüntülenemiyor.', 'woo-donation-popup'),
+      ));
+      wp_die();
+   }
+
    $html = wdp_render_donation_button($product_id, $button_text);
-   
+
    wp_send_json(array(
        'success' => true,
-       'html' => $html
+       'html' => $html,
    ));
-   
+
    wp_die();
 }

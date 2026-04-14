@@ -142,6 +142,17 @@ html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-success-screen, .wdp-moda
   min-height: 32px;
 }
 
+html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-success-screen, .wdp-modal-content .wdp-success-screen) .wdp-mini-cart-loading {
+  margin: 0;
+  padding: 15px;
+  text-align: center;
+  font-size: 14px;
+  color: var(--wdp-gray-500, #6b7280);
+  background: var(--wdp-gray-50, #f9fafb);
+  border: 1px dashed var(--wdp-border-light, #dbe4ee);
+  border-radius: var(--wdp-radius-md, 10px);
+}
+
 html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-success-screen, .wdp-modal-content .wdp-success-screen) .wdp-mini-cart {
   margin-bottom: var(--wdp-form-stack-gap);
   background: var(--wdp-gradient-soft-white, linear-gradient(135deg, #ffffff 0%, #fafbfc 50%, #f8f9fa 100%));

@@ -10,18 +10,10 @@
   
   // Use centralized module dependency helper
   const utilsCheck = (WDPApp.utils && WDPApp.utils.ensureModule)
-    ? WDPApp.utils.ensureModule('utils', ['escapeHtml'], {
-        escapeHtml: function(str) {
-          if (typeof str !== 'string') return '';
-          const div = document.createElement('div');
-          div.textContent = str;
-          return div.innerHTML;
-        },
-      })
+    ? WDPApp.utils.ensureModule('utils', [])
     : { module: WDPApp.utils || {}, isValid: false, missingMethods: [] };
   
   const utils = utilsCheck.module;
-  const { escapeHtml } = utils;
 
   const WDP_ALERT_AUTO_DISMISS = 7000;
   const WDP_ALERT_TEMPLATES = {
@@ -103,13 +95,13 @@
 
     const normalizedMessages = descriptionList
       .filter((item) => item !== undefined && item !== null && String(item).trim() !== '')
-      .map((item) => escapeHtml(String(item)));
+      .map((item) => String(item));
 
     if (!normalizedMessages.length) {
       return;
     }
 
-    const alertTitle = escapeHtml(config.title || template.defaultTitle);
+    const alertTitle = String(config.title || template.defaultTitle);
 
     clearAlerts();
 
@@ -124,25 +116,45 @@
     card.setAttribute('aria-modal', 'true');
     card.tabIndex = -1;
 
-    const listMarkup = normalizedMessages
-      .map((msg) => `<li>${escapeHtml(msg)}</li>`)
-      .join('');
+    const icon = document.createElement('div');
+    icon.className = 'wdp-alert__icon';
+    icon.setAttribute('aria-hidden', 'true');
+    // template.icon internal static SVG literal, user verisi içermez.
+    icon.innerHTML = template.icon;
 
-    card.innerHTML = `
-      <div class="wdp-alert__icon" aria-hidden="true">${template.icon}</div>
-      <div class="wdp-alert__body">
-        <h3 class="wdp-alert__title">${alertTitle}</h3>
-        <ul class="wdp-alert__list">${listMarkup}</ul>
-      </div>
-      <button type="button" class="wdp-alert__close" aria-label="Kapat">
-        <span aria-hidden="true">&times;</span>
-      </button>
-    `;
+    const body = document.createElement('div');
+    body.className = 'wdp-alert__body';
+
+    const title = document.createElement('h3');
+    title.className = 'wdp-alert__title';
+    title.textContent = alertTitle;
+
+    const list = document.createElement('ul');
+    list.className = 'wdp-alert__list';
+    normalizedMessages.forEach((msg) => {
+      const li = document.createElement('li');
+      li.textContent = msg;
+      list.appendChild(li);
+    });
+
+    body.appendChild(title);
+    body.appendChild(list);
+
+    const closeButton = document.createElement('button');
+    closeButton.type = 'button';
+    closeButton.className = 'wdp-alert__close';
+    closeButton.setAttribute('aria-label', 'Kapat');
+    const closeSymbol = document.createElement('span');
+    closeSymbol.setAttribute('aria-hidden', 'true');
+    closeSymbol.textContent = '×';
+    closeButton.appendChild(closeSymbol);
+
+    card.appendChild(icon);
+    card.appendChild(body);
+    card.appendChild(closeButton);
 
     overlay.appendChild(card);
     document.body.appendChild(overlay);
-    
-    const closeButton = card.querySelector('.wdp-alert__close');
     
     // Non-closable alert için data attribute ekle
     if (config.nonClosable || config.persistent) {

@@ -76,8 +76,19 @@
       return;
     }
     const w = fc.offsetWidth || 0;
+    // Rapid share-count güncellemelerinde (display/layout geçişleri) ölçüm 0 dönebilir.
+    // Bu durumda padding-left'i küçültmek placeholder'da sağ-sol zıplama üretir.
+    if (w < 24) {
+      return;
+    }
     const gapPx = getFieldStackIconTextGapPx();
-    input.style.paddingLeft = w + gapPx + 'px';
+    const targetPadding = w + gapPx;
+    const currentPadding = Number.parseFloat(window.getComputedStyle(input).paddingLeft || '0');
+    if (Number.isFinite(currentPadding) && currentPadding > targetPadding && currentPadding - targetPadding < 6) {
+      // Sub-pixel / transient dalgalanmalarda güncellemeyi atla.
+      return;
+    }
+    input.style.paddingLeft = targetPadding + 'px';
   }
 
   function scheduleTelInputPaddingSync(input) {
@@ -262,15 +273,28 @@
     el.setAttribute('aria-label', 'Country');
     el.hidden = true;
     el.id = 'wdp-phone-country-panel';
-    el.innerHTML =
-      '<div class="wdp-phone-country-panel__inner">' +
-      '<input type="search" class="wdp-phone-country-panel__search" autocomplete="off" autocorrect="off" spellcheck="false" />' +
-      '<ul class="wdp-phone-country-panel__list" role="listbox"></ul>' +
-      '</div>';
+
+    const inner = document.createElement('div');
+    inner.className = 'wdp-phone-country-panel__inner';
+
+    const search = document.createElement('input');
+    search.type = 'search';
+    search.className = 'wdp-phone-country-panel__search';
+    search.setAttribute('autocomplete', 'off');
+    search.setAttribute('autocorrect', 'off');
+    search.setAttribute('spellcheck', 'false');
+
+    const list = document.createElement('ul');
+    list.className = 'wdp-phone-country-panel__list';
+    list.setAttribute('role', 'listbox');
+
+    inner.appendChild(search);
+    inner.appendChild(list);
+    el.appendChild(inner);
     document.body.appendChild(el);
     countryPanel.root = el;
-    countryPanel.list = el.querySelector('.wdp-phone-country-panel__list');
-    countryPanel.search = el.querySelector('.wdp-phone-country-panel__search');
+    countryPanel.list = list;
+    countryPanel.search = search;
     const ph = wdp_ajax.strings && wdp_ajax.strings.phone_search_placeholder;
     if (ph) {
       countryPanel.search.setAttribute('placeholder', ph);

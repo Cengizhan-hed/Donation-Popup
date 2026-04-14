@@ -77,17 +77,17 @@
     : { module: WDPApp.alerts || {}, isValid: false, missingMethods: [] };
   
   const cartCheck = (WDPApp.utils && WDPApp.utils.ensureModule)
-    ? WDPApp.utils.ensureModule('cart', ['fetchContents', 'updateCountElements', 'createItemsHTML', 'setupContinueShoppingButton', 'updateWooCommerce', 'saveSideCartElements', 'showSideCarts'])
+    ? WDPApp.utils.ensureModule('cart', ['fetchContents', 'updateCountElements', 'createItemsHTML', 'renderItemsInto', 'setupContinueShoppingButton', 'updateWooCommerce', 'saveSideCartElements', 'showSideCarts'])
     : { module: WDPApp.cart || {}, isValid: false, missingMethods: [] };
   
   const utils = utilsCheck.module;
   const state = stateCheck.module;
   const alerts = alertsCheck.module;
   const cart = cartCheck.module;
-  const { productPrices } = state;
+  const { productPrices, originalForms } = state;
   const { formatCurrency, getAjaxNonce, announceStatus, safeLog, escapeHtml, debounce, mergeWdpAjaxNonces, refreshWdpAjaxNonces } = utils;
   const { clear: clearAlerts } = alerts;
-  const { fetchContents: fetchCartContents, updateCountElements: updateCartCountElements, createItemsHTML: createCartItemsHTML, setupContinueShoppingButton, setupRemoveCartItemButtons, updateWooCommerce: updateWooCommerceCart, saveSideCartElements, showSideCarts } = cart;
+  const { fetchContents: fetchCartContents, updateCountElements: updateCartCountElements, createItemsHTML: createCartItemsHTML, renderItemsInto: renderCartItemsInto, setupContinueShoppingButton, setupRemoveCartItemButtons, updateWooCommerce: updateWooCommerceCart, saveSideCartElements, showSideCarts } = cart;
   const wdp_ajax = window.wdp_ajax || {};
   const jQuery = window.jQuery || null;
 
@@ -854,6 +854,35 @@
     return count > 0;
   }
 
+  function getSuccessMessageText() {
+    const s = wdp_ajax && wdp_ajax.strings;
+    if (s && typeof s.added_to_cart === 'string' && s.added_to_cart.trim()) {
+      return s.added_to_cart.trim();
+    }
+    return 'Bağışınız sepete eklendi!';
+  }
+
+  function renderSuccessScreen(successScreen, cartItems) {
+    if (!successScreen) {
+      return;
+    }
+    successScreen.innerHTML = '';
+    const message = document.createElement('div');
+    message.className = 'wdp-success-message';
+    message.textContent = getSuccessMessageText();
+    successScreen.appendChild(message);
+    if (typeof renderCartItemsInto === 'function') {
+      renderCartItemsInto(successScreen, Array.isArray(cartItems) ? cartItems : []);
+    } else {
+      // Legacy fallback
+      const fallback = document.createElement('div');
+      fallback.innerHTML = createCartItemsHTML(Array.isArray(cartItems) ? cartItems : []);
+      while (fallback.firstChild) {
+        successScreen.appendChild(fallback.firstChild);
+      }
+    }
+  }
+
   function handleAjaxResponse(data, form, isCheckout, addToCartBtn, checkoutBtn) {
     safeLog("Handling AJAX response:", data);
 
@@ -861,7 +890,7 @@
     if (data.success) {
       clearAlerts();
       // Sepet sayısını güncelle
-      if (data.cart_count) {
+      if (data.cart_count !== undefined) {
         updateCartCountElements(data.cart_count);
       }
 
@@ -883,9 +912,18 @@
         safeLog("Showing success message", data);
         announceStatus('Bağışınız sepete eklendi.', 'polite');
 
-        // Form içeriğini sakla (tamamen silmek yerine)
-        const formContent = form.innerHTML;
-        form.setAttribute("data-original-content", formContent);
+        // "Yeni Bağış Ekle" geri dönüşü için formun ilk halini bu anda da garanti altına al.
+        // Bazı WordPress dinamik enjeksiyon senaryolarında saveOriginalForms ilk turu kaçırabiliyor.
+        const snapshotContainer = form.closest('.wdp-donation-form, .wdp-modal');
+        if (snapshotContainer && originalForms && typeof originalForms.set === 'function') {
+          const snapshotKey =
+            snapshotContainer.id ||
+            snapshotContainer.getAttribute('data-product-id') ||
+            null;
+          if (snapshotKey && !originalForms.has(snapshotKey)) {
+            originalForms.set(snapshotKey, form.innerHTML);
+          }
+        }
 
         // Form içeriğini temizle
         form.innerHTML = "";
@@ -917,58 +955,30 @@
         successScreen.className = "wdp-success-screen";
         form.appendChild(successScreen);
 
-        // Başarı mesajı
-        let successContent = `
-<div class="wdp-success-message">Bağışınız sepete eklendi!</div>
-`;
-
-        // Sepet içeriğini al ve göster
+        // Sepet içeriğini göster (ilk yanıtta yoksa AJAX ile tamamla)
         if (data.items && Array.isArray(data.items)) {
-          successContent += createCartItemsHTML(data.items);
+          renderSuccessScreen(successScreen, data.items);
+          setupContinueShoppingButton(form);
+          setupRemoveCartItemButtons(successScreen);
         } else {
-          // Geçici içerik göster
-          successContent += `
-<div class="wdp-mini-cart">
-  <div class="wdp-mini-cart-header">
-    <h4>Sepetiniz</h4>
-  </div>
-  <div class="wdp-mini-cart-items">
-    <div style="padding: 15px; text-align: center;">Sepet içeriği yükleniyor...</div>
-  </div>
-</div>
-<div class="wdp-success-buttons">
-  <a href="${wdp_ajax.cart_url || "/sepet/"}" class="wdp-success-button wdp-view-cart">${(wdp_ajax && wdp_ajax.button_texts && wdp_ajax.button_texts.success_view_cart) ? escapeHtml(wdp_ajax.button_texts.success_view_cart) : "Sepeti Görüntüle"}</a>
-  <a href="${wdp_ajax.checkout_url || "/odeme-sayfasi/"}" class="wdp-success-button wdp-checkout">${(wdp_ajax && wdp_ajax.button_texts && wdp_ajax.button_texts.success_go_checkout) ? escapeHtml(wdp_ajax.button_texts.success_go_checkout) : "Ödemeye Git"}</a>
-  <a href="#" class="wdp-success-button wdp-continue-shopping wdp-new-donation">${(wdp_ajax && wdp_ajax.button_texts && wdp_ajax.button_texts.success_new_donation) ? escapeHtml(wdp_ajax.button_texts.success_new_donation) : "Yeni Bağış Ekle"}</a>
-</div>
-`;
+          const loadingMessage = document.createElement('div');
+          loadingMessage.className = 'wdp-mini-cart-loading';
+          loadingMessage.textContent = 'Sepet içeriği yükleniyor...';
+          successScreen.innerHTML = '';
+          successScreen.appendChild(loadingMessage);
 
-          // Sepet içeriğini AJAX ile al
           fetchCartContents()
             .then((cartItems) => {
-              successScreen.innerHTML = `
-<div class="wdp-success-message">Bağışınız sepete eklendi!</div>
-${createCartItemsHTML(cartItems)}
-`;
+              renderSuccessScreen(successScreen, cartItems);
               setupContinueShoppingButton(form);
               setupRemoveCartItemButtons(successScreen);
             })
             .catch((error) => {
               safeLog("Error fetching cart contents:", error);
-              successScreen.innerHTML = `
-<div class="wdp-success-message">Bağışınız sepete eklendi!</div>
-${createCartItemsHTML([])}
-`;
+              renderSuccessScreen(successScreen, []);
               setupContinueShoppingButton(form);
               setupRemoveCartItemButtons(successScreen);
             });
-        }
-
-        // Eğer data.items varsa, HTML'i hemen ayarla
-        if (data.items && Array.isArray(data.items)) {
-          successScreen.innerHTML = successContent;
-          setupContinueShoppingButton(form);
-          setupRemoveCartItemButtons(successScreen);
         }
       }
 
@@ -1557,7 +1567,7 @@ ${createCartItemsHTML([])}
       const errorDiv = form.querySelector(".wdp-form-error");
       if (errorDiv) {
         errorDiv.style.display = "none";
-        errorDiv.innerHTML = "";
+        errorDiv.textContent = "";
       }
 
       // WooCommerce hata mesajlarını da gizle

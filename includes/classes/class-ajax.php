@@ -919,6 +919,8 @@ class WDP_Ajax {
                 'price' => $product_price, // Numeric değer (JavaScript için)
                 'line_total' => $line_total, // Toplam fiyat (JavaScript için)
                 'price_html' => WDP_Utils::format_price_html($line_total), // Formatlanmış HTML (isteğe bağlı)
+                // SECURITY: Frontend'de innerHTML bağımlılığını azaltmak için düz metin fiyat da gönder.
+                'price_plain' => WDP_Utils::format_price_plain($line_total),
             );
 
             // Meta veriler (donation data vb.)

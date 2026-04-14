@@ -80,10 +80,14 @@
   const state = stateCheck.module;
   const { safeLog, focusFirstElement, activateFocusTrap, announceStatus } = utils;
 
-  // Tüm formların orijinal içeriğini sakla
+  // Tüm formların orijinal içeriğini sakla (tek kaynak: dom modülü; yükleme sırası için yedek yol)
   function saveOriginalForms() {
+    const domModule = WDPApp.dom;
+    if (domModule && typeof domModule.saveOriginalForms === 'function') {
+      domModule.saveOriginalForms();
+      return;
+    }
     const { originalForms } = state;
-    // Hem popup hem ürün içi form için çalıştır
     document.querySelectorAll(".wdp-modal, .wdp-donation-form").forEach((container) => {
       const containerId = container.id || container.getAttribute("data-product-id") || Math.random().toString(36).substr(2, 9);
       const form = container.querySelector("form");

@@ -70,7 +70,19 @@ class WDP_Utils {
      * @return string
      */
     public static function format_price_plain($amount) {
-        return wp_strip_all_tags(self::format_price_html($amount));
+        $raw = wp_strip_all_tags(self::format_price_html($amount));
+        if ($raw === '') {
+            return '';
+        }
+
+        // wc_price() bazı para birimi sembollerini HTML entity olarak döndürebilir (örn: &#8378;).
+        // Mini-cart tarafında düz metin beklediğimiz için entity'leri Unicode karaktere çözüyoruz.
+        $charset = function_exists('get_bloginfo') ? (string) get_bloginfo('charset') : 'UTF-8';
+        if ($charset === '') {
+            $charset = 'UTF-8';
+        }
+
+        return html_entity_decode($raw, ENT_QUOTES | ENT_HTML5, $charset);
     }
 
     /**

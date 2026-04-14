@@ -204,141 +204,177 @@
     // Tema/eklenti stil çatışmalarını azaltmak için global !important CSS enjekte etmiyoruz.
   }
 
-  function createCartItemsHTML(cartItems) {
-    let html = `<div class="wdp-mini-cart">
-  <div class="wdp-mini-cart-header">
-    <h4>Sepetiniz</h4>
-  </div>
-  <div class="wdp-mini-cart-items">`;
+  function decodeHtmlEntities(value) {
+    if (value === null || value === undefined) {
+      return '';
+    }
+    const raw = String(value);
+    if (raw.indexOf('&') === -1) {
+      return raw;
+    }
+    const textarea = document.createElement('textarea');
+    textarea.innerHTML = raw;
+    return textarea.value;
+  }
+
+  function parseAmount(value) {
+    if (value === null || value === undefined || value === '') return NaN;
+    if (typeof value === 'number') return value;
+    const cleaned = String(value).trim().replace(/\s+/g, '').replace(/\./g, '').replace(',', '.');
+    return Number.parseFloat(cleaned);
+  }
+
+  function getButtonTexts() {
+    const buttonTexts = (wdp_ajax && wdp_ajax.button_texts) ? wdp_ajax.button_texts : {};
+    return {
+      viewCartText: buttonTexts.success_view_cart || "Sepeti Görüntüle",
+      goCheckoutText: buttonTexts.success_go_checkout || "Ödemeye Git",
+      newDonationText: buttonTexts.success_new_donation || "Yeni Bağış Ekle",
+    };
+  }
+
+  function buildCartUiNode(cartItems) {
+    const root = document.createElement('div');
+
+    const miniCart = document.createElement('div');
+    miniCart.className = 'wdp-mini-cart';
+    const header = document.createElement('div');
+    header.className = 'wdp-mini-cart-header';
+    const h4 = document.createElement('h4');
+    h4.textContent = 'Sepetiniz';
+    header.appendChild(h4);
+    miniCart.appendChild(header);
+
+    const itemsWrap = document.createElement('div');
+    itemsWrap.className = 'wdp-mini-cart-items';
 
     if (cartItems && cartItems.length > 0) {
-      // En son eklenen ürün en başta görünsün (reverse order)
       const reversedItems = [...cartItems].reverse();
       reversedItems.forEach((item) => {
-        // Fiyat ve miktarı güvenli bir şekilde al
-        let itemPrice = 0;
-        let itemQuantity = 1;
-        
-        // Fiyatı parse et (string veya number olabilir)
-        if (item.price !== null && item.price !== undefined && item.price !== '') {
-          if (typeof item.price === 'string') {
-            // String ise temizle (boşluk, nokta, virgül vb.)
-            const cleanedPrice = item.price.toString().trim().replace(/\s+/g, '').replace(/\./g, '').replace(',', '.');
-            itemPrice = Number.parseFloat(cleanedPrice);
-          } else if (typeof item.price === 'number') {
-            itemPrice = item.price;
-          }
-        }
-        
-        // Quantity'yi parse et
-        if (item.quantity !== null && item.quantity !== undefined && item.quantity !== '') {
-          itemQuantity = Number.parseInt(item.quantity, 10);
-        }
-        
-        // NaN kontrolü
-        if (!Number.isFinite(itemPrice) || isNaN(itemPrice)) {
-          itemPrice = 0;
-        }
-        if (!Number.isFinite(itemQuantity) || isNaN(itemQuantity) || itemQuantity < 1) {
-          itemQuantity = 1;
-        }
-        
-        // Toplam fiyatı hesapla - Eğer line_total varsa onu kullan, yoksa hesapla
-        let totalPrice = itemPrice * itemQuantity;
-        if (item.line_total !== null && item.line_total !== undefined && item.line_total !== '') {
-          if (typeof item.line_total === 'string') {
-            const cleanedLineTotal = item.line_total.toString().trim().replace(/\s+/g, '').replace(/\./g, '').replace(',', '.');
-            const parsedLineTotal = Number.parseFloat(cleanedLineTotal);
-            if (Number.isFinite(parsedLineTotal) && !isNaN(parsedLineTotal)) {
-              totalPrice = parsedLineTotal;
-            }
-          } else if (typeof item.line_total === 'number') {
-            totalPrice = item.line_total;
-          }
-        }
-        
-        // Fiyat gösterimi: Eğer price_html varsa onu kullan (Currency eklentisi desteği için)
-        // Aksi halde formatPrice kullan ama para birimi sembolü ekleme (price_html zaten içeriyor)
-        let priceDisplay = '';
-        if (item.price_html && typeof item.price_html === 'string' && item.price_html.trim() !== '') {
-          // price_html zaten formatlanmış HTML içeriyor (Currency eklentisi desteği ile)
-          priceDisplay = item.price_html;
-        } else {
-          // Fallback: Eğer price_html yoksa, formatPrice kullan ve para birimi sembolü ekle
-          const currencySymbol = (wdp_ajax && wdp_ajax.currency && wdp_ajax.currency.symbol) ? wdp_ajax.currency.symbol : '₺';
-          priceDisplay = formatPrice(totalPrice) + ' ' + currencySymbol;
-        }
-        
-        // Ürün adını her zaman escape ederek render et (XSS'e karşı güvenli varsayılan)
-        const productName = item.product_name || item.name || 'Ürün';
-        const productNameHtml = escapeHtml(productName);
-        
-        safeLog("Cart item:", {
-          name: productName,
-          product_name: item.product_name,
-          name_field: item.name,
-          hasHtml: false,
-          price: item.price,
-          parsedPrice: itemPrice,
-          line_total: item.line_total,
-          price_html: item.price_html,
-          quantity: item.quantity,
-          parsedQuantity: itemQuantity,
-          totalPrice: totalPrice,
-          priceDisplay: priceDisplay
-        });
+        const parsedPrice = parseAmount(item.price);
+        const itemPrice = Number.isFinite(parsedPrice) ? parsedPrice : 0;
+        const parsedQty = Number.parseInt(item.quantity, 10);
+        const itemQuantity = Number.isFinite(parsedQty) && parsedQty > 0 ? parsedQty : 1;
+        const parsedTotal = parseAmount(item.line_total);
+        const totalPrice = Number.isFinite(parsedTotal) ? parsedTotal : (itemPrice * itemQuantity);
+        const priceDisplay = (item.price_plain && String(item.price_plain).trim() !== '')
+          ? decodeHtmlEntities(item.price_plain)
+          : (formatPrice(totalPrice) + ' ' + ((wdp_ajax && wdp_ajax.currency && wdp_ajax.currency.symbol) ? wdp_ajax.currency.symbol : '₺'));
 
-        // Cart item key for remove functionality
-        const cartItemKey = item.key || '';
-        
-        // Temiz HTML yapısı - CSS class'ları kullanıyor
-        // Çarpı butonu en sağda, ürün başlığı ile aynı hizada
-        html += `
-      <table class="wdp-cart-item-table">
-        <tr>
-          <td class="wdp-cart-item-info">
-            <div class="wdp-cart-item-name">${productNameHtml}</div>
-              ${
-                item.meta && item.meta.length > 0
-                ? `<div class="wdp-cart-item-meta">
-                    ${item.meta
-                      .map((meta) => `<div class="wdp-cart-item-meta-item">${escapeHtml(meta.key)}: ${escapeHtml(meta.value)}</div>`)
-                      .join("")}
-                  </div>`
-                : ""
-            }
-          </td>
-          <td class="wdp-cart-item-details">
-            <div class="wdp-cart-item-quantity">${itemQuantity} adet</div>
-            <div class="wdp-cart-item-price">${priceDisplay}</div>
-          </td>
-          <td class="wdp-cart-item-remove">
-            <button type="button" class="wdp-remove-cart-item" data-cart-item-key="${escapeHtml(cartItemKey)}" aria-label="Sepetten Kaldır">
-              <span aria-hidden="true">&times;</span>
-            </button>
-          </td>
-        </tr>
-      </table>
-      `;
+        const table = document.createElement('table');
+        table.className = 'wdp-cart-item-table';
+        const row = document.createElement('tr');
+        const infoCell = document.createElement('td');
+        infoCell.className = 'wdp-cart-item-info';
+        const nameDiv = document.createElement('div');
+        nameDiv.className = 'wdp-cart-item-name';
+        nameDiv.textContent = item.product_name || item.name || 'Ürün';
+        infoCell.appendChild(nameDiv);
+
+        if (item.meta && item.meta.length > 0) {
+          const metaWrap = document.createElement('div');
+          metaWrap.className = 'wdp-cart-item-meta';
+          item.meta.forEach((meta) => {
+            const metaDiv = document.createElement('div');
+            metaDiv.className = 'wdp-cart-item-meta-item';
+            metaDiv.textContent = `${meta.key || ''}: ${meta.value || ''}`;
+            metaWrap.appendChild(metaDiv);
+          });
+          infoCell.appendChild(metaWrap);
+        }
+
+        const detailsCell = document.createElement('td');
+        detailsCell.className = 'wdp-cart-item-details';
+        const qtyDiv = document.createElement('div');
+        qtyDiv.className = 'wdp-cart-item-quantity';
+        qtyDiv.textContent = `${itemQuantity} adet`;
+        const priceDiv = document.createElement('div');
+        priceDiv.className = 'wdp-cart-item-price';
+        priceDiv.textContent = priceDisplay;
+        detailsCell.appendChild(qtyDiv);
+        detailsCell.appendChild(priceDiv);
+
+        const removeCell = document.createElement('td');
+        removeCell.className = 'wdp-cart-item-remove';
+        const removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.className = 'wdp-remove-cart-item';
+        removeBtn.setAttribute('aria-label', 'Sepetten Kaldır');
+        removeBtn.setAttribute('data-cart-item-key', String(item.key || ''));
+        const removeSpan = document.createElement('span');
+        removeSpan.setAttribute('aria-hidden', 'true');
+        removeSpan.textContent = '×';
+        removeBtn.appendChild(removeSpan);
+        removeCell.appendChild(removeBtn);
+
+        row.appendChild(infoCell);
+        row.appendChild(detailsCell);
+        row.appendChild(removeCell);
+        table.appendChild(row);
+        itemsWrap.appendChild(table);
       });
     } else {
-      html += `<div class="wdp-cart-empty">Sepetinizde ürün bulunmuyor.</div>`;
+      const empty = document.createElement('div');
+      empty.className = 'wdp-cart-empty';
+      empty.textContent = 'Sepetinizde ürün bulunmuyor.';
+      itemsWrap.appendChild(empty);
     }
 
-    // Başarı ekranı buton metinlerini ayarlardan al
-    const buttonTexts = (wdp_ajax && wdp_ajax.button_texts) ? wdp_ajax.button_texts : {};
-    const viewCartText = buttonTexts.success_view_cart || "Sepeti Görüntüle";
-    const goCheckoutText = buttonTexts.success_go_checkout || "Ödemeye Git";
-    const newDonationText = buttonTexts.success_new_donation || "Yeni Bağış Ekle";
+    miniCart.appendChild(itemsWrap);
+    root.appendChild(miniCart);
 
-    html += `</div></div>
- <div class="wdp-success-buttons">
-   <a href="${wdp_ajax.cart_url || "/sepet/"}" class="wdp-success-button wdp-view-cart">${escapeHtml(viewCartText)}</a>
-   <a href="${wdp_ajax.checkout_url || "/odeme-sayfasi/"}" class="wdp-success-button wdp-checkout">${escapeHtml(goCheckoutText)}</a>
-   <a href="#" class="wdp-success-button wdp-continue-shopping wdp-new-donation">${escapeHtml(newDonationText)}</a>
- </div>`;
+    const { viewCartText, goCheckoutText, newDonationText } = getButtonTexts();
+    const btnWrap = document.createElement('div');
+    btnWrap.className = 'wdp-success-buttons';
 
-    return html;
+    const viewCart = document.createElement('a');
+    viewCart.className = 'wdp-success-button wdp-view-cart';
+    viewCart.href = wdp_ajax.cart_url || "/sepet/";
+    viewCart.textContent = viewCartText;
+    btnWrap.appendChild(viewCart);
+
+    const checkout = document.createElement('a');
+    checkout.className = 'wdp-success-button wdp-checkout';
+    checkout.href = wdp_ajax.checkout_url || "/odeme-sayfasi/";
+    checkout.textContent = goCheckoutText;
+    btnWrap.appendChild(checkout);
+
+    const newDonation = document.createElement('a');
+    newDonation.className = 'wdp-success-button wdp-continue-shopping wdp-new-donation';
+    newDonation.href = '#';
+    newDonation.textContent = newDonationText;
+    btnWrap.appendChild(newDonation);
+
+    root.appendChild(btnWrap);
+    return root;
+  }
+
+  function renderCartItemsInto(container, cartItems) {
+    if (!container) return;
+    container.innerHTML = '';
+    container.appendChild(buildCartUiNode(Array.isArray(cartItems) ? cartItems : []));
+  }
+
+  function patchSuccessScreenCartUi(successScreen, cartItems) {
+    if (!successScreen) return;
+    const freshUi = buildCartUiNode(Array.isArray(cartItems) ? cartItems : []);
+    const newMini = freshUi.querySelector('.wdp-mini-cart');
+    const newButtons = freshUi.querySelector('.wdp-success-buttons');
+    const oldMini = successScreen.querySelector('.wdp-mini-cart');
+    const oldButtons = successScreen.querySelector('.wdp-success-buttons');
+    if (oldMini && newMini) {
+      oldMini.replaceWith(newMini);
+    }
+    if (oldButtons && newButtons) {
+      oldButtons.replaceWith(newButtons);
+    }
+  }
+
+  // Backward-compatible API: returns HTML for legacy call sites.
+  function createCartItemsHTML(cartItems) {
+    const wrapper = document.createElement('div');
+    wrapper.appendChild(buildCartUiNode(Array.isArray(cartItems) ? cartItems : []));
+    return wrapper.innerHTML;
   }
 
   function setupRemoveCartItemButtons(successScreen) {
@@ -455,42 +491,14 @@
           const cartItems = data.items || [];
           safeLog("Cart items after removal:", cartItems);
           
-          // Get the mini cart container
-          const miniCartContainer = successScreen.querySelector(".wdp-mini-cart");
-          if (miniCartContainer) {
-            // Extract only the mini cart HTML from the full HTML
-            const fullHTML = createCartItemsHTML(cartItems);
-            safeLog("Generated cart HTML:", fullHTML);
-            
-            const tempDiv = document.createElement("div");
-            tempDiv.innerHTML = fullHTML;
-            const newMiniCart = tempDiv.querySelector(".wdp-mini-cart");
-            
-            if (newMiniCart) {
-              // Mini cart items kısmını güncelle
-              const oldItems = miniCartContainer.querySelector(".wdp-mini-cart-items");
-              const newItems = newMiniCart.querySelector(".wdp-mini-cart-items");
-              
-              if (oldItems && newItems) {
-                oldItems.innerHTML = newItems.innerHTML;
-                safeLog("Cart items HTML updated successfully");
-              } else {
-                // Fallback: tüm mini cart'ı güncelle
-                miniCartContainer.innerHTML = newMiniCart.innerHTML;
-                safeLog("Cart container updated (full replace)");
-              }
-              
-              // Event delegation sayesinde yeni butonlar otomatik çalışacak
-              // Ama yine de setup'ı çağıralım (güvenlik için)
-              setupRemoveCartItemButtons(successScreen);
-              
-              safeLog("Cart updated, new items count:", cartItems.length);
-            } else {
-              safeLog("New mini cart element not found in generated HTML");
-            }
-          } else {
-            safeLog("Mini cart container not found in success screen");
+          patchSuccessScreenCartUi(successScreen, cartItems);
+          const hostForm = successScreen.closest('form');
+          if (hostForm) {
+            setupContinueShoppingButton(hostForm);
           }
+          // Event delegation'ı yeni buton referansları için yeniden bağla
+          setupRemoveCartItemButtons(successScreen);
+          safeLog("Cart updated, new items count:", cartItems.length);
 
           // Update WooCommerce cart
           updateWooCommerceCart();
@@ -583,8 +591,14 @@
   }
 
   function setupContinueShoppingButton(form) {
-    const continueShoppingBtn = form.querySelector(".wdp-continue-shopping");
-    if (continueShoppingBtn) {
+    if (!form) {
+      return;
+    }
+    const continueShoppingButtons = form.querySelectorAll(".wdp-continue-shopping");
+    continueShoppingButtons.forEach((continueShoppingBtn) => {
+      if (continueShoppingBtn.dataset.wdpContinueBound === '1') {
+        return;
+      }
       continueShoppingBtn.addEventListener("click", (e) => {
         e.preventDefault();
         // Aktif modal'ı bul ve kapat
@@ -658,7 +672,8 @@
         }
         return false;
       });
-    }
+      continueShoppingBtn.dataset.wdpContinueBound = '1';
+    });
   }
 
   function triggerSideCartUpdates() {
@@ -777,6 +792,7 @@
     updateCountElements: updateCartCountElements,
     saveSideCartElements,
     createItemsHTML: createCartItemsHTML,
+    renderItemsInto: renderCartItemsInto,
     setupContinueShoppingButton,
     setupRemoveCartItemButtons,
     updateWooCommerce: updateWooCommerceCart,

@@ -208,6 +208,8 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-field-stack__phone .iti__tel-
   min-height: calc(var(--wdp-input-min-height, 48px) - 2px - 12px);
   padding-top: var(--wdp-field-stack-input-pad-y, 10px);
   padding-bottom: var(--wdp-field-stack-input-pad-y, 10px);
+  /* JS padding-left sync anlık ölçüm güncellemeleri yapıyor; animasyonlu geçiş shimmer oluşturmasın. */
+  transition: none;
 }
 
 /* Selector overlay: only as wide as flag + dial + chevron — not full field */

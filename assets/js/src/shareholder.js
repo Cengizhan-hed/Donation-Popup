@@ -14,7 +14,7 @@
   
   // Use centralized module dependency helper
   const utilsCheck = (WDPApp.utils && WDPApp.utils.ensureModule)
-    ? WDPApp.utils.ensureModule('utils', ['safeLog', 'formatCurrency'])
+    ? WDPApp.utils.ensureModule('utils', ['safeLog', 'formatCurrency', 'escapeHtml', 'debounce'])
     : { module: WDPApp.utils || {}, isValid: false, missingMethods: [] };
   
   const stateCheck = (WDPApp.utils && WDPApp.utils.ensureModule)
@@ -28,7 +28,7 @@
   const utils = utilsCheck.module;
   const state = stateCheck.module;
   const product = productCheck.module;
-  const { safeLog, formatCurrency } = utils;
+  const { safeLog, formatCurrency, escapeHtml, debounce } = utils;
   const { productPrices, shareholdersResizeBound } = state;
   const { getData: getProductInfoData } = product;
 
@@ -68,38 +68,51 @@
     return form ? form.querySelector('textarea[name^="shareholder_note_"]') : null;
   }
 
+  function ensureVisible(element, preferredDisplay) {
+    if (!element) return;
+    if (preferredDisplay) {
+      element.style.display = preferredDisplay;
+    } else if (element.style.display === 'none') {
+      element.style.display = '';
+    }
+    element.style.visibility = 'visible';
+    element.style.opacity = '1';
+    element.removeAttribute('hidden');
+  }
+
+  function ensureReadableInput(element) {
+    if (!element) return;
+    ensureVisible(element, 'block');
+    element.style.color = '#1f2937';
+    element.style.webkitTextFillColor = '#1f2937';
+  }
+
   // Helper: Ensure shareholder list container exists
   function ensureShareholderList(container) {
     if (!container) return null;
-    
+
     // CRITICAL: Container'ın görünürlüğünü garanti et
-    container.style.display = '';
-    container.style.visibility = 'visible';
-    container.style.opacity = '1';
-    
+    ensureVisible(container);
+
     // CRITICAL: Parent area'nın da görünür olduğundan emin ol
     const shareholdersArea = container.closest('.wdp-shareholders-area');
     if (shareholdersArea) {
-      shareholdersArea.style.display = 'flex';
-      shareholdersArea.style.visibility = 'visible';
-      shareholdersArea.style.opacity = '1';
+      ensureVisible(shareholdersArea, 'flex');
     }
-    
+
     let list = container.querySelector(".wdp-shareholders-scroll");
     if (list) {
       // Mevcut listeyi görünür yap
-      list.style.display = '';
-      list.style.visibility = 'visible';
-      list.style.opacity = '1';
+      ensureVisible(list, 'flex');
+      list.style.flexDirection = 'column';
       return list;
     }
 
     list = document.createElement("div");
     list.className = "wdp-shareholders-scroll";
     // Yeni listeyi görünür yap
-    list.style.display = '';
-    list.style.visibility = 'visible';
-    list.style.opacity = '1';
+    ensureVisible(list, 'flex');
+    list.style.flexDirection = 'column';
 
     while (container.firstChild) {
       list.appendChild(container.firstChild);
@@ -202,6 +215,19 @@
     state.shareholdersResizeBound = true;
   }
 
+  const shareholderLayoutRafByArea = typeof WeakMap !== 'undefined' ? new WeakMap() : null;
+
+  function cancelPendingShareholderLayout(areaElement) {
+    if (!areaElement || !shareholderLayoutRafByArea || typeof window === 'undefined') {
+      return;
+    }
+    const pending = shareholderLayoutRafByArea.get(areaElement);
+    if (pending) {
+      window.cancelAnimationFrame(pending);
+      shareholderLayoutRafByArea.delete(areaElement);
+    }
+  }
+
   // Helper: Update scrollable class for shareholders container
   function updateShareholdersScrollable(modal) {
     const shareholdersContainer = modal.querySelector('.wdp-shareholders-container');
@@ -241,7 +267,9 @@
         // ABSOLUTE FIX: Modal yüksekliği sabit kalacak - ilk açıldığındaki height'ı kullan
         // CRITICAL: Scroll container'ın height'ını 1. formun yüksekliği kadar yap
         // Böylece 2. formun header'ı görünmez, sadece scroll yapınca görünür
-        requestAnimationFrame(() => {
+        cancelPendingShareholderLayout(shareholdersArea);
+        const layoutRaf = requestAnimationFrame(() => {
+          shareholderLayoutRafByArea && shareholderLayoutRafByArea.delete(shareholdersArea);
           if (shareholdersList && shareholdersArea) {
             // 1. formun yüksekliğini al
             const firstForm = shareholdersList.querySelector('.wdp-shareholder-form[data-index="1"]');
@@ -302,7 +330,11 @@
             shareholdersList.scrollTop = 0;
           }
         });
+        if (shareholderLayoutRafByArea) {
+          shareholderLayoutRafByArea.set(shareholdersArea, layoutRaf);
+        }
       } else {
+        cancelPendingShareholderLayout(shareholdersArea);
         shareholdersArea.classList.remove('scrollable');
         // Scroll container'ın height'ını sıfırla
         shareholdersList.style.maxHeight = '';
@@ -352,10 +384,25 @@
     }
   }
 
-  function escapeHtml(str) {
-    const div = document.createElement('div');
-    div.textContent = String(str == null ? '' : str);
-    return div.innerHTML;
+  /** Bir modal/form kökü için tek debounced guidance yenilemesi (çok hissedar + input olaylarında maliyeti düşürür). */
+  const shareholderGuidanceDebouncedByRoot = typeof WeakMap !== 'undefined' ? new WeakMap() : null;
+
+  function queueShareholderGuidanceRefresh(root) {
+    if (!root) {
+      return;
+    }
+    if (typeof debounce === 'function' && shareholderGuidanceDebouncedByRoot) {
+      let run = shareholderGuidanceDebouncedByRoot.get(root);
+      if (!run) {
+        run = debounce(function () {
+          refreshShareholderGuidance(root);
+        }, 120);
+        shareholderGuidanceDebouncedByRoot.set(root, run);
+      }
+      run();
+      return;
+    }
+    refreshShareholderGuidance(root);
   }
 
   function getShareholderForms(root) {
@@ -400,16 +447,35 @@
       sharesHeader.appendChild(overview);
     }
     if (!overview.querySelector('.wdp-shareholder-micro__heading')) {
-      overview.innerHTML =
-        '<div class="wdp-shareholder-micro" role="status" aria-live="polite">' +
-        '<span class="wdp-shareholder-micro__heading"></span>' +
-        '<div class="wdp-shareholder-micro__row">' +
-        '<div class="wdp-shareholder-micro__track" role="progressbar" aria-valuemin="0">' +
-        '<div class="wdp-shareholder-micro__fill"></div>' +
-        '</div>' +
-        '<span class="wdp-shareholder-micro__label"></span>' +
-        '</div>' +
-        '</div>';
+      overview.textContent = '';
+      const micro = document.createElement('div');
+      micro.className = 'wdp-shareholder-micro';
+      micro.setAttribute('role', 'status');
+      micro.setAttribute('aria-live', 'polite');
+
+      const heading = document.createElement('span');
+      heading.className = 'wdp-shareholder-micro__heading';
+
+      const row = document.createElement('div');
+      row.className = 'wdp-shareholder-micro__row';
+
+      const track = document.createElement('div');
+      track.className = 'wdp-shareholder-micro__track';
+      track.setAttribute('role', 'progressbar');
+      track.setAttribute('aria-valuemin', '0');
+
+      const fill = document.createElement('div');
+      fill.className = 'wdp-shareholder-micro__fill';
+      track.appendChild(fill);
+
+      const label = document.createElement('span');
+      label.className = 'wdp-shareholder-micro__label';
+
+      row.appendChild(track);
+      row.appendChild(label);
+      micro.appendChild(heading);
+      micro.appendChild(row);
+      overview.appendChild(micro);
     }
     return overview;
   }
@@ -511,7 +577,7 @@
         if (e && e.target && e.target.classList && e.target.classList.contains('wdp-error')) {
           e.target.classList.remove('wdp-error');
         }
-        refreshShareholderGuidance(root);
+        queueShareholderGuidanceRefresh(root);
       }
     };
     const nameInput = form.querySelector('input[name^="shareholder_name_"]');
@@ -563,28 +629,18 @@
 
   // Create shareholder form element
   function createShareholderForm(index) {
-    const headerText = escapeHtml(shareholderTexts.header || 'Hissedar Bilgileri');
-    const namePlaceholder = escapeHtml(shareholderTexts.name_placeholder || 'Ad Soyad *');
-    const phonePlaceholder = escapeHtml(shareholderTexts.phone_placeholder || 'Telefon Numarası *');
-    const notePlaceholder = escapeHtml(shareholderTexts.note_placeholder || 'Not (isteğe bağlı)');
-    const emailPlaceholder = escapeHtml(shareholderTexts.email_placeholder || 'E-posta (isteğe bağlı)');
-    const copyButtonText = escapeHtml(shareholderTexts.copy_button || '📋 Kopyasını Oluştur');
-    const emailRowHtml = enableEmailField
-      ? `<div class="wdp-field-stack__row">
-          <span class="wdp-field-stack__icon" aria-hidden="true">${FS_ICON_EMAIL}</span>
-          <input type="email" class="wdp-field-stack__input" name="shareholder_email_${index}" placeholder="${emailPlaceholder}" autocomplete="email" />
-        </div>`
-      : '';
-    const fieldGroupLabel = escapeHtml(shareholderTexts.header || 'Hissedar Bilgileri');
-    const copyButtonHtml = enableCopyButton
-      ? `<button type="button" class="wdp-copy-form-btn">
-          ${copyButtonText}
-        </button>`
-      : '';
+    const headerText = String(shareholderTexts.header || 'Hissedar Bilgileri');
+    const namePlaceholder = String(shareholderTexts.name_placeholder || 'Ad Soyad *');
+    const phonePlaceholder = String(shareholderTexts.phone_placeholder || 'Telefon Numarası *');
+    const notePlaceholder = String(shareholderTexts.note_placeholder || 'Not (isteğe bağlı)');
+    const emailPlaceholder = String(shareholderTexts.email_placeholder || 'E-posta (isteğe bağlı)');
+    const copyButtonText = String(shareholderTexts.copy_button || '📋 Kopyasını Oluştur');
+    const fieldGroupLabel = String(shareholderTexts.header || 'Hissedar Bilgileri');
+    const safeIndex = Math.max(1, Number.parseInt(index, 10) || 1);
 
     const form = document.createElement("div");
     form.className = "wdp-shareholder-form";
-    form.setAttribute("data-index", index);
+    form.setAttribute("data-index", String(safeIndex));
     // Kart yoğunluğu (compact / normal / spacious)
     if (densityMode === 'compact') {
       form.classList.add('wdp-shareholder-density-compact');
@@ -600,59 +656,132 @@
     form.style.opacity = '1';
 
     // İlk form açık, diğerleri kapalı
-    const isFirst = index === 1;
+    const isFirst = safeIndex === 1;
     if (!isFirst) {
       form.classList.add("collapsed");
     }
 
-    // Daha hızlı yükleme için basit HTML yapısı
-    form.innerHTML = `
-      <div class="wdp-shareholder-header">
-        <div class="wdp-shareholder-header__primary">
-          <h3>${index}. ${headerText}</h3>
-          <span class="wdp-shareholder-unit-price wdp-unit-price-badge" aria-hidden="true"></span>
-        </div>
-        <span class="wdp-shareholder-icon"></span>
-      </div>
-      <div class="wdp-shareholder-content ${layoutMode === 'two-column' ? 'wdp-shareholder-layout-two-column' : 'wdp-shareholder-layout-single'}" ${!isFirst ? 'style="display: none;"' : ''}>
-        <div class="wdp-field-stack" role="group" aria-label="${fieldGroupLabel}">
-          <div class="wdp-field-stack__row">
-            <span class="wdp-field-stack__icon" aria-hidden="true">${FS_ICON_USER}</span>
-            <input type="text" class="wdp-field-stack__input" name="shareholder_name_${index}" placeholder="${namePlaceholder}" autocomplete="name" required />
-          </div>
-          <div class="wdp-field-stack__row wdp-field-stack__row--phone">
-            <div class="wdp-field-stack__phone">
-              <input type="tel" class="wdp-field-stack__input" name="shareholder_phone_${index}" placeholder="${phonePlaceholder}" autocomplete="tel" required inputmode="tel" />
-            </div>
-          </div>
-          ${emailRowHtml}
-          <div class="wdp-field-stack__row wdp-field-stack__row--textarea">
-            <span class="wdp-field-stack__icon" aria-hidden="true">${FS_ICON_NOTE}</span>
-            <textarea class="wdp-field-stack__textarea" name="shareholder_note_${index}" rows="1" placeholder="${notePlaceholder}"></textarea>
-          </div>
-        </div>
-        ${copyButtonHtml}
-      </div>
-    `;
+    const header = document.createElement('div');
+    header.className = 'wdp-shareholder-header';
+    const headerPrimary = document.createElement('div');
+    headerPrimary.className = 'wdp-shareholder-header__primary';
+    const title = document.createElement('h3');
+    title.textContent = `${safeIndex}. ${headerText}`;
+    const unitPrice = document.createElement('span');
+    unitPrice.className = 'wdp-shareholder-unit-price wdp-unit-price-badge';
+    unitPrice.setAttribute('aria-hidden', 'true');
+    headerPrimary.appendChild(title);
+    headerPrimary.appendChild(unitPrice);
+    const headerIcon = document.createElement('span');
+    headerIcon.className = 'wdp-shareholder-icon';
+    header.appendChild(headerPrimary);
+    header.appendChild(headerIcon);
+    form.appendChild(header);
+
+    const content = document.createElement('div');
+    content.className = `wdp-shareholder-content ${layoutMode === 'two-column' ? 'wdp-shareholder-layout-two-column' : 'wdp-shareholder-layout-single'}`;
+    if (!isFirst) {
+      content.style.display = 'none';
+    }
+    const fieldStack = document.createElement('div');
+    fieldStack.className = 'wdp-field-stack';
+    fieldStack.setAttribute('role', 'group');
+    fieldStack.setAttribute('aria-label', fieldGroupLabel);
+
+    const nameRow = document.createElement('div');
+    nameRow.className = 'wdp-field-stack__row';
+    const userIcon = document.createElement('span');
+    userIcon.className = 'wdp-field-stack__icon';
+    userIcon.setAttribute('aria-hidden', 'true');
+    userIcon.innerHTML = FS_ICON_USER;
+    const nameInput = document.createElement('input');
+    nameInput.type = 'text';
+    nameInput.className = 'wdp-field-stack__input';
+    nameInput.name = `shareholder_name_${safeIndex}`;
+    nameInput.placeholder = namePlaceholder;
+    nameInput.autocomplete = 'name';
+    nameInput.required = true;
+    nameRow.appendChild(userIcon);
+    nameRow.appendChild(nameInput);
+    fieldStack.appendChild(nameRow);
+
+    const phoneRow = document.createElement('div');
+    phoneRow.className = 'wdp-field-stack__row wdp-field-stack__row--phone';
+    const phoneWrap = document.createElement('div');
+    phoneWrap.className = 'wdp-field-stack__phone';
+    const phoneInput = document.createElement('input');
+    phoneInput.type = 'tel';
+    phoneInput.className = 'wdp-field-stack__input';
+    phoneInput.name = `shareholder_phone_${safeIndex}`;
+    phoneInput.placeholder = phonePlaceholder;
+    phoneInput.autocomplete = 'tel';
+    phoneInput.required = true;
+    phoneInput.setAttribute('inputmode', 'tel');
+    phoneWrap.appendChild(phoneInput);
+    phoneRow.appendChild(phoneWrap);
+    fieldStack.appendChild(phoneRow);
+
+    if (enableEmailField) {
+      const emailRow = document.createElement('div');
+      emailRow.className = 'wdp-field-stack__row';
+      const emailIcon = document.createElement('span');
+      emailIcon.className = 'wdp-field-stack__icon';
+      emailIcon.setAttribute('aria-hidden', 'true');
+      emailIcon.innerHTML = FS_ICON_EMAIL;
+      const emailInput = document.createElement('input');
+      emailInput.type = 'email';
+      emailInput.className = 'wdp-field-stack__input';
+      emailInput.name = `shareholder_email_${safeIndex}`;
+      emailInput.placeholder = emailPlaceholder;
+      emailInput.autocomplete = 'email';
+      emailRow.appendChild(emailIcon);
+      emailRow.appendChild(emailInput);
+      fieldStack.appendChild(emailRow);
+    }
+
+    const noteRow = document.createElement('div');
+    noteRow.className = 'wdp-field-stack__row wdp-field-stack__row--textarea';
+    const noteIcon = document.createElement('span');
+    noteIcon.className = 'wdp-field-stack__icon';
+    noteIcon.setAttribute('aria-hidden', 'true');
+    noteIcon.innerHTML = FS_ICON_NOTE;
+    const noteInput = document.createElement('textarea');
+    noteInput.className = 'wdp-field-stack__textarea';
+    noteInput.name = `shareholder_note_${safeIndex}`;
+    noteInput.rows = 1;
+    noteInput.placeholder = notePlaceholder;
+    noteRow.appendChild(noteIcon);
+    noteRow.appendChild(noteInput);
+    fieldStack.appendChild(noteRow);
+
+    content.appendChild(fieldStack);
+    if (enableCopyButton) {
+      const copyButton = document.createElement('button');
+      copyButton.type = 'button';
+      copyButton.className = 'wdp-copy-form-btn';
+      copyButton.textContent = copyButtonText;
+      content.appendChild(copyButton);
+    }
+    form.appendChild(content);
 
     // Input'ları hemen aktif hale getir
-    const nameInput = form.querySelector('input[type="text"]');
-    const phoneInput = form.querySelector('input[type="tel"]');
+    const createdNameInput = form.querySelector('input[type="text"]');
+    const createdPhoneInput = form.querySelector('input[type="tel"]');
     
-    if (nameInput) {
-      nameInput.style.pointerEvents = 'auto';
-      nameInput.style.opacity = '1';
-      nameInput.style.visibility = 'visible';
-      nameInput.removeAttribute('readonly');
-      nameInput.removeAttribute('disabled');
+    if (createdNameInput) {
+      createdNameInput.style.pointerEvents = 'auto';
+      createdNameInput.style.opacity = '1';
+      createdNameInput.style.visibility = 'visible';
+      createdNameInput.removeAttribute('readonly');
+      createdNameInput.removeAttribute('disabled');
     }
     
-    if (phoneInput) {
-      phoneInput.style.pointerEvents = 'auto';
-      phoneInput.style.opacity = '1';
-      phoneInput.style.visibility = 'visible';
-      phoneInput.removeAttribute('readonly');
-      phoneInput.removeAttribute('disabled');
+    if (createdPhoneInput) {
+      createdPhoneInput.style.pointerEvents = 'auto';
+      createdPhoneInput.style.opacity = '1';
+      createdPhoneInput.style.visibility = 'visible';
+      createdPhoneInput.removeAttribute('readonly');
+      createdPhoneInput.removeAttribute('disabled');
     }
 
     attachGuidanceListeners(form);
@@ -1592,7 +1721,6 @@
       const shareCountInput = $modal('input[name="share_count"]');
       if (!shareCountInput) {
         safeLog("ERROR: Share count input not found in modal:", modal.id || modal.className);
-        safeLog("Modal HTML:", modal.outerHTML.substring(0, 500));
         return;
       }
       safeLog("Share count input found:", shareCountInput);
@@ -1624,39 +1752,25 @@
       // CRITICAL: Tüm container'ları görünür yap - önce en üst seviyeden başla
       const sharesSection = shareholdersContainer.closest('.wdp-shares-section');
       if (sharesSection) {
-        sharesSection.style.display = 'flex';
+        ensureVisible(sharesSection, 'flex');
         sharesSection.style.flexDirection = 'column';
-        sharesSection.style.visibility = 'visible';
-        sharesSection.style.opacity = '1';
-        sharesSection.removeAttribute('hidden');
         safeLog("Shares section made visible with flex display");
       }
       
       const sharesHeader = $modal('.wdp-shares-header');
       if (sharesHeader) {
-        sharesHeader.style.display = 'grid';
-        sharesHeader.style.visibility = 'visible';
-        sharesHeader.style.opacity = '1';
-        sharesHeader.removeAttribute('hidden');
+        ensureVisible(sharesHeader, 'grid');
         safeLog("Shares header made visible with grid display");
       }
       
       // CRITICAL: Share counter input'unu görünür yap ve değeri göster
       const shareCounter = $modal('.wdp-share-counter');
       if (shareCounter) {
-        shareCounter.style.display = 'flex';
-        shareCounter.style.visibility = 'visible';
-        shareCounter.style.opacity = '1';
-        shareCounter.removeAttribute('hidden');
+        ensureVisible(shareCounter, 'flex');
         const shareCountInputInCounter = shareCounter.querySelector('input[name="share_count"]');
         if (shareCountInputInCounter) {
-          shareCountInputInCounter.style.visibility = 'visible';
-          shareCountInputInCounter.style.opacity = '1';
-          shareCountInputInCounter.style.color = '#1f2937';
-          shareCountInputInCounter.style.display = 'block';
-          shareCountInputInCounter.removeAttribute('hidden');
           // CRITICAL: Input değerinin görünür olmasını garanti et
-          shareCountInputInCounter.style.webkitTextFillColor = '#1f2937';
+          ensureReadableInput(shareCountInputInCounter);
           safeLog("Share counter input made visible");
         }
       }
@@ -1664,20 +1778,14 @@
       // Hissedar alanını da görünür yap
       const shareholdersArea = shareholdersContainer.closest('.wdp-shareholders-area');
       if (shareholdersArea) {
-        shareholdersArea.style.display = 'flex';
+        ensureVisible(shareholdersArea, 'flex');
         shareholdersArea.style.flexDirection = 'column';
-        shareholdersArea.style.visibility = 'visible';
-        shareholdersArea.style.opacity = '1';
-        shareholdersArea.removeAttribute('hidden');
         safeLog("Shareholders area made visible");
       }
       
       // Container'ı görünür yap
-      shareholdersContainer.style.display = 'flex';
+      ensureVisible(shareholdersContainer, 'flex');
       shareholdersContainer.style.flexDirection = 'column';
-      shareholdersContainer.style.visibility = 'visible';
-      shareholdersContainer.style.opacity = '1';
-      shareholdersContainer.removeAttribute('hidden');
       safeLog("Shareholders container made visible");
       
       // Hissedar listesini oluştur veya bul
@@ -1688,22 +1796,14 @@
       }
       
       // CRITICAL: Shareholders list'i görünür yap
-      shareholdersList.style.display = 'flex';
+      ensureVisible(shareholdersList, 'flex');
       shareholdersList.style.flexDirection = 'column';
-      shareholdersList.style.visibility = 'visible';
-      shareholdersList.style.opacity = '1';
-      shareholdersList.removeAttribute('hidden');
       safeLog("Shareholders list made visible");
 
       // Başlangıç değerini 1 olarak ayarla ve event'leri tetikle
       shareCountInput.value = "1";
       // CRITICAL: Input görünürlüğünü garanti et
-      shareCountInput.style.visibility = 'visible';
-      shareCountInput.style.opacity = '1';
-      shareCountInput.style.color = '#1f2937';
-      shareCountInput.style.display = 'block';
-      shareCountInput.style.webkitTextFillColor = '#1f2937';
-      shareCountInput.removeAttribute('hidden');
+      ensureReadableInput(shareCountInput);
       shareCountInput.dispatchEvent(new Event('input', { bubbles: true }));
       shareCountInput.dispatchEvent(new Event('change', { bubbles: true }));
       safeLog("Initial share count set to 1");
@@ -1718,34 +1818,26 @@
         safeLog("First shareholder form created and appended to DOM");
         
         // Form görünürlüğünü garanti et
-        firstForm.style.display = '';
-        firstForm.style.visibility = 'visible';
-        firstForm.style.opacity = '1';
+        ensureVisible(firstForm);
         firstForm.style.position = 'relative';
         safeLog("First form visibility set");
         
         // Form header'ı görünür yap
         const header = firstForm.querySelector('.wdp-shareholder-header');
         if (header) {
-          header.style.display = '';
-          header.style.visibility = 'visible';
-          header.style.opacity = '1';
+          ensureVisible(header);
           safeLog("First form header made visible");
         }
         
         const content = firstForm.querySelector('.wdp-shareholder-content');
         if (content) {
-          content.style.display = 'flex';
-          content.style.visibility = 'visible';
-          content.style.opacity = '1';
+          ensureVisible(content, 'flex');
           safeLog("First form content made visible with flex display");
           
           // Input'ları da görünür yap
           const inputs = content.querySelectorAll('input, textarea, button');
           inputs.forEach((input, idx) => {
-            input.style.display = '';
-            input.style.visibility = 'visible';
-            input.style.opacity = '1';
+            ensureVisible(input);
             safeLog(`Input ${idx + 1} made visible:`, input.name || input.type);
           });
         } else {
