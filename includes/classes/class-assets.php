@@ -540,7 +540,6 @@ class WDP_Assets {
 
         wp_localize_script('wdp-utils-js', 'wdp_ajax', array(
             'ajax_url' => admin_url('admin-ajax.php'),
-            'plugin_url' => $plugin_url,
             'nonces' => array(
                 'ajax_add_to_cart' => wp_create_nonce('wdp_ajax_add_to_cart'),
                 'get_product_info' => wp_create_nonce('wdp_get_product_info'),
@@ -555,10 +554,6 @@ class WDP_Assets {
             'cart_url' => function_exists('wc_get_cart_url') ? wc_get_cart_url() : '',
             'version' => WDP_VERSION,
             'debug' => defined('WP_DEBUG') && WP_DEBUG,
-            'jquery_loaded' => wp_script_is('jquery', 'enqueued'),
-            'wc_loaded' => class_exists('WooCommerce'),
-            'home_url' => home_url(),
-            'site_url' => site_url(),
             'currency' => array(
                 'code' => $current_currency,
                 'symbol' => $currency_symbol,
@@ -586,6 +581,10 @@ class WDP_Assets {
             ),
             'button_texts' => self::get_button_texts(),
             'shareholder_texts' => self::get_shareholder_texts(),
+            'flags' => array(
+                // Disabled by default to avoid theme-wide side cart visibility overrides.
+                'side_cart_recovery' => (bool) apply_filters('wdp_enable_side_cart_recovery', false),
+            ),
         ));
         self::$frontend_data_localized = true;
     }

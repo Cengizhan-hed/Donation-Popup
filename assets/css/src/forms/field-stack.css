@@ -15,9 +15,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stac
   border-radius: var(--wdp-field-stack-radius);
   background: var(--wdp-field-stack-bg);
   overflow: hidden;
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.75) inset,
-    0 1px 2px rgba(15, 23, 42, 0.04);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.76) inset, 0 8px 18px -14px rgba(15, 23, 42, 0.22);
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__row {
@@ -47,6 +45,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stac
 
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__row:focus-within {
   background: var(--wdp-field-stack-row-focus-bg);
+  box-shadow: inset 2px 0 0 color-mix(in srgb, var(--wdp-primary, #4a90e2) 45%, transparent);
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__row--textarea {
@@ -133,6 +132,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stac
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__textarea {
   min-height: var(--wdp-field-stack-textarea-min-height);
   resize: vertical;
+  max-height: 180px;
   padding-top: 0;
   padding-bottom: 0;
   line-height: 1.5;
@@ -163,6 +163,10 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stac
   border-radius: 8px;
   box-shadow: 0 1px 0 rgba(255, 255, 255, 0.45) inset;
   color: #b42318;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__row .wdp-input-error:empty {
+  display: none;
 }
 
 /* Phone invalid state must not add red row/input outlines */

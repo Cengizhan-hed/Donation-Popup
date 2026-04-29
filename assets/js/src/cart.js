@@ -102,6 +102,11 @@
   }
 
   function showSideCarts() {
+    const flags = (wdp_ajax && wdp_ajax.flags) ? wdp_ajax.flags : {};
+    if (!flags.side_cart_recovery) {
+      return;
+    }
+
     safeLog("Showing side carts");
 
     // Yaygın side cart sınıf ve ID'lerini kontrol et
@@ -241,7 +246,7 @@
     const header = document.createElement('div');
     header.className = 'wdp-mini-cart-header';
     const h4 = document.createElement('h4');
-    h4.textContent = 'Sepetiniz';
+    h4.textContent = 'Bağış Sepetiniz';
     header.appendChild(h4);
     miniCart.appendChild(header);
 

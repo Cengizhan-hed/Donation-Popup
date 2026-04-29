@@ -64,6 +64,39 @@ if (!defined('ABSPATH')) {
  */
 class WDP_Ajax {
     /**
+     * Enforce rate limit for a named action.
+     *
+     * @param string $action Action suffix for limiter key.
+     * @param int    $max_requests Maximum requests.
+     * @param int    $window_seconds Window in seconds.
+     * @return void
+     * @throws WDP_Security_Exception When rate limit exceeded.
+     */
+    private static function enforce_rate_limit($action, $max_requests, $window_seconds) {
+        $rate_limit_key = WDP_Security::get_rate_limit_key($action);
+        if (!WDP_Security::check_rate_limit($rate_limit_key, $max_requests, $window_seconds)) {
+            throw new WDP_Security_Exception(__('Çok fazla istek gönderildi. Lütfen bir süre bekleyip tekrar deneyin.', 'woo-donation-popup'));
+        }
+    }
+
+    /**
+     * Validate nonce and request origin.
+     *
+     * @param string $nonce_action Nonce action key.
+     * @return void
+     * @throws WDP_Security_Exception When validation fails.
+     */
+    private static function validate_ajax_request($nonce_action) {
+        if (!check_ajax_referer($nonce_action, 'security', false)) {
+            throw new WDP_Security_Exception();
+        }
+
+        if (!WDP_Security::validate_request_origin()) {
+            throw new WDP_Security_Exception(__('Geçersiz istek kaynağı', 'woo-donation-popup'));
+        }
+    }
+
+    /**
      * Build a cache suffix scoped to current cart session.
      *
      * @return string
@@ -154,15 +187,8 @@ class WDP_Ajax {
      */
     public static function get_product_info() {
         try {
-            // SECURITY: Nonce verification
-            if (!check_ajax_referer('wdp_get_product_info', 'security', false)) {
-                throw new WDP_Security_Exception();
-            }
-            
-            // SECURITY: Request origin validation
-            if (!WDP_Security::validate_request_origin()) {
-                throw new WDP_Security_Exception(__('Geçersiz istek kaynağı', 'woo-donation-popup'));
-            }
+            self::validate_ajax_request('wdp_get_product_info');
+            self::enforce_rate_limit('get_product_info', 60, 60);
 
             $product_id = isset($_POST['product_id']) ? absint(wp_unslash($_POST['product_id'])) : 0;
 
@@ -271,29 +297,22 @@ class WDP_Ajax {
      * @throws WDP_Product_Not_Found_Exception If product doesn't exist.
      */
     public static function get_product_name() {
-        // SECURITY: Nonce verification
-        if (!check_ajax_referer('wdp_get_product_name', 'security', false)) {
-            WDP_Utils::json_error(__('Güvenlik doğrulaması başarısız', 'woo-donation-popup'));
-            return;
-        }
-        
-        // SECURITY: Request origin validation
-        if (!WDP_Security::validate_request_origin()) {
-            WDP_Utils::json_error(__('Geçersiz istek kaynağı', 'woo-donation-popup'));
-            return;
+        try {
+            self::validate_ajax_request('wdp_get_product_name');
+            self::enforce_rate_limit('get_product_name', 60, 60);
+        } catch (WDP_Security_Exception $e) {
+            WDP_Utils::json_error($e);
         }
 
         $product_id = isset($_POST['product_id']) ? absint(wp_unslash($_POST['product_id'])) : 0;
 
         if (!$product_id) {
             WDP_Utils::json_error(__('Geçersiz ürün ID', 'woo-donation-popup'));
-            return;
         }
         
         // SECURITY: Validate product ID
         if (!WDP_Security::validate_product_id($product_id)) {
             WDP_Utils::json_error(__('Geçersiz ürün ID', 'woo-donation-popup'));
-            return;
         }
 
         // PERFORMANCE: Use cached product object
@@ -309,7 +328,6 @@ class WDP_Ajax {
 
         if (!$product) {
             WDP_Utils::json_error(__('Ürün bulunamadı', 'woo-donation-popup'));
-            return;
         }
 
         WDP_Utils::json_success(array(
@@ -332,15 +350,7 @@ class WDP_Ajax {
      */
     public static function ajax_add_to_cart() {
         try {
-            // SECURITY: Nonce verification
-            if (!check_ajax_referer('wdp_ajax_add_to_cart', 'security', false)) {
-                throw new WDP_Security_Exception();
-            }
-            
-            // SECURITY: Request origin validation
-            if (!WDP_Security::validate_request_origin()) {
-                throw new WDP_Security_Exception(__('Geçersiz istek kaynağı', 'woo-donation-popup'));
-            }
+            self::validate_ajax_request('wdp_ajax_add_to_cart');
 
             // SECURITY: Rate limiting check
             $rate_limit_key = WDP_Security::get_rate_limit_key('add_to_cart');
@@ -695,13 +705,7 @@ class WDP_Ajax {
      */
     public static function verify_submission_in_cart() {
         try {
-            if (!check_ajax_referer('wdp_ajax_add_to_cart', 'security', false)) {
-                throw new WDP_Security_Exception();
-            }
-
-            if (!WDP_Security::validate_request_origin()) {
-                throw new WDP_Security_Exception(__('Geçersiz istek kaynağı', 'woo-donation-popup'));
-            }
+            self::validate_ajax_request('wdp_ajax_add_to_cart');
 
             $rate_limit_key = WDP_Security::get_rate_limit_key('verify_submission');
             if (!WDP_Security::check_rate_limit($rate_limit_key, 40, 60)) {
@@ -808,16 +812,11 @@ class WDP_Ajax {
      * Get cart count via AJAX
      */
     public static function get_cart_count() {
-        // SECURITY: Nonce verification
-        if (!check_ajax_referer('wdp_get_cart_count', 'security', false)) {
-            WDP_Utils::json_error(__('Güvenlik doğrulaması başarısız', 'woo-donation-popup'));
-            return;
-        }
-        
-        // SECURITY: Request origin validation
-        if (!WDP_Security::validate_request_origin()) {
-            WDP_Utils::json_error(__('Geçersiz istek kaynağı', 'woo-donation-popup'));
-            return;
+        try {
+            self::validate_ajax_request('wdp_get_cart_count');
+            self::enforce_rate_limit('get_cart_count', 120, 60);
+        } catch (WDP_Security_Exception $e) {
+            WDP_Utils::json_error($e);
         }
 
         if (!function_exists('WC') || !isset(WC()->cart)) {
@@ -844,16 +843,11 @@ class WDP_Ajax {
      * Get cart contents via AJAX
      */
     public static function get_cart_contents() {
-        // SECURITY: Nonce verification
-        if (!check_ajax_referer('wdp_get_cart_contents', 'security', false)) {
-            WDP_Utils::json_error(__('Güvenlik doğrulaması başarısız', 'woo-donation-popup'));
-            return;
-        }
-        
-        // SECURITY: Request origin validation
-        if (!WDP_Security::validate_request_origin()) {
-            WDP_Utils::json_error(__('Geçersiz istek kaynağı', 'woo-donation-popup'));
-            return;
+        try {
+            self::validate_ajax_request('wdp_get_cart_contents');
+            self::enforce_rate_limit('get_cart_contents', 120, 60);
+        } catch (WDP_Security_Exception $e) {
+            WDP_Utils::json_error($e);
         }
 
         if (!function_exists('WC') || !isset(WC()->cart)) {
@@ -992,16 +986,11 @@ class WDP_Ajax {
      * @return void
      */
     public static function remove_cart_item() {
-        // SECURITY: Nonce verification (zorunlu)
-        if (!check_ajax_referer('wdp_remove_cart_item', 'security', false)) {
-            WDP_Utils::json_error(__('Güvenlik doğrulaması başarısız', 'woo-donation-popup'));
-            return;
-        }
-
-        // SECURITY: Request origin validation
-        if (!WDP_Security::validate_request_origin()) {
-            WDP_Utils::json_error(__('Geçersiz istek kaynağı', 'woo-donation-popup'));
-            return;
+        try {
+            self::validate_ajax_request('wdp_remove_cart_item');
+            self::enforce_rate_limit('remove_cart_item', 40, 60);
+        } catch (WDP_Security_Exception $e) {
+            WDP_Utils::json_error($e);
         }
 
         if (!function_exists('WC') || !isset(WC()->cart)) {

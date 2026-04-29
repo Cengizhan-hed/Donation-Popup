@@ -341,6 +341,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-quantity-counter {
   position: relative;
   vertical-align: middle;
   transition: border-color 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+  font-variant-numeric: tabular-nums;
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-quantity-counter input[type="number"] {
@@ -410,7 +411,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-quantity-counter .wdp-product
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  border-radius: 6px;
+  border-radius: 10px;
   transition: color 0.15s ease;
   outline: none;
   padding: 0;
@@ -422,10 +423,23 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-quantity-counter .wdp-product
   align-self: stretch;
 }
 
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-quantity-counter .wdp-product-quantity-btn::before {
+  content: "";
+  position: absolute;
+  inset: 6px;
+  border-radius: 8px;
+  background: transparent;
+  transition: background-color 0.15s ease;
+}
+
 html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content, .wdp-modal-content form) .wdp-quantity-counter .wdp-product-quantity-btn:is(:hover, :focus-visible) {
   color: var(--wdp-color-primary, var(--wdp-primary));
   background: transparent;
   outline: none;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content, .wdp-modal-content form) .wdp-quantity-counter .wdp-product-quantity-btn:is(:hover, :focus-visible)::before {
+  background: color-mix(in srgb, var(--wdp-color-primary, #4a90e2) 10%, transparent);
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content, .wdp-modal-content form) .wdp-quantity-counter .wdp-product-quantity-btn:active {
@@ -457,6 +471,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-shares-section .wdp-share-cou
   gap: 0;
   position: relative;
   transition: border-color 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+  font-variant-numeric: tabular-nums;
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-shares-section .wdp-share-counter input[type="number"] {
@@ -508,7 +523,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-shares-section .wdp-share-cou
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  border-radius: 6px;
+  border-radius: 10px;
   transition: color 0.15s ease;
   outline: none;
   padding: 0;
@@ -516,6 +531,16 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-shares-section .wdp-share-cou
   line-height: 1;
   box-sizing: border-box;
   align-self: stretch;
+  position: relative;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-shares-section .wdp-share-counter .wdp-share-btn::before {
+  content: "";
+  position: absolute;
+  inset: 6px;
+  border-radius: 8px;
+  background: transparent;
+  transition: background-color 0.15s ease;
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-shares-section .wdp-share-counter .wdp-share-btn span {
@@ -532,6 +557,10 @@ html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content, .wdp-modal
   color: var(--wdp-color-primary, var(--wdp-primary));
   background: transparent;
   outline: none;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content, .wdp-modal-content form) .wdp-shares-section .wdp-share-counter .wdp-share-btn:is(:hover, :focus-visible)::before {
+  background: color-mix(in srgb, var(--wdp-color-primary, #4a90e2) 10%, transparent);
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content, .wdp-modal-content form) .wdp-shares-section .wdp-share-counter .wdp-share-btn:active {
@@ -663,3 +692,26 @@ html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content form, .wdp-
 
 /* Mobile responsive styles with high specificity */
 /* CRITICAL: Mobile should look identical to desktop - no visual changes */
+
+/* -------------------------------------------------------------------------- */
+/* Premium stability pass                                                      */
+/* -------------------------------------------------------------------------- */
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-price-quantity-row {
+  align-items: stretch;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-quantity-counter, .wdp-share-counter, .wdp-share-quantity) {
+  contain: layout paint;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-quantity-counter, .wdp-share-counter, .wdp-share-quantity) input[type="number"] {
+  letter-spacing: 0;
+  text-indent: 0;
+}
+
+@media (max-width: 600px) {
+  html body :is(.wdp-modal, .wdp-donation-form) .wdp-price-quantity-row:not(.wdp-progress-bar-price-row) {
+    grid-template-columns: 1fr;
+    row-gap: var(--wdp-space-2, 8px);
+  }
+}

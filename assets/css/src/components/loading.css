@@ -19,9 +19,9 @@ html body .wdp-loading-overlay {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(2px);
-  -webkit-backdrop-filter: blur(2px);
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -72,29 +72,7 @@ html body .wdp-skeleton-button {
   border-radius: 10px;
 }
 
-/* Progress indicator */
-html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-progress-bar,
-html body .wdp-progress-bar {
-  width: 100%;
-  height: 4px;
-  background-color: var(--wdp-gray-200);
-  border-radius: 10px;
-  overflow: hidden;
-  position: relative;
-}
-
-html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-progress-bar-fill,
-html body .wdp-progress-bar-fill {
-  height: 100%;
-  background: linear-gradient(
-    90deg,
-    var(--wdp-primary) 0%,
-    var(--wdp-primary-hover, #185d98) 100%
-  );
-  border-radius: 10px;
-  transition: width var(--wdp-duration-300, 300ms) var(--wdp-ease-out, cubic-bezier(0, 0, 0.2, 1));
-  /* Animation removed - Static progress bar per user request */
-}
+/* Progress bar visuals are centralized in components/progress-bar.css */
 
 /* Loading dots - Static, no animation */
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-loading-dots,

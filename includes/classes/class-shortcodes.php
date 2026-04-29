@@ -52,7 +52,7 @@ class WDP_Shortcodes {
         $custom_style = sanitize_text_field($atts['style']);
 
         // Ürünün varlığını kontrol et
-        $product = wc_get_product($product_id);
+        $product = WDP_Donation_Product_Context_Service::get_product($product_id);
         if (!$product) {
             if (current_user_can('manage_options')) {
                 return '<p style="color:red;">Ürün bulunamadı (ID: ' . esc_html($product_id) . '). Lütfen ürün ID\'sini kontrol edin.</p>';
@@ -164,7 +164,7 @@ class WDP_Shortcodes {
         ), $atts, 'wdp_donation_form');
 
         // Ürün ID'sini integer'a çevir
-        $product_id = intval($atts['id']);
+        $product_id = absint($atts['id']);
 
         // Buton metni
         $button_text = sanitize_text_field($atts['button_text']);
@@ -173,7 +173,7 @@ class WDP_Shortcodes {
         $custom_class = sanitize_text_field($atts['class']);
 
         // Ürünün varlığını kontrol et
-        $product = wc_get_product($product_id);
+        $product = WDP_Donation_Product_Context_Service::get_product($product_id);
         if (!$product) {
             if (current_user_can('manage_options')) {
                 return '<p style="color:red;">Ürün bulunamadı (ID: ' . esc_html($product_id) . '). Lütfen ürün ID\'sini kontrol edin.</p>';

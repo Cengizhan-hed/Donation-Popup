@@ -208,6 +208,15 @@ php tools/build-css-bundle.php
 - Eklenti bu manifest dosyasını otomatik algılar ve varsa tek bundle dosyayı enqueue eder.
 - Manifest yoksa otomatik olarak katmanlı `assets/css/src/*` fallback yükleme çalışır.
 
+### Dağıtım ZIP Paketleme (Release)
+- Üretim kurulumu için ZIP paketini script ile oluşturun:
+```bash
+npm run pack
+```
+- Script çıktısı: `build/woo-donation-popup.zip`
+- Paketleme dışlama kuralları tek kaynaktan `.distignore` dosyasından okunur.
+- Böylece geliştirme dosyaları (ör. `.git`, `node_modules`, lock dosyaları, local env) yanlışlıkla release paketine girmez.
+
 ## 🔄 Güncellemeler
 
 ### Versiyon 10.0

@@ -5,9 +5,9 @@
 
 html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content, .wdp-modal-content form) .wdp-form-error,
 html body .wdp-form-error {
-  background-color: var(--wdp-form-error-bg);
-  border: 1px solid var(--wdp-form-error-border);
-  color: var(--wdp-form-error-text);
+  background-color: #fff7f7;
+  border: 1px solid #fecaca;
+  color: #b42318;
   padding: var(--wdp-space-3) var(--wdp-space-4);
   border-radius: var(--wdp-input-radius);
   margin-bottom: var(--wdp-space-4);
@@ -30,9 +30,9 @@ html body .wdp-form-error::before {
 
 html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content, .wdp-modal-content form) .wdp-form-success,
 html body .wdp-form-success {
-  background-color: var(--wdp-form-success-bg);
-  border: 1px solid var(--wdp-form-success-border);
-  color: var(--wdp-form-success-text);
+  background-color: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #166534;
   padding: var(--wdp-space-3) var(--wdp-space-4);
   border-radius: var(--wdp-input-radius);
   margin-bottom: var(--wdp-space-4);
@@ -68,9 +68,16 @@ html body .wdp-input-error {
   font-size: 11px;
   line-height: 1.4;
   font-weight: 500;
-  white-space: nowrap;
+  white-space: normal;
   z-index: 100;
   pointer-events: none;
+}
+
+/* Safer default: inline field-level error flow to avoid viewport overflow in popup/mobile. */
+html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content, .wdp-modal-content form) :not(.wdp-field-stack__row) > .wdp-input-error {
+  position: static;
+  display: block;
+  margin-top: 6px;
 }
 
 /* Field-stack rows render validation inline for stable popup/mobile layout. */

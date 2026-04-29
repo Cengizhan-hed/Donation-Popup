@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
-# WordPress plugin ZIP: copies the working tree (including untracked vendor) into a temp folder,
-# then zips it. Excludes node_modules, .git, and dev manifests — the usual cause of ~20MB+ archives.
+# WordPress plugin ZIP builder.
+# - Copies working tree (including untracked runtime vendor files) to a temp dir
+# - Applies exclude rules from .distignore (single source of truth)
+# - Creates build/woo-donation-popup.zip
 set -euo pipefail
 
 PLUGIN_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -12,6 +14,7 @@ mkdir -p "$PLUGIN_ROOT/build"
 OUT_ZIP="$PLUGIN_ROOT/build/woo-donation-popup.zip"
 DEST="$TMP/$ARCHIVE_DIR_NAME"
 mkdir -p "$DEST"
+DISTIGNORE_FILE="$PLUGIN_ROOT/.distignore"
 
 if ! command -v rsync >/dev/null 2>&1; then
   echo "error: rsync is required (install Xcode CLT on macOS)." >&2
@@ -22,21 +25,34 @@ if ! command -v zip >/dev/null 2>&1; then
   exit 1
 fi
 
-rsync -a \
-  --exclude='node_modules' \
-  --exclude='.git' \
-  --exclude='.cursor' \
-  --exclude='.vscode' \
-  --exclude='build' \
-  --exclude='.DS_Store' \
-  --exclude='package.json' \
-  --exclude='package-lock.json' \
-  --exclude='yarn.lock' \
-  --exclude='pnpm-lock.yaml' \
-  --exclude='.env' \
-  --exclude='.env.*' \
-  --exclude='*.zip' \
-  "$PLUGIN_ROOT/" "$DEST/"
+RSYNC_ARGS=(-a)
+
+# Baseline excludes in case .distignore is missing.
+DEFAULT_EXCLUDES=(
+  "node_modules/"
+  ".git/"
+  ".cursor/"
+  ".vscode/"
+  "build/"
+  ".DS_Store"
+  "*.zip"
+)
+
+for pattern in "${DEFAULT_EXCLUDES[@]}"; do
+  RSYNC_ARGS+=(--exclude="$pattern")
+done
+
+if [[ -f "$DISTIGNORE_FILE" ]]; then
+  while IFS= read -r line || [[ -n "$line" ]]; do
+    # Trim whitespace.
+    pattern="$(echo "$line" | sed -E 's/^[[:space:]]+|[[:space:]]+$//g')"
+    # Skip comments and empty lines.
+    [[ -z "$pattern" || "${pattern:0:1}" == "#" ]] && continue
+    RSYNC_ARGS+=(--exclude="$pattern")
+  done < "$DISTIGNORE_FILE"
+fi
+
+rsync "${RSYNC_ARGS[@]}" "$PLUGIN_ROOT/" "$DEST/"
 
 cd "$TMP"
 rm -f "$OUT_ZIP"

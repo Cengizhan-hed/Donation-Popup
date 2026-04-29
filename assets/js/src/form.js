@@ -859,7 +859,7 @@
     if (s && typeof s.added_to_cart === 'string' && s.added_to_cart.trim()) {
       return s.added_to_cart.trim();
     }
-    return 'Bağışınız sepete eklendi!';
+    return 'Bağışınız güvenle sepete eklendi.';
   }
 
   function renderSuccessScreen(successScreen, cartItems) {
@@ -871,6 +871,10 @@
     message.className = 'wdp-success-message';
     message.textContent = getSuccessMessageText();
     successScreen.appendChild(message);
+    const reassurance = document.createElement('div');
+    reassurance.className = 'wdp-success-reassurance';
+    reassurance.textContent = 'Bilgileriniz bir sonraki adımda tekrar kontrol edilebilir.';
+    successScreen.appendChild(reassurance);
     if (typeof renderCartItemsInto === 'function') {
       renderCartItemsInto(successScreen, Array.isArray(cartItems) ? cartItems : []);
     } else {

@@ -31,11 +31,9 @@ html body.wdp-iti-country-open .wdp-modal.show .wdp-modal-content {
   display: flex;
   flex-direction: column;
   max-height: inherit;
-  border-radius: 12px;
+  border-radius: 16px;
   border: 1px solid color-mix(in srgb, var(--wdp-gray-400, #9ca3af) 35%, #e5e7eb);
-  box-shadow:
-    0 10px 40px rgba(15, 23, 42, 0.14),
-    0 2px 8px rgba(15, 23, 42, 0.08);
+  box-shadow: 0 14px 34px -18px rgba(15, 23, 42, 0.24), 0 8px 20px -16px rgba(15, 23, 42, 0.2);
   background: var(--wdp-field-stack-bg, #fff);
   overflow: hidden;
 }
@@ -149,11 +147,9 @@ body > .iti.iti--container.iti--wdp-positioned:not(.iti--fullscreen-popup),
 body > .iti.iti--container:not(.iti--fullscreen-popup) .iti__dropdown-content,
 .wdp-modal.show .wdp-iti-dropdown-root .iti.iti--container:not(.iti--fullscreen-popup) .iti__dropdown-content,
 .wdp-donation-form .wdp-iti-dropdown-root .iti.iti--container:not(.iti--fullscreen-popup) .iti__dropdown-content {
-  border-radius: 12px;
+  border-radius: 16px;
   border: 1px solid color-mix(in srgb, var(--wdp-gray-400, #9ca3af) 35%, #e5e7eb);
-  box-shadow:
-    0 10px 40px rgba(15, 23, 42, 0.12),
-    0 2px 8px rgba(15, 23, 42, 0.06);
+  box-shadow: 0 14px 34px -18px rgba(15, 23, 42, 0.24), 0 8px 20px -16px rgba(15, 23, 42, 0.2);
   background: var(--wdp-field-stack-bg, #fff);
   max-height: min(260px, 42vh);
   overflow-y: auto;
@@ -238,7 +234,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-field-stack__phone .iti__sele
   box-shadow: none;
   border-radius: 0;
   justify-content: flex-start;
-  padding: 0 4px 0 0;
+  padding: 0 6px 0 0;
 }
 
 /* Divider on the selector strip only — included in offsetWidth so lib padding-left stays aligned */
@@ -279,5 +275,10 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-field-stack__phone .iti__dial
 
   html body :is(.wdp-modal, .wdp-donation-form) .wdp-field-stack__phone .iti__tel-input {
     font-size: max(16px, var(--wdp-input-font-size, 16px));
+  }
+
+  .wdp-phone-country-panel__item {
+    min-height: 46px;
+    padding: 11px 12px;
   }
 }

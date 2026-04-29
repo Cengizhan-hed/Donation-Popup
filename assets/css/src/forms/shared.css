@@ -79,9 +79,10 @@ html body .wdp-modal .wdp-modal-content > .wdp-modal-close {
   margin: 0;
   padding: 0;
   border: none;
-  border-radius: 0;
-  background: transparent;
-  color: var(--wdp-gray-400, #9ca3af);
+  border-radius: 999px;
+  background: color-mix(in srgb, #ffffff 88%, #e2e8f0);
+  border: 1px solid color-mix(in srgb, #cbd5e1 45%, transparent);
+  color: var(--wdp-gray-500, #6b7280);
   font-size: 19px;
   line-height: 1;
   cursor: pointer;
@@ -135,10 +136,10 @@ html body .wdp-modal .wdp-modal-close:hover,
 html body .wdp-modal .wdp-modal-close:focus,
 html body .wdp-donation-form .wdp-modal-close:hover,
 html body .wdp-donation-form .wdp-modal-close:focus {
-  color: var(--wdp-gray-600, #4b5563);
+  color: var(--wdp-gray-700, #374151);
   outline: none;
-  background: transparent;
-  border: none;
+  background: color-mix(in srgb, #f8fafc 88%, #cbd5e1);
+  border-color: color-mix(in srgb, #94a3b8 42%, transparent);
 }
 
 html body .wdp-modal .wdp-modal-close:active,
@@ -195,6 +196,8 @@ html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-header, .wdp-modal-
   background: var(--wdp-price-badge-bg, rgba(30, 115, 190, 0.06));
   border: var(--wdp-price-badge-border, 1px solid rgba(30, 115, 190, 0.11));
   border-radius: 999px;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: var(--wdp-font-numeric, "tnum" 1, "zero" 1);
   flex-shrink: 0;
   max-width: 100%;
 }
@@ -614,24 +617,6 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content form.wdp-has-sh
   position: relative;
 }
 
-html body :is(.wdp-modal, .wdp-donation-form) .wdp-price-quantity-row {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--wdp-space-3, 12px);
-  align-items: stretch;
-  width: 100%;
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-html body :is(.wdp-modal, .wdp-donation-form) .wdp-price-quantity-row > *:not(input[name="custom_price"]):not(.wdp-price-field) {
-  width: 100%;
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-price-quantity-row:has(> input[type="hidden"]:only-child) {
   display: flex;
   flex-direction: column;
@@ -897,6 +882,11 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content select {
   text-align: left;
 }
 
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content :is(input[type="text"], input[type="tel"], input[type="email"], input[type="password"], input[type="search"], select):not(.wdp-field-stack__input):hover {
+  border-color: color-mix(in srgb, var(--wdp-input-border, #d1d5db) 72%, var(--wdp-color-primary, #4a90e2));
+  background: color-mix(in srgb, var(--wdp-input-bg, #ffffff) 95%, #f8fafc);
+}
+
 /* Ad soyad ve telefon numarası alanları - Metin sola dayalı, dikeyde ortalanmış */
 /* CRITICAL: Popup ve sayfa içi formlarda tutarlılık için yüksek specificity */
 html body .wdp-modal.show .wdp-modal-content form :is(input[type="text"], input[type="tel"]),
@@ -923,6 +913,11 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content textarea:not(.w
     background   0.18s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content textarea:not(.wdp-field-stack__textarea):hover {
+  border-color: color-mix(in srgb, var(--wdp-input-border, #d1d5db) 72%, var(--wdp-color-primary, #4a90e2));
+  background: color-mix(in srgb, var(--wdp-input-bg, #ffffff) 95%, #f8fafc);
+}
+
 /* Fare ile tıklamada sert kenarlık / halka yok; stack içi alanlar field-stack.css ile (çerçevesiz) */
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content :is(input:not(.wdp-field-stack__input), select, textarea:not(.wdp-field-stack__textarea)):focus {
   outline: none;
@@ -941,6 +936,10 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content :is(input:not(.
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content :is(input, textarea)::placeholder {
   color: var(--wdp-placeholder-color, #6b7280);
   opacity: 1;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-trust-strip {
+  display: none;
 }
 
 /* Sayfa içi formlarda ad soyad ve telefon numarası sola dayalı, dikeyde ortalanmış */

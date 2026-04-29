@@ -30,15 +30,15 @@ html body .wdp-toast {
   position: fixed;
   top: 20px;
   right: 20px;
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(12px) saturate(150%);
-  -webkit-backdrop-filter: blur(12px) saturate(150%);
-  border: 1px solid rgba(255, 255, 255, 0.75);
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px) saturate(120%);
+  -webkit-backdrop-filter: blur(8px) saturate(120%);
+  border: 1px solid #e2e8f0;
   border-radius: var(--wdp-radius-lg, 18px);
   padding: 14px 18px;
   z-index: 1000003;
-  max-width: 320px;
-  min-width: 240px;
+  max-width: 360px;
+  min-width: 260px;
   /* Hidden by default — JS adds .show */
   opacity: 0;
   transform: translateX(calc(100% + 24px)) scale(0.95);
@@ -67,13 +67,13 @@ html body .wdp-toast.error {
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-toast.warning,
 html body .wdp-toast.warning {
   border-left: 3px solid var(--wdp-warning, #f59e0b);
-  background: rgba(255, 251, 235, 0.95);
+  background: rgba(255, 251, 235, 0.98);
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-toast.success,
 html body .wdp-toast.success {
-  border-left: 3px solid var(--wdp-success-color, #10b981);
-  background: rgba(240, 253, 249, 0.95);
+  border-left: 3px solid var(--wdp-success, #10b981);
+  background: rgba(240, 253, 249, 0.98);
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-toast-header,

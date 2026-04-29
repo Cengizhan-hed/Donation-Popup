@@ -13,9 +13,9 @@ html body .wdp-alert-overlay {
   align-items: center;
   justify-content: center;
   padding: clamp(16px, 4vw, 32px);
-  background: rgba(15, 23, 42, 0.35);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background: rgba(15, 23, 42, 0.26);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.25s ease;
@@ -35,16 +35,16 @@ html body .wdp-alert {
   --wdp-alert-icon-bg: rgba(229, 62, 62, 0.12);
   --wdp-alert-icon-color: var(--wdp-error);
   --wdp-alert-icon-shadow: inset 0 0 0 1px rgba(229, 62, 62, 0.18);
-  width: min(520px, 96vw);
+  width: min(540px, 96vw);
   background: var(--wdp-alert-bg, var(--wdp-card-bg, #ffffff));
-  border-radius: var(--wdp-radius-xl, var(--wdp-card-radius));
+  border-radius: var(--wdp-radius-lg, 18px);
   border: 1px solid var(--wdp-alert-border, var(--wdp-card-border, #e5e7eb));
   display: grid;
   grid-template-columns: auto 1fr auto;
   gap: var(--wdp-space-4);
-  padding: var(--wdp-space-6);
+  padding: clamp(16px, 2.2vw, 24px);
   color: var(--wdp-gray-800);
-  transform: translateY(24px) scale(0.98);
+  transform: translateY(14px) scale(0.99);
   opacity: 0;
   transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.32s ease;
 }

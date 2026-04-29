@@ -29,7 +29,7 @@ class WDP_Cart {
         add_filter('woocommerce_get_item_data', array(__CLASS__, 'display_donation_data_in_cart'), 10, 2);
 
         // Özel fiyat uygulaması için gerekli hook'lar
-        add_filter('woocommerce_before_calculate_totals', array(__CLASS__, 'apply_custom_price_to_cart'), 99);
+        add_action('woocommerce_before_calculate_totals', array(__CLASS__, 'apply_custom_price_to_cart'), 99);
         add_filter('woocommerce_cart_item_price', array(__CLASS__, 'custom_cart_item_price'), 10, 3);
         add_filter('woocommerce_cart_item_subtotal', array(__CLASS__, 'custom_cart_item_subtotal'), 10, 3);
 
@@ -47,14 +47,18 @@ class WDP_Cart {
      * @return array
      */
     public static function add_donation_item_data($cart_item_data, $product_id, $variation_id) {
+        $request_data = self::get_request_data();
+
         // Sadece bağış formundan gelen istekleri işleme al
-        if (isset($_POST['donation_modal']) && $_POST['donation_modal'] == '1') {
+        if (self::is_donation_modal_request($request_data)) {
             $donation_data = array();
 
             // Çoklu hisse kontrolü
-            $share_count = isset($_POST['share_count']) ? absint($_POST['share_count']) : 0;
+            $share_count = isset($request_data['share_count']) ? absint($request_data['share_count']) : 0;
+            $max_share_count = self::get_max_share_count($product_id);
 
             if ($share_count > 0) {
+                $share_count = min($share_count, $max_share_count);
                 $donation_data['share_count'] = $share_count;
 
                 // Hissedar bilgilerini al
@@ -63,16 +67,16 @@ class WDP_Cart {
                 for ($i = 1; $i <= $share_count; $i++) {
                     $shareholder = array();
 
-                    if (isset($_POST['shareholder_name_' . $i])) {
-                        $shareholder['name'] = sanitize_text_field($_POST['shareholder_name_' . $i]);
+                    if (isset($request_data['shareholder_name_' . $i])) {
+                        $shareholder['name'] = sanitize_text_field($request_data['shareholder_name_' . $i]);
                     }
 
-                    if (isset($_POST['shareholder_phone_' . $i])) {
-                        $shareholder['phone'] = sanitize_text_field($_POST['shareholder_phone_' . $i]);
+                    if (isset($request_data['shareholder_phone_' . $i])) {
+                        $shareholder['phone'] = sanitize_text_field($request_data['shareholder_phone_' . $i]);
                     }
 
-                    if (isset($_POST['shareholder_note_' . $i])) {
-                        $shareholder['note'] = sanitize_textarea_field($_POST['shareholder_note_' . $i]);
+                    if (isset($request_data['shareholder_note_' . $i])) {
+                        $shareholder['note'] = sanitize_textarea_field($request_data['shareholder_note_' . $i]);
                     }
 
                     if (!empty($shareholder)) {
@@ -90,16 +94,16 @@ class WDP_Cart {
                 }
             } else {
                 // Normal bağış verilerini al
-                if (!empty($_POST['donation_full_name'])) {
-                    $donation_data['full_name'] = sanitize_text_field($_POST['donation_full_name']);
+                if (!empty($request_data['donation_full_name'])) {
+                    $donation_data['full_name'] = sanitize_text_field($request_data['donation_full_name']);
                 }
 
-                if (!empty($_POST['donation_phone'])) {
-                    $donation_data['phone'] = sanitize_text_field($_POST['donation_phone']);
+                if (!empty($request_data['donation_phone'])) {
+                    $donation_data['phone'] = sanitize_text_field($request_data['donation_phone']);
                 }
 
-                if (isset($_POST['donation_note'])) {
-                    $donation_data['note'] = sanitize_textarea_field($_POST['donation_note']);
+                if (isset($request_data['donation_note'])) {
+                    $donation_data['note'] = sanitize_textarea_field($request_data['donation_note']);
                 }
             }
 
@@ -108,8 +112,8 @@ class WDP_Cart {
                 $cart_item_data['donation_data'] = $donation_data;
 
                 // Benzersiz gönderim anahtarını ekle (eğer varsa)
-                if (isset($_POST['unique_submission_key']) && !empty($_POST['unique_submission_key'])) {
-                    $cart_item_data['unique_submission_key'] = sanitize_text_field($_POST['unique_submission_key']);
+                if (isset($request_data['unique_submission_key']) && !empty($request_data['unique_submission_key'])) {
+                    $cart_item_data['unique_submission_key'] = sanitize_text_field($request_data['unique_submission_key']);
                 }
 
                 // Her sepete ekleme işlemine özgü benzersiz bir anahtar oluştur
@@ -119,15 +123,18 @@ class WDP_Cart {
                     'product_id' => $product_id,
                     'ip' => isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '',
                     'form_data' => $donation_data,
-                    'custom_price' => isset($_POST['custom_price']) ? $_POST['custom_price'] : '',
+                    'custom_price' => isset($request_data['custom_price']) ? $request_data['custom_price'] : '',
                 );
 
                 $cart_item_data['unique_key'] = md5(serialize($unique_data));
             }
 
             // Özel fiyat değerini ekle
-            if (isset($_POST['custom_price']) && !empty($_POST['custom_price'])) {
-                $cart_item_data['custom_price'] = floatval($_POST['custom_price']);
+            if (isset($request_data['custom_price']) && '' !== $request_data['custom_price']) {
+                $custom_price = self::sanitize_custom_price($request_data['custom_price']);
+                if (null !== $custom_price) {
+                    $cart_item_data['custom_price'] = $custom_price;
+                }
             }
         }
 
@@ -145,23 +152,42 @@ class WDP_Cart {
      * @return bool
      */
     public static function validate_donation_fields($passed, $product_id, $quantity, $variation_id = '', $variations = array()) {
+        $request_data = self::get_request_data();
+
         // Sadece bağış formundan gelen istekleri işleme al
-        if (isset($_POST['donation_modal']) && $_POST['donation_modal'] == '1') {
+        if (self::is_donation_modal_request($request_data)) {
+            if (!self::is_valid_donation_form_nonce($request_data)) {
+                wc_add_notice(__('Güvenlik doğrulaması başarısız oldu. Lütfen sayfayı yenileyip tekrar deneyin.', 'woo-donation-popup'), 'error');
+                return false;
+            }
+
             // Çoklu hisse kontrolü
-            $share_count = isset($_POST['share_count']) ? absint($_POST['share_count']) : 0;
+            $share_count = isset($request_data['share_count']) ? absint($request_data['share_count']) : 0;
+            $max_share_count = self::get_max_share_count($product_id);
 
             if ($share_count > 0) {
+                if ($share_count > $max_share_count) {
+                    wc_add_notice(
+                        sprintf(
+                            __('Maksimum hisse sayısı: %d', 'woo-donation-popup'),
+                            $max_share_count
+                        ),
+                        'error'
+                    );
+                    return false;
+                }
+
                 // Hissedar bilgilerini kontrol et
                 $valid = true;
                 $missing_fields = array();
 
                 for ($i = 1; $i <= $share_count; $i++) {
-                    if (!isset($_POST['shareholder_name_' . $i]) || empty($_POST['shareholder_name_' . $i])) {
+                    if (!isset($request_data['shareholder_name_' . $i]) || empty($request_data['shareholder_name_' . $i])) {
                         $valid = false;
                         $missing_fields[] = $i . '. Hissedar Adı';
                     }
 
-                    if (!isset($_POST['shareholder_phone_' . $i]) || empty($_POST['shareholder_phone_' . $i])) {
+                    if (!isset($request_data['shareholder_phone_' . $i]) || empty($request_data['shareholder_phone_' . $i])) {
                         $valid = false;
                         $missing_fields[] = $i . '. Hissedar Telefonu';
                     }
@@ -173,12 +199,12 @@ class WDP_Cart {
                 }
             } else {
                 // Normal bağış verilerini kontrol et
-                if (!isset($_POST['donation_full_name']) || empty($_POST['donation_full_name'])) {
+                if (!isset($request_data['donation_full_name']) || empty($request_data['donation_full_name'])) {
                     wc_add_notice(__('Lütfen Ad Soyad bilginizi giriniz.', 'woo-donation-popup'), 'error');
                     return false;
                 }
 
-                if (!isset($_POST['donation_phone']) || empty($_POST['donation_phone'])) {
+                if (!isset($request_data['donation_phone']) || empty($request_data['donation_phone'])) {
                     wc_add_notice(__('Lütfen Telefon bilginizi giriniz.', 'woo-donation-popup'), 'error');
                     return false;
                 }
@@ -188,20 +214,26 @@ class WDP_Cart {
             // OPTIMIZATION: WooCommerce get_meta() kullan (cache'lenmiş, daha hızlı)
             $product = wc_get_product($product_id);
             if (!$product) {
-                return;
+                return $passed;
             }
             $allow_custom_price = $product->get_meta('_allow_custom_price') === 'yes';
 
             if ($allow_custom_price) {
-                if (!isset($_POST['custom_price']) || empty($_POST['custom_price'])) {
+                if (!isset($request_data['custom_price']) || '' === $request_data['custom_price']) {
                     wc_add_notice(__('Lütfen bağış miktarını giriniz.', 'woo-donation-popup'), 'error');
+                    return false;
+                }
+
+                $custom_price = self::sanitize_custom_price($request_data['custom_price']);
+                if (null === $custom_price) {
+                    wc_add_notice(__('Geçersiz bağış miktarı girdiniz.', 'woo-donation-popup'), 'error');
                     return false;
                 }
 
                 // Minimum fiyat kontrolü
                 // OPTIMIZATION: WooCommerce get_meta() kullan (cache'lenmiş, daha hızlı)
                 $min_price = $product->get_meta('_min_custom_price');
-                if ($min_price !== '' && floatval($_POST['custom_price']) < floatval($min_price)) {
+                if ($min_price !== '' && $custom_price < floatval($min_price)) {
                     wc_add_notice(sprintf(__('Lütfen %s TL ve üstü değerler girin.', 'woo-donation-popup'), wc_format_decimal($min_price)), 'error');
                     return false;
                 }
@@ -209,6 +241,29 @@ class WDP_Cart {
         }
 
         return $passed;
+    }
+
+    /**
+     * Return unslashed request payload.
+     *
+     * @return array
+     */
+    private static function get_request_data() {
+        if (!isset($_POST) || !is_array($_POST)) {
+            return array();
+        }
+
+        return wp_unslash($_POST);
+    }
+
+    /**
+     * Check if current request is donation modal submission.
+     *
+     * @param array $request_data Request payload.
+     * @return bool
+     */
+    private static function is_donation_modal_request(array $request_data) {
+        return isset($request_data['donation_modal']) && '1' == $request_data['donation_modal'];
     }
 
     /**
@@ -277,10 +332,65 @@ class WDP_Cart {
         foreach ($cart->get_cart() as $cart_item_key => $cart_item) {
             if (isset($cart_item['custom_price'])) {
                 $product = $cart_item['data'];
-                $custom_price = floatval($cart_item['custom_price']);
-                $product->set_price($custom_price);
+                $custom_price = self::sanitize_custom_price($cart_item['custom_price']);
+                if (null !== $custom_price) {
+                    $product->set_price($custom_price);
+                }
             }
         }
+    }
+
+    /**
+     * Validate donation form nonce for non-AJAX add-to-cart requests.
+     *
+     * @param array $request_data Request payload.
+     * @return bool
+     */
+    private static function is_valid_donation_form_nonce(array $request_data) {
+        $nonce = isset($request_data['wdp_nonce']) ? sanitize_text_field($request_data['wdp_nonce']) : '';
+        if ($nonce === '') {
+            return false;
+        }
+
+        return (bool) wp_verify_nonce($nonce, 'wdp_nonajax_add_to_cart');
+    }
+
+    /**
+     * Sanitize custom price to avoid negative or abusive values.
+     *
+     * @param mixed $value Raw value.
+     * @return float|null
+     */
+    private static function sanitize_custom_price($value) {
+        if (!class_exists('WDP_Security')) {
+            $numeric = is_numeric($value) ? (float) $value : null;
+            if (null === $numeric || $numeric < 0 || $numeric > 999999) {
+                return null;
+            }
+            return $numeric;
+        }
+
+        return WDP_Security::sanitize_numeric($value, 0, 999999);
+    }
+
+    /**
+     * Determine max share count for product with safety fallback.
+     *
+     * @param int $product_id Product ID.
+     * @return int
+     */
+    private static function get_max_share_count($product_id) {
+        $product = wc_get_product($product_id);
+        if (!$product) {
+            return 50;
+        }
+
+        $configured_max = absint($product->get_meta('_max_shares'));
+        if ($configured_max < 1) {
+            $configured_max = 7;
+        }
+
+        return min($configured_max, 50);
     }
 
     /**

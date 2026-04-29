@@ -194,10 +194,10 @@ class WDP_Templates {
      */
     public static function render_donation_modal($product_id, $button_text = '', $custom_class = '', $custom_style = '') {
         // Ürün ID'sini integer'a çevir
-        $product_id = intval($product_id);
+        $product_id = absint($product_id);
 
         // Ürünün varlığını kontrol et
-        $product = wc_get_product($product_id);
+        $product = WDP_Donation_Product_Context_Service::get_product($product_id);
         if (!$product) {
             if (current_user_can('manage_options')) {
                 return '<p style="color:red;">Ürün bulunamadı (ID: ' . esc_html($product_id) . '). Lütfen ürün ID\'sini kontrol edin.</p>';
@@ -213,18 +213,13 @@ class WDP_Templates {
             $button_text = isset($button_settings['popup_button_text']) ? $button_settings['popup_button_text'] : __('Bağış Yap', 'woo-donation-popup');
         }
 
-        // Ürün adını al
-        $product_name = $product->get_name();
-        
-        // Ürün fiyatını al
-        $product_price = $product->get_price();
-        $formatted_price = $product_price ? WDP_Utils::format_price_html($product_price) : '';
-        $enable_product_note = $product->get_meta('_enable_product_note') === 'yes';
-        $product_note_text = trim((string) $product->get_meta('_product_note_text'));
-        $product_note_icon = $product->get_meta('_product_note_icon');
-        if ($product_note_icon === '') {
-            $product_note_icon = 'info';
-        }
+        $context = WDP_Donation_Product_Context_Service::build_form_context($product);
+        $product_name = $context['product_name'];
+        $product_price = $context['product_price'];
+        $formatted_price = $context['formatted_price'];
+        $enable_product_note = $context['enable_product_note'];
+        $product_note_text = $context['product_note_text'];
+        $product_note_icon = $context['product_note_icon'];
         $show_product_note = $enable_product_note && $product_note_text !== '';
         $note_tone_class = self::get_note_tone_class($product_note_icon);
         $is_long_note = self::text_length($product_note_text) > 110;
@@ -233,53 +228,16 @@ class WDP_Templates {
         // Benzersiz bir ID oluştur
         $modal_id = 'wdp-modal-' . $product_id;
 
-        // OPTIMIZATION: WooCommerce get_meta() kullan (cache'lenmiş, daha hızlı)
-        $allow_custom_price = $product->get_meta('_allow_custom_price') === 'yes';
-        $min_price = $product->get_meta('_min_custom_price');
-
-        // Eğer minimum fiyat yoksa ve özel fiyat aktifse, varsayılan olarak 0 kullan
-        if ($allow_custom_price && $min_price === '') {
-            $min_price = '0';
-        }
-
-        // OPTIMIZATION: WooCommerce get_meta() kullan (cache'lenmiş, daha hızlı)
-        $allow_multiple_shares = $product->get_meta('_allow_multiple_shares') === 'yes';
-        $max_shares = $product->get_meta('_max_shares');
-
-        // Eğer maksimum hisse sayısı yoksa ve çoklu hisse aktifse, varsayılan olarak 7 kullan
-        if ($allow_multiple_shares && $max_shares === '') {
-            $max_shares = '7';
-        }
-
-        // Progress bar ayarları
-        $enable_progress_bar = $product->get_meta('_enable_progress_bar') === 'yes';
-        $progress_bar_limit = $product->get_meta('_progress_bar_limit');
-        if ($progress_bar_limit === '') {
-            $progress_bar_limit = '100000';
-        }
-        $progress_bar_limit = floatval($progress_bar_limit);
-        
-        // Progress bar formunda minimum fiyat kontrolü (ürün fiyatı veya min_custom_price)
-        $progress_min_price = $min_price;
-        if ($enable_progress_bar) {
-            $product_base_price = floatval($product->get_price());
-            if ($product_base_price > 0) {
-                $progress_min_price = $min_price && floatval($min_price) > 0 ? min(floatval($min_price), $product_base_price) : $product_base_price;
-            } else {
-                $progress_min_price = $min_price && floatval($min_price) > 0 ? $min_price : '0';
-            }
-        }
-        
-        // Toplam bağış miktarını al
-        $total_donation = 0.0;
-        if ($enable_progress_bar) {
-            $total_donation = WDP_Utils::get_total_donation_amount($product_id);
-        }
-
-        $wdp_currency_symbol = function_exists('get_woocommerce_currency_symbol') ? get_woocommerce_currency_symbol() : '₺';
-        $wdp_custom_price_placeholder = (floatval($min_price) > 0)
-            ? ('min: ' . WDP_Utils::format_amount_for_min_placeholder($min_price))
-            : __('Bağış tutarı *', 'woo-donation-popup');
+        $allow_custom_price = $context['allow_custom_price'];
+        $min_price = $context['min_price'];
+        $allow_multiple_shares = $context['allow_multiple_shares'];
+        $max_shares = $context['max_shares'];
+        $enable_progress_bar = $context['enable_progress_bar'];
+        $progress_bar_limit = $context['progress_bar_limit'];
+        $progress_min_price = $context['progress_min_price'];
+        $total_donation = $context['total_donation'];
+        $wdp_currency_symbol = $context['currency_symbol'];
+        $wdp_custom_price_placeholder = $context['custom_price_placeholder'];
 
         // Assets'i zorla yükle
         WDP_Assets::force_enqueue();
@@ -391,17 +349,17 @@ class WDP_Templates {
                     ?>
                     <div class="<?php echo $button_group_classes; ?>">
                         <?php if ($form_button_order === 'checkout_first') : ?>
-                            <button type="submit" name="donation_go_checkout"><?php echo esc_html($button_text_go_checkout); ?></button>
-                            <button type="submit" name="donation_add_to_cart"><?php echo esc_html($button_text_add_to_cart); ?></button>
+                            <button type="submit" class="wdp-btn-primary" name="donation_go_checkout"><?php echo esc_html($button_text_go_checkout); ?></button>
+                            <button type="submit" class="wdp-btn-secondary" name="donation_add_to_cart"><?php echo esc_html($button_text_add_to_cart); ?></button>
                         <?php else : ?>
-                            <button type="submit" name="donation_add_to_cart"><?php echo esc_html($button_text_add_to_cart); ?></button>
-                            <button type="submit" name="donation_go_checkout"><?php echo esc_html($button_text_go_checkout); ?></button>
+                            <button type="submit" class="wdp-btn-secondary" name="donation_add_to_cart"><?php echo esc_html($button_text_add_to_cart); ?></button>
+                            <button type="submit" class="wdp-btn-primary" name="donation_go_checkout"><?php echo esc_html($button_text_go_checkout); ?></button>
                         <?php endif; ?>
                     </div>
-
                     <!-- Gizli Alanlar -->
                     <input type="hidden" name="add-to-cart" value="<?php echo esc_attr($product_id); ?>">
                     <input type="hidden" name="donation_modal" value="1">
+                    <?php wp_nonce_field('wdp_nonajax_add_to_cart', 'wdp_nonce'); ?>
                 </form>
             </div>
         </div>
@@ -418,7 +376,7 @@ class WDP_Templates {
      */
     public static function render_donation_form($product_id, $atts = array()) {
         // Ürün ID'sini integer'a çevir
-        $product_id = intval($product_id);
+        $product_id = absint($product_id);
 
         // Varsayılan değerler
         $defaults = array(
@@ -431,7 +389,7 @@ class WDP_Templates {
         $atts = wp_parse_args($atts, $defaults);
 
         // Ürünün varlığını kontrol et
-        $product = wc_get_product($product_id);
+        $product = WDP_Donation_Product_Context_Service::get_product($product_id);
         if (!$product) {
             if (current_user_can('manage_options')) {
                 return '<p style="color:red;">Ürün bulunamadı (ID: ' . esc_html($product_id) . '). Lütfen ürün ID\'sini kontrol edin.</p>';
@@ -439,18 +397,13 @@ class WDP_Templates {
             return '';
         }
 
-        // Ürün adını al
-        $product_name = $product->get_name();
-        
-        // Ürün fiyatını al
-        $product_price = $product->get_price();
-        $formatted_price = $product_price ? WDP_Utils::format_price_html($product_price) : '';
-        $enable_product_note = $product->get_meta('_enable_product_note') === 'yes';
-        $product_note_text = trim((string) $product->get_meta('_product_note_text'));
-        $product_note_icon = $product->get_meta('_product_note_icon');
-        if ($product_note_icon === '') {
-            $product_note_icon = 'info';
-        }
+        $context = WDP_Donation_Product_Context_Service::build_form_context($product);
+        $product_name = $context['product_name'];
+        $product_price = $context['product_price'];
+        $formatted_price = $context['formatted_price'];
+        $enable_product_note = $context['enable_product_note'];
+        $product_note_text = $context['product_note_text'];
+        $product_note_icon = $context['product_note_icon'];
         $show_product_note = $enable_product_note && $product_note_text !== '';
         $note_tone_class = self::get_note_tone_class($product_note_icon);
         $is_long_note = self::text_length($product_note_text) > 110;
@@ -464,53 +417,16 @@ class WDP_Templates {
         $form_id = 'wdp-modal-' . $product_id . '-direct';
         $custom_class = sanitize_text_field($atts['class']);
 
-        // OPTIMIZATION: WooCommerce get_meta() kullan (cache'lenmiş, daha hızlı)
-        $allow_custom_price = $product->get_meta('_allow_custom_price') === 'yes';
-        $min_price = $product->get_meta('_min_custom_price');
-
-        // Eğer minimum fiyat yoksa ve özel fiyat aktifse, varsayılan olarak 0 kullan
-        if ($allow_custom_price && $min_price === '') {
-            $min_price = '0';
-        }
-
-        // OPTIMIZATION: WooCommerce get_meta() kullan (cache'lenmiş, daha hızlı)
-        $allow_multiple_shares = $product->get_meta('_allow_multiple_shares') === 'yes';
-        $max_shares = $product->get_meta('_max_shares');
-
-        // Eğer maksimum hisse sayısı yoksa ve çoklu hisse aktifse, varsayılan olarak 7 kullan
-        if ($allow_multiple_shares && $max_shares === '') {
-            $max_shares = '7';
-        }
-
-        // Progress bar ayarları
-        $enable_progress_bar = $product->get_meta('_enable_progress_bar') === 'yes';
-        $progress_bar_limit = $product->get_meta('_progress_bar_limit');
-        if ($progress_bar_limit === '') {
-            $progress_bar_limit = '100000';
-        }
-        $progress_bar_limit = floatval($progress_bar_limit);
-        
-        // Progress bar formunda minimum fiyat kontrolü (ürün fiyatı veya min_custom_price)
-        $progress_min_price = $min_price;
-        if ($enable_progress_bar) {
-            $product_base_price = floatval($product->get_price());
-            if ($product_base_price > 0) {
-                $progress_min_price = $min_price && floatval($min_price) > 0 ? min(floatval($min_price), $product_base_price) : $product_base_price;
-            } else {
-                $progress_min_price = $min_price && floatval($min_price) > 0 ? $min_price : '0';
-            }
-        }
-        
-        // Toplam bağış miktarını al
-        $total_donation = 0.0;
-        if ($enable_progress_bar) {
-            $total_donation = WDP_Utils::get_total_donation_amount($product_id);
-        }
-
-        $wdp_currency_symbol = function_exists('get_woocommerce_currency_symbol') ? get_woocommerce_currency_symbol() : '₺';
-        $wdp_custom_price_placeholder = (floatval($min_price) > 0)
-            ? ('min: ' . WDP_Utils::format_amount_for_min_placeholder($min_price))
-            : __('Bağış tutarı *', 'woo-donation-popup');
+        $allow_custom_price = $context['allow_custom_price'];
+        $min_price = $context['min_price'];
+        $allow_multiple_shares = $context['allow_multiple_shares'];
+        $max_shares = $context['max_shares'];
+        $enable_progress_bar = $context['enable_progress_bar'];
+        $progress_bar_limit = $context['progress_bar_limit'];
+        $progress_min_price = $context['progress_min_price'];
+        $total_donation = $context['total_donation'];
+        $wdp_currency_symbol = $context['currency_symbol'];
+        $wdp_custom_price_placeholder = $context['custom_price_placeholder'];
 
         // Form HTML'ini oluştur - popup ile aynı yapıyı kullan
         ob_start();
@@ -617,17 +533,17 @@ class WDP_Templates {
                     ?>
                     <div class="<?php echo $button_group_classes; ?>">
                         <?php if ($form_button_order === 'checkout_first') : ?>
-                            <button type="submit" name="donation_go_checkout"><?php echo esc_html($button_text_go_checkout); ?></button>
-                            <button type="submit" name="donation_add_to_cart"><?php echo esc_html($button_text_add_to_cart); ?></button>
+                            <button type="submit" class="wdp-btn-primary" name="donation_go_checkout"><?php echo esc_html($button_text_go_checkout); ?></button>
+                            <button type="submit" class="wdp-btn-secondary" name="donation_add_to_cart"><?php echo esc_html($button_text_add_to_cart); ?></button>
                         <?php else : ?>
-                            <button type="submit" name="donation_add_to_cart"><?php echo esc_html($button_text_add_to_cart); ?></button>
-                            <button type="submit" name="donation_go_checkout"><?php echo esc_html($button_text_go_checkout); ?></button>
+                            <button type="submit" class="wdp-btn-secondary" name="donation_add_to_cart"><?php echo esc_html($button_text_add_to_cart); ?></button>
+                            <button type="submit" class="wdp-btn-primary" name="donation_go_checkout"><?php echo esc_html($button_text_go_checkout); ?></button>
                         <?php endif; ?>
                     </div>
-
                     <!-- Gizli Alanlar -->
                     <input type="hidden" name="add-to-cart" value="<?php echo esc_attr($product_id); ?>">
                     <input type="hidden" name="donation_modal" value="1">
+                    <?php wp_nonce_field('wdp_nonajax_add_to_cart', 'wdp_nonce'); ?>
                 </form>
             </div>
         </div>

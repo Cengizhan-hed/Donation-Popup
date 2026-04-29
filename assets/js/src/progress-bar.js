@@ -65,8 +65,16 @@
       customPriceInput.setAttribute('step', '1');
     }
 
+    // Idempotent binding: setup tekrar çalışsa da listener çoğalmasın
+    if (customPriceInput._wdpProgressInputHandler) {
+      customPriceInput.removeEventListener('input', customPriceInput._wdpProgressInputHandler);
+    }
+    if (customPriceInput._wdpProgressBlurHandler) {
+      customPriceInput.removeEventListener('blur', customPriceInput._wdpProgressBlurHandler);
+    }
+
     // Özel fiyat değiştiğinde preview'ı güncelle
-    customPriceInput.addEventListener('input', function() {
+    customPriceInput._wdpProgressInputHandler = function() {
       // Virgül ve küsürat kısmını temizle - sadece tam sayı kabul et
       let rawValue = this.value.toString().trim();
       
@@ -83,15 +91,17 @@
       const finalValue = this.value === '' ? '' : this.value.toString().replace(/[^\d]/g, '');
       const inputValue = finalValue === '' ? 0 : parseInt(finalValue, 10) || 0;
       updatePreview(container, currentValue, limit, inputValue);
-    });
+    };
+    customPriceInput.addEventListener('input', customPriceInput._wdpProgressInputHandler);
 
     // Özel fiyat temizlendiğinde preview'ı sıfırla
-    customPriceInput.addEventListener('blur', function() {
+    customPriceInput._wdpProgressBlurHandler = function() {
       if (!this.value || parseFloat(this.value) === 0) {
         const currentValue = parseFloat(container.getAttribute('data-current')) || 0;
         updatePreview(container, currentValue, limit, 0);
       }
-    });
+    };
+    customPriceInput.addEventListener('blur', customPriceInput._wdpProgressBlurHandler);
 
     // İlk renk kontrolünü yap
     const initialPercentage = Math.min(100, (current / Math.max(1, limit)) * 100);
