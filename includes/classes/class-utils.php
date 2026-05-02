@@ -22,6 +22,13 @@ class WDP_Utils {
     private static $debug_enabled = false;
 
     /**
+     * Whether woocommerce_update_product cache hook was registered.
+     *
+     * @var bool
+     */
+    private static $wc_product_cache_invalidation_hook_registered = false;
+
+    /**
      * Initialize the utility class.
      * 
      * @since 10.0
@@ -33,6 +40,34 @@ class WDP_Utils {
         // Progress bar toplamlarını artımlı güncelle (büyük sipariş hacminde tam taramayı azaltır).
         add_action('woocommerce_order_status_completed', array(__CLASS__, 'sync_order_donation_totals_on_complete'), 20, 1);
         add_action('woocommerce_order_refunded', array(__CLASS__, 'sync_order_donation_totals_on_refund'), 20, 2);
+
+        // Ürün veya bağışa ilişkin ürün meta'sı değişince get_product_info / sepet AJAX önbelleğini tek merkezden temizle.
+        add_action('updated_post_meta', array(__CLASS__, 'maybe_invalidate_product_donation_caches_on_meta'), 10, 4);
+        add_action('added_post_meta', array(__CLASS__, 'maybe_invalidate_product_donation_caches_on_meta'), 10, 4);
+        add_action('deleted_post_meta', array(__CLASS__, 'maybe_invalidate_product_donation_caches_on_meta'), 10, 4);
+        add_action('save_post_product', array(__CLASS__, 'invalidate_product_donation_caches_on_product_save'), 10, 3);
+        if (did_action('woocommerce_loaded')) {
+            self::register_wc_product_cache_invalidation_hook();
+        } else {
+            add_action('woocommerce_loaded', array(__CLASS__, 'register_wc_product_cache_invalidation_hook'), 1);
+        }
+
+        // Ürün çöpe gider veya kalıcı silinirken önbellekte yetim anahtar kalmasın (object cache / Redis).
+        add_action('before_delete_post', array(__CLASS__, 'purge_product_donation_caches_on_delete'), 10, 2);
+        add_action('wp_trash_post', array(__CLASS__, 'purge_product_donation_caches_on_trash'), 10, 1);
+    }
+
+    /**
+     * Register WC product save hook once (safe if called early or after woocommerce_loaded).
+     *
+     * @return void
+     */
+    public static function register_wc_product_cache_invalidation_hook() {
+        if (self::$wc_product_cache_invalidation_hook_registered) {
+            return;
+        }
+        self::$wc_product_cache_invalidation_hook_registered = true;
+        add_action('woocommerce_update_product', array(__CLASS__, 'invalidate_product_donation_caches_on_wc_product'), 10, 1);
     }
 
     /**
@@ -442,6 +477,162 @@ class WDP_Utils {
 
         update_post_meta($product_id, '_wdp_total_donation_amount', $next_total);
         wp_cache_delete('wdp_total_donation_' . $product_id, 'wdp_donations');
+    }
+
+    /**
+     * Clear transient/object caches used for product donation info and WC product objects (WDP_Ajax).
+     *
+     * @param int $product_id Product ID.
+     * @return void
+     */
+    public static function invalidate_product_donation_caches($product_id) {
+        $product_id = absint($product_id);
+        if (!$product_id) {
+            return;
+        }
+        $key = 'wdp_product_info_' . $product_id;
+        delete_transient($key);
+        wp_cache_delete($key, 'wdp_product_info');
+        wp_cache_delete('wdp_product_object_' . $product_id, 'wdp_products');
+    }
+
+    /**
+     * Ürün kaldırıldığında / çöpe gittiğinde ürün + progress bar ile ilgili tüm WDP önbellek anahtarlarını sil.
+     *
+     * @param int $product_id Product ID.
+     * @return void
+     */
+    private static function purge_product_donation_caches_for_removal($product_id) {
+        $product_id = absint($product_id);
+        if (!$product_id) {
+            return;
+        }
+
+        self::invalidate_product_donation_caches($product_id);
+        wp_cache_delete('wdp_total_donation_' . $product_id, 'wdp_donations');
+    }
+
+    /**
+     * Kalıcı silmeden hemen önce (ürün yazı tipi).
+     *
+     * @param int          $post_id Post ID.
+     * @param WP_Post|null $post    Post object.
+     * @return void
+     */
+    public static function purge_product_donation_caches_on_delete($post_id, $post = null) {
+        $post_id = absint($post_id);
+        if ($post_id <= 0) {
+            return;
+        }
+
+        if ($post instanceof WP_Post) {
+            if ($post->post_type !== 'product') {
+                return;
+            }
+        } elseif (get_post_type($post_id) !== 'product') {
+            return;
+        }
+
+        self::purge_product_donation_caches_for_removal($post_id);
+    }
+
+    /**
+     * Ürün çöpe taşındığında.
+     *
+     * @param int $post_id Post ID.
+     * @return void
+     */
+    public static function purge_product_donation_caches_on_trash($post_id) {
+        $post_id = absint($post_id);
+        if ($post_id <= 0 || get_post_type($post_id) !== 'product') {
+            return;
+        }
+
+        self::purge_product_donation_caches_for_removal($post_id);
+    }
+
+    /**
+     * Invalidate caches when a product post is saved (price, title, stock, etc.).
+     *
+     * @param int     $post_id Post ID.
+     * @param WP_Post $post    Post object.
+     * @param bool    $update  Whether this is an update.
+     * @return void
+     */
+    public static function invalidate_product_donation_caches_on_product_save($post_id, $post, $update) {
+        unset($post, $update);
+
+        if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
+            return;
+        }
+
+        if (wp_is_post_revision($post_id)) {
+            return;
+        }
+
+        if (function_exists('wp_is_post_autosave') && wp_is_post_autosave($post_id)) {
+            return;
+        }
+
+        self::invalidate_product_donation_caches((int) $post_id);
+    }
+
+    /**
+     * Invalidate caches after WooCommerce persists a product (CRUD / admin / REST).
+     *
+     * @param int $product_id Product ID.
+     * @return void
+     */
+    public static function invalidate_product_donation_caches_on_wc_product($product_id) {
+        self::invalidate_product_donation_caches(absint($product_id));
+    }
+
+    /**
+     * Invalidate caches when donation-related product meta is added or updated.
+     *
+     * @param int    $meta_id    Meta row ID (unused).
+     * @param int    $object_id  Post ID.
+     * @param string $meta_key   Meta key.
+     * @param mixed  $meta_value Meta value (unused).
+     * @return void
+     */
+    public static function maybe_invalidate_product_donation_caches_on_meta($meta_id, $object_id, $meta_key, $meta_value) {
+        unset($meta_id, $meta_value);
+
+        $object_id = absint($object_id);
+        if ($object_id <= 0 || $meta_key === '') {
+            return;
+        }
+
+        if (get_post_type($object_id) !== 'product') {
+            return;
+        }
+
+        if (!self::is_donation_popup_product_info_meta_key($meta_key)) {
+            return;
+        }
+
+        self::invalidate_product_donation_caches($object_id);
+    }
+
+    /**
+     * Whether this meta key is part of WDP product donation settings (see WDP_Product_Settings_Service).
+     *
+     * @param string $meta_key Meta key.
+     * @return bool
+     */
+    private static function is_donation_popup_product_info_meta_key($meta_key) {
+        if (!class_exists('WDP_Product_Settings_Service')) {
+            return false;
+        }
+
+        static $lookup = null;
+
+        if (null === $lookup) {
+            $lookup = array_fill_keys(WDP_Product_Settings_Service::get_settings_meta_keys(), true);
+        }
+
+        return isset($lookup[$meta_key]);
     }
 
     /**

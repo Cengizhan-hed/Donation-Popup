@@ -375,10 +375,20 @@
     }
   }
 
+  /**
+   * Güvenli DOM kökü: innerHTML/string serileştirme olmadan sepet UI (XSS yüzeyini daraltır).
+   *
+   * @param {Array} cartItems Sepet öğeleri.
+   * @returns {HTMLElement}
+   */
+  function buildCartUiRoot(cartItems) {
+    return buildCartUiNode(Array.isArray(cartItems) ? cartItems : []);
+  }
+
   // Backward-compatible API: returns HTML for legacy call sites.
   function createCartItemsHTML(cartItems) {
     const wrapper = document.createElement('div');
-    wrapper.appendChild(buildCartUiNode(Array.isArray(cartItems) ? cartItems : []));
+    wrapper.appendChild(buildCartUiRoot(cartItems));
     return wrapper.innerHTML;
   }
 
@@ -797,6 +807,7 @@
     updateCountElements: updateCartCountElements,
     saveSideCartElements,
     createItemsHTML: createCartItemsHTML,
+    buildCartUiRoot,
     renderItemsInto: renderCartItemsInto,
     setupContinueShoppingButton,
     setupRemoveCartItemButtons,

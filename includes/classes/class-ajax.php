@@ -201,17 +201,8 @@ class WDP_Ajax {
                 throw new WDP_Validation_Exception(__('Geçersiz ürün ID', 'woo-donation-popup'));
             }
 
-            // PERFORMANCE: Use object cache if available
-            $cache_key = 'wdp_product_object_' . $product_id;
-            $product = wp_cache_get($cache_key, 'wdp_products');
-            
-            if (false === $product) {
-                $product = wc_get_product($product_id);
-                if ($product) {
-                    // Cache for 1 hour
-                    wp_cache_set($cache_key, $product, 'wdp_products', HOUR_IN_SECONDS);
-                }
-            }
+            // WC_Product nesnesini harici object cache'e yazmıyoruz (serileştirme / bayat nesne riski); hafif meta wdp_product_info önbelleğinde kalır.
+            $product = wc_get_product($product_id);
 
             if (!$product) {
                 throw new WDP_Product_Not_Found_Exception($product_id);
@@ -315,16 +306,7 @@ class WDP_Ajax {
             WDP_Utils::json_error(__('Geçersiz ürün ID', 'woo-donation-popup'));
         }
 
-        // PERFORMANCE: Use cached product object
-        $cache_key = 'wdp_product_object_' . $product_id;
-        $product = wp_cache_get($cache_key, 'wdp_products');
-        
-        if (false === $product) {
-            $product = wc_get_product($product_id);
-            if ($product) {
-                wp_cache_set($cache_key, $product, 'wdp_products', HOUR_IN_SECONDS);
-            }
-        }
+        $product = wc_get_product($product_id);
 
         if (!$product) {
             WDP_Utils::json_error(__('Ürün bulunamadı', 'woo-donation-popup'));
@@ -444,6 +426,15 @@ class WDP_Ajax {
                     $shareholder['phone'] = $phone;
                 }
 
+                $email_raw = isset($_POST['shareholder_email_' . $i]) ? wp_unslash($_POST['shareholder_email_' . $i]) : '';
+                if (strlen($email_raw) > 100) {
+                    $email_raw = substr($email_raw, 0, 100);
+                }
+                $email = sanitize_email($email_raw);
+                if ('' !== $email) {
+                    $shareholder['email'] = $email;
+                }
+
                 if ('' !== $note) {
                     $shareholder['note'] = $note;
                 }
@@ -504,23 +495,7 @@ class WDP_Ajax {
             }
         }
 
-        // PERFORMANCE: Use cached product object if available
-        $cache_key_product = 'wdp_product_object_' . $product_id;
-        $product = wp_cache_get($cache_key_product, 'wdp_products');
-        
-        if (false === $product) {
-            $product = wc_get_product($product_id);
-            if ($product) {
-                // Cache for 1 hour
-                wp_cache_set($cache_key_product, $product, 'wdp_products', HOUR_IN_SECONDS);
-            }
-        }
-        
-        if (!$product) {
-            throw new WDP_Product_Not_Found_Exception($product_id);
-        }
-
-        // PERFORMANCE: Use cached meta data
+        // PERFORMANCE: Use cached meta data ($product already loaded above).
         $cache_key_meta = 'wdp_product_info_' . $product_id;
         $cached_meta = wp_cache_get($cache_key_meta, 'wdp_product_info');
         
@@ -672,7 +647,7 @@ class WDP_Ajax {
      */
     public static function get_fresh_nonces() {
         try {
-            if (!WDP_Security::validate_request_origin()) {
+            if (!WDP_Security::validate_request_origin(true)) {
                 throw new WDP_Security_Exception(__('Geçersiz istek kaynağı', 'woo-donation-popup'));
             }
 
@@ -788,6 +763,10 @@ class WDP_Ajax {
                     }
 
                     if ((isset($shareholder1['phone']) ? $shareholder1['phone'] : '') !== (isset($shareholder2['phone']) ? $shareholder2['phone'] : '')) {
+                        return false;
+                    }
+
+                    if ((isset($shareholder1['email']) ? $shareholder1['email'] : '') !== (isset($shareholder2['email']) ? $shareholder2['email'] : '')) {
                         return false;
                     }
                 }
@@ -955,6 +934,13 @@ class WDP_Ajax {
                                 'value' => $shareholder['name'] . (isset($shareholder['phone']) ? ' - ' . $shareholder['phone'] : ''),
                             );
                         }
+                        if (isset($shareholder['email']) && $shareholder['email'] !== '') {
+                            $meta[] = array(
+                                'key' => sprintf(__('%d. Hissedar E-postası', 'woo-donation-popup'), $index),
+                                'value' => $shareholder['email'],
+                            );
+                        }
+
                         if (isset($shareholder['note']) && $shareholder['note'] !== '') {
                             $meta[] = array(
                                 'key' => sprintf(__('%d. Hissedar Notu', 'woo-donation-popup'), $index),

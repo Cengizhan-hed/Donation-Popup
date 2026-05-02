@@ -87,7 +87,7 @@
   const { productPrices, originalForms } = state;
   const { formatCurrency, getAjaxNonce, announceStatus, safeLog, escapeHtml, debounce, mergeWdpAjaxNonces, refreshWdpAjaxNonces } = utils;
   const { clear: clearAlerts } = alerts;
-  const { fetchContents: fetchCartContents, updateCountElements: updateCartCountElements, createItemsHTML: createCartItemsHTML, renderItemsInto: renderCartItemsInto, setupContinueShoppingButton, setupRemoveCartItemButtons, updateWooCommerce: updateWooCommerceCart, saveSideCartElements, showSideCarts } = cart;
+  const { fetchContents: fetchCartContents, updateCountElements: updateCartCountElements, createItemsHTML: createCartItemsHTML, renderItemsInto: renderCartItemsInto, buildCartUiRoot, setupContinueShoppingButton, setupRemoveCartItemButtons, updateWooCommerce: updateWooCommerceCart, saveSideCartElements, showSideCarts } = cart;
   const wdp_ajax = window.wdp_ajax || {};
   const jQuery = window.jQuery || null;
 
@@ -877,8 +877,9 @@
     successScreen.appendChild(reassurance);
     if (typeof renderCartItemsInto === 'function') {
       renderCartItemsInto(successScreen, Array.isArray(cartItems) ? cartItems : []);
+    } else if (typeof buildCartUiRoot === 'function') {
+      successScreen.appendChild(buildCartUiRoot(Array.isArray(cartItems) ? cartItems : []));
     } else {
-      // Legacy fallback
       const fallback = document.createElement('div');
       fallback.innerHTML = createCartItemsHTML(Array.isArray(cartItems) ? cartItems : []);
       while (fallback.firstChild) {
@@ -1275,9 +1276,11 @@
       for (let i = 1; i <= shareCount; i++) {
         const name = $form(`[name='shareholder_name_${i}']`);
         const phone = $form(`[name='shareholder_phone_${i}']`);
+        const email = $form(`[name='shareholder_email_${i}']`);
         const note = $form(`[name='shareholder_note_${i}']`);
         if (name) formData.set(`shareholder_name_${i}`, name.value);
         if (phone) formData.set(`shareholder_phone_${i}`, phone.value);
+        if (email) formData.set(`shareholder_email_${i}`, email.value);
         if (note) formData.set(`shareholder_note_${i}`, note.value);
       }
     }

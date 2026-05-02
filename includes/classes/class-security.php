@@ -268,9 +268,10 @@ class WDP_Security {
      * Validate request origin
      * SECURITY: CSRF protection enhancement
      *
+     * @param bool $credential_issuance True for endpoints that issue new nonces without a prior nonce (stricter: Sec-Fetch-Site "none" is not accepted).
      * @return bool
      */
-    public static function validate_request_origin() {
+    public static function validate_request_origin($credential_issuance = false) {
         $site_host = wp_parse_url(home_url(), PHP_URL_HOST);
         if (empty($site_host)) {
             return false;
@@ -296,7 +297,12 @@ class WDP_Security {
         }
 
         $fetch_site = isset($_SERVER['HTTP_SEC_FETCH_SITE']) ? strtolower(sanitize_text_field(wp_unslash($_SERVER['HTTP_SEC_FETCH_SITE']))) : '';
-        if (in_array($fetch_site, array('same-origin', 'same-site', 'none'), true)) {
+        if (in_array($fetch_site, array('same-origin', 'same-site'), true)) {
+            return true;
+        }
+
+        // "none" is trivially spoofable outside a browser; allow only for nonce-protected AJAX (Referer/Origin often absent with strict policies).
+        if (!$credential_issuance && 'none' === $fetch_site) {
             return true;
         }
 

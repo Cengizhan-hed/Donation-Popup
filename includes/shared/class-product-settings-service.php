@@ -14,6 +14,21 @@ if (!defined('ABSPATH')) {
  */
 class WDP_Product_Settings_Service {
 	/**
+	 * Meta keys persisted for donation product settings (single source for saves + cache invalidation).
+	 *
+	 * @return string[]
+	 */
+	public static function get_settings_meta_keys() {
+		static $keys = null;
+
+		if (null === $keys) {
+			$keys = array_keys(self::from_request(array()));
+		}
+
+		return $keys;
+	}
+
+	/**
 	 * Normalize product settings payload.
 	 *
 	 * @param array $request Request array.

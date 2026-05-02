@@ -79,6 +79,13 @@ class WDP_Cart {
                         $shareholder['note'] = sanitize_textarea_field($request_data['shareholder_note_' . $i]);
                     }
 
+                    if (isset($request_data['shareholder_email_' . $i])) {
+                        $maybe_email = sanitize_email($request_data['shareholder_email_' . $i]);
+                        if ('' !== $maybe_email) {
+                            $shareholder['email'] = $maybe_email;
+                        }
+                    }
+
                     if (!empty($shareholder)) {
                         $shareholders[$i] = $shareholder;
                     }
@@ -291,6 +298,13 @@ class WDP_Cart {
                             $item_data[] = array(
                                 'key' => sprintf(__('%d. Hissedar', 'woo-donation-popup'), $key),
                                 'value' => $shareholder['name'] . (!empty($shareholder['phone']) ? ' (' . $shareholder['phone'] . ')' : ''),
+                            );
+                        }
+
+                        if (!empty($shareholder['email'])) {
+                            $item_data[] = array(
+                                'key' => sprintf(__('%d. Hissedar E-postası', 'woo-donation-popup'), $key),
+                                'value' => $shareholder['email'],
                             );
                         }
 

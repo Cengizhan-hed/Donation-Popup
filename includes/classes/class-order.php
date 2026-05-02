@@ -55,6 +55,10 @@ class WDP_Order {
                             $item->add_meta_data(sprintf(__('%d. Hissedar Telefonu', 'woo-donation-popup'), $key), $shareholder['phone']);
                         }
 
+                        if (!empty($shareholder['email'])) {
+                            $item->add_meta_data(sprintf(__('%d. Hissedar E-postası', 'woo-donation-popup'), $key), $shareholder['email']);
+                        }
+
                         if (isset($shareholder['note']) && $shareholder['note'] !== '') {
                             $item->add_meta_data(sprintf(__('%d. Hissedar Notu', 'woo-donation-popup'), $key), $shareholder['note']);
                         }
