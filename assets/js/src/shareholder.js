@@ -1468,8 +1468,8 @@
     safeLog("Setting up share quantity buttons for modal:", modal.id);
     
     // Hisse adedi artırma/azaltma butonlarını bul
-    const decreaseBtn = $modal(".wdp-share-btn.decrease");
-    const increaseBtn = $modal(".wdp-share-btn.increase");
+    const decreaseBtn = $modal(".wdp-share-btn.wdp-share-btn-decrease");
+    const increaseBtn = $modal(".wdp-share-btn.wdp-share-btn-increase");
 
     // Quantity input'unu bul
     const quantityInput = $modal('input[name="quantity"]');

@@ -376,13 +376,26 @@
       $("#popup_button_custom_min_width_row, #popup_button_custom_min_height_row, #popup_button_custom_padding_x_row").toggle(isCustom)
     }
 
+    const togglePopupGradientRows = () => {
+      const isGradientEnabled = $("#popup_button_use_gradient").is(":checked")
+      $(
+        "#popup_button_gradient_type_row, #popup_button_gradient_angle_row, #popup_button_gradient_start_row, #popup_button_gradient_end_row, #popup_button_gradient_hover_start_row, #popup_button_gradient_hover_end_row, #popup_button_gradient_start_stop_row, #popup_button_gradient_end_stop_row"
+      ).toggle(isGradientEnabled)
+
+      const gradientType = $("#popup_button_gradient_type").val()
+      $("#popup_button_gradient_angle_row").toggle(isGradientEnabled && gradientType === "linear")
+    }
+
     $("#shareholders_area_use_gradient").off("change.wdpAdmin").on("change.wdpAdmin", toggleShareholderGradientRows)
     $("#popup_button_font_family").off("change.wdpAdmin").on("change.wdpAdmin", togglePopupCustomFontRow)
     $("#popup_button_size").off("change.wdpAdmin").on("change.wdpAdmin", togglePopupButtonSizeRows)
+    $("#popup_button_use_gradient").off("change.wdpAdmin").on("change.wdpAdmin", togglePopupGradientRows)
+    $("#popup_button_gradient_type").off("change.wdpAdmin").on("change.wdpAdmin", togglePopupGradientRows)
 
     toggleShareholderGradientRows()
     togglePopupCustomFontRow()
     togglePopupButtonSizeRows()
+    togglePopupGradientRows()
   }
 
   function bindDirtyStateTracking() {

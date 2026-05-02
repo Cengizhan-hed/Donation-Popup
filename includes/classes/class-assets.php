@@ -1030,7 +1030,7 @@ class WDP_Assets {
         ));
         
         // CSS değişkenlerini oluştur
-        $css = ":root {\n";
+        $css = ".hdf-donation-modal-wrapper {\n";
         
         // Popup butonu değişkenleri
         $popup_button_color = !empty($settings['popup_button_color']) ? $settings['popup_button_color'] : '#1e73be';
@@ -1367,7 +1367,7 @@ class WDP_Assets {
         // Bu sayede desktop kuralları (media query dışında) mobilde mobile değişkenlerini kullanacak
         // Breakpoint: --wdp-breakpoint-md (600px) ile uyumlu
         $css .= "@media (max-width: 600px) {\n";
-        $css .= "  :root {\n";
+        $css .= "  .hdf-donation-modal-wrapper {\n";
         $css .= "    --wdp-title-size: var(--wdp-title-size-mobile, " . esc_attr($settings['title_font_size']) . "px);\n";
         // Mobile modal görünüm değişkenlerini override et - desktop değişkenlerini mobile ile değiştir
         $css .= "    --wdp-popup-modal-width-desktop: var(--wdp-popup-modal-width-mobile);\n";
@@ -1394,19 +1394,19 @@ class WDP_Assets {
         return $button_css . "
         /* CRITICAL: Prevent font flash - apply font-size immediately before CSS loads */
         /* IMPORTANT: Respect dynamic title size set via --wdp-title-size */
-        html body .wdp-modal-title,
-        html body .wdp-form-title,
-        html body .wdp-modal .wdp-modal-content h2,
-        html body .wdp-donation-form .wdp-modal-content h2,
-        html body .wdp-modal .wdp-modal-content .wdp-form-title,
-        html body .wdp-donation-form .wdp-modal-content .wdp-form-title,
-        html body .wdp-modal .wdp-modal-content h2.wdp-form-title,
-        html body .wdp-donation-form .wdp-modal-content h2.wdp-form-title {
+        .hdf-donation-modal-wrapper .wdp-modal-title,
+        .hdf-donation-modal-wrapper .wdp-form-title,
+        .hdf-donation-modal-wrapper.wdp-modal .wdp-modal-content h2,
+        .hdf-donation-modal-wrapper.wdp-donation-form .wdp-modal-content h2,
+        .hdf-donation-modal-wrapper.wdp-modal .wdp-modal-content .wdp-form-title,
+        .hdf-donation-modal-wrapper.wdp-donation-form .wdp-modal-content .wdp-form-title,
+        .hdf-donation-modal-wrapper.wdp-modal .wdp-modal-content h2.wdp-form-title,
+        .hdf-donation-modal-wrapper.wdp-donation-form .wdp-modal-content h2.wdp-form-title {
             font-size: var(--wdp-title-size, 27px);
             line-height: 1.2;
         }
         /* Modal kapalıyken kesinlikle sayfa düzenini etkilememeli */
-        .wdp-modal:not(.show) { 
+        .hdf-donation-modal-wrapper.wdp-modal:not(.show) { 
             position: static; 
             z-index: auto; 
             left: auto; 
@@ -1426,7 +1426,7 @@ class WDP_Assets {
             clip-path: inset(100%); 
         }
         /* Modal açıkken normal görünüm */
-        .wdp-modal.show { 
+        .hdf-donation-modal-wrapper.wdp-modal.show { 
             position: fixed; 
             z-index: 999999; 
             left: 0; 
@@ -1438,23 +1438,23 @@ class WDP_Assets {
             clip: auto; 
             clip-path: none; 
         }
-        .wdp-modal-content { 
+        .hdf-donation-modal-wrapper .wdp-modal-content { 
             z-index: 1000000; 
         }
-        .wdp-modal-close { 
+        .hdf-donation-modal-wrapper .wdp-modal-close { 
             z-index: 1000001; 
         }
-        .wdp-modal * { 
+        .hdf-donation-modal-wrapper.wdp-modal * { 
             box-sizing: border-box; 
         }
-        .wdp-modal-content * { 
+        .hdf-donation-modal-wrapper .wdp-modal-content * { 
             box-sizing: border-box; 
         }
-        .wdp-donation-form * { 
+        .hdf-donation-modal-wrapper.wdp-donation-form * { 
             box-sizing: border-box; 
         }
         @media (max-width: 600px) {
-            .wdp-modal.show .wdp-modal-content { 
+            .hdf-donation-modal-wrapper.wdp-modal.show .wdp-modal-content { 
                 width: 95%; 
                 max-width: 95%; 
                 margin: 10px auto; 
@@ -1474,13 +1474,13 @@ class WDP_Assets {
         // Minimize size for faster page load
         return "
         /* PERFORMANCE: Critical CSS - Modal visibility only */
-        html body .wdp-modal.wdp-modal:not(.show) {
+        .hdf-donation-modal-wrapper.wdp-modal:not(.show) {
             display: none;
             visibility: hidden;
             opacity: 0;
             pointer-events: none;
         }
-        html body .wdp-modal.wdp-modal.show {
+        .hdf-donation-modal-wrapper.wdp-modal.show {
             display: flex;
             position: fixed;
             z-index: 2147483645;
@@ -1493,11 +1493,11 @@ class WDP_Assets {
             visibility: visible;
             opacity: 1;
         }
-        html body .wdp-modal .wdp-modal-content.wdp-modal-content {
+        .hdf-donation-modal-wrapper.wdp-modal .wdp-modal-content.wdp-modal-content {
             z-index: 2147483646;
             position: relative;
         }
-        html body.wdp-modal-open.wdp-modal-open {
+        body.wdp-modal-open.wdp-modal-open {
             overflow: hidden;
         }
         ";
@@ -1591,12 +1591,24 @@ class WDP_Assets {
      */
     private static function should_enqueue_assets($post) {
         $should_enqueue = self::$force_enqueue_assets;
+        $has_wdp_shortcode = false;
 
         // Shortcode kontrolü - sayfa içeriğinde shortcode var mı?
         if (!$should_enqueue && is_a($post, 'WP_Post')) {
             if (has_shortcode($post->post_content, 'wdp_donation_button') || has_shortcode($post->post_content, 'wdp_donation_form')) {
                 $should_enqueue = true;
+                $has_wdp_shortcode = true;
             }
+        }
+
+        // Checkout/cart/payment akışlarında sadece gerçekten gerekliyse yükle.
+        if (
+            !$should_enqueue
+            && function_exists('is_checkout')
+            && function_exists('is_cart')
+            && (is_checkout() || is_cart())
+        ) {
+            return false;
         }
 
         // Widget'lar ve diğer içerik alanları için kontrol
@@ -1630,6 +1642,18 @@ class WDP_Assets {
                 strpos($post->post_content, 'wdp-open-modal') !== false) {
                 $should_enqueue = true;
             }
+        }
+
+        // Checkout/cart sayfalarında shortcode veya force yoksa yükleme.
+        if (
+            $should_enqueue
+            && !self::$force_enqueue_assets
+            && !$has_wdp_shortcode
+            && function_exists('is_checkout')
+            && function_exists('is_cart')
+            && (is_checkout() || is_cart())
+        ) {
+            return false;
         }
 
         return $should_enqueue;

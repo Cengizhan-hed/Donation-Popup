@@ -106,7 +106,7 @@
     clearAlerts();
 
     const overlay = document.createElement('div');
-    overlay.className = 'wdp-alert-overlay';
+    overlay.className = 'hdf-donation-modal-wrapper wdp-alert-overlay';
     overlay.dataset.wdpAlert = 'true';
 
     const card = document.createElement('div');
@@ -154,7 +154,10 @@
     card.appendChild(closeButton);
 
     overlay.appendChild(card);
-    document.body.appendChild(overlay);
+    const activeWrapper = document.querySelector('.hdf-donation-modal-wrapper.wdp-modal.show')
+      || document.querySelector('.hdf-donation-modal-wrapper.wdp-donation-form')
+      || document.body;
+    activeWrapper.appendChild(overlay);
     
     // Non-closable alert için data attribute ekle
     if (config.nonClosable || config.persistent) {

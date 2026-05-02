@@ -245,7 +245,7 @@ class WDP_Templates {
         ob_start();
         ?>
         <!-- Modal -->
-        <div id="<?php echo esc_attr($modal_id); ?>" class="wdp-modal <?php echo esc_attr($custom_class); ?>" role="dialog" aria-modal="true" aria-labelledby="<?php echo esc_attr($modal_id); ?>-title" aria-describedby="<?php echo esc_attr($modal_id); ?>-description" data-wdp-unit-price="<?php echo esc_attr($product_price !== '' ? $product_price : ''); ?>" style="display:none;visibility:hidden;opacity:0;">
+        <div id="<?php echo esc_attr($modal_id); ?>" class="hdf-donation-modal-wrapper wdp-modal <?php echo esc_attr($custom_class); ?>" role="dialog" aria-modal="true" aria-labelledby="<?php echo esc_attr($modal_id); ?>-title" aria-describedby="<?php echo esc_attr($modal_id); ?>-description" data-wdp-unit-price="<?php echo esc_attr($product_price !== '' ? $product_price : ''); ?>" style="display:none;visibility:hidden;opacity:0;">
             <div class="wdp-modal-content">
                 <button type="button" class="wdp-modal-close" aria-label="<?php echo esc_attr__('Modalı Kapat', 'woo-donation-popup'); ?>">&times;</button>
                 <div class="wdp-modal-header">
@@ -287,9 +287,9 @@ class WDP_Templates {
                         <div class="wdp-shares-header">
                             <label>Hisse Adedi:</label>
                             <div class="wdp-share-counter">
-                                <button type="button" class="wdp-share-btn decrease"><span>-</span></button>
+                                <button type="button" class="wdp-share-btn wdp-share-btn-decrease"><span>-</span></button>
                                 <input type="number" name="share_count" value="1" min="1" max="<?php echo esc_attr($max_shares); ?>" readonly>
-                                <button type="button" class="wdp-share-btn increase"><span>+</span></button>
+                                <button type="button" class="wdp-share-btn wdp-share-btn-increase"><span>+</span></button>
                             </div>
                         </div>
                         <div class="wdp-shareholders-area">
@@ -431,7 +431,7 @@ class WDP_Templates {
         // Form HTML'ini oluştur - popup ile aynı yapıyı kullan
         ob_start();
         ?>
-        <div id="<?php echo esc_attr($form_id); ?>" class="wdp-donation-form <?php echo esc_attr($custom_class); ?>" data-product-id="<?php echo esc_attr($product_id); ?>" data-wdp-unit-price="<?php echo esc_attr($product_price !== '' ? $product_price : ''); ?>">
+        <div id="<?php echo esc_attr($form_id); ?>" class="hdf-donation-modal-wrapper wdp-donation-form <?php echo esc_attr($custom_class); ?>" data-product-id="<?php echo esc_attr($product_id); ?>" data-wdp-unit-price="<?php echo esc_attr($product_price !== '' ? $product_price : ''); ?>">
             <div class="wdp-modal-content">
                 <?php if ($show_title): ?>
                 <div class="wdp-form-title-wrapper">
@@ -471,9 +471,9 @@ class WDP_Templates {
                         <div class="wdp-shares-header">
                             <label>Hisse Adedi:</label>
                             <div class="wdp-share-counter">
-                                <button type="button" class="wdp-share-btn decrease"><span>-</span></button>
+                                <button type="button" class="wdp-share-btn wdp-share-btn-decrease"><span>-</span></button>
                                 <input type="number" name="share_count" value="1" min="1" max="<?php echo esc_attr($max_shares); ?>" readonly>
-                                <button type="button" class="wdp-share-btn increase"><span>+</span></button>
+                                <button type="button" class="wdp-share-btn wdp-share-btn-increase"><span>+</span></button>
                             </div>
                         </div>
                         <div class="wdp-shareholders-area">
@@ -548,64 +548,6 @@ class WDP_Templates {
             </div>
         </div>
 
-        <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            var formContainer = document.getElementById('<?php echo esc_js($form_id); ?>');
-            if (!formContainer) return;
-
-            var form = formContainer.querySelector('form');
-            if (!form) return;
-
-            var productId = formContainer.getAttribute('data-product-id');
-
-            function wdpInlineDebugLog(msg) {
-                if (window.wdp_ajax && window.wdp_ajax.debug) {
-                    console.log(msg);
-                }
-            }
-
-            function wdpRunWhenReady(getSetup, run, waitMsg, timeoutMsg) {
-                var setup = getSetup();
-                if (setup && typeof setup === 'function') {
-                    run(setup);
-                    return;
-                }
-                wdpInlineDebugLog(waitMsg);
-                var attempts = 0;
-                var id = setInterval(function() {
-                    attempts++;
-                    setup = getSetup();
-                    if (setup && typeof setup === 'function') {
-                        run(setup);
-                        clearInterval(id);
-                    } else if (attempts >= 50) {
-                        wdpInlineDebugLog(timeoutMsg);
-                        clearInterval(id);
-                    }
-                }, 100);
-            }
-
-            wdpRunWhenReady(
-                function() {
-                    var m = window.WDPApp && window.WDPApp.shareholder;
-                    return m && typeof m.setup === 'function' ? m.setup : null;
-                },
-                function(setup) { setup(formContainer, productId); },
-                'WDP: setupShareholderForms not available yet, will retry...',
-                'WDP: setupShareholderForms timeout after 5 seconds'
-            );
-
-            wdpRunWhenReady(
-                function() {
-                    var m = window.WDPApp && window.WDPApp.form;
-                    return m && typeof m.setup === 'function' ? m.setup : null;
-                },
-                function(setup) { setup(form); },
-                'WDP: setupFormSubmission not available yet, will retry...',
-                'WDP: setupFormSubmission timeout after 5 seconds'
-            );
-        });
-        </script>
         <?php
         return ob_get_clean();
     }
