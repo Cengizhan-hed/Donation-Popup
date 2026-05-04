@@ -34,7 +34,7 @@ html body .wdp-cart-actions :is(a, button) {
   cursor: pointer;
   text-decoration: none;
   /* Hafif renk geçişi serbest, hareket yok */
-  transition: var(--wdp-transition-button);
+  transition: var(--wdp-transition-button), box-shadow 0.22s ease;
   margin: 0;
   min-width: 120px;
   text-align: center;
@@ -78,7 +78,7 @@ html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-success-screen, .wdp-moda
   font-weight: 600;
   cursor: pointer;
   /* Hafif renk geçişi serbest, hareket yok */
-  transition: var(--wdp-transition-button);
+  transition: var(--wdp-transition-button), box-shadow 0.22s ease;
   text-decoration: none;
   text-align: center;
 }
@@ -168,21 +168,6 @@ html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-success-screen, .wdp-moda
   padding: 14px;
   position: relative;
   overflow: hidden;
-}
-
-/* Subtle background pattern */
-html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-success-screen, .wdp-modal-content .wdp-success-screen) .wdp-mini-cart::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 100%;
-  background: 
-    radial-gradient(circle at 20% 50%, rgba(30, 115, 190, 0.03) 0%, transparent 50%),
-    radial-gradient(circle at 80% 50%, rgba(72, 187, 120, 0.03) 0%, transparent 50%);
-  pointer-events: none;
-  z-index: 0;
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-success-screen, .wdp-modal-content .wdp-success-screen) .wdp-mini-cart > * {
@@ -316,7 +301,7 @@ html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-mini-cart-items, .wdp-mod
   cursor: pointer;
   padding: 0;
   border-radius: 0;
-  transition: color 0.2s ease;
+  transition: color 0.2s ease, box-shadow 0.22s ease;
   display: inline-flex;
   align-items: flex-start;
   justify-content: center;

@@ -25,15 +25,14 @@ class WDP_Admin_Layout_Tabs_Renderer {
 			'container_bg'      => '#f8fafc',
 			'container_border'  => '#e2e8f0',
 			'track_bg'          => '#e2e8f0',
-			'fill_start'        => '#3b82f6',
-			'fill_mid'          => '#2563eb',
-			'fill_end'          => '#1d4ed8',
+			'fill_color'        => '#2563eb',
 			'preview_bg'        => '#64748b',
 			'percentage_bg'     => '#ffffff',
 			'percentage_text'   => '#1e293b',
 		);
 
 		$settings = wp_parse_args($settings, $defaults);
+		$settings['fill_color'] = WDP_Utils::resolve_progress_bar_fill_color($settings);
 
 		WDP_Admin_Renderer_Helpers::open_form_container('wdp-progress-bar-settings-form');
 		self::render_progress_bar_help();
@@ -93,7 +92,7 @@ class WDP_Admin_Layout_Tabs_Renderer {
 		echo '<tr><th scope="row"><label for="progress_container_bg">' . __('Kapsayıcı Arka Plan Rengi', 'woo-donation-popup') . '</label></th><td><input type="color" id="progress_container_bg" name="progress_container_bg" value="' . esc_attr($settings['container_bg']) . '" /><p class="description">' . __('Progress bar kutusunun arka plan rengi.', 'woo-donation-popup') . '</p></td></tr>';
 		echo '<tr><th scope="row"><label for="progress_container_border">' . __('Kapsayıcı Border Rengi', 'woo-donation-popup') . '</label></th><td><input type="color" id="progress_container_border" name="progress_container_border" value="' . esc_attr($settings['container_border']) . '" /><p class="description">' . __('Progress bar kutusunun kenarlık rengi.', 'woo-donation-popup') . '</p></td></tr>';
 		echo '<tr><th scope="row"><label for="progress_track_bg">' . __('Boş Bar Arka Plan Rengi', 'woo-donation-popup') . '</label></th><td><input type="color" id="progress_track_bg" name="progress_track_bg" value="' . esc_attr($settings['track_bg']) . '" /><p class="description">' . __('İlerleme barının boş kısmının arka plan rengi.', 'woo-donation-popup') . '</p></td></tr>';
-		echo '<tr><th scope="row"><label>' . __('Dolu Bar Gradient Renkleri', 'woo-donation-popup') . '</label></th><td><label>' . __('Başlangıç', 'woo-donation-popup') . ' <input type="color" id="progress_fill_start" name="progress_fill_start" value="' . esc_attr($settings['fill_start']) . '" /></label><br /><label>' . __('Orta', 'woo-donation-popup') . ' <input type="color" id="progress_fill_mid" name="progress_fill_mid" value="' . esc_attr($settings['fill_mid']) . '" /></label><br /><label>' . __('Bitiş', 'woo-donation-popup') . ' <input type="color" id="progress_fill_end" name="progress_fill_end" value="' . esc_attr($settings['fill_end']) . '" /></label><p class="description">' . __('Dolu bar kısmının gradient renkleri.', 'woo-donation-popup') . '</p></td></tr>';
+		echo '<tr><th scope="row"><label for="progress_fill_color">' . __('Dolu Bar Rengi', 'woo-donation-popup') . '</label></th><td><input type="color" id="progress_fill_color" name="progress_fill_color" value="' . esc_attr($settings['fill_color']) . '" /><p class="description">' . __('İlerlemenin dolduğu kısmın rengi.', 'woo-donation-popup') . '</p></td></tr>';
 		echo '<tr><th scope="row"><label for="progress_preview_bg">' . __('Preview (Özel Fiyat) Bar Rengi', 'woo-donation-popup') . '</label></th><td><input type="color" id="progress_preview_bg" name="progress_preview_bg" value="' . esc_attr($settings['preview_bg']) . '" /><p class="description">' . __('Özel fiyat girildiğinde görünen ek bar renginin ana rengi.', 'woo-donation-popup') . '</p></td></tr>';
 		echo '<tr><th scope="row"><label for="progress_percentage_bg">' . __('Yüzde Rozeti Arka Plan Rengi', 'woo-donation-popup') . '</label></th><td><input type="color" id="progress_percentage_bg" name="progress_percentage_bg" value="' . esc_attr($settings['percentage_bg']) . '" /><p class="description">' . __('Ortadaki yüzde kutusunun arka plan rengi.', 'woo-donation-popup') . '</p></td></tr>';
 		echo '<tr><th scope="row"><label for="progress_percentage_text">' . __('Yüzde Rozeti Metin Rengi', 'woo-donation-popup') . '</label></th><td><input type="color" id="progress_percentage_text" name="progress_percentage_text" value="' . esc_attr($settings['percentage_text']) . '" /><p class="description">' . __('Ortadaki yüzde kutusunun metin rengi.', 'woo-donation-popup') . '</p></td></tr>';

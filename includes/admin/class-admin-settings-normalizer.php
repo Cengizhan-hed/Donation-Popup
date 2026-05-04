@@ -20,8 +20,10 @@ class WDP_Admin_Settings_Normalizer {
 	 * @return array
 	 */
 	public static function normalize_normal_form_settings(array $request) {
-		$existing = WDP_Utils::normalize_legacy_popup_button_text(
-			get_option('wdp_button_settings', array())
+		$existing = WDP_Utils::migrate_button_shadow_to_sc_modal(
+			WDP_Utils::normalize_legacy_popup_button_text(
+				get_option('wdp_button_settings', array())
+			)
 		);
 
 		$settings = array(
@@ -54,29 +56,31 @@ class WDP_Admin_Settings_Normalizer {
 			'popup_button_border_radius'        => isset($request['popup_button_border_radius']) ? absint($request['popup_button_border_radius']) : 10,
 			'popup_button_border_size'          => isset($request['popup_button_border_size']) ? absint($request['popup_button_border_size']) : (isset($existing['popup_button_border_size']) ? absint($existing['popup_button_border_size']) : 0),
 			'popup_button_full_width'           => isset($request['popup_button_full_width']) ? ('1' === $request['popup_button_full_width'] ? '1' : '0') : (isset($existing['popup_button_full_width']) ? (('1' === $existing['popup_button_full_width']) ? '1' : '0') : '0'),
-			'popup_button_use_gradient'         => isset($request['popup_button_use_gradient']) && '1' === $request['popup_button_use_gradient'] ? '1' : '0',
-			'popup_button_gradient_start'       => isset($request['popup_button_gradient_start']) ? sanitize_hex_color($request['popup_button_gradient_start']) : (isset($existing['popup_button_gradient_start']) ? sanitize_hex_color($existing['popup_button_gradient_start']) : '#ff8244'),
-			'popup_button_gradient_end'         => isset($request['popup_button_gradient_end']) ? sanitize_hex_color($request['popup_button_gradient_end']) : (isset($existing['popup_button_gradient_end']) ? sanitize_hex_color($existing['popup_button_gradient_end']) : '#ff9860'),
-			'popup_button_gradient_hover_start' => isset($request['popup_button_gradient_hover_start']) ? sanitize_hex_color($request['popup_button_gradient_hover_start']) : (isset($existing['popup_button_gradient_hover_start']) ? sanitize_hex_color($existing['popup_button_gradient_hover_start']) : '#ff8244'),
-			'popup_button_gradient_hover_end'   => isset($request['popup_button_gradient_hover_end']) ? sanitize_hex_color($request['popup_button_gradient_hover_end']) : (isset($existing['popup_button_gradient_hover_end']) ? sanitize_hex_color($existing['popup_button_gradient_hover_end']) : '#ff9860'),
-			'popup_button_gradient_start_stop'  => isset($request['popup_button_gradient_start_stop']) ? absint($request['popup_button_gradient_start_stop']) : (isset($existing['popup_button_gradient_start_stop']) ? absint($existing['popup_button_gradient_start_stop']) : 0),
-			'popup_button_gradient_end_stop'    => isset($request['popup_button_gradient_end_stop']) ? absint($request['popup_button_gradient_end_stop']) : (isset($existing['popup_button_gradient_end_stop']) ? absint($existing['popup_button_gradient_end_stop']) : 100),
-			'popup_button_gradient_type'        => (isset($request['popup_button_gradient_type']) && in_array($request['popup_button_gradient_type'], array('linear', 'radial'), true)) ? sanitize_text_field($request['popup_button_gradient_type']) : (isset($existing['popup_button_gradient_type']) ? sanitize_text_field($existing['popup_button_gradient_type']) : 'linear'),
-			'popup_button_gradient_angle'       => isset($request['popup_button_gradient_angle']) ? absint($request['popup_button_gradient_angle']) : (isset($existing['popup_button_gradient_angle']) ? absint($existing['popup_button_gradient_angle']) : 150),
 			'label_color'                       => isset($request['label_color']) ? sanitize_hex_color($request['label_color']) : '#374151',
 			'label_font_size'                   => isset($request['label_font_size']) ? absint($request['label_font_size']) : 14,
 			'label_font_weight'                 => isset($request['label_font_weight']) ? sanitize_text_field($request['label_font_weight']) : '600',
 			'placeholder_color'                 => isset($request['placeholder_color']) ? sanitize_hex_color($request['placeholder_color']) : '#6b7280',
 			'form_gap'                          => isset($request['form_gap']) ? absint($request['form_gap']) : 16,
-			'error_bg_color'                    => isset($request['error_bg_color']) ? sanitize_hex_color($request['error_bg_color']) : (isset($existing['error_bg_color']) ? sanitize_hex_color($existing['error_bg_color']) : '#fed7d7'),
-			'error_border_color'                => isset($request['error_border_color']) ? sanitize_hex_color($request['error_border_color']) : (isset($existing['error_border_color']) ? sanitize_hex_color($existing['error_border_color']) : '#feb2b2'),
-			'error_text_color'                  => isset($request['error_text_color']) ? sanitize_hex_color($request['error_text_color']) : (isset($existing['error_text_color']) ? sanitize_hex_color($existing['error_text_color']) : '#c53030'),
-			'input_error_bg_color'              => isset($request['input_error_bg_color']) ? sanitize_hex_color($request['input_error_bg_color']) : (isset($existing['input_error_bg_color']) ? sanitize_hex_color($existing['input_error_bg_color']) : '#fed7d7'),
-			'input_error_border_color'          => isset($request['input_error_border_color']) ? sanitize_hex_color($request['input_error_border_color']) : (isset($existing['input_error_border_color']) ? sanitize_hex_color($existing['input_error_border_color']) : '#feb2b2'),
-			'input_error_text_color'            => isset($request['input_error_text_color']) ? sanitize_hex_color($request['input_error_text_color']) : (isset($existing['input_error_text_color']) ? sanitize_hex_color($existing['input_error_text_color']) : '#c53030'),
 			'form_button_order'                 => isset($request['form_button_order']) ? (('checkout_first' === $request['form_button_order']) ? 'checkout_first' : 'add_first') : (isset($existing['form_button_order']) && 'checkout_first' === $existing['form_button_order'] ? 'checkout_first' : 'add_first'),
 			'form_button_alignment'             => in_array(isset($request['form_button_alignment']) ? $request['form_button_alignment'] : (isset($existing['form_button_alignment']) ? $existing['form_button_alignment'] : 'left'), array('left', 'center', 'right'), true) ? sanitize_text_field(isset($request['form_button_alignment']) ? $request['form_button_alignment'] : (isset($existing['form_button_alignment']) ? $existing['form_button_alignment'] : 'left')) : 'left',
 		);
+
+		foreach (array('sc', 'modal') as $slot) {
+			$pre = 'button_shadow_' . $slot . '_';
+			/* İşaretli değilse POST’ta anahtar yok — kapalı sayılır. */
+			$settings[ $pre . 'enabled' ]        = isset($request[ $pre . 'enabled' ]) && '1' === $request[ $pre . 'enabled' ] ? '1' : '0';
+			$settings[ $pre . 'hover_enhanced' ] = isset($request[ $pre . 'hover_enhanced' ]) && '1' === $request[ $pre . 'hover_enhanced' ] ? '1' : '0';
+			$settings[ $pre . 'color' ]          = isset($request[ $pre . 'color' ]) ? sanitize_hex_color($request[ $pre . 'color' ]) : (isset($existing[ $pre . 'color' ]) ? sanitize_hex_color($existing[ $pre . 'color' ]) : '#94a3b8');
+			$settings[ $pre . 'x' ]              = isset($request[ $pre . 'x' ]) ? (int) $request[ $pre . 'x' ] : (isset($existing[ $pre . 'x' ]) ? (int) $existing[ $pre . 'x' ] : 0);
+			$settings[ $pre . 'y' ]              = isset($request[ $pre . 'y' ]) ? (int) $request[ $pre . 'y' ] : (isset($existing[ $pre . 'y' ]) ? (int) $existing[ $pre . 'y' ] : 8);
+			$settings[ $pre . 'blur' ]           = isset($request[ $pre . 'blur' ]) ? absint($request[ $pre . 'blur' ]) : (isset($existing[ $pre . 'blur' ]) ? absint($existing[ $pre . 'blur' ]) : 20);
+			$settings[ $pre . 'spread' ]         = isset($request[ $pre . 'spread' ]) ? (int) $request[ $pre . 'spread' ] : (isset($existing[ $pre . 'spread' ]) ? (int) $existing[ $pre . 'spread' ] : 0);
+			$settings[ $pre . 'hover_blur' ]       = isset($request[ $pre . 'hover_blur' ]) ? absint($request[ $pre . 'hover_blur' ]) : (isset($existing[ $pre . 'hover_blur' ]) ? absint($existing[ $pre . 'hover_blur' ]) : 24);
+			$settings[ $pre . 'hover_color' ]      = isset($request[ $pre . 'hover_color' ]) ? sanitize_hex_color($request[ $pre . 'hover_color' ]) : (isset($existing[ $pre . 'hover_color' ]) ? sanitize_hex_color($existing[ $pre . 'hover_color' ]) : '');
+			$settings[ $pre . 'hover_x' ]          = isset($request[ $pre . 'hover_x' ]) ? (int) $request[ $pre . 'hover_x' ] : (isset($existing[ $pre . 'hover_x' ]) ? (int) $existing[ $pre . 'hover_x' ] : 0);
+			$settings[ $pre . 'hover_y' ]          = isset($request[ $pre . 'hover_y' ]) ? (int) $request[ $pre . 'hover_y' ] : (isset($existing[ $pre . 'hover_y' ]) ? (int) $existing[ $pre . 'hover_y' ] : 10);
+			$settings[ $pre . 'hover_spread' ]     = isset($request[ $pre . 'hover_spread' ]) ? (int) $request[ $pre . 'hover_spread' ] : (isset($existing[ $pre . 'hover_spread' ]) ? (int) $existing[ $pre . 'hover_spread' ] : 0);
+		}
 
 		$settings['button_border_radius'] = self::clamp_max($settings['button_border_radius'], 50);
 		$settings['modal_border_radius'] = self::clamp_max($settings['modal_border_radius'], 50);
@@ -92,9 +96,26 @@ class WDP_Admin_Settings_Normalizer {
 		$settings['popup_button_custom_min_width'] = self::clamp_range($settings['popup_button_custom_min_width'], 80, 420);
 		$settings['popup_button_custom_min_height'] = self::clamp_range($settings['popup_button_custom_min_height'], 36, 100);
 		$settings['popup_button_custom_padding_x'] = self::clamp_range($settings['popup_button_custom_padding_x'], 8, 64);
-		$settings['popup_button_gradient_start_stop'] = self::clamp_max($settings['popup_button_gradient_start_stop'], 100);
-		$settings['popup_button_gradient_end_stop'] = self::clamp_max($settings['popup_button_gradient_end_stop'], 100);
-		$settings['popup_button_gradient_angle'] = self::clamp_max($settings['popup_button_gradient_angle'], 360);
+
+		foreach (array('sc', 'modal') as $slot) {
+			$pre = 'button_shadow_' . $slot . '_';
+			$settings[ $pre . 'x' ]            = self::clamp_range((int) $settings[ $pre . 'x' ], -24, 24);
+			$settings[ $pre . 'y' ]            = self::clamp_range((int) $settings[ $pre . 'y' ], -24, 24);
+			$settings[ $pre . 'blur' ]         = self::clamp_range((int) $settings[ $pre . 'blur' ], 0, 48);
+			$settings[ $pre . 'spread' ]       = self::clamp_range((int) $settings[ $pre . 'spread' ], -8, 12);
+			$settings[ $pre . 'hover_blur' ]   = self::clamp_range((int) $settings[ $pre . 'hover_blur' ], 0, 48);
+			$settings[ $pre . 'hover_x' ]      = self::clamp_range((int) $settings[ $pre . 'hover_x' ], -24, 24);
+			$settings[ $pre . 'hover_y' ]      = self::clamp_range((int) $settings[ $pre . 'hover_y' ], -24, 24);
+			$settings[ $pre . 'hover_spread' ] = self::clamp_range((int) $settings[ $pre . 'hover_spread' ], -8, 12);
+			$base_c                            = sanitize_hex_color($settings[ $pre . 'color' ]);
+			$settings[ $pre . 'color' ]        = $base_c ? $base_c : '#94a3b8';
+			if ('1' === $settings[ $pre . 'hover_enhanced' ]) {
+				$h_c                               = sanitize_hex_color($settings[ $pre . 'hover_color' ]);
+				$settings[ $pre . 'hover_color' ] = $h_c ? $h_c : $settings[ $pre . 'color' ];
+			} else {
+				$settings[ $pre . 'hover_color' ] = '';
+			}
+		}
 		$settings['button_text_donate'] = $settings['popup_button_text'];
 
 		return $settings;
@@ -107,10 +128,14 @@ class WDP_Admin_Settings_Normalizer {
 	 * @return array
 	 */
 	public static function normalize_shareholder_settings(array $request) {
-		$use_gradient = isset($request['shareholders_area_use_gradient']) && '1' == $request['shareholders_area_use_gradient'];
-		$solid_color = isset($request['shareholders_area_solid_color']) ? sanitize_hex_color($request['shareholders_area_solid_color']) : '#ffffff';
-		$gradient_1 = isset($request['shareholders_area_color1']) ? sanitize_hex_color($request['shareholders_area_color1']) : '#ffffff';
-		$gradient_2 = isset($request['shareholders_area_color2']) ? sanitize_hex_color($request['shareholders_area_color2']) : '#fafbfc';
+		$existing = get_option('wdp_shareholder_settings', array());
+		$solid_requested = isset($request['shareholders_area_bg']) ? sanitize_hex_color($request['shareholders_area_bg']) : '';
+		if (!$solid_requested && !empty($existing['shareholders_area_bg'])) {
+			$solid_requested = WDP_Utils::coerce_solid_hex_background($existing['shareholders_area_bg'], '#fafbfc');
+		}
+		if (!$solid_requested) {
+			$solid_requested = '#fafbfc';
+		}
 
 		$settings = array(
 			'shareholder_card_bg'            => isset($request['shareholder_card_bg']) ? sanitize_hex_color($request['shareholder_card_bg']) : '#ffffff',
@@ -120,7 +145,7 @@ class WDP_Admin_Settings_Normalizer {
 			'shareholder_header_bg'          => isset($request['shareholder_header_bg']) ? sanitize_hex_color($request['shareholder_header_bg']) : '#f9fafb',
 			'shareholder_header_color'       => isset($request['shareholder_header_color']) ? sanitize_hex_color($request['shareholder_header_color']) : '#1f2937',
 			'shareholder_content_padding'    => isset($request['shareholder_content_padding']) ? absint($request['shareholder_content_padding']) : 12,
-			'shareholders_area_bg'           => $use_gradient ? 'linear-gradient(to bottom, ' . $gradient_1 . ' 0%, ' . $gradient_2 . ' 100%)' : $solid_color,
+			'shareholders_area_bg'           => $solid_requested,
 			'shareholders_area_border'       => isset($request['shareholders_area_border']) ? sanitize_hex_color($request['shareholders_area_border']) : '#e1e5e9',
 			'shareholders_area_radius'       => isset($request['shareholders_area_radius']) ? absint($request['shareholders_area_radius']) : 10,
 			'shareholders_scrollbar_color'   => isset($request['shareholders_scrollbar_color']) ? sanitize_hex_color($request['shareholders_scrollbar_color']) : '#4a90e2',
@@ -183,13 +208,15 @@ class WDP_Admin_Settings_Normalizer {
 	 * @return array
 	 */
 	public static function normalize_progress_bar_settings(array $request) {
+		$fill = isset($request['progress_fill_color']) ? sanitize_hex_color($request['progress_fill_color']) : '';
+		if (!$fill) {
+			$fill = WDP_Utils::resolve_progress_bar_fill_color(get_option('wdp_progress_bar_settings', array()));
+		}
 		return array(
 			'container_bg'    => isset($request['progress_container_bg']) ? sanitize_hex_color($request['progress_container_bg']) : '#f8fafc',
 			'container_border'=> isset($request['progress_container_border']) ? sanitize_hex_color($request['progress_container_border']) : '#e2e8f0',
 			'track_bg'        => isset($request['progress_track_bg']) ? sanitize_hex_color($request['progress_track_bg']) : '#e2e8f0',
-			'fill_start'      => isset($request['progress_fill_start']) ? sanitize_hex_color($request['progress_fill_start']) : '#3b82f6',
-			'fill_mid'        => isset($request['progress_fill_mid']) ? sanitize_hex_color($request['progress_fill_mid']) : '#2563eb',
-			'fill_end'        => isset($request['progress_fill_end']) ? sanitize_hex_color($request['progress_fill_end']) : '#1d4ed8',
+			'fill_color'      => $fill,
 			'preview_bg'      => isset($request['progress_preview_bg']) ? sanitize_hex_color($request['progress_preview_bg']) : '#64748b',
 			'percentage_bg'   => isset($request['progress_percentage_bg']) ? sanitize_hex_color($request['progress_percentage_bg']) : '#ffffff',
 			'percentage_text' => isset($request['progress_percentage_text']) ? sanitize_hex_color($request['progress_percentage_text']) : '#1e293b',

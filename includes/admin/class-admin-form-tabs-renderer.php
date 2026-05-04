@@ -19,8 +19,10 @@ class WDP_Admin_Form_Tabs_Renderer {
 	 * @return void
 	 */
 	public static function render_normal_form_tab() {
-		$button_settings = WDP_Utils::normalize_legacy_popup_button_text(
-			get_option('wdp_button_settings', array())
+		$button_settings = WDP_Utils::migrate_button_shadow_to_sc_modal(
+			WDP_Utils::normalize_legacy_popup_button_text(
+				get_option('wdp_button_settings', array())
+			)
 		);
 
 		$defaults = array(
@@ -44,15 +46,30 @@ class WDP_Admin_Form_Tabs_Renderer {
 			'popup_button_border_radius'        => '10',
 			'popup_button_border_size'          => '0',
 			'popup_button_full_width'           => '0',
-			'popup_button_use_gradient'         => '1',
-			'popup_button_gradient_start'       => '#ff8244',
-			'popup_button_gradient_end'         => '#ff9860',
-			'popup_button_gradient_hover_start' => '#ff8244',
-			'popup_button_gradient_hover_end'   => '#ff9860',
-			'popup_button_gradient_start_stop'  => '0',
-			'popup_button_gradient_end_stop'    => '100',
-			'popup_button_gradient_type'        => 'linear',
-			'popup_button_gradient_angle'       => '150',
+			'button_shadow_sc_enabled'          => '0',
+			'button_shadow_sc_color'            => '#94a3b8',
+			'button_shadow_sc_x'                => '0',
+			'button_shadow_sc_y'                => '8',
+			'button_shadow_sc_blur'             => '20',
+			'button_shadow_sc_spread'           => '0',
+			'button_shadow_sc_hover_enhanced'   => '0',
+			'button_shadow_sc_hover_blur'       => '24',
+			'button_shadow_sc_hover_color'      => '#64748b',
+			'button_shadow_sc_hover_x'          => '0',
+			'button_shadow_sc_hover_y'          => '10',
+			'button_shadow_sc_hover_spread'      => '0',
+			'button_shadow_modal_enabled'       => '0',
+			'button_shadow_modal_color'         => '#94a3b8',
+			'button_shadow_modal_x'             => '0',
+			'button_shadow_modal_y'             => '8',
+			'button_shadow_modal_blur'          => '20',
+			'button_shadow_modal_spread'        => '0',
+			'button_shadow_modal_hover_enhanced' => '0',
+			'button_shadow_modal_hover_blur'    => '24',
+			'button_shadow_modal_hover_color'   => '#64748b',
+			'button_shadow_modal_hover_x'       => '0',
+			'button_shadow_modal_hover_y'       => '10',
+			'button_shadow_modal_hover_spread'  => '0',
 		);
 
 		$settings = wp_parse_args($button_settings, $defaults);
@@ -82,7 +99,7 @@ class WDP_Admin_Form_Tabs_Renderer {
 			'shareholder_header_bg'          => '#f9fafb',
 			'shareholder_header_color'       => '#1f2937',
 			'shareholder_content_padding'    => '12',
-			'shareholders_area_bg'           => 'linear-gradient(to bottom, #ffffff 0%, #fafbfc 100%)',
+			'shareholders_area_bg'           => '#fafbfc',
 			'shareholders_area_border'       => '#e1e5e9',
 			'shareholders_area_radius'       => '10',
 			'shareholders_scrollbar_color'   => '#4a90e2',
@@ -112,16 +129,10 @@ class WDP_Admin_Form_Tabs_Renderer {
 		$shareholder_density           = isset($settings['shareholder_density']) ? $settings['shareholder_density'] : 'normal';
 		$enable_email                  = isset($settings['shareholder_enable_email']) ? (bool) $settings['shareholder_enable_email'] : false;
 		$shareholder_email_placeholder = isset($settings['shareholder_email_placeholder']) ? $settings['shareholder_email_placeholder'] : $defaults['shareholder_email_placeholder'];
-		$use_gradient                  = (strpos($settings['shareholders_area_bg'], 'gradient') !== false);
-		$color1                        = '#ffffff';
-		$color2                        = '#fafbfc';
-
-		if (preg_match('/#([a-fA-F0-9]{6})/', $settings['shareholders_area_bg'], $matches)) {
-			$color1 = '#' . $matches[1];
-		}
-		if (preg_match_all('/#([a-fA-F0-9]{6})/', $settings['shareholders_area_bg'], $matches) && isset($matches[1][1])) {
-			$color2 = '#' . $matches[1][1];
-		}
+		$shareholders_area_bg = WDP_Utils::coerce_solid_hex_background(
+			isset($settings['shareholders_area_bg']) ? $settings['shareholders_area_bg'] : '#fafbfc',
+			'#fafbfc'
+		);
 
 		WDP_Admin_Renderer_Helpers::open_form_container('wdp-shareholder-form-settings-form');
 		echo '<h2>' . __('Hisseli Form Metinleri', 'woo-donation-popup') . '</h2><table class="form-table">';
@@ -137,9 +148,7 @@ class WDP_Admin_Form_Tabs_Renderer {
 		echo '<tr><th scope="row"><label for="shareholder_email_placeholder">' . __('E-posta Placeholder', 'woo-donation-popup') . '</label></th><td><input type="text" id="shareholder_email_placeholder" name="shareholder_email_placeholder" value="' . esc_attr($shareholder_email_placeholder) . '" class="regular-text" /></td></tr>';
 		echo '</table>';
 		echo '<h2>' . __('Hissedarlar Alanı Ayarları', 'woo-donation-popup') . '</h2><table class="form-table">';
-		echo '<tr><th scope="row"><label for="shareholders_area_use_gradient">' . __('Gradient Kullan', 'woo-donation-popup') . '</label></th><td><label><input type="checkbox" id="shareholders_area_use_gradient" name="shareholders_area_use_gradient" value="1" ' . checked($use_gradient, true, false) . ' /> ' . __('Gradient kullan', 'woo-donation-popup') . '</label></td></tr>';
-		echo '<tr><th scope="row"><label for="shareholders_area_color1">' . __('Üst Renk', 'woo-donation-popup') . '</label></th><td><input type="color" id="shareholders_area_color1" name="shareholders_area_color1" value="' . esc_attr($color1) . '" /></td></tr>';
-		echo '<tr><th scope="row"><label for="shareholders_area_color2">' . __('Alt Renk', 'woo-donation-popup') . '</label></th><td><input type="color" id="shareholders_area_color2" name="shareholders_area_color2" value="' . esc_attr($color2) . '" /></td></tr>';
+		echo '<tr><th scope="row"><label for="shareholders_area_bg">' . __('Alan Arka Plan Rengi', 'woo-donation-popup') . '</label></th><td><input type="color" id="shareholders_area_bg" name="shareholders_area_bg" value="' . esc_attr($shareholders_area_bg) . '" /></td></tr>';
 		echo '<tr><th scope="row"><label for="shareholders_area_border">' . __('Alan Border Rengi', 'woo-donation-popup') . '</label></th><td><input type="color" id="shareholders_area_border" name="shareholders_area_border" value="' . esc_attr($settings['shareholders_area_border']) . '" /></td></tr>';
 		echo '</table>';
 		WDP_Admin_Renderer_Helpers::close_form_container('wdp-save-shareholder-form-settings');
@@ -224,36 +233,81 @@ class WDP_Admin_Form_Tabs_Renderer {
 		echo '<div id="wdp-normal-sec-fields" class="wdp-settings-section"><h2>' . __('Input Alanları Ayarları', 'woo-donation-popup') . '</h2><table class="form-table"><tr><th scope="row"><label for="input_border_color">' . __('Input Border Rengi', 'woo-donation-popup') . '</label></th><td><input type="color" id="input_border_color" name="input_border_color" value="' . esc_attr($input_border) . '" /></td></tr><tr><th scope="row"><label for="input_border_radius">' . __('Input Border Radius (px)', 'woo-donation-popup') . '</label></th><td><input type="number" id="input_border_radius" name="input_border_radius" value="' . esc_attr($input_radius) . '" min="0" max="50" step="1" class="small-text" /></td></tr><tr><th scope="row"><label for="label_color">' . __('Label Rengi', 'woo-donation-popup') . '</label></th><td><input type="color" id="label_color" name="label_color" value="' . esc_attr($label_color) . '" /></td></tr><tr><th scope="row"><label for="label_font_size">' . __('Label Font Boyutu (px)', 'woo-donation-popup') . '</label></th><td><input type="number" id="label_font_size" name="label_font_size" value="' . esc_attr($label_font_size) . '" min="10" max="24" step="1" class="small-text" /></td></tr><tr><th scope="row"><label for="label_font_weight">' . __('Label Font Kalınlığı', 'woo-donation-popup') . '</label></th><td><select id="label_font_weight" name="label_font_weight"><option value="400" ' . selected($label_font_weight, '400', false) . '>Normal (400)</option><option value="500" ' . selected($label_font_weight, '500', false) . '>Orta (500)</option><option value="600" ' . selected($label_font_weight, '600', false) . '>Yarı Kalın (600)</option><option value="700" ' . selected($label_font_weight, '700', false) . '>Kalın (700)</option></select></td></tr><tr><th scope="row"><label for="placeholder_color">' . __('Placeholder Rengi', 'woo-donation-popup') . '</label></th><td><input type="color" id="placeholder_color" name="placeholder_color" value="' . esc_attr($placeholder_color) . '" /></td></tr><tr><th scope="row"><label for="form_gap">' . __('Form Elemanları Arası Boşluk (px)', 'woo-donation-popup') . '</label></th><td><input type="number" id="form_gap" name="form_gap" value="' . esc_attr($form_gap) . '" min="4" max="40" step="1" class="small-text" /></td></tr></table></div>';
 	}
 
-	private static function render_normal_errors_section(array $settings) {
-		$error_bg = isset($settings['error_bg_color']) ? $settings['error_bg_color'] : '#fed7d7';
-		$error_border = isset($settings['error_border_color']) ? $settings['error_border_color'] : '#feb2b2';
-		$error_text = isset($settings['error_text_color']) ? $settings['error_text_color'] : '#c53030';
-		$input_error_bg = isset($settings['input_error_bg_color']) ? $settings['input_error_bg_color'] : '#fed7d7';
-		$input_error_border = isset($settings['input_error_border_color']) ? $settings['input_error_border_color'] : '#feb2b2';
-		$input_error_text = isset($settings['input_error_text_color']) ? $settings['input_error_text_color'] : '#c53030';
-		echo '<div id="wdp-normal-sec-errors" class="wdp-settings-section"><h2>' . __('Hata / Uyarı Mesajı Renkleri', 'woo-donation-popup') . '</h2><table class="form-table"><tr><th scope="row"><label for="error_bg_color">' . __('Form Hata Arka Plan Rengi', 'woo-donation-popup') . '</label></th><td><input type="color" id="error_bg_color" name="error_bg_color" value="' . esc_attr($error_bg) . '" /></td></tr><tr><th scope="row"><label for="error_border_color">' . __('Form Hata Border Rengi', 'woo-donation-popup') . '</label></th><td><input type="color" id="error_border_color" name="error_border_color" value="' . esc_attr($error_border) . '" /></td></tr><tr><th scope="row"><label for="error_text_color">' . __('Form Hata Metin Rengi', 'woo-donation-popup') . '</label></th><td><input type="color" id="error_text_color" name="error_text_color" value="' . esc_attr($error_text) . '" /></td></tr><tr><th scope="row"><label for="input_error_bg_color">' . __('Input Hata Balonu Arka Plan Rengi', 'woo-donation-popup') . '</label></th><td><input type="color" id="input_error_bg_color" name="input_error_bg_color" value="' . esc_attr($input_error_bg) . '" /></td></tr><tr><th scope="row"><label for="input_error_border_color">' . __('Input Hata Balonu Border Rengi', 'woo-donation-popup') . '</label></th><td><input type="color" id="input_error_border_color" name="input_error_border_color" value="' . esc_attr($input_error_border) . '" /></td></tr><tr><th scope="row"><label for="input_error_text_color">' . __('Input Hata Balonu Metin Rengi', 'woo-donation-popup') . '</label></th><td><input type="color" id="input_error_text_color" name="input_error_text_color" value="' . esc_attr($input_error_text) . '" /></td></tr></table></div>';
-	}
-
 	private static function render_normal_form_buttons_section(array $settings) {
 		$checkout_color = isset($settings['button_checkout_color']) ? $settings['button_checkout_color'] : '#48bb78';
 		$checkout_hover = isset($settings['button_checkout_hover']) ? $settings['button_checkout_hover'] : '#38a169';
-		echo '<div id="wdp-normal-sec-form-buttons" class="wdp-settings-section"><h2>' . __('Buton Renkleri', 'woo-donation-popup') . '</h2><table class="form-table"><tr><th scope="row"><label for="button_primary_color">' . __('Birincil Buton Rengi', 'woo-donation-popup') . '</label></th><td><input type="color" id="button_primary_color" name="button_primary_color" value="' . esc_attr($settings['button_primary_color']) . '" /></td></tr><tr><th scope="row"><label for="button_primary_hover">' . __('Buton Hover Rengi', 'woo-donation-popup') . '</label></th><td><input type="color" id="button_primary_hover" name="button_primary_hover" value="' . esc_attr($settings['button_primary_hover']) . '" /></td></tr><tr><th scope="row"><label for="button_checkout_color">' . __('Ödeme Yap Butonu Rengi', 'woo-donation-popup') . '</label></th><td><input type="color" id="button_checkout_color" name="button_checkout_color" value="' . esc_attr($checkout_color) . '" /></td></tr><tr><th scope="row"><label for="button_checkout_hover">' . __('Ödeme Yap Butonu Hover Rengi', 'woo-donation-popup') . '</label></th><td><input type="color" id="button_checkout_hover" name="button_checkout_hover" value="' . esc_attr($checkout_hover) . '" /></td></tr></table><h2>' . __('Buton Border Radius', 'woo-donation-popup') . '</h2><table class="form-table"><tr><th scope="row"><label for="button_border_radius">' . __('Border Radius (px)', 'woo-donation-popup') . '</label></th><td><input type="number" id="button_border_radius" name="button_border_radius" value="' . esc_attr($settings['button_border_radius']) . '" min="0" max="50" step="1" class="small-text" /></td></tr></table><h2>' . __('Buton Metinleri', 'woo-donation-popup') . '</h2><table class="form-table"><tr><th scope="row"><label for="button_text_add_to_cart">' . __('Sepete Ekle Butonu', 'woo-donation-popup') . '</label></th><td><input type="text" id="button_text_add_to_cart" name="button_text_add_to_cart" value="' . esc_attr($settings['button_text_add_to_cart']) . '" class="regular-text" /></td></tr><tr><th scope="row"><label for="button_text_go_checkout">' . __('Ödemeye Git Butonu', 'woo-donation-popup') . '</label></th><td><input type="text" id="button_text_go_checkout" name="button_text_go_checkout" value="' . esc_attr($settings['button_text_go_checkout']) . '" class="regular-text" /></td></tr></table></div>';
+
+		echo '<div id="wdp-normal-sec-form-buttons" class="wdp-settings-section"><h2>' . __('Buton Renkleri', 'woo-donation-popup') . '</h2><table class="form-table"><tr><th scope="row"><label for="button_primary_color">' . __('Birincil Buton Rengi', 'woo-donation-popup') . '</label></th><td><input type="color" id="button_primary_color" name="button_primary_color" value="' . esc_attr($settings['button_primary_color']) . '" /></td></tr><tr><th scope="row"><label for="button_primary_hover">' . __('Buton Hover Rengi', 'woo-donation-popup') . '</label></th><td><input type="color" id="button_primary_hover" name="button_primary_hover" value="' . esc_attr($settings['button_primary_hover']) . '" /></td></tr><tr><th scope="row"><label for="button_checkout_color">' . __('Ödeme Yap Butonu Rengi', 'woo-donation-popup') . '</label></th><td><input type="color" id="button_checkout_color" name="button_checkout_color" value="' . esc_attr($checkout_color) . '" /></td></tr><tr><th scope="row"><label for="button_checkout_hover">' . __('Ödeme Yap Butonu Hover Rengi', 'woo-donation-popup') . '</label></th><td><input type="color" id="button_checkout_hover" name="button_checkout_hover" value="' . esc_attr($checkout_hover) . '" /></td></tr></table>';
+
+		echo '<h2>' . __('Buton Border Radius', 'woo-donation-popup') . '</h2><table class="form-table"><tr><th scope="row"><label for="button_border_radius">' . __('Border Radius (px)', 'woo-donation-popup') . '</label></th><td><input type="number" id="button_border_radius" name="button_border_radius" value="' . esc_attr($settings['button_border_radius']) . '" min="0" max="50" step="1" class="small-text" /></td></tr></table>';
+
+		echo '<h2>' . __('Buton gölgesi (yalnızca eklenti butonları)', 'woo-donation-popup') . '</h2>';
+		echo '<p class="description" style="margin-top:0;">' . esc_html__('İki grup: (1) sayfadaki shortcode/tetikleyici düğmeler — CSS `--wdp-plugin-btn-shadow-sc`; (2) popup ve sayfa içi form içindeki Tüm diğer eklenti butonları — `--wdp-plugin-btn-shadow-modal`. Kapama (X) ve tutar çipleri hariç.', 'woo-donation-popup') . '</p>';
+
+		self::render_button_shadow_settings_group($settings, 'sc', __('1) Shortcode / tetikleyici butonları', 'woo-donation-popup'), 'wdp-bs-sc');
+		self::render_button_shadow_settings_group($settings, 'modal', __('2) Popup ve gömülü form içindeki butonlar', 'woo-donation-popup'), 'wdp-bs-modal');
+
+		echo '<h2>' . __('Buton Metinleri', 'woo-donation-popup') . '</h2><table class="form-table"><tr><th scope="row"><label for="button_text_add_to_cart">' . __('Sepete Ekle Butonu', 'woo-donation-popup') . '</label></th><td><input type="text" id="button_text_add_to_cart" name="button_text_add_to_cart" value="' . esc_attr($settings['button_text_add_to_cart']) . '" class="regular-text" /></td></tr><tr><th scope="row"><label for="button_text_go_checkout">' . __('Ödemeye Git Butonu', 'woo-donation-popup') . '</label></th><td><input type="text" id="button_text_go_checkout" name="button_text_go_checkout" value="' . esc_attr($settings['button_text_go_checkout']) . '" class="regular-text" /></td></tr></table></div>';
+	}
+
+	/**
+	 * Buton box-shadow ayar tablosu (sc | modal).
+	 *
+	 * @param array  $settings WP option + defaults.
+	 * @param string $slot     'sc' veya 'modal'.
+	 * @param string $title    Bölüm başlığı.
+	 * @param string $css_class tbody sınıfı (admin JS satır gösterme).
+	 */
+	private static function render_button_shadow_settings_group( array $settings, $slot, $title, $css_class ) {
+		$pre = 'button_shadow_' . $slot . '_';
+		$shadow_enabled  = isset($settings[ $pre . 'enabled' ]) ? $settings[ $pre . 'enabled' ] : '0';
+		$sx              = isset($settings[ $pre . 'x' ]) ? (int) $settings[ $pre . 'x' ] : 0;
+		$sy              = isset($settings[ $pre . 'y' ]) ? (int) $settings[ $pre . 'y' ] : 8;
+		$sblur           = isset($settings[ $pre . 'blur' ]) ? (int) $settings[ $pre . 'blur' ] : 20;
+		$sspread         = isset($settings[ $pre . 'spread' ]) ? (int) $settings[ $pre . 'spread' ] : 0;
+		$shadow_color    = isset($settings[ $pre . 'color' ]) ? $settings[ $pre . 'color' ] : '#94a3b8';
+		$hover_shadow_en = isset($settings[ $pre . 'hover_enhanced' ]) ? $settings[ $pre . 'hover_enhanced' ] : '0';
+		$hx              = isset($settings[ $pre . 'hover_x' ]) ? (int) $settings[ $pre . 'hover_x' ] : 0;
+		$hy              = isset($settings[ $pre . 'hover_y' ]) ? (int) $settings[ $pre . 'hover_y' ] : 10;
+		$hblur           = isset($settings[ $pre . 'hover_blur' ]) ? (int) $settings[ $pre . 'hover_blur' ] : 24;
+		$hspread         = isset($settings[ $pre . 'hover_spread' ]) ? (int) $settings[ $pre . 'hover_spread' ] : 0;
+		$hcolor          = isset($settings[ $pre . 'hover_color' ]) && $settings[ $pre . 'hover_color' ] ? $settings[ $pre . 'hover_color' ] : '#64748b';
+
+		$id_en   = $pre . 'enabled';
+		$id_hov  = $pre . 'hover_enhanced';
+		$varcite = ('sc' === $slot)
+			? '--wdp-plugin-btn-shadow-sc / --wdp-plugin-btn-shadow-sc-hover'
+			: '--wdp-plugin-btn-shadow-modal / --wdp-plugin-btn-shadow-modal-hover';
+
+		echo '<h3>' . esc_html($title) . '</h3>';
+		echo '<table class="form-table wdp-button-shadow-group ' . esc_attr($css_class) . '" data-shadow-slot="' . esc_attr($slot) . '">';
+		echo '<tr class="button-shadow-master-row"><th scope="row"><label for="' . esc_attr($id_en) . '">' . __('Buton gölgesini etkinleştir', 'woo-donation-popup') . '</label></th><td><label><input type="checkbox" id="' . esc_attr($id_en) . '" name="' . esc_attr($id_en) . '" value="1" ' . checked($shadow_enabled, '1', false) . ' /> ' . esc_html__('Açıksa bu gruptaki butonlar normal gölge alır.', 'woo-donation-popup') . '</label>';
+		echo '<p class="description">' . esc_html__('Kapalıyken bu grup için box-shadow çıktısı üretilmez.', 'woo-donation-popup') . '</p></td></tr>';
+		echo '<tr class="button-shadow-rows"><th scope="row"><label for="' . esc_attr($pre) . 'color">' . __('Normal gölge rengi (hex)', 'woo-donation-popup') . '</label></th><td><input type="color" id="' . esc_attr($pre) . 'color" name="' . esc_attr($pre) . 'color" value="' . esc_attr($shadow_color) . '" /></td></tr>';
+		echo '<tr class="button-shadow-rows"><th scope="row">' . __('Normal gölge: X/Y/bulanık/yayılım (px)', 'woo-donation-popup') . '</th><td>';
+		echo '<label style="margin-right:12px">' . esc_html__('X', 'woo-donation-popup') . ' <input type="number" class="small-text" name="' . esc_attr($pre) . 'x" id="' . esc_attr($pre) . 'x" value="' . esc_attr($sx) . '" min="-24" max="24" step="1" /></label>';
+		echo '<label style="margin-right:12px">' . esc_html__('Y', 'woo-donation-popup') . ' <input type="number" class="small-text" name="' . esc_attr($pre) . 'y" id="' . esc_attr($pre) . 'y" value="' . esc_attr($sy) . '" min="-24" max="24" step="1" /></label>';
+		echo '<label style="margin-right:12px">' . esc_html__('Bulanık', 'woo-donation-popup') . ' <input type="number" class="small-text" name="' . esc_attr($pre) . 'blur" id="' . esc_attr($pre) . 'blur" value="' . esc_attr($sblur) . '" min="0" max="48" step="1" /></label>';
+		echo '<label>' . esc_html__('Yayılım', 'woo-donation-popup') . ' <input type="number" class="small-text" name="' . esc_attr($pre) . 'spread" id="' . esc_attr($pre) . 'spread" value="' . esc_attr($sspread) . '" min="-8" max="12" step="1" /></label>';
+		echo '<p class="description">' . esc_html__('Önerilen hafif değer: Y 8px / bulanık 20px.', 'woo-donation-popup') . '</p></td></tr>';
+		echo '<tr class="button-shadow-rows"><th scope="row">' . __('Hover gölgesini etkinleştir', 'woo-donation-popup') . '</th><td><label><input type="checkbox" id="' . esc_attr($id_hov) . '" name="' . esc_attr($id_hov) . '" value="1" ' . checked($hover_shadow_en, '1', false) . ' /> ' . sprintf(
+			/* translators: %s: CSS custom property names */
+			esc_html__('Açıksa hover/odakta ayrı gölge (%s); kapalıysa yalnızca normal gölge kalır.', 'woo-donation-popup'),
+			esc_html($varcite)
+		) . '</label></td></tr>';
+		echo '<tr class="button-shadow-rows button-shadow-hover-extra"><th scope="row"><label for="' . esc_attr($pre) . 'hover_color">' . __('Hover gölge rengi (hex)', 'woo-donation-popup') . '</label></th><td><input type="color" id="' . esc_attr($pre) . 'hover_color" name="' . esc_attr($pre) . 'hover_color" value="' . esc_attr($hcolor) . '" /></td></tr>';
+		echo '<tr class="button-shadow-rows button-shadow-hover-extra"><th scope="row">' . __('Hover gölge: X/Y/bulanık/yayılım (px)', 'woo-donation-popup') . '</th><td>';
+		echo '<label style="margin-right:12px">' . esc_html__('X', 'woo-donation-popup') . ' <input type="number" class="small-text" id="' . esc_attr($pre) . 'hover_x" name="' . esc_attr($pre) . 'hover_x" value="' . esc_attr($hx) . '" min="-24" max="24" step="1" /></label>';
+		echo '<label style="margin-right:12px">' . esc_html__('Y', 'woo-donation-popup') . ' <input type="number" class="small-text" id="' . esc_attr($pre) . 'hover_y" name="' . esc_attr($pre) . 'hover_y" value="' . esc_attr($hy) . '" min="-24" max="24" step="1" /></label>';
+		echo '<label style="margin-right:12px">' . esc_html__('Bulanık', 'woo-donation-popup') . ' <input type="number" class="small-text" id="' . esc_attr($pre) . 'hover_blur" name="' . esc_attr($pre) . 'hover_blur" value="' . esc_attr($hblur) . '" min="0" max="48" step="1" /></label>';
+		echo '<label>' . esc_html__('Yayılım', 'woo-donation-popup') . ' <input type="number" class="small-text" id="' . esc_attr($pre) . 'hover_spread" name="' . esc_attr($pre) . 'hover_spread" value="' . esc_attr($hspread) . '" min="-8" max="12" step="1" /></label></td></tr>';
+		echo '</table>';
 	}
 
 	private static function render_normal_trigger_section(array $settings) {
 		$popup_button_text = isset($settings['popup_button_text']) ? $settings['popup_button_text'] : 'Bağış Yap';
 		$popup_button_color = isset($settings['popup_button_color']) ? $settings['popup_button_color'] : '#1e73be';
 		$popup_button_hover = isset($settings['popup_button_hover']) ? $settings['popup_button_hover'] : '#185d98';
-		$popup_button_use_gradient = isset($settings['popup_button_use_gradient']) ? $settings['popup_button_use_gradient'] : '1';
-		$popup_button_gradient_start = isset($settings['popup_button_gradient_start']) ? $settings['popup_button_gradient_start'] : '#ff8244';
-		$popup_button_gradient_end = isset($settings['popup_button_gradient_end']) ? $settings['popup_button_gradient_end'] : '#ff9860';
-		$popup_button_gradient_hover_start = isset($settings['popup_button_gradient_hover_start']) ? $settings['popup_button_gradient_hover_start'] : '#ff8244';
-		$popup_button_gradient_hover_end = isset($settings['popup_button_gradient_hover_end']) ? $settings['popup_button_gradient_hover_end'] : '#ff9860';
-		$popup_button_gradient_start_stop = isset($settings['popup_button_gradient_start_stop']) ? $settings['popup_button_gradient_start_stop'] : '0';
-		$popup_button_gradient_end_stop = isset($settings['popup_button_gradient_end_stop']) ? $settings['popup_button_gradient_end_stop'] : '100';
-		$popup_button_gradient_type = isset($settings['popup_button_gradient_type']) ? $settings['popup_button_gradient_type'] : 'linear';
-		$popup_button_gradient_angle = isset($settings['popup_button_gradient_angle']) ? $settings['popup_button_gradient_angle'] : '150';
-
-		echo '<div id="wdp-normal-sec-trigger" class="wdp-settings-section"><h2>' . __('Sayfadaki açan buton (shortcode)', 'woo-donation-popup') . '</h2><table class="form-table"><tr><th scope="row"><label for="popup_button_text">' . __('Buton Metni', 'woo-donation-popup') . '</label></th><td><input type="text" id="popup_button_text" name="popup_button_text" value="' . esc_attr($popup_button_text) . '" class="regular-text" /></td></tr><tr><th scope="row"><label for="popup_button_color">' . __('Buton Rengi', 'woo-donation-popup') . '</label></th><td><input type="color" id="popup_button_color" name="popup_button_color" value="' . esc_attr($popup_button_color) . '" /></td></tr><tr><th scope="row"><label for="popup_button_hover">' . __('Buton Hover Rengi', 'woo-donation-popup') . '</label></th><td><input type="color" id="popup_button_hover" name="popup_button_hover" value="' . esc_attr($popup_button_hover) . '" /></td></tr><tr><th scope="row"><label for="popup_button_use_gradient">' . __('Gradient Kullan', 'woo-donation-popup') . '</label></th><td><label class="wdp-switch"><input type="checkbox" id="popup_button_use_gradient" name="popup_button_use_gradient" value="1" ' . checked($popup_button_use_gradient, '1', false) . ' /><span class="wdp-slider"></span></label></td></tr><tr id="popup_button_gradient_type_row"><th scope="row"><label for="popup_button_gradient_type">' . __('Gradient Türü', 'woo-donation-popup') . '</label></th><td><select id="popup_button_gradient_type" name="popup_button_gradient_type"><option value="linear" ' . selected($popup_button_gradient_type, 'linear', false) . '>' . __('Linear', 'woo-donation-popup') . '</option><option value="radial" ' . selected($popup_button_gradient_type, 'radial', false) . '>' . __('Radial', 'woo-donation-popup') . '</option></select></td></tr><tr id="popup_button_gradient_angle_row"><th scope="row"><label for="popup_button_gradient_angle">' . __('Gradient Açısı (deg)', 'woo-donation-popup') . '</label></th><td><input type="number" id="popup_button_gradient_angle" name="popup_button_gradient_angle" value="' . esc_attr($popup_button_gradient_angle) . '" min="0" max="360" step="1" class="small-text" /></td></tr><tr id="popup_button_gradient_start_row"><th scope="row"><label for="popup_button_gradient_start">' . __('Gradient Başlangıç Rengi', 'woo-donation-popup') . '</label></th><td><input type="color" id="popup_button_gradient_start" name="popup_button_gradient_start" value="' . esc_attr($popup_button_gradient_start) . '" /></td></tr><tr id="popup_button_gradient_end_row"><th scope="row"><label for="popup_button_gradient_end">' . __('Gradient Bitiş Rengi', 'woo-donation-popup') . '</label></th><td><input type="color" id="popup_button_gradient_end" name="popup_button_gradient_end" value="' . esc_attr($popup_button_gradient_end) . '" /></td></tr><tr id="popup_button_gradient_hover_start_row"><th scope="row"><label for="popup_button_gradient_hover_start">' . __('Hover Başlangıç Rengi', 'woo-donation-popup') . '</label></th><td><input type="color" id="popup_button_gradient_hover_start" name="popup_button_gradient_hover_start" value="' . esc_attr($popup_button_gradient_hover_start) . '" /></td></tr><tr id="popup_button_gradient_hover_end_row"><th scope="row"><label for="popup_button_gradient_hover_end">' . __('Hover Bitiş Rengi', 'woo-donation-popup') . '</label></th><td><input type="color" id="popup_button_gradient_hover_end" name="popup_button_gradient_hover_end" value="' . esc_attr($popup_button_gradient_hover_end) . '" /></td></tr><tr id="popup_button_gradient_start_stop_row"><th scope="row"><label for="popup_button_gradient_start_stop">' . __('Başlangıç Stop (%)', 'woo-donation-popup') . '</label></th><td><input type="number" id="popup_button_gradient_start_stop" name="popup_button_gradient_start_stop" value="' . esc_attr($popup_button_gradient_start_stop) . '" min="0" max="100" step="1" class="small-text" /></td></tr><tr id="popup_button_gradient_end_stop_row"><th scope="row"><label for="popup_button_gradient_end_stop">' . __('Bitiş Stop (%)', 'woo-donation-popup') . '</label></th><td><input type="number" id="popup_button_gradient_end_stop" name="popup_button_gradient_end_stop" value="' . esc_attr($popup_button_gradient_end_stop) . '" min="0" max="100" step="1" class="small-text" /></td></tr></table></div>';
+		echo '<div id="wdp-normal-sec-trigger" class="wdp-settings-section"><h2>' . __('Sayfadaki açan buton (shortcode)', 'woo-donation-popup') . '</h2><table class="form-table"><tr><th scope="row"><label for="popup_button_text">' . __('Buton Metni', 'woo-donation-popup') . '</label></th><td><input type="text" id="popup_button_text" name="popup_button_text" value="' . esc_attr($popup_button_text) . '" class="regular-text" /></td></tr><tr><th scope="row"><label for="popup_button_color">' . __('Buton Rengi', 'woo-donation-popup') . '</label></th><td><input type="color" id="popup_button_color" name="popup_button_color" value="' . esc_attr($popup_button_color) . '" /></td></tr><tr><th scope="row"><label for="popup_button_hover">' . __('Buton Hover Rengi', 'woo-donation-popup') . '</label></th><td><input type="color" id="popup_button_hover" name="popup_button_hover" value="' . esc_attr($popup_button_hover) . '" /></td></tr></table></div>';
 	}
 }

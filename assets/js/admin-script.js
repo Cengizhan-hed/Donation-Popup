@@ -361,12 +361,6 @@
   }
 
   function bindConditionalRows() {
-    const toggleShareholderGradientRows = () => {
-      const isGradient = $("#shareholders_area_use_gradient").is(":checked")
-      $(".shareholders-area-color-row").toggle(isGradient)
-      $(".shareholders-area-solid-row").toggle(!isGradient)
-    }
-
     const togglePopupCustomFontRow = () => {
       $("#popup_button_custom_font_row").toggle($("#popup_button_font_family").val() === "custom")
     }
@@ -376,26 +370,45 @@
       $("#popup_button_custom_min_width_row, #popup_button_custom_min_height_row, #popup_button_custom_padding_x_row").toggle(isCustom)
     }
 
-    const togglePopupGradientRows = () => {
-      const isGradientEnabled = $("#popup_button_use_gradient").is(":checked")
-      $(
-        "#popup_button_gradient_type_row, #popup_button_gradient_angle_row, #popup_button_gradient_start_row, #popup_button_gradient_end_row, #popup_button_gradient_hover_start_row, #popup_button_gradient_hover_end_row, #popup_button_gradient_start_stop_row, #popup_button_gradient_end_stop_row"
-      ).toggle(isGradientEnabled)
-
-      const gradientType = $("#popup_button_gradient_type").val()
-      $("#popup_button_gradient_angle_row").toggle(isGradientEnabled && gradientType === "linear")
+    const toggleButtonShadowRows = () => {
+      $(".wdp-button-shadow-group").each(function () {
+        const $grp = $(this)
+        const slot = String($grp.data("shadow-slot") || "")
+        if (!slot) return
+        const enabled = $("#button_shadow_" + slot + "_enabled").is(":checked")
+        $grp.find("tr.button-shadow-rows").toggle(enabled)
+        if (enabled) {
+          const hover = $("#button_shadow_" + slot + "_hover_enhanced").is(":checked")
+          $grp.find("tr.button-shadow-hover-extra").toggle(hover)
+        } else {
+          $grp.find("tr.button-shadow-hover-extra").hide()
+        }
+      })
     }
 
-    $("#shareholders_area_use_gradient").off("change.wdpAdmin").on("change.wdpAdmin", toggleShareholderGradientRows)
+    const toggleButtonShadowHoverRows = () => {
+      $(".wdp-button-shadow-group").each(function () {
+        const $grp = $(this)
+        const slot = String($grp.data("shadow-slot") || "")
+        if (!slot) return
+        const master = $("#button_shadow_" + slot + "_enabled").is(":checked")
+        const hover = $("#button_shadow_" + slot + "_hover_enhanced").is(":checked")
+        $grp.find("tr.button-shadow-hover-extra").toggle(master && hover)
+      })
+    }
+
     $("#popup_button_font_family").off("change.wdpAdmin").on("change.wdpAdmin", togglePopupCustomFontRow)
     $("#popup_button_size").off("change.wdpAdmin").on("change.wdpAdmin", togglePopupButtonSizeRows)
-    $("#popup_button_use_gradient").off("change.wdpAdmin").on("change.wdpAdmin", togglePopupGradientRows)
-    $("#popup_button_gradient_type").off("change.wdpAdmin").on("change.wdpAdmin", togglePopupGradientRows)
+    $("#button_shadow_sc_enabled, #button_shadow_modal_enabled")
+      .off("change.wdpAdmin")
+      .on("change.wdpAdmin", toggleButtonShadowRows)
+    $("#button_shadow_sc_hover_enhanced, #button_shadow_modal_hover_enhanced")
+      .off("change.wdpAdmin")
+      .on("change.wdpAdmin", toggleButtonShadowHoverRows)
 
-    toggleShareholderGradientRows()
     togglePopupCustomFontRow()
     togglePopupButtonSizeRows()
-    togglePopupGradientRows()
+    toggleButtonShadowRows()
   }
 
   function bindDirtyStateTracking() {

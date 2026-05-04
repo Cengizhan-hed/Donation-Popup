@@ -202,7 +202,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholders-scroll .wdp-shar
   box-sizing: border-box;
   padding: 0;
   display: block;
-  animation: wdp-card-in 0.2s ease-out both;
+  animation: wdp-card-in 0.12s ease-out both;
 }
 
 /* ============ SHAREHOLDER HEADER - Perfect Alignment ============ */
@@ -213,11 +213,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-form .wdp-shareho
   gap: var(--wdp-form-stack-gap);
   padding: var(--wdp-space-3, 12px) var(--wdp-space-4, 16px);
   margin: 0;
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--wdp-button-primary, #1e73be) 7%, var(--wdp-shareholder-header-bg, #f9fafb)) 0%,
-    color-mix(in srgb, var(--wdp-button-primary, #1e73be) 3.5%, var(--wdp-shareholder-header-bg, #f9fafb)) 100%
-  );
+  background: color-mix(in srgb, var(--wdp-button-primary, #1e73be) 5.25%, var(--wdp-shareholder-header-bg, #f9fafb));
   border: none;
   border-bottom: 1px solid color-mix(in srgb, var(--wdp-button-primary, #1e73be) 12%, var(--wdp-shareholder-card-border, var(--wdp-border-soft-gray, #e8eaed)));
   cursor: pointer;
@@ -234,11 +230,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-form.collapsed .w
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-form .wdp-shareholder-header:hover {
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--wdp-button-primary, #1e73be) 9%, var(--wdp-shareholder-header-bg, #f9fafb)) 0%,
-    color-mix(in srgb, var(--wdp-button-primary, #1e73be) 5%, var(--wdp-shareholder-header-bg, #f9fafb)) 100%
-  );
+  background: color-mix(in srgb, var(--wdp-button-primary, #1e73be) 7%, var(--wdp-shareholder-header-bg, #f9fafb));
 }
 
 /* CTA sonrası odak satırı — sakin, uyarı görünümü değil */
@@ -568,7 +560,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-micro__fill {
   width: 0;
   min-width: 0;
   border-radius: inherit;
-  background: linear-gradient(90deg, var(--wdp-color-primary, #4a90e2) 0%, color-mix(in srgb, var(--wdp-color-primary, #4a90e2) 78%, #ffffff) 100%);
+  background: var(--wdp-color-primary, #4a90e2);
   transition: width 0.3s ease;
 }
 

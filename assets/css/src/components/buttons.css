@@ -27,7 +27,7 @@ html body :is(button.wdp-donate-button.wdp-open-modal[data-product-id],
   font-family: var(--wdp-popup-button-font-family, var(--wdp-font-family));
   cursor: pointer;
   /* Kullanıcı isteği: butonlarda animasyon / hareket efekti olmasın (yalnızca hafif renk değişimi) */
-  transition: var(--wdp-transition-button, background 0.15s ease, color 0.15s ease);
+  transition: var(--wdp-transition-button, background 0.15s ease, color 0.15s ease), box-shadow 0.22s ease;
   line-height: 1.4;
   text-align: center;
   letter-spacing: var(--wdp-tracking-normal, 0);
@@ -184,7 +184,12 @@ html body :is(.wdp-modal .wdp-modal-content form .wdp-button-group button,
   font-size: var(--wdp-text-base, clamp(1rem, 0.95rem + 0.25vw, 1.125rem));
   font-weight: var(--wdp-font-semibold, 600);
   cursor: pointer;
-  transition: background-color var(--wdp-transition), border-color var(--wdp-transition), color var(--wdp-transition), opacity var(--wdp-transition);
+  transition:
+    background-color var(--wdp-transition),
+    border-color var(--wdp-transition),
+    color var(--wdp-transition),
+    opacity var(--wdp-transition),
+    box-shadow 0.22s ease;
   text-align: center;
   text-decoration: none;
   display: inline-flex;
@@ -310,7 +315,7 @@ html body .wdp-copy-form-btn {
   font-size: var(--wdp-text-sm, clamp(0.875rem, 0.8rem + 0.375vw, 1rem));
   font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.15s ease, opacity 0.15s ease;
+  transition: background-color 0.15s ease, opacity 0.15s ease, box-shadow 0.22s ease;
   display: none;
   align-items: center;
   justify-content: center;
@@ -426,6 +431,106 @@ html body .wdp-loading-button::after {
     font-size: max(14px, calc(var(--wdp-popup-button-font-size, 18px) * 0.78));
     padding: 10px 16px;
   }
+}
+
+/* --------------------------------------------------------------------------
+   Plugin box-shadow: admin’de iki ayrı gruptan CSS değişkeni yazılır.
+   - Tetikleyiciler (--wdp-plugin-btn-shadow-sc)
+   - Popup / gömülü form (--wdp-plugin-btn-shadow-modal)
+   Kapalı slotlar için PHP değişken yazmaz; fallback none.
+   Hariç: modal kapat (.wdp-modal-close); tutar chip (.wdp-amount-preset).
+   -------------------------------------------------------------------------- */
+
+/* Shortcode / sayfadaki tetikleyici */
+html body :is(button.wdp-donate-button.wdp-open-modal[data-product-id],
+              button.wdp-donate-button[data-product-id],
+              button.wdp-open-modal[data-product-id],
+              button.wdp-donate-button.wdp-open-modal,
+              button.wdp-donate-button,
+              button.wdp-open-modal,
+              .wdp-donate-button.wdp-open-modal,
+              .wdp-donate-button,
+              .wdp-open-modal) {
+  box-shadow: var(--wdp-plugin-btn-shadow-sc, none);
+}
+
+html body :is(button.wdp-donate-button.wdp-open-modal[data-product-id],
+              button.wdp-donate-button[data-product-id],
+              button.wdp-open-modal[data-product-id],
+              button.wdp-donate-button.wdp-open-modal,
+              button.wdp-donate-button,
+              button.wdp-open-modal,
+              .wdp-donate-button.wdp-open-modal,
+              .wdp-donate-button,
+              .wdp-open-modal):is(:hover, :focus-visible):not(:disabled):not([aria-disabled="true"]) {
+  box-shadow: var(--wdp-plugin-btn-shadow-sc-hover, var(--wdp-plugin-btn-shadow-sc, none));
+}
+
+html body :is(button.wdp-donate-button.wdp-open-modal[data-product-id],
+              button.wdp-donate-button[data-product-id],
+              button.wdp-open-modal[data-product-id],
+              button.wdp-donate-button.wdp-open-modal,
+              button.wdp-donate-button,
+              button.wdp-open-modal,
+              .wdp-donate-button.wdp-open-modal,
+              .wdp-donate-button,
+              .wdp-open-modal):disabled {
+  box-shadow: none;
+}
+
+/* Popup kartı içi ve sayfa içi form */
+html body :is(.wdp-modal .wdp-modal-content form .wdp-button-group button,
+              .wdp-donation-form .wdp-modal-content form .wdp-button-group button,
+              .wdp-modal .wdp-modal-content .wdp-button-group button,
+              .wdp-donation-form .wdp-modal-content .wdp-button-group button,
+              .wdp-modal-content form .wdp-button-group button),
+html body .wdp-copy-form-btn,
+html body :is(.wdp-modal .wdp-modal-content .wdp-cart-actions :is(a, button),
+              .wdp-donation-form .wdp-modal-content .wdp-cart-actions :is(a, button),
+              .wdp-cart-actions :is(a, button)),
+html body :is(.wdp-modal .wdp-modal-content .wdp-success-screen .wdp-success-buttons .wdp-success-button,
+              .wdp-donation-form .wdp-modal-content .wdp-success-screen .wdp-success-buttons .wdp-success-button,
+              .wdp-modal .wdp-modal-content .wdp-success-buttons .wdp-success-button,
+              .wdp-donation-form .wdp-modal-content .wdp-success-buttons .wdp-success-button),
+html body :is(.wdp-modal .wdp-modal-content .wdp-mini-cart-items button.wdp-remove-cart-item,
+              .wdp-donation-form .wdp-modal-content .wdp-mini-cart-items button.wdp-remove-cart-item),
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-quantity-counter button.wdp-product-quantity-btn,
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-shares-section .wdp-share-counter button.wdp-share-btn,
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-form .wdp-share-quantity button.wdp-share-quantity-btn {
+  box-shadow: var(--wdp-plugin-btn-shadow-modal, none);
+}
+
+html body :is(.wdp-modal .wdp-modal-content form .wdp-button-group button,
+              .wdp-donation-form .wdp-modal-content form .wdp-button-group button,
+              .wdp-modal .wdp-modal-content .wdp-button-group button,
+              .wdp-donation-form .wdp-modal-content .wdp-button-group button,
+              .wdp-modal-content form .wdp-button-group button):is(:hover, :focus-visible):not(:disabled):not(.wdp-loading),
+html body .wdp-copy-form-btn:is(:hover, :focus-visible):not(:disabled),
+html body :is(.wdp-modal .wdp-modal-content .wdp-cart-actions :is(a, button):not([aria-disabled="true"]),
+              .wdp-donation-form .wdp-modal-content .wdp-cart-actions :is(a, button):not([aria-disabled="true"]),
+              .wdp-cart-actions :is(a, button):not([aria-disabled="true"])):is(:hover, :focus-visible),
+html body :is(.wdp-modal .wdp-modal-content .wdp-success-screen .wdp-success-buttons .wdp-success-button,
+              .wdp-donation-form .wdp-modal-content .wdp-success-screen .wdp-success-buttons .wdp-success-button,
+              .wdp-modal .wdp-modal-content .wdp-success-buttons .wdp-success-button,
+              .wdp-donation-form .wdp-modal-content .wdp-success-buttons .wdp-success-button):is(:hover, :focus-visible):not(:disabled),
+html body :is(.wdp-modal .wdp-modal-content .wdp-mini-cart-items button.wdp-remove-cart-item,
+              .wdp-donation-form .wdp-modal-content .wdp-mini-cart-items button.wdp-remove-cart-item):is(:hover, :focus-visible):not(:disabled),
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-quantity-counter button.wdp-product-quantity-btn:is(:hover, :focus-visible):not(:disabled),
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-shares-section .wdp-share-counter button.wdp-share-btn:is(:hover, :focus-visible):not(:disabled),
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-form .wdp-share-quantity button.wdp-share-quantity-btn:is(:hover, :focus-visible):not(:disabled) {
+  box-shadow: var(--wdp-plugin-btn-shadow-modal-hover, var(--wdp-plugin-btn-shadow-modal, none));
+}
+
+html body :is(.wdp-modal .wdp-modal-content form .wdp-button-group button,
+              .wdp-donation-form .wdp-modal-content form .wdp-button-group button,
+              .wdp-modal .wdp-modal-content .wdp-button-group button,
+              .wdp-donation-form .wdp-modal-content .wdp-button-group button,
+              .wdp-modal-content form .wdp-button-group button):is(:disabled, .wdp-loading),
+html body .wdp-copy-form-btn:disabled,
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-quantity-counter button.wdp-product-quantity-btn:disabled,
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-shares-section .wdp-share-counter button.wdp-share-btn:disabled,
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-form .wdp-share-quantity button.wdp-share-quantity-btn:disabled {
+  box-shadow: none;
 }
 
 @media print {

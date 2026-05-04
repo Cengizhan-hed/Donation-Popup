@@ -120,10 +120,10 @@ html body .wdp-open-modal {
   min-width: var(--wdp-touch-target-min, 44px);
 }
 
-/* Popup kapatma: genel 44px touch kuralı × ikonunu büyütüp dikeyde aşağı kaydırır; konum shared.css ile köşededir */
+/* Popup kapat — shared.css ile 44×44 hizalı; küçük min ile çakışma olmasın */
 html body .wdp-modal .wdp-modal-content > button.wdp-modal-close {
-  min-height: 32px;
-  min-width: 32px;
+  min-height: 44px;
+  min-width: 44px;
   padding: 0;
 }
 

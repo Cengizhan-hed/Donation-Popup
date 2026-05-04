@@ -345,13 +345,6 @@
   --wdp-pastel-pink: #fef2f2;
   --wdp-pastel-yellow: #fffbeb;
   
-  /* Modern gradient utilities - Soft & Beautiful */
-  --wdp-gradient-primary: linear-gradient(135deg, var(--wdp-primary) 0%, var(--wdp-secondary) 100%);
-  --wdp-gradient-accent: linear-gradient(135deg, var(--wdp-accent) 0%, var(--wdp-primary) 100%);
-  --wdp-gradient-soft-white: linear-gradient(135deg, #ffffff 0%, #fafbfc 50%, #f8f9fa 100%);
-  --wdp-gradient-pure-white: linear-gradient(135deg, #ffffff 0%, #fefefe 100%);
-  --wdp-gradient-cream: linear-gradient(135deg, #fafbfc 0%, #f8f9fa 100%);
-  
   /* Modern aspect ratios */
   --wdp-aspect-square: 1 / 1;
   --wdp-aspect-video: 16 / 9;
@@ -429,6 +422,9 @@
   --wdp-form-error-bg: #fed7d7;
   --wdp-form-error-border: #feb2b2;
   --wdp-form-error-text: #c53030;
+  --wdp-input-error-bg: #fed7d7;
+  --wdp-input-error-border: #feb2b2;
+  --wdp-input-error-text: #c53030;
 
   --wdp-form-success-bg: #c6f6d5;
   --wdp-form-success-border: #9ae6b4;
@@ -481,7 +477,6 @@
     0 0 0 1px rgba(255, 255, 255, 0.4) inset,
     0 22px 48px -20px rgba(15, 23, 42, 0.14),
     0 8px 20px -12px rgba(15, 23, 42, 0.08);
-  --wdp-gradient-modal-premium: linear-gradient(168deg, #ffffff 0%, #fdfefe 38%, #f8fafc 100%);
   --wdp-transition: 180ms cubic-bezier(0.2, 0, 0, 1);
 
   /* Form yüzeyleri — daha az “kutu içinde kutu”, daha yumuşak hiyerarşi */

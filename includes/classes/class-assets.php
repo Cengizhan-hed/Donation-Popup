@@ -949,6 +949,103 @@ class WDP_Assets {
         }
         return $sanitized;
     }
+
+    /**
+     * Derive validated box-shadow for plugin buttons (#hex only, solid shadow color).
+     *
+     * @param int    $x      X offset (px).
+     * @param int    $y      Y offset (px).
+     * @param int    $blur   Blur (px).
+     * @param int    $spread Spread (px).
+     * @param string $color_hex Hex color string.
+     * @return string
+     */
+    private static function wdp_compile_solid_box_shadow_fragment($x, $y, $blur, $spread, $color_hex) {
+        $hex = sanitize_hex_color($color_hex);
+        if (!$hex) {
+            return '';
+        }
+        return sprintf(
+            '%dpx %dpx %dpx %dpx %s',
+            (int) $x,
+            (int) $y,
+            max(0, (int) $blur),
+            (int) $spread,
+            strtolower($hex)
+        );
+    }
+
+    /**
+     * Tek bir gölge yuvası (--wdp-plugin-btn-shadow-{slot}[ -hover ]) için CSS değişkeni parçası.
+     *
+     * @param array  $settings  Ayar dizisi (button_shadow_{slot}_* anahtarları).
+     * @param string $slot      Örn. 'sc', 'modal'.
+     * @param string $varsuffix CSS kökündeki suffix: '--wdp-plugin-btn-shadow-sc'.
+     * @return string           Boş ya da ';' ile bitecek parça (--...: value).
+     */
+    private static function wdp_inline_button_shadow_fragment_for_slot(array $settings, $slot, $varsuffix) {
+        $pre = 'button_shadow_' . $slot . '_';
+        if (empty($settings[ $pre . 'enabled' ]) || '1' !== $settings[ $pre . 'enabled' ]) {
+            return '';
+        }
+
+        $x = max(-24, min(24, (int) (isset($settings[ $pre . 'x' ]) ? $settings[ $pre . 'x' ] : 0)));
+        $y = max(-24, min(24, (int) (isset($settings[ $pre . 'y' ]) ? $settings[ $pre . 'y' ] : 8)));
+        $blur = max(0, min(48, (int) (isset($settings[ $pre . 'blur' ]) ? $settings[ $pre . 'blur' ] : 20)));
+        $spread = max(-8, min(12, (int) (isset($settings[ $pre . 'spread' ]) ? $settings[ $pre . 'spread' ] : 0)));
+
+        $base_color = isset($settings[ $pre . 'color' ]) ? sanitize_hex_color($settings[ $pre . 'color' ]) : '';
+        if (!$base_color) {
+            $base_color = '#94a3b8';
+        }
+
+        $idle = self::wdp_compile_solid_box_shadow_fragment($x, $y, $blur, $spread, $base_color);
+        if ('' === $idle) {
+            return '';
+        }
+
+        /* $varsuffix sabit whitelist (sc|modal); gölge değeri sayısal px + hex. */
+        $out = $varsuffix . ':' . esc_attr($idle) . ';';
+
+        $hover_ok = !empty($settings[ $pre . 'hover_enhanced' ]) && '1' === $settings[ $pre . 'hover_enhanced' ];
+        if ($hover_ok) {
+            $hx = max(-24, min(24, (int) (isset($settings[ $pre . 'hover_x' ]) ? $settings[ $pre . 'hover_x' ] : 0)));
+            $hy = max(-24, min(24, (int) (isset($settings[ $pre . 'hover_y' ]) ? $settings[ $pre . 'hover_y' ] : 10)));
+            $h_blur = max(0, min(48, (int) (isset($settings[ $pre . 'hover_blur' ]) ? $settings[ $pre . 'hover_blur' ] : 24)));
+            $h_spread = max(-8, min(12, (int) (isset($settings[ $pre . 'hover_spread' ]) ? $settings[ $pre . 'hover_spread' ] : 0)));
+            $h_color_raw = isset($settings[ $pre . 'hover_color' ]) ? $settings[ $pre . 'hover_color' ] : '';
+            $h_color = sanitize_hex_color($h_color_raw);
+            if (!$h_color) {
+                $h_color = $base_color;
+            }
+            $hover_shadow = self::wdp_compile_solid_box_shadow_fragment($hx, $hy, $h_blur, $h_spread, $h_color);
+            if ('' !== $hover_shadow) {
+                $out .= $varsuffix . '-hover:' . esc_attr($hover_shadow) . ';';
+            }
+        }
+
+        return $out;
+    }
+
+    /**
+     * Inline :root block: shortcode tetikleyici (sc) ve popup içi (modal) kutular için ayrı gölgelenme.
+     *
+     * @param array $settings Parsed wdp_button_settings.
+     * @return string
+     */
+    private static function get_inline_plugin_button_shadow_root_css(array $settings) {
+        $parts = '';
+
+        // Geriye uyumluluk / ham veri için eski tek slot → migrate get_button_customization_css içinde uygulanır.
+        $parts .= self::wdp_inline_button_shadow_fragment_for_slot($settings, 'sc', '--wdp-plugin-btn-shadow-sc');
+        $parts .= self::wdp_inline_button_shadow_fragment_for_slot($settings, 'modal', '--wdp-plugin-btn-shadow-modal');
+
+        if ('' === $parts) {
+            return '';
+        }
+
+        return ':root{' . $parts . "}\n";
+    }
     
     /**
      * Get button customization CSS variables
@@ -958,7 +1055,10 @@ class WDP_Assets {
     private static function get_button_customization_css() {
         // Normal form ayarlarını al
         $button_settings = get_option('wdp_button_settings', array());
-        
+
+        $button_settings = WDP_Utils::normalize_legacy_popup_button_text(is_array($button_settings) ? $button_settings : array());
+        $button_settings = WDP_Utils::migrate_button_shadow_to_sc_modal($button_settings);
+
         // Varsayılan değerler
         $defaults = array(
             'button_primary_color' => '#1e73be',
@@ -987,26 +1087,37 @@ class WDP_Assets {
             'popup_button_custom_padding_x' => '24',
             'popup_button_border_radius' => '10',
             'popup_button_border_size' => '0',
-            'popup_button_use_gradient' => '1',
-            'popup_button_gradient_start' => '#ff8244',
-            'popup_button_gradient_end' => '#ff9860',
-            'popup_button_gradient_hover_start' => '#ff8244',
-            'popup_button_gradient_hover_end' => '#ff9860',
-            'popup_button_gradient_start_stop' => '0',
-            'popup_button_gradient_end_stop' => '100',
-            'popup_button_gradient_type' => 'linear',
-            'popup_button_gradient_angle' => '150',
             'label_color' => '#374151',
             'label_font_size' => 14,
             'label_font_weight' => '600',
             'placeholder_color' => '#6b7280',
             'form_gap' => 16,
-            'error_bg_color' => '#fed7d7',
-            'error_border_color' => '#feb2b2',
-            'error_text_color' => '#c53030',
-            'input_error_bg_color' => '#fed7d7',
-            'input_error_border_color' => '#feb2b2',
-            'input_error_text_color' => '#c53030',
+            // Shortcode tetikleyici gölgesi
+            'button_shadow_sc_enabled' => '0',
+            'button_shadow_sc_color' => '#94a3b8',
+            'button_shadow_sc_x' => '0',
+            'button_shadow_sc_y' => '8',
+            'button_shadow_sc_blur' => '20',
+            'button_shadow_sc_spread' => '0',
+            'button_shadow_sc_hover_enhanced' => '0',
+            'button_shadow_sc_hover_blur' => '24',
+            'button_shadow_sc_hover_color' => '#64748b',
+            'button_shadow_sc_hover_x' => '0',
+            'button_shadow_sc_hover_y' => '10',
+            'button_shadow_sc_hover_spread' => '0',
+            // Popup içi / gömülü form butonları gölgesi
+            'button_shadow_modal_enabled' => '0',
+            'button_shadow_modal_color' => '#94a3b8',
+            'button_shadow_modal_x' => '0',
+            'button_shadow_modal_y' => '8',
+            'button_shadow_modal_blur' => '20',
+            'button_shadow_modal_spread' => '0',
+            'button_shadow_modal_hover_enhanced' => '0',
+            'button_shadow_modal_hover_blur' => '24',
+            'button_shadow_modal_hover_color' => '#64748b',
+            'button_shadow_modal_hover_x' => '0',
+            'button_shadow_modal_hover_y' => '10',
+            'button_shadow_modal_hover_spread' => '0',
         );
         
         $settings = wp_parse_args($button_settings, $defaults);
@@ -1022,9 +1133,6 @@ class WDP_Assets {
             'popup_button_custom_min_width',
             'popup_button_custom_min_height',
             'popup_button_custom_padding_x',
-            'popup_button_gradient_start_stop',
-            'popup_button_gradient_end_stop',
-            'popup_button_gradient_angle',
             'label_font_size',
             'form_gap',
         ));
@@ -1104,65 +1212,11 @@ class WDP_Assets {
         $css .= "  --wdp-popup-button-min-width: " . $popup_button_min_width . "px;\n";
         $css .= "  --wdp-popup-button-min-height: " . $popup_button_min_height . "px;\n";
         $css .= "  --wdp-popup-button-padding-inline: " . $popup_button_padding_x . "px;\n";
+        $css .= "  --wdp-popup-button-bg: " . esc_attr($popup_button_color) . ";\n";
+        $css .= "  --wdp-popup-button-bg-hover: " . esc_attr($popup_button_hover) . ";\n";
+        $css .= "  --wdp-popup-button-border-color: " . esc_attr($popup_button_color) . ";\n";
+        $css .= "  --wdp-popup-button-border-hover-color: " . esc_attr($popup_button_hover) . ";\n";
 
-        $popup_button_use_gradient = isset($settings['popup_button_use_gradient']) && $settings['popup_button_use_gradient'] === '1';
-        $popup_gradient_type = (isset($settings['popup_button_gradient_type']) && in_array($settings['popup_button_gradient_type'], array('linear', 'radial'), true))
-            ? $settings['popup_button_gradient_type']
-            : 'linear';
-        $popup_gradient_start = !empty($settings['popup_button_gradient_start']) ? $settings['popup_button_gradient_start'] : '#ff8244';
-        $popup_gradient_end = !empty($settings['popup_button_gradient_end']) ? $settings['popup_button_gradient_end'] : '#ff9860';
-        $popup_gradient_hover_start = !empty($settings['popup_button_gradient_hover_start']) ? $settings['popup_button_gradient_hover_start'] : '#ff8244';
-        $popup_gradient_hover_end = !empty($settings['popup_button_gradient_hover_end']) ? $settings['popup_button_gradient_hover_end'] : '#ff9860';
-        $popup_gradient_start_stop = isset($settings['popup_button_gradient_start_stop']) ? max(0, min(100, (int) $settings['popup_button_gradient_start_stop'])) : 0;
-        $popup_gradient_end_stop = isset($settings['popup_button_gradient_end_stop']) ? max(0, min(100, (int) $settings['popup_button_gradient_end_stop'])) : 100;
-        $popup_gradient_angle = isset($settings['popup_button_gradient_angle']) ? max(0, min(360, (int) $settings['popup_button_gradient_angle'])) : 150;
-
-        if ($popup_gradient_type === 'radial') {
-            $popup_button_bg = sprintf(
-                'radial-gradient(circle, %1$s %2$d%%, %3$s %4$d%%)',
-                esc_attr($popup_gradient_start),
-                $popup_gradient_start_stop,
-                esc_attr($popup_gradient_end),
-                $popup_gradient_end_stop
-            );
-            $popup_button_bg_hover = sprintf(
-                'radial-gradient(circle, %1$s %2$d%%, %3$s %4$d%%)',
-                esc_attr($popup_gradient_hover_start),
-                $popup_gradient_start_stop,
-                esc_attr($popup_gradient_hover_end),
-                $popup_gradient_end_stop
-            );
-        } else {
-            $popup_button_bg = sprintf(
-                'linear-gradient(%1$ddeg, %2$s %3$d%%, %4$s %5$d%%)',
-                $popup_gradient_angle,
-                esc_attr($popup_gradient_start),
-                $popup_gradient_start_stop,
-                esc_attr($popup_gradient_end),
-                $popup_gradient_end_stop
-            );
-            $popup_button_bg_hover = sprintf(
-                'linear-gradient(%1$ddeg, %2$s %3$d%%, %4$s %5$d%%)',
-                $popup_gradient_angle,
-                esc_attr($popup_gradient_hover_start),
-                $popup_gradient_start_stop,
-                esc_attr($popup_gradient_hover_end),
-                $popup_gradient_end_stop
-            );
-        }
-
-        $css .= "  --wdp-popup-button-gradient-start: " . esc_attr($popup_gradient_start) . ";\n";
-        $css .= "  --wdp-popup-button-gradient-end: " . esc_attr($popup_gradient_end) . ";\n";
-        $css .= "  --wdp-popup-button-gradient-hover-start: " . esc_attr($popup_gradient_hover_start) . ";\n";
-        $css .= "  --wdp-popup-button-gradient-hover-end: " . esc_attr($popup_gradient_hover_end) . ";\n";
-        $css .= "  --wdp-popup-button-gradient-start-stop: " . $popup_gradient_start_stop . "%;\n";
-        $css .= "  --wdp-popup-button-gradient-end-stop: " . $popup_gradient_end_stop . "%;\n";
-        $css .= "  --wdp-popup-button-gradient-angle: " . $popup_gradient_angle . "deg;\n";
-        $css .= "  --wdp-popup-button-gradient-type: " . esc_attr($popup_gradient_type) . ";\n";
-        $css .= "  --wdp-popup-button-bg: " . ($popup_button_use_gradient ? $popup_button_bg : esc_attr($popup_button_color)) . ";\n";
-        $css .= "  --wdp-popup-button-bg-hover: " . ($popup_button_use_gradient ? $popup_button_bg_hover : esc_attr($popup_button_hover)) . ";\n";
-        $css .= "  --wdp-popup-button-border-color: " . esc_attr($popup_button_use_gradient ? $popup_gradient_start : $popup_button_color) . ";\n";
-        $css .= "  --wdp-popup-button-border-hover-color: " . esc_attr($popup_button_use_gradient ? $popup_gradient_hover_start : $popup_button_hover) . ";\n";
         
         // Normal form değişkenleri
         $css .= "  --wdp-button-primary: " . esc_attr($settings['button_primary_color']) . ";\n";
@@ -1185,12 +1239,6 @@ class WDP_Assets {
         $css .= "  --wdp-form-gap: " . esc_attr($settings['form_gap']) . "px;\n";
         /* Dikey form ritmi: admin form_gap ile orantılı; eski 6px üst sınırı kaldırıldı (parçalanmış düzen) */
         $css .= "  --wdp-form-stack-gap: clamp(8px, calc(var(--wdp-form-gap) * 0.75), 18px);\n";
-        $css .= "  --wdp-form-error-bg: " . esc_attr($settings['error_bg_color']) . ";\n";
-        $css .= "  --wdp-form-error-border: " . esc_attr($settings['error_border_color']) . ";\n";
-        $css .= "  --wdp-form-error-text: " . esc_attr($settings['error_text_color']) . ";\n";
-        $css .= "  --wdp-input-error-bg: " . esc_attr($settings['input_error_bg_color']) . ";\n";
-        $css .= "  --wdp-input-error-border: " . esc_attr($settings['input_error_border_color']) . ";\n";
-        $css .= "  --wdp-input-error-text: " . esc_attr($settings['input_error_text_color']) . ";\n";
 
         // Progress bar ayarlarını al
         $progress_settings = get_option('wdp_progress_bar_settings', array());
@@ -1198,24 +1246,22 @@ class WDP_Assets {
             'container_bg' => '#f8fafc',
             'container_border' => '#e2e8f0',
             'track_bg' => '#e2e8f0',
-            'fill_start' => '#3b82f6',
-            'fill_mid' => '#2563eb',
-            'fill_end' => '#1d4ed8',
+            'fill_color' => '#2563eb',
             'preview_bg' => '#64748b',
             'percentage_bg' => '#ffffff',
             'percentage_text' => '#1e293b',
         );
+        $progress_merged = wp_parse_args($progress_settings, $progress_defaults);
+        $progress_fill_hex = WDP_Utils::resolve_progress_bar_fill_color($progress_merged);
         $progress_settings = self::sanitize_css_settings(
-            wp_parse_args($progress_settings, $progress_defaults),
+            array_merge($progress_merged, array('fill_color' => $progress_fill_hex)),
             $progress_defaults
         );
 
         $css .= "  --wdp-progress-container-bg: " . esc_attr($progress_settings['container_bg']) . ";\n";
         $css .= "  --wdp-progress-container-border: " . esc_attr($progress_settings['container_border']) . ";\n";
         $css .= "  --wdp-progress-track-bg: " . esc_attr($progress_settings['track_bg']) . ";\n";
-        $css .= "  --wdp-progress-fill-start: " . esc_attr($progress_settings['fill_start']) . ";\n";
-        $css .= "  --wdp-progress-fill-mid: " . esc_attr($progress_settings['fill_mid']) . ";\n";
-        $css .= "  --wdp-progress-fill-end: " . esc_attr($progress_settings['fill_end']) . ";\n";
+        $css .= "  --wdp-progress-fill: " . esc_attr($progress_fill_hex) . ";\n";
         $css .= "  --wdp-progress-preview-bg: " . esc_attr($progress_settings['preview_bg']) . ";\n";
         $css .= "  --wdp-progress-percentage-bg: " . esc_attr($progress_settings['percentage_bg']) . ";\n";
         $css .= "  --wdp-progress-percentage-text: " . esc_attr($progress_settings['percentage_text']) . ";\n";
@@ -1242,7 +1288,7 @@ class WDP_Assets {
             'shareholder_header_bg' => '#f9fafb',
             'shareholder_header_color' => '#1f2937',
             'shareholder_content_padding' => '12',
-            'shareholders_area_bg' => 'linear-gradient(to bottom, #ffffff 0%, #fafbfc 100%)',
+            'shareholders_area_bg' => '#fafbfc',
             'shareholders_area_border' => '#e1e5e9',
             'shareholders_area_radius' => '16',
             'shareholders_scrollbar_color' => '#4a90e2',
@@ -1264,7 +1310,11 @@ class WDP_Assets {
         $css .= "  --wdp-shareholder-header-bg: " . esc_attr($shareholder_settings['shareholder_header_bg']) . ";\n";
         $css .= "  --wdp-shareholder-header-color: " . esc_attr($shareholder_settings['shareholder_header_color']) . ";\n";
         $css .= "  --wdp-shareholder-content-padding: " . esc_attr($shareholder_settings['shareholder_content_padding']) . "px;\n";
-        $css .= "  --wdp-shareholders-area-bg: " . esc_attr($shareholder_settings['shareholders_area_bg']) . ";\n";
+        $shareholders_area_bg = WDP_Utils::coerce_solid_hex_background(
+            isset($shareholder_settings['shareholders_area_bg']) ? $shareholder_settings['shareholders_area_bg'] : '#fafbfc',
+            '#fafbfc'
+        );
+        $css .= "  --wdp-shareholders-area-bg: " . esc_attr($shareholders_area_bg) . ";\n";
         $css .= "  --wdp-shareholders-area-border: " . esc_attr($shareholder_settings['shareholders_area_border']) . ";\n";
         $css .= "  --wdp-shareholders-area-radius: " . esc_attr($shareholder_settings['shareholders_area_radius']) . "px;\n";
         $css .= "  --wdp-shareholders-scrollbar-color: " . esc_attr($shareholder_settings['shareholders_scrollbar_color']) . ";\n";
@@ -1378,6 +1428,8 @@ class WDP_Assets {
         $css .= "    --wdp-modal-padding-left-desktop: var(--wdp-modal-padding-left-mobile);\n";
         $css .= "  }\n";
         $css .= "}\n";
+
+        $css .= self::get_inline_plugin_button_shadow_root_css($settings);
         
         return $css;
     }

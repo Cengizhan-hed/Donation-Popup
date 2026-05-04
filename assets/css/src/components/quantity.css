@@ -56,7 +56,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-price-quantity-row > :is(.wdp
   appearance: button;
 }
 
-html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content form, .wdp-modal-content, &) .wdp-price-quantity-row > :is(.wdp-price-field input[type="number"], input[name="custom_price"][type="number"]) {
+html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content form, .wdp-modal-content, .wdp-modal, .wdp-donation-form) .wdp-price-quantity-row > :is(.wdp-price-field input[type="number"], input[name="custom_price"][type="number"]) {
   -webkit-appearance: textfield;
   -moz-appearance: textfield;
   appearance: textfield;
@@ -296,7 +296,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-line-total-display .wdp-line-
   }
 }
 
-html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content form, .wdp-modal-content, &) .wdp-price-field {
+html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content form, .wdp-modal-content, .wdp-modal, .wdp-donation-form) .wdp-price-field {
   display: block;
   width: 100%;
   position: relative;
@@ -412,7 +412,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-quantity-counter .wdp-product
   justify-content: center;
   cursor: pointer;
   border-radius: 10px;
-  transition: color 0.15s ease;
+  transition: color 0.15s ease, box-shadow 0.22s ease;
   outline: none;
   padding: 0;
   margin: 0;
@@ -524,7 +524,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-shares-section .wdp-share-cou
   justify-content: center;
   cursor: pointer;
   border-radius: 10px;
-  transition: color 0.15s ease;
+  transition: color 0.15s ease, box-shadow 0.22s ease;
   outline: none;
   padding: 0;
   margin: 0;
@@ -605,7 +605,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-form .wdp-share-q
   font-weight: 700;
   cursor: pointer;
   border-radius: 6px;
-  transition: color 0.15s ease;
+  transition: color 0.15s ease, box-shadow 0.22s ease;
   margin: 0;
   padding: 0;
   align-self: stretch;
@@ -654,7 +654,7 @@ html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content form, .wdp-
 /* Custom price input with maximum specificity */
 /* CRITICAL: DO NOT override padding here - it's set in the more specific rule above */
 /* This rule only sets layout properties, padding is handled by the specific rule */
-html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content form, .wdp-modal-content, &) .wdp-price-quantity-row > input[name="custom_price"] {
+html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content form, .wdp-modal-content, .wdp-modal, .wdp-donation-form) .wdp-price-quantity-row > input[name="custom_price"] {
   font-family: var(--wdp-font-family);
   flex: 1 1 0;
   min-width: 0;
@@ -666,7 +666,7 @@ html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content form, .wdp-
 
 /* Tablet responsive styles with maximum specificity */
 @media (min-width: 769px) and (max-width: 1024px) {
-  html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content form, .wdp-modal-content, &) .wdp-price-quantity-row {
+  html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content form, .wdp-modal-content, .wdp-modal, .wdp-donation-form) .wdp-price-quantity-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
     column-gap: var(--wdp-space-4, 16px);
@@ -675,14 +675,14 @@ html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content form, .wdp-
 }
 
 @media (min-width: 481px) and (max-width: 768px) {
-  html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content form, .wdp-modal-content, &) .wdp-price-quantity-row {
+  html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content form, .wdp-modal-content, .wdp-modal, .wdp-donation-form) .wdp-price-quantity-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
     column-gap: var(--wdp-space-3, 12px);
     gap: var(--wdp-space-3, 12px);
   }
 
-  html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content, &) :is(.wdp-price-field, .wdp-product-quantity) {
+  html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content, .wdp-modal, .wdp-donation-form) :is(.wdp-price-field, .wdp-product-quantity) {
     width: 100%;
     margin: 0;
     padding: 0;
