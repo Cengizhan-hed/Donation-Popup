@@ -12,10 +12,10 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stac
   padding: 0;
   box-sizing: border-box;
   border: var(--wdp-field-stack-border);
-  border-radius: var(--wdp-field-stack-radius);
+  border-radius: var(--wdp-field-stack-radius, var(--wdp-input-radius, 20px));
   background: var(--wdp-field-stack-bg);
   overflow: hidden;
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.76) inset, 0 8px 18px -14px rgba(15, 23, 42, 0.22);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.62) inset, 0 6px 14px -12px rgba(15, 23, 42, 0.18);
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__row {
@@ -25,8 +25,8 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stac
   align-items: center;
   column-gap: var(--wdp-field-stack-gap-icon-text);
   row-gap: 0;
-  min-height: calc(var(--wdp-input-min-height, 48px) - 2px);
-  padding: 0 var(--wdp-field-stack-pad-x);
+  min-height: calc(var(--wdp-input-min-height, 50px) - 2px);
+  padding: 0 max(12px, var(--wdp-field-stack-pad-x));
   margin: 0;
   border: none;
   border-radius: 0;
@@ -45,7 +45,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stac
 
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__row:focus-within {
   background: var(--wdp-field-stack-row-focus-bg);
-  box-shadow: inset 2px 0 0 color-mix(in srgb, var(--wdp-primary, #4a90e2) 45%, transparent);
+  box-shadow: inset 2px 0 0 color-mix(in srgb, var(--wdp-primary, #4a90e2) 38%, transparent);
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__row--textarea {
@@ -112,7 +112,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stac
   min-width: 0;
   width: 100%;
   margin: 0;
-  padding: var(--wdp-field-stack-input-pad-y) 0;
+  padding: max(11px, var(--wdp-field-stack-input-pad-y)) 0;
   border: none;
   border-radius: 0;
   background: transparent;
@@ -130,7 +130,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stac
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__textarea {
-  min-height: var(--wdp-field-stack-textarea-min-height);
+  min-height: max(84px, var(--wdp-field-stack-textarea-min-height));
   resize: vertical;
   max-height: 180px;
   padding-top: 0;
@@ -146,7 +146,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stac
   position: static;
   grid-column: 1 / -1;
   grid-row: 2;
-  margin: 4px 0 8px 0;
+  margin: 2px 0 8px 0;
   padding: 6px 10px;
   font-size: 0.8125rem;
   line-height: 1.4;
@@ -160,7 +160,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stac
   z-index: 1;
   background: rgba(220, 38, 38, 0.08);
   border: 1px solid rgba(220, 38, 38, 0.22);
-  border-radius: 8px;
+  border-radius: var(--wdp-input-radius, 20px);
   box-shadow: 0 1px 0 rgba(255, 255, 255, 0.45) inset;
   color: #b42318;
 }

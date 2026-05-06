@@ -87,43 +87,21 @@ class WDP_Shortcodes {
             }
         }
 
-        // Buton ayarlarını al (CSS değişkenleri için)
-        $button_settings = get_option('wdp_button_settings', array());
-        
-        // Inline style oluştur - CSS değişkenlerini kullan
+        // Tetikleyici görünümü: renk / boyut / hover wp_add_inline_style ile :root + buttons.css üzerinden gelir.
+        // Arka plan veya fontu burada inline vermek :hover renginin üstünü örter (inline > stylesheet).
         $inline_styles = array();
         if (!empty($custom_style)) {
             $inline_styles[] = $custom_style;
         }
-        
-        // CRITICAL: Inline style'larda direkt değerler kullan (CSS değişkenleri değil) - Clean CSS approach
-        // Inline style'lar en yüksek önceliğe sahip olduğu için direkt değerler kullanılmalı
-        // !important kullanmıyoruz - inline style zaten en yüksek specificity'ye sahip
-        if (isset($button_settings['popup_button_color'])) {
-            $inline_styles[] = 'background-color: ' . esc_attr($button_settings['popup_button_color']) . ';';
-        }
-        if (isset($button_settings['popup_button_border_radius'])) {
-            $inline_styles[] = 'border-radius: ' . esc_attr($button_settings['popup_button_border_radius']) . 'px;';
-        }
-        if (isset($button_settings['popup_button_font_size'])) {
-            $inline_styles[] = 'font-size: ' . esc_attr($button_settings['popup_button_font_size']) . 'px;';
-        }
-        if (isset($button_settings['popup_button_font_weight'])) {
-            $inline_styles[] = 'font-weight: ' . esc_attr($button_settings['popup_button_font_weight']) . ';';
-        }
-        if (isset($button_settings['popup_button_font_family'])) {
-            if ($button_settings['popup_button_font_family'] === 'custom' && !empty($button_settings['popup_button_custom_font'])) {
-                $inline_styles[] = 'font-family: ' . esc_attr($button_settings['popup_button_custom_font']) . ';';
-            } elseif ($button_settings['popup_button_font_family'] !== 'inherit' && $button_settings['popup_button_font_family'] !== 'custom') {
-                $inline_styles[] = 'font-family: ' . esc_attr($button_settings['popup_button_font_family']) . ', sans-serif;';
-            }
-        }
-        
-        $combined_style = !empty($inline_styles) ? implode(' ', $inline_styles) : $custom_style;
-        
+        $combined_style = !empty($inline_styles) ? implode(' ', $inline_styles) : '';
+
+        $button_settings = WDP_Utils::normalize_legacy_popup_button_text(
+            get_option('wdp_button_settings', array())
+        );
+
         // Full width ayarını kontrol et
         $is_full_width = isset($button_settings['popup_button_full_width']) && $button_settings['popup_button_full_width'] === '1';
-        $button_classes = 'wdp-donate-button wdp-open-modal';
+        $button_classes = 'wdp-donate-button wdp-open-modal wdp-shortcode-trigger';
         if ($is_full_width) {
             $button_classes .= ' wdp-donate-button-full-width';
         }

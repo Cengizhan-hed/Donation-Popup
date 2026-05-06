@@ -4,7 +4,7 @@
 /* CRITICAL: Maximum specificity - html body ile tema override koruması */
 
 /* Başarı ekranı + mini sepet: gecikmeli / kademeli giriş animasyonu yok — anında, stabil render */
-html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-success-screen, .wdp-modal-content .wdp-success-screen) :is(.wdp-success-message, .wdp-mini-cart, .wdp-success-buttons, .wdp-cart-actions) {
+html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-success-screen, .wdp-modal-content .wdp-success-screen) :is(.wdp-success-message, .wdp-success-top-bar, .wdp-success-cart-stack, .wdp-mini-cart, .wdp-success-buttons, .wdp-cart-actions) {
   animation: none;
   opacity: 1;
   transform: none;
@@ -143,10 +143,66 @@ html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-success-screen, .wdp-moda
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-success-screen, .wdp-modal-content .wdp-success-screen) .wdp-success-reassurance {
-  margin: -4px 0 var(--wdp-form-stack-gap) 0;
+  margin: 0 0 var(--wdp-form-stack-gap) 0;
   text-align: center;
   font-size: 12px;
   color: var(--wdp-text-tertiary, #6b7280);
+}
+
+/* Başarı üst satırı (metin + X) — mini sepet kutusunun dışında */
+html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-success-screen, .wdp-modal-content .wdp-success-screen) {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-success-screen, .wdp-modal-content .wdp-success-screen) .wdp-success-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px;
+  position: relative;
+  margin: 0 0 8px 0;
+  padding: 2px 48px 0 0;
+  box-sizing: border-box;
+  flex: 0 0 auto;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-success-screen, .wdp-modal-content .wdp-success-screen) .wdp-success-top-bar__message {
+  margin: 0;
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 17px;
+  line-height: 1.3;
+  font-weight: 600;
+  color: var(--wdp-success-message-color, #059669);
+  text-align: left;
+  padding: 0 0 0 calc(4px + var(--wdp-form-stack-gap));
+}
+
+/* Başarı ekranında da ana modalın ortak close butonunu kullan (ilk popup ile birebir hizalama) */
+html body .wdp-modal .wdp-modal-content:has(.wdp-success-screen) > .wdp-modal-close {
+  display: inline-flex !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+  z-index: 6;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-success-screen, .wdp-modal-content .wdp-success-screen) .wdp-success-cart-stack {
+  display: flex;
+  flex-direction: column;
+  gap: max(8px, calc(var(--wdp-form-stack-gap) - 4px));
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-success-screen, .wdp-modal-content .wdp-success-screen) .wdp-success-cart-stack > .wdp-mini-cart {
+  margin-bottom: 0;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-success-screen, .wdp-modal-content .wdp-success-screen) .wdp-success-cart-stack > .wdp-success-buttons {
+  margin-top: 0;
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-success-screen, .wdp-modal-content .wdp-success-screen) .wdp-mini-cart-loading {
@@ -164,7 +220,7 @@ html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-success-screen, .wdp-moda
   margin-bottom: var(--wdp-form-stack-gap);
   background: var(--wdp-color-card, #ffffff);
   border: 1px solid var(--wdp-border-very-light, #f0f2f5);
-  border-radius: 20px;
+  border-radius: var(--wdp-mini-cart-radius, var(--wdp-input-radius, 20px));
   padding: 14px;
   position: relative;
   overflow: hidden;
@@ -175,10 +231,14 @@ html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-success-screen, .wdp-moda
   z-index: 1;
 }
 
+html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-mini-cart-header, .wdp-modal-content .wdp-mini-cart-header) {
+  margin-bottom: var(--wdp-form-stack-gap);
+}
+
 html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-mini-cart-header, .wdp-modal-content .wdp-mini-cart-header) h4 {
   font-size: 18px;
   font-weight: 700;
-  margin: 0 0 var(--wdp-form-stack-gap) 0;
+  margin: 0;
   color: var(--wdp-button-primary, #1e73be);
   letter-spacing: -0.3px;
   display: flex;
@@ -346,12 +406,32 @@ html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-mini-cart-items, .wdp-mod
 
   html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-mini-cart-header, .wdp-modal-content .wdp-mini-cart-header) h4 {
     font-size: 15px;
+  }
+
+  html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-mini-cart-header, .wdp-modal-content .wdp-mini-cart-header) {
+    margin-bottom: var(--wdp-space-2);
+  }
+
+  html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-success-screen, .wdp-modal-content .wdp-success-screen) .wdp-success-top-bar {
+    gap: 10px;
     margin-bottom: 6px;
+    padding-right: 46px;
+  }
+
+  html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-success-screen, .wdp-modal-content .wdp-success-screen) .wdp-success-top-bar__message {
+    font-size: 15px;
+    line-height: 1.3;
+    padding-left: calc(4px + var(--wdp-form-stack-gap));
   }
 
   html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-success-screen, .wdp-modal-content .wdp-success-screen) .wdp-success-buttons {
-    gap: var(--wdp-space-1);
+    column-gap: var(--wdp-space-1);
+    row-gap: var(--wdp-space-2);
     margin-top: var(--wdp-space-2);
+  }
+
+  html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-success-screen, .wdp-modal-content .wdp-success-screen) .wdp-success-buttons .wdp-new-donation {
+    margin-top: 6px;
   }
 
   html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-success-screen, .wdp-modal-content .wdp-success-screen) .wdp-success-buttons .wdp-success-button {

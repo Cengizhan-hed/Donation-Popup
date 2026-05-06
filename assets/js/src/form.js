@@ -854,12 +854,20 @@
     return count > 0;
   }
 
-  function getSuccessMessageText() {
-    const s = wdp_ajax && wdp_ajax.strings;
-    if (s && typeof s.added_to_cart === 'string' && s.added_to_cart.trim()) {
-      return s.added_to_cart.trim();
-    }
-    return 'Bağışınız güvenle sepete eklendi.';
+  function getSuccessAddedToCartText() {
+    const strings = wdp_ajax && wdp_ajax.strings ? wdp_ajax.strings : {};
+    const text = strings && typeof strings.added_to_cart === 'string' ? strings.added_to_cart.trim() : '';
+    return text || 'Bağışınız sepete eklendi';
+  }
+
+  function buildSuccessTopRow() {
+    const bar = document.createElement('div');
+    bar.className = 'wdp-success-top-bar';
+    const msg = document.createElement('p');
+    msg.className = 'wdp-success-top-bar__message';
+    msg.textContent = getSuccessAddedToCartText();
+    bar.appendChild(msg);
+    return bar;
   }
 
   function renderSuccessScreen(successScreen, cartItems) {
@@ -867,23 +875,19 @@
       return;
     }
     successScreen.innerHTML = '';
-    const message = document.createElement('div');
-    message.className = 'wdp-success-message';
-    message.textContent = getSuccessMessageText();
-    successScreen.appendChild(message);
-    const reassurance = document.createElement('div');
-    reassurance.className = 'wdp-success-reassurance';
-    reassurance.textContent = 'Bilgileriniz bir sonraki adımda tekrar kontrol edilebilir.';
-    successScreen.appendChild(reassurance);
+    successScreen.appendChild(buildSuccessTopRow());
+    const cartStack = document.createElement('div');
+    cartStack.className = 'wdp-success-cart-stack';
+    successScreen.appendChild(cartStack);
     if (typeof renderCartItemsInto === 'function') {
-      renderCartItemsInto(successScreen, Array.isArray(cartItems) ? cartItems : []);
+      renderCartItemsInto(cartStack, Array.isArray(cartItems) ? cartItems : []);
     } else if (typeof buildCartUiRoot === 'function') {
-      successScreen.appendChild(buildCartUiRoot(Array.isArray(cartItems) ? cartItems : []));
+      cartStack.appendChild(buildCartUiRoot(Array.isArray(cartItems) ? cartItems : []));
     } else {
       const fallback = document.createElement('div');
       fallback.innerHTML = createCartItemsHTML(Array.isArray(cartItems) ? cartItems : []);
       while (fallback.firstChild) {
-        successScreen.appendChild(fallback.firstChild);
+        cartStack.appendChild(fallback.firstChild);
       }
     }
   }
@@ -966,11 +970,15 @@
           setupContinueShoppingButton(form);
           setupRemoveCartItemButtons(successScreen);
         } else {
+          successScreen.innerHTML = '';
+          successScreen.appendChild(buildSuccessTopRow());
+          const cartStack = document.createElement('div');
+          cartStack.className = 'wdp-success-cart-stack';
           const loadingMessage = document.createElement('div');
           loadingMessage.className = 'wdp-mini-cart-loading';
           loadingMessage.textContent = 'Sepet içeriği yükleniyor...';
-          successScreen.innerHTML = '';
-          successScreen.appendChild(loadingMessage);
+          cartStack.appendChild(loadingMessage);
+          successScreen.appendChild(cartStack);
 
           fetchCartContents()
             .then((cartItems) => {

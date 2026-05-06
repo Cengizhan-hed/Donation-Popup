@@ -464,39 +464,11 @@ class WDP_Assets {
      * @param string|int $css_version Style version.
      * @return void
      */
-    /**
-     * Register Inter from Google Fonts so plugin UI typography matches design tokens.
-     *
-     * @return string Registered style handle.
-     */
-    private static function register_inter_font_handle() {
-        $handle = 'wdp-google-font-inter';
-        if (!wp_style_is($handle, 'registered')) {
-            wp_register_style(
-                $handle,
-                'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap',
-                array(),
-                null
-            );
-        }
-        return $handle;
-    }
-
     private static function register_frontend_style_stack($plugin_url, $css_version) {
         $plugin_dir = defined('WDP_PLUGIN_DIR') ? WDP_PLUGIN_DIR : plugin_dir_path(dirname(dirname(__FILE__)));
-        $font_handle = self::register_inter_font_handle();
 
-        // Preferred strategy: use single hashed build file when available.
-        $built_manifest = self::get_built_css_manifest($plugin_dir);
-        if (is_array($built_manifest)) {
-            wp_register_style(
-                self::FRONTEND_CSS_HANDLE,
-                $plugin_url . 'assets/css/' . $built_manifest['file'],
-                array($font_handle),
-                $css_version
-            );
-            return;
-        }
+        // Build bundle intentionally disabled: always load src layer stack.
+        // This keeps development/debug behavior deterministic and avoids hashed bundle dependency.
 
         $stack = self::get_frontend_css_stack_relative_paths();
         $existing = array();
@@ -511,7 +483,7 @@ class WDP_Assets {
             wp_register_style(
                 self::FRONTEND_CSS_HANDLE,
                 $plugin_url . 'assets/css/donation-modal.css',
-                array($font_handle),
+                array(),
                 $css_version
             );
             return;
@@ -521,7 +493,7 @@ class WDP_Assets {
         $last = count($existing) - 1;
         foreach ($existing as $i => $rel) {
             $handle = ($i === $last) ? self::FRONTEND_CSS_HANDLE : 'wdp-css-layer-' . $i;
-            $layer_deps = ($i === 0) ? array($font_handle) : $deps;
+            $layer_deps = ($i === 0) ? array() : $deps;
             wp_register_style($handle, $plugin_url . 'assets/css/' . $rel, $layer_deps, $css_version);
             $deps = array($handle);
         }
@@ -1063,11 +1035,11 @@ class WDP_Assets {
         $defaults = array(
             'button_primary_color' => '#1e73be',
             'button_primary_hover' => '#185d98',
-            'button_border_radius' => '10',
+            'button_border_radius' => '20',
             'modal_background_color' => '#ffffff',
-            'modal_border_radius' => '10',
+            'modal_border_radius' => '20',
             'input_border_color' => '#d1d5db',
-            'input_border_radius' => '10',
+            'input_border_radius' => '20',
             'title_color' => '#1f2937',
             'title_font_size' => '27',
             'title_font_size_mobile' => '22',
@@ -1077,15 +1049,18 @@ class WDP_Assets {
             'popup_button_text' => 'Bağış Yap',
             'popup_button_color' => '#1e73be',
             'popup_button_hover' => '#185d98',
+            'popup_button_text_color' => '#ffffff',
             'popup_button_font_size' => '18',
             'popup_button_font_weight' => '700',
             'popup_button_font_family' => 'inherit',
             'popup_button_custom_font' => '',
             'popup_button_size' => 'large',
+            /* Yalnızca shortcode tetikleyici: small | medium | large | xlarge */
+            'shortcode_button_size' => 'medium',
             'popup_button_custom_min_width' => '140',
             'popup_button_custom_min_height' => '48',
             'popup_button_custom_padding_x' => '24',
-            'popup_button_border_radius' => '10',
+            'popup_button_border_radius' => '20',
             'popup_button_border_size' => '0',
             'label_color' => '#374151',
             'label_font_size' => 14,
@@ -1138,7 +1113,12 @@ class WDP_Assets {
         ));
         
         // CSS değişkenlerini oluştur
-        $css = ".hdf-donation-modal-wrapper {\n";
+        /*
+         * :root — shortcode tetikleyici buton modal sarmalayıcısının dışında kaldığı için
+         * tüm --wdp-* özelleştirme değişkenleri burada da tanımlanır (inheritance).
+         * .hdf-donation-modal-wrapper — popup / gömülü form içi öncelik aynı kalır.
+         */
+        $css = ":root,\n.hdf-donation-modal-wrapper {\n";
         
         // Popup butonu değişkenleri
         $popup_button_color = !empty($settings['popup_button_color']) ? $settings['popup_button_color'] : '#1e73be';
@@ -1179,7 +1159,7 @@ class WDP_Assets {
         if (isset($settings['popup_button_border_radius'])) {
             $css .= "  --wdp-popup-button-radius: " . esc_attr($settings['popup_button_border_radius']) . "px;\n";
         } else {
-            $css .= "  --wdp-popup-button-radius: 10px;\n";
+            $css .= "  --wdp-popup-button-radius: 20px;\n";
         }
         if (isset($settings['popup_button_border_size'])) {
             $css .= "  --wdp-popup-button-border-size: " . esc_attr($settings['popup_button_border_size']) . "px;\n";
@@ -1209,6 +1189,27 @@ class WDP_Assets {
             $popup_button_padding_x = (int) $popup_size_presets[$popup_button_size]['padding_x'];
         }
 
+        // Shortcode tetikleyici boyutu (yalnızca --wdp-sc-trigger-*; popup içi butonlara uygulanmaz).
+        $sc_size = isset($settings['shortcode_button_size']) ? strtolower((string) $settings['shortcode_button_size']) : '';
+        if (!in_array($sc_size, array('small', 'medium', 'large', 'xlarge'), true)) {
+            $legacy_sc = isset($settings['popup_button_size']) ? strtolower((string) $settings['popup_button_size']) : '';
+            $sc_size = in_array($legacy_sc, array('small', 'medium', 'large', 'xlarge'), true) ? $legacy_sc : 'medium';
+        }
+        $base_popup_fs = isset($settings['popup_button_font_size']) ? max(12, min(32, (int) $settings['popup_button_font_size'])) : 18;
+        $sc_tier = array(
+            'small' => array('min_h' => 40, 'min_w' => 108, 'pad_x' => 14, 'pad_y' => 7, 'fs_add' => -2),
+            'medium' => array('min_h' => 46, 'min_w' => 126, 'pad_x' => 20, 'pad_y' => 10, 'fs_add' => 0),
+            'large' => array('min_h' => 52, 'min_w' => 140, 'pad_x' => 24, 'pad_y' => 12, 'fs_add' => 1),
+            'xlarge' => array('min_h' => 56, 'min_w' => 152, 'pad_x' => 28, 'pad_y' => 14, 'fs_add' => 2),
+        );
+        $sc = $sc_tier[ $sc_size ];
+        $sc_fs = max(12, min(22, $base_popup_fs + (int) $sc['fs_add'] ));
+        $css .= "  --wdp-sc-trigger-min-height: " . (int) $sc['min_h'] . "px;\n";
+        $css .= "  --wdp-sc-trigger-min-width: " . (int) $sc['min_w'] . "px;\n";
+        $css .= "  --wdp-sc-trigger-padding-inline: " . (int) $sc['pad_x'] . "px;\n";
+        $css .= "  --wdp-sc-trigger-padding-block: " . (int) $sc['pad_y'] . "px;\n";
+        $css .= "  --wdp-sc-trigger-font-size: " . $sc_fs . "px;\n";
+
         $css .= "  --wdp-popup-button-min-width: " . $popup_button_min_width . "px;\n";
         $css .= "  --wdp-popup-button-min-height: " . $popup_button_min_height . "px;\n";
         $css .= "  --wdp-popup-button-padding-inline: " . $popup_button_padding_x . "px;\n";
@@ -1216,6 +1217,11 @@ class WDP_Assets {
         $css .= "  --wdp-popup-button-bg-hover: " . esc_attr($popup_button_hover) . ";\n";
         $css .= "  --wdp-popup-button-border-color: " . esc_attr($popup_button_color) . ";\n";
         $css .= "  --wdp-popup-button-border-hover-color: " . esc_attr($popup_button_hover) . ";\n";
+        $sc_text = !empty($settings['popup_button_text_color']) ? sanitize_hex_color($settings['popup_button_text_color']) : '';
+        if (!$sc_text) {
+            $sc_text = '#ffffff';
+        }
+        $css .= "  --wdp-shortcode-trigger-text: " . esc_attr($sc_text) . ";\n";
 
         
         // Normal form değişkenleri
@@ -1283,14 +1289,14 @@ class WDP_Assets {
         $shareholder_defaults = array(
             'shareholder_card_bg' => '#ffffff',
             'shareholder_card_border' => '#f0f2f5',
-            'shareholder_card_radius' => '10',
+            'shareholder_card_radius' => '20',
             'shareholder_card_shadow' => '0 1px 3px rgba(0, 0, 0, 0.05)',
             'shareholder_header_bg' => '#f9fafb',
             'shareholder_header_color' => '#1f2937',
             'shareholder_content_padding' => '12',
             'shareholders_area_bg' => '#fafbfc',
             'shareholders_area_border' => '#e1e5e9',
-            'shareholders_area_radius' => '16',
+            'shareholders_area_radius' => '20',
             'shareholders_scrollbar_color' => '#4a90e2',
             'share_counter_border' => '#d1d5db',
             'share_counter_bg' => '#ffffff',
@@ -1327,14 +1333,14 @@ class WDP_Assets {
         $success_defaults = array(
             'success_button_color' => '#1e73be',
             'success_button_hover' => '#185d98',
-            'success_button_radius' => '10',
+            'success_button_radius' => '20',
             'success_message_bg' => 'rgba(72, 187, 120, 0.1)',
             'success_message_color' => '#48bb78',
             'success_message_border' => 'rgba(72, 187, 120, 0.2)',
-            'success_message_radius' => '10',
+            'success_message_radius' => '20',
             'mini_cart_bg' => '#f9fafb',
             'mini_cart_border' => '#e5e7eb',
-            'mini_cart_radius' => '10',
+            'mini_cart_radius' => '20',
             'cart_item_name_color' => '#1f2937',
             'cart_item_price_color' => '#1e73be',
         );
@@ -1417,7 +1423,7 @@ class WDP_Assets {
         // Bu sayede desktop kuralları (media query dışında) mobilde mobile değişkenlerini kullanacak
         // Breakpoint: --wdp-breakpoint-md (600px) ile uyumlu
         $css .= "@media (max-width: 600px) {\n";
-        $css .= "  .hdf-donation-modal-wrapper {\n";
+        $css .= "  :root,\n  .hdf-donation-modal-wrapper {\n";
         $css .= "    --wdp-title-size: var(--wdp-title-size-mobile, " . esc_attr($settings['title_font_size']) . "px);\n";
         // Mobile modal görünüm değişkenlerini override et - desktop değişkenlerini mobile ile değiştir
         $css .= "    --wdp-popup-modal-width-desktop: var(--wdp-popup-modal-width-mobile);\n";
@@ -1570,17 +1576,6 @@ class WDP_Assets {
         add_action('wp_head', function() use ($critical_css) {
             echo '<style id="wdp-critical-css">' . $critical_css . '</style>' . "\n";
         }, 1);
-        
-        // PERFORMANCE: Font preload for better performance (only if needed)
-        add_action('wp_head', function() {
-            // Preconnect to Google Fonts (only if Inter font is used)
-            // PERFORMANCE: Use dns-prefetch for non-critical resources
-            echo '<link rel="dns-prefetch" href="https://fonts.googleapis.com">' . "\n";
-            echo '<link rel="dns-prefetch" href="https://fonts.gstatic.com">' . "\n";
-            // Preconnect only when actually needed (lazy)
-            echo '<link rel="preconnect" href="https://fonts.googleapis.com">' . "\n";
-            echo '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>' . "\n";
-        }, 0);
         
         // Inline CSS'i ekle (non-critical, async)
         wp_add_inline_style('wdp-donation-modal-css', $inline_css);

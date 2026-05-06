@@ -80,6 +80,40 @@
     element.removeAttribute('hidden');
   }
 
+  function shareholdersAreaHasRail(area) {
+    return !!(area && area.classList && area.classList.contains('wdp-shareholders-area--with-rail'));
+  }
+
+  /** Satır içi display/flex — sol adım rayı varken CSS grid’i ezmemeli */
+  function applyShareholdersAreaVisibility(area) {
+    if (!area) return;
+    area.style.visibility = 'visible';
+    area.style.opacity = '1';
+    area.removeAttribute('hidden');
+    if (shareholdersAreaHasRail(area)) {
+      area.style.display = 'block';
+      area.style.flexDirection = '';
+    } else {
+      area.style.display = 'flex';
+      area.style.flexDirection = 'column';
+    }
+  }
+
+  function applyShareholdersContainerVisibility(container) {
+    if (!container) return;
+    const area = container.closest('.wdp-shareholders-area');
+    container.style.visibility = 'visible';
+    container.style.opacity = '1';
+    container.removeAttribute('hidden');
+    if (shareholdersAreaHasRail(area)) {
+      container.style.display = 'grid';
+      container.style.flexDirection = '';
+    } else {
+      container.style.display = 'flex';
+      container.style.flexDirection = 'column';
+    }
+  }
+
   function ensureReadableInput(element) {
     if (!element) return;
     ensureVisible(element, 'block');
@@ -97,7 +131,7 @@
     // CRITICAL: Parent area'nın da görünür olduğundan emin ol
     const shareholdersArea = container.closest('.wdp-shareholders-area');
     if (shareholdersArea) {
-      ensureVisible(shareholdersArea, 'flex');
+      applyShareholdersAreaVisibility(shareholdersArea);
     }
 
     let list = container.querySelector(".wdp-shareholders-scroll");
@@ -396,7 +430,7 @@
       if (!run) {
         run = debounce(function () {
           refreshShareholderGuidance(root);
-        }, 120);
+        }, 72);
         shareholderGuidanceDebouncedByRoot.set(root, run);
       }
       run();
@@ -408,6 +442,41 @@
   function getShareholderForms(root) {
     if (!root) return [];
     return Array.from(root.querySelectorAll('.wdp-shareholder-form'));
+  }
+
+  /**
+   * Doğrulama dataset bayrakları her zaman iç form (wdp-donation-form-fields) üzerinde tutulur.
+   * Bazı çağrılar .wdp-modal kökü ile geldiğinden, armed / target okuma-yazma için formu çözümler.
+   */
+  function resolveShareholderValidationRoot(scope) {
+    if (!scope) {
+      return null;
+    }
+    try {
+      if (scope.nodeType === 1 && scope.tagName === 'FORM') {
+        if (scope.classList.contains('wdp-donation-form-fields') || scope.classList.contains('wdp-has-shareholders')) {
+          return scope;
+        }
+      }
+    } catch (eResolve) {
+      /* ignore */
+    }
+    if (typeof scope.closest === 'function') {
+      const direct =
+        scope.closest('form.wdp-donation-form-fields') ||
+        scope.closest('form.wdp-has-shareholders') ||
+        scope.closest('form');
+      if (direct) {
+        return direct;
+      }
+    }
+    if (typeof scope.querySelector === 'function') {
+      const inner = scope.querySelector('form.wdp-donation-form-fields, form.wdp-has-shareholders');
+      if (inner) {
+        return inner;
+      }
+    }
+    return null;
   }
 
   function getRowRequiredState(form) {
@@ -436,48 +505,14 @@
     });
   }
 
-  function ensureShareholderOverview(root) {
-    if (!root) return null;
+  /** Eski üst “Hissedar Form Durumu” bandı kaldırıldı; sol adım rayı tek ilerleme göstergesi. Kalıntı DOM temizliği. */
+  function removeShareholderOverview(root) {
+    if (!root) return;
     const sharesHeader = root.querySelector('.wdp-shares-header');
-    if (!sharesHeader) return null;
-    let overview = sharesHeader.querySelector('.wdp-shareholder-overview');
-    if (!overview) {
-      overview = document.createElement('div');
-      overview.className = 'wdp-shareholder-overview';
-      sharesHeader.appendChild(overview);
-    }
-    if (!overview.querySelector('.wdp-shareholder-micro__heading')) {
-      overview.textContent = '';
-      const micro = document.createElement('div');
-      micro.className = 'wdp-shareholder-micro';
-      micro.setAttribute('role', 'status');
-      micro.setAttribute('aria-live', 'polite');
-
-      const heading = document.createElement('span');
-      heading.className = 'wdp-shareholder-micro__heading';
-
-      const row = document.createElement('div');
-      row.className = 'wdp-shareholder-micro__row';
-
-      const track = document.createElement('div');
-      track.className = 'wdp-shareholder-micro__track';
-      track.setAttribute('role', 'progressbar');
-      track.setAttribute('aria-valuemin', '0');
-
-      const fill = document.createElement('div');
-      fill.className = 'wdp-shareholder-micro__fill';
-      track.appendChild(fill);
-
-      const label = document.createElement('span');
-      label.className = 'wdp-shareholder-micro__label';
-
-      row.appendChild(track);
-      row.appendChild(label);
-      micro.appendChild(heading);
-      micro.appendChild(row);
-      overview.appendChild(micro);
-    }
-    return overview;
+    if (!sharesHeader) return;
+    sharesHeader.querySelectorAll('.wdp-shareholder-overview').forEach(function (el) {
+      el.remove();
+    });
   }
 
   function isShareValidationArmed(root) {
@@ -485,83 +520,123 @@
   }
 
   function setShareValidationArmed(root, armed, targetIndex) {
-    if (!root || !root.dataset) return;
-    root.dataset.wdpShareValidationArmed = armed ? '1' : '0';
+    const bag = resolveShareholderValidationRoot(root) || root;
+    if (!bag || !bag.dataset) return;
+    bag.dataset.wdpShareValidationArmed = armed ? '1' : '0';
     if (armed && Number.isFinite(Number(targetIndex)) && Number(targetIndex) > 0) {
-      root.dataset.wdpShareValidationTarget = String(Number(targetIndex));
+      bag.dataset.wdpShareValidationTarget = String(Number(targetIndex));
     } else {
-      delete root.dataset.wdpShareValidationTarget;
+      delete bag.dataset.wdpShareValidationTarget;
     }
     refreshShareholderGuidance(root);
   }
 
   function refreshShareholderGuidance(root) {
     if (!root) return;
-    const forms = getShareholderForms(root);
-    if (!forms.length) return;
-    const armed = isShareValidationArmed(root);
-    const targetIndex = Number.parseInt((root.dataset && root.dataset.wdpShareValidationTarget) || '0', 10) || 0;
-
-    let incompleteCount = 0;
-    let completeCount = 0;
-    const total = forms.length;
+    const bag = resolveShareholderValidationRoot(root) || root;
+    removeShareholderOverview(bag);
+    const forms = getShareholderForms(bag);
+    if (!forms.length) {
+      syncShareholderStepRail(bag);
+      return;
+    }
+    const armed = isShareValidationArmed(bag);
+    const targetIndex = Number.parseInt((bag.dataset && bag.dataset.wdpShareValidationTarget) || '0', 10) || 0;
 
     forms.forEach(function (form) {
       stripShareholderRowStatusUI(form);
       const state = getRowRequiredState(form);
       const formIndex = Number.parseInt(form.getAttribute('data-index') || '0', 10) || 0;
       form.classList.remove('is-complete', 'is-incomplete', 'is-incomplete-pending', 'is-targeted-incomplete');
-      if (state.complete) {
-        completeCount += 1;
-      } else {
-        incompleteCount += 1;
-      }
       if (armed && !state.complete && targetIndex > 0 && formIndex === targetIndex) {
         form.classList.add('is-targeted-incomplete');
       }
     });
 
-    const overview = ensureShareholderOverview(root);
-    if (overview) {
-      const shouldShow = incompleteCount > 0;
-      const heading = overview.querySelector('.wdp-shareholder-micro__heading');
-      const track = overview.querySelector('.wdp-shareholder-micro__track');
-      const fill = overview.querySelector('.wdp-shareholder-micro__fill');
-      const label = overview.querySelector('.wdp-shareholder-micro__label');
-      const pct = total > 0 ? (completeCount / total) * 100 : 0;
-      if (heading) {
-        heading.textContent =
-          (shareholderTexts.progress_status_label && String(shareholderTexts.progress_status_label).trim()) ||
-          'Hissedar Form Durumu';
-      }
-      if (fill) {
-        fill.style.width = pct + '%';
-      }
-      if (label) {
-        label.textContent =
-          incompleteCount === 1
-            ? '1 eksik'
-            : completeCount + '/' + total + ' tamamlandı';
-      }
-      if (track) {
-        track.setAttribute('aria-valuenow', String(completeCount));
-        track.setAttribute('aria-valuemax', String(total));
-        track.setAttribute(
-          'aria-label',
-          completeCount + ' of ' + total + ' complete, ' + incompleteCount + ' remaining'
-        );
-      }
-      if (shouldShow) {
-        overview.classList.add('wdp-shareholder-overview--active');
-        overview.setAttribute('aria-hidden', 'false');
-      } else {
-        overview.classList.remove('wdp-shareholder-overview--active');
-        overview.setAttribute('aria-hidden', 'true');
-      }
-    }
-
     forms.forEach(function (form) {
       checkShareholderFormWarning(form);
+    });
+
+    syncShareholderStepRail(bag);
+  }
+
+  /**
+   * Hisse numaraları: sol dikey gösterge (masaüstü), dar ekranda yatay.
+   * Tamamlanma: getRowRequiredState ile (ad + telefon) — mevcut doğrulama ile uyumlu.
+   * Aktif adım: açık (collapsed olmayan) kart; yoksa ilk eksik hisse.
+   * Durum önceliği: submit sonrası armed + eksik → kırmızı; tamamlandı → yeşil; açık eksik → mavi; diğer eksik → nötr.
+   */
+  function syncShareholderStepRail(root) {
+    if (!root || typeof document === 'undefined') {
+      return;
+    }
+    const bag = resolveShareholderValidationRoot(root) || root;
+    const armed = isShareValidationArmed(bag);
+    bag.querySelectorAll('.wdp-shareholders-area').forEach((area) => {
+      const rail = area.querySelector('.wdp-shareholders-step-rail');
+      if (!rail) {
+        return;
+      }
+      const list = area.querySelector('.wdp-shareholders-scroll');
+      if (!list) {
+        return;
+      }
+      const forms = Array.from(list.querySelectorAll('.wdp-shareholder-form'));
+      rail.textContent = '';
+      if (forms.length === 0) {
+        rail.setAttribute('hidden', 'hidden');
+        return;
+      }
+      rail.removeAttribute('hidden');
+      let currentIdx = forms.findIndex((f) => !f.classList.contains('collapsed'));
+      if (currentIdx < 0) {
+        currentIdx = forms.findIndex((f) => !getRowRequiredState(f).complete);
+      }
+      if (currentIdx < 0) {
+        currentIdx = forms.length - 1;
+      }
+      forms.forEach((form, idx) => {
+        if (idx > 0) {
+          const connector = document.createElement('span');
+          connector.className = 'wdp-shareholders-step-connector';
+          connector.setAttribute('aria-hidden', 'true');
+          rail.appendChild(connector);
+        }
+        const n = idx + 1;
+        const state = getRowRequiredState(form);
+        const step = document.createElement('button');
+        step.type = 'button';
+        step.className = 'wdp-shareholders-step-item';
+        step.textContent = String(n);
+        step.setAttribute('aria-label', 'Hisse ' + n);
+        if (armed && !state.complete) {
+          step.classList.add('is-invalid');
+          step.setAttribute('aria-invalid', 'true');
+        } else {
+          step.removeAttribute('aria-invalid');
+          if (state.complete) {
+            step.classList.add('is-complete');
+          } else if (idx === currentIdx) {
+            step.classList.add('is-current');
+          } else {
+            step.classList.add('is-pending');
+          }
+        }
+        step.addEventListener('click', () => {
+          const reduceMotion = typeof window !== 'undefined' && window.matchMedia
+            && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+          try {
+            form.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'nearest' });
+          } catch (e) {
+            form.scrollIntoView(false);
+          }
+          const header = form.querySelector('.wdp-shareholder-header');
+          if (header && form.classList.contains('collapsed')) {
+            header.click();
+          }
+        });
+        rail.appendChild(step);
+      });
     });
   }
 
@@ -570,14 +645,14 @@
       return;
     }
     const refresh = (e) => {
-      const root = form.closest('.wdp-modal') || form.closest('.wdp-donation-form') || form.closest('form');
-      if (root) {
-        root.dataset.wdpShareValidationArmed = '0';
-        delete root.dataset.wdpShareValidationTarget;
+      const bag = resolveShareholderValidationRoot(form) || form.closest('form');
+      if (bag) {
+        bag.dataset.wdpShareValidationArmed = '0';
+        delete bag.dataset.wdpShareValidationTarget;
         if (e && e.target && e.target.classList && e.target.classList.contains('wdp-error')) {
           e.target.classList.remove('wdp-error');
         }
-        queueShareholderGuidanceRefresh(root);
+        queueShareholderGuidanceRefresh(bag);
       }
     };
     const nameInput = form.querySelector('input[name^="shareholder_name_"]');
@@ -1051,20 +1126,12 @@
     // CRITICAL: Shareholders area görünürlüğünü garanti et
     const shareholdersArea = container.closest('.wdp-shareholders-area');
     if (shareholdersArea) {
-      shareholdersArea.style.display = 'flex';
-      shareholdersArea.style.flexDirection = 'column';
-      shareholdersArea.style.visibility = 'visible';
-      shareholdersArea.style.opacity = '1';
-      shareholdersArea.removeAttribute('hidden');
+      applyShareholdersAreaVisibility(shareholdersArea);
     }
     
     // CRITICAL: Container ve list görünürlüğünü garanti et
     if (container) {
-      container.style.display = 'flex';
-      container.style.flexDirection = 'column';
-      container.style.visibility = 'visible';
-      container.style.opacity = '1';
-      container.removeAttribute('hidden');
+      applyShareholdersContainerVisibility(container);
     }
     
     if (list) {
@@ -1242,18 +1309,16 @@
     safeLog("Existing forms:", existingCount, "New count:", shareCount);
 
     // CRITICAL: Container'ların görünürlüğünü garanti et
-    shareholdersContainer.style.display = '';
     shareholdersContainer.style.visibility = 'visible';
     shareholdersContainer.style.opacity = '1';
     shareholdersList.style.display = '';
     shareholdersList.style.visibility = 'visible';
     shareholdersList.style.opacity = '1';
+    applyShareholdersContainerVisibility(shareholdersContainer);
     
     const shareholdersArea = shareholdersContainer.closest('.wdp-shareholders-area');
     if (shareholdersArea) {
-      shareholdersArea.style.display = 'flex';
-      shareholdersArea.style.visibility = 'visible';
-      shareholdersArea.style.opacity = '1';
+      applyShareholdersAreaVisibility(shareholdersArea);
     }
     
     // CRITICAL: Yeni formlar eklenirken mevcut formların durumunu kontrol et
@@ -1448,12 +1513,8 @@
       shareholdersArea.classList.remove('scrollable');
       shareholdersContainer.classList.remove('scrollable');
       // CRITICAL: ShareCount 1'e düştüğünde container'ların görünürlüğünü garanti et
-      shareholdersArea.style.display = 'flex';
-      shareholdersArea.style.visibility = 'visible';
-      shareholdersArea.style.opacity = '1';
-      shareholdersContainer.style.display = '';
-      shareholdersContainer.style.visibility = 'visible';
-      shareholdersContainer.style.opacity = '1';
+      applyShareholdersAreaVisibility(shareholdersArea);
+      applyShareholdersContainerVisibility(shareholdersContainer);
       shareholdersList.style.display = '';
       shareholdersList.style.visibility = 'visible';
       shareholdersList.style.opacity = '1';
@@ -1788,14 +1849,13 @@
       // Hissedar alanını da görünür yap
       const shareholdersArea = shareholdersContainer.closest('.wdp-shareholders-area');
       if (shareholdersArea) {
-        ensureVisible(shareholdersArea, 'flex');
-        shareholdersArea.style.flexDirection = 'column';
+        applyShareholdersAreaVisibility(shareholdersArea);
         safeLog("Shareholders area made visible");
       }
       
-      // Container'ı görünür yap
-      ensureVisible(shareholdersContainer, 'flex');
-      shareholdersContainer.style.flexDirection = 'column';
+      removeShareholderOverview(modal);
+      // Container'ı görünür yap (rail varken grid; yoksa flex sütunu)
+      applyShareholdersContainerVisibility(shareholdersContainer);
       safeLog("Shareholders container made visible");
       
       // Hissedar listesini oluştur veya bul

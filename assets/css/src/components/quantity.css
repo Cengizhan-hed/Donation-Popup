@@ -4,7 +4,7 @@
 html body .wdp-price-quantity-row {
   display: grid;
   grid-template-columns: minmax(0,1fr) minmax(0,1fr);
-  column-gap: var(--wdp-space-3);
+  column-gap: clamp(10px, 1.2vh, 14px);
   width: 100%;
   border: none;
 }
@@ -158,7 +158,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-price-quantity-row.wdp-fixed-
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-price-quantity-row.wdp-custom-price-with-qty-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  column-gap: var(--wdp-space-3, 12px);
+  column-gap: clamp(10px, 1.2vh, 14px);
   align-items: start;
   width: 100%;
   margin: 0;
@@ -184,7 +184,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-custom-price-shell {
   align-items: stretch;
   width: 100%;
   min-width: 0;
-  min-height: var(--wdp-input-min-height, 48px);
+  min-height: var(--wdp-input-min-height, 50px);
   box-sizing: border-box;
   margin: 0;
   padding: 0;
@@ -254,9 +254,9 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-line-total-display {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: var(--wdp-input-min-height, 48px);
-  height: var(--wdp-input-min-height, 48px);
-  max-height: var(--wdp-input-min-height, 48px);
+  min-height: var(--wdp-input-min-height, 50px);
+  height: var(--wdp-input-min-height, 50px);
+  max-height: var(--wdp-input-min-height, 50px);
   padding: var(--wdp-input-padding-y, 10px) var(--wdp-input-padding-x, 16px);
   box-sizing: border-box;
   border: 1.5px solid var(--wdp-input-border, var(--wdp-border-soft-gray, #e8eaed));
@@ -305,7 +305,7 @@ html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content form, .wdp-
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-price-quantity-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  column-gap: var(--wdp-space-3, 12px);
+  column-gap: clamp(10px, 1.2vh, 14px);
   width: 100%;
   margin: 0;
   padding: 0;
@@ -331,7 +331,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-quantity-counter {
   height: var(--wdp-counter-min-height, var(--wdp-input-min-height, 48px));
   max-height: var(--wdp-counter-min-height, var(--wdp-input-min-height, 48px));
   border: 1px solid var(--wdp-input-border, var(--wdp-border-soft-gray, #e8eaed));
-  border-radius: var(--wdp-input-radius);
+  border-radius: var(--wdp-input-radius, 20px);
   background: var(--wdp-input-bg, var(--wdp-bg-pure-white, #ffffff));
   box-sizing: border-box;
   padding: 0 var(--wdp-counter-inner-padding-x, 8px);
@@ -429,7 +429,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-quantity-counter .wdp-product
   inset: 6px;
   border-radius: 8px;
   background: transparent;
-  transition: background-color 0.15s ease;
+  transition: none;
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content, .wdp-modal-content form) .wdp-quantity-counter .wdp-product-quantity-btn:is(:hover, :focus-visible) {
@@ -439,7 +439,7 @@ html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content, .wdp-modal
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content, .wdp-modal-content form) .wdp-quantity-counter .wdp-product-quantity-btn:is(:hover, :focus-visible)::before {
-  background: color-mix(in srgb, var(--wdp-color-primary, #4a90e2) 10%, transparent);
+  background: transparent;
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content, .wdp-modal-content form) .wdp-quantity-counter .wdp-product-quantity-btn:active {
@@ -462,7 +462,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-shares-section .wdp-share-cou
   height: var(--wdp-hisse-counter-min-height, var(--wdp-counter-min-height, 44px));
   max-height: var(--wdp-hisse-counter-min-height, var(--wdp-counter-min-height, 44px));
   border: 1px solid var(--wdp-input-border, var(--wdp-border-soft-gray, #e8eaed));
-  border-radius: var(--wdp-input-radius);
+  border-radius: var(--wdp-input-radius, 20px);
   background: var(--wdp-input-bg, var(--wdp-bg-pure-white, #ffffff));
   box-sizing: border-box;
   padding: 0 var(--wdp-hisse-counter-inner-padding-x, var(--wdp-counter-inner-padding-x, 6px));
@@ -540,7 +540,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-shares-section .wdp-share-cou
   inset: 6px;
   border-radius: 8px;
   background: transparent;
-  transition: background-color 0.15s ease;
+  transition: none;
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-shares-section .wdp-share-counter .wdp-share-btn span {
@@ -560,7 +560,7 @@ html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content, .wdp-modal
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content, .wdp-modal-content form) .wdp-shares-section .wdp-share-counter .wdp-share-btn:is(:hover, :focus-visible)::before {
-  background: color-mix(in srgb, var(--wdp-color-primary, #4a90e2) 10%, transparent);
+  background: transparent;
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content, .wdp-modal-content form) .wdp-shares-section .wdp-share-counter .wdp-share-btn:active {
@@ -581,7 +581,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-form .wdp-share-q
   height: var(--wdp-counter-min-height, var(--wdp-input-min-height, 48px));
   max-height: var(--wdp-counter-min-height, var(--wdp-input-min-height, 48px));
   border: 1px solid var(--wdp-input-border, var(--wdp-border-soft-gray, #e8eaed));
-  border-radius: var(--wdp-input-radius);
+  border-radius: var(--wdp-input-radius, 20px);
   background: var(--wdp-input-bg, var(--wdp-bg-pure-white, #ffffff));
   box-sizing: border-box;
   padding: 0 var(--wdp-counter-inner-padding-x, 8px);
@@ -709,9 +709,9 @@ html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-quantity-counter, .wdp-sh
   text-indent: 0;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 380px) {
   html body :is(.wdp-modal, .wdp-donation-form) .wdp-price-quantity-row:not(.wdp-progress-bar-price-row) {
     grid-template-columns: 1fr;
-    row-gap: var(--wdp-space-2, 8px);
+    row-gap: 10px;
   }
 }

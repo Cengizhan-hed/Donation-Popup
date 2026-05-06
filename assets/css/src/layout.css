@@ -7,7 +7,7 @@ html body .wdp-donation-form {
   container-type: inline-size;
   container-name: wdp-donation-form;
   max-width: 100%;
-  width: min(var(--wdp-inpage-form-width-desktop, 480px), calc(100vw - 48px));
+  width: min(var(--wdp-inpage-form-width-desktop, 520px), calc(100vw - 40px));
   /* Modern logical properties for RTL/LTR support */
   margin-block: clamp(1rem, 1.5rem, 1.5rem);
   margin-inline: auto;
@@ -24,14 +24,14 @@ html body .wdp-donation-form {
 
 /* Single product page form width */
 html body.single-product .wdp-donation-form {
-  max-width: min(var(--wdp-inpage-form-width-desktop, 480px), 96vw);
-  width: min(var(--wdp-inpage-form-width-desktop, 480px), 96vw);
+  max-width: min(var(--wdp-inpage-form-width-desktop, 520px), 96vw);
+  width: min(var(--wdp-inpage-form-width-desktop, 520px), 96vw);
   margin: 0 auto;
 }
 
 html body.single-product .wdp-donation-form .wdp-modal-content {
-  max-width: min(var(--wdp-inpage-form-width-desktop, 480px), 96vw);
-  width: min(var(--wdp-inpage-form-width-desktop, 480px), 96vw);
+  max-width: min(var(--wdp-inpage-form-width-desktop, 520px), 96vw);
+  width: min(var(--wdp-inpage-form-width-desktop, 520px), 96vw);
   padding-top: var(--wdp-modal-padding-top-desktop, 32px);
   padding-left: var(--wdp-modal-padding-left-desktop, 24px);
   padding-right: var(--wdp-modal-padding-right-desktop, 24px);
@@ -136,23 +136,23 @@ html body .wdp-modal.show .wdp-modal-content {
   font-family: var(--wdp-font-family, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
   background: var(--wdp-modal-bg, #ffffff);
   border: var(--wdp-modal-surface-border, 1px solid var(--wdp-border-very-light, #f0f2f5));
-  border-radius: var(--wdp-modal-content-radius, 20px);
+  border-radius: var(--wdp-modal-radius, 20px);
   box-shadow: var(--wdp-modal-card-shadow, 0 12px 40px -18px rgba(15, 23, 42, 0.12));
   /* Anında görünür açılış — gecikmeli giriş animasyonu yok (tıklamaya anlık tepki) */
   animation: none;
   opacity: 1;
   transform: none;
-  width: min(var(--wdp-popup-modal-width-desktop, 560px), 96vw);
-  max-width: min(var(--wdp-popup-modal-width-desktop, 560px), 96vw);
+  width: min(var(--wdp-popup-modal-width-desktop, 600px), 96vw);
+  max-width: min(var(--wdp-popup-modal-width-desktop, 600px), 96vw);
   /* CRITICAL: Absolute max-height - never exceed 90vh (modern dvh support) */
   max-height: min(90vh, 90dvh);
   height: auto;
   min-height: 0;
   /* CRITICAL: Use logical padding properties for better RTL support */
-  padding-block-start: var(--wdp-modal-padding-top-desktop, 34px);
-  padding-inline-start: var(--wdp-modal-padding-left-desktop, 26px);
-  padding-inline-end: var(--wdp-modal-padding-right-desktop, 26px);
-  padding-block-end: var(--wdp-modal-padding-bottom-desktop, 24px);
+  padding-block-start: var(--wdp-modal-padding-top-desktop, 30px);
+  padding-inline-start: var(--wdp-modal-padding-left-desktop, 28px);
+  padding-inline-end: var(--wdp-modal-padding-right-desktop, 28px);
+  padding-block-end: var(--wdp-modal-padding-bottom-desktop, 26px);
   position: relative;
   z-index: 2147483646;
   display: flex;
@@ -183,19 +183,19 @@ html body .wdp-donation-form .wdp-modal-content {
   font-family: var(--wdp-font-family, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
   background: var(--wdp-modal-bg, #ffffff);
   border: var(--wdp-modal-surface-border, 1px solid var(--wdp-border-very-light, #f0f2f5));
-  border-radius: var(--wdp-modal-content-radius, 20px);
+  border-radius: var(--wdp-modal-radius, 20px);
   box-shadow: var(--wdp-modal-card-shadow, 0 12px 40px -18px rgba(15, 23, 42, 0.1));
-  width: min(var(--wdp-inpage-form-width-desktop, 480px), 96vw);
-  max-width: min(var(--wdp-inpage-form-width-desktop, 480px), 96vw);
+  width: min(var(--wdp-inpage-form-width-desktop, 520px), 96vw);
+  max-width: min(var(--wdp-inpage-form-width-desktop, 520px), 96vw);
   /* CRITICAL: Absolute max-height - never exceed 90vh */
   max-height: 90vh;
   height: auto;
   min-height: 0;
   /* CRITICAL: Use individual padding properties - NOT shorthand (allows override) */
-  padding-top: var(--wdp-modal-padding-top-desktop, 32px);
-  padding-left: var(--wdp-modal-padding-left-desktop, 24px);
-  padding-right: var(--wdp-modal-padding-right-desktop, 24px);
-  padding-bottom: var(--wdp-modal-padding-bottom-desktop, 24px);
+  padding-top: var(--wdp-modal-padding-top-desktop, 30px);
+  padding-left: var(--wdp-modal-padding-left-desktop, 28px);
+  padding-right: var(--wdp-modal-padding-right-desktop, 28px);
+  padding-bottom: var(--wdp-modal-padding-bottom-desktop, 26px);
   position: relative;
   z-index: 2147483646;
   display: flex;
@@ -222,8 +222,8 @@ html body .wdp-donation-form .wdp-modal-content {
 /* CRITICAL: Popup modal with shareholders - ALWAYS fixed width */
 html body .wdp-modal.show .wdp-modal-content:has(form.wdp-has-shareholders) {
   /* CRITICAL: Same as non-shareholder popup - fixed width */
-  width: min(var(--wdp-popup-modal-width-desktop, 540px), 96vw);
-  max-width: min(var(--wdp-popup-modal-width-desktop, 540px), 96vw);
+  width: min(var(--wdp-popup-modal-width-desktop, 600px), 96vw);
+  max-width: min(var(--wdp-popup-modal-width-desktop, 600px), 96vw);
   /* CRITICAL: Same as non-shareholder forms - auto height with max-height constraint */
   max-height: 90vh;
   height: auto; /* FIX: Same as non-shareholder forms - auto height */
@@ -238,10 +238,10 @@ html body .wdp-modal.show .wdp-modal-content:has(form.wdp-has-shareholders) {
   /* CRITICAL: Ensure padding is included in box-sizing */
   box-sizing: border-box;
   /* CRITICAL: Use individual padding properties - NOT shorthand (allows override) */
-  padding-top: var(--wdp-modal-padding-top-desktop, 32px);
-  padding-left: var(--wdp-modal-padding-left-desktop, 24px);
-  padding-right: var(--wdp-modal-padding-right-desktop, 24px);
-  padding-bottom: var(--wdp-modal-padding-bottom-desktop, 24px); /* FIX: Same as non-shareholder forms */
+  padding-top: var(--wdp-modal-padding-top-desktop, 30px);
+  padding-left: var(--wdp-modal-padding-left-desktop, 28px);
+  padding-right: var(--wdp-modal-padding-right-desktop, 28px);
+  padding-bottom: var(--wdp-modal-padding-bottom-desktop, 26px); /* FIX: Same as non-shareholder forms */
   position: relative;
   z-index: 2147483646;
   text-align: left;
@@ -269,13 +269,13 @@ html body .wdp-donation-form .wdp-modal-content:has(form.wdp-has-shareholders) {
   box-sizing: border-box;
   background: var(--wdp-modal-bg, #ffffff);
   border: 1px solid var(--wdp-border-very-light, #f0f2f5);
-  border-radius: var(--wdp-modal-content-radius, 20px);
+  border-radius: var(--wdp-modal-radius, 20px);
   /* FIX: Same padding-bottom as non-shareholder forms - 24px desktop */
   /* CRITICAL: Use individual padding properties to override shorthand - NO  */
-  padding-top: var(--wdp-modal-padding-top-desktop, 32px);
-  padding-left: var(--wdp-modal-padding-left-desktop, 24px);
-  padding-right: var(--wdp-modal-padding-right-desktop, 24px);
-  padding-bottom: var(--wdp-modal-padding-bottom-desktop, 24px); /* FIX: Same as non-shareholder forms */
+  padding-top: var(--wdp-modal-padding-top-desktop, 30px);
+  padding-left: var(--wdp-modal-padding-left-desktop, 28px);
+  padding-right: var(--wdp-modal-padding-right-desktop, 28px);
+  padding-bottom: var(--wdp-modal-padding-bottom-desktop, 26px); /* FIX: Same as non-shareholder forms */
 }
 
 /* Mobile responsive styles with high specificity - Highest specificity */
@@ -285,20 +285,20 @@ html body .wdp-donation-form .wdp-modal-content:has(form.wdp-has-shareholders) {
   /* CRITICAL: Popup modal content - ALWAYS fixed width (540px) */
   html body .wdp-modal.show .wdp-modal-content {
     /* CRITICAL: Standard width - min(540px, 96vw) */
-    width: min(var(--wdp-popup-modal-width-mobile, 540px), 96vw);
-    max-width: min(var(--wdp-popup-modal-width-mobile, 540px), 96vw);
+    width: min(var(--wdp-popup-modal-width-mobile, 600px), 96vw);
+    max-width: min(var(--wdp-popup-modal-width-mobile, 600px), 96vw);
     /* CRITICAL: Use 100dvh for iOS Safari compatibility (dynamic viewport height) */
     max-height: min(90vh, 90dvh);
     height: auto;
     /* FIX: Reduce padding slightly for mobile - borders closer to content */
     /* CRITICAL: Use individual padding properties - NOT shorthand (allows override) */
-    padding-top: var(--wdp-modal-padding-top-mobile, 28px);
-    padding-left: var(--wdp-modal-padding-left-mobile, 20px);
-    padding-right: var(--wdp-modal-padding-right-mobile, 20px);
-    padding-bottom: var(--wdp-modal-padding-bottom-mobile, 20px);
+    padding-top: var(--wdp-modal-padding-top-mobile, 22px);
+    padding-left: var(--wdp-modal-padding-left-mobile, 16px);
+    padding-right: var(--wdp-modal-padding-right-mobile, 16px);
+    padding-bottom: var(--wdp-modal-padding-bottom-mobile, 16px);
     margin: 0;
     border: 1px solid var(--wdp-border-very-light, #f0f2f5);
-    border-radius: var(--wdp-modal-content-radius, 20px);
+    border-radius: var(--wdp-modal-radius, 20px);
     background: var(--wdp-modal-bg, #ffffff);
     box-sizing: border-box;
     overflow: hidden;
@@ -317,8 +317,8 @@ html body .wdp-donation-form .wdp-modal-content:has(form.wdp-has-shareholders) {
     max-width: 100%;
     box-sizing: border-box;
     padding: 0;
-    padding-left: 4px;
-    padding-right: 4px;
+    padding-left: 2px;
+    padding-right: 2px;
     overflow-x: hidden;
     overflow-y: visible;
     position: relative;
@@ -331,21 +331,21 @@ html body .wdp-donation-form .wdp-modal-content:has(form.wdp-has-shareholders) {
   html body.single-product .wdp-donation-form {
     margin: 0 auto;
     padding: 0;
-    width: min(var(--wdp-inpage-form-width-mobile, 480px), 96vw);
-    max-width: min(var(--wdp-inpage-form-width-mobile, 480px), 96vw);
+    width: min(var(--wdp-inpage-form-width-mobile, 520px), 96vw);
+    max-width: min(var(--wdp-inpage-form-width-mobile, 520px), 96vw);
   }
 
   html body.single-product .wdp-donation-form .wdp-modal-content {
-    width: min(var(--wdp-inpage-form-width-mobile, 480px), 96vw);
-    max-width: min(var(--wdp-inpage-form-width-mobile, 480px), 96vw);
+    width: min(var(--wdp-inpage-form-width-mobile, 520px), 96vw);
+    max-width: min(var(--wdp-inpage-form-width-mobile, 520px), 96vw);
     margin: 0;
-    padding-top: var(--wdp-modal-padding-top-mobile, 28px);
-    padding-left: var(--wdp-modal-padding-left-mobile, 20px);
-    padding-right: var(--wdp-modal-padding-right-mobile, 20px);
-    padding-bottom: var(--wdp-modal-padding-bottom-mobile, 20px);
+    padding-top: var(--wdp-modal-padding-top-mobile, 22px);
+    padding-left: var(--wdp-modal-padding-left-mobile, 16px);
+    padding-right: var(--wdp-modal-padding-right-mobile, 16px);
+    padding-bottom: var(--wdp-modal-padding-bottom-mobile, 16px);
     background: var(--wdp-modal-bg, #ffffff);
     border: 1px solid var(--wdp-border-very-light, #f0f2f5);
-    border-radius: var(--wdp-modal-content-radius, 20px);
+    border-radius: var(--wdp-modal-radius, 20px);
   }
 
   /* CRITICAL: In-page form modal content - FIX width to prevent overflow */
@@ -358,14 +358,14 @@ html body .wdp-donation-form .wdp-modal-content:has(form.wdp-has-shareholders) {
     height: auto;
     /* FIX: Reduce padding slightly for mobile - borders closer to content */
     /* CRITICAL: Use individual padding properties - NOT shorthand (allows override) */
-    padding-top: var(--wdp-modal-padding-top-mobile, 28px);
-    padding-left: var(--wdp-modal-padding-left-mobile, 20px);
-    padding-right: var(--wdp-modal-padding-right-mobile, 20px);
-    padding-bottom: var(--wdp-modal-padding-bottom-mobile, 20px);
+    padding-top: var(--wdp-modal-padding-top-mobile, 22px);
+    padding-left: var(--wdp-modal-padding-left-mobile, 16px);
+    padding-right: var(--wdp-modal-padding-right-mobile, 16px);
+    padding-bottom: var(--wdp-modal-padding-bottom-mobile, 16px);
     margin: 0 auto;
     background: var(--wdp-modal-bg, #ffffff);
     border: 1px solid var(--wdp-border-very-light, #f0f2f5);
-    border-radius: var(--wdp-modal-content-radius, 20px);
+    border-radius: var(--wdp-modal-radius, 20px);
     box-sizing: border-box;
     overflow: hidden;
     min-height: 0;
@@ -388,8 +388,8 @@ html body .wdp-donation-form .wdp-modal-content:has(form.wdp-has-shareholders) {
   /* CRITICAL: Popup modal with shareholders - Mobile - ALWAYS fixed width */
   html body .wdp-modal.show .wdp-modal-content:has(form.wdp-has-shareholders) {
     /* CRITICAL: Same as non-shareholder popup - fixed width */
-    width: min(var(--wdp-popup-modal-width-mobile, 540px), 96vw);
-    max-width: min(var(--wdp-popup-modal-width-mobile, 540px), 96vw);
+    width: min(var(--wdp-popup-modal-width-mobile, 600px), 96vw);
+    max-width: min(var(--wdp-popup-modal-width-mobile, 600px), 96vw);
     max-height: min(90vh, 90dvh);
     height: auto; /* FIX: Same as non-shareholder forms - auto height */
     min-height: 0; /* FIX: Same as non-shareholder forms - no min-height */
@@ -405,10 +405,10 @@ html body .wdp-donation-form .wdp-modal-content:has(form.wdp-has-shareholders) {
     gap: var(--wdp-form-stack-gap);
     /* FIX: Same padding-bottom as non-shareholder forms - 20px mobile */
     /* CRITICAL: Use individual padding properties to override shorthand - NO  */
-    padding-top: var(--wdp-modal-padding-top-mobile, 28px);
-    padding-left: var(--wdp-modal-padding-left-mobile, 20px);
-    padding-right: var(--wdp-modal-padding-right-mobile, 20px);
-    padding-bottom: var(--wdp-modal-padding-bottom-mobile, 20px); /* FIX: Same as non-shareholder forms */
+    padding-top: var(--wdp-modal-padding-top-mobile, 22px);
+    padding-left: var(--wdp-modal-padding-left-mobile, 16px);
+    padding-right: var(--wdp-modal-padding-right-mobile, 16px);
+    padding-bottom: var(--wdp-modal-padding-bottom-mobile, 16px); /* FIX: Same as non-shareholder forms */
   }
   
   /* FIX: In-page form için hissedarlı form width */
@@ -418,7 +418,7 @@ html body .wdp-donation-form .wdp-modal-content:has(form.wdp-has-shareholders) {
     max-width: 100%;
     background: var(--wdp-modal-bg, #ffffff);
     border: 1px solid var(--wdp-border-very-light, #f0f2f5);
-    border-radius: var(--wdp-modal-content-radius, 20px);
+    border-radius: var(--wdp-modal-radius, 20px);
   }
 }
 
@@ -432,13 +432,13 @@ html body .wdp-donation-form .wdp-modal-content:has(form.wdp-has-shareholders) {
     height: auto;
     /* FIX: Reduce padding slightly for mobile - borders closer to content */
     /* CRITICAL: Use individual padding properties - NOT shorthand (allows override) */
-    padding-top: var(--wdp-modal-padding-top-mobile, 28px);
-    padding-left: max(var(--wdp-modal-padding-left-mobile, 20px), env(safe-area-inset-left));
-    padding-right: max(var(--wdp-modal-padding-right-mobile, 20px), env(safe-area-inset-right));
-    padding-bottom: var(--wdp-modal-padding-bottom-mobile, 20px);
+    padding-top: var(--wdp-modal-padding-top-mobile, 22px);
+    padding-left: max(var(--wdp-modal-padding-left-mobile, 16px), env(safe-area-inset-left));
+    padding-right: max(var(--wdp-modal-padding-right-mobile, 16px), env(safe-area-inset-right));
+    padding-bottom: var(--wdp-modal-padding-bottom-mobile, 16px);
     /* CRITICAL: Standard width - same as popup */
-    width: min(var(--wdp-popup-modal-width-mobile, 540px), 96vw);
-    max-width: min(var(--wdp-popup-modal-width-mobile, 540px), 96vw);
+    width: min(var(--wdp-popup-modal-width-mobile, 600px), 96vw);
+    max-width: min(var(--wdp-popup-modal-width-mobile, 600px), 96vw);
     box-sizing: border-box;
     gap: var(--wdp-form-stack-gap);
   }
@@ -449,8 +449,8 @@ html body .wdp-donation-form .wdp-modal-content:has(form.wdp-has-shareholders) {
     max-width: 100%;
     margin: 24px 0;
     padding: 0;
-    padding-left: max(4px, env(safe-area-inset-left));
-    padding-right: max(4px, env(safe-area-inset-right));
+    padding-left: max(6px, env(safe-area-inset-left));
+    padding-right: max(6px, env(safe-area-inset-right));
     box-sizing: border-box;
     overflow-x: hidden;
     overflow-y: visible;
@@ -464,21 +464,21 @@ html body .wdp-donation-form .wdp-modal-content:has(form.wdp-has-shareholders) {
   html body.single-product .wdp-donation-form {
     margin: 0 auto;
     padding: 0;
-    width: min(var(--wdp-inpage-form-width-mobile, 480px), 96vw);
-    max-width: min(var(--wdp-inpage-form-width-mobile, 480px), 96vw);
+    width: min(var(--wdp-inpage-form-width-mobile, 520px), 96vw);
+    max-width: min(var(--wdp-inpage-form-width-mobile, 520px), 96vw);
   }
 
   html body.single-product .wdp-donation-form .wdp-modal-content {
-    width: min(var(--wdp-inpage-form-width-mobile, 480px), 96vw);
-    max-width: min(var(--wdp-inpage-form-width-mobile, 480px), 96vw);
+    width: min(var(--wdp-inpage-form-width-mobile, 520px), 96vw);
+    max-width: min(var(--wdp-inpage-form-width-mobile, 520px), 96vw);
     margin: 0;
-    padding-top: var(--wdp-modal-padding-top-mobile, 28px);
-    padding-left: var(--wdp-modal-padding-left-mobile, 20px);
-    padding-right: var(--wdp-modal-padding-right-mobile, 20px);
-    padding-bottom: var(--wdp-modal-padding-bottom-mobile, 20px);
+    padding-top: var(--wdp-modal-padding-top-mobile, 22px);
+    padding-left: var(--wdp-modal-padding-left-mobile, 16px);
+    padding-right: var(--wdp-modal-padding-right-mobile, 16px);
+    padding-bottom: var(--wdp-modal-padding-bottom-mobile, 16px);
     background: var(--wdp-modal-bg, #ffffff);
     border: 1px solid var(--wdp-border-very-light, #f0f2f5);
-    border-radius: var(--wdp-modal-content-radius, 20px);
+    border-radius: var(--wdp-modal-radius, 20px);
   }
 
   /* CRITICAL: In-page form modal content - FIX width to prevent overflow */
@@ -486,17 +486,17 @@ html body .wdp-donation-form .wdp-modal-content:has(form.wdp-has-shareholders) {
     max-height: min(90vh, 90dvh, calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom)));
     height: auto;
     /* CRITICAL: Use individual padding properties - NOT shorthand (allows override) */
-    padding-top: var(--wdp-modal-padding-top-mobile, 28px);
-    padding-left: max(var(--wdp-modal-padding-left-mobile, 20px), env(safe-area-inset-left));
-    padding-right: max(var(--wdp-modal-padding-right-mobile, 20px), env(safe-area-inset-right));
-    padding-bottom: var(--wdp-modal-padding-bottom-mobile, 20px);
+    padding-top: var(--wdp-modal-padding-top-mobile, 22px);
+    padding-left: max(var(--wdp-modal-padding-left-mobile, 16px), env(safe-area-inset-left));
+    padding-right: max(var(--wdp-modal-padding-right-mobile, 16px), env(safe-area-inset-right));
+    padding-bottom: var(--wdp-modal-padding-bottom-mobile, 16px);
     width: calc(100% - 0px);
     max-width: 100%;
     box-sizing: border-box;
     margin: 0 auto;
     background: var(--wdp-modal-bg, #ffffff);
     border: 1px solid var(--wdp-border-very-light, #f0f2f5);
-    border-radius: var(--wdp-modal-content-radius, 20px);
+    border-radius: var(--wdp-modal-radius, 20px);
     box-sizing: border-box;
     overflow: hidden;
     min-height: 0;
@@ -519,8 +519,8 @@ html body .wdp-donation-form .wdp-modal-content:has(form.wdp-has-shareholders) {
   /* CRITICAL: Popup modal with shareholders - Small Mobile - ALWAYS fixed width */
   html body .wdp-modal.show .wdp-modal-content:has(form.wdp-has-shareholders) {
     /* CRITICAL: Same as non-shareholder popup - fixed width */
-    width: min(var(--wdp-popup-modal-width-mobile, 540px), 96vw);
-    max-width: min(var(--wdp-popup-modal-width-mobile, 540px), 96vw);
+    width: min(var(--wdp-popup-modal-width-mobile, 600px), 96vw);
+    max-width: min(var(--wdp-popup-modal-width-mobile, 600px), 96vw);
     max-height: min(90vh, 90dvh, calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom)));
     height: auto; /* FIX: Same as non-shareholder forms - auto height */
     min-height: 0; /* FIX: Same as non-shareholder forms - no min-height */
@@ -536,10 +536,10 @@ html body .wdp-donation-form .wdp-modal-content:has(form.wdp-has-shareholders) {
     gap: var(--wdp-form-stack-gap);
     /* FIX: Same padding-bottom as non-shareholder forms - 20px mobile */
     /* CRITICAL: Use individual padding properties to override shorthand - NO  */
-    padding-top: var(--wdp-modal-padding-top-mobile, 28px);
-    padding-left: max(var(--wdp-modal-padding-left-mobile, 20px), env(safe-area-inset-left));
-    padding-right: max(var(--wdp-modal-padding-right-mobile, 20px), env(safe-area-inset-right));
-    padding-bottom: var(--wdp-modal-padding-bottom-mobile, 20px); /* FIX: Same as non-shareholder forms */
+    padding-top: var(--wdp-modal-padding-top-mobile, 22px);
+    padding-left: max(var(--wdp-modal-padding-left-mobile, 16px), env(safe-area-inset-left));
+    padding-right: max(var(--wdp-modal-padding-right-mobile, 16px), env(safe-area-inset-right));
+    padding-bottom: var(--wdp-modal-padding-bottom-mobile, 16px); /* FIX: Same as non-shareholder forms */
   }
   
   /* FIX: In-page form için hissedarlı form width */
@@ -549,6 +549,6 @@ html body .wdp-donation-form .wdp-modal-content:has(form.wdp-has-shareholders) {
     max-width: 100%;
     background: var(--wdp-modal-bg, #ffffff);
     border: 1px solid var(--wdp-border-very-light, #f0f2f5);
-    border-radius: var(--wdp-modal-content-radius, 20px);
+    border-radius: var(--wdp-modal-radius, 20px);
   }
 }

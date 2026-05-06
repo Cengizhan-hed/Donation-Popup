@@ -171,7 +171,7 @@
   --wdp-hisse-label-counter-gap: 0.5rem;
 
   /* Font Family */
-  --wdp-font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  --wdp-font-family: inherit;
   
   /* Typography (Modern fluid typography with clamp) */
   --wdp-text-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);      /* 12-14px */

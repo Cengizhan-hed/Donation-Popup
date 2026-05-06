@@ -65,24 +65,6 @@ if (!defined('ABSPATH')) {
  */
 class WDP_Templates {
     /**
-     * Render note icon SVG.
-     *
-     * @param string $icon Icon key.
-     * @return string
-     */
-    private static function render_note_icon_svg($icon) {
-        $svg_map = array(
-            'info' => '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"></circle><path d="M12 10.2v6.1"></path><circle cx="12" cy="7.6" r="1"></circle></svg>',
-            'video' => '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" data-wdp-note-icon="video"><circle cx="12" cy="12" r="8.75" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linejoin="round"></circle><path fill="currentColor" stroke="none" d="M10.15 8.45c0-.28.22-.5.5-.5.11 0 .22.04.31.11l4.85 3.18c.22.14.22.46 0 .6l-4.85 3.18c-.09.07-.2.11-.31.11-.28 0-.5-.22-.5-.5V8.95z"></path></svg>',
-            'delivery' => '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3.5 8h11v7h-11z"></path><path d="M14.5 11h3.2l2.3 2.6V15h-5.5z"></path><circle cx="8" cy="17.5" r="1.7"></circle><circle cx="17.5" cy="17.5" r="1.7"></circle></svg>',
-            'heart' => '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 20s-6.8-3.9-8.9-8A5.2 5.2 0 0 1 12 6a5.2 5.2 0 0 1 8.9 6c-2.1 4.1-8.9 8-8.9 8z"></path></svg>',
-        );
-
-        $icon = isset($svg_map[$icon]) ? $icon : 'info';
-        return $svg_map[$icon];
-    }
-
-    /**
      * Get note tone class by icon.
      *
      * @param string $icon Icon key.
@@ -254,7 +236,6 @@ class WDP_Templates {
                         <?php if ($show_product_note): ?>
                         <div class="wdp-product-note <?php echo esc_attr($note_tone_class); ?>" role="note">
                             <span class="wdp-product-note__content">
-                                <span class="wdp-product-note__icon" aria-hidden="true"><?php echo self::render_note_icon_svg($product_note_icon); ?></span>
                                 <span class="wdp-product-note__body">
                                     <?php if ($is_long_note): ?>
                                     <input type="checkbox" id="<?php echo esc_attr($modal_note_toggle_id); ?>" class="wdp-product-note__toggle">
@@ -292,8 +273,14 @@ class WDP_Templates {
                                 <button type="button" class="wdp-share-btn wdp-share-btn-increase"><span>+</span></button>
                             </div>
                         </div>
-                        <div class="wdp-shareholders-area">
+                        <div class="wdp-shareholders-area wdp-shareholders-area--with-rail">
                             <div class="wdp-shareholders-container">
+                                <aside class="wdp-shareholders-rail" aria-label="<?php echo esc_attr__('Hisse adımları', 'woo-donation-popup'); ?>">
+                                    <div class="wdp-shareholders-rail__inner">
+                                        <span class="wdp-shareholders-rail__line" aria-hidden="true"></span>
+                                        <div class="wdp-shareholders-step-rail" role="group"></div>
+                                    </div>
+                                </aside>
                                 <div class="wdp-shareholders-scroll">
                                 <!-- Hissedar formları JavaScript ile eklenecek -->
                                 </div>
@@ -439,7 +426,6 @@ class WDP_Templates {
                     <?php if ($show_product_note): ?>
                     <div class="wdp-product-note <?php echo esc_attr($note_tone_class); ?>" role="note">
                         <span class="wdp-product-note__content">
-                            <span class="wdp-product-note__icon" aria-hidden="true"><?php echo self::render_note_icon_svg($product_note_icon); ?></span>
                             <span class="wdp-product-note__body">
                                 <?php if ($is_long_note): ?>
                                 <input type="checkbox" id="<?php echo esc_attr($direct_note_toggle_id); ?>" class="wdp-product-note__toggle">
@@ -476,8 +462,14 @@ class WDP_Templates {
                                 <button type="button" class="wdp-share-btn wdp-share-btn-increase"><span>+</span></button>
                             </div>
                         </div>
-                        <div class="wdp-shareholders-area">
+                        <div class="wdp-shareholders-area wdp-shareholders-area--with-rail">
                             <div class="wdp-shareholders-container">
+                                <aside class="wdp-shareholders-rail" aria-label="<?php echo esc_attr__('Hisse adımları', 'woo-donation-popup'); ?>">
+                                    <div class="wdp-shareholders-rail__inner">
+                                        <span class="wdp-shareholders-rail__line" aria-hidden="true"></span>
+                                        <div class="wdp-shareholders-step-rail" role="group"></div>
+                                    </div>
+                                </aside>
                                 <div class="wdp-shareholders-scroll">
                                 <!-- Hissedar formları JavaScript ile eklenecek -->
                                 </div>
