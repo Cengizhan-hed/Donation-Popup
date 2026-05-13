@@ -689,7 +689,7 @@
 
   function syncShareholderUnitPricesFromModal(modal) {
     if (!modal) return;
-    const idInput = modal.querySelector('input[name="add-to-cart"]');
+    const idInput = modal.querySelector('input[name="wdp_product_id"], input[name="add-to-cart"]');
     const id = idInput ? Number.parseInt(idInput.value, 10) : 0;
     let unit = 0;
     if (id && productPrices && Number.isFinite(Number(productPrices[id]))) {
@@ -963,13 +963,14 @@
   function setupShareholderHeaderClick(form) {
     const header = form.querySelector('.wdp-shareholder-header');
     if (!header) return;
-    
-    // Önceki event listener'ları temizle
-    const newHeader = header.cloneNode(true);
-    header.parentNode.replaceChild(newHeader, header);
-    
+
+    if (header.dataset.wdpHeaderClickBound === '1') {
+      return;
+    }
+    header.dataset.wdpHeaderClickBound = '1';
+
     // Click event listener ekle
-    newHeader.addEventListener('click', (e) => {
+    header.addEventListener('click', (e) => {
       e.preventDefault();
       e.stopPropagation();
       toggleShareholderForm(form);
@@ -984,12 +985,10 @@
 
     if (!nameInput || !phoneInput || !copyBtn) return;
 
-    // Önceki event listener'ları temizle
-    const newCopyBtn = copyBtn.cloneNode(true);
-    copyBtn.parentNode.replaceChild(newCopyBtn, copyBtn);
-    newCopyBtn.disabled = true;
-    newCopyBtn.classList.remove('is-active');
-    newCopyBtn.style.display = 'none';
+    const normalizedCopyBtn = form.querySelector('.wdp-copy-form-btn');
+    normalizedCopyBtn.disabled = true;
+    normalizedCopyBtn.classList.remove('is-active');
+    normalizedCopyBtn.style.display = 'none';
 
     // Event listener'ları direkt ekle - clone işlemi yok
     const checkFields = () => {
@@ -997,44 +996,53 @@
       const phoneValue = phoneInput.value.trim();
       
       const isReady = Boolean(nameValue && phoneValue);
-      newCopyBtn.disabled = !isReady;
-      newCopyBtn.classList.toggle('is-active', isReady);
-      newCopyBtn.style.display = isReady ? 'inline-flex' : 'none';
-      newCopyBtn.style.opacity = isReady ? '1' : '0';
-      newCopyBtn.style.pointerEvents = isReady ? 'auto' : 'none';
+      normalizedCopyBtn.disabled = !isReady;
+      normalizedCopyBtn.classList.toggle('is-active', isReady);
+      normalizedCopyBtn.style.display = isReady ? 'inline-flex' : 'none';
+      normalizedCopyBtn.style.opacity = isReady ? '1' : '0';
+      normalizedCopyBtn.style.pointerEvents = isReady ? 'auto' : 'none';
       const root = form.closest('.wdp-modal') || form.closest('.wdp-donation-form');
       if (root) {
         refreshShareholderGuidance(root);
       }
     };
 
-    // Event listener'ları ekle
-    nameInput.addEventListener('input', checkFields);
-    phoneInput.addEventListener('input', checkFields);
+    // Event listener'ları bir kez ekle
+    if (nameInput.dataset.wdpCopyWatcherBound !== '1') {
+      nameInput.dataset.wdpCopyWatcherBound = '1';
+      nameInput.addEventListener('input', checkFields);
+    }
+    if (phoneInput.dataset.wdpCopyWatcherBound !== '1') {
+      phoneInput.dataset.wdpCopyWatcherBound = '1';
+      phoneInput.addEventListener('input', checkFields);
+    }
 
     // Sayfa yüklendiğinde mevcut değerleri kontrol et
     checkFields();
 
     // Kopyasını oluştur butonuna tıklama
-    newCopyBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      
-      // Mevcut form verilerini al
-      const nameValue = nameInput.value.trim();
-      const phoneValue = WDPApp.phoneInput && typeof WDPApp.phoneInput.getValueForCopy === 'function'
-        ? WDPApp.phoneInput.getValueForCopy(phoneInput)
-        : phoneInput.value.trim();
-      const noteEl = getShareholderNoteTextarea(form);
-      const noteValue = noteEl ? noteEl.value.trim() : '';
-      
-      if (!nameValue || !phoneValue) {
-        return;
-      }
-      
-      // Yeni form oluştur
-      duplicateShareholderForm(form, nameValue, phoneValue, noteValue);
-    });
+    if (normalizedCopyBtn.dataset.wdpCopyClickBound !== '1') {
+      normalizedCopyBtn.dataset.wdpCopyClickBound = '1';
+      normalizedCopyBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        // Mevcut form verilerini al
+        const nameValue = nameInput.value.trim();
+        const phoneValue = WDPApp.phoneInput && typeof WDPApp.phoneInput.getValueForCopy === 'function'
+          ? WDPApp.phoneInput.getValueForCopy(phoneInput)
+          : phoneInput.value.trim();
+        const noteEl = getShareholderNoteTextarea(form);
+        const noteValue = noteEl ? noteEl.value.trim() : '';
+        
+        if (!nameValue || !phoneValue) {
+          return;
+        }
+        
+        // Yeni form oluştur
+        duplicateShareholderForm(form, nameValue, phoneValue, noteValue);
+      });
+    }
   }
 
   // Duplicate shareholder form
@@ -1551,7 +1559,7 @@
       quantityInput: !!quantityInput
     });
 
-    // Input değişikliğini dinle - Önce eski event listener'ları temizle
+    // Input değişikliğini dinle
     let activeShareCountInput =
       shareCountInput && shareCountInput.parentNode
         ? shareCountInput
@@ -1561,34 +1569,8 @@
       return;
     }
 
-    const newShareCountInput = activeShareCountInput.cloneNode(true);
-    if (activeShareCountInput.parentNode) {
-      activeShareCountInput.parentNode.replaceChild(newShareCountInput, activeShareCountInput);
-    }
-    
-    // Yeni input referansını güncelle
-    const updatedShareCountInput = $modal('input[name="share_count"]');
-    
-    // Event listener'ları temizleme fonksiyonu
-    function removeAllEventListeners(element) {
-      const newElement = element.cloneNode(true);
-      if (element.parentNode) {
-        element.parentNode.replaceChild(newElement, element);
-      }
-      return newElement;
-    }
-    
-    // Önce mevcut event listener'ları temizleyelim
-    let newDecreaseBtn = null;
-    let newIncreaseBtn = null;
-    
-    if (decreaseBtn) {
-      newDecreaseBtn = removeAllEventListeners(decreaseBtn);
-    }
-
-    if (increaseBtn) {
-      newIncreaseBtn = removeAllEventListeners(increaseBtn);
-    }
+    const updatedShareCountInput = activeShareCountInput;
+    const handlerBag = modal._wdpShareHandlers || (modal._wdpShareHandlers = {});
     
     // Hisse adedini güncelleme fonksiyonu
     function updateShareCount(newValue) {
@@ -1614,8 +1596,11 @@
     }
     
     // Decrease butonu event listener'ı
-    if (newDecreaseBtn) {
-      newDecreaseBtn.addEventListener("mousedown", (e) => {
+    if (decreaseBtn) {
+      if (handlerBag.decreaseMousedown) {
+        decreaseBtn.removeEventListener("mousedown", handlerBag.decreaseMousedown);
+      }
+      handlerBag.decreaseMousedown = () => {
         const sharesSection = modal.querySelector('.wdp-shares-section');
         if (sharesSection) {
           sharesSection.classList.add('wdp-quantity-active');
@@ -1623,8 +1608,13 @@
             sharesSection.classList.remove('wdp-quantity-active');
           }, 200);
         }
-      });
-      newDecreaseBtn.addEventListener("click", (e) => {
+      };
+      decreaseBtn.addEventListener("mousedown", handlerBag.decreaseMousedown);
+
+      if (handlerBag.decreaseClick) {
+        decreaseBtn.removeEventListener("click", handlerBag.decreaseClick);
+      }
+      handlerBag.decreaseClick = (e) => {
         e.preventDefault();
         e.stopPropagation();
         safeLog("Decrease button clicked");
@@ -1633,12 +1623,16 @@
           const newValue = currentValue - 1;
           updateShareCount(newValue);
         }
-      });
+      };
+      decreaseBtn.addEventListener("click", handlerBag.decreaseClick);
     }
 
     // Increase butonu event listener'ı
-    if (newIncreaseBtn) {
-      newIncreaseBtn.addEventListener("mousedown", (e) => {
+    if (increaseBtn) {
+      if (handlerBag.increaseMousedown) {
+        increaseBtn.removeEventListener("mousedown", handlerBag.increaseMousedown);
+      }
+      handlerBag.increaseMousedown = () => {
         const sharesSection = modal.querySelector('.wdp-shares-section');
         if (sharesSection) {
           sharesSection.classList.add('wdp-quantity-active');
@@ -1646,8 +1640,13 @@
             sharesSection.classList.remove('wdp-quantity-active');
           }, 200);
         }
-      });
-      newIncreaseBtn.addEventListener("click", (e) => {
+      };
+      increaseBtn.addEventListener("mousedown", handlerBag.increaseMousedown);
+
+      if (handlerBag.increaseClick) {
+        increaseBtn.removeEventListener("click", handlerBag.increaseClick);
+      }
+      handlerBag.increaseClick = (e) => {
         e.preventDefault();
         e.stopPropagation();
         safeLog("Increase button clicked");
@@ -1656,12 +1655,16 @@
           const newValue = currentValue + 1;
           updateShareCount(newValue);
         }
-      });
+      };
+      increaseBtn.addEventListener("click", handlerBag.increaseClick);
     }
     
     // Input değişikliği event listener'ı
     if (updatedShareCountInput) {
-      updatedShareCountInput.addEventListener("input", function () {
+      if (handlerBag.shareInput) {
+        updatedShareCountInput.removeEventListener("input", handlerBag.shareInput);
+      }
+      handlerBag.shareInput = function () {
         let currentValue = Number.parseInt(this.value, 10) || 1;
         
         // Sınırları kontrol et
@@ -1682,7 +1685,8 @@
         // Değişiklikleri güvenli bir şekilde uygula
         updateShareholderFormsInternal(modal);
         updatePriceBasedOnShareCount();
-      });
+      };
+      updatedShareCountInput.addEventListener("input", handlerBag.shareInput);
     }
 
     // Copy button event listener'larını ekle
@@ -1952,7 +1956,7 @@
       const priceInput = modal.querySelector('input[name="custom_price"]');
 
       // Ürün ID'sini al
-      const productIdInput = modal.querySelector('input[name="add-to-cart"]');
+      const productIdInput = modal.querySelector('input[name="wdp_product_id"], input[name="add-to-cart"]');
       if (!productIdInput) {
         safeLog("Product ID input not found in modal:", modal.id);
         return;

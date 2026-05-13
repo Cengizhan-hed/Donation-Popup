@@ -12,9 +12,13 @@
   function getModule(name) {
     return WDPApp[name] || {};
   }
+  let delegatedEventsBound = false;
 
   // Olay dinleyicilerini başlat
   function initializeEventListeners() {
+    if (delegatedEventsBound) {
+      return;
+    }
     // State modülünü kontrol et (henüz yüklenmemişse oluştur)
     const currentState = getModule('state');
     if (!currentState || typeof currentState.listenersInitialized === 'undefined') {
@@ -133,8 +137,13 @@
                   formElement.requestSubmit();
                 }
               } else {
-                // Legacy fallback
-                formElement.submit();
+                // Legacy-safe fallback: trigger a real submit event path (do not bypass handlers).
+                const fallbackSubmit = document.createElement("button");
+                fallbackSubmit.type = "submit";
+                fallbackSubmit.hidden = true;
+                formElement.appendChild(fallbackSubmit);
+                fallbackSubmit.click();
+                fallbackSubmit.remove();
               }
             } finally {
               if (formElement.dataset) {
@@ -184,6 +193,8 @@
         }
         window.WDPApp._tempState.listenersInitialized = true;
       }
+
+      delegatedEventsBound = true;
     }
   }
 

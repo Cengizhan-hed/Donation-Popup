@@ -36,6 +36,10 @@
  * 
  * @package WooCommerce\Donation_Popup
 */
+if (!defined('ABSPATH')) {
+    exit;
+}
+
 class Woo_Donation_Popup {
  
  /**

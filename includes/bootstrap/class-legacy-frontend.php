@@ -21,6 +21,9 @@ if (!function_exists('wdp_render_donation_button')) {
 		if (!class_exists('WDP_Templates')) {
 			return '<p style="color:red;">WooCommerce Donation Popup eklentisi aktif değil.</p>';
 		}
+		if (!function_exists('wc_get_product')) {
+			return '<p style="color:red;">WooCommerce etkin değil.</p>';
+		}
 
 		$product_id = intval($product_id);
 		$product    = wc_get_product($product_id);
@@ -44,6 +47,9 @@ if (!function_exists('wdp_render_donation_form')) {
 	function wdp_render_donation_form($product_id, $args = array()) {
 		if (!class_exists('WDP_Templates')) {
 			return '<p style="color:red;">WooCommerce Donation Popup eklentisi aktif değil.</p>';
+		}
+		if (!function_exists('wc_get_product')) {
+			return '<p style="color:red;">WooCommerce etkin değil.</p>';
 		}
 
 		$product_id = intval($product_id);
@@ -141,6 +147,9 @@ if (!function_exists('wdp_ajax_render_donation_button')) {
 	 */
 	function wdp_ajax_render_donation_button() {
 		check_ajax_referer('wdp_render_donation_button', 'security');
+		if (!function_exists('wc_get_product')) {
+			wp_send_json(array('success' => false, 'message' => __('WooCommerce etkin değil.', 'woo-donation-popup')));
+		}
 
 		if (class_exists('WDP_Security')) {
 			if (!WDP_Security::validate_request_origin()) {

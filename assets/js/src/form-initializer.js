@@ -23,71 +23,106 @@
     return { setupFormSubmission, setupShareholderForms };
   }
 
-  // Doğrudan (embedded) formları başlatan yardımcı
-  function initializeDirectForms(root) {
-    const scope = root && root.querySelectorAll ? root : document;
-    scope.querySelectorAll('.wdp-donation-form').forEach((formContainer) => {
-      if (formContainer.dataset.wdpInitialized === '1') return;
-      const formElement = formContainer.querySelector('form');
-      if (!formElement) return;
-      
-      // Setup form submission
-      const { setupFormSubmission, setupShareholderForms } = updateModuleFunctions();
-      
-      if (setupFormSubmission && typeof setupFormSubmission === 'function') {
-        setupFormSubmission(formElement);
-      } else {
-        // INSTANT retry (no delay) - use requestAnimationFrame for next tick
-        requestAnimationFrame(function() {
-          const retry = updateModuleFunctions();
-          if (retry.setupFormSubmission && typeof retry.setupFormSubmission === 'function') {
-            retry.setupFormSubmission(formElement);
-          }
-        });
-      }
-      
-      // Hisseli form mu kontrol et - DOM query caching
-      const $form = (sel) => formElement.querySelector(sel);
-      const shareCountInput = $form('input[name="share_count"]');
-      if (shareCountInput) {
+  function resolveProductIdForContainer(container) {
+    if (!container) {
+      return null;
+    }
+    let productId = container.getAttribute('data-product-id');
+    if (productId) {
+      return productId;
+    }
+    const idAttr = container.id || '';
+    const m = /^wdp-modal-(\d+)$/.exec(idAttr);
+    if (m) {
+      return m[1];
+    }
+    const pidInput = container.querySelector('input[name="wdp_product_id"], input[name="add-to-cart"]');
+    return pidInput && pidInput.value ? String(pidInput.value) : null;
+  }
+
+  function bindOneDonationForm(formElement, hostForShareholder, hostForProgress) {
+    if (!formElement || formElement.dataset.wdpFormInitialized === '1') {
+      return;
+    }
+    const { setupFormSubmission, setupShareholderForms } = updateModuleFunctions();
+
+    if (setupFormSubmission && typeof setupFormSubmission === 'function') {
+      setupFormSubmission(formElement);
+    } else {
+      requestAnimationFrame(function() {
+        const retry = updateModuleFunctions();
+        if (retry.setupFormSubmission && typeof retry.setupFormSubmission === 'function') {
+          retry.setupFormSubmission(formElement);
+        }
+      });
+    }
+
+    const $form = (sel) => formElement.querySelector(sel);
+    const shareCountInput = $form('input[name="share_count"]');
+    if (shareCountInput) {
+      const productId = resolveProductIdForContainer(hostForShareholder);
+      if (productId) {
         if (setupShareholderForms && typeof setupShareholderForms === 'function') {
-          const productId = formContainer.getAttribute('data-product-id');
-          if (productId) {
-            setupShareholderForms(formContainer, productId);
-          }
+          setupShareholderForms(hostForShareholder, productId);
         } else {
-          // INSTANT retry (no delay) - use requestAnimationFrame for next tick
           requestAnimationFrame(function() {
             const retry = updateModuleFunctions();
             if (retry.setupShareholderForms && typeof retry.setupShareholderForms === 'function') {
-              const productId = formContainer.getAttribute('data-product-id');
-              if (productId) {
-                retry.setupShareholderForms(formContainer, productId);
-              }
+              retry.setupShareholderForms(hostForShareholder, productId);
             }
           });
         }
       }
-      
-      // Progress bar'ı başlat
-      const progressBarContainer = formContainer.querySelector('.wdp-progress-bar-container');
-      if (progressBarContainer) {
-        const progressBar = getModule('progressBar');
-        if (progressBar && typeof progressBar.setup === 'function') {
-          progressBar.setup(progressBarContainer);
-        } else {
-          // INSTANT retry
-          requestAnimationFrame(function() {
-            const retryProgressBar = getModule('progressBar');
-            if (retryProgressBar && typeof retryProgressBar.setup === 'function') {
-              retryProgressBar.setup(progressBarContainer);
-            }
-          });
-        }
+    }
+
+    const progressHost = hostForProgress || hostForShareholder;
+    const progressBarContainer = progressHost && progressHost.querySelector('.wdp-progress-bar-container');
+    if (progressBarContainer) {
+      const progressBar = getModule('progressBar');
+      if (progressBar && typeof progressBar.setup === 'function') {
+        progressBar.setup(progressBarContainer);
+      } else {
+        requestAnimationFrame(function() {
+          const retryProgressBar = getModule('progressBar');
+          if (retryProgressBar && typeof retryProgressBar.setup === 'function') {
+            retryProgressBar.setup(progressBarContainer);
+          }
+        });
       }
-      
-      formContainer.dataset.wdpInitialized = '1';
+    }
+
+    formElement.dataset.wdpFormInitialized = '1';
+    if (hostForShareholder && hostForShareholder.dataset) {
+      hostForShareholder.dataset.wdpInitialized = '1';
+    }
+  }
+
+  function initializeModalForms(root) {
+    const scope = root && root.querySelectorAll ? root : document;
+    const roots = root && root.matches && root.matches('.wdp-modal') ? [root] : null;
+    const modals = roots || scope.querySelectorAll('.wdp-modal');
+    Array.prototype.forEach.call(modals, function(modal) {
+      const formElement = modal.querySelector('form');
+      if (!formElement) {
+        return;
+      }
+      bindOneDonationForm(formElement, modal, modal);
     });
+  }
+
+  // Doğrudan (embedded) formları başlatan yardımcı
+  function initializeDirectForms(root) {
+    const scope = root && root.querySelectorAll ? root : document;
+    const roots = root && root.matches && root.matches('.wdp-donation-form') ? [root] : null;
+    const containers = roots || scope.querySelectorAll('.wdp-donation-form');
+    Array.prototype.forEach.call(containers, function(formContainer) {
+      const formElement = formContainer.querySelector('form');
+      if (!formElement) {
+        return;
+      }
+      bindOneDonationForm(formElement, formContainer, formContainer);
+    });
+    initializeModalForms(root);
   }
 
   // Inline formları başlat

@@ -108,9 +108,9 @@
   --wdp-icon-color-hover: var(--wdp-primary); /* Icon hover state */
 
   /* Button Styles */
-  --wdp-button-primary: #1e73be;
-  --wdp-button-primary-hover: #185d98;
-  --wdp-button-radius: 10px;
+  --wdp-button-primary: var(--wdp-primary);
+  --wdp-button-primary-hover: var(--wdp-primary-hover);
+  --wdp-button-radius: var(--wdp-radius-sm);
 
   /* Radii */
   --wdp-radius-sm: 10px;   /* buton, chip, badge */

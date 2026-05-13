@@ -344,7 +344,7 @@ class WDP_Templates {
                         <?php endif; ?>
                     </div>
                     <!-- Gizli Alanlar -->
-                    <input type="hidden" name="add-to-cart" value="<?php echo esc_attr($product_id); ?>">
+                    <input type="hidden" name="wdp_product_id" value="<?php echo esc_attr($product_id); ?>">
                     <input type="hidden" name="donation_modal" value="1">
                     <?php wp_nonce_field('wdp_nonajax_add_to_cart', 'wdp_nonce'); ?>
                 </form>
@@ -533,7 +533,7 @@ class WDP_Templates {
                         <?php endif; ?>
                     </div>
                     <!-- Gizli Alanlar -->
-                    <input type="hidden" name="add-to-cart" value="<?php echo esc_attr($product_id); ?>">
+                    <input type="hidden" name="wdp_product_id" value="<?php echo esc_attr($product_id); ?>">
                     <input type="hidden" name="donation_modal" value="1">
                     <?php wp_nonce_field('wdp_nonajax_add_to_cart', 'wdp_nonce'); ?>
                 </form>

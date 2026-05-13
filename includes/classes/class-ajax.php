@@ -64,6 +64,24 @@ if (!defined('ABSPATH')) {
  */
 class WDP_Ajax {
     /**
+     * Return WooCommerce cart instance when available.
+     *
+     * @return object|null
+     */
+    private static function get_wc_cart() {
+        if (!function_exists('WC')) {
+            return null;
+        }
+
+        $wc = WC();
+        if (!$wc || !isset($wc->cart)) {
+            return null;
+        }
+
+        return $wc->cart;
+    }
+
+    /**
      * Enforce rate limit for a named action.
      *
      * @param string $action Action suffix for limiter key.
@@ -346,7 +364,13 @@ class WDP_Ajax {
             }
 
             // SECURITY: Sanitize and validate inputs with length limits
-            $product_id = isset($_POST['add-to-cart']) ? absint(wp_unslash($_POST['add-to-cart'])) : 0;
+            $product_id = 0;
+            if (isset($_POST['wdp_product_id'])) {
+                $product_id = absint(wp_unslash($_POST['wdp_product_id']));
+            }
+            if (!$product_id && isset($_POST['add-to-cart'])) {
+                $product_id = absint(wp_unslash($_POST['add-to-cart']));
+            }
             $quantity = isset($_POST['quantity']) ? wc_stock_amount(wp_unslash($_POST['quantity'])) : 1;
             // SECURITY: Limit quantity to prevent abuse
             if ($quantity > 1000) {
@@ -372,7 +396,8 @@ class WDP_Ajax {
                 throw new WDP_Validation_Exception(__('Geçersiz ürün ID.', 'woo-donation-popup'));
             }
 
-            if (!function_exists('WC') || !isset(WC()->cart)) {
+            $cart = self::get_wc_cart();
+            if (!$cart) {
                 throw new WDP_Cart_Exception(__('WooCommerce sepet nesnesi bulunamadı.', 'woo-donation-popup'));
             }
 
@@ -550,11 +575,11 @@ class WDP_Ajax {
             $current_time = time();
 
             if (($current_time - $timestamp) < 30) {
-                foreach (WC()->cart->get_cart() as $cart_item) {
+                foreach ($cart->get_cart() as $cart_item) {
                     if (isset($cart_item['unique_submission_key']) && $cart_item['unique_submission_key'] === $unique_submission_key) {
                         WDP_Utils::json_success(array(
                             'message' => __('Ürün zaten sepete eklenmiş', 'woo-donation-popup'),
-                            'cart_count' => (int) WC()->cart->get_cart_contents_count(),
+                            'cart_count' => (int) $cart->get_cart_contents_count(),
                             'checkout_url' => wc_get_checkout_url(),
                             'items' => self::get_cart_items(),
                         ));
@@ -564,9 +589,9 @@ class WDP_Ajax {
         }
 
         // Aynı bağış verilerine sahip öğeyi kaldır
-        foreach (WC()->cart->get_cart() as $cart_item_key => $cart_item) {
+        foreach ($cart->get_cart() as $cart_item_key => $cart_item) {
             if ((int) $cart_item['product_id'] === $product_id && isset($cart_item['donation_data']) && self::is_same_donation_data($cart_item['donation_data'], $donation_data)) {
-                WC()->cart->remove_cart_item($cart_item_key);
+                $cart->remove_cart_item($cart_item_key);
                 break;
             }
         }
@@ -597,14 +622,14 @@ class WDP_Ajax {
             // PERFORMANCE: Clear cart cache after adding item
             self::clear_cart_cache();
             
-            $cart_item_key = WC()->cart->add_to_cart($product_id, $quantity, $variation_id, array(), $cart_item_data);
+            $cart_item_key = $cart->add_to_cart($product_id, $quantity, $variation_id, array(), $cart_item_data);
 
             if (!$cart_item_key) {
                 throw new WDP_Cart_Exception(__('Ürün sepete eklenirken bir hata oluştu.', 'woo-donation-popup'));
             }
 
             // PERFORMANCE: Get cart count once
-            $cart_count = (int) WC()->cart->get_cart_contents_count();
+            $cart_count = (int) $cart->get_cart_contents_count();
             
             // Progress bar için toplam bağış miktarını hesapla
             $total_donation = 0.0;
@@ -693,20 +718,21 @@ class WDP_Ajax {
 
             $key = isset($_POST['unique_submission_key']) ? WDP_Security::sanitize_text(wp_unslash($_POST['unique_submission_key']), 100) : '';
 
-            if ('' === $key || !function_exists('WC') || !isset(WC()->cart)) {
+            $cart = self::get_wc_cart();
+            if ('' === $key || !$cart) {
                 WDP_Utils::json_success(array(
                     'in_cart' => false,
                 ));
             }
 
-            foreach (WC()->cart->get_cart() as $cart_item) {
+            foreach ($cart->get_cart() as $cart_item) {
                 if (!empty($cart_item['unique_submission_key']) && $cart_item['unique_submission_key'] === $key) {
                     self::clear_cart_cache();
 
                     WDP_Utils::json_success(array(
                         'in_cart' => true,
                         'message' => __('Ürün sepete eklendi.', 'woo-donation-popup'),
-                        'cart_count' => (int) WC()->cart->get_cart_contents_count(),
+                        'cart_count' => (int) $cart->get_cart_contents_count(),
                         'checkout_url' => wc_get_checkout_url(),
                         'items' => self::get_cart_items(),
                     ));
@@ -798,7 +824,8 @@ class WDP_Ajax {
             WDP_Utils::json_error($e);
         }
 
-        if (!function_exists('WC') || !isset(WC()->cart)) {
+        $cart = self::get_wc_cart();
+        if (!$cart) {
             WDP_Utils::json_error(__('WooCommerce sepet nesnesi bulunamadı.', 'woo-donation-popup'));
             return;
         }
@@ -808,7 +835,7 @@ class WDP_Ajax {
         $cached_count = wp_cache_get($cache_key, 'wdp_cart');
         
         if (false === $cached_count) {
-            $cached_count = (int) WC()->cart->get_cart_contents_count();
+            $cached_count = (int) $cart->get_cart_contents_count();
             // Cache for 5 seconds (cart changes frequently)
             wp_cache_set($cache_key, $cached_count, 'wdp_cart', 5);
         }
@@ -829,7 +856,8 @@ class WDP_Ajax {
             WDP_Utils::json_error($e);
         }
 
-        if (!function_exists('WC') || !isset(WC()->cart)) {
+        $cart = self::get_wc_cart();
+        if (!$cart) {
             WDP_Utils::json_error(__('WooCommerce sepet nesnesi bulunamadı.', 'woo-donation-popup'));
             return;
         }
@@ -846,7 +874,7 @@ class WDP_Ajax {
 
         WDP_Utils::json_success(array(
             'items' => $cached_items,
-            'cart_count' => (int) WC()->cart->get_cart_contents_count(),
+            'cart_count' => (int) $cart->get_cart_contents_count(),
         ));
     }
 
@@ -856,14 +884,15 @@ class WDP_Ajax {
      * @return array
      */
     private static function get_cart_items() {
-        if (!function_exists('WC') || !isset(WC()->cart)) {
+        $cart = self::get_wc_cart();
+        if (!$cart) {
             return array();
         }
 
         $items = array();
         
         // PERFORMANCE: Get cart items once (avoid multiple calls)
-        $cart_items = WC()->cart->get_cart();
+        $cart_items = $cart->get_cart();
 
         foreach ($cart_items as $cart_item_key => $cart_item) {
             $product = $cart_item['data'];
@@ -979,7 +1008,8 @@ class WDP_Ajax {
             WDP_Utils::json_error($e);
         }
 
-        if (!function_exists('WC') || !isset(WC()->cart)) {
+        $cart = self::get_wc_cart();
+        if (!$cart) {
             WDP_Utils::json_error(__('WooCommerce sepet nesnesi bulunamadı.', 'woo-donation-popup'));
             return;
         }
@@ -994,7 +1024,7 @@ class WDP_Ajax {
             }
 
             // Remove item from cart
-            $removed = WC()->cart->remove_cart_item($cart_item_key);
+            $removed = $cart->remove_cart_item($cart_item_key);
 
             if (!$removed) {
                 throw new WDP_Exception(__('Sepet öğesi kaldırılamadı.', 'woo-donation-popup'));
@@ -1002,8 +1032,8 @@ class WDP_Ajax {
 
             // Clear all cart cache variations
             self::clear_cart_cache();
-            wp_cache_delete('wdp_cart_items_' . WC()->cart->get_cart_hash(), 'wdp_cart');
-            wp_cache_delete('wdp_cart_count_' . WC()->cart->get_cart_hash(), 'wdp_cart');
+            wp_cache_delete('wdp_cart_items_' . $cart->get_cart_hash(), 'wdp_cart');
+            wp_cache_delete('wdp_cart_count_' . $cart->get_cart_hash(), 'wdp_cart');
 
             // Get updated cart items
             $items = self::get_cart_items();
@@ -1011,7 +1041,7 @@ class WDP_Ajax {
             WDP_Utils::json_success(array(
                 'message' => __('Sepet öğesi kaldırıldı.', 'woo-donation-popup'),
                 'items' => $items,
-                'cart_count' => (int) WC()->cart->get_cart_contents_count(),
+                'cart_count' => (int) $cart->get_cart_contents_count(),
             ));
 
         } catch (WDP_Security_Exception $e) {

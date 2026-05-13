@@ -48,6 +48,9 @@ class WDP_Cart {
      */
     public static function add_donation_item_data($cart_item_data, $product_id, $variation_id) {
         $request_data = self::get_request_data();
+        if (self::is_ajax_add_to_cart_flow($request_data)) {
+            return $cart_item_data;
+        }
 
         // Sadece bağış formundan gelen istekleri işleme al
         if (self::is_donation_modal_request($request_data)) {
@@ -160,6 +163,9 @@ class WDP_Cart {
      */
     public static function validate_donation_fields($passed, $product_id, $quantity, $variation_id = '', $variations = array()) {
         $request_data = self::get_request_data();
+        if (self::is_ajax_add_to_cart_flow($request_data)) {
+            return $passed;
+        }
 
         // Sadece bağış formundan gelen istekleri işleme al
         if (self::is_donation_modal_request($request_data)) {
@@ -271,6 +277,18 @@ class WDP_Cart {
      */
     private static function is_donation_modal_request(array $request_data) {
         return isset($request_data['donation_modal']) && '1' == $request_data['donation_modal'];
+    }
+
+    /**
+     * Detect internal AJAX add-to-cart flow to avoid duplicate processing.
+     *
+     * @param array $request_data Request payload.
+     * @return bool
+     */
+    private static function is_ajax_add_to_cart_flow(array $request_data) {
+        return isset($request_data['action'], $request_data['wdp_ajax_flow'])
+            && $request_data['action'] === 'wdp_ajax_add_to_cart'
+            && $request_data['wdp_ajax_flow'] === '1';
     }
 
     /**

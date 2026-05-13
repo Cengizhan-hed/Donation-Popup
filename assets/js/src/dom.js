@@ -143,6 +143,13 @@
                 }
                 shouldRemoveInlineStyles = true
               }
+              const modals = node.matches && node.matches('.wdp-modal') ? [node] : node.querySelectorAll && node.querySelectorAll('.wdp-modal')
+              if (modals && modals.length) {
+                if (WDPApp.init && WDPApp.init.directForms) {
+                  WDPApp.init.directForms(node)
+                }
+                shouldRemoveInlineStyles = true
+              }
               // Yeni eklenen title elementleri varsa inline style'ları kaldır
               if (node.matches && (node.matches('.wdp-form-title') || node.matches('.wdp-modal-title') || node.matches('.wdp-modal-content h2') || node.matches('.wdp-donation-form .wdp-modal-content h2'))) {
                 shouldRemoveInlineStyles = true

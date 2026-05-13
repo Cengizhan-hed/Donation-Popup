@@ -102,6 +102,12 @@ class WDP_Assets {
      * @var bool
      */
     private static $frontend_data_localized = false;
+    /**
+     * Track whether frontend scripts/styles were registered in this request.
+     *
+     * @var bool
+     */
+    private static $frontend_assets_registered = false;
 
     /**
      * CSS handle for frontend modal styles (used for optimizer exclusions).
@@ -426,6 +432,9 @@ class WDP_Assets {
      * @return void
      */
     private static function register_frontend_assets($plugin_url, $css_version, $js_module_version, $dependencies) {
+        if (self::$frontend_assets_registered) {
+            return;
+        }
         $intl_tel_version = '18.5.3';
         wp_register_script('wdp-intl-tel-utils-js', $plugin_url . 'assets/vendor/intl-tel-input/js/utils.js', array(), $intl_tel_version, true);
         wp_register_script('wdp-intl-tel-input-js', $plugin_url . 'assets/vendor/intl-tel-input/js/intlTelInput.min.js', array('wdp-intl-tel-utils-js'), $intl_tel_version, true);
@@ -455,6 +464,7 @@ class WDP_Assets {
             array('wdp-intl-tel-input-base', self::FRONTEND_CSS_HANDLE),
             $css_version
         );
+        self::$frontend_assets_registered = true;
     }
 
     /**
@@ -1642,7 +1652,7 @@ class WDP_Assets {
 
         // Shortcode kontrolü - sayfa içeriğinde shortcode var mı?
         if (!$should_enqueue && is_a($post, 'WP_Post')) {
-            if (has_shortcode($post->post_content, 'wdp_donation_button') || has_shortcode($post->post_content, 'wdp_donation_form')) {
+            if (self::post_contains_wdp_shortcode($post->post_content)) {
                 $should_enqueue = true;
                 $has_wdp_shortcode = true;
             }
@@ -1675,10 +1685,7 @@ class WDP_Assets {
         if (!$should_enqueue && function_exists('is_product') && is_product()) {
             $current_product_id = get_the_ID();
             if ($current_product_id) {
-                $allow_custom_price = get_post_meta($current_product_id, '_allow_custom_price', true) === 'yes';
-                $allow_multiple_shares = get_post_meta($current_product_id, '_allow_multiple_shares', true) === 'yes';
-                $enable_progress_bar = get_post_meta($current_product_id, '_enable_progress_bar', true) === 'yes';
-                $should_enqueue = $allow_custom_price || $allow_multiple_shares || $enable_progress_bar;
+                $should_enqueue = self::product_requires_front_assets($current_product_id);
             }
         }
 
@@ -1704,6 +1711,37 @@ class WDP_Assets {
         }
 
         return $should_enqueue;
+    }
+
+    /**
+     * Decide whether post content contains plugin shortcodes.
+     *
+     * @param string $post_content Post body.
+     * @return bool
+     */
+    private static function post_contains_wdp_shortcode($post_content) {
+        if (!is_string($post_content) || $post_content === '') {
+            return false;
+        }
+
+        return has_shortcode($post_content, 'wdp_donation_button') || has_shortcode($post_content, 'wdp_donation_form');
+    }
+
+    /**
+     * Check product-level flags that require frontend assets.
+     *
+     * @param int $product_id Product ID.
+     * @return bool
+     */
+    private static function product_requires_front_assets($product_id) {
+        $product_id = absint($product_id);
+        if (!$product_id) {
+            return false;
+        }
+
+        return get_post_meta($product_id, '_allow_custom_price', true) === 'yes'
+            || get_post_meta($product_id, '_allow_multiple_shares', true) === 'yes'
+            || get_post_meta($product_id, '_enable_progress_bar', true) === 'yes';
     }
 }
 

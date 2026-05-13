@@ -139,6 +139,11 @@
     return 'wdp-field-err-' + wdpFieldErrorIdSeq;
   }
 
+  /** WooCommerce çekirdek/tema scriptleri `name="add-to-cart"` alanını yakalayıp paralel sepete ekleme yapabiliyor; önce wdp_product_id kullanılır. */
+  const WDP_PRODUCT_ID_INPUT_SELECTOR = 'input[name="wdp_product_id"], input[name="add-to-cart"]';
+
+  const WDP_FORM_SUBMIT_CAPTURE = true;
+
   function getWdpFormRoot(form) {
     if (!form) return null;
     return form.closest(".wdp-modal") || form.closest(".wdp-donation-form");
@@ -146,7 +151,7 @@
 
   function getWdpUnitPriceForForm(form) {
     const root = getWdpFormRoot(form);
-    const idInput = form.querySelector('input[name="add-to-cart"]');
+    const idInput = form.querySelector(WDP_PRODUCT_ID_INPUT_SELECTOR);
     const pid = idInput ? Number.parseInt(idInput.value, 10) : 0;
     if (pid && productPrices && Number.isFinite(Number(productPrices[pid]))) {
       return Number(productPrices[pid]);
@@ -378,9 +383,14 @@
     formError.style.display = 'block';
     // Remove on any input focus
     form.querySelectorAll('input, textarea').forEach(input => {
+      if (input.dataset.wdpFormErrorFocusBound === '1') {
+        return;
+      }
+      input.dataset.wdpFormErrorFocusBound = '1';
       input.addEventListener('focus', function clearFormError() {
         if (formError) formError.remove();
         input.removeEventListener('focus', clearFormError);
+        input.dataset.wdpFormErrorFocusBound = '0';
       });
     });
 
@@ -786,6 +796,47 @@
         anchor.scrollIntoView({ behavior: "smooth", block: "nearest" });
       }
     });
+  }
+
+  function clearInlineInputError(input) {
+    if (!input) return;
+    input.classList.remove("wdp-error");
+    const inputError = input.parentNode ? input.parentNode.querySelector(".wdp-input-error") : null;
+    if (inputError) {
+      inputError.remove();
+    }
+  }
+
+  function applyMinPriceError(input, minPrice, messageBuilder) {
+    if (!input) return;
+    const currentValue = Number.parseFloat(input.value || 0);
+    if (input.value !== "" && minPrice > 0 && currentValue < minPrice) {
+      input.classList.add("wdp-error");
+      const existingError = input.parentNode ? input.parentNode.querySelector(".wdp-input-error") : null;
+      if (existingError) {
+        existingError.remove();
+      }
+      const inputError = document.createElement("div");
+      inputError.className = "wdp-input-error";
+      inputError.textContent = messageBuilder(minPrice);
+      const parentField = input.closest(".wdp-price-field") || input.parentNode;
+      if (parentField) {
+        const computedStyle = window.getComputedStyle(parentField);
+        if (computedStyle.position === "static") {
+          parentField.style.position = "relative";
+        }
+        parentField.appendChild(inputError);
+      }
+      return;
+    }
+    clearInlineInputError(input);
+  }
+
+  function createMinPriceBlurHandler(messageBuilder) {
+    return function() {
+      const minPrice = Number.parseFloat(this.getAttribute("min") || 0);
+      applyMinPriceError(this, minPrice, messageBuilder);
+    };
   }
 
   /**
@@ -1301,6 +1352,7 @@
     // AJAX ile sepete ekleme işlemi
     formData.append("action", "wdp_ajax_add_to_cart");
     formData.append("security", getAjaxNonce("ajax_add_to_cart"));
+    formData.append("wdp_ajax_flow", "1");
     formData.append("timestamp", Date.now());
 
     // Butonları bul
@@ -1565,12 +1617,15 @@
 
     // Önceki dinleyiciyi kaldır (event-manager veya tekrar setup çağrıları çift AJAX üretmesin)
     if (form._wdpSubmitHandler) {
-      form.removeEventListener("submit", form._wdpSubmitHandler);
+      form.removeEventListener("submit", form._wdpSubmitHandler, WDP_FORM_SUBMIT_CAPTURE);
       form._wdpSubmitHandler = null;
     }
 
     function onWdpFormSubmit(e) {
       e.preventDefault();
+      if (typeof e.stopImmediatePropagation === "function") {
+        e.stopImmediatePropagation();
+      }
       safeLog("Form submitted");
 
       // Önce tüm hata mesajlarını gizle
@@ -1661,48 +1716,54 @@
     }
 
     form._wdpSubmitHandler = onWdpFormSubmit;
-    form.addEventListener("submit", form._wdpSubmitHandler);
+    form.addEventListener("submit", form._wdpSubmitHandler, WDP_FORM_SUBMIT_CAPTURE);
 
     // Input alanlarına olay dinleyicileri ekle
     form.querySelectorAll('input[type="text"], input[type="tel"], input[type="number"]').forEach((input) => {
-      input.addEventListener("focus", function () {
-        this.classList.remove("wdp-error");
-        // Eğer tüm zorunlu alanlar doluysa hata mesajını gizle
-        const errorMsg = form.querySelector(".wdp-form-error");
-        if (errorMsg) {
-          errorMsg.style.display = "none";
-        }
-        // Eğer fiyat uyarısı varsa onu da gizle
-        if (this.name === "custom_price") {
-          const priceField = this.closest(".wdp-price-field");
-          if (priceField) {
-            const minWarn = priceField.querySelector(".wdp-price-warning");
-            if (minWarn) minWarn.style.display = "none";
+      if (input.dataset.wdpBaseInputBound !== '1') {
+        input.dataset.wdpBaseInputBound = '1';
+        input.addEventListener("focus", function () {
+          this.classList.remove("wdp-error");
+          // Eğer tüm zorunlu alanlar doluysa hata mesajını gizle
+          const errorMsg = form.querySelector(".wdp-form-error");
+          if (errorMsg) {
+            errorMsg.style.display = "none";
           }
-        }
-      });
+          // Eğer fiyat uyarısı varsa onu da gizle
+          if (this.name === "custom_price") {
+            const priceField = this.closest(".wdp-price-field");
+            if (priceField) {
+              const minWarn = priceField.querySelector(".wdp-price-warning");
+              if (minWarn) minWarn.style.display = "none";
+            }
+          }
+        });
+      }
 
       // Özel fiyat alanı için minimum değer kontrolü - optimized with debounce
       if (input.name === "custom_price") {
         const customQtyRow = input.closest(".wdp-custom-price-with-qty-row");
         if (customQtyRow) {
-          input.addEventListener("focus", function () {
-            this.classList.remove("wdp-error");
-            const errorMsg = form.querySelector(".wdp-form-error");
-            if (errorMsg) {
-              errorMsg.style.display = "none";
-            }
-            const inputError = this.parentNode.querySelector(".wdp-input-error");
-            if (inputError) {
-              inputError.remove();
-            }
-          });
-          input.addEventListener("input", function () {
-            const row = this.closest(".wdp-custom-price-with-qty-row");
-            const qEl = row && row.querySelector('input[name="quantity"]');
-            const qty = qEl ? Number.parseInt(qEl.value, 10) || 1 : 1;
-            ensureCustomUnitFromDisplayed(this, qty);
-          });
+          if (input.dataset.wdpCustomQtyBound !== '1') {
+            input.dataset.wdpCustomQtyBound = '1';
+            input.addEventListener("focus", function () {
+              this.classList.remove("wdp-error");
+              const errorMsg = form.querySelector(".wdp-form-error");
+              if (errorMsg) {
+                errorMsg.style.display = "none";
+              }
+              const inputError = this.parentNode.querySelector(".wdp-input-error");
+              if (inputError) {
+                inputError.remove();
+              }
+            });
+            input.addEventListener("input", function () {
+              const row = this.closest(".wdp-custom-price-with-qty-row");
+              const qEl = row && row.querySelector('input[name="quantity"]');
+              const qty = qEl ? Number.parseInt(qEl.value, 10) || 1 : 1;
+              ensureCustomUnitFromDisplayed(this, qty);
+            });
+          }
           function runCustomQtyRowBlur() {
             const row = this.closest(".wdp-custom-price-with-qty-row");
             const qEl = row && row.querySelector('input[name="quantity"]');
@@ -1738,80 +1799,36 @@
             }
           }
           const debouncedBlurQtyRow = debounce ? debounce(runCustomQtyRowBlur, 300) : runCustomQtyRowBlur;
-          input.addEventListener("blur", debouncedBlurQtyRow);
+          if (input.dataset.wdpCustomQtyBlurBound !== '1') {
+            input.dataset.wdpCustomQtyBlurBound = '1';
+            input.addEventListener("blur", debouncedBlurQtyRow);
+          }
           return;
         }
 
         // Progress / diğer tek sütun özel fiyat alanları
-        input.addEventListener("focus", function () {
-          this.classList.remove("wdp-error");
-          const errorMsg = form.querySelector(".wdp-form-error");
-          if (errorMsg) {
-            errorMsg.style.display = "none";
-          }
-          const inputError = this.parentNode.querySelector('.wdp-input-error');
-          if (inputError) {
-            inputError.remove();
-          }
-        });
-        
-        const debouncedBlurHandler = debounce ? debounce(function() {
-          const minPrice = Number.parseFloat(this.getAttribute("min") || 0);
-          const currentValue = Number.parseFloat(this.value || 0);
-          if (this.value !== "" && minPrice > 0 && currentValue < minPrice) {
-            this.classList.add("wdp-error");
-            const existingError = this.parentNode.querySelector('.wdp-input-error');
-            if (existingError) {
-              existingError.remove();
-            }
-            const inputError = document.createElement('div');
-            inputError.className = 'wdp-input-error';
-            inputError.textContent = `Lütfen ${minPrice} TL ve üstü değerler girin.`;
-            const parentField = this.closest('.wdp-price-field') || this.parentNode;
-            if (parentField) {
-              const computedStyle = window.getComputedStyle(parentField);
-              if (computedStyle.position === 'static') {
-                parentField.style.position = 'relative';
-              }
-              parentField.appendChild(inputError);
-            }
-          } else {
+        if (input.dataset.wdpCustomPriceFocusBound !== '1') {
+          input.dataset.wdpCustomPriceFocusBound = '1';
+          input.addEventListener("focus", function () {
             this.classList.remove("wdp-error");
+            const errorMsg = form.querySelector(".wdp-form-error");
+            if (errorMsg) {
+              errorMsg.style.display = "none";
+            }
             const inputError = this.parentNode.querySelector('.wdp-input-error');
             if (inputError) {
               inputError.remove();
             }
-          }
-        }, 300) : function() {
-          const minPrice = Number.parseFloat(this.getAttribute("min") || 0);
-          const currentValue = Number.parseFloat(this.value || 0);
-          if (this.value !== "" && minPrice > 0 && currentValue < minPrice) {
-            this.classList.add("wdp-error");
-            const existingError = this.parentNode.querySelector('.wdp-input-error');
-            if (existingError) {
-              existingError.remove();
-            }
-            const inputError = document.createElement('div');
-            inputError.className = 'wdp-input-error';
-            inputError.textContent = `Lütfen ${minPrice} TL ve üstü değerler girin.`;
-            const parentField = this.closest('.wdp-price-field') || this.parentNode;
-            if (parentField) {
-              const computedStyle = window.getComputedStyle(parentField);
-              if (computedStyle.position === 'static') {
-                parentField.style.position = 'relative';
-              }
-              parentField.appendChild(inputError);
-            }
-          } else {
-            this.classList.remove("wdp-error");
-            const inputError = this.parentNode.querySelector('.wdp-input-error');
-            if (inputError) {
-              inputError.remove();
-            }
-          }
-        };
+          });
+        }
         
-        input.addEventListener("blur", debouncedBlurHandler);
+        const blurHandler = createMinPriceBlurHandler((minPrice) => `Lütfen ${minPrice} TL ve üstü değerler girin.`);
+        const debouncedBlurHandler = debounce ? debounce(blurHandler, 300) : blurHandler;
+        
+        if (input.dataset.wdpCustomPriceBlurBound !== '1') {
+          input.dataset.wdpCustomPriceBlurBound = '1';
+          input.addEventListener("blur", debouncedBlurHandler);
+        }
         input.value = "";
         const minPrice = Number.parseFloat(input.getAttribute("min") || 0);
         input.placeholder = "Min: " + minPrice + " TL";
@@ -1829,19 +1846,13 @@
     const isShareForm = !!shareCountInput;
 
     if (quantityInput && decreaseBtn && increaseBtn && !isShareForm) {
-      // Önceki event listener'ları temizle
-      const newDecreaseBtn = decreaseBtn.cloneNode(true);
-      if (decreaseBtn.parentNode) {
-        decreaseBtn.parentNode.replaceChild(newDecreaseBtn, decreaseBtn);
-      }
-
-      const newIncreaseBtn = increaseBtn.cloneNode(true);
-      if (increaseBtn.parentNode) {
-        increaseBtn.parentNode.replaceChild(newIncreaseBtn, increaseBtn);
-      }
+      const handlerBag = form._wdpQtyHandlers || (form._wdpQtyHandlers = {});
 
       // Sadece normal form için ürün adedi butonlarını etkinleştir
-      newDecreaseBtn.addEventListener("click", (e) => {
+      if (handlerBag.decreaseClick) {
+        decreaseBtn.removeEventListener("click", handlerBag.decreaseClick);
+      }
+      handlerBag.decreaseClick = (e) => {
         e.preventDefault();
         e.stopPropagation();
         const currentValue = Number.parseInt(quantityInput.value, 10) || 1;
@@ -1856,9 +1867,13 @@
           quantityInput.value = currentValue - 1;
           updateLineTotals(form);
         }
-      });
+      };
+      decreaseBtn.addEventListener("click", handlerBag.decreaseClick);
 
-      newIncreaseBtn.addEventListener("click", (e) => {
+      if (handlerBag.increaseClick) {
+        increaseBtn.removeEventListener("click", handlerBag.increaseClick);
+      }
+      handlerBag.increaseClick = (e) => {
         e.preventDefault();
         e.stopPropagation();
         const currentValue = Number.parseInt(quantityInput.value, 10) || 1;
@@ -1873,7 +1888,8 @@
         }
         quantityInput.value = String(Math.min(maxAllowed, currentValue + 1));
         updateLineTotals(form);
-      });
+      };
+      increaseBtn.addEventListener("click", handlerBag.increaseClick);
 
       updateLineTotals(form);
     }

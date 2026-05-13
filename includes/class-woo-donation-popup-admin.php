@@ -2,6 +2,10 @@
 /**
  * WooCommerce Donation Modal Popup Admin Class
  */
+if (!defined('ABSPATH')) {
+    exit;
+}
+
 class Woo_Donation_Popup_Admin {
     /**
      * Store settings in a non-autoload option to keep front bootstrap lean.
@@ -218,14 +222,14 @@ class Woo_Donation_Popup_Admin {
         // Buton Shortcode
         echo '<div class="wdp-shortcode-item">';
         echo '<label class="wdp-shortcode-label">Buton</label>';
-        echo '<code class="wdp-shortcode">' . $button_shortcode . '</code>';
+        echo '<code class="wdp-shortcode">' . esc_html($button_shortcode) . '</code>';
         echo '<button type="button" class="button button-small wdp-copy-shortcode" data-shortcode="' . esc_attr($button_shortcode) . '">' . __('Kopyala', 'woo-donation-popup') . '</button>';
         echo '</div>';
 
         // Form Shortcode
         echo '<div class="wdp-shortcode-item">';
         echo '<label class="wdp-shortcode-label">Form</label>';
-        echo '<code class="wdp-shortcode">' . $form_shortcode . '</code>';
+        echo '<code class="wdp-shortcode">' . esc_html($form_shortcode) . '</code>';
         echo '<button type="button" class="button button-small wdp-copy-shortcode" data-shortcode="' . esc_attr($form_shortcode) . '">' . __('Kopyala', 'woo-donation-popup') . '</button>';
         echo '</div>';
 
@@ -234,7 +238,7 @@ class Woo_Donation_Popup_Admin {
 
         // Alt kısım: işlem butonu
         echo '<div class="wdp-product-actions">';
-        echo '<button type="button" class="button wdp-save-product" data-product-id="' . $product->get_id() . '">' . __('Kaydet', 'woo-donation-popup') . '</button>';
+        echo '<button type="button" class="button wdp-save-product" data-product-id="' . esc_attr($product->get_id()) . '">' . __('Kaydet', 'woo-donation-popup') . '</button>';
         echo '<span class="spinner"></span>';
         echo '</div>'; // .wdp-product-actions
 
