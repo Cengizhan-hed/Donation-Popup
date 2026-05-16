@@ -439,7 +439,9 @@ class WDP_Assets {
         wp_register_script('wdp-intl-tel-utils-js', $plugin_url . 'assets/vendor/intl-tel-input/js/utils.js', array(), $intl_tel_version, true);
         wp_register_script('wdp-intl-tel-input-js', $plugin_url . 'assets/vendor/intl-tel-input/js/intlTelInput.min.js', array('wdp-intl-tel-utils-js'), $intl_tel_version, true);
 
-        wp_register_script('wdp-utils-js', $plugin_url . 'assets/js/src/utils.js', $dependencies, $js_module_version, true);
+        wp_register_script('wdp-meta-tracking-js', $plugin_url . 'assets/js/src/meta-tracking.js', array(), $js_module_version, true);
+        $utils_deps = array_merge(array('wdp-meta-tracking-js'), is_array($dependencies) ? $dependencies : array());
+        wp_register_script('wdp-utils-js', $plugin_url . 'assets/js/src/utils.js', $utils_deps, $js_module_version, true);
         wp_register_script('wdp-phone-input-js', $plugin_url . 'assets/js/src/phone-input.js', array('wdp-intl-tel-input-js', 'wdp-utils-js'), $js_module_version, true);
         wp_register_script('wdp-state-js', $plugin_url . 'assets/js/src/state.js', array('wdp-utils-js'), $js_module_version, true);
         wp_register_script('wdp-dom-js', $plugin_url . 'assets/js/src/dom.js', array('wdp-state-js'), $js_module_version, true);
@@ -567,6 +569,7 @@ class WDP_Assets {
                 // Disabled by default to avoid theme-wide side cart visibility overrides.
                 'side_cart_recovery' => (bool) apply_filters('wdp_enable_side_cart_recovery', false),
             ),
+            'meta' => class_exists('WDP_Meta_Tracking') ? WDP_Meta_Tracking::get_frontend_config() : array(),
         ));
         self::$frontend_data_localized = true;
     }

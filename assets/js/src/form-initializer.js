@@ -40,6 +40,60 @@
     return pidInput && pidInput.value ? String(pidInput.value) : null;
   }
 
+  function setupInlineMetaViewContent(container, productId, formElement) {
+    if (!container || !productId || !formElement || container.dataset.wdpMetaInlineBound === '1') {
+      return;
+    }
+    if (container.closest('.wdp-modal')) {
+      return;
+    }
+    const runVc = () => {
+      if (container.dataset.wdpMetaInlineVcDone === '1') {
+        return;
+      }
+      container.dataset.wdpMetaInlineVcDone = '1';
+      if (!window.WDPMetaTracking || typeof window.WDPMetaTracking.trackViewContentDonation !== 'function') {
+        return;
+      }
+      const qtyEl = formElement.querySelector('input[name="quantity"]');
+      const qty = qtyEl ? parseInt(qtyEl.value, 10) || 1 : 1;
+      let unit = 0;
+      if (container.dataset && container.dataset.wdpUnitPrice !== undefined && container.dataset.wdpUnitPrice !== '') {
+        unit = parseFloat(container.dataset.wdpUnitPrice);
+      }
+      if (!Number.isFinite(unit)) {
+        unit = 0;
+      }
+      const titleEl = container.querySelector('.wdp-form-title, .wdp-modal-title');
+      const cname = titleEl ? titleEl.textContent.trim() : '';
+      window.WDPMetaTracking.trackViewContentDonation({
+        productId: productId,
+        contentName: cname,
+        quantity: qty,
+        itemPrice: unit,
+        value: unit > 0 ? unit * qty : undefined,
+        formType: 'inline',
+      });
+    };
+    const onFirstInteract = () => {
+      runVc();
+    };
+    container.addEventListener('focusin', onFirstInteract, { once: true, passive: true });
+    container.addEventListener('pointerdown', onFirstInteract, { once: true, passive: true });
+    if (window.IntersectionObserver) {
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach((en) => {
+          if (en.isIntersecting && en.intersectionRatio > 0) {
+            io.disconnect();
+            runVc();
+          }
+        });
+      }, { threshold: 0.01 });
+      io.observe(container);
+    }
+    container.dataset.wdpMetaInlineBound = '1';
+  }
+
   function bindOneDonationForm(formElement, hostForShareholder, hostForProgress) {
     if (!formElement || formElement.dataset.wdpFormInitialized === '1') {
       return;
@@ -94,6 +148,10 @@
     formElement.dataset.wdpFormInitialized = '1';
     if (hostForShareholder && hostForShareholder.dataset) {
       hostForShareholder.dataset.wdpInitialized = '1';
+    }
+    const pidInline = resolveProductIdForContainer(hostForShareholder);
+    if (pidInline && hostForShareholder && !hostForShareholder.closest('.wdp-modal')) {
+      setupInlineMetaViewContent(hostForShareholder, pidInline, formElement);
     }
   }
 

@@ -3,7 +3,7 @@
  */
 ;((window, document, $) => {
   const cfg = window.wdp_admin || {}
-  const TAB_KEYS = ["products", "modal-layout", "normal-form", "shareholder-form", "progress-bar", "success-screen"]
+  const TAB_KEYS = ["products", "modal-layout", "normal-form", "shareholder-form", "progress-bar", "success-screen", "meta"]
 
   function ensureNoticeContainer($anchor) {
     let $notice = $("#wdp-admin-notices")
@@ -447,5 +447,6 @@
     bindSettingsForm("#wdp-success-screen-settings-form", "wdp_save_success_screen_settings", "#wdp-save-success-screen-settings", false)
     bindSettingsForm("#wdp-modal-layout-settings-form", "wdp_save_modal_layout_settings", "#wdp-save-modal-layout-settings", false)
     bindSettingsForm("#wdp-progress-bar-settings-form", "wdp_save_progress_bar_settings", "#wdp-save-progress-bar-settings", false)
+    bindSettingsForm("#wdp-meta-tracking-settings-form", "wdp_save_meta_tracking_settings", "#wdp-save-meta-tracking-settings", false)
   })
 })(window, document, jQuery)

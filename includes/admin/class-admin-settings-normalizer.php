@@ -272,6 +272,40 @@ class WDP_Admin_Settings_Normalizer {
 	}
 
 	/**
+	 * Normalize Meta Pixel companion settings.
+	 *
+	 * @param array $request Raw POST fields.
+	 * @return array
+	 */
+	public static function normalize_meta_tracking_settings(array $request) {
+		$defaults = class_exists('WDP_Meta_Tracking') ? WDP_Meta_Tracking::default_settings() : array();
+		$chk      = static function ($key) use ($request) {
+			return isset($request[ $key ]) && '1' === (string) $request[ $key ];
+		};
+
+		$pixel_raw = isset($request['optional_pixel_id']) ? sanitize_text_field(wp_unslash($request['optional_pixel_id'])) : '';
+		$pixel     = preg_replace('/\D/', '', $pixel_raw);
+
+		$out = array_merge(
+			$defaults,
+			array(
+				'enabled'                    => $chk('meta_enabled') ? '1' : '0',
+				'view_content'               => $chk('meta_view_content') ? '1' : '0',
+				'add_to_cart'                => $chk('meta_add_to_cart') ? '1' : '0',
+				'purchase'                   => $chk('meta_purchase') ? '1' : '0',
+				'custom_debug'               => $chk('meta_custom_debug') ? '1' : '0',
+				'debug'                      => $chk('meta_debug') ? '1' : '0',
+				'load_base_pixel'            => $chk('meta_load_base_pixel') ? '1' : '0',
+				'initiate_checkout'          => $chk('meta_initiate_checkout') ? '1' : '0',
+				'purchase_include_on_hold'   => $chk('meta_purchase_include_on_hold') ? '1' : '0',
+				'optional_pixel_id'          => strlen($pixel) >= 8 ? $pixel : '',
+			)
+		);
+
+		return $out;
+	}
+
+	/**
 	 * Clamp value between min and max.
 	 *
 	 * @param int $value Value.

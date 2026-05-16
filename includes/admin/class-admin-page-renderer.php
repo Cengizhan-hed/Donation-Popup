@@ -23,9 +23,10 @@ class WDP_Admin_Page_Renderer {
 	 * @param callable $render_shareholder_tab   Shareholder tab renderer.
 	 * @param callable $render_progress_bar_tab  Progress bar tab renderer.
 	 * @param callable $render_success_screen_tab Success tab renderer.
+	 * @param callable $render_meta_tab           Meta Pixel tab renderer.
 	 * @return void
 	 */
-	public static function render_settings_page($products, $render_product_row, $render_modal_layout_tab, $render_normal_form_tab, $render_shareholder_tab, $render_progress_bar_tab, $render_success_screen_tab) {
+	public static function render_settings_page($products, $render_product_row, $render_modal_layout_tab, $render_normal_form_tab, $render_shareholder_tab, $render_progress_bar_tab, $render_success_screen_tab, $render_meta_tab) {
 		echo '<div class="wrap wdp-admin-wrap">';
 		echo '<div class="wdp-admin-title-row">';
 		echo '<h1 class="wdp-admin-title">' . esc_html__('Bağış Popup Ayarları', 'woo-donation-popup') . '</h1>';
@@ -46,6 +47,7 @@ class WDP_Admin_Page_Renderer {
 		echo '<a id="wdp-tab-shareholder-form" href="#shareholder-form" class="nav-tab" data-tab="shareholder-form" role="tab" aria-controls="wdp-shareholder-form-tab" aria-selected="false" tabindex="-1">' . esc_html__('Hisseli Form', 'woo-donation-popup') . '</a>';
 		echo '<a id="wdp-tab-progress-bar" href="#progress-bar" class="nav-tab" data-tab="progress-bar" role="tab" aria-controls="wdp-progress-bar-tab" aria-selected="false" tabindex="-1">' . esc_html__('Progress Bar Form', 'woo-donation-popup') . '</a>';
 		echo '<a id="wdp-tab-success-screen" href="#success-screen" class="nav-tab" data-tab="success-screen" role="tab" aria-controls="wdp-success-screen-tab" aria-selected="false" tabindex="-1">' . esc_html__('Başarı & Mini Sepet', 'woo-donation-popup') . '</a>';
+		echo '<a id="wdp-tab-meta" href="#meta" class="nav-tab" data-tab="meta" role="tab" aria-controls="wdp-meta-tab" aria-selected="false" tabindex="-1">' . esc_html__('Meta Pixel', 'woo-donation-popup') . '</a>';
 		echo '</nav>';
 
 		self::render_products_tab($products, $render_product_row);
@@ -68,6 +70,10 @@ class WDP_Admin_Page_Renderer {
 
 		echo '<div id="wdp-success-screen-tab" class="wdp-tab-content" role="tabpanel" aria-hidden="true">';
 		call_user_func($render_success_screen_tab);
+		echo '</div>';
+
+		echo '<div id="wdp-meta-tab" class="wdp-tab-content" role="tabpanel" aria-hidden="true">';
+		call_user_func($render_meta_tab);
 		echo '</div>';
 
 		echo '</div>';

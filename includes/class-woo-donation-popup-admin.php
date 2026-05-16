@@ -73,7 +73,8 @@ class Woo_Donation_Popup_Admin {
             function() { $this->render_normal_form_customization_tab(); },
             function() { $this->render_shareholder_form_customization_tab(); },
             function() { $this->render_progress_bar_customization_tab(); },
-            function() { $this->render_success_screen_customization_tab(); }
+            function() { $this->render_success_screen_customization_tab(); },
+            function() { $this->render_meta_tracking_tab(); }
         );
     }
     
@@ -331,6 +332,15 @@ class Woo_Donation_Popup_Admin {
     private function render_progress_bar_customization_tab() {
         WDP_Admin_Layout_Tabs_Renderer::render_progress_bar_tab();
     }
+
+    /**
+     * Meta Pixel companion tab.
+     *
+     * @return void
+     */
+    private function render_meta_tracking_tab() {
+        WDP_Admin_Meta_Tracking_Tab_Renderer::render();
+    }
     
     /**
      * Normal form özelleştirme ayarlarını kaydet (AJAX)
@@ -396,6 +406,35 @@ class Woo_Donation_Popup_Admin {
         $this->bump_wdp_asset_cache_version();
 
         $this->send_admin_settings_success(__('Progress bar ayarları başarıyla kaydedildi.', 'woo-donation-popup'));
+    }
+
+    /**
+     * Meta Pixel companion ayarlarını kaydet (AJAX).
+     *
+     * @return void
+     */
+    public function save_meta_tracking_settings() {
+        try {
+            $this->guard_admin_settings_ajax();
+            $request_data = $this->get_admin_request_data();
+
+            $settings = WDP_Admin_Settings_Normalizer::normalize_meta_tracking_settings($request_data);
+
+            if (! class_exists('WDP_Meta_Tracking')) {
+                $this->send_admin_settings_error(__('Meta izleme modülü yüklenemedi.', 'woo-donation-popup'));
+                return;
+            }
+
+            WDP_Meta_Tracking::update_settings($settings);
+            $this->bump_wdp_asset_cache_version();
+
+            $this->send_admin_settings_success(__('Meta Pixel ayarları başarıyla kaydedildi.', 'woo-donation-popup'));
+        } catch (Exception $e) {
+            if (defined('WP_DEBUG') && WP_DEBUG) {
+                error_log('WDP meta tracking save error: ' . $e->getMessage());
+            }
+            $this->send_admin_settings_error(__('Bir hata oluştu. Lütfen tekrar deneyin.', 'woo-donation-popup'));
+        }
     }
     
     /**

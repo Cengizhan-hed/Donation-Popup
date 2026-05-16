@@ -575,13 +575,17 @@ class WDP_Ajax {
             $current_time = time();
 
             if (($current_time - $timestamp) < 30) {
-                foreach ($cart->get_cart() as $cart_item) {
+                foreach ($cart->get_cart() as $dup_key => $cart_item) {
                     if (isset($cart_item['unique_submission_key']) && $cart_item['unique_submission_key'] === $unique_submission_key) {
+                        $dup_pid = isset($cart_item['product_id']) ? (int) $cart_item['product_id'] : 0;
                         WDP_Utils::json_success(array(
                             'message' => __('Ürün zaten sepete eklenmiş', 'woo-donation-popup'),
                             'cart_count' => (int) $cart->get_cart_contents_count(),
                             'checkout_url' => wc_get_checkout_url(),
                             'items' => self::get_cart_items(),
+                            'cart_item_key' => $dup_key,
+                            'product_id' => $dup_pid,
+                            'meta_cart_line' => self::build_meta_cart_line_from_cart_item($cart_item, $dup_pid),
                         ));
                     }
                 }
@@ -640,6 +644,7 @@ class WDP_Ajax {
                 $total_donation = WDP_Utils::get_total_donation_amount($product_id);
             }
             
+            $added_item = $cart->get_cart_item($cart_item_key);
             WDP_Utils::json_success(array(
                 'message' => __('Ürün sepete eklendi.', 'woo-donation-popup'),
                 'cart_item_key' => $cart_item_key,
@@ -648,6 +653,7 @@ class WDP_Ajax {
                 'items' => self::get_cart_items(),
                 'total_donation' => $total_donation,
                 'product_id' => $product_id,
+                'meta_cart_line' => $added_item ? self::build_meta_cart_line_from_cart_item($added_item, $product_id) : null,
             ));
         } catch (WDP_Validation_Exception $e) {
             WDP_Utils::json_error($e);
@@ -725,9 +731,11 @@ class WDP_Ajax {
                 ));
             }
 
-            foreach ($cart->get_cart() as $cart_item) {
+            foreach ($cart->get_cart() as $cart_item_key => $cart_item) {
                 if (!empty($cart_item['unique_submission_key']) && $cart_item['unique_submission_key'] === $key) {
                     self::clear_cart_cache();
+
+                    $v_pid = isset($cart_item['product_id']) ? (int) $cart_item['product_id'] : 0;
 
                     WDP_Utils::json_success(array(
                         'in_cart' => true,
@@ -735,6 +743,9 @@ class WDP_Ajax {
                         'cart_count' => (int) $cart->get_cart_contents_count(),
                         'checkout_url' => wc_get_checkout_url(),
                         'items' => self::get_cart_items(),
+                        'cart_item_key' => $cart_item_key,
+                        'product_id' => $v_pid,
+                        'meta_cart_line' => self::build_meta_cart_line_from_cart_item($cart_item, $v_pid),
                     ));
                 }
             }
@@ -747,6 +758,45 @@ class WDP_Ajax {
         } catch (Exception $e) {
             WDP_Utils::handle_exception($e, true);
         }
+    }
+
+    /**
+     * Safe line summary for Meta AddToCart (no donor PII).
+     *
+     * @param array $cart_item WooCommerce cart row.
+     * @param int   $product_id Product ID fallback.
+     * @return array|null
+     */
+    private static function build_meta_cart_line_from_cart_item($cart_item, $product_id) {
+        if (empty($cart_item) || !isset($cart_item['data'])) {
+            return null;
+        }
+        $product = $cart_item['data'];
+        if (!$product || !is_object($product) || !method_exists($product, 'get_name')) {
+            return null;
+        }
+        $qty = isset($cart_item['quantity']) ? (int) $cart_item['quantity'] : 1;
+        if ($qty < 1) {
+            $qty = 1;
+        }
+        $product_price = floatval($product->get_price());
+        $line_total    = $product_price * $qty;
+        if (isset($cart_item['custom_price'])) {
+            $cp            = floatval($cart_item['custom_price']);
+            $line_total    = $cp * $qty;
+            $product_price = $cp;
+        }
+        $dec = function_exists('wc_get_price_decimals') ? wc_get_price_decimals() : 2;
+        $pid = isset($cart_item['product_id']) ? (int) $cart_item['product_id'] : (int) $product_id;
+
+        return array(
+            'product_id'   => $pid,
+            'product_name' => wp_strip_all_tags((string) $product->get_name()),
+            'quantity'     => $qty,
+            'line_total'   => round((float) $line_total, $dec),
+            'item_price'   => $qty > 0 ? round((float) $line_total / $qty, $dec) : round((float) $line_total, $dec),
+            'currency'     => function_exists('get_woocommerce_currency') ? get_woocommerce_currency() : 'TRY',
+        );
     }
 
     /**

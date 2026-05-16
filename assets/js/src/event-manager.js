@@ -59,6 +59,17 @@
             const productId = button.getAttribute("data-product-id");
             
             if (productId) {
+              try {
+                const ajax = window.wdp_ajax || {};
+                const meta = ajax.meta || {};
+                if (meta.enabled && meta.customDebug && window.WDPMetaTracking && typeof window.WDPMetaTracking.trackCustom === "function") {
+                  window.WDPMetaTracking.trackCustom(
+                    "DonationButtonClick",
+                    { source: "wdp_donation_plugin", product_id: String(productId) },
+                    { eventID: "wdp_dbg_btn_" + String(productId) + "_" + String(Date.now()) }
+                  );
+                }
+              } catch (dbc) {}
               // Update module functions before use - INSTANT execution
               const currentModal = getModule('modal');
               if (currentModal && typeof currentModal.open === 'function') {

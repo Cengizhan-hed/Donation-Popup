@@ -258,6 +258,32 @@
       state.activeModal = modal
       safeLog("Active modal set:", state.activeModal)
 
+      if (window.WDPMetaTracking && typeof window.WDPMetaTracking.trackViewContentDonation === "function") {
+        try {
+          const qtyEl = modal.querySelector('input[name="quantity"]')
+          const qty = qtyEl ? parseInt(qtyEl.value, 10) || 1 : 1
+          let unitPrice = 0
+          if (modal.dataset && modal.dataset.wdpUnitPrice !== undefined && modal.dataset.wdpUnitPrice !== "") {
+            unitPrice = parseFloat(modal.dataset.wdpUnitPrice)
+          }
+          if (!Number.isFinite(unitPrice)) {
+            unitPrice = 0
+          }
+          const titleEl = modal.querySelector(".wdp-modal-title")
+          const cname = titleEl ? titleEl.textContent.trim() : ""
+          window.WDPMetaTracking.trackViewContentDonation({
+            productId: productId,
+            contentName: cname,
+            quantity: qty,
+            itemPrice: unitPrice,
+            value: unitPrice > 0 ? unitPrice * qty : undefined,
+            formType: "popup",
+          })
+        } catch (metaErr) {
+          safeLog("Meta ViewContent:", metaErr)
+        }
+      }
+
       // Modal tekrar açılıyorsa aynı listener'ların birikmesini önle.
       document.removeEventListener("mousedown", handleOutsideClick)
       document.removeEventListener("keydown", handleEscKeyPress)

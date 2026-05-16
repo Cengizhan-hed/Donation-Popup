@@ -117,6 +117,7 @@ final class WDP_Plugin_Bootstrap {
 		require_once WDP_PLUGIN_DIR . 'includes/admin/class-admin-settings-normalizer.php';
 		require_once WDP_PLUGIN_DIR . 'includes/admin/class-admin-layout-tabs-renderer.php';
 		require_once WDP_PLUGIN_DIR . 'includes/admin/class-admin-form-tabs-renderer.php';
+		require_once WDP_PLUGIN_DIR . 'includes/admin/class-admin-meta-tracking-tab-renderer.php';
 		require_once WDP_PLUGIN_DIR . 'includes/admin/class-admin-product-settings-ajax.php';
 		require_once WDP_PLUGIN_DIR . 'includes/shared/class-product-settings-service.php';
 		require_once WDP_PLUGIN_DIR . 'includes/shared/class-donation-product-context-service.php';

@@ -689,6 +689,60 @@
       });
       continueShoppingBtn.dataset.wdpContinueBound = '1';
     });
+    setupCheckoutMetaLink(form);
+  }
+
+  /**
+   * Optional Meta InitiateCheckout when user clicks success ".wdp-checkout" (setting default off).
+   *
+   * @param {HTMLFormElement|null} form Host form (holds _wdpLastMetaCartLine after add).
+   * @returns {void}
+   */
+  function setupCheckoutMetaLink(form) {
+    if (!form) {
+      return;
+    }
+    const checkout = form.querySelector('a.wdp-checkout');
+    if (!checkout || checkout.dataset.wdpMetaIcBound === '1') {
+      return;
+    }
+    checkout.addEventListener('click', (ev) => {
+      const metaCfg = wdp_ajax && wdp_ajax.meta ? wdp_ajax.meta : {};
+      if (!metaCfg.enabled || !metaCfg.initiateCheckout || !window.WDPMetaTracking || typeof window.WDPMetaTracking.trackInitiateCheckoutDonation !== 'function') {
+        return;
+      }
+      const line = form._wdpLastMetaCartLine;
+      if (!line || !line.product_id) {
+        return;
+      }
+      try {
+        ev.preventDefault();
+        const pid = String(line.product_id);
+        const qty = parseInt(line.quantity, 10) || 1;
+        const icParams = {
+          content_ids: [pid],
+          content_name: String(line.product_name || '').slice(0, 500),
+          content_type: 'product',
+          contents: [{ id: pid, quantity: qty, item_price: parseFloat(line.item_price) || 0 }],
+          value: parseFloat(line.line_total) || 0,
+          currency: line.currency || (wdp_ajax.currency && wdp_ajax.currency.code) || 'TRY',
+          num_items: qty,
+        };
+        const uniqueInput = form.querySelector('input[name="unique_submission_key"]');
+        const usk = uniqueInput && uniqueInput.value ? String(uniqueInput.value) : '';
+        const dedupeKey = 'wdp_meta_ic_link_' + pid + '_' + (usk || 'nokey');
+        const eventID = 'wdp_ic_link_' + pid + '_' + String(Date.now());
+        window.WDPMetaTracking.trackInitiateCheckoutDonation({
+          params: icParams,
+          eventID: eventID,
+          dedupeKey: dedupeKey,
+        });
+      } catch (err) {
+        safeLog('Meta checkout link:', err);
+      }
+      window.location.href = checkout.href || (wdp_ajax.checkout_url || '/');
+    });
+    checkout.dataset.wdpMetaIcBound = '1';
   }
 
   function triggerSideCartUpdates() {

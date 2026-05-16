@@ -149,6 +149,71 @@
     return form.closest(".wdp-modal") || form.closest(".wdp-donation-form");
   }
 
+  function getWdpMetaFormType(form) {
+    return form && form.closest(".wdp-modal") ? "popup" : "inline";
+  }
+
+  function trackMetaPixelAfterAddToCartSuccess(data, form) {
+    if (!window.WDPMetaTracking || typeof window.WDPMetaTracking.trackAddToCartDonation !== "function") {
+      return;
+    }
+    try {
+      const line = data && data.meta_cart_line ? data.meta_cart_line : null;
+      const uniqueInput = form.querySelector('input[name="unique_submission_key"]');
+      const usk = uniqueInput && uniqueInput.value ? String(uniqueInput.value) : "";
+      if (form) {
+        form._wdpLastMetaCartLine = line || null;
+      }
+      window.WDPMetaTracking.trackAddToCartDonation({
+        metaCartLine: line,
+        cartItemKey: data && data.cart_item_key ? String(data.cart_item_key) : "",
+        uniqueSubmissionKey: usk,
+        productId: data && data.product_id,
+        formType: getWdpMetaFormType(form),
+      });
+    } catch (e) {
+      safeLog("Meta AddToCart:", e);
+    }
+  }
+
+  function trackMetaPixelInitiateCheckoutIfEnabled(form, data) {
+    if (!window.WDPMetaTracking || typeof window.WDPMetaTracking.trackInitiateCheckoutDonation !== "function") {
+      return;
+    }
+    const metaCfg = wdp_ajax && wdp_ajax.meta ? wdp_ajax.meta : {};
+    if (!metaCfg.enabled || !metaCfg.initiateCheckout) {
+      return;
+    }
+    const line = (data && data.meta_cart_line) || (form && form._wdpLastMetaCartLine) || null;
+    if (!line || !line.product_id) {
+      return;
+    }
+    try {
+      const pid = String(line.product_id);
+      const qty = parseInt(line.quantity, 10) || 1;
+      const icParams = {
+        content_ids: [pid],
+        content_name: String(line.product_name || "").slice(0, 500),
+        content_type: "product",
+        contents: [{ id: pid, quantity: qty, item_price: parseFloat(line.item_price) || 0 }],
+        value: parseFloat(line.line_total) || 0,
+        currency: line.currency || (wdp_ajax.currency && wdp_ajax.currency.code) || "TRY",
+        num_items: qty,
+      };
+      const uniqueInput = form.querySelector('input[name="unique_submission_key"]');
+      const usk = uniqueInput && uniqueInput.value ? String(uniqueInput.value) : "";
+      const dedupeKey = "wdp_meta_ic_" + pid + "_" + (usk || "nokey");
+      const eventID = "wdp_ic_" + pid + "_" + String(Date.now());
+      window.WDPMetaTracking.trackInitiateCheckoutDonation({
+        params: icParams,
+        eventID: eventID,
+        dedupeKey: dedupeKey,
+      });
+    } catch (e) {
+      safeLog("Meta InitiateCheckout:", e);
+    }
+  }
+
   function getWdpUnitPriceForForm(form) {
     const root = getWdpFormRoot(form);
     const idInput = form.querySelector(WDP_PRODUCT_ID_INPUT_SELECTOR);
@@ -948,6 +1013,7 @@
 
     // Başarı durumunda
     if (data.success) {
+      trackMetaPixelAfterAddToCartSuccess(data, form);
       clearAlerts();
       // Sepet sayısını güncelle
       if (data.cart_count !== undefined) {
@@ -966,6 +1032,7 @@
         // Ödeme sayfasına yönlendir
         safeLog("Redirecting to checkout:", data.checkout_url);
         announceStatus('Ödeme adımına yönlendiriliyorsunuz.', 'assertive');
+        trackMetaPixelInitiateCheckoutIfEnabled(form, data);
         window.location.href = data.checkout_url || wdp_ajax.checkout_url || "/odeme-sayfasi/";
       } else {
         // Sepete Ekle için başarı mesajını göster
@@ -1232,6 +1299,9 @@
                 cart_count: verifyData.cart_count,
                 items: verifyData.items,
                 checkout_url: verifyData.checkout_url,
+                cart_item_key: verifyData.cart_item_key,
+                product_id: verifyData.product_id,
+                meta_cart_line: verifyData.meta_cart_line,
               },
               form,
               isCheckout,
