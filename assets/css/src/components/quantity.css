@@ -461,9 +461,9 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-shares-section .wdp-share-cou
   min-height: var(--wdp-hisse-counter-min-height, var(--wdp-counter-min-height, 44px));
   height: var(--wdp-hisse-counter-min-height, var(--wdp-counter-min-height, 44px));
   max-height: var(--wdp-hisse-counter-min-height, var(--wdp-counter-min-height, 44px));
-  border: 1px solid var(--wdp-input-border, var(--wdp-border-soft-gray, #e8eaed));
+  border: 1px solid var(--wdp-share-counter-border, var(--wdp-input-border, var(--wdp-border-soft-gray, #e8eaed)));
   border-radius: var(--wdp-input-radius, 20px);
-  background: var(--wdp-input-bg, var(--wdp-bg-pure-white, #ffffff));
+  background: var(--wdp-share-counter-bg, var(--wdp-input-bg, var(--wdp-bg-pure-white, #ffffff)));
   box-sizing: border-box;
   padding: 0 var(--wdp-hisse-counter-inner-padding-x, var(--wdp-counter-inner-padding-x, 6px));
   margin: 0;
@@ -516,7 +516,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-shares-section .wdp-share-cou
   min-height: 0;
   border: none;
   background: transparent;
-  color: var(--wdp-icon-color, #9ca3af);
+  color: var(--wdp-share-counter-button-color, var(--wdp-icon-color, #9ca3af));
   font-size: var(--wdp-hisse-counter-icon-font-size, var(--wdp-counter-icon-font-size, 22px));
   font-weight: 700;
   display: flex;

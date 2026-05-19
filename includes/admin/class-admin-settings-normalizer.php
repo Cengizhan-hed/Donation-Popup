@@ -139,6 +139,10 @@ class WDP_Admin_Settings_Normalizer {
 	 */
 	public static function normalize_shareholder_settings(array $request) {
 		$existing = get_option('wdp_shareholder_settings', array());
+		if (!is_array($existing)) {
+			$existing = array();
+		}
+
 		$solid_requested = isset($request['shareholders_area_bg']) ? sanitize_hex_color($request['shareholders_area_bg']) : '';
 		if (!$solid_requested && !empty($existing['shareholders_area_bg'])) {
 			$solid_requested = WDP_Utils::coerce_solid_hex_background($existing['shareholders_area_bg'], '#fafbfc');
@@ -147,21 +151,51 @@ class WDP_Admin_Settings_Normalizer {
 			$solid_requested = '#fafbfc';
 		}
 
+		$pick_hex = static function ($key, $default) use ($request, $existing) {
+			if (isset($request[ $key ])) {
+				return sanitize_hex_color($request[ $key ]);
+			}
+			if (!empty($existing[ $key ])) {
+				return sanitize_hex_color($existing[ $key ]);
+			}
+			return $default;
+		};
+
+		$pick_int = static function ($key, $default) use ($request, $existing) {
+			if (isset($request[ $key ]) && '' !== $request[ $key ]) {
+				return absint($request[ $key ]);
+			}
+			if (isset($existing[ $key ]) && '' !== $existing[ $key ]) {
+				return absint($existing[ $key ]);
+			}
+			return $default;
+		};
+
+		$pick_text = static function ($key, $default) use ($request, $existing) {
+			if (isset($request[ $key ])) {
+				return sanitize_text_field($request[ $key ]);
+			}
+			if (isset($existing[ $key ]) && '' !== $existing[ $key ]) {
+				return sanitize_text_field($existing[ $key ]);
+			}
+			return $default;
+		};
+
 		$settings = array(
-			'shareholder_card_bg'            => isset($request['shareholder_card_bg']) ? sanitize_hex_color($request['shareholder_card_bg']) : '#ffffff',
-			'shareholder_card_border'        => isset($request['shareholder_card_border']) ? sanitize_hex_color($request['shareholder_card_border']) : '#f0f2f5',
-			'shareholder_card_radius'        => isset($request['shareholder_card_radius']) ? absint($request['shareholder_card_radius']) : 20,
-			'shareholder_card_shadow'        => isset($request['shareholder_card_shadow']) ? sanitize_text_field($request['shareholder_card_shadow']) : '0 1px 3px rgba(0, 0, 0, 0.05)',
-			'shareholder_header_bg'          => isset($request['shareholder_header_bg']) ? sanitize_hex_color($request['shareholder_header_bg']) : '#f9fafb',
-			'shareholder_header_color'       => isset($request['shareholder_header_color']) ? sanitize_hex_color($request['shareholder_header_color']) : '#1f2937',
-			'shareholder_content_padding'    => isset($request['shareholder_content_padding']) ? absint($request['shareholder_content_padding']) : 12,
+			'shareholder_card_bg'            => $pick_hex('shareholder_card_bg', '#ffffff'),
+			'shareholder_card_border'        => $pick_hex('shareholder_card_border', '#f0f2f5'),
+			'shareholder_card_radius'        => $pick_int('shareholder_card_radius', 20),
+			'shareholder_card_shadow'        => $pick_text('shareholder_card_shadow', '0 1px 3px rgba(0, 0, 0, 0.05)'),
+			'shareholder_header_bg'          => $pick_hex('shareholder_header_bg', '#f9fafb'),
+			'shareholder_header_color'       => $pick_hex('shareholder_header_color', '#1f2937'),
+			'shareholder_content_padding'    => $pick_int('shareholder_content_padding', 12),
 			'shareholders_area_bg'           => $solid_requested,
-			'shareholders_area_border'       => isset($request['shareholders_area_border']) ? sanitize_hex_color($request['shareholders_area_border']) : '#e1e5e9',
-			'shareholders_area_radius'       => isset($request['shareholders_area_radius']) ? absint($request['shareholders_area_radius']) : 20,
-			'shareholders_scrollbar_color'   => isset($request['shareholders_scrollbar_color']) ? sanitize_hex_color($request['shareholders_scrollbar_color']) : '#4a90e2',
-			'share_counter_border'           => isset($request['share_counter_border']) ? sanitize_hex_color($request['share_counter_border']) : '#d1d5db',
-			'share_counter_bg'               => isset($request['share_counter_bg']) ? sanitize_hex_color($request['share_counter_bg']) : '#ffffff',
-			'share_counter_button_color'     => isset($request['share_counter_button_color']) ? sanitize_hex_color($request['share_counter_button_color']) : '#888888',
+			'shareholders_area_border'       => isset($request['shareholders_area_border']) ? sanitize_hex_color($request['shareholders_area_border']) : $pick_hex('shareholders_area_border', '#e1e5e9'),
+			'shareholders_area_radius'       => $pick_int('shareholders_area_radius', 20),
+			'shareholders_scrollbar_color'   => $pick_hex('shareholders_scrollbar_color', '#4a90e2'),
+			'share_counter_border'           => $pick_hex('share_counter_border', '#d1d5db'),
+			'share_counter_bg'               => $pick_hex('share_counter_bg', '#ffffff'),
+			'share_counter_button_color'     => $pick_hex('share_counter_button_color', '#888888'),
 			'shareholder_header_text'        => isset($request['shareholder_header_text']) ? sanitize_text_field($request['shareholder_header_text']) : 'Hissedar Bilgileri',
 			'shareholder_name_placeholder'   => isset($request['shareholder_name_placeholder']) ? sanitize_text_field($request['shareholder_name_placeholder']) : 'Ad Soyad *',
 			'shareholder_phone_placeholder'  => isset($request['shareholder_phone_placeholder']) ? sanitize_text_field($request['shareholder_phone_placeholder']) : 'Telefon Numarası *',

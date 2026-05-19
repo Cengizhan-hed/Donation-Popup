@@ -461,7 +461,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-product-note--title-barinma {
   --wdp-note-icon: #334155;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 600px) {
   html body .wdp-modal .wdp-modal-header .wdp-modal-title-wrapper {
     column-gap: var(--wdp-space-2, 8px);
     row-gap: var(--wdp-space-2, 8px);
@@ -474,14 +474,14 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-product-note--title-barinma {
     padding-right: 40px;
   }
 
-  /* Başlık: taşmayı gizleme — çok satır veya kelime kırılımı ile görünür kalsın */
+  /* Başlık: admin mobil px (--wdp-title-size @600px) ile uyumlu; taşmayı gizleme */
   html body :is(.wdp-modal .wdp-modal-header .wdp-modal-title-wrapper, .wdp-donation-form .wdp-modal-content .wdp-form-title-wrapper) :is(.wdp-modal-title, .wdp-form-title, h2, h2.wdp-form-title) {
     overflow: visible;
     text-overflow: clip;
     white-space: normal;
     overflow-wrap: anywhere;
     word-break: break-word;
-    font-size: clamp(15px, 4.2vw, var(--wdp-title-size, 27px));
+    font-size: var(--wdp-title-size, 27px);
     line-height: 1.25;
   }
 

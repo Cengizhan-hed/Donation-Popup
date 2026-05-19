@@ -218,8 +218,8 @@ html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-success-screen, .wdp-moda
 
 html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-success-screen, .wdp-modal-content .wdp-success-screen) .wdp-mini-cart {
   margin-bottom: var(--wdp-form-stack-gap);
-  background: var(--wdp-color-card, #ffffff);
-  border: 1px solid var(--wdp-border-very-light, #f0f2f5);
+  background: var(--wdp-mini-cart-bg, var(--wdp-color-card, #ffffff));
+  border: 1px solid var(--wdp-mini-cart-border, var(--wdp-border-very-light, #f0f2f5));
   border-radius: var(--wdp-mini-cart-radius, var(--wdp-input-radius, 20px));
   padding: 14px;
   position: relative;

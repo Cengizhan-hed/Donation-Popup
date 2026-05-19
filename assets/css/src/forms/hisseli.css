@@ -721,10 +721,10 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-shares-section .wdp-sharehold
   display: block;
   width: 100%;
   box-sizing: border-box;
-  background: transparent;
-  border: none;
-  border-radius: 0;
-  padding: 0;
+  background: var(--wdp-shareholders-area-bg, transparent);
+  border: 1px solid var(--wdp-shareholders-area-border, transparent);
+  border-radius: var(--wdp-shareholders-area-radius, 0);
+  padding: var(--wdp-shareholder-content-padding, 12px);
   margin: 0;
   flex: 0 1 auto;
   min-height: 0;
