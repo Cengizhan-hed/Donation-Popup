@@ -764,7 +764,7 @@
     fieldStack.setAttribute('aria-label', fieldGroupLabel);
 
     const nameRow = document.createElement('div');
-    nameRow.className = 'wdp-field-stack__row';
+    nameRow.className = 'wdp-field-stack__row wdp-field-stack__row--name';
     const userIcon = document.createElement('span');
     userIcon.className = 'wdp-field-stack__icon';
     userIcon.setAttribute('aria-hidden', 'true');
@@ -784,21 +784,31 @@
     phoneRow.className = 'wdp-field-stack__row wdp-field-stack__row--phone';
     const phoneWrap = document.createElement('div');
     phoneWrap.className = 'wdp-field-stack__phone';
-    const phoneInput = document.createElement('input');
-    phoneInput.type = 'tel';
-    phoneInput.className = 'wdp-field-stack__input';
-    phoneInput.name = `shareholder_phone_${safeIndex}`;
-    phoneInput.placeholder = phonePlaceholder;
-    phoneInput.autocomplete = 'tel';
-    phoneInput.required = true;
-    phoneInput.setAttribute('inputmode', 'tel');
-    phoneWrap.appendChild(phoneInput);
+    if (WDPApp.phoneInput && typeof WDPApp.phoneInput.createFieldElement === 'function') {
+      phoneWrap.appendChild(
+        WDPApp.phoneInput.createFieldElement({
+          name: `shareholder_phone_${safeIndex}`,
+          placeholder: phonePlaceholder,
+          required: true,
+        })
+      );
+    } else {
+      const phoneInput = document.createElement('input');
+      phoneInput.type = 'tel';
+      phoneInput.className = 'wdp-field-stack__input';
+      phoneInput.name = `shareholder_phone_${safeIndex}`;
+      phoneInput.placeholder = phonePlaceholder;
+      phoneInput.autocomplete = 'tel';
+      phoneInput.required = true;
+      phoneInput.setAttribute('inputmode', 'tel');
+      phoneWrap.appendChild(phoneInput);
+    }
     phoneRow.appendChild(phoneWrap);
     fieldStack.appendChild(phoneRow);
 
     if (enableEmailField) {
       const emailRow = document.createElement('div');
-      emailRow.className = 'wdp-field-stack__row';
+      emailRow.className = 'wdp-field-stack__row wdp-field-stack__row--email';
       const emailIcon = document.createElement('span');
       emailIcon.className = 'wdp-field-stack__icon';
       emailIcon.setAttribute('aria-hidden', 'true');

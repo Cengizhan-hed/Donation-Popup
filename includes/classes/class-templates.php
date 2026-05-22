@@ -134,13 +134,13 @@ class WDP_Templates {
         ob_start();
         ?>
         <div class="wdp-field-stack" role="group" aria-label="<?php echo esc_attr__('Bağışçı iletişim bilgileri', 'woo-donation-popup'); ?>">
-            <div class="wdp-field-stack__row">
+            <div class="wdp-field-stack__row wdp-field-stack__row--name">
                 <span class="wdp-field-stack__icon"><?php echo self::field_stack_icon_user_svg(); ?></span>
                 <input type="text" class="wdp-field-stack__input" name="donation_full_name" placeholder="<?php echo esc_attr__( 'Ad Soyad *', 'woo-donation-popup' ); ?>" required autocomplete="name" />
             </div>
             <div class="wdp-field-stack__row wdp-field-stack__row--phone">
                 <div class="wdp-field-stack__phone">
-                    <input type="tel" class="wdp-field-stack__input" name="donation_phone" placeholder="<?php echo esc_attr__( 'Telefon Numarası *', 'woo-donation-popup' ); ?>" required autocomplete="tel" inputmode="tel" />
+                    <?php echo WDP_Phone_Field::render(); ?>
                 </div>
             </div>
             <div class="wdp-field-stack__row wdp-field-stack__row--textarea">

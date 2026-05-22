@@ -360,6 +360,8 @@
 
   /* Semantic form & card tokens (görünümü bozmadan, mevcut değerlere eşit) */
   /* Form inputs */
+  --wdp-control-border-width: 1px;
+  --wdp-control-border: var(--wdp-control-border-width) solid var(--wdp-input-border, var(--wdp-border-soft-gray, #e8eaed));
   --wdp-input-bg: #ffffff;
   --wdp-input-border: #d1d5db;
   --wdp-input-color: #1f2937;
@@ -396,10 +398,14 @@
   --wdp-field-stack-row-focus-bg: color-mix(in srgb, #64748b 5%, var(--wdp-bg-pure-white, #ffffff));
   --wdp-field-icon-size: 20px;
   --wdp-field-icon-zone-width: 28px;
-  --wdp-field-icon-color: #6b6b6b;
+  /* İkonlar: koyu → odak mavi → dolu yeşil */
+  --wdp-field-icon-color: #475569;
+  --wdp-field-icon-color-focus: #2a7fe8;
+  --wdp-field-icon-color-filled: #18a566;
   --wdp-field-stack-pad-x: 14px;
   --wdp-field-stack-gap-icon-text: 10px;
   --wdp-field-stack-input-pad-y: 13px;
+  --wdp-autofill-row-bg: #e8f4fc;
   --wdp-field-stack-placeholder: #757575;
   --wdp-field-stack-textarea-min-height: 52px;
   --wdp-field-stack-textarea-icon-pad-top: 11px;
@@ -489,8 +495,9 @@
   /* Ürün notu: başlık altı — biraz daha belirgin, yine kompakt */
   --wdp-product-note-padding-y: 8px;
   --wdp-product-note-padding-x: 14px;
-  --wdp-product-note-font-size: clamp(10.5px, 0.92vw, 12.5px);
-  --wdp-product-note-line-height: 1.42;
+  --wdp-product-note-color: #4b5563;
+  --wdp-product-note-font-size: clamp(13px, 1.05vw, 15px);
+  --wdp-product-note-line-height: 1.5;
   --wdp-product-note-icon-size: 17px;
   --wdp-product-note-icon-gap: 0.45rem;
   /* İkon: ilk satır optik hizası için ince düzeltme (px, isteğe bağlı) */

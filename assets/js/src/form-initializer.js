@@ -149,6 +149,13 @@
     if (hostForShareholder && hostForShareholder.dataset) {
       hostForShareholder.dataset.wdpInitialized = '1';
     }
+
+    const phone = WDPApp.phoneInput;
+    if (phone && typeof phone.refreshInRoot === 'function') {
+      phone.refreshInRoot(hostForShareholder || formElement);
+    } else if (phone && typeof phone.setupInRoot === 'function') {
+      phone.setupInRoot(hostForShareholder || formElement);
+    }
     const pidInline = resolveProductIdForContainer(hostForShareholder);
     if (pidInline && hostForShareholder && !hostForShareholder.closest('.wdp-modal')) {
       setupInlineMetaViewContent(hostForShareholder, pidInline, formElement);

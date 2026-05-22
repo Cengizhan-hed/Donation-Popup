@@ -60,7 +60,7 @@ html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content form, .wdp-
   -webkit-appearance: textfield;
   -moz-appearance: textfield;
   appearance: textfield;
-  border: 1.5px solid var(--wdp-input-border, var(--wdp-border-soft-gray, #e8eaed));
+  border: var(--wdp-control-border, 1px solid var(--wdp-input-border, var(--wdp-border-soft-gray, #e8eaed)));
   border-radius: var(--wdp-input-radius);
   background: var(--wdp-input-bg, var(--wdp-bg-pure-white, #ffffff));
   padding: var(--wdp-input-padding-y, 10px) var(--wdp-input-padding-x, 16px);
@@ -86,7 +86,7 @@ html body :is(.wdp-modal, .wdp-donation-form) input.wdp-custom-price-input[type=
   -webkit-appearance: textfield;
   -moz-appearance: textfield;
   appearance: textfield;
-  border: 1.5px solid var(--wdp-input-border, var(--wdp-border-soft-gray, #e8eaed));
+  border: var(--wdp-control-border, 1px solid var(--wdp-input-border, var(--wdp-border-soft-gray, #e8eaed)));
   border-radius: var(--wdp-input-radius);
   background: var(--wdp-input-bg, var(--wdp-bg-pure-white, #ffffff));
   padding: var(--wdp-input-padding-y, 10px) var(--wdp-input-padding-x, 16px);
@@ -152,7 +152,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-price-row .wdp-q
 }
 
 /* ==================== */
-/* SABİT FİYAT + SAYAÇ / ÖZEL FİYAT + GÖRÜNÜR SAYAÇ (50/50; dar ekranda alt alta) */
+/* SABİT FİYAT + SAYAÇ / ÖZEL FİYAT + GÖRÜNÜR SAYAÇ (50/50; mobil dahil yan yana) */
 /* ==================== */
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-price-quantity-row.wdp-fixed-price-counter-row,
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-price-quantity-row.wdp-custom-price-with-qty-row {
@@ -188,7 +188,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-custom-price-shell {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-  border: 1.5px solid var(--wdp-input-border, var(--wdp-border-soft-gray, #e8eaed));
+  border: var(--wdp-control-border, 1px solid var(--wdp-input-border, var(--wdp-border-soft-gray, #e8eaed)));
   border-radius: var(--wdp-input-radius);
   background: var(--wdp-input-bg, var(--wdp-bg-pure-white, #ffffff));
   transition:
@@ -259,7 +259,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-line-total-display {
   max-height: var(--wdp-input-min-height, 50px);
   padding: var(--wdp-input-padding-y, 10px) var(--wdp-input-padding-x, 16px);
   box-sizing: border-box;
-  border: 1.5px solid var(--wdp-input-border, var(--wdp-border-soft-gray, #e8eaed));
+  border: var(--wdp-control-border, 1px solid var(--wdp-input-border, var(--wdp-border-soft-gray, #e8eaed)));
   border-radius: var(--wdp-input-radius);
   background: var(--wdp-input-bg, var(--wdp-bg-pure-white, #ffffff));
   user-select: none;
@@ -284,15 +284,56 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-line-total-display .wdp-line-
   font-weight: inherit;
 }
 
-/* Dar ekranda da fiyat + sayaç yan yana (buton grubu gibi); sıkışmayı azalt */
-@media (max-width: 480px) {
+/* Mobil: fiyat + sayaç her zaman yan yana (50/50), kompakt sayaç butonları */
+@media (max-width: 768px) {
+  html body :is(.wdp-modal, .wdp-donation-form) .wdp-price-quantity-row,
   html body :is(.wdp-modal, .wdp-donation-form) .wdp-price-quantity-row.wdp-fixed-price-counter-row,
   html body :is(.wdp-modal, .wdp-donation-form) .wdp-price-quantity-row.wdp-custom-price-with-qty-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     column-gap: var(--wdp-space-2, 8px);
+    row-gap: 0;
+    align-items: stretch;
+  }
+
+  html body :is(.wdp-modal, .wdp-donation-form) .wdp-line-total-display {
+    min-height: var(--wdp-input-min-height, 48px);
+    height: var(--wdp-input-min-height, 48px);
+    max-height: var(--wdp-input-min-height, 48px);
+    padding-inline: var(--wdp-space-2, 10px);
   }
 
   html body :is(.wdp-modal, .wdp-donation-form) .wdp-line-total-display .wdp-line-total-value {
-    font-size: clamp(14px, 3.8vw, 16px);
+    font-size: clamp(13px, 3.4vw, 16px);
+  }
+
+  html body :is(.wdp-modal, .wdp-donation-form) .wdp-quantity-counter {
+    --wdp-counter-btn-col: 36px;
+    --wdp-counter-inner-padding-x: 4px;
+    grid-template-columns: var(--wdp-counter-btn-col) minmax(1.75rem, 1fr) var(--wdp-counter-btn-col);
+    min-height: var(--wdp-input-min-height, 48px);
+    height: var(--wdp-input-min-height, 48px);
+    max-height: var(--wdp-input-min-height, 48px);
+  }
+
+  html body :is(.wdp-modal, .wdp-donation-form) .wdp-quantity-counter input[type="number"] {
+    font-size: clamp(15px, 4vw, 17px);
+    line-height: var(--wdp-input-min-height, 48px);
+  }
+
+  html body :is(.wdp-modal, .wdp-donation-form) .wdp-custom-price-shell {
+    min-height: var(--wdp-input-min-height, 48px);
+  }
+
+  html body :is(.wdp-modal, .wdp-donation-form) .wdp-custom-price-currency {
+    padding-inline-start: var(--wdp-space-2, 10px);
+    padding-inline-end: 6px;
+    font-size: clamp(14px, 3.6vw, 16px);
+  }
+
+  html body :is(.wdp-modal, .wdp-donation-form) .wdp-custom-price-shell .wdp-custom-price-input[type="number"] {
+    padding-inline-end: var(--wdp-space-2, 10px);
+    font-size: clamp(14px, 3.6vw, 16px);
   }
 }
 
@@ -330,7 +371,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-quantity-counter {
   min-height: var(--wdp-counter-min-height, var(--wdp-input-min-height, 48px));
   height: var(--wdp-counter-min-height, var(--wdp-input-min-height, 48px));
   max-height: var(--wdp-counter-min-height, var(--wdp-input-min-height, 48px));
-  border: 1px solid var(--wdp-input-border, var(--wdp-border-soft-gray, #e8eaed));
+  border: var(--wdp-control-border, 1px solid var(--wdp-input-border, var(--wdp-border-soft-gray, #e8eaed)));
   border-radius: var(--wdp-input-radius, 20px);
   background: var(--wdp-input-bg, var(--wdp-bg-pure-white, #ffffff));
   box-sizing: border-box;
@@ -461,7 +502,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-shares-section .wdp-share-cou
   min-height: var(--wdp-hisse-counter-min-height, var(--wdp-counter-min-height, 44px));
   height: var(--wdp-hisse-counter-min-height, var(--wdp-counter-min-height, 44px));
   max-height: var(--wdp-hisse-counter-min-height, var(--wdp-counter-min-height, 44px));
-  border: 1px solid var(--wdp-share-counter-border, var(--wdp-input-border, var(--wdp-border-soft-gray, #e8eaed)));
+  border: var(--wdp-control-border-width, 1px) solid var(--wdp-share-counter-border, var(--wdp-input-border, var(--wdp-border-soft-gray, #e8eaed)));
   border-radius: var(--wdp-input-radius, 20px);
   background: var(--wdp-share-counter-bg, var(--wdp-input-bg, var(--wdp-bg-pure-white, #ffffff)));
   box-sizing: border-box;
@@ -580,7 +621,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-form .wdp-share-q
   min-height: var(--wdp-counter-min-height, var(--wdp-input-min-height, 48px));
   height: var(--wdp-counter-min-height, var(--wdp-input-min-height, 48px));
   max-height: var(--wdp-counter-min-height, var(--wdp-input-min-height, 48px));
-  border: 1px solid var(--wdp-input-border, var(--wdp-border-soft-gray, #e8eaed));
+  border: var(--wdp-control-border, 1px solid var(--wdp-input-border, var(--wdp-border-soft-gray, #e8eaed)));
   border-radius: var(--wdp-input-radius, 20px);
   background: var(--wdp-input-bg, var(--wdp-bg-pure-white, #ffffff));
   box-sizing: border-box;
@@ -709,9 +750,19 @@ html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-quantity-counter, .wdp-sh
   text-indent: 0;
 }
 
-@media (max-width: 380px) {
+/* Çok dar ekran (≤360px): yine yan yana; minimum boşluk */
+@media (max-width: 360px) {
   html body :is(.wdp-modal, .wdp-donation-form) .wdp-price-quantity-row:not(.wdp-progress-bar-price-row) {
-    grid-template-columns: 1fr;
-    row-gap: 10px;
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+    column-gap: 6px;
+  }
+
+  html body :is(.wdp-modal, .wdp-donation-form) .wdp-quantity-counter {
+    --wdp-counter-btn-col: 32px;
+    --wdp-counter-inner-padding-x: 2px;
+  }
+
+  html body :is(.wdp-modal, .wdp-donation-form) .wdp-line-total-display {
+    padding-inline: 8px;
   }
 }

@@ -17,7 +17,7 @@ html body .wdp-amount-preset {
   justify-content: center;
   padding: 8px 18px;
   background: var(--wdp-bg-pure-white, #ffffff);
-  border: 1.5px solid var(--wdp-border-soft-gray, #e8eaed);
+  border: var(--wdp-control-border, 1px solid var(--wdp-border-soft-gray, #e8eaed));
   border-radius: var(--wdp-radius-sm, 10px);
   font-family: var(--wdp-font-family, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
   font-size: 14px;

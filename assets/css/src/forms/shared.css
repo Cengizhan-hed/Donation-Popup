@@ -49,6 +49,39 @@ html body .wdp-modal .wdp-modal-header .wdp-modal-title-wrapper .wdp-product-not
   align-self: stretch;
 }
 
+/* Ürün notu — tüm form tipleri (modal header + inline title): sade metin, kutu yok */
+html body .hdf-donation-modal-wrapper:is(.wdp-modal, .wdp-donation-form) :is(
+  .wdp-modal-header .wdp-product-note,
+  .wdp-form-title-wrapper .wdp-product-note,
+  .wdp-modal-content .wdp-product-note
+) {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+  background-color: transparent;
+  color: var(--wdp-product-note-color, #4b5563);
+  font-family: var(--wdp-font-family);
+  font-size: var(--wdp-product-note-font-size, clamp(13px, 1.05vw, 15px));
+  font-weight: 600;
+  line-height: var(--wdp-product-note-line-height, 1.5);
+  letter-spacing: 0.01em;
+  text-wrap: pretty;
+  box-sizing: border-box;
+}
+
+html body .hdf-donation-modal-wrapper:is(.wdp-modal, .wdp-donation-form) .wdp-product-note__text {
+  color: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+}
+
 /* In-page form header - no underline, title inline-block */
 /* CRITICAL: Maximum specificity - html body ile tema override koruması */
 html body .wdp-donation-form .wdp-modal-header {
@@ -261,38 +294,27 @@ html body .wdp-donation-form .wdp-modal-content .wdp-form-title-wrapper .wdp-pro
   align-self: stretch;
 }
 
-/* Ürün başlığı alt bilgi notu - modal + in-page form */
-/* Not kutusu: sadece title-wrapper ile sınırlama — mobilde tema/override ile eşleşme kaçmasın diye .wdp-modal-content altında hedeflenir */
+/* Ürün başlığı alt bilgi notu — .wdp-modal-content içi (form gövdesi ile aynı görünüm) */
 html body :is(.wdp-modal .wdp-modal-content, .wdp-donation-form .wdp-modal-content) .wdp-product-note {
-  display: flex;
-  align-items: flex-start;
-  width: auto;
+  display: block;
+  width: 100%;
   max-width: 100%;
   align-self: flex-start;
   margin: 0;
-  padding: var(--wdp-product-note-padding-y, 5px) var(--wdp-product-note-padding-x, var(--wdp-space-3, 12px));
-  border-radius: var(--wdp-info-strip-radius, var(--wdp-input-radius));
-  border: 1px solid color-mix(in srgb, var(--wdp-primary) 5%, var(--wdp-border-very-light, #f0f2f5));
-  border-bottom-width: 1px;
-  border-bottom-style: solid;
-  border-bottom-color: color-mix(in srgb, #94a3b8 68%, #64748b);
-  box-shadow: inset 0 -1px 0 rgba(100, 116, 139, 0.24);
-  color: #18456c;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+  background-color: transparent;
+  color: var(--wdp-product-note-color, #4b5563);
   font-family: var(--wdp-font-family);
-  font-size: var(--wdp-product-note-font-size, clamp(10px, 0.88vw, 11px));
-  font-weight: 500;
-  line-height: var(--wdp-product-note-line-height, 1.45);
+  font-size: var(--wdp-product-note-font-size, clamp(13px, 1.05vw, 15px));
+  font-weight: 600;
+  line-height: var(--wdp-product-note-line-height, 1.5);
   letter-spacing: 0.01em;
   text-wrap: pretty;
   box-sizing: border-box;
-  isolation: isolate;
-  --wdp-note-bg-fallback: rgba(248, 250, 252, 0.98);
-  --wdp-note-border: rgba(148, 163, 184, 0.28);
-  --wdp-note-text: #18456c;
-  --wdp-note-icon: #0f548e;
-  background-color: var(--wdp-note-bg-fallback);
-  border-color: var(--wdp-note-border);
-  color: var(--wdp-note-text);
 }
 
 /* Not metni: sade tek sütun akış */
@@ -371,94 +393,30 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-product-note__toggle:checked 
   display: inline;
 }
 
-html body :is(.wdp-modal, .wdp-donation-form) .wdp-product-note--video {
-  --wdp-note-bg-fallback: rgba(30, 115, 190, 0.07);
-  --wdp-note-border: rgba(30, 115, 190, 0.24);
-  --wdp-note-text: #16446c;
-  --wdp-note-icon: #0f548e;
-}
-
-
-html body :is(.wdp-modal, .wdp-donation-form) .wdp-product-note--delivery {
-  --wdp-note-bg-fallback: rgba(22, 163, 74, 0.07);
-  --wdp-note-border: rgba(22, 163, 74, 0.28);
-  --wdp-note-text: #14532d;
-  --wdp-note-icon: #15803d;
-}
-
-
-html body :is(.wdp-modal, .wdp-donation-form) .wdp-product-note--heart {
-  --wdp-note-bg-fallback: rgba(225, 29, 72, 0.06);
-  --wdp-note-border: rgba(225, 29, 72, 0.26);
-  --wdp-note-text: #881337;
-  --wdp-note-icon: #be123c;
-}
-
-
-html body :is(.wdp-modal, .wdp-donation-form) .wdp-product-note--info {
-  --wdp-note-bg-fallback: rgba(30, 115, 190, 0.06);
-  --wdp-note-border: rgba(30, 115, 190, 0.2);
-  --wdp-note-text: #18456c;
-  --wdp-note-icon: #0f548e;
-}
-
-/* Başlık ikonu seçimine göre not tonunu otomatik eşle */
-html body :is(.wdp-modal, .wdp-donation-form) .wdp-product-note--title-kurban {
-  --wdp-note-bg-fallback: rgba(180, 83, 9, 0.08);
-  --wdp-note-border: rgba(154, 52, 18, 0.26);
-  --wdp-note-text: #7c2d12;
-  --wdp-note-icon: #9a3412;
-}
-
-html body :is(.wdp-modal, .wdp-donation-form) .wdp-product-note--title-egitim {
-  --wdp-note-bg-fallback: rgba(29, 78, 216, 0.07);
-  --wdp-note-border: rgba(29, 78, 216, 0.24);
-  --wdp-note-text: #1e3a8a;
-  --wdp-note-icon: #1d4ed8;
-}
-
-html body :is(.wdp-modal, .wdp-donation-form) .wdp-product-note--title-sadaka,
-html body :is(.wdp-modal, .wdp-donation-form) .wdp-product-note--title-saglik {
-  --wdp-note-bg-fallback: rgba(190, 24, 93, 0.07);
-  --wdp-note-border: rgba(190, 24, 93, 0.24);
-  --wdp-note-text: #831843;
-  --wdp-note-icon: #be185d;
-}
-
-html body :is(.wdp-modal, .wdp-donation-form) .wdp-product-note--title-zekat,
-html body :is(.wdp-modal, .wdp-donation-form) .wdp-product-note--title-kumanya {
-  --wdp-note-bg-fallback: rgba(22, 163, 74, 0.08);
-  --wdp-note-border: rgba(21, 128, 61, 0.25);
-  --wdp-note-text: #14532d;
-  --wdp-note-icon: #15803d;
-}
-
-html body :is(.wdp-modal, .wdp-donation-form) .wdp-product-note--title-su_kuyusu {
-  --wdp-note-bg-fallback: rgba(2, 132, 199, 0.08);
-  --wdp-note-border: rgba(3, 105, 161, 0.27);
-  --wdp-note-text: #0c4a6e;
-  --wdp-note-icon: #0369a1;
-}
-
-html body :is(.wdp-modal, .wdp-donation-form) .wdp-product-note--title-yetim {
-  --wdp-note-bg-fallback: rgba(79, 70, 229, 0.07);
-  --wdp-note-border: rgba(67, 56, 202, 0.25);
-  --wdp-note-text: #312e81;
-  --wdp-note-icon: #4338ca;
-}
-
-html body :is(.wdp-modal, .wdp-donation-form) .wdp-product-note--title-acil_yardim {
-  --wdp-note-bg-fallback: rgba(220, 38, 38, 0.08);
-  --wdp-note-border: rgba(185, 28, 28, 0.27);
-  --wdp-note-text: #7f1d1d;
-  --wdp-note-icon: #b91c1c;
-}
-
-html body :is(.wdp-modal, .wdp-donation-form) .wdp-product-note--title-barinma {
-  --wdp-note-bg-fallback: rgba(71, 85, 105, 0.09);
-  --wdp-note-border: rgba(51, 65, 85, 0.26);
-  --wdp-note-text: #1e293b;
-  --wdp-note-icon: #334155;
+/* Ton sınıfları: yalnızca “devamını gör” link rengi (metin rengi tüm formlarda aynı) */
+html body .hdf-donation-modal-wrapper:is(.wdp-modal, .wdp-donation-form) :is(
+  .wdp-product-note--video,
+  .wdp-product-note--delivery,
+  .wdp-product-note--heart,
+  .wdp-product-note--info,
+  .wdp-product-note--title-kurban,
+  .wdp-product-note--title-egitim,
+  .wdp-product-note--title-sadaka,
+  .wdp-product-note--title-saglik,
+  .wdp-product-note--title-zekat,
+  .wdp-product-note--title-kumanya,
+  .wdp-product-note--title-su_kuyusu,
+  .wdp-product-note--title-yetim,
+  .wdp-product-note--title-acil_yardim,
+  .wdp-product-note--title-barinma
+) {
+  --wdp-note-text: var(--wdp-product-note-color, #4b5563);
+  --wdp-note-icon: var(--wdp-primary, #4a90e2);
+  color: var(--wdp-product-note-color, #4b5563);
+  background: transparent;
+  background-color: transparent;
+  border: none;
+  box-shadow: none;
 }
 
 @media (max-width: 600px) {
@@ -491,10 +449,11 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-product-note--title-barinma {
   }
 
   html body :is(.wdp-modal .wdp-modal-content, .wdp-donation-form .wdp-modal-content) .wdp-product-note {
-    padding: var(--wdp-product-note-padding-y, 5px) var(--wdp-space-2, 8px);
-    border-radius: var(--wdp-info-strip-radius, var(--wdp-input-radius));
-    font-size: max(9px, 2.65vw);
-    line-height: 1.3;
+    padding: 0;
+    border: none;
+    font-size: max(13px, 2.85vw);
+    font-weight: 600;
+    line-height: 1.45;
     max-width: 100%;
     width: 100%;
     box-sizing: border-box;
@@ -816,7 +775,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content select {
   width: 100%;
   min-height: var(--wdp-input-min-height, 50px);
   padding: var(--wdp-input-padding-y, 12px) var(--wdp-input-padding-x, 16px);
-  border: 1.5px solid var(--wdp-input-border, var(--wdp-border-soft-gray, #e8eaed));
+  border: var(--wdp-control-border, 1px solid var(--wdp-input-border, var(--wdp-border-soft-gray, #e8eaed)));
   border-radius: var(--wdp-input-radius);
   background: var(--wdp-input-bg, var(--wdp-bg-pure-white, #ffffff));
   color: var(--wdp-input-color, #1f2937);
@@ -859,7 +818,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content textarea:not(.w
   min-height: var(--wdp-textarea-min-height, 90px);
   padding: var(--wdp-input-padding-y, 12px) var(--wdp-input-padding-x, 16px);
   resize: vertical;
-  border: 1.5px solid var(--wdp-input-border, var(--wdp-border-soft-gray, #e8eaed));
+  border: var(--wdp-control-border, 1px solid var(--wdp-input-border, var(--wdp-border-soft-gray, #e8eaed)));
   border-radius: var(--wdp-input-radius);
   background: var(--wdp-input-bg, var(--wdp-bg-pure-white, #ffffff));
   transition:

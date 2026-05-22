@@ -1,0 +1,264 @@
+/**
+ * WDP custom phone field — country code dropdown (no flags), scoped to plugin forms.
+ */
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-phone-field {
+  width: 100%;
+  min-width: 0;
+  display: block;
+  box-sizing: border-box;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-phone-field__inner {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  min-width: 0;
+  min-height: calc(var(--wdp-input-min-height, 50px) - 2px);
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-phone-field__code-wrap {
+  position: relative;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: stretch;
+  width: auto;
+  max-width: none;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-phone-field__code-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  width: auto;
+  min-width: 0;
+  max-width: none;
+  height: 100%;
+  margin: 0;
+  padding: max(11px, var(--wdp-field-stack-input-pad-y, 13px)) 12px;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  color: var(--wdp-field-icon-color, #475569);
+  font-family: var(--wdp-font-family, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
+  font-size: var(--wdp-input-font-size, 16px);
+  font-weight: 600;
+  line-height: 1.45;
+  white-space: nowrap;
+  cursor: pointer;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+  transition: color 0.18s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-phone-field__code-btn:hover {
+    color: var(--wdp-field-icon-color-focus, #2a7fe8);
+  }
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-phone-field__code-btn:focus {
+  outline: none;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-phone-field__code-btn:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--wdp-primary, #4a90e2) 55%, transparent);
+  outline-offset: -2px;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-phone-field__chevron {
+  display: inline-block;
+  width: 0;
+  height: 0;
+  margin-top: 2px;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 5px solid currentColor;
+  opacity: 0.72;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-phone-field__divider {
+  flex: 0 0 1px;
+  align-self: stretch;
+  width: 1px;
+  margin: max(11px, var(--wdp-field-stack-input-pad-y, 13px)) 0;
+  background: var(--wdp-field-stack-row-divider-color, color-mix(in srgb, #94a3b8 35%, transparent));
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-phone-field__number {
+  flex: 1 1 auto;
+  min-width: 0;
+  width: 100%;
+  margin: 0;
+  padding: max(11px, var(--wdp-field-stack-input-pad-y, 13px)) max(12px, var(--wdp-field-stack-pad-x, 14px));
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  font-family: var(--wdp-font-family, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
+  font-size: var(--wdp-input-font-size, 16px);
+  font-weight: 400;
+  line-height: 1.45;
+  color: var(--wdp-input-color, #1f2937);
+  -webkit-appearance: none;
+  appearance: none;
+  box-sizing: border-box;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-phone-field__number::placeholder {
+  color: var(--wdp-field-stack-placeholder);
+  opacity: 1;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-phone-field__number:focus,
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-phone-field__number:focus-visible {
+  outline: none;
+  border: none;
+  box-shadow: none;
+  background: transparent;
+}
+
+/* Floating country panel (appended to body) */
+html body .wdp-phone-country-panel {
+  position: fixed;
+  z-index: 2147483646;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  pointer-events: auto;
+  contain: layout style;
+}
+
+html body .wdp-phone-country-panel[hidden] {
+  display: none !important;
+}
+
+html body .wdp-phone-country-panel__inner {
+  display: flex;
+  flex-direction: column;
+  max-height: 280px;
+  min-height: 140px;
+  overflow: hidden;
+  border: var(--wdp-border-width, 1px) solid var(--wdp-border-light, #e5e7eb);
+  border-radius: var(--wdp-input-radius, 16px);
+  background: var(--wdp-modal-bg, #fff);
+  box-shadow: 0 12px 32px -8px rgba(15, 23, 42, 0.18), 0 0 0 1px rgba(15, 23, 42, 0.04);
+  transform: translateZ(0);
+}
+
+html body .wdp-phone-country-panel__search {
+  flex: 0 0 auto;
+  width: 100%;
+  margin: 0;
+  padding: 10px 12px;
+  border: none;
+  border-bottom: var(--wdp-field-stack-row-divider);
+  border-radius: var(--wdp-input-radius, 16px) var(--wdp-input-radius, 16px) 0 0;
+  font-family: var(--wdp-font-family);
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--wdp-input-color, #1f2937);
+  background: var(--wdp-field-stack-bg, #fff);
+  box-sizing: border-box;
+}
+
+html body .wdp-phone-country-panel__search:focus {
+  outline: none;
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--wdp-primary, #4a90e2) 35%, transparent);
+}
+
+html body .wdp-phone-country-panel__list {
+  flex: 1 1 auto;
+  margin: 0;
+  padding: 6px 0;
+  list-style: none;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+html body .wdp-phone-country-panel__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  margin: 0;
+  padding: 10px 14px;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  color: var(--wdp-input-color, #1f2937);
+  font-family: var(--wdp-font-family);
+  font-size: 14px;
+  line-height: 1.35;
+  text-align: left;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+html body .wdp-phone-country-panel__item:hover,
+html body .wdp-phone-country-panel__item:focus-visible {
+  background: color-mix(in srgb, var(--wdp-primary, #4a90e2) 8%, transparent);
+  outline: none;
+}
+
+html body .wdp-phone-country-panel__item--current {
+  background: color-mix(in srgb, var(--wdp-primary, #4a90e2) 12%, transparent);
+  font-weight: 600;
+}
+
+html body .wdp-phone-country-panel__name {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+html body .wdp-phone-country-panel__dial {
+  flex: 0 0 auto;
+  font-weight: 600;
+  color: var(--wdp-gray-600, #4b5563);
+}
+
+html body.wdp-phone-panel-open {
+  /* hook for optional scroll lock coordination */
+}
+
+/* Autofill: telefon satırının tamamı aynı mavi ton (kod + numara) */
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__row--phone:has(.wdp-phone-field__number:-webkit-autofill),
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__row--phone:has(.wdp-phone-field__number:autofill) {
+  background: var(--wdp-autofill-row-bg, #e8f4fc);
+  box-shadow: none;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__row--phone:has(.wdp-phone-field__number:-webkit-autofill) .wdp-phone-field__inner,
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__row--phone:has(.wdp-phone-field__number:autofill) .wdp-phone-field__inner,
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__row--phone:has(.wdp-phone-field__number:-webkit-autofill):not(:focus-within) .wdp-phone-field__code-btn,
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__row--phone:has(.wdp-phone-field__number:autofill):not(:focus-within) .wdp-phone-field__code-btn {
+  background: transparent;
+  color: var(--wdp-field-icon-color-filled, #18a566);
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__row--phone:has(.wdp-phone-field__number:-webkit-autofill) .wdp-phone-field__number,
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__row--phone:has(.wdp-phone-field__number:autofill) .wdp-phone-field__number {
+  -webkit-text-fill-color: var(--wdp-input-color, #1f2937);
+  caret-color: var(--wdp-input-color, #1f2937);
+  box-shadow: 0 0 0 1000px var(--wdp-autofill-row-bg, #e8f4fc) inset;
+  background-color: transparent;
+  transition: background-color 99999s ease-out;
+}
+
+@media (max-width: 480px) {
+  html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-phone-field__code-btn {
+    padding: max(11px, var(--wdp-field-stack-input-pad-y, 13px)) 10px;
+    font-size: max(16px, var(--wdp-input-font-size, 16px));
+  }
+
+  html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-phone-field__number {
+    padding-inline: max(12px, var(--wdp-field-stack-pad-x, 12px));
+    font-size: max(16px, var(--wdp-input-font-size, 16px));
+  }
+}

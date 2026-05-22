@@ -1975,7 +1975,10 @@
       }
     }
 
-    if (WDPApp.phoneInput && typeof WDPApp.phoneInput.setupInRoot === 'function') {
+    if (WDPApp.phoneInput && typeof WDPApp.phoneInput.refreshInRoot === 'function') {
+      const phoneRoot = form.closest('.wdp-modal, .wdp-donation-form') || form;
+      WDPApp.phoneInput.refreshInRoot(phoneRoot);
+    } else if (WDPApp.phoneInput && typeof WDPApp.phoneInput.setupInRoot === 'function') {
       WDPApp.phoneInput.setupInRoot(form);
     }
   }

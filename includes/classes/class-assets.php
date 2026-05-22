@@ -128,6 +128,7 @@ class WDP_Assets {
             'src/layout.css',
             'src/forms/shared.css',
             'src/forms/field-stack.css',
+            'src/components/phone-field.css',
             'src/forms/hisseli.css',
             'src/components/buttons.css',
             'src/components/alerts.css',
@@ -435,14 +436,10 @@ class WDP_Assets {
         if (self::$frontend_assets_registered) {
             return;
         }
-        $intl_tel_version = '18.5.3';
-        wp_register_script('wdp-intl-tel-utils-js', $plugin_url . 'assets/vendor/intl-tel-input/js/utils.js', array(), $intl_tel_version, true);
-        wp_register_script('wdp-intl-tel-input-js', $plugin_url . 'assets/vendor/intl-tel-input/js/intlTelInput.min.js', array('wdp-intl-tel-utils-js'), $intl_tel_version, true);
-
         wp_register_script('wdp-meta-tracking-js', $plugin_url . 'assets/js/src/meta-tracking.js', array(), $js_module_version, true);
         $utils_deps = array_merge(array('wdp-meta-tracking-js'), is_array($dependencies) ? $dependencies : array());
         wp_register_script('wdp-utils-js', $plugin_url . 'assets/js/src/utils.js', $utils_deps, $js_module_version, true);
-        wp_register_script('wdp-phone-input-js', $plugin_url . 'assets/js/src/phone-input.js', array('wdp-intl-tel-input-js', 'wdp-utils-js'), $js_module_version, true);
+        wp_register_script('wdp-phone-input-js', $plugin_url . 'assets/js/src/phone-input.js', array('wdp-utils-js'), $js_module_version, true);
         wp_register_script('wdp-state-js', $plugin_url . 'assets/js/src/state.js', array('wdp-utils-js'), $js_module_version, true);
         wp_register_script('wdp-dom-js', $plugin_url . 'assets/js/src/dom.js', array('wdp-state-js'), $js_module_version, true);
         wp_register_script('wdp-alerts-js', $plugin_url . 'assets/js/src/alerts.js', array('wdp-utils-js'), $js_module_version, true);
@@ -459,13 +456,6 @@ class WDP_Assets {
         wp_register_script('wdp-init-js', $plugin_url . 'assets/js/src/init.js', array('wdp-utils-js', 'wdp-state-js', 'wdp-dom-js', 'wdp-modal-js', 'wdp-form-js', 'wdp-shareholder-js', 'wdp-cart-js', 'wdp-progress-bar-js', 'wdp-form-initializer-js', 'wdp-event-manager-js', 'wdp-module-loader-js', 'wdp-constants-js'), $js_module_version, true);
         self::register_frontend_style_stack($plugin_url, $css_version);
 
-        wp_register_style('wdp-intl-tel-input-base', $plugin_url . 'assets/vendor/intl-tel-input/css/intlTelInput.css', array(), $intl_tel_version);
-        wp_register_style(
-            'wdp-intl-tel-input-wdp',
-            $plugin_url . 'assets/css/src/components/intl-tel-input-wdp.css',
-            array('wdp-intl-tel-input-base', self::FRONTEND_CSS_HANDLE),
-            $css_version
-        );
         self::$frontend_assets_registered = true;
     }
 
@@ -559,9 +549,8 @@ class WDP_Assets {
                 'phone_search_placeholder' => __('Ara', 'woo-donation-popup'),
             ),
             'phone' => array(
-                'default_country' => apply_filters('wdp_phone_default_country', 'tr'),
-                'preferred_countries' => apply_filters('wdp_phone_preferred_countries', array('tr', 'de', 'us', 'gb')),
-                'utils_url' => $plugin_url . 'assets/vendor/intl-tel-input/js/utils.js',
+                'default_country' => class_exists('WDP_Phone_Field') ? WDP_Phone_Field::get_default_country_iso() : 'tr',
+                'countries' => class_exists('WDP_Phone_Field') ? WDP_Phone_Field::get_countries_for_js() : array(),
             ),
             'button_texts' => self::get_button_texts(),
             'shareholder_texts' => self::get_shareholder_texts(),
@@ -629,8 +618,7 @@ class WDP_Assets {
             }
 
             $wdp_extra_css = array(
-                'assets/css/src/components/intl-tel-input-wdp.css',
-                'assets/vendor/intl-tel-input/css/intlTelInput.css',
+                'assets/css/src/components/phone-field.css',
             );
             foreach ($wdp_extra_css as $extra_rel) {
                 $extra_abs = $plugin_dir . $extra_rel;
@@ -675,20 +663,6 @@ class WDP_Assets {
                         if ($file_mtime > $js_module_version) {
                             $js_module_version = $file_mtime;
                         }
-                    }
-                }
-            }
-
-            $wdp_extra_js = array(
-                'assets/vendor/intl-tel-input/js/intlTelInput.min.js',
-                'assets/vendor/intl-tel-input/js/utils.js',
-            );
-            foreach ($wdp_extra_js as $extra_js) {
-                $extra_js_abs = $plugin_dir . $extra_js;
-                if (file_exists($extra_js_abs)) {
-                    $jm = filemtime($extra_js_abs);
-                    if ($jm > $js_module_version) {
-                        $js_module_version = $jm;
                     }
                 }
             }
@@ -748,10 +722,6 @@ class WDP_Assets {
         if (!wp_style_is('wdp-donation-modal-css', 'enqueued')) {
             wp_enqueue_style('wdp-donation-modal-css');
         }
-        if (wp_style_is('wdp-intl-tel-input-wdp', 'registered') && !wp_style_is('wdp-intl-tel-input-wdp', 'enqueued')) {
-            wp_enqueue_style('wdp-intl-tel-input-wdp');
-        }
-        
         // Inline style ekle
         self::maybe_enqueue_inline_style();
     }

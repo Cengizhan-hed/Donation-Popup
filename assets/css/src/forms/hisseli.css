@@ -478,9 +478,9 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-content > .wdp-fi
   min-height: 44px;
 }
 
-html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-content > .wdp-field-stack .wdp-field-stack__row:focus-within {
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-content > .wdp-field-stack .wdp-field-stack__row:focus-within:not(:has(:-webkit-autofill)):not(:has(:autofill)) {
   box-shadow: none;
-  background: color-mix(in srgb, var(--wdp-shareholder-header-bg, #f8fafc) 44%, transparent);
+  background: var(--wdp-field-stack-bg, #ffffff);
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-content > .wdp-field-stack .wdp-field-stack__icon {

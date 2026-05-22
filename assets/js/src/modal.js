@@ -150,6 +150,13 @@
       // Form içeriğini sıfırla
       resetForm(modal)
 
+      // Telefon alanı: resetForm innerHTML geri yükledikten sonra mutlaka yeniden bağla (hisseli dışı formlar)
+      if (WDPApp.phoneInput && typeof WDPApp.phoneInput.refreshInRoot === 'function') {
+        WDPApp.phoneInput.refreshInRoot(modal)
+      } else if (WDPApp.phoneInput && typeof WDPApp.phoneInput.setupInRoot === 'function') {
+        WDPApp.phoneInput.setupInRoot(modal)
+      }
+
       // Hata mesajını gizle
       const errorMsg = modal.querySelector(".wdp-form-error")
       if (errorMsg) {
@@ -320,12 +327,7 @@
         return;
       }
 
-      // Custom phone country panel + legacy iti portal (if any).
-      if (
-        e.target.closest('.wdp-phone-country-panel') ||
-        e.target.closest('.iti--container') ||
-        e.target.closest('.wdp-iti-dropdown-root')
-      ) {
+      if (e.target.closest('.wdp-phone-country-panel')) {
         return;
       }
       
@@ -414,7 +416,14 @@
 
     // Eğer orijinal form içeriği saklanmışsa, geri yükle
     if (originalForms.has(modalId) && form) {
-      form.innerHTML = originalForms.get(modalId)
+      const snapshot = originalForms.get(modalId)
+      const useSnapshot =
+        snapshot &&
+        (snapshot.indexOf('wdp-phone-field') !== -1 ||
+          !form.querySelector('[data-wdp-phone-field]'));
+      if (useSnapshot) {
+        form.innerHTML = snapshot
+      }
 
       // Form alanlarını temizle. Readonly/disabled atlanır: quantity/share_count için .value="" atanabildiğinden
       // (readonly sadece kullanıcı girişini keser) ilk açılışta sayaç boş kalıyor, +/- sonrası düzeliyordu.
@@ -429,7 +438,11 @@
       if (WDPApp.form && WDPApp.form.setup) {
         WDPApp.form.setup(form)
       }
-      
+
+      if (WDPApp.phoneInput && typeof WDPApp.phoneInput.refreshInRoot === 'function') {
+        WDPApp.phoneInput.refreshInRoot(modal)
+      }
+
       // Progress bar'ı başlat (form reset edildiğinde)
       const progressBarContainer = modal.querySelector('.wdp-progress-bar-container');
       if (progressBarContainer && WDPApp.progressBar && typeof WDPApp.progressBar.setup === 'function') {
