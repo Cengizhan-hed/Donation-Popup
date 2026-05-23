@@ -32,7 +32,7 @@
       return productId;
     }
     const idAttr = container.id || '';
-    const m = /^wdp-modal-(\d+)$/.exec(idAttr);
+    const m = /^wdp-(?:modal|side-panel)-(\d+)$/.exec(idAttr);
     if (m) {
       return m[1];
     }

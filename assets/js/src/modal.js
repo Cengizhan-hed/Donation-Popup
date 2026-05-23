@@ -80,6 +80,36 @@
   const state = stateCheck.module;
   const { safeLog, focusFirstElement, activateFocusTrap, announceStatus } = utils;
 
+  function isSidePanelModal(modal) {
+    return !!(modal && modal.classList.contains('wdp-side-panel'));
+  }
+
+  function resolveModalId(productId, options) {
+    if (options && options.modalId) {
+      return String(options.modalId);
+    }
+    return 'wdp-modal-' + productId;
+  }
+
+  function lockBodyScroll(isSidePanel) {
+    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+    if (scrollbarWidth > 0) {
+      document.documentElement.style.setProperty('--wdp-scrollbar-width', scrollbarWidth + 'px');
+    }
+    document.body.style.overflow = 'hidden';
+    if (isSidePanel) {
+      document.body.classList.add('wdp-side-panel-open');
+    } else {
+      document.body.classList.add('wdp-modal-open');
+    }
+  }
+
+  function unlockBodyScroll() {
+    document.body.classList.remove('wdp-modal-open', 'wdp-side-panel-open');
+    document.body.style.overflow = '';
+    document.documentElement.style.removeProperty('--wdp-scrollbar-width');
+  }
+
   // Tüm formların orijinal içeriğini sakla (tek kaynak: dom modülü; yükleme sırası için yedek yol)
   function saveOriginalForms() {
     const domModule = WDPApp.dom;
@@ -97,48 +127,146 @@
     });
   }
 
-  // Modal'ı aç fonksiyonunu düzelt - scroll pozisyonunu koru
-  function openModal(productId) {
+  function setupShareholderSection(modal, productId) {
+    const sharesSection = modal.querySelector(".wdp-shares-section")
+    const shareCountInput = modal.querySelector('input[name="share_count"]')
+    if (!sharesSection && !shareCountInput) {
+      return
+    }
+    safeLog("Shareholder form detected, setting up")
+    const quantityRow = modal.querySelector(".wdp-product-quantity")
+    if (quantityRow) {
+      quantityRow.style.display = "none"
+    }
+    if (!WDPApp.shareholder) {
+      return
+    }
+    const setupFunc = WDPApp.shareholder.setup || WDPApp.shareholder.setupShareholderForms
+    if (typeof setupFunc !== 'function') {
+      safeLog("ERROR: setupShareholderForms function not found in WDPApp.shareholder")
+      return
+    }
+    safeLog("Setting up shareholder forms for modal:", modal.id)
     try {
-      // Ürün ID'sini integer'a çevir
-      productId = Number.parseInt(productId, 10)
+      setupFunc(modal, productId)
+      safeLog("Shareholder forms setup completed")
+    } catch (error) {
+      safeLog("ERROR setting up shareholder forms:", error)
+      safeLog("Error stack:", error.stack)
+      try {
+        setupFunc(modal, productId)
+        safeLog("Shareholder forms setup retry completed")
+      } catch (retryError) {
+        safeLog("ERROR on retry setting up shareholder forms:", retryError)
+      }
+    }
+  }
 
-      const modal = document.getElementById("wdp-modal-" + productId)
+  function bindModalGlobalListeners() {
+    document.removeEventListener("mousedown", handleOutsideClick)
+    document.removeEventListener("keydown", handleEscKeyPress)
+    document.addEventListener("mousedown", handleOutsideClick)
+    document.addEventListener("keydown", handleEscKeyPress)
+  }
+
+  function trackModalViewContent(modal, productId, sidePanelMode) {
+    if (!window.WDPMetaTracking || typeof window.WDPMetaTracking.trackViewContentDonation !== "function") {
+      return
+    }
+    try {
+      const qtyEl = modal.querySelector('input[name="quantity"]')
+      const qty = qtyEl ? parseInt(qtyEl.value, 10) || 1 : 1
+      let unitPrice = 0
+      if (modal.dataset && modal.dataset.wdpUnitPrice !== undefined && modal.dataset.wdpUnitPrice !== "") {
+        unitPrice = parseFloat(modal.dataset.wdpUnitPrice)
+      }
+      if (!Number.isFinite(unitPrice)) {
+        unitPrice = 0
+      }
+      const titleEl = modal.querySelector(".wdp-modal-title")
+      const cname = titleEl ? titleEl.textContent.trim() : ""
+      window.WDPMetaTracking.trackViewContentDonation({
+        productId: productId,
+        contentName: cname,
+        quantity: qty,
+        itemPrice: unitPrice,
+        value: unitPrice > 0 ? unitPrice * qty : undefined,
+        formType: sidePanelMode ? "side_panel" : "popup",
+      })
+    } catch (metaErr) {
+      safeLog("Meta ViewContent:", metaErr)
+    }
+  }
+
+  function runModalOpenInit(modal, productId, sidePanelMode) {
+    if (!modal || state.activeModal !== modal) {
+      return
+    }
+
+    resetForm(modal)
+
+    const donationForm = modal.querySelector('form')
+    if (donationForm && WDPApp.form && typeof WDPApp.form.setup === 'function') {
+      WDPApp.form.setup(donationForm)
+    }
+
+    if (WDPApp.phoneInput && typeof WDPApp.phoneInput.refreshInRoot === 'function') {
+      WDPApp.phoneInput.refreshInRoot(modal)
+    } else if (WDPApp.phoneInput && typeof WDPApp.phoneInput.setupInRoot === 'function') {
+      WDPApp.phoneInput.setupInRoot(modal)
+    }
+
+    setupShareholderSection(modal, productId)
+
+    const loadProductInfo = WDPApp.product && (WDPApp.product.fetchProductInfo || WDPApp.product.fetch)
+    if (typeof loadProductInfo === 'function') {
+      loadProductInfo(productId)
+    }
+
+    const progressBarContainer = modal.querySelector('.wdp-progress-bar-container')
+    if (progressBarContainer && WDPApp.progressBar && typeof WDPApp.progressBar.setup === 'function') {
+      try {
+        WDPApp.progressBar.setup(progressBarContainer)
+        safeLog("Progress bar setup completed for modal", modal.id)
+      } catch (err) {
+        safeLog("Progress bar setup error:", err)
+      }
+    }
+
+    trackModalViewContent(modal, productId, sidePanelMode)
+    bindModalGlobalListeners()
+
+    focusFirstElement(modal)
+    state.focusTrapCleanup = activateFocusTrap(modal)
+
+    const modalTitle = modal.querySelector('.wdp-modal-title')
+    if (modalTitle && modalTitle.textContent) {
+      announceStatus(`${modalTitle.textContent.trim()} formu açıldı`, 'polite')
+    } else {
+      announceStatus(sidePanelMode ? 'Bağış paneli açıldı' : 'Bağış formu açıldı', 'polite')
+    }
+
+    safeLog("Modal init completed for product ID:", productId)
+  }
+
+  // Modal'ı aç — sağ panelde önce görünür yap, ağır init'i sonraki karede çalıştır
+  function openModal(productId, options) {
+    try {
+      productId = Number.parseInt(productId, 10)
+      const modalId = resolveModalId(productId, options)
+      const modal = document.getElementById(modalId)
       safeLog("Modal element found:", modal)
-      safeLog("Modal ID searched:", "wdp-modal-" + productId)
+      safeLog("Modal ID searched:", modalId)
 
       if (!modal) {
         safeLog("ERROR: Modal not found for product ID:", productId)
-        
-        // Tüm modal'ları kontrol et
-        const allModals = document.querySelectorAll(".wdp-modal")
-        safeLog("All modals found:", allModals.length)
-        allModals.forEach((m, index) => {
-          safeLog(`Modal ${index + 1}:`, {
-            id: m.id,
-            classes: m.className,
-            display: m.style.display,
-            visible: m.offsetParent !== null
-          })
-        })
-        
-        // Tüm butonları kontrol et
-        const allButtons = document.querySelectorAll(".wdp-donate-button, .wdp-open-modal")
-        safeLog("All buttons found:", allButtons.length)
-        allButtons.forEach((b, index) => {
-          safeLog(`Button ${index + 1}:`, {
-            element: b,
-            productId: b.getAttribute("data-product-id"),
-            classes: b.className,
-            text: b.textContent
-          })
-        })
-        
         return
       }
 
-      safeLog("Modal found, current display:", modal.style.display)
-      safeLog("Modal current classes:", modal.className)
+      const sidePanelMode = isSidePanelModal(modal)
+      if (sidePanelMode && !modal.classList.contains('wdp-side-panel')) {
+        modal.classList.add('wdp-side-panel')
+      }
 
       state.lastFocusedElement = document.activeElement instanceof HTMLElement ? document.activeElement : null
 
@@ -147,24 +275,12 @@
         state.focusTrapCleanup = null
       }
 
-      // Form içeriğini sıfırla
-      resetForm(modal)
-
-      // Telefon alanı: resetForm innerHTML geri yükledikten sonra mutlaka yeniden bağla (hisseli dışı formlar)
-      if (WDPApp.phoneInput && typeof WDPApp.phoneInput.refreshInRoot === 'function') {
-        WDPApp.phoneInput.refreshInRoot(modal)
-      } else if (WDPApp.phoneInput && typeof WDPApp.phoneInput.setupInRoot === 'function') {
-        WDPApp.phoneInput.setupInRoot(modal)
-      }
-
-      // Hata mesajını gizle
       const errorMsg = modal.querySelector(".wdp-form-error")
       if (errorMsg) {
         errorMsg.style.display = "none"
         errorMsg.textContent = ""
       }
 
-      // Modal'ı body'nin en üst seviyesine taşı (stacking context sorunlarını önler)
       if (modal.parentNode !== document.body) {
         try {
           document.body.appendChild(modal)
@@ -174,143 +290,33 @@
       }
 
       modal.setAttribute('aria-hidden', 'false')
+      modal.classList.remove('wdp-side-panel--closing')
 
-      // Modal'ı göster - CSS class kullan
-      safeLog("Adding 'show' class to modal")
-      modal.classList.add("show")
-      safeLog("Setting display to 'flex'")
-      modal.style.display = "flex"
-      modal.style.visibility = "visible"
-      modal.style.opacity = "1"
-      
-      safeLog("Modal classes after show:", modal.className)
-      safeLog("Modal display after show:", modal.style.display)
-
-      // CRITICAL: Sadece overflow: hidden kullan - position: fixed kullanma
-      // Bu şekilde scroll pozisyonu korunur ve sayfa hareket etmez
-      // Scrollbar genişliğini hesapla ve padding ekle (layout shift önlemek için)
-      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth
-      if (scrollbarWidth > 0) {
-        document.documentElement.style.setProperty('--wdp-scrollbar-width', scrollbarWidth + 'px')
-      }
-      document.body.style.overflow = "hidden"
-      document.body.classList.add("wdp-modal-open")
-      safeLog("Body classes after modal open:", document.body.className)
-
-        // Hissedar bölümünü kontrol et ve hemen ayarla - INSTANT (no delay)
-        const sharesSection = modal.querySelector(".wdp-shares-section")
-        const shareCountInput = modal.querySelector('input[name="share_count"]')
-        
-        if (sharesSection || shareCountInput) {
-          safeLog("Shareholder form detected, setting up")
-          // Ürün adedi bölümünü gizle (Hisseli formda ürün adedi hissedar sayısına göre otomatik belirlenir)
-          const quantityRow = modal.querySelector(".wdp-product-quantity")
-          if (quantityRow) {
-            quantityRow.style.display = "none"
-          }
-
-          // Hissedar formlarını oluştur - INSTANT (no delay for maximum performance)
-          if (WDPApp.shareholder) {
-            // Önce setup fonksiyonunu kontrol et (export'ta setup olarak tanımlı)
-            const setupFunc = WDPApp.shareholder.setup || WDPApp.shareholder.setupShareholderForms;
-            if (setupFunc && typeof setupFunc === 'function') {
-              safeLog("Setting up shareholder forms for modal:", modal.id);
-              // INSTANT execution - no delay
-              try {
-                setupFunc(modal, productId);
-                safeLog("Shareholder forms setup completed");
-              } catch (error) {
-                safeLog("ERROR setting up shareholder forms:", error);
-                safeLog("Error stack:", error.stack);
-                // Retry once immediately (no delay)
-                try {
-                  setupFunc(modal, productId);
-                  safeLog("Shareholder forms setup retry completed");
-                } catch (retryError) {
-                  safeLog("ERROR on retry setting up shareholder forms:", retryError);
-                }
-              }
-            } else {
-              safeLog("ERROR: setupShareholderForms function not found in WDPApp.shareholder");
-            }
-          } else {
-            // Modül henüz yüklenmemişse, immediate retry (no delay)
-            if (WDPApp.shareholder) {
-              const setupFunc = WDPApp.shareholder.setup || WDPApp.shareholder.setupShareholderForms;
-              if (setupFunc && typeof setupFunc === 'function') {
-                safeLog("Retrying shareholder forms setup after module load");
-                setupFunc(modal, productId);
-              }
-            }
-          }
-        }
-
-      // Ürün bilgilerini AJAX ile al
-      if (WDPApp.product && WDPApp.product.fetchProductInfo) {
-        WDPApp.product.fetchProductInfo(productId)
-      }
-
-      // Progress bar (tıklamadan hemen sonra; rAF beklemesi açılış hissine gecikme ekliyordu)
-      const progressBarContainer = modal.querySelector('.wdp-progress-bar-container');
-      if (progressBarContainer && WDPApp.progressBar && typeof WDPApp.progressBar.setup === 'function') {
-        try {
-          WDPApp.progressBar.setup(progressBarContainer);
-          safeLog("Progress bar setup completed for modal", modal.id);
-        } catch (err) {
-          safeLog("Progress bar setup error:", err);
-        }
-      }
-
-      // Aktif modal'ı kaydet
       state.activeModal = modal
-      safeLog("Active modal set:", state.activeModal)
 
-      if (window.WDPMetaTracking && typeof window.WDPMetaTracking.trackViewContentDonation === "function") {
-        try {
-          const qtyEl = modal.querySelector('input[name="quantity"]')
-          const qty = qtyEl ? parseInt(qtyEl.value, 10) || 1 : 1
-          let unitPrice = 0
-          if (modal.dataset && modal.dataset.wdpUnitPrice !== undefined && modal.dataset.wdpUnitPrice !== "") {
-            unitPrice = parseFloat(modal.dataset.wdpUnitPrice)
-          }
-          if (!Number.isFinite(unitPrice)) {
-            unitPrice = 0
-          }
-          const titleEl = modal.querySelector(".wdp-modal-title")
-          const cname = titleEl ? titleEl.textContent.trim() : ""
-          window.WDPMetaTracking.trackViewContentDonation({
-            productId: productId,
-            contentName: cname,
-            quantity: qty,
-            itemPrice: unitPrice,
-            value: unitPrice > 0 ? unitPrice * qty : undefined,
-            formType: "popup",
+      if (sidePanelMode) {
+        lockBodyScroll(true)
+        modal.style.display = 'flex'
+        modal.style.visibility = 'visible'
+        modal.style.opacity = '1'
+        modal.classList.add('show', 'wdp-side-panel--opening')
+        bindModalGlobalListeners()
+
+        requestAnimationFrame(function () {
+          requestAnimationFrame(function () {
+            modal.classList.remove('wdp-side-panel--opening')
+            runModalOpenInit(modal, productId, sidePanelMode)
           })
-        } catch (metaErr) {
-          safeLog("Meta ViewContent:", metaErr)
-        }
-      }
-
-      // Modal tekrar açılıyorsa aynı listener'ların birikmesini önle.
-      document.removeEventListener("mousedown", handleOutsideClick)
-      document.removeEventListener("keydown", handleEscKeyPress)
-
-      // Modal dışına tıklama olayını ekle - Her modal açılışında yeniden ekle
-      document.addEventListener("mousedown", handleOutsideClick)
-
-      // ESC tuşuna basma olayını ekle - Her modal açılışında yeniden ekle
-      document.addEventListener("keydown", handleEscKeyPress)
-      
-      focusFirstElement(modal)
-      state.focusTrapCleanup = activateFocusTrap(modal)
-
-      const modalTitle = modal.querySelector('.wdp-modal-title')
-      if (modalTitle && modalTitle.textContent) {
-        announceStatus(`${modalTitle.textContent.trim()} formu açıldı`, 'polite')
+        })
       } else {
-        announceStatus('Bağış formu açıldı', 'polite')
+        modal.classList.add('show')
+        modal.style.display = 'flex'
+        modal.style.visibility = 'visible'
+        modal.style.opacity = '1'
+        lockBodyScroll(false)
+        runModalOpenInit(modal, productId, sidePanelMode)
       }
-      
+
       safeLog("Modal opened successfully for product ID:", productId)
     } catch (error) {
       safeLog("ERROR in openModal:", error)
@@ -336,7 +342,10 @@
         modalContent &&
         !modalContent.contains(e.target) &&
         !e.target.classList.contains("wdp-open-modal") &&
+        !e.target.classList.contains("wdp-open-side-panel") &&
         !e.target.classList.contains("wdp-donate-button") &&
+        !e.target.closest(".wdp-open-modal") &&
+        !e.target.closest(".wdp-open-side-panel") &&
         !e.target.closest(".wdp-modal-content")
       ) {
         closeModal(modal)
@@ -360,40 +369,28 @@
     }
   }
 
-  // Modal'ı kapat fonksiyonunu düzelt - scroll pozisyonunu koru
-  function closeModal(modal) {
-    if (!modal) return
+  const SIDE_PANEL_CLOSE_MS = 380
 
-    // Modal header'ı tekrar göster (eğer gizliyse) - sadece popup için
-    const modalHeader = modal.querySelector('.wdp-modal-header');
+  function finalizeModalClose(modal) {
+    const modalHeader = modal.querySelector('.wdp-modal-header')
     if (modalHeader) {
-      modalHeader.classList.remove('wdp-hidden-on-success');
+      modalHeader.classList.remove('wdp-hidden-on-success')
     }
 
-    // Modal'ı gizle - CSS class'ı da kaldır
-    modal.classList.remove("show")
-    modal.style.display = "none"
-    modal.style.visibility = "hidden"
-    modal.style.opacity = "0"
+    const isSidePanel = modal.classList.contains('wdp-side-panel')
+
+    modal.style.display = 'none'
+    modal.style.visibility = 'hidden'
+    modal.classList.remove('show', 'wdp-side-panel--closing')
     modal.setAttribute('aria-hidden', 'true')
 
-    if (state.focusTrapCleanup) {
-      state.focusTrapCleanup()
-      state.focusTrapCleanup = null
+    if (isSidePanel) {
+      modal.style.removeProperty('opacity')
+    } else {
+      modal.style.opacity = '0'
     }
-    
-    document.body.classList.remove("wdp-modal-open")
 
-    // CRITICAL: Sadece overflow'u kaldır - position: fixed kullanmadığımız için scroll pozisyonu zaten korunuyor
-    document.body.style.overflow = ""
-    // Scrollbar width CSS variable'ını da temizle
-    document.documentElement.style.removeProperty('--wdp-scrollbar-width')
-
-    // Olay dinleyicilerini kaldır
-    document.removeEventListener("mousedown", handleOutsideClick)
-    document.removeEventListener("keydown", handleEscKeyPress)
-
-    state.activeModal = null
+    unlockBodyScroll()
 
     const lastFocused = state.lastFocusedElement
     state.lastFocusedElement = null
@@ -403,9 +400,64 @@
       }, 0)
     }
 
-    announceStatus('Bağış formu kapatıldı', 'polite')
-    
-    safeLog("Modal closed successfully")
+    safeLog('Modal closed successfully')
+  }
+
+  // Modal'ı kapat — sağ panel sağa kayarak kapanır
+  function closeModal(modal) {
+    if (!modal) return
+
+    const wasSidePanel = modal.classList.contains('wdp-side-panel')
+    const isOpen = modal.classList.contains('show')
+    const isClosing = modal.classList.contains('wdp-side-panel--closing')
+
+    if (isClosing) {
+      return
+    }
+
+    if (state.focusTrapCleanup) {
+      state.focusTrapCleanup()
+      state.focusTrapCleanup = null
+    }
+
+    document.removeEventListener('mousedown', handleOutsideClick)
+    document.removeEventListener('keydown', handleEscKeyPress)
+
+    state.activeModal = null
+    modal.setAttribute('aria-hidden', 'true')
+
+    announceStatus(wasSidePanel ? 'Bağış paneli kapatıldı' : 'Bağış formu kapatıldı', 'polite')
+
+    if (wasSidePanel && isOpen) {
+      modal.classList.add('wdp-side-panel--closing')
+
+      const panelContent = modal.querySelector('.wdp-modal-content')
+      let finished = false
+
+      const completeClose = () => {
+        if (finished) return
+        finished = true
+        if (panelContent) {
+          panelContent.removeEventListener('animationend', onPanelAnimationEnd)
+        }
+        finalizeModalClose(modal)
+      }
+
+      const onPanelAnimationEnd = (event) => {
+        if (event.target !== panelContent) return
+        if (event.animationName !== 'wdp-side-panel-slide-out') return
+        completeClose()
+      }
+
+      if (panelContent) {
+        panelContent.addEventListener('animationend', onPanelAnimationEnd)
+      }
+
+      setTimeout(completeClose, SIDE_PANEL_CLOSE_MS + 80)
+      return
+    }
+
+    finalizeModalClose(modal)
   }
 
   // Form içeriğini sıfırla

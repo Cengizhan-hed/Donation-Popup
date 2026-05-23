@@ -39,7 +39,8 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-phone-fiel
   max-width: none;
   height: 100%;
   margin: 0;
-  padding: max(11px, var(--wdp-field-stack-input-pad-y, 13px)) 12px;
+  padding-block: max(11px, var(--wdp-field-stack-input-pad-y, 13px));
+  padding-inline: 0 6px;
   border: none;
   border-radius: 0;
   background: transparent;
@@ -58,7 +59,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-phone-fiel
 
 @media (hover: hover) and (pointer: fine) {
   html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-phone-field__code-btn:hover {
-    color: var(--wdp-field-icon-color-focus, #2a7fe8);
+    color: var(--wdp-field-icon-color, #374151);
   }
 }
 
@@ -95,7 +96,8 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-phone-fiel
   min-width: 0;
   width: 100%;
   margin: 0;
-  padding: max(11px, var(--wdp-field-stack-input-pad-y, 13px)) max(12px, var(--wdp-field-stack-pad-x, 14px));
+  padding-block: max(11px, var(--wdp-field-stack-input-pad-y, 13px));
+  padding-inline: 8px 0;
   border: none;
   border-radius: 0;
   background: transparent;
@@ -239,7 +241,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stac
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__row--phone:has(.wdp-phone-field__number:-webkit-autofill):not(:focus-within) .wdp-phone-field__code-btn,
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__row--phone:has(.wdp-phone-field__number:autofill):not(:focus-within) .wdp-phone-field__code-btn {
   background: transparent;
-  color: var(--wdp-field-icon-color-filled, #18a566);
+  color: var(--wdp-field-icon-color, #374151);
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__row--phone:has(.wdp-phone-field__number:-webkit-autofill) .wdp-phone-field__number,
@@ -252,13 +254,8 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stac
 }
 
 @media (max-width: 480px) {
-  html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-phone-field__code-btn {
-    padding: max(11px, var(--wdp-field-stack-input-pad-y, 13px)) 10px;
-    font-size: max(16px, var(--wdp-input-font-size, 16px));
-  }
-
+  html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-phone-field__code-btn,
   html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-phone-field__number {
-    padding-inline: max(12px, var(--wdp-field-stack-pad-x, 12px));
     font-size: max(16px, var(--wdp-input-font-size, 16px));
   }
 }

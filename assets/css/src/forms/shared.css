@@ -49,32 +49,6 @@ html body .wdp-modal .wdp-modal-header .wdp-modal-title-wrapper .wdp-product-not
   align-self: stretch;
 }
 
-/* Ürün notu — tüm form tipleri (modal header + inline title): sade metin, kutu yok */
-html body .hdf-donation-modal-wrapper:is(.wdp-modal, .wdp-donation-form) :is(
-  .wdp-modal-header .wdp-product-note,
-  .wdp-form-title-wrapper .wdp-product-note,
-  .wdp-modal-content .wdp-product-note
-) {
-  display: block;
-  width: 100%;
-  max-width: 100%;
-  margin: 0;
-  padding: 0;
-  border: none;
-  border-radius: 0;
-  box-shadow: none;
-  background: transparent;
-  background-color: transparent;
-  color: var(--wdp-product-note-color, #4b5563);
-  font-family: var(--wdp-font-family);
-  font-size: var(--wdp-product-note-font-size, clamp(13px, 1.05vw, 15px));
-  font-weight: 600;
-  line-height: var(--wdp-product-note-line-height, 1.5);
-  letter-spacing: 0.01em;
-  text-wrap: pretty;
-  box-sizing: border-box;
-}
-
 html body .hdf-donation-modal-wrapper:is(.wdp-modal, .wdp-donation-form) .wdp-product-note__text {
   color: inherit;
   font-size: inherit;
@@ -294,29 +268,6 @@ html body .wdp-donation-form .wdp-modal-content .wdp-form-title-wrapper .wdp-pro
   align-self: stretch;
 }
 
-/* Ürün başlığı alt bilgi notu — .wdp-modal-content içi (form gövdesi ile aynı görünüm) */
-html body :is(.wdp-modal .wdp-modal-content, .wdp-donation-form .wdp-modal-content) .wdp-product-note {
-  display: block;
-  width: 100%;
-  max-width: 100%;
-  align-self: flex-start;
-  margin: 0;
-  padding: 0;
-  border: none;
-  border-radius: 0;
-  box-shadow: none;
-  background: transparent;
-  background-color: transparent;
-  color: var(--wdp-product-note-color, #4b5563);
-  font-family: var(--wdp-font-family);
-  font-size: var(--wdp-product-note-font-size, clamp(13px, 1.05vw, 15px));
-  font-weight: 600;
-  line-height: var(--wdp-product-note-line-height, 1.5);
-  letter-spacing: 0.01em;
-  text-wrap: pretty;
-  box-sizing: border-box;
-}
-
 /* Not metni: sade tek sütun akış */
 html body :is(.wdp-modal .wdp-modal-content, .wdp-donation-form .wdp-modal-content) .wdp-product-note__content {
   display: grid;
@@ -393,32 +344,6 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-product-note__toggle:checked 
   display: inline;
 }
 
-/* Ton sınıfları: yalnızca “devamını gör” link rengi (metin rengi tüm formlarda aynı) */
-html body .hdf-donation-modal-wrapper:is(.wdp-modal, .wdp-donation-form) :is(
-  .wdp-product-note--video,
-  .wdp-product-note--delivery,
-  .wdp-product-note--heart,
-  .wdp-product-note--info,
-  .wdp-product-note--title-kurban,
-  .wdp-product-note--title-egitim,
-  .wdp-product-note--title-sadaka,
-  .wdp-product-note--title-saglik,
-  .wdp-product-note--title-zekat,
-  .wdp-product-note--title-kumanya,
-  .wdp-product-note--title-su_kuyusu,
-  .wdp-product-note--title-yetim,
-  .wdp-product-note--title-acil_yardim,
-  .wdp-product-note--title-barinma
-) {
-  --wdp-note-text: var(--wdp-product-note-color, #4b5563);
-  --wdp-note-icon: var(--wdp-primary, #4a90e2);
-  color: var(--wdp-product-note-color, #4b5563);
-  background: transparent;
-  background-color: transparent;
-  border: none;
-  box-shadow: none;
-}
-
 @media (max-width: 600px) {
   html body .wdp-modal .wdp-modal-header .wdp-modal-title-wrapper {
     column-gap: var(--wdp-space-2, 8px);
@@ -446,17 +371,6 @@ html body .hdf-donation-modal-wrapper:is(.wdp-modal, .wdp-donation-form) :is(
   html body :is(.wdp-modal .wdp-modal-header .wdp-modal-title-wrapper, .wdp-donation-form .wdp-modal-content .wdp-form-title-wrapper) .wdp-product-price {
     font-size: 13px;
     padding: 4px 8px;
-  }
-
-  html body :is(.wdp-modal .wdp-modal-content, .wdp-donation-form .wdp-modal-content) .wdp-product-note {
-    padding: 0;
-    border: none;
-    font-size: max(13px, 2.85vw);
-    font-weight: 600;
-    line-height: 1.45;
-    max-width: 100%;
-    width: 100%;
-    box-sizing: border-box;
   }
 
   html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content form.wdp-has-shareholders .wdp-shares-header {
@@ -842,17 +756,13 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content :is(input:not(.
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content :is(input:not(.wdp-field-stack__input), select, textarea:not(.wdp-field-stack__textarea)):focus-visible {
   outline: none;
   border-color: color-mix(in srgb, var(--wdp-color-primary, #4a90e2) 24%, var(--wdp-border-light-gray, #e1e4e8));
-  background: var(--wdp-input-focus-bg-tint, color-mix(in srgb, #64748b 5.5%, #ffffff));
+  background: #ffffff;
   box-shadow: var(--wdp-focus-neutral-ring, 0 0 0 2px rgba(30, 64, 175, 0.09));
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content :is(input, textarea)::placeholder {
   color: var(--wdp-placeholder-color, #6b7280);
   opacity: 1;
-}
-
-html body :is(.wdp-modal, .wdp-donation-form) .wdp-trust-strip {
-  display: none;
 }
 
 /* Sayfa içi formlarda ad soyad ve telefon numarası sola dayalı, dikeyde ortalanmış */

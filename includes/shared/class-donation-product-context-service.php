@@ -77,11 +77,6 @@ class WDP_Donation_Product_Context_Service {
 			$total_donation = WDP_Utils::get_total_donation_amount($product_id);
 		}
 
-		$product_note_icon = (string) $product->get_meta('_product_note_icon');
-		if ($product_note_icon === '') {
-			$product_note_icon = 'info';
-		}
-
 		return array(
 			'product_id'                    => $product_id,
 			'product_name'                  => $product->get_name(),
@@ -97,7 +92,6 @@ class WDP_Donation_Product_Context_Service {
 			'total_donation'                => $total_donation,
 			'enable_product_note'           => $product->get_meta('_enable_product_note') === 'yes',
 			'product_note_text'             => trim((string) $product->get_meta('_product_note_text')),
-			'product_note_icon'             => $product_note_icon,
 			'currency_symbol'               => function_exists('get_woocommerce_currency_symbol') ? get_woocommerce_currency_symbol() : '₺',
 			'custom_price_placeholder'      => ((float) $min_price > 0) ? ('min: ' . WDP_Utils::format_amount_for_min_placeholder($min_price)) : __('Bağış tutarı *', 'woo-donation-popup'),
 		);

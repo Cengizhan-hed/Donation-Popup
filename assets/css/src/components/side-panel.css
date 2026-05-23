@@ -1,0 +1,713 @@
+/**
+ * Sağ panel (side cart) — yalnızca .wdp-modal.wdp-side-panel
+ * Tam yükseklik, sabit alt footer, orta alan scroll, sağdan slide animasyon.
+ */
+
+html body.wdp-side-panel-open {
+  overflow: hidden;
+  padding-right: var(--wdp-scrollbar-width, 0px);
+}
+
+html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel,
+html body .wdp-modal.wdp-side-panel {
+  --wdp-button-radius: 20px;
+  --wdp-button-radius-unified: 20px;
+  --wdp-input-radius: 20px;
+  --wdp-field-stack-radius: 20px;
+  --wdp-radius-sm: 20px;
+  --wdp-radius-md: 20px;
+  --wdp-radius-lg: 20px;
+  --wdp-card-radius: 20px;
+  --wdp-card-radius-sm: 20px;
+}
+
+html body .wdp-modal.wdp-side-panel {
+  contain: none;
+  --wdp-side-panel-width: clamp(
+    var(--wdp-sp-width-min-mobile, 0px),
+    var(--wdp-sp-width-pct-mobile, 92vw),
+    var(--wdp-sp-width-max-mobile, 100vw)
+  );
+  --wdp-side-panel-pad-inline: max(16px, env(safe-area-inset-right, 0px), env(safe-area-inset-left, 0px));
+  --wdp-side-panel-footer-border: var(--wdp-border-very-light, #e8eaed);
+  --wdp-side-panel-radius-left: 20px;
+  /* Side panel butonları — mavi (birincil marka) + yeşil (ödeme/tamamla) */
+  --wdp-sp-btn-radius: 20px;
+  --wdp-sp-btn-blue: #1e73be;
+  --wdp-sp-btn-blue-hover: #185d98;
+  --wdp-sp-btn-green: #48bb78;
+  --wdp-sp-btn-green-hover: #38a169;
+  --wdp-sp-btn-ghost-text: #c2410c;
+  --wdp-sp-btn-ghost-hover: #9a3412;
+  --wdp-sp-btn-ghost-bg: #fff7ed;
+  --wdp-sp-btn-ghost-border: #fdba74;
+}
+
+@media (min-width: 481px) {
+  html body .wdp-modal.wdp-side-panel {
+    --wdp-side-panel-pad-inline: 22px;
+  }
+}
+
+@media (min-width: 768px) {
+  html body .wdp-modal.wdp-side-panel {
+    --wdp-side-panel-width: clamp(
+      var(--wdp-sp-width-min-tablet, 380px),
+      var(--wdp-sp-width-pct-tablet, 55vw),
+      var(--wdp-sp-width-max-tablet, 600px)
+    );
+    --wdp-side-panel-pad-inline: 24px;
+  }
+}
+
+@media (min-width: 1200px) {
+  html body .wdp-modal.wdp-side-panel {
+    --wdp-side-panel-width: clamp(
+      var(--wdp-sp-width-min-desktop, 400px),
+      var(--wdp-sp-width-pct-desktop, 50vw),
+      var(--wdp-sp-width-max-desktop, 720px)
+    );
+  }
+}
+
+/* Overlay — anında sabit koyu ton (şeffaftan animasyon yok = beyaz titreme yok) */
+html body .wdp-modal.wdp-side-panel.show {
+  display: flex !important;
+  align-items: stretch !important;
+  justify-content: flex-end !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  opacity: 1 !important;
+  animation: none !important;
+  transition: none !important;
+  background: var(--wdp-modal-overlay-bg, rgba(15, 23, 42, 0.45)) !important;
+  background-color: var(--wdp-modal-overlay-bg, rgba(15, 23, 42, 0.45)) !important;
+  backdrop-filter: blur(4px) saturate(108%);
+  -webkit-backdrop-filter: blur(4px) saturate(108%);
+}
+
+html body .wdp-modal.wdp-side-panel.show.wdp-side-panel--closing {
+  pointer-events: none;
+  animation: none !important;
+  background: var(--wdp-modal-overlay-bg, rgba(15, 23, 42, 0.45)) !important;
+  background-color: var(--wdp-modal-overlay-bg, rgba(15, 23, 42, 0.45)) !important;
+}
+
+/* Kapalı panel — layout :not(.show) titremesini önle */
+html body .wdp-modal.wdp-side-panel:not(.show) {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  animation: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  background-color: transparent !important;
+}
+
+/* Panel kabuğu — tam yükseklik, sol köşe 20px */
+html body .wdp-modal.wdp-side-panel.show .wdp-modal-content,
+html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-content,
+html body .wdp-modal.wdp-side-panel.show .wdp-modal-content:has(form.wdp-has-shareholders),
+html body .wdp-modal.wdp-side-panel.show .wdp-modal-content:has(.wdp-success-screen) {
+  width: var(--wdp-side-panel-width) !important;
+  max-width: var(--wdp-side-panel-width) !important;
+  min-width: 0;
+  height: 100dvh !important;
+  max-height: 100dvh !important;
+  min-height: 100dvh !important;
+  margin: 0 !important;
+  align-self: stretch !important;
+  flex: 0 0 auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 10px;
+  overflow: hidden !important;
+  border-radius: var(--wdp-side-panel-radius-left) 0 0 var(--wdp-side-panel-radius-left) !important;
+  border-top: 0;
+  border-bottom: 0;
+  border-right: 0;
+  background: var(--wdp-modal-bg, #ffffff) !important;
+  background-color: var(--wdp-modal-bg, #ffffff) !important;
+  box-shadow: -14px 0 56px -18px rgba(15, 23, 42, 0.24);
+  padding-block-start: calc(20px + env(safe-area-inset-top, 0px));
+  padding-block-end: calc(12px + env(safe-area-inset-bottom, 0px));
+  padding-inline: var(--wdp-side-panel-pad-inline);
+  box-sizing: border-box;
+  isolation: isolate;
+  opacity: 1 !important;
+  will-change: transform;
+  animation: wdp-side-panel-slide-in 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+  transform: translate3d(0, 0, 0);
+}
+
+html body .wdp-modal.wdp-side-panel.show.wdp-side-panel--opening .wdp-modal-content,
+html body .wdp-modal.wdp-side-panel.show.wdp-side-panel--opening .wdp-side-panel-content,
+html body .wdp-modal.wdp-side-panel.show.wdp-side-panel--opening .wdp-modal-content:has(form.wdp-has-shareholders),
+html body .wdp-modal.wdp-side-panel.show.wdp-side-panel--opening .wdp-modal-content:has(.wdp-success-screen) {
+  animation: none !important;
+  transform: translate3d(100%, 0, 0);
+}
+
+html body .wdp-modal.wdp-side-panel.show.wdp-side-panel--closing .wdp-modal-content,
+html body .wdp-modal.wdp-side-panel.show.wdp-side-panel--closing .wdp-side-panel-content,
+html body .wdp-modal.wdp-side-panel.show.wdp-side-panel--closing .wdp-modal-content:has(form.wdp-has-shareholders),
+html body .wdp-modal.wdp-side-panel.show.wdp-side-panel--closing .wdp-modal-content:has(.wdp-success-screen) {
+  animation: wdp-side-panel-slide-out 0.36s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes wdp-side-panel-slide-in {
+  from {
+    transform: translate3d(100%, 0, 0);
+  }
+  to {
+    transform: translate3d(0, 0, 0);
+    will-change: auto;
+  }
+}
+
+@keyframes wdp-side-panel-slide-out {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(100%, 0, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html body .wdp-modal.wdp-side-panel.show,
+  html body .wdp-modal.wdp-side-panel.show.wdp-side-panel--closing {
+    animation: none;
+  }
+
+  html body .wdp-modal.wdp-side-panel.show .wdp-modal-content,
+  html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-content,
+  html body .wdp-modal.wdp-side-panel.show.wdp-side-panel--closing .wdp-modal-content {
+    animation: none;
+    transform: none;
+  }
+}
+
+html body .wdp-modal.wdp-side-panel.show .wdp-modal-content > .wdp-progress-bar-container {
+  flex: 0 0 auto;
+  flex-shrink: 0;
+  width: 100%;
+}
+
+html body .wdp-modal.wdp-side-panel.show .wdp-modal-content > .wdp-modal-close {
+  width: 52px;
+  height: 52px;
+  min-width: 52px;
+  min-height: 52px;
+  font-size: 30px;
+  top: calc(4px + env(safe-area-inset-top, 0px));
+  right: calc(4px + env(safe-area-inset-right, 0px));
+}
+
+html body .wdp-modal.wdp-side-panel.show .wdp-modal-header {
+  flex: 0 0 auto;
+  flex-shrink: 0;
+  margin: 4px 0 0;
+  padding: 4px 52px 0 0;
+  justify-content: flex-start;
+  text-align: left;
+}
+
+html body .wdp-modal.wdp-side-panel.show .wdp-modal-header .wdp-modal-title-wrapper {
+  width: 100%;
+  padding: 0;
+  justify-items: start;
+  text-align: left;
+}
+
+html body .wdp-modal.wdp-side-panel.show .wdp-modal-header .wdp-modal-title,
+html body .wdp-modal.wdp-side-panel.show .wdp-modal-header .wdp-product-note,
+html body .wdp-modal.wdp-side-panel.show .wdp-modal-header .wdp-product-note__content,
+html body .wdp-modal.wdp-side-panel.show .wdp-modal-header .wdp-product-note__body,
+html body .wdp-modal.wdp-side-panel.show .wdp-modal-header .wdp-product-note__text {
+  text-align: left;
+  justify-content: flex-start;
+}
+
+/* Form iskeleti */
+html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-form,
+html body .wdp-modal.wdp-side-panel.show .wdp-modal-content form.wdp-donation-form-fields {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: hidden;
+  gap: 0;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Kaydırılabilir gövde — alanlar arası standart boşluk */
+html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-main {
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--wdp-form-stack-gap, 12px);
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  background: var(--wdp-modal-bg, #ffffff);
+}
+
+html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-main > .wdp-field-stack {
+  flex-shrink: 0;
+  margin: 0;
+}
+
+html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-main > .wdp-price-quantity-row {
+  flex-shrink: 0;
+  margin: 0;
+}
+
+html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-main--shares {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-main--shares .wdp-shares-section {
+  flex: 1 1 0 !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+  gap: var(--wdp-form-stack-gap, 16px);
+  width: 100%;
+}
+
+html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-main--shares .wdp-shares-header {
+  flex: 0 0 auto;
+  flex-shrink: 0;
+}
+
+html body .wdp-modal.wdp-side-panel.show .wdp-shares-header {
+  text-align: left;
+  justify-content: space-between;
+}
+
+html body .wdp-modal.wdp-side-panel.show .wdp-shares-header label {
+  width: auto;
+  text-align: left;
+}
+
+html body .wdp-modal.wdp-side-panel.show .wdp-shares-header .wdp-share-counter {
+  margin-inline: 0 0;
+  margin-left: auto;
+}
+
+html body .wdp-modal.wdp-side-panel.show .wdp-shareholders-rail {
+  display: none !important;
+}
+
+html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-main--shares .wdp-shareholders-area,
+html body .wdp-modal.wdp-side-panel.show .wdp-shareholders-area.scrollable,
+html body .wdp-modal.wdp-side-panel.show .wdp-shareholders-area.wdp-shareholders-area--with-rail {
+  flex: 1 1 0 !important;
+  min-height: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  height: auto !important;
+  max-height: none !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch;
+}
+
+html body .wdp-modal.wdp-side-panel.show .wdp-shareholders-container,
+html body .wdp-modal.wdp-side-panel.show .wdp-shareholders-container.scrollable {
+  display: flex !important;
+  flex-direction: column !important;
+  width: 100% !important;
+  height: auto !important;
+  max-height: none !important;
+  min-height: 0 !important;
+  overflow: visible !important;
+}
+
+html body .wdp-modal.wdp-side-panel.show .wdp-shareholders-scroll {
+  width: 100% !important;
+  overflow: visible !important;
+}
+
+html body .wdp-modal.wdp-side-panel.show .wdp-shareholders-scroll .wdp-shareholder-form {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Sabit alt footer — yalnızca üst çizgi, arka plan yok */
+html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-footer-zone {
+  flex: 0 0 auto;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin: 0;
+  padding: 14px 0 0;
+  background: transparent !important;
+  border-top: 1px solid var(--wdp-side-panel-footer-border);
+  box-shadow: none;
+  z-index: 4;
+}
+
+/* Hisseli: toplam tutar (butonların üstü) */
+html body :is(.wdp-modal, .wdp-donation-form) form.wdp-has-shareholders .wdp-shares-total-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  margin: 0 0 12px;
+  padding: 12px 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #f8fafc;
+  box-sizing: border-box;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) form.wdp-has-shareholders .wdp-shares-total-bar[hidden] {
+  display: none !important;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) form.wdp-has-shareholders .wdp-shares-total-bar__label {
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: #475569;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) form.wdp-has-shareholders .wdp-shares-total-bar__value {
+  font-family: inherit;
+  font-size: 17px;
+  font-weight: 800;
+  color: #1e73be;
+  letter-spacing: 0.01em;
+}
+
+html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-footer-zone .wdp-shares-total-bar {
+  flex: 0 0 auto;
+  margin-bottom: 10px;
+}
+
+/* Sabit alt butonlar */
+html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-form-footer,
+html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-form > .wdp-button-group,
+html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-footer-zone .wdp-side-panel-form-footer {
+  flex: 0 0 auto;
+  flex-shrink: 0;
+  position: static !important;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: clamp(10px, 1.2vh, 12px);
+  width: 100%;
+  margin: 0 !important;
+  padding: 0 0 14px;
+  background: transparent;
+  border: none;
+  border-top: none;
+  box-shadow: none;
+  z-index: 4;
+}
+
+html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-form-footer .wdp-btn-primary,
+html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-footer-zone .wdp-btn-primary {
+  order: -1;
+}
+
+/* Form altı butonları — ortak taban */
+html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-form-footer button,
+html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-footer-zone .wdp-side-panel-form-footer button,
+html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-form > .wdp-button-group button {
+  width: 100%;
+  max-width: 100%;
+  min-height: 48px;
+  border-radius: var(--wdp-sp-btn-radius);
+  font-size: var(--wdp-form-button-font-size, 17px);
+  font-family: var(--wdp-button-font-family, inherit);
+  font-weight: var(--wdp-form-button-font-weight, var(--wdp-button-font-weight, 800));
+  letter-spacing: 0.01em;
+  line-height: 1.3;
+  border-width: 1px;
+  border-style: solid;
+  transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+  box-shadow: none !important;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Ödemeye git / tamamla — yeşil */
+html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-form-footer button[name="donation_go_checkout"],
+html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-footer-zone button[name="donation_go_checkout"] {
+  background: var(--wdp-sp-btn-green, #48bb78) !important;
+  background-color: var(--wdp-sp-btn-green, #48bb78) !important;
+  color: #ffffff !important;
+  border-color: transparent !important;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-form-footer button[name="donation_go_checkout"]:hover,
+  html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-footer-zone button[name="donation_go_checkout"]:hover {
+    background: var(--wdp-sp-btn-green-hover, #38a169) !important;
+    background-color: var(--wdp-sp-btn-green-hover, #38a169) !important;
+  }
+
+  html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-form-footer button[name="donation_add_to_cart"]:hover,
+  html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-footer-zone button[name="donation_add_to_cart"]:hover {
+    background: var(--wdp-sp-btn-blue-hover, #185d98) !important;
+    background-color: var(--wdp-sp-btn-blue-hover, #185d98) !important;
+  }
+}
+
+html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-form-footer button[name="donation_go_checkout"]:active,
+html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-footer-zone button[name="donation_go_checkout"]:active {
+  background: #2f855a !important;
+  background-color: #2f855a !important;
+}
+
+/* Sepete ekle / sepete git — mavi */
+html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-form-footer button[name="donation_add_to_cart"],
+html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-footer-zone button[name="donation_add_to_cart"] {
+  background: var(--wdp-sp-btn-blue, #1e73be) !important;
+  background-color: var(--wdp-sp-btn-blue, #1e73be) !important;
+  color: #ffffff !important;
+  border-color: transparent !important;
+}
+
+html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-form-footer button[name="donation_add_to_cart"]:active,
+html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-footer-zone button[name="donation_add_to_cart"]:active {
+  background: var(--wdp-sp-btn-blue-hover, #185d98) !important;
+  background-color: var(--wdp-sp-btn-blue-hover, #185d98) !important;
+}
+
+html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-form-footer button:focus-visible,
+html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-footer-zone button:focus-visible {
+  outline: 2px solid var(--wdp-sp-btn-blue, #1e73be);
+  outline-offset: 2px;
+}
+
+html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-form-footer button .wdp-btn__icon,
+html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-footer-zone button .wdp-btn__icon,
+html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-cart-footer .wdp-success-button .wdp-btn__icon {
+  color: #ffffff;
+}
+
+html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-cart-footer .wdp-success-button--ghost .wdp-btn__icon {
+  color: currentColor;
+}
+
+html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-cart-footer .wdp-success-button .wdp-btn__inner {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  max-width: 100%;
+  min-width: 0;
+}
+
+html body .wdp-modal.wdp-side-panel.show .wdp-price-quantity-row,
+html body .wdp-modal.wdp-side-panel.show .wdp-quantity-counter {
+  max-width: 100%;
+}
+
+/* Başarı / mini sepet */
+html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-form:has(.wdp-success-screen),
+html body .wdp-modal.wdp-side-panel.show form:has(.wdp-success-screen) {
+  overflow: hidden;
+}
+
+html body .wdp-modal.wdp-side-panel.show .wdp-success-screen {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  min-height: 0;
+  width: 100%;
+  overflow: hidden;
+  gap: 10px;
+}
+
+html body .wdp-modal.wdp-side-panel.show .wdp-success-screen .wdp-success-top-bar {
+  flex-shrink: 0;
+}
+
+html body .wdp-modal.wdp-side-panel.show .wdp-success-screen .wdp-success-cart-stack {
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-cart-layout {
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  width: 100%;
+}
+
+html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-cart-layout > .wdp-mini-cart {
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+}
+
+html body .wdp-modal.wdp-side-panel.show .wdp-mini-cart-header {
+  flex-shrink: 0;
+  margin-bottom: 8px;
+}
+
+html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-cart-layout .wdp-mini-cart-items {
+  flex: 1 1 0;
+  min-height: 0;
+  max-height: none !important;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-cart-footer {
+  flex: 0 0 auto;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 14px 0 0;
+  background: transparent !important;
+  border-top: 1px solid var(--wdp-side-panel-footer-border);
+  box-shadow: none;
+}
+
+html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-subtotal {
+  flex-shrink: 0;
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  padding: 0 0 12px;
+  border-top: none;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-subtotal__value {
+  color: var(--wdp-success, #10b981);
+}
+
+html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-cart-footer > .wdp-success-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(10px, 1.2vh, 12px);
+  padding: 0 0 14px;
+  border-top: none;
+}
+
+html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-cart-footer .wdp-success-button {
+  width: 100%;
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  border-radius: var(--wdp-sp-btn-radius, 20px);
+  font-family: var(--wdp-button-font-family, inherit);
+  font-weight: var(--wdp-form-button-font-weight, var(--wdp-button-font-weight, 800));
+  font-size: var(--wdp-form-button-font-size, 17px);
+  text-decoration: none;
+  box-sizing: border-box;
+  border: none;
+  transition: background-color 0.18s ease, color 0.18s ease;
+  box-shadow: none !important;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Bağışı tamamla — yeşil */
+html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-cart-footer .wdp-success-button--primary {
+  background: var(--wdp-sp-btn-green, #48bb78) !important;
+  background-color: var(--wdp-sp-btn-green, #48bb78) !important;
+  color: #ffffff !important;
+  padding: 14px 16px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-cart-footer .wdp-success-button--primary:hover,
+  html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-cart-footer .wdp-success-button--primary:focus-visible {
+    background: var(--wdp-sp-btn-green-hover, #38a169) !important;
+    background-color: var(--wdp-sp-btn-green-hover, #38a169) !important;
+    color: #ffffff !important;
+  }
+
+  html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-cart-footer .wdp-success-button--outline:hover,
+  html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-cart-footer .wdp-success-button--outline:focus-visible {
+    background: var(--wdp-sp-btn-blue-hover, #185d98) !important;
+    background-color: var(--wdp-sp-btn-blue-hover, #185d98) !important;
+    color: #ffffff !important;
+  }
+
+  html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-cart-footer .wdp-success-button--ghost:hover,
+  html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-cart-footer .wdp-success-button--ghost:focus-visible {
+    color: var(--wdp-sp-btn-ghost-hover, #9a3412) !important;
+    background: #ffedd5 !important;
+    border-color: #fb923c !important;
+  }
+}
+
+html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-cart-footer .wdp-success-button--primary:active {
+  background: #2f855a !important;
+  background-color: #2f855a !important;
+}
+
+/* Sepete git — mavi */
+html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-cart-footer .wdp-success-button--outline {
+  background: var(--wdp-sp-btn-blue, #1e73be) !important;
+  background-color: var(--wdp-sp-btn-blue, #1e73be) !important;
+  color: #ffffff !important;
+  padding: 12px 16px;
+}
+
+/* Bağış eklemeye devam — turuncu çerçeveli */
+html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-cart-footer .wdp-success-button--ghost {
+  background: var(--wdp-sp-btn-ghost-bg, #fff7ed) !important;
+  background-color: var(--wdp-sp-btn-ghost-bg, #fff7ed) !important;
+  color: var(--wdp-sp-btn-ghost-text, #c2410c) !important;
+  border: 1px solid var(--wdp-sp-btn-ghost-border, #fdba74) !important;
+  border-radius: var(--wdp-sp-btn-radius, 20px) !important;
+  padding: 11px 16px;
+  font-family: var(--wdp-button-font-family, inherit);
+  font-weight: var(--wdp-button-font-weight, 800);
+  font-size: 14px;
+}
+
+/* Mobil: tam yükseklik, ortalama yok, sol radius 20px */
+@media (max-width: 480px) {
+  html body .wdp-modal.wdp-side-panel {
+    --wdp-side-panel-width: min(92vw, calc(100vw - 12px));
+  }
+
+  html body .wdp-modal.wdp-side-panel.show {
+    align-items: stretch !important;
+    justify-content: flex-end !important;
+  }
+
+  html body .wdp-modal.wdp-side-panel.show .wdp-modal-content,
+  html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-content {
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    min-height: 100dvh !important;
+    margin: 0 !important;
+    border-radius: var(--wdp-side-panel-radius-left) 0 0 var(--wdp-side-panel-radius-left) !important;
+  }
+}

@@ -113,9 +113,9 @@
   --wdp-button-radius: var(--wdp-radius-sm);
 
   /* Radii */
-  --wdp-radius-sm: 10px;   /* buton, chip, badge */
-  --wdp-radius-md: 14px;   /* input, quantity counter */
-  --wdp-radius-lg: 18px;   /* kart, shareholder bloğu */
+  --wdp-radius-sm: 20px;   /* buton, chip, badge */
+  --wdp-radius-md: 20px;   /* input, quantity counter */
+  --wdp-radius-lg: 20px;   /* kart, shareholder bloğu */
   --wdp-radius-xl: 24px;   /* modal içeriği */
 
   /* Shadows (Modern with color-mix support) */
@@ -170,8 +170,12 @@
   /* Hisse Adedi etiketi ile sayaç — bitişik satır, kontrollü aralık */
   --wdp-hisse-label-counter-gap: 0.5rem;
 
-  /* Font Family */
+  /* Font Family — site / tema yazı tipi */
   --wdp-font-family: inherit;
+  --wdp-button-font-family: inherit;
+  --wdp-button-font-weight: 700;
+  --wdp-form-button-font-size: 17px;
+  --wdp-form-button-font-weight: 800;
   
   /* Typography (Modern fluid typography with clamp) */
   --wdp-text-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);      /* 12-14px */
@@ -363,7 +367,7 @@
   --wdp-control-border-width: 1px;
   --wdp-control-border: var(--wdp-control-border-width) solid var(--wdp-input-border, var(--wdp-border-soft-gray, #e8eaed));
   --wdp-input-bg: #ffffff;
-  --wdp-input-border: #d1d5db;
+  --wdp-input-border: #e2e8f0;
   --wdp-input-color: #1f2937;
   --wdp-input-radius: 20px;
   --wdp-input-min-height: 48px;
@@ -395,13 +399,27 @@
   --wdp-field-stack-row-divider: 1px solid rgba(148, 163, 184, 0.22);
   --wdp-field-stack-radius: 20px;
   --wdp-field-stack-bg: #ffffff;
+  --wdp-price-surface-bg: #3d8fd4;
+  --wdp-price-surface-color: #ffffff;
+  --wdp-price-surface-border: #3582c3;
+  --wdp-price-control-bg: var(--wdp-price-surface-bg, #3d8fd4);
+  --wdp-price-control-color: var(--wdp-price-surface-color, #ffffff);
+  --wdp-price-control-border: var(--wdp-price-surface-border, #3582c3);
+  --wdp-counter-control-bg: #ffffff;
+  --wdp-counter-control-border: #e2e8f0;
+  --wdp-counter-control-color: #1e293b;
+  --wdp-share-counter-bg: #ffffff;
+  --wdp-share-counter-border: #e2e8f0;
+  --wdp-shareholder-header-bg: #2a7cc4;
+  --wdp-shareholder-header-color: #ffffff;
+  --wdp-shareholder-header-bg-hover: #3189cf;
   --wdp-field-stack-row-focus-bg: color-mix(in srgb, #64748b 5%, var(--wdp-bg-pure-white, #ffffff));
   --wdp-field-icon-size: 20px;
   --wdp-field-icon-zone-width: 28px;
   /* İkonlar: koyu → odak mavi → dolu yeşil */
-  --wdp-field-icon-color: #475569;
-  --wdp-field-icon-color-focus: #2a7fe8;
-  --wdp-field-icon-color-filled: #18a566;
+  --wdp-field-icon-color: #374151;
+  --wdp-field-icon-color-focus: #374151;
+  --wdp-field-icon-color-filled: #374151;
   --wdp-field-stack-pad-x: 14px;
   --wdp-field-stack-gap-icon-text: 10px;
   --wdp-field-stack-input-pad-y: 13px;
@@ -416,8 +434,8 @@
   /* Card-like surfaces */
   --wdp-card-bg: #ffffff;
   --wdp-card-border: #e5e7eb;
-  --wdp-card-radius: 10px;
-  --wdp-card-radius-sm: 10px; /* Smaller cards (shareholder cards) */
+  --wdp-card-radius: 20px;
+  --wdp-card-radius-sm: 20px; /* Smaller cards (shareholder cards) */
   --wdp-card-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
   --wdp-card-shadow-md: 0 2px 8px rgba(0, 0, 0, 0.04); /* Progress bar, shareholders area */
   --wdp-card-padding-y: 14px; /* Progress bar container */

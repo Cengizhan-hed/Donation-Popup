@@ -16,6 +16,7 @@ $stack = array(
     'src/tokens.css',
     'src/base.css',
     'src/layout.css',
+    'src/components/side-panel.css',
     'src/forms/shared.css',
     'src/forms/field-stack.css',
     'src/components/phone-field.css',
@@ -31,6 +32,7 @@ $stack = array(
     'src/components/feedback.css',
     'src/components/accessibility.css',
     'src/components/amount-presets.css',
+    'src/components/product-note.css',
 );
 
 if (!is_dir($outDir) && !mkdir($outDir, 0775, true) && !is_dir($outDir)) {

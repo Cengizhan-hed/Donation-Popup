@@ -26,6 +26,17 @@
     return { defaultCountry: defaultCountry };
   }
 
+  const DEFAULT_NATIONAL_RULES = { min: 7, max: 12 };
+
+  const STRIP_LEADING_ZERO_ISOS = new Set([
+    'tr', 'gb', 'it', 'fr', 'de', 'nl', 'be', 'at', 'au', 'nz', 'ie', 'pt', 'es', 'pl', 'cz', 'sk', 'hu', 'ro', 'gr',
+    'no', 'dk', 'fi', 'se', 'ch', 'lu', 'za', 'ng', 'gh', 'ke', 'ug', 'tz', 'et', 'sn', 'ma', 'tn', 'dz', 'eg', 'ly',
+    'sd', 'bf', 'ml', 'ne', 'td', 'dj', 'so', 'pk', 'bd', 'in', 'lk', 'np', 'my', 'sg', 'ph', 'th', 'vn', 'id', 'mm',
+    'kh', 'la', 'hr', 'si', 'rs', 'ba', 'mk', 'me', 'xk', 'al', 'bg', 'ua', 'by', 'md', 'lv', 'lt', 'ee', 'is', 'li',
+    'ad', 'mc', 'sm', 'mt', 'cy', 'am', 'ge', 'az', 'kz', 'kg', 'uz', 'tj', 'tm', 'mn', 'ir', 'iq', 'sy', 'jo', 'lb',
+    'ps', 'ye', 'om', 'qa', 'bh', 'kw', 'ae', 'sa', 'il', 'br', 'ar', 'mx', 'cl', 'co', 'pe', 've', 'ec', 'uy', 'py',
+  ]);
+
   function findCountry(iso) {
     const key = (iso || '').toLowerCase();
     const countries = getCountries();
@@ -34,7 +45,60 @@
         return countries[i];
       }
     }
-    return countries[0] || { iso: 'tr', name: 'Türkiye', dial: '90' };
+    return countries[0] || { iso: 'tr', name: 'Türkiye', dial: '90', nationalMin: 10, nationalMax: 10 };
+  }
+
+  function getNationalRules(country) {
+    const c = country || {};
+    let min = Number(c.nationalMin);
+    let max = Number(c.nationalMax);
+    if (!Number.isFinite(min)) {
+      min = DEFAULT_NATIONAL_RULES.min;
+    }
+    if (!Number.isFinite(max)) {
+      max = DEFAULT_NATIONAL_RULES.max;
+    }
+    min = Math.max(1, Math.floor(min));
+    max = Math.max(min, Math.floor(max));
+    return { min: min, max: max };
+  }
+
+  function normalizeNationalDigits(iso, rawDigits) {
+    let digits = stripDigits(rawDigits);
+    if (!digits) {
+      return '';
+    }
+    const isoKey = (iso || '').toLowerCase();
+    if (STRIP_LEADING_ZERO_ISOS.has(isoKey) && digits.startsWith('0')) {
+      digits = digits.replace(/^0+/, '');
+    }
+    return digits;
+  }
+
+  function applyNationalLengthAttrs(input, country) {
+    if (!input) {
+      return;
+    }
+    const rules = getNationalRules(country);
+    input.setAttribute('maxlength', String(rules.max));
+    input.setAttribute('minlength', String(rules.min));
+    input.dataset.wdpPhoneNationalMin = String(rules.min);
+    input.dataset.wdpPhoneNationalMax = String(rules.max);
+  }
+
+  function clampNationalValue(input, country) {
+    if (!input) {
+      return;
+    }
+    const rules = getNationalRules(country);
+    let digits = normalizeNationalDigits(country.iso, input.value);
+    if (digits.length > rules.max) {
+      digits = digits.slice(0, rules.max);
+    }
+    if (digits !== String(input.value || '')) {
+      input.value = digits;
+    }
+    applyNationalLengthAttrs(input, country);
   }
 
   function stripDigits(value) {
@@ -110,25 +174,57 @@
     if (label) {
       label.textContent = '+' + country.dial;
     }
+    const num = fieldRoot.querySelector('.wdp-phone-field__number');
+    if (num) {
+      clampNationalValue(num, country);
+    }
   }
 
   function sanitizeNationalInput(input) {
     if (!input) {
       return;
     }
+    const fieldRoot = getPhoneFieldRoot(input);
+    const country = getSelectedCountry(fieldRoot);
+    const rules = getNationalRules(country);
     const oldValue = String(input.value || '');
     const start = typeof input.selectionStart === 'number' ? input.selectionStart : oldValue.length;
     const digitsBefore = stripDigits(oldValue.slice(0, start)).length;
-    const nextValue = stripDigits(oldValue);
+    let nextValue = normalizeNationalDigits(country.iso, oldValue);
+    if (nextValue.length > rules.max) {
+      nextValue = nextValue.slice(0, rules.max);
+    }
     if (nextValue === oldValue) {
+      applyNationalLengthAttrs(input, country);
       return;
     }
     input.value = nextValue;
+    const caret = Math.min(digitsBefore, nextValue.length);
     try {
-      input.setSelectionRange(digitsBefore, digitsBefore);
+      input.setSelectionRange(caret, caret);
     } catch (e) {
       /* ignore */
     }
+    applyNationalLengthAttrs(input, country);
+  }
+
+  function wouldExceedNationalMax(input, insertText, inputType) {
+    if (!input || !insertText) {
+      return false;
+    }
+    if (inputType && inputType.indexOf('insert') !== 0) {
+      return false;
+    }
+    const fieldRoot = getPhoneFieldRoot(input);
+    const country = getSelectedCountry(fieldRoot);
+    const rules = getNationalRules(country);
+    const cur = stripDigits(String(input.value || ''));
+    const selStart = typeof input.selectionStart === 'number' ? input.selectionStart : cur.length;
+    const selEnd = typeof input.selectionEnd === 'number' ? input.selectionEnd : selStart;
+    const before = stripDigits(String(input.value || '').slice(0, selStart));
+    const after = stripDigits(String(input.value || '').slice(selEnd));
+    const proposed = normalizeNationalDigits(country.iso, before + insertText + after);
+    return proposed.length > rules.max;
   }
 
   function attachDigitsOnlyGuards(input) {
@@ -144,6 +240,9 @@
     input.setAttribute('pattern', '[0-9]*');
     input.setAttribute('autocomplete', 'tel-national');
 
+    const fieldRoot = getPhoneFieldRoot(input);
+    applyNationalLengthAttrs(input, getSelectedCountry(fieldRoot));
+
     input._wdpPhoneBeforeInputGuard = function (e) {
       if (!e || typeof e.data !== 'string') {
         return;
@@ -152,6 +251,10 @@
         return;
       }
       if (/\D/.test(e.data)) {
+        e.preventDefault();
+        return;
+      }
+      if (wouldExceedNationalMax(input, e.data, e.inputType)) {
         e.preventDefault();
       }
     };
@@ -521,11 +624,20 @@
     }
     const fieldRoot = getPhoneFieldRoot(input);
     const country = getSelectedCountry(fieldRoot);
-    const national = stripDigits(input.value);
+    const national = normalizeNationalDigits(country.iso, input.value);
     if (!national) {
       return '';
     }
     return normalizePhoneNumber(country.iso, country.dial, national);
+  }
+
+  function getNationalDigitCount(input) {
+    if (!input) {
+      return 0;
+    }
+    const fieldRoot = getPhoneFieldRoot(input);
+    const country = getSelectedCountry(fieldRoot);
+    return normalizeNationalDigits(country.iso, input.value).length;
   }
 
   function createFieldElement(options) {
@@ -801,17 +913,68 @@
     const detected = detectCountryFromDigits(digits);
     if (detected) {
       setSelectedCountry(fieldRoot, detected.country);
-      numInput.value = detected.national;
+      const rules = getNationalRules(detected.country);
+      let national = normalizeNationalDigits(detected.country.iso, detected.national);
+      if (national.length > rules.max) {
+        national = national.slice(0, rules.max);
+      }
+      numInput.value = national;
+      applyNationalLengthAttrs(numInput, detected.country);
       return;
     }
-    numInput.value = digits;
+    const country = getSelectedCountry(fieldRoot);
+    const rules = getNationalRules(country);
+    let national = normalizeNationalDigits(country.iso, digits);
+    if (national.length > rules.max) {
+      national = national.slice(0, rules.max);
+    }
+    numInput.value = national;
+    applyNationalLengthAttrs(numInput, country);
   }
 
   function validatePhoneField(input) {
-    if (!input || !String(input.value || '').trim()) {
+    if (!input) {
       return { ok: true, empty: true, reason: 'empty' };
     }
-    return { ok: true, empty: false, reason: 'present' };
+    const raw = String(input.value || '').trim();
+    if (!raw) {
+      return { ok: true, empty: true, reason: 'empty' };
+    }
+    const fieldRoot = getPhoneFieldRoot(input);
+    const country = getSelectedCountry(fieldRoot);
+    const rules = getNationalRules(country);
+    const length = getNationalDigitCount(input);
+    if (length < rules.min) {
+      return {
+        ok: false,
+        empty: false,
+        reason: 'too_short',
+        min: rules.min,
+        max: rules.max,
+        length: length,
+        country: country,
+      };
+    }
+    if (length > rules.max) {
+      return {
+        ok: false,
+        empty: false,
+        reason: 'too_long',
+        min: rules.min,
+        max: rules.max,
+        length: length,
+        country: country,
+      };
+    }
+    return {
+      ok: true,
+      empty: false,
+      reason: 'valid',
+      min: rules.min,
+      max: rules.max,
+      length: length,
+      country: country,
+    };
   }
 
   WDPApp.phoneInput = {
@@ -824,6 +987,8 @@
     getValueForCopy: getValueForCopy,
     applyPastedNumber: applyPastedNumber,
     validatePhoneField: validatePhoneField,
+    getNationalRules: getNationalRules,
+    getNationalDigitCount: getNationalDigitCount,
     getPhoneInputs: getPhoneNumberInputs,
     getNormalizedValue: getNormalizedValue,
     normalizePhoneNumber: normalizePhoneNumber,

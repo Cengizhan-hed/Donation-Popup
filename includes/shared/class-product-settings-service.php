@@ -40,11 +40,6 @@ class WDP_Product_Settings_Service {
 		$enable_progress_bar   = isset($request['enable_progress_bar']) && wp_unslash($request['enable_progress_bar']) === 'true' ? 'yes' : 'no';
 		$enable_product_note   = isset($request['enable_product_note']) && wp_unslash($request['enable_product_note']) === 'true' ? 'yes' : 'no';
 
-		$product_note_icon = isset($request['product_note_icon']) ? sanitize_key(wp_unslash($request['product_note_icon'])) : 'info';
-		if (!in_array($product_note_icon, array('info', 'video', 'delivery', 'heart'), true)) {
-			$product_note_icon = 'info';
-		}
-
 		return array(
 			'_allow_custom_price'    => $allow_custom_price,
 			'_min_custom_price'      => isset($request['min_custom_price']) ? wc_format_decimal(wp_unslash($request['min_custom_price'])) : '',
@@ -54,7 +49,6 @@ class WDP_Product_Settings_Service {
 			'_progress_bar_limit'    => isset($request['progress_bar_limit']) ? wc_format_decimal(wp_unslash($request['progress_bar_limit'])) : '',
 			'_enable_product_note'   => $enable_product_note,
 			'_product_note_text'     => isset($request['product_note_text']) ? sanitize_textarea_field(wp_unslash($request['product_note_text'])) : '',
-			'_product_note_icon'     => $product_note_icon,
 		);
 	}
 }

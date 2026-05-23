@@ -241,8 +241,8 @@ html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-quantity-counter, .wdp-sh
 
 /* Özel fiyat input'ları için spinner'ları göster - Daha spesifik selector ile override */
 /* CRITICAL: Maximum specificity - html body ile tema override koruması */
-html body :is(.wdp-modal, .wdp-donation-form) .wdp-price-quantity-row > :is(.wdp-price-field input[type="number"], input[name="custom_price"][type="number"])::-webkit-outer-spin-button,
-html body :is(.wdp-modal, .wdp-donation-form) .wdp-price-quantity-row > :is(.wdp-price-field input[type="number"], input[name="custom_price"][type="number"])::-webkit-inner-spin-button {
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-price-quantity-row > :is(.wdp-price-field input[type="number"]:not(.wdp-custom-price-input), input[name="custom_price"][type="number"]:not(.wdp-custom-price-input))::-webkit-outer-spin-button,
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-price-quantity-row > :is(.wdp-price-field input[type="number"]:not(.wdp-custom-price-input), input[name="custom_price"][type="number"]:not(.wdp-custom-price-input))::-webkit-inner-spin-button {
   display: block;
   opacity: 1;
   cursor: pointer;
@@ -271,8 +271,8 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-price-quantity-row > :is(.wdp
 
   /* Mobile: Özel fiyat input spinner'ları görünür */
   /* CRITICAL: Maximum specificity - html body ile tema override koruması */
-  html body :is(.wdp-modal, .wdp-donation-form) .wdp-price-quantity-row > :is(.wdp-price-field input[type="number"], input[name="custom_price"][type="number"])::-webkit-outer-spin-button,
-  html body :is(.wdp-modal, .wdp-donation-form) .wdp-price-quantity-row > :is(.wdp-price-field input[type="number"], input[name="custom_price"][type="number"])::-webkit-inner-spin-button {
+  html body :is(.wdp-modal, .wdp-donation-form) .wdp-price-quantity-row > :is(.wdp-price-field input[type="number"]:not(.wdp-custom-price-input), input[name="custom_price"][type="number"]:not(.wdp-custom-price-input))::-webkit-outer-spin-button,
+  html body :is(.wdp-modal, .wdp-donation-form) .wdp-price-quantity-row > :is(.wdp-price-field input[type="number"]:not(.wdp-custom-price-input), input[name="custom_price"][type="number"]:not(.wdp-custom-price-input))::-webkit-inner-spin-button {
     display: block;
     opacity: 1;
     cursor: pointer;

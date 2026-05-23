@@ -84,6 +84,25 @@
     return !!(area && area.classList && area.classList.contains('wdp-shareholders-area--with-rail'));
   }
 
+  function isSidePanelModal(modal) {
+    return !!(modal && modal.classList && modal.classList.contains('wdp-side-panel'));
+  }
+
+  function clearSidePanelShareholderScrollLayout(modal) {
+    if (!modal) {
+      return;
+    }
+    modal.querySelectorAll('.wdp-shareholders-area, .wdp-shareholders-container, .wdp-shareholders-scroll').forEach((el) => {
+      el.classList.remove('scrollable');
+      el.style.removeProperty('height');
+      el.style.removeProperty('max-height');
+      el.style.removeProperty('min-height');
+      el.style.removeProperty('overflow');
+      el.style.removeProperty('overflow-y');
+      el.style.removeProperty('overflow-x');
+    });
+  }
+
   /** Satır içi display/flex — sol adım rayı varken CSS grid’i ezmemeli */
   function applyShareholdersAreaVisibility(area) {
     if (!area) return;
@@ -196,6 +215,12 @@
 
     const scrollElement = container.querySelector('.wdp-shareholders-scroll');
     const areaElement = container.closest('.wdp-shareholders-area');
+    const modalRoot = container.closest('.wdp-modal');
+
+    if (isSidePanelModal(modalRoot)) {
+      clearSidePanelShareholderScrollLayout(modalRoot);
+      return;
+    }
     
     // CRITICAL: When enabling scroll, DO NOT remove height constraints immediately
     // Let CSS handle it through scrollable class, but ensure class is applied first
@@ -264,6 +289,11 @@
 
   // Helper: Update scrollable class for shareholders container
   function updateShareholdersScrollable(modal) {
+    if (isSidePanelModal(modal)) {
+      clearSidePanelShareholderScrollLayout(modal);
+      return;
+    }
+
     const shareholdersContainer = modal.querySelector('.wdp-shareholders-container');
     if (!shareholdersContainer) return;
     const shareholdersList = ensureShareholderList(shareholdersContainer);
@@ -687,6 +717,49 @@
     });
   }
 
+  function resolveShareUnitPrice(modal) {
+    if (!modal) {
+      return 0;
+    }
+    const ds = modal.getAttribute('data-wdp-unit-price');
+    let unit = ds ? Number.parseFloat(ds) : 0;
+    if (!Number.isFinite(unit) || unit <= 0) {
+      const productId = modal.getAttribute('data-product-id')
+        || (modal.querySelector('input[name="wdp_product_id"]') && modal.querySelector('input[name="wdp_product_id"]').value);
+      if (productId && productPrices && productPrices[productId]) {
+        unit = Number.parseFloat(productPrices[productId]);
+      }
+    }
+    return Number.isFinite(unit) && unit > 0 ? unit : 0;
+  }
+
+  function updateSharesTotalBar(modal) {
+    if (!modal) {
+      return;
+    }
+    const form = modal.querySelector('form.wdp-has-shareholders');
+    if (!form) {
+      return;
+    }
+    const bar = form.querySelector('.wdp-shares-total-bar');
+    if (!bar) {
+      return;
+    }
+    const countInput = form.querySelector('input[name="share_count"]');
+    const count = countInput ? Math.max(1, Number.parseInt(countInput.value, 10) || 1) : 1;
+    const valueEl = bar.querySelector('.wdp-shares-total-bar__value');
+    if (!valueEl) {
+      return;
+    }
+    const unit = resolveShareUnitPrice(modal);
+    if (!unit) {
+      bar.hidden = true;
+      return;
+    }
+    valueEl.textContent = formatCurrency(unit * count);
+    bar.hidden = count < 2;
+  }
+
   function syncShareholderUnitPricesFromModal(modal) {
     if (!modal) return;
     const idInput = modal.querySelector('input[name="wdp_product_id"], input[name="add-to-cart"]');
@@ -700,6 +773,7 @@
       unit = ds ? Number.parseFloat(ds) : 0;
     }
     syncShareholderUnitPrices(modal, unit);
+    updateSharesTotalBar(modal);
   }
 
   // Create shareholder form element
@@ -1522,7 +1596,7 @@
     // CRITICAL: Update scrollable class immediately - BEFORE browser renders
     // This prevents modal expansion by applying height constraints instantly
     // shareholdersArea'yı yukarıda zaten tanımladık, tekrar tanımlamaya gerek yok
-    if (shareholdersArea && shareCount > 1) {
+    if (!isSidePanelModal(modal) && shareholdersArea && shareCount > 1) {
       // Immediately add scrollable class before updateShareholdersScrollable
       shareholdersArea.classList.add('scrollable');
       shareholdersContainer.classList.add('scrollable');
@@ -1603,6 +1677,7 @@
       // Formları güncelle
       updateShareholderFormsInternal(modal);
       updatePriceBasedOnShareCount();
+      updateSharesTotalBar(modal);
     }
     
     // Decrease butonu event listener'ı
@@ -1944,6 +2019,7 @@
       setupWdpPhoneFields(shareholdersList);
 
       syncShareholderUnitPricesFromModal(modal);
+      updateSharesTotalBar(modal);
       
       // ABSOLUTE FIX: Modal ilk açıldığında shareholders-area'nın height'ını kaydet
       // Böylece scrollable olduğunda aynı height'ı kullanabiliriz
@@ -2000,6 +2076,7 @@
 
             setupShareQuantityButtons(modal, modal.querySelector('input[name="share_count"]'), baseProductPrice, priceInput);
             syncShareholderUnitPricesFromModal(modal);
+            updateSharesTotalBar(modal);
             setupWdpPhoneFields(modal);
             refreshShareholderGuidance(modal);
             return;
@@ -2041,6 +2118,7 @@
 
             setupShareQuantityButtons(modal, modal.querySelector('input[name="share_count"]'), baseProductPrice, priceInput);
             syncShareholderUnitPricesFromModal(modal);
+            updateSharesTotalBar(modal);
             setupWdpPhoneFields(modal);
             refreshShareholderGuidance(modal);
           })
@@ -2277,6 +2355,7 @@
     updateForms: updateShareholderForms,
     refreshGuidance: refreshShareholderGuidance,
     setValidationArmed: setShareValidationArmed,
+    updateSharesTotalBar,
   };
 
   // Export shareholder module

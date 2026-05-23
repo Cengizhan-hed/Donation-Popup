@@ -123,15 +123,16 @@
               const isPluginNode = node.classList && (
                 node.classList.contains('wdp-donate-button') || 
                 node.classList.contains('wdp-open-modal') ||
+                node.classList.contains('wdp-open-side-panel') ||
                 node.classList.contains('wdp-donation-form') ||
-                node.querySelector('.wdp-donate-button, .wdp-open-modal, .wdp-donation-form')
+                node.querySelector('.wdp-donate-button, .wdp-open-modal, .wdp-open-side-panel, .wdp-donation-form')
               );
 
               if (!isPluginNode && pluginContainers.length > 0) {
                 return; // Plugin ile ilgili değil, atla
               }
 
-              const buttons = node.querySelectorAll(".wdp-donate-button, .wdp-open-modal")
+              const buttons = node.querySelectorAll(".wdp-donate-button, .wdp-open-modal, .wdp-open-side-panel")
               if (buttons.length > 0) {
                 shouldReinitialize = true
               }

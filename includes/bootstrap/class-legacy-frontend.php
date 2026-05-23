@@ -92,7 +92,7 @@ if (!function_exists('wdp_should_render_js_helpers')) {
 
 		if (is_singular()) {
 			$post = get_post();
-			if ($post && has_shortcode($post->post_content, 'wdp_donation_button')) {
+			if ($post && (has_shortcode($post->post_content, 'wdp_donation_button') || has_shortcode($post->post_content, 'wdp_donation_button_panel'))) {
 				return true;
 			}
 			if ($post && has_shortcode($post->post_content, 'wdp_donation_form')) {

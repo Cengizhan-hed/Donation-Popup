@@ -186,8 +186,9 @@ class WDP_Admin_Settings_Normalizer {
 			'shareholder_card_border'        => $pick_hex('shareholder_card_border', '#f0f2f5'),
 			'shareholder_card_radius'        => $pick_int('shareholder_card_radius', 20),
 			'shareholder_card_shadow'        => $pick_text('shareholder_card_shadow', '0 1px 3px rgba(0, 0, 0, 0.05)'),
-			'shareholder_header_bg'          => $pick_hex('shareholder_header_bg', '#f9fafb'),
-			'shareholder_header_color'       => $pick_hex('shareholder_header_color', '#1f2937'),
+			'shareholder_header_bg'          => $pick_hex('shareholder_header_bg', '#2a7cc4'),
+			'shareholder_header_color'       => $pick_hex('shareholder_header_color', '#ffffff'),
+			'shareholder_header_bg_hover'    => $pick_hex('shareholder_header_bg_hover', '#3189cf'),
 			'shareholder_content_padding'    => $pick_int('shareholder_content_padding', 12),
 			'shareholders_area_bg'           => $solid_requested,
 			'shareholders_area_border'       => isset($request['shareholders_area_border']) ? sanitize_hex_color($request['shareholders_area_border']) : $pick_hex('shareholders_area_border', '#e1e5e9'),
@@ -226,9 +227,9 @@ class WDP_Admin_Settings_Normalizer {
 			'success_button_color'     => isset($request['success_button_color']) ? sanitize_hex_color($request['success_button_color']) : '#1e73be',
 			'success_button_hover'     => isset($request['success_button_hover']) ? sanitize_hex_color($request['success_button_hover']) : '#185d98',
 			'success_button_radius'    => isset($request['success_button_radius']) ? absint($request['success_button_radius']) : 20,
-			'success_text_view_cart'   => isset($request['success_text_view_cart']) ? sanitize_text_field($request['success_text_view_cart']) : 'Sepeti Görüntüle',
-			'success_text_go_checkout' => isset($request['success_text_go_checkout']) ? sanitize_text_field($request['success_text_go_checkout']) : 'Ödemeye Git',
-			'success_text_new_donation'=> isset($request['success_text_new_donation']) ? sanitize_text_field($request['success_text_new_donation']) : 'Yeni Bağış Ekle',
+			'success_text_view_cart'   => isset($request['success_text_view_cart']) ? sanitize_text_field($request['success_text_view_cart']) : 'Sepete Git',
+			'success_text_go_checkout' => isset($request['success_text_go_checkout']) ? sanitize_text_field($request['success_text_go_checkout']) : 'Bağışı Tamamla',
+			'success_text_new_donation'=> isset($request['success_text_new_donation']) ? sanitize_text_field($request['success_text_new_donation']) : 'Bağış eklemeye devam edin',
 			'success_message_bg'       => isset($request['success_message_bg']) ? sanitize_text_field($request['success_message_bg']) : 'rgba(72, 187, 120, 0.1)',
 			'success_message_color'    => isset($request['success_message_color']) ? sanitize_hex_color($request['success_message_color']) : '#48bb78',
 			'success_message_border'   => isset($request['success_message_border']) ? sanitize_text_field($request['success_message_border']) : 'rgba(72, 187, 120, 0.2)',
@@ -275,6 +276,15 @@ class WDP_Admin_Settings_Normalizer {
 	 */
 	public static function normalize_modal_layout_settings(array $request) {
 		$settings = array(
+			'side_panel_width_desktop_percent' => isset($request['side_panel_width_desktop_percent']) ? self::clamp_range(absint($request['side_panel_width_desktop_percent']), 30, 100) : 50,
+			'side_panel_width_desktop_min_px'  => isset($request['side_panel_width_desktop_min_px']) ? self::clamp_range(absint($request['side_panel_width_desktop_min_px']), 320, 900) : 400,
+			'side_panel_width_desktop_max_px'  => isset($request['side_panel_width_desktop_max_px']) ? self::clamp_range(absint($request['side_panel_width_desktop_max_px']), 400, 1200) : 720,
+			'side_panel_width_tablet_percent'  => isset($request['side_panel_width_tablet_percent']) ? self::clamp_range(absint($request['side_panel_width_tablet_percent']), 30, 100) : 55,
+			'side_panel_width_tablet_min_px'   => isset($request['side_panel_width_tablet_min_px']) ? self::clamp_range(absint($request['side_panel_width_tablet_min_px']), 300, 800) : 380,
+			'side_panel_width_tablet_max_px'   => isset($request['side_panel_width_tablet_max_px']) ? self::clamp_range(absint($request['side_panel_width_tablet_max_px']), 380, 900) : 600,
+			'side_panel_width_mobile_percent'  => isset($request['side_panel_width_mobile_percent']) ? self::clamp_range(absint($request['side_panel_width_mobile_percent']), 70, 100) : 92,
+			'side_panel_width_mobile_min_px'   => isset($request['side_panel_width_mobile_min_px']) ? self::clamp_range(absint($request['side_panel_width_mobile_min_px']), 0, 600) : 0,
+			'side_panel_width_mobile_max_px'   => isset($request['side_panel_width_mobile_max_px']) ? self::clamp_range(absint($request['side_panel_width_mobile_max_px']), 320, 1200) : 100,
 			'popup_modal_width_desktop'   => isset($request['popup_modal_width_desktop']) && '' !== $request['popup_modal_width_desktop'] ? absint($request['popup_modal_width_desktop']) : 540,
 			'inpage_form_width_desktop'   => isset($request['inpage_form_width_desktop']) && '' !== $request['inpage_form_width_desktop'] ? absint($request['inpage_form_width_desktop']) : 480,
 			'modal_padding_top_desktop'   => isset($request['modal_padding_top_desktop']) && '' !== $request['modal_padding_top_desktop'] ? absint($request['modal_padding_top_desktop']) : 32,
@@ -288,6 +298,16 @@ class WDP_Admin_Settings_Normalizer {
 			'modal_padding_bottom_mobile' => isset($request['modal_padding_bottom_mobile']) && '' !== $request['modal_padding_bottom_mobile'] ? absint($request['modal_padding_bottom_mobile']) : 20,
 			'modal_padding_left_mobile'   => isset($request['modal_padding_left_mobile']) && '' !== $request['modal_padding_left_mobile'] ? absint($request['modal_padding_left_mobile']) : 20,
 		);
+
+		if ($settings['side_panel_width_desktop_min_px'] > $settings['side_panel_width_desktop_max_px']) {
+			$settings['side_panel_width_desktop_min_px'] = $settings['side_panel_width_desktop_max_px'];
+		}
+		if ($settings['side_panel_width_tablet_min_px'] > $settings['side_panel_width_tablet_max_px']) {
+			$settings['side_panel_width_tablet_min_px'] = $settings['side_panel_width_tablet_max_px'];
+		}
+		if ($settings['side_panel_width_mobile_min_px'] > $settings['side_panel_width_mobile_max_px']) {
+			$settings['side_panel_width_mobile_min_px'] = $settings['side_panel_width_mobile_max_px'];
+		}
 
 		$settings['popup_modal_width_desktop'] = self::clamp_range($settings['popup_modal_width_desktop'], 300, 800);
 		$settings['inpage_form_width_desktop'] = self::clamp_range($settings['inpage_form_width_desktop'], 300, 800);

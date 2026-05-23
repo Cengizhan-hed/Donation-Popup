@@ -67,12 +67,7 @@ class WDP_Admin_Product_Settings_Ajax {
 		$enable_progress_bar   = get_post_meta($product_id, '_enable_progress_bar', true) === 'yes';
 		$progress_bar_limit    = get_post_meta($product_id, '_progress_bar_limit', true);
 		$enable_product_note   = get_post_meta($product_id, '_enable_product_note', true) === 'yes';
-		$product_note_text     = get_post_meta($product_id, '_product_note_text', true);
-		$product_note_icon     = get_post_meta($product_id, '_product_note_icon', true);
-
-		if ($product_note_icon === '') {
-			$product_note_icon = 'info';
-		}
+		$product_note_text = get_post_meta($product_id, '_product_note_text', true);
 		if ($min_custom_price === '') {
 			$min_custom_price = '0';
 		}
@@ -92,9 +87,8 @@ class WDP_Admin_Product_Settings_Ajax {
 				'max_shares'            => $max_shares,
 				'enable_progress_bar'   => $enable_progress_bar,
 				'progress_bar_limit'    => $progress_bar_limit,
-				'enable_product_note'   => $enable_product_note,
-				'product_note_text'     => $product_note_text,
-				'product_note_icon'     => $product_note_icon,
+				'enable_product_note' => $enable_product_note,
+				'product_note_text'   => $product_note_text,
 			)
 		);
 	}

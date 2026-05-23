@@ -98,8 +98,9 @@ class WDP_Admin_Form_Tabs_Renderer {
 			'shareholder_card_border'        => '#f0f2f5',
 			'shareholder_card_radius'        => '20',
 			'shareholder_card_shadow'        => '0 1px 3px rgba(0, 0, 0, 0.05)',
-			'shareholder_header_bg'          => '#f9fafb',
-			'shareholder_header_color'       => '#1f2937',
+			'shareholder_header_bg'          => '#2a7cc4',
+			'shareholder_header_color'       => '#ffffff',
+			'shareholder_header_bg_hover'    => '#3189cf',
 			'shareholder_content_padding'    => '12',
 			'shareholders_area_bg'           => '#fafbfc',
 			'shareholders_area_border'       => '#e1e5e9',
@@ -167,9 +168,9 @@ class WDP_Admin_Form_Tabs_Renderer {
 			'success_button_color'     => '#1e73be',
 			'success_button_hover'     => '#185d98',
 			'success_button_radius'    => '20',
-			'success_text_view_cart'   => 'Sepeti Görüntüle',
-			'success_text_go_checkout' => 'Ödemeye Git',
-			'success_text_new_donation'=> 'Yeni Bağış Ekle',
+			'success_text_view_cart'   => 'Sepete Git',
+			'success_text_go_checkout' => 'Bağışı Tamamla',
+			'success_text_new_donation'=> 'Bağış eklemeye devam edin',
 			'success_message_bg'       => 'rgba(72, 187, 120, 0.1)',
 			'success_message_color'    => '#48bb78',
 			'success_message_border'   => 'rgba(72, 187, 120, 0.2)',
@@ -193,9 +194,9 @@ class WDP_Admin_Form_Tabs_Renderer {
 		echo '<tr><th scope="row"><label for="success_button_color">' . __('Buton Rengi', 'woo-donation-popup') . '</label></th><td><input type="color" id="success_button_color" name="success_button_color" value="' . esc_attr($settings['success_button_color']) . '" /></td></tr>';
 		echo '<tr><th scope="row"><label for="success_button_hover">' . __('Buton Hover Rengi', 'woo-donation-popup') . '</label></th><td><input type="color" id="success_button_hover" name="success_button_hover" value="' . esc_attr($settings['success_button_hover']) . '" /></td></tr>';
 		echo '<tr><th scope="row"><label for="success_button_radius">' . __('Buton Border Radius (px)', 'woo-donation-popup') . '</label></th><td><input type="number" id="success_button_radius" name="success_button_radius" value="' . esc_attr($settings['success_button_radius']) . '" min="0" max="50" step="1" class="small-text" /></td></tr>';
-		echo '<tr><th scope="row"><label for="success_text_view_cart">' . __('Sepeti Görüntüle Butonu', 'woo-donation-popup') . '</label></th><td><input type="text" id="success_text_view_cart" name="success_text_view_cart" value="' . esc_attr($settings['success_text_view_cart']) . '" class="regular-text" /></td></tr>';
-		echo '<tr><th scope="row"><label for="success_text_go_checkout">' . __('Ödemeye Git Butonu', 'woo-donation-popup') . '</label></th><td><input type="text" id="success_text_go_checkout" name="success_text_go_checkout" value="' . esc_attr($settings['success_text_go_checkout']) . '" class="regular-text" /></td></tr>';
-		echo '<tr><th scope="row"><label for="success_text_new_donation">' . __('Yeni Bağış Ekle Butonu', 'woo-donation-popup') . '</label></th><td><input type="text" id="success_text_new_donation" name="success_text_new_donation" value="' . esc_attr($settings['success_text_new_donation']) . '" class="regular-text" /></td></tr>';
+		echo '<tr><th scope="row"><label for="success_text_view_cart">' . __('Sepete Git Butonu', 'woo-donation-popup') . '</label></th><td><input type="text" id="success_text_view_cart" name="success_text_view_cart" value="' . esc_attr($settings['success_text_view_cart']) . '" class="regular-text" /></td></tr>';
+		echo '<tr><th scope="row"><label for="success_text_go_checkout">' . __('Bağışı Tamamla Butonu', 'woo-donation-popup') . '</label></th><td><input type="text" id="success_text_go_checkout" name="success_text_go_checkout" value="' . esc_attr($settings['success_text_go_checkout']) . '" class="regular-text" /></td></tr>';
+		echo '<tr><th scope="row"><label for="success_text_new_donation">' . __('Bağış Eklemeye Devam Butonu', 'woo-donation-popup') . '</label></th><td><input type="text" id="success_text_new_donation" name="success_text_new_donation" value="' . esc_attr($settings['success_text_new_donation']) . '" class="regular-text" /></td></tr>';
 		echo '</table>';
 		WDP_Admin_Renderer_Helpers::close_form_container('wdp-save-success-screen-settings');
 	}
@@ -215,7 +216,8 @@ class WDP_Admin_Form_Tabs_Renderer {
 		$title_size = isset($settings['title_font_size']) ? $settings['title_font_size'] : '27';
 		$title_size_mobile = !empty($settings['title_font_size_mobile']) ? $settings['title_font_size_mobile'] : $title_size;
 		$close_color = isset($settings['close_button_color']) ? $settings['close_button_color'] : '#6b7280';
-		echo '<div id="wdp-normal-sec-chrome" class="wdp-settings-section"><h2>' . __('Başlık Ayarları', 'woo-donation-popup') . '</h2><table class="form-table"><tr><th scope="row"><label for="title_color">' . __('Başlık Rengi', 'woo-donation-popup') . '</label></th><td><input type="color" id="title_color" name="title_color" value="' . esc_attr($title_color) . '" /></td></tr><tr><th scope="row"><label for="title_font_size">' . __('Başlık Font Boyutu (Masaüstü, px)', 'woo-donation-popup') . '</label></th><td><input type="number" id="title_font_size" name="title_font_size" value="' . esc_attr($title_size) . '" min="14" max="48" step="1" class="small-text" /></td></tr><tr><th scope="row"><label for="title_font_size_mobile">' . __('Başlık Font Boyutu (Mobil, px)', 'woo-donation-popup') . '</label></th><td><input type="number" id="title_font_size_mobile" name="title_font_size_mobile" value="' . esc_attr($title_size_mobile) . '" min="12" max="40" step="1" class="small-text" /></td></tr></table><h2>' . __('Kapat Butonu Ayarları', 'woo-donation-popup') . '</h2><table class="form-table"><tr><th scope="row"><label for="close_button_color">' . __('Kapat Butonu Rengi', 'woo-donation-popup') . '</label></th><td><input type="color" id="close_button_color" name="close_button_color" value="' . esc_attr($close_color) . '" /></td></tr></table></div>';
+		echo '<div id="wdp-normal-sec-chrome" class="wdp-settings-section"><h2>' . __('Başlık Ayarları', 'woo-donation-popup') . '</h2><table class="form-table"><tr><th scope="row"><label for="title_color">' . __('Başlık Rengi', 'woo-donation-popup') . '</label></th><td><input type="color" id="title_color" name="title_color" value="' . esc_attr($title_color) . '" /></td></tr><tr><th scope="row"><label for="title_font_size">' . __('Başlık Font Boyutu (Masaüstü, px)', 'woo-donation-popup') . '</label></th><td><input type="number" id="title_font_size" name="title_font_size" value="' . esc_attr($title_size) . '" min="14" max="48" step="1" class="small-text" /></td></tr><tr><th scope="row"><label for="title_font_size_mobile">' . __('Başlık Font Boyutu (Mobil, px)', 'woo-donation-popup') . '</label></th><td><input type="number" id="title_font_size_mobile" name="title_font_size_mobile" value="' . esc_attr($title_size_mobile) . '" min="12" max="40" step="1" class="small-text" /></td></tr></table>';
+		echo '<h2>' . __('Kapat Butonu Ayarları', 'woo-donation-popup') . '</h2><table class="form-table"><tr><th scope="row"><label for="close_button_color">' . __('Kapat Butonu Rengi', 'woo-donation-popup') . '</label></th><td><input type="color" id="close_button_color" name="close_button_color" value="' . esc_attr($close_color) . '" /></td></tr></table></div>';
 	}
 
 	private static function render_normal_modal_inner_section(array $settings) {

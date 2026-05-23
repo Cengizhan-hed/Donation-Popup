@@ -48,6 +48,15 @@ class WDP_Admin_Layout_Tabs_Renderer {
 	public static function render_modal_layout_tab() {
 		$settings = get_option('wdp_modal_layout_settings', array());
 		$defaults = array(
+			'side_panel_width_desktop_percent' => '50',
+			'side_panel_width_desktop_min_px'  => '400',
+			'side_panel_width_desktop_max_px'  => '720',
+			'side_panel_width_tablet_percent'  => '55',
+			'side_panel_width_tablet_min_px'   => '380',
+			'side_panel_width_tablet_max_px'   => '600',
+			'side_panel_width_mobile_percent'  => '92',
+			'side_panel_width_mobile_min_px'   => '0',
+			'side_panel_width_mobile_max_px'   => '100',
 			'popup_modal_width_desktop'  => '540',
 			'inpage_form_width_desktop'  => '480',
 			'modal_padding_top_desktop'  => '32',
@@ -65,6 +74,7 @@ class WDP_Admin_Layout_Tabs_Renderer {
 
 		WDP_Admin_Renderer_Helpers::open_form_container('wdp-modal-layout-settings-form');
 		self::render_modal_layout_help();
+		self::render_side_panel_width_settings($settings);
 		self::render_modal_layout_desktop_width($settings);
 		self::render_modal_layout_desktop_padding($settings);
 		self::render_modal_layout_mobile_width($settings);
@@ -106,6 +116,31 @@ class WDP_Admin_Layout_Tabs_Renderer {
 	 */
 	private static function render_modal_layout_help() {
 		echo '<div class="wdp-tab-help" role="note"><p class="wdp-tab-help__title">' . esc_html__('Bu sekmede ne yaparsınız?', 'woo-donation-popup') . '</p><ul class="wdp-tab-help__list"><li>' . esc_html__('Popup penceresinin ve sayfa içi (inline) formun piksel genişliği; masaüstü ve mobil için ayrı ayrı.', 'woo-donation-popup') . '</li><li>' . esc_html__('Padding, modal içeriğinin kenarlardan boşluğudur; renk veya buton stilleri diğer görünüm sekmelerindedir.', 'woo-donation-popup') . '</li><li>' . esc_html__('Modal kutusunun iç arka plan rengi ve iç köşe yuvarlaklığı “Normal Form” sekmesinde “Modal içi kutu” bölümündedir (bu sekme yalnızca ölçüler).', 'woo-donation-popup') . '</li></ul></div>';
+	}
+
+	/**
+	 * Sağ panel genişliği (yüzde + min/max px).
+	 *
+	 * @param array $settings Modal layout settings.
+	 * @return void
+	 */
+	private static function render_side_panel_width_settings(array $settings) {
+		echo '<h2>' . esc_html__('Sağ Panel Genişliği (Bağış Yap)', 'woo-donation-popup') . '</h2>';
+		echo '<p class="description">' . esc_html__('Ekran genişliğinin yüzdesi olarak ayarlanır; min/max değerler taşmayı önler.', 'woo-donation-popup') . '</p>';
+		echo '<table class="form-table">';
+		echo '<tr><th colspan="2"><strong>' . esc_html__('Masaüstü (1200px ve üzeri)', 'woo-donation-popup') . '</strong></th></tr>';
+		echo '<tr><th scope="row"><label for="side_panel_width_desktop_percent">' . esc_html__('Genişlik (%)', 'woo-donation-popup') . '</label></th><td><input type="number" id="side_panel_width_desktop_percent" name="side_panel_width_desktop_percent" value="' . esc_attr($settings['side_panel_width_desktop_percent']) . '" min="30" max="100" step="1" class="small-text" /></td></tr>';
+		echo '<tr><th scope="row"><label for="side_panel_width_desktop_min_px">' . esc_html__('En az (px)', 'woo-donation-popup') . '</label></th><td><input type="number" id="side_panel_width_desktop_min_px" name="side_panel_width_desktop_min_px" value="' . esc_attr($settings['side_panel_width_desktop_min_px']) . '" min="320" max="900" step="10" class="small-text" /></td></tr>';
+		echo '<tr><th scope="row"><label for="side_panel_width_desktop_max_px">' . esc_html__('En fazla (px)', 'woo-donation-popup') . '</label></th><td><input type="number" id="side_panel_width_desktop_max_px" name="side_panel_width_desktop_max_px" value="' . esc_attr($settings['side_panel_width_desktop_max_px']) . '" min="400" max="1200" step="10" class="small-text" /></td></tr>';
+		echo '<tr><th colspan="2"><strong>' . esc_html__('Tablet (768px – 1199px)', 'woo-donation-popup') . '</strong></th></tr>';
+		echo '<tr><th scope="row"><label for="side_panel_width_tablet_percent">' . esc_html__('Genişlik (%)', 'woo-donation-popup') . '</label></th><td><input type="number" id="side_panel_width_tablet_percent" name="side_panel_width_tablet_percent" value="' . esc_attr($settings['side_panel_width_tablet_percent']) . '" min="30" max="100" step="1" class="small-text" /></td></tr>';
+		echo '<tr><th scope="row"><label for="side_panel_width_tablet_min_px">' . esc_html__('En az (px)', 'woo-donation-popup') . '</label></th><td><input type="number" id="side_panel_width_tablet_min_px" name="side_panel_width_tablet_min_px" value="' . esc_attr($settings['side_panel_width_tablet_min_px']) . '" min="300" max="800" step="10" class="small-text" /></td></tr>';
+		echo '<tr><th scope="row"><label for="side_panel_width_tablet_max_px">' . esc_html__('En fazla (px)', 'woo-donation-popup') . '</label></th><td><input type="number" id="side_panel_width_tablet_max_px" name="side_panel_width_tablet_max_px" value="' . esc_attr($settings['side_panel_width_tablet_max_px']) . '" min="380" max="900" step="10" class="small-text" /></td></tr>';
+		echo '<tr><th colspan="2"><strong>' . esc_html__('Mobil (767px ve altı)', 'woo-donation-popup') . '</strong></th></tr>';
+		echo '<tr><th scope="row"><label for="side_panel_width_mobile_percent">' . esc_html__('Genişlik (%)', 'woo-donation-popup') . '</label></th><td><input type="number" id="side_panel_width_mobile_percent" name="side_panel_width_mobile_percent" value="' . esc_attr($settings['side_panel_width_mobile_percent']) . '" min="70" max="100" step="1" class="small-text" /></td></tr>';
+		echo '<tr><th scope="row"><label for="side_panel_width_mobile_min_px">' . esc_html__('En az (px)', 'woo-donation-popup') . '</label></th><td><input type="number" id="side_panel_width_mobile_min_px" name="side_panel_width_mobile_min_px" value="' . esc_attr($settings['side_panel_width_mobile_min_px']) . '" min="0" max="600" step="10" class="small-text" /><p class="description">' . esc_html__('0 = sınır yok', 'woo-donation-popup') . '</p></td></tr>';
+		echo '<tr><th scope="row"><label for="side_panel_width_mobile_max_px">' . esc_html__('En fazla (px)', 'woo-donation-popup') . '</label></th><td><input type="number" id="side_panel_width_mobile_max_px" name="side_panel_width_mobile_max_px" value="' . esc_attr($settings['side_panel_width_mobile_max_px']) . '" min="320" max="1200" step="10" class="small-text" /><p class="description">' . esc_html__('100 = tam genişlik (100vw)', 'woo-donation-popup') . '</p></td></tr>';
+		echo '</table>';
 	}
 
 	/**

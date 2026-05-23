@@ -66,7 +66,9 @@ html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-success-screen, .wdp-moda
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-success-screen, .wdp-modal-content .wdp-success-screen) .wdp-success-buttons .wdp-success-button {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   width: 100%;
   background: var(--wdp-success-button-color, #1e73be);
   background-image: none;
@@ -74,13 +76,42 @@ html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-success-screen, .wdp-moda
   border: none;
   border-radius: var(--wdp-success-button-radius, var(--wdp-button-radius-unified, 20px));
   padding: 12px 20px;
-  font-size: 16px;
-  font-weight: 600;
+  font-size: var(--wdp-form-button-font-size, 17px);
+  font-family: var(--wdp-button-font-family, inherit);
+  font-weight: var(--wdp-form-button-font-weight, var(--wdp-button-font-weight, 800));
+  -webkit-font-smoothing: antialiased;
   cursor: pointer;
-  /* Hafif renk geçişi serbest, hareket yok */
-  transition: var(--wdp-transition-button), box-shadow 0.22s ease;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
   text-decoration: none;
   text-align: center;
+  box-shadow: none;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-success-screen, .wdp-modal-content .wdp-success-screen) .wdp-success-buttons .wdp-success-button .wdp-btn__inner {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  max-width: 100%;
+  min-width: 0;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-success-screen, .wdp-modal-content .wdp-success-screen) .wdp-success-buttons .wdp-success-button .wdp-btn__icon {
+  display: block;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  color: currentColor;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-success-screen, .wdp-modal-content .wdp-success-screen) .wdp-success-buttons .wdp-success-button .wdp-btn__label {
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: 1.25;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-success-screen, .wdp-modal-content .wdp-success-screen) .wdp-success-buttons .wdp-success-button:hover,
@@ -437,6 +468,8 @@ html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-mini-cart-items, .wdp-mod
   html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-success-screen, .wdp-modal-content .wdp-success-screen) .wdp-success-buttons .wdp-success-button {
     padding: 10px 12px;
     font-size: 13px;
+    font-family: var(--wdp-button-font-family, inherit);
+    font-weight: var(--wdp-button-font-weight, 800);
     border-radius: var(--wdp-success-button-radius, 10px);
   }
 

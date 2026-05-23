@@ -3,7 +3,7 @@
  */
 ;((window, document, $) => {
   const cfg = window.wdp_admin || {}
-  const TAB_KEYS = ["products", "modal-layout", "normal-form", "shareholder-form", "progress-bar", "success-screen", "meta"]
+  const TAB_KEYS = ["products", "modal-layout", "normal-form", "shareholder-form", "progress-bar", "success-screen", "meta", "category-colors"]
 
   function ensureNoticeContainer($anchor) {
     let $notice = $("#wdp-admin-notices")
@@ -145,7 +145,6 @@
       enable_progress_bar: $row.find('input[name="enable_progress_bar"]').is(":checked"),
       progress_bar_limit: $row.find('input[name="progress_bar_limit"]').val(),
       enable_product_note: $row.find('input[name="enable_product_note"]').is(":checked"),
-      product_note_icon: $row.find('select[name="product_note_icon"]').val(),
       product_note_text: $row.find('textarea[name="product_note_text"]').val(),
     }
   }
@@ -411,6 +410,36 @@
     toggleButtonShadowRows()
   }
 
+  function bindCategoryColorPreview() {
+    const $form = $("#wdp-category-colors-settings-form")
+    if (!$form.length) return
+
+    function syncBlock($block) {
+      const $enable = $block.find('input[type="checkbox"][name^="category_color_enable"]')
+      const $picker = $block.find(".wdp-cat-color-picker")
+      const $preview = $block.find(".wdp-cat-color-block__product-name")
+      if (!$picker.length) return
+
+      const color = $picker.val() || "#1f2937"
+      if ($enable.is(":checked")) {
+        $preview.css("color", color)
+      } else {
+        $preview.css("color", "")
+      }
+    }
+
+    $form
+      .off("input.wdpCatColor change.wdpCatColor")
+      .on("input.wdpCatColor change.wdpCatColor", ".wdp-cat-color-picker, input[name^='category_color_enable']", function () {
+        syncBlock($(this).closest(".wdp-cat-color-block"))
+        markDirty($form.closest(".wdp-admin-settings-form"))
+      })
+
+    $form.find(".wdp-cat-color-block").each(function () {
+      syncBlock($(this))
+    })
+  }
+
   function bindDirtyStateTracking() {
     $(document)
       .off("input.wdpAdminDirty change.wdpAdminDirty")
@@ -448,5 +477,7 @@
     bindSettingsForm("#wdp-modal-layout-settings-form", "wdp_save_modal_layout_settings", "#wdp-save-modal-layout-settings", false)
     bindSettingsForm("#wdp-progress-bar-settings-form", "wdp_save_progress_bar_settings", "#wdp-save-progress-bar-settings", false)
     bindSettingsForm("#wdp-meta-tracking-settings-form", "wdp_save_meta_tracking_settings", "#wdp-save-meta-tracking-settings", false)
+    bindSettingsForm("#wdp-category-colors-settings-form", "wdp_save_category_colors_settings", "#wdp-save-category-colors-settings", false)
+    bindCategoryColorPreview()
   })
 })(window, document, jQuery)

@@ -133,6 +133,86 @@
     return generic;
   }
 
+  function getPhoneRequiredMessage() {
+    const s = wdp_ajax && wdp_ajax.strings;
+    if (s && typeof s.phone_required === 'string' && s.phone_required.trim()) {
+      return s.phone_required.trim();
+    }
+    return 'Telefon numarası eksik.';
+  }
+
+  function getPhoneIncompleteMessage(result) {
+    const s = wdp_ajax && wdp_ajax.strings;
+    const base =
+      s && typeof s.phone_incomplete === 'string' && s.phone_incomplete.trim()
+        ? s.phone_incomplete.trim()
+        : 'Telefon numarasını eksiksiz giriniz.';
+    if (result && result.min === result.max && Number.isFinite(result.min)) {
+      return base + ' (' + result.min + ' rakam)';
+    }
+    if (result && Number.isFinite(result.min) && Number.isFinite(result.max)) {
+      return base + ' (' + result.min + '–' + result.max + ' rakam)';
+    }
+    return base;
+  }
+
+  function getPhoneInvalidMessage() {
+    const s = wdp_ajax && wdp_ajax.strings;
+    if (s && typeof s.phone_invalid === 'string' && s.phone_invalid.trim()) {
+      return s.phone_invalid.trim();
+    }
+    return 'Geçerli bir telefon numarası giriniz.';
+  }
+
+  function validatePhoneInputInForm(form, input, options) {
+    if (!input || input.disabled || input.readOnly) {
+      return true;
+    }
+    const isRequired =
+      options && typeof options.required === 'boolean'
+        ? options.required
+        : input.required || input.hasAttribute('required');
+    if (!WDPApp.phoneInput || typeof WDPApp.phoneInput.validatePhoneField !== 'function') {
+      if (isRequired && !String(input.value || '').trim()) {
+        showInputError(input, getPhoneRequiredMessage());
+        return false;
+      }
+      return true;
+    }
+    const result = WDPApp.phoneInput.validatePhoneField(input);
+    if (result.empty) {
+      if (!isRequired) {
+        return true;
+      }
+      showInputError(input, getPhoneRequiredMessage());
+      return false;
+    }
+    if (!result.ok) {
+      const msg =
+        result.reason === 'too_long' ? getPhoneInvalidMessage() : getPhoneIncompleteMessage(result);
+      showInputError(input, msg);
+      return false;
+    }
+    return true;
+  }
+
+  function validateAllPhoneFields(form) {
+    let allOk = true;
+    form
+      .querySelectorAll(
+        'input[type="tel"][name="donation_phone"], input[type="tel"][name^="shareholder_phone_"]'
+      )
+      .forEach((input) => {
+        const required =
+          input.name === 'donation_phone' ||
+          (input.name && input.name.indexOf('shareholder_phone_') === 0);
+        if (!validatePhoneInputInForm(form, input, { required: required })) {
+          allOk = false;
+        }
+      });
+    return allOk;
+  }
+
   let wdpFieldErrorIdSeq = 0;
   function nextFieldErrorId() {
     wdpFieldErrorIdSeq += 1;
@@ -243,8 +323,18 @@
 
   function parseNormalizedAmount(raw) {
     if (raw === null || raw === undefined) return NaN;
-    const s = String(raw).trim().replace(/\s+/g, "").replace(/\./g, "").replace(",", ".");
+    let s = String(raw).trim().replace(/\s+/g, "");
     if (s === "") return NaN;
+    if (s.includes(",")) {
+      s = s.replace(/\./g, "").replace(",", ".");
+    } else {
+      const parts = s.split(".");
+      if (parts.length > 2) {
+        s = parts.join("");
+      } else if (parts.length === 2 && parts[1].length === 3 && /^\d+$/.test(parts[1])) {
+        s = parts[0] + parts[1];
+      }
+    }
     return Number.parseFloat(s);
   }
 
@@ -298,6 +388,52 @@
   function updateLineTotals(form) {
     updateFixedPriceLineDisplay(form);
     syncCustomPriceQtyRowDisplay(form);
+  }
+
+  function bindProductQuantityDelegation(form) {
+    if (!form || form.dataset.wdpQtyDelegationBound === '1') {
+      return;
+    }
+    form.dataset.wdpQtyDelegationBound = '1';
+    form.addEventListener('click', (e) => {
+      const btn = e.target.closest('.wdp-product-quantity-decrease, .wdp-product-quantity-increase');
+      if (!btn || !form.contains(btn)) {
+        return;
+      }
+      if (form.querySelector('input[name="share_count"]')) {
+        return;
+      }
+      const counter = btn.closest('.wdp-quantity-counter');
+      if (!counter) {
+        return;
+      }
+      const quantityInput = counter.querySelector('input[name="quantity"]');
+      if (!quantityInput) {
+        return;
+      }
+      e.preventDefault();
+      e.stopPropagation();
+      const currentValue = Number.parseInt(quantityInput.value, 10) || 1;
+      const isDecrease = btn.classList.contains('wdp-product-quantity-decrease');
+      const customRow = form.querySelector('.wdp-custom-price-with-qty-row');
+      if (customRow && customRow.contains(quantityInput)) {
+        const customIn = customRow.querySelector('input[name="custom_price"]');
+        if (customIn) {
+          ensureCustomUnitFromDisplayed(customIn, currentValue);
+        }
+      }
+      if (isDecrease) {
+        if (currentValue > 1) {
+          quantityInput.value = String(currentValue - 1);
+          updateLineTotals(form);
+        }
+        return;
+      }
+      const maxAttr = Number.parseInt(quantityInput.getAttribute('max') || '99', 10);
+      const maxAllowed = Number.isFinite(maxAttr) && maxAttr > 0 ? maxAttr : 99;
+      quantityInput.value = String(Math.min(maxAllowed, currentValue + 1));
+      updateLineTotals(form);
+    });
   }
 
   function patchSimpleCustomPriceQtyRowFormData(form, formData) {
@@ -674,14 +810,6 @@
           rowFirstField = rowFirstField || nameField;
         }
         
-        // Telefon alanı kontrolü
-        if (phoneField && !phoneField.value.trim()) {
-          safeLog(`Phone field ${rowIndex} is empty`);
-          phoneField.classList.add("wdp-error");
-          isValid = false;
-          rowHasMissing = true;
-          rowFirstField = rowFirstField || phoneField;
-        }
         if (rowHasMissing) {
           incompleteShareholderCount += 1;
           if (!firstShareholderIssue) {
@@ -706,16 +834,30 @@
       errorMessages.push(`${incompleteShareholderCount} hissedar formu eksik.`);
     }
 
+    // Telefon: ülkeye göre rakam sayısı (TR: 10, vb.)
+    if (!validateAllPhoneFields(form)) {
+      isValid = false;
+      if (!firstShareholderIssue) {
+        const badSharePhone = form.querySelector(
+          '.wdp-shareholder-row input[name^="shareholder_phone_"].wdp-error'
+        );
+        if (badSharePhone) {
+          firstShareholderIssue = {
+            row: badSharePhone.closest('.wdp-shareholder-row'),
+            field: badSharePhone,
+          };
+        }
+      }
+    }
+
     // Diğer zorunlu alanlar (fiyat, vb.)
     form.querySelectorAll('input[required], textarea[required]').forEach((field) => {
       // Hissedar formları dışındaki alanları kontrol et
       if (!field.name.includes('shareholder_')) {
+        if (field.name === 'donation_phone' || field.type === 'tel') {
+          return;
+        }
         if (!field.value.trim()) {
-          if (field.name === "donation_phone") {
-            field.classList.add("wdp-error");
-            isValid = false;
-            return;
-          }
           const msg = getRequiredFieldMessage(field);
           showInputError(field, msg);
           errorMessages.push(field.placeholder || msg);
@@ -728,14 +870,12 @@
     const customPriceInput = form.querySelector('input[name="custom_price"]');
     if (customPriceInput) {
       const rawValue = customPriceInput.value ? customPriceInput.value.toString().trim() : '';
-      const normalizedValue = rawValue.replace(/\s+/g, '').replace(/\./g, '').replace(',', '.');
-      const numericValue = rawValue === '' ? NaN : Number.parseFloat(normalizedValue);
+      const numericValue = rawValue === '' ? NaN : parseNormalizedAmount(rawValue);
       const minAttr = customPriceInput.getAttribute('min');
-      const normalizedMin = (minAttr || '0').toString().trim().replace(/\s+/g, '').replace(/\./g, '').replace(',', '.');
-      const minValueFromAttr = Number.parseFloat(normalizedMin);
+      const minValueFromAttr = minAttr !== null && minAttr !== '' ? parseNormalizedAmount(minAttr) : NaN;
       const baseMinData = customPriceInput.dataset.baseMin;
       const shareCountValue = shareCountInput ? getEffectiveShareCount(form) : 1;
-      const perShareMin = Number.parseFloat((baseMinData || '').toString().trim().replace(/\s+/g, '').replace(/\./g, '').replace(',', '.'));
+      const perShareMin = baseMinData !== undefined && baseMinData !== '' ? parseNormalizedAmount(baseMinData) : NaN;
       const customPriceQtyRow = customPriceInput.closest('.wdp-custom-price-with-qty-row');
 
       let effectiveMin = 0;
@@ -1685,6 +1825,8 @@
   function setupFormSubmission(form) {
     safeLog("Form submission setup for:", form);
 
+    bindProductQuantityDelegation(form);
+
     // Önceki dinleyiciyi kaldır (event-manager veya tekrar setup çağrıları çift AJAX üretmesin)
     if (form._wdpSubmitHandler) {
       form.removeEventListener("submit", form._wdpSubmitHandler, WDP_FORM_SUBMIT_CAPTURE);
@@ -1899,68 +2041,20 @@
           input.dataset.wdpCustomPriceBlurBound = '1';
           input.addEventListener("blur", debouncedBlurHandler);
         }
-        input.value = "";
-        const minPrice = Number.parseFloat(input.getAttribute("min") || 0);
-        input.placeholder = "Min: " + minPrice + " TL";
+        if (String(input.value || "").trim() === "") {
+          const minPrice = Number.parseFloat(input.getAttribute("min") || 0);
+          if (Number.isFinite(minPrice) && minPrice > 0) {
+            input.placeholder = "Min: " + minPrice + " TL";
+          }
+        }
       }
     });
 
-    // Ürün adedi artırma/azaltma butonları için olay dinleyicileri
-    // Adet artırma/azaltma butonları için olay dinleyicileri
     const quantityInput = form.querySelector('input[name="quantity"]');
-    const decreaseBtn = form.querySelector(".wdp-product-quantity-decrease");
-    const increaseBtn = form.querySelector(".wdp-product-quantity-increase");
-
-    // Hisseli form kontrolü - hissedar sayısına göre otomatik ayarlanıyorsa kontrolleri etkinleştirme
     const shareCountInput = form.querySelector('input[name="share_count"]');
     const isShareForm = !!shareCountInput;
 
-    if (quantityInput && decreaseBtn && increaseBtn && !isShareForm) {
-      const handlerBag = form._wdpQtyHandlers || (form._wdpQtyHandlers = {});
-
-      // Sadece normal form için ürün adedi butonlarını etkinleştir
-      if (handlerBag.decreaseClick) {
-        decreaseBtn.removeEventListener("click", handlerBag.decreaseClick);
-      }
-      handlerBag.decreaseClick = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        const currentValue = Number.parseInt(quantityInput.value, 10) || 1;
-        if (currentValue > 1) {
-          const customRow = form.querySelector(".wdp-custom-price-with-qty-row");
-          if (customRow && customRow.contains(quantityInput)) {
-            const customIn = customRow.querySelector('input[name="custom_price"]');
-            if (customIn) {
-              ensureCustomUnitFromDisplayed(customIn, currentValue);
-            }
-          }
-          quantityInput.value = currentValue - 1;
-          updateLineTotals(form);
-        }
-      };
-      decreaseBtn.addEventListener("click", handlerBag.decreaseClick);
-
-      if (handlerBag.increaseClick) {
-        increaseBtn.removeEventListener("click", handlerBag.increaseClick);
-      }
-      handlerBag.increaseClick = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        const currentValue = Number.parseInt(quantityInput.value, 10) || 1;
-        const maxAttr = Number.parseInt(quantityInput.getAttribute("max") || "99", 10);
-        const maxAllowed = Number.isFinite(maxAttr) && maxAttr > 0 ? maxAttr : 99;
-        const customRow = form.querySelector(".wdp-custom-price-with-qty-row");
-        if (customRow && customRow.contains(quantityInput)) {
-          const customIn = customRow.querySelector('input[name="custom_price"]');
-          if (customIn) {
-            ensureCustomUnitFromDisplayed(customIn, currentValue);
-          }
-        }
-        quantityInput.value = String(Math.min(maxAllowed, currentValue + 1));
-        updateLineTotals(form);
-      };
-      increaseBtn.addEventListener("click", handlerBag.increaseClick);
-
+    if (!isShareForm && quantityInput) {
       updateLineTotals(form);
     }
 

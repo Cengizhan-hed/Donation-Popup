@@ -48,28 +48,17 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stac
   box-shadow: none;
 }
 
-/* Dolu + odak dışı: yeşil ikon */
-html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__row:has(.wdp-field-stack__input:not(.wdp-phone-field__number):not(:placeholder-shown)):not(:focus-within) .wdp-field-stack__icon,
-html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__row:has(.wdp-field-stack__textarea:not(:placeholder-shown)):not(:focus-within) .wdp-field-stack__icon {
-  color: var(--wdp-field-icon-color-filled);
+/* İkonlar: odak / dolu durumda da sabit gri */
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__row:focus-within .wdp-field-stack__icon,
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__row:has(.wdp-field-stack__input:not(.wdp-phone-field__number):not(:placeholder-shown)) .wdp-field-stack__icon,
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__row:has(.wdp-field-stack__textarea:not(:placeholder-shown)) .wdp-field-stack__icon {
+  color: var(--wdp-field-icon-color, #374151);
 }
 
-/* Odak (tıklama): mavi ikon — dolu olsa bile yazarken mavi kalır */
-html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__row:focus-within .wdp-field-stack__icon {
-  color: var(--wdp-field-icon-color-focus);
-}
-
-html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__row--phone:has(.wdp-phone-field__number:not(:placeholder-shown)):not(:focus-within) .wdp-phone-field__code-btn {
-  color: var(--wdp-field-icon-color-filled);
-}
-
-html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__row--phone:focus-within .wdp-phone-field__code-btn {
-  color: var(--wdp-field-icon-color-focus);
-}
-
-html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__row--phone:has(.wdp-phone-field__number:not(:placeholder-shown)):not(:focus-within) .wdp-phone-field__chevron,
-html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__row--phone:focus-within .wdp-phone-field__chevron {
-  opacity: 0.92;
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__row--phone .wdp-phone-field__code-btn,
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__row--phone:focus-within .wdp-phone-field__code-btn,
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__row--phone:has(.wdp-phone-field__number:not(:placeholder-shown)) .wdp-phone-field__code-btn {
+  color: var(--wdp-field-icon-color, #374151);
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__row--textarea {
@@ -105,11 +94,11 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stac
   flex-shrink: 0;
 }
 
-/* Phone row: full-width custom country code + number (no left icon column) */
+/* Phone row: tam genişlik; yatay boşluk diğer satırlarla aynı (sol/sağ eşit) */
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__row--phone {
   grid-template-columns: minmax(0, 1fr);
   column-gap: 0;
-  padding-inline: 0;
+  padding-inline: max(12px, var(--wdp-field-stack-pad-x, 14px));
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__phone {
@@ -242,7 +231,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stac
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__row:has(.wdp-field-stack__textarea:-webkit-autofill):not(:focus-within) .wdp-field-stack__icon,
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__row:has(.wdp-field-stack__textarea:autofill):not(:focus-within) .wdp-field-stack__icon {
   background: transparent;
-  color: var(--wdp-field-icon-color-filled);
+  color: var(--wdp-field-icon-color, #374151);
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__input:not(.wdp-phone-field__number):-webkit-autofill,
@@ -271,8 +260,9 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-content .wdp-fiel
 }
 
 @media (max-width: 480px) {
-  html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__row {
-    padding-inline: 12px;
+  html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__row,
+  html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__row--phone {
+    padding-inline: max(12px, var(--wdp-field-stack-pad-x, 14px));
     column-gap: 8px;
   }
 

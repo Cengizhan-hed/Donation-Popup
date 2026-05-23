@@ -45,15 +45,17 @@
       document.addEventListener("click", function(e) {
         if (e.target.classList.contains("wdp-donate-button") || 
             e.target.classList.contains("wdp-open-modal") ||
+            e.target.classList.contains("wdp-open-side-panel") ||
             e.target.closest(".wdp-donate-button") ||
-            e.target.closest(".wdp-open-modal")) {
+            e.target.closest(".wdp-open-modal") ||
+            e.target.closest(".wdp-open-side-panel")) {
           
           e.preventDefault();
           e.stopPropagation();
           
-          const button = e.target.classList.contains("wdp-donate-button") || e.target.classList.contains("wdp-open-modal") 
+          const button = e.target.classList.contains("wdp-donate-button") || e.target.classList.contains("wdp-open-modal") || e.target.classList.contains("wdp-open-side-panel")
             ? e.target 
-            : e.target.closest(".wdp-donate-button") || e.target.closest(".wdp-open-modal");
+            : e.target.closest(".wdp-donate-button") || e.target.closest(".wdp-open-modal") || e.target.closest(".wdp-open-side-panel");
           
           if (button) {
             const productId = button.getAttribute("data-product-id");
@@ -70,16 +72,21 @@
                   );
                 }
               } catch (dbc) {}
-              // Update module functions before use - INSTANT execution
+
+              let modalId = button.getAttribute("data-wdp-modal-id");
+              if (!modalId && button.classList.contains("wdp-open-side-panel")) {
+                modalId = "wdp-side-panel-" + productId;
+              }
+              const openOptions = modalId ? { modalId: modalId } : undefined;
+
               const currentModal = getModule('modal');
               if (currentModal && typeof currentModal.open === 'function') {
-                currentModal.open(productId);
+                currentModal.open(productId, openOptions);
               } else {
-                // INSTANT retry (no delay) - use requestAnimationFrame for next tick
                 requestAnimationFrame(function() {
                   const retryModal = getModule('modal');
                   if (retryModal && typeof retryModal.open === 'function') {
-                    retryModal.open(productId);
+                    retryModal.open(productId, openOptions);
                   }
                 });
               }

@@ -142,9 +142,11 @@
       }
 
       const priceField = form.querySelector(".wdp-price-field.wdp-custom-price-field") || form.querySelector(".wdp-price-field");
+      const hasCustomQtyRow = !!form.querySelector(".wdp-custom-price-with-qty-row");
+      const showCustomPrice = !!(data.is_custom_price || hasCustomQtyRow);
       if (priceField) {
         safeLog("Özel fiyat durumu:", data.is_custom_price);
-        if (data.is_custom_price) {
+        if (showCustomPrice) {
           priceField.style.display = "flex";
 
           const priceInput = priceField.querySelector('input[name="custom_price"]');
@@ -155,8 +157,14 @@
             }
 
             const minPriceNumeric = Number.parseFloat((data.min_price || '').toString().trim().replace(/\s+/g, '').replace(/\./g, '').replace(',', '.'));
+            const isShareForm = !!form.querySelector('input[name="share_count"]');
             const basePriceNumeric = Number.parseFloat((data.price || '').toString().trim().replace(/\s+/g, '').replace(/\./g, '').replace(',', '.'));
-            const resolvedMin = Number.isFinite(minPriceNumeric) && minPriceNumeric > 0 ? minPriceNumeric : basePriceNumeric;
+            let resolvedMin = 0;
+            if (Number.isFinite(minPriceNumeric) && minPriceNumeric > 0) {
+              resolvedMin = minPriceNumeric;
+            } else if (isShareForm && Number.isFinite(basePriceNumeric) && basePriceNumeric > 0) {
+              resolvedMin = basePriceNumeric;
+            }
 
             if (Number.isFinite(resolvedMin) && resolvedMin > 0) {
               priceInput.setAttribute("min", resolvedMin.toString());
@@ -168,8 +176,12 @@
 
             priceInput.setAttribute("step", "0.01");
             priceInput.required = true;
-            priceInput.value = "";
-            delete priceInput.dataset.wdpCustomUnit;
+            const userHasValue = String(priceInput.value || '').trim() !== '';
+            const userIsTyping = document.activeElement === priceInput;
+            if (!userHasValue && !userIsTyping) {
+              priceInput.value = "";
+              delete priceInput.dataset.wdpCustomUnit;
+            }
             const emptyPlaceholder = (wdp_ajax.strings && wdp_ajax.strings.custom_price_placeholder_empty) ? wdp_ajax.strings.custom_price_placeholder_empty : "Bağış tutarı *";
             if (Number.isFinite(resolvedMin) && resolvedMin > 0) {
               priceInput.placeholder = `min: ${formatPrice(resolvedMin)}`;
@@ -229,6 +241,7 @@
   WDPApp.product = {
     getData: getProductInfoData,
     fetch: fetchProductInfo,
+    fetchProductInfo: fetchProductInfo,
     apply: applyProductInfo,
     displayError: displayProductInfoError,
   };

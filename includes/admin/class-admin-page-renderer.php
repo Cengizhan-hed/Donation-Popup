@@ -24,9 +24,10 @@ class WDP_Admin_Page_Renderer {
 	 * @param callable $render_progress_bar_tab  Progress bar tab renderer.
 	 * @param callable $render_success_screen_tab Success tab renderer.
 	 * @param callable $render_meta_tab           Meta Pixel tab renderer.
+	 * @param callable $render_category_colors_tab Category title colors tab renderer.
 	 * @return void
 	 */
-	public static function render_settings_page($products, $render_product_row, $render_modal_layout_tab, $render_normal_form_tab, $render_shareholder_tab, $render_progress_bar_tab, $render_success_screen_tab, $render_meta_tab) {
+	public static function render_settings_page($products, $render_product_row, $render_modal_layout_tab, $render_normal_form_tab, $render_shareholder_tab, $render_progress_bar_tab, $render_success_screen_tab, $render_meta_tab, $render_category_colors_tab) {
 		echo '<div class="wrap wdp-admin-wrap">';
 		echo '<div class="wdp-admin-title-row">';
 		echo '<h1 class="wdp-admin-title">' . esc_html__('Bağış Popup Ayarları', 'woo-donation-popup') . '</h1>';
@@ -48,6 +49,7 @@ class WDP_Admin_Page_Renderer {
 		echo '<a id="wdp-tab-progress-bar" href="#progress-bar" class="nav-tab" data-tab="progress-bar" role="tab" aria-controls="wdp-progress-bar-tab" aria-selected="false" tabindex="-1">' . esc_html__('Progress Bar Form', 'woo-donation-popup') . '</a>';
 		echo '<a id="wdp-tab-success-screen" href="#success-screen" class="nav-tab" data-tab="success-screen" role="tab" aria-controls="wdp-success-screen-tab" aria-selected="false" tabindex="-1">' . esc_html__('Başarı & Mini Sepet', 'woo-donation-popup') . '</a>';
 		echo '<a id="wdp-tab-meta" href="#meta" class="nav-tab" data-tab="meta" role="tab" aria-controls="wdp-meta-tab" aria-selected="false" tabindex="-1">' . esc_html__('Meta Pixel', 'woo-donation-popup') . '</a>';
+		echo '<a id="wdp-tab-category-colors" href="#category-colors" class="nav-tab" data-tab="category-colors" role="tab" aria-controls="wdp-category-colors-tab" aria-selected="false" tabindex="-1">' . esc_html__('Kategori Renkleri', 'woo-donation-popup') . '</a>';
 		echo '</nav>';
 
 		self::render_products_tab($products, $render_product_row);
@@ -76,6 +78,10 @@ class WDP_Admin_Page_Renderer {
 		call_user_func($render_meta_tab);
 		echo '</div>';
 
+		echo '<div id="wdp-category-colors-tab" class="wdp-tab-content" role="tabpanel" aria-hidden="true">';
+		call_user_func($render_category_colors_tab);
+		echo '</div>';
+
 		echo '</div>';
 		echo '</div>';
 	}
@@ -91,7 +97,7 @@ class WDP_Admin_Page_Renderer {
 		echo '<div id="wdp-products-tab" class="wdp-tab-content wdp-tab-active" role="tabpanel" aria-hidden="false">';
 		echo '<div class="wdp-settings-container">';
 		echo '<div class="wdp-products-toolbar"><div class="wdp-products-search"><span class="dashicons dashicons-search" aria-hidden="true"></span><input type="search" id="wdp-product-search" placeholder="' . esc_attr__('Ürün ara...', 'woo-donation-popup') . '" /></div></div>';
-		echo '<div class="wdp-tab-help" role="note"><p class="wdp-tab-help__title">' . esc_html__('Bu sekmede ne yaparsınız?', 'woo-donation-popup') . '</p><ul class="wdp-tab-help__list"><li>' . esc_html__('Her ürün için aynı anda yalnızca bir form modu seçilir: Çoklu Hisse, Özel Fiyat veya Progress Bar — biri açıkken diğerleri kapanır.', 'woo-donation-popup') . '</li><li>' . esc_html__('Buton ve Form shortcode’larını sayfaya veya bileşene yapıştırarak o ürünün popup’ını gösterirsiniz.', 'woo-donation-popup') . '</li><li>' . esc_html__('Kaydet tek kart için; Tüm Değişiklikleri Kaydet tüm ürünleri sırayla yazar.', 'woo-donation-popup') . '</li></ul></div>';
+		echo '<div class="wdp-tab-help" role="note"><p class="wdp-tab-help__title">' . esc_html__('Bu sekmede ne yaparsınız?', 'woo-donation-popup') . '</p><ul class="wdp-tab-help__list"><li>' . esc_html__('Her ürün için aynı anda yalnızca bir form modu seçilir: Çoklu Hisse, Özel Fiyat veya Progress Bar — biri açıkken diğerleri kapanır.', 'woo-donation-popup') . '</li><li>' . esc_html__('Buton shortcode ortada popup, Sağ Panel shortcode sağdan panel, Form shortcode sayfa içi form açar — hangisini nereye yapıştırırsanız o çalışır.', 'woo-donation-popup') . '</li><li>' . esc_html__('Kaydet tek kart için; Tüm Değişiklikleri Kaydet tüm ürünleri sırayla yazar.', 'woo-donation-popup') . '</li></ul></div>';
 
 		if (empty($products)) {
 			echo '<div class="wdp-products-grid"><div class="wdp-products-empty"><p>' . __('Hiç ürün bulunamadı.', 'woo-donation-popup') . '</p></div></div>';

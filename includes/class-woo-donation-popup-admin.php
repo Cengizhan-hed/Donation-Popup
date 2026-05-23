@@ -74,7 +74,8 @@ class Woo_Donation_Popup_Admin {
             function() { $this->render_shareholder_form_customization_tab(); },
             function() { $this->render_progress_bar_customization_tab(); },
             function() { $this->render_success_screen_customization_tab(); },
-            function() { $this->render_meta_tracking_tab(); }
+            function() { $this->render_meta_tracking_tab(); },
+            function() { $this->render_category_colors_tab(); }
         );
     }
     
@@ -91,11 +92,7 @@ class Woo_Donation_Popup_Admin {
         $progress_bar_limit = get_post_meta($product->get_id(), '_progress_bar_limit', true);
         $enable_product_note = get_post_meta($product->get_id(), '_enable_product_note', true) === 'yes';
         $product_note_text = get_post_meta($product->get_id(), '_product_note_text', true);
-        $product_note_icon = get_post_meta($product->get_id(), '_product_note_icon', true);
-        if ($product_note_icon === '') {
-            $product_note_icon = 'info';
-        }
-        
+
         // Varsayılan değerler
         if ($min_custom_price === '') {
             $min_custom_price = '0';
@@ -111,6 +108,7 @@ class Woo_Donation_Popup_Admin {
         
         // Shortcode'lar
         $button_shortcode = '[wdp_donation_button id="' . $product->get_id() . '"]';
+        $panel_button_shortcode = '[wdp_donation_button_panel id="' . $product->get_id() . '"]';
         $form_shortcode = '[wdp_donation_form id="' . $product->get_id() . '"]';
 
         // Grid/kart tabanlı ürün bloğu
@@ -195,22 +193,12 @@ class Woo_Donation_Popup_Admin {
         echo '</label>';
         echo '</div>';
         echo '</div>';
-        echo '<div class="wdp-sub-field">';
-        echo '<div class="wdp-sub-field-label">' . __('Not İkonu', 'woo-donation-popup') . '</div>';
+        echo '<div class="wdp-note-fields-grid">';
+        echo '<div class="wdp-sub-field wdp-sub-field--wide">';
+        echo '<div class="wdp-sub-field-label">' . __('Not metni', 'woo-donation-popup') . '</div>';
         echo '<div class="wdp-field-control">';
-        echo '<select name="product_note_icon">';
-        echo '<option value="info" ' . selected($product_note_icon, 'info', false) . '>' . esc_html__('Bilgi', 'woo-donation-popup') . '</option>';
-        echo '<option value="video" ' . selected($product_note_icon, 'video', false) . '>' . esc_html__('Video', 'woo-donation-popup') . '</option>';
-        echo '<option value="delivery" ' . selected($product_note_icon, 'delivery', false) . '>' . esc_html__('Hizli Teslim', 'woo-donation-popup') . '</option>';
-        echo '<option value="heart" ' . selected($product_note_icon, 'heart', false) . '>' . esc_html__('Bagis', 'woo-donation-popup') . '</option>';
-        echo '</select>';
-        echo '</div>';
-        echo '</div>';
-        echo '<div class="wdp-sub-field">';
-        echo '<div class="wdp-sub-field-label">' . __('Ürün Alt Notu', 'woo-donation-popup') . '</div>';
-        echo '<div class="wdp-field-control">';
-        echo '<textarea name="product_note_text" rows="3" maxlength="400" placeholder="' . esc_attr__('Örn: Formda bilgilendirme amaçlı video gönderilecektir.', 'woo-donation-popup') . '">' . esc_textarea($product_note_text) . '</textarea>';
-        echo '</div>';
+        echo '<textarea name="product_note_text" rows="3" maxlength="400" placeholder="' . esc_attr__('Örn: 24 saat içinde video ulaştırılmaktadır.', 'woo-donation-popup') . '">' . esc_textarea($product_note_text) . '</textarea>';
+        echo '</div></div>';
         echo '</div>';
         echo '</div>';
 
@@ -225,6 +213,13 @@ class Woo_Donation_Popup_Admin {
         echo '<label class="wdp-shortcode-label">Buton</label>';
         echo '<code class="wdp-shortcode">' . esc_html($button_shortcode) . '</code>';
         echo '<button type="button" class="button button-small wdp-copy-shortcode" data-shortcode="' . esc_attr($button_shortcode) . '">' . __('Kopyala', 'woo-donation-popup') . '</button>';
+        echo '</div>';
+
+        // Sağ panel buton shortcode
+        echo '<div class="wdp-shortcode-item">';
+        echo '<label class="wdp-shortcode-label">' . esc_html__('Sağ Panel', 'woo-donation-popup') . '</label>';
+        echo '<code class="wdp-shortcode">' . esc_html($panel_button_shortcode) . '</code>';
+        echo '<button type="button" class="button button-small wdp-copy-shortcode" data-shortcode="' . esc_attr($panel_button_shortcode) . '">' . __('Kopyala', 'woo-donation-popup') . '</button>';
         echo '</div>';
 
         // Form Shortcode
@@ -442,6 +437,42 @@ class Woo_Donation_Popup_Admin {
      */
     private function render_modal_layout_customization_tab() {
         WDP_Admin_Layout_Tabs_Renderer::render_modal_layout_tab();
+    }
+
+    /**
+     * Kategori başlık renkleri sekmesi.
+     *
+     * @return void
+     */
+    private function render_category_colors_tab() {
+        WDP_Admin_Category_Colors_Tab_Renderer::render_tab();
+    }
+
+    /**
+     * Kategori başlık renklerini kaydet (AJAX).
+     *
+     * @return void
+     */
+    public function save_category_colors_settings() {
+        try {
+            $this->guard_admin_settings_ajax();
+            $request_data = $this->get_admin_request_data();
+
+            $colors = WDP_Category_Title_Color_Service::normalize_from_request($request_data);
+            $saved = $this->update_non_autoload_option(WDP_Category_Title_Color_Service::OPTION_KEY, $colors);
+
+            if ($saved === false) {
+                $this->send_admin_settings_error(__('Ayarlar kaydedilirken bir hata oluştu.', 'woo-donation-popup'));
+            }
+
+            $this->bump_wdp_asset_cache_version();
+            $this->send_admin_settings_success(__('Kategori renkleri kaydedildi.', 'woo-donation-popup'));
+        } catch (Exception $e) {
+            if (defined('WP_DEBUG') && WP_DEBUG) {
+                error_log('WDP category colors save error: ' . $e->getMessage());
+            }
+            $this->send_admin_settings_error(__('Bir hata oluştu. Lütfen tekrar deneyin.', 'woo-donation-popup'));
+        }
     }
     
     /**

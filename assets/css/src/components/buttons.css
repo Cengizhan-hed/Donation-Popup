@@ -23,8 +23,8 @@ html body :is(button.wdp-donate-button.wdp-open-modal[data-product-id],
   border: var(--wdp-popup-button-border-size, 0px) solid var(--wdp-popup-button-border-color, transparent);
   border-radius: var(--wdp-popup-button-radius, var(--wdp-button-radius, 10px));
   font-size: var(--wdp-popup-button-font-size, clamp(1rem, 0.95rem + 0.25vw, 1.125rem));
-  font-weight: var(--wdp-popup-button-font-weight, 700);
-  font-family: var(--wdp-popup-button-font-family, var(--wdp-font-family));
+  font-weight: var(--wdp-popup-button-font-weight, var(--wdp-button-font-weight, 800));
+  font-family: var(--wdp-popup-button-font-family, var(--wdp-button-font-family, inherit));
   cursor: pointer;
   /* Kullanıcı isteği: butonlarda animasyon / hareket efekti olmasın (yalnızca hafif renk değişimi) */
   transition: var(--wdp-transition-button, background 0.15s ease, color 0.15s ease), box-shadow 0.22s ease;
@@ -40,7 +40,7 @@ html body :is(button.wdp-donate-button.wdp-open-modal[data-product-id],
 }
 
 /* Shortcode tetikleyici: admin’deki --wdp-sc-trigger-* (yalnızca .wdp-shortcode-trigger) */
-html body button.wdp-shortcode-trigger.wdp-donate-button.wdp-open-modal[data-product-id] {
+html body button.wdp-shortcode-trigger.wdp-donate-button:is(.wdp-open-modal, .wdp-open-side-panel)[data-product-id] {
   min-width: var(--wdp-sc-trigger-min-width, var(--wdp-popup-button-min-width, clamp(120px, 8.75rem, 140px)));
   min-height: var(--wdp-sc-trigger-min-height, var(--wdp-popup-button-min-height, var(--wdp-touch-target-comfortable, 48px)));
   padding-block: var(--wdp-sc-trigger-padding-block, 0);
@@ -66,14 +66,14 @@ html body :is(button.wdp-donate-button.wdp-open-modal[data-product-id],
   color: var(--wdp-text-inverse, #ffffff);
 }
 
-html body button.wdp-shortcode-trigger.wdp-donate-button.wdp-open-modal[data-product-id]:is(:hover, :focus-visible) {
+html body button.wdp-shortcode-trigger.wdp-donate-button:is(.wdp-open-modal, .wdp-open-side-panel)[data-product-id]:is(:hover, :focus-visible) {
   /* Tema (Avada vb.) genel .button:hover kurallarından daha yüksek özgüllük; düz admin rengi korunur */
   background: var(--wdp-popup-button-bg-hover, var(--wdp-primary-hover, #185d98));
   border-color: var(--wdp-popup-button-border-hover-color, var(--wdp-popup-button-border-color, transparent));
   color: var(--wdp-shortcode-trigger-text, var(--wdp-text-inverse, #ffffff));
 }
 
-html body button.wdp-shortcode-trigger.wdp-donate-button.wdp-open-modal[data-product-id]:active {
+html body button.wdp-shortcode-trigger.wdp-donate-button:is(.wdp-open-modal, .wdp-open-side-panel)[data-product-id]:active {
   background: var(--wdp-popup-button-bg-hover, var(--wdp-primary-hover, #185d98));
   border-color: var(--wdp-popup-button-border-hover-color, var(--wdp-popup-button-border-color, transparent));
   color: var(--wdp-shortcode-trigger-text, var(--wdp-text-inverse, #ffffff));
@@ -205,8 +205,8 @@ html body :is(.wdp-modal .wdp-modal-content form .wdp-button-group button,
   color: var(--wdp-text-inverse, #ffffff);
   border: none;
   border-radius: var(--wdp-button-radius-unified, var(--wdp-input-radius, 20px));
-  font-size: var(--wdp-text-base, clamp(1rem, 0.95rem + 0.25vw, 1.125rem));
-  font-weight: var(--wdp-font-semibold, 600);
+  font-size: var(--wdp-form-button-font-size, 17px);
+  font-weight: var(--wdp-form-button-font-weight, var(--wdp-button-font-weight, 800));
   cursor: pointer;
   /* Yalnızca arka plan: gölge geçişi + tema transform hover titremesine yol açabiliyor */
   transition: background-color 0.15s ease, opacity 0.15s ease;
@@ -217,12 +217,14 @@ html body :is(.wdp-modal .wdp-modal-content form .wdp-button-group button,
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 0;
   width: 100%;
   min-height: var(--wdp-button-height, 50px);
   height: var(--wdp-button-height, 50px);
   max-height: var(--wdp-button-height, 50px);
-  line-height: 1.4;
-  font-family: var(--wdp-font-family, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
+  line-height: 1.3;
+  font-family: var(--wdp-button-font-family, inherit);
+  -webkit-font-smoothing: antialiased;
   box-sizing: border-box;
   margin: 0;
   position: relative;
@@ -295,6 +297,38 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-button-group .wdp-btn-danger 
   background: #fff5f5;
   border: 1px solid #fecaca;
   color: #b91c1c;
+}
+
+/* Form CTA: ikon + metin */
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-button-group button .wdp-btn__inner {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  max-width: 100%;
+  min-width: 0;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-button-group button .wdp-btn__icon {
+  display: block;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  color: #ffffff;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-button-group .wdp-btn-secondary .wdp-btn__icon {
+  color: currentColor;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-button-group button .wdp-btn__label {
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: 1.25;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content form .wdp-button-group button.wdp-loading {
@@ -435,7 +469,7 @@ html body .wdp-loading-button::after {
 }
 
 @media (max-width: 480px) {
-  html body button.wdp-shortcode-trigger.wdp-donate-button.wdp-open-modal[data-product-id] {
+  html body button.wdp-shortcode-trigger.wdp-donate-button:is(.wdp-open-modal, .wdp-open-side-panel)[data-product-id] {
     min-width: min(100%, var(--wdp-sc-trigger-min-width, var(--wdp-popup-button-min-width, 140px)));
     min-height: max(var(--wdp-touch-target-min, 44px), var(--wdp-sc-trigger-min-height, var(--wdp-popup-button-min-height, 48px)));
     padding-block: max(var(--wdp-sc-trigger-padding-block, 0px), var(--wdp-space-1, 4px));
@@ -444,7 +478,7 @@ html body .wdp-loading-button::after {
 }
 
 @media (max-width: 280px) {
-  html body button.wdp-shortcode-trigger.wdp-donate-button.wdp-open-modal[data-product-id] {
+  html body button.wdp-shortcode-trigger.wdp-donate-button:is(.wdp-open-modal, .wdp-open-side-panel)[data-product-id] {
     min-width: min(100%, 120px);
     min-height: max(40px, var(--wdp-sc-trigger-min-height, 40px));
     font-size: max(14px, calc(var(--wdp-sc-trigger-font-size, var(--wdp-popup-button-font-size, 18px)) * 0.78));
@@ -461,15 +495,15 @@ html body .wdp-loading-button::after {
    -------------------------------------------------------------------------- */
 
 /* Shortcode / sayfadaki tetikleyici (yalnızca shortcode sınıfı — gölge modal içine sızmaz) */
-html body button.wdp-shortcode-trigger.wdp-donate-button.wdp-open-modal[data-product-id] {
+html body button.wdp-shortcode-trigger.wdp-donate-button:is(.wdp-open-modal, .wdp-open-side-panel)[data-product-id] {
   box-shadow: var(--wdp-plugin-btn-shadow-sc, none);
 }
 
-html body button.wdp-shortcode-trigger.wdp-donate-button.wdp-open-modal[data-product-id]:is(:hover, :focus-visible):not(:disabled):not([aria-disabled="true"]) {
+html body button.wdp-shortcode-trigger.wdp-donate-button:is(.wdp-open-modal, .wdp-open-side-panel)[data-product-id]:is(:hover, :focus-visible):not(:disabled):not([aria-disabled="true"]) {
   box-shadow: var(--wdp-plugin-btn-shadow-sc-hover, var(--wdp-plugin-btn-shadow-sc, none));
 }
 
-html body button.wdp-shortcode-trigger.wdp-donate-button.wdp-open-modal[data-product-id]:disabled {
+html body button.wdp-shortcode-trigger.wdp-donate-button:is(.wdp-open-modal, .wdp-open-side-panel)[data-product-id]:disabled {
   box-shadow: none;
 }
 
@@ -488,11 +522,15 @@ html body :is(.wdp-modal .wdp-modal-content .wdp-success-screen .wdp-success-but
               .wdp-modal .wdp-modal-content .wdp-success-buttons .wdp-success-button,
               .wdp-donation-form .wdp-modal-content .wdp-success-buttons .wdp-success-button),
 html body :is(.wdp-modal .wdp-modal-content .wdp-mini-cart-items button.wdp-remove-cart-item,
-              .wdp-donation-form .wdp-modal-content .wdp-mini-cart-items button.wdp-remove-cart-item),
+              .wdp-donation-form .wdp-modal-content .wdp-mini-cart-items button.wdp-remove-cart-item) {
+  box-shadow: var(--wdp-plugin-btn-shadow-modal, none);
+}
+
+/* Sayaç +/- butonları: admin gölge ayarı uygulanmaz */
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-quantity-counter button.wdp-product-quantity-btn,
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-shares-section .wdp-share-counter button.wdp-share-btn,
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-form .wdp-share-quantity button.wdp-share-quantity-btn {
-  box-shadow: var(--wdp-plugin-btn-shadow-modal, none);
+  box-shadow: none !important;
 }
 
 /* Form CTA: hover gölgesi değişmez (titreme önlenir); diğer modal butonlarında hover gölgesi */
@@ -506,10 +544,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-form .wdp-share-q
                 .wdp-modal .wdp-modal-content .wdp-success-buttons .wdp-success-button,
                 .wdp-donation-form .wdp-modal-content .wdp-success-buttons .wdp-success-button):is(:hover, :focus-visible):not(:disabled),
   html body :is(.wdp-modal .wdp-modal-content .wdp-mini-cart-items button.wdp-remove-cart-item,
-                .wdp-donation-form .wdp-modal-content .wdp-mini-cart-items button.wdp-remove-cart-item):is(:hover, :focus-visible):not(:disabled),
-  html body :is(.wdp-modal, .wdp-donation-form) .wdp-quantity-counter button.wdp-product-quantity-btn:is(:hover, :focus-visible):not(:disabled),
-  html body :is(.wdp-modal, .wdp-donation-form) .wdp-shares-section .wdp-share-counter button.wdp-share-btn:is(:hover, :focus-visible):not(:disabled),
-  html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-form .wdp-share-quantity button.wdp-share-quantity-btn:is(:hover, :focus-visible):not(:disabled) {
+                .wdp-donation-form .wdp-modal-content .wdp-mini-cart-items button.wdp-remove-cart-item):is(:hover, :focus-visible):not(:disabled) {
     box-shadow: var(--wdp-plugin-btn-shadow-modal-hover, var(--wdp-plugin-btn-shadow-modal, none));
   }
 }

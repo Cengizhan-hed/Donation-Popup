@@ -65,18 +65,66 @@ if (!defined('ABSPATH')) {
  */
 class WDP_Templates {
     /**
-     * Get note tone class by icon.
+     * Ürün notu metni (görünüm CSS ile sabitlenir).
      *
-     * @param string $icon Icon key.
-     * @return string
+     * @param array $context Product form context.
+     * @return array{text:string}
      */
-    private static function get_note_tone_class($icon) {
-        $map = array(
-            'video'    => 'wdp-product-note--video',
-            'delivery' => 'wdp-product-note--delivery',
-            'heart'    => 'wdp-product-note--heart',
+    private static function resolve_product_note_display(array $context) {
+        return array(
+            'text' => isset($context['product_note_text']) ? trim((string) $context['product_note_text']) : '',
         );
-        return isset($map[$icon]) ? $map[$icon] : 'wdp-product-note--info';
+    }
+
+    /**
+     * Ürün notu HTML bloğu.
+     *
+     * @param array  $display   text.
+     * @param string $toggle_id Optional expand toggle id.
+     * @param bool   $is_long   Long text flag.
+     * @return string Safe HTML.
+     */
+    private static function render_product_note_block(array $display, $toggle_id = '', $is_long = false) {
+        if (empty($display['text'])) {
+            return '';
+        }
+
+        ob_start();
+        ?>
+        <div class="wdp-product-note" role="note">
+            <div class="wdp-product-note__content">
+                <div class="wdp-product-note__body">
+                    <?php if ($is_long && $toggle_id !== '') : ?>
+                    <input type="checkbox" id="<?php echo esc_attr($toggle_id); ?>" class="wdp-product-note__toggle">
+                    <?php endif; ?>
+                    <p class="wdp-product-note__text"><?php echo esc_html($display['text']); ?></p>
+                    <?php if ($is_long && $toggle_id !== '') : ?>
+                    <label for="<?php echo esc_attr($toggle_id); ?>" class="wdp-product-note__more">
+                        <span class="wdp-product-note__more-open"><?php echo esc_html__('Devamini Gor', 'woo-donation-popup'); ?></span>
+                        <span class="wdp-product-note__more-close"><?php echo esc_html__('Daha Az Goster', 'woo-donation-popup'); ?></span>
+                    </label>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
+        <?php
+        return trim(ob_get_clean());
+    }
+
+    /**
+     * Hisseli formlar: toplam tutar çubuğu (butonların üstü).
+     *
+     * @return string Safe HTML.
+     */
+    private static function render_shares_total_bar() {
+        ob_start();
+        ?>
+        <div class="wdp-shares-total-bar" aria-live="polite" hidden>
+            <span class="wdp-shares-total-bar__label"><?php echo esc_html__('Toplam Tutar', 'woo-donation-popup'); ?></span>
+            <span class="wdp-shares-total-bar__value">—</span>
+        </div>
+        <?php
+        return trim(ob_get_clean());
     }
 
     /**
@@ -126,6 +174,144 @@ class WDP_Templates {
     }
 
     /**
+     * Allowed tags for form action button SVG icons.
+     *
+     * @return array<string, array<string, bool>>
+     */
+    private static function form_button_svg_kses() {
+        return array(
+            'svg'      => array(
+                'class'           => true,
+                'viewbox'         => true,
+                'xmlns'           => true,
+                'fill'            => true,
+                'aria-hidden'     => true,
+                'focusable'       => true,
+            ),
+            'path'     => array(
+                'd'               => true,
+                'fill'            => true,
+                'stroke'          => true,
+                'stroke-width'    => true,
+                'stroke-linecap'  => true,
+                'stroke-linejoin' => true,
+            ),
+            'rect'     => array(
+                'x'               => true,
+                'y'               => true,
+                'width'           => true,
+                'height'          => true,
+                'rx'              => true,
+                'fill'            => true,
+                'stroke'          => true,
+                'stroke-width'    => true,
+            ),
+            'circle'   => array(
+                'cx'              => true,
+                'cy'              => true,
+                'r'               => true,
+                'fill'            => true,
+                'stroke'          => true,
+                'stroke-width'    => true,
+            ),
+            'polyline' => array(
+                'points'          => true,
+                'fill'            => true,
+                'stroke'          => true,
+                'stroke-width'    => true,
+                'stroke-linecap'  => true,
+                'stroke-linejoin' => true,
+            ),
+        );
+    }
+
+    /**
+     * Sepete ekle — alışveriş arabası (stroke, yuvarlatılmış).
+     *
+     * @return string Safe HTML.
+     */
+    public static function get_form_button_icon_cart_svg() {
+        $svg = '<svg class="wdp-btn__icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">'
+            . '<path d="M2.25 3h1.9l2.05 11.58a1.85 1.85 0 0 0 1.82 1.52h8.68a1.85 1.85 0 0 0 1.8-1.38L20.75 6.5H7.1" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"/>'
+            . '<circle cx="9.25" cy="19.25" r="1.35" fill="currentColor" stroke="none"/>'
+            . '<circle cx="17.25" cy="19.25" r="1.35" fill="currentColor" stroke="none"/>'
+            . '</svg>';
+
+        return wp_kses($svg, self::form_button_svg_kses());
+    }
+
+    /**
+     * Ödemeye git — kalkan + onay (güvenli tamamlama).
+     *
+     * @return string Safe HTML.
+     */
+    public static function get_form_button_icon_checkout_svg() {
+        $svg = '<svg class="wdp-btn__icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">'
+            . '<path d="M12 3.25 18.25 6.4v5.35c0 3.72-2.55 6.72-6.25 8-3.7-1.28-6.25-4.28-6.25-8V6.4L12 3.25z" stroke="currentColor" stroke-width="1.65" stroke-linejoin="round"/>'
+            . '<path d="M8.6 12.15 10.65 14.2 15.55 9.3" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"/>'
+            . '</svg>';
+
+        return wp_kses($svg, self::form_button_svg_kses());
+    }
+
+    /**
+     * Bağışa devam — hediye kutusu (bağış teması).
+     *
+     * @return string Safe HTML.
+     */
+    public static function get_form_button_icon_continue_svg() {
+        $svg = '<svg class="wdp-btn__icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">'
+            . '<rect x="4.25" y="10.25" width="15.5" height="9.5" rx="1.75" stroke="currentColor" stroke-width="1.65"/>'
+            . '<path d="M12 10.25V19.75M4.25 10.25h15.5" stroke="currentColor" stroke-width="1.65" stroke-linecap="round"/>'
+            . '<path d="M12 10.25c0-2.35-1.85-4.25-4.25-4.25S3.5 7.9 3.5 10.25s1.85 4.25 4.25 4.25M12 10.25c0-2.35 1.85-4.25 4.25-4.25s4.25 1.9 4.25 4.25-1.85 4.25-4.25 4.25" stroke="currentColor" stroke-width="1.65" stroke-linecap="round"/>'
+            . '<path d="M12 10.25V6.75" stroke="currentColor" stroke-width="1.65" stroke-linecap="round"/>'
+            . '</svg>';
+
+        return wp_kses($svg, self::form_button_svg_kses());
+    }
+
+    /**
+     * Form altı aksiyon butonu (ikon + metin).
+     *
+     * @param string $name  donation_add_to_cart | donation_go_checkout.
+     * @param string $class wdp-btn-primary | wdp-btn-secondary.
+     * @param string $label Visible label.
+     * @return string Safe HTML.
+     */
+    private static function render_form_action_button($name, $class, $label) {
+        $icon = $name === 'donation_go_checkout'
+            ? self::get_form_button_icon_checkout_svg()
+            : self::get_form_button_icon_cart_svg();
+
+        return sprintf(
+            '<button type="submit" class="%1$s" name="%2$s"><span class="wdp-btn__inner">%3$s<span class="wdp-btn__label">%4$s</span></span></button>',
+            esc_attr($class),
+            esc_attr($name),
+            $icon,
+            esc_html($label)
+        );
+    }
+
+    /**
+     * Sepete ekle + ödemeye git buton grubu.
+     *
+     * @param bool   $checkout_first Checkout button first.
+     * @param string $text_add_to_cart Add to cart label.
+     * @param string $text_go_checkout Checkout label.
+     * @return void
+     */
+    private static function render_form_action_buttons($checkout_first, $text_add_to_cart, $text_go_checkout) {
+        if ($checkout_first) {
+            echo self::render_form_action_button('donation_go_checkout', 'wdp-btn-primary', $text_go_checkout);
+            echo self::render_form_action_button('donation_add_to_cart', 'wdp-btn-secondary', $text_add_to_cart);
+            return;
+        }
+
+        echo self::render_form_action_button('donation_add_to_cart', 'wdp-btn-secondary', $text_add_to_cart);
+        echo self::render_form_action_button('donation_go_checkout', 'wdp-btn-primary', $text_go_checkout);
+    }
+
+    /**
      * Stacked donor fields: name, phone, visible note (standard / progress forms).
      *
      * @return string Safe HTML.
@@ -172,9 +358,10 @@ class WDP_Templates {
      * @param string $button_text   Button text.
      * @param string $custom_class  Custom CSS class.
      * @param string $custom_style  Custom CSS style.
+     * @param string $display_mode  popup|side_panel.
      * @return string
      */
-    public static function render_donation_modal($product_id, $button_text = '', $custom_class = '', $custom_style = '') {
+    public static function render_donation_modal($product_id, $button_text = '', $custom_class = '', $custom_style = '', $display_mode = 'popup') {
         // Ürün ID'sini integer'a çevir
         $product_id = absint($product_id);
 
@@ -201,15 +388,14 @@ class WDP_Templates {
         $formatted_price = $context['formatted_price'];
         $enable_product_note = $context['enable_product_note'];
         $product_note_text = $context['product_note_text'];
-        $product_note_icon = $context['product_note_icon'];
         $show_product_note = $enable_product_note && $product_note_text !== '';
-        $note_tone_class = self::get_note_tone_class($product_note_icon);
         $is_long_note = self::text_length($product_note_text) > 110;
         $modal_note_toggle_id = 'wdp-note-toggle-' . $product_id . '-modal';
 
-        // Benzersiz bir ID oluştur
-        $modal_id = 'wdp-modal-' . $product_id;
-
+        // Benzersiz bir ID oluştur (popup ve sağ panel aynı sayfada çakışmasın)
+        $use_side_panel   = ($display_mode === 'side_panel');
+        $modal_id         = $use_side_panel ? ('wdp-side-panel-' . $product_id) : ('wdp-modal-' . $product_id);
+        $modal_mode_class = $use_side_panel ? ' wdp-side-panel' : '';
         $allow_custom_price = $context['allow_custom_price'];
         $min_price = $context['min_price'];
         $allow_multiple_shares = $context['allow_multiple_shares'];
@@ -220,6 +406,9 @@ class WDP_Templates {
         $total_donation = $context['total_donation'];
         $wdp_currency_symbol = $context['currency_symbol'];
         $wdp_custom_price_placeholder = $context['custom_price_placeholder'];
+        $title_style_attr = class_exists('WDP_Category_Title_Color_Service')
+            ? WDP_Category_Title_Color_Service::get_title_style_attr($product_id)
+            : '';
 
         // Assets'i zorla yükle
         WDP_Assets::force_enqueue();
@@ -227,29 +416,14 @@ class WDP_Templates {
         ob_start();
         ?>
         <!-- Modal -->
-        <div id="<?php echo esc_attr($modal_id); ?>" class="hdf-donation-modal-wrapper wdp-modal <?php echo esc_attr($custom_class); ?>" role="dialog" aria-modal="true" aria-labelledby="<?php echo esc_attr($modal_id); ?>-title" aria-describedby="<?php echo esc_attr($modal_id); ?>-description" data-wdp-unit-price="<?php echo esc_attr($product_price !== '' ? $product_price : ''); ?>" style="display:none;visibility:hidden;opacity:0;">
-            <div class="wdp-modal-content">
+        <div id="<?php echo esc_attr($modal_id); ?>" class="hdf-donation-modal-wrapper wdp-modal<?php echo esc_attr($modal_mode_class); ?><?php echo $custom_class !== '' ? ' ' . esc_attr($custom_class) : ''; ?>" role="dialog" aria-modal="true" aria-labelledby="<?php echo esc_attr($modal_id); ?>-title" aria-describedby="<?php echo esc_attr($modal_id); ?>-description" data-product-id="<?php echo esc_attr($product_id); ?>" data-wdp-unit-price="<?php echo esc_attr($product_price !== '' ? $product_price : ''); ?>"<?php echo $use_side_panel ? ' data-wdp-open-mode="side-panel"' : ''; ?> style="display:none;visibility:hidden;opacity:0;">
+            <div class="wdp-modal-content<?php echo $use_side_panel ? ' wdp-side-panel-content' : ''; ?>">
                 <button type="button" class="wdp-modal-close" aria-label="<?php echo esc_attr__('Modalı Kapat', 'woo-donation-popup'); ?>">&times;</button>
                 <div class="wdp-modal-header">
                     <div class="wdp-modal-title-wrapper">
-                        <span id="<?php echo esc_attr($modal_id); ?>-title" class="wdp-modal-title"><?php echo wp_kses_post($product_name); ?></span>
-                        <?php if ($show_product_note): ?>
-                        <div class="wdp-product-note <?php echo esc_attr($note_tone_class); ?>" role="note">
-                            <span class="wdp-product-note__content">
-                                <span class="wdp-product-note__body">
-                                    <?php if ($is_long_note): ?>
-                                    <input type="checkbox" id="<?php echo esc_attr($modal_note_toggle_id); ?>" class="wdp-product-note__toggle">
-                                    <?php endif; ?>
-                                    <span class="wdp-product-note__text"><?php echo esc_html($product_note_text); ?></span>
-                                    <?php if ($is_long_note): ?>
-                                    <label for="<?php echo esc_attr($modal_note_toggle_id); ?>" class="wdp-product-note__more">
-                                        <span class="wdp-product-note__more-open"><?php echo esc_html__('Devamini Gor', 'woo-donation-popup'); ?></span>
-                                        <span class="wdp-product-note__more-close"><?php echo esc_html__('Daha Az Goster', 'woo-donation-popup'); ?></span>
-                                    </label>
-                                    <?php endif; ?>
-                                </span>
-                            </span>
-                        </div>
+                        <span id="<?php echo esc_attr($modal_id); ?>-title" class="wdp-modal-title"<?php echo $title_style_attr; ?>><?php echo wp_kses_post($product_name); ?></span>
+                        <?php if ($show_product_note) : ?>
+                        <?php echo self::render_product_note_block(self::resolve_product_note_display($context), $modal_note_toggle_id, $is_long_note); ?>
                         <?php endif; ?>
                     </div>
                 </div>
@@ -259,8 +433,22 @@ class WDP_Templates {
                 <?php echo WDP_Progress_Form::render_progress_bar($product_id, $progress_bar_limit, $total_donation, true, $progress_min_price); ?>
                 <?php endif; ?>
                 
-                <form method="post" action="" class="<?php echo esc_attr($allow_multiple_shares ? 'wdp-donation-form-fields wdp-has-shareholders' : ($enable_progress_bar ? 'wdp-donation-form-fields wdp-has-progress-bar' : 'wdp-donation-form-fields')); ?>">
+                <?php
+                $form_field_classes = $allow_multiple_shares ? 'wdp-donation-form-fields wdp-has-shareholders' : ($enable_progress_bar ? 'wdp-donation-form-fields wdp-has-progress-bar' : 'wdp-donation-form-fields');
+                if ($use_side_panel) {
+                    $form_field_classes .= ' wdp-side-panel-form';
+                }
+                $side_panel_main_class = 'wdp-side-panel-main';
+                if ($allow_multiple_shares) {
+                    $side_panel_main_class .= ' wdp-side-panel-main--shares';
+                }
+                ?>
+                <form method="post" action="" class="<?php echo esc_attr($form_field_classes); ?>">
                     <div class="wdp-form-error" style="display: none;"></div>
+
+                    <?php if ($use_side_panel) : ?>
+                    <div class="<?php echo esc_attr($side_panel_main_class); ?>">
+                    <?php endif; ?>
 
                     <?php if ($allow_multiple_shares): ?>
                     <!-- Çoklu Hisse Alanı -->
@@ -322,6 +510,10 @@ class WDP_Templates {
                     <?php endif; ?>
                     <?php endif; ?>
 
+                    <?php if ($use_side_panel) : ?>
+                    </div>
+                    <?php endif; ?>
+
                     <!-- Butonlar -->
                     <?php
                     // Buton metinlerini ve düzenini ayarlardan al
@@ -333,16 +525,23 @@ class WDP_Templates {
                     $form_button_order = !empty($button_settings['form_button_order']) ? $button_settings['form_button_order'] : 'add_first';
                     $form_button_alignment = !empty($button_settings['form_button_alignment']) ? $button_settings['form_button_alignment'] : 'left';
                     $button_group_classes = 'wdp-button-group wdp-button-align-' . esc_attr($form_button_alignment);
+                    if ($use_side_panel) {
+                        $button_group_classes .= ' wdp-side-panel-form-footer';
+                    }
+                    $side_panel_checkout_first = $use_side_panel || $form_button_order === 'checkout_first';
                     ?>
+                    <?php if ($use_side_panel) : ?>
+                    <div class="wdp-side-panel-footer-zone">
+                    <?php endif; ?>
+                    <?php if ($allow_multiple_shares) : ?>
+                    <?php echo self::render_shares_total_bar(); ?>
+                    <?php endif; ?>
                     <div class="<?php echo $button_group_classes; ?>">
-                        <?php if ($form_button_order === 'checkout_first') : ?>
-                            <button type="submit" class="wdp-btn-primary" name="donation_go_checkout"><?php echo esc_html($button_text_go_checkout); ?></button>
-                            <button type="submit" class="wdp-btn-secondary" name="donation_add_to_cart"><?php echo esc_html($button_text_add_to_cart); ?></button>
-                        <?php else : ?>
-                            <button type="submit" class="wdp-btn-secondary" name="donation_add_to_cart"><?php echo esc_html($button_text_add_to_cart); ?></button>
-                            <button type="submit" class="wdp-btn-primary" name="donation_go_checkout"><?php echo esc_html($button_text_go_checkout); ?></button>
-                        <?php endif; ?>
+                        <?php self::render_form_action_buttons($side_panel_checkout_first, $button_text_add_to_cart, $button_text_go_checkout); ?>
                     </div>
+                    <?php if ($use_side_panel) : ?>
+                    </div>
+                    <?php endif; ?>
                     <!-- Gizli Alanlar -->
                     <input type="hidden" name="wdp_product_id" value="<?php echo esc_attr($product_id); ?>">
                     <input type="hidden" name="donation_modal" value="1">
@@ -390,9 +589,7 @@ class WDP_Templates {
         $formatted_price = $context['formatted_price'];
         $enable_product_note = $context['enable_product_note'];
         $product_note_text = $context['product_note_text'];
-        $product_note_icon = $context['product_note_icon'];
         $show_product_note = $enable_product_note && $product_note_text !== '';
-        $note_tone_class = self::get_note_tone_class($product_note_icon);
         $is_long_note = self::text_length($product_note_text) > 110;
         $direct_note_toggle_id = 'wdp-note-toggle-' . $product_id . '-direct';
 
@@ -414,6 +611,9 @@ class WDP_Templates {
         $total_donation = $context['total_donation'];
         $wdp_currency_symbol = $context['currency_symbol'];
         $wdp_custom_price_placeholder = $context['custom_price_placeholder'];
+        $title_style_attr = class_exists('WDP_Category_Title_Color_Service')
+            ? WDP_Category_Title_Color_Service::get_title_style_attr($product_id)
+            : '';
 
         // Form HTML'ini oluştur - popup ile aynı yapıyı kullan
         ob_start();
@@ -422,24 +622,9 @@ class WDP_Templates {
             <div class="wdp-modal-content">
                 <?php if ($show_title): ?>
                 <div class="wdp-form-title-wrapper">
-                    <h2 class="wdp-form-title"><?php echo wp_kses_post($title); ?></h2>
-                    <?php if ($show_product_note): ?>
-                    <div class="wdp-product-note <?php echo esc_attr($note_tone_class); ?>" role="note">
-                        <span class="wdp-product-note__content">
-                            <span class="wdp-product-note__body">
-                                <?php if ($is_long_note): ?>
-                                <input type="checkbox" id="<?php echo esc_attr($direct_note_toggle_id); ?>" class="wdp-product-note__toggle">
-                                <?php endif; ?>
-                                <span class="wdp-product-note__text"><?php echo esc_html($product_note_text); ?></span>
-                                <?php if ($is_long_note): ?>
-                                <label for="<?php echo esc_attr($direct_note_toggle_id); ?>" class="wdp-product-note__more">
-                                    <span class="wdp-product-note__more-open"><?php echo esc_html__('Devamini Gor', 'woo-donation-popup'); ?></span>
-                                    <span class="wdp-product-note__more-close"><?php echo esc_html__('Daha Az Goster', 'woo-donation-popup'); ?></span>
-                                </label>
-                                <?php endif; ?>
-                            </span>
-                        </span>
-                    </div>
+                    <h2 class="wdp-form-title"<?php echo $title_style_attr; ?>><?php echo wp_kses_post($title); ?></h2>
+                    <?php if ($show_product_note) : ?>
+                    <?php echo self::render_product_note_block(self::resolve_product_note_display($context), $direct_note_toggle_id, $is_long_note); ?>
                     <?php endif; ?>
                 </div>
                 <?php endif; ?>
@@ -523,14 +708,11 @@ class WDP_Templates {
                     $form_button_alignment = !empty($button_settings['form_button_alignment']) ? $button_settings['form_button_alignment'] : 'left';
                     $button_group_classes = 'wdp-button-group wdp-button-align-' . esc_attr($form_button_alignment);
                     ?>
+                    <?php if ($allow_multiple_shares) : ?>
+                    <?php echo self::render_shares_total_bar(); ?>
+                    <?php endif; ?>
                     <div class="<?php echo $button_group_classes; ?>">
-                        <?php if ($form_button_order === 'checkout_first') : ?>
-                            <button type="submit" class="wdp-btn-primary" name="donation_go_checkout"><?php echo esc_html($button_text_go_checkout); ?></button>
-                            <button type="submit" class="wdp-btn-secondary" name="donation_add_to_cart"><?php echo esc_html($button_text_add_to_cart); ?></button>
-                        <?php else : ?>
-                            <button type="submit" class="wdp-btn-secondary" name="donation_add_to_cart"><?php echo esc_html($button_text_add_to_cart); ?></button>
-                            <button type="submit" class="wdp-btn-primary" name="donation_go_checkout"><?php echo esc_html($button_text_go_checkout); ?></button>
-                        <?php endif; ?>
+                        <?php self::render_form_action_buttons($form_button_order === 'checkout_first', $button_text_add_to_cart, $button_text_go_checkout); ?>
                     </div>
                     <!-- Gizli Alanlar -->
                     <input type="hidden" name="wdp_product_id" value="<?php echo esc_attr($product_id); ?>">

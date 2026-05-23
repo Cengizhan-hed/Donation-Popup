@@ -12,7 +12,7 @@
   
   // Use centralized module dependency helper
   const utilsCheck = (WDPApp.utils && WDPApp.utils.ensureModule)
-    ? WDPApp.utils.ensureModule('utils', ['formatPrice', 'escapeHtml', 'getAjaxNonce', 'safeLog'])
+    ? WDPApp.utils.ensureModule('utils', ['formatPrice', 'formatCurrency', 'escapeHtml', 'getAjaxNonce', 'safeLog'])
     : { module: WDPApp.utils || {}, isValid: false, missingMethods: [] };
   
   const stateCheck = (WDPApp.utils && WDPApp.utils.ensureModule)
@@ -21,7 +21,7 @@
   
   const utils = utilsCheck.module;
   const state = stateCheck.module;
-  const { formatPrice, escapeHtml, getAjaxNonce, safeLog } = utils;
+  const { formatPrice, formatCurrency, escapeHtml, getAjaxNonce, safeLog } = utils;
   const { originalForms, sideCartElements } = state;
   const wdp_ajax = window.wdp_ajax || {};
   const jQuery = window.jQuery || null;
@@ -232,14 +232,104 @@
   function getButtonTexts() {
     const buttonTexts = (wdp_ajax && wdp_ajax.button_texts) ? wdp_ajax.button_texts : {};
     return {
-      viewCartText: buttonTexts.success_view_cart || "Sepeti Görüntüle",
-      goCheckoutText: buttonTexts.success_go_checkout || "Ödemeye Git",
-      newDonationText: buttonTexts.success_new_donation || "Yeni Bağış Ekle",
+      viewCartText: buttonTexts.success_view_cart || "Sepete Git",
+      goCheckoutText: buttonTexts.success_go_checkout || "Bağışı Tamamla",
+      newDonationText: buttonTexts.success_new_donation || "Bağış eklemeye devam edin",
     };
   }
 
-  function buildCartUiNode(cartItems) {
+  function getButtonIcons() {
+    const icons = (wdp_ajax && wdp_ajax.button_icons) ? wdp_ajax.button_icons : {};
+    return {
+      cart: icons.cart || "",
+      checkout: icons.checkout || "",
+      continue: icons.continue || "",
+    };
+  }
+
+  function fillSuccessButtonWithIcon(linkEl, iconHtml, label) {
+    if (!linkEl) {
+      return;
+    }
+    linkEl.textContent = "";
+    const inner = document.createElement("span");
+    inner.className = "wdp-btn__inner";
+    if (iconHtml) {
+      const iconHost = document.createElement("span");
+      iconHost.className = "wdp-btn__icon-host";
+      iconHost.innerHTML = iconHtml;
+      inner.appendChild(iconHost);
+    }
+    const labelEl = document.createElement("span");
+    labelEl.className = "wdp-btn__label";
+    labelEl.textContent = label;
+    inner.appendChild(labelEl);
+    linkEl.appendChild(inner);
+  }
+
+  function computeCartSubtotal(cartItems) {
+    let total = 0;
+    if (!Array.isArray(cartItems)) {
+      return total;
+    }
+    cartItems.forEach((item) => {
+      const parsedTotal = parseAmount(item.line_total);
+      if (Number.isFinite(parsedTotal)) {
+        total += parsedTotal;
+        return;
+      }
+      const parsedPrice = parseAmount(item.price);
+      const itemPrice = Number.isFinite(parsedPrice) ? parsedPrice : 0;
+      const parsedQty = Number.parseInt(item.quantity, 10);
+      const itemQuantity = Number.isFinite(parsedQty) && parsedQty > 0 ? parsedQty : 1;
+      total += itemPrice * itemQuantity;
+    });
+    return total;
+  }
+
+  function getCurrencySymbolDecoded() {
+    const raw = (wdp_ajax && wdp_ajax.currency && wdp_ajax.currency.symbol)
+      ? wdp_ajax.currency.symbol
+      : '₺';
+    return decodeHtmlEntities(raw);
+  }
+
+  function formatSidePanelSubtotalAmount(cartItems) {
+    const total = computeCartSubtotal(cartItems);
+    if (typeof formatCurrency === 'function') {
+      try {
+        return formatCurrency(total, { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+      } catch (e) {
+        /* fall through */
+      }
+    }
+    return formatPrice(total) + ' ' + getCurrencySymbolDecoded();
+  }
+
+  function appendSidePanelSubtotal(container, cartItems) {
+    if (!container) {
+      return;
+    }
+    const row = document.createElement('div');
+    row.className = 'wdp-side-panel-subtotal';
+    row.setAttribute('role', 'status');
+    row.setAttribute('aria-live', 'polite');
+    const label = document.createElement('span');
+    label.className = 'wdp-side-panel-subtotal__label';
+    label.textContent = 'Ara toplam:';
+    const value = document.createElement('span');
+    value.className = 'wdp-side-panel-subtotal__value';
+    value.textContent = formatSidePanelSubtotalAmount(cartItems);
+    row.appendChild(label);
+    row.appendChild(value);
+    container.appendChild(row);
+  }
+
+  function buildCartUiNode(cartItems, options = {}) {
     const root = document.createElement('div');
+    if (options.inSidePanel) {
+      root.className = 'wdp-side-panel-cart-layout';
+    }
 
     const miniCart = document.createElement('div');
     miniCart.className = 'wdp-mini-cart';
@@ -264,7 +354,7 @@
         const totalPrice = Number.isFinite(parsedTotal) ? parsedTotal : (itemPrice * itemQuantity);
         const priceDisplay = (item.price_plain && String(item.price_plain).trim() !== '')
           ? decodeHtmlEntities(item.price_plain)
-          : (formatPrice(totalPrice) + ' ' + ((wdp_ajax && wdp_ajax.currency && wdp_ajax.currency.symbol) ? wdp_ajax.currency.symbol : '₺'));
+          : (formatPrice(totalPrice) + ' ' + getCurrencySymbolDecoded());
 
         const table = document.createElement('table');
         table.className = 'wdp-cart-item-table';
@@ -329,48 +419,82 @@
     root.appendChild(miniCart);
 
     const { viewCartText, goCheckoutText, newDonationText } = getButtonTexts();
+    const { cart: iconCart, checkout: iconCheckout, continue: iconContinue } = getButtonIcons();
     const btnWrap = document.createElement('div');
     btnWrap.className = 'wdp-success-buttons';
 
-    const viewCart = document.createElement('a');
-    viewCart.className = 'wdp-success-button wdp-view-cart';
-    viewCart.href = wdp_ajax.cart_url || "/sepet/";
-    viewCart.textContent = viewCartText;
-    btnWrap.appendChild(viewCart);
-
     const checkout = document.createElement('a');
-    checkout.className = 'wdp-success-button wdp-checkout';
+    checkout.className = 'wdp-success-button wdp-checkout wdp-success-button--primary';
     checkout.href = wdp_ajax.checkout_url || "/odeme-sayfasi/";
-    checkout.textContent = goCheckoutText;
-    btnWrap.appendChild(checkout);
+    fillSuccessButtonWithIcon(checkout, iconCheckout, goCheckoutText);
+
+    const viewCart = document.createElement('a');
+    viewCart.className = 'wdp-success-button wdp-view-cart wdp-success-button--outline';
+    viewCart.href = wdp_ajax.cart_url || "/sepet/";
+    fillSuccessButtonWithIcon(viewCart, iconCart, viewCartText);
 
     const newDonation = document.createElement('a');
-    newDonation.className = 'wdp-success-button wdp-continue-shopping wdp-new-donation';
+    newDonation.className = 'wdp-success-button wdp-continue-shopping wdp-new-donation wdp-success-button--ghost';
     newDonation.href = '#';
-    newDonation.textContent = newDonationText;
-    btnWrap.appendChild(newDonation);
+    fillSuccessButtonWithIcon(newDonation, iconContinue, newDonationText);
 
-    root.appendChild(btnWrap);
+    if (options.inSidePanel) {
+      btnWrap.appendChild(checkout);
+      btnWrap.appendChild(viewCart);
+      btnWrap.appendChild(newDonation);
+    } else {
+      btnWrap.appendChild(viewCart);
+      btnWrap.appendChild(checkout);
+      btnWrap.appendChild(newDonation);
+    }
+
+    if (options.inSidePanel) {
+      const footer = document.createElement('div');
+      footer.className = 'wdp-side-panel-cart-footer';
+      appendSidePanelSubtotal(footer, cartItems);
+      footer.appendChild(btnWrap);
+      root.appendChild(footer);
+    } else {
+      root.appendChild(btnWrap);
+    }
     return root;
   }
 
   function renderCartItemsInto(container, cartItems) {
     if (!container) return;
+    const inSidePanel = !!(container.closest && container.closest('.wdp-side-panel'));
     container.innerHTML = '';
-    container.appendChild(buildCartUiNode(Array.isArray(cartItems) ? cartItems : []));
+    container.appendChild(buildCartUiNode(Array.isArray(cartItems) ? cartItems : [], { inSidePanel }));
   }
 
   function patchSuccessScreenCartUi(successScreen, cartItems) {
     if (!successScreen) return;
-    const freshUi = buildCartUiNode(Array.isArray(cartItems) ? cartItems : []);
+    const inSidePanel = !!(successScreen.closest && successScreen.closest('.wdp-side-panel'));
+    const freshUi = buildCartUiNode(Array.isArray(cartItems) ? cartItems : [], { inSidePanel });
+    const cartStack = successScreen.querySelector('.wdp-success-cart-stack');
+    const newLayout = freshUi.querySelector('.wdp-side-panel-cart-layout');
+    const oldLayout = successScreen.querySelector('.wdp-side-panel-cart-layout');
+    if (inSidePanel && cartStack && newLayout) {
+      if (oldLayout) {
+        oldLayout.replaceWith(newLayout);
+      } else {
+        cartStack.innerHTML = '';
+        cartStack.appendChild(newLayout);
+      }
+      return;
+    }
     const newMini = freshUi.querySelector('.wdp-mini-cart');
+    const newFooter = freshUi.querySelector('.wdp-side-panel-cart-footer');
     const newButtons = freshUi.querySelector('.wdp-success-buttons');
     const oldMini = successScreen.querySelector('.wdp-mini-cart');
+    const oldFooter = successScreen.querySelector('.wdp-side-panel-cart-footer');
     const oldButtons = successScreen.querySelector('.wdp-success-buttons');
     if (oldMini && newMini) {
       oldMini.replaceWith(newMini);
     }
-    if (oldButtons && newButtons) {
+    if (inSidePanel && oldFooter && newFooter) {
+      oldFooter.replaceWith(newFooter);
+    } else if (oldButtons && newButtons) {
       oldButtons.replaceWith(newButtons);
     }
   }
