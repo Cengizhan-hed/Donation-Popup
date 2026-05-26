@@ -226,45 +226,69 @@ class WDP_Templates {
     }
 
     /**
-     * Sepete ekle — alışveriş arabası (stroke, yuvarlatılmış).
+     * Sayaç — eksi (kalın çizgi).
+     *
+     * @return string Safe HTML.
+     */
+    public static function get_counter_icon_minus_svg() {
+        $svg = '<svg class="wdp-counter-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">'
+            . '<path d="M5.5 12h13" stroke="currentColor" stroke-width="2.75" stroke-linecap="round"/>'
+            . '</svg>';
+
+        return wp_kses($svg, self::form_button_svg_kses());
+    }
+
+    /**
+     * Sayaç — artı (kalın çizgi).
+     *
+     * @return string Safe HTML.
+     */
+    public static function get_counter_icon_plus_svg() {
+        $svg = '<svg class="wdp-counter-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">'
+            . '<path d="M12 5.5v13M5.5 12h13" stroke="currentColor" stroke-width="2.75" stroke-linecap="round"/>'
+            . '</svg>';
+
+        return wp_kses($svg, self::form_button_svg_kses());
+    }
+
+    /**
+     * Sepete ekle — alışveriş arabası.
      *
      * @return string Safe HTML.
      */
     public static function get_form_button_icon_cart_svg() {
         $svg = '<svg class="wdp-btn__icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">'
-            . '<path d="M2.25 3h1.9l2.05 11.58a1.85 1.85 0 0 0 1.82 1.52h8.68a1.85 1.85 0 0 0 1.8-1.38L20.75 6.5H7.1" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"/>'
-            . '<circle cx="9.25" cy="19.25" r="1.35" fill="currentColor" stroke="none"/>'
-            . '<circle cx="17.25" cy="19.25" r="1.35" fill="currentColor" stroke="none"/>'
+            . '<path d="M3.75 3.75h2.2l1.95 10.9a1.65 1.65 0 0 0 1.62 1.35h7.98a1.65 1.65 0 0 0 1.6-1.22l1.55-5.78H8.2" stroke="currentColor" stroke-width="2.35" stroke-linecap="round" stroke-linejoin="round"/>'
+            . '<circle cx="10" cy="19.25" r="1.6" fill="currentColor"/>'
+            . '<circle cx="17.25" cy="19.25" r="1.6" fill="currentColor"/>'
             . '</svg>';
 
         return wp_kses($svg, self::form_button_svg_kses());
     }
 
     /**
-     * Ödemeye git — kalkan + onay (güvenli tamamlama).
+     * Ödemeye git — kalkan + onay.
      *
      * @return string Safe HTML.
      */
     public static function get_form_button_icon_checkout_svg() {
         $svg = '<svg class="wdp-btn__icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">'
-            . '<path d="M12 3.25 18.25 6.4v5.35c0 3.72-2.55 6.72-6.25 8-3.7-1.28-6.25-4.28-6.25-8V6.4L12 3.25z" stroke="currentColor" stroke-width="1.65" stroke-linejoin="round"/>'
-            . '<path d="M8.6 12.15 10.65 14.2 15.55 9.3" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"/>'
+            . '<path d="M12 2.75 19.25 6.1v5.65c0 4.05-2.78 7.3-7.25 8.6-4.47-1.3-7.25-4.55-7.25-8.6V6.1L12 2.75z" stroke="currentColor" stroke-width="2.35" stroke-linejoin="round"/>'
+            . '<path d="M8.25 12.1 10.6 14.45 16.1 8.95" stroke="currentColor" stroke-width="2.35" stroke-linecap="round" stroke-linejoin="round"/>'
             . '</svg>';
 
         return wp_kses($svg, self::form_button_svg_kses());
     }
 
     /**
-     * Bağışa devam — hediye kutusu (bağış teması).
+     * Bağışa devam — artı (yeni bağış ekle).
      *
      * @return string Safe HTML.
      */
     public static function get_form_button_icon_continue_svg() {
         $svg = '<svg class="wdp-btn__icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">'
-            . '<rect x="4.25" y="10.25" width="15.5" height="9.5" rx="1.75" stroke="currentColor" stroke-width="1.65"/>'
-            . '<path d="M12 10.25V19.75M4.25 10.25h15.5" stroke="currentColor" stroke-width="1.65" stroke-linecap="round"/>'
-            . '<path d="M12 10.25c0-2.35-1.85-4.25-4.25-4.25S3.5 7.9 3.5 10.25s1.85 4.25 4.25 4.25M12 10.25c0-2.35 1.85-4.25 4.25-4.25s4.25 1.9 4.25 4.25-1.85 4.25-4.25 4.25" stroke="currentColor" stroke-width="1.65" stroke-linecap="round"/>'
-            . '<path d="M12 10.25V6.75" stroke="currentColor" stroke-width="1.65" stroke-linecap="round"/>'
+            . '<circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2.35"/>'
+            . '<path d="M12 8v8M8 12h8" stroke="currentColor" stroke-width="2.35" stroke-linecap="round"/>'
             . '</svg>';
 
         return wp_kses($svg, self::form_button_svg_kses());
@@ -309,6 +333,182 @@ class WDP_Templates {
 
         echo self::render_form_action_button('donation_add_to_cart', 'wdp-btn-secondary', $text_add_to_cart);
         echo self::render_form_action_button('donation_go_checkout', 'wdp-btn-primary', $text_go_checkout);
+    }
+
+    /**
+     * Özel fiyat satırı — tam genişlik, sol etiket, sayaç yok (adet = 1).
+     *
+     * @param string $min_price             Minimum price attribute.
+     * @param string $placeholder           Input placeholder.
+     * @param string $currency_symbol       Currency symbol.
+     * @return string Safe HTML.
+     */
+    public static function render_custom_price_amount_row($min_price, $placeholder, $currency_symbol, array $options = array()) {
+        $defaults = array(
+            'name'           => 'custom_price',
+            'label'          => __('Bağış Tutarı', 'woo-donation-popup'),
+            'required'       => true,
+            'row_class'      => 'wdp-custom-price-row',
+            'input_class'    => 'wdp-custom-price-input',
+            'include_qty'    => true,
+            'filter_label'   => 'wdp_custom_price_label',
+            'input_type'     => 'number',
+        );
+        $opts = array_merge($defaults, $options);
+        $input_type = ($opts['input_type'] === 'text') ? 'text' : 'number';
+
+        $label = apply_filters($opts['filter_label'], $opts['label']);
+        $label = is_string($label) ? trim($label) : (string) $opts['label'];
+        if ($label === '') {
+            $label = (string) $defaults['label'];
+        }
+        if ($label !== '' && substr($label, -1) !== ':') {
+            $label .= ':';
+        }
+        $label_id = 'wdp-price-label-' . wp_unique_id();
+        $row_class = trim((string) $opts['row_class']);
+        $input_class = trim((string) $opts['input_class']);
+        $required_attr = !empty($opts['required']) ? ' required' : '';
+        $min_attr = '';
+        if ($input_type === 'number') {
+            $min_attr = ' min="' . esc_attr($min_price) . '" step="1"';
+        } elseif ($min_price !== '' && $min_price !== null) {
+            $min_attr = ' data-wdp-min-price="' . esc_attr($min_price) . '"';
+        }
+
+        ob_start();
+        ?>
+        <div class="<?php echo esc_attr($row_class); ?>" role="group" aria-labelledby="<?php echo esc_attr($label_id); ?>">
+            <span class="wdp-custom-price-row__label" id="<?php echo esc_attr($label_id); ?>"><?php echo esc_html($label); ?></span>
+            <div class="wdp-price-field wdp-custom-price-field">
+                <div class="wdp-custom-price-shell">
+                    <span class="wdp-custom-price-currency" aria-hidden="true"><?php echo esc_html($currency_symbol); ?></span>
+                    <input type="<?php echo esc_attr($input_type); ?>" name="<?php echo esc_attr($opts['name']); ?>" placeholder="<?php echo esc_attr($placeholder); ?>"<?php echo $min_attr; ?><?php echo $required_attr; ?> class="<?php echo esc_attr($input_class); ?>" inputmode="decimal" autocomplete="off" aria-labelledby="<?php echo esc_attr($label_id); ?>">
+                </div>
+            </div>
+            <?php if (!empty($opts['include_qty'])) : ?>
+            <input type="hidden" name="quantity" value="1">
+            <?php endif; ?>
+        </div>
+        <?php
+        return trim(ob_get_clean());
+    }
+
+    /**
+     * Varsayılan sadaka açıklama metni (ürün özel metni boşken).
+     *
+     * @return string
+     */
+    public static function get_default_sadaka_donation_message() {
+        return (string) apply_filters(
+            'wdp_sadaka_inspirational_message',
+            __('İsterseniz bu vesileyle ayrıca bir sadaka bağışı da ekleyebilirsiniz. Her iyilik sessizce bir yere dokunur; sizin niyetiniz, ihtiyaç sahiplerine umut taşıyabilir.', 'woo-donation-popup')
+        );
+    }
+
+    /**
+     * Ürün sadaka metnini çözümler; boşsa varsayılan metin.
+     *
+     * @param string $message Per-product message from meta.
+     * @return string
+     */
+    public static function resolve_sadaka_donation_message($message) {
+        $message = is_string($message) ? trim($message) : '';
+        if ($message !== '') {
+            return $message;
+        }
+
+        return trim(self::get_default_sadaka_donation_message());
+    }
+
+    /**
+     * İsteğe bağlı alt bağış bloğu.
+     *
+     * @param array $context sadaka_min_price, sadaka_fixed_price, sadaka_wc_product_id, sadaka_price_placeholder, currency_symbol, sadaka_donation_message.
+     * @return string Safe HTML.
+     */
+    public static function render_sadaka_donation_block(array $context) {
+        $sadaka_min_price = isset($context['sadaka_min_price']) ? (string) $context['sadaka_min_price'] : '0';
+        $placeholder = isset($context['sadaka_price_placeholder']) ? (string) $context['sadaka_price_placeholder'] : '';
+        $currency_symbol = isset($context['currency_symbol']) ? (string) $context['currency_symbol'] : '';
+        $message = isset($context['sadaka_donation_message']) ? (string) $context['sadaka_donation_message'] : '';
+        $fixed_raw = isset($context['sadaka_fixed_price']) ? (string) $context['sadaka_fixed_price'] : '';
+        $fixed_float = ($fixed_raw !== '') ? (float) wc_format_decimal($fixed_raw) : 0.0;
+        $is_fixed = $fixed_float > 0;
+        $wc_product_id = isset($context['sadaka_wc_product_id']) ? absint($context['sadaka_wc_product_id']) : 0;
+
+        $note_text = self::resolve_sadaka_donation_message($message);
+        $toggle_label = isset($context['sadaka_toggle_label']) ? (string) $context['sadaka_toggle_label'] : '';
+        if ($toggle_label === '' && class_exists('WDP_Utils')) {
+            $toggle_label = WDP_Utils::get_sadaka_toggle_label();
+        }
+        if ($toggle_label === '') {
+            $toggle_label = __('Alt Bağış Ekle', 'woo-donation-popup');
+        }
+        $toggle_label = apply_filters('wdp_sadaka_toggle_label', $toggle_label);
+        $panel_id = 'wdp-sadaka-panel-' . wp_unique_id();
+
+        if ($is_fixed) {
+            $fixed_display = wc_format_decimal($fixed_float, wc_get_price_decimals());
+            $label = apply_filters('wdp_sadaka_price_label', __('Alt Bağış Tutarı', 'woo-donation-popup'));
+            $label = is_string($label) ? trim($label) : __('Alt Bağış Tutarı', 'woo-donation-popup');
+            if ($label !== '' && substr($label, -1) !== ':') {
+                $label .= ':';
+            }
+            $label_id = 'wdp-sadaka-fixed-label-' . wp_unique_id();
+            ob_start();
+            ?>
+            <div class="wdp-custom-price-row wdp-sadaka-donation__amount wdp-sadaka-donation__amount--fixed" role="group" aria-labelledby="<?php echo esc_attr($label_id); ?>">
+                <span class="wdp-custom-price-row__label" id="<?php echo esc_attr($label_id); ?>"><?php echo esc_html($label); ?></span>
+                <div class="wdp-price-field wdp-custom-price-field">
+                    <div class="wdp-custom-price-shell">
+                        <span class="wdp-custom-price-currency" aria-hidden="true"><?php echo esc_html($currency_symbol); ?></span>
+                        <input type="number" name="sadaka_custom_price" value="<?php echo esc_attr($fixed_display); ?>" readonly class="wdp-custom-price-input wdp-sadaka-custom-price-input" inputmode="decimal" autocomplete="off" aria-labelledby="<?php echo esc_attr($label_id); ?>">
+                    </div>
+                </div>
+            </div>
+            <?php
+            $amount_row = trim(ob_get_clean());
+        } else {
+            $amount_row = self::render_custom_price_amount_row(
+                $sadaka_min_price,
+                $placeholder,
+                $currency_symbol,
+                array(
+                    'name'         => 'sadaka_custom_price',
+                    'label'        => __('Alt Bağış Tutarı', 'woo-donation-popup'),
+                    'required'     => false,
+                    'row_class'    => 'wdp-custom-price-row wdp-sadaka-donation__amount',
+                    'input_class'  => 'wdp-custom-price-input wdp-sadaka-custom-price-input',
+                    'include_qty'  => false,
+                    'filter_label' => 'wdp_sadaka_price_label',
+                )
+            );
+        }
+
+        $wrap_attrs = ' data-wdp-sadaka-donation';
+        if ($is_fixed) {
+            $wrap_attrs .= ' data-wdp-alt-fixed-price="' . esc_attr(wc_format_decimal($fixed_float)) . '"';
+        }
+        if ($wc_product_id > 0) {
+            $wrap_attrs .= ' data-wdp-alt-wc-product-id="' . esc_attr((string) $wc_product_id) . '"';
+        }
+
+        ob_start();
+        ?>
+        <div class="wdp-sadaka-donation"<?php echo $wrap_attrs; ?>>
+            <button type="button" class="wdp-sadaka-donation__toggle" aria-expanded="false" aria-controls="<?php echo esc_attr($panel_id); ?>">
+                <?php echo esc_html($toggle_label); ?>
+            </button>
+            <div class="wdp-sadaka-donation__panel" id="<?php echo esc_attr($panel_id); ?>" hidden>
+                <?php if ($note_text !== '') : ?>
+                <p class="wdp-sadaka-donation__message"><?php echo esc_html($note_text); ?></p>
+                <?php endif; ?>
+                <?php echo $amount_row; ?>
+            </div>
+        </div>
+        <?php
+        return trim(ob_get_clean());
     }
 
     /**
@@ -406,6 +606,16 @@ class WDP_Templates {
         $total_donation = $context['total_donation'];
         $wdp_currency_symbol = $context['currency_symbol'];
         $wdp_custom_price_placeholder = $context['custom_price_placeholder'];
+        $enable_sadaka_donation = $context['enable_sadaka_donation'];
+        $sadaka_context = array(
+            'sadaka_min_price'         => $context['sadaka_min_price'],
+            'sadaka_fixed_price'       => isset($context['sadaka_fixed_price']) ? $context['sadaka_fixed_price'] : '',
+            'sadaka_wc_product_id'   => isset($context['sadaka_wc_product_id']) ? $context['sadaka_wc_product_id'] : '',
+            'sadaka_toggle_label'    => isset($context['sadaka_toggle_label']) ? $context['sadaka_toggle_label'] : '',
+            'sadaka_price_placeholder' => $context['sadaka_price_placeholder'],
+            'currency_symbol'        => $context['currency_symbol'],
+            'sadaka_donation_message' => $context['sadaka_donation_message'],
+        );
         $title_style_attr = class_exists('WDP_Category_Title_Color_Service')
             ? WDP_Category_Title_Color_Service::get_title_style_attr($product_id)
             : '';
@@ -416,7 +626,7 @@ class WDP_Templates {
         ob_start();
         ?>
         <!-- Modal -->
-        <div id="<?php echo esc_attr($modal_id); ?>" class="hdf-donation-modal-wrapper wdp-modal<?php echo esc_attr($modal_mode_class); ?><?php echo $custom_class !== '' ? ' ' . esc_attr($custom_class) : ''; ?>" role="dialog" aria-modal="true" aria-labelledby="<?php echo esc_attr($modal_id); ?>-title" aria-describedby="<?php echo esc_attr($modal_id); ?>-description" data-product-id="<?php echo esc_attr($product_id); ?>" data-wdp-unit-price="<?php echo esc_attr($product_price !== '' ? $product_price : ''); ?>"<?php echo $use_side_panel ? ' data-wdp-open-mode="side-panel"' : ''; ?> style="display:none;visibility:hidden;opacity:0;">
+        <div id="<?php echo esc_attr($modal_id); ?>" class="hdf-donation-modal-wrapper wdp-modal<?php echo esc_attr($modal_mode_class); ?><?php echo $custom_class !== '' ? ' ' . esc_attr($custom_class) : ''; ?>" role="dialog" aria-modal="true" aria-labelledby="<?php echo esc_attr($modal_id); ?>-title" aria-describedby="<?php echo esc_attr($modal_id); ?>-description" data-product-id="<?php echo esc_attr($product_id); ?>" data-wdp-unit-price="<?php echo esc_attr($product_price !== '' ? $product_price : ''); ?>" data-wdp-enable-sadaka="<?php echo ($enable_sadaka_donation && !$enable_progress_bar) ? '1' : '0'; ?>"<?php echo $use_side_panel ? ' data-wdp-open-mode="side-panel"' : ''; ?> style="display:none;visibility:hidden;opacity:0;">
             <div class="wdp-modal-content<?php echo $use_side_panel ? ' wdp-side-panel-content' : ''; ?>">
                 <button type="button" class="wdp-modal-close" aria-label="<?php echo esc_attr__('Modalı Kapat', 'woo-donation-popup'); ?>">&times;</button>
                 <div class="wdp-modal-header">
@@ -456,9 +666,9 @@ class WDP_Templates {
                         <div class="wdp-shares-header">
                             <label>Hisse Adedi:</label>
                             <div class="wdp-share-counter">
-                                <button type="button" class="wdp-share-btn wdp-share-btn-decrease"><span>-</span></button>
+                                <button type="button" class="wdp-share-btn wdp-share-btn-decrease" aria-label="<?php echo esc_attr__('Azalt', 'woo-donation-popup'); ?>"><?php echo self::get_counter_icon_minus_svg(); ?></button>
                                 <input type="number" name="share_count" value="1" min="1" max="<?php echo esc_attr($max_shares); ?>" readonly>
-                                <button type="button" class="wdp-share-btn wdp-share-btn-increase"><span>+</span></button>
+                                <button type="button" class="wdp-share-btn wdp-share-btn-increase" aria-label="<?php echo esc_attr__('Arttır', 'woo-donation-popup'); ?>"><?php echo self::get_counter_icon_plus_svg(); ?></button>
                             </div>
                         </div>
                         <div class="wdp-shareholders-area wdp-shareholders-area--with-rail">
@@ -482,32 +692,24 @@ class WDP_Templates {
                     <?php echo WDP_Templates::render_donor_contact_stack(); ?>
 
                     <?php if ($allow_custom_price) : ?>
-                    <div class="wdp-price-quantity-row wdp-custom-price-with-qty-row">
-                        <div class="wdp-price-field wdp-custom-price-field">
-                            <div class="wdp-custom-price-shell">
-                                <span class="wdp-custom-price-currency" aria-hidden="true"><?php echo esc_html($wdp_currency_symbol); ?></span>
-                                <input type="number" name="custom_price" placeholder="<?php echo esc_attr($wdp_custom_price_placeholder); ?>" min="<?php echo esc_attr($min_price); ?>" step="1" required class="wdp-custom-price-input" inputmode="decimal" autocomplete="off">
-                            </div>
-                        </div>
-                        <div class="wdp-quantity-counter">
-                            <button type="button" class="wdp-product-quantity-btn wdp-product-quantity-decrease" aria-label="<?php echo esc_attr__('Azalt', 'woo-donation-popup'); ?>">-</button>
-                            <input type="number" name="quantity" value="1" min="1" max="99" readonly>
-                            <button type="button" class="wdp-product-quantity-btn wdp-product-quantity-increase" aria-label="<?php echo esc_attr__('Arttır', 'woo-donation-popup'); ?>">+</button>
-                        </div>
-                    </div>
+                    <?php echo WDP_Templates::render_custom_price_amount_row($min_price, $wdp_custom_price_placeholder, $wdp_currency_symbol); ?>
                     <?php else : ?>
                     <div class="wdp-price-quantity-row wdp-fixed-price-counter-row">
                         <div class="wdp-line-total-display" role="status" aria-live="polite">
                             <span class="screen-reader-text"><?php esc_html_e('Satır tutarı', 'woo-donation-popup'); ?></span>
-                            <span class="wdp-line-total-value"><?php echo $formatted_price ? wp_kses_post($formatted_price) : '—'; ?></span>
+                            <span class="wdp-line-total-value"><?php echo $product_price !== '' ? esc_html(WDP_Utils::format_price_plain($product_price)) : '—'; ?></span>
                         </div>
                         <div class="wdp-quantity-counter">
-                            <button type="button" class="wdp-product-quantity-btn wdp-product-quantity-decrease" aria-label="<?php echo esc_attr__('Azalt', 'woo-donation-popup'); ?>">-</button>
+                            <button type="button" class="wdp-product-quantity-btn wdp-product-quantity-decrease" aria-label="<?php echo esc_attr__('Azalt', 'woo-donation-popup'); ?>"><?php echo self::get_counter_icon_minus_svg(); ?></button>
                             <input type="number" name="quantity" value="1" min="1" max="99" readonly>
-                            <button type="button" class="wdp-product-quantity-btn wdp-product-quantity-increase" aria-label="<?php echo esc_attr__('Arttır', 'woo-donation-popup'); ?>">+</button>
+                            <button type="button" class="wdp-product-quantity-btn wdp-product-quantity-increase" aria-label="<?php echo esc_attr__('Arttır', 'woo-donation-popup'); ?>"><?php echo self::get_counter_icon_plus_svg(); ?></button>
                         </div>
                     </div>
                     <?php endif; ?>
+                    <?php endif; ?>
+
+                    <?php if ($enable_sadaka_donation && !$enable_progress_bar) : ?>
+                    <?php echo self::render_sadaka_donation_block($sadaka_context); ?>
                     <?php endif; ?>
 
                     <?php if ($use_side_panel) : ?>
@@ -611,6 +813,16 @@ class WDP_Templates {
         $total_donation = $context['total_donation'];
         $wdp_currency_symbol = $context['currency_symbol'];
         $wdp_custom_price_placeholder = $context['custom_price_placeholder'];
+        $enable_sadaka_donation = $context['enable_sadaka_donation'];
+        $sadaka_context = array(
+            'sadaka_min_price'         => $context['sadaka_min_price'],
+            'sadaka_fixed_price'       => isset($context['sadaka_fixed_price']) ? $context['sadaka_fixed_price'] : '',
+            'sadaka_wc_product_id'   => isset($context['sadaka_wc_product_id']) ? $context['sadaka_wc_product_id'] : '',
+            'sadaka_toggle_label'    => isset($context['sadaka_toggle_label']) ? $context['sadaka_toggle_label'] : '',
+            'sadaka_price_placeholder' => $context['sadaka_price_placeholder'],
+            'currency_symbol'        => $context['currency_symbol'],
+            'sadaka_donation_message' => $context['sadaka_donation_message'],
+        );
         $title_style_attr = class_exists('WDP_Category_Title_Color_Service')
             ? WDP_Category_Title_Color_Service::get_title_style_attr($product_id)
             : '';
@@ -618,7 +830,7 @@ class WDP_Templates {
         // Form HTML'ini oluştur - popup ile aynı yapıyı kullan
         ob_start();
         ?>
-        <div id="<?php echo esc_attr($form_id); ?>" class="hdf-donation-modal-wrapper wdp-donation-form <?php echo esc_attr($custom_class); ?>" data-product-id="<?php echo esc_attr($product_id); ?>" data-wdp-unit-price="<?php echo esc_attr($product_price !== '' ? $product_price : ''); ?>">
+        <div id="<?php echo esc_attr($form_id); ?>" class="hdf-donation-modal-wrapper wdp-donation-form <?php echo esc_attr($custom_class); ?>" data-product-id="<?php echo esc_attr($product_id); ?>" data-wdp-unit-price="<?php echo esc_attr($product_price !== '' ? $product_price : ''); ?>" data-wdp-enable-sadaka="<?php echo ($enable_sadaka_donation && !$enable_progress_bar) ? '1' : '0'; ?>">
             <div class="wdp-modal-content">
                 <?php if ($show_title): ?>
                 <div class="wdp-form-title-wrapper">
@@ -642,9 +854,9 @@ class WDP_Templates {
                         <div class="wdp-shares-header">
                             <label>Hisse Adedi:</label>
                             <div class="wdp-share-counter">
-                                <button type="button" class="wdp-share-btn wdp-share-btn-decrease"><span>-</span></button>
+                                <button type="button" class="wdp-share-btn wdp-share-btn-decrease" aria-label="<?php echo esc_attr__('Azalt', 'woo-donation-popup'); ?>"><?php echo self::get_counter_icon_minus_svg(); ?></button>
                                 <input type="number" name="share_count" value="1" min="1" max="<?php echo esc_attr($max_shares); ?>" readonly>
-                                <button type="button" class="wdp-share-btn wdp-share-btn-increase"><span>+</span></button>
+                                <button type="button" class="wdp-share-btn wdp-share-btn-increase" aria-label="<?php echo esc_attr__('Arttır', 'woo-donation-popup'); ?>"><?php echo self::get_counter_icon_plus_svg(); ?></button>
                             </div>
                         </div>
                         <div class="wdp-shareholders-area wdp-shareholders-area--with-rail">
@@ -668,32 +880,24 @@ class WDP_Templates {
                     <?php echo WDP_Templates::render_donor_contact_stack(); ?>
 
                     <?php if ($allow_custom_price) : ?>
-                    <div class="wdp-price-quantity-row wdp-custom-price-with-qty-row">
-                        <div class="wdp-price-field wdp-custom-price-field">
-                            <div class="wdp-custom-price-shell">
-                                <span class="wdp-custom-price-currency" aria-hidden="true"><?php echo esc_html($wdp_currency_symbol); ?></span>
-                                <input type="number" name="custom_price" placeholder="<?php echo esc_attr($wdp_custom_price_placeholder); ?>" min="<?php echo esc_attr($min_price); ?>" step="1" required class="wdp-custom-price-input" inputmode="decimal" autocomplete="off">
-                            </div>
-                        </div>
-                        <div class="wdp-quantity-counter">
-                            <button type="button" class="wdp-product-quantity-btn wdp-product-quantity-decrease" aria-label="<?php echo esc_attr__('Azalt', 'woo-donation-popup'); ?>">-</button>
-                            <input type="number" name="quantity" value="1" min="1" max="99" readonly>
-                            <button type="button" class="wdp-product-quantity-btn wdp-product-quantity-increase" aria-label="<?php echo esc_attr__('Arttır', 'woo-donation-popup'); ?>">+</button>
-                        </div>
-                    </div>
+                    <?php echo WDP_Templates::render_custom_price_amount_row($min_price, $wdp_custom_price_placeholder, $wdp_currency_symbol); ?>
                     <?php else : ?>
                     <div class="wdp-price-quantity-row wdp-fixed-price-counter-row">
                         <div class="wdp-line-total-display" role="status" aria-live="polite">
                             <span class="screen-reader-text"><?php esc_html_e('Satır tutarı', 'woo-donation-popup'); ?></span>
-                            <span class="wdp-line-total-value"><?php echo $formatted_price ? wp_kses_post($formatted_price) : '—'; ?></span>
+                            <span class="wdp-line-total-value"><?php echo $product_price !== '' ? esc_html(WDP_Utils::format_price_plain($product_price)) : '—'; ?></span>
                         </div>
                         <div class="wdp-quantity-counter">
-                            <button type="button" class="wdp-product-quantity-btn wdp-product-quantity-decrease" aria-label="<?php echo esc_attr__('Azalt', 'woo-donation-popup'); ?>">-</button>
+                            <button type="button" class="wdp-product-quantity-btn wdp-product-quantity-decrease" aria-label="<?php echo esc_attr__('Azalt', 'woo-donation-popup'); ?>"><?php echo self::get_counter_icon_minus_svg(); ?></button>
                             <input type="number" name="quantity" value="1" min="1" max="99" readonly>
-                            <button type="button" class="wdp-product-quantity-btn wdp-product-quantity-increase" aria-label="<?php echo esc_attr__('Arttır', 'woo-donation-popup'); ?>">+</button>
+                            <button type="button" class="wdp-product-quantity-btn wdp-product-quantity-increase" aria-label="<?php echo esc_attr__('Arttır', 'woo-donation-popup'); ?>"><?php echo self::get_counter_icon_plus_svg(); ?></button>
                         </div>
                     </div>
                     <?php endif; ?>
+                    <?php endif; ?>
+
+                    <?php if ($enable_sadaka_donation && !$enable_progress_bar) : ?>
+                    <?php echo self::render_sadaka_donation_block($sadaka_context); ?>
                     <?php endif; ?>
 
                     <!-- Butonlar -->

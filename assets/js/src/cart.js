@@ -316,7 +316,7 @@
     row.setAttribute('aria-live', 'polite');
     const label = document.createElement('span');
     label.className = 'wdp-side-panel-subtotal__label';
-    label.textContent = 'Ara toplam:';
+    label.textContent = 'Toplam:';
     const value = document.createElement('span');
     value.className = 'wdp-side-panel-subtotal__value';
     value.textContent = formatSidePanelSubtotalAmount(cartItems);
@@ -356,13 +356,14 @@
           ? decodeHtmlEntities(item.price_plain)
           : (formatPrice(totalPrice) + ' ' + getCurrencySymbolDecoded());
 
+        const isSadakaLine = !!(item.is_sadaka_donation || item.line_kind === 'sadaka');
         const table = document.createElement('table');
-        table.className = 'wdp-cart-item-table';
+        table.className = isSadakaLine ? 'wdp-cart-item-table wdp-cart-item-table--sadaka' : 'wdp-cart-item-table';
         const row = document.createElement('tr');
         const infoCell = document.createElement('td');
         infoCell.className = 'wdp-cart-item-info';
         const nameDiv = document.createElement('div');
-        nameDiv.className = 'wdp-cart-item-name';
+        nameDiv.className = isSadakaLine ? 'wdp-cart-item-name wdp-cart-item-name--sadaka' : 'wdp-cart-item-name';
         nameDiv.textContent = item.product_name || item.name || 'Ürün';
         infoCell.appendChild(nameDiv);
 
@@ -384,7 +385,7 @@
         qtyDiv.className = 'wdp-cart-item-quantity';
         qtyDiv.textContent = `${itemQuantity} adet`;
         const priceDiv = document.createElement('div');
-        priceDiv.className = 'wdp-cart-item-price';
+        priceDiv.className = isSadakaLine ? 'wdp-cart-item-price wdp-cart-item-price--sadaka' : 'wdp-cart-item-price';
         priceDiv.textContent = priceDisplay;
         detailsCell.appendChild(qtyDiv);
         detailsCell.appendChild(priceDiv);
@@ -396,10 +397,13 @@
         removeBtn.className = 'wdp-remove-cart-item';
         removeBtn.setAttribute('aria-label', 'Sepetten Kaldır');
         removeBtn.setAttribute('data-cart-item-key', String(item.key || ''));
-        const removeSpan = document.createElement('span');
-        removeSpan.setAttribute('aria-hidden', 'true');
-        removeSpan.textContent = '×';
-        removeBtn.appendChild(removeSpan);
+        const removeIconHost = document.createElement('span');
+        removeIconHost.className = 'wdp-remove-cart-item__icon';
+        removeIconHost.setAttribute('aria-hidden', 'true');
+        removeIconHost.innerHTML = '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" focusable="false">'
+          + '<path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2.75" stroke-linecap="round"/>'
+          + '</svg>';
+        removeBtn.appendChild(removeIconHost);
         removeCell.appendChild(removeBtn);
 
         row.appendChild(infoCell);

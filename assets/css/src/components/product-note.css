@@ -1,5 +1,5 @@
 /**
- * Ürün bilgi notu — sabit, profesyonel bilgilendirme metni (admin renk ayarı yok).
+ * Ürün bilgi notu — başlık altı düz metin (kutu / gri zemin yok)
  */
 
 html body .hdf-donation-modal-wrapper:is(.wdp-modal, .wdp-donation-form) .wdp-product-note {
@@ -21,23 +21,25 @@ html body .hdf-donation-modal-wrapper:is(.wdp-modal, .wdp-donation-form) .wdp-pr
   min-width: 0;
   margin: 0;
   padding: 0;
+  background: transparent;
 }
 
-html body .hdf-donation-modal-wrapper:is(.wdp-modal, .wdp-donation-form) .wdp-product-note__text {
+html body .hdf-donation-modal-wrapper:is(.wdp-modal, .wdp-donation-form) :is(.wdp-product-note__text, .wdp-sadaka-donation__message) {
   display: block;
+  width: 100%;
+  max-width: none;
   margin: 0;
-  padding: 13px 15px 13px 17px;
+  padding: 12px 16px;
   font-family: inherit;
   font-size: clamp(0.875rem, 0.84rem + 0.2vw, 0.9375rem);
-  font-weight: 500;
+  font-weight: var(--wdp-info-text-font-weight, 600);
   line-height: 1.55;
   letter-spacing: 0.01em;
-  color: #475569;
+  color: var(--wdp-info-text-color, #ffffff);
   text-wrap: pretty;
-  background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
-  border: 1px solid #e2e8f0;
-  border-left: 3px solid #94a3b8;
-  border-radius: 12px;
+  background: var(--wdp-info-text-bg, var(--wdp-button-primary, #1e73be));
+  border: none;
+  border-radius: var(--wdp-info-text-radius, 20px);
   box-sizing: border-box;
 }
 
@@ -85,7 +87,6 @@ html body .hdf-donation-modal-wrapper:is(.wdp-modal, .wdp-donation-form) .wdp-pr
   display: inline;
 }
 
-/* Eski stil sınıfları / ikon kalıntıları */
 html body .hdf-donation-modal-wrapper:is(.wdp-modal, .wdp-donation-form) .wdp-product-note__title,
 html body .wdp-modal.wdp-side-panel .wdp-product-note__icon-wrap,
 html body .wdp-modal.wdp-side-panel .wdp-product-note > svg {

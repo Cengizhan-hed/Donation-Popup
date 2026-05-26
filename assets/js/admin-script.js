@@ -146,6 +146,12 @@
       progress_bar_limit: $row.find('input[name="progress_bar_limit"]').val(),
       enable_product_note: $row.find('input[name="enable_product_note"]').is(":checked"),
       product_note_text: $row.find('textarea[name="product_note_text"]').val(),
+      enable_sadaka_donation: $row.find('input[name="enable_sadaka_donation"]').is(":checked"),
+      sadaka_toggle_label: $row.find('input[name="sadaka_toggle_label"]').val(),
+      sadaka_min_price: $row.find('input[name="sadaka_min_price"]').val(),
+      sadaka_fixed_price: $row.find('input[name="sadaka_fixed_price"]').val(),
+      sadaka_wc_product_id: $row.find('input[name="sadaka_wc_product_id"]').val(),
+      sadaka_donation_message: $row.find('textarea[name="sadaka_donation_message"]').val(),
     }
   }
 

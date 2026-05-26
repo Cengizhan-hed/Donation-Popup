@@ -255,6 +255,8 @@ html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-main {
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
   background: var(--wdp-modal-bg, #ffffff);
+  padding-bottom: 3px;
+  box-sizing: border-box;
 }
 
 html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-main > .wdp-field-stack {
@@ -262,9 +264,18 @@ html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-main > .wdp-field-stack
   margin: 0;
 }
 
-html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-main > .wdp-price-quantity-row {
+html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-main > .wdp-price-quantity-row,
+html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-main > .wdp-custom-price-row,
+html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-main > .wdp-sadaka-donation {
   flex-shrink: 0;
   margin: 0;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-main > .wdp-custom-price-row .wdp-custom-price-shell {
+  max-width: 100%;
 }
 
 html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-main--shares {
@@ -352,6 +363,7 @@ html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-footer-zone {
   width: 100%;
   margin: 0;
   padding: 14px 0 0;
+  padding-bottom: max(0px, env(safe-area-inset-bottom, 0px));
   background: transparent !important;
   border-top: 1px solid var(--wdp-side-panel-footer-border);
   box-shadow: none;
@@ -495,7 +507,10 @@ html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-footer-zone button:focu
 
 html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-form-footer button .wdp-btn__icon,
 html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-footer-zone button .wdp-btn__icon,
-html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-cart-footer .wdp-success-button .wdp-btn__icon {
+html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-cart-footer .wdp-success-button .wdp-btn__icon,
+html body .wdp-modal.wdp-side-panel.show :is(.wdp-side-panel-form-footer, .wdp-side-panel-footer-zone, .wdp-side-panel-cart-footer) .wdp-btn__icon-host .wdp-btn__icon {
+  width: 22px;
+  height: 22px;
   color: #ffffff;
 }
 
@@ -520,7 +535,7 @@ html body .wdp-modal.wdp-side-panel.show .wdp-quantity-counter {
 /* Başarı / mini sepet */
 html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-form:has(.wdp-success-screen),
 html body .wdp-modal.wdp-side-panel.show form:has(.wdp-success-screen) {
-  overflow: hidden;
+  overflow: visible;
 }
 
 html body .wdp-modal.wdp-side-panel.show .wdp-success-screen {
@@ -529,7 +544,7 @@ html body .wdp-modal.wdp-side-panel.show .wdp-success-screen {
   flex: 1 1 0;
   min-height: 0;
   width: 100%;
-  overflow: hidden;
+  overflow: visible;
   gap: 10px;
 }
 
@@ -542,7 +557,7 @@ html body .wdp-modal.wdp-side-panel.show .wdp-success-screen .wdp-success-cart-s
   min-height: 0;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow: visible;
 }
 
 html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-cart-layout {
@@ -550,7 +565,8 @@ html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-cart-layout {
   min-height: 0;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  gap: 0;
+  overflow: visible;
   width: 100%;
 }
 
@@ -561,14 +577,24 @@ html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-cart-layout > .wdp-mini
   flex-direction: column;
   overflow: hidden;
   margin: 0;
-  padding: 0;
-  border: none;
-  background: transparent;
+  padding: 12px 10px;
+  border: 1px solid var(--wdp-mini-cart-border, var(--wdp-border-very-light, #e8eaed));
+  border-radius: var(--wdp-mini-cart-radius, var(--wdp-input-radius, 20px));
+  background: var(--wdp-mini-cart-bg, var(--wdp-color-card, #ffffff));
+  box-sizing: border-box;
 }
 
 html body .wdp-modal.wdp-side-panel.show .wdp-mini-cart-header {
   flex-shrink: 0;
   margin-bottom: 8px;
+  padding-inline-start: 2px;
+  overflow: visible;
+}
+
+html body .wdp-modal.wdp-side-panel.show .wdp-mini-cart-header h4 {
+  border: none;
+  padding: 0;
+  color: var(--wdp-input-color, #1f2937);
 }
 
 html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-cart-layout .wdp-mini-cart-items {
@@ -587,37 +613,54 @@ html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-cart-footer {
   flex-direction: column;
   gap: 0;
   padding: 14px 0 0;
+  margin-top: 0;
   background: transparent !important;
-  border-top: 1px solid var(--wdp-side-panel-footer-border);
+  border-top: none;
   box-shadow: none;
 }
 
 html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-subtotal {
   flex-shrink: 0;
   display: flex;
+  align-items: baseline;
   justify-content: flex-end;
-  gap: 6px;
-  padding: 0 0 12px;
+  gap: 10px;
+  padding: 0 0 14px;
   border-top: none;
-  font-size: 15px;
-  font-weight: 600;
+}
+
+html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-subtotal__label {
+  font-size: clamp(17px, 1.05rem + 0.2vw, 20px);
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: -0.02em;
 }
 
 html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-subtotal__value {
-  color: var(--wdp-success, #10b981);
+  font-size: clamp(20px, 1.25rem + 0.35vw, 26px);
+  font-weight: 800;
+  color: var(--wdp-sp-btn-green, #48bb78);
+  letter-spacing: -0.03em;
+  line-height: 1.15;
 }
 
 html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-cart-footer > .wdp-success-buttons {
   display: flex;
   flex-direction: column;
-  gap: clamp(10px, 1.2vh, 12px);
+  gap: 10px;
   padding: 0 0 14px;
   border-top: none;
+}
+
+html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-cart-footer .wdp-success-buttons .wdp-new-donation {
+  margin-top: 0 !important;
 }
 
 html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-cart-footer .wdp-success-button {
   width: 100%;
   min-height: 48px;
+  height: 48px;
+  max-height: 48px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -626,6 +669,8 @@ html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-cart-footer .wdp-succes
   font-family: var(--wdp-button-font-family, inherit);
   font-weight: var(--wdp-form-button-font-weight, var(--wdp-button-font-weight, 800));
   font-size: var(--wdp-form-button-font-size, 17px);
+  line-height: 1.3;
+  padding: 0 16px;
   text-decoration: none;
   box-sizing: border-box;
   border: none;
@@ -639,7 +684,6 @@ html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-cart-footer .wdp-succes
   background: var(--wdp-sp-btn-green, #48bb78) !important;
   background-color: var(--wdp-sp-btn-green, #48bb78) !important;
   color: #ffffff !important;
-  padding: 14px 16px;
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -675,7 +719,6 @@ html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-cart-footer .wdp-succes
   background: var(--wdp-sp-btn-blue, #1e73be) !important;
   background-color: var(--wdp-sp-btn-blue, #1e73be) !important;
   color: #ffffff !important;
-  padding: 12px 16px;
 }
 
 /* Bağış eklemeye devam — turuncu çerçeveli */
@@ -685,10 +728,58 @@ html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-cart-footer .wdp-succes
   color: var(--wdp-sp-btn-ghost-text, #c2410c) !important;
   border: 1px solid var(--wdp-sp-btn-ghost-border, #fdba74) !important;
   border-radius: var(--wdp-sp-btn-radius, 20px) !important;
-  padding: 11px 16px;
   font-family: var(--wdp-button-font-family, inherit);
-  font-weight: var(--wdp-button-font-weight, 800);
-  font-size: 14px;
+  font-weight: var(--wdp-form-button-font-weight, var(--wdp-button-font-weight, 800));
+  font-size: var(--wdp-form-button-font-size, 17px);
+  box-sizing: border-box;
+}
+
+/* Mobil: form + mini sepet butonları aynı yükseklik; sadaka paneli footer çizgisinden ayrı */
+@media (max-width: 768px) {
+  html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-form-footer button,
+  html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-footer-zone .wdp-side-panel-form-footer button,
+  html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-form > .wdp-button-group button {
+    min-height: 48px;
+    height: 48px;
+    max-height: 48px;
+    padding-block: 0;
+    padding-inline: 16px;
+    box-sizing: border-box;
+  }
+
+  html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-cart-footer .wdp-success-button {
+    min-height: 48px;
+    height: 48px;
+    max-height: 48px;
+    padding: 0 16px;
+    font-size: clamp(15px, 3.8vw, 17px);
+  }
+
+  html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-cart-footer > .wdp-success-buttons {
+    gap: 10px;
+  }
+
+  html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-main > .wdp-sadaka-donation.is-open {
+    margin-bottom: 10px;
+  }
+
+  html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-cart-layout > .wdp-mini-cart {
+    padding-inline: 10px;
+  }
+}
+
+@media (max-width: 600px) {
+  html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-cart-footer .wdp-success-button {
+    min-height: 48px;
+    height: 48px;
+    max-height: 48px;
+    padding: 0 16px;
+    font-size: clamp(15px, 3.8vw, 17px);
+  }
+
+  html body .wdp-modal.wdp-side-panel.show .wdp-side-panel-cart-footer > .wdp-success-buttons {
+    gap: 10px;
+  }
 }
 
 /* Mobil: tam yükseklik, ortalama yok, sol radius 20px */

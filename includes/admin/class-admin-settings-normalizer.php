@@ -239,7 +239,15 @@ class WDP_Admin_Settings_Normalizer {
 			'mini_cart_radius'         => isset($request['mini_cart_radius']) ? absint($request['mini_cart_radius']) : 20,
 			'cart_item_name_color'     => isset($request['cart_item_name_color']) ? sanitize_hex_color($request['cart_item_name_color']) : '#1f2937',
 			'cart_item_price_color'    => isset($request['cart_item_price_color']) ? sanitize_hex_color($request['cart_item_price_color']) : '#1e73be',
+			'sadaka_wc_product_id'     => isset($request['sadaka_wc_product_id']) ? absint($request['sadaka_wc_product_id']) : 10721,
+			'sadaka_toggle_label'      => isset($request['sadaka_toggle_label']) ? sanitize_text_field($request['sadaka_toggle_label']) : __('Alt Bağış Ekle', 'woo-donation-popup'),
 		);
+		if ($settings['sadaka_wc_product_id'] <= 0) {
+			$settings['sadaka_wc_product_id'] = 10721;
+		}
+		if ($settings['sadaka_toggle_label'] === '') {
+			$settings['sadaka_toggle_label'] = __('Alt Bağış Ekle', 'woo-donation-popup');
+		}
 		$settings['success_button_radius'] = self::clamp_max($settings['success_button_radius'], 50);
 		$settings['success_message_radius'] = self::clamp_max($settings['success_message_radius'], 50);
 		$settings['mini_cart_radius'] = self::clamp_max($settings['mini_cart_radius'], 50);

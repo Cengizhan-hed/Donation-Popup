@@ -311,10 +311,11 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-button-group button .wdp-btn_
 
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-button-group button .wdp-btn__icon {
   display: block;
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   flex-shrink: 0;
   color: #ffffff;
+  stroke-width: 2.35;
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-button-group .wdp-btn-secondary .wdp-btn__icon {

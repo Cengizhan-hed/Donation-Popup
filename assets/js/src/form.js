@@ -213,6 +213,194 @@
     return allOk;
   }
 
+  function getSadakaInvalidMessage() {
+    const s = wdp_ajax && wdp_ajax.strings;
+    if (s && typeof s.sadaka_invalid === 'string' && s.sadaka_invalid.trim()) {
+      return s.sadaka_invalid.trim();
+    }
+    return 'Geçerli bir alt bağış tutarı giriniz.';
+  }
+
+  function getSadakaMinErrorMessage(minValue) {
+    const s = wdp_ajax && wdp_ajax.strings;
+    const prefix =
+      s && typeof s.sadaka_min_error === 'string' && s.sadaka_min_error.trim()
+        ? s.sadaka_min_error.trim()
+        : 'Alt bağış için minimum tutar: ';
+    return prefix + formatCurrency(minValue);
+  }
+
+  function getSadakaFixedAmount(wrap) {
+    if (!wrap) {
+      return NaN;
+    }
+    const raw = wrap.getAttribute('data-wdp-alt-fixed-price');
+    if (raw === null || raw === '') {
+      return NaN;
+    }
+    const value = parseNormalizedAmount(String(raw).trim());
+    return Number.isFinite(value) && value > 0 ? value : NaN;
+  }
+
+  function validateSadakaDonation(form) {
+    const wrap = form ? form.querySelector('[data-wdp-sadaka-donation]') : null;
+    if (!wrap || !wrap.classList.contains('is-open')) {
+      return true;
+    }
+    if (Number.isFinite(getSadakaFixedAmount(wrap))) {
+      return true;
+    }
+    const input = wrap.querySelector('input[name="sadaka_custom_price"]');
+    if (!input) {
+      return true;
+    }
+    const raw = String(input.value || '').trim();
+    if (raw === '') {
+      if (input.readOnly) {
+        return true;
+      }
+      showInputError(input, getSadakaInvalidMessage());
+      return false;
+    }
+    const numericValue = parseNormalizedAmount(raw);
+    const minAttr = input.getAttribute('min');
+    const minValue = minAttr !== null && minAttr !== '' ? parseNormalizedAmount(minAttr) : 0;
+    if (!Number.isFinite(numericValue) || numericValue <= 0) {
+      showInputError(input, getSadakaInvalidMessage());
+      return false;
+    }
+    if (Number.isFinite(minValue) && minValue > 0 && numericValue + 0.0001 < minValue) {
+      showInputError(input, getSadakaMinErrorMessage(minValue));
+      return false;
+    }
+    return true;
+  }
+
+  function patchSadakaFormData(form, formData) {
+    if (!form || !formData) {
+      return;
+    }
+    const wrap = form.querySelector('[data-wdp-sadaka-donation]');
+    const hasMainCustomPrice = !!form.querySelector('input[name="custom_price"]');
+    if (wrap && wrap.classList.contains('is-open')) {
+      const fixedAmount = getSadakaFixedAmount(wrap);
+      const sadakaInput = wrap.querySelector('input[name="sadaka_custom_price"]');
+      const sadakaRaw = sadakaInput ? String(sadakaInput.value || '').trim() : '';
+      if (Number.isFinite(fixedAmount) && fixedAmount > 0) {
+        formData.set('sadaka_donation_active', '1');
+        formData.set('sadaka_custom_price', String(fixedAmount));
+      } else if (sadakaRaw !== '') {
+        formData.set('sadaka_donation_active', '1');
+        formData.set('sadaka_custom_price', sadakaRaw);
+      } else {
+        formData.delete('sadaka_custom_price');
+        formData.delete('sadaka_donation_active');
+      }
+    } else {
+      formData.delete('sadaka_custom_price');
+      formData.delete('sadaka_donation_active');
+    }
+    // Sabit fiyatlı ürünlerde sadaka alanı ana custom_price POST anahtarına karışmasın.
+    if (!hasMainCustomPrice) {
+      formData.delete('custom_price');
+    }
+  }
+
+  let sadakaDonationDelegationBound = false;
+
+  function clearSadakaInputErrors(input) {
+    if (!input) {
+      return;
+    }
+    input.classList.remove('wdp-error');
+    const anchor = getInputErrorAnchor(input) || input.parentNode;
+    const err = anchor && anchor.querySelector('.wdp-input-error');
+    if (err) {
+      err.remove();
+    }
+  }
+
+  function toggleSadakaDonationPanel(wrap) {
+    if (!wrap) {
+      return;
+    }
+    const toggle = wrap.querySelector('.wdp-sadaka-donation__toggle');
+    const panel = wrap.querySelector('.wdp-sadaka-donation__panel');
+    const input = wrap.querySelector('input[name="sadaka_custom_price"]');
+    if (!toggle || !panel) {
+      return;
+    }
+
+    const open = wrap.classList.toggle('is-open');
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if (open) {
+      panel.removeAttribute('hidden');
+    } else {
+      panel.setAttribute('hidden', '');
+      if (input) {
+        input.value = '';
+        clearSadakaInputErrors(input);
+      }
+    }
+  }
+
+  function ensureSadakaDonationDelegation() {
+    if (sadakaDonationDelegationBound) {
+      return;
+    }
+    sadakaDonationDelegationBound = true;
+
+    document.addEventListener('click', function (e) {
+      const toggle = e.target.closest('.wdp-sadaka-donation__toggle');
+      if (!toggle) {
+        return;
+      }
+      const wrap = toggle.closest('[data-wdp-sadaka-donation]');
+      const form = toggle.closest('form');
+      if (!wrap || !form) {
+        return;
+      }
+      if (!form.closest('.wdp-modal') && !form.closest('.wdp-donation-form')) {
+        return;
+      }
+
+      e.preventDefault();
+      if (typeof e.stopPropagation === 'function') {
+        e.stopPropagation();
+      }
+      toggleSadakaDonationPanel(wrap);
+    });
+
+    document.addEventListener('input', function (e) {
+      const input = e.target;
+      if (!input || !input.matches || !input.matches('input[name="sadaka_custom_price"]')) {
+        return;
+      }
+      if (input.classList.contains('wdp-error')) {
+        clearSadakaInputErrors(input);
+      }
+    });
+  }
+
+  function bindSadakaDonation(form) {
+    ensureSadakaDonationDelegation();
+    if (!form) {
+      return;
+    }
+    const wrap = form.querySelector('[data-wdp-sadaka-donation]');
+    if (!wrap) {
+      return;
+    }
+    const panel = wrap.querySelector('.wdp-sadaka-donation__panel');
+    const toggle = wrap.querySelector('.wdp-sadaka-donation__toggle');
+    if (panel && !wrap.classList.contains('is-open')) {
+      panel.setAttribute('hidden', '');
+    }
+    if (toggle) {
+      toggle.setAttribute('aria-expanded', wrap.classList.contains('is-open') ? 'true' : 'false');
+    }
+  }
+
   let wdpFieldErrorIdSeq = 0;
   function nextFieldErrorId() {
     wdpFieldErrorIdSeq += 1;
@@ -355,8 +543,18 @@
     return Number.isInteger(r) ? r.toFixed(0) : r.toFixed(2);
   }
 
-  function getCustomPriceQtyRow(form) {
-    return form ? form.querySelector(".wdp-custom-price-with-qty-row") : null;
+  function getCustomPriceRow(form) {
+    if (!form) {
+      return null;
+    }
+    return (
+      form.querySelector(".wdp-custom-price-row") ||
+      form.querySelector(".wdp-custom-price-with-qty-row")
+    );
+  }
+
+  function customPriceRowHasQtyCounter(row) {
+    return !!(row && row.querySelector('.wdp-quantity-counter input[name="quantity"]'));
   }
 
   function ensureCustomUnitFromDisplayed(customIn, qty) {
@@ -373,8 +571,8 @@
   }
 
   function syncCustomPriceQtyRowDisplay(form) {
-    const row = getCustomPriceQtyRow(form);
-    if (!row) return;
+    const row = getCustomPriceRow(form);
+    if (!row || !customPriceRowHasQtyCounter(row)) return;
     const customIn = row.querySelector('input[name="custom_price"]');
     const qtyEl = row.querySelector('input[name="quantity"]');
     if (!customIn || !qtyEl) return;
@@ -415,8 +613,8 @@
       e.stopPropagation();
       const currentValue = Number.parseInt(quantityInput.value, 10) || 1;
       const isDecrease = btn.classList.contains('wdp-product-quantity-decrease');
-      const customRow = form.querySelector('.wdp-custom-price-with-qty-row');
-      if (customRow && customRow.contains(quantityInput)) {
+      const customRow = getCustomPriceRow(form);
+      if (customRow && customPriceRowHasQtyCounter(customRow) && customRow.contains(quantityInput)) {
         const customIn = customRow.querySelector('input[name="custom_price"]');
         if (customIn) {
           ensureCustomUnitFromDisplayed(customIn, currentValue);
@@ -439,11 +637,16 @@
   function patchSimpleCustomPriceQtyRowFormData(form, formData) {
     if (!form || !formData) return;
     if (form.querySelector('input[name="share_count"]')) return;
-    const row = getCustomPriceQtyRow(form);
+    const row = getCustomPriceRow(form);
     if (!row) return;
     const priceInput = row.querySelector('input[name="custom_price"]');
+    if (!priceInput) return;
+    if (!customPriceRowHasQtyCounter(row)) {
+      formData.set('quantity', '1');
+      return;
+    }
     const qEl = row.querySelector('input[name="quantity"]');
-    if (!priceInput || !qEl) return;
+    if (!qEl) return;
     const q = Number.parseInt(qEl.value, 10) || 1;
     let unit = Number.parseFloat(priceInput.dataset.wdpCustomUnit);
     if (!Number.isFinite(unit) || unit <= 0) {
@@ -876,10 +1079,10 @@
       const baseMinData = customPriceInput.dataset.baseMin;
       const shareCountValue = shareCountInput ? getEffectiveShareCount(form) : 1;
       const perShareMin = baseMinData !== undefined && baseMinData !== '' ? parseNormalizedAmount(baseMinData) : NaN;
-      const customPriceQtyRow = customPriceInput.closest('.wdp-custom-price-with-qty-row');
+      const customPriceQtyRow = customPriceInput.closest('.wdp-custom-price-row, .wdp-custom-price-with-qty-row');
 
       let effectiveMin = 0;
-      if (customPriceQtyRow) {
+      if (customPriceQtyRow && customPriceRowHasQtyCounter(customPriceQtyRow)) {
         const qEl = customPriceQtyRow.querySelector('input[name="quantity"]');
         const qtyForMin = qEl ? Number.parseInt(qEl.value, 10) || 1 : 1;
         const perUnitCandidates = [];
@@ -939,6 +1142,10 @@
         focusInput();
           isValid = false;
       }
+    }
+
+    if (!validateSadakaDonation(form)) {
+      isValid = false;
     }
 
     errorMessages = Array.from(new Set(errorMessages));
@@ -1493,6 +1700,7 @@
     
     const formData = new FormData(form);
     patchSimpleCustomPriceQtyRowFormData(form, formData);
+    patchSadakaFormData(form, formData);
 
     // CRITICAL: Hissedar formlarında fiyatı hisse sayısına göre güncelle
     if (shareCountInput) {
@@ -1764,21 +1972,23 @@
       }
     }
 
-    const simpleCustomQtyRow = form.querySelector(".wdp-custom-price-with-qty-row");
-    if (simpleCustomQtyRow && !shareCountInput) {
-      const priceInput = simpleCustomQtyRow.querySelector('input[name="custom_price"]');
-      const qEl = simpleCustomQtyRow.querySelector('input[name="quantity"]');
-      if (priceInput && qEl) {
-        const q = Number.parseInt(qEl.value, 10) || 1;
-        let unit = Number.parseFloat(priceInput.dataset.wdpCustomUnit);
-        if (!Number.isFinite(unit) || unit <= 0) {
-          const total = parseNormalizedAmount(priceInput.value);
-          if (Number.isFinite(total) && total > 0 && q > 0) {
-            unit = roundMoney(total / q);
+    const simpleCustomRow = getCustomPriceRow(form);
+    if (simpleCustomRow && !shareCountInput) {
+      const priceInput = simpleCustomRow.querySelector('input[name="custom_price"]');
+      if (priceInput && customPriceRowHasQtyCounter(simpleCustomRow)) {
+        const qEl = simpleCustomRow.querySelector('input[name="quantity"]');
+        if (qEl) {
+          const q = Number.parseInt(qEl.value, 10) || 1;
+          let unit = Number.parseFloat(priceInput.dataset.wdpCustomUnit);
+          if (!Number.isFinite(unit) || unit <= 0) {
+            const total = parseNormalizedAmount(priceInput.value);
+            if (Number.isFinite(total) && total > 0 && q > 0) {
+              unit = roundMoney(total / q);
+            }
           }
-        }
-        if (Number.isFinite(unit) && unit > 0) {
-          priceInput.value = formatSubmitUnitPrice(unit);
+          if (Number.isFinite(unit) && unit > 0) {
+            priceInput.value = formatSubmitUnitPrice(unit);
+          }
         }
       }
     }
@@ -1826,6 +2036,7 @@
     safeLog("Form submission setup for:", form);
 
     bindProductQuantityDelegation(form);
+    bindSadakaDonation(form);
 
     // Önceki dinleyiciyi kaldır (event-manager veya tekrar setup çağrıları çift AJAX üretmesin)
     if (form._wdpSubmitHandler) {
@@ -1954,8 +2165,8 @@
 
       // Özel fiyat alanı için minimum değer kontrolü - optimized with debounce
       if (input.name === "custom_price") {
-        const customQtyRow = input.closest(".wdp-custom-price-with-qty-row");
-        if (customQtyRow) {
+        const customQtyRow = input.closest(".wdp-custom-price-row, .wdp-custom-price-with-qty-row");
+        if (customQtyRow && customPriceRowHasQtyCounter(customQtyRow)) {
           if (input.dataset.wdpCustomQtyBound !== '1') {
             input.dataset.wdpCustomQtyBound = '1';
             input.addEventListener("focus", function () {
@@ -1970,14 +2181,14 @@
               }
             });
             input.addEventListener("input", function () {
-              const row = this.closest(".wdp-custom-price-with-qty-row");
+              const row = this.closest(".wdp-custom-price-row, .wdp-custom-price-with-qty-row");
               const qEl = row && row.querySelector('input[name="quantity"]');
               const qty = qEl ? Number.parseInt(qEl.value, 10) || 1 : 1;
               ensureCustomUnitFromDisplayed(this, qty);
             });
           }
           function runCustomQtyRowBlur() {
-            const row = this.closest(".wdp-custom-price-with-qty-row");
+            const row = this.closest(".wdp-custom-price-row, .wdp-custom-price-with-qty-row");
             const qEl = row && row.querySelector('input[name="quantity"]');
             const qty = qEl ? Number.parseInt(qEl.value, 10) || 1 : 1;
             ensureCustomUnitFromDisplayed(this, qty);
@@ -2041,12 +2252,6 @@
           input.dataset.wdpCustomPriceBlurBound = '1';
           input.addEventListener("blur", debouncedBlurHandler);
         }
-        if (String(input.value || "").trim() === "") {
-          const minPrice = Number.parseFloat(input.getAttribute("min") || 0);
-          if (Number.isFinite(minPrice) && minPrice > 0) {
-            input.placeholder = "Min: " + minPrice + " TL";
-          }
-        }
       }
     });
 
@@ -2076,6 +2281,8 @@
       WDPApp.phoneInput.setupInRoot(form);
     }
   }
+
+  ensureSadakaDonationDelegation();
 
   // Export
   WDPApp.form = {

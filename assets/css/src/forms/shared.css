@@ -50,7 +50,7 @@ html body .wdp-modal .wdp-modal-header .wdp-modal-title-wrapper .wdp-product-not
 }
 
 html body .hdf-donation-modal-wrapper:is(.wdp-modal, .wdp-donation-form) .wdp-product-note__text {
-  color: inherit;
+  color: var(--wdp-info-text-color, #ffffff);
   font-size: inherit;
   font-weight: inherit;
   line-height: inherit;
@@ -527,7 +527,9 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content form {
 }
 
 html body .wdp-modal .wdp-modal-content form {
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: visible;
+  padding-bottom: 2px;
 }
 
 html body .wdp-donation-form .wdp-modal-content form {

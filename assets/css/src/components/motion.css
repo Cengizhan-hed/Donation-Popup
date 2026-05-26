@@ -4,7 +4,7 @@
 
 /* Performance containment */
 html body .wdp-modal {
-  contain: layout style paint;
+  contain: layout style;
 }
 
 html body .wdp-modal-content {

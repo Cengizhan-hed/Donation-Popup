@@ -241,6 +241,8 @@ class WDP_Ajax {
             $min_price = $cached_data['min_price'];
             $allow_multiple_shares = $cached_data['allow_multiple_shares'];
             $max_shares = $cached_data['max_shares'];
+            $enable_progress_bar = !empty($cached_data['enable_progress_bar']);
+            $enable_sadaka_donation = !empty($cached_data['enable_sadaka_donation']);
         } else {
             // PERFORMANCE: WooCommerce get_meta() kullan (cache'lenmiş, daha hızlı)
             // PERFORMANCE: Single meta query instead of multiple
@@ -254,12 +256,16 @@ class WDP_Ajax {
             $min_price = isset($meta_array['_min_custom_price']) ? $meta_array['_min_custom_price'] : '';
             $allow_multiple_shares = isset($meta_array['_allow_multiple_shares']) && $meta_array['_allow_multiple_shares'] === 'yes';
             $max_shares = isset($meta_array['_max_shares']) ? $meta_array['_max_shares'] : '';
+            $enable_progress_bar = isset($meta_array['_enable_progress_bar']) && $meta_array['_enable_progress_bar'] === 'yes';
+            $enable_sadaka_donation = isset($meta_array['_enable_sadaka_donation']) && $meta_array['_enable_sadaka_donation'] === 'yes';
             
             $cache_data = array(
                 'allow_custom_price' => $allow_custom_price,
                 'min_price' => $min_price,
                 'allow_multiple_shares' => $allow_multiple_shares,
                 'max_shares' => $max_shares,
+                'enable_progress_bar' => $enable_progress_bar,
+                'enable_sadaka_donation' => $enable_sadaka_donation,
             );
             
             // PERFORMANCE: Cache in both object cache and transient (fallback)
@@ -275,6 +281,20 @@ class WDP_Ajax {
             $max_shares = '7';
         }
 
+        if (!isset($enable_progress_bar)) {
+            $enable_progress_bar = $product->get_meta('_enable_progress_bar') === 'yes';
+        }
+        if (!isset($enable_sadaka_donation)) {
+            $enable_sadaka_donation = $product->get_meta('_enable_sadaka_donation') === 'yes';
+        }
+
+        $show_sadaka_donation = $enable_sadaka_donation && !$enable_progress_bar;
+        $sadaka_block_html = '';
+        if ($show_sadaka_donation && class_exists('WDP_Donation_Product_Context_Service') && class_exists('WDP_Templates')) {
+            $sadaka_context = WDP_Donation_Product_Context_Service::build_form_context($product);
+            $sadaka_block_html = WDP_Templates::render_sadaka_donation_block($sadaka_context);
+        }
+
         $raw_price = $product->get_price();
         $response = array(
             'product_name' => $product->get_name(),
@@ -285,6 +305,8 @@ class WDP_Ajax {
             'price_html' => ($raw_price !== '' && $raw_price !== null) ? WDP_Utils::format_price_html($raw_price) : '',
             'is_multiple_shares' => $allow_multiple_shares,
             'max_shares' => $max_shares,
+            'enable_sadaka_donation' => $show_sadaka_donation,
+            'sadaka_block_html' => $sadaka_block_html,
         );
 
             WDP_Utils::log(array('event' => 'get_product_info', 'response' => $response));
@@ -592,8 +614,11 @@ class WDP_Ajax {
             }
         }
 
-        // Aynı bağış verilerine sahip öğeyi kaldır
+        // Aynı ana bağış satırını kaldır (sadaka satırlarına dokunma).
         foreach ($cart->get_cart() as $cart_item_key => $cart_item) {
+            if (!empty($cart_item['wdp_sadaka_donation'])) {
+                continue;
+            }
             if ((int) $cart_item['product_id'] === $product_id && isset($cart_item['donation_data']) && self::is_same_donation_data($cart_item['donation_data'], $donation_data)) {
                 $cart->remove_cart_item($cart_item_key);
                 break;
@@ -602,7 +627,7 @@ class WDP_Ajax {
 
         $cart_item_data = array(
             'donation_data' => $donation_data,
-            'unique_key' => md5(serialize(array($product_id, microtime(true), wp_rand()))),
+            'unique_key' => md5(serialize(array($product_id, 'main', microtime(true), wp_rand()))),
         );
 
         if ($unique_submission_key) {
@@ -613,6 +638,11 @@ class WDP_Ajax {
             // CRITICAL: Form'dan gelen custom_price zaten base price (form.js'te hesaplanıyor)
             // Quantity = shareCount olacak ve subtotal = custom_price × quantity olarak hesaplanacak
             $cart_item_data['custom_price'] = $custom_price_value;
+        } else {
+            $base_unit = (float) $product->get_price();
+            if ($base_unit > 0) {
+                $cart_item_data['wdp_base_unit_price'] = $base_unit;
+            }
         }
 
         if ($is_direct_share_form) {
@@ -631,6 +661,8 @@ class WDP_Ajax {
             if (!$cart_item_key) {
                 throw new WDP_Cart_Exception(__('Ürün sepete eklenirken bir hata oluştu.', 'woo-donation-popup'));
             }
+
+            self::maybe_add_sadaka_donation_to_cart($cart, $product, $donation_data, $unique_submission_key, $cart_item_key);
 
             // PERFORMANCE: Get cart count once
             $cart_count = (int) $cart->get_cart_contents_count();
@@ -800,6 +832,161 @@ class WDP_Ajax {
     }
 
     /**
+     * Build donation meta for optional sadaka line item.
+     *
+     * @param array $donation_data Primary donation payload.
+     * @return array
+     */
+    private static function build_sadaka_donation_data(array $donation_data) {
+        $sadaka_data = array(
+            'is_sadaka' => true,
+        );
+
+        if (!empty($donation_data['share_count']) && !empty($donation_data['shareholders']) && is_array($donation_data['shareholders'])) {
+            $first = reset($donation_data['shareholders']);
+            if (is_array($first)) {
+                if (!empty($first['name'])) {
+                    $sadaka_data['full_name'] = $first['name'];
+                }
+                if (!empty($first['phone'])) {
+                    $sadaka_data['phone'] = $first['phone'];
+                }
+            }
+            return $sadaka_data;
+        }
+
+        if (!empty($donation_data['full_name'])) {
+            $sadaka_data['full_name'] = $donation_data['full_name'];
+        }
+        if (!empty($donation_data['phone'])) {
+            $sadaka_data['phone'] = $donation_data['phone'];
+        }
+        if (!empty($donation_data['note'])) {
+            $sadaka_data['note'] = $donation_data['note'];
+        }
+
+        return $sadaka_data;
+    }
+
+    /**
+     * Add separate sadaka cart line when donor opted in.
+     *
+     * @param WC_Cart     $cart                  Cart.
+     * @param WC_Product  $product               Product.
+     * @param array       $donation_data         Primary donation data.
+     * @param string      $unique_submission_key Submission key.
+     * @return void
+     */
+    private static function maybe_add_sadaka_donation_to_cart($cart, $product, array $donation_data, $unique_submission_key, $parent_cart_item_key = '') {
+        if (!$cart || !$product || $product->get_meta('_enable_sadaka_donation') !== 'yes') {
+            return;
+        }
+
+        $panel_active = isset($_POST['sadaka_donation_active']) && '1' === wp_unslash($_POST['sadaka_donation_active']);
+        if (!$panel_active) {
+            return;
+        }
+
+        $parent_product_id = (int) $product->get_id();
+        $configured_sadaka_id = WDP_Utils::get_configured_sadaka_wc_product_id($product);
+        $sadaka_product_id = WDP_Utils::resolve_sadaka_wc_product_id($product);
+
+        if ($configured_sadaka_id <= 0 || $sadaka_product_id <= 0) {
+            throw new WDP_Validation_Exception(
+                __('Alt bağış WC ürünü bulunamadı. Başarı & Mini Sepet veya ürün ayarında geçerli bir ürün ID girin.', 'woo-donation-popup'),
+                array('sadaka_custom_price')
+            );
+        }
+
+        foreach ($cart->get_cart() as $existing_key => $existing_item) {
+            if (empty($existing_item['wdp_sadaka_donation'])) {
+                continue;
+            }
+            if ($parent_cart_item_key !== '') {
+                if (empty($existing_item['wdp_parent_cart_item_key']) || $existing_item['wdp_parent_cart_item_key'] !== $parent_cart_item_key) {
+                    continue;
+                }
+            } elseif (!empty($existing_item['wdp_parent_product_id']) && (int) $existing_item['wdp_parent_product_id'] !== $parent_product_id) {
+                continue;
+            } elseif (empty($existing_item['wdp_parent_product_id']) && (int) $existing_item['product_id'] !== $parent_product_id && (int) $existing_item['product_id'] !== $sadaka_product_id) {
+                continue;
+            }
+            $cart->remove_cart_item($existing_key);
+        }
+
+        $fixed_price = WDP_Utils::get_sadaka_fixed_price($product);
+
+        if ($fixed_price > 0) {
+            $sadaka_value = $fixed_price;
+        } else {
+            $sadaka_raw = isset($_POST['sadaka_custom_price']) ? wc_clean(wp_unslash($_POST['sadaka_custom_price'])) : '';
+            if ($sadaka_raw === '') {
+                return;
+            }
+
+            if (strlen($sadaka_raw) > 20) {
+                $sadaka_raw = substr($sadaka_raw, 0, 20);
+            }
+
+            $sadaka_value = WDP_Security::sanitize_numeric($sadaka_raw, 0, 999999);
+            if (null === $sadaka_value || $sadaka_value <= 0) {
+                return;
+            }
+
+            $min_sadaka = $product->get_meta('_sadaka_min_price');
+            if ($min_sadaka !== '' && (float) $min_sadaka > 0 && $sadaka_value < (float) $min_sadaka) {
+                throw new WDP_Validation_Exception(
+                    sprintf(__('Alt bağış için lütfen %s TL ve üstü değerler girin.', 'woo-donation-popup'), wc_format_decimal($min_sadaka)),
+                    array('sadaka_custom_price')
+                );
+            }
+        }
+
+        $sadaka_cart_data = array(
+            'donation_data'         => self::build_sadaka_donation_data($donation_data),
+            'custom_price'          => $sadaka_value,
+            'wdp_sadaka_donation'   => true,
+            'wdp_parent_product_id' => $parent_product_id,
+            'wdp_sadaka_linked_wc_product' => true,
+            'unique_key'            => md5(serialize(array($parent_product_id, $sadaka_product_id, 'sadaka', microtime(true), wp_rand()))),
+        );
+
+        if ($parent_cart_item_key !== '') {
+            $sadaka_cart_data['wdp_parent_cart_item_key'] = $parent_cart_item_key;
+        }
+
+        if ($unique_submission_key) {
+            $sadaka_cart_data['unique_submission_key'] = $unique_submission_key . '-sadaka';
+        }
+
+        $allow_purchasable = static function ($purchasable, $check_product) use ($sadaka_product_id) {
+            if ($purchasable || !$check_product instanceof WC_Product) {
+                return $purchasable;
+            }
+            return (int) $check_product->get_id() === (int) $sadaka_product_id ? true : $purchasable;
+        };
+        add_filter('woocommerce_is_purchasable', $allow_purchasable, 99, 2);
+
+        $sadaka_key = $cart->add_to_cart($sadaka_product_id, 1, 0, array(), $sadaka_cart_data);
+
+        remove_filter('woocommerce_is_purchasable', $allow_purchasable, 99);
+
+        if (!$sadaka_key) {
+            throw new WDP_Cart_Exception(
+                sprintf(
+                    /* translators: %d: WooCommerce product ID */
+                    __('Alt bağış sepete eklenemedi (ürün #%d). Ürünün yayında olduğundan emin olun.', 'woo-donation-popup'),
+                    $sadaka_product_id
+                )
+            );
+        }
+
+        if (method_exists($cart, 'calculate_totals')) {
+            $cart->calculate_totals();
+        }
+    }
+
+    /**
      * Check if two donation data are the same
      *
      * @param array $data1 First donation data.
@@ -807,6 +994,10 @@ class WDP_Ajax {
      * @return bool
      */
     private static function is_same_donation_data($data1, $data2) {
+        if (!empty($data1['is_sadaka']) || !empty($data2['is_sadaka'])) {
+            return false;
+        }
+
         if (empty($data1) && empty($data2)) {
             return true;
         }
@@ -951,28 +1142,41 @@ class WDP_Ajax {
                 continue;
             }
 
-            // PERFORMANCE: Numeric fiyat hesapla (JavaScript için) - cache product price
-            $product_price = floatval($product->get_price());
-            $quantity = intval($cart_item['quantity']);
-            $line_total = $product_price * $quantity;
-
-            // Custom price varsa onu kullan
-            if (isset($cart_item['custom_price'])) {
-                $custom_price = floatval($cart_item['custom_price']);
-                $line_total = $custom_price * $quantity;
-                $product_price = $custom_price;
+            $quantity = max(1, (int) $cart_item['quantity']);
+            $unit_price = class_exists('WDP_Cart') ? WDP_Cart::get_cart_line_unit_price($cart_item) : null;
+            if (null === $unit_price) {
+                $unit_price = (float) $product->get_price();
+            }
+            $line_total = $unit_price * $quantity;
+            $is_sadaka_line = !empty($cart_item['wdp_sadaka_donation']);
+            if ($is_sadaka_line && class_exists('WDP_Cart')) {
+                $display_id = WDP_Cart::resolve_sadaka_line_wc_product_id($cart_item);
+                $parent_id = !empty($cart_item['wdp_parent_product_id'])
+                    ? (int) $cart_item['wdp_parent_product_id']
+                    : (int) $cart_item['product_id'];
+                if ($display_id > 0 && ($display_id !== $parent_id || !empty($cart_item['wdp_sadaka_linked_wc_product']))) {
+                    $display_product = wc_get_product($display_id);
+                    $product_name = ($display_product && $display_product->exists())
+                        ? wp_strip_all_tags((string) $display_product->get_name())
+                        : __('Sadaka Bağışı', 'woo-donation-popup');
+                } else {
+                    $product_name = __('Sadaka Bağışı', 'woo-donation-popup');
+                }
+            } else {
+                $product_name = wp_strip_all_tags((string) $product->get_name());
             }
 
             $item_data = array(
                 'key' => $cart_item_key,
                 'product_id' => $cart_item['product_id'],
-                'product_name' => wp_strip_all_tags((string) $product->get_name()),
+                'product_name' => $product_name,
                 'quantity' => $quantity,
-                'price' => $product_price, // Numeric değer (JavaScript için)
-                'line_total' => $line_total, // Toplam fiyat (JavaScript için)
-                'price_html' => WDP_Utils::format_price_html($line_total), // Formatlanmış HTML (isteğe bağlı)
-                // SECURITY: Frontend'de innerHTML bağımlılığını azaltmak için düz metin fiyat da gönder.
+                'price' => $unit_price,
+                'line_total' => $line_total,
+                'price_html' => WDP_Utils::format_price_html($line_total),
                 'price_plain' => WDP_Utils::format_price_plain($line_total),
+                'is_sadaka_donation' => $is_sadaka_line,
+                'line_kind' => $is_sadaka_line ? 'sadaka' : 'donation',
             );
 
             // Meta veriler (donation data vb.)
@@ -1073,11 +1277,30 @@ class WDP_Ajax {
                 throw new WDP_Validation_Exception(__('Sepet öğesi anahtarı bulunamadı.', 'woo-donation-popup'));
             }
 
-            // Remove item from cart
+            $target_item = $cart->get_cart_item($cart_item_key);
+            if (!$target_item) {
+                throw new WDP_Exception(__('Sepet öğesi kaldırılamadı.', 'woo-donation-popup'));
+            }
+
+            if (empty($target_item['wdp_sadaka_donation'])) {
+                foreach ($cart->get_cart() as $linked_key => $linked_item) {
+                    if (empty($linked_item['wdp_sadaka_donation'])) {
+                        continue;
+                    }
+                    if (isset($linked_item['wdp_parent_cart_item_key']) && $linked_item['wdp_parent_cart_item_key'] === $cart_item_key) {
+                        $cart->remove_cart_item($linked_key);
+                    }
+                }
+            }
+
             $removed = $cart->remove_cart_item($cart_item_key);
 
             if (!$removed) {
                 throw new WDP_Exception(__('Sepet öğesi kaldırılamadı.', 'woo-donation-popup'));
+            }
+
+            if (method_exists($cart, 'calculate_totals')) {
+                $cart->calculate_totals();
             }
 
             // Clear all cart cache variations

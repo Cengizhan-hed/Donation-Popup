@@ -77,6 +77,43 @@ class WDP_Utils {
      * @param array        $args   wc_price() için ek argümanlar.
      * @return string Güvenli HTML.
      */
+    /**
+     * Decode HTML entities to UTF-8 text (e.g. &#8378; → ₺).
+     *
+     * @param string $text Raw text.
+     * @return string
+     */
+    public static function decode_text_entities($text) {
+        $text = (string) $text;
+        if ($text === '') {
+            return '';
+        }
+
+        $charset = function_exists('get_bloginfo') ? (string) get_bloginfo('charset') : 'UTF-8';
+        if ($charset === '') {
+            $charset = 'UTF-8';
+        }
+
+        return html_entity_decode($text, ENT_QUOTES | ENT_HTML5, $charset);
+    }
+
+    /**
+     * Currency symbol safe for plain text / esc_html output.
+     *
+     * @param string $symbol Optional symbol; defaults to WooCommerce currency.
+     * @return string
+     */
+    public static function get_display_currency_symbol($symbol = '') {
+        if ($symbol === '' && function_exists('get_woocommerce_currency_symbol')) {
+            $symbol = get_woocommerce_currency_symbol();
+        }
+        if ($symbol === '') {
+            $symbol = '₺';
+        }
+
+        return self::decode_text_entities($symbol);
+    }
+
     public static function format_price_html($amount, array $args = array()) {
         if ($amount === '' || $amount === null) {
             return '';
@@ -95,7 +132,9 @@ class WDP_Utils {
             $args
         );
 
-        return wp_kses_post(wc_price($numeric, $args));
+        $html = wp_kses_post(wc_price($numeric, $args));
+
+        return self::decode_text_entities($html);
     }
 
     /**
@@ -148,6 +187,137 @@ class WDP_Utils {
             $formatted = $frac !== '' ? $whole . $dec . $frac : $whole;
         }
         return $formatted;
+    }
+
+    /**
+     * Alt bağış satırı için ürün meta'sındaki WooCommerce ürün ID'si.
+     *
+     * @param int|WC_Product $parent_product Ana bağış ürünü.
+     * @return int Geçerli WC ürün ID veya 0.
+     */
+    public static function resolve_sadaka_wc_product_id($parent_product) {
+        $configured = self::get_configured_sadaka_wc_product_id($parent_product);
+        if ($configured <= 0) {
+            return 0;
+        }
+
+        /**
+         * Alt bağış sepet satırında kullanılacak WooCommerce ürün ID.
+         *
+         * @param int $configured Ürün meta _sadaka_wc_product_id.
+         * @param int $parent_id  Ana bağış ürün ID.
+         */
+        $parent_id = $parent_product instanceof WC_Product
+            ? (int) $parent_product->get_id()
+            : absint($parent_product);
+        $filtered = apply_filters('wdp_sadaka_wc_product_id', $configured, $parent_id);
+        $product_id = absint($filtered);
+
+        return self::is_valid_sadaka_wc_product($product_id) ? $product_id : 0;
+    }
+
+    /**
+     * Sadaka sepet satırı için kullanılabilir WC ürünü (gizli/katalog ürünleri dahil).
+     *
+     * @param int $product_id Product ID.
+     * @return bool
+     */
+    public static function is_valid_sadaka_wc_product($product_id) {
+        $product_id = absint($product_id);
+        if ($product_id <= 0) {
+            return false;
+        }
+
+        $product = wc_get_product($product_id);
+        if (!$product || !$product->exists()) {
+            return false;
+        }
+
+        $status = $product->get_status();
+        return in_array($status, array('publish', 'private'), true);
+    }
+
+    /**
+     * Genel alt bağış WC ürün ID (Başarı & Mini Sepet). Varsayılan: 10721.
+     *
+     * @return int
+     */
+    public static function get_default_sadaka_wc_product_id() {
+        $settings = get_option('wdp_success_settings', array());
+        $id = 10721;
+        if (is_array($settings) && !empty($settings['sadaka_wc_product_id'])) {
+            $id = absint($settings['sadaka_wc_product_id']);
+        }
+        return $id > 0 ? $id : 10721;
+    }
+
+    /**
+     * Alt bağış aç/kapa buton metni (ürün meta → genel ayar → varsayılan).
+     *
+     * @param WC_Product|int|null $parent_product Ana bağış ürünü.
+     * @return string
+     */
+    public static function get_sadaka_toggle_label($parent_product = null) {
+        if ($parent_product !== null) {
+            $parent = $parent_product instanceof WC_Product ? $parent_product : wc_get_product((int) $parent_product);
+            if ($parent) {
+                $per_product = trim((string) $parent->get_meta('_sadaka_toggle_label'));
+                if ($per_product !== '') {
+                    return sanitize_text_field($per_product);
+                }
+            }
+        }
+
+        $settings = get_option('wdp_success_settings', array());
+        if (is_array($settings) && !empty($settings['sadaka_toggle_label'])) {
+            $label = sanitize_text_field($settings['sadaka_toggle_label']);
+            if ($label !== '') {
+                return $label;
+            }
+        }
+
+        return __('Alt Bağış Ekle', 'woo-donation-popup');
+    }
+
+    /**
+     * Ürün meta veya genel ayar alt bağış WC ürün ID'si.
+     *
+     * @param WC_Product|int $parent_product Ana bağış ürünü.
+     * @return int
+     */
+    public static function get_configured_sadaka_wc_product_id($parent_product) {
+        $parent = $parent_product instanceof WC_Product ? $parent_product : wc_get_product((int) $parent_product);
+        if (!$parent) {
+            return self::get_default_sadaka_wc_product_id();
+        }
+
+        $per_product = absint($parent->get_meta('_sadaka_wc_product_id'));
+        if ($per_product > 0) {
+            return $per_product;
+        }
+
+        return self::get_default_sadaka_wc_product_id();
+    }
+
+    /**
+     * Alt bağış sabit fiyatı (ürün meta). 0 = özel tutar modu.
+     *
+     * @param WC_Product|int $parent_product Ana bağış ürünü.
+     * @return float
+     */
+    public static function get_sadaka_fixed_price($parent_product) {
+        $parent = $parent_product instanceof WC_Product ? $parent_product : wc_get_product((int) $parent_product);
+        if (!$parent) {
+            return 0.0;
+        }
+
+        $raw = $parent->get_meta('_sadaka_fixed_price');
+        if ($raw === '' || $raw === null) {
+            return 0.0;
+        }
+
+        $value = (float) wc_format_decimal($raw);
+        return $value > 0 ? $value : 0.0;
     }
 
     /**

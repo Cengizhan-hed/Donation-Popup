@@ -122,27 +122,24 @@ class WDP_Assets {
      * @return string[]
      */
     private static function get_frontend_css_stack_relative_paths() {
-        return array(
-            'src/tokens.css',
-            'src/base.css',
-            'src/layout.css',
-            'src/components/side-panel.css',
-            'src/forms/shared.css',
-            'src/forms/field-stack.css',
-            'src/components/phone-field.css',
-            'src/forms/hisseli.css',
-            'src/components/buttons.css',
-            'src/components/alerts.css',
-            'src/components/loading.css',
-            'src/components/quantity.css',
-            'src/components/progress-bar.css',
-            'src/components/success.css',
-            'src/components/toast.css',
-            'src/components/motion.css',
-            'src/components/feedback.css',
-            'src/components/accessibility.css',
-            'src/components/amount-presets.css',
-        );
+        static $paths = null;
+
+        if (null !== $paths) {
+            return $paths;
+        }
+
+        $config = defined('WDP_PLUGIN_DIR')
+            ? WDP_PLUGIN_DIR . 'includes/config/frontend-css-stack.php'
+            : '';
+
+        if ($config && file_exists($config)) {
+            $loaded = require $config;
+            $paths = is_array($loaded) ? $loaded : array();
+            return $paths;
+        }
+
+        $paths = array();
+        return $paths;
     }
 
     /**
@@ -470,9 +467,22 @@ class WDP_Assets {
     private static function register_frontend_style_stack($plugin_url, $css_version) {
         $plugin_dir = defined('WDP_PLUGIN_DIR') ? WDP_PLUGIN_DIR : plugin_dir_path(dirname(dirname(__FILE__)));
 
-        // Build bundle intentionally disabled: always load src layer stack.
-        // This keeps development/debug behavior deterministic and avoids hashed bundle dependency.
+        $built_manifest = self::get_built_css_manifest($plugin_dir);
+        if (is_array($built_manifest) && !empty($built_manifest['file'])) {
+            $rel_file = ltrim((string) $built_manifest['file'], '/');
+            $abs_file = $plugin_dir . 'assets/css/' . $rel_file;
+            if (file_exists($abs_file)) {
+                wp_register_style(
+                    self::FRONTEND_CSS_HANDLE,
+                    $plugin_url . 'assets/css/' . $rel_file,
+                    array(),
+                    $css_version
+                );
+                return;
+            }
+        }
 
+        // Geliştirme yedeği: bundle yoksa katman katman (aynı stack listesi).
         $stack = self::get_frontend_css_stack_relative_paths();
         $existing = array();
         foreach ($stack as $rel) {
@@ -511,7 +521,9 @@ class WDP_Assets {
     private static function localize_frontend_assets($plugin_url) {
         // Get current currency (supports Currency switcher plugins)
         $current_currency = function_exists('get_woocommerce_currency') ? get_woocommerce_currency() : 'TRY';
-        $currency_symbol = function_exists('get_woocommerce_currency_symbol') ? get_woocommerce_currency_symbol($current_currency) : '₺';
+        $currency_symbol = WDP_Utils::get_display_currency_symbol(
+            function_exists('get_woocommerce_currency_symbol') ? get_woocommerce_currency_symbol($current_currency) : '₺'
+        );
 
         wp_localize_script('wdp-utils-js', 'wdp_ajax', array(
             'ajax_url' => admin_url('admin-ajax.php'),
@@ -542,6 +554,11 @@ class WDP_Assets {
                 'min_price_error' => __('Minimum fiyat: ', 'woo-donation-popup'),
                 'max_shares_error' => __('Maksimum hisse sayısı: ', 'woo-donation-popup'),
                 'custom_price_placeholder_empty' => __('Bağış tutarı *', 'woo-donation-popup'),
+                'custom_price_label' => __('Bağış Tutarı', 'woo-donation-popup'),
+                'sadaka_toggle_label' => class_exists('WDP_Utils') ? WDP_Utils::get_sadaka_toggle_label() : __('Alt Bağış Ekle', 'woo-donation-popup'),
+                'sadaka_price_label' => __('Alt Bağış Tutarı', 'woo-donation-popup'),
+                'sadaka_invalid' => __('Geçerli bir alt bağış tutarı giriniz.', 'woo-donation-popup'),
+                'sadaka_min_error' => __('Alt bağış için minimum tutar: ', 'woo-donation-popup'),
                 'phone_invalid' => __('Geçerli bir telefon numarası giriniz.', 'woo-donation-popup'),
                 'phone_required' => __('Telefon numarası eksik.', 'woo-donation-popup'),
                 'phone_incomplete' => __('Telefon numarasını eksiksiz giriniz.', 'woo-donation-popup'),

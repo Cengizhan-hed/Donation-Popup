@@ -180,8 +180,13 @@ class WDP_Admin_Form_Tabs_Renderer {
 			'mini_cart_radius'         => '20',
 			'cart_item_name_color'     => '#1f2937',
 			'cart_item_price_color'    => '#1e73be',
+			'sadaka_wc_product_id'     => 10721,
+			'sadaka_toggle_label'      => 'Alt Bağış Ekle',
 		);
 		$settings = wp_parse_args($settings, $defaults);
+		if (empty($settings['sadaka_wc_product_id'])) {
+			$settings['sadaka_wc_product_id'] = 10721;
+		}
 
 		WDP_Admin_Renderer_Helpers::open_form_container('wdp-success-screen-settings-form');
 		echo '<h2>' . __('Başarı Mesajı Ayarları', 'woo-donation-popup') . '</h2><table class="form-table">';
@@ -197,6 +202,12 @@ class WDP_Admin_Form_Tabs_Renderer {
 		echo '<tr><th scope="row"><label for="success_text_view_cart">' . __('Sepete Git Butonu', 'woo-donation-popup') . '</label></th><td><input type="text" id="success_text_view_cart" name="success_text_view_cart" value="' . esc_attr($settings['success_text_view_cart']) . '" class="regular-text" /></td></tr>';
 		echo '<tr><th scope="row"><label for="success_text_go_checkout">' . __('Bağışı Tamamla Butonu', 'woo-donation-popup') . '</label></th><td><input type="text" id="success_text_go_checkout" name="success_text_go_checkout" value="' . esc_attr($settings['success_text_go_checkout']) . '" class="regular-text" /></td></tr>';
 		echo '<tr><th scope="row"><label for="success_text_new_donation">' . __('Bağış Eklemeye Devam Butonu', 'woo-donation-popup') . '</label></th><td><input type="text" id="success_text_new_donation" name="success_text_new_donation" value="' . esc_attr($settings['success_text_new_donation']) . '" class="regular-text" /></td></tr>';
+		echo '</table>';
+		echo '<h2>' . __('Alt Bağış (varsayılan)', 'woo-donation-popup') . '</h2><table class="form-table">';
+		echo '<tr><th scope="row"><label for="sadaka_wc_product_id">' . __('Varsayılan WC ürün ID', 'woo-donation-popup') . '</label></th><td>';
+		echo '<input type="number" id="sadaka_wc_product_id" name="sadaka_wc_product_id" value="' . esc_attr($settings['sadaka_wc_product_id']) . '" min="1" step="1" class="small-text" placeholder="10721" />';
+		echo '<p class="description">' . esc_html__('Ürün kartında özel ID yoksa sepete bu WooCommerce ürünü eklenir (varsayılan 10721).', 'woo-donation-popup') . '</p>';
+		echo '</td></tr>';
 		echo '</table>';
 		WDP_Admin_Renderer_Helpers::close_form_container('wdp-save-success-screen-settings');
 	}

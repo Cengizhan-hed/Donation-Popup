@@ -72,7 +72,7 @@ html body .wdp-donation-form {
   display: block;
   background: transparent;
   isolation: isolate;
-  contain: layout style paint;
+  contain: layout style;
   font-display: swap;
   font-feature-settings: "kern" 1, "liga" 1;
 }
@@ -86,7 +86,8 @@ html body .wdp-donation-form * {
 /* Genel tema/plugin CSS override - tüm .wdp-* elementleri için */
 html body [class*="wdp-"] {
   isolation: isolate;
-  contain: layout style paint;
+  /* paint yok — alt border / focus halkası kesilmesin */
+  contain: layout style;
 }
 
 /* Typography reset - Sadece başlıklar için */
@@ -194,6 +195,12 @@ html body .wdp-donation-form p {
   line-height: var(--wdp-leading-normal);
   letter-spacing: var(--wdp-tracking-normal);
   max-width: 65ch; /* Optimal line length for readability */
+}
+
+html body .wdp-modal :is(.wdp-product-note__text, .wdp-sadaka-donation__message),
+html body .wdp-donation-form :is(.wdp-product-note__text, .wdp-sadaka-donation__message) {
+  margin: 0;
+  max-width: none;
 }
 
 /* Image reset */

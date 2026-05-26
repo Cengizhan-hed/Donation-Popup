@@ -193,7 +193,7 @@ html body .wdp-modal.show:not(.wdp-side-panel) .wdp-modal-content {
   flex-shrink: 1;
   flex-grow: 0;
   /* Prevent any content from forcing expansion */
-  contain: layout style paint; /* Modern contain with paint */
+  contain: layout style; /* paint yok — form alanı border'ları kesilmesin */
   /* Force layout isolation */
   isolation: isolate;
   
