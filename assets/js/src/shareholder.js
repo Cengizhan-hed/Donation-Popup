@@ -80,6 +80,43 @@
     element.removeAttribute('hidden');
   }
 
+  function isSidePanelModal(modal) {
+    return !!(modal && modal.classList && modal.classList.contains('wdp-side-panel'));
+  }
+
+  function clearSidePanelShareholderScrollLayout(modal) {
+    if (!modal) {
+      return;
+    }
+    modal.querySelectorAll('.wdp-shareholders-area, .wdp-shareholders-container, .wdp-shareholders-scroll').forEach((el) => {
+      el.classList.remove('scrollable');
+      el.style.removeProperty('height');
+      el.style.removeProperty('max-height');
+      el.style.removeProperty('min-height');
+      el.style.removeProperty('overflow');
+      el.style.removeProperty('overflow-y');
+      el.style.removeProperty('overflow-x');
+    });
+  }
+
+  function applyShareholdersAreaVisibility(area) {
+    if (!area) return;
+    area.style.visibility = 'visible';
+    area.style.opacity = '1';
+    area.removeAttribute('hidden');
+    area.style.display = 'flex';
+    area.style.flexDirection = 'column';
+  }
+
+  function applyShareholdersContainerVisibility(container) {
+    if (!container) return;
+    container.style.visibility = 'visible';
+    container.style.opacity = '1';
+    container.removeAttribute('hidden');
+    container.style.display = 'flex';
+    container.style.flexDirection = 'column';
+  }
+
   function ensureReadableInput(element) {
     if (!element) return;
     ensureVisible(element, 'block');
@@ -97,7 +134,7 @@
     // CRITICAL: Parent area'nın da görünür olduğundan emin ol
     const shareholdersArea = container.closest('.wdp-shareholders-area');
     if (shareholdersArea) {
-      ensureVisible(shareholdersArea, 'flex');
+      applyShareholdersAreaVisibility(shareholdersArea);
     }
 
     let list = container.querySelector(".wdp-shareholders-scroll");
@@ -142,6 +179,92 @@
     );
   }
 
+  /**
+   * Scroll alanı yüksekliği: ~2 kart + kısmi 3. satır; tam liste yüksekliğine sabitleme (scroll kırılır).
+   */
+  function computeShareholderScrollViewportHeight(shareholdersList) {
+    const cap = calculateShareholderMaxHeight();
+    if (!shareholdersList) {
+      return cap;
+    }
+    const forms = shareholdersList.querySelectorAll('.wdp-shareholder-form');
+    if (!forms.length) {
+      return cap;
+    }
+    if (forms.length === 1) {
+      const single = forms[0].offsetHeight || forms[0].getBoundingClientRect().height;
+      return Math.min(cap, Math.max(SHAREHOLDER_SCROLL_CONFIG.min, Math.ceil(single)));
+    }
+
+    const gapPx = 10;
+    let total = 0;
+    const fullVisible = 2;
+    for (let i = 0; i < Math.min(forms.length, fullVisible); i++) {
+      const h = forms[i].offsetHeight || forms[i].getBoundingClientRect().height;
+      total += h;
+      if (i > 0) {
+        total += gapPx;
+      }
+    }
+    if (forms.length > fullVisible) {
+      const next = forms[fullVisible];
+      let peek = 44;
+      if (next) {
+        if (next.classList.contains('collapsed')) {
+          const hdr = next.querySelector('.wdp-shareholder-header');
+          peek = hdr ? hdr.offsetHeight || 44 : 44;
+        } else {
+          peek = Math.min((next.offsetHeight || 120) * 0.4, 64);
+        }
+      }
+      total += peek + gapPx;
+    }
+    return Math.min(cap, Math.max(SHAREHOLDER_SCROLL_CONFIG.min, Math.ceil(total + 8)));
+  }
+
+  function applyShareholderScrollHeights(shareholdersArea, shareholdersContainer, shareholdersList, heightPx) {
+    if (!shareholdersArea || !shareholdersList || !Number.isFinite(heightPx) || heightPx <= 0) {
+      return;
+    }
+    const h = Math.round(heightPx) + 'px';
+    shareholdersArea.style.height = h;
+    shareholdersArea.style.maxHeight = h;
+    shareholdersArea.style.minHeight = '0';
+    if (shareholdersContainer) {
+      shareholdersContainer.style.height = h;
+      shareholdersContainer.style.maxHeight = h;
+      shareholdersContainer.style.minHeight = '0';
+    }
+    shareholdersList.style.height = h;
+    shareholdersList.style.maxHeight = h;
+    shareholdersList.style.minHeight = '0';
+    shareholdersList.style.overflowY = 'auto';
+    shareholdersList.style.overflowX = 'hidden';
+    shareholdersList.style.webkitOverflowScrolling = 'touch';
+    shareholdersList.style.touchAction = 'pan-y';
+    shareholdersList.style.overscrollBehavior = 'contain';
+  }
+
+  function clearShareholderScrollHeights(shareholdersArea, shareholdersContainer, shareholdersList) {
+    [shareholdersArea, shareholdersContainer, shareholdersList].forEach((el) => {
+      if (!el) {
+        return;
+      }
+      el.style.removeProperty('height');
+      el.style.removeProperty('max-height');
+      el.style.removeProperty('min-height');
+      el.style.removeProperty('overflow');
+      el.style.removeProperty('overflow-y');
+      el.style.removeProperty('overflow-x');
+      el.style.removeProperty('-webkit-overflow-scrolling');
+      el.style.removeProperty('touch-action');
+      el.style.removeProperty('overscroll-behavior');
+    });
+    if (shareholdersArea && shareholdersArea.dataset) {
+      delete shareholdersArea.dataset.initialHeight;
+    }
+  }
+
   // Helper: Cache base height for shareholder area
   function cacheShareholdersBaseHeight(container) {
     if (!container) return;
@@ -162,6 +285,12 @@
 
     const scrollElement = container.querySelector('.wdp-shareholders-scroll');
     const areaElement = container.closest('.wdp-shareholders-area');
+    const modalRoot = container.closest('.wdp-modal');
+
+    if (isSidePanelModal(modalRoot)) {
+      clearSidePanelShareholderScrollLayout(modalRoot);
+      return;
+    }
     
     // CRITICAL: When enabling scroll, DO NOT remove height constraints immediately
     // Let CSS handle it through scrollable class, but ensure class is applied first
@@ -206,9 +335,11 @@
     }
 
     const handleResize = () => {
-      document
-        .querySelectorAll('.wdp-shareholders-container.scrollable')
-        .forEach((container) => applyShareholderScrollStyles(container, container.classList.contains('scrollable')));
+      document.querySelectorAll('.wdp-modal, .wdp-donation-form').forEach((modal) => {
+        if (modal.querySelector('.wdp-shareholders-container')) {
+          updateShareholdersScrollable(modal);
+        }
+      });
     };
 
     window.addEventListener('resize', handleResize, { passive: true });
@@ -234,101 +365,44 @@
     if (!shareholdersContainer) return;
     const shareholdersList = ensureShareholderList(shareholdersContainer);
     if (!shareholdersList) return;
-    
-    // CRITICAL: shareCount'u kontrol et - görünür form sayısını değil
-    // Çünkü sadece 1. form görünür ama shareCount > 1 ise scroll olmalı
+
+    const shareholdersArea = shareholdersContainer.closest('.wdp-shareholders-area');
     const shareCountInput = modal.querySelector('input[name="share_count"]');
     const shareCount = shareCountInput ? Number.parseInt(shareCountInput.value, 10) || 1 : 1;
     const forms = shareholdersList.querySelectorAll('.wdp-shareholder-form');
-    // Scroll sadece hisse adedi 1'den fazla olduğunda aktif olsun (scrollbar görünsün)
-    // CRITICAL: shareCount'u kontrol et, görünür form sayısını değil
-    const shouldScroll = shareCount > 1;
-    
-    // CRITICAL: Immediately add/remove scrollable class to prevent modal expansion
-    // CSS will handle height constraints through scrollable class
-    const shareholdersArea = shareholdersContainer.closest('.wdp-shareholders-area');
-    if (shareholdersArea) {
-      // ABSOLUTE FIX: Modal ilk açıldığında shareholders-area'nın height'ını kaydet
-      // Böylece scrollable olduğunda aynı height'ı kullanabiliriz
-      if (!shareholdersArea.dataset.initialHeight) {
-        // İlk açılışta height'ı kaydet (1 form için)
-        requestAnimationFrame(() => {
-          const initialHeight = shareholdersArea.offsetHeight;
-          if (initialHeight > 0) {
-            shareholdersArea.dataset.initialHeight = initialHeight + 'px';
-          }
-        });
-      }
-      
-      if (shouldScroll) {
-        // Immediately add scrollable class - CSS will apply height constraints
+    const shouldScroll = shareCount > 1 || forms.length > 1;
+
+    if (isSidePanelModal(modal)) {
+      if (shouldScroll && shareholdersArea) {
         shareholdersArea.classList.add('scrollable');
-        
-        // ABSOLUTE FIX: Modal yüksekliği sabit kalacak - ilk açıldığındaki height'ı kullan
-        // CRITICAL: Scroll container'ın height'ını 1. formun yüksekliği kadar yap
-        // Böylece 2. formun header'ı görünmez, sadece scroll yapınca görünür
+        shareholdersContainer.classList.add('scrollable');
+        shareholdersList.style.overflowY = 'auto';
+        shareholdersList.style.overflowX = 'hidden';
+        shareholdersList.style.webkitOverflowScrolling = 'touch';
+        shareholdersList.style.touchAction = 'pan-y';
+        shareholdersList.style.flex = '1 1 auto';
+        shareholdersList.style.minHeight = '0';
+        shareholdersList.style.overscrollBehavior = 'contain';
+      } else {
+        clearSidePanelShareholderScrollLayout(modal);
+      }
+      return;
+    }
+
+    if (shareholdersArea) {
+      if (shouldScroll) {
+        shareholdersArea.classList.add('scrollable');
         cancelPendingShareholderLayout(shareholdersArea);
         const layoutRaf = requestAnimationFrame(() => {
           shareholderLayoutRafByArea && shareholderLayoutRafByArea.delete(shareholdersArea);
-          if (shareholdersList && shareholdersArea) {
-            // 1. formun yüksekliğini al
-            const firstForm = shareholdersList.querySelector('.wdp-shareholder-form[data-index="1"]');
-            if (!firstForm) return;
-            
-            // ABSOLUTE FIX: Modal ilk açıldığında kaydedilen height'ı kullan
-            // CRITICAL: Popup ve sayfa içi form için aynı height hesaplama mantığı
-            // Eğer kaydedilmemişse, scrollable class'ını geçici olarak kaldırıp height'ı ölç
-            let areaHeightValue;
-            if (shareholdersArea.dataset.initialHeight) {
-              areaHeightValue = parseFloat(shareholdersArea.dataset.initialHeight);
-            } else {
-              // CRITICAL: Scrollable class'ını geçici olarak kaldır, height'ı ölç
-              const wasScrollable = shareholdersArea.classList.contains('scrollable');
-              if (wasScrollable) {
-                shareholdersArea.classList.remove('scrollable');
-              }
-              
-              // Height'ı hemen ölç (scrollable olmadan)
-              const currentHeight = shareholdersArea.offsetHeight;
-              if (currentHeight > 0) {
-                shareholdersArea.dataset.initialHeight = currentHeight + 'px';
-                areaHeightValue = currentHeight;
-              } else {
-                // Fallback: CSS'teki clamp() değerini kullan
-                const computedAreaHeight = window.getComputedStyle(shareholdersArea).height;
-                areaHeightValue = parseFloat(computedAreaHeight) || 280;
-                shareholdersArea.dataset.initialHeight = areaHeightValue + 'px';
-              }
-              
-              // Scrollable class'ını geri ekle
-              if (wasScrollable) {
-                shareholdersArea.classList.add('scrollable');
-              }
-            }
-            
-            // ABSOLUTE FIX: Shareholders-area'nın height'ını ilk açıldığındaki height'a sabitle
-            // CRITICAL: Modal yüksekliği hiç değişmeyecek - sadece scroll container içinde scroll olacak
-            shareholdersArea.style.height = areaHeightValue + 'px';
-            shareholdersArea.style.maxHeight = areaHeightValue + 'px';
-            shareholdersArea.style.minHeight = areaHeightValue + 'px';
-            
-            // CRITICAL: Shareholders-container'ın height'ını areaHeightValue kadar yap (boşluk olmasın)
-            const shareholdersContainer = shareholdersList.closest('.wdp-shareholders-container');
-            if (shareholdersContainer) {
-              shareholdersContainer.style.height = areaHeightValue + 'px';
-              shareholdersContainer.style.maxHeight = areaHeightValue + 'px';
-              shareholdersContainer.style.minHeight = '0';
-            }
-            
-            // CRITICAL: Scroll container'ın height'ını areaHeightValue kadar yap
-            // Böylece scroll container areaHeightValue kadar yükseklikte olacak ve beyaz alan olmayacak
-            shareholdersList.style.height = areaHeightValue + 'px';
-            shareholdersList.style.maxHeight = areaHeightValue + 'px';
-            shareholdersList.style.minHeight = '0';
-            
-            // CRITICAL: Scroll pozisyonunu sıfırla (beyaz alan sorununu önlemek için)
-            shareholdersList.scrollTop = 0;
-          }
+          const viewportHeight = computeShareholderScrollViewportHeight(shareholdersList);
+          applyShareholderScrollHeights(
+            shareholdersArea,
+            shareholdersContainer,
+            shareholdersList,
+            viewportHeight
+          );
+          shareholdersList.scrollTop = 0;
         });
         if (shareholderLayoutRafByArea) {
           shareholderLayoutRafByArea.set(shareholdersArea, layoutRaf);
@@ -336,23 +410,10 @@
       } else {
         cancelPendingShareholderLayout(shareholdersArea);
         shareholdersArea.classList.remove('scrollable');
-        // Scroll container'ın height'ını sıfırla
-        shareholdersList.style.maxHeight = '';
-        shareholdersList.style.height = '';
-        // Shareholders-container'ın height'ını da sıfırla
-        const shareholdersContainer = shareholdersList.closest('.wdp-shareholders-container');
-        if (shareholdersContainer) {
-          shareholdersContainer.style.height = '';
-          shareholdersContainer.style.maxHeight = '';
-        }
-        // Shareholders-area'nın inline style'larını da temizle (CSS'e geri dön)
-        shareholdersArea.style.height = '';
-        shareholdersArea.style.maxHeight = '';
-        shareholdersArea.style.minHeight = '';
-        // ABSOLUTE FIX: initialHeight'ı temizleme - bir sonraki scrollable için kullanılabilir
+        clearShareholderScrollHeights(shareholdersArea, shareholdersContainer, shareholdersList);
       }
     }
-    
+
     shareholdersContainer.classList.toggle('scrollable', shouldScroll);
     
     if (!shouldScroll) {
@@ -396,7 +457,7 @@
       if (!run) {
         run = debounce(function () {
           refreshShareholderGuidance(root);
-        }, 120);
+        }, 72);
         shareholderGuidanceDebouncedByRoot.set(root, run);
       }
       run();
@@ -410,23 +471,96 @@
     return Array.from(root.querySelectorAll('.wdp-shareholder-form'));
   }
 
+  /**
+   * Doğrulama dataset bayrakları her zaman iç form (wdp-donation-form-fields) üzerinde tutulur.
+   * Bazı çağrılar .wdp-modal kökü ile geldiğinden, armed / target okuma-yazma için formu çözümler.
+   */
+  function resolveShareholderValidationRoot(scope) {
+    if (!scope) {
+      return null;
+    }
+    try {
+      if (scope.nodeType === 1 && scope.tagName === 'FORM') {
+        if (scope.classList.contains('wdp-donation-form-fields') || scope.classList.contains('wdp-has-shareholders')) {
+          return scope;
+        }
+      }
+    } catch (eResolve) {
+      /* ignore */
+    }
+    if (typeof scope.closest === 'function') {
+      const direct =
+        scope.closest('form.wdp-donation-form-fields') ||
+        scope.closest('form.wdp-has-shareholders') ||
+        scope.closest('form');
+      if (direct) {
+        return direct;
+      }
+    }
+    if (typeof scope.querySelector === 'function') {
+      const inner = scope.querySelector('form.wdp-donation-form-fields, form.wdp-has-shareholders');
+      if (inner) {
+        return inner;
+      }
+    }
+    return null;
+  }
+
   function getRowRequiredState(form) {
     if (!form) {
       return { complete: true, missing: [] };
     }
-    const nameInput = form.querySelector('input[name^="shareholder_name_"]');
-    const phoneInput = form.querySelector('input[name^="shareholder_phone_"]');
-    const missing = [];
-    if (!nameInput || !nameInput.value.trim()) {
-      missing.push('Ad Soyad');
+    const validation = getShareholderRowValidationState(form);
+    return {
+      complete: validation.complete,
+      missing: validation.issues.map(function (type) {
+        return type === 'name' ? 'Ad Soyad' : 'Telefon';
+      }),
+    };
+  }
+
+  function getShareholderRowValidationState(shareholderForm) {
+    if (!shareholderForm) {
+      return { complete: true, issues: [] };
     }
-    if (!phoneInput || !phoneInput.value.trim()) {
-      missing.push('Telefon');
+    const nameInput = shareholderForm.querySelector('input[name^="shareholder_name_"]');
+    const phoneInput = shareholderForm.querySelector('input[name^="shareholder_phone_"]');
+    const issues = [];
+    if (!nameInput || !nameInput.value.trim()) {
+      issues.push('name');
+    }
+    if (phoneInput) {
+      let phoneOk = true;
+      if (WDPApp.form && typeof WDPApp.form.getPhoneValidationState === 'function') {
+        phoneOk = WDPApp.form.getPhoneValidationState(phoneInput, { required: true }).ok;
+      } else if (!String(phoneInput.value || '').trim()) {
+        phoneOk = false;
+      }
+      if (!phoneOk) {
+        issues.push('phone');
+      }
     }
     return {
-      complete: missing.length === 0,
-      missing: missing,
+      complete: issues.length === 0,
+      issues: issues,
     };
+  }
+
+  function applyShareholderHeaderStatus(shareholderForm, armed) {
+    const header = shareholderForm ? shareholderForm.querySelector('.wdp-shareholder-header') : null;
+    if (!header) {
+      return;
+    }
+    header.classList.remove('wdp-header-status-valid', 'wdp-header-status-invalid');
+    if (!armed) {
+      return;
+    }
+    const state = getShareholderRowValidationState(shareholderForm);
+    if (state.complete) {
+      header.classList.add('wdp-header-status-valid');
+    } else {
+      header.classList.add('wdp-header-status-invalid');
+    }
   }
 
   function stripShareholderRowStatusUI(form) {
@@ -436,48 +570,14 @@
     });
   }
 
-  function ensureShareholderOverview(root) {
-    if (!root) return null;
+  /** Eski üst “Hissedar Form Durumu” bandı kalıntı DOM temizliği. */
+  function removeShareholderOverview(root) {
+    if (!root) return;
     const sharesHeader = root.querySelector('.wdp-shares-header');
-    if (!sharesHeader) return null;
-    let overview = sharesHeader.querySelector('.wdp-shareholder-overview');
-    if (!overview) {
-      overview = document.createElement('div');
-      overview.className = 'wdp-shareholder-overview';
-      sharesHeader.appendChild(overview);
-    }
-    if (!overview.querySelector('.wdp-shareholder-micro__heading')) {
-      overview.textContent = '';
-      const micro = document.createElement('div');
-      micro.className = 'wdp-shareholder-micro';
-      micro.setAttribute('role', 'status');
-      micro.setAttribute('aria-live', 'polite');
-
-      const heading = document.createElement('span');
-      heading.className = 'wdp-shareholder-micro__heading';
-
-      const row = document.createElement('div');
-      row.className = 'wdp-shareholder-micro__row';
-
-      const track = document.createElement('div');
-      track.className = 'wdp-shareholder-micro__track';
-      track.setAttribute('role', 'progressbar');
-      track.setAttribute('aria-valuemin', '0');
-
-      const fill = document.createElement('div');
-      fill.className = 'wdp-shareholder-micro__fill';
-      track.appendChild(fill);
-
-      const label = document.createElement('span');
-      label.className = 'wdp-shareholder-micro__label';
-
-      row.appendChild(track);
-      row.appendChild(label);
-      micro.appendChild(heading);
-      micro.appendChild(row);
-      overview.appendChild(micro);
-    }
-    return overview;
+    if (!sharesHeader) return;
+    sharesHeader.querySelectorAll('.wdp-shareholder-overview').forEach(function (el) {
+      el.remove();
+    });
   }
 
   function isShareValidationArmed(root) {
@@ -485,80 +585,109 @@
   }
 
   function setShareValidationArmed(root, armed, targetIndex) {
-    if (!root || !root.dataset) return;
-    root.dataset.wdpShareValidationArmed = armed ? '1' : '0';
+    const bag = resolveShareholderValidationRoot(root) || root;
+    if (!bag || !bag.dataset) return;
+    bag.dataset.wdpShareValidationArmed = armed ? '1' : '0';
     if (armed && Number.isFinite(Number(targetIndex)) && Number(targetIndex) > 0) {
-      root.dataset.wdpShareValidationTarget = String(Number(targetIndex));
+      bag.dataset.wdpShareValidationTarget = String(Number(targetIndex));
     } else {
-      delete root.dataset.wdpShareValidationTarget;
+      delete bag.dataset.wdpShareValidationTarget;
     }
     refreshShareholderGuidance(root);
   }
 
-  function refreshShareholderGuidance(root) {
-    if (!root) return;
-    const forms = getShareholderForms(root);
-    if (!forms.length) return;
-    const armed = isShareValidationArmed(root);
-    const targetIndex = Number.parseInt((root.dataset && root.dataset.wdpShareValidationTarget) || '0', 10) || 0;
+  const submitSummaryTimers =
+    typeof WeakMap !== 'undefined' ? new WeakMap() : null;
+  const SUBMIT_SUMMARY_VISIBLE_MS = 4500;
+  const SUBMIT_SUMMARY_VISIBLE_MS_COMPACT = 6500;
 
-    let incompleteCount = 0;
-    let completeCount = 0;
-    const total = forms.length;
+  function clearShareholdersSubmitSummary(root) {
+    const bag = resolveShareholderValidationRoot(root) || root;
+    if (!bag) {
+      return;
+    }
+    const existing = bag.querySelector('.wdp-shareholders-submit-summary');
+    if (existing) {
+      existing.remove();
+    }
+    if (submitSummaryTimers && submitSummaryTimers.has(bag)) {
+      clearTimeout(submitSummaryTimers.get(bag));
+      submitSummaryTimers.delete(bag);
+    }
+  }
 
-    forms.forEach(function (form) {
-      stripShareholderRowStatusUI(form);
-      const state = getRowRequiredState(form);
-      const formIndex = Number.parseInt(form.getAttribute('data-index') || '0', 10) || 0;
-      form.classList.remove('is-complete', 'is-incomplete', 'is-incomplete-pending', 'is-targeted-incomplete');
-      if (state.complete) {
-        completeCount += 1;
-      } else {
-        incompleteCount += 1;
-      }
-      if (armed && !state.complete && targetIndex > 0 && formIndex === targetIndex) {
-        form.classList.add('is-targeted-incomplete');
+  function showShareholdersSubmitSummary(root, lines, options) {
+    const bag = resolveShareholderValidationRoot(root) || root;
+    if (!bag || !Array.isArray(lines) || !lines.length) {
+      return;
+    }
+    const compact = !!(options && options.compact);
+    const footerZone = bag.querySelector('.wdp-side-panel-footer-zone');
+    const buttonGroup = footerZone
+      ? footerZone.querySelector('.wdp-button-group')
+      : bag.querySelector('.wdp-button-group');
+    if (!buttonGroup) {
+      return;
+    }
+    clearShareholdersSubmitSummary(bag);
+
+    const summary = document.createElement('div');
+    summary.className = 'wdp-shareholders-submit-summary';
+    if (compact) {
+      summary.classList.add('wdp-shareholders-submit-summary--compact');
+    }
+    summary.setAttribute('role', 'alert');
+    summary.setAttribute('aria-live', 'assertive');
+
+    lines.forEach(function (line) {
+      const row = document.createElement('div');
+      row.className = 'wdp-shareholders-submit-summary__line';
+      row.textContent = line;
+      summary.appendChild(row);
+    });
+
+    buttonGroup.parentNode.insertBefore(summary, buttonGroup);
+
+    window.requestAnimationFrame(function () {
+      summary.classList.add('is-visible');
+      const scrollTarget = footerZone || summary;
+      try {
+        scrollTarget.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      } catch (eScroll) {
+        /* ignore */
       }
     });
 
-    const overview = ensureShareholderOverview(root);
-    if (overview) {
-      const shouldShow = incompleteCount > 0;
-      const heading = overview.querySelector('.wdp-shareholder-micro__heading');
-      const track = overview.querySelector('.wdp-shareholder-micro__track');
-      const fill = overview.querySelector('.wdp-shareholder-micro__fill');
-      const label = overview.querySelector('.wdp-shareholder-micro__label');
-      const pct = total > 0 ? (completeCount / total) * 100 : 0;
-      if (heading) {
-        heading.textContent =
-          (shareholderTexts.progress_status_label && String(shareholderTexts.progress_status_label).trim()) ||
-          'Hissedar Form Durumu';
-      }
-      if (fill) {
-        fill.style.width = pct + '%';
-      }
-      if (label) {
-        label.textContent =
-          incompleteCount === 1
-            ? '1 eksik'
-            : completeCount + '/' + total + ' tamamlandı';
-      }
-      if (track) {
-        track.setAttribute('aria-valuenow', String(completeCount));
-        track.setAttribute('aria-valuemax', String(total));
-        track.setAttribute(
-          'aria-label',
-          completeCount + ' of ' + total + ' complete, ' + incompleteCount + ' remaining'
-        );
-      }
-      if (shouldShow) {
-        overview.classList.add('wdp-shareholder-overview--active');
-        overview.setAttribute('aria-hidden', 'false');
-      } else {
-        overview.classList.remove('wdp-shareholder-overview--active');
-        overview.setAttribute('aria-hidden', 'true');
-      }
+    const visibleMs = compact ? SUBMIT_SUMMARY_VISIBLE_MS_COMPACT : SUBMIT_SUMMARY_VISIBLE_MS;
+    const hideTimer = window.setTimeout(function () {
+      summary.classList.remove('is-visible');
+      window.setTimeout(function () {
+        if (summary.parentNode) {
+          summary.remove();
+        }
+      }, 280);
+    }, visibleMs);
+
+    if (submitSummaryTimers) {
+      submitSummaryTimers.set(bag, hideTimer);
     }
+  }
+
+  function refreshShareholderGuidance(root) {
+    if (!root) return;
+    const bag = resolveShareholderValidationRoot(root) || root;
+    removeShareholderOverview(bag);
+    const forms = getShareholderForms(bag);
+    if (!forms.length) {
+      return;
+    }
+    const armed = isShareValidationArmed(bag);
+
+    forms.forEach(function (form) {
+      stripShareholderRowStatusUI(form);
+      form.classList.remove('is-complete', 'is-incomplete', 'is-incomplete-pending', 'is-targeted-incomplete');
+      applyShareholderHeaderStatus(form, armed);
+    });
 
     forms.forEach(function (form) {
       checkShareholderFormWarning(form);
@@ -570,14 +699,16 @@
       return;
     }
     const refresh = (e) => {
-      const root = form.closest('.wdp-modal') || form.closest('.wdp-donation-form') || form.closest('form');
-      if (root) {
-        root.dataset.wdpShareValidationArmed = '0';
-        delete root.dataset.wdpShareValidationTarget;
+      const bag = resolveShareholderValidationRoot(form) || form.closest('form');
+      if (bag) {
+        bag.dataset.wdpShareValidationArmed = '0';
+        delete bag.dataset.wdpShareValidationTarget;
         if (e && e.target && e.target.classList && e.target.classList.contains('wdp-error')) {
           e.target.classList.remove('wdp-error');
         }
-        queueShareholderGuidanceRefresh(root);
+        applyShareholderHeaderStatus(form, false);
+        clearShareholdersSubmitSummary(bag);
+        queueShareholderGuidanceRefresh(bag);
       }
     };
     const nameInput = form.querySelector('input[name^="shareholder_name_"]');
@@ -612,9 +743,52 @@
     });
   }
 
+  function resolveShareUnitPrice(modal) {
+    if (!modal) {
+      return 0;
+    }
+    const ds = modal.getAttribute('data-wdp-unit-price');
+    let unit = ds ? Number.parseFloat(ds) : 0;
+    if (!Number.isFinite(unit) || unit <= 0) {
+      const productId = modal.getAttribute('data-product-id')
+        || (modal.querySelector('input[name="wdp_product_id"]') && modal.querySelector('input[name="wdp_product_id"]').value);
+      if (productId && productPrices && productPrices[productId]) {
+        unit = Number.parseFloat(productPrices[productId]);
+      }
+    }
+    return Number.isFinite(unit) && unit > 0 ? unit : 0;
+  }
+
+  function updateSharesTotalBar(modal) {
+    if (!modal) {
+      return;
+    }
+    const form = modal.querySelector('form.wdp-has-shareholders');
+    if (!form) {
+      return;
+    }
+    const bar = form.querySelector('.wdp-shares-total-bar');
+    if (!bar) {
+      return;
+    }
+    const countInput = form.querySelector('input[name="share_count"]');
+    const count = countInput ? Math.max(1, Number.parseInt(countInput.value, 10) || 1) : 1;
+    const valueEl = bar.querySelector('.wdp-shares-total-bar__value');
+    if (!valueEl) {
+      return;
+    }
+    const unit = resolveShareUnitPrice(modal);
+    if (!unit) {
+      bar.hidden = true;
+      return;
+    }
+    valueEl.textContent = formatCurrency(unit * count);
+    bar.hidden = count < 2;
+  }
+
   function syncShareholderUnitPricesFromModal(modal) {
     if (!modal) return;
-    const idInput = modal.querySelector('input[name="add-to-cart"]');
+    const idInput = modal.querySelector('input[name="wdp_product_id"], input[name="add-to-cart"]');
     const id = idInput ? Number.parseInt(idInput.value, 10) : 0;
     let unit = 0;
     if (id && productPrices && Number.isFinite(Number(productPrices[id]))) {
@@ -625,6 +799,7 @@
       unit = ds ? Number.parseFloat(ds) : 0;
     }
     syncShareholderUnitPrices(modal, unit);
+    updateSharesTotalBar(modal);
   }
 
   // Create shareholder form element
@@ -689,7 +864,7 @@
     fieldStack.setAttribute('aria-label', fieldGroupLabel);
 
     const nameRow = document.createElement('div');
-    nameRow.className = 'wdp-field-stack__row';
+    nameRow.className = 'wdp-field-stack__row wdp-field-stack__row--name';
     const userIcon = document.createElement('span');
     userIcon.className = 'wdp-field-stack__icon';
     userIcon.setAttribute('aria-hidden', 'true');
@@ -709,21 +884,31 @@
     phoneRow.className = 'wdp-field-stack__row wdp-field-stack__row--phone';
     const phoneWrap = document.createElement('div');
     phoneWrap.className = 'wdp-field-stack__phone';
-    const phoneInput = document.createElement('input');
-    phoneInput.type = 'tel';
-    phoneInput.className = 'wdp-field-stack__input';
-    phoneInput.name = `shareholder_phone_${safeIndex}`;
-    phoneInput.placeholder = phonePlaceholder;
-    phoneInput.autocomplete = 'tel';
-    phoneInput.required = true;
-    phoneInput.setAttribute('inputmode', 'tel');
-    phoneWrap.appendChild(phoneInput);
+    if (WDPApp.phoneInput && typeof WDPApp.phoneInput.createFieldElement === 'function') {
+      phoneWrap.appendChild(
+        WDPApp.phoneInput.createFieldElement({
+          name: `shareholder_phone_${safeIndex}`,
+          placeholder: phonePlaceholder,
+          required: true,
+        })
+      );
+    } else {
+      const phoneInput = document.createElement('input');
+      phoneInput.type = 'tel';
+      phoneInput.className = 'wdp-field-stack__input';
+      phoneInput.name = `shareholder_phone_${safeIndex}`;
+      phoneInput.placeholder = phonePlaceholder;
+      phoneInput.autocomplete = 'tel';
+      phoneInput.required = true;
+      phoneInput.setAttribute('inputmode', 'tel');
+      phoneWrap.appendChild(phoneInput);
+    }
     phoneRow.appendChild(phoneWrap);
     fieldStack.appendChild(phoneRow);
 
     if (enableEmailField) {
       const emailRow = document.createElement('div');
-      emailRow.className = 'wdp-field-stack__row';
+      emailRow.className = 'wdp-field-stack__row wdp-field-stack__row--email';
       const emailIcon = document.createElement('span');
       emailIcon.className = 'wdp-field-stack__icon';
       emailIcon.setAttribute('aria-hidden', 'true');
@@ -853,6 +1038,9 @@
     }
     const root = form.closest('.wdp-modal') || form.closest('.wdp-donation-form');
     if (root) {
+      requestAnimationFrame(() => {
+        updateShareholdersScrollable(root);
+      });
       refreshShareholderGuidance(root);
     }
   }
@@ -888,13 +1076,14 @@
   function setupShareholderHeaderClick(form) {
     const header = form.querySelector('.wdp-shareholder-header');
     if (!header) return;
-    
-    // Önceki event listener'ları temizle
-    const newHeader = header.cloneNode(true);
-    header.parentNode.replaceChild(newHeader, header);
-    
+
+    if (header.dataset.wdpHeaderClickBound === '1') {
+      return;
+    }
+    header.dataset.wdpHeaderClickBound = '1';
+
     // Click event listener ekle
-    newHeader.addEventListener('click', (e) => {
+    header.addEventListener('click', (e) => {
       e.preventDefault();
       e.stopPropagation();
       toggleShareholderForm(form);
@@ -909,12 +1098,10 @@
 
     if (!nameInput || !phoneInput || !copyBtn) return;
 
-    // Önceki event listener'ları temizle
-    const newCopyBtn = copyBtn.cloneNode(true);
-    copyBtn.parentNode.replaceChild(newCopyBtn, copyBtn);
-    newCopyBtn.disabled = true;
-    newCopyBtn.classList.remove('is-active');
-    newCopyBtn.style.display = 'none';
+    const normalizedCopyBtn = form.querySelector('.wdp-copy-form-btn');
+    normalizedCopyBtn.disabled = true;
+    normalizedCopyBtn.classList.remove('is-active');
+    normalizedCopyBtn.style.display = 'none';
 
     // Event listener'ları direkt ekle - clone işlemi yok
     const checkFields = () => {
@@ -922,44 +1109,53 @@
       const phoneValue = phoneInput.value.trim();
       
       const isReady = Boolean(nameValue && phoneValue);
-      newCopyBtn.disabled = !isReady;
-      newCopyBtn.classList.toggle('is-active', isReady);
-      newCopyBtn.style.display = isReady ? 'inline-flex' : 'none';
-      newCopyBtn.style.opacity = isReady ? '1' : '0';
-      newCopyBtn.style.pointerEvents = isReady ? 'auto' : 'none';
+      normalizedCopyBtn.disabled = !isReady;
+      normalizedCopyBtn.classList.toggle('is-active', isReady);
+      normalizedCopyBtn.style.display = isReady ? 'inline-flex' : 'none';
+      normalizedCopyBtn.style.opacity = isReady ? '1' : '0';
+      normalizedCopyBtn.style.pointerEvents = isReady ? 'auto' : 'none';
       const root = form.closest('.wdp-modal') || form.closest('.wdp-donation-form');
       if (root) {
         refreshShareholderGuidance(root);
       }
     };
 
-    // Event listener'ları ekle
-    nameInput.addEventListener('input', checkFields);
-    phoneInput.addEventListener('input', checkFields);
+    // Event listener'ları bir kez ekle
+    if (nameInput.dataset.wdpCopyWatcherBound !== '1') {
+      nameInput.dataset.wdpCopyWatcherBound = '1';
+      nameInput.addEventListener('input', checkFields);
+    }
+    if (phoneInput.dataset.wdpCopyWatcherBound !== '1') {
+      phoneInput.dataset.wdpCopyWatcherBound = '1';
+      phoneInput.addEventListener('input', checkFields);
+    }
 
     // Sayfa yüklendiğinde mevcut değerleri kontrol et
     checkFields();
 
     // Kopyasını oluştur butonuna tıklama
-    newCopyBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      
-      // Mevcut form verilerini al
-      const nameValue = nameInput.value.trim();
-      const phoneValue = WDPApp.phoneInput && typeof WDPApp.phoneInput.getValueForCopy === 'function'
-        ? WDPApp.phoneInput.getValueForCopy(phoneInput)
-        : phoneInput.value.trim();
-      const noteEl = getShareholderNoteTextarea(form);
-      const noteValue = noteEl ? noteEl.value.trim() : '';
-      
-      if (!nameValue || !phoneValue) {
-        return;
-      }
-      
-      // Yeni form oluştur
-      duplicateShareholderForm(form, nameValue, phoneValue, noteValue);
-    });
+    if (normalizedCopyBtn.dataset.wdpCopyClickBound !== '1') {
+      normalizedCopyBtn.dataset.wdpCopyClickBound = '1';
+      normalizedCopyBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        // Mevcut form verilerini al
+        const nameValue = nameInput.value.trim();
+        const phoneValue = WDPApp.phoneInput && typeof WDPApp.phoneInput.getValueForCopy === 'function'
+          ? WDPApp.phoneInput.getValueForCopy(phoneInput)
+          : phoneInput.value.trim();
+        const noteEl = getShareholderNoteTextarea(form);
+        const noteValue = noteEl ? noteEl.value.trim() : '';
+        
+        if (!nameValue || !phoneValue) {
+          return;
+        }
+        
+        // Yeni form oluştur
+        duplicateShareholderForm(form, nameValue, phoneValue, noteValue);
+      });
+    }
   }
 
   // Duplicate shareholder form
@@ -1051,20 +1247,12 @@
     // CRITICAL: Shareholders area görünürlüğünü garanti et
     const shareholdersArea = container.closest('.wdp-shareholders-area');
     if (shareholdersArea) {
-      shareholdersArea.style.display = 'flex';
-      shareholdersArea.style.flexDirection = 'column';
-      shareholdersArea.style.visibility = 'visible';
-      shareholdersArea.style.opacity = '1';
-      shareholdersArea.removeAttribute('hidden');
+      applyShareholdersAreaVisibility(shareholdersArea);
     }
     
     // CRITICAL: Container ve list görünürlüğünü garanti et
     if (container) {
-      container.style.display = 'flex';
-      container.style.flexDirection = 'column';
-      container.style.visibility = 'visible';
-      container.style.opacity = '1';
-      container.removeAttribute('hidden');
+      applyShareholdersContainerVisibility(container);
     }
     
     if (list) {
@@ -1075,26 +1263,36 @@
       list.removeAttribute('hidden');
     }
     
-    // CRITICAL: ÖNCE orijinal formu kesinlikle kapat
-    originalForm.classList.add('collapsed');
-    const originalContent = originalForm.querySelector('.wdp-shareholder-content');
-    if (originalContent) {
-      originalContent.style.display = 'none';
-      originalContent.style.visibility = 'hidden';
-      originalContent.style.opacity = '0';
-    }
-    
-    // CRITICAL: Tüm diğer formları da kapat (yeni form hariç)
+    /* Kaynak hissedar kartı kullanıcı verisini saklamalı: kopyalayınca orijinali kapatmak alanların
+       "silindiği" hissini veriyordu. Orijinal (ve diğer) formları çökertme; içerik display:none atanmasın.
+       Accordion gerekiyorsa kullanıcı başlıktan kolayca daraltır — kopyadan sonra tek açılmayı yeni karta verdik. */
+    const clearInlineContentVisibility = (formEl) => {
+      const c = formEl && formEl.querySelector('.wdp-shareholder-content');
+      if (!c) return;
+      c.style.display = '';
+      c.style.visibility = '';
+      c.style.opacity = '';
+    };
+
+    clearInlineContentVisibility(originalForm);
+
+    originalForm.classList.remove('collapsed');
+
+    /* Diğer kartlar: yeni kopyanın odak kaydı olması için accordion hissi korunur ancak görünür inline gizlemeler sıfırlanır */
     const allForms = list.querySelectorAll('.wdp-shareholder-form');
     allForms.forEach((form) => {
-      if (form !== newForm) {
-        form.classList.add('collapsed');
-        const content = form.querySelector('.wdp-shareholder-content');
-        if (content) {
-          content.style.display = 'none';
-          content.style.visibility = 'hidden';
-          content.style.opacity = '0';
-        }
+      clearInlineContentVisibility(form);
+      if (form === newForm) {
+        return;
+      }
+      if (form === originalForm) {
+        form.classList.remove('collapsed');
+        return;
+      }
+      form.classList.add('collapsed');
+      const content = form.querySelector('.wdp-shareholder-content');
+      if (content && form.classList.contains('collapsed')) {
+        content.style.display = 'none';
       }
     });
     
@@ -1166,16 +1364,13 @@
     
     // CRITICAL: Son bir kez daha kontrol et ve garanti et
     requestAnimationFrame(() => {
-      // Orijinal formu kesinlikle kapat
-      originalForm.classList.add('collapsed');
+      originalForm.classList.remove('collapsed');
+      clearInlineContentVisibility(originalForm);
       const origContent = originalForm.querySelector('.wdp-shareholder-content');
       if (origContent) {
-        origContent.style.display = 'none';
-        origContent.style.visibility = 'hidden';
-        origContent.style.opacity = '0';
+        origContent.style.display = '';
       }
-      
-      // Yeni formu kesinlikle aç
+
       newForm.classList.remove('collapsed');
       const newCont = newForm.querySelector('.wdp-shareholder-content');
       if (newCont) {
@@ -1183,9 +1378,12 @@
         newCont.style.visibility = 'visible';
         newCont.style.opacity = '1';
       }
-      
-      // Yeni formu görünür alana scroll et
-      newForm.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+      try {
+        newForm.scrollIntoView({ behavior: 'instant', block: 'nearest' });
+      } catch (e) {
+        newForm.scrollIntoView(false);
+      }
       safeLog(`Hissedar formu kopyalandı: ${newIndex}. Hissedar (açık olarak), ${currentCount}. Hissedar (kapalı)`);
       if (contextRoot) {
         refreshShareholderGuidance(contextRoot);
@@ -1232,18 +1430,16 @@
     safeLog("Existing forms:", existingCount, "New count:", shareCount);
 
     // CRITICAL: Container'ların görünürlüğünü garanti et
-    shareholdersContainer.style.display = '';
     shareholdersContainer.style.visibility = 'visible';
     shareholdersContainer.style.opacity = '1';
     shareholdersList.style.display = '';
     shareholdersList.style.visibility = 'visible';
     shareholdersList.style.opacity = '1';
+    applyShareholdersContainerVisibility(shareholdersContainer);
     
     const shareholdersArea = shareholdersContainer.closest('.wdp-shareholders-area');
     if (shareholdersArea) {
-      shareholdersArea.style.display = 'flex';
-      shareholdersArea.style.visibility = 'visible';
-      shareholdersArea.style.opacity = '1';
+      applyShareholdersAreaVisibility(shareholdersArea);
     }
     
     // CRITICAL: Yeni formlar eklenirken mevcut formların durumunu kontrol et
@@ -1429,7 +1625,7 @@
     // CRITICAL: Update scrollable class immediately - BEFORE browser renders
     // This prevents modal expansion by applying height constraints instantly
     // shareholdersArea'yı yukarıda zaten tanımladık, tekrar tanımlamaya gerek yok
-    if (shareholdersArea && shareCount > 1) {
+    if (!isSidePanelModal(modal) && shareholdersArea && shareCount > 1) {
       // Immediately add scrollable class before updateShareholdersScrollable
       shareholdersArea.classList.add('scrollable');
       shareholdersContainer.classList.add('scrollable');
@@ -1438,12 +1634,8 @@
       shareholdersArea.classList.remove('scrollable');
       shareholdersContainer.classList.remove('scrollable');
       // CRITICAL: ShareCount 1'e düştüğünde container'ların görünürlüğünü garanti et
-      shareholdersArea.style.display = 'flex';
-      shareholdersArea.style.visibility = 'visible';
-      shareholdersArea.style.opacity = '1';
-      shareholdersContainer.style.display = '';
-      shareholdersContainer.style.visibility = 'visible';
-      shareholdersContainer.style.opacity = '1';
+      applyShareholdersAreaVisibility(shareholdersArea);
+      applyShareholdersContainerVisibility(shareholdersContainer);
       shareholdersList.style.display = '';
       shareholdersList.style.visibility = 'visible';
       shareholdersList.style.opacity = '1';
@@ -1468,8 +1660,8 @@
     safeLog("Setting up share quantity buttons for modal:", modal.id);
     
     // Hisse adedi artırma/azaltma butonlarını bul
-    const decreaseBtn = $modal(".wdp-share-btn.decrease");
-    const increaseBtn = $modal(".wdp-share-btn.increase");
+    const decreaseBtn = $modal(".wdp-share-btn.wdp-share-btn-decrease");
+    const increaseBtn = $modal(".wdp-share-btn.wdp-share-btn-increase");
 
     // Quantity input'unu bul
     const quantityInput = $modal('input[name="quantity"]');
@@ -1480,7 +1672,7 @@
       quantityInput: !!quantityInput
     });
 
-    // Input değişikliğini dinle - Önce eski event listener'ları temizle
+    // Input değişikliğini dinle
     let activeShareCountInput =
       shareCountInput && shareCountInput.parentNode
         ? shareCountInput
@@ -1490,34 +1682,8 @@
       return;
     }
 
-    const newShareCountInput = activeShareCountInput.cloneNode(true);
-    if (activeShareCountInput.parentNode) {
-      activeShareCountInput.parentNode.replaceChild(newShareCountInput, activeShareCountInput);
-    }
-    
-    // Yeni input referansını güncelle
-    const updatedShareCountInput = $modal('input[name="share_count"]');
-    
-    // Event listener'ları temizleme fonksiyonu
-    function removeAllEventListeners(element) {
-      const newElement = element.cloneNode(true);
-      if (element.parentNode) {
-        element.parentNode.replaceChild(newElement, element);
-      }
-      return newElement;
-    }
-    
-    // Önce mevcut event listener'ları temizleyelim
-    let newDecreaseBtn = null;
-    let newIncreaseBtn = null;
-    
-    if (decreaseBtn) {
-      newDecreaseBtn = removeAllEventListeners(decreaseBtn);
-    }
-
-    if (increaseBtn) {
-      newIncreaseBtn = removeAllEventListeners(increaseBtn);
-    }
+    const updatedShareCountInput = activeShareCountInput;
+    const handlerBag = modal._wdpShareHandlers || (modal._wdpShareHandlers = {});
     
     // Hisse adedini güncelleme fonksiyonu
     function updateShareCount(newValue) {
@@ -1540,11 +1706,15 @@
       // Formları güncelle
       updateShareholderFormsInternal(modal);
       updatePriceBasedOnShareCount();
+      updateSharesTotalBar(modal);
     }
     
     // Decrease butonu event listener'ı
-    if (newDecreaseBtn) {
-      newDecreaseBtn.addEventListener("mousedown", (e) => {
+    if (decreaseBtn) {
+      if (handlerBag.decreaseMousedown) {
+        decreaseBtn.removeEventListener("mousedown", handlerBag.decreaseMousedown);
+      }
+      handlerBag.decreaseMousedown = () => {
         const sharesSection = modal.querySelector('.wdp-shares-section');
         if (sharesSection) {
           sharesSection.classList.add('wdp-quantity-active');
@@ -1552,8 +1722,13 @@
             sharesSection.classList.remove('wdp-quantity-active');
           }, 200);
         }
-      });
-      newDecreaseBtn.addEventListener("click", (e) => {
+      };
+      decreaseBtn.addEventListener("mousedown", handlerBag.decreaseMousedown);
+
+      if (handlerBag.decreaseClick) {
+        decreaseBtn.removeEventListener("click", handlerBag.decreaseClick);
+      }
+      handlerBag.decreaseClick = (e) => {
         e.preventDefault();
         e.stopPropagation();
         safeLog("Decrease button clicked");
@@ -1562,12 +1737,16 @@
           const newValue = currentValue - 1;
           updateShareCount(newValue);
         }
-      });
+      };
+      decreaseBtn.addEventListener("click", handlerBag.decreaseClick);
     }
 
     // Increase butonu event listener'ı
-    if (newIncreaseBtn) {
-      newIncreaseBtn.addEventListener("mousedown", (e) => {
+    if (increaseBtn) {
+      if (handlerBag.increaseMousedown) {
+        increaseBtn.removeEventListener("mousedown", handlerBag.increaseMousedown);
+      }
+      handlerBag.increaseMousedown = () => {
         const sharesSection = modal.querySelector('.wdp-shares-section');
         if (sharesSection) {
           sharesSection.classList.add('wdp-quantity-active');
@@ -1575,8 +1754,13 @@
             sharesSection.classList.remove('wdp-quantity-active');
           }, 200);
         }
-      });
-      newIncreaseBtn.addEventListener("click", (e) => {
+      };
+      increaseBtn.addEventListener("mousedown", handlerBag.increaseMousedown);
+
+      if (handlerBag.increaseClick) {
+        increaseBtn.removeEventListener("click", handlerBag.increaseClick);
+      }
+      handlerBag.increaseClick = (e) => {
         e.preventDefault();
         e.stopPropagation();
         safeLog("Increase button clicked");
@@ -1585,12 +1769,16 @@
           const newValue = currentValue + 1;
           updateShareCount(newValue);
         }
-      });
+      };
+      increaseBtn.addEventListener("click", handlerBag.increaseClick);
     }
     
     // Input değişikliği event listener'ı
     if (updatedShareCountInput) {
-      updatedShareCountInput.addEventListener("input", function () {
+      if (handlerBag.shareInput) {
+        updatedShareCountInput.removeEventListener("input", handlerBag.shareInput);
+      }
+      handlerBag.shareInput = function () {
         let currentValue = Number.parseInt(this.value, 10) || 1;
         
         // Sınırları kontrol et
@@ -1611,7 +1799,8 @@
         // Değişiklikleri güvenli bir şekilde uygula
         updateShareholderFormsInternal(modal);
         updatePriceBasedOnShareCount();
-      });
+      };
+      updatedShareCountInput.addEventListener("input", handlerBag.shareInput);
     }
 
     // Copy button event listener'larını ekle
@@ -1778,14 +1967,12 @@
       // Hissedar alanını da görünür yap
       const shareholdersArea = shareholdersContainer.closest('.wdp-shareholders-area');
       if (shareholdersArea) {
-        ensureVisible(shareholdersArea, 'flex');
-        shareholdersArea.style.flexDirection = 'column';
+        applyShareholdersAreaVisibility(shareholdersArea);
         safeLog("Shareholders area made visible");
       }
       
-      // Container'ı görünür yap
-      ensureVisible(shareholdersContainer, 'flex');
-      shareholdersContainer.style.flexDirection = 'column';
+      removeShareholderOverview(modal);
+      applyShareholdersContainerVisibility(shareholdersContainer);
       safeLog("Shareholders container made visible");
       
       // Hissedar listesini oluştur veya bul
@@ -1860,19 +2047,7 @@
       setupWdpPhoneFields(shareholdersList);
 
       syncShareholderUnitPricesFromModal(modal);
-      
-      // ABSOLUTE FIX: Modal ilk açıldığında shareholders-area'nın height'ını kaydet
-      // Böylece scrollable olduğunda aynı height'ı kullanabiliriz
-      if (shareholdersArea) {
-        requestAnimationFrame(() => {
-          // İlk form oluşturulduktan sonra height'ı kaydet (1 form için)
-          const initialHeight = shareholdersArea.offsetHeight;
-          if (initialHeight > 0 && !shareholdersArea.dataset.initialHeight) {
-            shareholdersArea.dataset.initialHeight = initialHeight + 'px';
-            safeLog("Initial shareholders-area height saved:", initialHeight + 'px');
-          }
-        });
-      }
+      updateSharesTotalBar(modal);
       
       // Scrollable class'ını güncelle
       updateShareholdersScrollable(modal);
@@ -1882,7 +2057,7 @@
       const priceInput = modal.querySelector('input[name="custom_price"]');
 
       // Ürün ID'sini al
-      const productIdInput = modal.querySelector('input[name="add-to-cart"]');
+      const productIdInput = modal.querySelector('input[name="wdp_product_id"], input[name="add-to-cart"]');
       if (!productIdInput) {
         safeLog("Product ID input not found in modal:", modal.id);
         return;
@@ -1916,6 +2091,7 @@
 
             setupShareQuantityButtons(modal, modal.querySelector('input[name="share_count"]'), baseProductPrice, priceInput);
             syncShareholderUnitPricesFromModal(modal);
+            updateSharesTotalBar(modal);
             setupWdpPhoneFields(modal);
             refreshShareholderGuidance(modal);
             return;
@@ -1957,6 +2133,7 @@
 
             setupShareQuantityButtons(modal, modal.querySelector('input[name="share_count"]'), baseProductPrice, priceInput);
             syncShareholderUnitPricesFromModal(modal);
+            updateSharesTotalBar(modal);
             setupWdpPhoneFields(modal);
             refreshShareholderGuidance(modal);
           })
@@ -2193,6 +2370,9 @@
     updateForms: updateShareholderForms,
     refreshGuidance: refreshShareholderGuidance,
     setValidationArmed: setShareValidationArmed,
+    showSubmitSummary: showShareholdersSubmitSummary,
+    clearSubmitSummary: clearShareholdersSubmitSummary,
+    updateSharesTotalBar,
   };
 
   // Export shareholder module

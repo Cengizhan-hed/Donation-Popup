@@ -1,10 +1,13 @@
 {
   "name": "donation-popup",
   "version": "1.0.0",
-  "description": "WooCommerce donation popup — WordPress plugin (runtime assets live in assets/vendor; do not npm install intl-tel-input here).",
+  "description": "WooCommerce donation popup — WordPress plugin.",
   "private": true,
   "scripts": {
-    "pack": "sh scripts/package-wp-plugin.sh"
+    "build:css": "php tools/build-css-bundle.php",
+    "build:js": "php tools/build-js-bundle.php",
+    "build": "npm run build:css && npm run build:js",
+    "pack": "npm run build && sh scripts/package-wp-plugin.sh"
   },
   "repository": {
     "type": "git",

@@ -112,18 +112,18 @@ html body .wdp-toast[dir="rtl"].show {
 }
 
 /* Touch target size for mobile accessibility */
-html body .wdp-modal-content button,
-html body .wdp-donation-form .wdp-modal-content button,
+html body .wdp-modal-content button:not(.wdp-remove-cart-item),
+html body .wdp-donation-form .wdp-modal-content button:not(.wdp-remove-cart-item),
 html body button.wdp-donate-button,
 html body .wdp-open-modal {
   min-height: var(--wdp-touch-target-min, 44px);
   min-width: var(--wdp-touch-target-min, 44px);
 }
 
-/* Popup kapatma: genel 44px touch kuralı × ikonunu büyütüp dikeyde aşağı kaydırır; konum shared.css ile köşededir */
+/* Popup kapat — shared.css ile 44×44 hizalı; küçük min ile çakışma olmasın */
 html body .wdp-modal .wdp-modal-content > button.wdp-modal-close {
-  min-height: 32px;
-  min-width: 32px;
+  min-height: 44px;
+  min-width: 44px;
   padding: 0;
 }
 
@@ -162,16 +162,16 @@ html body #wdp-live-region-assertive {
 
 /* Mobile accessibility optimizations - sadece touch target; focus ring yok */
 @media (max-width: 600px) {
-  html body .wdp-modal-content button,
-  html body .wdp-donation-form .wdp-modal-content button {
+  html body .wdp-modal-content button:not(.wdp-remove-cart-item),
+  html body .wdp-donation-form .wdp-modal-content button:not(.wdp-remove-cart-item) {
     min-height: var(--wdp-touch-target-comfortable);
     min-width: var(--wdp-touch-target-comfortable);
   }
 }
 
 @media (max-width: 480px) {
-  html body .wdp-modal-content button,
-  html body .wdp-donation-form .wdp-modal-content button {
+  html body .wdp-modal-content button:not(.wdp-remove-cart-item),
+  html body .wdp-donation-form .wdp-modal-content button:not(.wdp-remove-cart-item) {
     min-height: var(--wdp-touch-target-min, 44px);
     min-width: var(--wdp-touch-target-min, 44px);
   }

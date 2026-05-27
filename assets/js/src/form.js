@@ -45,7 +45,7 @@
  * DEPENDENCIES:
  * - utils.js (formatCurrency, getAjaxNonce, announceStatus, debounce)
  * - state.js (form state management)
- * - alerts.js (error/success mesajları)
+ * - utils.js (clearAlerts — legacy overlay cleanup)
  * - cart.js (sepet güncelleme)
  * 
  * EXPORT:
@@ -72,22 +72,16 @@
     ? WDPApp.utils.ensureModule('state', [])
     : { module: WDPApp.state || {}, isValid: false, missingMethods: [] };
   
-  const alertsCheck = (WDPApp.utils && WDPApp.utils.ensureModule)
-    ? WDPApp.utils.ensureModule('alerts', ['clear', 'show'])
-    : { module: WDPApp.alerts || {}, isValid: false, missingMethods: [] };
-  
   const cartCheck = (WDPApp.utils && WDPApp.utils.ensureModule)
     ? WDPApp.utils.ensureModule('cart', ['fetchContents', 'updateCountElements', 'createItemsHTML', 'renderItemsInto', 'setupContinueShoppingButton', 'updateWooCommerce', 'saveSideCartElements', 'showSideCarts'])
     : { module: WDPApp.cart || {}, isValid: false, missingMethods: [] };
   
   const utils = utilsCheck.module;
   const state = stateCheck.module;
-  const alerts = alertsCheck.module;
   const cart = cartCheck.module;
   const { productPrices, originalForms } = state;
-  const { formatCurrency, getAjaxNonce, announceStatus, safeLog, escapeHtml, debounce, mergeWdpAjaxNonces, refreshWdpAjaxNonces } = utils;
-  const { clear: clearAlerts } = alerts;
-  const { fetchContents: fetchCartContents, updateCountElements: updateCartCountElements, createItemsHTML: createCartItemsHTML, renderItemsInto: renderCartItemsInto, setupContinueShoppingButton, setupRemoveCartItemButtons, updateWooCommerce: updateWooCommerceCart, saveSideCartElements, showSideCarts } = cart;
+  const { formatCurrency, getAjaxNonce, announceStatus, safeLog, escapeHtml, debounce, mergeWdpAjaxNonces, refreshWdpAjaxNonces, clearAlerts } = utils;
+  const { fetchContents: fetchCartContents, updateCountElements: updateCartCountElements, createItemsHTML: createCartItemsHTML, renderItemsInto: renderCartItemsInto, buildCartUiRoot, setupContinueShoppingButton, setupRemoveCartItemButtons, updateWooCommerce: updateWooCommerceCart, saveSideCartElements, showSideCarts } = cart;
   const wdp_ajax = window.wdp_ajax || {};
   const jQuery = window.jQuery || null;
 
@@ -100,6 +94,112 @@
       return row;
     }
     return input.parentNode;
+  }
+
+  function prepareDonationFormValidation(form) {
+    if (!form) {
+      return;
+    }
+    form.setAttribute('novalidate', 'novalidate');
+    form.noValidate = true;
+    form.querySelectorAll('.wdp-shareholder-form.collapsed input, .wdp-shareholder-form.collapsed textarea, .wdp-shareholder-form.collapsed select').forEach((field) => {
+      if (field.dataset.wdpCollapsedNativeOff === '1') {
+        return;
+      }
+      field.dataset.wdpCollapsedNativeOff = '1';
+      if (field.required) {
+        field.dataset.wdpHadRequired = '1';
+        field.required = false;
+      }
+    });
+  }
+
+  function restoreDonationFormValidation(form) {
+    if (!form) {
+      return;
+    }
+    form.querySelectorAll('.wdp-shareholder-form.collapsed [data-wdp-collapsed-native-off="1"]').forEach((field) => {
+      if (field.dataset.wdpHadRequired === '1') {
+        field.required = true;
+        delete field.dataset.wdpHadRequired;
+      }
+      delete field.dataset.wdpCollapsedNativeOff;
+    });
+  }
+
+  function resolveSubmitSubmitter(form, event) {
+    if (event && event.submitter) {
+      return event.submitter;
+    }
+    if (form && form._wdpLastClickSubmitter) {
+      return form._wdpLastClickSubmitter;
+    }
+    return null;
+  }
+
+  function showShareholderValidationFeedback(form, summaryLines, fallbackMessage) {
+    const lines = Array.isArray(summaryLines)
+      ? summaryLines.filter((line) => typeof line === 'string' && line.trim())
+      : [];
+    const primary =
+      lines.length > 0
+        ? lines[0]
+        : (typeof fallbackMessage === 'string' && fallbackMessage.trim()
+            ? fallbackMessage.trim()
+            : 'Lütfen işaretlenen alanları kontrol edin.');
+    ensureVisibleValidationFeedback(form, lines.length ? lines : [primary]);
+  }
+
+  function isCompactShareholderViewport() {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
+      return false;
+    }
+    return window.matchMedia('(max-width: 768px)').matches;
+  }
+
+  function scrollShareholderValidationIntoView(input) {
+    if (!input || typeof input.closest !== 'function') {
+      return;
+    }
+    const shareholderForm = input.closest('.wdp-shareholder-form');
+    if (!shareholderForm) {
+      return;
+    }
+    const scrollRoot =
+      shareholderForm.closest('.wdp-shareholders-scroll') ||
+      shareholderForm.closest('.wdp-shareholders-area');
+    const anchor =
+      getInputErrorAnchor(input) ||
+      input.closest('.wdp-field-stack__row') ||
+      input;
+    if (!scrollRoot || !anchor) {
+      return;
+    }
+    window.requestAnimationFrame(() => {
+      try {
+        anchor.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'smooth' });
+      } catch (eScroll1) {
+        try {
+          anchor.scrollIntoView(false);
+        } catch (eScroll2) {
+          /* ignore */
+        }
+      }
+      if (isCompactShareholderViewport()) {
+        const footerZone = (shareholderForm.closest('form') || document).querySelector(
+          '.wdp-side-panel-footer-zone, .wdp-button-group'
+        );
+        if (footerZone && typeof footerZone.scrollIntoView === 'function') {
+          window.setTimeout(() => {
+            try {
+              footerZone.scrollIntoView({ block: 'end', behavior: 'smooth' });
+            } catch (eFooter) {
+              /* ignore */
+            }
+          }, 160);
+        }
+      }
+    });
   }
 
   function getDonorNameRequiredMessage() {
@@ -133,20 +233,405 @@
     return generic;
   }
 
+  function getPhoneRequiredMessage() {
+    return getPhoneIncompleteMessage();
+  }
+
+  function getPhoneIncompleteMessage() {
+    const s = wdp_ajax && wdp_ajax.strings;
+    if (s && typeof s.phone_incomplete === 'string' && s.phone_incomplete.trim()) {
+      return s.phone_incomplete.trim();
+    }
+    return 'Telefon numaranızı eksiksiz giriniz.';
+  }
+
+  function getPhoneValidationState(input, options) {
+    if (!input || input.disabled || input.readOnly) {
+      return { ok: true, message: '' };
+    }
+    const isRequired =
+      options && typeof options.required === 'boolean'
+        ? options.required
+        : input.required || input.hasAttribute('required');
+    if (!WDPApp.phoneInput || typeof WDPApp.phoneInput.validatePhoneField !== 'function') {
+      if (isRequired && !String(input.value || '').trim()) {
+        return { ok: false, message: getPhoneRequiredMessage() };
+      }
+      return { ok: true, message: '' };
+    }
+    const result = WDPApp.phoneInput.validatePhoneField(input);
+    if (result.empty) {
+      if (!isRequired) {
+        return { ok: true, message: '' };
+      }
+      return { ok: false, message: getPhoneRequiredMessage() };
+    }
+    if (!result.ok) {
+      return { ok: false, message: getPhoneIncompleteMessage() };
+    }
+    return { ok: true, message: '' };
+  }
+
+  function validatePhoneInputInForm(form, input, options) {
+    const state = getPhoneValidationState(input, options);
+    if (!state.ok && !(options && options.silent)) {
+      showInputError(input, state.message);
+    }
+    return state.ok;
+  }
+
+  function validateAllPhoneFields(form, options) {
+    const includeShareholders = !(options && options.shareholders === false);
+    const selector = includeShareholders
+      ? 'input[type="tel"][name="donation_phone"], input[type="tel"][name^="shareholder_phone_"]'
+      : 'input[type="tel"][name="donation_phone"]';
+    let allOk = true;
+    form.querySelectorAll(selector).forEach((input) => {
+      const required =
+        input.name === 'donation_phone' ||
+        (input.name && input.name.indexOf('shareholder_phone_') === 0);
+      if (!validatePhoneInputInForm(form, input, { required: required })) {
+        allOk = false;
+      }
+    });
+    return allOk;
+  }
+
+  function getShareholderIssueSummaryLabel(type) {
+    const s = wdp_ajax && wdp_ajax.strings;
+    if (type === 'name') {
+      if (s && typeof s.shareholder_issue_name === 'string' && s.shareholder_issue_name.trim()) {
+        return s.shareholder_issue_name.trim();
+      }
+      return 'ad soyad alanı eksik';
+    }
+    if (type === 'phone') {
+      if (s && typeof s.shareholder_issue_phone === 'string' && s.shareholder_issue_phone.trim()) {
+        return s.shareholder_issue_phone.trim();
+      }
+      return 'telefon alanı eksik veya hatalı';
+    }
+    return 'alan eksik';
+  }
+
+  function clearShareholderHeaderStatusMarks(form) {
+    if (!form) {
+      return;
+    }
+    form.querySelectorAll('.wdp-shareholder-header').forEach((header) => {
+      header.classList.remove('wdp-header-status-valid', 'wdp-header-status-invalid');
+    });
+  }
+
+  function validateShareholderRow(shareholderForm) {
+    const rowIndex = Number.parseInt(shareholderForm.getAttribute('data-index') || '0', 10) || 0;
+    const nameField = shareholderForm.querySelector('input[name^="shareholder_name_"]');
+    const phoneField = shareholderForm.querySelector('input[name^="shareholder_phone_"]');
+    const isCollapsed = shareholderForm.classList.contains('collapsed');
+    const issues = [];
+
+    if (nameField && !nameField.value.trim()) {
+      issues.push({
+        type: 'name',
+        field: nameField,
+        message: `${rowIndex}. ${getShareholderNameRequiredMessage()}`,
+      });
+    }
+    if (phoneField) {
+      const phoneState = getPhoneValidationState(phoneField, { required: true });
+      if (!phoneState.ok) {
+        issues.push({
+          type: 'phone',
+          field: phoneField,
+          message: phoneState.message,
+        });
+      }
+    }
+
+    issues.forEach((issue) => {
+      showInputError(issue.field, issue.message);
+    });
+
+    return {
+      rowIndex: rowIndex > 0 ? rowIndex : 1,
+      row: shareholderForm,
+      isCollapsed,
+      issues,
+    };
+  }
+
+  function getSadakaInvalidMessage() {
+    const s = wdp_ajax && wdp_ajax.strings;
+    if (s && typeof s.sadaka_invalid === 'string' && s.sadaka_invalid.trim()) {
+      return s.sadaka_invalid.trim();
+    }
+    return 'Geçerli bir alt bağış tutarı giriniz.';
+  }
+
+  function getSadakaMinErrorMessage(minValue) {
+    const s = wdp_ajax && wdp_ajax.strings;
+    const prefix =
+      s && typeof s.sadaka_min_error === 'string' && s.sadaka_min_error.trim()
+        ? s.sadaka_min_error.trim()
+        : 'Alt bağış için minimum tutar: ';
+    return prefix + formatCurrency(minValue);
+  }
+
+  function getSadakaFixedAmount(wrap) {
+    if (!wrap) {
+      return NaN;
+    }
+    const raw = wrap.getAttribute('data-wdp-alt-fixed-price');
+    if (raw === null || raw === '') {
+      return NaN;
+    }
+    const value = parseNormalizedAmount(String(raw).trim());
+    return Number.isFinite(value) && value > 0 ? value : NaN;
+  }
+
+  function validateSadakaDonation(form) {
+    const wrap = form ? form.querySelector('[data-wdp-sadaka-donation]') : null;
+    if (!wrap || !wrap.classList.contains('is-open')) {
+      return true;
+    }
+    if (Number.isFinite(getSadakaFixedAmount(wrap))) {
+      return true;
+    }
+    const input = wrap.querySelector('input[name="sadaka_custom_price"]');
+    if (!input) {
+      return true;
+    }
+    const raw = String(input.value || '').trim();
+    if (raw === '') {
+      if (input.readOnly) {
+        return true;
+      }
+      showInputError(input, getSadakaInvalidMessage());
+      return false;
+    }
+    const numericValue = parseNormalizedAmount(raw);
+    const minAttr = input.getAttribute('min');
+    const minValue = minAttr !== null && minAttr !== '' ? parseNormalizedAmount(minAttr) : 0;
+    if (!Number.isFinite(numericValue) || numericValue <= 0) {
+      showInputError(input, getSadakaInvalidMessage());
+      return false;
+    }
+    if (Number.isFinite(minValue) && minValue > 0 && numericValue + 0.0001 < minValue) {
+      showInputError(input, getSadakaMinErrorMessage(minValue));
+      return false;
+    }
+    return true;
+  }
+
+  function patchSadakaFormData(form, formData) {
+    if (!form || !formData) {
+      return;
+    }
+    const wrap = form.querySelector('[data-wdp-sadaka-donation]');
+    const hasMainCustomPrice = !!form.querySelector('input[name="custom_price"]');
+    if (wrap && wrap.classList.contains('is-open')) {
+      const fixedAmount = getSadakaFixedAmount(wrap);
+      const sadakaInput = wrap.querySelector('input[name="sadaka_custom_price"]');
+      const sadakaRaw = sadakaInput ? String(sadakaInput.value || '').trim() : '';
+      if (Number.isFinite(fixedAmount) && fixedAmount > 0) {
+        formData.set('sadaka_donation_active', '1');
+        formData.set('sadaka_custom_price', String(fixedAmount));
+      } else if (sadakaRaw !== '') {
+        formData.set('sadaka_donation_active', '1');
+        formData.set('sadaka_custom_price', sadakaRaw);
+      } else {
+        formData.delete('sadaka_custom_price');
+        formData.delete('sadaka_donation_active');
+      }
+    } else {
+      formData.delete('sadaka_custom_price');
+      formData.delete('sadaka_donation_active');
+    }
+    // Sabit fiyatlı ürünlerde sadaka alanı ana custom_price POST anahtarına karışmasın.
+    if (!hasMainCustomPrice) {
+      formData.delete('custom_price');
+    }
+  }
+
+  let sadakaDonationDelegationBound = false;
+
+  function clearSadakaInputErrors(input) {
+    if (!input) {
+      return;
+    }
+    input.classList.remove('wdp-error');
+    const anchor = getInputErrorAnchor(input) || input.parentNode;
+    const err = anchor && anchor.querySelector('.wdp-input-error');
+    if (err) {
+      err.remove();
+    }
+  }
+
+  function toggleSadakaDonationPanel(wrap) {
+    if (!wrap) {
+      return;
+    }
+    const toggle = wrap.querySelector('.wdp-sadaka-donation__toggle');
+    const panel = wrap.querySelector('.wdp-sadaka-donation__panel');
+    const input = wrap.querySelector('input[name="sadaka_custom_price"]');
+    if (!toggle || !panel) {
+      return;
+    }
+
+    const open = wrap.classList.toggle('is-open');
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if (open) {
+      panel.removeAttribute('hidden');
+    } else {
+      panel.setAttribute('hidden', '');
+      if (input) {
+        input.value = '';
+        clearSadakaInputErrors(input);
+      }
+    }
+  }
+
+  function ensureSadakaDonationDelegation() {
+    if (sadakaDonationDelegationBound) {
+      return;
+    }
+    sadakaDonationDelegationBound = true;
+
+    document.addEventListener('click', function (e) {
+      const toggle = e.target.closest('.wdp-sadaka-donation__toggle');
+      if (!toggle) {
+        return;
+      }
+      const wrap = toggle.closest('[data-wdp-sadaka-donation]');
+      const form = toggle.closest('form');
+      if (!wrap || !form) {
+        return;
+      }
+      if (!form.closest('.wdp-modal') && !form.closest('.wdp-donation-form')) {
+        return;
+      }
+
+      e.preventDefault();
+      if (typeof e.stopPropagation === 'function') {
+        e.stopPropagation();
+      }
+      toggleSadakaDonationPanel(wrap);
+    });
+
+    document.addEventListener('input', function (e) {
+      const input = e.target;
+      if (!input || !input.matches || !input.matches('input[name="sadaka_custom_price"]')) {
+        return;
+      }
+      if (input.classList.contains('wdp-error')) {
+        clearSadakaInputErrors(input);
+      }
+    });
+  }
+
+  function bindSadakaDonation(form) {
+    ensureSadakaDonationDelegation();
+    if (!form) {
+      return;
+    }
+    const wrap = form.querySelector('[data-wdp-sadaka-donation]');
+    if (!wrap) {
+      return;
+    }
+    const panel = wrap.querySelector('.wdp-sadaka-donation__panel');
+    const toggle = wrap.querySelector('.wdp-sadaka-donation__toggle');
+    if (panel && !wrap.classList.contains('is-open')) {
+      panel.setAttribute('hidden', '');
+    }
+    if (toggle) {
+      toggle.setAttribute('aria-expanded', wrap.classList.contains('is-open') ? 'true' : 'false');
+    }
+  }
+
   let wdpFieldErrorIdSeq = 0;
   function nextFieldErrorId() {
     wdpFieldErrorIdSeq += 1;
     return 'wdp-field-err-' + wdpFieldErrorIdSeq;
   }
 
+  /** WooCommerce çekirdek/tema scriptleri `name="add-to-cart"` alanını yakalayıp paralel sepete ekleme yapabiliyor; önce wdp_product_id kullanılır. */
+  const WDP_PRODUCT_ID_INPUT_SELECTOR = 'input[name="wdp_product_id"], input[name="add-to-cart"]';
+
+  const WDP_FORM_SUBMIT_CAPTURE = true;
+
   function getWdpFormRoot(form) {
     if (!form) return null;
     return form.closest(".wdp-modal") || form.closest(".wdp-donation-form");
   }
 
+  function getWdpMetaFormType(form) {
+    return form && form.closest(".wdp-modal") ? "popup" : "inline";
+  }
+
+  function trackMetaPixelAfterAddToCartSuccess(data, form) {
+    if (!window.WDPMetaTracking || typeof window.WDPMetaTracking.trackAddToCartDonation !== "function") {
+      return;
+    }
+    try {
+      const line = data && data.meta_cart_line ? data.meta_cart_line : null;
+      const uniqueInput = form.querySelector('input[name="unique_submission_key"]');
+      const usk = uniqueInput && uniqueInput.value ? String(uniqueInput.value) : "";
+      if (form) {
+        form._wdpLastMetaCartLine = line || null;
+      }
+      window.WDPMetaTracking.trackAddToCartDonation({
+        metaCartLine: line,
+        cartItemKey: data && data.cart_item_key ? String(data.cart_item_key) : "",
+        uniqueSubmissionKey: usk,
+        productId: data && data.product_id,
+        formType: getWdpMetaFormType(form),
+      });
+    } catch (e) {
+      safeLog("Meta AddToCart:", e);
+    }
+  }
+
+  function trackMetaPixelInitiateCheckoutIfEnabled(form, data) {
+    if (!window.WDPMetaTracking || typeof window.WDPMetaTracking.trackInitiateCheckoutDonation !== "function") {
+      return;
+    }
+    const metaCfg = wdp_ajax && wdp_ajax.meta ? wdp_ajax.meta : {};
+    if (!metaCfg.enabled || !metaCfg.initiateCheckout) {
+      return;
+    }
+    const line = (data && data.meta_cart_line) || (form && form._wdpLastMetaCartLine) || null;
+    if (!line || !line.product_id) {
+      return;
+    }
+    try {
+      const pid = String(line.product_id);
+      const qty = parseInt(line.quantity, 10) || 1;
+      const icParams = {
+        content_ids: [pid],
+        content_name: String(line.product_name || "").slice(0, 500),
+        content_type: "product",
+        contents: [{ id: pid, quantity: qty, item_price: parseFloat(line.item_price) || 0 }],
+        value: parseFloat(line.line_total) || 0,
+        currency: line.currency || (wdp_ajax.currency && wdp_ajax.currency.code) || "TRY",
+        num_items: qty,
+      };
+      const uniqueInput = form.querySelector('input[name="unique_submission_key"]');
+      const usk = uniqueInput && uniqueInput.value ? String(uniqueInput.value) : "";
+      const dedupeKey = "wdp_meta_ic_" + pid + "_" + (usk || "nokey");
+      const eventID = "wdp_ic_" + pid + "_" + String(Date.now());
+      window.WDPMetaTracking.trackInitiateCheckoutDonation({
+        params: icParams,
+        eventID: eventID,
+        dedupeKey: dedupeKey,
+      });
+    } catch (e) {
+      safeLog("Meta InitiateCheckout:", e);
+    }
+  }
+
   function getWdpUnitPriceForForm(form) {
     const root = getWdpFormRoot(form);
-    const idInput = form.querySelector('input[name="add-to-cart"]');
+    const idInput = form.querySelector(WDP_PRODUCT_ID_INPUT_SELECTOR);
     const pid = idInput ? Number.parseInt(idInput.value, 10) : 0;
     if (pid && productPrices && Number.isFinite(Number(productPrices[pid]))) {
       return Number(productPrices[pid]);
@@ -173,8 +658,18 @@
 
   function parseNormalizedAmount(raw) {
     if (raw === null || raw === undefined) return NaN;
-    const s = String(raw).trim().replace(/\s+/g, "").replace(/\./g, "").replace(",", ".");
+    let s = String(raw).trim().replace(/\s+/g, "");
     if (s === "") return NaN;
+    if (s.includes(",")) {
+      s = s.replace(/\./g, "").replace(",", ".");
+    } else {
+      const parts = s.split(".");
+      if (parts.length > 2) {
+        s = parts.join("");
+      } else if (parts.length === 2 && parts[1].length === 3 && /^\d+$/.test(parts[1])) {
+        s = parts[0] + parts[1];
+      }
+    }
     return Number.parseFloat(s);
   }
 
@@ -195,8 +690,18 @@
     return Number.isInteger(r) ? r.toFixed(0) : r.toFixed(2);
   }
 
-  function getCustomPriceQtyRow(form) {
-    return form ? form.querySelector(".wdp-custom-price-with-qty-row") : null;
+  function getCustomPriceRow(form) {
+    if (!form) {
+      return null;
+    }
+    return (
+      form.querySelector(".wdp-custom-price-row") ||
+      form.querySelector(".wdp-custom-price-with-qty-row")
+    );
+  }
+
+  function customPriceRowHasQtyCounter(row) {
+    return !!(row && row.querySelector('.wdp-quantity-counter input[name="quantity"]'));
   }
 
   function ensureCustomUnitFromDisplayed(customIn, qty) {
@@ -213,8 +718,8 @@
   }
 
   function syncCustomPriceQtyRowDisplay(form) {
-    const row = getCustomPriceQtyRow(form);
-    if (!row) return;
+    const row = getCustomPriceRow(form);
+    if (!row || !customPriceRowHasQtyCounter(row)) return;
     const customIn = row.querySelector('input[name="custom_price"]');
     const qtyEl = row.querySelector('input[name="quantity"]');
     if (!customIn || !qtyEl) return;
@@ -230,14 +735,65 @@
     syncCustomPriceQtyRowDisplay(form);
   }
 
+  function bindProductQuantityDelegation(form) {
+    if (!form || form.dataset.wdpQtyDelegationBound === '1') {
+      return;
+    }
+    form.dataset.wdpQtyDelegationBound = '1';
+    form.addEventListener('click', (e) => {
+      const btn = e.target.closest('.wdp-product-quantity-decrease, .wdp-product-quantity-increase');
+      if (!btn || !form.contains(btn)) {
+        return;
+      }
+      if (form.querySelector('input[name="share_count"]')) {
+        return;
+      }
+      const counter = btn.closest('.wdp-quantity-counter');
+      if (!counter) {
+        return;
+      }
+      const quantityInput = counter.querySelector('input[name="quantity"]');
+      if (!quantityInput) {
+        return;
+      }
+      e.preventDefault();
+      e.stopPropagation();
+      const currentValue = Number.parseInt(quantityInput.value, 10) || 1;
+      const isDecrease = btn.classList.contains('wdp-product-quantity-decrease');
+      const customRow = getCustomPriceRow(form);
+      if (customRow && customPriceRowHasQtyCounter(customRow) && customRow.contains(quantityInput)) {
+        const customIn = customRow.querySelector('input[name="custom_price"]');
+        if (customIn) {
+          ensureCustomUnitFromDisplayed(customIn, currentValue);
+        }
+      }
+      if (isDecrease) {
+        if (currentValue > 1) {
+          quantityInput.value = String(currentValue - 1);
+          updateLineTotals(form);
+        }
+        return;
+      }
+      const maxAttr = Number.parseInt(quantityInput.getAttribute('max') || '99', 10);
+      const maxAllowed = Number.isFinite(maxAttr) && maxAttr > 0 ? maxAttr : 99;
+      quantityInput.value = String(Math.min(maxAllowed, currentValue + 1));
+      updateLineTotals(form);
+    });
+  }
+
   function patchSimpleCustomPriceQtyRowFormData(form, formData) {
     if (!form || !formData) return;
     if (form.querySelector('input[name="share_count"]')) return;
-    const row = getCustomPriceQtyRow(form);
+    const row = getCustomPriceRow(form);
     if (!row) return;
     const priceInput = row.querySelector('input[name="custom_price"]');
+    if (!priceInput) return;
+    if (!customPriceRowHasQtyCounter(row)) {
+      formData.set('quantity', '1');
+      return;
+    }
     const qEl = row.querySelector('input[name="quantity"]');
-    if (!priceInput || !qEl) return;
+    if (!qEl) return;
     const q = Number.parseInt(qEl.value, 10) || 1;
     let unit = Number.parseFloat(priceInput.dataset.wdpCustomUnit);
     if (!Number.isFinite(unit) || unit <= 0) {
@@ -312,6 +868,9 @@
     } catch (eAria) {
       /* ignore */
     }
+    if (input.closest('.wdp-shareholder-form')) {
+      scrollShareholderValidationIntoView(input);
+    }
     // Remove error on focus/input - optimized with debounce
     function clearError() {
       input.classList.remove('wdp-error');
@@ -378,9 +937,14 @@
     formError.style.display = 'block';
     // Remove on any input focus
     form.querySelectorAll('input, textarea').forEach(input => {
+      if (input.dataset.wdpFormErrorFocusBound === '1') {
+        return;
+      }
+      input.dataset.wdpFormErrorFocusBound = '1';
       input.addEventListener('focus', function clearFormError() {
         if (formError) formError.remove();
         input.removeEventListener('focus', clearFormError);
+        input.dataset.wdpFormErrorFocusBound = '0';
       });
     });
 
@@ -562,6 +1126,11 @@
       }
     });
     form.querySelectorAll('.wdp-form-error').forEach((error) => error.remove());
+    form.classList.remove('wdp-shareholders-validation-active');
+    clearShareholderHeaderStatusMarks(form);
+    if (WDPApp.shareholder && typeof WDPApp.shareholder.clearSubmitSummary === 'function') {
+      WDPApp.shareholder.clearSubmitSummary(form);
+    }
 
     // Önceki merkezi alert overlay (artık doğrulama için kullanılmıyor)
     clearAlerts();
@@ -570,58 +1139,56 @@
     const shareCountInput = form.querySelector('input[name="share_count"]');
     const shareholderRows = getOrderedShareholderRows(form);
     let firstShareholderIssue = null;
+    let firstOpenShareholderIssue = null;
     let incompleteShareholderCount = 0;
-    if (shareCountInput || (shareholderRows && shareholderRows.length > 0)) {
+    const collapsedShareholderSummaryLines = [];
+    const shareholderSubmitSummaryLines = [];
+    const compactViewport = isCompactShareholderViewport();
+    const hasShareholderRows = shareholderRows && shareholderRows.length > 0;
+    if (shareCountInput || hasShareholderRows) {
       getEffectiveShareCount(form);
       safeLog("Checking shareholder forms for count:", shareholderRows.length);
 
-      shareholderRows.forEach((shareholderForm, idx) => {
-        const rowIndex = Number.parseInt(shareholderForm.getAttribute("data-index") || "0", 10) || idx + 1;
-        const nameField = shareholderForm.querySelector('input[name^="shareholder_name_"]');
-        const phoneField = shareholderForm.querySelector('input[name^="shareholder_phone_"]');
-        
-        safeLog(`Checking form ${rowIndex}:`, {
-          nameField: !!nameField,
-          nameValue: nameField?.value,
-          phoneField: !!phoneField,
-          phoneValue: phoneField?.value
-        });
-        
-        // Ad alanı kontrolü
-        let rowHasMissing = false;
-        let rowFirstField = null;
-        if (nameField && !nameField.value.trim()) {
-          safeLog(`Name field ${rowIndex} is empty`);
-          showInputError(nameField, `${rowIndex}. ${getShareholderNameRequiredMessage()}`);
-          errorMessages.push(`${rowIndex}. ${getShareholderNameRequiredMessage()}`);
-          isValid = false;
-          rowHasMissing = true;
-          rowFirstField = rowFirstField || nameField;
+      shareholderRows.forEach((shareholderForm) => {
+        const rowResult = validateShareholderRow(shareholderForm);
+        if (!rowResult.issues.length) {
+          return;
         }
-        
-        // Telefon alanı kontrolü
-        if (phoneField && !phoneField.value.trim()) {
-          safeLog(`Phone field ${rowIndex} is empty`);
-          phoneField.classList.add("wdp-error");
-          isValid = false;
-          rowHasMissing = true;
-          rowFirstField = rowFirstField || phoneField;
-        }
-        if (rowHasMissing) {
-          incompleteShareholderCount += 1;
-          if (!firstShareholderIssue) {
-            firstShareholderIssue = {
-              row: shareholderForm,
-              field: rowFirstField,
-            };
+        incompleteShareholderCount += 1;
+        isValid = false;
+        rowResult.issues.forEach((issue) => {
+          if (!errorMessages.includes(issue.message)) {
+            errorMessages.push(issue.message);
           }
+        });
+        if (!firstShareholderIssue) {
+          firstShareholderIssue = {
+            row: shareholderForm,
+            field: rowResult.issues[0].field,
+          };
         }
+        if (!rowResult.isCollapsed && !firstOpenShareholderIssue) {
+          firstOpenShareholderIssue = {
+            row: shareholderForm,
+            field: rowResult.issues[0].field,
+          };
+        }
+        rowResult.issues.forEach((issue) => {
+          const line = `${rowResult.rowIndex}. hisse ${getShareholderIssueSummaryLabel(issue.type)}`;
+          if (rowResult.isCollapsed) {
+            collapsedShareholderSummaryLines.push(line);
+          }
+          if (compactViewport) {
+            shareholderSubmitSummaryLines.push(line);
+          }
+        });
       });
     }
     if (WDPApp.shareholder && typeof WDPApp.shareholder.setValidationArmed === "function") {
+      const focusIssue = firstOpenShareholderIssue || firstShareholderIssue;
       const targetIndex =
-        firstShareholderIssue && firstShareholderIssue.row
-          ? Number.parseInt(firstShareholderIssue.row.getAttribute("data-index") || "0", 10) || 0
+        focusIssue && focusIssue.row
+          ? Number.parseInt(focusIssue.row.getAttribute("data-index") || "0", 10) || 0
           : 0;
       WDPApp.shareholder.setValidationArmed(form, incompleteShareholderCount > 0, targetIndex);
     } else if (WDPApp.shareholder && typeof WDPApp.shareholder.refreshGuidance === "function") {
@@ -631,16 +1198,37 @@
       errorMessages.push(`${incompleteShareholderCount} hissedar formu eksik.`);
     }
 
+    // Telefon: ülkeye göre rakam sayısı (TR: 10, vb.) — hissedar satırları yukarıda doğrulandı
+    if (!validateAllPhoneFields(form, { shareholders: !hasShareholderRows })) {
+      isValid = false;
+      if (!firstShareholderIssue) {
+        const badSharePhone = form.querySelector(
+          '.wdp-shareholder-form input[name^="shareholder_phone_"].wdp-error'
+        );
+        if (badSharePhone) {
+          firstShareholderIssue = {
+            row: badSharePhone.closest('.wdp-shareholder-form'),
+            field: badSharePhone,
+          };
+          if (
+            firstShareholderIssue.row &&
+            !firstShareholderIssue.row.classList.contains('collapsed') &&
+            !firstOpenShareholderIssue
+          ) {
+            firstOpenShareholderIssue = firstShareholderIssue;
+          }
+        }
+      }
+    }
+
     // Diğer zorunlu alanlar (fiyat, vb.)
     form.querySelectorAll('input[required], textarea[required]').forEach((field) => {
       // Hissedar formları dışındaki alanları kontrol et
       if (!field.name.includes('shareholder_')) {
+        if (field.name === 'donation_phone' || field.type === 'tel') {
+          return;
+        }
         if (!field.value.trim()) {
-          if (field.name === "donation_phone") {
-            field.classList.add("wdp-error");
-            isValid = false;
-            return;
-          }
           const msg = getRequiredFieldMessage(field);
           showInputError(field, msg);
           errorMessages.push(field.placeholder || msg);
@@ -653,18 +1241,16 @@
     const customPriceInput = form.querySelector('input[name="custom_price"]');
     if (customPriceInput) {
       const rawValue = customPriceInput.value ? customPriceInput.value.toString().trim() : '';
-      const normalizedValue = rawValue.replace(/\s+/g, '').replace(/\./g, '').replace(',', '.');
-      const numericValue = rawValue === '' ? NaN : Number.parseFloat(normalizedValue);
+      const numericValue = rawValue === '' ? NaN : parseNormalizedAmount(rawValue);
       const minAttr = customPriceInput.getAttribute('min');
-      const normalizedMin = (minAttr || '0').toString().trim().replace(/\s+/g, '').replace(/\./g, '').replace(',', '.');
-      const minValueFromAttr = Number.parseFloat(normalizedMin);
+      const minValueFromAttr = minAttr !== null && minAttr !== '' ? parseNormalizedAmount(minAttr) : NaN;
       const baseMinData = customPriceInput.dataset.baseMin;
       const shareCountValue = shareCountInput ? getEffectiveShareCount(form) : 1;
-      const perShareMin = Number.parseFloat((baseMinData || '').toString().trim().replace(/\s+/g, '').replace(/\./g, '').replace(',', '.'));
-      const customPriceQtyRow = customPriceInput.closest('.wdp-custom-price-with-qty-row');
+      const perShareMin = baseMinData !== undefined && baseMinData !== '' ? parseNormalizedAmount(baseMinData) : NaN;
+      const customPriceQtyRow = customPriceInput.closest('.wdp-custom-price-row, .wdp-custom-price-with-qty-row');
 
       let effectiveMin = 0;
-      if (customPriceQtyRow) {
+      if (customPriceQtyRow && customPriceRowHasQtyCounter(customPriceQtyRow)) {
         const qEl = customPriceQtyRow.querySelector('input[name="quantity"]');
         const qtyForMin = qEl ? Number.parseInt(qEl.value, 10) || 1 : 1;
         const perUnitCandidates = [];
@@ -726,12 +1312,16 @@
       }
     }
 
+    if (!validateSadakaDonation(form)) {
+      isValid = false;
+    }
+
     errorMessages = Array.from(new Set(errorMessages));
     safeLog("Form validation result:", { isValid, errorMessages });
 
     if (!isValid) {
       safeLog("Form is invalid; showing field-anchored errors only");
-      if (firstShareholderIssue && incompleteShareholderCount > 0) {
+      if (firstShareholderIssue && firstShareholderIssue.row && incompleteShareholderCount > 0) {
         const firstRowIndex =
           Number.parseInt(firstShareholderIssue.row.getAttribute("data-index") || "0", 10) || 0;
         const summaryMsg = incompleteShareholderCount > 1
@@ -741,19 +1331,47 @@
           errorMessages.push(summaryMsg);
         }
       }
-      const shareholderFocused = focusShareholderIssue(firstShareholderIssue);
+      const summaryLines = compactViewport
+        ? Array.from(new Set(shareholderSubmitSummaryLines))
+        : collapsedShareholderSummaryLines;
+      if (
+        summaryLines.length > 0 &&
+        WDPApp.shareholder &&
+        typeof WDPApp.shareholder.showSubmitSummary === 'function'
+      ) {
+        WDPApp.shareholder.showSubmitSummary(form, summaryLines, { compact: compactViewport });
+      }
+      if (hasShareholderRows) {
+        form.classList.add('wdp-shareholders-validation-active');
+      }
+      const focusIssue = firstOpenShareholderIssue || (collapsedShareholderSummaryLines.length ? null : firstShareholderIssue);
+      const shareholderFocused = focusIssue ? focusShareholderIssue(focusIssue) : false;
       if (!shareholderFocused) {
         if (incompleteShareholderCount > 0) {
           focusShareholderSection(form);
         }
-        focusFirstInvalidField(form);
+        if (!collapsedShareholderSummaryLines.length) {
+          focusFirstInvalidField(form);
+        }
       }
+      showShareholderValidationFeedback(
+        form,
+        summaryLines,
+        errorMessages.length ? errorMessages[0] : 'Lütfen işaretlenen alanları kontrol edin.'
+      );
       announceStatus(
-        errorMessages.length ? errorMessages[0] : "Lütfen işaretlenen alanları kontrol edin.",
+        summaryLines.length
+          ? summaryLines[0]
+          : (errorMessages.length ? errorMessages[0] : "Lütfen işaretlenen alanları kontrol edin."),
         "assertive"
       );
     } else if (WDPApp.shareholder && typeof WDPApp.shareholder.setValidationArmed === "function") {
       WDPApp.shareholder.setValidationArmed(form, false, 0);
+      if (typeof WDPApp.shareholder.clearSubmitSummary === 'function') {
+        WDPApp.shareholder.clearSubmitSummary(form);
+      }
+      clearShareholderHeaderStatusMarks(form);
+      form.classList.remove('wdp-shareholders-validation-active');
     }
 
     return isValid;
@@ -786,6 +1404,47 @@
         anchor.scrollIntoView({ behavior: "smooth", block: "nearest" });
       }
     });
+  }
+
+  function clearInlineInputError(input) {
+    if (!input) return;
+    input.classList.remove("wdp-error");
+    const inputError = input.parentNode ? input.parentNode.querySelector(".wdp-input-error") : null;
+    if (inputError) {
+      inputError.remove();
+    }
+  }
+
+  function applyMinPriceError(input, minPrice, messageBuilder) {
+    if (!input) return;
+    const currentValue = Number.parseFloat(input.value || 0);
+    if (input.value !== "" && minPrice > 0 && currentValue < minPrice) {
+      input.classList.add("wdp-error");
+      const existingError = input.parentNode ? input.parentNode.querySelector(".wdp-input-error") : null;
+      if (existingError) {
+        existingError.remove();
+      }
+      const inputError = document.createElement("div");
+      inputError.className = "wdp-input-error";
+      inputError.textContent = messageBuilder(minPrice);
+      const parentField = input.closest(".wdp-price-field") || input.parentNode;
+      if (parentField) {
+        const computedStyle = window.getComputedStyle(parentField);
+        if (computedStyle.position === "static") {
+          parentField.style.position = "relative";
+        }
+        parentField.appendChild(inputError);
+      }
+      return;
+    }
+    clearInlineInputError(input);
+  }
+
+  function createMinPriceBlurHandler(messageBuilder) {
+    return function() {
+      const minPrice = Number.parseFloat(this.getAttribute("min") || 0);
+      applyMinPriceError(this, minPrice, messageBuilder);
+    };
   }
 
   /**
@@ -854,12 +1513,20 @@
     return count > 0;
   }
 
-  function getSuccessMessageText() {
-    const s = wdp_ajax && wdp_ajax.strings;
-    if (s && typeof s.added_to_cart === 'string' && s.added_to_cart.trim()) {
-      return s.added_to_cart.trim();
-    }
-    return 'Bağışınız güvenle sepete eklendi.';
+  function getSuccessAddedToCartText() {
+    const strings = wdp_ajax && wdp_ajax.strings ? wdp_ajax.strings : {};
+    const text = strings && typeof strings.added_to_cart === 'string' ? strings.added_to_cart.trim() : '';
+    return text || 'Bağışınız sepete eklendi';
+  }
+
+  function buildSuccessTopRow() {
+    const bar = document.createElement('div');
+    bar.className = 'wdp-success-top-bar';
+    const msg = document.createElement('p');
+    msg.className = 'wdp-success-top-bar__message';
+    msg.textContent = getSuccessAddedToCartText();
+    bar.appendChild(msg);
+    return bar;
   }
 
   function renderSuccessScreen(successScreen, cartItems) {
@@ -867,22 +1534,19 @@
       return;
     }
     successScreen.innerHTML = '';
-    const message = document.createElement('div');
-    message.className = 'wdp-success-message';
-    message.textContent = getSuccessMessageText();
-    successScreen.appendChild(message);
-    const reassurance = document.createElement('div');
-    reassurance.className = 'wdp-success-reassurance';
-    reassurance.textContent = 'Bilgileriniz bir sonraki adımda tekrar kontrol edilebilir.';
-    successScreen.appendChild(reassurance);
+    successScreen.appendChild(buildSuccessTopRow());
+    const cartStack = document.createElement('div');
+    cartStack.className = 'wdp-success-cart-stack';
+    successScreen.appendChild(cartStack);
     if (typeof renderCartItemsInto === 'function') {
-      renderCartItemsInto(successScreen, Array.isArray(cartItems) ? cartItems : []);
+      renderCartItemsInto(cartStack, Array.isArray(cartItems) ? cartItems : []);
+    } else if (typeof buildCartUiRoot === 'function') {
+      cartStack.appendChild(buildCartUiRoot(Array.isArray(cartItems) ? cartItems : []));
     } else {
-      // Legacy fallback
       const fallback = document.createElement('div');
       fallback.innerHTML = createCartItemsHTML(Array.isArray(cartItems) ? cartItems : []);
       while (fallback.firstChild) {
-        successScreen.appendChild(fallback.firstChild);
+        cartStack.appendChild(fallback.firstChild);
       }
     }
   }
@@ -892,6 +1556,7 @@
 
     // Başarı durumunda
     if (data.success) {
+      trackMetaPixelAfterAddToCartSuccess(data, form);
       clearAlerts();
       // Sepet sayısını güncelle
       if (data.cart_count !== undefined) {
@@ -910,6 +1575,7 @@
         // Ödeme sayfasına yönlendir
         safeLog("Redirecting to checkout:", data.checkout_url);
         announceStatus('Ödeme adımına yönlendiriliyorsunuz.', 'assertive');
+        trackMetaPixelInitiateCheckoutIfEnabled(form, data);
         window.location.href = data.checkout_url || wdp_ajax.checkout_url || "/odeme-sayfasi/";
       } else {
         // Sepete Ekle için başarı mesajını göster
@@ -965,11 +1631,15 @@
           setupContinueShoppingButton(form);
           setupRemoveCartItemButtons(successScreen);
         } else {
+          successScreen.innerHTML = '';
+          successScreen.appendChild(buildSuccessTopRow());
+          const cartStack = document.createElement('div');
+          cartStack.className = 'wdp-success-cart-stack';
           const loadingMessage = document.createElement('div');
           loadingMessage.className = 'wdp-mini-cart-loading';
           loadingMessage.textContent = 'Sepet içeriği yükleniyor...';
-          successScreen.innerHTML = '';
-          successScreen.appendChild(loadingMessage);
+          cartStack.appendChild(loadingMessage);
+          successScreen.appendChild(cartStack);
 
           fetchCartContents()
             .then((cartItems) => {
@@ -1172,6 +1842,9 @@
                 cart_count: verifyData.cart_count,
                 items: verifyData.items,
                 checkout_url: verifyData.checkout_url,
+                cart_item_key: verifyData.cart_item_key,
+                product_id: verifyData.product_id,
+                meta_cart_line: verifyData.meta_cart_line,
               },
               form,
               isCheckout,
@@ -1223,6 +1896,7 @@
     
     const formData = new FormData(form);
     patchSimpleCustomPriceQtyRowFormData(form, formData);
+    patchSadakaFormData(form, formData);
 
     // CRITICAL: Hissedar formlarında fiyatı hisse sayısına göre güncelle
     if (shareCountInput) {
@@ -1275,9 +1949,11 @@
       for (let i = 1; i <= shareCount; i++) {
         const name = $form(`[name='shareholder_name_${i}']`);
         const phone = $form(`[name='shareholder_phone_${i}']`);
+        const email = $form(`[name='shareholder_email_${i}']`);
         const note = $form(`[name='shareholder_note_${i}']`);
         if (name) formData.set(`shareholder_name_${i}`, name.value);
         if (phone) formData.set(`shareholder_phone_${i}`, phone.value);
+        if (email) formData.set(`shareholder_email_${i}`, email.value);
         if (note) formData.set(`shareholder_note_${i}`, note.value);
       }
     }
@@ -1290,6 +1966,7 @@
     // AJAX ile sepete ekleme işlemi
     formData.append("action", "wdp_ajax_add_to_cart");
     formData.append("security", getAjaxNonce("ajax_add_to_cart"));
+    formData.append("wdp_ajax_flow", "1");
     formData.append("timestamp", Date.now());
 
     // Butonları bul
@@ -1491,21 +2168,23 @@
       }
     }
 
-    const simpleCustomQtyRow = form.querySelector(".wdp-custom-price-with-qty-row");
-    if (simpleCustomQtyRow && !shareCountInput) {
-      const priceInput = simpleCustomQtyRow.querySelector('input[name="custom_price"]');
-      const qEl = simpleCustomQtyRow.querySelector('input[name="quantity"]');
-      if (priceInput && qEl) {
-        const q = Number.parseInt(qEl.value, 10) || 1;
-        let unit = Number.parseFloat(priceInput.dataset.wdpCustomUnit);
-        if (!Number.isFinite(unit) || unit <= 0) {
-          const total = parseNormalizedAmount(priceInput.value);
-          if (Number.isFinite(total) && total > 0 && q > 0) {
-            unit = roundMoney(total / q);
+    const simpleCustomRow = getCustomPriceRow(form);
+    if (simpleCustomRow && !shareCountInput) {
+      const priceInput = simpleCustomRow.querySelector('input[name="custom_price"]');
+      if (priceInput && customPriceRowHasQtyCounter(simpleCustomRow)) {
+        const qEl = simpleCustomRow.querySelector('input[name="quantity"]');
+        if (qEl) {
+          const q = Number.parseInt(qEl.value, 10) || 1;
+          let unit = Number.parseFloat(priceInput.dataset.wdpCustomUnit);
+          if (!Number.isFinite(unit) || unit <= 0) {
+            const total = parseNormalizedAmount(priceInput.value);
+            if (Number.isFinite(total) && total > 0 && q > 0) {
+              unit = roundMoney(total / q);
+            }
           }
-        }
-        if (Number.isFinite(unit) && unit > 0) {
-          priceInput.value = formatSubmitUnitPrice(unit);
+          if (Number.isFinite(unit) && unit > 0) {
+            priceInput.value = formatSubmitUnitPrice(unit);
+          }
         }
       }
     }
@@ -1552,44 +2231,44 @@
   function setupFormSubmission(form) {
     safeLog("Form submission setup for:", form);
 
+    prepareDonationFormValidation(form);
+    bindProductQuantityDelegation(form);
+    bindSadakaDonation(form);
+
     // Önceki dinleyiciyi kaldır (event-manager veya tekrar setup çağrıları çift AJAX üretmesin)
     if (form._wdpSubmitHandler) {
-      form.removeEventListener("submit", form._wdpSubmitHandler);
+      form.removeEventListener("submit", form._wdpSubmitHandler, WDP_FORM_SUBMIT_CAPTURE);
       form._wdpSubmitHandler = null;
     }
 
     function onWdpFormSubmit(e) {
       e.preventDefault();
+      if (typeof e.stopImmediatePropagation === "function") {
+        e.stopImmediatePropagation();
+      }
       safeLog("Form submitted");
 
-      // Önce tüm hata mesajlarını gizle
-      if (typeof window.WDP !== "undefined" && typeof window.WDP.hideErrorMessages === "function") {
-        window.WDP.hideErrorMessages();
-      }
+      prepareDonationFormValidation(form);
 
-      // Hata mesajı alanını hemen temizle
-      const errorDiv = form.querySelector(".wdp-form-error");
-      if (errorDiv) {
-        errorDiv.style.display = "none";
-        errorDiv.textContent = "";
-      }
-
-      // WooCommerce hata mesajlarını da gizle
-      const wooMessages = document.querySelectorAll(".woocommerce-error, .woocommerce-message, .woocommerce-info");
-      wooMessages.forEach((msg) => {
-        msg.style.display = "none";
-      });
-
-      // Hangi butonun tıklandığını belirle
-      const isCheckout = e.submitter && e.submitter.name === "donation_go_checkout";
+      const submitter = resolveSubmitSubmitter(form, e);
+      const isCheckout = submitter && submitter.name === "donation_go_checkout";
       safeLog("Is checkout:", isCheckout);
 
-      // Rendered shareholder rows are source-of-truth; sync share_count before validation.
-      ensureShareholderRowsReady(form);
-      getEffectiveShareCount(form);
+      let validationPassed = false;
+      try {
+        // Rendered shareholder rows are source-of-truth; sync share_count before validation.
+        ensureShareholderRowsReady(form);
+        getEffectiveShareCount(form);
+        validationPassed = validateForm(form);
+      } catch (validationError) {
+        safeLog("validateForm threw:", validationError);
+        validationPassed = false;
+        showShareholderValidationFeedback(form, [], 'Lütfen işaretlenen alanları kontrol edin.');
+      } finally {
+        restoreDonationFormValidation(form);
+      }
 
-      // Form doğrulama
-      if (!validateForm(form)) {
+      if (!validationPassed) {
         safeLog("Form validation failed");
         return false;
       }
@@ -1650,50 +2329,70 @@
     }
 
     form._wdpSubmitHandler = onWdpFormSubmit;
-    form.addEventListener("submit", form._wdpSubmitHandler);
+    form.addEventListener("submit", form._wdpSubmitHandler, WDP_FORM_SUBMIT_CAPTURE);
+
+    form.querySelectorAll('button[name="donation_add_to_cart"], button[name="donation_go_checkout"]').forEach((btn) => {
+      if (btn.dataset.wdpActionClickBound === '1') {
+        return;
+      }
+      btn.dataset.wdpActionClickBound = '1';
+      btn.addEventListener(
+        'click',
+        function trackSubmitButtonClick() {
+          form._wdpLastClickSubmitter = btn;
+        },
+        true
+      );
+    });
 
     // Input alanlarına olay dinleyicileri ekle
     form.querySelectorAll('input[type="text"], input[type="tel"], input[type="number"]').forEach((input) => {
-      input.addEventListener("focus", function () {
-        this.classList.remove("wdp-error");
-        // Eğer tüm zorunlu alanlar doluysa hata mesajını gizle
-        const errorMsg = form.querySelector(".wdp-form-error");
-        if (errorMsg) {
-          errorMsg.style.display = "none";
-        }
-        // Eğer fiyat uyarısı varsa onu da gizle
-        if (this.name === "custom_price") {
-          const priceField = this.closest(".wdp-price-field");
-          if (priceField) {
-            const minWarn = priceField.querySelector(".wdp-price-warning");
-            if (minWarn) minWarn.style.display = "none";
+      if (input.dataset.wdpBaseInputBound !== '1') {
+        input.dataset.wdpBaseInputBound = '1';
+        input.addEventListener("focus", function () {
+          this.classList.remove("wdp-error");
+          // Eğer tüm zorunlu alanlar doluysa hata mesajını gizle
+          const errorMsg = form.querySelector(".wdp-form-error");
+          if (errorMsg) {
+            errorMsg.style.display = "none";
           }
-        }
-      });
+          // Eğer fiyat uyarısı varsa onu da gizle
+          if (this.name === "custom_price") {
+            const priceField = this.closest(".wdp-price-field");
+            if (priceField) {
+              const minWarn = priceField.querySelector(".wdp-price-warning");
+              if (minWarn) minWarn.style.display = "none";
+            }
+          }
+        });
+      }
 
       // Özel fiyat alanı için minimum değer kontrolü - optimized with debounce
       if (input.name === "custom_price") {
-        const customQtyRow = input.closest(".wdp-custom-price-with-qty-row");
-        if (customQtyRow) {
-          input.addEventListener("focus", function () {
-            this.classList.remove("wdp-error");
-            const errorMsg = form.querySelector(".wdp-form-error");
-            if (errorMsg) {
-              errorMsg.style.display = "none";
-            }
-            const inputError = this.parentNode.querySelector(".wdp-input-error");
-            if (inputError) {
-              inputError.remove();
-            }
-          });
-          input.addEventListener("input", function () {
-            const row = this.closest(".wdp-custom-price-with-qty-row");
-            const qEl = row && row.querySelector('input[name="quantity"]');
-            const qty = qEl ? Number.parseInt(qEl.value, 10) || 1 : 1;
-            ensureCustomUnitFromDisplayed(this, qty);
-          });
+        const customQtyRow = input.closest(".wdp-custom-price-row, .wdp-custom-price-with-qty-row");
+        if (customQtyRow && customPriceRowHasQtyCounter(customQtyRow)) {
+          if (input.dataset.wdpCustomQtyBound !== '1') {
+            input.dataset.wdpCustomQtyBound = '1';
+            input.addEventListener("focus", function () {
+              this.classList.remove("wdp-error");
+              const errorMsg = form.querySelector(".wdp-form-error");
+              if (errorMsg) {
+                errorMsg.style.display = "none";
+              }
+              const inputError = this.parentNode.querySelector(".wdp-input-error");
+              if (inputError) {
+                inputError.remove();
+              }
+            });
+            input.addEventListener("input", function () {
+              const row = this.closest(".wdp-custom-price-row, .wdp-custom-price-with-qty-row");
+              const qEl = row && row.querySelector('input[name="quantity"]');
+              const qty = qEl ? Number.parseInt(qEl.value, 10) || 1 : 1;
+              ensureCustomUnitFromDisplayed(this, qty);
+            });
+          }
           function runCustomQtyRowBlur() {
-            const row = this.closest(".wdp-custom-price-with-qty-row");
+            const row = this.closest(".wdp-custom-price-row, .wdp-custom-price-with-qty-row");
             const qEl = row && row.querySelector('input[name="quantity"]');
             const qty = qEl ? Number.parseInt(qEl.value, 10) || 1 : 1;
             ensureCustomUnitFromDisplayed(this, qty);
@@ -1727,143 +2426,44 @@
             }
           }
           const debouncedBlurQtyRow = debounce ? debounce(runCustomQtyRowBlur, 300) : runCustomQtyRowBlur;
-          input.addEventListener("blur", debouncedBlurQtyRow);
+          if (input.dataset.wdpCustomQtyBlurBound !== '1') {
+            input.dataset.wdpCustomQtyBlurBound = '1';
+            input.addEventListener("blur", debouncedBlurQtyRow);
+          }
           return;
         }
 
         // Progress / diğer tek sütun özel fiyat alanları
-        input.addEventListener("focus", function () {
-          this.classList.remove("wdp-error");
-          const errorMsg = form.querySelector(".wdp-form-error");
-          if (errorMsg) {
-            errorMsg.style.display = "none";
-          }
-          const inputError = this.parentNode.querySelector('.wdp-input-error');
-          if (inputError) {
-            inputError.remove();
-          }
-        });
-        
-        const debouncedBlurHandler = debounce ? debounce(function() {
-          const minPrice = Number.parseFloat(this.getAttribute("min") || 0);
-          const currentValue = Number.parseFloat(this.value || 0);
-          if (this.value !== "" && minPrice > 0 && currentValue < minPrice) {
-            this.classList.add("wdp-error");
-            const existingError = this.parentNode.querySelector('.wdp-input-error');
-            if (existingError) {
-              existingError.remove();
-            }
-            const inputError = document.createElement('div');
-            inputError.className = 'wdp-input-error';
-            inputError.textContent = `Lütfen ${minPrice} TL ve üstü değerler girin.`;
-            const parentField = this.closest('.wdp-price-field') || this.parentNode;
-            if (parentField) {
-              const computedStyle = window.getComputedStyle(parentField);
-              if (computedStyle.position === 'static') {
-                parentField.style.position = 'relative';
-              }
-              parentField.appendChild(inputError);
-            }
-          } else {
+        if (input.dataset.wdpCustomPriceFocusBound !== '1') {
+          input.dataset.wdpCustomPriceFocusBound = '1';
+          input.addEventListener("focus", function () {
             this.classList.remove("wdp-error");
+            const errorMsg = form.querySelector(".wdp-form-error");
+            if (errorMsg) {
+              errorMsg.style.display = "none";
+            }
             const inputError = this.parentNode.querySelector('.wdp-input-error');
             if (inputError) {
               inputError.remove();
             }
-          }
-        }, 300) : function() {
-          const minPrice = Number.parseFloat(this.getAttribute("min") || 0);
-          const currentValue = Number.parseFloat(this.value || 0);
-          if (this.value !== "" && minPrice > 0 && currentValue < minPrice) {
-            this.classList.add("wdp-error");
-            const existingError = this.parentNode.querySelector('.wdp-input-error');
-            if (existingError) {
-              existingError.remove();
-            }
-            const inputError = document.createElement('div');
-            inputError.className = 'wdp-input-error';
-            inputError.textContent = `Lütfen ${minPrice} TL ve üstü değerler girin.`;
-            const parentField = this.closest('.wdp-price-field') || this.parentNode;
-            if (parentField) {
-              const computedStyle = window.getComputedStyle(parentField);
-              if (computedStyle.position === 'static') {
-                parentField.style.position = 'relative';
-              }
-              parentField.appendChild(inputError);
-            }
-          } else {
-            this.classList.remove("wdp-error");
-            const inputError = this.parentNode.querySelector('.wdp-input-error');
-            if (inputError) {
-              inputError.remove();
-            }
-          }
-        };
+          });
+        }
         
-        input.addEventListener("blur", debouncedBlurHandler);
-        input.value = "";
-        const minPrice = Number.parseFloat(input.getAttribute("min") || 0);
-        input.placeholder = "Min: " + minPrice + " TL";
+        const blurHandler = createMinPriceBlurHandler((minPrice) => `Lütfen ${minPrice} TL ve üstü değerler girin.`);
+        const debouncedBlurHandler = debounce ? debounce(blurHandler, 300) : blurHandler;
+        
+        if (input.dataset.wdpCustomPriceBlurBound !== '1') {
+          input.dataset.wdpCustomPriceBlurBound = '1';
+          input.addEventListener("blur", debouncedBlurHandler);
+        }
       }
     });
 
-    // Ürün adedi artırma/azaltma butonları için olay dinleyicileri
-    // Adet artırma/azaltma butonları için olay dinleyicileri
     const quantityInput = form.querySelector('input[name="quantity"]');
-    const decreaseBtn = form.querySelector(".wdp-product-quantity-decrease");
-    const increaseBtn = form.querySelector(".wdp-product-quantity-increase");
-
-    // Hisseli form kontrolü - hissedar sayısına göre otomatik ayarlanıyorsa kontrolleri etkinleştirme
     const shareCountInput = form.querySelector('input[name="share_count"]');
     const isShareForm = !!shareCountInput;
 
-    if (quantityInput && decreaseBtn && increaseBtn && !isShareForm) {
-      // Önceki event listener'ları temizle
-      const newDecreaseBtn = decreaseBtn.cloneNode(true);
-      if (decreaseBtn.parentNode) {
-        decreaseBtn.parentNode.replaceChild(newDecreaseBtn, decreaseBtn);
-      }
-
-      const newIncreaseBtn = increaseBtn.cloneNode(true);
-      if (increaseBtn.parentNode) {
-        increaseBtn.parentNode.replaceChild(newIncreaseBtn, increaseBtn);
-      }
-
-      // Sadece normal form için ürün adedi butonlarını etkinleştir
-      newDecreaseBtn.addEventListener("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        const currentValue = Number.parseInt(quantityInput.value, 10) || 1;
-        if (currentValue > 1) {
-          const customRow = form.querySelector(".wdp-custom-price-with-qty-row");
-          if (customRow && customRow.contains(quantityInput)) {
-            const customIn = customRow.querySelector('input[name="custom_price"]');
-            if (customIn) {
-              ensureCustomUnitFromDisplayed(customIn, currentValue);
-            }
-          }
-          quantityInput.value = currentValue - 1;
-          updateLineTotals(form);
-        }
-      });
-
-      newIncreaseBtn.addEventListener("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        const currentValue = Number.parseInt(quantityInput.value, 10) || 1;
-        const maxAttr = Number.parseInt(quantityInput.getAttribute("max") || "99", 10);
-        const maxAllowed = Number.isFinite(maxAttr) && maxAttr > 0 ? maxAttr : 99;
-        const customRow = form.querySelector(".wdp-custom-price-with-qty-row");
-        if (customRow && customRow.contains(quantityInput)) {
-          const customIn = customRow.querySelector('input[name="custom_price"]');
-          if (customIn) {
-            ensureCustomUnitFromDisplayed(customIn, currentValue);
-          }
-        }
-        quantityInput.value = String(Math.min(maxAllowed, currentValue + 1));
-        updateLineTotals(form);
-      });
-
+    if (!isShareForm && quantityInput) {
       updateLineTotals(form);
     }
 
@@ -1878,16 +2478,22 @@
       }
     }
 
-    if (WDPApp.phoneInput && typeof WDPApp.phoneInput.setupInRoot === 'function') {
+    if (WDPApp.phoneInput && typeof WDPApp.phoneInput.refreshInRoot === 'function') {
+      const phoneRoot = form.closest('.wdp-modal, .wdp-donation-form') || form;
+      WDPApp.phoneInput.refreshInRoot(phoneRoot);
+    } else if (WDPApp.phoneInput && typeof WDPApp.phoneInput.setupInRoot === 'function') {
       WDPApp.phoneInput.setupInRoot(form);
     }
   }
+
+  ensureSadakaDonationDelegation();
 
   // Export
   WDPApp.form = {
     setup: setupFormSubmission,
     submit: submitFormData,
     validate: validateForm,
+    getPhoneValidationState,
     showInputError,
     showFormError,
     handleAjaxResponse,

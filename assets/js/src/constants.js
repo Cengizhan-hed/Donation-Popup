@@ -34,7 +34,7 @@
 
   // CSS Selectors - frequently used selectors
   const SELECTORS = {
-    DONATE_BUTTON: '.wdp-donate-button, .wdp-open-modal',
+    DONATE_BUTTON: '.wdp-donate-button, .wdp-open-modal, .wdp-open-side-panel',
     MODAL: '.wdp-modal',
     MODAL_CLOSE: '.wdp-modal-close',
     DONATION_FORM: '.wdp-donation-form',

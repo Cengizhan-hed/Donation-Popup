@@ -22,6 +22,13 @@ class WDP_Utils {
     private static $debug_enabled = false;
 
     /**
+     * Whether woocommerce_update_product cache hook was registered.
+     *
+     * @var bool
+     */
+    private static $wc_product_cache_invalidation_hook_registered = false;
+
+    /**
      * Initialize the utility class.
      * 
      * @since 10.0
@@ -33,6 +40,34 @@ class WDP_Utils {
         // Progress bar toplamlarını artımlı güncelle (büyük sipariş hacminde tam taramayı azaltır).
         add_action('woocommerce_order_status_completed', array(__CLASS__, 'sync_order_donation_totals_on_complete'), 20, 1);
         add_action('woocommerce_order_refunded', array(__CLASS__, 'sync_order_donation_totals_on_refund'), 20, 2);
+
+        // Ürün veya bağışa ilişkin ürün meta'sı değişince get_product_info / sepet AJAX önbelleğini tek merkezden temizle.
+        add_action('updated_post_meta', array(__CLASS__, 'maybe_invalidate_product_donation_caches_on_meta'), 10, 4);
+        add_action('added_post_meta', array(__CLASS__, 'maybe_invalidate_product_donation_caches_on_meta'), 10, 4);
+        add_action('deleted_post_meta', array(__CLASS__, 'maybe_invalidate_product_donation_caches_on_meta'), 10, 4);
+        add_action('save_post_product', array(__CLASS__, 'invalidate_product_donation_caches_on_product_save'), 10, 3);
+        if (did_action('woocommerce_loaded')) {
+            self::register_wc_product_cache_invalidation_hook();
+        } else {
+            add_action('woocommerce_loaded', array(__CLASS__, 'register_wc_product_cache_invalidation_hook'), 1);
+        }
+
+        // Ürün çöpe gider veya kalıcı silinirken önbellekte yetim anahtar kalmasın (object cache / Redis).
+        add_action('before_delete_post', array(__CLASS__, 'purge_product_donation_caches_on_delete'), 10, 2);
+        add_action('wp_trash_post', array(__CLASS__, 'purge_product_donation_caches_on_trash'), 10, 1);
+    }
+
+    /**
+     * Register WC product save hook once (safe if called early or after woocommerce_loaded).
+     *
+     * @return void
+     */
+    public static function register_wc_product_cache_invalidation_hook() {
+        if (self::$wc_product_cache_invalidation_hook_registered) {
+            return;
+        }
+        self::$wc_product_cache_invalidation_hook_registered = true;
+        add_action('woocommerce_update_product', array(__CLASS__, 'invalidate_product_donation_caches_on_wc_product'), 10, 1);
     }
 
     /**
@@ -42,6 +77,43 @@ class WDP_Utils {
      * @param array        $args   wc_price() için ek argümanlar.
      * @return string Güvenli HTML.
      */
+    /**
+     * Decode HTML entities to UTF-8 text (e.g. &#8378; → ₺).
+     *
+     * @param string $text Raw text.
+     * @return string
+     */
+    public static function decode_text_entities($text) {
+        $text = (string) $text;
+        if ($text === '') {
+            return '';
+        }
+
+        $charset = function_exists('get_bloginfo') ? (string) get_bloginfo('charset') : 'UTF-8';
+        if ($charset === '') {
+            $charset = 'UTF-8';
+        }
+
+        return html_entity_decode($text, ENT_QUOTES | ENT_HTML5, $charset);
+    }
+
+    /**
+     * Currency symbol safe for plain text / esc_html output.
+     *
+     * @param string $symbol Optional symbol; defaults to WooCommerce currency.
+     * @return string
+     */
+    public static function get_display_currency_symbol($symbol = '') {
+        if ($symbol === '' && function_exists('get_woocommerce_currency_symbol')) {
+            $symbol = get_woocommerce_currency_symbol();
+        }
+        if ($symbol === '') {
+            $symbol = '₺';
+        }
+
+        return self::decode_text_entities($symbol);
+    }
+
     public static function format_price_html($amount, array $args = array()) {
         if ($amount === '' || $amount === null) {
             return '';
@@ -60,7 +132,9 @@ class WDP_Utils {
             $args
         );
 
-        return wp_kses_post(wc_price($numeric, $args));
+        $html = wp_kses_post(wc_price($numeric, $args));
+
+        return self::decode_text_entities($html);
     }
 
     /**
@@ -113,6 +187,137 @@ class WDP_Utils {
             $formatted = $frac !== '' ? $whole . $dec . $frac : $whole;
         }
         return $formatted;
+    }
+
+    /**
+     * Alt bağış satırı için ürün meta'sındaki WooCommerce ürün ID'si.
+     *
+     * @param int|WC_Product $parent_product Ana bağış ürünü.
+     * @return int Geçerli WC ürün ID veya 0.
+     */
+    public static function resolve_sadaka_wc_product_id($parent_product) {
+        $configured = self::get_configured_sadaka_wc_product_id($parent_product);
+        if ($configured <= 0) {
+            return 0;
+        }
+
+        /**
+         * Alt bağış sepet satırında kullanılacak WooCommerce ürün ID.
+         *
+         * @param int $configured Ürün meta _sadaka_wc_product_id.
+         * @param int $parent_id  Ana bağış ürün ID.
+         */
+        $parent_id = $parent_product instanceof WC_Product
+            ? (int) $parent_product->get_id()
+            : absint($parent_product);
+        $filtered = apply_filters('wdp_sadaka_wc_product_id', $configured, $parent_id);
+        $product_id = absint($filtered);
+
+        return self::is_valid_sadaka_wc_product($product_id) ? $product_id : 0;
+    }
+
+    /**
+     * Sadaka sepet satırı için kullanılabilir WC ürünü (gizli/katalog ürünleri dahil).
+     *
+     * @param int $product_id Product ID.
+     * @return bool
+     */
+    public static function is_valid_sadaka_wc_product($product_id) {
+        $product_id = absint($product_id);
+        if ($product_id <= 0) {
+            return false;
+        }
+
+        $product = wc_get_product($product_id);
+        if (!$product || !$product->exists()) {
+            return false;
+        }
+
+        $status = $product->get_status();
+        return in_array($status, array('publish', 'private'), true);
+    }
+
+    /**
+     * Genel alt bağış WC ürün ID (Başarı & Mini Sepet). Varsayılan: 10721.
+     *
+     * @return int
+     */
+    public static function get_default_sadaka_wc_product_id() {
+        $settings = get_option('wdp_success_settings', array());
+        $id = 10721;
+        if (is_array($settings) && !empty($settings['sadaka_wc_product_id'])) {
+            $id = absint($settings['sadaka_wc_product_id']);
+        }
+        return $id > 0 ? $id : 10721;
+    }
+
+    /**
+     * Alt bağış aç/kapa buton metni (ürün meta → genel ayar → varsayılan).
+     *
+     * @param WC_Product|int|null $parent_product Ana bağış ürünü.
+     * @return string
+     */
+    public static function get_sadaka_toggle_label($parent_product = null) {
+        if ($parent_product !== null) {
+            $parent = $parent_product instanceof WC_Product ? $parent_product : wc_get_product((int) $parent_product);
+            if ($parent) {
+                $per_product = trim((string) $parent->get_meta('_sadaka_toggle_label'));
+                if ($per_product !== '') {
+                    return sanitize_text_field($per_product);
+                }
+            }
+        }
+
+        $settings = get_option('wdp_success_settings', array());
+        if (is_array($settings) && !empty($settings['sadaka_toggle_label'])) {
+            $label = sanitize_text_field($settings['sadaka_toggle_label']);
+            if ($label !== '') {
+                return $label;
+            }
+        }
+
+        return __('Alt Bağış Ekle', 'woo-donation-popup');
+    }
+
+    /**
+     * Ürün meta veya genel ayar alt bağış WC ürün ID'si.
+     *
+     * @param WC_Product|int $parent_product Ana bağış ürünü.
+     * @return int
+     */
+    public static function get_configured_sadaka_wc_product_id($parent_product) {
+        $parent = $parent_product instanceof WC_Product ? $parent_product : wc_get_product((int) $parent_product);
+        if (!$parent) {
+            return self::get_default_sadaka_wc_product_id();
+        }
+
+        $per_product = absint($parent->get_meta('_sadaka_wc_product_id'));
+        if ($per_product > 0) {
+            return $per_product;
+        }
+
+        return self::get_default_sadaka_wc_product_id();
+    }
+
+    /**
+     * Alt bağış sabit fiyatı (ürün meta). 0 = özel tutar modu.
+     *
+     * @param WC_Product|int $parent_product Ana bağış ürünü.
+     * @return float
+     */
+    public static function get_sadaka_fixed_price($parent_product) {
+        $parent = $parent_product instanceof WC_Product ? $parent_product : wc_get_product((int) $parent_product);
+        if (!$parent) {
+            return 0.0;
+        }
+
+        $raw = $parent->get_meta('_sadaka_fixed_price');
+        if ($raw === '' || $raw === null) {
+            return 0.0;
+        }
+
+        $value = (float) wc_format_decimal($raw);
+        return $value > 0 ? $value : 0.0;
     }
 
     /**
@@ -330,6 +535,52 @@ class WDP_Utils {
     }
 
     /**
+     * Read order/refund flag meta (HPOS-safe with post_meta fallback).
+     *
+     * @param int|WC_Abstract_Order $order_or_id Order or refund object or ID.
+     * @param string                $meta_key    Meta key.
+     * @return string
+     */
+    public static function get_order_flag_meta($order_or_id, $meta_key) {
+        $order = is_object($order_or_id) ? $order_or_id : wc_get_order($order_or_id);
+        if ($order && is_a($order, 'WC_Abstract_Order')) {
+            $value = $order->get_meta($meta_key, true);
+            if ($value !== '' && $value !== null) {
+                return (string) $value;
+            }
+        }
+
+        $order_id = $order ? $order->get_id() : absint($order_or_id);
+        if ($order_id) {
+            return (string) get_post_meta($order_id, $meta_key, true);
+        }
+
+        return '';
+    }
+
+    /**
+     * Persist order/refund flag meta (HPOS-safe with post_meta fallback).
+     *
+     * @param int|WC_Abstract_Order $order_or_id Order or refund object or ID.
+     * @param string                $meta_key    Meta key.
+     * @param string                $value       Meta value.
+     * @return void
+     */
+    public static function set_order_flag_meta($order_or_id, $meta_key, $value) {
+        $order = is_object($order_or_id) ? $order_or_id : wc_get_order($order_or_id);
+        if ($order && is_a($order, 'WC_Abstract_Order')) {
+            $order->update_meta_data($meta_key, $value);
+            $order->save();
+            return;
+        }
+
+        $order_id = absint($order_or_id);
+        if ($order_id) {
+            update_post_meta($order_id, $meta_key, $value);
+        }
+    }
+
+    /**
      * Sipariş tamamlandığında artımlı bağış toplamlarını güncelle.
      *
      * @param int $order_id WooCommerce order id.
@@ -341,13 +592,12 @@ class WDP_Utils {
             return;
         }
 
-        $already_applied = get_post_meta($order_id, '_wdp_donation_totals_applied', true);
-        if ($already_applied === 'yes') {
+        $order = wc_get_order($order_id);
+        if (!$order) {
             return;
         }
 
-        $order = wc_get_order($order_id);
-        if (!$order) {
+        if (self::get_order_flag_meta($order, '_wdp_donation_totals_applied') === 'yes') {
             return;
         }
 
@@ -365,7 +615,7 @@ class WDP_Utils {
             self::update_product_donation_total($product_id, $line_total);
         }
 
-        update_post_meta($order_id, '_wdp_donation_totals_applied', 'yes');
+        self::set_order_flag_meta($order, '_wdp_donation_totals_applied', 'yes');
     }
 
     /**
@@ -381,13 +631,12 @@ class WDP_Utils {
             return;
         }
 
-        $already_reverted = get_post_meta($refund_id, '_wdp_donation_totals_reverted', true);
-        if ($already_reverted === 'yes') {
+        $refund = wc_get_order($refund_id);
+        if (!$refund || !is_a($refund, 'WC_Order_Refund')) {
             return;
         }
 
-        $refund = wc_get_order($refund_id);
-        if (!$refund || !is_a($refund, 'WC_Order_Refund')) {
+        if (self::get_order_flag_meta($refund, '_wdp_donation_totals_reverted') === 'yes') {
             return;
         }
 
@@ -406,7 +655,7 @@ class WDP_Utils {
             self::update_product_donation_total($product_id, $refund_total);
         }
 
-        update_post_meta($refund_id, '_wdp_donation_totals_reverted', 'yes');
+        self::set_order_flag_meta($refund, '_wdp_donation_totals_reverted', 'yes');
     }
 
     /**
@@ -445,6 +694,207 @@ class WDP_Utils {
     }
 
     /**
+     * Clear transient/object caches used for product donation info and WC product objects (WDP_Ajax).
+     *
+     * @param int $product_id Product ID.
+     * @return void
+     */
+    public static function invalidate_product_donation_caches($product_id) {
+        $product_id = absint($product_id);
+        if (!$product_id) {
+            return;
+        }
+        $key = 'wdp_product_info_' . $product_id;
+        delete_transient($key);
+        wp_cache_delete($key, 'wdp_product_info');
+        wp_cache_delete('wdp_product_object_' . $product_id, 'wdp_products');
+    }
+
+    /**
+     * Ürün kaldırıldığında / çöpe gittiğinde ürün + progress bar ile ilgili tüm WDP önbellek anahtarlarını sil.
+     *
+     * @param int $product_id Product ID.
+     * @return void
+     */
+    private static function purge_product_donation_caches_for_removal($product_id) {
+        $product_id = absint($product_id);
+        if (!$product_id) {
+            return;
+        }
+
+        self::invalidate_product_donation_caches($product_id);
+        wp_cache_delete('wdp_total_donation_' . $product_id, 'wdp_donations');
+    }
+
+    /**
+     * Kalıcı silmeden hemen önce (ürün yazı tipi).
+     *
+     * @param int          $post_id Post ID.
+     * @param WP_Post|null $post    Post object.
+     * @return void
+     */
+    public static function purge_product_donation_caches_on_delete($post_id, $post = null) {
+        $post_id = absint($post_id);
+        if ($post_id <= 0) {
+            return;
+        }
+
+        if ($post instanceof WP_Post) {
+            if ($post->post_type !== 'product') {
+                return;
+            }
+        } elseif (get_post_type($post_id) !== 'product') {
+            return;
+        }
+
+        self::purge_product_donation_caches_for_removal($post_id);
+    }
+
+    /**
+     * Ürün çöpe taşındığında.
+     *
+     * @param int $post_id Post ID.
+     * @return void
+     */
+    public static function purge_product_donation_caches_on_trash($post_id) {
+        $post_id = absint($post_id);
+        if ($post_id <= 0 || get_post_type($post_id) !== 'product') {
+            return;
+        }
+
+        self::purge_product_donation_caches_for_removal($post_id);
+    }
+
+    /**
+     * Invalidate caches when a product post is saved (price, title, stock, etc.).
+     *
+     * @param int     $post_id Post ID.
+     * @param WP_Post $post    Post object.
+     * @param bool    $update  Whether this is an update.
+     * @return void
+     */
+    public static function invalidate_product_donation_caches_on_product_save($post_id, $post, $update) {
+        unset($post, $update);
+
+        if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
+            return;
+        }
+
+        if (wp_is_post_revision($post_id)) {
+            return;
+        }
+
+        if (function_exists('wp_is_post_autosave') && wp_is_post_autosave($post_id)) {
+            return;
+        }
+
+        self::invalidate_product_donation_caches((int) $post_id);
+    }
+
+    /**
+     * Invalidate caches after WooCommerce persists a product (CRUD / admin / REST).
+     *
+     * @param int $product_id Product ID.
+     * @return void
+     */
+    public static function invalidate_product_donation_caches_on_wc_product($product_id) {
+        self::invalidate_product_donation_caches(absint($product_id));
+    }
+
+    /**
+     * Invalidate caches when donation-related product meta is added or updated.
+     *
+     * @param int    $meta_id    Meta row ID (unused).
+     * @param int    $object_id  Post ID.
+     * @param string $meta_key   Meta key.
+     * @param mixed  $meta_value Meta value (unused).
+     * @return void
+     */
+    public static function maybe_invalidate_product_donation_caches_on_meta($meta_id, $object_id, $meta_key, $meta_value) {
+        unset($meta_id, $meta_value);
+
+        $object_id = absint($object_id);
+        if ($object_id <= 0 || $meta_key === '') {
+            return;
+        }
+
+        if (get_post_type($object_id) !== 'product') {
+            return;
+        }
+
+        if (!self::is_donation_popup_product_info_meta_key($meta_key)) {
+            return;
+        }
+
+        self::invalidate_product_donation_caches($object_id);
+    }
+
+    /**
+     * Whether this meta key is part of WDP product donation settings (see WDP_Product_Settings_Service).
+     *
+     * @param string $meta_key Meta key.
+     * @return bool
+     */
+    private static function is_donation_popup_product_info_meta_key($meta_key) {
+        if (!class_exists('WDP_Product_Settings_Service')) {
+            return false;
+        }
+
+        static $lookup = null;
+
+        if (null === $lookup) {
+            $lookup = array_fill_keys(WDP_Product_Settings_Service::get_settings_meta_keys(), true);
+        }
+
+        return isset($lookup[$meta_key]);
+    }
+
+    /**
+     * Arka plan seçeneği düz #hex veya eski gradient dizgesi olabilir; çıktıda yalnızca düz hex kullanılır.
+     *
+     * @param mixed  $value    Kayıtlı veya gönderilmiş değer.
+     * @param string $fallback Geçersizse kullanılacak renk.
+     * @return string
+     */
+    public static function coerce_solid_hex_background($value, $fallback = '#ffffff') {
+        if (!is_string($value) || '' === $value) {
+            return $fallback;
+        }
+        $trim = trim($value);
+        $hex = sanitize_hex_color($trim);
+        if ($hex) {
+            return $hex;
+        }
+        if (preg_match_all('/#(?:[a-fA-F0-9]{3}|[a-fA-F0-9]{6})\b/', $trim, $matches) && !empty($matches[0])) {
+            foreach ($matches[0] as $candidate) {
+                $san = sanitize_hex_color($candidate);
+                if ($san) {
+                    return $san;
+                }
+            }
+        }
+        return $fallback;
+    }
+
+    /**
+     * Progress bar dolgu rengi (tek renk); eski fill_start / fill_mid / fill_end ile uyum.
+     *
+     * @param array $settings wdp_progress_bar_settings.
+     * @return string
+     */
+    public static function resolve_progress_bar_fill_color(array $settings) {
+        if (!empty($settings['fill_color']) && sanitize_hex_color($settings['fill_color'])) {
+            return sanitize_hex_color($settings['fill_color']);
+        }
+        foreach (array('fill_mid', 'fill_start', 'fill_end') as $key) {
+            if (!empty($settings[$key]) && sanitize_hex_color($settings[$key])) {
+                return sanitize_hex_color($settings[$key]);
+            }
+        }
+        return '#2563eb';
+    }
+
+    /**
      * Eski kurulumlar: sadece button_text_donate kayıtlıysa popup buton metnine yansıtır.
      *
      * @param array $settings get_option('wdp_button_settings') ham dizisi.
@@ -454,6 +904,57 @@ class WDP_Utils {
         if (!array_key_exists('popup_button_text', $settings) && !empty($settings['button_text_donate'])) {
             $settings['popup_button_text'] = $settings['button_text_donate'];
         }
+        return $settings;
+    }
+
+    /**
+     * Eski tek "button_shadow_*" anahtarlarını shortcode ('sc') ve modal içi ('modal') çiftleriyle doldurur.
+     *
+     * @param array $settings Ayar dizisi.
+     * @return array
+     */
+    public static function migrate_button_shadow_to_sc_modal( array $settings ) {
+        if (!is_array($settings)) {
+            return $settings;
+        }
+        if (array_key_exists('button_shadow_sc_enabled', $settings) || array_key_exists('button_shadow_modal_enabled', $settings)) {
+            return $settings;
+        }
+        if (!array_key_exists('button_shadow_enabled', $settings)) {
+            return $settings;
+        }
+
+        $base = array(
+            'enabled'           => isset($settings['button_shadow_enabled']) ? (string) $settings['button_shadow_enabled'] : '0',
+            'color'             => isset($settings['button_shadow_color']) ? $settings['button_shadow_color'] : '#94a3b8',
+            'x'                 => isset($settings['button_shadow_x']) ? $settings['button_shadow_x'] : 0,
+            'y'                 => isset($settings['button_shadow_y']) ? $settings['button_shadow_y'] : 8,
+            'blur'              => isset($settings['button_shadow_blur']) ? $settings['button_shadow_blur'] : 20,
+            'spread'            => isset($settings['button_shadow_spread']) ? $settings['button_shadow_spread'] : 0,
+            'hover_enhanced'    => isset($settings['button_shadow_hover_enhanced']) ? (string) $settings['button_shadow_hover_enhanced'] : '0',
+            'hover_blur'        => isset($settings['button_shadow_hover_blur']) ? $settings['button_shadow_hover_blur'] : 24,
+            'hover_color'       => isset($settings['button_shadow_hover_color']) ? $settings['button_shadow_hover_color'] : '',
+            'hover_x'           => isset($settings['button_shadow_hover_x']) ? $settings['button_shadow_hover_x'] : 0,
+            'hover_y'           => isset($settings['button_shadow_hover_y']) ? $settings['button_shadow_hover_y'] : 10,
+            'hover_spread'      => isset($settings['button_shadow_hover_spread']) ? $settings['button_shadow_hover_spread'] : 0,
+        );
+
+        foreach (array('sc', 'modal') as $slot) {
+            $p = 'button_shadow_' . $slot . '_';
+            $settings[ $p . 'enabled' ]          = $base['enabled'];
+            $settings[ $p . 'color' ]           = $base['color'];
+            $settings[ $p . 'x' ]              = $base['x'];
+            $settings[ $p . 'y' ]              = $base['y'];
+            $settings[ $p . 'blur' ]           = $base['blur'];
+            $settings[ $p . 'spread' ]         = $base['spread'];
+            $settings[ $p . 'hover_enhanced' ] = $base['hover_enhanced'];
+            $settings[ $p . 'hover_blur' ]     = $base['hover_blur'];
+            $settings[ $p . 'hover_color' ]    = $base['hover_color'];
+            $settings[ $p . 'hover_x' ]        = $base['hover_x'];
+            $settings[ $p . 'hover_y' ]        = $base['hover_y'];
+            $settings[ $p . 'hover_spread' ]   = $base['hover_spread'];
+        }
+
         return $settings;
     }
 }

@@ -106,15 +106,96 @@
       return [];
     }
     const roots = [];
-    const modal = document.getElementById("wdp-modal-" + id);
-    if (modal) {
-      roots.push(modal);
-    }
-    const direct = document.getElementById("wdp-modal-" + id + "-direct");
-    if (direct) {
-      roots.push(direct);
-    }
+    const seen = new Set();
+    const addRoot = (el) => {
+      if (el && !seen.has(el)) {
+        seen.add(el);
+        roots.push(el);
+      }
+    };
+
+    addRoot(document.getElementById("wdp-modal-" + id));
+    addRoot(document.getElementById("wdp-side-panel-" + id));
+    addRoot(document.getElementById("wdp-modal-" + id + "-direct"));
+
     return roots;
+  }
+
+  function refreshFormSnapshot(root) {
+    if (!root || !state || !state.originalForms) {
+      return;
+    }
+    const containerId = root.id || root.getAttribute("data-product-id");
+    const form = root.querySelector("form");
+    if (containerId && form) {
+      state.originalForms.set(containerId, form.innerHTML);
+    }
+  }
+
+  function mountSadakaDonationBlock(form, html) {
+    if (!form || !html || typeof html !== "string") {
+      return null;
+    }
+    const existing = form.querySelector("[data-wdp-sadaka-donation]");
+    if (existing) {
+      return existing;
+    }
+
+    const temp = document.createElement("div");
+    temp.innerHTML = html.trim();
+    const block = temp.querySelector("[data-wdp-sadaka-donation]");
+    if (!block) {
+      return null;
+    }
+
+    const main = form.querySelector(".wdp-side-panel-main");
+    const footer = form.querySelector(".wdp-side-panel-footer-zone");
+    if (main) {
+      main.appendChild(block);
+    } else if (footer) {
+      form.insertBefore(block, footer);
+    } else {
+      const buttons = form.querySelector(".wdp-button-group");
+      if (buttons) {
+        form.insertBefore(block, buttons);
+      } else {
+        form.appendChild(block);
+      }
+    }
+
+    return block;
+  }
+
+  function applySadakaDonation(root, form, data) {
+    const enabled = !!(data && data.enable_sadaka_donation);
+    const existing = form.querySelector("[data-wdp-sadaka-donation]");
+
+    if (!enabled) {
+      if (existing) {
+        existing.remove();
+      }
+      if (root) {
+        root.setAttribute("data-wdp-enable-sadaka", "0");
+      }
+      refreshFormSnapshot(root);
+      return;
+    }
+
+    if (root) {
+      root.setAttribute("data-wdp-enable-sadaka", "1");
+    }
+
+    let block = existing;
+    if (!block && data.sadaka_block_html) {
+      block = mountSadakaDonationBlock(form, data.sadaka_block_html);
+    }
+
+    if (block) {
+      refreshFormSnapshot(root);
+      if (WDPApp.form && typeof WDPApp.form.setup === "function") {
+        WDPApp.form.setup(form);
+      }
+    }
   }
 
   function applyProductInfo(productId, data) {
@@ -141,22 +222,39 @@
         return;
       }
 
-      const priceField = form.querySelector(".wdp-price-field.wdp-custom-price-field") || form.querySelector(".wdp-price-field");
+      const customPriceRow = form.querySelector(".wdp-custom-price-row, .wdp-custom-price-with-qty-row");
+      const priceField =
+        customPriceRow ||
+        form.querySelector(".wdp-price-field.wdp-custom-price-field") ||
+        form.querySelector(".wdp-price-field");
+      const showCustomPrice = !!(data.is_custom_price || customPriceRow);
       if (priceField) {
         safeLog("Özel fiyat durumu:", data.is_custom_price);
-        if (data.is_custom_price) {
-          priceField.style.display = "flex";
+        if (showCustomPrice) {
+          if (customPriceRow) {
+            customPriceRow.style.display = "";
+          } else {
+            priceField.style.display = "flex";
+          }
 
-          const priceInput = priceField.querySelector('input[name="custom_price"]');
+          const priceInput = (customPriceRow || priceField).querySelector('input[name="custom_price"]');
           if (priceInput) {
             const currencyEl = priceField.querySelector(".wdp-custom-price-currency");
-            if (currencyEl && wdp_ajax.currency && wdp_ajax.currency.symbol) {
+            if (currencyEl && WDPApp.utils && typeof WDPApp.utils.getCurrencySymbol === "function") {
+              currencyEl.textContent = WDPApp.utils.getCurrencySymbol();
+            } else if (currencyEl && wdp_ajax.currency && wdp_ajax.currency.symbol) {
               currencyEl.textContent = wdp_ajax.currency.symbol;
             }
 
             const minPriceNumeric = Number.parseFloat((data.min_price || '').toString().trim().replace(/\s+/g, '').replace(/\./g, '').replace(',', '.'));
+            const isShareForm = !!form.querySelector('input[name="share_count"]');
             const basePriceNumeric = Number.parseFloat((data.price || '').toString().trim().replace(/\s+/g, '').replace(/\./g, '').replace(',', '.'));
-            const resolvedMin = Number.isFinite(minPriceNumeric) && minPriceNumeric > 0 ? minPriceNumeric : basePriceNumeric;
+            let resolvedMin = 0;
+            if (Number.isFinite(minPriceNumeric) && minPriceNumeric > 0) {
+              resolvedMin = minPriceNumeric;
+            } else if (isShareForm && Number.isFinite(basePriceNumeric) && basePriceNumeric > 0) {
+              resolvedMin = basePriceNumeric;
+            }
 
             if (Number.isFinite(resolvedMin) && resolvedMin > 0) {
               priceInput.setAttribute("min", resolvedMin.toString());
@@ -168,15 +266,22 @@
 
             priceInput.setAttribute("step", "0.01");
             priceInput.required = true;
-            priceInput.value = "";
-            delete priceInput.dataset.wdpCustomUnit;
+            const userHasValue = String(priceInput.value || '').trim() !== '';
+            const userIsTyping = document.activeElement === priceInput;
+            if (!userHasValue && !userIsTyping) {
+              priceInput.value = "";
+              delete priceInput.dataset.wdpCustomUnit;
+            }
             const emptyPlaceholder = (wdp_ajax.strings && wdp_ajax.strings.custom_price_placeholder_empty) ? wdp_ajax.strings.custom_price_placeholder_empty : "Bağış tutarı *";
+            let nextPlaceholder = emptyPlaceholder;
             if (Number.isFinite(resolvedMin) && resolvedMin > 0) {
-              priceInput.placeholder = `min: ${formatPrice(resolvedMin)}`;
+              nextPlaceholder = `min: ${formatPrice(resolvedMin)}`;
             } else if (data.min_price) {
-              priceInput.placeholder = `min: ${data.min_price}`;
-            } else {
-              priceInput.placeholder = emptyPlaceholder;
+              nextPlaceholder = `min: ${data.min_price}`;
+            }
+            const currentPlaceholder = String(priceInput.placeholder || '').trim();
+            if (currentPlaceholder !== nextPlaceholder) {
+              priceInput.placeholder = nextPlaceholder;
             }
           }
         } else if (priceField) {
@@ -198,6 +303,8 @@
           quantityRow.style.display = "flex";
         }
       }
+
+      applySadakaDonation(root, form, data);
 
       if (WDPApp.form && typeof WDPApp.form.updateLineTotals === "function") {
         WDPApp.form.updateLineTotals(form);
@@ -229,6 +336,7 @@
   WDPApp.product = {
     getData: getProductInfoData,
     fetch: fetchProductInfo,
+    fetchProductInfo: fetchProductInfo,
     apply: applyProductInfo,
     displayError: displayProductInfoError,
   };

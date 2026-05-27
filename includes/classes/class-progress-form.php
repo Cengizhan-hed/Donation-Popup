@@ -72,7 +72,7 @@ class WDP_Progress_Form {
         // Progress bar formunda özel fiyat her zaman aktif olmalı
         $allow_custom_price = true;
 
-        $wdp_currency_symbol = function_exists('get_woocommerce_currency_symbol') ? get_woocommerce_currency_symbol() : '₺';
+        $wdp_currency_symbol = WDP_Utils::get_display_currency_symbol();
         $wdp_custom_price_placeholder = (floatval($min_price) > 0)
             ? ('min: ' . WDP_Utils::format_amount_for_min_placeholder($min_price))
             : __('Bağış tutarı *', 'woo-donation-popup');

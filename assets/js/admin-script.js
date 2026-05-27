@@ -3,7 +3,7 @@
  */
 ;((window, document, $) => {
   const cfg = window.wdp_admin || {}
-  const TAB_KEYS = ["products", "modal-layout", "normal-form", "shareholder-form", "progress-bar", "success-screen"]
+  const TAB_KEYS = ["products", "modal-layout", "normal-form", "shareholder-form", "progress-bar", "success-screen", "meta", "category-colors"]
 
   function ensureNoticeContainer($anchor) {
     let $notice = $("#wdp-admin-notices")
@@ -145,8 +145,13 @@
       enable_progress_bar: $row.find('input[name="enable_progress_bar"]').is(":checked"),
       progress_bar_limit: $row.find('input[name="progress_bar_limit"]').val(),
       enable_product_note: $row.find('input[name="enable_product_note"]').is(":checked"),
-      product_note_icon: $row.find('select[name="product_note_icon"]').val(),
       product_note_text: $row.find('textarea[name="product_note_text"]').val(),
+      enable_sadaka_donation: $row.find('input[name="enable_sadaka_donation"]').is(":checked"),
+      sadaka_toggle_label: $row.find('input[name="sadaka_toggle_label"]').val(),
+      sadaka_min_price: $row.find('input[name="sadaka_min_price"]').val(),
+      sadaka_fixed_price: $row.find('input[name="sadaka_fixed_price"]').val(),
+      sadaka_wc_product_id: $row.find('input[name="sadaka_wc_product_id"]').val(),
+      sadaka_donation_message: $row.find('textarea[name="sadaka_donation_message"]').val(),
     }
   }
 
@@ -361,12 +366,6 @@
   }
 
   function bindConditionalRows() {
-    const toggleShareholderGradientRows = () => {
-      const isGradient = $("#shareholders_area_use_gradient").is(":checked")
-      $(".shareholders-area-color-row").toggle(isGradient)
-      $(".shareholders-area-solid-row").toggle(!isGradient)
-    }
-
     const togglePopupCustomFontRow = () => {
       $("#popup_button_custom_font_row").toggle($("#popup_button_font_family").val() === "custom")
     }
@@ -376,13 +375,75 @@
       $("#popup_button_custom_min_width_row, #popup_button_custom_min_height_row, #popup_button_custom_padding_x_row").toggle(isCustom)
     }
 
-    $("#shareholders_area_use_gradient").off("change.wdpAdmin").on("change.wdpAdmin", toggleShareholderGradientRows)
+    const toggleButtonShadowRows = () => {
+      $(".wdp-button-shadow-group").each(function () {
+        const $grp = $(this)
+        const slot = String($grp.data("shadow-slot") || "")
+        if (!slot) return
+        const enabled = $("#button_shadow_" + slot + "_enabled").is(":checked")
+        $grp.find("tr.button-shadow-rows").toggle(enabled)
+        if (enabled) {
+          const hover = $("#button_shadow_" + slot + "_hover_enhanced").is(":checked")
+          $grp.find("tr.button-shadow-hover-extra").toggle(hover)
+        } else {
+          $grp.find("tr.button-shadow-hover-extra").hide()
+        }
+      })
+    }
+
+    const toggleButtonShadowHoverRows = () => {
+      $(".wdp-button-shadow-group").each(function () {
+        const $grp = $(this)
+        const slot = String($grp.data("shadow-slot") || "")
+        if (!slot) return
+        const master = $("#button_shadow_" + slot + "_enabled").is(":checked")
+        const hover = $("#button_shadow_" + slot + "_hover_enhanced").is(":checked")
+        $grp.find("tr.button-shadow-hover-extra").toggle(master && hover)
+      })
+    }
+
     $("#popup_button_font_family").off("change.wdpAdmin").on("change.wdpAdmin", togglePopupCustomFontRow)
     $("#popup_button_size").off("change.wdpAdmin").on("change.wdpAdmin", togglePopupButtonSizeRows)
+    $("#button_shadow_sc_enabled, #button_shadow_modal_enabled")
+      .off("change.wdpAdmin")
+      .on("change.wdpAdmin", toggleButtonShadowRows)
+    $("#button_shadow_sc_hover_enhanced, #button_shadow_modal_hover_enhanced")
+      .off("change.wdpAdmin")
+      .on("change.wdpAdmin", toggleButtonShadowHoverRows)
 
-    toggleShareholderGradientRows()
     togglePopupCustomFontRow()
     togglePopupButtonSizeRows()
+    toggleButtonShadowRows()
+  }
+
+  function bindCategoryColorPreview() {
+    const $form = $("#wdp-category-colors-settings-form")
+    if (!$form.length) return
+
+    function syncBlock($block) {
+      const $enable = $block.find('input[type="checkbox"][name^="category_color_enable"]')
+      const $picker = $block.find(".wdp-cat-color-picker")
+      const $preview = $block.find(".wdp-cat-color-block__product-name")
+      if (!$picker.length) return
+
+      const color = $picker.val() || "#1f2937"
+      if ($enable.is(":checked")) {
+        $preview.css("color", color)
+      } else {
+        $preview.css("color", "")
+      }
+    }
+
+    $form
+      .off("input.wdpCatColor change.wdpCatColor")
+      .on("input.wdpCatColor change.wdpCatColor", ".wdp-cat-color-picker, input[name^='category_color_enable']", function () {
+        syncBlock($(this).closest(".wdp-cat-color-block"))
+        markDirty($form.closest(".wdp-admin-settings-form"))
+      })
+
+    $form.find(".wdp-cat-color-block").each(function () {
+      syncBlock($(this))
+    })
   }
 
   function bindDirtyStateTracking() {
@@ -421,5 +482,8 @@
     bindSettingsForm("#wdp-success-screen-settings-form", "wdp_save_success_screen_settings", "#wdp-save-success-screen-settings", false)
     bindSettingsForm("#wdp-modal-layout-settings-form", "wdp_save_modal_layout_settings", "#wdp-save-modal-layout-settings", false)
     bindSettingsForm("#wdp-progress-bar-settings-form", "wdp_save_progress_bar_settings", "#wdp-save-progress-bar-settings", false)
+    bindSettingsForm("#wdp-meta-tracking-settings-form", "wdp_save_meta_tracking_settings", "#wdp-save-meta-tracking-settings", false)
+    bindSettingsForm("#wdp-category-colors-settings-form", "wdp_save_category_colors_settings", "#wdp-save-category-colors-settings", false)
+    bindCategoryColorPreview()
   })
 })(window, document, jQuery)

@@ -123,21 +123,29 @@
               const isPluginNode = node.classList && (
                 node.classList.contains('wdp-donate-button') || 
                 node.classList.contains('wdp-open-modal') ||
+                node.classList.contains('wdp-open-side-panel') ||
                 node.classList.contains('wdp-donation-form') ||
-                node.querySelector('.wdp-donate-button, .wdp-open-modal, .wdp-donation-form')
+                node.querySelector('.wdp-donate-button, .wdp-open-modal, .wdp-open-side-panel, .wdp-donation-form')
               );
 
               if (!isPluginNode && pluginContainers.length > 0) {
                 return; // Plugin ile ilgili değil, atla
               }
 
-              const buttons = node.querySelectorAll(".wdp-donate-button, .wdp-open-modal")
+              const buttons = node.querySelectorAll(".wdp-donate-button, .wdp-open-modal, .wdp-open-side-panel")
               if (buttons.length > 0) {
                 shouldReinitialize = true
               }
               // Yeni eklenen doğrudan formlar varsa hemen başlat
               const forms = node.matches && node.matches('.wdp-donation-form') ? [node] : node.querySelectorAll && node.querySelectorAll('.wdp-donation-form')
               if (forms && forms.length) {
+                if (WDPApp.init && WDPApp.init.directForms) {
+                  WDPApp.init.directForms(node)
+                }
+                shouldRemoveInlineStyles = true
+              }
+              const modals = node.matches && node.matches('.wdp-modal') ? [node] : node.querySelectorAll && node.querySelectorAll('.wdp-modal')
+              if (modals && modals.length) {
                 if (WDPApp.init && WDPApp.init.directForms) {
                   WDPApp.init.directForms(node)
                 }

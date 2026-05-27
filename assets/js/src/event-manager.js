@@ -12,9 +12,13 @@
   function getModule(name) {
     return WDPApp[name] || {};
   }
+  let delegatedEventsBound = false;
 
   // Olay dinleyicilerini başlat
   function initializeEventListeners() {
+    if (delegatedEventsBound) {
+      return;
+    }
     // State modülünü kontrol et (henüz yüklenmemişse oluştur)
     const currentState = getModule('state');
     if (!currentState || typeof currentState.listenersInitialized === 'undefined') {
@@ -41,30 +45,48 @@
       document.addEventListener("click", function(e) {
         if (e.target.classList.contains("wdp-donate-button") || 
             e.target.classList.contains("wdp-open-modal") ||
+            e.target.classList.contains("wdp-open-side-panel") ||
             e.target.closest(".wdp-donate-button") ||
-            e.target.closest(".wdp-open-modal")) {
+            e.target.closest(".wdp-open-modal") ||
+            e.target.closest(".wdp-open-side-panel")) {
           
           e.preventDefault();
           e.stopPropagation();
           
-          const button = e.target.classList.contains("wdp-donate-button") || e.target.classList.contains("wdp-open-modal") 
+          const button = e.target.classList.contains("wdp-donate-button") || e.target.classList.contains("wdp-open-modal") || e.target.classList.contains("wdp-open-side-panel")
             ? e.target 
-            : e.target.closest(".wdp-donate-button") || e.target.closest(".wdp-open-modal");
+            : e.target.closest(".wdp-donate-button") || e.target.closest(".wdp-open-modal") || e.target.closest(".wdp-open-side-panel");
           
           if (button) {
             const productId = button.getAttribute("data-product-id");
             
             if (productId) {
-              // Update module functions before use - INSTANT execution
+              try {
+                const ajax = window.wdp_ajax || {};
+                const meta = ajax.meta || {};
+                if (meta.enabled && meta.customDebug && window.WDPMetaTracking && typeof window.WDPMetaTracking.trackCustom === "function") {
+                  window.WDPMetaTracking.trackCustom(
+                    "DonationButtonClick",
+                    { source: "wdp_donation_plugin", product_id: String(productId) },
+                    { eventID: "wdp_dbg_btn_" + String(productId) + "_" + String(Date.now()) }
+                  );
+                }
+              } catch (dbc) {}
+
+              let modalId = button.getAttribute("data-wdp-modal-id");
+              if (!modalId && button.classList.contains("wdp-open-side-panel")) {
+                modalId = "wdp-side-panel-" + productId;
+              }
+              const openOptions = modalId ? { modalId: modalId } : undefined;
+
               const currentModal = getModule('modal');
               if (currentModal && typeof currentModal.open === 'function') {
-                currentModal.open(productId);
+                currentModal.open(productId, openOptions);
               } else {
-                // INSTANT retry (no delay) - use requestAnimationFrame for next tick
                 requestAnimationFrame(function() {
                   const retryModal = getModule('modal');
                   if (retryModal && typeof retryModal.open === 'function') {
-                    retryModal.open(productId);
+                    retryModal.open(productId, openOptions);
                   }
                 });
               }
@@ -133,8 +155,13 @@
                   formElement.requestSubmit();
                 }
               } else {
-                // Legacy fallback
-                formElement.submit();
+                // Legacy-safe fallback: trigger a real submit event path (do not bypass handlers).
+                const fallbackSubmit = document.createElement("button");
+                fallbackSubmit.type = "submit";
+                fallbackSubmit.hidden = true;
+                formElement.appendChild(fallbackSubmit);
+                fallbackSubmit.click();
+                fallbackSubmit.remove();
               }
             } finally {
               if (formElement.dataset) {
@@ -184,6 +211,8 @@
         }
         window.WDPApp._tempState.listenersInitialized = true;
       }
+
+      delegatedEventsBound = true;
     }
   }
 

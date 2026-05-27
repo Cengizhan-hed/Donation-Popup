@@ -17,7 +17,7 @@ html body .wdp-amount-preset {
   justify-content: center;
   padding: 8px 18px;
   background: var(--wdp-bg-pure-white, #ffffff);
-  border: 1.5px solid var(--wdp-border-soft-gray, #e8eaed);
+  border: var(--wdp-control-border, 1px solid var(--wdp-border-soft-gray, #e8eaed));
   border-radius: var(--wdp-radius-sm, 10px);
   font-family: var(--wdp-font-family, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
   font-size: 14px;
@@ -51,11 +51,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-amount-pre
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-amount-preset[aria-pressed="true"],
 html body .wdp-amount-preset.selected,
 html body .wdp-amount-preset[aria-pressed="true"] {
-  background: linear-gradient(
-    135deg,
-    var(--wdp-color-primary, #4a90e2) 0%,
-    color-mix(in srgb, var(--wdp-color-primary, #4a90e2) 80%, #2563eb) 100%
-  );
+  background: var(--wdp-color-primary, #4a90e2);
   border-color: transparent;
   color: #ffffff;
 }
@@ -72,11 +68,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-amount-pre
 html body .wdp-amount-preset.selected:focus-visible,
 html body .wdp-amount-preset[aria-pressed="true"]:focus-visible {
   box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.5);
-  background: linear-gradient(
-    135deg,
-    var(--wdp-color-primary, #4a90e2) 0%,
-    color-mix(in srgb, var(--wdp-color-primary, #4a90e2) 80%, #2563eb) 100%
-  );
+  background: var(--wdp-color-primary, #4a90e2);
 }
 
 @media (prefers-reduced-motion: reduce) {

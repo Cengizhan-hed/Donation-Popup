@@ -1,7 +1,5 @@
 /**
- * International phone fields — intl-tel-input for format/validation/dial code + WDP country panel.
- * Library dropdown is disabled (allowDropdown: false) to avoid portal/scroll/modal conflicts; the
- * visible list is a single controlled panel (fixed, high z-index) opened only from the flag strip.
+ * Custom country-code phone fields (no intl-tel-input).
  *
  * @package WooCommerce\Donation_Popup
  */
@@ -12,130 +10,228 @@
   const WDPApp = window.WDPApp || (window.WDPApp = {});
   const wdp_ajax = window.wdp_ajax || {};
 
-  function debugPhone(msg) {
-    if (typeof window !== 'undefined' && window.wdpDebugPhoneCountry && window.console && window.console.debug) {
-      window.console.debug('[WDP phone]', msg);
-    }
+  const PANEL_ID = 'wdp-phone-country-panel';
+
+  function getCountries() {
+    const list = wdp_ajax.phone && Array.isArray(wdp_ajax.phone.countries) ? wdp_ajax.phone.countries : [];
+    return list.filter(function (c) {
+      return c && typeof c.iso === 'string' && c.iso.length === 2 && c.dial;
+    });
   }
 
   function getPhoneConfig() {
     const phone = wdp_ajax.phone || {};
     const raw = phone.default_country || 'tr';
     const defaultCountry = typeof raw === 'string' && raw.length === 2 ? raw.toLowerCase() : 'tr';
-    const preferred = Array.isArray(phone.preferred_countries) ? phone.preferred_countries : ['tr', 'de', 'us', 'gb'];
-    return {
-      defaultCountry: defaultCountry,
-      preferredCountries: preferred.filter(function (c) {
-        return typeof c === 'string' && c.length === 2;
-      }),
-    };
+    return { defaultCountry: defaultCountry };
   }
 
-  function getPhoneInputs(root) {
+  const DEFAULT_NATIONAL_RULES = { min: 7, max: 12 };
+
+  const STRIP_LEADING_ZERO_ISOS = new Set([
+    'tr', 'gb', 'it', 'fr', 'de', 'nl', 'be', 'at', 'au', 'nz', 'ie', 'pt', 'es', 'pl', 'cz', 'sk', 'hu', 'ro', 'gr',
+    'no', 'dk', 'fi', 'se', 'ch', 'lu', 'za', 'ng', 'gh', 'ke', 'ug', 'tz', 'et', 'sn', 'ma', 'tn', 'dz', 'eg', 'ly',
+    'sd', 'bf', 'ml', 'ne', 'td', 'dj', 'so', 'pk', 'bd', 'in', 'lk', 'np', 'my', 'sg', 'ph', 'th', 'vn', 'id', 'mm',
+    'kh', 'la', 'hr', 'si', 'rs', 'ba', 'mk', 'me', 'xk', 'al', 'bg', 'ua', 'by', 'md', 'lv', 'lt', 'ee', 'is', 'li',
+    'ad', 'mc', 'sm', 'mt', 'cy', 'am', 'ge', 'az', 'kz', 'kg', 'uz', 'tj', 'tm', 'mn', 'ir', 'iq', 'sy', 'jo', 'lb',
+    'ps', 'ye', 'om', 'qa', 'bh', 'kw', 'ae', 'sa', 'il', 'br', 'ar', 'mx', 'cl', 'co', 'pe', 've', 'ec', 'uy', 'py',
+  ]);
+
+  function findCountry(iso) {
+    const key = (iso || '').toLowerCase();
+    const countries = getCountries();
+    for (let i = 0; i < countries.length; i++) {
+      if (countries[i].iso === key) {
+        return countries[i];
+      }
+    }
+    return countries[0] || { iso: 'tr', name: 'Türkiye', dial: '90', nationalMin: 10, nationalMax: 10 };
+  }
+
+  function getNationalRules(country) {
+    const c = country || {};
+    let min = Number(c.nationalMin);
+    let max = Number(c.nationalMax);
+    if (!Number.isFinite(min)) {
+      min = DEFAULT_NATIONAL_RULES.min;
+    }
+    if (!Number.isFinite(max)) {
+      max = DEFAULT_NATIONAL_RULES.max;
+    }
+    min = Math.max(1, Math.floor(min));
+    max = Math.max(min, Math.floor(max));
+    return { min: min, max: max };
+  }
+
+  function normalizeNationalDigits(iso, rawDigits) {
+    let digits = stripDigits(rawDigits);
+    if (!digits) {
+      return '';
+    }
+    const isoKey = (iso || '').toLowerCase();
+    if (STRIP_LEADING_ZERO_ISOS.has(isoKey) && digits.startsWith('0')) {
+      digits = digits.replace(/^0+/, '');
+    }
+    return digits;
+  }
+
+  function applyNationalLengthAttrs(input, country) {
+    if (!input) {
+      return;
+    }
+    const rules = getNationalRules(country);
+    input.setAttribute('maxlength', String(rules.max));
+    input.setAttribute('minlength', String(rules.min));
+    input.dataset.wdpPhoneNationalMin = String(rules.min);
+    input.dataset.wdpPhoneNationalMax = String(rules.max);
+  }
+
+  function clampNationalValue(input, country) {
+    if (!input) {
+      return;
+    }
+    const rules = getNationalRules(country);
+    let digits = normalizeNationalDigits(country.iso, input.value);
+    if (digits.length > rules.max) {
+      digits = digits.slice(0, rules.max);
+    }
+    if (digits !== String(input.value || '')) {
+      input.value = digits;
+    }
+    applyNationalLengthAttrs(input, country);
+  }
+
+  function stripDigits(value) {
+    return String(value == null ? '' : value).replace(/\D+/g, '');
+  }
+
+  function normalizePhoneNumber(iso, dialCode, rawInput) {
+    let digits = stripDigits(rawInput);
+    const dial = stripDigits(dialCode);
+    if (!digits) {
+      return '';
+    }
+
+    if (digits.startsWith(dial) && digits.length >= dial.length + 6) {
+      return digits;
+    }
+
+    if (iso === 'tr') {
+      if (digits.startsWith('0')) {
+        digits = digits.slice(1);
+      }
+      if (digits.startsWith('90') && digits.length >= 12) {
+        return digits;
+      }
+      if (digits.startsWith(dial)) {
+        return digits;
+      }
+      return dial + digits;
+    }
+
+    if (digits.startsWith('0')) {
+      digits = digits.replace(/^0+/, '');
+    }
+    if (digits.startsWith(dial)) {
+      return digits;
+    }
+    return dial + digits;
+  }
+
+  function getPhoneNumberInputs(root) {
     if (!root || !root.querySelectorAll) {
       return [];
     }
     return Array.prototype.slice.call(
       root.querySelectorAll(
-        'input[type="tel"][name="donation_phone"], input[type="tel"][name^="shareholder_phone_"]'
+        '.wdp-phone-field__number, input[type="tel"][name="donation_phone"], input[type="tel"][name^="shareholder_phone_"]'
       )
     );
   }
 
-  /**
-   * Match visual gap from dial-code/flag strip to typed text with the name row rhythm
-   * (icon column + column-gap: --wdp-field-stack-gap-icon-text). intl-tel-input uses ~6px;
-   * we override padding-left after layout using the flag container width + design token.
-   */
-  function getFieldStackIconTextGapPx() {
-    let gapPx = 10;
-    try {
-      const raw = window
-        .getComputedStyle(document.documentElement)
-        .getPropertyValue('--wdp-field-stack-gap-icon-text')
-        .trim();
-      if (raw.endsWith('px')) {
-        const n = Number.parseFloat(raw);
-        if (Number.isFinite(n) && n >= 0) {
-          gapPx = n;
-        }
-      }
-    } catch (e) {
-      /* ignore */
+  function getPhoneFieldRoot(input) {
+    if (!input) {
+      return null;
     }
-    return gapPx;
+    return input.closest('[data-wdp-phone-field]');
   }
 
-  function syncTelInputPaddingToFieldRhythm(input) {
+  function getSelectedCountry(fieldRoot) {
+    if (!fieldRoot) {
+      return findCountry(getPhoneConfig().defaultCountry);
+    }
+    const iso = (fieldRoot.dataset.selectedCountry || fieldRoot.dataset.defaultCountry || getPhoneConfig().defaultCountry).toLowerCase();
+    return findCountry(iso);
+  }
+
+  function setSelectedCountry(fieldRoot, country) {
+    if (!fieldRoot || !country) {
+      return;
+    }
+    fieldRoot.dataset.selectedCountry = country.iso;
+    fieldRoot.dataset.dialCode = country.dial;
+    const label = fieldRoot.querySelector('.wdp-phone-field__code-label');
+    if (label) {
+      label.textContent = '+' + country.dial;
+    }
+    const num = fieldRoot.querySelector('.wdp-phone-field__number');
+    if (num) {
+      clampNationalValue(num, country);
+    }
+  }
+
+  function sanitizeNationalInput(input) {
     if (!input) {
       return;
     }
-    const wrap = input.closest('.iti');
-    const fc = wrap ? wrap.querySelector('.iti__flag-container') : null;
-    if (!fc) {
-      return;
-    }
-    const w = fc.offsetWidth || 0;
-    // Rapid share-count güncellemelerinde (display/layout geçişleri) ölçüm 0 dönebilir.
-    // Bu durumda padding-left'i küçültmek placeholder'da sağ-sol zıplama üretir.
-    if (w < 24) {
-      return;
-    }
-    const gapPx = getFieldStackIconTextGapPx();
-    const targetPadding = w + gapPx;
-    const currentPadding = Number.parseFloat(window.getComputedStyle(input).paddingLeft || '0');
-    if (Number.isFinite(currentPadding) && currentPadding > targetPadding && currentPadding - targetPadding < 6) {
-      // Sub-pixel / transient dalgalanmalarda güncellemeyi atla.
-      return;
-    }
-    input.style.paddingLeft = targetPadding + 'px';
-  }
-
-  function scheduleTelInputPaddingSync(input) {
-    if (!input) {
-      return;
-    }
-    window.requestAnimationFrame(function () {
-      window.requestAnimationFrame(function () {
-        syncTelInputPaddingToFieldRhythm(input);
-      });
-    });
-  }
-
-  function hasUtils() {
-    return typeof window.intlTelInputUtils !== 'undefined' && window.intlTelInputUtils;
-  }
-
-  function normalizePhoneDigits(value) {
-    if (value == null) {
-      return '';
-    }
-    return String(value).replace(/\D+/g, '');
-  }
-
-  function sanitizePhoneInputValue(input) {
-    if (!input) {
-      return;
-    }
+    const fieldRoot = getPhoneFieldRoot(input);
+    const country = getSelectedCountry(fieldRoot);
+    const rules = getNationalRules(country);
     const oldValue = String(input.value || '');
     const start = typeof input.selectionStart === 'number' ? input.selectionStart : oldValue.length;
-    const digitsBeforeCursor = normalizePhoneDigits(oldValue.slice(0, start)).length;
-    const nextValue = normalizePhoneDigits(oldValue);
+    const digitsBefore = stripDigits(oldValue.slice(0, start)).length;
+    let nextValue = normalizeNationalDigits(country.iso, oldValue);
+    if (nextValue.length > rules.max) {
+      nextValue = nextValue.slice(0, rules.max);
+    }
     if (nextValue === oldValue) {
+      applyNationalLengthAttrs(input, country);
       return;
     }
     input.value = nextValue;
+    const caret = Math.min(digitsBefore, nextValue.length);
     try {
-      input.setSelectionRange(digitsBeforeCursor, digitsBeforeCursor);
-    } catch (eSel) {
+      input.setSelectionRange(caret, caret);
+    } catch (e) {
       /* ignore */
     }
+    applyNationalLengthAttrs(input, country);
+  }
+
+  function wouldExceedNationalMax(input, insertText, inputType) {
+    if (!input || !insertText) {
+      return false;
+    }
+    if (inputType && inputType.indexOf('insert') !== 0) {
+      return false;
+    }
+    const fieldRoot = getPhoneFieldRoot(input);
+    const country = getSelectedCountry(fieldRoot);
+    const rules = getNationalRules(country);
+    const cur = stripDigits(String(input.value || ''));
+    const selStart = typeof input.selectionStart === 'number' ? input.selectionStart : cur.length;
+    const selEnd = typeof input.selectionEnd === 'number' ? input.selectionEnd : selStart;
+    const before = stripDigits(String(input.value || '').slice(0, selStart));
+    const after = stripDigits(String(input.value || '').slice(selEnd));
+    const proposed = normalizeNationalDigits(country.iso, before + insertText + after);
+    return proposed.length > rules.max;
   }
 
   function attachDigitsOnlyGuards(input) {
-    if (!input) {
+    if (!input || input._wdpPhoneDigitsBound) {
       return;
     }
+    input._wdpPhoneDigitsBound = true;
     if (typeof input.inputMode === 'string') {
       input.inputMode = 'numeric';
     } else {
@@ -144,15 +240,8 @@
     input.setAttribute('pattern', '[0-9]*');
     input.setAttribute('autocomplete', 'tel-national');
 
-    if (input._wdpPhoneBeforeInputGuard) {
-      input.removeEventListener('beforeinput', input._wdpPhoneBeforeInputGuard);
-    }
-    if (input._wdpPhoneInputSanitizer) {
-      input.removeEventListener('input', input._wdpPhoneInputSanitizer);
-    }
-    if (input._wdpPhonePasteSanitizer) {
-      input.removeEventListener('paste', input._wdpPhonePasteSanitizer);
-    }
+    const fieldRoot = getPhoneFieldRoot(input);
+    applyNationalLengthAttrs(input, getSelectedCountry(fieldRoot));
 
     input._wdpPhoneBeforeInputGuard = function (e) {
       if (!e || typeof e.data !== 'string') {
@@ -163,40 +252,138 @@
       }
       if (/\D/.test(e.data)) {
         e.preventDefault();
+        return;
+      }
+      if (wouldExceedNationalMax(input, e.data, e.inputType)) {
+        e.preventDefault();
       }
     };
     input._wdpPhoneInputSanitizer = function () {
-      sanitizePhoneInputValue(input);
+      sanitizeNationalInput(input);
     };
     input._wdpPhonePasteSanitizer = function () {
       window.requestAnimationFrame(function () {
-        sanitizePhoneInputValue(input);
+        sanitizeNationalInput(input);
       });
     };
 
     input.addEventListener('beforeinput', input._wdpPhoneBeforeInputGuard);
     input.addEventListener('input', input._wdpPhoneInputSanitizer);
     input.addEventListener('paste', input._wdpPhonePasteSanitizer);
-    sanitizePhoneInputValue(input);
+    sanitizeNationalInput(input);
   }
 
-  function getIntlCountryDataset() {
+  const countryPanel = {
+    root: null,
+    list: null,
+    search: null,
+    currentField: null,
+    triggerEl: null,
+    onDocClick: null,
+    onDocKeyDown: null,
+    onVv: null,
+    filterDebounce: null,
+    repositionTimer: null,
+    outsideClickArmed: false,
+    openToken: 0,
+  };
+
+  function canFocusCountrySearch() {
     try {
-      const g = window.intlTelInputGlobals;
-      if (g && typeof g.getCountryData === 'function') {
-        return g.getCountryData().slice();
-      }
+      return window.matchMedia('(hover: hover) and (pointer: fine)').matches;
     } catch (e) {
-      /* ignore */
+      return true;
     }
-    try {
-      if (window.intlTelInput && typeof window.intlTelInput.getCountryData === 'function') {
-        return window.intlTelInput.getCountryData().slice();
+  }
+
+  function schedulePanelReposition() {
+    if (!countryPanel.triggerEl) {
+      return;
+    }
+    if (countryPanel.repositionTimer) {
+      clearTimeout(countryPanel.repositionTimer);
+    }
+    countryPanel.repositionTimer = window.setTimeout(function () {
+      countryPanel.repositionTimer = null;
+      if (countryPanel.root && !countryPanel.root.hidden && countryPanel.triggerEl) {
+        positionCountryPanel(countryPanel.triggerEl);
       }
-    } catch (e2) {
-      /* ignore */
+    }, 48);
+  }
+
+  function ensureCountryPanelDom() {
+    if (countryPanel.root) {
+      return countryPanel.root;
     }
-    return [];
+    const el = document.createElement('div');
+    el.className = 'wdp-phone-country-panel';
+    el.setAttribute('role', 'dialog');
+    el.setAttribute('aria-modal', 'true');
+    el.setAttribute('aria-label', 'Country');
+    el.hidden = true;
+    el.id = PANEL_ID;
+
+    const inner = document.createElement('div');
+    inner.className = 'wdp-phone-country-panel__inner';
+
+    const search = document.createElement('input');
+    search.type = 'search';
+    search.className = 'wdp-phone-country-panel__search';
+    search.setAttribute('autocomplete', 'off');
+    search.setAttribute('autocorrect', 'off');
+    search.setAttribute('spellcheck', 'false');
+
+    const list = document.createElement('ul');
+    list.className = 'wdp-phone-country-panel__list';
+    list.setAttribute('role', 'listbox');
+
+    inner.appendChild(search);
+    inner.appendChild(list);
+    el.appendChild(inner);
+    document.body.appendChild(el);
+
+    countryPanel.root = el;
+    countryPanel.list = list;
+    countryPanel.search = search;
+
+    const ph = wdp_ajax.strings && wdp_ajax.strings.phone_search_placeholder;
+    search.setAttribute('placeholder', ph || 'Ara');
+
+    search.addEventListener('click', function (e) {
+      e.stopPropagation();
+    });
+    search.addEventListener('input', function () {
+      if (countryPanel.filterDebounce) {
+        clearTimeout(countryPanel.filterDebounce);
+      }
+      countryPanel.filterDebounce = window.setTimeout(function () {
+        countryPanel.filterDebounce = null;
+        renderFilteredList();
+      }, 80);
+    });
+
+    list.addEventListener('click', function (e) {
+      const btn = e.target && e.target.closest ? e.target.closest('button[data-iso]') : null;
+      if (!btn || !countryPanel.currentField) {
+        return;
+      }
+      const iso = btn.getAttribute('data-iso');
+      if (!iso) {
+        return;
+      }
+      setSelectedCountry(countryPanel.currentField, findCountry(iso));
+      closeCountryPanel();
+      const num = countryPanel.currentField.querySelector('.wdp-phone-field__number');
+      if (num && typeof num.focus === 'function') {
+        try {
+          num.focus({ preventScroll: true });
+        } catch (e2) {
+          num.focus();
+        }
+      }
+    });
+
+    return el;
   }
 
   function readVisualViewportFrame() {
@@ -217,135 +404,13 @@
     };
   }
 
-  function sortCountriesForConfig(all, preferredIso2) {
-    const prefSet = {};
-    preferredIso2.forEach(function (p) {
-      prefSet[p.toLowerCase()] = true;
-    });
-    const preferred = [];
-    const rest = [];
-    for (let i = 0; i < all.length; i++) {
-      const c = all[i];
-      if (!c || !c.iso2) {
-        continue;
-      }
-      const iso = c.iso2.toLowerCase();
-      if (prefSet[iso]) {
-        preferred.push(c);
-      } else {
-        rest.push(c);
-      }
-    }
-    preferred.sort(function (a, b) {
-      const ia = preferredIso2.indexOf(a.iso2.toLowerCase());
-      const ib = preferredIso2.indexOf(b.iso2.toLowerCase());
-      return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib);
-    });
-    rest.sort(function (a, b) {
-      return (a.name || '').localeCompare(b.name || '', undefined, { sensitivity: 'base' });
-    });
-    return preferred.concat(rest);
-  }
-
-  /** Single floating panel — explicit visibility, no intl-tel-input portal. */
-  const countryPanel = {
-    root: null,
-    list: null,
-    search: null,
-    currentInput: null,
-    currentIti: null,
-    triggerEl: null,
-    sortedCountries: null,
-    onDocPointerDown: null,
-    onDocKeyDown: null,
-    onVv: null,
-    filterDebounce: null,
-  };
-
-  function ensureCountryPanelDom() {
-    if (countryPanel.root) {
-      return countryPanel.root;
-    }
-    const el = document.createElement('div');
-    el.className = 'wdp-phone-country-panel';
-    el.setAttribute('role', 'dialog');
-    el.setAttribute('aria-modal', 'true');
-    el.setAttribute('aria-label', 'Country');
-    el.hidden = true;
-    el.id = 'wdp-phone-country-panel';
-
-    const inner = document.createElement('div');
-    inner.className = 'wdp-phone-country-panel__inner';
-
-    const search = document.createElement('input');
-    search.type = 'search';
-    search.className = 'wdp-phone-country-panel__search';
-    search.setAttribute('autocomplete', 'off');
-    search.setAttribute('autocorrect', 'off');
-    search.setAttribute('spellcheck', 'false');
-
-    const list = document.createElement('ul');
-    list.className = 'wdp-phone-country-panel__list';
-    list.setAttribute('role', 'listbox');
-
-    inner.appendChild(search);
-    inner.appendChild(list);
-    el.appendChild(inner);
-    document.body.appendChild(el);
-    countryPanel.root = el;
-    countryPanel.list = list;
-    countryPanel.search = search;
-    const ph = wdp_ajax.strings && wdp_ajax.strings.phone_search_placeholder;
-    if (ph) {
-      countryPanel.search.setAttribute('placeholder', ph);
-    } else {
-      countryPanel.search.setAttribute('placeholder', 'Search');
-    }
-    countryPanel.search.addEventListener('click', function (e) {
-      e.stopPropagation();
-    });
-    countryPanel.search.addEventListener('input', function () {
-      if (countryPanel.filterDebounce) {
-        clearTimeout(countryPanel.filterDebounce);
-      }
-      countryPanel.filterDebounce = window.setTimeout(function () {
-        countryPanel.filterDebounce = null;
-        renderFilteredList();
-      }, 80);
-    });
-    countryPanel.list.addEventListener('click', function (e) {
-      const btn = e.target && e.target.closest ? e.target.closest('button[data-iso]') : null;
-      if (!btn || !countryPanel.currentIti) {
-        return;
-      }
-      const iso = btn.getAttribute('data-iso');
-      if (!iso) {
-        return;
-      }
-      try {
-        countryPanel.currentIti.setCountry(iso.toLowerCase());
-      } catch (err) {
-        debugPhone('setCountry failed: ' + err);
-      }
-      closeCountryPanel();
-      if (countryPanel.currentInput && typeof countryPanel.currentInput.focus === 'function') {
-        try {
-          countryPanel.currentInput.focus({ preventScroll: true });
-        } catch (e2) {
-          countryPanel.currentInput.focus();
-        }
-      }
-    });
-    return el;
-  }
-
-  function positionCountryPanel(anchorInput) {
+  function positionCountryPanel(anchorEl) {
     const el = countryPanel.root;
-    if (!el || !anchorInput) {
+    if (!el || !anchorEl) {
       return;
     }
     const inner = el.querySelector('.wdp-phone-country-panel__inner');
-    const rect = anchorInput.getBoundingClientRect();
+    const rect = anchorEl.getBoundingClientRect();
     const frame = readVisualViewportFrame();
     const gap = 6;
     const pad = 8;
@@ -367,7 +432,6 @@
     let left = rect.left;
     left = Math.max(frame.left + pad, Math.min(left, frame.right - width - pad));
 
-    el.style.position = 'fixed';
     el.style.top = Math.round(top) + 'px';
     el.style.left = Math.round(left) + 'px';
     el.style.width = Math.round(width) + 'px';
@@ -375,33 +439,20 @@
   }
 
   function renderFilteredList() {
-    if (!countryPanel.list || !countryPanel.sortedCountries) {
+    if (!countryPanel.list) {
       return;
     }
     const q = (countryPanel.search && countryPanel.search.value ? countryPanel.search.value : '').trim().toLowerCase();
-    const cur =
-      countryPanel.currentIti && typeof countryPanel.currentIti.getSelectedCountryData === 'function'
-        ? countryPanel.currentIti.getSelectedCountryData()
-        : null;
-    const curIso = cur && cur.iso2 ? cur.iso2.toLowerCase() : '';
+    const cur = countryPanel.currentField ? getSelectedCountry(countryPanel.currentField) : null;
+    const curIso = cur ? cur.iso : '';
 
     countryPanel.list.textContent = '';
-    for (let i = 0; i < countryPanel.sortedCountries.length; i++) {
-      const c = countryPanel.sortedCountries[i];
-      if (!c || !c.iso2) {
-        continue;
-      }
+    getCountries().forEach(function (c) {
       const name = (c.name || '').toLowerCase();
-      const iso = c.iso2.toLowerCase();
-      const dial = String(c.dialCode || '');
-      if (
-        q &&
-        !name.includes(q) &&
-        !iso.includes(q) &&
-        !('+' + dial).includes(q) &&
-        !dial.includes(q)
-      ) {
-        continue;
+      const iso = c.iso.toLowerCase();
+      const dial = String(c.dial || '');
+      if (q && !name.includes(q) && !iso.includes(q) && !('+' + dial).includes(q) && !dial.includes(q)) {
+        return;
       }
       const btn = document.createElement('button');
       btn.type = 'button';
@@ -409,33 +460,30 @@
       btn.setAttribute('data-iso', iso);
       btn.setAttribute('role', 'option');
       btn.setAttribute('aria-selected', iso === curIso ? 'true' : 'false');
-      const flagBox = document.createElement('span');
-      flagBox.className = 'iti__flag-box';
-      const flag = document.createElement('div');
-      flag.className = 'iti__flag iti__' + iso;
-      flagBox.appendChild(flag);
+
       const nameSpan = document.createElement('span');
       nameSpan.className = 'wdp-phone-country-panel__name';
       nameSpan.textContent = c.name || iso.toUpperCase();
+
       const dialSpan = document.createElement('span');
       dialSpan.className = 'wdp-phone-country-panel__dial';
       dialSpan.textContent = '+' + dial;
-      btn.appendChild(flagBox);
+
       btn.appendChild(nameSpan);
       btn.appendChild(dialSpan);
       if (iso === curIso) {
         btn.classList.add('wdp-phone-country-panel__item--current');
       }
       countryPanel.list.appendChild(btn);
-    }
+    });
   }
 
   function bindCountryPanelGlobalListeners() {
-    if (countryPanel.onDocPointerDown) {
+    if (countryPanel.onDocClick) {
       return;
     }
-    countryPanel.onDocPointerDown = function (e) {
-      if (!countryPanel.root || countryPanel.root.hidden) {
+    countryPanel.onDocClick = function (e) {
+      if (!countryPanel.root || countryPanel.root.hidden || !countryPanel.outsideClickArmed) {
         return;
       }
       const t = e.target;
@@ -465,14 +513,14 @@
         }
       }
     };
-    document.addEventListener('pointerdown', countryPanel.onDocPointerDown, true);
+    document.addEventListener('click', countryPanel.onDocClick, false);
     document.addEventListener('keydown', countryPanel.onDocKeyDown, true);
   }
 
   function unbindCountryPanelGlobalListeners() {
-    if (countryPanel.onDocPointerDown) {
-      document.removeEventListener('pointerdown', countryPanel.onDocPointerDown, true);
-      countryPanel.onDocPointerDown = null;
+    if (countryPanel.onDocClick) {
+      document.removeEventListener('click', countryPanel.onDocClick, false);
+      countryPanel.onDocClick = null;
     }
     if (countryPanel.onDocKeyDown) {
       document.removeEventListener('keydown', countryPanel.onDocKeyDown, true);
@@ -486,44 +534,40 @@
       }
       countryPanel.onVv = null;
     }
+    if (countryPanel.repositionTimer) {
+      clearTimeout(countryPanel.repositionTimer);
+      countryPanel.repositionTimer = null;
+    }
+    countryPanel.outsideClickArmed = false;
   }
 
-  function openCountryPanel(input, iti) {
+  function openCountryPanel(fieldRoot, triggerBtn) {
     ensureCountryPanelDom();
-    const wrap = input.closest('.iti');
-    const trigger = wrap ? wrap.querySelector('.iti__flag-container') : null;
-    if (!trigger) {
-      debugPhone('openCountryPanel: no flag container');
+    if (!fieldRoot || !triggerBtn) {
       return;
     }
 
-    countryPanel.currentInput = input;
-    countryPanel.currentIti = iti;
-    countryPanel.triggerEl = trigger;
-
-    if (!countryPanel.sortedCountries || !countryPanel.sortedCountries.length) {
-      const raw = getIntlCountryDataset();
-      const cfg = getPhoneConfig();
-      countryPanel.sortedCountries = sortCountriesForConfig(raw, cfg.preferredCountries);
-    }
+    countryPanel.currentField = fieldRoot;
+    countryPanel.triggerEl = triggerBtn;
 
     if (countryPanel.search) {
       countryPanel.search.value = '';
     }
     renderFilteredList();
 
+    const openToken = ++countryPanel.openToken;
+    countryPanel.outsideClickArmed = false;
+
     countryPanel.root.hidden = false;
     countryPanel.root.setAttribute('aria-hidden', 'false');
-    document.body.classList.add('wdp-iti-country-open');
-    trigger.setAttribute('aria-expanded', 'true');
+    document.body.classList.add('wdp-phone-panel-open');
+    triggerBtn.setAttribute('aria-expanded', 'true');
 
-    positionCountryPanel(input);
+    positionCountryPanel(triggerBtn);
     bindCountryPanelGlobalListeners();
 
     countryPanel.onVv = function () {
-      if (countryPanel.currentInput) {
-        positionCountryPanel(countryPanel.currentInput);
-      }
+      schedulePanelReposition();
     };
     const vv = window.visualViewport;
     if (vv) {
@@ -532,8 +576,16 @@
     }
 
     window.requestAnimationFrame(function () {
-      positionCountryPanel(input);
-      if (countryPanel.search && typeof countryPanel.search.focus === 'function') {
+      if (openToken !== countryPanel.openToken || countryPanel.root.hidden) {
+        return;
+      }
+      positionCountryPanel(triggerBtn);
+      window.setTimeout(function () {
+        if (openToken === countryPanel.openToken && countryPanel.root && !countryPanel.root.hidden) {
+          countryPanel.outsideClickArmed = true;
+        }
+      }, 0);
+      if (canFocusCountrySearch() && countryPanel.search && typeof countryPanel.search.focus === 'function') {
         try {
           countryPanel.search.focus({ preventScroll: true });
         } catch (e) {
@@ -541,78 +593,201 @@
         }
       }
     });
-
-    debugPhone('panel open for ' + (input.name || input.id || 'tel'));
   }
 
   function closeCountryPanel() {
     if (!countryPanel.root || countryPanel.root.hidden) {
       return;
     }
+    countryPanel.openToken += 1;
+    countryPanel.outsideClickArmed = false;
     countryPanel.root.hidden = true;
     countryPanel.root.setAttribute('aria-hidden', 'true');
-    document.body.classList.remove('wdp-iti-country-open');
+    document.body.classList.remove('wdp-phone-panel-open');
     if (countryPanel.triggerEl) {
       countryPanel.triggerEl.setAttribute('aria-expanded', 'false');
     }
     unbindCountryPanelGlobalListeners();
-    countryPanel.currentInput = null;
-    countryPanel.currentIti = null;
+    countryPanel.currentField = null;
     countryPanel.triggerEl = null;
-    debugPhone('panel closed');
   }
 
-  function closeCountryPanelIfInput(input) {
-    if (input && countryPanel.currentInput === input) {
+  function closeCountryPanelIfField(fieldRoot) {
+    if (fieldRoot && countryPanel.currentField === fieldRoot) {
       closeCountryPanel();
     }
   }
 
-  function buildItiOptions() {
-    const cfg = getPhoneConfig();
-    return {
-      initialCountry: cfg.defaultCountry || 'tr',
-      preferredCountries: cfg.preferredCountries,
-      allowDropdown: false,
-      countrySearch: false,
-      strictMode: false,
-      separateDialCode: true,
-      nationalMode: true,
-      formatOnDisplay: true,
-      customContainer: 'wdp-iti',
-      showFlags: true,
-      useFullscreenPopup: false,
-      utilsScript: '',
-    };
+  function getNormalizedValue(input) {
+    if (!input) {
+      return '';
+    }
+    const fieldRoot = getPhoneFieldRoot(input);
+    const country = getSelectedCountry(fieldRoot);
+    const national = normalizeNationalDigits(country.iso, input.value);
+    if (!national) {
+      return '';
+    }
+    return normalizePhoneNumber(country.iso, country.dial, national);
   }
 
-  function attachWdpCountryTrigger(input, iti) {
-    const wrap = input.closest('.iti');
-    if (!wrap) {
-      return function () {};
+  function getNationalDigitCount(input) {
+    if (!input) {
+      return 0;
     }
-    const fc = wrap.querySelector('.iti__flag-container');
-    const sf = wrap.querySelector('.iti__selected-flag');
-    if (!fc || !sf) {
-      return function () {};
+    const fieldRoot = getPhoneFieldRoot(input);
+    const country = getSelectedCountry(fieldRoot);
+    return normalizeNationalDigits(country.iso, input.value).length;
+  }
+
+  function createFieldElement(options) {
+    const opts = Object.assign(
+      {
+        name: 'donation_phone',
+        placeholder: 'Telefon Numarası *',
+        required: true,
+        autocomplete: 'tel',
+        inputmode: 'tel',
+        className: 'wdp-field-stack__input',
+        defaultCountry: getPhoneConfig().defaultCountry,
+      },
+      options || {}
+    );
+
+    const country = findCountry(opts.defaultCountry);
+    const wrap = document.createElement('div');
+    wrap.className = 'wdp-phone-field';
+    wrap.setAttribute('data-wdp-phone-field', '');
+    wrap.setAttribute('data-default-country', country.iso);
+    wrap.setAttribute('data-selected-country', country.iso);
+    wrap.setAttribute('data-dial-code', country.dial);
+
+    const inner = document.createElement('div');
+    inner.className = 'wdp-phone-field__inner';
+
+    const codeWrap = document.createElement('div');
+    codeWrap.className = 'wdp-phone-field__code-wrap';
+
+    const codeBtn = document.createElement('button');
+    codeBtn.type = 'button';
+    codeBtn.className = 'wdp-phone-field__code-btn';
+    codeBtn.setAttribute('aria-haspopup', 'listbox');
+    codeBtn.setAttribute('aria-expanded', 'false');
+    codeBtn.setAttribute('aria-label', 'Ülke kodu seç');
+
+    const codeLabel = document.createElement('span');
+    codeLabel.className = 'wdp-phone-field__code-label';
+    codeLabel.textContent = '+' + country.dial;
+
+    const chevron = document.createElement('span');
+    chevron.className = 'wdp-phone-field__chevron';
+    chevron.setAttribute('aria-hidden', 'true');
+
+    codeBtn.appendChild(codeLabel);
+    codeBtn.appendChild(chevron);
+    codeWrap.appendChild(codeBtn);
+
+    const divider = document.createElement('span');
+    divider.className = 'wdp-phone-field__divider';
+    divider.setAttribute('aria-hidden', 'true');
+
+    const numberInput = document.createElement('input');
+    numberInput.type = 'tel';
+    numberInput.className = opts.className + ' wdp-phone-field__number';
+    numberInput.name = opts.name;
+    numberInput.placeholder = opts.placeholder;
+    numberInput.autocomplete = opts.autocomplete;
+    numberInput.setAttribute('inputmode', opts.inputmode);
+    if (opts.required) {
+      numberInput.required = true;
     }
 
-    ensureCountryPanelDom();
-    fc.classList.add('wdp-phone-flag-trigger');
-    fc.setAttribute('role', 'button');
-    fc.setAttribute('tabindex', '0');
-    fc.setAttribute('aria-haspopup', 'dialog');
-    fc.setAttribute('aria-expanded', 'false');
-    fc.setAttribute('aria-controls', countryPanel.root && countryPanel.root.id ? countryPanel.root.id : 'wdp-phone-country-panel');
+    inner.appendChild(codeWrap);
+    inner.appendChild(divider);
+    inner.appendChild(numberInput);
+    wrap.appendChild(inner);
 
-    if (!sf.querySelector('.wdp-phone-selector-chevron')) {
-      const ch = document.createElement('span');
-      ch.className = 'wdp-phone-selector-chevron';
-      ch.setAttribute('aria-hidden', 'true');
-      sf.appendChild(ch);
+    return wrap;
+  }
+
+  function wrapBareTelInput(input) {
+    if (!input || getPhoneFieldRoot(input)) {
+      return null;
+    }
+    const parent = input.parentNode;
+    if (!parent) {
+      return null;
+    }
+    const field = createFieldElement({
+      name: input.name || 'donation_phone',
+      placeholder: input.getAttribute('placeholder') || '',
+      required: input.required,
+      autocomplete: input.getAttribute('autocomplete') || 'tel',
+      className: (input.className || 'wdp-field-stack__input').replace(/\bwdp-phone-field__number\b/g, '').trim(),
+    });
+    const newInput = field.querySelector('.wdp-phone-field__number');
+    if (newInput && input.value) {
+      newInput.value = stripDigits(input.value);
+    }
+    if (input.id) {
+      newInput.id = input.id;
+    }
+    parent.replaceChild(field, input);
+    return field;
+  }
+
+  function destroyField(input) {
+    if (!input) {
+      return;
+    }
+    const fieldRoot = getPhoneFieldRoot(input);
+    closeCountryPanelIfField(fieldRoot);
+
+    if (typeof input._wdpCountryPickerCleanup === 'function') {
+      try {
+        input._wdpCountryPickerCleanup();
+      } catch (e) {
+        /* ignore */
+      }
+      input._wdpCountryPickerCleanup = null;
     }
 
-    function openFromUser(e) {
+    if (input._wdpPhoneBeforeInputGuard) {
+      input.removeEventListener('beforeinput', input._wdpPhoneBeforeInputGuard);
+      input._wdpPhoneBeforeInputGuard = null;
+    }
+    if (input._wdpPhoneInputSanitizer) {
+      input.removeEventListener('input', input._wdpPhoneInputSanitizer);
+      input._wdpPhoneInputSanitizer = null;
+    }
+    if (input._wdpPhonePasteSanitizer) {
+      input.removeEventListener('paste', input._wdpPhonePasteSanitizer);
+      input._wdpPhonePasteSanitizer = null;
+    }
+    input._wdpPhoneDigitsBound = false;
+    delete input.dataset.wdpPhoneInit;
+  }
+
+  function isInitialized(fieldRoot) {
+    return fieldRoot && fieldRoot.dataset && fieldRoot.dataset.wdpPhoneInit === '1';
+  }
+
+  function initFieldRoot(fieldRoot) {
+    if (!fieldRoot || isInitialized(fieldRoot)) {
+      return;
+    }
+
+    const input = fieldRoot.querySelector('.wdp-phone-field__number');
+    const codeBtn = fieldRoot.querySelector('.wdp-phone-field__code-btn');
+    if (!input || !codeBtn || input.readOnly || input.disabled) {
+      return;
+    }
+
+    const defaultIso = (fieldRoot.dataset.defaultCountry || getPhoneConfig().defaultCountry).toLowerCase();
+    setSelectedCountry(fieldRoot, findCountry(defaultIso));
+    fieldRoot.dataset.wdpPhoneInit = '1';
+
+    function toggleFromUser(e) {
       if (input.disabled || input.readOnly) {
         return;
       }
@@ -623,204 +798,72 @@
         e.preventDefault();
       }
       e.stopPropagation();
-      if (!countryPanel.root || countryPanel.root.hidden || countryPanel.currentInput !== input) {
-        openCountryPanel(input, iti);
-      } else {
+      const isOpen =
+        countryPanel.root &&
+        !countryPanel.root.hidden &&
+        countryPanel.currentField === fieldRoot;
+      if (isOpen) {
         closeCountryPanel();
+      } else {
+        openCountryPanel(fieldRoot, codeBtn);
       }
     }
 
-    fc.addEventListener('click', openFromUser);
-    fc.addEventListener('keydown', openFromUser);
+    codeBtn.addEventListener('click', toggleFromUser);
+    codeBtn.addEventListener('keydown', toggleFromUser);
 
-    return function cleanup() {
-      fc.removeEventListener('click', openFromUser);
-      fc.removeEventListener('keydown', openFromUser);
-      fc.classList.remove('wdp-phone-flag-trigger');
-      fc.removeAttribute('role');
-      fc.removeAttribute('tabindex');
-      fc.removeAttribute('aria-haspopup');
-      fc.removeAttribute('aria-expanded');
-      const chev = sf.querySelector('.wdp-phone-selector-chevron');
-      if (chev) {
-        chev.remove();
-      }
-      closeCountryPanelIfInput(input);
+    input._wdpCountryPickerCleanup = function () {
+      codeBtn.removeEventListener('click', toggleFromUser);
+      codeBtn.removeEventListener('keydown', toggleFromUser);
+      closeCountryPanelIfField(fieldRoot);
     };
-  }
 
-  function destroyField(input) {
-    if (!input) {
-      return;
-    }
-    closeCountryPanelIfInput(input);
-    if (typeof input._wdpCountryPickerCleanup === 'function') {
-      try {
-        input._wdpCountryPickerCleanup();
-      } catch (e) {
-        /* ignore */
-      }
-      input._wdpCountryPickerCleanup = null;
-    }
-    if (input._wdpPaddingSyncCountryChange) {
-      try {
-        input.removeEventListener('countrychange', input._wdpPaddingSyncCountryChange);
-      } catch (eRm) {
-        /* ignore */
-      }
-      input._wdpPaddingSyncCountryChange = null;
-    }
-    if (input._wdpPhoneBeforeInputGuard) {
-      try {
-        input.removeEventListener('beforeinput', input._wdpPhoneBeforeInputGuard);
-      } catch (eBg) {
-        /* ignore */
-      }
-      input._wdpPhoneBeforeInputGuard = null;
-    }
-    if (input._wdpPhoneInputSanitizer) {
-      try {
-        input.removeEventListener('input', input._wdpPhoneInputSanitizer);
-      } catch (eIg) {
-        /* ignore */
-      }
-      input._wdpPhoneInputSanitizer = null;
-    }
-    if (input._wdpPhonePasteSanitizer) {
-      try {
-        input.removeEventListener('paste', input._wdpPhonePasteSanitizer);
-      } catch (ePg) {
-        /* ignore */
-      }
-      input._wdpPhonePasteSanitizer = null;
-    }
-    const iti = input._wdpIti;
-    if (iti && typeof iti.destroy === 'function') {
-      try {
-        iti.destroy();
-      } catch (e2) {
-        /* ignore */
-      }
-    }
-    if (input._wdpFlagResizeObserver && typeof input._wdpFlagResizeObserver.disconnect === 'function') {
-      try {
-        input._wdpFlagResizeObserver.disconnect();
-      } catch (e3) {
-        /* ignore */
-      }
-    }
-    input._wdpFlagResizeObserver = null;
-    input._wdpPaddingSyncCountryChange = null;
-    input.style.paddingLeft = '';
-    input._wdpIti = null;
-    delete input.dataset.wdpIntlInit;
-  }
-
-  function isInitialized(input) {
-    return input && input.dataset && input.dataset.wdpIntlInit === '1' && input._wdpIti;
-  }
-
-  function initField(input) {
-    if (!input || !window.intlTelInput || input.readOnly || input.disabled) {
-      return null;
-    }
-    if (isInitialized(input)) {
-      return input._wdpIti;
-    }
-
-    const iti = window.intlTelInput(input, buildItiOptions());
-    input._wdpIti = iti;
-    input.dataset.wdpIntlInit = '1';
-
-    input._wdpCountryPickerCleanup = attachWdpCountryTrigger(input, iti);
-
-    const wrap = input.closest('.iti');
-    const fc = wrap ? wrap.querySelector('.iti__flag-container') : null;
-    if (fc && typeof window.ResizeObserver === 'function') {
-      if (input._wdpFlagResizeObserver && typeof input._wdpFlagResizeObserver.disconnect === 'function') {
-        try {
-          input._wdpFlagResizeObserver.disconnect();
-        } catch (eRo) {
-          /* ignore */
-        }
-      }
-      input._wdpFlagResizeObserver = new window.ResizeObserver(function () {
-        scheduleTelInputPaddingSync(input);
-      });
-      try {
-        input._wdpFlagResizeObserver.observe(fc);
-      } catch (eObs) {
-        input._wdpFlagResizeObserver = null;
-      }
-    }
-
-    const onCountryChange = function () {
-      scheduleTelInputPaddingSync(input);
-    };
-    input._wdpPaddingSyncCountryChange = onCountryChange;
-    input.addEventListener('countrychange', onCountryChange);
-    scheduleTelInputPaddingSync(input);
     attachDigitsOnlyGuards(input);
-
-    return iti;
+    input.dataset.wdpPhoneInit = '1';
   }
 
   function setupInRoot(root) {
-    if (!root || !window.intlTelInput) {
+    if (!root) {
       return;
     }
-    getPhoneInputs(root).forEach(function (input) {
+    root.querySelectorAll('[data-wdp-phone-field]').forEach(function (fieldRoot) {
+      initFieldRoot(fieldRoot);
+    });
+    getPhoneNumberInputs(root).forEach(function (input) {
       if (input.readOnly || input.disabled) {
         return;
       }
-      if (isInitialized(input)) {
+      if (getPhoneFieldRoot(input)) {
         return;
       }
-      destroyField(input);
-      initField(input);
+      const field = wrapBareTelInput(input);
+      if (field) {
+        initFieldRoot(field);
+      }
     });
   }
 
   function refreshInRoot(root) {
-    if (!root || !window.intlTelInput) {
+    if (!root) {
       return;
     }
-    getPhoneInputs(root).forEach(function (input) {
-      if (input.readOnly || input.disabled) {
-        return;
-      }
+    getPhoneNumberInputs(root).forEach(function (input) {
       destroyField(input);
-      initField(input);
     });
+    root.querySelectorAll('[data-wdp-phone-field]').forEach(function (fieldRoot) {
+      delete fieldRoot.dataset.wdpPhoneInit;
+    });
+    setupInRoot(root);
   }
 
-  function getE164(input) {
-    if (!input) {
-      return '';
-    }
-    const iti = input._wdpIti;
-    const utils = window.intlTelInputUtils;
-    if (!iti || !utils || !input.value.trim()) {
-      return '';
-    }
-    try {
-      if (iti.isValidNumber()) {
-        return iti.getNumber(utils.numberFormat.E164) || '';
-      }
-    } catch (e) {
-      /* ignore */
-    }
-    return '';
-  }
-
-  function syncE164FieldsInForm(form) {
-    if (!form || !hasUtils()) {
+  function syncNormalizedFieldsInForm(form) {
+    if (!form) {
       return;
     }
-    getPhoneInputs(form).forEach(function (input) {
-      const e164 = getE164(input);
-      if (e164) {
-        input.value = e164;
+    getPhoneNumberInputs(form).forEach(function (input) {
+      const normalized = getNormalizedValue(input);
+      if (normalized) {
+        input.value = normalized;
       }
     });
   }
@@ -829,60 +872,133 @@
     if (!input) {
       return '';
     }
-    const e164 = getE164(input);
-    if (e164) {
-      return e164;
+    const normalized = getNormalizedValue(input);
+    if (normalized) {
+      return normalized;
     }
-    return (input.value || '').trim();
+    return stripDigits(input.value || '');
+  }
+
+  function detectCountryFromDigits(digits) {
+    const countries = getCountries().slice().sort(function (a, b) {
+      return String(b.dial).length - String(a.dial).length;
+    });
+    for (let i = 0; i < countries.length; i++) {
+      const dial = String(countries[i].dial);
+      if (digits.startsWith(dial) && digits.length > dial.length + 5) {
+        return {
+          country: countries[i],
+          national: digits.slice(dial.length),
+        };
+      }
+    }
+    return null;
   }
 
   function applyPastedNumber(input, value) {
     if (!input || value == null) {
       return;
     }
-    const v = String(value).trim();
-    if (!v) {
+    const fieldRoot = getPhoneFieldRoot(input) || wrapBareTelInput(input);
+    if (!fieldRoot) {
+      input.value = stripDigits(value);
       return;
     }
-    const iti = input._wdpIti;
-    if (iti && typeof iti.setNumber === 'function') {
-      try {
-        iti.setNumber(v);
-        return;
-      } catch (e) {
-        /* fall through */
-      }
+    initFieldRoot(fieldRoot);
+    const numInput = fieldRoot.querySelector('.wdp-phone-field__number') || input;
+    let digits = stripDigits(String(value).trim());
+    if (!digits) {
+      return;
     }
-    input.value = v;
+    const detected = detectCountryFromDigits(digits);
+    if (detected) {
+      setSelectedCountry(fieldRoot, detected.country);
+      const rules = getNationalRules(detected.country);
+      let national = normalizeNationalDigits(detected.country.iso, detected.national);
+      if (national.length > rules.max) {
+        national = national.slice(0, rules.max);
+      }
+      numInput.value = national;
+      applyNationalLengthAttrs(numInput, detected.country);
+      return;
+    }
+    const country = getSelectedCountry(fieldRoot);
+    const rules = getNationalRules(country);
+    let national = normalizeNationalDigits(country.iso, digits);
+    if (national.length > rules.max) {
+      national = national.slice(0, rules.max);
+    }
+    numInput.value = national;
+    applyNationalLengthAttrs(numInput, country);
   }
 
-  /**
-   * Result shape for form validation:
-   * - Simplified rule: only presence is validated at form level.
-   * - Country-aware strict validity is intentionally not enforced for submit blocking.
-   */
   function validatePhoneField(input) {
-    if (!input || !String(input.value || '').trim()) {
+    if (!input) {
       return { ok: true, empty: true, reason: 'empty' };
     }
-    return { ok: true, empty: false, reason: 'present' };
+    const raw = String(input.value || '').trim();
+    if (!raw) {
+      return { ok: true, empty: true, reason: 'empty' };
+    }
+    const fieldRoot = getPhoneFieldRoot(input);
+    const country = getSelectedCountry(fieldRoot);
+    const rules = getNationalRules(country);
+    const length = getNationalDigitCount(input);
+    if (length < rules.min) {
+      return {
+        ok: false,
+        empty: false,
+        reason: 'too_short',
+        min: rules.min,
+        max: rules.max,
+        length: length,
+        country: country,
+      };
+    }
+    if (length > rules.max) {
+      return {
+        ok: false,
+        empty: false,
+        reason: 'too_long',
+        min: rules.min,
+        max: rules.max,
+        length: length,
+        country: country,
+      };
+    }
+    return {
+      ok: true,
+      empty: false,
+      reason: 'valid',
+      min: rules.min,
+      max: rules.max,
+      length: length,
+      country: country,
+    };
   }
 
   WDPApp.phoneInput = {
     setupInRoot: setupInRoot,
     refreshInRoot: refreshInRoot,
     destroyField: destroyField,
-    syncE164FieldsInForm: syncE164FieldsInForm,
+    createFieldElement: createFieldElement,
+    syncE164FieldsInForm: syncNormalizedFieldsInForm,
+    syncNormalizedFieldsInForm: syncNormalizedFieldsInForm,
     getValueForCopy: getValueForCopy,
     applyPastedNumber: applyPastedNumber,
     validatePhoneField: validatePhoneField,
-    getPhoneInputs: getPhoneInputs,
-    hasUtils: hasUtils,
-    /** Manual QA: open state + anchor rect in console */
+    getNationalRules: getNationalRules,
+    getNationalDigitCount: getNationalDigitCount,
+    getPhoneInputs: getPhoneNumberInputs,
+    getNormalizedValue: getNormalizedValue,
+    normalizePhoneNumber: normalizePhoneNumber,
+    hasUtils: function () {
+      return true;
+    },
     debugCountryPanelState: function () {
       return {
         open: !!(countryPanel.root && !countryPanel.root.hidden),
-        anchor: countryPanel.currentInput ? countryPanel.currentInput.getBoundingClientRect() : null,
+        anchor: countryPanel.triggerEl ? countryPanel.triggerEl.getBoundingClientRect() : null,
       };
     },
   };

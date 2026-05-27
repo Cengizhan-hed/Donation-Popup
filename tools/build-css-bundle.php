@@ -12,25 +12,21 @@ $root = dirname(__DIR__);
 $cssRoot = $root . '/assets/css';
 $outDir = $cssRoot . '/build';
 
-$stack = array(
-    'src/tokens.css',
-    'src/base.css',
-    'src/layout.css',
-    'src/forms/shared.css',
-    'src/forms/field-stack.css',
-    'src/forms/hisseli.css',
-    'src/components/buttons.css',
-    'src/components/alerts.css',
-    'src/components/loading.css',
-    'src/components/quantity.css',
-    'src/components/progress-bar.css',
-    'src/components/success.css',
-    'src/components/toast.css',
-    'src/components/motion.css',
-    'src/components/feedback.css',
-    'src/components/accessibility.css',
-    'src/components/amount-presets.css',
-);
+// Stack config uses ABSPATH guard; define for CLI builds.
+if (!defined('ABSPATH')) {
+    define('ABSPATH', $root . '/');
+}
+
+$stack_file = $root . '/includes/config/frontend-css-stack.php';
+if (!file_exists($stack_file)) {
+    fwrite(STDERR, "Missing CSS stack config: {$stack_file}\n");
+    exit(1);
+}
+$stack = require $stack_file;
+if (!is_array($stack)) {
+    fwrite(STDERR, "Invalid CSS stack config.\n");
+    exit(1);
+}
 
 if (!is_dir($outDir) && !mkdir($outDir, 0775, true) && !is_dir($outDir)) {
     fwrite(STDERR, "Cannot create build directory: {$outDir}\n");

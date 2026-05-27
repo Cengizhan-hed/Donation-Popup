@@ -72,6 +72,21 @@ class WDP_Autoloader {
             return;
         }
 
+        $exception_classes = array(
+            'WDP_Exception',
+            'WDP_Product_Not_Found_Exception',
+            'WDP_Validation_Exception',
+            'WDP_Security_Exception',
+            'WDP_Cart_Exception',
+        );
+        if (in_array($class_name, $exception_classes, true)) {
+            $exceptions_file = WDP_PLUGIN_DIR . 'includes/classes/class-exceptions.php';
+            if (file_exists($exceptions_file)) {
+                require_once $exceptions_file;
+            }
+            return;
+        }
+
         // Convert class name to file path
         // WDP_Assets -> class-assets.php
         // WDP_Ajax -> class-ajax.php

@@ -138,17 +138,36 @@
   }
 
   // Modern para formatı
+  function decodeHtmlEntities(value) {
+    if (value === null || value === undefined) {
+      return ''
+    }
+    const str = String(value)
+    if (str.indexOf('&') === -1) {
+      return str
+    }
+    const textarea = document.createElement('textarea')
+    textarea.innerHTML = str
+    return textarea.value
+  }
+
+  function getCurrencySymbol() {
+    const raw = (wdp_ajax && wdp_ajax.currency && wdp_ajax.currency.symbol) ? wdp_ajax.currency.symbol : '₺'
+    const decoded = decodeHtmlEntities(raw)
+    return decoded || '₺'
+  }
+
   function formatCurrency(amount, options = {}) {
     const numericValue = Number((typeof amount === 'string' ? amount.replace(/\s+/g, '').replace(/\./g, '').replace(',', '.') : amount))
 
     if (!Number.isFinite(numericValue)) {
-      const currencySymbol = (wdp_ajax && wdp_ajax.currency && wdp_ajax.currency.symbol) ? wdp_ajax.currency.symbol : '₺'
+      const currencySymbol = getCurrencySymbol()
       return `${currencySymbol}${formatPrice(0)}`
     }
 
     // Para birimi bilgisini al (Currency eklentisi desteği için)
     const currencyCode = (wdp_ajax && wdp_ajax.currency && wdp_ajax.currency.code) ? wdp_ajax.currency.code : 'TRY'
-    const currencySymbol = (wdp_ajax && wdp_ajax.currency && wdp_ajax.currency.symbol) ? wdp_ajax.currency.symbol : '₺'
+    const currencySymbol = getCurrencySymbol()
     
     // Locale belirle (para birimine göre)
     let locale = 'tr-TR'
@@ -523,10 +542,33 @@
     };
   }
 
+  let wdpActiveAlertTimer = null;
+
+  /**
+   * Remove any legacy alert overlay nodes (validation no longer uses center popup).
+   */
+  function clearAlerts() {
+    if (wdpActiveAlertTimer) {
+      clearTimeout(wdpActiveAlertTimer);
+      wdpActiveAlertTimer = null;
+    }
+
+    document.querySelectorAll('.wdp-alert-overlay').forEach((overlay) => {
+      overlay.classList.remove('show');
+      setTimeout(() => {
+        if (overlay.parentNode) {
+          overlay.parentNode.removeChild(overlay);
+        }
+      }, 180);
+    });
+  }
+
   // Export utils module
   const utils = {
     formatPrice,
     formatCurrency,
+    decodeHtmlEntities,
+    getCurrencySymbol,
     escapeHtml,
     safeLog,
     getAjaxNonce,
@@ -540,7 +582,12 @@
     throttle, // Performance optimization
     rafThrottle, // Performance optimization for scroll/resize
     ensureModule, // Export module helper
-  }
+    clearAlerts,
+  };
+
+  // Backward compatibility for themes/snippets that called WDPApp.alerts.clear().
+  WDPApp.alerts = WDPApp.alerts || {};
+  WDPApp.alerts.clear = clearAlerts;
 
   WDPApp.utils = utils;
 

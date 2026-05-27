@@ -19,39 +19,67 @@ class WDP_Shortcodes {
      * Initialize shortcodes
      */
     public static function init() {
-        // Shortcode ekle
         add_shortcode('wdp_donation_button', array(__CLASS__, 'donation_button_shortcode'));
-
-        // Yeni shortcode ekle - doğrudan form için
+        add_shortcode('wdp_donation_button_panel', array(__CLASS__, 'donation_button_panel_shortcode'));
         add_shortcode('wdp_donation_form', array(__CLASS__, 'donation_form_shortcode'));
     }
 
     /**
-     * Donation button shortcode
+     * Donation button shortcode (center popup).
      *
      * @param array $atts Shortcode attributes.
      * @return string
      */
     public static function donation_button_shortcode($atts) {
-        // Shortcode parametrelerini al ve güvenli hale getir
-        $atts = shortcode_atts(array(
-            'id' => 0,
-            'text' => __('Bağış Yap', 'woo-donation-popup'),
-            'class' => '',
-            'style' => '',
-        ), $atts, 'wdp_donation_button');
+        return self::render_donation_button_markup($atts, 'wdp_donation_button', 'popup');
+    }
 
-        // Ürün ID'sini integer'a çevir ve güvenlik kontrolü yap
+    /**
+     * Donation button shortcode (right side panel).
+     *
+     * @param array $atts Shortcode attributes.
+     * @return string
+     */
+    public static function donation_button_panel_shortcode($atts) {
+        return self::render_donation_button_markup($atts, 'wdp_donation_button_panel', 'side_panel');
+    }
+
+    /**
+     * Shared button + modal renderer for popup and side panel triggers.
+     *
+     * @param array  $atts         Shortcode attributes.
+     * @param string $shortcode_tag Shortcode tag name.
+     * @param string $display_mode popup|side_panel.
+     * @return string
+     */
+    private static function render_donation_button_markup($atts, $shortcode_tag, $display_mode) {
+        $atts = shortcode_atts(
+            array(
+                'id'    => 0,
+                'text'  => '',
+                'class' => '',
+                'style' => '',
+            ),
+            $atts,
+            $shortcode_tag
+        );
+
         $product_id = absint($atts['id']);
-
-        // Buton metni
-        $button_text = sanitize_text_field($atts['text']);
-
-        // Özel sınıf ve stil
         $custom_class = sanitize_html_class($atts['class']);
         $custom_style = sanitize_text_field($atts['style']);
 
-        // Ürünün varlığını kontrol et
+        $button_settings = WDP_Utils::normalize_legacy_popup_button_text(
+            get_option('wdp_button_settings', array())
+        );
+
+        if ($atts['text'] !== '') {
+            $button_text = sanitize_text_field($atts['text']);
+        } elseif (!empty($button_settings['popup_button_text'])) {
+            $button_text = sanitize_text_field($button_settings['popup_button_text']);
+        } else {
+            $button_text = __('Bağış Yap', 'woo-donation-popup');
+        }
+
         $product = WDP_Donation_Product_Context_Service::get_product($product_id);
         if (!$product) {
             if (current_user_can('manage_options')) {
@@ -60,7 +88,6 @@ class WDP_Shortcodes {
             return '';
         }
 
-        // Ürünün satın alınabilir olup olmadığını kontrol et
         if (!$product->is_purchasable()) {
             if (current_user_can('manage_options')) {
                 return '<p style="color:red;">Bu ürün satın alınamaz (ID: ' . esc_html($product_id) . ').</p>';
@@ -68,7 +95,6 @@ class WDP_Shortcodes {
             return '';
         }
 
-        // Ürünün stok durumunu kontrol et
         if (!$product->is_in_stock()) {
             if (current_user_can('manage_options')) {
                 return '<p style="color:red;">Bu ürün stokta yok (ID: ' . esc_html($product_id) . ').</p>';
@@ -76,74 +102,43 @@ class WDP_Shortcodes {
             return '';
         }
 
-        // Assets'i zorla yükle
         WDP_Assets::force_enqueue();
-        
-        // Eğer wp_enqueue_scripts geçtiyse, direkt yükle (güvenlik için)
-        if (did_action('wp_enqueue_scripts')) {
-            // wp_footer'da yüklenecek ama emin olmak için şimdi de kontrol et
-            if (class_exists('WDP_Assets')) {
-                WDP_Assets::enqueue_assets_now();
-            }
+
+        if (did_action('wp_enqueue_scripts') && class_exists('WDP_Assets')) {
+            WDP_Assets::enqueue_assets_now();
         }
 
-        // Buton ayarlarını al (CSS değişkenleri için)
-        $button_settings = get_option('wdp_button_settings', array());
-        
-        // Inline style oluştur - CSS değişkenlerini kullan
         $inline_styles = array();
         if (!empty($custom_style)) {
             $inline_styles[] = $custom_style;
         }
-        
-        // CRITICAL: Inline style'larda direkt değerler kullan (CSS değişkenleri değil) - Clean CSS approach
-        // Inline style'lar en yüksek önceliğe sahip olduğu için direkt değerler kullanılmalı
-        // !important kullanmıyoruz - inline style zaten en yüksek specificity'ye sahip
-        if (isset($button_settings['popup_button_color'])) {
-            $inline_styles[] = 'background-color: ' . esc_attr($button_settings['popup_button_color']) . ';';
-        }
-        if (isset($button_settings['popup_button_border_radius'])) {
-            $inline_styles[] = 'border-radius: ' . esc_attr($button_settings['popup_button_border_radius']) . 'px;';
-        }
-        if (isset($button_settings['popup_button_font_size'])) {
-            $inline_styles[] = 'font-size: ' . esc_attr($button_settings['popup_button_font_size']) . 'px;';
-        }
-        if (isset($button_settings['popup_button_font_weight'])) {
-            $inline_styles[] = 'font-weight: ' . esc_attr($button_settings['popup_button_font_weight']) . ';';
-        }
-        if (isset($button_settings['popup_button_font_family'])) {
-            if ($button_settings['popup_button_font_family'] === 'custom' && !empty($button_settings['popup_button_custom_font'])) {
-                $inline_styles[] = 'font-family: ' . esc_attr($button_settings['popup_button_custom_font']) . ';';
-            } elseif ($button_settings['popup_button_font_family'] !== 'inherit' && $button_settings['popup_button_font_family'] !== 'custom') {
-                $inline_styles[] = 'font-family: ' . esc_attr($button_settings['popup_button_font_family']) . ', sans-serif;';
-            }
-        }
-        
-        $combined_style = !empty($inline_styles) ? implode(' ', $inline_styles) : $custom_style;
-        
-        // Full width ayarını kontrol et
+        $combined_style = !empty($inline_styles) ? implode(' ', $inline_styles) : '';
+
         $is_full_width = isset($button_settings['popup_button_full_width']) && $button_settings['popup_button_full_width'] === '1';
-        $button_classes = 'wdp-donate-button wdp-open-modal';
+        $is_side_panel = ($display_mode === 'side_panel');
+
+        $open_class = $is_side_panel ? 'wdp-open-modal wdp-open-side-panel' : 'wdp-open-modal';
+        $button_classes = 'wdp-donate-button ' . $open_class . ' wdp-shortcode-trigger';
         if ($is_full_width) {
             $button_classes .= ' wdp-donate-button-full-width';
         }
         if (!empty($custom_class)) {
             $button_classes .= ' ' . esc_attr($custom_class);
         }
-        
-        // Sadece buton oluştur, modal ayrı oluşturulacak
+
         ob_start();
         ?>
         <!-- Bağış Butonu -->
         <button type="button" class="<?php echo esc_attr($button_classes); ?>"
                 data-product-id="<?php echo esc_attr($product_id); ?>"
+                <?php if ($is_side_panel) : ?>data-wdp-modal-id="<?php echo esc_attr('wdp-side-panel-' . $product_id); ?>" <?php endif; ?>
                 style="<?php echo esc_attr($combined_style); ?>">
             <?php echo esc_html($button_text); ?>
         </button>
 
-        <!-- Modal - Ayrı oluşturuluyor -->
-        <?php echo WDP_Templates::render_donation_modal($product_id, $button_text, $custom_class, $custom_style); ?>
+        <!-- Modal -->
         <?php
+        echo WDP_Templates::render_donation_modal($product_id, $button_text, $custom_class, $custom_style, $display_mode);
         return ob_get_clean();
     }
 
@@ -154,25 +149,18 @@ class WDP_Shortcodes {
      * @return string
      */
     public static function donation_form_shortcode($atts) {
-        // Shortcode parametrelerini al
         $atts = shortcode_atts(array(
             'id' => 0,
             'button_text' => __('Bağış Yap', 'woo-donation-popup'),
-            'title' => '', // Özel başlık
-            'show_title' => 'yes', // Başlığı göster/gizle
-            'class' => '', // Özel CSS sınıfı
+            'title' => '',
+            'show_title' => 'yes',
+            'class' => '',
         ), $atts, 'wdp_donation_form');
 
-        // Ürün ID'sini integer'a çevir
         $product_id = absint($atts['id']);
-
-        // Buton metni
         $button_text = sanitize_text_field($atts['button_text']);
-
-        // Özel sınıf
         $custom_class = sanitize_text_field($atts['class']);
 
-        // Ürünün varlığını kontrol et
         $product = WDP_Donation_Product_Context_Service::get_product($product_id);
         if (!$product) {
             if (current_user_can('manage_options')) {
@@ -181,21 +169,14 @@ class WDP_Shortcodes {
             return '';
         }
 
-        // Assets'i zorla yükle
         WDP_Assets::force_enqueue();
-        
-        // Eğer wp_enqueue_scripts geçtiyse, direkt yükle (güvenlik için)
-        if (did_action('wp_enqueue_scripts')) {
-            // wp_footer'da yüklenecek ama emin olmak için şimdi de kontrol et
-            if (class_exists('WDP_Assets')) {
-                WDP_Assets::enqueue_assets_now();
-            }
+
+        if (did_action('wp_enqueue_scripts') && class_exists('WDP_Assets')) {
+            WDP_Assets::enqueue_assets_now();
         }
 
-        // Form'u render et
         return WDP_Templates::render_donation_form($product_id, $atts);
     }
 }
 
 // Note: init() is called by Woo_Donation_Popup::__construct()
-

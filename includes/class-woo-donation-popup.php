@@ -36,15 +36,16 @@
  * 
  * @package WooCommerce\Donation_Popup
 */
+if (!defined('ABSPATH')) {
+    exit;
+}
+
 class Woo_Donation_Popup {
  
  /**
      * Eklenti etkinleştirildiğinde çalışacak fonksiyon
   */
  public static function activate() {
-     // Transient oluştur, bu sayede eklenti etkinleştirildiğinde bir kerelik çalışacak
-     set_transient('wdp_flush_rewrite', true, 30);
-     
      // Önbellek versiyonunu güncelle
      update_option('wdp_cache_version', time());
  }
@@ -74,6 +75,7 @@ class Woo_Donation_Popup {
         $modules = array(
             'WDP_Utils',
             'WDP_Assets',
+            'WDP_Meta_Tracking',
             'WDP_Ajax',
             'WDP_Cart',
             'WDP_Order',

@@ -4,11 +4,12 @@
 
 /* Performance containment */
 html body .wdp-modal {
-  contain: layout style paint;
+  contain: layout style;
 }
 
 html body .wdp-modal-content {
-  scroll-behavior: var(--wdp-scroll-behavior, smooth);
+  /* Varsayılan: iç alan kaydırması için anında hareket (tıklamadan sonra tepki hissini kesmez) */
+  scroll-behavior: var(--wdp-scroll-behavior, auto);
 }
 
 /* Giriş odak stilleri: shared.css + accessibility.css (klavye için ince :focus-visible) */

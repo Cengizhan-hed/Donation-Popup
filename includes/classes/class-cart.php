@@ -36,6 +36,10 @@ class WDP_Cart {
         // Hisseli ürünler için miktar girişini devre dışı bırak
         add_filter('woocommerce_cart_item_quantity', array(__CLASS__, 'disable_quantity_input_for_share_items'), 10, 3);
         add_filter('woocommerce_update_cart_validation', array(__CLASS__, 'prevent_share_items_quantity_update'), 10, 4);
+
+        add_filter('woocommerce_cart_item_class', array(__CLASS__, 'filter_cart_item_css_class'), 10, 3);
+        add_filter('woocommerce_cart_item_name', array(__CLASS__, 'filter_cart_item_display_name'), 10, 3);
+        add_filter('woocommerce_cart_item_thumbnail', array(__CLASS__, 'filter_cart_item_thumbnail'), 10, 3);
     }
 
     /**
@@ -48,6 +52,9 @@ class WDP_Cart {
      */
     public static function add_donation_item_data($cart_item_data, $product_id, $variation_id) {
         $request_data = self::get_request_data();
+        if (self::is_ajax_add_to_cart_flow($request_data)) {
+            return $cart_item_data;
+        }
 
         // Sadece bağış formundan gelen istekleri işleme al
         if (self::is_donation_modal_request($request_data)) {
@@ -77,6 +84,13 @@ class WDP_Cart {
 
                     if (isset($request_data['shareholder_note_' . $i])) {
                         $shareholder['note'] = sanitize_textarea_field($request_data['shareholder_note_' . $i]);
+                    }
+
+                    if (isset($request_data['shareholder_email_' . $i])) {
+                        $maybe_email = sanitize_email($request_data['shareholder_email_' . $i]);
+                        if ('' !== $maybe_email) {
+                            $shareholder['email'] = $maybe_email;
+                        }
                     }
 
                     if (!empty($shareholder)) {
@@ -153,6 +167,9 @@ class WDP_Cart {
      */
     public static function validate_donation_fields($passed, $product_id, $quantity, $variation_id = '', $variations = array()) {
         $request_data = self::get_request_data();
+        if (self::is_ajax_add_to_cart_flow($request_data)) {
+            return $passed;
+        }
 
         // Sadece bağış formundan gelen istekleri işleme al
         if (self::is_donation_modal_request($request_data)) {
@@ -267,6 +284,18 @@ class WDP_Cart {
     }
 
     /**
+     * Detect internal AJAX add-to-cart flow to avoid duplicate processing.
+     *
+     * @param array $request_data Request payload.
+     * @return bool
+     */
+    private static function is_ajax_add_to_cart_flow(array $request_data) {
+        return isset($request_data['action'], $request_data['wdp_ajax_flow'])
+            && $request_data['action'] === 'wdp_ajax_add_to_cart'
+            && $request_data['wdp_ajax_flow'] === '1';
+    }
+
+    /**
      * Display donation data in cart
      *
      * @param array $item_data Item data.
@@ -291,6 +320,13 @@ class WDP_Cart {
                             $item_data[] = array(
                                 'key' => sprintf(__('%d. Hissedar', 'woo-donation-popup'), $key),
                                 'value' => $shareholder['name'] . (!empty($shareholder['phone']) ? ' (' . $shareholder['phone'] . ')' : ''),
+                            );
+                        }
+
+                        if (!empty($shareholder['email'])) {
+                            $item_data[] = array(
+                                'key' => sprintf(__('%d. Hissedar E-postası', 'woo-donation-popup'), $key),
+                                'value' => $shareholder['email'],
                             );
                         }
 
@@ -329,15 +365,233 @@ class WDP_Cart {
      * @param WC_Cart $cart Cart object.
      */
     public static function apply_custom_price_to_cart($cart) {
+        if (!$cart || !is_a($cart, 'WC_Cart')) {
+            return;
+        }
+
         foreach ($cart->get_cart() as $cart_item_key => $cart_item) {
-            if (isset($cart_item['custom_price'])) {
-                $product = $cart_item['data'];
-                $custom_price = self::sanitize_custom_price($cart_item['custom_price']);
-                if (null !== $custom_price) {
-                    $product->set_price($custom_price);
+            if (!empty($cart_item['wdp_sadaka_donation'])) {
+                $cart_item = self::sync_sadaka_line_wc_product($cart, $cart_item_key, $cart_item);
+            }
+
+            if (empty($cart_item['data']) || !is_a($cart_item['data'], 'WC_Product')) {
+                continue;
+            }
+
+            $line_price = self::resolve_cart_line_unit_price($cart_item);
+            if (null === $line_price) {
+                continue;
+            }
+
+            $line_product = clone $cart_item['data'];
+            $line_product->set_price($line_price);
+            $cart->cart_contents[ $cart_item_key ]['data'] = $line_product;
+        }
+    }
+
+    /**
+     * Sadaka satırı için bağlı WC ürün ID'si (görsel / isim).
+     *
+     * @param array $cart_item Cart row.
+     * @return int
+     */
+    public static function resolve_sadaka_line_wc_product_id(array $cart_item) {
+        if (empty($cart_item['wdp_sadaka_donation'])) {
+            return 0;
+        }
+
+        $line_product_id = isset($cart_item['product_id']) ? (int) $cart_item['product_id'] : 0;
+        if (!empty($cart_item['wdp_sadaka_linked_wc_product']) && $line_product_id > 0) {
+            return $line_product_id;
+        }
+
+        $parent_id = !empty($cart_item['wdp_parent_product_id'])
+            ? (int) $cart_item['wdp_parent_product_id']
+            : 0;
+
+        if ($parent_id > 0 && class_exists('WDP_Utils')) {
+            $resolved = (int) WDP_Utils::resolve_sadaka_wc_product_id($parent_id);
+            if ($resolved > 0) {
+                return $resolved;
+            }
+        }
+
+        return $line_product_id;
+    }
+
+    /**
+     * Sepet satırını bağlı Sadaka WC ürününe hizala (görsel + ürün adı).
+     *
+     * @param WC_Cart $cart          Cart.
+     * @param string  $cart_item_key Key.
+     * @param array   $cart_item     Row.
+     * @return array
+     */
+    private static function sync_sadaka_line_wc_product($cart, $cart_item_key, array $cart_item) {
+        $target_id = self::resolve_sadaka_line_wc_product_id($cart_item);
+        $current_id = isset($cart_item['product_id']) ? (int) $cart_item['product_id'] : 0;
+
+        if ($target_id <= 0 || $target_id === $current_id) {
+            return $cart_item;
+        }
+
+        $sadaka_product = wc_get_product($target_id);
+        if (!$sadaka_product || !$sadaka_product->exists()) {
+            return $cart_item;
+        }
+
+        $cart_item['product_id'] = $target_id;
+        $cart_item['data'] = $sadaka_product;
+        $cart_item['wdp_sadaka_linked_wc_product'] = true;
+
+        if (is_array($cart->cart_contents) && isset($cart->cart_contents[ $cart_item_key ])) {
+            $cart->cart_contents[ $cart_item_key ]['product_id'] = $target_id;
+            $cart->cart_contents[ $cart_item_key ]['data'] = $sadaka_product;
+            $cart->cart_contents[ $cart_item_key ]['wdp_sadaka_linked_wc_product'] = true;
+        }
+
+        return $cart_item;
+    }
+
+    /**
+     * Resolve per-line unit price (main donation vs optional sadaka line).
+     *
+     * @param array $cart_item Cart row.
+     * @return float|null
+     */
+    /**
+     * Public accessor for cart line unit price (used by AJAX cart payload).
+     *
+     * @param array $cart_item Cart row.
+     * @return float|null
+     */
+    public static function get_cart_line_unit_price(array $cart_item) {
+        return self::resolve_cart_line_unit_price($cart_item);
+    }
+
+    private static function resolve_cart_line_unit_price(array $cart_item) {
+        if (!empty($cart_item['wdp_sadaka_donation'])) {
+            if (!isset($cart_item['custom_price'])) {
+                return null;
+            }
+            return self::sanitize_custom_price($cart_item['custom_price']);
+        }
+
+        if (isset($cart_item['custom_price'])) {
+            return self::sanitize_custom_price($cart_item['custom_price']);
+        }
+
+        if (isset($cart_item['wdp_base_unit_price'])) {
+            $stored = self::sanitize_custom_price($cart_item['wdp_base_unit_price']);
+            if (null !== $stored && $stored > 0) {
+                return $stored;
+            }
+        }
+
+        $product_id = !empty($cart_item['product_id']) ? (int) $cart_item['product_id'] : 0;
+        if ($product_id <= 0) {
+            return null;
+        }
+
+        $catalog = wc_get_product($product_id);
+        if (!$catalog) {
+            return null;
+        }
+
+        $base = (float) $catalog->get_regular_price('edit');
+        if ($base <= 0) {
+            $base = (float) $catalog->get_price('edit');
+        }
+
+        return $base > 0 ? $base : null;
+    }
+
+    /**
+     * CSS class for sadaka rows on cart/checkout tables.
+     *
+     * @param string $class        Classes.
+     * @param array  $cart_item    Cart item.
+     * @param string $cart_item_key Key.
+     * @return string
+     */
+    public static function filter_cart_item_css_class($class, $cart_item, $cart_item_key) {
+        unset($cart_item_key);
+        if (!empty($cart_item['wdp_sadaka_donation'])) {
+            $class .= ' wdp-cart-line--sadaka';
+        }
+        return trim($class);
+    }
+
+    /**
+     * Display name suffix for sadaka cart lines.
+     *
+     * @param string $product_name Name HTML.
+     * @param array  $cart_item    Cart item.
+     * @param string $cart_item_key Key.
+     * @return string
+     */
+    public static function filter_cart_item_display_name($product_name, $cart_item, $cart_item_key) {
+        unset($cart_item_key);
+        if (empty($cart_item['wdp_sadaka_donation'])) {
+            return $product_name;
+        }
+
+        $display_id = self::resolve_sadaka_line_wc_product_id($cart_item);
+        if ($display_id > 0) {
+            $display_product = wc_get_product($display_id);
+            if ($display_product && $display_product->exists()) {
+                $parent_id = !empty($cart_item['wdp_parent_product_id'])
+                    ? (int) $cart_item['wdp_parent_product_id']
+                    : (int) ($cart_item['product_id'] ?? 0);
+                if ($display_id !== $parent_id || !empty($cart_item['wdp_sadaka_linked_wc_product'])) {
+                    return wp_kses_post($display_product->get_name());
                 }
             }
         }
+
+        return esc_html__('Alt Bağış', 'woo-donation-popup');
+    }
+
+    /**
+     * Sadaka satırında WooCommerce ürün görseli (bağlı Sadaka ürünü).
+     *
+     * @param string $thumbnail     Default HTML.
+     * @param array  $cart_item     Cart row.
+     * @param string $cart_item_key Key.
+     * @return string
+     */
+    public static function filter_cart_item_thumbnail($thumbnail, $cart_item, $cart_item_key) {
+        unset($cart_item_key);
+        if (empty($cart_item['wdp_sadaka_donation'])) {
+            return $thumbnail;
+        }
+
+        $display_id = self::resolve_sadaka_line_wc_product_id($cart_item);
+        if ($display_id <= 0) {
+            return $thumbnail;
+        }
+
+        $display_product = wc_get_product($display_id);
+        if (!$display_product || !$display_product->exists()) {
+            return $thumbnail;
+        }
+
+        $parent_id = !empty($cart_item['wdp_parent_product_id'])
+            ? (int) $cart_item['wdp_parent_product_id']
+            : (int) ($cart_item['product_id'] ?? 0);
+
+        if ($display_id === $parent_id && empty($cart_item['wdp_sadaka_linked_wc_product'])) {
+            return $thumbnail;
+        }
+
+        $image = $display_product->get_image(
+            apply_filters('wdp_sadaka_cart_thumbnail_size', 'woocommerce_thumbnail'),
+            array(
+                'class' => 'wdp-sadaka-cart-thumb',
+            )
+        );
+
+        return $image ? $image : $thumbnail;
     }
 
     /**
@@ -402,9 +656,10 @@ class WDP_Cart {
      * @return string
      */
     public static function custom_cart_item_price($price, $cart_item, $cart_item_key) {
-        if (isset($cart_item['custom_price'])) {
-            $custom_price = floatval($cart_item['custom_price']);
-            return WDP_Utils::format_price_html($custom_price);
+        unset($cart_item_key);
+        $unit = self::resolve_cart_line_unit_price($cart_item);
+        if (null !== $unit) {
+            return WDP_Utils::format_price_html($unit);
         }
 
         return $price;
@@ -419,10 +674,11 @@ class WDP_Cart {
      * @return string
      */
     public static function custom_cart_item_subtotal($price, $cart_item, $cart_item_key) {
-        if (isset($cart_item['custom_price'])) {
-            $custom_price = floatval($cart_item['custom_price']);
-            $quantity = $cart_item['quantity'];
-            return WDP_Utils::format_price_html($custom_price * $quantity);
+        unset($cart_item_key);
+        $unit = self::resolve_cart_line_unit_price($cart_item);
+        if (null !== $unit) {
+            $quantity = isset($cart_item['quantity']) ? max(1, (int) $cart_item['quantity']) : 1;
+            return WDP_Utils::format_price_html($unit * $quantity);
         }
 
         return $price;

@@ -2,6 +2,10 @@
 /**
  * WooCommerce Donation Modal Popup Admin Class
  */
+if (!defined('ABSPATH')) {
+    exit;
+}
+
 class Woo_Donation_Popup_Admin {
     /**
      * Store settings in a non-autoload option to keep front bootstrap lean.
@@ -69,176 +73,20 @@ class Woo_Donation_Popup_Admin {
             function() { $this->render_normal_form_customization_tab(); },
             function() { $this->render_shareholder_form_customization_tab(); },
             function() { $this->render_progress_bar_customization_tab(); },
-            function() { $this->render_success_screen_customization_tab(); }
+            function() { $this->render_success_screen_customization_tab(); },
+            function() { $this->render_meta_tracking_tab(); },
+            function() { $this->render_category_colors_tab(); }
         );
     }
     
     /**
      * Ürün satırını render et
+     *
+     * @param WC_Product $product Product.
+     * @return void
      */
     public function render_product_row($product) {
-        // Ürün ayarlarını al
-        $allow_custom_price = get_post_meta($product->get_id(), '_allow_custom_price', true) === 'yes';
-        $min_custom_price = get_post_meta($product->get_id(), '_min_custom_price', true);
-        $allow_multiple_shares = get_post_meta($product->get_id(), '_allow_multiple_shares', true) === 'yes';
-        $max_shares = get_post_meta($product->get_id(), '_max_shares', true);
-        $enable_progress_bar = get_post_meta($product->get_id(), '_enable_progress_bar', true) === 'yes';
-        $progress_bar_limit = get_post_meta($product->get_id(), '_progress_bar_limit', true);
-        $enable_product_note = get_post_meta($product->get_id(), '_enable_product_note', true) === 'yes';
-        $product_note_text = get_post_meta($product->get_id(), '_product_note_text', true);
-        $product_note_icon = get_post_meta($product->get_id(), '_product_note_icon', true);
-        if ($product_note_icon === '') {
-            $product_note_icon = 'info';
-        }
-        
-        // Varsayılan değerler
-        if ($min_custom_price === '') {
-            $min_custom_price = '0';
-        }
-        
-        if ($max_shares === '') {
-            $max_shares = '7';
-        }
-        
-        if ($progress_bar_limit === '') {
-            $progress_bar_limit = '100000';
-        }
-        
-        // Shortcode'lar
-        $button_shortcode = '[wdp_donation_button id="' . $product->get_id() . '"]';
-        $form_shortcode = '[wdp_donation_form id="' . $product->get_id() . '"]';
-
-        // Grid/kart tabanlı ürün bloğu
-        echo '<div class="wdp-product-card" data-product-id="' . esc_attr($product->get_id()) . '">';
-
-        // Üst kısım: Ürün adı
-        echo '<div class="wdp-product-main">';
-        echo '<div class="wdp-product-title">';
-        echo '<a href="' . esc_url(get_edit_post_link($product->get_id())) . '" target="_blank">' . esc_html($product->get_name()) . '</a>';
-        echo '</div>';
-        echo '<input type="hidden" name="product_id" value="' . esc_attr($product->get_id()) . '">';
-        echo '</div>'; // .wdp-product-main
-
-        // Orta kısım: ayar grid'i (her kolon altında ilgili alt ayar)
-        echo '<div class="wdp-product-settings-grid">';
-
-        // Çoklu hisse + Maks. hisse
-        echo '<div class="wdp-field-group">';
-        echo '<div class="wdp-field wdp-field-toggle">';
-        echo '<div class="wdp-field-label">' . __('Çoklu Hisse', 'woo-donation-popup') . '</div>';
-        echo '<div class="wdp-field-control">';
-        echo '<label class="wdp-switch">';
-        echo '<input type="checkbox" name="allow_multiple_shares" ' . checked($allow_multiple_shares, true, false) . '>';
-        echo '<span class="wdp-slider"></span>';
-        echo '</label>';
-        echo '</div>';
-        echo '</div>';
-        echo '<div class="wdp-sub-field">';
-        echo '<div class="wdp-sub-field-label">' . __('Maks. Hisse', 'woo-donation-popup') . '</div>';
-        echo '<div class="wdp-field-control">';
-        echo '<input type="number" name="max_shares" value="' . esc_attr($max_shares) . '" min="1" max="20" class="small-text">';
-        echo '</div>';
-        echo '</div>';
-        echo '</div>';
-
-        // Özel fiyat + Min. fiyat
-        echo '<div class="wdp-field-group">';
-        echo '<div class="wdp-field wdp-field-toggle">';
-        echo '<div class="wdp-field-label">' . __('Özel Fiyat', 'woo-donation-popup') . '</div>';
-        echo '<div class="wdp-field-control">';
-        echo '<label class="wdp-switch">';
-        echo '<input type="checkbox" name="allow_custom_price" ' . checked($allow_custom_price, true, false) . '>';
-        echo '<span class="wdp-slider"></span>';
-        echo '</label>';
-        echo '</div>';
-        echo '</div>';
-        echo '<div class="wdp-sub-field">';
-        echo '<div class="wdp-sub-field-label">' . __('Min. Fiyat (₺)', 'woo-donation-popup') . '</div>';
-        echo '<div class="wdp-field-control">';
-        echo '<input type="number" name="min_custom_price" value="' . esc_attr($min_custom_price) . '" min="0" step="1" class="small-text">';
-        echo '</div>';
-        echo '</div>';
-        echo '</div>';
-
-        // Progress Bar + Üst Limit
-        echo '<div class="wdp-field-group">';
-        echo '<div class="wdp-field wdp-field-toggle">';
-        echo '<div class="wdp-field-label">' . __('Progress Bar', 'woo-donation-popup') . '</div>';
-        echo '<div class="wdp-field-control">';
-        echo '<label class="wdp-switch">';
-        echo '<input type="checkbox" name="enable_progress_bar" ' . checked($enable_progress_bar, true, false) . '>';
-        echo '<span class="wdp-slider"></span>';
-        echo '</label>';
-        echo '</div>';
-        echo '</div>';
-        echo '<div class="wdp-sub-field">';
-        echo '<div class="wdp-sub-field-label">' . __('Üst Limit (₺)', 'woo-donation-popup') . '</div>';
-        echo '<div class="wdp-field-control">';
-        echo '<input type="number" name="progress_bar_limit" value="' . esc_attr($progress_bar_limit) . '" min="0" step="1" class="small-text">';
-        echo '</div>';
-        echo '</div>';
-        echo '</div>';
-
-        // Ürün notu + Not metni
-        echo '<div class="wdp-field-group wdp-field-group-note">';
-        echo '<div class="wdp-field wdp-field-toggle">';
-        echo '<div class="wdp-field-label">' . __('Not Ekle', 'woo-donation-popup') . '</div>';
-        echo '<div class="wdp-field-control">';
-        echo '<label class="wdp-switch">';
-        echo '<input type="checkbox" name="enable_product_note" ' . checked($enable_product_note, true, false) . '>';
-        echo '<span class="wdp-slider"></span>';
-        echo '</label>';
-        echo '</div>';
-        echo '</div>';
-        echo '<div class="wdp-sub-field">';
-        echo '<div class="wdp-sub-field-label">' . __('Not İkonu', 'woo-donation-popup') . '</div>';
-        echo '<div class="wdp-field-control">';
-        echo '<select name="product_note_icon">';
-        echo '<option value="info" ' . selected($product_note_icon, 'info', false) . '>' . esc_html__('Bilgi', 'woo-donation-popup') . '</option>';
-        echo '<option value="video" ' . selected($product_note_icon, 'video', false) . '>' . esc_html__('Video', 'woo-donation-popup') . '</option>';
-        echo '<option value="delivery" ' . selected($product_note_icon, 'delivery', false) . '>' . esc_html__('Hizli Teslim', 'woo-donation-popup') . '</option>';
-        echo '<option value="heart" ' . selected($product_note_icon, 'heart', false) . '>' . esc_html__('Bagis', 'woo-donation-popup') . '</option>';
-        echo '</select>';
-        echo '</div>';
-        echo '</div>';
-        echo '<div class="wdp-sub-field">';
-        echo '<div class="wdp-sub-field-label">' . __('Ürün Alt Notu', 'woo-donation-popup') . '</div>';
-        echo '<div class="wdp-field-control">';
-        echo '<textarea name="product_note_text" rows="3" maxlength="400" placeholder="' . esc_attr__('Örn: Formda bilgilendirme amaçlı video gönderilecektir.', 'woo-donation-popup') . '">' . esc_textarea($product_note_text) . '</textarea>';
-        echo '</div>';
-        echo '</div>';
-        echo '</div>';
-
-        echo '</div>'; // .wdp-product-settings-grid
-
-        // Shortcode alanı
-        echo '<div class="wdp-product-shortcodes">';
-        echo '<div class="wdp-shortcodes">';
-
-        // Buton Shortcode
-        echo '<div class="wdp-shortcode-item">';
-        echo '<label class="wdp-shortcode-label">Buton</label>';
-        echo '<code class="wdp-shortcode">' . $button_shortcode . '</code>';
-        echo '<button type="button" class="button button-small wdp-copy-shortcode" data-shortcode="' . esc_attr($button_shortcode) . '">' . __('Kopyala', 'woo-donation-popup') . '</button>';
-        echo '</div>';
-
-        // Form Shortcode
-        echo '<div class="wdp-shortcode-item">';
-        echo '<label class="wdp-shortcode-label">Form</label>';
-        echo '<code class="wdp-shortcode">' . $form_shortcode . '</code>';
-        echo '<button type="button" class="button button-small wdp-copy-shortcode" data-shortcode="' . esc_attr($form_shortcode) . '">' . __('Kopyala', 'woo-donation-popup') . '</button>';
-        echo '</div>';
-
-        echo '</div>'; // .wdp-shortcodes
-        echo '</div>'; // .wdp-product-shortcodes
-
-        // Alt kısım: işlem butonu
-        echo '<div class="wdp-product-actions">';
-        echo '<button type="button" class="button wdp-save-product" data-product-id="' . $product->get_id() . '">' . __('Kaydet', 'woo-donation-popup') . '</button>';
-        echo '<span class="spinner"></span>';
-        echo '</div>'; // .wdp-product-actions
-
-        echo '</div>'; // .wdp-product-card
+        WDP_Admin_Product_Row_Renderer::render($product);
     }
     
     /**
@@ -327,6 +175,15 @@ class Woo_Donation_Popup_Admin {
     private function render_progress_bar_customization_tab() {
         WDP_Admin_Layout_Tabs_Renderer::render_progress_bar_tab();
     }
+
+    /**
+     * Meta Pixel companion tab.
+     *
+     * @return void
+     */
+    private function render_meta_tracking_tab() {
+        WDP_Admin_Meta_Tracking_Tab_Renderer::render();
+    }
     
     /**
      * Normal form özelleştirme ayarlarını kaydet (AJAX)
@@ -393,12 +250,77 @@ class Woo_Donation_Popup_Admin {
 
         $this->send_admin_settings_success(__('Progress bar ayarları başarıyla kaydedildi.', 'woo-donation-popup'));
     }
+
+    /**
+     * Meta Pixel companion ayarlarını kaydet (AJAX).
+     *
+     * @return void
+     */
+    public function save_meta_tracking_settings() {
+        try {
+            $this->guard_admin_settings_ajax();
+            $request_data = $this->get_admin_request_data();
+
+            $settings = WDP_Admin_Settings_Normalizer::normalize_meta_tracking_settings($request_data);
+
+            if (! class_exists('WDP_Meta_Tracking')) {
+                $this->send_admin_settings_error(__('Meta izleme modülü yüklenemedi.', 'woo-donation-popup'));
+                return;
+            }
+
+            WDP_Meta_Tracking::update_settings($settings);
+            $this->bump_wdp_asset_cache_version();
+
+            $this->send_admin_settings_success(__('Meta Pixel ayarları başarıyla kaydedildi.', 'woo-donation-popup'));
+        } catch (Exception $e) {
+            if (defined('WP_DEBUG') && WP_DEBUG) {
+                error_log('WDP meta tracking save error: ' . $e->getMessage());
+            }
+            $this->send_admin_settings_error(__('Bir hata oluştu. Lütfen tekrar deneyin.', 'woo-donation-popup'));
+        }
+    }
     
     /**
      * Modal görünüm ayarları tab'ını render et
      */
     private function render_modal_layout_customization_tab() {
         WDP_Admin_Layout_Tabs_Renderer::render_modal_layout_tab();
+    }
+
+    /**
+     * Kategori başlık renkleri sekmesi.
+     *
+     * @return void
+     */
+    private function render_category_colors_tab() {
+        WDP_Admin_Category_Colors_Tab_Renderer::render_tab();
+    }
+
+    /**
+     * Kategori başlık renklerini kaydet (AJAX).
+     *
+     * @return void
+     */
+    public function save_category_colors_settings() {
+        try {
+            $this->guard_admin_settings_ajax();
+            $request_data = $this->get_admin_request_data();
+
+            $colors = WDP_Category_Title_Color_Service::normalize_from_request($request_data);
+            $saved = $this->update_non_autoload_option(WDP_Category_Title_Color_Service::OPTION_KEY, $colors);
+
+            if ($saved === false) {
+                $this->send_admin_settings_error(__('Ayarlar kaydedilirken bir hata oluştu.', 'woo-donation-popup'));
+            }
+
+            $this->bump_wdp_asset_cache_version();
+            $this->send_admin_settings_success(__('Kategori renkleri kaydedildi.', 'woo-donation-popup'));
+        } catch (Exception $e) {
+            if (defined('WP_DEBUG') && WP_DEBUG) {
+                error_log('WDP category colors save error: ' . $e->getMessage());
+            }
+            $this->send_admin_settings_error(__('Bir hata oluştu. Lütfen tekrar deneyin.', 'woo-donation-popup'));
+        }
     }
     
     /**

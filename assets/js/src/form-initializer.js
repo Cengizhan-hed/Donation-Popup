@@ -23,71 +23,171 @@
     return { setupFormSubmission, setupShareholderForms };
   }
 
-  // Doğrudan (embedded) formları başlatan yardımcı
-  function initializeDirectForms(root) {
-    const scope = root && root.querySelectorAll ? root : document;
-    scope.querySelectorAll('.wdp-donation-form').forEach((formContainer) => {
-      if (formContainer.dataset.wdpInitialized === '1') return;
-      const formElement = formContainer.querySelector('form');
-      if (!formElement) return;
-      
-      // Setup form submission
-      const { setupFormSubmission, setupShareholderForms } = updateModuleFunctions();
-      
-      if (setupFormSubmission && typeof setupFormSubmission === 'function') {
-        setupFormSubmission(formElement);
-      } else {
-        // INSTANT retry (no delay) - use requestAnimationFrame for next tick
-        requestAnimationFrame(function() {
-          const retry = updateModuleFunctions();
-          if (retry.setupFormSubmission && typeof retry.setupFormSubmission === 'function') {
-            retry.setupFormSubmission(formElement);
+  function resolveProductIdForContainer(container) {
+    if (!container) {
+      return null;
+    }
+    let productId = container.getAttribute('data-product-id');
+    if (productId) {
+      return productId;
+    }
+    const idAttr = container.id || '';
+    const m = /^wdp-(?:modal|side-panel)-(\d+)$/.exec(idAttr);
+    if (m) {
+      return m[1];
+    }
+    const pidInput = container.querySelector('input[name="wdp_product_id"], input[name="add-to-cart"]');
+    return pidInput && pidInput.value ? String(pidInput.value) : null;
+  }
+
+  function setupInlineMetaViewContent(container, productId, formElement) {
+    if (!container || !productId || !formElement || container.dataset.wdpMetaInlineBound === '1') {
+      return;
+    }
+    if (container.closest('.wdp-modal')) {
+      return;
+    }
+    const runVc = () => {
+      if (container.dataset.wdpMetaInlineVcDone === '1') {
+        return;
+      }
+      container.dataset.wdpMetaInlineVcDone = '1';
+      if (!window.WDPMetaTracking || typeof window.WDPMetaTracking.trackViewContentDonation !== 'function') {
+        return;
+      }
+      const qtyEl = formElement.querySelector('input[name="quantity"]');
+      const qty = qtyEl ? parseInt(qtyEl.value, 10) || 1 : 1;
+      let unit = 0;
+      if (container.dataset && container.dataset.wdpUnitPrice !== undefined && container.dataset.wdpUnitPrice !== '') {
+        unit = parseFloat(container.dataset.wdpUnitPrice);
+      }
+      if (!Number.isFinite(unit)) {
+        unit = 0;
+      }
+      const titleEl = container.querySelector('.wdp-form-title, .wdp-modal-title');
+      const cname = titleEl ? titleEl.textContent.trim() : '';
+      window.WDPMetaTracking.trackViewContentDonation({
+        productId: productId,
+        contentName: cname,
+        quantity: qty,
+        itemPrice: unit,
+        value: unit > 0 ? unit * qty : undefined,
+        formType: 'inline',
+      });
+    };
+    const onFirstInteract = () => {
+      runVc();
+    };
+    container.addEventListener('focusin', onFirstInteract, { once: true, passive: true });
+    container.addEventListener('pointerdown', onFirstInteract, { once: true, passive: true });
+    if (window.IntersectionObserver) {
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach((en) => {
+          if (en.isIntersecting && en.intersectionRatio > 0) {
+            io.disconnect();
+            runVc();
           }
         });
-      }
-      
-      // Hisseli form mu kontrol et - DOM query caching
-      const $form = (sel) => formElement.querySelector(sel);
-      const shareCountInput = $form('input[name="share_count"]');
-      if (shareCountInput) {
+      }, { threshold: 0.01 });
+      io.observe(container);
+    }
+    container.dataset.wdpMetaInlineBound = '1';
+  }
+
+  function bindOneDonationForm(formElement, hostForShareholder, hostForProgress) {
+    if (!formElement || formElement.dataset.wdpFormInitialized === '1') {
+      return;
+    }
+    const { setupFormSubmission, setupShareholderForms } = updateModuleFunctions();
+
+    if (setupFormSubmission && typeof setupFormSubmission === 'function') {
+      setupFormSubmission(formElement);
+    } else {
+      requestAnimationFrame(function() {
+        const retry = updateModuleFunctions();
+        if (retry.setupFormSubmission && typeof retry.setupFormSubmission === 'function') {
+          retry.setupFormSubmission(formElement);
+        }
+      });
+    }
+
+    const $form = (sel) => formElement.querySelector(sel);
+    const shareCountInput = $form('input[name="share_count"]');
+    if (shareCountInput) {
+      const productId = resolveProductIdForContainer(hostForShareholder);
+      if (productId) {
         if (setupShareholderForms && typeof setupShareholderForms === 'function') {
-          const productId = formContainer.getAttribute('data-product-id');
-          if (productId) {
-            setupShareholderForms(formContainer, productId);
-          }
+          setupShareholderForms(hostForShareholder, productId);
         } else {
-          // INSTANT retry (no delay) - use requestAnimationFrame for next tick
           requestAnimationFrame(function() {
             const retry = updateModuleFunctions();
             if (retry.setupShareholderForms && typeof retry.setupShareholderForms === 'function') {
-              const productId = formContainer.getAttribute('data-product-id');
-              if (productId) {
-                retry.setupShareholderForms(formContainer, productId);
-              }
+              retry.setupShareholderForms(hostForShareholder, productId);
             }
           });
         }
       }
-      
-      // Progress bar'ı başlat
-      const progressBarContainer = formContainer.querySelector('.wdp-progress-bar-container');
-      if (progressBarContainer) {
-        const progressBar = getModule('progressBar');
-        if (progressBar && typeof progressBar.setup === 'function') {
-          progressBar.setup(progressBarContainer);
-        } else {
-          // INSTANT retry
-          requestAnimationFrame(function() {
-            const retryProgressBar = getModule('progressBar');
-            if (retryProgressBar && typeof retryProgressBar.setup === 'function') {
-              retryProgressBar.setup(progressBarContainer);
-            }
-          });
-        }
+    }
+
+    const progressHost = hostForProgress || hostForShareholder;
+    const progressBarContainer = progressHost && progressHost.querySelector('.wdp-progress-bar-container');
+    if (progressBarContainer) {
+      const progressBar = getModule('progressBar');
+      if (progressBar && typeof progressBar.setup === 'function') {
+        progressBar.setup(progressBarContainer);
+      } else {
+        requestAnimationFrame(function() {
+          const retryProgressBar = getModule('progressBar');
+          if (retryProgressBar && typeof retryProgressBar.setup === 'function') {
+            retryProgressBar.setup(progressBarContainer);
+          }
+        });
       }
-      
-      formContainer.dataset.wdpInitialized = '1';
+    }
+
+    formElement.dataset.wdpFormInitialized = '1';
+    if (hostForShareholder && hostForShareholder.dataset) {
+      hostForShareholder.dataset.wdpInitialized = '1';
+    }
+
+    const phone = WDPApp.phoneInput;
+    if (phone && typeof phone.refreshInRoot === 'function') {
+      phone.refreshInRoot(hostForShareholder || formElement);
+    } else if (phone && typeof phone.setupInRoot === 'function') {
+      phone.setupInRoot(hostForShareholder || formElement);
+    }
+    const pidInline = resolveProductIdForContainer(hostForShareholder);
+    if (pidInline && hostForShareholder && !hostForShareholder.closest('.wdp-modal')) {
+      setupInlineMetaViewContent(hostForShareholder, pidInline, formElement);
+    }
+  }
+
+  function initializeModalForms(root) {
+    const scope = root && root.querySelectorAll ? root : document;
+    const roots = root && root.matches && root.matches('.wdp-modal') ? [root] : null;
+    const modals = roots || scope.querySelectorAll('.wdp-modal');
+    Array.prototype.forEach.call(modals, function(modal) {
+      const formElement = modal.querySelector('form');
+      if (!formElement) {
+        return;
+      }
+      bindOneDonationForm(formElement, modal, modal);
     });
+  }
+
+  // Doğrudan (embedded) formları başlatan yardımcı
+  function initializeDirectForms(root) {
+    const scope = root && root.querySelectorAll ? root : document;
+    const roots = root && root.matches && root.matches('.wdp-donation-form') ? [root] : null;
+    const containers = roots || scope.querySelectorAll('.wdp-donation-form');
+    Array.prototype.forEach.call(containers, function(formContainer) {
+      const formElement = formContainer.querySelector('form');
+      if (!formElement) {
+        return;
+      }
+      bindOneDonationForm(formElement, formContainer, formContainer);
+    });
+    initializeModalForms(root);
   }
 
   // Inline formları başlat
