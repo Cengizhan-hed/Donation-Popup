@@ -137,7 +137,7 @@ html body .wdp-phone-country-panel {
 }
 
 html body .wdp-phone-country-panel[hidden] {
-  display: none !important;
+  display: none;
 }
 
 html body .wdp-phone-country-panel__inner {

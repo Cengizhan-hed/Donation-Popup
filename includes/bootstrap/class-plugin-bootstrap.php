@@ -70,7 +70,6 @@ final class WDP_Plugin_Bootstrap {
 
 		update_option('wdp_version', WDP_VERSION);
 		update_option('wdp_cache_version', time());
-		set_transient('wdp_flush_rewrite', true, 30);
 		self::clear_all_caches();
 	}
 
@@ -80,8 +79,6 @@ final class WDP_Plugin_Bootstrap {
 	 * @return void
 	 */
 	public static function clear_all_caches() {
-		delete_transient('wdp_flush_rewrite');
-
 		if (function_exists('wc_delete_product_transients')) {
 			wc_delete_product_transients();
 		}
@@ -119,10 +116,12 @@ final class WDP_Plugin_Bootstrap {
 		require_once WDP_PLUGIN_DIR . 'includes/admin/class-admin-form-tabs-renderer.php';
 		require_once WDP_PLUGIN_DIR . 'includes/admin/class-admin-meta-tracking-tab-renderer.php';
 		require_once WDP_PLUGIN_DIR . 'includes/admin/class-admin-product-settings-ajax.php';
+		require_once WDP_PLUGIN_DIR . 'includes/admin/class-admin-product-row-renderer.php';
 		require_once WDP_PLUGIN_DIR . 'includes/shared/class-product-settings-service.php';
 		require_once WDP_PLUGIN_DIR . 'includes/shared/class-donation-product-context-service.php';
 		require_once WDP_PLUGIN_DIR . 'includes/shared/class-category-title-color-service.php';
 		require_once WDP_PLUGIN_DIR . 'includes/admin/class-admin-category-colors-tab-renderer.php';
+		require_once WDP_PLUGIN_DIR . 'includes/classes/class-exceptions.php';
 		require_once WDP_PLUGIN_DIR . 'includes/class-autoloader.php';
 		require_once WDP_PLUGIN_DIR . 'includes/class-woo-donation-popup-admin.php';
 		require_once WDP_PLUGIN_DIR . 'includes/bootstrap/class-legacy-frontend.php';

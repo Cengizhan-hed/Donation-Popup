@@ -1,0 +1,50 @@
+/**
+ * Final cascade layer — tema/woocommerce çakışmaları için ek specificity.
+ * Bu dosyada !important kullanılmaz; yalnızca html body + wrapper zinciri.
+ */
+
+/* Kapalı sağ panel — tema display override */
+html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel:not(.show) {
+  display: none;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* Başarı ekranı kapatma — tema gizleme kurallarına karşı */
+html body .hdf-donation-modal-wrapper.wdp-modal .wdp-modal-content:has(.wdp-success-screen) > .wdp-modal-close {
+  display: inline-flex;
+  visibility: visible;
+  pointer-events: auto;
+  z-index: 6;
+}
+
+/* [hidden] — attribute ile gizlenen plugin UI */
+html body .hdf-donation-modal-wrapper [hidden].wdp-phone-country-panel,
+html body .hdf-donation-modal-wrapper :is(.wdp-modal, .wdp-donation-form) .wdp-shares-total-bar[hidden],
+html body .hdf-donation-modal-wrapper :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-form.wdp-shareholder-form--hidden {
+  display: none;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* WooCommerce sepet/checkout sadaka satırı tutarı */
+html body.woocommerce-cart .cart tr.wdp-cart-line--sadaka .product-total,
+html body.woocommerce-cart .cart tr.wdp-cart-line--sadaka .amount,
+html body.woocommerce-checkout .shop_table tr.wdp-cart-line--sadaka .product-total,
+html body.woocommerce-checkout .shop_table tr.wdp-cart-line--sadaka .amount {
+  color: #15803d;
+  font-weight: 700;
+}
+
+/* Mini sepet kaldır — tema buton stillerini sıfırla */
+html body .hdf-donation-modal-wrapper :is(.wdp-modal, .wdp-donation-form) .wdp-mini-cart-items button.wdp-remove-cart-item {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+}
+
+html body .hdf-donation-modal-wrapper :is(.wdp-modal, .wdp-donation-form) .wdp-mini-cart-items button.wdp-remove-cart-item:hover,
+html body .hdf-donation-modal-wrapper :is(.wdp-modal, .wdp-donation-form) .wdp-mini-cart-items button.wdp-remove-cart-item:focus-visible {
+  background: transparent;
+}

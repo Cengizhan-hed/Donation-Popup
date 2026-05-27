@@ -27,6 +27,7 @@ yarn.lock
 dist/
 build/
 assets/css/build/
+assets/js/build/
 
 # Compiled/minified files (should not be committed)
 assets/css/donation-modal.css

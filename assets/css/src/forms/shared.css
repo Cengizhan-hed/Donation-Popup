@@ -545,8 +545,10 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content form.wdp-has-sh
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content form.wdp-has-shareholders .wdp-shares-section {
   min-height: 0;
   max-height: none;
-  flex: 0 1 auto;
-  overflow: visible;
+  flex: 1 1 auto;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
   gap: clamp(10px, 1.2vh, 12px);
 }
 

@@ -57,8 +57,7 @@
 /* ============ SHARE COUNTER ============ */
 /* Hisse Adedi sayacı — assets/css/src/components/quantity.css (.wdp-quantity-counter ile aynı model) */
 
-/* Rail (--with-rail) için display:grid aşağıda; bu flex üstte tam genişlik satırı oluşturuyordu */
-html body :is(.wdp-modal, .wdp-donation-form) .wdp-shares-section .wdp-shareholders-area:not(.wdp-shareholders-area--with-rail) {
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-shares-section .wdp-shareholders-area {
   background: transparent;
   border: none;
   border-radius: 0;
@@ -75,10 +74,9 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-shares-section .wdp-sharehold
   margin: 0;
 }
 
-html body :is(.wdp-modal, .wdp-donation-form) .wdp-shares-section .wdp-shareholders-area.scrollable:not(.wdp-shareholders-area--with-rail) {
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-shares-section .wdp-shareholders-area.scrollable {
   flex: 1 1 auto;
-  min-height: clamp(280px, 40vh, 360px);
-  height: clamp(280px, 40vh, 360px);
+  min-height: 0;
   max-height: clamp(280px, 40vh, 360px);
   overflow: hidden;
   background: transparent;
@@ -105,42 +103,6 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholders-area .wdp-shareh
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-}
-
-/* Sol adım rayı + scroll: grid bu kapsayıcıda (rail formlarla aynı satırda) */
-html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholders-area--with-rail > .wdp-shareholders-container {
-  display: grid;
-  /* Hover/focus halkasi kesilmesin diye rail kolonuna nefes payi */
-  grid-template-columns: 30px minmax(0, 1fr);
-  grid-template-rows: minmax(0, 1fr);
-  column-gap: 6px;
-  align-items: stretch;
-  width: 100%;
-  min-height: 0;
-  box-sizing: border-box;
-}
-
-html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholders-area.scrollable.wdp-shareholders-area--with-rail > .wdp-shareholders-container {
-  height: 100%;
-  max-height: 100%;
-  min-height: 0;
-}
-
-html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholders-area--with-rail > .wdp-shareholders-container > .wdp-shareholders-rail {
-  grid-column: 1;
-  grid-row: 1;
-  /* stretch yerine: uzun form sütununda rail’i zorlamadan içerik yüksekliği — 7 adım için iç scroll gerekmez */
-  align-self: start;
-  justify-self: center;
-  min-width: 0;
-  max-width: 100%;
-  overflow: visible;
-}
-
-html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholders-area--with-rail > .wdp-shareholders-container > .wdp-shareholders-scroll {
-  grid-column: 2;
-  grid-row: 1;
-  min-width: 0;
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholders-area.scrollable .wdp-shareholders-container {
@@ -172,10 +134,9 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholders-container .wdp-s
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholders-area.scrollable .wdp-shareholders-scroll {
-  /* CRITICAL: Height JavaScript tarafından ayarlanacak - CSS'te height: 100% kaldırıldı */
-  /* height: 100%; */
   max-height: 100%;
   min-height: 0;
+  flex: 1 1 auto;
   overflow-y: auto;
   overflow-x: hidden;
   overscroll-behavior: contain;
@@ -293,14 +254,63 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-form.collapsed .w
   }
 }
 
-html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholders-area--with-rail .wdp-shareholders-scroll {
-  /* Sol rail ile görsel denge */
-  padding-top: 1px;
+/* Doğrulama sonrası hissedar başlığı — dolu: yeşil, hatalı: kırmızı (açık tonlar) */
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-form .wdp-shareholder-header.wdp-header-status-valid {
+  background: #4cb88a;
+  --wdp-shareholder-header-bg: #4cb88a;
+  --wdp-shareholder-header-color: #ffffff;
 }
 
-/* CTA sonrası odak satırı — sakin, uyarı görünümü değil */
-html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-form.is-targeted-incomplete {
-  box-shadow: 0 0 0 2px #93c5fd;
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-form .wdp-shareholder-header.wdp-header-status-invalid {
+  background: #e88a8a;
+  --wdp-shareholder-header-bg: #e88a8a;
+  --wdp-shareholder-header-color: #ffffff;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-form .wdp-shareholder-header.wdp-header-status-valid::after,
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-form .wdp-shareholder-header.wdp-header-status-invalid::after {
+  opacity: 0;
+}
+
+/* Sepete ekle / ödemeye git üstü — kapalı formlardaki hatalar (kompakt liste) */
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholders-submit-summary {
+  margin: 0 0 8px;
+  padding: 0;
+  color: #b91c1c;
+  font-size: 12px;
+  line-height: 1.35;
+  opacity: 0;
+  transform: translateY(3px);
+  transition: opacity 0.22s ease, transform 0.22s ease;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholders-submit-summary.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholders-submit-summary__line {
+  margin: 0 0 2px;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) form.wdp-shareholders-validation-active .wdp-shareholder-header.wdp-header-status-valid {
+  background: #4cb88a;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) form.wdp-shareholders-validation-active .wdp-shareholder-header.wdp-header-status-invalid {
+  background: #e88a8a;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholders-submit-summary--compact {
+  font-size: 13px;
+  line-height: 1.4;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-footer-zone .wdp-shareholders-submit-summary {
+  flex: 0 0 auto;
+  width: 100%;
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-status,
@@ -486,7 +496,17 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-content > .wdp-fi
   border-radius: 0;
   background: transparent;
   box-shadow: none;
-  overflow: visible;
+  overflow: hidden;
+}
+
+/* Hata mesajı: input ile aynı köşe yarıçapı (20px) */
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-content > .wdp-field-stack .wdp-field-stack__row .wdp-input-error {
+  border-radius: var(--wdp-input-radius, 20px);
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-content > .wdp-field-stack .wdp-field-stack__row:last-child:has(.wdp-input-error) {
+  border-bottom-left-radius: var(--wdp-shareholder-card-radius, var(--wdp-input-radius, 20px));
+  border-bottom-right-radius: var(--wdp-shareholder-card-radius, var(--wdp-input-radius, 20px));
 }
 
 /* Başlık + alanlar tek ana kartta: içte ikinci kutu görünümünü kaldır */
@@ -586,14 +606,14 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-shares-header .wdp-collapsed-
 
 /* Eski bundle/DOM: üst “Hissedar Form Durumu” bandı — sol ray varken kesin gizle (satır içi flex/grid çakışması önlenir) */
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-shares-header .wdp-shareholder-overview {
-  display: none !important;
-  height: 0 !important;
-  max-height: 0 !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  overflow: hidden !important;
-  visibility: hidden !important;
-  pointer-events: none !important;
+  display: none;
+  height: 0;
+  max-height: 0;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  visibility: hidden;
+  pointer-events: none;
 }
 
 /* Hisse başlığı ↔ kartlar: daha sıkı dikey ritim */
@@ -602,6 +622,21 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content form.wdp-has-sh
 }
 
 /* ============ RESPONSIVE DESIGN ============ */
+/* Popup modal: hissedar bölümü flex zinciri — iç scroll için min-height:0 */
+html body .wdp-modal.show:not(.wdp-side-panel) .wdp-modal-content:has(form.wdp-has-shareholders) form.wdp-has-shareholders {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+
+html body .wdp-modal.show:not(.wdp-side-panel) .wdp-modal-content form.wdp-has-shareholders .wdp-shares-section {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
 @media (max-width: 768px) {
   /* CRITICAL: Mobilde ikonların görünür olması için - Masaüstünden daha küçük ama görünür */
   /* CRITICAL: Maximum specificity - Tema/plugin class'larına bağımlı değil - GENEL ÇÖZÜM */
@@ -644,19 +679,18 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content form.wdp-has-sh
     font-size: 15px;
   }
   
-  html body .wdp-modal .wdp-modal-content form.wdp-has-shareholders .wdp-shares-section .wdp-shareholders-area:not(.scrollable):not(.wdp-shareholders-area--with-rail),
-  html body .wdp-donation-form .wdp-modal-content form.wdp-has-shareholders .wdp-shares-section .wdp-shareholders-area:not(.scrollable):not(.wdp-shareholders-area--with-rail) {
+  html body .wdp-modal .wdp-modal-content form.wdp-has-shareholders .wdp-shares-section .wdp-shareholders-area:not(.scrollable),
+  html body .wdp-donation-form .wdp-modal-content form.wdp-has-shareholders .wdp-shares-section .wdp-shareholders-area:not(.scrollable) {
     max-height: none;
     height: auto;
     overflow: visible;
     margin: 0;
   }
   
-  html body .wdp-modal .wdp-modal-content form.wdp-has-shareholders .wdp-shares-section .wdp-shareholders-area.scrollable:not(.wdp-shareholders-area--with-rail),
-  html body .wdp-donation-form .wdp-modal-content form.wdp-has-shareholders .wdp-shares-section .wdp-shareholders-area.scrollable:not(.wdp-shareholders-area--with-rail) {
-    min-height: clamp(280px, 50vh, 360px);
-    height: clamp(280px, 50vh, 360px);
-    max-height: clamp(280px, 50vh, 360px);
+  html body .wdp-modal .wdp-modal-content form.wdp-has-shareholders .wdp-shares-section .wdp-shareholders-area.scrollable,
+  html body .wdp-donation-form .wdp-modal-content form.wdp-has-shareholders .wdp-shares-section .wdp-shareholders-area.scrollable {
+    min-height: 0;
+    max-height: clamp(240px, 50vh, 360px);
     margin: 0;
   }
 
@@ -666,23 +700,11 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content form.wdp-has-sh
     scroll-padding-bottom: max(12px, var(--wdp-scroll-padding-block, 16px));
   }
 
-  html body .wdp-modal .wdp-modal-content form.wdp-has-shareholders .wdp-shares-section .wdp-shareholders-area:not(.scrollable).wdp-shareholders-area--with-rail,
-  html body .wdp-donation-form .wdp-modal-content form.wdp-has-shareholders .wdp-shares-section .wdp-shareholders-area:not(.scrollable).wdp-shareholders-area--with-rail {
-    max-height: none;
-    height: auto;
-    overflow: visible;
-    margin: 0;
-    padding: 0;
+  html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__row .wdp-input-error {
+    font-size: 12px;
+    padding: 6px 10px;
   }
 
-  html body .wdp-modal .wdp-modal-content form.wdp-has-shareholders .wdp-shares-section .wdp-shareholders-area.scrollable.wdp-shareholders-area--with-rail,
-  html body .wdp-donation-form .wdp-modal-content form.wdp-has-shareholders .wdp-shares-section .wdp-shareholders-area.scrollable.wdp-shareholders-area--with-rail {
-    min-height: clamp(280px, 50vh, 360px);
-    height: clamp(280px, 50vh, 360px);
-    max-height: clamp(280px, 50vh, 360px);
-    margin: 0;
-    padding: 0;
-  }
 }
 
 @media (max-width: 480px) {
@@ -690,19 +712,18 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content form.wdp-has-sh
     display: none;
   }
 
-  html body .wdp-modal .wdp-modal-content form.wdp-has-shareholders .wdp-shares-section .wdp-shareholders-area:not(.scrollable):not(.wdp-shareholders-area--with-rail),
-  html body .wdp-donation-form .wdp-modal-content form.wdp-has-shareholders .wdp-shares-section .wdp-shareholders-area:not(.scrollable):not(.wdp-shareholders-area--with-rail) {
+  html body .wdp-modal .wdp-modal-content form.wdp-has-shareholders .wdp-shares-section .wdp-shareholders-area:not(.scrollable),
+  html body .wdp-donation-form .wdp-modal-content form.wdp-has-shareholders .wdp-shares-section .wdp-shareholders-area:not(.scrollable) {
     max-height: none;
     height: auto;
     overflow: visible;
     margin: 0;
   }
 
-  html body .wdp-modal .wdp-modal-content form.wdp-has-shareholders .wdp-shares-section .wdp-shareholders-area.scrollable:not(.wdp-shareholders-area--with-rail),
-  html body .wdp-donation-form .wdp-modal-content form.wdp-has-shareholders .wdp-shares-section .wdp-shareholders-area.scrollable:not(.wdp-shareholders-area--with-rail) {
-    min-height: clamp(280px, min(40vh, 40dvh), 360px);
-    height: clamp(280px, min(40vh, 40dvh), 360px);
-    max-height: clamp(280px, min(40vh, 40dvh), 360px);
+  html body .wdp-modal .wdp-modal-content form.wdp-has-shareholders .wdp-shares-section .wdp-shareholders-area.scrollable,
+  html body .wdp-donation-form .wdp-modal-content form.wdp-has-shareholders .wdp-shares-section .wdp-shareholders-area.scrollable {
+    min-height: 0;
+    max-height: clamp(220px, min(42vh, 42dvh), 340px);
     margin: 0;
   }
 
@@ -712,24 +733,6 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content form.wdp-has-sh
     scroll-padding-bottom: max(12px, var(--wdp-scroll-padding-block, 16px));
   }
 
-  html body .wdp-modal .wdp-modal-content form.wdp-has-shareholders .wdp-shares-section .wdp-shareholders-area:not(.scrollable).wdp-shareholders-area--with-rail,
-  html body .wdp-donation-form .wdp-modal-content form.wdp-has-shareholders .wdp-shares-section .wdp-shareholders-area:not(.scrollable).wdp-shareholders-area--with-rail {
-    max-height: none;
-    height: auto;
-    overflow: visible;
-    margin: 0;
-    padding: 0;
-  }
-
-  html body .wdp-modal .wdp-modal-content form.wdp-has-shareholders .wdp-shares-section .wdp-shareholders-area.scrollable.wdp-shareholders-area--with-rail,
-  html body .wdp-donation-form .wdp-modal-content form.wdp-has-shareholders .wdp-shares-section .wdp-shareholders-area.scrollable.wdp-shareholders-area--with-rail {
-    min-height: clamp(280px, min(40vh, 40dvh), 360px);
-    height: clamp(280px, min(40vh, 40dvh), 360px);
-    max-height: clamp(280px, min(40vh, 40dvh), 360px);
-    margin: 0;
-    padding: 0;
-  }
-  
   /* CRITICAL: Küçük mobilde ikonların kesinlikle görünür olması - Tablet'ten biraz daha küçük */
   /* CRITICAL: Maximum specificity - Tema/plugin class'larına bağımlı değil - GENEL ÇÖZÜM */
   html body .wdp-modal .wdp-shareholder-form .wdp-shareholder-header .wdp-shareholder-icon,
@@ -778,332 +781,8 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content form.wdp-has-sh
   
 }
 
-/* ============ HISSE ADIM RAYI ============ */
-/* Grid .wdp-shareholders-container üzerinde; rail formlarla aynı blokta (üst mikro durum bandı kaldırıldı) */
-/* Dış kutu yok: rail + kartlar doğrudan modal genişliğinde; admin alan renk/border değişkenleri burada uygulanmaz */
-html body :is(.wdp-modal, .wdp-donation-form) .wdp-shares-section .wdp-shareholders-area.wdp-shareholders-area--with-rail {
-  display: block;
-  width: 100%;
-  box-sizing: border-box;
-  background: transparent;
-  border: none;
-  border-radius: 0;
-  padding: 0;
-  margin: 0;
-  flex: 0 1 auto;
-  min-height: 0;
-  max-height: none;
-  height: auto;
-  overflow: visible;
-  box-shadow: none;
-  outline: none;
-}
-
-html body :is(.wdp-modal, .wdp-donation-form) .wdp-shares-section .wdp-shareholders-area.scrollable.wdp-shareholders-area--with-rail {
-  flex: 1 1 auto;
-  min-height: clamp(280px, 40vh, 360px);
-  height: clamp(280px, 40vh, 360px);
-  max-height: clamp(280px, 40vh, 360px);
-  overflow: hidden;
-  background: transparent;
-  border: none;
-  border-radius: 0;
-  padding: 0;
-  margin: 0;
-  margin-block-end: 0;
-  margin-bottom: 0;
-  scroll-snap-type: y proximity;
-  box-sizing: border-box;
-  width: 100%;
-}
-
-html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholders-area--with-rail .wdp-shareholders-rail {
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  align-self: stretch;
-  min-width: 0;
-  min-height: 0;
-}
-
-html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholders-area--with-rail .wdp-shareholders-rail__inner {
-  position: relative;
-  top: auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  width: 100%;
-  height: auto;
-  min-height: 0;
-  max-height: none;
-  padding: 2px 0 4px;
-  box-sizing: border-box;
-  background: transparent;
-  border: none;
-  border-radius: 0;
-  /* 7 adım: iç scroll kullanılmaz; tüm rakamlar tek bakışta */
-  overflow: visible;
-  overscroll-behavior: auto;
-  isolation: isolate;
-}
-
-/* Uzun tek çizgi kaldırıldı; adımlar arası kısa bağlayıcılar kullanılıyor */
-html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholders-rail__line {
-  display: none;
-}
-
-@keyframes wdp-rail-invalid-pulse {
-  0%,
-  100% {
-    box-shadow: 0 0 0 0 rgba(220, 38, 38, 0);
-  }
-
-  45% {
-    box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.28);
-  }
-}
-
-html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholders-step-rail {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0;
-  width: 100%;
-  padding: 1px 0 3px;
-  box-sizing: border-box;
-  flex: 0 0 auto;
-}
-
-/* Rakamlar arası ince dikey bağ — merkez hizalı, nötr */
-html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholders-step-rail .wdp-shareholders-step-connector {
-  flex: 0 0 auto;
-  position: relative;
-  z-index: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 5px;
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  pointer-events: none;
-}
-
-html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholders-step-rail .wdp-shareholders-step-connector::after {
-  content: "";
-  display: block;
-  width: 2px;
-  height: 100%;
-  border-radius: 999px;
-  background: rgba(148, 163, 184, 0.45);
-}
-
-/* Dış border yok: dolgu + tipografi ile durum okunur */
-html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholders-step-rail .wdp-shareholders-step-item {
-  appearance: none;
-  position: relative;
-  z-index: 1;
-  border: none;
-  background: #f1f5f9;
-  color: #64748b;
-  width: 24px;
-  height: 24px;
-  min-width: 24px;
-  min-height: 24px;
-  padding: 0;
-  margin: 0;
-  border-radius: 999px;
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: -0.02em;
-  line-height: 1;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  box-sizing: border-box;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
-  transition:
-    background-color 0.15s ease,
-    color 0.15s ease,
-    box-shadow 0.15s ease,
-    transform 0.14s ease;
-}
-
-html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholders-step-rail .wdp-shareholders-step-item:hover {
-  z-index: 3;
-  color: #475569;
-  background: #e8eef5;
-  box-shadow:
-    0 1px 3px rgba(15, 23, 42, 0.08),
-    inset 0 0 0 1px rgba(37, 99, 235, 0.28);
-  transform: none;
-}
-
-html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholders-step-rail .wdp-shareholders-step-item:active {
-  z-index: 3;
-  transform: scale(0.98);
-}
-
-/* Açık / odak hissesi — eksik alanlar varken mavi (Sepete/Ödeme denemesinden önce kırmızı yok) */
-html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholders-step-rail .wdp-shareholders-step-item.is-current {
-  color: #ffffff;
-  background: #2563eb;
-  font-weight: 700;
-  box-shadow: 0 1px 3px rgba(37, 99, 235, 0.35);
-}
-
-html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholders-step-rail .wdp-shareholders-step-item.is-current:hover {
-  color: #ffffff;
-  background: #1d4ed8;
-  box-shadow:
-    0 1px 3px rgba(37, 99, 235, 0.35),
-    inset 0 0 0 1px rgba(147, 197, 253, 0.55);
-}
-
-/* Tamamlanan hisse — yeşil */
-html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholders-step-rail .wdp-shareholders-step-item.is-complete {
-  background: #16a34a;
-  color: #ffffff;
-  font-weight: 700;
-  box-shadow: 0 1px 3px rgba(22, 163, 74, 0.28);
-}
-
-html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholders-step-rail .wdp-shareholders-step-item.is-complete:hover {
-  color: #ffffff;
-  background: #15803d;
-  box-shadow:
-    0 1px 3px rgba(22, 163, 74, 0.28),
-    inset 0 0 0 1px rgba(134, 239, 172, 0.52);
-}
-
-/* Pasif + eksik — nötr (henüz gönderim denemesi yok) */
-html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholders-step-rail .wdp-shareholders-step-item.is-pending {
-  background: #f1f5f9;
-  color: #94a3b8;
-  font-weight: 600;
-}
-
-html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholders-step-rail .wdp-shareholders-step-item.is-pending:hover {
-  color: #64748b;
-  background: #e8eef5;
-  box-shadow:
-    0 1px 3px rgba(15, 23, 42, 0.08),
-    inset 0 0 0 1px rgba(148, 163, 184, 0.38);
-}
-
-/* Submit denemesi sonrası eksik zorunlu alanlar — kısa pulse, ardından sabit kırmızı */
-html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholders-step-rail .wdp-shareholders-step-item.is-invalid {
-  background: #dc2626;
-  color: #ffffff;
-  font-weight: 700;
-  box-shadow: 0 1px 3px rgba(220, 38, 38, 0.35);
-  animation: wdp-rail-invalid-pulse 0.48s ease-in-out 2 both;
-}
-
-html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholders-step-rail .wdp-shareholders-step-item.is-invalid:hover {
-  color: #ffffff;
-  background: #b91c1c;
-  box-shadow:
-    0 1px 3px rgba(220, 38, 38, 0.35),
-    inset 0 0 0 1px rgba(252, 165, 165, 0.5);
-}
-
-html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholders-step-rail .wdp-shareholders-step-item:focus-visible {
-  z-index: 3;
-  outline: 2px solid var(--wdp-button-primary, #2563eb);
-  outline-offset: 2px;
-}
-
-html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholders-step-rail .wdp-shareholders-step-item.is-invalid:focus-visible {
-  outline-color: #fecaca;
-}
-
-/* Mobilde de desktop yapısı korunur: rail solda kalır, yalnızca sıkılaşır */
-@media (max-width: 480px) {
-  html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholders-area--with-rail > .wdp-shareholders-container {
-    grid-template-columns: 31px minmax(0, 1fr);
-    grid-template-rows: minmax(0, 1fr);
-    column-gap: 6px;
-  }
-
-  html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholders-area--with-rail > .wdp-shareholders-container > .wdp-shareholders-rail {
-    grid-column: 1;
-    grid-row: 1;
-    align-self: start;
-  }
-
-  html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholders-area--with-rail > .wdp-shareholders-container > .wdp-shareholders-scroll {
-    grid-column: 2;
-    grid-row: 1;
-    min-height: 0;
-  }
-
-  html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholders-rail__inner {
-    position: relative;
-    top: auto;
-    flex-direction: column;
-    justify-content: flex-start;
-    align-items: center;
-    flex-wrap: nowrap;
-    gap: 0;
-    min-height: 0;
-    max-height: none;
-    padding: 2px 0 4px;
-  }
-
-  html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholders-rail__line {
-    display: none;
-  }
-
-  html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholders-step-rail {
-    flex-direction: column;
-    flex-wrap: nowrap;
-    justify-content: flex-start;
-    align-items: center;
-    gap: 0;
-    width: 100%;
-    padding: 1px 0 3px;
-  }
-
-  html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholders-step-rail .wdp-shareholders-step-connector {
-    width: 100%;
-    height: 5px;
-    align-self: auto;
-  }
-
-  html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholders-step-rail .wdp-shareholders-step-connector::after {
-    width: 2px;
-    height: 100%;
-  }
-
-  html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholders-step-rail .wdp-shareholders-step-item {
-    width: 24px;
-    height: 24px;
-    min-width: 24px;
-    min-height: 24px;
-    font-size: 11px;
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
   html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholders-scroll .wdp-shareholder-form {
-    animation: none;
-  }
-
-  html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholders-step-rail .wdp-shareholders-step-item {
-    transition: none;
-  }
-
-  html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholders-step-rail .wdp-shareholders-step-item:active {
-    transform: none;
-  }
-
-  html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholders-step-rail .wdp-shareholders-step-item.is-invalid {
     animation: none;
   }
 }

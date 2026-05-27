@@ -19,7 +19,6 @@ return array(
 	'src/components/phone-field.css',
 	'src/forms/hisseli.css',
 	'src/components/buttons.css',
-	'src/components/alerts.css',
 	'src/components/loading.css',
 	'src/components/quantity.css',
 	'src/components/progress-bar.css',
@@ -31,4 +30,5 @@ return array(
 	'src/components/amount-presets.css',
 	'src/components/product-note.css',
 	'src/components/sadaka-donation.css',
+	'src/theme-isolation-overrides.css',
 );

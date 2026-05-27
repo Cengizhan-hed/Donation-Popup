@@ -542,6 +542,27 @@
     };
   }
 
+  let wdpActiveAlertTimer = null;
+
+  /**
+   * Remove any legacy alert overlay nodes (validation no longer uses center popup).
+   */
+  function clearAlerts() {
+    if (wdpActiveAlertTimer) {
+      clearTimeout(wdpActiveAlertTimer);
+      wdpActiveAlertTimer = null;
+    }
+
+    document.querySelectorAll('.wdp-alert-overlay').forEach((overlay) => {
+      overlay.classList.remove('show');
+      setTimeout(() => {
+        if (overlay.parentNode) {
+          overlay.parentNode.removeChild(overlay);
+        }
+      }, 180);
+    });
+  }
+
   // Export utils module
   const utils = {
     formatPrice,
@@ -561,7 +582,12 @@
     throttle, // Performance optimization
     rafThrottle, // Performance optimization for scroll/resize
     ensureModule, // Export module helper
-  }
+    clearAlerts,
+  };
+
+  // Backward compatibility for themes/snippets that called WDPApp.alerts.clear().
+  WDPApp.alerts = WDPApp.alerts || {};
+  WDPApp.alerts.clear = clearAlerts;
 
   WDPApp.utils = utils;
 

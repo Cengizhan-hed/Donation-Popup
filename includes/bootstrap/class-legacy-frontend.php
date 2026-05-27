@@ -13,6 +13,7 @@ if (!function_exists('wdp_render_donation_button')) {
 	/**
 	 * Render donation button for a product.
 	 *
+	 * @deprecated 10.2.5 Prefer shortcodes `wdp_donation_button` or `wdp_donation_button_panel`.
 	 * @param int    $product_id  Product ID.
 	 * @param string $button_text Button label.
 	 * @return string
@@ -63,9 +64,47 @@ if (!function_exists('wdp_render_donation_form')) {
 	}
 }
 
+if (!function_exists('wdp_track_deprecated_ajax_usage')) {
+	/**
+	 * Record deprecated AJAX action usage (removal planning).
+	 *
+	 * @param string $action AJAX action name.
+	 * @return void
+	 */
+	function wdp_track_deprecated_ajax_usage($action) {
+		$action = sanitize_key((string) $action);
+		if ($action === '') {
+			return;
+		}
+		$option_key = 'wdp_deprecated_ajax_' . $action;
+		$count      = (int) get_option($option_key, 0);
+		update_option($option_key, $count + 1, false);
+		if (defined('WP_DEBUG') && WP_DEBUG && function_exists('wdp_debug_log')) {
+			wdp_debug_log('WDP deprecated AJAX used: ' . $action . ' (count: ' . ($count + 1) . ')');
+		}
+	}
+}
+
+if (!function_exists('wdp_track_legacy_render_usage')) {
+	/**
+	 * Record legacy AJAX render usage for deprecation planning.
+	 *
+	 * @return void
+	 */
+	function wdp_track_legacy_render_usage() {
+		$count = (int) get_option('wdp_legacy_render_count', 0);
+		update_option('wdp_legacy_render_count', $count + 1, false);
+		if (defined('WP_DEBUG') && WP_DEBUG && function_exists('wdp_debug_log')) {
+			wdp_debug_log('WDP legacy render_donation_button AJAX used (count: ' . ($count + 1) . ')');
+		}
+	}
+}
+
 if (!function_exists('wdp_should_render_js_helpers')) {
 	/**
 	 * Determine if JS helper snippet should be printed.
+	 *
+	 * Aligns with WDP_Assets enqueue rules when the main bundle is not loaded.
 	 *
 	 * @return bool
 	 */
@@ -78,26 +117,8 @@ if (!function_exists('wdp_should_render_js_helpers')) {
 			return true;
 		}
 
-		if (function_exists('is_product') && is_product()) {
-			$product_id = get_the_ID();
-			if ($product_id) {
-				$allow_custom_price    = get_post_meta($product_id, '_allow_custom_price', true) === 'yes';
-				$allow_multiple_shares = get_post_meta($product_id, '_allow_multiple_shares', true) === 'yes';
-				$enable_progress_bar   = get_post_meta($product_id, '_enable_progress_bar', true) === 'yes';
-				if ($allow_custom_price || $allow_multiple_shares || $enable_progress_bar) {
-					return true;
-				}
-			}
-		}
-
-		if (is_singular()) {
-			$post = get_post();
-			if ($post && (has_shortcode($post->post_content, 'wdp_donation_button') || has_shortcode($post->post_content, 'wdp_donation_button_panel'))) {
-				return true;
-			}
-			if ($post && has_shortcode($post->post_content, 'wdp_donation_form')) {
-				return true;
-			}
+		if (class_exists('WDP_Assets') && method_exists('WDP_Assets', 'request_should_enqueue_frontend_assets')) {
+			return WDP_Assets::request_should_enqueue_frontend_assets();
 		}
 
 		return false;
@@ -117,6 +138,7 @@ if (!function_exists('wdp_add_js_helpers')) {
 		?>
 		<script>
 		if (typeof window.WDP === 'undefined') { window.WDP = {}; }
+		/** @deprecated Prefer shortcodes; legacy embed API. */
 		window.WDP.renderDonationButton = function(productId, containerId) {
 		  var container = document.getElementById(containerId);
 		  var parsedProductId = Number.parseInt(productId, 10);
@@ -146,6 +168,7 @@ if (!function_exists('wdp_ajax_render_donation_button')) {
 	 * @return void
 	 */
 	function wdp_ajax_render_donation_button() {
+		wdp_track_legacy_render_usage();
 		check_ajax_referer('wdp_render_donation_button', 'security');
 		if (!function_exists('wc_get_product')) {
 			wp_send_json(array('success' => false, 'message' => __('WooCommerce etkin değil.', 'woo-donation-popup')));

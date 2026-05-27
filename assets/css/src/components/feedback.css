@@ -95,7 +95,7 @@ html body .wdp-field-stack__row .wdp-input-error {
   max-width: 100%;
   white-space: normal;
   word-break: break-word;
-  border-radius: 8px;
+  border-radius: var(--wdp-input-radius, 20px);
   pointer-events: auto;
 }
 

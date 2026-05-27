@@ -88,7 +88,7 @@ class WDP_Admin_Product_Settings_Ajax {
 				'enable_progress_bar'   => $enable_progress_bar,
 				'progress_bar_limit'    => $progress_bar_limit,
 				'enable_product_note' => $enable_product_note,
-				'product_note_text'   => $product_note_text,
+				'product_note_text'   => sanitize_textarea_field((string) $product_note_text),
 			)
 		);
 	}
