@@ -2,6 +2,19 @@
 
 Use this checklist before production deploys.
 
+## Refactor regression pass (v10.2.6+)
+
+- [ ] `php tests/smoke/run.php` exits 0 after `npm run build`.
+- [ ] PHP `php -l` on all plugin files (no syntax errors).
+- [ ] Plugin activates without fatal; WooCommerce inactive shows admin notice only.
+- [ ] AJAX add-to-cart with invalid nonce returns JSON error (not PHP fatal).
+- [ ] Order complete updates `_wdp_donation_totals_applied` via order object (HPOS site if available).
+- [ ] Legacy `WDP.renderDonationButton` still works on pages without full bundle (optional).
+- [ ] `wdp_legacy_render_count` option increments when legacy AJAX is used.
+- [ ] Production ZIP includes `assets/css/build/manifest.json` and `assets/js/build/manifest.json` after `npm run pack`.
+- [ ] Mobile validation: no center alert popup; summary above buttons only.
+- [ ] `wdp_get_product_name` still returns name (deprecated flag in JSON) if called by old integrations.
+
 ## 1) Modal and Form Basics
 
 - Open donation modal from product page and shortcode button.

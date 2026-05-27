@@ -214,9 +214,9 @@ html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-success-screen, .wdp-moda
 
 /* Başarı ekranında da ana modalın ortak close butonunu kullan (ilk popup ile birebir hizalama) */
 html body .wdp-modal .wdp-modal-content:has(.wdp-success-screen) > .wdp-modal-close {
-  display: inline-flex !important;
-  visibility: visible !important;
-  pointer-events: auto !important;
+  display: inline-flex;
+  visibility: visible;
+  pointer-events: auto;
   z-index: 6;
 }
 
@@ -415,7 +415,7 @@ html body.woocommerce-cart .cart tr.wdp-cart-line--sadaka .product-total,
 html body.woocommerce-checkout .shop_table tr.wdp-cart-line--sadaka .product-total,
 html body.woocommerce-cart .cart tr.wdp-cart-line--sadaka .amount,
 html body.woocommerce-checkout .shop_table tr.wdp-cart-line--sadaka .amount {
-  color: #15803d !important;
+  color: #15803d;
   font-weight: 700;
 }
 
@@ -434,15 +434,15 @@ html body.woocommerce-checkout .wdp-cart-sadaka-label {
 }
 
 html body :is(.hdf-donation-modal-wrapper, .wdp-modal, .wdp-donation-form) :is(.wdp-mini-cart-items, .wdp-modal-content .wdp-mini-cart-items) button.wdp-remove-cart-item {
-  background: transparent !important;
-  border: none !important;
+  background: transparent;
+  border: none;
   color: #94a3b8;
   font-size: 0;
   line-height: 0;
   cursor: pointer;
-  padding: 0 !important;
+  padding: 0;
   border-radius: 0;
-  box-shadow: none !important;
+  box-shadow: none;
   transition: color 0.2s ease;
   display: inline-flex;
   align-items: center;
@@ -462,7 +462,7 @@ html body :is(.hdf-donation-modal-wrapper, .wdp-modal, .wdp-donation-form) :is(.
 html body :is(.hdf-donation-modal-wrapper, .wdp-modal, .wdp-donation-form) :is(.wdp-mini-cart-items, .wdp-modal-content .wdp-mini-cart-items) button.wdp-remove-cart-item:focus-visible {
   color: #dc2626;
   outline: none;
-  background: transparent !important;
+  background: transparent;
 }
 
 html body :is(.hdf-donation-modal-wrapper, .wdp-modal, .wdp-donation-form) :is(.wdp-mini-cart-items, .wdp-modal-content .wdp-mini-cart-items) .wdp-remove-cart-item .wdp-remove-cart-item__icon {

@@ -531,7 +531,7 @@ html body :is(.wdp-modal .wdp-modal-content .wdp-mini-cart-items button.wdp-remo
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-quantity-counter button.wdp-product-quantity-btn,
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-shares-section .wdp-share-counter button.wdp-share-btn,
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-form .wdp-share-quantity button.wdp-share-quantity-btn {
-  box-shadow: none !important;
+  box-shadow: none;
 }
 
 /* Form CTA: hover gölgesi değişmez (titreme önlenir); diğer modal butonlarında hover gölgesi */

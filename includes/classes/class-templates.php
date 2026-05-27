@@ -653,7 +653,7 @@ class WDP_Templates {
                     $side_panel_main_class .= ' wdp-side-panel-main--shares';
                 }
                 ?>
-                <form method="post" action="" class="<?php echo esc_attr($form_field_classes); ?>">
+                <form method="post" action="" class="<?php echo esc_attr($form_field_classes); ?>" novalidate>
                     <div class="wdp-form-error" style="display: none;"></div>
 
                     <?php if ($use_side_panel) : ?>
@@ -671,14 +671,8 @@ class WDP_Templates {
                                 <button type="button" class="wdp-share-btn wdp-share-btn-increase" aria-label="<?php echo esc_attr__('Arttır', 'woo-donation-popup'); ?>"><?php echo self::get_counter_icon_plus_svg(); ?></button>
                             </div>
                         </div>
-                        <div class="wdp-shareholders-area wdp-shareholders-area--with-rail">
+                        <div class="wdp-shareholders-area">
                             <div class="wdp-shareholders-container">
-                                <aside class="wdp-shareholders-rail" aria-label="<?php echo esc_attr__('Hisse adımları', 'woo-donation-popup'); ?>">
-                                    <div class="wdp-shareholders-rail__inner">
-                                        <span class="wdp-shareholders-rail__line" aria-hidden="true"></span>
-                                        <div class="wdp-shareholders-step-rail" role="group"></div>
-                                    </div>
-                                </aside>
                                 <div class="wdp-shareholders-scroll">
                                 <!-- Hissedar formları JavaScript ile eklenecek -->
                                 </div>
@@ -845,7 +839,7 @@ class WDP_Templates {
                 <?php echo WDP_Progress_Form::render_progress_bar($product_id, $progress_bar_limit, $total_donation, true, $progress_min_price); ?>
                 <?php endif; ?>
 
-                <form method="post" action="" class="<?php echo esc_attr($allow_multiple_shares ? 'wdp-donation-form-fields wdp-has-shareholders' : ($enable_progress_bar ? 'wdp-donation-form-fields wdp-has-progress-bar' : 'wdp-donation-form-fields')); ?>">
+                <form method="post" action="" class="<?php echo esc_attr($allow_multiple_shares ? 'wdp-donation-form-fields wdp-has-shareholders' : ($enable_progress_bar ? 'wdp-donation-form-fields wdp-has-progress-bar' : 'wdp-donation-form-fields')); ?>" novalidate>
                     <div class="wdp-form-error" style="display: none;"></div>
 
                     <?php if ($allow_multiple_shares): ?>
@@ -859,14 +853,8 @@ class WDP_Templates {
                                 <button type="button" class="wdp-share-btn wdp-share-btn-increase" aria-label="<?php echo esc_attr__('Arttır', 'woo-donation-popup'); ?>"><?php echo self::get_counter_icon_plus_svg(); ?></button>
                             </div>
                         </div>
-                        <div class="wdp-shareholders-area wdp-shareholders-area--with-rail">
+                        <div class="wdp-shareholders-area">
                             <div class="wdp-shareholders-container">
-                                <aside class="wdp-shareholders-rail" aria-label="<?php echo esc_attr__('Hisse adımları', 'woo-donation-popup'); ?>">
-                                    <div class="wdp-shareholders-rail__inner">
-                                        <span class="wdp-shareholders-rail__line" aria-hidden="true"></span>
-                                        <div class="wdp-shareholders-step-rail" role="group"></div>
-                                    </div>
-                                </aside>
                                 <div class="wdp-shareholders-scroll">
                                 <!-- Hissedar formları JavaScript ile eklenecek -->
                                 </div>

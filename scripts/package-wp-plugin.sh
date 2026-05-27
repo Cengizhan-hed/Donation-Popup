@@ -54,6 +54,29 @@ fi
 
 rsync "${RSYNC_ARGS[@]}" "$PLUGIN_ROOT/" "$DEST/"
 
+# Production ZIP: bundle frontend CSS into a single file when PHP CLI is available.
+if command -v php >/dev/null 2>&1 && [[ -f "$DEST/tools/build-css-bundle.php" ]]; then
+  echo "Building frontend CSS bundle..."
+  (cd "$DEST" && php tools/build-css-bundle.php) || {
+    echo "warning: CSS bundle build failed; ZIP will use layered CSS handles." >&2
+  }
+fi
+
+if command -v php >/dev/null 2>&1 && [[ -f "$DEST/tools/build-js-bundle.php" ]]; then
+  echo "Building frontend JS bundle..."
+  (cd "$DEST" && php tools/build-js-bundle.php) || {
+    echo "warning: JS bundle build failed; ZIP will use modular JS handles." >&2
+  }
+fi
+
+if [[ ! -f "$DEST/assets/css/build/manifest.json" ]]; then
+  echo "note: assets/css/build/manifest.json not present — dev layered CSS will be used at runtime." >&2
+fi
+
+if [[ ! -f "$DEST/assets/js/build/manifest.json" ]]; then
+  echo "note: assets/js/build/manifest.json not present — modular JS will be used at runtime." >&2
+fi
+
 cd "$TMP"
 rm -f "$OUT_ZIP"
 zip -qr "$OUT_ZIP" "$ARCHIVE_DIR_NAME"

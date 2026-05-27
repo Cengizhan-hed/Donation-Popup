@@ -535,6 +535,52 @@ class WDP_Utils {
     }
 
     /**
+     * Read order/refund flag meta (HPOS-safe with post_meta fallback).
+     *
+     * @param int|WC_Abstract_Order $order_or_id Order or refund object or ID.
+     * @param string                $meta_key    Meta key.
+     * @return string
+     */
+    public static function get_order_flag_meta($order_or_id, $meta_key) {
+        $order = is_object($order_or_id) ? $order_or_id : wc_get_order($order_or_id);
+        if ($order && is_a($order, 'WC_Abstract_Order')) {
+            $value = $order->get_meta($meta_key, true);
+            if ($value !== '' && $value !== null) {
+                return (string) $value;
+            }
+        }
+
+        $order_id = $order ? $order->get_id() : absint($order_or_id);
+        if ($order_id) {
+            return (string) get_post_meta($order_id, $meta_key, true);
+        }
+
+        return '';
+    }
+
+    /**
+     * Persist order/refund flag meta (HPOS-safe with post_meta fallback).
+     *
+     * @param int|WC_Abstract_Order $order_or_id Order or refund object or ID.
+     * @param string                $meta_key    Meta key.
+     * @param string                $value       Meta value.
+     * @return void
+     */
+    public static function set_order_flag_meta($order_or_id, $meta_key, $value) {
+        $order = is_object($order_or_id) ? $order_or_id : wc_get_order($order_or_id);
+        if ($order && is_a($order, 'WC_Abstract_Order')) {
+            $order->update_meta_data($meta_key, $value);
+            $order->save();
+            return;
+        }
+
+        $order_id = absint($order_or_id);
+        if ($order_id) {
+            update_post_meta($order_id, $meta_key, $value);
+        }
+    }
+
+    /**
      * Sipariş tamamlandığında artımlı bağış toplamlarını güncelle.
      *
      * @param int $order_id WooCommerce order id.
@@ -546,13 +592,12 @@ class WDP_Utils {
             return;
         }
 
-        $already_applied = get_post_meta($order_id, '_wdp_donation_totals_applied', true);
-        if ($already_applied === 'yes') {
+        $order = wc_get_order($order_id);
+        if (!$order) {
             return;
         }
 
-        $order = wc_get_order($order_id);
-        if (!$order) {
+        if (self::get_order_flag_meta($order, '_wdp_donation_totals_applied') === 'yes') {
             return;
         }
 
@@ -570,7 +615,7 @@ class WDP_Utils {
             self::update_product_donation_total($product_id, $line_total);
         }
 
-        update_post_meta($order_id, '_wdp_donation_totals_applied', 'yes');
+        self::set_order_flag_meta($order, '_wdp_donation_totals_applied', 'yes');
     }
 
     /**
@@ -586,13 +631,12 @@ class WDP_Utils {
             return;
         }
 
-        $already_reverted = get_post_meta($refund_id, '_wdp_donation_totals_reverted', true);
-        if ($already_reverted === 'yes') {
+        $refund = wc_get_order($refund_id);
+        if (!$refund || !is_a($refund, 'WC_Order_Refund')) {
             return;
         }
 
-        $refund = wc_get_order($refund_id);
-        if (!$refund || !is_a($refund, 'WC_Order_Refund')) {
+        if (self::get_order_flag_meta($refund, '_wdp_donation_totals_reverted') === 'yes') {
             return;
         }
 
@@ -611,7 +655,7 @@ class WDP_Utils {
             self::update_product_donation_total($product_id, $refund_total);
         }
 
-        update_post_meta($refund_id, '_wdp_donation_totals_reverted', 'yes');
+        self::set_order_flag_meta($refund, '_wdp_donation_totals_reverted', 'yes');
     }
 
     /**

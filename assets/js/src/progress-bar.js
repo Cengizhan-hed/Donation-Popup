@@ -53,6 +53,11 @@
       return;
     }
 
+    if (container.getAttribute('data-wdp-progress-setup') === '1') {
+      return;
+    }
+    container.setAttribute('data-wdp-progress-setup', '1');
+
     // Form içindeki özel fiyat input'unu bul
     const form = container.closest('.wdp-modal, .wdp-donation-form')?.querySelector('form');
     if (!form) return;

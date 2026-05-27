@@ -3,7 +3,7 @@
  * Plugin Name: WooCommerce Donation Modal Popup
  * Description: WooCommerce ürünleri için bağış formu açılır penceresi oluşturur (Tüm temalarla uyumlu). Bu eklenti Hedef Derneği tarafından hazırlanmaktadır.
  * Author: Hedef Derneği
- * Version: 10.2.4
+ * Version: 10.2.6
  * Requires at least: 5.0
  * Tested up to: 6.7
  * WC requires at least: 3.0
@@ -22,7 +22,7 @@ if (!defined('ABSPATH')) {
 }
 
 define('WDP_PLUGIN_FILE', __FILE__);
-define('WDP_VERSION', '10.2.4');
+define('WDP_VERSION', '10.2.6');
 define('WDP_PLUGIN_DIR', plugin_dir_path(WDP_PLUGIN_FILE));
 define('WDP_PLUGIN_URL', plugin_dir_url(WDP_PLUGIN_FILE));
 define('WDP_ASSET_VERSION', get_option('wdp_cache_version', WDP_VERSION));

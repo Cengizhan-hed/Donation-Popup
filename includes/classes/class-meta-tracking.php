@@ -140,6 +140,24 @@ class WDP_Meta_Tracking {
 	}
 
 	/**
+	 * Whether frontend meta-tracking.js should load with the main bundle.
+	 *
+	 * Thank-you Purchase uses a separate enqueue path.
+	 *
+	 * @return bool
+	 */
+	public static function frontend_events_script_needed() {
+		$s = self::get_settings();
+		if (!self::is_on($s, 'enabled')) {
+			return false;
+		}
+
+		return self::is_on($s, 'view_content')
+			|| self::is_on($s, 'add_to_cart')
+			|| self::is_on($s, 'initiate_checkout');
+	}
+
+	/**
 	 * Config for wp_localize_script (wdp_ajax.meta).
 	 *
 	 * @return array

@@ -68,7 +68,7 @@ html body :is(.hdf-donation-modal-wrapper, .wdp-modal, .wdp-donation-form) .wdp-
 }
 
 html body :is(.hdf-donation-modal-wrapper, .wdp-modal, .wdp-donation-form) .wdp-sadaka-donation.is-open .wdp-sadaka-donation__panel {
-  display: flex !important;
+  display: flex;
 }
 
 /* Sadaka tutarı — görünüm quantity.css .wdp-custom-price-row ile birebir (etiket, kutu, ₺, placeholder) */

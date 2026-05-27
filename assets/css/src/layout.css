@@ -108,7 +108,7 @@ html body .wdp-modal.show:not(.wdp-side-panel) {
 }
 
 /* Sağ panel — kendi overlay/pozisyon kuralları (side-panel.css) */
-html body .wdp-modal.wdp-side-panel.show {
+html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show {
   display: flex;
   position: fixed;
   z-index: 2147483645;
@@ -147,8 +147,9 @@ html body.wdp-modal-open {
   padding-right: var(--wdp-scrollbar-width, 0px);
 }
 
-/* Calculate scrollbar width and store it as CSS variable */
-html {
+/* Scrollbar width for body scroll lock — only when modal is open (avoids global html side effects) */
+html:has(body.wdp-modal-open),
+body.wdp-modal-open {
   --wdp-scrollbar-width: calc(100vw - 100%);
 }
 

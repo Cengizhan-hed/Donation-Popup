@@ -41,7 +41,7 @@
  * 
  * WOO DONATION POPUP - THEME ISOLATION BASE
  * GiveWP benzeri tema bağımsız CSS yapısı
- * Clean CSS -  kullanmadan
+ * Clean CSS — !important kullanılmaz (specificity + theme-isolation-overrides.css)
  * ============================================
  */
 

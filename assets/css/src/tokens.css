@@ -112,12 +112,6 @@
   --wdp-button-primary-hover: var(--wdp-primary-hover);
   --wdp-button-radius: var(--wdp-radius-sm);
 
-  /* Radii */
-  --wdp-radius-sm: 20px;   /* buton, chip, badge */
-  --wdp-radius-md: 20px;   /* input, quantity counter */
-  --wdp-radius-lg: 20px;   /* kart, shareholder bloğu */
-  --wdp-radius-xl: 24px;   /* modal içeriği */
-
   /* Shadows (Modern with color-mix support) */
   --wdp-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --wdp-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);

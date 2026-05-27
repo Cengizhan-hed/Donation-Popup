@@ -90,7 +90,7 @@ html body .hdf-donation-modal-wrapper:is(.wdp-modal, .wdp-donation-form) .wdp-pr
 html body .hdf-donation-modal-wrapper:is(.wdp-modal, .wdp-donation-form) .wdp-product-note__title,
 html body .wdp-modal.wdp-side-panel .wdp-product-note__icon-wrap,
 html body .wdp-modal.wdp-side-panel .wdp-product-note > svg {
-  display: none !important;
+  display: none;
 }
 
 html body .wdp-modal.wdp-side-panel.show .wdp-modal-header .wdp-product-note {
