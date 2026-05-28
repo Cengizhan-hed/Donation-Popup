@@ -70,7 +70,22 @@ class WDP_Admin_Product_Row_Renderer {
 
 		echo '<div class="wdp-product-settings-grid">';
 
-		echo '<div class="wdp-field-group">';
+		echo '<div class="wdp-field-group wdp-field-group-shortcodes">';
+		echo '<div class="wdp-shortcode-compact">';
+		echo '<label class="wdp-shortcode-label" for="wdp-shortcode-select-' . esc_attr($product->get_id()) . '">' . esc_html__('Kısa Kod', 'woo-donation-popup') . '</label>';
+		echo '<select id="wdp-shortcode-select-' . esc_attr($product->get_id()) . '" class="wdp-shortcode-select">';
+		echo '<option value="' . esc_attr($button_shortcode) . '">' . esc_html__('Buton', 'woo-donation-popup') . '</option>';
+		echo '<option value="' . esc_attr($panel_button_shortcode) . '">' . esc_html__('Sağ Panel', 'woo-donation-popup') . '</option>';
+		echo '<option value="' . esc_attr($form_shortcode) . '">' . esc_html__('Form', 'woo-donation-popup') . '</option>';
+		echo '</select>';
+		echo '<code class="wdp-shortcode wdp-shortcode-current">' . esc_html($button_shortcode) . '</code>';
+		echo '<button type="button" class="button button-small wdp-copy-shortcode wdp-copy-shortcode-current" data-shortcode="' . esc_attr($button_shortcode) . '">' . esc_html__('Kopyala', 'woo-donation-popup') . '</button>';
+		echo '</div>';
+		echo '</div>';
+
+		echo '<div class="wdp-product-settings-row-core">';
+
+		echo '<div class="wdp-field-group wdp-field-group-core wdp-field-group-core--shares">';
 		echo '<div class="wdp-field wdp-field-toggle">';
 		echo '<div class="wdp-field-label">' . esc_html__('Çoklu Hisse', 'woo-donation-popup') . '</div>';
 		echo '<div class="wdp-field-control">';
@@ -88,7 +103,7 @@ class WDP_Admin_Product_Row_Renderer {
 		echo '</div>';
 		echo '</div>';
 
-		echo '<div class="wdp-field-group">';
+		echo '<div class="wdp-field-group wdp-field-group-core wdp-field-group-core--price">';
 		echo '<div class="wdp-field wdp-field-toggle">';
 		echo '<div class="wdp-field-label">' . esc_html__('Özel Fiyat', 'woo-donation-popup') . '</div>';
 		echo '<div class="wdp-field-control">';
@@ -106,7 +121,7 @@ class WDP_Admin_Product_Row_Renderer {
 		echo '</div>';
 		echo '</div>';
 
-		echo '<div class="wdp-field-group">';
+		echo '<div class="wdp-field-group wdp-field-group-core wdp-field-group-core--progress">';
 		echo '<div class="wdp-field wdp-field-toggle">';
 		echo '<div class="wdp-field-label">' . esc_html__('Progress Bar', 'woo-donation-popup') . '</div>';
 		echo '<div class="wdp-field-control">';
@@ -124,7 +139,21 @@ class WDP_Admin_Product_Row_Renderer {
 		echo '</div>';
 		echo '</div>';
 
+		echo '</div>';
+
+		echo '<div class="wdp-field-group wdp-field-group-details">';
+		echo '<button type="button" class="wdp-collapse-toggle" data-collapse-target=".wdp-product-details-grid" aria-expanded="false">';
+		echo '<span class="wdp-collapse-toggle__label">' . esc_html__('Detaylar', 'woo-donation-popup') . '</span>';
+		echo '<span class="wdp-collapse-toggle__icon" aria-hidden="true"></span>';
+		echo '</button>';
+		echo '<div class="wdp-product-details-grid">';
+
 		echo '<div class="wdp-field-group wdp-field-group-note">';
+		echo '<button type="button" class="wdp-collapse-toggle" data-collapse-target=".wdp-note-fields-grid" aria-expanded="false">';
+		echo '<span class="wdp-collapse-toggle__label">' . esc_html__('Not Ayarları', 'woo-donation-popup') . '</span>';
+		echo '<span class="wdp-collapse-toggle__icon" aria-hidden="true"></span>';
+		echo '</button>';
+		echo '<div class="wdp-note-fields-grid">';
 		echo '<div class="wdp-field wdp-field-toggle">';
 		echo '<div class="wdp-field-label">' . esc_html__('Not Ekle', 'woo-donation-popup') . '</div>';
 		echo '<div class="wdp-field-control">';
@@ -134,7 +163,6 @@ class WDP_Admin_Product_Row_Renderer {
 		echo '</label>';
 		echo '</div>';
 		echo '</div>';
-		echo '<div class="wdp-note-fields-grid">';
 		echo '<div class="wdp-sub-field wdp-sub-field--wide">';
 		echo '<div class="wdp-sub-field-label">' . esc_html__('Not metni', 'woo-donation-popup') . '</div>';
 		echo '<div class="wdp-field-control">';
@@ -144,6 +172,11 @@ class WDP_Admin_Product_Row_Renderer {
 		echo '</div>';
 
 		echo '<div class="wdp-field-group wdp-field-group-sadaka">';
+		echo '<button type="button" class="wdp-collapse-toggle" data-collapse-target=".wdp-sadaka-settings-stack" aria-expanded="false">';
+		echo '<span class="wdp-collapse-toggle__label">' . esc_html__('Alt Bağış Ayarları', 'woo-donation-popup') . '</span>';
+		echo '<span class="wdp-collapse-toggle__icon" aria-hidden="true"></span>';
+		echo '</button>';
+		echo '<div class="wdp-sadaka-settings-stack">';
 		echo '<div class="wdp-field wdp-field-toggle wdp-sadaka-toggle-row">';
 		echo '<div class="wdp-field-label">' . esc_html__('Alt bağış ekle', 'woo-donation-popup') . '</div>';
 		echo '<div class="wdp-field-control wdp-sadaka-toggle-row__inner">';
@@ -154,7 +187,6 @@ class WDP_Admin_Product_Row_Renderer {
 		echo '<input type="text" name="sadaka_toggle_label" value="' . esc_attr(is_string($sadaka_toggle_label) ? $sadaka_toggle_label : '') . '" class="wdp-sadaka-toggle-label-input" maxlength="80" placeholder="' . esc_attr__('Alt Bağış Ekle', 'woo-donation-popup') . '" aria-label="' . esc_attr__('Form buton metni', 'woo-donation-popup') . '">';
 		echo '</div>';
 		echo '</div>';
-		echo '<div class="wdp-sadaka-settings-stack">';
 		echo '<div class="wdp-sub-field wdp-sub-field--min">';
 		echo '<div class="wdp-sub-field-label">' . esc_html__('WC ürün ID', 'woo-donation-popup') . '</div>';
 		echo '<div class="wdp-field-control">';
@@ -189,28 +221,6 @@ class WDP_Admin_Product_Row_Renderer {
 		echo '</div>';
 
 		echo '</div>';
-
-		echo '<div class="wdp-product-shortcodes">';
-		echo '<div class="wdp-shortcodes">';
-
-		echo '<div class="wdp-shortcode-item">';
-		echo '<label class="wdp-shortcode-label">' . esc_html__('Buton', 'woo-donation-popup') . '</label>';
-		echo '<code class="wdp-shortcode">' . esc_html($button_shortcode) . '</code>';
-		echo '<button type="button" class="button button-small wdp-copy-shortcode" data-shortcode="' . esc_attr($button_shortcode) . '">' . esc_html__('Kopyala', 'woo-donation-popup') . '</button>';
-		echo '</div>';
-
-		echo '<div class="wdp-shortcode-item">';
-		echo '<label class="wdp-shortcode-label">' . esc_html__('Sağ Panel', 'woo-donation-popup') . '</label>';
-		echo '<code class="wdp-shortcode">' . esc_html($panel_button_shortcode) . '</code>';
-		echo '<button type="button" class="button button-small wdp-copy-shortcode" data-shortcode="' . esc_attr($panel_button_shortcode) . '">' . esc_html__('Kopyala', 'woo-donation-popup') . '</button>';
-		echo '</div>';
-
-		echo '<div class="wdp-shortcode-item">';
-		echo '<label class="wdp-shortcode-label">' . esc_html__('Form', 'woo-donation-popup') . '</label>';
-		echo '<code class="wdp-shortcode">' . esc_html($form_shortcode) . '</code>';
-		echo '<button type="button" class="button button-small wdp-copy-shortcode" data-shortcode="' . esc_attr($form_shortcode) . '">' . esc_html__('Kopyala', 'woo-donation-popup') . '</button>';
-		echo '</div>';
-
 		echo '</div>';
 		echo '</div>';
 

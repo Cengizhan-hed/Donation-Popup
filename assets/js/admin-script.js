@@ -233,6 +233,20 @@
       })
   }
 
+  function bindCompactShortcodeSelector() {
+    $(document)
+      .off("change.wdpShortcodeSelect", ".wdp-shortcode-select")
+      .on("change.wdpShortcodeSelect", ".wdp-shortcode-select", function () {
+        const $select = $(this)
+        const selected = String($select.val() || "")
+        const $container = $select.closest(".wdp-shortcode-compact")
+        if (!$container.length) return
+
+        $container.find(".wdp-shortcode-current").text(selected)
+        $container.find(".wdp-copy-shortcode-current").attr("data-shortcode", selected)
+      })
+  }
+
   function bindSettingsForm(selector, action, buttonSelector, withInlineMessage) {
     const $form = $(selector)
     if (!$form.length) return
@@ -365,6 +379,24 @@
       })
   }
 
+  function bindProductCollapsibles() {
+    $(document)
+      .off("click.wdpAdminCollapse", ".wdp-collapse-toggle")
+      .on("click.wdpAdminCollapse", ".wdp-collapse-toggle", function () {
+        const $toggle = $(this)
+        const $card = $toggle.closest(".wdp-product-card")
+        const target = String($toggle.data("collapse-target") || "")
+        if (!$card.length || !target) return
+
+        const $target = $card.find(target).first()
+        if (!$target.length) return
+
+        const willOpen = !$target.hasClass("is-open")
+        $target.toggleClass("is-open", willOpen)
+        $toggle.attr("aria-expanded", willOpen ? "true" : "false")
+      })
+  }
+
   function bindConditionalRows() {
     const togglePopupCustomFontRow = () => {
       $("#popup_button_custom_font_row").toggle($("#popup_button_font_family").val() === "custom")
@@ -473,7 +505,9 @@
     bindTabSystem()
     bindProductSearch()
     bindCopyShortcodes()
+    bindCompactShortcodeSelector()
     bindProductSaveActions()
+    bindProductCollapsibles()
     bindConditionalRows()
     bindDirtyStateTracking()
 
