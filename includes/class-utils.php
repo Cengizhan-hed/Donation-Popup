@@ -1,0 +1,491 @@
+<?php
+/**
+ * Utilities class
+ * 
+ * @package WooCommerce\Donation_Popup
+ */
+
+if (!defined('ABSPATH')) {
+    exit;
+}
+
+require_once WDP_PLUGIN_DIR . 'includes/traits/trait-wdp-utils-price.php';
+require_once WDP_PLUGIN_DIR . 'includes/traits/trait-wdp-utils-order-meta.php';
+require_once WDP_PLUGIN_DIR . 'includes/traits/trait-wdp-utils-legacy-settings.php';
+
+
+
+/**
+ * Class WDP_Utils
+ */
+class WDP_Utils {
+    use WDP_Utils_Price_Trait;
+    use WDP_Utils_Order_Meta_Trait;
+    use WDP_Utils_Legacy_Settings_Trait;
+
+
+    /**
+     * Debug logging enabled flag.
+     *
+     * @var bool
+     */
+    private static $debug_enabled = false;
+
+    /**
+     * Whether woocommerce_update_product cache hook was registered.
+     *
+     * @var bool
+     */
+    private static $wc_product_cache_invalidation_hook_registered = false;
+
+    /**
+     * Initialize the utility class.
+     * 
+     * @since 10.0
+     * @return void
+     */
+    public static function init() {
+        self::$debug_enabled = (bool) (defined('WP_DEBUG') && WP_DEBUG);
+
+        // Progress bar toplamlarını artımlı güncelle (büyük sipariş hacminde tam taramayı azaltır).
+        add_action('woocommerce_order_status_completed', array(__CLASS__, 'sync_order_donation_totals_on_complete'), 20, 1);
+        add_action('woocommerce_order_refunded', array(__CLASS__, 'sync_order_donation_totals_on_refund'), 20, 2);
+
+        // Ürün veya bağışa ilişkin ürün meta'sı değişince get_product_info / sepet AJAX önbelleğini tek merkezden temizle.
+        add_action('updated_post_meta', array(__CLASS__, 'maybe_invalidate_product_donation_caches_on_meta'), 10, 4);
+        add_action('added_post_meta', array(__CLASS__, 'maybe_invalidate_product_donation_caches_on_meta'), 10, 4);
+        add_action('deleted_post_meta', array(__CLASS__, 'maybe_invalidate_product_donation_caches_on_meta'), 10, 4);
+        add_action('save_post_product', array(__CLASS__, 'invalidate_product_donation_caches_on_product_save'), 10, 3);
+        if (did_action('woocommerce_loaded')) {
+            self::register_wc_product_cache_invalidation_hook();
+        } else {
+            add_action('woocommerce_loaded', array(__CLASS__, 'register_wc_product_cache_invalidation_hook'), 1);
+        }
+
+        // Ürün çöpe gider veya kalıcı silinirken önbellekte yetim anahtar kalmasın (object cache / Redis).
+        add_action('before_delete_post', array(__CLASS__, 'purge_product_donation_caches_on_delete'), 10, 2);
+        add_action('wp_trash_post', array(__CLASS__, 'purge_product_donation_caches_on_trash'), 10, 1);
+    }
+
+    /**
+     * Register WC product save hook once (safe if called early or after woocommerce_loaded).
+     *
+     * @return void
+     */
+    public static function register_wc_product_cache_invalidation_hook() {
+        if (self::$wc_product_cache_invalidation_hook_registered) {
+            return;
+        }
+        self::$wc_product_cache_invalidation_hook_registered = true;
+        add_action('woocommerce_update_product', array(__CLASS__, 'invalidate_product_donation_caches_on_wc_product'), 10, 1);
+    }
+
+    /**
+     * WooCommerce fiyat HTML'i; gereksiz sondaki ondalıkları kaldırır (ör. tam sayılarda ",00" yok).
+     *
+     * @param float|string $amount Ham tutar.
+     * @param array        $args   wc_price() için ek argümanlar.
+     * @return string Güvenli HTML.
+     */
+    /**
+     * Decode HTML entities to UTF-8 text (e.g. &#8378; → ₺).
+     *
+     * @param string $text Raw text.
+     * @return string
+     */
+
+    /**
+     * Alt bağış satırı için ürün meta'sındaki WooCommerce ürün ID'si.
+     *
+     * @param int|WC_Product $parent_product Ana bağış ürünü.
+     * @return int Geçerli WC ürün ID veya 0.
+     */
+    public static function resolve_sadaka_wc_product_id($parent_product) {
+        $configured = self::get_configured_sadaka_wc_product_id($parent_product);
+        if ($configured <= 0) {
+            return 0;
+        }
+
+        /**
+         * Alt bağış sepet satırında kullanılacak WooCommerce ürün ID.
+         *
+         * @param int $configured Ürün meta _sadaka_wc_product_id.
+         * @param int $parent_id  Ana bağış ürün ID.
+         */
+        $parent_id = $parent_product instanceof WC_Product
+            ? (int) $parent_product->get_id()
+            : absint($parent_product);
+        $filtered = apply_filters('wdp_sadaka_wc_product_id', $configured, $parent_id);
+        $product_id = absint($filtered);
+
+        return self::is_valid_sadaka_wc_product($product_id) ? $product_id : 0;
+    }
+
+    /**
+     * Sadaka sepet satırı için kullanılabilir WC ürünü (gizli/katalog ürünleri dahil).
+     *
+     * @param int $product_id Product ID.
+     * @return bool
+     */
+    public static function is_valid_sadaka_wc_product($product_id) {
+        $product_id = absint($product_id);
+        if ($product_id <= 0) {
+            return false;
+        }
+
+        $product = wc_get_product($product_id);
+        if (!$product || !$product->exists()) {
+            return false;
+        }
+
+        $status = $product->get_status();
+        return in_array($status, array('publish', 'private'), true);
+    }
+
+    /**
+     * Genel alt bağış WC ürün ID (Başarı & Mini Sepet). Varsayılan: 10721.
+     *
+     * @return int
+     */
+    public static function get_default_sadaka_wc_product_id() {
+        $settings = get_option('wdp_success_settings', array());
+        $id = 10721;
+        if (is_array($settings) && !empty($settings['sadaka_wc_product_id'])) {
+            $id = absint($settings['sadaka_wc_product_id']);
+        }
+        return $id > 0 ? $id : 10721;
+    }
+
+    /**
+     * Alt bağış aç/kapa buton metni (ürün meta → genel ayar → varsayılan).
+     *
+     * @param WC_Product|int|null $parent_product Ana bağış ürünü.
+     * @return string
+     */
+    public static function get_sadaka_toggle_label($parent_product = null) {
+        if ($parent_product !== null) {
+            $parent = $parent_product instanceof WC_Product ? $parent_product : wc_get_product((int) $parent_product);
+            if ($parent) {
+                $per_product = trim((string) $parent->get_meta('_sadaka_toggle_label'));
+                if ($per_product !== '') {
+                    return sanitize_text_field($per_product);
+                }
+            }
+        }
+
+        $settings = get_option('wdp_success_settings', array());
+        if (is_array($settings) && !empty($settings['sadaka_toggle_label'])) {
+            $label = sanitize_text_field($settings['sadaka_toggle_label']);
+            if ($label !== '') {
+                return $label;
+            }
+        }
+
+        return __('Alt Bağış Ekle', 'woo-donation-popup');
+    }
+
+    /**
+     * Ürün meta veya genel ayar alt bağış WC ürün ID'si.
+     *
+     * @param WC_Product|int $parent_product Ana bağış ürünü.
+     * @return int
+     */
+    public static function get_configured_sadaka_wc_product_id($parent_product) {
+        $parent = $parent_product instanceof WC_Product ? $parent_product : wc_get_product((int) $parent_product);
+        if (!$parent) {
+            return self::get_default_sadaka_wc_product_id();
+        }
+
+        $per_product = absint($parent->get_meta('_sadaka_wc_product_id'));
+        if ($per_product > 0) {
+            return $per_product;
+        }
+
+        return self::get_default_sadaka_wc_product_id();
+    }
+
+    /**
+     * Alt bağış sabit fiyatı (ürün meta). 0 = özel tutar modu.
+     *
+     * @param WC_Product|int $parent_product Ana bağış ürünü.
+     * @return float
+     */
+    public static function get_sadaka_fixed_price($parent_product) {
+        $parent = $parent_product instanceof WC_Product ? $parent_product : wc_get_product((int) $parent_product);
+        if (!$parent) {
+            return 0.0;
+        }
+
+        $raw = $parent->get_meta('_sadaka_fixed_price');
+        if ($raw === '' || $raw === null) {
+            return 0.0;
+        }
+
+        $value = (float) wc_format_decimal($raw);
+        return $value > 0 ? $value : 0.0;
+    }
+
+    /**
+     * Log debug message.
+     * 
+     * Only logs if WP_DEBUG is enabled. Supports arrays, objects, and strings.
+     *
+     * @since 10.0
+     * @param mixed $message Message to log. Can be string, array, or object.
+     * @return void
+     */
+    public static function log($message) {
+        if (!self::$debug_enabled) {
+            return;
+        }
+
+        if (function_exists('wdp_debug_log')) {
+            wdp_debug_log($message);
+            return;
+        }
+
+        if (is_array($message) || is_object($message)) {
+            error_log(print_r($message, true));
+            return;
+        }
+
+        error_log((string) $message);
+    }
+
+    /**
+     * Send JSON error response and terminate execution.
+     * 
+     * Handles both string messages and WDP_Exception objects.
+     * Automatically logs exceptions and includes validation errors if available.
+     *
+     * @since 10.0
+     * @param string|WDP_Exception $message Error message or exception object.
+     * @param array                $extra   Extra data to include in response.
+     * @return never
+     * @throws Never Returns, always terminates execution.
+     */
+    public static function json_error($message, array $extra = array()) {
+        $error_message = is_string($message) ? $message : '';
+        $error_code = 500;
+        $error_data = array();
+
+        // Handle exception objects
+        if ($message instanceof WDP_Exception) {
+            $error_message = $message->getMessage();
+            $error_code = $message->getCode();
+            
+            // Log the exception
+            $message->log();
+            
+            // Include validation errors if available
+            if ($message instanceof WDP_Validation_Exception) {
+                $error_data['errors'] = $message->getErrors();
+            }
+        } elseif (is_string($message)) {
+            $error_message = $message;
+        }
+
+        $response = array_merge(
+            array(
+                'success' => false,
+                'message' => $error_message,
+                'code' => $error_code,
+            ),
+            $error_data,
+            $extra
+        );
+
+        wp_send_json($response);
+        wp_die();
+    }
+    
+    /**
+     * Handle exception gracefully.
+     * 
+     * Logs the exception and optionally sends a JSON error response.
+     *
+     * @since 10.0
+     * @param Exception $exception      Exception object to handle.
+     * @param bool      $json_response  Whether to send JSON response. Default false.
+     * @return void
+     */
+    public static function handle_exception(Exception $exception, $json_response = false) {
+        self::log(array(
+            'exception' => get_class($exception),
+            'message' => $exception->getMessage(),
+            'file' => $exception->getFile(),
+            'line' => $exception->getLine(),
+            'trace' => $exception->getTraceAsString(),
+        ));
+
+        if ($json_response) {
+            $message = __('Bir hata oluştu. Lütfen tekrar deneyin.', 'woo-donation-popup');
+            
+            if ($exception instanceof WDP_Exception) {
+                $message = $exception->getMessage();
+            } elseif (self::$debug_enabled) {
+                $message = $exception->getMessage();
+            }
+
+            self::json_error($message);
+        }
+    }
+
+    /**
+     * Send JSON success response and terminate execution.
+     *
+     * @since 10.0
+     * @param array $data Data to include in success response.
+     * @return never
+     * @throws Never Returns, always terminates execution.
+     */
+    public static function json_success(array $data = array()) {
+        wp_send_json(array_merge(
+            array(
+                'success' => true,
+            ),
+            $data
+        ));
+        wp_die();
+    }
+
+    /**
+     * Get total donation amount for a product from completed orders.
+     * 
+     * ÖNEMLİ: Bu fonksiyon SADECE belirtilen ürün ID'si için yapılan bağışları sayar.
+     * Her ürün için ayrı progress bar olduğundan, ürünler birbirine karışmaz.
+     *
+     * @since 10.2.0
+     * @param int $product_id Product ID. Sadece bu ürün için yapılan bağışlar sayılır.
+     * @return float Total donation amount for this specific product only.
+     */
+    public static function get_total_donation_amount($product_id) {
+        $product_id = absint($product_id);
+        
+        if (!$product_id) {
+            return 0.0;
+        }
+
+        // Cache key - her ürün için ayrı cache
+        $cache_key = 'wdp_total_donation_' . $product_id;
+        
+        // Try to get from cache first
+        $cached = wp_cache_get($cache_key, 'wdp_donations');
+        if (false !== $cached) {
+            return floatval($cached);
+        }
+
+        $meta_total = get_post_meta($product_id, '_wdp_total_donation_amount', true);
+        if ($meta_total !== '' && is_numeric($meta_total)) {
+            $meta_total = max(0.0, floatval($meta_total));
+            wp_cache_set($cache_key, $meta_total, 'wdp_donations', HOUR_IN_SECONDS);
+            return $meta_total;
+        }
+
+        // Get total from completed orders ONLY (not from cart)
+        // SADECE bu ürün için yapılan bağışları say
+        $total = 0.0;
+
+        // Büyük mağazalarda memory/CPU maliyetini azaltmak için siparişleri sayfalar halinde işle.
+        $page = 1;
+        $per_page = 200;
+
+        do {
+            $order_query = wc_get_orders(array(
+                'status' => array('wc-completed'),
+                'limit' => $per_page,
+                'page' => $page,
+                'paginate' => true,
+                'return' => 'objects',
+            ));
+
+            if (empty($order_query) || empty($order_query->orders)) {
+                break;
+            }
+
+            foreach ($order_query->orders as $order) {
+                if (!$order) {
+                    continue;
+                }
+
+                foreach ($order->get_items() as $item) {
+                    $item_product_id = (int) $item->get_product_id();
+                    if ($item_product_id !== $product_id) {
+                        continue;
+                    }
+
+                    $custom_price = $item->get_meta('_custom_price');
+                    if ($custom_price && floatval($custom_price) > 0) {
+                        $total += floatval($custom_price) * $item->get_quantity();
+                    } else {
+                        $item_total = floatval($item->get_total());
+                        if ($item_total > 0) {
+                            $total += $item_total;
+                        }
+                    }
+                }
+            }
+
+            $page++;
+        } while ($page <= (int) $order_query->max_num_pages);
+
+        update_post_meta($product_id, '_wdp_total_donation_amount', $total);
+
+        // Cache for 1 hour - her ürün için ayrı cache
+        wp_cache_set($cache_key, $total, 'wdp_donations', HOUR_IN_SECONDS);
+
+        // ÖNEMLİ: Sadece bu ürün için yapılan bağışların toplamını döndür
+        // Farklı ürünlerin bağışları birbirine karışmaz
+        return floatval($total);
+    }
+
+
+    /**
+     * Arka plan seçeneği düz #hex veya eski gradient dizgesi olabilir; çıktıda yalnızca düz hex kullanılır.
+     *
+     * @param mixed  $value    Kayıtlı veya gönderilmiş değer.
+     * @param string $fallback Geçersizse kullanılacak renk.
+     * @return string
+     */
+    public static function coerce_solid_hex_background($value, $fallback = '#ffffff') {
+        if (!is_string($value) || '' === $value) {
+            return $fallback;
+        }
+        $trim = trim($value);
+        $hex = sanitize_hex_color($trim);
+        if ($hex) {
+            return $hex;
+        }
+        if (preg_match_all('/#(?:[a-fA-F0-9]{3}|[a-fA-F0-9]{6})\b/', $trim, $matches) && !empty($matches[0])) {
+            foreach ($matches[0] as $candidate) {
+                $san = sanitize_hex_color($candidate);
+                if ($san) {
+                    return $san;
+                }
+            }
+        }
+        return $fallback;
+    }
+
+    /**
+     * Progress bar dolgu rengi (tek renk); eski fill_start / fill_mid / fill_end ile uyum.
+     *
+     * @param array $settings wdp_progress_bar_settings.
+     * @return string
+     */
+    public static function resolve_progress_bar_fill_color(array $settings) {
+        if (!empty($settings['fill_color']) && sanitize_hex_color($settings['fill_color'])) {
+            return sanitize_hex_color($settings['fill_color']);
+        }
+        foreach (array('fill_mid', 'fill_start', 'fill_end') as $key) {
+            if (!empty($settings[$key]) && sanitize_hex_color($settings[$key])) {
+                return sanitize_hex_color($settings[$key]);
+            }
+        }
+        return '#2563eb';
+    }
+
+}
+
+// Note: init() is called by Woo_Donation_Popup::__construct()
+

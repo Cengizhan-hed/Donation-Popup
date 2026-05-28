@@ -69,6 +69,21 @@ if command -v php >/dev/null 2>&1 && [[ -f "$DEST/tools/build-js-bundle.php" ]];
   }
 fi
 
+# Prune development-only files from distribution archive.
+rm -rf \
+  "$DEST/tests" \
+  "$DEST/scripts" \
+  "$DEST/.github" \
+  "$DEST/.cursor" \
+  "$DEST/.vscode"
+rm -f \
+  "$DEST/package.json" \
+  "$DEST/package-lock.json" \
+  "$DEST/yarn.lock" \
+  "$DEST/pnpm-lock.yaml" \
+  "$DEST/.gitignore" \
+  "$DEST/.distignore"
+
 if [[ ! -f "$DEST/assets/css/build/manifest.json" ]]; then
   echo "note: assets/css/build/manifest.json not present — dev layered CSS will be used at runtime." >&2
 fi

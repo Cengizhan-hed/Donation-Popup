@@ -4,7 +4,7 @@
  * ============================================================================
  * 
  * DOSYA: init.js
- * KONUM: /assets/js/src/init.js
+ * KONUM: /assets/js/src/bootstrap/init.js
  * 
  * AMAÇ:
  * Plugin'in JavaScript tarafını başlatır. Tüm modülleri koordine eder
@@ -76,45 +76,48 @@
 
   // ✅ GÜVENLİ: Event listener'lar için flag kontrolü (gereksiz tekrarları önler)
   let listenersInitialized = false;
+  let fallbackScheduled = false;
 
-  // DOM ready handler - main initialization
-  function handleDomReady() {
-    // ✅ GÜVENLİ: Modül kontrolleri her çağrıda çalışır (güvenli)
+  function runCoreSetup() {
     const utils = getModule('utils');
     if (utils && typeof utils.ensureLiveRegion === 'function') {
       utils.ensureLiveRegion('polite');
       utils.ensureLiveRegion('assertive');
     }
 
-    // ✅ GÜVENLİ: Inline style temizleme her çağrıda çalışır (tema/eklenti dinamik olarak ekleyebilir)
     const dom = getModule('dom');
     if (dom && typeof dom.removeInlineStylesFromTitles === 'function') {
       dom.removeInlineStylesFromTitles();
     }
 
-    // ✅ GÜVENLİ: Side cart kaydetme her çağrıda çalışır (tema değişiklikleri için)
     const cart = getModule('cart');
     if (cart && typeof cart.saveSideCartElements === 'function') {
       cart.saveSideCartElements();
     }
 
-    // ✅ Formları önce bağla (submit handler + _wdpSubmitHandler), sonra document dinleyicileri —
-    // böylece ilk gönderimde yedek listener gereksiz setup tetiklemez.
     const formInitializer = getModule('formInitializer');
     if (formInitializer && typeof formInitializer.inline === 'function') {
       formInitializer.inline();
     }
 
-    // ✅ GÜVENLİ: Sadece event listener'lar için flag kontrolü (gereksiz tekrar önlenir)
     if (!listenersInitialized) {
       const eventManager = getModule('eventManager');
       if (eventManager && typeof eventManager.init === 'function') {
         eventManager.init();
-        listenersInitialized = true; // ✅ Sadece listener'lar için flag
+        listenersInitialized = true;
       }
     }
+  }
+
+  // DOM ready handler - main initialization
+  function handleDomReady() {
+    runCoreSetup();
 
     // Sayfa yüklendikten sonra da bir kez daha kontrol et (bazı temalar için) - Optimized delay
+    if (fallbackScheduled) {
+      return;
+    }
+    fallbackScheduled = true;
     const fallbackDelay = (WDPApp.constants && WDPApp.constants.TIMING && WDPApp.constants.TIMING.FALLBACK_CHECK_DELAY) || 100;
     if (fallbackDelay > 0) {
       setTimeout(() => {
@@ -123,27 +126,7 @@
         if (moduleLoader && typeof moduleLoader.update === 'function') {
           moduleLoader.update();
         }
-        
-        // Side cart elementlerini tekrar kaydet
-        if (cart && typeof cart.saveSideCartElements === 'function') {
-          cart.saveSideCartElements();
-        }
-        
-        // Inline style'ları tekrar kaldır (tema/eklenti dinamik olarak ekleyebilir)
-        if (dom && typeof dom.removeInlineStylesFromTitles === 'function') {
-          dom.removeInlineStylesFromTitles();
-        }
-        
-        // Formları önce, event listener yedekleri sonra
-        if (formInitializer && typeof formInitializer.inline === 'function') {
-          formInitializer.inline();
-        }
-
-        const eventManager = getModule('eventManager');
-        if (eventManager && typeof eventManager.init === 'function' && !listenersInitialized) {
-          eventManager.init();
-          listenersInitialized = true;
-        }
+        runCoreSetup();
       }, fallbackDelay);
     }
   }

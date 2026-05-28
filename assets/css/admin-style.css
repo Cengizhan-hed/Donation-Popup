@@ -418,9 +418,12 @@
 }
 
 .wdp-products-grid {
+  --wdp-product-card-width: 500px;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: var(--wdp-space-1);
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, var(--wdp-product-card-width)), var(--wdp-product-card-width)));
+  gap: clamp(14px, 1.2vw, 18px);
+  justify-content: start;
+  align-items: start;
 }
 
 .wdp-products-empty {
@@ -442,16 +445,45 @@
   border-radius: var(--wdp-radius);
   border: 1px solid #dbe3ef;
   background: var(--wdp-surface);
-  padding: 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+  padding: 16px;
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(250px, 0.55fr);
+  grid-template-areas:
+    "main actions"
+    "settings shortcodes";
+  gap: 12px 16px;
+  align-items: start;
   position: relative;
+  transition: border-color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
 }
 
 .wdp-product-card:hover {
   border-color: #c6d6ec;
   transform: translateY(-1px);
+}
+
+.wdp-product-main {
+  grid-area: main;
+  min-width: 0;
+}
+
+.wdp-product-shortcodes {
+  grid-area: shortcodes;
+  align-self: start;
+  min-width: 0;
+}
+
+.wdp-product-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  grid-area: actions;
+  align-self: start;
+  justify-self: end;
+  border-top: none;
+  margin-top: 0;
+  padding-top: 0;
 }
 
 .wdp-product-card.is-dirty {
@@ -477,10 +509,11 @@
 
 .wdp-product-title a {
   font-weight: 700;
-  font-size: 14px;
+  font-size: 15px;
   color: var(--wdp-text);
   text-decoration: none;
   transition: color 0.15s ease;
+  line-height: 1.35;
 }
 
 .wdp-product-title a:hover {
@@ -488,9 +521,35 @@
 }
 
 .wdp-product-settings-grid {
+  grid-area: settings;
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+@media screen and (max-width: 1600px) {
+  .wdp-product-settings-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media screen and (max-width: 1280px) {
+  .wdp-product-card {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "main"
+      "settings"
+      "shortcodes"
+      "actions";
+  }
+
+  .wdp-product-actions {
+    justify-self: stretch;
+    justify-content: flex-end;
+    border-top: 1px solid var(--wdp-border);
+    margin-top: 4px;
+    padding-top: 8px;
+  }
 }
 
 @media screen and (max-width: 1100px) {
@@ -692,17 +751,7 @@
   padding: 10px 12px;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-}
-
-.wdp-product-actions {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 8px;
-  padding-top: 4px;
-  border-top: 1px solid var(--wdp-border);
-  margin-top: 2px;
+  justify-content: flex-start;
 }
 
 .wdp-product-actions .button {
@@ -769,12 +818,22 @@
 .wdp-products-grid input[type="number"],
 .wdp-products-grid input[type="text"] {
   width: 100%;
-  max-width: 120px;
+  max-width: none;
   padding: 6px 10px;
   border-radius: var(--wdp-radius-sm);
   border: 1px solid var(--wdp-border);
   font-size: 13px;
   font-weight: 500;
+}
+
+.wdp-product-settings-grid .wdp-field-control {
+  align-items: flex-start;
+}
+
+.wdp-product-settings-grid .wdp-field-control .description {
+  margin: 6px 0 0;
+  font-size: 11px;
+  line-height: 1.45;
 }
 
 .wdp-products-grid input[type="number"]:focus,
@@ -1158,6 +1217,7 @@
   }
 
   .wdp-products-grid {
+    --wdp-product-card-width: 100%;
     grid-template-columns: 1fr;
   }
 

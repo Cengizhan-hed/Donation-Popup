@@ -103,26 +103,14 @@ final class WDP_Plugin_Bootstrap {
 	/**
 	 * Include runtime dependencies.
 	 *
+	 * WDP_* classes autoload from flat includes/class-*.php files.
+	 *
 	 * @return void
 	 */
 	private static function load_dependencies() {
-		require_once WDP_PLUGIN_DIR . 'includes/admin/class-admin-assets.php';
-		require_once WDP_PLUGIN_DIR . 'includes/admin/class-admin-request.php';
-		require_once WDP_PLUGIN_DIR . 'includes/admin/class-admin-hooks.php';
-		require_once WDP_PLUGIN_DIR . 'includes/admin/class-admin-page-renderer.php';
-		require_once WDP_PLUGIN_DIR . 'includes/admin/class-admin-renderer-helpers.php';
-		require_once WDP_PLUGIN_DIR . 'includes/admin/class-admin-settings-normalizer.php';
-		require_once WDP_PLUGIN_DIR . 'includes/admin/class-admin-layout-tabs-renderer.php';
-		require_once WDP_PLUGIN_DIR . 'includes/admin/class-admin-form-tabs-renderer.php';
-		require_once WDP_PLUGIN_DIR . 'includes/admin/class-admin-meta-tracking-tab-renderer.php';
-		require_once WDP_PLUGIN_DIR . 'includes/admin/class-admin-product-settings-ajax.php';
-		require_once WDP_PLUGIN_DIR . 'includes/admin/class-admin-product-row-renderer.php';
-		require_once WDP_PLUGIN_DIR . 'includes/shared/class-product-settings-service.php';
-		require_once WDP_PLUGIN_DIR . 'includes/shared/class-donation-product-context-service.php';
-		require_once WDP_PLUGIN_DIR . 'includes/shared/class-category-title-color-service.php';
-		require_once WDP_PLUGIN_DIR . 'includes/admin/class-admin-category-colors-tab-renderer.php';
-		require_once WDP_PLUGIN_DIR . 'includes/classes/class-exceptions.php';
+		require_once WDP_PLUGIN_DIR . 'includes/class-exceptions.php';
 		require_once WDP_PLUGIN_DIR . 'includes/class-autoloader.php';
+		require_once WDP_PLUGIN_DIR . 'includes/class-woo-donation-popup.php';
 		require_once WDP_PLUGIN_DIR . 'includes/class-woo-donation-popup-admin.php';
 		require_once WDP_PLUGIN_DIR . 'includes/bootstrap/class-legacy-frontend.php';
 	}

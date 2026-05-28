@@ -14,6 +14,38 @@
   }
   let delegatedEventsBound = false;
 
+  function getClosestTriggerButton(target) {
+    if (!target || typeof target.closest !== 'function') {
+      return null;
+    }
+    if (
+      target.classList.contains("wdp-donate-button") ||
+      target.classList.contains("wdp-open-modal") ||
+      target.classList.contains("wdp-open-side-panel")
+    ) {
+      return target;
+    }
+    return (
+      target.closest(".wdp-donate-button") ||
+      target.closest(".wdp-open-modal") ||
+      target.closest(".wdp-open-side-panel")
+    );
+  }
+
+  function invokeModuleMethod(moduleName, methodName, args) {
+    const currentModule = getModule(moduleName);
+    if (currentModule && typeof currentModule[methodName] === 'function') {
+      currentModule[methodName].apply(currentModule, args || []);
+      return;
+    }
+    requestAnimationFrame(function() {
+      const retryModule = getModule(moduleName);
+      if (retryModule && typeof retryModule[methodName] === 'function') {
+        retryModule[methodName].apply(retryModule, args || []);
+      }
+    });
+  }
+
   // Olay dinleyicilerini başlat
   function initializeEventListeners() {
     if (delegatedEventsBound) {
@@ -43,54 +75,32 @@
       // PERFORMANCE: Use event delegation and passive listeners where possible
       // Modal açma/ kapama event'leri - Event delegation for better performance
       document.addEventListener("click", function(e) {
-        if (e.target.classList.contains("wdp-donate-button") || 
-            e.target.classList.contains("wdp-open-modal") ||
-            e.target.classList.contains("wdp-open-side-panel") ||
-            e.target.closest(".wdp-donate-button") ||
-            e.target.closest(".wdp-open-modal") ||
-            e.target.closest(".wdp-open-side-panel")) {
+        const button = getClosestTriggerButton(e.target);
+        if (button) {
           
           e.preventDefault();
           e.stopPropagation();
-          
-          const button = e.target.classList.contains("wdp-donate-button") || e.target.classList.contains("wdp-open-modal") || e.target.classList.contains("wdp-open-side-panel")
-            ? e.target 
-            : e.target.closest(".wdp-donate-button") || e.target.closest(".wdp-open-modal") || e.target.closest(".wdp-open-side-panel");
-          
-          if (button) {
-            const productId = button.getAttribute("data-product-id");
-            
-            if (productId) {
-              try {
-                const ajax = window.wdp_ajax || {};
-                const meta = ajax.meta || {};
-                if (meta.enabled && meta.customDebug && window.WDPMetaTracking && typeof window.WDPMetaTracking.trackCustom === "function") {
-                  window.WDPMetaTracking.trackCustom(
-                    "DonationButtonClick",
-                    { source: "wdp_donation_plugin", product_id: String(productId) },
-                    { eventID: "wdp_dbg_btn_" + String(productId) + "_" + String(Date.now()) }
-                  );
-                }
-              } catch (dbc) {}
 
-              let modalId = button.getAttribute("data-wdp-modal-id");
-              if (!modalId && button.classList.contains("wdp-open-side-panel")) {
-                modalId = "wdp-side-panel-" + productId;
+          const productId = button.getAttribute("data-product-id");
+          if (productId) {
+            try {
+              const ajax = window.wdp_ajax || {};
+              const meta = ajax.meta || {};
+              if (meta.enabled && meta.customDebug && window.WDPMetaTracking && typeof window.WDPMetaTracking.trackCustom === "function") {
+                window.WDPMetaTracking.trackCustom(
+                  "DonationButtonClick",
+                  { source: "wdp_donation_plugin", product_id: String(productId) },
+                  { eventID: "wdp_dbg_btn_" + String(productId) + "_" + String(Date.now()) }
+                );
               }
-              const openOptions = modalId ? { modalId: modalId } : undefined;
+            } catch (dbc) {}
 
-              const currentModal = getModule('modal');
-              if (currentModal && typeof currentModal.open === 'function') {
-                currentModal.open(productId, openOptions);
-              } else {
-                requestAnimationFrame(function() {
-                  const retryModal = getModule('modal');
-                  if (retryModal && typeof retryModal.open === 'function') {
-                    retryModal.open(productId, openOptions);
-                  }
-                });
-              }
+            let modalId = button.getAttribute("data-wdp-modal-id");
+            if (!modalId && button.classList.contains("wdp-open-side-panel")) {
+              modalId = "wdp-side-panel-" + productId;
             }
+            const openOptions = modalId ? { modalId: modalId } : undefined;
+            invokeModuleMethod('modal', 'open', [productId, openOptions]);
           }
         }
         
@@ -106,13 +116,21 @@
             : e.target.closest(".wdp-modal-close");
           
           if (closeButton) {
-            const currentModal = getModule('modal');
-            if (currentModal && typeof currentModal.close === 'function') {
-              const modal = closeButton.closest(".wdp-modal");
-              if (modal) {
-                currentModal.close(modal);
-              }
+            const modal = closeButton.closest(".wdp-modal");
+            if (modal) {
+              invokeModuleMethod('modal', 'close', [modal]);
             }
+          }
+        }
+      });
+
+      // Keyboard events
+      document.addEventListener("keydown", function(e) {
+        if ((e.key === "Enter" || e.key === " ") && e.target.classList.contains("wdp-modal-close")) {
+          e.preventDefault();
+          const modal = e.target.closest(".wdp-modal");
+          if (modal) {
+            invokeModuleMethod('modal', 'close', [modal]);
           }
         }
       });
@@ -171,34 +189,8 @@
           });
         }
 
-        const currentForm = getModule('form');
-        if (currentForm && typeof currentForm.setup === 'function') {
-          currentForm.setup(formElement);
-          retrySubmitAfterSetup();
-        } else {
-          requestAnimationFrame(function() {
-            const retryForm = getModule('form');
-            if (retryForm && typeof retryForm.setup === 'function') {
-              retryForm.setup(formElement);
-              retrySubmitAfterSetup();
-            }
-          });
-        }
-      });
-
-      // Keyboard events
-      document.addEventListener("keydown", function(e) {
-        if ((e.key === "Enter" || e.key === " ") && e.target.classList.contains("wdp-modal-close")) {
-          e.preventDefault();
-          
-          const currentModal = getModule('modal');
-          if (currentModal && typeof currentModal.close === 'function') {
-            const modal = e.target.closest(".wdp-modal");
-            if (modal) {
-              currentModal.close(modal);
-            }
-          }
-        }
+        invokeModuleMethod('form', 'setup', [formElement]);
+        requestAnimationFrame(retrySubmitAfterSetup);
       });
 
       // State'i güncelle

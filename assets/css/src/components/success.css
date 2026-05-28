@@ -212,7 +212,8 @@ html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-success-screen, .wdp-moda
   padding: 0 0 0 calc(4px + var(--wdp-form-stack-gap));
 }
 
-/* Başarı ekranında da ana modalın ortak close butonunu kullan (ilk popup ile birebir hizalama) */
+/* Başarı ekranında da ana modalın ortak close butonunu kullan (class fallback + :has) */
+html body .wdp-modal .wdp-modal-content.wdp-has-success > .wdp-modal-close,
 html body .wdp-modal .wdp-modal-content:has(.wdp-success-screen) > .wdp-modal-close {
   display: inline-flex;
   visibility: visible;

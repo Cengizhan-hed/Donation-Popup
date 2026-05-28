@@ -10,9 +10,9 @@ if (!defined('ABSPATH')) {
 }
 
 return array(
-	'src/tokens.css',
-	'src/base.css',
-	'src/layout.css',
+	'src/foundation/tokens.css',
+	'src/foundation/base.css',
+	'src/foundation/layout.css',
 	'src/components/side-panel.css',
 	'src/forms/shared.css',
 	'src/forms/field-stack.css',
@@ -30,5 +30,5 @@ return array(
 	'src/components/amount-presets.css',
 	'src/components/product-note.css',
 	'src/components/sadaka-donation.css',
-	'src/theme-isolation-overrides.css',
+	'src/overrides/theme-isolation-overrides.css',
 );

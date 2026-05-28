@@ -4,7 +4,7 @@
  * ============================================================================
  * 
  * DOSYA: utils.js
- * KONUM: /assets/js/src/utils.js
+ * KONUM: /assets/js/src/core/utils.js
  * 
  * AMAÇ:
  * Tüm modüller tarafından kullanılan yardımcı fonksiyonları içerir.

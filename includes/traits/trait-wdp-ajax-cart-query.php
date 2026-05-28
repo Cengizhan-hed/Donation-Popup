@@ -5,12 +5,45 @@ if (!defined('ABSPATH')) {
 
 trait WDP_Ajax_Cart_Query_Trait {
     /**
+     * Keep a small, privacy-safe subset of donation metadata for frontend cart UI.
+     *
+     * @param array $donation_data Raw donation payload from cart item.
+     * @return array
+     */
+    private static function sanitize_public_donation_data($donation_data) {
+        if (!is_array($donation_data)) {
+            return array();
+        }
+
+        $safe = array();
+        if (isset($donation_data['full_name'])) {
+            $safe['full_name'] = sanitize_text_field((string) $donation_data['full_name']);
+        }
+        if (isset($donation_data['share_count'])) {
+            $safe['share_count'] = (int) $donation_data['share_count'];
+        }
+        if (!empty($donation_data['shareholders']) && is_array($donation_data['shareholders'])) {
+            $safe['shareholders'] = array();
+            foreach ($donation_data['shareholders'] as $shareholder) {
+                if (!is_array($shareholder) || empty($shareholder['name'])) {
+                    continue;
+                }
+                $safe['shareholders'][] = array(
+                    'name' => sanitize_text_field((string) $shareholder['name']),
+                );
+            }
+        }
+
+        return $safe;
+    }
+    /**
      * Get cart count via AJAX
      */
     public static function get_cart_count() {
         try {
             self::validate_ajax_request('wdp_get_cart_count');
             self::enforce_rate_limit('get_cart_count', 120, 60);
+            self::enforce_capability('read');
         } catch (WDP_Security_Exception $e) {
             WDP_Utils::json_error($e);
         }
@@ -43,6 +76,7 @@ trait WDP_Ajax_Cart_Query_Trait {
         try {
             self::validate_ajax_request('wdp_get_cart_contents');
             self::enforce_rate_limit('get_cart_contents', 120, 60);
+            self::enforce_capability('read');
         } catch (WDP_Security_Exception $e) {
             WDP_Utils::json_error($e);
         }
@@ -131,53 +165,31 @@ trait WDP_Ajax_Cart_Query_Trait {
 
             // Meta veriler (donation data vb.)
             if (isset($cart_item['donation_data'])) {
-                $item_data['donation_data'] = $cart_item['donation_data'];
+                $safe_donation_data = self::sanitize_public_donation_data($cart_item['donation_data']);
+                if (!empty($safe_donation_data)) {
+                    $item_data['donation_data'] = $safe_donation_data;
+                }
                 
                 // Meta verileri formatla (gösterim için)
                 $meta = array();
-                if (isset($cart_item['donation_data']['full_name'])) {
+                if (isset($safe_donation_data['full_name'])) {
                     $meta[] = array(
                         'key' => __('Ad Soyad', 'woo-donation-popup'),
-                        'value' => $cart_item['donation_data']['full_name'],
+                        'value' => $safe_donation_data['full_name'],
                     );
                 }
-                if (isset($cart_item['donation_data']['phone'])) {
-                    $meta[] = array(
-                        'key' => __('Telefon', 'woo-donation-popup'),
-                        'value' => $cart_item['donation_data']['phone'],
-                    );
-                }
-                if (isset($cart_item['donation_data']['note'])) {
-                    $meta[] = array(
-                        'key' => __('Not', 'woo-donation-popup'),
-                        'value' => $cart_item['donation_data']['note'],
-                    );
-                }
-                if (isset($cart_item['donation_data']['share_count'])) {
+                if (isset($safe_donation_data['share_count'])) {
                     $meta[] = array(
                         'key' => __('Hisse Adedi', 'woo-donation-popup'),
-                        'value' => $cart_item['donation_data']['share_count'],
+                        'value' => $safe_donation_data['share_count'],
                     );
                 }
-                if (isset($cart_item['donation_data']['shareholders']) && is_array($cart_item['donation_data']['shareholders'])) {
-                    foreach ($cart_item['donation_data']['shareholders'] as $index => $shareholder) {
-                        if (isset($shareholder['name'])) {
+                if (isset($safe_donation_data['shareholders']) && is_array($safe_donation_data['shareholders'])) {
+                    foreach ($safe_donation_data['shareholders'] as $index => $shareholder) {
+                        if (isset($shareholder['name']) && $shareholder['name'] !== '') {
                             $meta[] = array(
-                                'key' => sprintf(__('%d. Hissedar', 'woo-donation-popup'), $index),
-                                'value' => $shareholder['name'] . (isset($shareholder['phone']) ? ' - ' . $shareholder['phone'] : ''),
-                            );
-                        }
-                        if (isset($shareholder['email']) && $shareholder['email'] !== '') {
-                            $meta[] = array(
-                                'key' => sprintf(__('%d. Hissedar E-postası', 'woo-donation-popup'), $index),
-                                'value' => $shareholder['email'],
-                            );
-                        }
-
-                        if (isset($shareholder['note']) && $shareholder['note'] !== '') {
-                            $meta[] = array(
-                                'key' => sprintf(__('%d. Hissedar Notu', 'woo-donation-popup'), $index),
-                                'value' => $shareholder['note'],
+                                'key' => sprintf(__('%d. Hissedar', 'woo-donation-popup'), (int) $index + 1),
+                                'value' => $shareholder['name'],
                             );
                         }
                     }
@@ -208,6 +220,7 @@ trait WDP_Ajax_Cart_Query_Trait {
         try {
             self::validate_ajax_request('wdp_remove_cart_item');
             self::enforce_rate_limit('remove_cart_item', 40, 60);
+            self::enforce_capability('read');
         } catch (WDP_Security_Exception $e) {
             WDP_Utils::json_error($e);
         }

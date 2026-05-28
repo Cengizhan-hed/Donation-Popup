@@ -5,7 +5,7 @@
  * ============================================================================
  * 
  * DOSYA: class-templates.php
- * KONUM: /includes/classes/class-templates.php
+ * KONUM: /includes/class-templates.php
  * 
  * AMAÇ:
  * Modal ve form HTML şablonlarını render eder.
@@ -626,7 +626,7 @@ class WDP_Templates {
         ob_start();
         ?>
         <!-- Modal -->
-        <div id="<?php echo esc_attr($modal_id); ?>" class="hdf-donation-modal-wrapper wdp-modal<?php echo esc_attr($modal_mode_class); ?><?php echo $custom_class !== '' ? ' ' . esc_attr($custom_class) : ''; ?>" role="dialog" aria-modal="true" aria-labelledby="<?php echo esc_attr($modal_id); ?>-title" aria-describedby="<?php echo esc_attr($modal_id); ?>-description" data-product-id="<?php echo esc_attr($product_id); ?>" data-wdp-unit-price="<?php echo esc_attr($product_price !== '' ? $product_price : ''); ?>" data-wdp-enable-sadaka="<?php echo ($enable_sadaka_donation && !$enable_progress_bar) ? '1' : '0'; ?>"<?php echo $use_side_panel ? ' data-wdp-open-mode="side-panel"' : ''; ?> style="display:none;visibility:hidden;opacity:0;">
+        <div id="<?php echo esc_attr($modal_id); ?>" class="hdf-donation-modal-wrapper wdp-modal<?php echo esc_attr($modal_mode_class); ?><?php echo $custom_class !== '' ? ' ' . esc_attr($custom_class) : ''; ?>" role="dialog" aria-modal="true" aria-labelledby="<?php echo esc_attr($modal_id); ?>-title" aria-describedby="<?php echo esc_attr($modal_id); ?>-description" data-product-id="<?php echo esc_attr($product_id); ?>" data-wdp-unit-price="<?php echo esc_attr($product_price !== '' ? $product_price : ''); ?>" data-wdp-enable-sadaka="<?php echo ($enable_sadaka_donation && !$enable_progress_bar) ? '1' : '0'; ?>"<?php echo $use_side_panel ? ' data-wdp-open-mode="side-panel"' : ''; ?> aria-hidden="true">
             <div class="wdp-modal-content<?php echo $use_side_panel ? ' wdp-side-panel-content' : ''; ?>">
                 <button type="button" class="wdp-modal-close" aria-label="<?php echo esc_attr__('Modalı Kapat', 'woo-donation-popup'); ?>">&times;</button>
                 <div class="wdp-modal-header">
@@ -683,10 +683,10 @@ class WDP_Templates {
                     <?php echo WDP_Progress_Form::render_form_fields(true, $progress_min_price); ?>
                     <?php else: ?>
                     <!-- Bağışçı Bilgileri -->
-                    <?php echo WDP_Templates::render_donor_contact_stack(); ?>
+                    <?php echo self::render_donor_contact_stack(); ?>
 
                     <?php if ($allow_custom_price) : ?>
-                    <?php echo WDP_Templates::render_custom_price_amount_row($min_price, $wdp_custom_price_placeholder, $wdp_currency_symbol); ?>
+                    <?php echo self::render_custom_price_amount_row($min_price, $wdp_custom_price_placeholder, $wdp_currency_symbol); ?>
                     <?php else : ?>
                     <div class="wdp-price-quantity-row wdp-fixed-price-counter-row">
                         <div class="wdp-line-total-display" role="status" aria-live="polite">
@@ -865,10 +865,10 @@ class WDP_Templates {
                     <?php echo WDP_Progress_Form::render_form_fields(true, $progress_min_price); ?>
                     <?php else: ?>
                     <!-- Bağışçı Bilgileri -->
-                    <?php echo WDP_Templates::render_donor_contact_stack(); ?>
+                    <?php echo self::render_donor_contact_stack(); ?>
 
                     <?php if ($allow_custom_price) : ?>
-                    <?php echo WDP_Templates::render_custom_price_amount_row($min_price, $wdp_custom_price_placeholder, $wdp_currency_symbol); ?>
+                    <?php echo self::render_custom_price_amount_row($min_price, $wdp_custom_price_placeholder, $wdp_currency_symbol); ?>
                     <?php else : ?>
                     <div class="wdp-price-quantity-row wdp-fixed-price-counter-row">
                         <div class="wdp-line-total-display" role="status" aria-live="polite">

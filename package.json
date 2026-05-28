@@ -7,6 +7,8 @@
     "build:css": "php tools/build-css-bundle.php",
     "build:js": "php tools/build-js-bundle.php",
     "build": "npm run build:css && npm run build:js",
+    "smoke": "php tests/smoke/run.php",
+    "verify": "npm run build && npm run smoke",
     "pack": "npm run build && sh scripts/package-wp-plugin.sh"
   },
   "repository": {
@@ -14,5 +16,8 @@
     "url": "git+https://github.com/Hedefdev/Donation-Popup.git"
   },
   "license": "ISC",
-  "type": "commonjs"
+  "type": "commonjs",
+  "devDependencies": {
+    "esbuild": "^0.25.5"
+  }
 }

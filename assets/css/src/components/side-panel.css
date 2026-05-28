@@ -106,6 +106,8 @@ html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel:not(.show) {
 /* Panel kabuğu — tam yükseklik, sol köşe 20px */
 html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-modal-content,
 html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-content,
+html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-modal-content.wdp-has-shareholders,
+html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-modal-content.wdp-has-success,
 html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-modal-content:has(form.wdp-has-shareholders),
 html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-modal-content:has(.wdp-success-screen) {
   width: var(--wdp-side-panel-width);
@@ -141,6 +143,8 @@ html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-modal-c
 
 html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show.wdp-side-panel--opening .wdp-modal-content,
 html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show.wdp-side-panel--opening .wdp-side-panel-content,
+html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show.wdp-side-panel--opening .wdp-modal-content.wdp-has-shareholders,
+html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show.wdp-side-panel--opening .wdp-modal-content.wdp-has-success,
 html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show.wdp-side-panel--opening .wdp-modal-content:has(form.wdp-has-shareholders),
 html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show.wdp-side-panel--opening .wdp-modal-content:has(.wdp-success-screen) {
   animation: none;
@@ -149,6 +153,8 @@ html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show.wdp-side-pan
 
 html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show.wdp-side-panel--closing .wdp-modal-content,
 html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show.wdp-side-panel--closing .wdp-side-panel-content,
+html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show.wdp-side-panel--closing .wdp-modal-content.wdp-has-shareholders,
+html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show.wdp-side-panel--closing .wdp-modal-content.wdp-has-success,
 html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show.wdp-side-panel--closing .wdp-modal-content:has(form.wdp-has-shareholders),
 html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show.wdp-side-panel--closing .wdp-modal-content:has(.wdp-success-screen) {
   animation: wdp-side-panel-slide-out 0.36s cubic-bezier(0.4, 0, 0.2, 1) forwards;
@@ -534,6 +540,7 @@ html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-quantit
 
 /* Başarı / mini sepet */
 html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-form:has(.wdp-success-screen),
+html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-form.wdp-has-success,
 html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show form:has(.wdp-success-screen) {
   overflow: visible;
 }
@@ -802,3 +809,4 @@ html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-pa
     border-radius: var(--wdp-side-panel-radius-left) 0 0 var(--wdp-side-panel-radius-left);
   }
 }
+

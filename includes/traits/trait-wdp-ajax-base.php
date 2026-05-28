@@ -32,6 +32,19 @@ trait WDP_Ajax_Base_Trait {
     }
 
     /**
+     * Ensure current visitor has required capability.
+     *
+     * @param string $capability Capability to enforce.
+     * @return void
+     * @throws WDP_Security_Exception If capability check fails.
+     */
+    private static function enforce_capability($capability = 'read') {
+        if (!WDP_Security::check_capability($capability)) {
+            throw new WDP_Security_Exception(__('Yetkiniz bulunmuyor', 'woo-donation-popup'));
+        }
+    }
+
+    /**
      * Validate nonce and request origin.
      *
      * @param string $nonce_action Nonce action key.
@@ -39,12 +52,27 @@ trait WDP_Ajax_Base_Trait {
      * @throws WDP_Security_Exception When validation fails.
      */
     private static function validate_ajax_request($nonce_action) {
+        self::require_post_method();
+
         if (!check_ajax_referer($nonce_action, 'security', false)) {
             throw new WDP_Security_Exception();
         }
 
         if (!WDP_Security::validate_request_origin()) {
             throw new WDP_Security_Exception(__('Geçersiz istek kaynağı', 'woo-donation-popup'));
+        }
+    }
+
+    /**
+     * Require HTTP POST for mutating/ajax actions.
+     *
+     * @return void
+     * @throws WDP_Security_Exception If request method is invalid.
+     */
+    private static function require_post_method() {
+        $method = isset($_SERVER['REQUEST_METHOD']) ? strtoupper((string) wp_unslash($_SERVER['REQUEST_METHOD'])) : '';
+        if ('POST' !== $method) {
+            throw new WDP_Security_Exception(__('Geçersiz istek metodu', 'woo-donation-popup'));
         }
     }
 

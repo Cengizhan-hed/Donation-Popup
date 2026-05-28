@@ -13,13 +13,11 @@ trait WDP_Ajax_Product_Trait {
                 throw new WDP_Validation_Exception(__('Geçersiz ürün ID', 'woo-donation-popup'));
             }
             
-            // SECURITY: Validate product ID
-            if (!WDP_Security::validate_product_id($product_id)) {
+            $product = null;
+            // SECURITY: Validate product ID and reuse resolved product instance.
+            if (!WDP_Security::validate_product_id($product_id, $product)) {
                 throw new WDP_Validation_Exception(__('Geçersiz ürün ID', 'woo-donation-popup'));
             }
-
-            // WC_Product nesnesini harici object cache'e yazmıyoruz (serileştirme / bayat nesne riski); hafif meta wdp_product_info önbelleğinde kalır.
-            $product = wc_get_product($product_id);
 
             if (!$product) {
                 throw new WDP_Product_Not_Found_Exception($product_id);
@@ -43,20 +41,13 @@ trait WDP_Ajax_Product_Trait {
             $enable_progress_bar = !empty($cached_data['enable_progress_bar']);
             $enable_sadaka_donation = !empty($cached_data['enable_sadaka_donation']);
         } else {
-            // PERFORMANCE: WooCommerce get_meta() kullan (cache'lenmiş, daha hızlı)
-            // PERFORMANCE: Single meta query instead of multiple
-            $product_meta = $product->get_meta_data();
-            $meta_array = array();
-            foreach ($product_meta as $meta) {
-                $meta_array[$meta->key] = $meta->value;
-            }
-            
-            $allow_custom_price = isset($meta_array['_allow_custom_price']) && $meta_array['_allow_custom_price'] === 'yes';
-            $min_price = isset($meta_array['_min_custom_price']) ? $meta_array['_min_custom_price'] : '';
-            $allow_multiple_shares = isset($meta_array['_allow_multiple_shares']) && $meta_array['_allow_multiple_shares'] === 'yes';
-            $max_shares = isset($meta_array['_max_shares']) ? $meta_array['_max_shares'] : '';
-            $enable_progress_bar = isset($meta_array['_enable_progress_bar']) && $meta_array['_enable_progress_bar'] === 'yes';
-            $enable_sadaka_donation = isset($meta_array['_enable_sadaka_donation']) && $meta_array['_enable_sadaka_donation'] === 'yes';
+            // PERFORMANCE: Read only required keys (avoids hydrating full meta collection).
+            $allow_custom_price = $product->get_meta('_allow_custom_price') === 'yes';
+            $min_price = $product->get_meta('_min_custom_price');
+            $allow_multiple_shares = $product->get_meta('_allow_multiple_shares') === 'yes';
+            $max_shares = $product->get_meta('_max_shares');
+            $enable_progress_bar = $product->get_meta('_enable_progress_bar') === 'yes';
+            $enable_sadaka_donation = $product->get_meta('_enable_sadaka_donation') === 'yes';
             
             $cache_data = array(
                 'allow_custom_price' => $allow_custom_price,
@@ -78,13 +69,6 @@ trait WDP_Ajax_Product_Trait {
 
         if ($allow_multiple_shares && '' === $max_shares) {
             $max_shares = '7';
-        }
-
-        if (!isset($enable_progress_bar)) {
-            $enable_progress_bar = $product->get_meta('_enable_progress_bar') === 'yes';
-        }
-        if (!isset($enable_sadaka_donation)) {
-            $enable_sadaka_donation = $product->get_meta('_enable_sadaka_donation') === 'yes';
         }
 
         $show_sadaka_donation = $enable_sadaka_donation && !$enable_progress_bar;
@@ -144,12 +128,11 @@ trait WDP_Ajax_Product_Trait {
             WDP_Utils::json_error(__('Geçersiz ürün ID', 'woo-donation-popup'));
         }
         
-        // SECURITY: Validate product ID
-        if (!WDP_Security::validate_product_id($product_id)) {
+        $product = null;
+        // SECURITY: Validate product ID and reuse resolved product instance.
+        if (!WDP_Security::validate_product_id($product_id, $product)) {
             WDP_Utils::json_error(__('Geçersiz ürün ID', 'woo-donation-popup'));
         }
-
-        $product = wc_get_product($product_id);
 
         if (!$product) {
             WDP_Utils::json_error(__('Ürün bulunamadı', 'woo-donation-popup'));

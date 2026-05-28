@@ -244,7 +244,9 @@ html body .wdp-donation-form .wdp-modal-content {
 
 /* CRITICAL: Forms with shareholders must never cause modal expansion */
 /* ABSOLUTE FIX: Force max-height constraint - allow content to be visible */
-/* CRITICAL: Popup modal with shareholders - ALWAYS fixed width (sağ panel: side-panel.css) */
+/* CRITICAL: Popup modal with shareholders - ALWAYS fixed width (class fallback + :has) */
+html body .wdp-modal.show:not(.wdp-side-panel).wdp-has-shareholders .wdp-modal-content,
+html body .wdp-modal.show:not(.wdp-side-panel) .wdp-modal-content.wdp-has-shareholders,
 html body .wdp-modal.show:not(.wdp-side-panel) .wdp-modal-content:has(form.wdp-has-shareholders) {
   /* CRITICAL: Same as non-shareholder popup - fixed width */
   width: min(var(--wdp-popup-modal-width-desktop, 600px), 96vw);
@@ -278,6 +280,8 @@ html body .wdp-modal.show:not(.wdp-side-panel) .wdp-modal-content:has(form.wdp-h
 }
 
 /* CRITICAL: In-page forms with shareholders - can be overridden for single product */
+html body .wdp-donation-form.wdp-has-shareholders .wdp-modal-content,
+html body .wdp-donation-form .wdp-modal-content.wdp-has-shareholders,
 html body .wdp-donation-form .wdp-modal-content:has(form.wdp-has-shareholders) {
   gap: var(--wdp-form-stack-gap);
   /* CRITICAL: Same as non-shareholder forms - auto height with max-height constraint */

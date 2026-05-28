@@ -1529,6 +1529,25 @@
     return bar;
   }
 
+  function syncModalSuccessState(scope) {
+    const modal = scope && typeof scope.closest === 'function' ? scope.closest('.wdp-modal') : null;
+    if (!modal) {
+      return;
+    }
+
+    if (WDPApp.modal && typeof WDPApp.modal.syncStateClasses === 'function') {
+      WDPApp.modal.syncStateClasses(modal);
+      return;
+    }
+
+    // Backward-safe fallback if modal module is not ready yet.
+    const panelContent = modal.querySelector('.wdp-modal-content');
+    if (panelContent) {
+      panelContent.classList.toggle('wdp-has-success', !!modal.querySelector('.wdp-success-screen'));
+      panelContent.classList.toggle('wdp-has-shareholders', !!modal.querySelector('form.wdp-has-shareholders'));
+    }
+  }
+
   function renderSuccessScreen(successScreen, cartItems) {
     if (!successScreen) {
       return;
@@ -1548,6 +1567,10 @@
       while (fallback.firstChild) {
         cartStack.appendChild(fallback.firstChild);
       }
+    }
+    const modal = successScreen.closest('.wdp-modal');
+    if (modal) {
+      syncModalSuccessState(successScreen);
     }
   }
 
@@ -1623,7 +1646,9 @@
         // Başarı ekranı oluştur
         const successScreen = document.createElement("div");
         successScreen.className = "wdp-success-screen";
+        form.classList.add('wdp-has-success');
         form.appendChild(successScreen);
+        syncModalSuccessState(form);
 
         // Sepet içeriğini göster (ilk yanıtta yoksa AJAX ile tamamla)
         if (data.items && Array.isArray(data.items)) {

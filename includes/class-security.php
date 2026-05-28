@@ -88,10 +88,11 @@ class WDP_Security {
     /**
      * Validate product ID
      *
-     * @param int $product_id Product ID.
+     * @param int             $product_id Product ID.
+     * @param WC_Product|null $product_out Optional product output reference.
      * @return bool
      */
-    public static function validate_product_id($product_id) {
+    public static function validate_product_id($product_id, &$product_out = null) {
         $product_id = absint($product_id);
         
         if ($product_id <= 0) {
@@ -113,6 +114,7 @@ class WDP_Security {
             }
         }
 
+        $product_out = $product;
         return true;
     }
 

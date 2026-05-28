@@ -11,7 +11,7 @@ trait WDP_Ajax_Cart_Add_Trait {
      * Includes rate limiting, validation, and security checks.
      *
      * @since 10.0
-     * @return never Sends JSON response and terminates.
+     * @return void Sends JSON response and terminates.
      * @throws WDP_Security_Exception      If nonce verification fails or rate limit exceeded.
      * @throws WDP_Validation_Exception    If validation fails (missing fields, invalid price, etc.).
      * @throws WDP_Product_Not_Found_Exception If product doesn't exist.
@@ -22,15 +22,10 @@ trait WDP_Ajax_Cart_Add_Trait {
             self::validate_ajax_request('wdp_ajax_add_to_cart');
 
             // SECURITY: Rate limiting check
-            $rate_limit_key = WDP_Security::get_rate_limit_key('add_to_cart');
-            if (!WDP_Security::check_rate_limit($rate_limit_key, 20, 60)) {
-                throw new WDP_Security_Exception(__('Çok fazla istek gönderildi. Lütfen bir süre bekleyip tekrar deneyin.', 'woo-donation-popup'));
-            }
+            self::enforce_rate_limit('add_to_cart', 20, 60);
             
             // SECURITY: Capability check (read permission for adding to cart)
-            if (!WDP_Security::check_capability('read')) {
-                throw new WDP_Security_Exception(__('Yetkiniz bulunmuyor', 'woo-donation-popup'));
-            }
+            self::enforce_capability('read');
 
             // SECURITY: Sanitize and validate inputs with length limits
             $product_id = 0;

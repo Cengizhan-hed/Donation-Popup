@@ -1,6 +1,6 @@
 <?php
 /**
- * AJAX handlers — thin registrar; logic split across traits in includes/classes/traits/.
+ * AJAX handlers — thin registrar; logic in includes/traits/.
  *
  * @package WooCommerce\Donation_Popup
  */
@@ -9,7 +9,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-$wdp_ajax_traits_dir = WDP_PLUGIN_DIR . 'includes/classes/traits/';
+$wdp_ajax_traits_dir = WDP_PLUGIN_DIR . 'includes/traits/';
 require_once $wdp_ajax_traits_dir . 'trait-wdp-ajax-base.php';
 require_once $wdp_ajax_traits_dir . 'trait-wdp-ajax-product.php';
 require_once $wdp_ajax_traits_dir . 'trait-wdp-ajax-cart-add.php';

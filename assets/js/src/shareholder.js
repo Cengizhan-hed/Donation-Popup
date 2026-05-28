@@ -75,8 +75,8 @@
     } else if (element.style.display === 'none') {
       element.style.display = '';
     }
-    element.style.visibility = 'visible';
-    element.style.opacity = '1';
+    element.style.removeProperty('visibility');
+    element.style.removeProperty('opacity');
     element.removeAttribute('hidden');
   }
 
@@ -101,8 +101,8 @@
 
   function applyShareholdersAreaVisibility(area) {
     if (!area) return;
-    area.style.visibility = 'visible';
-    area.style.opacity = '1';
+    area.style.removeProperty('visibility');
+    area.style.removeProperty('opacity');
     area.removeAttribute('hidden');
     area.style.display = 'flex';
     area.style.flexDirection = 'column';
@@ -110,8 +110,8 @@
 
   function applyShareholdersContainerVisibility(container) {
     if (!container) return;
-    container.style.visibility = 'visible';
-    container.style.opacity = '1';
+    container.style.removeProperty('visibility');
+    container.style.removeProperty('opacity');
     container.removeAttribute('hidden');
     container.style.display = 'flex';
     container.style.flexDirection = 'column';
@@ -337,7 +337,7 @@
     const handleResize = () => {
       document.querySelectorAll('.wdp-modal, .wdp-donation-form').forEach((modal) => {
         if (modal.querySelector('.wdp-shareholders-container')) {
-          updateShareholdersScrollable(modal);
+          scheduleShareholdersScrollableUpdate(modal);
         }
       });
     };
@@ -347,6 +347,26 @@
   }
 
   const shareholderLayoutRafByArea = typeof WeakMap !== 'undefined' ? new WeakMap() : null;
+  const shareholderUpdateRafByRoot = typeof WeakMap !== 'undefined' ? new WeakMap() : null;
+
+  function scheduleShareholdersScrollableUpdate(root) {
+    if (!root || typeof window === 'undefined') {
+      return;
+    }
+    if (!shareholderUpdateRafByRoot) {
+      updateShareholdersScrollable(root);
+      return;
+    }
+    const pending = shareholderUpdateRafByRoot.get(root);
+    if (pending) {
+      window.cancelAnimationFrame(pending);
+    }
+    const rafId = window.requestAnimationFrame(() => {
+      shareholderUpdateRafByRoot.delete(root);
+      updateShareholdersScrollable(root);
+    });
+    shareholderUpdateRafByRoot.set(root, rafId);
+  }
 
   function cancelPendingShareholderLayout(areaElement) {
     if (!areaElement || !shareholderLayoutRafByArea || typeof window === 'undefined') {
@@ -396,13 +416,16 @@
         const layoutRaf = requestAnimationFrame(() => {
           shareholderLayoutRafByArea && shareholderLayoutRafByArea.delete(shareholdersArea);
           const viewportHeight = computeShareholderScrollViewportHeight(shareholdersList);
+          const prevScrollTop = shareholdersList.scrollTop || 0;
           applyShareholderScrollHeights(
             shareholdersArea,
             shareholdersContainer,
             shareholdersList,
             viewportHeight
           );
-          shareholdersList.scrollTop = 0;
+          if (prevScrollTop > 0) {
+            shareholdersList.scrollTop = Math.max(0, prevScrollTop);
+          }
         });
         if (shareholderLayoutRafByArea) {
           shareholderLayoutRafByArea.set(shareholdersArea, layoutRaf);
@@ -1039,7 +1062,7 @@
     const root = form.closest('.wdp-modal') || form.closest('.wdp-donation-form');
     if (root) {
       requestAnimationFrame(() => {
-        updateShareholdersScrollable(root);
+        scheduleShareholdersScrollableUpdate(root);
       });
       refreshShareholderGuidance(root);
     }
@@ -1642,7 +1665,7 @@
     }
     
     // Then update scrollable state (this will clean up and ensure consistency)
-    updateShareholdersScrollable(modal);
+    scheduleShareholdersScrollableUpdate(modal);
     
     // CRITICAL: Fiyatı güncelle (hisse adedi değiştiğinde)
     // updatePriceBasedOnShareCount fonksiyonu setupShareQuantityButtons scope'unda tanımlı
@@ -1921,6 +1944,10 @@
       if (hostForm) {
         hostForm.classList.add('wdp-has-shareholders');
       }
+      const modalContent = modal.querySelector('.wdp-modal-content');
+      if (modalContent) {
+        modalContent.classList.add('wdp-has-shareholders');
+      }
 
       // Hissedar formları konteynerini bul - Eğer bulunamazsa bir kez daha dene
       // DOM query caching kullan (üstte tanımlı $modal)
@@ -2050,7 +2077,7 @@
       updateSharesTotalBar(modal);
       
       // Scrollable class'ını güncelle
-      updateShareholdersScrollable(modal);
+      scheduleShareholdersScrollableUpdate(modal);
       refreshShareholderGuidance(modal);
 
       // Fiyat alanını bul
@@ -2337,7 +2364,7 @@
 
     // Scrollable class'ını güncelle
     const modal = container.closest('.wdp-modal') || container.closest('.wdp-donation-form');
-    updateShareholdersScrollable(modal);
+    scheduleShareholdersScrollableUpdate(modal);
     
     // Kapalı form sayısını güncelle
     updateCollapsedFormsCount(modal);

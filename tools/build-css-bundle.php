@@ -12,6 +12,67 @@ $root = dirname(__DIR__);
 $cssRoot = $root . '/assets/css';
 $outDir = $cssRoot . '/build';
 
+/**
+ * Minify CSS via local npm tool when available.
+ * Falls back to original content if minifier fails.
+ *
+ * @param string $root Project root.
+ * @param string $css  Raw CSS bundle.
+ * @return string
+ */
+function wdp_minify_css_bundle($root, $css) {
+    $tmpIn = tempnam(sys_get_temp_dir(), 'wdp_css_in_');
+    if (!is_string($tmpIn) || $tmpIn === '') {
+        return $css;
+    }
+    $tmpOut = $tmpIn . '.min.css';
+
+    try {
+        if (file_put_contents($tmpIn, $css) === false) {
+            return $css;
+        }
+
+        $cmd = 'npx --yes esbuild ' . escapeshellarg($tmpIn) . ' --loader=css --minify --legal-comments=none --outfile=' . escapeshellarg($tmpOut) . ' 2>/dev/null';
+        $cwd = getcwd();
+        @chdir($root);
+        $exit = 1;
+        @exec($cmd, $unused, $exit);
+        if ($cwd !== false) {
+            @chdir($cwd);
+        }
+
+        if ($exit !== 0 || !file_exists($tmpOut)) {
+            return $css;
+        }
+
+        $min = file_get_contents($tmpOut);
+        if (!is_string($min) || trim($min) === '') {
+            return $css;
+        }
+
+        // Safety net: if critical selectors disappear after minify, keep original CSS.
+        $critical_selectors = array(
+            'wdp-field-stack__svg',
+            'wdp-field-stack__row',
+            'wdp-field-stack__input',
+        );
+        foreach ($critical_selectors as $selector) {
+            if (strpos($css, $selector) !== false && strpos($min, $selector) === false) {
+                return $css;
+            }
+        }
+
+        if (strpos($css, '@layer') !== false && strpos($min, '@layer') === false) {
+            return $css;
+        }
+
+        return $min . "\n";
+    } finally {
+        @unlink($tmpIn);
+        @unlink($tmpOut);
+    }
+}
+
 // Stack config uses ABSPATH guard; define for CLI builds.
 if (!defined('ABSPATH')) {
     define('ABSPATH', $root . '/');
@@ -45,10 +106,11 @@ foreach ($stack as $rel) {
         fwrite(STDERR, "Cannot read CSS file: {$rel}\n");
         exit(1);
     }
-    $parts[] = "/* >>> {$rel} */\n" . trim($content) . "\n";
+    $parts[] = trim($content);
 }
 
 $bundle = implode("\n", $parts) . "\n";
+$bundle = wdp_minify_css_bundle($root, $bundle);
 $hash = substr(sha1($bundle), 0, 12);
 $fileName = "donation-modal.{$hash}.css";
 $outPath = $outDir . '/' . $fileName;
@@ -69,7 +131,7 @@ $manifest = array(
     'hash' => $hash,
     'generated_at' => gmdate('c'),
 );
-$manifestJson = json_encode($manifest, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . "\n";
+$manifestJson = json_encode($manifest, JSON_UNESCAPED_SLASHES) . "\n";
 
 if (file_put_contents($outDir . '/manifest.json', $manifestJson) === false) {
     fwrite(STDERR, "Cannot write manifest.json\n");

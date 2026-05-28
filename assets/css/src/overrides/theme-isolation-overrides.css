@@ -10,7 +10,8 @@ html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel:not(.show) {
   pointer-events: none;
 }
 
-/* Başarı ekranı kapatma — tema gizleme kurallarına karşı */
+/* Başarı ekranı kapatma — tema gizleme kurallarına karşı (class fallback + :has) */
+html body .hdf-donation-modal-wrapper.wdp-modal .wdp-modal-content.wdp-has-success > .wdp-modal-close,
 html body .hdf-donation-modal-wrapper.wdp-modal .wdp-modal-content:has(.wdp-success-screen) > .wdp-modal-close {
   display: inline-flex;
   visibility: visible;

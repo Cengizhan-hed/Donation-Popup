@@ -10,24 +10,26 @@ trait WDP_Ajax_Cart_Session_Trait {
      * Used when the page stayed open a long time or after a failed add-to-cart response
      * so the client can retry verification with valid credentials.
      *
-     * @return never
+     * @return void
      */
     public static function get_fresh_nonces() {
         try {
+            self::require_post_method();
             if (!WDP_Security::validate_request_origin(true)) {
                 throw new WDP_Security_Exception(__('Geçersiz istek kaynağı', 'woo-donation-popup'));
             }
 
-            $rate_limit_key = WDP_Security::get_rate_limit_key('fresh_nonces');
-            if (!WDP_Security::check_rate_limit($rate_limit_key, 60, 60)) {
-                throw new WDP_Security_Exception(__('Çok fazla istek gönderildi. Lütfen bir süre bekleyip tekrar deneyin.', 'woo-donation-popup'));
+            self::enforce_rate_limit('fresh_nonces', 60, 60);
+            self::enforce_capability('read');
+
+            $cart = self::get_wc_cart();
+            if (!$cart) {
+                throw new WDP_Security_Exception(__('Geçerli sepet oturumu bulunamadı', 'woo-donation-popup'));
             }
 
             WDP_Utils::json_success(array(
                 'nonces' => array(
                     'ajax_add_to_cart' => wp_create_nonce('wdp_ajax_add_to_cart'),
-                    'get_product_info' => wp_create_nonce('wdp_get_product_info'),
-                    'get_product_name' => wp_create_nonce('wdp_get_product_name'),
                     'get_cart_count' => wp_create_nonce('wdp_get_cart_count'),
                     'get_cart_contents' => wp_create_nonce('wdp_get_cart_contents'),
                     'remove_cart_item' => wp_create_nonce('wdp_remove_cart_item'),
@@ -43,20 +45,13 @@ trait WDP_Ajax_Cart_Session_Trait {
     /**
      * Check whether a prior submission (unique_submission_key) is already in the cart.
      *
-     * @return never
+     * @return void
      */
     public static function verify_submission_in_cart() {
         try {
             self::validate_ajax_request('wdp_ajax_add_to_cart');
-
-            $rate_limit_key = WDP_Security::get_rate_limit_key('verify_submission');
-            if (!WDP_Security::check_rate_limit($rate_limit_key, 40, 60)) {
-                throw new WDP_Security_Exception(__('Çok fazla istek gönderildi. Lütfen bir süre bekleyip tekrar deneyin.', 'woo-donation-popup'));
-            }
-
-            if (!WDP_Security::check_capability('read')) {
-                throw new WDP_Security_Exception(__('Yetkiniz bulunmuyor', 'woo-donation-popup'));
-            }
+            self::enforce_rate_limit('verify_submission', 40, 60);
+            self::enforce_capability('read');
 
             $key = isset($_POST['unique_submission_key']) ? WDP_Security::sanitize_text(wp_unslash($_POST['unique_submission_key']), 100) : '';
 

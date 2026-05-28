@@ -79,6 +79,21 @@
   const utils = utilsCheck.module;
   const state = stateCheck.module;
   const { safeLog, focusFirstElement, activateFocusTrap, announceStatus } = utils;
+  const modalLifecycleState = typeof WeakMap !== 'undefined' ? new WeakMap() : null;
+
+  function getModalLifecycleState(modal) {
+    if (!modal || !modalLifecycleState) return '';
+    return modalLifecycleState.get(modal) || '';
+  }
+
+  function setModalLifecycleState(modal, nextState) {
+    if (!modal || !modalLifecycleState) return;
+    if (!nextState) {
+      modalLifecycleState.delete(modal);
+      return;
+    }
+    modalLifecycleState.set(modal, nextState);
+  }
 
   function isSidePanelModal(modal) {
     return !!(modal && modal.classList.contains('wdp-side-panel'));
@@ -169,6 +184,21 @@
     document.addEventListener("keydown", handleEscKeyPress)
   }
 
+  function syncModalStateClasses(modal) {
+    if (!modal) {
+      return;
+    }
+    const panelContent = modal.querySelector('.wdp-modal-content');
+    const hasShareholders = !!modal.querySelector('form.wdp-has-shareholders');
+    const hasSuccess = !!modal.querySelector('.wdp-success-screen');
+    if (panelContent) {
+      panelContent.classList.toggle('wdp-has-shareholders', hasShareholders);
+      panelContent.classList.toggle('wdp-has-success', hasSuccess);
+    }
+    modal.classList.toggle('wdp-has-shareholders', hasShareholders);
+    modal.classList.toggle('wdp-has-success', hasSuccess);
+  }
+
   function trackModalViewContent(modal, productId, sidePanelMode) {
     if (!window.WDPMetaTracking || typeof window.WDPMetaTracking.trackViewContentDonation !== "function") {
       return
@@ -233,6 +263,8 @@
       }
     }
 
+    syncModalStateClasses(modal)
+
     trackModalViewContent(modal, productId, sidePanelMode)
     bindModalGlobalListeners()
 
@@ -260,6 +292,13 @@
 
       if (!modal) {
         safeLog("ERROR: Modal not found for product ID:", productId)
+        return
+      }
+      const lifecycleState = getModalLifecycleState(modal)
+      if (lifecycleState === 'opening' || lifecycleState === 'closing') {
+        return
+      }
+      if (state.activeModal === modal && modal.classList.contains('show')) {
         return
       }
 
@@ -290,15 +329,17 @@
       }
 
       modal.setAttribute('aria-hidden', 'false')
+      // Şablondaki inline display/visibility/opacity CSS .show'dan baskın gelir; hepsini temizle
+      modal.style.removeProperty('display')
+      modal.style.removeProperty('visibility')
+      modal.style.removeProperty('opacity')
       modal.classList.remove('wdp-side-panel--closing')
 
       state.activeModal = modal
 
       if (sidePanelMode) {
+        setModalLifecycleState(modal, 'opening')
         lockBodyScroll(true)
-        modal.style.display = 'flex'
-        modal.style.visibility = 'visible'
-        modal.style.opacity = '1'
         modal.classList.add('show', 'wdp-side-panel--opening')
         bindModalGlobalListeners()
 
@@ -306,15 +347,15 @@
           requestAnimationFrame(function () {
             modal.classList.remove('wdp-side-panel--opening')
             runModalOpenInit(modal, productId, sidePanelMode)
+            setModalLifecycleState(modal, 'open')
           })
         })
       } else {
+        setModalLifecycleState(modal, 'opening')
         modal.classList.add('show')
-        modal.style.display = 'flex'
-        modal.style.visibility = 'visible'
-        modal.style.opacity = '1'
         lockBodyScroll(false)
         runModalOpenInit(modal, productId, sidePanelMode)
+        setModalLifecycleState(modal, 'open')
       }
 
       safeLog("Modal opened successfully for product ID:", productId)
@@ -380,15 +421,11 @@
     const isSidePanel = modal.classList.contains('wdp-side-panel')
 
     modal.style.display = 'none'
-    modal.style.visibility = 'hidden'
     modal.classList.remove('show', 'wdp-side-panel--closing')
     modal.setAttribute('aria-hidden', 'true')
-
-    if (isSidePanel) {
-      modal.style.removeProperty('opacity')
-    } else {
-      modal.style.opacity = '0'
-    }
+    modal.style.removeProperty('visibility')
+    modal.style.removeProperty('opacity')
+    modal.classList.remove('wdp-has-success')
 
     unlockBodyScroll()
 
@@ -401,6 +438,7 @@
     }
 
     safeLog('Modal closed successfully')
+    setModalLifecycleState(modal, 'closed')
   }
 
   // Modal'ı kapat — sağ panel sağa kayarak kapanır
@@ -410,10 +448,12 @@
     const wasSidePanel = modal.classList.contains('wdp-side-panel')
     const isOpen = modal.classList.contains('show')
     const isClosing = modal.classList.contains('wdp-side-panel--closing')
+    const lifecycleState = getModalLifecycleState(modal)
 
-    if (isClosing) {
+    if (isClosing || lifecycleState === 'closing') {
       return
     }
+    setModalLifecycleState(modal, 'closing')
 
     if (state.focusTrapCleanup) {
       state.focusTrapCleanup()
@@ -476,6 +516,12 @@
       if (useSnapshot) {
         form.innerHTML = snapshot
       }
+      form.classList.remove('wdp-has-success')
+      const panelContent = modal.querySelector('.wdp-modal-content')
+      if (panelContent) {
+        panelContent.classList.remove('wdp-has-success')
+      }
+      syncModalStateClasses(modal)
 
       // Form alanlarını temizle. Readonly/disabled atlanır: quantity/share_count için .value="" atanabildiğinden
       // (readonly sadece kullanıcı girişini keser) ilk açılışta sayaç boş kalıyor, +/- sonrası düzeliyordu.
@@ -511,6 +557,7 @@
     close: closeModal,
     resetForm,
     saveOriginalForms,
+    syncStateClasses: syncModalStateClasses,
     handleOutsideClick,
     handleEscKeyPress,
   }

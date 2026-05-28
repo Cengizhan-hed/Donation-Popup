@@ -5,7 +5,7 @@
  * ============================================================================
  * 
  * DOSYA: class-progress-form.php
- * KONUM: /includes/classes/class-progress-form.php
+ * KONUM: /includes/class-progress-form.php
  * 
  * AMAÇ:
  * Progress bar özellikli bağış formlarını render eder.
