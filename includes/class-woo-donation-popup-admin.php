@@ -66,11 +66,7 @@ class Woo_Donation_Popup_Admin {
      * Ayarlar sayfasını render et
      */
     public function render_settings_page() {
-        $products = $this->get_products();
-
         WDP_Admin_Page_Renderer::render_settings_page(
-            $products,
-            array($this, 'render_product_row'),
             function() { $this->render_modal_layout_customization_tab(); },
             function() { $this->render_normal_form_customization_tab(); },
             function() { $this->render_shareholder_form_customization_tab(); },
@@ -89,61 +85,6 @@ class Woo_Donation_Popup_Admin {
      */
     private function render_design_studio_tab() {
         WDP_Admin_Design_Studio_Renderer::render_tab();
-    }
-    
-    /**
-     * Ürün satırını render et
-     *
-     * @param WC_Product $product Product.
-     * @return void
-     */
-    public function render_product_row($product) {
-        WDP_Admin_Product_Row_Renderer::render($product);
-    }
-    
-    /**
-     * Tüm ürünleri al
-     */
-    private function get_products() {
-        $cache_key = 'wdp_admin_products_list';
-        $cached_ids = get_transient($cache_key);
-        if (is_array($cached_ids) && !empty($cached_ids)) {
-            $cached_products = array();
-            foreach ($cached_ids as $cached_id) {
-                $product = wc_get_product((int) $cached_id);
-                if ($product) {
-                    $cached_products[] = $product;
-                }
-            }
-            if (!empty($cached_products)) {
-                return $cached_products;
-            }
-        }
-
-        $args = array(
-            'status' => 'publish',
-            'limit' => -1,
-            'orderby' => 'title',
-            'order' => 'ASC',
-            'return' => 'ids',
-        );
-
-        $product_ids = wc_get_products($args);
-        if (!is_array($product_ids)) {
-            return array();
-        }
-
-        set_transient($cache_key, $product_ids, MINUTE_IN_SECONDS);
-
-        $products = array();
-        foreach ($product_ids as $product_id) {
-            $product = wc_get_product((int) $product_id);
-            if ($product) {
-                $products[] = $product;
-            }
-        }
-
-        return $products;
     }
     
     /**

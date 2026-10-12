@@ -85,6 +85,20 @@ class WDP_Form_Modules {
 	}
 
 	/**
+	 * Decode a JSON list stored in meta (as-is) or posted from a form (slashed).
+	 *
+	 * @param string $raw Raw JSON.
+	 * @return array|null
+	 */
+	private static function decode_json_list($raw) {
+		$decoded = json_decode($raw, true);
+		if (!is_array($decoded)) {
+			$decoded = json_decode(wp_unslash($raw), true);
+		}
+		return is_array($decoded) ? $decoded : null;
+	}
+
+	/**
 	 * Sanitize FAQ JSON items (max 5).
 	 *
 	 * @param mixed $raw Raw JSON string or array.
@@ -93,7 +107,7 @@ class WDP_Form_Modules {
 	public static function sanitize_faq_items($raw) {
 		$items = array();
 		if (is_string($raw)) {
-			$decoded = json_decode(wp_unslash($raw), true);
+			$decoded = self::decode_json_list($raw);
 			if (is_array($decoded)) {
 				$raw = $decoded;
 			} else {
@@ -141,7 +155,7 @@ class WDP_Form_Modules {
 	public static function sanitize_trust_badges($raw) {
 		$out = array();
 		if (is_string($raw)) {
-			$decoded = json_decode(wp_unslash($raw), true);
+			$decoded = self::decode_json_list($raw);
 			$raw     = is_array($decoded) ? $decoded : array();
 		}
 		if (!is_array($raw)) {

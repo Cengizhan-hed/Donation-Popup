@@ -20,7 +20,6 @@ Thumbs.db
 node_modules/
 npm-debug.log
 yarn-error.log
-package-lock.json
 yarn.lock
 
 # Build output (generate locally or in release CI; do not commit)

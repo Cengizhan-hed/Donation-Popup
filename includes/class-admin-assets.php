@@ -25,6 +25,15 @@ class WDP_Admin_Assets {
 	 * @return void
 	 */
 	public static function enqueue($hook) {
+		if ($hook === 'post.php' || $hook === 'post-new.php') {
+			$screen = function_exists('get_current_screen') ? get_current_screen() : null;
+			if ($screen && $screen->post_type === 'product' && current_user_can('manage_woocommerce')) {
+				wp_enqueue_style('wp-color-picker');
+				self::enqueue_products_assets(array('wp-color-picker'), array('wp-color-picker'));
+			}
+			return;
+		}
+
 		if ($hook !== self::PAGE_HOOK) {
 			return;
 		}
@@ -76,6 +85,51 @@ class WDP_Admin_Assets {
 				),
 			)
 		);
+
+		self::enqueue_products_assets(array('wdp-admin-css'));
+	}
+
+	/**
+	 * Products table (settings page) + product "Bağış" tab assets.
+	 *
+	 * @param string[] $style_deps  Style dependencies.
+	 * @param string[] $script_deps Script dependencies.
+	 * @return void
+	 */
+	private static function enqueue_products_assets(array $style_deps = array(), array $script_deps = array()) {
+		$css_rel = 'assets/css/admin/products.css';
+		$js_rel  = 'assets/js/admin/products.js';
+
+		wp_enqueue_style('wdp-admin-products', WDP_PLUGIN_URL . $css_rel, $style_deps, self::asset_version($css_rel));
+		wp_enqueue_script('wdp-admin-products', WDP_PLUGIN_URL . $js_rel, $script_deps, self::asset_version($js_rel), true);
+
+		wp_localize_script(
+			'wdp-admin-products',
+			'wdpProductsAdmin',
+			array(
+				'ajaxUrl' => admin_url('admin-ajax.php'),
+				'nonce'   => wp_create_nonce('wdp_admin_nonce'),
+				'tabKey'  => WDP_Admin_Product_Data_Tab::TAB_KEY,
+				'i18n'    => array(
+					'copied'        => __('Kopyalandı', 'woo-donation-popup'),
+					'copyFailed'    => __('Kopyalanamadı; metni seçip elle kopyalayın.', 'woo-donation-popup'),
+					'recalculating' => __('Toplam yeniden hesaplanıyor…', 'woo-donation-popup'),
+					'error'         => __('İşlem tamamlanamadı. Lütfen tekrar deneyin.', 'woo-donation-popup'),
+					'rowAdded'      => __('Satır eklendi.', 'woo-donation-popup'),
+					'rowRemoved'    => __('Satır silindi.', 'woo-donation-popup'),
+					'moved'         => __('Sıra güncellendi.', 'woo-donation-popup'),
+				),
+			)
+		);
+	}
+
+	/**
+	 * @param string $relative_path Path from plugin root.
+	 * @return string
+	 */
+	private static function asset_version($relative_path) {
+		$path = WDP_PLUGIN_DIR . $relative_path;
+		return WDP_VERSION . '.' . (string) (file_exists($path) ? filemtime($path) : 0);
 	}
 
 	/**

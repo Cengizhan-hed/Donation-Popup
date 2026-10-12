@@ -228,4 +228,33 @@ wdp_smoke_assert(
     'Form validation defines validateForm helper'
 );
 
+// Admin: product "Bağış" tab + Settings → Ürünler table.
+wdp_smoke_assert(class_exists('WDP_Donation_Type'), 'WDP_Donation_Type loads');
+wdp_smoke_assert(class_exists('WDP_Admin_Product_Data_Tab'), 'WDP_Admin_Product_Data_Tab loads');
+wdp_smoke_assert(
+    wdp_smoke_file_contains(WDP_PLUGIN_DIR . 'includes/class-admin-products-list-table.php', 'extends WP_List_Table'),
+    'Products list table extends WP_List_Table'
+);
+wdp_smoke_assert(
+    wdp_smoke_file_contains(WDP_PLUGIN_DIR . 'includes/class-admin-hooks.php', 'WDP_Admin_Product_Data_Tab::register()'),
+    'Product data tab hooks are registered'
+);
+wdp_smoke_assert(
+    !file_exists(WDP_PLUGIN_DIR . 'includes/class-admin-product-row-renderer.php'),
+    'Legacy product card renderer removed'
+);
+foreach (array('assets/css/admin/products.css', 'assets/js/admin/products.js') as $rel) {
+    wdp_smoke_assert(file_exists(WDP_PLUGIN_DIR . $rel), 'Admin products asset: ' . $rel);
+    wdp_smoke_assert(wdp_smoke_file_contains(WDP_PLUGIN_DIR . 'includes/class-admin-assets.php', $rel), 'Admin products asset enqueued: ' . $rel);
+}
+wdp_smoke_assert(
+    wdp_smoke_file_contains(WDP_PLUGIN_DIR . 'scripts/package-wp-plugin.sh', 'assets/css/admin/products.css'),
+    'Pack script minifies admin/products.css'
+);
+wdp_smoke_assert(
+    !wdp_smoke_file_contains(WDP_PLUGIN_DIR . 'assets/css/admin-style.css', '.wdp-product-card')
+        && !wdp_smoke_file_contains(WDP_PLUGIN_DIR . 'assets/js/admin-script.js', 'wdp-product-card'),
+    'Legacy product card CSS/JS removed'
+);
+
 exit($failures > 0 ? 1 : 0);

@@ -81,6 +81,7 @@ Aşağıda projedeki her kaynak dosyanın kısa Türkçe açıklaması yer alır
 | `class-progress-form.php` | Hedefli bağış progress bar form alanı HTML'i. |
 | `class-donation-product-context-service.php` | Üründen normalize form bağlamı üretir. |
 | `class-product-settings-service.php` | Admin ürün meta ayarlarını normalize eder. |
+| `class-donation-type.php` | Bağış tipi ↔ eski meta bayrakları eşlemesi (çıkarım, kayıt, tablo filtresi). |
 | `class-category-title-color-service.php` | Kategori bazlı modal başlık rengi. |
 
 ### `includes/` — Admin (ayarlar sayfası)
@@ -91,11 +92,12 @@ Aşağıda projedeki her kaynak dosyanın kısa Türkçe açıklaması yer alır
 | `class-admin-hooks.php` | Admin menü, asset ve AJAX eylem bağlantıları. |
 | `class-admin-assets.php` | Admin CSS/JS yükleme ve `wdp_admin` localize verisi. |
 | `class-admin-page-renderer.php` | Ayarlar sayfası kabuğu ve ürünler sekmesi. |
+| `class-admin-products-list-table.php` | Ayarlar → Ürünler tablosu (`WP_List_Table`): bağış tipi rozeti, kısa kod, hedef/toplanan, arama ve filtreler. |
+| `class-admin-product-data-tab.php` | Ürün düzenleme ekranındaki "Bağış" sekmesi (bağış tipi, gruplu ayarlar, kısa kod) ve ürünle birlikte kayıt. |
 | `class-admin-renderer-helpers.php` | Ortak admin form sarmalayıcı ve kaydet butonu. |
 | `class-admin-request.php` | Admin AJAX nonce/yetki ve JSON yanıtları. |
 | `class-admin-settings-normalizer.php` | Tüm sekme ayar isteklerini sınırlar ve normalize eder. |
-| `class-admin-product-settings-ajax.php` | Tek ürün bağış ayarı okuma/kaydetme AJAX. |
-| `class-admin-product-row-renderer.php` | Ürün başına bağış yapılandırma kartı. |
+| `class-admin-product-settings-ajax.php` | Tek ürün bağış ayarı okuma/kaydetme ve toplam yeniden hesaplama AJAX (geriye dönük uyum). |
 | `class-admin-form-tabs-renderer.php` | Normal/hisseli form ve başarı ekranı sekmeleri. |
 | `class-admin-layout-tabs-renderer.php` | Modal düzeni ve progress bar stil sekmeleri. |
 | `class-admin-category-colors-tab-renderer.php` | Kategori başlık rengi seçim formu. |
@@ -178,6 +180,8 @@ Aşağıda projedeki her kaynak dosyanın kısa Türkçe açıklaması yer alır
 |-------|----------------|
 | `assets/css/admin-style.css` | Bağış Popup Ayarları admin sayfası görünümü. |
 | `assets/js/admin-script.js` | Admin sekmeleri, AJAX kaydetme ve bildirimler. |
+| `assets/css/admin/products.css` | Ürünler tablosu ve ürün "Bağış" sekmesi stilleri (`npm run pack` ile küçültülür). |
+| `assets/js/admin/products.js` | Kısa kod kopyalama, toplam yenileme, bağış tipi geçişi, satır ekle/sil ve blok sırası. |
 
 ### `assets/js/src/core/` — JS çekirdek
 
@@ -283,6 +287,15 @@ npm run verify     # build + smoke
 | `wdp_meta_pixel_has_consent` | `false` | WP Consent API yoksa pazarlama izni kararı ("Çerez izni gerektir" açıkken). |
 
 ## Sürüm notları
+
+### 10.26.0 — Aşama 2A: ürün bağış ayarlarının yeniden tasarımı
+
+Ön yüzdeki formların görünümü ve davranışı değişmedi; mevcut ürün meta anahtarları aynen kullanılır.
+
+- **Tek "Bağış tipi":** Sabit tutar / Bağışçı belirler / Hisseli / Hedefli kampanya. Tip ayrı bir meta olarak saklanmaz; `_allow_custom_price`, `_allow_multiple_shares`, `_enable_progress_bar` bayraklarından ön yüzle aynı öncelikle çıkarılır (`WDP_Donation_Type`) ve kayıtta bu üç bayrak tutarlı şekilde yazılır. Çelişkili eski kayıtlar (ör. hisseli + progress) ön yüzün gösterdiği tipe göre okunur.
+- **Ürün düzenleme → "Bağış" sekmesi:** Tip kartları, yalnızca seçili tipin alanları; Tutar seçenekleri, Form alanları, Kampanya blokları, Alt bağış ve Bu ürüne özel görünüm açılır grupları. SSS ve güven rozetleri satır ekle/sil editörüyle düzenlenir (kayıt biçimi aynı JSON). Blok sırası klavyeyle yukarı/aşağı taşınır. Kayıt WooCommerce ürün kaydıyla birlikte yapılır (nonce + `manage_woocommerce`).
+- **Ayarlar → Ürünler:** Kart düzeni kaldırıldı; yerine arama, kategori ve bağış tipi filtreli, sayfa başına 20 ürünlük tablo geldi. Hedef/Toplanan ve "Yeniden hesapla" yalnızca hedefli kampanyalarda görünür. "Düzenle" ürünü doğrudan "Bağış" sekmesinde açar (`#wdp_donation`).
+- **Düzeltmeler:** SSS/rozet metinlerindeki Türkçe karakterlerin kayıtta bozulması (`u00fc`) giderildi; eski bozuk kayıtlar panelde onarılarak gösterilir. E-posta / ithaf / anonim alanları ürün bazında "Genel ayar / Açık / Kapalı" olarak seçilebilir. Özel blok sırası kapalıyken ürün artık genel sırayı izler. Eski kart kaydı `_theme_preset_id` değerini silmiyor.
 
 ### 10.25.0 — Aşama 1: kritik düzeltmeler
 

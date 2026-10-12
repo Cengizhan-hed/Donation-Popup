@@ -16,8 +16,6 @@ class WDP_Admin_Page_Renderer {
 	/**
 	 * Render full settings page.
 	 *
-	 * @param array    $products                 Products.
-	 * @param callable $render_product_row       Product row renderer.
 	 * @param callable $render_modal_layout_tab  Modal layout tab renderer.
 	 * @param callable $render_normal_form_tab   Normal form tab renderer.
 	 * @param callable $render_shareholder_tab   Shareholder tab renderer.
@@ -28,7 +26,7 @@ class WDP_Admin_Page_Renderer {
 	 * @param callable $render_design_studio_tab   Design studio tab renderer.
 	 * @return void
 	 */
-	public static function render_settings_page($products, $render_product_row, $render_modal_layout_tab, $render_normal_form_tab, $render_shareholder_tab, $render_progress_bar_tab, $render_success_screen_tab, $render_meta_tab, $render_category_colors_tab, $render_design_studio_tab = null) {
+	public static function render_settings_page($render_modal_layout_tab, $render_normal_form_tab, $render_shareholder_tab, $render_progress_bar_tab, $render_success_screen_tab, $render_meta_tab, $render_category_colors_tab, $render_design_studio_tab = null) {
 		echo '<div class="wrap wdp-admin-wrap">';
 		echo '<header class="wdp-admin-hero">';
 		echo '<div class="wdp-admin-hero__accent" aria-hidden="true"></div>';
@@ -67,7 +65,7 @@ class WDP_Admin_Page_Renderer {
 		echo '</div>';
 		echo '</nav>';
 
-		self::render_products_tab($products, $render_product_row);
+		self::render_products_tab();
 
 		echo '<div id="wdp-design-studio-tab" class="wdp-tab-content" role="tabpanel" aria-hidden="true" hidden aria-labelledby="wdp-tab-design-studio">';
 		if (is_callable($render_design_studio_tab)) {
@@ -144,80 +142,28 @@ class WDP_Admin_Page_Renderer {
 	}
 
 	/**
-	 * Render products tab body.
+	 * Render products tab body (WP_List_Table overview; settings live on the product "Bağış" tab).
 	 *
-	 * @param array    $products           Products.
-	 * @param callable $render_product_row Product row renderer.
 	 * @return void
 	 */
-	private static function render_products_tab($products, $render_product_row) {
+	private static function render_products_tab() {
+		$table = new WDP_Admin_Products_List_Table();
+		$table->prepare_items();
+
 		echo '<div id="wdp-products-tab" class="wdp-tab-content wdp-tab-active" role="tabpanel" aria-hidden="false" aria-labelledby="wdp-tab-products">';
-		echo '<div class="wdp-settings-container">';
-		echo '<div class="wdp-products-toolbar"><div class="wdp-products-search"><span class="dashicons dashicons-search" aria-hidden="true"></span><input type="search" id="wdp-product-search" placeholder="' . esc_attr__('Ürün ara...', 'woo-donation-popup') . '" /></div></div>';
-		echo '<div class="wdp-tab-help" role="note"><p class="wdp-tab-help__title">' . esc_html__('Bu sekmede ne yaparsınız?', 'woo-donation-popup') . '</p><ul class="wdp-tab-help__list"><li>' . esc_html__('Her ürün için aynı anda yalnızca bir form modu seçilir: Çoklu Hisse, Özel Fiyat veya Progress Bar — biri açıkken diğerleri kapanır.', 'woo-donation-popup') . '</li><li>' . esc_html__('Buton shortcode ortada popup, Sağ Panel shortcode sağdan panel, Form shortcode sayfa içi form açar — hangisini nereye yapıştırırsanız o çalışır.', 'woo-donation-popup') . '</li><li>' . esc_html__('Kaydet tek kart için; Tüm Değişiklikleri Kaydet tüm ürünleri sırayla yazar.', 'woo-donation-popup') . '</li></ul></div>';
+		echo '<div class="wdp-settings-container wdp-products-overview">';
+		echo '<div class="wdp-tab-help" role="note"><p class="wdp-tab-help__title">' . esc_html__('Bu sekmede ne yaparsınız?', 'woo-donation-popup') . '</p><ul class="wdp-tab-help__list">';
+		echo '<li>' . esc_html__('Her ürünün bağış tipini, kısa kodunu ve hedefli kampanyalarda toplanan tutarı tek bakışta görürsünüz.', 'woo-donation-popup') . '</li>';
+		echo '<li>' . esc_html__('Ayarları değiştirmek için "Düzenle"ye tıklayın; ürün düzenleme ekranındaki "Bağış" sekmesi açılır ve ürünle birlikte kaydedilir.', 'woo-donation-popup') . '</li>';
+		echo '<li>' . esc_html__('Buton kısa kodu ortada açılan pencere, Sağ panel kısa kodu sağdan panel, Form kısa kodu sayfa içi form gösterir.', 'woo-donation-popup') . '</li>';
+		echo '</ul></div>';
 
-		if (empty($products)) {
-			echo '<div class="wdp-products-grid"><div class="wdp-products-empty"><p>' . __('Hiç ürün bulunamadı.', 'woo-donation-popup') . '</p></div></div>';
-		} else {
-			$products_by_category   = array();
-			$uncategorized_products = array();
-			foreach ($products as $product) {
-				$product_id = $product->get_id();
-				$term_ids   = wp_get_post_terms($product_id, 'product_cat', array('fields' => 'ids'));
-				if (!is_wp_error($term_ids) && !empty($term_ids)) {
-					foreach ($term_ids as $term_id) {
-						if (!isset($products_by_category[$term_id])) {
-							$products_by_category[$term_id] = array();
-						}
-						$products_by_category[$term_id][] = $product;
-					}
-				} else {
-					$uncategorized_products[] = $product;
-				}
-			}
-
-			$categories = get_terms(
-				array(
-					'taxonomy'   => 'product_cat',
-					'hide_empty' => false,
-					'orderby'    => 'menu_order',
-					'order'      => 'ASC',
-				)
-			);
-
-			echo '<div class="wdp-products-by-category">';
-			if (!is_wp_error($categories) && !empty($categories)) {
-				foreach ($categories as $category) {
-					$term_id = $category->term_id;
-					if (empty($products_by_category[$term_id])) {
-						continue;
-					}
-					$category_products = $products_by_category[$term_id];
-					$category_count    = count($category_products);
-					echo '<section class="wdp-category-section" data-category-id="' . esc_attr($term_id) . '">';
-					echo '<header class="wdp-category-header"><h2 class="wdp-category-title">' . esc_html($category->name) . '</h2><span class="wdp-category-count">' . sprintf(_n('%d ürün', '%d ürün', $category_count, 'woo-donation-popup'), $category_count) . '</span></header>';
-					if (!empty($category->description)) {
-						echo '<div class="wdp-category-description">' . esc_html($category->description) . '</div>';
-					}
-					echo '<div class="wdp-products-grid">';
-					foreach ($category_products as $product) {
-						call_user_func($render_product_row, $product);
-					}
-					echo '</div></section>';
-				}
-			}
-			if (!empty($uncategorized_products)) {
-				$uncategorized_count = count($uncategorized_products);
-				echo '<section class="wdp-category-section wdp-category-uncategorized" data-category-id="uncategorized"><header class="wdp-category-header"><h2 class="wdp-category-title">' . esc_html__('Kategorisiz Ürünler', 'woo-donation-popup') . '</h2><span class="wdp-category-count">' . sprintf(_n('%d ürün', '%d ürün', $uncategorized_count, 'woo-donation-popup'), $uncategorized_count) . '</span></header><div class="wdp-products-grid">';
-				foreach ($uncategorized_products as $product) {
-					call_user_func($render_product_row, $product);
-				}
-				echo '</div></section>';
-			}
-			echo '</div>';
-		}
-
-		echo '<div class="wdp-bulk-actions"><p class="wdp-bulk-actions__hint">' . esc_html__('Kaydetmediğiniz değişiklikler sayfa yenilenince kaybolur.', 'woo-donation-popup') . '</p><div class="wdp-bulk-actions__buttons"><button type="button" id="wdp-save-all" class="button button-primary button-large wdp-btn-save-all">' . esc_html__('Tüm Değişiklikleri Kaydet', 'woo-donation-popup') . '</button><span class="spinner"></span></div></div>';
+		echo '<form method="get" action="' . esc_url(WDP_Admin_Products_List_Table::get_base_url()) . '" class="wdp-products-table-form">';
+		echo '<input type="hidden" name="page" value="wdp-popup-settings" />';
+		$table->search_box(__('Ürün ara', 'woo-donation-popup'), 'wdp-product-search');
+		$table->display();
+		echo '</form>';
+		echo '<p class="screen-reader-text" data-wdp-products-status role="status" aria-live="polite"></p>';
 		echo '</div></div>';
 	}
 }

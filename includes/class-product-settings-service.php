@@ -14,6 +14,40 @@ if (!defined('ABSPATH')) {
  */
 class WDP_Product_Settings_Service {
 	/**
+	 * Checkbox fields of the product "Bağış" panel (absent from POST = unchecked).
+	 */
+	const PANEL_CHECKBOX_FIELDS = array(
+		'enable_product_note',
+		'enable_sadaka_donation',
+		'enable_trust_strip',
+		'enable_quantity',
+		'enable_amount_presets',
+		'enable_wizard',
+		'enable_field_icons',
+		'enable_impact_line',
+		'progress_celebrate',
+		'enable_urgency',
+		'enable_social_proof',
+		'enable_faq',
+		'enable_cover_fee',
+		'enable_campaign_media',
+		'theme_inherit_category_color',
+	);
+
+	/**
+	 * Request field => meta key kept as-is when the request does not carry it
+	 * (no admin control writes these values).
+	 */
+	const PRESERVED_FIELDS = array(
+		'theme_preset_id' => '_theme_preset_id',
+	);
+
+	/**
+	 * Keep Unicode as-is so slashing/unslashing on the way to meta cannot strip `\uXXXX` escapes.
+	 */
+	const JSON_FLAGS = JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES;
+
+	/**
 	 * Meta keys persisted for donation product settings (single source for saves + cache invalidation).
 	 *
 	 * @return string[]
@@ -48,10 +82,130 @@ class WDP_Product_Settings_Service {
 	}
 
 	/**
+	 * Parse a product flag that can also defer to the global setting.
+	 *
+	 * Returns `yes`, `no` or `''` (= use global). Legacy boolean payloads keep their
+	 * old meaning: true → `yes`, false/unchecked → `''`.
+	 *
+	 * @param mixed $value Raw value.
+	 * @return string
+	 */
+	public static function parse_tristate_flag($value) {
+		if ($value === null) {
+			return '';
+		}
+		if (is_bool($value) || is_int($value) || is_float($value)) {
+			return self::parse_bool_flag($value) ? 'yes' : '';
+		}
+		$raw = strtolower(trim((string) wp_unslash($value)));
+		if ($raw === 'no') {
+			return 'no';
+		}
+		return in_array($raw, array('1', 'true', 'yes', 'on'), true) ? 'yes' : '';
+	}
+
+	/**
+	 * Restore Latin letters that older saves stored as bare `u00fc`-style sequences
+	 * (a `\uXXXX` JSON escape that lost its backslash).
+	 *
+	 * Only U+00C0–U+017F (Turkish/Latin letters) are restored so ordinary text is untouched.
+	 *
+	 * @param string $text Text.
+	 * @return string
+	 */
+	public static function repair_unicode_escapes($text) {
+		$text = (string) $text;
+		if (strpos($text, 'u0') === false) {
+			return $text;
+		}
+		return (string) preg_replace_callback(
+			'/u(0[0-1][0-9a-fA-F]{2})/',
+			static function ($m) {
+				$code = hexdec($m[1]);
+				if ($code < 0xC0 || $code > 0x17F) {
+					return $m[0];
+				}
+				return html_entity_decode('&#' . $code . ';', ENT_QUOTES, 'UTF-8');
+			},
+			$text
+		);
+	}
+
+	/**
+	 * Fill fields that no admin control sends from the product's existing meta.
+	 *
+	 * @param array $request       Request array.
+	 * @param array $existing_meta Meta key => current value.
+	 * @return array
+	 */
+	public static function with_preserved_fields(array $request, array $existing_meta) {
+		foreach (self::PRESERVED_FIELDS as $field => $meta_key) {
+			if (!array_key_exists($field, $request)) {
+				$request[ $field ] = isset($existing_meta[ $meta_key ]) ? (string) $existing_meta[ $meta_key ] : '';
+			}
+		}
+		return $request;
+	}
+
+	/**
+	 * Normalize the product edit screen "Bağış" panel payload.
+	 *
+	 * @param array $posted        Raw (slashed) `$_POST['wdp_donation']`.
+	 * @param array $existing_meta Meta key => current value (for preserved fields).
+	 * @return array Meta map, same shape as from_request().
+	 */
+	public static function from_product_panel(array $posted, array $existing_meta = array()) {
+		$request = $posted;
+
+		foreach (self::PANEL_CHECKBOX_FIELDS as $field) {
+			$request[ $field ] = (isset($request[ $field ]) && self::parse_bool_flag($request[ $field ])) ? 'yes' : 'no';
+		}
+
+		$request['donation_type'] = WDP_Donation_Type::sanitize(isset($request['donation_type']) ? $request['donation_type'] : '');
+
+		$request['faq_items']    = self::rows_from_panel(isset($request['faq_items']) ? $request['faq_items'] : array(), array('q', 'a'));
+		$request['trust_badges'] = self::rows_from_panel(isset($request['trust_badges']) ? $request['trust_badges'] : array(), array('icon', 'text'));
+
+		$custom_order = isset($request['module_order_custom']) && self::parse_bool_flag($request['module_order_custom']);
+		$request['module_order'] = ($custom_order && isset($request['module_order']) && is_array($request['module_order']))
+			? array_values(array_map('strval', array_filter(wp_unslash($request['module_order']), 'is_scalar')))
+			: '';
+		unset($request['module_order_custom']);
+
+		return self::from_request(self::with_preserved_fields($request, $existing_meta));
+	}
+
+	/**
+	 * Repeater rows → list of associative rows (unslashed; sanitized later by WDP_Form_Modules).
+	 *
+	 * @param mixed    $rows Raw rows.
+	 * @param string[] $keys Column keys.
+	 * @return array<int, array<string, string>>
+	 */
+	private static function rows_from_panel($rows, array $keys) {
+		if (!is_array($rows)) {
+			return array();
+		}
+		$out = array();
+		foreach (wp_unslash($rows) as $row) {
+			if (!is_array($row)) {
+				continue;
+			}
+			$clean = array();
+			foreach ($keys as $key) {
+				$clean[ $key ] = isset($row[ $key ]) && is_scalar($row[ $key ]) ? (string) $row[ $key ] : '';
+			}
+			$out[] = $clean;
+		}
+		return $out;
+	}
+
+	/**
 	 * Normalize product settings payload.
 	 *
-	 * Progress bar forms always need a custom amount field, so enabling
-	 * progress implies `_allow_custom_price = yes`.
+	 * A valid `donation_type` decides the three legacy form-mode flags; without it the
+	 * flags are read individually. Progress bar forms always need a custom amount
+	 * field, so enabling progress implies `_allow_custom_price = yes`.
 	 *
 	 * @param array $request Request array.
 	 * @return array
@@ -60,6 +214,13 @@ class WDP_Product_Settings_Service {
 		$allow_custom_price     = self::parse_bool_flag(isset($request['allow_custom_price']) ? $request['allow_custom_price'] : false);
 		$allow_multiple_shares  = self::parse_bool_flag(isset($request['allow_multiple_shares']) ? $request['allow_multiple_shares'] : false);
 		$enable_progress_bar    = self::parse_bool_flag(isset($request['enable_progress_bar']) ? $request['enable_progress_bar'] : false);
+		$donation_type          = isset($request['donation_type']) ? WDP_Donation_Type::sanitize(wp_unslash($request['donation_type']), '') : '';
+		if ($donation_type !== '') {
+			$type_flags            = WDP_Donation_Type::to_flags($donation_type);
+			$allow_custom_price    = $type_flags['allow_custom_price'];
+			$allow_multiple_shares = $type_flags['allow_multiple_shares'];
+			$enable_progress_bar   = $type_flags['enable_progress_bar'];
+		}
 		$enable_product_note    = self::parse_bool_flag(isset($request['enable_product_note']) ? $request['enable_product_note'] : false);
 		$enable_sadaka_donation = self::parse_bool_flag(isset($request['enable_sadaka_donation']) ? $request['enable_sadaka_donation'] : false);
 		$enable_trust_strip     = self::parse_bool_flag(isset($request['enable_trust_strip']) ? $request['enable_trust_strip'] : true);
@@ -69,9 +230,9 @@ class WDP_Product_Settings_Service {
 		$enable_field_icons     = self::parse_bool_flag(isset($request['enable_field_icons']) ? $request['enable_field_icons'] : true);
 		$enable_impact_line     = self::parse_bool_flag(isset($request['enable_impact_line']) ? $request['enable_impact_line'] : true);
 		$progress_celebrate     = self::parse_bool_flag(isset($request['progress_celebrate']) ? $request['progress_celebrate'] : true);
-		$enable_email           = self::parse_bool_flag(isset($request['enable_email']) ? $request['enable_email'] : false);
-		$enable_dedication      = self::parse_bool_flag(isset($request['enable_dedication']) ? $request['enable_dedication'] : false);
-		$enable_anonymous       = self::parse_bool_flag(isset($request['enable_anonymous']) ? $request['enable_anonymous'] : false);
+		$enable_email           = self::parse_tristate_flag(isset($request['enable_email']) ? $request['enable_email'] : null);
+		$enable_dedication      = self::parse_tristate_flag(isset($request['enable_dedication']) ? $request['enable_dedication'] : null);
+		$enable_anonymous       = self::parse_tristate_flag(isset($request['enable_anonymous']) ? $request['enable_anonymous'] : null);
 		$enable_urgency         = self::parse_bool_flag(isset($request['enable_urgency']) ? $request['enable_urgency'] : false);
 		$enable_social_proof    = self::parse_bool_flag(isset($request['enable_social_proof']) ? $request['enable_social_proof'] : false);
 		$enable_faq             = self::parse_bool_flag(isset($request['enable_faq']) ? $request['enable_faq'] : false);
@@ -107,8 +268,10 @@ class WDP_Product_Settings_Service {
 		$trust_raw    = isset($request['trust_badges']) ? $request['trust_badges'] : '';
 		$trust_badges = class_exists('WDP_Form_Modules') ? WDP_Form_Modules::sanitize_trust_badges($trust_raw) : array();
 
+		// Empty order → '' so the product follows the global order (sanitize_order() would pin the defaults).
 		$module_order = isset($request['module_order']) ? $request['module_order'] : '';
-		$order_list   = class_exists('WDP_Form_Modules') ? WDP_Form_Modules::sanitize_order($module_order) : array();
+		$has_order    = is_array($module_order) ? !empty($module_order) : (is_scalar($module_order) && trim((string) $module_order) !== '');
+		$order_list   = ($has_order && class_exists('WDP_Form_Modules')) ? WDP_Form_Modules::sanitize_order($module_order) : array();
 
 		$amount_presets = isset($request['amount_presets']) ? sanitize_text_field(wp_unslash($request['amount_presets'])) : '';
 		if ($amount_presets !== '' && class_exists('WDP_Form_Modules')) {
@@ -124,6 +287,10 @@ class WDP_Product_Settings_Service {
 			$cover_fee_percent = 15;
 		}
 
+		// 0 / empty → '' so the front end falls back to the default share count.
+		$max_shares = isset($request['max_shares']) ? absint(wp_unslash($request['max_shares'])) : 0;
+		$max_shares = $max_shares > 0 ? $max_shares : '';
+
 		$theme_radius = isset($request['theme_radius']) ? absint(wp_unslash($request['theme_radius'])) : 0;
 		if ($theme_radius > 32) {
 			$theme_radius = 32;
@@ -133,7 +300,7 @@ class WDP_Product_Settings_Service {
 			'_allow_custom_price'             => $allow_custom_price ? 'yes' : 'no',
 			'_min_custom_price'               => isset($request['min_custom_price']) ? wc_format_decimal(wp_unslash($request['min_custom_price'])) : '',
 			'_allow_multiple_shares'          => $allow_multiple_shares ? 'yes' : 'no',
-			'_max_shares'                     => isset($request['max_shares']) ? absint(wp_unslash($request['max_shares'])) : '',
+			'_max_shares'                     => $max_shares,
 			'_enable_progress_bar'            => $enable_progress_bar ? 'yes' : 'no',
 			'_progress_bar_limit'             => isset($request['progress_bar_limit']) ? wc_format_decimal(wp_unslash($request['progress_bar_limit'])) : '',
 			'_enable_product_note'            => $enable_product_note ? 'yes' : 'no',
@@ -153,11 +320,11 @@ class WDP_Product_Settings_Service {
 			'_progress_celebrate'             => $progress_celebrate ? 'yes' : 'no',
 			'_impact_line_text'               => isset($request['impact_line_text']) ? sanitize_text_field(wp_unslash($request['impact_line_text'])) : '',
 			'_amount_presets'                 => $amount_presets,
-			'_enable_email'                   => $enable_email ? 'yes' : '',
-			'_enable_dedication'              => $enable_dedication ? 'yes' : '',
-			'_enable_anonymous'               => $enable_anonymous ? 'yes' : '',
+			'_enable_email'                   => $enable_email,
+			'_enable_dedication'              => $enable_dedication,
+			'_enable_anonymous'               => $enable_anonymous,
 			'_dedication_placeholder'         => isset($request['dedication_placeholder']) ? sanitize_text_field(wp_unslash($request['dedication_placeholder'])) : '',
-			'_trust_badges'                   => !empty($trust_badges) ? wp_json_encode($trust_badges) : '',
+			'_trust_badges'                   => !empty($trust_badges) ? wp_json_encode($trust_badges, self::JSON_FLAGS) : '',
 			'_theme_preset_id'                => isset($request['theme_preset_id']) ? sanitize_key((string) wp_unslash($request['theme_preset_id'])) : '',
 			'_theme_primary'                  => isset($request['theme_primary']) ? (sanitize_hex_color(wp_unslash($request['theme_primary'])) ?: '') : '',
 			'_theme_primary_hover'            => isset($request['theme_primary_hover']) ? (sanitize_hex_color(wp_unslash($request['theme_primary_hover'])) ?: '') : '',
@@ -173,7 +340,7 @@ class WDP_Product_Settings_Service {
 			'_enable_social_proof'            => $enable_social_proof ? 'yes' : 'no',
 			'_social_proof_text'              => isset($request['social_proof_text']) ? sanitize_text_field(wp_unslash($request['social_proof_text'])) : '',
 			'_enable_faq'                     => $enable_faq ? 'yes' : 'no',
-			'_faq_items'                      => !empty($faq) ? wp_json_encode($faq) : '',
+			'_faq_items'                      => !empty($faq) ? wp_json_encode($faq, self::JSON_FLAGS) : '',
 			'_enable_cover_fee'               => $enable_cover_fee ? 'yes' : 'no',
 			'_cover_fee_percent'              => $cover_fee_percent > 0 ? (string) $cover_fee_percent : '',
 			'_wdp_module_order'               => !empty($order_list) ? implode(',', $order_list) : '',
@@ -188,6 +355,7 @@ class WDP_Product_Settings_Service {
 	 */
 	public static function public_flags_from_normalized(array $normalized) {
 		return array(
+			'donation_type'          => WDP_Donation_Type::infer_from_meta($normalized),
 			'allow_custom_price'     => (isset($normalized['_allow_custom_price']) && $normalized['_allow_custom_price'] === 'yes'),
 			'allow_multiple_shares'  => (isset($normalized['_allow_multiple_shares']) && $normalized['_allow_multiple_shares'] === 'yes'),
 			'enable_progress_bar'    => (isset($normalized['_enable_progress_bar']) && $normalized['_enable_progress_bar'] === 'yes'),

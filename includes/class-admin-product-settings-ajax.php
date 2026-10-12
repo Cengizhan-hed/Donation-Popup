@@ -31,12 +31,18 @@ class WDP_Admin_Product_Settings_Ajax {
 			WDP_Admin_Request::json_error(__('Ürün bulunamadı.', 'woo-donation-popup'), 'not_found', 404);
 		}
 
-		$normalized_settings = WDP_Product_Settings_Service::from_request($_POST);
-		foreach ($normalized_settings as $meta_key => $meta_value) {
-			update_post_meta($product_id, $meta_key, $meta_value);
+		$existing_meta = array();
+		foreach (WDP_Product_Settings_Service::PRESERVED_FIELDS as $meta_key) {
+			$existing_meta[ $meta_key ] = get_post_meta($product_id, $meta_key, true);
 		}
 
-		delete_transient('wdp_admin_products_list');
+		$normalized_settings = WDP_Product_Settings_Service::from_request(
+			WDP_Product_Settings_Service::with_preserved_fields($_POST, $existing_meta)
+		);
+		foreach ($normalized_settings as $meta_key => $meta_value) {
+			update_post_meta($product_id, $meta_key, wp_slash($meta_value));
+		}
+
 		WDP_Admin_Request::json_success(
 			sprintf(__('"%s" ürünü için ayarlar başarıyla kaydedildi.', 'woo-donation-popup'), $product->get_name()),
 			array(
@@ -126,6 +132,7 @@ class WDP_Admin_Product_Settings_Ajax {
 		wp_send_json_success(
 			array(
 				'code'                  => 'ok',
+				'donation_type'         => WDP_Donation_Type::infer_from_flags($allow_custom_price, $allow_multiple_shares, $enable_progress_bar),
 				'allow_custom_price'    => $allow_custom_price,
 				'min_custom_price'      => $min_custom_price,
 				'allow_multiple_shares' => $allow_multiple_shares,
