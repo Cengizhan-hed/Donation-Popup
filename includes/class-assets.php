@@ -1,6 +1,6 @@
 <?php
 /**
- * Frontend asset orchestrator — delegates to registry, inline styles, optimizer traits.
+ * Ön yüz CSS/JS yükleme orkestratörü; koşullu enqueue ve önbellek temizleme.
  *
  * @package WooCommerce\Donation_Popup
  */

@@ -1,6 +1,6 @@
 <?php
 /**
- * Admin: Meta Pixel companion settings tab.
+ * Meta Pixel eşlik ayarları sekmesi form alanları.
  *
  * @package WooCommerce\Donation_Popup
  */
@@ -36,6 +36,15 @@ class WDP_Admin_Meta_Tracking_Tab_Renderer {
 
 		echo '<form id="wdp-meta-tracking-settings-form" class="wdp-admin-settings-form" method="post">';
 		self::row_toggle('meta_enabled', __('Meta izlemeyi etkinleştir', 'woo-donation-popup'), $on('enabled'));
+		$consent_api = class_exists('WDP_Meta_Tracking') && WDP_Meta_Tracking::is_consent_api_available();
+		self::row_toggle(
+			'meta_require_consent',
+			__('Çerez izni gerektir', 'woo-donation-popup'),
+			$on('require_consent'),
+			$consent_api
+				? __('Açıkken Pixel ve olaylar yalnızca pazarlama (marketing) izni verildiğinde çalışır. WP Consent API algılandı; izin sonradan verilirse Pixel o anda başlatılır.', 'woo-donation-popup')
+				: __('Açıkken Pixel ve olaylar yalnızca pazarlama izni varsa çalışır. WP Consent API yüklü değil: izin durumu “wdp_meta_pixel_has_consent” filtresiyle bildirilmelidir (varsayılan: izin yok). Kapalıysa eski davranış korunur.', 'woo-donation-popup')
+		);
 		self::row_toggle('meta_view_content', __('Form açıldığında ViewContent gönder', 'woo-donation-popup'), $on('view_content'));
 		self::row_toggle('meta_add_to_cart', __('Sepete eklendikten sonra AddToCart gönder', 'woo-donation-popup'), $on('add_to_cart'));
 		self::row_toggle(

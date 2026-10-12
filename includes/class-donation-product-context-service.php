@@ -1,6 +1,6 @@
 <?php
 /**
- * Donation product context service.
+ * WC ürününden normalize edilmiş form bağlamı (fiyat, hisse, sadaka) üretir.
  *
  * @package WooCommerce\Donation_Popup
  */
@@ -45,6 +45,11 @@ class WDP_Donation_Product_Context_Service {
 		$allow_custom_price    = $product->get_meta('_allow_custom_price') === 'yes';
 		$allow_multiple_shares = $product->get_meta('_allow_multiple_shares') === 'yes';
 		$enable_progress_bar   = $product->get_meta('_enable_progress_bar') === 'yes';
+
+		// Progress bar forms always collect a custom amount.
+		if ($enable_progress_bar) {
+			$allow_custom_price = true;
+		}
 
 		$min_price = (string) $product->get_meta('_min_custom_price');
 		if ($allow_custom_price && $min_price === '') {
@@ -113,12 +118,84 @@ class WDP_Donation_Product_Context_Service {
 			'sadaka_wc_product_id'          => $sadaka_wc_product_id,
 			'sadaka_toggle_label'           => $sadaka_toggle_label,
 			'currency_symbol'               => WDP_Utils::get_display_currency_symbol(),
-			'custom_price_placeholder'      => ((float) $min_price > 0) ? ('min: ' . WDP_Utils::format_amount_for_min_placeholder($min_price)) : __('Bağış tutarı *', 'woo-donation-popup'),
+			'custom_price_placeholder'      => ((float) ($enable_progress_bar ? $progress_min_price : $min_price) > 0)
+				? ('min: ' . WDP_Utils::format_amount_for_min_placeholder($enable_progress_bar ? $progress_min_price : $min_price))
+				: '',
 			'sadaka_price_placeholder'      => $sadaka_is_fixed_price
 				? ''
 				: (((float) $sadaka_min_price > 0)
 					? ('min: ' . WDP_Utils::format_amount_for_min_placeholder($sadaka_min_price))
 					: __('Alt bağış tutarı', 'woo-donation-popup')),
+			'enable_trust_strip'            => self::meta_flag_default_yes($product, '_enable_trust_strip'),
+			'enable_quantity'               => self::meta_flag_default_yes($product, '_enable_quantity'),
+			'enable_amount_presets'         => self::meta_flag_default_yes($product, '_enable_amount_presets'),
+			'enable_wizard'                 => $product->get_meta('_enable_wizard') === 'yes',
+			'enable_field_icons'            => self::meta_flag_default_yes($product, '_enable_field_icons'),
+			'enable_impact_line'            => self::meta_flag_default_yes($product, '_enable_impact_line'),
+			'progress_celebrate'            => self::meta_flag_default_yes($product, '_progress_celebrate'),
+			'impact_line_text'              => trim((string) $product->get_meta('_impact_line_text')),
+			'amount_presets'                => trim((string) $product->get_meta('_amount_presets')),
+			'enable_email'                  => self::meta_flag_or_global($product, '_enable_email', 'enable_donor_email'),
+			'enable_dedication'             => self::meta_flag_or_global($product, '_enable_dedication', 'enable_dedication'),
+			'enable_anonymous'              => self::meta_flag_or_global($product, '_enable_anonymous', 'enable_anonymous'),
+			'dedication_placeholder'        => trim((string) $product->get_meta('_dedication_placeholder')),
+			'trust_badges'                  => (string) $product->get_meta('_trust_badges'),
+			'theme_preset_id'               => sanitize_key((string) $product->get_meta('_theme_preset_id')),
+			'theme_primary'                 => (string) $product->get_meta('_theme_primary'),
+			'theme_primary_hover'           => (string) $product->get_meta('_theme_primary_hover'),
+			'theme_radius'                  => (string) $product->get_meta('_theme_radius'),
+			'theme_density'                 => (string) $product->get_meta('_theme_density'),
+			'theme_modal_bg'                => (string) $product->get_meta('_theme_modal_bg'),
+			'theme_inherit_category'        => $product->get_meta('_theme_inherit_category_color') === 'yes',
+			'layout_mode'                   => in_array(sanitize_key((string) $product->get_meta('_layout_mode')), array('classic', 'campaign', 'story'), true)
+				? sanitize_key((string) $product->get_meta('_layout_mode'))
+				: 'classic',
+			'enable_campaign_media'         => $product->get_meta('_enable_campaign_media') === 'yes',
+			'enable_urgency'                => $product->get_meta('_enable_urgency') === 'yes',
+			'urgency_text'                  => trim((string) $product->get_meta('_urgency_text')),
+			'urgency_ends_at'               => trim((string) $product->get_meta('_urgency_ends_at')),
+			'enable_social_proof'           => $product->get_meta('_enable_social_proof') === 'yes',
+			'social_proof_text'             => trim((string) $product->get_meta('_social_proof_text')),
+			'enable_faq'                    => $product->get_meta('_enable_faq') === 'yes',
+			'faq_items'                     => (string) $product->get_meta('_faq_items'),
+			'enable_cover_fee'              => $product->get_meta('_enable_cover_fee') === 'yes',
+			'cover_fee_percent'             => (float) $product->get_meta('_cover_fee_percent'),
+			'module_order'                  => (string) $product->get_meta('_wdp_module_order'),
 		);
+	}
+
+	/**
+	 * Post meta yes/no with empty → yes.
+	 *
+	 * @param WC_Product $product Product.
+	 * @param string     $key     Meta key.
+	 * @return bool
+	 */
+	private static function meta_flag_default_yes($product, $key) {
+		$raw = $product->get_meta($key);
+		if ($raw === '' || $raw === null) {
+			return true;
+		}
+		return $raw === 'yes';
+	}
+
+	/**
+	 * yes/no meta with empty → global button setting.
+	 *
+	 * @param WC_Product $product     Product.
+	 * @param string     $meta_key    Meta key.
+	 * @param string     $global_key  Key in wdp_button_settings.
+	 * @return bool
+	 */
+	private static function meta_flag_or_global($product, $meta_key, $global_key) {
+		$raw = $product->get_meta($meta_key);
+		if ($raw === 'yes') {
+			return true;
+		}
+		if ($raw === 'no') {
+			return false;
+		}
+		$button = get_option('wdp_button_settings', array());
+		return is_array($button) && !empty($button[ $global_key ]) && (string) $button[ $global_key ] === '1';
 	}
 }

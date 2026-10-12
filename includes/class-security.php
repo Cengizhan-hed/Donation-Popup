@@ -1,8 +1,7 @@
 <?php
 /**
- * Security class
- * Enhanced security checks and sanitization
- * 
+ * Sanitizasyon, nonce, yetki, rate limit ve istek kaynağı doğrulaması.
+ *
  * @package WooCommerce\Donation_Popup
  */
 
@@ -187,28 +186,36 @@ class WDP_Security {
     }
 
     /**
-     * Get client IP address
-     * SECURITY: Enhanced IP detection with validation
+     * Get client IP address.
+     * Prefer REMOTE_ADDR; proxy headers are spoofable unless a trusted proxy is configured.
      *
      * @return string
      */
     public static function get_client_ip() {
-        $ip_keys = array(
-            'HTTP_CLIENT_IP',
-            'HTTP_X_FORWARDED_FOR',
-            'HTTP_X_FORWARDED',
-            'HTTP_X_CLUSTER_CLIENT_IP',
-            'HTTP_FORWARDED_FOR',
-            'HTTP_FORWARDED',
-            'REMOTE_ADDR',
-        );
+        // Prefer REMOTE_ADDR first. Only trust X-Forwarded-For (etc.) when
+        // apply_filters( 'wdp_trust_proxy_headers', false ) is true for known proxies.
+        $remote = isset($_SERVER['REMOTE_ADDR']) ? trim((string) $_SERVER['REMOTE_ADDR']) : '';
+        if ($remote !== '' && filter_var($remote, FILTER_VALIDATE_IP) !== false) {
+            if (!(bool) apply_filters('wdp_trust_proxy_headers', false)) {
+                return $remote;
+            }
+        }
 
-        foreach ($ip_keys as $key) {
-            if (array_key_exists($key, $_SERVER) === true) {
-                foreach (explode(',', $_SERVER[$key]) as $ip) {
+        if ((bool) apply_filters('wdp_trust_proxy_headers', false)) {
+            $proxy_keys = array(
+                'HTTP_CLIENT_IP',
+                'HTTP_X_FORWARDED_FOR',
+                'HTTP_X_FORWARDED',
+                'HTTP_X_CLUSTER_CLIENT_IP',
+                'HTTP_FORWARDED_FOR',
+                'HTTP_FORWARDED',
+            );
+            foreach ($proxy_keys as $key) {
+                if (empty($_SERVER[ $key ])) {
+                    continue;
+                }
+                foreach (explode(',', (string) $_SERVER[ $key ]) as $ip) {
                     $ip = trim($ip);
-                    
-                    // SECURITY: Validate IP and filter out private/reserved ranges
                     if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) !== false) {
                         return $ip;
                     }
@@ -216,9 +223,11 @@ class WDP_Security {
             }
         }
 
-        // SECURITY: Fallback to REMOTE_ADDR with validation
-        $fallback_ip = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '0.0.0.0';
-        return filter_var($fallback_ip, FILTER_VALIDATE_IP) !== false ? $fallback_ip : '0.0.0.0';
+        if ($remote !== '' && filter_var($remote, FILTER_VALIDATE_IP) !== false) {
+            return $remote;
+        }
+
+        return '0.0.0.0';
     }
     
     /**

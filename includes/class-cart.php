@@ -1,8 +1,7 @@
 <?php
 /**
- * Cart operations class
- * Handles cart item data, validation, and display
- * 
+ * WooCommerce sepet kancaları; bağış verisi, özel fiyat, hisse kilidi ve görünüm filtreleri.
+ *
  * @package WooCommerce\Donation_Popup
  */
 
@@ -65,41 +64,19 @@ class WDP_Cart {
             $max_share_count = self::get_max_share_count($product_id);
 
             if ($share_count > 0) {
-                $share_count = min($share_count, $max_share_count);
+                $parsed = self::parse_shareholders_from_request(
+                    $request_data,
+                    $share_count,
+                    array(
+                        'max_shares'      => $max_share_count,
+                        'require_contact' => false,
+                    )
+                );
+                $share_count = $parsed['share_count'];
                 $donation_data['share_count'] = $share_count;
 
-                // Hissedar bilgilerini al
-                $shareholders = array();
-
-                for ($i = 1; $i <= $share_count; $i++) {
-                    $shareholder = array();
-
-                    if (isset($request_data['shareholder_name_' . $i])) {
-                        $shareholder['name'] = sanitize_text_field($request_data['shareholder_name_' . $i]);
-                    }
-
-                    if (isset($request_data['shareholder_phone_' . $i])) {
-                        $shareholder['phone'] = sanitize_text_field($request_data['shareholder_phone_' . $i]);
-                    }
-
-                    if (isset($request_data['shareholder_note_' . $i])) {
-                        $shareholder['note'] = sanitize_textarea_field($request_data['shareholder_note_' . $i]);
-                    }
-
-                    if (isset($request_data['shareholder_email_' . $i])) {
-                        $maybe_email = sanitize_email($request_data['shareholder_email_' . $i]);
-                        if ('' !== $maybe_email) {
-                            $shareholder['email'] = $maybe_email;
-                        }
-                    }
-
-                    if (!empty($shareholder)) {
-                        $shareholders[$i] = $shareholder;
-                    }
-                }
-
-                if (!empty($shareholders)) {
-                    $donation_data['shareholders'] = $shareholders;
+                if (!empty($parsed['shareholders'])) {
+                    $donation_data['shareholders'] = $parsed['shareholders'];
                 }
 
                 // Hisse adedini ayrı bir alanda sakla, quantity'yi değiştirme
@@ -118,6 +95,21 @@ class WDP_Cart {
 
                 if (isset($request_data['donation_note'])) {
                     $donation_data['note'] = sanitize_textarea_field($request_data['donation_note']);
+                }
+                if (!empty($request_data['donation_email'])) {
+                    $email = sanitize_email($request_data['donation_email']);
+                    if ($email) {
+                        $donation_data['email'] = $email;
+                    }
+                }
+                if (!empty($request_data['donation_dedication'])) {
+                    $donation_data['dedication'] = sanitize_text_field($request_data['donation_dedication']);
+                }
+                if (!empty($request_data['donation_anonymous'])) {
+                    $donation_data['anonymous'] = '1';
+                }
+                if (!empty($request_data['donation_cover_fee'])) {
+                    $donation_data['cover_fee'] = '1';
                 }
             }
 
@@ -195,23 +187,17 @@ class WDP_Cart {
                 }
 
                 // Hissedar bilgilerini kontrol et
-                $valid = true;
-                $missing_fields = array();
+                $parsed = self::parse_shareholders_from_request(
+                    $request_data,
+                    $share_count,
+                    array(
+                        'max_shares'      => $max_share_count,
+                        'require_contact' => true,
+                    )
+                );
 
-                for ($i = 1; $i <= $share_count; $i++) {
-                    if (!isset($request_data['shareholder_name_' . $i]) || empty($request_data['shareholder_name_' . $i])) {
-                        $valid = false;
-                        $missing_fields[] = $i . '. Hissedar Adı';
-                    }
-
-                    if (!isset($request_data['shareholder_phone_' . $i]) || empty($request_data['shareholder_phone_' . $i])) {
-                        $valid = false;
-                        $missing_fields[] = $i . '. Hissedar Telefonu';
-                    }
-                }
-
-                if (!$valid) {
-                    wc_add_notice(__('Lütfen tüm zorunlu alanları doldurun: ', 'woo-donation-popup') . implode(', ', $missing_fields), 'error');
+                if (!empty($parsed['missing_fields'])) {
+                    wc_add_notice(__('Lütfen tüm zorunlu alanları doldurun: ', 'woo-donation-popup') . implode(', ', $parsed['missing_fields']), 'error');
                     return false;
                 }
             } else {
@@ -234,6 +220,9 @@ class WDP_Cart {
                 return $passed;
             }
             $allow_custom_price = $product->get_meta('_allow_custom_price') === 'yes';
+            if (!$allow_custom_price && $product->get_meta('_enable_progress_bar') === 'yes') {
+                $allow_custom_price = true;
+            }
 
             if ($allow_custom_price) {
                 if (!isset($request_data['custom_price']) || '' === $request_data['custom_price']) {
@@ -247,11 +236,15 @@ class WDP_Cart {
                     return false;
                 }
 
-                // Minimum fiyat kontrolü
-                // OPTIMIZATION: WooCommerce get_meta() kullan (cache'lenmiş, daha hızlı)
-                $min_price = $product->get_meta('_min_custom_price');
-                if ($min_price !== '' && $custom_price < floatval($min_price)) {
-                    wc_add_notice(sprintf(__('Lütfen %s TL ve üstü değerler girin.', 'woo-donation-popup'), wc_format_decimal($min_price)), 'error');
+                // Minimum fiyat kontrolü (ürün min'i boş/0 olsa bile tutar > 0 olmalı)
+                $amount_error = self::get_donation_amount_error(
+                    $custom_price,
+                    $product->get_meta('_min_custom_price'),
+                    (int) $product_id,
+                    false
+                );
+                if ('' !== $amount_error) {
+                    wc_add_notice($amount_error, 'error');
                     return false;
                 }
             }
@@ -369,6 +362,8 @@ class WDP_Cart {
             return;
         }
 
+        $removed_zero_lines = false;
+
         foreach ($cart->get_cart() as $cart_item_key => $cart_item) {
             if (!empty($cart_item['wdp_sadaka_donation'])) {
                 $cart_item = self::sync_sadaka_line_wc_product($cart, $cart_item_key, $cart_item);
@@ -379,6 +374,13 @@ class WDP_Cart {
             }
 
             $line_price = self::resolve_cart_line_unit_price($cart_item);
+
+            if (self::is_zero_priced_donation_line($cart_item, $line_price)) {
+                $cart->remove_cart_item($cart_item_key);
+                $removed_zero_lines = true;
+                continue;
+            }
+
             if (null === $line_price) {
                 continue;
             }
@@ -387,6 +389,122 @@ class WDP_Cart {
             $line_product->set_price($line_price);
             $cart->cart_contents[ $cart_item_key ]['data'] = $line_product;
         }
+
+        if ($removed_zero_lines && function_exists('wc_add_notice')) {
+            $notice = __('Tutarı 0 olan bağış satırı sepetten kaldırıldı. Lütfen geçerli bir bağış tutarı girin.', 'woo-donation-popup');
+            if (!function_exists('wc_has_notice') || !wc_has_notice($notice, 'error')) {
+                wc_add_notice($notice, 'error');
+            }
+        }
+    }
+
+    /**
+     * Whether a cart row is a plugin donation line (main, share or sadaka).
+     *
+     * @param array $cart_item Cart row.
+     * @return bool
+     */
+    public static function is_donation_cart_line(array $cart_item) {
+        return isset($cart_item['donation_data'])
+            || isset($cart_item['custom_price'])
+            || !empty($cart_item['wdp_sadaka_donation']);
+    }
+
+    /**
+     * Donation line whose effective unit price is 0 (or not positive) — must not stay in the cart.
+     *
+     * @param array      $cart_item  Cart row.
+     * @param float|null $line_price Resolved unit price (null = falls back to product price).
+     * @return bool
+     */
+    public static function is_zero_priced_donation_line(array $cart_item, $line_price) {
+        if (!self::is_donation_cart_line($cart_item)) {
+            return false;
+        }
+
+        if (null === $line_price) {
+            $product = isset($cart_item['data']) ? $cart_item['data'] : null;
+            if (!is_object($product) || !method_exists($product, 'get_price')) {
+                return false;
+            }
+            $line_price = (float) $product->get_price();
+        }
+
+        return (float) $line_price <= 0;
+    }
+
+    /**
+     * Global minimum donation amount (filterable), never below the product minimum.
+     *
+     * @param mixed $product_min_meta Product `_min_custom_price` meta (may be '' or 0).
+     * @param int   $product_id       Product ID (filter context).
+     * @return float
+     */
+    public static function get_min_donation_amount($product_min_meta = '', $product_id = 0) {
+        /**
+         * Lowest accepted donation amount when the product has no (or a zero) minimum.
+         *
+         * @param float $min        Default 1.
+         * @param int   $product_id Product ID.
+         */
+        $global_min = (float) apply_filters('wdp_min_donation_amount', 1.0, absint($product_id));
+        if (!is_finite($global_min) || $global_min < 0) {
+            $global_min = 0.0;
+        }
+
+        $product_min = ('' !== $product_min_meta && null !== $product_min_meta && is_numeric($product_min_meta))
+            ? (float) $product_min_meta
+            : 0.0;
+
+        return max($global_min, $product_min);
+    }
+
+    /**
+     * Validation message for a donation amount ('' when valid).
+     *
+     * @param float $amount           Sanitized amount.
+     * @param mixed $product_min_meta Product `_min_custom_price` meta.
+     * @param int   $product_id       Product ID.
+     * @param bool  $plain_text       True for JSON/textContent consumers, false for HTML notices.
+     * @return string
+     */
+    public static function get_donation_amount_error($amount, $product_min_meta = '', $product_id = 0, $plain_text = true) {
+        $amount = (float) $amount;
+        $min    = self::get_min_donation_amount($product_min_meta, $product_id);
+
+        if ($amount > 0 && $amount >= $min) {
+            return '';
+        }
+
+        if ($min <= 0) {
+            return __('Lütfen 0\'dan büyük bir bağış tutarı girin.', 'woo-donation-popup');
+        }
+
+        return sprintf(
+            /* translators: %s: formatted minimum amount with currency */
+            __('Lütfen %s ve üstü değerler girin.', 'woo-donation-popup'),
+            self::format_amount_for_message($min, $plain_text)
+        );
+    }
+
+    /**
+     * Currency-aware amount for user messages.
+     *
+     * @param float $amount     Amount.
+     * @param bool  $plain_text Strip HTML (for JSON/textContent).
+     * @return string
+     */
+    public static function format_amount_for_message($amount, $plain_text = true) {
+        if (class_exists('WDP_Utils')) {
+            $formatted = $plain_text ? WDP_Utils::format_price_plain($amount) : WDP_Utils::format_price_html($amount);
+            if ('' !== $formatted) {
+                return $formatted;
+            }
+        }
+
+        $symbol = function_exists('get_woocommerce_currency_symbol') ? get_woocommerce_currency_symbol() : '';
+        $number = function_exists('wc_format_decimal') ? wc_format_decimal($amount) : (string) $amount;
+        return trim($number . ' ' . html_entity_decode((string) $symbol, ENT_QUOTES, 'UTF-8'));
     }
 
     /**
@@ -467,6 +585,43 @@ class WDP_Cart {
      */
     public static function get_cart_line_unit_price(array $cart_item) {
         return self::resolve_cart_line_unit_price($cart_item);
+    }
+
+    /**
+     * Sum non-sadaka cart line totals for a progress-bar product (pending until paid).
+     *
+     * @param int $product_id Product ID.
+     * @return float
+     */
+    public static function sum_cart_pending_for_product($product_id) {
+        $product_id = absint($product_id);
+        if ($product_id <= 0 || !function_exists('WC')) {
+            return 0.0;
+        }
+
+        $cart = WC()->cart;
+        if (!$cart) {
+            return 0.0;
+        }
+
+        $pending = 0.0;
+        foreach ($cart->get_cart() as $cart_item) {
+            if (empty($cart_item['product_id']) || (int) $cart_item['product_id'] !== $product_id) {
+                continue;
+            }
+            if (!empty($cart_item['wdp_sadaka_donation'])) {
+                continue;
+            }
+            $quantity = max(1, (int) (isset($cart_item['quantity']) ? $cart_item['quantity'] : 1));
+            $unit = self::resolve_cart_line_unit_price($cart_item);
+            if (null === $unit) {
+                $product = isset($cart_item['data']) ? $cart_item['data'] : null;
+                $unit = $product ? (float) $product->get_price() : 0.0;
+            }
+            $pending += ((float) $unit) * $quantity;
+        }
+
+        return max(0.0, $pending);
     }
 
     private static function resolve_cart_line_unit_price(array $cart_item) {
@@ -625,6 +780,97 @@ class WDP_Cart {
         }
 
         return WDP_Security::sanitize_numeric($value, 0, 999999);
+    }
+
+    /**
+     * Parse shareholder fields from a request bag (AJAX POST or non-AJAX form).
+     *
+     * @param array $request     Request data.
+     * @param int   $share_count Requested share count.
+     * @param array $options {
+     *     @type int  $max_shares       Cap (default 50).
+     *     @type bool $require_contact  Require name+phone (default true).
+     * }
+     * @return array{
+     *   shareholders: array<int,array>,
+     *   missing_fields: string[],
+     *   missing_field_keys: string[],
+     *   share_count: int
+     * }
+     */
+    public static function parse_shareholders_from_request(array $request, $share_count, array $options = array()) {
+        $max_shares = isset($options['max_shares']) ? absint($options['max_shares']) : 50;
+        if ($max_shares < 1) {
+            $max_shares = 50;
+        }
+        $require_contact = !isset($options['require_contact']) || (bool) $options['require_contact'];
+
+        $share_count = min(max(0, absint($share_count)), $max_shares);
+        $shareholders = array();
+        $missing_fields = array();
+        $missing_field_keys = array();
+
+        for ($i = 1; $i <= $share_count; $i++) {
+            $name_key = 'shareholder_name_' . $i;
+            $phone_key = 'shareholder_phone_' . $i;
+            $note_key = 'shareholder_note_' . $i;
+            $email_key = 'shareholder_email_' . $i;
+
+            $name = isset($request[$name_key])
+                ? WDP_Security::sanitize_text(wp_unslash($request[$name_key]), 100)
+                : '';
+            $phone = isset($request[$phone_key])
+                ? WDP_Security::sanitize_phone(wp_unslash($request[$phone_key]))
+                : '';
+
+            $note_raw = isset($request[$note_key]) ? wp_unslash($request[$note_key]) : '';
+            if (strlen($note_raw) > 500) {
+                $note_raw = substr($note_raw, 0, 500);
+            }
+            $note = sanitize_textarea_field($note_raw);
+
+            $email_raw = isset($request[$email_key]) ? wp_unslash($request[$email_key]) : '';
+            if (strlen($email_raw) > 100) {
+                $email_raw = substr($email_raw, 0, 100);
+            }
+            $email = sanitize_email($email_raw);
+
+            if ($require_contact) {
+                if ('' === $name) {
+                    $missing_fields[] = sprintf(__('%d. Hissedar Adı', 'woo-donation-popup'), $i);
+                    $missing_field_keys[] = $name_key;
+                }
+                if ('' === $phone) {
+                    $missing_fields[] = sprintf(__('%d. Hissedar Telefonu', 'woo-donation-popup'), $i);
+                    $missing_field_keys[] = $phone_key;
+                }
+            }
+
+            $shareholder = array();
+            if ('' !== $name) {
+                $shareholder['name'] = $name;
+            }
+            if ('' !== $phone) {
+                $shareholder['phone'] = $phone;
+            }
+            if ('' !== $email) {
+                $shareholder['email'] = $email;
+            }
+            if ('' !== $note) {
+                $shareholder['note'] = $note;
+            }
+
+            if (!empty($shareholder)) {
+                $shareholders[$i] = $shareholder;
+            }
+        }
+
+        return array(
+            'shareholders'       => $shareholders,
+            'missing_fields'     => $missing_fields,
+            'missing_field_keys' => $missing_field_keys,
+            'share_count'        => $share_count,
+        );
     }
 
     /**

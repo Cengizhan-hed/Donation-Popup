@@ -1,6 +1,7 @@
 /**
- * Product - Ürün bilgileri yönetimi
- * getProductInfoData, fetchProductInfo, applyProductInfo, displayProductInfoError
+ * @file product.js
+ * Ürün bilgisi AJAX yükleme ve forma normalize veri aktarımı.
+ * Dış API: WDPApp.product
  */
 
 (function(window) {
@@ -246,43 +247,56 @@
               currencyEl.textContent = wdp_ajax.currency.symbol;
             }
 
-            const minPriceNumeric = Number.parseFloat((data.min_price || '').toString().trim().replace(/\s+/g, '').replace(/\./g, '').replace(',', '.'));
-            const isShareForm = !!form.querySelector('input[name="share_count"]');
-            const basePriceNumeric = Number.parseFloat((data.price || '').toString().trim().replace(/\s+/g, '').replace(/\./g, '').replace(',', '.'));
-            let resolvedMin = 0;
-            if (Number.isFinite(minPriceNumeric) && minPriceNumeric > 0) {
-              resolvedMin = minPriceNumeric;
-            } else if (isShareForm && Number.isFinite(basePriceNumeric) && basePriceNumeric > 0) {
-              resolvedMin = basePriceNumeric;
-            }
+			const minPriceNumeric = Number.parseFloat((data.min_price || '').toString().trim().replace(/\s+/g, '').replace(/\./g, '').replace(',', '.'));
+			const progressMinNumeric = Number.parseFloat((data.progress_min_price || '').toString().trim().replace(/\s+/g, '').replace(/\./g, '').replace(',', '.'));
+			const isShareForm = !!form.querySelector('input[name="share_count"]');
+			const isProgressForm =
+			  !!form.classList.contains('wdp-has-progress-bar') ||
+			  !!root.querySelector('.wdp-progress-bar-container') ||
+			  !!data.enable_progress_bar;
+			const basePriceNumeric = Number.parseFloat((data.price || data.regular_price || '').toString().trim().replace(/\s+/g, '').replace(/\./g, '').replace(',', '.'));
+			let resolvedMin = 0;
+			if (Number.isFinite(minPriceNumeric) && minPriceNumeric > 0) {
+			  resolvedMin = minPriceNumeric;
+			} else if (isProgressForm && Number.isFinite(progressMinNumeric) && progressMinNumeric > 0) {
+			  resolvedMin = progressMinNumeric;
+			} else if ((isShareForm || isProgressForm) && Number.isFinite(basePriceNumeric) && basePriceNumeric > 0) {
+			  resolvedMin = basePriceNumeric;
+			}
 
-            if (Number.isFinite(resolvedMin) && resolvedMin > 0) {
-              priceInput.setAttribute("min", resolvedMin.toString());
-              priceInput.dataset.baseMin = resolvedMin.toString();
-            } else {
-              priceInput.dataset.baseMin = '';
-              priceInput.removeAttribute("min");
-            }
+			if (Number.isFinite(resolvedMin) && resolvedMin > 0) {
+			  priceInput.setAttribute("min", resolvedMin.toString());
+			  priceInput.dataset.baseMin = resolvedMin.toString();
+			} else {
+			  priceInput.dataset.baseMin = '';
+			  priceInput.removeAttribute("min");
+			}
 
-            priceInput.setAttribute("step", "0.01");
-            priceInput.required = true;
-            const userHasValue = String(priceInput.value || '').trim() !== '';
-            const userIsTyping = document.activeElement === priceInput;
-            if (!userHasValue && !userIsTyping) {
-              priceInput.value = "";
-              delete priceInput.dataset.wdpCustomUnit;
-            }
-            const emptyPlaceholder = (wdp_ajax.strings && wdp_ajax.strings.custom_price_placeholder_empty) ? wdp_ajax.strings.custom_price_placeholder_empty : "Bağış tutarı *";
-            let nextPlaceholder = emptyPlaceholder;
-            if (Number.isFinite(resolvedMin) && resolvedMin > 0) {
-              nextPlaceholder = `min: ${formatPrice(resolvedMin)}`;
-            } else if (data.min_price) {
-              nextPlaceholder = `min: ${data.min_price}`;
-            }
-            const currentPlaceholder = String(priceInput.placeholder || '').trim();
-            if (currentPlaceholder !== nextPlaceholder) {
-              priceInput.placeholder = nextPlaceholder;
-            }
+			priceInput.setAttribute("step", "0.01");
+			priceInput.required = true;
+			const userHasValue = String(priceInput.value || '').trim() !== '';
+			const userIsTyping = document.activeElement === priceInput;
+			// Progress form: tutarı otomatik doldurma — sadece min placeholder.
+			if (!userHasValue && !userIsTyping) {
+			  priceInput.value = "";
+			  delete priceInput.dataset.wdpCustomUnit;
+			  delete priceInput.dataset.wdpDefaultPrice;
+			}
+			const emptyPlaceholder = "";
+			let nextPlaceholder = emptyPlaceholder;
+			if (Number.isFinite(resolvedMin) && resolvedMin > 0) {
+			  nextPlaceholder = `min: ${formatPrice(resolvedMin)}`;
+			}
+			const currentPlaceholder = String(priceInput.placeholder || '').trim();
+			if (currentPlaceholder !== nextPlaceholder) {
+			  priceInput.placeholder = nextPlaceholder;
+			}
+
+			if (isProgressForm && priceInput && userHasValue) {
+			  try {
+				priceInput.dispatchEvent(new Event('input', { bubbles: true }));
+			  } catch (_) { /* noop */ }
+			}
           }
         } else if (priceField) {
           priceField.style.display = "none";

@@ -1,0 +1,23 @@
+{
+  "name": "hedefdev/donation-popup",
+  "description": "WooCommerce Donation Popup — WordPress plugin",
+  "type": "wordpress-plugin",
+  "license": "GPL-2.0-or-later",
+  "require": {
+    "php": ">=7.4"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^9.6"
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "WDP\\Tests\\": "tests/unit/"
+    }
+  },
+  "scripts": {
+    "test": "phpunit"
+  },
+  "config": {
+    "sort-packages": true
+  }
+}

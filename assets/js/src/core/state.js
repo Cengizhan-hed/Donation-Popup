@@ -1,6 +1,7 @@
 /**
- * State - Durum yönetimi
- * Global state ve getter/setter'lar
+ * @file state.js
+ * Global durum: açık modal, aktif ürün ve form oturumu bilgisi.
+ * Dış API: WDPApp.state
  */
 
 (function(window) {

@@ -1,9 +1,8 @@
 <?php
 /**
- * Build single hashed frontend CSS bundle.
+ * frontend-css-stack.php sırasına göre CSS kaynaklarını tek bundle dosyasında birleştirir.
  *
- * Usage:
- *   php tools/build-css-bundle.php
+ * @package WooCommerce\Donation_Popup
  */
 
 declare(strict_types=1);

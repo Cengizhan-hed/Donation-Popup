@@ -1,6 +1,6 @@
 <?php
 /**
- * Autoloader for WDP_* classes (flat includes/ + traits/).
+ * WDP_* sınıf adlarını includes/ ve traits/ dosyalarına eşleyen SPL autoloader.
  *
  * @package WooCommerce\Donation_Popup
  */
@@ -74,7 +74,12 @@ class WDP_Autoloader {
         $file_name = self::class_name_to_file_name($class_name);
         $root      = WDP_PLUGIN_DIR . 'includes/';
 
-        self::require_if_exists($root . $file_name);
+        if (self::require_if_exists($root . $file_name)) {
+            return;
+        }
+
+        // Phase 2: template renderers live under includes/templates/.
+        self::require_if_exists($root . 'templates/' . $file_name);
     }
 }
 

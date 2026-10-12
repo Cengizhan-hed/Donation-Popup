@@ -1,16 +1,17 @@
 /**
- * Final cascade layer — tema/woocommerce çakışmaları için ek specificity.
- * Bu dosyada !important kullanılmaz; yalnızca html body + wrapper zinciri.
+ * @file theme-isolation-overrides.css
+ * Tema çakışmalarını önleyen yüksek özgüllükte son katman stilleri.
+ * Unlayered so these rules can beat theme styles that use @layer.
  */
 
-/* Kapalı sağ panel — tema display override */
+/* Closed side panel — beat theme display overrides */
 html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel:not(.show) {
   display: none;
   visibility: hidden;
   pointer-events: none;
 }
 
-/* Başarı ekranı kapatma — tema gizleme kurallarına karşı (class fallback + :has) */
+/* Success close — visible against theme hide rules */
 html body .hdf-donation-modal-wrapper.wdp-modal .wdp-modal-content.wdp-has-success > .wdp-modal-close,
 html body .hdf-donation-modal-wrapper.wdp-modal .wdp-modal-content:has(.wdp-success-screen) > .wdp-modal-close {
   display: inline-flex;
@@ -19,25 +20,26 @@ html body .hdf-donation-modal-wrapper.wdp-modal .wdp-modal-content:has(.wdp-succ
   z-index: 6;
 }
 
-/* [hidden] — attribute ile gizlenen plugin UI */
+/* [hidden] / hidden shareholder forms / wizard panels */
 html body .hdf-donation-modal-wrapper [hidden].wdp-phone-country-panel,
 html body .hdf-donation-modal-wrapper :is(.wdp-modal, .wdp-donation-form) .wdp-shares-total-bar[hidden],
-html body .hdf-donation-modal-wrapper :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-form.wdp-shareholder-form--hidden {
-  display: none;
+html body .hdf-donation-modal-wrapper :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-form.wdp-shareholder-form--hidden,
+html body .hdf-donation-modal-wrapper :is(.wdp-modal, .wdp-donation-form) .wdp-wizard__panel[hidden] {
+  display: none !important;
   visibility: hidden;
   pointer-events: none;
 }
 
-/* WooCommerce sepet/checkout sadaka satırı tutarı */
+/* Woo cart/checkout sadaka line amount */
 html body.woocommerce-cart .cart tr.wdp-cart-line--sadaka .product-total,
 html body.woocommerce-cart .cart tr.wdp-cart-line--sadaka .amount,
 html body.woocommerce-checkout .shop_table tr.wdp-cart-line--sadaka .product-total,
 html body.woocommerce-checkout .shop_table tr.wdp-cart-line--sadaka .amount {
-  color: #15803d;
+  color: #156538;
   font-weight: 700;
 }
 
-/* Mini sepet kaldır — tema buton stillerini sıfırla */
+/* Mini-cart remove — reset theme button chrome */
 html body .hdf-donation-modal-wrapper :is(.wdp-modal, .wdp-donation-form) .wdp-mini-cart-items button.wdp-remove-cart-item {
   background: transparent;
   border: none;

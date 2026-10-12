@@ -1,6 +1,6 @@
 <?php
 /**
- * Meta Pixel companion: settings, thank-you Purchase payload, optional base pixel (off by default).
+ * Meta Pixel ayarları, ViewContent/AddToCart/Purchase ve teşekkür sayfası scriptleri.
  *
  * @package WooCommerce\Donation_Popup
  */
@@ -34,7 +34,76 @@ class WDP_Meta_Tracking {
 			'optional_pixel_id'        => '',
 			'initiate_checkout'        => '0',
 			'purchase_include_on_hold' => '0',
+			// On by default: pixel/events only after marketing consent.
+			'require_consent'          => '1',
 		);
+	}
+
+	/**
+	 * Whether the "require cookie consent" setting is on.
+	 *
+	 * @return bool
+	 */
+	public static function consent_required() {
+		return self::is_on(self::get_settings(), 'require_consent');
+	}
+
+	/**
+	 * Whether the WP Consent API plugin is available.
+	 *
+	 * @return bool
+	 */
+	public static function is_consent_api_available() {
+		return function_exists('wp_has_consent');
+	}
+
+	/**
+	 * Marketing consent for Meta Pixel (server side).
+	 *
+	 * Setting off → always true (legacy behavior). WP Consent API → wp_has_consent('marketing');
+	 * otherwise the `wdp_meta_pixel_has_consent` filter decides (default false).
+	 *
+	 * @return bool
+	 */
+	public static function has_marketing_consent() {
+		if (!self::consent_required()) {
+			return true;
+		}
+
+		if (self::is_consent_api_available()) {
+			return (bool) wp_has_consent('marketing');
+		}
+
+		/**
+		 * Marketing consent when WP Consent API is not installed.
+		 *
+		 * @param bool $has_consent Default false.
+		 */
+		return (bool) apply_filters('wdp_meta_pixel_has_consent', false);
+	}
+
+	/**
+	 * Consent fields shared by wdp_ajax.meta and wdpMetaPurchase.
+	 *
+	 * @return array
+	 */
+	private static function get_consent_config() {
+		return array(
+			'requireConsent' => self::consent_required(),
+			'hasConsent'     => self::has_marketing_consent(),
+			'consentApi'     => self::is_consent_api_available(),
+		);
+	}
+
+	/**
+	 * Sanitized optional pixel ID (empty when invalid).
+	 *
+	 * @param array $settings Settings.
+	 * @return string
+	 */
+	private static function get_optional_pixel_id($settings) {
+		$pixel = isset($settings['optional_pixel_id']) ? preg_replace('/\D/', '', (string) $settings['optional_pixel_id']) : '';
+		return strlen($pixel) >= 8 ? $pixel : '';
 	}
 
 	/**
@@ -164,17 +233,20 @@ class WDP_Meta_Tracking {
 	 */
 	public static function get_frontend_config() {
 		$s = self::get_settings();
-		return array(
-			'enabled'            => self::is_on($s, 'enabled'),
-			'viewContent'        => self::is_on($s, 'view_content'),
-			'addToCart'          => self::is_on($s, 'add_to_cart'),
-			'purchase'           => self::should_track_purchase_from_plugin(),
-			'wcMetaPurchaseActive' => self::is_woocommerce_meta_purchase_integration_active(),
-			'customDebug'        => self::is_on($s, 'custom_debug'),
-			'debug'              => self::is_on($s, 'debug'),
-			'initiateCheckout'   => self::is_on($s, 'initiate_checkout'),
-			'loadBasePixel'      => self::is_on($s, 'load_base_pixel'),
-			'optionalPixelId'    => isset($s['optional_pixel_id']) ? preg_replace('/\D/', '', (string) $s['optional_pixel_id']) : '',
+		return array_merge(
+			array(
+				'enabled'            => self::is_on($s, 'enabled'),
+				'viewContent'        => self::is_on($s, 'view_content'),
+				'addToCart'          => self::is_on($s, 'add_to_cart'),
+				'purchase'           => self::should_track_purchase_from_plugin(),
+				'wcMetaPurchaseActive' => self::is_woocommerce_meta_purchase_integration_active(),
+				'customDebug'        => self::is_on($s, 'custom_debug'),
+				'debug'              => self::is_on($s, 'debug'),
+				'initiateCheckout'   => self::is_on($s, 'initiate_checkout'),
+				'loadBasePixel'      => self::is_on($s, 'load_base_pixel'),
+				'optionalPixelId'    => isset($s['optional_pixel_id']) ? preg_replace('/\D/', '', (string) $s['optional_pixel_id']) : '',
+			),
+			self::get_consent_config()
 		);
 	}
 
@@ -190,6 +262,11 @@ class WDP_Meta_Tracking {
 		self::maybe_migrate_purchase_setting_for_wc_meta();
 		add_action('wp_enqueue_scripts', array(__CLASS__, 'maybe_enqueue_thankyou_purchase'), 25);
 		add_action('wp_footer', array(__CLASS__, 'maybe_print_optional_base_pixel'), 1);
+
+		// WP Consent API: declare that this plugin respects consent categories.
+		if (defined('WDP_PLUGIN_FILE')) {
+			add_filter('wp_consent_api_registered_' . plugin_basename(WDP_PLUGIN_FILE), '__return_true');
+		}
 	}
 
 	/**
@@ -205,8 +282,12 @@ class WDP_Meta_Tracking {
 		if (! self::is_on($s, 'load_base_pixel')) {
 			return;
 		}
-		$pixel = isset($s['optional_pixel_id']) ? preg_replace('/\D/', '', (string) $s['optional_pixel_id']) : '';
-		if ('' === $pixel || strlen($pixel) < 8) {
+		$pixel = self::get_optional_pixel_id($s);
+		if ('' === $pixel) {
+			return;
+		}
+		// No consent yet: meta-tracking.js bootstraps the pixel on wp_listen_for_consent_change.
+		if (! self::has_marketing_consent()) {
 			return;
 		}
 		$pixel_js = esc_js($pixel);
@@ -233,6 +314,11 @@ class WDP_Meta_Tracking {
 		}
 
 		$s = self::get_settings();
+
+		// Consent required, not given and no way to receive it later on this page.
+		if (self::consent_required() && ! self::has_marketing_consent() && ! self::is_consent_api_available()) {
+			return;
+		}
 
 		global $wp;
 		$order_id = 0;
@@ -293,12 +379,17 @@ class WDP_Meta_Tracking {
 		wp_localize_script(
 			'wdp-meta-tracking-js',
 			'wdpMetaPurchase',
-			array(
-				'orderId'      => $order_id,
-				'eventID'      => $event_id,
-				'params'       => $payload['params'],
-				'runPurchase'  => true,
-				'debug'        => self::is_on($s, 'debug'),
+			array_merge(
+				array(
+					'orderId'         => $order_id,
+					'eventID'         => $event_id,
+					'params'          => $payload['params'],
+					'runPurchase'     => true,
+					'debug'           => self::is_on($s, 'debug'),
+					'loadBasePixel'   => self::is_on($s, 'load_base_pixel'),
+					'optionalPixelId' => self::get_optional_pixel_id($s),
+				),
+				self::get_consent_config()
 			)
 		);
 	}

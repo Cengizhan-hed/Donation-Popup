@@ -18,6 +18,18 @@ package.json
 package-lock.json
 yarn.lock
 pnpm-lock.yaml
+docs/
+vendor/
+composer.json
+composer.lock
+composer.phar
+composer-setup.php
+phpunit.xml
+phpunit.xml.dist
+.phpunit.result.cache
+tests/
+tools/
+scripts/
 
 # Removed: intl-tel-input (replaced by WDP custom phone field)
 assets/vendor/intl-tel-input/

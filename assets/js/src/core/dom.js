@@ -1,6 +1,7 @@
 /**
- * DOM - DOM manipülasyonları
- * Inline style temizleme, DOM observation
+ * @file dom.js
+ * DOM sorgulama, güvenli element oluşturma ve form kapsayıcı yardımcıları.
+ * Dış API: WDPApp.dom
  */
 
 (function(window) {
@@ -65,6 +66,28 @@
     })
   }
 
+  /**
+   * Wizard chrome'u snapshot'a yazma — reset sonrası dinleyicisiz İleri butonu üretmesin.
+   */
+  function getCleanFormSnapshotHtml(form) {
+    if (!form) {
+      return '';
+    }
+    const clone = form.cloneNode(true);
+    clone.querySelectorAll('.wdp-wizard, .wdp-wizard-foot').forEach(function(el) {
+      el.remove();
+    });
+    clone.querySelectorAll('[data-wdp-step], .wdp-wizard-section').forEach(function(el) {
+      el.removeAttribute('data-wdp-step');
+      el.removeAttribute('data-wdp-step-index');
+      el.removeAttribute('hidden');
+      el.removeAttribute('aria-hidden');
+      el.classList.remove('wdp-wizard-section', 'is-wdp-step-active');
+    });
+    clone.classList.remove('wdp-wizard-ready', 'wdp-wizard-on-confirm');
+    return clone.innerHTML;
+  }
+
   // Tüm formların orijinal içeriğini sakla (modal.js'den taşındı)
   function saveOriginalForms() {
     if (!state || !state.originalForms) {
@@ -76,7 +99,7 @@
       const containerId = container.id || container.getAttribute("data-product-id") || Math.random().toString(36).substr(2, 9);
       const form = container.querySelector("form");
       if (form) {
-        originalForms.set(containerId, form.innerHTML);
+        originalForms.set(containerId, getCleanFormSnapshotHtml(form));
       }
     });
   }

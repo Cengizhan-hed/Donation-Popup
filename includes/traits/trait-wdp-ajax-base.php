@@ -1,7 +1,13 @@
 <?php
+/**
+ * AJAX trait temeli; sepet erişimi, nonce, rate limit ve yetki yardımcıları.
+ *
+ * @package WooCommerce\Donation_Popup
+ */
 if (!defined("ABSPATH")) { exit; }
 
 trait WDP_Ajax_Base_Trait {
+    /** WooCommerce sepet nesnesini güvenli şekilde döndürür; yoksa null. */
     private static function get_wc_cart() {
         if (!function_exists('WC')) {
             return null;
@@ -16,13 +22,12 @@ trait WDP_Ajax_Base_Trait {
     }
 
     /**
-     * Enforce rate limit for a named action.
+     * Belirli bir AJAX eylemi için istek hızını sınırlar.
      *
-     * @param string $action Action suffix for limiter key.
-     * @param int    $max_requests Maximum requests.
-     * @param int    $window_seconds Window in seconds.
-     * @return void
-     * @throws WDP_Security_Exception When rate limit exceeded.
+     * @param string $action         Limiter anahtarı için eylem adı.
+     * @param int    $max_requests   Pencere içinde izin verilen maksimum istek.
+     * @param int    $window_seconds Pencere süresi (saniye).
+     * @throws WDP_Security_Exception Limit aşıldığında.
      */
     private static function enforce_rate_limit($action, $max_requests, $window_seconds) {
         $rate_limit_key = WDP_Security::get_rate_limit_key($action);
@@ -32,11 +37,10 @@ trait WDP_Ajax_Base_Trait {
     }
 
     /**
-     * Ensure current visitor has required capability.
+     * Ziyaretçinin gerekli yetkiye sahip olduğunu doğrular.
      *
-     * @param string $capability Capability to enforce.
-     * @return void
-     * @throws WDP_Security_Exception If capability check fails.
+     * @param string $capability WordPress capability (varsayılan: read).
+     * @throws WDP_Security_Exception Yetki yoksa.
      */
     private static function enforce_capability($capability = 'read') {
         if (!WDP_Security::check_capability($capability)) {
@@ -45,11 +49,10 @@ trait WDP_Ajax_Base_Trait {
     }
 
     /**
-     * Validate nonce and request origin.
+     * Nonce ve istek kaynağını doğrular; yalnızca POST kabul edilir.
      *
-     * @param string $nonce_action Nonce action key.
-     * @return void
-     * @throws WDP_Security_Exception When validation fails.
+     * @param string $nonce_action Nonce eylem anahtarı.
+     * @throws WDP_Security_Exception Doğrulama başarısızsa.
      */
     private static function validate_ajax_request($nonce_action) {
         self::require_post_method();
@@ -64,10 +67,9 @@ trait WDP_Ajax_Base_Trait {
     }
 
     /**
-     * Require HTTP POST for mutating/ajax actions.
+     * Değiştirici AJAX isteklerinde HTTP POST zorunluluğu.
      *
-     * @return void
-     * @throws WDP_Security_Exception If request method is invalid.
+     * @throws WDP_Security_Exception POST değilse.
      */
     private static function require_post_method() {
         $method = isset($_SERVER['REQUEST_METHOD']) ? strtoupper((string) wp_unslash($_SERVER['REQUEST_METHOD'])) : '';
@@ -77,9 +79,30 @@ trait WDP_Ajax_Base_Trait {
     }
 
     /**
-     * Build a cache suffix scoped to current cart session.
+     * Nonce + rate limit + (opsiyonel) capability; başarısızsa JSON hata ile çıkar.
      *
-     * @return string
+     * @param string      $nonce_action    Nonce eylem anahtarı.
+     * @param string      $rate_action     Rate limit anahtarı.
+     * @param int         $max_requests    Pencere içi max istek.
+     * @param int         $window_seconds  Pencere süresi.
+     * @param string|false $capability     Capability; false ise atlanır.
+     */
+    private static function run_secured_ajax($nonce_action, $rate_action, $max_requests, $window_seconds = 60, $capability = 'read') {
+        try {
+            self::validate_ajax_request($nonce_action);
+            self::enforce_rate_limit($rate_action, $max_requests, $window_seconds);
+            if ($capability) {
+                self::enforce_capability($capability);
+            }
+        } catch (WDP_Security_Exception $e) {
+            WDP_Utils::json_error($e);
+        }
+    }
+
+    /**
+     * Aktif sepet oturumuna göre önbellek anahtarı soneki üretir.
+     *
+     * @return string Kullanıcı veya misafir oturumuna özgü sonek.
      */
     private static function get_cart_cache_suffix() {
         $user_id = get_current_user_id();
@@ -102,9 +125,7 @@ trait WDP_Ajax_Base_Trait {
     }
 
     /**
-     * Delete short-lived cart caches for the active session.
-     *
-     * @return void
+     * Aktif oturum için kısa ömürlü sepet önbelleğini temizler.
      */
     private static function clear_cart_cache() {
         $suffix = self::get_cart_cache_suffix();

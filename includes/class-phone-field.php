@@ -1,6 +1,6 @@
 <?php
 /**
- * Central phone field markup and country list for donation forms.
+ * Ülke listesi, telefon kuralları ve ülke kodlu alan HTML/JS verisi.
  *
  * @package WooCommerce\Donation_Popup
  */
@@ -82,7 +82,6 @@ class WDP_Phone_Field {
             'id' => array('name' => __('Endonezya', 'woo-donation-popup'), 'dial' => '62'),
             'ir' => array('name' => __('İran', 'woo-donation-popup'), 'dial' => '98'),
             'iq' => array('name' => __('Irak', 'woo-donation-popup'), 'dial' => '964'),
-            'il' => array('name' => __('İsrail', 'woo-donation-popup'), 'dial' => '972'),
             'jp' => array('name' => __('Japonya', 'woo-donation-popup'), 'dial' => '81'),
             'jo' => array('name' => __('Ürdün', 'woo-donation-popup'), 'dial' => '962'),
             'kz' => array('name' => __('Kazakistan', 'woo-donation-popup'), 'dial' => '7'),
@@ -161,24 +160,29 @@ class WDP_Phone_Field {
      * @return array<string, array{name:string,dial:string}>
      */
     private static function sort_countries_for_dropdown(array $countries) {
-        if (!isset($countries['tr'])) {
-            uasort(
-                $countries,
-                static function ($a, $b) {
-                    return strcasecmp((string) $a['name'], (string) $b['name']);
+        $compare = static function ($a, $b) {
+            $an = (string) $a['name'];
+            $bn = (string) $b['name'];
+            if (class_exists('Collator')) {
+                static $collator = null;
+                if ($collator === null) {
+                    $collator = new Collator('tr_TR');
                 }
-            );
+                if ($collator instanceof Collator) {
+                    return $collator->compare($an, $bn);
+                }
+            }
+            return strcasecmp($an, $bn);
+        };
+
+        if (!isset($countries['tr'])) {
+            uasort($countries, $compare);
             return $countries;
         }
 
         $turkey = array( 'tr' => $countries['tr'] );
         unset($countries['tr']);
-        uasort(
-            $countries,
-            static function ($a, $b) {
-                return strcasecmp((string) $a['name'], (string) $b['name']);
-            }
-        );
+        uasort($countries, $compare);
 
         return array_merge($turkey, $countries);
     }
@@ -266,7 +270,6 @@ class WDP_Phone_Field {
             'id' => array( 'min' => 9, 'max' => 11 ),
             'ir' => array( 'min' => 10, 'max' => 10 ),
             'iq' => array( 'min' => 10, 'max' => 10 ),
-            'il' => array( 'min' => 9, 'max' => 9 ),
             'jp' => array( 'min' => 10, 'max' => 10 ),
             'jo' => array( 'min' => 9, 'max' => 9 ),
             'kz' => array( 'min' => 10, 'max' => 10 ),

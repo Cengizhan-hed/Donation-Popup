@@ -1,0 +1,15 @@
+---
+description: Her anlamlı kod güncellemesinde eklenti sürümünü artır
+alwaysApply: true
+---
+
+# Sürüm güncelleme
+
+Her özellik, düzeltme veya görünüm güncellemesi tamamlandığında patch (veya gerekirse minor) sürümü artır:
+
+1. `woo-donation-popup.php` — header `Version:` ve `WDP_VERSION`
+2. `package.json` — `"version"`
+
+Aynı değer her iki yerde de olmalı. Hedef her zaman **mevcut sürümden bir sonraki** patch veya minor sürümdür (mevcut değeri `woo-donation-popup.php` içindeki `Version:` satırından oku).
+
+Breaking / büyük özellik → bir sonraki minor (ör. X.Y.Z → X.(Y+1).0). Küçük fix/UI → bir sonraki patch (ör. X.Y.Z → X.Y.(Z+1)).

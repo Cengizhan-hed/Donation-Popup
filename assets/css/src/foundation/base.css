@@ -1,67 +1,14 @@
 /**
- * ============================================================================
- * BASE.CSS - TEMEL RESET VE NORMALIZE
- * ============================================================================
- * 
- * DOSYA: base.css
- * KONUM: /assets/css/src/base.css
- * 
- * AMAÇ:
- * Tema stillerinden izole etmek için temel reset ve normalize kuralları.
- * GiveWP benzeri bir yaklaşım kullanır.
- * 
- * YAKLAŞIM:
- * -  kullanmaz
- * - Yüksek specificity ile tema override'larını önler
- * - html body ile başlayan selector'ler kullanır
- * - Minimal reset (sadece gerekli olanlar)
- * 
- * İÇERİK:
- * 1. Modal ve form container reset
- * 2. Typography reset (başlıklar, paragraflar)
- * 3. Link reset
- * 4. List reset
- * 5. Image reset
- * 6. Table reset
- * 7. Number input spinner kontrolü
- * 
- * ÖZELLİKLER:
- * - Font smoothing (webkit ve moz)
- * - Font display: swap (FOUT önleme)
- * - Font feature settings (kerning, ligatures)
- * - Optimal line length (65ch)
- * - Responsive typography scale
- * 
- * GÜVENLİK:
- * - Tema stillerinden tamamen izole
- * - Yüksek specificity (html body .wdp-*)
- * - Tema override'larını önler
- * 
- * ============================================================================
- * 
- * WOO DONATION POPUP - THEME ISOLATION BASE
- * GiveWP benzeri tema bağımsız CSS yapısı
- * Clean CSS — !important kullanılmaz (specificity + theme-isolation-overrides.css)
- * ============================================
+ * @file base.css
+ * Temel sıfırlama ve ortak tipografi; modal/form için varsayılan font ve renk.
  */
 
-/* ============================================================================
- * CSS ISOLATION LAYER - WOOCOMMERCE VE TEMA İZOLASYONU
- * ============================================================================
- * WooCommerce ve diğer tema/plugin CSS'lerinden tamamen izole etmek için
- * Ultra-yüksek specificity ile tüm olası selector'leri override eder
- * ============================================================================ */
-
-/* CSS Isolation Layer - Minimal reset, sadece gerekli olanlar */
-/* CRITICAL: Maximum specificity - html body ile tema override koruması */
-/* CRITICAL: Tema/plugin class'larına bağımlı değil - GENEL ÇÖZÜM */
-/* GiveWP benzeri maksimum specificity - WooCommerce ve tüm tema/plugin CSS'lerini override eder */
 html body .wdp-modal,
 html body .wdp-donation-form {
   font-family: var(--wdp-font-family);
   font-size: var(--wdp-text-base);
   line-height: var(--wdp-leading-normal);
-  color: var(--wdp-gray-800);
+  color: var(--wdp-text-primary, #0f172a);
   font-weight: var(--wdp-font-normal);
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -73,26 +20,20 @@ html body .wdp-donation-form {
   background: transparent;
   isolation: isolate;
   contain: layout style;
-  font-display: swap;
   font-feature-settings: "kern" 1, "liga" 1;
 }
 
-/* Tüm plugin UI metni Inter zincirini kullansın (tema inherit/atayımlarını kırma) */
 html body .wdp-modal *,
 html body .wdp-donation-form * {
   font-family: inherit;
+  box-sizing: border-box;
 }
 
-/* Genel tema/plugin CSS override - tüm .wdp-* elementleri için */
 html body [class*="wdp-"] {
   isolation: isolate;
-  /* paint yok — alt border / focus halkası kesilmesin */
   contain: layout style;
 }
 
-/* Typography reset - Sadece başlıklar için */
-/* CRITICAL: Do not override display and width for title elements - let shared.css handle it */
-/* CRITICAL: Maximum specificity - html body ile tema override koruması */
 html body .wdp-modal h1:not(.wdp-form-title):not(.wdp-modal-title),
 html body .wdp-modal h2:not(.wdp-form-title),
 html body .wdp-modal h3,
@@ -108,23 +49,20 @@ html body .wdp-donation-form h6 {
   font-family: var(--wdp-font-family);
   font-weight: var(--wdp-font-semibold);
   line-height: var(--wdp-leading-tight);
-  color: var(--wdp-gray-800);
+  color: var(--wdp-text-primary, #0f172a);
   margin: 0 0 var(--wdp-space-4) 0;
   padding: 0;
   letter-spacing: var(--wdp-tracking-tight);
 }
 
-/* Heading size scale */
 html body .wdp-modal h1:not(.wdp-form-title):not(.wdp-modal-title),
 html body .wdp-donation-form h1:not(.wdp-form-title):not(.wdp-modal-title) {
   font-size: var(--wdp-text-3xl);
-  line-height: var(--wdp-leading-tight);
 }
 
 html body .wdp-modal h2:not(.wdp-form-title),
 html body .wdp-donation-form h2:not(.wdp-form-title) {
   font-size: var(--wdp-text-2xl);
-  line-height: var(--wdp-leading-tight);
 }
 
 html body .wdp-modal h3,
@@ -151,8 +89,6 @@ html body .wdp-donation-form h6 {
   line-height: var(--wdp-leading-normal);
 }
 
-/* Link reset */
-/* CRITICAL: Maximum specificity - html body ile tema override koruması */
 html body .wdp-modal a,
 html body .wdp-donation-form a {
   color: inherit;
@@ -167,8 +103,6 @@ html body .wdp-donation-form a:focus {
   text-decoration: underline;
 }
 
-/* List reset */
-/* CRITICAL: Maximum specificity - html body ile tema override koruması */
 html body .wdp-modal ul,
 html body .wdp-modal ol,
 html body .wdp-donation-form ul,
@@ -184,17 +118,13 @@ html body .wdp-donation-form li {
   padding: 0;
 }
 
-/* Paragraph reset with improved typography */
-/* CRITICAL: Maximum specificity - html body ile tema override koruması */
 html body .wdp-modal p,
 html body .wdp-donation-form p {
   margin: 0 0 var(--wdp-space-3);
   padding: 0;
-  color: var(--wdp-gray-700);
+  color: var(--wdp-text-secondary, #475569);
   font-size: var(--wdp-text-base);
   line-height: var(--wdp-leading-normal);
-  letter-spacing: var(--wdp-tracking-normal);
-  max-width: 65ch; /* Optimal line length for readability */
 }
 
 html body .wdp-modal :is(.wdp-product-note__text, .wdp-sadaka-donation__message),
@@ -203,8 +133,6 @@ html body .wdp-donation-form :is(.wdp-product-note__text, .wdp-sadaka-donation__
   max-width: none;
 }
 
-/* Image reset */
-/* CRITICAL: Maximum specificity - html body ile tema override koruması */
 html body .wdp-modal img,
 html body .wdp-donation-form img {
   max-width: 100%;
@@ -212,8 +140,6 @@ html body .wdp-donation-form img {
   display: block;
 }
 
-/* Table reset */
-/* CRITICAL: Maximum specificity - html body ile tema override koruması */
 html body .wdp-modal table,
 html body .wdp-donation-form table {
   border-collapse: collapse;
@@ -231,8 +157,6 @@ html body .wdp-donation-form td {
   margin: 0;
 }
 
-/* Remove native number input controls - Sadece sayaçlar için spinner gizle */
-/* CRITICAL: Maximum specificity - html body ile tema override koruması */
 html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-quantity-counter, .wdp-share-counter, .wdp-share-quantity) input[type="number"]::-webkit-outer-spin-button,
 html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-quantity-counter, .wdp-share-counter, .wdp-share-quantity) input[type="number"]::-webkit-inner-spin-button {
   -webkit-appearance: none;
@@ -244,49 +168,4 @@ html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-quantity-counter, .wdp-sh
   -webkit-appearance: none;
   -moz-appearance: textfield;
   appearance: none;
-}
-
-/* Özel fiyat input'ları için spinner'ları göster - Daha spesifik selector ile override */
-/* CRITICAL: Maximum specificity - html body ile tema override koruması */
-html body :is(.wdp-modal, .wdp-donation-form) .wdp-price-quantity-row > :is(.wdp-price-field input[type="number"]:not(.wdp-custom-price-input), input[name="custom_price"][type="number"]:not(.wdp-custom-price-input))::-webkit-outer-spin-button,
-html body :is(.wdp-modal, .wdp-donation-form) .wdp-price-quantity-row > :is(.wdp-price-field input[type="number"]:not(.wdp-custom-price-input), input[name="custom_price"][type="number"]:not(.wdp-custom-price-input))::-webkit-inner-spin-button {
-  display: block;
-  opacity: 1;
-  cursor: pointer;
-  -webkit-appearance: button;
-  appearance: button;
-  height: 21px;
-  width: 21px;
-  margin: 0;
-}
-
-/* Media queries for mobile */
-@media (max-width: 600px) {
-  /* CRITICAL: Maximum specificity - html body ile tema override koruması */
-  html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-quantity-counter, .wdp-share-counter, .wdp-share-quantity) input[type="number"]::-webkit-outer-spin-button,
-  html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-quantity-counter, .wdp-share-counter, .wdp-share-quantity) input[type="number"]::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-    display: none;
-  }
-
-  html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-quantity-counter, .wdp-share-counter, .wdp-share-quantity) input[type="number"] {
-    -webkit-appearance: none;
-    -moz-appearance: textfield;
-    appearance: none;
-  }
-
-  /* Mobile: Özel fiyat input spinner'ları görünür */
-  /* CRITICAL: Maximum specificity - html body ile tema override koruması */
-  html body :is(.wdp-modal, .wdp-donation-form) .wdp-price-quantity-row > :is(.wdp-price-field input[type="number"]:not(.wdp-custom-price-input), input[name="custom_price"][type="number"]:not(.wdp-custom-price-input))::-webkit-outer-spin-button,
-  html body :is(.wdp-modal, .wdp-donation-form) .wdp-price-quantity-row > :is(.wdp-price-field input[type="number"]:not(.wdp-custom-price-input), input[name="custom_price"][type="number"]:not(.wdp-custom-price-input))::-webkit-inner-spin-button {
-    display: block;
-    opacity: 1;
-    cursor: pointer;
-    -webkit-appearance: button;
-    appearance: button;
-    height: 21px;
-    width: 21px;
-    margin: 0;
-  }
 }

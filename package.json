@@ -1,6 +1,6 @@
 {
   "name": "donation-popup",
-  "version": "1.0.0",
+  "version": "10.25.0",
   "description": "WooCommerce donation popup — WordPress plugin.",
   "private": true,
   "scripts": {
@@ -8,6 +8,8 @@
     "build:js": "php tools/build-js-bundle.php",
     "build": "npm run build:css && npm run build:js",
     "smoke": "php tests/smoke/run.php",
+    "test": "php vendor/bin/phpunit -c phpunit.xml.dist",
+    "test:install": "composer install --no-interaction",
     "verify": "npm run build && npm run smoke",
     "pack": "npm run build && sh scripts/package-wp-plugin.sh"
   },

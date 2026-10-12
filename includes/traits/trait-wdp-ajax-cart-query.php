@@ -1,13 +1,18 @@
 <?php
+/**
+ * Sepet sayacı, mini-cart listesi, satır silme ve bağış meta alt kümesi.
+ *
+ * @package WooCommerce\Donation_Popup
+ */
 if (!defined('ABSPATH')) {
 	exit;
 }
 
 trait WDP_Ajax_Cart_Query_Trait {
     /**
-     * Keep a small, privacy-safe subset of donation metadata for frontend cart UI.
+     * Ön yüz sepet UI için bağış meta verisinin gizlilik-güvenli alt kümesini döndürür.
      *
-     * @param array $donation_data Raw donation payload from cart item.
+     * @param array $donation_data Sepet satırındaki ham bağış verisi.
      * @return array
      */
     private static function sanitize_public_donation_data($donation_data) {
@@ -37,16 +42,10 @@ trait WDP_Ajax_Cart_Query_Trait {
         return $safe;
     }
     /**
-     * Get cart count via AJAX
+     * AJAX ile sepet ürün adedini döndürür.
      */
     public static function get_cart_count() {
-        try {
-            self::validate_ajax_request('wdp_get_cart_count');
-            self::enforce_rate_limit('get_cart_count', 120, 60);
-            self::enforce_capability('read');
-        } catch (WDP_Security_Exception $e) {
-            WDP_Utils::json_error($e);
-        }
+        self::run_secured_ajax('wdp_get_cart_count', 'get_cart_count', 120, 60);
 
         $cart = self::get_wc_cart();
         if (!$cart) {
@@ -70,16 +69,10 @@ trait WDP_Ajax_Cart_Query_Trait {
     }
 
     /**
-     * Get cart contents via AJAX
+     * AJAX ile sepet satırlarını (mini-cart UI) döndürür.
      */
     public static function get_cart_contents() {
-        try {
-            self::validate_ajax_request('wdp_get_cart_contents');
-            self::enforce_rate_limit('get_cart_contents', 120, 60);
-            self::enforce_capability('read');
-        } catch (WDP_Security_Exception $e) {
-            WDP_Utils::json_error($e);
-        }
+        self::run_secured_ajax('wdp_get_cart_contents', 'get_cart_contents', 120, 60);
 
         $cart = self::get_wc_cart();
         if (!$cart) {
@@ -217,22 +210,15 @@ trait WDP_Ajax_Cart_Query_Trait {
      * @return void
      */
     public static function remove_cart_item() {
-        try {
-            self::validate_ajax_request('wdp_remove_cart_item');
-            self::enforce_rate_limit('remove_cart_item', 40, 60);
-            self::enforce_capability('read');
-        } catch (WDP_Security_Exception $e) {
-            WDP_Utils::json_error($e);
-        }
+        self::run_secured_ajax('wdp_remove_cart_item', 'remove_cart_item', 40, 60);
 
         $cart = self::get_wc_cart();
         if (!$cart) {
             WDP_Utils::json_error(__('WooCommerce sepet nesnesi bulunamadı.', 'woo-donation-popup'));
             return;
         }
-        
-        try {
 
+        try {
             // Get cart item key
             $cart_item_key = isset($_POST['cart_item_key']) ? sanitize_text_field(wp_unslash($_POST['cart_item_key'])) : '';
 
@@ -273,11 +259,17 @@ trait WDP_Ajax_Cart_Query_Trait {
 
             // Get updated cart items
             $items = self::get_cart_items();
+            $removed_product_id = !empty($target_item['product_id']) ? absint($target_item['product_id']) : 0;
+            $pending_in_cart = ($removed_product_id > 0 && class_exists('WDP_Cart'))
+                ? (float) WDP_Cart::sum_cart_pending_for_product($removed_product_id)
+                : 0.0;
 
             WDP_Utils::json_success(array(
                 'message' => __('Sepet öğesi kaldırıldı.', 'woo-donation-popup'),
                 'items' => $items,
                 'cart_count' => (int) $cart->get_cart_contents_count(),
+                'product_id' => $removed_product_id,
+                'pending_in_cart' => $pending_in_cart,
             ));
 
         } catch (WDP_Security_Exception $e) {

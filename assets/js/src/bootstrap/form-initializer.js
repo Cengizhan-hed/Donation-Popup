@@ -1,6 +1,7 @@
 /**
- * Form Initializer - Form başlatma işlemleri
- * initializeDirectForms, initializeInlineForms
+ * @file form-initializer.js
+ * Sayfadaki bağış formlarına başlangıç verisi ve dinleyici atar.
+ * Dış API: WDPApp.formInitializer
  */
 
 (function(window) {

@@ -1,11 +1,16 @@
 <?php
+/**
+ * get_product_info AJAX; önbellekli ürün meta ve sadaka blok verisi.
+ *
+ * @package WooCommerce\Donation_Popup
+ */
 if (!defined("ABSPATH")) { exit; }
 
 trait WDP_Ajax_Product_Trait {
+    /** Ürün meta verilerini önbellekleyerek ön yüze JSON döndürür. */
     public static function get_product_info() {
         try {
-            self::validate_ajax_request('wdp_get_product_info');
-            self::enforce_rate_limit('get_product_info', 60, 60);
+            self::run_secured_ajax('wdp_get_product_info', 'get_product_info', 60, 60, false);
 
             $product_id = isset($_POST['product_id']) ? absint(wp_unslash($_POST['product_id'])) : 0;
 
@@ -63,34 +68,59 @@ trait WDP_Ajax_Product_Trait {
             set_transient($cache_key, $cache_data, HOUR_IN_SECONDS);
         }
 
-        if ($allow_custom_price && '' === $min_price) {
-            $min_price = '0';
-        }
+		if ($enable_progress_bar) {
+			$allow_custom_price = true;
+		}
 
-        if ($allow_multiple_shares && '' === $max_shares) {
-            $max_shares = '7';
-        }
+		if ($allow_custom_price && '' === $min_price) {
+			$min_price = '0';
+		}
 
-        $show_sadaka_donation = $enable_sadaka_donation && !$enable_progress_bar;
-        $sadaka_block_html = '';
-        if ($show_sadaka_donation && class_exists('WDP_Donation_Product_Context_Service') && class_exists('WDP_Templates')) {
-            $sadaka_context = WDP_Donation_Product_Context_Service::build_form_context($product);
-            $sadaka_block_html = WDP_Templates::render_sadaka_donation_block($sadaka_context);
-        }
+		// Progress forms: floor/default is WooCommerce product price when admin min is 0/empty.
+		$progress_min_price = $min_price;
+		if ($enable_progress_bar) {
+			$product_base_price = (float) $product->get_price();
+			if ($product_base_price > 0) {
+				$progress_min_price = ($min_price !== '' && (float) $min_price > 0)
+					? (string) min((float) $min_price, $product_base_price)
+					: (string) $product_base_price;
+			} elseif ($min_price !== '' && (float) $min_price > 0) {
+				$progress_min_price = (string) $min_price;
+			} else {
+				$progress_min_price = '0';
+			}
+			// Frontend min_price for progress should never advertise "0" when WC has a price.
+			if ((float) $progress_min_price > 0) {
+				$min_price = $progress_min_price;
+			}
+		}
 
-        $raw_price = $product->get_price();
-        $response = array(
-            'product_name' => $product->get_name(),
-            'is_custom_price' => $allow_custom_price,
-            'min_price' => $min_price,
-            'regular_price' => $product->get_regular_price(),
-            'price' => $raw_price,
-            'price_html' => ($raw_price !== '' && $raw_price !== null) ? WDP_Utils::format_price_html($raw_price) : '',
-            'is_multiple_shares' => $allow_multiple_shares,
-            'max_shares' => $max_shares,
-            'enable_sadaka_donation' => $show_sadaka_donation,
-            'sadaka_block_html' => $sadaka_block_html,
-        );
+		if ($allow_multiple_shares && '' === $max_shares) {
+			$max_shares = '7';
+		}
+
+		$show_sadaka_donation = $enable_sadaka_donation && !$enable_progress_bar;
+		$sadaka_block_html = '';
+		if ($show_sadaka_donation && class_exists('WDP_Donation_Product_Context_Service') && class_exists('WDP_Templates')) {
+			$sadaka_context = WDP_Donation_Product_Context_Service::build_form_context($product);
+			$sadaka_block_html = WDP_Templates::render_sadaka_donation_block($sadaka_context);
+		}
+
+		$raw_price = $product->get_price();
+		$response = array(
+			'product_name' => $product->get_name(),
+			'is_custom_price' => $allow_custom_price,
+			'min_price' => $min_price,
+			'progress_min_price' => $progress_min_price,
+			'enable_progress_bar' => $enable_progress_bar,
+			'regular_price' => $product->get_regular_price(),
+			'price' => $raw_price,
+			'price_html' => ($raw_price !== '' && $raw_price !== null) ? WDP_Utils::format_price_html($raw_price) : '',
+			'is_multiple_shares' => $allow_multiple_shares,
+			'max_shares' => $max_shares,
+			'enable_sadaka_donation' => $show_sadaka_donation,
+			'sadaka_block_html' => $sadaka_block_html,
+		);
 
             WDP_Utils::log(array('event' => 'get_product_info', 'response' => $response));
             WDP_Utils::json_success($response);
@@ -116,8 +146,7 @@ trait WDP_Ajax_Product_Trait {
         }
 
         try {
-            self::validate_ajax_request('wdp_get_product_name');
-            self::enforce_rate_limit('get_product_name', 60, 60);
+            self::run_secured_ajax('wdp_get_product_name', 'get_product_name', 60, 60, false);
         } catch (WDP_Security_Exception $e) {
             WDP_Utils::json_error($e);
         }

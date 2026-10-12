@@ -1,0 +1,219 @@
+/**
+ * @file wizard.css
+ * Multi-step progress-stepper nav + CTA-height foot controls.
+ */
+
+html body :is(.wdp-modal, .wdp-donation-form) form.wdp-wizard-ready > .wdp-wizard {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  margin: 0 0 4px;
+  flex: 0 0 auto;
+}
+
+/* Progress-stepper: connected numbered nodes */
+html body :is(.wdp-modal, .wdp-donation-form) form.wdp-wizard-ready .wdp-wizard__nav {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0;
+  margin: 0;
+  padding: 4px 2px 0;
+  position: relative;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) form.wdp-wizard-ready .wdp-wizard__nav::before {
+  content: "";
+  position: absolute;
+  top: 18px;
+  left: 12%;
+  right: 12%;
+  height: 2px;
+  background: var(--wdp-border-soft-gray, #e5e9ec);
+  z-index: 0;
+  pointer-events: none;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) form.wdp-wizard-ready .wdp-wizard__step {
+  position: relative;
+  z-index: 1;
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 6px;
+  padding: 0 4px;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  color: var(--wdp-text-tertiary, #64748b);
+  cursor: pointer;
+  font-family: var(--wdp-font-family);
+  transition: color 0.15s ease;
+  min-height: 44px;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) form.wdp-wizard-ready .wdp-wizard__step.is-done {
+  color: var(--wdp-primary, #0f608b);
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) form.wdp-wizard-ready .wdp-wizard__step.is-active {
+  color: var(--wdp-primary, #0f608b);
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) form.wdp-wizard-ready .wdp-wizard__step:focus-visible {
+  outline: none;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) form.wdp-wizard-ready .wdp-wizard__step:focus-visible .wdp-wizard__step-index {
+  box-shadow: var(--wdp-focus-ring, 0 0 0 3px color-mix(in srgb, var(--wdp-primary) 12%, transparent));
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) form.wdp-wizard-ready .wdp-wizard__step-index {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1;
+  background: var(--wdp-surface-1, #f7f8fa);
+  border: 2px solid var(--wdp-border-soft-gray, #e5e9ec);
+  color: var(--wdp-text-tertiary, #64748b);
+  box-sizing: border-box;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) form.wdp-wizard-ready .wdp-wizard__step.is-done .wdp-wizard__step-index {
+  background: color-mix(in srgb, var(--wdp-primary, #0f608b) 12%, #ffffff);
+  border-color: color-mix(in srgb, var(--wdp-primary, #0f608b) 45%, #e5e9ec);
+  color: var(--wdp-primary, #0f608b);
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) form.wdp-wizard-ready .wdp-wizard__step.is-active .wdp-wizard__step-index {
+  background: var(--wdp-primary, #0f608b);
+  border-color: var(--wdp-primary, #0f608b);
+  color: #ffffff;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) form.wdp-wizard-ready .wdp-wizard__step-label {
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.25;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) form.wdp-wizard-ready .wdp-wizard-section[hidden],
+html body :is(.wdp-modal, .wdp-donation-form) form.wdp-wizard-ready .wdp-wizard-section[aria-hidden="true"] {
+  display: none !important;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) form.wdp-wizard-ready .wdp-wizard-section.is-wdp-step-active {
+  animation: wdp-wizard-panel-in 260ms var(--wdp-ease-out, cubic-bezier(0, 0, 0.2, 1)) both;
+}
+
+@keyframes wdp-wizard-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) form.wdp-wizard-ready .wdp-wizard-foot {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin: 8px 0 4px;
+  padding: 0;
+  position: relative;
+  z-index: 5;
+  flex: 0 0 auto;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) form.wdp-wizard-ready.wdp-wizard-on-confirm .wdp-wizard-foot {
+  display: none !important;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) form.wdp-wizard-ready .wdp-wizard__btn {
+  min-height: var(--wdp-form-cta-height, 52px);
+  height: var(--wdp-form-cta-height, 52px);
+  min-width: 112px;
+  padding: 0 20px;
+  border-radius: var(--wdp-radius-ui, 12px);
+  border: 1px solid var(--wdp-border-soft-gray, #e5e9ec);
+  background: var(--wdp-ghost-btn-bg, #ffffff);
+  color: var(--wdp-text-primary, #0f172a);
+  font-weight: 700;
+  font-size: var(--wdp-form-button-font-size, 16px);
+  font-family: var(--wdp-font-family);
+  cursor: pointer;
+  pointer-events: auto;
+  touch-action: manipulation;
+  box-sizing: border-box;
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) form.wdp-wizard-ready .wdp-wizard__btn--back {
+  background: transparent;
+  border-color: var(--wdp-border-soft-gray, #e5e9ec);
+  color: var(--wdp-text-secondary, #475569);
+  font-weight: 600;
+  box-shadow: none;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) form.wdp-wizard-ready .wdp-wizard__btn--back:hover {
+  background: var(--wdp-surface-1, #f7f8fa);
+  color: var(--wdp-text-primary, #0f172a);
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) form.wdp-wizard-ready .wdp-wizard__btn--next {
+  margin-inline-start: auto;
+  background: var(--wdp-primary, #0f608b);
+  border-color: var(--wdp-primary, #0f608b);
+  color: #ffffff;
+  box-shadow: var(--wdp-plugin-btn-shadow-modal, 0 1px 3px rgba(15, 23, 42, 0.1));
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) form.wdp-wizard-ready .wdp-wizard__btn--next:hover {
+  background: var(--wdp-primary-hover, #0c4f72);
+  border-color: var(--wdp-primary-hover, #0c4f72);
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) form.wdp-wizard-ready .wdp-wizard__btn:focus-visible {
+  outline: none;
+  box-shadow: var(--wdp-focus-ring, 0 0 0 3px color-mix(in srgb, var(--wdp-primary) 12%, transparent));
+  border-color: var(--wdp-primary, #0f608b);
+}
+
+@media (max-width: 420px) {
+  html body :is(.wdp-modal, .wdp-donation-form) form.wdp-wizard-ready .wdp-wizard__step-label {
+    font-size: 12px;
+  }
+
+  html body :is(.wdp-modal, .wdp-donation-form) form.wdp-wizard-ready .wdp-wizard__nav::before {
+    left: 14%;
+    right: 14%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html body :is(.wdp-modal, .wdp-donation-form) form.wdp-wizard-ready .wdp-wizard-section.is-wdp-step-active {
+    animation: none;
+  }
+}

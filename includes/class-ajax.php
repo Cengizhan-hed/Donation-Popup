@@ -1,6 +1,6 @@
 <?php
 /**
- * AJAX handlers — thin registrar; logic in includes/traits/.
+ * wp_ajax_* kancalarını kaydeden ince AJAX sınıfı; mantık trait dosyalarında.
  *
  * @package WooCommerce\Donation_Popup
  */

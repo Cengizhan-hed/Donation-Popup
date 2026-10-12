@@ -1,16 +1,18 @@
 <?php
+/**
+ * Taze nonce üretimi ve benzersiz gönderim anahtarı doğrulaması.
+ *
+ * @package WooCommerce\Donation_Popup
+ */
 if (!defined('ABSPATH')) {
 	exit;
 }
 
 trait WDP_Ajax_Cart_Session_Trait {
     /**
-     * Return fresh AJAX nonces for the current session (no prior nonce required).
+     * Mevcut oturum için güncel AJAX nonce değerlerini döndürür.
      *
-     * Used when the page stayed open a long time or after a failed add-to-cart response
-     * so the client can retry verification with valid credentials.
-     *
-     * @return void
+     * Sayfa uzun süre açık kaldığında veya başarısız ekleme sonrası yeniden deneme için kullanılır.
      */
     public static function get_fresh_nonces() {
         try {
@@ -43,15 +45,13 @@ trait WDP_Ajax_Cart_Session_Trait {
     }
 
     /**
-     * Check whether a prior submission (unique_submission_key) is already in the cart.
+     * Benzersiz gönderim anahtarının sepette olup olmadığını kontrol eder.
      *
-     * @return void
+     * Ağ kopması sonrası çift ekleme / yanlış hata mesajını önlemek için kullanılır.
      */
     public static function verify_submission_in_cart() {
         try {
-            self::validate_ajax_request('wdp_ajax_add_to_cart');
-            self::enforce_rate_limit('verify_submission', 40, 60);
-            self::enforce_capability('read');
+            self::run_secured_ajax('wdp_ajax_add_to_cart', 'verify_submission', 40, 60);
 
             $key = isset($_POST['unique_submission_key']) ? WDP_Security::sanitize_text(wp_unslash($_POST['unique_submission_key']), 100) : '';
 

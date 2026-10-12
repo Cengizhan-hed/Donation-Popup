@@ -1,4 +1,9 @@
 <?php
+/**
+ * SiteGround, WP Rocket, LiteSpeed ve Autoptimize birleştirme dışlamaları.
+ *
+ * @package WooCommerce\Donation_Popup
+ */
 if (!defined('ABSPATH')) {
     exit;
 }

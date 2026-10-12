@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin bootstrap orchestration.
+ * HPOS uyumluluğu, bağımlılık yükleme, sürüm güncelleme ve WC kontrolü.
  *
  * @package WooCommerce\Donation_Popup
  */

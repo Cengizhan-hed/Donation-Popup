@@ -1,7 +1,7 @@
 <?php
 /**
- * Utilities class
- * 
+ * Merkezi yardımcı sınıf; log, JSON yanıt, sadaka çözümü, progress bar ve önbellek.
+ *
  * @package WooCommerce\Donation_Popup
  */
 
@@ -48,7 +48,8 @@ class WDP_Utils {
         self::$debug_enabled = (bool) (defined('WP_DEBUG') && WP_DEBUG);
 
         // Progress bar toplamlarını artımlı güncelle (büyük sipariş hacminde tam taramayı azaltır).
-        add_action('woocommerce_order_status_completed', array(__CLASS__, 'sync_order_donation_totals_on_complete'), 20, 1);
+        // Ödenmiş durumlar (wdp_progress_paid_statuses) sayılır; refunded/cancelled/failed geri alınır.
+        add_action('woocommerce_order_status_changed', array(__CLASS__, 'sync_order_donation_totals_on_status_change'), 20, 4);
         add_action('woocommerce_order_refunded', array(__CLASS__, 'sync_order_donation_totals_on_refund'), 20, 2);
 
         // Ürün veya bağışa ilişkin ürün meta'sı değişince get_product_info / sepet AJAX önbelleğini tek merkezden temizle.
@@ -143,17 +144,18 @@ class WDP_Utils {
     }
 
     /**
-     * Genel alt bağış WC ürün ID (Başarı & Mini Sepet). Varsayılan: 10721.
+     * Genel alt bağış WC ürün ID (Başarı & Mini Sepet).
+     * 0 değeri, zorunlu yapılandırma eksik olduğunu ifade eder.
      *
      * @return int
      */
     public static function get_default_sadaka_wc_product_id() {
         $settings = get_option('wdp_success_settings', array());
-        $id = 10721;
+        $id = 0;
         if (is_array($settings) && !empty($settings['sadaka_wc_product_id'])) {
             $id = absint($settings['sadaka_wc_product_id']);
         }
-        return $id > 0 ? $id : 10721;
+        return $id > 0 ? $id : 0;
     }
 
     /**
@@ -350,7 +352,7 @@ class WDP_Utils {
     }
 
     /**
-     * Get total donation amount for a product from completed orders.
+     * Get total donation amount for a product from paid orders (wdp_progress_paid_statuses).
      * 
      * ÖNEMLİ: Bu fonksiyon SADECE belirtilen ürün ID'si için yapılan bağışları sayar.
      * Her ürün için ayrı progress bar olduğundan, ürünler birbirine karışmaz.
@@ -382,54 +384,10 @@ class WDP_Utils {
             return $meta_total;
         }
 
-        // Get total from completed orders ONLY (not from cart)
+        // İlk okuma: ödemesi alınmış siparişleri (wdp_progress_paid_statuses) sayfalı tara ve yaz.
         // SADECE bu ürün için yapılan bağışları say
-        $total = 0.0;
-
-        // Büyük mağazalarda memory/CPU maliyetini azaltmak için siparişleri sayfalar halinde işle.
-        $page = 1;
-        $per_page = 200;
-
-        do {
-            $order_query = wc_get_orders(array(
-                'status' => array('wc-completed'),
-                'limit' => $per_page,
-                'page' => $page,
-                'paginate' => true,
-                'return' => 'objects',
-            ));
-
-            if (empty($order_query) || empty($order_query->orders)) {
-                break;
-            }
-
-            foreach ($order_query->orders as $order) {
-                if (!$order) {
-                    continue;
-                }
-
-                foreach ($order->get_items() as $item) {
-                    $item_product_id = (int) $item->get_product_id();
-                    if ($item_product_id !== $product_id) {
-                        continue;
-                    }
-
-                    $custom_price = $item->get_meta('_custom_price');
-                    if ($custom_price && floatval($custom_price) > 0) {
-                        $total += floatval($custom_price) * $item->get_quantity();
-                    } else {
-                        $item_total = floatval($item->get_total());
-                        if ($item_total > 0) {
-                            $total += $item_total;
-                        }
-                    }
-                }
-            }
-
-            $page++;
-        } while ($page <= (int) $order_query->max_num_pages);
-
-        update_post_meta($product_id, '_wdp_total_donation_amount', $total);
+        $result = self::recalculate_product_donation_total($product_id);
+        $total = (float) $result['total'];
 
         // Cache for 1 hour - her ürün için ayrı cache
         wp_cache_set($cache_key, $total, 'wdp_donations', HOUR_IN_SECONDS);
@@ -437,6 +395,28 @@ class WDP_Utils {
         // ÖNEMLİ: Sadece bu ürün için yapılan bağışların toplamını döndür
         // Farklı ürünlerin bağışları birbirine karışmaz
         return floatval($total);
+    }
+
+    /**
+     * Ürün için tamamlanmış bağışçı sayısı.
+     *
+     * @param int $product_id Product ID.
+     * @return int
+     */
+    public static function get_donor_count($product_id) {
+        $product_id = absint($product_id);
+        if (!$product_id) {
+            return 0;
+        }
+        $cache_key = 'wdp_donor_count_' . $product_id;
+        $cached = wp_cache_get($cache_key, 'wdp_donations');
+        if (false !== $cached) {
+            return max(0, (int) $cached);
+        }
+        $meta = get_post_meta($product_id, '_wdp_donor_count', true);
+        $count = ($meta !== '' && is_numeric($meta)) ? max(0, (int) $meta) : 0;
+        wp_cache_set($cache_key, $count, 'wdp_donations', HOUR_IN_SECONDS);
+        return $count;
     }
 
 

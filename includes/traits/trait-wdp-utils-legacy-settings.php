@@ -1,4 +1,9 @@
 <?php
+/**
+ * Eski popup buton metni ve gölge ayarlarını yeni şemaya taşır.
+ *
+ * @package WooCommerce\Donation_Popup
+ */
 if (!defined('ABSPATH')) {
     exit;
 }

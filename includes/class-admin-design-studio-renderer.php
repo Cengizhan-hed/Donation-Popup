@@ -1,0 +1,370 @@
+<?php
+/**
+ * Tasarım stüdyosu: stil paketi kartları, yüzey token’ları, ikon seçici ve güven şeridi.
+ *
+ * @package WooCommerce\Donation_Popup
+ */
+
+if (!defined('ABSPATH')) {
+	exit;
+}
+
+/**
+ * Class WDP_Admin_Design_Studio_Renderer
+ */
+class WDP_Admin_Design_Studio_Renderer {
+
+	/**
+	 * Full Design Studio tab.
+	 *
+	 * @return void
+	 */
+	public static function render_tab() {
+		$button_settings = get_option('wdp_button_settings', array());
+		if (!is_array($button_settings)) {
+			$button_settings = array();
+		}
+		$settings = wp_parse_args(
+			$button_settings,
+			array(
+				'brand_color'         => '#0f608b',
+				'style_preset_id'     => 'classic',
+				'form_density'        => 'normal',
+				'glass_blur_px'       => '22',
+				'glass_fill_opacity'  => '90',
+				'overlay_tint'        => '#0f172a',
+				'overlay_opacity'     => '52',
+				'elevation_level'     => '3',
+				'body_font_family'    => 'inherit',
+				'enable_donor_email'  => '0',
+				'enable_dedication'   => '0',
+				'enable_anonymous'    => '0',
+				'dedication_placeholder' => __('Kimin adına? (isteğe bağlı)', 'woo-donation-popup'),
+				'module_order'        => '',
+				'trust_badges'        => '',
+				'motion_intensity'    => 'normal',
+				'chip_style'          => 'soft',
+			)
+		);
+		if (empty($settings['brand_color']) && !empty($settings['button_primary_color'])) {
+			$settings['brand_color'] = $settings['button_primary_color'];
+		}
+
+		WDP_Admin_Renderer_Helpers::open_settings_split();
+		WDP_Admin_Renderer_Helpers::open_form_container('wdp-design-studio-settings-form');
+
+		echo '<div class="wdp-tab-help" role="note"><p class="wdp-tab-help__title">' . esc_html__('Tasarım Stüdyosu', 'woo-donation-popup') . '</p><ul class="wdp-tab-help__list"><li>' . esc_html__('Global marka rengi tüm buton, progress ve vurgu tonlarını otomatik üretir (açık / koyu).', 'woo-donation-popup') . '</li><li>' . esc_html__('Görünüm paketleri, cam/yüzey token’ları, ikonlar ve güven rozetleri burada yönetilir.', 'woo-donation-popup') . '</li></ul></div>';
+
+		echo '<div id="wdp-studio-sec-brand" class="wdp-settings-section">';
+		self::render_brand_color_section($settings);
+		echo '</div>';
+
+		echo '<div id="wdp-studio-sec-presets" class="wdp-settings-section">';
+		self::render_style_presets_section(isset($settings['style_preset_id']) ? (string) $settings['style_preset_id'] : 'classic');
+		echo '</div>';
+
+		echo '<div id="wdp-studio-sec-surface" class="wdp-settings-section">';
+		self::render_surface_section($settings);
+		echo '</div>';
+
+		echo '<div id="wdp-studio-sec-icons" class="wdp-settings-section">';
+		self::render_icons_section($settings);
+		echo '</div>';
+
+		echo '<div id="wdp-studio-sec-modules" class="wdp-settings-section">';
+		self::render_modules_section($settings);
+		echo '</div>';
+
+		WDP_Admin_Renderer_Helpers::close_form_container('wdp-save-design-studio-settings', true);
+		WDP_Admin_Renderer_Helpers::begin_live_preview_aside('wdp-live-preview-studio', __('Stüdyo önizlemesi', 'woo-donation-popup'));
+		echo '<p class="description">' . esc_html__('Paket ve yüzey ayarları kaydedildikten sonra ön yüzde uygulanır. Ürün override’ları ürün kartından gelir.', 'woo-donation-popup') . '</p>';
+		WDP_Admin_Renderer_Helpers::close_settings_split();
+	}
+
+	/**
+	 * Global brand color + live palette preview swatches.
+	 *
+	 * @param array $settings Settings.
+	 * @return void
+	 */
+	public static function render_brand_color_section(array $settings) {
+		WDP_Admin_Renderer_Helpers::render_section_heading(
+			__('Global marka rengi', 'woo-donation-popup'),
+			__('Tek renk seçin — butonlar, progress, odak kenarlığı ve yumuşak arka plan tonları otomatik üretilir.', 'woo-donation-popup')
+		);
+
+		$brand = isset($settings['brand_color']) ? (string) $settings['brand_color'] : '';
+		if (!sanitize_hex_color($brand)) {
+			$brand = !empty($settings['button_primary_color']) ? (string) $settings['button_primary_color'] : '#0f608b';
+		}
+		$brand = sanitize_hex_color($brand) ? $brand : '#0f608b';
+		$palette = class_exists('WDP_Color_Palette') ? WDP_Color_Palette::from_hex($brand) : array('primary' => $brand);
+
+		echo '<table class="form-table wdp-admin-field-cards">';
+		echo '<tr><th scope="row"><label for="brand_color">' . esc_html__('Marka rengi', 'woo-donation-popup') . '</label></th><td>';
+		echo '<input type="color" id="brand_color" name="brand_color" value="' . esc_attr($brand) . '" />';
+		echo '<p class="description">' . esc_html__('Ne işe yarar: Sitenizin ana kimlik rengidir. Kaydettiğinizde Sepete Ekle / Ödemeye Git / popup tetikleyici / progress dolumu / başarı ekranı vurguları bu renkten üretilen açık-koyu palete otomatik güncellenir. Ürün kartındaki “Primary” alanı doluysa o ürün için marka rengini ezer.', 'woo-donation-popup') . '</p>';
+		echo '</td></tr></table>';
+
+		echo '<div class="wdp-brand-palette-preview" aria-hidden="true">';
+		$swatches = array(
+			'primary'       => __('Ana', 'woo-donation-popup'),
+			'primary_hover' => __('Hover', 'woo-donation-popup'),
+			'primary_dark'  => __('Koyu', 'woo-donation-popup'),
+			'primary_soft'  => __('Açık', 'woo-donation-popup'),
+			'checkout'      => __('Ödeme', 'woo-donation-popup'),
+			'progress_pending' => __('Bekleyen', 'woo-donation-popup'),
+		);
+		foreach ($swatches as $key => $label) {
+			$hex = isset($palette[ $key ]) ? $palette[ $key ] : $brand;
+			echo '<span class="wdp-brand-palette-preview__swatch" style="--wdp-swatch:' . esc_attr($hex) . '" title="' . esc_attr($hex) . '">';
+			echo '<i style="background:' . esc_attr($hex) . '"></i>';
+			echo '<em>' . esc_html($label) . '</em>';
+			echo '</span>';
+		}
+		echo '</div>';
+	}
+
+	/**
+	 * Style preset cards + import/export toolbar.
+	 *
+	 * @param string $current_id Active preset id.
+	 * @return void
+	 */
+	public static function render_style_presets_section($current_id = 'classic') {
+		$current_id = sanitize_key((string) $current_id);
+		if ($current_id === '') {
+			$current_id = 'classic';
+		}
+
+		WDP_Admin_Renderer_Helpers::render_section_heading(
+			__('Görünüm paketleri', 'woo-donation-popup'),
+			__('Bir pakete tıklayın — renkler, radius ve yoğunluk form alanlarına dolar. Kaydettikten sonra sitede uygulanır.', 'woo-donation-popup')
+		);
+
+		echo '<input type="hidden" name="style_preset_id" id="style_preset_id" value="' . esc_attr($current_id) . '" />';
+		echo '<div class="wdp-style-presets" data-wdp-style-presets>';
+
+		foreach (WDP_Style_Presets::get_cards_for_admin() as $card) {
+			$id     = $card['id'];
+			$active = ($id === $current_id) ? ' is-active' : '';
+			$swatch = !empty($card['swatch']) ? sanitize_hex_color($card['swatch']) : '';
+			echo '<button type="button" class="wdp-style-preset-card' . esc_attr($active) . '" data-preset-id="' . esc_attr($id) . '"' . ($swatch ? ' style="--wdp-preset-swatch:' . esc_attr($swatch) . '"' : '') . '>';
+			if ($swatch) {
+				echo '<span class="wdp-style-preset-card__swatch" aria-hidden="true"><i style="background:' . esc_attr($swatch) . '"></i><i style="background:' . esc_attr($swatch) . ';opacity:.72"></i><i style="background:' . esc_attr($swatch) . ';opacity:.42"></i></span>';
+			}
+			echo '<span class="wdp-style-preset-card__title">' . esc_html($card['label']) . '</span>';
+			echo '<span class="wdp-style-preset-card__desc">' . esc_html($card['description']) . '</span>';
+			echo '</button>';
+		}
+
+		echo '</div>';
+
+		echo '<div class="wdp-style-presets__toolbar">';
+		echo '<button type="button" class="button" id="wdp-export-style-preset">' . esc_html__('Mevcut görünümü dışa aktar', 'woo-donation-popup') . '</button>';
+		echo '<label class="button" for="wdp-import-style-preset-file">' . esc_html__('Paket içe aktar', 'woo-donation-popup') . '</label>';
+		echo '<input type="file" id="wdp-import-style-preset-file" accept="application/json,.json" hidden />';
+		echo '<button type="button" class="button button-primary" id="wdp-apply-style-preset-now">' . esc_html__('Paketi şimdi uygula & kaydet', 'woo-donation-popup') . '</button>';
+		echo '<p class="description">' . esc_html__('Kart tıklamak: Sadece form alanlarını doldurur (henüz kaydetmez). “Paketi şimdi uygula & kaydet”: Seçili paketi veritabanına yazar; Normal / Hisseli / Progress / Başarı renklerini günceller; sayfa yenilenmez. Dışa aktar: Mevcut ayarları JSON indirir. İçe aktar: JSON paketi yükler ve uygular.', 'woo-donation-popup') . '</p>';
+		echo '</div>';
+	}
+
+	/**
+	 * Surface / glass / density / typography controls.
+	 *
+	 * @param array $settings Button settings.
+	 * @return void
+	 */
+	public static function render_surface_section(array $settings) {
+		WDP_Admin_Renderer_Helpers::render_section_heading(
+			__('Yüzey & tipografi', 'woo-donation-popup'),
+			__('Cam paneli, elevation ve form yoğunluğu — Soft Glass paketinin gerçek glass token’ları burada.', 'woo-donation-popup')
+		);
+
+		$density = isset($settings['form_density']) ? (string) $settings['form_density'] : 'normal';
+		$blur    = isset($settings['glass_blur_px']) ? absint($settings['glass_blur_px']) : 22;
+		$fill_op = isset($settings['glass_fill_opacity']) ? absint($settings['glass_fill_opacity']) : 90;
+		$elev    = isset($settings['elevation_level']) ? absint($settings['elevation_level']) : 3;
+		$overlay = isset($settings['overlay_tint']) ? (string) $settings['overlay_tint'] : '#0f172a';
+		$ov_op   = isset($settings['overlay_opacity']) ? absint($settings['overlay_opacity']) : 52;
+		$font    = isset($settings['body_font_family']) ? (string) $settings['body_font_family'] : 'inherit';
+		$motion  = isset($settings['motion_intensity']) ? (string) $settings['motion_intensity'] : 'normal';
+		$chip    = isset($settings['chip_style']) ? (string) $settings['chip_style'] : 'soft';
+
+		echo '<table class="form-table wdp-admin-field-cards">';
+		echo '<tr><th scope="row"><label for="form_density">' . esc_html__('Form yoğunluğu (global)', 'woo-donation-popup') . '</label></th><td>';
+		echo '<select id="form_density" name="form_density">';
+		foreach (array('compact' => __('Kompakt', 'woo-donation-popup'), 'normal' => __('Normal', 'woo-donation-popup'), 'spacious' => __('Geniş', 'woo-donation-popup')) as $k => $lab) {
+			echo '<option value="' . esc_attr($k) . '" ' . selected($density, $k, false) . '>' . esc_html($lab) . '</option>';
+		}
+		echo '</select>';
+		echo '<p class="description">' . esc_html__('Ne işe yarar: Form içi boşlukları (satır yüksekliği, alan aralığı, padding) ayarlar. Kompakt = daha az scroll; Geniş = daha ferah dokunmatik kullanım. Ürün kartında “Yoğunluk” doluysa o ürün bu ayarı ezer.', 'woo-donation-popup') . '</p>';
+		echo '</td></tr>';
+		echo '<tr><th scope="row"><label for="glass_blur_px">' . esc_html__('Cam blur (px)', 'woo-donation-popup') . '</label></th><td>';
+		echo '<input type="number" id="glass_blur_px" name="glass_blur_px" value="' . esc_attr((string) $blur) . '" min="0" max="40" class="small-text" />';
+		echo '<p class="description">' . esc_html__('Ne işe yarar: Modal arka planının “buzlu cam” bulanıklık gücü. 0 = bulanıklık yok (düz panel). Yüksek değer = daha soft, daha ağır (performans etkisi artabilir). Modal arka planı şu an düz beyaz zorlandığı için görsel etki sınırlı olabilir; Soft Glass paketleriyle birlikte anlamlıdır.', 'woo-donation-popup') . '</p>';
+		echo '</td></tr>';
+		echo '<tr><th scope="row"><label for="glass_fill_opacity">' . esc_html__('Cam dolgu opaklığı (%)', 'woo-donation-popup') . '</label></th><td>';
+		echo '<input type="number" id="glass_fill_opacity" name="glass_fill_opacity" value="' . esc_attr((string) $fill_op) . '" min="60" max="100" class="small-text" />';
+		echo '<p class="description">' . esc_html__('Ne işe yarar: Modal yüzeyinin ne kadar opak/şeffaf olacağını belirler. 100 = tamamen opak beyaz; 60–80 = arkadaki sayfanın hafif göründüğü cam etkisi. Okunabilirlik için 85+ önerilir.', 'woo-donation-popup') . '</p>';
+		echo '</td></tr>';
+		echo '<tr><th scope="row"><label for="elevation_level">' . esc_html__('Elevation (1–5)', 'woo-donation-popup') . '</label></th><td>';
+		echo '<input type="number" id="elevation_level" name="elevation_level" value="' . esc_attr((string) $elev) . '" min="1" max="5" class="small-text" />';
+		echo '<p class="description">' . esc_html__('Ne işe yarar: Modal ve kart gölge derinliği. 1 = düz/minimal; 5 = belirgin yükseltilmiş gölge. Marka tonunu bozmadan “havada durma” hissini ayarlar.', 'woo-donation-popup') . '</p>';
+		echo '</td></tr>';
+		echo '<tr><th scope="row"><label for="overlay_tint">' . esc_html__('Overlay rengi', 'woo-donation-popup') . '</label></th><td>';
+		echo '<input type="color" id="overlay_tint" name="overlay_tint" value="' . esc_attr(sanitize_hex_color($overlay) ? $overlay : '#0f172a') . '" />';
+		echo '<p class="description">' . esc_html__('Ne işe yarar: Popup açılınca arka planı karartan perde rengi. Genelde koyu lacivert/siyah seçilir; markaya yakın koyu ton da kullanılabilir.', 'woo-donation-popup') . '</p>';
+		echo '</td></tr>';
+		echo '<tr><th scope="row"><label for="overlay_opacity">' . esc_html__('Overlay opaklığı (%)', 'woo-donation-popup') . '</label></th><td>';
+		echo '<input type="number" id="overlay_opacity" name="overlay_opacity" value="' . esc_attr((string) $ov_op) . '" min="20" max="80" class="small-text" />';
+		echo '<p class="description">' . esc_html__('Ne işe yarar: Perdenin ne kadar koyu olacağı. Düşük = arka plan hâlâ okunur; yüksek = forma odak artar, arka plan daha çok kararır. Tipik aralık 40–60.', 'woo-donation-popup') . '</p>';
+		echo '</td></tr>';
+		echo '<tr><th scope="row"><label for="body_font_family">' . esc_html__('Form font stack', 'woo-donation-popup') . '</label></th><td>';
+		echo '<input type="text" id="body_font_family" name="body_font_family" value="' . esc_attr($font) . '" class="large-text" placeholder="inherit veya &#39;DM Sans&#39;, system-ui, sans-serif" />';
+		echo '<p class="description">' . esc_html__('Ne işe yarar: Modal/form içindeki yazı tipi ailesi. “inherit” = temanızın fontunu kullanır. Özel font için CSS font-family yazın (Google Fonts URL’si değil). Örn: \'Inter\', system-ui, sans-serif — fontun temada veya sayfada yüklü olması gerekir.', 'woo-donation-popup') . '</p>';
+		echo '</td></tr>';
+		echo '<tr><th scope="row"><label for="motion_intensity">' . esc_html__('Motion', 'woo-donation-popup') . '</label></th><td>';
+		echo '<select id="motion_intensity" name="motion_intensity"><option value="subtle" ' . selected($motion, 'subtle', false) . '>' . esc_html__('Hafif', 'woo-donation-popup') . '</option><option value="normal" ' . selected($motion, 'normal', false) . '>' . esc_html__('Normal', 'woo-donation-popup') . '</option><option value="expressive" ' . selected($motion, 'expressive', false) . '>' . esc_html__('İfadeli', 'woo-donation-popup') . '</option></select>';
+		echo '<p class="description">' . esc_html__('Ne işe yarar: Açılış, başarı, progress kutlama gibi animasyonların gücünü ayarlar. Hafif = sakin siteler; İfadeli = daha canlı geçişler. “prefers-reduced-motion” açık kullanıcılarda animasyonlar zaten kısılır.', 'woo-donation-popup') . '</p>';
+		echo '</td></tr>';
+		echo '<tr><th scope="row"><label for="chip_style">' . esc_html__('Tutar chip stili', 'woo-donation-popup') . '</label></th><td>';
+		echo '<select id="chip_style" name="chip_style"><option value="soft" ' . selected($chip, 'soft', false) . '>' . esc_html__('Yumuşak', 'woo-donation-popup') . '</option><option value="outline" ' . selected($chip, 'outline', false) . '>' . esc_html__('Outline', 'woo-donation-popup') . '</option><option value="solid" ' . selected($chip, 'solid', false) . '>' . esc_html__('Solid', 'woo-donation-popup') . '</option></select>';
+		echo '<p class="description">' . esc_html__('Ne işe yarar: Hızlı tutar seçeneklerinin (100 / 250 / 500…) görünümü. Yumuşak = açık dolgulu; Outline = sadece kenarlık; Solid = marka rengiyle dolu chip. Chip’ler kapalıysa (ürün/global) bu ayar görünmez.', 'woo-donation-popup') . '</p>';
+		echo '</td></tr>';
+		echo '</table>';
+	}
+
+	/**
+	 * Global donor modules + trust badges + module order.
+	 *
+	 * @param array $settings Settings.
+	 * @return void
+	 */
+	public static function render_modules_section(array $settings) {
+		WDP_Admin_Renderer_Helpers::render_section_heading(
+			__('İçerik modülleri (global varsayılan)', 'woo-donation-popup'),
+			__('Ürün kartı kapalıysa bu varsayılanlar kullanılır.', 'woo-donation-popup')
+		);
+
+		$email_on = !empty($settings['enable_donor_email']) && (string) $settings['enable_donor_email'] === '1';
+		$ded_on   = !empty($settings['enable_dedication']) && (string) $settings['enable_dedication'] === '1';
+		$anon_on  = !empty($settings['enable_anonymous']) && (string) $settings['enable_anonymous'] === '1';
+		$ded_ph   = isset($settings['dedication_placeholder']) ? (string) $settings['dedication_placeholder'] : '';
+		$order    = isset($settings['module_order']) ? (string) $settings['module_order'] : '';
+		$badges   = isset($settings['trust_badges']) ? $settings['trust_badges'] : '';
+		if (is_array($badges)) {
+			$badges = wp_json_encode($badges);
+		}
+
+		echo '<table class="form-table wdp-admin-field-cards">';
+		echo '<tr><th scope="row">' . esc_html__('E-posta alanı', 'woo-donation-popup') . '</th><td><label class="wdp-admin-toggle"><input type="checkbox" name="enable_donor_email" value="1" ' . checked($email_on, true, false) . ' /> ' . esc_html__('Normal formda e-posta göster', 'woo-donation-popup') . '</label>';
+		echo '<p class="description">' . esc_html__('Ne işe yarar: Bağışçıdan e-posta ister. Açıkken formda ek satır çıkar. Ürün kartında “E-posta alanı” kapalıysa o üründe gizlenir.', 'woo-donation-popup') . '</p></td></tr>';
+		echo '<tr><th scope="row">' . esc_html__('İthaf', 'woo-donation-popup') . '</th><td><label class="wdp-admin-toggle"><input type="checkbox" name="enable_dedication" value="1" ' . checked($ded_on, true, false) . ' /> ' . esc_html__('İthaf alanı', 'woo-donation-popup') . '</label>';
+		echo '<p class="description">' . esc_html__('Ne işe yarar: “Kimin adına?” gibi ithaf metni toplar; sipariş meta’sına yazılır. Anma / hediye bağışlarında kullanışlıdır.', 'woo-donation-popup') . '</p></td></tr>';
+		echo '<tr><th scope="row">' . esc_html__('Anonim', 'woo-donation-popup') . '</th><td><label class="wdp-admin-toggle"><input type="checkbox" name="enable_anonymous" value="1" ' . checked($anon_on, true, false) . ' /> ' . esc_html__('Anonim bağış kutusu', 'woo-donation-popup') . '</label>';
+		echo '<p class="description">' . esc_html__('Ne işe yarar: Bağışçının adının listelerde/teşekkürlerde gizlenmesini isteyebileceği onay kutusunu gösterir.', 'woo-donation-popup') . '</p></td></tr>';
+		echo '<tr><th scope="row"><label for="dedication_placeholder">' . esc_html__('İthaf placeholder', 'woo-donation-popup') . '</label></th><td><input type="text" id="dedication_placeholder" name="dedication_placeholder" value="' . esc_attr($ded_ph) . '" class="regular-text" />';
+		echo '<p class="description">' . esc_html__('Ne işe yarar: İthaf alanı boşken görünen örnek metin. Kullanıcıya ne yazacağını anlatır; zorunlu değer değildir.', 'woo-donation-popup') . '</p></td></tr>';
+		echo '<tr><th scope="row"><label for="module_order">' . esc_html__('Varsayılan modül sırası', 'woo-donation-popup') . '</label></th><td>';
+		echo '<input type="text" id="module_order" name="module_order" value="' . esc_attr($order) . '" class="large-text" />';
+		echo '<p class="description">' . esc_html__('Ne işe yarar: Modal üst bölümündeki blokların sırası (virgülle). Örn. media,impact,urgency,social_proof,progress,faq,sadaka,trust. Form gövdesi sabittir: bağışçı → ithaf → tutar → cover fee (donor/amount buradan değişmez). Ürün kartındaki “Modül sırası” doluysa ürün önceliklidir. Boş bırakırsanız varsayılan sıra kullanılır.', 'woo-donation-popup') . '</p></td></tr>';
+		echo '<tr><th scope="row"><label for="trust_badges">' . esc_html__('Güven rozetleri (JSON, max 3)', 'woo-donation-popup') . '</label></th><td>';
+		echo '<textarea id="trust_badges" name="trust_badges" rows="4" class="large-text code">' . esc_textarea((string) $badges) . '</textarea>';
+		echo '<p class="description">' . esc_html__('Ne işe yarar: Form altında birden fazla güven rozeti gösterir. JSON dizi formatı: [{"icon":"builtin:shield","text":"SSL"},{"icon":"builtin:heart","text":"Güvenli"}]. En fazla 3 rozet. Boşsa aşağıdaki tek satırlık “Güven metni” yedek olarak kullanılır. Hatalı JSON kaydedilmez/boş sayılır.', 'woo-donation-popup') . '</p></td></tr>';
+		echo '</table>';
+	}
+
+	/**
+	 * Icon pickers for fields / CTAs / trust.
+	 *
+	 * @param array $settings Button settings.
+	 * @return void
+	 */
+	public static function render_icons_section(array $settings) {
+		WDP_Admin_Renderer_Helpers::render_section_heading(
+			__('İkonlar', 'woo-donation-popup'),
+			__('Hazır SVG setinden seçin veya Medya Kütüphanesi’nden kendi ikonunuzu yükleyin.', 'woo-donation-popup')
+		);
+
+		$enable_field_icons = !isset($settings['enable_field_icons']) || '1' === (string) $settings['enable_field_icons'];
+
+		echo '<table class="form-table wdp-admin-field-cards">';
+		echo '<tr><th scope="row">' . esc_html__('Alan ikonları', 'woo-donation-popup') . '</th><td>';
+		echo '<label class="wdp-admin-toggle"><input type="checkbox" name="enable_field_icons" value="1" ' . checked($enable_field_icons, true, false) . ' /> ';
+		echo esc_html__('Ad / not / e-posta satırlarında ikon göster', 'woo-donation-popup') . '</label>';
+		echo '<p class="description">' . esc_html__('Ne işe yarar: Form satırlarının solundaki küçük ikonları aç/kapatır. Kapalıysa alanlar daha sade görünür. Ürün kartındaki “Alan ikonları” anahtarı ürün bazında ezer.', 'woo-donation-popup') . '</p>';
+		echo '</td></tr>';
+		echo '</table>';
+
+		$slots = array(
+			'icon_field_user'  => array('label' => __('Ad Soyad ikonu', 'woo-donation-popup'), 'fallback' => 'builtin:user', 'help' => __('Ad Soyad satırının sol ikonu.', 'woo-donation-popup')),
+			'icon_field_note'  => array('label' => __('Not ikonu', 'woo-donation-popup'), 'fallback' => 'builtin:note', 'help' => __('Not / mesaj alanının ikonu.', 'woo-donation-popup')),
+			'icon_field_email' => array('label' => __('E-posta ikonu', 'woo-donation-popup'), 'fallback' => 'builtin:email', 'help' => __('E-posta satırı açıksa kullanılan ikon.', 'woo-donation-popup')),
+			'icon_field_phone' => array('label' => __('Telefon ikonu', 'woo-donation-popup'), 'fallback' => 'builtin:phone', 'help' => __('Telefon satırı için yedek/özel ikon (ülke seçici yanında kullanılabilir).', 'woo-donation-popup')),
+			'icon_cart'        => array('label' => __('Sepete Ekle ikonu', 'woo-donation-popup'), 'fallback' => 'builtin:cart', 'help' => __('“Sepete Ekle” CTA butonundaki ikon.', 'woo-donation-popup')),
+			'icon_checkout'    => array('label' => __('Ödemeye Git ikonu', 'woo-donation-popup'), 'fallback' => 'builtin:checkout', 'help' => __('“Ödemeye Git” CTA butonundaki ikon.', 'woo-donation-popup')),
+			'icon_trust'       => array('label' => __('Güven şeridi ikonu', 'woo-donation-popup'), 'fallback' => 'builtin:shield', 'help' => __('Butonların altındaki güven metninin sol ikonu.', 'woo-donation-popup')),
+			'icon_continue'    => array('label' => __('Devam ikonu', 'woo-donation-popup'), 'fallback' => 'builtin:continue', 'help' => __('Çok adımlı (wizard) formda “Devam” adım butonu ikonu.', 'woo-donation-popup')),
+			'icon_success'     => array('label' => __('Başarı ikonu', 'woo-donation-popup'), 'fallback' => 'builtin:check', 'help' => __('Başarı / teşekkür ekranındaki onay ikonu.', 'woo-donation-popup')),
+			'icon_sadaka'      => array('label' => __('Alt bağış ikonu', 'woo-donation-popup'), 'fallback' => 'builtin:gift', 'help' => __('Alt bağış (sadaka) bloğu başlık/ikon alanı.', 'woo-donation-popup')),
+			'icon_progress'    => array('label' => __('Progress ikonu', 'woo-donation-popup'), 'fallback' => 'builtin:star', 'help' => __('Progress formlarda dekoratif / rozet ikon yedeği.', 'woo-donation-popup')),
+		);
+
+		echo '<div class="wdp-icon-pickers">';
+		foreach ($slots as $name => $meta) {
+			$val = isset($settings[ $name ]) && $settings[ $name ] !== ''
+				? (string) $settings[ $name ]
+				: $meta['fallback'];
+			self::render_icon_picker_row($name, $meta['label'], $val, isset($meta['help']) ? $meta['help'] : '');
+		}
+		echo '</div>';
+		echo '<p class="description" style="margin-top:8px">' . esc_html__('İkon seçimi: Hazır SVG chip’e tıklayın veya “Medyadan seç” ile kendi görselinizi yükleyin (küçük PNG/SVG önerilir). “Sıfırla” ilk hazır ikona döner. Değişiklikler “Ayarları Kaydet” ile kalıcı olur.', 'woo-donation-popup') . '</p>';
+
+		echo '<table class="form-table wdp-admin-field-cards">';
+		echo '<tr><th scope="row"><label for="trust_strip_enabled">' . esc_html__('Güven şeridi', 'woo-donation-popup') . '</label></th><td>';
+		$trust_on = !isset($settings['trust_strip_enabled']) || '1' === (string) $settings['trust_strip_enabled'];
+		echo '<label class="wdp-admin-toggle"><input type="checkbox" name="trust_strip_enabled" id="trust_strip_enabled" value="1" ' . checked($trust_on, true, false) . ' /> ';
+		echo esc_html__('CTA altında güven metnini göster', 'woo-donation-popup') . '</label>';
+		echo '<p class="description">' . esc_html__('Ne işe yarar: Sepete Ekle / Ödemeye Git butonlarının hemen altında “Güvenli ödeme…” satırını gösterir. JSON rozetler doluysa onlar öncelikli olabilir; bu anahtar kapalıysa şerit tamamen gizlenir.', 'woo-donation-popup') . '</p>';
+		echo '</td></tr>';
+		$trust_text = isset($settings['trust_strip_text']) ? (string) $settings['trust_strip_text'] : __('Güvenli ödeme · SSL korumalı işlem', 'woo-donation-popup');
+		echo '<tr><th scope="row"><label for="trust_strip_text">' . esc_html__('Güven metni (tek rozet yedek)', 'woo-donation-popup') . '</label></th><td>';
+		echo '<input type="text" class="regular-text" id="trust_strip_text" name="trust_strip_text" value="' . esc_attr($trust_text) . '" maxlength="120" />';
+		echo '<p class="description">' . esc_html__('Ne işe yarar: JSON güven rozetleri boşken gösterilen tek satırlık güven mesajı. Kısa tutun (max 120 karakter); mobil CTA altında okunaklı kalsın.', 'woo-donation-popup') . '</p>';
+		echo '</td></tr>';
+		echo '</table>';
+	}
+
+	/**
+	 * @param string $name  Input name.
+	 * @param string $label Label.
+	 * @param string $value Current value.
+	 * @param string $help  Optional help text.
+	 * @return void
+	 */
+	private static function render_icon_picker_row($name, $label, $value, $help = '') {
+		$preview = WDP_Icon_Library::resolve($value, 'user', 'wdp-icon-picker__preview-svg');
+		echo '<div class="wdp-icon-picker" data-wdp-icon-picker data-slot="' . esc_attr($name) . '">';
+		echo '<div class="wdp-icon-picker__label">' . esc_html($label) . '</div>';
+		if ($help !== '') {
+			echo '<p class="description wdp-icon-picker__help">' . esc_html($help) . '</p>';
+		}
+		echo '<div class="wdp-icon-picker__preview" aria-hidden="true">' . $preview . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- trusted SVG/img from library
+		echo '<input type="hidden" name="' . esc_attr($name) . '" value="' . esc_attr($value) . '" class="wdp-icon-picker__value" />';
+		echo '<div class="wdp-icon-picker__builtins">';
+		foreach (WDP_Icon_Library::get_builtins_for_admin() as $item) {
+			$val = 'builtin:' . $item['id'];
+			$sel = ($value === $val || $value === $item['id']) ? ' is-selected' : '';
+			echo '<button type="button" class="wdp-icon-picker__chip' . esc_attr($sel) . '" data-icon-value="' . esc_attr($val) . '" title="' . esc_attr($item['label']) . '">';
+			echo $item['svg']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			echo '</button>';
+		}
+		echo '</div>';
+		echo '<div class="wdp-icon-picker__actions">';
+		echo '<button type="button" class="button wdp-icon-picker__media">' . esc_html__('Medyadan seç', 'woo-donation-popup') . '</button>';
+		echo '<button type="button" class="button-link wdp-icon-picker__reset">' . esc_html__('Sıfırla', 'woo-donation-popup') . '</button>';
+		echo '</div>';
+		echo '</div>';
+	}
+}

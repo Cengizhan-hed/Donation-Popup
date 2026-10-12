@@ -1,12 +1,13 @@
 /**
- * Ürün bilgi notu — başlık altı düz metin (kutu / gri zemin yok)
+ * @file product-note.css
+ * Ürün bilgilendirme notu — kompakt inline chip.
  */
 
 html body .hdf-donation-modal-wrapper:is(.wdp-modal, .wdp-donation-form) .wdp-product-note {
-  display: block;
+  display: flex;
   width: 100%;
   max-width: 100%;
-  margin: 12px 0 0;
+  margin: 0;
   padding: 0;
   border: none;
   background: transparent;
@@ -14,33 +15,100 @@ html body .hdf-donation-modal-wrapper:is(.wdp-modal, .wdp-donation-form) .wdp-pr
   box-sizing: border-box;
 }
 
+html body .hdf-donation-modal-wrapper:is(.wdp-modal, .wdp-donation-form) .wdp-product-note__card {
+  display: inline-grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  column-gap: 8px;
+  width: auto;
+  max-width: 100%;
+  margin: 0;
+  padding: 5px 10px 5px 5px;
+  box-sizing: border-box;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--wdp-info-text-accent, var(--wdp-primary, #0f608b)) 20%, #e8edf2);
+  background:
+    linear-gradient(
+      105deg,
+      color-mix(in srgb, var(--wdp-info-text-accent, var(--wdp-primary, #0f608b)) 10%, #ffffff) 0%,
+      #ffffff 70%
+    );
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+html body .hdf-donation-modal-wrapper:is(.wdp-modal, .wdp-donation-form) .wdp-product-note__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  margin: 0;
+  border-radius: 50%;
+  color: #ffffff;
+  background-color: var(--wdp-info-text-accent, var(--wdp-primary, #0f608b));
+  background-image: linear-gradient(
+    145deg,
+    var(--wdp-info-text-accent, var(--wdp-primary, #0f608b)) 0%,
+    color-mix(in srgb, var(--wdp-info-text-accent, var(--wdp-primary, #0f608b)) 72%, #0f172a) 100%
+  );
+  box-shadow: 0 2px 6px color-mix(in srgb, var(--wdp-info-text-accent, var(--wdp-primary, #0f608b)) 28%, transparent);
+  flex-shrink: 0;
+}
+
+html body .hdf-donation-modal-wrapper:is(.wdp-modal, .wdp-donation-form) .wdp-product-note__badge-icon {
+  display: block;
+  width: 13px;
+  height: 13px;
+}
+
 html body .hdf-donation-modal-wrapper:is(.wdp-modal, .wdp-donation-form) .wdp-product-note__content,
 html body .hdf-donation-modal-wrapper:is(.wdp-modal, .wdp-donation-form) .wdp-product-note__body {
-  display: block;
-  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: auto;
   min-width: 0;
   margin: 0;
   padding: 0;
   background: transparent;
+  gap: 0;
 }
 
-html body .hdf-donation-modal-wrapper:is(.wdp-modal, .wdp-donation-form) :is(.wdp-product-note__text, .wdp-sadaka-donation__message) {
+html body .hdf-donation-modal-wrapper:is(.wdp-modal, .wdp-donation-form) .wdp-product-note__text {
   display: block;
-  width: 100%;
-  max-width: none;
+  width: auto;
+  max-width: 100%;
   margin: 0;
-  padding: 12px 16px;
-  font-family: inherit;
-  font-size: clamp(0.875rem, 0.84rem + 0.2vw, 0.9375rem);
-  font-weight: var(--wdp-info-text-font-weight, 600);
-  line-height: 1.55;
-  letter-spacing: 0.01em;
-  color: var(--wdp-info-text-color, #ffffff);
-  text-wrap: pretty;
-  background: var(--wdp-info-text-bg, var(--wdp-button-primary, #1e73be));
-  border: none;
-  border-radius: var(--wdp-info-text-radius, 20px);
+  padding: 0;
   box-sizing: border-box;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  color: var(--wdp-info-text-color, #334155);
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 650;
+  line-height: 1.3;
+  letter-spacing: 0.005em;
+  text-wrap: pretty;
+  box-shadow: none;
+}
+
+/* Sadaka mesajı — aynı kompakt dil */
+html body .hdf-donation-modal-wrapper:is(.wdp-modal, .wdp-donation-form) .wdp-sadaka-donation__message {
+  display: inline-block;
+  width: auto;
+  max-width: 100%;
+  margin: 0;
+  padding: 6px 12px;
+  box-sizing: border-box;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--wdp-info-text-accent, var(--wdp-primary, #0f608b)) 20%, #e8edf2);
+  background: color-mix(in srgb, var(--wdp-primary, #0f608b) 7%, #ffffff);
+  color: var(--wdp-info-text-color, #334155);
+  font-size: 12.5px;
+  font-weight: 650;
+  line-height: 1.3;
 }
 
 html body .hdf-donation-modal-wrapper:is(.wdp-modal, .wdp-donation-form) .wdp-product-note__toggle {
@@ -52,7 +120,7 @@ html body .hdf-donation-modal-wrapper:is(.wdp-modal, .wdp-donation-form) .wdp-pr
 html body .hdf-donation-modal-wrapper:is(.wdp-modal, .wdp-donation-form) .wdp-product-note__toggle ~ .wdp-product-note__text {
   display: -webkit-box;
   -webkit-box-orient: vertical;
-  -webkit-line-clamp: 3;
+  -webkit-line-clamp: 2;
   overflow: hidden;
 }
 
@@ -64,15 +132,26 @@ html body .hdf-donation-modal-wrapper:is(.wdp-modal, .wdp-donation-form) .wdp-pr
 html body .hdf-donation-modal-wrapper:is(.wdp-modal, .wdp-donation-form) .wdp-product-note__more {
   display: inline-flex;
   align-self: flex-start;
-  margin-top: 8px;
+  margin-top: 4px;
   cursor: pointer;
   font-family: inherit;
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: #1e73be;
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--wdp-info-text-accent, var(--wdp-primary, #0f608b));
+  text-decoration: none;
+  letter-spacing: 0.01em;
+}
+
+html body .hdf-donation-modal-wrapper:is(.wdp-modal, .wdp-donation-form) .wdp-product-note__more:hover {
   text-decoration: underline;
   text-underline-offset: 2px;
-  line-height: 1.3;
+}
+
+html body .hdf-donation-modal-wrapper:is(.wdp-modal, .wdp-donation-form) .wdp-product-note__more:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--wdp-primary, #0f608b) 42%, transparent);
+  outline-offset: 2px;
+  border-radius: 4px;
 }
 
 html body .hdf-donation-modal-wrapper:is(.wdp-modal, .wdp-donation-form) .wdp-product-note__more-close {
@@ -90,9 +169,28 @@ html body .hdf-donation-modal-wrapper:is(.wdp-modal, .wdp-donation-form) .wdp-pr
 html body .hdf-donation-modal-wrapper:is(.wdp-modal, .wdp-donation-form) .wdp-product-note__title,
 html body .wdp-modal.wdp-side-panel .wdp-product-note__icon-wrap,
 html body .wdp-modal.wdp-side-panel .wdp-product-note > svg {
-  display: none;
+  display: none !important;
 }
 
-html body .wdp-modal.wdp-side-panel.show .wdp-modal-header .wdp-product-note {
-  margin-top: 12px;
+/* Uzun notlarda chip → kart */
+html body .hdf-donation-modal-wrapper:is(.wdp-modal, .wdp-donation-form) .wdp-product-note:has(.wdp-product-note__toggle) .wdp-product-note__card {
+  border-radius: 14px;
+  padding: 8px 12px 8px 8px;
+  align-items: start;
+}
+
+@media (max-width: 600px) {
+  html body .hdf-donation-modal-wrapper:is(.wdp-modal, .wdp-donation-form) .wdp-product-note__card {
+    padding: 4px 9px 4px 4px;
+    column-gap: 7px;
+  }
+
+  html body .hdf-donation-modal-wrapper:is(.wdp-modal, .wdp-donation-form) .wdp-product-note__badge {
+    width: 22px;
+    height: 22px;
+  }
+
+  html body .hdf-donation-modal-wrapper:is(.wdp-modal, .wdp-donation-form) .wdp-product-note__text {
+    font-size: 12px;
+  }
 }

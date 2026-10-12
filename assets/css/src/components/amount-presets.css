@@ -1,45 +1,49 @@
-/* ==================== */
-/* AMOUNT PRESET CHIPS */
-/* ==================== */
+/**
+ * @file amount-presets.css
+ * Quick amount chips — 48px touch targets, solid selected, popular accent.
+ */
 
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-amount-presets,
 html body .wdp-amount-presets {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin-block: 4px;
+  margin: 0;
+  width: 100%;
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-amount-preset,
 html body .wdp-amount-preset {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 8px 18px;
+  min-height: var(--wdp-preset-min-height, 48px);
+  min-width: 72px;
+  padding: 10px 16px;
   background: var(--wdp-bg-pure-white, #ffffff);
-  border: var(--wdp-control-border, 1px solid var(--wdp-border-soft-gray, #e8eaed));
-  border-radius: var(--wdp-radius-sm, 10px);
-  font-family: var(--wdp-font-family, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
+  border: 1px solid var(--wdp-border-soft-gray, #e5e9ec);
+  border-radius: var(--wdp-radius-ui, 12px);
+  font-family: var(--wdp-font-family, inherit);
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
   color: var(--wdp-text-secondary, #475569);
   cursor: pointer;
-  transition:
-    border-color 0.15s ease,
-    color        0.15s ease,
-    background   0.15s ease;
+  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
   white-space: nowrap;
   user-select: none;
+  box-shadow: var(--wdp-card-elev, 0 1px 2px rgba(15, 23, 42, 0.04));
+  transform: none;
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-amount-preset:hover,
 html body .wdp-amount-preset:hover {
-  border-color: var(--wdp-color-primary, #4a90e2);
-  color: var(--wdp-color-primary, #4a90e2);
-  background: color-mix(in srgb, var(--wdp-color-primary, #4a90e2) 8%, #ffffff);
+  border-color: var(--wdp-primary, #0f608b);
+  color: var(--wdp-primary, #0f608b);
+  background: color-mix(in srgb, var(--wdp-primary, #0f608b) 6%, #ffffff);
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-amount-preset:active,
@@ -51,40 +55,81 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-amount-pre
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-amount-preset[aria-pressed="true"],
 html body .wdp-amount-preset.selected,
 html body .wdp-amount-preset[aria-pressed="true"] {
-  background: var(--wdp-color-primary, #4a90e2);
-  border-color: transparent;
+  background: var(--wdp-primary, #0f608b);
+  border-color: var(--wdp-primary, #0f608b);
   color: #ffffff;
+  box-shadow: none;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-amount-preset {
+  background: var(--wdp-surface-0, #ffffff);
+}
+
+/* Popular — inline chip accent (no floating sticker) */
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-amount-preset.is-popular,
+html body .wdp-amount-preset.is-popular {
+  flex-direction: column;
+  gap: 2px;
+  padding-block: 8px 7px;
+  border-top: 2px solid var(--wdp-primary, #0f608b);
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-amount-preset.is-popular::after,
+html body .wdp-amount-preset.is-popular::after {
+  content: attr(data-popular-label);
+  position: static;
+  inset: auto;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--wdp-primary, #0f608b);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  line-height: 1.2;
+  text-transform: none;
+  pointer-events: none;
+  white-space: nowrap;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-amount-preset.is-popular.selected,
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-amount-preset.is-popular[aria-pressed="true"],
+html body .wdp-amount-preset.is-popular.selected,
+html body .wdp-amount-preset.is-popular[aria-pressed="true"] {
+  border-top-color: color-mix(in srgb, #ffffff 55%, var(--wdp-primary, #0f608b));
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-amount-preset.is-popular.selected::after,
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-amount-preset.is-popular[aria-pressed="true"]::after,
+html body .wdp-amount-preset.is-popular.selected::after,
+html body .wdp-amount-preset.is-popular[aria-pressed="true"]::after {
+  background: transparent;
+  color: color-mix(in srgb, #ffffff 82%, transparent);
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-amount-preset:focus-visible,
 html body .wdp-amount-preset:focus-visible {
   outline: none;
-  box-shadow: var(--wdp-focus-neutral-ring, inset 0 0 0 1px rgba(15, 23, 42, 0.1));
-  background: var(--wdp-input-focus-bg-tint, color-mix(in srgb, #64748b 5.5%, #ffffff));
+  border-color: var(--wdp-primary, #0f608b);
+  box-shadow: var(--wdp-focus-ring, 0 0 0 3px color-mix(in srgb, var(--wdp-primary) 12%, transparent));
+  transform: none;
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-amount-preset.selected:focus-visible,
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-amount-preset[aria-pressed="true"]:focus-visible,
 html body .wdp-amount-preset.selected:focus-visible,
 html body .wdp-amount-preset[aria-pressed="true"]:focus-visible {
-  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.5);
-  background: var(--wdp-color-primary, #4a90e2);
+  border-color: var(--wdp-primary-hover, #0c4f72);
+  box-shadow: var(--wdp-focus-ring, 0 0 0 3px color-mix(in srgb, var(--wdp-primary) 12%, transparent));
 }
 
 @media (prefers-reduced-motion: reduce) {
   html body .wdp-amount-preset,
   html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-amount-preset {
     transition: border-color 0.1s ease, color 0.1s ease, background 0.1s ease;
-  }
-
-  html body .wdp-amount-preset:hover,
-  html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-amount-preset:hover {
-    transform: none;
-  }
-
-  html body .wdp-amount-preset.selected,
-  html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-amount-preset.selected {
-    transform: none;
   }
 }
 
@@ -93,7 +138,8 @@ html body .wdp-amount-preset[aria-pressed="true"]:focus-visible {
   html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-amount-preset {
     flex: 1 1 calc(33.333% - 6px);
     min-width: 0;
-    padding: 8px 10px;
+    min-height: var(--wdp-preset-min-height-mobile, 48px);
+    padding: 10px 8px;
     font-size: 13px;
   }
 }

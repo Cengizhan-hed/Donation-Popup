@@ -33,7 +33,7 @@ DEFAULT_EXCLUDES=(
   ".git/"
   ".cursor/"
   ".vscode/"
-  "build/"
+  "/build/"
   ".DS_Store"
   "*.zip"
 )
@@ -54,6 +54,12 @@ fi
 
 rsync "${RSYNC_ARGS[@]}" "$PLUGIN_ROOT/" "$DEST/"
 
+# Minify admin CSS in the distribution copy only (source stays readable).
+if command -v php >/dev/null 2>&1 && [[ -f "$PLUGIN_ROOT/tools/minify-admin-css.php" ]]; then
+  echo "Minifying admin CSS for distribution..."
+  php "$PLUGIN_ROOT/tools/minify-admin-css.php" "$DEST/assets/css/admin-style.css" || true
+fi
+
 # Production ZIP: bundle frontend CSS into a single file when PHP CLI is available.
 if command -v php >/dev/null 2>&1 && [[ -f "$DEST/tools/build-css-bundle.php" ]]; then
   echo "Building frontend CSS bundle..."
@@ -73,16 +79,28 @@ fi
 rm -rf \
   "$DEST/tests" \
   "$DEST/scripts" \
+  "$DEST/docs" \
   "$DEST/.github" \
   "$DEST/.cursor" \
   "$DEST/.vscode"
+rm -rf "$DEST/vendor"
 rm -f \
   "$DEST/package.json" \
   "$DEST/package-lock.json" \
   "$DEST/yarn.lock" \
   "$DEST/pnpm-lock.yaml" \
   "$DEST/.gitignore" \
-  "$DEST/.distignore"
+  "$DEST/.distignore" \
+  "$DEST/composer.json" \
+  "$DEST/composer.lock" \
+  "$DEST/composer.phar" \
+  "$DEST/composer-setup.php" \
+  "$DEST/phpunit.xml" \
+  "$DEST/phpunit.xml.dist" \
+  "$DEST/.phpunit.result.cache"
+
+# Keep only README.md as markdown in distribution root.
+find "$DEST" -type f -name "*.md" ! -name "README.md" -delete
 
 if [[ ! -f "$DEST/assets/css/build/manifest.json" ]]; then
   echo "note: assets/css/build/manifest.json not present — dev layered CSS will be used at runtime." >&2

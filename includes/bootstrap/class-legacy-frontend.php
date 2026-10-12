@@ -1,6 +1,6 @@
 <?php
 /**
- * Backward-compatible frontend helpers and AJAX handlers.
+ * wdp_render_donation_button/form geriye dönük PHP yardımcıları ve eski AJAX uçları.
  *
  * @package WooCommerce\Donation_Popup
  */

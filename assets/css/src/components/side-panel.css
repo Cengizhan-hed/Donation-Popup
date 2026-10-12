@@ -1,76 +1,64 @@
 /**
- * Sağ panel (side cart) — yalnızca .wdp-modal.wdp-side-panel
- * Tam yükseklik, sabit alt footer, orta alan scroll, sağdan slide animasyon.
+ * @file side-panel.css
+ * Sağdan açılan bağış paneli (side panel) kabuğu, overlay ve animasyonlar.
  */
 
-html body.wdp-side-panel-open {
-  overflow: hidden;
-  padding-right: var(--wdp-scrollbar-width, 0px);
-}
+/* Body lock */
+html body.wdp-side-panel-open { overflow: hidden; }
 
-html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel {
-  --wdp-button-radius: 20px;
-  --wdp-button-radius-unified: 20px;
-  --wdp-input-radius: 20px;
-  --wdp-field-stack-radius: 20px;
-  --wdp-radius-sm: 20px;
-  --wdp-radius-md: 20px;
-  --wdp-radius-lg: 20px;
-  --wdp-card-radius: 20px;
-  --wdp-card-radius-sm: 20px;
-}
-
+/* Tokens */
 html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel {
   contain: none;
-  --wdp-side-panel-width: clamp(
-    var(--wdp-sp-width-min-mobile, 0px),
-    var(--wdp-sp-width-pct-mobile, 92vw),
-    var(--wdp-sp-width-max-mobile, 100vw)
-  );
+  --wdp-button-radius-unified: var(--wdp-radius-ui);
+  --wdp-input-radius: var(--wdp-radius-ui);
+  --wdp-field-stack-radius: var(--wdp-radius-ui);
+  --wdp-card-radius: var(--wdp-radius-ui);
+  --wdp-card-radius-sm: var(--wdp-radius-ui);
+  --wdp-sp-duration-open: 0.34s;
+  --wdp-sp-duration-close: 0.36s;
+  --wdp-sp-ease-open: cubic-bezier(0.22, 1, 0.36, 1);
+  --wdp-sp-ease-close: cubic-bezier(0.4, 0, 0.2, 1);
+  --wdp-side-panel-width: clamp(var(--wdp-sp-width-min-mobile, 0px), var(--wdp-sp-width-pct-mobile, 92vw), var(--wdp-sp-width-max-mobile, 100vw));
   --wdp-side-panel-pad-inline: max(16px, env(safe-area-inset-right, 0px), env(safe-area-inset-left, 0px));
-  --wdp-side-panel-footer-border: var(--wdp-border-very-light, #e8eaed);
-  --wdp-side-panel-radius-left: 20px;
-  /* Side panel butonları — mavi (birincil marka) + yeşil (ödeme/tamamla) */
-  --wdp-sp-btn-radius: 20px;
-  --wdp-sp-btn-blue: #1e73be;
-  --wdp-sp-btn-blue-hover: #185d98;
-  --wdp-sp-btn-green: #48bb78;
-  --wdp-sp-btn-green-hover: #38a169;
-  --wdp-sp-btn-ghost-text: #c2410c;
-  --wdp-sp-btn-ghost-hover: #9a3412;
-  --wdp-sp-btn-ghost-bg: #fff7ed;
-  --wdp-sp-btn-ghost-border: #fdba74;
+  --wdp-side-panel-footer-border: rgba(15, 23, 42, 0.08);
+  --wdp-side-panel-radius-left: var(--wdp-radius-panel);
+  --wdp-sp-btn-radius: var(--wdp-radius-ui);
+  --wdp-sp-btn-blue: var(--wdp-primary, #0f608b);
+  --wdp-sp-btn-blue-hover: var(--wdp-primary-hover, #0c4f72);
+  --wdp-sp-btn-green: var(--wdp-success, #16a34a);
+  --wdp-sp-btn-green-hover: color-mix(in srgb, var(--wdp-success, #16a34a) 88%, #0f172a);
+  --wdp-sp-glass-bg: #ffffff;
+  --wdp-sp-glass-blur: var(--wdp-glass-blur, blur(14px) saturate(160%));
+  --wdp-sp-overlay-blur: var(--wdp-overlay-blur, none);
 }
 
 @media (min-width: 481px) {
-  html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel {
-    --wdp-side-panel-pad-inline: 22px;
-  }
+  html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel { --wdp-side-panel-pad-inline: 22px; }
 }
 
 @media (min-width: 768px) {
   html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel {
-    --wdp-side-panel-width: clamp(
-      var(--wdp-sp-width-min-tablet, 380px),
-      var(--wdp-sp-width-pct-tablet, 55vw),
-      var(--wdp-sp-width-max-tablet, 600px)
-    );
+    --wdp-side-panel-width: clamp(var(--wdp-sp-width-min-tablet, 380px), var(--wdp-sp-width-pct-tablet, 55vw), var(--wdp-sp-width-max-tablet, 600px));
     --wdp-side-panel-pad-inline: 24px;
   }
 }
 
 @media (min-width: 1200px) {
   html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel {
-    --wdp-side-panel-width: clamp(
-      var(--wdp-sp-width-min-desktop, 400px),
-      var(--wdp-sp-width-pct-desktop, 50vw),
-      var(--wdp-sp-width-max-desktop, 720px)
-    );
+    --wdp-side-panel-width: clamp(var(--wdp-sp-width-min-desktop, 400px), var(--wdp-sp-width-pct-desktop, 50vw), var(--wdp-sp-width-max-desktop, 720px));
   }
 }
 
-/* Overlay — anında sabit koyu ton (şeffaftan animasyon yok = beyaz titreme yok) */
-html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show {
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel {
+    --wdp-sp-glass-bg: #ffffff;
+  }
+}
+
+/* Overlay — hafif blur doğrudan overlay’de (ayrı ::before flaş yapıyordu) */
+html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show,
+html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show.wdp-side-panel--opening,
+html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show.wdp-side-panel--closing {
   display: flex;
   align-items: stretch;
   justify-content: flex-end;
@@ -79,20 +67,24 @@ html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show {
   opacity: 1;
   animation: none;
   transition: none;
-  background: var(--wdp-modal-overlay-bg, rgba(15, 23, 42, 0.45));
-  background-color: var(--wdp-modal-overlay-bg, rgba(15, 23, 42, 0.45));
-  backdrop-filter: blur(4px) saturate(108%);
-  -webkit-backdrop-filter: blur(4px) saturate(108%);
+  background: var(--wdp-modal-overlay-bg, rgba(15, 23, 42, 0.52));
+  background-color: var(--wdp-modal-overlay-bg, rgba(15, 23, 42, 0.52));
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  transform: none;
+  isolation: isolate;
+  transition: none;
 }
 
-html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show.wdp-side-panel--closing {
-  pointer-events: none;
-  animation: none;
-  background: var(--wdp-modal-overlay-bg, rgba(15, 23, 42, 0.45));
-  background-color: var(--wdp-modal-overlay-bg, rgba(15, 23, 42, 0.45));
+html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show::before,
+html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show.wdp-side-panel--opening::before,
+html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show.wdp-side-panel--closing::before {
+  content: none;
+  display: none;
 }
 
-/* Kapalı panel — layout :not(.show) titremesini önle */
+html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show.wdp-side-panel--closing { pointer-events: none; }
+
 html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel:not(.show) {
   display: none;
   visibility: hidden;
@@ -103,13 +95,8 @@ html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel:not(.show) {
   background-color: transparent;
 }
 
-/* Panel kabuğu — tam yükseklik, sol köşe 20px */
-html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-modal-content,
-html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-content,
-html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-modal-content.wdp-has-shareholders,
-html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-modal-content.wdp-has-success,
-html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-modal-content:has(form.wdp-has-shareholders),
-html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-modal-content:has(.wdp-success-screen) {
+/* Panel shell — glass */
+html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show :is(.wdp-modal-content, .wdp-side-panel-content, .wdp-modal-content.wdp-has-shareholders, .wdp-modal-content.wdp-has-success, .wdp-modal-content:has(form.wdp-has-shareholders), .wdp-modal-content:has(.wdp-success-screen)) {
   width: var(--wdp-side-panel-width);
   max-width: var(--wdp-side-panel-width);
   min-width: 0;
@@ -121,97 +108,76 @@ html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-modal-c
   flex: 0 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--wdp-form-stack-gap, 16px);
   overflow: hidden;
   border-radius: var(--wdp-side-panel-radius-left) 0 0 var(--wdp-side-panel-radius-left);
-  border-top: 0;
-  border-bottom: 0;
-  border-right: 0;
-  background: var(--wdp-modal-bg, #ffffff);
-  background-color: var(--wdp-modal-bg, #ffffff);
-  box-shadow: -14px 0 56px -18px rgba(15, 23, 42, 0.24);
+  border: 0;
+  border-left: var(--wdp-glass-border, 1px solid rgba(255, 255, 255, 0.35));
+  background: var(--wdp-sp-glass-bg, #ffffff);
+  background-color: var(--wdp-sp-glass-bg, #ffffff);
+  box-shadow: var(--wdp-side-panel-shadow, 0 0 0 1px rgba(17, 26, 33, 0.06), -20px 0 64px -24px rgba(17, 26, 33, 0.22), -6px 0 20px -10px rgba(17, 26, 33, 0.1));
   padding-block-start: calc(20px + env(safe-area-inset-top, 0px));
   padding-block-end: calc(12px + env(safe-area-inset-bottom, 0px));
   padding-inline: var(--wdp-side-panel-pad-inline);
   box-sizing: border-box;
   isolation: isolate;
   opacity: 1;
-  will-change: transform;
-  animation: wdp-side-panel-slide-in 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
-  transform: translate3d(0, 0, 0);
+  position: relative;
+  z-index: 1;
+  filter: none;
+  will-change: auto;
+  animation: wdp-side-panel-slide-in var(--wdp-sp-duration-open) var(--wdp-sp-ease-open) both;
+  transform: none;
 }
 
-html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show.wdp-side-panel--opening .wdp-modal-content,
-html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show.wdp-side-panel--opening .wdp-side-panel-content,
-html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show.wdp-side-panel--opening .wdp-modal-content.wdp-has-shareholders,
-html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show.wdp-side-panel--opening .wdp-modal-content.wdp-has-success,
-html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show.wdp-side-panel--opening .wdp-modal-content:has(form.wdp-has-shareholders),
-html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show.wdp-side-panel--opening .wdp-modal-content:has(.wdp-success-screen) {
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show :is(.wdp-modal-content, .wdp-side-panel-content) {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: #ffffff;
+    background-color: #ffffff;
+  }
+}
+
+html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show.wdp-side-panel--opening :is(.wdp-modal-content, .wdp-side-panel-content, .wdp-modal-content.wdp-has-shareholders, .wdp-modal-content.wdp-has-success, .wdp-modal-content:has(form.wdp-has-shareholders), .wdp-modal-content:has(.wdp-success-screen)) {
   animation: none;
-  transform: translate3d(100%, 0, 0);
+  opacity: 1;
+  transform: translateX(100%);
+  will-change: transform;
 }
 
-html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show.wdp-side-panel--closing .wdp-modal-content,
-html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show.wdp-side-panel--closing .wdp-side-panel-content,
-html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show.wdp-side-panel--closing .wdp-modal-content.wdp-has-shareholders,
-html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show.wdp-side-panel--closing .wdp-modal-content.wdp-has-success,
-html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show.wdp-side-panel--closing .wdp-modal-content:has(form.wdp-has-shareholders),
-html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show.wdp-side-panel--closing .wdp-modal-content:has(.wdp-success-screen) {
-  animation: wdp-side-panel-slide-out 0.36s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show.wdp-side-panel--closing :is(.wdp-modal-content, .wdp-side-panel-content, .wdp-modal-content.wdp-has-shareholders, .wdp-modal-content.wdp-has-success, .wdp-modal-content:has(form.wdp-has-shareholders), .wdp-modal-content:has(.wdp-success-screen)) {
+  animation: wdp-side-panel-slide-out var(--wdp-sp-duration-close) var(--wdp-sp-ease-close) forwards;
 }
 
 @keyframes wdp-side-panel-slide-in {
-  from {
-    transform: translate3d(100%, 0, 0);
-  }
-  to {
-    transform: translate3d(0, 0, 0);
-    will-change: auto;
-  }
+  from { transform: translateX(100%); will-change: transform; }
+  to { transform: none; will-change: auto; }
 }
 
 @keyframes wdp-side-panel-slide-out {
-  from {
-    transform: translate3d(0, 0, 0);
-  }
-  to {
-    transform: translate3d(100%, 0, 0);
-  }
+  from { transform: none; }
+  to { transform: translateX(100%); }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show,
-  html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show.wdp-side-panel--closing {
-    animation: none;
-  }
-
-  html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-modal-content,
-  html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-content,
-  html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show.wdp-side-panel--closing .wdp-modal-content {
-    animation: none;
-    transform: none;
-  }
-}
-
+/* Progress: başlık altında sabit — kırpılmaz, sticky yok */
 html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-modal-content > .wdp-progress-bar-container {
   flex: 0 0 auto;
-  flex-shrink: 0;
   width: 100%;
+  margin: 0;
+  border-radius: var(--wdp-radius-ui, 12px);
+  align-self: stretch;
+  max-height: none;
+  overflow: visible;
 }
 
 html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-modal-content > .wdp-modal-close {
-  width: 52px;
-  height: 52px;
-  min-width: 52px;
-  min-height: 52px;
-  font-size: 30px;
-  top: calc(4px + env(safe-area-inset-top, 0px));
-  right: calc(4px + env(safe-area-inset-right, 0px));
+  top: calc(8px + env(safe-area-inset-top, 0px));
+  right: calc(8px + env(safe-area-inset-right, 0px));
 }
 
 html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-modal-header {
   flex: 0 0 auto;
-  flex-shrink: 0;
   margin: 4px 0 0;
   padding: 4px 52px 0 0;
   justify-content: flex-start;
@@ -225,18 +191,13 @@ html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-modal-h
   text-align: left;
 }
 
-html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-modal-header .wdp-modal-title,
-html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-modal-header .wdp-product-note,
-html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-modal-header .wdp-product-note__content,
-html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-modal-header .wdp-product-note__body,
-html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-modal-header .wdp-product-note__text {
+html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-modal-header :is(.wdp-modal-title, .wdp-product-note, .wdp-product-note__content, .wdp-product-note__body, .wdp-product-note__text) {
   text-align: left;
   justify-content: flex-start;
 }
 
-/* Form iskeleti */
-html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-form,
-html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-modal-content form.wdp-donation-form-fields {
+/* Form flex column */
+html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show :is(.wdp-side-panel-form, .wdp-modal-content form.wdp-donation-form-fields) {
   display: flex;
   flex-direction: column;
   flex: 1 1 0;
@@ -248,47 +209,53 @@ html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-modal-c
   box-sizing: border-box;
 }
 
-/* Kaydırılabilir gövde — alanlar arası standart boşluk */
-html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-main {
-  flex: 1 1 0;
+html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-form:not(:has(.wdp-success-screen)) {
+  justify-content: flex-start;
+}
+
+html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-main:not(.wdp-side-panel-main--shares) {
+  flex: 1 1 auto;
   min-height: 0;
+  max-height: 100%;
   display: flex;
   flex-direction: column;
-  gap: var(--wdp-form-stack-gap, 12px);
+  gap: var(--wdp-form-stack-gap, 16px);
   overflow-x: hidden;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
-  background: var(--wdp-modal-bg, #ffffff);
+  background: transparent;
   padding-bottom: 3px;
   box-sizing: border-box;
 }
 
-html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-main > .wdp-field-stack {
+html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-main--shares {
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--wdp-form-stack-gap, 16px);
+  overflow: hidden;
+  background: transparent;
+  padding-bottom: 3px;
+  box-sizing: border-box;
+}
+
+html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-main > :is(.wdp-field-stack, .wdp-price-quantity-row, .wdp-custom-price-row, .wdp-sadaka-donation) {
   flex-shrink: 0;
   margin: 0;
 }
 
-html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-main > .wdp-price-quantity-row,
-html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-main > .wdp-custom-price-row,
-html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-main > .wdp-sadaka-donation {
-  flex-shrink: 0;
-  margin: 0;
+html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-main > :is(.wdp-price-quantity-row, .wdp-custom-price-row, .wdp-sadaka-donation) {
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
 }
 
-html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-main > .wdp-custom-price-row .wdp-custom-price-shell {
-  max-width: 100%;
-}
+html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-main > .wdp-custom-price-row .wdp-custom-price-shell { max-width: 100%; }
+html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show :is(.wdp-price-quantity-row, .wdp-quantity-counter) { max-width: 100%; }
 
-html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-main--shares {
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
+/* Shareholders */
 html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-main--shares .wdp-shares-section {
   flex: 1 1 0;
   min-height: 0;
@@ -300,10 +267,7 @@ html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-pa
   width: 100%;
 }
 
-html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-main--shares .wdp-shares-header {
-  flex: 0 0 auto;
-  flex-shrink: 0;
-}
+html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-main--shares .wdp-shares-header { flex: 0 0 auto; }
 
 html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-shares-header {
   text-align: left;
@@ -316,12 +280,12 @@ html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-shares-
 }
 
 html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-shares-header .wdp-share-counter {
-  margin-inline: 0 0;
-  margin-left: auto;
+  margin-inline: 0;
+  margin-left: 0;
+  justify-self: start;
 }
 
-html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-main--shares .wdp-shareholders-area,
-html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-shareholders-area.scrollable {
+html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show :is(.wdp-side-panel-main--shares .wdp-shareholders-area, .wdp-shareholders-area.scrollable) {
   flex: 1 1 0;
   min-height: 0;
   width: 100%;
@@ -333,8 +297,7 @@ html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-shareho
   -webkit-overflow-scrolling: touch;
 }
 
-html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-shareholders-container,
-html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-shareholders-container.scrollable {
+html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show :is(.wdp-shareholders-container, .wdp-shareholders-container.scrollable) {
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -360,23 +323,30 @@ html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-shareho
   box-sizing: border-box;
 }
 
-/* Sabit alt footer — yalnızca üst çizgi, arka plan yok */
+/* Sticky footer — same glass surface as panel */
 html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-footer-zone {
   flex: 0 0 auto;
-  flex-shrink: 0;
   display: flex;
   flex-direction: column;
+  gap: var(--wdp-modal-stack-gap, 16px);
   width: 100%;
   margin: 0;
-  padding: 14px 0 0;
-  padding-bottom: max(0px, env(safe-area-inset-bottom, 0px));
+  margin-block-start: auto;
+  padding: 12px 0 max(0px, env(safe-area-inset-bottom, 0px));
   background: transparent;
-  border-top: 1px solid var(--wdp-side-panel-footer-border);
+  border-top: var(--wdp-footer-border, 1px solid rgba(15, 23, 42, 0.06));
   box-shadow: none;
   z-index: 4;
 }
 
-/* Hisseli: toplam tutar (butonların üstü) */
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-footer-zone {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+
+/* Shares total bar — blend with panel */
 html body :is(.wdp-modal, .wdp-donation-form) form.wdp-has-shareholders .wdp-shares-total-bar {
   display: flex;
   align-items: center;
@@ -384,43 +354,40 @@ html body :is(.wdp-modal, .wdp-donation-form) form.wdp-has-shareholders .wdp-sha
   gap: 12px;
   width: 100%;
   margin: 0 0 12px;
-  padding: 12px 14px;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  background: #f8fafc;
+  padding: 10px 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
   box-sizing: border-box;
+  box-shadow: none;
 }
 
-html body :is(.wdp-modal, .wdp-donation-form) form.wdp-has-shareholders .wdp-shares-total-bar[hidden] {
-  display: none;
-}
+html body :is(.wdp-modal, .wdp-donation-form) form.wdp-has-shareholders .wdp-shares-total-bar[hidden] { display: none; }
 
 html body :is(.wdp-modal, .wdp-donation-form) form.wdp-has-shareholders .wdp-shares-total-bar__label {
   font-family: inherit;
   font-size: 14px;
   font-weight: 600;
-  color: #475569;
+  color: var(--wdp-text-secondary, #475569);
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) form.wdp-has-shareholders .wdp-shares-total-bar__value {
   font-family: inherit;
   font-size: 17px;
   font-weight: 800;
-  color: #1e73be;
-  letter-spacing: 0.01em;
+  color: var(--wdp-primary, #0f608b);
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
 }
 
 html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-footer-zone .wdp-shares-total-bar {
   flex: 0 0 auto;
-  margin-bottom: 10px;
+  margin: 0;
 }
 
-/* Sabit alt butonlar */
-html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-form-footer,
-html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-form > .wdp-button-group,
-html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-footer-zone .wdp-side-panel-form-footer {
+/* Footer CTAs */
+html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show :is(.wdp-side-panel-form-footer, .wdp-side-panel-form > .wdp-button-group, .wdp-side-panel-footer-zone .wdp-side-panel-form-footer) {
   flex: 0 0 auto;
-  flex-shrink: 0;
   position: static;
   display: flex;
   flex-direction: column;
@@ -428,101 +395,35 @@ html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-pa
   gap: clamp(10px, 1.2vh, 12px);
   width: 100%;
   margin: 0;
-  padding: 0 0 14px;
+  padding: 0;
   background: transparent;
   border: none;
-  border-top: none;
   box-shadow: none;
   z-index: 4;
 }
 
-html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-form-footer .wdp-btn-primary,
-html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-footer-zone .wdp-btn-primary {
-  order: -1;
-}
+html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show :is(.wdp-side-panel-form-footer, .wdp-side-panel-footer-zone) .wdp-btn-primary { order: -1; }
 
-/* Form altı butonları — ortak taban */
-html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-form-footer button,
-html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-footer-zone .wdp-side-panel-form-footer button,
-html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-form > .wdp-button-group button {
+/* Layout deltas only — colors / hover live in buttons.css */
+html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show :is(.wdp-side-panel-form-footer, .wdp-side-panel-footer-zone .wdp-side-panel-form-footer, .wdp-side-panel-form > .wdp-button-group) button {
   width: 100%;
   max-width: 100%;
-  min-height: 48px;
+  min-height: var(--wdp-form-cta-height, 52px);
   border-radius: var(--wdp-sp-btn-radius);
-  font-size: var(--wdp-form-button-font-size, 17px);
-  font-family: var(--wdp-button-font-family, inherit);
-  font-weight: var(--wdp-form-button-font-weight, var(--wdp-button-font-weight, 800));
-  letter-spacing: 0.01em;
-  line-height: 1.3;
-  border-width: 1px;
-  border-style: solid;
-  transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease;
-  box-shadow: none;
-  -webkit-font-smoothing: antialiased;
 }
 
-/* Ödemeye git / tamamla — yeşil */
-html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-form-footer button[name="donation_go_checkout"],
-html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-footer-zone button[name="donation_go_checkout"] {
-  background: var(--wdp-sp-btn-green, #48bb78);
-  background-color: var(--wdp-sp-btn-green, #48bb78);
-  color: #ffffff;
-  border-color: transparent;
-}
-
-@media (hover: hover) and (pointer: fine) {
-  html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-form-footer button[name="donation_go_checkout"]:hover,
-  html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-footer-zone button[name="donation_go_checkout"]:hover {
-    background: var(--wdp-sp-btn-green-hover, #38a169);
-    background-color: var(--wdp-sp-btn-green-hover, #38a169);
-  }
-
-  html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-form-footer button[name="donation_add_to_cart"]:hover,
-  html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-footer-zone button[name="donation_add_to_cart"]:hover {
-    background: var(--wdp-sp-btn-blue-hover, #185d98);
-    background-color: var(--wdp-sp-btn-blue-hover, #185d98);
-  }
-}
-
-html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-form-footer button[name="donation_go_checkout"]:active,
-html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-footer-zone button[name="donation_go_checkout"]:active {
-  background: #2f855a;
-  background-color: #2f855a;
-}
-
-/* Sepete ekle / sepete git — mavi */
-html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-form-footer button[name="donation_add_to_cart"],
-html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-footer-zone button[name="donation_add_to_cart"] {
-  background: var(--wdp-sp-btn-blue, #1e73be);
-  background-color: var(--wdp-sp-btn-blue, #1e73be);
-  color: #ffffff;
-  border-color: transparent;
-}
-
-html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-form-footer button[name="donation_add_to_cart"]:active,
-html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-footer-zone button[name="donation_add_to_cart"]:active {
-  background: var(--wdp-sp-btn-blue-hover, #185d98);
-  background-color: var(--wdp-sp-btn-blue-hover, #185d98);
-}
-
-html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-form-footer button:focus-visible,
-html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-footer-zone button:focus-visible {
-  outline: 2px solid var(--wdp-sp-btn-blue, #1e73be);
-  outline-offset: 2px;
-}
-
-html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-form-footer button .wdp-btn__icon,
-html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-footer-zone button .wdp-btn__icon,
-html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-cart-footer .wdp-success-button .wdp-btn__icon,
-html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show :is(.wdp-side-panel-form-footer, .wdp-side-panel-footer-zone, .wdp-side-panel-cart-footer) .wdp-btn__icon-host .wdp-btn__icon {
+html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show :is(.wdp-side-panel-form-footer button .wdp-btn__icon, .wdp-side-panel-footer-zone button .wdp-btn__icon, .wdp-side-panel-cart-footer .wdp-success-button .wdp-btn__icon, :is(.wdp-side-panel-form-footer, .wdp-side-panel-footer-zone, .wdp-side-panel-cart-footer) .wdp-btn__icon-host .wdp-btn__icon) {
   width: 22px;
   height: 22px;
   color: #ffffff;
 }
 
-html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-cart-footer .wdp-success-button--ghost .wdp-btn__icon {
+html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show :is(.wdp-side-panel-form-footer, .wdp-side-panel-footer-zone) .wdp-btn-secondary .wdp-btn__icon,
+html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show :is(.wdp-side-panel-form-footer, .wdp-side-panel-footer-zone) button[name="donation_add_to_cart"] .wdp-btn__icon {
   color: currentColor;
 }
+
+html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-cart-footer .wdp-success-button--ghost .wdp-btn__icon { color: currentColor; }
 
 html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-cart-footer .wdp-success-button .wdp-btn__inner {
   display: inline-flex;
@@ -533,15 +434,8 @@ html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-pa
   min-width: 0;
 }
 
-html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-price-quantity-row,
-html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-quantity-counter {
-  max-width: 100%;
-}
-
-/* Başarı / mini sepet */
-html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-form:has(.wdp-success-screen),
-html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-form.wdp-has-success,
-html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show form:has(.wdp-success-screen) {
+/* Success / mini-cart */
+html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show :is(.wdp-side-panel-form:has(.wdp-success-screen), .wdp-side-panel-form.wdp-has-success, form:has(.wdp-success-screen)) {
   overflow: visible;
 }
 
@@ -555,9 +449,7 @@ html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-success
   gap: 10px;
 }
 
-html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-success-screen .wdp-success-top-bar {
-  flex-shrink: 0;
-}
+html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-success-screen .wdp-success-top-bar { flex-shrink: 0; }
 
 html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-success-screen .wdp-success-cart-stack {
   flex: 1 1 0;
@@ -584,10 +476,11 @@ html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-pa
   flex-direction: column;
   overflow: hidden;
   margin: 0;
-  padding: 12px 10px;
-  border: 1px solid var(--wdp-mini-cart-border, var(--wdp-border-very-light, #e8eaed));
-  border-radius: var(--wdp-mini-cart-radius, var(--wdp-input-radius, 20px));
-  background: var(--wdp-mini-cart-bg, var(--wdp-color-card, #ffffff));
+  padding: 12px;
+  border: var(--wdp-mini-cart-surface-border, 1px solid rgba(15, 23, 42, 0.08));
+  border-radius: var(--wdp-mini-cart-radius, var(--wdp-radius-ui));
+  background: var(--wdp-mini-cart-surface-bg, #ffffff);
+  box-shadow: none;
   box-sizing: border-box;
 }
 
@@ -615,7 +508,6 @@ html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-pa
 
 html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-cart-footer {
   flex: 0 0 auto;
-  flex-shrink: 0;
   display: flex;
   flex-direction: column;
   gap: 0;
@@ -646,7 +538,7 @@ html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-pa
 html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-subtotal__value {
   font-size: clamp(20px, 1.25rem + 0.35vw, 26px);
   font-weight: 800;
-  color: var(--wdp-sp-btn-green, #48bb78);
+  color: var(--wdp-sp-btn-green, #16a34a);
   letter-spacing: -0.03em;
   line-height: 1.15;
 }
@@ -659,23 +551,19 @@ html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-pa
   border-top: none;
 }
 
-html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-cart-footer .wdp-success-buttons .wdp-new-donation {
-  margin-top: 0;
-}
+html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-cart-footer .wdp-success-buttons .wdp-new-donation { margin-top: 0; }
 
 html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-cart-footer .wdp-success-button {
   width: 100%;
-  min-height: 48px;
-  height: 48px;
-  max-height: 48px;
+  min-height: var(--wdp-form-cta-height, 52px);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   text-align: center;
-  border-radius: var(--wdp-sp-btn-radius, 20px);
+  border-radius: var(--wdp-radius-ui);
   font-family: var(--wdp-button-font-family, inherit);
   font-weight: var(--wdp-form-button-font-weight, var(--wdp-button-font-weight, 800));
-  font-size: var(--wdp-form-button-font-size, 17px);
+  font-size: var(--wdp-form-button-font-size, 16px);
   line-height: 1.3;
   padding: 0 16px;
   text-decoration: none;
@@ -686,110 +574,81 @@ html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-pa
   -webkit-font-smoothing: antialiased;
 }
 
-/* Bağışı tamamla — yeşil */
 html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-cart-footer .wdp-success-button--primary {
-  background: var(--wdp-sp-btn-green, #48bb78);
-  background-color: var(--wdp-sp-btn-green, #48bb78);
+  background: var(--wdp-sp-btn-green, #16a34a);
+  background-color: var(--wdp-sp-btn-green, #16a34a);
   color: #ffffff;
 }
 
+html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-cart-footer .wdp-success-button--outline {
+  background: var(--wdp-sp-btn-blue, var(--wdp-primary, #0f608b));
+  background-color: var(--wdp-sp-btn-blue, var(--wdp-primary, #0f608b));
+  color: #ffffff;
+}
+
+html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-cart-footer .wdp-success-button--ghost {
+  background: var(--wdp-ghost-btn-bg, #ffffff);
+  background-color: var(--wdp-ghost-btn-bg, #ffffff);
+  color: var(--wdp-ghost-btn-text, var(--wdp-primary, #0f608b));
+  border: 1px solid #e2e8f0;
+  border-radius: var(--wdp-radius-ui);
+  font-family: var(--wdp-button-font-family, inherit);
+  font-weight: var(--wdp-form-button-font-weight, var(--wdp-button-font-weight, 800));
+  font-size: var(--wdp-form-button-font-size, 16px);
+  box-sizing: border-box;
+}
+
 @media (hover: hover) and (pointer: fine) {
-  html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-cart-footer .wdp-success-button--primary:hover,
-  html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-cart-footer .wdp-success-button--primary:focus-visible {
-    background: var(--wdp-sp-btn-green-hover, #38a169);
-    background-color: var(--wdp-sp-btn-green-hover, #38a169);
+  html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-cart-footer .wdp-success-button--primary:is(:hover, :focus-visible) {
+    background: var(--wdp-sp-btn-green-hover);
+    background-color: var(--wdp-sp-btn-green-hover);
     color: #ffffff;
   }
 
-  html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-cart-footer .wdp-success-button--outline:hover,
-  html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-cart-footer .wdp-success-button--outline:focus-visible {
-    background: var(--wdp-sp-btn-blue-hover, #185d98);
-    background-color: var(--wdp-sp-btn-blue-hover, #185d98);
+  html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-cart-footer .wdp-success-button--outline:is(:hover, :focus-visible) {
+    background: var(--wdp-sp-btn-blue-hover, #0c4f72);
+    background-color: var(--wdp-sp-btn-blue-hover, #0c4f72);
     color: #ffffff;
   }
 
-  html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-cart-footer .wdp-success-button--ghost:hover,
-  html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-cart-footer .wdp-success-button--ghost:focus-visible {
-    color: var(--wdp-sp-btn-ghost-hover, #9a3412);
-    background: #ffedd5;
-    border-color: #fb923c;
+  html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-cart-footer .wdp-success-button--ghost:is(:hover, :focus-visible) {
+    color: var(--wdp-ghost-btn-text-hover, #0c4f72);
+    background: var(--wdp-ghost-btn-bg-hover, #f7f8fa);
+    background-color: var(--wdp-ghost-btn-bg-hover, #f7f8fa);
+    border-color: #cbd5e1;
   }
 }
 
 html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-cart-footer .wdp-success-button--primary:active {
-  background: #2f855a;
-  background-color: #2f855a;
+  background: var(--wdp-sp-btn-green-hover);
+  background-color: var(--wdp-sp-btn-green-hover);
 }
 
-/* Sepete git — mavi */
-html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-cart-footer .wdp-success-button--outline {
-  background: var(--wdp-sp-btn-blue, #1e73be);
-  background-color: var(--wdp-sp-btn-blue, #1e73be);
-  color: #ffffff;
-}
-
-/* Bağış eklemeye devam — turuncu çerçeveli */
-html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-cart-footer .wdp-success-button--ghost {
-  background: var(--wdp-sp-btn-ghost-bg, #fff7ed);
-  background-color: var(--wdp-sp-btn-ghost-bg, #fff7ed);
-  color: var(--wdp-sp-btn-ghost-text, #c2410c);
-  border: 1px solid var(--wdp-sp-btn-ghost-border, #fdba74);
-  border-radius: var(--wdp-sp-btn-radius, 20px);
-  font-family: var(--wdp-button-font-family, inherit);
-  font-weight: var(--wdp-form-button-font-weight, var(--wdp-button-font-weight, 800));
-  font-size: var(--wdp-form-button-font-size, 17px);
-  box-sizing: border-box;
-}
-
-/* Mobil: form + mini sepet butonları aynı yükseklik; sadaka paneli footer çizgisinden ayrı */
+/* Mobile */
 @media (max-width: 768px) {
-  html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-form-footer button,
-  html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-footer-zone .wdp-side-panel-form-footer button,
-  html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-form > .wdp-button-group button {
-    min-height: 48px;
-    height: 48px;
-    max-height: 48px;
-    padding-block: 0;
+  html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel {
+    --wdp-sp-glass-blur: var(--wdp-glass-blur-mobile, blur(10px) saturate(140%));
+  }
+
+  html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show :is(.wdp-side-panel-form-footer, .wdp-side-panel-footer-zone .wdp-side-panel-form-footer, .wdp-side-panel-form > .wdp-button-group) button {
+    min-height: var(--wdp-form-cta-height-mobile, var(--wdp-form-cta-height, 52px));
     padding-inline: 16px;
-    box-sizing: border-box;
   }
 
   html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-cart-footer .wdp-success-button {
-    min-height: 48px;
-    height: 48px;
-    max-height: 48px;
-    padding: 0 16px;
+    min-height: var(--wdp-form-cta-height-mobile, var(--wdp-form-cta-height, 52px));
     font-size: clamp(15px, 3.8vw, 17px);
   }
 
-  html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-cart-footer > .wdp-success-buttons {
-    gap: 10px;
-  }
-
-  html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-main > .wdp-sadaka-donation.is-open {
-    margin-bottom: 10px;
-  }
-
-  html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-cart-layout > .wdp-mini-cart {
-    padding-inline: 10px;
-  }
+  html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-cart-footer > .wdp-success-buttons { gap: var(--wdp-form-stack-gap, 16px); }
+  html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-main > .wdp-sadaka-donation.is-open { margin-bottom: var(--wdp-form-stack-gap, 16px); }
+  html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-cart-layout > .wdp-mini-cart { padding-inline: 16px; }
 }
 
 @media (max-width: 600px) {
-  html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-cart-footer .wdp-success-button {
-    min-height: 48px;
-    height: 48px;
-    max-height: 48px;
-    padding: 0 16px;
-    font-size: clamp(15px, 3.8vw, 17px);
-  }
-
-  html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-cart-footer > .wdp-success-buttons {
-    gap: 10px;
-  }
+  html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-cart-footer > .wdp-success-buttons { gap: var(--wdp-form-stack-gap, 16px); }
 }
 
-/* Mobil: tam yükseklik, ortalama yok, sol radius 20px */
 @media (max-width: 480px) {
   html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel {
     --wdp-side-panel-width: min(92vw, calc(100vw - 12px));
@@ -800,13 +659,82 @@ html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-pa
     justify-content: flex-end;
   }
 
-  html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-modal-content,
-  html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-content {
+  html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show :is(.wdp-modal-content, .wdp-side-panel-content) {
     height: 100dvh;
     max-height: 100dvh;
     min-height: 100dvh;
     margin: 0;
     border-radius: var(--wdp-side-panel-radius-left) 0 0 var(--wdp-side-panel-radius-left);
   }
+
+  html body :is(.wdp-modal, .wdp-donation-form) form.wdp-has-shareholders .wdp-shares-total-bar {
+    gap: 8px;
+    padding: 8px 12px;
+    margin: 0 0 8px;
+    border-radius: var(--wdp-radius-ui);
+  }
+
+  html body :is(.wdp-modal, .wdp-donation-form) form.wdp-has-shareholders .wdp-shares-total-bar__label { font-size: 12.5px; }
+  html body :is(.wdp-modal, .wdp-donation-form) form.wdp-has-shareholders .wdp-shares-total-bar__value { font-size: 15px; }
+  html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-footer-zone .wdp-shares-total-bar { margin-bottom: 8px; }
 }
 
+/* A11y */
+@media (prefers-reduced-motion: reduce) {
+  html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show,
+  html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show.wdp-side-panel--closing {
+    animation: none;
+  }
+
+  html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show :is(.wdp-modal-content, .wdp-side-panel-content),
+  html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show.wdp-side-panel--closing .wdp-modal-content {
+    animation: none;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel {
+    --wdp-sp-glass-bg: #ffffff;
+  }
+
+  html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show::before,
+  html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show.wdp-side-panel--opening::before,
+  html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show.wdp-side-panel--closing::before {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show :is(.wdp-modal-content, .wdp-side-panel-content),
+  html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-footer-zone {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+}
+
+/* Başlık + progress sabit; form kayar — chrome ayrımı */
+html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-modal-content > .wdp-modal-header,
+html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-modal-content > .wdp-progress-bar-container {
+  flex: 0 0 auto;
+  position: relative;
+  z-index: 2;
+}
+
+html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-modal-content > .wdp-progress-bar-container {
+  margin-bottom: 2px;
+  box-shadow: none;
+  border-bottom: 1px solid color-mix(in srgb, var(--wdp-border-soft-gray, #e5e9ec) 85%, transparent);
+}
+
+html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-footer-zone {
+  flex: 0 0 auto;
+  position: relative;
+  z-index: 3;
+  background: #ffffff;
+  box-shadow: 0 -10px 24px -18px rgba(15, 23, 42, 0.22);
+  padding-bottom: max(10px, calc(env(safe-area-inset-bottom, 0px) + var(--wdp-keyboard-inset, 0px)));
+  transform: translateY(calc(-1 * var(--wdp-keyboard-inset, 0px)));
+  transition: transform 0.12s ease, padding-bottom 0.12s ease;
+}

@@ -1,6 +1,6 @@
 <?php
 /**
- * WooCommerce product category → modal title color mapping.
+ * Kategori bazlı modal başlık rengi okuma, kayıt ve inline stil.
  *
  * @package WooCommerce\Donation_Popup
  */
@@ -116,11 +116,30 @@ class WDP_Category_Title_Color_Service {
 
 	/**
 	 * Inline style attribute for product title.
+	 * Global marka rengi varsa kategori rengi modal başlığını ezmez.
 	 *
 	 * @param int $product_id Product ID.
 	 * @return string Safe HTML attribute fragment (empty or style="...").
 	 */
 	public static function get_title_style_attr($product_id) {
+		$button_settings = get_option('wdp_button_settings', array());
+		if (is_array($button_settings)) {
+			$brand = isset($button_settings['brand_color']) ? sanitize_hex_color((string) $button_settings['brand_color']) : '';
+			$primary = isset($button_settings['button_primary_color']) ? sanitize_hex_color((string) $button_settings['button_primary_color']) : '';
+			// Marka veya özel primary varken kategori yeşili başlığı ezmesin.
+			$effective = $brand !== '' ? $brand : $primary;
+			if ($effective !== '') {
+				$legacy_greens = array('#036a37', '#025a2e', '#047857', '#065f46', '#166534', '#14532d');
+				$is_legacy_green = in_array(strtolower($effective), $legacy_greens, true);
+				if (!$is_legacy_green || $brand !== '') {
+					$use_category = (bool) apply_filters('wdp_use_category_title_color_with_brand', false, absint($product_id));
+					if (!$use_category) {
+						return '';
+					}
+				}
+			}
+		}
+
 		$color = self::get_color_for_product($product_id);
 		if ($color === '') {
 			return '';

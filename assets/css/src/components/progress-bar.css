@@ -1,278 +1,468 @@
-/* ==================== */
-/* PROGRESS BAR */
-/* ==================== */
-/* CRITICAL: Maximum specificity - html body ile tema override koruması */
+/**
+ * @file progress-bar.css
+ * Clean fundraising progress — one amount, one %, one thin track, quiet meta.
+ */
 
-html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content, .wdp-modal, .wdp-donation-form) .wdp-progress-bar-container,
-html body .wdp-progress-bar-container {
-  margin: var(--wdp-form-stack-gap) 0;
-  padding: var(--wdp-space-3, 12px) var(--wdp-space-4, 16px);
-  background: var(--wdp-color-card, #ffffff);
-  border-radius: var(--wdp-input-radius, 10px);
-  border: 1px solid var(--wdp-border-very-light, #f0f2f5);
-  position: relative;
-  overflow: hidden;
-}
-
-html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content, .wdp-modal, .wdp-donation-form) .wdp-progress-bar-container > *,
-html body .wdp-progress-bar-container > * {
-  position: relative;
-  z-index: 1;
-}
-
-html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content, .wdp-modal, .wdp-donation-form) .wdp-progress-bar-header,
-html body .wdp-progress-bar-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: var(--wdp-form-stack-gap);
-  flex-wrap: wrap;
-  gap: var(--wdp-form-stack-gap);
-  position: relative;
-}
-
-html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content, .wdp-modal, .wdp-donation-form) :is(.wdp-progress-bar-info, .wdp-progress-bar-limit),
-html body :is(.wdp-progress-bar-info, .wdp-progress-bar-limit) {
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-container {
+  --wdp-progress-track-h: clamp(14px, var(--wdp-progress-bar-height, 18px), 28px);
+  --wdp-progress-ink: var(--wdp-progress-fill, var(--wdp-primary, #0f608b));
+  margin: 0;
+  padding: 14px 0 10px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  flex: 1;
-  min-width: 0;
-}
-
-/* Collected donation section - more prominent */
-html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content, .wdp-modal, .wdp-donation-form) .wdp-progress-bar-info .wdp-progress-bar-amount {
-  color: var(--wdp-primary, #4a90e2);
-}
-
-html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content :is(.wdp-progress-bar-label, .wdp-progress-bar-limit-label),
-html body :is(.wdp-progress-bar-label, .wdp-progress-bar-limit-label) {
-  font-size: 10px;
-  font-weight: 600;
-  color: var(--wdp-text-tertiary, #64748b);
-  text-transform: uppercase;
-  letter-spacing: 0.7px;
-  font-family: var(--wdp-font-family);
-  opacity: 0.85;
-}
-
-html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content, .wdp-modal, .wdp-donation-form) :is(.wdp-progress-bar-amount, .wdp-progress-bar-limit-amount),
-html body :is(.wdp-progress-bar-amount, .wdp-progress-bar-limit-amount) {
-  font-size: clamp(16px, 1vw + 12px, 19px);
-  font-weight: 700;
-  color: var(--wdp-text-primary, #1e293b);
-  line-height: 1.3;
-  font-family: var(--wdp-font-family);
-  letter-spacing: -0.01em;
-}
-
-html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content, .wdp-modal, .wdp-donation-form) .wdp-progress-bar-limit-amount,
-html body .wdp-progress-bar-limit-amount {
-  color: var(--wdp-text-secondary, #475569);
-  font-weight: 700;
-}
-
-html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content, .wdp-modal, .wdp-donation-form) .wdp-progress-bar-wrapper,
-html body .wdp-progress-bar-wrapper {
-  position: relative;
-  margin-top: 2px;
-  padding: 0;
-  min-height: 20px;
-}
-
-html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content, .wdp-modal, .wdp-donation-form) .wdp-progress-bar,
-html body .wdp-progress-bar {
-  width: 100%;
-  height: 20px;
-  background: var(--wdp-bg-cream, #fafbfc);
-  border-radius: 14px;
-  overflow: hidden;
-  position: relative;
-  border: 1px solid var(--wdp-border-soft-gray, #e8eaed);
-}
-
-html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content, .wdp-modal, .wdp-donation-form) .wdp-progress-bar-fill,
-html body .wdp-progress-bar-fill {
-  height: 100%;
-  background: var(--wdp-progress-fill, var(--wdp-primary, #4a90e2));
-  border-radius: 10px;
-  position: relative;
-  transition: width calc(0.8s * var(--wdp-motion-scale, 1)) cubic-bezier(0.34, 1.56, 0.64, 1);
-  z-index: 2;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  overflow: hidden;
-}
-
-/* Respect user's motion preferences */
-@media (prefers-reduced-motion: reduce) {
-  html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content, .wdp-modal, .wdp-donation-form) .wdp-progress-bar-fill,
-  html body .wdp-progress-bar-fill {
-    transition: width 0.3s ease;
-  }
-}
-
-html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content, .wdp-modal, .wdp-donation-form) .wdp-progress-bar-preview,
-html body .wdp-progress-bar-preview {
-  height: 100%;
-  background: var(--wdp-progress-preview-bg, #64748b);
-  border-radius: 0 10px 10px 0; /* Sağ tarafta yuvarlak köşe */
-  position: absolute;
-  top: 0;
-  left: 0;
-  transition: width 0.3s ease-out, left 0.3s ease-out;
-  opacity: 0.6;
-  z-index: 1;
-  display: none;
-}
-
-html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content, .wdp-modal, .wdp-donation-form) .wdp-progress-bar-percentage,
-html body .wdp-progress-bar-percentage {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10;
-  pointer-events: none;
-}
-
-html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content, .wdp-modal, .wdp-donation-form) .wdp-progress-bar-percentage-value,
-html body .wdp-progress-bar-percentage-value {
-  font-size: 10px;
-  font-weight: 800;
-  color: var(--wdp-progress-percentage-text-dark, #475569);
-  background: none;
-  padding: 0;
-  border-radius: 0;
-  white-space: nowrap;
-  min-height: auto;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  line-height: 1;
+  gap: 10px;
+  flex: 0 0 auto;
+  background: transparent;
   border: none;
-  font-family: var(--wdp-font-family);
-  letter-spacing: 0.02em;
-  backdrop-filter: none;
+  border-radius: 0;
+  box-shadow: none;
+  position: relative;
+  overflow: visible;
 }
 
-/* Progress bar fill üzerindeyse beyaz renk - JavaScript ile class eklenecek */
-html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content, .wdp-modal, .wdp-donation-form) .wdp-progress-bar-percentage-value.on-fill,
-html body .wdp-progress-bar-percentage-value.on-fill {
-  color: var(--wdp-progress-percentage-text-light, #ffffff);
-  font-weight: 900;
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-container.is-approaching {
+  /* Quiet emphasis — no glow rings */
 }
 
-/* Mobil optimizasyonlar */
-/* CRITICAL: Maximum specificity - html body ile tema override koruması */
-@media (max-width: 600px) {
-  html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content, .wdp-modal, .wdp-donation-form) .wdp-progress-bar-container,
-  html body .wdp-progress-bar-container {
-    margin: 14px 0;
-    padding: 16px 14px;
-    border-radius: 10px;
-  }
-
-  html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content, .wdp-modal, .wdp-donation-form) .wdp-progress-bar-header,
-  html body .wdp-progress-bar-header {
-    flex-direction: row;
-    align-items: flex-start;
-    gap: var(--wdp-form-stack-gap);
-    margin-bottom: var(--wdp-form-stack-gap);
-  }
-
-  html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content, .wdp-modal, .wdp-donation-form) :is(.wdp-progress-bar-info, .wdp-progress-bar-limit),
-  html body :is(.wdp-progress-bar-info, .wdp-progress-bar-limit) {
-    flex: 1;
-    min-width: 0;
-  }
-
-  html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content, .wdp-modal, .wdp-donation-form) :is(.wdp-progress-bar-label, .wdp-progress-bar-limit-label),
-  html body :is(.wdp-progress-bar-label, .wdp-progress-bar-limit-label) {
-    font-size: 10px;
-    letter-spacing: 0.5px;
-  }
-
-  html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content, .wdp-modal, .wdp-donation-form) :is(.wdp-progress-bar-amount, .wdp-progress-bar-limit-amount),
-  html body :is(.wdp-progress-bar-amount, .wdp-progress-bar-limit-amount) {
-    font-size: clamp(15px, 3.5vw, 18px);
-  }
-
-  html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content, .wdp-modal, .wdp-donation-form) .wdp-progress-bar,
-  html body .wdp-progress-bar {
-    height: 14px;
-  }
-  
-  html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content, .wdp-modal, .wdp-donation-form) .wdp-progress-bar-wrapper,
-  html body .wdp-progress-bar-wrapper {
-    min-height: 14px;
-  }
-
-  html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content, .wdp-modal, .wdp-donation-form) .wdp-progress-bar-percentage,
-  html body .wdp-progress-bar-percentage {
-    height: 14px;
-  }
-
-  html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content, .wdp-modal, .wdp-donation-form) .wdp-progress-bar-percentage-value,
-  html body .wdp-progress-bar-percentage-value {
-    font-size: 10px;
-  }
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-ambient,
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-edge,
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-top,
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-pct-ring,
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-scale,
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-ticks,
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-markers,
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-tip,
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-percentage,
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-milestones,
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-legend,
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-status,
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-impact,
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-status__chip {
+  display: none !important;
 }
 
-/* Küçük mobil */
-/* CRITICAL: Maximum specificity - html body ile tema override koruması */
-@media (max-width: 480px) {
-  html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content, .wdp-modal, .wdp-donation-form) .wdp-progress-bar-container,
-  html body .wdp-progress-bar-container {
-    margin: 12px 0;
-    padding: 14px 12px;
-    border-radius: 10px;
-  }
-
-  html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content, .wdp-modal, .wdp-donation-form) .wdp-progress-bar-header,
-  html body .wdp-progress-bar-header {
-    margin-bottom: var(--wdp-form-stack-gap);
-    gap: var(--wdp-form-stack-gap);
-  }
-
-  html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content, .wdp-modal, .wdp-donation-form) :is(.wdp-progress-bar-label, .wdp-progress-bar-limit-label),
-  html body :is(.wdp-progress-bar-label, .wdp-progress-bar-limit-label) {
-    font-size: 9px;
-    letter-spacing: 0.4px;
-  }
-
-  html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content, .wdp-modal, .wdp-donation-form) :is(.wdp-progress-bar-amount, .wdp-progress-bar-limit-amount),
-  html body :is(.wdp-progress-bar-amount, .wdp-progress-bar-limit-amount) {
-    font-size: clamp(14px, 4.5vw, 17px);
-  }
-
-  html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content, .wdp-modal, .wdp-donation-form) .wdp-progress-bar,
-  html body .wdp-progress-bar {
-    height: 12px;
-  }
-  
-  html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content, .wdp-modal, .wdp-donation-form) .wdp-progress-bar-wrapper,
-  html body .wdp-progress-bar-wrapper {
-    min-height: 12px;
-  }
-
-  html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content, .wdp-modal, .wdp-donation-form) .wdp-progress-bar-percentage,
-  html body .wdp-progress-bar-percentage {
-    height: 12px;
-  }
-
-  html body :is(.wdp-modal, .wdp-donation-form) :is(.wdp-modal-content, .wdp-modal, .wdp-donation-form) .wdp-progress-bar-percentage-value,
-  html body .wdp-progress-bar-percentage-value {
-    font-size: 9px;
-  }
-}
-
-/* Modal içi ilerleme çubuğu: dış margin yok — üst bloklar arası .wdp-modal-content gap */
-html body .wdp-modal.show .wdp-modal-content > .wdp-progress-bar-container,
-html body .wdp-donation-form .wdp-modal-content > .wdp-progress-bar-container {
+/* —— Header: amount + % —— */
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
   margin: 0;
 }
 
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-info {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 8px;
+  min-width: 0;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-amount {
+  font-size: clamp(22px, 2.2vw + 16px, 28px);
+  font-weight: 750;
+  letter-spacing: -0.035em;
+  line-height: 1.1;
+  color: var(--wdp-text-primary, #0f172a);
+  font-variant-numeric: tabular-nums;
+  font-family: var(--wdp-font-family);
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--wdp-text-tertiary, #64748b);
+  letter-spacing: 0;
+  text-transform: none;
+  font-family: var(--wdp-font-family);
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-delta {
+  display: inline-flex;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 650;
+  color: var(--wdp-progress-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-delta[hidden] {
+  display: none !important;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-pct-block {
+  flex: 0 0 auto;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-pct {
+  font-size: clamp(18px, 1.4vw + 14px, 22px);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--wdp-progress-ink);
+  font-variant-numeric: tabular-nums;
+  font-family: var(--wdp-font-family);
+  line-height: 1;
+}
+
+/* —— Track —— */
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-wrapper {
+  position: relative;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: var(--wdp-progress-track-h, 18px) !important;
+  min-height: var(--wdp-progress-track-h, 18px) !important;
+  max-height: var(--wdp-progress-track-h, 18px) !important;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar {
+  display: block !important;
+  visibility: visible !important;
+  width: 100% !important;
+  height: var(--wdp-progress-track-h, 18px) !important;
+  min-height: var(--wdp-progress-track-h, 18px) !important;
+  max-height: var(--wdp-progress-track-h, 18px) !important;
+  opacity: 1 !important;
+  background-color: var(--wdp-progress-track-bg, #e8eef2) !important;
+  background-image: linear-gradient(
+    180deg,
+    color-mix(in srgb, #0f172a 5%, var(--wdp-progress-track-bg, #e8eef2)) 0%,
+    var(--wdp-progress-track-bg, #e8eef2) 100%
+  );
+  border: none;
+  border-radius: 9999px;
+  overflow: hidden;
+  position: relative;
+  box-shadow:
+    inset 0 1px 2px rgba(15, 23, 42, 0.1),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.65);
+  box-sizing: border-box;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-fill {
+  display: block !important;
+  visibility: visible !important;
+  height: 100% !important;
+  min-height: 100% !important;
+  opacity: 1 !important;
+  background-color: var(--wdp-progress-ink) !important;
+  background-image:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.22) 0%, transparent 42%),
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--wdp-progress-ink) 82%, #0f172a) 0%,
+      var(--wdp-progress-ink) 48%,
+      color-mix(in srgb, var(--wdp-progress-ink) 88%, #ffffff) 100%
+    );
+  border-radius: 0;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 2;
+  overflow: hidden;
+  transition: width calc(0.55s * var(--wdp-motion-scale, 1)) cubic-bezier(0.22, 1, 0.36, 1);
+  box-shadow: 1px 0 0 rgba(255, 255, 255, 0.2);
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-fill::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 12px;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35));
+  pointer-events: none;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-fill::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 40%,
+    rgba(255, 255, 255, 0.18) 50%,
+    transparent 60%
+  );
+  background-size: 220% 100%;
+  pointer-events: none;
+  opacity: 0.45;
+  animation: wdp-progress-sheen 3.2s ease-in-out infinite;
+}
+
+@keyframes wdp-progress-sheen {
+  0% { background-position: 140% 0; }
+  100% { background-position: -40% 0; }
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-pending {
+  height: 100%;
+  background: color-mix(in srgb, var(--wdp-progress-pending-bg, var(--wdp-progress-ink)) 52%, #ffffff);
+  border-radius: 0;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 3;
+  display: none;
+  opacity: 1;
+  transition:
+    width calc(0.45s * var(--wdp-motion-scale, 1)) cubic-bezier(0.22, 1, 0.36, 1),
+    left calc(0.45s * var(--wdp-motion-scale, 1)) cubic-bezier(0.22, 1, 0.36, 1);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.15);
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-preview {
+  height: 100%;
+  background: color-mix(in srgb, var(--wdp-progress-ink) 52%, #ffffff);
+  border-radius: 0;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 4;
+  display: none;
+  opacity: 1;
+  transition:
+    width calc(0.3s * var(--wdp-motion-scale, 1)) cubic-bezier(0.22, 1, 0.36, 1),
+    left calc(0.3s * var(--wdp-motion-scale, 1)) cubic-bezier(0.22, 1, 0.36, 1);
+  background-image: repeating-linear-gradient(
+    -45deg,
+    transparent 0 3px,
+    rgba(255, 255, 255, 0.28) 3px 6px
+  );
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--wdp-progress-ink) 28%, transparent);
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-percentage-value[hidden] {
+  display: none !important;
+}
+
+/* —— Meta row —— */
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-status-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 6px;
+  margin: 0;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--wdp-text-secondary, #64748b);
+  font-family: var(--wdp-font-family);
+  line-height: 1.35;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-goal {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+  min-width: 0;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-limit-label {
+  font-size: inherit;
+  font-weight: 500;
+  color: inherit;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-limit-amount {
+  font-size: inherit;
+  font-weight: 650;
+  color: var(--wdp-text-primary, #0f172a);
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-sep {
+  color: #cbd5e1;
+  font-weight: 400;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-remaining,
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-donors {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0;
+  border: none;
+  background: none;
+  font-size: inherit;
+  font-weight: 600;
+  color: inherit;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-remaining::before {
+  content: none;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-donors {
+  color: var(--wdp-text-secondary, #475569);
+  font-weight: 650;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-donors::before {
+  content: "";
+  display: inline-block;
+  width: 13px;
+  height: 13px;
+  flex: 0 0 auto;
+  background-color: currentColor;
+  opacity: 0.78;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none'%3E%3Cpath fill='%23000' d='M16 11a3 3 0 1 0-3-3 3 3 0 0 0 3 3Zm-8 0a3 3 0 1 0-3-3 3 3 0 0 0 3 3Zm0 2c-2.67 0-8 1.34-8 4v2h10.05A6.47 6.47 0 0 1 8 16.5c0-1.23.35-2.38.95-3.36A13.1 13.1 0 0 0 8 13Zm8 0c-.4 0-.81.03-1.21.08A6.48 6.48 0 0 1 18.5 16.5c0 .86-.17 1.67-.47 2.41L24 19v-2c0-2.66-5.33-4-8-4Z'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none'%3E%3Cpath fill='%23000' d='M16 11a3 3 0 1 0-3-3 3 3 0 0 0 3 3Zm-8 0a3 3 0 1 0-3-3 3 3 0 0 0 3 3Zm0 2c-2.67 0-8 1.34-8 4v2h10.05A6.47 6.47 0 0 1 8 16.5c0-1.23.35-2.38.95-3.36A13.1 13.1 0 0 0 8 13Zm8 0c-.4 0-.81.03-1.21.08A6.48 6.48 0 0 1 18.5 16.5c0 .86-.17 1.67-.47 2.41L24 19v-2c0-2.66-5.33-4-8-4Z'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-remaining[hidden],
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-donors[hidden] {
+  display: none !important;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-meta {
+  margin: 0;
+  font-size: 12.5px;
+  font-weight: 650;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-meta[hidden] {
+  display: none !important;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-complete-label {
+  color: var(--wdp-success, #16a34a);
+  font-weight: 700;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-container.is-complete .wdp-progress-bar-fill {
+  background-color: var(--wdp-success, #16a34a) !important;
+  background-image: none;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-container.is-complete .wdp-progress-bar-pct {
+  color: var(--wdp-success, #16a34a);
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-container.has-draft .wdp-progress-bar-preview,
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-container.is-draft-pulse .wdp-progress-bar-preview {
+  display: block;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-container.is-draft-flash .wdp-progress-bar-preview {
+  animation: wdp-draft-soft-pulse 360ms ease;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-container.is-milestone .wdp-progress-bar-pct {
+  animation: wdp-progress-pct-nudge 0.45s ease;
+}
+
+@keyframes wdp-draft-soft-pulse {
+  0% { opacity: 0.7; }
+  40% { opacity: 1; }
+  100% { opacity: 1; }
+}
+
+@keyframes wdp-progress-pct-nudge {
+  0% { transform: none; }
+  40% { transform: translateY(-1px); }
+  100% { transform: none; }
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-price-row .wdp-custom-price-shell {
+  min-height: var(--wdp-input-min-height, 52px);
+  border-radius: var(--wdp-radius-ui, 12px);
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-price-row .wdp-custom-price-shell:focus-within {
+  border-color: color-mix(in srgb, var(--wdp-primary, #0f608b) 55%, #e5e9ec);
+  box-shadow: none;
+  transform: none;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) form.wdp-has-progress-bar .wdp-field-stack {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form).show .wdp-modal-content > .wdp-progress-bar-container,
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content > .wdp-progress-bar-container {
+  margin: 0;
+  padding-top: 8px;
+  padding-bottom: 4px;
+  border-bottom: none;
+}
+
+html body .wdp-modal .wdp-modal-content.wdp-has-success > .wdp-progress-bar-container,
+html body .wdp-modal .wdp-modal-content:has(.wdp-success-screen) > .wdp-progress-bar-container,
+html body .wdp-modal .wdp-progress-bar-container.wdp-hidden-on-success,
+html body .wdp-donation-form .wdp-progress-bar-container.wdp-hidden-on-success {
+  display: none !important;
+}
+
+/* Side panel */
+html body .wdp-modal.wdp-side-panel .wdp-progress-bar-container {
+  padding: 10px 0 8px;
+  gap: 8px;
+}
+
+html body .wdp-modal.wdp-side-panel .wdp-progress-bar-amount {
+  font-size: clamp(20px, 1.6vw + 14px, 24px);
+}
+
+/* Desktop */
+@media (min-width: 901px) {
+  html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-container {
+    --wdp-progress-track-h: clamp(16px, var(--wdp-progress-bar-height, 18px), 28px);
+    gap: 11px;
+  }
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+  html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-container {
+    --wdp-progress-track-h: clamp(14px, var(--wdp-progress-bar-height-mobile, var(--wdp-progress-bar-height, 16px)), 24px);
+    gap: 8px;
+    padding: 10px 0 8px;
+  }
+
+  html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-wrapper,
+  html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar {
+    height: var(--wdp-progress-track-h) !important;
+    min-height: var(--wdp-progress-track-h) !important;
+    max-height: var(--wdp-progress-track-h) !important;
+  }
+
+  html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-amount {
+    font-size: clamp(20px, 5vw, 24px);
+  }
+
+  html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-pct {
+    font-size: 17px;
+  }
+
+  html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-status-row {
+    font-size: 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html body :is(.wdp-modal, .wdp-donation-form) :is(
+    .wdp-progress-bar-fill,
+    .wdp-progress-bar-pending,
+    .wdp-progress-bar-preview,
+    .wdp-progress-bar-pct
+  ) {
+    transition: none !important;
+    animation: none !important;
+  }
+
+  html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-fill::after {
+    animation: none;
+    opacity: 0.2;
+  }
+}

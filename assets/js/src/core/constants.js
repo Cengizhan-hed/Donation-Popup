@@ -1,6 +1,7 @@
 /**
- * Constants - Sabitler ve yapılandırma değerleri
- * Magic numbers ve timing constants
+ * @file constants.js
+ * Sabitler: AJAX eylem adları, CSS sınıfları ve yapılandırma anahtarları.
+ * Dış API: WDPApp.constants
  */
 
 (function(window) {

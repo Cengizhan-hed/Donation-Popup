@@ -1,6 +1,6 @@
 <?php
 /**
- * Admin AJAX request utilities.
+ * Admin AJAX nonce/yetki kontrolü ve standart JSON başarı/hata yanıtları.
  *
  * @package WooCommerce\Donation_Popup
  */

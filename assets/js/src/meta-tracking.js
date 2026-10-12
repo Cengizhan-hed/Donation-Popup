@@ -1,7 +1,7 @@
 /**
- * Meta Pixel companion for WDP — uses existing window.fbq only (no duplicate PageView/init by default).
- *
- * @package WooCommerce\Donation_Popup
+ * @file meta-tracking.js
+ * Meta Pixel ViewContent, AddToCart ve ilgili ön yüz olayları.
+ * Dış API: WDPApp.metaTracking
  */
 (function (window) {
   'use strict';
@@ -42,8 +42,64 @@
     return typeof window.fbq === 'function';
   }
 
+  /** Consent fields come from wdp_ajax.meta (main bundle) or wdpMetaPurchase (thank-you page). */
+  function getConsentCfg() {
+    var meta = getMetaCfg();
+    if (meta && typeof meta.requireConsent !== 'undefined') {
+      return meta;
+    }
+    return window.wdpMetaPurchase || {};
+  }
+
+  /** null = no runtime decision yet; true/false = last wp_listen_for_consent_change result. */
+  var runtimeConsent = null;
+
+  /**
+   * Marketing consent: setting off → always true; WP Consent API JS → wp_has_consent('marketing');
+   * otherwise the server-side decision (wdp_meta_pixel_has_consent filter).
+   *
+   * @returns {boolean}
+   */
+  function hasConsent() {
+    var c = getConsentCfg();
+    if (!c.requireConsent) {
+      return true;
+    }
+    if (runtimeConsent !== null) {
+      return runtimeConsent;
+    }
+    if (typeof window.wp_has_consent === 'function') {
+      try {
+        return !!window.wp_has_consent('marketing');
+      } catch (e) {
+        return false;
+      }
+    }
+    return !!c.hasConsent;
+  }
+
+  /**
+   * Optional base pixel when consent arrives after page load (server skipped the snippet).
+   * Only used when the consent setting is on; otherwise PHP prints the snippet as before.
+   */
+  function ensureBasePixel() {
+    var c = getConsentCfg();
+    if (!c.requireConsent || !c.loadBasePixel || hasFbq()) {
+      return;
+    }
+    var pixelId = String(c.optionalPixelId || '').replace(/\D/g, '');
+    if (pixelId.length < 8) {
+      return;
+    }
+    /* eslint-disable */
+    !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window, document,'script','https://connect.facebook.net/en_US/fbevents.js');
+    /* eslint-enable */
+    window.fbq('init', pixelId);
+    debugLog('Base pixel initialised after consent', pixelId);
+  }
+
   function flushQueue() {
-    if (!hasFbq()) {
+    if (!hasFbq() || !hasConsent()) {
       return;
     }
     while (queue.length) {
@@ -78,6 +134,10 @@
   }
 
   function enqueueFbqCall(argsArray) {
+    if (!hasConsent()) {
+      debugLog('Skipped (no marketing consent)', argsArray && argsArray[1]);
+      return;
+    }
     try {
       if (hasFbq()) {
         window.fbq.apply(window, argsArray);
@@ -220,7 +280,7 @@
    */
   function trackViewContentDonation(opts) {
     var cfg = getMetaCfg();
-    if (!cfg.enabled || !cfg.viewContent) {
+    if (!cfg.enabled || !cfg.viewContent || !hasConsent()) {
       return;
     }
     var productId = opts && opts.productId;
@@ -271,7 +331,7 @@
    */
   function trackAddToCartDonation(opts) {
     var cfg = getMetaCfg();
-    if (!cfg.enabled || !cfg.addToCart) {
+    if (!cfg.enabled || !cfg.addToCart || !hasConsent()) {
       return;
     }
     var line = opts.metaCartLine || {};
@@ -331,7 +391,7 @@
    */
   function trackInitiateCheckoutDonation(opts) {
     var cfg = getMetaCfg();
-    if (!cfg.enabled || !cfg.initiateCheckout) {
+    if (!cfg.enabled || !cfg.initiateCheckout || !hasConsent()) {
       return;
     }
     var dedupe = opts && opts.dedupeKey ? String(opts.dedupeKey) : '';
@@ -367,6 +427,11 @@
     if (cfg.runPurchase === false) {
       return;
     }
+    // Not marked as sent: retried from the consent-change listener.
+    if (!hasConsent()) {
+      return;
+    }
+    ensureBasePixel();
     if (isDebug() || cfg.debug) {
       try {
         window.console.log('[WDP Meta]', 'Purchase', { order_id: oid, eventID: cfg.eventID });
@@ -376,11 +441,34 @@
     localSet(key, '1');
   }
 
+  /**
+   * WP Consent API event: detail is { category: 'allow' | 'deny' }.
+   */
+  document.addEventListener('wp_listen_for_consent_change', function (e) {
+    var changed = e && e.detail;
+    if (!changed || typeof changed !== 'object' || !Object.prototype.hasOwnProperty.call(changed, 'marketing')) {
+      return;
+    }
+    if (changed.marketing === 'allow') {
+      runtimeConsent = true;
+      debugLog('Marketing consent granted');
+      ensureBasePixel();
+      flushQueue();
+      tryAutoPurchase();
+    } else if (changed.marketing === 'deny') {
+      runtimeConsent = false;
+      queue.length = 0;
+      stopPoll();
+      debugLog('Marketing consent denied');
+    }
+  });
+
   window.WDPMetaTracking = {
     track: track,
     trackCustom: trackCustom,
     once: once,
     flushQueue: flushQueue,
+    hasConsent: hasConsent,
     trackViewContentDonation: trackViewContentDonation,
     trackAddToCartDonation: trackAddToCartDonation,
     trackInitiateCheckoutDonation: trackInitiateCheckoutDonation,
@@ -397,6 +485,10 @@
   }
 
   onReady(function () {
+    // Cached page / consent given before load: server skipped the base snippet.
+    if (hasConsent()) {
+      ensureBasePixel();
+    }
     tryAutoPurchase();
   });
 })(window);

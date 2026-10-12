@@ -1,9 +1,15 @@
 <?php
+/**
+ * Para birimi sembolü ve wc_price tabanlı HTML/düz metin fiyat formatlama.
+ *
+ * @package WooCommerce\Donation_Popup
+ */
 if (!defined('ABSPATH')) {
     exit;
 }
 
 trait WDP_Utils_Price_Trait {
+    /** HTML entity içeren metni düz metne çevirir (ör. &#8378; → ₺). */
     public static function decode_text_entities($text) {
         $text = (string) $text;
         if ($text === '') {
@@ -19,9 +25,9 @@ trait WDP_Utils_Price_Trait {
     }
 
     /**
-     * Currency symbol safe for plain text / esc_html output.
+     * Düz metin / esc_html için güvenli para birimi sembolü.
      *
-     * @param string $symbol Optional symbol; defaults to WooCommerce currency.
+     * @param string $symbol Boşsa WooCommerce varsayılanı kullanılır.
      * @return string
      */
     public static function get_display_currency_symbol($symbol = '') {

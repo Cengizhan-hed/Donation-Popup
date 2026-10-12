@@ -1,6 +1,6 @@
 <?php
 /**
- * Product settings admin AJAX controller.
+ * Tek ürün bağış ayarlarını okuma ve post meta kaydetme AJAX uçları.
  *
  * @package WooCommerce\Donation_Popup
  */
@@ -38,7 +38,52 @@ class WDP_Admin_Product_Settings_Ajax {
 
 		delete_transient('wdp_admin_products_list');
 		WDP_Admin_Request::json_success(
-			sprintf(__('"%s" ürünü için ayarlar başarıyla kaydedildi.', 'woo-donation-popup'), $product->get_name())
+			sprintf(__('"%s" ürünü için ayarlar başarıyla kaydedildi.', 'woo-donation-popup'), $product->get_name()),
+			array(
+				'settings' => WDP_Product_Settings_Service::public_flags_from_normalized($normalized_settings),
+			)
+		);
+	}
+
+	/**
+	 * Recalculate a product's progress total from all paid orders.
+	 *
+	 * @return void
+	 */
+	public static function recalculate_total() {
+		WDP_Admin_Request::guard();
+
+		$product_id = isset($_POST['product_id']) ? absint(wp_unslash($_POST['product_id'])) : 0;
+		if (!$product_id) {
+			WDP_Admin_Request::json_error(__('Geçersiz ürün ID.', 'woo-donation-popup'), 'invalid_product');
+		}
+
+		$product = wc_get_product($product_id);
+		if (!$product) {
+			WDP_Admin_Request::json_error(__('Ürün bulunamadı.', 'woo-donation-popup'), 'not_found', 404);
+		}
+
+		if (function_exists('wc_set_time_limit')) {
+			wc_set_time_limit(0);
+		}
+
+		$result = WDP_Utils::recalculate_product_donation_total($product_id);
+		$total_text = WDP_Utils::format_price_plain($result['total']);
+
+		WDP_Admin_Request::json_success(
+			sprintf(
+				/* translators: 1: product name, 2: formatted total, 3: order count */
+				__('"%1$s" toplamı yeniden hesaplandı: %2$s (%3$d sipariş).', 'woo-donation-popup'),
+				wp_strip_all_tags($product->get_name()),
+				$total_text,
+				(int) $result['orders']
+			),
+			array(
+				'total'      => (float) $result['total'],
+				'total_text' => $total_text,
+				'donors'     => (int) $result['donors'],
+				'orders'     => (int) $result['orders'],
+			)
 		);
 	}
 

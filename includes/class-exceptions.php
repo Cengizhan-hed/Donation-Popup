@@ -1,7 +1,7 @@
 <?php
 /**
- * Exception classes for WDP
- * 
+ * WDP_Exception tabanı ve ürün, doğrulama, güvenlik, sepet hata türleri.
+ *
  * @package WooCommerce\Donation_Popup
  */
 

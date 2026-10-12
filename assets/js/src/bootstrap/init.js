@@ -1,63 +1,7 @@
 /**
- * ============================================================================
- * INIT.JS - PLUGIN BAŞLATMA ORKESTRATÖRÜ
- * ============================================================================
- * 
- * DOSYA: init.js
- * KONUM: /assets/js/src/bootstrap/init.js
- * 
- * AMAÇ:
- * Plugin'in JavaScript tarafını başlatır. Tüm modülleri koordine eder
- * ve sırayla başlatır.
- * 
- * ROL:
- * - Modül bağımlılık yönetimi
- * - DOM ready handling
- * - Event listener başlatma
- * - Form initialization
- * - DOM observation
- * - Fallback mekanizmaları
- * 
- * BAŞLATMA SIRASI:
- * 1. DOM ready kontrolü
- * 2. Module loader ile modül bekleme
- * 3. Live region oluşturma (accessibility)
- * 4. Inline style temizleme
- * 5. Side cart kaydetme
- * 6. Form başlatma (her çağrıda) — document submit yedeklerinden önce
- * 7. Event listener'ları başlatma (bir kez)
- * 8. Fallback kontrol (100ms sonra)
- * 9. Window load event (tüm script'ler yüklendikten sonra)
- * 
- * MODÜLLER:
- * - utils: Yardımcı fonksiyonlar
- * - dom: DOM manipülasyonu
- * - cart: Sepet işlemleri
- * - eventManager: Event yönetimi
- * - formInitializer: Form başlatma
- * - moduleLoader: Modül yükleme
- * 
- * GÜVENLİK:
- * - Modül varlık kontrolü
- * - Function type kontrolü
- * - Flag kontrolü (gereksiz tekrar önleme)
- * 
- * PERFORMANS:
- * - Event listener'lar sadece bir kez başlatılır
- * - Modül kontrolleri optimize edilmiş
- * - Fallback delay optimize edilmiş (100ms)
- * 
- * EXPORT:
- * - WDPApp.init.run: Ana başlatma fonksiyonu
- * - WDPApp.init.inlineForms: Inline form başlatma
- * - WDPApp.init.directForms: Direct form başlatma
- * - WDPApp.init.eventListeners: Event listener başlatma
- * - WDPApp.init.observe: DOM observation başlatma
- * 
- * ============================================================================
- * 
- * Init - Plugin başlatma orkestratörü
- * Main initialization orchestrator using modular components
+ * @file init.js
+ * DOM hazır olduğunda WDPApp ön yüzünü başlatır.
+ * Dış API: WDPApp.init
  */
 
 (function(window) {
@@ -83,6 +27,11 @@
     if (utils && typeof utils.ensureLiveRegion === 'function') {
       utils.ensureLiveRegion('polite');
       utils.ensureLiveRegion('assertive');
+    }
+
+    const ctaViewport = getModule('ctaViewport');
+    if (ctaViewport && typeof ctaViewport.init === 'function') {
+      ctaViewport.init();
     }
 
     const dom = getModule('dom');

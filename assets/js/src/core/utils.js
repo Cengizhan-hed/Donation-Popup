@@ -1,53 +1,7 @@
 /**
- * ============================================================================
- * UTILS.JS - YARDIMCI FONKSİYONLAR MODÜLÜ
- * ============================================================================
- * 
- * DOSYA: utils.js
- * KONUM: /assets/js/src/core/utils.js
- * 
- * AMAÇ:
- * Tüm modüller tarafından kullanılan yardımcı fonksiyonları içerir.
- * Utility functions library.
- * 
- * İÇERİK:
- * 1. formatPrice - Fiyat formatlama (Türkçe format: 1.234,56)
- * 2. formatCurrency - Para birimi formatlama
- * 3. escapeHtml - HTML escape (XSS önleme)
- * 4. safeLog - Güvenli console.log (debug modunda)
- * 5. getAjaxNonce - AJAX nonce alma
- * 6. getFocusableElements - Focusable elementleri bulma
- * 7. focusFirstElement - İlk focusable elemente odaklanma
- * 8. activateFocusTrap - Focus trap aktivasyonu (modal için)
- * 9. announceStatus - Screen reader için mesaj duyurma
- * 10. debounce - Debounce fonksiyonu (performans)
- * 11. throttle - Throttle fonksiyonu (performans)
- * 12. rafThrottle - RequestAnimationFrame throttle
- * 13. ensureModule - Modül bağımlılık kontrolü
- * 
- * PERFORMANS FONKSİYONLARI:
- * - debounce: Fonksiyon çağrılarını geciktirir (input events için)
- * - throttle: Fonksiyon çağrılarını sınırlar (scroll/resize için)
- * - rafThrottle: RequestAnimationFrame kullanarak optimize eder
- * 
- * ACCESSIBILITY:
- * - ensureLiveRegion: ARIA live region oluşturma
- * - announceStatus: Screen reader için mesaj duyurma
- * - getFocusableElements: Keyboard navigation için
- * - activateFocusTrap: Modal içinde focus trap
- * 
- * GÜVENLİK:
- * - escapeHtml: XSS önleme
- * - Input validation
- * - Safe error handling
- * 
- * EXPORT:
- * WDPApp.utils = { formatPrice, formatCurrency, ... }
- * 
- * ============================================================================
- * 
- * Utils - Yardımcı fonksiyonlar
- * Format, log, ajax, accessibility yardımcıları
+ * @file utils.js
+ * Ortak yardımcılar: fiyat formatlama, HTML escape, nonce, odak ve güvenli log.
+ * Dış API: WDPApp.utils
  */
 
 (function(window) {
@@ -366,11 +320,19 @@
     }
 
     return Array.from(container.querySelectorAll(FOCUSABLE_SELECTORS)).filter((element) => {
-      return (
-        element.offsetParent !== null &&
-        !element.hasAttribute('disabled') &&
-        element.getAttribute('aria-hidden') !== 'true'
-      )
+      if (element.hasAttribute('disabled') || element.getAttribute('aria-hidden') === 'true') {
+        return false
+      }
+      // offsetParent misses position:fixed / sticky; also check geometry
+      if (element.offsetParent !== null) {
+        return true
+      }
+      const style = window.getComputedStyle(element)
+      if (style.display === 'none' || style.visibility === 'hidden') {
+        return false
+      }
+      const rect = element.getBoundingClientRect()
+      return rect.width > 0 && rect.height > 0
     })
   }
 
@@ -465,6 +427,91 @@
     }, liveRegionDelay)
   }
 
+  /** Custom event bus for analytics / integrations. */
+  function emitWdpEvent(name, detail) {
+    try {
+      const ev = new CustomEvent(name, { detail: detail || {}, bubbles: true });
+      document.dispatchEvent(ev);
+    } catch (e) {
+      safeLog('emitWdpEvent', e);
+    }
+  }
+
+  /** Visual toast — pairs with announceStatus for a11y. */
+  function showToast(opts) {
+    opts = opts || {};
+    const type = opts.type || 'info';
+    const title = opts.title || '';
+    const message = opts.message || '';
+    const duration = Number.isFinite(opts.duration) ? opts.duration : 4200;
+    const doAnnounce = opts.announce !== false;
+
+    let host = document.getElementById('wdp-toast-host');
+    if (!host) {
+      host = document.createElement('div');
+      host.id = 'wdp-toast-host';
+      host.className = 'wdp-toast-host';
+      host.setAttribute('aria-live', 'off');
+      document.body.appendChild(host);
+    }
+
+    const toast = document.createElement('div');
+    toast.className = 'wdp-toast wdp-toast--' + type;
+    toast.setAttribute('role', type === 'error' ? 'alert' : 'status');
+    toast.innerHTML =
+      '<div class="wdp-toast__body">' +
+      (title ? '<div class="wdp-toast__title"></div>' : '') +
+      (message ? '<div class="wdp-toast__message"></div>' : '') +
+      '</div>' +
+      '<button type="button" class="wdp-toast-close" aria-label="Kapat">&times;</button>';
+    if (title) toast.querySelector('.wdp-toast__title').textContent = title;
+    if (message) toast.querySelector('.wdp-toast__message').textContent = message;
+    host.appendChild(toast);
+    requestAnimationFrame(function() {
+      toast.classList.add('show');
+    });
+
+    const close = function() {
+      toast.classList.remove('show');
+      toast.classList.add('hide');
+      window.setTimeout(function() {
+        if (toast.parentNode) toast.parentNode.removeChild(toast);
+      }, 280);
+    };
+    const closeBtn = toast.querySelector('.wdp-toast-close');
+    if (closeBtn) closeBtn.addEventListener('click', close);
+    if (duration > 0) window.setTimeout(close, duration);
+    if (doAnnounce && (title || message)) {
+      announceStatus([title, message].filter(Boolean).join('. '), type === 'error' ? 'assertive' : 'polite');
+    }
+    return { close: close, el: toast };
+  }
+
+  function bindOnlineStatus() {
+    if (bindOnlineStatus._bound) return;
+    bindOnlineStatus._bound = true;
+    window.addEventListener('offline', function() {
+      document.documentElement.classList.add('wdp-is-offline');
+      showToast({
+        type: 'warning',
+        title: 'Çevrimdışı',
+        message: 'Bağlantı yok. İşlemler bağlantı gelince tekrar denenebilir.',
+        duration: 5000,
+      });
+      emitWdpEvent('wdp:network:offline', {});
+    });
+    window.addEventListener('online', function() {
+      document.documentElement.classList.remove('wdp-is-offline');
+      showToast({
+        type: 'success',
+        title: 'Çevrimiçi',
+        message: 'Bağlantı yeniden kuruldu.',
+        duration: 2800,
+      });
+      emitWdpEvent('wdp:network:online', {});
+    });
+  }
+
   // Debounce function - delays function execution until after wait time
   function debounce(func, wait = 300, immediate = false) {
     let timeout;
@@ -545,6 +592,54 @@
   let wdpActiveAlertTimer = null;
 
   /**
+   * Whether the user prefers reduced motion.
+   *
+   * @returns {boolean}
+   */
+  function prefersReducedMotion() {
+    try {
+      return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /**
+   * scrollIntoView that respects prefers-reduced-motion.
+   *
+   * @param {Element} el Target element.
+   * @param {ScrollIntoViewOptions|boolean} [options] Native options (or legacy boolean).
+   */
+  function scrollIntoViewSafe(el, options) {
+    if (!el || typeof el.scrollIntoView !== 'function') {
+      return;
+    }
+    if (typeof options === 'boolean') {
+      try {
+        el.scrollIntoView(options);
+      } catch (eBool) {
+        /* ignore */
+      }
+      return;
+    }
+    const opts = options && typeof options === 'object' ? Object.assign({}, options) : {};
+    if (prefersReducedMotion()) {
+      opts.behavior = 'auto';
+    } else if (!opts.behavior) {
+      opts.behavior = 'smooth';
+    }
+    try {
+      el.scrollIntoView(opts);
+    } catch (eOpts) {
+      try {
+        el.scrollIntoView(false);
+      } catch (eFallback) {
+        /* ignore */
+      }
+    }
+  }
+
+  /**
    * Remove any legacy alert overlay nodes (validation no longer uses center popup).
    */
   function clearAlerts() {
@@ -578,11 +673,16 @@
     focusFirstElement,
     activateFocusTrap,
     announceStatus,
+    emitWdpEvent,
+    showToast,
+    bindOnlineStatus,
     debounce, // Performance optimization
     throttle, // Performance optimization
     rafThrottle, // Performance optimization for scroll/resize
     ensureModule, // Export module helper
     clearAlerts,
+    prefersReducedMotion,
+    scrollIntoViewSafe,
   };
 
   // Backward compatibility for themes/snippets that called WDPApp.alerts.clear().
@@ -590,5 +690,13 @@
   WDPApp.alerts.clear = clearAlerts;
 
   WDPApp.utils = utils;
+
+  if (typeof document !== 'undefined') {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', bindOnlineStatus);
+    } else {
+      bindOnlineStatus();
+    }
+  }
 
 })(window);

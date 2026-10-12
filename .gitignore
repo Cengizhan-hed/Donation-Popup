@@ -65,11 +65,14 @@ release/
 .env.local
 .env.*.local
 
-# Testing
-/tests/
+# Testing / Composer
+/vendor/
+composer.phar
+composer-setup.php
 phpunit.xml
 .phpunit.result.cache
 coverage/
+/tests/coverage/
 
 # Documentation build
 /docs/build/

@@ -1,6 +1,6 @@
 <?php
 /**
- * Admin layout-focused tab renderers.
+ * Modal/form görünümü ve progress bar renk/stil özelleştirme sekmeleri.
  *
  * @package WooCommerce\Donation_Popup
  */
@@ -22,22 +22,29 @@ class WDP_Admin_Layout_Tabs_Renderer {
 		$settings = get_option('wdp_progress_bar_settings', array());
 
 		$defaults = array(
-			'container_bg'      => '#f8fafc',
-			'container_border'  => '#e2e8f0',
-			'track_bg'          => '#e2e8f0',
-			'fill_color'        => '#2563eb',
-			'preview_bg'        => '#64748b',
-			'percentage_bg'     => '#ffffff',
-			'percentage_text'   => '#1e293b',
+			'container_bg'             => '#ffffff',
+			'container_border'         => '#e5e9ec',
+			'track_bg'                 => '#eef2f4',
+			'fill_color'               => '#0f608b',
+			'preview_bg'               => '#94a3b8',
+			'pending_bg'               => '#0f608b',
+			'percentage_bg'            => '#ffffff',
+			'percentage_text'          => '#0f172a',
+			'bar_height'               => '18',
+			'enable_celebrate'         => '1',
 		);
 
 		$settings = wp_parse_args($settings, $defaults);
 		$settings['fill_color'] = WDP_Utils::resolve_progress_bar_fill_color($settings);
 
+		WDP_Admin_Renderer_Helpers::open_settings_split();
 		WDP_Admin_Renderer_Helpers::open_form_container('wdp-progress-bar-settings-form');
 		self::render_progress_bar_help();
 		self::render_progress_bar_fields($settings);
 		WDP_Admin_Renderer_Helpers::close_form_container('wdp-save-progress-bar-settings');
+		WDP_Admin_Renderer_Helpers::begin_live_preview_aside('wdp-live-preview-progress', __('Progress bar önizlemesi', 'woo-donation-popup'));
+		self::render_progress_bar_preview_card($settings);
+		WDP_Admin_Renderer_Helpers::close_settings_split();
 	}
 
 	/**
@@ -72,6 +79,7 @@ class WDP_Admin_Layout_Tabs_Renderer {
 		);
 		$settings = wp_parse_args($settings, $defaults);
 
+		WDP_Admin_Renderer_Helpers::open_settings_split();
 		WDP_Admin_Renderer_Helpers::open_form_container('wdp-modal-layout-settings-form');
 		self::render_modal_layout_help();
 		self::render_side_panel_width_settings($settings);
@@ -80,6 +88,9 @@ class WDP_Admin_Layout_Tabs_Renderer {
 		self::render_modal_layout_mobile_width($settings);
 		self::render_modal_layout_mobile_padding($settings);
 		WDP_Admin_Renderer_Helpers::close_form_container('wdp-save-modal-layout-settings');
+		WDP_Admin_Renderer_Helpers::begin_live_preview_aside('wdp-live-preview-layout', __('Modal ölçü önizlemesi', 'woo-donation-popup'));
+		self::render_modal_layout_preview($settings);
+		WDP_Admin_Renderer_Helpers::close_settings_split();
 	}
 
 	/**
@@ -88,7 +99,27 @@ class WDP_Admin_Layout_Tabs_Renderer {
 	 * @return void
 	 */
 	private static function render_progress_bar_help() {
-		echo '<div class="wdp-tab-help" role="note"><p class="wdp-tab-help__title">' . esc_html__('Bu sekmede ne yaparsınız?', 'woo-donation-popup') . '</p><ul class="wdp-tab-help__list"><li>' . esc_html__('Ürün Ayarları’nda ilgili ürün için “Progress Bar” açıksa, hedefe doğru dolan çubuğun renkleri ve kutusu buradan yönetilir.', 'woo-donation-popup') . '</li><li>' . esc_html__('Hedef tutar ürün kartındaki “Üst Limit” alanından; bu sekme yalnızca görsel stildir.', 'woo-donation-popup') . '</li></ul></div>';
+		echo '<div class="wdp-tab-help" role="note"><p class="wdp-tab-help__title">' . esc_html__('Bu sekmede ne yaparsınız?', 'woo-donation-popup') . '</p><ul class="wdp-tab-help__list"><li>' . esc_html__('Ürün Ayarları’nda “Progress Bar” açıksa, hedefe doğru dolan çubuğun renkleri, yüksekliği ve etiketleri buradan yönetilir.', 'woo-donation-popup') . '</li><li>' . esc_html__('Üç katman: onaylı (ödeme sonrası), sepet bekleyen, yazılan tutar önizlemesi. Hedef tutar ürün kartındaki “Üst Limit” alanındadır.', 'woo-donation-popup') . '</li></ul></div>';
+	}
+
+	/**
+	 * Live mini preview for progress layers.
+	 *
+	 * @param array $settings Parsed progress settings.
+	 * @return void
+	 */
+	private static function render_progress_bar_preview_card(array $settings) {
+		$h = max(12, min(28, absint($settings['bar_height'])));
+		echo '<div class="wdp-admin-progress-preview" id="wdp-admin-progress-preview">';
+		echo '<div class="wdp-admin-progress-preview__card" style="--wdp-ap-container-bg:' . esc_attr($settings['container_bg']) . ';--wdp-ap-container-border:' . esc_attr($settings['container_border']) . ';--wdp-ap-track:' . esc_attr($settings['track_bg']) . ';--wdp-ap-fill:' . esc_attr($settings['fill_color']) . ';--wdp-ap-pending:' . esc_attr($settings['pending_bg']) . ';--wdp-ap-preview:' . esc_attr($settings['preview_bg']) . ';--wdp-ap-pct-bg:' . esc_attr($settings['percentage_bg']) . ';--wdp-ap-pct-text:' . esc_attr($settings['percentage_text']) . ';--wdp-ap-h:' . esc_attr($h) . 'px;">';
+		echo '<div class="wdp-admin-progress-preview__hdr"><span>' . esc_html__('Toplanan', 'woo-donation-popup') . '<strong>₺42.000</strong></span><span>' . esc_html__('Hedef', 'woo-donation-popup') . '<strong>₺100.000</strong></span></div>';
+		echo '<div class="wdp-admin-progress-preview__track">';
+		echo '<span class="wdp-admin-progress-preview__fill" style="width:42%"></span>';
+		echo '<span class="wdp-admin-progress-preview__pending" style="left:42%;width:18%"></span>';
+		echo '<span class="wdp-admin-progress-preview__draft" style="left:60%;width:12%"></span>';
+		echo '<span class="wdp-admin-progress-preview__pct">72%</span>';
+		echo '</div>';
+		echo '</div></div>';
 	}
 
 	/**
@@ -98,22 +129,57 @@ class WDP_Admin_Layout_Tabs_Renderer {
 	 * @return void
 	 */
 	private static function render_progress_bar_fields(array $settings) {
-		echo '<h2>' . __('Progress Bar Görünüm Ayarları', 'woo-donation-popup') . '</h2><table class="form-table">';
-		echo '<tr><th scope="row"><label for="progress_container_bg">' . __('Kapsayıcı Arka Plan Rengi', 'woo-donation-popup') . '</label></th><td><input type="color" id="progress_container_bg" name="progress_container_bg" value="' . esc_attr($settings['container_bg']) . '" /><p class="description">' . __('Progress bar kutusunun arka plan rengi.', 'woo-donation-popup') . '</p></td></tr>';
-		echo '<tr><th scope="row"><label for="progress_container_border">' . __('Kapsayıcı Border Rengi', 'woo-donation-popup') . '</label></th><td><input type="color" id="progress_container_border" name="progress_container_border" value="' . esc_attr($settings['container_border']) . '" /><p class="description">' . __('Progress bar kutusunun kenarlık rengi.', 'woo-donation-popup') . '</p></td></tr>';
-		echo '<tr><th scope="row"><label for="progress_track_bg">' . __('Boş Bar Arka Plan Rengi', 'woo-donation-popup') . '</label></th><td><input type="color" id="progress_track_bg" name="progress_track_bg" value="' . esc_attr($settings['track_bg']) . '" /><p class="description">' . __('İlerleme barının boş kısmının arka plan rengi.', 'woo-donation-popup') . '</p></td></tr>';
-		echo '<tr><th scope="row"><label for="progress_fill_color">' . __('Dolu Bar Rengi', 'woo-donation-popup') . '</label></th><td><input type="color" id="progress_fill_color" name="progress_fill_color" value="' . esc_attr($settings['fill_color']) . '" /><p class="description">' . __('İlerlemenin dolduğu kısmın rengi.', 'woo-donation-popup') . '</p></td></tr>';
-		echo '<tr><th scope="row"><label for="progress_preview_bg">' . __('Preview (Özel Fiyat) Bar Rengi', 'woo-donation-popup') . '</label></th><td><input type="color" id="progress_preview_bg" name="progress_preview_bg" value="' . esc_attr($settings['preview_bg']) . '" /><p class="description">' . __('Özel fiyat girildiğinde görünen ek bar renginin ana rengi.', 'woo-donation-popup') . '</p></td></tr>';
-		echo '<tr><th scope="row"><label for="progress_percentage_bg">' . __('Yüzde Rozeti Arka Plan Rengi', 'woo-donation-popup') . '</label></th><td><input type="color" id="progress_percentage_bg" name="progress_percentage_bg" value="' . esc_attr($settings['percentage_bg']) . '" /><p class="description">' . __('Ortadaki yüzde kutusunun arka plan rengi.', 'woo-donation-popup') . '</p></td></tr>';
-		echo '<tr><th scope="row"><label for="progress_percentage_text">' . __('Yüzde Rozeti Metin Rengi', 'woo-donation-popup') . '</label></th><td><input type="color" id="progress_percentage_text" name="progress_percentage_text" value="' . esc_attr($settings['percentage_text']) . '" /><p class="description">' . __('Ortadaki yüzde kutusunun metin rengi.', 'woo-donation-popup') . '</p></td></tr>';
+		WDP_Admin_Renderer_Helpers::render_section_heading(
+			__('Renkler ve katmanlar', 'woo-donation-popup'),
+			__('Onaylı / sepet / yazılan dilim renkleri ve kart yüzeyi.', 'woo-donation-popup')
+		);
+		echo '<table class="form-table wdp-admin-field-cards">';
+		echo '<tr><th scope="row"><label for="progress_container_bg">' . esc_html__('Kapsayıcı Arka Plan', 'woo-donation-popup') . '</label></th><td><input type="color" id="progress_container_bg" name="progress_container_bg" value="' . esc_attr($settings['container_bg']) . '" class="wdp-progress-live-input" data-ap-var="--wdp-ap-container-bg" /><p class="description">' . esc_html__('Progress kartının arka plan rengi.', 'woo-donation-popup') . '</p></td></tr>';
+		echo '<tr><th scope="row"><label for="progress_container_border">' . esc_html__('Kapsayıcı Border', 'woo-donation-popup') . '</label></th><td><input type="color" id="progress_container_border" name="progress_container_border" value="' . esc_attr($settings['container_border']) . '" class="wdp-progress-live-input" data-ap-var="--wdp-ap-container-border" /><p class="description">' . esc_html__('Kart kenarlık rengi.', 'woo-donation-popup') . '</p></td></tr>';
+		echo '<tr><th scope="row"><label for="progress_track_bg">' . esc_html__('Boş Bar', 'woo-donation-popup') . '</label></th><td><input type="color" id="progress_track_bg" name="progress_track_bg" value="' . esc_attr($settings['track_bg']) . '" class="wdp-progress-live-input" data-ap-var="--wdp-ap-track" /><p class="description">' . esc_html__('Track (boş kısım) rengi.', 'woo-donation-popup') . '</p></td></tr>';
+		echo '<tr><th scope="row"><label for="progress_fill_color">' . esc_html__('Onaylı (Dolu) Bar', 'woo-donation-popup') . '</label></th><td><input type="color" id="progress_fill_color" name="progress_fill_color" value="' . esc_attr($settings['fill_color']) . '" class="wdp-progress-live-input" data-ap-var="--wdp-ap-fill" /><p class="description">' . esc_html__('Ödeme sonrası onaylanan tutar.', 'woo-donation-popup') . '</p></td></tr>';
+		echo '<tr><th scope="row"><label for="progress_pending_bg">' . esc_html__('Sepet Bekleyen Bar', 'woo-donation-popup') . '</label></th><td><input type="color" id="progress_pending_bg" name="progress_pending_bg" value="' . esc_attr($settings['pending_bg']) . '" class="wdp-progress-live-input" data-ap-var="--wdp-ap-pending" /><p class="description">' . esc_html__('Sepette duran, henüz ödenmemiş tutar dilimi.', 'woo-donation-popup') . '</p></td></tr>';
+		echo '<tr><th scope="row"><label for="progress_preview_bg">' . esc_html__('Yazılan Tutar (Draft)', 'woo-donation-popup') . '</label></th><td><input type="color" id="progress_preview_bg" name="progress_preview_bg" value="' . esc_attr($settings['preview_bg']) . '" class="wdp-progress-live-input" data-ap-var="--wdp-ap-preview" /><p class="description">' . esc_html__('Frontend soft-ink dilim fill rengini kullanır; bu alan eski uyumluluk / yedek renktir.', 'woo-donation-popup') . '</p></td></tr>';
+		echo '<tr><th scope="row"><label for="progress_percentage_bg">' . esc_html__('Yüzde Rozeti Arka Plan', 'woo-donation-popup') . '</label></th><td><input type="color" id="progress_percentage_bg" name="progress_percentage_bg" value="' . esc_attr($settings['percentage_bg']) . '" class="wdp-progress-live-input" data-ap-var="--wdp-ap-pct-bg" /><p class="description">' . esc_html__('Frontend’de yüzde arkaplansızdır; eski uyumluluk.', 'woo-donation-popup') . '</p></td></tr>';
+		echo '<tr><th scope="row"><label for="progress_percentage_text">' . esc_html__('Yüzde Rozeti Metin', 'woo-donation-popup') . '</label></th><td><input type="color" id="progress_percentage_text" name="progress_percentage_text" value="' . esc_attr($settings['percentage_text']) . '" class="wdp-progress-live-input" data-ap-var="--wdp-ap-pct-text" /></td></tr>';
+		echo '</table>';
+
+		WDP_Admin_Renderer_Helpers::render_section_heading(
+			__('Boyut ve animasyon', 'woo-donation-popup'),
+			__('Çubuk yüksekliği ve hedef kutlaması.', 'woo-donation-popup')
+		);
+		echo '<table class="form-table wdp-admin-field-cards">';
+		echo '<tr><th scope="row"><label for="progress_bar_height">' . esc_html__('Bar Yüksekliği (px)', 'woo-donation-popup') . '</label></th><td><input type="number" id="progress_bar_height" name="progress_bar_height" min="12" max="28" step="1" value="' . esc_attr(min(28, max(12, (int) $settings['bar_height']))) . '" class="small-text wdp-progress-live-height" /><p class="description">' . esc_html__('12–28 px. Daha okunaklı bir çubuk için 16–20 önerilir.', 'woo-donation-popup') . '</p></td></tr>';
+		echo '<tr><th scope="row">' . esc_html__('Animasyon', 'woo-donation-popup') . '</th><td>';
+		$celebrate = !isset($settings['enable_celebrate']) || (string) $settings['enable_celebrate'] !== '0';
+		echo '<label style="display:block;"><input type="checkbox" name="progress_enable_celebrate" value="1" ' . checked($celebrate, true, false) . '> ' . esc_html__('Hedef dolunca kutlama animasyonu', 'woo-donation-popup') . '</label>';
+		echo '</td></tr>';
 		echo '</table>';
 	}
 
 	/**
-	 * Render modal layout help section.
+	 * Scaled modal size preview (desktop width + padding).
 	 *
+	 * @param array $settings Layout settings.
 	 * @return void
 	 */
+	private static function render_modal_layout_preview(array $settings) {
+		$w = max(280, min(800, absint($settings['popup_modal_width_desktop'])));
+		$scale = min(1, 320 / max(1, $w));
+		$pt = absint($settings['modal_padding_top_desktop']);
+		$pr = absint($settings['modal_padding_right_desktop']);
+		$pb = absint($settings['modal_padding_bottom_desktop']);
+		$pl = absint($settings['modal_padding_left_desktop']);
+		$sp = absint($settings['side_panel_width_desktop_percent']);
+		echo '<div class="wdp-admin-layout-preview" id="wdp-admin-layout-preview" style="--wdp-lp-modal-w:' . esc_attr((string) $w) . 'px;--wdp-lp-scale:' . esc_attr((string) $scale) . ';--wdp-lp-pad:' . esc_attr("{$pt}px {$pr}px {$pb}px {$pl}px") . ';--wdp-lp-sp:' . esc_attr((string) $sp) . '%;">';
+		echo '<div class="wdp-admin-layout-preview__stage">';
+		echo '<div class="wdp-admin-layout-preview__modal"><div class="wdp-admin-layout-preview__modal-inner"><span class="wdp-admin-layout-preview__title">' . esc_html__('Popup', 'woo-donation-popup') . '</span><span class="wdp-admin-layout-preview__line"></span><span class="wdp-admin-layout-preview__line short"></span></div></div>';
+		echo '<div class="wdp-admin-layout-preview__panel" title="' . esc_attr__('Sağ panel genişliği', 'woo-donation-popup') . '"></div>';
+		echo '</div>';
+		echo '<p class="wdp-admin-layout-preview__caption"><span data-lp-width>' . esc_html((string) $w) . 'px</span> · <span data-lp-sp>' . esc_html((string) $sp) . '%</span></p>';
+		echo '</div>';
+	}
+
 	private static function render_modal_layout_help() {
 		echo '<div class="wdp-tab-help" role="note"><p class="wdp-tab-help__title">' . esc_html__('Bu sekmede ne yaparsınız?', 'woo-donation-popup') . '</p><ul class="wdp-tab-help__list"><li>' . esc_html__('Popup penceresinin ve sayfa içi (inline) formun piksel genişliği; masaüstü ve mobil için ayrı ayrı.', 'woo-donation-popup') . '</li><li>' . esc_html__('Padding, modal içeriğinin kenarlardan boşluğudur; renk veya buton stilleri diğer görünüm sekmelerindedir.', 'woo-donation-popup') . '</li><li>' . esc_html__('Modal kutusunun iç arka plan rengi ve iç köşe yuvarlaklığı “Normal Form” sekmesinde “Modal içi kutu” bölümündedir (bu sekme yalnızca ölçüler).', 'woo-donation-popup') . '</li></ul></div>';
 	}

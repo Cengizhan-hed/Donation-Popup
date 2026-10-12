@@ -1,31 +1,27 @@
 <?php
+/**
+ * AJAX sepete ekleme; bağış doğrulama, özel fiyat ve güvenli sepet ekleme mantığı.
+ *
+ * @package WooCommerce\Donation_Popup
+ */
 if (!defined('ABSPATH')) {
 	exit;
 }
 
 trait WDP_Ajax_Cart_Add_Trait {
     /**
-     * Add product to cart via AJAX.
-     * 
-     * Handles both single donation and multiple shares (shareholder) donations.
-     * Includes rate limiting, validation, and security checks.
+     * AJAX ile ürünü sepete ekler (tekli veya çoklu hisse).
      *
-     * @since 10.0
-     * @return void Sends JSON response and terminates.
-     * @throws WDP_Security_Exception      If nonce verification fails or rate limit exceeded.
-     * @throws WDP_Validation_Exception    If validation fails (missing fields, invalid price, etc.).
-     * @throws WDP_Product_Not_Found_Exception If product doesn't exist.
-     * @throws WDP_Cart_Exception          If cart operation fails.
+     * Hız sınırı, alan doğrulama ve güvenlik kontrolleri içerir.
+     *
+     * @throws WDP_Security_Exception Nonce veya limit hatası.
+     * @throws WDP_Validation_Exception Eksik/geçersiz alan veya fiyat.
+     * @throws WDP_Product_Not_Found_Exception Ürün bulunamazsa.
+     * @throws WDP_Cart_Exception Sepet işlemi başarısızsa.
      */
     public static function ajax_add_to_cart() {
         try {
-            self::validate_ajax_request('wdp_ajax_add_to_cart');
-
-            // SECURITY: Rate limiting check
-            self::enforce_rate_limit('add_to_cart', 20, 60);
-            
-            // SECURITY: Capability check (read permission for adding to cart)
-            self::enforce_capability('read');
+            self::run_secured_ajax('wdp_ajax_add_to_cart', 'add_to_cart', 20, 60);
 
             // SECURITY: Sanitize and validate inputs with length limits
             $product_id = 0;
@@ -75,73 +71,38 @@ trait WDP_Ajax_Cart_Add_Trait {
         $share_count = isset($_POST['share_count']) ? absint(wp_unslash($_POST['share_count'])) : 0;
 
         if ($share_count > 0) {
-            $donation_data['share_count'] = $share_count;
-            $shareholders = array();
-            $missing_fields = array();
-            $missing_field_keys = array();
+            $max_share_count = 50;
+            if ($product && method_exists($product, 'get_meta')) {
+                $configured_max = absint($product->get_meta('_max_shares'));
+                if ($configured_max >= 1) {
+                    $max_share_count = min($configured_max, 50);
+                }
+            }
 
-            // SECURITY: Limit maximum share count to prevent abuse
-            if ($share_count > 50) {
+            if ($share_count > $max_share_count) {
                 throw new WDP_Validation_Exception(__('Maksimum hisse sayısı aşıldı', 'woo-donation-popup'));
             }
-            
-            for ($i = 1; $i <= $share_count; $i++) {
-                $name = isset($_POST['shareholder_name_' . $i]) ? WDP_Security::sanitize_text(wp_unslash($_POST['shareholder_name_' . $i]), 100) : '';
-                $phone = isset($_POST['shareholder_phone_' . $i]) ? WDP_Security::sanitize_phone(wp_unslash($_POST['shareholder_phone_' . $i])) : '';
-                // SECURITY: Limit note length to prevent abuse
-                $note_raw = isset($_POST['shareholder_note_' . $i]) ? wp_unslash($_POST['shareholder_note_' . $i]) : '';
-                if (strlen($note_raw) > 500) {
-                    $note_raw = substr($note_raw, 0, 500);
-                }
-                $note = sanitize_textarea_field($note_raw);
 
-                if ('' === $name) {
-                    $missing_fields[] = sprintf(__('%d. Hissedar Adı', 'woo-donation-popup'), $i);
-                    $missing_field_keys[] = 'shareholder_name_' . $i;
-                }
+            $parsed = WDP_Cart::parse_shareholders_from_request(
+                $_POST,
+                $share_count,
+                array(
+                    'max_shares'      => $max_share_count,
+                    'require_contact' => true,
+                )
+            );
 
-                if ('' === $phone) {
-                    $missing_fields[] = sprintf(__('%d. Hissedar Telefonu', 'woo-donation-popup'), $i);
-                    $missing_field_keys[] = 'shareholder_phone_' . $i;
-                }
-
-                $shareholder = array();
-
-                if ('' !== $name) {
-                    $shareholder['name'] = $name;
-                }
-
-                if ('' !== $phone) {
-                    $shareholder['phone'] = $phone;
-                }
-
-                $email_raw = isset($_POST['shareholder_email_' . $i]) ? wp_unslash($_POST['shareholder_email_' . $i]) : '';
-                if (strlen($email_raw) > 100) {
-                    $email_raw = substr($email_raw, 0, 100);
-                }
-                $email = sanitize_email($email_raw);
-                if ('' !== $email) {
-                    $shareholder['email'] = $email;
-                }
-
-                if ('' !== $note) {
-                    $shareholder['note'] = $note;
-                }
-
-                if (!empty($shareholder)) {
-                    $shareholders[$i] = $shareholder;
-                }
-            }
-
-            if (!empty($missing_fields)) {
+            if (!empty($parsed['missing_fields'])) {
                 throw new WDP_Validation_Exception(
-                    __('Lütfen tüm zorunlu alanları doldurun: ', 'woo-donation-popup') . implode(', ', $missing_fields),
-                    $missing_field_keys
+                    __('Lütfen tüm zorunlu alanları doldurun: ', 'woo-donation-popup') . implode(', ', $parsed['missing_fields']),
+                    $parsed['missing_field_keys']
                 );
             }
 
-            if (!empty($shareholders)) {
-                $donation_data['shareholders'] = $shareholders;
+            $share_count = $parsed['share_count'];
+            $donation_data['share_count'] = $share_count;
+            if (!empty($parsed['shareholders'])) {
+                $donation_data['shareholders'] = $parsed['shareholders'];
             }
 
             // CRITICAL: Quantity'yi share_count olarak ayarla (hissedar sayısı = sepetteki miktar)
@@ -182,6 +143,31 @@ trait WDP_Ajax_Cart_Add_Trait {
             if ('' !== $note) {
                 $donation_data['note'] = $note;
             }
+
+            if (!empty($_POST['donation_email'])) {
+                $email = sanitize_email(wp_unslash($_POST['donation_email']));
+                if ($email) {
+                    $donation_data['email'] = $email;
+                }
+            }
+            if (!empty($_POST['donation_dedication'])) {
+                $donation_data['dedication'] = WDP_Security::sanitize_text(wp_unslash($_POST['donation_dedication']), 120);
+            }
+            if (!empty($_POST['donation_anonymous'])) {
+                $donation_data['anonymous'] = '1';
+            }
+            if (!empty($_POST['donation_cover_fee'])) {
+                $donation_data['cover_fee'] = '1';
+                $fee_pct = isset($_POST['donation_cover_fee_percent'])
+                    ? (float) WDP_Security::sanitize_numeric(wp_unslash($_POST['donation_cover_fee_percent']), 0, 15)
+                    : 0;
+                if ($fee_pct <= 0) {
+                    $fee_pct = (float) $product->get_meta('_cover_fee_percent');
+                }
+                if ($fee_pct > 0) {
+                    $donation_data['cover_fee_percent'] = min(15, max(0.5, $fee_pct));
+                }
+            }
         }
 
         // PERFORMANCE: Use cached meta data ($product already loaded above).
@@ -193,9 +179,15 @@ trait WDP_Ajax_Cart_Add_Trait {
         }
         
         if (false !== $cached_meta) {
-            $allow_custom_price = $cached_meta['allow_custom_price'];
+            $allow_custom_price = !empty($cached_meta['allow_custom_price']);
+            if (!$allow_custom_price && !empty($cached_meta['enable_progress_bar'])) {
+                $allow_custom_price = true;
+            }
         } else {
             $allow_custom_price = $product->get_meta('_allow_custom_price') === 'yes';
+            if (!$allow_custom_price && $product->get_meta('_enable_progress_bar') === 'yes') {
+                $allow_custom_price = true;
+            }
         }
         
         $custom_price_value = null;
@@ -220,18 +212,30 @@ trait WDP_Ajax_Cart_Add_Trait {
                 }
                 $max_price = 999999; // Reasonable maximum
 
-                if ($min_price !== '' && $custom_price_value < (float) $min_price) {
+                // Ürün min'i boş/0 olsa bile tutar > 0 ve global minimumun (wdp_min_donation_amount) üstünde olmalı.
+                $amount_error = WDP_Cart::get_donation_amount_error($custom_price_value, $min_price, $product_id, true);
+                if ('' !== $amount_error) {
+                    $effective_min = WDP_Cart::get_min_donation_amount($min_price, $product_id);
                     throw new WDP_Validation_Exception(
-                        sprintf(__('Lütfen %s TL ve üstü değerler girin.', 'woo-donation-popup'), wc_format_decimal($min_price)),
-                        array('custom_price' => __('Minimum fiyat: ', 'woo-donation-popup') . wc_format_decimal($min_price))
+                        $amount_error,
+                        array('custom_price' => __('Minimum fiyat: ', 'woo-donation-popup') . WDP_Cart::format_amount_for_message($effective_min, true))
                     );
                 }
 
                 if ($custom_price_value > $max_price) {
                     throw new WDP_Validation_Exception(
-                        sprintf(__('Maksimum fiyat: %s TL', 'woo-donation-popup'), number_format($max_price, 2, ',', '.')),
+                        sprintf(
+                            /* translators: %s: formatted maximum amount with currency */
+                            __('Maksimum fiyat: %s', 'woo-donation-popup'),
+                            WDP_Cart::format_amount_for_message($max_price, true)
+                        ),
                         array('custom_price')
                     );
+                }
+
+                if (!empty($donation_data['cover_fee']) && !empty($donation_data['cover_fee_percent']) && $custom_price_value > 0) {
+                    $pct = (float) $donation_data['cover_fee_percent'];
+                    $custom_price_value = round($custom_price_value * (1 + ($pct / 100)), 2);
                 }
             }
 
@@ -311,11 +315,15 @@ trait WDP_Ajax_Cart_Add_Trait {
             
             // Progress bar için toplam bağış miktarını hesapla
             $total_donation = 0.0;
+            $pending_in_cart = 0.0;
             $enable_progress_bar = $product->get_meta('_enable_progress_bar') === 'yes';
             if ($enable_progress_bar) {
                 // Cache'i temizle (yeni bağış eklendi)
                 wp_cache_delete('wdp_total_donation_' . $product_id, 'wdp_donations');
                 $total_donation = WDP_Utils::get_total_donation_amount($product_id);
+                $pending_in_cart = class_exists('WDP_Cart')
+                    ? (float) WDP_Cart::sum_cart_pending_for_product($product_id)
+                    : 0.0;
             }
             
             $added_item = $cart->get_cart_item($cart_item_key);
@@ -326,6 +334,7 @@ trait WDP_Ajax_Cart_Add_Trait {
                 'checkout_url' => wc_get_checkout_url(),
                 'items' => self::get_cart_items(),
                 'total_donation' => $total_donation,
+                'pending_in_cart' => $pending_in_cart,
                 'product_id' => $product_id,
                 'meta_cart_line' => $added_item ? self::build_meta_cart_line_from_cart_item($added_item, $product_id) : null,
             ));
@@ -485,7 +494,11 @@ trait WDP_Ajax_Cart_Add_Trait {
             $min_sadaka = $product->get_meta('_sadaka_min_price');
             if ($min_sadaka !== '' && (float) $min_sadaka > 0 && $sadaka_value < (float) $min_sadaka) {
                 throw new WDP_Validation_Exception(
-                    sprintf(__('Alt bağış için lütfen %s TL ve üstü değerler girin.', 'woo-donation-popup'), wc_format_decimal($min_sadaka)),
+                    sprintf(
+                        /* translators: %s: formatted minimum amount with currency */
+                        __('Alt bağış için lütfen %s ve üstü değerler girin.', 'woo-donation-popup'),
+                        WDP_Cart::format_amount_for_message((float) $min_sadaka, true)
+                    ),
                     array('sadaka_custom_price')
                 );
             }

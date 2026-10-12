@@ -1,6 +1,7 @@
 /**
- * Module Loader - Modül yükleme ve güncelleme
- * updateModuleFunctions, waitForModulesAndInit
+ * @file module-loader.js
+ * Modül hazır olma kontrolü ve sıralı başlatma yardımcıları.
+ * Dış API: WDPApp.moduleLoader
  */
 
 (function(window) {

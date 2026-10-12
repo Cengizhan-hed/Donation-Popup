@@ -1,0 +1,178 @@
+/**
+ * @file ux-enhancements.css
+ * Skeleton open, CTA press, celebrate, retry, container queries, toast host, perf.
+ */
+
+/* Modal skeleton veil — soft, non-blocking */
+html body .wdp-modal.wdp-is-skeleton .wdp-modal-content > :not(.wdp-modal-close) {
+  filter: none;
+  opacity: 0.92;
+}
+
+html body .wdp-modal.wdp-is-skeleton .wdp-modal-content::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  pointer-events: none;
+  border-radius: inherit;
+  background: linear-gradient(
+    105deg,
+    transparent 40%,
+    rgba(255, 255, 255, 0.14) 50%,
+    transparent 60%
+  );
+  background-size: 220% 100%;
+  animation: wdp-skeleton-sheen 1.4s ease-in-out infinite;
+}
+
+@keyframes wdp-skeleton-sheen {
+  from { background-position: 120% 0; }
+  to { background-position: -20% 0; }
+}
+
+/* Fixed amount presets selected state — primary, transparent idle */
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-amount-preset,
+html body .wdp-amount-preset {
+  background: transparent;
+}
+
+/* Wizard foot stays above sticky CTA stacking */
+html body :is(.wdp-modal, .wdp-donation-form) form.wdp-wizard-ready .wdp-wizard-foot {
+  background: transparent;
+}
+
+/* Soft field-stack gap before amount */
+html body :is(.wdp-modal, .wdp-donation-form) form.wdp-donation-form-fields {
+  gap: var(--wdp-modal-stack-gap, 16px);
+}
+
+html body.wdp-scroll-locked {
+  scrollbar-gutter: stable;
+}
+
+html {
+  scrollbar-gutter: stable;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-button-group button.is-cta-press {
+  animation: wdp-cta-press 420ms var(--wdp-ease-out, ease-out);
+}
+
+@keyframes wdp-cta-press {
+  0% { transform: scale(1); filter: brightness(1); }
+  35% { transform: scale(0.985); filter: brightness(1.05); }
+  100% { transform: scale(1); filter: brightness(1); }
+}
+
+/* Progress celebrate burst */
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-celebrate {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 12;
+  overflow: hidden;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-celebrate__dot {
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--wdp-primary, #0f608b) 70%, #ffffff);
+  opacity: 0;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-container.is-celebrating .wdp-progress-celebrate__dot {
+  animation: wdp-celebrate-dot 900ms ease-out forwards;
+  animation-delay: calc(var(--i, 0) * 28ms);
+}
+
+@keyframes wdp-celebrate-dot {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(0.6) rotate(calc(var(--i, 0) * 30deg)) translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1) rotate(calc(var(--i, 0) * 30deg)) translateY(-46px);
+  }
+}
+
+/* Form error retry */
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-form-error__retry-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 12px;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-form-error__retry {
+  min-height: 34px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--wdp-error, #c62828) 35%, #e5e9ec);
+  background: #ffffff;
+  color: #9b1c1c;
+  font-weight: 700;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-form-error__retry:focus-visible {
+  outline: none;
+  border-color: var(--wdp-error, #c62828);
+}
+
+/* Container queries — narrow modal content */
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content {
+  container-type: inline-size;
+  container-name: wdp-modal;
+}
+
+@container wdp-modal (max-width: 380px) {
+  html body :is(.wdp-modal, .wdp-donation-form) .wdp-price-quantity-row:not(.wdp-progress-bar-price-row) {
+    grid-template-columns: 1fr;
+    row-gap: 10px;
+  }
+
+  html body :is(.wdp-modal, .wdp-donation-form) form.wdp-wizard-ready .wdp-wizard__step-label {
+    font-size: 12px;
+  }
+}
+
+/* Shareholder list perf */
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholders-scroll .wdp-shareholder-form {
+  content-visibility: auto;
+  contain-intrinsic-size: 120px;
+}
+
+/* Offline — clear dim + subtle banner cue on CTA zone */
+html body.wdp-is-offline :is(.wdp-modal, .wdp-donation-form) .wdp-button-group button {
+  opacity: 0.7;
+  filter: grayscale(0.15);
+}
+
+html body.wdp-is-offline :is(.wdp-modal, .wdp-donation-form) .wdp-trust-strip::after {
+  content: " · Çevrimdışı";
+  color: var(--wdp-warning, #b45309);
+  font-weight: 700;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html body .wdp-modal.wdp-is-skeleton .wdp-modal-content::after,
+  html body :is(.wdp-modal, .wdp-donation-form) .wdp-button-group button.is-cta-press,
+  html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-container.is-celebrating .wdp-progress-celebrate__dot {
+    animation: none;
+  }
+}
+
+@media (prefers-contrast: more) {
+  html body :is(.wdp-modal, .wdp-donation-form) .wdp-field-stack,
+  html body :is(.wdp-modal, .wdp-donation-form) .wdp-custom-price-shell,
+  html body :is(.wdp-modal, .wdp-donation-form) .wdp-quantity-counter {
+    border-width: 2px;
+  }
+}

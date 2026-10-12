@@ -1,7 +1,7 @@
 /**
- * Custom country-code phone fields (no intl-tel-input).
- *
- * @package WooCommerce\Donation_Popup
+ * @file phone-input.js
+ * Ülke kodlu telefon maskesi, doğrulama ve alan başlatma.
+ * Dış API: WDPApp.phoneInput
  */
 
 (function (window) {
@@ -15,7 +15,7 @@
   function getCountries() {
     const list = wdp_ajax.phone && Array.isArray(wdp_ajax.phone.countries) ? wdp_ajax.phone.countries : [];
     return list.filter(function (c) {
-      return c && typeof c.iso === 'string' && c.iso.length === 2 && c.dial;
+      return c && typeof c.iso === 'string' && c.iso.length === 2 && c.dial && String(c.iso).toLowerCase() !== 'il';
     });
   }
 
@@ -34,7 +34,7 @@
     'sd', 'bf', 'ml', 'ne', 'td', 'dj', 'so', 'pk', 'bd', 'in', 'lk', 'np', 'my', 'sg', 'ph', 'th', 'vn', 'id', 'mm',
     'kh', 'la', 'hr', 'si', 'rs', 'ba', 'mk', 'me', 'xk', 'al', 'bg', 'ua', 'by', 'md', 'lv', 'lt', 'ee', 'is', 'li',
     'ad', 'mc', 'sm', 'mt', 'cy', 'am', 'ge', 'az', 'kz', 'kg', 'uz', 'tj', 'tm', 'mn', 'ir', 'iq', 'sy', 'jo', 'lb',
-    'ps', 'ye', 'om', 'qa', 'bh', 'kw', 'ae', 'sa', 'il', 'br', 'ar', 'mx', 'cl', 'co', 'pe', 've', 'ec', 'uy', 'py',
+    'ps', 'ye', 'om', 'qa', 'bh', 'kw', 'ae', 'sa', 'br', 'ar', 'mx', 'cl', 'co', 'pe', 've', 'ec', 'uy', 'py',
   ]);
 
   function findCountry(iso) {
@@ -410,10 +410,28 @@
       return;
     }
     const inner = el.querySelector('.wdp-phone-country-panel__inner');
-    const rect = anchorEl.getBoundingClientRect();
     const frame = readVisualViewportFrame();
-    const gap = 6;
     const pad = 8;
+    const isSheet = window.matchMedia && window.matchMedia('(max-width: 600px)').matches;
+
+    if (isSheet) {
+      el.classList.add('wdp-phone-country-panel--sheet');
+      el.classList.remove('wdp-phone-country-panel--dropup');
+      el.style.top = '';
+      el.style.left = '';
+      el.style.width = '';
+      el.style.right = '';
+      el.style.bottom = '';
+      if (inner) {
+        const maxH = Math.max(180, Math.min(Math.floor(frame.bottom - frame.top) * 0.55, 360));
+        inner.style.maxHeight = maxH + 'px';
+      }
+      return;
+    }
+
+    el.classList.remove('wdp-phone-country-panel--sheet');
+    const rect = anchorEl.getBoundingClientRect();
+    const gap = 6;
 
     inner.style.maxHeight = '';
     const naturalH = 280;
@@ -860,10 +878,73 @@
     if (!form) {
       return;
     }
+    // Native (non-AJAX) submit only: write E.164 into the visible field for POST.
+    // AJAX paths must use applyNormalizedPhonesToFormData so the national UI stays intact.
     getPhoneNumberInputs(form).forEach(function (input) {
       const normalized = getNormalizedValue(input);
       if (normalized) {
         input.value = normalized;
+      }
+    });
+  }
+
+  /**
+   * Patch FormData phone fields to E.164 without mutating the visible national inputs.
+   */
+  function applyNormalizedPhonesToFormData(form, formData) {
+    if (!form || !formData) {
+      return;
+    }
+    getPhoneNumberInputs(form).forEach(function (input) {
+      if (!input || !input.name) {
+        return;
+      }
+      const normalized = getNormalizedValue(input);
+      if (normalized) {
+        formData.set(input.name, normalized);
+      }
+    });
+  }
+
+  /**
+   * If a previous submit wrote dial+national into the input, restore national-only display.
+   */
+  function ensureNationalDisplayInForm(form) {
+    if (!form) {
+      return;
+    }
+    getPhoneNumberInputs(form).forEach(function (input) {
+      if (!input) {
+        return;
+      }
+      const fieldRoot = getPhoneFieldRoot(input);
+      const country = getSelectedCountry(fieldRoot);
+      const digits = stripDigits(input.value || '');
+      if (!digits) {
+        return;
+      }
+      const dial = String(country.dial || '');
+      const rules = getNationalRules(country);
+      const maxNational = rules && rules.max ? rules.max : 15;
+      if (dial && digits.startsWith(dial) && digits.length > dial.length) {
+        const national = normalizeNationalDigits(country.iso, digits.slice(dial.length));
+        if (national && national.length <= maxNational) {
+          input.value = national;
+          return;
+        }
+      }
+      if (digits.length > maxNational) {
+        const detected = detectCountryFromDigits(digits);
+        if (detected && detected.country && detected.national) {
+          const national = normalizeNationalDigits(
+            detected.country.iso,
+            detected.national
+          );
+          if (national) {
+            setSelectedCountry(fieldRoot, detected.country);
+            input.value = national;
+          }
+        }
       }
     });
   }
@@ -984,6 +1065,8 @@
     createFieldElement: createFieldElement,
     syncE164FieldsInForm: syncNormalizedFieldsInForm,
     syncNormalizedFieldsInForm: syncNormalizedFieldsInForm,
+    applyNormalizedPhonesToFormData: applyNormalizedPhonesToFormData,
+    ensureNationalDisplayInForm: ensureNationalDisplayInForm,
     getValueForCopy: getValueForCopy,
     applyPastedNumber: applyPastedNumber,
     validatePhoneField: validatePhoneField,

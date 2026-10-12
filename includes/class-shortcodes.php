@@ -1,8 +1,7 @@
 <?php
 /**
- * Shortcodes class
- * Handles shortcode registration and rendering
- * 
+ * wdp_donation_button, panel ve form shortcode kayıt ve render işlemleri.
+ *
  * @package WooCommerce\Donation_Popup
  */
 

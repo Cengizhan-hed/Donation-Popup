@@ -1,9 +1,8 @@
 <?php
 /**
- * Build single hashed frontend JS bundle.
+ * frontend-js-stack.php sırasına göre JS modüllerini tek bundle dosyasında birleştirir.
  *
- * Usage:
- *   php tools/build-js-bundle.php
+ * @package WooCommerce\Donation_Popup
  */
 
 declare(strict_types=1);

@@ -1,8 +1,7 @@
 <?php
 /**
- * Order operations class
- * Handles order meta data
- * 
+ * Ödeme sırasında bağış/hisse verisini sipariş satırı meta alanlarına yazar.
+ *
  * @package WooCommerce\Donation_Popup
  */
 
@@ -21,6 +20,9 @@ class WDP_Order {
     public static function init() {
         // Sipariş oluşturulurken, bağış verilerini sipariş öğe metalarına ekle
         add_action('woocommerce_checkout_create_order_line_item', array(__CLASS__, 'add_donation_meta_to_order'), 10, 4);
+
+        WDP_Order_Meta_Keys::init();
+        WDP_Privacy::init();
     }
 
     /**
@@ -37,46 +39,10 @@ class WDP_Order {
             $item->add_meta_data('_custom_price', floatval($values['custom_price']));
         }
         
-        if (isset($values['donation_data'])) {
-            $donation_data = $values['donation_data'];
-
-            // Çoklu hisse kontrolü
-            if (isset($donation_data['share_count']) && $donation_data['share_count'] > 0) {
-                $item->add_meta_data(__('Hisse Sayısı', 'woo-donation-popup'), $donation_data['share_count']);
-
-                // Hissedar bilgilerini ekle
-                if (isset($donation_data['shareholders'])) {
-                    foreach ($donation_data['shareholders'] as $key => $shareholder) {
-                        if (!empty($shareholder['name'])) {
-                            $item->add_meta_data(sprintf(__('%d. Hissedar Adı', 'woo-donation-popup'), $key), $shareholder['name']);
-                        }
-
-                        if (!empty($shareholder['phone'])) {
-                            $item->add_meta_data(sprintf(__('%d. Hissedar Telefonu', 'woo-donation-popup'), $key), $shareholder['phone']);
-                        }
-
-                        if (!empty($shareholder['email'])) {
-                            $item->add_meta_data(sprintf(__('%d. Hissedar E-postası', 'woo-donation-popup'), $key), $shareholder['email']);
-                        }
-
-                        if (isset($shareholder['note']) && $shareholder['note'] !== '') {
-                            $item->add_meta_data(sprintf(__('%d. Hissedar Notu', 'woo-donation-popup'), $key), $shareholder['note']);
-                        }
-                    }
-                }
-            } else {
-                // Normal bağış verilerini ekle
-                if (!empty($donation_data['full_name'])) {
-                    $item->add_meta_data(__('Bağışçı Adı', 'woo-donation-popup'), $donation_data['full_name']);
-                }
-
-                if (!empty($donation_data['phone'])) {
-                    $item->add_meta_data(__('Bağışçı Telefonu', 'woo-donation-popup'), $donation_data['phone']);
-                }
-
-                if (isset($donation_data['note']) && $donation_data['note'] !== '') {
-                    $item->add_meta_data(__('Bağış Notu', 'woo-donation-popup'), $donation_data['note']);
-                }
+        if (isset($values['donation_data']) && is_array($values['donation_data'])) {
+            // Dilden bağımsız sabit anahtarlar; etiketler WDP_Order_Meta_Keys display filtresiyle gösterilir.
+            foreach (WDP_Order_Meta_Keys::build_item_meta($values['donation_data']) as $meta_key => $meta_value) {
+                $item->add_meta_data($meta_key, $meta_value);
             }
         }
     }

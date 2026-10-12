@@ -1,4 +1,9 @@
 <?php
+/**
+ * CSS/JS yığını kaydı, build manifest okuma ve koşullu asset enqueue.
+ *
+ * @package WooCommerce\Donation_Popup
+ */
 if (!defined('ABSPATH')) {
     exit;
 }
@@ -334,6 +339,7 @@ trait WDP_Assets_Registry_Trait {
                 'shareholder_issue_name' => __('ad soyad alanı eksik', 'woo-donation-popup'),
                 'shareholder_issue_phone' => __('telefon numaranızı eksiksiz giriniz', 'woo-donation-popup'),
                 'phone_search_placeholder' => __('Ara', 'woo-donation-popup'),
+                'added_to_cart' => __('Bağışınız sepete eklendi', 'woo-donation-popup'),
             ),
             'phone' => array(
                 'default_country' => class_exists('WDP_Phone_Field') ? WDP_Phone_Field::get_default_country_iso() : 'tr',
@@ -345,6 +351,14 @@ trait WDP_Assets_Registry_Trait {
             'flags' => array(
                 // Disabled by default to avoid theme-wide side cart visibility overrides.
                 'side_cart_recovery' => (bool) apply_filters('wdp_enable_side_cart_recovery', false),
+                'multi_step' => (function () {
+                    $bs = get_option('wdp_button_settings', array());
+                    return !empty($bs['enable_multi_step']) && (string) $bs['enable_multi_step'] === '1';
+                })(),
+                'progress_celebrate' => (function () {
+                    $ps = get_option('wdp_progress_bar_settings', array());
+                    return !isset($ps['enable_celebrate']) || (string) $ps['enable_celebrate'] !== '0';
+                })(),
             ),
             'meta' => class_exists('WDP_Meta_Tracking') ? WDP_Meta_Tracking::get_frontend_config() : array(),
             'validation' => array(

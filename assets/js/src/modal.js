@@ -1,65 +1,7 @@
 /**
- * ============================================================================
- * MODAL.JS - MODAL YÖNETİM MODÜLÜ
- * ============================================================================
- * 
- * DOSYA: modal.js
- * KONUM: /assets/js/src/modal.js
- * 
- * AMAÇ:
- * Modal (popup) açma/kapama, form reset, focus trap, keyboard navigation.
- * 
- * ANA İŞLEVLER:
- * 1. openModal - Modal açma
- * 2. closeModal - Modal kapatma
- * 3. resetForm - Form sıfırlama
- * 4. handleOutsideClick - Dışarı tıklama ile kapatma
- * 5. handleEscKeyPress - ESC tuşu ile kapatma
- * 6. saveOriginalForms - Form orijinal içeriğini kaydetme
- * 
- * MODAL AÇMA:
- * - Product ID ile modal bulma
- * - Scroll pozisyonunu koruma
- * - Body scroll lock
- * - Focus trap aktivasyonu
- * - ARIA live region duyurma
- * - Animation trigger
- * 
- * MODAL KAPATMA:
- * - Body scroll unlock
- * - Focus trap deaktivasyonu
- * - Form reset
- * - Animation trigger
- * - Focus'u açan butona geri döndürme
- * 
- * FOCUS MANAGEMENT:
- * - Focus trap (modal içinde tutma)
- * - First focusable element'e odaklanma
- * - ESC tuşu ile kapatma
- * - Tab navigation
- * 
- * ACCESSIBILITY:
- * - ARIA attributes (aria-hidden, aria-modal)
- * - Keyboard navigation
- * - Screen reader announcements
- * - Focus management
- * 
- * PERFORMANS:
- * - Debounced event handlers
- * - Cached DOM references
- * - Optimized animations
- * 
- * DEPENDENCIES:
- * - utils.js (focusFirstElement, activateFocusTrap, announceStatus)
- * - state.js (form state, original forms)
- * 
- * EXPORT:
- * WDPApp.modal = { open, close, reset, ... }
- * 
- * ============================================================================
- * 
- * Modal - Modal işlemleri
- * openModal, closeModal, resetForm, handleOutsideClick, handleEscKeyPress
+ * @file modal.js
+ * Modal aç/kapa, odak tuzağı, panel geçişi ve form yaşam döngüsü.
+ * Dış API: WDPApp.modal
  */
 
 (function(window) {
@@ -80,6 +22,9 @@
   const state = stateCheck.module;
   const { safeLog, focusFirstElement, activateFocusTrap, announceStatus } = utils;
   const modalLifecycleState = typeof WeakMap !== 'undefined' ? new WeakMap() : null;
+  let sidePanelScrollLockY = 0;
+  let centerModalScrollLockY = 0;
+  let pendingOpenRequest = null;
 
   function getModalLifecycleState(modal) {
     if (!modal || !modalLifecycleState) return '';
@@ -95,6 +40,15 @@
     modalLifecycleState.set(modal, nextState);
   }
 
+  function flushPendingOpen() {
+    const pending = pendingOpenRequest;
+    pendingOpenRequest = null;
+    if (!pending) {
+      return;
+    }
+    openModal(pending.productId, pending.options);
+  }
+
   function isSidePanelModal(modal) {
     return !!(modal && modal.classList.contains('wdp-side-panel'));
   }
@@ -107,22 +61,57 @@
   }
 
   function lockBodyScroll(isSidePanel) {
-    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
-    if (scrollbarWidth > 0) {
-      document.documentElement.style.setProperty('--wdp-scrollbar-width', scrollbarWidth + 'px');
+    // Blur/opacity/scrim flaş üretiyordu → solid overlay.
+    // overflow:hidden + 100vw scrollbar kaybı titreşim yapıyordu → body position:fixed + scrollbar-gutter.
+    if (document.body.classList.contains('wdp-modal-open') || document.body.classList.contains('wdp-side-panel-open')) {
+      return;
     }
-    document.body.style.overflow = 'hidden';
+    const legacyScrim = document.getElementById('wdp-page-scrim');
+    if (legacyScrim && legacyScrim.parentNode) {
+      legacyScrim.parentNode.removeChild(legacyScrim);
+    }
+
+    const scrollY = window.scrollY || window.pageYOffset || 0;
+    document.documentElement.classList.add('wdp-scroll-locked');
+
     if (isSidePanel) {
+      sidePanelScrollLockY = scrollY;
       document.body.classList.add('wdp-side-panel-open');
     } else {
+      centerModalScrollLockY = scrollY;
       document.body.classList.add('wdp-modal-open');
     }
+
+    document.body.style.position = 'fixed';
+    document.body.style.top = '-' + scrollY + 'px';
+    document.body.style.left = '0';
+    document.body.style.right = '0';
+    document.body.style.width = '100%';
+    document.body.style.overflow = 'hidden';
   }
 
   function unlockBodyScroll() {
+    const wasSidePanel = document.body.classList.contains('wdp-side-panel-open');
+    const wasModal = document.body.classList.contains('wdp-modal-open');
+    const scrollY = wasSidePanel ? sidePanelScrollLockY : centerModalScrollLockY;
+
     document.body.classList.remove('wdp-modal-open', 'wdp-side-panel-open');
+    document.documentElement.classList.remove('wdp-scroll-locked');
+    document.documentElement.style.overflow = '';
     document.body.style.overflow = '';
+    document.body.style.paddingRight = '';
     document.documentElement.style.removeProperty('--wdp-scrollbar-width');
+    document.body.style.position = '';
+    document.body.style.top = '';
+    document.body.style.left = '';
+    document.body.style.right = '';
+    document.body.style.width = '';
+    sidePanelScrollLockY = 0;
+    centerModalScrollLockY = 0;
+
+    if (wasSidePanel || wasModal) {
+      window.scrollTo(0, scrollY || 0);
+    }
   }
 
   // Tüm formların orijinal içeriğini sakla (tek kaynak: dom modülü; yükleme sırası için yedek yol)
@@ -239,6 +228,9 @@
     if (donationForm && WDPApp.form && typeof WDPApp.form.setup === 'function') {
       WDPApp.form.setup(donationForm)
     }
+    if (donationForm && WDPApp.formWizard && typeof WDPApp.formWizard.reset === 'function') {
+      WDPApp.formWizard.reset(donationForm)
+    }
 
     if (WDPApp.phoneInput && typeof WDPApp.phoneInput.refreshInRoot === 'function') {
       WDPApp.phoneInput.refreshInRoot(modal)
@@ -247,6 +239,13 @@
     }
 
     setupShareholderSection(modal, productId)
+
+    if (donationForm && WDPApp.formWizard && typeof WDPApp.formWizard.setup === 'function') {
+      WDPApp.formWizard.setup(donationForm)
+      if (typeof WDPApp.formWizard.reset === 'function') {
+        WDPApp.formWizard.reset(donationForm)
+      }
+    }
 
     const loadProductInfo = WDPApp.product && (WDPApp.product.fetchProductInfo || WDPApp.product.fetch)
     if (typeof loadProductInfo === 'function') {
@@ -258,6 +257,18 @@
       try {
         WDPApp.progressBar.setup(progressBarContainer)
         safeLog("Progress bar setup completed for modal", modal.id)
+        const fetchCart =
+          (WDPApp.cartActions && WDPApp.cartActions.fetchContents) ||
+          (WDPApp.cart && WDPApp.cart.fetchContents)
+        if (typeof fetchCart === 'function') {
+          fetchCart()
+            .then((items) => {
+              if (WDPApp.progressBar && typeof WDPApp.progressBar.syncFromCartItems === 'function') {
+                WDPApp.progressBar.syncFromCartItems(items)
+              }
+            })
+            .catch(() => {})
+        }
       } catch (err) {
         safeLog("Progress bar setup error:", err)
       }
@@ -267,6 +278,7 @@
 
     trackModalViewContent(modal, productId, sidePanelMode)
     bindModalGlobalListeners()
+    modal.classList.remove('wdp-is-skeleton')
 
     focusFirstElement(modal)
     state.focusTrapCleanup = activateFocusTrap(modal)
@@ -296,6 +308,7 @@
       }
       const lifecycleState = getModalLifecycleState(modal)
       if (lifecycleState === 'opening' || lifecycleState === 'closing') {
+        pendingOpenRequest = { productId: productId, options: options || null }
         return
       }
       if (state.activeModal === modal && modal.classList.contains('show')) {
@@ -320,6 +333,8 @@
         errorMsg.textContent = ""
       }
 
+      resetShareholderValidationIfNeeded(modal)
+
       if (modal.parentNode !== document.body) {
         try {
           document.body.appendChild(modal)
@@ -334,8 +349,14 @@
       modal.style.removeProperty('visibility')
       modal.style.removeProperty('opacity')
       modal.classList.remove('wdp-side-panel--closing')
+      modal.classList.add('wdp-is-skeleton')
 
       state.activeModal = modal
+      pendingOpenRequest = null
+
+      if (WDPApp.utils && typeof WDPApp.utils.emitWdpEvent === 'function') {
+        WDPApp.utils.emitWdpEvent('wdp:form:open', { productId: productId, modal: modal, sidePanel: sidePanelMode })
+      }
 
       if (sidePanelMode) {
         setModalLifecycleState(modal, 'opening')
@@ -345,6 +366,9 @@
 
         requestAnimationFrame(function () {
           requestAnimationFrame(function () {
+            if (getModalLifecycleState(modal) !== 'opening' || state.activeModal !== modal) {
+              return
+            }
             modal.classList.remove('wdp-side-panel--opening')
             runModalOpenInit(modal, productId, sidePanelMode)
             setModalLifecycleState(modal, 'open')
@@ -352,8 +376,8 @@
         })
       } else {
         setModalLifecycleState(modal, 'opening')
-        modal.classList.add('show')
         lockBodyScroll(false)
+        modal.classList.add('show')
         runModalOpenInit(modal, productId, sidePanelMode)
         setModalLifecycleState(modal, 'open')
       }
@@ -412,17 +436,35 @@
 
   const SIDE_PANEL_CLOSE_MS = 380
 
+  function resetShareholderValidationIfNeeded(modal) {
+    if (!modal) {
+      return
+    }
+    const form = modal.querySelector('form.wdp-has-shareholders, form.wdp-donation-form-fields')
+    if (!form || !WDPApp.shareholder) {
+      return
+    }
+    if (typeof WDPApp.shareholder.resetValidationUI === 'function') {
+      WDPApp.shareholder.resetValidationUI(form)
+    }
+  }
+
   function finalizeModalClose(modal) {
     const modalHeader = modal.querySelector('.wdp-modal-header')
     if (modalHeader) {
       modalHeader.classList.remove('wdp-hidden-on-success')
     }
+    const modalProgress = modal.querySelector('.wdp-progress-bar-container')
+    if (modalProgress) {
+      modalProgress.classList.remove('wdp-hidden-on-success')
+    }
 
-    const isSidePanel = modal.classList.contains('wdp-side-panel')
+    resetShareholderValidationIfNeeded(modal)
 
-    modal.style.display = 'none'
-    modal.classList.remove('show', 'wdp-side-panel--closing')
+    // Inline display:none kullanma — CSS :not(.show) gizler; inline reopen’da bir frame flaş yapıyordu
+    modal.classList.remove('show', 'wdp-side-panel--closing', 'wdp-is-skeleton')
     modal.setAttribute('aria-hidden', 'true')
+    modal.style.removeProperty('display')
     modal.style.removeProperty('visibility')
     modal.style.removeProperty('opacity')
     modal.classList.remove('wdp-has-success')
@@ -439,6 +481,7 @@
 
     safeLog('Modal closed successfully')
     setModalLifecycleState(modal, 'closed')
+    flushPendingOpen()
   }
 
   // Modal'ı kapat — sağ panel sağa kayarak kapanır
@@ -508,6 +551,10 @@
 
     // Eğer orijinal form içeriği saklanmışsa, geri yükle
     if (originalForms.has(modalId) && form) {
+      // Wizard DOM/state form.innerHTML ile kopuyor; önce temizle.
+      if (WDPApp.formWizard && typeof WDPApp.formWizard.destroy === 'function') {
+        WDPApp.formWizard.destroy(form)
+      }
       const snapshot = originalForms.get(modalId)
       const useSnapshot =
         snapshot &&
@@ -529,6 +576,17 @@
         if (input.readOnly || input.disabled) {
           return
         }
+        // Progress tutar alanı: boş bırak; minimum yalnızca placeholder'da.
+        if (
+          input.name === 'custom_price' &&
+          (input.classList.contains('wdp-progress-bar-price-input') ||
+            form.classList.contains('wdp-has-progress-bar'))
+        ) {
+          input.value = ""
+          delete input.dataset.wdpCustomUnit
+          delete input.dataset.wdpDefaultPrice
+          return
+        }
         input.value = ""
       })
 
@@ -545,7 +603,20 @@
       const progressBarContainer = modal.querySelector('.wdp-progress-bar-container');
       if (progressBarContainer && WDPApp.progressBar && typeof WDPApp.progressBar.setup === 'function') {
         try {
+          progressBarContainer.removeAttribute('data-wdp-progress-setup');
           WDPApp.progressBar.setup(progressBarContainer);
+          const fetchCart =
+            (WDPApp.cartActions && WDPApp.cartActions.fetchContents) ||
+            (WDPApp.cart && WDPApp.cart.fetchContents);
+          if (typeof fetchCart === 'function') {
+            fetchCart()
+              .then((items) => {
+                if (WDPApp.progressBar && typeof WDPApp.progressBar.syncFromCartItems === 'function') {
+                  WDPApp.progressBar.syncFromCartItems(items);
+                }
+              })
+              .catch(() => {});
+          }
         } catch (_) { /* noop */ }
       }
     }

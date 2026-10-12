@@ -3,16 +3,17 @@
  * Plugin Name: WooCommerce Donation Panel
  * Description: WooCommerce ürünleri için bağış formu açılır penceresi oluşturur (Tüm temalarla uyumlu). Bu eklenti Hedef Derneği tarafından hazırlanmaktadır.
  * Author: Hedef Derneği
- * Version: 10.3.1
+ * Version: 10.25.0
  * Requires at least: 5.0
- * Tested up to: 6.7
+ * Requires PHP: 7.4
+ * Requires Plugins: woocommerce
+ * Tested up to: 7.1
  * WC requires at least: 3.0
- * WC tested up to: 9.0
+ * WC tested up to: 11.2
  * License: GPLv2 or later
  * Text Domain: woo-donation-popup
  * 
- * Woo: 12345:342928dfsfhsf8429842374wdf4234sfd
- * WooCommerce: true
+ * Dosya: WordPress eklenti giriş dosyası; sabitleri tanımlar ve bootstrap sınıfını başlatır.
  *
  * @package WooCommerce\Donation_Popup
  */
@@ -22,7 +23,7 @@ if (!defined('ABSPATH')) {
 }
 
 define('WDP_PLUGIN_FILE', __FILE__);
-define('WDP_VERSION', '10.3.1');
+define('WDP_VERSION', '10.25.0');
 define('WDP_PLUGIN_DIR', plugin_dir_path(WDP_PLUGIN_FILE));
 define('WDP_PLUGIN_URL', plugin_dir_url(WDP_PLUGIN_FILE));
 define('WDP_ASSET_VERSION', get_option('wdp_cache_version', WDP_VERSION));

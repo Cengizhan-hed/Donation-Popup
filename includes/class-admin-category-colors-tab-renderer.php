@@ -1,6 +1,6 @@
 <?php
 /**
- * Admin tab: WooCommerce category title colors.
+ * Ürün kategorileri için başlık rengi seçim formu.
  *
  * @package WooCommerce\Donation_Popup
  */
@@ -113,7 +113,7 @@ class WDP_Admin_Category_Colors_Tab_Renderer {
 		echo '</div>';
 		echo '<div class="wdp-cat-color-block__controls">';
 		echo '<label class="wdp-cat-color-block__enable"><input type="checkbox" name="category_color_enable[' . esc_attr((string) $term_id) . ']" value="1" ' . checked($enabled, true, false) . ' /> ' . esc_html__('Renk', 'woo-donation-popup') . '</label>';
-		echo '<input type="color" class="wdp-cat-color-picker" name="category_color[' . esc_attr((string) $term_id) . ']" value="' . esc_attr($current ? $current : '#1e73be') . '" data-preview-target="wdp-cat-preview-' . esc_attr((string) $term_id) . '" />';
+		echo '<input type="color" class="wdp-cat-color-picker" name="category_color[' . esc_attr((string) $term_id) . ']" value="' . esc_attr($current ? $current : '#036a37') . '" data-preview-target="wdp-cat-preview-' . esc_attr((string) $term_id) . '" />';
 		echo '</div>';
 		echo '</header>';
 

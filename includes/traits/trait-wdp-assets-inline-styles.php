@@ -1,10 +1,18 @@
 <?php
+/**
+ * Admin ayarlarından dinamik inline CSS ve JS yapılandırma verisi üretir.
+ *
+ * @package WooCommerce\Donation_Popup
+ */
 if (!defined('ABSPATH')) {
     exit;
 }
 
 trait WDP_Assets_Inline_Styles_Trait {
     private static function get_button_icons() {
+        if (class_exists('WDP_Icon_Library')) {
+            return WDP_Icon_Library::get_button_icons_for_js();
+        }
         if (!class_exists('WDP_Templates')) {
             return array();
         }
@@ -17,9 +25,9 @@ trait WDP_Assets_Inline_Styles_Trait {
     }
 
     /**
-     * Get button texts from settings
+     * Ayarlardan buton metinlerini okur (başarı ekranı dahil).
      *
-     * @return array Button texts.
+     * @return array Buton metinleri.
      */
     private static function get_button_texts() {
         // Buton ayarlarını al
@@ -78,7 +86,7 @@ trait WDP_Assets_Inline_Styles_Trait {
             'shareholder_name_placeholder' => 'Ad Soyad *',
             'shareholder_phone_placeholder'=> 'Telefon Numarası *',
             'shareholder_note_placeholder' => 'Not (isteğe bağlı)',
-            'shareholder_copy_button_text' => '📋 Kopyasını Oluştur',
+            'shareholder_copy_button_text' => 'Kopyasını Oluştur',
             'shareholder_enable_copy_button' => '1',
             'shareholder_layout'           => 'single',
             'shareholder_density'          => 'normal',
@@ -306,22 +314,23 @@ trait WDP_Assets_Inline_Styles_Trait {
 
         // Varsayılan değerler
         $defaults = array(
-            'button_primary_color' => '#1e73be',
-            'button_primary_hover' => '#185d98',
-            'button_border_radius' => '20',
+            'button_primary_color' => '#0f608b',
+            'button_primary_hover' => '#0c4f72',
+            'ui_border_radius' => '10',
+            'button_border_radius' => '10',
             'modal_background_color' => '#ffffff',
-            'modal_border_radius' => '20',
+            'modal_border_radius' => '10',
             'input_border_color' => '#d1d5db',
-            'input_border_radius' => '20',
+            'input_border_radius' => '10',
             'title_color' => '#1f2937',
             'title_font_size' => '27',
             'title_font_size_mobile' => '22',
             'close_button_color' => '#6b7280',
-            'button_checkout_color' => '#48bb78',
-            'button_checkout_hover' => '#38a169',
+            'button_checkout_color' => '#16a34a',
+            'button_checkout_hover' => '#15803d',
             'popup_button_text' => 'Bağış Yap',
-            'popup_button_color' => '#1e73be',
-            'popup_button_hover' => '#185d98',
+            'popup_button_color' => '#0f608b',
+            'popup_button_hover' => '#0c4f72',
             'popup_button_text_color' => '#ffffff',
             'popup_button_font_size' => '18',
             'popup_button_font_weight' => '700',
@@ -333,12 +342,12 @@ trait WDP_Assets_Inline_Styles_Trait {
             'popup_button_custom_min_width' => '140',
             'popup_button_custom_min_height' => '48',
             'popup_button_custom_padding_x' => '24',
-            'popup_button_border_radius' => '20',
+            'popup_button_border_radius' => '10',
             'popup_button_border_size' => '0',
             'label_color' => '#374151',
             'label_font_size' => 14,
             'label_font_weight' => '600',
-            'placeholder_color' => '#6b7280',
+            'placeholder_color' => '#64748b',
             'form_gap' => 16,
             // Shortcode tetikleyici gölgesi
             'button_shadow_sc_enabled' => '0',
@@ -370,6 +379,7 @@ trait WDP_Assets_Inline_Styles_Trait {
         
         $settings = wp_parse_args($button_settings, $defaults);
         $settings = self::sanitize_css_settings($settings, $defaults, array(
+            'ui_border_radius',
             'button_border_radius',
             'modal_border_radius',
             'input_border_radius',
@@ -384,6 +394,19 @@ trait WDP_Assets_Inline_Styles_Trait {
             'label_font_size',
             'form_gap',
         ));
+
+        $ui_radius = absint(isset($settings['ui_border_radius']) ? $settings['ui_border_radius'] : 0);
+        if ($ui_radius <= 0) {
+            $ui_radius = absint(isset($settings['button_border_radius']) ? $settings['button_border_radius'] : 12);
+        }
+        if ($ui_radius <= 0) {
+            $ui_radius = 12;
+        }
+        $settings['ui_border_radius'] = $ui_radius;
+        $settings['button_border_radius'] = $ui_radius;
+        $settings['modal_border_radius'] = $ui_radius;
+        $settings['input_border_radius'] = $ui_radius;
+        $settings['popup_button_border_radius'] = $ui_radius;
         
         // CSS değişkenlerini oluştur
         /*
@@ -393,19 +416,42 @@ trait WDP_Assets_Inline_Styles_Trait {
          */
         $css = ":root,\n.hdf-donation-modal-wrapper {\n";
         
+        // Brand primary from global brand color (auto palette) or form primary buttons
+        $brand_seed = !empty($settings['brand_color']) ? $settings['brand_color'] : (!empty($settings['button_primary_color']) ? $settings['button_primary_color'] : '#0f608b');
+        $brand_primary = !empty($settings['button_primary_color']) ? $settings['button_primary_color'] : '#0f608b';
+        $brand_hover = !empty($settings['button_primary_hover']) ? $settings['button_primary_hover'] : '#0c4f72';
+        $on_primary = '#ffffff';
+        $palette = null;
+        if (class_exists('WDP_Color_Palette')) {
+            $palette = WDP_Color_Palette::from_hex($brand_seed);
+            $brand_primary = $palette['primary'];
+            $brand_hover = $palette['primary_hover'];
+            $on_primary = !empty($palette['on_primary']) ? $palette['on_primary'] : '#ffffff';
+            $css .= WDP_Color_Palette::to_css_variables($brand_seed);
+        } else {
+            $css .= "  --wdp-primary: " . esc_attr($brand_primary) . ";\n";
+            $css .= "  --wdp-primary-hover: " . esc_attr($brand_hover) . ";\n";
+        }
+        // Radius ladder relative to admin UI radius (8 / 12 / 16 / 20 when ui=12)
+        $radius_xs = max(0, $ui_radius - 4);
+        $radius_md = $ui_radius + 4;
+        $radius_panel = $ui_radius + 8;
+        $css .= "  --wdp-radius-ui: " . esc_attr($ui_radius) . "px;\n";
+        $css .= "  --wdp-radius-xs: " . esc_attr($radius_xs) . "px;\n";
+        $css .= "  --wdp-radius-sm: " . esc_attr($ui_radius) . "px;\n";
+        $css .= "  --wdp-radius-md: " . esc_attr($radius_md) . "px;\n";
+        $css .= "  --wdp-radius-lg: " . esc_attr($radius_panel) . "px;\n";
+        $css .= "  --wdp-radius-xl: " . esc_attr($radius_md) . "px;\n";
+        $css .= "  --wdp-radius-2xl: " . esc_attr($radius_panel) . "px;\n";
+        $css .= "  --wdp-radius-panel: " . esc_attr($radius_panel) . "px;\n";
+        $css .= "  --wdp-radius-sheet: " . esc_attr($radius_panel) . "px;\n";
+        $css .= "  --wdp-shareholder-header-bg: " . esc_attr($brand_primary) . ";\n";
+        $css .= "  --wdp-shareholder-header-bg-hover: " . esc_attr($brand_hover) . ";\n";
+        $css .= "  --wdp-price-surface-bg: " . esc_attr($brand_primary) . ";\n";
+
         // Popup butonu değişkenleri
-        $popup_button_color = !empty($settings['popup_button_color']) ? $settings['popup_button_color'] : '#1e73be';
-        $popup_button_hover = !empty($settings['popup_button_hover']) ? $settings['popup_button_hover'] : '#185d98';
-        if (isset($settings['popup_button_color'])) {
-            $css .= "  --wdp-primary: " . esc_attr($popup_button_color) . ";\n";
-        } else {
-            $css .= "  --wdp-primary: #1e73be;\n";
-        }
-        if (isset($settings['popup_button_hover'])) {
-            $css .= "  --wdp-primary-hover: " . esc_attr($popup_button_hover) . ";\n";
-        } else {
-            $css .= "  --wdp-primary-hover: #185d98;\n";
-        }
+        $popup_button_color = !empty($settings['popup_button_color']) ? $settings['popup_button_color'] : '#0f608b';
+        $popup_button_hover = !empty($settings['popup_button_hover']) ? $settings['popup_button_hover'] : '#0c4f72';
         if (isset($settings['popup_button_font_size'])) {
             $css .= "  --wdp-popup-button-font-size: " . esc_attr($settings['popup_button_font_size']) . "px;\n";
         } else {
@@ -430,12 +476,8 @@ trait WDP_Assets_Inline_Styles_Trait {
         } else {
             $css .= "  --wdp-popup-button-font-family: inherit;\n";
         }
-        // Popup buton border radius
-        if (isset($settings['popup_button_border_radius'])) {
-            $css .= "  --wdp-popup-button-radius: " . esc_attr($settings['popup_button_border_radius']) . "px;\n";
-        } else {
-            $css .= "  --wdp-popup-button-radius: 20px;\n";
-        }
+        // Popup buton border radius (unified UI radius)
+        $css .= "  --wdp-popup-button-radius: " . esc_attr($ui_radius) . "px;\n";
         if (isset($settings['popup_button_border_size'])) {
             $css .= "  --wdp-popup-button-border-size: " . esc_attr($settings['popup_button_border_size']) . "px;\n";
         } else {
@@ -503,59 +545,206 @@ trait WDP_Assets_Inline_Styles_Trait {
         $css .= "  --wdp-button-primary: " . esc_attr($settings['button_primary_color']) . ";\n";
         $css .= "  --wdp-button-primary-hover: " . esc_attr($settings['button_primary_hover']) . ";\n";
         $css .= "  --wdp-button-radius: " . esc_attr($settings['button_border_radius']) . "px;\n";
-        $css .= "  --wdp-modal-bg: " . esc_attr($settings['modal_background_color']) . ";\n";
+        $css .= "  --wdp-modal-bg: #ffffff;\n";
         $css .= "  --wdp-modal-radius: " . esc_attr($settings['modal_border_radius']) . "px;\n";
         $css .= "  --wdp-input-border: " . esc_attr($settings['input_border_color']) . ";\n";
         $css .= "  --wdp-input-radius: " . esc_attr($settings['input_border_radius']) . "px;\n";
         $css .= "  --wdp-title-color: " . esc_attr($settings['title_color']) . ";\n";
-        $css .= "  --wdp-title-size: " . esc_attr($settings['title_font_size']) . "px;\n";
+        $title_size_px = absint($settings['title_font_size']);
+        if ($title_size_px <= 0) {
+            $title_size_px = 20;
+        }
+        // Allow preset display sizes up to 32px (was clamped to 22).
+        $title_size_px = min(32, max(14, $title_size_px));
+        $css .= "  --wdp-title-size: " . esc_attr($title_size_px) . "px;\n";
         if (!empty($settings['title_font_size_mobile'])) {
-            $css .= "  --wdp-title-size-mobile: " . esc_attr($settings['title_font_size_mobile']) . "px;\n";
+            $title_mobile_px = min(28, max(13, absint($settings['title_font_size_mobile'])));
+            $css .= "  --wdp-title-size-mobile: " . esc_attr($title_mobile_px) . "px;\n";
         }
         $css .= "  --wdp-close-color: " . esc_attr($settings['close_button_color']) . ";\n";
         $css .= "  --wdp-label-color: " . esc_attr($settings['label_color']) . ";\n";
+
+        // Marka / özel primary varken eski yeşil kalıntı chrome değerlerini iyileştir; özel seçim korunur.
+        $brand_hex = !empty($settings['brand_color']) ? sanitize_hex_color((string) $settings['brand_color']) : '';
+        $primary_hex = !empty($settings['button_primary_color']) ? sanitize_hex_color((string) $settings['button_primary_color']) : '';
+        $heal_seed = $brand_hex !== '' ? $brand_hex : $primary_hex;
+        if ($heal_seed !== '' && class_exists('WDP_Color_Palette')) {
+            $stale = array(
+                '#036a37', '#025a2e', '#052e16', '#14532d', '#166534', '#047857', '#065f46',
+                '#1b7a45', '#16a34a', '#15803d', '#48bb78', '#22c55e', '#184a75', '#2a7cc4',
+                '#d1fae5', '#bbf7d0', '#a7f3d0', '#ecfdf5', '#f0fdf4', '#f0f9f4', '#6ee7b7',
+                '#86efac', '#4ade80', '#34d399', '#10b981', '#059669', '#064e3b', '#0f766e',
+                '#a3e635', '#84cc16', '#65a30d', '#4d7c0f', '#3f6212', '#365314',
+            );
+            $legacy_primary = in_array(strtolower($heal_seed), $stale, true);
+            // Marka seçiliyse veya primary eski yeşil değilse chrome'u senkronla.
+            if ($brand_hex !== '' || !$legacy_primary) {
+                $heal_palette = (is_array($palette) && !empty($palette['primary_dark']))
+                    ? $palette
+                    : WDP_Color_Palette::from_hex($heal_seed);
+                $title_hex = strtolower(trim((string) $settings['title_color']));
+                $label_hex = strtolower(trim((string) $settings['label_color']));
+                $border_hex = strtolower(trim((string) $settings['input_border_color']));
+                if ($title_hex === '' || in_array($title_hex, $stale, true)) {
+                    $css .= "  --wdp-title-color: " . esc_attr($heal_palette['primary_dark']) . ";\n";
+                }
+                if ($label_hex === '' || in_array($label_hex, $stale, true)) {
+                    $css .= "  --wdp-label-color: " . esc_attr($heal_palette['primary_dark']) . ";\n";
+                }
+                if ($border_hex === '' || in_array($border_hex, $stale, true)) {
+                    $css .= "  --wdp-input-border: " . esc_attr($heal_palette['primary_border']) . ";\n";
+                }
+            }
+        }
         $css .= "  --wdp-label-font-size: " . esc_attr($settings['label_font_size']) . "px;\n";
         $css .= "  --wdp-label-font-weight: " . esc_attr($settings['label_font_weight']) . ";\n";
         $css .= "  --wdp-placeholder-color: " . esc_attr($settings['placeholder_color']) . ";\n";
         $css .= "  --wdp-form-gap: " . esc_attr($settings['form_gap']) . "px;\n";
-        /* Dikey form ritmi: admin form_gap ile orantılı; eski 6px üst sınırı kaldırıldı (parçalanmış düzen) */
-        $css .= "  --wdp-form-stack-gap: clamp(8px, calc(var(--wdp-form-gap) * 0.75), 18px);\n";
+        $form_stack_gap = isset($settings['form_gap']) ? (int) $settings['form_gap'] : 16;
+        if ($form_stack_gap < 8) {
+            $form_stack_gap = 8;
+        } elseif ($form_stack_gap > 24) {
+            $form_stack_gap = 24;
+        }
+        $css .= "  --wdp-form-stack-gap: " . esc_attr((string) $form_stack_gap) . "px;\n";
+        $css .= "  --wdp-modal-stack-gap: " . esc_attr((string) $form_stack_gap) . "px;\n";
+        $css .= "  --wdp-progress-form-gap: " . esc_attr((string) $form_stack_gap) . "px;\n";
+        $css .= "  --wdp-field-gap-comfortable: " . esc_attr((string) $form_stack_gap) . "px;\n";
+
+        $share_density = isset($settings['form_density']) ? (string) $settings['form_density'] : '';
+        if ($share_density === '' || !in_array($share_density, array('compact', 'normal', 'spacious'), true)) {
+            $share_density = isset($settings['shareholder_density']) ? (string) $settings['shareholder_density'] : 'normal';
+        }
+        if (!in_array($share_density, array('compact', 'normal', 'spacious'), true)) {
+            $share_density = 'normal';
+        }
+        if ($share_density === 'compact') {
+            $css .= "  --wdp-density: compact;\n";
+            $css .= "  --wdp-shareholder-density-gap: var(--wdp-field-gap-compact, 8px);\n";
+            $css .= "  --wdp-shareholder-density-input-h: 44px;\n";
+            $compact_gap = max(8, $form_stack_gap - 4);
+            $css .= "  --wdp-form-stack-gap: " . esc_attr((string) $compact_gap) . "px;\n";
+            $css .= "  --wdp-modal-stack-gap: " . esc_attr((string) $compact_gap) . "px;\n";
+            $css .= "  --wdp-progress-form-gap: " . esc_attr((string) $compact_gap) . "px;\n";
+            $css .= "  --wdp-field-gap-comfortable: " . esc_attr((string) $compact_gap) . "px;\n";
+            $css .= "  --wdp-input-min-height: 44px;\n";
+            $css .= "  --wdp-counter-min-height: 44px;\n";
+            $css .= "  --wdp-form-cta-height: 48px;\n";
+            $css .= "  --wdp-form-cta-height-mobile: 48px;\n";
+            $css .= "  --wdp-button-height: 48px;\n";
+            $css .= "  --wdp-preset-min-height: 44px;\n";
+            $css .= "  --wdp-preset-min-height-mobile: 44px;\n";
+            $css .= "  --wdp-amount-shell-min-height: 48px;\n";
+        } elseif ($share_density === 'spacious') {
+            $css .= "  --wdp-density: spacious;\n";
+            $css .= "  --wdp-shareholder-density-gap: var(--wdp-field-gap-spacious, 20px);\n";
+            $css .= "  --wdp-shareholder-density-input-h: 56px;\n";
+            $spacious_gap = min(24, $form_stack_gap + 4);
+            $css .= "  --wdp-form-stack-gap: " . esc_attr((string) $spacious_gap) . "px;\n";
+            $css .= "  --wdp-modal-stack-gap: " . esc_attr((string) $spacious_gap) . "px;\n";
+            $css .= "  --wdp-progress-form-gap: " . esc_attr((string) $spacious_gap) . "px;\n";
+            $css .= "  --wdp-field-gap-comfortable: " . esc_attr((string) $spacious_gap) . "px;\n";
+            $css .= "  --wdp-input-min-height: 56px;\n";
+            $css .= "  --wdp-counter-min-height: 56px;\n";
+            $css .= "  --wdp-form-cta-height: 56px;\n";
+            $css .= "  --wdp-form-cta-height-mobile: 56px;\n";
+            $css .= "  --wdp-button-height: 56px;\n";
+            $css .= "  --wdp-preset-min-height: 52px;\n";
+            $css .= "  --wdp-preset-min-height-mobile: 48px;\n";
+            $css .= "  --wdp-amount-shell-min-height: 60px;\n";
+        } else {
+            $css .= "  --wdp-density: comfortable;\n";
+            $css .= "  --wdp-shareholder-density-gap: var(--wdp-field-gap-comfortable, 16px);\n";
+            $css .= "  --wdp-shareholder-density-input-h: var(--wdp-input-min-height, 52px);\n";
+        }
+
+        $glass_blur = isset($settings['glass_blur_px']) ? absint($settings['glass_blur_px']) : 22;
+        $glass_blur = min(40, max(0, $glass_blur));
+        $glass_op   = isset($settings['glass_fill_opacity']) ? absint($settings['glass_fill_opacity']) : 90;
+        $glass_op   = min(100, max(60, $glass_op));
+        $glass_alpha = round($glass_op / 100, 2);
+        $elev_lvl   = isset($settings['elevation_level']) ? absint($settings['elevation_level']) : 3;
+        $elev_lvl   = min(5, max(1, $elev_lvl));
+        $ov_tint    = isset($settings['overlay_tint']) ? sanitize_hex_color($settings['overlay_tint']) : '#0f172a';
+        if (!$ov_tint) {
+            $ov_tint = '#0f172a';
+        }
+        $ov_op = isset($settings['overlay_opacity']) ? absint($settings['overlay_opacity']) : 52;
+        $ov_op = min(80, max(20, $ov_op));
+        $ov_alpha = round($ov_op / 100, 2);
+        $r = hexdec(substr($ov_tint, 1, 2));
+        $g = hexdec(substr($ov_tint, 3, 2));
+        $b = hexdec(substr($ov_tint, 5, 2));
+        $css .= "  --wdp-modal-bg: #ffffff;\n";
+        $css .= "  --wdp-glass-blur: none;\n";
+        $css .= "  --wdp-glass-blur-mobile: none;\n";
+        $css .= "  --wdp-glass-fill: #ffffff;\n";
+        $css .= "  --wdp-glass-fill-strong: #ffffff;\n";
+        $css .= "  --wdp-modal-overlay-bg: rgba(" . esc_attr((string) $r) . ", " . esc_attr((string) $g) . ", " . esc_attr((string) $b) . ", " . esc_attr((string) $ov_alpha) . ");\n";
+        $css .= "  --wdp-modal-card-shadow: var(--wdp-elevation-" . esc_attr((string) $elev_lvl) . ");\n";
+        if (!empty($settings['body_font_family']) && $settings['body_font_family'] !== 'inherit') {
+            $css .= "  --wdp-font-family: " . esc_attr((string) $settings['body_font_family']) . ";\n";
+        }
+        $chip = isset($settings['chip_style']) ? (string) $settings['chip_style'] : 'soft';
+        if (in_array($chip, array('soft', 'outline', 'solid'), true)) {
+            $css .= "  --wdp-chip-style: " . esc_attr($chip) . ";\n";
+        }
+        $motion = isset($settings['motion_intensity']) ? (string) $settings['motion_intensity'] : 'normal';
+        if (in_array($motion, array('subtle', 'normal', 'expressive'), true)) {
+            $css .= "  --wdp-motion-intensity: " . esc_attr($motion) . ";\n";
+        }
+
         // Progress bar ayarlarını al
         $progress_settings = get_option('wdp_progress_bar_settings', array());
         $progress_defaults = array(
-            'container_bg' => '#f8fafc',
-            'container_border' => '#e2e8f0',
-            'track_bg' => '#e2e8f0',
-            'fill_color' => '#2563eb',
-            'preview_bg' => '#64748b',
+            'container_bg' => '#ffffff',
+            'container_border' => '#e5e9ec',
+            'track_bg' => '#eef2f4',
+            'fill_color' => '#0f608b',
+            'preview_bg' => '#94a3b8',
+            'pending_bg' => '#0f608b',
             'percentage_bg' => '#ffffff',
-            'percentage_text' => '#1e293b',
+            'percentage_text' => '#0f172a',
         );
         $progress_merged = wp_parse_args($progress_settings, $progress_defaults);
         $progress_fill_hex = WDP_Utils::resolve_progress_bar_fill_color($progress_merged);
-        $progress_settings = self::sanitize_css_settings(
+        $progress_color_sanitized = self::sanitize_css_settings(
             array_merge($progress_merged, array('fill_color' => $progress_fill_hex)),
             $progress_defaults
         );
+        $pending_hex = isset($progress_merged['pending_bg']) ? sanitize_hex_color($progress_merged['pending_bg']) : '';
+        if (!$pending_hex) {
+            $pending_hex = '#0f608b';
+        }
+        $bar_height = isset($progress_merged['bar_height']) ? (int) $progress_merged['bar_height'] : 18;
+        if ($bar_height < 12 || $bar_height > 28) {
+            $bar_height = 18;
+        }
+        $bar_height_mobile = max(14, min(24, $bar_height - 2));
 
-        $css .= "  --wdp-progress-container-bg: " . esc_attr($progress_settings['container_bg']) . ";\n";
-        $css .= "  --wdp-progress-container-border: " . esc_attr($progress_settings['container_border']) . ";\n";
-        $css .= "  --wdp-progress-track-bg: " . esc_attr($progress_settings['track_bg']) . ";\n";
+        $css .= "  --wdp-progress-container-bg: " . esc_attr($progress_color_sanitized['container_bg']) . ";\n";
+        $css .= "  --wdp-progress-container-border: " . esc_attr($progress_color_sanitized['container_border']) . ";\n";
+        $css .= "  --wdp-progress-track-bg: " . esc_attr($progress_color_sanitized['track_bg']) . ";\n";
         $css .= "  --wdp-progress-fill: " . esc_attr($progress_fill_hex) . ";\n";
-        $css .= "  --wdp-progress-preview-bg: " . esc_attr($progress_settings['preview_bg']) . ";\n";
-        $css .= "  --wdp-progress-percentage-bg: " . esc_attr($progress_settings['percentage_bg']) . ";\n";
-        $css .= "  --wdp-progress-percentage-text: " . esc_attr($progress_settings['percentage_text']) . ";\n";
+        $css .= "  --wdp-progress-preview-bg: " . esc_attr($progress_color_sanitized['preview_bg']) . ";\n";
+        $css .= "  --wdp-progress-pending-bg: " . esc_attr($pending_hex) . ";\n";
+        $css .= "  --wdp-progress-percentage-bg: " . esc_attr($progress_color_sanitized['percentage_bg']) . ";\n";
+        $css .= "  --wdp-progress-percentage-text: " . esc_attr($progress_color_sanitized['percentage_text']) . ";\n";
+        $css .= "  --wdp-progress-bar-height: " . esc_attr((string) $bar_height) . "px;\n";
+        $css .= "  --wdp-progress-bar-height-mobile: " . esc_attr((string) $bar_height_mobile) . "px;\n";
         
-        // Ödeme Yap butonu renkleri
+        // Ödeme Yap butonu renkleri (success / checkout)
         if (isset($settings['button_checkout_color'])) {
             $css .= "  --wdp-accent: " . esc_attr($settings['button_checkout_color']) . ";\n";
+            $css .= "  --wdp-success: " . esc_attr($settings['button_checkout_color']) . ";\n";
         } else {
-            $css .= "  --wdp-accent: #48bb78;\n";
+            $css .= "  --wdp-accent: #16a34a;\n";
+            $css .= "  --wdp-success: #16a34a;\n";
         }
         if (isset($settings['button_checkout_hover'])) {
             $css .= "  --wdp-accent-hover: " . esc_attr($settings['button_checkout_hover']) . ";\n";
         } else {
-            $css .= "  --wdp-accent-hover: #38a169;\n";
+            $css .= "  --wdp-accent-hover: #15803d;\n";
         }
         
         // Hisseli form ayarlarını al
@@ -563,16 +752,16 @@ trait WDP_Assets_Inline_Styles_Trait {
         $shareholder_defaults = array(
             'shareholder_card_bg' => '#ffffff',
             'shareholder_card_border' => '#f0f2f5',
-            'shareholder_card_radius' => '20',
+            'shareholder_card_radius' => '10',
             'shareholder_card_shadow' => '0 1px 3px rgba(0, 0, 0, 0.05)',
-            'shareholder_header_bg' => '#2a7cc4',
+            'shareholder_header_bg' => '#0f608b',
             'shareholder_header_color' => '#ffffff',
-            'shareholder_header_bg_hover' => '#3189cf',
+            'shareholder_header_bg_hover' => '#0c4f72',
             'shareholder_content_padding' => '12',
             'shareholders_area_bg' => '#fafbfc',
             'shareholders_area_border' => '#e1e5e9',
-            'shareholders_area_radius' => '20',
-            'shareholders_scrollbar_color' => '#4a90e2',
+            'shareholders_area_radius' => '10',
+            'shareholders_scrollbar_color' => '#0f608b',
             'share_counter_border' => '#d1d5db',
             'share_counter_bg' => '#ffffff',
             'share_counter_button_color' => '#888888',
@@ -583,29 +772,15 @@ trait WDP_Assets_Inline_Styles_Trait {
             array('shareholder_card_radius', 'shareholder_content_padding', 'shareholders_area_radius')
         );
         
-        // Hisseli form değişkenleri
+        // Hisseli form değişkenleri — kaydedilmiş option (global marka kaydı bunları günceller; manuel override korunur).
+        $ui_radius_share = isset($ui_radius) ? (string) $ui_radius : '10';
         $css .= "  --wdp-shareholder-card-bg: " . esc_attr($shareholder_settings['shareholder_card_bg']) . ";\n";
         $css .= "  --wdp-shareholder-card-border: " . esc_attr($shareholder_settings['shareholder_card_border']) . ";\n";
-        $css .= "  --wdp-shareholder-card-radius: " . esc_attr($shareholder_settings['shareholder_card_radius']) . "px;\n";
-        $css .= "  --wdp-shareholder-card-shadow: " . esc_attr($shareholder_settings['shareholder_card_shadow']) . ";\n";
-        $shareholder_header_bg = isset($shareholder_settings['shareholder_header_bg'])
-            ? strtolower(trim((string) $shareholder_settings['shareholder_header_bg']))
-            : '#184a75';
-        if ($shareholder_header_bg === '#f9fafb' || $shareholder_header_bg === '#fafbfc' || $shareholder_header_bg === '#184a75') {
-            $shareholder_header_bg = '#2a7cc4';
-        }
-        $shareholder_header_color = isset($shareholder_settings['shareholder_header_color'])
-            ? strtolower(trim((string) $shareholder_settings['shareholder_header_color']))
-            : '#ffffff';
-        if ($shareholder_header_color === '#1f2937' || $shareholder_header_color === '#374151') {
-            $shareholder_header_color = '#ffffff';
-        }
-        $shareholder_header_hover = isset($shareholder_settings['shareholder_header_bg_hover'])
-            ? (string) $shareholder_settings['shareholder_header_bg_hover']
-            : '#1f5688';
-        $css .= "  --wdp-shareholder-header-bg: " . esc_attr($shareholder_header_bg) . ";\n";
-        $css .= "  --wdp-shareholder-header-color: " . esc_attr($shareholder_header_color) . ";\n";
-        $css .= "  --wdp-shareholder-header-bg-hover: " . esc_attr($shareholder_header_hover) . ";\n";
+        $css .= "  --wdp-shareholder-card-radius: " . esc_attr($ui_radius_share) . "px;\n";
+        $css .= "  --wdp-shareholder-card-shadow: none;\n";
+        $css .= "  --wdp-shareholder-header-bg: " . esc_attr($shareholder_settings['shareholder_header_bg']) . ";\n";
+        $css .= "  --wdp-shareholder-header-color: " . esc_attr($shareholder_settings['shareholder_header_color']) . ";\n";
+        $css .= "  --wdp-shareholder-header-bg-hover: " . esc_attr($shareholder_settings['shareholder_header_bg_hover']) . ";\n";
         $css .= "  --wdp-shareholder-content-padding: " . esc_attr($shareholder_settings['shareholder_content_padding']) . "px;\n";
         $shareholders_area_bg = WDP_Utils::coerce_solid_hex_background(
             isset($shareholder_settings['shareholders_area_bg']) ? $shareholder_settings['shareholders_area_bg'] : '#fafbfc',
@@ -613,27 +788,37 @@ trait WDP_Assets_Inline_Styles_Trait {
         );
         $css .= "  --wdp-shareholders-area-bg: " . esc_attr($shareholders_area_bg) . ";\n";
         $css .= "  --wdp-shareholders-area-border: " . esc_attr($shareholder_settings['shareholders_area_border']) . ";\n";
-        $css .= "  --wdp-shareholders-area-radius: " . esc_attr($shareholder_settings['shareholders_area_radius']) . "px;\n";
+        $css .= "  --wdp-shareholders-area-radius: " . esc_attr($ui_radius_share) . "px;\n";
         $css .= "  --wdp-shareholders-scrollbar-color: " . esc_attr($shareholder_settings['shareholders_scrollbar_color']) . ";\n";
         $css .= "  --wdp-share-counter-border: " . esc_attr($shareholder_settings['share_counter_border']) . ";\n";
         $css .= "  --wdp-share-counter-bg: " . esc_attr($shareholder_settings['share_counter_bg']) . ";\n";
         $css .= "  --wdp-share-counter-button-color: " . esc_attr($shareholder_settings['share_counter_button_color']) . ";\n";
+
+        // Bilgilendirme notu — marka soft tonları
+        $info_bg = (is_array($palette) && !empty($palette['primary_soft_2'])) ? $palette['primary_soft_2'] : '#f8fafc';
+        $info_border = (is_array($palette) && !empty($palette['primary_border'])) ? $palette['primary_border'] : $brand_primary;
+        $info_ink = (is_array($palette) && !empty($palette['primary_dark'])) ? $palette['primary_dark'] : '#334155';
+        $css .= "  --wdp-info-text-bg: " . esc_attr($info_bg) . ";\n";
+        $css .= "  --wdp-info-text-accent: " . esc_attr($brand_primary) . ";\n";
+        $css .= "  --wdp-info-text-color: " . esc_attr($info_ink) . ";\n";
+        $css .= "  --wdp-price-badge-bg: " . esc_attr($info_bg) . ";\n";
+        $css .= "  --wdp-price-badge-border: 1px solid " . esc_attr($info_border) . ";\n";
         
         // Başarı ekranı ayarlarını al
         $success_settings = get_option('wdp_success_settings', array());
         $success_defaults = array(
-            'success_button_color' => '#1e73be',
-            'success_button_hover' => '#185d98',
-            'success_button_radius' => '20',
+            'success_button_color' => '#0f608b',
+            'success_button_hover' => '#0c4f72',
+            'success_button_radius' => '10',
             'success_message_bg' => 'rgba(72, 187, 120, 0.1)',
             'success_message_color' => '#48bb78',
             'success_message_border' => 'rgba(72, 187, 120, 0.2)',
-            'success_message_radius' => '20',
+            'success_message_radius' => '10',
             'mini_cart_bg' => '#f9fafb',
             'mini_cart_border' => '#e5e7eb',
-            'mini_cart_radius' => '20',
+            'mini_cart_radius' => '10',
             'cart_item_name_color' => '#1f2937',
-            'cart_item_price_color' => '#1e73be',
+            'cart_item_price_color' => '#0f608b',
         );
         $success_settings = self::sanitize_css_settings(
             wp_parse_args($success_settings, $success_defaults),
@@ -670,17 +855,17 @@ trait WDP_Assets_Inline_Styles_Trait {
             // Desktop
             'popup_modal_width_desktop' => '540',
             'inpage_form_width_desktop' => '480',
-            'modal_padding_top_desktop' => '32',
-            'modal_padding_right_desktop' => '24',
-            'modal_padding_bottom_desktop' => '24',
-            'modal_padding_left_desktop' => '24',
+            'modal_padding_top_desktop' => '20',
+            'modal_padding_right_desktop' => '20',
+            'modal_padding_bottom_desktop' => '20',
+            'modal_padding_left_desktop' => '20',
             // Mobile
             'popup_modal_width_mobile' => '540',
             'inpage_form_width_mobile' => '480',
-            'modal_padding_top_mobile' => '28',
-            'modal_padding_right_mobile' => '20',
-            'modal_padding_bottom_mobile' => '20',
-            'modal_padding_left_mobile' => '20',
+            'modal_padding_top_mobile' => '16',
+            'modal_padding_right_mobile' => '16',
+            'modal_padding_bottom_mobile' => '16',
+            'modal_padding_left_mobile' => '16',
         );
         $modal_layout_settings = self::sanitize_css_settings(
             wp_parse_args($modal_layout_settings, $modal_layout_defaults),
@@ -723,20 +908,28 @@ trait WDP_Assets_Inline_Styles_Trait {
         $css .= "  --wdp-sp-width-min-desktop: " . esc_attr($modal_layout_settings['side_panel_width_desktop_min_px']) . "px;\n";
         $css .= "  --wdp-sp-width-max-desktop: " . esc_attr($sp_desktop_max >= 100 ? '100vw' : $sp_desktop_max . 'px') . ";\n";
 
-        // Modal görünüm değişkenleri - Desktop
+        // Modal görünüm değişkenleri - Desktop (GiveWP-like compact: eski şişkin 24–32 varsayılanlarını sıkıştır)
+        $pad_top_d = min(22, max(12, absint($modal_layout_settings['modal_padding_top_desktop'])));
+        $pad_right_d = min(22, max(12, absint($modal_layout_settings['modal_padding_right_desktop'])));
+        $pad_bottom_d = min(22, max(12, absint($modal_layout_settings['modal_padding_bottom_desktop'])));
+        $pad_left_d = min(22, max(12, absint($modal_layout_settings['modal_padding_left_desktop'])));
         $css .= "  --wdp-popup-modal-width-desktop: " . esc_attr($modal_layout_settings['popup_modal_width_desktop']) . "px;\n";
         $css .= "  --wdp-inpage-form-width-desktop: " . esc_attr($modal_layout_settings['inpage_form_width_desktop']) . "px;\n";
-        $css .= "  --wdp-modal-padding-top-desktop: " . esc_attr($modal_layout_settings['modal_padding_top_desktop']) . "px;\n";
-        $css .= "  --wdp-modal-padding-right-desktop: " . esc_attr($modal_layout_settings['modal_padding_right_desktop']) . "px;\n";
-        $css .= "  --wdp-modal-padding-bottom-desktop: " . esc_attr($modal_layout_settings['modal_padding_bottom_desktop']) . "px;\n";
-        $css .= "  --wdp-modal-padding-left-desktop: " . esc_attr($modal_layout_settings['modal_padding_left_desktop']) . "px;\n";
+        $css .= "  --wdp-modal-padding-top-desktop: " . esc_attr($pad_top_d) . "px;\n";
+        $css .= "  --wdp-modal-padding-right-desktop: " . esc_attr($pad_right_d) . "px;\n";
+        $css .= "  --wdp-modal-padding-bottom-desktop: " . esc_attr($pad_bottom_d) . "px;\n";
+        $css .= "  --wdp-modal-padding-left-desktop: " . esc_attr($pad_left_d) . "px;\n";
         // Modal görünüm değişkenleri - Mobile
+        $pad_top_m = min(18, max(12, absint($modal_layout_settings['modal_padding_top_mobile'])));
+        $pad_right_m = min(18, max(12, absint($modal_layout_settings['modal_padding_right_mobile'])));
+        $pad_bottom_m = min(18, max(12, absint($modal_layout_settings['modal_padding_bottom_mobile'])));
+        $pad_left_m = min(18, max(12, absint($modal_layout_settings['modal_padding_left_mobile'])));
         $css .= "  --wdp-popup-modal-width-mobile: " . esc_attr($modal_layout_settings['popup_modal_width_mobile']) . "px;\n";
         $css .= "  --wdp-inpage-form-width-mobile: " . esc_attr($modal_layout_settings['inpage_form_width_mobile']) . "px;\n";
-        $css .= "  --wdp-modal-padding-top-mobile: " . esc_attr($modal_layout_settings['modal_padding_top_mobile']) . "px;\n";
-        $css .= "  --wdp-modal-padding-right-mobile: " . esc_attr($modal_layout_settings['modal_padding_right_mobile']) . "px;\n";
-        $css .= "  --wdp-modal-padding-bottom-mobile: " . esc_attr($modal_layout_settings['modal_padding_bottom_mobile']) . "px;\n";
-        $css .= "  --wdp-modal-padding-left-mobile: " . esc_attr($modal_layout_settings['modal_padding_left_mobile']) . "px;\n";
+        $css .= "  --wdp-modal-padding-top-mobile: " . esc_attr($pad_top_m) . "px;\n";
+        $css .= "  --wdp-modal-padding-right-mobile: " . esc_attr($pad_right_m) . "px;\n";
+        $css .= "  --wdp-modal-padding-bottom-mobile: " . esc_attr($pad_bottom_m) . "px;\n";
+        $css .= "  --wdp-modal-padding-left-mobile: " . esc_attr($pad_left_m) . "px;\n";
         
         $css .= "}\n";
 

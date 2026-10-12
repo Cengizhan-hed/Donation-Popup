@@ -1,41 +1,9 @@
 <?php
 /**
- * ============================================================================
- * WOOCOMMERCE DONATION POPUP - ANA EKLENTI SINIFI
- * ============================================================================
- * 
- * DOSYA: class-woo-donation-popup.php
- * KONUM: /includes/class-woo-donation-popup.php
- * 
- * AMAÇ:
- * Ana eklenti sınıfı - tüm modülleri başlatır ve koordine eder.
- * Bu sınıf bir orchestrator görevi görür.
- * 
- * ROL:
- * - Modül başlatma sistemi
- * - Activation/deactivation hooks
- * - Hata yönetimi
- * - Modül bağımlılık yönetimi
- * 
- * MODÜL BAŞLATMA SIRASI:
- * 1. WDP_Utils - Yardımcı fonksiyonlar (diğer modüller için gerekli)
- * 2. WDP_Assets - CSS/JS yükleme sistemi
- * 3. WDP_Ajax - AJAX endpoint'leri
- * 4. WDP_Cart - Sepet işlemleri
- * 5. WDP_Order - Sipariş işlemleri
- * 6. WDP_Shortcodes - Shortcode'lar (en son, diğer modüllere bağımlı)
- * 
- * GÜVENLİK:
- * - Try-catch ile hata yönetimi
- * - Modül yoksa diğerlerini etkilemez
- * - Debug modunda hata loglama
- * 
- * ============================================================================
- * 
- * WooCommerce Donation Modal Popup main class
- * 
+ * Ana eklenti orkestratörü; modülleri sırayla başlatır ve aktivasyon kancalarını yönetir.
+ *
  * @package WooCommerce\Donation_Popup
-*/
+ */
 if (!defined('ABSPATH')) {
     exit;
 }

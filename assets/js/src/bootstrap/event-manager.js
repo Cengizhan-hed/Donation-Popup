@@ -1,6 +1,7 @@
 /**
- * Event Manager - Event listener yönetimi
- * initializeEventListeners
+ * @file event-manager.js
+ * Delegated tıklama, submit ve klavye olaylarını merkezi yönetir.
+ * Dış API: WDPApp.eventManager
  */
 
 (function(window) {
