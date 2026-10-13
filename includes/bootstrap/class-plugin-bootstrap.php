@@ -21,6 +21,7 @@ final class WDP_Plugin_Bootstrap {
 	public static function run() {
 		self::register_hpos_compatibility();
 		self::load_dependencies();
+		WDP_Migrations::init();
 
 		add_action('plugins_loaded', array(__CLASS__, 'launch_plugin'));
 		add_action('plugins_loaded', array(__CLASS__, 'update_version'));
@@ -62,10 +63,15 @@ final class WDP_Plugin_Bootstrap {
 	 * @return void
 	 */
 	public static function update_version() {
-		$current_version = get_option('wdp_version', '1.0');
+		$stored_version  = get_option('wdp_version', false);
+		$current_version = $stored_version === false ? '1.0' : $stored_version;
 
 		if ($current_version === WDP_VERSION) {
 			return;
+		}
+
+		if (class_exists('WDP_Migrations')) {
+			WDP_Migrations::remember_previous_version($stored_version);
 		}
 
 		update_option('wdp_version', WDP_VERSION);

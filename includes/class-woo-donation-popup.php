@@ -16,6 +16,10 @@ class Woo_Donation_Popup {
  public static function activate() {
      // Önbellek versiyonunu güncelle
      update_option('wdp_cache_version', time());
+
+     if (class_exists('WDP_Migrations')) {
+         WDP_Migrations::maybe_run();
+     }
  }
 
  /**
@@ -48,6 +52,13 @@ class Woo_Donation_Popup {
             'WDP_Cart',
             'WDP_Order',
             // WDP_Templates - init() metodu yok, statik metodlar kullanılıyor
+            'WDP_Donations_List',
+            'WDP_Product_Page_Integration',
+            'WDP_Lazy_Modal',
+            'WDP_Schema',
+            'WDP_Blocks',
+            'WDP_Elementor',
+            'WDP_Form_Matrix',
             'WDP_Shortcodes', // Shortcodes en son (diğer modüllere bağımlı)
         );
         

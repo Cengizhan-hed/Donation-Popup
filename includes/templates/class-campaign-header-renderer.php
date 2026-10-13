@@ -34,8 +34,8 @@ class WDP_Campaign_Header_Renderer {
 	 * @param bool   $is_long   Long text flag.
 	 * @return string Safe HTML.
 	 */
-	public static function render_product_note_block(array $display, $toggle_id = '', $is_long = false) {
-		if (empty($display['text'])) {
+	public static function render_product_note_block($display, $toggle_id = '', $is_long = false) {
+		if (!is_array($display) || empty($display['text'])) {
 			return '';
 		}
 
@@ -145,7 +145,7 @@ class WDP_Campaign_Header_Renderer {
 	}
 
 	/**
-	 * Header persuasion modules (media, impact, urgency, social, faq) in module order.
+	 * Header persuasion modules (media, impact, urgency, social proof) in module order.
 	 * Skips body module ids (amount, donor, dedication, cover_fee, sadaka, trust).
 	 *
 	 * @param int   $product_id Product ID.
@@ -156,7 +156,7 @@ class WDP_Campaign_Header_Renderer {
 	public static function render_header_modules($product_id, array $context, array $extra = array()) {
 		$order = class_exists('WDP_Form_Modules')
 			? WDP_Form_Modules::resolve_order($product_id)
-			: array('media', 'impact', 'urgency', 'social_proof', 'progress', 'faq');
+			: array('media', 'impact', 'urgency', 'social_proof', 'progress');
 
 		$chunks = array(
 			'media'        => self::render_campaign_media($product_id, $context),
@@ -171,9 +171,6 @@ class WDP_Campaign_Header_Renderer {
 				? WDP_Form_Modules::render_social_proof(isset($context['social_proof_text']) ? $context['social_proof_text'] : '')
 				: '',
 			'progress'     => isset($extra['progress_html']) ? (string) $extra['progress_html'] : '',
-			'faq'          => (!empty($context['enable_faq']) && class_exists('WDP_Form_Modules'))
-				? WDP_Form_Modules::render_faq(isset($context['faq_items']) ? $context['faq_items'] : array())
-				: '',
 			'title'        => isset($extra['title_html']) ? (string) $extra['title_html'] : '',
 			'note'         => isset($extra['note_html']) ? (string) $extra['note_html'] : '',
 		);

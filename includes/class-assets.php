@@ -158,7 +158,7 @@ class WDP_Assets {
         $has_wdp_shortcode = false;
 
         if (!$should_enqueue && is_a($post, 'WP_Post')) {
-            if (self::post_contains_wdp_shortcode($post->post_content)) {
+            if (self::post_contains_wdp_shortcode($post->post_content) || self::post_contains_wdp_shortcode($post->post_excerpt)) {
                 $should_enqueue    = true;
                 $has_wdp_shortcode = true;
             }
@@ -190,6 +190,16 @@ class WDP_Assets {
             if ($current_product_id) {
                 $should_enqueue = self::product_requires_front_assets($current_product_id);
             }
+        }
+
+        if (
+            !$should_enqueue
+            && function_exists('is_shop')
+            && (is_shop() || (function_exists('is_product_taxonomy') && is_product_taxonomy()))
+            && class_exists('WDP_Placement_Settings')
+            && WDP_Placement_Settings::value('loop_button') !== 'off'
+        ) {
+            $should_enqueue = true;
         }
 
         if (!$should_enqueue && is_a($post, 'WP_Post')) {
@@ -226,7 +236,9 @@ class WDP_Assets {
         }
         return has_shortcode($post_content, 'wdp_donation_button')
             || has_shortcode($post_content, 'wdp_donation_button_panel')
-            || has_shortcode($post_content, 'wdp_donation_form');
+            || has_shortcode($post_content, 'wdp_donation_form')
+            || has_shortcode($post_content, 'wdp_donations')
+            || (function_exists('has_block') && (has_block('wdp/donation-form', $post_content) || has_block('wdp/donations', $post_content)));
     }
 
     /**
@@ -240,8 +252,11 @@ class WDP_Assets {
         if (!$product_id) {
             return false;
         }
-        return get_post_meta($product_id, '_allow_custom_price', true) === 'yes'
+        if (get_post_meta($product_id, '_allow_custom_price', true) === 'yes'
             || get_post_meta($product_id, '_allow_multiple_shares', true) === 'yes'
-            || get_post_meta($product_id, '_enable_progress_bar', true) === 'yes';
+            || get_post_meta($product_id, '_enable_progress_bar', true) === 'yes') {
+            return true;
+        }
+        return class_exists('WDP_Donation_Scope') && WDP_Donation_Scope::is_donation_product($product_id);
     }
 }

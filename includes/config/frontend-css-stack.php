@@ -16,6 +16,7 @@ return array(
 	'src/foundation/layout.css',
 	'src/forms/shared.css',
 	'src/forms/field-stack.css',
+	'src/forms/container-queries.css',
 	'src/components/phone-field.css',
 	'src/forms/hisseli.css',
 	'src/components/quantity.css',

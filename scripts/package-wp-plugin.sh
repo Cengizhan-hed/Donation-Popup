@@ -57,7 +57,7 @@ rsync "${RSYNC_ARGS[@]}" "$PLUGIN_ROOT/" "$DEST/"
 # Minify admin CSS in the distribution copy only (source stays readable).
 if command -v php >/dev/null 2>&1 && [[ -f "$PLUGIN_ROOT/tools/minify-admin-css.php" ]]; then
   echo "Minifying admin CSS for distribution..."
-  php "$PLUGIN_ROOT/tools/minify-admin-css.php" "$DEST/assets/css/admin-style.css" || true
+  php "$PLUGIN_ROOT/tools/minify-admin-css.php" "$DEST/assets/css/admin-style.css" "$DEST/assets/css/admin/products.css" "$DEST/assets/css/list.css" || true
 fi
 
 # Production ZIP: bundle frontend CSS into a single file when PHP CLI is available.

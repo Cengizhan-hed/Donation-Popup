@@ -66,11 +66,7 @@ class Woo_Donation_Popup_Admin {
      * Ayarlar sayfasını render et
      */
     public function render_settings_page() {
-        $products = $this->get_products();
-
         WDP_Admin_Page_Renderer::render_settings_page(
-            $products,
-            array($this, 'render_product_row'),
             function() { $this->render_modal_layout_customization_tab(); },
             function() { $this->render_normal_form_customization_tab(); },
             function() { $this->render_shareholder_form_customization_tab(); },
@@ -92,72 +88,22 @@ class Woo_Donation_Popup_Admin {
     }
     
     /**
-     * Ürün satırını render et
+     * Ürün sayfası ve liste ayarlarını kaydet (AJAX).
      *
-     * @param WC_Product $product Product.
      * @return void
      */
-    public function render_product_row($product) {
-        WDP_Admin_Product_Row_Renderer::render($product);
-    }
-    
-    /**
-     * Tüm ürünleri al
-     */
-    private function get_products() {
-        $cache_key = 'wdp_admin_products_list';
-        $cached_ids = get_transient($cache_key);
-        if (is_array($cached_ids) && !empty($cached_ids)) {
-            $cached_products = array();
-            foreach ($cached_ids as $cached_id) {
-                $product = wc_get_product((int) $cached_id);
-                if ($product) {
-                    $cached_products[] = $product;
-                }
+    public function save_placement_settings() {
+        try {
+            $this->guard_admin_settings_ajax();
+            WDP_Placement_Settings::save($this->get_admin_request_data());
+            $this->bump_wdp_asset_cache_version();
+            $this->send_admin_settings_success(__('Ürün sayfası ve liste ayarları kaydedildi.', 'woo-donation-popup'));
+        } catch (\Throwable $e) {
+            if (function_exists('wdp_debug_log')) {
+                wdp_debug_log('WDP placement save: ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine());
             }
-            if (!empty($cached_products)) {
-                return $cached_products;
-            }
+            $this->send_admin_settings_error(__('Bir hata oluştu. Lütfen tekrar deneyin.', 'woo-donation-popup'));
         }
-
-        $args = array(
-            'status' => 'publish',
-            'limit' => -1,
-            'orderby' => 'title',
-            'order' => 'ASC',
-            'return' => 'ids',
-        );
-
-        $product_ids = wc_get_products($args);
-        if (!is_array($product_ids)) {
-            return array();
-        }
-
-        set_transient($cache_key, $product_ids, MINUTE_IN_SECONDS);
-
-        $products = array();
-        foreach ($product_ids as $product_id) {
-            $product = wc_get_product((int) $product_id);
-            if ($product) {
-                $products[] = $product;
-            }
-        }
-
-        return $products;
-    }
-    
-    /**
-     * Ürün ayarlarını kaydet (AJAX)
-     */
-    public function save_product_settings() {
-        WDP_Admin_Product_Settings_Ajax::save();
-    }
-    
-    /**
-     * Ürün ayarlarını al (AJAX)
-     */
-    public function get_product_settings() {
-        WDP_Admin_Product_Settings_Ajax::get();
     }
     
     /**

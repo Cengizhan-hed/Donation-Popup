@@ -15,22 +15,22 @@
   const { originalForms } = state;
   const wdp_ajax = window.wdp_ajax || {};
 
-  const patchSuccessScreenCartUi = cartUi.patchSuccessScreenCartUi || function() {};
+  const patchSuccessViewCartUi = cartUi.patchSuccessViewCartUi || function() {};
   const updateWooCommerceCart = cartWoo.updateWooCommerce || function() {};
   const updateCartCountElements = cartWoo.updateCountElements || function() {};
 
-  function setupRemoveCartItemButtons(successScreen) {
-    if (!successScreen) {
-      safeLog("setupRemoveCartItemButtons: successScreen is null");
+  function setupRemoveCartItemButtons(successView) {
+    if (!successView) {
+      safeLog("setupRemoveCartItemButtons: successView is null");
       return;
     }
 
     // Event delegation kullan - daha güvenilir ve dinamik butonlar için
     // Önce mevcut listener'ı kaldır (varsa)
-    const existingHandler = successScreen._removeCartItemHandler;
+    const existingHandler = successView._removeCartItemHandler;
     if (existingHandler) {
-      successScreen.removeEventListener("click", existingHandler);
-      delete successScreen._removeCartItemHandler;
+      successView.removeEventListener("click", existingHandler);
+      delete successView._removeCartItemHandler;
     }
 
     // Yeni handler oluştur
@@ -133,13 +133,13 @@
           const cartItems = data.items || [];
           safeLog("Cart items after removal:", cartItems);
           
-          patchSuccessScreenCartUi(successScreen, cartItems);
-          const hostForm = successScreen.closest('form');
+          patchSuccessViewCartUi(successView, cartItems);
+          const hostForm = successView.closest('form');
           if (hostForm) {
             setupContinueShoppingButton(hostForm);
           }
           // Event delegation'ı yeni buton referansları için yeniden bağla
-          setupRemoveCartItemButtons(successScreen);
+          setupRemoveCartItemButtons(successView);
           safeLog("Cart updated, new items count:", cartItems.length);
 
           // Update WooCommerce cart
@@ -183,12 +183,12 @@
       }
     };
 
-    // Handler'ı successScreen'e bağla ve kaydet
-    successScreen.addEventListener("click", handler);
-    successScreen._removeCartItemHandler = handler;
+    // Handler'ı successView'e bağla ve kaydet
+    successView.addEventListener("click", handler);
+    successView._removeCartItemHandler = handler;
     
     // Debug: Kaç buton bulundu
-    const removeButtons = successScreen.querySelectorAll(".wdp-remove-cart-item");
+    const removeButtons = successView.querySelectorAll(".wdp-remove-cart-item");
     safeLog("setupRemoveCartItemButtons: Found", removeButtons.length, "remove buttons");
   }
 

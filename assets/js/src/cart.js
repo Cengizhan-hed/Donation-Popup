@@ -55,10 +55,10 @@
         cartActions.setupContinueShoppingButton(form);
       }
     },
-    setupRemoveCartItemButtons: function setupRemoveCartItemButtons(successScreen) {
+    setupRemoveCartItemButtons: function setupRemoveCartItemButtons(successView) {
       const cartActions = WDPApp.cartActions || {};
       if (typeof cartActions.setupRemoveCartItemButtons === 'function') {
-        cartActions.setupRemoveCartItemButtons(successScreen);
+        cartActions.setupRemoveCartItemButtons(successView);
       }
     },
     updateWooCommerce: function updateWooCommerceCart() {

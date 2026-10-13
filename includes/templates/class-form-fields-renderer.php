@@ -340,7 +340,10 @@ class WDP_Form_Fields_Renderer {
 	 * @param array $context sadaka_min_price, sadaka_fixed_price, sadaka_wc_product_id, sadaka_price_placeholder, currency_symbol, sadaka_donation_message.
 	 * @return string Safe HTML.
 	 */
-	public static function render_sadaka_donation_block(array $context) {
+	public static function render_sadaka_donation_block($context) {
+		if (!is_array($context)) {
+			$context = array();
+		}
 		$sadaka_min_price = isset($context['sadaka_min_price']) ? (string) $context['sadaka_min_price'] : '0';
 		$placeholder      = isset($context['sadaka_price_placeholder']) ? (string) $context['sadaka_price_placeholder'] : '';
 		$currency_symbol  = isset($context['currency_symbol']) ? (string) $context['currency_symbol'] : '';
@@ -432,13 +435,13 @@ class WDP_Form_Fields_Renderer {
 	 */
 	public static function build_sadaka_context(array $context) {
 		return array(
-			'sadaka_min_price'         => $context['sadaka_min_price'],
+			'sadaka_min_price'         => isset($context['sadaka_min_price']) ? $context['sadaka_min_price'] : '0',
 			'sadaka_fixed_price'       => isset($context['sadaka_fixed_price']) ? $context['sadaka_fixed_price'] : '',
 			'sadaka_wc_product_id'     => isset($context['sadaka_wc_product_id']) ? $context['sadaka_wc_product_id'] : '',
 			'sadaka_toggle_label'      => isset($context['sadaka_toggle_label']) ? $context['sadaka_toggle_label'] : '',
-			'sadaka_price_placeholder' => $context['sadaka_price_placeholder'],
-			'currency_symbol'          => $context['currency_symbol'],
-			'sadaka_donation_message'  => $context['sadaka_donation_message'],
+			'sadaka_price_placeholder' => isset($context['sadaka_price_placeholder']) ? $context['sadaka_price_placeholder'] : '',
+			'currency_symbol'          => isset($context['currency_symbol']) ? $context['currency_symbol'] : '',
+			'sadaka_donation_message'  => isset($context['sadaka_donation_message']) ? $context['sadaka_donation_message'] : '',
 		);
 	}
 

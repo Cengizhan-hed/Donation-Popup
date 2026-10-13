@@ -170,6 +170,44 @@ class WDP_Modal_Shell_Renderer {
 	}
 
 	/**
+	 * Admin-only notice for an unknown product ID.
+	 *
+	 * @param int $product_id Product ID.
+	 * @return string
+	 */
+	public static function product_missing_notice($product_id) {
+		/* translators: %d: product ID */
+		return WDP_Utils::admin_notice_html(sprintf(__('Bağış formu: #%d numaralı ürün bulunamadı. Kısa koddaki ürün ID\'sini kontrol edin.', 'woo-donation-popup'), absint($product_id)));
+	}
+
+	/**
+	 * Admin-only notice when the product cannot take donations as configured; null when it can.
+	 *
+	 * Fixed-amount and share forms charge the product price, so they need a price above zero.
+	 *
+	 * @param WC_Product $product Product.
+	 * @return string|null
+	 */
+	public static function unavailable_notice($product) {
+		$type = WDP_Donation_Type::infer_from_meta(
+			array(
+				'_allow_custom_price'    => $product->get_meta('_allow_custom_price'),
+				'_allow_multiple_shares' => $product->get_meta('_allow_multiple_shares'),
+				'_enable_progress_bar'   => $product->get_meta('_enable_progress_bar'),
+			)
+		);
+		if (!in_array($type, array(WDP_Donation_Type::FIXED, WDP_Donation_Type::SHARES), true)) {
+			return null;
+		}
+		$price = $product->get_price();
+		if (is_numeric($price) && (float) $price > 0) {
+			return null;
+		}
+		/* translators: %d: product ID */
+		return WDP_Utils::admin_notice_html(sprintf(__('Bu ürünün fiyatı yok; bağış formu gösterilmiyor (ürün #%d). Fiyatı ürünün "Genel" sekmesinden girin veya bağış tipini "Bağışçı belirler" yapın.', 'woo-donation-popup'), (int) $product->get_id()));
+	}
+
+	/**
 	 * Multibyte-safe string length.
 	 *
 	 * @param string $value Text value.
@@ -197,10 +235,11 @@ class WDP_Modal_Shell_Renderer {
 
 		$product = WDP_Donation_Product_Context_Service::get_product($product_id);
 		if (!$product) {
-			if (current_user_can('manage_options')) {
-				return '<p style="color:red;">Ürün bulunamadı (ID: ' . esc_html($product_id) . '). Lütfen ürün ID\'sini kontrol edin.</p>';
-			}
-			return '';
+			return self::product_missing_notice($product_id);
+		}
+		$unavailable = self::unavailable_notice($product);
+		if ($unavailable !== null) {
+			return $unavailable;
 		}
 
 		if (empty($button_text)) {
@@ -386,10 +425,11 @@ class WDP_Modal_Shell_Renderer {
 
 		$product = WDP_Donation_Product_Context_Service::get_product($product_id);
 		if (!$product) {
-			if (current_user_can('manage_options')) {
-				return '<p style="color:red;">Ürün bulunamadı (ID: ' . esc_html($product_id) . '). Lütfen ürün ID\'sini kontrol edin.</p>';
-			}
-			return '';
+			return self::product_missing_notice($product_id);
+		}
+		$unavailable = self::unavailable_notice($product);
+		if ($unavailable !== null) {
+			return $unavailable;
 		}
 
 		$context             = WDP_Donation_Product_Context_Service::build_form_context($product);

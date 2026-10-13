@@ -95,7 +95,7 @@ class WDP_Donation_Product_Context_Service {
 			: (string) absint($product->get_meta('_sadaka_wc_product_id'));
 		$sadaka_toggle_label = class_exists('WDP_Utils') ? WDP_Utils::get_sadaka_toggle_label($product) : __('Alt Bağış Ekle', 'woo-donation-popup');
 
-		return array(
+		$context = array(
 			'product_id'                    => $product_id,
 			'product_name'                  => $product->get_name(),
 			'product_price'                 => $product_price,
@@ -156,12 +156,12 @@ class WDP_Donation_Product_Context_Service {
 			'urgency_ends_at'               => trim((string) $product->get_meta('_urgency_ends_at')),
 			'enable_social_proof'           => $product->get_meta('_enable_social_proof') === 'yes',
 			'social_proof_text'             => trim((string) $product->get_meta('_social_proof_text')),
-			'enable_faq'                    => $product->get_meta('_enable_faq') === 'yes',
-			'faq_items'                     => (string) $product->get_meta('_faq_items'),
 			'enable_cover_fee'              => $product->get_meta('_enable_cover_fee') === 'yes',
-			'cover_fee_percent'             => (float) $product->get_meta('_cover_fee_percent'),
+			'cover_fee_percent'             => min(20, max(0, (float) $product->get_meta('_cover_fee_percent'))),
 			'module_order'                  => (string) $product->get_meta('_wdp_module_order'),
 		);
+
+		return apply_filters('wdp_form_context', $context, $product);
 	}
 
 	/**

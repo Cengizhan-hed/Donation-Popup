@@ -7,8 +7,8 @@
 html body .wdp-donation-form {
   container-type: inline-size;
   container-name: wdp-donation-form;
-  max-width: 100%;
-  width: min(var(--wdp-inpage-form-width-desktop, 440px), calc(100vw - 40px));
+  max-width: min(var(--wdp-inpage-form-width-desktop, 440px), 100%);
+  width: 100%;
   margin-block: clamp(1rem, 1.5rem, 1.5rem);
   margin-inline: auto;
   padding: 0;
@@ -19,8 +19,8 @@ html body .wdp-donation-form {
 }
 
 html body.single-product .wdp-donation-form {
-  max-width: min(var(--wdp-inpage-form-width-desktop, 440px), 96vw);
-  width: min(var(--wdp-inpage-form-width-desktop, 440px), 96vw);
+  max-width: min(var(--wdp-inpage-form-width-desktop, 440px), 100%);
+  width: 100%;
   margin: 0 auto;
 }
 
@@ -169,8 +169,8 @@ html body.single-product .wdp-donation-form .wdp-modal-content {
   border: 1px solid var(--wdp-border-soft-gray, #e5e9ec);
   border-radius: var(--wdp-radius-panel, 20px);
   box-shadow: var(--wdp-modal-card-shadow);
-  width: min(var(--wdp-inpage-form-width-desktop, 440px), 96vw);
-  max-width: min(var(--wdp-inpage-form-width-desktop, 440px), 96vw);
+  width: 100%;
+  max-width: min(var(--wdp-inpage-form-width-desktop, 440px), 100%);
   max-height: none;
   height: auto;
   min-height: 0;

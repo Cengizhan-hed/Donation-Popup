@@ -154,7 +154,7 @@
     return bar;
   }
 
-  function syncModalSuccessState(scope) {
+  function syncModalSuccessUi(scope) {
     const modal = scope && typeof scope.closest === 'function' ? scope.closest('.wdp-modal') : null;
     if (!modal) {
       return;
@@ -173,15 +173,15 @@
     }
   }
 
-  function renderSuccessScreen(successScreen, cartItems) {
-    if (!successScreen) {
+  function renderSuccessView(successView, cartItems) {
+    if (!successView) {
       return;
     }
-    successScreen.innerHTML = '';
-    successScreen.appendChild(buildSuccessTopRow());
+    successView.innerHTML = '';
+    successView.appendChild(buildSuccessTopRow());
     const cartStack = document.createElement('div');
     cartStack.className = 'wdp-success-cart-stack';
-    successScreen.appendChild(cartStack);
+    successView.appendChild(cartStack);
     if (typeof renderCartItemsInto === 'function') {
       renderCartItemsInto(cartStack, Array.isArray(cartItems) ? cartItems : []);
     } else if (typeof buildCartUiRoot === 'function') {
@@ -193,9 +193,9 @@
         cartStack.appendChild(fallback.firstChild);
       }
     }
-    const modal = successScreen.closest('.wdp-modal');
+    const modal = successView.closest('.wdp-modal');
     if (modal) {
-      syncModalSuccessState(successScreen);
+      syncModalSuccessUi(successView);
     }
   }
 
@@ -273,39 +273,39 @@
         }
 
         // Başarı ekranı oluştur
-        const successScreen = document.createElement("div");
-        successScreen.className = "wdp-success-screen";
+        const successView = document.createElement("div");
+        successView.className = "wdp-success-screen";
         form.classList.add('wdp-has-success');
-        form.appendChild(successScreen);
-        syncModalSuccessState(form);
+        form.appendChild(successView);
+        syncModalSuccessUi(form);
 
         // Sepet içeriğini göster (ilk yanıtta yoksa AJAX ile tamamla)
         if (data.items && Array.isArray(data.items)) {
-          renderSuccessScreen(successScreen, data.items);
+          renderSuccessView(successView, data.items);
           setupContinueShoppingButton(form);
-          setupRemoveCartItemButtons(successScreen);
+          setupRemoveCartItemButtons(successView);
         } else {
-          successScreen.innerHTML = '';
-          successScreen.appendChild(buildSuccessTopRow());
+          successView.innerHTML = '';
+          successView.appendChild(buildSuccessTopRow());
           const cartStack = document.createElement('div');
           cartStack.className = 'wdp-success-cart-stack';
           const loadingMessage = document.createElement('div');
           loadingMessage.className = 'wdp-mini-cart-loading';
           loadingMessage.textContent = 'Sepet içeriği yükleniyor...';
           cartStack.appendChild(loadingMessage);
-          successScreen.appendChild(cartStack);
+          successView.appendChild(cartStack);
 
           fetchCartContents()
             .then((cartItems) => {
-              renderSuccessScreen(successScreen, cartItems);
+              renderSuccessView(successView, cartItems);
               setupContinueShoppingButton(form);
-              setupRemoveCartItemButtons(successScreen);
+              setupRemoveCartItemButtons(successView);
             })
             .catch((error) => {
               safeLog("Error fetching cart contents:", error);
-              renderSuccessScreen(successScreen, []);
+              renderSuccessView(successView, []);
               setupContinueShoppingButton(form);
-              setupRemoveCartItemButtons(successScreen);
+              setupRemoveCartItemButtons(successView);
             });
         }
       }
@@ -970,8 +970,8 @@
   }
   WDPApp.formAjax = {
     registerHooks: registerHooks,
-    syncModalSuccessState: syncModalSuccessState,
-    renderSuccessScreen: renderSuccessScreen,
+    syncModalSuccessUi: syncModalSuccessUi,
+    renderSuccessView: renderSuccessView,
     handleAjaxResponse: handleAjaxResponse,
     handleAjaxError: handleAjaxError,
     parseWdpAjaxResponseText: parseWdpAjaxResponseText,

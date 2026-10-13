@@ -1,21 +1,24 @@
 /**
  * @file admin-script.js
- * Admin sekmeleri, AJAX kaydetme, ürün kartları ve bildirimler için jQuery tabanlı script.
+ * Admin sekmeleri, ayar formlarının AJAX ile kaydı, canlı önizlemeler ve bildirimler için jQuery tabanlı script.
  */
 ;((window, document, $) => {
   const cfg = window.wdp_admin || {}
-  const TAB_KEYS = [
-    "products",
-    "design-studio",
-    "modal-layout",
-    "normal-form",
-    "shareholder-form",
-    "progress-bar",
-    "success-screen",
-    "meta",
-    "category-colors",
-    "advanced",
-  ]
+
+  function getTabKeys() {
+    const keys = []
+    $(".wdp-nav-tab-wrapper .nav-tab[data-tab]").each(function () {
+      const key = String($(this).attr("data-tab") || "").trim()
+      if (!key) return
+      if (!$("#wdp-" + key + "-tab").length) return
+      if (keys.indexOf(key) === -1) keys.push(key)
+    })
+    return keys
+  }
+
+  function isValidTab(tabKey) {
+    return getTabKeys().indexOf(tabKey) !== -1
+  }
 
   function ensureNoticeContainer($anchor) {
     let $notice = $("#wdp-admin-notices")
@@ -75,15 +78,15 @@
   }
 
   function clearAllDirty() {
-    $(".wdp-product-card.is-dirty, .wdp-admin-settings-form.is-dirty").removeClass("is-dirty")
+    $(".wdp-admin-settings-form.is-dirty").removeClass("is-dirty")
   }
 
   function normalizeTabHash(rawHash) {
     const raw = String(rawHash || "").replace(/^#/, "")
     if (!raw) return null
-    if (TAB_KEYS.indexOf(raw) !== -1) return raw
+    if (isValidTab(raw)) return raw
     const legacy = raw.match(/^wdp-(.+)-tab$/)
-    if (legacy && TAB_KEYS.indexOf(legacy[1]) !== -1) return legacy[1]
+    if (legacy && isValidTab(legacy[1])) return legacy[1]
     return null
   }
 
@@ -94,19 +97,31 @@
     }
   }
 
+  function currentTabKey() {
+    return String($(".wdp-nav-tab-wrapper .nav-tab-active").attr("data-tab") || "")
+  }
+
+  function confirmLeaveDirty(nextKey) {
+    if (!$(".wdp-admin-settings-form.is-dirty").length) return true
+    if (currentTabKey() === nextKey) return true
+    return window.confirm("Kaydedilmemiş değişiklikleriniz var. Bu sekmeden ayrılmak istediğinize emin misiniz?")
+  }
+
   function activateTab(tabKey, options) {
     const opts = options || {}
-    if (TAB_KEYS.indexOf(tabKey) === -1) return
+    if (!isValidTab(tabKey)) return false
+    if (!opts.skipDirtyCheck && !confirmLeaveDirty(tabKey)) return false
 
+    const tabKeys = getTabKeys()
     const $tabs = $(".wdp-nav-tab-wrapper .nav-tab")
     // Prefer direct shell children; fall back if markup was historically broken.
     let $allPanels = $(".wdp-admin-shell > .wdp-tab-content")
-    if ($allPanels.length < TAB_KEYS.length) {
+    if ($allPanels.length < tabKeys.length) {
       $allPanels = $(".wdp-admin-wrap .wdp-tab-content")
     }
     const $targetTab = $('.wdp-nav-tab-wrapper .nav-tab[data-tab="' + tabKey + '"]')
     const $targetPanel = $("#wdp-" + tabKey + "-tab")
-    if (!$targetPanel.length) return
+    if (!$targetPanel.length) return false
 
     $tabs.removeClass("nav-tab-active").attr("aria-selected", "false").attr("tabindex", "-1")
     $allPanels
@@ -131,6 +146,7 @@
     }
 
     scrollActiveTabIntoView()
+    return true
   }
 
   function handleTabKeyboardNavigation(event) {
@@ -139,7 +155,8 @@
       return
     }
 
-    const $tabs = $(".wdp-nav-tab-wrapper .nav-tab")
+    const keys = getTabKeys()
+    const $tabs = $(keys.map((k) => '.wdp-nav-tab-wrapper .nav-tab[data-tab="' + k + '"]').join(", "))
     const currentIndex = $tabs.index(event.currentTarget)
     if (currentIndex < 0) return
 
@@ -151,7 +168,7 @@
 
     if (key === "Enter" || key === " ") {
       event.preventDefault()
-      activateTab($(event.currentTarget).data("tab"))
+      activateTab(String($(event.currentTarget).attr("data-tab") || ""))
       return
     }
 
@@ -159,200 +176,8 @@
     const nextTab = $tabs.get(nextIndex)
     if (nextTab) {
       nextTab.focus()
-      activateTab($(nextTab).data("tab"))
+      activateTab(String($(nextTab).attr("data-tab") || ""))
     }
-  }
-
-  function handleFormTypeExclusivity($row, changedType) {
-    const allowCustomPrice = $row.find('input[name="allow_custom_price"]').is(":checked")
-    const allowMultipleShares = $row.find('input[name="allow_multiple_shares"]').is(":checked")
-    const enableProgressBar = $row.find('input[name="enable_progress_bar"]').is(":checked")
-
-    if (changedType === "custom_price" && allowCustomPrice) {
-      $row.find('input[name="allow_multiple_shares"], input[name="enable_progress_bar"]').prop("checked", false)
-    } else if (changedType === "custom_price" && !allowCustomPrice && enableProgressBar) {
-      // Progress forms require a custom amount field.
-      $row.find('input[name="enable_progress_bar"]').prop("checked", false)
-    } else if (changedType === "multiple_shares" && allowMultipleShares) {
-      $row.find('input[name="allow_custom_price"], input[name="enable_progress_bar"]').prop("checked", false)
-    } else if (changedType === "progress_bar" && enableProgressBar) {
-      $row.find('input[name="allow_multiple_shares"]').prop("checked", false)
-      $row.find('input[name="allow_custom_price"]').prop("checked", true)
-    }
-  }
-
-  function applySavedProductSettings($row, settings) {
-    if (!$row || !$row.length || !settings || typeof settings !== "object") {
-      return
-    }
-    if (typeof settings.allow_custom_price === "boolean") {
-      $row.find('input[name="allow_custom_price"]').prop("checked", settings.allow_custom_price)
-    }
-    if (typeof settings.allow_multiple_shares === "boolean") {
-      $row.find('input[name="allow_multiple_shares"]').prop("checked", settings.allow_multiple_shares)
-    }
-    if (typeof settings.enable_progress_bar === "boolean") {
-      $row.find('input[name="enable_progress_bar"]').prop("checked", settings.enable_progress_bar)
-    }
-    if (typeof settings.enable_product_note === "boolean") {
-      $row.find('input[name="enable_product_note"]').prop("checked", settings.enable_product_note)
-    }
-    if (typeof settings.enable_sadaka_donation === "boolean") {
-      $row.find('input[name="enable_sadaka_donation"]').prop("checked", settings.enable_sadaka_donation)
-    }
-    if (settings.min_custom_price != null && settings.min_custom_price !== "") {
-      $row.find('input[name="min_custom_price"]').val(settings.min_custom_price)
-    }
-    if (settings.max_shares != null && settings.max_shares !== "") {
-      $row.find('input[name="max_shares"]').val(settings.max_shares)
-    }
-    if (settings.progress_bar_limit != null && settings.progress_bar_limit !== "") {
-      $row.find('input[name="progress_bar_limit"]').val(settings.progress_bar_limit)
-    }
-  }
-
-  function collectProductSettings($row) {
-    return {
-      product_id: $row.data("product-id"),
-      allow_custom_price: $row.find('input[name="allow_custom_price"]').is(":checked"),
-      min_custom_price: $row.find('input[name="min_custom_price"]').val(),
-      allow_multiple_shares: $row.find('input[name="allow_multiple_shares"]').is(":checked"),
-      max_shares: $row.find('input[name="max_shares"]').val(),
-      enable_progress_bar: $row.find('input[name="enable_progress_bar"]').is(":checked"),
-      progress_bar_limit: $row.find('input[name="progress_bar_limit"]').val(),
-      enable_product_note: $row.find('input[name="enable_product_note"]').is(":checked"),
-      product_note_text: $row.find('textarea[name="product_note_text"]').val(),
-      enable_sadaka_donation: $row.find('input[name="enable_sadaka_donation"]').is(":checked"),
-      sadaka_toggle_label: $row.find('input[name="sadaka_toggle_label"]').val(),
-      sadaka_min_price: $row.find('input[name="sadaka_min_price"]').val(),
-      sadaka_fixed_price: $row.find('input[name="sadaka_fixed_price"]').val(),
-      sadaka_wc_product_id: $row.find('input[name="sadaka_wc_product_id"]').val(),
-      sadaka_donation_message: $row.find('textarea[name="sadaka_donation_message"]').val(),
-      enable_trust_strip: $row.find('input[name="enable_trust_strip"]').is(":checked"),
-      enable_quantity: $row.find('input[name="enable_quantity"]').is(":checked"),
-      enable_amount_presets: $row.find('input[name="enable_amount_presets"]').is(":checked"),
-      enable_wizard: $row.find('input[name="enable_wizard"]').is(":checked"),
-      enable_field_icons: $row.find('input[name="enable_field_icons"]').is(":checked"),
-      enable_impact_line: $row.find('input[name="enable_impact_line"]').is(":checked"),
-      progress_celebrate: $row.find('input[name="progress_celebrate"]').is(":checked"),
-      impact_line_text: $row.find('input[name="impact_line_text"]').val(),
-      amount_presets: $row.find('input[name="amount_presets"]').val(),
-      enable_email: $row.find('input[name="enable_email"]').is(":checked"),
-      enable_dedication: $row.find('input[name="enable_dedication"]').is(":checked"),
-      enable_anonymous: $row.find('input[name="enable_anonymous"]').is(":checked"),
-      dedication_placeholder: $row.find('input[name="dedication_placeholder"]').val(),
-      layout_mode: $row.find('select[name="layout_mode"]').val(),
-      enable_campaign_media: $row.find('input[name="enable_campaign_media"]').is(":checked"),
-      theme_inherit_category_color: $row.find('input[name="theme_inherit_category_color"]').is(":checked"),
-      theme_primary: $row.find('input[name="theme_primary"]').val(),
-      theme_primary_hover: $row.find('input[name="theme_primary_hover"]').val(),
-      theme_radius: $row.find('input[name="theme_radius"]').val(),
-      theme_density: $row.find('select[name="theme_density"]').val(),
-      theme_modal_bg: $row.find('input[name="theme_modal_bg"]').val(),
-      enable_urgency: $row.find('input[name="enable_urgency"]').is(":checked"),
-      urgency_text: $row.find('input[name="urgency_text"]').val(),
-      urgency_ends_at: $row.find('input[name="urgency_ends_at"]').val(),
-      enable_social_proof: $row.find('input[name="enable_social_proof"]').is(":checked"),
-      social_proof_text: $row.find('input[name="social_proof_text"]').val(),
-      enable_faq: $row.find('input[name="enable_faq"]').is(":checked"),
-      faq_items: $row.find('textarea[name="faq_items"]').val(),
-      enable_cover_fee: $row.find('input[name="enable_cover_fee"]').is(":checked"),
-      cover_fee_percent: $row.find('input[name="cover_fee_percent"]').val(),
-      module_order: $row.find('input[name="module_order"]').val(),
-      trust_badges: $row.find('textarea[name="trust_badges"]').val(),
-    }
-  }
-
-  function requestSaveProduct(payload) {
-    return $.ajax({
-      url: cfg.ajax_url,
-      type: "POST",
-      dataType: "json",
-      data: $.extend(
-        {
-          action: "wdp_save_product_settings",
-          nonce: cfg.nonce,
-        },
-        payload
-      ),
-    })
-  }
-
-  function bindProductSearch() {
-    const $input = $("#wdp-product-search")
-    if (!$input.length) return
-
-    $input.off("input.wdpAdmin").on("input.wdpAdmin", function () {
-      const query = String($(this).val() || "").toLowerCase().trim()
-
-      $(".wdp-product-card").each(function () {
-        const $card = $(this)
-        const textPool = (
-          $card.find(".wdp-product-title a").text() +
-          " " +
-          $card.find(".wdp-shortcode").text()
-        ).toLowerCase()
-        $card.toggle(!query || textPool.indexOf(query) !== -1)
-      })
-
-      $(".wdp-category-section").each(function () {
-        const hasVisibleProducts = $(this).find(".wdp-product-card:visible").length > 0
-        $(this).toggle(hasVisibleProducts || !query)
-      })
-    })
-  }
-
-  function bindCopyShortcodes() {
-    $(document)
-      .off("click.wdpAdminCopy", ".wdp-copy-shortcode")
-      .on("click.wdpAdminCopy", ".wdp-copy-shortcode", function () {
-        const $button = $(this)
-        const original = $button.text()
-        const shortcode = String($button.data("shortcode") || "")
-        if (!shortcode) return
-
-        const onSuccess = () => {
-          $button.text("Kopyalandı!")
-          window.setTimeout(() => $button.text(original), 1600)
-        }
-
-        if (navigator.clipboard && window.isSecureContext) {
-          navigator.clipboard.writeText(shortcode).then(onSuccess).catch(() => {
-            const $temp = $("<textarea>").val(shortcode).appendTo("body")
-            $temp.get(0).select()
-            try {
-              document.execCommand("copy")
-              onSuccess()
-            } finally {
-              $temp.remove()
-            }
-          })
-          return
-        }
-
-        const $temp = $("<textarea>").val(shortcode).appendTo("body")
-        $temp.get(0).select()
-        try {
-          document.execCommand("copy")
-          onSuccess()
-        } finally {
-          $temp.remove()
-        }
-      })
-  }
-
-  function bindCompactShortcodeSelector() {
-    $(document)
-      .off("change.wdpShortcodeSelect", ".wdp-shortcode-select")
-      .on("change.wdpShortcodeSelect", ".wdp-shortcode-select", function () {
-        const $select = $(this)
-        const selected = String($select.val() || "")
-        const $container = $select.closest(".wdp-shortcode-compact")
-        if (!$container.length) return
-
-        $container.find(".wdp-shortcode-current").text(selected)
-        $container.find(".wdp-copy-shortcode-current").attr("data-shortcode", selected)
-      })
   }
 
   function bindSettingsForm(selector, action, buttonSelector, withInlineMessage) {
@@ -394,6 +219,20 @@
     })
   }
 
+  /**
+   * Ayar formlarını DOM'daki data-wdp-ajax-action ile bağlar (elle tutulan form listesi yok).
+   */
+  function bindAllSettingsForms() {
+    $(".wdp-admin-settings-form[data-wdp-ajax-action]").each(function () {
+      const formId = String(this.id || "")
+      const action = String($(this).attr("data-wdp-ajax-action") || "").trim()
+      if (!formId || !action) return
+      const buttonId = formId.replace(/^wdp-(.+)-settings-form$/, "wdp-save-$1-settings")
+      const withInline = $(this).find(".wdp-inline-save-message").length > 0
+      bindSettingsForm("#" + formId, action, "#" + buttonId, withInline)
+    })
+  }
+
   function bindTabSystem() {
     // Sekmeler `wdp-admin-tabs` inline script ile yönetilir.
     // jQuery tarafı yalnızca global API varsa ona delege eder (çift bağlama yok).
@@ -418,148 +257,21 @@
     const applyHash = () => {
       const key = normalizeTabHash(window.location.hash)
       if (key) {
-        activateTab(key, { skipScroll: firstRun })
+        if (!activateTab(key, { skipScroll: firstRun, skipDirtyCheck: firstRun }) && !firstRun) {
+          const cur = currentTabKey()
+          if (cur && window.history && window.history.replaceState) {
+            window.history.replaceState(null, "", "#" + cur)
+          }
+        }
       } else if (firstRun) {
-        activateTab("products", { skipHistory: true, skipScroll: true })
+        const fallback = getTabKeys()[0] || "products"
+        activateTab(fallback, { skipHistory: true, skipScroll: true, skipDirtyCheck: true })
       }
       firstRun = false
     }
 
     applyHash()
     $(window).off("hashchange.wdpAdmin").on("hashchange.wdpAdmin", applyHash)
-  }
-
-  function bindProductSaveActions() {
-    $(document)
-      .off("change.wdpAdminFormMode")
-      .on("change.wdpAdminFormMode", 'input[name="allow_custom_price"]', function () {
-        handleFormTypeExclusivity($(this).closest(".wdp-product-card"), "custom_price")
-      })
-      .on("change.wdpAdminFormMode", 'input[name="allow_multiple_shares"]', function () {
-        handleFormTypeExclusivity($(this).closest(".wdp-product-card"), "multiple_shares")
-      })
-      .on("change.wdpAdminFormMode", 'input[name="enable_progress_bar"]', function () {
-        handleFormTypeExclusivity($(this).closest(".wdp-product-card"), "progress_bar")
-      })
-
-    $(document)
-      .off("click.wdpAdminSaveOne", ".wdp-save-product")
-      .on("click.wdpAdminSaveOne", ".wdp-save-product", function () {
-        const $row = $(this).closest(".wdp-product-card")
-        const $spinner = $(this).next(".spinner")
-        toggleSpinner($spinner, true)
-
-        requestSaveProduct(collectProductSettings($row))
-          .done((response) => {
-            if (response && response.success) {
-              if (response.data && response.data.settings) {
-                applySavedProductSettings($row, response.data.settings)
-              }
-              showNotice(true, response.data.message || cfg.save_success, true)
-              clearDirty($row)
-            } else {
-              showNotice(false, (response && response.data && response.data.message) || cfg.save_error, false)
-            }
-          })
-          .fail(() => showNotice(false, cfg.save_error, false))
-          .always(() => toggleSpinner($spinner, false))
-      })
-
-    $(document)
-      .off("click.wdpAdminRecalc", ".wdp-recalculate-total")
-      .on("click.wdpAdminRecalc", ".wdp-recalculate-total", function () {
-        const $button = $(this)
-        const $row = $button.closest(".wdp-product-card")
-        const $spinner = $button.next(".spinner")
-        if ($button.prop("disabled")) return
-        $button.prop("disabled", true)
-        toggleSpinner($spinner, true)
-
-        $.ajax({
-          url: cfg.ajax_url,
-          type: "POST",
-          dataType: "json",
-          data: {
-            action: "wdp_recalculate_product_total",
-            nonce: cfg.nonce,
-            product_id: $button.data("product-id"),
-          },
-        })
-          .done((response) => {
-            if (response && response.success) {
-              if (response.data && response.data.total_text) {
-                $row.find(".wdp-product-total__value").text(response.data.total_text)
-              }
-              showNotice(true, (response.data && response.data.message) || cfg.save_success, true)
-            } else {
-              showNotice(false, (response && response.data && response.data.message) || cfg.save_error, false)
-            }
-          })
-          .fail((xhr) => {
-            const msg = xhr && xhr.responseJSON && xhr.responseJSON.data && xhr.responseJSON.data.message
-            showNotice(false, msg || cfg.save_error, false)
-          })
-          .always(() => {
-            $button.prop("disabled", false)
-            toggleSpinner($spinner, false)
-          })
-      })
-
-    $("#wdp-save-all")
-      .off("click.wdpAdmin")
-      .on("click.wdpAdmin", function () {
-        const $spinner = $(this).next(".spinner")
-        const $rows = $(".wdp-product-card")
-        const total = $rows.length
-        if (!total) return
-
-        let processed = 0
-        let successCount = 0
-        toggleSpinner($spinner, true)
-
-        $rows.each(function () {
-          const $row = $(this)
-          requestSaveProduct(collectProductSettings($row))
-            .done((response) => {
-              if (response && response.success) {
-                successCount += 1
-                if (response.data && response.data.settings) {
-                  applySavedProductSettings($row, response.data.settings)
-                }
-              }
-            })
-            .always(() => {
-              processed += 1
-              if (processed === total) {
-                toggleSpinner($spinner, false)
-                if (successCount === total) {
-                  showNotice(true, cfg.save_success, true)
-                  clearDirty($rows)
-                } else {
-                  showNotice(false, successCount + " / " + total + " ürün için ayarlar kaydedildi.", false)
-                }
-              }
-            })
-        })
-      })
-  }
-
-  function bindProductCollapsibles() {
-    $(document)
-      .off("click.wdpAdminCollapse", ".wdp-collapse-toggle")
-      .on("click.wdpAdminCollapse", ".wdp-collapse-toggle", function () {
-        const $toggle = $(this)
-        const $card = $toggle.closest(".wdp-product-card")
-        const target = String($toggle.data("collapse-target") || "")
-        if (!$card.length || !target) return
-
-        const $target = $card.find(target).first()
-        if (!$target.length) return
-
-        const willOpen = !$target.hasClass("is-open")
-        $target.toggleClass("is-open", willOpen)
-        $toggle.attr("aria-expanded", willOpen ? "true" : "false")
-      })
   }
 
   function bindConditionalRows() {
@@ -646,9 +358,6 @@
   function bindDirtyStateTracking() {
     $(document)
       .off("input.wdpAdminDirty change.wdpAdminDirty")
-      .on("input.wdpAdminDirty change.wdpAdminDirty", ".wdp-product-card :input", function () {
-        markDirty($(this).closest(".wdp-product-card"))
-      })
       .on("input.wdpAdminDirty change.wdpAdminDirty", ".wdp-admin-settings-form :input", function () {
         markDirty($(this).closest(".wdp-admin-settings-form"))
       })
@@ -656,7 +365,7 @@
     $(window)
       .off("beforeunload.wdpAdminDirty")
       .on("beforeunload.wdpAdminDirty", function () {
-        const hasDirtyState = $(".wdp-product-card.is-dirty, .wdp-admin-settings-form.is-dirty").length > 0
+        const hasDirtyState = $(".wdp-admin-settings-form.is-dirty").length > 0
         if (!hasDirtyState) {
           return undefined
         }
@@ -911,23 +620,9 @@
     })
 
     bindTabSystem()
-    bindProductSearch()
-    bindCopyShortcodes()
-    bindCompactShortcodeSelector()
-    bindProductSaveActions()
-    bindProductCollapsibles()
     bindConditionalRows()
     bindDirtyStateTracking()
-
-    bindSettingsForm("#wdp-normal-form-settings-form", "wdp_save_normal_form_settings", "#wdp-save-normal-form-settings", true)
-    bindSettingsForm("#wdp-design-studio-settings-form", "wdp_save_design_studio_settings", "#wdp-save-design-studio-settings", true)
-    bindSettingsForm("#wdp-shareholder-form-settings-form", "wdp_save_shareholder_form_settings", "#wdp-save-shareholder-form-settings", false)
-    bindSettingsForm("#wdp-success-screen-settings-form", "wdp_save_success_screen_settings", "#wdp-save-success-screen-settings", false)
-    bindSettingsForm("#wdp-modal-layout-settings-form", "wdp_save_modal_layout_settings", "#wdp-save-modal-layout-settings", false)
-    bindSettingsForm("#wdp-progress-bar-settings-form", "wdp_save_progress_bar_settings", "#wdp-save-progress-bar-settings", false)
-    bindSettingsForm("#wdp-meta-tracking-settings-form", "wdp_save_meta_tracking_settings", "#wdp-save-meta-tracking-settings", false)
-    bindSettingsForm("#wdp-category-colors-settings-form", "wdp_save_category_colors_settings", "#wdp-save-category-colors-settings", false)
-    bindSettingsForm("#wdp-advanced-settings-form", "wdp_save_advanced_settings", "#wdp-save-advanced-settings", false)
+    bindAllSettingsForms()
     bindCategoryColorPreview()
     bindProgressLivePreview()
     bindNormalFormLivePreview()

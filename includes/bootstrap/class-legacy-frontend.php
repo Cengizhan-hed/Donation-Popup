@@ -194,7 +194,21 @@ if (!function_exists('wdp_ajax_render_donation_button')) {
 			wp_send_json(array('success' => false, 'message' => __('Ürün bulunamadı veya görüntülenemiyor.', 'woo-donation-popup')));
 		}
 
-		wp_send_json(array('success' => true, 'html' => wdp_render_donation_button($product_id, $button_text)));
+		$html = class_exists('WDP_Render_Guard')
+			? WDP_Render_Guard::value(
+				static function () use ($product_id, $button_text) {
+					return wdp_render_donation_button($product_id, $button_text);
+				},
+				null,
+				'wdp_ajax_render_donation_button'
+			)
+			: wdp_render_donation_button($product_id, $button_text);
+
+		if (!is_string($html)) {
+			wp_send_json(array('success' => false, 'message' => __('Bağış formu şu anda gösterilemiyor.', 'woo-donation-popup')));
+		}
+
+		wp_send_json(array('success' => true, 'html' => $html));
 	}
 }
 

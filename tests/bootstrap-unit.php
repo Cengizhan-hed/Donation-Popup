@@ -19,10 +19,13 @@ if (!defined('WDP_PLUGIN_FILE')) {
 	define('WDP_PLUGIN_FILE', $root . '/woo-donation-popup.php');
 }
 if (!defined('WDP_VERSION')) {
-	define('WDP_VERSION', '10.23.0');
+	define('WDP_VERSION', '10.27.1');
 }
 if (!defined('HOUR_IN_SECONDS')) {
 	define('HOUR_IN_SECONDS', 3600);
+}
+if (!defined('DAY_IN_SECONDS')) {
+	define('DAY_IN_SECONDS', 86400);
 }
 
 /**
@@ -38,11 +41,66 @@ final class WDP_Test_State {
 	/** @var array<string, callable> */
 	public static $filters = array();
 
+	/** @var string[] Capabilities granted to the current user. */
+	public static $caps = array();
+
+	/** @var array<string, mixed> */
+	public static $transients = array();
+
+	/** @var array<string, array<int, callable>> Registered actions (hook => callbacks). */
+	public static $actions = array();
+
+	/** @var array<int, WC_Product> */
+	public static $products = array();
+
+	/** @var array<string, int> slug => product id */
+	public static $product_slugs = array();
+
+	/** @var array<string, int> sku => product id */
+	public static $product_skus = array();
+
+	/** @var bool */
+	public static $is_product = false;
+
+	/** @var int */
+	public static $queried_id = 0;
+
 	public static function reset(): void {
-		self::$options   = array();
-		self::$post_meta = array();
-		self::$filters   = array();
-		$_SERVER         = array();
+		self::$options       = array();
+		self::$post_meta     = array();
+		self::$filters       = array();
+		self::$caps          = array();
+		self::$transients    = array();
+		self::$actions       = array();
+		self::$products      = array();
+		self::$product_slugs = array();
+		self::$product_skus  = array();
+		self::$is_product    = false;
+		self::$queried_id    = 0;
+		$GLOBALS['wpdb']     = new WDP_Fake_Wpdb();
+		unset($GLOBALS['product']);
+		$_SERVER  = array();
+		$_GET     = array();
+		$_POST    = array();
+		$_REQUEST = array();
+		if (class_exists('WDP_Donation_Scope')) {
+			WDP_Donation_Scope::flush();
+		}
+		if (class_exists('WDP_Placement_Settings')) {
+			WDP_Placement_Settings::flush();
+		}
+		if (class_exists('WDP_Render_Registry')) {
+			WDP_Render_Registry::reset();
+		}
+		if (class_exists('WDP_Builder_Detect')) {
+			WDP_Builder_Detect::reset();
+		}
+	}
+}
+
+if (!function_exists('current_user_can')) {
+	function current_user_can($capability, ...$args) {
+		return in_array((string) $capability, WDP_Test_State::$caps, true);
 	}
 }
 
@@ -154,7 +212,7 @@ if (!function_exists('get_option')) {
 	}
 }
 if (!function_exists('update_option')) {
-	function update_option($key, $value) {
+	function update_option($key, $value, $autoload = null) {
 		WDP_Test_State::$options[ $key ] = $value;
 		return true;
 	}
@@ -257,13 +315,138 @@ if (!function_exists('wp_cache_delete')) {
 }
 if (!function_exists('delete_transient')) {
 	function delete_transient($key) {
+		unset(WDP_Test_State::$transients[ $key ]);
 		return true;
+	}
+}
+if (!function_exists('get_transient')) {
+	function get_transient($key) {
+		return array_key_exists($key, WDP_Test_State::$transients) ? WDP_Test_State::$transients[ $key ] : false;
+	}
+}
+if (!function_exists('set_transient')) {
+	function set_transient($key, $value, $expiration = 0) {
+		WDP_Test_State::$transients[ $key ] = $value;
+		return true;
+	}
+}
+if (!function_exists('delete_option')) {
+	function delete_option($key) {
+		unset(WDP_Test_State::$options[ $key ]);
+		return true;
+	}
+}
+if (!function_exists('delete_post_meta_by_key')) {
+	function delete_post_meta_by_key($key) {
+		foreach (WDP_Test_State::$post_meta as $post_id => $meta) {
+			unset(WDP_Test_State::$post_meta[ $post_id ][ $key ]);
+		}
+		return true;
+	}
+}
+if (!function_exists('add_action')) {
+	function add_action($hook, $callback, $priority = 10, $accepted_args = 1) {
+		WDP_Test_State::$actions[ $hook ][] = $callback;
+		return true;
+	}
+}
+if (!function_exists('do_action')) {
+	function do_action($hook, ...$args) {
+		foreach (WDP_Test_State::$actions[ $hook ] ?? array() as $callback) {
+			call_user_func_array($callback, $args);
+		}
+	}
+}
+if (!function_exists('plugin_basename')) {
+	function plugin_basename($file) {
+		return basename(dirname((string) $file)) . '/' . basename((string) $file);
 	}
 }
 if (!function_exists('wp_strip_all_tags')) {
 	function wp_strip_all_tags($text) {
 		return trim(strip_tags((string) $text));
 	}
+}
+if (!function_exists('remove_filter')) {
+	function remove_filter($hook, $callback, $priority = 10) {
+		unset(WDP_Test_State::$filters[ $hook ]);
+		return true;
+	}
+}
+if (!function_exists('wp_verify_nonce')) {
+	function wp_verify_nonce($nonce, $action = -1) {
+		return $nonce !== '' && $nonce !== '0';
+	}
+}
+if (!function_exists('wp_nonce_url')) {
+	function wp_nonce_url($url, $action = -1, $name = '_wpnonce') {
+		return $url . (strpos((string) $url, '?') === false ? '?' : '&') . $name . '=test-nonce';
+	}
+}
+if (!function_exists('add_query_arg')) {
+	function add_query_arg($key, $value = null, $url = null) {
+		if (is_array($key)) {
+			$url = (string) $value;
+			foreach ($key as $k => $v) {
+				$url .= (strpos($url, '?') === false ? '?' : '&') . rawurlencode((string) $k) . '=' . rawurlencode((string) $v);
+			}
+			return $url;
+		}
+		$url = (string) ($url === null ? '' : $url);
+		return $url . (strpos($url, '?') === false ? '?' : '&') . rawurlencode((string) $key) . '=' . rawurlencode((string) $value);
+	}
+}
+if (!function_exists('sanitize_title')) {
+	function sanitize_title($title) {
+		$title = strtolower(trim((string) $title));
+		$title = preg_replace('/[^a-z0-9\-]+/', '-', $title);
+		return trim((string) $title, '-');
+	}
+}
+if (!function_exists('get_page_by_path')) {
+	function get_page_by_path($path, $output = OBJECT, $post_type = 'page') {
+		$id = WDP_Test_State::$product_slugs[ sanitize_title((string) $path) ] ?? 0;
+		if (!$id) {
+			return null;
+		}
+		$post = new stdClass();
+		$post->ID = $id;
+		return $post;
+	}
+}
+if (!function_exists('wc_get_product')) {
+	function wc_get_product($id) {
+		$id = is_object($id) && isset($id->ID) ? (int) $id->ID : (int) $id;
+		return WDP_Test_State::$products[ $id ] ?? null;
+	}
+}
+if (!function_exists('wc_get_product_id_by_sku')) {
+	function wc_get_product_id_by_sku($sku) {
+		return WDP_Test_State::$product_skus[ (string) $sku ] ?? 0;
+	}
+}
+if (!function_exists('is_product')) {
+	function is_product() {
+		return WDP_Test_State::$is_product;
+	}
+}
+if (!function_exists('get_queried_object_id')) {
+	function get_queried_object_id() {
+		return WDP_Test_State::$queried_id;
+	}
+}
+if (!function_exists('get_the_ID')) {
+	function get_the_ID() {
+		return WDP_Test_State::$queried_id;
+	}
+}
+if (!function_exists('get_woocommerce_currency')) {
+	function get_woocommerce_currency() {
+		return 'TRY';
+	}
+}
+if (!defined('OBJECT')) {
+	define('OBJECT', 'OBJECT');
 }
 if (!function_exists('get_woocommerce_currency_symbol')) {
 	function get_woocommerce_currency_symbol() {
@@ -283,6 +466,7 @@ if (!function_exists('wc_price')) {
 }
 
 require_once __DIR__ . '/support/fakes.php';
+$GLOBALS['wpdb'] = new WDP_Fake_Wpdb();
 
 require_once WDP_PLUGIN_DIR . 'includes/class-exceptions.php';
 require_once WDP_PLUGIN_DIR . 'includes/class-autoloader.php';
