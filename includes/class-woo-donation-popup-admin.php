@@ -88,17 +88,22 @@ class Woo_Donation_Popup_Admin {
     }
     
     /**
-     * Ürün ayarlarını kaydet (AJAX)
+     * Ürün sayfası ve liste ayarlarını kaydet (AJAX).
+     *
+     * @return void
      */
-    public function save_product_settings() {
-        WDP_Admin_Product_Settings_Ajax::save();
-    }
-    
-    /**
-     * Ürün ayarlarını al (AJAX)
-     */
-    public function get_product_settings() {
-        WDP_Admin_Product_Settings_Ajax::get();
+    public function save_placement_settings() {
+        try {
+            $this->guard_admin_settings_ajax();
+            WDP_Placement_Settings::save($this->get_admin_request_data());
+            $this->bump_wdp_asset_cache_version();
+            $this->send_admin_settings_success(__('Ürün sayfası ve liste ayarları kaydedildi.', 'woo-donation-popup'));
+        } catch (\Throwable $e) {
+            if (function_exists('wdp_debug_log')) {
+                wdp_debug_log('WDP placement save: ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine());
+            }
+            $this->send_admin_settings_error(__('Bir hata oluştu. Lütfen tekrar deneyin.', 'woo-donation-popup'));
+        }
     }
     
     /**

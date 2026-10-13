@@ -16,11 +16,16 @@ class WDP_Admin_Renderer_Helpers {
 	/**
 	 * Open form container wrapper.
 	 *
-	 * @param string $form_id Form id.
+	 * @param string $form_id     Form id (wdp-{slug}-settings-form).
+	 * @param string $ajax_action Optional AJAX action; derived from form id when empty.
 	 * @return void
 	 */
-	public static function open_form_container($form_id) {
-		echo '<div class="wdp-button-settings-container"><form id="' . esc_attr($form_id) . '" class="wdp-admin-settings-form" novalidate>';
+	public static function open_form_container($form_id, $ajax_action = '') {
+		if ($ajax_action === '' && preg_match('/^wdp-(.+)-settings-form$/', $form_id, $matches)) {
+			$ajax_action = 'wdp_save_' . str_replace('-', '_', $matches[1]) . '_settings';
+		}
+		$action_attr = $ajax_action !== '' ? ' data-wdp-ajax-action="' . esc_attr($ajax_action) . '"' : '';
+		echo '<div class="wdp-button-settings-container"><form id="' . esc_attr($form_id) . '" class="wdp-admin-settings-form" novalidate' . $action_attr . '>';
 	}
 
 	/**

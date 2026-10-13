@@ -1,6 +1,6 @@
 <?php
 /**
- * İçerik modülleri: sıra, güven rozetleri, SSS, aciliyet, cover-fee ve ürün tema stili.
+ * İçerik modülleri: sıra, güven rozetleri, aciliyet, cover-fee ve ürün tema stili.
  *
  * @package WooCommerce\Donation_Popup
  */
@@ -96,54 +96,6 @@ class WDP_Form_Modules {
 			$decoded = json_decode(wp_unslash($raw), true);
 		}
 		return is_array($decoded) ? $decoded : null;
-	}
-
-	/**
-	 * Sanitize FAQ JSON items (max 5).
-	 *
-	 * @param mixed $raw Raw JSON string or array.
-	 * @return array<int, array{q:string,a:string}>
-	 */
-	public static function sanitize_faq_items($raw) {
-		$items = array();
-		if (is_string($raw)) {
-			$decoded = self::decode_json_list($raw);
-			if (is_array($decoded)) {
-				$raw = $decoded;
-			} else {
-				// Plain lines: Q|A per line
-				$lines = preg_split('/\r\n|\r|\n/', wp_unslash($raw));
-				$raw   = array();
-				if (is_array($lines)) {
-					foreach ($lines as $line) {
-						$line = trim((string) $line);
-						if ($line === '' || strpos($line, '|') === false) {
-							continue;
-						}
-						list($q, $a) = array_map('trim', explode('|', $line, 2));
-						$raw[]       = array('q' => $q, 'a' => $a);
-					}
-				}
-			}
-		}
-		if (!is_array($raw)) {
-			return array();
-		}
-		foreach ($raw as $row) {
-			if (!is_array($row)) {
-				continue;
-			}
-			$q = isset($row['q']) ? sanitize_text_field((string) $row['q']) : '';
-			$a = isset($row['a']) ? sanitize_textarea_field((string) $row['a']) : '';
-			if ($q === '' || $a === '') {
-				continue;
-			}
-			$items[] = array('q' => $q, 'a' => $a);
-			if (count($items) >= 5) {
-				break;
-			}
-		}
-		return $items;
 	}
 
 	/**
@@ -309,30 +261,6 @@ class WDP_Form_Modules {
 		}
 
 		return implode(';', $vars);
-	}
-
-	/**
-	 * FAQ accordion HTML.
-	 *
-	 * @param array $items FAQ items.
-	 * @return string
-	 */
-	public static function render_faq(array $items) {
-		$items = self::sanitize_faq_items($items);
-		if (empty($items)) {
-			return '';
-		}
-		ob_start();
-		echo '<div class="wdp-faq" role="group" aria-label="' . esc_attr__('Sık sorulan sorular', 'woo-donation-popup') . '">';
-		foreach ($items as $i => $item) {
-			$id = 'wdp-faq-' . (int) $i . '-' . wp_unique_id();
-			echo '<details class="wdp-faq__item">';
-			echo '<summary class="wdp-faq__q" id="' . esc_attr($id) . '">' . esc_html($item['q']) . '</summary>';
-			echo '<div class="wdp-faq__a">' . esc_html($item['a']) . '</div>';
-			echo '</details>';
-		}
-		echo '</div>';
-		return trim(ob_get_clean());
 	}
 
 	/**

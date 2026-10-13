@@ -28,7 +28,6 @@ class WDP_Product_Settings_Service {
 		'progress_celebrate',
 		'enable_urgency',
 		'enable_social_proof',
-		'enable_faq',
 		'enable_cover_fee',
 		'enable_campaign_media',
 		'theme_inherit_category_color',
@@ -163,7 +162,6 @@ class WDP_Product_Settings_Service {
 
 		$request['donation_type'] = WDP_Donation_Type::sanitize(isset($request['donation_type']) ? $request['donation_type'] : '');
 
-		$request['faq_items']    = self::rows_from_panel(isset($request['faq_items']) ? $request['faq_items'] : array(), array('q', 'a'));
 		$request['trust_badges'] = self::rows_from_panel(isset($request['trust_badges']) ? $request['trust_badges'] : array(), array('icon', 'text'));
 
 		$custom_order = isset($request['module_order_custom']) && self::parse_bool_flag($request['module_order_custom']);
@@ -235,7 +233,6 @@ class WDP_Product_Settings_Service {
 		$enable_anonymous       = self::parse_tristate_flag(isset($request['enable_anonymous']) ? $request['enable_anonymous'] : null);
 		$enable_urgency         = self::parse_bool_flag(isset($request['enable_urgency']) ? $request['enable_urgency'] : false);
 		$enable_social_proof    = self::parse_bool_flag(isset($request['enable_social_proof']) ? $request['enable_social_proof'] : false);
-		$enable_faq             = self::parse_bool_flag(isset($request['enable_faq']) ? $request['enable_faq'] : false);
 		$enable_cover_fee       = self::parse_bool_flag(isset($request['enable_cover_fee']) ? $request['enable_cover_fee'] : false);
 		$enable_campaign_media  = self::parse_bool_flag(isset($request['enable_campaign_media']) ? $request['enable_campaign_media'] : false);
 		$theme_inherit_category = self::parse_bool_flag(isset($request['theme_inherit_category_color']) ? $request['theme_inherit_category_color'] : false);
@@ -262,9 +259,6 @@ class WDP_Product_Settings_Service {
 			$theme_density = '';
 		}
 
-		$faq_raw = isset($request['faq_items']) ? $request['faq_items'] : '';
-		$faq     = class_exists('WDP_Form_Modules') ? WDP_Form_Modules::sanitize_faq_items($faq_raw) : array();
-
 		$trust_raw    = isset($request['trust_badges']) ? $request['trust_badges'] : '';
 		$trust_badges = class_exists('WDP_Form_Modules') ? WDP_Form_Modules::sanitize_trust_badges($trust_raw) : array();
 
@@ -280,36 +274,42 @@ class WDP_Product_Settings_Service {
 		}
 
 		$cover_fee_percent = isset($request['cover_fee_percent']) ? (float) wc_format_decimal(wp_unslash($request['cover_fee_percent'])) : 0;
-		if ($cover_fee_percent < 0) {
-			$cover_fee_percent = 0;
-		}
-		if ($cover_fee_percent > 15) {
-			$cover_fee_percent = 15;
-		}
+		$cover_fee_percent = self::clamp_number($cover_fee_percent, 0, 20, __('Ücret yüzdesi', 'woo-donation-popup'));
 
 		// 0 / empty → '' so the front end falls back to the default share count.
-		$max_shares = isset($request['max_shares']) ? absint(wp_unslash($request['max_shares'])) : 0;
-		$max_shares = $max_shares > 0 ? $max_shares : '';
+		$max_shares_raw = isset($request['max_shares']) ? absint(wp_unslash($request['max_shares'])) : 0;
+		if ($max_shares_raw > 0) {
+			$max_shares = (int) self::clamp_number($max_shares_raw, 1, 100, __('Maksimum hisse', 'woo-donation-popup'));
+		} else {
+			$max_shares = '';
+		}
 
 		$theme_radius = isset($request['theme_radius']) ? absint(wp_unslash($request['theme_radius'])) : 0;
-		if ($theme_radius > 32) {
-			$theme_radius = 32;
+		$theme_radius = (int) self::clamp_number($theme_radius, 0, 40, __('Köşe yuvarlaklığı', 'woo-donation-popup'));
+
+		$min_custom_price = isset($request['min_custom_price']) ? (float) wc_format_decimal(wp_unslash($request['min_custom_price'])) : 0;
+		$min_custom_price = self::clamp_number($min_custom_price, 0, 100000000, __('En düşük tutar', 'woo-donation-popup'));
+
+		$goal = isset($request['progress_bar_limit']) ? (float) wc_format_decimal(wp_unslash($request['progress_bar_limit'])) : 0;
+		if ($enable_progress_bar && $goal <= 0) {
+			self::note_clamp(__('Hedef tutar', 'woo-donation-popup'), (string) $goal, WDP_Donation_Type::DEFAULT_GOAL);
+			$goal = (float) WDP_Donation_Type::DEFAULT_GOAL;
 		}
 
 		return array(
 			'_allow_custom_price'             => $allow_custom_price ? 'yes' : 'no',
-			'_min_custom_price'               => isset($request['min_custom_price']) ? wc_format_decimal(wp_unslash($request['min_custom_price'])) : '',
+			'_min_custom_price'               => $min_custom_price > 0 ? wc_format_decimal($min_custom_price) : '0',
 			'_allow_multiple_shares'          => $allow_multiple_shares ? 'yes' : 'no',
 			'_max_shares'                     => $max_shares,
 			'_enable_progress_bar'            => $enable_progress_bar ? 'yes' : 'no',
-			'_progress_bar_limit'             => isset($request['progress_bar_limit']) ? wc_format_decimal(wp_unslash($request['progress_bar_limit'])) : '',
+			'_progress_bar_limit'             => $goal > 0 ? wc_format_decimal($goal) : '',
 			'_enable_product_note'            => $enable_product_note ? 'yes' : 'no',
-			'_product_note_text'              => isset($request['product_note_text']) ? sanitize_textarea_field(wp_unslash($request['product_note_text'])) : '',
+			'_product_note_text'              => isset($request['product_note_text']) ? self::limit_text(sanitize_textarea_field(wp_unslash($request['product_note_text'])), 1000) : '',
 			'_enable_sadaka_donation'         => $enable_sadaka_donation ? 'yes' : 'no',
 			'_sadaka_min_price'               => isset($request['sadaka_min_price']) ? wc_format_decimal(wp_unslash($request['sadaka_min_price'])) : '',
 			'_sadaka_fixed_price'             => isset($request['sadaka_fixed_price']) ? wc_format_decimal(wp_unslash($request['sadaka_fixed_price'])) : '',
-			'_sadaka_donation_message'        => isset($request['sadaka_donation_message']) ? sanitize_textarea_field(wp_unslash($request['sadaka_donation_message'])) : '',
-			'_sadaka_toggle_label'            => isset($request['sadaka_toggle_label']) ? sanitize_text_field(wp_unslash($request['sadaka_toggle_label'])) : '',
+			'_sadaka_donation_message'        => isset($request['sadaka_donation_message']) ? self::limit_text(sanitize_textarea_field(wp_unslash($request['sadaka_donation_message'])), 500) : '',
+			'_sadaka_toggle_label'            => isset($request['sadaka_toggle_label']) ? self::limit_text(sanitize_text_field(wp_unslash($request['sadaka_toggle_label'])), 80) : '',
 			'_sadaka_wc_product_id'           => isset($request['sadaka_wc_product_id']) ? absint(wp_unslash($request['sadaka_wc_product_id'])) : '',
 			'_enable_trust_strip'             => $enable_trust_strip ? 'yes' : 'no',
 			'_enable_quantity'                => $enable_quantity ? 'yes' : 'no',
@@ -318,12 +318,12 @@ class WDP_Product_Settings_Service {
 			'_enable_field_icons'             => $enable_field_icons ? 'yes' : 'no',
 			'_enable_impact_line'             => $enable_impact_line ? 'yes' : 'no',
 			'_progress_celebrate'             => $progress_celebrate ? 'yes' : 'no',
-			'_impact_line_text'               => isset($request['impact_line_text']) ? sanitize_text_field(wp_unslash($request['impact_line_text'])) : '',
+			'_impact_line_text'               => isset($request['impact_line_text']) ? self::limit_text(sanitize_text_field(wp_unslash($request['impact_line_text'])), 200) : '',
 			'_amount_presets'                 => $amount_presets,
 			'_enable_email'                   => $enable_email,
 			'_enable_dedication'              => $enable_dedication,
 			'_enable_anonymous'               => $enable_anonymous,
-			'_dedication_placeholder'         => isset($request['dedication_placeholder']) ? sanitize_text_field(wp_unslash($request['dedication_placeholder'])) : '',
+			'_dedication_placeholder'         => isset($request['dedication_placeholder']) ? self::limit_text(sanitize_text_field(wp_unslash($request['dedication_placeholder'])), 160) : '',
 			'_trust_badges'                   => !empty($trust_badges) ? wp_json_encode($trust_badges, self::JSON_FLAGS) : '',
 			'_theme_preset_id'                => isset($request['theme_preset_id']) ? sanitize_key((string) wp_unslash($request['theme_preset_id'])) : '',
 			'_theme_primary'                  => isset($request['theme_primary']) ? (sanitize_hex_color(wp_unslash($request['theme_primary'])) ?: '') : '',
@@ -335,16 +335,88 @@ class WDP_Product_Settings_Service {
 			'_layout_mode'                    => $layout_mode,
 			'_enable_campaign_media'          => $enable_campaign_media ? 'yes' : 'no',
 			'_enable_urgency'                 => $enable_urgency ? 'yes' : 'no',
-			'_urgency_text'                   => isset($request['urgency_text']) ? sanitize_text_field(wp_unslash($request['urgency_text'])) : '',
+			'_urgency_text'                   => isset($request['urgency_text']) ? self::limit_text(sanitize_text_field(wp_unslash($request['urgency_text'])), 200) : '',
 			'_urgency_ends_at'                => isset($request['urgency_ends_at']) ? sanitize_text_field(wp_unslash($request['urgency_ends_at'])) : '',
 			'_enable_social_proof'            => $enable_social_proof ? 'yes' : 'no',
-			'_social_proof_text'              => isset($request['social_proof_text']) ? sanitize_text_field(wp_unslash($request['social_proof_text'])) : '',
-			'_enable_faq'                     => $enable_faq ? 'yes' : 'no',
-			'_faq_items'                      => !empty($faq) ? wp_json_encode($faq, self::JSON_FLAGS) : '',
+			'_social_proof_text'              => isset($request['social_proof_text']) ? self::limit_text(sanitize_text_field(wp_unslash($request['social_proof_text'])), 200) : '',
 			'_enable_cover_fee'               => $enable_cover_fee ? 'yes' : 'no',
 			'_cover_fee_percent'              => $cover_fee_percent > 0 ? (string) $cover_fee_percent : '',
 			'_wdp_module_order'               => !empty($order_list) ? implode(',', $order_list) : '',
+			'_wdp_donation_product'           => self::parse_tristate_flag(isset($request['donation_product']) ? $request['donation_product'] : null),
+			'_wdp_auto_place'                 => (isset($request['auto_place']) && is_scalar($request['auto_place']) && strtolower(trim((string) $request['auto_place'])) === 'no') ? 'no' : '',
 		);
+	}
+
+	/** @var string[] */
+	private static $corrections = array();
+
+	/**
+	 * @param float  $value Value.
+	 * @param float  $min   Min.
+	 * @param float  $max   Max.
+	 * @param string $label Field label.
+	 * @return float
+	 */
+	private static function clamp_number($value, $min, $max, $label) {
+		$clamped = max($min, min($max, $value));
+		if ((string) $clamped !== (string) $value) {
+			self::note_clamp($label, (string) $value, (string) $clamped);
+		}
+		return $clamped;
+	}
+
+	/**
+	 * @param string $label Field.
+	 * @param string $from  Original.
+	 * @param string $to    Corrected.
+	 * @return void
+	 */
+	private static function note_clamp($label, $from, $to) {
+		self::$corrections[] = sprintf(
+			/* translators: 1: field name, 2: original value, 3: corrected value */
+			__('«%1$s» değeri %2$s\'ten %3$s\'ye düzeltildi.', 'woo-donation-popup'),
+			$label,
+			$from,
+			$to
+		);
+	}
+
+	/**
+	 * @param string $value Text.
+	 * @param int    $max   Max length.
+	 * @return string
+	 */
+	private static function limit_text($value, $max) {
+		$max = (int) $max;
+		if ($max <= 0) {
+			return $value;
+		}
+		if (function_exists('mb_substr') && function_exists('mb_strlen') && mb_strlen($value) > $max) {
+			return mb_substr($value, 0, $max);
+		}
+		if (strlen($value) > $max) {
+			return substr($value, 0, $max);
+		}
+		return $value;
+	}
+
+	/**
+	 * Push WooCommerce admin notices for values that were clamped on save.
+	 *
+	 * @return void
+	 */
+	public static function flush_correction_notices() {
+		if (empty(self::$corrections)) {
+			return;
+		}
+		foreach (self::$corrections as $message) {
+			if (class_exists('WC_Admin_Meta_Boxes') && method_exists('WC_Admin_Meta_Boxes', 'add_error')) {
+				WC_Admin_Meta_Boxes::add_error($message);
+			} elseif (function_exists('wc_add_notice')) {
+				wc_add_notice($message, 'notice');
+			}
+		}
+		self::$corrections = array();
 	}
 
 	/**

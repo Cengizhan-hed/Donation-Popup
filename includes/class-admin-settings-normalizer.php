@@ -603,6 +603,39 @@ class WDP_Admin_Settings_Normalizer {
 	 * @param int $max Maximum.
 	 * @return int
 	 */
+	/**
+	 * Re-save stored option groups so missing keys receive defaults (user values are kept).
+	 *
+	 * @return int Number of options written.
+	 */
+	public static function rewrite_stored_options() {
+		$written = 0;
+		$map     = array(
+			'wdp_button_settings'        => 'normalize_normal_form_settings',
+			'wdp_shareholder_settings'   => 'normalize_shareholder_settings',
+			'wdp_success_settings'       => 'normalize_success_screen_settings',
+			'wdp_progress_bar_settings'  => 'normalize_progress_bar_settings',
+			'wdp_modal_layout_settings'  => 'normalize_modal_layout_settings',
+			'wdp_meta_tracking_settings' => 'normalize_meta_tracking_settings',
+		);
+		foreach ($map as $option => $method) {
+			if (get_option($option, false) === false) {
+				continue;
+			}
+			if (!method_exists(__CLASS__, $method)) {
+				continue;
+			}
+			$current = get_option($option, array());
+			$clean   = call_user_func(array(__CLASS__, $method), array());
+			if (is_array($clean)) {
+				$merged = is_array($current) ? array_merge($current, $clean) : $clean;
+				update_option($option, $merged, false);
+				$written++;
+			}
+		}
+		return $written;
+	}
+
 	private static function clamp_range($value, $min, $max) {
 		return max($min, min($value, $max));
 	}

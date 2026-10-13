@@ -4,18 +4,21 @@
  */
 ;((window, document, $) => {
   const cfg = window.wdp_admin || {}
-  const TAB_KEYS = [
-    "products",
-    "design-studio",
-    "modal-layout",
-    "normal-form",
-    "shareholder-form",
-    "progress-bar",
-    "success-screen",
-    "meta",
-    "category-colors",
-    "advanced",
-  ]
+
+  function getTabKeys() {
+    const keys = []
+    $(".wdp-nav-tab-wrapper .nav-tab[data-tab]").each(function () {
+      const key = String($(this).attr("data-tab") || "").trim()
+      if (!key) return
+      if (!$("#wdp-" + key + "-tab").length) return
+      if (keys.indexOf(key) === -1) keys.push(key)
+    })
+    return keys
+  }
+
+  function isValidTab(tabKey) {
+    return getTabKeys().indexOf(tabKey) !== -1
+  }
 
   function ensureNoticeContainer($anchor) {
     let $notice = $("#wdp-admin-notices")
@@ -81,9 +84,9 @@
   function normalizeTabHash(rawHash) {
     const raw = String(rawHash || "").replace(/^#/, "")
     if (!raw) return null
-    if (TAB_KEYS.indexOf(raw) !== -1) return raw
+    if (isValidTab(raw)) return raw
     const legacy = raw.match(/^wdp-(.+)-tab$/)
-    if (legacy && TAB_KEYS.indexOf(legacy[1]) !== -1) return legacy[1]
+    if (legacy && isValidTab(legacy[1])) return legacy[1]
     return null
   }
 
@@ -94,19 +97,31 @@
     }
   }
 
+  function currentTabKey() {
+    return String($(".wdp-nav-tab-wrapper .nav-tab-active").attr("data-tab") || "")
+  }
+
+  function confirmLeaveDirty(nextKey) {
+    if (!$(".wdp-admin-settings-form.is-dirty").length) return true
+    if (currentTabKey() === nextKey) return true
+    return window.confirm("Kaydedilmemiş değişiklikleriniz var. Bu sekmeden ayrılmak istediğinize emin misiniz?")
+  }
+
   function activateTab(tabKey, options) {
     const opts = options || {}
-    if (TAB_KEYS.indexOf(tabKey) === -1) return
+    if (!isValidTab(tabKey)) return false
+    if (!opts.skipDirtyCheck && !confirmLeaveDirty(tabKey)) return false
 
+    const tabKeys = getTabKeys()
     const $tabs = $(".wdp-nav-tab-wrapper .nav-tab")
     // Prefer direct shell children; fall back if markup was historically broken.
     let $allPanels = $(".wdp-admin-shell > .wdp-tab-content")
-    if ($allPanels.length < TAB_KEYS.length) {
+    if ($allPanels.length < tabKeys.length) {
       $allPanels = $(".wdp-admin-wrap .wdp-tab-content")
     }
     const $targetTab = $('.wdp-nav-tab-wrapper .nav-tab[data-tab="' + tabKey + '"]')
     const $targetPanel = $("#wdp-" + tabKey + "-tab")
-    if (!$targetPanel.length) return
+    if (!$targetPanel.length) return false
 
     $tabs.removeClass("nav-tab-active").attr("aria-selected", "false").attr("tabindex", "-1")
     $allPanels
@@ -131,6 +146,7 @@
     }
 
     scrollActiveTabIntoView()
+    return true
   }
 
   function handleTabKeyboardNavigation(event) {
@@ -139,7 +155,8 @@
       return
     }
 
-    const $tabs = $(".wdp-nav-tab-wrapper .nav-tab")
+    const keys = getTabKeys()
+    const $tabs = $(keys.map((k) => '.wdp-nav-tab-wrapper .nav-tab[data-tab="' + k + '"]').join(", "))
     const currentIndex = $tabs.index(event.currentTarget)
     if (currentIndex < 0) return
 
@@ -151,7 +168,7 @@
 
     if (key === "Enter" || key === " ") {
       event.preventDefault()
-      activateTab($(event.currentTarget).data("tab"))
+      activateTab(String($(event.currentTarget).attr("data-tab") || ""))
       return
     }
 
@@ -159,7 +176,7 @@
     const nextTab = $tabs.get(nextIndex)
     if (nextTab) {
       nextTab.focus()
-      activateTab($(nextTab).data("tab"))
+      activateTab(String($(nextTab).attr("data-tab") || ""))
     }
   }
 
@@ -202,6 +219,20 @@
     })
   }
 
+  /**
+   * Ayar formlarını DOM'daki data-wdp-ajax-action ile bağlar (elle tutulan form listesi yok).
+   */
+  function bindAllSettingsForms() {
+    $(".wdp-admin-settings-form[data-wdp-ajax-action]").each(function () {
+      const formId = String(this.id || "")
+      const action = String($(this).attr("data-wdp-ajax-action") || "").trim()
+      if (!formId || !action) return
+      const buttonId = formId.replace(/^wdp-(.+)-settings-form$/, "wdp-save-$1-settings")
+      const withInline = $(this).find(".wdp-inline-save-message").length > 0
+      bindSettingsForm("#" + formId, action, "#" + buttonId, withInline)
+    })
+  }
+
   function bindTabSystem() {
     // Sekmeler `wdp-admin-tabs` inline script ile yönetilir.
     // jQuery tarafı yalnızca global API varsa ona delege eder (çift bağlama yok).
@@ -226,9 +257,15 @@
     const applyHash = () => {
       const key = normalizeTabHash(window.location.hash)
       if (key) {
-        activateTab(key, { skipScroll: firstRun })
+        if (!activateTab(key, { skipScroll: firstRun, skipDirtyCheck: firstRun }) && !firstRun) {
+          const cur = currentTabKey()
+          if (cur && window.history && window.history.replaceState) {
+            window.history.replaceState(null, "", "#" + cur)
+          }
+        }
       } else if (firstRun) {
-        activateTab("products", { skipHistory: true, skipScroll: true })
+        const fallback = getTabKeys()[0] || "products"
+        activateTab(fallback, { skipHistory: true, skipScroll: true, skipDirtyCheck: true })
       }
       firstRun = false
     }
@@ -585,16 +622,7 @@
     bindTabSystem()
     bindConditionalRows()
     bindDirtyStateTracking()
-
-    bindSettingsForm("#wdp-normal-form-settings-form", "wdp_save_normal_form_settings", "#wdp-save-normal-form-settings", true)
-    bindSettingsForm("#wdp-design-studio-settings-form", "wdp_save_design_studio_settings", "#wdp-save-design-studio-settings", true)
-    bindSettingsForm("#wdp-shareholder-form-settings-form", "wdp_save_shareholder_form_settings", "#wdp-save-shareholder-form-settings", false)
-    bindSettingsForm("#wdp-success-screen-settings-form", "wdp_save_success_screen_settings", "#wdp-save-success-screen-settings", false)
-    bindSettingsForm("#wdp-modal-layout-settings-form", "wdp_save_modal_layout_settings", "#wdp-save-modal-layout-settings", false)
-    bindSettingsForm("#wdp-progress-bar-settings-form", "wdp_save_progress_bar_settings", "#wdp-save-progress-bar-settings", false)
-    bindSettingsForm("#wdp-meta-tracking-settings-form", "wdp_save_meta_tracking_settings", "#wdp-save-meta-tracking-settings", false)
-    bindSettingsForm("#wdp-category-colors-settings-form", "wdp_save_category_colors_settings", "#wdp-save-category-colors-settings", false)
-    bindSettingsForm("#wdp-advanced-settings-form", "wdp_save_advanced_settings", "#wdp-save-advanced-settings", false)
+    bindAllSettingsForms()
     bindCategoryColorPreview()
     bindProgressLivePreview()
     bindNormalFormLivePreview()

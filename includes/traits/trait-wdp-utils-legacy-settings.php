@@ -12,10 +12,13 @@ trait WDP_Utils_Legacy_Settings_Trait {
     /**
      * Eski kurulumlar: sadece button_text_donate kayıtlıysa popup buton metnine yansıtır.
      *
-     * @param array $settings get_option('wdp_button_settings') ham dizisi.
+     * @param mixed $settings get_option('wdp_button_settings') ham değeri (bozuk kayıtta dizi olmayabilir).
      * @return array
      */
-    public static function normalize_legacy_popup_button_text( array $settings ) {
+    public static function normalize_legacy_popup_button_text( $settings ) {
+        if (!is_array($settings)) {
+            $settings = array();
+        }
         if (!array_key_exists('popup_button_text', $settings) && !empty($settings['button_text_donate'])) {
             $settings['popup_button_text'] = $settings['button_text_donate'];
         }
@@ -25,12 +28,12 @@ trait WDP_Utils_Legacy_Settings_Trait {
     /**
      * Eski tek "button_shadow_*" anahtarlarını shortcode ('sc') ve modal içi ('modal') çiftleriyle doldurur.
      *
-     * @param array $settings Ayar dizisi.
+     * @param mixed $settings Ayar dizisi.
      * @return array
      */
-    public static function migrate_button_shadow_to_sc_modal( array $settings ) {
+    public static function migrate_button_shadow_to_sc_modal( $settings ) {
         if (!is_array($settings)) {
-            return $settings;
+            return array();
         }
         if (array_key_exists('button_shadow_sc_enabled', $settings) || array_key_exists('button_shadow_modal_enabled', $settings)) {
             return $settings;

@@ -307,6 +307,7 @@ trait WDP_Assets_Registry_Trait {
                 'get_cart_contents' => wp_create_nonce('wdp_get_cart_contents'),
                 'remove_cart_item' => wp_create_nonce('wdp_remove_cart_item'),
                 'render_button' => wp_create_nonce('wdp_render_donation_button'),
+                'render_modal'  => wp_create_nonce('wdp_render_modal'),
             ),
             'nonce' => wp_create_nonce('wdp_ajax_add_to_cart'),
             'checkout_url' => function_exists('wc_get_checkout_url') ? wc_get_checkout_url() : '',

@@ -22,9 +22,8 @@ class WDP_Admin_Product_Data_Tab {
 	/**
 	 * Header blocks whose order a product may override (body blocks have a fixed order).
 	 */
-	const HEADER_MODULES = array('media', 'impact', 'urgency', 'social_proof', 'progress', 'faq');
+	const HEADER_MODULES = array('media', 'impact', 'urgency', 'social_proof', 'progress');
 
-	const MAX_FAQ_ROWS   = 5;
 	const MAX_TRUST_ROWS = 3;
 
 	/**
@@ -57,10 +56,15 @@ class WDP_Admin_Product_Data_Tab {
 			return $tabs;
 		}
 
+		$classes = array();
+		foreach (WDP_Donation_Scope::supported_types() as $type) {
+			$classes[] = 'show_if_' . $type;
+		}
+
 		$tabs[ self::TAB_KEY ] = array(
 			'label'    => __('Bağış', 'woo-donation-popup'),
 			'target'   => self::PANEL_ID,
-			'class'    => array(),
+			'class'    => $classes,
 			'priority' => 15,
 		);
 
@@ -74,6 +78,20 @@ class WDP_Admin_Product_Data_Tab {
 	 * @return void
 	 */
 	public static function save($product) {
+		try {
+			self::save_panel($product);
+		} catch (\Throwable $e) {
+			if (function_exists('wdp_debug_log')) {
+				wdp_debug_log('WDP product tab save failed: ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine());
+			}
+		}
+	}
+
+	/**
+	 * @param WC_Product $product Product being saved.
+	 * @return void
+	 */
+	private static function save_panel($product) {
 		if (!is_a($product, 'WC_Product')) {
 			return;
 		}
@@ -98,6 +116,10 @@ class WDP_Admin_Product_Data_Tab {
 		foreach (WDP_Product_Settings_Service::from_product_panel($posted, $existing) as $meta_key => $meta_value) {
 			$product->update_meta_data($meta_key, $meta_value);
 		}
+		WDP_Product_Settings_Service::flush_correction_notices();
+		if (class_exists('WDP_Donation_Scope')) {
+			WDP_Donation_Scope::flush($product->get_id());
+		}
 	}
 
 	/**
@@ -119,9 +141,10 @@ class WDP_Admin_Product_Data_Tab {
 
 		$values = self::get_panel_values($product);
 
-		echo '<div id="' . esc_attr(self::PANEL_ID) . '" class="panel woocommerce_options_panel hidden wdp-pp" data-wdp-product-panel>';
+		echo '<div id="' . esc_attr(self::PANEL_ID) . '" class="panel woocommerce_options_panel hidden wdp-pp" data-wdp-product-panel data-wdp-supported-types="' . esc_attr(implode(' ', WDP_Donation_Scope::supported_types())) . '">';
 		wp_nonce_field(self::NONCE_ACTION, self::NONCE_FIELD);
 
+		self::render_scope_block($product, $values);
 		self::render_type_picker($values['donation_type']);
 		self::render_type_fields($product, $values);
 
@@ -200,11 +223,6 @@ class WDP_Admin_Product_Data_Tab {
 
 		$repair = array('WDP_Product_Settings_Service', 'repair_unicode_escapes');
 
-		$faq_rows = array();
-		foreach (WDP_Form_Modules::sanitize_faq_items($meta('_faq_items')) as $row) {
-			$faq_rows[] = array('q' => call_user_func($repair, $row['q']), 'a' => call_user_func($repair, $row['a']));
-		}
-
 		$trust_rows = array();
 		$trust_raw  = $meta('_trust_badges');
 		if ($trust_raw !== '') {
@@ -219,7 +237,11 @@ class WDP_Admin_Product_Data_Tab {
 		$layout     = sanitize_key($meta('_layout_mode'));
 		$density    = $meta('_theme_density');
 
+		$auto_place = $meta('_wdp_auto_place');
+
 		return array(
+			'donation_product'             => WDP_Donation_Scope::product_flag($product),
+			'auto_place'                   => $auto_place === 'no' ? 'no' : '',
 			'donation_type'                => WDP_Donation_Type::infer_from_meta(
 				array(
 					'_allow_custom_price'    => $meta('_allow_custom_price'),
@@ -251,8 +273,6 @@ class WDP_Admin_Product_Data_Tab {
 			'urgency_ends_at'              => $meta('_urgency_ends_at'),
 			'enable_social_proof'          => $flag('_enable_social_proof'),
 			'social_proof_text'            => $meta('_social_proof_text'),
-			'enable_faq'                   => $flag('_enable_faq'),
-			'faq_rows'                     => $faq_rows,
 			'enable_trust_strip'           => $flag('_enable_trust_strip', true),
 			'trust_rows'                   => $trust_rows,
 			'module_order_custom'          => $meta('_wdp_module_order') !== '',
@@ -469,6 +489,45 @@ class WDP_Admin_Product_Data_Tab {
 	 * ------------------------------------------------------------------- */
 
 	/**
+	 * Donation product flag + automatic placement override.
+	 *
+	 * @param WC_Product $product Product.
+	 * @param array      $values  Values.
+	 * @return void
+	 */
+	private static function render_scope_block($product, array $values) {
+		$global_is_donation = WDP_Donation_Scope::matches_global_scope($product);
+		$global_label       = $global_is_donation ? __('Bağış ürünü', 'woo-donation-popup') : __('Normal ürün', 'woo-donation-popup');
+		$auto_place_global  = WDP_Placement_Settings::value('auto_place') === 'yes' ? __('Açık', 'woo-donation-popup') : __('Kapalı', 'woo-donation-popup');
+
+		echo '<div class="wdp-pp-block wdp-pp-scope options_group">';
+		self::select(
+			'donation_product',
+			$values['donation_product'],
+			__('Bağış ürünü', 'woo-donation-popup'),
+			__('Bağış ürünlerinde WooCommerce sepete ekle alanı yerine bağış formu kullanılır ve ürün bağış listelerinde görünür.', 'woo-donation-popup'),
+			array(
+				/* translators: %s: what the global setting currently decides */
+				''    => sprintf(__('Genel ayar (şu an: %s)', 'woo-donation-popup'), $global_label),
+				'yes' => __('Bağış ürünü', 'woo-donation-popup'),
+				'no'  => __('Normal ürün', 'woo-donation-popup'),
+			)
+		);
+		self::select(
+			'auto_place',
+			$values['auto_place'],
+			__('Otomatik yerleşim', 'woo-donation-popup'),
+			__('Kapalıysa formu ürün sayfasına yalnızca kısa kod, blok veya widget ile siz eklersiniz.', 'woo-donation-popup'),
+			array(
+				/* translators: %s: Açık / Kapalı */
+				''   => sprintf(__('Genel ayar (şu an: %s)', 'woo-donation-popup'), $auto_place_global),
+				'no' => __('Kapalı', 'woo-donation-popup'),
+			)
+		);
+		echo '</div>';
+	}
+
+	/**
 	 * @param string $current Selected type.
 	 * @return void
 	 */
@@ -583,7 +642,7 @@ class WDP_Admin_Product_Data_Tab {
 	 * @return void
 	 */
 	private static function render_campaign_blocks_section($product_id, array $values) {
-		self::open_section('campaign', __('Kampanya blokları', 'woo-donation-popup'), __('Etki satırı, aciliyet, sosyal kanıt, SSS, güven rozetleri ve sıralama', 'woo-donation-popup'));
+		self::open_section('campaign', __('Kampanya blokları', 'woo-donation-popup'), __('Etki satırı, aciliyet, sosyal kanıt, güven rozetleri ve sıralama', 'woo-donation-popup'));
 
 		self::checkbox('enable_impact_line', $values['enable_impact_line'], __('Etki satırı', 'woo-donation-popup'), __('Başlığın altında bağışın etkisini anlatan kısa bir cümle gösterir.', 'woo-donation-popup'));
 		self::text('impact_line_text', $values['impact_line_text'], __('Etki metni', 'woo-donation-popup'), __('Boş bırakırsanız genel etki metni kullanılır.', 'woo-donation-popup'), array('placeholder' => __('Örn: Bir bağışınız bir aileyi ısıtır.', 'woo-donation-popup'), 'custom_attributes' => array('maxlength' => '160')));
@@ -594,20 +653,6 @@ class WDP_Admin_Product_Data_Tab {
 
 		self::checkbox('enable_social_proof', $values['enable_social_proof'], __('Sosyal kanıt', 'woo-donation-popup'), __('Kaç kişinin bağış yaptığını anlatan bir satır gösterir.', 'woo-donation-popup'));
 		self::text('social_proof_text', $values['social_proof_text'], __('Sosyal kanıt metni', 'woo-donation-popup'), __('Satırda görünecek metin.', 'woo-donation-popup'), array('placeholder' => __('Bugün 128 kişi bağış yaptı', 'woo-donation-popup')));
-
-		self::checkbox('enable_faq', $values['enable_faq'], __('SSS', 'woo-donation-popup'), __('Formda açılır-kapanır sık sorulan sorular gösterir.', 'woo-donation-popup'));
-		self::render_repeater(
-			'faq_items',
-			__('Sorular', 'woo-donation-popup'),
-			/* translators: %d: max rows */
-			sprintf(__('Her satıra bir soru ve cevabı yazın (en fazla %d).', 'woo-donation-popup'), self::MAX_FAQ_ROWS),
-			$values['faq_rows'],
-			self::MAX_FAQ_ROWS,
-			array(
-				'q' => array('label' => __('Soru', 'woo-donation-popup'), 'type' => 'text'),
-				'a' => array('label' => __('Cevap', 'woo-donation-popup'), 'type' => 'textarea'),
-			)
-		);
 
 		self::checkbox('enable_trust_strip', $values['enable_trust_strip'], __('Güven rozetleri', 'woo-donation-popup'), __('Formun altında güvenli ödeme gibi kısa güven mesajları gösterir.', 'woo-donation-popup'));
 		self::render_repeater(
@@ -850,10 +895,25 @@ class WDP_Admin_Product_Data_Tab {
 	 */
 	public static function get_shortcodes($product_id) {
 		$product_id = absint($product_id);
-		return array(
+		$slug = '';
+		$product = function_exists('wc_get_product') ? wc_get_product($product_id) : null;
+		if ($product && method_exists($product, 'get_slug')) {
+			$slug = (string) $product->get_slug();
+		}
+
+		$list = array(
 			array('label' => __('Buton (ortada açılır)', 'woo-donation-popup'), 'code' => '[wdp_donation_button id="' . $product_id . '"]'),
 			array('label' => __('Sağ panel', 'woo-donation-popup'), 'code' => '[wdp_donation_button_panel id="' . $product_id . '"]'),
 			array('label' => __('Sayfa içi form', 'woo-donation-popup'), 'code' => '[wdp_donation_form id="' . $product_id . '"]'),
+			array('label' => __('Kimliksiz (ürün sayfasında otomatik)', 'woo-donation-popup'), 'code' => '[wdp_donation_form]'),
+			array('label' => __('Kimliksiz sağ panel', 'woo-donation-popup'), 'code' => '[wdp_donation_button_panel]'),
 		);
+		if ($slug !== '') {
+			$list[] = array(
+				'label' => __('Slug ile form', 'woo-donation-popup'),
+				'code'  => '[wdp_donation_form slug="' . $slug . '"]',
+			);
+		}
+		return $list;
 	}
 }

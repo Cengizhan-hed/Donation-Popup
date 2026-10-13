@@ -17,9 +17,10 @@ if (!class_exists('WP_List_Table')) {
  * Donation products overview table.
  */
 class WDP_Admin_Products_List_Table extends WP_List_Table {
-	const PER_PAGE    = 20;
-	const CATEGORY_QV = 'wdp_cat';
-	const TYPE_QV     = 'wdp_type';
+	const PER_PAGE     = 20;
+	const CATEGORY_QV  = 'wdp_cat';
+	const TYPE_QV      = 'wdp_type';
+	const SHORTCODE_QV = 'wdp_sc';
 
 	/**
 	 * Constructor.
@@ -39,6 +40,7 @@ class WDP_Admin_Products_List_Table extends WP_List_Table {
 	 */
 	public function get_columns() {
 		return array(
+			'cb'        => '<input type="checkbox" />',
 			'name'      => __('Ürün', 'woo-donation-popup'),
 			'category'  => __('Kategori', 'woo-donation-popup'),
 			'type'      => __('Bağış tipi', 'woo-donation-popup'),
@@ -124,7 +126,17 @@ class WDP_Admin_Products_List_Table extends WP_List_Table {
 			$args['meta_query'] = WDP_Donation_Type::get_meta_query($type); // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
 		}
 
+		$shortcode = $this->get_shortcode_filter();
+		if ($shortcode === 'yes' || $shortcode === 'no') {
+			$args['wdp_shortcode_filter'] = $shortcode;
+			add_filter('posts_where', array($this, 'filter_shortcode_where'), 10, 2);
+		}
+
 		$query = new WP_Query($args);
+
+		if ($shortcode === 'yes' || $shortcode === 'no') {
+			remove_filter('posts_where', array($this, 'filter_shortcode_where'), 10);
+		}
 
 		$this->items = array();
 		foreach ($query->posts as $post) {
@@ -179,9 +191,16 @@ class WDP_Admin_Products_List_Table extends WP_List_Table {
 		}
 		echo '</select>';
 
+		echo '<label class="screen-reader-text" for="wdp-filter-shortcode">' . esc_html__('Elle eklenmiş kısa kod', 'woo-donation-popup') . '</label>';
+		echo '<select name="' . esc_attr(self::SHORTCODE_QV) . '" id="wdp-filter-shortcode">';
+		echo '<option value="">' . esc_html__('Elle eklenmiş kısa kod', 'woo-donation-popup') . '</option>';
+		echo '<option value="yes"' . selected($this->get_shortcode_filter(), 'yes', false) . '>' . esc_html__('Var', 'woo-donation-popup') . '</option>';
+		echo '<option value="no"' . selected($this->get_shortcode_filter(), 'no', false) . '>' . esc_html__('Yok', 'woo-donation-popup') . '</option>';
+		echo '</select>';
+
 		submit_button(__('Filtrele', 'woo-donation-popup'), '', 'wdp_filter', false);
 
-		if ($this->get_category_filter() > 0 || $this->get_type_filter() !== '' || $this->get_search() !== '') {
+		if ($this->get_category_filter() > 0 || $this->get_type_filter() !== '' || $this->get_shortcode_filter() !== '' || $this->get_search() !== '') {
 			echo ' <a class="button-link wdp-products-table__reset" href="' . esc_url(self::get_base_url()) . '">' . esc_html__('Filtreleri temizle', 'woo-donation-popup') . '</a>';
 		}
 
@@ -216,7 +235,12 @@ class WDP_Admin_Products_List_Table extends WP_List_Table {
 
 		$out  = '<div class="wdp-products-table__product">';
 		$out .= '<span class="wdp-products-table__thumb" aria-hidden="true">' . $thumb . '</span>';
+		$is_donation = class_exists('WDP_Donation_Scope') && WDP_Donation_Scope::is_donation_product($product);
+		$badge_label = $is_donation ? __('Bağış ürünü', 'woo-donation-popup') : __('Normal ürün', 'woo-donation-popup');
+		$badge_class = $is_donation ? 'wdp-scope-badge wdp-scope-badge--yes' : 'wdp-scope-badge wdp-scope-badge--no';
+
 		$out .= '<span class="wdp-products-table__title"><a class="row-title" href="' . esc_url($edit_url) . '">' . esc_html($product->get_name()) . '</a>' . $state;
+		$out .= ' <span class="' . esc_attr($badge_class) . '">' . esc_html($badge_label) . '</span>';
 		$out .= '<span class="wdp-products-table__id">#' . esc_html((string) $product->get_id()) . '</span></span>';
 		$out .= '</div>';
 
@@ -311,6 +335,50 @@ class WDP_Admin_Products_List_Table extends WP_List_Table {
 	}
 
 	/**
+	 * @param WC_Product $product Product.
+	 * @return string
+	 */
+	protected function column_cb($product) {
+		return '<input type="checkbox" name="wdp_product[]" value="' . esc_attr((string) $product->get_id()) . '" />';
+	}
+
+	/**
+	 * @return array<string, string>
+	 */
+	protected function get_bulk_actions() {
+		return array(
+			'wdp_mark_donation' => __('Bağış ürünü yap', 'woo-donation-popup'),
+			'wdp_mark_normal'   => __('Normal ürün yap', 'woo-donation-popup'),
+			'wdp_mark_global'   => __('Genel ayara döndür', 'woo-donation-popup'),
+		);
+	}
+
+	/**
+	 * Restrict WP_Query to products whose content/excerpt contains a WDP shortcode.
+	 *
+	 * @param string   $where Where SQL.
+	 * @param WP_Query $query Query.
+	 * @return string
+	 */
+	public function filter_shortcode_where($where, $query) {
+		if (!is_object($query) || $query->get('wdp_shortcode_filter') === '') {
+			return $where;
+		}
+		global $wpdb;
+		if (!isset($wpdb) || !is_object($wpdb)) {
+			return $where;
+		}
+		$like   = '%' . $wpdb->esc_like('[wdp_donation') . '%';
+		$clause = $wpdb->prepare(
+			"({$wpdb->posts}.post_content LIKE %s OR {$wpdb->posts}.post_excerpt LIKE %s)",
+			$like,
+			$like
+		);
+		$want = $query->get('wdp_shortcode_filter');
+		return $where . ($want === 'no' ? ' AND NOT ' : ' AND ') . $clause;
+	}
+
+	/**
 	 * @return string
 	 */
 	private function get_search() {
@@ -330,6 +398,14 @@ class WDP_Admin_Products_List_Table extends WP_List_Table {
 	private function get_type_filter() {
 		$raw = isset($_REQUEST[ self::TYPE_QV ]) ? wp_unslash($_REQUEST[ self::TYPE_QV ]) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		return WDP_Donation_Type::sanitize($raw, '');
+	}
+
+	/**
+	 * @return string yes|no|''
+	 */
+	private function get_shortcode_filter() {
+		$raw = isset($_REQUEST[ self::SHORTCODE_QV ]) ? sanitize_key(wp_unslash($_REQUEST[ self::SHORTCODE_QV ])) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		return in_array($raw, array('yes', 'no'), true) ? $raw : '';
 	}
 
 	/**

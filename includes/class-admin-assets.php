@@ -140,39 +140,56 @@ class WDP_Admin_Assets {
 	private static function get_tabs_inline_script() {
 		return <<<'JS'
 (function () {
-  var TAB_KEYS = [
-    "products",
-    "design-studio",
-    "modal-layout",
-    "normal-form",
-    "shareholder-form",
-    "progress-bar",
-    "success-screen",
-    "meta",
-    "category-colors",
-    "advanced"
-  ];
+  function getTabKeys() {
+    var wrap = document.querySelector(".wdp-admin-wrap");
+    if (!wrap) return [];
+    var nodes = wrap.querySelectorAll(".wdp-nav-tab-wrapper .nav-tab[data-tab]");
+    var keys = [];
+    for (var i = 0; i < nodes.length; i++) {
+      var key = String(nodes[i].getAttribute("data-tab") || "").trim();
+      if (!key) continue;
+      if (!document.getElementById("wdp-" + key + "-tab")) continue;
+      if (keys.indexOf(key) === -1) keys.push(key);
+    }
+    return keys;
+  }
+
+  function isValidTab(tabKey) {
+    return getTabKeys().indexOf(tabKey) !== -1;
+  }
 
   function normalizeHash(raw) {
     var key = String(raw || "").replace(/^#/, "");
     if (!key) return null;
-    if (TAB_KEYS.indexOf(key) !== -1) return key;
+    if (isValidTab(key)) return key;
     var m = key.match(/^wdp-(.+)-tab$/);
-    if (m && TAB_KEYS.indexOf(m[1]) !== -1) return m[1];
+    if (m && isValidTab(m[1])) return m[1];
     return null;
+  }
+
+  function currentTabKey() {
+    var active = document.querySelector(".wdp-nav-tab-wrapper .nav-tab-active");
+    return active ? String(active.getAttribute("data-tab") || "") : "";
+  }
+
+  function confirmLeaveDirty(nextKey) {
+    if (!document.querySelector(".wdp-admin-settings-form.is-dirty")) return true;
+    if (currentTabKey() === nextKey) return true;
+    return window.confirm("Kaydedilmemiş değişiklikleriniz var. Bu sekmeden ayrılmak istediğinize emin misiniz?");
   }
 
   function activateTab(tabKey, opts) {
     opts = opts || {};
-    if (TAB_KEYS.indexOf(tabKey) === -1) return;
+    if (!isValidTab(tabKey)) return false;
+    if (!opts.skipDirtyCheck && !confirmLeaveDirty(tabKey)) return false;
     var wrap = document.querySelector(".wdp-admin-wrap");
-    if (!wrap) return;
+    if (!wrap) return false;
 
     var tabs = wrap.querySelectorAll(".wdp-nav-tab-wrapper .nav-tab");
     var panels = wrap.querySelectorAll(".wdp-tab-content");
     var targetTab = wrap.querySelector('.wdp-nav-tab-wrapper .nav-tab[data-tab="' + tabKey + '"]');
     var targetPanel = document.getElementById("wdp-" + tabKey + "-tab");
-    if (!targetPanel) return;
+    if (!targetPanel) return false;
 
     for (var i = 0; i < tabs.length; i++) {
       tabs[i].classList.remove("nav-tab-active");
@@ -205,6 +222,7 @@ class WDP_Admin_Assets {
         }
       } catch (e) {}
     }
+    return true;
   }
 
   window.wdpAdminActivateTab = activateTab;
@@ -232,8 +250,13 @@ class WDP_Admin_Assets {
     wrap.addEventListener("keydown", function (event) {
       var tab = event.target.closest ? event.target.closest(".wdp-nav-tab-wrapper .nav-tab") : null;
       if (!tab || !wrap.contains(tab)) return;
-      var tabs = wrap.querySelectorAll(".wdp-nav-tab-wrapper .nav-tab");
-      var idx = Array.prototype.indexOf.call(tabs, tab);
+      var keys = getTabKeys();
+      var tabs = [];
+      for (var t = 0; t < keys.length; t++) {
+        var el = wrap.querySelector('.wdp-nav-tab-wrapper .nav-tab[data-tab="' + keys[t] + '"]');
+        if (el) tabs.push(el);
+      }
+      var idx = tabs.indexOf(tab);
       if (idx < 0) return;
       var next = idx;
       if (event.key === "ArrowRight") next = (idx + 1) % tabs.length;
@@ -252,12 +275,20 @@ class WDP_Admin_Assets {
       activateTab(tabs[next].getAttribute("data-tab") || "");
     });
 
-    var initial = normalizeHash(window.location.hash) || "products";
-    activateTab(initial, { skipHistory: !window.location.hash });
+    var initial = normalizeHash(window.location.hash) || (getTabKeys()[0] || "products");
+    activateTab(initial, { skipHistory: !window.location.hash, skipDirtyCheck: true });
 
     window.addEventListener("hashchange", function () {
       var key = normalizeHash(window.location.hash);
-      if (key) activateTab(key, { skipHistory: true });
+      if (!key) return;
+      if (!activateTab(key, { skipHistory: true })) {
+        var cur = currentTabKey();
+        if (cur && window.history && window.history.replaceState) {
+          try {
+            window.history.replaceState(null, "", "#" + cur);
+          } catch (e) {}
+        }
+      }
     });
   });
 })();

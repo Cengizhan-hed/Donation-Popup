@@ -126,8 +126,8 @@ class WDP_Templates {
 	 * @param array $context Sadaka context.
 	 * @return string Safe HTML.
 	 */
-	public static function render_sadaka_donation_block(array $context) {
-		return WDP_Form_Fields_Renderer::render_sadaka_donation_block($context);
+	public static function render_sadaka_donation_block($context) {
+		return WDP_Form_Fields_Renderer::render_sadaka_donation_block(is_array($context) ? $context : array());
 	}
 
 	/**
@@ -181,7 +181,13 @@ class WDP_Templates {
 	 * @return string
 	 */
 	public static function render_donation_modal($product_id, $button_text = '', $custom_class = '', $custom_style = '', $display_mode = 'popup') {
-		return WDP_Modal_Shell_Renderer::render_donation_modal($product_id, $button_text, $custom_class, $custom_style, $display_mode);
+		return WDP_Render_Guard::html(
+			static function () use ($product_id, $button_text, $custom_class, $custom_style, $display_mode) {
+				return WDP_Modal_Shell_Renderer::render_donation_modal($product_id, $button_text, $custom_class, $custom_style, $display_mode);
+			},
+			absint($product_id),
+			'render_donation_modal'
+		);
 	}
 
 	/**
@@ -192,6 +198,12 @@ class WDP_Templates {
 	 * @return string
 	 */
 	public static function render_donation_form($product_id, $atts = array()) {
-		return WDP_Modal_Shell_Renderer::render_donation_form($product_id, $atts);
+		return WDP_Render_Guard::html(
+			static function () use ($product_id, $atts) {
+				return WDP_Modal_Shell_Renderer::render_donation_form($product_id, is_array($atts) ? $atts : array());
+			},
+			absint($product_id),
+			'render_donation_form'
+		);
 	}
 }

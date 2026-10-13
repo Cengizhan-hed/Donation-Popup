@@ -120,6 +120,27 @@
   color: #614200;
 }
 
+.wdp-scope-badge {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.6;
+  vertical-align: middle;
+}
+
+.wdp-scope-badge--yes {
+  background: #edfaef;
+  color: #00450c;
+}
+
+.wdp-scope-badge--no {
+  background: #f0f0f1;
+  color: #50575e;
+}
+
 .wdp-progress-summary {
   display: flex;
   flex-direction: column;

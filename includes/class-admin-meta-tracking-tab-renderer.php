@@ -34,7 +34,7 @@ class WDP_Admin_Meta_Tracking_Tab_Renderer {
 
 		$wc_meta_purchase = class_exists('WDP_Meta_Tracking') && WDP_Meta_Tracking::is_woocommerce_meta_purchase_integration_active();
 
-		echo '<form id="wdp-meta-tracking-settings-form" class="wdp-admin-settings-form" method="post">';
+		echo '<form id="wdp-meta-tracking-settings-form" class="wdp-admin-settings-form" method="post" data-wdp-ajax-action="wdp_save_meta_tracking_settings">';
 		self::row_toggle('meta_enabled', __('Meta izlemeyi etkinleştir', 'woo-donation-popup'), $on('enabled'));
 		$consent_api = class_exists('WDP_Meta_Tracking') && WDP_Meta_Tracking::is_consent_api_available();
 		self::row_toggle(

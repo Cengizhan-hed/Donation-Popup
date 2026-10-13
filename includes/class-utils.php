@@ -255,6 +255,42 @@ class WDP_Utils {
     }
 
     /**
+     * Notice shown only to shop editors in place of a form that cannot be displayed.
+     *
+     * Visitors always get an empty string, so a misconfigured shortcode never shows them an error.
+     *
+     * @param string $message Plain-text message.
+     * @return string Safe HTML (or '').
+     */
+    public static function admin_notice_html($message) {
+        if (!function_exists('current_user_can') || !current_user_can('edit_products')) {
+            return '';
+        }
+        $message = trim((string) $message);
+        if ($message === '') {
+            return '';
+        }
+        self::enqueue_admin_notice_style();
+        return '<div class="wdp-admin-notice" role="note">' . esc_html($message) . '</div>';
+    }
+
+    /**
+     * Tiny stylesheet for .wdp-admin-notice (printed in the footer when content is already rendering).
+     *
+     * @return void
+     */
+    private static function enqueue_admin_notice_style() {
+        static $done = false;
+        if ($done || !function_exists('wp_register_style') || !function_exists('wp_add_inline_style')) {
+            return;
+        }
+        $done = true;
+        wp_register_style('wdp-admin-notice', false, array(), defined('WDP_VERSION') ? WDP_VERSION : false);
+        wp_enqueue_style('wdp-admin-notice');
+        wp_add_inline_style('wdp-admin-notice', '.wdp-admin-notice{box-sizing:border-box;margin:12px 0;padding:10px 14px;border:1px solid #f0b849;border-left-width:4px;border-radius:4px;background:#fcf9e8;color:#1e1e1e;font-size:14px;line-height:1.5}');
+    }
+
+    /**
      * Send JSON error response and terminate execution.
      * 
      * Handles both string messages and WDP_Exception objects.
@@ -417,6 +453,25 @@ class WDP_Utils {
         $count = ($meta !== '' && is_numeric($meta)) ? max(0, (int) $meta) : 0;
         wp_cache_set($cache_key, $count, 'wdp_donations', HOUR_IN_SECONDS);
         return $count;
+    }
+
+    /**
+     * Bulk progress totals (uses cached _wdp_total_donation_amount; empty meta = 0, no N+1 recalculation).
+     *
+     * @param int[] $product_ids Product IDs.
+     * @return array<int, float>
+     */
+    public static function get_totals_for_products(array $product_ids) {
+        $out = array();
+        foreach ($product_ids as $product_id) {
+            $product_id = absint($product_id);
+            if ($product_id <= 0) {
+                continue;
+            }
+            $meta = get_post_meta($product_id, '_wdp_total_donation_amount', true);
+            $out[ $product_id ] = ($meta !== '' && is_numeric($meta)) ? max(0.0, (float) $meta) : 0.0;
+        }
+        return $out;
     }
 
 

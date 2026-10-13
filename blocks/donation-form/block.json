@@ -1,0 +1,19 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "wdp/donation-form",
+  "title": "Bağış formu",
+  "category": "woocommerce",
+  "description": "Mevcut ürünün veya seçilen ürünün bağış formunu basar.",
+  "textdomain": "woo-donation-popup",
+  "usesContext": ["postId", "postType"],
+  "editorScript": "wdp-block-donation-form",
+  "attributes": {
+    "productId": { "type": "number", "default": 0 },
+    "slug": { "type": "string", "default": "" },
+    "sku": { "type": "string", "default": "" },
+    "display": { "type": "string", "default": "inline" },
+    "showTitle": { "type": "boolean", "default": true },
+    "buttonText": { "type": "string", "default": "" }
+  }
+}

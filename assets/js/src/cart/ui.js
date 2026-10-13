@@ -300,13 +300,13 @@
     container.appendChild(buildCartUiNode(Array.isArray(cartItems) ? cartItems : [], { inSidePanel }));
   }
 
-  function patchSuccessScreenCartUi(successScreen, cartItems) {
-    if (!successScreen) return;
-    const inSidePanel = !!(successScreen.closest && successScreen.closest('.wdp-side-panel'));
+  function patchSuccessViewCartUi(successView, cartItems) {
+    if (!successView) return;
+    const inSidePanel = !!(successView.closest && successView.closest('.wdp-side-panel'));
     const freshUi = buildCartUiNode(Array.isArray(cartItems) ? cartItems : [], { inSidePanel });
-    const cartStack = successScreen.querySelector('.wdp-success-cart-stack');
+    const cartStack = successView.querySelector('.wdp-success-cart-stack');
     const newLayout = freshUi.querySelector('.wdp-side-panel-cart-layout');
-    const oldLayout = successScreen.querySelector('.wdp-side-panel-cart-layout');
+    const oldLayout = successView.querySelector('.wdp-side-panel-cart-layout');
     if (inSidePanel && cartStack && newLayout) {
       if (oldLayout) {
         oldLayout.replaceWith(newLayout);
@@ -319,9 +319,9 @@
     const newMini = freshUi.querySelector('.wdp-mini-cart');
     const newFooter = freshUi.querySelector('.wdp-side-panel-cart-footer');
     const newButtons = freshUi.querySelector('.wdp-success-buttons');
-    const oldMini = successScreen.querySelector('.wdp-mini-cart');
-    const oldFooter = successScreen.querySelector('.wdp-side-panel-cart-footer');
-    const oldButtons = successScreen.querySelector('.wdp-success-buttons');
+    const oldMini = successView.querySelector('.wdp-mini-cart');
+    const oldFooter = successView.querySelector('.wdp-side-panel-cart-footer');
+    const oldButtons = successView.querySelector('.wdp-success-buttons');
     if (oldMini && newMini) {
       oldMini.replaceWith(newMini);
     }
@@ -352,7 +352,7 @@
     buildCartUiNode: buildCartUiNode,
     buildCartUiRoot: buildCartUiRoot,
     renderItemsInto: renderCartItemsInto,
-    patchSuccessScreenCartUi: patchSuccessScreenCartUi,
+    patchSuccessViewCartUi: patchSuccessViewCartUi,
     createItemsHTML: createCartItemsHTML,
     computeCartSubtotal: computeCartSubtotal,
     formatSidePanelSubtotalAmount: formatSidePanelSubtotalAmount,

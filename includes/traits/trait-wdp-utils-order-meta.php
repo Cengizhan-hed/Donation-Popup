@@ -568,6 +568,12 @@ trait WDP_Utils_Order_Meta_Trait {
         delete_transient($key);
         wp_cache_delete($key, 'wdp_product_info');
         wp_cache_delete('wdp_product_object_' . $product_id, 'wdp_products');
+        if (class_exists('WDP_Donations_List')) {
+            WDP_Donations_List::bump_cache();
+        }
+        if (class_exists('WDP_Donation_Scope')) {
+            WDP_Donation_Scope::flush($product_id);
+        }
     }
 
     /**

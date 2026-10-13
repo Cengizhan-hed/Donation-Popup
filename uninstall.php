@@ -52,6 +52,11 @@ function wdp_uninstall_cleanup_site() {
 		)
 	);
 
+	// Legacy product meta of the removed in-form FAQ module (10.27.0 migration deletes it too).
+	foreach (array('_enable_faq', '_faq_items') as $wdp_legacy_meta_key) {
+		delete_post_meta_by_key($wdp_legacy_meta_key);
+	}
+
 	wp_cache_delete('alloptions', 'options');
 	wp_cache_delete('notoptions', 'options');
 	if (function_exists('wp_cache_flush_group')) {

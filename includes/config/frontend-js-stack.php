@@ -216,9 +216,14 @@ return array(
 		'deps'   => array('wdp-utils-js', 'wdp-form-js', 'wdp-shareholder-js'),
 	),
 	array(
+		'handle' => 'wdp-lazy-modal-js',
+		'file'   => 'src/lazy-modal.js',
+		'deps'   => array('wdp-utils-js', 'wdp-modal-js'),
+	),
+	array(
 		'handle' => 'wdp-event-manager-js',
 		'file'   => 'src/bootstrap/event-manager.js',
-		'deps'   => array('wdp-utils-js', 'wdp-modal-js', 'wdp-form-js'),
+		'deps'   => array('wdp-utils-js', 'wdp-modal-js', 'wdp-form-js', 'wdp-lazy-modal-js'),
 	),
 	array(
 		'handle' => 'wdp-module-loader-js',
@@ -239,6 +244,7 @@ return array(
 			'wdp-cart-js',
 			'wdp-progress-bar-js',
 			'wdp-form-initializer-js',
+			'wdp-lazy-modal-js',
 			'wdp-event-manager-js',
 			'wdp-module-loader-js',
 			'wdp-constants-js',

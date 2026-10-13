@@ -1,6 +1,6 @@
 /**
  * @file campaign-modules.css
- * Aciliyet, sosyal kanıt, SSS, cover-fee, çoklu trust ve layout modları.
+ * Aciliyet, sosyal kanıt, cover-fee, çoklu trust ve layout modları.
  */
 
 .hdf-donation-modal-wrapper .wdp-urgency-banner,
@@ -24,44 +24,6 @@
   font-size: var(--wdp-text-sm, 13px);
   font-weight: 500;
   line-height: 1.4;
-}
-
-.hdf-donation-modal-wrapper .wdp-faq,
-.wdp-donation-form .wdp-faq {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin: 4px 0 10px;
-}
-
-.hdf-donation-modal-wrapper .wdp-faq__item,
-.wdp-donation-form .wdp-faq__item {
-  border: 1px solid var(--wdp-gray-200, #e5e9ec);
-  border-radius: var(--wdp-radius-sm, 8px);
-  background: var(--wdp-bg-secondary, #f7f8fa);
-  padding: 0;
-}
-
-.hdf-donation-modal-wrapper .wdp-faq__q,
-.wdp-donation-form .wdp-faq__q {
-  cursor: pointer;
-  list-style: none;
-  padding: 10px 12px;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--wdp-text-primary, #0f172a);
-}
-
-.hdf-donation-modal-wrapper .wdp-faq__q::-webkit-details-marker {
-  display: none;
-}
-
-.hdf-donation-modal-wrapper .wdp-faq__a,
-.wdp-donation-form .wdp-faq__a {
-  padding: 0 12px 10px;
-  font-size: 13px;
-  line-height: 1.45;
-  color: var(--wdp-text-secondary, #475569);
 }
 
 .hdf-donation-modal-wrapper .wdp-cover-fee,

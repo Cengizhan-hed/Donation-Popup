@@ -79,7 +79,12 @@ class WDP_Autoloader {
         }
 
         // Phase 2: template renderers live under includes/templates/.
-        self::require_if_exists($root . 'templates/' . $file_name);
+        if (self::require_if_exists($root . 'templates/' . $file_name)) {
+            return;
+        }
+
+        // Theme / page builder specific code lives only under includes/compat/.
+        self::require_if_exists($root . 'compat/' . $file_name);
     }
 }
 

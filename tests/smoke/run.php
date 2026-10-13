@@ -165,7 +165,7 @@ wdp_smoke_assert(
     'Modal exports syncStateClasses'
 );
 wdp_smoke_assert(
-    wdp_smoke_file_contains($form_ajax_js, 'function syncModalSuccessState('),
+    wdp_smoke_file_contains($form_ajax_js, 'function syncModalSuccessUi('),
     'Form AJAX module has modal success state sync helper'
 );
 wdp_smoke_assert(
@@ -256,5 +256,125 @@ wdp_smoke_assert(
         && !wdp_smoke_file_contains(WDP_PLUGIN_DIR . 'assets/js/admin-script.js', 'wdp-product-card'),
     'Legacy product card CSS/JS removed'
 );
+
+// 10.27.0: render guard, migrations, removed in-form module.
+wdp_smoke_assert(class_exists('WDP_Render_Guard'), 'WDP_Render_Guard loads');
+wdp_smoke_assert(class_exists('WDP_Migrations'), 'WDP_Migrations loads');
+wdp_smoke_assert(
+    wdp_smoke_file_contains(WDP_PLUGIN_DIR . 'includes/class-templates.php', 'WDP_Render_Guard::html')
+        && wdp_smoke_file_contains(WDP_PLUGIN_DIR . 'includes/class-shortcodes.php', 'WDP_Render_Guard::html'),
+    'Templates and shortcodes render through WDP_Render_Guard'
+);
+$wdp_removed_module_css = 'wdp-' . WDP_Migrations::REMOVED_MODULE_IDS[0];
+wdp_smoke_assert(
+    !wdp_smoke_file_contains(WDP_PLUGIN_DIR . 'assets/css/src/components/campaign-modules.css', $wdp_removed_module_css)
+        && !wdp_smoke_file_contains(WDP_PLUGIN_DIR . 'assets/css/' . ltrim((string) ($css['file'] ?? ''), '/'), $wdp_removed_module_css),
+    'Removed in-form module CSS is gone from source and bundle'
+);
+
+// 10.27.0: placement, list, blocks, lazy modal.
+foreach (array(
+    'WDP_Donation_Scope',
+    'WDP_Product_Resolver',
+    'WDP_Render_Registry',
+    'WDP_Product_Page_Integration',
+    'WDP_Donations_List',
+    'WDP_Lazy_Modal',
+    'WDP_Schema',
+    'WDP_Placement_Settings',
+    'WDP_Blocks',
+    'WDP_Elementor',
+    'WDP_Form_Matrix',
+    'WDP_Admin_Placement_Tab_Renderer',
+    'WDP_Admin_Bulk_Actions',
+) as $wdp_2b_class) {
+    wdp_smoke_assert(class_exists($wdp_2b_class), $wdp_2b_class . ' loads');
+}
+wdp_smoke_assert(file_exists(WDP_PLUGIN_DIR . 'assets/css/list.css') && file_exists(WDP_PLUGIN_DIR . 'assets/js/list.js'), 'List CSS/JS exist');
+wdp_smoke_assert(file_exists(WDP_PLUGIN_DIR . 'blocks/donation-form/block.json') && file_exists(WDP_PLUGIN_DIR . 'blocks/donations/block.json'), 'Gutenberg block.json files exist');
+wdp_smoke_assert(file_exists(WDP_PLUGIN_DIR . 'includes/compat/class-builder-detect.php'), 'Builder detect lives in compat/');
+wdp_smoke_assert(
+    wdp_smoke_file_contains(WDP_PLUGIN_DIR . 'includes/config/frontend-js-stack.php', 'lazy-modal.js'),
+    'Lazy modal is on the frontend JS stack'
+);
+wdp_smoke_assert(
+    wdp_smoke_file_contains(WDP_PLUGIN_DIR . 'includes/config/frontend-css-stack.php', 'container-queries.css'),
+    'Container queries CSS is on the frontend stack'
+);
+wdp_smoke_assert(
+    defined('WDP_VERSION') && WDP_VERSION === '10.27.1',
+    'Plugin version is 10.27.1'
+);
+
+// 10.27.1: admin tabs/forms stay in sync (no hardcoded TAB_KEYS).
+$admin_page_renderer = (string) file_get_contents(WDP_PLUGIN_DIR . 'includes/class-admin-page-renderer.php');
+$admin_script_js     = (string) file_get_contents(WDP_PLUGIN_DIR . 'assets/js/admin-script.js');
+$admin_assets_php    = (string) file_get_contents(WDP_PLUGIN_DIR . 'includes/class-admin-assets.php');
+$admin_hooks_php     = (string) file_get_contents(WDP_PLUGIN_DIR . 'includes/class-admin-hooks.php');
+
+preg_match_all('/data-tab="([a-z0-9\-]+)"/', $admin_page_renderer, $wdp_tab_matches);
+$wdp_tab_keys = array_values(array_unique($wdp_tab_matches[1] ?? array()));
+wdp_smoke_assert($wdp_tab_keys !== array(), 'Admin page renderer declares data-tab keys');
+foreach ($wdp_tab_keys as $wdp_tab_key) {
+    wdp_smoke_assert(
+        strpos($admin_page_renderer, 'id="wdp-' . $wdp_tab_key . '-tab"') !== false,
+        'Admin tab panel exists for data-tab=' . $wdp_tab_key
+    );
+}
+wdp_smoke_assert(
+    strpos($admin_script_js, 'const TAB_KEYS') === false
+        && strpos($admin_script_js, 'var TAB_KEYS') === false
+        && strpos($admin_script_js, 'function getTabKeys') !== false,
+    'admin-script.js builds tab keys from DOM (no fixed TAB_KEYS)'
+);
+wdp_smoke_assert(
+    strpos($admin_assets_php, 'var TAB_KEYS') === false
+        && strpos($admin_assets_php, 'function getTabKeys') !== false,
+    'Inline admin tabs script builds tab keys from DOM'
+);
+wdp_smoke_assert(
+    in_array('placement', $wdp_tab_keys, true)
+        && strpos($admin_page_renderer, 'id="wdp-placement-tab"') !== false,
+    'Placement tab and panel are registered'
+);
+
+$wdp_includes_php = '';
+foreach (glob(WDP_PLUGIN_DIR . 'includes/class-admin*.php') ?: array() as $wdp_admin_php_file) {
+    $wdp_includes_php .= (string) file_get_contents($wdp_admin_php_file) . "\n";
+}
+$wdp_includes_php .= (string) file_get_contents(WDP_PLUGIN_DIR . 'includes/class-admin-renderer-helpers.php') . "\n";
+preg_match_all('/id="(wdp-[a-z0-9\-]+-settings-form)"/', $wdp_includes_php, $wdp_form_matches);
+$wdp_form_ids = array_values(array_unique($wdp_form_matches[1] ?? array()));
+// Forms opened via open_form_container('…') without a literal id="…" attribute in the same file.
+preg_match_all("/open_form_container\(\s*'([^']+)'/", $wdp_includes_php, $wdp_open_form_matches);
+foreach ($wdp_open_form_matches[1] ?? array() as $wdp_open_form_id) {
+    if (preg_match('/^wdp-.+-settings-form$/', $wdp_open_form_id) && !in_array($wdp_open_form_id, $wdp_form_ids, true)) {
+        $wdp_form_ids[] = $wdp_open_form_id;
+    }
+}
+wdp_smoke_assert($wdp_form_ids !== array(), 'Admin settings form ids discovered');
+wdp_smoke_assert(
+    strpos($admin_script_js, 'function bindSettingsForm') !== false
+        && strpos($admin_script_js, 'function bindAllSettingsForms') !== false
+        && strpos($admin_script_js, 'data-wdp-ajax-action') !== false
+        && strpos($admin_script_js, 'bindAllSettingsForms()') !== false,
+    'admin-script.js binds settings forms via data-wdp-ajax-action'
+);
+foreach ($wdp_form_ids as $wdp_form_id) {
+    if (!preg_match('/^wdp-(.+)-settings-form$/', $wdp_form_id, $wdp_form_parts)) {
+        wdp_smoke_assert(false, 'Unexpected settings form id: ' . $wdp_form_id);
+        continue;
+    }
+    $wdp_ajax_action = 'wdp_save_' . str_replace('-', '_', $wdp_form_parts[1]) . '_settings';
+    wdp_smoke_assert(
+        strpos($wdp_includes_php, 'data-wdp-ajax-action="' . $wdp_ajax_action . '"') !== false
+            || strpos($wdp_includes_php, "open_form_container('" . $wdp_form_id . "'") !== false,
+        'Settings form has AJAX action markup: ' . $wdp_form_id
+    );
+    wdp_smoke_assert(
+        strpos($admin_hooks_php, "wp_ajax_{$wdp_ajax_action}") !== false,
+        'wp_ajax_ registered for ' . $wdp_ajax_action
+    );
+}
 
 exit($failures > 0 ? 1 : 0);

@@ -13,8 +13,10 @@ WooCommerce bağış popup / sağ panel eklentisi. Ürün bazlı bağış formla
 1. Eklentiyi `wp-content/plugins/` altına yükleyin ve etkinleştirin.
 2. **WooCommerce → Bağış Popup Ayarları** menüsünden ürün ve görünüm ayarlarını yapın.
 3. Shortcode örnekleri:
-   - `[wdp_donation_button product_id="123"]` — bağış butonu
-   - `[wdp_donation_form product_id="123"]` — sayfa içi form
+   - `[wdp_donation_form]` — ürün sayfasında mevcut ürünün formu (id zorunlu değil)
+   - `[wdp_donation_form id="123"]` / `slug="kurban"` / `sku="SKU"` — belirli ürün
+   - `[wdp_donation_button]` / `[wdp_donation_button_panel]` — buton + popup / sağ panel
+   - `[wdp_donations]` — bağış ürünleri ızgarası
 
 ## Geliştirme
 
@@ -75,7 +77,20 @@ Aşağıda projedeki her kaynak dosyanın kısa Türkçe açıklaması yer alır
 | `class-order-meta-keys.php` | Sipariş satırı meta anahtarlarının tek kaynağı: sabit `wdp_*` anahtarlar, görünen etiketler, eski (çevrilmiş) anahtar uyumluluğu. |
 | `class-privacy.php` | WordPress kişisel veri dışa aktarma/silme kayıtçıları (bağışçı ve hissedar alanları, `[deleted]` ile anonimleştirme). |
 | `class-templates.php` | Modal, form, buton ve alan HTML çıktısı. |
-| `class-shortcodes.php` | Bağış butonu, panel ve form shortcode'ları. |
+| `class-shortcodes.php` | Bağış butonu, panel, form ve `[wdp_donations]` kısa kodları. |
+| `class-donation-scope.php` | Bir ürünün bağış ürünü sayılıp sayılmadığı (kapsam + işaret + tip). |
+| `class-product-resolver.php` | Kısa kod/blok/widget için ürün çözümleyici (id, slug, sku, bağlam). |
+| `class-render-registry.php` | İstek içinde yinelenen form/modal HTML’ini önler. |
+| `class-product-page-integration.php` | Ürün sayfasına otomatik yerleşim, döngü butonu, blok şablon uyumu. |
+| `class-donations-list.php` | `[wdp_donations]` sorgu, kart, sekme ve önbellek. |
+| `class-lazy-modal.php` | Liste/döngü için gecikmeli modal AJAX (`wdp_render_modal`). |
+| `class-schema.php` | WooCommerce / Rank Math Product JSON-LD kuralları. |
+| `class-blocks.php` | Gutenberg bağış formu ve liste blokları. |
+| `class-elementor.php` | Elementor Free widget kaydı. |
+| `class-form-matrix.php` | Form test sayfası (`?wdp_form_matrix=1`). |
+| `class-placement-settings.php` | `wdp_placement_settings` varsayılanları ve normalizer. |
+| `class-migrations.php` | `wdp_db_version` geçişleri; idempotent adımlar. |
+| `class-render-guard.php` | Render giriş noktalarında çökme koruması. |
 | `class-phone-field.php` | Ülke kodlu telefon alanı verisi ve kuralları. |
 | `class-meta-tracking.php` | Meta Pixel olayları ve teşekkür sayfası scriptleri. |
 | `class-progress-form.php` | Hedefli bağış progress bar form alanı HTML'i. |
@@ -97,7 +112,9 @@ Aşağıda projedeki her kaynak dosyanın kısa Türkçe açıklaması yer alır
 | `class-admin-renderer-helpers.php` | Ortak admin form sarmalayıcı ve kaydet butonu. |
 | `class-admin-request.php` | Admin AJAX nonce/yetki ve JSON yanıtları. |
 | `class-admin-settings-normalizer.php` | Tüm sekme ayar isteklerini sınırlar ve normalize eder. |
-| `class-admin-product-settings-ajax.php` | Tek ürün bağış ayarı okuma/kaydetme ve toplam yeniden hesaplama AJAX (geriye dönük uyum). |
+| `class-admin-product-settings-ajax.php` | Ürün ilerleme toplamını yeniden hesaplayan AJAX. |
+| `class-admin-placement-tab-renderer.php` | Ayarlar → Ürün sayfası ve liste sekmesi. |
+| `class-admin-bulk-actions.php` | Bağış ürünü işaretleme toplu işlemleri (ayarlar tablosu + WC ürün listesi). |
 | `class-admin-form-tabs-renderer.php` | Normal/hisseli form ve başarı ekranı sekmeleri. |
 | `class-admin-layout-tabs-renderer.php` | Modal düzeni ve progress bar stil sekmeleri. |
 | `class-admin-category-colors-tab-renderer.php` | Kategori başlık rengi seçim formu. |
@@ -278,6 +295,17 @@ npm run test       # tests/unit
 npm run verify     # build + smoke
 ```
 
+## Kısa kodlar
+
+| Kısa kod | Nitelikler | Ne basar |
+|----------|------------|----------|
+| `[wdp_donation_form]` | `id`, `slug`, `sku`, `show_title`, `title`, `class` | Sayfa içi form. id/slug/sku yoksa mevcut ürün. |
+| `[wdp_donation_button]` | `id`, `slug`, `sku`, `text`, `class`, `style` | Ortada açılan pencere. |
+| `[wdp_donation_button_panel]` | aynı | Sağ panel. |
+| `[wdp_donations]` | `categories`, `exclude_categories`, `ids`, `exclude`, `type`, `limit` (1–100), `orderby` (menu_order/date/title/popularity/random), `order`, `tabs`, `tab_all`, `tab_all_label`, `columns` / `columns_tablet` / `columns_mobile` (1–6), `gap` (0–64), `image_ratio`, `align`, `button` (panel/popup/link), `button_full`, `button_text`, `show_image`, `show_excerpt`, `show_progress`, `show_price`, `show_category`, `excerpt_words`, `image_size`, `heading_tag`, `class` | Bağış listesi. |
+
+Bloklar: Gutenberg **Bağış formu** (`wdp/donation-form`) ve **Bağış listesi** (`wdp/donations`). Elementor: kategori **Bağış (WooCommerce Donation)**.
+
 ## Geliştirici kancaları (filtreler)
 
 | Filtre | Varsayılan | Ne işe yarar |
@@ -285,17 +313,54 @@ npm run verify     # build + smoke
 | `wdp_min_donation_amount` | `1` | Ürün min. fiyatı boş/0 olsa bile kabul edilen en düşük bağış tutarı (`$min`, `$product_id`). Tutar her durumda 0'dan büyük olmalıdır. |
 | `wdp_progress_paid_statuses` | `['processing','completed']` | Progress bar toplamına sayılan sipariş durumları. |
 | `wdp_meta_pixel_has_consent` | `false` | WP Consent API yoksa pazarlama izni kararı ("Çerez izni gerektir" açıkken). |
+| `wdp_is_donation_product` | kapsam kararı | Ürünün bağış ürünü sayılıp sayılmadığı (`$bool`, `$product`). |
+| `wdp_supported_product_types` | `['simple']` | Bağış formunun desteklediği WC ürün tipleri. |
+| `wdp_resolve_product` | çözümleyici sonucu | Kısa kod/blok ürünü (`$product`, `$atts`, `$context`). |
+| `wdp_builder_preview_product` | son bağış ürünü | Sayfa oluşturucu önizlemesinde örnek ürün. |
+| `wdp_product_schema` | tip+fiyat kararı | Product JSON-LD basılsın mı (`$keep`, `$product`, `$type`). Yoast / SEOPress / AIOSEO bu filtreyi kullanabilir. |
+| `wdp_form_context` | ürün bağlamı | Form bağlamını değiştirir (yalnızca test sayfasında tip simülasyonu için yazılır). |
+| `wdp_donations_query_args` | liste WP_Query args | `[wdp_donations]` sorgu argümanları. |
+| `wdp_donations_card_html` | kart HTML | Liste kartı HTML’i. |
+
+Ayar varsayılanı, anlamı veya yapısı değişirse ya da bir özellik kaldırılırsa aynı aşamada `WDP_Migrations` adımı ve testi eklenir; ayar ekranı her zaman uygulanan değeri gösterir.
+
+## Avada’dan geçiş
+
+1. Single product layout’taki Code Block’a bir kez `[wdp_donation_button_panel]` veya `[wdp_donation_form]` ekleyin (id yok; layout ürün sayfasında o ürünü çözer). Avada Layout WooCommerce kancalarını çalıştırmadığı için otomatik yerleşim burada devreye girmez.
+2. Ürün kısa açıklamalarındaki eski `[wdp_donation_form id="…"]` kodlarını Ayarlar → Ürünler → **Elle eklenmiş kısa kod: Var** filtresiyle bulun ve temizleyin (çift form olmasın).
+3. Bağışlar sayfasındaki görsel+başlık+buton Code Block yığınını tek `[wdp_donations]` ile değiştirin.
+4. Ürün ID arayan özel snippet’leri (`[hd_panel_buton]` vb.) kaldırın; eklenti ürünü sayfa bağlamından çözer.
+
+## Kaldırılan özellik: form içi SSS
+
+Formun içindeki SSS modülü 10.27.0’da tamamen kaldırıldı. SSS’ler ürün sayfası içeriğinde tutulmalıdır (SEO ve Rank Math FAQ schema için). Eski `_enable_faq` / `_faq_items` meta değerleri güncellemede silinir.
 
 ## Sürüm notları
+
+### 10.27.1 — Ayar sekmeleri DOM’dan üretilir
+
+- **Ürün sayfası ve liste** sekmesi açılmıyordu: `admin-script.js` ve inline `wdp-admin-tabs` sabit `TAB_KEYS` listesinde `placement` yoktu. Sekme listesi artık sayfadaki `data-tab` + panel eşleşmesinden üretiliyor; `#placement` hash, yenileme ve geri/ileri gezinme çalışır.
+- Ayar formları `data-wdp-ajax-action` ile DOM’dan bağlanır; kaydedilmemiş değişiklik varken sekme değişiminde uyarı verilir.
+
+### 10.27.0 — Aşama 2B: yerleşim, liste, bloklar, sağlamlık
+
+- **Form içi SSS kaldırıldı** (çökme nedeni: JSON string’in dizi type-hint’e gitmesi). Ürün sayfası içeriğindeki SSS’lere dokunulmaz.
+- **Çökme koruması:** form/kısa kod/blok/widget/liste/AJAX try/catch; ziyaretçiye boş, yöneticiye uyarı, hata günlüğü.
+- **Bağış ürünü kapsamı:** tüm basit ürünler / kategoriler / işaretli. Ürün Bağış sekmesinde Genel ayar / Bağış ürünü / Normal ürün.
+- **Kimliksiz kısa kod:** `[wdp_donation_form]` ürün sayfasında ve Avada Layout Code Block’ta çalışır (`id` / `slug` / `sku` hâlâ geçerli). Elle yazılmış id’li kodlar kapsamı yok sayar.
+- **Otomatik yerleşim:** yeni kurulumda açık, güncellemede kapalı (`wdp_placement_settings`). Klasik temalarda sepete ekle yerine form; Avada Layout’ta kısa kod gerekir.
+- **`[wdp_donations]`**, Gutenberg blokları, Elementor widget’ları, gecikmeli modal, schema (WooCommerce + Rank Math).
+- **Form test sayfası:** Ayarlar → Ürün sayfası ve liste → Form test sayfasını aç.
+- **Geçiş:** `wdp_db_version`; SSS verisi temizliği; yerleşim anahtarları açıkça yazılır.
 
 ### 10.26.0 — Aşama 2A: ürün bağış ayarlarının yeniden tasarımı
 
 Ön yüzdeki formların görünümü ve davranışı değişmedi; mevcut ürün meta anahtarları aynen kullanılır.
 
 - **Tek "Bağış tipi":** Sabit tutar / Bağışçı belirler / Hisseli / Hedefli kampanya. Tip ayrı bir meta olarak saklanmaz; `_allow_custom_price`, `_allow_multiple_shares`, `_enable_progress_bar` bayraklarından ön yüzle aynı öncelikle çıkarılır (`WDP_Donation_Type`) ve kayıtta bu üç bayrak tutarlı şekilde yazılır. Çelişkili eski kayıtlar (ör. hisseli + progress) ön yüzün gösterdiği tipe göre okunur.
-- **Ürün düzenleme → "Bağış" sekmesi:** Tip kartları, yalnızca seçili tipin alanları; Tutar seçenekleri, Form alanları, Kampanya blokları, Alt bağış ve Bu ürüne özel görünüm açılır grupları. SSS ve güven rozetleri satır ekle/sil editörüyle düzenlenir (kayıt biçimi aynı JSON). Blok sırası klavyeyle yukarı/aşağı taşınır. Kayıt WooCommerce ürün kaydıyla birlikte yapılır (nonce + `manage_woocommerce`).
+- **Ürün düzenleme → "Bağış" sekmesi:** Tip kartları, yalnızca seçili tipin alanları; Tutar seçenekleri, Form alanları, Kampanya blokları, Alt bağış ve Bu ürüne özel görünüm açılır grupları. Güven rozetleri satır ekle/sil editörüyle düzenlenir (kayıt biçimi aynı JSON). Blok sırası klavyeyle yukarı/aşağı taşınır. Kayıt WooCommerce ürün kaydıyla birlikte yapılır (nonce + `manage_woocommerce`).
 - **Ayarlar → Ürünler:** Kart düzeni kaldırıldı; yerine arama, kategori ve bağış tipi filtreli, sayfa başına 20 ürünlük tablo geldi. Hedef/Toplanan ve "Yeniden hesapla" yalnızca hedefli kampanyalarda görünür. "Düzenle" ürünü doğrudan "Bağış" sekmesinde açar (`#wdp_donation`).
-- **Düzeltmeler:** SSS/rozet metinlerindeki Türkçe karakterlerin kayıtta bozulması (`u00fc`) giderildi; eski bozuk kayıtlar panelde onarılarak gösterilir. E-posta / ithaf / anonim alanları ürün bazında "Genel ayar / Açık / Kapalı" olarak seçilebilir. Özel blok sırası kapalıyken ürün artık genel sırayı izler. Eski kart kaydı `_theme_preset_id` değerini silmiyor.
+- **Düzeltmeler:** Rozet metinlerindeki Türkçe karakterlerin kayıtta bozulması (`u00fc`) giderildi; eski bozuk kayıtlar panelde onarılarak gösterilir. E-posta / ithaf / anonim alanları ürün bazında "Genel ayar / Açık / Kapalı" olarak seçilebilir. Özel blok sırası kapalıyken ürün artık genel sırayı izler. Eski kart kaydı `_theme_preset_id` değerini silmiyor.
 
 ### 10.25.0 — Aşama 1: kritik düzeltmeler
 

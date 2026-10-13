@@ -1,0 +1,8 @@
+---
+description: Ayar varsayılanı, anlamı veya yapısı değişince WDP_Migrations adımı ekle
+alwaysApply: true
+---
+
+# Ayar geçişleri
+
+Bir ayarın varsayılanı, anlamı veya yapısı değişirse ya da bir özellik kaldırılırsa, aynı aşamada `WDP_Migrations` sınıfına idempotent bir adım ve testi eklenir; ayar ekranı her zaman uygulanan değeri gösterir. Gizli varsayılan bırakılmaz: yeni kurulum ile güncelleme `wdp_db_version` ve mevcut `wdp_*` option’larıyla ayırt edilir.

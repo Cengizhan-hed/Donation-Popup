@@ -106,51 +106,39 @@ final class ProductSettingsSaveTest extends TestCase {
 		$this->assertSame('', WDP_Product_Settings_Service::parse_tristate_flag('maybe'));
 	}
 
-	public function test_repeaters_are_stored_in_the_legacy_json_format_with_unicode_intact(): void {
+	public function test_trust_badges_are_stored_in_the_legacy_json_format_with_unicode_intact(): void {
 		$meta = WDP_Product_Settings_Service::from_product_panel(
 			array(
-				'faq_items'    => array(
-					3 => array('q' => 'Bağış ne zaman ulaşır?', 'a' => 'Gün içinde iletilir.'),
-					7 => array('q' => '', 'a' => 'Soru boş, atlanır'),
-					9 => 'not-a-row',
-				),
 				'trust_badges' => array(
-					array('icon' => 'builtin:heart', 'text' => 'Güvenli ödeme'),
-					array('icon' => 'builtin:heart', 'text' => ''),
+					3 => array('icon' => 'builtin:heart', 'text' => 'Güvenli ödeme'),
+					7 => array('icon' => 'builtin:heart', 'text' => ''),
+					9 => 'not-a-row',
 				),
 			)
 		);
 
-		$this->assertStringNotContainsString('\\u', $meta['_faq_items']);
-		$this->assertSame(
-			array(array('q' => 'Bağış ne zaman ulaşır?', 'a' => 'Gün içinde iletilir.')),
-			json_decode($meta['_faq_items'], true)
-		);
+		$this->assertStringNotContainsString('\\u', $meta['_trust_badges']);
 		$this->assertSame(
 			array(array('icon' => 'builtin:heart', 'text' => 'Güvenli ödeme')),
 			json_decode($meta['_trust_badges'], true)
 		);
-
-		// Same rows read back by the front-end sanitizer.
-		$this->assertSame('Bağış ne zaman ulaşır?', WDP_Form_Modules::sanitize_faq_items($meta['_faq_items'])[0]['q']);
 	}
 
 	public function test_empty_repeaters_store_empty_string(): void {
-		$meta = WDP_Product_Settings_Service::from_product_panel(array('faq_items' => array(), 'trust_badges' => 'junk'));
+		$meta = WDP_Product_Settings_Service::from_product_panel(array('trust_badges' => 'junk'));
 
-		$this->assertSame('', $meta['_faq_items']);
 		$this->assertSame('', $meta['_trust_badges']);
 	}
 
 	public function test_module_order_only_saved_when_custom_order_is_enabled(): void {
-		$posted = array('module_order' => array('faq', 'media', array('x'), 'bogus'));
+		$posted = array('module_order' => array('urgency', 'media', array('x'), 'bogus'));
 
 		$off = WDP_Product_Settings_Service::from_product_panel($posted);
 		$this->assertSame('', $off['_wdp_module_order']);
 
 		$on = WDP_Product_Settings_Service::from_product_panel($posted + array('module_order_custom' => 'yes'));
 		$order = explode(',', $on['_wdp_module_order']);
-		$this->assertSame(array('faq', 'media'), array_slice($order, 0, 2));
+		$this->assertSame(array('urgency', 'media'), array_slice($order, 0, 2));
 		$this->assertNotContains('bogus', $order);
 		$this->assertCount(count(WDP_Form_Modules::allowed_ids()), $order);
 	}

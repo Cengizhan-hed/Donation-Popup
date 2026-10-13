@@ -267,6 +267,37 @@
     }
   }
 
+  /**
+   * The tab carries show_if_{type} classes (WooCommerce toggles them); this keeps the
+   * panel closed when the product switches to a type the donation form does not support.
+   * Inputs stay in the form, so saving never deletes the stored donation settings.
+   */
+  function syncTabWithProductType(panel) {
+    const select = document.getElementById("product-type")
+    if (!select) return
+    const supported = (panel.getAttribute("data-wdp-supported-types") || "simple").split(/\s+/)
+    const key = cfg.tabKey || "wdp_donation"
+    const tab = document.querySelector("#woocommerce-product-data ." + key + "_options")
+
+    const apply = () => {
+      const ok = supported.indexOf(select.value) !== -1
+      if (tab) tab.hidden = !ok
+      if (!ok && panel.offsetParent !== null) {
+        panel.style.display = "none"
+        const visible = Array.prototype.filter.call(
+          document.querySelectorAll("#woocommerce-product-data ul.wc-tabs > li"),
+          (li) => !li.hidden && li.offsetParent !== null
+        )
+        const first = visible.length ? visible[0].querySelector("a") : null
+        if (first) first.click()
+      }
+    }
+
+    select.addEventListener("change", () => window.setTimeout(apply, 0))
+    if (window.jQuery) window.jQuery(document.body).on("woocommerce-product-type-change", () => window.setTimeout(apply, 0))
+    apply()
+  }
+
   function initColorPickers(panel) {
     const $ = window.jQuery
     if (!$ || !$.fn || typeof $.fn.wpColorPicker !== "function") return
@@ -318,6 +349,7 @@
     if (form) form.addEventListener("invalid", revealInvalid, true)
 
     initColorPickers(panel)
+    syncTabWithProductType(panel)
   }
 
   function init() {
