@@ -1,0 +1,111 @@
+/**
+ * @file amount.css
+ * Tutar bölümü: sabit özet satırı, özel tutar, para birimi ön eki.
+ */
+
+.wdp-form-block--amount,
+.wdp-price-quantity-row,
+.wdp-custom-price-row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--wdp-space-3);
+  margin: 0 0 var(--wdp-space-5);
+}
+
+/* Sabit tutar — tıklanamaz özet (buton gibi DEĞİL) */
+.wdp-line-total-display,
+.wdp-fixed-amount-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--wdp-space-3);
+  width: 100%;
+  min-height: auto;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: inherit;
+  cursor: default;
+  box-shadow: none !important;
+  pointer-events: none;
+}
+
+.wdp-line-total-display .wdp-line-total-label,
+.wdp-fixed-amount-summary__label {
+  font-size: var(--wdp-fs-label);
+  font-weight: var(--wdp-fw-regular);
+  color: var(--wdp-text-muted);
+}
+
+.wdp-line-total-display .wdp-line-total-value,
+.wdp-fixed-amount-summary__value {
+  font-size: var(--wdp-fs-body);
+  font-weight: var(--wdp-fw-semibold);
+  color: var(--wdp-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.wdp-fixed-price-counter-row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--wdp-space-3);
+  align-items: stretch;
+}
+
+.wdp-fixed-price-counter-row .wdp-quantity-counter {
+  align-self: stretch;
+}
+
+.wdp-custom-price-field,
+.wdp-price-field {
+  width: 100%;
+}
+
+.wdp-custom-price-shell {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  min-height: var(--wdp-control-h);
+  border: 1px solid var(--wdp-border);
+  border-radius: var(--wdp-radius-md);
+  background: var(--wdp-surface);
+  overflow: hidden;
+}
+
+.wdp-custom-price-shell:focus-within {
+  border-color: var(--wdp-primary);
+  box-shadow: var(--wdp-focus-ring) !important;
+}
+
+.wdp-custom-price-currency {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 40px;
+  width: 40px;
+  border-right: 1px solid var(--wdp-border);
+  background: var(--wdp-surface-muted);
+  color: var(--wdp-text-muted);
+  font-size: var(--wdp-fs-label);
+  font-weight: var(--wdp-fw-medium);
+}
+
+.wdp-custom-price-shell .wdp-custom-price-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: var(--wdp-control-h);
+  border: 0 !important;
+  border-radius: 0;
+  box-shadow: none !important;
+  padding: 12px 14px;
+  font-size: var(--wdp-fs-input);
+  font-variant-numeric: tabular-nums;
+}
+
+.wdp-custom-price-input[readonly] {
+  background: var(--wdp-surface-muted);
+  color: var(--wdp-text);
+  cursor: default;
+}

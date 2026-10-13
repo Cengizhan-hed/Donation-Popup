@@ -18,12 +18,45 @@ WooCommerce bağış popup / sağ panel eklentisi. Ürün bazlı bağış formla
    - `[wdp_donation_button]` / `[wdp_donation_button_panel]` — buton + popup / sağ panel
    - `[wdp_donations]` — bağış ürünleri ızgarası
 
+## 10.28.0 — Form tasarım sistemi (Stage 2C)
+
+- Form CSS’i token’lar üzerine baştan yazıldı (`assets/css/src/foundation|shells|components|list`).
+- Tek ana renk; gölge yalnızca kabukta; hover’da transform yok; gradient yok.
+- Admin sekmeleri 6’ya indirildi: Ürünler, Ürün sayfası ve liste, **Görünüm**, **Formlar ve metinler**, Entegrasyonlar, Gelişmiş.
+- Kurulum rehberi tema/oluşturucu algılama ile yeniden yazıldı (`WDP_Builder_Detect::detect_site_context`).
+- Geçiş: `WDP_Migrations` adımı `10.28.0` — yedek `wdp_settings_backup_10_27`, ölü görsel ayarlar silinir.
+
+### Tasarım token’ları (özet)
+
+`--wdp-primary`, `--wdp-primary-hover/active/soft`, `--wdp-on-primary`, `--wdp-text/muted`, `--wdp-border/strong`, `--wdp-surface/muted`, `--wdp-radius-sm/md/lg`, `--wdp-control-h`, `--wdp-button-h`, `--wdp-space-1…8`, `--wdp-shadow-shell`, `--wdp-shell-w-modal/panel`, tipografi (`--wdp-fs-*`, `--wdp-font`).
+
+### Kaldırılan ayarlar ve nedenleri
+
+| Ayar | Neden |
+|------|--------|
+| Buton gölgeleri (`button_shadow_*`) | Butonlar gölgesiz |
+| Cam blur / fill opacity | Zaten zorlanmış; solid yüzey |
+| `motion_intensity`, `chip_style` | CSS tüketmiyordu |
+| Progress `percentage_bg/text` | Kullanılmıyordu |
+| Checkout yeşili / ikinci mavi | Tek primary |
+| Hover kaydırma / elevation ladder | Tasarım ilkesi |
+
+### Görsel kontrol
+
+```bash
+npm install
+npx playwright install chromium
+npm run visual   # fixtures + Playwright; çıktı: build/visual/index.html
+```
+
 ## Geliştirme
 
 ```bash
 npm install
 npm run build      # CSS + JS bundle üretir
 npm run verify     # build + smoke test
+npm run test       # PHPUnit + JS toplam hesabı
+npm run visual     # görsel smoke (dev)
 npm run pack       # dağıtım ZIP'i (build/woo-donation-popup.zip)
 ```
 

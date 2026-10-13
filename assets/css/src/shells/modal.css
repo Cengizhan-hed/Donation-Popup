@@ -1,0 +1,139 @@
+/**
+ * @file modal.css
+ * Ortada açılan modal kabuk.
+ */
+
+.hdf-donation-modal-wrapper.wdp-modal:not(.wdp-side-panel) {
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: var(--wdp-space-4);
+  background: var(--wdp-overlay);
+  opacity: 0;
+}
+
+.hdf-donation-modal-wrapper.wdp-modal:not(.wdp-side-panel).show {
+  display: flex;
+  animation: wdp-fade-in 180ms ease forwards;
+}
+
+.hdf-donation-modal-wrapper.wdp-modal:not(.wdp-side-panel).show.wdp-is-closing {
+  animation: wdp-fade-out 160ms ease forwards;
+}
+
+.hdf-donation-modal-wrapper.wdp-modal:not(.wdp-side-panel) .wdp-modal-content {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: min(var(--wdp-shell-w-modal), calc(100% - 32px));
+  max-height: calc(100dvh - 48px);
+  max-height: calc(100vh - 48px);
+  background: var(--wdp-surface);
+  border: 1px solid var(--wdp-border);
+  border-radius: var(--wdp-radius-lg);
+  box-shadow: var(--wdp-shadow-shell);
+  overflow: hidden;
+}
+
+.hdf-donation-modal-wrapper.wdp-modal:not(.wdp-side-panel) .wdp-modal-header,
+.hdf-donation-modal-wrapper.wdp-modal:not(.wdp-side-panel) .wdp-form-title-wrapper {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--wdp-space-3);
+  padding: var(--wdp-space-5) var(--wdp-space-5) var(--wdp-space-3);
+  padding-right: calc(var(--wdp-space-5) + 44px);
+}
+
+.hdf-donation-modal-wrapper .wdp-modal-title-wrapper,
+.hdf-donation-modal-wrapper .wdp-form-title-wrapper {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.hdf-donation-modal-wrapper .wdp-modal-title,
+.hdf-donation-modal-wrapper .wdp-form-title {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: var(--wdp-fs-title);
+  font-weight: var(--wdp-fw-semibold);
+  line-height: var(--wdp-lh-title);
+  color: var(--wdp-text);
+}
+
+.hdf-donation-modal-wrapper .wdp-modal-close {
+  position: absolute;
+  top: var(--wdp-space-3);
+  right: var(--wdp-space-3);
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: var(--wdp-radius-md);
+  background: transparent;
+  color: var(--wdp-text-muted);
+  font-size: 28px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.hdf-donation-modal-wrapper .wdp-modal-close:hover {
+  color: var(--wdp-text);
+  background: var(--wdp-surface-muted);
+}
+
+.hdf-donation-modal-wrapper.wdp-modal:not(.wdp-side-panel) form.wdp-donation-form-fields {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.hdf-donation-modal-wrapper.wdp-modal:not(.wdp-side-panel) form.wdp-donation-form-fields > :not(.wdp-form-cta-zone):not(.wdp-side-panel-footer-zone) {
+  /* scrollable body pieces handled via form overflow on children */
+}
+
+.hdf-donation-modal-wrapper.wdp-modal:not(.wdp-side-panel) .wdp-modal-content > .wdp-progress-bar-container,
+.hdf-donation-modal-wrapper.wdp-modal:not(.wdp-side-panel) form.wdp-donation-form-fields > .wdp-field-stack,
+.hdf-donation-modal-wrapper.wdp-modal:not(.wdp-side-panel) form.wdp-donation-form-fields > .wdp-form-block,
+.hdf-donation-modal-wrapper.wdp-modal:not(.wdp-side-panel) form.wdp-donation-form-fields > .wdp-shares-section,
+.hdf-donation-modal-wrapper.wdp-modal:not(.wdp-side-panel) form.wdp-donation-form-fields > .wdp-price-quantity-row,
+.hdf-donation-modal-wrapper.wdp-modal:not(.wdp-side-panel) form.wdp-donation-form-fields > .wdp-custom-price-row,
+.hdf-donation-modal-wrapper.wdp-modal:not(.wdp-side-panel) form.wdp-donation-form-fields > .wdp-sadaka-donation,
+.hdf-donation-modal-wrapper.wdp-modal:not(.wdp-side-panel) form.wdp-donation-form-fields > .wdp-amount-presets,
+.hdf-donation-modal-wrapper.wdp-modal:not(.wdp-side-panel) form.wdp-donation-form-fields > .wdp-campaign-module,
+.hdf-donation-modal-wrapper.wdp-modal:not(.wdp-side-panel) form.wdp-donation-form-fields > .wdp-form-error {
+  padding-left: var(--wdp-space-5);
+  padding-right: var(--wdp-space-5);
+}
+
+.hdf-donation-modal-wrapper.wdp-modal:not(.wdp-side-panel) form.wdp-donation-form-fields {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-bottom: 0;
+}
+
+@media (max-width: 600px) {
+  .hdf-donation-modal-wrapper.wdp-modal:not(.wdp-side-panel) {
+    align-items: flex-end;
+    padding: 0;
+    background: var(--wdp-overlay);
+  }
+
+  .hdf-donation-modal-wrapper.wdp-modal:not(.wdp-side-panel) .wdp-modal-content {
+    width: 100%;
+    max-height: 92dvh;
+    max-height: 92vh;
+    border-radius: var(--wdp-radius-lg) var(--wdp-radius-lg) 0 0;
+    border-bottom: 0;
+  }
+}

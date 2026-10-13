@@ -85,12 +85,23 @@
       return;
     }
     const unit = resolveShareUnitPrice(modal);
+    bar.hidden = false;
+    bar.removeAttribute('hidden');
     if (!unit) {
-      bar.hidden = true;
+      valueEl.textContent = '—';
+      const detailEmpty = form.querySelector('.wdp-shares-total-bar__detail, .wdp-footer-total__detail');
+      if (detailEmpty) {
+        detailEmpty.hidden = true;
+        detailEmpty.textContent = '';
+      }
       return;
     }
     valueEl.textContent = formatCurrency(unit * count);
-    bar.hidden = count < 2;
+    const detail = form.querySelector('.wdp-shares-total-bar__detail, .wdp-footer-total__detail');
+    if (detail) {
+      detail.hidden = false;
+      detail.textContent = count + ' hisse × ' + formatCurrency(unit);
+    }
   }
 
   function syncShareholderUnitPricesFromModal(modal) {

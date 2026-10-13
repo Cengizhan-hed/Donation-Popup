@@ -23,16 +23,17 @@ class WDP_Color_Palette {
 	public static function from_hex($hex) {
 		$hex = self::normalize_hex($hex);
 		if ($hex === '') {
-			$hex = '#0f608b';
+			$hex = '#1d5fa8';
 		}
 
 		$rgb = self::hex_to_rgb($hex);
 		$hsl = self::rgb_to_hsl($rgb[0], $rgb[1], $rgb[2]);
 
 		$primary = $hex;
-		$hover   = self::hsl_to_hex(self::clamp($hsl[0], 0, 360), self::clamp($hsl[1] * 1.05, 0, 100), self::clamp($hsl[2] - 8, 8, 92));
-		$dark    = self::hsl_to_hex(self::clamp($hsl[0], 0, 360), self::clamp($hsl[1] * 1.08, 0, 100), self::clamp($hsl[2] - 16, 6, 88));
-		$soft    = self::mix_hex($primary, '#ffffff', 0.88);
+		/* FAZ 2: hover %8 koyu, active %12 koyu; soft = primary %8 opaklık. */
+		$hover   = self::mix_hex($primary, '#000000', 0.08);
+		$dark    = self::mix_hex($primary, '#000000', 0.12);
+		$soft    = self::mix_hex($primary, '#ffffff', 0.92);
 		$soft_2  = self::mix_hex($primary, '#ffffff', 0.94);
 		$muted   = self::mix_hex($primary, '#ffffff', 0.72);
 		$border  = self::mix_hex($primary, '#e2e8f0', 0.55);
@@ -154,19 +155,17 @@ class WDP_Color_Palette {
 	 */
 	public static function to_css_variables($hex) {
 		$p = self::from_hex($hex);
+		$rgb = self::hex_to_rgb($p['primary']);
+		$soft_rgba = sprintf('rgba(%d,%d,%d,0.08)', $rgb[0], $rgb[1], $rgb[2]);
 		$lines = array(
 			'--wdp-primary: ' . $p['primary'],
 			'--wdp-primary-hover: ' . $p['primary_hover'],
+			'--wdp-primary-active: ' . $p['primary_dark'],
 			'--wdp-primary-dark: ' . $p['primary_dark'],
-			'--wdp-primary-soft: ' . $p['primary_soft'],
-			'--wdp-primary-soft-2: ' . $p['primary_soft_2'],
-			'--wdp-primary-muted: ' . $p['primary_muted'],
-			'--wdp-primary-border: ' . $p['primary_border'],
+			'--wdp-primary-soft: ' . $soft_rgba,
 			'--wdp-on-primary: ' . $p['on_primary'],
-			'--wdp-success: ' . $p['success'],
-			'--wdp-autofill-row-bg: ' . $p['primary_soft_2'],
-			'--wdp-a-soft: color-mix(in srgb, ' . $p['primary'] . ' 10%, transparent)',
-			'--wdp-a-border: color-mix(in srgb, ' . $p['primary'] . ' 22%, transparent)',
+			'--wdp-button-primary: ' . $p['primary'],
+			'--wdp-button-primary-hover: ' . $p['primary_hover'],
 		);
 		$out = '';
 		foreach ($lines as $line) {

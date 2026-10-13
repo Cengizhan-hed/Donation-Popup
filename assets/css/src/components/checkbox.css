@@ -1,0 +1,66 @@
+/**
+ * @file checkbox.css
+ * Onay kutusu: işlem ücreti, anonim, e-posta, ithaf.
+ */
+
+.wdp-checkbox,
+.wdp-cover-fee,
+.wdp-anonymous-option,
+.wdp-form-checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--wdp-space-3);
+  min-height: 44px;
+  margin: 0 0 var(--wdp-space-3);
+  cursor: pointer;
+}
+
+.wdp-checkbox input[type="checkbox"],
+.wdp-cover-fee input[type="checkbox"],
+.wdp-form-checkbox input[type="checkbox"],
+.wdp-anonymous-option input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  margin-top: 12px;
+  border: 1px solid var(--wdp-border-strong);
+  border-radius: var(--wdp-radius-sm);
+  background: var(--wdp-surface);
+  cursor: pointer;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.wdp-checkbox input[type="checkbox"]:checked,
+.wdp-cover-fee input[type="checkbox"]:checked,
+.wdp-form-checkbox input[type="checkbox"]:checked {
+  background: var(--wdp-primary);
+  border-color: var(--wdp-primary);
+}
+
+.wdp-checkbox input[type="checkbox"]:checked::after,
+.wdp-cover-fee input[type="checkbox"]:checked::after,
+.wdp-form-checkbox input[type="checkbox"]:checked::after {
+  content: "";
+  position: absolute;
+  left: 6px;
+  top: 2px;
+  width: 5px;
+  height: 10px;
+  border: solid var(--wdp-on-primary);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.wdp-checkbox__label,
+.wdp-cover-fee label,
+.wdp-form-checkbox label,
+.wdp-anonymous-option label {
+  flex: 1 1 auto;
+  padding: 12px 0;
+  font-size: var(--wdp-fs-label);
+  color: var(--wdp-text);
+  cursor: pointer;
+}

@@ -29,6 +29,8 @@ class WDP_Admin_Hooks {
 		add_action('wp_ajax_wdp_recalculate_product_total', array('WDP_Admin_Product_Settings_Ajax', 'recalculate_total'));
 		add_action('wp_ajax_wdp_save_placement_settings', array($admin, 'save_placement_settings'));
 		add_action('wp_ajax_wdp_save_advanced_settings', array($admin, 'save_advanced_settings'));
+		add_action('wp_ajax_wdp_save_appearance_settings', array($admin, 'save_appearance_settings'));
+		add_action('wp_ajax_wdp_save_forms_texts_settings', array($admin, 'save_forms_texts_settings'));
 		add_action('wp_ajax_wdp_save_normal_form_settings', array($admin, 'save_normal_form_settings'));
 		add_action('wp_ajax_wdp_save_design_studio_settings', array($admin, 'save_design_studio_settings'));
 		add_action('wp_ajax_wdp_save_shareholder_form_settings', array($admin, 'save_shareholder_form_settings'));

@@ -1,0 +1,167 @@
+/**
+ * @file field.css
+ * Form alanları: etiket üstte, ikon, hata, field-stack uyumu.
+ */
+
+.wdp-field,
+.wdp-field-stack__row,
+.wdp-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--wdp-space-1);
+  margin: 0 0 var(--wdp-space-3);
+}
+
+.wdp-field__label,
+.wdp-field-stack__label,
+.wdp-form-group > label,
+.wdp-custom-price-row__label {
+  display: block;
+  font-size: var(--wdp-fs-label);
+  font-weight: var(--wdp-fw-medium);
+  color: var(--wdp-text);
+  line-height: var(--wdp-lh);
+}
+
+.wdp-field__required,
+.wdp-field-stack__required {
+  color: var(--wdp-danger);
+  margin-left: 2px;
+}
+
+.wdp-field__control,
+.wdp-field-stack__control {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.wdp-field__icon,
+.wdp-field-stack__svg,
+.wdp-field-stack__icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  color: var(--wdp-text-muted);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.wdp-field-stack__row--textarea .wdp-field-stack__svg,
+.wdp-field-stack__row--textarea .wdp-field__icon {
+  top: 14px;
+  transform: none;
+}
+
+.wdp-field__input,
+.wdp-field-stack__input,
+.wdp-form-group input[type="text"],
+.wdp-form-group input[type="email"],
+.wdp-form-group input[type="tel"],
+.wdp-form-group input[type="number"],
+.wdp-form-group textarea,
+.wdp-custom-price-input {
+  width: 100%;
+  min-height: var(--wdp-control-h);
+  height: var(--wdp-control-h);
+  padding: 12px 14px;
+  border: 1px solid var(--wdp-border);
+  border-radius: var(--wdp-radius-md);
+  background: var(--wdp-surface);
+  color: var(--wdp-text);
+  font-size: var(--wdp-fs-input);
+  font-weight: var(--wdp-fw-regular);
+  line-height: var(--wdp-lh);
+}
+
+.wdp-field-stack__row:has(.wdp-field-stack__svg) .wdp-field-stack__input,
+.wdp-field-stack__row:has(.wdp-field__icon) .wdp-field-stack__input,
+.wdp-no-field-icons .wdp-field-stack__input {
+  /* icons off: default padding */
+}
+
+.wdp-field-stack:not(.wdp-no-field-icons) .wdp-field-stack__row:has(.wdp-field-stack__svg) .wdp-field-stack__input,
+.hdf-donation-modal-wrapper:not(.wdp-no-field-icons) .wdp-field-stack__row .wdp-field-stack__input {
+  padding-left: 44px;
+}
+
+form.wdp-no-field-icons .wdp-field-stack__svg,
+form.wdp-no-field-icons .wdp-field__icon {
+  display: none;
+}
+
+form.wdp-no-field-icons .wdp-field-stack__input {
+  padding-left: 14px;
+}
+
+.wdp-form-group textarea,
+.wdp-field-stack__input[rows],
+textarea.wdp-field-stack__input {
+  height: auto;
+  min-height: calc(var(--wdp-control-h) + 32px);
+  resize: vertical;
+}
+
+.wdp-field__help,
+.wdp-field-stack__help,
+.wdp-form-help {
+  font-size: var(--wdp-fs-help);
+  color: var(--wdp-text-muted);
+  margin-top: 2px;
+}
+
+.wdp-field__error,
+.wdp-field-stack__error,
+.wdp-form-error,
+.wdp-error-message {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--wdp-space-1);
+  margin-top: var(--wdp-space-1);
+  font-size: var(--wdp-fs-help);
+  color: var(--wdp-danger);
+}
+
+.wdp-field--invalid .wdp-field__input,
+.wdp-field-stack__row.is-invalid .wdp-field-stack__input,
+.wdp-field-stack__input[aria-invalid="true"],
+.wdp-custom-price-input[aria-invalid="true"] {
+  border-color: var(--wdp-danger);
+}
+
+.wdp-field-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-bottom: var(--wdp-space-5);
+}
+
+.wdp-field-stack__group {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-bottom: var(--wdp-space-5);
+}
+
+.wdp-note-toggle,
+.wdp-add-note-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--wdp-space-1);
+  margin: 0 0 var(--wdp-space-3);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--wdp-primary);
+  font-size: var(--wdp-fs-label);
+  font-weight: var(--wdp-fw-medium);
+  cursor: pointer;
+}
+
+.wdp-note-toggle:hover,
+.wdp-add-note-link:hover {
+  color: var(--wdp-primary-hover);
+}

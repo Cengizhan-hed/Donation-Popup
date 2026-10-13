@@ -1,0 +1,62 @@
+/**
+ * @file footer.css
+ * Alt bölge: toplam satırı + butonlar + hata.
+ */
+
+.wdp-form-cta-zone,
+.wdp-side-panel-footer-zone {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--wdp-space-3);
+  padding: var(--wdp-space-4) var(--wdp-space-5);
+  padding-bottom: calc(var(--wdp-space-4) + env(safe-area-inset-bottom, 0px));
+  border-top: 1px solid var(--wdp-border);
+  background: var(--wdp-surface);
+}
+
+.hdf-donation-modal-wrapper.wdp-donation-form .wdp-form-cta-zone {
+  padding-left: 0;
+  padding-right: 0;
+  padding-bottom: 0;
+}
+
+.wdp-footer-error,
+.wdp-form-cta-zone .wdp-form-error:not([style*="display: none"]),
+.wdp-side-panel-footer-zone .wdp-form-error:not([style*="display: none"]) {
+  margin: 0;
+  padding: var(--wdp-space-2) var(--wdp-space-3);
+  border: 1px solid color-mix(in srgb, var(--wdp-danger) 30%, var(--wdp-border));
+  border-radius: var(--wdp-radius-md);
+  background: color-mix(in srgb, var(--wdp-danger) 8%, var(--wdp-surface));
+  color: var(--wdp-danger);
+  font-size: var(--wdp-fs-help);
+}
+
+.wdp-footer-total {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  width: 100%;
+  margin: 0;
+}
+
+.wdp-footer-total__label {
+  font-size: var(--wdp-fs-body);
+  font-weight: var(--wdp-fw-medium);
+}
+
+.wdp-footer-total__value {
+  font-size: var(--wdp-fs-body);
+  font-weight: var(--wdp-fw-semibold);
+  font-variant-numeric: tabular-nums;
+}
+
+.wdp-footer-total__detail {
+  display: block;
+  width: 100%;
+  font-size: var(--wdp-fs-help);
+  color: var(--wdp-text-muted);
+  text-align: right;
+  margin: calc(-1 * var(--wdp-space-2)) 0 0;
+}

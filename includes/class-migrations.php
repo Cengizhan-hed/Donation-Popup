@@ -68,6 +68,7 @@ class WDP_Migrations {
 	public static function steps() {
 		return array(
 			'10.27.0' => array(__CLASS__, 'step_10_27_0'),
+			'10.28.0' => array(__CLASS__, 'step_10_28_0'),
 		);
 	}
 
@@ -197,6 +198,143 @@ class WDP_Migrations {
 	}
 
 	/**
+	 * 10.28.0: backup settings, map visual options to tokens, drop dead keys, slim product theme metas.
+	 *
+	 * @param bool $is_fresh Fresh install.
+	 * @return string Summary for the log.
+	 */
+	public static function step_10_28_0($is_fresh) {
+		$backup_keys = array_merge(
+			self::SETTINGS_OPTIONS,
+			array(
+				'wdp_placement_settings',
+				'wdp_meta_tracking_settings',
+				'wdp_category_title_colors',
+				'wdp_custom_style_presets',
+			)
+		);
+		$backup = array();
+		foreach ($backup_keys as $option) {
+			$val = get_option($option, null);
+			if ($val !== null) {
+				$backup[ $option ] = $val;
+			}
+		}
+		if (!$is_fresh && get_option('wdp_settings_backup_10_27', false) === false) {
+			update_option('wdp_settings_backup_10_27', $backup, false);
+		}
+
+		$button = get_option('wdp_button_settings', array());
+		$button = is_array($button) ? $button : array();
+		$brand  = '';
+		if (!empty($button['brand_color'])) {
+			$brand = sanitize_hex_color($button['brand_color']);
+		}
+		if (!$brand && !empty($button['button_primary_color'])) {
+			$brand = sanitize_hex_color($button['button_primary_color']);
+		}
+		if (!$brand) {
+			$brand = '#1d5fa8';
+		}
+		$button['brand_color']          = $brand;
+		$button['button_primary_color'] = $brand;
+		if (empty($button['title_size'])) {
+			$px = isset($button['title_font_size']) ? (int) $button['title_font_size'] : 22;
+			$button['title_size'] = $px <= 20 ? 'S' : ($px >= 26 ? 'L' : 'M');
+		}
+		if (isset($button['form_density'])) {
+			if ($button['form_density'] === 'compact') {
+				$button['form_density'] = 'tight';
+			} elseif ($button['form_density'] === 'spacious') {
+				$button['form_density'] = 'comfortable';
+			}
+		}
+		$radius = isset($button['ui_border_radius']) ? max(0, min(24, (int) $button['ui_border_radius'])) : 10;
+		$button['ui_border_radius'] = (string) $radius;
+		$mapped_density = isset($button['form_density']) ? (string) $button['form_density'] : 'normal';
+
+		$dead_button_keys = array(
+			'glass_blur_px',
+			'glass_fill_opacity',
+			'modal_background_color',
+			'motion_intensity',
+			'chip_style',
+			'elevation_level',
+			'form_button_alignment',
+			'button_checkout_color',
+			'button_checkout_hover',
+		);
+		foreach ($dead_button_keys as $key) {
+			unset($button[ $key ]);
+		}
+		foreach (array_keys($button) as $key) {
+			if (strpos((string) $key, 'button_shadow_') === 0) {
+				unset($button[ $key ]);
+			}
+		}
+		update_option('wdp_button_settings', $button, false);
+
+		$progress = get_option('wdp_progress_bar_settings', array());
+		if (is_array($progress)) {
+			unset($progress['percentage_bg'], $progress['percentage_text']);
+			update_option('wdp_progress_bar_settings', $progress, false);
+		}
+
+		$share = get_option('wdp_shareholder_settings', array());
+		if (is_array($share)) {
+			foreach (array('shareholder_card_shadow', 'shareholder_card_radius', 'shareholders_area_radius', 'shareholder_progress_status_label') as $key) {
+				unset($share[ $key ]);
+			}
+			update_option('wdp_shareholder_settings', $share, false);
+		}
+
+		$removed_theme_meta = 0;
+		foreach (array('_theme_primary_hover', '_theme_modal_bg', '_theme_preset_id', '_theme_density') as $meta_key) {
+			delete_post_meta_by_key($meta_key);
+			$removed_theme_meta++;
+		}
+
+		// Re-apply token fields after any normalizer fill (legacy normalizers may not know 2C keys).
+		$button = get_option('wdp_button_settings', array());
+		if (is_array($button)) {
+			$button['form_density'] = $mapped_density;
+			$button['ui_border_radius'] = (string) $radius;
+			if (!empty($button['brand_color']) || !empty($button['button_primary_color'])) {
+				$button['brand_color'] = !empty($button['brand_color']) ? $button['brand_color'] : $button['button_primary_color'];
+			}
+			foreach ($dead_button_keys as $key) {
+				unset($button[ $key ]);
+			}
+			foreach (array_keys($button) as $key) {
+				if (strpos((string) $key, 'button_shadow_') === 0) {
+					unset($button[ $key ]);
+				}
+			}
+			update_option('wdp_button_settings', $button, false);
+		}
+		$progress = get_option('wdp_progress_bar_settings', array());
+		if (is_array($progress)) {
+			unset($progress['percentage_bg'], $progress['percentage_text']);
+			update_option('wdp_progress_bar_settings', $progress, false);
+		}
+		$share = get_option('wdp_shareholder_settings', array());
+		if (is_array($share)) {
+			foreach (array('shareholder_card_shadow', 'shareholder_card_radius', 'shareholders_area_radius', 'shareholder_progress_status_label') as $key) {
+				unset($share[ $key ]);
+			}
+			update_option('wdp_shareholder_settings', $share, false);
+		}
+
+		return sprintf(
+			'backup:%s brand:%s theme_meta:%d fresh:%s',
+			isset($backup['wdp_button_settings']) ? 'yes' : 'no',
+			$brand,
+			$removed_theme_meta,
+			$is_fresh ? 'yes' : 'no'
+		);
+	}
+
+	/**
 	 * 10.27.0: remove the in-form FAQ module data, write placement settings, fill missing option keys.
 	 *
 	 * @param bool $is_fresh Fresh install.
@@ -280,10 +418,27 @@ class WDP_Migrations {
 		if (get_option(self::NOTICE_OPTION, '') !== '1' || !current_user_can('manage_woocommerce')) {
 			return;
 		}
-		$url = wp_nonce_url(add_query_arg('wdp_dismiss_placement', '1'), 'wdp_dismiss_placement');
+		// Yalnızca eklenti ayarları ve Eklentiler ekranı (tüm admin'e yayılmaz).
+		$screen = function_exists('get_current_screen') ? get_current_screen() : null;
+		$ok     = false;
+		if ($screen && isset($screen->id)) {
+			$id = (string) $screen->id;
+			if ($id === 'plugins' || $id === 'plugins-network' || strpos($id, 'wdp-popup-settings') !== false) {
+				$ok = true;
+			}
+		}
+		if (!$ok && isset($_GET['page']) && (string) $_GET['page'] === 'wdp-popup-settings') { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$ok = true;
+		}
+		if (!$ok) {
+			return;
+		}
+		$settings = admin_url('admin.php?page=wdp-popup-settings#placement');
+		$url      = wp_nonce_url(add_query_arg('wdp_dismiss_placement', '1'), 'wdp_dismiss_placement');
 		echo '<div class="notice notice-info is-dismissible"><p>';
-		echo esc_html__('Ürün sayfası otomatik yerleşimi eklendi; mevcut düzeniniz korunması için kapalı. Ayarlar → Ürün sayfası ve liste.', 'woo-donation-popup');
-		echo ' <a href="' . esc_url($url) . '">' . esc_html__('Gizle', 'woo-donation-popup') . '</a>';
+		echo esc_html__('Ürün sayfası otomatik yerleşimi eklendi; mevcut düzeniniz korunması için kapalı.', 'woo-donation-popup');
+		echo ' <a href="' . esc_url($settings) . '">' . esc_html__('Ayarlar → Ürün sayfası ve liste', 'woo-donation-popup') . '</a>';
+		echo ' · <a href="' . esc_url($url) . '">' . esc_html__('Gizle', 'woo-donation-popup') . '</a>';
 		echo '</p></div>';
 	}
 

@@ -1,0 +1,77 @@
+/**
+ * @file reset-scope.css
+ * Tema izolasyonu: .wdp-root içinde kontrollü sıfırlama. @layer yok.
+ * !important yalnızca tema sızıntısını engellemek için.
+ * min-height/padding bileşen token'larına bırakılır (tema min-height ezmesi yok).
+ */
+
+.wdp-root,
+.hdf-donation-modal-wrapper {
+  box-sizing: border-box;
+  font-family: var(--wdp-font);
+  font-size: var(--wdp-fs-body);
+  font-weight: var(--wdp-fw-regular);
+  line-height: var(--wdp-lh);
+  color: var(--wdp-text);
+  -webkit-font-smoothing: antialiased;
+}
+
+.wdp-root *,
+.wdp-root *::before,
+.wdp-root *::after,
+.hdf-donation-modal-wrapper *,
+.hdf-donation-modal-wrapper *::before,
+.hdf-donation-modal-wrapper *::after {
+  box-sizing: border-box;
+}
+
+.wdp-root :is(button, input, select, textarea, label, a, svg, p, h2, h3, h4),
+.hdf-donation-modal-wrapper :is(button, input, select, textarea, label, a, svg, p, h2, h3, h4) {
+  appearance: none;
+  -webkit-appearance: none;
+  margin: 0;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: var(--wdp-lh);
+  letter-spacing: normal;
+  text-transform: none;
+  box-shadow: none !important;
+  background-image: none !important;
+}
+
+.wdp-root :is(button, input, select, textarea),
+.hdf-donation-modal-wrapper :is(button, input, select, textarea) {
+  border-style: solid;
+  border-width: 0;
+  border-radius: var(--wdp-radius-md);
+  background-color: transparent;
+  color: inherit;
+}
+
+.wdp-root :is(.elementor-button, .fusion-button, .ast-button, .wp-block-button__link),
+.hdf-donation-modal-wrapper :is(.elementor-button, .fusion-button, .ast-button, .wp-block-button__link) {
+  all: unset;
+  display: inline-flex;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+.wdp-root a,
+.hdf-donation-modal-wrapper a {
+  color: var(--wdp-primary);
+  text-decoration: none;
+  box-shadow: none !important;
+}
+
+.wdp-root a:hover,
+.hdf-donation-modal-wrapper a:hover {
+  color: var(--wdp-primary-hover);
+}
+
+.wdp-root svg,
+.hdf-donation-modal-wrapper svg {
+  display: block;
+  flex-shrink: 0;
+  fill: currentColor;
+}

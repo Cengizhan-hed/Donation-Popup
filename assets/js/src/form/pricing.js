@@ -38,21 +38,139 @@
     return 0;
   }
 
-  /** Sabit fiyat + miktar satırında toplam tutarı günceller. */
+  /**
+   * Sabit fiyat özet satırı: birim fiyat (adet çarpımı yok — toplam footer'da).
+   */
   function updateFixedPriceLineDisplay(form) {
     const row = form.querySelector('.wdp-fixed-price-counter-row');
     if (!row) {
       return;
     }
-    const qtyEl = row.querySelector('input[name="quantity"]');
     const out = row.querySelector('.wdp-line-total-value');
-    if (!out || !qtyEl) {
+    if (!out) {
       return;
     }
-    const qty = Number.parseInt(qtyEl.value, 10) || 1;
     const unit = getWdpUnitPriceForForm(form);
     if (unit > 0) {
-      out.textContent = formatCurrency(unit * qty);
+      out.textContent = formatCurrency(unit);
+    }
+  }
+
+  /**
+   * Tek toplam hesabı — tüm bağış tipleri (FAZ 4.9).
+   * @returns {{ total: number|null, detail: string, unit: number, qty: number }}
+   */
+  function computeDonationTotal(form) {
+    const empty = { total: null, detail: '', unit: 0, qty: 1 };
+    if (!form) {
+      return empty;
+    }
+
+    let unit = 0;
+    let qty = 1;
+    let detail = '';
+
+    const shareCountEl = form.querySelector('input[name="share_count"]');
+    if (shareCountEl) {
+      qty = Math.max(1, Number.parseInt(shareCountEl.value, 10) || 1);
+      unit = getWdpUnitPriceForForm(form);
+      if (!(unit > 0)) {
+        return empty;
+      }
+      detail = qty + ' hisse × ' + formatCurrency(unit);
+      let total = roundMoney(unit * qty);
+      total = addOptionalAmounts(form, total);
+      return { total: total, detail: detail, unit: unit, qty: qty };
+    }
+
+    const customRow = getCustomPriceRow(form);
+    const customIn = customRow ? customRow.querySelector('input[name="custom_price"]') : form.querySelector('input[name="custom_price"]');
+    const qtyEl = form.querySelector('.wdp-fixed-price-counter-row input[name="quantity"], .wdp-custom-price-row input[name="quantity"], input[name="quantity"]');
+    if (qtyEl) {
+      qty = Math.max(1, Number.parseInt(qtyEl.value, 10) || 1);
+    }
+
+    if (customIn) {
+      if (customPriceRowHasQtyCounter(customRow)) {
+        unit = Number.parseFloat(customIn.dataset.wdpCustomUnit);
+        if (!Number.isFinite(unit) || unit <= 0) {
+          const displayed = parseNormalizedAmount(customIn.value);
+          if (Number.isFinite(displayed) && displayed > 0 && qty > 0) {
+            unit = roundMoney(displayed / qty);
+          }
+        }
+      } else {
+        unit = parseNormalizedAmount(customIn.value);
+      }
+      if (!Number.isFinite(unit) || unit <= 0) {
+        return { total: null, detail: '', unit: 0, qty: qty };
+      }
+      let total = roundMoney(unit * qty);
+      total = addOptionalAmounts(form, total);
+      return { total: total, detail: detail, unit: unit, qty: qty };
+    }
+
+    unit = getWdpUnitPriceForForm(form);
+    if (!(unit > 0)) {
+      return empty;
+    }
+    let total = roundMoney(unit * qty);
+    total = addOptionalAmounts(form, total);
+    return { total: total, detail: detail, unit: unit, qty: qty };
+  }
+
+  function addOptionalAmounts(form, total) {
+    let t = total;
+    const sadakaWrap = form.querySelector('.wdp-sadaka-donation');
+    if (sadakaWrap) {
+      const toggle = sadakaWrap.querySelector('input[type="checkbox"][name*="sadaka"], input.wdp-sadaka-toggle, input[name="enable_sadaka"]');
+      const enabled = toggle ? !!toggle.checked : sadakaWrap.classList.contains('is-open');
+      if (enabled) {
+        const sadakaIn = sadakaWrap.querySelector('input[name="sadaka_custom_price"]');
+        const fixed = sadakaWrap.getAttribute('data-wdp-alt-fixed-price');
+        let sadakaAmt = sadakaIn ? parseNormalizedAmount(sadakaIn.value) : NaN;
+        if ((!Number.isFinite(sadakaAmt) || sadakaAmt <= 0) && fixed) {
+          sadakaAmt = Number.parseFloat(fixed);
+        }
+        if (Number.isFinite(sadakaAmt) && sadakaAmt > 0) {
+          t = roundMoney(t + sadakaAmt);
+        }
+      }
+    }
+    const cover = form.querySelector('input[name="wdp_cover_fee"], input[name="cover_fee"]');
+    if (cover && cover.checked) {
+      const pct = Number.parseFloat(cover.getAttribute('data-fee-percent') || cover.value || '0');
+      if (Number.isFinite(pct) && pct > 0) {
+        t = roundMoney(t + t * (pct / 100));
+      }
+    }
+    return t;
+  }
+
+  function updateFooterTotal(form) {
+    if (!form) {
+      return;
+    }
+    const result = computeDonationTotal(form);
+    const valueEl =
+      form.querySelector('[data-wdp-footer-total] .wdp-footer-total__value') ||
+      form.querySelector('.wdp-shares-total-bar__value') ||
+      form.querySelector('.wdp-footer-total__value');
+    const detailEl =
+      form.querySelector('[data-wdp-footer-total-detail]') ||
+      form.querySelector('.wdp-shares-total-bar__detail') ||
+      form.querySelector('.wdp-footer-total__detail');
+    if (valueEl) {
+      valueEl.textContent = result.total === null ? '—' : formatCurrency(result.total);
+    }
+    if (detailEl) {
+      if (result.detail) {
+        detailEl.hidden = false;
+        detailEl.textContent = result.detail;
+      } else {
+        detailEl.hidden = true;
+        detailEl.textContent = '';
+      }
     }
   }
 
@@ -151,6 +269,7 @@
   function updateLineTotals(form) {
     updateFixedPriceLineDisplay(form);
     syncCustomPriceQtyRowDisplay(form);
+    updateFooterTotal(form);
   }
 
   function updateDonationSummary() {
@@ -366,6 +485,8 @@
     customPriceRowHasQtyCounter: customPriceRowHasQtyCounter,
     ensureCustomUnitFromDisplayed: ensureCustomUnitFromDisplayed,
     getWdpUnitPriceForForm: getWdpUnitPriceForForm,
+    computeDonationTotal: computeDonationTotal,
+    updateFooterTotal: updateFooterTotal,
     updateLineTotals: updateLineTotals,
     updateDonationSummary: updateDonationSummary,
     bindDonationSummary: bindDonationSummary,

@@ -1,0 +1,42 @@
+/**
+ * @file list.css (src)
+ * [wdp_donations] liste kartları — aynı token'lar.
+ * Not: dağıtımda assets/css/list.css ayrı enqueue edilir; bu dosya bundle'a da girer.
+ */
+
+.wdp-donations-list,
+.wdp-donations-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: var(--wdp-space-4);
+}
+
+.wdp-donation-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--wdp-space-3);
+  padding: var(--wdp-space-4);
+  border: 1px solid var(--wdp-border);
+  border-radius: var(--wdp-radius-lg);
+  background: var(--wdp-surface);
+  box-shadow: none;
+}
+
+.wdp-donation-card__title {
+  font-size: var(--wdp-fs-body);
+  font-weight: var(--wdp-fw-semibold);
+  color: var(--wdp-text);
+  line-height: var(--wdp-lh-title);
+  margin: 0;
+}
+
+.wdp-donation-card__meta {
+  font-size: var(--wdp-fs-help);
+  color: var(--wdp-text-muted);
+}
+
+.wdp-donation-card .wdp-list-donate-btn,
+.wdp-donation-card .wdp-open-donation-modal {
+  width: 100%;
+  margin-top: auto;
+}

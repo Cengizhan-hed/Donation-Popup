@@ -1,0 +1,108 @@
+/**
+ * @file phone.css
+ * Telefon + ülke seçici (bütünleşik).
+ */
+
+.wdp-phone-field,
+.wdp-field-stack__row--phone .wdp-field-stack__control,
+.wdp-iti-wrap {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  min-height: var(--wdp-control-h);
+  border: 1px solid var(--wdp-border);
+  border-radius: var(--wdp-radius-md);
+  background: var(--wdp-surface);
+  overflow: visible;
+}
+
+.wdp-phone-field:focus-within,
+.wdp-iti-wrap:focus-within {
+  border-color: var(--wdp-primary);
+  box-shadow: var(--wdp-focus-ring) !important;
+}
+
+.wdp-phone-field .wdp-country-trigger,
+.wdp-iti-wrap .wdp-country-btn,
+.wdp-phone-country-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--wdp-space-1);
+  flex: 0 0 auto;
+  min-width: 72px;
+  min-height: var(--wdp-control-h);
+  padding: 0 12px;
+  border: 0;
+  border-right: 1px solid var(--wdp-border);
+  border-radius: var(--wdp-radius-md) 0 0 var(--wdp-radius-md);
+  background: var(--wdp-surface-muted);
+  color: var(--wdp-text);
+  font-size: var(--wdp-fs-label);
+  cursor: pointer;
+}
+
+.wdp-phone-field .wdp-country-trigger:hover,
+.wdp-phone-country-btn:hover {
+  background: var(--wdp-surface-muted);
+  color: var(--wdp-primary);
+}
+
+.wdp-phone-field input[type="tel"],
+.wdp-iti-wrap input[type="tel"],
+.wdp-field-stack__row--phone .wdp-field-stack__input {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: var(--wdp-control-h);
+  border: 0 !important;
+  border-radius: 0 var(--wdp-radius-md) var(--wdp-radius-md) 0;
+  box-shadow: none !important;
+  padding-left: 12px;
+  font-size: var(--wdp-fs-input);
+}
+
+.wdp-country-dropdown,
+.wdp-phone-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 20;
+  width: 100%;
+  max-height: 240px;
+  overflow-y: auto;
+  background: var(--wdp-surface);
+  border: 1px solid var(--wdp-border);
+  border-radius: var(--wdp-radius-md);
+  box-shadow: none;
+}
+
+.wdp-country-dropdown button,
+.wdp-phone-dropdown button,
+.wdp-country-option {
+  display: flex;
+  align-items: center;
+  gap: var(--wdp-space-2);
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 0;
+  background: transparent;
+  color: var(--wdp-text);
+  font-size: var(--wdp-fs-label);
+  text-align: left;
+  cursor: pointer;
+}
+
+.wdp-country-option:hover,
+.wdp-country-dropdown button:hover {
+  background: var(--wdp-primary-soft);
+}
+
+@media (max-width: 600px) {
+  .wdp-country-dropdown,
+  .wdp-phone-dropdown {
+    width: 100%;
+    left: 0;
+    right: 0;
+  }
+}

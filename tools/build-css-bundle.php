@@ -51,8 +51,9 @@ function wdp_minify_css_bundle($root, $css) {
 
         // Safety net: if critical selectors disappear after minify, keep original CSS.
         $critical_selectors = array(
-            'wdp-field-stack__svg',
-            'wdp-field-stack__row',
+            'wdp-root',
+            'wdp-btn-primary',
+            'wdp-footer-total',
             'wdp-field-stack__input',
         );
         foreach ($critical_selectors as $selector) {

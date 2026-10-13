@@ -1,0 +1,84 @@
+/**
+ * @file stepper.css
+ * Adet / hisse stepper (44×44).
+ */
+
+.wdp-quantity-counter,
+.wdp-share-counter {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--wdp-space-2);
+  min-height: 44px;
+}
+
+.wdp-quantity-counter {
+  justify-content: space-between;
+  width: 100%;
+}
+
+.wdp-qty-label,
+.wdp-shares-header label {
+  font-size: var(--wdp-fs-label);
+  font-weight: var(--wdp-fw-medium);
+  color: var(--wdp-text);
+}
+
+.wdp-product-quantity-btn,
+.wdp-share-btn,
+.wdp-quantity-counter button,
+.wdp-share-counter button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  border: 1px solid var(--wdp-border-strong);
+  border-radius: var(--wdp-radius-md);
+  background: var(--wdp-surface);
+  color: var(--wdp-text);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: none !important;
+}
+
+.wdp-product-quantity-btn:hover:not(:disabled),
+.wdp-share-btn:hover:not(:disabled) {
+  background: var(--wdp-surface-muted);
+  border-color: var(--wdp-primary);
+  color: var(--wdp-primary);
+}
+
+.wdp-product-quantity-btn:disabled,
+.wdp-share-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.wdp-quantity-counter input,
+.wdp-share-counter input {
+  width: 56px;
+  min-height: 44px;
+  height: 44px;
+  text-align: center;
+  border: 1px solid var(--wdp-border);
+  border-radius: var(--wdp-radius-md);
+  background: var(--wdp-surface);
+  font-size: var(--wdp-fs-input);
+  font-weight: var(--wdp-fw-semibold);
+  font-variant-numeric: tabular-nums;
+}
+
+.wdp-shares-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--wdp-space-3);
+  margin-bottom: var(--wdp-space-3);
+}
+
+.wdp-shares-header .wdp-share-counter {
+  margin-left: auto;
+}

@@ -91,6 +91,106 @@ class WDP_Builder_Detect {
 	}
 
 	/**
+	 * Site theme/builder context for the setup guide (FAZ 7.1).
+	 *
+	 * @return array{type:string,recommended:string,reason:string,label:string,has_product_template:bool}
+	 */
+	public static function detect_site_context() {
+		$has_avada_product_layout = self::avada_has_product_layout();
+		$has_elementor_product    = self::elementor_has_product_template();
+		$is_block_theme           = function_exists('wp_is_block_theme') && wp_is_block_theme();
+
+		if ($has_avada_product_layout || (defined('AVADA_VERSION') || class_exists('FusionBuilder'))) {
+			return array(
+				'type'                 => 'avada',
+				'recommended'          => 'template_shortcode',
+				'reason'               => __('Avada algılandı ve ürünleriniz bir Avada Layout kullanıyor. Bu yüzden otomatik yerleşim çalışmaz; şablona bir kez kısa kod ekleyin.', 'woo-donation-popup'),
+				'label'                => __('Avada', 'woo-donation-popup'),
+				'has_product_template' => $has_avada_product_layout,
+			);
+		}
+
+		if ($has_elementor_product || (defined('ELEMENTOR_VERSION') && defined('ELEMENTOR_PRO_VERSION'))) {
+			return array(
+				'type'                 => 'elementor',
+				'recommended'          => 'template_shortcode',
+				'reason'               => __('Elementor Pro Theme Builder ürün şablonu algılandı. Bağış widget’ını şablona bir kez ekleyin; otomatik yerleşim tema şablonuyla çakışabilir.', 'woo-donation-popup'),
+				'label'                => __('Elementor', 'woo-donation-popup'),
+				'has_product_template' => $has_elementor_product,
+			);
+		}
+
+		if ($is_block_theme) {
+			return array(
+				'type'                 => 'block',
+				'recommended'          => 'auto',
+				'reason'               => __('Blok tema algılandı. Otomatik yerleşim çoğu durumda yeterlidir; isterseniz ürün şablonuna «Bağış formu» bloğu ekleyebilirsiniz.', 'woo-donation-popup'),
+				'label'                => __('Blok tema', 'woo-donation-popup'),
+				'has_product_template' => false,
+			);
+		}
+
+		return array(
+			'type'                 => 'classic',
+			'recommended'          => 'auto',
+			'reason'               => __('Klasik tema algılandı. Otomatik yerleşim önerilir; WooCommerce ürün şablonuna müdahale etmeden form eklenir.', 'woo-donation-popup'),
+			'label'                => __('Klasik tema', 'woo-donation-popup'),
+			'has_product_template' => false,
+		);
+	}
+
+	/**
+	 * @return bool
+	 */
+	private static function avada_has_product_layout() {
+		if (!function_exists('post_type_exists')) {
+			return false;
+		}
+		if (!post_type_exists('fusion_tb_section') && !post_type_exists('fusion_tb_layout')) {
+			return false;
+		}
+		$q = new WP_Query(
+			array(
+				'post_type'      => array('fusion_tb_section', 'fusion_tb_layout'),
+				'post_status'    => 'publish',
+				'posts_per_page' => 5,
+				's'              => 'product',
+				'fields'         => 'ids',
+			)
+		);
+		$found = $q->have_posts();
+		wp_reset_postdata();
+		return $found;
+	}
+
+	/**
+	 * @return bool
+	 */
+	private static function elementor_has_product_template() {
+		if (!function_exists('post_type_exists') || !post_type_exists('elementor_library')) {
+			return false;
+		}
+		$q = new WP_Query(
+			array(
+				'post_type'      => 'elementor_library',
+				'post_status'    => 'publish',
+				'posts_per_page' => 5,
+				'meta_query'     => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+					array(
+						'key'     => '_elementor_template_type',
+						'value'   => array('product', 'product-archive', 'single-product'),
+						'compare' => 'IN',
+					),
+				),
+				'fields'         => 'ids',
+			)
+		);
+		$found = $q->have_posts();
+		wp_reset_postdata();
+		return $found;
+	}
+
+	/**
 	 * @return bool
 	 */
 	private static function avada() {

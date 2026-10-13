@@ -1,0 +1,85 @@
+/**
+ * @file progress.css
+ * Hedefli kampanya ilerleme bloğu — düz renk dolgu, gradient yok.
+ */
+
+.wdp-progress-bar-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--wdp-space-2);
+  margin: 0 0 var(--wdp-space-5);
+  padding: 0;
+  background: transparent;
+  border: 0;
+  box-shadow: none !important;
+}
+
+.wdp-progress-bar-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--wdp-space-3);
+}
+
+.wdp-progress-bar-amount,
+.wdp-progress-raised {
+  font-size: 20px;
+  font-weight: var(--wdp-fw-semibold);
+  font-variant-numeric: tabular-nums;
+  color: var(--wdp-text);
+  line-height: var(--wdp-lh-title);
+}
+
+.wdp-progress-raised-label {
+  font-size: var(--wdp-fs-help);
+  font-weight: var(--wdp-fw-regular);
+  color: var(--wdp-text-muted);
+  margin-left: var(--wdp-space-1);
+}
+
+.wdp-progress-bar-percentage,
+.wdp-progress-percent {
+  font-size: var(--wdp-fs-label);
+  font-weight: var(--wdp-fw-semibold);
+  font-variant-numeric: tabular-nums;
+  color: var(--wdp-text);
+}
+
+.wdp-progress-bar-wrapper,
+.wdp-progress-track {
+  position: relative;
+  width: 100%;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--wdp-surface-muted);
+  border: 1px solid var(--wdp-border);
+  overflow: hidden;
+}
+
+.wdp-progress-bar-fill,
+.wdp-progress-bar,
+.wdp-progress-fill {
+  display: block;
+  height: 100%;
+  max-width: 100%;
+  border-radius: 999px;
+  background: var(--wdp-primary);
+  background-image: none !important;
+  transition: width 180ms ease;
+}
+
+.wdp-progress-bar-pending,
+.wdp-progress-bar-preview {
+  display: none;
+}
+
+.wdp-progress-bar-goal,
+.wdp-progress-meta {
+  font-size: var(--wdp-fs-help);
+  color: var(--wdp-text-muted);
+}
+
+.wdp-progress-bar-remaining {
+  font-size: var(--wdp-fs-help);
+  color: var(--wdp-text-muted);
+}

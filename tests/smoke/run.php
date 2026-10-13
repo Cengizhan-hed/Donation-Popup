@@ -110,9 +110,11 @@ foreach ($js_paths as $rel) {
 
 $css_paths = array(
     'src/foundation/tokens.css',
-    'src/components/quantity.css',
-    'src/components/side-panel.css',
-    'src/forms/shared.css',
+    'src/foundation/reset-scope.css',
+    'src/shells/modal.css',
+    'src/components/field.css',
+    'src/components/buttons.css',
+    'src/components/footer.css',
 );
 foreach ($css_paths as $rel) {
     wdp_smoke_assert(file_exists(WDP_PLUGIN_DIR . 'assets/css/' . $rel), 'CSS file: ' . $rel);
@@ -266,9 +268,9 @@ wdp_smoke_assert(
     'Templates and shortcodes render through WDP_Render_Guard'
 );
 $wdp_removed_module_css = 'wdp-' . WDP_Migrations::REMOVED_MODULE_IDS[0];
+$wdp_css_bundle_path    = WDP_PLUGIN_DIR . 'assets/css/' . ltrim((string) ($css['file'] ?? ''), '/');
 wdp_smoke_assert(
-    !wdp_smoke_file_contains(WDP_PLUGIN_DIR . 'assets/css/src/components/campaign-modules.css', $wdp_removed_module_css)
-        && !wdp_smoke_file_contains(WDP_PLUGIN_DIR . 'assets/css/' . ltrim((string) ($css['file'] ?? ''), '/'), $wdp_removed_module_css),
+    !wdp_smoke_file_contains($wdp_css_bundle_path, $wdp_removed_module_css),
     'Removed in-form module CSS is gone from source and bundle'
 );
 
@@ -298,15 +300,64 @@ wdp_smoke_assert(
     'Lazy modal is on the frontend JS stack'
 );
 wdp_smoke_assert(
-    wdp_smoke_file_contains(WDP_PLUGIN_DIR . 'includes/config/frontend-css-stack.php', 'container-queries.css'),
-    'Container queries CSS is on the frontend stack'
+    wdp_smoke_file_contains(WDP_PLUGIN_DIR . 'includes/config/frontend-css-stack.php', 'shells/inline.css')
+        && wdp_smoke_file_contains(WDP_PLUGIN_DIR . 'assets/css/src/shells/inline.css', 'container-type'),
+    'Inline shell provides container queries on the frontend stack'
 );
 wdp_smoke_assert(
-    defined('WDP_VERSION') && WDP_VERSION === '10.27.1',
-    'Plugin version is 10.27.1'
+    defined('WDP_VERSION') && WDP_VERSION === '10.28.0',
+    'Plugin version is 10.28.0'
 );
 
-// 10.27.1: admin tabs/forms stay in sync (no hardcoded TAB_KEYS).
+// 10.28.0: design-system CSS architecture + smoke rules.
+$wdp_css_stack = (string) file_get_contents(WDP_PLUGIN_DIR . 'includes/config/frontend-css-stack.php');
+foreach (array('polish.css', 'mobile-polish.css', 'ux-enhancements.css', 'theme-isolation-overrides.css', 'motion.css') as $wdp_gone) {
+    wdp_smoke_assert(strpos($wdp_css_stack, $wdp_gone) === false, 'Removed patch CSS not on stack: ' . $wdp_gone);
+    wdp_smoke_assert(!file_exists(WDP_PLUGIN_DIR . 'assets/css/src/foundation/' . $wdp_gone)
+        && !file_exists(WDP_PLUGIN_DIR . 'assets/css/src/components/' . $wdp_gone)
+        && !file_exists(WDP_PLUGIN_DIR . 'assets/css/src/overrides/' . $wdp_gone), 'Removed patch CSS file gone: ' . $wdp_gone);
+}
+wdp_smoke_assert(
+    wdp_smoke_file_contains(WDP_PLUGIN_DIR . 'includes/config/frontend-css-stack.php', 'foundation/tokens.css')
+        && wdp_smoke_file_contains(WDP_PLUGIN_DIR . 'includes/config/frontend-css-stack.php', 'shells/modal.css')
+        && wdp_smoke_file_contains(WDP_PLUGIN_DIR . 'includes/config/frontend-css-stack.php', 'components/field.css'),
+    '2C CSS stack has foundation/shells/components'
+);
+$wdp_src_css_blob = '';
+foreach (glob(WDP_PLUGIN_DIR . 'assets/css/src/**/*.css') ?: array() as $wdp_src_css) {
+    $wdp_src_css_blob .= (string) file_get_contents($wdp_src_css) . "\n";
+}
+// Also walk nested dirs (glob ** may be limited).
+$wdp_css_iter = new RecursiveIteratorIterator(new RecursiveDirectoryIterator(WDP_PLUGIN_DIR . 'assets/css/src'));
+$wdp_src_css_blob = '';
+$wdp_box_shadow_outside_tokens = false;
+$wdp_has_linear_gradient = false;
+$wdp_has_hover_transform = false;
+foreach ($wdp_css_iter as $wdp_css_file) {
+    if (!$wdp_css_file->isFile() || substr($wdp_css_file->getFilename(), -4) !== '.css') {
+        continue;
+    }
+    $rel  = str_replace('\\', '/', substr($wdp_css_file->getPathname(), strlen(WDP_PLUGIN_DIR)));
+    $body = (string) file_get_contents($wdp_css_file->getPathname());
+    if (stripos($body, 'linear-gradient') !== false) {
+        $wdp_has_linear_gradient = true;
+    }
+    if (preg_match('/:hover[^{]*\{[^}]*transform\s*:\s*(?!none\b)/i', $body)) {
+        $wdp_has_hover_transform = true;
+    }
+    if (strpos($rel, 'tokens.css') === false && preg_match('/box-shadow\s*:\s*[^;]*\d+px/i', $body)) {
+        $wdp_box_shadow_outside_tokens = true;
+    }
+}
+wdp_smoke_assert(!$wdp_has_linear_gradient, 'No linear-gradient in CSS sources');
+wdp_smoke_assert(!$wdp_has_hover_transform, 'No transform on :hover in CSS sources');
+wdp_smoke_assert(!$wdp_box_shadow_outside_tokens, 'Pixel box-shadow values only in tokens.css');
+if (is_readable($wdp_css_bundle_path)) {
+    $wdp_bundle_size = filesize($wdp_css_bundle_path);
+    wdp_smoke_assert($wdp_bundle_size !== false && $wdp_bundle_size <= 70 * 1024, 'CSS bundle minify ≤ 70 KB');
+}
+
+// 10.28.0: admin tabs (6) stay in sync (no hardcoded TAB_KEYS).
 $admin_page_renderer = (string) file_get_contents(WDP_PLUGIN_DIR . 'includes/class-admin-page-renderer.php');
 $admin_script_js     = (string) file_get_contents(WDP_PLUGIN_DIR . 'assets/js/admin-script.js');
 $admin_assets_php    = (string) file_get_contents(WDP_PLUGIN_DIR . 'includes/class-admin-assets.php');
@@ -314,7 +365,8 @@ $admin_hooks_php     = (string) file_get_contents(WDP_PLUGIN_DIR . 'includes/cla
 
 preg_match_all('/data-tab="([a-z0-9\-]+)"/', $admin_page_renderer, $wdp_tab_matches);
 $wdp_tab_keys = array_values(array_unique($wdp_tab_matches[1] ?? array()));
-wdp_smoke_assert($wdp_tab_keys !== array(), 'Admin page renderer declares data-tab keys');
+$wdp_expected_tabs = array('products', 'placement', 'appearance', 'forms-texts', 'integrations', 'advanced');
+wdp_smoke_assert($wdp_tab_keys === $wdp_expected_tabs, 'Admin tabs are the 2C six-tab set');
 foreach ($wdp_tab_keys as $wdp_tab_key) {
     wdp_smoke_assert(
         strpos($admin_page_renderer, 'id="wdp-' . $wdp_tab_key . '-tab"') !== false,
@@ -336,6 +388,18 @@ wdp_smoke_assert(
     in_array('placement', $wdp_tab_keys, true)
         && strpos($admin_page_renderer, 'id="wdp-placement-tab"') !== false,
     'Placement tab and panel are registered'
+);
+wdp_smoke_assert(
+    class_exists('WDP_Admin_Appearance_Tab_Renderer') && class_exists('WDP_Admin_Forms_Texts_Tab_Renderer'),
+    'Appearance and Forms-texts tab renderers load'
+);
+wdp_smoke_assert(
+    method_exists('WDP_Builder_Detect', 'detect_site_context'),
+    'Builder detect exposes detect_site_context'
+);
+wdp_smoke_assert(
+    isset(WDP_Migrations::steps()['10.28.0']),
+    'Migration step 10.28.0 is registered'
 );
 
 $wdp_includes_php = '';

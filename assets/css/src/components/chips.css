@@ -1,0 +1,55 @@
+/**
+ * @file chips.css
+ * Hızlı tutar çipleri.
+ */
+
+.wdp-amount-presets {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--wdp-space-2);
+  margin: 0 0 var(--wdp-space-3);
+}
+
+.wdp-amount-preset,
+.wdp-amount-presets button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: var(--wdp-space-2) var(--wdp-space-3);
+  border: 1px solid var(--wdp-border);
+  border-radius: var(--wdp-radius-md);
+  background: var(--wdp-surface);
+  color: var(--wdp-text);
+  font-size: var(--wdp-fs-label);
+  font-weight: var(--wdp-fw-medium);
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  box-shadow: none !important;
+}
+
+.wdp-amount-preset:hover,
+.wdp-amount-presets button:hover {
+  border-color: var(--wdp-border-strong);
+  background: var(--wdp-surface-muted);
+}
+
+.wdp-amount-preset.is-selected,
+.wdp-amount-preset[aria-pressed="true"],
+.wdp-amount-presets button.is-selected {
+  border-color: var(--wdp-primary);
+  background: var(--wdp-primary-soft);
+  color: var(--wdp-primary);
+}
+
+@container wdp-form (max-width: 400px) {
+  .wdp-amount-presets {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  .wdp-amount-presets {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

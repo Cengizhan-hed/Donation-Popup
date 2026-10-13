@@ -1,375 +1,98 @@
 /**
  * @file tokens.css
- * Glass modal tasarım jetonları: varsayılan marka #0f608b, cam blur, tipografi ve yüzey.
+ * Form tasarım jetonları (Stage 2C). Bileşen CSS'i yalnızca bu değişkenleri kullanır.
+ * Ayarlardan gelen değerler .wdp-root üzerinde satır içi olarak override edilir.
  */
 
-:root {
-  /* Brand — admin --wdp-primary overrides */
-  --wdp-primary: #0f608b;
-  --wdp-primary-hover: #0c4f72;
-  --wdp-primary-alpha-10: rgba(15, 96, 139, 0.1);
-  --wdp-primary-alpha-20: rgba(15, 96, 139, 0.2);
-  --wdp-primary-alpha-50: rgba(15, 96, 139, 0.5);
+.wdp-root,
+.hdf-donation-modal-wrapper {
+  --wdp-font: inherit;
+  --wdp-fs-title: 22px;
+  --wdp-fs-body: 16px;
+  --wdp-fs-label: 14px;
+  --wdp-fs-help: 13px;
+  --wdp-fs-input: 16px;
+  --wdp-fw-regular: 400;
+  --wdp-fw-medium: 500;
+  --wdp-fw-semibold: 600;
+  --wdp-lh: 1.5;
+  --wdp-lh-title: 1.25;
 
-  /* PHP sets --wdp-accent from checkout color; default = money/checkout green */
-  --wdp-success: #16a34a;
-  --wdp-success-alpha-10: rgba(22, 163, 74, 0.1);
-  --wdp-accent: var(--wdp-success);
-  --wdp-accent-hover: color-mix(in srgb, var(--wdp-success) 88%, #0f172a);
-  --wdp-error: #c62828;
-  --wdp-error-alpha-10: rgba(198, 40, 40, 0.1);
-  --wdp-warning: #b45309;
-  --wdp-warning-alpha-10: rgba(180, 83, 9, 0.1);
+  --wdp-primary: #1d5fa8;
+  --wdp-primary-hover: color-mix(in srgb, var(--wdp-primary) 92%, #000);
+  --wdp-primary-active: color-mix(in srgb, var(--wdp-primary) 88%, #000);
+  --wdp-primary-soft: color-mix(in srgb, var(--wdp-primary) 8%, transparent);
+  --wdp-on-primary: #ffffff;
 
-  /* Neutrals — cool slate (IHH white clarity) */
-  --wdp-white: #ffffff;
-  --wdp-gray-50: #f7f8fa;
-  --wdp-gray-100: #eef1f4;
-  --wdp-gray-200: #e5e9ec;
-  --wdp-gray-300: #d0d7de;
-  --wdp-gray-400: #94a3b8;
-  --wdp-gray-500: #64748b;
-  --wdp-gray-600: #475569;
-  --wdp-gray-700: #334155;
-  --wdp-gray-800: #1e293b;
-  --wdp-gray-900: #0f172a;
+  --wdp-text: #0f172a;
+  --wdp-text-muted: #475569;
+  --wdp-border: #d7dde5;
+  --wdp-border-strong: #b6c0cc;
+  --wdp-surface: #ffffff;
+  --wdp-surface-muted: #f6f8fa;
+  --wdp-success: #15803d;
+  --wdp-danger: #b42318;
+  --wdp-overlay: rgba(15, 23, 42, 0.52);
 
-  --wdp-text-primary: #0f172a;
-  --wdp-text-secondary: #475569;
-  --wdp-text-tertiary: #64748b;
-  --wdp-text-inverse: var(--wdp-white);
+  --wdp-radius-sm: 6px;
+  --wdp-radius-md: 10px;
+  --wdp-radius-lg: 16px;
 
-  --wdp-bg-primary: var(--wdp-white);
-  --wdp-bg-secondary: var(--wdp-gray-50);
-  --wdp-bg-tertiary: var(--wdp-gray-100);
-  --wdp-bg-pure-white: #ffffff;
+  --wdp-control-h: 48px;
+  --wdp-button-h: 52px;
 
-  --wdp-icon-color: #94a3b8;
-  --wdp-icon-color-hover: var(--wdp-primary);
+  --wdp-space-1: 4px;
+  --wdp-space-2: 8px;
+  --wdp-space-3: 12px;
+  --wdp-space-4: 16px;
+  --wdp-space-5: 20px;
+  --wdp-space-6: 24px;
+  --wdp-space-7: 32px;
+  --wdp-space-8: 40px;
 
+  --wdp-shadow-shell: 0 20px 50px rgba(15, 23, 42, 0.18);
+  --wdp-focus-ring: 0 0 0 3px var(--wdp-primary-soft);
+  --wdp-shell-w-modal: 520px;
+  --wdp-shell-w-panel: 480px;
+
+  /* Legacy aliases used by remaining markup / JS hooks */
   --wdp-button-primary: var(--wdp-primary);
   --wdp-button-primary-hover: var(--wdp-primary-hover);
-  --wdp-button-radius: var(--wdp-radius-ui);
+  --wdp-button-radius: var(--wdp-radius-md);
+  --wdp-modal-bg: var(--wdp-surface);
+  --wdp-modal-overlay-bg: var(--wdp-overlay);
+  --wdp-text-primary: var(--wdp-text);
+  --wdp-text-secondary: var(--wdp-text-muted);
+  --wdp-font-family: var(--wdp-font);
+  --wdp-error: var(--wdp-danger);
+  --wdp-form-cta-height: var(--wdp-button-h);
+  --wdp-input-height: var(--wdp-control-h);
+  --wdp-radius-ui: var(--wdp-radius-md);
+  --wdp-radius-panel: var(--wdp-radius-lg);
+  --wdp-radius-sheet: var(--wdp-radius-lg);
+  --wdp-transition: 180ms ease;
+  --wdp-white: #ffffff;
+  --wdp-gray-50: var(--wdp-surface-muted);
+  --wdp-gray-100: #eef1f4;
+  --wdp-gray-200: var(--wdp-border);
+  --wdp-gray-300: var(--wdp-border-strong);
+  --wdp-gray-500: #64748b;
+  --wdp-gray-600: var(--wdp-text-muted);
+  --wdp-gray-900: var(--wdp-text);
+}
 
-  /* White glass — opaque white panel (user preference: solid white modal surfaces) */
-  --wdp-glass-fill: #ffffff;
-  --wdp-glass-fill-strong: #ffffff;
-  --wdp-glass-border: 1px solid rgba(15, 23, 42, 0.08);
-  --wdp-glass-blur: none;
-  --wdp-glass-blur-mobile: none;
-  --wdp-overlay-blur: none;
-  --wdp-modal-overlay-bg: rgba(15, 23, 42, 0.52);
-  --wdp-progress-form-gap: 12px;
-  --wdp-modal-stack-gap: 12px;
-  --wdp-modal-bg: #ffffff;
-  --wdp-modal-content-radius: var(--wdp-radius-panel);
-  --wdp-modal-surface-border: var(--wdp-glass-border);
-  --wdp-modal-card-shadow:
-    0 12px 40px -12px rgba(15, 23, 42, 0.2),
-    0 4px 12px -4px rgba(15, 23, 42, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9);
-  --wdp-side-panel-shadow:
-    0 0 0 1px rgba(15, 23, 42, 0.05),
-    -24px 0 64px -20px rgba(15, 23, 42, 0.22),
-    -8px 0 24px -12px rgba(15, 23, 42, 0.1);
+@container wdp-form (max-width: 480px) {
+  .wdp-root,
+  .hdf-donation-modal-wrapper {
+    --wdp-fs-title: 20px;
+  }
+}
 
-  /* Elevation — honest ladder */
-  --wdp-shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.04);
-  --wdp-shadow-md: 0 4px 14px -4px rgba(15, 23, 42, 0.1);
-  --wdp-shadow-lg: 0 12px 40px -16px rgba(15, 23, 42, 0.16);
-  --wdp-shadow-xl: 0 20px 48px -20px rgba(15, 23, 42, 0.22);
-  --wdp-shadow-2xl: 0 24px 56px -20px rgba(15, 23, 42, 0.26);
-  /* PHP inline styles reference --wdp-elevation-N for modal card shadow */
-  --wdp-elevation-1: var(--wdp-shadow-sm);
-  --wdp-elevation-2: var(--wdp-shadow-md);
-  --wdp-elevation-3: var(--wdp-shadow-lg);
-  --wdp-elevation-4: var(--wdp-shadow-xl);
-  --wdp-elevation-5: var(--wdp-shadow-2xl);
-  --wdp-card-elev: 0 1px 2px rgba(15, 23, 42, 0.04);
-  --wdp-cta-primary-shadow:
-    0 1px 2px rgba(15, 23, 42, 0.06),
-    0 4px 12px -4px color-mix(in srgb, var(--wdp-primary) 28%, transparent);
-  --wdp-plugin-btn-shadow-modal: var(--wdp-cta-primary-shadow);
-
-  /* Motion */
-  --wdp-transition-colors: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
-  --wdp-transition-transform: transform 0.2s ease;
-  --wdp-transition-color: color 0.2s ease;
-  --wdp-transition-button: background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
-  --wdp-transition-border: border-color 0.2s ease;
-  --wdp-transition: 180ms cubic-bezier(0.2, 0, 0, 1);
-  --wdp-duration-150: 150ms;
-  --wdp-ease-out: cubic-bezier(0, 0, 0.2, 1);
-  --wdp-ease-emphasized: cubic-bezier(0.2, 0, 0, 1);
-  --wdp-ease-emphasized-decelerate: cubic-bezier(0.05, 0.7, 0.1, 1);
-  --wdp-sheet-duration: 280ms;
-  --wdp-sheet-ease: cubic-bezier(0.05, 0.7, 0.1, 1);
-  --wdp-modal-in-duration: var(--wdp-sheet-duration);
-  --wdp-modal-out-duration: 200ms;
-  --wdp-modal-ease-in: var(--wdp-sheet-ease);
-  --wdp-modal-ease-out: cubic-bezier(0.4, 0, 1, 1);
-  --wdp-success-stagger-1: 40ms;
-  --wdp-success-stagger-2: 80ms;
-  --wdp-success-stagger-3: 120ms;
-  --wdp-success-stagger-4: 160ms;
-  --wdp-toast-in-duration: 220ms;
-  --wdp-toast-out-duration: 180ms;
-  --wdp-skeleton-shimmer-duration: 1.6s;
-  --wdp-motion-scale: 1;
-
-  /* Spacing — keep only steps referenced in CSS */
-  --wdp-space-1: 0.25rem;
-  --wdp-space-2: 0.5rem;
-  --wdp-space-3: 0.75rem;
-  --wdp-space-4: 1rem;
-  --wdp-space-6: 1.5rem;
-  --wdp-space-8: 2rem;
-
-  --wdp-form-stack-gap: 12px;
-  --wdp-hisse-stack-gap: var(--wdp-form-stack-gap);
-  --wdp-form-control-inline-gap: var(--wdp-space-4);
-  --wdp-hisse-label-counter-gap: 0.5rem;
-
-  /* Typography */
-  --wdp-font-family: inherit;
-  --wdp-button-font-family: inherit;
-  --wdp-button-font-weight: 700;
-  --wdp-form-button-font-size: 16px;
-  --wdp-form-button-font-weight: 700;
-  --wdp-title-size: clamp(1.2rem, 2vw, 1.45rem);
-  --wdp-title-tracking: -0.03em;
-  --wdp-amount-font-size: 20px;
-  --wdp-amount-font-size-mobile: 18px;
-  --wdp-amount-font-weight: 700;
-  --wdp-text-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
-  --wdp-text-sm: clamp(0.875rem, 0.8rem + 0.375vw, 1rem);
-  --wdp-text-base: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
-  --wdp-text-lg: clamp(1.125rem, 1.05rem + 0.375vw, 1.25rem);
-  --wdp-text-xl: clamp(1.25rem, 1.15rem + 0.5vw, 1.5rem);
-  --wdp-text-2xl: clamp(1.5rem, 1.35rem + 0.75vw, 1.875rem);
-  --wdp-text-3xl: clamp(1.875rem, 1.65rem + 1.125vw, 2.25rem);
-  --wdp-text-sm-fixed: 14px;
-  --wdp-text-lg-fixed: 18px;
-  --wdp-leading-tight: 1.25;
-  --wdp-leading-snug: 1.375;
-  --wdp-leading-normal: 1.5;
-  --wdp-tracking-tight: -0.025em;
-  --wdp-tracking-normal: 0;
-  --wdp-font-normal: 400;
-  --wdp-font-semibold: 600;
-  --wdp-font-bold: 700;
-  --wdp-font-numeric: "tnum" 1, "zero" 1;
-
-  --wdp-border-1: 1px;
-  --wdp-border-2: 2px;
-  --wdp-border-soft-gray: #e5e9ec;
-  --wdp-border-light-gray: #d0d7de;
-  --wdp-border-very-light: #eef1f4;
-  --wdp-border-white: #ffffff;
-
-  --wdp-opacity-75: 0.75;
-
-  --wdp-focus-ring-width: 2px;
-  --wdp-focus-ring-offset: 1px;
-  --wdp-focus-ring-color: var(--wdp-primary);
-  --wdp-focus-ring:
-    0 0 0 1px color-mix(in srgb, var(--wdp-primary) 22%, transparent);
-  --wdp-input-focus-keyboard-outline: transparent;
-  --wdp-input-focus-keyboard-width: 0px;
-  --wdp-input-focus-bg-tint: color-mix(in srgb, var(--wdp-primary) 2%, #ffffff);
-  --wdp-focus-neutral-ring:
-    0 0 0 1px color-mix(in srgb, var(--wdp-primary) 18%, transparent);
-
-  --wdp-form-cta-height: 52px;
-  --wdp-form-cta-height-mobile: 52px;
-  --wdp-touch-target-min: 44px;
-  --wdp-touch-target-comfortable: 48px;
-  --wdp-button-height: 52px;
-  --wdp-button-padding-x: 18px;
-  --wdp-button-radius-unified: var(--wdp-radius-ui);
-
-  --wdp-z-modal: 2147483645;
-  --wdp-z-modal-content: 2147483646;
-  --wdp-z-modal-close: 2147483647;
-
-  /* Align media queries to 480 / 600 / 768 / 900; PHP docs reference md */
-  --wdp-breakpoint-md: 600px;
-
-  /* Radius ladder — 8 / 10 / 12 / 16 / 20 / 24 */
-  --wdp-radius-xs: 8px;
-  --wdp-radius-sm: 10px;
-  --wdp-radius-ui: 12px;
-  --wdp-radius-md: 16px;
-  --wdp-radius-lg: 20px;
-  --wdp-radius-xl: 24px;
-  --wdp-radius-2xl: 28px;
-  --wdp-radius-full: 9999px;
-  --wdp-radius-panel: 24px;
-  --wdp-radius-sheet: 24px;
-
-  --wdp-scroll-behavior: smooth;
-  --wdp-scroll-padding-block: var(--wdp-space-4);
-
-  /* Form controls */
-  --wdp-control-border-width: 1px;
-  --wdp-control-border: 1px solid var(--wdp-border-soft-gray);
-  --wdp-input-bg: #ffffff;
-  --wdp-input-border: #e5e9ec;
-  --wdp-input-color: #0f172a;
-  --wdp-input-radius: var(--wdp-radius-ui);
-  --wdp-input-min-height: 52px;
-  --wdp-counter-min-height: var(--wdp-input-min-height);
-  --wdp-counter-value-font-size: 16px;
-  --wdp-counter-icon-font-size: 16px;
-  --wdp-counter-inner-padding-x: 8px;
-  --wdp-input-padding-y: 14px;
-  --wdp-input-padding-x: 14px;
-  --wdp-header-price-font-size: 14px;
-  --wdp-header-price-padding-y: 6px;
-  --wdp-header-price-padding-x: 12px;
-  --wdp-header-title-price-gap: 0.75rem;
-  --wdp-input-font-size: 16px;
-  --wdp-input-line-height: 1.5;
-  --wdp-textarea-min-height: 64px;
-
-  --wdp-label-color: #0f172a;
-  --wdp-label-font-size: 0.75rem;
-  --wdp-label-font-weight: 600;
-  --wdp-placeholder-color: #64748b;
-
-  --wdp-field-stack-border: 1px solid #e5e9ec;
-  --wdp-field-stack-row-divider: none;
-  --wdp-field-stack-radius: var(--wdp-radius-ui);
-  --wdp-field-stack-bg: #ffffff;
-  --wdp-field-hint-color: var(--wdp-text-tertiary, #64748b);
-  --wdp-field-hint-size: 12px;
-  --wdp-preset-min-height: 48px;
-  --wdp-preset-min-height-mobile: 48px;
-  --wdp-amount-shell-min-height: 56px;
-  --wdp-price-surface-bg: var(--wdp-primary);
-  --wdp-price-surface-color: #ffffff;
-  --wdp-price-surface-border: color-mix(in srgb, var(--wdp-primary) 78%, #0f172a);
-  --wdp-price-control-bg: var(--wdp-price-surface-bg);
-  --wdp-price-control-color: var(--wdp-price-surface-color);
-  --wdp-price-control-border: var(--wdp-price-surface-border);
-  --wdp-counter-control-bg: #ffffff;
-  --wdp-counter-control-border: #e5e9ec;
-  --wdp-counter-control-color: #0f172a;
-  --wdp-share-counter-bg: #ffffff;
-  --wdp-share-counter-border: #e5e9ec;
-  --wdp-shareholder-header-bg: var(--wdp-primary);
-  --wdp-shareholder-header-color: #ffffff;
-  --wdp-shareholder-header-bg-hover: var(--wdp-primary-hover);
-  --wdp-shareholder-header-valid-bg: color-mix(in srgb, var(--wdp-success) 88%, #0f172a);
-  --wdp-shareholder-header-invalid-bg: color-mix(in srgb, var(--wdp-error) 72%, #ffffff);
-  --wdp-field-stack-row-focus-bg: color-mix(in srgb, var(--wdp-primary) 1.5%, #ffffff);
-  --wdp-field-icon-size: 18px;
-  --wdp-field-icon-zone-width: 36px;
-  --wdp-field-icon-color: #94a3b8;
-  --wdp-field-icon-color-focus: var(--wdp-primary);
-  --wdp-field-icon-color-filled: #475569;
-  --wdp-field-stack-pad-x: 14px;
-  --wdp-field-stack-gap-icon-text: 10px;
-  --wdp-field-stack-input-pad-y: 14px;
-  --wdp-autofill-row-bg: #f0f7fb;
-  --wdp-field-stack-placeholder: #64748b;
-  --wdp-field-stack-textarea-min-height: 80px;
-  --wdp-field-stack-textarea-icon-pad-top: 16px;
-
-  --wdp-card-bg: #ffffff;
-  --wdp-card-border: #e5e9ec;
-  --wdp-card-radius: var(--wdp-radius-ui);
-  --wdp-card-radius-sm: var(--wdp-radius-ui);
-  --wdp-card-shadow: var(--wdp-card-elev);
-  --wdp-card-shadow-md: var(--wdp-shadow-md);
-  --wdp-card-padding-y: 16px;
-  --wdp-card-padding-x: 16px;
-  --wdp-card-header-padding-y: 12px;
-  --wdp-card-header-padding-x: 16px;
-
-  --wdp-form-error-bg: #fef2f2;
-  --wdp-form-error-border: #fecaca;
-  --wdp-form-error-text: #c62828;
-  --wdp-input-error-bg: #fef2f2;
-  --wdp-input-error-border: #fecaca;
-  --wdp-input-error-text: #c62828;
-  --wdp-price-error-text: #c62828;
-  --wdp-price-error-border: #f0a3a0;
-  --wdp-form-success-bg: #ecfdf5;
-  --wdp-form-success-border: #a7f3d0;
-  --wdp-form-success-text: #156538;
-
-  --wdp-density: comfortable;
-  --wdp-field-gap-compact: 8px;
-  --wdp-field-gap-comfortable: 16px;
-  --wdp-field-gap-spacious: 20px;
-
-  --wdp-price-badge-bg: color-mix(in srgb, var(--wdp-primary) 8%, #ffffff);
-  --wdp-price-badge-border: 1px solid color-mix(in srgb, var(--wdp-primary) 16%, transparent);
-  --wdp-form-section-divider: 1px solid var(--wdp-border-very-light);
-  --wdp-info-strip-radius: var(--wdp-radius-ui);
-  --wdp-info-strip-padding-y: 12px;
-  --wdp-info-strip-padding-x: 14px;
-  --wdp-product-note-padding-y: 11px;
-  --wdp-product-note-padding-x: 14px;
-  --wdp-product-note-color: var(--wdp-info-text-color, #334155);
-  --wdp-product-note-font-size: clamp(13px, 1.05vw, 13.5px);
-  --wdp-product-note-line-height: 1.5;
-  --wdp-product-note-icon-size: 17px;
-  --wdp-product-note-icon-gap: 0.5rem;
-  --wdp-product-note-icon-optical-nudge: 0px;
-
-  --wdp-info-text-bg: #f0f7fb;
-  --wdp-info-text-color: #334155;
-  --wdp-info-text-border: 1px solid #e5e9ec;
-  --wdp-info-text-radius: var(--wdp-radius-ui);
-  --wdp-info-text-font-weight: 500;
-  --wdp-info-text-accent: var(--wdp-primary);
-
-  --wdp-ghost-btn-bg: #ffffff;
-  --wdp-ghost-btn-bg-hover: #f7f8fa;
-  --wdp-ghost-btn-border: 1px solid #e5e9ec;
-  --wdp-ghost-btn-border-hover: 1px solid #d0d7de;
-  --wdp-ghost-btn-text: var(--wdp-primary);
-  --wdp-ghost-btn-text-hover: var(--wdp-primary-hover);
-
-  --wdp-surface-0: #ffffff;
-  --wdp-surface-1: #f7f8fa;
-  --wdp-surface-2: #eef1f4;
-  /* CTA zone matches modal glass — no opaque white strip */
-  --wdp-surface-footer-fade: transparent;
-  --wdp-footer-bg: transparent;
-  --wdp-footer-border: 1px solid rgba(15, 23, 42, 0.06);
-
-  --wdp-mini-cart-radius: var(--wdp-radius-ui);
-  --wdp-mini-cart-row-min-height: 52px;
-  --wdp-mini-cart-surface-bg: #ffffff;
-  --wdp-mini-cart-surface-border: 1px solid rgba(15, 23, 42, 0.08);
-  --wdp-mini-cart-item-bg: #f7f8fa;
-  --wdp-mini-cart-item-border: 1px solid transparent;
-  --wdp-mini-cart-item-radius: var(--wdp-radius-ui);
-  --wdp-mini-cart-item-hover-bg: #f0f7fb;
-  --wdp-mini-cart-item-hover-border: 1px solid color-mix(in srgb, var(--wdp-primary) 22%, transparent);
-  --wdp-mini-cart-item-shadow: none;
-  --wdp-mini-cart-item-shadow-hover: none;
-  --wdp-mini-cart-item-gap: 6px;
-
-  --wdp-hisse-row-label-size: var(--wdp-label-font-size);
-  --wdp-counter-btn-col: 44px;
-  --wdp-hisse-counter-min-height: 48px;
-  --wdp-hisse-counter-value-font-size: 16px;
-  --wdp-hisse-counter-icon-font-size: 16px;
-  --wdp-hisse-counter-btn-col: 44px;
-  --wdp-hisse-counter-inner-padding-x: 6px;
-
-  --wdp-popup-modal-width-desktop: 440px;
-  --wdp-inpage-form-width-desktop: 440px;
-  --wdp-modal-padding-top-desktop: 24px;
-  --wdp-modal-padding-left-desktop: 24px;
-  --wdp-modal-padding-right-desktop: 24px;
-  --wdp-modal-padding-bottom-desktop: 20px;
-  --wdp-modal-padding-top-mobile: 18px;
-  --wdp-modal-padding-left-mobile: 18px;
-  --wdp-modal-padding-right-mobile: 18px;
-  --wdp-modal-padding-bottom-mobile: 14px;
+@supports not (color: color-mix(in srgb, red 50%, blue)) {
+  .wdp-root,
+  .hdf-donation-modal-wrapper {
+    --wdp-primary-hover: #1a5697;
+    --wdp-primary-active: #184f8b;
+    --wdp-primary-soft: rgba(29, 95, 168, 0.08);
+  }
 }

@@ -1,0 +1,76 @@
+/**
+ * @file sadaka.css
+ * Alt bağış (sadaka) anahtarı + tutar.
+ */
+
+.wdp-sadaka-donation {
+  display: flex;
+  flex-direction: column;
+  gap: var(--wdp-space-3);
+  margin: 0 0 var(--wdp-space-5);
+  padding: var(--wdp-space-4);
+  border: 1px solid var(--wdp-border);
+  border-radius: var(--wdp-radius-md);
+  background: var(--wdp-surface-muted);
+  box-shadow: none !important;
+}
+
+.wdp-sadaka-donation__toggle,
+.wdp-sadaka-switch-row {
+  display: flex;
+  align-items: center;
+  gap: var(--wdp-space-3);
+  min-height: 44px;
+  cursor: pointer;
+}
+
+.wdp-sadaka-donation__label {
+  font-size: var(--wdp-fs-label);
+  font-weight: var(--wdp-fw-medium);
+  color: var(--wdp-text);
+  cursor: pointer;
+}
+
+.wdp-sadaka-donation input[type="checkbox"],
+.wdp-switch {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  border-radius: 999px;
+  border: 1px solid var(--wdp-border-strong);
+  background: var(--wdp-border);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.wdp-sadaka-donation input[type="checkbox"]::after,
+.wdp-switch::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--wdp-surface);
+  transition: left 160ms ease;
+}
+
+.wdp-sadaka-donation input[type="checkbox"]:checked,
+.wdp-switch[aria-checked="true"] {
+  background: var(--wdp-primary);
+  border-color: var(--wdp-primary);
+}
+
+.wdp-sadaka-donation input[type="checkbox"]:checked::after {
+  left: 22px;
+}
+
+.wdp-sadaka-donation__amount {
+  opacity: 1;
+}
+
+.wdp-sadaka-donation__amount[hidden],
+.wdp-sadaka-donation:not(.is-open) .wdp-sadaka-donation__amount--collapsible {
+  display: none;
+}

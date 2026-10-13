@@ -66,16 +66,7 @@ class Woo_Donation_Popup_Admin {
      * Ayarlar sayfasını render et
      */
     public function render_settings_page() {
-        WDP_Admin_Page_Renderer::render_settings_page(
-            function() { $this->render_modal_layout_customization_tab(); },
-            function() { $this->render_normal_form_customization_tab(); },
-            function() { $this->render_shareholder_form_customization_tab(); },
-            function() { $this->render_progress_bar_customization_tab(); },
-            function() { $this->render_success_screen_customization_tab(); },
-            function() { $this->render_meta_tracking_tab(); },
-            function() { $this->render_category_colors_tab(); },
-            function() { $this->render_design_studio_tab(); }
-        );
+        WDP_Admin_Page_Renderer::render_settings_page();
     }
 
     /**
@@ -338,7 +329,133 @@ class Woo_Donation_Popup_Admin {
         $delete_on_uninstall = isset($request_data['delete_data_on_uninstall']) && '1' === (string) $request_data['delete_data_on_uninstall'];
         $this->update_non_autoload_option('wdp_delete_data_on_uninstall', $delete_on_uninstall ? '1' : '0');
 
+        $debug_log = isset($request_data['debug_log_enabled']) && '1' === (string) $request_data['debug_log_enabled'];
+        $this->update_non_autoload_option('wdp_debug_log_enabled', $debug_log ? '1' : '0');
+
         $this->send_admin_settings_success(__('Gelişmiş ayarlar kaydedildi.', 'woo-donation-popup'));
+    }
+
+    /**
+     * Görünüm sekmesi ayarlarını kaydet (AJAX).
+     *
+     * @return void
+     */
+    public function save_appearance_settings() {
+        try {
+            $this->guard_admin_settings_ajax();
+            $request  = $this->get_admin_request_data();
+            $existing = get_option('wdp_button_settings', array());
+            if (!is_array($existing)) {
+                $existing = array();
+            }
+
+            $brand = '';
+            if (!empty($request['brand_color_hex'])) {
+                $brand = sanitize_hex_color($request['brand_color_hex']);
+            }
+            if (!$brand && !empty($request['brand_color'])) {
+                $brand = sanitize_hex_color($request['brand_color']);
+            }
+            if ($brand) {
+                $existing['brand_color']          = $brand;
+                $existing['button_primary_color'] = $brand;
+                if (class_exists('WDP_Color_Palette')) {
+                    $existing = WDP_Color_Palette::apply_to_button_settings($existing, $brand);
+                }
+            }
+
+            $token_keys = array(
+                'style_preset_id',
+                'ui_border_radius',
+                'form_density',
+                'body_font_family',
+                'title_size',
+                'note_field_mode',
+                'form_button_order',
+                'shell_modal_width',
+                'shell_panel_width',
+            );
+            foreach ($token_keys as $key) {
+                if (isset($request[ $key ])) {
+                    $existing[ $key ] = sanitize_text_field((string) $request[ $key ]);
+                }
+            }
+            $existing['enable_field_icons']   = !empty($request['enable_field_icons']) ? '1' : '0';
+            $existing['button_icons_enabled'] = !empty($request['button_icons_enabled']) ? '1' : '0';
+            $existing['use_category_color']   = !empty($request['use_category_color']) ? '1' : '0';
+
+            $radius = isset($existing['ui_border_radius']) ? max(0, min(24, (int) $existing['ui_border_radius'])) : 10;
+            $existing['ui_border_radius'] = (string) $radius;
+
+            $this->update_non_autoload_option('wdp_button_settings', $existing);
+
+            if (class_exists('WDP_Category_Title_Color_Service')) {
+                $colors = WDP_Category_Title_Color_Service::normalize_from_request($request);
+                $this->update_non_autoload_option(WDP_Category_Title_Color_Service::OPTION_KEY, $colors);
+            }
+
+            $this->bump_wdp_asset_cache_version();
+            $this->send_admin_settings_success(__('Görünüm ayarları kaydedildi.', 'woo-donation-popup'));
+        } catch (Exception $e) {
+            $this->send_admin_settings_error(__('Bir hata oluştu. Lütfen tekrar deneyin.', 'woo-donation-popup'));
+        }
+    }
+
+    /**
+     * Formlar ve metinler sekmesi ayarlarını kaydet (AJAX).
+     *
+     * @return void
+     */
+    public function save_forms_texts_settings() {
+        try {
+            $this->guard_admin_settings_ajax();
+            $request = $this->get_admin_request_data();
+
+            $button = get_option('wdp_button_settings', array());
+            $button = is_array($button) ? $button : array();
+            foreach (array('popup_button_text', 'button_text_add_to_cart', 'button_text_go_checkout', 'dedication_placeholder', 'amount_presets', 'trust_strip_text') as $key) {
+                if (isset($request[ $key ])) {
+                    $button[ $key ] = sanitize_text_field((string) $request[ $key ]);
+                }
+            }
+            foreach (array('enable_multi_step', 'enable_amount_presets', 'enable_donor_email', 'enable_dedication', 'enable_anonymous', 'trust_strip_enabled') as $key) {
+                $button[ $key ] = !empty($request[ $key ]) ? '1' : '0';
+            }
+            $this->update_non_autoload_option('wdp_button_settings', $button);
+
+            $share = get_option('wdp_shareholder_settings', array());
+            $share = is_array($share) ? $share : array();
+            foreach (array('shareholder_header_text', 'shareholder_name_placeholder', 'shareholder_phone_placeholder', 'shareholder_note_placeholder', 'shareholder_copy_button_text') as $key) {
+                if (isset($request[ $key ])) {
+                    $share[ $key ] = sanitize_text_field((string) $request[ $key ]);
+                }
+            }
+            $share['shareholder_enable_copy_button'] = !empty($request['shareholder_enable_copy_button']) ? '1' : '0';
+            $share['shareholder_enable_email']       = !empty($request['shareholder_enable_email']) ? '1' : '0';
+            $this->update_non_autoload_option('wdp_shareholder_settings', $share);
+
+            $success = get_option('wdp_success_settings', array());
+            $success = is_array($success) ? $success : array();
+            foreach (array('success_text_view_cart', 'success_text_go_checkout', 'success_text_new_donation', 'sadaka_toggle_label') as $key) {
+                if (isset($request[ $key ])) {
+                    $success[ $key ] = sanitize_text_field((string) $request[ $key ]);
+                }
+            }
+            if (isset($request['sadaka_wc_product_id'])) {
+                $success['sadaka_wc_product_id'] = absint($request['sadaka_wc_product_id']);
+            }
+            $this->update_non_autoload_option('wdp_success_settings', $success);
+
+            $progress = get_option('wdp_progress_bar_settings', array());
+            $progress = is_array($progress) ? $progress : array();
+            $progress['enable_celebrate'] = !empty($request['enable_celebrate']) ? '1' : '0';
+            $this->update_non_autoload_option('wdp_progress_bar_settings', $progress);
+
+            $this->bump_wdp_asset_cache_version();
+            $this->send_admin_settings_success(__('Form ve metin ayarları kaydedildi.', 'woo-donation-popup'));
+        } catch (Exception $e) {
+            $this->send_admin_settings_error(__('Bir hata oluştu. Lütfen tekrar deneyin.', 'woo-donation-popup'));
+        }
     }
 
     /**

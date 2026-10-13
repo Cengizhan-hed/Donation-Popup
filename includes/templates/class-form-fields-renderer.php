@@ -245,11 +245,12 @@ class WDP_Form_Fields_Renderer {
 		ob_start();
 		?>
 		<div class="wdp-price-quantity-row wdp-fixed-price-counter-row">
-			<div class="wdp-line-total-display" role="status" aria-live="polite">
-				<span class="screen-reader-text"><?php esc_html_e('Satır tutarı', 'woo-donation-popup'); ?></span>
-				<span class="wdp-line-total-value"><?php echo $product_price !== '' ? esc_html(WDP_Utils::format_price_plain($product_price)) : '—'; ?></span>
+			<div class="wdp-line-total-display wdp-fixed-amount-summary" role="status" aria-live="polite">
+				<span class="wdp-line-total-label wdp-fixed-amount-summary__label"><?php esc_html_e('Bağış tutarı', 'woo-donation-popup'); ?></span>
+				<span class="wdp-line-total-value wdp-fixed-amount-summary__value"><?php echo $product_price !== '' ? esc_html(WDP_Utils::format_price_plain($product_price)) : '—'; ?></span>
 			</div>
 			<div class="wdp-quantity-counter">
+				<span class="wdp-qty-label"><?php esc_html_e('Adet', 'woo-donation-popup'); ?></span>
 				<button type="button" class="wdp-product-quantity-btn wdp-product-quantity-decrease" aria-label="<?php echo esc_attr__('Azalt', 'woo-donation-popup'); ?>"><?php echo WDP_Svg_Icons::get_counter_icon_minus_svg(); ?></button>
 				<input type="number" name="quantity" value="1" min="1" max="99" readonly>
 				<button type="button" class="wdp-product-quantity-btn wdp-product-quantity-increase" aria-label="<?php echo esc_attr__('Arttır', 'woo-donation-popup'); ?>"><?php echo WDP_Svg_Icons::get_counter_icon_plus_svg(); ?></button>

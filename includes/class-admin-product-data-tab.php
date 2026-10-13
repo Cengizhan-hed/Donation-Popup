@@ -702,40 +702,26 @@ class WDP_Admin_Product_Data_Tab {
 	 * @return void
 	 */
 	private static function render_appearance_section(array $values) {
-		self::open_section('appearance', __('Bu ürüne özel görünüm', 'woo-donation-popup'), __('Düzen, renkler, köşe yuvarlaklığı, yoğunluk ve medya', 'woo-donation-popup'));
+		self::open_section('appearance', __('Bu ürüne özel görünüm', 'woo-donation-popup'), __('Yalnızca anlamlı geçersiz kılmalar: ana renk, köşe, düzen, kampanya medyası. Boş bırakılanlar genel Görünüm ayarını kullanır.', 'woo-donation-popup'));
 		self::select(
 			'layout_mode',
 			$values['layout_mode'],
 			__('Düzen', 'woo-donation-popup'),
 			__('Formun genel yerleşimi; "Hikâye" görseli ve formu yan yana gösterir.', 'woo-donation-popup'),
 			array(
-				'classic'  => __('Klasik', 'woo-donation-popup'),
+				'classic'  => __('Klasik (genel ayar)', 'woo-donation-popup'),
 				'campaign' => __('Kampanya', 'woo-donation-popup'),
 				'story'    => __('Hikâye (yan yana)', 'woo-donation-popup'),
 			)
 		);
-		self::checkbox('enable_campaign_media', $values['enable_campaign_media'], __('Ürün görselini göster', 'woo-donation-popup'), __('Ürünün öne çıkan görselini formun üst kısmında kampanya görseli olarak kullanır.', 'woo-donation-popup'));
-		self::checkbox('theme_inherit_category_color', $values['theme_inherit_category_color'], __('Kategori rengini kullan', 'woo-donation-popup'), __('Ana rengi Kategoriler sekmesinde bu ürünün kategorisine verilen renkten alır.', 'woo-donation-popup'));
+		self::checkbox('enable_campaign_media', $values['enable_campaign_media'], __('Kampanya medyası', 'woo-donation-popup'), __('Ürünün öne çıkan görselini formda 16:9 kampanya medyası olarak gösterir.', 'woo-donation-popup'));
+		self::checkbox('theme_inherit_category_color', $values['theme_inherit_category_color'], __('Kategori rengini kullan', 'woo-donation-popup'), __('Ana rengi Görünüm → kategori renklerinden alır (işaretliyse aşağıdaki renk yerine geçer).', 'woo-donation-popup'));
 		$color_extra = array(
 			'class'             => 'short wdp-color-field',
 			'custom_attributes' => array('maxlength' => '7', 'pattern' => '#?[0-9A-Fa-f]{3,6}'),
 		);
-		self::text('theme_primary', $values['theme_primary'], __('Ana renk', 'woo-donation-popup'), __('Düğme ve vurgu rengi; boşsa genel tasarım rengi kullanılır.', 'woo-donation-popup'), $color_extra + array('placeholder' => '#036a37'));
-		self::text('theme_primary_hover', $values['theme_primary_hover'], __('Ana renk (üzerine gelince)', 'woo-donation-popup'), __('Fare düğmenin üzerindeyken kullanılan renk.', 'woo-donation-popup'), $color_extra + array('placeholder' => '#025a2e'));
-		self::text('theme_modal_bg', $values['theme_modal_bg'], __('Arka plan rengi', 'woo-donation-popup'), __('Form penceresinin arka planı; boşsa genel ayar kullanılır.', 'woo-donation-popup'), $color_extra + array('placeholder' => '#ffffff'));
-		self::number('theme_radius', $values['theme_radius'], __('Köşe yuvarlaklığı (px)', 'woo-donation-popup'), __('Düğme ve alan köşeleri için 4–32 px; boşsa genel ayar kullanılır.', 'woo-donation-popup'), array('max' => '32', 'step' => '1'));
-		self::select(
-			'theme_density',
-			$values['theme_density'],
-			__('Yoğunluk', 'woo-donation-popup'),
-			__('Alanlar arasındaki boşluk miktarı.', 'woo-donation-popup'),
-			array(
-				''         => __('Genel ayarı kullan', 'woo-donation-popup'),
-				'compact'  => __('Sıkı', 'woo-donation-popup'),
-				'normal'   => __('Normal', 'woo-donation-popup'),
-				'spacious' => __('Ferah', 'woo-donation-popup'),
-			)
-		);
+		self::text('theme_primary', $values['theme_primary'], __('Ana renk', 'woo-donation-popup'), __('Boş = genel ayar. Hover/active otomatik hesaplanır.', 'woo-donation-popup'), $color_extra + array('placeholder' => __('Genel ayar', 'woo-donation-popup')));
+		self::number('theme_radius', $values['theme_radius'], __('Köşe yuvarlaklığı (px)', 'woo-donation-popup'), __('0–24; boş = genel ayar.', 'woo-donation-popup'), array('max' => '24', 'step' => '1', 'placeholder' => __('Genel ayar', 'woo-donation-popup')));
 		self::close_section();
 	}
 

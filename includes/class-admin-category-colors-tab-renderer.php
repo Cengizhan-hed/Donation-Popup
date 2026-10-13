@@ -14,9 +14,11 @@ if (!defined('ABSPATH')) {
  */
 class WDP_Admin_Category_Colors_Tab_Renderer {
 	/**
+	 * Category color fields without form chrome (embedded in Görünüm).
+	 *
 	 * @return void
 	 */
-	public static function render_tab() {
+	public static function render_fields_only() {
 		if (!taxonomy_exists('product_cat')) {
 			echo '<p>' . esc_html__('WooCommerce ürün kategorileri bulunamadı.', 'woo-donation-popup') . '</p>';
 			return;
@@ -35,14 +37,8 @@ class WDP_Admin_Category_Colors_Tab_Renderer {
 			)
 		);
 
-		WDP_Admin_Renderer_Helpers::open_form_container('wdp-category-colors-settings-form');
-		echo '<div class="wdp-tab-help" role="note"><p class="wdp-tab-help__title">' . esc_html__('Kategori başlık renkleri', 'woo-donation-popup') . '</p>';
-		echo '<ul class="wdp-tab-help__list"><li>' . esc_html__('Her kategori için renk seçin; o kategoriye doğrudan atanmış ürünlerin panel başlığı bu renkle görünür.', 'woo-donation-popup') . '</li>';
-		echo '<li>' . esc_html__('Ürün birden fazla kategorideyse en alt (en spesifik) kategori rengi kullanılır.', 'woo-donation-popup') . '</li></ul></div>';
-
 		if (is_wp_error($terms) || empty($terms)) {
 			echo '<p>' . esc_html__('Henüz ürün kategorisi yok.', 'woo-donation-popup') . '</p>';
-			WDP_Admin_Renderer_Helpers::close_form_container('wdp-save-category-colors-settings');
 			return;
 		}
 
@@ -52,7 +48,17 @@ class WDP_Admin_Category_Colors_Tab_Renderer {
 			self::render_category_node($node, $colors, 0);
 		}
 		echo '</div>';
+	}
 
+	/**
+	 * @return void
+	 */
+	public static function render_tab() {
+		WDP_Admin_Renderer_Helpers::open_form_container('wdp-category-colors-settings-form');
+		echo '<div class="wdp-tab-help" role="note"><p class="wdp-tab-help__title">' . esc_html__('Kategori başlık renkleri', 'woo-donation-popup') . '</p>';
+		echo '<ul class="wdp-tab-help__list"><li>' . esc_html__('Her kategori için renk seçin; o kategoriye doğrudan atanmış ürünlerin panel başlığı bu renkle görünür.', 'woo-donation-popup') . '</li>';
+		echo '<li>' . esc_html__('Ürün birden fazla kategorideyse en alt (en spesifik) kategori rengi kullanılır.', 'woo-donation-popup') . '</li></ul></div>';
+		self::render_fields_only();
 		WDP_Admin_Renderer_Helpers::close_form_container('wdp-save-category-colors-settings');
 	}
 

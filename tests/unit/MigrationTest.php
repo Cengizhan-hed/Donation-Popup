@@ -91,7 +91,8 @@ final class MigrationTest extends TestCase {
 		unset($options_after_first[ WDP_Migrations::LOG_OPTION ]);
 		$meta_after_first = WDP_Test_State::$post_meta;
 
-		WDP_Test_State::$options[ WDP_Migrations::OPTION ] = '10.26.0';
+		// Re-run only from the last schema step so fill/backup side-effects stay stable.
+		WDP_Test_State::$options[ WDP_Migrations::OPTION ] = '10.27.0';
 		WDP_Migrations::run();
 		$options_after_second = WDP_Test_State::$options;
 		unset($options_after_second[ WDP_Migrations::LOG_OPTION ]);

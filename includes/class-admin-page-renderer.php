@@ -1,6 +1,7 @@
 <?php
 /**
  * Bağış Popup Ayarları sayfa kabuğu, sekme navigasyonu ve ürünler sekmesi.
+ * Stage 2C: 6 sekme (Ürünler, Yerleşim, Görünüm, Formlar ve metinler, Entegrasyonlar, Gelişmiş).
  *
  * @package WooCommerce\Donation_Popup
  */
@@ -14,19 +15,11 @@ if (!defined('ABSPATH')) {
  */
 class WDP_Admin_Page_Renderer {
 	/**
-	 * Render full settings page.
+	 * Render full settings page (6 tabs).
 	 *
-	 * @param callable $render_modal_layout_tab  Modal layout tab renderer.
-	 * @param callable $render_normal_form_tab   Normal form tab renderer.
-	 * @param callable $render_shareholder_tab   Shareholder tab renderer.
-	 * @param callable $render_progress_bar_tab  Progress bar tab renderer.
-	 * @param callable $render_success_screen_tab Success tab renderer.
-	 * @param callable $render_meta_tab           Meta Pixel tab renderer.
-	 * @param callable $render_category_colors_tab Category title colors tab renderer.
-	 * @param callable $render_design_studio_tab   Design studio tab renderer.
 	 * @return void
 	 */
-	public static function render_settings_page($render_modal_layout_tab, $render_normal_form_tab, $render_shareholder_tab, $render_progress_bar_tab, $render_success_screen_tab, $render_meta_tab, $render_category_colors_tab, $render_design_studio_tab = null) {
+	public static function render_settings_page() {
 		echo '<div class="wrap wdp-admin-wrap">';
 		echo '<header class="wdp-admin-hero">';
 		echo '<div class="wdp-admin-hero__accent" aria-hidden="true"></div>';
@@ -34,7 +27,7 @@ class WDP_Admin_Page_Renderer {
 		echo '<div class="wdp-admin-hero__copy">';
 		echo '<p class="wdp-admin-eyebrow">' . esc_html__('Donation Popup', 'woo-donation-popup') . '</p>';
 		echo '<h1 class="wdp-admin-title">' . esc_html__('Bağış Popup Ayarları', 'woo-donation-popup') . '</h1>';
-		echo '<p class="wdp-admin-subtitle">' . esc_html__('Ürün davranışını, form görünümünü ve başarı ekranını tek yerden yönetin — değişiklikler canlı önizlemede anında görünür.', 'woo-donation-popup') . '</p>';
+		echo '<p class="wdp-admin-subtitle">' . esc_html__('Ürünler, yerleşim, görünüm ve form metinlerini tek yerden yönetin.', 'woo-donation-popup') . '</p>';
 		echo '</div>';
 		if (defined('WDP_VERSION')) {
 			echo '<span class="wdp-admin-version" title="' . esc_attr__('Eklenti sürümü', 'woo-donation-popup') . '">';
@@ -50,18 +43,13 @@ class WDP_Admin_Page_Renderer {
 		echo '<div class="wdp-nav-group" data-group="setup"><span class="wdp-nav-group__label">' . esc_html__('Kurulum', 'woo-donation-popup') . '</span>';
 		echo '<a id="wdp-tab-products" href="#products" class="nav-tab nav-tab-active" data-tab="products" role="tab" aria-controls="wdp-products-tab" aria-selected="true" tabindex="0">' . esc_html__('Ürünler', 'woo-donation-popup') . '</a>';
 		echo '<a id="wdp-tab-placement" href="#placement" class="nav-tab" data-tab="placement" role="tab" aria-controls="wdp-placement-tab" aria-selected="false" tabindex="-1">' . esc_html__('Ürün sayfası ve liste', 'woo-donation-popup') . '</a>';
-		echo '<a id="wdp-tab-design-studio" href="#design-studio" class="nav-tab" data-tab="design-studio" role="tab" aria-controls="wdp-design-studio-tab" aria-selected="false" tabindex="-1">' . esc_html__('Tasarım', 'woo-donation-popup') . '</a>';
 		echo '</div>';
-		echo '<div class="wdp-nav-group" data-group="forms"><span class="wdp-nav-group__label">' . esc_html__('Formlar', 'woo-donation-popup') . '</span>';
-		echo '<a id="wdp-tab-modal-layout" href="#modal-layout" class="nav-tab" data-tab="modal-layout" role="tab" aria-controls="wdp-modal-layout-tab" aria-selected="false" tabindex="-1">' . esc_html__('Modal', 'woo-donation-popup') . '</a>';
-		echo '<a id="wdp-tab-normal-form" href="#normal-form" class="nav-tab" data-tab="normal-form" role="tab" aria-controls="wdp-normal-form-tab" aria-selected="false" tabindex="-1">' . esc_html__('Normal', 'woo-donation-popup') . '</a>';
-		echo '<a id="wdp-tab-shareholder-form" href="#shareholder-form" class="nav-tab" data-tab="shareholder-form" role="tab" aria-controls="wdp-shareholder-form-tab" aria-selected="false" tabindex="-1">' . esc_html__('Hisseli', 'woo-donation-popup') . '</a>';
-		echo '<a id="wdp-tab-progress-bar" href="#progress-bar" class="nav-tab" data-tab="progress-bar" role="tab" aria-controls="wdp-progress-bar-tab" aria-selected="false" tabindex="-1">' . esc_html__('Progress', 'woo-donation-popup') . '</a>';
-		echo '<a id="wdp-tab-success-screen" href="#success-screen" class="nav-tab" data-tab="success-screen" role="tab" aria-controls="wdp-success-screen-tab" aria-selected="false" tabindex="-1">' . esc_html__('Başarı', 'woo-donation-popup') . '</a>';
+		echo '<div class="wdp-nav-group" data-group="design"><span class="wdp-nav-group__label">' . esc_html__('Tasarım', 'woo-donation-popup') . '</span>';
+		echo '<a id="wdp-tab-appearance" href="#appearance" class="nav-tab" data-tab="appearance" role="tab" aria-controls="wdp-appearance-tab" aria-selected="false" tabindex="-1">' . esc_html__('Görünüm', 'woo-donation-popup') . '</a>';
+		echo '<a id="wdp-tab-forms-texts" href="#forms-texts" class="nav-tab" data-tab="forms-texts" role="tab" aria-controls="wdp-forms-texts-tab" aria-selected="false" tabindex="-1">' . esc_html__('Formlar ve metinler', 'woo-donation-popup') . '</a>';
 		echo '</div>';
-		echo '<div class="wdp-nav-group" data-group="integrations"><span class="wdp-nav-group__label">' . esc_html__('Ek', 'woo-donation-popup') . '</span>';
-		echo '<a id="wdp-tab-meta" href="#meta" class="nav-tab" data-tab="meta" role="tab" aria-controls="wdp-meta-tab" aria-selected="false" tabindex="-1">' . esc_html__('Meta Pixel', 'woo-donation-popup') . '</a>';
-		echo '<a id="wdp-tab-category-colors" href="#category-colors" class="nav-tab" data-tab="category-colors" role="tab" aria-controls="wdp-category-colors-tab" aria-selected="false" tabindex="-1">' . esc_html__('Kategoriler', 'woo-donation-popup') . '</a>';
+		echo '<div class="wdp-nav-group" data-group="more"><span class="wdp-nav-group__label">' . esc_html__('Diğer', 'woo-donation-popup') . '</span>';
+		echo '<a id="wdp-tab-integrations" href="#integrations" class="nav-tab" data-tab="integrations" role="tab" aria-controls="wdp-integrations-tab" aria-selected="false" tabindex="-1">' . esc_html__('Entegrasyonlar', 'woo-donation-popup') . '</a>';
 		echo '<a id="wdp-tab-advanced" href="#advanced" class="nav-tab" data-tab="advanced" role="tab" aria-controls="wdp-advanced-tab" aria-selected="false" tabindex="-1">' . esc_html__('Gelişmiş', 'woo-donation-popup') . '</a>';
 		echo '</div>';
 		echo '</nav>';
@@ -72,40 +60,18 @@ class WDP_Admin_Page_Renderer {
 		WDP_Admin_Placement_Tab_Renderer::render_tab();
 		echo '</div>';
 
-		echo '<div id="wdp-design-studio-tab" class="wdp-tab-content" role="tabpanel" aria-hidden="true" hidden aria-labelledby="wdp-tab-design-studio">';
-		if (is_callable($render_design_studio_tab)) {
-			call_user_func($render_design_studio_tab);
-		} elseif (class_exists('WDP_Admin_Design_Studio_Renderer')) {
-			WDP_Admin_Design_Studio_Renderer::render_tab();
+		echo '<div id="wdp-appearance-tab" class="wdp-tab-content" role="tabpanel" aria-hidden="true" hidden aria-labelledby="wdp-tab-appearance">';
+		WDP_Admin_Appearance_Tab_Renderer::render_tab();
+		echo '</div>';
+
+		echo '<div id="wdp-forms-texts-tab" class="wdp-tab-content" role="tabpanel" aria-hidden="true" hidden aria-labelledby="wdp-tab-forms-texts">';
+		WDP_Admin_Forms_Texts_Tab_Renderer::render_tab();
+		echo '</div>';
+
+		echo '<div id="wdp-integrations-tab" class="wdp-tab-content" role="tabpanel" aria-hidden="true" hidden aria-labelledby="wdp-tab-integrations">';
+		if (class_exists('WDP_Admin_Meta_Tracking_Tab_Renderer')) {
+			WDP_Admin_Meta_Tracking_Tab_Renderer::render();
 		}
-		echo '</div>';
-
-		echo '<div id="wdp-modal-layout-tab" class="wdp-tab-content" role="tabpanel" aria-hidden="true" hidden aria-labelledby="wdp-tab-modal-layout">';
-		call_user_func($render_modal_layout_tab);
-		echo '</div>';
-
-		echo '<div id="wdp-normal-form-tab" class="wdp-tab-content" role="tabpanel" aria-hidden="true" hidden aria-labelledby="wdp-tab-normal-form">';
-		call_user_func($render_normal_form_tab);
-		echo '</div>';
-
-		echo '<div id="wdp-shareholder-form-tab" class="wdp-tab-content" role="tabpanel" aria-hidden="true" hidden aria-labelledby="wdp-tab-shareholder-form">';
-		call_user_func($render_shareholder_tab);
-		echo '</div>';
-
-		echo '<div id="wdp-progress-bar-tab" class="wdp-tab-content" role="tabpanel" aria-hidden="true" hidden aria-labelledby="wdp-tab-progress-bar">';
-		call_user_func($render_progress_bar_tab);
-		echo '</div>';
-
-		echo '<div id="wdp-success-screen-tab" class="wdp-tab-content" role="tabpanel" aria-hidden="true" hidden aria-labelledby="wdp-tab-success-screen">';
-		call_user_func($render_success_screen_tab);
-		echo '</div>';
-
-		echo '<div id="wdp-meta-tab" class="wdp-tab-content" role="tabpanel" aria-hidden="true" hidden aria-labelledby="wdp-tab-meta">';
-		call_user_func($render_meta_tab);
-		echo '</div>';
-
-		echo '<div id="wdp-category-colors-tab" class="wdp-tab-content" role="tabpanel" aria-hidden="true" hidden aria-labelledby="wdp-tab-category-colors">';
-		call_user_func($render_category_colors_tab);
 		echo '</div>';
 
 		echo '<div id="wdp-advanced-tab" class="wdp-tab-content" role="tabpanel" aria-hidden="true" hidden aria-labelledby="wdp-tab-advanced">';
@@ -117,29 +83,41 @@ class WDP_Admin_Page_Renderer {
 	}
 
 	/**
-	 * Advanced tab: data retention on uninstall.
+	 * Advanced tab: data retention, cache, form test, debug.
 	 *
 	 * @return void
 	 */
 	private static function render_advanced_tab() {
 		$delete_on_uninstall = '1' === (string) get_option('wdp_delete_data_on_uninstall', '0');
+		$debug_log           = '1' === (string) get_option('wdp_debug_log_enabled', '0');
+		$matrix              = class_exists('WDP_Form_Matrix') ? WDP_Form_Matrix::admin_url() : '';
 
 		echo '<div class="wdp-settings-container">';
 		echo '<div class="wdp-tab-help" role="note">';
-		echo '<p class="wdp-tab-help__title">' . esc_html__('Veri ve kaldırma', 'woo-donation-popup') . '</p>';
-		echo '<p>' . esc_html__('Kişisel veri dışa aktarma ve silme talepleri (Araçlar → Kişisel verileri dışa aktar / sil) siparişlerdeki bağışçı ve hissedar alanlarını kapsar; silmede değerler “[deleted]” ile anonimleştirilir.', 'woo-donation-popup') . '</p>';
+		echo '<p class="wdp-tab-help__title">' . esc_html__('Gelişmiş', 'woo-donation-popup') . '</p>';
+		echo '<p>' . esc_html__('Veri saklama, önbellek ve hata ayıklama. Günlük işlemler için diğer sekmeleri kullanın.', 'woo-donation-popup') . '</p>';
 		echo '</div>';
 
 		echo '<form id="wdp-advanced-settings-form" class="wdp-admin-settings-form" method="post" data-wdp-ajax-action="wdp_save_advanced_settings">';
-		echo '<table class="form-table" role="presentation"><tbody><tr>';
-		echo '<th scope="row">' . esc_html__('Eklenti kaldırılınca tüm verilerini sil', 'woo-donation-popup') . '</th><td>';
+		echo '<table class="form-table" role="presentation"><tbody>';
+		echo '<tr><th scope="row">' . esc_html__('Eklenti kaldırılınca tüm verilerini sil', 'woo-donation-popup') . '</th><td>';
 		echo '<label><input type="checkbox" name="delete_data_on_uninstall" value="1"' . checked($delete_on_uninstall, true, false) . ' /> ';
 		echo esc_html__('Etkin', 'woo-donation-popup') . '</label>';
-		echo '<p class="description">' . esc_html__('Açıksa eklenti silindiğinde wdp_ ile başlayan ayarlar, geçici veriler (transient) ve ürün meta verileri kaldırılır. Siparişlerdeki bağış verilerine dokunulmaz. Varsayılan: kapalı.', 'woo-donation-popup') . '</p>';
-		echo '</td></tr></tbody></table>';
+		echo '<p class="description">' . esc_html__('Açıksa eklenti silindiğinde wdp_ ayarları ve ürün meta verileri kaldırılır. Sipariş verisine dokunulmaz.', 'woo-donation-popup') . '</p>';
+		echo '</td></tr>';
+		echo '<tr><th scope="row">' . esc_html__('Hata ayıklama günlüğü', 'woo-donation-popup') . '</th><td>';
+		echo '<label><input type="checkbox" name="debug_log_enabled" value="1"' . checked($debug_log, true, false) . ' /> ';
+		echo esc_html__('Etkin', 'woo-donation-popup') . '</label></td></tr>';
+		echo '</tbody></table>';
+
+		if ($matrix !== '') {
+			echo '<p><a class="button" href="' . esc_url($matrix) . '" target="_blank" rel="noopener noreferrer">' . esc_html__('Form test sayfasını aç', 'woo-donation-popup') . '</a></p>';
+		}
+		echo '<p><button type="button" class="button" id="wdp-clear-asset-cache">' . esc_html__('Önbelleği temizle', 'woo-donation-popup') . '</button> ';
+		echo '<button type="button" class="button" id="wdp-recalc-progress">' . esc_html__('İlerleme toplamlarını yeniden hesapla', 'woo-donation-popup') . '</button></p>';
 
 		echo '<p class="submit">';
-		submit_button(__('Gelişmiş ayarları kaydet', 'woo-donation-popup'), 'primary', 'submit', false, array('id' => 'wdp-save-advanced-settings'));
+		submit_button(__('Kaydet', 'woo-donation-popup'), 'primary', 'submit', false, array('id' => 'wdp-save-advanced-settings'));
 		echo '<span class="spinner"></span>';
 		echo '</p>';
 		echo '</form>';
@@ -147,7 +125,7 @@ class WDP_Admin_Page_Renderer {
 	}
 
 	/**
-	 * Render products tab body (WP_List_Table overview; settings live on the product "Bağış" tab).
+	 * Render products tab body.
 	 *
 	 * @return void
 	 */
@@ -159,8 +137,7 @@ class WDP_Admin_Page_Renderer {
 		echo '<div class="wdp-settings-container wdp-products-overview">';
 		echo '<div class="wdp-tab-help" role="note"><p class="wdp-tab-help__title">' . esc_html__('Bu sekmede ne yaparsınız?', 'woo-donation-popup') . '</p><ul class="wdp-tab-help__list">';
 		echo '<li>' . esc_html__('Her ürünün bağış tipini, kısa kodunu ve hedefli kampanyalarda toplanan tutarı tek bakışta görürsünüz.', 'woo-donation-popup') . '</li>';
-		echo '<li>' . esc_html__('Ayarları değiştirmek için "Düzenle"ye tıklayın; ürün düzenleme ekranındaki "Bağış" sekmesi açılır ve ürünle birlikte kaydedilir.', 'woo-donation-popup') . '</li>';
-		echo '<li>' . esc_html__('Buton kısa kodu ortada açılan pencere, Sağ panel kısa kodu sağdan panel, Form kısa kodu sayfa içi form gösterir.', 'woo-donation-popup') . '</li>';
+		echo '<li>' . esc_html__('Ayarları değiştirmek için "Düzenle"ye tıklayın; ürün düzenleme ekranındaki "Bağış" sekmesi açılır.', 'woo-donation-popup') . '</li>';
 		echo '</ul></div>';
 
 		echo '<form method="post" action="' . esc_url(admin_url('admin.php?page=wdp-popup-settings')) . '" class="wdp-products-table-form">';

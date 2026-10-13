@@ -1,0 +1,86 @@
+/**
+ * @file info-row.css
+ * Bilgi satırı: güven rozeti, etki, aciliyet, sosyal kanıt, ürün notu, medya.
+ */
+
+.wdp-info-row,
+.wdp-trust-strip,
+.wdp-trust-badge,
+.wdp-product-note,
+.wdp-campaign-module,
+.wdp-impact-line,
+.wdp-urgency-banner,
+.wdp-social-proof {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--wdp-space-2);
+  padding: var(--wdp-space-2) var(--wdp-space-3);
+  margin: 0 0 var(--wdp-space-3);
+  border-radius: var(--wdp-radius-md);
+  background: var(--wdp-surface-muted);
+  border: 0;
+  box-shadow: none !important;
+  font-size: var(--wdp-fs-help);
+  color: var(--wdp-text-muted);
+  line-height: var(--wdp-lh);
+}
+
+.wdp-trust-strip {
+  flex-wrap: wrap;
+  gap: var(--wdp-space-2);
+}
+
+.wdp-trust-badge {
+  margin: 0;
+  padding: var(--wdp-space-1) var(--wdp-space-2);
+  background: transparent;
+}
+
+.wdp-trust-badge__icon,
+.wdp-info-row__icon,
+.wdp-product-note__icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--wdp-text-muted);
+}
+
+.wdp-urgency-banner,
+.wdp-info-row--urgency {
+  background: transparent;
+  color: var(--wdp-danger);
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.wdp-campaign-media,
+.wdp-campaign-module--media img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: var(--wdp-radius-md);
+  margin: 0 0 var(--wdp-space-3);
+  background: var(--wdp-surface-muted);
+}
+
+.wdp-product-note__toggle,
+.wdp-product-note__more {
+  display: inline;
+  margin-left: var(--wdp-space-1);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--wdp-primary);
+  font-size: inherit;
+  font-weight: var(--wdp-fw-medium);
+  cursor: pointer;
+}
+
+.wdp-product-note.is-collapsed .wdp-product-note__body {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}

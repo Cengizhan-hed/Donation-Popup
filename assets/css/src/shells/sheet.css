@@ -1,0 +1,19 @@
+/**
+ * @file sheet.css
+ * Mobil alt sayfa (sheet) — modal/panel ≤600px dönüşümü shells'te;
+ * burada ortak sheet yardımcıları.
+ */
+
+.wdp-root[data-wdp-shell="sheet"],
+.hdf-donation-modal-wrapper[data-wdp-shell="sheet"] {
+  align-items: flex-end;
+}
+
+.wdp-root[data-wdp-shell="sheet"] .wdp-modal-content,
+.hdf-donation-modal-wrapper[data-wdp-shell="sheet"] .wdp-modal-content {
+  width: 100%;
+  max-height: 92dvh;
+  max-height: 92vh;
+  border-radius: var(--wdp-radius-lg) var(--wdp-radius-lg) 0 0;
+  box-shadow: var(--wdp-shadow-shell);
+}
