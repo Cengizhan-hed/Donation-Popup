@@ -785,6 +785,205 @@ async function closeOpenShell(page, how) {
  * @param {import('@playwright/test').Locator} root
  * @returns {Promise<{ name: string, phone: string, email: string }>}
  */
+/**
+ * İskelet kilidi: product_info hata/abort/gecikme ve kapat-yeniden-aç yollarında
+ * ad alanı ≤11 sn içinde yazılabilir + görünür uyarı.
+ *
+ * @param {object} opts
+ */
+async function runSkeletonUnlockChecks({
+  browser,
+  contextOpts,
+  env,
+  productPath,
+  guestExtra,
+  failures,
+  stats,
+}) {
+  const UNLOCK_MS = 11000;
+  const STALL_RE = /Form tam yüklenemedi|Ürün bilgileri alınamadı|bilgilerinizi kontrol|sayfayı yenileyip/i;
+
+  /**
+   * @param {'status500'|'abort'|'delay12'} mode
+   */
+  async function oneProductInfoFault(mode) {
+    const ctx = await browser.newContext(contextOpts);
+    const page = await ctx.newPage();
+    try {
+      await page.route('**/admin-ajax.php*', async (route) => {
+        const req = route.request();
+        const post = req.postData() || '';
+        const url = req.url();
+        const isProductInfo =
+          /wdp_get_product_info/i.test(post) || /wdp_get_product_info/i.test(url);
+        if (!isProductInfo) {
+          await route.continue();
+          return;
+        }
+        if (mode === 'status500') {
+          await route.fulfill({
+            status: 500,
+            contentType: 'application/json',
+            body: JSON.stringify({ success: false, data: { message: 'server' } }),
+          });
+          return;
+        }
+        if (mode === 'abort') {
+          await route.abort('failed');
+          return;
+        }
+        // delay12: 12 sn gecikme — eklenti 10 sn abort + uyarı bekler
+        await new Promise((r) => setTimeout(r, 12000));
+        await route.continue();
+      });
+
+      await page.goto(withCacheBust(env.E2E_BASE_URL, productPath, guestExtra), {
+        waitUntil: 'domcontentloaded',
+      });
+      await page.locator(SEL.sidePanelTrigger).first().click({ timeout: CHECK_MS }).catch(() =>
+        openDonate(page)
+      );
+      const shell = openShellLocator(page);
+      await shell.waitFor({ state: 'visible', timeout: CHECK_MS });
+
+      const nameLoc = shell.locator(SEL.donorName).first();
+      const t0 = Date.now();
+      await nameLoc.waitFor({ state: 'visible', timeout: UNLOCK_MS });
+      await page
+        .waitForFunction(
+          () => {
+            const modal = document.querySelector('.wdp-modal.show');
+            if (!modal || modal.classList.contains('wdp-is-skeleton')) return false;
+            if (modal.getAttribute('aria-busy') === 'true') return false;
+            const input = modal.querySelector('input[name="donation_full_name"]');
+            return !!(input && !input.disabled && input.isConnected);
+          },
+          null,
+          { timeout: UNLOCK_MS }
+        )
+        .catch(() => {});
+      const elapsed = Date.now() - t0;
+      if (elapsed > UNLOCK_MS) {
+        failures.push(
+          makeFailure({
+            check: 'skeleton-unlocks',
+            description: `İskelet kilidi ${mode} yolunda zamanında açılmadı`,
+            detail: `ms=${elapsed} limit=${UNLOCK_MS}`,
+          })
+        );
+        stats.failed += 1;
+        return;
+      }
+
+      // Uyarıyı fill'den ÖNCE topla (input dinleyicisi banner'ı temizler)
+      const warnBudget = mode === 'delay12' ? UNLOCK_MS : 4000;
+      const warnDeadline = Date.now() + warnBudget;
+      let warned = false;
+      while (Date.now() < warnDeadline) {
+        const texts = await visibleValidationErrors(page);
+        const banner = await shell
+          .locator(SEL.formError)
+          .allTextContents()
+          .catch(() => []);
+        const joined = [...texts, ...banner].join(' ');
+        if (STALL_RE.test(joined)) {
+          warned = true;
+          break;
+        }
+        await page.waitForTimeout(250);
+      }
+      if (!warned) {
+        failures.push(
+          makeFailure({
+            check: 'skeleton-unlocks',
+            description: `Görünür uyarı yok (${mode})`,
+            detail: 'Form tam yüklenemedi / Ürün bilgileri alınamadı beklenirdi',
+          })
+        );
+        stats.failed += 1;
+      }
+
+      await nameLoc.fill('Skeleton Unlock').catch((e) => {
+        failures.push(
+          makeFailure({
+            check: 'skeleton-unlocks',
+            description: `Ad alanı yazılamadı (${mode})`,
+            detail: String(e && e.message ? e.message : e),
+          })
+        );
+        stats.failed += 1;
+      });
+      const filled = await nameLoc.inputValue().catch(() => '');
+      if (filled === 'Skeleton Unlock' && warned) {
+        stats.passed += 1;
+      } else if (filled !== 'Skeleton Unlock' && warned) {
+        /* fill failure already recorded */
+      } else if (!warned && filled === 'Skeleton Unlock') {
+        /* warn failure already recorded */
+      }
+    } finally {
+      await page.close().catch(() => {});
+      await ctx.close().catch(() => {});
+    }
+  }
+
+  await oneProductInfoFault('status500');
+  await oneProductInfoFault('abort');
+  await oneProductInfoFault('delay12');
+
+  // Kapat → yeniden aç → yazılabilir
+  const ctx = await browser.newContext(contextOpts);
+  const page = await ctx.newPage();
+  try {
+    await page.goto(withCacheBust(env.E2E_BASE_URL, productPath, guestExtra), {
+      waitUntil: 'domcontentloaded',
+    });
+    await page.locator(SEL.sidePanelTrigger).first().click({ timeout: CHECK_MS }).catch(() =>
+      openDonate(page)
+    );
+    let shell = openShellLocator(page);
+    await shell.waitFor({ state: 'visible', timeout: CHECK_MS });
+    // Yükleme sırasında kapat
+    await page.keyboard.press('Escape').catch(() => {});
+    await waitForShellClosed(page, CHECK_MS).catch(() => {});
+    await page.locator(SEL.sidePanelTrigger).first().click({ timeout: CHECK_MS }).catch(() =>
+      openDonate(page)
+    );
+    shell = openShellLocator(page);
+    await shell.waitFor({ state: 'visible', timeout: CHECK_MS });
+    const nameLoc = shell.locator(SEL.donorName).first();
+    await page
+      .waitForFunction(
+        () => {
+          const modal = document.querySelector('.wdp-modal.show');
+          if (!modal || modal.classList.contains('wdp-is-skeleton')) return false;
+          const input = modal.querySelector('input[name="donation_full_name"]');
+          return !!(input && !input.disabled);
+        },
+        null,
+        { timeout: UNLOCK_MS }
+      )
+      .catch(() => {});
+    await nameLoc.fill('Reopen OK');
+    const val = await nameLoc.inputValue().catch(() => '');
+    if (val !== 'Reopen OK') {
+      failures.push(
+        makeFailure({
+          check: 'skeleton-unlocks',
+          description: 'Kapat→yeniden aç sonrası ad alanı yazılamadı',
+          detail: `değer="${val}"`,
+        })
+      );
+      stats.failed += 1;
+    } else {
+      stats.passed += 1;
+    }
+  } finally {
+    await page.close().catch(() => {});
+    await ctx.close().catch(() => {});
+  }
+}
+
 async function fillDonorFields(root) {
   // includes/templates/class-form-fields-renderer.php — donation_full_name
   // İskelet (disabled/inert) kalkmadan fill no-op olabiliyor; actionability beklenir (senaryo sırası aynı).
@@ -2137,6 +2336,29 @@ export async function captureAll({
     }
     await admin.close();
     logSection('admin sekmeleri', tAdmin);
+  }
+
+  // Functional: skeleton unlock paths (product_info 500 / abort / delay + close-reopen)
+  if (runFunctional) {
+    const tSkel = Date.now();
+    await runSkeletonUnlockChecks({
+      browser,
+      contextOpts,
+      env,
+      productPath: productUrls.fixed,
+      guestExtra,
+      failures,
+      stats: functionalStats,
+    }).catch((e) => {
+      failures.push(
+        makeFailure({
+          check: 'skeleton-unlocks',
+          description: 'İskelet kilit açılma kontrolü çöktü',
+          error: e,
+        })
+      );
+    });
+    logSection('skeleton-unlocks', tSkel);
   }
 
   // Functional: qty change + add to cart for fixed

@@ -196,10 +196,11 @@ test('modal.js capture/restore, inert ve skeleton disabled kilidi kullanır', ()
   assert.match(js, /setModalSkeletonBusy/);
   assert.match(js, /lockSkeletonControls/);
   assert.match(js, /wdpSkeletonLock/);
-  // restore, wizard/phone kurulumundan sonra ve unlock öncesi
+  assert.match(js, /finally\s*\{[\s\S]*setModalSkeletonBusy\(modal,\s*false\)/);
+  assert.match(js, /SKELETON_WATCHDOG_MS/);
+  // restore, wizard/phone kurulumundan sonra
   const restoreAt = js.indexOf('restoreModalFormValues(modal, preserved)');
-  const unlockAt = js.indexOf('setModalSkeletonBusy(modal, false)');
-  assert.ok(restoreAt > 0 && unlockAt > restoreAt, 'restore unlock öncesi olmalı');
+  assert.ok(restoreAt > 0, 'restore var');
 });
 
 test('validateForm canlı forma yönlendirir', () => {

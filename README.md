@@ -387,6 +387,12 @@ Formun içindeki SSS modülü 10.27.0’da tamamen kaldırıldı. SSS’ler ür�
 
 ## Sürüm notları
 
+### 10.28.9 — İskelet kilidi her yolda açılır
+
+- **try/finally:** `runModalOpenInit` ve `openModal` hata yolunda kilit + `aria-busy` kalkar.
+- **Bekçi:** 10 sn içinde açılmazsa zorla unlock + görünür uyarı + `console.warn`.
+- **İstek kimliği:** `data-wdp-open-token`; eski `wdp_get_product_info` yanıtı yeni formu ezmez. Ürün bilgisi 10 sn zaman aşımı + panel/popup hata banner’ı.
+
 ### 10.28.8 — İskelet kilidi (disabled) + restore sırası
 
 - **Playwright/otomasyon:** Yalnızca `inert` yetmez; iskelette input/select/textarea/button `disabled` (+ `data-wdp-skeleton-lock`). `resetForm` sonrası kilit yenilenir.

@@ -22,6 +22,10 @@
   const state = stateCheck.module;
   const { safeLog, focusFirstElement, activateFocusTrap, announceStatus } = utils;
   const modalLifecycleState = typeof WeakMap !== 'undefined' ? new WeakMap() : null;
+  const skeletonWatchdogs = typeof WeakMap !== 'undefined' ? new WeakMap() : null;
+  const SKELETON_WATCHDOG_MS = 10000;
+  const SKELETON_STALL_MESSAGE =
+    'Form tam yüklenemedi, lütfen bilgilerinizi kontrol edin.';
   let sidePanelScrollLockY = 0;
   let centerModalScrollLockY = 0;
   let pendingOpenRequest = null;
@@ -250,6 +254,67 @@
     })
   }
 
+  function bumpModalOpenToken(modal) {
+    if (!modal) {
+      return 0
+    }
+    const next = (Number.parseInt(modal.dataset.wdpOpenToken || '0', 10) || 0) + 1
+    modal.dataset.wdpOpenToken = String(next)
+    return next
+  }
+
+  function clearSkeletonWatchdog(modal) {
+    if (!modal || !skeletonWatchdogs) {
+      return
+    }
+    const timer = skeletonWatchdogs.get(modal)
+    if (timer) {
+      window.clearTimeout(timer)
+      skeletonWatchdogs.delete(modal)
+    }
+  }
+
+  function showSkeletonStallWarning(modal) {
+    if (!modal) {
+      return
+    }
+    const form = modal.querySelector('form')
+    if (form && WDPApp.formFeedback && typeof WDPApp.formFeedback.showFormError === 'function') {
+      WDPApp.formFeedback.showFormError(form, SKELETON_STALL_MESSAGE)
+    } else {
+      const errorMsg = modal.querySelector('.wdp-form-error')
+      if (errorMsg) {
+        errorMsg.textContent = SKELETON_STALL_MESSAGE
+        errorMsg.style.display = 'block'
+        errorMsg.setAttribute('role', 'alert')
+      }
+    }
+    if (typeof console !== 'undefined' && typeof console.warn === 'function') {
+      console.warn('[WDP] Skeleton lock watchdog: force unlock', modal.id || '')
+    }
+    announceStatus(SKELETON_STALL_MESSAGE, 'assertive')
+  }
+
+  function armSkeletonWatchdog(modal) {
+    if (!modal || !skeletonWatchdogs) {
+      return
+    }
+    clearSkeletonWatchdog(modal)
+    const tokenAtArm = modal.dataset.wdpOpenToken || ''
+    const timer = window.setTimeout(function () {
+      skeletonWatchdogs.delete(modal)
+      if ((modal.dataset.wdpOpenToken || '') !== tokenAtArm) {
+        return
+      }
+      if (!modal.classList.contains('wdp-is-skeleton') && modal.getAttribute('aria-busy') !== 'true') {
+        return
+      }
+      showSkeletonStallWarning(modal)
+      setModalSkeletonBusy(modal, false)
+    }, SKELETON_WATCHDOG_MS)
+    skeletonWatchdogs.set(modal, timer)
+  }
+
   function setModalSkeletonBusy(modal, busy) {
     if (!modal) {
       return
@@ -263,7 +328,9 @@
         content.setAttribute('aria-busy', 'true')
       }
       lockSkeletonControls(modal, true)
+      armSkeletonWatchdog(modal)
     } else {
+      clearSkeletonWatchdog(modal)
       modal.classList.remove('wdp-is-skeleton')
       modal.removeAttribute('aria-busy')
       if (content) {
@@ -288,75 +355,96 @@
   }
 
   function runModalOpenInit(modal, productId, sidePanelMode) {
-    if (!modal || state.activeModal !== modal) {
+    if (!modal) {
+      return
+    }
+    // Kapatılmış / başka modal aktif: yine de bu kabuktaki kilidi bırak
+    if (state.activeModal !== modal) {
+      setModalSkeletonBusy(modal, false)
       return
     }
 
-    // Skeleton sırasında (veya yarışta) yazılmış kullanıcı verisini koru
-    const preserved = captureModalFormValues(modal)
-    resetForm(modal)
-    // resetForm innerHTML sonrası yeni inputlar kilitsiz kalmasın
-    lockSkeletonControls(modal, true)
+    const openToken = Number.parseInt(modal.dataset.wdpOpenToken || '0', 10) || 0
+    let initOk = false
+    try {
+      // Skeleton sırasında (veya yarışta) yazılmış kullanıcı verisini koru
+      const preserved = captureModalFormValues(modal)
+      resetForm(modal)
+      // resetForm innerHTML sonrası yeni inputlar kilitsiz kalmasın
+      lockSkeletonControls(modal, true)
 
-    const donationForm = modal.querySelector('form')
-    if (donationForm && WDPApp.form && typeof WDPApp.form.setup === 'function') {
-      WDPApp.form.setup(donationForm)
-    }
-    if (donationForm && WDPApp.formWizard && typeof WDPApp.formWizard.reset === 'function') {
-      WDPApp.formWizard.reset(donationForm)
-    }
-
-    if (WDPApp.phoneInput && typeof WDPApp.phoneInput.refreshInRoot === 'function') {
-      WDPApp.phoneInput.refreshInRoot(modal)
-    } else if (WDPApp.phoneInput && typeof WDPApp.phoneInput.setupInRoot === 'function') {
-      WDPApp.phoneInput.setupInRoot(modal)
-    }
-
-    setupShareholderSection(modal, productId)
-
-    if (donationForm && WDPApp.formWizard && typeof WDPApp.formWizard.setup === 'function') {
-      WDPApp.formWizard.setup(donationForm)
-      if (typeof WDPApp.formWizard.reset === 'function') {
+      const donationForm = modal.querySelector('form')
+      if (donationForm && WDPApp.form && typeof WDPApp.form.setup === 'function') {
+        WDPApp.form.setup(donationForm)
+      }
+      if (donationForm && WDPApp.formWizard && typeof WDPApp.formWizard.reset === 'function') {
         WDPApp.formWizard.reset(donationForm)
       }
-    }
 
-    // Wizard/phone yeniden kurulumundan SONRA geri yükle; ardından kilidi aç
-    restoreModalFormValues(modal, preserved)
-    lockSkeletonControls(modal, true)
-
-    const loadProductInfo = WDPApp.product && (WDPApp.product.fetchProductInfo || WDPApp.product.fetch)
-    if (typeof loadProductInfo === 'function') {
-      loadProductInfo(productId)
-    }
-
-    const progressBarContainer = modal.querySelector('.wdp-progress-bar-container')
-    if (progressBarContainer && WDPApp.progressBar && typeof WDPApp.progressBar.setup === 'function') {
-      try {
-        WDPApp.progressBar.setup(progressBarContainer)
-        safeLog("Progress bar setup completed for modal", modal.id)
-        const fetchCart =
-          (WDPApp.cartActions && WDPApp.cartActions.fetchContents) ||
-          (WDPApp.cart && WDPApp.cart.fetchContents)
-        if (typeof fetchCart === 'function') {
-          fetchCart()
-            .then((items) => {
-              if (WDPApp.progressBar && typeof WDPApp.progressBar.syncFromCartItems === 'function') {
-                WDPApp.progressBar.syncFromCartItems(items)
-              }
-            })
-            .catch(() => {})
-        }
-      } catch (err) {
-        safeLog("Progress bar setup error:", err)
+      if (WDPApp.phoneInput && typeof WDPApp.phoneInput.refreshInRoot === 'function') {
+        WDPApp.phoneInput.refreshInRoot(modal)
+      } else if (WDPApp.phoneInput && typeof WDPApp.phoneInput.setupInRoot === 'function') {
+        WDPApp.phoneInput.setupInRoot(modal)
       }
+
+      setupShareholderSection(modal, productId)
+
+      if (donationForm && WDPApp.formWizard && typeof WDPApp.formWizard.setup === 'function') {
+        WDPApp.formWizard.setup(donationForm)
+        if (typeof WDPApp.formWizard.reset === 'function') {
+          WDPApp.formWizard.reset(donationForm)
+        }
+      }
+
+      // Wizard/phone yeniden kurulumundan SONRA geri yükle
+      restoreModalFormValues(modal, preserved)
+      lockSkeletonControls(modal, true)
+
+      const loadProductInfo = WDPApp.product && (WDPApp.product.fetchProductInfo || WDPApp.product.fetch)
+      if (typeof loadProductInfo === 'function') {
+        loadProductInfo(productId, { openToken: openToken, modal: modal })
+      }
+
+      const progressBarContainer = modal.querySelector('.wdp-progress-bar-container')
+      if (progressBarContainer && WDPApp.progressBar && typeof WDPApp.progressBar.setup === 'function') {
+        try {
+          WDPApp.progressBar.setup(progressBarContainer)
+          safeLog("Progress bar setup completed for modal", modal.id)
+          const fetchCart =
+            (WDPApp.cartActions && WDPApp.cartActions.fetchContents) ||
+            (WDPApp.cart && WDPApp.cart.fetchContents)
+          if (typeof fetchCart === 'function') {
+            fetchCart()
+              .then((items) => {
+                if (WDPApp.progressBar && typeof WDPApp.progressBar.syncFromCartItems === 'function') {
+                  WDPApp.progressBar.syncFromCartItems(items)
+                }
+              })
+              .catch(() => {})
+          }
+        } catch (err) {
+          safeLog("Progress bar setup error:", err)
+        }
+      }
+
+      syncModalStateClasses(modal)
+
+      trackModalViewContent(modal, productId, sidePanelMode)
+      bindModalGlobalListeners()
+      initOk = true
+
+      safeLog("Modal init completed for product ID:", productId)
+    } catch (initErr) {
+      safeLog("ERROR in runModalOpenInit:", initErr)
+      showSkeletonStallWarning(modal)
+    } finally {
+      // Her yolda kilit + aria-busy kalkar (bekçi de temizlenir)
+      setModalSkeletonBusy(modal, false)
     }
 
-    syncModalStateClasses(modal)
-
-    trackModalViewContent(modal, productId, sidePanelMode)
-    bindModalGlobalListeners()
-    setModalSkeletonBusy(modal, false)
+    if (!initOk || state.activeModal !== modal) {
+      return
+    }
 
     focusFirstElement(modal)
     state.focusTrapCleanup = activateFocusTrap(modal)
@@ -367,16 +455,15 @@
     } else {
       announceStatus(sidePanelMode ? 'Bağış paneli açıldı' : 'Bağış formu açıldı', 'polite')
     }
-
-    safeLog("Modal init completed for product ID:", productId)
   }
 
   // Modal'ı aç — sağ panelde önce görünür yap, ağır init'i sonraki karede çalıştır
   function openModal(productId, options) {
+    let modal = null
     try {
       productId = Number.parseInt(productId, 10)
       const modalId = resolveModalId(productId, options)
-      const modal = document.getElementById(modalId)
+      modal = document.getElementById(modalId)
       safeLog("Modal element found:", modal)
       safeLog("Modal ID searched:", modalId)
 
@@ -427,7 +514,9 @@
       modal.style.removeProperty('visibility')
       modal.style.removeProperty('opacity')
       modal.classList.remove('wdp-side-panel--closing')
-      // İskelet: inputlar etkileşimsiz (inert + CSS); gerçek init bitince açılır
+      // İstek kimliği: eski product_info yanıtları bu açılışı ezmesin
+      bumpModalOpenToken(modal)
+      // İskelet: inputlar etkileşimsiz (inert + CSS + disabled); gerçek init bitince açılır
       setModalSkeletonBusy(modal, true)
 
       state.activeModal = modal
@@ -446,6 +535,8 @@
         requestAnimationFrame(function () {
           requestAnimationFrame(function () {
             if (getModalLifecycleState(modal) !== 'opening' || state.activeModal !== modal) {
+              // Kapatma finalize eder; yine de aria-busy/kilit kalmasın
+              setModalSkeletonBusy(modal, false)
               return
             }
             modal.classList.remove('wdp-side-panel--opening')
@@ -465,6 +556,9 @@
     } catch (error) {
       safeLog("ERROR in openModal:", error)
       safeLog("Error stack:", error.stack)
+      if (modal) {
+        setModalSkeletonBusy(modal, false)
+      }
     }
   }
 
@@ -711,6 +805,9 @@
     syncStateClasses: syncModalStateClasses,
     handleOutsideClick,
     handleEscKeyPress,
+    setSkeletonBusy: setModalSkeletonBusy,
+    SKELETON_WATCHDOG_MS: SKELETON_WATCHDOG_MS,
+    SKELETON_STALL_MESSAGE: SKELETON_STALL_MESSAGE,
   }
 
   // Export modal module

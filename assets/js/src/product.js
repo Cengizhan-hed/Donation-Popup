@@ -24,6 +24,8 @@
   const { productPrices, productDataCache, productInfoRequests } = state;
   const wdp_ajax = window.wdp_ajax || {};
 
+  const PRODUCT_INFO_TIMEOUT_MS = 10000;
+
   function getProductInfoData(productId) {
     const id = Number.parseInt(productId, 10);
     if (!Number.isFinite(id)) {
@@ -44,11 +46,29 @@
     formData.append("product_id", id);
     formData.append("security", getAjaxNonce("get_product_info"));
 
-    const request = fetch(wdp_ajax.ajax_url, {
+    let abortTimer = null;
+    const controller =
+      typeof AbortController !== "undefined" ? new AbortController() : null;
+    if (controller) {
+      abortTimer = window.setTimeout(function () {
+        try {
+          controller.abort();
+        } catch (eAbort) {
+          /* ignore */
+        }
+      }, PRODUCT_INFO_TIMEOUT_MS);
+    }
+
+    const fetchOpts = {
       method: "POST",
       body: formData,
       credentials: "same-origin",
-    })
+    };
+    if (controller) {
+      fetchOpts.signal = controller.signal;
+    }
+
+    const request = fetch(wdp_ajax.ajax_url, fetchOpts)
       .then((response) => {
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
@@ -74,6 +94,9 @@
         return null;
       })
       .finally(() => {
+        if (abortTimer) {
+          window.clearTimeout(abortTimer);
+        }
         productInfoRequests.delete(id);
       });
 
@@ -87,18 +110,53 @@
       return;
     }
 
-    const modal = document.getElementById("wdp-modal-" + id);
-    if (!modal) {
-      return;
+    const fallbackMessage =
+      message || "Ürün bilgileri alınamadı. Lütfen sayfayı yenileyip tekrar deneyin.";
+    const roots = getWdpProductRoots(id);
+    if (!roots.length) {
+      const fallback =
+        document.getElementById("wdp-modal-" + id) ||
+        document.getElementById("wdp-side-panel-" + id);
+      if (fallback) {
+        roots.push(fallback);
+      }
     }
 
-    const errorMsg = modal.querySelector(".wdp-form-error");
-    if (errorMsg) {
-      const fallbackMessage = message || "Ürün bilgileri alınamadı. Lütfen sayfayı yenileyip tekrar deneyin.";
-      errorMsg.textContent = fallbackMessage;
-      errorMsg.style.display = "block";
-      announceStatus(fallbackMessage, 'assertive');
+    let wrote = false;
+    roots.forEach(function (root) {
+      if (!root) {
+        return;
+      }
+      const isOpen =
+        root.classList.contains("show") || root.getAttribute("aria-hidden") === "false";
+      if (!isOpen) {
+        return;
+      }
+      const form = root.querySelector("form");
+      if (form && WDPApp.formFeedback && typeof WDPApp.formFeedback.showFormError === "function") {
+        WDPApp.formFeedback.showFormError(form, fallbackMessage);
+        wrote = true;
+        return;
+      }
+      const errorMsg = root.querySelector(".wdp-form-error");
+      if (errorMsg) {
+        errorMsg.textContent = fallbackMessage;
+        errorMsg.style.display = "block";
+        errorMsg.setAttribute("role", "alert");
+        wrote = true;
+      }
+    });
+    if (wrote) {
+      announceStatus(fallbackMessage, "assertive");
     }
+  }
+
+  function isStaleProductInfoRequest(modal, openToken) {
+    if (openToken == null || !modal) {
+      return false;
+    }
+    const current = Number.parseInt(modal.dataset.wdpOpenToken || "0", 10) || 0;
+    return current !== Number(openToken);
   }
 
   function getWdpProductRoots(productId) {
@@ -199,11 +257,14 @@
     }
   }
 
-  function applyProductInfo(productId, data) {
+  function applyProductInfo(productId, data, options) {
     const id = Number.parseInt(productId, 10);
     if (!Number.isFinite(id) || !data || !data.success) {
       return;
     }
+
+    const openToken = options && options.openToken;
+    const modalHint = options && options.modal;
 
     const unitNumeric = Number.parseFloat(data.price);
     productPrices[id] = Number.isFinite(unitNumeric) ? unitNumeric : 0;
@@ -214,6 +275,10 @@
     }
 
     roots.forEach((root) => {
+      if (isStaleProductInfoRequest(modalHint || root, openToken)) {
+        safeLog("Ignoring stale product info apply", { productId: id, openToken: openToken });
+        return;
+      }
       if (data.price !== undefined && data.price !== null && String(data.price) !== '') {
         root.setAttribute("data-wdp-unit-price", String(data.price));
       }
@@ -328,23 +393,32 @@
     });
   }
 
-  function fetchProductInfo(productId) {
+  function fetchProductInfo(productId, options) {
+    const opts = options || {};
+    const openToken = opts.openToken;
+    const modal = opts.modal || null;
     return getProductInfoData(productId)
       .then((data) => {
+        if (isStaleProductInfoRequest(modal, openToken)) {
+          safeLog("Ignoring stale product info response", { productId: productId, openToken: openToken });
+          return;
+        }
         if (!data) {
           displayProductInfoError(productId);
           return;
         }
 
         if (data.success) {
-          applyProductInfo(productId, data);
+          applyProductInfo(productId, data, { openToken: openToken, modal: modal });
         } else {
           displayProductInfoError(productId, data.message);
         }
       })
       .catch((error) => {
         safeLog("Error fetching product info:", error);
-        displayProductInfoError(productId);
+        if (!isStaleProductInfoRequest(modal, openToken)) {
+          displayProductInfoError(productId);
+        }
       });
   }
 
