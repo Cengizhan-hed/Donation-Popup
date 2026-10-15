@@ -473,36 +473,23 @@ trait WDP_Ajax_Cart_Add_Trait {
         }
 
         $fixed_price = WDP_Utils::get_sadaka_fixed_price($product);
-
-        if ($fixed_price > 0) {
-            $sadaka_value = $fixed_price;
-        } else {
-            $sadaka_raw = isset($_POST['sadaka_custom_price']) ? wc_clean(wp_unslash($_POST['sadaka_custom_price'])) : '';
-            if ($sadaka_raw === '') {
-                return;
-            }
-
-            if (strlen($sadaka_raw) > 20) {
-                $sadaka_raw = substr($sadaka_raw, 0, 20);
-            }
-
-            $sadaka_value = WDP_Security::sanitize_numeric($sadaka_raw, 0, 999999);
-            if (null === $sadaka_value || $sadaka_value <= 0) {
-                return;
-            }
-
-            $min_sadaka = $product->get_meta('_sadaka_min_price');
-            if ($min_sadaka !== '' && (float) $min_sadaka > 0 && $sadaka_value < (float) $min_sadaka) {
-                throw new WDP_Validation_Exception(
-                    sprintf(
-                        /* translators: %s: formatted minimum amount with currency */
-                        __('Alt bağış için lütfen %s ve üstü değerler girin.', 'woo-donation-popup'),
-                        WDP_Cart::format_amount_for_message((float) $min_sadaka, true)
-                    ),
-                    array('sadaka_custom_price')
-                );
-            }
+        $sadaka_raw  = isset($_POST['sadaka_custom_price']) ? wc_clean(wp_unslash($_POST['sadaka_custom_price'])) : '';
+        if (strlen($sadaka_raw) > 20) {
+            $sadaka_raw = substr($sadaka_raw, 0, 20);
         }
+        $min_sadaka = $product->get_meta('_sadaka_min_price');
+        $min_float  = ($min_sadaka !== '' && (float) $min_sadaka > 0) ? (float) $min_sadaka : 0.0;
+
+        $validated = WDP_Utils::validate_sadaka_amount($sadaka_raw, $min_float, $fixed_price);
+        if (empty($validated['ok'])) {
+            throw new WDP_Validation_Exception(
+                !empty($validated['message'])
+                    ? (string) $validated['message']
+                    : __('Geçerli bir alt bağış tutarı giriniz.', 'woo-donation-popup'),
+                array('sadaka_custom_price')
+            );
+        }
+        $sadaka_value = (float) $validated['amount'];
 
         $sadaka_cart_data = array(
             'donation_data'         => self::build_sadaka_donation_data($donation_data),

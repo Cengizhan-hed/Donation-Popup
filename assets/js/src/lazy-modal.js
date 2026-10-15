@@ -57,14 +57,67 @@
   window.WDP = window.WDP || {};
   window.WDP.refresh = refresh;
 
+  function modalFingerprint(modal) {
+    if (!modal) return "";
+    const form = modal.querySelector("form");
+    const pid =
+      (modal.getAttribute("data-product-id") || "") +
+      "|" +
+      (form && form.querySelector('input[name="wdp_product_id"]')
+        ? form.querySelector('input[name="wdp_product_id"]').value
+        : "") +
+      "|" +
+      (form && form.querySelector('input[name="share_count"]') ? "share" : "plain") +
+      "|" +
+      (form && form.querySelector("[data-wdp-sadaka-donation]") ? "sadaka" : "nosadaka");
+    return pid;
+  }
+
+  function captureValues(root) {
+    if (WDPApp.dom && typeof WDPApp.dom.captureFormValues === "function") {
+      return WDPApp.dom.captureFormValues(root);
+    }
+    return { fields: [], focusName: "", selectionStart: null, selectionEnd: null };
+  }
+
+  function restoreValues(root, snap) {
+    if (WDPApp.dom && typeof WDPApp.dom.restoreFormValues === "function") {
+      WDPApp.dom.restoreFormValues(root, snap);
+    }
+  }
+
+  /**
+   * Yeni modal HTML'ini yerleştir. Aynı ürün/tip varsa dokunma.
+   * Değiştirirken kullanıcı girdilerini koru.
+   */
   function inject(html) {
     if (!html) return null;
     const wrap = document.createElement("div");
     wrap.innerHTML = html;
     const modal = wrap.querySelector(".wdp-modal");
     if (!modal) return null;
-    if (document.getElementById(modal.id)) {
-      return document.getElementById(modal.id);
+    const existing = document.getElementById(modal.id);
+    if (existing) {
+      const nextFp = modalFingerprint(modal);
+      const curFp = modalFingerprint(existing);
+      if (nextFp && curFp && nextFp === curFp) {
+        // Zaten tam/güncel — değiştirme
+        return existing;
+      }
+      const preserved = captureValues(existing);
+      try {
+        existing.replaceWith(modal);
+      } catch (eRep) {
+        if (existing.parentNode) {
+          existing.parentNode.insertBefore(modal, existing);
+          existing.parentNode.removeChild(existing);
+        } else {
+          document.body.appendChild(modal);
+        }
+      }
+      refresh();
+      restoreValues(modal, preserved);
+      return modal;
     }
     document.body.appendChild(modal);
     refresh();
@@ -191,5 +244,6 @@
     prefetch: prefetch,
     isLazyTrigger: isLazyTrigger,
     refresh: refresh,
+    inject: inject,
   };
 })(window);

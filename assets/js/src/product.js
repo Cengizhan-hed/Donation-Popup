@@ -223,11 +223,13 @@
         return;
       }
 
-      const customPriceRow = form.querySelector(".wdp-custom-price-row, .wdp-custom-price-with-qty-row");
+      const customPriceRow = form.querySelector(
+        ".wdp-custom-price-row:not(.wdp-sadaka-donation__amount), .wdp-custom-price-with-qty-row:not(.wdp-sadaka-donation__amount)"
+      );
       const priceField =
         customPriceRow ||
-        form.querySelector(".wdp-price-field.wdp-custom-price-field") ||
-        form.querySelector(".wdp-price-field");
+        form.querySelector(".wdp-price-field.wdp-custom-price-field:not(.wdp-sadaka-donation__amount .wdp-price-field)") ||
+        null;
       const showCustomPrice = !!(data.is_custom_price || customPriceRow);
       if (priceField) {
         safeLog("Özel fiyat durumu:", data.is_custom_price);

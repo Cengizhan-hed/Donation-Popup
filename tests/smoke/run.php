@@ -275,6 +275,7 @@ wdp_smoke_assert(
 // 10.27.0: placement, list, blocks, lazy modal.
 foreach (array(
     'WDP_Donation_Scope',
+    'WDP_Sadaka_Product_Visibility',
     'WDP_Product_Resolver',
     'WDP_Render_Registry',
     'WDP_Product_Page_Integration',
@@ -302,8 +303,24 @@ wdp_smoke_assert(
     'Container queries CSS is on the frontend stack'
 );
 wdp_smoke_assert(
-    defined('WDP_VERSION') && WDP_VERSION === '10.27.1',
-    'Plugin version is 10.27.1'
+    defined('WDP_VERSION') && WDP_VERSION === '10.28.8',
+    'Plugin version is 10.28.8'
+);
+wdp_smoke_assert(
+    file_exists(WDP_PLUGIN_DIR . 'templates/woocommerce/single-product/add-to-cart/simple.php'),
+    'WooCommerce simple add-to-cart override template exists'
+);
+wdp_smoke_assert(
+    wdp_smoke_file_contains(WDP_PLUGIN_DIR . 'includes/class-product-page-integration.php', 'filter_wc_get_template')
+        && wdp_smoke_file_contains(WDP_PLUGIN_DIR . 'includes/class-migrations.php', 'step_10_28_1'),
+    '10.28.1 template override and restore migration are present'
+);
+wdp_smoke_assert(
+    wdp_smoke_file_contains(WDP_PLUGIN_DIR . 'includes/class-migrations.php', 'step_10_28_4')
+        && wdp_smoke_file_contains(WDP_PLUGIN_DIR . 'includes/class-migrations.php', 'step_10_28_5')
+        && wdp_smoke_file_contains(WDP_PLUGIN_DIR . 'includes/class-sadaka-product-visibility.php', 'clear_visibility_caches')
+        && !wdp_smoke_file_contains(WDP_PLUGIN_DIR . 'includes/class-sadaka-product-visibility.php', 'filter_is_donation_product'),
+    '10.28.5 sadaka visibility caches cleared; no donation-scope hide filter'
 );
 
 // 10.27.1: admin tabs/forms stay in sync (no hardcoded TAB_KEYS).
@@ -375,6 +392,12 @@ foreach ($wdp_form_ids as $wdp_form_id) {
         strpos($admin_hooks_php, "wp_ajax_{$wdp_ajax_action}") !== false,
         'wp_ajax_ registered for ' . $wdp_ajax_action
     );
+}
+
+// 10.28.1: settings page self-check (each tab renderer + DOM shell).
+$admin_selfcheck = require __DIR__ . '/admin-page-selfcheck.php';
+if ((int) $admin_selfcheck > 0) {
+    $failures += (int) $admin_selfcheck;
 }
 
 exit($failures > 0 ? 1 : 0);

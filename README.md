@@ -25,9 +25,58 @@ npm install
 npm run build      # CSS + JS bundle üretir
 npm run verify     # build + smoke test
 npm run pack       # dağıtım ZIP'i (build/woo-donation-popup.zip)
+npm run test       # PHPUnit + Node birim testleri
+npm run e2e:quick   # hızlı staging E2E (ürün + form + liste; ≤ ~150 sn)
+npm run ship:staging # staging deploy + e2e:quick + raporu aç
+npm run e2e:accept  # son çalıştırmanın ekranlarını baseline’a birleştir (güvenli)
 ```
 
+**Staging akışı:** her değişiklikten sonra `npm run ship:staging`; rapor temizse bildirin; bilerek değiştiyse `npm run e2e:accept` (yalnızca `run.json`’daki ekranlar; işlevsel hata varken reddeder).
+
+Kaynak / dağıtım ZIP (`npm run pack` veya `.distignore`): `.env.deploy`, `.env.e2e`, `tests/e2e/.auth/*`, `tests/e2e/__baseline__/*` dahil edilmez.
+
 Derlenmiş asset'ler `assets/css/build/` ve `assets/js/build/` altında oluşur. Kaynak dosyalar sırasıyla `includes/config/frontend-css-stack.php` ve `frontend-js-stack.php` ile tanımlanır.
+
+## Gerçek sitede test
+
+Staging üzerinde Playwright ile görsel + işlevsel kontrol. **Yalnızca staging**; test kullanıcısı canlıda olmamalıdır.
+
+1. Proje kökünde `.env.e2e` oluşturun (şablon: `.env.e2e.example`). Anahtarlar:
+   - `E2E_BASE_URL` — staging kök adresi (`staging` içermeli; aksi halde `E2E_ALLOW_PROD=1` gerekir)
+   - `E2E_USER` / `E2E_PASS` — yalnızca staging’de var olan test kullanıcısı
+   - `E2E_LOGIN_PATH` — (isteğe bağlı) giriş yolu; varsayılan `/wp-login.php`. SiteGround Security ile gizlenmiş giriş için örn. `/hedefdev/`
+   - `E2E_PRODUCT_FIXED` / `E2E_PRODUCT_CUSTOM` / `E2E_PRODUCT_SHARES` / `E2E_PRODUCT_CAMPAIGN` — ürün slug’ları
+   - `E2E_LIST_PAGE` / `E2E_SHOP_PAGE` — bağış listesi ve mağaza yolları
+2. `npm install` ve `npx playwright install chromium webkit`
+3. Önerilen: `npm run ship:staging` (deploy + hızlı E2E + rapor açılır). Her çalıştırma `build/e2e/current/` ve `diff/` temizler; yalnızca bu koşuda çekilen ekranlar karşılaştırılır. Eksik baseline → `Yeni referans`.
+4. Bilerek UI değiştiyse: `npm run e2e:accept` — `run.json` zorunlu, işlevsel hata = 0; yalnızca listedeki ekranlar baseline’a birleşir (mobil/admin gibi çekilmeyenler silinmez). Eski baseline `__baseline_prev__/`.
+5. Tam referans: `npm run e2e:baseline`. Tam karşılaştırma: `npm run e2e`.
+
+Ayarların ne işe yaradığı: [docs/AYARLAR.md](docs/AYARLAR.md) (Türkçe, ürün Bağış sekmesi + ayar sekmeleri).
+
+Giriş başarısız olursa testler durur; `build/e2e/debug/login-failure.png` (şifre doldurulmadan önce) ve konsolda son URL, HTTP durum, sayfa başlığı yazılır. Olası ipuçları:
+- 404 veya ana sayfaya yönlendirme → `E2E_LOGIN_PATH` değerini kontrol edin
+- sayfada CAPTCHA (`g-recaptcha` / `cf-turnstile` / `hcaptcha`) → e2e kullanıcısı için kapatılmalı
+- 2FA / OTP / authentication code → e2e kullanıcısının rolünü Mağaza yöneticisi yapın veya 2FA’yı kapatın
+- `#login_error` / `.woocommerce-error` → form hata metni konsola yazılır (`E2E_PASS` asla yazılmaz)
+
+`.env.e2e`, baseline ve auth dosyaları git’e girmez; E2E dağıtım ZIP’ine dahil edilmez.
+
+## Staging’e otomatik kurulum
+
+Yalnızca staging. Canlı site yolu veya URL ile çalışmaz; kilitler tutmazsa hiçbir şey yapılmaz.
+
+1. Proje kökünde `.env.deploy` oluşturun (şablon: `.env.deploy.example`):
+   - `DEPLOY_SSH_HOST` / `DEPLOY_SSH_USER` / `DEPLOY_SSH_PORT` / `DEPLOY_SSH_KEY`
+   - `DEPLOY_WP_PATH` — staging WordPress kökü (mutlak yol; içinde `staging` geçmeli; `/www/hedefdernegi.org/` olmamalı)
+   - `DEPLOY_SITE_URL` — staging site adresi (`staging` içermeli; uzak `wp option get siteurl` ile birebir aynı olmalı)
+2. SSH anahtarı Mac anahtar zincirinden (`ssh-agent`) kullanılır; betik şifre istemez.
+3. Komutlar:
+   - `npm run deploy:staging` — `verify` + `test` + `pack`, uzak yedek, `wp plugin install --force --activate`, geçiş adımları, önbellek temizliği
+   - `npm run deploy:staging:rollback` — `/home/customer/wdp-backups/` içindeki en son yedeği geri kurar
+   - `npm run ship:staging` — `deploy:staging` + `e2e:quick` + `build/e2e/report.html` açılır
+
+Gizli değerler terminale yazılmaz. Çıktı örneği: `Staging'e kuruldu: 10.28.7`.
 
 **Önemli:** Canlıya almadan önce mutlaka `npm run build` çalıştırın. WordPress varsayılan olarak hashed bundle + `manifest.json` kullanır; yalnızca `assets/*/src` değiştirmek canlı arayüzü güncellemez.
 
@@ -81,7 +130,8 @@ Aşağıda projedeki her kaynak dosyanın kısa Türkçe açıklaması yer alır
 | `class-donation-scope.php` | Bir ürünün bağış ürünü sayılıp sayılmadığı (kapsam + işaret + tip). |
 | `class-product-resolver.php` | Kısa kod/blok/widget için ürün çözümleyici (id, slug, sku, bağlam). |
 | `class-render-registry.php` | İstek içinde yinelenen form/modal HTML’ini önler. |
-| `class-product-page-integration.php` | Ürün sayfasına otomatik yerleşim, döngü butonu, blok şablon uyumu. |
+| `class-product-page-integration.php` | WooCommerce şablon override, döngü Bağış Yap, fiyat gizleme, blok uyumu. |
+| `templates/woocommerce/.../simple.php` | Simple ürün sepete ekle şablonunun bağış UI ile değiştirilmesi. |
 | `class-donations-list.php` | `[wdp_donations]` sorgu, kart, sekme ve önbellek. |
 | `class-lazy-modal.php` | Liste/döngü için gecikmeli modal AJAX (`wdp_render_modal`). |
 | `class-schema.php` | WooCommerce / Rank Math Product JSON-LD kuralları. |
@@ -336,6 +386,49 @@ Ayar varsayılanı, anlamı veya yapısı değişirse ya da bir özellik kaldır
 Formun içindeki SSS modülü 10.27.0’da tamamen kaldırıldı. SSS’ler ürün sayfası içeriğinde tutulmalıdır (SEO ve Rank Math FAQ schema için). Eski `_enable_faq` / `_faq_items` meta değerleri güncellemede silinir.
 
 ## Sürüm notları
+
+### 10.28.8 — İskelet kilidi (disabled) + restore sırası
+
+- **Playwright/otomasyon:** Yalnızca `inert` yetmez; iskelette input/select/textarea/button `disabled` (+ `data-wdp-skeleton-lock`). `resetForm` sonrası kilit yenilenir.
+- **Restore sırası:** Değerler wizard/phone kurulumundan sonra, kilit açılmadan hemen önce geri yüklenir.
+
+### 10.28.7 — Modal açılışında kullanıcı verisi korunur
+
+- **Yarış:** Side panel açılışında gecikmeli `resetForm` doldurulmuş Ad Soyad’ı siliyordu (yük altında). İskelet sırasında form `inert` + etkileşimsiz; init sonrası değerler geri yüklenir.
+- **Lazy modal:** Aynı ürün/tipte HTML değiştirilmez; değişirse girdiler name ile aktarılır.
+- **Hata DOM:** `validateForm` / `showInputError` açık kabuktaki güncel forma yazar.
+
+### 10.28.6 — validateForm sessiz false giderildi
+
+- **Doğrulama geri bildirimi:** `validateForm` false döndüğünde her yolda görünür Türkçe alan hatası (veya form üstü genel mesaj) + ilk hatalı alana odak/kaydırma. Sessiz false yok.
+- **Teşhis:** `WDPApp.form.lastValidation = { ok, failures:[{field, rule, value}] }` (yalnızca okuma; dış dönüş hâlâ boolean).
+- **Kurallar değişmedi:** zorunluluk, telefon uzunluğu, min tutar aynı; yalnızca görünür geri bildirim eklendi.
+
+### 10.28.5 — Alt bağış görünürlüğü etkilemez + ship/accept E2E
+
+- **Ürün kararı:** Bir ürün hem kendi başına bağış ürünü hem de başka bir ürünün alt bağışı olabilir. Alt bağış bağlantısı görünürlüğü veya bağış kapsamını etkilemez; listede gizlemek için WooCommerce “Katalog görünürlüğü: Gizli” kullanılır.
+- **Gizleme kaldırıldı:** `wdp_is_donation_product` filtresi ve sorgu dışlamaları yok. Sınıf bilgi amaçlı (hangi ürünler alt bağış olarak kullanılıyor).
+- **Ürünler tablosu:** “Alt bağış olarak kullanılıyor (N)” rozeti (tooltip: ana ürün adları). “Gizli önerilir” kaldırıldı.
+- **Geçiş 10.28.5:** görünürlük transient/önbellek temizliği + `wdp_list_cache_version` artışı. 10.28.4 denetim tablosu korunur.
+- **E2E:** Kontrol beklemesi ≤ 5 sn; eksik öğe hata yazar, akış durmaz. `e2e:quick` form (popup/panel) dahil, ≤ ~150 sn; `run.json` manifesti; rapor yalnızca bu koşunun ekranlarını karşılaştırır. `e2e:accept` güvenli birleştirme (hata varken reddeder).
+
+### 10.28.4 — Alt bağış tespiti, Avada listeleri, E2E hızı, staging kurulum
+
+- **Alt bağış tespiti:** Yalnızca genel varsayılan veya “Alt bağış ekle” açık ürünlerin seçtiği WC ürünü sayılır; kendini gösteren ID hariç. Kayıtta geçersiz seçim temizlenir.
+- **Geçiş 10.28.4:** Eski/kapalı `_sadaka_wc_product_id` değerleri temizlenir; Ayarlar → Gelişmiş → “Alt bağış bağlantıları” tablosu + `wdp_migration_log`.
+- **E2E / staging:** `e2e:quick`, `deploy:staging` / `ship:staging`. Ayar rehberi: `docs/AYARLAR.md`.
+
+### 10.28.3 — Alt bağış ürün gizleme ve E2E kararlılığı
+
+- **(10.28.5 ile geri alındı)** Alt bağış WC ürünlerini listelerden gizleme yaklaşımı kaldırıldı; ürün hem bağış hem alt bağış olabilir.
+- **Ürün Bağış sekmesi / genel ayar:** `wc-product-search` ile ürün adına göre seçim (mevcut ID korunur).
+- **E2E:** Alt bağış senaryoları yapılandırmaya bağlı; raporda Geçti / Atlandı / Hata.
+
+### 10.28.2 — Alt bağış (sadaka) tutarı doğrulaması
+
+- **Alt bağış tutarı:** Açık sadaka panelinde yalnızca sadaka doğrulayıcısı çalışır; geçerli tutar yazılınca hata anında kalkar; panel kapanınca alan/hatalar sıfırlanır. Genel “Bu alan zorunludur” mesajı alt bağış alanına yanlışlıkla basılmaz.
+- **Sunucu:** `sadaka_custom_price` sayı / > 0 / min doğrulanır; sessizce yutulmaz. WooCommerce alt bağış ürünü yoksa veya geçersizse “Sadaka Bağışı Ekle” gösterilmez (`edit_products` yetkilisine uyarı).
+- **E2E:** sadaka senaryosu (popup/panel, sabit + bağışçı belirler); görsel raporda Durum (Aynı/Değişti) ve `E2E_DIFF_THRESHOLD` (varsayılan %0,5); hata ekranlarında animasyon/odak kararlılığı.
 
 ### 10.27.1 — Ayar sekmeleri DOM’dan üretilir
 

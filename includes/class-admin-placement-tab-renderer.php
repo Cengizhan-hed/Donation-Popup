@@ -1,6 +1,6 @@
 <?php
 /**
- * Ayarlar → Ürün sayfası ve liste sekmesi: kapsam, yerleşim, döngü, schema ve kurulum örnekleri.
+ * Ayarlar → Ürün sayfası ve liste sekmesi: kapsam, WooCommerce sayfaları, schema ve kurulum rehberi.
  *
  * @package WooCommerce\Donation_Popup
  */
@@ -26,8 +26,7 @@ class WDP_Admin_Placement_Tab_Renderer {
 
 		echo '<div class="wdp-settings-container">';
 		echo '<div class="wdp-tab-help" role="note"><p class="wdp-tab-help__title">' . esc_html__('Ürün sayfası ve liste', 'woo-donation-popup') . '</p><ul class="wdp-tab-help__list">';
-		echo '<li>' . esc_html__('Hangi ürünlerin bağış ürünü sayılacağını, ürün sayfasına formun nasıl yerleşeceğini ve mağaza döngüsündeki butonu buradan yönetirsiniz.', 'woo-donation-popup') . '</li>';
-		echo '<li>' . esc_html__('Avada Layout gibi WooCommerce kancalarını çalıştırmayan şablonlarda otomatik yerleşim devreye girmez; şablona bir kez kimliksiz kısa kod ekleyin.', 'woo-donation-popup') . '</li>';
+		echo '<li>' . esc_html__('Hangi ürünlerin bağış ürünü sayılacağını ve WooCommerce mağaza / ürün sayfalarında “Bağış Yap” davranışını buradan yönetirsiniz.', 'woo-donation-popup') . '</li>';
 		echo '</ul></div>';
 
 		echo '<form id="wdp-placement-settings-form" class="wdp-admin-settings-form" method="post" data-wdp-ajax-action="wdp_save_placement_settings">';
@@ -60,47 +59,58 @@ class WDP_Admin_Placement_Tab_Renderer {
 		echo '</td></tr>';
 		echo '</tbody></table>';
 
-		echo '<h2 class="wdp-section-title">' . esc_html__('Ürün sayfası', 'woo-donation-popup') . '</h2>';
+		echo '<h2 class="wdp-section-title">' . esc_html__('WooCommerce sayfaları', 'woo-donation-popup') . '</h2>';
 		echo '<table class="form-table" role="presentation"><tbody>';
-		self::select_row('auto_place', $s['auto_place'], __('Otomatik yerleşim', 'woo-donation-popup'), __('Klasik WooCommerce şablonlarında sepete ekle alanının yerine (veya yanına) formu basar.', 'woo-donation-popup'), array('yes' => __('Açık', 'woo-donation-popup'), 'no' => __('Kapalı', 'woo-donation-popup')));
 		self::select_row(
-			'position',
-			$s['position'],
-			__('Konum', 'woo-donation-popup'),
-			'',
+			'auto_place',
+			$s['auto_place'],
+			__('WooCommerce sayfalarında “Sepete Ekle” yerine “Bağış Yap”', 'woo-donation-popup'),
+			__('Açıkken mağaza ve ürün sayfalarındaki sepete ekle alanı bağış butonu veya formuna dönüşür.', 'woo-donation-popup'),
 			array(
-				'replace_cart'  => __('Sepete ekle yerine', 'woo-donation-popup'),
-				'after_excerpt' => __('Kısa açıklamadan sonra', 'woo-donation-popup'),
-				'below_summary' => __('Özetin altında', 'woo-donation-popup'),
+				'yes' => __('Açık', 'woo-donation-popup'),
+				'no'  => __('Kapalı', 'woo-donation-popup'),
 			)
 		);
 		self::select_row(
 			'display',
 			$s['display'],
-			__('Görünüm', 'woo-donation-popup'),
+			__('Ürün sayfasında gösterim', 'woo-donation-popup'),
 			'',
 			array(
-				'inline'        => __('Sayfa içi form', 'woo-donation-popup'),
-				'button_popup'  => __('Buton + ortada pencere', 'woo-donation-popup'),
-				'button_panel'  => __('Buton + sağ panel', 'woo-donation-popup'),
+				'inline'       => __('Sayfa içi form', 'woo-donation-popup'),
+				'button_popup' => __('Buton + ortada açılan', 'woo-donation-popup'),
+				'button_panel' => __('Buton + sağ panel', 'woo-donation-popup'),
 			)
 		);
-		self::select_row('hide_price', $s['hide_price'], __('Fiyatı gizle', 'woo-donation-popup'), __('Yalnızca tekil ürün özeti ve döngü. Sepet, ödeme ve e-posta fiyatları değişmez.', 'woo-donation-popup'), array('yes' => __('Evet', 'woo-donation-popup'), 'no' => __('Hayır', 'woo-donation-popup')));
-		self::select_row('show_form_title', $s['show_form_title'], __('Form başlığını göster', 'woo-donation-popup'), __('Ürün sayfasında zaten H1 olduğu için varsayılan kapalıdır.', 'woo-donation-popup'), array('yes' => __('Evet', 'woo-donation-popup'), 'no' => __('Hayır', 'woo-donation-popup')));
-		echo '</tbody></table>';
-
-		echo '<h2 class="wdp-section-title">' . esc_html__('Mağaza ve kategori sayfaları', 'woo-donation-popup') . '</h2>';
-		echo '<table class="form-table" role="presentation"><tbody>';
 		self::select_row(
 			'loop_button',
 			$s['loop_button'],
-			__('Döngü butonu', 'woo-donation-popup'),
-			__('Mağaza, kategori ve ilgili ürün kartlarındaki sepete ekle bağlantısı.', 'woo-donation-popup'),
+			__('Mağaza ve kategori sayfalarında buton', 'woo-donation-popup'),
+			'',
 			array(
 				'link'  => __('Ürün sayfasına git', 'woo-donation-popup'),
-				'popup' => __('Ortada pencere', 'woo-donation-popup'),
+				'popup' => __('Ortada açılan', 'woo-donation-popup'),
 				'panel' => __('Sağ panel', 'woo-donation-popup'),
-				'off'   => __('Dokunma', 'woo-donation-popup'),
+			)
+		);
+		self::select_row(
+			'hide_price',
+			$s['hide_price'],
+			__('Fiyat gösterimi', 'woo-donation-popup'),
+			__('Sepet, ödeme ve e-postalardaki fiyatlar değişmez.', 'woo-donation-popup'),
+			array(
+				'yes' => __('Sabit ve hisseli üründe göster, diğerlerinde gizle', 'woo-donation-popup'),
+				'no'  => __('Her zaman göster', 'woo-donation-popup'),
+			)
+		);
+		self::select_row(
+			'show_form_title',
+			$s['show_form_title'],
+			__('Form başlığını göster', 'woo-donation-popup'),
+			__('Ürün sayfasında zaten başlık olduğu için varsayılan kapalıdır.', 'woo-donation-popup'),
+			array(
+				'yes' => __('Evet', 'woo-donation-popup'),
+				'no'  => __('Hayır', 'woo-donation-popup'),
 			)
 		);
 		echo '</tbody></table>';
@@ -123,14 +133,23 @@ class WDP_Admin_Placement_Tab_Renderer {
 		echo '</tbody></table>';
 
 		echo '<h2 class="wdp-section-title">' . esc_html__('Kurulum rehberi', 'woo-donation-popup') . '</h2>';
-		echo '<ul class="wdp-tab-help__list">';
-		self::copy_row('[wdp_donations]');
-		self::copy_row('[wdp_donations categories="kurban" columns="3" button="panel"]');
-		self::copy_row('[wdp_donation_form]');
-		self::copy_row('[wdp_donation_button_panel]');
-		echo '</ul>';
-		echo '<p>' . esc_html__('Avada Layout: tekil ürün şablonundaki Code Block’a kimliksiz [wdp_donation_form] veya [wdp_donation_button_panel] yapıştırın.', 'woo-donation-popup') . '</p>';
-		echo '<p>' . esc_html__('Elementor: Bağış (WooCommerce Donation) kategorisindeki widget’ı ekleyin. Gutenberg: Bağış formu veya Bağış listesi bloğu.', 'woo-donation-popup') . '</p>';
+		echo '<ol class="wdp-tab-help__list">';
+		echo '<li><strong>' . esc_html__('WooCommerce sayfalarını kullanıyorum', 'woo-donation-popup') . '</strong><br>';
+		echo esc_html__('Yukarıdaki ayarı Açık bırakın. Başka bir şey yapmanız gerekmez; Mağaza sayfası ve ürün sayfaları otomatik olarak bağış sayfasına dönüşür.', 'woo-donation-popup');
+		echo '</li>';
+		echo '<li><strong>' . esc_html__('Ürün sayfam özel tasarım (Avada Layout, Elementor Pro şablonu)', 'woo-donation-popup') . '</strong><br>';
+		echo esc_html__('Şablonda WooCommerce’in Sepete Ekle elemanı varsa otomatik olarak Bağış Yap’a dönüşür. Yoksa şablona bir kez şu kısa kodu ekleyin:', 'woo-donation-popup');
+		echo ' ';
+		self::copy_inline('[wdp_donation_button_panel]');
+		echo '<br>' . esc_html__('Avada: Layouts → ürün layout’u → Code Block → yapıştır → Save.', 'woo-donation-popup');
+		echo '</li>';
+		echo '<li><strong>' . esc_html__('Kendi bağış sayfamı yapıyorum', 'woo-donation-popup') . '</strong><br>';
+		echo esc_html__('Liste için:', 'woo-donation-popup') . ' ';
+		self::copy_inline('[wdp_donations]');
+		echo ' ' . esc_html__('(Elementor’da “Bağış Listesi” widget’ı, Gutenberg’de “Bağış listesi” bloğu). Tek ürün için:', 'woo-donation-popup') . ' ';
+		self::copy_inline('[wdp_donation_button_panel slug="urun-kisa-adi"]');
+		echo '</li>';
+		echo '</ol>';
 		echo '<p><a class="button" href="' . esc_url($matrix) . '" target="_blank" rel="noopener noreferrer">' . esc_html__('Form test sayfasını aç', 'woo-donation-popup') . '</a></p>';
 
 		echo '<p class="submit">';
@@ -166,9 +185,9 @@ class WDP_Admin_Placement_Tab_Renderer {
 	 * @param string $code Shortcode.
 	 * @return void
 	 */
-	private static function copy_row($code) {
-		echo '<li><code>' . esc_html($code) . '</code> ';
-		echo '<button type="button" class="button button-small" data-wdp-copy="' . esc_attr($code) . '">' . esc_html__('Kopyala', 'woo-donation-popup') . '</button></li>';
+	private static function copy_inline($code) {
+		echo '<code>' . esc_html($code) . '</code> ';
+		echo '<button type="button" class="button button-small" data-wdp-copy="' . esc_attr($code) . '">' . esc_html__('Kopyala', 'woo-donation-popup') . '</button>';
 	}
 
 	/**

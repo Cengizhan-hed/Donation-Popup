@@ -113,7 +113,7 @@ class WDP_Admin_Product_Data_Tab {
 			$existing[ $meta_key ] = $product->get_meta($meta_key, true);
 		}
 
-		foreach (WDP_Product_Settings_Service::from_product_panel($posted, $existing) as $meta_key => $meta_value) {
+		foreach (WDP_Product_Settings_Service::from_product_panel($posted, $existing, $product->get_id()) as $meta_key => $meta_value) {
 			$product->update_meta_data($meta_key, $meta_value);
 		}
 		WDP_Product_Settings_Service::flush_correction_notices();
@@ -152,7 +152,7 @@ class WDP_Admin_Product_Data_Tab {
 		self::render_amount_section($values);
 		self::render_form_fields_section($values);
 		self::render_campaign_blocks_section($product->get_id(), $values);
-		self::render_sadaka_section($values);
+		self::render_sadaka_section($values, $product->get_id());
 		self::render_appearance_section($values);
 		echo '</div>';
 
@@ -677,7 +677,7 @@ class WDP_Admin_Product_Data_Tab {
 	 * @param array $values Values.
 	 * @return void
 	 */
-	private static function render_sadaka_section(array $values) {
+	private static function render_sadaka_section(array $values, $parent_product_id = 0) {
 		$default_wc_id = WDP_Utils::get_default_sadaka_wc_product_id();
 		$default_label = class_exists('WDP_Templates') ? WDP_Templates::get_default_sadaka_donation_message() : '';
 		$currency      = get_woocommerce_currency_symbol();
@@ -688,7 +688,36 @@ class WDP_Admin_Product_Data_Tab {
 		echo '</div>';
 		self::checkbox('enable_sadaka_donation', $values['enable_sadaka_donation'], __('Alt bağış ekle', 'woo-donation-popup'), __('Bağışçının ana bağışa ek olarak küçük bir bağış eklemesine izin verir.', 'woo-donation-popup'));
 		self::text('sadaka_toggle_label', $values['sadaka_toggle_label'], __('Düğme metni', 'woo-donation-popup'), __('Alt bağışı açan düğmenin metni.', 'woo-donation-popup'), array('placeholder' => __('Alt Bağış Ekle', 'woo-donation-popup'), 'custom_attributes' => array('maxlength' => '80')));
-		self::number('sadaka_wc_product_id', $values['sadaka_wc_product_id'], __('Alt bağış ürün ID', 'woo-donation-popup'), __('Sepete eklenecek WooCommerce ürünü; boşsa genel varsayılan kullanılır, o da yoksa satır eklenmez.', 'woo-donation-popup'), array('min' => '1', 'step' => '1', 'placeholder' => $default_wc_id ? (string) $default_wc_id : ''));
+		$sadaka_wc_value = ($values['sadaka_wc_product_id'] !== '' && $values['sadaka_wc_product_id'] !== '0')
+			? absint($values['sadaka_wc_product_id'])
+			: 0;
+		$sadaka_field_error = '';
+		if ($sadaka_wc_value > 0 && class_exists('WDP_Sadaka_Product_Visibility')) {
+			$check = WDP_Sadaka_Product_Visibility::validate_sadaka_product_id($sadaka_wc_value, (int) $parent_product_id);
+			if (empty($check['ok'])) {
+				$sadaka_field_error = (string) $check['error'];
+			}
+		}
+		if (class_exists('WDP_Sadaka_Product_Visibility')) {
+			WDP_Sadaka_Product_Visibility::render_product_search_field(
+				array(
+					'id'          => self::id('sadaka_wc_product_id'),
+					'name'        => self::name('sadaka_wc_product_id'),
+					'value'       => $sadaka_wc_value,
+					'label'       => __('Alt bağış ürünü', 'woo-donation-popup'),
+					'description' => $default_wc_id
+						? sprintf(
+							/* translators: %d: default product ID */
+							__('Sepete eklenecek WooCommerce ürünü; boşsa genel varsayılan (#%d) kullanılır.', 'woo-donation-popup'),
+							$default_wc_id
+						)
+						: __('Sepete eklenecek WooCommerce ürünü; boşsa genel varsayılan kullanılır, o da yoksa satır eklenmez.', 'woo-donation-popup'),
+					'error'       => $sadaka_field_error,
+				)
+			);
+		} else {
+			self::number('sadaka_wc_product_id', $values['sadaka_wc_product_id'], __('Alt bağış ürün ID', 'woo-donation-popup'), __('Sepete eklenecek WooCommerce ürünü; boşsa genel varsayılan kullanılır, o da yoksa satır eklenmez.', 'woo-donation-popup'), array('min' => '1', 'step' => '1', 'placeholder' => $default_wc_id ? (string) $default_wc_id : ''));
+		}
 		/* translators: %s: currency symbol */
 		self::number('sadaka_min_price', $values['sadaka_min_price'], sprintf(__('En düşük tutar (%s)', 'woo-donation-popup'), $currency), __('Bağışçı tutarı kendisi yazarken uygulanacak alt sınır.', 'woo-donation-popup'), array('step' => '1'));
 		/* translators: %s: currency symbol */

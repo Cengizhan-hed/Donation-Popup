@@ -1,6 +1,6 @@
 <?php
 /**
- * Ürün sayfasına otomatik yerleşim, sepete ekle gizleme, döngü butonu ve blok şablon uyumu.
+ * WooCommerce sayfalarında "Sepete Ekle" yerine bağış formu/butonu; şablon override, döngü, fiyat.
  *
  * @package WooCommerce\Donation_Popup
  */
@@ -10,19 +10,28 @@ if (!defined('ABSPATH')) {
 }
 
 /**
- * Front-end product page and loop integration. Avada Layouts without WC hooks are skipped
- * (place an id-less shortcode in the layout once).
+ * Front-end product page and loop integration.
+ *
+ * Primary path: replace WooCommerce simple add-to-cart template (theme/builder agnostic).
+ * Fallback: summary hooks when the template filter did not run in this request.
+ * Avada Layouts without a WooCommerce Add to cart element need a shortcode in the layout.
  */
 class WDP_Product_Page_Integration {
 
-	/** @var bool */
-	private static $in_loop = false;
+	/** Relative WooCommerce template we override. */
+	const SIMPLE_ATC_TEMPLATE = 'single-product/add-to-cart/simple.php';
 
 	/** @var bool */
 	private static $css_printed = false;
 
+	/** @var bool Template filter returned our file at least once this request. */
+	private static $template_override_used = false;
+
+	/** @var bool Filters registered for this request. */
+	private static $hooks_added = false;
+
 	/**
-	 * Front-end only.
+	 * Front-end only. WooCommerce filters are registered only when the setting is on.
 	 *
 	 * @return void
 	 */
@@ -31,15 +40,25 @@ class WDP_Product_Page_Integration {
 			return;
 		}
 
+		if (WDP_Placement_Settings::value('auto_place') !== 'yes') {
+			return;
+		}
+
+		self::$hooks_added = true;
+
 		add_action('wp', array(__CLASS__, 'on_wp'), 20);
 		add_filter('body_class', array(__CLASS__, 'body_class'));
 		add_filter('post_class', array(__CLASS__, 'post_class'), 10, 3);
 		add_action('wp_head', array(__CLASS__, 'print_hide_cart_css'), 30);
 
-		add_action('woocommerce_before_shop_loop_item', array(__CLASS__, 'loop_enter'), 1);
-		add_action('woocommerce_after_shop_loop_item', array(__CLASS__, 'loop_leave'), 99);
-		add_filter('woocommerce_get_price_html', array(__CLASS__, 'filter_loop_price_html'), 20, 2);
+		add_filter('wc_get_template', array(__CLASS__, 'filter_wc_get_template'), 20, 5);
+		add_filter('woocommerce_locate_template', array(__CLASS__, 'filter_locate_template'), 20, 3);
+
+		add_filter('woocommerce_get_price_html', array(__CLASS__, 'filter_price_html'), 20, 2);
 		add_filter('woocommerce_loop_add_to_cart_link', array(__CLASS__, 'filter_loop_add_to_cart'), 10, 3);
+		add_filter('woocommerce_product_add_to_cart_text', array(__CLASS__, 'filter_add_to_cart_text'), 20, 2);
+		add_filter('woocommerce_product_add_to_cart_url', array(__CLASS__, 'filter_add_to_cart_url'), 20, 2);
+		add_filter('woocommerce_product_supports', array(__CLASS__, 'filter_product_supports'), 20, 3);
 
 		add_filter('render_block_woocommerce/add-to-cart-form', array(__CLASS__, 'filter_block_add_to_cart'), 10, 3);
 		add_filter('render_block_woocommerce/add-to-cart-with-options', array(__CLASS__, 'filter_block_add_to_cart'), 10, 3);
@@ -48,7 +67,21 @@ class WDP_Product_Page_Integration {
 	}
 
 	/**
-	 * Classic PHP templates: hook the single product summary once we know the queried product.
+	 * @return bool
+	 */
+	public static function hooks_added() {
+		return self::$hooks_added;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public static function template_override_used() {
+		return self::$template_override_used;
+	}
+
+	/**
+	 * Register fallback summary placement after we know the queried product.
 	 *
 	 * @return void
 	 */
@@ -60,23 +93,133 @@ class WDP_Product_Page_Integration {
 		if (!$product || !WDP_Donation_Scope::is_donation_product($product)) {
 			return;
 		}
-
-		self::hide_add_to_cart_hooks();
-		if (WDP_Placement_Settings::value('hide_price') === 'yes') {
-			self::hide_price_hooks();
-		}
-
 		if (!self::should_auto_place($product)) {
 			return;
 		}
 
+		// Backup only: if the template filter never runs, still try summary hooks.
 		$position = (string) WDP_Placement_Settings::value('position', 'replace_cart');
 		if ($position === 'below_summary') {
-			add_action('woocommerce_after_single_product_summary', array(__CLASS__, 'render_placed_form'), 5);
+			add_action('woocommerce_after_single_product_summary', array(__CLASS__, 'render_fallback_placed_form'), 5);
 			return;
 		}
 		$priority = ($position === 'after_excerpt') ? 21 : 30;
-		add_action('woocommerce_single_product_summary', array(__CLASS__, 'render_placed_form'), $priority);
+		add_action('woocommerce_single_product_summary', array(__CLASS__, 'render_fallback_placed_form'), $priority);
+	}
+
+	/**
+	 * Swap the simple add-to-cart template for donation products.
+	 *
+	 * @param string $template      Located path.
+	 * @param string $template_name Relative name.
+	 * @param array  $args          Template args.
+	 * @param string $template_path WC template path.
+	 * @param string $default_path  Default path.
+	 * @return string
+	 */
+	public static function filter_wc_get_template($template, $template_name, $args = array(), $template_path = '', $default_path = '') {
+		if ((string) $template_name !== self::SIMPLE_ATC_TEMPLATE) {
+			return $template;
+		}
+		if (!self::should_override_current_product()) {
+			return $template;
+		}
+		$path = self::plugin_simple_template_path();
+		if ($path === '' || !is_readable($path)) {
+			return $template;
+		}
+		self::$template_override_used = true;
+		return $path;
+	}
+
+	/**
+	 * Secondary locate filter for themes that bypass wc_get_template.
+	 *
+	 * @param string $template      Located path.
+	 * @param string $template_name Relative name.
+	 * @param string $template_path Path prefix.
+	 * @return string
+	 */
+	public static function filter_locate_template($template, $template_name, $template_path = '') {
+		if ((string) $template_name !== self::SIMPLE_ATC_TEMPLATE) {
+			return $template;
+		}
+		if (!self::should_override_current_product()) {
+			return $template;
+		}
+		$path = self::plugin_simple_template_path();
+		if ($path === '' || !is_readable($path)) {
+			return $template;
+		}
+		self::$template_override_used = true;
+		return $path;
+	}
+
+	/**
+	 * Absolute path to the plugin's simple add-to-cart override.
+	 *
+	 * @return string
+	 */
+	public static function plugin_simple_template_path() {
+		if (!defined('WDP_PLUGIN_DIR')) {
+			return '';
+		}
+		return WDP_PLUGIN_DIR . 'templates/woocommerce/' . self::SIMPLE_ATC_TEMPLATE;
+	}
+
+	/**
+	 * Echo donation UI from the overridden WooCommerce template.
+	 *
+	 * @return void
+	 */
+	public static function render_template_override() {
+		echo WDP_Render_Guard::html( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			static function () {
+				return self::template_override_markup();
+			},
+			self::current_product_id(),
+			'template_override'
+		);
+	}
+
+	/**
+	 * @return string
+	 */
+	public static function template_override_markup() {
+		$product = self::current_product();
+		if (!$product || !WDP_Donation_Scope::is_donation_product($product)) {
+			return '';
+		}
+		$id = (int) $product->get_id();
+		if (WDP_Render_Registry::has_product_ui($id)) {
+			return WDP_Render_Registry::duplicate_ui_notice($id);
+		}
+		if (!self::should_auto_place($product)) {
+			return '';
+		}
+		return self::placed_markup();
+	}
+
+	/**
+	 * Fallback when the template filter did not run; never doubles after a successful override.
+	 *
+	 * @return void
+	 */
+	public static function render_fallback_placed_form() {
+		if (self::$template_override_used) {
+			return;
+		}
+		$product = self::current_product();
+		if (!$product) {
+			return;
+		}
+		if (WDP_Render_Registry::has_product_ui((int) $product->get_id())) {
+			if (function_exists('current_user_can') && current_user_can('edit_products')) {
+				echo WDP_Render_Registry::duplicate_ui_notice((int) $product->get_id()); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			}
+			return;
+		}
+		self::render_placed_form();
 	}
 
 	/**
@@ -113,7 +256,7 @@ class WDP_Product_Page_Integration {
 	}
 
 	/**
-	 * Hide the native cart form even when a theme re-adds it at a custom priority.
+	 * Hide a theme-reintroduced native cart form (plugin form/button keep their classes).
 	 *
 	 * @return void
 	 */
@@ -125,7 +268,7 @@ class WDP_Product_Page_Integration {
 			return;
 		}
 		$product = self::current_product();
-		if (!$product || !WDP_Donation_Scope::is_donation_product($product)) {
+		if (!$product || !WDP_Donation_Scope::is_donation_product($product) || !self::should_auto_place($product)) {
 			return;
 		}
 		self::$css_printed = true;
@@ -136,7 +279,7 @@ class WDP_Product_Page_Integration {
 	 * @return void
 	 */
 	public static function render_placed_form() {
-		echo WDP_Render_Guard::html(
+		echo WDP_Render_Guard::html( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			static function () {
 				return self::placed_markup();
 			},
@@ -156,7 +299,7 @@ class WDP_Product_Page_Integration {
 		if (self::content_already_has_shortcode($product)) {
 			return '';
 		}
-		$display = (string) WDP_Placement_Settings::value('display', 'inline');
+		$display = (string) WDP_Placement_Settings::value('display', 'button_panel');
 		$atts    = array(
 			'show_title' => WDP_Placement_Settings::value('show_form_title') === 'yes' ? 'yes' : 'no',
 		);
@@ -170,29 +313,18 @@ class WDP_Product_Page_Integration {
 	}
 
 	/**
-	 * @return void
-	 */
-	public static function loop_enter() {
-		self::$in_loop = true;
-	}
-
-	/**
-	 * @return void
-	 */
-	public static function loop_leave() {
-		self::$in_loop = false;
-	}
-
-	/**
-	 * Hide loop price for open-amount and campaign donation products when hide_price=yes.
-	 * Fixed and share products keep their price.
+	 * Hide price for open-amount and campaign donation products when hide_price=yes.
+	 * Fixed and share products keep their price. Never blank in admin/cart/checkout/email/REST.
 	 *
 	 * @param string     $html    Price HTML.
 	 * @param WC_Product $product Product.
 	 * @return string
 	 */
-	public static function filter_loop_price_html($html, $product) {
-		if (!self::$in_loop || WDP_Placement_Settings::value('hide_price') !== 'yes') {
+	public static function filter_price_html($html, $product) {
+		if (WDP_Placement_Settings::value('hide_price') !== 'yes') {
+			return $html;
+		}
+		if (self::should_preserve_price_html_context()) {
 			return $html;
 		}
 		if (!WDP_Product_Resolver::is_wc_product($product) || !WDP_Donation_Scope::is_donation_product($product)) {
@@ -230,7 +362,7 @@ class WDP_Product_Page_Integration {
 		if (!WDP_Product_Resolver::is_wc_product($product) || !WDP_Donation_Scope::is_donation_product($product)) {
 			return $html;
 		}
-		$mode = (string) WDP_Placement_Settings::value('loop_button', 'link');
+		$mode = (string) WDP_Placement_Settings::value('loop_button', 'panel');
 		if ($mode === 'off') {
 			return $html;
 		}
@@ -249,6 +381,59 @@ class WDP_Product_Page_Integration {
 	}
 
 	/**
+	 * Themes that draw their own loop button text.
+	 *
+	 * @param string     $text    Default text.
+	 * @param WC_Product $product Product.
+	 * @return string
+	 */
+	public static function filter_add_to_cart_text($text, $product = null) {
+		if (!WDP_Product_Resolver::is_wc_product($product) || !WDP_Donation_Scope::is_donation_product($product)) {
+			return $text;
+		}
+		if ((string) WDP_Placement_Settings::value('loop_button', 'panel') === 'off') {
+			return $text;
+		}
+		return WDP_Shortcodes::resolve_button_text('');
+	}
+
+	/**
+	 * Point loop URLs at the product page (no direct add-to-cart).
+	 *
+	 * @param string     $url     URL.
+	 * @param WC_Product $product Product.
+	 * @return string
+	 */
+	public static function filter_add_to_cart_url($url, $product = null) {
+		if (!WDP_Product_Resolver::is_wc_product($product) || !WDP_Donation_Scope::is_donation_product($product)) {
+			return $url;
+		}
+		if ((string) WDP_Placement_Settings::value('loop_button', 'panel') === 'off') {
+			return $url;
+		}
+		$permalink = method_exists($product, 'get_permalink') ? $product->get_permalink() : get_permalink($product->get_id());
+		return $permalink ? $permalink : $url;
+	}
+
+	/**
+	 * Disable AJAX add-to-cart support on donation products in loops.
+	 *
+	 * @param bool       $supports Whether supported.
+	 * @param string     $feature  Feature name.
+	 * @param WC_Product $product  Product.
+	 * @return bool
+	 */
+	public static function filter_product_supports($supports, $feature, $product = null) {
+		if ((string) $feature !== 'ajax_add_to_cart') {
+			return $supports;
+		}
+		if (!WDP_Product_Resolver::is_wc_product($product) || !WDP_Donation_Scope::is_donation_product($product)) {
+			return $supports;
+		}
+		return false;
+	}
+
+	/**
 	 * Block themes: replace add-to-cart block with the donation form on donation products.
 	 *
 	 * @param string   $content Block HTML.
@@ -263,8 +448,8 @@ class WDP_Product_Page_Integration {
 				if (!$product || !WDP_Donation_Scope::is_donation_product($product) || !self::should_auto_place($product)) {
 					return $content;
 				}
-				if (self::content_already_has_shortcode($product) || WDP_Render_Registry::has_form($product->get_id())) {
-					return '';
+				if (self::content_already_has_shortcode($product) || WDP_Render_Registry::has_product_ui($product->get_id())) {
+					return WDP_Render_Registry::duplicate_ui_notice((int) $product->get_id());
 				}
 				return self::placed_markup();
 			},
@@ -283,16 +468,16 @@ class WDP_Product_Page_Integration {
 		if (WDP_Placement_Settings::value('hide_price') !== 'yes') {
 			return $content;
 		}
+		if (self::should_preserve_price_html_context()) {
+			return $content;
+		}
 		$product = self::product_from_block($instance);
 		if (!$product || !WDP_Donation_Scope::is_donation_product($product)) {
 			return $content;
 		}
-		$is_single = (function_exists('is_product') && is_product()) || self::block_is_single_product($instance);
-		if (!$is_single) {
-			$type = WDP_Donation_Type::for_product($product->get_id());
-			if (!in_array($type, array(WDP_Donation_Type::CUSTOM, WDP_Donation_Type::CAMPAIGN), true)) {
-				return $content;
-			}
+		$type = WDP_Donation_Type::for_product($product->get_id());
+		if (!in_array($type, array(WDP_Donation_Type::CUSTOM, WDP_Donation_Type::CAMPAIGN), true)) {
+			return $content;
 		}
 		return '';
 	}
@@ -334,9 +519,6 @@ class WDP_Product_Page_Integration {
 		if (WDP_Placement_Settings::value('auto_place') !== 'yes') {
 			return false;
 		}
-		if (WDP_Render_Registry::has_form($product->get_id())) {
-			return false;
-		}
 		return !self::content_already_has_shortcode($product);
 	}
 
@@ -345,7 +527,6 @@ class WDP_Product_Page_Integration {
 	 * @return bool
 	 */
 	public static function content_already_has_shortcode($product) {
-		$id = (int) $product->get_id();
 		$excerpt = (string) $product->get_short_description();
 		$content = (string) $product->get_description();
 		return self::text_has_wdp_shortcode($excerpt) || self::text_has_wdp_shortcode($content);
@@ -365,25 +546,48 @@ class WDP_Product_Page_Integration {
 	}
 
 	/**
-	 * @return void
+	 * @return bool
 	 */
-	private static function hide_add_to_cart_hooks() {
-		$hook = 'woocommerce_single_product_summary';
-		$priority = has_action($hook, 'woocommerce_template_single_add_to_cart');
-		if ($priority !== false) {
-			remove_action($hook, 'woocommerce_template_single_add_to_cart', $priority);
+	private static function should_override_current_product() {
+		$product = self::current_product();
+		if (!$product || !WDP_Donation_Scope::is_donation_product($product)) {
+			return false;
 		}
+		$override = $product->get_meta('_wdp_auto_place', true);
+		if ($override === 'no') {
+			return false;
+		}
+		return WDP_Placement_Settings::value('auto_place') === 'yes';
 	}
 
 	/**
-	 * @return void
+	 * Contexts where price HTML must never be blanked.
+	 *
+	 * @return bool
 	 */
-	private static function hide_price_hooks() {
-		$hook = 'woocommerce_single_product_summary';
-		$priority = has_action($hook, 'woocommerce_template_single_price');
-		if ($priority !== false) {
-			remove_action($hook, 'woocommerce_template_single_price', $priority);
+	public static function should_preserve_price_html_context() {
+		if (function_exists('is_admin') && is_admin() && !(function_exists('wp_doing_ajax') && wp_doing_ajax())) {
+			return true;
 		}
+		if (function_exists('is_cart') && is_cart()) {
+			return true;
+		}
+		if (function_exists('is_checkout') && is_checkout()) {
+			return true;
+		}
+		if (defined('REST_REQUEST') && REST_REQUEST) {
+			return true;
+		}
+		if (function_exists('did_action') && did_action('woocommerce_email_header')) {
+			return true;
+		}
+		if (function_exists('wp_doing_ajax') && wp_doing_ajax()) {
+			$wc_ajax = isset($_REQUEST['wc-ajax']) ? sanitize_key(wp_unslash((string) $_REQUEST['wc-ajax'])) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			if ($wc_ajax !== '' && (strpos($wc_ajax, 'fragment') !== false || strpos($wc_ajax, 'cart') !== false || $wc_ajax === 'get_refreshed_fragments')) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**
@@ -433,16 +637,13 @@ class WDP_Product_Page_Integration {
 	}
 
 	/**
-	 * @param WP_Block|null $instance Block.
-	 * @return bool
+	 * Reset request flags (unit tests).
+	 *
+	 * @return void
 	 */
-	private static function block_is_single_product($instance) {
-		if (function_exists('is_product') && is_product()) {
-			return true;
-		}
-		if (is_object($instance) && !empty($instance->context['postType']) && $instance->context['postType'] === 'product') {
-			return empty($instance->context['queryId']);
-		}
-		return false;
+	public static function reset_request_flags() {
+		self::$css_printed            = false;
+		self::$template_override_used = false;
+		self::$hooks_added            = false;
 	}
 }

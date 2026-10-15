@@ -434,8 +434,16 @@
         msg = m ? m[1] + ". " + getShareholderNameRequiredMessage() : getShareholderNameRequiredMessage();
       } else if (key === "custom_price") {
         msg = "Lütfen bağış tutarını giriniz.";
+      } else if (key === "sadaka_custom_price") {
+        // Sunucu mesajını koru; genel "Bu alan zorunludur" ile ezme.
+        msg =
+          fb ||
+          (typeof formMessages.getSadakaInvalidMessage === "function"
+            ? formMessages.getSadakaInvalidMessage()
+            : null) ||
+          "Geçerli bir alt bağış tutarı giriniz.";
       } else {
-        msg = getRequiredFieldMessage(el) || fb || "Bu alan zorunludur.";
+        msg = fb || getRequiredFieldMessage(el) || "Bu alan zorunludur.";
       }
 
       showInputError(el, msg);
@@ -495,7 +503,7 @@
       } catch (validationError) {
         safeLog("validateForm threw:", validationError);
         validationPassed = false;
-        let fallback = 'Lütfen işaretlenen alanları kontrol edin.';
+        let fallback = 'Lütfen işaretli alanları kontrol edin.';
         if (WDPApp.formFeedback && typeof WDPApp.formFeedback.collectVisibleFieldErrorMessages === 'function') {
           const collected = WDPApp.formFeedback.collectVisibleFieldErrorMessages(form);
           if (collected && collected.length) {
@@ -512,10 +520,16 @@
           /is not defined|is not a function|Cannot read|undefined/i.test(rawMsg) ||
           (validationError &&
             (validationError.name === 'ReferenceError' || validationError.name === 'TypeError'));
-        if (!isTechnical && rawMsg && fallback === 'Lütfen işaretlenen alanları kontrol edin.') {
+        if (!isTechnical && rawMsg && fallback === 'Lütfen işaretli alanları kontrol edin.') {
           fallback = rawMsg;
         }
         showShareholderValidationFeedback(form, [], fallback);
+        if (WDPApp.form) {
+          WDPApp.form.lastValidation = {
+            ok: false,
+            failures: [{ field: '', rule: 'exception', value: isTechnical ? 'technical' : rawMsg }],
+          };
+        }
       } finally {
         restoreDonationFormValidation(form);
       }
@@ -749,11 +763,14 @@
   }
 
 
-  // Export
+  // Export — lastValidation validate.js tarafından yazılır; üzerine yazma
+  const prevLastValidation =
+    WDPApp.form && WDPApp.form.lastValidation ? WDPApp.form.lastValidation : null;
   WDPApp.form = {
     setup: setupFormSubmission,
     submit: submitFormData,
     validate: validateForm,
+    validateForm: validateForm,
     getPhoneValidationState,
     showInputError,
     showFormError,
@@ -761,6 +778,7 @@
     handleAjaxError,
     directSubmit: directFormSubmit,
     updateLineTotals,
+    lastValidation: prevLastValidation,
   };
 
   // Export form module

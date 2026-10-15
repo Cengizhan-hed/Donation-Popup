@@ -105,9 +105,10 @@
     if (!form) {
       return null;
     }
+    // Alt bağış satırını ana tutar satırı sanma (sabit ürünlerde tek .wdp-custom-price-row sadaka olabilir).
     return (
-      form.querySelector('.wdp-custom-price-row') ||
-      form.querySelector('.wdp-custom-price-with-qty-row')
+      form.querySelector('.wdp-custom-price-row:not(.wdp-sadaka-donation__amount)') ||
+      form.querySelector('.wdp-custom-price-with-qty-row:not(.wdp-sadaka-donation__amount)')
     );
   }
 

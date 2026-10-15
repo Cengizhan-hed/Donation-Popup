@@ -26,7 +26,7 @@ class WDP_Placement_Settings {
 	private static $cache = null;
 
 	/**
-	 * Defaults of a new install (the 10.27.0 migration writes auto_place=no on upgrades).
+	 * Defaults of a new install (10.28.1: WooCommerce pages replace Add to cart with Donate).
 	 *
 	 * @return array<string, mixed>
 	 */
@@ -34,10 +34,10 @@ class WDP_Placement_Settings {
 		return array(
 			'auto_place'          => 'yes',
 			'position'            => 'replace_cart',
-			'display'             => 'inline',
+			'display'             => 'button_panel',
 			'hide_price'          => 'yes',
 			'show_form_title'     => 'no',
-			'loop_button'         => 'link',
+			'loop_button'         => 'panel',
 			'donation_scope'      => 'all',
 			'donation_categories' => array(),
 			'schema'              => 'auto',
@@ -77,7 +77,7 @@ class WDP_Placement_Settings {
 
 	/**
 	 * Applied settings. Before the migration wrote the option, automatic placement stays off
-	 * so an upgraded site never gets a second form on its product pages.
+	 * so an upgraded site never gets a second form on its product pages until 10.28.1 runs.
 	 *
 	 * @return array<string, mixed>
 	 */

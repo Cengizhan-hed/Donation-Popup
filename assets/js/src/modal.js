@@ -217,12 +217,86 @@
     }
   }
 
+  /**
+   * İskelet sırasında form kontrollerini disabled yap (Playwright/otomasyon inert'i yok sayabiliyor).
+   * data-wdp-skeleton-lock: önceden disabled ise "1", değilse "0".
+   */
+  function lockSkeletonControls(modal, lock) {
+    const content = modal && modal.querySelector('.wdp-modal-content')
+    if (!content) {
+      return
+    }
+    content.querySelectorAll('input, select, textarea, button').forEach((el) => {
+      if (!el || (el.classList && el.classList.contains('wdp-modal-close'))) {
+        return
+      }
+      if (el.closest && el.closest('.wdp-modal-close')) {
+        return
+      }
+      if (lock) {
+        if (el.dataset.wdpSkeletonLock == null) {
+          el.dataset.wdpSkeletonLock = el.disabled ? '1' : '0'
+        }
+        el.disabled = true
+        return
+      }
+      if (el.dataset.wdpSkeletonLock == null) {
+        return
+      }
+      if (el.dataset.wdpSkeletonLock === '0') {
+        el.disabled = false
+      }
+      delete el.dataset.wdpSkeletonLock
+    })
+  }
+
+  function setModalSkeletonBusy(modal, busy) {
+    if (!modal) {
+      return
+    }
+    const content = modal.querySelector('.wdp-modal-content')
+    if (busy) {
+      modal.classList.add('wdp-is-skeleton')
+      modal.setAttribute('aria-busy', 'true')
+      if (content) {
+        content.setAttribute('inert', '')
+        content.setAttribute('aria-busy', 'true')
+      }
+      lockSkeletonControls(modal, true)
+    } else {
+      modal.classList.remove('wdp-is-skeleton')
+      modal.removeAttribute('aria-busy')
+      if (content) {
+        content.removeAttribute('inert')
+        content.removeAttribute('aria-busy')
+      }
+      lockSkeletonControls(modal, false)
+    }
+  }
+
+  function captureModalFormValues(modal) {
+    if (WDPApp.dom && typeof WDPApp.dom.captureFormValues === 'function') {
+      return WDPApp.dom.captureFormValues(modal)
+    }
+    return { fields: [], focusName: '', selectionStart: null, selectionEnd: null }
+  }
+
+  function restoreModalFormValues(modal, snapshot) {
+    if (WDPApp.dom && typeof WDPApp.dom.restoreFormValues === 'function') {
+      WDPApp.dom.restoreFormValues(modal, snapshot)
+    }
+  }
+
   function runModalOpenInit(modal, productId, sidePanelMode) {
     if (!modal || state.activeModal !== modal) {
       return
     }
 
+    // Skeleton sırasında (veya yarışta) yazılmış kullanıcı verisini koru
+    const preserved = captureModalFormValues(modal)
     resetForm(modal)
+    // resetForm innerHTML sonrası yeni inputlar kilitsiz kalmasın
+    lockSkeletonControls(modal, true)
 
     const donationForm = modal.querySelector('form')
     if (donationForm && WDPApp.form && typeof WDPApp.form.setup === 'function') {
@@ -246,6 +320,10 @@
         WDPApp.formWizard.reset(donationForm)
       }
     }
+
+    // Wizard/phone yeniden kurulumundan SONRA geri yükle; ardından kilidi aç
+    restoreModalFormValues(modal, preserved)
+    lockSkeletonControls(modal, true)
 
     const loadProductInfo = WDPApp.product && (WDPApp.product.fetchProductInfo || WDPApp.product.fetch)
     if (typeof loadProductInfo === 'function') {
@@ -278,7 +356,7 @@
 
     trackModalViewContent(modal, productId, sidePanelMode)
     bindModalGlobalListeners()
-    modal.classList.remove('wdp-is-skeleton')
+    setModalSkeletonBusy(modal, false)
 
     focusFirstElement(modal)
     state.focusTrapCleanup = activateFocusTrap(modal)
@@ -349,7 +427,8 @@
       modal.style.removeProperty('visibility')
       modal.style.removeProperty('opacity')
       modal.classList.remove('wdp-side-panel--closing')
-      modal.classList.add('wdp-is-skeleton')
+      // İskelet: inputlar etkileşimsiz (inert + CSS); gerçek init bitince açılır
+      setModalSkeletonBusy(modal, true)
 
       state.activeModal = modal
       pendingOpenRequest = null
@@ -463,6 +542,7 @@
 
     // Inline display:none kullanma — CSS :not(.show) gizler; inline reopen’da bir frame flaş yapıyordu
     modal.classList.remove('show', 'wdp-side-panel--closing', 'wdp-is-skeleton')
+    setModalSkeletonBusy(modal, false)
     modal.setAttribute('aria-hidden', 'true')
     modal.style.removeProperty('display')
     modal.style.removeProperty('visibility')

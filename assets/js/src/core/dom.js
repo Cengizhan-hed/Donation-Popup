@@ -104,6 +104,168 @@
     });
   }
 
+  /**
+   * Kullanıcı girdilerini name ile topla (form HTML değişiminde koruma).
+   * @param {ParentNode|null} root
+   * @returns {{ fields: Array<object>, focusName: string, selectionStart: number|null, selectionEnd: number|null }}
+   */
+  function captureFormValues(root) {
+    const out = {
+      fields: [],
+      focusName: '',
+      selectionStart: null,
+      selectionEnd: null,
+    };
+    if (!root || typeof root.querySelectorAll !== 'function') {
+      return out;
+    }
+    const active = document.activeElement;
+    if (active && root.contains && root.contains(active) && active.name) {
+      out.focusName = String(active.name);
+      try {
+        if (typeof active.selectionStart === 'number') {
+          out.selectionStart = active.selectionStart;
+          out.selectionEnd = active.selectionEnd;
+        }
+      } catch (eSel) {
+        /* ignore */
+      }
+    }
+    root.querySelectorAll('input, select, textarea').forEach((el) => {
+      if (!el || !el.name) {
+        return;
+      }
+      const type = String(el.type || el.tagName || '').toLowerCase();
+      if (type === 'password' || type === 'file' || type === 'submit' || type === 'button' || type === 'image') {
+        return;
+      }
+      if (type === 'checkbox' || type === 'radio') {
+        out.fields.push({
+          name: el.name,
+          type: type,
+          checked: !!el.checked,
+          value: String(el.value || ''),
+        });
+        return;
+      }
+      out.fields.push({
+        name: el.name,
+        type: type,
+        value: String(el.value == null ? '' : el.value),
+      });
+    });
+    return out;
+  }
+
+  /**
+   * captureFormValues çıktısını forma uygula; input/change tetikle.
+   * @param {ParentNode|null} root
+   * @param {{ fields?: Array<object>, focusName?: string, selectionStart?: number|null, selectionEnd?: number|null }|null} snapshot
+   */
+  function restoreFormValues(root, snapshot) {
+    if (!root || !snapshot || !Array.isArray(snapshot.fields) || !snapshot.fields.length) {
+      return;
+    }
+    snapshot.fields.forEach((rec) => {
+      if (!rec || !rec.name) {
+        return;
+      }
+      const type = String(rec.type || '').toLowerCase();
+      if (type === 'checkbox' || type === 'radio') {
+        const nodes = root.querySelectorAll(
+          'input[name="' + rec.name.replace(/"/g, '\\"') + '"]'
+        );
+        nodes.forEach((el) => {
+          if (String(el.value || '') === String(rec.value || '')) {
+            el.checked = !!rec.checked;
+          } else if (type === 'checkbox' && nodes.length === 1) {
+            el.checked = !!rec.checked;
+          }
+          try {
+            el.dispatchEvent(new Event('change', { bubbles: true }));
+          } catch (eCh) {
+            /* ignore */
+          }
+        });
+        return;
+      }
+      const el = root.querySelector(
+        'input[name="' + rec.name.replace(/"/g, '\\"') + '"], select[name="' + rec.name.replace(/"/g, '\\"') + '"], textarea[name="' + rec.name.replace(/"/g, '\\"') + '"]'
+      );
+      if (!el) {
+        return;
+      }
+      const next = rec.value == null ? '' : String(rec.value);
+      if (String(el.value || '') === next) {
+        return;
+      }
+      el.value = next;
+      try {
+        el.dispatchEvent(new Event('input', { bubbles: true }));
+        el.dispatchEvent(new Event('change', { bubbles: true }));
+      } catch (eEv) {
+        /* ignore */
+      }
+    });
+    if (snapshot.focusName) {
+      const focusEl = root.querySelector(
+        '[name="' + String(snapshot.focusName).replace(/"/g, '\\"') + '"]'
+      );
+      if (focusEl && typeof focusEl.focus === 'function') {
+        try {
+          focusEl.focus({ preventScroll: true });
+        } catch (eF) {
+          try {
+            focusEl.focus();
+          } catch (eF2) {
+            /* ignore */
+          }
+        }
+        if (
+          typeof snapshot.selectionStart === 'number' &&
+          typeof focusEl.setSelectionRange === 'function'
+        ) {
+          try {
+            focusEl.setSelectionRange(
+              snapshot.selectionStart,
+              typeof snapshot.selectionEnd === 'number'
+                ? snapshot.selectionEnd
+                : snapshot.selectionStart
+            );
+          } catch (eRange) {
+            /* ignore */
+          }
+        }
+      }
+    }
+  }
+
+  /**
+   * Açık kabuktaki güncel bağış formunu bul (ayrılmış/eski node yerine).
+   * @param {HTMLFormElement|null} preferred
+   * @returns {HTMLFormElement|null}
+   */
+  function getLiveDonationForm(preferred) {
+    if (
+      preferred &&
+      preferred.isConnected &&
+      preferred.closest &&
+      preferred.closest('.wdp-modal.show, .wdp-modal[aria-hidden="false"], .wdp-donation-form')
+    ) {
+      return preferred;
+    }
+    const openModal = document.querySelector(
+      '.wdp-modal.show form.wdp-donation-form-fields, .wdp-modal.show form, .wdp-modal[aria-hidden="false"] form.wdp-donation-form-fields'
+    );
+    if (openModal) {
+      return openModal;
+    }
+    if (preferred && preferred.isConnected) {
+      return preferred;
+    }
+    return document.querySelector('form.wdp-donation-form-fields');
+  }
+
   // DOM değişikliklerini izle - OPTIMIZED: Sadece plugin container'larını izle
   function observeDOMChanges() {
     // OPTIMIZATION: Sadece plugin container'larını bul ve onları izle (tüm body yerine)
@@ -257,6 +419,10 @@
     removeInlineStylesFromTitles,
     observeDOMChanges,
     saveOriginalForms,
+    getCleanFormSnapshotHtml,
+    captureFormValues,
+    restoreFormValues,
+    getLiveDonationForm,
     // initializeDirectForms init.js'de tanımlı
   }
 

@@ -19,7 +19,7 @@ if (!defined('WDP_PLUGIN_FILE')) {
     define('WDP_PLUGIN_FILE', $root . '/woo-donation-popup.php');
 }
 if (!defined('WDP_VERSION')) {
-    define('WDP_VERSION', '10.27.1');
+	define('WDP_VERSION', '10.28.8');
 }
 
 require_once WDP_PLUGIN_DIR . 'includes/class-exceptions.php';

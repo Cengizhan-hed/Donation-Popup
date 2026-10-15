@@ -166,6 +166,8 @@ if (!class_exists('WC_Product')) {
 		public $short_description = '';
 		/** @var string */
 		public $description = '';
+		/** @var string visible|catalog|search|hidden */
+		public $catalog_visibility = 'visible';
 
 		public function __construct($id = 0) {
 			$this->id = (int) $id;
@@ -198,12 +200,24 @@ if (!class_exists('WC_Product')) {
 			return $this->status;
 		}
 
+		public function exists() {
+			return $this->id > 0;
+		}
+
+		public function get_catalog_visibility() {
+			return $this->catalog_visibility;
+		}
+
 		public function get_short_description() {
 			return $this->short_description;
 		}
 
 		public function get_description() {
 			return $this->description;
+		}
+
+		public function get_permalink() {
+			return 'https://example.test/product/' . ($this->slug !== '' ? $this->slug : ('p' . $this->id)) . '/';
 		}
 
 		public function get_category_ids() {

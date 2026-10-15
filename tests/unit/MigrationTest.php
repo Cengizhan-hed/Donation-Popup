@@ -72,7 +72,10 @@ final class MigrationTest extends TestCase {
 		$this->assertArrayNotHasKey(WDP_Migrations::LOCK, WDP_Test_State::$transients);
 
 		$placement = WDP_Test_State::$options[ WDP_Placement_Settings::OPTION ];
-		$this->assertSame('no', $placement['auto_place']);
+		// 10.27.0 wrote no on upgrades; 10.28.1 forces WooCommerce placement on.
+		$this->assertSame('yes', $placement['auto_place']);
+		$this->assertSame('button_panel', $placement['display']);
+		$this->assertSame('panel', $placement['loop_button']);
 		$this->assertSame('1', WDP_Test_State::$options[ WDP_Migrations::NOTICE_OPTION ]);
 	}
 
