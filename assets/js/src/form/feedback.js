@@ -191,6 +191,28 @@
     if (!input) {
       return;
     }
+    // Ayrılmış node'a yazma — açık kabuktaki eşleşen alana yönlendir
+    if (input.isConnected === false && input.name && WDPApp.dom && typeof WDPApp.dom.getLiveDonationForm === 'function') {
+      const liveForm = WDPApp.dom.getLiveDonationForm(null);
+      if (liveForm) {
+        let live = null;
+        try {
+          if (typeof CSS !== 'undefined' && CSS.escape) {
+            live = liveForm.querySelector('[name="' + CSS.escape(input.name) + '"]');
+          }
+        } catch (eCss) {
+          live = null;
+        }
+        if (!live) {
+          live = liveForm.querySelector(
+            'input[name="' + input.name + '"], textarea[name="' + input.name + '"], select[name="' + input.name + '"]'
+          );
+        }
+        if (live) {
+          input = live;
+        }
+      }
+    }
     try {
       input.classList.add('wdp-error');
     } catch (eClass) {
@@ -340,7 +362,7 @@
     if (!msgs.length) {
       msgs = collectVisibleFieldErrorMessages(form);
     }
-    const msg = msgs.length ? msgs[0] : 'Lütfen işaretlenen alanları kontrol edin.';
+    const msg = msgs.length ? msgs[0] : 'Lütfen işaretli alanları kontrol edin.';
     showFormError(form, msg);
   }
 
@@ -356,7 +378,7 @@
             : '');
     if (!primary) {
       const collected = collectVisibleFieldErrorMessages(form);
-      primary = collected.length ? collected[0] : 'Lütfen işaretlenen alanları kontrol edin.';
+      primary = collected.length ? collected[0] : 'Lütfen işaretli alanları kontrol edin.';
     }
     ensureVisibleValidationFeedback(form, lines.length ? lines : [primary]);
   }

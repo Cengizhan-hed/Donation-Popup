@@ -18,16 +18,62 @@
   const announceStatus = typeof utils.announceStatus === 'function' ? utils.announceStatus.bind(utils) : function() {};
   const clearAlerts = typeof utils.clearAlerts === 'function' ? utils.clearAlerts.bind(utils) : function() {};
 
+  const GENERAL_VALIDATION_MESSAGE = 'Lütfen işaretli alanları kontrol edin.';
+
   function showInputError(input, message) {
-    if (typeof formFeedback.showInputError === 'function') {
-      formFeedback.showInputError(input, message);
+    // Canlı lookup: modül yükleme sırası / yeniden atama altında stale {} kalmasın
+    const fb = WDPApp.formFeedback || formFeedback;
+    if (fb && typeof fb.showInputError === 'function') {
+      fb.showInputError(input, message);
     }
   }
 
   function showShareholderValidationFeedback(form, summaryLines, fallbackMessage) {
-    if (typeof formFeedback.showShareholderValidationFeedback === 'function') {
-      formFeedback.showShareholderValidationFeedback(form, summaryLines, fallbackMessage);
+    const fb = WDPApp.formFeedback || formFeedback;
+    if (fb && typeof fb.showShareholderValidationFeedback === 'function') {
+      fb.showShareholderValidationFeedback(form, summaryLines, fallbackMessage);
     }
+  }
+
+  function showFormErrorBanner(form, message) {
+    const fb = WDPApp.formFeedback || formFeedback;
+    if (fb && typeof fb.showFormError === 'function') {
+      fb.showFormError(form, message || GENERAL_VALIDATION_MESSAGE);
+    }
+  }
+
+  function ensureVisibleValidationFeedback(form, errorMessages) {
+    const fb = WDPApp.formFeedback || formFeedback;
+    if (fb && typeof fb.ensureVisibleValidationFeedback === 'function') {
+      fb.ensureVisibleValidationFeedback(form, errorMessages);
+      return;
+    }
+    showFormErrorBanner(
+      form,
+      (errorMessages && errorMessages[0]) || GENERAL_VALIDATION_MESSAGE
+    );
+  }
+
+  function fieldValueSnapshot(field) {
+    if (!field) {
+      return '';
+    }
+    try {
+      return String(field.value == null ? '' : field.value).slice(0, 80);
+    } catch (e) {
+      return '';
+    }
+  }
+
+  function storeLastValidation(result) {
+    if (!WDPApp.formValidate) {
+      WDPApp.formValidate = {};
+    }
+    WDPApp.formValidate.lastValidation = result;
+    if (!WDPApp.form) {
+      WDPApp.form = {};
+    }
+    WDPApp.form.lastValidation = result;
   }
 
   function isCompactShareholderViewport() {
@@ -104,26 +150,45 @@
   function validatePhoneInputInForm(form, input, options) {
     const state = getPhoneValidationState(input, options);
     if (!state.ok && !(options && options.silent)) {
-      showInputError(input, state.message);
+      showInputError(input, state.message || getPhoneIncompleteMessage());
     }
     return state.ok;
   }
 
-  /** Formdaki tüm telefon alanlarını (bağışçı + hissedar) sırayla doğrular. */
+  /**
+   * Formdaki tüm telefon alanlarını (bağışçı + hissedar) sırayla doğrular.
+   * @returns {{ ok: boolean, failures: Array<{field:string,rule:string,value:string}> }}
+   */
   function validateAllPhoneFields(form, options) {
     const includeShareholders = !(options && options.shareholders === false);
     const selector = includeShareholders
       ? 'input[type="tel"][name="donation_phone"], input[type="tel"][name^="shareholder_phone_"]'
       : 'input[type="tel"][name="donation_phone"]';
+    const failures = [];
     let allOk = true;
     form.querySelectorAll(selector).forEach((input) => {
       const required =
         input.name === 'donation_phone' ||
         (input.name && input.name.indexOf('shareholder_phone_') === 0);
-      if (!validatePhoneInputInForm(form, input, { required: required })) {
+      const state = getPhoneValidationState(input, { required: required });
+      if (!state.ok) {
         allOk = false;
+        const rule = state.message === getPhoneRequiredMessage() || !String(input.value || '').trim()
+          ? 'phone_required'
+          : 'phone_incomplete';
+        failures.push({
+          field: input.name || 'donation_phone',
+          rule: rule,
+          value: fieldValueSnapshot(input),
+        });
+        if (!(options && options.silent)) {
+          showInputError(input, state.message || getPhoneIncompleteMessage());
+        }
       }
     });
+    if (options && options.collectFailures && Array.isArray(options.collectFailures)) {
+      failures.forEach((f) => options.collectFailures.push(f));
+    }
     return allOk;
   }
 
@@ -313,12 +378,22 @@
 
   /**
    * Tüm zorunlu alanları, telefonu, fiyatı ve hissedar satırlarını doğrular.
+   * Dışa boolean döner (uyumluluk). Ayrıntı: WDPApp.form.lastValidation
    * @returns {boolean} Geçerliyse true.
    */
   function validateForm(form) {
     safeLog("validateForm called");
+    // Ayrılmış/eski node yerine açık kabuktaki güncel form
+    if (WDPApp.dom && typeof WDPApp.dom.getLiveDonationForm === 'function') {
+      const live = WDPApp.dom.getLiveDonationForm(form);
+      if (live) {
+        form = live;
+      }
+    }
     let isValid = true;
     let errorMessages = [];
+    /** @type {Array<{field:string,rule:string,value:string}>} */
+    const failures = [];
     ensureShareholderRowsReady(form);
 
     if (WDPApp.phoneInput && typeof WDPApp.phoneInput.ensureNationalDisplayInForm === 'function') {
@@ -381,6 +456,11 @@
           if (!errorMessages.includes(issue.message)) {
             errorMessages.push(issue.message);
           }
+          failures.push({
+            field: (issue.field && issue.field.name) || ('shareholder_' + issue.type),
+            rule: issue.type === 'phone' ? 'shareholder_phone' : 'shareholder_name_required',
+            value: fieldValueSnapshot(issue.field),
+          });
         });
         if (!firstShareholderIssue) {
           firstShareholderIssue = {
@@ -420,8 +500,10 @@
     }
 
     // Telefon: ülkeye göre rakam sayısı (TR: 10, vb.) — hissedar satırları yukarıda doğrulandı
-    if (!validateAllPhoneFields(form, { shareholders: !hasShareholderRows })) {
+    const phoneFailures = [];
+    if (!validateAllPhoneFields(form, { shareholders: !hasShareholderRows, collectFailures: phoneFailures })) {
       isValid = false;
+      phoneFailures.forEach((f) => failures.push(f));
       const phoneMsg = getPhoneIncompleteMessage();
       if (!errorMessages.includes(phoneMsg)) {
         errorMessages.push(phoneMsg);
@@ -442,30 +524,36 @@
           ) {
             firstOpenShareholderIssue = firstShareholderIssue;
           }
-        } else {
-          const badDonorPhone = form.querySelector(
-            'input[name="donation_phone"].wdp-error, input[type="tel"].wdp-error'
-          );
-          if (badDonorPhone && !errorMessages.includes(phoneMsg)) {
-            errorMessages.push(phoneMsg);
-          }
         }
       }
     }
 
-    // Diğer zorunlu alanlar (fiyat, vb.)
+    // Diğer zorunlu alanlar (fiyat, vb.) — alt bağış (sadaka) bu döngüde yok; validateSadakaDonation ayrı.
     form.querySelectorAll('input[required], textarea[required]').forEach((field) => {
-      // Hissedar formları dışındaki alanları kontrol et
-      if (!field.name.includes('shareholder_')) {
-        if (field.name === 'donation_phone' || field.type === 'tel') {
-          return;
-        }
-        if (!field.value.trim()) {
-          const msg = getRequiredFieldMessage(field);
-          showInputError(field, msg);
-          errorMessages.push(field.placeholder || msg);
-          isValid = false;
-        }
+      if (field.name && field.name.includes('shareholder_')) {
+        return;
+      }
+      if (field.name === 'donation_phone' || field.type === 'tel') {
+        return;
+      }
+      if (field.name === 'sadaka_custom_price' || (field.closest && field.closest('[data-wdp-sadaka-donation]'))) {
+        return;
+      }
+      if (field.closest && field.closest('[hidden]')) {
+        return;
+      }
+      // type=number geçersiz değerde .value "" döner; yine de trim ile boşluk kontrolü yeterli.
+      const rawVal = field.value == null ? '' : String(field.value);
+      if (!rawVal.trim()) {
+        const msg = getRequiredFieldMessage(field);
+        showInputError(field, msg);
+        errorMessages.push(field.placeholder || msg);
+        failures.push({
+          field: field.name || 'required',
+          rule: field.name === 'donation_full_name' ? 'donor_name_required' : 'required',
+          value: '',
+        });
+        isValid = false;
       }
     });
 
@@ -505,48 +593,45 @@
         effectiveMin = effectiveMinCandidates.length > 0 ? Math.max.apply(null, effectiveMinCandidates) : 0;
       }
 
-      const focusInput = () => {
-          if (isValid) {
-            try {
-              customPriceInput.focus({ preventScroll: false });
-            } catch (e) {
-              customPriceInput.focus();
-            }
-          }
-      };
-
       if (rawValue === '') {
         const emptyMessage = 'Lütfen bağış tutarını giriniz.';
         showInputError(customPriceInput, emptyMessage);
         if (!errorMessages.includes(emptyMessage)) {
           errorMessages.push(emptyMessage);
         }
-        focusInput();
-          isValid = false;
+        failures.push({ field: 'custom_price', rule: 'price_empty', value: '' });
+        isValid = false;
       } else if (!Number.isFinite(numericValue) || numericValue <= 0) {
         const invalidMessage = 'Lütfen geçerli bir bağış tutarı giriniz.';
         showInputError(customPriceInput, invalidMessage);
         if (!errorMessages.includes(invalidMessage)) {
           errorMessages.push(invalidMessage);
         }
-        focusInput();
+        failures.push({ field: 'custom_price', rule: 'price_invalid', value: rawValue });
         isValid = false;
       } else if (effectiveMin > 0 && numericValue + 0.0001 < effectiveMin) {
         const minMessage = customPriceQtyRow
           ? `Lütfen ${formatCurrency(effectiveMin)} ve üstü toplam tutar girin.`
           : `Lütfen ${formatCurrency(effectiveMin)} ve üstü değerler girin.`;
-          showInputError(customPriceInput, minMessage);
-          if (!errorMessages.includes(minMessage)) {
-            errorMessages.push(minMessage);
-          }
-        focusInput();
-          isValid = false;
+        showInputError(customPriceInput, minMessage);
+        if (!errorMessages.includes(minMessage)) {
+          errorMessages.push(minMessage);
+        }
+        failures.push({
+          field: 'custom_price',
+          rule: 'price_below_min',
+          value: rawValue,
+        });
+        isValid = false;
       }
     }
 
     if (!validateSadakaDonation(form)) {
       isValid = false;
       const sadakaErr = form.querySelector('[data-wdp-sadaka-donation] .wdp-input-error');
+      const sadakaInput = form.querySelector(
+        '[data-wdp-sadaka-donation] input[name="sadaka_custom_price"], [data-wdp-sadaka-donation] input'
+      );
       const sadakaMsg =
         sadakaErr && sadakaErr.textContent
           ? sadakaErr.textContent.trim()
@@ -556,24 +641,43 @@
       if (sadakaMsg && !errorMessages.includes(sadakaMsg)) {
         errorMessages.push(sadakaMsg);
       }
+      failures.push({
+        field: (sadakaInput && sadakaInput.name) || 'sadaka_custom_price',
+        rule: 'sadaka_invalid',
+        value: fieldValueSnapshot(sadakaInput),
+      });
+      // Sadaka modülü mesaj basmadıysa yine görünür hata
+      if (!sadakaErr && sadakaInput) {
+        showInputError(sadakaInput, sadakaMsg);
+      } else if (!sadakaErr) {
+        showFormErrorBanner(form, sadakaMsg);
+      }
     }
 
     errorMessages = Array.from(new Set(errorMessages));
+    const fbLive = WDPApp.formFeedback || formFeedback;
     if (!isValid && !errorMessages.length) {
       const collected =
-        typeof formFeedback.collectVisibleFieldErrorMessages === 'function'
-          ? formFeedback.collectVisibleFieldErrorMessages(form)
+        fbLive && typeof fbLive.collectVisibleFieldErrorMessages === 'function'
+          ? fbLive.collectVisibleFieldErrorMessages(form)
           : [];
       if (collected && collected.length) {
         errorMessages = collected.slice();
+      } else if (failures.length) {
+        errorMessages.push(GENERAL_VALIDATION_MESSAGE);
       } else {
-        errorMessages.push(getPhoneIncompleteMessage());
+        // Alanı belirlenemeyen genel false — sessiz kalmasın
+        errorMessages.push(GENERAL_VALIDATION_MESSAGE);
+        failures.push({ field: '', rule: 'general', value: '' });
       }
     }
-    safeLog("Form validation result:", { isValid, errorMessages });
+    safeLog("Form validation result:", { isValid, errorMessages, failures });
+
+    const lastValidation = { ok: isValid, failures: failures.slice() };
+    storeLastValidation(lastValidation);
 
     if (!isValid) {
-      safeLog("Form is invalid; showing field-anchored errors only");
+      safeLog("Form is invalid; showing field-anchored errors + banner fallback");
       if (firstShareholderIssue && firstShareholderIssue.row && incompleteShareholderCount > 0) {
         const firstRowIndex =
           Number.parseInt(firstShareholderIssue.row.getAttribute("data-index") || "0", 10) || 0;
@@ -606,15 +710,20 @@
         }
         focusFirstInvalidField(form);
       }
-      showShareholderValidationFeedback(
-        form,
-        summaryLines,
-        errorMessages.length ? errorMessages[0] : 'Lütfen işaretlenen alanları kontrol edin.'
-      );
+      const fallbackMsg = errorMessages.length ? errorMessages[0] : GENERAL_VALIDATION_MESSAGE;
+      showShareholderValidationFeedback(form, summaryLines, fallbackMsg);
+      // Yedek: hiçbir görünür metin yoksa genel banner (sessiz false yok)
+      ensureVisibleValidationFeedback(form, errorMessages.length ? errorMessages : [GENERAL_VALIDATION_MESSAGE]);
+      if (!form.querySelector('.wdp-input-error, .wdp-form-error')) {
+        showFormErrorBanner(form, GENERAL_VALIDATION_MESSAGE);
+      }
+      if (!form.querySelector('.wdp-error') && !shareholderFocused) {
+        focusFirstInvalidField(form);
+      }
       announceStatus(
         summaryLines.length
           ? summaryLines[0]
-          : (errorMessages.length ? errorMessages[0] : "Lütfen işaretlenen alanları kontrol edin."),
+          : fallbackMsg,
         "assertive"
       );
     } else if (WDPApp.shareholder && typeof WDPApp.shareholder.setValidationArmed === "function") {

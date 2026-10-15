@@ -100,6 +100,11 @@ class WDP_Admin_Assets {
 		$css_rel = 'assets/css/admin/products.css';
 		$js_rel  = 'assets/js/admin/products.js';
 
+		// Alt bağış ürün seçici (wc-product-search / selectWoo).
+		wp_enqueue_script('wc-enhanced-select');
+		wp_enqueue_style('woocommerce_admin_styles');
+		$script_deps[] = 'wc-enhanced-select';
+
 		wp_enqueue_style('wdp-admin-products', WDP_PLUGIN_URL . $css_rel, $style_deps, self::asset_version($css_rel));
 		wp_enqueue_script('wdp-admin-products', WDP_PLUGIN_URL . $js_rel, $script_deps, self::asset_version($js_rel), true);
 

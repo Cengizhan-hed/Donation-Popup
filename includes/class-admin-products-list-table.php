@@ -236,11 +236,30 @@ class WDP_Admin_Products_List_Table extends WP_List_Table {
 		$out  = '<div class="wdp-products-table__product">';
 		$out .= '<span class="wdp-products-table__thumb" aria-hidden="true">' . $thumb . '</span>';
 		$is_donation = class_exists('WDP_Donation_Scope') && WDP_Donation_Scope::is_donation_product($product);
-		$badge_label = $is_donation ? __('Bağış ürünü', 'woo-donation-popup') : __('Normal ürün', 'woo-donation-popup');
-		$badge_class = $is_donation ? 'wdp-scope-badge wdp-scope-badge--yes' : 'wdp-scope-badge wdp-scope-badge--no';
+		if ($is_donation) {
+			$badge_label = __('Bağış ürünü', 'woo-donation-popup');
+			$badge_class = 'wdp-scope-badge wdp-scope-badge--yes';
+		} else {
+			$badge_label = __('Normal ürün', 'woo-donation-popup');
+			$badge_class = 'wdp-scope-badge wdp-scope-badge--no';
+		}
 
 		$out .= '<span class="wdp-products-table__title"><a class="row-title" href="' . esc_url($edit_url) . '">' . esc_html($product->get_name()) . '</a>' . $state;
 		$out .= ' <span class="' . esc_attr($badge_class) . '">' . esc_html($badge_label) . '</span>';
+
+		if (class_exists('WDP_Sadaka_Product_Visibility') && WDP_Sadaka_Product_Visibility::is_sadaka_line_product($product->get_id())) {
+			$referrers = WDP_Sadaka_Product_Visibility::get_referrer_labels($product->get_id());
+			$count     = count($referrers);
+			if ($count > 0) {
+				$sadaka_title = implode(', ', $referrers);
+				$sadaka_label = sprintf(
+					/* translators: %d: number of parent products using this as alt donation */
+					__('Alt bağış olarak kullanılıyor (%d)', 'woo-donation-popup'),
+					$count
+				);
+				$out .= ' <span class="wdp-scope-badge wdp-scope-badge--sadaka" title="' . esc_attr($sadaka_title) . '">' . esc_html($sadaka_label) . '</span>';
+			}
+		}
 		$out .= '<span class="wdp-products-table__id">#' . esc_html((string) $product->get_id()) . '</span></span>';
 		$out .= '</div>';
 

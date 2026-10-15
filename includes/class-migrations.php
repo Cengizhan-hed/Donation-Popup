@@ -20,10 +20,25 @@ class WDP_Migrations {
 	const OPTION          = 'wdp_db_version';
 	const PREVIOUS_OPTION = 'wdp_previous_version';
 	const LOG_OPTION      = 'wdp_migration_log';
-	const NOTICE_OPTION   = 'wdp_notice_placement_intro';
-	const LOCK            = 'wdp_migration_lock';
-	const LOCK_TTL        = 300;
-	const BATCH           = 500;
+	const NOTICE_OPTION            = 'wdp_notice_placement_intro';
+	const BACKUP_OPTION            = 'wdp_settings_backup_10_27';
+	const BACKUP_RESTORED_OPTION   = 'wdp_settings_backup_10_27_restored';
+	const LOCK                     = 'wdp_migration_lock';
+	const LOCK_TTL                 = 300;
+	const BATCH                    = 500;
+
+	/** Option names that may appear in the 10.27 settings backup (plus nested product_meta). */
+	const BACKUP_OPTION_KEYS = array(
+		'wdp_button_settings',
+		'wdp_success_settings',
+		'wdp_shareholder_settings',
+		'wdp_progress_bar_settings',
+		'wdp_modal_layout_settings',
+		'wdp_placement_settings',
+		'wdp_meta_tracking_settings',
+		'wdp_category_title_colors',
+		'wdp_custom_style_presets',
+	);
 
 	/** Product meta of the removed in-form FAQ module (10.27.0). */
 	const REMOVED_PRODUCT_META = array('_enable_faq', '_faq_items');
@@ -68,6 +83,9 @@ class WDP_Migrations {
 	public static function steps() {
 		return array(
 			'10.27.0' => array(__CLASS__, 'step_10_27_0'),
+			'10.28.1' => array(__CLASS__, 'step_10_28_1'),
+			'10.28.4' => array(__CLASS__, 'step_10_28_4'),
+			'10.28.5' => array(__CLASS__, 'step_10_28_5'),
 		);
 	}
 
@@ -197,6 +215,339 @@ class WDP_Migrations {
 	}
 
 	/**
+	 * 10.28.1: restore settings wiped by the rejected 10.28.0 step (when a backup exists),
+	 * then write WooCommerce placement defaults (auto_place on for upgrades too).
+	 *
+	 * @param bool $is_fresh Fresh install.
+	 * @return string Summary for the log.
+	 */
+	public static function step_10_28_1($is_fresh) {
+		$restore   = self::restore_settings_backup_10_27();
+		$placement = self::write_placement_settings_10_28_1();
+
+		return sprintf(
+			'restore:%s placement:%s fresh:%s',
+			$restore,
+			$placement,
+			$is_fresh ? 'yes' : 'no'
+		);
+	}
+
+	/**
+	 * 10.28.5: alt bağış görünürlük/dışlama önbelleklerini temizle; liste önbelleğini artır.
+	 * Geçerli bağlantılara dokunmaz (10.28.4 denetim tablosu korunur).
+	 *
+	 * @param bool $is_fresh Fresh install.
+	 * @return string Summary for the log.
+	 */
+	public static function step_10_28_5($is_fresh) {
+		$flag   = 'wdp_sadaka_visibility_cache_cleared';
+		$before = (int) get_option('wdp_list_cache_version', 1);
+
+		// Transient her zaman temizlenir; liste önbelleği yalnızca bir kez artırılır (idempotent).
+		if (class_exists('WDP_Sadaka_Product_Visibility')) {
+			WDP_Sadaka_Product_Visibility::flush();
+		} else {
+			delete_transient('wdp_sadaka_line_ids');
+		}
+
+		$bumped = false;
+		if (get_option($flag, false) === false) {
+			if (class_exists('WDP_Donations_List') && method_exists('WDP_Donations_List', 'bump_cache')) {
+				WDP_Donations_List::bump_cache();
+			} else {
+				update_option('wdp_list_cache_version', $before + 1, false);
+			}
+			update_option($flag, '1', false);
+			$bumped = true;
+		}
+
+		$after = (int) get_option('wdp_list_cache_version', 1);
+
+		return sprintf(
+			'sadaka_visibility_caches cleared list_cache:%d→%d bumped:%s fresh:%s',
+			$before,
+			$after,
+			$bumped ? 'yes' : 'no',
+			$is_fresh ? 'yes' : 'no'
+		);
+	}
+
+	/**
+	 * 10.28.4: temizle geçersiz / kapalı alt bağış (_sadaka_wc_product_id) bağlantılarını.
+	 *
+	 * @param bool $is_fresh Fresh install.
+	 * @return string Summary for the log.
+	 */
+	public static function step_10_28_4($is_fresh) {
+		$audit   = self::audit_and_clean_sadaka_links();
+		$cleaned = isset($audit['cleaned']) ? (int) $audit['cleaned'] : 0;
+		$valid   = isset($audit['valid']) ? (int) $audit['valid'] : 0;
+		$rows    = isset($audit['rows']) && is_array($audit['rows']) ? $audit['rows'] : array();
+
+		update_option(
+			class_exists('WDP_Sadaka_Product_Visibility')
+				? WDP_Sadaka_Product_Visibility::AUDIT_OPTION
+				: 'wdp_sadaka_links_audit',
+			array(
+				'time'    => time(),
+				'fresh'   => $is_fresh ? 1 : 0,
+				'cleaned' => $cleaned,
+				'valid'   => $valid,
+				'rows'    => $rows,
+			),
+			false
+		);
+
+		if (class_exists('WDP_Sadaka_Product_Visibility')) {
+			WDP_Sadaka_Product_Visibility::flush();
+		}
+
+		$reasons = array();
+		foreach ($rows as $row) {
+			if (!is_array($row) || (isset($row['status']) ? $row['status'] : '') !== 'cleaned') {
+				continue;
+			}
+			$r = isset($row['reason']) ? (string) $row['reason'] : 'other';
+			$reasons[ $r ] = isset($reasons[ $r ]) ? $reasons[ $r ] + 1 : 1;
+		}
+		$reason_bits = array();
+		foreach ($reasons as $code => $count) {
+			$reason_bits[] = $code . '=' . $count;
+		}
+
+		return sprintf(
+			'sadaka_links cleaned:%d valid:%d %s fresh:%s',
+			$cleaned,
+			$valid,
+			$reason_bits ? implode(',', $reason_bits) : 'reasons:none',
+			$is_fresh ? 'yes' : 'no'
+		);
+	}
+
+	/**
+	 * Scan _sadaka_wc_product_id; clear self-ref, missing, non-simple, or enable-off leftovers.
+	 *
+	 * @return array{cleaned:int,valid:int,rows:array<int,array<string,mixed>>}
+	 */
+	public static function audit_and_clean_sadaka_links() {
+		$rows    = array();
+		$cleaned = 0;
+		$valid   = 0;
+
+		$parent_ids = self::find_products_with_sadaka_meta();
+		foreach ($parent_ids as $parent_id) {
+			$parent_id = absint($parent_id);
+			$raw_id    = absint(get_post_meta($parent_id, '_sadaka_wc_product_id', true));
+			if ($raw_id <= 0) {
+				continue;
+			}
+
+			$enabled = class_exists('WDP_Sadaka_Product_Visibility')
+				? WDP_Sadaka_Product_Visibility::parent_has_sadaka_enabled($parent_id)
+				: (strtolower((string) get_post_meta($parent_id, '_enable_sadaka_donation', true)) === 'yes');
+
+			$reason = '';
+			if ($raw_id === $parent_id) {
+				$reason = 'self_ref';
+			} elseif (!$enabled) {
+				$reason = 'enable_off';
+			} elseif (!class_exists('WDP_Utils') || !WDP_Utils::is_valid_sadaka_wc_product($raw_id)) {
+				$product = function_exists('wc_get_product') ? wc_get_product($raw_id) : null;
+				$reason  = $product ? 'not_simple_or_status' : 'missing';
+			}
+
+			$parent_label = class_exists('WDP_Sadaka_Product_Visibility')
+				? WDP_Sadaka_Product_Visibility::product_label($parent_id)
+				: '#' . $parent_id;
+			$sadaka_label = class_exists('WDP_Sadaka_Product_Visibility')
+				? WDP_Sadaka_Product_Visibility::product_label($raw_id)
+				: '#' . $raw_id;
+
+			if ($reason !== '') {
+				delete_post_meta($parent_id, '_sadaka_wc_product_id');
+				$cleaned++;
+				$rows[] = array(
+					'parent_id'    => $parent_id,
+					'parent_label' => $parent_label,
+					'sadaka_id'    => $raw_id,
+					'sadaka_label' => $sadaka_label,
+					'status'       => 'cleaned',
+					'reason'       => $reason,
+				);
+				continue;
+			}
+
+			$valid++;
+			$rows[] = array(
+				'parent_id'    => $parent_id,
+				'parent_label' => $parent_label,
+				'sadaka_id'    => $raw_id,
+				'sadaka_label' => $sadaka_label,
+				'status'       => 'valid',
+				'reason'       => '',
+			);
+		}
+
+		// Genel varsayılanı da tabloya ekle (silinmez; yalnızca görünürlük).
+		$default = class_exists('WDP_Utils') ? (int) WDP_Utils::get_default_sadaka_wc_product_id() : 0;
+		if ($default > 0) {
+			$ok = class_exists('WDP_Utils') && WDP_Utils::is_valid_sadaka_wc_product($default);
+			$rows[] = array(
+				'parent_id'    => 0,
+				'parent_label' => __('Genel varsayılan (Başarı sekmesi)', 'woo-donation-popup'),
+				'sadaka_id'    => $default,
+				'sadaka_label' => class_exists('WDP_Sadaka_Product_Visibility')
+					? WDP_Sadaka_Product_Visibility::product_label($default)
+					: '#' . $default,
+				'status'       => $ok ? 'valid' : 'invalid_default',
+				'reason'       => $ok ? '' : 'missing_or_invalid',
+			);
+		}
+
+		return array(
+			'cleaned' => $cleaned,
+			'valid'   => $valid,
+			'rows'    => $rows,
+		);
+	}
+
+	/**
+	 * @return int[]
+	 */
+	private static function find_products_with_sadaka_meta() {
+		if (function_exists('get_posts')) {
+			$found = get_posts(
+				array(
+					'post_type'              => 'product',
+					'post_status'            => 'any',
+					'numberposts'            => self::BATCH,
+					'fields'                 => 'ids',
+					'suppress_filters'       => true,
+					'no_found_rows'          => true,
+					'update_post_meta_cache' => true,
+					'update_post_term_cache' => false,
+					'meta_query'             => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+						array(
+							'key'     => '_sadaka_wc_product_id',
+							'value'   => 0,
+							'compare' => '>',
+							'type'    => 'NUMERIC',
+						),
+					),
+				)
+			);
+			if (!empty($found)) {
+				return array_map('absint', (array) $found);
+			}
+		}
+
+		if (class_exists('WDP_Test_State') && !empty(WDP_Test_State::$post_meta)) {
+			$out = array();
+			foreach (WDP_Test_State::$post_meta as $pid => $meta) {
+				if (!empty($meta['_sadaka_wc_product_id']) && absint($meta['_sadaka_wc_product_id']) > 0) {
+					$out[] = (int) $pid;
+				}
+			}
+			return $out;
+		}
+
+		return array();
+	}
+
+	/**
+	 * Restore options (+ optional product_meta) from wdp_settings_backup_10_27, then rename the backup.
+	 * Idempotent: no-op when the backup is missing or already renamed to *_restored.
+	 *
+	 * @return string skipped|restored|already
+	 */
+	public static function restore_settings_backup_10_27() {
+		if (get_option(self::BACKUP_RESTORED_OPTION, false) !== false) {
+			return 'already';
+		}
+
+		$backup = get_option(self::BACKUP_OPTION, false);
+		if (!is_array($backup) || $backup === array()) {
+			return 'skipped';
+		}
+
+		$options_restored = 0;
+		foreach ($backup as $key => $value) {
+			$key = (string) $key;
+			if ($key === 'product_meta' || $key === '') {
+				continue;
+			}
+			update_option($key, $value, false);
+			$options_restored++;
+		}
+
+		// Drop known plugin options that 10.28.0 may have left when they are absent from the backup.
+		foreach (self::BACKUP_OPTION_KEYS as $option_key) {
+			if (!array_key_exists($option_key, $backup) && get_option($option_key, null) !== null) {
+				delete_option($option_key);
+			}
+		}
+
+		$meta_restored = 0;
+		$meta_removed  = 0;
+		if (isset($backup['product_meta']) && is_array($backup['product_meta'])) {
+			foreach ($backup['product_meta'] as $post_id => $metas) {
+				$post_id = absint($post_id);
+				if ($post_id <= 0 || !is_array($metas)) {
+					continue;
+				}
+				$kept_keys = array();
+				foreach ($metas as $meta_key => $meta_value) {
+					$meta_key = (string) $meta_key;
+					if ($meta_key === '') {
+						continue;
+					}
+					update_post_meta($post_id, $meta_key, $meta_value);
+					$kept_keys[ $meta_key ] = true;
+					$meta_restored++;
+				}
+				$current = get_post_meta($post_id);
+				if (is_array($current)) {
+					foreach (array_keys($current) as $meta_key) {
+						$meta_key = (string) $meta_key;
+						if (strpos($meta_key, '_theme_') === 0 && !isset($kept_keys[ $meta_key ])) {
+							delete_post_meta($post_id, $meta_key);
+							$meta_removed++;
+						}
+					}
+				}
+			}
+		}
+
+		update_option(self::BACKUP_RESTORED_OPTION, $backup, false);
+		delete_option(self::BACKUP_OPTION);
+
+		return sprintf('ok options:%d meta:%d removed:%d', $options_restored, $meta_restored, $meta_removed);
+	}
+
+	/**
+	 * Force WooCommerce page placement defaults for 10.28.1 (auto_place on for upgrades).
+	 *
+	 * @return string auto_place value written.
+	 */
+	private static function write_placement_settings_10_28_1() {
+		$defaults = WDP_Placement_Settings::defaults();
+		$stored   = get_option(WDP_Placement_Settings::OPTION, false);
+		$stored   = is_array($stored) ? $stored : array();
+
+		$stored['auto_place']  = 'yes';
+		$stored['display']     = $defaults['display'];
+		$stored['loop_button'] = $defaults['loop_button'];
+		$stored['hide_price']  = $defaults['hide_price'];
+		if (!isset($stored['position'])) {
+			$stored['position'] = $defaults['position'];
+		}
+
+		$saved = WDP_Placement_Settings::save($stored);
+		return isset($saved['auto_place']) ? (string) $saved['auto_place'] : 'yes';
+	}
+
+	/**
 	 * 10.27.0: remove the in-form FAQ module data, write placement settings, fill missing option keys.
 	 *
 	 * @param bool $is_fresh Fresh install.
@@ -280,10 +631,27 @@ class WDP_Migrations {
 		if (get_option(self::NOTICE_OPTION, '') !== '1' || !current_user_can('manage_woocommerce')) {
 			return;
 		}
-		$url = wp_nonce_url(add_query_arg('wdp_dismiss_placement', '1'), 'wdp_dismiss_placement');
+		// Only on plugin settings and the Plugins screens (not every admin page).
+		$screen = function_exists('get_current_screen') ? get_current_screen() : null;
+		$ok     = false;
+		if ($screen && isset($screen->id)) {
+			$id = (string) $screen->id;
+			if ($id === 'plugins' || $id === 'plugins-network' || strpos($id, 'wdp-popup-settings') !== false) {
+				$ok = true;
+			}
+		}
+		if (!$ok && isset($_GET['page']) && (string) $_GET['page'] === 'wdp-popup-settings') { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$ok = true;
+		}
+		if (!$ok) {
+			return;
+		}
+		$settings = admin_url('admin.php?page=wdp-popup-settings#placement');
+		$url      = wp_nonce_url(add_query_arg('wdp_dismiss_placement', '1'), 'wdp_dismiss_placement');
 		echo '<div class="notice notice-info is-dismissible"><p>';
-		echo esc_html__('Ürün sayfası otomatik yerleşimi eklendi; mevcut düzeniniz korunması için kapalı. Ayarlar → Ürün sayfası ve liste.', 'woo-donation-popup');
-		echo ' <a href="' . esc_url($url) . '">' . esc_html__('Gizle', 'woo-donation-popup') . '</a>';
+		echo esc_html__('WooCommerce ürün ve mağaza sayfalarında “Sepete Ekle” yerine “Bağış Yap” kullanılabilir.', 'woo-donation-popup');
+		echo ' <a href="' . esc_url($settings) . '">' . esc_html__('Ayarlar → Ürün sayfası ve liste', 'woo-donation-popup') . '</a>';
+		echo ' · <a href="' . esc_url($url) . '">' . esc_html__('Gizle', 'woo-donation-popup') . '</a>';
 		echo '</p></div>';
 	}
 

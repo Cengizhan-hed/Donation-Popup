@@ -19,7 +19,7 @@ if (!defined('WDP_PLUGIN_FILE')) {
 	define('WDP_PLUGIN_FILE', $root . '/woo-donation-popup.php');
 }
 if (!defined('WDP_VERSION')) {
-	define('WDP_VERSION', '10.27.1');
+	define('WDP_VERSION', '10.28.9');
 }
 if (!defined('HOUR_IN_SECONDS')) {
 	define('HOUR_IN_SECONDS', 3600);
@@ -65,6 +65,21 @@ final class WDP_Test_State {
 	/** @var int */
 	public static $queried_id = 0;
 
+	/** @var bool */
+	public static $is_admin = false;
+
+	/** @var bool */
+	public static $is_cart = false;
+
+	/** @var bool */
+	public static $is_checkout = false;
+
+	/** @var bool */
+	public static $doing_ajax = false;
+
+	/** @var array<string, int> */
+	public static $did_actions = array();
+
 	public static function reset(): void {
 		self::$options       = array();
 		self::$post_meta     = array();
@@ -77,6 +92,11 @@ final class WDP_Test_State {
 		self::$product_skus  = array();
 		self::$is_product    = false;
 		self::$queried_id    = 0;
+		self::$is_admin      = false;
+		self::$is_cart       = false;
+		self::$is_checkout   = false;
+		self::$doing_ajax    = false;
+		self::$did_actions   = array();
 		$GLOBALS['wpdb']     = new WDP_Fake_Wpdb();
 		unset($GLOBALS['product']);
 		$_SERVER  = array();
@@ -86,6 +106,9 @@ final class WDP_Test_State {
 		if (class_exists('WDP_Donation_Scope')) {
 			WDP_Donation_Scope::flush();
 		}
+		if (class_exists('WDP_Sadaka_Product_Visibility')) {
+			WDP_Sadaka_Product_Visibility::flush();
+		}
 		if (class_exists('WDP_Placement_Settings')) {
 			WDP_Placement_Settings::flush();
 		}
@@ -94,6 +117,9 @@ final class WDP_Test_State {
 		}
 		if (class_exists('WDP_Builder_Detect')) {
 			WDP_Builder_Detect::reset();
+		}
+		if (class_exists('WDP_Product_Page_Integration')) {
+			WDP_Product_Page_Integration::reset_request_flags();
 		}
 	}
 }
@@ -462,6 +488,51 @@ if (!function_exists('wc_price')) {
 	function wc_price($price, $args = array()) {
 		$formatted = rtrim(rtrim(number_format((float) $price, 2, ',', '.'), '0'), ',');
 		return '<span class="woocommerce-Price-amount amount"><bdi>' . $formatted . '&nbsp;<span class="woocommerce-Price-currencySymbol">&#8378;</span></bdi></span>';
+	}
+}
+if (!function_exists('is_admin')) {
+	function is_admin() {
+		return WDP_Test_State::$is_admin;
+	}
+}
+if (!function_exists('is_cart')) {
+	function is_cart() {
+		return WDP_Test_State::$is_cart;
+	}
+}
+if (!function_exists('is_checkout')) {
+	function is_checkout() {
+		return WDP_Test_State::$is_checkout;
+	}
+}
+if (!function_exists('wp_doing_ajax')) {
+	function wp_doing_ajax() {
+		return WDP_Test_State::$doing_ajax;
+	}
+}
+if (!function_exists('did_action')) {
+	function did_action($hook) {
+		return (int) (WDP_Test_State::$did_actions[ (string) $hook ] ?? 0);
+	}
+}
+if (!function_exists('get_permalink')) {
+	function get_permalink($post = 0) {
+		$id = is_object($post) && method_exists($post, 'get_id') ? (int) $post->get_id() : (int) $post;
+		return 'https://example.test/?p=' . $id;
+	}
+}
+if (!function_exists('has_shortcode')) {
+	function has_shortcode($content, $tag) {
+		return is_string($content) && $tag !== '' && strpos($content, '[' . $tag) !== false;
+	}
+}
+if (!function_exists('selected')) {
+	function selected($selected, $current = true, $echo = true) {
+		$result = ((string) $selected === (string) $current) ? ' selected="selected"' : '';
+		if ($echo) {
+			echo $result;
+		}
+		return $result;
 	}
 }
 

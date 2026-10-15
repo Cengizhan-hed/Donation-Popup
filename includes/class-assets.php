@@ -197,6 +197,7 @@ class WDP_Assets {
             && function_exists('is_shop')
             && (is_shop() || (function_exists('is_product_taxonomy') && is_product_taxonomy()))
             && class_exists('WDP_Placement_Settings')
+            && WDP_Placement_Settings::value('auto_place') === 'yes'
             && WDP_Placement_Settings::value('loop_button') !== 'off'
         ) {
             $should_enqueue = true;

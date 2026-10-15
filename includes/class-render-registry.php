@@ -17,6 +17,9 @@ class WDP_Render_Registry {
 	/** @var array<int, true> */
 	private static $forms = array();
 
+	/** @var array<int, true> Trigger / Donate buttons printed for a product in this request. */
+	private static $triggers = array();
+
 	/** @var array<string, true> */
 	private static $modals = array();
 
@@ -58,6 +61,52 @@ class WDP_Render_Registry {
 			return '';
 		}
 		return '<!-- wdp: form zaten basıldı #' . $product_id . ' -->';
+	}
+
+	/**
+	 * Record that a Donate trigger button was printed for this product.
+	 *
+	 * @param int $product_id Product ID.
+	 * @return void
+	 */
+	public static function mark_trigger($product_id) {
+		$product_id = absint($product_id);
+		if ($product_id > 0) {
+			self::$triggers[ $product_id ] = true;
+		}
+	}
+
+	/**
+	 * @param int $product_id Product ID.
+	 * @return bool
+	 */
+	public static function has_trigger($product_id) {
+		return isset(self::$triggers[ absint($product_id) ]);
+	}
+
+	/**
+	 * Form or trigger already printed for this product in the request.
+	 *
+	 * @param int $product_id Product ID.
+	 * @return bool
+	 */
+	public static function has_product_ui($product_id) {
+		$product_id = absint($product_id);
+		return self::has_form($product_id) || self::has_trigger($product_id);
+	}
+
+	/**
+	 * Template override skip notice for editors.
+	 *
+	 * @param int $product_id Product ID.
+	 * @return string
+	 */
+	public static function duplicate_ui_notice($product_id) {
+		$product_id = absint($product_id);
+		if (!function_exists('current_user_can') || !current_user_can('edit_products')) {
+			return '';
+		}
+		return '<!-- wdp: form veya buton zaten basıldı #' . $product_id . ' -->';
 	}
 
 	/**
@@ -104,7 +153,8 @@ class WDP_Render_Registry {
 	 * @return void
 	 */
 	public static function reset() {
-		self::$forms  = array();
-		self::$modals = array();
+		self::$forms    = array();
+		self::$triggers = array();
+		self::$modals   = array();
 	}
 }

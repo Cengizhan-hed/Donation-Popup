@@ -3,10 +3,19 @@
  * Skeleton open, CTA press, celebrate, retry, container queries, toast host, perf.
  */
 
-/* Modal skeleton veil — soft, non-blocking */
+/* Modal skeleton: görsel iskelet; form etkileşimsiz (veri kaybı yarışını önler) */
+html body .wdp-modal.wdp-is-skeleton .wdp-modal-content {
+  pointer-events: none;
+  user-select: none;
+}
+
 html body .wdp-modal.wdp-is-skeleton .wdp-modal-content > :not(.wdp-modal-close) {
   filter: none;
   opacity: 0.92;
+}
+
+html body .wdp-modal.wdp-is-skeleton .wdp-modal-close {
+  pointer-events: auto;
 }
 
 html body .wdp-modal.wdp-is-skeleton .wdp-modal-content::after {

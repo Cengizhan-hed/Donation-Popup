@@ -105,6 +105,8 @@ trait WDP_Ajax_Product_Trait {
 			$sadaka_context = WDP_Donation_Product_Context_Service::build_form_context($product);
 			$sadaka_block_html = WDP_Templates::render_sadaka_donation_block($sadaka_context);
 		}
+		// Yalnızca gerçek UI (toggle) varsa etkin say; yalnızca admin uyarısı ise kapalı.
+		$sadaka_ui_ready = $sadaka_block_html !== '' && strpos($sadaka_block_html, 'data-wdp-sadaka-donation') !== false;
 
 		$raw_price = $product->get_price();
 		$response = array(
@@ -118,8 +120,8 @@ trait WDP_Ajax_Product_Trait {
 			'price_html' => ($raw_price !== '' && $raw_price !== null) ? WDP_Utils::format_price_html($raw_price) : '',
 			'is_multiple_shares' => $allow_multiple_shares,
 			'max_shares' => $max_shares,
-			'enable_sadaka_donation' => $show_sadaka_donation,
-			'sadaka_block_html' => $sadaka_block_html,
+			'enable_sadaka_donation' => $sadaka_ui_ready,
+			'sadaka_block_html' => $sadaka_ui_ready ? $sadaka_block_html : '',
 		);
 
             WDP_Utils::log(array('event' => 'get_product_info', 'response' => $response));

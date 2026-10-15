@@ -135,7 +135,15 @@ class WDP_Utils {
         }
 
         $product = wc_get_product($product_id);
-        if (!$product || !$product->exists()) {
+        if (!$product) {
+            return false;
+        }
+        if (method_exists($product, 'exists') && !$product->exists()) {
+            return false;
+        }
+
+        $type = method_exists($product, 'get_type') ? (string) $product->get_type() : '';
+        if ($type !== '' && $type !== 'simple') {
             return false;
         }
 
@@ -225,6 +233,126 @@ class WDP_Utils {
 
         $value = (float) wc_format_decimal($raw);
         return $value > 0 ? $value : 0.0;
+    }
+
+    /**
+     * Yerel biçimli alt bağış tutarını sayıya çevirir (5.566 / 5,566 / 5566).
+     *
+     * @param mixed $raw Ham tutar.
+     * @return float|null Geçerli sayı veya null.
+     */
+    public static function parse_sadaka_amount($raw) {
+        if ($raw === null || $raw === '') {
+            return null;
+        }
+        if (is_int($raw) || is_float($raw)) {
+            $n = (float) $raw;
+            return is_finite($n) ? $n : null;
+        }
+        $s = preg_replace('/\s+/u', '', (string) $raw);
+        if ($s === '' || $s === null) {
+            return null;
+        }
+        $has_comma = strpos($s, ',') !== false;
+        $has_dot   = strpos($s, '.') !== false;
+        if ($has_comma && $has_dot) {
+            // 1.234,56 → 1234.56
+            if (strrpos($s, ',') > strrpos($s, '.')) {
+                $s = str_replace('.', '', $s);
+                $s = str_replace(',', '.', $s);
+            } else {
+                // 1,234.56 → 1234.56
+                $s = str_replace(',', '', $s);
+            }
+        } elseif ($has_comma) {
+            $parts = explode(',', $s);
+            if (count($parts) > 2) {
+                $s = implode('', $parts);
+            } elseif (count($parts) === 2 && strlen($parts[1]) === 3 && ctype_digit($parts[1]) && ctype_digit(str_replace('-', '', $parts[0]))) {
+                // 5,566 → binlik
+                $s = $parts[0] . $parts[1];
+            } else {
+                // 5,5 / 5,56 → ondalık
+                $s = $parts[0] . '.' . (isset($parts[1]) ? $parts[1] : '');
+            }
+        } else {
+            $parts = explode('.', $s);
+            if (count($parts) > 2) {
+                $s = implode('', $parts);
+            } elseif (count($parts) === 2 && strlen($parts[1]) === 3 && ctype_digit($parts[1]) && ctype_digit(str_replace('-', '', $parts[0]))) {
+                // 5.566 → binlik
+                $s = $parts[0] . $parts[1];
+            }
+        }
+        if (!is_numeric($s)) {
+            return null;
+        }
+        $n = (float) $s;
+        return is_finite($n) ? $n : null;
+    }
+
+    /**
+     * Açık alt bağış paneli için tutar doğrulaması.
+     *
+     * @param mixed $raw         Ham tutar (sabit fiyat yoksa).
+     * @param float $min_price   Minimum tutar (0 = yok).
+     * @param float $fixed_price Sabit tutar (>0 ise raw yok sayılır).
+     * @return array{ok:bool,amount:float|null,code:string,message:string}
+     */
+    public static function validate_sadaka_amount($raw, $min_price = 0.0, $fixed_price = 0.0) {
+        $fixed = (float) $fixed_price;
+        if ($fixed > 0) {
+            return array(
+                'ok'      => true,
+                'amount'  => $fixed,
+                'code'    => 'fixed',
+                'message' => '',
+            );
+        }
+
+        $raw_str = is_string($raw) ? trim($raw) : (string) $raw;
+        if ($raw_str === '' || $raw === null) {
+            return array(
+                'ok'      => false,
+                'amount'  => null,
+                'code'    => 'empty',
+                'message' => __('Geçerli bir alt bağış tutarı giriniz.', 'woo-donation-popup'),
+            );
+        }
+
+        $amount = self::parse_sadaka_amount($raw_str);
+        if (null === $amount || $amount <= 0) {
+            return array(
+                'ok'      => false,
+                'amount'  => null,
+                'code'    => 'invalid',
+                'message' => __('Geçerli bir alt bağış tutarı giriniz.', 'woo-donation-popup'),
+            );
+        }
+
+        $min = (float) $min_price;
+        if ($min > 0 && $amount + 0.0001 < $min) {
+            $formatted = class_exists('WDP_Cart')
+                ? WDP_Cart::format_amount_for_message($min, true)
+                : (string) $min;
+            return array(
+                'ok'      => false,
+                'amount'  => $amount,
+                'code'    => 'below_min',
+                'message' => sprintf(
+                    /* translators: %s: formatted minimum amount with currency */
+                    __('Alt bağış için lütfen %s ve üstü değerler girin.', 'woo-donation-popup'),
+                    $formatted
+                ),
+            );
+        }
+
+        return array(
+            'ok'      => true,
+            'amount'  => $amount,
+            'code'    => 'valid',
+            'message' => '',
+        );
     }
 
     /**

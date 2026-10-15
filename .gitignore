@@ -63,6 +63,7 @@ release/
 .env
 .env.local
 .env.*.local
+.env.e2e
 
 # Testing / Composer
 /vendor/
@@ -72,6 +73,10 @@ phpunit.xml
 .phpunit.result.cache
 coverage/
 /tests/coverage/
+tests/e2e/__baseline__/
+tests/e2e/__baseline_prev__/
+tests/e2e/.auth/
+build/e2e/
 
 # Documentation build
 /docs/build/
@@ -79,3 +84,4 @@ coverage/
 # Local release ZIP output (npm run pack)
 build/
 
+.env.deploy

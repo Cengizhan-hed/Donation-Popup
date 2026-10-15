@@ -157,6 +157,7 @@ class WDP_Shortcodes {
 			<?php echo esc_html($button_text); ?>
 		</button>
 		<?php
+		WDP_Render_Registry::mark_trigger($product_id);
 		if (!$lazy && WDP_Render_Registry::claim_modal($modal_id)) {
 			echo WDP_Templates::render_donation_modal($product_id, $button_text, $custom_class, $custom_style, $display_mode); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		}

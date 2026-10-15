@@ -250,9 +250,24 @@ class WDP_Admin_Form_Tabs_Renderer {
 			__('Ürün kartında özel ID yoksa kullanılan WC ürünü.', 'woo-donation-popup')
 		);
 		echo '<table class="form-table wdp-admin-field-cards">';
-		echo '<tr><th scope="row"><label for="sadaka_wc_product_id">' . esc_html__('Varsayılan WC ürün ID', 'woo-donation-popup') . '</label></th><td>';
-		echo '<input type="number" id="sadaka_wc_product_id" name="sadaka_wc_product_id" value="' . esc_attr($settings['sadaka_wc_product_id']) . '" min="1" step="1" class="small-text" placeholder="' . esc_attr__('Örn: 123', 'woo-donation-popup') . '" />';
-		echo '<p class="description">' . esc_html__('Boş/0 ise alt bağış satırı eklenmez.', 'woo-donation-popup') . '</p>';
+		echo '<tr><th scope="row"><label for="sadaka_wc_product_id">' . esc_html__('Varsayılan alt bağış ürünü', 'woo-donation-popup') . '</label></th><td>';
+		$sadaka_default_id = absint($settings['sadaka_wc_product_id']);
+		if (class_exists('WDP_Sadaka_Product_Visibility')) {
+			$opts = WDP_Sadaka_Product_Visibility::product_search_options($sadaka_default_id);
+			echo '<select class="wc-product-search" style="width:100%;max-width:400px;" id="sadaka_wc_product_id" name="sadaka_wc_product_id"';
+			echo ' data-placeholder="' . esc_attr__('Ürün adı ile ara…', 'woo-donation-popup') . '"';
+			echo ' data-action="woocommerce_json_search_products_and_variations" data-allow_clear="true">';
+			foreach ($opts as $opt_id => $opt_label) {
+				if ((string) $opt_id === '') {
+					continue;
+				}
+				echo '<option value="' . esc_attr((string) $opt_id) . '" selected="selected">' . esc_html($opt_label) . '</option>';
+			}
+			echo '</select>';
+		} else {
+			echo '<input type="number" id="sadaka_wc_product_id" name="sadaka_wc_product_id" value="' . esc_attr($settings['sadaka_wc_product_id']) . '" min="1" step="1" class="small-text" placeholder="' . esc_attr__('Örn: 123', 'woo-donation-popup') . '" />';
+		}
+		echo '<p class="description">' . esc_html__('Boş/0 ise alt bağış satırı eklenmez. Seçilen ürün mağaza/liste/aramadan gizlenir; doğrudan URL ve sepet çalışmaya devam eder.', 'woo-donation-popup') . '</p>';
 		echo '</td></tr>';
 		echo '<tr><th scope="row"><label for="sadaka_toggle_label">' . esc_html__('Alt Bağış Toggle Metni', 'woo-donation-popup') . '</label></th><td><input type="text" id="sadaka_toggle_label" name="sadaka_toggle_label" value="' . esc_attr($settings['sadaka_toggle_label']) . '" class="regular-text" /></td></tr>';
 		echo '</table>';

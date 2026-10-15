@@ -141,6 +141,11 @@
   color: #50575e;
 }
 
+.wdp-scope-badge--sadaka {
+  background: #f0f6fc;
+  color: #0a4b78;
+}
+
 .wdp-progress-summary {
   display: flex;
   flex-direction: column;

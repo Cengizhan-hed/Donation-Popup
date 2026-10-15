@@ -153,7 +153,7 @@ class WDP_Product_Settings_Service {
 	 * @param array $existing_meta Meta key => current value (for preserved fields).
 	 * @return array Meta map, same shape as from_request().
 	 */
-	public static function from_product_panel(array $posted, array $existing_meta = array()) {
+	public static function from_product_panel(array $posted, array $existing_meta = array(), $parent_product_id = 0) {
 		$request = $posted;
 
 		foreach (self::PANEL_CHECKBOX_FIELDS as $field) {
@@ -170,7 +170,38 @@ class WDP_Product_Settings_Service {
 			: '';
 		unset($request['module_order_custom']);
 
-		return self::from_request(self::with_preserved_fields($request, $existing_meta));
+		$normalized = self::from_request(self::with_preserved_fields($request, $existing_meta));
+		return self::validate_sadaka_wc_product_meta($normalized, (int) $parent_product_id);
+	}
+
+	/**
+	 * Clear invalid _sadaka_wc_product_id and record an admin correction notice.
+	 *
+	 * @param array $normalized Meta map.
+	 * @param int   $parent_id  Parent product ID.
+	 * @return array
+	 */
+	public static function validate_sadaka_wc_product_meta(array $normalized, $parent_id = 0) {
+		$raw = isset($normalized['_sadaka_wc_product_id']) ? absint($normalized['_sadaka_wc_product_id']) : 0;
+		if ($raw <= 0) {
+			$normalized['_sadaka_wc_product_id'] = '';
+			return $normalized;
+		}
+
+		$result = class_exists('WDP_Sadaka_Product_Visibility')
+			? WDP_Sadaka_Product_Visibility::validate_sadaka_product_id($raw, (int) $parent_id)
+			: array('ok' => true, 'id' => $raw, 'error' => '');
+
+		if (empty($result['ok'])) {
+			$normalized['_sadaka_wc_product_id'] = '';
+			if (!empty($result['error'])) {
+				self::$corrections[] = $result['error'];
+			}
+			return $normalized;
+		}
+
+		$normalized['_sadaka_wc_product_id'] = (int) $result['id'];
+		return $normalized;
 	}
 
 	/**

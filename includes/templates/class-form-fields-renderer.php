@@ -351,7 +351,30 @@ class WDP_Form_Fields_Renderer {
 		$fixed_raw        = isset($context['sadaka_fixed_price']) ? (string) $context['sadaka_fixed_price'] : '';
 		$fixed_float      = ($fixed_raw !== '') ? (float) wc_format_decimal($fixed_raw) : 0.0;
 		$is_fixed         = $fixed_float > 0;
-		$wc_product_id    = isset($context['sadaka_wc_product_id']) ? absint($context['sadaka_wc_product_id']) : 0;
+		$parent_id        = isset($context['product_id']) ? absint($context['product_id']) : 0;
+		$wc_product_id    = 0;
+		if (class_exists('WDP_Utils')) {
+			$wc_product_id = $parent_id > 0
+				? (int) WDP_Utils::resolve_sadaka_wc_product_id($parent_id)
+				: 0;
+			if ($wc_product_id <= 0) {
+				$configured = isset($context['sadaka_wc_product_id']) ? absint($context['sadaka_wc_product_id']) : 0;
+				if ($configured > 0 && WDP_Utils::is_valid_sadaka_wc_product($configured)) {
+					$wc_product_id = $configured;
+				}
+			}
+		} else {
+			$wc_product_id = isset($context['sadaka_wc_product_id']) ? absint($context['sadaka_wc_product_id']) : 0;
+		}
+
+		// WC ürünü yoksa butonu gizle; edit_products yetkilisine uyarı göster.
+		if ($wc_product_id <= 0) {
+			return class_exists('WDP_Utils')
+				? WDP_Utils::admin_notice_html(
+					__('Alt bağış (sadaka) için geçerli bir WooCommerce ürünü tanımlı değil. Ayarlar → Başarı & Mini Sepet veya ürün Bağış sekmesinden alt bağış ürünü seçin.', 'woo-donation-popup')
+				)
+				: '';
+		}
 
 		$note_text    = self::resolve_sadaka_donation_message($message);
 		$toggle_label = isset($context['sadaka_toggle_label']) ? (string) $context['sadaka_toggle_label'] : '';
@@ -435,6 +458,7 @@ class WDP_Form_Fields_Renderer {
 	 */
 	public static function build_sadaka_context(array $context) {
 		return array(
+			'product_id'               => isset($context['product_id']) ? absint($context['product_id']) : 0,
 			'sadaka_min_price'         => isset($context['sadaka_min_price']) ? $context['sadaka_min_price'] : '0',
 			'sadaka_fixed_price'       => isset($context['sadaka_fixed_price']) ? $context['sadaka_fixed_price'] : '',
 			'sadaka_wc_product_id'     => isset($context['sadaka_wc_product_id']) ? $context['sadaka_wc_product_id'] : '',

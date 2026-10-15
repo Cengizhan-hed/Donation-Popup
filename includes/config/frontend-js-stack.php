@@ -83,12 +83,17 @@ return array(
 	array(
 		'handle' => 'wdp-form-feedback-js',
 		'file'   => 'src/form/feedback.js',
+		'deps'   => array('wdp-utils-js', 'wdp-dom-js'),
+	),
+	array(
+		'handle' => 'wdp-form-sadaka-rules-js',
+		'file'   => 'src/form/sadaka-rules.js',
 		'deps'   => array('wdp-utils-js'),
 	),
 	array(
 		'handle' => 'wdp-form-sadaka-js',
 		'file'   => 'src/form/sadaka.js',
-		'deps'   => array('wdp-utils-js', 'wdp-form-messages-js', 'wdp-form-pricing-js', 'wdp-form-feedback-js'),
+		'deps'   => array('wdp-utils-js', 'wdp-form-messages-js', 'wdp-form-pricing-js', 'wdp-form-feedback-js', 'wdp-form-sadaka-rules-js'),
 	),
 	array(
 		'handle' => 'wdp-form-ajax-js',
@@ -107,6 +112,7 @@ return array(
 		'file'   => 'src/form/validate.js',
 		'deps'   => array(
 			'wdp-utils-js',
+			'wdp-dom-js',
 			'wdp-form-messages-js',
 			'wdp-form-pricing-js',
 			'wdp-form-feedback-js',
@@ -208,7 +214,7 @@ return array(
 	array(
 		'handle' => 'wdp-modal-js',
 		'file'   => 'src/modal.js',
-		'deps'   => array('wdp-utils-js', 'wdp-state-js', 'wdp-form-js', 'wdp-shareholder-js', 'wdp-progress-bar-js'),
+		'deps'   => array('wdp-utils-js', 'wdp-state-js', 'wdp-dom-js', 'wdp-form-js', 'wdp-shareholder-js', 'wdp-progress-bar-js'),
 	),
 	array(
 		'handle' => 'wdp-form-initializer-js',
@@ -218,7 +224,7 @@ return array(
 	array(
 		'handle' => 'wdp-lazy-modal-js',
 		'file'   => 'src/lazy-modal.js',
-		'deps'   => array('wdp-utils-js', 'wdp-modal-js'),
+		'deps'   => array('wdp-utils-js', 'wdp-dom-js', 'wdp-modal-js'),
 	),
 	array(
 		'handle' => 'wdp-event-manager-js',
