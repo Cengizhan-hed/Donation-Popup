@@ -387,6 +387,12 @@ Formun içindeki SSS modülü 10.27.0’da tamamen kaldırıldı. SSS’ler ür�
 
 ## Sürüm notları
 
+### 10.28.10 — Gecikmeli product_info hissedar verisini silmez
+
+- **Kök neden:** `applyProductInfo` → `shareholder.setup` satırlar varken `innerHTML=""` ile listeyi yeniden kuruyordu; kullanıcı adı/telefon/not ve `.wdp-input-error` kayboluyordu.
+- **Düzeltme:** Satırlar varken soft-sync (fiyat/rozet/+/−/görünürlük); wipe yok. `force:true` gerekirsen capture→restore (10.28.8 kalıbı) + armed ise doğrulamayı yeniden boya.
+- **E2E:** `shares-late-product-info` (product_info ~1.5 sn gecikmeli) quick içinde.
+
 ### 10.28.9 — İskelet kilidi her yolda açılır
 
 - **try/finally:** `runModalOpenInit` ve `openModal` hata yolunda kilit + `aria-busy` kalkar.

@@ -44,6 +44,7 @@ import {
   snapshotSadakaAndButton,
   wrapWdpValidationHooks,
 } from './page-probe.mjs';
+import { runSharesLateProductInfoChecks } from '../run-shares-late-product-info.mjs';
 
 const DESKTOP = { width: 1440, height: 900 };
 const MOBILE = { width: 390, height: 844 };
@@ -3039,6 +3040,30 @@ export async function captureAll({
       })(),
     ]);
     logSection('skeleton+sepet (paralel)', tSkelCart);
+
+    // Gecikmeli product_info: hissedar değeri + hata mesajı korunumu (panel+popup)
+    const tLateShares = Date.now();
+    await runSharesLateProductInfoChecks({
+      browser,
+      contextOpts,
+      env,
+      sharesProductPath: productUrls.shares,
+      listPagePath: env.E2E_LIST_PAGE,
+      sharesProductId: productIds.shares,
+      guestExtra,
+      failures,
+      stats: functionalStats,
+    }).catch((e) => {
+      failures.push(
+        makeFailure({
+          check: 'shares-late-product-info',
+          description: 'Gecikmeli product_info senaryosu çöktü',
+          error: e,
+        })
+      );
+      functionalStats.failed += 1;
+    });
+    logSection('shares-late-product-info', tLateShares);
 
     // Alt bağış: admin config (üstte başlatıldı) bitince 4 senaryo paralel
     await adminConfigPromise;
