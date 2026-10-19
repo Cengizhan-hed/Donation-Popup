@@ -18,6 +18,8 @@ import {
   makeFailure,
   openShellLocator,
   resolveAllProductPaths,
+  resolveProductIdBySlug,
+  shellTriggerLocator,
   visibleValidationErrors,
   waitForShellClosed,
 } from './checks.mjs';
@@ -139,10 +141,50 @@ img.lazyload, img.lazyloading, img.lazyloaded, .fusion-image-wrapper img, .lazyl
 `;
 
 /**
+ * Kabuk PNG köşe sızıntısı: element.screenshot dikdörtgeni border-radius dışında
+ * arka sayfa piksellerini alır → %0.1 eşikte gürültü. Yalnız capture anında sayfa +
+ * backdrop’u düz renge boyar; modal radius/görünümü aynı kalır (maske yerine seçildi:
+ * radius temaya göre değişir, maske gerçek köşe regresyonunu gizler).
+ */
+const SHELL_CAPTURE_FLAT_BACKDROP_CSS = `
+html, body {
+  background: #9aa0a6 !important;
+  background-image: none !important;
+}
+.wdp-modal.show,
+.wdp-modal.wdp-side-panel.show,
+.hdf-donation-modal-wrapper.wdp-modal.show {
+  background-color: #9aa0a6 !important;
+  background-image: none !important;
+}
+.wdp-modal.show::before,
+.wdp-modal.show::after,
+.hdf-donation-modal-wrapper.wdp-modal.show::before,
+.hdf-donation-modal-wrapper.wdp-modal.show::after {
+  background: #9aa0a6 !important;
+  background-image: none !important;
+  opacity: 1 !important;
+}
+`;
+
+/** Boş catch yerine: temizlik dışı yutulursa log + fırlat. */
+function catchFail(label, err) {
+  const msg = err && err.message ? err.message : String(err || 'unknown');
+  console.error(`[e2e:catch-fail] ${label}: ${msg}`);
+  throw err instanceof Error ? err : new Error(`${label}: ${msg}`);
+}
+
+/** Bilinçli temizlik / isteğe bağlı stabilize — yine loglanır. */
+function catchSoft(label, err) {
+  const msg = err && err.message ? err.message : String(err || 'unknown');
+  console.warn(`[e2e:soft-catch] ${label}: ${msg}`);
+}
+
+/**
  * @param {import('@playwright/test').Page} page
  */
 async function freezeMotion(page) {
-  await page.addStyleTag({ content: FREEZE_MOTION_CSS }).catch(() => {});
+  await page.addStyleTag({ content: FREEZE_MOTION_CSS }).catch((e) => catchSoft('freezeMotion', e));
 }
 
 /**
@@ -573,13 +615,19 @@ async function waitForAnimationsSettled(page) {
 }
 
 /**
- * Hisseli hata ekranı: ilk kart açık, diğerleri kapalı; kaydırma sabit.
+ * Hisseli hata ekranı: açık kabuk içinde ilk kart açık, diğerleri kapalı.
+ * Önemli: document.querySelectorAll tüm gömülü/lazy modalları da alır; listede
+ * gizli modal formları index 0 olunca açık kabuktaki kart yanlışlıkla collapsed olur
+ * (popup-shares-errors teşhisi).
  * @param {import('@playwright/test').Page} page
+ * @param {'popup'|'panel'|''} [mode]
  */
-async function stabilizeShareholderErrorState(page) {
-  await page
-    .evaluate(() => {
-      const forms = Array.from(document.querySelectorAll('.wdp-shareholder-form'));
+async function stabilizeShareholderErrorState(page, mode = '') {
+  const shell = openShellLocator(page, mode);
+  const root = (await shell.count().catch(() => 0)) > 0 ? shell : page.locator('body');
+  await root
+    .evaluate((scope) => {
+      const forms = Array.from(scope.querySelectorAll('.wdp-shareholder-form'));
       forms.forEach((form, i) => {
         if (i === 0) {
           form.classList.remove('collapsed');
@@ -587,20 +635,175 @@ async function stabilizeShareholderErrorState(page) {
           form.classList.add('collapsed');
         }
       });
-      document.querySelectorAll('.wdp-shareholders-scroll').forEach((el) => {
+      scope.querySelectorAll('.wdp-shareholders-scroll').forEach((el) => {
         el.scrollTop = 0;
       });
       window.scrollTo(0, 0);
     })
-    .catch(() => {});
+    .catch((e) => catchFail('stabilizeShareholderErrorState', e));
+}
+
+/**
+ * Errors ekranı öncesi: açık kabukta goCheckout ile doğrulama tetikle.
+ * Sayfa genelindeki ilk buton gizli/yanlış modalda olabilir (diag: popup’ta inShell=false).
+ * @param {import('@playwright/test').Page} page
+ * @param {'popup'|'panel'} mode
+ */
+async function triggerShellValidationErrors(page, mode) {
+  const shell = openShellLocator(page, mode);
+  await shell.waitFor({ state: 'visible', timeout: CHECK_MS });
+  const btn = shell.locator(SEL.goCheckout).first();
+  const n = await btn.count().catch(() => 0);
+  if (!n) {
+    throw new Error(`goCheckout kabukta yok (mode=${mode})`);
+  }
+  await btn.waitFor({ state: 'visible', timeout: CHECK_MS });
+  await btn.click({ timeout: CHECK_MS });
+  await page
+    .waitForFunction(() => {
+      const app = window.WDPApp || {};
+      const last =
+        (app.form && app.form.lastValidation) ||
+        (app.formValidate && app.formValidate.lastValidation) ||
+        null;
+      return !!(last && last.ok === false);
+    }, { timeout: CHECK_MS })
+    .catch(() => {
+      throw new Error('goCheckout sonrası lastValidation.ok===false oluşmadı');
+    });
+}
+
+/**
+ * Errors screenshot öncesi zorunlu iddia:
+ * lastValidation.ok===false ve failures’taki HER alan için o alana ait görünür
+ * .wdp-input-error mesajı. Başlık/özet (.wdp-header-status-invalid) tek başına yetmez.
+ * @param {import('@playwright/test').Page} page
+ * @param {'popup'|'panel'|''} mode
+ * @returns {Promise<{ ok: boolean, detail: string, lastValidation: object|null, visibleErrors: string[], missingFieldMessages: string[] }>}
+ */
+async function readShellValidationErrorState(page, mode) {
+  const shell = openShellLocator(page, mode);
+  return shell.evaluate((root) => {
+    const app = window.WDPApp || {};
+    const lastValidation =
+      (app.form && app.form.lastValidation) ||
+      (app.formValidate && app.formValidate.lastValidation) ||
+      null;
+
+    function isShown(el) {
+      if (!el) return false;
+      if (el.closest && el.closest('.wdp-shareholder-form.collapsed')) return false;
+      const st = window.getComputedStyle(el);
+      const r = el.getBoundingClientRect();
+      return (
+        st.display !== 'none' &&
+        st.visibility !== 'hidden' &&
+        Number.parseFloat(st.opacity || '1') > 0.05 &&
+        r.width > 0 &&
+        r.height > 0
+      );
+    }
+
+    function fieldErrorMessage(fieldName) {
+      if (!fieldName) return null;
+      let input = null;
+      try {
+        if (typeof CSS !== 'undefined' && CSS.escape) {
+          input = root.querySelector('[name="' + CSS.escape(fieldName) + '"]');
+        }
+      } catch (eCss) {
+        input = null;
+      }
+      if (!input) {
+        input = root.querySelector(
+          'input[name="' + fieldName + '"], textarea[name="' + fieldName + '"], select[name="' + fieldName + '"]'
+        );
+      }
+      if (!input) return null;
+      if (input.closest && input.closest('.wdp-shareholder-form.collapsed')) {
+        return null;
+      }
+      const anchor =
+        (input.closest && input.closest('.wdp-field-stack__row')) || input.parentElement;
+      const errDiv = anchor && anchor.querySelector && anchor.querySelector('.wdp-input-error');
+      if (errDiv && isShown(errDiv)) {
+        const t = (errDiv.textContent || '').trim();
+        return t || null;
+      }
+      const described = input.getAttribute && input.getAttribute('aria-describedby');
+      if (described) {
+        const byId = root.querySelector('#' + described) || document.getElementById(described);
+        if (byId && isShown(byId)) {
+          const t = (byId.textContent || '').trim();
+          return t || null;
+        }
+      }
+      return null;
+    }
+
+    const visibleErrors = [];
+    const msgSel =
+      '.wdp-form-error, .wdp-input-error, [role="alert"].wdp-form-error, [role="alert"].wdp-input-error';
+    for (const el of root.querySelectorAll(msgSel)) {
+      if (!isShown(el)) continue;
+      const t = (el.textContent || '').trim();
+      visibleErrors.push(t ? t.slice(0, 120) : `(metinsiz class=${el.className})`);
+    }
+
+    const failures = (lastValidation && Array.isArray(lastValidation.failures) && lastValidation.failures) || [];
+    const missingFieldMessages = [];
+    for (const f of failures) {
+      const field = f && f.field ? String(f.field) : '';
+      const rule = f && f.rule ? String(f.rule) : '';
+      if (!field) {
+        const formLevel = [...root.querySelectorAll('.wdp-form-error, .wdp-shareholders-submit-summary')].some(
+          (el) => isShown(el) && (el.textContent || '').trim()
+        );
+        if (!formLevel) {
+          missingFieldMessages.push(`(fieldless:${rule || '?'})`);
+        }
+        continue;
+      }
+      const msg = fieldErrorMessage(field);
+      if (!msg) {
+        missingFieldMessages.push(field);
+      } else {
+        visibleErrors.push(`${field}:${msg.slice(0, 80)}`);
+      }
+    }
+
+    // Teşhis: başlık durumu not edilir ama ok hesabına yetmez
+    const headerInvalid = [...root.querySelectorAll('.wdp-header-status-invalid')].some(isShown);
+
+    const ok = !!(
+      lastValidation &&
+      lastValidation.ok === false &&
+      failures.length > 0 &&
+      missingFieldMessages.length === 0
+    );
+    return {
+      ok,
+      detail: [
+        `lastValidation=${lastValidation ? JSON.stringify(lastValidation).slice(0, 300) : 'null'}`,
+        `eksikAlanMesajı=${missingFieldMessages.length ? missingFieldMessages.join(',') : '(yok)'}`,
+        `görünürHata=${visibleErrors.length}`,
+        headerInvalid ? 'header-invalid=1(yetersiz)' : 'header-invalid=0',
+        visibleErrors.slice(0, 4).join(' | ') || '(yok)',
+      ].join(' · '),
+      lastValidation,
+      visibleErrors,
+      missingFieldMessages,
+    };
+  });
 }
 
 /**
  * Hata durumu ekranı: animasyon bitsin, odak/imleç gizlensin, scroll sabit.
  * @param {import('@playwright/test').Page} page
- * @param {{ shares?: boolean }} [opts]
+ * @param {{ shares?: boolean, shellMode?: 'popup'|'panel'|'' }} [opts]
  */
 async function prepareErrorShot(page, opts = {}) {
+  const shellMode = opts.shellMode || '';
   await page
     .evaluate(() => {
       const ae = document.activeElement;
@@ -609,16 +812,16 @@ async function prepareErrorShot(page, opts = {}) {
       }
       window.getSelection()?.removeAllRanges?.();
     })
-    .catch(() => {});
+    .catch((e) => catchSoft('prepareErrorShot:blur', e));
 
   if (opts.shares) {
-    await stabilizeShareholderErrorState(page);
+    await stabilizeShareholderErrorState(page, shellMode);
   }
 
   await waitForAnimationsSettled(page);
-  await page.addStyleTag({ content: FREEZE_ERROR_SHOT_CSS }).catch(() => {});
+  await page.addStyleTag({ content: FREEZE_ERROR_SHOT_CSS }).catch((e) => catchSoft('FREEZE_ERROR_SHOT_CSS', e));
   if (opts.shares) {
-    await stabilizeShareholderErrorState(page);
+    await stabilizeShareholderErrorState(page, shellMode);
   }
   await page
     .evaluate(() => {
@@ -627,7 +830,7 @@ async function prepareErrorShot(page, opts = {}) {
         if (el && 'scrollTop' in el) el.scrollTop = 0;
       });
     })
-    .catch(() => {});
+    .catch((e) => catchSoft('prepareErrorShot:scroll', e));
 }
 
 /**
@@ -669,31 +872,46 @@ html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:non
  * @param {string} dir
  * @param {string} name
  * @param {string[]} maskList
- * @param {{ fullPage?: boolean, scrollPage?: boolean, shellOnly?: boolean }} [opts]
+ * @param {{ fullPage?: boolean, scrollPage?: boolean, shellOnly?: boolean, shellMode?: 'popup'|'panel'|'' }} [opts]
  */
 async function shot(page, dir, name, maskList, opts = {}) {
   fs.mkdirSync(dir, { recursive: true });
   const fullPage = opts.fullPage !== false;
   const scrollPage = opts.scrollPage !== false;
   const shellOnly = !!opts.shellOnly;
+  const shellMode = opts.shellMode || '';
   await settleForScreenshot(page, { fullPage: shellOnly ? false : fullPage, scrollPage: shellOnly ? false : scrollPage });
   if (!shellOnly) {
     await preparePageShotChrome(page);
   }
   // Stabilize CSS yalnızca ekran anında
-  await page.addStyleTag({ content: STABILIZE_SHOT_CSS }).catch(() => {});
+  await page.addStyleTag({ content: STABILIZE_SHOT_CSS }).catch((e) => catchSoft('STABILIZE_SHOT_CSS', e));
   await freezeMotion(page);
   const file = path.join(dir, `${name}.png`);
   if (shellOnly) {
-    const shell = openShellLocator(page);
-    const visible = (await shell.count().catch(() => 0)) > 0 && (await shell.isVisible().catch(() => false));
+    await page
+      .addStyleTag({ content: SHELL_CAPTURE_FLAT_BACKDROP_CSS })
+      .catch((e) => catchSoft('SHELL_CAPTURE_FLAT_BACKDROP_CSS', e));
+    // Wrapper (.hdf-donation-modal-wrapper) tam viewport + backdrop — kutu değil.
+    // Ortadaki popup / sağ panel kutusu: .wdp-modal-content (panelde + .wdp-side-panel-content).
+    const shell = openShellLocator(page, shellMode);
+    const content =
+      shellMode === 'panel'
+        ? shell.locator(SEL.sidePanelContent).first()
+        : shell.locator(SEL.modalContent).first();
+    const box = (await content.count().catch(() => 0)) > 0 ? content : shell;
+    const visible = (await box.count().catch(() => 0)) > 0 && (await box.isVisible().catch(() => false));
     if (visible) {
-      await shell.screenshot({
+      await box.screenshot({
         path: file,
         animations: 'disabled',
       });
       return file;
     }
+    // Kabuk yoksa tam sayfaya düşme — boş/yanlış viewport baseline üretmesin
+    throw new Error(
+      `shellOnly screenshot: açık kabuk içeriği yok (mode=${shellMode || 'any'} sel=${shellMode === 'panel' ? SEL.sidePanelContent : SEL.modalContent})`
+    );
   }
   const masks = [];
   for (const sel of maskList) {
@@ -1108,35 +1326,44 @@ async function assertDonorFieldsPersist(shell, expected, failures, check) {
  * }>}
  */
 /**
- * Store API ile ürün ID’si (slug).
- * @param {import('@playwright/test').Page} page
- * @param {string} baseUrl
- * @param {string} slug
+ * Başarı sekmesindeki genel alt bağış varsayılanı (bir kez okunur).
+ * @param {import('@playwright/test').BrowserContext} authed
+ * @param {Record<string,string>} env
  * @returns {Promise<number>}
  */
-async function resolveProductIdBySlug(page, baseUrl, slug) {
-  const root = baseUrl.replace(/\/$/, '');
-  return page.evaluate(
-    async ({ base, productSlug }) => {
-      try {
-        const url = `${base}/wp-json/wc/store/v1/products?slug=${encodeURIComponent(productSlug)}&per_page=5`;
-        const res = await fetch(url, { credentials: 'same-origin' });
-        if (!res.ok) return 0;
-        const data = await res.json();
-        const list = Array.isArray(data) ? data : [];
-        const hit =
-          list.find((p) => p && p.slug === productSlug) ||
-          list.find((p) => p && String(p.permalink || '').includes(productSlug));
-        return hit && hit.id ? Number(hit.id) || 0 : 0;
-      } catch (e) {
-        return 0;
-      }
-    },
-    { base: root, productSlug: slug }
-  );
+export async function readGlobalSadakaWcId(authed, env) {
+  const page = await authed.newPage();
+  try {
+    await page.goto(
+      withCacheBust(env.E2E_BASE_URL, '/wp-admin/admin.php?page=wdp-popup-settings'),
+      { waitUntil: 'domcontentloaded' }
+    );
+    const successTab = page.locator('[data-tab="success-screen"]').first();
+    if (await successTab.count()) {
+      await successTab.click().catch(() => {});
+      await page
+        .locator('#sadaka_wc_product_id')
+        .waitFor({ state: 'attached', timeout: CHECK_MS })
+        .catch(() => {});
+    }
+    const globalSelect = page.locator('#sadaka_wc_product_id');
+    if (await globalSelect.count()) {
+      const g = await globalSelect.inputValue().catch(() => '');
+      return Number.parseInt(String(g || ''), 10) || 0;
+    }
+    return 0;
+  } finally {
+    await page.close().catch(() => {});
+  }
 }
 
-export async function readProductSadakaAdminConfig(authed, env, productSlug) {
+/**
+ * @param {import('@playwright/test').BrowserContext} authed
+ * @param {Record<string,string>} env
+ * @param {string} productSlug
+ * @param {{ globalWcId?: number, productId?: number }} [opts]
+ */
+export async function readProductSadakaAdminConfig(authed, env, productSlug, opts = {}) {
   const page = await authed.newPage();
   const empty = (reason) => ({
     enabled: false,
@@ -1150,8 +1377,11 @@ export async function readProductSadakaAdminConfig(authed, env, productSlug) {
   });
   try {
     // Mağaza yöneticisi: ürün listesi araması yerine doğrudan post.php (Store API ID).
-    await page.goto(withCacheBust(env.E2E_BASE_URL, '/'), { waitUntil: 'domcontentloaded' }).catch(() => {});
-    const productId = await resolveProductIdBySlug(page, env.E2E_BASE_URL, productSlug);
+    let productId = Number(opts.productId) > 0 ? Number(opts.productId) : 0;
+    if (!productId) {
+      await page.goto(withCacheBust(env.E2E_BASE_URL, '/'), { waitUntil: 'domcontentloaded' }).catch(() => {});
+      productId = await resolveProductIdBySlug(page, env.E2E_BASE_URL, productSlug);
+    }
     if (!productId) {
       return empty('Store API’den ürün ID bulunamadı');
     }
@@ -1182,24 +1412,29 @@ export async function readProductSadakaAdminConfig(authed, env, productSlug) {
       productWcId = Number.parseInt(String(val || ''), 10) || 0;
     }
 
-    // Genel varsayılan — her zaman oku (ürün ID boşsa çözülür)
-    let globalWcId = 0;
-    await page.goto(
-      withCacheBust(env.E2E_BASE_URL, '/wp-admin/admin.php?page=wdp-popup-settings'),
-      { waitUntil: 'domcontentloaded' }
-    );
-    const successTab = page.locator('[data-tab="success-screen"]').first();
-    if (await successTab.count()) {
-      await successTab.click().catch(() => {});
-      await page
-        .locator('#sadaka_wc_product_id')
-        .waitFor({ state: 'attached', timeout: CHECK_MS })
-        .catch(() => {});
-    }
-    const globalSelect = page.locator('#sadaka_wc_product_id');
-    if (await globalSelect.count()) {
-      const g = await globalSelect.inputValue().catch(() => '');
-      globalWcId = Number.parseInt(String(g || ''), 10) || 0;
+    // Genel varsayılan — önbellekten veya bir kez oku
+    let globalWcId =
+      opts.globalWcId !== undefined && opts.globalWcId !== null
+        ? Number(opts.globalWcId) || 0
+        : 0;
+    if (opts.globalWcId === undefined) {
+      await page.goto(
+        withCacheBust(env.E2E_BASE_URL, '/wp-admin/admin.php?page=wdp-popup-settings'),
+        { waitUntil: 'domcontentloaded' }
+      );
+      const successTab = page.locator('[data-tab="success-screen"]').first();
+      if (await successTab.count()) {
+        await successTab.click().catch(() => {});
+        await page
+          .locator('#sadaka_wc_product_id')
+          .waitFor({ state: 'attached', timeout: CHECK_MS })
+          .catch(() => {});
+      }
+      const globalSelect = page.locator('#sadaka_wc_product_id');
+      if (await globalSelect.count()) {
+        const g = await globalSelect.inputValue().catch(() => '');
+        globalWcId = Number.parseInt(String(g || ''), 10) || 0;
+      }
     }
 
     const resolvedWcId = productWcId > 0 ? productWcId : globalWcId;
@@ -1506,6 +1741,7 @@ async function assertDonationLoopButtons({
 
 /**
  * Alt bağış (sadaka) senaryosu — popup veya panel.
+ * popup → liste kısa kodu (ortadaki modal); panel → ürün sayfası (sağ panel).
  * Yapılandırma yoksa atlanır (hata sayılmaz); ayar var ama buton yoksa hata.
  * @param {object} opts
  * @param {import('@playwright/test').BrowserContext} opts.context
@@ -1515,6 +1751,8 @@ async function assertDonationLoopButtons({
  * @param {string} opts.productSlug
  * @param {'fixed'|'custom'} opts.productKey
  * @param {'popup'|'panel'} opts.mode
+ * @param {string} [opts.listPagePath] popup için liste yolu (varsayılan env.E2E_LIST_PAGE)
+ * @param {number} [opts.productId] data-product-id eşlemesi
  * @param {ReturnType<typeof makeFailure>[]} opts.failures
  * @param {Array<{check:string,description:string,detail?:string}>} opts.skips
  * @param {{ passed: number, skipped: number, failed: number }} opts.stats
@@ -1528,6 +1766,8 @@ export async function runSadakaScenario({
   productSlug,
   productKey,
   mode,
+  listPagePath,
+  productId = 0,
   failures,
   skips,
   stats,
@@ -1545,9 +1785,11 @@ export async function runSadakaScenario({
   const paths = tracePaths(runLabel, check);
   const timeline = createTimeline(check);
   const guestExtra = noSideCart ? { hdf_no_side_cart: '1' } : {};
-  await installPageProbe(context).catch(() => {});
+  if (wantDiag) {
+    await installPageProbe(context).catch((e) => catchFail('installPageProbe:sadaka', e));
+  }
   const page = await context.newPage();
-  const cacheProbe = attachDocumentCacheProbe(page);
+  const cacheProbe = wantDiag ? attachDocumentCacheProbe(page) : { get: () => ({}), dispose: () => {} };
   const postedSadaka = { fields: {} };
   /** @type {object|null} */
   let firstAttemptBundle = null;
@@ -1594,24 +1836,59 @@ export async function runSadakaScenario({
 
     timeline.mark('empty-cart');
     await emptyCart(page, env.E2E_BASE_URL);
+    // popup: liste sayfasından ortadaki modal; panel: ürün sayfasından sağ panel
+    const openPath =
+      mode === 'popup'
+        ? listPagePath || env.E2E_LIST_PAGE
+        : productPath;
     timeline.mark('goto-product');
-    await page.goto(withCacheBust(env.E2E_BASE_URL, productPath, guestExtra), {
+    await page.goto(withCacheBust(env.E2E_BASE_URL, openPath, guestExtra), {
       waitUntil: 'domcontentloaded',
     });
 
     timeline.mark('open-shell');
-    const trigger =
-      mode === 'panel'
-        ? page.locator(SEL.sidePanelTrigger).first()
-        : page.locator(SEL.donateTrigger).first();
+    let trigger = shellTriggerLocator(page, mode, { productId });
+    if ((await trigger.count().catch(() => 0)) === 0) {
+      trigger =
+        mode === 'panel'
+          ? page.locator(SEL.sidePanelTrigger).first()
+          : page.locator(SEL.centeredPopupTrigger).first();
+    }
     await trigger.click({ timeout: CHECK_MS }).catch(() => openDonate(page));
-    const shell = openShellLocator(page);
+    const shell = openShellLocator(page, mode);
     await shell.waitFor({ state: 'visible', timeout: CHECK_MS });
-    await wrapWdpValidationHooks(page).catch(() => {});
+    const isSidePanel = await shell
+      .evaluate((el) => el.classList.contains('wdp-side-panel'))
+      .catch(() => null);
+    if (mode === 'popup' && isSidePanel) {
+      failures.push(
+        makeFailure({
+          check,
+          description: 'Sadaka popup senaryosu sağ panel açtı — ortadaki modal bekleniyordu',
+          detail: `sayfa=${openPath} productId=${productId}`,
+          screenshot: `desktop-${mode}-${productKey}-open.png`,
+        })
+      );
+      stats.failed += 1;
+      return { ok: false, check, skipped: false };
+    }
+    if (mode === 'panel' && isSidePanel === false) {
+      failures.push(
+        makeFailure({
+          check,
+          description: 'Sadaka panel senaryosu ortadaki popup açtı — sağ panel bekleniyordu',
+          detail: `sayfa=${openPath} productId=${productId}`,
+          screenshot: `desktop-${mode}-${productKey}-open.png`,
+        })
+      );
+      stats.failed += 1;
+      return { ok: false, check, skipped: false };
+    }
+    await wrapWdpValidationHooks(page).catch((e) => catchFail('wrapWdpValidationHooks', e));
 
     timeline.mark('fill-donor');
     const donorFilled = await fillDonorFields(shell);
-    await wrapWdpValidationHooks(page).catch(() => {});
+    await wrapWdpValidationHooks(page).catch((e) => catchFail('wrapWdpValidationHooks', e));
     if (productKey === 'custom') {
       await shell.locator(SEL.customPrice).first().fill('250');
     }
@@ -1685,7 +1962,7 @@ export async function runSadakaScenario({
     const addBtn = shell.locator(SEL.addToCart).first();
     const tClick = Date.now();
     if (wantDiag) {
-      await startDomMutationProbe(page).catch(() => {});
+      await startDomMutationProbe(page).catch((e) => catchFail('startDomMutationProbe', e));
     }
     // Akış aralığını bozma: yalnızca anlık okuma (ek bekleme yok)
     const snapBeforeClick = wantDiag
@@ -1738,12 +2015,6 @@ export async function runSadakaScenario({
         return bundle;
       },
     });
-    let mutationSummary = null;
-    if (wantDiag) {
-      const left = Math.max(0, 2000 - (Date.now() - tClick));
-      mutationSummary = await stopDomMutationProbe(page, left).catch(() => null);
-    }
-
     timeline.mark('verify-cart');
     await page
       .waitForFunction(async () => {
@@ -1781,6 +2052,13 @@ export async function runSadakaScenario({
       !!sadakaByProduct &&
       !!amountOk &&
       !errsAfter.some((t) => /zorunlu|geçerli bir alt bağış/i.test(t));
+
+    // Mutation beklemesi yalnızca hata yolunda (başarıda 2 sn israf etme)
+    let mutationSummary = null;
+    if (wantDiag) {
+      const waitMs = ok ? 0 : Math.max(0, 2000 - (Date.now() - tClick));
+      mutationSummary = await stopDomMutationProbe(page, waitMs).catch(() => null);
+    }
 
     if (!ok) {
       let clickDiag = null;
@@ -1902,7 +2180,7 @@ export async function runSadakaScenario({
   } finally {
     cacheProbe.dispose();
     timeline.end();
-    await emptyCart(page, env.E2E_BASE_URL).catch(() => {});
+    await emptyCart(page, env.E2E_BASE_URL).catch((e) => catchFail('emptyCart', e));
     await page.close();
   }
 }
@@ -1952,7 +2230,8 @@ export async function captureAll({
   const products = productPaths(env);
   const maskList = maskSelectors(env.E2E_MASK_SELECTORS || '');
   const quick = mode === 'quick';
-  const maxWorkers = Math.max(1, Math.min(3, Number(workers) || 3));
+  // Quick: 4 worker (shell + sadaka dalgaları daha kısa)
+  const maxWorkers = Math.max(1, Math.min(quick ? 4 : 3, Number(workers) || (quick ? 4 : 3)));
   const guestExtra = noSideCart ? { hdf_no_side_cart: '1' } : {};
   /** @type {ReturnType<typeof makeFailure>[]} */
   const failures = [];
@@ -1977,13 +2256,42 @@ export async function captureAll({
     storageState: AUTH_FILE,
   });
 
-  // Ürün kalıcı bağlantıları (Store API / sayfa linki)
+  // Ürün kalıcı bağlantıları + ID’ler (Store API / sayfa linki) — bir kez
   const tProbe = Date.now();
   const probe = await guest.newPage();
   await probe.goto(withCacheBust(env.E2E_BASE_URL, '/'), { waitUntil: 'domcontentloaded' }).catch(() => {});
   const productUrls = await resolveAllProductPaths(probe, env.E2E_BASE_URL, products);
+  /** @type {Record<string, number>} */
+  const productIds = {};
+  for (const [key, slug] of Object.entries(products)) {
+    productIds[key] = await resolveProductIdBySlug(probe, env.E2E_BASE_URL, slug);
+  }
   await probe.close();
-  logSection('ürün URL çözümü', tProbe);
+  logSection('ürün URL/ID çözümü', tProbe);
+
+  // Alt bağış admin — ürün/shell/liste ile örtüşür (wall clock)
+  /** @type {Map<string, Awaited<ReturnType<typeof readProductSadakaAdminConfig>>>} */
+  const adminConfigCache = new Map();
+  const adminConfigPromise =
+    runFunctional
+      ? (async () => {
+          const tSadakaAdmin = Date.now();
+          const globalWcId = await readGlobalSadakaWcId(authed, env);
+          await mapPool(
+            /** @type {const} */ (['fixed', 'custom']),
+            2,
+            async (productKey) => {
+              const slug = products[productKey];
+              const cfg = await readProductSadakaAdminConfig(authed, env, slug, {
+                globalWcId,
+                productId: productIds[productKey] || 0,
+              });
+              adminConfigCache.set(slug, cfg);
+            }
+          );
+          logSection('alt bağış admin config', tSadakaAdmin);
+        })()
+      : Promise.resolve();
 
   /**
    * @param {import('@playwright/test').BrowserContext} context
@@ -2082,12 +2390,23 @@ export async function captureAll({
   });
   logSection('ürün sayfaları', tProducts);
 
-  // b/c/d) modal + panel open/errors — quick + full (admin/mobil yalnız full)
+  // b/c/d) gerçek popup (liste) + panel (ürün sayfası) open/errors
+  // Karar: ürün sayfasında display=button_panel iken donateTrigger de paneli açar;
+  // desktop-popup-* adları korunur ama içerik ortadaki modal olur (liste kısa kodu).
   const shellJobs = [];
   for (const [key, rel] of Object.entries(productUrls)) {
-    for (const shellMode of ['popup', 'panel']) {
-      shellJobs.push({ key, rel, mode: shellMode });
-    }
+    shellJobs.push({
+      key,
+      mode: /** @type {'panel'} */ ('panel'),
+      pagePath: rel,
+      productId: productIds[key] || 0,
+    });
+    shellJobs.push({
+      key,
+      mode: /** @type {'popup'} */ ('popup'),
+      pagePath: env.E2E_LIST_PAGE,
+      productId: productIds[key] || 0,
+    });
   }
   const tShells = Date.now();
   /**
@@ -2095,56 +2414,107 @@ export async function captureAll({
    * @param {import('@playwright/test').Page} page
    * @param {string} screenName
    * @param {string} productKey
+   * @param {'popup'|'panel'} shellMode
    */
-  async function shotShellAndCheck(page, screenName, productKey) {
+  async function shotShellAndCheck(page, screenName, productKey, shellMode) {
     shots.push(
       await shot(page, outDir, screenName, maskList, {
         scrollPage: false,
         fullPage: false,
         shellOnly: true,
+        shellMode,
       })
     );
     if (runFunctional) {
-      await assertVisibleImagesLoaded(page, screenName, failures);
+      await assertVisibleImagesLoaded(page, screenName, failures, { shellOnly: true });
       const shellH = await readPageScrollHeight(page);
       assertShellPageHeight(shellH, productPageHeights[productKey] || 0, screenName, failures);
     }
   }
 
-  await mapPool(shellJobs, maxWorkers, async ({ key, rel, mode }) => {
+  /**
+   * @param {import('@playwright/test').Page} page
+   * @param {'popup'|'panel'} mode
+   * @param {number} productId
+   */
+  async function openShellForMode(page, mode, productId) {
+    let trigger = shellTriggerLocator(page, mode, { productId });
+    if ((await trigger.count().catch(() => 0)) === 0) {
+      trigger =
+        mode === 'panel'
+          ? page.locator(SEL.sidePanelTrigger).first()
+          : page.locator(SEL.centeredPopupTrigger).first();
+    }
+    const hasTrigger = (await trigger.count().catch(() => 0)) > 0;
+    if (!hasTrigger) {
+      return { ok: false, detail: `selector=${mode === 'panel' ? 'sidePanel' : 'centeredPopup'}` };
+    }
+    try {
+      await trigger.click({ timeout: CHECK_MS });
+    } catch (clickErr) {
+      catchSoft('openShellForMode:trigger.click', clickErr);
+      try {
+        await openDonate(page);
+      } catch (openErr) {
+        catchFail('openShellForMode:openDonate', openErr);
+      }
+    }
+    const shell = openShellLocator(page, mode);
+    await shell.waitFor({ state: 'visible', timeout: CHECK_MS });
+    const isSidePanel = await shell
+      .evaluate((el) => el.classList.contains('wdp-side-panel'))
+      .catch((e) => {
+        catchSoft('openShellForMode:isSidePanel', e);
+        return null;
+      });
+    if (mode === 'popup' && isSidePanel) {
+      return { ok: false, detail: 'ortadaki popup beklenirken sağ panel açıldı' };
+    }
+    if (mode === 'panel' && isSidePanel === false) {
+      return { ok: false, detail: 'sağ panel beklenirken ortadaki popup açıldı' };
+    }
+    return { ok: true, shell };
+  }
+
+  await mapPool(shellJobs, maxWorkers, async ({ key, pagePath, mode, productId }) => {
     // Her kabuk işi temiz context (sepet / storage taşınmasın)
     const ctx = await browser.newContext(contextOpts);
     const page = await ctx.newPage();
     const errors = attachConsoleErrorCollector(page);
-    const url = withCacheBust(env.E2E_BASE_URL, rel, guestExtra);
+    const url = withCacheBust(env.E2E_BASE_URL, pagePath, guestExtra);
     const openName = `desktop-${mode}-${key}-open`;
     const errorsName = `desktop-${mode}-${key}-errors`;
     try {
       await page.goto(url, { waitUntil: 'domcontentloaded' });
-      // Her goto sonrası, form açılmadan önce full settle
-      await settleForScreenshot(page, { fullPage: true, scrollPage: true });
+      // Kabuk ekranı: tam sayfa kaydırma gerekmez (süre)
+      await settleForScreenshot(page, { fullPage: false, scrollPage: false });
 
-      const trigger =
-        mode === 'panel'
-          ? page.locator(SEL.sidePanelTrigger).first()
-          : page.locator(SEL.donateTrigger).first();
-      const hasTrigger = (await trigger.count().catch(() => 0)) > 0;
-      if (!hasTrigger) {
+      const opened = await openShellForMode(page, mode, productId);
+      if (!opened.ok) {
         failures.push(
           makeFailure({
             check: `${mode}-${key}-open`,
-            description: 'Bağış butonu bulunamadı — ekran yine de alındı',
-            detail: `selector=${mode === 'panel' ? 'sidePanel' : 'donate'}`,
+            description: 'Bağış kabuğu açılamadı veya yanlış tip — ekran yine de alındı',
+            detail: opened.detail,
             screenshot: `${openName}.png`,
           })
         );
-        await shotShellAndCheck(page, openName, key);
-        await shotShellAndCheck(page, errorsName, key);
+        try {
+          await shotShellAndCheck(page, openName, key, mode);
+        } catch (_) {
+          /* ignore */
+        }
+        // errors shot yok: validation tetiklenmedi — sahte “errors=open” üretme
+        failures.push(
+          makeFailure({
+            check: `${mode}-${key}-errors-assert`,
+            description: 'Errors ekranı atlandı — kabuk açılamadığı için doğrulama yok',
+            detail: opened.detail,
+          })
+        );
         return;
       }
 
-      await trigger.click({ timeout: CHECK_MS }).catch(() => openDonate(page).catch(() => {}));
-      await openShellLocator(page).waitFor({ state: 'visible', timeout: CHECK_MS }).catch(() => {});
       await waitTwoFrames(page);
 
       const qty = await readShellInitialQty(page, key);
@@ -2159,8 +2529,7 @@ export async function captureAll({
         );
       }
 
-      // Kabuk açık: kaydırma yok, lazy yine çözülür (scrollPage:false)
-      await shotShellAndCheck(page, openName, key);
+      await shotShellAndCheck(page, openName, key, mode);
 
       if (runFunctional && mode === 'popup') {
         for (const how of /** @type {const} */ (['close', 'esc', 'backdrop'])) {
@@ -2171,10 +2540,11 @@ export async function captureAll({
             backdrop: 'Arka plana tıklayınca form kapanmalı',
           };
           try {
-            if ((await page.locator(SEL.openModalShell).count()) === 0) {
+            if ((await page.locator(SEL.openCenteredPopup).count()) === 0) {
               await page.goto(url, { waitUntil: 'domcontentloaded' });
-              await settleForScreenshot(page, { fullPage: true, scrollPage: true });
-              await openDonate(page);
+              await settleForScreenshot(page, { fullPage: false, scrollPage: false });
+              const re = await openShellForMode(page, 'popup', productId);
+              if (!re.ok) throw new Error(re.detail || 'popup yeniden açılamadı');
             }
             await closeOpenShell(page, how);
           } catch (e) {
@@ -2190,19 +2560,66 @@ export async function captureAll({
         }
       }
 
-      // errors: taze goto + full settle, sonra form
+      // errors: taze goto → kabuk içi goCheckout → zorunlu hata iddiası → shot
       await page.goto(url, { waitUntil: 'domcontentloaded' });
-      await settleForScreenshot(page, { fullPage: true, scrollPage: true });
-      const trigger2 =
-        mode === 'panel'
-          ? page.locator(SEL.sidePanelTrigger).first()
-          : page.locator(SEL.donateTrigger).first();
-      await trigger2.click({ timeout: CHECK_MS }).catch(() => openDonate(page).catch(() => {}));
-      await openShellLocator(page).waitFor({ state: 'visible', timeout: CHECK_MS }).catch(() => {});
-      await page.locator(SEL.goCheckout).first().click({ timeout: CHECK_MS }).catch(() => {});
-      await prepareErrorShot(page, { shares: key === 'shares' });
+      await settleForScreenshot(page, { fullPage: false, scrollPage: false });
+      const opened2 = await openShellForMode(page, mode, productId);
+      if (!opened2.ok) {
+        failures.push(
+          makeFailure({
+            check: `${mode}-${key}-errors-open`,
+            description: 'Hata ekranı için kabuk açılamadı',
+            detail: opened2.detail,
+            screenshot: `${errorsName}.png`,
+          })
+        );
+        return;
+      }
+      try {
+        await triggerShellValidationErrors(page, mode);
+      } catch (e) {
+        failures.push(
+          makeFailure({
+            check: `${mode}-${key}-errors-trigger`,
+            description: 'goCheckout ile doğrulama hatası tetiklenemedi',
+            error: e,
+            screenshot: `${errorsName}.png`,
+          })
+        );
+        // Yine de durum kaydı için shot dene (iddia aşağıda fail eder)
+      }
+      await prepareErrorShot(page, { shares: key === 'shares', shellMode: mode });
       await waitTwoFrames(page);
-      await shotShellAndCheck(page, errorsName, key);
+      const errState = await readShellValidationErrorState(page, mode).catch((e) => ({
+        ok: false,
+        detail: String(e.message || e),
+        lastValidation: null,
+        visibleErrors: [],
+      }));
+      if (runFunctional && !errState.ok) {
+        failures.push(
+          makeFailure({
+            check: `${mode}-${key}-errors-assert`,
+            description:
+              'Errors ekranı: lastValidation.failures’taki her alan için görünür alan mesajı zorunlu (başlık tek başına yetmez)',
+            detail: errState.detail,
+            screenshot: `${errorsName}.png`,
+          })
+        );
+      }
+      // Shot yine alınır (teşhis); işlevsel hata yukarıda
+      try {
+        await shotShellAndCheck(page, errorsName, key, mode);
+      } catch (e) {
+        failures.push(
+          makeFailure({
+            check: `${mode}-${key}-errors-shot`,
+            description: 'Errors kabuk ekranı alınamadı',
+            error: e,
+            screenshot: `${errorsName}.png`,
+          })
+        );
+      }
 
       try {
         assertNoConsoleErrors(errors);
@@ -2228,7 +2645,7 @@ export async function captureAll({
         })
       );
       try {
-        await shotShellAndCheck(page, openName, key);
+        await shotShellAndCheck(page, openName, key, mode);
       } catch (_) {
         /* ignore */
       }
@@ -2338,37 +2755,41 @@ export async function captureAll({
     logSection('admin sekmeleri', tAdmin);
   }
 
-  // Functional: skeleton unlock paths (product_info 500 / abort / delay + close-reopen)
+  // Functional: skeleton + fixed-cart paralel (ayrı context — sepet çakışmaz)
   if (runFunctional) {
-    const tSkel = Date.now();
-    await runSkeletonUnlockChecks({
-      browser,
-      contextOpts,
-      env,
-      productPath: productUrls.fixed,
-      guestExtra,
-      failures,
-      stats: functionalStats,
-    }).catch((e) => {
-      failures.push(
-        makeFailure({
-          check: 'skeleton-unlocks',
-          description: 'İskelet kilit açılma kontrolü çöktü',
-          error: e,
-        })
-      );
-    });
-    logSection('skeleton-unlocks', tSkel);
-  }
-
-  // Functional: qty change + add to cart for fixed
-  if (runFunctional) {
+    const tSkelCart = Date.now();
+    await Promise.all([
+      (async () => {
+        const tSkel = Date.now();
+        await runSkeletonUnlockChecks({
+          browser,
+          contextOpts,
+          env,
+          productPath: productUrls.fixed,
+          guestExtra,
+          failures,
+          stats: functionalStats,
+        }).catch((e) => {
+          failures.push(
+            makeFailure({
+              check: 'skeleton-unlocks',
+              description: 'İskelet kilit açılma kontrolü çöktü',
+              error: e,
+            })
+          );
+        });
+        logSection('skeleton-unlocks', tSkel);
+      })(),
+      (async () => {
     const tCart = Date.now();
     const cartPaths = tracePaths(runLabel, 'fixed-cart');
     const cartTimeline = createTimeline('fixed-cart');
     const cartCtx = await browser.newContext(contextOpts);
-    await installPageProbe(cartCtx).catch(() => {});
-    await cartCtx.tracing.start({ screenshots: true, snapshots: true, sources: false });
+    await installPageProbe(cartCtx).catch((e) => catchFail('installPageProbe:cart', e));
+    const cartTrace = !quick;
+    if (cartTrace) {
+      await cartCtx.tracing.start({ screenshots: true, snapshots: true, sources: false });
+    }
     const page = await cartCtx.newPage();
     const cartCacheProbe = attachDocumentCacheProbe(page);
     let cartFailed = false;
@@ -2388,7 +2809,7 @@ export async function captureAll({
       cartTimeline.mark('open-shell');
       await openDonate(page);
       const shell = openShellLocator(page);
-      await wrapWdpValidationHooks(page).catch(() => {});
+      await wrapWdpValidationHooks(page).catch((e) => catchFail('wrapWdpValidationHooks', e));
       const amountBefore = await shell.locator(SEL.lineTotal).first().innerText().catch(() => '');
       await shell.locator(SEL.qtyIncrease).first().click({ timeout: CHECK_MS }).catch(() => {});
       await shell
@@ -2411,7 +2832,7 @@ export async function captureAll({
       try {
         cartTimeline.mark('fill-donor');
         const donorFilled = await fillDonorFields(shell);
-        await wrapWdpValidationHooks(page).catch(() => {});
+        await wrapWdpValidationHooks(page).catch((e) => catchFail('wrapWdpValidationHooks', e));
         await assertDonorFieldsPersist(
           shell,
           { name: donorFilled.name, phone: donorFilled.phone },
@@ -2419,7 +2840,7 @@ export async function captureAll({
           'fixed-cart'
         );
         const addBtn = shell.locator(SEL.addToCart).first();
-        await startDomMutationProbe(page).catch(() => {});
+        await startDomMutationProbe(page).catch((e) => catchFail('startDomMutationProbe', e));
         const tClick = Date.now();
         const snapBeforeClick = await snapshotSadakaAndButton(page).catch(() => null);
         const snapAfter50Promise = (async () => {
@@ -2462,9 +2883,6 @@ export async function captureAll({
             return bundle;
           },
         });
-        const left = Math.max(0, 2000 - (Date.now() - tClick));
-        const mutationSummary = await stopDomMutationProbe(page, left).catch(() => null);
-
         if (/checkout|order-pay|payment/i.test(page.url()) && !/cart/i.test(page.url())) {
           failures.push(
             makeFailure({
@@ -2492,6 +2910,9 @@ export async function captureAll({
             .catch(() => {});
           items = await cartItemCount(page, env.E2E_BASE_URL);
         }
+        const cartOk = items > 0;
+        const mutationWait = cartOk ? 0 : Math.max(0, 2000 - (Date.now() - tClick));
+        const mutationSummary = await stopDomMutationProbe(page, mutationWait).catch(() => null);
         if (items === 0) {
           cartFailed = true;
           const valErrors = await visibleValidationErrors(page);
@@ -2597,46 +3018,50 @@ export async function captureAll({
       );
     }
 
-    await emptyCart(page, env.E2E_BASE_URL).catch(() => {});
+    await emptyCart(page, env.E2E_BASE_URL).catch((e) => catchFail('emptyCart', e));
     cartCacheProbe.dispose();
     cartTimeline.end();
     await page.close().catch(() => {});
-    if (cartFailed) {
+    if (cartTrace) {
       await cartCtx.tracing.stop({ path: cartPaths.zip }).catch(() => {});
-      debugFiles.push(path.relative(ROOT, cartPaths.zip));
-    } else {
-      await cartCtx.tracing.stop({ path: cartPaths.zip }).catch(() => {});
-      try {
-        fs.unlinkSync(cartPaths.zip);
-      } catch (e) {
-        /* ignore */
+      if (cartFailed) {
+        debugFiles.push(path.relative(ROOT, cartPaths.zip));
+      } else {
+        try {
+          fs.unlinkSync(cartPaths.zip);
+        } catch (e) {
+          /* ignore */
+        }
       }
     }
     await cartCtx.close().catch(() => {});
     logSection('sepet (fixed)', tCart);
+      })(),
+    ]);
+    logSection('skeleton+sepet (paralel)', tSkelCart);
 
-    // Alt bağış: önce admin yapılandırmasını sırayla oku, senaryoları kendi context’leriyle paralel çalıştır
+    // Alt bağış: admin config (üstte başlatıldı) bitince 4 senaryo paralel
+    await adminConfigPromise;
     const tSadaka = Date.now();
     /** @type {number[]} */
     const sadakaProductIds = [];
-    /** @type {Map<string, Awaited<ReturnType<typeof readProductSadakaAdminConfig>>>} */
-    const adminConfigCache = new Map();
-    for (const productKey of /** @type {const} */ (['fixed', 'custom'])) {
-      const slug = products[productKey];
-      const cfg = await readProductSadakaAdminConfig(authed, env, slug);
-      adminConfigCache.set(slug, cfg);
-    }
     const sadakaJobs = [];
     for (const productKey of /** @type {const} */ (['fixed', 'custom'])) {
       for (const mode of /** @type {const} */ (['popup', 'panel'])) {
         sadakaJobs.push({ productKey, mode });
       }
     }
-    await mapPool(sadakaJobs, maxWorkers, async ({ productKey, mode }) => {
+    // 4 senaryo paralel (kendi context + emptyCart). 2 worker denemesi wall’ı uzattı.
+    const sadakaWorkers = Math.min(4, sadakaJobs.length);
+    await mapPool(sadakaJobs, sadakaWorkers, async ({ productKey, mode }) => {
       const check = `sadaka-${productKey}-${mode}`;
       const paths = tracePaths(runLabel, check);
       const ctx = await browser.newContext(contextOpts);
-      await ctx.tracing.start({ screenshots: true, snapshots: true, sources: false });
+      // Quick’te tracing pahalı (200s’nin büyük kısmı); full’da koru. Hata → debug JSON.
+      const useTrace = !quick;
+      if (useTrace) {
+        await ctx.tracing.start({ screenshots: true, snapshots: true, sources: false });
+      }
       /** @type {{ ok?: boolean, skipped?: boolean, debugFile?: string }|null} */
       let result = null;
       try {
@@ -2648,6 +3073,8 @@ export async function captureAll({
           productSlug: products[productKey],
           productKey,
           mode,
+          listPagePath: env.E2E_LIST_PAGE,
+          productId: productIds[productKey] || 0,
           failures,
           skips,
           stats: functionalStats,
@@ -2656,7 +3083,8 @@ export async function captureAll({
           sadakaProductIds,
           adminConfigCache,
           failDiagnostics: {
-            enabled: true,
+            // Quick: teşhis sondajı kapalı (süre); hata yine makeFailure + AJAX özeti
+            enabled: !quick,
             runLabel,
             onCollected: (d) => {
               if (d && d.debugFiles && d.debugFiles.json) {
@@ -2677,18 +3105,20 @@ export async function captureAll({
         debugFiles.push(path.relative(ROOT, paths.json));
       } finally {
         const failed = !result || (!result.skipped && result.ok === false);
-        await ctx.tracing.stop({ path: paths.zip }).catch(() => {});
-        if (failed) {
-          debugFiles.push(path.relative(ROOT, paths.zip));
-          if (result && result.debugFile) {
-            debugFiles.push(path.relative(ROOT, result.debugFile));
+        if (useTrace) {
+          await ctx.tracing.stop({ path: paths.zip }).catch(() => {});
+          if (failed) {
+            debugFiles.push(path.relative(ROOT, paths.zip));
+          } else {
+            try {
+              fs.unlinkSync(paths.zip);
+            } catch (e) {
+              /* ignore */
+            }
           }
-        } else {
-          try {
-            fs.unlinkSync(paths.zip);
-          } catch (e) {
-            /* ignore */
-          }
+        }
+        if (failed && result && result.debugFile) {
+          debugFiles.push(path.relative(ROOT, result.debugFile));
         }
         await ctx.close().catch(() => {});
       }

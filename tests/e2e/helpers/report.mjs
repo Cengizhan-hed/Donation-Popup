@@ -13,14 +13,15 @@ import pixelmatch from 'pixelmatch';
  * @param {string} currentDir
  * @param {string} reportDir
  * @param {Array<{check:string,description:string,detail?:string,screenshot?:string,debugFile?:string}>} [failures]
- * @param {number} [diffThreshold] yüzde; üstü "Değişti"
+ * @param {number} [diffThreshold] yüzde; üstü "Değişti" (sayfa ekranları)
  * @param {{
  *   skips?: Array<{check:string,description:string,detail?:string}>,
  *   flaky?: Array<{check:string,firstError?:string,attemptMs?:number[]}>,
  *   stats?: { passed?: number, skipped?: number, failed?: number },
  *   capturedScreens?: string[],
  *   mode?: string,
- *   autoCreateBaseline?: boolean
+ *   autoCreateBaseline?: boolean,
+ *   shellDiffThreshold?: number
  * }} [extra]
  */
 export function compareAndReport(baselineDir, currentDir, reportDir, failures = [], diffThreshold = 0.5, extra = {}) {
@@ -35,6 +36,17 @@ export function compareAndReport(baselineDir, currentDir, reportDir, failures = 
   const diffDir = path.join(reportDir, 'diff');
   fs.mkdirSync(diffDir, { recursive: true });
   const threshold = Number.isFinite(diffThreshold) ? diffThreshold : 0.5;
+  const shellThreshold = Number.isFinite(extra.shellDiffThreshold)
+    ? Number(extra.shellDiffThreshold)
+    : 0.1;
+
+  /**
+   * Kabuk ekranları (popup/panel) küçük alan — sayfa eşiği (%0.5) küçük UI farklarını yutar.
+   * @param {string} name
+   */
+  function thresholdFor(name) {
+    return /-(popup|panel)-/i.test(String(name || '')) ? shellThreshold : threshold;
+  }
 
   const currentPngs = fs.existsSync(currentDir)
     ? fs.readdirSync(currentDir).filter((f) => f.endsWith('.png'))
@@ -130,7 +142,8 @@ export function compareAndReport(baselineDir, currentDir, reportDir, failures = 
     const diffFile = path.join(diffDir, diffName);
     fs.writeFileSync(diffFile, PNG.sync.write(diff));
     // ≤16 px yükseklik farkı tek başına Değişti sayılmaz; ortak üst alan eşiğe göre
-    const status = pct <= threshold ? 'Aynı' : 'Değişti';
+    const rowThreshold = thresholdFor(name);
+    const status = pct <= rowThreshold ? 'Aynı' : 'Değişti';
     if (status === 'Değişti') changedScreens.push(name);
     rows.push({
       name,
@@ -140,6 +153,7 @@ export function compareAndReport(baselineDir, currentDir, reportDir, failures = 
       status,
       heightNote,
       heightDiffPx,
+      thresholdUsed: rowThreshold,
     });
   }
 
@@ -267,7 +281,7 @@ ${flakyBlock}
 ${skipBlock}
 ${notCapturedBlock}
 <h1>WDP staging görsel rapor</h1>
-<p>Eşik: ≤ ${threshold}% → <span class="status-same">Aynı</span>; üstü → <span class="status-changed">Değişti</span>. Değişen ekran: <strong>${changedCount}</strong>.${modeNote}</p>
+<p>Eşik: sayfa ≤ ${threshold}% · kabuk (popup/panel) ≤ ${shellThreshold}% → <span class="status-same">Aynı</span>; üstü → <span class="status-changed">Değişti</span>. Değişen ekran: <strong>${changedCount}</strong>.${modeNote}</p>
 <p class="note">Akış: <code>npm run ship:staging</code> → rapor temizse devam; bilerek değiştiyse <code>npm run e2e:accept</code> (yalnızca bu çalıştırmanın ekranları + işlevsel hata yokken). Eksik baseline otomatik <span class="status-new">Yeni referans</span>.</p>
 ${
   newBaselineCount

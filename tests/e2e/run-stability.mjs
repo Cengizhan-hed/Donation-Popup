@@ -182,6 +182,7 @@ async function main() {
         mode: 'stability',
         autoCreateBaseline: false,
         stats: { passed: 0, skipped: 0, failed: 0 },
+        shellDiffThreshold: env.E2E_SHELL_DIFF_THRESHOLD,
       }
     );
 

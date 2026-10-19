@@ -6,7 +6,12 @@
 export const SEL = {
   // includes/class-shortcodes.php — .wdp-donate-button.wdp-open-modal
   // includes/class-product-page-integration.php — .wdp-loop-donate.wdp-open-modal
+  // Not: panel butonları da .wdp-open-modal taşır; ortadaki popup için centeredPopupTrigger kullan.
   donateTrigger: '.wdp-donate-button, .wdp-loop-donate, .wdp-open-modal',
+
+  // Ortada açılan gerçek popup tetikleyici (side-panel sınıfı yok)
+  // includes/class-shortcodes.php wdp_donation_button; class-donations-list.php button=popup
+  centeredPopupTrigger: '.wdp-open-modal:not(.wdp-open-side-panel)',
 
   // includes/class-product-page-integration.php / class-shortcodes.php — side panel
   sidePanelTrigger: '.wdp-open-side-panel, .wdp-donate-button.wdp-open-side-panel',
@@ -18,11 +23,17 @@ export const SEL = {
   // Kapanma kontrolünde .show yokluğunu kullan (locator kaybolmasın diye shell için modalShell+.show).
   openModalShell: '.hdf-donation-modal-wrapper.wdp-modal.show',
 
+  // Ortada açılan gerçek popup kabuğu (sağ panel değil)
+  openCenteredPopup: '.hdf-donation-modal-wrapper.wdp-modal.show:not(.wdp-side-panel)',
+
   // includes/templates/class-modal-shell-renderer.php — side panel sınıfı
   openSidePanel: '.hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show',
 
   // includes/templates/class-modal-shell-renderer.php — .wdp-modal-content
+  // Kabuk ekran görüntüsü: wrapper (tam viewport + backdrop) değil, bu kutu.
   modalContent: '.wdp-modal-content',
+  // Side panel içerik kutusu (aynı düğüm + sınıf)
+  sidePanelContent: '.wdp-modal-content.wdp-side-panel-content, .wdp-side-panel.show .wdp-modal-content',
 
   // includes/templates/class-modal-shell-renderer.php — button.wdp-modal-close
   modalClose: 'button.wdp-modal-close',

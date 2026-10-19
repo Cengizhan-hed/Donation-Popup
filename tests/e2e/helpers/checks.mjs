@@ -299,11 +299,69 @@ export async function resolveAllProductPaths(page, baseUrl, products) {
 }
 
 /**
- * Açık bağış kabuğu (popup veya side panel) — .show sınıfı.
+ * Store API ile ürün ID’si (slug).
  * @param {import('@playwright/test').Page} page
+ * @param {string} baseUrl
+ * @param {string} slug
+ * @returns {Promise<number>}
  */
-export function openShellLocator(page) {
+export async function resolveProductIdBySlug(page, baseUrl, slug) {
+  const root = baseUrl.replace(/\/$/, '');
+  return page.evaluate(
+    async ({ base, productSlug }) => {
+      try {
+        const url = `${base}/wp-json/wc/store/v1/products?slug=${encodeURIComponent(productSlug)}&per_page=5`;
+        const res = await fetch(url, { credentials: 'same-origin' });
+        if (!res.ok) return 0;
+        const data = await res.json();
+        const list = Array.isArray(data) ? data : [];
+        const hit =
+          list.find((p) => p && p.slug === productSlug) ||
+          list.find((p) => p && String(p.permalink || '').includes(productSlug));
+        return hit && hit.id ? Number(hit.id) || 0 : 0;
+      } catch (e) {
+        return 0;
+      }
+    },
+    { base: root, productSlug: slug }
+  );
+}
+
+/**
+ * Açık bağış kabuğu.
+ * @param {import('@playwright/test').Page} page
+ * @param {'popup'|'panel'|''} [mode] popup → ortadaki modal; panel → sağ panel; boş → herhangi .show
+ */
+export function openShellLocator(page, mode = '') {
+  if (mode === 'panel') {
+    return page.locator(SEL.openSidePanel).first();
+  }
+  if (mode === 'popup') {
+    return page.locator(SEL.openCenteredPopup).first();
+  }
   return page.locator(SEL.openModalShell).first();
+}
+
+/**
+ * Kabuk tetikleyici: panel → side-panel sınıfı; popup → ortadaki (side-panel değil).
+ * @param {import('@playwright/test').Page} page
+ * @param {'popup'|'panel'} mode
+ * @param {{ productId?: number }} [opts]
+ */
+export function shellTriggerLocator(page, mode, opts = {}) {
+  const productId = Number(opts.productId) > 0 ? Number(opts.productId) : 0;
+  if (mode === 'panel') {
+    const base = SEL.sidePanelTrigger;
+    if (productId) {
+      return page.locator(`${base}[data-product-id="${productId}"]`).first();
+    }
+    return page.locator(base).first();
+  }
+  const base = SEL.centeredPopupTrigger;
+  if (productId) {
+    return page.locator(`${base}[data-product-id="${productId}"]`).first();
+  }
+  return page.locator(base).first();
 }
 
 /**

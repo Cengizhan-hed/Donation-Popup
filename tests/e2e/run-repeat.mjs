@@ -11,7 +11,7 @@ import path from 'node:path';
 import { chromium } from '@playwright/test';
 import { loadE2EEnv, ROOT, productPaths, withCacheBust } from './helpers/env.mjs';
 import { ensureAuth, AUTH_FILE } from './helpers/auth.mjs';
-import { resolveAllProductPaths } from './helpers/checks.mjs';
+import { resolveAllProductPaths, resolveProductIdBySlug } from './helpers/checks.mjs';
 import {
   readProductSadakaAdminConfig,
   runSadakaScenario,
@@ -144,6 +144,7 @@ async function runOneAttempt(opts) {
     mode,
     env,
     productUrls,
+    productId,
     slug,
     authed,
     adminConfigCache,
@@ -172,6 +173,8 @@ async function runOneAttempt(opts) {
       productSlug: slug,
       productKey,
       mode,
+      listPagePath: env.E2E_LIST_PAGE,
+      productId: productId || 0,
       failures,
       skips,
       stats,
@@ -301,6 +304,7 @@ async function main() {
   await probe.goto(withCacheBust(env.E2E_BASE_URL, '/'), { waitUntil: 'domcontentloaded' }).catch(() => {});
   const products = productPaths(env);
   const productUrls = await resolveAllProductPaths(probe, env.E2E_BASE_URL, products);
+  const productId = await resolveProductIdBySlug(probe, env.E2E_BASE_URL, products[productKey]);
   await probeCtx.close();
 
   const authed = await browser.newContext({
@@ -309,7 +313,7 @@ async function main() {
   });
   const adminConfigCache = new Map();
   const slug = products[productKey];
-  const cfg = await readProductSadakaAdminConfig(authed, env, slug);
+  const cfg = await readProductSadakaAdminConfig(authed, env, slug, { productId });
   adminConfigCache.set(slug, cfg);
   if (!cfg.expected) {
     console.error(`Senaryo atlanır — yapılandırma yok: ${cfg.reason} (${cfg.detail})`);
@@ -345,6 +349,7 @@ async function main() {
         mode,
         env,
         productUrls,
+        productId,
         slug,
         authed,
         adminConfigCache,
