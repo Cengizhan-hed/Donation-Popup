@@ -131,3 +131,87 @@ Görsel/CSS düzeltmeleri en sona kalır; ayar turunda yalnız DAVRANIŞ düzelt
 | Test borcu | amount-options.mjs:291 `.catch(() => {})` ve :631 boş catch (yorumlu) yutma yasağına aykırı; sonraki Cursor görevinde düzeltilecek |
 | GÖRSEL | G12: Sepete Ekle ikincil (çerçeveli) kural specificity kaybediyor; iki CTA da dolgulu mavi |
 | e2e:quick | 42/0/0; accept: 4 ekran |
+
+## Bölüm: Form alanları (analiz, 2026-10-20; kararlar bekliyor)
+
+| Ayar | Davranış sorunu | Önerilen düzeltme |
+|------|-----------------|-------------------|
+| E-posta alanı | Hisseli formda render edilmiyor (FFR ~690-712) ama ürün sekmesi gösteriyor; kapalıyken sunucu yine kabul ediyor (AJX:147); geçersiz e-posta sessizce siliniyor (AJX:148-151); uzunluk sınırı yok; sepette görünmüyor | Hisselide gizle; kapalıysa sunucu yok say; geçersizde hata; maxlength |
+| İthaf alanı | 120 bayt (sunucu) / 120 karakter (form) / eski yolda sınırsız; Türkçe karakter ortadan bölünebilir; kapalıyken kabul | mb_substr 120 karakter, her yolda |
+| İthaf örnek metni | Ürün kutusu 120, kayıt 160 | 120 |
+| Anonim bağış | Hiçbir yerde uygulanmıyor (yalnız sipariş meta); açıklama vaat ediyor | Karar gerekli |
+| Ürün notu | Kutu 400, kayıt 1000 | 400 |
+| Çok adımlı form | Genel açıkken ürün kapatamıyor; ithaf/anonim bloğunun hangi adımda çıktığı doğrulanacak | Ürüne üçlü seçim |
+| Alan ikonları | Genel ayar formda okunmuyor; ürün varsayılanı "yes" | Boşken genel ayarı oku |
+| KVKK | Formda aydınlatma metni yok; debug günlüğünde e-posta/ithaf maskelenmiyor (ajax.js:714-719) | Aydınlatma bağlantı ayarı; maskeleme |
+
+Görsel aşamaya: G13 etiket birliği (İthaf placeholder, wizard, Anonim üç ifade, ikon açıklaması "ad, not, e-posta").
+
+## Kararlar: Form alanları (2026-10-20)
+
+| Kod | Karar |
+|-----|-------|
+| F1 a | Hisselide e-posta/ithaf/anonim gizlenir (ürün sekmesinde de) |
+| F2 a | Sunucu ürün ayarına bakıp kapalı alanı yok sayar |
+| F3 b | Anonim seçilirse isim YALNIZ herkese açık yerlerde maskelenir (kampanya bağışçı listesi, sayaçlar, teşekkür ekranı vb.). Sipariş, yönetici ekranı, e-posta, makbuz kayıtları DEĞİŞMEZ |
+| F4 a | İthaf her yolda 120 karakter |
+| F5 a | Ürün notu 400 |
+| F6 a | Çok adımlı form ürün düzeyinde Genel/Açık/Kapalı |
+| F7 a | Alan ikonları: ürün boşken genel ayar okunur |
+| F8 a | Geçersiz e-postada hata, gönderim durur |
+| F9 a | Sepet satırında e-posta/ithaf/anonim gösterilir |
+| F10 a | Ayardan açılıp kapanan aydınlatma bağlantısı; varsayılan adres WordPress Gizlilik Politikası sayfası (ayarlıysa) |
+| Ek | ajax.js:714-719 günlük maskeleme düzeltilir; önceki testteki iki hata yutma yeri düzeltilir |
+| Onay | Toplu onay verildi |
+
+## Güvenlik denetimi notları (denetim aşamasına)
+
+| Konu | Not |
+|------|-----|
+| KVKK dışa aktarma/silme eşleşmesi | Bağışçı sorgusu yalnız faturalama e-postası veya wdp_donor_email ile eşleşiyor (class-privacy.php:78, 227-290). Fatura e-postası farklı, e-posta alanı kapalıysa kayıt bulunamayabilir; telefon/ad ile eşleşme yok. Şimdi düzeltilmeyecek. |
+| Eski yol | CART add_donation_item_data (CART:52-110) hâlâ erişilebilir mi, doğrulanacak |
+| E-posta şablonları | Sipariş satır meta'sının (ad/telefon/ithaf) müşteri/yönetici e-postasında basılıp basılmadığı doğrulanacak |
+
+## Bölüm: Kampanya blokları (analiz, 2026-10-20; kararlar bekliyor)
+
+Akika: Hedefe ulaşınca yalnız ekran değişiyor ("Hedefe ulaşıldı", konfeti); sunucu bağışı kabul etmeye devam ediyor (trait-wdp-ajax-cart-add.php:20-260, hedef kontrolü yok), toplanan hedefi aşıyor. Mevcut "hedefe ulaşınca davranış" ayarı yok.
+
+| Ayar | Davranış sorunu | Teknik karar (Claude) |
+|------|-----------------|-----------------------|
+| Hedef tutar | Hedef ≤0 sessizce 100000'e çekiliyor (PSS:382-386); sunucuda zorlanmıyor | ≤0'da kayıt hatası, üst sınır; ürün başına `goal_reached_action` (continue/message/close), close iken sunucu + woocommerce_add_to_cart_validation + checkout'ta toplam+bekleyen ≥ hedef reddeder |
+| En düşük tutar | Kampanyada "ürün fiyatı ile min'in küçüğü" kuralı açıklanmamış | Açıklamaya yaz |
+| En fazla hisse | Admin 100, sunucu 50 | Tek sınır |
+| Toplanan | on-hold (havale) sayılmıyor; silinen/çöpe atılan sipariş ve processing→on-hold düşmüyor olabilir; ilk okumada ağır tarama; işlem ücreti toplama dahil olabilir; Curcy dönüşümü yok | Düşme kancaları; arka plan hesap; ücret toplamdan hariç; çubuk %100'de kalır, gerçek tutar gösterilir |
+| Kutlama animasyonu | Açıklama "bağış eklendiğinde" ama kod yalnız onaylı ≥100'de; baştan %100 ise her açılışta kutlayabilir (PB:320) | Yalnız oturumda geçiş anında; açıklama "Hedef dolunca" |
+| Etki satırı/metni | "Genel etki metni" açıklaması var, ayar yok | Açıklama "Boşsa satır görünmez"; ürün başına, genel yok |
+| Aciliyet şeridi/metni | — | — |
+| Bitiş tarihi | UTC: bitiş günü başında (TR 03:00) şerit kapanıyor; geçersiz tarih sessizce süresiz | Y-m-d doğrula, wp_timezone() ile gün sonu; geçersizde hata; önbellek için JS yedek |
+| Sosyal kanıt metni | Sabit metin, örnek "128 kişi"; uydurma sayı riski | `{donors}` yer tutucusu gerçek sayıdan; 0 ise gizle |
+| Güven rozetleri/Rozetler | Genel kapalıysa ürün açık olsa da çıkmaz; ürün listesi genel listeyi değiştirir | Açıklamaya yaz |
+| Blok sırası | Genel alanın örneği (`sadaka,trust`) yanıltıcı | Genel alan yalnız 5 başlık bloğu |
+| İlerleme çubuğu | Metin yüzdesi bekleyen dahil, dolgu yalnız onaylı | Tek fonksiyon |
+
+Görsel aşama: G14 yüzde gösterimi (admin floor / form 1 ondalık), sekme yardımında "Üst Limit" adı.
+Güvenlik denetimi notu: etki/aciliyet/sosyal kanıt/rozet çıktıları esc_html ile temiz.
+
+## Kararlar: Kampanya blokları (2026-10-20)
+
+| Kod | Karar |
+|-----|-------|
+| K1 b | Hedefe ulaşan kampanya bağış almaya devam eder + mesaj. Ürün başına `goal_reached_action` (continue / message / close) ayarı; varsayılan message |
+| K2 | Ürün başına mesaj alanı; varsayılan metin: "Hedefimize ulaştık, desteğiniz için teşekkür ederiz. Bu kampanyaya yapılan fazla bağışlar benzer projelerimizde kullanılır." Mesaj bağıştan ÖNCE formda görünür |
+| K3 a | on-hold (havale/EFT) toplananda sayılmaz; yalnız ödemesi onaylananlar |
+| K4 b | Elle/offline bağış alanı EKLENMEZ (elden bağış yok) |
+| K5 a | Sosyal kanıt yalnız gerçek sayı (`{donors}`) |
+| K6 a | Aciliyet bitişi yalnız şeridi kaldırır; kampanya kapanışı K1 ayarıyla ayrı |
+| K7 | EUR/USD bağış gelebilir, Ikram Aid için GBP de hedefleniyor: Toplanan tutarda doğru para birimi dönüşümü yapılacak (ürünün/mağaza para birimine, sipariş tarihindeki kurla; teknik karar rapora yazılacak) |
+| Onay | Toplu onay verildi; Form alanları bitince başlat |
+
+## Sonraya bırakılanlar (şimdi YAPMA)
+
+| Konu | Not |
+|------|-----|
+| GiveWP karşılaştırması | Eksik özellik analizi: düzenli bağış, bağışçı paneli, makbuz, raporlar vb. |
+| Saha listesi | Ürüne göre sahaya dışa aktarma + "video gönderildi" takibi |
+| Aydınlatma metni (F10) | Varsayılan metin yurt dışındaki saha ekiplerine aktarımı da kapsamalı; Form alanları görevi bittikten sonra metin güncellenecek |
+| Refaktör | Ayar turu sonrası: dosya yapısı sadeleştirme, ölü kod, adlandırma; davranış değişmez |

@@ -88,6 +88,7 @@ class WDP_Migrations {
 			'10.28.5' => array(__CLASS__, 'step_10_28_5'),
 			'10.29.0' => array(__CLASS__, 'step_10_29_0'),
 			'10.29.1' => array(__CLASS__, 'step_10_29_1'),
+			'10.30.0' => array(__CLASS__, 'step_10_30_0'),
 		);
 	}
 
@@ -233,6 +234,49 @@ class WDP_Migrations {
 			$placement,
 			$is_fresh ? 'yes' : 'no'
 		);
+	}
+
+	/**
+	 * 10.30.0: Form alanları — aydınlatma bağlantısı varsayılan anahtarları (veri silinmez).
+	 *
+	 * - `enable_privacy_notice` yoksa '0'
+	 * - `privacy_notice_text` yoksa varsayılan metin
+	 * - `privacy_notice_url` yoksa ''
+	 * Mevcut ürün notu / ithaf metinleri kırpılmaz.
+	 *
+	 * @param bool $is_fresh Fresh install.
+	 * @return string Summary for the log.
+	 */
+	public static function step_10_30_0($is_fresh) {
+		$flag = 'wdp_migrated_10_30_0';
+		if ($is_fresh) {
+			update_option($flag, '1', false);
+			return 'skipped (fresh install)';
+		}
+
+		$button = get_option('wdp_button_settings', false);
+		$added  = array();
+		if (!is_array($button)) {
+			$button = array();
+		}
+		if (!array_key_exists('enable_privacy_notice', $button)) {
+			$button['enable_privacy_notice'] = '0';
+			$added[] = 'enable_privacy_notice';
+		}
+		if (!array_key_exists('privacy_notice_text', $button)) {
+			$button['privacy_notice_text'] = __('Kişisel verileriniz Aydınlatma Metni kapsamında işlenir.', 'woo-donation-popup');
+			$added[] = 'privacy_notice_text';
+		}
+		if (!array_key_exists('privacy_notice_url', $button)) {
+			$button['privacy_notice_url'] = '';
+			$added[] = 'privacy_notice_url';
+		}
+		if ($added) {
+			update_option('wdp_button_settings', $button, false);
+		}
+
+		update_option($flag, '1', false);
+		return 'privacy_keys:' . ($added ? implode(',', $added) : 'none');
 	}
 
 	/**

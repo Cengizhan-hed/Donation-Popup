@@ -189,6 +189,7 @@ class WDP_Style_Presets {
 			'form_density', 'glass_blur_px', 'glass_fill_opacity', 'elevation_level', 'overlay_tint', 'overlay_opacity',
 			'body_font_family', 'motion_intensity', 'chip_style', 'module_order', 'trust_badges',
 			'enable_donor_email', 'enable_dedication', 'enable_anonymous', 'dedication_placeholder',
+			'enable_privacy_notice', 'privacy_notice_text', 'privacy_notice_url',
 		);
 		$share_keys = array(
 			'shareholder_card_bg', 'shareholder_card_border', 'shareholder_card_radius',

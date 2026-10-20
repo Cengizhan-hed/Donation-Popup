@@ -3338,6 +3338,33 @@ export async function captureAll({
     } finally {
       logSection('amount-options', tAmountOpts);
     }
+
+    // 10.30.0 form alanları
+    const tFormFields = Date.now();
+    try {
+      const { runFormFieldsChecks } = await import('./form-fields.mjs');
+      await runFormFieldsChecks({
+        browser,
+        contextOpts,
+        env,
+        productUrls,
+        productIds,
+        listPagePath: env.E2E_LIST_PAGE,
+        failures,
+        stats: functionalStats,
+      });
+    } catch (e) {
+      failures.push(
+        makeFailure({
+          check: 'form-fields-runner',
+          description: 'Form alanları E2E koşucusu çöktü',
+          error: e,
+        })
+      );
+      functionalStats.failed += 1;
+    } finally {
+      logSection('form-fields', tFormFields);
+    }
   }
 
   // Mobile chromium + webkit sample (quick’te atlanır)

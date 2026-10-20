@@ -81,22 +81,28 @@ final class ProductSettingsSaveTest extends TestCase {
 		$this->assertSame('no', $meta['_enable_trust_strip']);
 		$this->assertSame('no', $meta['_enable_quantity']);
 		$this->assertSame('no', $meta['_enable_amount_presets']);
-		$this->assertSame('no', $meta['_enable_field_icons']);
 		$this->assertSame('no', $meta['_progress_celebrate']);
+		// 10.30.0: wizard / alan ikonları üçlü select; POST'ta yoksa genel ayar ('').
+		$this->assertSame('', $meta['_enable_field_icons']);
+		$this->assertSame('', $meta['_enable_wizard']);
 	}
 
 	public function test_tristate_fields(): void {
 		$meta = WDP_Product_Settings_Service::from_product_panel(
 			array(
-				'enable_email'      => 'yes',
-				'enable_dedication' => 'no',
-				'enable_anonymous'  => '',
+				'enable_email'       => 'yes',
+				'enable_dedication'  => 'no',
+				'enable_anonymous'   => '',
+				'enable_wizard'      => 'yes',
+				'enable_field_icons' => 'no',
 			)
 		);
 
 		$this->assertSame('yes', $meta['_enable_email']);
 		$this->assertSame('no', $meta['_enable_dedication']);
 		$this->assertSame('', $meta['_enable_anonymous']);
+		$this->assertSame('yes', $meta['_enable_wizard']);
+		$this->assertSame('no', $meta['_enable_field_icons']);
 
 		$this->assertSame('yes', WDP_Product_Settings_Service::parse_tristate_flag(true));
 		$this->assertSame('', WDP_Product_Settings_Service::parse_tristate_flag(false));

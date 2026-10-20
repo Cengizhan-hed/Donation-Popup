@@ -129,8 +129,8 @@ class WDP_Donation_Product_Context_Service {
 			'enable_trust_strip'            => self::meta_flag_default_yes($product, '_enable_trust_strip'),
 			'enable_quantity'               => self::meta_flag_default_yes($product, '_enable_quantity'),
 			'enable_amount_presets'         => self::meta_flag_default_yes($product, '_enable_amount_presets'),
-			'enable_wizard'                 => $product->get_meta('_enable_wizard') === 'yes',
-			'enable_field_icons'            => self::meta_flag_default_yes($product, '_enable_field_icons'),
+			'enable_wizard'                 => self::meta_flag_or_global($product, '_enable_wizard', 'enable_multi_step'),
+			'enable_field_icons'            => self::meta_flag_or_global($product, '_enable_field_icons', 'enable_field_icons'),
 			'enable_impact_line'            => self::meta_flag_default_yes($product, '_enable_impact_line'),
 			'progress_celebrate'            => self::meta_flag_default_yes($product, '_progress_celebrate'),
 			'impact_line_text'              => trim((string) $product->get_meta('_impact_line_text')),
@@ -189,6 +189,18 @@ class WDP_Donation_Product_Context_Service {
 	 * @return bool
 	 */
 	private static function meta_flag_or_global($product, $meta_key, $global_key) {
+		return self::resolve_flag_or_global($product, $meta_key, $global_key);
+	}
+
+	/**
+	 * Public resolver: yes/no meta with empty → global button setting.
+	 *
+	 * @param WC_Product $product     Product.
+	 * @param string     $meta_key    Meta key.
+	 * @param string     $global_key  Key in wdp_button_settings.
+	 * @return bool
+	 */
+	public static function resolve_flag_or_global($product, $meta_key, $global_key) {
 		$raw = $product->get_meta($meta_key);
 		if ($raw === 'yes') {
 			return true;

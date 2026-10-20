@@ -557,6 +557,25 @@
       }
     });
 
+    // E-posta: boş serbest; doluysa biçim kontrolü + görünür alan hatası
+    const emailInput = form.querySelector('input[name="donation_email"]');
+    if (emailInput && !emailInput.disabled && !(emailInput.closest && emailInput.closest('[hidden]'))) {
+      const emailRaw = emailInput.value == null ? '' : String(emailInput.value).trim();
+      if (emailRaw !== '') {
+        const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailRaw);
+        if (!emailOk) {
+          const msg =
+            (WDPApp.formMessages && typeof WDPApp.formMessages.getInvalidEmailMessage === 'function'
+              ? WDPApp.formMessages.getInvalidEmailMessage()
+              : null) || 'Lütfen geçerli bir e-posta adresi giriniz.';
+          showInputError(emailInput, msg);
+          errorMessages.push(msg);
+          failures.push({ field: 'donation_email', rule: 'email_invalid', value: emailRaw });
+          isValid = false;
+        }
+      }
+    }
+
     // Minimum bağış tutarı ve sayısal doğrulama
     const customPriceInput = form.querySelector('input[name="custom_price"]');
     if (customPriceInput) {

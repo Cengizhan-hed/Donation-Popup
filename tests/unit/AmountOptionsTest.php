@@ -195,6 +195,7 @@ final class AmountOptionsTest extends TestCase {
 	public function test_steps_include_10_29_0_and_10_29_1(): void {
 		$this->assertArrayHasKey('10.29.0', WDP_Migrations::steps());
 		$this->assertArrayHasKey('10.29.1', WDP_Migrations::steps());
+		$this->assertArrayHasKey('10.30.0', WDP_Migrations::steps());
 	}
 
 	public function test_migration_10_29_0_repairs_and_is_idempotent(): void {

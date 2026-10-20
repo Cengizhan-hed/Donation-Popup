@@ -27,12 +27,49 @@ class WDP_Security {
         }
 
         $value = sanitize_text_field($value);
-        
-        if (strlen($value) > $max_length) {
-            $value = substr($value, 0, $max_length);
-        }
+        $value = self::limit_chars($value, (int) $max_length);
 
         return trim($value);
+    }
+
+    /**
+     * Truncate by Unicode characters (not bytes) so Turkish letters are not split.
+     *
+     * @param string $value Text.
+     * @param int    $max   Max characters; ≤0 leaves value unchanged.
+     * @return string
+     */
+    public static function limit_chars($value, $max) {
+        $value = (string) $value;
+        $max   = (int) $max;
+        if ($max <= 0) {
+            return $value;
+        }
+        if (function_exists('mb_strlen') && function_exists('mb_substr')) {
+            if (mb_strlen($value) > $max) {
+                return mb_substr($value, 0, $max);
+            }
+            return $value;
+        }
+        if (strlen($value) > $max) {
+            return substr($value, 0, $max);
+        }
+        return $value;
+    }
+
+    /**
+     * Sanitize textarea with character (not byte) length limit.
+     *
+     * @param string $value Text.
+     * @param int    $max_length Max characters.
+     * @return string
+     */
+    public static function sanitize_textarea($value, $max_length = 500) {
+        if (!is_string($value)) {
+            return '';
+        }
+        $value = sanitize_textarea_field($value);
+        return trim(self::limit_chars($value, (int) $max_length));
     }
 
     /**

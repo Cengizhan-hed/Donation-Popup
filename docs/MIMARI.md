@@ -1,4 +1,4 @@
-# MIMARI — woo-donation-popup (10.29.1)
+# MIMARI — woo-donation-popup (10.30.0)
 
 Kalıcı mimari harita. Sonraki görevler için ilk okuma noktası.  
 Dal referansı: `docs-mimari` / commit `220f4ec`.  
@@ -193,6 +193,7 @@ Admin: `wdp_admin` localize (`includes/class-admin-assets.php` — ayrı yığı
 | `wdp_sadaka_visibility_cache_cleared` | migration 10.28.5 | `includes/class-migrations.php:244` |
 | `wdp_migrated_10_29_0` | migration 10.29.0 (cover fee 0,5–15 onarımı, genel liste ≤6) | `includes/class-migrations.php` `step_10_29_0` |
 | `wdp_migrated_10_29_1` | migration 10.29.1 (genel `amount_preset_recommended` silinir) | `includes/class-migrations.php` `step_10_29_1` |
+| `wdp_migrated_10_30_0` | migration 10.30.0 (aydınlatma bağlantısı varsayılan anahtarları; veri silinmez) | `includes/class-migrations.php` `step_10_30_0` |
 
 ### Ürün meta (Bağış ayarları — tek kaynak `from_request`)
 
@@ -321,7 +322,11 @@ Kaynak rehber: `docs/AYARLAR.md`. Teknik varsayılanlar normalizer / placement /
 | Konu | Sıra | Fonksiyon |
 |------|------|-----------|
 | Bağış ürünü mü? | tip destek → meta yes/no → global scope | `WDP_Donation_Scope::evaluate` (`includes/class-donation-scope.php:81-93`) |
-| E-posta / ithaf / anonim | meta `yes`/`no` → değilse `wdp_button_settings` | `meta_flag_or_global` (`includes/class-donation-product-context-service.php:190-199`) — global anahtarlar: `enable_donor_email`, `enable_dedication`, `enable_anonymous` |
+| E-posta / ithaf / anonim | meta `yes`/`no` → değilse `wdp_button_settings`; hisseli tipte hep kapalı; sunucu kapalı alanı yok sayar (`WDP_Donation_Optional_Fields::apply_from_request`, AJAX + legacy cart) | `resolve_flag_or_global` / `WDP_Donation_Optional_Fields` — global: `enable_donor_email`, `enable_dedication`, `enable_anonymous` |
+| Çok adımlı form | ürün `_enable_wizard` tristate → global `enable_multi_step`; form sınıfı `wdp-multi-step` (JS genel bayrağa bakmaz) | CTX + `class-modal-shell-renderer.php` + `wizard.js` |
+| Alan ikonları | ürün `_enable_field_icons` tristate → global `enable_field_icons`; kapalıysa `wdp-no-field-icons` | CTX + MSR |
+| Aydınlatma bağlantısı | global `enable_privacy_notice` (varsayılan kapalı) + metin/URL; URL boşsa WP gizlilik sayfası; yoksa gösterilmez. Yalnız e-posta/ithaf/hissedar varken | `WDP_Donation_Optional_Fields::render_privacy_notice_html` |
+| Anonim maske | yalnız herkese açık yüzeyler (`sanitize_public_donation_data`); sipariş/admin/e-posta orijinal ad | `mask_public_donor_name` |
 | Hızlı tutar düğmeleri | global `enable_amount_presets==='1'` → ürün `_enable_amount_presets==='no'` gizler; yalnız custom/campaign; min altı elenir; "Önerilen" yalnız ürün `_amount_preset_recommended` dolu ve görünen listedeyse (ortadaki/genel varsayılan yok; seçili gelmez) | `render_amount_presets` (`includes/templates/class-form-fields-renderer.php`) |
 | Modül sırası | ürün `_wdp_module_order` dolu → yoksa button `module_order` → defaults | `WDP_Form_Modules::resolve_order` (`includes/class-form-modules.php:74-84`) |
 | Güven rozetleri | global → ürün `_trust_badges` doluysa ürün | `resolve_trust_badges` (`includes/class-form-modules.php:145-175`) |
@@ -358,9 +363,10 @@ Kaynak rehber: `docs/AYARLAR.md`. Teknik varsayılanlar normalizer / placement /
 | Hızlı tutar / Tutarlar / Önerilen | `_enable_amount_presets`, `_amount_presets`, `_amount_preset_recommended` | presets varsayılan yes; kayıtta katı doğrulama; Önerilen yalnız ürün (boş=etiket yok; listede yoksa kayıt hata); okumada yumuşak parse | form-fields, product-settings-service |
 | Adet seçici | `_enable_quantity` | boş→yes; yalnız sabit tipte; sunucu adedi kapalıyken/sabit olmayan tipte 1'e sabitler (`WDP_Cart::product_allows_quantity`, hisseli hariç) | context, ajax-cart-add |
 | Cover fee | `_enable_cover_fee`, `_cover_fee_percent` | off / 0; tüm tipler; kayıt 0 veya 0,5–15 (`normalize_cover_fee_percent_for_save`, aralık dışı = hata), çalışma anı `clamp_cover_fee_percent_for_runtime`; yüzde sunucuda HER ZAMAN ürün meta'sından (`WDP_Cart::get_product_cover_fee_percent`), istemci yüzdesi yok sayılır; fiyat: custom → `custom_price`, sabit/hisseli → `wdp_base_unit_price` × (1+yüzde); sepette "İşlem ücreti" satırı; formda `data-wdp-form-total` Toplam satırı | context, cart, ajax-cart-add, form-modules |
-| E-posta/İthaf/Anonim | `_enable_*` tristate | `''`→global | meta_flag_or_global |
-| Ürün notu | `_enable_product_note`, `_product_note_text` | off | context |
-| Wizard / ikon / etki / aciliyet / sosyal / medya / layout / tema… | ilgili `_` meta | bkz. `from_request` | context + header renderer |
+| E-posta/İthaf/Anonim | `_enable_*` tristate | `''`→global; hisseli tipte UI+sunucu yok; geçersiz e-posta `donation_email` hatası; ithaf 120 karakter (mb); sepette e-posta/ithaf/anonim satırı (kendi sepet) | CTX + Optional_Fields + cart display |
+| Ürün notu | `_enable_product_note`, `_product_note_text` | off; kayıt sınırı 400 (okumada kırpma yok) | context / PSS |
+| Wizard / ikon | `_enable_wizard`, `_enable_field_icons` tristate | `''`→global (`enable_multi_step` / `enable_field_icons`) | CTX + MSR |
+| Etki / aciliyet / sosyal / medya / layout / tema… | ilgili `_` meta | bkz. `from_request` | context + header renderer |
 | Alt bağış | `_enable_sadaka_donation`, `_sadaka_*` | off | context; kampanyada UI gizlenir (product_info `includes/traits/trait-wdp-ajax-product.php:102`) |
 | Blok sırası | `_wdp_module_order` | boş→global | resolve_order |
 

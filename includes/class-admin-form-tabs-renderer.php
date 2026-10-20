@@ -468,7 +468,7 @@ class WDP_Admin_Form_Tabs_Renderer {
 		$enabled = !empty($settings['enable_multi_step']) && (string) $settings['enable_multi_step'] === '1';
 		$presets_enabled = !empty($settings['enable_amount_presets']) && (string) $settings['enable_amount_presets'] === '1';
 		$amount_presets = isset($settings['amount_presets']) ? $settings['amount_presets'] : '100, 250, 500, 1000, 2500';
-		echo '<div id="wdp-normal-sec-wizard" class="wdp-settings-section"><h2>' . esc_html__('Çok adımlı form (wizard)', 'woo-donation-popup') . '</h2>';
+		echo '<div id="wdp-normal-sec-wizard" class="wdp-settings-section"><h2>' . esc_html__('Çok adımlı form', 'woo-donation-popup') . '</h2>';
 		echo '<p class="wdp-settings-section__hint">' . esc_html__('Açıldığında form adım adım ilerler. Hisseli: Hisseler → Onay. Standart/Progress: Bilgiler → Tutar → (Alt bağış) → Onay. Progress bar her zaman üstte kalır.', 'woo-donation-popup') . '</p>';
 		echo '<table class="form-table"><tr><th scope="row">' . esc_html__('Çok adımlı formu etkinleştir', 'woo-donation-popup') . '</th><td>';
 		echo '<label class="wdp-admin-toggle"><input type="checkbox" id="enable_multi_step" name="enable_multi_step" value="1" ' . checked($enabled, true, false) . ' /> ';

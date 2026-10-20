@@ -288,10 +288,8 @@ class WDP_Modal_Shell_Renderer {
 		$checkout_first    = $use_side_panel || $form_button_order === 'checkout_first';
 
 		$form_field_classes = $allow_multiple_shares ? 'wdp-donation-form-fields wdp-has-shareholders' : ($enable_progress_bar ? 'wdp-donation-form-fields wdp-has-progress-bar' : 'wdp-donation-form-fields');
-		$enable_multi_step  = !empty($button_settings['enable_multi_step']) && (string) $button_settings['enable_multi_step'] === '1';
-		if (!empty($context['enable_wizard'])) {
-			$enable_multi_step = true;
-		}
+		// 10.30.0: ürün üçlü (genel/açık/kapalı) CTX'te çözülür; genel bayrak doğrudan okunmaz.
+		$enable_multi_step = !empty($context['enable_wizard']);
 		if ($enable_multi_step) {
 			$form_field_classes .= ' wdp-multi-step';
 		}
@@ -475,10 +473,8 @@ class WDP_Modal_Shell_Renderer {
 		$form_button_order = !empty($button_settings['form_button_order']) ? $button_settings['form_button_order'] : 'add_first';
 		$checkout_first    = $form_button_order === 'checkout_first';
 		$inline_form_classes = $allow_multiple_shares ? 'wdp-donation-form-fields wdp-has-shareholders' : ($enable_progress_bar ? 'wdp-donation-form-fields wdp-has-progress-bar' : 'wdp-donation-form-fields');
-		$enable_multi_step   = !empty($button_settings['enable_multi_step']) && (string) $button_settings['enable_multi_step'] === '1';
-		if (!empty($context['enable_wizard'])) {
-			$enable_multi_step = true;
-		}
+		// 10.30.0: ürün üçlü (genel/açık/kapalı) CTX'te çözülür; genel bayrak doğrudan okunmaz.
+		$enable_multi_step = !empty($context['enable_wizard']);
 		if ($enable_multi_step) {
 			$inline_form_classes .= ' wdp-multi-step';
 		}
