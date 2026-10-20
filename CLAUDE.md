@@ -59,6 +59,8 @@ Bitiş: verify + test → (gerekirse) npm run ship:staging → e2e:quick → RAP
 - Aklına gelmeyenleri söyle; en ince ayrıntıyı düşün.
 - Şifre, token, `.env` değeri asla sohbete veya dosyaya yazılmaz.
 - Onay gerektiren her komuttan ÖNCE kullanıcıya Türkçe tek cümleyle ne yapacağını ve "yalnız okur" / "dosya değiştirir" / "geri alınması zor" olduğunu yaz. Kullanıcı teknik değil; komut metnini anlamayabilir.
+- Her aşama sonunda 6. Durum bölümünü güncelle. Ardından kullanıcının claude.ai proje sohbetine kopyalayacağı bir AŞAMA ÖZETİ mesajı yaz: ne yapıldı, sürümler ve commit'ler, açık kalan sorunlar, alınan kararlar, sıradaki aşama önerisi. Kısa tablolarla, en fazla 1 sayfa. Dosya oluşturma, mesaj olarak yaz.
+- Her ship:staging sonrasında kullanıcıya şunları yaz: yüklenen sürüm; sade dille neler değişti; staging'de kendi gözüyle kontrol etmesi için tıklama tıklama kısa bir kontrol listesi (hangi sayfa, neye tıklanır, ne görmeli). Kullanıcı kontrol edip 'tamam' demeden accept ve commit'e geçme.
 - Her mesajın EN SON satırı şu üçünden biri olmalı:
   ✅ BİTTİ – sıra sende
   ⏳ BEKLİYOR – Cursor çalışıyor, bitince kendim devam edeceğim
@@ -97,7 +99,7 @@ Bitiş: verify + test → (gerekirse) npm run ship:staging → e2e:quick → RAP
 
 ## 6. Durum (2026-10-20)
 
-- `main` = `c52e3e4` = 2C-S kapandı (10.28.10–10.28.12). Staging'de 10.28.12.
+- `main` = `874003c` (2C-S + pilot + MIMARI birleşti). Claude Code + Cursor CLI düzeni kalıcı; `pilot-claude-code` ve `docs-mimari` dalları silinebilir. 2C-S kapandı (10.28.10–10.28.12). Staging'de 10.28.12.
 - quick 31/0/0, ~150 sn; stability temiz.
 - 10.28.10: hisseli liste product_info sonrası silinmiyor (gerçek veri kaybı düzeltildi).
 - 10.28.11–12: mağaza niyet ön yüklemesi (hover 760→42 ms, touch 85 ms); boşta ilk 3 ürün (saveData/2g/webdriver atlar); önbellek ürün+para+dil, yalnız bellek.
