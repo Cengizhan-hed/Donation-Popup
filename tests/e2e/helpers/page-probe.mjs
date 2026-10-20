@@ -354,10 +354,14 @@ export async function wrapWdpValidationHooks(page) {
           window.__wdpE2EValWrapped = true;
         }
       } catch (e) {
-        /* sessizce atla */
+        console.error('[e2e:catch-fail] wrapWdpValidationHooks:in-page', e && e.message ? e.message : e);
+        throw e;
       }
     })
-    .catch(() => {});
+    .catch((e) => {
+      console.error('[e2e:catch-fail] wrapWdpValidationHooks:evaluate', e && e.message ? e.message : e);
+      throw e instanceof Error ? e : new Error(String(e));
+    });
 }
 
 /**

@@ -387,6 +387,24 @@ Formun içindeki SSS modülü 10.27.0’da tamamen kaldırıldı. SSS’ler ür�
 
 ## Sürüm notları
 
+### 10.28.12 — Benzer Bağışlar E2E zamanlaması + idle Save-Data
+
+- **Teşhis:** Ürün sayfası “Benzer Bağışlar” kartlarında başlık/buton DOM’da vardı; Avada `.fusion-post-cards.fusion-animated` `visibility:hidden` iken ekran alınıyordu (eklenti döngüyü silmiyor). Mağaza WooCommerce `ul.products` — animasyon yok, “Aynı” kaldı.
+- **E2E:** `settleForScreenshot` animasyon görünür olana kadar bekler; ürün + mağazada görünür başlık + “Bağış Yap” işlevsel iddiası.
+- **Idle prefetch:** `navigator.connection.saveData` / `2g` / `slow-2g` / `webdriver` → atlanır (niyet ön yükleme açık kalır).
+
+### 10.28.11 — Mağaza lazy modal niyet ön yükleme + E2E hız
+
+- **Mağaza/döngü:** `pointerenter` / `focus` / `touchstart` ile `wdp_render_modal` önceden çağrılır; tıklamada hazır HTML. Önbellek anahtarı = ürün + para birimi + dil; Curcy değişince geçersiz. Boşta: `requestIdleCallback` + `IntersectionObserver`, varsayılan ilk 3 görünür ürün, eşzamanlı 1 (`wdp_lazy_idle_prefetch` filtresi). Form sayfaya gömülmez.
+- **Nonce:** Sunucu `wdp_render_modal` için nonce zorunlu tutmaz (sayfa önbelleği); istemci hata olursa tıklamada `wdp_get_fresh_nonces` + yeniden dener.
+- **E2E:** quick ≤180 sn (shares-late paralellik); stability kabuk eşiği özeti; accept yalnız Değişti+Yeni; `e2e:perf` mağaza hover bütçesi (≤300 ms uyarı).
+
+### 10.28.10 — Gecikmeli product_info hissedar verisini silmez
+
+- **Kök neden:** `applyProductInfo` → `shareholder.setup` satırlar varken `innerHTML=""` ile listeyi yeniden kuruyordu; kullanıcı adı/telefon/not ve `.wdp-input-error` kayboluyordu.
+- **Düzeltme:** Satırlar varken soft-sync (fiyat/rozet/+/−/görünürlük); wipe yok. `force:true` gerekirsen capture→restore (10.28.8 kalıbı) + armed ise doğrulamayı yeniden boya.
+- **E2E:** `shares-late-product-info` (product_info ~1.5 sn gecikmeli) quick içinde.
+
 ### 10.28.9 — İskelet kilidi her yolda açılır
 
 - **try/finally:** `runModalOpenInit` ve `openModal` hata yolunda kilit + `aria-busy` kalkar.

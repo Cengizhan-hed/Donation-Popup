@@ -60,6 +60,7 @@ async function main() {
     stats,
     capturedScreens,
     mode: 'full',
+    shellDiffThreshold: env.E2E_SHELL_DIFF_THRESHOLD,
   });
 
   writeRunManifest({

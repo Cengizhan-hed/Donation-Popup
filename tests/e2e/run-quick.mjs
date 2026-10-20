@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 /**
  * Hızlı E2E: masaüstü Chromium — ürün + form (popup/panel) + liste/mağaza + işlevsel.
- * Baseline yoksa ekran bazında otomatik oluşturur. Hedef ≤ 150 sn.
+ * Baseline yoksa ekran bazında otomatik oluşturur. Hedef ≤ 180 sn.
+ * desktop-popup-* = ortadaki modal (liste); desktop-panel-* = sağ panel (ürün sayfası).
  *
  *   npm run e2e:quick
  *   npm run e2e:quick -- --no-side-cart
@@ -57,7 +58,7 @@ async function main() {
   cleanE2EOutputDirs();
   const startedAt = new Date().toISOString();
   const started = Date.now();
-  console.log('E2E quick (desktop Chromium, 3 worker, form dahil) → build/e2e/current/');
+  console.log('E2E quick (desktop Chromium, 4 worker, form dahil) → build/e2e/current/');
   if (flags.noSideCart) {
     console.log('Seçenek: --no-side-cart (guest URL + hdf_no_side_cart=1)');
   }
@@ -76,7 +77,7 @@ async function main() {
     outDir: CURRENT_DIR,
     runFunctional: true,
     mode: 'quick',
-    workers: 3,
+    workers: 4,
     runLabel: 'quick',
     noSideCart: flags.noSideCart,
   });
@@ -99,6 +100,7 @@ async function main() {
     stats,
     capturedScreens,
     mode: 'quick',
+    shellDiffThreshold: env.E2E_SHELL_DIFF_THRESHOLD,
   });
 
   const endedAt = new Date().toISOString();
@@ -131,8 +133,17 @@ async function main() {
     );
   }
   console.log(
-    `Görsel durum: Değişti=${changedCount} Yeni referans=${newBaselineCount} (eşik ≤ ${threshold}%)`
+    `Görsel durum: Değişti=${changedCount} Yeni referans=${newBaselineCount}` +
+      ` (sayfa ≤ ${threshold}% · kabuk ≤ ${env.E2E_SHELL_DIFF_THRESHOLD}%)`
   );
+  if (changedScreens.length) {
+    console.log('Değişti:');
+    for (const name of changedScreens) console.log(`  • ${name}`);
+  }
+  if (newBaselineScreens.length) {
+    console.log('Yeni:');
+    for (const name of newBaselineScreens) console.log(`  • ${name}`);
+  }
   console.log(`Süre: ${((Date.now() - started) / 1000).toFixed(1)}s`);
   console.log(`Manifest: ${path.relative(ROOT, path.join(CURRENT_DIR, 'run.json'))}`);
 

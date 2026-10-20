@@ -72,10 +72,15 @@ export function loadE2EEnv() {
     E2E_SHOP_PAGE: String(env.E2E_SHOP_PAGE).trim(),
     // İsteğe bağlı: ekran görüntüsünde maskelenecek ek CSS seçiciler (virgülle)
     E2E_MASK_SELECTORS: String(env.E2E_MASK_SELECTORS || '').trim(),
-    // Görsel fark eşiği (%); üstü "Değişti"
+    // Görsel fark eşiği (%); üstü "Değişti" — sayfa ekranları
     E2E_DIFF_THRESHOLD: (() => {
       const n = Number.parseFloat(String(env.E2E_DIFF_THRESHOLD || '0.5'));
       return Number.isFinite(n) && n >= 0 ? n : 0.5;
+    })(),
+    // Kabuk (popup/panel) ekranları — daha küçük alan; düşük eşik (varsayılan %0.1)
+    E2E_SHELL_DIFF_THRESHOLD: (() => {
+      const n = Number.parseFloat(String(env.E2E_SHELL_DIFF_THRESHOLD || '0.1'));
+      return Number.isFinite(n) && n >= 0 ? n : 0.1;
     })(),
   };
 }

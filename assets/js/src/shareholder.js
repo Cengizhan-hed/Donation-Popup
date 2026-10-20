@@ -225,8 +225,8 @@
     callModule('formsSync', 'updateShareholderForms', [container, productData]);
   }
 
-  function setupShareholderForms(modal, productId) {
-    return callModule('setup', 'setupShareholderForms', [modal, productId]);
+  function setupShareholderForms(modal, productId, options) {
+    return callModule('setup', 'setupShareholderForms', [modal, productId, options]);
   }
 
   function setupDirectShareholderForms(formContainer, productId, productData) {

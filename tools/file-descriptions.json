@@ -154,7 +154,7 @@
   "includes/elementor/class-widget-donations-list.php": "Elementor Bağış Listesi widget'ı.",
   "assets/css/list.css": "[wdp_donations] ızgara, kart ve sekme stilleri (yalnızca liste kullanıldığında yüklenir).",
   "assets/js/list.js": "[wdp_donations] sekmeleri: klavye, hash paylaşımı, JS kapalıyken tüm kartlar görünür.",
-  "assets/js/src/lazy-modal.js": "data-wdp-lazy butonlarda modal HTML'ini AJAX ile getirir, önbelleğe alır ve açar.",
+  "assets/js/src/lazy-modal.js": "data-wdp-lazy: niyet/idle ön yükleme, ürün+para+dil önbelleği, tıklamada açar (form gömmez).",
   "assets/css/src/forms/container-queries.css": "Form içi düzen, ekran genişliğine değil bulunduğu kutunun genişliğine göre kırılır.",
   "blocks/donation-form/block.json": "Gutenberg bağış formu bloğu tanımı.",
   "blocks/donations/block.json": "Gutenberg bağış listesi bloğu tanımı.",

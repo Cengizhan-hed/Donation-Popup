@@ -171,19 +171,22 @@ async function main() {
             : []
         );
 
-    const { reportFile, changedCount, changedScreens = [] } = compareAndReport(
-      run1Dir,
-      run2Dir,
-      reportDir,
-      [],
-      threshold,
-      {
-        capturedScreens: captured,
-        mode: 'stability',
-        autoCreateBaseline: false,
-        stats: { passed: 0, skipped: 0, failed: 0 },
-      }
-    );
+    const shellThreshold = Number.isFinite(Number(env.E2E_SHELL_DIFF_THRESHOLD))
+      ? Number(env.E2E_SHELL_DIFF_THRESHOLD)
+      : 0.1;
+
+    const {
+      reportFile,
+      changedCount,
+      changedScreens = [],
+      shellThreshold: reportShellThreshold = shellThreshold,
+    } = compareAndReport(run1Dir, run2Dir, reportDir, [], threshold, {
+      capturedScreens: captured,
+      mode: 'stability',
+      autoCreateBaseline: false,
+      stats: { passed: 0, skipped: 0, failed: 0 },
+      shellDiffThreshold: shellThreshold,
+    });
 
     const summary = {
       mode: 'stability',
@@ -191,6 +194,7 @@ async function main() {
       maxRuns,
       noSideCart: !!noSideCart,
       threshold,
+      shellThreshold: reportShellThreshold,
       report: path.relative(ROOT, reportFile),
       runs: runs.map((r) => ({
         label: r.label,
@@ -212,7 +216,9 @@ async function main() {
     console.log(`=== Stability özet (tur ${round}) ===`);
     console.log(`run1: ${runs[0].secs.toFixed(1)}s | run2: ${runs[1].secs.toFixed(1)}s`);
     console.log(`noSideCart: ${noSideCart ? 'evet' : 'hayır'}`);
-    console.log(`Eşik: ≤ ${threshold}%`);
+    console.log(
+      `Eşik: sayfa ≤ ${threshold}% · kabuk (popup/panel) ≤ ${reportShellThreshold}%`
+    );
     console.log(`Rapor: ${path.relative(ROOT, reportFile)}`);
     console.log(`Manifest: ${path.relative(ROOT, path.join(STAB_DIR, 'run.json'))}`);
     for (const r of runs) {

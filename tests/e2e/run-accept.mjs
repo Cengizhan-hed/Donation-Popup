@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 /**
- * Güvenli accept: yalnızca son çalıştırmanın (run.json) ekranlarını baseline’a birleştirir.
+ * Güvenli accept: yalnızca son çalıştırmanın Değişti + Yeni ekranlarını baseline’a yazar.
+ * "Aynı" ekranlara dokunulmaz (baseline kayması olmasın).
  * İşlevsel hata varken veya run.json yokken reddeder.
- * Eski baseline → tests/e2e/__baseline_prev__/
+ * Eski baseline → tests/e2e/__baseline_prev__/ (yalnızca üzerine yazılanlar yedeklenir).
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -31,6 +32,12 @@ function copyPngs(from, to) {
   }
 }
 
+function basenames(list) {
+  return (Array.isArray(list) ? list : [])
+    .map((n) => path.basename(String(n)))
+    .filter((n) => n.endsWith('.png'));
+}
+
 const run = readRunManifest();
 if (!run || !Array.isArray(run.screens) || !run.screens.length) {
   console.error(
@@ -55,8 +62,20 @@ if (flaky.length) {
   );
 }
 
-const screens = run.screens.map((n) => path.basename(String(n))).filter((n) => n.endsWith('.png'));
-const missing = screens.filter((n) => !fs.existsSync(path.join(CURRENT_DIR, n)));
+const changed = basenames(run.changedScreens);
+const neu = basenames(run.newBaselineScreens);
+/** Değişti önce, Yeni sonra — tekilleştir */
+const toCopy = [...new Set([...changed, ...neu])];
+
+if (!toCopy.length) {
+  console.log(
+    'Kabul: kopyalanacak ekran yok (Değişti=0, Yeni=0). Baseline’daki "Aynı" ekranlara dokunulmadı.'
+  );
+  console.log(`Baseline toplam: ${pngs(BASELINE_DIR).length} ekran. Mod=${run.mode || '?'} sürüm=${run.pluginVersion || '?'}`);
+  process.exit(0);
+}
+
+const missing = toCopy.filter((n) => !fs.existsSync(path.join(CURRENT_DIR, n)));
 if (missing.length) {
   console.error(
     `Kabul reddedildi: run.json’daki bazı ekranlar current’da yok: ${missing.slice(0, 5).join(', ')}`
@@ -73,15 +92,24 @@ if (pngs(BASELINE_DIR).length) {
 }
 
 fs.mkdirSync(BASELINE_DIR, { recursive: true });
-const copied = [];
-for (const name of screens) {
+const copiedChanged = [];
+const copiedNew = [];
+for (const name of toCopy) {
   fs.copyFileSync(path.join(CURRENT_DIR, name), path.join(BASELINE_DIR, name));
-  copied.push(name);
+  if (changed.includes(name)) copiedChanged.push(name);
+  else copiedNew.push(name);
 }
 
-console.log(`Birleştirildi: ${copied.length} ekran baseline’a kopyalandı (diğer baseline ekranları korundu).`);
-for (const name of copied) {
-  console.log(`  • ${name}`);
+console.log(
+  `Birleştirildi: ${toCopy.length} ekran (Değişti=${copiedChanged.length}, Yeni=${copiedNew.length}). Aynı olanlara dokunulmadı.`
+);
+if (copiedChanged.length) {
+  console.log('Değişti:');
+  for (const name of copiedChanged) console.log(`  • ${name}`);
+}
+if (copiedNew.length) {
+  console.log('Yeni:');
+  for (const name of copiedNew) console.log(`  • ${name}`);
 }
 console.log(
   `Baseline toplam: ${pngs(BASELINE_DIR).length} ekran. Mod=${run.mode || '?'} sürüm=${run.pluginVersion || '?'}`

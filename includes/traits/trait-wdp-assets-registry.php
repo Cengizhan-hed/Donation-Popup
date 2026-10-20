@@ -278,11 +278,6 @@ trait WDP_Assets_Registry_Trait {
      *
      * @param string $plugin_url Plugin URL.
      * @return void
-    /**
-     * Localize frontend runtime data once per request.
-     *
-     * @param string $plugin_url Plugin URL.
-     * @return void
      */
     private static function localize_frontend_assets($plugin_url) {
         // Get current currency (supports Currency switcher plugins)
@@ -317,6 +312,10 @@ trait WDP_Assets_Registry_Trait {
             'currency' => array(
                 'code' => $current_currency,
                 'symbol' => $currency_symbol,
+            ),
+            // Lazy modal: boşta ön yükleme üst sınırı (görünür ilk N; eşzamanlı 1). 0 = kapalı.
+            'lazy' => array(
+                'idle_prefetch' => max(0, min(12, (int) apply_filters('wdp_lazy_idle_prefetch', 3))),
             ),
             'strings' => array(
                 'loading' => __('Yükleniyor...', 'woo-donation-popup'),
@@ -502,10 +501,9 @@ trait WDP_Assets_Registry_Trait {
     }
     
     /**
-     * Enqueue assets immediately (called by force_enqueue or wp_enqueue_scripts)
-    
-    /**
-     * Enqueue assets immediately (called by force_enqueue or wp_enqueue_scripts)
+     * Enqueue assets immediately (called by force_enqueue or wp_enqueue_scripts).
+     *
+     * @return void
      */
     public static function enqueue_assets_now() {
         // Script'ler zaten register edilmiş olmalı (enqueue_assets metodunda)

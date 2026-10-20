@@ -43,9 +43,47 @@
     callHook('setupShareQuantityButtons', m, input, price, el);
   }
 
-  async function setupShareholderForms(modal, productId) {
+  /**
+   * Satırlar varken wipe yok: görünürlük + fiyat/rozet + +/- + telefon + rehberlik.
+   * Hisse adedi ve alan değerleri korunur.
+   */
+  function softSyncExistingShareholderForms(modal, shareCountInput, shareholdersList, shareholdersContainer) {
+    ensureReadableInput(shareCountInput);
+    const forms = shareholdersList.querySelectorAll('.wdp-shareholder-form');
+    forms.forEach(function(form) {
+      ensureVisible(form);
+      setupCopyFormButton(form);
+      setupShareholderHeaderClick(form);
+      checkShareholderFormWarning(form);
+    });
+    setupWdpPhoneFields(shareholdersList);
+    const priceInput = modal.querySelector('input[name="custom_price"]');
+    let baseProductPrice = 0;
+    const ds = modal.getAttribute && modal.getAttribute('data-wdp-unit-price');
+    if (ds) {
+      baseProductPrice = Number.parseFloat(ds) || 0;
+    }
+    setupShareQuantityButtons(modal, shareCountInput, baseProductPrice, priceInput);
+    syncShareholderUnitPricesFromModal(modal);
+    updateSharesTotalBar(modal);
+    scheduleShareholdersScrollableUpdate(modal);
+    refreshShareholderGuidance(modal);
+    if (shareholdersContainer) {
+      cacheShareholdersBaseHeight(shareholdersContainer);
+    }
+    safeLog('setupShareholderForms soft-sync done; rows=', forms.length);
+  }
+
+  /**
+   * @param {HTMLElement} modal
+   * @param {number|string} productId
+   * @param {{ force?: boolean }} [options] force=true → capture→wipe→restore (+ armed ise yeniden doğrula)
+   */
+  async function setupShareholderForms(modal, productId, options) {
     try {
-      safeLog("setupShareholderForms called with modal:", modal?.id || modal?.className, "productId:", productId);
+      const opts = options && typeof options === 'object' ? options : {};
+      const forceRebuild = !!opts.force;
+      safeLog("setupShareholderForms called with modal:", modal?.id || modal?.className, "productId:", productId, "force:", forceRebuild);
       
       // Setup shareholder forms
       
@@ -138,7 +176,27 @@
       shareholdersList.style.flexDirection = 'column';
       safeLog("Shareholders list made visible");
 
-      // Başlangıç değerini 1 olarak ayarla ve event'leri tetikle
+      const existingForms = shareholdersList.querySelectorAll('.wdp-shareholder-form');
+      // product_info / tekrar setup: satırlar varken wipe etme (kullanıcı verisi + hata DOM)
+      if (existingForms.length > 0 && !forceRebuild) {
+        softSyncExistingShareholderForms(modal, shareCountInput, shareholdersList, shareholdersContainer);
+        return;
+      }
+
+      let preservedValues = null;
+      let wasValidationArmed = false;
+      if (forceRebuild && existingForms.length > 0) {
+        if (WDPApp.dom && typeof WDPApp.dom.captureFormValues === 'function') {
+          preservedValues = WDPApp.dom.captureFormValues(modal);
+        }
+        wasValidationArmed = !!(
+          hostForm &&
+          hostForm.dataset &&
+          hostForm.dataset.wdpShareValidationArmed === '1'
+        );
+      }
+
+      // İlk kurulum (veya force): adedi 1'e çek, listeyi yenile
       shareCountInput.value = "1";
       // CRITICAL: Input görünürlüğünü garanti et
       ensureReadableInput(shareCountInput);
@@ -203,6 +261,25 @@
       // Scrollable class'ını güncelle
       scheduleShareholdersScrollableUpdate(modal);
       refreshShareholderGuidance(modal);
+
+      // force rebuild: 10.28.8 kalıbı — capture → wipe → restore; armed ise hataları yeniden boya
+      if (preservedValues && WDPApp.dom && typeof WDPApp.dom.restoreFormValues === 'function') {
+        WDPApp.dom.restoreFormValues(modal, preservedValues);
+        setupWdpPhoneFields(shareholdersList);
+        refreshShareholderGuidance(modal);
+      }
+      if (
+        wasValidationArmed &&
+        hostForm &&
+        WDPApp.form &&
+        typeof WDPApp.form.validateForm === 'function'
+      ) {
+        try {
+          WDPApp.form.validateForm(hostForm);
+        } catch (eRepaint) {
+          safeLog('setupShareholderForms re-validate after force failed:', eRepaint);
+        }
+      }
 
       // Fiyat alanını bul
       const priceInput = modal.querySelector('input[name="custom_price"]');

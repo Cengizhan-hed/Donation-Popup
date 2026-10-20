@@ -375,7 +375,9 @@
         if (quantityRow) {
           quantityRow.style.display = "none";
         }
-        if (WDPApp.shareholder && WDPApp.shareholder.setup) {
+        // Satırlar zaten varsa setup soft-sync yapar (wipe yok). Yoksa ilk kurulum.
+        // force:true yalnız adet/ürün yapısı gerçekten değişince — capture→restore.
+        if (WDPApp.shareholder && typeof WDPApp.shareholder.setup === "function") {
           WDPApp.shareholder.setup(root, id);
         }
       } else {
