@@ -56,6 +56,11 @@ Bitiş: verify + test → (gerekirse) npm run ship:staging → e2e:quick → RAP
 - Aklına gelmeyenleri söyle; en ince ayrıntıyı düşün.
 - Şifre, token, `.env` değeri asla sohbete veya dosyaya yazılmaz.
 - Onay gerektiren her komuttan ÖNCE kullanıcıya Türkçe tek cümleyle ne yapacağını ve "yalnız okur" / "dosya değiştirir" / "geri alınması zor" olduğunu yaz. Kullanıcı teknik değil; komut metnini anlamayabilir.
+- Her mesajın EN SON satırı şu üçünden biri olmalı:
+  ✅ BİTTİ – sıra sende
+  ⏳ BEKLİYOR – Cursor çalışıyor, bitince kendim devam edeceğim
+  ❓ ONAY GEREKİYOR – <ne için>
+  Arka planda Cursor çalışırken asla ✅ yazma.
 
 ## 5. Proje
 
