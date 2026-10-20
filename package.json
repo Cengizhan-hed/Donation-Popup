@@ -1,6 +1,6 @@
 {
   "name": "donation-popup",
-  "version": "10.28.10",
+  "version": "10.28.12",
   "description": "WooCommerce donation popup — WordPress plugin.",
   "private": true,
   "scripts": {
@@ -23,7 +23,8 @@
     "e2e:selftest": "node --test tests/e2e/helpers/auth-classify.test.mjs tests/unit/js/*.test.mjs",
     "deploy:staging": "node scripts/deploy-staging.mjs",
     "deploy:staging:rollback": "node scripts/deploy-staging.mjs --rollback",
-    "ship:staging": "node scripts/ship-staging.mjs"
+    "ship:staging": "node scripts/ship-staging.mjs",
+    "handoff": "node scripts/handoff.mjs"
   },
   "repository": {
     "type": "git",

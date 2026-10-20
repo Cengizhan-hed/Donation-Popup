@@ -30,6 +30,11 @@ class WDP_Lazy_Modal {
 			if (!WDP_Security::validate_request_origin()) {
 				wp_send_json_error(array('message' => __('Geçersiz istek kaynağı', 'woo-donation-popup')), 403);
 			}
+			// Bilinçli: check_ajax_referer YOK. SiteGround sayfa önbelleği eski
+			// wdp_ajax.nonces.render_modal gömebilir; nonce zorunlu olsa hem ön yükleme
+			// hem tıklama kırılır. Koruma: origin + rate limit. İstemci security
+			// gönderir; boş/403 yanıtında tıklama fresh nonce + yeniden dener
+			// (assets/js/src/lazy-modal.js ensureAndOpen).
 			$key = WDP_Security::get_rate_limit_key('render_modal');
 			if (!WDP_Security::check_rate_limit($key, 60, 60)) {
 				wp_send_json_error(array('message' => __('Çok fazla istek gönderildi. Lütfen kısa süre sonra tekrar deneyin.', 'woo-donation-popup')), 429);

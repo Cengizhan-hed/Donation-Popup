@@ -25,6 +25,11 @@ import { SEL } from './helpers/selectors.mjs';
 const PERF_DIR = path.join(ROOT, 'build/e2e/perf');
 const REPEATS = 5;
 const DESKTOP = { width: 1440, height: 900 };
+/** Mağaza hover sonrası ready medyan bütçesi (ms). Aşılırsa uyarı; exit code 0. */
+const SHOP_HOVER_READY_BUDGET_MS = Number.parseInt(
+  String(process.env.E2E_PERF_SHOP_HOVER_BUDGET_MS || '300'),
+  10
+) || 300;
 
 const WDP_ACTIONS = new Set([
   'wdp_get_product_info',
@@ -119,8 +124,9 @@ async function countShellInDom(page, mode, productId) {
  * @param {import('@playwright/test').Page} page
  * @param {import('@playwright/test').Locator} trigger
  * @param {'popup'|'panel'} mode
+ * @param {{ hoverFirst?: boolean }} [opts]
  */
-async function measureOpen(page, trigger, mode) {
+async function measureOpen(page, trigger, mode, opts = {}) {
   /** @type {Array<{ action: string, ms: number, bytes: number, when: 'pre'|'post', url: string }>} */
   const ajax = [];
   /** @type {{ t: number }} */
@@ -162,10 +168,32 @@ async function measureOpen(page, trigger, mode) {
   const shellBefore = await countShellInDom(page, mode, productIdNum);
 
   await trigger.waitFor({ state: 'visible', timeout: CHECK_MS });
+
+  let hoverWaitMs = NaN;
+  if (opts.hoverFirst) {
+    const tHover = Date.now();
+    await trigger.hover({ timeout: CHECK_MS }).catch(() => {});
+    // Niyet ön yükleme: wdp_render_modal bitsin (veya önbellekte olsun)
+    await page
+      .waitForResponse(
+        (res) => {
+          if (!/admin-ajax\.php/i.test(res.url())) return false;
+          const req = res.request();
+          const post = req.postData() || '';
+          return /wdp_render_modal/i.test(post) || /wdp_render_modal/i.test(res.url());
+        },
+        { timeout: 8000 }
+      )
+      .catch(() => null);
+    // Prefetch cache'e yazılmış olabilir (yanıt kaçırıldı) — kısa buffer
+    await new Promise((r) => setTimeout(r, 80));
+    hoverWaitMs = Date.now() - tHover;
+  }
+
   clickMark.t = Date.now();
 
   const timing = await page.evaluate(
-    async ({ triggerSel, productId, openSel }) => {
+    async ({ triggerSel, productId, openSel, isPanel }) => {
       const t0 = performance.now();
       /** @type {HTMLElement|null} */
       let btn = null;
@@ -173,7 +201,17 @@ async function measureOpen(page, trigger, mode) {
         btn = document.querySelector(`${triggerSel}[data-product-id="${productId}"]`);
       }
       if (!btn) btn = /** @type {HTMLElement|null} */ (document.querySelector(triggerSel));
-      if (!btn) return { error: 'trigger-missing', domMs: NaN, visibleMs: NaN, unlockMs: NaN, readyMs: NaN };
+      if (!btn) {
+        return {
+          error: 'trigger-missing',
+          domMs: NaN,
+          visibleMs: NaN,
+          unlockMs: NaN,
+          readyMs: NaN,
+          doubleRafMs: NaN,
+          slideAnimMs: NaN,
+        };
+      }
 
       btn.click();
 
@@ -182,11 +220,35 @@ async function measureOpen(page, trigger, mode) {
       let visibleMs = NaN;
       let unlockMs = NaN;
       let readyMs = NaN;
+      let doubleRafMs = NaN;
+      let slideAnimMs = NaN;
+      let rafStarted = false;
 
       while (performance.now() < deadline) {
         const shell = document.querySelector(openSel);
         if (shell && !Number.isFinite(domMs)) {
           domMs = performance.now() - t0;
+          if (isPanel && !rafStarted) {
+            rafStarted = true;
+            const tRaf = performance.now();
+            await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+            doubleRafMs = performance.now() - tRaf;
+            try {
+              const st = window.getComputedStyle(shell);
+              const dur = st.animationDuration || st.transitionDuration || '0s';
+              const parts = String(dur)
+                .split(',')
+                .map((s) => s.trim());
+              let maxMs = 0;
+              for (const p of parts) {
+                if (p.endsWith('ms')) maxMs = Math.max(maxMs, Number.parseFloat(p) || 0);
+                else if (p.endsWith('s')) maxMs = Math.max(maxMs, (Number.parseFloat(p) || 0) * 1000);
+              }
+              slideAnimMs = maxMs;
+            } catch (e) {
+              slideAnimMs = NaN;
+            }
+          }
         }
         if (shell) {
           const st = window.getComputedStyle(shell);
@@ -223,12 +285,13 @@ async function measureOpen(page, trigger, mode) {
         }
         await new Promise((r) => requestAnimationFrame(r));
       }
-      return { domMs, visibleMs, unlockMs, readyMs, error: null };
+      return { domMs, visibleMs, unlockMs, readyMs, doubleRafMs, slideAnimMs, error: null };
     },
     {
       triggerSel: mode === 'panel' ? SEL.sidePanelTrigger : SEL.centeredPopupTrigger,
       productId: productIdAttr,
       openSel: mode === 'panel' ? SEL.openSidePanel : SEL.openCenteredPopup,
+      isPanel: mode === 'panel',
     }
   );
 
@@ -246,6 +309,10 @@ async function measureOpen(page, trigger, mode) {
     clickToVisibleMs: timing.visibleMs,
     clickToUnlockMs: timing.unlockMs,
     clickToReadyMs: timing.readyMs,
+    doubleRafMs: timing.doubleRafMs,
+    slideAnimMs: timing.slideAnimMs,
+    hoverWaitMs,
+    hoverFirst: !!opts.hoverFirst,
     error: timing.error || null,
     bundleBeforeClick: bundleBefore,
     shellBeforeClick: shellBefore,
@@ -259,10 +326,11 @@ async function measureOpen(page, trigger, mode) {
  * @param {object} opts
  */
 async function runOneTrial(browser, opts) {
-  const { env, pagePath, mode, productId, warm, guestExtra, label } = opts;
+  const { env, pagePath, mode, productId, warm, guestExtra, label, hoverFirst } = opts;
   const context = await browser.newContext({
     viewport: DESKTOP,
-    reducedMotion: 'reduce',
+    // Hover ölçümünde gerçek slide süresini görmek için reducedMotion kapalı (yalnız hover shop)
+    reducedMotion: hoverFirst ? 'no-preference' : 'reduce',
     storageState: warm ? undefined : undefined,
   });
   // Soğuk: hiç cache yok; ılık: aynı context’te ikinci yükleme
@@ -300,6 +368,8 @@ async function runOneTrial(browser, opts) {
       clickToVisibleMs: NaN,
       clickToUnlockMs: NaN,
       clickToReadyMs: NaN,
+      doubleRafMs: NaN,
+      slideAnimMs: NaN,
       ajax: [],
       bundleBeforeClick: { loaded: false },
       shellBeforeClick: { count: 0 },
@@ -307,7 +377,7 @@ async function runOneTrial(browser, opts) {
     };
   }
 
-  const result = await measureOpen(page, trigger, mode);
+  const result = await measureOpen(page, trigger, mode, { hoverFirst: !!hoverFirst });
   await context.close().catch(() => {});
   return { label, warm, mode, pagePath, productId, ...result };
 }
@@ -359,13 +429,22 @@ async function main() {
       productKey: key,
     });
   }
-  // Mağaza × panel (loop_button varsayılan panel)
+  // Mağaza × panel — soğuk tıklama (hover yok, mobil benzeri) + hover sonrası
   targets.push({
-    label: 'shop-panel',
+    label: 'shop-panel-cold',
     path: env.E2E_SHOP_PAGE,
     mode: 'panel',
     productId: productIds.fixed || 0,
     productKey: 'fixed',
+    hoverFirst: false,
+  });
+  targets.push({
+    label: 'shop-panel-hover',
+    path: env.E2E_SHOP_PAGE,
+    mode: 'panel',
+    productId: productIds.fixed || 0,
+    productKey: 'fixed',
+    hoverFirst: true,
   });
   // Ürün sayfaları × panel (display varsayılan button_panel)
   for (const key of /** @type {const} */ (['fixed', 'custom', 'shares', 'campaign'])) {
@@ -395,6 +474,7 @@ async function main() {
           warm,
           guestExtra: {},
           label: `${target.label}/${kind}`,
+          hoverFirst: !!target.hoverFirst,
         });
         allTrials.push({ ...trial, target: target.label, productKey: target.productKey, repeat: i + 1 });
         process.stdout.write('.');
@@ -423,6 +503,8 @@ async function main() {
     const vis = stats(trials.map((t) => t.clickToVisibleMs));
     const unlock = stats(trials.map((t) => t.clickToUnlockMs));
     const ready = stats(trials.map((t) => t.clickToReadyMs));
+    const raf = stats(trials.map((t) => t.doubleRafMs));
+    const slide = stats(trials.map((t) => t.slideAnimMs));
     const panelFlags = trials.map((t) => t.openedIsSidePanel);
     const ajaxActions = {};
     for (const t of trials) {
@@ -465,11 +547,26 @@ async function main() {
         `- Görünür: med ${fmtMs(vis.median)} / worst ${fmtMs(vis.worst)}\n` +
         `- Kilit kalktı: med ${fmtMs(unlock.median)} / worst ${fmtMs(unlock.worst)}\n` +
         `- Form hazır: med ${fmtMs(ready.median)} / worst ${fmtMs(ready.worst)}\n` +
+        `- Çift rAF (ölçüm): med ${fmtMs(raf.median)} ms\n` +
+        `- Panel slide CSS süresi (ölçüm): med ${fmtMs(slide.median)} ms\n` +
         `- Tıklama öncesi kabuk DOM’da: ${htmlReady ? 'evet' : 'hayır'} (lazy tetik: ${lazy ? 'evet' : 'hayır'})\n` +
         `- Bundle tıklama öncesi: ${bundle.loaded ? 'yüklü' : 'yok'} ${bundle.defer || ''} ${bundle.async || ''} ${bundle.url || ''}\n` +
         `- Açılan kabuk: ${panelFlags.filter((f) => f === true).length} panel / ${panelFlags.filter((f) => f === false).length} popup\n` +
         `- AJAX: ${ajaxSummary || '(yok)'}\n`
     );
+  }
+
+  /** @type {string[]} */
+  const budgetWarnings = [];
+  for (const [key, trials] of groups) {
+    const [target, kind] = key.split('|');
+    if (target !== 'shop-panel-hover') continue;
+    const ready = stats(trials.map((t) => t.clickToReadyMs));
+    if (Number.isFinite(ready.median) && ready.median > SHOP_HOVER_READY_BUDGET_MS) {
+      budgetWarnings.push(
+        `UYARI: ${target} (${kind}) ready med=${fmtMs(ready.median)} ms > bütçe ${SHOP_HOVER_READY_BUDGET_MS} ms`
+      );
+    }
   }
 
   const placementNotes = `
@@ -501,6 +598,13 @@ async function main() {
 4. Bundle’ı ürün/liste sayfalarında erken yükle (footer gecikmesini azalt).
 `;
 
+  const budgetBlock =
+    `\n## Bütçe\n\n` +
+    `- Mağaza hover sonrası ready ≤ **${SHOP_HOVER_READY_BUDGET_MS} ms** (aşım = uyarı, exit 0)\n` +
+    (budgetWarnings.length
+      ? budgetWarnings.map((w) => `- ${w}`).join('\n') + '\n'
+      : `- shop-panel-hover bütçe içinde.\n`);
+
   const report =
     `# E2E form açılış perf raporu\n\n` +
     `Tarih: ${new Date().toISOString()}\n` +
@@ -526,16 +630,26 @@ async function main() {
     ) +
     `\n` +
     detailBlocks.join('\n') +
+    budgetBlock +
     placementNotes;
 
   const reportFile = path.join(PERF_DIR, 'report.md');
   fs.writeFileSync(reportFile, report, 'utf8');
-  fs.writeFileSync(path.join(PERF_DIR, 'raw.json'), JSON.stringify({ trials: allTrials, summaryRows }, null, 2));
+  fs.writeFileSync(
+    path.join(PERF_DIR, 'raw.json'),
+    JSON.stringify({ trials: allTrials, summaryRows, budgetWarnings, shopHoverBudgetMs: SHOP_HOVER_READY_BUDGET_MS }, null, 2)
+  );
 
   console.log('');
   console.log('=== Perf özeti (ready medyan ms) ===');
   for (const r of summaryRows) {
     console.log(`  ${r[0].padEnd(28)} ${r[1].padEnd(5)} ready med=${r[6]} worst=${r[7]} kabuk=${r[11]} html=${r[8]}`);
+  }
+  if (budgetWarnings.length) {
+    console.warn('');
+    for (const w of budgetWarnings) console.warn(w);
+  } else {
+    console.log(`Mağaza hover bütçe: ≤ ${SHOP_HOVER_READY_BUDGET_MS} ms (OK veya ölçüm yok)`);
   }
   console.log(`Report: ${path.relative(ROOT, reportFile)}`);
   console.log(`Süre: ${((Date.now() - started) / 1000).toFixed(1)}s`);

@@ -327,6 +327,7 @@ ${rows
     notCapturedScreens: notCaptured,
     capturedScreens: captured,
     threshold,
+    shellThreshold,
     passedCount,
     skippedCount,
     failedCount,

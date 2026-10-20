@@ -56,6 +56,11 @@
         listenersInitialized = true;
       }
     }
+
+    const lazyModal = getModule('lazyModal');
+    if (lazyModal && typeof lazyModal.startIdlePrefetch === 'function') {
+      lazyModal.startIdlePrefetch();
+    }
   }
 
   // DOM ready handler - main initialization

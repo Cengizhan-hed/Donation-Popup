@@ -35,6 +35,8 @@ trait WDP_Ajax_Cart_Session_Trait {
                     'get_cart_count' => wp_create_nonce('wdp_get_cart_count'),
                     'get_cart_contents' => wp_create_nonce('wdp_get_cart_contents'),
                     'remove_cart_item' => wp_create_nonce('wdp_remove_cart_item'),
+                    'get_product_info' => wp_create_nonce('wdp_get_product_info'),
+                    'render_modal' => wp_create_nonce('wdp_render_modal'),
                 ),
             ));
         } catch (WDP_Security_Exception $e) {

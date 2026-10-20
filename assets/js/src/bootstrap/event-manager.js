@@ -73,18 +73,29 @@
       : (window.WDPApp._tempState ? window.WDPApp._tempState.listenersInitialized : false);
 
     if (!currentListenersInitialized) {
-      document.addEventListener("pointerover", function(e) {
-        const button = getClosestTriggerButton(e.target);
+      function prefetchLazyButton(button) {
         if (button && button.getAttribute("data-wdp-lazy") && WDPApp.lazyModal && typeof WDPApp.lazyModal.prefetch === "function") {
           WDPApp.lazyModal.prefetch(button);
         }
-      });
-      document.addEventListener("focusin", function(e) {
+      }
+      // pointerenter bubble etmez → pointerover + relatedTarget ile enter benzeri (niyet)
+      document.addEventListener("pointerover", function (e) {
         const button = getClosestTriggerButton(e.target);
-        if (button && button.getAttribute("data-wdp-lazy") && WDPApp.lazyModal && typeof WDPApp.lazyModal.prefetch === "function") {
-          WDPApp.lazyModal.prefetch(button);
-        }
+        if (!button) return;
+        const from = e.relatedTarget;
+        if (from && typeof button.contains === "function" && button.contains(from)) return;
+        prefetchLazyButton(button);
       });
+      document.addEventListener("focusin", function (e) {
+        prefetchLazyButton(getClosestTriggerButton(e.target));
+      });
+      document.addEventListener(
+        "touchstart",
+        function (e) {
+          prefetchLazyButton(getClosestTriggerButton(e.target));
+        },
+        { passive: true, capture: true }
+      );
       // PERFORMANCE: Use event delegation and passive listeners where possible
       // Modal açma/ kapama event'leri - Event delegation for better performance
       document.addEventListener("click", function(e) {

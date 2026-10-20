@@ -133,8 +133,17 @@ async function main() {
     );
   }
   console.log(
-    `Görsel durum: Değişti=${changedCount} Yeni referans=${newBaselineCount} (eşik ≤ ${threshold}%)`
+    `Görsel durum: Değişti=${changedCount} Yeni referans=${newBaselineCount}` +
+      ` (sayfa ≤ ${threshold}% · kabuk ≤ ${env.E2E_SHELL_DIFF_THRESHOLD}%)`
   );
+  if (changedScreens.length) {
+    console.log('Değişti:');
+    for (const name of changedScreens) console.log(`  • ${name}`);
+  }
+  if (newBaselineScreens.length) {
+    console.log('Yeni:');
+    for (const name of newBaselineScreens) console.log(`  • ${name}`);
+  }
   console.log(`Süre: ${((Date.now() - started) / 1000).toFixed(1)}s`);
   console.log(`Manifest: ${path.relative(ROOT, path.join(CURRENT_DIR, 'run.json'))}`);
 

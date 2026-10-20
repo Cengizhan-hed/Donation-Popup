@@ -231,10 +231,13 @@ export async function runSharesLateProductInfoChecks({
     }
   }
 
-  await one('panel', 'values');
-  await one('panel', 'errors');
-  await one('popup', 'values');
-  await one('popup', 'errors');
+  // 4 senaryo paralel (her biri kendi context) — quick wall süresini kısaltır
+  await Promise.all([
+    one('panel', 'values'),
+    one('panel', 'errors'),
+    one('popup', 'values'),
+    one('popup', 'errors'),
+  ]);
 
   return {
     ok: failed === 0,

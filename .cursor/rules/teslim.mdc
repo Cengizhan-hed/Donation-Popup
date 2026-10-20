@@ -1,0 +1,26 @@
+---
+description: Görev sonu handoff raporu ve e2e-inceleme paketi
+alwaysApply: true
+---
+
+# Teslim (handoff)
+
+Bu kural `migrations.mdc` ve `version-bump.mdc` ile çakışmaz: onlar sürüm/ayar; bu kural görev sonu teslim paketidir.
+
+## Her görevin sonunda
+
+1. `build/handoff/RAPOR.md` yaz (Türkçe, kısa tablolar). Zorunlu başlıklar:
+   1. Özet (2–4 satır)
+   2. Değişen dosyalar (dosya:satır + ne/neden)
+   3. Kanıt (teşhis dosyaları, ölçümler, önce/sonra)
+   4. Komut sonuçları (verify, test, quick: Geçti/Atlandı/Hata/Değişti/Yeni + süre; perf varsa medyanlar)
+   5. Değişti/Yeni ekran listesi
+   6. Riskler ve açık sorular
+   7. Bilerek yapılmayanlar (commit, accept vb.)
+2. Ardından `npm run handoff` çalıştır (gerekirse `--screens …` / `--shells`).
+3. Sohbete yalnız kısa özet: `Teslim hazır: N dosya` (+ varsa uyarılar).
+
+## Yasaklar
+
+- Şifre, token, `.env` değeri asla rapora veya `git-durum.txt` içine yazılmaz.
+- Commit, push, `e2e:accept`, merge ve canlıya kurulum **yalnız açıkça istenirse** yapılır.

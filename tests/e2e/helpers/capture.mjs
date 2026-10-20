@@ -481,6 +481,36 @@ async function settleForScreenshot(page, opts = {}) {
   // Aşılırsa ekran yine alınır; assertVisibleImagesLoaded images-loaded hatası yazar
   await waitUntilImagesReallyLoaded(page);
 
+  // Avada Post Cards: .fusion-animated başlangıçta visibility:hidden; animasyon bitmeden
+  // ekran alınırsa "Benzer Bağışlar" yalnız resim / boş görünür (gerçek DOM’da başlık+buton var).
+  if (scrollPage && fullPage) {
+    await page
+      .evaluate(async () => {
+        const deadline = Date.now() + 5000;
+        const sel =
+          '.fusion-post-cards.fusion-animated, .fusion-animated.fusion-grid-archive, .fusion-blog-shortcode.fusion-animated';
+        while (Date.now() < deadline) {
+          const nodes = Array.from(document.querySelectorAll(sel));
+          const blocked = nodes.filter((el) => {
+            const st = window.getComputedStyle(el);
+            if (st.display === 'none' || st.visibility !== 'hidden') return false;
+            const r = el.getBoundingClientRect();
+            return r.height > 8 && r.width > 8;
+          });
+          if (!blocked.length) break;
+          for (const el of blocked.slice(0, 4)) {
+            try {
+              el.scrollIntoView({ block: 'center', inline: 'nearest' });
+            } catch (e) {
+              /* ignore */
+            }
+          }
+          await new Promise((r) => setTimeout(r, 120));
+        }
+      })
+      .catch(() => {});
+  }
+
   await page
     .evaluate(async () => {
       window.scrollTo(0, 0);
@@ -1622,6 +1652,110 @@ async function settleLoopPage(page) {
 }
 
 /**
+ * Ürün sayfası "Benzer Bağışlar" (Avada post-cards) + mağaza döngüsü:
+ * her kartta görünür başlık ve görünür "Bağış Yap".
+ *
+ * @param {import('@playwright/test').Page} page
+ * @param {'product'|'shop'} surface
+ * @param {string} screenName
+ * @param {ReturnType<typeof makeFailure>[]} failures
+ * @param {{ passed?: number, failed?: number }} [stats]
+ */
+async function assertLoopCardsTitleAndDonate(page, surface, screenName, failures, stats) {
+  const result = await page.evaluate((surfaceKind) => {
+    function visible(el) {
+      if (!el) return false;
+      const st = getComputedStyle(el);
+      const r = el.getBoundingClientRect();
+      return (
+        st.display !== 'none' &&
+        st.visibility !== 'hidden' &&
+        Number.parseFloat(st.opacity || '1') > 0.05 &&
+        r.width > 4 &&
+        r.height > 4
+      );
+    }
+    /** @type {Element[]} */
+    let cards = [];
+    if (surfaceKind === 'product') {
+      const headings = Array.from(document.querySelectorAll('h1,h2,h3,h4,.fusion-title,.fusion-title-heading'));
+      const benzer = headings.find((h) => /benzer\s*bağış/i.test(h.textContent || ''));
+      const root =
+        (benzer &&
+          (benzer.closest('.fusion-fullwidth, .fusion-builder-row, .related, section, .fusion-post-cards') ||
+            benzer.parentElement)) ||
+        document.querySelector('.fusion-post-cards, .related.products');
+      if (root) {
+        cards = Array.from(
+          root.querySelectorAll('li.post-card, li.fusion-grid-column, .post-card, li.product')
+        );
+      }
+    } else {
+      cards = Array.from(document.querySelectorAll('ul.products li.product')).slice(0, 12);
+    }
+
+    const rows = cards.map((card, i) => {
+      const title =
+        card.querySelector('.fusion-title, .woocommerce-loop-product__title, .product-title, h2, h3') ||
+        null;
+      const btn =
+        Array.from(card.querySelectorAll('a, button')).find((el) =>
+          /bağış\s*yap/i.test((el.textContent || '').trim())
+        ) || null;
+      return {
+        i,
+        titleText: (title && (title.textContent || '').trim().slice(0, 80)) || '',
+        titleVisible: visible(title),
+        btnText: (btn && (btn.textContent || '').trim().slice(0, 40)) || '',
+        btnVisible: visible(btn),
+        cardVisible: visible(card),
+      };
+    });
+    return { cardCount: cards.length, rows };
+  }, surface);
+
+  if (result.cardCount < 1) {
+    failures.push(
+      makeFailure({
+        check: `loop-cards-${surface}`,
+        description:
+          surface === 'product'
+            ? 'Ürün sayfasında "Benzer Bağışlar" kartları bulunamadı'
+            : 'Mağaza döngüsünde ürün kartı yok',
+        detail: `screen=${screenName}`,
+        screenshot: `${screenName}.png`,
+      })
+    );
+    if (stats) stats.failed = (stats.failed || 0) + 1;
+    return;
+  }
+
+  const bad = result.rows.filter((r) => !r.titleVisible || !r.btnVisible || !r.cardVisible);
+  if (bad.length) {
+    failures.push(
+      makeFailure({
+        check: `loop-cards-${surface}`,
+        description:
+          surface === 'product'
+            ? 'Benzer Bağışlar: her kartta görünür başlık + "Bağış Yap" olmalı'
+            : 'Mağaza: her kartta görünür başlık + "Bağış Yap" olmalı',
+        detail: bad
+          .slice(0, 6)
+          .map(
+            (r) =>
+              `#${r.i} titleVis=${r.titleVisible} "${r.titleText}" btnVis=${r.btnVisible} "${r.btnText}" cardVis=${r.cardVisible}`
+          )
+          .join(' | '),
+        screenshot: `${screenName}.png`,
+      })
+    );
+    if (stats) stats.failed = (stats.failed || 0) + 1;
+  } else if (stats) {
+    stats.passed = (stats.passed || 0) + 1;
+  }
+}
+
+/**
  * Mağaza + bağış listesinde her bağış ürününde "Bağış Yap".
  * @param {object} opts
  */
@@ -2350,6 +2484,8 @@ export async function captureAll({
     productPageHeights[key] = await readPageScrollHeight(page);
     if (runFunctional) {
       try {
+        // Benzer Bağışlar: görünür başlık + Bağış Yap (Avada post-card animasyonu)
+        await assertLoopCardsTitleAndDonate(page, 'product', name, failures, functionalStats);
         const cartForms = await page
           .locator('form.cart:not(.wdp-form):not(.wdp-donation-form-fields)')
           .count();
@@ -2477,7 +2613,7 @@ export async function captureAll({
     return { ok: true, shell };
   }
 
-  await mapPool(shellJobs, maxWorkers, async ({ key, pagePath, mode, productId }) => {
+  const shellsPromise = mapPool(shellJobs, maxWorkers, async ({ key, pagePath, mode, productId }) => {
     // Her kabuk işi temiz context (sepet / storage taşınmasın)
     const ctx = await browser.newContext(contextOpts);
     const page = await ctx.newPage();
@@ -2654,38 +2790,339 @@ export async function captureAll({
       await page.close().catch(() => {});
       await ctx.close().catch(() => {});
     }
+  }).finally(() => {
+    if (shellJobs.length) logSection('popup/panel ekranları', tShells);
   });
-  if (shellJobs.length) logSection('popup/panel ekranları', tShells);
 
-  // e) list + shop
+  // e) list + shop — kabuklarla örtüşür (ayrı guest page’ler)
   const tList = Date.now();
-  await (await visit(guest, env.E2E_LIST_PAGE, 'desktop-list', { checkImages: true })).close();
-  const shopPage = await visit(guest, env.E2E_SHOP_PAGE, 'desktop-shop', { checkImages: true });
-  if (runFunctional) {
-    const addTexts = await shopPage.locator('a.button, button').allTextContents();
-    const bad = addTexts.some((t) => /sepete\s*ekle/i.test(t || ''));
-    if (bad) {
-      failures.push(
-        makeFailure({
-          check: 'shop',
-          description: 'Döngüde "Sepete ekle" metni görünmemeli',
-          detail: 'shop sayfasında Sepete ekle metni bulundu',
-          screenshot: 'desktop-shop.png',
-        })
+  const listShopPromise = (async () => {
+    await (await visit(guest, env.E2E_LIST_PAGE, 'desktop-list', { checkImages: true })).close();
+    const shopPage = await visit(guest, env.E2E_SHOP_PAGE, 'desktop-shop', { checkImages: true });
+    if (runFunctional) {
+      const addTexts = await shopPage.locator('a.button, button').allTextContents();
+      const bad = addTexts.some((t) => /sepete\s*ekle/i.test(t || ''));
+      if (bad) {
+        failures.push(
+          makeFailure({
+            check: 'shop',
+            description: 'Döngüde "Sepete ekle" metni görünmemeli',
+            detail: 'shop sayfasında Sepete ekle metni bulundu',
+            screenshot: 'desktop-shop.png',
+          })
+        );
+      }
+      await assertLoopCardsTitleAndDonate(
+        shopPage,
+        'shop',
+        'desktop-shop',
+        failures,
+        functionalStats
       );
+      await assertDonationLoopButtons({
+        guest,
+        env,
+        products,
+        productUrls,
+        failures,
+        stats: functionalStats,
+        guestExtra,
+      });
     }
-    await assertDonationLoopButtons({
-      guest,
-      env,
-      products,
-      productUrls,
-      failures,
-      stats: functionalStats,
-      guestExtra,
-    });
-  }
-  await shopPage.close();
-  logSection('liste + mağaza', tList);
+    await shopPage.close();
+  })().finally(() => {
+    logSection('liste + mağaza', tList);
+  });
+
+  const tSkelCart = Date.now();
+  const skelCartPromise = runFunctional
+    ? (async () => {
+      await Promise.all([
+        (async () => {
+          const tSkel = Date.now();
+          await runSkeletonUnlockChecks({
+            browser,
+            contextOpts,
+            env,
+            productPath: productUrls.fixed,
+            guestExtra,
+            failures,
+            stats: functionalStats,
+          }).catch((e) => {
+            failures.push(
+              makeFailure({
+                check: 'skeleton-unlocks',
+                description: 'İskelet kilit açılma kontrolü çöktü',
+                error: e,
+              })
+            );
+          });
+          logSection('skeleton-unlocks', tSkel);
+        })(),
+        (async () => {
+      const tCart = Date.now();
+      const cartPaths = tracePaths(runLabel, 'fixed-cart');
+      const cartTimeline = createTimeline('fixed-cart');
+      const cartCtx = await browser.newContext(contextOpts);
+      await installPageProbe(cartCtx).catch((e) => catchFail('installPageProbe:cart', e));
+      const cartTrace = !quick;
+      if (cartTrace) {
+        await cartCtx.tracing.start({ screenshots: true, snapshots: true, sources: false });
+      }
+      const page = await cartCtx.newPage();
+      const cartCacheProbe = attachDocumentCacheProbe(page);
+      let cartFailed = false;
+      /** @type {object|null} */
+      let cartFirstAttempt = null;
+      try {
+        cartTimeline.mark('goto-product');
+        await page.goto(withCacheBust(env.E2E_BASE_URL, productUrls.fixed, guestExtra), {
+          waitUntil: 'domcontentloaded',
+        });
+        cartTimeline.mark('empty-cart');
+        await emptyCart(page, env.E2E_BASE_URL);
+        cartTimeline.mark('goto-product-2');
+        await page.goto(withCacheBust(env.E2E_BASE_URL, productUrls.fixed, guestExtra), {
+          waitUntil: 'domcontentloaded',
+        });
+        cartTimeline.mark('open-shell');
+        await openDonate(page);
+        const shell = openShellLocator(page);
+        await wrapWdpValidationHooks(page).catch((e) => catchFail('wrapWdpValidationHooks', e));
+        const amountBefore = await shell.locator(SEL.lineTotal).first().innerText().catch(() => '');
+        await shell.locator(SEL.qtyIncrease).first().click({ timeout: CHECK_MS }).catch(() => {});
+        await shell
+          .locator(SEL.lineTotal)
+          .first()
+          .waitFor({ state: 'visible', timeout: CHECK_MS })
+          .catch(() => {});
+        const amountAfter = await shell.locator(SEL.lineTotal).first().innerText().catch(() => '');
+        if (amountBefore && amountAfter && amountBefore === amountAfter) {
+          failures.push(
+            makeFailure({
+              check: 'fixed-qty',
+              description: 'Adet artınca görünen tutar değişmeli',
+              detail: `önce=${amountBefore} sonra=${amountAfter}`,
+              screenshot: 'desktop-popup-fixed-open.png',
+            })
+          );
+        }
+
+        try {
+          cartTimeline.mark('fill-donor');
+          const donorFilled = await fillDonorFields(shell);
+          await wrapWdpValidationHooks(page).catch((e) => catchFail('wrapWdpValidationHooks', e));
+          await assertDonorFieldsPersist(
+            shell,
+            { name: donorFilled.name, phone: donorFilled.phone },
+            failures,
+            'fixed-cart'
+          );
+          const addBtn = shell.locator(SEL.addToCart).first();
+          await startDomMutationProbe(page).catch((e) => catchFail('startDomMutationProbe', e));
+          const tClick = Date.now();
+          const snapBeforeClick = await snapshotSadakaAndButton(page).catch(() => null);
+          const snapAfter50Promise = (async () => {
+            await new Promise((r) => setTimeout(r, 50));
+            return snapshotSadakaAndButton(page).catch(() => null);
+          })();
+          cartTimeline.mark('click-add-to-cart');
+          const ajax = await clickAddToCartWithRetry(page, addBtn, {
+            checkId: 'fixed-cart',
+            onAttemptFail: async (info) => {
+              const snapAfter50 = await snapAfter50Promise.catch(() => null);
+              const probe = await collectPageProbeLogs(page);
+              const clickDiag = await collectAddToCartDiagnostics(page, addBtn, {
+                networkTail: info.networkRaw || [],
+              }).catch((e) => ({ error: String(e.message || e) }));
+              const bundle = {
+                phase: 'attempt1-before-retry',
+                check: 'fixed-cart',
+                attempt: info.attempt,
+                ajax: info.ajax,
+                buttonState: info.buttonState,
+                networkRaw: info.networkRaw,
+                consoleErrors: info.consoleErrors,
+                clickDiag,
+                lastValidation: clickDiag && clickDiag.lastValidation ? clickDiag.lastValidation : null,
+                visibleErrors: clickDiag && clickDiag.visibleErrors ? clickDiag.visibleErrors : [],
+                fields: clickDiag && clickDiag.fields ? clickDiag.fields : [],
+                cacheHeaders: cartCacheProbe.get(),
+                activeScenarios: listActiveScenarios(),
+                timeline: cartTimeline.toJSON(),
+                snapBeforeClick,
+                snapAfter50ms: snapAfter50,
+                pageEvents: probe.pageEvents,
+                listeners: probe.listeners,
+                xhrLog: probe.xhrLog,
+                validation: probe.validation,
+              };
+              cartFirstAttempt = bundle;
+              writeDebugJson(cartPaths.firstAttemptJson, bundle);
+              return bundle;
+            },
+          });
+          if (/checkout|order-pay|payment/i.test(page.url()) && !/cart/i.test(page.url())) {
+            failures.push(
+              makeFailure({
+                check: 'fixed-cart-nav',
+                description: 'Sepete Ekle ödeme/checkout’a gitmemeli',
+                detail: `url=${page.url()}`,
+                screenshot: 'desktop-popup-fixed-open.png',
+              })
+            );
+          }
+
+          let items = await cartItemCount(page, env.E2E_BASE_URL);
+          if (items === 0 && ajax.ok) {
+            await page
+              .waitForFunction(async () => {
+                try {
+                  const res = await fetch('/wp-json/wc/store/v1/cart', { credentials: 'same-origin' });
+                  if (!res.ok) return false;
+                  const data = await res.json();
+                  return Array.isArray(data.items) && data.items.length > 0;
+                } catch (e) {
+                  return false;
+                }
+              }, { timeout: CHECK_MS })
+              .catch(() => {});
+            items = await cartItemCount(page, env.E2E_BASE_URL);
+          }
+          const cartOk = items > 0;
+          const mutationWait = cartOk ? 0 : Math.max(0, 2000 - (Date.now() - tClick));
+          const mutationSummary = await stopDomMutationProbe(page, mutationWait).catch(() => null);
+          if (items === 0) {
+            cartFailed = true;
+            const valErrors = await visibleValidationErrors(page);
+            const clickDiag = await collectAddToCartDiagnostics(page, addBtn, {
+              networkTail: ajax.networkRaw || [],
+            }).catch((e) => ({ error: String(e.message || e) }));
+            const debugBundle = {
+              phase: 'final-fail',
+              check: 'fixed-cart',
+              runLabel,
+              ajax,
+              clickDiag,
+              mutationSummary,
+              cacheHeaders: cartCacheProbe.get(),
+              activeScenarios: listActiveScenarios(),
+              timeline: cartTimeline.toJSON(),
+              firstAttempt: cartFirstAttempt || ajax.firstAttemptDiag || null,
+              valErrors,
+              debugFiles: {
+                json: path.relative(ROOT, cartPaths.json),
+                firstAttempt: path.relative(ROOT, cartPaths.firstAttemptJson),
+                trace: path.relative(ROOT, cartPaths.zip),
+              },
+            };
+            writeDebugJson(cartPaths.json, debugBundle);
+            debugFiles.push(path.relative(ROOT, cartPaths.json));
+            failures.push(
+              makeFailure({
+                check: 'fixed-cart',
+                description: 'Sepete Ekle sonrası sepet boş kalmamalı',
+                detail: [
+                  `HTTP ${ajax.status} ok=${ajax.ok} timedOut=${ajax.timedOut}`,
+                  `yanıt (ilk 300): ${ajax.bodyPreview}`,
+                  `buton: visible=${ajax.buttonState?.visible} disabled=${ajax.buttonState?.disabled}`,
+                  `denemeler: ${JSON.stringify(ajax.attempts || [])}`,
+                  `son 15 network: ${(ajax.networkTail || []).join(' | ') || '(yok)'}`,
+                  `konsol hataları: ${(ajax.consoleErrors || []).join(' | ') || '(yok)'}`,
+                  `debug: ${path.relative(ROOT, cartPaths.json)}`,
+                  `trace: ${path.relative(ROOT, cartPaths.zip)}`,
+                  `teşhis: ${JSON.stringify({
+                    formFlags: clickDiag.formFlags,
+                    modules: clickDiag.modules,
+                    topAtPoint: clickDiag.topAtPoint,
+                    nonce: clickDiag.nonce,
+                    cacheHeaders: cartCacheProbe.get(),
+                    activeScenarios: listActiveScenarios(),
+                  })}`,
+                  valErrors.length
+                    ? `form hataları: ${valErrors.join(' | ')}`
+                    : 'formda görünür doğrulama hatası yok',
+                ].join('\n'),
+                screenshot: 'desktop-popup-fixed-open.png',
+                debugFile: path.relative(ROOT, cartPaths.json),
+              })
+            );
+          } else {
+            if (ajax.flaky) {
+              const first = (ajax.attempts || []).find((a) => a.attempt === 1);
+              flaky.push({
+                check: 'fixed-cart',
+                firstError: first?.error || 'waitForResponse timeout',
+                attemptMs: (ajax.attempts || []).map((a) => a.ms),
+              });
+            }
+            functionalStats.passed += 1;
+          }
+        } catch (e) {
+          cartFailed = true;
+          const valErrors = await visibleValidationErrors(page).catch(() => []);
+          writeDebugJson(cartPaths.json, {
+            phase: 'exception',
+            check: 'fixed-cart',
+            error: String(e.message || e),
+            activeScenarios: listActiveScenarios(),
+            timeline: cartTimeline.toJSON(),
+          });
+          debugFiles.push(path.relative(ROOT, cartPaths.json));
+          failures.push(
+            makeFailure({
+              check: 'fixed-cart',
+              description: 'Sepete Ekle akışı hata verdi',
+              detail: [
+                String(e.message || e),
+                valErrors.length ? `form hataları: ${valErrors.join(' | ')}` : '',
+                `debug: ${path.relative(ROOT, cartPaths.json)}`,
+              ]
+                .filter(Boolean)
+                .join('\n'),
+              screenshot: 'desktop-popup-fixed-open.png',
+              debugFile: path.relative(ROOT, cartPaths.json),
+            })
+          );
+        }
+      } catch (e) {
+        cartFailed = true;
+        failures.push(
+          makeFailure({
+            check: 'fixed-cart',
+            description: 'Sabit ürün sepet senaryosu açılamadı',
+            error: e,
+            screenshot: 'desktop-product-fixed.png',
+          })
+        );
+      }
+
+      await emptyCart(page, env.E2E_BASE_URL).catch((e) => catchFail('emptyCart', e));
+      cartCacheProbe.dispose();
+      cartTimeline.end();
+      await page.close().catch(() => {});
+      if (cartTrace) {
+        await cartCtx.tracing.stop({ path: cartPaths.zip }).catch(() => {});
+        if (cartFailed) {
+          debugFiles.push(path.relative(ROOT, cartPaths.zip));
+        } else {
+          try {
+            fs.unlinkSync(cartPaths.zip);
+          } catch (e) {
+            /* ignore */
+          }
+        }
+      }
+      await cartCtx.close().catch(() => {});
+      logSection('sepet (fixed)', tCart);
+        })(),
+      ]);
+      logSection('skeleton+sepet (paralel)', tSkelCart);
+      })()
+    : Promise.resolve();
+
+  await Promise.all([shellsPromise, listShopPromise, skelCartPromise]);
+
 
   // f) admin settings tabs + product Bağış tab (quick’te atlanır)
   if (!quick) {
@@ -2756,294 +3193,12 @@ export async function captureAll({
     logSection('admin sekmeleri', tAdmin);
   }
 
-  // Functional: skeleton + fixed-cart paralel (ayrı context — sepet çakışmaz)
+  // Functional: shares-late + alt bağış (skel+cart yukarıda örtüştü)
   if (runFunctional) {
-    const tSkelCart = Date.now();
-    await Promise.all([
-      (async () => {
-        const tSkel = Date.now();
-        await runSkeletonUnlockChecks({
-          browser,
-          contextOpts,
-          env,
-          productPath: productUrls.fixed,
-          guestExtra,
-          failures,
-          stats: functionalStats,
-        }).catch((e) => {
-          failures.push(
-            makeFailure({
-              check: 'skeleton-unlocks',
-              description: 'İskelet kilit açılma kontrolü çöktü',
-              error: e,
-            })
-          );
-        });
-        logSection('skeleton-unlocks', tSkel);
-      })(),
-      (async () => {
-    const tCart = Date.now();
-    const cartPaths = tracePaths(runLabel, 'fixed-cart');
-    const cartTimeline = createTimeline('fixed-cart');
-    const cartCtx = await browser.newContext(contextOpts);
-    await installPageProbe(cartCtx).catch((e) => catchFail('installPageProbe:cart', e));
-    const cartTrace = !quick;
-    if (cartTrace) {
-      await cartCtx.tracing.start({ screenshots: true, snapshots: true, sources: false });
-    }
-    const page = await cartCtx.newPage();
-    const cartCacheProbe = attachDocumentCacheProbe(page);
-    let cartFailed = false;
-    /** @type {object|null} */
-    let cartFirstAttempt = null;
-    try {
-      cartTimeline.mark('goto-product');
-      await page.goto(withCacheBust(env.E2E_BASE_URL, productUrls.fixed, guestExtra), {
-        waitUntil: 'domcontentloaded',
-      });
-      cartTimeline.mark('empty-cart');
-      await emptyCart(page, env.E2E_BASE_URL);
-      cartTimeline.mark('goto-product-2');
-      await page.goto(withCacheBust(env.E2E_BASE_URL, productUrls.fixed, guestExtra), {
-        waitUntil: 'domcontentloaded',
-      });
-      cartTimeline.mark('open-shell');
-      await openDonate(page);
-      const shell = openShellLocator(page);
-      await wrapWdpValidationHooks(page).catch((e) => catchFail('wrapWdpValidationHooks', e));
-      const amountBefore = await shell.locator(SEL.lineTotal).first().innerText().catch(() => '');
-      await shell.locator(SEL.qtyIncrease).first().click({ timeout: CHECK_MS }).catch(() => {});
-      await shell
-        .locator(SEL.lineTotal)
-        .first()
-        .waitFor({ state: 'visible', timeout: CHECK_MS })
-        .catch(() => {});
-      const amountAfter = await shell.locator(SEL.lineTotal).first().innerText().catch(() => '');
-      if (amountBefore && amountAfter && amountBefore === amountAfter) {
-        failures.push(
-          makeFailure({
-            check: 'fixed-qty',
-            description: 'Adet artınca görünen tutar değişmeli',
-            detail: `önce=${amountBefore} sonra=${amountAfter}`,
-            screenshot: 'desktop-popup-fixed-open.png',
-          })
-        );
-      }
 
-      try {
-        cartTimeline.mark('fill-donor');
-        const donorFilled = await fillDonorFields(shell);
-        await wrapWdpValidationHooks(page).catch((e) => catchFail('wrapWdpValidationHooks', e));
-        await assertDonorFieldsPersist(
-          shell,
-          { name: donorFilled.name, phone: donorFilled.phone },
-          failures,
-          'fixed-cart'
-        );
-        const addBtn = shell.locator(SEL.addToCart).first();
-        await startDomMutationProbe(page).catch((e) => catchFail('startDomMutationProbe', e));
-        const tClick = Date.now();
-        const snapBeforeClick = await snapshotSadakaAndButton(page).catch(() => null);
-        const snapAfter50Promise = (async () => {
-          await new Promise((r) => setTimeout(r, 50));
-          return snapshotSadakaAndButton(page).catch(() => null);
-        })();
-        cartTimeline.mark('click-add-to-cart');
-        const ajax = await clickAddToCartWithRetry(page, addBtn, {
-          checkId: 'fixed-cart',
-          onAttemptFail: async (info) => {
-            const snapAfter50 = await snapAfter50Promise.catch(() => null);
-            const probe = await collectPageProbeLogs(page);
-            const clickDiag = await collectAddToCartDiagnostics(page, addBtn, {
-              networkTail: info.networkRaw || [],
-            }).catch((e) => ({ error: String(e.message || e) }));
-            const bundle = {
-              phase: 'attempt1-before-retry',
-              check: 'fixed-cart',
-              attempt: info.attempt,
-              ajax: info.ajax,
-              buttonState: info.buttonState,
-              networkRaw: info.networkRaw,
-              consoleErrors: info.consoleErrors,
-              clickDiag,
-              lastValidation: clickDiag && clickDiag.lastValidation ? clickDiag.lastValidation : null,
-              visibleErrors: clickDiag && clickDiag.visibleErrors ? clickDiag.visibleErrors : [],
-              fields: clickDiag && clickDiag.fields ? clickDiag.fields : [],
-              cacheHeaders: cartCacheProbe.get(),
-              activeScenarios: listActiveScenarios(),
-              timeline: cartTimeline.toJSON(),
-              snapBeforeClick,
-              snapAfter50ms: snapAfter50,
-              pageEvents: probe.pageEvents,
-              listeners: probe.listeners,
-              xhrLog: probe.xhrLog,
-              validation: probe.validation,
-            };
-            cartFirstAttempt = bundle;
-            writeDebugJson(cartPaths.firstAttemptJson, bundle);
-            return bundle;
-          },
-        });
-        if (/checkout|order-pay|payment/i.test(page.url()) && !/cart/i.test(page.url())) {
-          failures.push(
-            makeFailure({
-              check: 'fixed-cart-nav',
-              description: 'Sepete Ekle ödeme/checkout’a gitmemeli',
-              detail: `url=${page.url()}`,
-              screenshot: 'desktop-popup-fixed-open.png',
-            })
-          );
-        }
-
-        let items = await cartItemCount(page, env.E2E_BASE_URL);
-        if (items === 0 && ajax.ok) {
-          await page
-            .waitForFunction(async () => {
-              try {
-                const res = await fetch('/wp-json/wc/store/v1/cart', { credentials: 'same-origin' });
-                if (!res.ok) return false;
-                const data = await res.json();
-                return Array.isArray(data.items) && data.items.length > 0;
-              } catch (e) {
-                return false;
-              }
-            }, { timeout: CHECK_MS })
-            .catch(() => {});
-          items = await cartItemCount(page, env.E2E_BASE_URL);
-        }
-        const cartOk = items > 0;
-        const mutationWait = cartOk ? 0 : Math.max(0, 2000 - (Date.now() - tClick));
-        const mutationSummary = await stopDomMutationProbe(page, mutationWait).catch(() => null);
-        if (items === 0) {
-          cartFailed = true;
-          const valErrors = await visibleValidationErrors(page);
-          const clickDiag = await collectAddToCartDiagnostics(page, addBtn, {
-            networkTail: ajax.networkRaw || [],
-          }).catch((e) => ({ error: String(e.message || e) }));
-          const debugBundle = {
-            phase: 'final-fail',
-            check: 'fixed-cart',
-            runLabel,
-            ajax,
-            clickDiag,
-            mutationSummary,
-            cacheHeaders: cartCacheProbe.get(),
-            activeScenarios: listActiveScenarios(),
-            timeline: cartTimeline.toJSON(),
-            firstAttempt: cartFirstAttempt || ajax.firstAttemptDiag || null,
-            valErrors,
-            debugFiles: {
-              json: path.relative(ROOT, cartPaths.json),
-              firstAttempt: path.relative(ROOT, cartPaths.firstAttemptJson),
-              trace: path.relative(ROOT, cartPaths.zip),
-            },
-          };
-          writeDebugJson(cartPaths.json, debugBundle);
-          debugFiles.push(path.relative(ROOT, cartPaths.json));
-          failures.push(
-            makeFailure({
-              check: 'fixed-cart',
-              description: 'Sepete Ekle sonrası sepet boş kalmamalı',
-              detail: [
-                `HTTP ${ajax.status} ok=${ajax.ok} timedOut=${ajax.timedOut}`,
-                `yanıt (ilk 300): ${ajax.bodyPreview}`,
-                `buton: visible=${ajax.buttonState?.visible} disabled=${ajax.buttonState?.disabled}`,
-                `denemeler: ${JSON.stringify(ajax.attempts || [])}`,
-                `son 15 network: ${(ajax.networkTail || []).join(' | ') || '(yok)'}`,
-                `konsol hataları: ${(ajax.consoleErrors || []).join(' | ') || '(yok)'}`,
-                `debug: ${path.relative(ROOT, cartPaths.json)}`,
-                `trace: ${path.relative(ROOT, cartPaths.zip)}`,
-                `teşhis: ${JSON.stringify({
-                  formFlags: clickDiag.formFlags,
-                  modules: clickDiag.modules,
-                  topAtPoint: clickDiag.topAtPoint,
-                  nonce: clickDiag.nonce,
-                  cacheHeaders: cartCacheProbe.get(),
-                  activeScenarios: listActiveScenarios(),
-                })}`,
-                valErrors.length
-                  ? `form hataları: ${valErrors.join(' | ')}`
-                  : 'formda görünür doğrulama hatası yok',
-              ].join('\n'),
-              screenshot: 'desktop-popup-fixed-open.png',
-              debugFile: path.relative(ROOT, cartPaths.json),
-            })
-          );
-        } else {
-          if (ajax.flaky) {
-            const first = (ajax.attempts || []).find((a) => a.attempt === 1);
-            flaky.push({
-              check: 'fixed-cart',
-              firstError: first?.error || 'waitForResponse timeout',
-              attemptMs: (ajax.attempts || []).map((a) => a.ms),
-            });
-          }
-          functionalStats.passed += 1;
-        }
-      } catch (e) {
-        cartFailed = true;
-        const valErrors = await visibleValidationErrors(page).catch(() => []);
-        writeDebugJson(cartPaths.json, {
-          phase: 'exception',
-          check: 'fixed-cart',
-          error: String(e.message || e),
-          activeScenarios: listActiveScenarios(),
-          timeline: cartTimeline.toJSON(),
-        });
-        debugFiles.push(path.relative(ROOT, cartPaths.json));
-        failures.push(
-          makeFailure({
-            check: 'fixed-cart',
-            description: 'Sepete Ekle akışı hata verdi',
-            detail: [
-              String(e.message || e),
-              valErrors.length ? `form hataları: ${valErrors.join(' | ')}` : '',
-              `debug: ${path.relative(ROOT, cartPaths.json)}`,
-            ]
-              .filter(Boolean)
-              .join('\n'),
-            screenshot: 'desktop-popup-fixed-open.png',
-            debugFile: path.relative(ROOT, cartPaths.json),
-          })
-        );
-      }
-    } catch (e) {
-      cartFailed = true;
-      failures.push(
-        makeFailure({
-          check: 'fixed-cart',
-          description: 'Sabit ürün sepet senaryosu açılamadı',
-          error: e,
-          screenshot: 'desktop-product-fixed.png',
-        })
-      );
-    }
-
-    await emptyCart(page, env.E2E_BASE_URL).catch((e) => catchFail('emptyCart', e));
-    cartCacheProbe.dispose();
-    cartTimeline.end();
-    await page.close().catch(() => {});
-    if (cartTrace) {
-      await cartCtx.tracing.stop({ path: cartPaths.zip }).catch(() => {});
-      if (cartFailed) {
-        debugFiles.push(path.relative(ROOT, cartPaths.zip));
-      } else {
-        try {
-          fs.unlinkSync(cartPaths.zip);
-        } catch (e) {
-          /* ignore */
-        }
-      }
-    }
-    await cartCtx.close().catch(() => {});
-    logSection('sepet (fixed)', tCart);
-      })(),
-    ]);
-    logSection('skeleton+sepet (paralel)', tSkelCart);
-
-    // Gecikmeli product_info: hissedar değeri + hata mesajı korunumu (panel+popup)
+    // shares-late + alt bağış örtüşür (wall clock); shares-late admin config beklemez
     const tLateShares = Date.now();
-    await runSharesLateProductInfoChecks({
+    const lateSharesPromise = runSharesLateProductInfoChecks({
       browser,
       contextOpts,
       env,
@@ -3053,17 +3208,20 @@ export async function captureAll({
       guestExtra,
       failures,
       stats: functionalStats,
-    }).catch((e) => {
-      failures.push(
-        makeFailure({
-          check: 'shares-late-product-info',
-          description: 'Gecikmeli product_info senaryosu çöktü',
-          error: e,
-        })
-      );
-      functionalStats.failed += 1;
-    });
-    logSection('shares-late-product-info', tLateShares);
+    })
+      .catch((e) => {
+        failures.push(
+          makeFailure({
+            check: 'shares-late-product-info',
+            description: 'Gecikmeli product_info senaryosu çöktü',
+            error: e,
+          })
+        );
+        functionalStats.failed += 1;
+      })
+      .finally(() => {
+        logSection('shares-late-product-info', tLateShares);
+      });
 
     // Alt bağış: admin config (üstte başlatıldı) bitince 4 senaryo paralel
     await adminConfigPromise;
@@ -3078,7 +3236,7 @@ export async function captureAll({
     }
     // 4 senaryo paralel (kendi context + emptyCart). 2 worker denemesi wall’ı uzattı.
     const sadakaWorkers = Math.min(4, sadakaJobs.length);
-    await mapPool(sadakaJobs, sadakaWorkers, async ({ productKey, mode }) => {
+    const sadakaPromise = mapPool(sadakaJobs, sadakaWorkers, async ({ productKey, mode }) => {
       const check = `sadaka-${productKey}-${mode}`;
       const paths = tracePaths(runLabel, check);
       const ctx = await browser.newContext(contextOpts);
@@ -3147,8 +3305,11 @@ export async function captureAll({
         }
         await ctx.close().catch(() => {});
       }
+    }).finally(() => {
+      logSection('alt bağış senaryoları', tSadaka);
     });
-    logSection('alt bağış senaryoları', tSadaka);
+
+    await Promise.all([lateSharesPromise, sadakaPromise]);
     void sadakaProductIds;
   }
 
