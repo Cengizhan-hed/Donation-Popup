@@ -168,7 +168,10 @@ class WDP_Campaign_Header_Renderer {
 				)
 				: '',
 			'social_proof' => (!empty($context['enable_social_proof']) && class_exists('WDP_Form_Modules'))
-				? WDP_Form_Modules::render_social_proof(isset($context['social_proof_text']) ? $context['social_proof_text'] : '')
+				? WDP_Form_Modules::render_social_proof(
+					isset($context['social_proof_text']) ? $context['social_proof_text'] : '',
+					$product_id
+				)
 				: '',
 			'progress'     => isset($extra['progress_html']) ? (string) $extra['progress_html'] : '',
 			'title'        => isset($extra['title_html']) ? (string) $extra['title_html'] : '',

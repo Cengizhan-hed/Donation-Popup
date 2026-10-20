@@ -102,9 +102,9 @@ export async function setProductMeta(productId, metaKey, value) {
     const val = String(value).replace(/'/g, `'\\''`);
     remote(loaded.env, `wp post meta update ${id} '${key}' '${val}' --path='${wpPath}'`);
   }
-  // product_info / bağış önbelleğini düşür (meta hook kaçarsa diye).
+  // product_info / bağış / donor önbelleğini düşür (meta hook kaçarsa diye).
   remote(
     loaded.env,
-    `wp eval 'if (class_exists("WDP_Utils")) { WDP_Utils::invalidate_product_donation_caches(${id}); }' --path='${wpPath}' 2>/dev/null || true`
+    `wp eval 'if (class_exists("WDP_Utils")) { WDP_Utils::invalidate_product_donation_caches(${id}); } wp_cache_delete("wdp_donor_count_${id}", "wdp_donations"); wp_cache_delete("wdp_total_donation_${id}", "wdp_donations");' --path='${wpPath}' 2>/dev/null || true`
   );
 }

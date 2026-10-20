@@ -29,10 +29,11 @@ final class RobustMetaTest extends TestCase {
 		);
 		// 10.29.0 (Y2): sınır dışı yüzde sessizce kısılmaz; reddedilir (boş) ve hata bildirimi kuyruğa girer.
 		$this->assertSame('', $meta['_cover_fee_percent']);
-		$this->assertSame(100, $meta['_max_shares']);
+		// 10.31.0: hisse >50 ve hedef ≤0 reddedilir (sessiz DEFAULT_GOAL yok).
+		$this->assertSame('', $meta['_max_shares']);
 		$this->assertSame('40', $meta['_theme_radius']);
 		$this->assertSame('0', $meta['_min_custom_price']);
-		$this->assertSame(WDP_Donation_Type::DEFAULT_GOAL, $meta['_progress_bar_limit']);
+		$this->assertSame('', $meta['_progress_bar_limit']);
 		$this->assertSame('', $meta['_theme_primary']);
 		$this->assertSame('classic', $meta['_layout_mode']);
 	}

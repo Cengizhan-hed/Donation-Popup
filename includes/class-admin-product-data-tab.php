@@ -181,8 +181,10 @@ class WDP_Admin_Product_Data_Tab {
 		$total      = $has_total ? max(0.0, (float) $stored) : 0.0;
 		$percent    = $goal > 0 ? min(100, (int) floor(($total / $goal) * 100)) : 0;
 
-		$total_text = $has_total ? WDP_Utils::format_price_plain($total) : __('Henüz hesaplanmadı', 'woo-donation-popup');
+		$total_text = $has_total ? WDP_Utils::format_price_plain($total) : __('0', 'woo-donation-popup');
 		$goal_text  = WDP_Utils::format_price_plain($goal);
+		$unconverted = get_post_meta($product_id, '_wdp_progress_unconverted_orders', true);
+		$unconverted_n = is_array($unconverted) ? count($unconverted) : 0;
 
 		echo '<div class="wdp-progress-summary' . ($compact ? ' wdp-progress-summary--compact' : '') . '" data-wdp-progress data-goal="' . esc_attr((string) $goal) . '">';
 		echo '<div class="wdp-progress-summary__text">';
@@ -198,6 +200,17 @@ class WDP_Admin_Product_Data_Tab {
 		echo '<span class="dashicons dashicons-update" aria-hidden="true"></span>';
 		echo '</button>';
 		echo '</div>';
+		if ($unconverted_n > 0) {
+			echo '<p class="description wdp-pp-note--warning">';
+			echo esc_html(
+				sprintf(
+					/* translators: %d: number of orders */
+					_n('%d sipariş dönüştürülemedi', '%d sipariş dönüştürülemedi', $unconverted_n, 'woo-donation-popup'),
+					$unconverted_n
+				)
+			);
+			echo '</p>';
+		}
 		echo '</div>';
 	}
 
@@ -256,6 +269,10 @@ class WDP_Admin_Product_Data_Tab {
 			'max_shares'                   => ($max_shares !== '' && absint($max_shares) > 0) ? $max_shares : WDP_Donation_Type::DEFAULT_MAX_SHARES,
 			'progress_bar_limit'           => $goal !== '' ? $goal : WDP_Donation_Type::DEFAULT_GOAL,
 			'progress_celebrate'           => $flag('_progress_celebrate', true),
+			'goal_reached_action'          => class_exists('WDP_Campaign_Goal')
+				? WDP_Campaign_Goal::sanitize_action($meta('_goal_reached_action'))
+				: 'message',
+			'goal_reached_message'         => $meta('_goal_reached_message'),
 			'enable_amount_presets'        => $flag('_enable_amount_presets', true),
 			'amount_presets'               => $meta('_amount_presets'),
 			'amount_preset_recommended'    => $meta('_amount_preset_recommended'),
@@ -583,16 +600,22 @@ class WDP_Admin_Product_Data_Tab {
 
 		self::open_type_scope(array(WDP_Donation_Type::CAMPAIGN), $type);
 		/* translators: %s: currency symbol */
-		self::number('progress_bar_limit', $values['progress_bar_limit'], sprintf(__('Hedef tutar (%s)', 'woo-donation-popup'), $currency), __('İlerleme çubuğunun %100 sayılacağı kampanya hedefi.', 'woo-donation-popup'), array('step' => '1'));
+		self::number('progress_bar_limit', $values['progress_bar_limit'], sprintf(__('Hedef tutar (%s)', 'woo-donation-popup'), $currency), __('İlerleme çubuğunun %100 sayılacağı kampanya hedefi (mağaza ana para biriminde). Boş veya sıfır kaydedilemez.', 'woo-donation-popup'), array('step' => '1', 'min' => '1'));
 		echo '</div>';
 
 		self::open_type_scope(array(WDP_Donation_Type::CUSTOM, WDP_Donation_Type::CAMPAIGN), $type);
 		/* translators: %s: currency symbol */
-		self::number('min_custom_price', $values['min_custom_price'], sprintf(__('En düşük tutar (%s)', 'woo-donation-popup'), $currency), __('Bağışçının yazabileceği en düşük tutar; hedefli kampanyada ürün fiyatı daha düşükse o kullanılır.', 'woo-donation-popup'), array('step' => '1'));
+		self::number(
+			'min_custom_price',
+			$values['min_custom_price'],
+			sprintf(__('En düşük tutar (%s)', 'woo-donation-popup'), $currency),
+			__('Bağışçının yazabileceği en düşük tutar. Hedefli kampanyada formda ürün fiyatı ile bu tutarın küçüğü kullanılır; ürün fiyatı yoksa veya 0 ise yalnız bu alan geçerlidir.', 'woo-donation-popup'),
+			array('step' => '1')
+		);
 		echo '</div>';
 
 		self::open_type_scope(array(WDP_Donation_Type::SHARES), $type);
-		self::number('max_shares', $values['max_shares'], __('En fazla hisse', 'woo-donation-popup'), __('Bağışçının tek seferde seçebileceği en yüksek hisse adedi.', 'woo-donation-popup'), array('min' => '1', 'step' => '1'));
+		self::number('max_shares', $values['max_shares'], __('En fazla hisse', 'woo-donation-popup'), __('Bağışçının tek seferde seçebileceği en yüksek hisse adedi (en fazla 50).', 'woo-donation-popup'), array('min' => '1', 'max' => '50', 'step' => '1'));
 		echo '</div>';
 
 		self::open_type_scope(array(WDP_Donation_Type::CAMPAIGN), $type);
@@ -600,10 +623,31 @@ class WDP_Admin_Product_Data_Tab {
 		echo '<span class="wdp-pp-field__label">' . esc_html__('Toplanan', 'woo-donation-popup') . '</span>';
 		echo '<div class="wdp-pp-field__control">';
 		self::render_progress_summary($product->get_id());
-		echo '<span class="description">' . esc_html__('Ödemesi alınmış siparişlerden hesaplanır; yenile simgesi toplamı baştan hesaplar.', 'woo-donation-popup') . '</span>';
+		echo '<span class="description">' . esc_html__('Yalnız ödemesi onaylanan siparişler (processing/completed) sayılır; işlem ücreti ve on-hold dahil değildir. Tutarlar mağaza ana para birimine çevrilir. Yenile simgesi toplamı baştan hesaplar.', 'woo-donation-popup') . '</span>';
 		echo '</div>';
 		echo '</div>';
-		self::checkbox('progress_celebrate', $values['progress_celebrate'], __('Kutlama animasyonu', 'woo-donation-popup'), __('Bağış eklendiğinde ilerleme çubuğunda kısa bir kutlama gösterir.', 'woo-donation-popup'));
+		self::checkbox('progress_celebrate', $values['progress_celebrate'], __('Kutlama animasyonu', 'woo-donation-popup'), __('Hedefe ulaşıldığında kısa kutlama gösterir.', 'woo-donation-popup'));
+		self::select(
+			'goal_reached_action',
+			isset($values['goal_reached_action']) ? $values['goal_reached_action'] : 'message',
+			__('Hedefe ulaşınca', 'woo-donation-popup'),
+			__('Kampanya hedefe ulaştığında bağış almaya devam edilsin mi, yoksa kapatılsın mı.', 'woo-donation-popup'),
+			array(
+				'continue' => __('Bağış almaya devam et (mesaj yok)', 'woo-donation-popup'),
+				'message'  => __('Bağış al + teşekkür mesajı göster', 'woo-donation-popup'),
+				'close'    => __('Yeni bağışı kapat + mesaj göster', 'woo-donation-popup'),
+			)
+		);
+		self::textarea(
+			'goal_reached_message',
+			isset($values['goal_reached_message']) ? $values['goal_reached_message'] : '',
+			__('Hedefe ulaşınca mesaj', 'woo-donation-popup'),
+			__('Boş bırakılırsa varsayılan teşekkür metni kullanılır (en fazla 300 karakter).', 'woo-donation-popup'),
+			array(
+				'maxlength'   => '300',
+				'placeholder' => class_exists('WDP_Campaign_Goal') ? WDP_Campaign_Goal::default_message() : '',
+			)
+		);
 		echo '</div>';
 
 		echo '</div>';
@@ -670,21 +714,56 @@ class WDP_Admin_Product_Data_Tab {
 		self::open_section('campaign', __('Kampanya blokları', 'woo-donation-popup'), __('Etki satırı, aciliyet, sosyal kanıt, güven rozetleri ve sıralama', 'woo-donation-popup'));
 
 		self::checkbox('enable_impact_line', $values['enable_impact_line'], __('Etki satırı', 'woo-donation-popup'), __('Başlığın altında bağışın etkisini anlatan kısa bir cümle gösterir.', 'woo-donation-popup'));
-		self::text('impact_line_text', $values['impact_line_text'], __('Etki metni', 'woo-donation-popup'), __('Boş bırakırsanız genel etki metni kullanılır.', 'woo-donation-popup'), array('placeholder' => __('Örn: Bir bağışınız bir aileyi ısıtır.', 'woo-donation-popup'), 'custom_attributes' => array('maxlength' => '160')));
+		self::text('impact_line_text', $values['impact_line_text'], __('Etki metni', 'woo-donation-popup'), __('Boş bırakılırsa satır görünmez.', 'woo-donation-popup'), array('placeholder' => __('Örn: Bir bağışınız bir aileyi ısıtır.', 'woo-donation-popup'), 'custom_attributes' => array('maxlength' => '160')));
+		if ($values['enable_impact_line'] === 'yes' && trim((string) $values['impact_line_text']) === '') {
+			echo '<p class="description wdp-pp-note--warning">' . esc_html__('Etki satırı açık ama metin boş; satır formda görünmez.', 'woo-donation-popup') . '</p>';
+		}
 
-		self::checkbox('enable_urgency', $values['enable_urgency'], __('Aciliyet şeridi', 'woo-donation-popup'), __('Kampanyanın süreli olduğunu vurgulayan bir şerit gösterir.', 'woo-donation-popup'));
+		self::checkbox('enable_urgency', $values['enable_urgency'], __('Aciliyet şeridi', 'woo-donation-popup'), __('Kampanyanın süreli olduğunu vurgulayan bir şerit gösterir. Bitiş tarihi yalnız şeridi kaldırır; kampanyayı kapatmaz.', 'woo-donation-popup'));
 		self::text('urgency_text', $values['urgency_text'], __('Aciliyet metni', 'woo-donation-popup'), __('Şeritte görünecek metin.', 'woo-donation-popup'), array('custom_attributes' => array('maxlength' => '140')));
-		self::text('urgency_ends_at', $values['urgency_ends_at'], __('Bitiş tarihi', 'woo-donation-popup'), __('Bu tarihten sonra şerit otomatik gizlenir (YYYY-AA-GG); boş bırakılabilir.', 'woo-donation-popup'), array('placeholder' => 'YYYY-MM-DD'));
+		self::text(
+			'urgency_ends_at',
+			$values['urgency_ends_at'],
+			__('Bitiş tarihi', 'woo-donation-popup'),
+			__('Site saat diliminde bu günün sonuna (23:59:59) kadar şerit görünür (Y-m-d). Geçersiz tarih kaydedilmez.', 'woo-donation-popup'),
+			array(
+				'type'              => 'date',
+				'placeholder'       => 'YYYY-MM-DD',
+				'custom_attributes' => array('pattern' => '\d{4}-\d{2}-\d{2}'),
+			)
+		);
+		if ($values['urgency_ends_at'] !== '') {
+			$ends_check = WDP_Product_Settings_Service::validate_urgency_ends_at($values['urgency_ends_at']);
+			if (empty($ends_check['ok'])) {
+				echo '<p class="description wdp-pp-note--warning">' . esc_html__('Kayıtlı bitiş tarihi geçersiz; şerit süresiz görünür. Geçerli bir Y-m-d girin.', 'woo-donation-popup') . '</p>';
+			}
+		}
 
-		self::checkbox('enable_social_proof', $values['enable_social_proof'], __('Sosyal kanıt', 'woo-donation-popup'), __('Kaç kişinin bağış yaptığını anlatan bir satır gösterir.', 'woo-donation-popup'));
-		self::text('social_proof_text', $values['social_proof_text'], __('Sosyal kanıt metni', 'woo-donation-popup'), __('Satırda görünecek metin.', 'woo-donation-popup'), array('placeholder' => __('Bugün 128 kişi bağış yaptı', 'woo-donation-popup')));
+		self::checkbox('enable_social_proof', $values['enable_social_proof'], __('Sosyal kanıt', 'woo-donation-popup'), __('Gerçek bağışçı sayısını gösteren bir satır gösterir. Sayı 0 ise satır gizlenir.', 'woo-donation-popup'));
+		self::text(
+			'social_proof_text',
+			$values['social_proof_text'],
+			__('Sosyal kanıt metni', 'woo-donation-popup'),
+			__('Metinde {donors} yer tutucusu gerçek bağışçı sayısıyla değişir. Boş bırakılırsa varsayılan: “{donors} kişi bağış yaptı”.', 'woo-donation-popup'),
+			array('placeholder' => __('{donors} kişi bağış yaptı', 'woo-donation-popup'))
+		);
+		$legacy_social = (string) $values['social_proof_text'];
+		if ($legacy_social !== '' && strpos($legacy_social, '{donors}') === false) {
+			echo '<p class="description wdp-pp-note">' . esc_html(
+				sprintf(
+					/* translators: %s: old free-text */
+					__('Eski metin: %s — artık kullanılmıyor, gerçek sayı kullanılır.', 'woo-donation-popup'),
+					$legacy_social
+				)
+			) . '</p>';
+		}
 
-		self::checkbox('enable_trust_strip', $values['enable_trust_strip'], __('Güven rozetleri', 'woo-donation-popup'), __('Formun altında güvenli ödeme gibi kısa güven mesajları gösterir.', 'woo-donation-popup'));
+		self::checkbox('enable_trust_strip', $values['enable_trust_strip'], __('Güven rozetleri', 'woo-donation-popup'), __('Formun altında güven mesajları gösterir. Genel ayar kapalıysa bu ürün için açık olsa da gösterilmez.', 'woo-donation-popup'));
 		self::render_repeater(
 			'trust_badges',
 			__('Rozetler', 'woo-donation-popup'),
 			/* translators: %d: max rows */
-			sprintf(__('Boş bırakırsanız genel rozetler kullanılır (en fazla %d).', 'woo-donation-popup'), self::MAX_TRUST_ROWS),
+			sprintf(__('Ürün listesi doluysa genel listenin yerine geçer (en fazla %d). Boş bırakırsanız genel rozetler kullanılır.', 'woo-donation-popup'), self::MAX_TRUST_ROWS),
 			$values['trust_rows'],
 			self::MAX_TRUST_ROWS,
 			array(

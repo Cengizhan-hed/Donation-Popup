@@ -215,3 +215,14 @@ Güvenlik denetimi notu: etki/aciliyet/sosyal kanıt/rozet çıktıları esc_htm
 | Saha listesi | Ürüne göre sahaya dışa aktarma + "video gönderildi" takibi |
 | Aydınlatma metni (F10) | Varsayılan metin yurt dışındaki saha ekiplerine aktarımı da kapsamalı; Form alanları görevi bittikten sonra metin güncellenecek |
 | Refaktör | Ayar turu sonrası: dosya yapısı sadeleştirme, ölü kod, adlandırma; davranış değişmez |
+
+## Durum: 10.31.0 Kampanya blokları (kabul edildi, main'e merge)
+
+| Konu | Sonuç |
+|------|-------|
+| Test | verify + PHPUnit 214 + JS 43 geçti; e2e:quick 60/0/0; accept 4 ekran (campaign popup/panel open/errors) |
+| Akıbet | Akika: mesaj bağıştan önce görünüyor, ₺147.750 / hedef ₺100.000 %100 |
+| CANLIYA ALMA ENGELİ | Curcy sipariş meta anahtarı (`wmc_order_info` vb.) gerçek EUR/USD siparişle DOĞRULANMADI; anahtar yoksa satır toplamdan atlanıyor ("N sipariş dönüştürülemedi") → canlıda toplanan EKSİK görünebilir. 2İ öncesi gerçek/test siparişle ölçülecek |
+| G14 | Yüzde gösterimi (admin floor / form 1 ondalık), "Üst Limit" adı |
+| G15 | Tamamlanmış (hedefe ulaşıldı) çubuk/yüzde rengi eskisinden açık (is-complete `--wdp-success`); marka mavisiyle tutarlı olmalı |
+| G16 | Close durumunda `aria-disabled` tetikleyici, erişilebilirlik gözden geçirmesi |

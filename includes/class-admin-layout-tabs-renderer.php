@@ -99,7 +99,7 @@ class WDP_Admin_Layout_Tabs_Renderer {
 	 * @return void
 	 */
 	private static function render_progress_bar_help() {
-		echo '<div class="wdp-tab-help" role="note"><p class="wdp-tab-help__title">' . esc_html__('Bu sekmede ne yaparsınız?', 'woo-donation-popup') . '</p><ul class="wdp-tab-help__list"><li>' . esc_html__('Ürün Ayarları’nda “Progress Bar” açıksa, hedefe doğru dolan çubuğun renkleri, yüksekliği ve etiketleri buradan yönetilir.', 'woo-donation-popup') . '</li><li>' . esc_html__('Üç katman: onaylı (ödeme sonrası), sepet bekleyen, yazılan tutar önizlemesi. Hedef tutar ürün kartındaki “Üst Limit” alanındadır.', 'woo-donation-popup') . '</li></ul></div>';
+		echo '<div class="wdp-tab-help" role="note"><p class="wdp-tab-help__title">' . esc_html__('Bu sekmede ne yaparsınız?', 'woo-donation-popup') . '</p><ul class="wdp-tab-help__list"><li>' . esc_html__('Ürün Ayarları’nda “Progress Bar” açıksa, hedefe doğru dolan çubuğun renkleri, yüksekliği ve etiketleri buradan yönetilir.', 'woo-donation-popup') . '</li><li>' . esc_html__('Üç katman: onaylı (ödeme sonrası), sepet bekleyen, yazılan tutar önizlemesi. Hedef tutar ürün kartındaki “Hedef tutar” alanındadır.', 'woo-donation-popup') . '</li></ul></div>';
 	}
 
 	/**

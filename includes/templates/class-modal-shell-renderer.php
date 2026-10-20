@@ -93,14 +93,18 @@ class WDP_Modal_Shell_Renderer {
 	 * @param string $label Visible label.
 	 * @return string Safe HTML.
 	 */
-	public static function render_form_action_button($name, $class, $label) {
+	public static function render_form_action_button($name, $class, $label, $disabled = false) {
 		$icon = $name === 'donation_go_checkout'
 			? WDP_Svg_Icons::get_form_button_icon_checkout_svg()
 			: WDP_Svg_Icons::get_form_button_icon_cart_svg();
 
+		$extra = $disabled
+			? ' disabled aria-disabled="true" class="' . esc_attr($class . ' is-disabled') . '"'
+			: ' class="' . esc_attr($class) . '"';
+
 		return sprintf(
-			'<button type="submit" class="%1$s" name="%2$s"><span class="wdp-btn__inner">%3$s<span class="wdp-btn__label">%4$s</span></span></button>',
-			esc_attr($class),
+			'<button type="submit"%1$s name="%2$s"><span class="wdp-btn__inner">%3$s<span class="wdp-btn__label">%4$s</span></span></button>',
+			$extra,
 			esc_attr($name),
 			$icon,
 			esc_html($label)
@@ -113,17 +117,18 @@ class WDP_Modal_Shell_Renderer {
 	 * @param bool   $checkout_first     Checkout button first.
 	 * @param string $text_add_to_cart   Add to cart label.
 	 * @param string $text_go_checkout   Checkout label.
+	 * @param bool   $disabled           Goal closed.
 	 * @return void
 	 */
-	public static function render_form_action_buttons($checkout_first, $text_add_to_cart, $text_go_checkout) {
+	public static function render_form_action_buttons($checkout_first, $text_add_to_cart, $text_go_checkout, $disabled = false) {
 		if ($checkout_first) {
-			echo self::render_form_action_button('donation_go_checkout', 'wdp-btn-primary', $text_go_checkout);
-			echo self::render_form_action_button('donation_add_to_cart', 'wdp-btn-secondary', $text_add_to_cart);
+			echo self::render_form_action_button('donation_go_checkout', 'wdp-btn-primary', $text_go_checkout, $disabled);
+			echo self::render_form_action_button('donation_add_to_cart', 'wdp-btn-secondary', $text_add_to_cart, $disabled);
 			return;
 		}
 
-		echo self::render_form_action_button('donation_add_to_cart', 'wdp-btn-secondary', $text_add_to_cart);
-		echo self::render_form_action_button('donation_go_checkout', 'wdp-btn-primary', $text_go_checkout);
+		echo self::render_form_action_button('donation_add_to_cart', 'wdp-btn-secondary', $text_add_to_cart, $disabled);
+		echo self::render_form_action_button('donation_go_checkout', 'wdp-btn-primary', $text_go_checkout, $disabled);
 	}
 
 	/**
@@ -148,6 +153,9 @@ class WDP_Modal_Shell_Renderer {
 		if ($use_side_panel) {
 			$button_group_classes .= ' wdp-side-panel-form-footer';
 		}
+		$goal_closed = ($product_id > 0 && class_exists('WDP_Campaign_Goal'))
+			? WDP_Campaign_Goal::should_block_new_donations($product_id)
+			: false;
 
 		ob_start();
 		echo '<div class="' . ($use_side_panel ? 'wdp-side-panel-footer-zone' : 'wdp-form-cta-zone') . '">';
@@ -156,7 +164,7 @@ class WDP_Modal_Shell_Renderer {
 		}
 		?>
 		<div class="<?php echo $button_group_classes; ?>">
-			<?php self::render_form_action_buttons($checkout_first, $button_text_add_to_cart, $button_text_go_checkout); ?>
+			<?php self::render_form_action_buttons($checkout_first, $button_text_add_to_cart, $button_text_go_checkout, $goal_closed); ?>
 		</div>
 		<?php
 		echo self::render_trust_strip();

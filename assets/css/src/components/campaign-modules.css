@@ -207,3 +207,38 @@ html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel .wdp-campaign-med
   flex-direction: column;
   gap: 8px;
 }
+
+/* 10.31.0 — hedefe ulaşınca mesaj / pasif durum (asgari) */
+.hdf-donation-modal-wrapper .wdp-goal-reached-notice,
+.wdp-donation-form .wdp-goal-reached-notice {
+  margin: 0 0 12px;
+  padding: 12px 14px;
+  border-radius: var(--wdp-radius-sm, 8px);
+  background: color-mix(in srgb, var(--wdp-success, #15803d) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--wdp-success, #15803d) 28%, transparent);
+  color: var(--wdp-text-primary, #0f172a);
+  font-size: var(--wdp-text-sm, 13px);
+  line-height: 1.45;
+}
+
+.hdf-donation-modal-wrapper .wdp-goal-reached-notice--closed,
+.wdp-donation-form .wdp-goal-reached-notice--closed {
+  background: color-mix(in srgb, var(--wdp-warning, #b45309) 10%, transparent);
+  border-color: color-mix(in srgb, var(--wdp-warning, #b45309) 28%, transparent);
+}
+
+.hdf-donation-modal-wrapper .wdp-goal-closed input,
+.hdf-donation-modal-wrapper .wdp-goal-closed button:not([data-wdp-goal-closed]),
+.wdp-donation-form .wdp-goal-closed input,
+.wdp-donation-form .wdp-goal-closed button:not([data-wdp-goal-closed]) {
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.wdp-donate-button.is-disabled,
+.wdp-loop-donate.is-disabled,
+.wdp-btn-primary.is-disabled,
+.wdp-btn-secondary.is-disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}

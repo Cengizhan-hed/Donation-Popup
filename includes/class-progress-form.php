@@ -30,17 +30,19 @@ class WDP_Progress_Form {
         $pending = class_exists('WDP_Cart')
             ? (float) WDP_Cart::sum_cart_pending_for_product($product_id)
             : 0.0;
-        $percent = min(100, ($current / $limit) * 100);
+        // Tek kaynak: yüzde + dolgu = onaylı toplam (sepet bekleyen ayrı şerit; yüzdeye dahil değil).
+        $percent = class_exists('WDP_Campaign_Goal')
+            ? WDP_Campaign_Goal::compute_percent($current, $limit)
+            : min(100, ($current / $limit) * 100);
         $pending_percent = 0.0;
         if ($pending > 0 && $percent < 100) {
             $pending_percent = min(100 - $percent, ($pending / $limit) * 100);
         }
-        $display_percent = min(100, $percent + $pending_percent);
         $is_complete = $percent >= 100;
-        $is_approaching = !$is_complete && $display_percent >= 90;
+        $is_approaching = !$is_complete && $percent >= 90;
         $donor_count = class_exists('WDP_Utils') ? (int) WDP_Utils::get_donor_count($product_id) : 0;
         $remaining = max(0, $limit - $current);
-        $pct_rounded = round($display_percent, 1);
+        $pct_rounded = round($percent, 1);
 
         $container_class = 'wdp-progress-bar-container';
         if ($is_complete) {
@@ -82,6 +84,7 @@ class WDP_Progress_Form {
             data-current="<?php echo esc_attr($total_donation); ?>"
             data-pending="<?php echo esc_attr($pending); ?>"
             data-donor-count="<?php echo esc_attr((string) $donor_count); ?>"
+            data-wdp-was-complete="<?php echo $is_complete ? '1' : '0'; ?>"
             role="group"
             aria-label="<?php echo esc_attr__('Bağış ilerleme durumu', 'woo-donation-popup'); ?>"
         >

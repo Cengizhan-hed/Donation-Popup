@@ -626,11 +626,29 @@ class WDP_Form_Fields_Renderer {
 			);
 		}
 
+		$product_id = isset($args['product_id']) ? absint($args['product_id']) : 0;
+		$goal_closed = false;
+		$goal_notice = '';
+		if ($product_id > 0 && class_exists('WDP_Campaign_Goal')) {
+			$goal_closed = WDP_Campaign_Goal::should_block_new_donations($product_id);
+			$goal_notice = WDP_Campaign_Goal::render_reached_notice_html($product_id, $goal_closed);
+		}
+
 		$html = '';
+		// Hedefe ulaşınca mesaj: tutar kutusundan / düğmelerden önce.
+		if ($goal_notice !== '') {
+			$html .= $goal_notice;
+		}
+		if ($goal_closed) {
+			$html .= '<div class="wdp-goal-closed" data-wdp-goal-closed="1">';
+		}
 		foreach (self::BODY_MODULE_IDS as $id) {
 			if (!empty($chunks[ $id ])) {
 				$html .= $chunks[ $id ];
 			}
+		}
+		if ($goal_closed) {
+			$html .= '</div>';
 		}
 
 		if (class_exists('WDP_Donation_Optional_Fields')) {

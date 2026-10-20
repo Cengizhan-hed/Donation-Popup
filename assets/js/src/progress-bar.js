@@ -96,7 +96,9 @@
     if (window.WDPMetaTracking && typeof window.WDPMetaTracking.trackCustom === 'function') {
       try {
         window.WDPMetaTracking.trackCustom('DonationProgressComplete', {});
-      } catch (e) {}
+      } catch (err) {
+        if (safeLog) safeLog('progress celebrate meta track', err);
+      }
     }
   }
 
@@ -226,14 +228,16 @@
     container.classList.toggle('has-pending', pendingPct > 0.05);
     container.classList.toggle('is-draft-pulse', draftPct > 0.05);
 
-    const displayPct = Math.min(100, fillPct + pendingPct + draftPct);
+    // Yüzde metni = onaylı dolgu (tek kaynak). Pending/draft yalnız şerit olarak kalır.
+    const displayPct = fillPct;
+    const previewPct = Math.min(100, fillPct + pendingPct + draftPct);
     percentageElement.textContent = displayPct.toFixed(1) + '%';
     updatePercentageColor(percentageElement, displayPct);
     updatePctRing(container, displayPct);
-    updateImpact(container, displayPct);
+    updateImpact(container, previewPct);
     updateRemaining(container, current, limit);
     updateDelta(container, draft);
-    updateTip(container, displayPct);
+    updateTip(container, previewPct);
 
     if (draftPct > 0.05) {
       container.classList.remove('is-draft-flash');
@@ -453,10 +457,44 @@
     });
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initAllProgressBars);
-  } else {
+  function hideExpiredUrgencyBanners() {
+    const now = Math.floor(Date.now() / 1000);
+    document.querySelectorAll('.wdp-urgency-banner[data-ends-at]').forEach(function (el) {
+      const ends = parseInt(el.getAttribute('data-ends-at'), 10);
+      if (Number.isFinite(ends) && ends > 0 && ends < now) {
+        el.hidden = true;
+        el.style.display = 'none';
+      }
+    });
+  }
+
+  function bindGoalClosedTriggers() {
+    if (document.documentElement.getAttribute('data-wdp-goal-closed-bound') === '1') {
+      return;
+    }
+    document.documentElement.setAttribute('data-wdp-goal-closed-bound', '1');
+    // Pasif görünür; tıklanınca nedeni duyurulur. Modal/panel yine açılabilir (içeride mesaj + disabled alanlar).
+    document.addEventListener('click', function (e) {
+      const t = e.target && e.target.closest ? e.target.closest('[data-wdp-goal-closed="1"]') : null;
+      if (!t) return;
+      const msg = t.getAttribute('data-wdp-goal-message') || '';
+      if (!msg) return;
+      if (utils && typeof utils.announceStatus === 'function') {
+        utils.announceStatus(msg, 'assertive');
+      }
+    });
+  }
+
+  function bootCampaignUi() {
     initAllProgressBars();
+    hideExpiredUrgencyBanners();
+    bindGoalClosedTriggers();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', bootCampaignUi);
+  } else {
+    bootCampaignUi();
   }
 
   WDPApp.progressBar = {
@@ -467,6 +505,7 @@
     syncFromCartItems: syncFromCartItems,
     sumPendingForProduct: sumPendingForProduct,
     initAll: initAllProgressBars,
+    hideExpiredUrgency: hideExpiredUrgencyBanners,
   };
 
 })(window);

@@ -148,10 +148,18 @@ class WDP_Admin_Settings_Normalizer {
 			'enable_anonymous'                  => self::pick_flag($request, $existing, 'enable_anonymous', '0'),
 			'dedication_placeholder'            => self::pick_text($request, $existing, 'dedication_placeholder', __('Kimin adına? (isteğe bağlı)', 'woo-donation-popup')),
 			'enable_privacy_notice'             => self::pick_flag($request, $existing, 'enable_privacy_notice', '0'),
-			'privacy_notice_text'               => self::pick_text($request, $existing, 'privacy_notice_text', __('Kişisel verileriniz Aydınlatma Metni kapsamında işlenir.', 'woo-donation-popup')),
+			'privacy_notice_text'               => self::pick_text(
+				$request,
+				$existing,
+				'privacy_notice_text',
+				__(
+					'Kişisel verileriniz bağışınızın gerçekleştirilmesi için işlenir ve yurt dışındaki saha ekiplerimizle paylaşılır. Ayrıntı için Aydınlatma Metni\'ne bakın.',
+					'woo-donation-popup'
+				)
+			),
 			'privacy_notice_url'                => self::pick_text($request, $existing, 'privacy_notice_url', ''),
 			'module_order'                      => isset($request['module_order'])
-				? (class_exists('WDP_Form_Modules') ? implode(',', WDP_Form_Modules::sanitize_order(wp_unslash($request['module_order']))) : sanitize_text_field(wp_unslash($request['module_order'])))
+				? (class_exists('WDP_Form_Modules') ? implode(',', WDP_Form_Modules::sanitize_header_order(wp_unslash($request['module_order']))) : sanitize_text_field(wp_unslash($request['module_order'])))
 				: (isset($existing['module_order']) ? (string) $existing['module_order'] : ''),
 			'trust_badges'                      => isset($request['trust_badges'])
 				? (class_exists('WDP_Form_Modules') ? wp_json_encode(WDP_Form_Modules::sanitize_trust_badges($request['trust_badges'])) : '')

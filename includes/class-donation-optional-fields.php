@@ -176,7 +176,10 @@ class WDP_Donation_Optional_Fields {
 			return null;
 		}
 
-		$default_text = __('Kişisel verileriniz Aydınlatma Metni kapsamında işlenir.', 'woo-donation-popup');
+		$default_text = __(
+			'Kişisel verileriniz bağışınızın gerçekleştirilmesi için işlenir ve yurt dışındaki saha ekiplerimizle paylaşılır. Ayrıntı için Aydınlatma Metni\'ne bakın.',
+			'woo-donation-popup'
+		);
 		$text         = isset($button['privacy_notice_text']) && trim((string) $button['privacy_notice_text']) !== ''
 			? trim((string) $button['privacy_notice_text'])
 			: $default_text;

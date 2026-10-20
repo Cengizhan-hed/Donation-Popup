@@ -144,6 +144,10 @@ class WDP_Shortcodes {
 		if ($custom_class !== '') {
 			$button_classes .= ' ' . $custom_class;
 		}
+		$goal_closed = class_exists('WDP_Campaign_Goal') && WDP_Campaign_Goal::should_block_new_donations($product_id);
+		if ($goal_closed) {
+			$button_classes .= ' is-disabled wdp-goal-closed-trigger';
+		}
 
 		ob_start();
 		echo $notice; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- admin_notice_html is escaped
@@ -151,6 +155,7 @@ class WDP_Shortcodes {
 		<button type="button" class="<?php echo esc_attr($button_classes); ?>"
 				data-product-id="<?php echo esc_attr((string) $product_id); ?>"
 				data-wdp-mode="<?php echo esc_attr($is_side_panel ? 'side_panel' : 'popup'); ?>"
+				<?php if ($goal_closed) : ?>aria-disabled="true" data-wdp-goal-closed="1" data-wdp-goal-message="<?php echo esc_attr(WDP_Campaign_Goal::resolve_message($product_id)); ?>"<?php endif; ?>
 				<?php if ($is_side_panel) : ?>data-wdp-modal-id="<?php echo esc_attr($modal_id); ?>" <?php endif; ?>
 				<?php if ($lazy) : ?>data-wdp-lazy="1"<?php endif; ?>
 				<?php if ($custom_style !== '') : ?>style="<?php echo esc_attr($custom_style); ?>"<?php endif; ?>>
