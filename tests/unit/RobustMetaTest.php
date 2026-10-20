@@ -31,10 +31,15 @@ final class RobustMetaTest extends TestCase {
 		$this->assertSame('', $meta['_cover_fee_percent']);
 		// 10.31.0: hisse >50 ve hedef ≤0 reddedilir (sessiz DEFAULT_GOAL yok).
 		$this->assertSame('', $meta['_max_shares']);
-		$this->assertSame('40', $meta['_theme_radius']);
+		// 10.32.0: köşe 4–32; geçersiz hex reddedilir (sessiz silme yok).
+		$this->assertSame('32', $meta['_theme_radius']);
 		$this->assertSame('0', $meta['_min_custom_price']);
 		$this->assertSame('', $meta['_progress_bar_limit']);
 		$this->assertSame('', $meta['_theme_primary']);
+		$notes = WDP_Product_Settings_Service::drain_corrections();
+		$this->assertNotEmpty(array_filter($notes, static function ($n) {
+			return strpos($n, 'Ana renk') !== false || strpos($n, 'Köşe') !== false;
+		}));
 		$this->assertSame('classic', $meta['_layout_mode']);
 	}
 

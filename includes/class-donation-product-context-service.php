@@ -141,13 +141,10 @@ class WDP_Donation_Product_Context_Service {
 			'enable_anonymous'              => self::meta_flag_or_global($product, '_enable_anonymous', 'enable_anonymous'),
 			'dedication_placeholder'        => trim((string) $product->get_meta('_dedication_placeholder')),
 			'trust_badges'                  => (string) $product->get_meta('_trust_badges'),
-			'theme_preset_id'               => sanitize_key((string) $product->get_meta('_theme_preset_id')),
 			'theme_primary'                 => (string) $product->get_meta('_theme_primary'),
 			'theme_primary_hover'           => (string) $product->get_meta('_theme_primary_hover'),
 			'theme_radius'                  => (string) $product->get_meta('_theme_radius'),
-			'theme_density'                 => (string) $product->get_meta('_theme_density'),
 			'theme_modal_bg'                => (string) $product->get_meta('_theme_modal_bg'),
-			'theme_inherit_category'        => $product->get_meta('_theme_inherit_category_color') === 'yes',
 			'layout_mode'                   => in_array(sanitize_key((string) $product->get_meta('_layout_mode')), array('classic', 'campaign', 'story'), true)
 				? sanitize_key((string) $product->get_meta('_layout_mode'))
 				: 'classic',

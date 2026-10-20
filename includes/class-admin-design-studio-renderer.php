@@ -272,11 +272,14 @@ class WDP_Admin_Design_Studio_Renderer {
 		$privacy_url  = isset($settings['privacy_notice_url']) ? (string) $settings['privacy_notice_url'] : '';
 		$wp_privacy   = function_exists('get_privacy_policy_url') ? (string) get_privacy_policy_url() : '';
 		echo '<tr><th scope="row">' . esc_html__('Aydınlatma metni bağlantısı', 'woo-donation-popup') . '</th><td>';
+		$privacy_placeholder = class_exists('WDP_Donation_Optional_Fields')
+			? WDP_Donation_Optional_Fields::default_privacy_link_label()
+			: __('Kişisel verilerin işlenmesine ilişkin aydınlatma metni', 'woo-donation-popup');
 		echo '<label class="wdp-admin-toggle"><input type="checkbox" name="enable_privacy_notice" value="1" ' . checked($privacy_on, true, false) . ' /> ' . esc_html__('Aydınlatma metni bağlantısını göster', 'woo-donation-popup') . '</label>';
-		echo '<p class="description">' . esc_html__('Yalnız formda e-posta, ithaf veya hissedar alanlarından en az biri varken gösterilir. Varsayılan kapalıdır.', 'woo-donation-popup') . '</p>';
-		echo '<p><label for="privacy_notice_text">' . esc_html__('Bağlantı metni', 'woo-donation-popup') . '</label><br />';
-		echo '<input type="text" id="privacy_notice_text" name="privacy_notice_text" value="' . esc_attr($privacy_text) . '" class="large-text" placeholder="' . esc_attr__('Kişisel verileriniz bağışınızın gerçekleştirilmesi için işlenir ve yurt dışındaki saha ekiplerimizle paylaşılır. Ayrıntı için Aydınlatma Metni\'ne bakın.', 'woo-donation-popup') . '" /></p>';
-		echo '<p class="description">' . esc_html__('Varsayılan metin, bağışın gerçekleştirilmesi ve yurt dışındaki saha ekipleriyle paylaşımı kapsar. Kayıtlı özel metniniz değiştirilmez.', 'woo-donation-popup') . '</p>';
+		echo '<p class="description">' . esc_html__('Aydınlatma metni sitenizdeki KVKK/Gizlilik sayfasında olmalıdır; burada yalnız bağlantı gösterilir. Yalnız formda e-posta, ithaf veya hissedar alanlarından en az biri varken görünür (varsayılan kapalı).', 'woo-donation-popup') . '</p>';
+		echo '<p><label for="privacy_notice_text">' . esc_html__('Bağlantı etiketi', 'woo-donation-popup') . '</label><br />';
+		echo '<input type="text" id="privacy_notice_text" name="privacy_notice_text" value="' . esc_attr($privacy_text) . '" class="large-text" placeholder="' . esc_attr($privacy_placeholder) . '" /></p>';
+		echo '<p class="description">' . esc_html__('Bağlantıda görünen kısa etiket. Boş bırakılırsa varsayılan etiket kullanılır.', 'woo-donation-popup') . '</p>';
 		echo '<p><label for="privacy_notice_url">' . esc_html__('Bağlantı adresi', 'woo-donation-popup') . '</label><br />';
 		echo '<input type="url" id="privacy_notice_url" name="privacy_notice_url" value="' . esc_attr($privacy_url) . '" class="large-text" placeholder="https://" /></p>';
 		if ($privacy_url === '' && $wp_privacy === '') {

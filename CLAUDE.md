@@ -94,10 +94,11 @@ Bitiş: verify + test → (gerekirse) npm run ship:staging → e2e:quick → RAP
 - Akış: bağış → bilgiler yurt dışındaki saha ekiplerine iletilir → iş yapılır → bağışçıya video gönderilir (kurban kesim, su kuyusu açılış vb.).
 - Kim adına kesilecek / ithaf / hissedar isimleri ve bağışçı telefon/e-postası sahaya ve videoya eksiksiz ulaşmalı. Hiçbir ayar (anonim dahil) bunları sipariş kaydından silemez ya da maskeleyemez; anonim yalnız herkese açık yerleri etkiler. Türkçe karakterler hiçbir yolda bozulmamalı.
 - Para birimleri: Hedef TL/EUR/USD (Curcy). Ikram Aid (İngiltere): GBP + Gift Aid.
-- KVKK: veriler yurt dışındaki saha ekiplerine aktarılıyor; aydınlatma açıklaması (F10) bunu kapsamalı.
+- KVKK: veriler yurt dışındaki saha ekiplerine aktarılıyor; bu bilgi sitedeki KVKK/aydınlatma sayfasının işidir. Eklenti yalnız o sayfaya kısa bir bağlantı gösterir (metin yazmaz).
 
 ### TASARIM İLKELERİ (her teknik kararda uygula)
 
+0. **KAPSAM:** Eklentiye yalnız bağış almak için gerekenler girer. WordPress, WooCommerce, tema veya sayfa oluşturucu (Elementor) zaten yapıyorsa eklentiye EKLEME: sayfa içeriği/tasarımı, KVKK metni (yalnız bağlantı), sipariş listesi, e-postalar, raporlar, dışa aktarma WooCommerce'in işidir. Yeni bir özellik ya da ayar gerekli görünürse UYGULAMA; önce kullanıcıya "neden gerekli, WordPress/WooCommerce neden karşılamıyor" gerekçesiyle sor.
 1. **WooCommerce'in içinde:** bağış = WooCommerce siparişi; ödeme, para birimi, e-posta, rapor ve diğer eklentilerle uyum. Ayrı kapalı sistem kurma.
 2. **Şeffaflık:** gizli otomatik davranış yok; her davranışın ayarı ve açık bir açıklaması var.
 3. **Esneklik + mantıklı varsayılan:** ayar yapmadan doğru çalışır, her şey ayarlanabilir.

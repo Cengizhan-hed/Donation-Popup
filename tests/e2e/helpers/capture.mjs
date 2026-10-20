@@ -3392,6 +3392,33 @@ export async function captureAll({
     } finally {
       logSection('campaign-blocks', tCampaignBlocks);
     }
+
+    // 10.32.0 ürün teması
+    const tProductTheme = Date.now();
+    try {
+      const { runProductThemeChecks } = await import('./product-theme.mjs');
+      await runProductThemeChecks({
+        browser,
+        contextOpts,
+        env,
+        productUrls,
+        productIds,
+        listPagePath: env.E2E_LIST_PAGE,
+        failures,
+        stats: functionalStats,
+      });
+    } catch (e) {
+      failures.push(
+        makeFailure({
+          check: 'product-theme-runner',
+          description: 'Ürün görünüm E2E koşucusu çöktü',
+          error: e,
+        })
+      );
+      functionalStats.failed += 1;
+    } finally {
+      logSection('product-theme', tProductTheme);
+    }
   }
 
   // Mobile chromium + webkit sample (quick’te atlanır)

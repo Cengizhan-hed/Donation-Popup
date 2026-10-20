@@ -228,11 +228,11 @@ Aşağıdaki her alan için: ekran adı, ne işe yarar, hangi tipte görünür /
 ### Aydınlatma metni bağlantısı
 
 - **Ekran adı:** Aydınlatma metni bağlantısını göster  
-- **Ne işe yarar:** Formda kişisel veri aydınlatma bağlantısı gösterir (varsayılan kapalı). Varsayılan metin bağışın gerçekleştirilmesi ve yurt dışındaki saha ekipleriyle paylaşımı kapsar; kayıtlı özel metin değişmez.  
+- **Ne işe yarar:** Formda kişisel veri aydınlatma bağlantısı gösterir (varsayılan kapalı). Aydınlatma metni sitenizdeki KVKK/Gizlilik sayfasında olmalıdır; burada yalnız kısa bağlantı gösterilir. Varsayılan etiket: “Kişisel verilerin işlenmesine ilişkin aydınlatma metni” (ayardan değişir).  
 - **Tip:** E-posta, ithaf veya hissedar alanlarından en az biri varken  
-- **Formda:** Kısa metin + “Aydınlatma Metni” bağlantısı (yeni sekme, `rel=noopener`). Adres boşsa WordPress Gizlilik Politikası sayfası; o da yoksa bağlantı gösterilmez.  
+- **Formda:** Yalnız bağlantı (yeni sekme, `rel=noopener`). Adres boşsa WordPress Gizlilik Politikası sayfası; o da yoksa bağlantı gösterilmez + yönetici uyarısı.  
 - **Genel ayar:** Tasarım → Aydınlatma metni bağlantısı.  
-- **Nasıl denenir:** Açıp e-posta alanını açın → formda satır görünmeli.
+- **Nasıl denenir:** Açıp e-posta alanını açın → formda kısa bağlantı görünmeli.
 
 ### Etki satırı / Etki metni
 
@@ -324,23 +324,23 @@ Aşağıdaki her alan için: ekran adı, ne işe yarar, hangi tipte görünür /
 - **Genel ayar:** Yönetimde ayrı genel alan yok; boşsa eklenti varsayılan metni kullanılır.  
 - **Nasıl denenir:** Metni değiştirip formda görün.
 
-### Düzen / Ürün görselini göster / Kategori rengini kullan
+### Düzen / Ürün görselini göster
 
-- **Ekran adı:** Düzen; Ürün görselini göster; Kategori rengini kullan  
-- **Ne işe yarar:** Klasik / Kampanya / Hikâye yerleşimi; öne çıkan görsel; kategori renklerini kullanma.  
+- **Ekran adı:** Düzen; Ürün görselini göster  
+- **Ne işe yarar:** Klasik / Kampanya / Hikâye yerleşimi; öne çıkan görsel. **Boş = Klasik; genel düzen ayarı yoktur.** Görsel açıkken ürünün öne çıkan görseli yoksa yönetici uyarısı.  
 - **Tip:** Tümü  
-- **Formda:** Yerleşim ve üst görsel; ana renk kategoriden.  
-- **Genel ayar:** Kategori rengi → Kategoriler sekmesi.  
-- **Nasıl denenir:** Hikâye düzeni + görsel açın; kategori rengi işaretleyin.
+- **Formda:** Yerleşim ve üst görsel (`wdp_campaign_media_url` filtresi URL’yi değiştirebilir). Liste kartları ürün temasını kullanmaz.  
+- **Genel ayar:** Yok (düzen ürün başına).  
+- **Nasıl denenir:** Hikâye düzeni + görsel açın.
 
-### Ana renk / hover / arka plan / köşe / yoğunluk
+### Ana renk / hover / arka plan / köşe
 
-- **Ekran adı:** Ana renk; Ana renk (üzerine gelince); Arka plan rengi; Köşe yuvarlaklığı; Yoğunluk  
-- **Ne işe yarar:** Bu ürüne özel renk, köşe ve boşluk. Boş bırakılanlar genel tasarımı izler.  
+- **Ekran adı:** Ana renk; Ana renk (üzerine gelince); Arka plan rengi; Köşe yuvarlaklığı (px)  
+- **Ne işe yarar:** Bu ürüne özel renk ve köşe. Ana renk boşsa kategori rengi, o da yoksa genel marka rengi. Hover boşsa ana renkten türetilir. Köşe 4–32 px (boş/0 = genel). Yoğunluk ürün ekranından gizlendi (meta silinmez).  
 - **Tip:** Tümü  
-- **Formda:** Düğme, panel ve alan stilleri.  
-- **Genel ayar:** Tasarım (marka / yoğunluk) ve Normal (birincil renk, modal arka plan, UI radius).  
-- **Nasıl denenir:** Hex renk girin; hover ve arka planı kontrol edin.
+- **Formda:** Kabuk CSS değişkenleri (türev palet, `--wdp-on-primary`, panel/sheet köşe oranı).  
+- **Genel ayar:** Tasarım (marka) ve Normal (modal arka plan, UI radius); Kategoriler → kategori renkleri.  
+- **Nasıl denenir:** Hex girin (`#` isteğe bağlı); açık renkte düğme yazısının koyu olduğunu kontrol edin.
 
 ### Kısa kodlar
 

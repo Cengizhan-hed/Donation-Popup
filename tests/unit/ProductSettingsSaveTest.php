@@ -149,14 +149,12 @@ final class ProductSettingsSaveTest extends TestCase {
 		$this->assertCount(count(WDP_Form_Modules::allowed_ids()), $order);
 	}
 
-	public function test_theme_preset_is_preserved(): void {
-		$meta = WDP_Product_Settings_Service::from_product_panel(array(), array('_theme_preset_id' => 'ocean'));
-		$this->assertSame('ocean', $meta['_theme_preset_id']);
+	public function test_theme_preset_id_not_written(): void {
+		$meta = WDP_Product_Settings_Service::from_product_panel(array(), array( '_theme_preset_id' => 'ocean' ));
+		$this->assertArrayNotHasKey('_theme_preset_id', $meta);
 
-		$legacy = WDP_Product_Settings_Service::from_request(
-			WDP_Product_Settings_Service::with_preserved_fields(array('theme_preset_id' => 'forest'), array('_theme_preset_id' => 'ocean'))
-		);
-		$this->assertSame('forest', $legacy['_theme_preset_id']);
+		$legacy = WDP_Product_Settings_Service::from_request(array( 'theme_preset_id' => 'forest' ));
+		$this->assertArrayNotHasKey('_theme_preset_id', $legacy);
 	}
 
 	public function test_max_shares_zero_or_empty_falls_back_to_default(): void {

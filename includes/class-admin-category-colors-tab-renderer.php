@@ -37,8 +37,8 @@ class WDP_Admin_Category_Colors_Tab_Renderer {
 
 		WDP_Admin_Renderer_Helpers::open_form_container('wdp-category-colors-settings-form');
 		echo '<div class="wdp-tab-help" role="note"><p class="wdp-tab-help__title">' . esc_html__('Kategori başlık renkleri', 'woo-donation-popup') . '</p>';
-		echo '<ul class="wdp-tab-help__list"><li>' . esc_html__('Her kategori için renk seçin; o kategoriye doğrudan atanmış ürünlerin panel başlığı bu renkle görünür.', 'woo-donation-popup') . '</li>';
-		echo '<li>' . esc_html__('Ürün birden fazla kategorideyse en alt (en spesifik) kategori rengi kullanılır.', 'woo-donation-popup') . '</li></ul></div>';
+		echo '<ul class="wdp-tab-help__list"><li>' . esc_html__('Her kategori için renk seçin; ürünün kendi ana rengi boşsa panel başlığı ve vurgu rengi bu kategoriden alınır.', 'woo-donation-popup') . '</li>';
+		echo '<li>' . esc_html__('Ürün birden fazla kategorideyse en alt (en spesifik) kategori rengi kullanılır. Kategori rengi de yoksa genel marka rengi geçerlidir.', 'woo-donation-popup') . '</li></ul></div>';
 
 		if (is_wp_error($terms) || empty($terms)) {
 			echo '<p>' . esc_html__('Henüz ürün kategorisi yok.', 'woo-donation-popup') . '</p>';

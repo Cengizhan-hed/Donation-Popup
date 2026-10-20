@@ -152,10 +152,9 @@ class WDP_Admin_Settings_Normalizer {
 				$request,
 				$existing,
 				'privacy_notice_text',
-				__(
-					'Kişisel verileriniz bağışınızın gerçekleştirilmesi için işlenir ve yurt dışındaki saha ekiplerimizle paylaşılır. Ayrıntı için Aydınlatma Metni\'ne bakın.',
-					'woo-donation-popup'
-				)
+				class_exists('WDP_Donation_Optional_Fields')
+					? WDP_Donation_Optional_Fields::default_privacy_link_label()
+					: __('Kişisel verilerin işlenmesine ilişkin aydınlatma metni', 'woo-donation-popup')
 			),
 			'privacy_notice_url'                => self::pick_text($request, $existing, 'privacy_notice_url', ''),
 			'module_order'                      => isset($request['module_order'])
