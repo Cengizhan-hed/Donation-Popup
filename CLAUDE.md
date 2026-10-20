@@ -2,6 +2,16 @@
 
 Bu dosyayı her oturumun başında oku. Kullanıcıyla her zaman **Türkçe** konuş.
 
+## 0. ÇALIŞMA BİÇİMİ (en üstte, diğer kurallardan önce gelir)
+
+1. **Bölüm başına tek analiz.** Bölümün tüm ayarlarını koddan ve docs/MIMARI.md'den incele; TEK mesajda ver: her ayar ne yapar, sorunlar, önerilen düzeltmeler, kullanıcının vereceği kararlar (numaralı, seçenekli, öneri işaretli). Ayar ayar soru sorma.
+2. **Kullanıcıya elle davranış testi yaptırma.** Davranış testleri (tıkla → ne oluyor, sınır değerler, kapat-aç, ürün değişimi, yenileme, sepete ekleme sonrası) Cursor'a otomatik E2E / Playwright testi olarak yazdırılır.
+3. **Kullanıcı yalnız iki şey yapar:** kararları verir ve ship sonrası TEK görsel kontrol listesini (en fazla 8 madde, hepsi tek seferde) uygular.
+4. **Onaylar toplu.** Bölüm başında tek toplu onay al ("şu bölümde şunları yapacağım: düzeltme, ship, accept, commit, push"). Onaydan sonra sormadan ilerle; yalnız beklenmeyen bir risk çıkarsa dur.
+5. **Dosya disiplini.** Yalnız CLAUDE.md, docs/MIMARI.md, docs/AYARLAR.md, docs/AYAR-TURU-NOTLARI.md ve build/handoff/ kullanılır. Yeni .md dosyası açma. Notlar ve kararlar anında docs/AYAR-TURU-NOTLARI.md'ye yazılır; sohbette bırakılan bilgi yeni oturumda kaybolur.
+6. **ILERLEME.md** yalnız Cursor görevleri sırasında kullanılır.
+7. **Aşama özeti** dosya değil, aşama bitince yazılan mesajdır.
+
 ## 1. Rol dağılımı (en önemli kural)
 
 | Kim | Ne yapar | Ne yapmaz |
@@ -53,15 +63,15 @@ Bitiş: verify + test → (gerekirse) npm run ship:staging → e2e:quick → RAP
 
 ## 4. Kullanıcıyla iletişim
 
-- Türkçe. Her mesajda **tek adım**. Tıklama tıklama anlat (menü, tıklanacak yer, ne görünmeli).
+- Türkçe. Kullanıcıdan istenen iş varsa tıklama tıklama anlat (menü, tıklanacak yer, ne görünmeli).
 - Kod/komut tek kopyala-yapıştır bloğu; ayarlar kompakt tablo (ekrandaki yer + tam değer).
 - Uzun tek satır komutlar yapıştırırken bozuluyor → kısa komutlar; uzun metin dosyadan (`printf > /tmp/x.txt`, `git commit -F`).
 - Aklına gelmeyenleri söyle; en ince ayrıntıyı düşün.
 - Şifre, token, `.env` değeri asla sohbete veya dosyaya yazılmaz.
 - Onay gerektiren her komuttan ÖNCE kullanıcıya Türkçe tek cümleyle ne yapacağını ve "yalnız okur" / "dosya değiştirir" / "geri alınması zor" olduğunu yaz. Kullanıcı teknik değil; komut metnini anlamayabilir.
 - Her aşama sonunda 6. Durum bölümünü güncelle. Ardından kullanıcının claude.ai proje sohbetine kopyalayacağı bir AŞAMA ÖZETİ mesajı yaz: ne yapıldı, sürümler ve commit'ler, açık kalan sorunlar, alınan kararlar, sıradaki aşama önerisi. Kısa tablolarla, en fazla 1 sayfa. Dosya oluşturma, mesaj olarak yaz.
-- Her ship:staging sonrasında kullanıcıya şunları yaz: yüklenen sürüm; sade dille neler değişti; staging'de kendi gözüyle kontrol etmesi için tıklama tıklama kısa bir kontrol listesi (hangi sayfa, neye tıklanır, ne görmeli). Kullanıcı kontrol edip 'tamam' demeden accept ve commit'e geçme.
-- Kullanıcı her zaman masa başında değil. Onay gerektiren adımları toplu sor: bir işin başında gereken tüm kritik onayları (commit, push, merge, accept, ship) tek mesajda listele, kullanıcı bir kez onaylasın. Arada küçük sorularla durma; karar gerektiren soruları da biriktirip tek seferde sor.
+- Her ship:staging sonrasında kullanıcıya tek mesajda yaz: yüklenen sürüm; sade dille neler değişti; TEK görsel kontrol listesi (en fazla 8 madde: hangi sayfa, neye tıklanır, ne görülmeli). Kullanıcı 'tamam' demeden accept ve commit'e geçme (bölüm başındaki toplu onay accept/commit/push'u kapsar, ama görsel kontrol sonucu beklenir).
+- Kullanıcı her zaman masa başında değil. Onay gerektiren adımları toplu sor: bir işin başında gereken tüm kritik onayları (commit, push, merge, accept, ship) tek mesajda listele, kullanıcı bir kez onaylasın. Arada küçük sorularla durma; kararları biriktirip tek seferde sor (bkz. Bölüm 0).
 - Her mesajın EN SON satırı şu üçünden biri olmalı:
   ✅ BİTTİ – sıra sende
   ⏳ BEKLİYOR – Cursor çalışıyor, bitince kendim devam edeceğim
