@@ -3,6 +3,8 @@
 
 node_modules/
 .git/
+.claude/
+CLAUDE.md
 .cursor/
 .vscode/
 .github/
