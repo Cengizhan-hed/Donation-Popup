@@ -387,6 +387,19 @@ Formun içindeki SSS modülü 10.27.0’da tamamen kaldırıldı. SSS’ler ür�
 
 ## Sürüm notları
 
+### 10.29.1 — Önerilen yalnız ürün; Ödemeye Git solukluğu
+- "Önerilen" etiketi yalnız üründe Önerilen tutar doluysa ve görünen listedeyse; ortadaki/genel varsayılan kaldırıldı.
+- Ödemeye Git: Dual CTA artık `--wdp-primary` kullanır (soluk `--wdp-success` checkout rengi yerine).
+- Migration `10.29.1`: genel `amount_preset_recommended` silinir.
+
+### 10.29.0 — Tutar seçenekleri (hızlı tutar, adet, işlem ücreti)
+
+- **Etiketler:** "Chip" → "Hızlı tutar düğmeleri"; "En çok tercih" → "Önerilen" (10.29.1’de yalnız ürün alanı; seçili gelmez).
+- **K1:** Hiçbir tutar otomatik seçili gelmez; seçim yalnız aynı ürün/oturumda (bellek); sepete ekleme / yenileme / ürün değişiminde temizlenir.
+- **Tutarlar:** Kayıtta yalnız tam sayı (en fazla 6, genel liste dahil); geçersizde kayıt durur. Min altı düğmeler gizlenir. Yalnız Bağışçı belirler + Hedefli kampanya.
+- **Adet:** Yalnız sabit tutar; kapalıysa sunucu adet=1 zorlar.
+- **İşlem ücreti:** Tüm tiplerde; Toplam satırı canlı; yüzde 0,5–15 (0=kapalı); sunucu yüzdesi her zaman ürün meta’sından.
+
 ### 10.28.12 — Benzer Bağışlar E2E zamanlaması + idle Save-Data
 
 - **Teşhis:** Ürün sayfası “Benzer Bağışlar” kartlarında başlık/buton DOM’da vardı; Avada `.fusion-post-cards.fusion-animated` `visibility:hidden` iken ekran alınıyordu (eklenti döngüyü silmiyor). Mağaza WooCommerce `ul.products` — animasyon yok, “Aynı” kaldı.

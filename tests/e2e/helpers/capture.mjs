@@ -3311,6 +3311,33 @@ export async function captureAll({
 
     await Promise.all([lateSharesPromise, sadakaPromise]);
     void sadakaProductIds;
+
+    // 10.29.0 tutar seçenekleri (K1/K2/ücret/adet)
+    const tAmountOpts = Date.now();
+    try {
+      const { runAmountOptionsChecks } = await import('./amount-options.mjs');
+      await runAmountOptionsChecks({
+        browser,
+        contextOpts,
+        env,
+        productUrls,
+        productIds,
+        listPagePath: env.E2E_LIST_PAGE,
+        failures,
+        stats: functionalStats,
+      });
+    } catch (e) {
+      failures.push(
+        makeFailure({
+          check: 'amount-opts-runner',
+          description: 'Tutar seçenekleri E2E koşucusu çöktü',
+          error: e,
+        })
+      );
+      functionalStats.failed += 1;
+    } finally {
+      logSection('amount-options', tAmountOpts);
+    }
   }
 
   // Mobile chromium + webkit sample (quick’te atlanır)

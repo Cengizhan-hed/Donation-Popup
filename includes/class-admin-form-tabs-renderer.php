@@ -374,7 +374,7 @@ class WDP_Admin_Form_Tabs_Renderer {
 				if ($n > 0) {
 					$preset_chips[] = $n;
 				}
-				if (count($preset_chips) >= 5) {
+				if (count($preset_chips) >= 6) {
 					break;
 				}
 			}
@@ -403,16 +403,12 @@ class WDP_Admin_Form_Tabs_Renderer {
 		echo '<span>' . esc_html__('3 Onay', 'woo-donation-popup') . '</span>';
 		echo '</div>';
 
-		/* Amount-first: tutar + presets önce, alanlar sonra */
-		$popular_label = __('En çok tercih', 'woo-donation-popup');
-		$popular_index = count($preset_chips) > 0 ? (int) floor(count($preset_chips) / 2) : -1;
+		/* Amount-first: tutar + presets önce, alanlar sonra. Önerilen yalnız üründe ayarlanır (10.29.1). */
 		echo '<div class="wdp-admin-normal-preview__amount">';
 		echo '<label class="wdp-admin-normal-preview__label">' . esc_html__('Bağış tutarı', 'woo-donation-popup') . '</label>';
 		echo '<div class="wdp-admin-normal-preview__presets" data-lp-presets' . ($presets_on ? '' : ' hidden') . '>';
 		foreach ($preset_chips as $i => $chip) {
-			$is_popular = ((int) $i === $popular_index);
-			$chip_class = 'wdp-admin-normal-preview__chip' . ($is_popular ? ' is-popular is-selected' : '');
-			echo '<span class="' . esc_attr($chip_class) . '"' . ($is_popular ? ' data-popular-label="' . esc_attr($popular_label) . '"' : '') . '>₺' . esc_html((string) (int) $chip) . '</span>';
+			echo '<span class="wdp-admin-normal-preview__chip">₺' . esc_html((string) (int) $chip) . '</span>';
 		}
 		echo '</div>';
 		echo '<div class="wdp-admin-normal-preview__input amount"><span>₺</span><em>' . esc_html__('500', 'woo-donation-popup') . '</em></div>';
@@ -480,16 +476,16 @@ class WDP_Admin_Form_Tabs_Renderer {
 		echo '<p class="description">' . esc_html__('Kapalıyken form tek ekranda klasik görünümde kalır.', 'woo-donation-popup') . '</p>';
 		echo '</td></tr></table></div>';
 
-		echo '<div id="wdp-normal-sec-amount-presets" class="wdp-settings-section"><h2>' . esc_html__('Hızlı tutar chip’leri', 'woo-donation-popup') . '</h2>';
-		echo '<p class="wdp-settings-section__hint">' . esc_html__('Özel tutar girilen formlarda (custom price / progress) sabit tutar butonlarını göstermek için açın. Kapalıyken yalnızca tutar alanı görünür.', 'woo-donation-popup') . '</p>';
-		echo '<table class="form-table"><tr><th scope="row">' . esc_html__('Chip’leri göster', 'woo-donation-popup') . '</th><td>';
+		echo '<div id="wdp-normal-sec-amount-presets" class="wdp-settings-section"><h2>' . esc_html__('Hızlı tutar düğmeleri', 'woo-donation-popup') . '</h2>';
+		echo '<p class="wdp-settings-section__hint">' . esc_html__('Yalnız "Bağışçı belirler" ve "Hedefli kampanya" formlarında, tutar kutusunun üstünde tek tıkla seçilen düğmeleri gösterir. Kapalıyken yalnızca tutar alanı görünür.', 'woo-donation-popup') . '</p>';
+		echo '<table class="form-table"><tr><th scope="row">' . esc_html__('Hızlı tutar düğmelerini göster', 'woo-donation-popup') . '</th><td>';
 		echo '<label class="wdp-admin-toggle"><input type="checkbox" id="enable_amount_presets" name="enable_amount_presets" value="1" ' . checked($presets_enabled, true, false) . ' data-wdp-toggle-target="#wdp-amount-presets-fields" /> ';
-		echo '<span>' . esc_html__('Tutar alanının altında hızlı seçim chip’lerini göster', 'woo-donation-popup') . '</span></label>';
+		echo '<span>' . esc_html__('Tutar kutusunun üstünde 100 ₺ / 250 ₺ gibi tek tıkla seçilen düğmeler.', 'woo-donation-popup') . '</span></label>';
 		echo '</td></tr></table>';
 		echo '<div id="wdp-amount-presets-fields" class="wdp-admin-collapsible"' . ($presets_enabled ? '' : ' hidden') . '>';
-		echo '<table class="form-table"><tr><th scope="row"><label for="amount_presets">' . esc_html__('Chip tutarları', 'woo-donation-popup') . '</label></th><td>';
+		echo '<table class="form-table"><tr><th scope="row"><label for="amount_presets">' . esc_html__('Hızlı tutar düğmeleri', 'woo-donation-popup') . '</label></th><td>';
 		echo '<input type="text" id="amount_presets" name="amount_presets" value="' . esc_attr($amount_presets) . '" class="large-text" />';
-		echo '<p class="description">' . esc_html__('Virgülle ayırın, en fazla 6 değer. Örnek: 100, 250, 500, 1000, 2500. Ürün min tutarının altındakiler otomatik elenir.', 'woo-donation-popup') . '</p>';
+		echo '<p class="description">' . esc_html__('Yalnız tam sayılar; virgül, boşluk veya noktalı virgülle ayırın, en fazla 6 değer (ör. 100, 250, 500, 1000, 2500). "1.000" veya "1,5" geçersizdir. Ürünün en düşük tutarının altındaki düğmeler gösterilmez. "Önerilen" etiketi yalnız ürün kartındaki Önerilen tutar alanından gelir.', 'woo-donation-popup') . '</p>';
 		echo '<p class="description" id="wdp-amount-presets-hint" data-lp-preset-hint></p>';
 		echo '</td></tr></table></div></div>';
 	}
@@ -501,7 +497,7 @@ class WDP_Admin_Form_Tabs_Renderer {
 		echo '<div id="wdp-normal-sec-form-buttons" class="wdp-settings-section"><h2>' . __('Buton Renkleri', 'woo-donation-popup') . '</h2><table class="form-table"><tr><th scope="row"><label for="button_primary_color">' . __('Birincil Buton Rengi', 'woo-donation-popup') . '</label></th><td><input type="color" id="button_primary_color" name="button_primary_color" value="' . esc_attr($settings['button_primary_color']) . '" /></td></tr><tr><th scope="row"><label for="button_primary_hover">' . __('Buton Hover Rengi', 'woo-donation-popup') . '</label></th><td><input type="color" id="button_primary_hover" name="button_primary_hover" value="' . esc_attr($settings['button_primary_hover']) . '" /></td></tr><tr><th scope="row"><label for="button_checkout_color">' . __('Ödeme Yap Butonu Rengi', 'woo-donation-popup') . '</label></th><td><input type="color" id="button_checkout_color" name="button_checkout_color" value="' . esc_attr($checkout_color) . '" /></td></tr><tr><th scope="row"><label for="button_checkout_hover">' . __('Ödeme Yap Butonu Hover Rengi', 'woo-donation-popup') . '</label></th><td><input type="color" id="button_checkout_hover" name="button_checkout_hover" value="' . esc_attr($checkout_hover) . '" /></td></tr></table>';
 
 		echo '<h2>' . __('Buton gölgesi (yalnızca eklenti butonları)', 'woo-donation-popup') . '</h2>';
-		echo '<p class="description" style="margin-top:0;">' . esc_html__('İki grup: (1) sayfadaki shortcode/tetikleyici düğmeler — CSS `--wdp-plugin-btn-shadow-sc`; (2) popup ve sayfa içi form içindeki Tüm diğer eklenti butonları — `--wdp-plugin-btn-shadow-modal`. Kapama (X) ve tutar çipleri hariç.', 'woo-donation-popup') . '</p>';
+		echo '<p class="description" style="margin-top:0;">' . esc_html__('İki grup: (1) sayfadaki shortcode/tetikleyici düğmeler — CSS `--wdp-plugin-btn-shadow-sc`; (2) popup ve sayfa içi form içindeki Tüm diğer eklenti butonları — `--wdp-plugin-btn-shadow-modal`. Kapama (X) ve hızlı tutar düğmeleri hariç.', 'woo-donation-popup') . '</p>';
 
 		self::render_button_shadow_settings_group($settings, 'sc', __('1) Shortcode / tetikleyici butonları', 'woo-donation-popup'), 'wdp-bs-sc');
 		self::render_button_shadow_settings_group($settings, 'modal', __('2) Popup ve gömülü form içindeki butonlar', 'woo-donation-popup'), 'wdp-bs-modal');

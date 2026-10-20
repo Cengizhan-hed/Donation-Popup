@@ -27,7 +27,8 @@ final class RobustMetaTest extends TestCase {
 				'layout_mode'        => 'neon',
 			)
 		);
-		$this->assertSame('20', $meta['_cover_fee_percent']);
+		// 10.29.0 (Y2): sınır dışı yüzde sessizce kısılmaz; reddedilir (boş) ve hata bildirimi kuyruğa girer.
+		$this->assertSame('', $meta['_cover_fee_percent']);
 		$this->assertSame(100, $meta['_max_shares']);
 		$this->assertSame('40', $meta['_theme_radius']);
 		$this->assertSame('0', $meta['_min_custom_price']);
@@ -52,7 +53,8 @@ final class RobustMetaTest extends TestCase {
 		WDP_Test_State::$post_meta[8] = array('_layout_mode' => '???', '_cover_fee_percent' => '50');
 		$context = WDP_Donation_Product_Context_Service::build_form_context($p);
 		$this->assertSame('classic', $context['layout_mode']);
-		$this->assertEquals(20, $context['cover_fee_percent']);
+		// 10.29.0: çalışma anı üst sınırı 15 (önceki 20).
+		$this->assertEquals(15, $context['cover_fee_percent']);
 	}
 
 	public function test_broken_sadaka_product_id_is_numeric(): void {

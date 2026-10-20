@@ -156,18 +156,23 @@ trait WDP_Ajax_Cart_Add_Trait {
             if (!empty($_POST['donation_anonymous'])) {
                 $donation_data['anonymous'] = '1';
             }
-            if (!empty($_POST['donation_cover_fee'])) {
-                $donation_data['cover_fee'] = '1';
-                $fee_pct = isset($_POST['donation_cover_fee_percent'])
-                    ? (float) WDP_Security::sanitize_numeric(wp_unslash($_POST['donation_cover_fee_percent']), 0, 15)
-                    : 0;
-                if ($fee_pct <= 0) {
-                    $fee_pct = (float) $product->get_meta('_cover_fee_percent');
-                }
-                if ($fee_pct > 0) {
-                    $donation_data['cover_fee_percent'] = min(15, max(0.5, $fee_pct));
-                }
+        }
+
+        // 10.29.0 (Y1/Y2): işlem ücreti tüm tiplerde (özel, kampanya, sabit, hisseli) uygulanır.
+        // Yüzde HER ZAMAN ürün meta'sından okunur; istemciden gelen donation_cover_fee_percent yok sayılır.
+        $cover_fee_pct = 0.0;
+        if (!empty($_POST['donation_cover_fee'])) {
+            $cover_fee_pct = WDP_Cart::get_product_cover_fee_percent($product);
+            if ($cover_fee_pct > 0) {
+                $donation_data['cover_fee']         = '1';
+                $donation_data['cover_fee_percent'] = $cover_fee_pct;
             }
+        }
+
+        // 10.29.0 (C): adet seçici kapalıysa (ya da form sabit tutarlı değilse) adet sunucuda 1'e sabitlenir.
+        // Hisseli formda adet = hisse sayısıdır, dokunulmaz.
+        if ($share_count <= 0 && !WDP_Cart::product_allows_quantity($product)) {
+            $quantity = 1;
         }
 
         // PERFORMANCE: Use cached meta data ($product already loaded above).
@@ -233,9 +238,8 @@ trait WDP_Ajax_Cart_Add_Trait {
                     );
                 }
 
-                if (!empty($donation_data['cover_fee']) && !empty($donation_data['cover_fee_percent']) && $custom_price_value > 0) {
-                    $pct = (float) $donation_data['cover_fee_percent'];
-                    $custom_price_value = round($custom_price_value * (1 + ($pct / 100)), 2);
+                if ($cover_fee_pct > 0 && $custom_price_value > 0) {
+                    $custom_price_value = WDP_Cart::apply_cover_fee_to_amount($custom_price_value, $cover_fee_pct);
                 }
             }
 
@@ -285,7 +289,8 @@ trait WDP_Ajax_Cart_Add_Trait {
             // Quantity = shareCount olacak ve subtotal = custom_price × quantity olarak hesaplanacak
             $cart_item_data['custom_price'] = $custom_price_value;
         } else {
-            $base_unit = (float) $product->get_price();
+            // Sabit / hisseli: işlem ücreti birim fiyata eklenir (sepet satırında ayrıca gösterilir).
+            $base_unit = WDP_Cart::apply_cover_fee_to_amount((float) $product->get_price(), $cover_fee_pct);
             if ($base_unit > 0) {
                 $cart_item_data['wdp_base_unit_price'] = $base_unit;
             }

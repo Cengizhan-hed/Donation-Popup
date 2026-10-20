@@ -242,7 +242,7 @@ html body :is(.hdf-donation-modal-wrapper, .wdp-modal, .wdp-donation-form) :is(.
   }
 
   html body :is(.hdf-donation-modal-wrapper, .wdp-modal, .wdp-donation-form) :is(.wdp-modal-content form, .wdp-modal-content) .wdp-button-group button[name="donation_go_checkout"]:hover {
-    background: color-mix(in srgb, var(--wdp-success, #1b7a45) 88%, #0f172a);
+    background: var(--wdp-primary-hover, #0c4f72);
     transform: none;
     filter: none;
   }
@@ -260,19 +260,23 @@ html body :is(.hdf-donation-modal-wrapper, .wdp-modal, .wdp-donation-form) :is(.
   background: var(--wdp-primary-hover, #0c4f72);
 }
 
-/* Dual CTA: Ödemeye Git = sole solid primary */
+/* Dual CTA: Ödemeye Git = sole solid primary (brand primary — not lighter --wdp-success).
+ * 10.29.1: staging'de --wdp-success (=button_checkout_color) primary'den açık kalınca
+ * düğme "soluk" görünüyordu; Sepete Ekle solid primary kazanınca kontrast tersine dönüyordu.
+ */
 html body :is(.hdf-donation-modal-wrapper, .wdp-modal, .wdp-donation-form) :is(.wdp-modal-content form, .wdp-modal-content) .wdp-button-group button[name="donation_go_checkout"],
 html body :is(.hdf-donation-modal-wrapper, .wdp-modal, .wdp-donation-form) .wdp-button-group button[name="donation_go_checkout"].wdp-btn-primary {
-  background: var(--wdp-success, #1b7a45);
-  background-color: var(--wdp-success, #1b7a45);
+  background: var(--wdp-primary, #0f608b);
+  background-color: var(--wdp-primary, #0f608b);
   color: #ffffff;
   border: none;
   box-shadow: var(--wdp-cta-primary-shadow);
   min-height: var(--wdp-form-cta-height, var(--wdp-button-height, 52px));
+  opacity: 1;
 }
 
 html body :is(.hdf-donation-modal-wrapper, .wdp-modal, .wdp-donation-form) :is(.wdp-modal-content form, .wdp-modal-content) .wdp-button-group button[name="donation_go_checkout"]:active {
-  background: color-mix(in srgb, var(--wdp-success, #1b7a45) 88%, #0f172a);
+  background: var(--wdp-primary-hover, #0c4f72);
 }
 
 html body :is(.hdf-donation-modal-wrapper, .wdp-modal, .wdp-donation-form) .wdp-button-group .wdp-btn-primary:not([name="donation_go_checkout"]) {

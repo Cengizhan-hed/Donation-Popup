@@ -112,6 +112,9 @@ class WDP_Admin_Product_Data_Tab {
 		foreach (WDP_Product_Settings_Service::PRESERVED_FIELDS as $meta_key) {
 			$existing[ $meta_key ] = $product->get_meta($meta_key, true);
 		}
+		foreach (WDP_Product_Settings_Service::VALIDATED_META_KEYS as $meta_key) {
+			$existing[ $meta_key ] = $product->get_meta($meta_key, true);
+		}
 
 		foreach (WDP_Product_Settings_Service::from_product_panel($posted, $existing, $product->get_id()) as $meta_key => $meta_value) {
 			$product->update_meta_data($meta_key, $meta_value);
@@ -255,6 +258,7 @@ class WDP_Admin_Product_Data_Tab {
 			'progress_celebrate'           => $flag('_progress_celebrate', true),
 			'enable_amount_presets'        => $flag('_enable_amount_presets', true),
 			'amount_presets'               => $meta('_amount_presets'),
+			'amount_preset_recommended'    => $meta('_amount_preset_recommended'),
 			'enable_quantity'              => $flag('_enable_quantity', true),
 			'enable_cover_fee'             => $flag('_enable_cover_fee'),
 			'cover_fee_percent'            => $meta('_cover_fee_percent'),
@@ -610,12 +614,24 @@ class WDP_Admin_Product_Data_Tab {
 	 * @return void
 	 */
 	private static function render_amount_section(array $values) {
+		$type = isset($values['donation_type']) ? $values['donation_type'] : WDP_Donation_Type::FIXED;
 		self::open_section('amount', __('Tutar seçenekleri', 'woo-donation-popup'), __('Hızlı tutar düğmeleri, adet ve işlem ücreti', 'woo-donation-popup'));
-		self::checkbox('enable_amount_presets', $values['enable_amount_presets'], __('Hızlı tutar düğmeleri', 'woo-donation-popup'), __('Tutar alanının üstünde tek tıkla seçilen tutar düğmeleri gösterir.', 'woo-donation-popup'));
-		self::text('amount_presets', $values['amount_presets'], __('Tutarlar', 'woo-donation-popup'), __('Virgülle ayırın (en fazla 6); boş bırakırsanız genel ayardaki tutarlar kullanılır.', 'woo-donation-popup'), array('placeholder' => '100, 250, 500'));
-		self::checkbox('enable_quantity', $values['enable_quantity'], __('Adet seçici', 'woo-donation-popup'), __('Sabit tutarlı formda adet artırma/azaltma düğmelerini gösterir.', 'woo-donation-popup'));
-		self::checkbox('enable_cover_fee', $values['enable_cover_fee'], __('İşlem ücretini karşıla', 'woo-donation-popup'), __('Bağışçıya ödeme işlem maliyetini de üstlenme seçeneği sunar.', 'woo-donation-popup'));
-		self::number('cover_fee_percent', $values['cover_fee_percent'], __('İşlem ücreti (%)', 'woo-donation-popup'), __('Bağış tutarına eklenecek yüzde (en fazla 15).', 'woo-donation-popup'), array('max' => '15', 'step' => '0.1'));
+
+		// Hızlı tutar düğmeleri yalnız "Bağışçı belirler" ve "Hedefli kampanya" formlarında vardır.
+		self::open_type_scope(array(WDP_Donation_Type::CUSTOM, WDP_Donation_Type::CAMPAIGN), $type);
+		self::checkbox('enable_amount_presets', $values['enable_amount_presets'], __('Hızlı tutar düğmeleri', 'woo-donation-popup'), __('Tutar alanının üstünde tek tıkla seçilen tutar düğmeleri gösterir. Genel ayar (Ayarlar → Normal) kapalıysa bu kutu işaretli olsa da düğmeler görünmez.', 'woo-donation-popup'));
+		self::text('amount_presets', $values['amount_presets'], __('Tutarlar', 'woo-donation-popup'), __('Yalnız tam sayılar; virgül, boşluk veya noktalı virgülle ayırın (en fazla 6). Boş bırakırsanız genel ayardaki tutarlar kullanılır. En düşük tutarın altındaki düğmeler gösterilmez.', 'woo-donation-popup'), array('placeholder' => '100, 250, 500'));
+		self::number('amount_preset_recommended', isset($values['amount_preset_recommended']) ? $values['amount_preset_recommended'] : '', __('Önerilen tutar', 'woo-donation-popup'), __('Boş bırakılırsa hiçbir tutarda Önerilen etiketi gösterilmez. Doluysa yalnızca listedeki o tutarda etiket görünür; tutar kendiliğinden seçili gelmez. Listede olmayan veya tam sayı olmayan değer kaydı durdurur.', 'woo-donation-popup'), array('min' => '1', 'step' => '1'));
+		echo '</div>';
+
+		// Adet seçici yalnız sabit tutarlı formda vardır.
+		self::open_type_scope(array(WDP_Donation_Type::FIXED), $type);
+		self::checkbox('enable_quantity', $values['enable_quantity'], __('Adet seçici', 'woo-donation-popup'), __('Sabit tutarlı formda adet artırma/azaltma düğmelerini gösterir. Kapalıysa adet her zaman 1 olur.', 'woo-donation-popup'));
+		echo '</div>';
+
+		// İşlem ücreti tüm bağış tiplerinde geçerlidir.
+		self::checkbox('enable_cover_fee', $values['enable_cover_fee'], __('İşlem ücretini karşıla', 'woo-donation-popup'), __('Bağışçıya ödeme işlem maliyetini de üstlenme seçeneği sunar (tüm bağış tiplerinde).', 'woo-donation-popup'));
+		self::number('cover_fee_percent', $values['cover_fee_percent'], __('İşlem ücreti (%)', 'woo-donation-popup'), __('0 = kapalı; aksi halde 0,5 ile 15 arasında bir yüzde. Aralık dışı değer kaydedilmez.', 'woo-donation-popup'), array('min' => '0', 'max' => '15', 'step' => '0.1'));
 		self::close_section();
 	}
 

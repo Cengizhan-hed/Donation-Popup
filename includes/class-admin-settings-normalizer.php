@@ -14,12 +14,21 @@ if (!defined('ABSPATH')) {
  */
 class WDP_Admin_Settings_Normalizer {
 	/**
+	 * Strict-validation error of the last normalize_normal_form_settings() call ('' = none).
+	 * Admin save handlers must refuse to persist the option when this is not empty (10.29.0).
+	 *
+	 * @var string
+	 */
+	public static $last_validation_error = '';
+
+	/**
 	 * Normalize normal form settings.
 	 *
 	 * @param array $request Raw request payload.
 	 * @return array
 	 */
 	public static function normalize_normal_form_settings(array $request) {
+		self::$last_validation_error = '';
 		$existing = WDP_Utils::migrate_button_shadow_to_sc_modal(
 			WDP_Utils::normalize_legacy_popup_button_text(
 				get_option('wdp_button_settings', array())
@@ -185,21 +194,27 @@ class WDP_Admin_Settings_Normalizer {
 			$settings['overlay_opacity'] = self::clamp_range((int) $settings['overlay_opacity'], 20, 80);
 		}
 
-		$preset_raw = isset($settings['amount_presets']) ? (string) $settings['amount_presets'] : '';
-		$preset_parts = preg_split('/[\s,;]+/', $preset_raw);
-		$preset_clean = array();
-		if (is_array($preset_parts)) {
-			foreach ($preset_parts as $part) {
-				$n = (float) str_replace(',', '.', preg_replace('/[^\d.,]/', '', (string) $part));
-				if ($n > 0) {
-					$preset_clean[] = (string) (floor($n) == $n ? (int) $n : round($n, 2));
-				}
-				if (count($preset_clean) >= 6) {
-					break;
-				}
+		// 10.29.0 (Y3/Y4/Y6): strict list validation. A changed, invalid value is rejected (the
+		// stored list is kept and last_validation_error is set); an UNCHANGED legacy value is
+		// tolerated and soft-cleaned so unrelated tabs (e.g. Design Studio) can still save.
+		$default_presets = '100, 250, 500, 1000, 2500';
+		$preset_raw      = isset($settings['amount_presets']) ? trim((string) $settings['amount_presets']) : '';
+		$stored_presets  = isset($existing['amount_presets']) ? trim(sanitize_text_field((string) $existing['amount_presets'])) : '';
+		$preset_check    = WDP_Form_Modules::validate_amount_presets_for_save($preset_raw);
+		if (!empty($preset_check['ok'])) {
+			$settings['amount_presets'] = !empty($preset_check['amounts']) ? implode(', ', $preset_check['amounts']) : $default_presets;
+		} else {
+			$kept = WDP_Form_Modules::parse_amount_presets_csv($stored_presets);
+			if ($preset_raw !== $stored_presets) {
+				self::$last_validation_error = isset($preset_check['error']) ? (string) $preset_check['error'] : '';
 			}
+			$settings['amount_presets'] = !empty($kept)
+				? implode(', ', array_map('intval', $kept))
+				: $default_presets;
 		}
-		$settings['amount_presets'] = !empty($preset_clean) ? implode(', ', $preset_clean) : '100, 250, 500, 1000, 2500';
+
+		// 10.29.1 (K2): genel amount_preset_recommended kaldırıldı; eski anahtar sessizce yok sayılır.
+		unset($settings['amount_preset_recommended']);
 		if (!empty($settings['title_font_size_mobile'])) {
 			$settings['title_font_size_mobile'] = self::clamp_range($settings['title_font_size_mobile'], 12, 40);
 		}

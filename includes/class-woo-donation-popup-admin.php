@@ -172,6 +172,12 @@ class Woo_Donation_Popup_Admin {
         $merged_request = array_merge($existing, $request_data);
         $settings       = WDP_Admin_Settings_Normalizer::normalize_normal_form_settings($merged_request);
 
+        // 10.29.0: geçersiz hızlı tutar listesi / önerilen tutar kaydedilmez; mevcut ayar korunur.
+        if (WDP_Admin_Settings_Normalizer::$last_validation_error !== '') {
+            $this->send_admin_settings_error(WDP_Admin_Settings_Normalizer::$last_validation_error);
+            return;
+        }
+
         $this->update_non_autoload_option('wdp_button_settings', $settings);
         $this->bump_wdp_asset_cache_version();
 
@@ -196,6 +202,10 @@ class Woo_Donation_Popup_Admin {
         }
 		$merged_request = array_merge($existing, $request_data);
 		$settings       = WDP_Admin_Settings_Normalizer::normalize_normal_form_settings($merged_request);
+		if (WDP_Admin_Settings_Normalizer::$last_validation_error !== '') {
+			$this->send_admin_settings_error(WDP_Admin_Settings_Normalizer::$last_validation_error);
+			return;
+		}
 
 		// Global marka rengi → otomatik palet (butonlar + progress + başarı).
 		$brand = '';

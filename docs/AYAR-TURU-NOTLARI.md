@@ -7,11 +7,13 @@
 
 | # | Ayar | Durum |
 |---|------|-------|
-| 1 | Hızlı tutar düğmeleri | Test sürüyor (a, b, c açık) |
-| 2 | Tutarlar | Sırada (boş, 6, 7 tutar, geçersiz karakter) |
-| 3 | Adet seçici | Bekliyor |
-| 4 | İşlem ücretini karşıla | Bekliyor |
-| 5 | İşlem ücreti (%) | Bekliyor |
+| 1 | Hızlı tutar düğmeleri | 10.29.0 ship + quick Geçti (E2E a–e) |
+| 2 | Tutarlar | 10.29.0 (Y3–Y6 + PHPUnit + E2E g/f) |
+| 3 | Adet seçici | 10.29.0 (N3 + sunucu qty=1 + E2E h) |
+| 4 | İşlem ücretini karşıla | 10.29.0 (Y1 tüm tipler + Toplam + E2E i) |
+| 5 | İşlem ücreti (%) | 10.29.0 (Y2 0,5–15 + meta’dan oku) |
+
+**Ship:** staging 10.29.0; quick 40/0/0; Değişti 4 custom kabuk (Önerilen). Accept/commit bekliyor (görsel kontrol).
 
 ## Bilgiler (koddan doğrulandı)
 
@@ -83,3 +85,49 @@ Ek bulgu (Ayar 1): "En çok tercih" otomatik ortadaki düğme (K2'de çözülece
 | Y5 | a: En düşük tutarın altındaki hızlı düğmeler gizlenir. |
 | Y6 | a: Genel hızlı tutar listesi de en fazla 6. |
 | Onay | Toplu onay VERİLDİ: tek Cursor görevi (N1–N7, K1–K2, Y1–Y6, tablo önerileri, otomatik testler a/b/c dahil) + ship:staging + quick; sonra en fazla 8 maddelik görsel liste; kullanıcı "tamam" deyince accept + commit + push. |
+
+## Durum: 10.29.0 (dal ayar-tutar-secenekleri)
+
+| Konu | Sonuç |
+|------|-------|
+| Cursor görevi | Bitti; verify + test geçti (PHPUnit 178, JS 43); staging'de 10.29.0; e2e:quick işlevsel 40/0/0 |
+| Görsel | 4 ekran Değişti (custom popup/panel open + errors): "Önerilen" etiketi + düğmeler görünür; hiçbir tutar seçili değil |
+| Gözlem | Önerilen düğmenin mavi çerçevesi "seçili" gibi okunabilir; kullanıcı staging'de değerlendirecek |
+| Açık | Staging ürünlerinde ücret kapalıysa E2E "i" atlanabilir (bu koşuda geçti). Kalan teknik adlar: chip_style option, CSS sınıf adları (kullanıcıya görünmez) |
+| Bekleyen | Kullanıcı görsel kontrol → "tamam" → accept + commit + push |
+
+## YÖN DEĞİŞİKLİĞİ (2026-10-20)
+
+Görsel/CSS düzeltmeleri en sona kalır; ayar turunda yalnız DAVRANIŞ düzeltilir. Her bölüm: koddan analiz → tek mesaj (tablo + numaralı kararlar) → onay → tek Cursor görevi (düzeltme + otomatik test + ship + quick) → en fazla 3 maddelik davranış kontrolü → accept + commit + push + merge. Kalan bölümler sırası: Form alanları → Kampanya blokları (Akika hedefe ulaştı ama bağış almaya devam ediyor: karar listesine eklenecek) → Bu ürüne özel görünüm → Kısa kod. Tur bitince: 6. Durum + AŞAMA ÖZETİ (GÖRSEL AŞAMA listesi dahil).
+
+| Karar | İçerik |
+|-------|--------|
+| K2 (güncel) | "Önerilen" yalnız üründe "Önerilen tutar" doluysa ve o tutar listede varsa görünür. Boşsa hiçbir düğmede görünmez. Ortadaki otomatik varsayılan ve genel ayardaki önerilen tutar KALDIRILIR. Ürün alanı açıklaması: "Boş bırakılırsa hiçbir tutarda Önerilen etiketi gösterilmez." |
+| Ödemeye Git | 4 custom ekranda eskiye göre soluk; sebep kanıtlanacak. Disabled/pasif veya Toplam yan etkisiyse şimdi düzelt (buton her zaman aktif, doğrulama tıklayınca). Yalnız CSS ise görsel aşamaya yaz. |
+
+## GÖRSEL AŞAMA (sona kalan)
+
+| # | Madde |
+|---|-------|
+| G1 | N6: tüm hızlı tutar düğmeleri eşit yükseklik (Önerilen için etiket yer kaplamasın) |
+| G2 | Önerilen düğme seçili gibi görünmesin: aynı çerçeve, yalnız küçük yazı |
+| G3 | Seçili düğme dolgulu ve baskın olsun |
+| G4 | Ürün sayfası "Bağış Yap" bilgi kartından geniş |
+| G5 | Mağaza buton yazısı hizası (Avada `.button`, yazı yukarıda) |
+| G6 | Popup / panel buton sırası aynı olsun (popup: Sepete Ekle solda; panel: Ödemeye Git üstte) |
+| G7 | "Benzer Bağışlar" turuncu butonlar liste mavisiyle tutarsız |
+| G8 | Panelde içerik ile butonlar arası büyük boşluk |
+| G9 | Not ikonu hizasız (2E) |
+| G10 | Sabit fiyattaki fiyat kutusu buton gibi görünüyor; her tipte "Toplam" satırı (2D) |
+| G11 | Bağışçı belirler tutar alanında "min" ipucu yok (2E) |
+
+## Durum: 10.29.1 (kabul edildi)
+
+| Konu | Sonuç |
+|------|-------|
+| K2 | Önerilen yalnız üründe dolu ve listedeki tutarda; genel ayar ve otomatik orta kaldırıldı |
+| Ödemeye Git | Disabled değil; sebep CSS (`--wdp-success` açık renk, buttons.css:263-276). Cursor primary'ye çevirdi; iki düğme aynı mavi |
+| Test verisi | Staging Nafile'de `_amount_presets`=50, 100 ve ücret %5 kullanıcı tarafından girildi (baseline bu duruma göre kabul edildi) |
+| Test borcu | amount-options.mjs:291 `.catch(() => {})` ve :631 boş catch (yorumlu) yutma yasağına aykırı; sonraki Cursor görevinde düzeltilecek |
+| GÖRSEL | G12: Sepete Ekle ikincil (çerçeveli) kural specificity kaybediyor; iki CTA da dolgulu mavi |
+| e2e:quick | 42/0/0; accept: 4 ekran |

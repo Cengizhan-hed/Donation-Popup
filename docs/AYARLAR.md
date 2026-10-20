@@ -109,27 +109,35 @@ Aşağıdaki her alan için: ekran adı, ne işe yarar, hangi tipte görünür /
 
 ### Hızlı tutar düğmeleri
 
-- **Ekran adı:** Hızlı tutar düğmeleri  
-- **Ne işe yarar:** Tutar alanının üstünde tek tıkla seçilen tutar düğmeleri.  
-- **Tip:** Yönetimde tümü; formda özellikle bağışçı belirler / kampanya  
-- **Formda:** Tutar alanının üstündeki chip düğmeler.  
-- **Genel ayar (gösterim):** Normal → Chip’leri göster. Üründe kapalıysa gizlenir; genel kapalıysa ürün açık olsa da chip gelmez.  
-- **Nasıl denenir:** Normal’de chip’leri açın, üründe kapatın → chip yok; ikisini açın → chip var.
+- **Ekran adı:** Hızlı tutar düğmeleri (genel ayarda "Hızlı tutar düğmelerini göster")  
+- **Ne işe yarar:** Tutar kutusunun üstünde 100 ₺ / 250 ₺ gibi tek tıkla seçilen düğmeler.  
+- **Tip:** Yalnız "Bağışçı belirler" ve "Hedefli kampanya" (yönetimde diğer tiplerde gizli; formda gelmez)  
+- **Formda:** Tutar alanının üstündeki düğmeler. En düşük tutarın altındakiler gizlenir; hepsi gizlenirse bölüm tamamen kalkar.  
+- **Genel ayar (gösterim):** Normal → Hızlı tutar düğmelerini göster. Üründe kapalıysa gizlenir; genel kapalıysa ürün açık olsa da düğmeler gelmez.  
+- **Nasıl denenir:** Normal'de düğmeleri açın, üründe kapatın → düğme yok; ikisini açın → düğme var.
 
-### Tutarlar
+### Tutarlar (hızlı tutar düğmeleri listesi)
 
-- **Ekran adı:** Tutarlar  
-- **Ne işe yarar:** Virgülle ayırın (en fazla 6); boş bırakırsanız genel ayardaki tutarlar kullanılır.  
+- **Ekran adı:** Tutarlar (genel ayarda "Hızlı tutar düğmeleri")  
+- **Ne işe yarar:** Yalnız tam sayılar; virgül, boşluk veya noktalı virgülle ayırın (en fazla 6, genel ayarda da). "1.000", "1,5", "5o0" gibi değerler geçersizdir: kayıt durur ve hatalı değer hata mesajında gösterilir. Ürün alanı boşsa genel ayardaki tutarlar kullanılır.  
 - **Tip:** Yukarıdaki gibi  
-- **Formda:** Chip tutarları.  
-- **Genel ayar:** Normal → Chip tutarları.  
-- **Nasıl denenir:** Ürüne `50, 100` yazın; formda yalnızca bunlar görünsün.
+- **Formda:** Hızlı tutar düğmeleri. Hiçbir tutar kendiliğinden seçili gelmez.  
+- **Genel ayar:** Normal → Hızlı tutar düğmeleri.  
+- **Nasıl denenir:** Ürüne `50, 100` yazın; formda yalnızca bunlar görünsün. `1.000` yazın; kayıt hata vermeli.
+
+### Önerilen tutar
+
+- **Ekran adı:** Önerilen tutar  
+- **Ne işe yarar:** Üründe doluysa ve o tutar o an görünen hızlı tutar düğmeleri arasındaysa yalnız o düğmede "Önerilen" etiketi gösterir. Boş bırakılırsa hiçbir tutarda etiket yok. Listede olmayan / tam sayı olmayan değer kaydı durdurur. Etiketli tutar kendiliğinden seçilmez.  
+- **Tip:** Yalnız "Bağışçı belirler" ve "Hedefli kampanya" (hisseli/sabitte admin alanı gizli)  
+- **Genel ayar:** Yok (10.29.1’de Normal sekmesinden kaldırıldı; eski genel değer yok sayılır / migration siler).  
+- **Nasıl denenir:** Alanı boş bırakın → etiket yok; `250` yazın → yalnız 250 ₺ düğmesinde etiket; `777` yazın → kayıt hata.
 
 ### Adet seçici
 
 - **Ekran adı:** Adet seçici  
-- **Ne işe yarar:** Sabit tutarlı formda adet artırma/azaltma düğmelerini gösterir.  
-- **Tip:** Anlamlısı sabit tutar  
+- **Ne işe yarar:** Sabit tutarlı formda adet artırma/azaltma düğmelerini gösterir. Kapalıysa (ve sabit olmayan tiplerde) sunucu adedi her zaman 1 yapar.  
+- **Tip:** Yalnız sabit tutar (yönetimde diğer tiplerde gizli)  
 - **Formda:** Adet +/-.  
 - **Genel ayar:** Yok (ürüne özel; boş bırakılırsa açıktır).  
 - **Nasıl denenir:** Sabit tipte kapatın → adet gizlenmeli.
@@ -137,9 +145,9 @@ Aşağıdaki her alan için: ekran adı, ne işe yarar, hangi tipte görünür /
 ### İşlem ücretini karşıla / İşlem ücreti (%)
 
 - **Ekran adı:** İşlem ücretini karşıla; İşlem ücreti (%)  
-- **Ne işe yarar:** Bağışçıya ödeme işlem maliyetini üstlenme seçeneği sunar; tutara eklenecek yüzde.  
-- **Tip:** Tümü (yönetim)  
-- **Formda:** “İşlem ücretini karşıla” kutusu; işaretlenince toplam artar.  
+- **Ne işe yarar:** Bağışçıya ödeme işlem maliyetini üstlenme seçeneği sunar; tutara eklenecek yüzde. 0 = kapalı, aksi halde 0,5–15; aralık dışı değer kaydedilmez (hata gösterilir). Yüzde her zaman üründen okunur, istemciden gelen değer yok sayılır.  
+- **Tip:** Tüm tipler (özel, kampanya, sabit, hisseli)  
+- **Formda:** "İşlem ücretini karşıla" kutusu; işaretlenince "Toplam" satırı güncellenir. Sepet satırında ve sipariş notunda "İşlem ücreti +%X" ayrıca görünür.  
 - **Genel ayar:** Yok  
 - **Nasıl denenir:** Açıp yüzde girin; kutuyu işaretleyip toplamın arttığını görün.
 

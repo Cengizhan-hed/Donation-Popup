@@ -398,6 +398,21 @@
 
       // Wizard/phone yeniden kurulumundan SONRA geri yükle
       restoreModalFormValues(modal, preserved)
+      // K1 oturum içi: geri yüklenen tutarla hızlı düğme .selected senkronu
+      if (donationForm && WDPApp.formPricing) {
+        const priceInput = donationForm.querySelector('input[name="custom_price"]')
+        const presets = donationForm.querySelector('.wdp-amount-presets')
+        if (priceInput && presets && typeof WDPApp.formPricing.syncAmountPresetSelection === 'function') {
+          const parsed =
+            typeof WDPApp.formPricing.parseNormalizedAmount === 'function'
+              ? WDPApp.formPricing.parseNormalizedAmount(priceInput.value)
+              : Number.parseFloat(priceInput.value)
+          WDPApp.formPricing.syncAmountPresetSelection(presets, parsed)
+        }
+        if (typeof WDPApp.formPricing.updateCoverFeeTotal === 'function') {
+          WDPApp.formPricing.updateCoverFeeTotal(donationForm)
+        }
+      }
       lockSkeletonControls(modal, true)
 
       const loadProductInfo = WDPApp.product && (WDPApp.product.fetchProductInfo || WDPApp.product.fetch)
@@ -763,6 +778,16 @@
         }
         input.value = ""
       })
+
+      // K1: hızlı tutar seçimi / aria-pressed temiz (snapshot'ta selected kalmasın).
+      form.querySelectorAll('.wdp-amount-preset').forEach(function(btn) {
+        btn.classList.remove('selected')
+        btn.setAttribute('aria-pressed', 'false')
+      })
+      const coverFeeReset = form.querySelector('input[name="donation_cover_fee"]')
+      if (coverFeeReset) {
+        coverFeeReset.checked = false
+      }
 
       // Form gönderim olayını bağla
       if (WDPApp.form && WDPApp.form.setup) {

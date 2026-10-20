@@ -108,8 +108,15 @@ class WDP_Cart {
                 if (!empty($request_data['donation_anonymous'])) {
                     $donation_data['anonymous'] = '1';
                 }
-                if (!empty($request_data['donation_cover_fee'])) {
-                    $donation_data['cover_fee'] = '1';
+            }
+
+            // 10.29.0: işlem ücreti yüzdesi her zaman ürün meta'sından okunur (istemci yok sayılır).
+            $cover_fee_pct = 0.0;
+            if (!empty($request_data['donation_cover_fee'])) {
+                $cover_fee_pct = self::get_product_cover_fee_percent($product_id);
+                if ($cover_fee_pct > 0) {
+                    $donation_data['cover_fee']         = '1';
+                    $donation_data['cover_fee_percent'] = $cover_fee_pct;
                 }
             }
 
@@ -139,7 +146,14 @@ class WDP_Cart {
             if (isset($request_data['custom_price']) && '' !== $request_data['custom_price']) {
                 $custom_price = self::sanitize_custom_price($request_data['custom_price']);
                 if (null !== $custom_price) {
-                    $cart_item_data['custom_price'] = $custom_price;
+                    $cart_item_data['custom_price'] = self::apply_cover_fee_to_amount($custom_price, $cover_fee_pct);
+                }
+            } elseif ($cover_fee_pct > 0) {
+                // Sabit / hisseli: birim fiyata ücret eklenir.
+                $catalog = wc_get_product($product_id);
+                $base    = $catalog ? (float) $catalog->get_price() : 0.0;
+                if ($base > 0) {
+                    $cart_item_data['wdp_base_unit_price'] = self::apply_cover_fee_to_amount($base, $cover_fee_pct);
                 }
             }
         }
@@ -289,6 +303,65 @@ class WDP_Cart {
     }
 
     /**
+     * Cover-fee percent for a product. ALWAYS read from product meta (never from the client);
+     * 0 when the product has the fee disabled. Runtime-clamped to 0.5–15.
+     *
+     * @param WC_Product|int $product Product or ID.
+     * @return float
+     */
+    public static function get_product_cover_fee_percent($product) {
+        if (is_numeric($product)) {
+            $product = wc_get_product((int) $product);
+        }
+        if (!$product || !is_object($product) || !method_exists($product, 'get_meta')) {
+            return 0.0;
+        }
+        if ('yes' !== $product->get_meta('_enable_cover_fee')) {
+            return 0.0;
+        }
+        return WDP_Form_Modules::clamp_cover_fee_percent_for_runtime($product->get_meta('_cover_fee_percent'));
+    }
+
+    /**
+     * Unit amount including the cover fee.
+     *
+     * @param float $amount  Base unit amount.
+     * @param float $percent Fee percent (0 = none).
+     * @return float
+     */
+    public static function apply_cover_fee_to_amount($amount, $percent) {
+        $amount  = (float) $amount;
+        $percent = (float) $percent;
+        if ($percent <= 0 || $amount <= 0) {
+            return $amount;
+        }
+        return round($amount * (1 + ($percent / 100)), 2);
+    }
+
+    /**
+     * Whether the product form has the quantity selector (fixed type only; default on).
+     *
+     * @param WC_Product $product Product.
+     * @return bool
+     */
+    public static function product_allows_quantity($product) {
+        if (!$product || !is_object($product) || !method_exists($product, 'get_meta')) {
+            return true;
+        }
+        if ('no' === $product->get_meta('_enable_quantity')) {
+            return false;
+        }
+        $type = WDP_Donation_Type::infer_from_meta(
+            array(
+                '_allow_custom_price'    => (string) $product->get_meta('_allow_custom_price'),
+                '_allow_multiple_shares' => (string) $product->get_meta('_allow_multiple_shares'),
+                '_enable_progress_bar'   => (string) $product->get_meta('_enable_progress_bar'),
+            )
+        );
+        return WDP_Donation_Type::FIXED === $type;
+    }
+
+    /**
      * Display donation data in cart
      *
      * @param array $item_data Item data.
@@ -347,6 +420,22 @@ class WDP_Cart {
                     );
                 }
             }
+        }
+
+        // 10.29.0 (Y1): işlem ücreti ayrı satır olarak gösterilir (tüm bağış tiplerinde).
+        if (!empty($cart_item['donation_data']['cover_fee']) && !empty($cart_item['donation_data']['cover_fee_percent'])) {
+            $pct   = (float) $cart_item['donation_data']['cover_fee_percent'];
+            $value = sprintf('+%%%s', rtrim(rtrim(number_format($pct, 2, ',', ''), '0'), ','));
+            $unit  = self::resolve_cart_line_unit_price($cart_item);
+            $qty   = max(1, (int) (isset($cart_item['quantity']) ? $cart_item['quantity'] : 1));
+            if (null !== $unit && $unit > 0 && $pct > 0 && function_exists('wc_price')) {
+                $fee_amount = ($unit - ($unit / (1 + ($pct / 100)))) * $qty;
+                $value     .= ' (' . wp_strip_all_tags(wc_price($fee_amount)) . ')';
+            }
+            $item_data[] = array(
+                'key'   => __('İşlem ücreti', 'woo-donation-popup'),
+                'value' => $value,
+            );
         }
 
         return $item_data;

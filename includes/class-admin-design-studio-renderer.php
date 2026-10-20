@@ -228,9 +228,9 @@ class WDP_Admin_Design_Studio_Renderer {
 		echo '<select id="motion_intensity" name="motion_intensity"><option value="subtle" ' . selected($motion, 'subtle', false) . '>' . esc_html__('Hafif', 'woo-donation-popup') . '</option><option value="normal" ' . selected($motion, 'normal', false) . '>' . esc_html__('Normal', 'woo-donation-popup') . '</option><option value="expressive" ' . selected($motion, 'expressive', false) . '>' . esc_html__('İfadeli', 'woo-donation-popup') . '</option></select>';
 		echo '<p class="description">' . esc_html__('Ne işe yarar: Açılış, başarı, progress kutlama gibi animasyonların gücünü ayarlar. Hafif = sakin siteler; İfadeli = daha canlı geçişler. “prefers-reduced-motion” açık kullanıcılarda animasyonlar zaten kısılır.', 'woo-donation-popup') . '</p>';
 		echo '</td></tr>';
-		echo '<tr><th scope="row"><label for="chip_style">' . esc_html__('Tutar chip stili', 'woo-donation-popup') . '</label></th><td>';
+		echo '<tr><th scope="row"><label for="chip_style">' . esc_html__('Hızlı tutar düğmesi stili', 'woo-donation-popup') . '</label></th><td>';
 		echo '<select id="chip_style" name="chip_style"><option value="soft" ' . selected($chip, 'soft', false) . '>' . esc_html__('Yumuşak', 'woo-donation-popup') . '</option><option value="outline" ' . selected($chip, 'outline', false) . '>' . esc_html__('Outline', 'woo-donation-popup') . '</option><option value="solid" ' . selected($chip, 'solid', false) . '>' . esc_html__('Solid', 'woo-donation-popup') . '</option></select>';
-		echo '<p class="description">' . esc_html__('Ne işe yarar: Hızlı tutar seçeneklerinin (100 / 250 / 500…) görünümü. Yumuşak = açık dolgulu; Outline = sadece kenarlık; Solid = marka rengiyle dolu chip. Chip’ler kapalıysa (ürün/global) bu ayar görünmez.', 'woo-donation-popup') . '</p>';
+		echo '<p class="description">' . esc_html__('Ne işe yarar: Hızlı tutar seçeneklerinin (100 / 250 / 500…) görünümü. Yumuşak = açık dolgulu; Outline = sadece kenarlık; Solid = marka rengiyle dolu düğme. Hızlı tutar düğmeleri kapalıysa (ürün/genel ayar) bu ayar görünmez.', 'woo-donation-popup') . '</p>';
 		echo '</td></tr>';
 		echo '</table>';
 	}
@@ -319,7 +319,7 @@ class WDP_Admin_Design_Studio_Renderer {
 			self::render_icon_picker_row($name, $meta['label'], $val, isset($meta['help']) ? $meta['help'] : '');
 		}
 		echo '</div>';
-		echo '<p class="description" style="margin-top:8px">' . esc_html__('İkon seçimi: Hazır SVG chip’e tıklayın veya “Medyadan seç” ile kendi görselinizi yükleyin (küçük PNG/SVG önerilir). “Sıfırla” ilk hazır ikona döner. Değişiklikler “Ayarları Kaydet” ile kalıcı olur.', 'woo-donation-popup') . '</p>';
+		echo '<p class="description" style="margin-top:8px">' . esc_html__('İkon seçimi: Hazır SVG ikona tıklayın veya “Medyadan seç” ile kendi görselinizi yükleyin (küçük PNG/SVG önerilir). “Sıfırla” ilk hazır ikona döner. Değişiklikler “Ayarları Kaydet” ile kalıcı olur.', 'woo-donation-popup') . '</p>';
 
 		echo '<table class="form-table wdp-admin-field-cards">';
 		echo '<tr><th scope="row"><label for="trust_strip_enabled">' . esc_html__('Güven şeridi', 'woo-donation-popup') . '</label></th><td>';

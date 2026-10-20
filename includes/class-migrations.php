@@ -86,6 +86,8 @@ class WDP_Migrations {
 			'10.28.1' => array(__CLASS__, 'step_10_28_1'),
 			'10.28.4' => array(__CLASS__, 'step_10_28_4'),
 			'10.28.5' => array(__CLASS__, 'step_10_28_5'),
+			'10.29.0' => array(__CLASS__, 'step_10_29_0'),
+			'10.29.1' => array(__CLASS__, 'step_10_29_1'),
 		);
 	}
 
@@ -231,6 +233,131 @@ class WDP_Migrations {
 			$placement,
 			$is_fresh ? 'yes' : 'no'
 		);
+	}
+
+	/**
+	 * 10.29.1 (K2): genel `amount_preset_recommended` kaldırılır (ürün meta korunur).
+	 *
+	 * Idempotent. Yeni kurulumda anahtar zaten yoktur.
+	 *
+	 * @param bool $is_fresh Fresh install.
+	 * @return string Summary for the log.
+	 */
+	public static function step_10_29_1($is_fresh) {
+		$flag = 'wdp_migrated_10_29_1';
+		if ($is_fresh) {
+			update_option($flag, '1', false);
+			return 'skipped (fresh install)';
+		}
+
+		$removed = 'no';
+		$button  = get_option('wdp_button_settings', false);
+		if (is_array($button) && array_key_exists('amount_preset_recommended', $button)) {
+			unset($button['amount_preset_recommended']);
+			update_option('wdp_button_settings', $button, false);
+			$removed = 'yes';
+		}
+
+		update_option($flag, '1', false);
+		return 'global_recommended_removed:' . $removed;
+	}
+
+	/**
+	 * 10.29.0: "Tutar seçenekleri" veri onarımı (yalnız güncellemelerde; yeni kurulum atlanır).
+	 *
+	 * - Ürün `_cover_fee_percent`: 15'ten büyük → 15; (0, 0.5) → 0.5 (çalışma anı sınırlarıyla aynı; 0 = kapalı korunur).
+	 * - Genel `amount_presets`: 6'dan fazla değer varsa ilk 6 tam sayıya kısaltılır (Y6). Yeni değer uydurulmaz.
+	 *
+	 * Idempotent: ikinci çalıştırmada değiştirilecek bir şey kalmaz.
+	 *
+	 * @param bool $is_fresh Fresh install.
+	 * @return string Summary for the log.
+	 */
+	public static function step_10_29_0($is_fresh) {
+		$flag = 'wdp_migrated_10_29_0';
+		if ($is_fresh) {
+			update_option($flag, '1', false);
+			return 'skipped (fresh install)';
+		}
+
+		$fee_fixed = 0;
+		foreach (self::find_products_with_meta_key('_cover_fee_percent') as $product_id) {
+			$raw = get_post_meta($product_id, '_cover_fee_percent', true);
+			if ($raw === '' || $raw === null || !is_numeric($raw)) {
+				continue;
+			}
+			$value = (float) $raw;
+			if ($value <= 0) {
+				continue;
+			}
+			$clamped = (float) min(15, max(0.5, $value));
+			if (abs($clamped - $value) > 0.00001) {
+				update_post_meta($product_id, '_cover_fee_percent', (string) $clamped);
+				$fee_fixed++;
+			}
+		}
+
+		$presets_trimmed = false;
+		$button          = get_option('wdp_button_settings', false);
+		if (is_array($button) && isset($button['amount_presets']) && is_string($button['amount_presets'])) {
+			$tokens = preg_split('/[\s,;]+/', trim($button['amount_presets']), -1, PREG_SPLIT_NO_EMPTY);
+			if (is_array($tokens) && count($tokens) > 6) {
+				$kept = WDP_Form_Modules::parse_amount_presets_csv($button['amount_presets']);
+				if (!empty($kept)) {
+					$button['amount_presets'] = implode(', ', array_map('intval', $kept));
+					update_option('wdp_button_settings', $button, false);
+					$presets_trimmed = true;
+				}
+			}
+		}
+
+		update_option($flag, '1', false);
+
+		return sprintf(
+			'cover_fee_fixed:%d global_presets_trimmed:%s',
+			$fee_fixed,
+			$presets_trimmed ? 'yes' : 'no'
+		);
+	}
+
+	/**
+	 * Product IDs that carry a non-empty value for a meta key (batched).
+	 *
+	 * @param string $meta_key Meta key.
+	 * @return int[]
+	 */
+	private static function find_products_with_meta_key($meta_key) {
+		global $wpdb;
+		if (isset($wpdb) && is_object($wpdb)) {
+			$out   = array();
+			$after = 0;
+			do {
+				$ids = $wpdb->get_col(
+					$wpdb->prepare(
+						"SELECT post_id FROM {$wpdb->postmeta} WHERE meta_key = %s AND meta_value <> '' AND post_id > %d ORDER BY post_id ASC LIMIT %d",
+						$meta_key,
+						$after,
+						self::BATCH
+					)
+				);
+				$ids = array_map('absint', (array) $ids);
+				foreach ($ids as $post_id) {
+					$after = max($after, $post_id);
+					$out[] = $post_id;
+				}
+			} while (count($ids) === self::BATCH);
+			return $out;
+		}
+
+		$out = array();
+		if (class_exists('WDP_Test_State') && !empty(WDP_Test_State::$post_meta)) {
+			foreach (WDP_Test_State::$post_meta as $pid => $meta) {
+				if (isset($meta[ $meta_key ]) && '' !== $meta[ $meta_key ]) {
+					$out[] = (int) $pid;
+				}
+			}
+		}
+		return $out;
 	}
 
 	/**

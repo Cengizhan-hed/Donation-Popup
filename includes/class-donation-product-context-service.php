@@ -135,6 +135,7 @@ class WDP_Donation_Product_Context_Service {
 			'progress_celebrate'            => self::meta_flag_default_yes($product, '_progress_celebrate'),
 			'impact_line_text'              => trim((string) $product->get_meta('_impact_line_text')),
 			'amount_presets'                => trim((string) $product->get_meta('_amount_presets')),
+			'amount_preset_recommended'     => trim((string) $product->get_meta('_amount_preset_recommended')),
 			'enable_email'                  => self::meta_flag_or_global($product, '_enable_email', 'enable_donor_email'),
 			'enable_dedication'             => self::meta_flag_or_global($product, '_enable_dedication', 'enable_dedication'),
 			'enable_anonymous'              => self::meta_flag_or_global($product, '_enable_anonymous', 'enable_anonymous'),
@@ -157,7 +158,7 @@ class WDP_Donation_Product_Context_Service {
 			'enable_social_proof'           => $product->get_meta('_enable_social_proof') === 'yes',
 			'social_proof_text'             => trim((string) $product->get_meta('_social_proof_text')),
 			'enable_cover_fee'              => $product->get_meta('_enable_cover_fee') === 'yes',
-			'cover_fee_percent'             => min(20, max(0, (float) $product->get_meta('_cover_fee_percent'))),
+			'cover_fee_percent'             => WDP_Form_Modules::clamp_cover_fee_percent_for_runtime($product->get_meta('_cover_fee_percent')),
 			'module_order'                  => (string) $product->get_meta('_wdp_module_order'),
 		);
 

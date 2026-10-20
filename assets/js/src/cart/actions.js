@@ -250,6 +250,12 @@
               if (WDPApp.form && WDPApp.form.setup) {
                 WDPApp.form.setup(form);
               }
+              // K1: sepete ekleme sonrası aynı ürün formu tutarsız seçimle açılmasın.
+              if (WDPApp.form && typeof WDPApp.form.clearAmountSelection === 'function') {
+                WDPApp.form.clearAmountSelection(form);
+              } else if (WDPApp.formPricing && typeof WDPApp.formPricing.clearAmountSelection === 'function') {
+                WDPApp.formPricing.clearAmountSelection(form);
+              }
               // Eğer hisseli form ise, tekrar başlat
               const shareCountInput = form.querySelector('input[name="share_count"]');
               if (shareCountInput && WDPApp.shareholder && WDPApp.shareholder.setup && formContainer) {

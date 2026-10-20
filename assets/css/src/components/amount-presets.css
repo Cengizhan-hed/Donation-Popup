@@ -65,23 +65,26 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-amount-pre
   background: var(--wdp-surface-0, #ffffff);
 }
 
-/* Popular — inline chip accent (no floating sticker) */
+/* Önerilen — aynı yükseklik; vurgu çerçeve + etiket yer kaplamaz (N6) */
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-amount-preset.is-popular,
 html body .wdp-amount-preset.is-popular {
-  flex-direction: column;
-  gap: 2px;
-  padding-block: 8px 7px;
-  border-top: 2px solid var(--wdp-primary, #0f608b);
+  flex-direction: row;
+  gap: 0;
+  padding-block: 10px;
+  border: 2px solid var(--wdp-primary, #0f608b);
+  border-top-width: 2px;
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-amount-preset.is-popular::after,
 html body .wdp-amount-preset.is-popular::after {
   content: attr(data-popular-label);
-  position: static;
-  inset: auto;
-  padding: 0;
-  border-radius: 0;
-  background: transparent;
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 0 6px;
+  border-radius: 4px;
+  background: var(--wdp-bg-pure-white, #ffffff);
   color: var(--wdp-primary, #0f608b);
   font-size: 10px;
   font-weight: 600;
@@ -90,7 +93,7 @@ html body .wdp-amount-preset.is-popular::after {
   text-transform: none;
   pointer-events: none;
   white-space: nowrap;
-  max-width: 100%;
+  max-width: calc(100% - 8px);
   overflow: hidden;
   text-overflow: ellipsis;
 }
