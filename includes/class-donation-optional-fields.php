@@ -176,14 +176,10 @@ class WDP_Donation_Optional_Fields {
 			return null;
 		}
 
-		$default_text = __(
-			'Kişisel verileriniz bağışınızın gerçekleştirilmesi için işlenir ve yurt dışındaki saha ekiplerimizle paylaşılır. Ayrıntı için Aydınlatma Metni\'ne bakın.',
-			'woo-donation-popup'
-		);
-		$text         = isset($button['privacy_notice_text']) && trim((string) $button['privacy_notice_text']) !== ''
+		$default_label = self::default_privacy_link_label();
+		$label         = isset($button['privacy_notice_text']) && trim((string) $button['privacy_notice_text']) !== ''
 			? trim((string) $button['privacy_notice_text'])
-			: $default_text;
-		$link_label   = __('Aydınlatma Metni', 'woo-donation-popup');
+			: $default_label;
 
 		$url = isset($button['privacy_notice_url']) ? trim((string) $button['privacy_notice_url']) : '';
 		if ($url === '' && function_exists('get_privacy_policy_url')) {
@@ -193,14 +189,24 @@ class WDP_Donation_Optional_Fields {
 
 		return array(
 			'show'       => true,
-			'text'       => $text,
+			'text'       => $label,
 			'url'        => $url,
-			'link_label' => $link_label,
+			'link_label' => $label,
 		);
 	}
 
 	/**
+	 * Default short link label (no long body copy — site owns the KVKK page).
+	 *
+	 * @return string
+	 */
+	public static function default_privacy_link_label() {
+		return __('Kişisel verilerin işlenmesine ilişkin aydınlatma metni', 'woo-donation-popup');
+	}
+
+	/**
 	 * Safe HTML for the privacy notice line (empty when hidden / no URL).
+	 * Shows only a short link; long default body copy was removed in 10.32.0.
 	 *
 	 * @param array $options See resolve_privacy_notice.
 	 * @return string
@@ -210,25 +216,10 @@ class WDP_Donation_Optional_Fields {
 		if (!$notice || empty($notice['show']) || empty($notice['url'])) {
 			return '';
 		}
-		$text       = (string) $notice['text'];
 		$link_label = (string) $notice['link_label'];
 		$url        = (string) $notice['url'];
+		$link_html  = '<a href="' . esc_url($url) . '" target="_blank" rel="noopener">' . esc_html($link_label) . '</a>';
 
-		$link_html = '<a href="' . esc_url($url) . '" target="_blank" rel="noopener">' . esc_html($link_label) . '</a>';
-		if (function_exists('mb_stripos') && mb_stripos($text, $link_label) !== false) {
-			$pos      = mb_stripos($text, $link_label);
-			$before   = mb_substr($text, 0, $pos);
-			$after    = mb_substr($text, $pos + mb_strlen($link_label));
-			$body_html = esc_html($before) . $link_html . esc_html($after);
-		} elseif (stripos($text, $link_label) !== false) {
-			$pos       = stripos($text, $link_label);
-			$before    = substr($text, 0, $pos);
-			$after     = substr($text, $pos + strlen($link_label));
-			$body_html = esc_html($before) . $link_html . esc_html($after);
-		} else {
-			$body_html = esc_html($text) . ' ' . $link_html;
-		}
-
-		return '<p class="wdp-privacy-notice">' . $body_html . '</p>';
+		return '<p class="wdp-privacy-notice">' . $link_html . '</p>';
 	}
 }

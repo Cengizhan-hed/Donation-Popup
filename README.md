@@ -387,6 +387,13 @@ Formun içindeki SSS modülü 10.27.0’da tamamen kaldırıldı. SSS’ler ür�
 
 ## Sürüm notları
 
+### 10.32.0 — Bu ürüne özel görünüm + aydınlatma bağlantısı
+
+- Renk önceliği: ürün ana rengi → kategori → genel; “Kategori rengini kullan” kutusu kaldırıldı (meta silinmez).
+- Hex: `#` opsiyonel; geçersizde kayıt hatası; boş = temizle. Türev palet + `--wdp-on-primary` (WCAG kontrast).
+- Köşe 4–32 tek sınır; panel/sheet orantılı. Yoğunluk ürün UI’dan gizlendi; `_theme_preset_id` okunmaz/yazılmaz.
+- Aydınlatma: yalnız kısa bağlantı etiketi; uzun varsayılan metin kaldırıldı (migration `10.32.0`).
+
 ### 10.31.0 — Kampanya blokları (hedef davranışı, toplanan, çok para birimi)
 
 - Hedefe ulaşınca: ürün başına `continue` / `message` / `close` (varsayılan message); close sunucu + sepet doğrulaması.

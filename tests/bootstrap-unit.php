@@ -19,7 +19,7 @@ if (!defined('WDP_PLUGIN_FILE')) {
 	define('WDP_PLUGIN_FILE', $root . '/woo-donation-popup.php');
 }
 if (!defined('WDP_VERSION')) {
-	define('WDP_VERSION', '10.31.0');
+	define('WDP_VERSION', '10.32.0');
 }
 if (!defined('MINUTE_IN_SECONDS')) {
 	define('MINUTE_IN_SECONDS', 60);
@@ -62,6 +62,12 @@ final class WDP_Test_State {
 	/** @var array<string, int> sku => product id */
 	public static $product_skus = array();
 
+	/** @var array<int, int[]> product_id => term ids (product_cat) */
+	public static $product_terms = array();
+
+	/** @var array<int, object> term_id => term stub */
+	public static $terms = array();
+
 	/** @var bool */
 	public static $is_product = false;
 
@@ -102,6 +108,8 @@ final class WDP_Test_State {
 		self::$products      = array();
 		self::$product_slugs = array();
 		self::$product_skus  = array();
+		self::$product_terms = array();
+		self::$terms         = array();
 		self::$is_product    = false;
 		self::$queried_id    = 0;
 		self::$is_admin      = false;
@@ -473,6 +481,25 @@ if (!function_exists('wc_get_product')) {
 		return WDP_Test_State::$products[ $id ] ?? null;
 	}
 }
+if (!function_exists('wc_get_product_term_ids')) {
+	function wc_get_product_term_ids($product_id, $taxonomy = '') {
+		unset($taxonomy);
+		return WDP_Test_State::$product_terms[ (int) $product_id ] ?? array();
+	}
+}
+if (!function_exists('get_term')) {
+	function get_term($term_id, $taxonomy = '') {
+		unset($taxonomy);
+		$term_id = (int) $term_id;
+		if (isset(WDP_Test_State::$terms[ $term_id ])) {
+			return WDP_Test_State::$terms[ $term_id ];
+		}
+		$t          = new stdClass();
+		$t->term_id = $term_id;
+		$t->parent  = 0;
+		return $t;
+	}
+}
 if (!function_exists('wc_get_product_id_by_sku')) {
 	function wc_get_product_id_by_sku($sku) {
 		return WDP_Test_State::$product_skus[ (string) $sku ] ?? 0;
@@ -527,6 +554,16 @@ if (!function_exists('wc_add_notice')) {
 			'type'    => (string) $notice_type,
 		);
 		return true;
+	}
+}
+if (!function_exists('number_format_i18n')) {
+	function number_format_i18n($number, $decimals = 0) {
+		return number_format((float) $number, (int) $decimals, '.', '');
+	}
+}
+if (!function_exists('is_wp_error')) {
+	function is_wp_error($thing) {
+		return is_object($thing) && is_a($thing, 'WP_Error');
 	}
 }
 if (!function_exists('is_admin')) {

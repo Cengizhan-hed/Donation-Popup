@@ -28,16 +28,13 @@ class WDP_Product_Settings_Service {
 		'enable_social_proof',
 		'enable_cover_fee',
 		'enable_campaign_media',
-		'theme_inherit_category_color',
 	);
 
 	/**
 	 * Request field => meta key kept as-is when the request does not carry it
-	 * (no admin control writes these values).
+	 * (no admin control writes these values). Empty: `_theme_preset_id` is dead meta (not read/written).
 	 */
-	const PRESERVED_FIELDS = array(
-		'theme_preset_id' => '_theme_preset_id',
-	);
+	const PRESERVED_FIELDS = array();
 
 	/**
 	 * Keep Unicode as-is so slashing/unslashing on the way to meta cannot strip `\uXXXX` escapes.
@@ -251,6 +248,7 @@ class WDP_Product_Settings_Service {
 	 */
 	public static function from_request(array $request) {
 		self::$rejected_meta = array();
+		self::$corrections   = array();
 
 		$allow_custom_price     = self::parse_bool_flag(isset($request['allow_custom_price']) ? $request['allow_custom_price'] : false);
 		$allow_multiple_shares  = self::parse_bool_flag(isset($request['allow_multiple_shares']) ? $request['allow_multiple_shares'] : false);
@@ -277,8 +275,7 @@ class WDP_Product_Settings_Service {
 		$enable_urgency         = self::parse_bool_flag(isset($request['enable_urgency']) ? $request['enable_urgency'] : false);
 		$enable_social_proof    = self::parse_bool_flag(isset($request['enable_social_proof']) ? $request['enable_social_proof'] : false);
 		$enable_cover_fee       = self::parse_bool_flag(isset($request['enable_cover_fee']) ? $request['enable_cover_fee'] : false);
-		$enable_campaign_media  = self::parse_bool_flag(isset($request['enable_campaign_media']) ? $request['enable_campaign_media'] : false);
-		$theme_inherit_category = self::parse_bool_flag(isset($request['theme_inherit_category_color']) ? $request['theme_inherit_category_color'] : false);
+		$enable_campaign_media = self::parse_bool_flag(isset($request['enable_campaign_media']) ? $request['enable_campaign_media'] : false);
 
 		// Mutual exclusivity (server-side): progress ⇔ custom amount, shares exclusive.
 		if ($enable_progress_bar) {
@@ -295,11 +292,6 @@ class WDP_Product_Settings_Service {
 		$layout_mode = isset($request['layout_mode']) ? sanitize_key((string) wp_unslash($request['layout_mode'])) : 'classic';
 		if (!in_array($layout_mode, array('classic', 'campaign', 'story'), true)) {
 			$layout_mode = 'classic';
-		}
-
-		$theme_density = isset($request['theme_density']) ? sanitize_key((string) wp_unslash($request['theme_density'])) : '';
-		if ($theme_density !== '' && !in_array($theme_density, array('compact', 'normal', 'spacious'), true)) {
-			$theme_density = '';
 		}
 
 		$trust_raw    = isset($request['trust_badges']) ? $request['trust_badges'] : '';
@@ -375,8 +367,61 @@ class WDP_Product_Settings_Service {
 			$max_shares = '';
 		}
 
-		$theme_radius = isset($request['theme_radius']) ? absint(wp_unslash($request['theme_radius'])) : 0;
-		$theme_radius = (int) self::clamp_number($theme_radius, 0, 40, __('Köşe yuvarlaklığı', 'woo-donation-popup'));
+		$theme_radius_raw = isset($request['theme_radius']) && is_scalar($request['theme_radius'])
+			? trim((string) wp_unslash($request['theme_radius']))
+			: '';
+		$theme_radius     = '';
+		if ($theme_radius_raw !== '' && $theme_radius_raw !== '0') {
+			$radius_in  = absint($theme_radius_raw);
+			$radius_out = class_exists('WDP_Form_Modules')
+				? WDP_Form_Modules::clamp_product_theme_radius($radius_in)
+				: max(4, min(32, $radius_in));
+			if ($radius_out > 0 && $radius_out !== $radius_in) {
+				self::note_clamp(__('Köşe yuvarlaklığı', 'woo-donation-popup'), (string) $radius_in, (string) $radius_out);
+			}
+			$theme_radius = $radius_out > 0 ? (string) $radius_out : '';
+		}
+
+		$theme_primary = self::parse_theme_hex_field(
+			isset($request['theme_primary']) ? $request['theme_primary'] : null,
+			'_theme_primary',
+			__('Ana renk', 'woo-donation-popup')
+		);
+		$theme_primary_hover = self::parse_theme_hex_field(
+			isset($request['theme_primary_hover']) ? $request['theme_primary_hover'] : null,
+			'_theme_primary_hover',
+			__('Ana renk (üzerine gelince)', 'woo-donation-popup')
+		);
+		$theme_modal_bg = self::parse_theme_hex_field(
+			isset($request['theme_modal_bg']) ? $request['theme_modal_bg'] : null,
+			'_theme_modal_bg',
+			__('Arka plan rengi', 'woo-donation-popup')
+		);
+
+		if ($theme_primary !== '' && class_exists('WDP_Color_Palette')) {
+			$on    = WDP_Color_Palette::pick_on_color($theme_primary);
+			$ratio = WDP_Color_Palette::contrast_ratio($theme_primary, $on);
+			if ($ratio < 4.5) {
+				self::$corrections[] = sprintf(
+					/* translators: 1: field label, 2: contrast ratio */
+					__('«%1$s» ile düğme yazısı kontrastı %2$s:1 (önerilen en az 4.5:1). Kayıt yapıldı; daha koyu veya açık bir renk seçin.', 'woo-donation-popup'),
+					__('Ana renk', 'woo-donation-popup'),
+					number_format_i18n($ratio, 2)
+				);
+			}
+		}
+		if ($theme_modal_bg !== '' && class_exists('WDP_Color_Palette')) {
+			$text  = WDP_Color_Palette::is_dark_surface($theme_modal_bg) ? '#f8fafc' : '#0f172a';
+			$ratio = WDP_Color_Palette::contrast_ratio($theme_modal_bg, $text);
+			if ($ratio < 4.5) {
+				self::$corrections[] = sprintf(
+					/* translators: 1: field label, 2: contrast ratio */
+					__('«%1$s» ile metin kontrastı %2$s:1 (önerilen en az 4.5:1). Kayıt yapıldı; daha açık veya koyu bir arka plan seçin.', 'woo-donation-popup'),
+					__('Arka plan rengi', 'woo-donation-popup'),
+					number_format_i18n($ratio, 2)
+				);
+			}
+		}
 
 		$min_raw = isset($request['min_custom_price']) && is_scalar($request['min_custom_price'])
 			? (string) wp_unslash($request['min_custom_price'])
@@ -467,13 +512,10 @@ class WDP_Product_Settings_Service {
 			'_enable_anonymous'               => $enable_anonymous,
 			'_dedication_placeholder'         => isset($request['dedication_placeholder']) ? self::limit_text(sanitize_text_field(wp_unslash($request['dedication_placeholder'])), 120) : '',
 			'_trust_badges'                   => !empty($trust_badges) ? wp_json_encode($trust_badges, self::JSON_FLAGS) : '',
-			'_theme_preset_id'                => isset($request['theme_preset_id']) ? sanitize_key((string) wp_unslash($request['theme_preset_id'])) : '',
-			'_theme_primary'                  => isset($request['theme_primary']) ? (sanitize_hex_color(wp_unslash($request['theme_primary'])) ?: '') : '',
-			'_theme_primary_hover'            => isset($request['theme_primary_hover']) ? (sanitize_hex_color(wp_unslash($request['theme_primary_hover'])) ?: '') : '',
-			'_theme_radius'                   => $theme_radius > 0 ? (string) $theme_radius : '',
-			'_theme_density'                  => $theme_density,
-			'_theme_modal_bg'                 => isset($request['theme_modal_bg']) ? (sanitize_hex_color(wp_unslash($request['theme_modal_bg'])) ?: '') : '',
-			'_theme_inherit_category_color'   => $theme_inherit_category ? 'yes' : 'no',
+			'_theme_primary'                  => $theme_primary,
+			'_theme_primary_hover'            => $theme_primary_hover,
+			'_theme_radius'                   => $theme_radius,
+			'_theme_modal_bg'                 => $theme_modal_bg,
 			'_layout_mode'                    => $layout_mode,
 			'_enable_campaign_media'          => $enable_campaign_media ? 'yes' : 'no',
 			'_enable_urgency'                 => $enable_urgency ? 'yes' : 'no',
@@ -592,7 +634,54 @@ class WDP_Product_Settings_Service {
 		'_progress_bar_limit',
 		'_max_shares',
 		'_urgency_ends_at',
+		'_theme_primary',
+		'_theme_primary_hover',
+		'_theme_modal_bg',
 	);
+
+	/**
+	 * Parse a product theme hex field. Empty clears; `#` optional; invalid → reject (no silent delete).
+	 *
+	 * @param mixed  $raw      Posted value.
+	 * @param string $meta_key Meta key for reject restore.
+	 * @param string $label    Field label.
+	 * @return string Normalized `#rrggbb` or empty.
+	 */
+	private static function parse_theme_hex_field($raw, $meta_key, $label) {
+		if ($raw === null || !is_scalar($raw)) {
+			return '';
+		}
+		$value = trim((string) wp_unslash($raw));
+		if ($value === '') {
+			return '';
+		}
+		$hex = class_exists('WDP_Color_Palette')
+			? WDP_Color_Palette::normalize_hex($value)
+			: (string) (sanitize_hex_color($value[0] === '#' ? $value : '#' . $value) ?: '');
+		if ($hex === '') {
+			self::reject_meta(
+				$meta_key,
+				sprintf(
+					/* translators: %s: field label */
+					__('«%s» geçerli bir renk olmalıdır (#RGB veya #RRGGBB).', 'woo-donation-popup'),
+					$label
+				)
+			);
+			return '';
+		}
+		return $hex;
+	}
+
+	/**
+	 * Drain pending correction/warning messages (tests / callers that skip flush).
+	 *
+	 * @return string[]
+	 */
+	public static function drain_corrections() {
+		$out               = self::$corrections;
+		self::$corrections = array();
+		return $out;
+	}
 
 	/**
 	 * @param float  $value Value.

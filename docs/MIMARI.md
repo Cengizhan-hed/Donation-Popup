@@ -1,4 +1,4 @@
-# MIMARI — woo-donation-popup (10.30.0)
+# MIMARI — woo-donation-popup (10.32.0)
 
 Kalıcı mimari harita. Sonraki görevler için ilk okuma noktası.  
 Dal referansı: `docs-mimari` / commit `220f4ec`.  
@@ -194,16 +194,20 @@ Admin: `wdp_admin` localize (`includes/class-admin-assets.php` — ayrı yığı
 | `wdp_migrated_10_29_0` | migration 10.29.0 (cover fee 0,5–15 onarımı, genel liste ≤6) | `includes/class-migrations.php` `step_10_29_0` |
 | `wdp_migrated_10_29_1` | migration 10.29.1 (genel `amount_preset_recommended` silinir) | `includes/class-migrations.php` `step_10_29_1` |
 | `wdp_migrated_10_30_0` | migration 10.30.0 (aydınlatma bağlantısı varsayılan anahtarları; veri silinmez) | `includes/class-migrations.php` `step_10_30_0` |
+| `wdp_migrated_10_31_0` | migration 10.31.0 (toplanan plan + aydınlatma varsayılanı) | `includes/class-migrations.php` `step_10_31_0` |
+| `wdp_migrated_10_32_0` | migration 10.32.0 (uzun aydınlatma varsayılan etiketlerini boşalt; özel metne dokunma) | `includes/class-migrations.php` `step_10_32_0` |
 
 ### Ürün meta (Bağış ayarları — tek kaynak `from_request`)
 
-`includes/class-product-settings-service.php:330-378` anahtarları:
+`WDP_Product_Settings_Service::from_request` anahtarları (10.32.0: `_theme_preset_id`, `_theme_density`, `_theme_inherit_category_color` yazılmaz; kayıtlı meta silinmez):
 
-`_allow_custom_price`, `_min_custom_price`, `_allow_multiple_shares`, `_max_shares`, `_enable_progress_bar`, `_progress_bar_limit`, `_goal_reached_action`, `_goal_reached_message`, `_enable_product_note`, `_product_note_text`, `_enable_sadaka_donation`, `_sadaka_*`, `_enable_trust_strip`, `_enable_quantity`, `_enable_amount_presets`, `_enable_wizard`, `_enable_field_icons`, `_enable_impact_line`, `_progress_celebrate`, `_impact_line_text`, `_amount_presets`, `_enable_email|dedication|anonymous` (tristate `yes`/`no`/''), `_dedication_placeholder`, `_trust_badges`, `_theme_*`, `_layout_mode`, `_enable_campaign_media`, `_enable_urgency`, `_urgency_*`, `_enable_social_proof`, `_social_proof_text`, `_enable_cover_fee`, `_cover_fee_percent`, `_wdp_module_order`, `_wdp_donation_product`, `_wdp_auto_place`.
+`_allow_custom_price`, `_min_custom_price`, `_allow_multiple_shares`, `_max_shares`, `_enable_progress_bar`, `_progress_bar_limit`, `_goal_reached_action`, `_goal_reached_message`, `_enable_product_note`, `_product_note_text`, `_enable_sadaka_donation`, `_sadaka_*`, `_enable_trust_strip`, `_enable_quantity`, `_enable_amount_presets`, `_enable_wizard`, `_enable_field_icons`, `_enable_impact_line`, `_progress_celebrate`, `_impact_line_text`, `_amount_presets`, `_enable_email|dedication|anonymous` (tristate `yes`/`no`/''), `_dedication_placeholder`, `_trust_badges`, `_theme_primary|primary_hover|modal_bg|radius`, `_layout_mode`, `_enable_campaign_media`, `_enable_urgency`, `_urgency_*`, `_enable_social_proof`, `_social_proof_text`, `_enable_cover_fee`, `_cover_fee_percent`, `_wdp_module_order`, `_wdp_donation_product`, `_wdp_auto_place`.
 
 Ek progress meta: `_wdp_total_donation_amount`, `_wdp_donor_count`, `_wdp_progress_unconverted_orders` (`includes/class-utils.php`, `trait-wdp-utils-order-meta.php`).
 
 **10.31.0 hedef / toplanan:** `WDP_Campaign_Goal` (hedefe ulaşma kararı, message/close/continue); `WDP_Progress_Currency` (`wdp_progress_convert_amount` — Curcy `wmc_order_info` / rate, sert bağımlılık yok). Toplanan = paid statuses − cover fee; boş meta → cron `wdp_recalculate_product_donation_total` (ziyaretçi taraması yok). Çubuk yüzdesi = onaylı toplam / hedef (`WDP_Campaign_Goal::compute_percent`).
+
+**10.32.0 ürün teması:** `WDP_Form_Modules::resolve_product_primary_color` / `resolve_product_shell_primary` (ürün → kategori → genel; `_theme_inherit_category_color` okunmaz). `build_product_theme_style` → `WDP_Color_Palette::from_hex` türevleri + `--wdp-on-primary`; hover boşsa türetilmiş; koyu `--wdp-modal-bg` için metin token’ları. Köşe `PRODUCT_THEME_RADIUS_MIN/MAX` (4–32) + `product_radius_ladder` (panel/sheet oranı). Kampanya görseli URL: filtre `wdp_campaign_media_url` (`class-campaign-header-renderer.php`).
 
 Kapsam bayrağı: `_wdp_donation_product` (`includes/class-donation-scope.php:20`).
 
@@ -327,7 +331,8 @@ Kaynak rehber: `docs/AYARLAR.md`. Teknik varsayılanlar normalizer / placement /
 | E-posta / ithaf / anonim | meta `yes`/`no` → değilse `wdp_button_settings`; hisseli tipte hep kapalı; sunucu kapalı alanı yok sayar (`WDP_Donation_Optional_Fields::apply_from_request`, AJAX + legacy cart) | `resolve_flag_or_global` / `WDP_Donation_Optional_Fields` — global: `enable_donor_email`, `enable_dedication`, `enable_anonymous` |
 | Çok adımlı form | ürün `_enable_wizard` tristate → global `enable_multi_step`; form sınıfı `wdp-multi-step` (JS genel bayrağa bakmaz) | CTX + `class-modal-shell-renderer.php` + `wizard.js` |
 | Alan ikonları | ürün `_enable_field_icons` tristate → global `enable_field_icons`; kapalıysa `wdp-no-field-icons` | CTX + MSR |
-| Aydınlatma bağlantısı | global `enable_privacy_notice` (varsayılan kapalı) + metin/URL; URL boşsa WP gizlilik sayfası; yoksa gösterilmez. Yalnız e-posta/ithaf/hissedar varken | `WDP_Donation_Optional_Fields::render_privacy_notice_html` |
+| Aydınlatma bağlantısı | global `enable_privacy_notice` (varsayılan kapalı) + kısa etiket (`privacy_notice_text`) / URL; URL boşsa WP gizlilik sayfası; yoksa gösterilmez. Yalnız bağlantı (uzun gövde yok). Yalnız e-posta/ithaf/hissedar varken | `WDP_Donation_Optional_Fields::render_privacy_notice_html` |
+| Ürün vurgu rengi | ürün `_theme_primary` → kategori `wdp_category_title_colors` → genel marka; başlık aynı kural (`get_title_style_attr`) | `WDP_Form_Modules::resolve_product_*` / `WDP_Category_Title_Color_Service` |
 | Anonim maske | yalnız herkese açık yüzeyler (`sanitize_public_donation_data`); sipariş/admin/e-posta orijinal ad | `mask_public_donor_name` |
 | Hızlı tutar düğmeleri | global `enable_amount_presets==='1'` → ürün `_enable_amount_presets==='no'` gizler; yalnız custom/campaign; min altı elenir; "Önerilen" yalnız ürün `_amount_preset_recommended` dolu ve görünen listedeyse (ortadaki/genel varsayılan yok; seçili gelmez) | `render_amount_presets` (`includes/templates/class-form-fields-renderer.php`) |
 | Modül sırası | ürün `_wdp_module_order` dolu → yoksa button `module_order` → defaults | `WDP_Form_Modules::resolve_order` (`includes/class-form-modules.php:74-84`) |

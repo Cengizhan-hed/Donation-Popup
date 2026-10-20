@@ -90,6 +90,7 @@ class WDP_Migrations {
 			'10.29.1' => array(__CLASS__, 'step_10_29_1'),
 			'10.30.0' => array(__CLASS__, 'step_10_30_0'),
 			'10.31.0' => array(__CLASS__, 'step_10_31_0'),
+			'10.32.0' => array(__CLASS__, 'step_10_32_0'),
 		);
 	}
 
@@ -353,6 +354,52 @@ class WDP_Migrations {
 			$scheduled,
 			$is_fresh ? 'yes' : 'no'
 		);
+	}
+
+	/**
+	 * 10.32.0: Aydınlatma — uzun varsayılan etiketleri boşalt (kısa varsayılan geçerli olsun).
+	 *
+	 * Kayıtlı etiket 10.30.0 veya 10.31.0 varsayılan metinlerinden birebir biriyse '' yapılır;
+	 * özel yazılmış metinlere dokunulmaz. Veri silinmez (yalnız eşleşen varsayılan temizlenir).
+	 *
+	 * @param bool $is_fresh Fresh install.
+	 * @return string Summary for the log.
+	 */
+	public static function step_10_32_0($is_fresh) {
+		$flag = 'wdp_migrated_10_32_0';
+		if (get_option($flag)) {
+			return 'already';
+		}
+		if ($is_fresh) {
+			update_option($flag, '1', false);
+			return 'skipped (fresh install)';
+		}
+
+		$legacy_defaults = array(
+			__('Kişisel verileriniz Aydınlatma Metni kapsamında işlenir.', 'woo-donation-popup'),
+			__(
+				'Kişisel verileriniz bağışınızın gerçekleştirilmesi için işlenir ve yurt dışındaki saha ekiplerimizle paylaşılır. Ayrıntı için Aydınlatma Metni\'ne bakın.',
+				'woo-donation-popup'
+			),
+			// Non-translated copies that may have been stored from prior migrations.
+			'Kişisel verileriniz Aydınlatma Metni kapsamında işlenir.',
+			'Kişisel verileriniz bağışınızın gerçekleştirilmesi için işlenir ve yurt dışındaki saha ekiplerimizle paylaşılır. Ayrıntı için Aydınlatma Metni\'ne bakın.',
+		);
+		$legacy_defaults = array_values(array_unique($legacy_defaults));
+
+		$action = 'none';
+		$button = get_option('wdp_button_settings', false);
+		if (is_array($button) && array_key_exists('privacy_notice_text', $button)) {
+			$current = trim((string) $button['privacy_notice_text']);
+			if ($current !== '' && in_array($current, $legacy_defaults, true)) {
+				$button['privacy_notice_text'] = '';
+				update_option('wdp_button_settings', $button, false);
+				$action = 'cleared_legacy_default';
+			}
+		}
+
+		update_option($flag, '1', false);
+		return 'privacy:' . $action;
 	}
 
 	/**

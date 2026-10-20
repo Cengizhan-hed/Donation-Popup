@@ -414,6 +414,135 @@ class WDP_Form_Modules {
 		return array('ok' => true, 'value' => (string) $amount);
 	}
 
+	/** Product theme corner radius bounds (UI, save, output — single source). */
+	const PRODUCT_THEME_RADIUS_MIN = 4;
+	const PRODUCT_THEME_RADIUS_MAX = 32;
+
+	/**
+	 * Clamp a product theme radius for output/save. 0 / empty → 0 (use global).
+	 * Out-of-range positive values are clamped to 4–32 (stored 1–3 / 33–40 not deleted).
+	 *
+	 * @param mixed $raw Raw radius.
+	 * @return int 0 or 4–32.
+	 */
+	public static function clamp_product_theme_radius($raw) {
+		$n = absint($raw);
+		if ($n <= 0) {
+			return 0;
+		}
+		if ($n < self::PRODUCT_THEME_RADIUS_MIN) {
+			return self::PRODUCT_THEME_RADIUS_MIN;
+		}
+		if ($n > self::PRODUCT_THEME_RADIUS_MAX) {
+			return self::PRODUCT_THEME_RADIUS_MAX;
+		}
+		return $n;
+	}
+
+	/**
+	 * Panel/sheet radius ladder scaled from product UI radius vs global UI radius.
+	 *
+	 * @param int $product_ui Clamped product UI radius (4–32).
+	 * @return array{ui:int,xs:int,md:int,lg:int,panel:int,sheet:int}
+	 */
+	public static function product_radius_ladder($product_ui) {
+		$product_ui = self::clamp_product_theme_radius($product_ui);
+		$global_ui  = 12;
+		$button     = get_option('wdp_button_settings', array());
+		if (is_array($button)) {
+			if (!empty($button['ui_border_radius'])) {
+				$global_ui = absint($button['ui_border_radius']);
+			} elseif (!empty($button['button_border_radius'])) {
+				$global_ui = absint($button['button_border_radius']);
+			}
+		}
+		if ($global_ui <= 0) {
+			$global_ui = 12;
+		}
+		$global_panel = $global_ui + 8;
+		$ratio        = $product_ui / $global_ui;
+		$panel        = max(0, (int) round($global_panel * $ratio));
+		$md           = max(0, (int) round(($global_ui + 4) * $ratio));
+		$xs           = max(0, (int) round(max(0, $global_ui - 4) * $ratio));
+		return array(
+			'ui'    => $product_ui,
+			'xs'    => $xs,
+			'md'    => $md,
+			'lg'    => $panel,
+			'panel' => $panel,
+			'sheet' => $panel,
+		);
+	}
+
+	/**
+	 * Effective accent color: product primary → category → general brand.
+	 * Does not read `_theme_inherit_category_color`.
+	 *
+	 * @param int   $product_id Product ID.
+	 * @param array $context    Optional form context (theme_primary).
+	 * @return string Hex or empty.
+	 */
+	public static function resolve_product_primary_color($product_id, array $context = array()) {
+		$product_id = absint($product_id);
+		$raw        = isset($context['theme_primary'])
+			? (string) $context['theme_primary']
+			: ($product_id > 0 ? (string) get_post_meta($product_id, '_theme_primary', true) : '');
+		$primary    = class_exists('WDP_Color_Palette')
+			? WDP_Color_Palette::normalize_hex($raw)
+			: (string) (sanitize_hex_color($raw) ?: '');
+		if ($primary !== '') {
+			return $primary;
+		}
+		if ($product_id > 0 && class_exists('WDP_Category_Title_Color_Service')) {
+			$cat = WDP_Category_Title_Color_Service::get_color_for_product($product_id);
+			if (is_string($cat) && $cat !== '') {
+				return class_exists('WDP_Color_Palette')
+					? WDP_Color_Palette::normalize_hex($cat)
+					: (string) (sanitize_hex_color($cat) ?: '');
+			}
+		}
+		$button = get_option('wdp_button_settings', array());
+		if (!is_array($button)) {
+			return '';
+		}
+		$brand = isset($button['brand_color']) ? (string) $button['brand_color'] : '';
+		if ($brand === '' && isset($button['button_primary_color'])) {
+			$brand = (string) $button['button_primary_color'];
+		}
+		return class_exists('WDP_Color_Palette')
+			? WDP_Color_Palette::normalize_hex($brand)
+			: (string) (sanitize_hex_color($brand) ?: '');
+	}
+
+	/**
+	 * Product / category override only (empty → leave global CSS vars).
+	 *
+	 * @param int   $product_id Product ID.
+	 * @param array $context    Optional context.
+	 * @return string Hex or empty.
+	 */
+	public static function resolve_product_shell_primary($product_id, array $context = array()) {
+		$product_id = absint($product_id);
+		$raw        = isset($context['theme_primary'])
+			? (string) $context['theme_primary']
+			: ($product_id > 0 ? (string) get_post_meta($product_id, '_theme_primary', true) : '');
+		$primary    = class_exists('WDP_Color_Palette')
+			? WDP_Color_Palette::normalize_hex($raw)
+			: (string) (sanitize_hex_color($raw) ?: '');
+		if ($primary !== '') {
+			return $primary;
+		}
+		if ($product_id > 0 && class_exists('WDP_Category_Title_Color_Service')) {
+			$cat = WDP_Category_Title_Color_Service::get_color_for_product($product_id);
+			if (is_string($cat) && $cat !== '') {
+				return class_exists('WDP_Color_Palette')
+					? WDP_Color_Palette::normalize_hex($cat)
+					: (string) (sanitize_hex_color($cat) ?: '');
+			}
+		}
+		return '';
+	}
+
 	/**
 	 * Product theme CSS vars for modal wrapper.
 	 *
@@ -429,50 +558,71 @@ class WDP_Form_Modules {
 
 		$vars = array();
 
-		$primary = isset($context['theme_primary']) ? (string) $context['theme_primary'] : (string) get_post_meta($product_id, '_theme_primary', true);
-		$hover   = isset($context['theme_primary_hover']) ? (string) $context['theme_primary_hover'] : (string) get_post_meta($product_id, '_theme_primary_hover', true);
-		$radius  = isset($context['theme_radius']) ? $context['theme_radius'] : get_post_meta($product_id, '_theme_radius', true);
-		$modal_bg = isset($context['theme_modal_bg']) ? (string) $context['theme_modal_bg'] : (string) get_post_meta($product_id, '_theme_modal_bg', true);
-		$density = isset($context['theme_density']) ? (string) $context['theme_density'] : (string) get_post_meta($product_id, '_theme_density', true);
-		$inherit = !empty($context['theme_inherit_category']) || get_post_meta($product_id, '_theme_inherit_category_color', true) === 'yes';
+		$primary = self::resolve_product_shell_primary($product_id, $context);
+		$hover_raw = isset($context['theme_primary_hover'])
+			? (string) $context['theme_primary_hover']
+			: (string) get_post_meta($product_id, '_theme_primary_hover', true);
+		$hover     = class_exists('WDP_Color_Palette')
+			? WDP_Color_Palette::normalize_hex($hover_raw)
+			: (string) (sanitize_hex_color($hover_raw) ?: '');
+		$radius    = isset($context['theme_radius']) ? $context['theme_radius'] : get_post_meta($product_id, '_theme_radius', true);
+		$modal_bg_raw = isset($context['theme_modal_bg'])
+			? (string) $context['theme_modal_bg']
+			: (string) get_post_meta($product_id, '_theme_modal_bg', true);
+		$modal_bg = class_exists('WDP_Color_Palette')
+			? WDP_Color_Palette::normalize_hex($modal_bg_raw)
+			: (string) (sanitize_hex_color($modal_bg_raw) ?: '');
 
-		if ($inherit && class_exists('WDP_Category_Title_Color_Service') && method_exists('WDP_Category_Title_Color_Service', 'get_color_for_product')) {
-			$cat = WDP_Category_Title_Color_Service::get_color_for_product($product_id);
-			if (is_string($cat) && $cat !== '') {
-				$primary = $cat;
-			}
-		} elseif ($inherit && class_exists('WDP_Category_Title_Color_Service')) {
-			// Fallback: parse from title style attr hex if helper missing.
-			$attr = WDP_Category_Title_Color_Service::get_title_style_attr($product_id);
-			if (is_string($attr) && preg_match('/#([0-9a-fA-F]{3,8})/', $attr, $m)) {
-				$primary = '#' . $m[1];
-			}
-		}
-
-		$primary = sanitize_hex_color($primary);
-		$hover   = sanitize_hex_color($hover);
-		$modal_bg = sanitize_hex_color($modal_bg);
-
-		if ($primary) {
+		if ($primary !== '' && class_exists('WDP_Color_Palette')) {
+			$palette = WDP_Color_Palette::from_hex($primary);
+			$hover   = $hover !== '' ? $hover : $palette['primary_hover'];
+			$on      = $palette['on_primary'];
+			$vars[]  = '--wdp-primary:' . $palette['primary'];
+			$vars[]  = '--wdp-button-primary:' . $palette['primary'];
+			$vars[]  = '--wdp-primary-hover:' . $hover;
+			$vars[]  = '--wdp-button-primary-hover:' . $hover;
+			$vars[]  = '--wdp-primary-dark:' . $palette['primary_dark'];
+			$vars[]  = '--wdp-primary-soft:' . $palette['primary_soft'];
+			$vars[]  = '--wdp-primary-soft-2:' . $palette['primary_soft_2'];
+			$vars[]  = '--wdp-primary-muted:' . $palette['primary_muted'];
+			$vars[]  = '--wdp-primary-border:' . $palette['primary_border'];
+			$vars[]  = '--wdp-on-primary:' . $on;
+			$vars[]  = '--wdp-title-color:' . $palette['primary_dark'];
+		} elseif ($primary !== '') {
 			$vars[] = '--wdp-primary:' . $primary;
 			$vars[] = '--wdp-button-primary:' . $primary;
-		}
-		if ($hover) {
+			if ($hover !== '') {
+				$vars[] = '--wdp-primary-hover:' . $hover;
+				$vars[] = '--wdp-button-primary-hover:' . $hover;
+			}
+		} elseif ($hover !== '') {
 			$vars[] = '--wdp-primary-hover:' . $hover;
 			$vars[] = '--wdp-button-primary-hover:' . $hover;
 		}
-		$radius_int = absint($radius);
+
+		$radius_int = self::clamp_product_theme_radius($radius);
 		if ($radius_int > 0) {
-			$radius_int = min(32, max(4, $radius_int));
-			$vars[]     = '--wdp-radius-ui:' . $radius_int . 'px';
-			$vars[]     = '--wdp-button-radius:' . $radius_int . 'px';
-			$vars[]     = '--wdp-input-radius:' . $radius_int . 'px';
+			$ladder = self::product_radius_ladder($radius_int);
+			$vars[] = '--wdp-radius-ui:' . $ladder['ui'] . 'px';
+			$vars[] = '--wdp-radius-xs:' . $ladder['xs'] . 'px';
+			$vars[] = '--wdp-radius-sm:' . $ladder['ui'] . 'px';
+			$vars[] = '--wdp-radius-md:' . $ladder['md'] . 'px';
+			$vars[] = '--wdp-radius-lg:' . $ladder['lg'] . 'px';
+			$vars[] = '--wdp-radius-xl:' . $ladder['md'] . 'px';
+			$vars[] = '--wdp-radius-2xl:' . $ladder['panel'] . 'px';
+			$vars[] = '--wdp-radius-panel:' . $ladder['panel'] . 'px';
+			$vars[] = '--wdp-radius-sheet:' . $ladder['sheet'] . 'px';
+			$vars[] = '--wdp-button-radius:' . $ladder['ui'] . 'px';
+			$vars[] = '--wdp-input-radius:' . $ladder['ui'] . 'px';
+			$vars[] = '--wdp-modal-content-radius:' . $ladder['panel'] . 'px';
 		}
-		if ($modal_bg) {
+		if ($modal_bg !== '') {
 			$vars[] = '--wdp-modal-bg:' . $modal_bg;
-		}
-		if (in_array($density, array('compact', 'normal', 'spacious'), true)) {
-			$vars[] = '--wdp-density:' . ($density === 'normal' ? 'comfortable' : $density);
+			if (class_exists('WDP_Color_Palette')) {
+				foreach (WDP_Color_Palette::dark_surface_text_vars($modal_bg) as $name => $value) {
+					$vars[] = $name . ':' . $value;
+				}
+			}
 		}
 
 		return implode(';', $vars);

@@ -212,9 +212,9 @@ Güvenlik denetimi notu: etki/aciliyet/sosyal kanıt/rozet çıktıları esc_htm
 | Konu | Not |
 |------|-----|
 | GiveWP karşılaştırması | Eksik özellik analizi: düzenli bağış, bağışçı paneli, makbuz, raporlar vb. |
-| Saha listesi | Ürüne göre sahaya dışa aktarma + "video gönderildi" takibi |
-| Aydınlatma metni (F10) | Varsayılan metin yurt dışındaki saha ekiplerine aktarımı da kapsamalı; Form alanları görevi bittikten sonra metin güncellenecek |
-| Refaktör | Ayar turu sonrası: dosya yapısı sadeleştirme, ölü kod, adlandırma; davranış değişmez |
+| Saha iletimi (Refaktörde) | WooCommerce sipariş dışa aktarması + sipariş öğesi bilgileri sahaya iletim için yeterli mi, kontrol et (yeni özellik eklenmez) |
+| Aydınlatma bağlantısı (F10) | Eklenti uzun varsayılan metin YAZMAZ; yalnız kısa bağlantı: "Kişisel verilerin işlenmesine ilişkin aydınlatma metni" (etiket ayardan değişir, adres Gizlilik Politikası sayfası). Yurt dışı aktarım bilgisi sitedeki KVKK sayfasının işidir. 10.31.0'daki uzun varsayılan metin 10.32.0'da kaldırılır |
+| Refaktör | Ayar turu sonrası: dosya yapısı sadeleştirme, ölü kod, adlandırma; davranış değişmez. Özellik envanteri: her özellik ve ayar için Çekirdek / WP-WooCommerce zaten yapıyor / Gereksiz etiketi ve öneri (koru / sadeleştir / kaldır). Kampanya blokları (kutlama, sosyal kanıt, aciliyet, etki metni) ve tasarım ayarları dahil |
 
 ## Durum: 10.31.0 Kampanya blokları (kabul edildi, main'e merge)
 
@@ -226,3 +226,42 @@ Güvenlik denetimi notu: etki/aciliyet/sosyal kanıt/rozet çıktıları esc_htm
 | G14 | Yüzde gösterimi (admin floor / form 1 ondalık), "Üst Limit" adı |
 | G15 | Tamamlanmış (hedefe ulaşıldı) çubuk/yüzde rengi eskisinden açık (is-complete `--wdp-success`); marka mavisiyle tutarlı olmalı |
 | G16 | Close durumunda `aria-disabled` tetikleyici, erişilebilirlik gözden geçirmesi |
+
+## Bölüm: Bu ürüne özel görünüm (analiz, 2026-10-20; kararlar bekliyor)
+
+Genel: ürün teması kabuk div'ine satır içi CSS değişkeni olarak yazılıyor (modal-shell-renderer.php:320,498); popup, panel, sayfa içi form aynı; tip koşulu yok; liste kartı (`[wdp_donations]`) ürün temasını kullanmıyor. Güvenlik: kaçışlama yeterli (sanitize_hex_color + esc_attr).
+
+| Ayar | Davranış sorunu | Teknik karar (Claude) |
+|------|-----------------|-----------------------|
+| Düzen | "Genel ayarı kullan" yok, boş = klasik | İş kararı P1 |
+| Ürün görselini göster | Görsel yoksa sessiz boş | Admin'de uyarı |
+| Kategori rengini kullan | Açıkken ürünün ana rengi sessizce yok sayılıyor; başlık ve ana renk öncelik kuralları farklı | İş kararı P2; tek öncelik kuralı belgelenir |
+| Ana renk | Geçersiz hex sessizce siliniyor; `#`'siz giriş (desen izin veriyor) siliniyor (service:471); açık renkte beyaz buton yazısı okunmaz; türevler (soft/border) genel markada kalır | `#` otomatik ekle; geçersizde kayıt hatası; ürün için `WDP_Color_Palette::from_hex` ile tüm türevler + `--wdp-on-primary`; kontrast <4.5:1 ise uyar + yazı rengi otomatik |
+| Hover rengi | Boşsa genel hover (ton uyumsuz) | Boşsa ana renkten türet |
+| Arka plan rengi | Koyu seçilirse metin okunmaz | Kontrast uyarısı; yalnız açık/koyu algılayıp metin rengini türet |
+| Köşe | Kayıt 0-40, çıktı 4-32, UI 4-32 (1-3 ve 33-40 kayıtlı ama farklı çiziliyor); panel/sheet köşesi genel kalıyor | Tek sınır 4-32 (tek sabit), kayıtta uyarı, panel köşesi orantılı |
+| Yoğunluk | ETKİSİZ: `--wdp-density` hiçbir CSS/JS'te okunmuyor (tokens.css:302 yalnız tanım) | Ayar şimdilik gizlenir (kayıtlı veri silinmez); CSS'e bağlama GÖRSEL AŞAMA'da |
+| Ölü meta `_theme_preset_id` | Kullanılmıyor, stil paketiyle bağ yok | Kaldırma önerisi: okuma/yazma çıkar, kayıtlı veri silinmez |
+
+Güvenlik denetimi notu: ürün ayarı kaydında nonce/yetki bu analizde doğrulanmadı.
+Görsel aşama: G17 yoğunluk CSS bağlama; G18 hikâye düzeni dar ekranda; G19 karışık palet/köşe.
+
+## Kararlar: Bu ürüne özel görünüm (2026-10-20)
+
+| Kod | Karar |
+|-----|-------|
+| P1 a | Düzen ürün başına, boş = Klasik |
+| P2 | "Kategori rengini kullan" kutusu KALDIRILIR (kayıtlı veri silinmez, okunmaz). Kural: ürün ana rengi doluysa o; boşsa kategori rengi; o da boşsa genel renk. Renk alanı altına: "Boş bırakılırsa kategori rengi, o da yoksa genel renk kullanılır." |
+| P3 a | Liste kartları genel tasarımda kalır |
+| Düzeltme | Aydınlatma: uzun varsayılan metin kaldırılır, yalnız kısa bağlantı (bkz. Sonraya bırakılanlar) |
+| Onay | Toplu onay verildi |
+
+## Durum: 10.32.0 Bu ürüne özel görünüm (main'e merge)
+
+| Konu | Sonuç |
+|------|-------|
+| Test | verify + PHPUnit 229 + JS 43; e2e:quick 65/0/0; görsel Değişti 0 (accept gerekmedi) |
+| Dikkat | ship içindeki ilk e2e'de `form-fields-wizard-product-off` tetikleyici tıklama timeout (63/0/1); tekrar koşuda geçti. Kararsızlık şüphesi: e2e:stability ile refaktörde incele |
+| Dikkat | e2e:quick süresi ~150 sn → ~840 sn'ye çıktı (testler eklendi); refaktörde E2E hız/paralellik gözden geçirilecek |
+| Güvenlik notu | Ürün ayarı kaydı: nonce + manage_woocommerce + edit_post var (class-admin-product-data-tab.php:99-106) |
+| Görsel aşama | G17 yoğunluk CSS bağlama; G18 hikâye düzeni dar ekran; G19 karışık palet/köşe; koyu modal arka plan görsel doğrulama |

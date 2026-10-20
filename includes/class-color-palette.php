@@ -176,13 +176,114 @@ class WDP_Color_Palette {
 	}
 
 	/**
+	 * Normalize a 3/6-digit hex color. Accepts with or without leading `#`.
+	 *
 	 * @param string $hex Hex color.
-	 * @return string
+	 * @return string `#rrggbb` or empty.
 	 */
 	public static function normalize_hex($hex) {
 		$hex = is_string($hex) ? trim($hex) : '';
+		if ($hex === '') {
+			return '';
+		}
+		if ($hex[0] !== '#') {
+			$hex = '#' . $hex;
+		}
 		$san = sanitize_hex_color($hex);
 		return $san ? $san : '';
+	}
+
+	/**
+	 * WCAG 2.x relative luminance (sRGB), 0–1.
+	 *
+	 * @param string $hex Hex color.
+	 * @return float
+	 */
+	public static function relative_luminance($hex) {
+		$hex = self::normalize_hex($hex);
+		if ($hex === '') {
+			return 0.0;
+		}
+		$rgb = self::hex_to_rgb($hex);
+		$channels = array();
+		foreach ($rgb as $c) {
+			$v = $c / 255;
+			$channels[] = ($v <= 0.03928) ? ($v / 12.92) : pow(($v + 0.055) / 1.055, 2.4);
+		}
+		return (0.2126 * $channels[0]) + (0.7152 * $channels[1]) + (0.0722 * $channels[2]);
+	}
+
+	/**
+	 * WCAG contrast ratio between two hex colors (≥1).
+	 *
+	 * @param string $a Hex A.
+	 * @param string $b Hex B.
+	 * @return float
+	 */
+	public static function contrast_ratio($a, $b) {
+		$l1 = self::relative_luminance($a);
+		$l2 = self::relative_luminance($b);
+		$lighter = max($l1, $l2);
+		$darker  = min($l1, $l2);
+		return ($lighter + 0.05) / ($darker + 0.05);
+	}
+
+	/**
+	 * Best ink (#ffffff or #0f172a) for $bg by WCAG contrast; prefers higher ratio.
+	 *
+	 * @param string $bg Background hex.
+	 * @return string
+	 */
+	public static function pick_on_color($bg) {
+		$bg = self::normalize_hex($bg);
+		if ($bg === '') {
+			return '#ffffff';
+		}
+		$light = '#ffffff';
+		$dark  = '#0f172a';
+		$r_light = self::contrast_ratio($bg, $light);
+		$r_dark  = self::contrast_ratio($bg, $dark);
+		return ($r_dark >= $r_light) ? $dark : $light;
+	}
+
+	/**
+	 * Whether a surface reads as dark (text should flip to light).
+	 *
+	 * @param string $hex Background hex.
+	 * @return bool
+	 */
+	public static function is_dark_surface($hex) {
+		$hex = self::normalize_hex($hex);
+		if ($hex === '') {
+			return false;
+		}
+		return self::relative_luminance($hex) < 0.45;
+	}
+
+	/**
+	 * CSS vars for readable text/fields on a dark modal background.
+	 *
+	 * @param string $bg Modal background hex.
+	 * @return array<string,string> var => value (no `--` prefix on keys? keep full names)
+	 */
+	public static function dark_surface_text_vars($bg) {
+		$bg = self::normalize_hex($bg);
+		if ($bg === '' || !self::is_dark_surface($bg)) {
+			return array();
+		}
+		$input_bg = self::mix_hex($bg, '#ffffff', 0.08);
+		$border   = self::mix_hex($bg, '#ffffff', 0.22);
+		return array(
+			'--wdp-text-primary'   => '#f8fafc',
+			'--wdp-text-secondary' => '#cbd5e1',
+			'--wdp-text-tertiary'  => '#94a3b8',
+			'--wdp-title-color'    => '#f8fafc',
+			'--wdp-label-color'    => '#e2e8f0',
+			'--wdp-input-color'    => '#f8fafc',
+			'--wdp-input-bg'       => $input_bg,
+			'--wdp-input-border'   => $border,
+			'--wdp-field-hint-color' => '#94a3b8',
+		);
 	}
 
 	/**
@@ -287,15 +388,13 @@ class WDP_Color_Palette {
 	}
 
 	/**
-	 * Pick white or near-black ink for contrast on $bg.
+	 * Pick white or near-black ink for contrast on $bg (WCAG relative luminance).
 	 *
 	 * @param string $bg Background hex.
 	 * @return string
 	 */
 	private static function contrast_ink($bg) {
-		$rgb = self::hex_to_rgb(self::normalize_hex($bg) ?: '#036a37');
-		$yiq = (($rgb[0] * 299) + ($rgb[1] * 587) + ($rgb[2] * 114)) / 1000;
-		return ($yiq >= 160) ? '#0f172a' : '#ffffff';
+		return self::pick_on_color($bg);
 	}
 
 	/**

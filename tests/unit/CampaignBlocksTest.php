@@ -241,15 +241,19 @@ final class CampaignBlocksTest extends TestCase {
 		$this->assertStringContainsString('width: 50%', $html);
 	}
 
-	public function test_privacy_default_covers_field_teams(): void {
+	public function test_privacy_default_is_short_link_label(): void {
 		WDP_Test_State::$options['wdp_button_settings'] = array(
 			'enable_privacy_notice' => '1',
 			'privacy_notice_text'   => '',
 			'privacy_notice_url'    => 'https://example.test/p',
 		);
-		$n = WDP_Donation_Optional_Fields::resolve_privacy_notice(array('has_email' => true));
+		$n = WDP_Donation_Optional_Fields::resolve_privacy_notice(array( 'has_email' => true ));
 		$this->assertNotNull($n);
-		$this->assertStringContainsString('yurt dışındaki saha ekiplerimizle', $n['text']);
+		$this->assertSame(
+			WDP_Donation_Optional_Fields::default_privacy_link_label(),
+			$n['link_label']
+		);
+		$this->assertStringNotContainsString('yurt dışındaki saha', $n['text']);
 	}
 
 	public function test_migration_10_31_0(): void {

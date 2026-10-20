@@ -251,9 +251,14 @@ class WDP_Admin_Product_Data_Tab {
 		$max_shares = $meta('_max_shares');
 		$goal       = $meta('_progress_bar_limit');
 		$layout     = sanitize_key($meta('_layout_mode'));
-		$density    = $meta('_theme_density');
 
 		$auto_place = $meta('_wdp_auto_place');
+		$has_image  = false;
+		if (method_exists($product, 'get_image_id')) {
+			$has_image = (int) $product->get_image_id() > 0;
+		} elseif (function_exists('get_post_thumbnail_id')) {
+			$has_image = (int) get_post_thumbnail_id($product->get_id()) > 0;
+		}
 
 		return array(
 			'donation_product'             => WDP_Donation_Scope::product_flag($product),
@@ -305,12 +310,11 @@ class WDP_Admin_Product_Data_Tab {
 			'sadaka_donation_message'      => $meta('_sadaka_donation_message'),
 			'layout_mode'                  => in_array($layout, array('classic', 'campaign', 'story'), true) ? $layout : 'classic',
 			'enable_campaign_media'        => $flag('_enable_campaign_media'),
-			'theme_inherit_category_color' => $flag('_theme_inherit_category_color'),
+			'has_featured_image'           => $has_image ? 'yes' : 'no',
 			'theme_primary'                => $meta('_theme_primary'),
 			'theme_primary_hover'          => $meta('_theme_primary_hover'),
 			'theme_modal_bg'               => $meta('_theme_modal_bg'),
 			'theme_radius'                 => $meta('_theme_radius'),
-			'theme_density'                => in_array($density, array('compact', 'normal', 'spacious'), true) ? $density : '',
 		);
 	}
 
@@ -835,12 +839,12 @@ class WDP_Admin_Product_Data_Tab {
 	 * @return void
 	 */
 	private static function render_appearance_section(array $values) {
-		self::open_section('appearance', __('Bu ürüne özel görünüm', 'woo-donation-popup'), __('Düzen, renkler, köşe yuvarlaklığı, yoğunluk ve medya', 'woo-donation-popup'));
+		self::open_section('appearance', __('Bu ürüne özel görünüm', 'woo-donation-popup'), __('Düzen, renkler, köşe yuvarlaklığı ve medya', 'woo-donation-popup'));
 		self::select(
 			'layout_mode',
 			$values['layout_mode'],
 			__('Düzen', 'woo-donation-popup'),
-			__('Formun genel yerleşimi; "Hikâye" görseli ve formu yan yana gösterir.', 'woo-donation-popup'),
+			__('Formun genel yerleşimi; "Hikâye" görseli ve formu yan yana gösterir. Boş bırakılamaz; varsayılan Klasik (genel düzen ayarı yoktur).', 'woo-donation-popup'),
 			array(
 				'classic'  => __('Klasik', 'woo-donation-popup'),
 				'campaign' => __('Kampanya', 'woo-donation-popup'),
@@ -848,26 +852,37 @@ class WDP_Admin_Product_Data_Tab {
 			)
 		);
 		self::checkbox('enable_campaign_media', $values['enable_campaign_media'], __('Ürün görselini göster', 'woo-donation-popup'), __('Ürünün öne çıkan görselini formun üst kısmında kampanya görseli olarak kullanır.', 'woo-donation-popup'));
-		self::checkbox('theme_inherit_category_color', $values['theme_inherit_category_color'], __('Kategori rengini kullan', 'woo-donation-popup'), __('Ana rengi Kategoriler sekmesinde bu ürünün kategorisine verilen renkten alır.', 'woo-donation-popup'));
+		if ($values['enable_campaign_media'] === 'yes' && empty($values['has_featured_image'])) {
+			echo '<p class="form-field wdp-pp-field wdp-pp-media-warning" style="margin-top:-8px"><span class="description" style="color:#b32d2e">'
+				. esc_html__('Bu ürünün öne çıkan görseli yok; görsel gösterilemez.', 'woo-donation-popup')
+				. '</span></p>';
+		}
 		$color_extra = array(
 			'class'             => 'short wdp-color-field',
 			'custom_attributes' => array('maxlength' => '7', 'pattern' => '#?[0-9A-Fa-f]{3,6}'),
 		);
-		self::text('theme_primary', $values['theme_primary'], __('Ana renk', 'woo-donation-popup'), __('Düğme ve vurgu rengi; boşsa genel tasarım rengi kullanılır.', 'woo-donation-popup'), $color_extra + array('placeholder' => '#036a37'));
-		self::text('theme_primary_hover', $values['theme_primary_hover'], __('Ana renk (üzerine gelince)', 'woo-donation-popup'), __('Fare düğmenin üzerindeyken kullanılan renk.', 'woo-donation-popup'), $color_extra + array('placeholder' => '#025a2e'));
+		self::text(
+			'theme_primary',
+			$values['theme_primary'],
+			__('Ana renk', 'woo-donation-popup'),
+			__('Düğme ve vurgu rengi. Boş bırakılırsa kategori rengi, o da yoksa genel renk kullanılır.', 'woo-donation-popup'),
+			$color_extra + array('placeholder' => '#036a37')
+		);
+		self::text('theme_primary_hover', $values['theme_primary_hover'], __('Ana renk (üzerine gelince)', 'woo-donation-popup'), __('Fare düğmenin üzerindeyken kullanılan renk; boşsa ana renkten türetilir.', 'woo-donation-popup'), $color_extra + array('placeholder' => '#025a2e'));
 		self::text('theme_modal_bg', $values['theme_modal_bg'], __('Arka plan rengi', 'woo-donation-popup'), __('Form penceresinin arka planı; boşsa genel ayar kullanılır.', 'woo-donation-popup'), $color_extra + array('placeholder' => '#ffffff'));
-		self::number('theme_radius', $values['theme_radius'], __('Köşe yuvarlaklığı (px)', 'woo-donation-popup'), __('Düğme ve alan köşeleri için 4–32 px; boşsa genel ayar kullanılır.', 'woo-donation-popup'), array('max' => '32', 'step' => '1'));
-		self::select(
-			'theme_density',
-			$values['theme_density'],
-			__('Yoğunluk', 'woo-donation-popup'),
-			__('Alanlar arasındaki boşluk miktarı.', 'woo-donation-popup'),
-			array(
-				''         => __('Genel ayarı kullan', 'woo-donation-popup'),
-				'compact'  => __('Sıkı', 'woo-donation-popup'),
-				'normal'   => __('Normal', 'woo-donation-popup'),
-				'spacious' => __('Ferah', 'woo-donation-popup'),
-			)
+		$r_min = class_exists('WDP_Form_Modules') ? (string) WDP_Form_Modules::PRODUCT_THEME_RADIUS_MIN : '4';
+		$r_max = class_exists('WDP_Form_Modules') ? (string) WDP_Form_Modules::PRODUCT_THEME_RADIUS_MAX : '32';
+		self::number(
+			'theme_radius',
+			$values['theme_radius'],
+			__('Köşe yuvarlaklığı (px)', 'woo-donation-popup'),
+			sprintf(
+				/* translators: 1: min px, 2: max px */
+				__('Düğme ve alan köşeleri için %1$s–%2$s px; boşsa genel ayar kullanılır.', 'woo-donation-popup'),
+				$r_min,
+				$r_max
+			),
+			array('min' => $r_min, 'max' => $r_max, 'step' => '1')
 		);
 		self::close_section();
 	}

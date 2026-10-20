@@ -180,6 +180,8 @@ if (!class_exists('WC_Product')) {
 		public $description = '';
 		/** @var string visible|catalog|search|hidden */
 		public $catalog_visibility = 'visible';
+		/** @var int Featured image attachment id (0 = none). */
+		public $image_id = 0;
 
 		public function __construct($id = 0) {
 			$this->id = (int) $id;
@@ -190,6 +192,10 @@ if (!class_exists('WC_Product')) {
 
 		public function get_id() {
 			return $this->id;
+		}
+
+		public function get_image_id() {
+			return (int) $this->image_id;
 		}
 
 		public function get_type() {
