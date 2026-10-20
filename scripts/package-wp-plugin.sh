@@ -31,6 +31,8 @@ RSYNC_ARGS=(-a)
 DEFAULT_EXCLUDES=(
   "node_modules/"
   ".git/"
+  ".claude/"
+  "CLAUDE.md"
   ".cursor/"
   ".vscode/"
   "/build/"
@@ -81,6 +83,8 @@ rm -rf \
   "$DEST/scripts" \
   "$DEST/docs" \
   "$DEST/.github" \
+  "$DEST/.claude" \
+  "$DEST/CLAUDE.md" \
   "$DEST/.cursor" \
   "$DEST/.vscode"
 rm -rf "$DEST/vendor"
