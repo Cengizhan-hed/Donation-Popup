@@ -1,7 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "permissions": {
-    "defaultMode": "default",
+    "defaultMode": "acceptEdits",
     "allow": [
       "Bash(git status)",
       "Bash(git status *)",
@@ -32,10 +32,20 @@
       "Bash(git ls-files *)",
       "Bash(git check-ignore *)",
       "Bash(git rev-parse *)",
-      "Read(build/**)"
+      "Read(build/**)",
+      "Bash(agent *)",
+      "Bash(cd *)",
+      "Bash(git add *)",
+      "Bash(pgrep *)",
+      "Bash(echo *)",
+      "Bash(printf *)",
+      "Bash(mkdir -p build/*)",
+      "Bash(npm run pack)",
+      "Edit(CLAUDE.md)",
+      "Edit(build/handoff/**)",
+      "Edit(docs/**)"
     ],
     "ask": [
-      "Bash(agent *)",
       "Bash(git commit *)",
       "Bash(git push *)",
       "Bash(git merge *)",
@@ -86,7 +96,23 @@
       "Bash(ssh *)",
       "Bash(scp *)",
       "Bash(sftp *)",
-      "Bash(rsync *)"
+      "Bash(rsync *)",
+      "Edit(includes/**)",
+      "Edit(assets/**)",
+      "Edit(templates/**)",
+      "Edit(blocks/**)",
+      "Edit(tests/**)",
+      "Edit(scripts/**)",
+      "Edit(tools/**)",
+      "Edit(**/*.php)",
+      "Edit(**/*.js)",
+      "Edit(**/*.mjs)",
+      "Edit(**/*.css)",
+      "Edit(package.json)",
+      "Edit(composer.json)",
+      "Edit(.distignore)",
+      "Edit(.gitignore)",
+      "Edit(.cursor/**)"
     ]
   }
 }

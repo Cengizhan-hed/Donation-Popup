@@ -61,6 +61,7 @@ Bitiş: verify + test → (gerekirse) npm run ship:staging → e2e:quick → RAP
 - Onay gerektiren her komuttan ÖNCE kullanıcıya Türkçe tek cümleyle ne yapacağını ve "yalnız okur" / "dosya değiştirir" / "geri alınması zor" olduğunu yaz. Kullanıcı teknik değil; komut metnini anlamayabilir.
 - Her aşama sonunda 6. Durum bölümünü güncelle. Ardından kullanıcının claude.ai proje sohbetine kopyalayacağı bir AŞAMA ÖZETİ mesajı yaz: ne yapıldı, sürümler ve commit'ler, açık kalan sorunlar, alınan kararlar, sıradaki aşama önerisi. Kısa tablolarla, en fazla 1 sayfa. Dosya oluşturma, mesaj olarak yaz.
 - Her ship:staging sonrasında kullanıcıya şunları yaz: yüklenen sürüm; sade dille neler değişti; staging'de kendi gözüyle kontrol etmesi için tıklama tıklama kısa bir kontrol listesi (hangi sayfa, neye tıklanır, ne görmeli). Kullanıcı kontrol edip 'tamam' demeden accept ve commit'e geçme.
+- Kullanıcı her zaman masa başında değil. Onay gerektiren adımları toplu sor: bir işin başında gereken tüm kritik onayları (commit, push, merge, accept, ship) tek mesajda listele, kullanıcı bir kez onaylasın. Arada küçük sorularla durma; karar gerektiren soruları da biriktirip tek seferde sor.
 - Her mesajın EN SON satırı şu üçünden biri olmalı:
   ✅ BİTTİ – sıra sende
   ⏳ BEKLİYOR – Cursor çalışıyor, bitince kendim devam edeceğim
@@ -105,6 +106,7 @@ Bitiş: verify + test → (gerekirse) npm run ship:staging → e2e:quick → RAP
 - 10.28.11–12: mağaza niyet ön yüklemesi (hover 760→42 ms, touch 85 ms); boşta ilk 3 ürün (saveData/2g/webdriver atlar); önbellek ürün+para+dil, yalnız bellek.
 - Bilinen: mobil baseline'larda "Benzer Bağışlar" boş (Avada animasyon/lazy) → 2G'de düzelt, sonra mobil accept.
 - Bilinen: `wdp_render_modal` sunucu süresi ~750 ms, nonce'suz (sayfa önbelleği için bilinçli) → hız sınırı/önbellek Aşama 4 ve güvenlik denetiminde.
+- Staging ayar değişikliği (2026-10-20, kullanıcı elle): Ayarlar → Normal → "Chip'leri göster" AÇILDI (önce kapalıydı). Bağışçı belirler/kampanya ekranlarında hızlı tutar düğmeleri çıkar → sonraki quick'te bu ekran farkları beklenen değişiklik sayılır (kod değişikliği değil).
 
 ## 7. Yol haritası
 
