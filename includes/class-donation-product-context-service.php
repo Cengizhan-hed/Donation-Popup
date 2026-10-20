@@ -159,6 +159,18 @@ class WDP_Donation_Product_Context_Service {
 			'social_proof_text'             => trim((string) $product->get_meta('_social_proof_text')),
 			'enable_cover_fee'              => $product->get_meta('_enable_cover_fee') === 'yes',
 			'cover_fee_percent'             => WDP_Form_Modules::clamp_cover_fee_percent_for_runtime($product->get_meta('_cover_fee_percent')),
+			'goal_reached_action'           => class_exists('WDP_Campaign_Goal')
+				? WDP_Campaign_Goal::resolve_action($product)
+				: 'message',
+			'goal_reached_message'          => class_exists('WDP_Campaign_Goal')
+				? WDP_Campaign_Goal::resolve_message($product)
+				: '',
+			'goal_reached'                  => class_exists('WDP_Campaign_Goal')
+				? WDP_Campaign_Goal::is_goal_reached($product_id, array('include_pending' => false))
+				: false,
+			'goal_closed'                   => class_exists('WDP_Campaign_Goal')
+				? WDP_Campaign_Goal::should_block_new_donations($product)
+				: false,
 			'module_order'                  => (string) $product->get_meta('_wdp_module_order'),
 		);
 

@@ -67,6 +67,10 @@ trait WDP_Ajax_Cart_Add_Trait {
                 throw new WDP_Product_Not_Found_Exception($product_id);
             }
 
+            if (class_exists('WDP_Campaign_Goal')) {
+                WDP_Campaign_Goal::assert_accepts_donation($product);
+            }
+
         $donation_data = array();
         $share_count = isset($_POST['share_count']) ? absint(wp_unslash($_POST['share_count'])) : 0;
 

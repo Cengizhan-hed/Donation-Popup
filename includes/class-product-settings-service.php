@@ -364,9 +364,13 @@ class WDP_Product_Settings_Service {
 		}
 
 		// 0 / empty → '' so the front end falls back to the default share count.
+		// Admin + sunucu tek üst sınır: 50 (aşan yeni kayıt hata; mevcut meta silinmez).
 		$max_shares_raw = isset($request['max_shares']) ? absint(wp_unslash($request['max_shares'])) : 0;
-		if ($max_shares_raw > 0) {
-			$max_shares = (int) self::clamp_number($max_shares_raw, 1, 100, __('Maksimum hisse', 'woo-donation-popup'));
+		if ($max_shares_raw > 50) {
+			self::reject_meta('_max_shares', __('En fazla hisse 50 olabilir.', 'woo-donation-popup'));
+			$max_shares = '';
+		} elseif ($max_shares_raw > 0) {
+			$max_shares = (int) self::clamp_number($max_shares_raw, 1, 50, __('En fazla hisse', 'woo-donation-popup'));
 		} else {
 			$max_shares = '';
 		}
@@ -374,14 +378,64 @@ class WDP_Product_Settings_Service {
 		$theme_radius = isset($request['theme_radius']) ? absint(wp_unslash($request['theme_radius'])) : 0;
 		$theme_radius = (int) self::clamp_number($theme_radius, 0, 40, __('Köşe yuvarlaklığı', 'woo-donation-popup'));
 
-		$min_custom_price = isset($request['min_custom_price']) ? (float) wc_format_decimal(wp_unslash($request['min_custom_price'])) : 0;
+		$min_raw = isset($request['min_custom_price']) && is_scalar($request['min_custom_price'])
+			? (string) wp_unslash($request['min_custom_price'])
+			: '0';
+		$min_parsed       = self::parse_money_input($min_raw === '' ? '0' : $min_raw);
+		$min_custom_price = !empty($min_parsed['ok']) ? (float) $min_parsed['amount'] : 0.0;
 		$min_custom_price = self::clamp_number($min_custom_price, 0, 100000000, __('En düşük tutar', 'woo-donation-popup'));
 
-		$goal = isset($request['progress_bar_limit']) ? (float) wc_format_decimal(wp_unslash($request['progress_bar_limit'])) : 0;
-		if ($enable_progress_bar && $goal <= 0) {
-			self::note_clamp(__('Hedef tutar', 'woo-donation-popup'), (string) $goal, WDP_Donation_Type::DEFAULT_GOAL);
-			$goal = (float) WDP_Donation_Type::DEFAULT_GOAL;
+		$goal_raw    = isset($request['progress_bar_limit']) && is_scalar($request['progress_bar_limit'])
+			? (string) wp_unslash($request['progress_bar_limit'])
+			: '';
+		$goal_parsed = self::parse_money_input($goal_raw);
+		$goal        = !empty($goal_parsed['ok']) ? (float) $goal_parsed['amount'] : 0.0;
+		if ($enable_progress_bar) {
+			if (empty($goal_parsed['ok']) || $goal <= 0) {
+				self::reject_meta(
+					'_progress_bar_limit',
+					isset($goal_parsed['error']) && $goal_parsed['error'] !== ''
+						? (string) $goal_parsed['error']
+						: __('Hedef tutar boş veya sıfır olamaz.', 'woo-donation-popup')
+				);
+				$goal = 0.0;
+			} elseif ($goal > WDP_Campaign_Goal::MAX_GOAL_AMOUNT) {
+				self::reject_meta(
+					'_progress_bar_limit',
+					sprintf(
+						/* translators: %s: max amount */
+						__('Hedef tutar en fazla %s olabilir.', 'woo-donation-popup'),
+						wc_format_decimal(WDP_Campaign_Goal::MAX_GOAL_AMOUNT)
+					)
+				);
+				$goal = 0.0;
+			}
 		}
+
+		$goal_action = class_exists('WDP_Campaign_Goal')
+			? WDP_Campaign_Goal::sanitize_action(isset($request['goal_reached_action']) ? $request['goal_reached_action'] : '')
+			: 'message';
+		$goal_message_raw = isset($request['goal_reached_message']) && is_scalar($request['goal_reached_message'])
+			? (string) wp_unslash($request['goal_reached_message'])
+			: '';
+		$goal_message = class_exists('WDP_Campaign_Goal')
+			? WDP_Campaign_Goal::sanitize_message($goal_message_raw)
+			: sanitize_text_field($goal_message_raw);
+
+		$urgency_ends_raw = isset($request['urgency_ends_at']) ? sanitize_text_field(wp_unslash($request['urgency_ends_at'])) : '';
+		$urgency_ends_at  = '';
+		if ($urgency_ends_raw !== '') {
+			$ends_check = self::validate_urgency_ends_at($urgency_ends_raw);
+			if (!empty($ends_check['ok'])) {
+				$urgency_ends_at = (string) $ends_check['value'];
+			} else {
+				self::reject_meta('_urgency_ends_at', (string) $ends_check['error']);
+			}
+		}
+
+		$social_proof_text = isset($request['social_proof_text'])
+			? self::limit_text(sanitize_text_field(wp_unslash($request['social_proof_text'])), 200)
+			: '';
 
 		return array(
 			'_allow_custom_price'             => $allow_custom_price ? 'yes' : 'no',
@@ -424,15 +478,83 @@ class WDP_Product_Settings_Service {
 			'_enable_campaign_media'          => $enable_campaign_media ? 'yes' : 'no',
 			'_enable_urgency'                 => $enable_urgency ? 'yes' : 'no',
 			'_urgency_text'                   => isset($request['urgency_text']) ? self::limit_text(sanitize_text_field(wp_unslash($request['urgency_text'])), 200) : '',
-			'_urgency_ends_at'                => isset($request['urgency_ends_at']) ? sanitize_text_field(wp_unslash($request['urgency_ends_at'])) : '',
+			'_urgency_ends_at'                => $urgency_ends_at,
 			'_enable_social_proof'            => $enable_social_proof ? 'yes' : 'no',
-			'_social_proof_text'              => isset($request['social_proof_text']) ? self::limit_text(sanitize_text_field(wp_unslash($request['social_proof_text'])), 200) : '',
+			'_social_proof_text'              => $social_proof_text,
 			'_enable_cover_fee'               => $enable_cover_fee ? 'yes' : 'no',
 			'_cover_fee_percent'              => $cover_fee_percent > 0 ? (string) $cover_fee_percent : '',
+			'_goal_reached_action'            => $goal_action,
+			'_goal_reached_message'           => $goal_message,
 			'_wdp_module_order'               => !empty($order_list) ? implode(',', $order_list) : '',
 			'_wdp_donation_product'           => self::parse_tristate_flag(isset($request['donation_product']) ? $request['donation_product'] : null),
 			'_wdp_auto_place'                 => (isset($request['auto_place']) && is_scalar($request['auto_place']) && strtolower(trim((string) $request['auto_place'])) === 'no') ? 'no' : '',
 		);
+	}
+
+	/**
+	 * Binlik ayırıcılı tutar girişi ("100.000", "100,000.50") → float.
+	 *
+	 * Ölçüm: PHP `(float) "100.000"` = 100; birim test stub `wc_format_decimal` de dizeyi olduğu gibi
+	 * döndürür. Bu yüzden TR/EN binlik kalıpları önce temizlenir, sonra wc_format_decimal kullanılır.
+	 *
+	 * @param mixed $raw Raw input.
+	 * @return array{ok:bool,amount:float,error:string}
+	 */
+	public static function parse_money_input($raw) {
+		$raw = trim((string) $raw);
+		if ($raw === '') {
+			return array('ok' => false, 'amount' => 0.0, 'error' => __('Geçerli bir tutar girin.', 'woo-donation-popup'));
+		}
+		// TR: 100.000 veya 100.000,50
+		if (preg_match('/^\d{1,3}(\.\d{3})+(,\d{1,6})?$/', $raw)) {
+			$normalized = str_replace('.', '', $raw);
+			$normalized = str_replace(',', '.', $normalized);
+		} elseif (preg_match('/^\d{1,3}(,\d{3})+(\.\d{1,6})?$/', $raw)) {
+			// EN: 100,000 or 100,000.50
+			$normalized = str_replace(',', '', $raw);
+		} else {
+			$normalized = function_exists('wc_format_decimal') ? (string) wc_format_decimal($raw) : $raw;
+			$normalized = str_replace(',', '.', $normalized);
+		}
+		if ($normalized === '' || !is_numeric($normalized)) {
+			return array(
+				'ok'     => false,
+				'amount' => 0.0,
+				'error'  => __('Hedef tutar geçerli bir sayı olmalıdır.', 'woo-donation-popup'),
+			);
+		}
+		return array('ok' => true, 'amount' => (float) $normalized, 'error' => '');
+	}
+
+	/**
+	 * Aciliyet bitiş tarihi: yalnız Y-m-d.
+	 *
+	 * @param string $raw Raw date.
+	 * @return array{ok:bool,value:string,error:string}
+	 */
+	public static function validate_urgency_ends_at($raw) {
+		$raw = trim((string) $raw);
+		if ($raw === '') {
+			return array('ok' => true, 'value' => '', 'error' => '');
+		}
+		if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $raw)) {
+			return array(
+				'ok'    => false,
+				'value' => '',
+				'error' => __('Bitiş tarihi Y-m-d biçiminde olmalıdır (örn. 2026-12-31).', 'woo-donation-popup'),
+			);
+		}
+		$dt = \DateTimeImmutable::createFromFormat('Y-m-d', $raw);
+		$errors = \DateTimeImmutable::getLastErrors();
+		$bad = !$dt || (is_array($errors) && (!empty($errors['warning_count']) || !empty($errors['error_count'])));
+		if ($bad || $dt->format('Y-m-d') !== $raw) {
+			return array(
+				'ok'    => false,
+				'value' => '',
+				'error' => __('Bitiş tarihi geçerli bir takvim günü olmalıdır.', 'woo-donation-popup'),
+			);
+		}
+		return array('ok' => true, 'value' => $raw, 'error' => '');
 	}
 
 	/** @var string[] */
@@ -463,7 +585,14 @@ class WDP_Product_Settings_Service {
 	 * Meta keys that are strictly validated on save; the product panel passes their current
 	 * values as $existing_meta so a rejected field keeps what was stored.
 	 */
-	const VALIDATED_META_KEYS = array('_amount_presets', '_amount_preset_recommended', '_cover_fee_percent');
+	const VALIDATED_META_KEYS = array(
+		'_amount_presets',
+		'_amount_preset_recommended',
+		'_cover_fee_percent',
+		'_progress_bar_limit',
+		'_max_shares',
+		'_urgency_ends_at',
+	);
 
 	/**
 	 * @param float  $value Value.

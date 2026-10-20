@@ -41,8 +41,27 @@ class WDP_Form_Modules {
 	 * @return string[]
 	 */
 	public static function sanitize_order($raw) {
-		$allowed = self::allowed_ids();
-		$parts   = array();
+		return self::sanitize_order_against($raw, self::allowed_ids());
+	}
+
+	/**
+	 * Genel ayar: yalnız 5 başlık bloğu (bilinmeyen kimlikler sessizce yok sayılır).
+	 *
+	 * @param mixed $raw Raw order.
+	 * @return string[]
+	 */
+	public static function sanitize_header_order($raw) {
+		$header = array('media', 'impact', 'urgency', 'social_proof', 'progress');
+		return self::sanitize_order_against($raw, $header);
+	}
+
+	/**
+	 * @param mixed    $raw     Raw.
+	 * @param string[] $allowed Allowed ids (order of append for missing).
+	 * @return string[]
+	 */
+	private static function sanitize_order_against($raw, array $allowed) {
+		$parts = array();
 		if (is_array($raw)) {
 			$parts = $raw;
 		} elseif (is_string($raw)) {
@@ -472,27 +491,51 @@ class WDP_Form_Modules {
 			return '';
 		}
 		$ends_at = trim((string) $ends_at);
+		$ends_ts = 0;
 		if ($ends_at !== '') {
-			$ts = strtotime($ends_at);
-			if ($ts && $ts < time()) {
-				return '';
+			// Geçerli Y-m-d: site TZ ile gün sonu 23:59:59. Geçersiz eski kayıt → süresiz (şerit kalır).
+			if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $ends_at)) {
+				try {
+					$tz = function_exists('wp_timezone') ? wp_timezone() : new \DateTimeZone('UTC');
+					$dt = new \DateTimeImmutable($ends_at . ' 23:59:59', $tz);
+					$ends_ts = (int) $dt->getTimestamp();
+					if ($ends_ts > 0 && $ends_ts < time()) {
+						return '';
+					}
+				} catch (Exception $e) { // phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedCatch -- invalid date = treat as open-ended
+					$ends_ts = 0;
+				}
 			}
 		}
-		return '<p class="wdp-urgency-banner" role="status"><span class="wdp-urgency-banner__text">' . esc_html($text) . '</span></p>';
+		$attrs = '';
+		if ($ends_ts > 0) {
+			$attrs = ' data-ends-at="' . esc_attr((string) $ends_ts) . '"';
+		}
+		return '<p class="wdp-urgency-banner" role="status"' . $attrs . '><span class="wdp-urgency-banner__text">' . esc_html($text) . '</span></p>';
 	}
 
 	/**
-	 * Social proof line.
+	 * Sosyal kanıt: {donors} gerçek sayıdan; 0 veya {donors} yoksa (eski serbest metin) yeni biçim.
 	 *
-	 * @param string $text Copy.
+	 * @param string $text       Product template (may be legacy free text).
+	 * @param int    $product_id Product ID.
 	 * @return string
 	 */
-	public static function render_social_proof($text) {
-		$text = trim((string) $text);
-		if ($text === '') {
+	public static function render_social_proof($text, $product_id = 0) {
+		$product_id = absint($product_id);
+		$donors     = ($product_id > 0 && class_exists('WDP_Utils'))
+			? (int) WDP_Utils::get_donor_count($product_id)
+			: 0;
+		if ($donors <= 0) {
 			return '';
 		}
-		return '<p class="wdp-social-proof" role="status">' . esc_html($text) . '</p>';
+
+		$template = trim((string) $text);
+		if ($template === '' || strpos($template, '{donors}') === false) {
+			$template = __('{donors} kişi bağış yaptı', 'woo-donation-popup');
+		}
+		$line = str_replace('{donors}', (string) $donors, $template);
+		return '<p class="wdp-social-proof" role="status">' . esc_html($line) . '</p>';
 	}
 
 	/**

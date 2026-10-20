@@ -3365,6 +3365,33 @@ export async function captureAll({
     } finally {
       logSection('form-fields', tFormFields);
     }
+
+    // 10.31.0 kampanya blokları
+    const tCampaignBlocks = Date.now();
+    try {
+      const { runCampaignBlocksChecks } = await import('./campaign-blocks.mjs');
+      await runCampaignBlocksChecks({
+        browser,
+        contextOpts,
+        env,
+        productUrls,
+        productIds,
+        listPagePath: env.E2E_LIST_PAGE,
+        failures,
+        stats: functionalStats,
+      });
+    } catch (e) {
+      failures.push(
+        makeFailure({
+          check: 'campaign-blocks-runner',
+          description: 'Kampanya blokları E2E koşucusu çöktü',
+          error: e,
+        })
+      );
+      functionalStats.failed += 1;
+    } finally {
+      logSection('campaign-blocks', tCampaignBlocks);
+    }
   }
 
   // Mobile chromium + webkit sample (quick’te atlanır)

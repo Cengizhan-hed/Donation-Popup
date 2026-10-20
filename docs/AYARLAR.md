@@ -65,16 +65,25 @@ Aşağıdaki her alan için: ekran adı, ne işe yarar, hangi tipte görünür /
 ### Hedef tutar
 
 - **Ekran adı:** Hedef tutar  
-- **Ne işe yarar:** İlerleme çubuğunun yüzde 100 sayılacağı kampanya hedefi.  
+- **Ne işe yarar:** İlerleme çubuğunun yüzde 100 sayılacağı kampanya hedefi (mağaza ana para biriminde). Boş/≤0 veya üst sınır (1.000.000.000) aşımı kaydı durdurur; sessizce 100000’e çekilmez. Binlik ayırıcılı giriş (`100.000`) kabul edilir.  
 - **Tip:** Hedefli kampanya  
 - **Formda:** İlerleme çubuğunun hedefi.  
 - **Genel ayar:** Yok  
 - **Nasıl denenir:** 1) Tipi kampanya yapın. 2) Hedefi değiştirin. 3) Formda yüzdeyi yenileyin.
 
+### Hedefe ulaşınca
+
+- **Ekran adı:** Hedefe ulaşınca; Hedefe ulaşınca mesaj  
+- **Ne işe yarar:** `continue` (mesaj yok, bağış devam), `message` (teşekkür mesajı + bağış devam; varsayılan), `close` (yeni bağış kapalı + mesaj; sunucu reddeder). Meta boş = message. Mesaj bağış tutarından önce görünür.  
+- **Tip:** Hedefli kampanya  
+- **Formda:** `.wdp-goal-reached-notice`; close iken tutar/Sepete Ekle pasif.  
+- **Genel ayar:** Yok  
+- **Nasıl denenir:** Toplananı hedefe çekip üç seçeneği deneyin.
+
 ### En düşük tutar
 
 - **Ekran adı:** En düşük tutar  
-- **Ne işe yarar:** Bağışçının yazabileceği en düşük tutar; kampanyada ürün fiyatı daha düşükse o kullanılır.  
+- **Ne işe yarar:** Bağışçının yazabileceği en düşük tutar. Hedefli kampanyada formda ürün fiyatı ile bu tutarın küçüğü kullanılır; ürün fiyatı yok/0 ise yalnız bu alan.  
 - **Tip:** Bağışçı belirler, Hedefli kampanya  
 - **Formda:** Tutar alanı doğrulaması.  
 - **Genel ayar:** Yok  
@@ -83,7 +92,7 @@ Aşağıdaki her alan için: ekran adı, ne işe yarar, hangi tipte görünür /
 ### En fazla hisse
 
 - **Ekran adı:** En fazla hisse  
-- **Ne işe yarar:** Tek seferde seçilebilecek en yüksek hisse adedi.  
+- **Ne işe yarar:** Tek seferde seçilebilecek en yüksek hisse adedi (en fazla 50; admin ve sunucu aynı sınır).  
 - **Tip:** Hisseli  
 - **Formda:** Hisse artırma üst limiti.  
 - **Genel ayar:** Yok  
@@ -92,20 +101,20 @@ Aşağıdaki her alan için: ekran adı, ne işe yarar, hangi tipte görünür /
 ### Toplanan
 
 - **Ekran adı:** Toplanan  
-- **Ne işe yarar:** Ödemesi alınmış siparişlerden hesaplanan toplam; yenile simgesi yeniden hesaplar.  
+- **Ne işe yarar:** Yalnız processing/completed siparişlerden; işlem ücreti hariç; tutarlar mağaza ana para birimine (sipariş kuru / Curcy) çevrilir. on-hold sayılmaz. Yenile simgesi tam yeniden hesaplar. Dönüşülemeyen siparişler uyarıda sayılır.  
 - **Tip:** Hedefli kampanya (yönetim özeti)  
-- **Formda:** İlerleme çubuğunun doluluk oranı.  
+- **Formda:** İlerleme çubuğu dolgusu ve “toplandı” tutarı (yüzde onaylı toplamdan; hedef aşımında çubuk %100, tutar gerçek).  
 - **Genel ayar:** Yok  
 - **Nasıl denenir:** Yenile’ye basıp yüzdeyi kontrol edin.
 
 ### Kutlama animasyonu
 
 - **Ekran adı:** Kutlama animasyonu  
-- **Ne işe yarar:** Bağış eklendiğinde ilerleme çubuğunda kısa bir kutlama gösterir.  
+- **Ne işe yarar:** Hedefe ulaşıldığında (onaylı toplam geçiş anında) kısa kutlama gösterir; sayfa açılışında zaten %100 ise kutlama yok.  
 - **Tip:** Hedefli kampanya  
-- **Formda:** Sepete ekleme sonrası kısa animasyon.  
+- **Formda:** İlerleme çubuğu kutlaması.  
 - **Genel ayar:** Progress sekmesindeki “Hedef dolunca kutlama” ayrı bir genel ayardır.  
-- **Nasıl denenir:** Kampanya formunda sepete ekleyip animasyonu izleyin.
+- **Nasıl denenir:** Hedefin altında açıp onaylı toplamı geçirin.
 
 ### Hızlı tutar düğmeleri
 
@@ -219,7 +228,7 @@ Aşağıdaki her alan için: ekran adı, ne işe yarar, hangi tipte görünür /
 ### Aydınlatma metni bağlantısı
 
 - **Ekran adı:** Aydınlatma metni bağlantısını göster  
-- **Ne işe yarar:** Formda kişisel veri aydınlatma bağlantısı gösterir (varsayılan kapalı).  
+- **Ne işe yarar:** Formda kişisel veri aydınlatma bağlantısı gösterir (varsayılan kapalı). Varsayılan metin bağışın gerçekleştirilmesi ve yurt dışındaki saha ekipleriyle paylaşımı kapsar; kayıtlı özel metin değişmez.  
 - **Tip:** E-posta, ithaf veya hissedar alanlarından en az biri varken  
 - **Formda:** Kısa metin + “Aydınlatma Metni” bağlantısı (yeni sekme, `rel=noopener`). Adres boşsa WordPress Gizlilik Politikası sayfası; o da yoksa bağlantı gösterilmez.  
 - **Genel ayar:** Tasarım → Aydınlatma metni bağlantısı.  
@@ -228,46 +237,46 @@ Aşağıdaki her alan için: ekran adı, ne işe yarar, hangi tipte görünür /
 ### Etki satırı / Etki metni
 
 - **Ekran adı:** Etki satırı; Etki metni  
-- **Ne işe yarar:** Başlığın altında bağışın etkisini anlatan kısa cümle.  
+- **Ne işe yarar:** Başlığın altında bağışın etkisini anlatan kısa cümle. Boş bırakılırsa satır görünmez.  
 - **Tip:** Tümü (yönetim)  
 - **Formda:** Başlık altı etki satırı.  
-- **Genel ayar:** Yönetimde ayrı bir genel “etki metni” alanı yoktur; boş bırakılırsa satır çoğu zaman görünmez.  
+- **Genel ayar:** Yok  
 - **Nasıl denenir:** Açıp metin girin; formu kontrol edin.
 
 ### Aciliyet şeridi / Aciliyet metni / Bitiş tarihi
 
 - **Ekran adı:** Aciliyet şeridi; Aciliyet metni; Bitiş tarihi  
-- **Ne işe yarar:** Kampanyanın süreli olduğunu vurgular; bitişten sonra şerit gizlenir.  
+- **Ne işe yarar:** Kampanyanın süreli olduğunu vurgular. Bitiş (Y-m-d) site saat diliminde gün sonuna (23:59:59) kadar şeridi gösterir; yalnız şeridi kaldırır (kampanyayı kapatmaz).  
 - **Tip:** Tümü (yönetim)  
-- **Formda:** Üstte aciliyet şeridi.  
+- **Formda:** Üstte aciliyet şeridi (`data-ends-at` + JS yedek).  
 - **Genel ayar:** Yok  
 - **Nasıl denenir:** Metin + yarın bitiş → şerit var; dünü yazın → şerit yok.
 
 ### Sosyal kanıt / Sosyal kanıt metni
 
 - **Ekran adı:** Sosyal kanıt; Sosyal kanıt metni  
-- **Ne işe yarar:** Kaç kişinin bağış yaptığını anlatan satır.  
+- **Ne işe yarar:** Gerçek bağışçı sayısı; metinde `{donors}` yer tutucusu. Sayı 0 ise satır gizli. Varsayılan: “{donors} kişi bağış yaptı”.  
 - **Tip:** Tümü (yönetim)  
 - **Formda:** Sosyal kanıt satırı.  
 - **Genel ayar:** Yok  
-- **Nasıl denenir:** Açıp metin girin.
+- **Nasıl denenir:** Açıp `{donors}` içeren metin girin.
 
 ### Güven rozetleri / Rozetler
 
 - **Ekran adı:** Güven rozetleri; Rozetler  
-- **Ne işe yarar:** Formun altında güvenli ödeme gibi kısa güven mesajları.  
+- **Ne işe yarar:** Formun altında güven mesajları. Genel ayar kapalıysa ürün açık olsa da gösterilmez. Ürün listesi doluysa genel listenin yerine geçer.  
 - **Tip:** Tümü  
 - **Formda:** Sepete ekle altı güven şeridi.  
-- **Genel ayar (boş rozetler):** Tasarım → Güven rozetleri / Güven metni. Genel güven şeridi kapalıysa hiç görünmez.  
+- **Genel ayar (boş rozetler):** Tasarım → Güven rozetleri / Güven metni.  
 - **Nasıl denenir:** Ürün rozeti yazın → formda o metin.
 
 ### Blok sırası
 
 - **Ekran adı:** Bu ürüne özel sıra kullan / blok sırası  
-- **Ne işe yarar:** Başlık altı blokların sırası; kapalıysa Tasarım’daki genel sıra kullanılır.  
+- **Ne işe yarar:** Başlık altı 5 bloğun sırası (media, impact, urgency, social_proof, progress); kapalıysa Tasarım’daki genel sıra.  
 - **Tip:** Tümü  
 - **Formda:** Medya, etki, aciliyet, sosyal kanıt, ilerleme sırası.  
-- **Genel ayar:** Tasarım → Varsayılan modül sırası.  
+- **Genel ayar:** Tasarım → Varsayılan modül sırası (yalnız bu 5 kimlik).  
 - **Nasıl denenir:** Özel sıra açıp yukarı/aşağı taşıyın; formu kontrol edin.
 
 ### Alt bağış ekle

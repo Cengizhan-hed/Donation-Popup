@@ -48,9 +48,13 @@ class WDP_Utils {
         self::$debug_enabled = (bool) (defined('WP_DEBUG') && WP_DEBUG);
 
         // Progress bar toplamlarını artımlı güncelle (büyük sipariş hacminde tam taramayı azaltır).
-        // Ödenmiş durumlar (wdp_progress_paid_statuses) sayılır; refunded/cancelled/failed geri alınır.
+        // Ödenmiş durumlar (wdp_progress_paid_statuses) sayılır; ödenmemişe düşünce / silme / çöpte düşülür.
         add_action('woocommerce_order_status_changed', array(__CLASS__, 'sync_order_donation_totals_on_status_change'), 20, 4);
         add_action('woocommerce_order_refunded', array(__CLASS__, 'sync_order_donation_totals_on_refund'), 20, 2);
+        add_action('before_delete_post', array(__CLASS__, 'uncount_order_progress_on_delete'), 5, 2);
+        add_action('wp_trash_post', array(__CLASS__, 'uncount_order_progress_on_trash'), 5, 1);
+        add_action('untrashed_post', array(__CLASS__, 'recount_order_progress_on_untrash'), 10, 1);
+        add_action('wdp_recalculate_product_donation_total', array(__CLASS__, 'cron_recalculate_product_donation_total'), 10, 1);
 
         // Ürün veya bağışa ilişkin ürün meta'sı değişince get_product_info / sepet AJAX önbelleğini tek merkezden temizle.
         add_action('updated_post_meta', array(__CLASS__, 'maybe_invalidate_product_donation_caches_on_meta'), 10, 4);
@@ -548,17 +552,11 @@ class WDP_Utils {
             return $meta_total;
         }
 
-        // İlk okuma: ödemesi alınmış siparişleri (wdp_progress_paid_statuses) sayfalı tara ve yaz.
-        // SADECE bu ürün için yapılan bağışları say
-        $result = self::recalculate_product_donation_total($product_id);
-        $total = (float) $result['total'];
+        // Meta boş: ziyaretçi isteğinde ağır tarama YAPMA; arka planda hesapla, şimdilik 0 göster.
+        self::schedule_product_donation_total_recalc($product_id);
+        wp_cache_set($cache_key, 0.0, 'wdp_donations', MINUTE_IN_SECONDS);
 
-        // Cache for 1 hour - her ürün için ayrı cache
-        wp_cache_set($cache_key, $total, 'wdp_donations', HOUR_IN_SECONDS);
-
-        // ÖNEMLİ: Sadece bu ürün için yapılan bağışların toplamını döndür
-        // Farklı ürünlerin bağışları birbirine karışmaz
-        return floatval($total);
+        return 0.0;
     }
 
     /**

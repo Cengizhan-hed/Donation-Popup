@@ -275,7 +275,8 @@ class WDP_Admin_Design_Studio_Renderer {
 		echo '<label class="wdp-admin-toggle"><input type="checkbox" name="enable_privacy_notice" value="1" ' . checked($privacy_on, true, false) . ' /> ' . esc_html__('Aydınlatma metni bağlantısını göster', 'woo-donation-popup') . '</label>';
 		echo '<p class="description">' . esc_html__('Yalnız formda e-posta, ithaf veya hissedar alanlarından en az biri varken gösterilir. Varsayılan kapalıdır.', 'woo-donation-popup') . '</p>';
 		echo '<p><label for="privacy_notice_text">' . esc_html__('Bağlantı metni', 'woo-donation-popup') . '</label><br />';
-		echo '<input type="text" id="privacy_notice_text" name="privacy_notice_text" value="' . esc_attr($privacy_text) . '" class="large-text" placeholder="' . esc_attr__('Kişisel verileriniz Aydınlatma Metni kapsamında işlenir.', 'woo-donation-popup') . '" /></p>';
+		echo '<input type="text" id="privacy_notice_text" name="privacy_notice_text" value="' . esc_attr($privacy_text) . '" class="large-text" placeholder="' . esc_attr__('Kişisel verileriniz bağışınızın gerçekleştirilmesi için işlenir ve yurt dışındaki saha ekiplerimizle paylaşılır. Ayrıntı için Aydınlatma Metni\'ne bakın.', 'woo-donation-popup') . '" /></p>';
+		echo '<p class="description">' . esc_html__('Varsayılan metin, bağışın gerçekleştirilmesi ve yurt dışındaki saha ekipleriyle paylaşımı kapsar. Kayıtlı özel metniniz değiştirilmez.', 'woo-donation-popup') . '</p>';
 		echo '<p><label for="privacy_notice_url">' . esc_html__('Bağlantı adresi', 'woo-donation-popup') . '</label><br />';
 		echo '<input type="url" id="privacy_notice_url" name="privacy_notice_url" value="' . esc_attr($privacy_url) . '" class="large-text" placeholder="https://" /></p>';
 		if ($privacy_url === '' && $wp_privacy === '') {
@@ -286,7 +287,7 @@ class WDP_Admin_Design_Studio_Renderer {
 		echo '</td></tr>';
 		echo '<tr><th scope="row"><label for="module_order">' . esc_html__('Varsayılan modül sırası', 'woo-donation-popup') . '</label></th><td>';
 		echo '<input type="text" id="module_order" name="module_order" value="' . esc_attr($order) . '" class="large-text" />';
-		echo '<p class="description">' . esc_html__('Ne işe yarar: Modal üst bölümündeki blokların sırası (virgülle). Örn. media,impact,urgency,social_proof,progress,sadaka,trust. Form gövdesi sabittir: bağışçı → ithaf → tutar → cover fee (donor/amount buradan değişmez). Ürün kartındaki “Modül sırası” doluysa ürün önceliklidir. Boş bırakırsanız varsayılan sıra kullanılır.', 'woo-donation-popup') . '</p></td></tr>';
+		echo '<p class="description">' . esc_html__('Ne işe yarar: Modal üst bölümündeki 5 başlık bloğunun sırası (virgülle). Örn. media,impact,urgency,social_proof,progress. Bilinmeyen kimlikler yok sayılır. Form gövdesi sabittir: bağışçı → ithaf → tutar → işlem ücreti. Ürün kartındaki “Modül sırası” doluysa ürün önceliklidir. Boş bırakırsanız varsayılan sıra kullanılır.', 'woo-donation-popup') . '</p></td></tr>';
 		echo '<tr><th scope="row"><label for="trust_badges">' . esc_html__('Güven rozetleri (JSON, max 3)', 'woo-donation-popup') . '</label></th><td>';
 		echo '<textarea id="trust_badges" name="trust_badges" rows="4" class="large-text code">' . esc_textarea((string) $badges) . '</textarea>';
 		echo '<p class="description">' . esc_html__('Ne işe yarar: Form altında birden fazla güven rozeti gösterir. JSON dizi formatı: [{"icon":"builtin:shield","text":"SSL"},{"icon":"builtin:heart","text":"Güvenli"}]. En fazla 3 rozet. Boşsa aşağıdaki tek satırlık “Güven metni” yedek olarak kullanılır. Hatalı JSON kaydedilmez/boş sayılır.', 'woo-donation-popup') . '</p></td></tr>';

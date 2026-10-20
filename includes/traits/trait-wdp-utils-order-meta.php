@@ -123,11 +123,100 @@ trait WDP_Utils_Order_Meta_Trait {
 
         $to = self::normalize_order_status_slug($to);
 
+        // Ödenmiş duruma geçince say; herhangi bir ödenmemiş duruma (on-hold, pending, trash…) düşünce düş.
         if (in_array($to, self::get_progress_paid_statuses(), true)) {
             self::count_order_in_progress_totals($order);
-        } elseif (in_array($to, self::get_progress_reversal_statuses(), true)) {
+        } elseif (self::is_order_counted_in_progress($order)) {
             self::uncount_order_from_progress_totals($order);
         }
+    }
+
+    /**
+     * Sipariş kalıcı silinmeden / çöpe gitmeden önce progress toplamından düş.
+     *
+     * @param int          $post_id Post ID.
+     * @param WP_Post|null $post    Post.
+     * @return void
+     */
+    public static function uncount_order_progress_on_delete($post_id, $post = null) {
+        $post_id = absint($post_id);
+        if ($post_id <= 0) {
+            return;
+        }
+        $type = ($post instanceof WP_Post) ? $post->post_type : get_post_type($post_id);
+        if ($type !== 'shop_order') {
+            // HPOS: post_type boş olabilir; sipariş nesnesi dene.
+            if (!function_exists('wc_get_order')) {
+                return;
+            }
+        }
+        $order = function_exists('wc_get_order') ? wc_get_order($post_id) : null;
+        if (!$order || is_a($order, 'WC_Order_Refund')) {
+            return;
+        }
+        self::uncount_order_from_progress_totals($order);
+    }
+
+    /**
+     * Sipariş çöpe taşındığında.
+     *
+     * @param int $post_id Post ID.
+     * @return void
+     */
+    public static function uncount_order_progress_on_trash($post_id) {
+        self::uncount_order_progress_on_delete($post_id, null);
+    }
+
+    /**
+     * Sipariş çöpten çıkınca, hâlâ ödenmiş durumdaysa yeniden say.
+     *
+     * @param int $post_id Post ID.
+     * @return void
+     */
+    public static function recount_order_progress_on_untrash($post_id) {
+        $post_id = absint($post_id);
+        if (!$post_id || !function_exists('wc_get_order')) {
+            return;
+        }
+        $order = wc_get_order($post_id);
+        if (!$order || is_a($order, 'WC_Order_Refund')) {
+            return;
+        }
+        $status = method_exists($order, 'get_status')
+            ? self::normalize_order_status_slug($order->get_status())
+            : '';
+        if (in_array($status, self::get_progress_paid_statuses(), true)) {
+            self::count_order_in_progress_totals($order);
+        }
+    }
+
+    /**
+     * Arka plan toplam yeniden hesap (wp-cron).
+     *
+     * @param int $product_id Product ID.
+     * @return void
+     */
+    public static function cron_recalculate_product_donation_total($product_id) {
+        self::recalculate_product_donation_total(absint($product_id));
+    }
+
+    /**
+     * Tek seferlik yeniden hesap planla (ziyaretçi isteğinde ağır tarama yok).
+     *
+     * @param int $product_id Product ID.
+     * @return void
+     */
+    public static function schedule_product_donation_total_recalc($product_id) {
+        $product_id = absint($product_id);
+        if (!$product_id || !function_exists('wp_schedule_single_event')) {
+            return;
+        }
+        $hook = 'wdp_recalculate_product_donation_total';
+        $args = array($product_id);
+        if (function_exists('wp_next_scheduled') && wp_next_scheduled($hook, $args)) {
+            return;
+        }
+        wp_schedule_single_event(time() + 15, $hook, $args);
     }
 
     /**
@@ -324,6 +413,10 @@ trait WDP_Utils_Order_Meta_Trait {
             return $amounts;
         }
 
+        $currency = class_exists('WDP_Progress_Currency')
+            ? WDP_Progress_Currency::get_order_currency($order)
+            : (method_exists($order, 'get_currency') ? strtoupper((string) $order->get_currency()) : '');
+
         foreach ($order->get_items() as $item_id => $item) {
             $product_id = absint($item->get_product_id());
             if (!$product_id) {
@@ -334,11 +427,54 @@ trait WDP_Utils_Order_Meta_Trait {
             if (method_exists($order, 'get_total_refunded_for_item')) {
                 $line_total -= abs(floatval($order->get_total_refunded_for_item($item_id)));
             }
+            $line_total = max(0.0, $line_total);
+            if ($line_total <= 0) {
+                continue;
+            }
+
+            if (class_exists('WDP_Progress_Currency')) {
+                $converted = WDP_Progress_Currency::convert_to_base($line_total, $currency, $order);
+                if (empty($converted['ok'])) {
+                    self::log_progress_conversion_skip($order, $product_id, isset($converted['reason']) ? (string) $converted['reason'] : 'unknown');
+                    continue;
+                }
+                $line_total = (float) $converted['amount'];
+            }
 
             $amounts[ $product_id ] = (isset($amounts[ $product_id ]) ? $amounts[ $product_id ] : 0.0) + max(0.0, $line_total);
         }
 
         return $amounts;
+    }
+
+    /**
+     * Dönüşülemeyen satır: kişisel veri yok, günlük + ürün sayacı.
+     *
+     * @param WC_Abstract_Order $order      Order.
+     * @param int               $product_id Product.
+     * @param string            $reason     Reason code.
+     * @return void
+     */
+    private static function log_progress_conversion_skip($order, $product_id, $reason) {
+        $order_id = (is_object($order) && method_exists($order, 'get_id')) ? absint($order->get_id()) : 0;
+        self::log(
+            sprintf(
+                'progress convert skip order=%d product=%d reason=%s',
+                $order_id,
+                absint($product_id),
+                sanitize_key($reason)
+            )
+        );
+        $product_id = absint($product_id);
+        if ($product_id) {
+            $key = '_wdp_progress_unconverted_orders';
+            $skipped = get_post_meta($product_id, $key, true);
+            $list = is_array($skipped) ? $skipped : array();
+            if ($order_id && !in_array($order_id, $list, true)) {
+                $list[] = $order_id;
+                update_post_meta($product_id, $key, array_values(array_slice($list, -50)));
+            }
+        }
     }
 
     /**
@@ -393,10 +529,13 @@ trait WDP_Utils_Order_Meta_Trait {
      */
     public static function recalculate_product_donation_total($product_id) {
         $product_id = absint($product_id);
-        $result = array('total' => 0.0, 'donors' => 0, 'orders' => 0);
+        $result = array('total' => 0.0, 'donors' => 0, 'orders' => 0, 'unconverted' => 0);
         if (!$product_id || !function_exists('wc_get_orders')) {
             return $result;
         }
+
+        // Yeniden hesap başında dönüşüm uyarı listesini sıfırla; compute sırasında yeniden dolar.
+        delete_post_meta($product_id, '_wdp_progress_unconverted_orders');
 
         $statuses = array();
         foreach (self::get_progress_paid_statuses() as $status) {
@@ -456,6 +595,9 @@ trait WDP_Utils_Order_Meta_Trait {
             $page++;
         } while ($page <= (int) $order_query->max_num_pages);
 
+        $skipped = get_post_meta($product_id, '_wdp_progress_unconverted_orders', true);
+        $result['unconverted'] = is_array($skipped) ? count($skipped) : 0;
+
         self::update_product_donation_total($product_id, $result['total'], true);
         self::set_product_donor_count($product_id, $result['donors']);
 
@@ -471,10 +613,48 @@ trait WDP_Utils_Order_Meta_Trait {
     private static function resolve_donation_line_total($item) {
         $custom_price = $item->get_meta('_custom_price');
         if ($custom_price !== '' && is_numeric($custom_price) && floatval($custom_price) > 0) {
-            return floatval($custom_price) * max(1, intval($item->get_quantity()));
+            $line = floatval($custom_price) * max(1, intval($item->get_quantity()));
+        } else {
+            $line = max(0.0, floatval($item->get_total()));
         }
 
-        return max(0.0, floatval($item->get_total()));
+        return self::strip_cover_fee_from_line_total($item, $line);
+    }
+
+    /**
+     * İşlem ücreti toplanana girmez: satırdaki wdp_cover_fee yüzdesinden bağış kısmını ayır.
+     *
+     * Kayıt: cover_fee işaretliyken sipariş satır meta `wdp_cover_fee` = yüzde string (veya eski 'yes').
+     * `_custom_price` / satır total şişirilmiş tutardır → bağış = total / (1 + pct/100).
+     *
+     * @param object $item Order line item.
+     * @param float  $line Gross line total.
+     * @return float Net donation amount.
+     */
+    public static function strip_cover_fee_from_line_total($item, $line) {
+        $line = max(0.0, (float) $line);
+        if ($line <= 0 || !is_object($item) || !method_exists($item, 'get_meta')) {
+            return $line;
+        }
+
+        $fee_raw = $item->get_meta(class_exists('WDP_Order_Meta_Keys') ? WDP_Order_Meta_Keys::COVER_FEE : 'wdp_cover_fee');
+        $pct     = 0.0;
+        if ($fee_raw !== '' && $fee_raw !== null && is_numeric($fee_raw)) {
+            $pct = (float) $fee_raw;
+        } elseif ((string) $fee_raw === 'yes' && method_exists($item, 'get_product_id')) {
+            $product = function_exists('wc_get_product') ? wc_get_product(absint($item->get_product_id())) : null;
+            if ($product && method_exists($product, 'get_meta')) {
+                $pct = (float) $product->get_meta('_cover_fee_percent');
+            }
+        }
+
+        if ($pct <= 0) {
+            return $line;
+        }
+
+        $net = $line / (1.0 + ($pct / 100.0));
+        $decimals = function_exists('wc_get_price_decimals') ? (int) wc_get_price_decimals() : 2;
+        return max(0.0, round($net, $decimals));
     }
 
     /**
@@ -568,6 +748,9 @@ trait WDP_Utils_Order_Meta_Trait {
         delete_transient($key);
         wp_cache_delete($key, 'wdp_product_info');
         wp_cache_delete('wdp_product_object_' . $product_id, 'wdp_products');
+        // Progress sayaçları (meta wp-cli ile değişince de düşsün).
+        wp_cache_delete('wdp_total_donation_' . $product_id, 'wdp_donations');
+        wp_cache_delete('wdp_donor_count_' . $product_id, 'wdp_donations');
         if (class_exists('WDP_Donations_List')) {
             WDP_Donations_List::bump_cache();
         }
@@ -688,7 +871,12 @@ trait WDP_Utils_Order_Meta_Trait {
             return;
         }
 
-        if (!self::is_donation_popup_product_info_meta_key($meta_key)) {
+        $progress_keys = array(
+            '_wdp_total_donation_amount',
+            '_wdp_donor_count',
+            '_wdp_progress_unconverted_orders',
+        );
+        if (!self::is_donation_popup_product_info_meta_key($meta_key) && !in_array($meta_key, $progress_keys, true)) {
             return;
         }
 

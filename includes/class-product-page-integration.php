@@ -371,7 +371,14 @@ class WDP_Product_Page_Integration {
 		$text = WDP_Shortcodes::resolve_button_text('');
 		$id   = (int) $product->get_id();
 		$cls  = 'button wdp-loop-donate';
+		$goal_closed = class_exists('WDP_Campaign_Goal') && WDP_Campaign_Goal::should_block_new_donations($product);
+		if ($goal_closed) {
+			$cls .= ' is-disabled wdp-goal-closed-trigger';
+		}
 		$attrs = ' href="' . esc_url($url) . '" class="' . esc_attr($cls) . '"';
+		if ($goal_closed) {
+			$attrs .= ' aria-disabled="true" data-wdp-goal-closed="1" data-wdp-goal-message="' . esc_attr(WDP_Campaign_Goal::resolve_message($product)) . '"';
+		}
 		if ($mode === 'popup' || $mode === 'panel') {
 			$attrs .= ' data-product-id="' . esc_attr((string) $id) . '" data-wdp-lazy="1" data-wdp-mode="' . esc_attr($mode === 'panel' ? 'side_panel' : 'popup') . '"';
 			$cls_extra = $mode === 'panel' ? ' wdp-open-modal wdp-open-side-panel' : ' wdp-open-modal';

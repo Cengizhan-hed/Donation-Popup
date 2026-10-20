@@ -101,6 +101,10 @@ class WDP_Fake_Order extends WC_Abstract_Order {
 	public $meta = array();
 	/** @var array<int,float> item id => refunded amount */
 	public $refunded_for_item = array();
+	/** @var string */
+	public $currency = 'TRY';
+	/** @var string */
+	public $status = 'processing';
 
 	public function __construct(int $id, array $items = array()) {
 		$this->id    = $id;
@@ -113,6 +117,14 @@ class WDP_Fake_Order extends WC_Abstract_Order {
 
 	public function get_items($type = 'line_item'): array {
 		return $this->items;
+	}
+
+	public function get_currency(): string {
+		return strtoupper((string) $this->currency);
+	}
+
+	public function get_status(): string {
+		return (string) $this->status;
 	}
 
 	public function get_meta($key, $single = true) {

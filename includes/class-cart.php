@@ -169,6 +169,16 @@ class WDP_Cart {
      * @return bool
      */
     public static function validate_donation_fields($passed, $product_id, $quantity, $variation_id = '', $variations = array()) {
+        unset($quantity, $variation_id, $variations);
+
+        // Hedef kapatıldıysa (close): yeni eklemeyi reddet (AJAX dışı WC yolu + sepette bekleyen dahil).
+        if ($passed && class_exists('WDP_Campaign_Goal')) {
+            $passed = WDP_Campaign_Goal::filter_add_to_cart_validation($passed, $product_id);
+            if (!$passed) {
+                return false;
+            }
+        }
+
         $request_data = self::get_request_data();
         if (self::is_ajax_add_to_cart_flow($request_data)) {
             return $passed;

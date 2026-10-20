@@ -89,6 +89,7 @@ class WDP_Migrations {
 			'10.29.0' => array(__CLASS__, 'step_10_29_0'),
 			'10.29.1' => array(__CLASS__, 'step_10_29_1'),
 			'10.30.0' => array(__CLASS__, 'step_10_30_0'),
+			'10.31.0' => array(__CLASS__, 'step_10_31_0'),
 		);
 	}
 
@@ -277,6 +278,81 @@ class WDP_Migrations {
 
 		update_option($flag, '1', false);
 		return 'privacy_keys:' . ($added ? implode(',', $added) : 'none');
+	}
+
+	/**
+	 * 10.31.0: Kampanya blokları — toplanan yeniden hesap planı + aydınlatma varsayılanı.
+	 *
+	 * - Progress açık ürünlerde toplam yeniden hesap planlanır (veri silinmez).
+	 * - Aydınlatma metni yalnız eski varsayılanla birebir aynıysa yeni varsayılana güncellenir;
+	 *   özel metinler dokunulmaz. Anahtar yoksa yeni varsayılan eklenir.
+	 *
+	 * @param bool $is_fresh Fresh install.
+	 * @return string Summary for the log.
+	 */
+	public static function step_10_31_0($is_fresh) {
+		$flag = 'wdp_migrated_10_31_0';
+		if (get_option($flag)) {
+			return 'already';
+		}
+
+		$old_privacy = __('Kişisel verileriniz Aydınlatma Metni kapsamında işlenir.', 'woo-donation-popup');
+		$new_privacy = __(
+			'Kişisel verileriniz bağışınızın gerçekleştirilmesi için işlenir ve yurt dışındaki saha ekiplerimizle paylaşılır. Ayrıntı için Aydınlatma Metni\'ne bakın.',
+			'woo-donation-popup'
+		);
+
+		$privacy_action = 'none';
+		$button         = get_option('wdp_button_settings', false);
+		if (!is_array($button)) {
+			$button = array();
+		}
+		if (!array_key_exists('privacy_notice_text', $button)) {
+			$button['privacy_notice_text'] = $new_privacy;
+			update_option('wdp_button_settings', $button, false);
+			$privacy_action = 'added';
+		} elseif (trim((string) $button['privacy_notice_text']) === $old_privacy) {
+			$button['privacy_notice_text'] = $new_privacy;
+			update_option('wdp_button_settings', $button, false);
+			$privacy_action = 'updated_default';
+		}
+
+		$scheduled = 0;
+		if (!$is_fresh && function_exists('get_posts')) {
+			$ids = get_posts(
+				array(
+					'post_type'              => 'product',
+					'post_status'            => 'any',
+					'posts_per_page'         => 200,
+					'fields'                 => 'ids',
+					'no_found_rows'          => true,
+					'update_post_meta_cache' => false,
+					'update_post_term_cache' => false,
+					'meta_key'               => '_enable_progress_bar',
+					'meta_value'             => 'yes',
+				)
+			);
+			if (is_array($ids)) {
+				foreach ($ids as $pid) {
+					$pid = absint($pid);
+					if (!$pid) {
+						continue;
+					}
+					if (class_exists('WDP_Utils') && method_exists('WDP_Utils', 'schedule_product_donation_total_recalc')) {
+						WDP_Utils::schedule_product_donation_total_recalc($pid);
+						$scheduled++;
+					}
+				}
+			}
+		}
+
+		update_option($flag, '1', false);
+		return sprintf(
+			'privacy:%s recalc_scheduled:%d fresh:%s',
+			$privacy_action,
+			$scheduled,
+			$is_fresh ? 'yes' : 'no'
+		);
 	}
 
 	/**

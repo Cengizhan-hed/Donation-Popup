@@ -387,6 +387,12 @@ Formun içindeki SSS modülü 10.27.0’da tamamen kaldırıldı. SSS’ler ür�
 
 ## Sürüm notları
 
+### 10.31.0 — Kampanya blokları (hedef davranışı, toplanan, çok para birimi)
+
+- Hedefe ulaşınca: ürün başına `continue` / `message` / `close` (varsayılan message); close sunucu + sepet doğrulaması.
+- Toplanan: yalnız processing/completed; işlem ücreti hariç; Curcy/GBP dönüşümü; boş meta’da ziyaretçi taraması yok.
+- Sosyal kanıt `{donors}`; aciliyet bitişi site TZ gün sonu; ilerleme yüzdesi = onaylı toplam; aydınlatma varsayılanı saha aktarımını kapsar.
+
 ### 10.30.0 — Form alanları (e-posta, ithaf, anonim, wizard/ikon, aydınlatma)
 
 - Hisselide e-posta/ithaf/anonim yok (ürün sekmesi + sunucu).
