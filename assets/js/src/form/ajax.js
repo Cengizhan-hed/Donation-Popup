@@ -616,17 +616,13 @@
     const coverFee = form.querySelector('input[name="donation_cover_fee"]');
     if (coverFee && coverFee.checked) {
       formData.set('donation_cover_fee', '1');
-      const pct = coverFee.getAttribute('data-wdp-cover-fee-percent');
-      if (pct) {
-        formData.set('donation_cover_fee_percent', String(pct));
-      }
-      // Client-side bump so displayed submit amount matches server when using simple custom price.
+      // 10.29.0: yüzdeyi istemci göndermez; sunucu ürün meta'sından okur.
+      formData.delete('donation_cover_fee_percent');
+      // Sunucu ücreti uygular — taban tutarı gönder (çift uygulama yok).
       const priceInput = form.querySelector('input[name="custom_price"]');
       if (priceInput && formData.has('custom_price')) {
         const base = Number.parseFloat(String(formData.get('custom_price') || '').replace(',', '.'));
-        const p = Number.parseFloat(String(pct || '0'));
-        if (Number.isFinite(base) && base > 0 && Number.isFinite(p) && p > 0) {
-          // Server applies fee — send base amount only; do not double-apply.
+        if (Number.isFinite(base) && base > 0) {
           formData.set('custom_price', String(base));
         }
       }

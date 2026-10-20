@@ -120,6 +120,18 @@
     }
   }
 
+  function bindCoverFeeTotal(form) {
+    if (typeof formPricing.bindCoverFeeTotal === 'function') {
+      formPricing.bindCoverFeeTotal(form);
+    }
+  }
+
+  function clearAmountSelection(form) {
+    if (typeof formPricing.clearAmountSelection === 'function') {
+      formPricing.clearAmountSelection(form);
+    }
+  }
+
   function bindDonationSummary(form) {
     if (typeof formPricing.bindDonationSummary === 'function') {
       formPricing.bindDonationSummary(form);
@@ -468,6 +480,7 @@
     prepareDonationFormValidation(form);
     bindProductQuantityDelegation(form);
     bindAmountPresets(form);
+    bindCoverFeeTotal(form);
     bindDonationSummary(form);
     bindSadakaDonation(form);
     bindSmartKeyboard(form);
@@ -778,6 +791,7 @@
     handleAjaxError,
     directSubmit: directFormSubmit,
     updateLineTotals,
+    clearAmountSelection,
     lastValidation: prevLastValidation,
   };
 

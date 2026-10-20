@@ -66,7 +66,7 @@ class WDP_Templates {
 	}
 
 	/**
-	 * Hızlı tutar chip listesi (min altına düşenler elenir).
+	 * Hızlı tutar düğmesi listesi (min altına düşenler elenir).
 	 *
 	 * @param float|string $min_price  Minimum custom price.
 	 * @param int          $product_id Product ID.
@@ -77,7 +77,7 @@ class WDP_Templates {
 	}
 
 	/**
-	 * Hızlı tutar chip HTML'i.
+	 * Hızlı tutar düğmesi HTML'i.
 	 *
 	 * @param float|string $min_price       Minimum price.
 	 * @param string       $currency_symbol Currency symbol.

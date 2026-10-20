@@ -170,7 +170,19 @@ class WDP_Product_Settings_Service {
 			: '';
 		unset($request['module_order_custom']);
 
-		$normalized = self::from_request(self::with_preserved_fields($request, $existing_meta));
+		$request = self::with_preserved_fields($request, $existing_meta);
+		// For Önerilen list check when product presets are empty/rejected (10.29.1).
+		$request['__existing_amount_presets'] = isset($existing_meta['_amount_presets'])
+			? (is_scalar($existing_meta['_amount_presets']) ? (string) $existing_meta['_amount_presets'] : '')
+			: '';
+		$normalized = self::from_request($request);
+		foreach (self::$rejected_meta as $meta_key) {
+			// Rejected input never overwrites stored data (Y3/Y4/Y2).
+			if (array_key_exists($meta_key, $existing_meta)) {
+				$normalized[ $meta_key ] = is_scalar($existing_meta[ $meta_key ]) ? (string) $existing_meta[ $meta_key ] : '';
+			}
+		}
+		self::$rejected_meta = array();
 		return self::validate_sadaka_wc_product_meta($normalized, (int) $parent_product_id);
 	}
 
@@ -240,6 +252,8 @@ class WDP_Product_Settings_Service {
 	 * @return array
 	 */
 	public static function from_request(array $request) {
+		self::$rejected_meta = array();
+
 		$allow_custom_price     = self::parse_bool_flag(isset($request['allow_custom_price']) ? $request['allow_custom_price'] : false);
 		$allow_multiple_shares  = self::parse_bool_flag(isset($request['allow_multiple_shares']) ? $request['allow_multiple_shares'] : false);
 		$enable_progress_bar    = self::parse_bool_flag(isset($request['enable_progress_bar']) ? $request['enable_progress_bar'] : false);
@@ -298,14 +312,58 @@ class WDP_Product_Settings_Service {
 		$has_order    = is_array($module_order) ? !empty($module_order) : (is_scalar($module_order) && trim((string) $module_order) !== '');
 		$order_list   = ($has_order && class_exists('WDP_Form_Modules')) ? WDP_Form_Modules::sanitize_order($module_order) : array();
 
-		$amount_presets = isset($request['amount_presets']) ? sanitize_text_field(wp_unslash($request['amount_presets'])) : '';
-		if ($amount_presets !== '' && class_exists('WDP_Form_Modules')) {
-			$parsed = WDP_Form_Modules::parse_amount_presets_csv($amount_presets);
-			$amount_presets = !empty($parsed) ? implode(', ', $parsed) : '';
+		// 10.29.0 (Y3/Y4/Y2): strict validation on save. A rejected field keeps its previous
+		// value (restored in from_product_panel from the existing meta) and raises an admin error.
+		$amount_presets = '';
+		$presets_raw    = isset($request['amount_presets']) && is_scalar($request['amount_presets']) ? sanitize_text_field(wp_unslash((string) $request['amount_presets'])) : '';
+		$presets_check  = WDP_Form_Modules::validate_amount_presets_for_save($presets_raw);
+		if (!empty($presets_check['ok'])) {
+			$amount_presets = !empty($presets_check['amounts']) ? implode(', ', $presets_check['amounts']) : '';
+		} else {
+			self::reject_meta('_amount_presets', isset($presets_check['error']) ? (string) $presets_check['error'] : '');
 		}
 
-		$cover_fee_percent = isset($request['cover_fee_percent']) ? (float) wc_format_decimal(wp_unslash($request['cover_fee_percent'])) : 0;
-		$cover_fee_percent = self::clamp_number($cover_fee_percent, 0, 20, __('Ücret yüzdesi', 'woo-donation-popup'));
+		// Effective list for Önerilen: non-empty product list, else stored product list, else global.
+		$allowed_for_recommended = array();
+		if (!empty($presets_check['ok']) && !empty($presets_check['amounts'])) {
+			$allowed_for_recommended = array_map('intval', $presets_check['amounts']);
+		} else {
+			$fallback_raw = $amount_presets;
+			if ($fallback_raw === '' && isset($request['__existing_amount_presets']) && is_scalar($request['__existing_amount_presets'])) {
+				$fallback_raw = (string) $request['__existing_amount_presets'];
+			}
+			$from_product = WDP_Form_Modules::parse_amount_presets_csv($fallback_raw);
+			if (!empty($from_product)) {
+				$allowed_for_recommended = array_map('intval', $from_product);
+			} else {
+				$button     = get_option('wdp_button_settings', array());
+				$global_raw = (is_array($button) && isset($button['amount_presets'])) ? (string) $button['amount_presets'] : '';
+				$allowed_for_recommended = array_map('intval', WDP_Form_Modules::parse_amount_presets_csv($global_raw));
+			}
+		}
+
+		$recommended     = '';
+		$recommended_raw = isset($request['amount_preset_recommended']) && is_scalar($request['amount_preset_recommended'])
+			? trim((string) wp_unslash($request['amount_preset_recommended']))
+			: '';
+		$recommended_check = WDP_Form_Modules::validate_recommended_amount_for_save($recommended_raw, $allowed_for_recommended);
+		if (!empty($recommended_check['ok'])) {
+			$recommended = isset($recommended_check['value']) ? (string) $recommended_check['value'] : '';
+		} else {
+			self::reject_meta(
+				'_amount_preset_recommended',
+				isset($recommended_check['error']) ? (string) $recommended_check['error'] : ''
+			);
+		}
+
+		$cover_fee_raw   = isset($request['cover_fee_percent']) && is_scalar($request['cover_fee_percent']) ? (string) wp_unslash((string) $request['cover_fee_percent']) : '';
+		$cover_fee_check = WDP_Form_Modules::normalize_cover_fee_percent_for_save($cover_fee_raw);
+		$cover_fee_percent = 0.0;
+		if (!empty($cover_fee_check['ok'])) {
+			$cover_fee_percent = (float) $cover_fee_check['percent'];
+		} else {
+			self::reject_meta('_cover_fee_percent', (string) $cover_fee_check['error']);
+		}
 
 		// 0 / empty → '' so the front end falls back to the default share count.
 		$max_shares_raw = isset($request['max_shares']) ? absint(wp_unslash($request['max_shares'])) : 0;
@@ -351,6 +409,7 @@ class WDP_Product_Settings_Service {
 			'_progress_celebrate'             => $progress_celebrate ? 'yes' : 'no',
 			'_impact_line_text'               => isset($request['impact_line_text']) ? self::limit_text(sanitize_text_field(wp_unslash($request['impact_line_text'])), 200) : '',
 			'_amount_presets'                 => $amount_presets,
+			'_amount_preset_recommended'      => $recommended,
 			'_enable_email'                   => $enable_email,
 			'_enable_dedication'              => $enable_dedication,
 			'_enable_anonymous'               => $enable_anonymous,
@@ -380,6 +439,33 @@ class WDP_Product_Settings_Service {
 
 	/** @var string[] */
 	private static $corrections = array();
+
+	/**
+	 * Meta keys whose posted value failed strict validation in the last from_request() call.
+	 *
+	 * @var string[]
+	 */
+	private static $rejected_meta = array();
+
+	/**
+	 * Mark a meta key as rejected and queue the admin error.
+	 *
+	 * @param string $meta_key Meta key.
+	 * @param string $message  Error text.
+	 * @return void
+	 */
+	private static function reject_meta($meta_key, $message) {
+		self::$rejected_meta[] = $meta_key;
+		if ($message !== '') {
+			self::$corrections[] = $message;
+		}
+	}
+
+	/**
+	 * Meta keys that are strictly validated on save; the product panel passes their current
+	 * values as $existing_meta so a rejected field keeps what was stored.
+	 */
+	const VALIDATED_META_KEYS = array('_amount_presets', '_amount_preset_recommended', '_cover_fee_percent');
 
 	/**
 	 * @param float  $value Value.

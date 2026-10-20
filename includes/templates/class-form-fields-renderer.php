@@ -22,7 +22,11 @@ class WDP_Form_Fields_Renderer {
 	const BODY_MODULE_IDS = array('donor', 'dedication', 'amount', 'cover_fee');
 
 	/**
-	 * Hızlı tutar chip listesi (min altına düşenler elenir).
+	 * Hızlı tutar düğmesi listesi (min altına düşenler elenir; hepsi elenirse boş liste).
+	 *
+	 * Eski verilere karşı toleranslı (soft) okur; katı doğrulama yalnız kayıtta yapılır
+	 * (WDP_Form_Modules::validate_amount_presets_for_save). Min altı için çarpan uydurulmaz:
+	 * hiç düğme kalmazsa bölüm gizlenir (10.29.0, Y5).
 	 *
 	 * @param float|string $min_price  Minimum custom price.
 	 * @param int          $product_id Product ID.
@@ -33,27 +37,15 @@ class WDP_Form_Fields_Renderer {
 		$defaults = array(100, 250, 500, 1000, 2500);
 		$button_settings = get_option('wdp_button_settings', array());
 		if (!empty($button_settings['amount_presets']) && is_string($button_settings['amount_presets'])) {
-			$parts  = preg_split('/[\s,;]+/', $button_settings['amount_presets']);
-			$parsed = array();
-			if (is_array($parts)) {
-				foreach ($parts as $part) {
-					$n = (float) str_replace(',', '.', preg_replace('/[^\d.,]/', '', (string) $part));
-					if ($n > 0) {
-						$parsed[] = $n;
-					}
-				}
-			}
+			$parsed = WDP_Form_Modules::parse_amount_presets_csv($button_settings['amount_presets']);
 			if (!empty($parsed)) {
 				$defaults = $parsed;
 			}
 		}
-		$product_id = absint($product_id);
-		if ($product_id <= 0 && !empty($GLOBALS['wdp_current_donation_product_id'])) {
-			$product_id = absint($GLOBALS['wdp_current_donation_product_id']);
-		}
+		$product_id = self::resolve_preset_product_id($product_id);
 		if ($product_id > 0) {
 			$product_csv = trim((string) get_post_meta($product_id, '_amount_presets', true));
-			if ($product_csv !== '' && class_exists('WDP_Form_Modules')) {
+			if ($product_csv !== '') {
 				$product_parsed = WDP_Form_Modules::parse_amount_presets_csv($product_csv);
 				if (!empty($product_parsed)) {
 					$defaults = $product_parsed;
@@ -80,63 +72,95 @@ class WDP_Form_Fields_Renderer {
 			}
 		}
 
-		if (empty($out) && $min > 0) {
-			foreach (array(1, 2, 5, 10) as $mult) {
-				$out[] = round($min * $mult, 2);
-			}
-		}
-
 		return array_values(array_slice($out, 0, 6));
 	}
 
 	/**
-	 * Hızlı tutar chip HTML'i.
+	 * Explicit product ID, otherwise the product currently being rendered.
+	 *
+	 * @param int $product_id Product ID.
+	 * @return int
+	 */
+	private static function resolve_preset_product_id($product_id) {
+		$product_id = absint($product_id);
+		if ($product_id <= 0 && !empty($GLOBALS['wdp_current_donation_product_id'])) {
+			$product_id = absint($GLOBALS['wdp_current_donation_product_id']);
+		}
+		return $product_id;
+	}
+
+	/**
+	 * Hızlı tutar düğmeleri yalnız "Bağışçı belirler" ve "Hedefli kampanya" formlarında vardır.
+	 *
+	 * @param int         $product_id Product ID (0 = unknown, caller already is a custom/campaign path).
+	 * @param string|null $type       Explicit donation type override.
+	 * @return bool
+	 */
+	private static function type_supports_presets($product_id, $type = null) {
+		if ($type === null || $type === '') {
+			if ($product_id <= 0 || !class_exists('WDP_Donation_Type')) {
+				return true;
+			}
+			$type = WDP_Donation_Type::for_product($product_id);
+		}
+		return in_array($type, array(WDP_Donation_Type::CUSTOM, WDP_Donation_Type::CAMPAIGN), true);
+	}
+
+	/**
+	 * Hızlı tutar düğmeleri HTML'i.
+	 *
+	 * "Önerilen" yalnız etiketlenir; hiçbir düğme seçili (aria-pressed=true) gelmez (K1/K2).
 	 *
 	 * @param float|string $min_price       Minimum price.
 	 * @param string       $currency_symbol Currency symbol.
-	 * @param array        $options         show (bool), input_selector.
+	 * @param array        $options         show (bool), product_id (int), type (string).
 	 * @return string Safe HTML.
 	 */
 	public static function render_amount_presets($min_price = 0, $currency_symbol = '', array $options = array()) {
 		$button_settings = get_option('wdp_button_settings', array());
 		$enabled         = !empty($button_settings['enable_amount_presets']) && (string) $button_settings['enable_amount_presets'] === '1';
 		$show            = array_key_exists('show', $options) ? !empty($options['show']) : $enabled;
-		if (isset($options['product_id'])) {
-			$pid = absint($options['product_id']);
-			if ($pid > 0) {
-				$flag = get_post_meta($pid, '_enable_amount_presets', true);
-				if ($flag === 'no') {
-					$show = false;
-				}
+		$pid             = isset($options['product_id']) ? self::resolve_preset_product_id($options['product_id']) : self::resolve_preset_product_id(0);
+		if ($pid > 0) {
+			$flag = get_post_meta($pid, '_enable_amount_presets', true);
+			if ($flag === 'no') {
+				$show = false;
 			}
+		}
+		$type = isset($options['type']) ? sanitize_key((string) $options['type']) : null;
+		if (!self::type_supports_presets($pid, $type)) {
+			return '';
 		}
 		$show = (bool) apply_filters('wdp_show_amount_presets', $show, $min_price);
 		if (!$show) {
 			return '';
 		}
 
-		$presets = self::get_amount_presets($min_price, isset($options['product_id']) ? absint($options['product_id']) : 0);
+		$presets = self::get_amount_presets($min_price, $pid);
 		if (empty($presets)) {
 			return '';
 		}
 
-		$symbol         = $currency_symbol !== '' ? $currency_symbol : WDP_Utils::get_display_currency_symbol();
-		$group_label    = __('Hızlı tutar seç', 'woo-donation-popup');
-		$popular_label  = __('En çok tercih', 'woo-donation-popup');
-		$popular_index  = (int) apply_filters('wdp_amount_preset_popular_index', (int) floor(count($presets) / 2), $presets, $min_price);
-		if ($popular_index < 0 || $popular_index >= count($presets)) {
-			$popular_index = (int) floor(count($presets) / 2);
+		// 10.29.1 (K2): yalnız ürün meta doluysa ve görünen listede varsa; genel ayar yok sayılır.
+		$configured_recommended = '';
+		if ($pid > 0) {
+			$configured_recommended = trim((string) get_post_meta($pid, '_amount_preset_recommended', true));
 		}
+		$recommended = WDP_Form_Modules::resolve_recommended_amount($presets, $configured_recommended);
+
+		$symbol        = $currency_symbol !== '' ? $currency_symbol : WDP_Utils::get_display_currency_symbol();
+		$group_label   = __('Hızlı tutar seç', 'woo-donation-popup');
+		$popular_label = __('Önerilen', 'woo-donation-popup');
 
 		ob_start();
 		?>
 		<div class="wdp-amount-presets" role="group" aria-label="<?php echo esc_attr($group_label); ?>">
-			<?php foreach ($presets as $i => $amount) : ?>
+			<?php foreach ($presets as $amount) : ?>
 				<?php
 				$label = class_exists('WDP_Utils')
 					? wp_strip_all_tags(WDP_Utils::format_price_html($amount))
 					: ($symbol . number_format((float) $amount, 0, ',', '.'));
-				$is_popular = ((int) $i === $popular_index);
+				$is_popular = ($recommended !== null && abs((float) $amount - $recommended) < 0.005);
 				$btn_class  = 'wdp-amount-preset' . ($is_popular ? ' is-popular' : '');
 				?>
 				<button
@@ -146,6 +170,7 @@ class WDP_Form_Fields_Renderer {
 					aria-pressed="false"
 					<?php if ($is_popular) : ?>
 						data-popular-label="<?php echo esc_attr($popular_label); ?>"
+						data-recommended="1"
 					<?php endif; ?>
 				><?php echo esc_html($label); ?></button>
 			<?php endforeach; ?>
@@ -214,6 +239,7 @@ class WDP_Form_Fields_Renderer {
 				$preset_opts['product_id'] = absint($GLOBALS['wdp_current_donation_product_id']);
 			}
 			$presets_html = self::render_amount_presets($min_price, $currency_symbol, $preset_opts);
+			// Not: render_amount_presets() ürün tipi sabit/hisseli ise boş döner.
 		}
 
 		ob_start();
@@ -280,7 +306,7 @@ class WDP_Form_Fields_Renderer {
 		?>
 		<div class="wdp-form-block wdp-form-block--amount">
 		<div class="wdp-price-quantity-row wdp-progress-bar-price-row">
-			<?php echo self::render_amount_presets($min_price, $wdp_currency_symbol, array('product_id' => $preset_product_id)); ?>
+			<?php echo self::render_amount_presets($min_price, $wdp_currency_symbol, array('product_id' => $preset_product_id, 'type' => WDP_Donation_Type::CAMPAIGN)); ?>
 			<div class="wdp-price-field wdp-progress-bar-price-field">
 				<div class="wdp-custom-price-shell">
 					<span class="wdp-custom-price-currency" aria-hidden="true"><?php echo esc_html($wdp_currency_symbol); ?></span>
@@ -658,6 +684,10 @@ class WDP_Form_Fields_Renderer {
 				</div>
 			</div>
 			<?php
+			// 10.29.0 (Y1): işlem ücreti hisseli formda da sunulur.
+			if (!empty($context['enable_cover_fee']) && class_exists('WDP_Form_Modules')) {
+				echo WDP_Form_Modules::render_cover_fee(isset($context['cover_fee_percent']) ? (float) $context['cover_fee_percent'] : 0); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped in renderer
+			}
 		} elseif ($enable_progress_bar) {
 			echo self::render_ordered_body_modules(
 				array(

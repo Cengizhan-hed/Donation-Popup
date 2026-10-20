@@ -452,22 +452,22 @@
 
       const presetsOn = $form.find('[name="enable_amount_presets"]').is(":checked")
       const presetsRaw = String($form.find('[name="amount_presets"]').val() || "")
-      const parts = presetsOn ? presetsRaw.split(/[\s,;]+/).filter(Boolean).slice(0, 5) : []
+      const parts = presetsOn ? presetsRaw.split(/[\s,;]+/).filter(Boolean).slice(0, 6) : []
+      const amounts = parts
+        .map(function (p) {
+          return parseFloat(String(p).replace(/[^\d.]/g, ""))
+        })
+        .filter(function (n) {
+          return Number.isFinite(n) && n > 0
+        })
+      // 10.29.1: Önerilen yalnız üründe; Normal önizlemede etiket yok.
       const $presets = $root.find("[data-lp-presets]")
       if ($presets.length) {
         $presets.empty()
         if (presetsOn) {
           $presets.removeAttr("hidden")
-          const popularIndex = parts.length > 0 ? Math.floor(parts.length / 2) : -1
-          const popularLabel = "En çok tercih"
-          parts.forEach(function (p, i) {
-            const n = parseFloat(String(p).replace(/[^\d.]/g, ""))
-            if (!Number.isFinite(n) || n <= 0) return
-            const $chip = $('<span class="wdp-admin-normal-preview__chip"/>').text("₺" + Math.round(n))
-            if (i === popularIndex) {
-              $chip.addClass("is-popular is-selected").attr("data-popular-label", popularLabel)
-            }
-            $presets.append($chip)
+          amounts.forEach(function (n) {
+            $presets.append($('<span class="wdp-admin-normal-preview__chip"/>').text("₺" + Math.round(n)))
           })
         } else {
           $presets.attr("hidden", "hidden")

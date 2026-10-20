@@ -1,4 +1,4 @@
-# MIMARI — woo-donation-popup (10.28.12)
+# MIMARI — woo-donation-popup (10.29.1)
 
 Kalıcı mimari harita. Sonraki görevler için ilk okuma noktası.  
 Dal referansı: `docs-mimari` / commit `220f4ec`.  
@@ -191,6 +191,8 @@ Admin: `wdp_admin` localize (`includes/class-admin-assets.php` — ayrı yığı
 | `wdp_sadaka_links_audit` | migration 10.28.4 | admin Gelişmiş |
 | `wdp_meta_purchase_wc_migration_v1` | Meta migrate | `includes/class-meta-tracking.php:193-208` |
 | `wdp_sadaka_visibility_cache_cleared` | migration 10.28.5 | `includes/class-migrations.php:244` |
+| `wdp_migrated_10_29_0` | migration 10.29.0 (cover fee 0,5–15 onarımı, genel liste ≤6) | `includes/class-migrations.php` `step_10_29_0` |
+| `wdp_migrated_10_29_1` | migration 10.29.1 (genel `amount_preset_recommended` silinir) | `includes/class-migrations.php` `step_10_29_1` |
 
 ### Ürün meta (Bağış ayarları — tek kaynak `from_request`)
 
@@ -320,7 +322,7 @@ Kaynak rehber: `docs/AYARLAR.md`. Teknik varsayılanlar normalizer / placement /
 |------|------|-----------|
 | Bağış ürünü mü? | tip destek → meta yes/no → global scope | `WDP_Donation_Scope::evaluate` (`includes/class-donation-scope.php:81-93`) |
 | E-posta / ithaf / anonim | meta `yes`/`no` → değilse `wdp_button_settings` | `meta_flag_or_global` (`includes/class-donation-product-context-service.php:190-199`) — global anahtarlar: `enable_donor_email`, `enable_dedication`, `enable_anonymous` |
-| Chip (hızlı tutar) | global `enable_amount_presets==='1'` → ürün `_enable_amount_presets==='no'` gizler | `render_amount_presets` (`includes/templates/class-form-fields-renderer.php:101-111`) |
+| Hızlı tutar düğmeleri | global `enable_amount_presets==='1'` → ürün `_enable_amount_presets==='no'` gizler; yalnız custom/campaign; min altı elenir; "Önerilen" yalnız ürün `_amount_preset_recommended` dolu ve görünen listedeyse (ortadaki/genel varsayılan yok; seçili gelmez) | `render_amount_presets` (`includes/templates/class-form-fields-renderer.php`) |
 | Modül sırası | ürün `_wdp_module_order` dolu → yoksa button `module_order` → defaults | `WDP_Form_Modules::resolve_order` (`includes/class-form-modules.php:74-84`) |
 | Güven rozetleri | global → ürün `_trust_badges` doluysa ürün | `resolve_trust_badges` (`includes/class-form-modules.php:145-175`) |
 | Otomatik yerleşim | global `auto_place` + ürün `_wdp_auto_place!=='no'` | `should_auto_place` / meta (`includes/class-product-page-integration.php:515+`) |
@@ -353,9 +355,9 @@ Kaynak rehber: `docs/AYARLAR.md`. Teknik varsayılanlar normalizer / placement /
 | En düşük tutar | `_min_custom_price` | `0` | context / cart |
 | En fazla hisse | `_max_shares` | boş → runtime `7` | context `includes/class-donation-product-context-service.php:60-61`, product_info `includes/traits/trait-wdp-ajax-product.php:98-99` |
 | Kutlama | `_progress_celebrate` | boş→yes | context |
-| Hızlı tutar / Tutarlar | `_enable_amount_presets`, `_amount_presets` | presets varsayılan yes | form-fields |
-| Adet seçici | `_enable_quantity` | boş→yes | context |
-| Cover fee | `_enable_cover_fee`, `_cover_fee_percent` | off / 0 | context |
+| Hızlı tutar / Tutarlar / Önerilen | `_enable_amount_presets`, `_amount_presets`, `_amount_preset_recommended` | presets varsayılan yes; kayıtta katı doğrulama; Önerilen yalnız ürün (boş=etiket yok; listede yoksa kayıt hata); okumada yumuşak parse | form-fields, product-settings-service |
+| Adet seçici | `_enable_quantity` | boş→yes; yalnız sabit tipte; sunucu adedi kapalıyken/sabit olmayan tipte 1'e sabitler (`WDP_Cart::product_allows_quantity`, hisseli hariç) | context, ajax-cart-add |
+| Cover fee | `_enable_cover_fee`, `_cover_fee_percent` | off / 0; tüm tipler; kayıt 0 veya 0,5–15 (`normalize_cover_fee_percent_for_save`, aralık dışı = hata), çalışma anı `clamp_cover_fee_percent_for_runtime`; yüzde sunucuda HER ZAMAN ürün meta'sından (`WDP_Cart::get_product_cover_fee_percent`), istemci yüzdesi yok sayılır; fiyat: custom → `custom_price`, sabit/hisseli → `wdp_base_unit_price` × (1+yüzde); sepette "İşlem ücreti" satırı; formda `data-wdp-form-total` Toplam satırı | context, cart, ajax-cart-add, form-modules |
 | E-posta/İthaf/Anonim | `_enable_*` tristate | `''`→global | meta_flag_or_global |
 | Ürün notu | `_enable_product_note`, `_product_note_text` | off | context |
 | Wizard / ikon / etki / aciliyet / sosyal / medya / layout / tema… | ilgili `_` meta | bkz. `from_request` | context + header renderer |
@@ -366,7 +368,7 @@ Kaynak rehber: `docs/AYARLAR.md`. Teknik varsayılanlar normalizer / placement /
 
 | Sekme | Option | Örnek varsayılanlar (normalizer) | Kanıt |
 |-------|--------|----------------------------------|-------|
-| Normal (+ kısmen Tasarım alanları aynı option) | `wdp_button_settings` | primary `#0f608b`, popup text `Bağış Yap`, chips `enable_amount_presets` default `'0'`, `amount_presets` `100, 250, …`, donor email/dedication/anonymous `'0'` | `includes/class-admin-settings-normalizer.php:31-140` |
+| Normal (+ kısmen Tasarım alanları aynı option) | `wdp_button_settings` | primary `#0f608b`, popup text `Bağış Yap`, hızlı tutar düğmeleri `enable_amount_presets` default `'0'`, `amount_presets` `100, 250, …` (katı doğrulama: `WDP_Admin_Settings_Normalizer::$last_validation_error`; değişmiş geçersiz liste kaydedilmez, değişmemiş eski veri yumuşak okunur), donor email/dedication/anonymous `'0'` | `includes/class-admin-settings-normalizer.php:31-140` |
 | Hisseli | `wdp_shareholder_settings` | header `#0f608b`, email enable `'0'` | `includes/class-admin-settings-normalizer.php:280-314` |
 | Başarı | `wdp_success_settings` | buton renkleri, sadaka toggle label | `includes/class-admin-settings-normalizer.php:335-353` |
 | Progress | `wdp_progress_bar_settings` | fill/pending/height | `includes/class-admin-settings-normalizer.php:372+` |
@@ -376,7 +378,7 @@ Kaynak rehber: `docs/AYARLAR.md`. Teknik varsayılanlar normalizer / placement /
 | Gelişmiş | `wdp_delete_data_on_uninstall` | `'0'` | `includes/class-admin-page-renderer.php:125` |
 | Stil paketleri | `wdp_button_settings` (+ share/progress/success merge) + `wdp_custom_style_presets` | `WDP_Style_Presets` | `includes/class-style-presets.php` |
 
-**AYARLAR çapraz kontrol:** Chip için AYARLAR “genel kapalıysa ürün açık olsa da gelmez” → kodla uyumlu (`includes/templates/class-form-fields-renderer.php:101-111`). E-posta global anahtarı AYARLAR’da “Tasarım → E-posta”; kodda `enable_donor_email` (`includes/class-admin-settings-normalizer.php:137`, context `includes/class-donation-product-context-service.php:138`) — etiket/option adı eşleşmesi tutarlı.
+**AYARLAR çapraz kontrol:** Hızlı tutar düğmeleri için AYARLAR “genel kapalıysa ürün açık olsa da gelmez” → kodla uyumlu (`includes/templates/class-form-fields-renderer.php:101-111`). E-posta global anahtarı AYARLAR’da “Tasarım → E-posta”; kodda `enable_donor_email` (`includes/class-admin-settings-normalizer.php:137`, context `includes/class-donation-product-context-service.php:138`) — etiket/option adı eşleşmesi tutarlı.
 
 ---
 

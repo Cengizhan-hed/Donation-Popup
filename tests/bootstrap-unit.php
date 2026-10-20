@@ -19,7 +19,7 @@ if (!defined('WDP_PLUGIN_FILE')) {
 	define('WDP_PLUGIN_FILE', $root . '/woo-donation-popup.php');
 }
 if (!defined('WDP_VERSION')) {
-	define('WDP_VERSION', '10.28.12');
+	define('WDP_VERSION', '10.29.1');
 }
 if (!defined('HOUR_IN_SECONDS')) {
 	define('HOUR_IN_SECONDS', 3600);

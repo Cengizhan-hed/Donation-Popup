@@ -152,6 +152,135 @@
   function updateLineTotals(form) {
     updateFixedPriceLineDisplay(form);
     syncCustomPriceQtyRowDisplay(form);
+    updateCoverFeeTotal(form);
+  }
+
+  /**
+   * K1: tutar seçimini / kutuyu temizler (sessionStorage yok; yalnız DOM).
+   * Bağışçı adı/telefon vb. alanlara dokunmaz.
+   */
+  function clearAmountSelection(form) {
+    if (!form) {
+      return;
+    }
+    form.querySelectorAll('input[name="custom_price"]').forEach(function(input) {
+      if (input.closest('[data-wdp-sadaka-donation], .wdp-sadaka-donation')) {
+        return;
+      }
+      input.value = '';
+      delete input.dataset.wdpCustomUnit;
+      delete input.dataset.wdpDefaultPrice;
+      input.classList.remove('wdp-error', 'wdp-input-error');
+    });
+    form.querySelectorAll('.wdp-amount-preset').forEach(function(btn) {
+      btn.classList.remove('selected');
+      btn.setAttribute('aria-pressed', 'false');
+    });
+    const coverFee = form.querySelector('input[name="donation_cover_fee"]');
+    if (coverFee) {
+      coverFee.checked = false;
+    }
+    updateCoverFeeTotal(form);
+    updateFixedPriceLineDisplay(form);
+  }
+
+  /** Formdaki baz tutar (ücret öncesi): custom_price, sabit birim×adet veya hisse toplamı. */
+  function getFormBaseAmount(form) {
+    if (!form) {
+      return NaN;
+    }
+    const shareTotal = form.querySelector('.wdp-shares-total-bar__value');
+    const shareCount = form.querySelector('input[name="share_count"]');
+    if (shareCount && shareTotal && !shareTotal.closest('[hidden]')) {
+      const fromBar = parseNormalizedAmount(shareTotal.textContent);
+      if (Number.isFinite(fromBar) && fromBar > 0) {
+        return fromBar;
+      }
+    }
+    const customRow = getCustomPriceRow(form);
+    const customIn = customRow ? customRow.querySelector('input[name="custom_price"]') : form.querySelector('input[name="custom_price"]:not([name="sadaka_custom_price"])');
+    if (customIn) {
+      const n = parseNormalizedAmount(customIn.value);
+      if (Number.isFinite(n) && n > 0) {
+        return n;
+      }
+    }
+    const fixedRow = form.querySelector('.wdp-fixed-price-counter-row');
+    if (fixedRow) {
+      const qtyEl = fixedRow.querySelector('input[name="quantity"]');
+      const qty = qtyEl ? Number.parseInt(qtyEl.value, 10) || 1 : 1;
+      const unit = getWdpUnitPriceForForm(form);
+      if (unit > 0) {
+        return roundMoney(unit * qty);
+      }
+    }
+    return NaN;
+  }
+
+  /** İşlem ücreti kutusu → Toplam satırı (+ sabit/hisse satır tutarı). */
+  function updateCoverFeeTotal(form) {
+    if (!form) {
+      return;
+    }
+    const totalRoot = form.querySelector('[data-wdp-form-total]');
+    const coverFee = form.querySelector('input[name="donation_cover_fee"]');
+    const pctAttr = coverFee ? Number.parseFloat(coverFee.getAttribute('data-wdp-cover-fee-percent') || '0') : 0;
+    const pct = Number.isFinite(pctAttr) && pctAttr > 0 ? pctAttr : 0;
+    const base = getFormBaseAmount(form);
+    const feeOn = !!(coverFee && coverFee.checked && pct > 0 && Number.isFinite(base) && base > 0);
+    const withFee = feeOn ? roundMoney(base * (1 + pct / 100)) : base;
+
+    if (totalRoot) {
+      const valueEl = totalRoot.querySelector('.wdp-form-total__value');
+      if (feeOn && valueEl) {
+        totalRoot.hidden = false;
+        valueEl.textContent = formatCurrency(withFee);
+      } else {
+        totalRoot.hidden = true;
+        if (valueEl) {
+          valueEl.textContent = '—';
+        }
+      }
+    }
+
+    const fixedOut = form.querySelector('.wdp-fixed-price-counter-row .wdp-line-total-value');
+    if (fixedOut && Number.isFinite(base) && base > 0) {
+      fixedOut.textContent = formatCurrency(feeOn ? withFee : base);
+    }
+
+    const barVal = form.querySelector('.wdp-shares-total-bar__value');
+    if (barVal && form.querySelector('input[name="share_count"]') && Number.isFinite(base) && base > 0) {
+      if (feeOn) {
+        barVal.setAttribute('data-wdp-fee-applied', '1');
+        barVal.textContent = formatCurrency(withFee);
+      } else if (barVal.getAttribute('data-wdp-fee-applied') === '1') {
+        barVal.removeAttribute('data-wdp-fee-applied');
+        barVal.textContent = formatCurrency(base);
+      }
+    }
+  }
+
+  function bindCoverFeeTotal(form) {
+    if (!form || form.dataset.wdpCoverFeeBound === '1') {
+      return;
+    }
+    form.dataset.wdpCoverFeeBound = '1';
+    form.addEventListener('change', function(e) {
+      const t = e.target;
+      if (!t) {
+        return;
+      }
+      if (t.name === 'donation_cover_fee' || t.name === 'custom_price' || t.name === 'quantity' || t.name === 'share_count') {
+        updateCoverFeeTotal(form);
+      }
+    });
+    form.addEventListener('input', function(e) {
+      const t = e.target;
+      if (t && (t.name === 'custom_price' || t.name === 'quantity' || t.name === 'share_count')) {
+        updateCoverFeeTotal(form);
+      }
+    });
+    updateCoverFeeTotal(form);
   }
 
   function updateDonationSummary() {
@@ -375,5 +504,9 @@
     bindAmountPresets: bindAmountPresets,
     syncAmountPresetSelection: syncAmountPresetSelection,
     syncAmountPresetsToMin: syncAmountPresetsToMin,
+    clearAmountSelection: clearAmountSelection,
+    updateCoverFeeTotal: updateCoverFeeTotal,
+    bindCoverFeeTotal: bindCoverFeeTotal,
+    getFormBaseAmount: getFormBaseAmount,
   };
 })(window);

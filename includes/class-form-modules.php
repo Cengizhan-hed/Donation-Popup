@@ -176,9 +176,13 @@ class WDP_Form_Modules {
 	}
 
 	/**
-	 * Parse amount presets CSV (max 6).
+	 * SOFT parse of an amount presets list — ONLY for READING already stored data / render.
 	 *
-	 * @param string $raw CSV.
+	 * Tolerant: strips junk characters, accepts decimals and "1.000" style tokens, keeps
+	 * positive numbers, max 6. Never use this to validate user input on SAVE; use
+	 * validate_amount_presets_for_save() instead (10.29.0 decision Y3/Y4).
+	 *
+	 * @param string $raw CSV / space / semicolon separated list.
 	 * @return float[]
 	 */
 	public static function parse_amount_presets_csv($raw) {
@@ -197,6 +201,198 @@ class WDP_Form_Modules {
 			}
 		}
 		return $out;
+	}
+
+	/**
+	 * STRICT validation of the quick amount list on SAVE (admin global + product panel).
+	 *
+	 * Separators: comma, whitespace, semicolon. Every token must be digits only
+	 * (letters, decimals and thousand separators like "1.000" / "1,5" / "5o0" are invalid),
+	 * greater than zero, at most 6 tokens. Empty string is valid and yields an empty list.
+	 *
+	 * @param mixed $raw Raw user input.
+	 * @return array{ok:bool,amounts?:int[],error?:string,invalid?:string}
+	 */
+	public static function validate_amount_presets_for_save($raw) {
+		$raw = trim((string) $raw);
+		if ($raw === '') {
+			return array('ok' => true, 'amounts' => array());
+		}
+
+		// Binlik/ondalık nokta ("1.000", "1.5") — ayırıcı değil, geçersiz.
+		if (preg_match('/\d+\.\d+/', $raw, $dot_m)) {
+			return array(
+				'ok'      => false,
+				'invalid' => $dot_m[0],
+				'error'   => sprintf(
+					/* translators: %s: invalid token */
+					__('Hızlı tutar düğmeleri yalnız tam sayı olmalı; geçersiz değer: "%s". Tutarları virgül, boşluk veya noktalı virgülle ayırın (ör. 100, 250, 500).', 'woo-donation-popup'),
+					$dot_m[0]
+				),
+			);
+		}
+
+		// Türkçe ondalık ("1,5") — tek başına veya boşluk/noktalı virgülle ayrılmış segment.
+		// "100,250,500" gibi listeler (virgülden sonra 3+ hane veya 3+ parça) ayırıcı sayılır.
+		if (preg_match('/(?:^|[\s;])(\d+,\d{1,2})(?=[\s;]|$)/u', $raw, $dec_m) || preg_match('/^(\d+,\d{1,2})$/u', $raw, $dec_m)) {
+			return array(
+				'ok'      => false,
+				'invalid' => $dec_m[1],
+				'error'   => sprintf(
+					/* translators: %s: invalid token */
+					__('Hızlı tutar düğmeleri yalnız tam sayı olmalı; geçersiz değer: "%s". Tutarları virgül, boşluk veya noktalı virgülle ayırın (ör. 100, 250, 500).', 'woo-donation-popup'),
+					$dec_m[1]
+				),
+			);
+		}
+
+		$parts   = preg_split('/[\s,;]+/', $raw, -1, PREG_SPLIT_NO_EMPTY);
+		$amounts = array();
+		if (!is_array($parts)) {
+			$parts = array();
+		}
+		foreach ($parts as $part) {
+			$part = trim((string) $part);
+			if ($part === '') {
+				continue;
+			}
+			if (!preg_match('/^\d+$/', $part) || (int) $part <= 0) {
+				return array(
+					'ok'      => false,
+					'invalid' => $part,
+					'error'   => sprintf(
+						/* translators: %s: invalid token */
+						__('Hızlı tutar düğmeleri yalnız tam sayı olmalı; geçersiz değer: "%s". Tutarları virgül, boşluk veya noktalı virgülle ayırın (ör. 100, 250, 500).', 'woo-donation-popup'),
+						$part
+					),
+				);
+			}
+			$amounts[] = (int) $part;
+		}
+		if (count($amounts) > 6) {
+			return array(
+				'ok'    => false,
+				'error' => __('En fazla 6 hızlı tutar düğmesi tanımlanabilir.', 'woo-donation-popup'),
+			);
+		}
+		return array('ok' => true, 'amounts' => $amounts);
+	}
+
+	/**
+	 * Validate the cover-fee percent on SAVE. 0 / empty = fee off; otherwise 0.5–15.
+	 *
+	 * @param mixed $raw Raw input.
+	 * @return array{ok:bool,percent:float,error:string}
+	 */
+	public static function normalize_cover_fee_percent_for_save($raw) {
+		$raw = is_string($raw) ? trim(str_replace(',', '.', $raw)) : $raw;
+		if ($raw === '' || $raw === null || $raw === false) {
+			return array('ok' => true, 'percent' => 0.0, 'error' => '');
+		}
+		if (!is_numeric($raw)) {
+			return array(
+				'ok'      => false,
+				'percent' => 0.0,
+				'error'   => __('İşlem ücreti yüzdesi sayı olmalı: 0 (kapalı) veya 0,5–15 arası.', 'woo-donation-popup'),
+			);
+		}
+		$value = (float) $raw;
+		if ($value == 0.0) {
+			return array('ok' => true, 'percent' => 0.0, 'error' => '');
+		}
+		if ($value < 0.5 || $value > 15) {
+			return array(
+				'ok'      => false,
+				'percent' => 0.0,
+				'error'   => __('İşlem ücreti yüzdesi 0 (kapalı) veya 0,5–15 arasında olmalı.', 'woo-donation-popup'),
+			);
+		}
+		return array('ok' => true, 'percent' => round($value, 2), 'error' => '');
+	}
+
+	/**
+	 * Runtime clamp for display / cart: 0 when off, otherwise within 0.5–15.
+	 *
+	 * @param mixed $raw Stored or posted value.
+	 * @return float
+	 */
+	public static function clamp_cover_fee_percent_for_runtime($raw) {
+		$value = is_numeric($raw) ? (float) $raw : (float) str_replace(',', '.', (string) $raw);
+		if ($value <= 0) {
+			return 0.0;
+		}
+		return (float) min(15, max(0.5, $value));
+	}
+
+	/**
+	 * Which preset is labelled "Önerilen". Never auto-selected.
+	 *
+	 * 10.29.1 (K2): Label only when a product-configured amount is present in the
+	 * visible (min-filtered) list. Empty / missing / not-in-list → no label.
+	 * No middle-button fallback; global amount_preset_recommended is ignored.
+	 *
+	 * @param array $presets    Presets as rendered (after min filter).
+	 * @param mixed $configured Product `_amount_preset_recommended` (empty = none).
+	 * @return float|null
+	 */
+	public static function resolve_recommended_amount(array $presets, $configured = null) {
+		$presets = array_values($presets);
+		if (empty($presets)) {
+			return null;
+		}
+		if ($configured === null || $configured === '') {
+			return null;
+		}
+		$configured = is_numeric($configured) ? (float) $configured : 0.0;
+		if ($configured <= 0) {
+			return null;
+		}
+		foreach ($presets as $preset) {
+			if (abs((float) $preset - $configured) < 0.005) {
+				return (float) $preset;
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * STRICT save validation for product "Önerilen tutar" (Y3).
+	 *
+	 * Empty is valid. Non-empty must be a positive integer that appears in $allowed_amounts
+	 * (the product list, or the global list when the product list is empty).
+	 *
+	 * @param mixed $raw             Posted value.
+	 * @param int[] $allowed_amounts Allowed amounts (integers).
+	 * @return array{ok:bool,value?:string,error?:string}
+	 */
+	public static function validate_recommended_amount_for_save($raw, array $allowed_amounts) {
+		$raw = is_scalar($raw) ? trim((string) $raw) : '';
+		if ($raw === '') {
+			return array('ok' => true, 'value' => '');
+		}
+		if (!preg_match('/^\d+$/', $raw) || (int) $raw <= 0) {
+			return array(
+				'ok'    => false,
+				'error' => sprintf(
+					/* translators: %s: invalid value */
+					__('Önerilen tutar yalnız pozitif tam sayı olmalı; geçersiz değer: "%s".', 'woo-donation-popup'),
+					$raw
+				),
+			);
+		}
+		$amount = (int) $raw;
+		$allowed = array_map('intval', $allowed_amounts);
+		if (!in_array($amount, $allowed, true)) {
+			return array(
+				'ok'    => false,
+				'error' => sprintf(
+					/* translators: %s: invalid value */
+					__('Önerilen tutar hızlı tutar listesinde olmalı; geçersiz değer: "%s".', 'woo-donation-popup'),
+					$raw
+				),
+			);
+		}
+		return array('ok' => true, 'value' => (string) $amount);
 	}
 
 	/**
@@ -307,11 +503,10 @@ class WDP_Form_Modules {
 	 * @return string
 	 */
 	public static function render_cover_fee($percent, $label = '') {
-		$percent = (float) $percent;
+		$percent = self::clamp_cover_fee_percent_for_runtime($percent);
 		if ($percent <= 0) {
 			return '';
 		}
-		$percent = min(15, max(0.5, $percent));
 		if ($label === '') {
 			$label = sprintf(
 				/* translators: %s: percent */
@@ -325,6 +520,10 @@ class WDP_Form_Modules {
 			<input type="checkbox" name="donation_cover_fee" value="1" data-wdp-cover-fee-percent="<?php echo esc_attr((string) $percent); ?>" />
 			<span class="wdp-cover-fee__label"><?php echo esc_html($label); ?></span>
 		</label>
+		<div class="wdp-form-total" data-wdp-form-total hidden>
+			<span class="wdp-form-total__label"><?php echo esc_html__('Toplam', 'woo-donation-popup'); ?></span>
+			<span class="wdp-form-total__value">—</span>
+		</div>
 		<?php
 		return trim(ob_get_clean());
 	}
