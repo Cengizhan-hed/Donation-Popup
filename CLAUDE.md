@@ -20,9 +20,12 @@ Kendin düzenleyebileceğin dosyalar yalnız: `CLAUDE.md`, `build/handoff/GOREV.
    agent -p --trust --force --model auto "$(cat build/handoff/GOREV.md)" > build/handoff/cursor-log.txt 2>&1
    ```
    `--model auto` reddedilirse `agent models` ile geçerli adı bul.
+   İlerleme izleme: Her GOREV.md'nin sonuna şu satırı koy: "Her ana adımın başında build/handoff/ILERLEME.md dosyasına saat ve tek cümleyle ne yaptığını ekle (ör. 12:52 – includes/ klasörünü okuyorum). Bitince son satır: BİTTİ." Cursor'u başlatırken `build/handoff/ILERLEME.md`'yi boşalt (`: > build/handoff/ILERLEME.md`) ve kullanıcıya dosyayı editörde açmasını söyle.
 3. Bitince sırayla oku: `build/handoff/RAPOR.md` → `~/Desktop/e2e-inceleme/git-durum.txt` → yalnız Değişti/Yeni ekranların `__1-yeni`, `__2-eski`, `__3-fark` PNG'leri. `cursor-log.txt`'yi yalnız RAPOR eksik/çelişkiliyse oku (uzun olabilir; sonunu oku).
 4. Her `agent -p` çağrısı yeni bir Cursor sohbetidir; önceki bağlamı bilmez. GOREV.md kendi başına yeterli olmalı.
 5. Cursor'un kendi çalıştırdığı komutlar senin izin kurallarına tabi **değildir**. Bu yüzden her GOREV.md'de yasaklar açıkça yazılır ve `.cursor/rules/teslim.mdc` de aynı yasakları içerir.
+
+6. Kodla ilgili her işte önce `docs/MIMARI.md`'yi oku; yalnız gereken dosyaları aç. Kod değiştiren her Cursor görevinin sonunda MIMARI.md'nin ilgili bölümünü güncellet (GOREV.md "Yapılacaklar"ına madde olarak yaz).
 
 ### GOREV.md şablonu
 
