@@ -113,6 +113,15 @@
     return 'Geçerli bir alt bağış tutarı giriniz.';
   }
 
+  /** Geçersiz e-posta (dolu ama hatalı). */
+  function getInvalidEmailMessage() {
+    const s = wdp_ajax && wdp_ajax.strings;
+    if (s && typeof s.invalid_email === 'string' && s.invalid_email.trim()) {
+      return s.invalid_email.trim();
+    }
+    return 'Lütfen geçerli bir e-posta adresi giriniz.';
+  }
+
   /** Minimum alt bağış tutarı hata metni. */
   function getSadakaMinErrorMessage(minValue) {
     const formatCurrency = WDPApp.utils && typeof WDPApp.utils.formatCurrency === 'function'
@@ -135,5 +144,6 @@
     getShareholderIssueSummaryLabel: getShareholderIssueSummaryLabel,
     getSadakaInvalidMessage: getSadakaInvalidMessage,
     getSadakaMinErrorMessage: getSadakaMinErrorMessage,
+    getInvalidEmailMessage: getInvalidEmailMessage,
   };
 })(window);

@@ -714,7 +714,13 @@
       if (n.indexOf("shareholder_") === 0) {
         return true;
       }
-      return n === "donation_full_name" || n === "donation_phone" || n === "donation_note";
+      return (
+        n === "donation_full_name" ||
+        n === "donation_phone" ||
+        n === "donation_note" ||
+        n === "donation_email" ||
+        n === "donation_dedication"
+      );
     };
     for (const pair of formData.entries()) {
       if (debugPayload) {

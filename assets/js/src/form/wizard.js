@@ -25,11 +25,8 @@
 
   function isEnabled(form) {
     if (!form) return false;
-    if (form.classList.contains('wdp-multi-step') || form.getAttribute('data-wdp-multi-step') === '1') {
-      return true;
-    }
-    const flags = (window.wdp_ajax && window.wdp_ajax.flags) || {};
-    return flags.multi_step === true || flags.multi_step === 1 || flags.multi_step === '1';
+    // 10.30.0: yalnız form sınıfı / data özniteliği (ürün bazlı PHP kararı); genel flags.multi_step yok sayılır.
+    return form.classList.contains('wdp-multi-step') || form.getAttribute('data-wdp-multi-step') === '1';
   }
 
   function prefersReducedMotion() {
@@ -97,9 +94,13 @@
         nodes: uniqueNodes([form.querySelector('.wdp-shares-section')]),
       });
     } else {
-      const donor = form.querySelector('.wdp-field-stack');
-      if (donor) {
-        defs.push({ id: 'donor', label: STEP_LABELS.donor, nodes: [donor] });
+      // Bilgiler adımı: bağışçı yığını + ithaf/anonim bloğu (wdp-form-block--note) aynı adımda.
+      const donorBlock = form.querySelector('.wdp-form-block--info');
+      const donorStack = form.querySelector('.wdp-field-stack');
+      const noteBlock = form.querySelector('.wdp-form-block--note');
+      const donorNodes = uniqueNodes([donorBlock || donorStack, noteBlock]);
+      if (donorNodes.length) {
+        defs.push({ id: 'donor', label: STEP_LABELS.donor, nodes: donorNodes });
       }
       let amountNodes = uniqueNodes(form.querySelectorAll('.wdp-form-block--amount'));
       if (!amountNodes.length) {

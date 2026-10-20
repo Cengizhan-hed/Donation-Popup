@@ -84,29 +84,26 @@ class WDP_Cart {
                     $cart_item_data['share_count_hidden'] = $share_count;
                 }
             } else {
-                // Normal bağış verilerini al
+                // Normal bağış verilerini al (legacy donation_modal=1 yolu; AJAX akışı bu filtreyi atlar).
                 if (!empty($request_data['donation_full_name'])) {
-                    $donation_data['full_name'] = sanitize_text_field($request_data['donation_full_name']);
+                    $donation_data['full_name'] = WDP_Security::sanitize_text($request_data['donation_full_name'], WDP_Donation_Optional_Fields::NAME_MAX);
                 }
 
                 if (!empty($request_data['donation_phone'])) {
-                    $donation_data['phone'] = sanitize_text_field($request_data['donation_phone']);
+                    $donation_data['phone'] = WDP_Security::sanitize_phone($request_data['donation_phone']);
                 }
 
                 if (isset($request_data['donation_note'])) {
-                    $donation_data['note'] = sanitize_textarea_field($request_data['donation_note']);
+                    $donation_data['note'] = WDP_Security::sanitize_textarea($request_data['donation_note'], WDP_Donation_Optional_Fields::NOTE_MAX);
                 }
-                if (!empty($request_data['donation_email'])) {
-                    $email = sanitize_email($request_data['donation_email']);
-                    if ($email) {
-                        $donation_data['email'] = $email;
-                    }
-                }
-                if (!empty($request_data['donation_dedication'])) {
-                    $donation_data['dedication'] = sanitize_text_field($request_data['donation_dedication']);
-                }
-                if (!empty($request_data['donation_anonymous'])) {
-                    $donation_data['anonymous'] = '1';
+
+                // 10.30.0: e-posta/ithaf/anonim — kapalıysa yok say; geçersiz e-posta sepete eklemeyi durdurur.
+                try {
+                    WDP_Donation_Optional_Fields::apply_from_request($product_id, $request_data, $donation_data);
+                } catch (WDP_Validation_Exception $e) {
+                    wc_add_notice($e->getMessage(), 'error');
+                    // Sepet satırı oluşmasın: boş bırakıp validate aşamasına bırakılamaz; filtre veriyi yazmaz.
+                    return $cart_item_data;
                 }
             }
 
@@ -223,6 +220,15 @@ class WDP_Cart {
 
                 if (!isset($request_data['donation_phone']) || empty($request_data['donation_phone'])) {
                     wc_add_notice(__('Lütfen Telefon bilginizi giriniz.', 'woo-donation-popup'), 'error');
+                    return false;
+                }
+
+                // 10.30.0: açık e-posta alanında geçersiz değer → sepete ekleme durur.
+                try {
+                    $probe = array();
+                    WDP_Donation_Optional_Fields::apply_from_request($product_id, $request_data, $probe);
+                } catch (WDP_Validation_Exception $e) {
+                    wc_add_notice($e->getMessage(), 'error');
                     return false;
                 }
             }
@@ -405,11 +411,32 @@ class WDP_Cart {
                     }
                 }
             } else {
-                // Normal bağış verilerini göster
+                // Normal bağış verilerini göster (bağışçının kendi oturum sepeti — orijinal ad).
                 if (!empty($donation_data['full_name'])) {
                     $item_data[] = array(
                         'key' => __('Bağışçı', 'woo-donation-popup'),
                         'value' => $donation_data['full_name'] . (!empty($donation_data['phone']) ? ' (' . $donation_data['phone'] . ')' : ''),
+                    );
+                }
+
+                if (!empty($donation_data['email'])) {
+                    $item_data[] = array(
+                        'key'   => __('E-posta', 'woo-donation-popup'),
+                        'value' => $donation_data['email'],
+                    );
+                }
+
+                if (!empty($donation_data['dedication'])) {
+                    $item_data[] = array(
+                        'key'   => __('İthaf', 'woo-donation-popup'),
+                        'value' => $donation_data['dedication'],
+                    );
+                }
+
+                if (!empty($donation_data['anonymous'])) {
+                    $item_data[] = array(
+                        'key'   => __('İsmim gizli kalsın', 'woo-donation-popup'),
+                        'value' => __('Evet', 'woo-donation-popup'),
                     );
                 }
 

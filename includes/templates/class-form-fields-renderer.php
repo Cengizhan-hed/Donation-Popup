@@ -532,13 +532,13 @@ class WDP_Form_Fields_Renderer {
 			</div>
 			<div class="wdp-field-stack__row wdp-field-stack__row--textarea">
 				<span class="wdp-field-stack__icon"><?php echo WDP_Svg_Icons::field_stack_icon_note_svg(); ?></span>
-				<textarea class="wdp-field-stack__textarea" name="donation_note" rows="1" placeholder="<?php echo esc_attr__( 'Not (isteğe bağlı)', 'woo-donation-popup' ); ?>"></textarea>
+				<textarea class="wdp-field-stack__textarea" name="donation_note" rows="1" maxlength="500" placeholder="<?php echo esc_attr__( 'Not (isteğe bağlı)', 'woo-donation-popup' ); ?>"></textarea>
 				<span class="wdp-field-stack__hint"><?php echo esc_html($note_hint); ?></span>
 			</div>
 			<?php if ($enable_email) : ?>
 			<div class="wdp-field-stack__row wdp-field-stack__row--email">
 				<span class="wdp-field-stack__icon"><?php echo WDP_Svg_Icons::field_stack_icon_email_svg(); ?></span>
-				<input type="email" class="wdp-field-stack__input" name="donation_email" placeholder="<?php echo esc_attr__( 'E-posta (isteğe bağlı)', 'woo-donation-popup' ); ?>" autocomplete="email" inputmode="email" />
+				<input type="email" class="wdp-field-stack__input" name="donation_email" placeholder="<?php echo esc_attr__( 'E-posta (isteğe bağlı)', 'woo-donation-popup' ); ?>" autocomplete="email" inputmode="email" maxlength="100" />
 				<span class="wdp-field-stack__hint"><?php echo esc_html($email_hint); ?></span>
 			</div>
 			<?php endif; ?>
@@ -633,6 +633,16 @@ class WDP_Form_Fields_Renderer {
 			}
 		}
 
+		if (class_exists('WDP_Donation_Optional_Fields')) {
+			$html .= WDP_Donation_Optional_Fields::render_privacy_notice_html(
+				array(
+					'has_email'       => !empty($donor_opts['enable_email']),
+					'has_dedication'  => !empty($donor_opts['enable_dedication']),
+					'has_shareholders'=> false,
+				)
+			);
+		}
+
 		return $html;
 	}
 
@@ -684,6 +694,15 @@ class WDP_Form_Fields_Renderer {
 				</div>
 			</div>
 			<?php
+			if (class_exists('WDP_Donation_Optional_Fields')) {
+				echo WDP_Donation_Optional_Fields::render_privacy_notice_html( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped in helper
+					array(
+						'has_email'        => false,
+						'has_dedication'   => false,
+						'has_shareholders' => true,
+					)
+				);
+			}
 			// 10.29.0 (Y1): işlem ücreti hisseli formda da sunulur.
 			if (!empty($context['enable_cover_fee']) && class_exists('WDP_Form_Modules')) {
 				echo WDP_Form_Modules::render_cover_fee(isset($context['cover_fee_percent']) ? (float) $context['cover_fee_percent'] : 0); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped in renderer

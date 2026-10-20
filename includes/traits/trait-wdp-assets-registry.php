@@ -335,6 +335,7 @@ trait WDP_Assets_Registry_Trait {
                 'phone_required' => __('Telefon numarası eksik.', 'woo-donation-popup'),
                 'phone_incomplete' => __('Telefon numaranızı eksiksiz giriniz.', 'woo-donation-popup'),
                 'donor_name_required' => __('Ad Soyad zorunludur.', 'woo-donation-popup'),
+                'invalid_email' => __('Lütfen geçerli bir e-posta adresi giriniz.', 'woo-donation-popup'),
                 'shareholder_name_required' => __('Hissedar adı zorunludur.', 'woo-donation-popup'),
                 'shareholder_issue_name' => __('ad soyad alanı eksik', 'woo-donation-popup'),
                 'shareholder_issue_phone' => __('telefon numaranızı eksiksiz giriniz', 'woo-donation-popup'),

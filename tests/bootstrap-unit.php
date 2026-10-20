@@ -19,7 +19,7 @@ if (!defined('WDP_PLUGIN_FILE')) {
 	define('WDP_PLUGIN_FILE', $root . '/woo-donation-popup.php');
 }
 if (!defined('WDP_VERSION')) {
-	define('WDP_VERSION', '10.29.1');
+	define('WDP_VERSION', '10.30.0');
 }
 if (!defined('HOUR_IN_SECONDS')) {
 	define('HOUR_IN_SECONDS', 3600);
@@ -158,6 +158,18 @@ if (!function_exists('esc_attr')) {
 if (!function_exists('esc_url')) {
 	function esc_url($url) {
 		return filter_var((string) $url, FILTER_SANITIZE_URL) ?: '';
+	}
+}
+if (!function_exists('esc_url_raw')) {
+	function esc_url_raw($url) {
+		return esc_url($url);
+	}
+}
+if (!function_exists('get_privacy_policy_url')) {
+	function get_privacy_policy_url() {
+		return isset(WDP_Test_State::$options['__privacy_policy_url'])
+			? (string) WDP_Test_State::$options['__privacy_policy_url']
+			: '';
 	}
 }
 if (!function_exists('wp_kses')) {
@@ -488,6 +500,18 @@ if (!function_exists('wc_price')) {
 	function wc_price($price, $args = array()) {
 		$formatted = rtrim(rtrim(number_format((float) $price, 2, ',', '.'), '0'), ',');
 		return '<span class="woocommerce-Price-amount amount"><bdi>' . $formatted . '&nbsp;<span class="woocommerce-Price-currencySymbol">&#8378;</span></bdi></span>';
+	}
+}
+if (!function_exists('wc_add_notice')) {
+	function wc_add_notice($message, $notice_type = 'success') {
+		if (!isset(WDP_Test_State::$options['__wc_notices'])) {
+			WDP_Test_State::$options['__wc_notices'] = array();
+		}
+		WDP_Test_State::$options['__wc_notices'][] = array(
+			'message' => (string) $message,
+			'type'    => (string) $notice_type,
+		);
+		return true;
 	}
 }
 if (!function_exists('is_admin')) {

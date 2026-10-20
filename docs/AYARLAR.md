@@ -155,44 +155,44 @@ Aşağıdaki her alan için: ekran adı, ne işe yarar, hangi tipte görünür /
 
 - **Ekran adı:** E-posta alanı  
 - **Ne işe yarar:** Bağışçıdan e-posta ister.  
-- **Tip:** Tümü  
-- **Formda:** Bağışçı bilgilerinde e-posta satırı.  
+- **Tip:** Sabit / Bağışçı belirler / Hedefli kampanya (hisselide yok).  
+- **Formda:** Bağışçı bilgilerinde e-posta satırı (`maxlength=100`). Boş serbest; dolu ama geçersizse gönderim durur (görünür hata). Kapalıysa sunucu POST’taki değeri yok sayar. Sepet satırında görünür.  
 - **Genel ayar:** Tasarım → E-posta alanı.  
-- **Nasıl denenir:** Tasarım’da açık + üründe Genel → e-posta var; üründe Kapalı → yok.
+- **Nasıl denenir:** Tasarım’da açık + üründe Genel → e-posta var; üründe Kapalı → yok; geçersiz adres → hata.
 
 ### İthaf alanı
 
 - **Ekran adı:** İthaf alanı  
 - **Ne işe yarar:** Bağışın kimin adına yapıldığını yazmak için alan gösterir.  
-- **Tip:** Tümü  
-- **Formda:** İthaf metin kutusu.  
-- **Genel ayar:** Tasarım → İthaf.  
+- **Tip:** Sabit / Bağışçı belirler / Hedefli kampanya (hisselide yok).  
+- **Formda:** İthaf metin kutusu (120 karakter). Kapalıysa sunucu yok sayar. Sepet satırında görünür.  
+- **Genel ayar:** Tasarım → İthaf alanı.  
 - **Nasıl denenir:** Açıkken ithaf yazıp sepete ekleyin.
 
 ### İthaf örnek metni
 
 - **Ekran adı:** İthaf örnek metni  
 - **Ne işe yarar:** İthaf alanı boşken içinde görünen örnek metin.  
-- **Tip:** Tümü  
-- **Formda:** Alanın soluk örnek yazısı.  
-- **Genel ayar (boşsa):** Tasarım → İthaf placeholder.  
+- **Tip:** Sabit / Bağışçı belirler / Hedefli kampanya  
+- **Formda:** Alanın soluk örnek yazısı (kayıt sınırı 120).  
+- **Genel ayar (boşsa):** Tasarım → İthaf örnek metni.  
 - **Nasıl denenir:** Ürün metnini değiştirip formda görün.
 
 ### Anonim bağış
 
 - **Ekran adı:** Anonim bağış  
-- **Ne işe yarar:** Bağışçının adının gizli kalmasını seçebileceği kutucuk.  
-- **Tip:** Tümü  
-- **Formda:** “İsmim gizli kalsın” benzeri kutu.  
-- **Genel ayar:** Tasarım → Anonim.  
-- **Nasıl denenir:** Kutuyu işaretleyip sepete ekleyin.
+- **Ne işe yarar:** İşaretlenirse bağışçı adı herkese açık listelerde gizlenir; sipariş kayıtlarında görünür.  
+- **Tip:** Sabit / Bağışçı belirler / Hedefli kampanya (hisselide yok).  
+- **Formda:** “İsmim gizli kalsın” kutusu. Sepette “İsmim gizli kalsın: Evet” satırı. Mini sepet herkese açık alt kümede tam ad maskelenir.  
+- **Genel ayar:** Tasarım → Anonim bağış.  
+- **Nasıl denenir:** Kutuyu işaretleyip sepete ekleyin; herkese açık yanıtta tam ad olmamalı.
 
 ### Ürün notu / Not metni
 
 - **Ekran adı:** Ürün notu; Not metni  
-- **Ne işe yarar:** Formun üstünde kısa bilgilendirme notu.  
+- **Ne işe yarar:** Bağışçının yazdığı not değildir; formun üstünde gösterilen bilgi metnidir.  
 - **Tip:** Tümü  
-- **Formda:** Form başında not kartı.  
+- **Formda:** Form başında not kartı. Kayıt sınırı 400 (mevcut uzun metin okunurken kırpılmaz).  
 - **Genel ayar:** Yok  
 - **Nasıl denenir:** Açıp metin girin → form başında görünmeli.
 
@@ -201,18 +201,29 @@ Aşağıdaki her alan için: ekran adı, ne işe yarar, hangi tipte görünür /
 - **Ekran adı:** Çok adımlı form  
 - **Ne işe yarar:** Formu bağışçı bilgisi ve tutar olarak adım adım gösterir.  
 - **Tip:** Tümü  
-- **Formda:** Adım adım geçiş.  
-- **İlgili genel ayar:** Normal → Çok adımlı formu etkinleştir (ürün kapalı olsa bile genel açık olabilir).  
-- **Nasıl denenir:** Üründe açın → adım adım arayüz.
+- **Formda:** Adım adım geçiş; ithaf/anonim bloğu Bilgiler adımında.  
+- **Ürün:** Genel ayarı kullan / Açık / Kapalı (`_enable_wizard`).  
+- **İlgili genel ayar:** Normal → Çok adımlı form.  
+- **Nasıl denenir:** Üründe Açık → adım adım; Kapalı → tek ekran (genel açık olsa bile).
 
 ### Alan ikonları
 
 - **Ekran adı:** Alan ikonları  
-- **Ne işe yarar:** Ad, telefon ve e-posta alanlarının başında ikon gösterir.  
+- **Ne işe yarar:** Ad, not ve e-posta satırlarındaki ikonlar.  
 - **Tip:** Tümü  
-- **Formda:** Alan başı ikonları.  
-- **İlgili genel ayar:** Tasarım → Alan ikonları; ürün Kapalı ise gizlenir.  
-- **Nasıl denenir:** Kapatın → ikonlar kaybolmalı.
+- **Formda:** Alan başı ikonları; ürün boşken genel ayar.  
+- **Ürün:** Genel ayarı kullan / Açık / Kapalı.  
+- **İlgili genel ayar:** Tasarım → Alan ikonları.  
+- **Nasıl denenir:** Kapalı → `wdp-no-field-icons`, ikonlar kaybolmalı.
+
+### Aydınlatma metni bağlantısı
+
+- **Ekran adı:** Aydınlatma metni bağlantısını göster  
+- **Ne işe yarar:** Formda kişisel veri aydınlatma bağlantısı gösterir (varsayılan kapalı).  
+- **Tip:** E-posta, ithaf veya hissedar alanlarından en az biri varken  
+- **Formda:** Kısa metin + “Aydınlatma Metni” bağlantısı (yeni sekme, `rel=noopener`). Adres boşsa WordPress Gizlilik Politikası sayfası; o da yoksa bağlantı gösterilmez.  
+- **Genel ayar:** Tasarım → Aydınlatma metni bağlantısı.  
+- **Nasıl denenir:** Açıp e-posta alanını açın → formda satır görünmeli.
 
 ### Etki satırı / Etki metni
 

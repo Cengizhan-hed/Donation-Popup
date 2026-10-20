@@ -22,8 +22,6 @@ class WDP_Product_Settings_Service {
 		'enable_trust_strip',
 		'enable_quantity',
 		'enable_amount_presets',
-		'enable_wizard',
-		'enable_field_icons',
 		'enable_impact_line',
 		'progress_celebrate',
 		'enable_urgency',
@@ -269,8 +267,8 @@ class WDP_Product_Settings_Service {
 		$enable_trust_strip     = self::parse_bool_flag(isset($request['enable_trust_strip']) ? $request['enable_trust_strip'] : true);
 		$enable_quantity        = self::parse_bool_flag(isset($request['enable_quantity']) ? $request['enable_quantity'] : true);
 		$enable_amount_presets  = self::parse_bool_flag(isset($request['enable_amount_presets']) ? $request['enable_amount_presets'] : true);
-		$enable_wizard          = self::parse_bool_flag(isset($request['enable_wizard']) ? $request['enable_wizard'] : false);
-		$enable_field_icons     = self::parse_bool_flag(isset($request['enable_field_icons']) ? $request['enable_field_icons'] : true);
+		$enable_wizard          = self::parse_tristate_flag(isset($request['enable_wizard']) ? $request['enable_wizard'] : null);
+		$enable_field_icons     = self::parse_tristate_flag(isset($request['enable_field_icons']) ? $request['enable_field_icons'] : null);
 		$enable_impact_line     = self::parse_bool_flag(isset($request['enable_impact_line']) ? $request['enable_impact_line'] : true);
 		$progress_celebrate     = self::parse_bool_flag(isset($request['progress_celebrate']) ? $request['progress_celebrate'] : true);
 		$enable_email           = self::parse_tristate_flag(isset($request['enable_email']) ? $request['enable_email'] : null);
@@ -393,7 +391,7 @@ class WDP_Product_Settings_Service {
 			'_enable_progress_bar'            => $enable_progress_bar ? 'yes' : 'no',
 			'_progress_bar_limit'             => $goal > 0 ? wc_format_decimal($goal) : '',
 			'_enable_product_note'            => $enable_product_note ? 'yes' : 'no',
-			'_product_note_text'              => isset($request['product_note_text']) ? self::limit_text(sanitize_textarea_field(wp_unslash($request['product_note_text'])), 1000) : '',
+			'_product_note_text'              => isset($request['product_note_text']) ? self::limit_text(sanitize_textarea_field(wp_unslash($request['product_note_text'])), 400) : '',
 			'_enable_sadaka_donation'         => $enable_sadaka_donation ? 'yes' : 'no',
 			'_sadaka_min_price'               => isset($request['sadaka_min_price']) ? wc_format_decimal(wp_unslash($request['sadaka_min_price'])) : '',
 			'_sadaka_fixed_price'             => isset($request['sadaka_fixed_price']) ? wc_format_decimal(wp_unslash($request['sadaka_fixed_price'])) : '',
@@ -403,8 +401,8 @@ class WDP_Product_Settings_Service {
 			'_enable_trust_strip'             => $enable_trust_strip ? 'yes' : 'no',
 			'_enable_quantity'                => $enable_quantity ? 'yes' : 'no',
 			'_enable_amount_presets'          => $enable_amount_presets ? 'yes' : 'no',
-			'_enable_wizard'                  => $enable_wizard ? 'yes' : 'no',
-			'_enable_field_icons'             => $enable_field_icons ? 'yes' : 'no',
+			'_enable_wizard'                  => $enable_wizard,
+			'_enable_field_icons'             => $enable_field_icons,
 			'_enable_impact_line'             => $enable_impact_line ? 'yes' : 'no',
 			'_progress_celebrate'             => $progress_celebrate ? 'yes' : 'no',
 			'_impact_line_text'               => isset($request['impact_line_text']) ? self::limit_text(sanitize_text_field(wp_unslash($request['impact_line_text'])), 200) : '',
@@ -413,7 +411,7 @@ class WDP_Product_Settings_Service {
 			'_enable_email'                   => $enable_email,
 			'_enable_dedication'              => $enable_dedication,
 			'_enable_anonymous'               => $enable_anonymous,
-			'_dedication_placeholder'         => isset($request['dedication_placeholder']) ? self::limit_text(sanitize_text_field(wp_unslash($request['dedication_placeholder'])), 160) : '',
+			'_dedication_placeholder'         => isset($request['dedication_placeholder']) ? self::limit_text(sanitize_text_field(wp_unslash($request['dedication_placeholder'])), 120) : '',
 			'_trust_badges'                   => !empty($trust_badges) ? wp_json_encode($trust_badges, self::JSON_FLAGS) : '',
 			'_theme_preset_id'                => isset($request['theme_preset_id']) ? sanitize_key((string) wp_unslash($request['theme_preset_id'])) : '',
 			'_theme_primary'                  => isset($request['theme_primary']) ? (sanitize_hex_color(wp_unslash($request['theme_primary'])) ?: '') : '',

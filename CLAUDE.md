@@ -5,12 +5,13 @@ Bu dosyayı her oturumun başında oku. Kullanıcıyla her zaman **Türkçe** ko
 ## 0. ÇALIŞMA BİÇİMİ (en üstte, diğer kurallardan önce gelir)
 
 1. **Bölüm başına tek analiz.** Bölümün tüm ayarlarını koddan ve docs/MIMARI.md'den incele; TEK mesajda ver: her ayar ne yapar, sorunlar, önerilen düzeltmeler, kullanıcının vereceği kararlar (numaralı, seçenekli, öneri işaretli). Ayar ayar soru sorma.
-2. **Kullanıcıya elle davranış testi yaptırma.** Davranış testleri (tıkla → ne oluyor, sınır değerler, kapat-aç, ürün değişimi, yenileme, sepete ekleme sonrası) Cursor'a otomatik E2E / Playwright testi olarak yazdırılır.
-3. **Kullanıcı yalnız iki şey yapar:** kararları verir ve ship sonrası TEK görsel kontrol listesini (en fazla 8 madde, hepsi tek seferde) uygular.
+2. **Kullanıcıya davranış kontrolü verme.** Davranış testleri (tıkla → ne oluyor, sınır değerler, kapat-aç, ürün değişimi, yenileme, sepete ekleme sonrası) Cursor'a otomatik E2E / Playwright / PHPUnit testi olarak yazdırılır. Görev sonunda kullanıcıya "Doğrulama raporu" ver: test edilen her davranış, sonuç ("doğrulandı / sorun bulundu"), kanıt (test adı). Sorun yoksa sormadan accept + commit + push + merge yap.
+3. **Kullanıcı yalnız iş/politika kararlarını verir** (bağışçıya ne gösterilir, dernek politikası, yasal kapsam). Kontrol listesi YALNIZ büyük değişikliklerde (görsel aşama, yeni özellik, canlıya alma öncesi) verilir; en fazla 5 madde, hepsi tek seferde. Teknik kararları (en iyi uygulama, güvenlik, KVKK, bağışçı deneyimi) sen ver ve rapora "Alınan teknik kararlar" olarak yaz. Kullanıcıya soru sorarken önerini her zaman işaretle.
 4. **Onaylar toplu.** Bölüm başında tek toplu onay al ("şu bölümde şunları yapacağım: düzeltme, ship, accept, commit, push"). Onaydan sonra sormadan ilerle; yalnız beklenmeyen bir risk çıkarsa dur.
 5. **Dosya disiplini.** Yalnız CLAUDE.md, docs/MIMARI.md, docs/AYARLAR.md, docs/AYAR-TURU-NOTLARI.md ve build/handoff/ kullanılır. Yeni .md dosyası açma. Notlar ve kararlar anında docs/AYAR-TURU-NOTLARI.md'ye yazılır; sohbette bırakılan bilgi yeni oturumda kaybolur.
 6. **ILERLEME.md** yalnız Cursor görevleri sırasında kullanılır.
 7. **Aşama özeti** dosya değil, aşama bitince yazılan mesajdır.
+8. Kullanıcı yazarken çalışmaya devam et; kuyruktaki mesajı bir sonraki adımda dikkate al.
 
 ## 1. Rol dağılımı (en önemli kural)
 
@@ -70,7 +71,7 @@ Bitiş: verify + test → (gerekirse) npm run ship:staging → e2e:quick → RAP
 - Şifre, token, `.env` değeri asla sohbete veya dosyaya yazılmaz.
 - Onay gerektiren her komuttan ÖNCE kullanıcıya Türkçe tek cümleyle ne yapacağını ve "yalnız okur" / "dosya değiştirir" / "geri alınması zor" olduğunu yaz. Kullanıcı teknik değil; komut metnini anlamayabilir.
 - Her aşama sonunda 6. Durum bölümünü güncelle. Ardından kullanıcının claude.ai proje sohbetine kopyalayacağı bir AŞAMA ÖZETİ mesajı yaz: ne yapıldı, sürümler ve commit'ler, açık kalan sorunlar, alınan kararlar, sıradaki aşama önerisi. Kısa tablolarla, en fazla 1 sayfa. Dosya oluşturma, mesaj olarak yaz.
-- Her ship:staging sonrasında kullanıcıya tek mesajda yaz: yüklenen sürüm; sade dille neler değişti; TEK görsel kontrol listesi (en fazla 8 madde: hangi sayfa, neye tıklanır, ne görülmeli). Kullanıcı 'tamam' demeden accept ve commit'e geçme (bölüm başındaki toplu onay accept/commit/push'u kapsar, ama görsel kontrol sonucu beklenir).
+- Her ship:staging sonrasında kullanıcıya Doğrulama raporu ver (bkz. Bölüm 0 madde 2); kontrol listesi yalnız büyük değişikliklerde (Bölüm 0 madde 3).
 - Kullanıcı her zaman masa başında değil. Onay gerektiren adımları toplu sor: bir işin başında gereken tüm kritik onayları (commit, push, merge, accept, ship) tek mesajda listele, kullanıcı bir kez onaylasın. Arada küçük sorularla durma; kararları biriktirip tek seferde sor (bkz. Bölüm 0).
 - Her mesajın EN SON satırı şu üçünden biri olmalı:
   ✅ BİTTİ – sıra sende
@@ -86,6 +87,22 @@ Bitiş: verify + test → (gerekirse) npm run ship:staging → e2e:quick → RAP
 - Canlı: hedefdernegi.org — **ESKİ sürüm, dokunulmaz**. Tüm aşamalar bitmeden canlıya kurulum yok.
 - Staging: staging28.hedefdernegi.org (Avada, Rank Math, SiteGround, Curcy Multi Currency TL/EUR/USD, Fixed Price açık, cookie, cache "Override by AJAX").
 - `.env.e2e` / `.env.deploy` yerelde, git dışı. **Okuma.**
+
+### İŞ BAĞLAMI
+
+- Hedef Derneği yalnız web sitesi üzerinden bağış alır, elden bağış yoktur (offline/elle bağış özelliği eklenmez).
+- Akış: bağış → bilgiler yurt dışındaki saha ekiplerine iletilir → iş yapılır → bağışçıya video gönderilir (kurban kesim, su kuyusu açılış vb.).
+- Kim adına kesilecek / ithaf / hissedar isimleri ve bağışçı telefon/e-postası sahaya ve videoya eksiksiz ulaşmalı. Hiçbir ayar (anonim dahil) bunları sipariş kaydından silemez ya da maskeleyemez; anonim yalnız herkese açık yerleri etkiler. Türkçe karakterler hiçbir yolda bozulmamalı.
+- Para birimleri: Hedef TL/EUR/USD (Curcy). Ikram Aid (İngiltere): GBP + Gift Aid.
+- KVKK: veriler yurt dışındaki saha ekiplerine aktarılıyor; aydınlatma açıklaması (F10) bunu kapsamalı.
+
+### TASARIM İLKELERİ (her teknik kararda uygula)
+
+1. **WooCommerce'in içinde:** bağış = WooCommerce siparişi; ödeme, para birimi, e-posta, rapor ve diğer eklentilerle uyum. Ayrı kapalı sistem kurma.
+2. **Şeffaflık:** gizli otomatik davranış yok; her davranışın ayarı ve açık bir açıklaması var.
+3. **Esneklik + mantıklı varsayılan:** ayar yapmadan doğru çalışır, her şey ayarlanabilir.
+4. **Açıklık:** belgelenmiş hook/filter'lar, dışa aktarılabilir veri, kilitlenme yok.
+5. **Kalite çıtası GiveWP'nin üstü:** güvenlik, KVKK/UK GDPR, erişilebilirlik (WCAG 2.2 AA), hız, temadan bağımsızlık, çok para birimi, görünüm.
 
 ### Komutlar
 
@@ -110,7 +127,7 @@ Bitiş: verify + test → (gerekirse) npm run ship:staging → e2e:quick → RAP
 
 ## 6. Durum (2026-10-20)
 
-- `main` = `874003c` (2C-S + pilot + MIMARI birleşti). Claude Code + Cursor CLI düzeni kalıcı; `pilot-claude-code` ve `docs-mimari` dalları silinebilir. 2C-S kapandı (10.28.10–10.28.12). Staging'de 10.28.12.
+- `main` = `8458db8` (10.29.1 tutar seçenekleri birleşti; Form alanları `form-alanlari` dalında). Eski: `874003c` (2C-S + pilot + MIMARI). Claude Code + Cursor CLI düzeni kalıcı; `pilot-claude-code` ve `docs-mimari` dalları silinebilir. 2C-S kapandı (10.28.10–10.28.12). Staging'de 10.28.12.
 - quick 31/0/0, ~150 sn; stability temiz.
 - 10.28.10: hisseli liste product_info sonrası silinmiyor (gerçek veri kaybı düzeltildi).
 - 10.28.11–12: mağaza niyet ön yüklemesi (hover 760→42 ms, touch 85 ms); boşta ilk 3 ürün (saveData/2g/webdriver atlar); önbellek ürün+para+dil, yalnız bellek.
@@ -120,9 +137,9 @@ Bitiş: verify + test → (gerekirse) npm run ship:staging → e2e:quick → RAP
 
 ## 7. Yol haritası
 
-Ayar turu (devam): Tutar seçenekleri, Form alanları, Kampanya blokları, Bu ürüne özel görünüm, Kısa kod (`docs/AYARLAR.md` ile).
+Ayar turu (devam): Tutar seçenekleri ✔ (10.29.1), Form alanları (10.30.0, sürüyor), Kampanya blokları, Bu ürüne özel görünüm, Kısa kod (`docs/AYARLAR.md` ile).
 
-2D butonlar + "Toplam" satırı → 2E alanlar → 2F tutar bölümü → 2G mobil/panel/modal (+ erişilebilirlik, mobil baseline) → 2H ayar ekranı sadeleştirme → **Güvenlik + KVKK denetimi** → 2İ Hedef geçişi + canlıya alma → 3 Dil/para birimi → 4 Performans/SEO → 5 Alan yönetimi → 6 Gift Aid → 7 Kod temizliği.
+Sıra: Ayar turu → **REFAKTÖR** (dosya yapısını sadeleştir, birleştir, ölü kodu temizle, adlandırmayı tutarlı yap; davranış değişmez, E2E güvence; MIMARI.md güncellenir) → **Görsel aşama** (2D–2G; liste docs/AYAR-TURU-NOTLARI.md "GÖRSEL AŞAMA") → **Güvenlik + KVKK denetimi** → **2İ Hedef geçişi + canlıya alma** → **Çoklu para birimi/dil** → **Gift Aid**.
 
 ### Notlar
 

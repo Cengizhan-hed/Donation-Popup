@@ -44,7 +44,10 @@ async function waitShellReady(shell) {
         SEL.goCheckout,
         { timeout: CHECK_MS }
       )
-      .catch(() => {});
+      .catch((err) => {
+        // İskelet kilidi zaman aşımı — senaryoyu düşürmez; teşhis için loglanır.
+        console.warn('waitShellReady checkout unlock:', err && err.message ? err.message : err);
+      });
   }
 }
 
@@ -288,7 +291,15 @@ export async function runAmountOptionsChecks({
       fail('amount-opts-k2-recommended-only-configured', 'Önerilen yalnız yapılandırılan tutar', e);
     } finally {
       if (customId > 0) {
-        await setProductMeta(customId, RECOMMENDED_META, previousRecommended || '').catch(() => {});
+        try {
+          await setProductMeta(customId, RECOMMENDED_META, previousRecommended || '');
+        } catch (restoreErr) {
+          fail(
+            'amount-opts-k2-meta-restore',
+            'Önerilen meta geri yükleme başarısız',
+            restoreErr
+          );
+        }
       }
     }
 
@@ -627,8 +638,12 @@ export async function runAmountOptionsChecks({
     if (metaTouched && customId > 0) {
       try {
         await setProductMeta(customId, RECOMMENDED_META, previousRecommended || '');
-      } catch {
-        /* restore best-effort */
+      } catch (restoreErr) {
+        fail(
+          'amount-opts-meta-restore-final',
+          'Önerilen meta geri yükleme (finally) başarısız',
+          restoreErr
+        );
       }
     }
     await page.close().catch(() => {});

@@ -195,7 +195,7 @@ class Woo_Donation_Popup_Admin {
             $existing = array();
         }
         // Unchecked checkboxes are absent from POST — force off for studio fields.
-        foreach (array('enable_field_icons', 'trust_strip_enabled', 'enable_donor_email', 'enable_dedication', 'enable_anonymous') as $checkbox_key) {
+        foreach (array('enable_field_icons', 'trust_strip_enabled', 'enable_donor_email', 'enable_dedication', 'enable_anonymous', 'enable_privacy_notice') as $checkbox_key) {
             if (!isset($request_data[ $checkbox_key ])) {
                 $request_data[ $checkbox_key ] = '0';
             }

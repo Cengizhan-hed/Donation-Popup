@@ -387,6 +387,16 @@ Formun içindeki SSS modülü 10.27.0’da tamamen kaldırıldı. SSS’ler ür�
 
 ## Sürüm notları
 
+### 10.30.0 — Form alanları (e-posta, ithaf, anonim, wizard/ikon, aydınlatma)
+
+- Hisselide e-posta/ithaf/anonim yok (ürün sekmesi + sunucu).
+- Kapalı alan POST’ta yok sayılır (AJAX + legacy cart); geçersiz e-posta hata + gönderim durur.
+- İthaf/ad/not karakter (mb) sınırları; ürün notu kayıt 400; ithaf örnek metni 120.
+- Anonim: herkese açık yüzeylerde ad maskelenir; sipariş/admin değişmez; sepet satırında e-posta/ithaf/anonim görünür.
+- Wizard ve alan ikonları ürün üçlü (Genel/Açık/Kapalı); JS form sınıfına bakar.
+- İsteğe bağlı aydınlatma bağlantısı (varsayılan kapalı); debug logda e-posta/ithaf maskelenir.
+- Migration `10.30.0`: aydınlatma anahtarları eklenir (veri silinmez).
+
 ### 10.29.1 — Önerilen yalnız ürün; Ödemeye Git solukluğu
 - "Önerilen" etiketi yalnız üründe Önerilen tutar doluysa ve görünen listedeyse; ortadaki/genel varsayılan kaldırıldı.
 - Ödemeye Git: Dual CTA artık `--wdp-primary` kullanır (soluk `--wdp-success` checkout rengi yerine).

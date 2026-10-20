@@ -321,3 +321,17 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-form-block--note .wdp-field-s
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-form-block--note .wdp-dedication-block {
   margin-top: 0;
 }
+
+/* 10.30.0: isteğe bağlı aydınlatma bağlantısı (asgari stil) */
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-privacy-notice {
+  margin: 10px 0 0;
+  padding: 0;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  color: inherit;
+  opacity: 0.85;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-privacy-notice a {
+  text-decoration: underline;
+}

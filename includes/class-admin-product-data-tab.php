@@ -268,8 +268,8 @@ class WDP_Admin_Product_Data_Tab {
 			'enable_anonymous'             => $tristate('_enable_anonymous'),
 			'enable_product_note'          => $flag('_enable_product_note'),
 			'product_note_text'            => $meta('_product_note_text'),
-			'enable_wizard'                => $flag('_enable_wizard'),
-			'enable_field_icons'           => $flag('_enable_field_icons', true),
+			'enable_wizard'                => $tristate('_enable_wizard'),
+			'enable_field_icons'           => $tristate('_enable_field_icons'),
 			'enable_impact_line'           => $flag('_enable_impact_line', true),
 			'impact_line_text'             => $meta('_impact_line_text'),
 			'enable_urgency'               => $flag('_enable_urgency'),
@@ -640,15 +640,24 @@ class WDP_Admin_Product_Data_Tab {
 	 * @return void
 	 */
 	private static function render_form_fields_section(array $values) {
+		$type = isset($values['donation_type']) ? $values['donation_type'] : WDP_Donation_Type::FIXED;
 		self::open_section('fields', __('Form alanları', 'woo-donation-popup'), __('E-posta, ithaf, anonim bağış ve not', 'woo-donation-popup'));
+
+		// F1: e-posta / ithaf / anonim hisseli tipte formda yok → ürün sekmesinde de gizle.
+		self::open_type_scope(
+			array(WDP_Donation_Type::FIXED, WDP_Donation_Type::CUSTOM, WDP_Donation_Type::CAMPAIGN),
+			$type
+		);
 		self::select('enable_email', $values['enable_email'], __('E-posta alanı', 'woo-donation-popup'), __('Bağışçıdan e-posta adresi ister; "Genel ayar" Tasarım sekmesindeki seçimi uygular.', 'woo-donation-popup'), self::tristate_options());
 		self::select('enable_dedication', $values['enable_dedication'], __('İthaf alanı', 'woo-donation-popup'), __('Bağışın kimin adına yapıldığını yazmak için alan gösterir.', 'woo-donation-popup'), self::tristate_options());
 		self::text('dedication_placeholder', $values['dedication_placeholder'], __('İthaf örnek metni', 'woo-donation-popup'), __('İthaf alanı boşken içinde görünen örnek metin.', 'woo-donation-popup'), array('custom_attributes' => array('maxlength' => '120')));
-		self::select('enable_anonymous', $values['enable_anonymous'], __('Anonim bağış', 'woo-donation-popup'), __('Bağışçının adının gizli kalmasını seçebileceği kutucuk gösterir.', 'woo-donation-popup'), self::tristate_options());
-		self::checkbox('enable_product_note', $values['enable_product_note'], __('Ürün notu', 'woo-donation-popup'), __('Formun üstünde aşağıdaki bilgilendirme notunu gösterir.', 'woo-donation-popup'));
+		self::select('enable_anonymous', $values['enable_anonymous'], __('Anonim bağış', 'woo-donation-popup'), __('İşaretlenirse bağışçı adı herkese açık listelerde gizlenir; sipariş kayıtlarında görünür.', 'woo-donation-popup'), self::tristate_options());
+		echo '</div>';
+
+		self::checkbox('enable_product_note', $values['enable_product_note'], __('Ürün notu', 'woo-donation-popup'), __('Bağışçının yazdığı not değildir; formun üstünde gösterilen bilgi metnidir.', 'woo-donation-popup'));
 		self::textarea('product_note_text', $values['product_note_text'], __('Not metni', 'woo-donation-popup'), __('Bağışçıya gösterilecek kısa bilgi (en fazla 400 karakter).', 'woo-donation-popup'), array('maxlength' => '400', 'placeholder' => __('Örn: 24 saat içinde video ulaştırılmaktadır.', 'woo-donation-popup')));
-		self::checkbox('enable_wizard', $values['enable_wizard'], __('Çok adımlı form', 'woo-donation-popup'), __('Formu bağışçı bilgisi ve tutar olarak adım adım gösterir.', 'woo-donation-popup'));
-		self::checkbox('enable_field_icons', $values['enable_field_icons'], __('Alan ikonları', 'woo-donation-popup'), __('Ad, telefon ve e-posta alanlarının başında ikon gösterir.', 'woo-donation-popup'));
+		self::select('enable_wizard', $values['enable_wizard'], __('Çok adımlı form', 'woo-donation-popup'), __('Formu bağışçı bilgisi ve tutar olarak adım adım gösterir. "Genel ayarı kullan" Normal sekmesindeki seçimi uygular.', 'woo-donation-popup'), self::tristate_options());
+		self::select('enable_field_icons', $values['enable_field_icons'], __('Alan ikonları', 'woo-donation-popup'), __('Ad, not ve e-posta satırlarındaki ikonlar. "Genel ayarı kullan" Tasarım sekmesindeki seçimi uygular.', 'woo-donation-popup'), self::tristate_options());
 		self::close_section();
 	}
 

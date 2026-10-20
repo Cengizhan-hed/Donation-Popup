@@ -120,14 +120,11 @@ trait WDP_Ajax_Cart_Add_Trait {
             ));
         } else {
             // Ad Soyad alanını al
-            $full_name = isset($_POST['donation_full_name']) ? WDP_Security::sanitize_text(wp_unslash($_POST['donation_full_name']), 100) : '';
+            $full_name = isset($_POST['donation_full_name']) ? WDP_Security::sanitize_text(wp_unslash($_POST['donation_full_name']), WDP_Donation_Optional_Fields::NAME_MAX) : '';
             $phone = isset($_POST['donation_phone']) ? WDP_Security::sanitize_phone(wp_unslash($_POST['donation_phone'])) : '';
-            // SECURITY: Limit note length to prevent abuse
-            $note_raw = isset($_POST['donation_note']) ? wp_unslash($_POST['donation_note']) : '';
-            if (strlen($note_raw) > 500) {
-                $note_raw = substr($note_raw, 0, 500);
-            }
-            $note = sanitize_textarea_field($note_raw);
+            $note = isset($_POST['donation_note'])
+                ? WDP_Security::sanitize_textarea(wp_unslash($_POST['donation_note']), WDP_Donation_Optional_Fields::NOTE_MAX)
+                : '';
 
             if ('' === $full_name) {
                 throw new WDP_Validation_Exception(__('Lütfen Ad Soyad bilginizi giriniz.', 'woo-donation-popup'), array('donation_full_name'));
@@ -144,18 +141,8 @@ trait WDP_Ajax_Cart_Add_Trait {
                 $donation_data['note'] = $note;
             }
 
-            if (!empty($_POST['donation_email'])) {
-                $email = sanitize_email(wp_unslash($_POST['donation_email']));
-                if ($email) {
-                    $donation_data['email'] = $email;
-                }
-            }
-            if (!empty($_POST['donation_dedication'])) {
-                $donation_data['dedication'] = WDP_Security::sanitize_text(wp_unslash($_POST['donation_dedication']), 120);
-            }
-            if (!empty($_POST['donation_anonymous'])) {
-                $donation_data['anonymous'] = '1';
-            }
+            // 10.30.0: e-posta/ithaf/anonim — ürün bağlamında kapalıysa yok say; geçersiz e-posta hata.
+            WDP_Donation_Optional_Fields::apply_from_request($product, wp_unslash($_POST), $donation_data);
         }
 
         // 10.29.0 (Y1/Y2): işlem ücreti tüm tiplerde (özel, kampanya, sabit, hisseli) uygulanır.

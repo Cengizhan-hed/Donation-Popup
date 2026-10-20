@@ -22,7 +22,13 @@ trait WDP_Ajax_Cart_Query_Trait {
 
         $safe = array();
         if (isset($donation_data['full_name'])) {
-            $safe['full_name'] = sanitize_text_field((string) $donation_data['full_name']);
+            // Herkese açık mini-sepet alt kümesi: anonimse tam ad sızdırılmaz.
+            $safe['full_name'] = class_exists('WDP_Donation_Optional_Fields')
+                ? WDP_Donation_Optional_Fields::mask_public_donor_name(
+                    (string) $donation_data['full_name'],
+                    !empty($donation_data['anonymous'])
+                )
+                : sanitize_text_field((string) $donation_data['full_name']);
         }
         if (isset($donation_data['share_count'])) {
             $safe['share_count'] = (int) $donation_data['share_count'];

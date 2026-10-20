@@ -259,13 +259,31 @@ class WDP_Admin_Design_Studio_Renderer {
 
 		echo '<table class="form-table wdp-admin-field-cards">';
 		echo '<tr><th scope="row">' . esc_html__('E-posta alanı', 'woo-donation-popup') . '</th><td><label class="wdp-admin-toggle"><input type="checkbox" name="enable_donor_email" value="1" ' . checked($email_on, true, false) . ' /> ' . esc_html__('Normal formda e-posta göster', 'woo-donation-popup') . '</label>';
-		echo '<p class="description">' . esc_html__('Ne işe yarar: Bağışçıdan e-posta ister. Açıkken formda ek satır çıkar. Ürün kartında “E-posta alanı” kapalıysa o üründe gizlenir.', 'woo-donation-popup') . '</p></td></tr>';
-		echo '<tr><th scope="row">' . esc_html__('İthaf', 'woo-donation-popup') . '</th><td><label class="wdp-admin-toggle"><input type="checkbox" name="enable_dedication" value="1" ' . checked($ded_on, true, false) . ' /> ' . esc_html__('İthaf alanı', 'woo-donation-popup') . '</label>';
-		echo '<p class="description">' . esc_html__('Ne işe yarar: “Kimin adına?” gibi ithaf metni toplar; sipariş meta’sına yazılır. Anma / hediye bağışlarında kullanışlıdır.', 'woo-donation-popup') . '</p></td></tr>';
-		echo '<tr><th scope="row">' . esc_html__('Anonim', 'woo-donation-popup') . '</th><td><label class="wdp-admin-toggle"><input type="checkbox" name="enable_anonymous" value="1" ' . checked($anon_on, true, false) . ' /> ' . esc_html__('Anonim bağış kutusu', 'woo-donation-popup') . '</label>';
-		echo '<p class="description">' . esc_html__('Ne işe yarar: Bağışçının adının listelerde/teşekkürlerde gizlenmesini isteyebileceği onay kutusunu gösterir.', 'woo-donation-popup') . '</p></td></tr>';
-		echo '<tr><th scope="row"><label for="dedication_placeholder">' . esc_html__('İthaf placeholder', 'woo-donation-popup') . '</label></th><td><input type="text" id="dedication_placeholder" name="dedication_placeholder" value="' . esc_attr($ded_ph) . '" class="regular-text" />';
+		echo '<p class="description">' . esc_html__('Ne işe yarar: Bağışçıdan e-posta ister. Açıkken formda ek satır çıkar. Ürün kartında “E-posta alanı” kapalıysa o üründe gizlenir. Hisseli formda gösterilmez.', 'woo-donation-popup') . '</p></td></tr>';
+		echo '<tr><th scope="row">' . esc_html__('İthaf alanı', 'woo-donation-popup') . '</th><td><label class="wdp-admin-toggle"><input type="checkbox" name="enable_dedication" value="1" ' . checked($ded_on, true, false) . ' /> ' . esc_html__('İthaf alanı', 'woo-donation-popup') . '</label>';
+		echo '<p class="description">' . esc_html__('Ne işe yarar: “Kimin adına?” gibi ithaf metni toplar; sipariş meta’sına yazılır. Anma / hediye bağışlarında kullanışlıdır. Hisseli formda gösterilmez.', 'woo-donation-popup') . '</p></td></tr>';
+		echo '<tr><th scope="row">' . esc_html__('Anonim bağış', 'woo-donation-popup') . '</th><td><label class="wdp-admin-toggle"><input type="checkbox" name="enable_anonymous" value="1" ' . checked($anon_on, true, false) . ' /> ' . esc_html__('Anonim bağış', 'woo-donation-popup') . '</label>';
+		echo '<p class="description">' . esc_html__('İşaretlenirse bağışçı adı herkese açık listelerde gizlenir; sipariş kayıtlarında görünür.', 'woo-donation-popup') . '</p></td></tr>';
+		echo '<tr><th scope="row"><label for="dedication_placeholder">' . esc_html__('İthaf örnek metni', 'woo-donation-popup') . '</label></th><td><input type="text" id="dedication_placeholder" name="dedication_placeholder" value="' . esc_attr($ded_ph) . '" class="regular-text" maxlength="120" />';
 		echo '<p class="description">' . esc_html__('Ne işe yarar: İthaf alanı boşken görünen örnek metin. Kullanıcıya ne yazacağını anlatır; zorunlu değer değildir.', 'woo-donation-popup') . '</p></td></tr>';
+
+		$privacy_on   = !empty($settings['enable_privacy_notice']) && (string) $settings['enable_privacy_notice'] === '1';
+		$privacy_text = isset($settings['privacy_notice_text']) ? (string) $settings['privacy_notice_text'] : '';
+		$privacy_url  = isset($settings['privacy_notice_url']) ? (string) $settings['privacy_notice_url'] : '';
+		$wp_privacy   = function_exists('get_privacy_policy_url') ? (string) get_privacy_policy_url() : '';
+		echo '<tr><th scope="row">' . esc_html__('Aydınlatma metni bağlantısı', 'woo-donation-popup') . '</th><td>';
+		echo '<label class="wdp-admin-toggle"><input type="checkbox" name="enable_privacy_notice" value="1" ' . checked($privacy_on, true, false) . ' /> ' . esc_html__('Aydınlatma metni bağlantısını göster', 'woo-donation-popup') . '</label>';
+		echo '<p class="description">' . esc_html__('Yalnız formda e-posta, ithaf veya hissedar alanlarından en az biri varken gösterilir. Varsayılan kapalıdır.', 'woo-donation-popup') . '</p>';
+		echo '<p><label for="privacy_notice_text">' . esc_html__('Bağlantı metni', 'woo-donation-popup') . '</label><br />';
+		echo '<input type="text" id="privacy_notice_text" name="privacy_notice_text" value="' . esc_attr($privacy_text) . '" class="large-text" placeholder="' . esc_attr__('Kişisel verileriniz Aydınlatma Metni kapsamında işlenir.', 'woo-donation-popup') . '" /></p>';
+		echo '<p><label for="privacy_notice_url">' . esc_html__('Bağlantı adresi', 'woo-donation-popup') . '</label><br />';
+		echo '<input type="url" id="privacy_notice_url" name="privacy_notice_url" value="' . esc_attr($privacy_url) . '" class="large-text" placeholder="https://" /></p>';
+		if ($privacy_url === '' && $wp_privacy === '') {
+			echo '<p class="description" style="color:#b32d2e">' . esc_html__('Adres boş ve WordPress Gizlilik Politikası sayfası da yoksa bağlantı formda gösterilmez. Ayarlar → Gizlilik’den bir sayfa seçin veya buraya adres yazın.', 'woo-donation-popup') . '</p>';
+		} elseif ($privacy_url === '' && $wp_privacy !== '') {
+			echo '<p class="description">' . esc_html__('Adres boşsa WordPress Gizlilik Politikası sayfası kullanılır.', 'woo-donation-popup') . '</p>';
+		}
+		echo '</td></tr>';
 		echo '<tr><th scope="row"><label for="module_order">' . esc_html__('Varsayılan modül sırası', 'woo-donation-popup') . '</label></th><td>';
 		echo '<input type="text" id="module_order" name="module_order" value="' . esc_attr($order) . '" class="large-text" />';
 		echo '<p class="description">' . esc_html__('Ne işe yarar: Modal üst bölümündeki blokların sırası (virgülle). Örn. media,impact,urgency,social_proof,progress,sadaka,trust. Form gövdesi sabittir: bağışçı → ithaf → tutar → cover fee (donor/amount buradan değişmez). Ürün kartındaki “Modül sırası” doluysa ürün önceliklidir. Boş bırakırsanız varsayılan sıra kullanılır.', 'woo-donation-popup') . '</p></td></tr>';
@@ -292,8 +310,8 @@ class WDP_Admin_Design_Studio_Renderer {
 		echo '<table class="form-table wdp-admin-field-cards">';
 		echo '<tr><th scope="row">' . esc_html__('Alan ikonları', 'woo-donation-popup') . '</th><td>';
 		echo '<label class="wdp-admin-toggle"><input type="checkbox" name="enable_field_icons" value="1" ' . checked($enable_field_icons, true, false) . ' /> ';
-		echo esc_html__('Ad / not / e-posta satırlarında ikon göster', 'woo-donation-popup') . '</label>';
-		echo '<p class="description">' . esc_html__('Ne işe yarar: Form satırlarının solundaki küçük ikonları aç/kapatır. Kapalıysa alanlar daha sade görünür. Ürün kartındaki “Alan ikonları” anahtarı ürün bazında ezer.', 'woo-donation-popup') . '</p>';
+		echo esc_html__('Ad, not ve e-posta satırlarındaki ikonlar', 'woo-donation-popup') . '</label>';
+		echo '<p class="description">' . esc_html__('Ne işe yarar: Form satırlarının solundaki küçük ikonları aç/kapatır. Kapalıysa alanlar daha sade görünür. Ürün kartında Genel/Açık/Kapalı seçimi ürün bazında ezer.', 'woo-donation-popup') . '</p>';
 		echo '</td></tr>';
 		echo '</table>';
 
