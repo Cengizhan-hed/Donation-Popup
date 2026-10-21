@@ -83,18 +83,20 @@ class WDP_Shortcodes {
 	 * @return string
 	 */
 	public static function render_button($atts, $shortcode_tag, $display_mode, $context = array(), $lazy = false) {
-		$atts = shortcode_atts(
+		$raw_atts = is_array($atts) ? $atts : array();
+		$atts     = shortcode_atts(
 			array(
-				'id'      => 0,
-				'slug'    => '',
-				'sku'     => '',
-				'text'    => '',
-				'class'   => '',
-				'style'   => '',
+				'id'          => 0,
+				'slug'        => '',
+				'sku'         => '',
+				'text'        => '',
+				'button_text' => '',
+				'class'       => '',
 			),
-			is_array($atts) ? $atts : array(),
+			$raw_atts,
 			$shortcode_tag
 		);
+		unset($raw_atts['style']);
 
 		$resolved = self::resolve_for_output($atts, $context);
 		if (is_string($resolved)) {
@@ -104,28 +106,14 @@ class WDP_Shortcodes {
 		$product_id = (int) $product->get_id();
 		$notice     = $resolved['notice'];
 
-		if (!$product->is_purchasable()) {
-			return WDP_Utils::admin_notice_html(
-				sprintf(
-					/* translators: %d: product ID */
-					__('Bu ürün satın alınamaz (ID: %d).', 'woo-donation-popup'),
-					$product_id
-				)
-			);
-		}
-		if (!$product->is_in_stock()) {
-			return WDP_Utils::admin_notice_html(
-				sprintf(
-					/* translators: %d: product ID */
-					__('Bu ürün stokta yok (ID: %d).', 'woo-donation-popup'),
-					$product_id
-				)
-			);
+		if (self::product_is_unavailable($product)) {
+			return self::unavailable_product_notice($product);
 		}
 
-		$custom_class = sanitize_html_class($atts['class']);
-		$custom_style = sanitize_text_field($atts['style']);
-		$button_text  = self::resolve_button_text($atts['text']);
+		$custom_class = self::sanitize_class_list($atts['class']);
+		$button_text  = self::resolve_button_text(
+			$atts['text'] !== '' ? $atts['text'] : $atts['button_text']
+		);
 
 		self::enqueue_front();
 
@@ -157,14 +145,13 @@ class WDP_Shortcodes {
 				data-wdp-mode="<?php echo esc_attr($is_side_panel ? 'side_panel' : 'popup'); ?>"
 				<?php if ($goal_closed) : ?>aria-disabled="true" data-wdp-goal-closed="1" data-wdp-goal-message="<?php echo esc_attr(WDP_Campaign_Goal::resolve_message($product_id)); ?>"<?php endif; ?>
 				<?php if ($is_side_panel) : ?>data-wdp-modal-id="<?php echo esc_attr($modal_id); ?>" <?php endif; ?>
-				<?php if ($lazy) : ?>data-wdp-lazy="1"<?php endif; ?>
-				<?php if ($custom_style !== '') : ?>style="<?php echo esc_attr($custom_style); ?>"<?php endif; ?>>
+				<?php if ($lazy) : ?>data-wdp-lazy="1"<?php endif; ?>>
 			<?php echo esc_html($button_text); ?>
 		</button>
 		<?php
 		WDP_Render_Registry::mark_trigger($product_id);
 		if (!$lazy && WDP_Render_Registry::claim_modal($modal_id)) {
-			echo WDP_Templates::render_donation_modal($product_id, $button_text, $custom_class, $custom_style, $display_mode); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			echo WDP_Templates::render_donation_modal($product_id, $button_text, $custom_class, '', $display_mode); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		}
 		return (string) ob_get_clean();
 	}
@@ -177,19 +164,24 @@ class WDP_Shortcodes {
 	 * @return string
 	 */
 	public static function render_form($atts, $context = array()) {
+		$raw  = is_array($atts) ? $atts : array();
 		$atts = shortcode_atts(
 			array(
 				'id'          => 0,
 				'slug'        => '',
 				'sku'         => '',
-				'button_text' => __('Bağış Yap', 'woo-donation-popup'),
+				'button_text' => '',
+				'text'        => '',
 				'title'       => '',
 				'show_title'  => 'yes',
 				'class'       => '',
 			),
-			is_array($atts) ? $atts : array(),
+			$raw,
 			'wdp_donation_form'
 		);
+		$atts['class'] = self::sanitize_class_list($atts['class']);
+		// Inline form ignores button_text/text (Sepete Ekle / Ödemeye Git genel ayardan gelir).
+		unset($atts['button_text'], $atts['text']);
 
 		$resolved = self::resolve_for_output($atts, $context);
 		if (is_string($resolved)) {
@@ -198,6 +190,10 @@ class WDP_Shortcodes {
 		$product    = $resolved['product'];
 		$product_id = (int) $product->get_id();
 		$notice     = $resolved['notice'];
+
+		if (self::product_is_unavailable($product)) {
+			return self::unavailable_product_notice($product);
+		}
 
 		if (!WDP_Render_Registry::claim_form($product_id)) {
 			return WDP_Render_Registry::duplicate_form_notice($product_id);
@@ -242,9 +238,74 @@ class WDP_Shortcodes {
 	}
 
 	/**
-	 * @param mixed $text Attribute text.
+	 * Space-separated HTML classes; each token is sanitized separately.
+	 *
+	 * @param mixed $raw Raw class attribute.
 	 * @return string
 	 */
+	public static function sanitize_class_list($raw) {
+		$parts = preg_split('/\s+/', is_scalar($raw) ? trim((string) $raw) : '');
+		$out   = array();
+		foreach ((array) $parts as $part) {
+			$clean = sanitize_html_class($part);
+			if ($clean !== '' && !in_array($clean, $out, true)) {
+				$out[] = $clean;
+			}
+		}
+		return implode(' ', $out);
+	}
+
+	/**
+	 * Shared stock / purchasable check for button and inline form.
+	 *
+	 * @param object $product WC_Product.
+	 * @return bool
+	 */
+	public static function product_is_unavailable($product) {
+		if (!is_object($product) || !method_exists($product, 'get_id')) {
+			return false;
+		}
+		if (method_exists($product, 'is_purchasable') && !$product->is_purchasable()) {
+			return true;
+		}
+		if (method_exists($product, 'is_in_stock') && !$product->is_in_stock()) {
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Admin-only notice when the product cannot be donated; guests see empty output.
+	 *
+	 * @param object $product WC_Product.
+	 * @return string
+	 */
+	public static function unavailable_product_notice($product) {
+		if (!self::product_is_unavailable($product)) {
+			return '';
+		}
+		$product_id = (int) $product->get_id();
+		if (method_exists($product, 'is_purchasable') && !$product->is_purchasable()) {
+			return WDP_Utils::admin_notice_html(
+				sprintf(
+					/* translators: %d: product ID */
+					__('Bu ürün satın alınamaz (ID: %d).', 'woo-donation-popup'),
+					$product_id
+				)
+			);
+		}
+		if (method_exists($product, 'is_in_stock') && !$product->is_in_stock()) {
+			return WDP_Utils::admin_notice_html(
+				sprintf(
+					/* translators: %d: product ID */
+					__('Bu ürün stokta yok (ID: %d).', 'woo-donation-popup'),
+					$product_id
+				)
+			);
+		}
+		return '';
+	}
+
 	public static function resolve_button_text($text) {
 		$text = is_scalar($text) ? sanitize_text_field((string) $text) : '';
 		if ($text !== '') {

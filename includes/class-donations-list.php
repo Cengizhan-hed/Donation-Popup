@@ -27,6 +27,41 @@ class WDP_Donations_List {
 	/** @var bool */
 	private static $invalidation_hooked = false;
 
+	/** @var bool One bump per HTTP request (option increment is cheap; skip repeats). */
+	private static $bumped_this_request = false;
+
+	const UID_PLACEHOLDER   = '{{WDP_LIST_UID}}';
+	const PANEL_PLACEHOLDER = '{{WDP_LIST_PANEL}}';
+
+	/**
+	 * Events that already called bump_cache in 10.32.0 (measured from source before this version).
+	 *
+	 * @return array<string, bool>
+	 */
+	public static function bump_events_before_10_33_0() {
+		return array(
+			'set_object_terms'                   => true,
+			'woocommerce_product_set_stock'      => true,
+			'woocommerce_product_set_stock_status' => true,
+			'created_product_cat'                => true,
+			'edited_product_cat'                 => true,
+			'delete_product_cat'                 => true,
+			'woocommerce_update_product'         => false,
+			'woocommerce_new_product'            => false,
+			'save_post_product'                  => false,
+			'trashed_post'                       => false,
+			'untrashed_post'                     => false,
+			'before_delete_post'                 => false,
+			'transition_post_status'             => false,
+			'updated_post_meta:_price'           => false,
+			'updated_post_meta:_regular_price'   => false,
+			'updated_post_meta:_sale_price'      => false,
+			'product_settings_save'              => false,
+			'woocommerce_order_status_changed'   => false,
+			'woocommerce_order_refunded'         => false,
+		);
+	}
+
 	/**
 	 * @return void
 	 */
@@ -41,6 +76,18 @@ class WDP_Donations_List {
 		add_action('created_product_cat', array(__CLASS__, 'bump_cache'));
 		add_action('edited_product_cat', array(__CLASS__, 'bump_cache'));
 		add_action('delete_product_cat', array(__CLASS__, 'bump_cache'));
+		add_action('woocommerce_update_product', array(__CLASS__, 'bump_cache'));
+		add_action('woocommerce_new_product', array(__CLASS__, 'bump_cache'));
+		add_action('save_post_product', array(__CLASS__, 'on_save_post_product'), 20, 3);
+		add_action('trashed_post', array(__CLASS__, 'on_product_post_event'), 10, 1);
+		add_action('untrashed_post', array(__CLASS__, 'on_product_post_event'), 10, 1);
+		add_action('before_delete_post', array(__CLASS__, 'on_product_post_event'), 10, 1);
+		add_action('transition_post_status', array(__CLASS__, 'on_transition_post_status'), 10, 3);
+		add_action('updated_post_meta', array(__CLASS__, 'on_product_meta'), 10, 4);
+		add_action('added_post_meta', array(__CLASS__, 'on_product_meta'), 10, 4);
+		add_action('deleted_post_meta', array(__CLASS__, 'on_product_meta'), 10, 4);
+		add_action('woocommerce_order_status_changed', array(__CLASS__, 'bump_cache'));
+		add_action('woocommerce_order_refunded', array(__CLASS__, 'bump_cache'));
 	}
 
 	/**
@@ -58,9 +105,46 @@ class WDP_Donations_List {
 	}
 
 	/**
-	 * @param array $atts Attributes.
+	 * Map Elementor list widget settings to shortcode attributes (responsive columns included).
+	 *
+	 * @param array $s Elementor settings.
 	 * @return array<string, mixed>
 	 */
+	public static function atts_from_elementor_settings($s) {
+		$s = is_array($s) ? $s : array();
+		return array(
+			'categories'         => isset($s['categories']) ? $s['categories'] : '',
+			'exclude_categories' => isset($s['exclude_categories']) ? $s['exclude_categories'] : '',
+			'ids'                => isset($s['ids']) ? $s['ids'] : '',
+			'exclude'            => isset($s['exclude']) ? $s['exclude'] : '',
+			'type'               => isset($s['type']) ? $s['type'] : '',
+			'limit'              => isset($s['limit']) ? $s['limit'] : 48,
+			'orderby'            => isset($s['orderby']) ? $s['orderby'] : 'menu_order',
+			'order'              => isset($s['order']) ? $s['order'] : 'ASC',
+			'tabs'               => !empty($s['tabs']) ? $s['tabs'] : 'no',
+			'tab_all'            => !empty($s['tab_all']) ? $s['tab_all'] : 'no',
+			'tab_all_label'      => isset($s['tab_all_label']) ? $s['tab_all_label'] : '',
+			'columns'            => isset($s['columns']) ? $s['columns'] : 3,
+			'columns_tablet'     => isset($s['columns_tablet']) ? $s['columns_tablet'] : 2,
+			'columns_mobile'     => isset($s['columns_mobile']) ? $s['columns_mobile'] : 1,
+			'gap'                => isset($s['gap']) ? $s['gap'] : 24,
+			'image_ratio'        => isset($s['image_ratio']) ? $s['image_ratio'] : '4:3',
+			'image_size'         => isset($s['image_size']) ? $s['image_size'] : 'woocommerce_thumbnail',
+			'align'              => isset($s['align']) ? $s['align'] : 'center',
+			'button'             => isset($s['button']) ? $s['button'] : 'panel',
+			'button_full'        => !empty($s['button_full']) ? $s['button_full'] : 'no',
+			'button_text'        => isset($s['button_text']) ? $s['button_text'] : '',
+			'show_image'         => !empty($s['show_image']) ? $s['show_image'] : 'no',
+			'show_excerpt'       => !empty($s['show_excerpt']) ? $s['show_excerpt'] : 'no',
+			'show_progress'      => !empty($s['show_progress']) ? $s['show_progress'] : 'no',
+			'show_price'         => !empty($s['show_price']) ? $s['show_price'] : 'no',
+			'show_category'      => !empty($s['show_category']) ? $s['show_category'] : 'no',
+			'excerpt_words'      => isset($s['excerpt_words']) ? $s['excerpt_words'] : 18,
+			'heading_tag'        => isset($s['heading_tag']) ? $s['heading_tag'] : 'h3',
+			'class'              => isset($s['class']) ? $s['class'] : '',
+		);
+	}
+
 	public static function sanitize_atts($atts) {
 		$atts  = is_array($atts) ? $atts : array();
 		$yesno = static function ($value, $default) {
@@ -152,7 +236,9 @@ class WDP_Donations_List {
 				? sanitize_key((string) $atts['image_size'])
 				: 'woocommerce_thumbnail',
 			'heading_tag'        => $heading,
-			'class'              => isset($atts['class']) ? sanitize_html_class((string) $atts['class']) : '',
+			'class'              => isset($atts['class']) && class_exists('WDP_Shortcodes')
+				? WDP_Shortcodes::sanitize_class_list($atts['class'])
+				: (isset($atts['class']) ? sanitize_html_class((string) $atts['class']) : ''),
 		);
 	}
 
@@ -164,11 +250,29 @@ class WDP_Donations_List {
 		$atts = self::sanitize_atts($atts);
 		self::enqueue_assets();
 
-		$cache_key = self::cache_key($atts);
-		$html      = get_transient($cache_key);
-		if (!is_string($html) || $html === '') {
-			$html = self::build_html($atts);
-			set_transient($cache_key, $html, DAY_IN_SECONDS);
+		$use_cache = $atts['orderby'] !== 'random';
+		$html      = '';
+		if ($use_cache) {
+			$cache_key = self::cache_key($atts);
+			$cached    = get_transient($cache_key);
+			if (is_string($cached) && $cached !== '') {
+				$html = $cached;
+			}
+		}
+		if ($html === '') {
+			$built = self::build_html($atts);
+			$html  = $built['html'];
+			if ($use_cache) {
+				set_transient(self::cache_key($atts), $html, DAY_IN_SECONDS);
+			}
+		} else {
+			$built = array('empty' => (strpos($html, 'wdp-list__empty') !== false));
+		}
+
+		$html = self::apply_request_ids($html);
+		if (!empty($built['empty']) && function_exists('current_user_can') && current_user_can('edit_products')) {
+			$notice = WDP_Utils::admin_notice_html(self::empty_reason($atts));
+			$html   = preg_replace('/(<div\b[^>]*\bclass="[^"]*wdp-list-wrap[^"]*"[^>]*>)/', '$1' . $notice, $html, 1);
 		}
 
 		self::collect_schema_from_html($html);
@@ -181,11 +285,124 @@ class WDP_Donations_List {
 	}
 
 	/**
+	 * Increment list cache version once per request.
+	 *
 	 * @return void
 	 */
 	public static function bump_cache() {
+		if (self::$bumped_this_request) {
+			return;
+		}
+		self::$bumped_this_request = true;
 		$current = (int) get_option(self::CACHE_VERSION, 1);
 		update_option(self::CACHE_VERSION, $current + 1, false);
+	}
+
+	/**
+	 * @return void
+	 */
+	public static function reset_bump_guard() {
+		self::$bumped_this_request = false;
+	}
+
+	/**
+	 * @return void
+	 */
+	public static function reset_for_tests() {
+		self::$invalidation_hooked = false;
+		self::$bumped_this_request = false;
+		self::$footer_hooked       = false;
+		self::$schema_items        = array();
+	}
+
+	/**
+	 * Product settings panel saved (Bağış sekmesi).
+	 *
+	 * @return void
+	 */
+	public static function on_product_settings_save() {
+		self::bump_cache();
+	}
+
+	/**
+	 * @param int     $post_id Post ID.
+	 * @param WP_Post $post    Post.
+	 * @param bool    $update  Update.
+	 * @return void
+	 */
+	public static function on_save_post_product($post_id, $post = null, $update = true) {
+		unset($post, $update);
+		if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
+			return;
+		}
+		if (function_exists('wp_is_post_revision') && wp_is_post_revision($post_id)) {
+			return;
+		}
+		self::bump_cache();
+	}
+
+	/**
+	 * @param int $post_id Post ID.
+	 * @return void
+	 */
+	public static function on_product_post_event($post_id) {
+		if (self::post_is_product($post_id)) {
+			self::bump_cache();
+		}
+	}
+
+	/**
+	 * @param string  $new  New status.
+	 * @param string  $old  Old status.
+	 * @param WP_Post $post Post.
+	 * @return void
+	 */
+	public static function on_transition_post_status($new, $old, $post) {
+		if ($new === $old || !is_object($post)) {
+			return;
+		}
+		$type = isset($post->post_type) ? (string) $post->post_type : '';
+		if ($type === 'product' || $type === 'product_variation') {
+			self::bump_cache();
+		}
+	}
+
+	/**
+	 * Price or donation-progress meta on a product.
+	 *
+	 * @param int    $meta_id    Meta id.
+	 * @param int    $object_id  Post id.
+	 * @param string $meta_key   Key.
+	 * @param mixed  $meta_value Value.
+	 * @return void
+	 */
+	public static function on_product_meta($meta_id, $object_id, $meta_key, $meta_value = null) {
+		unset($meta_id, $meta_value);
+		$key  = (string) $meta_key;
+		$keys = array('_price', '_regular_price', '_sale_price', '_wdp_total_donation_amount', '_wdp_donor_count');
+		$watch = in_array($key, $keys, true);
+		if (!$watch && class_exists('WDP_Product_Settings_Service') && method_exists('WDP_Product_Settings_Service', 'get_settings_meta_keys')) {
+			$watch = in_array($key, WDP_Product_Settings_Service::get_settings_meta_keys(), true);
+		}
+		if (!$watch) {
+			return;
+		}
+		if (self::post_is_product($object_id)) {
+			self::bump_cache();
+		}
+	}
+
+	/**
+	 * @param int $post_id Post ID.
+	 * @return bool
+	 */
+	private static function post_is_product($post_id) {
+		$post_id = absint($post_id);
+		if ($post_id <= 0) {
+			return false;
+		}
+		$type = function_exists('get_post_type') ? get_post_type($post_id) : '';
+		return $type === 'product' || $type === 'product_variation';
 	}
 
 	/**
@@ -256,19 +473,31 @@ class WDP_Donations_List {
 	}
 
 	/**
-	 * @param array $atts Sanitized atts.
+	 * Replace cache-safe placeholders with per-request unique ids.
+	 *
+	 * @param string $html Cached HTML.
 	 * @return string
+	 */
+	public static function apply_request_ids($html) {
+		$uid   = function_exists('wp_unique_id') ? wp_unique_id('wdp-list-') : ('wdp-list-' . uniqid());
+		$panel = $uid . '-panel';
+		$html  = str_replace(self::UID_PLACEHOLDER, $uid, $html);
+		return str_replace(self::PANEL_PLACEHOLDER, $panel, $html);
+	}
+
+	/**
+	 * @param array $atts Sanitized atts.
+	 * @return array{html:string,empty:bool}
 	 */
 	private static function build_html($atts) {
 		$products = self::query_products($atts);
 		if (empty($products)) {
 			$msg = '<p class="wdp-list__empty">' . esc_html__('Şu anda gösterilecek bağış bulunmuyor.', 'woo-donation-popup') . '</p>';
-			$why = '';
-			if (function_exists('current_user_can') && current_user_can('edit_products')) {
-				$why = WDP_Utils::admin_notice_html(self::empty_reason($atts));
-			}
 			$class = 'wdp-list-wrap' . ($atts['class'] !== '' ? ' ' . esc_attr($atts['class']) : '');
-			return '<div class="' . $class . '">' . $why . $msg . '</div>';
+			return array(
+				'html'  => '<div class="' . $class . '" data-wdp-list-id="' . esc_attr(self::UID_PLACEHOLDER) . '">' . $msg . '</div>',
+				'empty' => true,
+			);
 		}
 
 		$ids    = array();
@@ -292,26 +521,34 @@ class WDP_Donations_List {
 			$wrap_class .= ' ' . $atts['class'];
 		}
 
+		$panel_id = self::PANEL_PLACEHOLDER;
+		$uid      = self::UID_PLACEHOLDER;
 		ob_start();
-		echo '<div class="' . esc_attr($wrap_class) . '" style="' . esc_attr($style) . '">';
+		echo '<div class="' . esc_attr($wrap_class) . '" style="' . esc_attr($style) . '" data-wdp-list-id="' . esc_attr($uid) . '">';
 		if (!empty($tabs)) {
-			echo self::tabs_html($tabs, $atts); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			echo self::tabs_html($tabs, $atts, $uid, $panel_id); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			$labelled = ($atts['tab_all'] === 'yes') ? ($uid . '-all') : ($uid . '-' . $tabs[0]['slug']);
+			echo '<ul class="wdp-list" role="tabpanel" id="' . esc_attr($panel_id) . '" aria-labelledby="' . esc_attr($labelled) . '">';
+		} else {
+			echo '<ul class="wdp-list" role="list">';
 		}
-		echo '<ul class="wdp-list" role="list">';
 		$index = 0;
 		foreach ($products as $product) {
 			$index++;
 			echo self::card_html($product, $atts, $totals, $index); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		}
 		echo '</ul></div>';
-		return (string) ob_get_clean();
+		return array(
+			'html'  => (string) ob_get_clean(),
+			'empty' => false,
+		);
 	}
 
 	/**
 	 * @param array $atts Sanitized atts.
 	 * @return WC_Product[]
 	 */
-	private static function query_products($atts) {
+	public static function query_products($atts) {
 		$tax_query  = array();
 		$meta_query = array();
 
@@ -347,11 +584,14 @@ class WDP_Donations_List {
 			$meta_query = WDP_Donation_Type::get_meta_query($atts['type'][0]);
 		}
 
-		$orderby = $atts['orderby'];
-		$args    = array(
+		$orderby  = $atts['orderby'];
+		$limit    = (int) $atts['limit'];
+		$multi    = count($atts['type']) > 1;
+		$per_page = $multi ? min(100, max($limit * 4, $limit)) : min(100, max($limit * 2, $limit));
+		$args     = array(
 			'post_type'              => 'product',
 			'post_status'            => 'publish',
-			'posts_per_page'         => min(100, max((int) $atts['limit'] * 2, (int) $atts['limit'])),
+			'posts_per_page'         => $per_page,
 			'order'                  => $atts['order'],
 			'ignore_sticky_posts'    => true,
 			'no_found_rows'          => true,
@@ -391,26 +631,42 @@ class WDP_Donations_List {
 		 * @param array $args WP_Query args.
 		 * @param array $atts Sanitized attributes.
 		 */
-		$args  = apply_filters('wdp_donations_query_args', $args, $atts);
-		$query = new WP_Query($args);
-		$out   = array();
-		foreach ($query->posts as $post) {
-			$product = wc_get_product($post);
-			if (!$product || !WDP_Donation_Scope::is_donation_product($product)) {
-				continue;
-			}
-			if (!$product->is_purchasable() || !$product->is_in_stock() || !$product->is_visible()) {
-				continue;
-			}
-			if (!empty($atts['type']) && !in_array(WDP_Donation_Type::for_product($product->get_id()), $atts['type'], true)) {
-				continue;
-			}
-			$out[] = $product;
-			if (count($out) >= (int) $atts['limit']) {
+		$args = apply_filters('wdp_donations_query_args', $args, $atts);
+		$out  = array();
+		$page = 1;
+		$max  = 20;
+		while (count($out) < $limit && $page <= $max) {
+			$args['paged'] = $page;
+			$query         = new WP_Query($args);
+			$posts         = is_object($query) && isset($query->posts) ? $query->posts : array();
+			if (empty($posts)) {
 				break;
 			}
+			foreach ($posts as $post) {
+				$product = wc_get_product($post);
+				if (!$product || !WDP_Donation_Scope::is_donation_product($product)) {
+					continue;
+				}
+				if (!$product->is_purchasable() || !$product->is_in_stock() || !$product->is_visible()) {
+					continue;
+				}
+				if (!empty($atts['type']) && !in_array(WDP_Donation_Type::for_product($product->get_id()), $atts['type'], true)) {
+					continue;
+				}
+				$out[] = $product;
+				if (count($out) >= $limit) {
+					break;
+				}
+			}
+			$got = count($posts);
+			if ($got < $per_page) {
+				break;
+			}
+			$page++;
 		}
-		wp_reset_postdata();
+		if (function_exists('wp_reset_postdata')) {
+			wp_reset_postdata();
+		}
 		return $out;
 	}
 
@@ -474,20 +730,23 @@ class WDP_Donations_List {
 	}
 
 	/**
-	 * @param array $tabs Tabs.
-	 * @param array $atts Atts.
+	 * @param array  $tabs     Tabs.
+	 * @param array  $atts     Atts.
+	 * @param string $uid      Tablist unique id (placeholder allowed).
+	 * @param string $panel_id Panel element id (placeholder allowed).
 	 * @return string
 	 */
-	private static function tabs_html(array $tabs, array $atts) {
-		$uid = 'wdp-list-tabs-' . wp_unique_id();
+	private static function tabs_html(array $tabs, array $atts, $uid = '', $panel_id = '') {
+		$uid      = $uid !== '' ? $uid : self::UID_PLACEHOLDER;
+		$panel_id = $panel_id !== '' ? $panel_id : self::PANEL_PLACEHOLDER;
 		ob_start();
-		echo '<div class="wdp-list__tabs" role="tablist" aria-label="' . esc_attr__('Bağış kategorileri', 'woo-donation-popup') . '" data-wdp-tabs>';
+		echo '<div class="wdp-list__tabs" role="tablist" aria-label="' . esc_attr__('Bağış kategorileri', 'woo-donation-popup') . '" data-wdp-tabs data-wdp-tabs-id="' . esc_attr($uid) . '">';
 		if ($atts['tab_all'] === 'yes') {
-			echo '<button type="button" class="wdp-list__tab is-active" role="tab" id="' . esc_attr($uid . '-all') . '" aria-selected="true" aria-controls="' . esc_attr($uid) . '" data-wdp-tab="all">' . esc_html($atts['tab_all_label']) . '</button>';
+			echo '<button type="button" class="wdp-list__tab is-active" role="tab" id="' . esc_attr($uid . '-all') . '" aria-selected="true" aria-controls="' . esc_attr($panel_id) . '" tabindex="0" data-wdp-tab="all">' . esc_html($atts['tab_all_label']) . '</button>';
 		}
 		foreach ($tabs as $tab) {
 			$hash = 'bagis-' . $tab['slug'];
-			echo '<button type="button" class="wdp-list__tab" role="tab" id="' . esc_attr($uid . '-' . $tab['slug']) . '" aria-selected="false" aria-controls="' . esc_attr($uid) . '" data-wdp-tab="' . esc_attr($tab['slug']) . '" data-wdp-hash="' . esc_attr($hash) . '">' . esc_html($tab['name']) . '</button>';
+			echo '<button type="button" class="wdp-list__tab" role="tab" id="' . esc_attr($uid . '-' . $tab['slug']) . '" aria-selected="false" aria-controls="' . esc_attr($panel_id) . '" tabindex="-1" data-wdp-tab="' . esc_attr($tab['slug']) . '" data-wdp-hash="' . esc_attr($hash) . '">' . esc_html($tab['name']) . '</button>';
 		}
 		echo '</div>';
 		return (string) ob_get_clean();
@@ -666,7 +925,7 @@ class WDP_Donations_List {
 	 * @param array $atts Sanitized atts.
 	 * @return string
 	 */
-	private static function cache_key($atts) {
+	public static function cache_key($atts) {
 		$locale   = function_exists('determine_locale') ? determine_locale() : get_locale();
 		$currency = function_exists('get_woocommerce_currency') ? get_woocommerce_currency() : '';
 		$version  = defined('WDP_VERSION') ? WDP_VERSION : '';

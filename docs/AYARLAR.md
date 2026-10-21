@@ -344,17 +344,83 @@ Aşağıdaki her alan için: ekran adı, ne işe yarar, hangi tipte görünür /
 
 ### Kısa kodlar
 
-- **Ekran adı:** Kısa kod kutuları (ayar değil)  
-- **Ne işe yarar:** Buton (ortada), sağ panel, sayfa içi form vb. kodları kopyalama.  
-- **Nasıl denenir:** Kodu bir sayfaya yapıştırıp ön yüzü kontrol edin.
+Ürün sekmesinde ve Ürünler tablosunda üç kod kopyalanır: buton, panel, form (hepsi `id="…"` ile). Gutenberg blokları ve Elementor widget’ları aynı render fonksiyonlarını kullanır.
+
+**Kapsam atlama:** `id`, `slug` veya `sku` ile ürün açıkça verilirse bağış kapsamı kontrolü uygulanmaz (ürün kapsam dışında da çalışır). Kimlik verilmezse (mevcut ürün sayfası) kapsam dışındaki ürün boş döner; uyarı yalnız `edit_products` yetkilisine görünür.
+
+**`style`:** `[wdp_donation_button]` ve panel için kaldırıldı; verilirse yok sayılır (eski içerik bozulmaz).
+
+#### `[wdp_donation_button]` — ortada pencere
+
+Blok: Gutenberg **Bağış formu** (`wdp/donation-form`, görünüm = popup). Elementor: **Bağış Formu** (görünüm = ortada pencere).
+
+| Öznitelik | Varsayılan | Sınır | Açıklama |
+|-----------|------------|-------|----------|
+| `id` | (yok) | pozitif tam sayı | WooCommerce ürün ID. |
+| `slug` | (yok) | slug | Ürün kısa adı. |
+| `sku` | (yok) | metin | Stok kodu. |
+| `text` / `button_text` | genel “Bağış Yap” | düz metin | Popup buton yazısı (`text` yoksa `button_text`). |
+| `class` | (yok) | boşlukla ayrılmış sınıflar; her parça `sanitize_html_class` | Ek CSS sınıfı. |
+| `style` | — | yok sayılır | Eski içerik uyumu. |
+
+#### `[wdp_donation_button_panel]` — sağ panel
+
+Blok/widget: aynı form bloğu, görünüm = panel. Öznitelikler buton ile aynı.
+
+#### `[wdp_donation_form]` — sayfa içi form
+
+Blok: görünüm = sayfa içi form. Elementor: görünüm = sayfa içi form. Stoksuz veya satın alınamaz üründe form basılmaz (yetkiliye uyarı). `text` / `button_text` yok sayılır (Sepete Ekle / Ödemeye Git genel ayardan gelir); blok ve widget inline iken alanı gizler.
+
+| Öznitelik | Varsayılan | Sınır | Açıklama |
+|-----------|------------|-------|----------|
+| `id` / `slug` / `sku` | (yok) | aynı | Ürün seçimi; kapsam atlama notu yukarıda. |
+| `show_title` | `yes` | `yes` / `no` | Ürün başlığı. |
+| `title` | (ürün adı) | metin | Başlık metni. |
+| `class` | (yok) | çoklu sınıf, parça parça temizlenir | Ek CSS sınıfı. |
+| `text` / `button_text` | — | yok sayılır | Yalnız popup/panelde kullanılır. |
+
+#### `[wdp_donations]` — bağış listesi
+
+Blok: **Bağış listesi** (`wdp/donations`). Elementor: **Bağış Listesi** (`columns_tablet` / `columns_mobile` ve `image_size` kısa koda geçer). 1 gün HTML önbelleği; `orderby=random` önbelleği atlar. Admin boş-liste notu ve sekme `id` önbelleğe girmez.
+
+| Öznitelik | Varsayılan | Sınır | Açıklama |
+|-----------|------------|-------|----------|
+| `categories` | (tümü) | slug CSV | Kategori süzgeci. |
+| `exclude_categories` | (yok) | slug CSV | Hariç kategoriler. |
+| `ids` | (yok) | ID CSV | Yalnız bu ürünler. |
+| `exclude` | (yok) | ID CSV | Hariç ürünler. |
+| `type` | (tümü) | `fixed,custom,shares,campaign` | Çok tipte liste `limit`’e kadar doldurulur. |
+| `limit` | `48` | 1–100 | Ürün sayısı. |
+| `orderby` | `menu_order` | `menu_order` / `date` / `title` / `popularity` / `random` | Sıra; `random` önbellek yok. |
+| `order` | `ASC` | `ASC` / `DESC` | Yön. |
+| `tabs` | `yes` | `yes` / `no` | Kategori sekmeleri (ARIA tab/tabpanel). |
+| `tab_all` | `yes` | `yes` / `no` | “Tümü” sekmesi. |
+| `tab_all_label` | `Tümü` | metin | Tümü etiketi. |
+| `columns` | `3` | 1–6 | Masaüstü sütun. |
+| `columns_tablet` | `2` | 1–6 | Tablet sütun. |
+| `columns_mobile` | `1` | 1–6 | Mobil sütun. |
+| `gap` | `24` | 0–64 px | Kart boşluğu. |
+| `image_ratio` | `4:3` | `1:1` `4:3` `3:2` `16:9` `original` | Görsel oranı. |
+| `align` | `center` | `center` / `left` | Hiza. |
+| `button` | `panel` | `panel` / `popup` / `link` | Kart butonu. |
+| `button_full` | `yes` | `yes` / `no` | Buton tam genişlik. |
+| `button_text` | (genel) | metin | Kart buton yazısı. |
+| `show_image` | `yes` | `yes` / `no` | Görsel. |
+| `show_excerpt` | `no` | `yes` / `no` | Özet. |
+| `show_progress` | `yes` | `yes` / `no` | İlerleme. |
+| `show_price` | `yes` | `yes` / `no` | Fiyat. |
+| `show_category` | `no` | `yes` / `no` | Kategori. |
+| `excerpt_words` | `18` | 0–60 | Özet kelime. |
+| `image_size` | `woocommerce_thumbnail` | WP görsel boyutu | Kart görseli. |
+| `heading_tag` | `h3` | `h2` `h3` `h4` | Kart başlığı. |
+| `class` | (yok) | çoklu sınıf | Ek CSS sınıfı. |
+
+**Nasıl denenir:** Ürün sekmesinden kodu kopyalayıp bir sayfaya yapıştırın; ön yüzde buton/panel/form ve liste sekmelerini kontrol edin.
 
 ---
 
-## Alt bağış bağlantıları (Gelişmiş)
+## Alt bağış (Gelişmiş tablosu kaldırıldı)
 
-10.28.4 güncellemesi, “Alt bağış ekle” kapalıyken dolu kalmış veya geçersiz `_sadaka_wc_product_id` değerlerini temizler. Sonuç:
-
-1. **Ayarlar → Gelişmiş → Alt bağış bağlantıları** tablosunda ana ürün → alt bağış ürünü ve durum (geçerli / temizlendi + neden).  
-2. Aynı özet `wdp_migration_log` seçeneğinde (sürüm 10.28.4 satırı) tutulur.
+10.28.4 bir kerelik `_sadaka_wc_product_id` temizliği `wdp_migration_log` ve (silinmeyen) `wdp_sadaka_links_audit` seçeneğinde durur. 10.33.0’dan itibaren Gelişmiş sekmesinde denetim tablosu yoktur.
 
 **10.28.5:** Alt bağış bağlantısı bir ürünün görünürlüğünü veya bağış ürünü olmasını etkilemez. Aynı ürün hem kendi sayfasında/listelerde bağış ürünü olabilir hem de başka bir ürünün alt bağışı olarak seçilebilir. Listede gizlemek isterseniz WooCommerce ürün ayarında **Katalog görünürlüğü: Gizli** kullanın. Ürünler tablosunda bilgi rozeti: “Alt bağış olarak kullanılıyor (N)” (üzerine gelince ana ürün adları).

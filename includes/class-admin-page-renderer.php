@@ -132,10 +132,10 @@ class WDP_Admin_Page_Renderer {
 
 		echo '<form id="wdp-advanced-settings-form" class="wdp-admin-settings-form" method="post" data-wdp-ajax-action="wdp_save_advanced_settings">';
 		echo '<table class="form-table" role="presentation"><tbody><tr>';
-		echo '<th scope="row">' . esc_html__('Eklenti kaldırılınca tüm verilerini sil', 'woo-donation-popup') . '</th><td>';
-		echo '<label><input type="checkbox" name="delete_data_on_uninstall" value="1"' . checked($delete_on_uninstall, true, false) . ' /> ';
+		echo '<th scope="row">' . esc_html__('Eklenti kaldırılınca verileri sil', 'woo-donation-popup') . '</th><td>';
+		echo '<label><input type="checkbox" name="delete_data_on_uninstall" id="wdp-delete-data-on-uninstall" value="1"' . checked($delete_on_uninstall, true, false) . ($delete_on_uninstall ? ' data-wdp-was-on="1"' : '') . ' /> ';
 		echo esc_html__('Etkin', 'woo-donation-popup') . '</label>';
-		echo '<p class="description">' . esc_html__('Açıksa eklenti silindiğinde wdp_ ile başlayan ayarlar, geçici veriler (transient) ve ürün meta verileri kaldırılır. Siparişlerdeki bağış verilerine dokunulmaz. Varsayılan: kapalı.', 'woo-donation-popup') . '</p>';
+		echo '<p class="description">' . esc_html__('Eklentinin tüm ürün ayarları ve eklenti seçenekleri silinir. Siparişlere ve sipariş kayıtlarına dokunulmaz. Bu işlem geri alınamaz.', 'woo-donation-popup') . '</p>';
 		echo '</td></tr></tbody></table>';
 
 		echo '<p class="submit">';
@@ -144,84 +144,7 @@ class WDP_Admin_Page_Renderer {
 		echo '</p>';
 		echo '</form>';
 
-		self::render_sadaka_links_table();
 		echo '</div>';
-	}
-
-	/**
-	 * Alt bağış bağlantıları (geçiş denetimi + güncel durum).
-	 *
-	 * @return void
-	 */
-	private static function render_sadaka_links_table() {
-		$audit_key = class_exists('WDP_Sadaka_Product_Visibility')
-			? WDP_Sadaka_Product_Visibility::AUDIT_OPTION
-			: 'wdp_sadaka_links_audit';
-		$audit = get_option($audit_key, array());
-		$rows  = (is_array($audit) && isset($audit['rows']) && is_array($audit['rows'])) ? $audit['rows'] : array();
-
-		$reason_labels = array(
-			'self_ref'             => __('Ana ürün kendi ID’sini gösteriyordu', 'woo-donation-popup'),
-			'enable_off'           => __('“Alt bağış ekle” kapalıyken dolu kalmıştı', 'woo-donation-popup'),
-			'missing'              => __('Hedef ürün bulunamadı', 'woo-donation-popup'),
-			'not_simple_or_status' => __('Hedef basit / yayımlanmış ürün değil', 'woo-donation-popup'),
-			'missing_or_invalid'   => __('Genel varsayılan geçersiz', 'woo-donation-popup'),
-		);
-
-		echo '<div class="wdp-tab-help" role="note" style="margin-top:24px;">';
-		echo '<p class="wdp-tab-help__title">' . esc_html__('Alt bağış bağlantıları', 'woo-donation-popup') . '</p>';
-		echo '<p>' . esc_html__('Ana ürün → alt bağış ürünü eşlemeleri. 10.28.4 geçişi kurallara uymayan kayıtları temizler; ayrıntı wdp_migration_log seçeneğinde de tutulur.', 'woo-donation-popup') . '</p>';
-		echo '</div>';
-
-		if (empty($rows)) {
-			echo '<p class="description">' . esc_html__('Henüz denetim kaydı yok. Eklenti 10.28.4’e güncellenince veya geçiş yeniden çalışınca burada listelenir.', 'woo-donation-popup') . '</p>';
-			return;
-		}
-
-		echo '<table class="widefat striped wdp-sadaka-links-table" style="max-width:960px;">';
-		echo '<thead><tr>';
-		echo '<th>' . esc_html__('Ana ürün', 'woo-donation-popup') . '</th>';
-		echo '<th>' . esc_html__('Alt bağış ürünü', 'woo-donation-popup') . '</th>';
-		echo '<th>' . esc_html__('Durum', 'woo-donation-popup') . '</th>';
-		echo '</tr></thead><tbody>';
-		foreach ($rows as $row) {
-			if (!is_array($row)) {
-				continue;
-			}
-			$parent = isset($row['parent_label']) ? (string) $row['parent_label'] : '';
-			$sadaka = isset($row['sadaka_label']) ? (string) $row['sadaka_label'] : '';
-			$status = isset($row['status']) ? (string) $row['status'] : '';
-			$reason = isset($row['reason']) ? (string) $row['reason'] : '';
-			if ($status === 'valid') {
-				$status_text = __('Geçerli', 'woo-donation-popup');
-			} elseif ($status === 'cleaned') {
-				$why         = isset($reason_labels[ $reason ]) ? $reason_labels[ $reason ] : $reason;
-				$status_text = __('Temizlendi', 'woo-donation-popup') . ($why !== '' ? ' — ' . $why : '');
-			} else {
-				$why         = isset($reason_labels[ $reason ]) ? $reason_labels[ $reason ] : $reason;
-				$status_text = __('Geçersiz', 'woo-donation-popup') . ($why !== '' ? ' — ' . $why : '');
-			}
-			echo '<tr>';
-			echo '<td>' . esc_html($parent) . '</td>';
-			echo '<td>' . esc_html($sadaka) . '</td>';
-			echo '<td>' . esc_html($status_text) . '</td>';
-			echo '</tr>';
-		}
-		echo '</tbody></table>';
-
-		$log = get_option('wdp_migration_log', array());
-		if (is_array($log) && !empty($log)) {
-			$last = end($log);
-			if (is_array($last) && isset($last['version'], $last['message']) && (string) $last['version'] === '10.28.4') {
-				echo '<p class="description" style="margin-top:8px;">';
-				echo esc_html(sprintf(
-					/* translators: %s: migration summary */
-					__('Son geçiş özeti: %s', 'woo-donation-popup'),
-					(string) $last['message']
-				));
-				echo '</p>';
-			}
-		}
 	}
 
 	/**

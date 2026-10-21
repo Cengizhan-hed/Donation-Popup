@@ -19,7 +19,7 @@ if (!defined('WDP_PLUGIN_FILE')) {
 	define('WDP_PLUGIN_FILE', $root . '/woo-donation-popup.php');
 }
 if (!defined('WDP_VERSION')) {
-	define('WDP_VERSION', '10.32.0');
+	define('WDP_VERSION', '10.33.0');
 }
 if (!defined('MINUTE_IN_SECONDS')) {
 	define('MINUTE_IN_SECONDS', 60);
@@ -29,6 +29,12 @@ if (!defined('HOUR_IN_SECONDS')) {
 }
 if (!defined('DAY_IN_SECONDS')) {
 	define('DAY_IN_SECONDS', 86400);
+}
+if (!defined('WDP_PLUGIN_URL')) {
+	define('WDP_PLUGIN_URL', 'https://example.test/wp-content/plugins/woo-donation-popup/');
+}
+if (!defined('WDP_ASSET_VERSION')) {
+	define('WDP_ASSET_VERSION', '10.33.0');
 }
 
 /**
@@ -98,6 +104,12 @@ final class WDP_Test_State {
 	/** @var string */
 	public static $currency = 'TRY';
 
+	/** @var array<int, string> post_id => post_type */
+	public static $post_types = array();
+
+	/** @var int */
+	public static $unique_id = 0;
+
 	public static function reset(): void {
 		self::$options       = array();
 		self::$post_meta     = array();
@@ -120,7 +132,12 @@ final class WDP_Test_State {
 		self::$cron          = array();
 		self::$timezone      = 'Europe/Istanbul';
 		self::$currency      = 'TRY';
+		self::$post_types    = array();
+		self::$unique_id     = 0;
 		$GLOBALS['wpdb']     = new WDP_Fake_Wpdb();
+		if (class_exists('WDP_Donations_List') && method_exists('WDP_Donations_List', 'reset_for_tests')) {
+			WDP_Donations_List::reset_for_tests();
+		}
 		unset($GLOBALS['product']);
 		$_SERVER  = array();
 		$_GET     = array();
@@ -329,6 +346,17 @@ if (!function_exists('wp_parse_args')) {
 			$defaults = array();
 		}
 		return array_merge($defaults, $args);
+	}
+}
+if (!function_exists('shortcode_atts')) {
+	function shortcode_atts($pairs, $atts, $shortcode = '') {
+		$atts = is_array($atts) ? $atts : array();
+		$out  = array();
+		foreach ((array) $pairs as $name => $default) {
+			$out[ $name ] = array_key_exists($name, $atts) ? $atts[ $name ] : $default;
+		}
+		unset($shortcode);
+		return $out;
 	}
 }
 if (!function_exists('sanitize_html_class')) {
@@ -644,6 +672,97 @@ if (!function_exists('get_posts')) {
 			$out[] = (int) $id;
 		}
 		return $out;
+	}
+}
+if (!function_exists('get_post_type')) {
+	function get_post_type($post = null) {
+		$id = is_object($post) && isset($post->ID) ? (int) $post->ID : (int) $post;
+		if (isset(WDP_Test_State::$post_types[ $id ])) {
+			return WDP_Test_State::$post_types[ $id ];
+		}
+		return isset(WDP_Test_State::$products[ $id ]) ? 'product' : '';
+	}
+}
+if (!function_exists('wp_unique_id')) {
+	function wp_unique_id($prefix = '') {
+		WDP_Test_State::$unique_id++;
+		return $prefix . (string) WDP_Test_State::$unique_id;
+	}
+}
+if (!function_exists('taxonomy_exists')) {
+	function taxonomy_exists($taxonomy) {
+		return false;
+	}
+}
+if (!function_exists('wp_reset_postdata')) {
+	function wp_reset_postdata() {}
+}
+if (!function_exists('wp_enqueue_style')) {
+	function wp_enqueue_style(...$args) {}
+}
+if (!function_exists('wp_enqueue_script')) {
+	function wp_enqueue_script(...$args) {}
+}
+if (!function_exists('wp_script_add_data')) {
+	function wp_script_add_data(...$args) {}
+}
+if (!function_exists('home_url')) {
+	function home_url($path = '') {
+		return 'https://example.test' . $path;
+	}
+}
+if (!function_exists('wp_parse_url')) {
+	function wp_parse_url($url, $component = -1) {
+		return $component === -1 ? parse_url((string) $url) : parse_url((string) $url, $component);
+	}
+}
+if (!function_exists('get_locale')) {
+	function get_locale() {
+		return 'tr_TR';
+	}
+}
+if (!function_exists('determine_locale')) {
+	function determine_locale() {
+		return 'tr_TR';
+	}
+}
+if (!function_exists('wp_cache_flush_group')) {
+	function wp_cache_flush_group($group) {
+		return true;
+	}
+}
+if (!function_exists('wp_is_post_revision')) {
+	function wp_is_post_revision($post) {
+		return false;
+	}
+}
+if (!class_exists('WP_Query')) {
+	class WP_Query {
+		/** @var array */
+		public $posts = array();
+
+		public function __construct($args = array()) {
+			$args     = is_array($args) ? $args : array();
+			$limit    = isset($args['posts_per_page']) ? (int) $args['posts_per_page'] : 10;
+			$paged    = isset($args['paged']) ? max(1, (int) $args['paged']) : 1;
+			$include  = isset($args['post__in']) && is_array($args['post__in']) ? array_map('intval', $args['post__in']) : array();
+			$exclude  = isset($args['post__not_in']) && is_array($args['post__not_in']) ? array_map('intval', $args['post__not_in']) : array();
+			$ids      = array();
+			if (!empty($include)) {
+				$ids = $include;
+			} else {
+				$ids = array_keys(WDP_Test_State::$products);
+				sort($ids, SORT_NUMERIC);
+			}
+			$ids = array_values(array_diff($ids, $exclude));
+			$offset = ($paged - 1) * max(1, $limit);
+			$slice  = array_slice($ids, $offset, max(1, $limit));
+			foreach ($slice as $id) {
+				$p     = new stdClass();
+				$p->ID = (int) $id;
+				$this->posts[] = $p;
+			}
+		}
 	}
 }
 if (!function_exists('wc_get_price_decimals')) {

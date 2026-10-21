@@ -265,3 +265,52 @@ Görsel aşama: G17 yoğunluk CSS bağlama; G18 hikâye düzeni dar ekranda; G19
 | Dikkat | e2e:quick süresi ~150 sn → ~840 sn'ye çıktı (testler eklendi); refaktörde E2E hız/paralellik gözden geçirilecek |
 | Güvenlik notu | Ürün ayarı kaydı: nonce + manage_woocommerce + edit_post var (class-admin-product-data-tab.php:99-106) |
 | Görsel aşama | G17 yoğunluk CSS bağlama; G18 hikâye düzeni dar ekran; G19 karışık palet/köşe; koyu modal arka plan görsel doğrulama |
+
+## Bölüm: Kısa kod / blok / Elementor / Gelişmiş (analiz, 2026-10-20; kararlar bekliyor)
+
+Kapsam: [wdp_donation_button], [wdp_donation_button_panel], [wdp_donation_form], [wdp_donations], Gutenberg wdp/donation-form ve wdp/donations, Elementor "Bağış Formu" ve "Bağış Listesi", ürün sekmesi "Kısa kodlar", Ürünler sekmesi kısa kod sütunu, Gelişmiş sekmesi. Üç giriş (kısa kod, blok, widget) aynı render fonksiyonuna iniyor: yinelenen mantık yok.
+
+| Konu | Davranış sorunu | Teknik karar (Claude) |
+|------|-----------------|-----------------------|
+| `style` özniteliği (buton) | CSS enjeksiyonuna açık (düşük risk) | Kaldır (tema/Elementor stilini yapar) |
+| id/slug/sku ile verilen ürün | Bağış kapsamı kontrolü atlanıyor (bilinçli), belgede yok | AYARLAR.md'ye yaz |
+| `button_text` (form) | Ölü öznitelik: şablon kullanmıyor; blok/widget yanlış anahtar (`text`) gönderiyor | Yalnız popup/panelde göster, inline formda alanı gizle (karar 8a) |
+| Form: aynı ürün ikinci kez | Sessizce gizleniyor, editöre HTML yorumu | Mevcut hal (karar 4a) |
+| Ürünü çözülemeyen kod | Ziyaretçiye boş, not yalnız yöneticiye | Mevcut hal (karar 3a) |
+| Form: stoksuz/satın alınamaz | render_form'da kontrol yok (şablonda unavailable_notice kapsamı doğrulanacak) | Kontrol ekle |
+| [wdp_donations] önbellek | 1 gün transient; ürün kaydında (ad/fiyat/görsel/yayın) bump yok → bayat; sipariş tamamlanınca bump doğrulanacak; orderby=random 1 gün sabit; aynı öznitelikli iki liste aynı sekme id'si; boş sonuçta editörün admin notu cache'e girip ziyaretçiye gidebilir | Ürün kaydı/çöp/durum ve sipariş kancalarında bump; random için cache atla; admin notu ve sekme id'si cache dışı |
+| Liste sekmeleri | aria-controls hedefi yok, tabpanel rolü yok; list.js hash'te querySelector kırılabilir | ARIA tamamla; hash beyaz liste/CSS.escape |
+| Liste tip filtresi | Çok tipte limit'ten az ürün çıkabilir | Sorguyu düzelt |
+| Elementor ürün seçimi | 300 ürün sınırı, her yüklemede sorgu, yalnız simple | Ajax arama |
+| Elementor liste widget | image_size kontrolü yok | Ekle |
+| Ürün sekmesi "Kısa kodlar" | 6 satır, kimliksizler yanıltıcı | İş kararı 6 |
+| Ürünler tablosu filtresi | "Elle eklenmiş kısa kod" yalnız ürün içeriğine bakıyor, yanıltıcı | İş kararı 5 |
+| Gelişmiş: veri silme | Ürün ayarlarının çoğu `_enable_*`, `_sadaka_*` vb. wdp ön eksiz; uninstall bunları silmiyor; ekran metni yanlış/eksik; onay uyarısı yok; sipariş/HPOS dokunulmuyor (doğru) | İş kararı 7; onay kutusu + "geri alınamaz" metni |
+| Gelişmiş: alt bağış denetim tablosu | Bir kerelik 10.28.4 anlık görüntüsü, canlı değil; yeni kurulumda anlamsız | İş kararı 2 |
+| nopriv AJAX | wdp_render_modal sağlam (origin+hız sınırı, nonce'suz bilinçli); eski wdp_render_donation_button yolu ölü/yinelenen aday; get_product_name/info taslak/özel ürün sızdırıyor mu doğrulanacak | Eski yolu denetle, kullanılmıyorsa kaldır; sızıntı testi |
+| Belgelenme | AYARLAR.md öznitelik tablosu yok (README'de var) | AYARLAR.md'ye ekle |
+
+Güvenlik denetimi notu: origin başlığı yokken wdp_render_modal davranışı doğrulanacak; get_product_name/info sızıntı testi.
+Görsel aşama: G20 kapalı hedef butonunun görünümü (is-disabled), G21 tablo satır içi stiller (Gelişmiş).
+
+## Kararlar: Kısa kod (2026-10-21)
+
+| Kod | Karar |
+|-----|-------|
+| S1 a | [wdp_donations] kalır |
+| S2 a | Gelişmiş sekmesindeki "Alt bağış bağlantıları" denetim tablosu kaldırılır |
+| S3 a | Ürünler sekmesindeki "Elle eklenmiş kısa kod" filtresi kaldırılır |
+| S4 a | Ürün sekmesinde ve Ürünler tablosunda 3 kısa kod: buton, panel, form |
+| S5 a | Eklenti kaldırılınca tüm ürün ayarları (`_enable_*`, `_sadaka_*` dahil) ve eklenti seçenekleri silinir; siparişlere dokunulmaz; kaydederken "geri alınamaz" onay kutusu |
+| Ek şart | Liste önbelleği, ürünün WooCommerce fiyatı ve bağış sekmesi ayarları değiştiğinde de yenilenir |
+| Teknik kararlar | Onaylandı (liste önbelleği, ARIA, style kaldır, button_text, Elementor ajax, eski AJAX yolu) |
+| Onay | Toplu onay verildi (accept + commit + push + merge). Sonra ayar turu kapanır, 6. Durum + AŞAMA ÖZETİ + refaktör ön önerisi |
+| Sıra kararı | Ayar turundan sonra: 1) Ikram Aid test ortamı, 2) dil desteği (i18n), 3) refaktör |
+
+## Durum: 10.33.0 Kısa kod (kabul edildi, main'e merge) — AYAR TURU KAPANDI
+
+| Konu | Sonuç |
+|------|-------|
+| Test | verify + PHPUnit 242 + JS 43; e2e:quick 70/0/0; 10 ekran accept (fixed/shares/campaign/custom popup+panel: Ödemeye Git artık Sepete Ekle ile aynı mavi, 10.29.1 kararı tüm tiplere yayıldı; 1 px genişlik kayması) |
+| Güvenlik | Yetkisiz uçlar: taslak/özel/şifreli ürün sızıntısı yok; wdp_render_modal origin yok → reddedilir; eski nopriv wdp_render_donation_button kaldırıldı |
+| Uninstall | Açık anahtar listesi + onay; sipariş/HPOS/WooCommerce çekirdek silinmez |

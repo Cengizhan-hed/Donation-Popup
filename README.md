@@ -99,7 +99,7 @@ Aşağıda projedeki her kaynak dosyanın kısa Türkçe açıklaması yer alır
 | Dosya | Ne işe yarar |
 |-------|----------------|
 | `woo-donation-popup.php` | WordPress eklenti giriş dosyası; sabitleri tanımlar ve bootstrap sınıfını başlatır. |
-| `uninstall.php` | Kaldırmada yalnızca "Eklenti kaldırılınca tüm verilerini sil" açıksa `wdp_` option/transient ve ürün meta verilerini siler; sipariş verilerine dokunmaz. |
+| `uninstall.php` | "Eklenti kaldırılınca verileri sil" açıksa eklenti seçenekleri, transient’ler ve ürün bağış meta’sı silinir; siparişlere ve WooCommerce çekirdek anahtarlarına dokunulmaz. |
 
 ### `tools/` — Derleme araçları
 
@@ -350,7 +350,7 @@ npm run verify     # build + smoke
 | Kısa kod | Nitelikler | Ne basar |
 |----------|------------|----------|
 | `[wdp_donation_form]` | `id`, `slug`, `sku`, `show_title`, `title`, `class` | Sayfa içi form. id/slug/sku yoksa mevcut ürün. |
-| `[wdp_donation_button]` | `id`, `slug`, `sku`, `text`, `class`, `style` | Ortada açılan pencere. |
+| `[wdp_donation_button]` | `id`, `slug`, `sku`, `text` / `button_text`, `class` (`style` yok sayılır) | Ortada açılan pencere. |
 | `[wdp_donation_button_panel]` | aynı | Sağ panel. |
 | `[wdp_donations]` | `categories`, `exclude_categories`, `ids`, `exclude`, `type`, `limit` (1–100), `orderby` (menu_order/date/title/popularity/random), `order`, `tabs`, `tab_all`, `tab_all_label`, `columns` / `columns_tablet` / `columns_mobile` (1–6), `gap` (0–64), `image_ratio`, `align`, `button` (panel/popup/link), `button_full`, `button_text`, `show_image`, `show_excerpt`, `show_progress`, `show_price`, `show_category`, `excerpt_words`, `image_size`, `heading_tag`, `class` | Bağış listesi. |
 
@@ -377,7 +377,7 @@ Ayar varsayılanı, anlamı veya yapısı değişirse ya da bir özellik kaldır
 ## Avada’dan geçiş
 
 1. Single product layout’taki Code Block’a bir kez `[wdp_donation_button_panel]` veya `[wdp_donation_form]` ekleyin (id yok; layout ürün sayfasında o ürünü çözer). Avada Layout WooCommerce kancalarını çalıştırmadığı için otomatik yerleşim burada devreye girmez.
-2. Ürün kısa açıklamalarındaki eski `[wdp_donation_form id="…"]` kodlarını Ayarlar → Ürünler → **Elle eklenmiş kısa kod: Var** filtresiyle bulun ve temizleyin (çift form olmasın).
+2. Ürün kısa açıklamalarındaki eski `[wdp_donation_form id="…"]` kodlarını ürün içeriğinden temizleyin (çift form olmasın).
 3. Bağışlar sayfasındaki görsel+başlık+buton Code Block yığınını tek `[wdp_donations]` ile değiştirin.
 4. Ürün ID arayan özel snippet’leri (`[hd_panel_buton]` vb.) kaldırın; eklenti ürünü sayfa bağlamından çözer.
 
@@ -386,6 +386,15 @@ Ayar varsayılanı, anlamı veya yapısı değişirse ya da bir özellik kaldır
 Formun içindeki SSS modülü 10.27.0’da tamamen kaldırıldı. SSS’ler ürün sayfası içeriğinde tutulmalıdır (SEO ve Rank Math FAQ schema için). Eski `_enable_faq` / `_faq_items` meta değerleri güncellemede silinir.
 
 ## Sürüm notları
+
+### 10.33.0 — Kısa kod / blok / Elementor / Gelişmiş
+
+- `[wdp_donations]` önbelleği ürün kaydı, fiyat, bağış sekmesi ve sipariş durumunda yenilenir; `random` atlanır; admin notu cache’e girmez.
+- Liste sekmeleri ARIA; `style` özniteliği yok sayılır; `text`/`button_text` popup/panelde eşleşir.
+- Elementor ürün SELECT2 ajax; liste `image_size` + tablet/mobil sütun.
+- Admin: 3 kısa kod; elle kısa kod filtresi ve alt bağış denetim tablosu kaldırıldı.
+- Kaldırmada ürün ayarları açık listeyle silinir (siparişlere dokunulmaz); onay kutusu.
+- Kullanılmayan `wdp_render_donation_button` AJAX kaldırıldı; yayımlanmamış ürün bilgisi sızmaz.
 
 ### 10.32.0 — Bu ürüne özel görünüm + aydınlatma bağlantısı
 

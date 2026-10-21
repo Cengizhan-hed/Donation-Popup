@@ -144,8 +144,20 @@ class WDP_Security {
 
         // Check if user can view this product
         if (!current_user_can('edit_post', $product_id)) {
-            // For non-admins, check if product is published
             if ($product->get_status() !== 'publish') {
+                return false;
+            }
+            $password = '';
+            if (method_exists($product, 'get_post_password')) {
+                $password = (string) $product->get_post_password();
+            }
+            if ($password !== '') {
+                return false;
+            }
+            if (method_exists($product, 'is_visible') && !$product->is_visible()) {
+                return false;
+            }
+            if (method_exists($product, 'get_catalog_visibility') && $product->get_catalog_visibility() === 'hidden') {
                 return false;
             }
         }

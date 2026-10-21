@@ -126,15 +126,18 @@ Bitiş: verify + test → (gerekirse) npm run ship:staging → e2e:quick → RAP
 - Avada `fusion-animated` kartlar ~1.5 sn geç görünür; settle beklemesi var.
 - Teşhis: `build/e2e/traces/*-attempt1.json`, `build/e2e/debug/`.
 
-## 6. Durum (2026-10-20)
+## 6. Durum (2026-10-21)
 
-- `main` = `8458db8` (10.29.1 tutar seçenekleri birleşti; Form alanları `form-alanlari` dalında). Eski: `874003c` (2C-S + pilot + MIMARI). Claude Code + Cursor CLI düzeni kalıcı; `pilot-claude-code` ve `docs-mimari` dalları silinebilir. 2C-S kapandı (10.28.10–10.28.12). Staging'de 10.28.12.
-- quick 31/0/0, ~150 sn; stability temiz.
-- 10.28.10: hisseli liste product_info sonrası silinmiyor (gerçek veri kaybı düzeltildi).
-- 10.28.11–12: mağaza niyet ön yüklemesi (hover 760→42 ms, touch 85 ms); boşta ilk 3 ürün (saveData/2g/webdriver atlar); önbellek ürün+para+dil, yalnız bellek.
-- Bilinen: mobil baseline'larda "Benzer Bağışlar" boş (Avada animasyon/lazy) → 2G'de düzelt, sonra mobil accept.
-- Bilinen: `wdp_render_modal` sunucu süresi ~750 ms, nonce'suz (sayfa önbelleği için bilinçli) → hız sınırı/önbellek Aşama 4 ve güvenlik denetiminde.
-- Staging ayar değişikliği (2026-10-20, kullanıcı elle): Ayarlar → Normal → "Chip'leri göster" AÇILDI (önce kapalıydı). Bağışçı belirler/kampanya ekranlarında hızlı tutar düğmeleri çıkar → sonraki quick'te bu ekran farkları beklenen değişiklik sayılır (kod değişikliği değil).
+- Ayar turu KAPANDI. `main` = 10.33.0 (kısa kod birleşti). Staging'de 10.33.0. Sürümler: 10.29.1 tutar seçenekleri, 10.30.0 form alanları, 10.31.0 kampanya blokları, 10.32.0 ürüne özel görünüm, 10.33.0 kısa kod/blok/Gelişmiş. Claude Code + Cursor CLI düzeni kalıcı.
+- quick 70/0/0 (~920 sn; testler eklendi, süre refaktörde ele alınacak). Baseline 43 ekran.
+- Açık: Curcy sipariş kur meta anahtarı gerçek EUR/USD siparişle doğrulanmadı (toplanan tutar dönüşümü) → canlıya alma ENGELİ (2İ öncesi ölç).
+- Açık: `form-fields-wizard-product-off` bir kez kararsız (ship e2e'sinde timeout) → e2e:stability ile incele.
+- Açık: KVKK dışa aktarma/silme eşleşmesi (yalnız fatura e-postası) → güvenlik denetimi.
+- Açık: mobil baseline'larda "Benzer Bağışlar" boş (Avada animasyon/lazy) → 2G'de düzelt, sonra mobil accept.
+- Açık: `wdp_render_modal` ~750 ms, nonce'suz (bilinçli) → güvenlik denetimi / Aşama 4.
+- GÖRSEL AŞAMA listesi: docs/AYAR-TURU-NOTLARI.md (G1–G21).
+- Staging verisi (kullanıcı girdi): Nafile #10695 `_amount_presets`=50, 100; işlem ücreti %5; "Hızlı tutar düğmelerini göster" açık. E2E baseline bu duruma göre.
+- Karar sırası: Ikram Aid test ortamı → dil desteği (i18n) → refaktör → görsel aşama → güvenlik+KVKK denetimi → 2İ canlıya alma.
 
 ## 7. Yol haritası
 

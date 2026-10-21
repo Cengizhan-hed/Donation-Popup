@@ -121,49 +121,45 @@ class WDP_Elementor_Widget_Donations_List extends \Elementor\Widget_Base {
 		$this->add_control('show_price', array('label' => __('Fiyat', 'woo-donation-popup'), 'type' => \Elementor\Controls_Manager::SWITCHER, 'return_value' => 'yes', 'default' => 'yes'));
 		$this->add_control('show_category', array('label' => __('Kategori', 'woo-donation-popup'), 'type' => \Elementor\Controls_Manager::SWITCHER, 'return_value' => 'yes', 'default' => ''));
 		$this->add_control('excerpt_words', array('label' => __('Özet kelime', 'woo-donation-popup'), 'type' => \Elementor\Controls_Manager::NUMBER, 'min' => 0, 'max' => 60, 'default' => 18));
+		$this->add_control(
+			'image_size',
+			array(
+				'label'   => __('Görsel boyutu', 'woo-donation-popup'),
+				'type'    => \Elementor\Controls_Manager::SELECT,
+				'default' => 'woocommerce_thumbnail',
+				'options' => self::image_size_options(),
+			)
+		);
 		$this->add_control('heading_tag', array('label' => __('Başlık etiketi', 'woo-donation-popup'), 'type' => \Elementor\Controls_Manager::SELECT, 'default' => 'h3', 'options' => array('h2' => 'H2', 'h3' => 'H3', 'h4' => 'H4')));
 		$this->add_control('class', array('label' => __('CSS sınıfı', 'woo-donation-popup'), 'type' => \Elementor\Controls_Manager::TEXT));
 		$this->end_controls_section();
 	}
 
 	/**
-	 * @return void
+	 * @return array<string, string>
 	 */
+	private static function image_size_options() {
+		$out = array(
+			'woocommerce_thumbnail' => 'woocommerce_thumbnail',
+			'thumbnail'             => 'thumbnail',
+			'medium'                => 'medium',
+			'medium_large'          => 'medium_large',
+			'large'                 => 'large',
+			'full'                  => 'full',
+		);
+		if (function_exists('wp_get_registered_image_subsizes')) {
+			foreach (array_keys(wp_get_registered_image_subsizes()) as $size) {
+				$out[ $size ] = $size;
+			}
+		}
+		return $out;
+	}
+
 	protected function render() {
 		$s    = $this->get_settings_for_display();
 		$html = WDP_Render_Guard::html(
 			static function () use ($s) {
-				$atts = array(
-					'categories'         => isset($s['categories']) ? $s['categories'] : '',
-					'exclude_categories' => isset($s['exclude_categories']) ? $s['exclude_categories'] : '',
-					'ids'                => isset($s['ids']) ? $s['ids'] : '',
-					'exclude'            => isset($s['exclude']) ? $s['exclude'] : '',
-					'type'               => isset($s['type']) ? $s['type'] : '',
-					'limit'              => isset($s['limit']) ? $s['limit'] : 48,
-					'orderby'            => isset($s['orderby']) ? $s['orderby'] : 'menu_order',
-					'order'              => isset($s['order']) ? $s['order'] : 'ASC',
-					'tabs'               => !empty($s['tabs']) ? $s['tabs'] : 'no',
-					'tab_all'            => !empty($s['tab_all']) ? $s['tab_all'] : 'no',
-					'tab_all_label'      => isset($s['tab_all_label']) ? $s['tab_all_label'] : '',
-					'columns'            => isset($s['columns']) ? $s['columns'] : 3,
-					'columns_tablet'     => isset($s['columns_tablet']) ? $s['columns_tablet'] : 2,
-					'columns_mobile'     => isset($s['columns_mobile']) ? $s['columns_mobile'] : 1,
-					'gap'                => isset($s['gap']) ? $s['gap'] : 24,
-					'image_ratio'        => isset($s['image_ratio']) ? $s['image_ratio'] : '4:3',
-					'align'              => isset($s['align']) ? $s['align'] : 'center',
-					'button'             => isset($s['button']) ? $s['button'] : 'panel',
-					'button_full'        => !empty($s['button_full']) ? $s['button_full'] : 'no',
-					'button_text'        => isset($s['button_text']) ? $s['button_text'] : '',
-					'show_image'         => !empty($s['show_image']) ? $s['show_image'] : 'no',
-					'show_excerpt'       => !empty($s['show_excerpt']) ? $s['show_excerpt'] : 'no',
-					'show_progress'      => !empty($s['show_progress']) ? $s['show_progress'] : 'no',
-					'show_price'         => !empty($s['show_price']) ? $s['show_price'] : 'no',
-					'show_category'      => !empty($s['show_category']) ? $s['show_category'] : 'no',
-					'excerpt_words'      => isset($s['excerpt_words']) ? $s['excerpt_words'] : 18,
-					'heading_tag'        => isset($s['heading_tag']) ? $s['heading_tag'] : 'h3',
-					'class'              => isset($s['class']) ? $s['class'] : '',
-				);
-				return WDP_Donations_List::shortcode($atts);
+				return WDP_Donations_List::shortcode(WDP_Donations_List::atts_from_elementor_settings($s));
 			},
 			0,
 			'elementor_donations'
