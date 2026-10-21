@@ -1,0 +1,91 @@
+{
+  "id": "ikram-aid",
+  "name": "Ikram Aid",
+  "aliases": ["ikram"],
+  "baseUrl": "https://ikramaid.uk",
+  "allowedHosts": ["ikramaid.uk", "www.ikramaid.uk"],
+  "envFile": ".env.e2e.ikram",
+  "deployEnvFile": ".env.deploy.ikram",
+  "locale": "en_GB",
+  "language": "en",
+  "currency": {
+    "code": "GBP",
+    "symbol": "£",
+    "decimals": 2,
+    "thousandSeparator": ",",
+    "decimalSeparator": ".",
+    "symbolPosition": "left"
+  },
+  "phone": {
+    "prefix": "+44",
+    "country": "GB",
+    "nationalExample": "7700900123"
+  },
+  "theme": "Blocksy",
+  "pageBuilder": "Elementor",
+  "listPage": "",
+  "listPageId": 100,
+  "shopPage": "",
+  "cachePurge": "sg-purge",
+  "wpCliAuth": true,
+  "comingSoon": true,
+  "searchEngineBlock": true,
+  "allowMetaMutation": false,
+  "checkoutType": "auto",
+  "ssh": {
+    "alias": "ikramaid",
+    "wpPath": "~/www/ikramaid.uk/public_html"
+  },
+  "strings": {
+    "donateButton": "Bağış Yap",
+    "donateButtonPattern": "bağış\\s*yap|donate",
+    "similarDonations": "Related",
+    "similarDonationsPattern": "benzer\\s*bağış|related|similar"
+  },
+  "selectors": {
+    "loopCards": "li.product, .wdp-donations-item, .wdp-card, .elementor-widget-woocommerce-products li.product",
+    "loopTitle": ".woocommerce-loop-product__title, .product-title, h2, h3, .wdp-card-title",
+    "animated": "",
+    "header": "header, .ct-header, #header"
+  },
+  "products": {
+    "custom": {
+      "role": "custom",
+      "name": "Orphan Support",
+      "min": 5
+    },
+    "customSadaqah": {
+      "role": "custom",
+      "name": "Sadaqah",
+      "min": 5
+    },
+    "customZakat": {
+      "role": "custom",
+      "name": "Zakat",
+      "min": 5
+    },
+    "fixed": {
+      "role": "fixed",
+      "name": "Food Pack",
+      "amount": 40
+    },
+    "fixedQurbani": {
+      "role": "fixed",
+      "name": "Qurbani",
+      "amount": 120
+    },
+    "campaign": null,
+    "shares": null
+  },
+  "unavailableRoles": {
+    "shares": "Ikram'da hisseli ürün yok → atla (neden: profil shares=null)",
+    "campaign": "Ikram'da kampanya ürünü yok → atla (neden: profil campaign=null; Water Well hedefli ürün olarak ayrıca çözülür)"
+  },
+  "hedefli": {
+    "role": "goal",
+    "name": "Water Well",
+    "goal": 3000
+  },
+  "protectedProductIds": [],
+  "altDonationProductId": 0
+}

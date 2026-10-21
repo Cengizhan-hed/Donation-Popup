@@ -9,8 +9,28 @@ export const CURRENT_DIR = path.join(ROOT, 'build/e2e/current');
 export const DIFF_DIR = path.join(ROOT, 'build/e2e/diff');
 export const REPORT_DIR = path.join(ROOT, 'build/e2e');
 export const RUN_JSON = path.join(CURRENT_DIR, 'run.json');
-export const BASELINE_DIR = path.join(ROOT, 'tests/e2e/__baseline__');
+export const BASELINE_ROOT = path.join(ROOT, 'tests/e2e/__baseline__');
+/** @deprecated kök; ortam+cihaz için baselineDirFor kullan */
+export const BASELINE_DIR = BASELINE_ROOT;
 export const BASELINE_PREV_DIR = path.join(ROOT, 'tests/e2e/__baseline_prev__');
+
+/**
+ * @param {string} envId
+ * @param {string} deviceId
+ */
+export function baselineDirFor(envId, deviceId) {
+  const env = String(envId || 'staging-hedef');
+  const device = String(deviceId || 'desktop');
+  return path.join(BASELINE_ROOT, env, device);
+}
+
+/**
+ * @param {string} envId
+ * @param {string} deviceId
+ */
+export function currentDirFor(envId, deviceId) {
+  return path.join(CURRENT_DIR, String(envId || 'staging-hedef'), String(deviceId || 'desktop'));
+}
 
 /**
  * build/e2e/current ve build/e2e/diff silinip yeniden oluşturulur.

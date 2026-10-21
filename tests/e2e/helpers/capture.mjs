@@ -3,8 +3,22 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
-import { chromium, webkit } from '@playwright/test';
+import { chromium } from '@playwright/test';
 import { withCacheBust, productPaths, ROOT } from './env.mjs';
+import { getActiveProfile, matchesProfilePattern } from './profile.mjs';
+import { getDevicePreset } from './devices.mjs';
+import { areaIncludes } from './area-filter.mjs';
+import { applyComingSoonBypass, comingSoonQuery } from './coming-soon.mjs';
+import { getAuthFile } from './auth.mjs';
+import { runMobileA11yChecks } from './mobile-a11y.mjs';
+import { runDonationFlowChecks } from './donation-flow.mjs';
+import { prepareCheckoutEnv } from './checkout-setup.mjs';
+import {
+  probeSimilarDonations,
+  writeSimilarDonationsProbe,
+  classifySimilarDonations,
+} from './similar-donations-probe.mjs';
+import { snapshotGuardOrder, cleanupE2EData } from './test-cleanup.mjs';
 import {
   assertNoConsoleErrors,
   assertNoCriticalError,
@@ -23,7 +37,7 @@ import {
   visibleValidationErrors,
   waitForShellClosed,
 } from './checks.mjs';
-import { ensureAuth, AUTH_FILE } from './auth.mjs';
+import { ensureAuth } from './auth.mjs';
 import { FREEZE_MOTION_CSS, SEL, maskSelectors } from './selectors.mjs';
 import { currentSrcMatchesExpected } from './image-url.mjs';
 import {
@@ -48,6 +62,24 @@ import { runSharesLateProductInfoChecks } from '../run-shares-late-product-info.
 
 const DESKTOP = { width: 1440, height: 900 };
 const MOBILE = { width: 390, height: 844 };
+
+/**
+ * @param {import('@playwright/test').Browser} browser
+ * @param {object} opts
+ * @param {Record<string,string>} [env]
+ */
+async function contextWithBypass(browser, opts, env) {
+  const ctx = await browser.newContext(opts);
+  try {
+    const profile = getActiveProfile();
+    if (profile?.comingSoon && env) {
+      await applyComingSoonBypass(ctx, profile, env);
+    }
+  } catch {
+    /* profil yok */
+  }
+  return ctx;
+}
 
 /** @type {Array<{label:string,secs:number}>} */
 const sectionTimings = [];
@@ -138,6 +170,10 @@ const STABILIZE_SHOT_CSS = `
 img.lazyload, img.lazyloading, img.lazyloaded, .fusion-image-wrapper img, .lazyload,
 .fusion-image-wrapper, .fusion-lazy-load, .awb-image-wrapper, .lazyloaded{
   opacity:1!important;visibility:visible!important
+}
+.fusion-animated, .fusion-post-cards.fusion-animated, .fusion-animated.fusion-grid-archive,
+.fusion-blog-shortcode.fusion-animated, .awb-animate, [class*="fusion-animated"]{
+  visibility:visible!important;opacity:1!important;animation:none!important;transform:none!important
 }
 `;
 
@@ -1056,7 +1092,7 @@ async function runSkeletonUnlockChecks({
    * @param {'status500'|'abort'|'delay12'} mode
    */
   async function oneProductInfoFault(mode) {
-    const ctx = await browser.newContext(contextOpts);
+    const ctx = await contextWithBypass(browser, contextOpts, env);
     const page = await ctx.newPage();
     try {
       await page.route('**/admin-ajax.php*', async (route) => {
@@ -1181,7 +1217,7 @@ async function runSkeletonUnlockChecks({
   await oneProductInfoFault('delay12');
 
   // Kapat → yeniden aç → yazılabilir
-  const ctx = await browser.newContext(contextOpts);
+  const ctx = await contextWithBypass(browser, contextOpts, env);
   const page = await ctx.newPage();
   try {
     await page.goto(withCacheBust(env.E2E_BASE_URL, productPath, guestExtra), {
@@ -1237,7 +1273,12 @@ async function fillDonorFields(root) {
   // includes/templates/class-form-fields-renderer.php — donation_full_name
   // İskelet (disabled/inert) kalkmadan fill no-op olabiliyor; actionability beklenir (senaryo sırası aynı).
   const nameVal = 'E2E Test';
-  const phoneVal = '5551234567';
+  let phoneVal = '5551234567';
+  try {
+    phoneVal = getActiveProfile()?.phone?.nationalExample || phoneVal;
+  } catch {
+    /* profil yoksa Hedef yedek */
+  }
   const nameLoc = root.locator(SEL.donorName).first();
   await nameLoc.waitFor({ state: 'visible', timeout: CHECK_MS });
   await root.page().waitForFunction(
@@ -1662,7 +1703,21 @@ async function settleLoopPage(page) {
  * @param {{ passed?: number, failed?: number }} [stats]
  */
 async function assertLoopCardsTitleAndDonate(page, surface, screenName, failures, stats) {
-  const result = await page.evaluate((surfaceKind) => {
+  let similarPat = 'benzer\\s*bağış';
+  let donatePat = 'bağış\\s*yap';
+  let cardSel = 'li.post-card, li.fusion-grid-column, .post-card, li.product';
+  let titleSel = '.fusion-title, .woocommerce-loop-product__title, .product-title, h2, h3';
+  try {
+    const p = getActiveProfile();
+    similarPat = p.strings?.similarDonationsPattern || similarPat;
+    donatePat = p.strings?.donateButtonPattern || donatePat;
+    cardSel = p.selectors?.loopCards || cardSel;
+    titleSel = p.selectors?.loopTitle || titleSel;
+  } catch {
+    /* profil yok */
+  }
+  const result = await page.evaluate(
+    ({ surfaceKind, similarPat, donatePat, cardSel, titleSel }) => {
     function visible(el) {
       if (!el) return false;
       const st = getComputedStyle(el);
@@ -1675,32 +1730,30 @@ async function assertLoopCardsTitleAndDonate(page, surface, screenName, failures
         r.height > 4
       );
     }
+    const benzerRe = new RegExp(similarPat, 'i');
+    const donateRe = new RegExp(donatePat, 'i');
     /** @type {Element[]} */
     let cards = [];
     if (surfaceKind === 'product') {
       const headings = Array.from(document.querySelectorAll('h1,h2,h3,h4,.fusion-title,.fusion-title-heading'));
-      const benzer = headings.find((h) => /benzer\s*bağış/i.test(h.textContent || ''));
+      const benzer = headings.find((h) => benzerRe.test(h.textContent || ''));
       const root =
         (benzer &&
           (benzer.closest('.fusion-fullwidth, .fusion-builder-row, .related, section, .fusion-post-cards') ||
             benzer.parentElement)) ||
         document.querySelector('.fusion-post-cards, .related.products');
       if (root) {
-        cards = Array.from(
-          root.querySelectorAll('li.post-card, li.fusion-grid-column, .post-card, li.product')
-        );
+        cards = Array.from(root.querySelectorAll(cardSel));
       }
     } else {
       cards = Array.from(document.querySelectorAll('ul.products li.product')).slice(0, 12);
     }
 
     const rows = cards.map((card, i) => {
-      const title =
-        card.querySelector('.fusion-title, .woocommerce-loop-product__title, .product-title, h2, h3') ||
-        null;
+      const title = card.querySelector(titleSel) || null;
       const btn =
         Array.from(card.querySelectorAll('a, button')).find((el) =>
-          /bağış\s*yap/i.test((el.textContent || '').trim())
+          donateRe.test((el.textContent || '').trim())
         ) || null;
       return {
         i,
@@ -1712,7 +1765,9 @@ async function assertLoopCardsTitleAndDonate(page, surface, screenName, failures
       };
     });
     return { cardCount: cards.length, rows };
-  }, surface);
+  },
+    { surfaceKind: surface, similarPat, donatePat, cardSel, titleSel }
+  );
 
   if (result.cardCount < 1) {
     failures.push(
@@ -1919,7 +1974,10 @@ export async function runSadakaScenario({
   const wantDiag = !!(failDiagnostics && failDiagnostics.enabled !== false);
   const paths = tracePaths(runLabel, check);
   const timeline = createTimeline(check);
-  const guestExtra = noSideCart ? { hdf_no_side_cart: '1' } : {};
+  const guestExtra = {
+    ...(noSideCart ? { hdf_no_side_cart: '1' } : {}),
+    ...comingSoonQuery(env, getActiveProfile()),
+  };
   if (wantDiag) {
     await installPageProbe(context).catch((e) => catchFail('installPageProbe:sadaka', e));
   }
@@ -2346,6 +2404,8 @@ async function mapPool(items, limit, fn) {
  * @param {boolean} opts.runFunctional
  * @param {'full'|'quick'} [opts.mode]
  * @param {number} [opts.workers]
+ * @param {'iphone'|'android'|'desktop'} [opts.device]
+ * @param {string[]|null} [opts.areas]
  */
 export async function captureAll({
   env,
@@ -2355,19 +2415,53 @@ export async function captureAll({
   workers = 3,
   runLabel = 'run',
   noSideCart = false,
+  device: deviceId = 'desktop',
+  areas = null,
 }) {
   sectionTimings.length = 0;
   fs.mkdirSync(outDir, { recursive: true });
+  const profile = env._profile || getActiveProfile();
+  const device = getDevicePreset(deviceId);
+  const pfx = device.id === 'desktop' ? 'desktop' : device.id;
+  const want = (id) => areaIncludes(areas, id);
+  /** @type {object[]} */
+  const a11yFindings = [];
+  let guardOrder = null;
+  try {
+    guardOrder = await snapshotGuardOrder();
+  } catch {
+    guardOrder = null;
+  }
   const tAuth = Date.now();
   await ensureAuth(env);
   logSection('auth', tAuth);
+
+  /** @type {{ checkoutUrl: string, offline: {id:string,title:string}|null, mutated: boolean, restore: () => void, skipOrderReason: string } | null} */
+  let checkoutEnv = null;
+  if (runFunctional && want('checkout-flow')) {
+    try {
+      checkoutEnv = await prepareCheckoutEnv();
+    } catch (e) {
+      console.error(`[e2e:catch-fail] prepareCheckoutEnv: ${e && e.message ? e.message : e}`);
+      checkoutEnv = {
+        checkoutUrl: '/checkout/',
+        offline: null,
+        mutated: false,
+        restore: () => {},
+        skipOrderReason: `checkout-setup hata: ${e && e.message ? e.message : e}`,
+      };
+    }
+  }
 
   const products = productPaths(env);
   const maskList = maskSelectors(env.E2E_MASK_SELECTORS || '');
   const quick = mode === 'quick';
   // Quick: 4 worker (shell + sadaka dalgaları daha kısa)
   const maxWorkers = Math.max(1, Math.min(quick ? 4 : 3, Number(workers) || (quick ? 4 : 3)));
-  const guestExtra = noSideCart ? { hdf_no_side_cart: '1' } : {};
+  const guestExtra = {
+    ...(noSideCart ? { hdf_no_side_cart: '1' } : {}),
+    ...comingSoonQuery(env, profile),
+  };
   /** @type {ReturnType<typeof makeFailure>[]} */
   const failures = [];
   /** @type {Array<{check:string,description:string,detail?:string}>} */
@@ -2378,18 +2472,22 @@ export async function captureAll({
   const debugFiles = [];
   const functionalStats = { passed: 0, skipped: 0, failed: 0 };
   const shots = [];
+  if (Array.isArray(env._roleSkips)) {
+    for (const s of env._roleSkips) skips.push(s);
+    functionalStats.skipped += env._roleSkips.length;
+  }
 
-  const contextOpts = {
-    viewport: DESKTOP,
-    reducedMotion: /** @type {'reduce'} */ ('reduce'),
-  };
-
-  const browser = await chromium.launch();
-  const guest = await browser.newContext(contextOpts);
+  const contextOpts = { ...device.context };
+  const browser = await device.browserType.launch();
+  const guest = await contextWithBypass(browser, contextOpts, env);
   const authed = await browser.newContext({
     ...contextOpts,
-    storageState: AUTH_FILE,
+    storageState: getAuthFile(),
   });
+  if (profile.comingSoon) {
+    await applyComingSoonBypass(guest, profile, env);
+    await applyComingSoonBypass(authed, profile, env);
+  }
 
   // Ürün kalıcı bağlantıları + ID’ler (Store API / sayfa linki) — bir kez
   const tProbe = Date.now();
@@ -2399,7 +2497,8 @@ export async function captureAll({
   /** @type {Record<string, number>} */
   const productIds = {};
   for (const [key, slug] of Object.entries(products)) {
-    productIds[key] = await resolveProductIdBySlug(probe, env.E2E_BASE_URL, slug);
+    const wpId = Number(env._resolvedProducts?.[key]?.id || profile.products?.[key]?.id || 0);
+    productIds[key] = await resolveProductIdBySlug(probe, env.E2E_BASE_URL, slug, wpId);
   }
   await probe.close();
   logSection('ürün URL/ID çözümü', tProbe);
@@ -2439,6 +2538,27 @@ export async function captureAll({
     const errors = attachConsoleErrorCollector(page);
     const url = withCacheBust(env.E2E_BASE_URL, rel, guestExtra);
     await page.goto(url, { waitUntil: 'domcontentloaded' }).catch(() => {});
+    if (runFunctional && device.isMobile && /^[^-]+-product-/.test(name) && name.endsWith(`-${Object.keys(productUrls)[0]}`)) {
+      try {
+        const probeBefore = await probeSimilarDonations(page);
+        const kindBefore = classifySimilarDonations(probeBefore);
+        const probeFile = writeSimilarDonationsProbe(
+          { kind: kindBefore, phase: 'before-shot', device: device.id, env: profile.id, ...probeBefore },
+          `${profile.id}-${device.id}-before`
+        );
+        debugFiles.push(path.relative(ROOT, probeFile));
+        a11yFindings.push({
+          check: 'similar-donations-probe-before',
+          env: profile.id,
+          device: device.id,
+          control: 'Benzer Bağışlar (ekran CSS öncesi)',
+          result: kindBefore,
+          detail: probeFile,
+        });
+      } catch (e) {
+        debugFiles.push(`similar-donations-before-error:${String(e.message || e)}`);
+      }
+    }
     try {
       await assertNoCriticalError(page);
       await assertNoHorizontalOverflow(page);
@@ -2479,13 +2599,36 @@ export async function captureAll({
   const tProducts = Date.now();
   const productEntries = Object.entries(productUrls);
   await mapPool(productEntries, maxWorkers, async ([key, rel]) => {
-    const name = `desktop-product-${key}`;
+    const name = `${pfx}-product-${key}`;
     const page = await visit(guest, rel, name, { checkImages: true });
     productPageHeights[key] = await readPageScrollHeight(page);
     if (runFunctional) {
       try {
         // Benzer Bağışlar: görünür başlık + Bağış Yap (Avada post-card animasyonu)
         await assertLoopCardsTitleAndDonate(page, 'product', name, failures, functionalStats);
+        if (device.isMobile && key === Object.keys(productUrls)[0]) {
+          try {
+            const probeSim = await probeSimilarDonations(page);
+            const kind = classifySimilarDonations(probeSim);
+            const probeFile = writeSimilarDonationsProbe(
+              { kind, device: device.id, env: profile.id, ...probeSim },
+              `${profile.id}-${device.id}-${key}`
+            );
+            debugFiles.push(path.relative(ROOT, probeFile));
+            if (kind !== 'ok') {
+              a11yFindings.push({
+                check: 'similar-donations-probe',
+                env: profile.id,
+                device: device.id,
+                control: 'Benzer Bağışlar',
+                result: kind,
+                detail: probeFile,
+              });
+            }
+          } catch (e) {
+            debugFiles.push(`similar-donations-probe-error:${String(e.message || e)}`);
+          }
+        }
         const cartForms = await page
           .locator('form.cart:not(.wdp-form):not(.wdp-donation-form-fields)')
           .count();
@@ -2576,7 +2719,8 @@ export async function captureAll({
    */
   async function openShellForMode(page, mode, productId) {
     let trigger = shellTriggerLocator(page, mode, { productId });
-    if ((await trigger.count().catch(() => 0)) === 0) {
+    const idCount = await trigger.count().catch(() => 0);
+    if (idCount === 0) {
       trigger =
         mode === 'panel'
           ? page.locator(SEL.sidePanelTrigger).first()
@@ -2584,9 +2728,19 @@ export async function captureAll({
     }
     const hasTrigger = (await trigger.count().catch(() => 0)) > 0;
     if (!hasTrigger) {
-      return { ok: false, detail: `selector=${mode === 'panel' ? 'sidePanel' : 'centeredPopup'}` };
+      const ids = await page
+        .locator(`${SEL.centeredPopupTrigger}[data-product-id], ${SEL.sidePanelTrigger}[data-product-id]`)
+        .evaluateAll((els) =>
+          els.map((el) => el.getAttribute('data-product-id')).filter(Boolean).slice(0, 12)
+        )
+        .catch(() => []);
+      return {
+        ok: false,
+        detail: `selector=${mode === 'panel' ? 'sidePanel' : 'centeredPopup'} resolvedId=${productId || 0} visibleIds=${(ids || []).join(',') || '(yok)'}`,
+      };
     }
     try {
+      await trigger.scrollIntoViewIfNeeded().catch(() => {});
       await trigger.click({ timeout: CHECK_MS });
     } catch (clickErr) {
       catchSoft('openShellForMode:trigger.click', clickErr);
@@ -2615,12 +2769,12 @@ export async function captureAll({
 
   const shellsPromise = mapPool(shellJobs, maxWorkers, async ({ key, pagePath, mode, productId }) => {
     // Her kabuk işi temiz context (sepet / storage taşınmasın)
-    const ctx = await browser.newContext(contextOpts);
+    const ctx = await contextWithBypass(browser, contextOpts, env);
     const page = await ctx.newPage();
     const errors = attachConsoleErrorCollector(page);
     const url = withCacheBust(env.E2E_BASE_URL, pagePath, guestExtra);
-    const openName = `desktop-${mode}-${key}-open`;
-    const errorsName = `desktop-${mode}-${key}-errors`;
+    const openName = `${pfx}-${mode}-${key}-open`;
+    const errorsName = `${pfx}-${mode}-${key}-errors`;
     try {
       await page.goto(url, { waitUntil: 'domcontentloaded' });
       // Kabuk ekranı: tam sayfa kaydırma gerekmez (süre)
@@ -2797,8 +2951,13 @@ export async function captureAll({
   // e) list + shop — kabuklarla örtüşür (ayrı guest page’ler)
   const tList = Date.now();
   const listShopPromise = (async () => {
-    await (await visit(guest, env.E2E_LIST_PAGE, 'desktop-list', { checkImages: true })).close();
-    const shopPage = await visit(guest, env.E2E_SHOP_PAGE, 'desktop-shop', { checkImages: true });
+    if (!env.E2E_LIST_PAGE) {
+      skips.push({ check: `${pfx}-list`, description: 'Liste sayfası yolu yok' });
+      functionalStats.skipped += 1;
+      return;
+    }
+    await (await visit(guest, env.E2E_LIST_PAGE, `${pfx}-list`, { checkImages: true })).close();
+    const shopPage = await visit(guest, env.E2E_SHOP_PAGE, `${pfx}-shop`, { checkImages: true });
     if (runFunctional) {
       const addTexts = await shopPage.locator('a.button, button').allTextContents();
       const bad = addTexts.some((t) => /sepete\s*ekle/i.test(t || ''));
@@ -2863,7 +3022,7 @@ export async function captureAll({
       const tCart = Date.now();
       const cartPaths = tracePaths(runLabel, 'fixed-cart');
       const cartTimeline = createTimeline('fixed-cart');
-      const cartCtx = await browser.newContext(contextOpts);
+      const cartCtx = await contextWithBypass(browser, contextOpts, env);
       await installPageProbe(cartCtx).catch((e) => catchFail('installPageProbe:cart', e));
       const cartTrace = !quick;
       if (cartTrace) {
@@ -3125,7 +3284,7 @@ export async function captureAll({
 
 
   // f) admin settings tabs + product Bağış tab (quick’te atlanır)
-  if (!quick) {
+  if (!quick && device.id === 'desktop' && want('admin')) {
     const tAdmin = Date.now();
     const admin = await authed.newPage();
     const adminErrors = attachConsoleErrorCollector(admin);
@@ -3198,7 +3357,17 @@ export async function captureAll({
 
     // shares-late + alt bağış örtüşür (wall clock); shares-late admin config beklemez
     const tLateShares = Date.now();
-    const lateSharesPromise = runSharesLateProductInfoChecks({
+    const lateSharesPromise = (!productUrls.shares || !want('shares'))
+      ? Promise.resolve().then(() => {
+          if (!productUrls.shares) {
+            skips.push({
+              check: 'shares-late-product-info',
+              description: `${profile.id}: hisseli ürün yok, atlandı`,
+            });
+            functionalStats.skipped += 1;
+          }
+        })
+      : runSharesLateProductInfoChecks({
       browser,
       contextOpts,
       env,
@@ -3239,7 +3408,7 @@ export async function captureAll({
     const sadakaPromise = mapPool(sadakaJobs, sadakaWorkers, async ({ productKey, mode }) => {
       const check = `sadaka-${productKey}-${mode}`;
       const paths = tracePaths(runLabel, check);
-      const ctx = await browser.newContext(contextOpts);
+      const ctx = await contextWithBypass(browser, contextOpts, env);
       // Quick’te tracing pahalı (200s’nin büyük kısmı); full’da koru. Hata → debug JSON.
       const useTrace = !quick;
       if (useTrace) {
@@ -3312,201 +3481,151 @@ export async function captureAll({
     await Promise.all([lateSharesPromise, sadakaPromise]);
     void sadakaProductIds;
 
-    // 10.29.0 tutar seçenekleri (K1/K2/ücret/adet)
-    const tAmountOpts = Date.now();
-    try {
-      const { runAmountOptionsChecks } = await import('./amount-options.mjs');
-      await runAmountOptionsChecks({
-        browser,
-        contextOpts,
-        env,
-        productUrls,
-        productIds,
-        listPagePath: env.E2E_LIST_PAGE,
-        failures,
-        stats: functionalStats,
-      });
-    } catch (e) {
-      failures.push(
-        makeFailure({
-          check: 'amount-opts-runner',
-          description: 'Tutar seçenekleri E2E koşucusu çöktü',
-          error: e,
-        })
-      );
-      functionalStats.failed += 1;
-    } finally {
-      logSection('amount-options', tAmountOpts);
-    }
-
-    // 10.30.0 form alanları
-    const tFormFields = Date.now();
-    try {
-      const { runFormFieldsChecks } = await import('./form-fields.mjs');
-      await runFormFieldsChecks({
-        browser,
-        contextOpts,
-        env,
-        productUrls,
-        productIds,
-        listPagePath: env.E2E_LIST_PAGE,
-        failures,
-        stats: functionalStats,
-      });
-    } catch (e) {
-      failures.push(
-        makeFailure({
-          check: 'form-fields-runner',
-          description: 'Form alanları E2E koşucusu çöktü',
-          error: e,
-        })
-      );
-      functionalStats.failed += 1;
-    } finally {
-      logSection('form-fields', tFormFields);
-    }
-
-    // 10.31.0 kampanya blokları
-    const tCampaignBlocks = Date.now();
-    try {
-      const { runCampaignBlocksChecks } = await import('./campaign-blocks.mjs');
-      await runCampaignBlocksChecks({
-        browser,
-        contextOpts,
-        env,
-        productUrls,
-        productIds,
-        listPagePath: env.E2E_LIST_PAGE,
-        failures,
-        stats: functionalStats,
-      });
-    } catch (e) {
-      failures.push(
-        makeFailure({
-          check: 'campaign-blocks-runner',
-          description: 'Kampanya blokları E2E koşucusu çöktü',
-          error: e,
-        })
-      );
-      functionalStats.failed += 1;
-    } finally {
-      logSection('campaign-blocks', tCampaignBlocks);
-    }
-
-    // 10.32.0 ürün teması
-    const tProductTheme = Date.now();
-    try {
-      const { runProductThemeChecks } = await import('./product-theme.mjs');
-      await runProductThemeChecks({
-        browser,
-        contextOpts,
-        env,
-        productUrls,
-        productIds,
-        listPagePath: env.E2E_LIST_PAGE,
-        failures,
-        stats: functionalStats,
-      });
-    } catch (e) {
-      failures.push(
-        makeFailure({
-          check: 'product-theme-runner',
-          description: 'Ürün görünüm E2E koşucusu çöktü',
-          error: e,
-        })
-      );
-      functionalStats.failed += 1;
-    } finally {
-      logSection('product-theme', tProductTheme);
-    }
-
-    // 10.33.0 kısa kod / liste
-    const tShortcodes = Date.now();
-    try {
-      const { runShortcodeChecks } = await import('./shortcodes.mjs');
-      await runShortcodeChecks({
-        browser,
-        contextOpts,
-        env,
-        productUrls,
-        productIds,
-        listPagePath: env.E2E_LIST_PAGE,
-        failures,
-        stats: functionalStats,
-      });
-    } catch (e) {
-      failures.push(
-        makeFailure({
-          check: 'shortcodes-runner',
-          description: 'Kısa kod E2E koşucusu çöktü',
-          error: e,
-        })
-      );
-      functionalStats.failed += 1;
-    } finally {
-      logSection('shortcodes', tShortcodes);
-    }
-  }
-
-  // Mobile chromium + webkit sample (quick’te atlanır)
-  if (!quick) {
-    const tMobile = Date.now();
-    for (const [engineName, engine] of [
-      ['chromium', chromium],
-      ['webkit', webkit],
-    ]) {
-      const b = engineName === 'chromium' ? browser : await engine.launch();
-      const ctx = await b.newContext({
-        viewport: MOBILE,
-        isMobile: true,
-        hasTouch: true,
-        reducedMotion: 'reduce',
-      });
-      for (const [key, rel] of Object.entries(productUrls)) {
-        const page = await ctx.newPage();
-        try {
-          await page.goto(withCacheBust(env.E2E_BASE_URL, rel, guestExtra), {
-            waitUntil: 'domcontentloaded',
-          });
-          shots.push(await shot(page, outDir, `mobile-${engineName}-product-${key}`, maskList));
-        } catch (e) {
-          failures.push(
-            makeFailure({
-              check: `mobile-${engineName}-product-${key}`,
-              description: 'Mobil ekran alınamadı — devam',
-              error: e,
-            })
-          );
-        }
-        await page.close().catch(() => {});
-      }
-      const list = await ctx.newPage();
+    const skipMeta = !profile.allowMetaMutation;
+    const metaSuites = [
+      ['amount-options', './amount-options.mjs', 'runAmountOptionsChecks', 'Tutar seçenekleri E2E koşucusu çöktü'],
+      ['form-fields', './form-fields.mjs', 'runFormFieldsChecks', 'Form alanları E2E koşucusu çöktü'],
+      ['campaign-blocks', './campaign-blocks.mjs', 'runCampaignBlocksChecks', 'Kampanya blokları E2E koşucusu çöktü'],
+      ['product-theme', './product-theme.mjs', 'runProductThemeChecks', 'Ürün görünüm E2E koşucusu çöktü'],
+      ['shortcodes', './shortcodes.mjs', 'runShortcodeChecks', 'Kısa kod E2E koşucusu çöktü'],
+    ];
+    for (const [area, mod, fn, crash] of metaSuites) {
+      const tSuite = Date.now();
       try {
-        await list.goto(withCacheBust(env.E2E_BASE_URL, env.E2E_LIST_PAGE, guestExtra), {
-          waitUntil: 'domcontentloaded',
+        if (skipMeta) {
+          skips.push({
+            check: area,
+            description: `${profile.id}: ürün/sayfa içeriğine dokunulmaz (allowMetaMutation=false)`,
+          });
+          functionalStats.skipped += 1;
+        } else if (!want(area)) {
+          /* alan süzgeci */
+        } else {
+          const imported = await import(mod);
+          await imported[fn]({
+            browser,
+            contextOpts,
+            env,
+            productUrls,
+            productIds,
+            listPagePath: env.E2E_LIST_PAGE,
+            failures,
+            stats: functionalStats,
+          });
+        }
+      } catch (e) {
+        failures.push(makeFailure({ check: `${area}-runner`, description: crash, error: e }));
+        functionalStats.failed += 1;
+      } finally {
+        logSection(area, tSuite);
+      }
+    }
+
+    if (want('mobile-a11y') || want('checkout-flow')) {
+      const tA11y = Date.now();
+      const flowPage = await guest.newPage();
+      flowPage.setDefaultTimeout(20000);
+      flowPage.setDefaultNavigationTimeout(25000);
+      try {
+        const work = (async () => {
+          const listOrProduct = env.E2E_LIST_PAGE || productUrls.custom || productUrls.fixed || '/';
+          await flowPage.goto(withCacheBust(env.E2E_BASE_URL, listOrProduct, guestExtra), {
+            waitUntil: 'domcontentloaded',
+            timeout: 25000,
+          });
+          const trigger = flowPage.locator(SEL.centeredPopupTrigger).first();
+          if ((await trigger.count()) > 0) {
+            await trigger.click({ timeout: 15000 }).catch(() => {});
+            await flowPage
+              .locator(SEL.openModalShell)
+              .first()
+              .waitFor({ state: 'visible', timeout: 15000 })
+              .catch(() => {});
+          }
+          if (want('mobile-a11y')) {
+            await runMobileA11yChecks({
+              page: flowPage,
+              device,
+              profile,
+              failures,
+              stats: functionalStats,
+              knownFindings: a11yFindings,
+            });
+          }
+          if (want('checkout-flow')) {
+            await runDonationFlowChecks({
+              page: flowPage,
+              env,
+              productUrls,
+              productIds,
+              listPagePath: env.E2E_LIST_PAGE,
+              failures,
+              stats: functionalStats,
+              skips,
+              deviceId: device.id,
+              checkoutUrl: checkoutEnv?.checkoutUrl || '',
+              offlineGateway: checkoutEnv?.offline || null,
+              skipOrderReason: checkoutEnv?.skipOrderReason || '',
+            });
+          }
+        })();
+        const timeout = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error('a11y+checkout-flow 120s zaman aşımı')), 120000);
         });
-        shots.push(await shot(list, outDir, `mobile-${engineName}-list`, maskList));
+        await Promise.race([work, timeout]);
       } catch (e) {
         failures.push(
           makeFailure({
-            check: `mobile-${engineName}-list`,
-            description: 'Mobil liste ekranı alınamadı — devam',
+            check: `device-flow-${device.id}`,
+            description: 'Cihaz akışı / a11y koşucusu çöktü',
             error: e,
           })
         );
+        functionalStats.failed += 1;
+      } finally {
+        await flowPage.close().catch(() => {});
+        logSection('a11y+checkout-flow', tA11y);
       }
-      await list.close().catch(() => {});
-      if (engineName !== 'chromium') {
-        await b.close();
-      }
-      await ctx.close();
     }
-    logSection('mobil ekranlar', tMobile);
   }
 
   await guest.close();
   await authed.close();
   await browser.close();
+
+  if (checkoutEnv && typeof checkoutEnv.restore === 'function') {
+    try {
+      checkoutEnv.restore();
+    } catch (e) {
+      failures.push(
+        makeFailure({
+          check: 'checkout-restore',
+          description: 'Ödeme yöntemi eski haline alınamadı',
+          error: e,
+        })
+      );
+    }
+  }
+
+  if (runFunctional) {
+    try {
+      const cleaned = await Promise.race([
+        cleanupE2EData({ guardOrderId: guardOrder?.id }),
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('cleanup 60s zaman aşımı')), 60000)
+        ),
+      ]);
+      debugFiles.push(`cleanup:${JSON.stringify(cleaned)}`);
+    } catch (e) {
+      failures.push(
+        makeFailure({
+          check: 'e2e-cleanup',
+          description: 'İşaretli test sipariş/müşteri silinemedi',
+          error: e,
+        })
+      );
+    }
+  }
 
   if (runFunctional) {
     functionalStats.failed = failures.length;
@@ -3539,5 +3658,8 @@ export async function captureAll({
     mode,
     runLabel,
     noSideCart: !!noSideCart,
+    device: device.id,
+    profileId: profile.id,
+    a11yFindings,
   };
 }

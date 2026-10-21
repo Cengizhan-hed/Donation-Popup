@@ -65,7 +65,16 @@ async function fillDonor(shell, vals = {}) {
   }
   const phone = shell.locator(SEL.donorPhone).first();
   if (await phone.count()) {
-    await phone.fill(vals.phone || '5551234567');
+    let phoneVal = vals.phone;
+    if (!phoneVal) {
+      try {
+        const { getActiveProfile } = await import('./profile.mjs');
+        phoneVal = getActiveProfile()?.phone?.nationalExample || '5551234567';
+      } catch {
+        phoneVal = '5551234567';
+      }
+    }
+    await phone.fill(phoneVal);
   }
   if (vals.email !== undefined) {
     const email = shell.locator('input[name="donation_email"]').first();

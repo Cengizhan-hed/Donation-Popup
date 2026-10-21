@@ -1,8 +1,11 @@
 /**
- * Playwright config for staging E2E (used when invoking playwright test directly).
- * Primary entrypoints are npm run e2e / e2e:baseline (custom runners).
+ * Playwright cihaz projeleri (öncelik: iPhone → Android → masaüstü).
+ * Asıl giriş: npm run e2e:quick / e2e:full (özel koşucular).
  */
 import { defineConfig, devices } from '@playwright/test';
+
+const iphone = devices['iPhone 15'] || devices['iPhone 14'];
+const android = devices['Pixel 7'] || devices['Pixel 5'];
 
 export default defineConfig({
   testDir: './specs',
@@ -17,7 +20,17 @@ export default defineConfig({
     video: 'off',
   },
   projects: [
-    { name: 'chromium', use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 } } },
-    { name: 'webkit', use: { ...devices['Desktop Safari'], viewport: { width: 1440, height: 900 } } },
+    {
+      name: 'iphone',
+      use: { ...iphone, hasTouch: true, isMobile: true },
+    },
+    {
+      name: 'android',
+      use: { ...android, hasTouch: true, isMobile: true },
+    },
+    {
+      name: 'desktop',
+      use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 } },
+    },
   ],
 });

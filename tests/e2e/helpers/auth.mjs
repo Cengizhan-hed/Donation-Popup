@@ -9,6 +9,22 @@ import { ROOT } from './env.mjs';
 
 export const AUTH_DIR = path.join(ROOT, 'tests/e2e/.auth');
 export const AUTH_FILE = path.join(AUTH_DIR, 'user.json');
+
+/** @type {string|null} */
+let authFileOverride = null;
+
+/**
+ * @param {string} profileId
+ */
+export function setAuthFileForProfile(profileId) {
+  const id = String(profileId || '').trim() || 'default';
+  authFileOverride = path.join(AUTH_DIR, `${id}.json`);
+  return authFileOverride;
+}
+
+export function getAuthFile() {
+  return authFileOverride || AUTH_FILE;
+}
 const DEBUG_DIR = path.join(ROOT, 'build/e2e/debug');
 const LOGIN_FAILURE_SHOT = path.join(DEBUG_DIR, 'login-failure.png');
 
@@ -178,9 +194,17 @@ async function adminLooksLoggedIn(page, env) {
 async function storageStateOpensAdmin(context, env) {
   const page = await context.newPage();
   try {
-    const { ok } = await adminLooksLoggedIn(page, env);
+    const { ok, status } = await adminLooksLoggedIn(page, env);
+    if (!ok) {
+      const url = page.url();
+      const title = await page.title().catch(() => '');
+      console.error(
+        `[e2e:catch-fail] wp-admin probe ok=false status=${status} url=${url} title=${String(title).slice(0, 80)}`
+      );
+    }
     return ok;
-  } catch {
+  } catch (e) {
+    console.error(`[e2e:catch-fail] storageStateOpensAdmin: ${e && e.message ? e.message : e}`);
     return false;
   } finally {
     await page.close().catch(() => {});
@@ -287,10 +311,113 @@ async function failLogin(page, status, prePasswordShot, env, reason) {
  * @param {import('@playwright/test').BrowserContext} context
  */
 async function finishSuccessfulLogin(context) {
-  await context.storageState({ path: AUTH_FILE });
+  const dest = getAuthFile();
+  await context.storageState({ path: dest });
   clearLoginFailureShot();
   console.log('Giriş başarılı');
-  return AUTH_FILE;
+  return dest;
+}
+
+/**
+ * WP-CLI oturum çerezi — şifre yok, görünürlük değişmez.
+ * Çerez değeri loglanmaz.
+ * @param {Record<string, string>} env
+ */
+async function authViaWpCliCookie(env) {
+  const { wp } = await import('./wp-remote.mjs');
+  const php = [
+    'if (!function_exists("wp_generate_auth_cookie")) { echo ""; return; }',
+    '$ids = get_users(array("role"=>"administrator","number"=>1,"fields"=>"ID"));',
+    'if (!$ids) { echo ""; return; }',
+    '$id = (int) $ids[0];',
+    '$exp = time() + WEEK_IN_SECONDS;',
+    'echo wp_json_encode(array(',
+    '  "logged_in_name" => LOGGED_IN_COOKIE,',
+    '  "logged_in" => wp_generate_auth_cookie($id, $exp, "logged_in"),',
+    '  "auth_name" => AUTH_COOKIE,',
+    '  "auth" => wp_generate_auth_cookie($id, $exp, "auth"),',
+    '  "secure_auth_name" => SECURE_AUTH_COOKIE,',
+    '  "secure_auth" => wp_generate_auth_cookie($id, $exp, "secure_auth"),',
+    '));',
+  ].join(' ');
+  let raw = '';
+  try {
+    raw = wp(`wp eval '${php.replace(/'/g, `'\\''`)}'`);
+  } catch (e) {
+    console.error(`[e2e:catch-fail] wpCliAuth eval: ${e && e.message ? e.message : e}`);
+    return null;
+  }
+  const jsonLine = String(raw || '')
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter((l) => l.startsWith('{') && l.endsWith('}'))
+    .pop();
+  let data;
+  try {
+    data = JSON.parse(jsonLine || String(raw).trim());
+  } catch (e) {
+    console.error(
+      `[e2e:catch-fail] wpCliAuth JSON: ${e && e.message ? e.message : e} preview=${String(raw).slice(0, 80)}`
+    );
+    return null;
+  }
+  if (!data || !data.logged_in || !data.logged_in_name) {
+    console.error('[e2e:catch-fail] wpCliAuth: çerez alanları boş (yönetici kullanıcı yok olabilir)');
+    return null;
+  }
+  let host = '';
+  try {
+    host = new URL(env.E2E_BASE_URL).hostname;
+  } catch {
+    return null;
+  }
+  fs.mkdirSync(AUTH_DIR, { recursive: true });
+  const browser = await chromium.launch();
+  try {
+    const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+    if (env?._profile?.comingSoon) {
+      const { applyComingSoonBypass } = await import('./coming-soon.mjs');
+      await applyComingSoonBypass(context, env._profile, env);
+    }
+    const cookieDomain = host.replace(/^www\./, '');
+    const cookies = [
+      {
+        name: data.logged_in_name,
+        value: data.logged_in,
+        domain: cookieDomain,
+        path: '/',
+        httpOnly: true,
+        secure: true,
+        sameSite: 'Lax',
+      },
+    ];
+    for (const pair of [
+      [data.auth_name, data.auth],
+      [data.secure_auth_name, data.secure_auth],
+    ]) {
+      if (pair[0] && pair[1]) {
+        cookies.push({
+          name: pair[0],
+          value: pair[1],
+          domain: cookieDomain,
+          path: '/',
+          httpOnly: true,
+          secure: true,
+          sameSite: 'Lax',
+        });
+      }
+    }
+    await context.addCookies(cookies);
+    const ok = await storageStateOpensAdmin(context, env);
+    if (!ok) {
+      console.error('[e2e:catch-fail] wpCliAuth: çerez kondu ama /wp-admin açılamadı');
+      await context.close();
+      return null;
+    }
+    return await finishSuccessfulLogin(context);
+  } finally {
+    await browser.close().catch(() => {});
+  }
 }
 
 /**
@@ -298,29 +425,43 @@ async function finishSuccessfulLogin(context) {
  */
 export async function ensureAuth(env) {
   fs.mkdirSync(AUTH_DIR, { recursive: true });
+  if (env && env.E2E_PROFILE_ID) setAuthFileForProfile(env.E2E_PROFILE_ID);
+  const dest = getAuthFile();
 
-  if (fs.existsSync(AUTH_FILE)) {
+  if (fs.existsSync(dest)) {
     const probe = await chromium.launch();
     try {
       const context = await probe.newContext({
         viewport: { width: 1440, height: 900 },
-        storageState: AUTH_FILE,
+        storageState: dest,
       });
       const ok = await storageStateOpensAdmin(context, env);
       await context.close();
       if (ok) {
         clearLoginFailureShot();
-        return AUTH_FILE;
+        return dest;
       }
     } finally {
       await probe.close().catch(() => {});
     }
   }
 
+  if (env?._profile?.wpCliAuth) {
+    const viaCli = await authViaWpCliCookie(env);
+    if (viaCli) return viaCli;
+    throw new Error(
+      'wpCliAuth: WP-CLI oturum çerezi ile /wp-admin açılamadı (form girişi atlandı).'
+    );
+  }
+
   const browser = await chromium.launch();
   const context = await browser.newContext({
     viewport: { width: 1440, height: 900 },
   });
+  if (env?._profile?.comingSoon) {
+    const { applyComingSoonBypass } = await import('./coming-soon.mjs');
+    await applyComingSoonBypass(context, env._profile, env);
+  }
   // Keep traces off during login so credentials never land in a trace.
   await context.tracing.stop().catch(() => {});
   const page = await context.newPage();

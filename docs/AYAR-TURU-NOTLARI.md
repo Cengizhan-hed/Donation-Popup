@@ -314,3 +314,60 @@ Görsel aşama: G20 kapalı hedef butonunun görünümü (is-disabled), G21 tabl
 | Test | verify + PHPUnit 242 + JS 43; e2e:quick 70/0/0; 10 ekran accept (fixed/shares/campaign/custom popup+panel: Ödemeye Git artık Sepete Ekle ile aynı mavi, 10.29.1 kararı tüm tiplere yayıldı; 1 px genişlik kayması) |
 | Güvenlik | Yetkisiz uçlar: taslak/özel/şifreli ürün sızıntısı yok; wdp_render_modal origin yok → reddedilir; eski nopriv wdp_render_donation_button kaldırıldı |
 | Uninstall | Açık anahtar listesi + onay; sipariş/HPOS/WooCommerce çekirdek silinmez |
+
+## IKRAM AID ORTAMI ve GENEL UYUM GÖREVİ (2026-10-21)
+
+Kullanıcı düzeltmeleri: Ikram Aid için AYRI staging kurulmaz (ortam hazır); Ikram'da Curcy YOK, GBP WooCommerce ana para birimi. Temel ilkeler CLAUDE.md'nin en üstüne eklendi.
+
+| Konu | Not |
+|------|-----|
+| Ortam | ikramaid.uk (gerçek, yayında olmayan site): WP 7.1.3, WooCommerce 11.2.1, Blocksy + Elementor 4.3.5 Free, Slider Revolution 7, SiteGround (sg-cachepress + object-cache), GBP (2 ondalık, virgül binlik), İngiltere, İngilizce. SSH alias "ikramaid", WP yolu ~/www/ikramaid.uk/public_html. Eklenti 10.32.0 kurulu |
+| Ürünler | Sadaqah, Zakat, Orphan Support (bağışçı belirler, min 5), Food Pack £40, Qurbani £120 (sabit), Water Well (hedefli £3.000). General fiyat geçici olarak min tutara eşitlenmiş. Appeals sayfası (post 100): Elementor "Bağış Listesi" |
+| Kurallar | Sayfa/ürün içeriği/tasarıma dokunma. Arama motoru engeli ve WooCommerce "Coming soon" açık kalır (değiştirmek KRİTİK KAPI, önce kullanıcıya sor). Gerçek ödeme yok; test sipariş/müşteri kayıtları işaretlenir ve her koşudan sonra silinir |
+| Güvenlik kilidi | ship hedefi izinli: yalnız staging28.hedefdernegi.org ve ikramaid.uk; hedefdernegi.org (canlı) kesin engelli. Ikram Aid yayına alınmadan önce ikramaid.uk izni KALDIRILACAK (KAYIT) |
+| Test düzeni | Cihaz sırası: iPhone (WebKit) → Android (Chromium) → masaüstü (Chrome). e2e:quick yalnız iPhone, değişen alan, hedef <5 dk. Tam paket (3 cihaz, 2 gerçek ortam) merge öncesi. Tema matrisi sürüm öncesi (Avada, Blocksy, Twenty Twenty-Five, Storefront; çeşitli para birimi/ayırıcı/sembol konumu; blok + klasik ödeme; HPOS açık/kapalı). Siteye özel değerler ortam profilinden okunur; baseline'lar ortam+cihaz başına ayrı |
+| Kabul a | Liste kartı: görsel ve başlık gerçek `<a href>` (ürün sayfası); "Bağış Yap" sayfadan ayrılmadan formu açar; ürünü olmayan kategori/Uncategorized sekme yok |
+| Kabul b | Bağışçı belirler/Hedefli: General fiyat BOŞ olsa da listede görünür ve sepete eklenir; min tutarın tek kaynağı Bağış sekmesi; mevcut ürünler bozulmaz; liste önbelleği doğru yenilenir |
+| Kabul c-g | c: Bağışçı belirler kartında sabit fiyat yok. d: Hedefli kartta toplanan+hedef tutar. e: tutar alanı etiketi tüm türlerde aynı (Water Well'de yok). f: Bağış Formu widget "ürün bulunamadı" yalnız Elementor editöründe. g: GBP ana para biriminde tutar/toplam/ücret/hedef/sipariş doğru |
+| Genel uyum denetimi | Siteye/ülkeye/temaya bağlı varsayımların listesi (TL/₺, +90, sabit Türkçe, TR kuralları, sabit ondalık/ayırıcı, Avada seçicisi, Hedef ürün adı/ID, ödeme yöntemi/çoklu para birimi eklentisine özel kod, Curcy'ye özel kod); her bulgu: dosya, ne yapıyor, WP/Woo standart karşılığı, hangi görevde düzelecek. Kabul şartlarını bozanlar bu görevde düzelir, kalanı yalnız listelenir |
+| Curcy | Hiçbir ortamda kurulu değil: "Curcy kur kaydı" engeli ertelendi; Hedef canlıya alınmadan önce Curcy staging28'e kurulunca kapatılır. Bu görevde Curcy testi YOK. Eklentideki Curcy'ye özel kod → genel uyum listesine |
+| Sonraki göreve (DİL) | Metin çevirisi; telefon ön eki WooCommerce mağaza ülkesinden (Ikram +44, Hedef +90); tüm tutarların WooCommerce sayı biçimiyle yazılması ("£3,000.00" vs "£3.000 kaldı", "0.0%"); Elementor widget'larının İngilizce aramada bulunması |
+| Sonraki göreve (FORM ALANI YÖNETİMİ) | Telefonun zorunlu/isteğe bağlı olması ayar olacak (varsayılan zorunlu) |
+| Sonraki göreve (GÜVENLİK) | "KVKK denetimi" genel gizlilik denetimi: KVKK + UK GDPR + WordPress kişisel veri dışa aktarma/silme araçları; fatura e-postasıyla sınırlı eşleşme bu kapsamda |
+| Plan | Görev 3 Cursor görevine bölünür: (1) ortam altyapısı + test düzeni, (2) kabul şartları a-g + mobil baseline "Benzer Bağışlar" + genel uyum denetimi listesi, (3) tema/Woo uyum matrisi |
+
+### GÖRSEL AŞAMA eklemeleri
+
+| # | Madde |
+|---|-------|
+| G22 | Görsel aşama mobilden başlayarak tasarlanır; dört temada (Avada, Blocksy, Twenty Twenty-Five, Storefront) mobil ve masaüstünde doğrulanır |
+| G23 | Formdaki büyük boşluk |
+| G24 | Sabit fiyat kutusu buton gibi görünüyor (= G10) |
+| G25 | "Ödemeye Git" ile "Sepete Ekle" aynı ağırlıkta (ikincil/birincil ayrımı) |
+| G26 | Ad Soyad ve Not alanlarının hizası |
+| G27 | Liste kartlarının sayfa başlığıyla aynı hizada olmaması |
+
+## GENEL UYUM DENETİMİ (kod taraması, 10.33.0, 2026-10-21) — yalnız tespit
+
+Görev: DİL = i18n/sayı biçimi/telefon; REF = refaktör; GÜV = güvenlik; FORM = form alanı yönetimi; KABUL = 2/3. Önem: Y/O/D.
+
+| # | Alan | Bulgu (dosya:satır) | Woo/WP standardı | Görev | Önem |
+|---|------|---------------------|------------------|-------|------|
+| 1 | JS para biçimleme | `formatPrice` sabit `tr-TR` (utils.js:85); `formatCurrency` yalnız USD en-US, EUR de-DE, diğer HER ŞEY tr-TR → GBP £1.000,5 (utils.js:123-133) | Woo ayarları (ondalık sayı, binlik/ondalık ayırıcı, fiyat biçimi) wdp_ajax'a aktarılıp JS'te kullanılır | KABUL (çekirdek mekanizma) + DİL (yayılım) | Y |
+| 2 | JS tutar ayrıştırma | Nokta her zaman binlik sayılıyor: "100.50" → 10050 (utils.js:68,115; product.js:317-324; cart/ui.js:30); pricing.js:69, sadaka-rules.js:28-30 tahmin; wizard.js:425, ajax.js:624 | Woo ondalık ayırıcısıyla ayrıştır / DOM'a ham nokta-ondalıklı sayı | KABUL (GBP doğruluğu) | Y |
+| 3 | Varsayılan hızlı tutarlar | 100,250,500,1000,2500 para birimine bakmadan (form-fields-renderer.php:37; normalizer:88,210; form-tabs-renderer:368,470); varsayılan hedef 100000 (donation-type.php:25) | Para birimine duyarlı varsayılan (ya da boş) | KABUL (GBP) + DİL | Y/O |
+| 4 | PHP biçim | Yüzde `number_format(...,',')` (cart.php:465, form-modules.php:707); `$symbol . wc_format_decimal` (cart.php:631-632); sabit ₺ yönetici önizlemesi (form-tabs-renderer:411,414,483; layout-tabs:115); sembol/kod yedekleri ₺/TRY (utils-price:38, assets-registry:284,286, progress-currency:26, cart-add:384 ve JS 6 yerde); girdi ayrıştırma "Türkçe ondalık" (form-modules:214,254,307,339; settings-service:540-559; utils:266-269) | wc_price, wc_format_localized_decimal, get_woocommerce_currency(_symbol), wc_format_decimal | DİL | O/D |
+| 5 | Telefon | Varsayılan ülke 'tr' (class-phone-field.php:196-202; registry:345; phone-input.js:24-25,48); Türkiye listenin başına sabit, Collator('tr_TR'), ülke adları Türkçe sabit, tr için özel normalleştirme (phone-input.js:32,119-124) | `WC()->countries->get_base_country()`, `get_countries()`, locale sıralaması | DİL | Y/O |
+| 6 | Sabit Türkçe metin | JS ~45 satır: cart/ui.js ("Sepete Git", "Bağış Sepetiniz", "Sepetten Kaldır", "Sepetiniz boş"), progress-bar.js ("Hedefe ulaşıldı", "kaldı"), form/messages, validate, wizard, form, ajax, feedback, modal (yedek metinler); block.json başlıkları; order-meta-keys.php:155-157 çift sürüm | wdp_ajax.strings / wp_set_script_translations / `__()` | DİL | Y/O |
+| 7 | Türkiye kuralı | TC kimlik/il/vergi YOK (uyumlu); Collator tr_TR; "İthaf/hisse/sadaka" kavram adları İslami-Türkçe (genel özellik olarak tasarlanmış) | | DİL | O |
+| 8 | Tema/builder | builder-detect: Avada (fusion_tb_section, FusionBuilder), Divi, Bricks, Beaver tespiti (compat/class-builder-detect.php) ve product-page-integration.php:17 Avada Layouts yorumu; theme-isolation-overrides.css `html body` + !important; sepet satırı CSS'i yalnız klasik tablo (blok sepet/ödemede çalışmaz). CSS'te tema adı/seçicisi YOK (uyumlu) | | REF (+3/3 blok ödeme) | O/D |
+| 9 | Hedef'e özel | Ürün/ID/alan adı yok (uyumlu); "sadaka" ~560 geçiş iç ad (sadaka.js, cart.php, class-sadaka-product-visibility...) — genel "alt bağış" özelliği; eklenti başlığı "Hedef Derneği" | | REF (iç ad), DİL (etiket) | O/D |
+| 10 | Curcy/çoklu para birimine özel kod | class-progress-currency.php:3,47,63-69,84,107-113 (`wmc_order_info`, `_wmc_order_*`, `_woocs_order_rate`, `WOOMULTI_CURRENCY_Data`); lazy-modal.js:73-80 (çerezler wmc_/woocs_), :136-159 (`.woocs_currency`, wmc_/woocs_/curcy_currency_changed olayları), :90 (WPML çerezleri) | Genel `wdp_progress_convert_amount` / `wdp_progress_live_rate` filtreleri, `get_woocommerce_currency()`, `document.documentElement.lang`, genel `wdp:currency-changed` | REF (genelleştir) + Hedef canlı öncesi Curcy doğrulaması | O |
+| 11 | WooCommerce yolları | HPOS bildirimi var; sipariş okuma `$order->get_meta` (yedek get_post_meta zararsız); migration/uninstall `$wpdb` yalnız ürün meta; sepet `add_to_cart`/`woocommerce_before_calculate_totals` standart; toplanan `wc_get_orders` | | REF (küçük) | D |
+| 12 | Vergi | Kart fiyatı ham `$product->get_price()` (donations-list.php:802,809); `wc_get_price_to_display` hiçbir yerde yok → vergi dahil/hariç gösterim ayarı gözetilmiyor | `wc_get_price_to_display($product)` | KABUL (kart fiyatı) | O |
+| 13 | Liste: fiyatsız ürün | Sorgu `is_purchasable()` ister (donations-list.php:650); General fiyatı boş bağışçı-belirler ürün listeden düşer; `product_is_unavailable` (shortcodes.php:268) aynı; eklenti fiyat boşken is_purchasable'ı true yapıyor mu DOĞRULANACAK | | KABUL (şart b) | Y |
+| 14 | Widget mesajı | Kısa kod "ürün bulunamadı" shortcodes.php:226; Elementor widget'larında benzer mesaj bulunmadı: yalnız editörde görünme (şart f) doğrulanacak | | KABUL (f) | O |
+| 15 | Saat dilimi / dil kodu / RTL | `wp_timezone()` doğru; lazy-modal.js:91 yedek 'tr' (düşük); RTL: accessibility.css `[dir=rtl]` var ama 34 fiziksel margin/padding-left; tam RTL doğrulanmadı | mantıksal özellikler | DİL | D |
+| 16 | GÜV / FORM | Bu taramada ilke ihlali bulunmadı | | | |
+
+KARAR (Claude): 2/3'te yalnız GBP doğruluğunu sağlayan ÇEKİRDEK düzeltilir: Woo sayı ayarlarını wdp_ajax ile JS'e aktar + tek JS biçimleme/ayrıştırma yardımcısı (maddeler 1, 2) + GBP/USD için güvenli varsayılan hızlı tutar/hedef (madde 3) + madde 12-14. Metinlerin çevirisi, telefon ön eki ve geri kalan tüm biçimlendirme yayılımı DİL görevinde.

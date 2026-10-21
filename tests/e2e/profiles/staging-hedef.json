@@ -1,0 +1,69 @@
+{
+  "id": "staging-hedef",
+  "name": "Hedef Derneği staging",
+  "aliases": ["hedef", "staging"],
+  "baseUrl": "https://staging28.hedefdernegi.org",
+  "allowedHosts": ["staging28.hedefdernegi.org"],
+  "envFile": ".env.e2e",
+  "deployEnvFile": ".env.deploy",
+  "locale": "tr_TR",
+  "language": "tr",
+  "currency": {
+    "code": "TRY",
+    "symbol": "₺",
+    "decimals": 2,
+    "thousandSeparator": ".",
+    "decimalSeparator": ",",
+    "symbolPosition": "left"
+  },
+  "phone": {
+    "prefix": "+90",
+    "country": "TR",
+    "nationalExample": "5551234567"
+  },
+  "theme": "Avada",
+  "pageBuilder": "Avada Builder",
+  "listPage": "",
+  "shopPage": "",
+  "cachePurge": "sg-purge",
+  "comingSoon": false,
+  "searchEngineBlock": false,
+  "allowMetaMutation": true,
+  "checkoutType": "classic",
+  "ssh": {
+    "alias": ""
+  },
+  "strings": {
+    "donateButton": "Bağış Yap",
+    "donateButtonPattern": "bağış\\s*yap",
+    "similarDonations": "Benzer Bağışlar",
+    "similarDonationsPattern": "benzer\\s*bağış"
+  },
+  "selectors": {
+    "loopCards": "li.post-card, li.fusion-grid-column, .post-card, li.product",
+    "loopTitle": ".fusion-title, .woocommerce-loop-product__title, .product-title, h2, h3",
+    "animated": ".fusion-post-cards.fusion-animated, .fusion-animated.fusion-grid-archive, .fusion-blog-shortcode.fusion-animated",
+    "header": "header, .fusion-header-wrapper, .fusion-header"
+  },
+  "products": {
+    "custom": {
+      "role": "custom",
+      "name": "Nafile Kurbanı",
+      "id": 10695
+    },
+    "fixed": {
+      "role": "fixed",
+      "name": ""
+    },
+    "shares": {
+      "role": "shares",
+      "name": ""
+    },
+    "campaign": {
+      "role": "campaign",
+      "name": "Akika"
+    }
+  },
+  "protectedProductIds": [10695],
+  "altDonationProductId": 10721
+}

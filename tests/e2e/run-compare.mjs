@@ -4,13 +4,15 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
-import { loadE2EEnv, ROOT } from './helpers/env.mjs';
+import { loadE2EEnv, parseE2ECli, ROOT } from './helpers/env.mjs';
+import { fillMissingProductSlugs } from './helpers/resolve-products.mjs';
 import { captureAll } from './helpers/capture.mjs';
 import { compareAndReport } from './helpers/report.mjs';
 import {
-  BASELINE_DIR,
   CURRENT_DIR,
   REPORT_DIR,
+  baselineDirFor,
+  currentDirFor,
   cleanE2EOutputDirs,
   normalizeScreenNames,
   readLocalPluginVersion,
@@ -18,27 +20,34 @@ import {
 } from './helpers/run-io.mjs';
 
 async function main() {
+  const flags = parseE2ECli(process.argv.slice(2));
+  const deviceId = flags.device || 'desktop';
   let env;
   try {
-    env = loadE2EEnv();
+    env = loadE2EEnv({ envId: flags.envId });
+    env = await fillMissingProductSlugs(env);
   } catch (e) {
     console.error(String(e.message || e));
     process.exit(1);
   }
 
+  const profileId = env.E2E_PROFILE_ID || 'staging-hedef';
+  const baselineDir = baselineDirFor(profileId, deviceId);
+  const outDir = currentDirFor(profileId, deviceId);
   cleanE2EOutputDirs();
-  fs.mkdirSync(BASELINE_DIR, { recursive: true });
+  fs.mkdirSync(baselineDir, { recursive: true });
 
   const startedAt = new Date().toISOString();
   const started = Date.now();
-  console.log('Capturing current → build/e2e/current/');
+  console.log(`Capturing current → ${path.relative(ROOT, outDir)}/`);
   const { failures, skips = [], flaky = [], stats = {}, screens = [], shots = [] } = await captureAll({
     env,
-    outDir: CURRENT_DIR,
+    outDir,
     runFunctional: true,
     mode: 'full',
     workers: 3,
     runLabel: 'full',
+    device: deviceId,
   });
 
   const capturedScreens = screens.length ? screens : normalizeScreenNames(shots);
@@ -54,7 +63,7 @@ async function main() {
     passedCount,
     skippedCount,
     failedCount,
-  } = compareAndReport(BASELINE_DIR, CURRENT_DIR, REPORT_DIR, failures, env.E2E_DIFF_THRESHOLD, {
+  } = compareAndReport(baselineDir, outDir, REPORT_DIR, failures, env.E2E_DIFF_THRESHOLD, {
     skips,
     flaky,
     stats,

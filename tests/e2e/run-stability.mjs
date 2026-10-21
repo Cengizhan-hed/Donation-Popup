@@ -12,9 +12,11 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
-import { loadE2EEnv, ROOT } from './helpers/env.mjs';
+import { loadE2EEnv, parseE2ECli, ROOT } from './helpers/env.mjs';
+import { fillMissingProductSlugs } from './helpers/resolve-products.mjs';
 import { captureAll } from './helpers/capture.mjs';
 import { compareAndReport } from './helpers/report.mjs';
+import { resolveQuickAreas } from './helpers/area-filter.mjs';
 import { cleanE2EOutputDirs, normalizeScreenNames } from './helpers/run-io.mjs';
 
 const STAB_DIR = path.join(ROOT, 'build/e2e/stability');
@@ -51,9 +53,12 @@ function sadakaFailures(failures) {
 
 async function main() {
   const { maxRuns, noSideCart } = parseFlags(process.argv.slice(2).filter((a) => a !== '--'));
+  const cli = parseE2ECli(process.argv.slice(2));
+  const deviceId = cli.device || 'iphone';
   let env;
   try {
-    env = loadE2EEnv();
+    env = loadE2EEnv({ envId: cli.envId });
+    env = await fillMissingProductSlugs(env);
   } catch (e) {
     console.error(String(e.message || e));
     process.exit(1);
@@ -66,6 +71,13 @@ async function main() {
   let lastFailed = false;
   /** @type {object|null} */
   let stopReason = null;
+
+  const areaInfo = cli.all
+    ? { areas: null, files: [], unmatched: [], reason: '--all' }
+    : resolveQuickAreas(cli.areas);
+  console.log(
+    `E2E stability (${deviceId}, env=${env.E2E_PROFILE_ID || env._profile?.id}, alan=${areaInfo.areas ? areaInfo.areas.join(',') : 'hepsi'} — ${areaInfo.reason})`
+  );
 
   if (noSideCart) {
     console.log('Seçenek: --no-side-cart (guest URL + hdf_no_side_cart=1)');
@@ -98,9 +110,11 @@ async function main() {
         outDir,
         runFunctional: true,
         mode: 'quick',
-        workers: 3,
+        workers: deviceId === 'iphone' ? 2 : 3,
         runLabel: `stab${round}-${label}`,
         noSideCart,
+        device: deviceId,
+        areas: areaInfo.areas,
       });
       const secs = (Date.now() - started) / 1000;
       const screenList = screens.length ? screens : normalizeScreenNames(shots);

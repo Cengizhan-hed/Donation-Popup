@@ -81,22 +81,46 @@ export async function assertNoHorizontalOverflow(page) {
 }
 
 /**
+ * 404 / konsol kaynağını ayırt et (gizleme yok).
+ * @param {string} url
+ */
+export function classifyResourceUrl(url) {
+  const u = String(url || '').toLowerCase();
+  if (!u) return 'unknown';
+  if (/favicon|apple-touch-icon|\.ico(\?|$)/.test(u)) return 'favicon';
+  if (/\/wp-content\/plugins\/woo-donation-popup\//.test(u)) return 'plugin';
+  if (/\/wp-content\/plugins\//.test(u)) return 'other-plugin';
+  if (/\/wp-content\/themes\//.test(u)) return 'theme';
+  if (/\/wp-content\/uploads\//.test(u)) return 'upload';
+  if (/\/wp-includes\//.test(u)) return 'core';
+  return 'page';
+}
+
+/**
  * @param {import('@playwright/test').Page} page
- * @returns {Promise<string[]>}
+ * @returns {string[]}
  */
 export function attachConsoleErrorCollector(page) {
   const errors = [];
   page.on('console', (msg) => {
-    if (msg.type() === 'error') {
-      const text = msg.text();
-      // Never retain password-looking query fragments.
-      if (!/pass(word)?=/i.test(text)) {
-        errors.push(text.slice(0, 300));
-      }
-    }
+    if (msg.type() !== 'error') return;
+    const text = msg.text();
+    if (/pass(word)?=/i.test(text)) return;
+    const loc = typeof msg.location === 'function' ? msg.location() : {};
+    const locUrl = loc && loc.url ? String(loc.url) : '';
+    const kind = classifyResourceUrl(locUrl);
+    const extra = locUrl ? ` src=${locUrl.slice(0, 180)} kind=${kind}` : '';
+    errors.push(`${text.slice(0, 220)}${extra}`);
   });
   page.on('pageerror', (err) => {
     errors.push(String(err.message || err).slice(0, 300));
+  });
+  page.on('response', (res) => {
+    if (res.status() !== 404) return;
+    const url = res.url();
+    if (/pass(word)?=/i.test(url)) return;
+    const kind = classifyResourceUrl(url);
+    errors.push(`HTTP 404 ${url.slice(0, 220)} kind=${kind}`);
   });
   return errors;
 }
@@ -106,7 +130,10 @@ export function attachConsoleErrorCollector(page) {
  */
 export function assertNoConsoleErrors(errors) {
   if (errors.length) {
-    throw new Error('Browser console errors: ' + errors.slice(0, 5).join(' | '));
+    const kinds = [...new Set(errors.map((e) => (String(e).match(/kind=([a-z-]+)/) || [])[1] || 'unknown'))];
+    throw new Error(
+      `Browser console errors (kinds=${kinds.join(',')}): ` + errors.slice(0, 5).join(' | ')
+    );
   }
 }
 
@@ -305,9 +332,11 @@ export async function resolveAllProductPaths(page, baseUrl, products) {
  * @param {string} slug
  * @returns {Promise<number>}
  */
-export async function resolveProductIdBySlug(page, baseUrl, slug) {
+export async function resolveProductIdBySlug(page, baseUrl, slug, fallbackId = 0) {
+  const known = Number(fallbackId) > 0 ? Number(fallbackId) : 0;
+  if (!slug) return known;
   const root = baseUrl.replace(/\/$/, '');
-  return page.evaluate(
+  const fromApi = await page.evaluate(
     async ({ base, productSlug }) => {
       try {
         const url = `${base}/wp-json/wc/store/v1/products?slug=${encodeURIComponent(productSlug)}&per_page=5`;
@@ -325,6 +354,7 @@ export async function resolveProductIdBySlug(page, baseUrl, slug) {
     },
     { base: root, productSlug: slug }
   );
+  return Number(fromApi) > 0 ? Number(fromApi) : known;
 }
 
 /**

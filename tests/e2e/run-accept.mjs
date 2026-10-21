@@ -1,17 +1,16 @@
 #!/usr/bin/env node
 /**
  * Güvenli accept: yalnızca son çalıştırmanın Değişti + Yeni ekranlarını baseline’a yazar.
- * "Aynı" ekranlara dokunulmaz (baseline kayması olmasın).
+ * ` --env <profil> --device <iphone|android|desktop> ` — yoksa run.json’dan okunur.
  * İşlevsel hata varken veya run.json yokken reddeder.
- * Eski baseline → tests/e2e/__baseline_prev__/ (yalnızca üzerine yazılanlar yedeklenir).
  */
 import fs from 'node:fs';
 import path from 'node:path';
-import { ROOT } from './helpers/env.mjs';
+import { ROOT, parseE2ECli } from './helpers/env.mjs';
 import {
-  BASELINE_DIR,
   BASELINE_PREV_DIR,
   CURRENT_DIR,
+  baselineDirFor,
   readRunManifest,
 } from './helpers/run-io.mjs';
 
@@ -38,6 +37,7 @@ function basenames(list) {
     .filter((n) => n.endsWith('.png'));
 }
 
+const flags = parseE2ECli(process.argv.slice(2));
 const run = readRunManifest();
 if (!run || !Array.isArray(run.screens) || !run.screens.length) {
   console.error(
@@ -62,20 +62,30 @@ if (flaky.length) {
   );
 }
 
+const envId = flags.envId && flags.envId !== 'hedef'
+  ? flags.envId
+  : run.env || run.profileId || 'staging-hedef';
+const deviceId = flags.device || run.device || 'desktop';
+const baselineDir = run.baselineDir
+  ? path.resolve(ROOT, run.baselineDir)
+  : baselineDirFor(envId, deviceId);
+const currentDir = run.currentDir ? path.resolve(ROOT, run.currentDir) : CURRENT_DIR;
+
 const changed = basenames(run.changedScreens);
 const neu = basenames(run.newBaselineScreens);
-/** Değişti önce, Yeni sonra — tekilleştir */
 const toCopy = [...new Set([...changed, ...neu])];
 
 if (!toCopy.length) {
   console.log(
     'Kabul: kopyalanacak ekran yok (Değişti=0, Yeni=0). Baseline’daki "Aynı" ekranlara dokunulmadı.'
   );
-  console.log(`Baseline toplam: ${pngs(BASELINE_DIR).length} ekran. Mod=${run.mode || '?'} sürüm=${run.pluginVersion || '?'}`);
+  console.log(
+    `Baseline toplam: ${pngs(baselineDir).length} ekran. Mod=${run.mode || '?'} env=${envId} cihaz=${deviceId} sürüm=${run.pluginVersion || '?'}`
+  );
   process.exit(0);
 }
 
-const missing = toCopy.filter((n) => !fs.existsSync(path.join(CURRENT_DIR, n)));
+const missing = toCopy.filter((n) => !fs.existsSync(path.join(currentDir, n)));
 if (missing.length) {
   console.error(
     `Kabul reddedildi: run.json’daki bazı ekranlar current’da yok: ${missing.slice(0, 5).join(', ')}`
@@ -84,18 +94,18 @@ if (missing.length) {
 }
 
 rmTree(BASELINE_PREV_DIR);
-if (pngs(BASELINE_DIR).length) {
-  copyPngs(BASELINE_DIR, BASELINE_PREV_DIR);
+if (pngs(baselineDir).length) {
+  copyPngs(baselineDir, BASELINE_PREV_DIR);
   console.log(
     `Eski baseline → ${path.relative(ROOT, BASELINE_PREV_DIR)}/ (${pngs(BASELINE_PREV_DIR).length} ekran)`
   );
 }
 
-fs.mkdirSync(BASELINE_DIR, { recursive: true });
+fs.mkdirSync(baselineDir, { recursive: true });
 const copiedChanged = [];
 const copiedNew = [];
 for (const name of toCopy) {
-  fs.copyFileSync(path.join(CURRENT_DIR, name), path.join(BASELINE_DIR, name));
+  fs.copyFileSync(path.join(currentDir, name), path.join(baselineDir, name));
   if (changed.includes(name)) copiedChanged.push(name);
   else copiedNew.push(name);
 }
@@ -112,6 +122,6 @@ if (copiedNew.length) {
   for (const name of copiedNew) console.log(`  • ${name}`);
 }
 console.log(
-  `Baseline toplam: ${pngs(BASELINE_DIR).length} ekran. Mod=${run.mode || '?'} sürüm=${run.pluginVersion || '?'}`
+  `Baseline toplam: ${pngs(baselineDir).length} ekran. Mod=${run.mode || '?'} env=${envId} cihaz=${deviceId} sürüm=${run.pluginVersion || '?'}`
 );
-console.log('Kabul edildi. Sonraki ship:staging / e2e:quick bu referansa göre karşılaştırır.');
+console.log('Kabul edildi. Sonraki koşu bu referansa göre karşılaştırır.');

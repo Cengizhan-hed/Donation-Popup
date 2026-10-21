@@ -1,26 +1,29 @@
 #!/usr/bin/env node
 /**
- * Hızlı E2E: masaüstü Chromium — ürün + form (popup/panel) + liste/mağaza + işlevsel.
- * Baseline yoksa ekran bazında otomatik oluşturur. Hedef ≤ 180 sn.
- * desktop-popup-* = ortadaki modal (liste); desktop-panel-* = sağ panel (ürün sayfası).
+ * Hızlı E2E: YALNIZ iPhone (WebKit), YALNIZ değişen alanın işlevsel testleri.
+ * Varsayılan ortam Hedef staging; `--env ikram` ile Ikram.
+ * Hedef süre < 5 dk. `--all` alan süzgecini kapatır. `--device desktop` eski 70’lik küme.
  *
  *   npm run e2e:quick
- *   npm run e2e:quick -- --no-side-cart
- *     → guest URL’lere hdf_no_side_cart=1 (yan sepet snippet kapalı)
+ *   npm run e2e:quick -- --env ikram
+ *   npm run e2e:quick -- --all --device desktop
  */
 import path from 'node:path';
 import { spawn } from 'node:child_process';
-import { loadE2EEnv, ROOT } from './helpers/env.mjs';
+import { loadE2EEnv, parseE2ECli, ROOT } from './helpers/env.mjs';
+import { fillMissingProductSlugs } from './helpers/resolve-products.mjs';
 import { captureAll } from './helpers/capture.mjs';
 import { compareAndReport } from './helpers/report.mjs';
+import { resolveQuickAreas } from './helpers/area-filter.mjs';
 import {
-  BASELINE_DIR,
-  CURRENT_DIR,
+  baselineDirFor,
+  currentDirFor,
   REPORT_DIR,
   cleanE2EOutputDirs,
   normalizeScreenNames,
   readLocalPluginVersion,
   writeRunManifest,
+  CURRENT_DIR,
 } from './helpers/run-io.mjs';
 
 function openReport(reportFile) {
@@ -35,33 +38,35 @@ function openReport(reportFile) {
   spawn('xdg-open', [reportFile], { detached: true, stdio: 'ignore' }).unref();
 }
 
-/**
- * @param {string[]} argv
- */
-function parseFlags(argv) {
-  return {
-    openReport: argv.includes('--open-report'),
-    noSideCart: argv.includes('--no-side-cart'),
-  };
-}
-
 async function main() {
-  const flags = parseFlags(process.argv.slice(2).filter((a) => a !== '--'));
+  const flags = parseE2ECli(process.argv.slice(2));
+  const deviceId = flags.device || 'iphone';
   let env;
   try {
-    env = loadE2EEnv();
+    env = loadE2EEnv({ envId: flags.envId });
+    env = await fillMissingProductSlugs(env);
   } catch (e) {
     console.error(String(e.message || e));
     process.exit(1);
   }
 
+  const areaInfo = flags.all
+    ? { areas: null, files: [], unmatched: [], reason: '--all' }
+    : resolveQuickAreas(flags.areas);
+  const profileId = env.E2E_PROFILE_ID || env._profile?.id || 'staging-hedef';
+  const outDir = currentDirFor(profileId, deviceId);
+  const baselineDir = baselineDirFor(profileId, deviceId);
+
   cleanE2EOutputDirs();
   const startedAt = new Date().toISOString();
   const started = Date.now();
-  console.log('E2E quick (desktop Chromium, 4 worker, form dahil) → build/e2e/current/');
-  if (flags.noSideCart) {
-    console.log('Seçenek: --no-side-cart (guest URL + hdf_no_side_cart=1)');
+  console.log(
+    `E2E quick (${deviceId}, env=${profileId}, alan=${areaInfo.areas ? areaInfo.areas.join(',') : 'hepsi'} — ${areaInfo.reason})`
+  );
+  if (areaInfo.files.length) {
+    console.log(`Değişen dosya: ${areaInfo.files.length} (eşlemesiz ${areaInfo.unmatched.length})`);
   }
+  if (flags.noSideCart) console.log('Seçenek: --no-side-cart');
 
   const {
     failures,
@@ -72,14 +77,17 @@ async function main() {
     screens = [],
     shots = [],
     noSideCart = false,
+    a11yFindings = [],
   } = await captureAll({
     env,
-    outDir: CURRENT_DIR,
+    outDir,
     runFunctional: true,
     mode: 'quick',
-    workers: 4,
+    workers: deviceId === 'iphone' ? 2 : 4,
     runLabel: 'quick',
     noSideCart: flags.noSideCart,
+    device: deviceId,
+    areas: areaInfo.areas,
   });
 
   const capturedScreens = screens.length ? screens : normalizeScreenNames(shots);
@@ -94,7 +102,7 @@ async function main() {
     passedCount,
     skippedCount,
     failedCount,
-  } = compareAndReport(BASELINE_DIR, CURRENT_DIR, REPORT_DIR, failures, env.E2E_DIFF_THRESHOLD, {
+  } = compareAndReport(baselineDir, outDir, REPORT_DIR, failures, env.E2E_DIFF_THRESHOLD, {
     skips,
     flaky,
     stats,
@@ -103,12 +111,16 @@ async function main() {
     shellDiffThreshold: env.E2E_SHELL_DIFF_THRESHOLD,
   });
 
-  const endedAt = new Date().toISOString();
+  const durationSec = Number(((Date.now() - started) / 1000).toFixed(1));
   writeRunManifest({
     mode: 'quick',
+    env: profileId,
+    device: deviceId,
+    areas: areaInfo.areas,
+    areaReason: areaInfo.reason,
     startedAt,
-    endedAt,
-    durationSec: Number(((Date.now() - started) / 1000).toFixed(1)),
+    endedAt: new Date().toISOString(),
+    durationSec,
     pluginVersion: readLocalPluginVersion(),
     noSideCart: !!noSideCart,
     screens: capturedScreens,
@@ -120,6 +132,9 @@ async function main() {
     changedScreens,
     newBaselineScreens,
     flaky,
+    a11yFindings,
+    baselineDir: path.relative(ROOT, baselineDir),
+    currentDir: path.relative(ROOT, outDir),
   });
 
   console.log('Report:', reportFile);
@@ -128,9 +143,7 @@ async function main() {
       ` | noSideCart=${noSideCart ? 'evet' : 'hayır'}`
   );
   if (flaky.length) {
-    console.warn(
-      `Kararsız (yeniden denemede geçti): ${flaky.map((f) => f.check).join(', ')}`
-    );
+    console.warn(`Kararsız (yeniden denemede geçti): ${flaky.map((f) => f.check).join(', ')}`);
   }
   console.log(
     `Görsel durum: Değişti=${changedCount} Yeni referans=${newBaselineCount}` +
@@ -144,7 +157,7 @@ async function main() {
     console.log('Yeni:');
     for (const name of newBaselineScreens) console.log(`  • ${name}`);
   }
-  console.log(`Süre: ${((Date.now() - started) / 1000).toFixed(1)}s`);
+  console.log(`Süre: ${durationSec}s`);
   console.log(`Manifest: ${path.relative(ROOT, path.join(CURRENT_DIR, 'run.json'))}`);
 
   if (flags.openReport) {

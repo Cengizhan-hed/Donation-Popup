@@ -2,6 +2,13 @@
 
 Bu dosyayı her oturumun başında oku. Kullanıcıyla her zaman **Türkçe** konuş.
 
+## TEMEL İLKELER (en üst kural; her görevde geçerli)
+
+- **Eklenti geneldir.** Hedef Derneği ya da Ikram Aid için değil, WooCommerce kurulu her bağış sitesi için yazılır. Kurulumdan sonra ek iş gerektirmeden harika çalışmalı. Hiçbir site, ülke, dil, para birimi ya da tema varsayımı koda gömülmez. Değerler ya WooCommerce/WordPress'ten okunur ya da ayar olur. Siteye özel değerler yalnız test ortam profillerinde durur.
+- **WooCommerce ile %100 uyumlu.** Para birimi, ondalık sayısı, binlik ve ondalık ayırıcı, mağaza ülkesi, vergi, sepet, ödeme sayfası (blok ve kısa kodlu), sipariş ve HPOS işleri yalnız WooCommerce'in standart yollarıyla yapılır. Herhangi bir ödeme yöntemi ya da WooCommerce uyumlu çoklu para birimi eklentisiyle kendiliğinden çalışır; belirli bir eklentiye özel kod yok.
+- **Tema ve sayfa oluşturucudan bağımsız.** Eklenti kodunda temaya özel seçici ya da düzeltme olmaz. Kısa kod, blok ve Elementor widget'ı hangi temada kullanılırsa kullanılsın aynı çalışır ve iyi görünür. Eklenti stilleri temayı bozmaz, tema da eklentiyi bozmaz.
+- **Masaüstünde ve mobilde harika.** Mobil birinci öncelik: bağışların %90'ından fazlası mobilden. Her davranış önce mobilde doğrulanır; tasarım mobilde masaüstünden de iyi olmalı.
+
 ## 0. ÇALIŞMA BİÇİMİ (en üstte, diğer kurallardan önce gelir)
 
 1. **Bölüm başına tek analiz.** Bölümün tüm ayarlarını koddan ve docs/MIMARI.md'den incele; TEK mesajda ver: her ayar ne yapar, sorunlar, önerilen düzeltmeler, kullanıcının vereceği kararlar (numaralı, seçenekli, öneri işaretli). Ayar ayar soru sorma.

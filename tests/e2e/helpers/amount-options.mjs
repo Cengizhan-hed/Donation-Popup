@@ -95,7 +95,14 @@ async function fillMinimalDonor(shell) {
   }
   const phone = shell.locator(SEL.donorPhone).first();
   if (await phone.count()) {
-    await phone.fill('5551234567');
+    let phoneVal = '5551234567';
+    try {
+      const { getActiveProfile } = await import('./profile.mjs');
+      phoneVal = getActiveProfile()?.phone?.nationalExample || phoneVal;
+    } catch {
+      /* yedek */
+    }
+    await phone.fill(phoneVal);
   }
 }
 

@@ -1,53 +1,160 @@
 /**
- * Staging kurulum kilitleri (ağ gerektirmeyen kontroller).
- * Canlı yol veya staging içermeyen URL reddedilir.
+ * Kurulum kilitleri (ağ gerektirmeyen kontroller).
+ *
+ * İzinli ship hedefleri YALNIZ:
+ *   - staging28.hedefdernegi.org
+ *   - ikramaid.uk
+ *
+ * Kara liste: hedefdernegi.org (canlı) — path veya URL sapması durur.
+ *
+ * KAYIT: ikramaid.uk izni Ikram Aid yayına alınmadan önce KALDIRILACAK.
  */
+
+/** Ikram Aid yayına alınmadan önce bu izin KALDIRILACAK. */
+export const IKRAM_ALLOW_REMOVAL_NOTE =
+  'ikramaid.uk izni Ikram Aid yayına alınmadan önce KALDIRILACAK';
+
+/**
+ * Canlı Hedef: alt alan adı staging* değilse reddet.
+ * www.hedefdernegi.org ve hedefdernegi.org kara listede.
+ */
+export const LIVE_HOST_BLOCKLIST = [
+  /(^|\.)hedefdernegi\.org$/i,
+];
+
+export const ALLOWED_DEPLOY_TARGETS = [
+  {
+    id: 'staging-hedef',
+    hosts: [/staging28\.hedefdernegi\.org$/i],
+    urlIncludes: ['staging28.hedefdernegi.org'],
+    pathIncludes: ['staging28.hedefdernegi.org', 'staging'],
+  },
+  {
+    id: 'ikram-aid',
+    hosts: [/(^|\.)ikramaid\.uk$/i],
+    urlIncludes: ['ikramaid.uk'],
+    pathIncludes: ['ikramaid.uk'],
+    // ikramaid.uk izni Ikram Aid yayına alınmadan önce KALDIRILACAK
+    removalNote: IKRAM_ALLOW_REMOVAL_NOTE,
+  },
+];
+
+/**
+ * @param {string} hostOrUrl
+ */
+export function isLiveHedefHost(hostOrUrl) {
+  const raw = String(hostOrUrl || '').trim().toLowerCase();
+  if (!raw) return false;
+  if (raw.includes('staging')) return false;
+  let host = raw;
+  try {
+    if (/^https?:\/\//i.test(raw)) host = new URL(raw).hostname;
+  } catch {
+    host = raw.replace(/^https?:\/\//i, '').split('/')[0];
+  }
+  host = host.replace(/^www\./, '');
+  return host === 'hedefdernegi.org' || /(^|\.)hedefdernegi\.org$/.test(host);
+}
+
+/**
+ * @param {string} siteUrl
+ * @param {string} wpPath
+ */
+export function matchAllowedTarget(siteUrl, wpPath) {
+  const url = String(siteUrl || '').trim().replace(/\/$/, '').toLowerCase();
+  const p = String(wpPath || '').trim().toLowerCase();
+  if (isLiveHedefHost(url) || isLiveHedefHost(p) || /\/www\/hedefdernegi\.org\//i.test(p)) {
+    return { ok: false, reason: 'Kara liste: hedefdernegi.org (canlı) kesin engelli.' };
+  }
+  for (const t of ALLOWED_DEPLOY_TARGETS) {
+    const urlOk = t.urlIncludes.some((s) => url.includes(s));
+    const pathOk = t.pathIncludes.some((s) => p.includes(String(s).toLowerCase()));
+    if (urlOk && pathOk) {
+      return { ok: true, target: t };
+    }
+  }
+  return {
+    ok: false,
+    reason:
+      'DEPLOY_SITE_URL / DEPLOY_WP_PATH izin listesinde değil. İzinli: staging28.hedefdernegi.org, ikramaid.uk.',
+  };
+}
 
 /**
  * @param {Record<string, string>} env
- * @returns {{ ok: true } | { ok: false, reason: string }}
+ * @returns {{ ok: true, target?: object } | { ok: false, reason: string }}
  */
 export function validateDeployEnv(env) {
-  const path = String(env.DEPLOY_WP_PATH || '').trim();
+  const pathVal = String(env.DEPLOY_WP_PATH || '').trim();
   const siteUrl = String(env.DEPLOY_SITE_URL || '').trim().replace(/\/$/, '');
+  const alias = String(env.DEPLOY_SSH_ALIAS || '').trim();
   const host = String(env.DEPLOY_SSH_HOST || '').trim();
   const user = String(env.DEPLOY_SSH_USER || '').trim();
   const port = String(env.DEPLOY_SSH_PORT || '').trim();
   const key = String(env.DEPLOY_SSH_KEY || '').trim();
 
-  if (!host || !user || !port || !key || !path || !siteUrl) {
+  if (!pathVal || !siteUrl) {
+    return {
+      ok: false,
+      reason: 'Eksik .env.deploy anahtarı: DEPLOY_WP_PATH, DEPLOY_SITE_URL gerekli.',
+    };
+  }
+
+  if (!alias) {
+    if (!host || !user || !port || !key) {
+      return {
+        ok: false,
+        reason:
+          'Eksik SSH: DEPLOY_SSH_ALIAS veya DEPLOY_SSH_HOST, DEPLOY_SSH_USER, DEPLOY_SSH_PORT, DEPLOY_SSH_KEY gerekli.',
+      };
+    }
+  }
+
+  if (!pathVal.startsWith('/') && !pathVal.startsWith('~/') && !pathVal.startsWith('$HOME')) {
+    return {
+      ok: false,
+      reason: 'DEPLOY_WP_PATH mutlak yol veya ~/… olmalı.',
+    };
+  }
+
+  const allowed = matchAllowedTarget(siteUrl, pathVal);
+  if (!allowed.ok) return allowed;
+
+  return { ok: true, target: allowed.target };
+}
+
+/**
+ * E2E taban URL: izin listesi + canlı kara liste.
+ * @param {string} baseUrl
+ * @param {string[]} [allowedHosts]
+ */
+export function validateE2EBaseUrl(baseUrl, allowedHosts = []) {
+  const raw = String(baseUrl || '').trim();
+  if (!raw) return { ok: false, reason: 'E2E_BASE_URL boş.' };
+  if (isLiveHedefHost(raw)) {
+    return { ok: false, reason: 'Kara liste: hedefdernegi.org (canlı) E2E için kesin engelli.' };
+  }
+  let host = '';
+  try {
+    host = new URL(raw).hostname.toLowerCase().replace(/^www\./, '');
+  } catch {
+    return { ok: false, reason: 'E2E_BASE_URL geçerli bir URL değil.' };
+  }
+  const allowed = (allowedHosts || []).map((h) => String(h).toLowerCase().replace(/^www\./, ''));
+  if (allowed.length && !allowed.includes(host)) {
+    return {
+      ok: false,
+      reason: `E2E_BASE_URL host profil izin listesinde değil (${allowed.join(', ')}).`,
+    };
+  }
+  const urlOk = matchAllowedTarget(raw, raw);
+  if (!urlOk.ok && !allowed.includes(host)) {
     return {
       ok: false,
       reason:
-        'Eksik .env.deploy anahtarı: DEPLOY_SSH_HOST, DEPLOY_SSH_USER, DEPLOY_SSH_PORT, DEPLOY_SSH_KEY, DEPLOY_WP_PATH, DEPLOY_SITE_URL gerekli.',
+        'E2E_BASE_URL izin listesinde değil. İzinli: staging28.hedefdernegi.org, ikramaid.uk.',
     };
   }
-
-  const pathLower = path.toLowerCase();
-  const urlLower = siteUrl.toLowerCase();
-  if (!pathLower.includes('staging') || !urlLower.includes('staging')) {
-    return {
-      ok: false,
-      reason:
-        'DEPLOY_WP_PATH ve DEPLOY_SITE_URL içinde "staging" geçmeli. Canlıya kurulum desteklenmez.',
-    };
-  }
-
-  if (!path.startsWith('/')) {
-    return {
-      ok: false,
-      reason: 'DEPLOY_WP_PATH mutlak yol olmalı (ör. /home/customer/www/staging…/public_html). ~ kullanmayın.',
-    };
-  }
-
-  if (path.includes('/www/hedefdernegi.org/')) {
-    return {
-      ok: false,
-      reason:
-        'DEPLOY_WP_PATH canlı site yolunu içeriyor (/www/hedefdernegi.org/). Yalnızca staging yoluna izin verilir.',
-    };
-  }
-
   return { ok: true };
 }
 
@@ -63,10 +170,13 @@ export function validateRemoteSiteUrl(remoteSiteUrl, expectedSiteUrl) {
   if (!remote || !expected) {
     return { ok: false, reason: 'Uzak veya beklenen site URL boş.' };
   }
+  if (isLiveHedefHost(remote) || isLiveHedefHost(expected)) {
+    return { ok: false, reason: 'Kara liste: hedefdernegi.org (canlı) kesin engelli.' };
+  }
   if (remote !== expected) {
     return {
       ok: false,
-      reason: `Uzak siteurl yapılandırılan DEPLOY_SITE_URL ile eşleşmiyor (beklenen staging adresi).`,
+      reason: `Uzak siteurl yapılandırılan DEPLOY_SITE_URL ile eşleşmiyor.`,
     };
   }
   return { ok: true };

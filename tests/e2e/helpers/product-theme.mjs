@@ -13,7 +13,6 @@ import {
 import { getProductMeta, setProductMeta } from './staging-wp-meta.mjs';
 
 const CHECK_MS = 25000;
-const NAFILE_ID = 10695;
 
 const META_KEYS = [
   '_theme_primary',
@@ -129,7 +128,7 @@ export async function runProductThemeChecks(opts) {
     stats.failed += 1;
   };
 
-  const customId = Number(productIds?.custom || 0) || NAFILE_ID;
+  const customId = Number(productIds?.custom || 0);
   const customPath = productUrls?.custom || '';
   const baseUrl = env.E2E_BASE_URL;
   const listPath = listPagePath || env.E2E_LIST_PAGE;
@@ -141,11 +140,8 @@ export async function runProductThemeChecks(opts) {
   const page = await ctx.newPage();
 
   try {
-    if (customId !== NAFILE_ID) {
-      throw new Error(`product-theme E2E Nafile (#${NAFILE_ID}) bekler; gelen #${customId}`);
-    }
-    if (!customPath) {
-      throw new Error('E2E custom ürün yolu yok');
+    if (!customId || !customPath) {
+      throw new Error('E2E custom ürün yolu/id yok');
     }
 
     for (const key of META_KEYS) {

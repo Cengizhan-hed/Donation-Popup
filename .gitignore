@@ -65,6 +65,9 @@ release/
 .env.local
 .env.*.local
 .env.e2e
+.env.e2e.*
+!.env.e2e.example
+!.env.e2e.*.example
 
 # Testing / Composer
 /vendor/
@@ -86,3 +89,6 @@ build/e2e/
 build/
 
 .env.deploy
+.env.deploy.*
+!.env.deploy.example
+!.env.deploy.*.example

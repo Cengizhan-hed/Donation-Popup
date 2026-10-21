@@ -71,7 +71,18 @@ async function fillDonor(shell, vals = {}) {
   const name = shell.locator(SEL.donorName).first();
   if (await name.count()) await name.fill(vals.name || 'E2E Kampanya');
   const phone = shell.locator(SEL.donorPhone).first();
-  if (await phone.count()) await phone.fill(vals.phone || '5551234567');
+  if (await phone.count()) {
+    let phoneVal = vals.phone;
+    if (!phoneVal) {
+      try {
+        const { getActiveProfile } = await import('./profile.mjs');
+        phoneVal = getActiveProfile()?.phone?.nationalExample || '5551234567';
+      } catch {
+        phoneVal = '5551234567';
+      }
+    }
+    await phone.fill(phoneVal);
+  }
   if (vals.amount) {
     const price = shell.locator(SEL.customPrice).first();
     if (await price.count()) await price.fill(vals.amount);
@@ -96,14 +107,21 @@ async function restoreMeta(productId, snapshot) {
  * @param {number} productId
  */
 async function postAddToCart(page, shell, productId) {
+  let phoneVal = '5551234567';
+  try {
+    const { getActiveProfile } = await import('./profile.mjs');
+    phoneVal = getActiveProfile()?.phone?.nationalExample || phoneVal;
+  } catch {
+    /* yedek */
+  }
   return page.evaluate(
-    async ({ pid }) => {
+    async ({ pid, phoneVal }) => {
       const form = document.querySelector('.wdp-modal.show form, .wdp-donation-form form, form.wdp-donation-form');
       const fd = form ? new FormData(form) : new FormData();
       fd.set('action', 'wdp_ajax_add_to_cart');
       fd.set('wdp_product_id', String(pid));
       if (!fd.get('donation_full_name')) fd.set('donation_full_name', 'E2E Kampanya');
-      if (!fd.get('donation_phone')) fd.set('donation_phone', '5551234567');
+      if (!fd.get('donation_phone')) fd.set('donation_phone', phoneVal);
       if (!fd.get('custom_price')) fd.set('custom_price', '50');
       const ajax = window.wdp_ajax || {};
       if (ajax.nonce) fd.set('nonce', ajax.nonce);
@@ -118,7 +136,7 @@ async function postAddToCart(page, shell, productId) {
       }
       return { ok: res.ok, status: res.status, json };
     },
-    { pid: productId }
+    { pid: productId, phoneVal }
   );
 }
 
@@ -162,8 +180,9 @@ export async function runCampaignBlocksChecks({
       throw new Error('E2E kampanya ürün yolu/id yok');
     }
     // Güvenlik: bilinen staging ürünlerine dokunma
-    if (campaignId === 10695) {
-      throw new Error('Kampanya E2E Nafile (#10695) kullanamaz');
+    const protectedIds = (env._profile?.protectedProductIds || [10695]).map(Number);
+    if (protectedIds.includes(campaignId)) {
+      throw new Error(`Kampanya E2E korunan ürüne (#${campaignId}) dokunamaz`);
     }
 
     for (const key of META_KEYS) {

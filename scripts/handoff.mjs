@@ -59,6 +59,26 @@ function parseArgs(argv) {
  * @param {string} filePath
  * @returns {string[]}
  */
+const PUBLIC_ENV_KEYS = new Set([
+  'E2E_BASE_URL',
+  'E2E_LOGIN_PATH',
+  'E2E_LIST_PAGE',
+  'E2E_SHOP_PAGE',
+  'E2E_PRODUCT_FIXED',
+  'E2E_PRODUCT_CUSTOM',
+  'E2E_PRODUCT_SHARES',
+  'E2E_PRODUCT_CAMPAIGN',
+  'E2E_DIFF_THRESHOLD',
+  'E2E_SHELL_DIFF_THRESHOLD',
+  'E2E_MASK_SELECTORS',
+  'DEPLOY_SITE_URL',
+  'DEPLOY_WP_PATH',
+  'DEPLOY_SSH_ALIAS',
+  'DEPLOY_SSH_HOST',
+  'DEPLOY_SSH_PORT',
+  'DEPLOY_SSH_USER',
+]);
+
 function loadSecretValues(filePath) {
   if (!fs.existsSync(filePath)) return [];
   const raw = fs.readFileSync(filePath, 'utf8');
@@ -69,6 +89,8 @@ function loadSecretValues(filePath) {
     if (!t || t.startsWith('#')) continue;
     const eq = t.indexOf('=');
     if (eq < 0) continue;
+    const key = t.slice(0, eq).trim();
+    if (PUBLIC_ENV_KEYS.has(key)) continue;
     let v = t.slice(eq + 1).trim();
     if (
       (v.startsWith("'") && v.endsWith("'")) ||
@@ -112,10 +134,12 @@ function stem(name) {
  * @param {string} name
  * @returns {{ yeni?: string, eski?: string, fark?: string }}
  */
-function resolveTriple(name) {
+function resolveTriple(name, run) {
   const base = path.basename(name);
-  const cur = path.join(CURRENT_DIR, base);
-  const old = path.join(BASELINE_DIR, base);
+  const currentDir = run?.currentDir ? path.resolve(ROOT, run.currentDir) : CURRENT_DIR;
+  const baselineDir = run?.baselineDir ? path.resolve(ROOT, run.baselineDir) : BASELINE_DIR;
+  const cur = path.join(currentDir, base);
+  const old = path.join(baselineDir, base);
   const diffCandidates = [
     path.join(DIFF_DIR, base.replace(/\.png$/i, '-diff.png')),
     path.join(DIFF_DIR, base),
@@ -170,6 +194,8 @@ function main() {
   const secrets = [
     ...loadSecretValues(path.join(ROOT, '.env.e2e')),
     ...loadSecretValues(path.join(ROOT, '.env.deploy')),
+    ...loadSecretValues(path.join(ROOT, '.env.e2e.ikram')),
+    ...loadSecretValues(path.join(ROOT, '.env.deploy.ikram')),
   ];
 
   if (!fs.existsSync(REPORT_MD)) {
@@ -263,7 +289,7 @@ function main() {
   /** @type {Array<{ name: string, files: Array<{ src: string, dest: string }> }>} */
   const triples = [];
   for (const name of screenNames) {
-    const t = resolveTriple(name);
+    const t = resolveTriple(name, run);
     if (!t.yeni && !t.eski && !t.fark) continue;
     const st = stem(name);
     /** @type {Array<{ src: string, dest: string }>} */

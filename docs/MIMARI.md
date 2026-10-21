@@ -440,12 +440,17 @@ Kaynak rehber: `docs/AYARLAR.md`. Teknik varsayılanlar normalizer / placement /
 | `npm run pack` | `build` + `scripts/package-wp-plugin.sh` | `package.json:14` |
 | `.distignore` | ZIP dışı: node_modules, .env*, docs, tests, tools, scripts, vendor… | `.distignore:4-38` |
 | `scripts/package-wp-plugin.sh` | rsync exclude → admin CSS minify → (DEST’te tools yoksa bundle yeniden denemesi uyarıya düşebilir) → prune → `build/woo-donation-popup.zip` | `scripts/package-wp-plugin.sh:57-119` |
-| `npm run deploy:staging` | `scripts/deploy-staging.mjs` | `package.json:24` |
-| Canlı kilidi | `validateDeployEnv`: path+URL içinde `staging`; `/www/hedefdernegi.org/` reddi; zorunlu SSH alanları | `scripts/lib/deploy-guards.mjs:10-51` |
-| Uzak doğrulama | `validateRemoteSiteUrl` birebir eşleşme | `scripts/lib/deploy-guards.mjs:60-72` |
-| `npm run ship:staging` | deploy + `e2e:quick --open-report` | `scripts/ship-staging.mjs:23-29` |
+| `npm run deploy:staging` | `scripts/deploy-staging.mjs` | `package.json` |
+| `npm run deploy:ikram` / `ship:ikram` | rsync + SSH alias `ikramaid` (`--dry-run` kuru çalıştırma); ardından `e2e:quick --env ikram` | `scripts/deploy-ikram.mjs`, `scripts/ship-ikram.mjs` |
+| `npm run ikram:wp` | Ikram WP-CLI köprüsü (yalnız alias `ikramaid`; kara liste yıkıcı komutlar) | `scripts/ikram-wp.mjs`, `scripts/lib/ikram-wp-guard.mjs` |
+| Canlı kilidi | İzin listesi: `staging28.hedefdernegi.org` + `ikramaid.uk`. Kara liste: `hedefdernegi.org` (canlı). Biri saparsa durur. | `scripts/lib/deploy-guards.mjs` |
+| Uzak doğrulama | `validateRemoteSiteUrl` birebir eşleşme | `scripts/lib/deploy-guards.mjs` |
+| `npm run ship:staging` | deploy + `e2e:quick --open-report` | `scripts/ship-staging.mjs` |
+| Rsync dışlama | `.distignore` tek kaynak (`pack-excludes.mjs`) | `scripts/lib/pack-excludes.mjs` |
 
-`.env.deploy` / `.env.e2e` **okunmadı** (görev yasağı); yalnızca anahtar adları README/şablonlarda belgelidir.
+`.env.deploy` / `.env.e2e` / `.env.*.ikram` **okunmadı** (görev yasağı); yalnızca anahtar adları şablonlarda belgelidir.
+
+**KAYIT:** `ikramaid.uk` izni Ikram Aid yayına alınmadan önce **KALDIRILACAK** (`IKRAM_ALLOW_REMOVAL_NOTE` in `scripts/lib/deploy-guards.mjs`).
 
 ---
 
@@ -453,13 +458,51 @@ Kaynak rehber: `docs/AYARLAR.md`. Teknik varsayılanlar normalizer / placement /
 
 | Öğe | Değer |
 |-----|--------|
-| Komutlar | `e2e:quick`, `e2e`, `e2e:baseline`, `e2e:accept`, `e2e:stability`, `e2e:perf`, … (`package.json:15-22`) |
-| Ortam | `.env.e2e` (git dışı); yükleyici `tests/e2e/helpers/env.mjs` |
-| Çıktı | `build/e2e/current/`, `diff/`, `report.html`; baseline `tests/e2e/__baseline__/` |
+| Komutlar | `e2e:quick`, `e2e:full`, `e2e:matrix`, `e2e`, `e2e:baseline`, `e2e:accept`, `e2e:stability`, `e2e:perf` (`package.json`) |
+| Ortam | Profil JSON `tests/e2e/profiles/*.json` + sır dosyası `.env.e2e` / `.env.e2e.ikram`; yükleyici `tests/e2e/helpers/env.mjs` |
+| Çıktı | `build/e2e/current/<ortam>/<cihaz>/`; baseline `tests/e2e/__baseline__/<ortam>/<cihaz>/` |
 | Manifest | `run.json` (`tests/e2e/helpers/run-io.mjs`) |
-| Eşik | sayfa varsayılan **%0.5**; kabuk popup/panel **%0.1** (`tests/e2e/helpers/env.mjs:76-83`, `tests/e2e/helpers/report.mjs:38-48`) |
-| Quick | desktop Chromium, functional + ekran (`tests/e2e/run-quick.mjs:1-9`) |
-| Accept | yalnız Değişti+Yeni; functional hata 0 (`tests/e2e/run-accept.mjs` — ayrıntı README) |
+| Eşik | sayfa varsayılan **%0.5**; kabuk popup/panel **%0.1** |
+| Quick | Yalnız iPhone (WebKit) + değişen alan (`tests/e2e/area-map.json` + `git diff --name-only HEAD`); `--env ikram`; `--all --device desktop` eski 70’lik küme |
+| Full | 3 cihaz × gerçek ortam(lar), merge öncesi (`tests/e2e/run-full.mjs`) |
+| Matrix | Boş iskelet (görev 3/3) `npm run e2e:matrix` |
+| Accept | `--env` + `--device`; yalnız Değişti+Yeni; functional hata 0 |
+
+### Test ortamları ve profiller
+
+| Profil | Dosya | Sırlar | Tema / oluşturucu | Para | Coming soon |
+|--------|-------|--------|-------------------|------|-------------|
+| Hedef staging | `tests/e2e/profiles/staging-hedef.json` | `.env.e2e` + `.env.deploy` | Avada Builder | TRY `₺` | kapalı |
+| Ikram Aid | `tests/e2e/profiles/ikram-aid.json` | `.env.e2e.ikram` + `.env.deploy.ikram` | Blocksy + Elementor | GBP `£` | açık (paylaşım çerezi; option yazılmaz) |
+
+Siteye özel değer (sembol, ayırıcı, telefon ön eki, dil, ürün adı, tema seçicisi) testte sabit yazılmaz; profilden okunur. Ürün eşlemesi rol bazlı (`custom` / `fixed` / `shares` / `campaign`). `shares: null` → hisseli testler atlanır (gizlenmez). Ikram’da `allowMetaMutation: false` — ürün/sayfa içeriği yazılmaz.
+
+Coming soon: WP-CLI `woocommerce_share_key` okunur veya `E2E_COMING_SOON_SHARE_KEY`; çerez `woo-share`. `blog_public` ve coming soon option **değiştirilmez**.
+
+### Cihaz projeleri ve komutlar
+
+Öncelik: 1) iPhone (WebKit, iPhone 15, dokunmatik, güvenli alan 47/34) 2) Android (Chromium, Pixel 7) 3) masaüstü (Chrome 1440). Tanımlar: `tests/e2e/helpers/devices.mjs`, `tests/e2e/playwright.config.mjs`.
+
+| Komut | Davranış |
+|-------|----------|
+| `e2e:quick` | iPhone + alan süzgeci; hedef &lt; 5 dk |
+| `e2e:full` | 3 cihaz × ortam; cihazlar sırayla (meta yarışı yok); env içinde ürün URL/ID bir kez |
+| `e2e:matrix` | 3/3 iskelet |
+| `e2e:stability` | Aynı cihazda iki koşu; varsayılan iPhone |
+
+### ship:ikram ve güvenlik kilidi
+
+`scripts/deploy-ikram.mjs`: verify + test + pack → uzak eklenti **dizinini** (`wp plugin path SLUG --dir`; dosya yolu `normalizeRemotePluginDir` ile düzeltilir) zip yedekle (`$HOME/wdp-backups`) → rsync kaynak/hedef sonda slash + `--delete` yalnız eklenti dizini + `.distignore` dışlamaları → activate + migrations → `wp eval 'echo 1;'` → `wp sg purge` / `wp cache flush` / liste cache bump. `--dry-run` uzak yazmaz.
+
+**Ikram etkileşimi yalnız repo içi node scriptleri üzerinden:** `npm run ikram:wp -- …` / `deploy:ikram` / `ship:ikram`. Doğrudan `ssh` / `rsync` yazılmaz (Cursor deny). `ikram:wp` kara listesi: `db drop/reset`, `site empty`, `user delete`, `post delete`, `plugin delete/uninstall`, `option update/delete`. İzin: plugin list/get/status/path, option get, post list/get, wc …, cache flush, sg purge, eval (yıkıcı PHP yok), eval-file yalnız `tests/e2e/helpers/cleanup-e2e.php`. Builtin: `plugin-health`, `php-ok`, `debug-log`, `gateways`.
+
+İzin: yalnız `staging28.hedefdernegi.org` ve `ikramaid.uk`. Kara liste `hedefdernegi.org`. **ikramaid.uk izni Ikram Aid yayına alınmadan önce KALDIRILACAK.**
+
+### Test verisi temizliği
+
+Sipariş/müşteri: e-posta `*@wdp-e2e.test` + meta `_wdp_e2e_test=1`. Her functional koşu sonunda `tests/e2e/helpers/test-cleanup.mjs` SSH `wp eval` (HPOS `wc_get_orders`, yalnız işaretliler; yedek PHP `cleanup-e2e.php`). Silme hatası koşuyu fail eder. Koruma siparişi silinmez.
+
+Ödeme URL: `wc_get_checkout_url()` (`tests/e2e/helpers/checkout-setup.mjs`). Hedef (`allowMetaMutation`): çek geçici açılır, sonra eski haline döner. Ikram: ödeme ayarı yazılmaz; çevrimdışı yöntem yoksa sipariş tamamlama atlanır (neden yazılı). Ürün ID: WP-CLI `post list` + Store API yedek (`resolve-products.mjs`). Konsol 404: istek URL + `kind=` (favicon/theme/plugin) — gizlenmez.
 
 ---
 

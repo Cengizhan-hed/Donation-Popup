@@ -17,6 +17,12 @@ import {
 
 const CHECK_MS = 40000;
 const FORBIDDEN_IDS = new Set([10695]);
+
+function forbiddenIds(env) {
+  const extra = env?._profile?.protectedProductIds;
+  if (Array.isArray(extra) && extra.length) return new Set(extra.map(Number));
+  return FORBIDDEN_IDS;
+}
 const PRICE_MARKER = '8877';
 
 /**
@@ -77,7 +83,8 @@ export async function runShortcodeChecks({
 }) {
   const fixedId = Number(productIds.fixed || 0);
   const campaignId = Number(productIds.campaign || 0);
-  if (campaignId) FORBIDDEN_IDS.add(campaignId);
+  const blocked = forbiddenIds(env);
+  if (campaignId) blocked.add(campaignId);
 
   const ctx = await browser.newContext(contextOpts);
   const page = await ctx.newPage();
@@ -89,7 +96,7 @@ export async function runShortcodeChecks({
 
   let listTemp = null;
   try {
-    if (!fixedId || FORBIDDEN_IDS.has(fixedId)) {
+    if (!fixedId || blocked.has(fixedId)) {
       throw new Error('Kısa kod E2E için güvenli ürün ID yok');
     }
     listTemp = await createTempPage(

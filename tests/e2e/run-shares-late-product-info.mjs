@@ -17,13 +17,17 @@ import {
   shellTriggerLocator,
 } from './helpers/checks.mjs';
 import { SEL } from './helpers/selectors.mjs';
+import { peekActiveProfile } from './helpers/profile.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
 
 const DELAY_MS = 1500;
 const NAME_VAL = 'Kim Adına Kesilecek';
-const PHONE_VAL = '5551234567';
 const NOTE_VAL = 'Geç yanıt notu';
+
+function phoneVal() {
+  return peekActiveProfile()?.phone?.nationalExample || '5551234567';
+}
 
 /**
  * @param {import('@playwright/test').Page} page
@@ -76,7 +80,7 @@ async function fillShareholder1(shell) {
   const note = shell.locator('textarea[name="shareholder_note_1"]').first();
   await name.waitFor({ state: 'visible', timeout: CHECK_MS });
   await name.fill(NAME_VAL);
-  await phone.fill(PHONE_VAL);
+  await phone.fill(phoneVal());
   if ((await note.count()) > 0) {
     await note.fill(NOTE_VAL);
   }
@@ -165,9 +169,10 @@ export async function runSharesLateProductInfoChecks({
         await page.waitForTimeout(DELAY_MS + 800);
         const after = await readShareholder1(shell);
         const nameOk = after.name.trim() === NAME_VAL;
+        const expectedPhone = phoneVal();
         const phoneOk =
-          String(after.phone).replace(/\D/g, '').endsWith('5551234567') ||
-          after.phone.includes(PHONE_VAL);
+          String(after.phone).replace(/\D/g, '').endsWith(expectedPhone.replace(/\D/g, '')) ||
+          after.phone.includes(expectedPhone);
         const noteOk = !after.note || after.note.trim() === NOTE_VAL;
         if (!nameOk || !phoneOk || !noteOk) {
           failed += 1;

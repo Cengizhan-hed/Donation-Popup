@@ -1,0 +1,120 @@
+{
+  "unmappedFallback": ["core", "shell", "sadaka", "mobile-a11y", "checkout-flow"],
+  "areas": {
+    "core": {
+      "label": "Ürün sayfaları, liste, mağaza, taşma",
+      "tests": ["product-pages", "list-shop", "overflow"]
+    },
+    "shell": {
+      "label": "Popup/panel açılış ve doğrulama",
+      "tests": ["popup-panel", "skeleton"]
+    },
+    "sadaka": {
+      "label": "Alt bağış",
+      "tests": ["sadaka"]
+    },
+    "amount-options": {
+      "label": "Tutar seçenekleri",
+      "tests": ["amount-options"]
+    },
+    "form-fields": {
+      "label": "Form alanları",
+      "tests": ["form-fields"]
+    },
+    "campaign-blocks": {
+      "label": "Kampanya blokları",
+      "tests": ["campaign-blocks"]
+    },
+    "product-theme": {
+      "label": "Ürüne özel görünüm",
+      "tests": ["product-theme"]
+    },
+    "shortcodes": {
+      "label": "Kısa kod / liste",
+      "tests": ["shortcodes"]
+    },
+    "shares": {
+      "label": "Hisseli form",
+      "tests": ["shares-late"]
+    },
+    "mobile-a11y": {
+      "label": "Mobil/masaüstü davranış denetimleri",
+      "tests": ["mobile-a11y"]
+    },
+    "checkout-flow": {
+      "label": "Sepet + ödeme + sipariş",
+      "tests": ["cart", "checkout-flow"]
+    },
+    "admin": {
+      "label": "Yönetici sekmeleri (full)",
+      "tests": ["admin"]
+    }
+  },
+  "paths": [
+    { "match": "includes/templates/class-form-fields-renderer.php", "areas": ["amount-options", "form-fields", "sadaka", "shell"] },
+    { "match": "includes/templates/class-form-modules.php", "areas": ["form-fields", "amount-options", "sadaka"] },
+    { "match": "includes/templates/class-modal-shell-renderer.php", "areas": ["shell", "mobile-a11y"] },
+    { "match": "includes/class-form-fields-renderer.php", "areas": ["form-fields", "amount-options"] },
+    { "match": "includes/class-phone-field.php", "areas": ["form-fields", "mobile-a11y"] },
+    { "match": "includes/class-donations-list.php", "areas": ["core", "shortcodes"] },
+    { "match": "includes/class-product-page-integration.php", "areas": ["core", "shell"] },
+    { "match": "includes/class-shortcodes.php", "areas": ["shortcodes"] },
+    { "match": "includes/class-blocks.php", "areas": ["shortcodes"] },
+    { "match": "includes/elementor/", "areas": ["shortcodes", "core"] },
+    { "match": "includes/class-cart.php", "areas": ["checkout-flow"] },
+    { "match": "includes/class-order.php", "areas": ["checkout-flow"] },
+    { "match": "includes/traits/trait-wdp-ajax-cart-add.php", "areas": ["checkout-flow", "sadaka"] },
+    { "match": "includes/class-admin-", "areas": ["admin", "form-fields"] },
+    { "match": "assets/js/src/form/pricing.js", "areas": ["amount-options", "shell"] },
+    { "match": "assets/js/src/form/", "areas": ["form-fields", "shell"] },
+    { "match": "assets/js/src/phone-input.js", "areas": ["form-fields", "mobile-a11y"] },
+    { "match": "assets/js/src/modal.js", "areas": ["shell", "mobile-a11y"] },
+    { "match": "assets/js/src/cart/", "areas": ["checkout-flow"] },
+    { "match": "assets/css/src/", "areas": ["shell", "mobile-a11y"] },
+    { "match": "tests/e2e/helpers/amount-options.mjs", "areas": ["amount-options"] },
+    { "match": "tests/e2e/helpers/form-fields.mjs", "areas": ["form-fields"] },
+    { "match": "tests/e2e/helpers/campaign-blocks.mjs", "areas": ["campaign-blocks"] },
+    { "match": "tests/e2e/helpers/product-theme.mjs", "areas": ["product-theme"] },
+    { "match": "tests/e2e/helpers/shortcodes.mjs", "areas": ["shortcodes"] },
+    { "match": "tests/e2e/helpers/mobile-a11y.mjs", "areas": ["mobile-a11y"] },
+    { "match": "tests/e2e/helpers/donation-flow.mjs", "areas": ["checkout-flow"] },
+    { "match": "tests/e2e/run-shares-late-product-info.mjs", "areas": ["shares"] },
+    { "match": "tests/e2e/helpers/capture.mjs", "areas": ["core", "shell", "sadaka", "mobile-a11y", "checkout-flow"] },
+    { "match": "tests/e2e/helpers/checks.mjs", "areas": ["core", "shell"] },
+    { "match": "tests/e2e/helpers/selectors.mjs", "areas": ["core", "shell"] },
+    { "match": "tests/e2e/helpers/profile.mjs", "areas": ["core"] },
+    { "match": "tests/e2e/helpers/env.mjs", "areas": ["core"] },
+    { "match": "tests/e2e/helpers/env-root.mjs", "areas": ["core"] },
+    { "match": "tests/e2e/helpers/devices.mjs", "areas": ["core", "mobile-a11y"] },
+    { "match": "tests/e2e/helpers/area-filter.mjs", "areas": ["core"] },
+    { "match": "tests/e2e/helpers/currency.mjs", "areas": ["core"] },
+    { "match": "tests/e2e/helpers/coming-soon.mjs", "areas": ["core"] },
+    { "match": "tests/e2e/helpers/wp-remote.mjs", "areas": ["core"] },
+    { "match": "tests/e2e/helpers/test-cleanup.mjs", "areas": ["checkout-flow"] },
+    { "match": "tests/e2e/helpers/cleanup-e2e.php", "areas": ["checkout-flow"] },
+    { "match": "tests/e2e/helpers/similar-donations-probe.mjs", "areas": ["core"] },
+    { "match": "tests/e2e/helpers/resolve-products.mjs", "areas": ["core"] },
+    { "match": "tests/e2e/helpers/auth.mjs", "areas": ["core"] },
+    { "match": "tests/e2e/helpers/run-io.mjs", "areas": ["core"] },
+    { "match": "tests/e2e/helpers/staging-wp-meta.mjs", "areas": ["amount-options"] },
+    { "match": "tests/e2e/profiles/", "areas": ["core"] },
+    { "match": "tests/e2e/area-map.json", "areas": ["core"] },
+    { "match": "tests/e2e/playwright.config.mjs", "areas": ["core"] },
+    { "match": "tests/e2e/run-quick.mjs", "areas": ["core"] },
+    { "match": "tests/e2e/run-full.mjs", "areas": ["core"] },
+    { "match": "tests/e2e/run-matrix.mjs", "areas": ["core"] },
+    { "match": "tests/e2e/run-accept.mjs", "areas": ["core"] },
+    { "match": "tests/e2e/run-compare.mjs", "areas": ["core"] },
+    { "match": "tests/e2e/run-stability.mjs", "areas": ["core"] },
+    { "match": "package.json", "areas": ["core"] },
+    { "match": "scripts/lib/deploy-guards.mjs", "areas": ["core"] },
+    { "match": "scripts/handoff.mjs", "areas": ["core"] },
+    { "match": "scripts/deploy-", "areas": ["core"] },
+    { "match": "scripts/ship-", "areas": ["core"] },
+    { "match": "scripts/ikram-wp.mjs", "areas": ["core"] },
+    { "match": "scripts/lib/ikram-wp-guard.mjs", "areas": ["core"] },
+    { "match": "scripts/lib/pack-excludes.mjs", "areas": ["core"] },
+    { "match": "tests/e2e/helpers/checkout-setup.mjs", "areas": ["checkout-flow"] },
+    { "match": "tests/unit/js/", "areas": ["core"] }
+  ]
+}
