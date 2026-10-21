@@ -116,13 +116,15 @@
                 set({ showTitle: v });
               },
             }),
-            el(TextControl, {
-              label: __("Buton metni", "woo-donation-popup"),
-              value: atts.buttonText || "",
-              onChange: function (v) {
-                set({ buttonText: v });
-              },
-            })
+            atts.display !== "inline"
+              ? el(TextControl, {
+                  label: __("Buton metni", "woo-donation-popup"),
+                  value: atts.buttonText || "",
+                  onChange: function (v) {
+                    set({ buttonText: v });
+                  },
+                })
+              : null
           )
         ),
         preview ||

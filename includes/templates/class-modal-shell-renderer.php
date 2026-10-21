@@ -455,7 +455,9 @@ class WDP_Modal_Shell_Renderer {
 		$show_title = ($atts['show_title'] === 'yes');
 
 		$form_id      = 'wdp-modal-' . $product_id . '-direct';
-		$custom_class = sanitize_text_field($atts['class']);
+		$custom_class = class_exists('WDP_Shortcodes')
+			? WDP_Shortcodes::sanitize_class_list($atts['class'])
+			: sanitize_html_class((string) $atts['class']);
 
 		$allow_custom_price     = $context['allow_custom_price'];
 		$min_price              = $context['min_price'];

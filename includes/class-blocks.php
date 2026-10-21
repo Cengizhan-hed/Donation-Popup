@@ -75,12 +75,14 @@ class WDP_Blocks {
 				$atts    = is_array($atts) ? $atts : array();
 				$context = (is_object($block) && isset($block->context) && is_array($block->context)) ? $block->context : array();
 				$display = isset($atts['display']) ? sanitize_key((string) $atts['display']) : 'inline';
+				$label   = isset($atts['buttonText']) ? sanitize_text_field((string) $atts['buttonText']) : '';
 				$short   = array(
-					'id'         => isset($atts['productId']) ? absint($atts['productId']) : 0,
-					'slug'       => isset($atts['slug']) ? sanitize_title((string) $atts['slug']) : '',
-					'sku'        => isset($atts['sku']) ? sanitize_text_field((string) $atts['sku']) : '',
-					'text'       => isset($atts['buttonText']) ? sanitize_text_field((string) $atts['buttonText']) : '',
-					'show_title' => (!empty($atts['showTitle']) && $atts['showTitle'] !== 'no' && $atts['showTitle'] !== false) ? 'yes' : 'no',
+					'id'          => isset($atts['productId']) ? absint($atts['productId']) : 0,
+					'slug'        => isset($atts['slug']) ? sanitize_title((string) $atts['slug']) : '',
+					'sku'         => isset($atts['sku']) ? sanitize_text_field((string) $atts['sku']) : '',
+					'text'        => $label,
+					'button_text' => $label,
+					'show_title'  => (!empty($atts['showTitle']) && $atts['showTitle'] !== 'no' && $atts['showTitle'] !== false) ? 'yes' : 'no',
 				);
 				if ($display === 'popup') {
 					return WDP_Shortcodes::render_button($short, 'wdp_donation_button', 'popup', $context);

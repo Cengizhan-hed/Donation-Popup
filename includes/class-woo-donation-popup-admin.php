@@ -346,6 +346,14 @@ class Woo_Donation_Popup_Admin {
         $request_data = $this->get_admin_request_data();
 
         $delete_on_uninstall = isset($request_data['delete_data_on_uninstall']) && '1' === (string) $request_data['delete_data_on_uninstall'];
+        $currently_on        = '1' === (string) get_option('wdp_delete_data_on_uninstall', '0');
+        if ($delete_on_uninstall && !$currently_on) {
+            $confirmed = isset($request_data['confirm_delete_data']) && '1' === (string) $request_data['confirm_delete_data'];
+            if (!$confirmed) {
+                $this->send_admin_settings_error(__('Bu işlem geri alınamaz. Onaylamadan kaydedilmez.', 'woo-donation-popup'));
+                return;
+            }
+        }
         $this->update_non_autoload_option('wdp_delete_data_on_uninstall', $delete_on_uninstall ? '1' : '0');
 
         $this->send_admin_settings_success(__('Gelişmiş ayarlar kaydedildi.', 'woo-donation-popup'));

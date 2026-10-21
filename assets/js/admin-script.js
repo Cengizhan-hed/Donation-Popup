@@ -183,19 +183,40 @@
   function bindSettingsForm(selector, action, buttonSelector, withInlineMessage) {
     const $form = $(selector)
     if (!$form.length) return
+    const formId = String($form.attr("id") || "")
 
     $form.off("submit.wdpAdmin").on("submit.wdpAdmin", function (event) {
       event.preventDefault()
+      if (formId === "wdp-advanced-settings-form") {
+        const $cb = $form.find("#wdp-delete-data-on-uninstall")
+        if ($cb.length && $cb.is(":checked") && $cb.attr("data-wdp-was-on") !== "1") {
+          const ok = window.confirm(
+            "Eklentinin tüm ürün ayarları ve eklenti seçenekleri silinir. Siparişlere ve sipariş kayıtlarına dokunulmaz. Bu işlem geri alınamaz. Yedek aldınız mı?"
+          )
+          if (!ok) {
+            $cb.prop("checked", false)
+            return
+          }
+        }
+      }
       const $button = $(buttonSelector)
       const $spinner = $button.next(".spinner")
       const $inlineMessage = withInlineMessage ? $button.closest(".submit").find(".wdp-inline-save-message") : $()
       toggleSpinner($spinner, true)
 
+      let payload = $(this).serialize() + "&action=" + action + "&nonce=" + cfg.nonce
+      if (formId === "wdp-advanced-settings-form") {
+        const $cb = $form.find("#wdp-delete-data-on-uninstall")
+        if ($cb.length && $cb.is(":checked") && $cb.attr("data-wdp-was-on") !== "1") {
+          payload += "&confirm_delete_data=1"
+        }
+      }
+
       $.ajax({
         url: cfg.ajax_url,
         type: "POST",
         dataType: "json",
-        data: $(this).serialize() + "&action=" + action + "&nonce=" + cfg.nonce,
+        data: payload,
       })
         .done((response) => {
           if (response && response.success) {
@@ -230,6 +251,21 @@
       const buttonId = formId.replace(/^wdp-(.+)-settings-form$/, "wdp-save-$1-settings")
       const withInline = $(this).find(".wdp-inline-save-message").length > 0
       bindSettingsForm("#" + formId, action, "#" + buttonId, withInline)
+    })
+    bindUninstallConfirm()
+  }
+
+  function bindUninstallConfirm() {
+    const $cb = $("#wdp-delete-data-on-uninstall")
+    if (!$cb.length) return
+    $cb.off("change.wdpUninstall").on("change.wdpUninstall", function () {
+      if (!this.checked || $cb.attr("data-wdp-was-on") === "1") return
+      const ok = window.confirm(
+        "Eklentinin tüm ürün ayarları ve eklenti seçenekleri silinir. Siparişlere ve sipariş kayıtlarına dokunulmaz. Bu işlem geri alınamaz. Yedek aldınız mı?"
+      )
+      if (!ok) {
+        this.checked = false
+      }
     })
   }
 

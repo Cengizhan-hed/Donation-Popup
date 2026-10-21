@@ -3419,6 +3419,33 @@ export async function captureAll({
     } finally {
       logSection('product-theme', tProductTheme);
     }
+
+    // 10.33.0 kısa kod / liste
+    const tShortcodes = Date.now();
+    try {
+      const { runShortcodeChecks } = await import('./shortcodes.mjs');
+      await runShortcodeChecks({
+        browser,
+        contextOpts,
+        env,
+        productUrls,
+        productIds,
+        listPagePath: env.E2E_LIST_PAGE,
+        failures,
+        stats: functionalStats,
+      });
+    } catch (e) {
+      failures.push(
+        makeFailure({
+          check: 'shortcodes-runner',
+          description: 'Kısa kod E2E koşucusu çöktü',
+          error: e,
+        })
+      );
+      functionalStats.failed += 1;
+    } finally {
+      logSection('shortcodes', tShortcodes);
+    }
   }
 
   // Mobile chromium + webkit sample (quick’te atlanır)

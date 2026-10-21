@@ -123,6 +123,9 @@ class WDP_Admin_Product_Data_Tab {
 		if (class_exists('WDP_Donation_Scope')) {
 			WDP_Donation_Scope::flush($product->get_id());
 		}
+		if (class_exists('WDP_Donations_List')) {
+			WDP_Donations_List::on_product_settings_save();
+		}
 	}
 
 	/**
@@ -1043,25 +1046,11 @@ class WDP_Admin_Product_Data_Tab {
 	 */
 	public static function get_shortcodes($product_id) {
 		$product_id = absint($product_id);
-		$slug = '';
-		$product = function_exists('wc_get_product') ? wc_get_product($product_id) : null;
-		if ($product && method_exists($product, 'get_slug')) {
-			$slug = (string) $product->get_slug();
-		}
-
-		$list = array(
-			array('label' => __('Buton (ortada açılır)', 'woo-donation-popup'), 'code' => '[wdp_donation_button id="' . $product_id . '"]'),
-			array('label' => __('Sağ panel', 'woo-donation-popup'), 'code' => '[wdp_donation_button_panel id="' . $product_id . '"]'),
-			array('label' => __('Sayfa içi form', 'woo-donation-popup'), 'code' => '[wdp_donation_form id="' . $product_id . '"]'),
-			array('label' => __('Kimliksiz (ürün sayfasında otomatik)', 'woo-donation-popup'), 'code' => '[wdp_donation_form]'),
-			array('label' => __('Kimliksiz sağ panel', 'woo-donation-popup'), 'code' => '[wdp_donation_button_panel]'),
+		$id_attr    = esc_attr((string) $product_id);
+		return array(
+			array('label' => __('Buton (ortada açılır)', 'woo-donation-popup'), 'code' => '[wdp_donation_button id="' . $id_attr . '"]'),
+			array('label' => __('Sağ panel', 'woo-donation-popup'), 'code' => '[wdp_donation_button_panel id="' . $id_attr . '"]'),
+			array('label' => __('Sayfa içi form', 'woo-donation-popup'), 'code' => '[wdp_donation_form id="' . $id_attr . '"]'),
 		);
-		if ($slug !== '') {
-			$list[] = array(
-				'label' => __('Slug ile form', 'woo-donation-popup'),
-				'code'  => '[wdp_donation_form slug="' . $slug . '"]',
-			);
-		}
-		return $list;
 	}
 }

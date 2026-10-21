@@ -91,6 +91,7 @@ class WDP_Migrations {
 			'10.30.0' => array(__CLASS__, 'step_10_30_0'),
 			'10.31.0' => array(__CLASS__, 'step_10_31_0'),
 			'10.32.0' => array(__CLASS__, 'step_10_32_0'),
+			'10.33.0' => array(__CLASS__, 'step_10_33_0'),
 		);
 	}
 
@@ -400,6 +401,28 @@ class WDP_Migrations {
 
 		update_option($flag, '1', false);
 		return 'privacy:' . $action;
+	}
+
+	/**
+	 * 10.33.0: liste önbelleği sürümünü artır (bayat HTML düşsün). Veri silinmez.
+	 *
+	 * @param bool $is_fresh Fresh install.
+	 * @return string Summary for the log.
+	 */
+	public static function step_10_33_0($is_fresh) {
+		$flag = 'wdp_migrated_10_33_0';
+		if (get_option($flag)) {
+			return 'already';
+		}
+		if (class_exists('WDP_Donations_List')) {
+			WDP_Donations_List::reset_bump_guard();
+			WDP_Donations_List::bump_cache();
+		} else {
+			$cv = (int) get_option('wdp_list_cache_version', 1);
+			update_option('wdp_list_cache_version', $cv + 1, false);
+		}
+		update_option($flag, '1', false);
+		return $is_fresh ? 'list cache initialized' : 'list cache bumped';
 	}
 
 	/**

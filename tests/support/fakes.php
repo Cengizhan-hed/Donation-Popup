@@ -182,6 +182,10 @@ if (!class_exists('WC_Product')) {
 		public $catalog_visibility = 'visible';
 		/** @var int Featured image attachment id (0 = none). */
 		public $image_id = 0;
+		/** @var bool */
+		public $visible = true;
+		/** @var string */
+		public $post_password = '';
 
 		public function __construct($id = 0) {
 			$this->id = (int) $id;
@@ -248,6 +252,14 @@ if (!class_exists('WC_Product')) {
 
 		public function is_in_stock() {
 			return $this->in_stock;
+		}
+
+		public function is_visible() {
+			return $this->visible && $this->status === 'publish' && $this->catalog_visibility !== 'hidden' && $this->post_password === '';
+		}
+
+		public function get_post_password() {
+			return $this->post_password;
 		}
 
 		public function get_meta($key, $single = true) {
@@ -338,6 +350,49 @@ final class WDP_Fake_Wpdb {
 
 	public function query($query) {
 		$this->queries[] = $query;
+		$sql  = is_array($query) ? (string) $query['sql'] : (string) $query;
+		$args = is_array($query) ? (array) $query['args'] : array();
+
+		if (stripos($sql, 'DELETE FROM') !== false && stripos($sql, $this->options) !== false) {
+			$n = 0;
+			foreach ($args as $like) {
+				$prefix = stripcslashes(preg_replace('/%$/', '', (string) $like));
+				foreach (array_keys(WDP_Test_State::$options) as $name) {
+					if ($prefix !== '' && strpos((string) $name, $prefix) === 0) {
+						unset(WDP_Test_State::$options[ $name ]);
+						$n++;
+					}
+				}
+			}
+			return $n;
+		}
+
+		if (stripos($sql, $this->postmeta) !== false && stripos($sql, 'DELETE') !== false) {
+			$n      = 0;
+			$exact  = array();
+			$prefix = '';
+			if (stripos($sql, 'IN (') !== false) {
+				$exact = array_map('strval', $args);
+			} elseif (stripos($sql, 'LIKE') !== false && isset($args[0])) {
+				$prefix = stripcslashes(preg_replace('/%$/', '', (string) $args[0]));
+			}
+			foreach (WDP_Test_State::$post_meta as $id => $meta) {
+				$type = WDP_Test_State::$post_types[ $id ] ?? (isset(WDP_Test_State::$products[ $id ]) ? 'product' : '');
+				if ($type !== 'product' && $type !== 'product_variation') {
+					continue;
+				}
+				foreach (array_keys($meta) as $key) {
+					$hit = (!empty($exact) && in_array((string) $key, $exact, true))
+						|| ($prefix !== '' && strpos((string) $key, $prefix) === 0);
+					if ($hit) {
+						unset(WDP_Test_State::$post_meta[ $id ][ $key ]);
+						$n++;
+					}
+				}
+			}
+			return $n;
+		}
+
 		return 0;
 	}
 }

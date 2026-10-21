@@ -1,4 +1,4 @@
-# MIMARI — woo-donation-popup (10.32.0)
+# MIMARI — woo-donation-popup (10.33.0)
 
 Kalıcı mimari harita. Sonraki görevler için ilk okuma noktası.  
 Dal referansı: `docs-mimari` / commit `220f4ec`.  
@@ -11,7 +11,7 @@ Kural: her iddia `dosya:satır`; emin olunmayan yerler **DOĞRULANMADI**.
 | Yol | Sorumluluk | Kanıt |
 |-----|------------|-------|
 | `woo-donation-popup.php` | Giriş: sabitler, aktivasyon/deaktivasyon, bootstrap | `woo-donation-popup.php:25-56` |
-| `uninstall.php` | Kaldırmada yalnızca `wdp_delete_data_on_uninstall=1` ise option/transient/`wdp_*`+`_wdp_*` ürün meta siler; sipariş meta dokunulmaz | `uninstall.php:22-53` |
+| `uninstall.php` | `wdp_delete_data_on_uninstall=1` ise `WDP_Uninstall::cleanup_site`: eklenti option/transient + ürün meta (açık liste + `wdp_`/`_wdp_`/`_enable_`/`_sadaka_`/`_theme_` önekleri, yalnız `product`/`product_variation`); sipariş/HPOS dokunulmaz | `uninstall.php` + `includes/class-uninstall.php` |
 | `includes/` | PHP çekirdek, admin, trait, config, şablon sınıfları | `includes/class-woo-donation-popup.php:45-64` |
 | `includes/bootstrap/` | HPOS, bağımlılık, sürüm, legacy frontend | `includes/bootstrap/class-plugin-bootstrap.php:21-122` |
 | `includes/config/` | JS/CSS stack, stil paketleri, form modül sırası | `includes/config/frontend-js-stack.php`, `includes/config/frontend-css-stack.php` |
@@ -184,11 +184,11 @@ Admin: `wdp_admin` localize (`includes/class-admin-assets.php` — ayrı yığı
 | `wdp_meta_tracking_settings` | Meta sekme | `WDP_Meta_Tracking` |
 | `wdp_category_title_colors` | Kategoriler | `WDP_Category_Title_Color_Service` |
 | `wdp_custom_style_presets` | stil import | `WDP_Style_Presets` |
-| `wdp_delete_data_on_uninstall` | Gelişmiş | `uninstall.php:22` |
-| `wdp_list_cache_version` | liste/sadaka flush | `Donations_List` / sadaka |
+| `wdp_delete_data_on_uninstall` | Gelişmiş | `includes/class-uninstall.php` |
+| `wdp_list_cache_version` | liste HTML geçersiz kılma | `WDP_Donations_List::bump_cache` |
 | `wdp_css_signature` | assets registry | `includes/traits/trait-wdp-assets-registry.php:153-156` |
-| `wdp_legacy_render_count` | legacy button AJAX | `includes/bootstrap/class-legacy-frontend.php:95-96` |
-| `wdp_sadaka_links_audit` | migration 10.28.4 | admin Gelişmiş |
+| `wdp_legacy_render_count` | eski (kullanılmayan) sayaç; AJAX yolu 10.33.0’da kaldırıldı | `includes/bootstrap/class-legacy-frontend.php` |
+| `wdp_sadaka_links_audit` | migration 10.28.4 anlık görüntü; UI 10.33.0’da kaldırıldı, option silinmez | `includes/class-sadaka-product-visibility.php` |
 | `wdp_meta_purchase_wc_migration_v1` | Meta migrate | `includes/class-meta-tracking.php:193-208` |
 | `wdp_sadaka_visibility_cache_cleared` | migration 10.28.5 | `includes/class-migrations.php:244` |
 | `wdp_migrated_10_29_0` | migration 10.29.0 (cover fee 0,5–15 onarımı, genel liste ≤6) | `includes/class-migrations.php` `step_10_29_0` |
@@ -196,6 +196,7 @@ Admin: `wdp_admin` localize (`includes/class-admin-assets.php` — ayrı yığı
 | `wdp_migrated_10_30_0` | migration 10.30.0 (aydınlatma bağlantısı varsayılan anahtarları; veri silinmez) | `includes/class-migrations.php` `step_10_30_0` |
 | `wdp_migrated_10_31_0` | migration 10.31.0 (toplanan plan + aydınlatma varsayılanı) | `includes/class-migrations.php` `step_10_31_0` |
 | `wdp_migrated_10_32_0` | migration 10.32.0 (uzun aydınlatma varsayılan etiketlerini boşalt; özel metne dokunma) | `includes/class-migrations.php` `step_10_32_0` |
+| `wdp_migrated_10_33_0` | migration 10.33.0 (liste önbelleği sürümü artar; veri silinmez) | `includes/class-migrations.php` `step_10_33_0` |
 
 ### Ürün meta (Bağış ayarları — tek kaynak `from_request`)
 
@@ -238,7 +239,7 @@ Eski çevrilmiş etiket anahtarları `normalize_key` ile okunur (`includes/class
 | `wdp_rate_limit_*` | transient | Security rate limit (`includes/class-security.php:149-160`) |
 | `wdp_migration_lock` | transient | Migrations |
 | `wdp_sadaka_line_ids` | transient | Sadaka visibility (`TRANSIENT` const) |
-| Liste HTML | transient (liste sınıfı) | `includes/class-donations-list.php:168-171` |
+| Liste HTML | 1 gün transient; `wdp_list_cache_version`; `orderby=random` atlar; UID/panel yer tutucu + admin notu cache dışı | `includes/class-donations-list.php` `render` / `bump_cache` |
 | `wdp_css_version_*` / `wdp_js_version_*` | transient+cache | assets |
 | WC session `get_customer_id()` | session | rate-limit / cart cache suffix (`includes/traits/trait-wdp-ajax-base.php:113-114`) |
 | Curcy/WPML cookie (istemci) | cookie okuma JS | lazy-modal para/dil anahtarı (`assets/js/src/lazy-modal.js:61-93`) — eklenti set etmez |
@@ -263,8 +264,8 @@ Yetki notu: `run_secured_ajax` varsayılan capability `read`; misafir için `che
 | `wdp_remove_cart_item` | evet | `wdp_remove_cart_item` | read | cart_item_key | items | `includes/class-ajax.php:50-51`, query `includes/traits/trait-wdp-ajax-cart-query.php:212+` |
 | `wdp_get_product_name` | evet | `wdp_get_product_name` | yok (false) | product_id | deprecated name | `includes/class-ajax.php:54-55`, product `includes/traits/trait-wdp-ajax-product.php:145-176` |
 | `wdp_get_product_info` | evet | `wdp_get_product_info` | yok (false) | product_id | form meta JSON | `includes/class-ajax.php:57-58`, `includes/traits/trait-wdp-ajax-product.php:11-128` |
-| `wdp_render_modal` | evet | **bilinçli yok** | origin+rate+scope | product_id, mode | `{html}` | `includes/class-lazy-modal.php:21-62` |
-| `wdp_render_donation_button` | evet | `wdp_render_donation_button` | origin+rate | product_id, button_text | `{html}` | `includes/bootstrap/class-legacy-frontend.php:172-217` |
+| `wdp_render_modal` | evet | **bilinçli yok** | origin+rate+scope (Origin/Referer yoksa `validate_request_origin` false; `Sec-Fetch-Site` same-origin/same-site veya nonce’lu `none` istisna) | product_id, mode | `{html}` | `includes/class-lazy-modal.php:21-62` |
+| `wdp_elementor_search_products` | hayır | `wdp_elementor_search_products` | `edit_products` / `edit_posts` | q | `{results:[{id,text}]}` bağış kapsamı, tip sınırı yok | `includes/class-elementor.php` |
 | `wdp_recalculate_product_total` | hayır | `wdp_admin_nonce` | `manage_woocommerce` | product_id | total JSON | `includes/class-admin-hooks.php:29` + `includes/class-admin-product-settings-ajax.php:21-56` + `includes/class-admin-request.php:21-26` |
 | `wdp_save_placement_settings` | hayır | admin nonce | manage_woocommerce | placement alanları | success | `includes/class-admin-hooks.php:30` |
 | `wdp_save_advanced_settings` | hayır | aynı | aynı | uninstall flag vb. | success | `includes/class-admin-hooks.php:31` |
@@ -295,7 +296,9 @@ Yetki notu: `run_secured_ajax` varsayılan capability `read`; misafir için `che
 | `[wdp_donation_form]` | gömülü form | `includes/class-shortcodes.php:23,65-72` |
 | `[wdp_donations]` | liste ızgara | `includes/class-shortcodes.php:24` → `WDP_Donations_List::shortcode` |
 
-Ürün çözümleme: `WDP_Product_Resolver` + `resolve_for_output` (`includes/class-shortcodes.php:212+`).
+Ürün çözümleme: `WDP_Product_Resolver` + `resolve_for_output`. `id`/`slug`/`sku` açıkça verilirse bağış kapsamı atlanır.
+
+Liste önbelleği bump (10.33.0; aynı istekte bir kez): stok/kategori (önceki) + `woocommerce_update_product`, `woocommerce_new_product`, `save_post_product`, `trashed_post` / `untrashed_post` / `before_delete_post`, `transition_post_status`, fiyat/ilerleme meta (`_price` `_regular_price` `_sale_price` `_wdp_total_donation_amount` `_wdp_donor_count`), bağış sekmesi kaydı (`on_product_settings_save`), sipariş durum / iade.
 
 ### Gutenberg
 
@@ -306,7 +309,7 @@ Yetki notu: `run_secured_ajax` varsayılan capability `read`; misafir için `che
 
 ### Elementor
 
-`WDP_Elementor` widget kaydı (`includes/class-elementor.php`); widget’lar shortcode fonksiyonlarını çağırır (`includes/elementor/class-widget-*.php`).
+`WDP_Elementor` widget kaydı (`includes/class-elementor.php`); widget’lar shortcode fonksiyonlarını çağırır (`includes/elementor/class-widget-*.php`). Form ürün seçimi SELECT2 ajax (`wdp_elementor_search_products`). Liste `image_size` + `columns_tablet`/`columns_mobile` → `WDP_Donations_List::atts_from_elementor_settings`.
 
 ### Ürün sayfası / mağaza
 
@@ -468,9 +471,9 @@ Kaynak rehber: `docs/AYARLAR.md`. Teknik varsayılanlar normalizer / placement /
 | 2 | `wdp_get_fresh_nonces` nonce’suz; credential_issuance origin | `includes/traits/trait-wdp-ajax-cart-session.php:17-22` |
 | 3 | Misafir için `WDP_Security::check_capability('read')` her zaman true (`includes/class-security.php:240-244`); `run_secured_ajax` varsayılan `$capability='read'` (`includes/traits/trait-wdp-ajax-base.php:90-96`) — uç listesi aşağıda | `includes/class-security.php:240-244` |
 | 4 | `wdp_render_modal` sunucu maliyeti / nonce’suz → CLAUDE durum notuyla uyumlu gözlem | `includes/class-lazy-modal.php`, `includes/traits/trait-wdp-assets-registry.php` |
-| 5 | Uninstall yalnız `wdp_*` / `_wdp_*` ürün meta; `_allow_custom_price` vb. bağış meta silinmez | `uninstall.php:43-52` vs product meta listesi |
-| 6 | Deprecated `wdp_get_product_name` hâlâ kayıtlı | `includes/class-ajax.php:53-55` |
-| 7 | Legacy `wdp_render_donation_button` + `wdp_legacy_render_count` | `includes/bootstrap/class-legacy-frontend.php:215-217` |
+| 5 | Uninstall 10.33.0’da açık ürün meta listesi + önek; sipariş/HPOS hâlâ dokunulmaz (bilinçli) | `includes/class-uninstall.php` |
+| 6 | Deprecated `wdp_get_product_name` hâlâ kayıtlı; taslak/özel/şifreli/gizli ürün `validate_product_id` ile kapatıldı | `includes/class-ajax.php:53-55`, `includes/class-security.php:131-167` |
+| 7 | Legacy nopriv `wdp_render_donation_button` 10.33.0’da kaldırıldı; PHP `wdp_render_donation_button()` yardımcısı duruyor | `includes/bootstrap/class-legacy-frontend.php` |
 | 8 | `pack` script DEST’te `tools/` yokken yeniden build denemesi → uyarıya düşebilir; asıl bundle `npm run build` ile gelir | `scripts/package-wp-plugin.sh:66-78` + `.distignore:37` |
 | 9 | Boş / noop catch ve `.catch(() => {})` envanteri (düzeltme yok) — alt tablo | grep `includes/`, `templates/`, `blocks/`, `assets/js/src/` |
 | 10 | product_info + transient 1 saat; meta değişince invalidate bağımlı | `includes/traits/trait-wdp-ajax-product.php:67-68`, utils hooks |
