@@ -36,6 +36,13 @@ export function parseMoney(raw, currency) {
   return Number.isFinite(n) ? n : NaN;
 }
 
+/** PHP WDP_Utils::format_min_placeholder / JS formatMinPlaceholder ile aynı. */
+export function formatMinPlaceholder(amount, currency) {
+  const num = formatMoney(amount, { ...(currency || {}), symbol: '' });
+  if (!num) return '';
+  return `min: ${num}`;
+}
+
 export function formatMoney(amount, currency) {
   const c = currency || {};
   const decimals = Number.isFinite(Number(c.decimals)) ? Number(c.decimals) : 2;

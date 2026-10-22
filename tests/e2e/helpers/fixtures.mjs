@@ -5,7 +5,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { ROOT } from './env-root.mjs';
-import { loadProfile, peekActiveProfile } from './profile.mjs';
+import { loadProfile, peekActiveProfile, isRemoteProfile } from './profile.mjs';
 
 export const FIXTURE_MARK_PREFIX = 'fixture';
 
@@ -219,6 +219,72 @@ export function isFixtureProductId(productId, env) {
   return fixtureProductRecords(data).some((r) => r.id === id);
 }
 
+/** Mutasyon suite'lerinin ihtiyaç duyduğu fixture rolleri. */
+export const MUTATION_FIXTURE_ROLES = [
+  'custom',
+  'fixed',
+  'shares',
+  'campaign',
+  'sadaka',
+  'goal-reached',
+  'empty-price',
+];
+
+/**
+ * Meta yazan test hedefi fixture listesinde değilse KIRMIZI.
+ * @param {number|string} productId
+ * @param {object} [env]
+ * @param {string} [label]
+ */
+export function assertMutationTargetIsFixture(productId, env, label = '') {
+  const id = Math.abs(Number.parseInt(String(productId), 10) || 0);
+  const tag = label ? ` ${label}` : '';
+  if (id <= 0) {
+    throw new Error(`mutasyon hedefi geçersiz id${tag}`);
+  }
+  if (!isFixtureProductId(id, env)) {
+    throw new Error(`mutasyon hedefi fixture listesinde değil: id=${id}${tag}`);
+  }
+  return id;
+}
+
+/**
+ * Koşu başı: uzak profilde fixture dosyası + roller; her id listede.
+ * @param {object} env
+ */
+export function assertRunMutationTargetsAreFixtures(env) {
+  const data = loadFixtures(env);
+  const records = fixtureProductRecords(data);
+  const remote = isRemoteProfile(env?._profile);
+  if (!records.length) {
+    if (remote) {
+      throw new Error('e2e:bootstrap çalıştırın (uzak fixtures-<profil>.json yok veya boş)');
+    }
+    return { ok: true, skipped: 'no-fixtures-local' };
+  }
+  const missing = MUTATION_FIXTURE_ROLES.filter((role) => !data?.roles?.[role]?.id);
+  if (missing.length) {
+    throw new Error(`fixture rolü eksik: ${missing.join(', ')} — e2e:bootstrap çalıştırın`);
+  }
+  for (const rec of records) {
+    assertMutationTargetIsFixture(rec.id, env, rec.role);
+  }
+  return { ok: true, ids: records.map((r) => r.id) };
+}
+
+/**
+ * Private fixture ürünü yönetici oturumunda açmak için.
+ * @param {import('@playwright/test').Browser} browser
+ * @param {object} contextOpts
+ * @param {() => Promise<import('@playwright/test').BrowserContext>} [createAdminContext]
+ */
+export async function mutationBrowserContext(browser, contextOpts, createAdminContext) {
+  if (typeof createAdminContext === 'function') {
+    return createAdminContext();
+  }
+  return browser.newContext(contextOpts);
+}
+
 /**
  * Mutasyon testleri için fixture ürün. Yoksa açık FAIL.
  * @param {object} env
@@ -232,8 +298,10 @@ export function requireFixtureRole(env, role) {
       `e2e:bootstrap çalıştırın (fixture rolü yok: ${role}; dosya build/e2e/fixtures-<env>.json)`
     );
   }
+  const id = Number(row.id);
+  assertMutationTargetIsFixture(id, env, role);
   return {
-    id: Number(row.id),
+    id,
     name: String(row.name || ''),
     slug: String(row.slug || ''),
     url: String(row.url || ''),

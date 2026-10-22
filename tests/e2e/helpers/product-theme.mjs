@@ -13,7 +13,7 @@ import {
   makeFailure,
 } from './checks.mjs';
 import { getProductMeta, setProductMeta } from './staging-wp-meta.mjs';
-import { requireFixtureRole } from './fixtures.mjs';
+import { requireFixtureRole, mutationBrowserContext } from './fixtures.mjs';
 
 const CHECK_MS = 25000;
 
@@ -123,7 +123,7 @@ async function readCssVar(shell, varName) {
  * @param {object} opts
  */
 export async function runProductThemeChecks(opts) {
-  const { browser, contextOpts, env, productUrls, productIds, listPagePath, failures, stats } =
+  const { browser, contextOpts, env, productUrls, productIds, listPagePath, failures, stats, createAdminContext } =
     opts;
   const pass = (id) => {
     stats.passed += 1;
@@ -150,7 +150,7 @@ export async function runProductThemeChecks(opts) {
   /** @type {Record<string,string>} */
   const snapshot = {};
   let metaTouched = false;
-  const ctx = await browser.newContext(contextOpts);
+  const ctx = await mutationBrowserContext(browser, contextOpts, createAdminContext);
   const page = await ctx.newPage();
 
   try {

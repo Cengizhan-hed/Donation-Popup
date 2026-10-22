@@ -111,12 +111,12 @@ class WDP_Donation_Product_Context_Service {
 			'sadaka_toggle_label'           => $sadaka_toggle_label,
 			'currency_symbol'               => WDP_Utils::get_display_currency_symbol(),
 			'custom_price_placeholder'      => ((float) ($enable_progress_bar ? $progress_min_price : $min_price) > 0)
-				? ('min: ' . WDP_Utils::format_amount_for_min_placeholder($enable_progress_bar ? $progress_min_price : $min_price))
+				? WDP_Utils::format_min_placeholder($enable_progress_bar ? $progress_min_price : $min_price)
 				: '',
 			'sadaka_price_placeholder'      => $sadaka_is_fixed_price
 				? ''
 				: (((float) $sadaka_min_price > 0)
-					? ('min: ' . WDP_Utils::format_amount_for_min_placeholder($sadaka_min_price))
+					? WDP_Utils::format_min_placeholder($sadaka_min_price)
 					: __('Alt bağış tutarı', 'woo-donation-popup')),
 			'enable_trust_strip'            => self::meta_flag_default_yes($product, '_enable_trust_strip'),
 			'enable_quantity'               => self::meta_flag_default_yes($product, '_enable_quantity'),

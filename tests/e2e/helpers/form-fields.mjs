@@ -17,7 +17,7 @@ import {
   isWooCartUrl,
 } from './checks.mjs';
 import { getProductMeta, setProductMeta, assertWooCartPagePublished } from './staging-wp-meta.mjs';
-import { requireFixtureRole } from './fixtures.mjs';
+import { requireFixtureRole, mutationBrowserContext } from './fixtures.mjs';
 import { writeDebugJson } from './scenario-debug.mjs';
 
 const CHECK_MS = 20000;
@@ -137,6 +137,7 @@ export async function runFormFieldsChecks({
   listPagePath,
   failures,
   stats,
+  createAdminContext,
 }) {
   const checks = [];
   const baseUrl = env.E2E_BASE_URL;
@@ -159,7 +160,7 @@ export async function runFormFieldsChecks({
     return;
   }
 
-  const ctx = await browser.newContext(contextOpts);
+  const ctx = await mutationBrowserContext(browser, contextOpts, createAdminContext);
   const page = await ctx.newPage();
 
   const pass = (id) => {

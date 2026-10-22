@@ -418,7 +418,7 @@ class WDP_Admin_Form_Tabs_Renderer {
 		$preview_vals   = class_exists('WDP_Form_Modules') ? WDP_Form_Modules::default_amount_preset_values() : array(100, 250, 500);
 		$preview_sample = isset($preview_vals[2]) ? $preview_vals[2] : 25;
 		$preview_sample_label = class_exists('WDP_Utils')
-			? wp_strip_all_tags(WDP_Utils::format_amount_for_min_placeholder($preview_sample))
+			? wp_strip_all_tags(WDP_Utils::format_localized_amount($preview_sample))
 			: (string) $preview_sample;
 		echo '<div class="wdp-admin-normal-preview__input amount"><span>' . esc_html($preview_symbol) . '</span><em>' . esc_html($preview_sample_label) . '</em></div>';
 		echo '</div>';

@@ -6,7 +6,7 @@
 import { SEL } from './selectors.mjs';
 import { withCacheBust } from './env.mjs';
 import { getActiveProfile } from './profile.mjs';
-import { requireFixtureRole } from './fixtures.mjs';
+import { requireFixtureRole, mutationBrowserContext, isFixtureProductId } from './fixtures.mjs';
 import {
   emptyCart,
   openShellLocator,
@@ -173,6 +173,7 @@ export async function runEmptyPriceChecks({
     pass,
     fail,
     skip,
+    createAdminContext,
   });
 }
 
@@ -192,6 +193,7 @@ async function runHedefEmptyPrice({
   pass,
   fail,
   skip,
+  createAdminContext,
 }) {
   const targets = [
     { role: 'custom', id: productIds.custom || 0, path: productUrls.custom, list: true },
@@ -209,14 +211,14 @@ async function runHedefEmptyPrice({
 
     let snapshot = { price: '', regular: '', sale: '' };
     let restored = false;
-    const ctx = await browser.newContext(contextOpts);
+    const ctx = await mutationBrowserContext(browser, contextOpts, createAdminContext);
     const page = await ctx.newPage();
     try {
       snapshot = await snapshotProductPrices(t.id);
       await saveProductPrices(t.id, { price: '', regular: '', sale: '' });
       await bumpListCache();
 
-      if (t.list && listPath) {
+      if (t.list && listPath && !isFixtureProductId(t.id, env)) {
         try {
           await page.goto(withCacheBust(baseUrl, listPath, { hdf_no_side_cart: '1' }), {
             waitUntil: 'domcontentloaded',
@@ -241,6 +243,8 @@ async function runHedefEmptyPrice({
         } catch (e) {
           fail(`empty-price-${t.role}-list-visible`, `${t.role} fiyatsız listede görünür`, e);
         }
+      } else if (isFixtureProductId(t.id, env)) {
+        skip(`empty-price-${t.role}-list-visible`, 'fixture private, ziyaretçi listesinde yok');
       } else {
         skip(`empty-price-${t.role}-list-visible`, 'Liste yolu yok');
       }

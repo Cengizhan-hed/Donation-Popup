@@ -209,7 +209,7 @@ html body .wdp-donation-form .wdp-modal-content:has(form.wdp-has-shareholders) {
 /* —— Sticky zones inside content —— */
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content > .wdp-modal-close {
   position: absolute;
-  top: max(14px, env(safe-area-inset-top, 0px), var(--wdp-safe-top, 0px));
+  top: 14px;
   inset-inline-end: max(14px, env(safe-area-inset-right, 0px));
   z-index: var(--wdp-z-modal-close, 2147483647);
 }

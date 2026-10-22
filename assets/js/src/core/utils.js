@@ -200,6 +200,31 @@
     return formatted || '0'
   }
 
+  /** PHP WDP_Utils::format_min_placeholder ile aynı metin (sembol yok, ondalık kırpılmaz). */
+  function formatMinPlaceholder(amount) {
+    const n = typeof amount === 'number' ? amount : parseMoney(amount)
+    if (!Number.isFinite(n) || n <= 0) {
+      return ''
+    }
+    const formatted = formatPrice(n)
+    return formatted ? ('min: ' + formatted) : ''
+  }
+
+  function applyCurrencyShellPosition(shell) {
+    if (!shell || !shell.classList) {
+      return
+    }
+    const cfg = getCurrencyConfig()
+    const allowed = ['left', 'left_space', 'right', 'right_space']
+    const pos = allowed.indexOf(String(cfg.symbolPosition || '')) >= 0
+      ? String(cfg.symbolPosition)
+      : 'left'
+    allowed.forEach((p) => {
+      shell.classList.remove('wdp-currency-pos-' + p)
+    })
+    shell.classList.add('wdp-currency-pos-' + pos)
+  }
+
   function formatCurrency(amount, options) {
     const n = typeof amount === 'number' ? amount : parseMoney(amount)
     if (!Number.isFinite(n)) {
@@ -725,6 +750,8 @@
   // Export utils module
   const utils = {
     formatPrice,
+    formatMinPlaceholder,
+    applyCurrencyShellPosition,
     formatCurrency,
     formatMoney,
     parseMoney,

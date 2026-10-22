@@ -49,14 +49,26 @@
   /**
    * viewport-fit=cover olmasa da iPhone home indicator için taban boşluk.
    * env() 0 ise 34px taban; gerçek env varsa onu kullanır. Tema seçicisi yok.
+   * --wdp-safe-top yalnız üst kenara yapışık (flush) kabukta; kapat düğmesi
+   * başlık satırındadır ve form kutusuna binmez (içerik zaten padding alır).
    */
   function applySafeBottom() {
     const envBottom = readEnvSafe('bottom');
     const envTop = readEnvSafe('top');
     const floorBottom = (isIphoneLike() && envBottom < 20) ? 34 : 0;
-    const floorTop = (isIphoneLike() && envTop < 20) ? 47 : 0;
     document.documentElement.style.setProperty('--wdp-safe-bottom', Math.max(envBottom, floorBottom) + 'px');
-    document.documentElement.style.setProperty('--wdp-safe-top', Math.max(envTop, floorTop) + 'px');
+    document.documentElement.style.setProperty('--wdp-safe-top', '0px');
+    document.querySelectorAll('.hdf-donation-modal-wrapper.wdp-modal.show, .wdp-donation-form').forEach((root) => {
+      const content = root.querySelector('.wdp-modal-content') || root;
+      const top = content.getBoundingClientRect().top;
+      const flush = top <= 2;
+      root.classList.toggle('wdp-flush-top', flush);
+      if (flush) {
+        root.style.setProperty('--wdp-safe-top', Math.max(envTop, 0) + 'px');
+      } else {
+        root.style.removeProperty('--wdp-safe-top');
+      }
+    });
   }
 
   function roots() {

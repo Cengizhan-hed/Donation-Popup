@@ -3,6 +3,7 @@
  * Meta yazılmaz. Öğesi yoksa atlanmaz — fail.
  */
 import { SEL } from './selectors.mjs';
+import { requireFixtureRole, mutationBrowserContext } from './fixtures.mjs';
 import { withCacheBust } from './env.mjs';
 import { comingSoonQuery } from './coming-soon.mjs';
 import { getActiveProfile } from './profile.mjs';
@@ -248,6 +249,57 @@ async function assertFixedPriceQtyRatio(shell) {
 }
 
 /**
+ * Kapat (×) başlıkla hizalı, form kutusuyla kesişmez, ≥44px dokunma.
+ * @param {import('@playwright/test').Locator} shell
+ */
+async function assertCloseNotOverlappingForm(shell) {
+  const info = await shell.evaluate(() => {
+    const root =
+      document.querySelector('.hdf-donation-modal-wrapper.wdp-modal.show') ||
+      document.querySelector('.wdp-donation-form');
+    if (!root) return { error: 'açık kabuk yok' };
+    const close = root.querySelector('button.wdp-modal-close');
+    const form =
+      root.querySelector('.wdp-donation-form-fields') ||
+      root.querySelector('form.wdp-donation-form-fields');
+    const header = root.querySelector('.wdp-modal-header, .wdp-form-title-wrapper');
+    if (!close) return { error: 'kapat düğmesi yok' };
+    if (!form) return { error: 'form kutusu yok' };
+    const c = close.getBoundingClientRect();
+    const f = form.getBoundingClientRect();
+    const h = header ? header.getBoundingClientRect() : null;
+    const overlap = !(c.right <= f.left || c.left >= f.right || c.bottom <= f.top || c.top >= f.bottom);
+    return {
+      cw: c.width,
+      ch: c.height,
+      cy: c.y,
+      fy: f.y,
+      hy: h ? h.y : null,
+      hh: h ? h.height : null,
+      overlap,
+    };
+  });
+  if (info.error) throw new Error(info.error);
+  if (info.cw + 1 < 44 || info.ch + 1 < 44) {
+    throw new Error(`kapat dokunma hedefi < 44px (${Math.round(info.cw)}x${Math.round(info.ch)})`);
+  }
+  if (info.overlap) {
+    throw new Error(
+      `kapat düğmesi form kutusuyla kesişiyor (close.y=${info.cy.toFixed(1)} form.y=${info.fy.toFixed(1)})`
+    );
+  }
+  if (info.hy != null && info.hh != null) {
+    const headerMid = info.hy + info.hh / 2;
+    const closeMid = info.cy + info.ch / 2;
+    if (Math.abs(headerMid - closeMid) > 36 && info.cy > info.fy - 8) {
+      throw new Error(
+        `kapat başlık satırında değil (close.y=${info.cy.toFixed(1)} header.y=${info.hy.toFixed(1)})`
+      );
+    }
+  }
+}
+
+/**
  * @param {import('@playwright/test').Locator} shell
  */
 async function assertAmountLabelWithInput(shell) {
@@ -303,10 +355,7 @@ export async function runLayoutChecks({
   ];
   const modes = /** @type {const} */ (['popup', 'panel']);
 
-  const ctx =
-    profile.comingSoon && typeof createAdminContext === 'function'
-      ? await createAdminContext()
-      : await browser.newContext(contextOpts);
+  const ctx = await mutationBrowserContext(browser, contextOpts, createAdminContext);
   const page = await ctx.newPage();
   page.setDefaultTimeout(CHECK_MS);
   page.setDefaultNavigationTimeout(25000);
@@ -326,14 +375,26 @@ export async function runLayoutChecks({
 
   try {
     for (const type of types) {
-      const path = productUrls[type.key];
-      const productId = productIds[type.key] || 0;
+      let path = productUrls[type.key];
+      let productId = productIds[type.key] || 0;
+      let fromFixture = Array.isArray(env._fixtureRoles) && env._fixtureRoles.includes(type.key);
       if (!path) {
-        skip(`layout-${type.key}-missing`, `${type.key} ürün yolu yok`);
-        continue;
+        try {
+          const fx = requireFixtureRole(env, type.key);
+          path = fx.path || fx.url;
+          productId = fx.id;
+          fromFixture = true;
+        } catch {
+          skip(`layout-${type.key}-missing`, `${type.key} ürün yolu yok`);
+          continue;
+        }
       }
       for (const mode of modes) {
         const prefix = `layout-${type.key}-${mode}`;
+        if (fromFixture && mode === 'popup') {
+          skip(`${prefix}-private-list`, 'fixture private, ziyaretçi listesinde yok');
+          continue;
+        }
         let shell;
         try {
           shell = await openProductShell(page, mode, {
@@ -388,6 +449,13 @@ export async function runLayoutChecks({
           pass(`${prefix}-in-viewport`);
         } catch (e) {
           fail(`${prefix}-in-viewport`, 'Öğe viewport dışına taşıyor', e);
+        }
+
+        try {
+          await assertCloseNotOverlappingForm(shell);
+          pass(`${prefix}-close-vs-form`);
+        } catch (e) {
+          fail(`${prefix}-close-vs-form`, 'Kapat düğmesi form kutusuyla kesişiyor', e);
         }
 
         try {

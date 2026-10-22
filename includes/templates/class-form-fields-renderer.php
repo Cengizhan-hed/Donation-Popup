@@ -218,7 +218,7 @@ class WDP_Form_Fields_Renderer {
 		if ($placeholder === '' || strpos($ph_lower, 'bağış tutarı') !== false || strpos($ph_lower, 'bagis tutari') !== false) {
 			$min_numeric = (float) $min_price;
 			$placeholder = ($min_numeric > 0 && class_exists('WDP_Utils'))
-				? ('min: ' . WDP_Utils::format_amount_for_min_placeholder($min_price))
+				? WDP_Utils::format_min_placeholder($min_price)
 				: '';
 		}
 		$label_id      = 'wdp-price-label-' . wp_unique_id();
@@ -244,13 +244,18 @@ class WDP_Form_Fields_Renderer {
 			// Not: render_amount_presets() ürün tipi sabit/hisseli ise boş döner.
 		}
 
+		$shell_class = 'wdp-custom-price-shell';
+		if (class_exists('WDP_Utils')) {
+			$shell_class .= ' ' . WDP_Utils::currency_position_class();
+		}
+
 		ob_start();
 		?>
 		<div class="<?php echo esc_attr($row_class); ?>" role="group" aria-labelledby="<?php echo esc_attr($label_id); ?>">
 			<span class="wdp-custom-price-row__label" id="<?php echo esc_attr($label_id); ?>"><?php echo esc_html($label); ?></span>
 			<?php echo $presets_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped in renderer ?>
 			<div class="wdp-price-field wdp-custom-price-field">
-				<div class="wdp-custom-price-shell">
+				<div class="<?php echo esc_attr($shell_class); ?>">
 					<span class="wdp-custom-price-currency" aria-hidden="true"><?php echo esc_html($currency_symbol); ?></span>
 					<input type="<?php echo esc_attr($input_type); ?>" name="<?php echo esc_attr($opts['name']); ?>" placeholder="<?php echo esc_attr($placeholder); ?>"<?php echo $min_attr; ?><?php echo $required_attr; ?> class="<?php echo esc_attr($input_class); ?>" inputmode="decimal" autocomplete="off" aria-labelledby="<?php echo esc_attr($label_id); ?>">
 				</div>
@@ -301,7 +306,7 @@ class WDP_Form_Fields_Renderer {
 		$wdp_currency_symbol = WDP_Utils::get_display_currency_symbol();
 		$min_numeric         = (float) $min_price;
 		$placeholder         = ($min_numeric > 0)
-			? ('min: ' . WDP_Utils::format_amount_for_min_placeholder($min_price))
+			? WDP_Utils::format_min_placeholder($min_price)
 			: '';
 		$preset_product_id = !empty($GLOBALS['wdp_current_donation_product_id'])
 			? absint($GLOBALS['wdp_current_donation_product_id'])
@@ -407,12 +412,16 @@ class WDP_Form_Fields_Renderer {
 				$label .= ':';
 			}
 			$label_id = 'wdp-sadaka-fixed-label-' . wp_unique_id();
+			$shell_class = 'wdp-custom-price-shell';
+			if (class_exists('WDP_Utils')) {
+				$shell_class .= ' ' . WDP_Utils::currency_position_class();
+			}
 			ob_start();
 			?>
 			<div class="wdp-custom-price-row wdp-sadaka-donation__amount wdp-sadaka-donation__amount--fixed" role="group" aria-labelledby="<?php echo esc_attr($label_id); ?>">
 				<span class="wdp-custom-price-row__label" id="<?php echo esc_attr($label_id); ?>"><?php echo esc_html($label); ?></span>
 				<div class="wdp-price-field wdp-custom-price-field">
-					<div class="wdp-custom-price-shell">
+					<div class="<?php echo esc_attr($shell_class); ?>">
 						<span class="wdp-custom-price-currency" aria-hidden="true"><?php echo esc_html($currency_symbol); ?></span>
 						<input type="number" name="sadaka_custom_price" value="<?php echo esc_attr($fixed_display); ?>" readonly class="wdp-custom-price-input wdp-sadaka-custom-price-input" inputmode="decimal" autocomplete="off" aria-labelledby="<?php echo esc_attr($label_id); ?>">
 					</div>
