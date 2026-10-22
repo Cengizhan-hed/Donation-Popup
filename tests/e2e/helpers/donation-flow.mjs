@@ -200,7 +200,13 @@ export async function runDonationFlowChecks({
       onCheckout = /checkout|order-pay|odeme|ödeme/i.test(url);
     }
     if (!onCheckout) {
-      throw new Error(`ödeme sayfasına gidilmedi: ${url} (beklenen ${checkoutPath})`);
+      let pathNow = url;
+      try {
+        pathNow = new URL(url).pathname;
+      } catch {
+        pathNow = url;
+      }
+      throw new Error(`ödeme sayfasına gidilmedi: ${pathNow} (beklenen ${checkoutPath})`);
     }
     stats.passed += 1;
 

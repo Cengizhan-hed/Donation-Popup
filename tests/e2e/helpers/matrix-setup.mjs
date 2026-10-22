@@ -215,11 +215,56 @@ function seedZipCache() {
       }
     }
   }
+  const siblingCache = path.join(sibling, 'e2e/matrix/_cache');
+  if (fs.existsSync(siblingCache)) {
+    fs.mkdirSync(CACHE_DIR, { recursive: true });
+    for (const name of fs.readdirSync(siblingCache)) {
+      if (!name.endsWith('.zip')) continue;
+      const src = path.join(siblingCache, name);
+      const dest = path.join(CACHE_DIR, name);
+      if (fs.existsSync(src) && fs.statSync(src).size > 10000) {
+        if (!fs.existsSync(dest) || fs.statSync(dest).size < 10000) {
+          fs.copyFileSync(src, dest);
+        }
+      }
+    }
+  }
+}
+
+function seedSiblingSnapshots() {
+  const sibling = path.resolve(ROOT, '../Donation Popup/build/e2e/matrix');
+  const pairs = [
+    [path.join(sibling, '_snapshots/_base.sqlite'), path.join(SNAPSHOT_DIR, '_base.sqlite')],
+    [
+      path.join(sibling, '_snapshots/tt5-try-blocks-hpos.sqlite'),
+      path.join(SNAPSHOT_DIR, 'tt5-try-blocks-hpos.sqlite'),
+    ],
+    [
+      path.join(sibling, '_snapshots/tt5-try-blocks-hpos.json'),
+      path.join(SNAPSHOT_DIR, 'tt5-try-blocks-hpos.json'),
+    ],
+  ];
+  for (const [src, dest] of pairs) {
+    if (fs.existsSync(src) && fs.statSync(src).size > 1000) {
+      if (!fs.existsSync(dest) || fs.statSync(dest).size < 1000) {
+        fs.mkdirSync(path.dirname(dest), { recursive: true });
+        fs.copyFileSync(src, dest);
+      }
+    }
+    for (const ext of ['-wal', '-shm']) {
+      const s = src + ext;
+      const d = dest + ext;
+      if (fs.existsSync(s) && (!fs.existsSync(d) || fs.statSync(d).size === 0)) {
+        fs.copyFileSync(s, d);
+      }
+    }
+  }
 }
 
 export function ensureMatrixTemplate() {
   fs.mkdirSync(CACHE_DIR, { recursive: true });
   seedZipCache();
+  seedSiblingSnapshots();
   const wpDir = ensureLocalWp({ root: TEMPLATE_ROOT, quiet: true });
   ensureWooCommerce(wpDir);
   ensureTheme(wpDir, 'twentytwentyfive');
@@ -265,6 +310,24 @@ export function prepareConfigSnapshot(resolved) {
   return { snap, meta };
 }
 
+function killPortListeners(port) {
+  const r = spawnSync('lsof', ['-nP', `-iTCP:${port}`, '-sTCP:LISTEN', '-t'], {
+    encoding: 'utf8',
+  });
+  const pids = String(r.stdout || '')
+    .trim()
+    .split(/\s+/)
+    .map((x) => Number(x))
+    .filter((n) => Number.isFinite(n) && n > 1);
+  for (const pid of pids) {
+    try {
+      process.kill(pid, 'SIGTERM');
+    } catch {
+      /* already gone */
+    }
+  }
+}
+
 function waitHttp(url, timeoutMs = 40000) {
   const t0 = Date.now();
   return new Promise((resolve, reject) => {
@@ -301,22 +364,26 @@ export async function startPhpServer(opts) {
   const port = Number(opts.port);
   const wpDir = opts.wpDir;
   copyRouter(wpDir);
+  killPortListeners(port);
+  await new Promise((r) => setTimeout(r, 300));
+  const logFile = path.join(MATRIX_DIR, `php-${port}.log`);
+  fs.mkdirSync(path.dirname(logFile), { recursive: true });
+  const logFd = fs.openSync(logFile, 'a');
   const child = spawn('php', ['-S', `${host}:${port}`, '-t', wpDir, path.join(wpDir, 'router.php')], {
     cwd: wpDir,
-    stdio: ['ignore', 'pipe', 'pipe'],
+    stdio: ['ignore', logFd, logFd],
     env: { ...process.env },
   });
-  let errBuf = '';
-  child.stderr.on('data', (d) => {
-    errBuf += String(d);
-    if (errBuf.length > 4000) errBuf = errBuf.slice(-2000);
-  });
+  fs.closeSync(logFd);
   const url = `http://${host}:${port}/`;
   try {
     await waitHttp(url);
+    if (child.exitCode != null) {
+      throw new Error(`PHP sunucu çıktı (kod ${child.exitCode})`);
+    }
   } catch (e) {
-    child.kill('SIGTERM');
-    throw new Error(`${e.message} ${errBuf.slice(0, 300)}`);
+    if (child.exitCode == null) child.kill('SIGTERM');
+    throw new Error(`${e.message}`);
   }
   return {
     child,
@@ -338,6 +405,39 @@ export async function startPhpServer(opts) {
       });
     },
   };
+}
+
+/**
+ * e2e:full --env local: TT5 matris WP + fixture ürünleri + PHP 8899.
+ * @param {number} [port]
+ */
+export async function prepareLocalFullStack(port = 8899) {
+  const { loadMatrix, resolveConfig } = await import('./matrix-cover.mjs');
+  const matrix = loadMatrix();
+  const resolved = resolveConfig(matrix, 'tt5-try-blocks-hpos');
+  const { snap } = prepareConfigSnapshot(resolved);
+  const wpDir = materializeWorker(resolved.id, port, snap);
+  process.env.WDP_LOCAL_WP_DIR = wpDir;
+  const admin = matrixEval(wpDir, ['ensure-admin']);
+  if (!admin.ok) {
+    throw new Error(`local admin: ${admin.error || JSON.stringify(admin).slice(0, 200)}`);
+  }
+  const phpFile = path.join(ROOT, 'tests/local-wp/bootstrap-fixtures.php');
+  const r = spawnSync('php', [phpFile, 'upsert', 'local', 'fixture'], {
+    encoding: 'utf8',
+    cwd: ROOT,
+    env: { ...process.env, WDP_LOCAL_WP_DIR: wpDir },
+    timeout: 120000,
+  });
+  if (r.status !== 0) {
+    throw new Error(`local fixtures: ${(r.stderr || r.stdout || '').slice(0, 500)}`);
+  }
+  const data = parseJsonLine(r.stdout);
+  const outFile = path.join(ROOT, 'build/e2e', 'fixtures-local.json');
+  fs.mkdirSync(path.dirname(outFile), { recursive: true });
+  fs.writeFileSync(outFile, JSON.stringify(data, null, 2) + '\n');
+  const server = await startPhpServer({ wpDir, port, host: '127.0.0.1' });
+  return { server, wpDir, fixtures: data };
 }
 
 /**

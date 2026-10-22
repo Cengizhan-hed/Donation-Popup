@@ -11,18 +11,25 @@ import {
   resetBlockedTrackers,
   resetRemotePostBlocked,
   snapshotBlockedTrackers,
+  snapshotBlockedLive,
   snapshotRemotePostBlocked,
   snapshotPluginAjaxFails,
   throwIfRemoteOrderBlocked,
   throwIfRemoteAdminWriteBlocked,
+  throwIfRemoteRetiredHostBlocked,
+  throwIfRemoteForeignWriteBlocked,
   consumeOrderBlocks,
   consumeAdminWriteBlocks,
+  consumeRetiredHostBlocks,
+  consumeForeignWriteBlocks,
   RemoteOrderBlockedError,
   RemoteAdminWriteBlockedError,
+  RemoteRetiredHostBlockedError,
 } from '../../../tests/e2e/helpers/network-guard.mjs';
 import {
   assertNoUnexpectedPluginErrors,
   assertNoPluginAjaxFailures,
+  assertNoConsoleErrors,
 } from '../../../tests/e2e/helpers/checks.mjs';
 
 /** @type {http.Server} */
@@ -335,6 +342,89 @@ describe('network-guard Playwright kanıt', () => {
         </div>
       </body></html>`);
       await assertNoUnexpectedPluginErrors(page, { scenarioId: 'iphone-panel-custom-errors' });
+    } finally {
+      await browser.close();
+    }
+  });
+
+  it('uzak: canlı font + emekli staging28 POST sunucuya ulaşmaz', async () => {
+    resetBlockedTrackers();
+    resetRemotePostBlocked();
+    consumeOrderBlocks();
+    consumeAdminWriteBlocks();
+    consumeRetiredHostBlocks();
+    consumeForeignWriteBlocks();
+    hits.length = 0;
+    const browser = await chromium.launch();
+    try {
+      const context = await browser.newContext();
+      await applyNetworkGuard(context, {
+        remote: true,
+        siteHost: '127.0.0.1',
+        allowedHosts: ['127.0.0.1'],
+        blockTrackers: true,
+      });
+      const page = await context.newPage();
+      const errors = [];
+      page.on('console', (msg) => {
+        if (msg.type() === 'error') errors.push(msg.text());
+      });
+      await page.goto(`http://127.0.0.1:${port}/`, { waitUntil: 'domcontentloaded' });
+      await page.evaluate(async () => {
+        window.__liveTried = 0;
+        window.__liveReached = 0;
+        window.__retiredTried = 0;
+        window.__retiredReached = 0;
+        function ping(u, flagTried, flagReached) {
+          window[flagTried]++;
+          return fetch(u, { method: 'GET', mode: 'cors' }).then(
+            function () {
+              window[flagReached]++;
+            },
+            function () {
+              /* iptal beklenen */
+            }
+          );
+        }
+        await ping(
+          'https://hedefdernegi.org/wp-content/themes/Avada/fonts/font.woff2', // live-scan:blacklist-def
+          '__liveTried',
+          '__liveReached'
+        );
+        window.__retiredTried++;
+        try {
+          const res = await fetch('https://staging28.hedefdernegi.org/wp-admin/admin-ajax.php', { // live-scan:allow-reject-test
+            method: 'POST',
+            body: 'action=heartbeat',
+          });
+          if (res && res.ok) window.__retiredReached++;
+        } catch {
+          /* iptal beklenen */
+        }
+      });
+      await page.waitForTimeout(400);
+      const live = await page.evaluate(() => ({
+        tried: window.__liveTried,
+        reached: window.__liveReached,
+        retiredTried: window.__retiredTried,
+        retiredReached: window.__retiredReached,
+      }));
+      assert.equal(live.reached, 0);
+      assert.equal(live.retiredReached, 0);
+      assert.equal(
+        hits.some((h) => /hedefdernegi|staging28|Avada/i.test(h)),
+        false,
+        'canlı/emekli istek yerel sunucuya düşmemeli'
+      );
+      const liveSnap = snapshotBlockedLive();
+      assert.ok(liveSnap.total >= 1, JSON.stringify(liveSnap));
+      assert.throws(() => throwIfRemoteRetiredHostBlocked(), (e) => {
+        assert.ok(e instanceof RemoteRetiredHostBlockedError);
+        assert.match(String(e.message), /REMOTE-RETIRED-HOST:/);
+        return true;
+      });
+      assert.doesNotThrow(() => throwIfRemoteForeignWriteBlocked());
+      assertNoConsoleErrors(errors.map((t) => t.slice(0, 300)));
     } finally {
       await browser.close();
     }

@@ -13,6 +13,7 @@ import {
   bumpListCache,
 } from './staging-wp-meta.mjs';
 import { requireFixtureRole, mutationBrowserContext } from './fixtures.mjs';
+import { skipLocalOnlyOnRemote } from './mutation-policy.mjs';
 
 const CHECK_MS = 40000;
 const FORBIDDEN_IDS = new Set([10695]);
@@ -79,6 +80,7 @@ export async function runShortcodeChecks({
   productIds,
   failures,
   stats,
+  skips = [],
   createAdminContext,
 }) {
   let fixedId = Number(productIds.fixed || 0);
@@ -113,16 +115,30 @@ export async function runShortcodeChecks({
       throw new Error('Kısa kod E2E için güvenli ürün ID yok');
     }
     const listUrl = env.E2E_LIST_PAGE;
-    if (!listUrl) {
-      throw new Error(
-        'Liste sayfası yok — sayfa oluşturulmaz (2026-10-22). Mevcut liste yolunu profilden verin.'
-      );
+    const skipList = skipLocalOnlyOnRemote(env, 'shortcodes-setup', skips, stats);
+    if (skipList) {
+      skipLocalOnlyOnRemote(env, 'shortcode-list-price-refresh', skips, stats);
+      skipLocalOnlyOnRemote(env, 'shortcode-tabs-aria', skips, stats);
+      skipLocalOnlyOnRemote(env, 'shortcode-bad-hash', skips, stats);
+    } else {
+      if (!listUrl) {
+        throw new Error(
+          'Liste sayfası yok — sayfa oluşturulmaz (2026-10-22). Mevcut liste yolunu profilden verin.'
+        );
+      }
+      await runListPriceCheck({ page, env, listUrl, fixedId, failures, stats });
+      await runTabsAriaCheck({ page, env, listUrl, failures, stats });
+      await runBadHashCheck({ page, env, listUrl, pageErrors, failures, stats });
     }
-    await runListPriceCheck({ page, env, listUrl, fixedId, failures, stats });
-    await runTabsAriaCheck({ page, env, listUrl, failures, stats });
-    await runBadHashCheck({ page, env, listUrl, pageErrors, failures, stats });
-    await runButtonTextCheck({ page, env, fixedId, failures, stats, productPath: env.E2E_PRODUCT_FIXED || '' });
-    await runOutOfStockFormCheck({ page, env, fixedId, failures, stats, productPath: env.E2E_PRODUCT_FIXED || '' });
+    let productPath = env.E2E_PRODUCT_FIXED || '';
+    try {
+      const fx = requireFixtureRole(env, 'fixed');
+      productPath = fx.path || fx.url || productPath;
+    } catch {
+      /* productIds.fixed yedek */
+    }
+    await runButtonTextCheck({ page, env, fixedId, failures, stats, productPath });
+    await runOutOfStockFormCheck({ page, env, fixedId, failures, stats, productPath });
   } catch (e) {
     failures.push(
       makeFailure({

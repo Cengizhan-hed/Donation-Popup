@@ -6,7 +6,8 @@
  *   php tests/local-wp/bootstrap-fixtures.php remove local fixture
  */
 $root = dirname(__DIR__, 2);
-$wp_dir = $root . '/build/local-wp/wordpress';
+$from_env = getenv('WDP_LOCAL_WP_DIR');
+$wp_dir = ($from_env !== false && $from_env !== '') ? $from_env : $root . '/build/local-wp/wordpress';
 if (empty($_SERVER['HTTP_HOST'])) {
 	$_SERVER['HTTP_HOST']   = '127.0.0.1';
 	$_SERVER['SERVER_NAME'] = '127.0.0.1';

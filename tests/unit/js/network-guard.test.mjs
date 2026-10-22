@@ -19,6 +19,10 @@ import {
   listWdpAjaxFromIncludes,
   EXPECTED_WDP_NOPRIV_AJAX,
   formatRemotePostBlockedLines,
+  classifyRemoteHost,
+  isLiveBlockedHost,
+  isRetiredSimilarHost,
+  classifyBlockedConsoleError,
 } from '../../../tests/e2e/helpers/network-guard.mjs';
 import { isRemoteProfile } from '../../../tests/e2e/helpers/profile.mjs';
 import { ROOT } from '../../../tests/e2e/helpers/env-root.mjs';
@@ -536,6 +540,71 @@ describe('profil remoteReadOnlyPostActions', () => {
     assert.equal(
       formatRemotePostBlockedLines({ total: 0, byPath: {} }, { total: 3, byAction: { wmc_get_products_price: 3 } }),
       'remote_post_blocked: 0\nizinli-okuma: 3\n  • wmc_get_products_price  3'
+    );
+  });
+});
+
+describe('network-guard uzak host sınıflaması', () => {
+  const stagingAllowed = ['staging30.hedefdernegi.org'];
+  const ikramAllowed = ['ikramaid.uk', 'www.ikramaid.uk'];
+
+  it('canlı apeks live; staging30 allowed; staging28 retired', () => {
+    assert.equal(isLiveBlockedHost('hedefdernegi.org'), true); // live-scan:blacklist-def
+    assert.equal(isLiveBlockedHost('www.hedefdernegi.org'), true); // live-scan:blacklist-def
+    assert.equal(isLiveBlockedHost('https://hedefdernegi.org/x'), true); // live-scan:blacklist-def
+    assert.equal(isLiveBlockedHost('staging30.hedefdernegi.org'), false);
+    assert.equal(
+      classifyRemoteHost('staging30.hedefdernegi.org', { allowedHosts: stagingAllowed }),
+      'allowed'
+    );
+    assert.equal(
+      classifyRemoteHost('staging28.hedefdernegi.org', { allowedHosts: stagingAllowed }), // live-scan:allow-reject-test
+      'retired'
+    );
+    assert.equal(
+      isRetiredSimilarHost('staging28.hedefdernegi.org', stagingAllowed), // live-scan:allow-reject-test
+      true
+    );
+  });
+
+  it('Ikram’da staging28 retired; ikramaid.uk allowed', () => {
+    assert.equal(
+      classifyRemoteHost('ikramaid.uk', { allowedHosts: ikramAllowed }),
+      'allowed'
+    );
+    assert.equal(
+      classifyRemoteHost('staging28.hedefdernegi.org', { allowedHosts: ikramAllowed }), // live-scan:allow-reject-test
+      'retired'
+    );
+    assert.equal(
+      classifyRemoteHost('evil.example', { allowedHosts: ikramAllowed }),
+      'foreign'
+    );
+  });
+
+  it('blocked_live özeti kırmızı değil, uyarı yazar', () => {
+    const text = formatRemotePostBlockedLines(
+      { total: 0, byPath: {} },
+      { total: 0, byAction: {} },
+      { blocked_live: { total: 2, byHost: { 'hedefdernegi.org': 2 } } } // live-scan:blacklist-def
+    );
+    assert.match(text, /blocked_live: 2/);
+    assert.match(text, /kırmızı değil/);
+    assert.equal(/REMOTE-FOREIGN-WRITE/.test(text), false);
+  });
+
+  it('font CORS / emekli ajax konsol eklenti hatası değil', () => {
+    assert.equal(
+      classifyBlockedConsoleError(
+        "Access to font at 'https://hedefdernegi.org/wp-content/themes/Avada/x.woff2' from origin 'https://staging30.hedefdernegi.org' has been blocked by CORS policy" // live-scan:blacklist-def
+      ),
+      'blocked-live'
+    );
+    assert.equal(
+      classifyBlockedConsoleError(
+        '/staging28.hedefdernegi.org/wp-admin/admin-ajax.php due to access control checks.' // live-scan:allow-reject-test
+      ),
+      'blocked-site'
     );
   });
 });

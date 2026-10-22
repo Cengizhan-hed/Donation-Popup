@@ -45,4 +45,20 @@ describe('classifyResourceUrl', () => {
       ])
     );
   });
+
+  it('canlı font CORS ve emekli ajax konsol eklenti hatası sayılmaz', () => {
+    assert.doesNotThrow(() =>
+      assertNoConsoleErrors([
+        "Access to font at 'https://hedefdernegi.org/wp-content/themes/Avada/font.woff2' from origin https://staging30.hedefdernegi.org has been blocked by CORS policy", // live-scan:blacklist-def
+      ])
+    );
+    assert.doesNotThrow(() =>
+      assertNoConsoleErrors([
+        '/staging28.hedefdernegi.org/wp-admin/admin-ajax.php due to access control checks.', // live-scan:allow-reject-test
+      ])
+    );
+    assert.doesNotThrow(() =>
+      assertNoConsoleErrors(['Failed to load resource: net::ERR_BLOCKED_BY_CLIENT.Inspector'])
+    );
+  });
 });

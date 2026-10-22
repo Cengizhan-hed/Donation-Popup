@@ -6,7 +6,6 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { ROOT } from './env-root.mjs';
-import { loadDeployEnvSilent, remote } from './wp-remote.mjs';
 import { loadRegistry } from './run-registry.mjs';
 import { loadFixtures, verifiedFixtureIds } from './fixtures.mjs';
 import { peekActiveProfile, isRemoteProfile, resolveAllowedRemoteTarget } from './profile.mjs';
@@ -165,6 +164,10 @@ export function formatCanaryStatusLine(beforeOk, afterOk, expectedNew = 0) {
 
 export function snapshotCanary() {
   if (snapshotOverride) return snapshotOverride();
+  const profile = peekActiveProfile();
+  if (!profile || !isRemoteProfile(profile)) {
+    return snapshotCanaryLocal();
+  }
   const local = path.join(ROOT, CANARY_SNAPSHOT_FILE);
   if (!fs.existsSync(local)) throw new Error(`canary: ${CANARY_SNAPSHOT_FILE} yok`);
   const src = fs.readFileSync(local, 'utf8');
@@ -172,25 +175,16 @@ export function snapshotCanary() {
     throw new Error('canary-snapshot.php yazma çağrısı içeriyor');
   }
   const b64 = fs.readFileSync(local).toString('base64');
-  const profile = peekActiveProfile();
-  let raw = '';
-  if (profile && isRemoteProfile(profile)) {
-    const resolved = resolveAllowedRemoteTarget(profile);
-    const remoteCmd = buildGuardedEvalFileCommand(resolved.wpPath, { tmpPrefix: 'wdp-canary', b64 });
-    const res = runGuardedSsh(
-      spawnGuarded,
-      resolved.alias,
-      remoteCmd,
-      { encoding: 'utf8', cwd: ROOT, timeout: 120000 },
-      { alias: resolved.alias, wpPath: resolved.wpPath, siteUrl: resolved.siteUrl }
-    );
-    raw = res.stdout || '';
-  } else {
-    const loaded = loadDeployEnvSilent();
-    if (!loaded.ok) throw new Error(`canary: ${loaded.reason}`);
-    const wpPath = String(loaded.env.DEPLOY_WP_PATH || '').trim();
-    raw = remote(loaded.env, buildGuardedEvalFileCommand(wpPath, { tmpPrefix: 'wdp-canary', b64 }));
-  }
+  const resolved = resolveAllowedRemoteTarget(profile);
+  const remoteCmd = buildGuardedEvalFileCommand(resolved.wpPath, { tmpPrefix: 'wdp-canary', b64 });
+  const res = runGuardedSsh(
+    spawnGuarded,
+    resolved.alias,
+    remoteCmd,
+    { encoding: 'utf8', cwd: ROOT, timeout: 120000 },
+    { alias: resolved.alias, wpPath: resolved.wpPath, siteUrl: resolved.siteUrl }
+  );
+  const raw = res.stdout || '';
   const snap = parseSnapshotOutput(raw);
   if (!snap || !Array.isArray(snap.posts) || !snap.options) {
     throw new Error('canary: anlık görüntü eksik (posts/options)');

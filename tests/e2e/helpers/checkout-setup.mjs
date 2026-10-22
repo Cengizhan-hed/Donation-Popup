@@ -12,6 +12,8 @@ const OFFLINE = ['cheque', 'bacs', 'cod'];
  * @returns {string}
  */
 export function readCheckoutUrl() {
+  const profile = peekActiveProfile();
+  if (!isRemoteProfile(profile)) return '/checkout/';
   const loaded = loadDeployEnvSilent();
   if (!loaded.ok) return '/checkout/';
   const raw = wp(
@@ -24,6 +26,8 @@ export function readCheckoutUrl() {
  * @returns {string}
  */
 export function readCartUrl() {
+  const profile = peekActiveProfile();
+  if (!isRemoteProfile(profile)) return '/cart/';
   const loaded = loadDeployEnvSilent();
   if (!loaded.ok) return '/cart/';
   const raw = wp(
@@ -60,6 +64,10 @@ export function checkoutPathFromUrl(checkoutUrl, baseUrl) {
  * @returns {{ id: string, title: string, enabled: boolean }[]}
  */
 export function listPaymentGateways() {
+  const profile = peekActiveProfile();
+  if (!isRemoteProfile(profile)) {
+    return [{ id: 'cheque', title: 'Check payments', enabled: true }];
+  }
   const php =
     'if(!function_exists("WC")){echo "[]"; return;} WC()->payment_gateways(); $g=WC()->payment_gateways()->payment_gateways(); $o=array(); foreach((array)$g as $id=>$gw){ $o[]=array("id"=>$id,"title"=>(string)$gw->get_title(),"enabled"=>$gw->enabled==="yes"); } echo wp_json_encode($o);';
   const raw = wp(`wp eval '${php}'`);
