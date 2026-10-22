@@ -5,6 +5,7 @@ import { canonical, valueHash, valueType, flattenOptionEntries, flattenValue } f
 
 export const CLASSES = [
   'KORUNDU',
+  'KORUNDU (tür)',
   'TAŞINDI',
   'DEĞİŞTİ',
   'VARSAYILANA DÖNDÜ',
@@ -155,11 +156,39 @@ function classify(key, va, vb, defaults, fieldDefaults) {
   if (hasA && !hasB) return isExpectedChangeKey(key) ? 'BEKLENEN DEĞİŞİM' : 'KAYBOLDU';
   if (canonical(va) === canonical(vb)) return 'KORUNDU';
   if (isExpectedChangeKey(key)) return 'BEKLENEN DEĞİŞİM';
+  if (numericTypeEqual(va, vb)) return 'KORUNDU (tür)';
   const def = lookupDefault(key, defaults, fieldDefaults);
   if (def !== undefined && canonical(vb) === canonical(def) && canonical(va) !== canonical(def)) {
     return 'VARSAYILANA DÖNDÜ';
   }
   return 'DEĞİŞTİ';
+}
+
+/**
+ * Same number after stripping a trailing px/% and string/number cast ("12" → 12, "12px" → 12).
+ * Hex, lists and empty string are not numeric.
+ * @param {unknown} a
+ * @param {unknown} b
+ */
+export function numericTypeEqual(a, b) {
+  const na = coerceNumeric(a);
+  const nb = coerceNumeric(b);
+  return Number.isFinite(na) && na === nb;
+}
+
+/**
+ * @param {unknown} value
+ * @returns {number}
+ */
+function coerceNumeric(value) {
+  if (typeof value === 'number' && Number.isFinite(value)) return value;
+  if (typeof value !== 'string') return NaN;
+  const t = value.trim();
+  if (t === '') return NaN;
+  if (/^-?\d+(\.\d+)?px$/i.test(t)) return Number(t.slice(0, -2));
+  if (/^-?\d+(\.\d+)?%$/.test(t)) return Number(t.slice(0, -1));
+  if (/^-?\d+(\.\d+)?$/.test(t)) return Number(t);
+  return NaN;
 }
 
 function lookupDefault(key, defaults, fieldDefaults) {
@@ -244,7 +273,9 @@ export function formatCompareMarkdown(result, meta = {}) {
  */
 export function compareIdempotent(a, b) {
   const r = compareSnapshots(a, b, {});
-  const notSame = r.rows.filter((row) => row.class !== 'KORUNDU' && row.class !== 'BEKLENEN DEĞİŞİM');
+  const notSame = r.rows.filter(
+    (row) => row.class !== 'KORUNDU' && row.class !== 'KORUNDU (tür)' && row.class !== 'BEKLENEN DEĞİŞİM'
+  );
   return {
     ...r,
     fail: notSame.length > 0,

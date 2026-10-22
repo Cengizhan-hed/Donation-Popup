@@ -32,6 +32,26 @@ describe('migration-compare sınıfları', () => {
     assert.equal(r.fail, false);
   });
 
+  it('KORUNDU (tür): "12" → 12 ve "12px" → 12 fail değil', () => {
+    const a = snap({
+      wdp_button_settings: entry({ button_border_radius: '12', modal_padding_top_desktop: '12px' }),
+    });
+    const b = snap({
+      wdp_button_settings: entry({ button_border_radius: 12, modal_padding_top_desktop: 12 }),
+    });
+    const r = compareSnapshots(a, b);
+    assert.equal(
+      r.rows.find((x) => x.key === 'option:wdp_button_settings.button_border_radius').class,
+      'KORUNDU (tür)'
+    );
+    assert.equal(
+      r.rows.find((x) => x.key === 'option:wdp_button_settings.modal_padding_top_desktop').class,
+      'KORUNDU (tür)'
+    );
+    assert.equal(r.fail, false);
+    assert.equal(r.problems.length, 0);
+  });
+
   it('TAŞINDI: eşleme tablosu + eşdeğer değer', () => {
     const a = snap({ wdp_settings_backup_10_27: entry({ k: 1 }) });
     const b = snap({ wdp_settings_backup_10_27_restored: entry({ k: 1 }) });

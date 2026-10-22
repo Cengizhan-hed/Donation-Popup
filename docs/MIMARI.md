@@ -1,4 +1,4 @@
-# MIMARI — woo-donation-popup (10.34.2)
+# MIMARI — woo-donation-popup (10.34.3)
 
 Kalıcı mimari harita. Sonraki görevler için ilk okuma noktası.  
 Dal referansı: `docs-mimari` / commit `220f4ec`.  
@@ -472,9 +472,11 @@ Canlı/staging’de göçü çalıştırmadan önce yerel prova. Eklenti kodu (P
 |-------|----------|-------|
 | `npm run migration:snapshot -- --env local --label <etiket>` | Eski+güncel kaynak ağacından anahtar çıkarır; `wdp_%` + eski önekler + ürün meta; WC mağaza ayarları salt okunur. `--env staging\|ikram`: profil `ssh.alias/wpPath/siteUrl` + `findTargetById`/`findTargetByAlias`; komut `wp --path="$HOME/…" eval-file` (`spawnGuarded`, yalnız Claude; birim testte spawn yok). Eval yazma yok. Uzak payload gzip+base64 + `fold -w 76` (OpenSSL `base64 -d` uzun satırda sessiz 0 bayt üretmesin); boş decode çıkış 97. Anahtar kümesi ayrı uzak geçici dosya (`WDP_MIG_KEYS_FILE`), PHP’ye `define` enjekte edilmez. stdout boşsa stderr 300 + çıkış kodu. | `scripts/migration-snapshot.mjs`, `tests/e2e/helpers/migration-snapshot.php`, `buildGuardedEvalFileCommand` |
 | `npm run migration:rehearsal -- --from 10.3.1` | Temiz yerel WP+WC → eski eklenti (`build/migration/source/10.3.1/woo-donation-popup` veya `onceki.zip` 10.28.12) → görüntü → güncel kopya + `upgrader_process_complete`/`maybe_run` → görüntü → karşılaştır → göç 2. kez (idempotent). | `scripts/migration-rehearsal.mjs`, `tests/local-wp/migration-ops.php` |
-| `npm run migration:compare -- --before a.json --after b.json` | Sınıflar: KORUNDU, TAŞINDI, DEĞİŞTİ, VARSAYILANA DÖNDÜ, KAYBOLDU, YENİ, **BEKLENEN DEĞİŞİM**. Çıkış 2: KAYBOLDU/VARSAYILANA DÖNDÜ/DEĞİŞTİ > 0 (sürüm/önbellek/log/`wdp_migrated_*` hariç). `--idempotent` birebir (BEKLENEN DEĞİŞİM fail değil). | `scripts/lib/migration-compare-core.mjs` |
+| `npm run migration:compare -- --before a.json --after b.json` | Sınıflar: KORUNDU, **KORUNDU (tür)** (sayısal eşit: `"12"`/`12px` → 12), TAŞINDI, DEĞİŞTİ, VARSAYILANA DÖNDÜ, KAYBOLDU, YENİ, **BEKLENEN DEĞİŞİM**. Çıkış 2: KAYBOLDU/VARSAYILANA DÖNDÜ/DEĞİŞTİ > 0 (sürüm/önbellek/log/`wdp_migrated_*` hariç; tür farkı fail değil). `--idempotent` birebir (BEKLENEN DEĞİŞİM ve KORUNDU (tür) fail değil). | `scripts/lib/migration-compare-core.mjs` |
 
 Anahtar çıkarıcı: `get_option`/`update_option`/`add_option`/`get_post_meta`/`update_post_meta` + `wdp_` / `_wdp_` dizgi sabitleri (`scripts/lib/migration-keys.mjs`). TAŞINDI tablosu: `WDP_Migrations::BACKUP_OPTION` → `BACKUP_RESTORED_OPTION`. BEKLENEN DEĞİŞİM: `wdp_version`, `wdp_db_version`, `wdp_cache_version`, `wdp_list_cache_version`, `wdp_migration_log`, `wdp_migrated_*`. 10.3.1 kaynağı `build/migration/source/10.3.1/woo-donation-popup/` (git dışı).
+
+**10.3.1 → güncel doldurma (10.34.3):** `step_10_27_0` → `fill_stored_options` → `WDP_Admin_Settings_Normalizer::rewrite_stored_options`. Eski sıra `array_merge($current, $clean)` normalizerin boş istek varsayılanlarını kullanıcı değerinin üstüne yazıyordu (`ui_border_radius` yokken 4 radius → 10; layout anahtarları → eksik-anahtar varsayılanı). Yeni sıra `array_merge($clean, $current)`: eksik anahtar dolar, kayıtlı değer korunur; `ui_border_radius` yoksa legacy radius’tan tohumlanır (`seed_ui_border_radius_from_legacy`). Kanıt: `tests/unit/Migration1031SettingsPreserveTest.php`.
 
 `.env.deploy` / `.env.e2e` / `.env.*.ikram` **okunmadı** (görev yasağı); yalnızca anahtar adları şablonlarda belgelidir.
 
