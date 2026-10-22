@@ -428,3 +428,16 @@ Kullanıcı yönergesi önceki tüm görev metinlerinin yerini aldı; CLAUDE.md 
 | M3 | Sepette telefon `(905551234567)`: `+` ve biçim yok | Faz 5 |
 | M4 | Telefon ön eki EUR/US mağazada `+90` (mağaza ülkesinden gelmeli) | Faz 5 (bilinen) |
 | M5 | TT5: form alanı metinleri soldan girintili, simge yok → boşluk (hizasız) | Faz 7 (G26) |
+
+## FAZ 1–3 ara bulgular (2026-10-22)
+
+| # | Bulgu | Sonuç |
+|---|-------|-------|
+| F1 | Birim test Claude kabuğunda gerçek SSH açtı (salt okunur, zararsız düştü) | 1F: testler ağa çıkamaz; sahte ssh shim ile 0 çağrı kanıtı |
+| F2 | Uzak `base64 -d` (OpenSSL) uzun tek satırda sessizce 0 bayt | 1H: gzip+fold, boş dosyada çıkış 97 |
+| F3 | Kanarya ön kontrolü id=0'ı (page_for_posts, terms) eksik sayıyordu | 1I: id 0 = ayarlı değil |
+| F4 | Uzak POST varsayılan-red eklentinin FormData isteğini engelledi ("Ürün bilgileri alınamadı"), test yakalamadı; `wdp_*` kalıbı yönetici kaydetme uçlarını da kapsıyordu | 1K: 4 gövde türü ayrıştırıcı, yalnız nopriv uçlar, görünür eklenti hatası = KIRMIZI |
+| F5 | GÖÇ: 10.3.1 → güncel 21 özelleştirilmiş görünüm ayarını eziyordu (canlıya gitseydi Hedef ayarları bozulurdu) | 2B+2C (10.34.3): kullanıcı değeri kazanır, 0 dahil; gerçek veri provası 700 korundu / 0 kayıp / idempotent; 25 ürün 464 meta korundu |
+| F6 | Ikram: açık durumda "£ min: 5" (hata durumunda 5.00) — GBP 2 ondalık bozuk; kapat (×) form kenarına biniyor (10.34.2 güvenli alan) | 3A; Ikram accept bekletildi |
+| F7 | Ikram: "Bağış Yap", "Tümü", form etiketleri İngilizce sitede Türkçe | Faz 5 |
+| Not | staging30 snippet #27 sepete eklemeye bağlı (terk edilmiş sepet olayı); #29 ödeme tamamlanınca dış istek; #43 form gönderiminde API+e-posta. Testler sipariş/form göndermiyor | Raporlandı |
