@@ -49,10 +49,25 @@ export const TRACKER_HOST_PATH_RULES = [
 const MATOMO_PATH_RE = /\/(?:matomo|piwik)\.(?:js|php)(?:$|[/?])/i;
 const MATOMO_HOST_RE = /(^|\.)matomo\.(cloud|org)$/i;
 
+/** Uzak yazımda izinli wc-ajax uçları (apply_coupon / update_order_review yok). */
+export const ALLOWED_WC_AJAX = new Set([
+  'add_to_cart',
+  'get_refreshed_fragments',
+  'remove_from_cart',
+]);
+
+/** admin-ajax Woo sepet uçları (checkout yok). */
+export const ALLOWED_ADMIN_AJAX = new Set([
+  'woocommerce_add_to_cart',
+  'woocommerce_get_refreshed_fragments',
+]);
+
 /** @type {Map<string, number>} */
 const blockedByHost = new Map();
 /** @type {string[]} */
 const orderBlocks = [];
+/** @type {Map<string, number>} */
+const blockedPosts = new Map();
 
 /**
  * @param {string} url
@@ -146,6 +161,63 @@ function normalizePath(pathname) {
 }
 
 /**
+ * Tam URL veya yol → normalize pathname (sorgu yok).
+ * @param {string} raw
+ * @param {string} [fallback]
+ */
+export function pathFromMaybeUrl(raw, fallback = '/') {
+  const s = String(raw || '').trim();
+  if (!s) return fallback;
+  try {
+    if (/^https?:\/\//i.test(s)) {
+      return normalizePath(new URL(s).pathname || fallback);
+    }
+  } catch {
+    /* relative */
+  }
+  const pathOnly = s.split('?')[0];
+  if (pathOnly.startsWith('/')) return normalizePath(pathOnly);
+  return normalizePath(`/${pathOnly}`);
+}
+
+/**
+ * @param {string} pathname
+ * @param {URLSearchParams} search
+ */
+function wcAjaxName(pathname, search) {
+  const fromQuery = String(search?.get('wc-ajax') || '').trim();
+  if (fromQuery) return fromQuery;
+  const m = String(pathname || '').match(/\/wc-ajax\/([^/]+)/i);
+  return m ? decodeURIComponent(m[1]) : '';
+}
+
+/**
+ * Store API batch gövdesindeki her istek cart yolunda mı?
+ * @param {string} postData
+ */
+export function storeBatchAllCart(postData) {
+  let parsed;
+  try {
+    parsed = JSON.parse(String(postData || ''));
+  } catch {
+    return false;
+  }
+  const reqs = Array.isArray(parsed?.requests) ? parsed.requests : [];
+  if (!reqs.length) return false;
+  return reqs.every((r) => {
+    const p = String(r?.path || '');
+    return /\/wc\/store\/(?:v\d+\/)?cart(?:\/|$)/i.test(p);
+  });
+}
+
+/**
+ * @param {string} action
+ */
+export function isWdpAjaxAction(action) {
+  return /^wdp_[a-z0-9_]+$/i.test(String(action || '').trim());
+}
+
+/**
  * @param {{ method?: string, url?: string, postData?: string|null, checkoutPath?: string }} req
  */
 export function isRemoteOrderRequest(req) {
@@ -199,12 +271,85 @@ export function isRemoteOrderRequest(req) {
     if (/woocommerce_checkout_place_order|woocommerce-process-checkout-nonce/i.test(postData)) {
       return true;
     }
-    const configured = normalizePath(req?.checkoutPath || '/checkout/');
+    const configured = pathFromMaybeUrl(req?.checkoutPath || '/checkout/', '/checkout/');
     if (pathname === configured || pathname === `${configured}/`) return true;
-    if (/\/(checkout|odeme|ödeme)(?:\/|$)/i.test(pathname)) return true;
   }
 
   return false;
+}
+
+/**
+ * Uzak profilde site alanına giden yazma: yalnız izin listesi.
+ * apply_coupon ve update_order_review yok (ödeme sayfasında da).
+ *
+ * @param {{ method?: string, url?: string, postData?: string|null, checkoutPath?: string, cartPath?: string }} req
+ */
+export function isRemoteWriteAllowed(req) {
+  const method = String(req?.method || 'GET').toUpperCase();
+  if (!['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) return true;
+  const url = String(req?.url || '');
+  let u;
+  try {
+    u = new URL(url, 'http://local.test');
+  } catch {
+    return false;
+  }
+  const pathname = normalizePath(u.pathname || '/');
+  const search = u.searchParams;
+  const postData = req?.postData == null ? '' : String(req.postData);
+  const storePath = pathname.replace(/^\/wp-json/, '');
+
+  const ajax = wcAjaxName(pathname, search);
+  if (ajax) {
+    return ALLOWED_WC_AJAX.has(ajax);
+  }
+
+  if (/\/wc\/store\/(?:v\d+\/)?cart(?:\/|$)/i.test(storePath)) {
+    return true;
+  }
+
+  if (/\/wc\/store\/(?:v\d+\/)?batch$/i.test(storePath)) {
+    return storeBatchAllCart(postData);
+  }
+
+  if (/\/admin-ajax\.php$/i.test(pathname)) {
+    const action = String(search.get('action') || formField(postData, 'action') || '').trim();
+    if (isWdpAjaxAction(action)) return true;
+    return ALLOWED_ADMIN_AJAX.has(action);
+  }
+
+  if (method === 'POST') {
+    const cartPath = pathFromMaybeUrl(req?.cartPath || '/cart/', '/cart/');
+    if (pathname === cartPath || pathname === `${cartPath}/`) {
+      if (/(?:^|[&\n])(?:update_cart|remove_item)=/i.test(postData) || search.has('remove_item')) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+/**
+ * Sayaç anahtarı: yol (sorgu yok); action adı serbest.
+ * @param {string} url
+ * @param {string} [postData]
+ */
+export function remotePostBlockKey(url, postData = '') {
+  let pathname = '/';
+  let action = '';
+  let wcAjax = '';
+  try {
+    const u = new URL(String(url), 'http://local.test');
+    pathname = u.pathname || '/';
+    action = String(u.searchParams.get('action') || formField(postData, 'action') || '').trim();
+    wcAjax = String(u.searchParams.get('wc-ajax') || '').trim();
+  } catch {
+    pathname = '/';
+  }
+  if (action) return `${pathname} action=${action}`;
+  if (wcAjax) return `${pathname} wc-ajax=${wcAjax}`;
+  return pathname;
 }
 
 /**
@@ -237,6 +382,26 @@ export function snapshotBlockedTrackers() {
     total += n;
   }
   return { total, byHost };
+}
+
+function recordRemotePost(key) {
+  const k = String(key || '/') || '/';
+  blockedPosts.set(k, (blockedPosts.get(k) || 0) + 1);
+}
+
+export function resetRemotePostBlocked() {
+  blockedPosts.clear();
+}
+
+export function snapshotRemotePostBlocked() {
+  /** @type {Record<string, number>} */
+  const byPath = {};
+  let total = 0;
+  for (const [p, n] of blockedPosts) {
+    byPath[p] = n;
+    total += n;
+  }
+  return { total, byPath };
 }
 
 export function consumeOrderBlocks() {
@@ -296,7 +461,8 @@ export function guardOptionsFromEnv(env, extra = {}) {
   return {
     remote,
     siteHost: extra.siteHost || siteHostFromEnv(env),
-    checkoutPath: extra.checkoutPath || '/checkout/',
+    checkoutPath: pathFromMaybeUrl(extra.checkoutPath || '/checkout/', '/checkout/'),
+    cartPath: pathFromMaybeUrl(extra.cartPath || '/cart/', '/cart/'),
     blockTrackers: true,
   };
 }
@@ -304,13 +470,14 @@ export function guardOptionsFromEnv(env, extra = {}) {
 /**
  * Uzakta tracker engeli kapatılamaz (env ile bile).
  * @param {import('@playwright/test').BrowserContext} context
- * @param {{ remote?: boolean, siteHost?: string, checkoutPath?: string, blockTrackers?: boolean }} opts
+ * @param {{ remote?: boolean, siteHost?: string, checkoutPath?: string, cartPath?: string, blockTrackers?: boolean }} opts
  */
 export async function applyNetworkGuard(context, opts = {}) {
   if (!context || context[INSTALLED]) return context;
   const remote = !!opts.remote;
   const siteHost = String(opts.siteHost || '');
-  const checkoutPath = opts.checkoutPath || '/checkout/';
+  const checkoutPath = pathFromMaybeUrl(opts.checkoutPath || '/checkout/', '/checkout/');
+  const cartPath = pathFromMaybeUrl(opts.cartPath || '/cart/', '/cart/');
   const blockTrackers = remote ? true : opts.blockTrackers !== false;
 
   await context.route('**/*', async (route) => {
@@ -332,11 +499,20 @@ export async function applyNetworkGuard(context, opts = {}) {
       } catch {
         postData = '';
       }
-      if (isRemoteOrderRequest({ method, url, postData, checkoutPath })) {
-        const requestPath = safeRequestPath(url);
-        orderBlocks.push(requestPath);
-        await route.abort('blockedbyclient');
-        return;
+      const write = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(String(method || '').toUpperCase());
+      const parts = parseUrlParts(url);
+      const firstParty = !siteHost || isFirstPartyHost(parts?.hostname, siteHost);
+      if (write && firstParty) {
+        const reqInfo = { method, url, postData, checkoutPath, cartPath };
+        const allowed = isRemoteWriteAllowed(reqInfo);
+        if (!allowed) {
+          recordRemotePost(remotePostBlockKey(url, postData));
+          if (isRemoteOrderRequest(reqInfo)) {
+            orderBlocks.push(safeRequestPath(url));
+          }
+          await route.abort('blockedbyclient');
+          return;
+        }
       }
     }
 

@@ -742,9 +742,10 @@ export function runGuardedSsh(spawn, alias, remoteCmd, spawnOpts, guardOpts) {
     String(alias),
     remoteCmd,
   ];
+  const bin = 'ssh';
   let last;
   for (let attempt = 0; attempt < 2; attempt++) {
-    last = spawn('ssh', args, spawnOpts, guardOpts);
+    last = spawn(bin, args, spawnOpts, guardOpts);
     if (last && last.status === 0) return last;
     if (attempt === 0 && isSshConnectionError(last)) continue;
     break;

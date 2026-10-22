@@ -26,6 +26,30 @@ describe('canary', () => {
     assert.ok(cmp.diffs.some((d) => d.option === 'user_count'));
   });
 
+  it('defterdeki yeni ürün product_count artışını bekler', () => {
+    const before = {
+      posts: [{ id: 5, type: 'page', status: 'publish', modified: 'a', mark: '' }],
+      options: { show_on_front: 'page' },
+      user_count: 2,
+      page_count: 1,
+      product_count: 0,
+      attachment_count: 0,
+    };
+    const after = {
+      posts: [
+        { id: 5, type: 'page', status: 'publish', modified: 'a', mark: '' },
+        { id: 80, type: 'product', status: 'private', modified: 'b', mark: 'boot-1' },
+      ],
+      options: { show_on_front: 'page' },
+      user_count: 2,
+      page_count: 1,
+      product_count: 1,
+      attachment_count: 0,
+    };
+    const cmp = compareCanary(before, after, { allowedCreatedIds: [80] });
+    assert.equal(cmp.ok, true, JSON.stringify(cmp.diffs));
+  });
+
   it('ön kontrol: çöpteki sepet kırmızı', () => {
     const snap = {
       posts: [

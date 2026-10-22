@@ -44,14 +44,6 @@ export function loadProfile(idOrAlias) {
 }
 
 /**
- * Uzak profil: SSH alias varsa allowMetaMutation yasak; üçlü izin listesiyle birebir.
- * @param {object} profile
- */
-export function isRemoteProfile(profile) {
-  return Boolean(profile?.ssh?.alias);
-}
-
-/**
  * @param {object} profile
  */
 export function assertRemoteProfileSafe(profile) {

@@ -1,12 +1,20 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
 import {
   isTrackerUrl,
   isRemoteOrderRequest,
+  isRemoteWriteAllowed,
+  isWdpAjaxAction,
+  storeBatchAllCart,
+  remotePostBlockKey,
   hostMatchesSuffix,
   isFirstPartyHost,
+  pathFromMaybeUrl,
 } from '../../../tests/e2e/helpers/network-guard.mjs';
 import { isRemoteProfile } from '../../../tests/e2e/helpers/profile.mjs';
+import { ROOT } from '../../../tests/e2e/helpers/env-root.mjs';
 
 describe('network-guard tracker eşleşmesi', () => {
   it('googletagmanager.com/gtm.js engellenir', () => {
@@ -168,5 +176,164 @@ describe('isRemoteProfile türetme', () => {
   it('profile.remote boolean öncelikli', () => {
     assert.equal(isRemoteProfile({ id: 'local', remote: true }), true);
     assert.equal(isRemoteProfile({ id: 'staging-hedef', remote: false, ssh: { alias: 'x' } }), false);
+  });
+
+  it('allowedHosts yalnız 127.0.0.1/localhost ise yerel', () => {
+    assert.equal(isRemoteProfile({ id: 'dev', allowedHosts: ['127.0.0.1', 'localhost'] }), false);
+    assert.equal(isRemoteProfile({ id: 'dev', allowedHosts: ['staging30.hedefdernegi.org'] }), true);
+  });
+});
+
+describe('uzak POST varsayılan-red', () => {
+  const site = 'https://ornek.test';
+
+  it('heartbeat, cartflows, wp-login, update_order_review iptal', () => {
+    const blocked = [
+      { method: 'POST', url: `${site}/wp-admin/admin-ajax.php`, postData: 'action=heartbeat' },
+      {
+        method: 'POST',
+        url: `${site}/wp-admin/admin-ajax.php`,
+        postData: 'action=cartflows_save_cart_abandonment_data',
+      },
+      { method: 'POST', url: `${site}/wp-login.php`, postData: 'log=a&pwd=b' },
+      { method: 'POST', url: `${site}/?wc-ajax=update_order_review`, postData: 'post_data=x' },
+      { method: 'POST', url: `${site}/?wc-ajax=apply_coupon`, postData: 'coupon_code=x' },
+    ];
+    for (const req of blocked) {
+      assert.equal(isRemoteWriteAllowed(req), false, req.url + (req.postData || ''));
+    }
+  });
+
+  it('add_to_cart, store cart, wdp_* geçer', () => {
+    assert.equal(
+      isRemoteWriteAllowed({
+        method: 'POST',
+        url: `${site}/?wc-ajax=add_to_cart`,
+        postData: 'product_id=1',
+      }),
+      true
+    );
+    assert.equal(
+      isRemoteWriteAllowed({
+        method: 'POST',
+        url: `${site}/wp-json/wc/store/v1/cart/add-item`,
+        postData: '{"id":1}',
+      }),
+      true
+    );
+    assert.equal(
+      isRemoteWriteAllowed({
+        method: 'POST',
+        url: `${site}/wp-admin/admin-ajax.php`,
+        postData: 'action=wdp_ajax_add_to_cart&product_id=1',
+      }),
+      true
+    );
+    assert.equal(
+      isRemoteWriteAllowed({
+        method: 'POST',
+        url: `${site}/wp-admin/admin-ajax.php`,
+        postData: 'action=woocommerce_add_to_cart',
+      }),
+      true
+    );
+    assert.equal(
+      isRemoteWriteAllowed({
+        method: 'DELETE',
+        url: `${site}/wp-json/wc/store/v1/cart/items`,
+      }),
+      true
+    );
+  });
+
+  it('batch yalnız tüm istekler cart ise geçer', () => {
+    assert.equal(
+      storeBatchAllCart(
+        JSON.stringify({
+          requests: [{ path: '/wc/store/v1/cart/add-item', method: 'POST' }],
+        })
+      ),
+      true
+    );
+    assert.equal(
+      isRemoteWriteAllowed({
+        method: 'POST',
+        url: `${site}/wp-json/wc/store/v1/batch`,
+        postData: JSON.stringify({
+          requests: [
+            { path: '/wc/store/v1/cart/add-item' },
+            { path: '/wc/store/v1/checkout' },
+          ],
+        }),
+      }),
+      false
+    );
+  });
+
+  it('sepet formu update_cart/remove_item; checkoutPath tam URL', () => {
+    assert.equal(
+      isRemoteWriteAllowed({
+        method: 'POST',
+        url: `${site}/cart/`,
+        postData: 'update_cart=1&cart[abc][qty]=0',
+        cartPath: '/cart/',
+      }),
+      true
+    );
+    assert.equal(
+      isRemoteWriteAllowed({
+        method: 'POST',
+        url: `${site}/sepet/`,
+        postData: 'remove_item=abc',
+        cartPath: 'https://ornek.test/sepet/',
+      }),
+      true
+    );
+    assert.equal(pathFromMaybeUrl('https://ornek.test/odeme/', '/checkout/'), '/odeme');
+    assert.equal(
+      isRemoteOrderRequest({
+        method: 'POST',
+        url: `${site}/odeme/`,
+        postData: 'woocommerce_checkout_place_order=1',
+        checkoutPath: 'https://ornek.test/odeme/',
+      }),
+      true
+    );
+  });
+
+  it('remote_post_blocked anahtarı sorgu dizesi yazmaz, action serbest', () => {
+    const key = remotePostBlockKey(
+      `${site}/wp-admin/admin-ajax.php?action=heartbeat&uid=9`,
+      'action=heartbeat'
+    );
+    assert.equal(key.includes('uid='), false);
+    assert.match(key, /action=heartbeat/);
+    assert.equal(key.includes('?'), false);
+  });
+
+  it('includes/ içindeki wdp_ ajax adları izinli önekle eşleşir', () => {
+    const inc = path.join(ROOT, 'includes');
+    const files = fs.readdirSync(inc).filter((f) => f.endsWith('.php'));
+    const names = new Set();
+    for (const f of files) {
+      const src = fs.readFileSync(path.join(inc, f), 'utf8');
+      const re = /wp_ajax(?:_nopriv)?_(wdp_[a-z0-9_]+)/gi;
+      let m;
+      while ((m = re.exec(src))) names.add(m[1]);
+    }
+    assert.ok(names.has('wdp_ajax_add_to_cart'));
+    assert.ok(names.has('wdp_render_modal'));
+    for (const n of names) {
+      assert.equal(isWdpAjaxAction(n), true, n);
+      assert.equal(
+        isRemoteWriteAllowed({
+          method: 'POST',
+          url: `${site}/wp-admin/admin-ajax.php`,
+          postData: `action=${n}`,
+        }),
+        true,
+        n
+      );
+    }
   });
 });

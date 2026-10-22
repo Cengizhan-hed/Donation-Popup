@@ -16,7 +16,9 @@ import {
   applyNetworkGuard,
   guardOptionsFromEnv,
   resetBlockedTrackers,
+  resetRemotePostBlocked,
   snapshotBlockedTrackers,
+  snapshotRemotePostBlocked,
   consumeOrderBlocks,
 } from './network-guard.mjs';
 import { runMobileA11yChecks } from './mobile-a11y.mjs';
@@ -2514,6 +2516,7 @@ export async function captureAll({
       profileId: profile.id,
       a11yFindings: [],
       blocked_trackers: { total: 0, byHost: {} },
+      remote_post_blocked: { total: 0, byPath: {} },
     };
   }
   let guardOrder = null;
@@ -2569,9 +2572,11 @@ export async function captureAll({
 
   const contextOpts = { ...device.context };
   resetBlockedTrackers();
+  resetRemotePostBlocked();
   const browser = await device.browserType.launch();
   installBrowserGuard(browser, env, {
     checkoutPath: checkoutEnv?.checkoutUrl || '/checkout/',
+    cartPath: checkoutEnv?.cartUrl || '/cart/',
   });
   const guest = await asVisitor(browser, env, contextOpts);
   const authed = await asAdmin(browser, env, contextOpts);
@@ -3918,6 +3923,7 @@ export async function captureAll({
   }
 
   const blockedTrackers = snapshotBlockedTrackers();
+  const remotePostBlocked = snapshotRemotePostBlocked();
 
   return {
     shots,
@@ -3936,5 +3942,6 @@ export async function captureAll({
     profileId: profile.id,
     a11yFindings,
     blocked_trackers: blockedTrackers,
+    remote_post_blocked: remotePostBlocked,
   };
 }

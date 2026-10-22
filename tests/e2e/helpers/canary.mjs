@@ -4,6 +4,7 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
+import { spawnSync } from 'node:child_process';
 import { ROOT } from './env-root.mjs';
 import { loadDeployEnvSilent, remote, resolveWpPath } from './wp-remote.mjs';
 import { loadRegistry } from './run-registry.mjs';
@@ -51,6 +52,26 @@ export function parseSnapshotOutput(raw) {
   }
 }
 
+/**
+ * Yerel WP kanarya (SSH yok).
+ */
+export function snapshotCanaryLocal() {
+  const bridge = path.join(ROOT, 'tests/local-wp/eval-file.php');
+  const r = spawnSync('php', [bridge, CANARY_SNAPSHOT_FILE], {
+    encoding: 'utf8',
+    cwd: ROOT,
+    timeout: 120000,
+  });
+  if (r.status !== 0) {
+    throw new Error(`canary local: ${(r.stderr || r.stdout || '').slice(0, 400)}`);
+  }
+  const snap = parseSnapshotOutput(r.stdout);
+  if (!snap || !Array.isArray(snap.posts) || !snap.options) {
+    throw new Error('canary local: anlık görüntü eksik (posts/options)');
+  }
+  return snap;
+}
+
 export function snapshotCanary() {
   if (snapshotOverride) return snapshotOverride();
   const loaded = loadDeployEnvSilent();
@@ -85,6 +106,12 @@ export function compareCanary(before, after, opts = {}) {
   const allowedCreated = new Set((opts.allowedCreatedIds || []).map((n) => Number(n)).filter((n) => n > 0));
   const mutated = new Set((opts.mutatedIds || []).map((n) => Number(n)).filter((n) => n > 0));
   const diffs = [];
+  const allowedNewProducts = [...(after.posts || [])].filter(
+    (a) =>
+      allowedCreated.has(Number(a.id)) &&
+      !(before.posts || []).some((b) => Number(b.id) === Number(a.id)) &&
+      String(a.type) === 'product'
+  ).length;
   const beforeMap = new Map((before.posts || []).map((p) => [Number(p.id), p]));
   const afterMap = new Map((after.posts || []).map((p) => [Number(p.id), p]));
   const ids = new Set([...beforeMap.keys(), ...afterMap.keys()]);
@@ -126,9 +153,9 @@ export function compareCanary(before, after, opts = {}) {
   for (const countKey of ['user_count', 'attachment_count', 'page_count', 'product_count']) {
     const left = Number(before[countKey] ?? 0);
     const right = Number(after[countKey] ?? 0);
-    if (left !== right) {
-      diffs.push({ option: countKey, change: 'count', from: String(left), to: String(right) });
-    }
+    if (left === right) continue;
+    if (countKey === 'product_count' && right - left === allowedNewProducts) continue;
+    diffs.push({ option: countKey, change: 'count', from: String(left), to: String(right) });
   }
   return { ok: diffs.length === 0, diffs };
 }

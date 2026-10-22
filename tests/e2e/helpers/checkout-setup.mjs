@@ -21,6 +21,18 @@ export function readCheckoutUrl() {
 }
 
 /**
+ * @returns {string}
+ */
+export function readCartUrl() {
+  const loaded = loadDeployEnvSilent();
+  if (!loaded.ok) return '/cart/';
+  const raw = wp(
+    `wp eval 'echo function_exists("wc_get_cart_url") ? wc_get_cart_url() : "";'`
+  );
+  return String(raw || '').trim() || '/cart/';
+}
+
+/**
  * @param {string} checkoutUrl
  * @param {string} baseUrl
  */
@@ -83,6 +95,7 @@ function setChequeEnabled() {
  * Ikram / allowMetaMutation=false: yazma yok.
  * @returns {Promise<{
  *   checkoutUrl: string,
+ *   cartUrl: string,
  *   offline: {id:string,title:string}|null,
  *   mutated: boolean,
  *   restore: () => void,
@@ -92,6 +105,7 @@ function setChequeEnabled() {
 export async function prepareCheckoutEnv() {
   const profile = peekActiveProfile() || getActiveProfile();
   const checkoutUrl = readCheckoutUrl();
+  const cartUrl = readCartUrl();
   const gateways = listPaymentGateways();
   const existing = pickOfflineGateway(gateways);
   /** @type {Array<() => void>} */
@@ -110,6 +124,7 @@ export async function prepareCheckoutEnv() {
   const remote = isRemoteProfile(profile);
   return {
     checkoutUrl,
+    cartUrl,
     offline: existing ? { id: existing.id, title: existing.title || existing.id } : null,
     mutated: false,
     restore,

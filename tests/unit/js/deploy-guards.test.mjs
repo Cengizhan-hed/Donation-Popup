@@ -12,9 +12,16 @@ import {
   hasBlockedHedefMention,
   assertRemoteTarget,
   checkRemoteTarget,
+  inspectRemoteCommand,
+  plannedRemoteCommands,
   IKRAM_ALLOW_REMOVAL_NOTE,
   ALLOWED_DEPLOY_TARGETS,
 } from '../../../scripts/lib/deploy-guards.mjs';
+import {
+  DISCOVER_STEPS,
+  buildRemoteWpCommand,
+  stepToWpTail,
+} from '../../../scripts/lib/remote-discover-lib.mjs';
 
 const STAGING = {
   alias: 'hedef-staging',
@@ -216,5 +223,97 @@ describe('deploy-guards', () => {
   it('parses plugin version', () => {
     const src = ` * Version: 10.28.4\n define('WDP_VERSION', '10.28.4');`;
     assert.equal(parsePluginVersion(src), '10.28.4');
+  });
+
+  it('RED: cd ../.. kaçışı (izinli köke girdikten sonra)', () => {
+    const r = checkRemoteTarget({
+      ...STAGING,
+      remoteCommand: `cd ${STAGING.wpPath} && cd ../.. && ls`,
+    });
+    assert.equal(r.ok, false);
+    assert.match(r.reason, /\.\.|cd/i);
+  });
+
+  it('RED: cd …/public_html/../../ + wp --path', () => {
+    const r = checkRemoteTarget({
+      ...STAGING,
+      remoteCommand: `cd ${STAGING.wpPath}/../../ && wp --path=${STAGING.wpPath} option get x`,
+    });
+    assert.equal(r.ok, false);
+    assert.match(r.reason, /\.\./);
+  });
+
+  it('RED: wp --path doğru; cd ~ && ls www', () => {
+    const r = checkRemoteTarget({
+      ...STAGING,
+      remoteCommand: `wp --path=${STAGING.wpPath} eval "echo 1;" ; cd ~ && ls www`,
+    });
+    assert.equal(r.ok, false);
+    assert.match(r.reason, /cd|ls ~/i);
+  });
+
+  it('RED: pushd/popd, ln -s, find /, ls ~, ls /', () => {
+    const cases = [
+      `pushd ${STAGING.wpPath}`,
+      `popd`,
+      `ln -s /tmp/x ${STAGING.wpPath}/x`,
+      `find / -name wp-config.php`,
+      `ls ~`,
+      `ls /`,
+      `cd`,
+      `cd -`,
+      `cd $HOME`,
+      `cd ${STAGING.wpPath}/../other`,
+    ];
+    for (const remoteCommand of cases) {
+      const r = checkRemoteTarget({ ...STAGING, remoteCommand });
+      assert.equal(r.ok, false, remoteCommand);
+    }
+  });
+
+  it('Ikram: aynı kaçışlar RED; izinli wp --path geçer', () => {
+    assert.equal(
+      checkRemoteTarget({
+        ...IKRAM,
+        remoteCommand: `cd ${IKRAM.wpPath} && cd ../.. && ls`,
+      }).ok,
+      false
+    );
+    assert.equal(
+      checkRemoteTarget({
+        ...IKRAM,
+        remoteCommand: `wp eval 'echo 1;' --path='${IKRAM.wpPath}'`,
+      }).ok,
+      true
+    );
+    const lsHome = inspectRemoteCommand('ls ~', IKRAM.wpPath);
+    assert.equal(lsHome.ok, false);
+  });
+
+  it('deploy/discover/ikram-wp/staging-wp dry-run komutları kilitten geçer', () => {
+    for (const target of ALLOWED_DEPLOY_TARGETS) {
+      const cmds = plannedRemoteCommands(target);
+      assert.ok(cmds.length > 8, target.id);
+      for (const remoteCommand of cmds) {
+        const r = checkRemoteTarget({
+          alias: target.sshAlias,
+          wpPath: target.wpPath,
+          siteUrl: target.siteUrl,
+          remoteCommand,
+        });
+        assert.equal(r.ok, true, `${target.id}: ${r.reason || ''} :: ${remoteCommand.slice(0, 120)}`);
+      }
+      for (const step of DISCOVER_STEPS) {
+        if (step.kind !== 'eval') continue;
+        const remoteCommand = buildRemoteWpCommand(target.wpPath, stepToWpTail(step));
+        const r = checkRemoteTarget({
+          alias: target.sshAlias,
+          wpPath: target.wpPath,
+          siteUrl: target.siteUrl,
+          remoteCommand,
+        });
+        assert.equal(r.ok, true, `discover ${step.id}: ${r.reason || ''}`);
+      }
+    }
   });
 });

@@ -214,6 +214,217 @@ function deny(reason) {
 }
 
 /**
+ * Kabuk parçalarını `&&` `||` `;` `|` satır sonuna göre ayır.
+ * @param {string} cmd
+ * @returns {string[]}
+ */
+export function splitRemoteCommandSegments(cmd) {
+  return String(cmd || '')
+    .split(/\n|&&|\|\||;(?![^']*')|\|(?!\|)/)
+    .map((s) => s.replace(/^\(+/, '').replace(/\)+$/, '').trim())
+    .filter(Boolean);
+}
+
+/**
+ * @param {string} raw
+ */
+function unquoteShellArg(raw) {
+  const t = String(raw || '').trim();
+  if (t.length >= 2 && ((t.startsWith("'") && t.endsWith("'")) || (t.startsWith('"') && t.endsWith('"')))) {
+    return t.slice(1, -1);
+  }
+  return t;
+}
+
+/**
+ * `cd` hedefi: göreli, `~`, `-`, `$HOME`, boş, `..` → RED.
+ * Değişken/`$(dirname …)` (wp --path ile sınırlı) izinli.
+ * @param {string} arg
+ * @param {string} allowedRoot
+ */
+function inspectCdTarget(arg, allowedRoot) {
+  const raw = String(arg || '').trim();
+  if (!raw || raw === '-' || raw === '~' || raw === '$HOME' || raw === '~/' || raw === '$HOME/') {
+    return deny('cd hedefi izinli kök dışında (cd, cd ~, cd -, cd $HOME yasak).');
+  }
+  const first = unquoteShellArg(raw.split(/\s+/)[0] || raw);
+  if (!first || first === '-' || first === '~' || first === '$HOME' || first === '~/' || first === '$HOME/') {
+    return deny('cd hedefi izinli kök dışında (cd, cd ~, cd -, cd $HOME yasak).');
+  }
+  if (first.includes('..')) {
+    return deny('Yol `..` içeremez.');
+  }
+  if (first.startsWith('$') || first.startsWith('"') || /\$\{|\$\(/.test(first)) {
+    return { ok: true };
+  }
+  const looksAbs = first.startsWith('/') || first.startsWith('~/') || first.startsWith('$HOME');
+  if (!looksAbs) {
+    return deny('göreli cd yasak.');
+  }
+  if (!pathInsideAllowedRoot(first, allowedRoot)) {
+    return deny('Yol izinli kökün dışında.');
+  }
+  return { ok: true };
+}
+
+/**
+ * Mutlak / `~` / `$HOME` adayını izinli köke göre denetle.
+ * `/tmp/wdp-*` (eval-file mktemp) istisna.
+ * @param {string} rawPath
+ * @param {string} allowedRoot
+ */
+function inspectAbsoluteOrHomePath(rawPath, allowedRoot) {
+  const p = unquoteShellArg(rawPath);
+  if (!p) return { ok: true };
+  if (/^\/tmp\/wdp-/.test(p) || p === '/tmp' || /^\/tmp\/wdp-/.test(String(rawPath))) {
+    return { ok: true };
+  }
+  if (p.startsWith('$') || /\$\{|\$\(/.test(p)) return { ok: true };
+  const looks =
+    p.startsWith('/') || p.startsWith('~/') || p === '~' || p.startsWith('$HOME') || p.startsWith('/home/');
+  if (!looks) return { ok: true };
+  if (p === '~' || p === '$HOME' || p === '/' || p === '/home' || p === '/home/') {
+    return deny('Yol izinli kökün dışında.');
+  }
+  const inspected = inspectRemotePath(p);
+  if (!inspected.ok) return inspected;
+  if (!pathInsideAllowedRoot(p, allowedRoot)) {
+    return deny('Yol izinli kökün dışında.');
+  }
+  return { ok: true };
+}
+
+/**
+ * Uzak komut metni: `..`, cd, pushd/popd, ln -s, find /, ls ~, ls /.
+ *
+ * @param {string} cmd
+ * @param {string} allowedRoot
+ * @returns {{ ok: true } | { ok: false, reason: string }}
+ */
+export function inspectRemoteCommand(cmd, allowedRoot) {
+  const s = String(cmd || '');
+  if (!s) return { ok: true };
+
+  if (/(?:^|[/'"`\s=])\.\.(?:[/'"`\s]|$)/.test(s) || s.includes('/..') || s.includes('../')) {
+    return deny('Yol `..` içeremez.');
+  }
+  if (/(?:^|[\s;|&`(])(?:pushd|popd)(?:\s|$)/.test(s)) {
+    return deny('pushd/popd yasak.');
+  }
+  if (/(?:^|[\s;|&`(])ln\s+-[^\n]*s/.test(s)) {
+    return deny('ln -s yasak.');
+  }
+  if (/(?:^|[\s;|&`(])find\s+(?:-[A-Za-z0-9=]+\s+)*\//.test(s)) {
+    return deny('find / yasak.');
+  }
+
+  const lsHome = /(?:^|[\s;|&`(])ls(?:\s+-[A-Za-z0-9]+)*\s+(~|\$HOME|\/)(?=\s|$)/;
+  if (lsHome.test(s)) {
+    return deny('ls ~ veya ls / yasak.');
+  }
+
+  const segments = splitRemoteCommandSegments(s);
+  for (const seg of segments) {
+    const cdMatch = seg.match(/^(?:\(+\s*)?cd(?:\s+(.*))?$/);
+    if (cdMatch) {
+      const r = inspectCdTarget(cdMatch[1] || '', allowedRoot);
+      if (!r.ok) return r;
+    }
+
+    const lsMatch = seg.match(/^(?:\(+\s*)?ls(?:\s+-[A-Za-z0-9]+)*\s+(\S[\s\S]*)$/);
+    if (lsMatch) {
+      const arg = unquoteShellArg(String(lsMatch[1]).trim().split(/\s+/)[0] || '');
+      if (arg === '~' || arg === '$HOME' || arg === '/' || arg === '/home') {
+        return deny('ls ~ veya ls / yasak.');
+      }
+      const abs = inspectAbsoluteOrHomePath(arg, allowedRoot);
+      if (!abs.ok) return abs;
+    }
+  }
+
+  return { ok: true };
+}
+
+/**
+ * Betiklerin ürettiği gerçek uzak komut kalıpları (ağ yok; dry-run üretimi).
+ * @param {RemoteTarget} target
+ * @returns {string[]}
+ */
+export function plannedRemoteCommands(target) {
+  const t = target || {};
+  const wp = String(t.wpPath || '').replace(/'/g, `'\\''`);
+  const root = String(t.allowedRoot || '').replace(/\/$/, '');
+  const backupRoot = `${root}/wdp-backups`;
+  const deployRoot = `${root}/wdp-deploy`;
+  const slug = 'woo-donation-popup';
+  const backupZip = `${backupRoot}/${slug}-pre-x.zip`;
+  const list = [
+    `wp option get siteurl --path='${wp}'`,
+    `wp eval 'echo 1;' --path='${wp}'`,
+    `echo ${t.wpPath}`,
+    `mkdir -p '${backupRoot}' '${deployRoot}'`,
+    `ls -1t '${backupRoot}' 2>/dev/null | head -n 1`,
+    `wp plugin get ${slug} --field=version --path='${wp}'`,
+    `wp plugin activate ${slug} --path='${wp}'`,
+    `wp plugin path ${slug} --dir --path='${wp}' 2>/dev/null || echo '${wp}/wp-content/plugins/${slug}'`,
+    `(wp sg purge --path='${wp}' 2>/dev/null || wp cache flush --path='${wp}')`,
+    `LOG='${wp}/wp-content/debug.log'; if [ -f "$LOG" ]; then tail -n 80 "$LOG"; else echo "debug.log yok"; fi`,
+    [
+      `TMP=$(mktemp /tmp/wdp-disc-XXXX.php)`,
+      `echo 'YmFzZTY0' | base64 -d > "$TMP"`,
+      `wp eval-file "$TMP" --path='${wp}'`,
+      `EC=$?`,
+      `rm -f "$TMP"`,
+      `exit $EC`,
+    ].join('\n'),
+    [
+      `TMP=$(mktemp /tmp/wdp-read-XXXX.php)`,
+      `echo 'YmFzZTY0' | base64 -d > "$TMP"`,
+      `wp eval-file "$TMP" --path='${wp}'`,
+      `EC=$?`,
+      `rm -f "$TMP"`,
+      `exit $EC`,
+    ].join('\n'),
+    [
+      `TMP=$(mktemp /tmp/wdp-canary-XXXX.php)`,
+      `echo 'YmFzZTY0' | base64 -d > "$TMP"`,
+      `wp eval-file "$TMP" --path='${wp}'`,
+      `EC=$?`,
+      `rm -f "$TMP"`,
+      `exit $EC`,
+    ].join('\n'),
+    [
+      `TMP=$(mktemp /tmp/wdp-cleanup-XXXX.php)`,
+      `echo 'YmFzZTY0' | base64 -d > "$TMP"`,
+      `wp eval-file "$TMP" cleanup --path='${wp}'`,
+      `EC=$?`,
+      `rm -f "$TMP"`,
+      `exit $EC`,
+    ].join('\n'),
+    [
+      `PLUGIN_DIR=$(wp plugin path ${slug} --path='${wp}' 2>/dev/null || true)`,
+      `if [ -n "$PLUGIN_DIR" ] && [ -d "$PLUGIN_DIR" ]; then`,
+      `  (cd "$(dirname "$PLUGIN_DIR")" && zip -qr '${backupZip}' "$(basename "$PLUGIN_DIR")")`,
+      `  ls -1t '${backupRoot}' 2>/dev/null | tail -n +4 | while read -r f; do rm -f '${backupRoot}'/"$f"; done`,
+      `fi`,
+    ].join('\n'),
+    [
+      `DIR='${wp}/wp-content/plugins/${slug}'`,
+      `echo "plugin_dir=$DIR"`,
+      `if [ -d "$DIR" ]; then echo "is_dir=1"; else echo "is_dir=0"; fi`,
+      `if [ -f "$DIR/${slug}.php" ]; then echo "has_main=1"; else echo "has_main=0"; fi`,
+      `echo -n "file_count="`,
+      `if [ -d "$DIR" ]; then find "$DIR" -type f | wc -l | tr -d ' '; else echo 0; fi`,
+    ].join('\n'),
+    `wp eval 'if (class_exists("WDP_Migrations")) { WDP_Migrations::maybe_run(); }' --path='${wp}'`,
+    `(wp sg purge --path='${wp}' 2>/dev/null || true; wp cache flush --path='${wp}' 2>/dev/null || true; wp eval 'if (function_exists("wp_cache_flush")) { wp_cache_flush(); } if (class_exists("WDP_Donations_List")) { WDP_Donations_List::reset_bump_guard(); WDP_Donations_List::bump_cache(); }' --path='${wp}')`,
+    `wp plugin install '${deployRoot}/${slug}-x.zip' --force --activate --path='${wp}'`,
+    `rm -f '${deployRoot}/${slug}-x.zip'`,
+  ];
+  return list;
+}
+
+/**
  * Alias + wpPath + siteUrl üçlüsü ve komut içi yollar.
  *
  * @param {{
@@ -274,6 +485,11 @@ export function checkRemoteTarget(opts = {}) {
     if (!pathInsideAllowedRoot(cand, target.allowedRoot)) {
       return deny('Yol izinli kökün dışında.');
     }
+  }
+
+  if (remoteCommand) {
+    const cmdInspect = inspectRemoteCommand(remoteCommand, target.allowedRoot);
+    if (!cmdInspect.ok) return cmdInspect;
   }
 
   if (remoteCommand && isWpCliRemoteCommand(remoteCommand)) {
