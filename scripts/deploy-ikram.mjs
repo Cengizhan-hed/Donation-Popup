@@ -17,6 +17,7 @@ import { fileURLToPath } from 'node:url';
 import dotenv from 'dotenv';
 import {
   IKRAM_ALLOW_REMOVAL_NOTE,
+  findTargetByAlias,
   parsePluginVersion,
   validateDeployEnv,
   validateRemoteSiteUrl,
@@ -42,16 +43,22 @@ function loadDeployEnv() {
     fail('Eksik .env.deploy.ikram (şablon: .env.deploy.ikram.example).');
   }
   const parsed = dotenv.parse(fs.readFileSync(envPath));
+  const alias = String(parsed.DEPLOY_SSH_ALIAS || 'ikramaid').trim();
+  const listed = findTargetByAlias(alias);
+  const envWp = String(parsed.DEPLOY_WP_PATH || '').trim();
+  const envUrl = String(parsed.DEPLOY_SITE_URL || '').trim().replace(/\/$/, '');
+  if (listed) {
+    if (envWp && envWp !== listed.wpPath) fail('eşleşmiyor');
+    if (envUrl && envUrl !== listed.siteUrl) fail('eşleşmiyor');
+  }
   return {
-    DEPLOY_SSH_ALIAS: String(parsed.DEPLOY_SSH_ALIAS || 'ikramaid').trim(),
+    DEPLOY_SSH_ALIAS: alias,
     DEPLOY_SSH_HOST: String(parsed.DEPLOY_SSH_HOST || '').trim(),
     DEPLOY_SSH_USER: String(parsed.DEPLOY_SSH_USER || '').trim(),
     DEPLOY_SSH_PORT: String(parsed.DEPLOY_SSH_PORT || '').trim(),
     DEPLOY_SSH_KEY: String(parsed.DEPLOY_SSH_KEY || '').trim(),
-    DEPLOY_WP_PATH: String(parsed.DEPLOY_WP_PATH || '~/www/ikramaid.uk/public_html').trim(),
-    DEPLOY_SITE_URL: String(parsed.DEPLOY_SITE_URL || 'https://ikramaid.uk')
-      .trim()
-      .replace(/\/$/, ''),
+    DEPLOY_WP_PATH: envWp || listed?.wpPath || '',
+    DEPLOY_SITE_URL: envUrl || listed?.siteUrl || '',
   };
 }
 
@@ -89,6 +96,7 @@ function run(cmd, args, opts = {}, guardOpts = {}) {
 function remote(env, remoteCmd) {
   const args = sshArgs(env);
   return run('ssh', [...args, remoteCmd], {}, {
+    alias: env?.DEPLOY_SSH_ALIAS,
     siteUrl: env?.DEPLOY_SITE_URL,
     wpPath: env?.DEPLOY_WP_PATH,
   });
@@ -124,6 +132,7 @@ function rsyncTo(env, localDir, remoteDir, dry) {
   if (dry) args.unshift('-n', '--itemize-changes');
   args.push(src, dest);
   const out = run('rsync', args, { stdio: dry ? 'pipe' : 'inherit' }, {
+    alias: env?.DEPLOY_SSH_ALIAS,
     siteUrl: env?.DEPLOY_SITE_URL,
     wpPath: env?.DEPLOY_WP_PATH,
   });
@@ -180,17 +189,19 @@ function main() {
   const urlGuard = validateRemoteSiteUrl(siteCheck, env.DEPLOY_SITE_URL);
   if (!urlGuard.ok) fail(urlGuard.reason);
 
-  const home = remote(env, 'echo $HOME').replace(/'/g, `'\\''`);
-  const backupRoot = `${home}/wdp-backups`;
+  const listed = findTargetByAlias(env.DEPLOY_SSH_ALIAS);
+  const siteRoot = String(listed?.allowedRoot || '').replace(/\/$/, '');
+  const backupRoot = `${siteRoot}/wdp-backups`;
   const stamp = new Date().toISOString().replace(/[:.]/g, '-');
 
   if (ROLLBACK) {
     if (DRY_RUN) fail('--rollback ile --dry-run birlikte olmaz.');
     console.log('Ikram geri alma…');
-    const latest = remote(
+    const latestName = remote(
       env,
-      `ls -1t '${backupRoot}'/${PLUGIN_SLUG}-*.zip 2>/dev/null | head -n 1`
+      `ls -1t '${backupRoot}' 2>/dev/null | head -n 1`
     );
+    const latest = latestName ? `${backupRoot}/${latestName}` : '';
     if (!latest) fail('Geri alınacak yedek bulunamadı.');
     remote(
       env,
@@ -254,7 +265,7 @@ function main() {
       `PLUGIN_DIR='${pluginDirEsc}'`,
       `if [ -d "$PLUGIN_DIR" ]; then`,
       `  (cd "$(dirname "$PLUGIN_DIR")" && zip -qr '${backupZip}' "$(basename "$PLUGIN_DIR")")`,
-      `  ls -1t '${backupRoot}'/${PLUGIN_SLUG}-*.zip 2>/dev/null | tail -n +4 | while read -r f; do rm -f "$f"; done`,
+      `  ls -1t '${backupRoot}' 2>/dev/null | tail -n +4 | while read -r f; do rm -f '${backupRoot}'/"$f"; done`,
       `fi`,
       `mkdir -p "$PLUGIN_DIR"`,
     ].join('\n')

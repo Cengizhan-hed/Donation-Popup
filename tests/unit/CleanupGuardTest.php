@@ -128,7 +128,7 @@ class CleanupGuardTest extends TestCase {
 	}
 
 	public function test_undefined_email_needle_bug_does_not_match_all() {
-		$email = 'admin@hedefdernegi.org';
+		$email = 'admin@example.org';
 		$undefined = null;
 		$search = '*' . $undefined;
 		$this->assertSame('*', $search);

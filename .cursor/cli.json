@@ -1,0 +1,28 @@
+{
+  "permissions": {
+    "allow": [],
+    "deny": [
+      "Shell(ssh)",
+      "Shell(scp)",
+      "Shell(sftp)",
+      "Shell(rsync)",
+      "Shell(curl)",
+      "Shell(wget)",
+      "Shell(nc)",
+      "Shell(telnet)",
+      "Shell(ftp)",
+      "Shell(npm:run ship:*)",
+      "Shell(npm:run deploy:*)",
+      "Shell(npm:run ikram:wp)",
+      "Shell(npm:run staging:wp)",
+      "Read(.env*)",
+      "Read(**/.env*)",
+      "Read(tests/e2e/.auth/**)",
+      "Read(**/*.pem)",
+      "Read(**/*.key)",
+      "Write(.env*)",
+      "Write(**/.env*)",
+      "Write(.cursor/cli.json)"
+    ]
+  }
+}

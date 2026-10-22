@@ -10,7 +10,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadDeployEnvSilent, remote, resolveWpPath, setActiveDeployEnvFile } from '../tests/e2e/helpers/wp-remote.mjs';
 import { TRASH_REPORT_EVAL_FILE } from './lib/ikram-wp-guard.mjs';
-import { RETIRED_HEDEF_STAGING_NOTE, validateRemoteSiteUrl } from './lib/deploy-guards.mjs';
+import { validateRemoteSiteUrl } from './lib/deploy-guards.mjs';
 import { assertRemoteAllowed } from './lib/remote-guard.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -54,7 +54,6 @@ function main() {
   const loaded = loadDeployEnvSilent();
   if (!loaded.ok) fail(`staging:wp: ${loaded.reason}`);
   const env = loaded.env;
-  fail(RETIRED_HEDEF_STAGING_NOTE);
   const wpPath = resolveWpPath(env);
   const siteCheck = remote(env, `wp option get siteurl --path='${wpPath.replace(/'/g, `'\\''`)}'`);
   const urlGuard = validateRemoteSiteUrl(siteCheck, env.DEPLOY_SITE_URL);

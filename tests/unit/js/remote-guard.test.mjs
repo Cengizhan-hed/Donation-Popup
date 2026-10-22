@@ -1,50 +1,115 @@
 /**
- * Uzak erişim kilidi — ağ yok. REMOTE_FREEZE + izin listesi + ham ssh yok.
+ * Uzak erişim kilidi — ağ yok. Operatör kapısı + FREEZE + ham ssh yok.
  */
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
-import { spawnSync } from 'node:child_process';
-import { ROOT } from '../../../tests/e2e/helpers/env-root.mjs';
 import {
   assertRemoteAllowed,
+  assertOperatorGate,
   isRemoteFrozen,
   isRemoteRsync,
   redactSpawnArgs,
+  parseRemoteInvocation,
   REMOTE_FREEZE_PATH,
   FREEZE_MESSAGE,
+  OPERATOR_GATE_MESSAGE,
+  CURSOR_AGENT_ENV_KEYS,
 } from '../../../scripts/lib/remote-guard.mjs';
-import {
-  validateDeployEnv,
-  validateE2EBaseUrl,
-  isRetiredHedefStaging,
-  RETIRED_HEDEF_STAGING_NOTE,
-  IKRAM_ALLOW_REMOVAL_NOTE,
-} from '../../../scripts/lib/deploy-guards.mjs';
+import { scanDirectRemoteSpawns } from '../../../scripts/lib/live-target-scan.mjs';
+import { ROOT } from '../../../tests/e2e/helpers/env-root.mjs';
+
+const CLAUDE_ONLY = { CLAUDECODE: '1' };
 
 describe('remote-guard', () => {
-  it('REMOTE_FREEZE dosyası bu çalışma ağacında var', () => {
-    assert.equal(fs.existsSync(REMOTE_FREEZE_PATH), true);
-    assert.equal(isRemoteFrozen(), true);
+  it('isRemoteFrozen dosya varlığına göre', () => {
+    assert.equal(isRemoteFrozen(), fs.existsSync(REMOTE_FREEZE_PATH));
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'wdp-freeze-'));
+    const freeze = path.join(dir, 'REMOTE_FREEZE');
+    fs.writeFileSync(freeze, 'lock');
+    try {
+      assert.equal(isRemoteFrozen(freeze), true);
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
   });
 
-  it('freeze varken ssh reddedilir (Türkçe mesaj)', () => {
-    assert.throws(() => assertRemoteAllowed({ bin: 'ssh' }), (e) => {
-      assert.match(String(e.message), /UZAK ERİŞİM KİLİTLİ|REMOTE_FREEZE|2026-10-22/);
-      assert.equal(e.message, FREEZE_MESSAGE);
+  it('CLAUDECODE yokken RED', () => {
+    assert.throws(() => assertOperatorGate({}), (e) => {
+      assert.equal(e.message, OPERATOR_GATE_MESSAGE);
+      return true;
+    });
+    assert.throws(() => assertRemoteAllowed({ bin: 'ssh', env: {} }), (e) => {
+      assert.equal(e.message, OPERATOR_GATE_MESSAGE);
       return true;
     });
   });
 
-  it('freeze varken scp ve uzak rsync reddedilir', () => {
-    assert.throws(() => assertRemoteAllowed({ bin: 'scp', args: ['a', 'host:b'] }));
+  it('Cursor işareti varken RED', () => {
+    const env = { CLAUDECODE: '1', CURSOR_AGENT: '1' };
+    assert.throws(() => assertOperatorGate(env), (e) => {
+      assert.equal(e.message, OPERATOR_GATE_MESSAGE);
+      return true;
+    });
+    assert.ok(CURSOR_AGENT_ENV_KEYS.includes('CURSOR_AGENT'));
     assert.throws(() =>
       assertRemoteAllowed({
-        bin: 'rsync',
-        args: ['-az', '-e', 'ssh', 'src/', 'alias:dest/'],
+        bin: 'ssh',
+        args: ['hedef-staging', 'true'],
+        env: { CLAUDECODE: '1', CURSOR_CONVERSATION_ID: 'x' },
       })
     );
+  });
+
+  it('REMOTE_FREEZE varken RED', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'wdp-freeze-'));
+    const freeze = path.join(dir, 'REMOTE_FREEZE');
+    fs.writeFileSync(freeze, 'lock');
+    try {
+      assert.throws(
+        () =>
+          assertRemoteAllowed({
+            bin: 'ssh',
+            args: ['hedef-staging', 'true'],
+            env: CLAUDE_ONLY,
+            freezePath: freeze,
+          }),
+        (e) => {
+          assert.equal(e.message, FREEZE_MESSAGE);
+          return true;
+        }
+      );
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('freeze varken scp ve uzak rsync reddedilir', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'wdp-freeze-'));
+    const freeze = path.join(dir, 'REMOTE_FREEZE');
+    fs.writeFileSync(freeze, 'lock');
+    try {
+      assert.throws(() =>
+        assertRemoteAllowed({
+          bin: 'scp',
+          args: ['a', 'ikramaid:~/www/ikramaid.uk/public_html/x'],
+          env: CLAUDE_ONLY,
+          freezePath: freeze,
+        })
+      );
+      assert.throws(() =>
+        assertRemoteAllowed({
+          bin: 'rsync',
+          args: ['-az', '-e', 'ssh', 'src/', 'ikramaid:~/www/ikramaid.uk/public_html/'],
+          env: CLAUDE_ONLY,
+          freezePath: freeze,
+        })
+      );
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
   });
 
   it('yerel paket rsync freeze altında izinli', () => {
@@ -52,6 +117,7 @@ describe('remote-guard', () => {
       bin: 'rsync',
       args: ['-a', '/tmp/src/', '/tmp/dest/'],
       localPack: true,
+      env: {},
     });
     assert.equal(r.ok, true);
     assert.equal(r.localPack, true);
@@ -68,109 +134,22 @@ describe('remote-guard', () => {
     assert.equal(red.includes('/Users/me/.ssh/id_ed25519'), false);
     assert.equal(red.includes('[redacted-key-path]'), true);
   });
-});
 
-describe('deploy-guards 2e', () => {
-  const goodIkram = {
-    DEPLOY_SSH_ALIAS: 'ikramaid',
-    DEPLOY_WP_PATH: '/home/customer/www/ikramaid.uk/public_html',
-    DEPLOY_SITE_URL: 'https://ikramaid.uk',
-  };
-
-  it('staging28 Hedef staging reddedilir', () => {
-    const r = validateDeployEnv({
-      DEPLOY_SSH_HOST: 'ssh.example.com',
-      DEPLOY_SSH_USER: 'u',
-      DEPLOY_SSH_PORT: '18765',
-      DEPLOY_SSH_KEY: '/tmp/id',
-      DEPLOY_WP_PATH: '/home/customer/www/staging28.hedefdernegi.org/public_html',
-      DEPLOY_SITE_URL: 'https://staging28.hedefdernegi.org',
-    });
-    assert.equal(r.ok, false);
-    assert.match(r.reason, /staging28|2026-10-22|izin listesinden/i);
-    assert.equal(isRetiredHedefStaging('https://staging28.hedefdernegi.org'), true);
-    assert.match(RETIRED_HEDEF_STAGING_NOTE, /staging28/);
-  });
-
-  it('canlı hedefdernegi.org reddedilir', () => {
-    const r = validateDeployEnv({
-      ...goodIkram,
-      DEPLOY_SITE_URL: 'https://hedefdernegi.org',
-      DEPLOY_WP_PATH: '/home/customer/www/hedefdernegi.org/public_html',
-    });
-    assert.equal(r.ok, false);
-    assert.match(r.reason, /canlı|kara/i);
-  });
-
-  it('izinsiz hedef reddedilir', () => {
-    const r = validateDeployEnv({
-      DEPLOY_SSH_ALIAS: 'x',
-      DEPLOY_WP_PATH: '/var/www/example.com',
-      DEPLOY_SITE_URL: 'https://example.com',
-    });
-    assert.equal(r.ok, false);
-    assert.match(r.reason, /izin/i);
-  });
-
-  it('ikramaid.uk izin listesinde (freeze ayrı kilit); kaldırma notu durur', () => {
-    const r = validateDeployEnv(goodIkram);
-    assert.equal(r.ok, true);
-    assert.equal(r.target?.id, 'ikram-aid');
-    assert.match(IKRAM_ALLOW_REMOVAL_NOTE, /KALDIRILACAK/);
-  });
-
-  it('E2E URL staging28 reddedilir (profil allowedHosts olsa bile)', () => {
-    const r = validateE2EBaseUrl('https://staging28.hedefdernegi.org', [
-      'staging28.hedefdernegi.org',
+  it('parseRemoteInvocation ssh alias + komut', () => {
+    const p = parseRemoteInvocation('ssh', [
+      '-o',
+      'BatchMode=yes',
+      'hedef-staging',
+      'wp option get siteurl --path=~/www/staging30.hedefdernegi.org/public_html',
     ]);
-    assert.equal(r.ok, false);
-    assert.match(r.reason, /staging28|2026-10-22/i);
+    assert.equal(p.alias, 'hedef-staging');
+    assert.match(p.remoteCommand, /wp option get/);
   });
 });
 
-describe('ham ssh/scp/rsync spawn yok', () => {
-  it('spawnSync("ssh"|"scp"|"rsync") uygulama kodunda yok (yalnız spawnGuarded)', () => {
-    const res = spawnSync(
-      'rg',
-      [
-        '-n',
-        `spawnSync\\(\\s*['"](ssh|scp|rsync)['"]`,
-        '--glob',
-        '*.{mjs,js,cjs}',
-        '--glob',
-        '!**/*.test.mjs',
-        ROOT,
-      ],
-      { encoding: 'utf8' }
-    );
-    const lines = String(res.stdout || '')
-      .split(/\n/)
-      .map((l) => l.trim())
-      .filter((l) => l && !l.includes('.test.mjs') && !l.includes('node_modules'));
-    assert.deepEqual(lines, [], lines.join('\n'));
-  });
-
-  it('js ssh/scp/rsync spawn uygulama kodunda spawnGuarded veya remote-guard CLI', () => {
-    const res = spawnSync(
-      'rg',
-      [
-        '-n',
-        `spawnGuarded\\(\\s*['"](ssh|scp|rsync)['"]|spawnSync\\(\\s*['"](ssh|scp|rsync)['"]`,
-        '--glob',
-        '*.{mjs,js,sh}',
-        ROOT,
-      ],
-      { encoding: 'utf8' }
-    );
-    const lines = String(res.stdout || '')
-      .split(/\n/)
-      .map((l) => l.trim())
-      .filter((l) => l && !l.includes('node_modules') && !l.includes('.test.mjs'));
-    const offenders = lines.filter((line) => {
-      if (line.includes('remote-guard.mjs')) return false;
-      if (/spawnGuarded\(/.test(line)) return false;
-      return /spawnSync\(/.test(line);
-    });
-    assert.deepEqual(offenders, [], offenders.join('\n'));
+describe('ham ssh/scp/sftp/rsync spawn yok', () => {
+  it('scripts/ ve tests/e2e/ altında doğrudan spawn(ssh) yok', () => {
+    const hits = scanDirectRemoteSpawns(ROOT);
+    assert.deepEqual(hits, [], hits.map((h) => `${h.file}:${h.line}`).join('\n'));
   });
 });

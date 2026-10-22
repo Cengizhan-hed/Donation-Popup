@@ -34,7 +34,8 @@
   "checkoutType": "auto",
   "ssh": {
     "alias": "ikramaid",
-    "wpPath": "~/www/ikramaid.uk/public_html"
+    "wpPath": "~/www/ikramaid.uk/public_html",
+    "siteUrl": "https://ikramaid.uk"
   },
   "strings": {
     "donateButton": "Bağış Yap",

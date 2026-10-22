@@ -24,3 +24,14 @@ Bu kural `migrations.mdc` ve `version-bump.mdc` ile çakışmaz: onlar sürüm/a
 
 - Şifre, token, `.env` değeri asla rapora veya `git-durum.txt` içine yazılmaz.
 - Commit, push, `e2e:accept`, merge ve canlıya kurulum **yalnız açıkça istenirse** yapılır.
+
+## Uzak komut yasağı
+
+Uzak işlemleri yalnız Claude çalıştırır. Cursor ajanı yalnız yerel komut çalıştırır (`verify`, `test`, yerel WP, birim test).
+
+- ssh, scp, sftp, rsync, curl/wget ile uzak site yok.
+- `npm run ship:*`, `npm run deploy:*`, `npm run ikram:wp`, `npm run staging:wp`, `node scripts/staging-wp.mjs`, `node scripts/ikram-wp.mjs` yok.
+- Uzak profille (`--env staging`, `--env hedef`, `--env ikram`) e2e koşusu yok.
+- `~/.ssh`, `.env*`, `tests/e2e/.auth/**`, `*.pem`, `*.key` okunmaz (cat/grep/head dahil); değer yazılmaz.
+- `hedefdernegi.org` (canlı) ya da `~/www/hedefdernegi.org` hiçbir betikte, yapılandırmada ya da testte HEDEF olarak geçemez (yalnız kara liste/test verisi, `live-scan:allow-reject-test` ile). live-scan:blacklist-def
+- Kilidi `scripts/lib/remote-guard.mjs` + `scripts/lib/deploy-guards.mjs` + `.cursor/cli.json` sağlar. REMOTE_FREEZE varken uzak yok; dosyayı silme.

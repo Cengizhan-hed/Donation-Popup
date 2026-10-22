@@ -17,6 +17,7 @@ import { fileURLToPath } from 'node:url';
 import dotenv from 'dotenv';
 import {
   IKRAM_ALLOW_REMOVAL_NOTE,
+  findTargetByAlias,
   validateDeployEnv,
   validateRemoteSiteUrl,
 } from './lib/deploy-guards.mjs';
@@ -34,7 +35,7 @@ import {
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
-const DEFAULT_WP = '~/www/ikramaid.uk/public_html';
+const DEFAULT_WP = findTargetByAlias('ikramaid')?.wpPath || '~/www/ikramaid.uk/public_html';
 
 function fail(msg) {
   console.error(msg);
@@ -59,7 +60,7 @@ function loadEnv() {
       .replace(/\/$/, ''),
   };
   if (env.DEPLOY_SSH_ALIAS !== IKRAM_WP_ALIAS) {
-    fail(`ikram:wp yalnız alias ${IKRAM_WP_ALIAS} (verilen: ${env.DEPLOY_SSH_ALIAS}).`);
+    fail('eşleşmiyor');
   }
   const guard = validateDeployEnv(env);
   if (!guard.ok) fail(guard.reason);
@@ -90,7 +91,11 @@ function remote(env, remoteCmd) {
     'ssh',
     [...sshArgs(env), remoteCmd],
     { encoding: 'utf8', cwd: ROOT, timeout: 60000 },
-    { siteUrl: env?.DEPLOY_SITE_URL, wpPath: env?.DEPLOY_WP_PATH }
+    {
+      alias: env?.DEPLOY_SSH_ALIAS,
+      siteUrl: env?.DEPLOY_SITE_URL,
+      wpPath: env?.DEPLOY_WP_PATH,
+    }
   );
   if (res.status !== 0) {
     const err = (res.stderr || res.stdout || '').trim().slice(0, 500);
