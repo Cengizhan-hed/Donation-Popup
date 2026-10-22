@@ -11,6 +11,8 @@
  * KAYIT: ikramaid.uk izni Ikram Aid yayına alınmadan önce KALDIRILACAK.
  */
 
+import { gzipSync } from 'node:zlib';
+
 /** Ikram Aid yayına alınmadan önce bu izin KALDIRILACAK. */
 export const IKRAM_ALLOW_REMOVAL_NOTE =
   'ikramaid.uk izni Ikram Aid yayına alınmadan önce KALDIRILACAK';
@@ -221,7 +223,7 @@ export const WP_PATH_FLAG_VALUE_RE =
  * @returns {string[]}
  */
 export function extractPathsFromText(text) {
-  const raw = String(text || '');
+  const raw = stripQuotedBase64Blobs(String(text || ''));
   if (!raw) return [];
   const out = [];
   const seen = new Set();
@@ -416,24 +418,84 @@ export function inspectRemoteCommand(cmd, allowedRoot) {
   return { ok: true };
 }
 
+/** `base64 -d` boş/başarısız → eval-file çağrılmaz. */
+export const EVAL_FILE_EMPTY_EXIT = 97;
+
+/**
+ * Tek tırnaklı uzun base64 gövdelerini yol taramasından çıkar
+ * (`/home/` alt dizgisi yanlış pozitif üretmesin).
+ * @param {string} text
+ */
+export function stripQuotedBase64Blobs(text) {
+  return String(text || '').replace(/'([A-Za-z0-9+/=\n]{32,})'/g, "''");
+}
+
+/**
+ * Ham base64 (dosya içeriği) → gzip+base64. Uzak `fold -w 76` MIME satırları
+ * OpenSSL `base64 -d`'nin uzun satırda sessiz 0 bayt üretmesini önler.
+ * @param {string} b64
+ */
+export function gzipBase64Payload(b64) {
+  const raw = Buffer.from(String(b64 || ''), 'base64');
+  return gzipSync(raw).toString('base64');
+}
+
+/**
+ * @param {string} gzB64
+ * @param {string} destRef  örn. `"$TMP"`
+ * @param {string[]} rmRefs
+ * @returns {string[]}
+ */
+function decodeGzipPayloadLines(gzB64, destRef, rmRefs) {
+  const rm = rmRefs.join(' ');
+  return [
+    `printf '%s\\n' '${gzB64}' | fold -w 76 | base64 -d | gzip -dc > ${destRef} || { rm -f ${rm}; exit ${EVAL_FILE_EMPTY_EXIT}; }`,
+    `[ -s ${destRef} ] || { rm -f ${rm}; exit ${EVAL_FILE_EMPTY_EXIT}; }`,
+  ];
+}
+
 /**
  * Salt okunur uzak eval-file kalıbı: `wp --path=<wpPath> eval-file …`
+ * Payload gzip+base64; `base64 -d` boş/başarısızsa çıkış 97.
  * @param {string} wpPath
- * @param {{ tmpPrefix?: string, extraArgs?: string, b64?: string }} [opts]
+ * @param {{ tmpPrefix?: string, extraArgs?: string, b64?: string, envFile?: { envName: string, b64: string, suffix?: string } }} [opts]
  */
 export function buildGuardedEvalFileCommand(wpPath, opts = {}) {
   const prefix = String(opts.tmpPrefix || 'wdp-eval').replace(/[^a-z0-9-]/gi, '') || 'wdp-eval';
   const extra = opts.extraArgs ? ` ${opts.extraArgs}` : '';
-  const b64 = String(opts.b64 || 'YmFzZTY0');
+  const b64 = opts.b64 == null ? 'YmFzZTY0' : String(opts.b64);
   const flag = wpPathFlag(wpPath);
-  return [
-    `TMP=$(mktemp /tmp/${prefix}-XXXX.php)`,
-    `echo '${b64}' | base64 -d > "$TMP"`,
-    `wp ${flag} eval-file "$TMP"${extra}`,
+  const phpGz = gzipBase64Payload(b64);
+  const envFile = opts.envFile;
+  const hasEnv =
+    envFile &&
+    String(envFile.envName || '') &&
+    envFile.b64 != null &&
+    String(envFile.b64) !== '';
+  /** @type {string[]} */
+  const lines = [`TMP=$(mktemp /tmp/${prefix}-XXXX.php)`];
+  /** @type {string[]} */
+  const rmRefs = ['"$TMP"'];
+  if (hasEnv) {
+    const suffix = String(envFile.suffix || '.json').replace(/[^a-z0-9._-]/gi, '') || '.json';
+    lines.push(`ENVF=$(mktemp /tmp/${prefix}-XXXX${suffix})`);
+    rmRefs.push('"$ENVF"');
+  }
+  lines.push(...decodeGzipPayloadLines(phpGz, '"$TMP"', rmRefs));
+  let wpPrefix = '';
+  if (hasEnv) {
+    const envName = String(envFile.envName).replace(/[^A-Z0-9_]/g, '');
+    const envGz = gzipBase64Payload(String(envFile.b64));
+    lines.push(...decodeGzipPayloadLines(envGz, '"$ENVF"', rmRefs));
+    wpPrefix = `${envName}="$ENVF" `;
+  }
+  lines.push(
+    `${wpPrefix}wp ${flag} eval-file "$TMP"${extra}`,
     `EC=$?`,
-    `rm -f "$TMP"`,
-    `exit $EC`,
-  ].join('\n');
+    `rm -f ${rmRefs.join(' ')}`,
+    `exit $EC`
+  );
+  return lines.join('\n');
 }
 
 /**

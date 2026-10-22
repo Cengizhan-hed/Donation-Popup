@@ -117,6 +117,8 @@ describe('migration:snapshot uzak', () => {
       assert.match(cmd, /wp --path=/);
       assert.match(cmd, /eval-file/);
       assert.match(cmd, /wdp-mig-/);
+      assert.match(cmd, /fold -w 76/);
+      assert.match(cmd, /\[ -s "\$TMP" \] \|\| /);
       const r = checkRemoteTarget({
         alias: resolved.alias,
         wpPath: resolved.wpPath,

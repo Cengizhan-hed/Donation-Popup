@@ -21,7 +21,7 @@ import { phpEvalFile, ensureLocalWp, LOCAL_WP_ROOT } from './local-wp.mjs';
 import { spawnGuarded } from './lib/remote-guard.mjs';
 import { buildGuardedEvalFileCommand } from './lib/deploy-guards.mjs';
 import { loadProfile, resolveAllowedRemoteTarget, setActiveProfile } from '../tests/e2e/helpers/profile.mjs';
-import { runGuardedSsh } from './lib/remote-discover-lib.mjs';
+import { runGuardedSsh, formatGuardedSshFailure } from './lib/remote-discover-lib.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export const SNAPSHOT_PHP = 'tests/e2e/helpers/migration-snapshot.php';
@@ -90,11 +90,18 @@ export function assertSnapshotPhpReadOnly(phpText) {
   }
 }
 
-function extractJsonObject(text) {
+/**
+ * @param {string} text
+ * @param {{ status?: number|null, stderr?: string }|null} [sshRes]
+ */
+export function extractSnapshotJson(text, sshRes) {
   const raw = String(text || '');
   const i = raw.indexOf('{');
   const j = raw.lastIndexOf('}');
   if (i < 0 || j < i) {
+    if (sshRes) {
+      throw new Error(formatGuardedSshFailure(sshRes, 'anlık görüntü JSON yok'));
+    }
     throw new Error(`anlık görüntü JSON yok: ${raw.slice(0, 240)}`);
   }
   return JSON.parse(raw.slice(i, j + 1));
@@ -136,7 +143,7 @@ export async function runSnapshot(args) {
     throw new Error(`--env local|staging|ikram (gelen: ${args.env})`);
   }
 
-  const snap = extractJsonObject(raw);
+  const snap = extractSnapshotJson(raw);
   snap.env = args.env;
   snap.label = args.label;
   fs.writeFileSync(outFile, JSON.stringify(snap, null, 2) + '\n', 'utf8');
@@ -158,10 +165,28 @@ export function resolveSnapshotRemoteTarget(envId) {
 
 /**
  * @param {string} wpPath
- * @param {string} b64
+ * @param {string} b64 PHP dosyasının base64'ü
+ * @param {string} [keysetB64] anahtar kümesi JSON base64 (ayrı uzak geçici dosya)
  */
-export function buildSnapshotRemoteCommand(wpPath, b64) {
-  return buildGuardedEvalFileCommand(wpPath, { tmpPrefix: 'wdp-mig', b64 });
+export function buildSnapshotRemoteCommand(wpPath, b64, keysetB64) {
+  /** @type {{ tmpPrefix: string, b64: string, envFile?: { envName: string, b64: string, suffix: string } }} */
+  const opts = { tmpPrefix: 'wdp-mig', b64 };
+  if (keysetB64) {
+    opts.envFile = { envName: 'WDP_MIG_KEYS_FILE', b64: String(keysetB64), suffix: '.json' };
+  }
+  return buildGuardedEvalFileCommand(wpPath, opts);
+}
+
+/**
+ * Enjeksiyonsuz: orijinal PHP + anahtar kümesi ayrı dosya (`WDP_MIG_KEYS_FILE`).
+ * @param {string} wpPath
+ * @param {string} phpText
+ * @param {object} keyset
+ */
+export function buildRemoteSnapshotEvalCommand(wpPath, phpText, keyset) {
+  const phpB64 = Buffer.from(String(phpText || ''), 'utf8').toString('base64');
+  const keyB64 = Buffer.from(JSON.stringify(keyset || {}), 'utf8').toString('base64');
+  return buildSnapshotRemoteCommand(wpPath, phpB64, keyB64);
 }
 
 /**
@@ -174,19 +199,20 @@ export function buildSnapshotRemoteCommand(wpPath, b64) {
  */
 function runRemoteSnapshot(envId, phpText, keyset, outFile, label = '') {
   const resolved = resolveSnapshotRemoteTarget(envId);
-  const injected =
-    `<?php if (!defined('WDP_MIG_KEYSET_JSON')) define('WDP_MIG_KEYSET_JSON', '${JSON.stringify(keyset).replace(/\\/g, '\\\\').replace(/'/g, "\\'")}');\n` +
-    phpText.replace(/^<\?php\s*/, '');
-  const b64 = Buffer.from(injected, 'utf8').toString('base64');
-  const remoteCmd = buildSnapshotRemoteCommand(resolved.wpPath, b64);
+  const remoteCmd = buildRemoteSnapshotEvalCommand(resolved.wpPath, phpText, keyset);
   const res = runGuardedSsh(
     spawnGuarded,
     resolved.alias,
     remoteCmd,
     { encoding: 'utf8', cwd: ROOT, timeout: 120000 },
-    { alias: resolved.alias, wpPath: resolved.wpPath, siteUrl: resolved.siteUrl }
+    {
+      alias: resolved.alias,
+      wpPath: resolved.wpPath,
+      siteUrl: resolved.siteUrl,
+      requireStdout: true,
+    }
   );
-  const snap = extractJsonObject(res.stdout || '');
+  const snap = extractSnapshotJson(res.stdout || '', res);
   snap.env = envId;
   snap.label = label || snap.label || 'snap';
   fs.mkdirSync(path.dirname(outFile), { recursive: true });

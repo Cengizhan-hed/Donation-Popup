@@ -313,6 +313,10 @@ describe('deploy-guards', () => {
       const snap = buildGuardedEvalFileCommand(target.wpPath, { tmpPrefix: 'wdp-mig' });
       assert.match(snap, /wp --path=/);
       assert.match(snap, /eval-file/);
+      assert.match(snap, /fold -w 76/);
+      assert.match(snap, /gzip -dc/);
+      assert.match(snap, /exit 97/);
+      assert.doesNotMatch(snap, /echo '/);
       for (const remoteCommand of cmds) {
         const r = checkRemoteTarget({
           alias: target.sshAlias,

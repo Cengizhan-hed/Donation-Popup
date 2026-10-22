@@ -146,8 +146,38 @@ describe('remote-discover sahte ssh', () => {
       n += 1;
       return { status: 1, stderr: 'Error: WooCommerce yok', stdout: '' };
     };
-    assert.throws(() => runGuardedSsh(fake, 'ikramaid', 'wp eval "echo 1;" --path=/x', {}, {}), /ssh başarısız/);
+    assert.throws(() => runGuardedSsh(fake, 'ikramaid', 'wp eval "echo 1;" --path=/x', {}, {}), /ssh başarısız \(çıkış 1\)/);
     assert.equal(n, 1);
+  });
+
+  it('stdout boşsa stderr 300 + çıkış kodu (e-posta/URL/anahtar yok)', () => {
+    const fake = () => ({
+      status: 0,
+      stdout: '',
+      stderr: 'admin@example.com https://staging.example.org/secret sk_live_abc123XYZ token=hunter2',
+    });
+    assert.throws(
+      () =>
+        runGuardedSsh(
+          fake,
+          'ikramaid',
+          'wp eval "echo 1;" --path=/x',
+          {},
+          { requireStdout: true, siteUrl: 'https://ikramaid.uk', wpPath: '~/www/ikramaid.uk/public_html' }
+        ),
+      (err) => {
+        const msg = String(err && err.message ? err.message : err);
+        assert.match(msg, /ssh başarısız \(çıkış 0\)/);
+        assert.match(msg, /redacted-email/);
+        assert.match(msg, /redacted-url/);
+        assert.match(msg, /redacted-key/);
+        assert.equal(msg.includes('admin@example.com'), false);
+        assert.equal(/https?:\/\//.test(msg), false);
+        assert.equal(msg.includes('sk_live_'), false);
+        assert.equal(msg.includes('hunter2'), false);
+        return true;
+      }
+    );
   });
 
   it('tüm uzak adımlar ssh + --path, skip-themes yok', () => {
