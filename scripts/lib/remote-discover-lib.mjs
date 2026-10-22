@@ -1364,8 +1364,24 @@ export function isSshConnectionError(res) {
 }
 
 /**
+ * stderr'in ilk 300 karakteri (e-posta/URL/anahtar temiz) + çıkış kodu.
+ * @param {{ status?: number|null, stderr?: string, stdout?: string }|null|undefined} res
+ * @param {string} [prefix]
+ */
+export function formatGuardedSshFailure(res, prefix = 'ssh başarısız') {
+  const code = res && res.status != null ? Number(res.status) : '?';
+  const raw = String((res && res.stderr) || '').slice(0, 300);
+  const clean = sanitizeString(raw).replace(/\s+/g, ' ').trim();
+  return `${prefix} (çıkış ${code})${clean ? `: ${clean}` : ''}`;
+}
+
+/**
  * SSH. Bağlantı hatasında en fazla 1 tekrar.
  * @param {Function} spawn spawnGuarded uyumlu
+ * @param {string} alias
+ * @param {string} remoteCmd
+ * @param {object} spawnOpts
+ * @param {{ requireStdout?: boolean, siteUrl?: string, wpPath?: string, alias?: string }} [guardOpts]
  */
 export function runGuardedSsh(spawn, alias, remoteCmd, spawnOpts, guardOpts) {
   const args = [
@@ -1382,12 +1398,18 @@ export function runGuardedSsh(spawn, alias, remoteCmd, spawnOpts, guardOpts) {
   let last;
   for (let attempt = 0; attempt < 2; attempt++) {
     last = spawn(bin, args, spawnOpts, guardOpts);
-    if (last && last.status === 0) return last;
+    if (last && last.status === 0) {
+      if (guardOpts && guardOpts.requireStdout && !String(last.stdout || '').trim()) {
+        const e = new Error(formatGuardedSshFailure(last));
+        e.result = last;
+        throw e;
+      }
+      return last;
+    }
     if (attempt === 0 && isSshConnectionError(last)) continue;
     break;
   }
-  const err = ((last && (last.stderr || last.stdout)) || '').trim().slice(0, 400);
-  const e = new Error(`ssh başarısız${err ? `: ${err}` : ''}`);
+  const e = new Error(formatGuardedSshFailure(last));
   e.result = last;
   throw e;
 }
