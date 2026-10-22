@@ -23,10 +23,95 @@ export const BLACKLISTED_TYPES = new Set([
 ]);
 
 /**
- * @returns {{ runId: string, startedAt: string, created: object[], mutated: object[] }}
+ * @returns {{ runId: string, startedAt: string, created: object[], mutated: object[], fixtures: object[] }}
  */
 export function emptyRegistry() {
-  return { runId: '', startedAt: '', created: [], mutated: [] };
+  return { runId: '', startedAt: '', created: [], mutated: [], fixtures: [] };
+}
+
+function asId(raw) {
+  return Math.abs(Number.parseInt(String(raw), 10) || 0);
+}
+
+function normalizeFixtureRec(rec) {
+  const id = asId(rec?.id);
+  if (id <= 0) return null;
+  return {
+    id,
+    type: String(rec.type || 'product'),
+    mark: String(rec.mark || ''),
+    role: String(rec.role || ''),
+    source: 'fixture',
+  };
+}
+
+/**
+ * Koşu sıfırlanırken kalıcı fixture kayıtları.
+ * @param {object} [prev]
+ * @param {{ clearFixtures?: boolean, fixtures?: object[], fixtureRecords?: object[] }} [opts]
+ */
+export function preservedFixtures(prev, opts = {}) {
+  if (opts.clearFixtures) return [];
+  if (Array.isArray(opts.fixtures)) {
+    return opts.fixtures.map(normalizeFixtureRec).filter(Boolean);
+  }
+  if (Array.isArray(opts.fixtureRecords)) {
+    return opts.fixtureRecords.map(normalizeFixtureRec).filter(Boolean);
+  }
+  const seen = new Set();
+  const out = [];
+  const add = (rec) => {
+    const row = normalizeFixtureRec(rec);
+    if (!row || seen.has(row.id)) return;
+    seen.add(row.id);
+    out.push(row);
+  };
+  for (const rec of prev?.fixtures || []) add(rec);
+  for (const rec of prev?.created || []) {
+    if (rec?.source === 'fixture' || rec?.persistent) add(rec);
+  }
+  return out;
+}
+
+/**
+ * Saf: sıfırlanmış defter (disk yok).
+ * @param {object} [prev]
+ * @param {string} runId
+ * @param {{ clearFixtures?: boolean, fixtures?: object[], fixtureRecords?: object[], now?: string }} [opts]
+ */
+export function nextRegistryAfterReset(prev, runId, opts = {}) {
+  const id = String(runId || '');
+  if (!isRunIdOk(id)) {
+    throw new Error(`resetRegistry: geçersiz runId (${id})`);
+  }
+  return {
+    runId: id,
+    startedAt: String(opts.now || new Date().toISOString()),
+    created: [],
+    mutated: [],
+    fixtures: preservedFixtures(prev, opts),
+  };
+}
+
+/**
+ * Temizlik: fixture ürünleri listeden çıkarılır (yalnız --remove-fixtures siler).
+ * @param {object} [registry]
+ * @param {number[]} [fixtureIds]
+ */
+export function createdForCleanup(registry, fixtureIds = []) {
+  const skip = new Set();
+  for (const rec of registry?.fixtures || []) {
+    const id = asId(rec?.id);
+    if (id) skip.add(id);
+  }
+  for (const raw of fixtureIds) {
+    const id = asId(raw);
+    if (id) skip.add(id);
+  }
+  return (registry?.created || []).filter((x) => {
+    if (x?.source === 'fixture' || x?.persistent) return false;
+    return !skip.has(asId(x?.id));
+  });
 }
 
 export function isRunIdOk(runId) {
@@ -44,7 +129,7 @@ export function saveRegistry(data) {
 }
 
 /**
- * @returns {{ runId: string, startedAt: string, created: object[], mutated: object[] }}
+ * @returns {{ runId: string, startedAt: string, created: object[], mutated: object[], fixtures: object[] }}
  */
 export function loadRegistry() {
   if (!fs.existsSync(REGISTRY_PATH)) return emptyRegistry();
@@ -55,6 +140,7 @@ export function loadRegistry() {
       startedAt: String(parsed.startedAt || ''),
       created: Array.isArray(parsed.created) ? parsed.created : [],
       mutated: Array.isArray(parsed.mutated) ? parsed.mutated : [],
+      fixtures: Array.isArray(parsed.fixtures) ? parsed.fixtures : [],
     };
   } catch {
     throw new Error(`run-registry.json okunamadı: ${REGISTRY_PATH}`);
@@ -63,20 +149,23 @@ export function loadRegistry() {
 
 /**
  * @param {string} [runId]
+ * @param {{ clearFixtures?: boolean, fixtures?: object[], fixtureRecords?: object[] }} [opts]
  */
-export function resetRegistry(runId = `run-${Date.now()}`) {
-  const id = String(runId);
-  if (!isRunIdOk(id)) {
-    throw new Error(`resetRegistry: geçersiz runId (${id})`);
-  }
-  const data = {
-    runId: id,
-    startedAt: new Date().toISOString(),
-    created: [],
-    mutated: [],
-  };
+export function resetRegistry(runId = `run-${Date.now()}`, opts = {}) {
+  const data = nextRegistryAfterReset(loadRegistry(), runId, opts);
   saveRegistry(data);
   return data;
+}
+
+/**
+ * Kalıcı fixture listesini dosyadaki kayıtlarla değiştirir.
+ * @param {object[]} records
+ */
+export function setRegistryFixtures(records) {
+  const r = loadRegistry();
+  r.fixtures = (Array.isArray(records) ? records : []).map(normalizeFixtureRec).filter(Boolean);
+  saveRegistry(r);
+  return r.fixtures;
 }
 
 /**
@@ -95,12 +184,23 @@ export function registerCreated(rec) {
   if (!isRunIdOk(r.runId)) {
     throw new Error('registerCreated: kayıt defteri runId yok — resetRegistry çağırın');
   }
-  r.created.push({
+  const source = rec.source === 'fixture' || rec.persistent ? 'fixture' : 'run';
+  const row = {
     id,
     type,
     mark: rec.mark || `${E2E_META_KEY}=${r.runId}`,
+    source,
     at: new Date().toISOString(),
-  });
+  };
+  if (rec.role) row.role = String(rec.role);
+  r.created.push(row);
+  if (source === 'fixture') {
+    r.fixtures = Array.isArray(r.fixtures) ? r.fixtures : [];
+    const idx = r.fixtures.findIndex((x) => Number(x.id) === id);
+    const fx = normalizeFixtureRec({ ...row, role: rec.role });
+    if (idx >= 0) r.fixtures[idx] = fx;
+    else r.fixtures.push(fx);
+  }
   saveRegistry(r);
   return id;
 }

@@ -31,6 +31,7 @@ import {
 } from './similar-donations-probe.mjs';
 import { snapshotGuardOrder, cleanupE2EData } from './test-cleanup.mjs';
 import { resetRegistry } from './run-registry.mjs';
+import { fixtureProductRecords, loadFixtures } from './fixtures.mjs';
 import {
   snapshotCanary,
   preflightCanary,
@@ -2479,7 +2480,9 @@ export async function captureAll({
   const want = (id) => areaIncludes(areas, id);
   /** @type {object[]} */
   const a11yFindings = [];
-  resetRegistry(`run-${Date.now()}`);
+  resetRegistry(`run-${Date.now()}`, {
+    fixtureRecords: fixtureProductRecords(loadFixtures(profile.id)),
+  });
   /** @type {object|null} */
   let canaryBefore = null;
   try {
@@ -3837,7 +3840,7 @@ export async function captureAll({
   if (canaryBefore) {
     try {
       const after = snapshotCanary();
-      const cmp = compareWithRegistry(canaryBefore, after);
+      const cmp = compareWithRegistry(canaryBefore, after, undefined, { envId: profile.id });
       if (!cmp.ok) {
         writeCanaryAlert(cmp, 'Koşu durdu; sonraki testler başlatılmaz.');
         failures.push(
@@ -3862,7 +3865,7 @@ export async function captureAll({
   if (runFunctional) {
     try {
       const cleaned = await Promise.race([
-        cleanupE2EData({ guardOrderId: guardOrder?.id }),
+        cleanupE2EData({ guardOrderId: guardOrder?.id, envId: profile.id }),
         new Promise((_, reject) =>
           setTimeout(() => reject(new Error('cleanup 60s zaman aşımı')), 60000)
         ),
@@ -3870,7 +3873,7 @@ export async function captureAll({
       debugFiles.push(`cleanup:${JSON.stringify(cleaned)}`);
       if (canaryBefore) {
         const afterCleanup = snapshotCanary();
-        const cmpCleanup = compareWithRegistry(canaryBefore, afterCleanup);
+        const cmpCleanup = compareWithRegistry(canaryBefore, afterCleanup, undefined, { envId: profile.id });
         if (!cmpCleanup.ok) {
           writeCanaryAlert(cmpCleanup, 'Temizlik sonrası kayıt defteri dışı fark; koşu kırmızı.');
           failures.push(

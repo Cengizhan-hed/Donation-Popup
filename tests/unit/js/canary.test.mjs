@@ -6,14 +6,17 @@ import { spawnSync } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
 import {
   compareCanary,
+  compareWithRegistry,
   preflightCanary,
   formatCanaryDiff,
   evaluateCanaryAgainstBaseline,
   evaluateCanaryHealth,
   formatCanaryStatusLine,
   writeCanaryAlert,
+  updateCanaryBaselineIfClean,
   CANARY_ALERT_PATH,
 } from '../../../tests/e2e/helpers/canary.mjs';
+import { verifiedFixtureIds } from '../../../tests/e2e/helpers/fixtures.mjs';
 import { parseCanaryArgs, runCanary } from '../../../tests/e2e/run-canary.mjs';
 import { evaluateBootstrapCanary } from '../../../scripts/e2e-bootstrap.mjs';
 import { evaluateDeleteGuard, evaluateUserDeleteGuard } from '../../../tests/e2e/helpers/safe-remote-write.mjs';
@@ -305,6 +308,7 @@ describe('run-canary', () => {
       snapshotFn: () => snap,
       registry: { created: [], mutated: [] },
       baseline: snap,
+      fixtures: null,
     });
     assert.equal(r.ok, true, JSON.stringify(r.diffs));
     assert.equal(r.status, 'TEMİZ');
@@ -324,6 +328,7 @@ describe('run-canary', () => {
       snapshotFn: () => snap,
       registry: { created: [], mutated: [] },
       baseline: snap,
+      fixtures: null,
     });
     assert.equal(r.ok, false);
     const text = fs.readFileSync(CANARY_ALERT_PATH, 'utf8');
@@ -388,5 +393,148 @@ describe('safe-remote-write guards', () => {
     });
     assert.equal(g.ok, false);
     assert.equal(g.reason, 'user-has-content');
+  });
+
+  it('fixture ürün silinmez (fixture-protected)', () => {
+    const g = evaluateDeleteGuard({
+      id: 913,
+      expectedType: 'product',
+      registryIds: [913],
+      coreIds: [],
+      runId: 'run-abc',
+      post: { type: 'product', mark: 'run-abc', status: 'private' },
+      fixtureIds: [913],
+    });
+    assert.equal(g.ok, false);
+    assert.equal(g.reason, 'fixture-protected');
+  });
+});
+
+const FIXTURE_IDS = [913, 914, 915, 916, 917, 918, 919];
+const FIXTURE_MARK = 'boot-abc';
+
+function catalogPosts() {
+  return [1, 2, 3, 4, 5, 6].map((id) => ({
+    id,
+    type: 'product',
+    status: 'publish',
+    modified: 'a',
+    mark: '',
+  }));
+}
+
+function fixturePosts(overrides = {}) {
+  return FIXTURE_IDS.map((id) => ({
+    id,
+    type: 'product',
+    status: 'private',
+    modified: 'b',
+    mark: FIXTURE_MARK,
+    ...overrides,
+  }));
+}
+
+function fixtureFile(mark = FIXTURE_MARK) {
+  const roles = {};
+  const names = ['custom', 'fixed', 'shares', 'campaign', 'sadaka', 'goal-reached', 'empty-price'];
+  names.forEach((role, i) => {
+    roles[role] = { id: FIXTURE_IDS[i], mark, type: 'product' };
+  });
+  return { runId: mark, roles };
+}
+
+function countSnap(posts) {
+  return {
+    posts,
+    options: { show_on_front: 'posts' },
+    user_count: 1,
+    page_count: posts.filter((p) => p.type === 'page').length,
+    product_count: posts.filter((p) => p.type === 'product').length,
+    attachment_count: 0,
+  };
+}
+
+describe('kanarya fixture birleşimi', () => {
+  it('boş defter + doğrulanmış 7 fixture TEMİZ (product_count 6→13)', () => {
+    const baseline = countSnap(catalogPosts());
+    const current = countSnap([...catalogPosts(), ...fixturePosts()]);
+    const fixtures = fixtureFile();
+    assert.deepEqual(verifiedFixtureIds(current, fixtures), FIXTURE_IDS);
+    const r = evaluateCanaryAgainstBaseline(baseline, current, { created: [], mutated: [] }, { fixtures });
+    assert.equal(r.ok, true, JSON.stringify(r.diffs));
+    assert.equal(r.status, 'TEMİZ');
+    assert.equal(r.canUpdate, true);
+  });
+
+  it('fixture id dosyada değilse KIRMIZI', () => {
+    const baseline = countSnap(catalogPosts());
+    const current = countSnap([...catalogPosts(), ...fixturePosts()]);
+    const fixtures = fixtureFile();
+    delete fixtures.roles.custom;
+    const r = evaluateCanaryAgainstBaseline(baseline, current, { created: [], mutated: [] }, { fixtures });
+    assert.equal(r.ok, false);
+    assert.ok(r.diffs.some((d) => d.change === 'created' && d.id === 913));
+  });
+
+  it('uzakta işaret fixture ile eşit değilse KIRMIZI', () => {
+    const baseline = countSnap(catalogPosts());
+    const current = countSnap([...catalogPosts(), ...fixturePosts({ mark: 'other-boot' })]);
+    const r = evaluateCanaryAgainstBaseline(baseline, current, { created: [], mutated: [] }, {
+      fixtures: fixtureFile(),
+    });
+    assert.equal(r.ok, false);
+    assert.ok(r.diffs.some((d) => d.change === 'created' && Number(d.id) >= 913));
+  });
+
+  it('durum private değilse KIRMIZI', () => {
+    const baseline = countSnap(catalogPosts());
+    const current = countSnap([...catalogPosts(), ...fixturePosts({ status: 'publish' })]);
+    const r = evaluateCanaryAgainstBaseline(baseline, current, { created: [], mutated: [] }, {
+      fixtures: fixtureFile(),
+    });
+    assert.equal(r.ok, false);
+    assert.ok(r.diffs.some((d) => d.change === 'created'));
+  });
+
+  it('fixture silinince allowedDeleted + product_count düşüşü TEMİZ', () => {
+    const before = countSnap([...catalogPosts(), ...fixturePosts()]);
+    const after = countSnap(catalogPosts());
+    const cmp = compareCanary(before, after, { allowedDeletedIds: FIXTURE_IDS });
+    assert.equal(cmp.ok, true, JSON.stringify(cmp.diffs));
+  });
+
+  it('beklenmeyen sayfa farkı varken fixture TEMİZ sayılmaz', () => {
+    const baseline = countSnap([
+      ...catalogPosts(),
+      { id: 50, type: 'page', status: 'publish', modified: 'a', mark: '' },
+    ]);
+    const current = countSnap([...catalogPosts(), ...fixturePosts()]);
+    current.page_count = 0;
+    const r = evaluateCanaryAgainstBaseline(baseline, current, { created: [], mutated: [] }, {
+      fixtures: fixtureFile(),
+    });
+    assert.equal(r.ok, false);
+    assert.ok(r.diffs.some((d) => d.change === 'deleted' && d.id === 50));
+    assert.equal(updateCanaryBaselineIfClean('local', current, r).updated, false);
+  });
+
+  it('runCanary boş defter + doğrulanmış fixture TEMİZ (ağ yok)', () => {
+    const baseline = countSnap(catalogPosts());
+    const current = countSnap([...catalogPosts(), ...fixturePosts()]);
+    const r = runCanary({
+      envName: 'local',
+      snapshotFn: () => current,
+      registry: { created: [], mutated: [], fixtures: [] },
+      baseline,
+      fixtures: fixtureFile(),
+    });
+    assert.equal(r.ok, true, JSON.stringify(r.diffs));
+    assert.equal(r.status, 'TEMİZ');
+  });
+
+  it('compareWithRegistry envId olmadan disk fixture yüklemez', () => {
+    const snap = countSnap(catalogPosts());
+    const cmp = compareWithRegistry(snap, snap, { created: [], mutated: [] });
+    assert.equal(cmp.ok, true);
   });
 });

@@ -119,22 +119,53 @@ $removed = array();
 $skipped = array();
 
 if ($action === 'remove') {
-	foreach ($catalog as $role => $row) {
-		$id = wdp_boot_find_product($row[0], $run_id);
-		if (!$id) {
-			$skipped[] = $role;
-			continue;
+	$remove_ids_raw = (string) getenv('WDP_E2E_REMOVE_IDS');
+	$remove_by_id   = array();
+	if ($remove_ids_raw !== '') {
+		foreach (explode(',', $remove_ids_raw) as $piece) {
+			$nid = absint($piece);
+			if ($nid > 0) {
+				$remove_by_id[] = $nid;
+			}
 		}
-		if ((string) get_post_meta($id, META_KEY, true) !== $run_id) {
-			$skipped[] = $role . ':unmarked';
-			continue;
+		$remove_by_id = array_values(array_unique($remove_by_id));
+	}
+	if ($remove_by_id) {
+		foreach ($remove_by_id as $id) {
+			$post = get_post($id);
+			if (!$post) {
+				$skipped[] = 'id:' . $id . ':missing';
+				continue;
+			}
+			if ((string) get_post_meta($id, META_KEY, true) !== $run_id) {
+				$skipped[] = 'id:' . $id . ':unmarked';
+				continue;
+			}
+			if ($post->post_type === 'page') {
+				$skipped[] = 'id:' . $id . ':page';
+				continue;
+			}
+			wp_delete_post($id, true);
+			$removed[] = array( 'role' => '', 'id' => $id );
 		}
-		if (get_post_type($id) === 'page') {
-			$skipped[] = $role . ':page';
-			continue;
+	} else {
+		foreach ($catalog as $role => $row) {
+			$id = wdp_boot_find_product($row[0], $run_id);
+			if (!$id) {
+				$skipped[] = $role;
+				continue;
+			}
+			if ((string) get_post_meta($id, META_KEY, true) !== $run_id) {
+				$skipped[] = $role . ':unmarked';
+				continue;
+			}
+			if (get_post_type($id) === 'page') {
+				$skipped[] = $role . ':page';
+				continue;
+			}
+			wp_delete_post($id, true);
+			$removed[] = array( 'role' => $role, 'id' => $id );
 		}
-		wp_delete_post($id, true);
-		$removed[] = array( 'role' => $role, 'id' => $id );
 	}
 	echo wp_json_encode(
 		array(

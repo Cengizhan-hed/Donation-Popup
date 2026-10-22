@@ -3,7 +3,8 @@
  * Tek kaynak: cleanup-e2e.php (kayıt defteri + run_id + kara liste).
  */
 import { loadDeployEnvSilent, remote, wpCliPath, runEvalFile } from './wp-remote.mjs';
-import { isRunIdOk, loadRegistry, registerCreated, registryIds } from './run-registry.mjs';
+import { isRunIdOk, loadRegistry, registerCreated, registryIds, createdForCleanup } from './run-registry.mjs';
+import { fixtureProductRecords, loadFixtures } from './fixtures.mjs';
 
 export const E2E_META_KEY = '_wdp_e2e_test';
 export const E2E_EMAIL_DOMAIN = 'wdp-e2e.test';
@@ -52,7 +53,8 @@ export async function markOrderAsE2E(orderId) {
  */
 export async function cleanupE2EData(opts = {}) {
   const registry = loadRegistry();
-  const created = Array.isArray(registry.created) ? registry.created : [];
+  const fixtureIds = fixtureProductRecords(loadFixtures(opts.envId)).map((r) => r.id);
+  const created = createdForCleanup(registry, fixtureIds);
   const empty = {
     orders_deleted: 0,
     customers_deleted: 0,
@@ -73,6 +75,7 @@ export async function cleanupE2EData(opts = {}) {
     WDP_E2E_RUN_ID: registry.runId,
   };
   if (guard) extraEnv.WDP_E2E_GUARD_ORDER_ID = String(guard);
+  if (fixtureIds.length) extraEnv.WDP_E2E_FIXTURE_IDS = fixtureIds.join(',');
   const raw = opts.execFn
     ? opts.execFn(CLEANUP_EVAL_FILE, extraEnv)
     : runEvalFile(CLEANUP_EVAL_FILE, extraEnv);
