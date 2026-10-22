@@ -50,6 +50,7 @@ async function main() {
     shots = [],
     blocked_trackers = { total: 0, byHost: {} },
     remote_post_blocked = { total: 0, byPath: {} },
+    izinli_okuma = { total: 0, byAction: {} },
   } = await captureAll({
     env,
     outDir,
@@ -99,6 +100,7 @@ async function main() {
     flaky,
     blocked_trackers,
     remote_post_blocked,
+    izinli_okuma,
   });
 
   console.log('Report:', reportFile);
@@ -115,7 +117,7 @@ async function main() {
   console.log(
     `Görsel durum: Değişti=${changedCount} Yeni referans=${newBaselineCount} (eşik ≤ ${threshold}%)`
   );
-  console.log(formatRemotePostBlockedLines(remote_post_blocked));
+  console.log(formatRemotePostBlockedLines(remote_post_blocked, izinli_okuma));
   console.log(`Manifest: ${path.relative(ROOT, path.join(CURRENT_DIR, 'run.json'))}`);
   if (skips.length) {
     console.log('');

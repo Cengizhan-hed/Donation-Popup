@@ -432,7 +432,12 @@ export async function resolveProductPath(page, baseUrl, slug) {
 
   // Shop / arama sayfasındaki ürün linki
   for (const probe of [`/?s=${encodeURIComponent(slug)}&post_type=product`, '/shop/']) {
-    await page.goto(root + probe, { waitUntil: 'domcontentloaded' }).catch(() => {});
+    try {
+      await page.goto(root + probe, { waitUntil: 'domcontentloaded' });
+    } catch (e) {
+      console.error(`[e2e:catch-fail] resolveProductPath ${probe}: ${e && e.message ? e.message : e}`);
+      continue;
+    }
     const link = page
       .locator(
         `a[href*="${slug}"][href*="product"], .woocommerce ul.products li.product a.woocommerce-LoopProduct-link`
@@ -445,14 +450,14 @@ export async function resolveProductPath(page, baseUrl, slug) {
           const u = new URL(href, root + '/');
           return u.pathname.replace(/\/?$/, '/') + (u.search || '');
         } catch (e) {
-          /* continue */
+          console.error(`[e2e:catch-fail] resolveProductPath href: ${e && e.message ? e.message : e}`);
         }
       }
     }
   }
 
-  // Son çare: WordPress varsayılan ürün yolu (yalnızca çözümleme başarısızsa)
-  return `/product/${slug}/`;
+  // /product/${slug}/ tahmini yok (uzak permalink farklı → 404).
+  return '';
 }
 
 /**

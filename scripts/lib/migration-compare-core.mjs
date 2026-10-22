@@ -20,6 +20,8 @@ export const EXPECTED_CHANGE_KEYS = [
   'wdp_cache_version',
   'wdp_list_cache_version',
   'wdp_migration_log',
+  // CSS bundle hash: kurulum/göç sonrası assets registry imzayı yeniler (veri kaybı değil).
+  'wdp_css_signature',
 ];
 
 /**

@@ -90,6 +90,8 @@ const orderBlocks = [];
 const adminWriteBlocks = [];
 /** @type {Map<string, number>} */
 const blockedPosts = new Map();
+/** @type {Map<string, number>} */
+const allowedReads = new Map();
 /** @type {Array<{ action: string, status: number }>} */
 const pluginAjaxFails = [];
 let ajaxWatchPaused = 0;
@@ -395,6 +397,46 @@ export function listWdpAjaxFromIncludes(includesDir) {
 export const ALLOWED_WDP_NOPRIV_AJAX = new Set(listWdpAjaxFromIncludes().nopriv);
 
 /**
+ * Profil `remoteReadOnlyPostActions` — yalnız eklenebilir; kod kuralı değişmez.
+ * @param {object|null|undefined} profile
+ * @returns {string[]}
+ */
+export function profileReadOnlyPostActions(profile) {
+  const raw = profile?.remoteReadOnlyPostActions;
+  if (!Array.isArray(raw)) return [];
+  const out = [];
+  for (const a of raw) {
+    const s = String(a || '').trim();
+    if (s && /^[a-z0-9_]+$/i.test(s)) out.push(s);
+  }
+  return out;
+}
+
+/**
+ * Eklenti yönetici uçları + sipariş — profil listesine konsa bile RED.
+ * @param {string} action
+ */
+export function isHardDeniedRemoteAjaxAction(action) {
+  const a = String(action || '').trim();
+  if (!a) return false;
+  if (a === 'woocommerce_checkout') return true;
+  if (isWdpAjaxAction(a) && !ALLOWED_WDP_NOPRIV_AJAX.has(a)) return true;
+  return false;
+}
+
+/**
+ * @param {string} action
+ * @param {string[]} extra
+ */
+export function isProfileReadOnlyPostAction(action, extra) {
+  const a = String(action || '').trim();
+  if (!a) return false;
+  if (isHardDeniedRemoteAjaxAction(a)) return false;
+  const list = Array.isArray(extra) ? extra : [];
+  return list.includes(a);
+}
+
+/**
  * @param {string} pathname
  */
 function normalizePath(pathname) {
@@ -526,7 +568,7 @@ export function isRemoteOrderRequest(req) {
  * Uzak profilde site alanına giden yazma: yalnız izin listesi.
  * apply_coupon ve update_order_review yok (ödeme sayfasında da).
  *
- * @param {{ method?: string, url?: string, postData?: string|null, headers?: Record<string, string>, checkoutPath?: string, cartPath?: string }} req
+ * @param {{ method?: string, url?: string, postData?: string|null, headers?: Record<string, string>, checkoutPath?: string, cartPath?: string, readOnlyActions?: string[] }} req
  */
 export function isRemoteWriteAllowed(req) {
   const method = String(req?.method || 'GET').toUpperCase();
@@ -560,7 +602,10 @@ export function isRemoteWriteAllowed(req) {
   if (/\/admin-ajax\.php$/i.test(pathname)) {
     const action = extractAjaxAction({ url, postData, headers });
     if (ALLOWED_WDP_NOPRIV_AJAX.has(action)) return true;
-    return ALLOWED_ADMIN_AJAX.has(action);
+    if (ALLOWED_ADMIN_AJAX.has(action)) return true;
+    const extra = Array.isArray(req?.readOnlyActions) ? req.readOnlyActions : [];
+    if (isProfileReadOnlyPostAction(action, extra)) return true;
+    return false;
   }
 
   if (method === 'POST') {
@@ -661,8 +706,25 @@ function recordRemotePost(key) {
 
 export function resetRemotePostBlocked() {
   blockedPosts.clear();
+  allowedReads.clear();
   adminWriteBlocks.length = 0;
   pluginAjaxFails.length = 0;
+}
+
+function recordAllowedRead(action) {
+  const k = String(action || '').trim() || '(unknown)';
+  allowedReads.set(k, (allowedReads.get(k) || 0) + 1);
+}
+
+export function snapshotAllowedReads() {
+  /** @type {Record<string, number>} */
+  const byAction = {};
+  let total = 0;
+  for (const [a, n] of allowedReads) {
+    byAction[a] = n;
+    total += n;
+  }
+  return { total, byAction };
 }
 
 export function snapshotRemotePostBlocked() {
@@ -679,7 +741,7 @@ export function snapshotRemotePostBlocked() {
 /**
  * @param {{ total?: number, byPath?: Record<string, number> }|null|undefined} snap
  */
-export function formatRemotePostBlockedLines(snap) {
+export function formatRemotePostBlockedLines(snap, allowed) {
   const s = snap && typeof snap === 'object' ? snap : { total: 0, byPath: {} };
   const total = Number(s.total) || 0;
   const lines = [`remote_post_blocked: ${total}`];
@@ -687,6 +749,16 @@ export function formatRemotePostBlockedLines(snap) {
     const byPath = s.byPath || {};
     for (const [k, n] of Object.entries(byPath)) {
       lines.push(`  • ${k}  ${n}`);
+    }
+  }
+  if (allowed !== undefined) {
+    const a = allowed && typeof allowed === 'object' ? allowed : { total: 0, byAction: {} };
+    const n = Number(a.total) || 0;
+    lines.push(`izinli-okuma: ${n}`);
+    if (n > 0) {
+      for (const [k, c] of Object.entries(a.byAction || {})) {
+        lines.push(`  • ${k}  ${c}`);
+      }
     }
   }
   return lines.join('\n');
@@ -833,6 +905,8 @@ export function guardOptionsFromEnv(env, extra = {}) {
     checkoutPath: pathFromMaybeUrl(extra.checkoutPath || '/checkout/', '/checkout/'),
     cartPath: pathFromMaybeUrl(extra.cartPath || '/cart/', '/cart/'),
     blockTrackers: true,
+    readOnlyActions: profileReadOnlyPostActions(profile),
+    profile,
   };
 }
 
@@ -848,6 +922,9 @@ export async function applyNetworkGuard(context, opts = {}) {
   const checkoutPath = pathFromMaybeUrl(opts.checkoutPath || '/checkout/', '/checkout/');
   const cartPath = pathFromMaybeUrl(opts.cartPath || '/cart/', '/cart/');
   const blockTrackers = remote ? true : opts.blockTrackers !== false;
+  const readOnlyActions = Array.isArray(opts.readOnlyActions)
+    ? opts.readOnlyActions
+    : profileReadOnlyPostActions(opts.profile);
 
   const existingPages = typeof context.pages === 'function' ? context.pages() : [];
   for (const page of existingPages || []) {
@@ -883,7 +960,7 @@ export async function applyNetworkGuard(context, opts = {}) {
       const parts = parseUrlParts(url);
       const firstParty = !siteHost || isFirstPartyHost(parts?.hostname, siteHost);
       if (write && firstParty) {
-        const reqInfo = { method, url, postData, headers, checkoutPath, cartPath };
+        const reqInfo = { method, url, postData, headers, checkoutPath, cartPath, readOnlyActions };
         const allowed = isRemoteWriteAllowed(reqInfo);
         if (!allowed) {
           recordRemotePost(remotePostBlockKey(url, postData, headers));
@@ -894,6 +971,14 @@ export async function applyNetworkGuard(context, opts = {}) {
           }
           await route.abort('blockedbyclient');
           return;
+        }
+        const action = extractAjaxAction({ url, postData, headers });
+        if (
+          isProfileReadOnlyPostAction(action, readOnlyActions) &&
+          !ALLOWED_WDP_NOPRIV_AJAX.has(action) &&
+          !ALLOWED_ADMIN_AJAX.has(action)
+        ) {
+          recordAllowedRead(action);
         }
       }
     }

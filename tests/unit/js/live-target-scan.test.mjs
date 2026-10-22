@@ -73,6 +73,12 @@ describe('e2e profiller', () => {
     assert.equal(p.products.custom.role, 'custom');
     assert.equal(p.products.custom.id, undefined);
     assert.equal(p.products.custom.name, undefined);
+    assert.deepEqual(p.remoteReadOnlyPostActions, [
+      'wmc_get_products_price',
+      'hdf_side_cart_v8_get',
+      'fusion_get_webfonts_ajax',
+    ]);
+    assert.equal(p.currencySwitch.param, 'wmc-currency');
     assertRemoteProfileSafe(p);
   });
 
@@ -81,6 +87,9 @@ describe('e2e profiller', () => {
     assert.equal(p.allowMetaMutation, false);
     assert.equal(p.ssh.alias, 'ikramaid');
     assert.equal(p.ssh.wpPath, '~/www/ikramaid.uk/public_html');
+    assert.equal(p.products.custom.name, undefined);
+    assert.equal(p.listPageId, undefined);
+    assert.equal(p.currencySwitch, undefined);
     assertRemoteProfileSafe(p);
   });
 

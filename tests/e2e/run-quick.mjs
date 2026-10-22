@@ -81,6 +81,7 @@ async function main() {
     a11yFindings = [],
     blocked_trackers = { total: 0, byHost: {} },
     remote_post_blocked = { total: 0, byPath: {} },
+    izinli_okuma = { total: 0, byAction: {} },
   } = await captureAll({
     env,
     outDir,
@@ -140,6 +141,7 @@ async function main() {
     currentDir: path.relative(ROOT, outDir),
     blocked_trackers,
     remote_post_blocked,
+    izinli_okuma,
   });
 
   console.log('Report:', reportFile);
@@ -163,7 +165,7 @@ async function main() {
     for (const name of newBaselineScreens) console.log(`  • ${name}`);
   }
   console.log(`Süre: ${durationSec}s`);
-  console.log(formatRemotePostBlockedLines(remote_post_blocked));
+  console.log(formatRemotePostBlockedLines(remote_post_blocked, izinli_okuma));
   console.log(`Manifest: ${path.relative(ROOT, path.join(CURRENT_DIR, 'run.json'))}`);
 
   if (flags.openReport) {

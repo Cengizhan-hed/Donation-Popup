@@ -6,6 +6,9 @@ import {
   isRemoteOrderRequest,
   isRemoteWriteAllowed,
   isRemoteAdminWrite,
+  profileReadOnlyPostActions,
+  isHardDeniedRemoteAjaxAction,
+  isProfileReadOnlyPostAction,
   isWdpAjaxAction,
   storeBatchAllCart,
   remotePostBlockKey,
@@ -466,6 +469,73 @@ describe('extractAjaxAction dört gövde türü', () => {
         byPath: { '/wp-admin/admin-ajax.php action=heartbeat': 2 },
       }),
       /remote_post_blocked: 2/
+    );
+  });
+});
+
+describe('profil remoteReadOnlyPostActions', () => {
+  const site = 'https://ornek.test';
+  const stagingExtra = profileReadOnlyPostActions({
+    remoteReadOnlyPostActions: [
+      'wmc_get_products_price',
+      'hdf_side_cart_v8_get',
+      'fusion_get_webfonts_ajax',
+    ],
+  });
+
+  it('staging okuma uçları geçer; sayaç yazan RED', () => {
+    for (const action of stagingExtra) {
+      assert.equal(
+        isRemoteWriteAllowed({
+          method: 'POST',
+          url: `${site}/wp-admin/admin-ajax.php`,
+          postData: `action=${action}`,
+          readOnlyActions: stagingExtra,
+        }),
+        true,
+        action
+      );
+    }
+    assert.equal(
+      isRemoteWriteAllowed({
+        method: 'POST',
+        url: `${site}/wp-admin/admin-ajax.php`,
+        postData: 'action=fusion_form_update_view',
+        readOnlyActions: stagingExtra,
+      }),
+      false
+    );
+  });
+
+  it('yönetici wdp ve sipariş profil listesinde olsa RED', () => {
+    const poisoned = [
+      ...stagingExtra,
+      'wdp_save_placement_settings',
+      'woocommerce_checkout',
+    ];
+    assert.equal(isHardDeniedRemoteAjaxAction('wdp_save_placement_settings'), true);
+    assert.equal(isProfileReadOnlyPostAction('wdp_save_placement_settings', poisoned), false);
+    assert.equal(
+      isRemoteWriteAllowed({
+        method: 'POST',
+        url: `${site}/wp-admin/admin-ajax.php`,
+        postData: 'action=wdp_save_placement_settings',
+        readOnlyActions: poisoned,
+      }),
+      false
+    );
+    assert.equal(
+      isRemoteWriteAllowed({
+        method: 'POST',
+        url: `${site}/wp-admin/admin-ajax.php`,
+        postData: 'action=woocommerce_checkout',
+        readOnlyActions: poisoned,
+      }),
+      false
+    );
+    assert.equal(
+      formatRemotePostBlockedLines({ total: 0, byPath: {} }, { total: 3, byAction: { wmc_get_products_price: 3 } }),
+      'remote_post_blocked: 0\nizinli-okuma: 3\n  • wmc_get_products_price  3'
     );
   });
 });

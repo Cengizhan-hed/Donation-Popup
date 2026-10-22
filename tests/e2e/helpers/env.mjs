@@ -9,6 +9,7 @@ import { ROOT } from './env-root.mjs';
 import { loadProfile, setActiveProfile, productRole, isRemoteProfile, resolveAllowedRemoteTarget } from './profile.mjs';
 import { setActiveDeployEnvFile } from './wp-remote.mjs';
 import { inspectEnvTargetKeys, validateE2EBaseUrl } from '../../../scripts/lib/deploy-guards.mjs';
+import { inspectEnvPageProductKeys } from './catalog-core.mjs';
 
 export { ROOT };
 
@@ -114,17 +115,24 @@ export function loadE2EEnv(opts = {}) {
   if (!loginPath.startsWith('/')) loginPath = `/${loginPath}`;
 
   const products = {};
-  for (const [key, role] of PRODUCT_KEYS) {
-    const fromEnv = String(env[key] || '').trim();
-    const fromProfile = productRole(profile, role);
-    const slug = fromEnv || String(fromProfile?.slug || '').trim();
-    products[key] = slug;
+  let listPage = '';
+  let shopPage = '';
+  if (remote) {
+    const pageInspect = inspectEnvPageProductKeys(parsed, envFileName);
+    if (pageInspect.warning) console.warn(pageInspect.warning);
+    for (const [key] of PRODUCT_KEYS) products[key] = '';
+  } else {
+    for (const [key, role] of PRODUCT_KEYS) {
+      const fromEnv = String(env[key] || '').trim();
+      const fromProfile = productRole(profile, role);
+      const slug = fromEnv || String(fromProfile?.slug || '').trim();
+      products[key] = slug;
+    }
+    listPage =
+      String(env.E2E_LIST_PAGE || '').trim() || String(profile.listPage || '').trim();
+    shopPage =
+      String(env.E2E_SHOP_PAGE || '').trim() || String(profile.shopPage || '').trim();
   }
-
-  const listPage =
-    String(env.E2E_LIST_PAGE || '').trim() || String(profile.listPage || '').trim();
-  const shopPage =
-    String(env.E2E_SHOP_PAGE || '').trim() || String(profile.shopPage || '').trim();
 
   const out = {
     E2E_BASE_URL: base,
@@ -137,6 +145,8 @@ export function loadE2EEnv(opts = {}) {
     E2E_PRODUCT_CAMPAIGN: products.E2E_PRODUCT_CAMPAIGN,
     E2E_LIST_PAGE: listPage,
     E2E_SHOP_PAGE: shopPage,
+    E2E_CART_PAGE: '',
+    E2E_CHECKOUT_PAGE: '',
     E2E_MASK_SELECTORS: String(env.E2E_MASK_SELECTORS || '').trim(),
     E2E_COMING_SOON_SHARE_KEY: String(env.E2E_COMING_SOON_SHARE_KEY || '').trim(),
     E2E_DIFF_THRESHOLD: (() => {

@@ -5,7 +5,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { chromium } from '@playwright/test';
 import { withCacheBust, productPaths, ROOT } from './env.mjs';
-import { getActiveProfile, matchesProfilePattern } from './profile.mjs';
+import { getActiveProfile, isRemoteProfile, matchesProfilePattern } from './profile.mjs';
+import { productNavPath } from './catalog-core.mjs';
+import { currencySwitchFromProfile, runCurrencySwitchChecks } from './currency-switch.mjs';
 import { getDevicePreset } from './devices.mjs';
 import { areaIncludes } from './area-filter.mjs';
 import { applyComingSoonBypass, comingSoonQuery } from './coming-soon.mjs';
@@ -19,6 +21,7 @@ import {
   resetRemotePostBlocked,
   snapshotBlockedTrackers,
   snapshotRemotePostBlocked,
+  snapshotAllowedReads,
   consumeOrderBlocks,
   consumeAdminWriteBlocks,
   snapshotPluginAjaxFails,
@@ -2533,6 +2536,7 @@ export async function captureAll({
       a11yFindings: [],
       blocked_trackers: { total: 0, byHost: {} },
       remote_post_blocked: { total: 0, byPath: {} },
+      izinli_okuma: { total: 0, byAction: {} },
     };
   }
   let guardOrder = null;
@@ -2591,31 +2595,56 @@ export async function captureAll({
   resetRemotePostBlocked();
   const browser = await device.browserType.launch();
   installBrowserGuard(browser, env, {
-    checkoutPath: checkoutEnv?.checkoutUrl || '/checkout/',
-    cartPath: checkoutEnv?.cartUrl || '/cart/',
+    checkoutPath: checkoutEnv?.checkoutUrl || env.E2E_CHECKOUT_PAGE || '/checkout/',
+    cartPath: checkoutEnv?.cartUrl || env.E2E_CART_PAGE || '/cart/',
   });
   const guest = await asVisitor(browser, env, contextOpts);
   const authed = await asAdmin(browser, env, contextOpts);
   const catalogCtx = profile.comingSoon ? authed : guest;
 
-  // Ürün kalıcı bağlantıları + ID’ler (Store API / sayfa linki) — bir kez
+  // Ürün kalıcı bağlantıları + ID’ler — uzak: WP katalog permalink; yerel: Store API
   const tProbe = Date.now();
-  const probe = await catalogCtx.newPage();
-  await probe.goto(withCacheBust(env.E2E_BASE_URL, '/'), { waitUntil: 'domcontentloaded' }).catch(() => {});
-  const productUrls = await resolveAllProductPaths(probe, env.E2E_BASE_URL, products);
+  /** @type {Record<string, string>} */
+  const productUrls = {};
   /** @type {Record<string, number>} */
   const productIds = {};
-  for (const [key, slug] of Object.entries(products)) {
-    const wpId = Number(env._resolvedProducts?.[key]?.id || profile.products?.[key]?.id || 0);
-    productIds[key] = await resolveProductIdBySlug(probe, env.E2E_BASE_URL, slug, wpId);
+  const remote = isRemoteProfile(profile);
+  for (const [key, val] of Object.entries(products)) {
+    const rec = env._resolvedProducts?.[key];
+    if (rec?.path) productUrls[key] = rec.path;
+    else {
+      const p = productNavPath(val);
+      if (p) productUrls[key] = p;
+    }
+    if (rec?.id) productIds[key] = Number(rec.id) || 0;
+  }
+  if (!remote) {
+    const probe = await catalogCtx.newPage();
+    try {
+      await probe.goto(withCacheBust(env.E2E_BASE_URL, '/'), { waitUntil: 'domcontentloaded' });
+    } catch (e) {
+      console.error(`[e2e:catch-fail] ürün probe ana sayfa: ${e && e.message ? e.message : e}`);
+    }
+    const pending = Object.fromEntries(
+      Object.entries(products).filter(([k, slug]) => slug && !productUrls[k])
+    );
+    if (Object.keys(pending).length) {
+      const probed = await resolveAllProductPaths(probe, env.E2E_BASE_URL, pending);
+      Object.assign(productUrls, probed);
+    }
+    for (const [key, slug] of Object.entries(products)) {
+      if (productIds[key]) continue;
+      const wpId = Number(env._resolvedProducts?.[key]?.id || profile.products?.[key]?.id || 0);
+      productIds[key] = await resolveProductIdBySlug(probe, env.E2E_BASE_URL, slug, wpId);
+    }
+    await probe.close();
   }
   for (const [role, rec] of Object.entries(env._resolvedProducts || {})) {
-    if (!rec || !rec.fromFixture) continue;
+    if (!rec) continue;
     const path = rec.path || rec.url || productUrls[role];
     if (path) productUrls[role] = path;
     if (rec.id) productIds[role] = Number(rec.id) || productIds[role] || 0;
   }
-  await probe.close();
   logSection('ürün URL/ID çözümü', tProbe);
 
   // Alt bağış admin — ürün/shell/liste ile örtüşür (wall clock)
@@ -3242,6 +3271,14 @@ export async function captureAll({
       }
     }
     await listPage.close();
+    if (!env.E2E_SHOP_PAGE) {
+      skips.push({
+        check: `${pfx}-shop`,
+        description: 'Mağaza sayfası WooCommerce’den çözülemedi → atla',
+      });
+      functionalStats.skipped += 1;
+      return;
+    }
     const shopPage = await visit(catalogCtx, env.E2E_SHOP_PAGE, `${pfx}-shop`, { checkImages: true });
     if (runFunctional) {
       const addTexts = await shopPage.locator('a.button, button').allTextContents();
@@ -3897,6 +3934,33 @@ export async function captureAll({
         logSection('a11y+checkout-flow', tA11y);
       }
     }
+    if (runFunctional && currencySwitchFromProfile(profile) && (want('core') || want('checkout-flow'))) {
+      const tCur = Date.now();
+      try {
+        await runCurrencySwitchChecks({
+          browser,
+          contextOpts,
+          env,
+          productUrls,
+          productIds,
+          listPagePath: env.E2E_LIST_PAGE,
+          failures,
+          stats: functionalStats,
+          skips,
+        });
+      } catch (e) {
+        failures.push(
+          makeFailure({
+            check: 'currency-switch-runner',
+            description: 'Para birimi gösterimi koşucusu çöktü',
+            error: e,
+          })
+        );
+        functionalStats.failed += 1;
+      } finally {
+        logSection('currency-switch', tCur);
+      }
+    }
   }
 
   await guest.close();
@@ -4030,7 +4094,8 @@ export async function captureAll({
 
   const blockedTrackers = snapshotBlockedTrackers();
   const remotePostBlocked = snapshotRemotePostBlocked();
-  console.log(formatRemotePostBlockedLines(remotePostBlocked));
+  const izinliOkuma = snapshotAllowedReads();
+  console.log(formatRemotePostBlockedLines(remotePostBlocked, izinliOkuma));
 
   return {
     shots,
@@ -4050,5 +4115,6 @@ export async function captureAll({
     a11yFindings,
     blocked_trackers: blockedTrackers,
     remote_post_blocked: remotePostBlocked,
+    izinli_okuma: izinliOkuma,
   };
 }

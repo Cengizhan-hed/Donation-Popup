@@ -1,86 +1,90 @@
 /**
- * Profildeki ürün adından slug/ID çöz (WP-CLI; içerik değiştirmez).
- * Store API / sabit ID yok: WP post list kaynak.
+ * Uzak: sayfa/ürün = WP-CLI katalog (permalink). Yerel: env / profil / fixture.
+ * Store API slug tahmini yok.
  */
-import { loadDeployEnvSilent, remote, wpCliPath } from './wp-remote.mjs';
+import { runEvalFile } from './wp-remote.mjs';
 import { loadFixtures } from './fixtures.mjs';
+import { isRemoteProfile } from './profile.mjs';
+import {
+  applyRemoteCatalog,
+  parseCatalogJson,
+} from './catalog-core.mjs';
 
 /**
- * @param {string} name
- * @returns {Promise<{id:number,slug:string,title:string}|null>}
+ * @returns {Promise<{ ok: true, catalog: object } | { ok: false, reason: string }>}
  */
-export async function findProductByName(name) {
-  const title = String(name || '').trim();
-  if (!title) return null;
-  const loaded = loadDeployEnvSilent();
-  if (!loaded.ok) return null;
-  const flag = wpCliPath(loaded.env);
-  const q = title.replace(/'/g, `'\\''`);
-  const raw = remote(
-    loaded.env,
-    `wp post list --post_type=product --s='${q}' --fields=ID,post_name,post_title --format=json ${flag}`
-  );
-  let rows = [];
-  try {
-    rows = JSON.parse(raw || '[]');
-  } catch {
-    return null;
+export async function fetchRemoteCatalog() {
+  if (String(process.env.WDP_UNIT_TEST || '') === '1') {
+    return { ok: false, reason: 'birim test: uzak katalog yok' };
   }
-  if (!Array.isArray(rows) || !rows.length) return null;
-  const exact = rows.find(
-    (r) => String(r.post_title || '').trim().toLowerCase() === title.toLowerCase()
-  );
-  const row = exact || rows[0];
-  return {
-    id: Number(row.ID) || 0,
-    slug: String(row.post_name || '').trim(),
-    title: String(row.post_title || '').trim(),
-  };
-}
-
-/**
- * @param {string} slug
- * @returns {Promise<{id:number,slug:string,title:string}|null>}
- */
-export async function findProductBySlug(slug) {
-  const s = String(slug || '').trim().replace(/^\/+|\/+$/g, '');
-  if (!s) return null;
-  const loaded = loadDeployEnvSilent();
-  if (!loaded.ok) return null;
-  const flag = wpCliPath(loaded.env);
-  const q = s.replace(/'/g, `'\\''`);
-  const raw = remote(
-    loaded.env,
-    `wp post list --post_type=product --name='${q}' --fields=ID,post_name,post_title --format=json ${flag}`
-  );
-  let rows = [];
   try {
-    rows = JSON.parse(raw || '[]');
-  } catch {
-    return null;
+    const raw = runEvalFile('tests/e2e/helpers/catalog-resolve.php');
+    const catalog = parseCatalogJson(raw);
+    if (!catalog) return { ok: false, reason: 'katalog JSON okunamadı' };
+    return { ok: true, catalog };
+  } catch (e) {
+    const msg = e && e.message ? String(e.message) : String(e);
+    return { ok: false, reason: msg.slice(0, 120) };
   }
-  const row = Array.isArray(rows) && rows[0] ? rows[0] : null;
-  if (!row) return null;
-  return {
-    id: Number(row.ID) || 0,
-    slug: String(row.post_name || '').trim() || s,
-    title: String(row.post_title || '').trim(),
-  };
 }
 
 /**
  * @param {object} env loadE2EEnv çıktısı
+ * @param {{ catalog?: object }} [opts]
  */
-export async function fillMissingProductSlugs(env) {
+export async function fillMissingProductSlugs(env, opts = {}) {
   const profile = env._profile;
-  if (!profile?.products) return env;
-  /** @type {Record<string, {id:number,slug:string,title:string,skipReason?:string}>} */
-  const resolved = env._resolvedProducts && typeof env._resolvedProducts === 'object'
-    ? env._resolvedProducts
-    : {};
-  env._resolvedProducts = resolved;
-  /** @type {Array<{check:string,description:string}>} */
   env._roleSkips = Array.isArray(env._roleSkips) ? env._roleSkips : [];
+  env._resolvedProducts =
+    env._resolvedProducts && typeof env._resolvedProducts === 'object' ? env._resolvedProducts : {};
+
+  if (isRemoteProfile(profile)) {
+    const injected = opts.catalog;
+    const fetched = injected ? { ok: true, catalog: injected } : await fetchRemoteCatalog();
+    if (!fetched.ok) {
+      env.E2E_SHOP_PAGE = '';
+      env.E2E_LIST_PAGE = '';
+      env.E2E_CART_PAGE = '';
+      env.E2E_CHECKOUT_PAGE = '';
+      for (const role of ['fixed', 'custom', 'shares', 'campaign']) {
+        env[`E2E_PRODUCT_${role.toUpperCase()}`] = '';
+      }
+      env._roleSkips.push({
+        check: 'catalog',
+        description: `WP katalog okunamadı (${fetched.reason}) → sayfa/ürün senaryoları atlanır`,
+      });
+      console.log(`[e2e] ürün eşlemesi ${profile.id}: katalog yok`);
+      return env;
+    }
+    applyRemoteCatalog(env, fetched.catalog);
+    const mapLog = {
+      roles: Object.fromEntries(
+        ['fixed', 'custom', 'shares', 'campaign'].map((r) => [
+          r,
+          env._resolvedProducts[r]?.path || '(yok)',
+        ])
+      ),
+      ids: Object.fromEntries(
+        Object.entries(env._resolvedProducts).map(([k, v]) => [k, v.id])
+      ),
+      shop: env.E2E_SHOP_PAGE || '(yok)',
+      list: env.E2E_LIST_PAGE || '(yok)',
+      cart: env.E2E_CART_PAGE || '(yok)',
+    };
+    console.log(`[e2e] ürün eşlemesi ${profile.id}: ${JSON.stringify(mapLog)}`);
+    return env;
+  }
+
+  return fillLocalProductSlugs(env);
+}
+
+/**
+ * Yerel: env / fixture. Uzak kuralı uygulanmaz.
+ * @param {object} env
+ */
+function fillLocalProductSlugs(env) {
+  const profile = env._profile;
+  if (!profile) return env;
 
   function applyFixtureRole(role) {
     const data = loadFixtures(env);
@@ -109,113 +113,24 @@ export async function fillMissingProductSlugs(env) {
   const roles = ['fixed', 'custom', 'shares', 'campaign'];
   for (const role of roles) {
     const key = `E2E_PRODUCT_${role.toUpperCase()}`;
-    const spec = profile.products[role];
+    if (env[key]) continue;
+    const spec = profile.products?.[role];
     if (!spec) {
       if (applyFixtureRole(role)) continue;
       env[key] = '';
       const note =
-        profile.unavailableRoles?.[role] ||
-        `${profile.id}: ${role} ürünü yok → atla`;
-      env._roleSkips.push({
-        check: `role-${role}`,
-        description: note,
-      });
+        profile.unavailableRoles?.[role] || `${profile.id}: ${role} ürünü yok → atla`;
+      env._roleSkips.push({ check: `role-${role}`, description: note });
       continue;
     }
-    if (!env[key] && spec.slug) env[key] = spec.slug;
-    if (!env[key] && spec.name) {
-      const found = await findProductByName(spec.name);
-      if (found?.slug) {
-        env[key] = found.slug;
-        spec.id = found.id || spec.id;
-        spec.slug = found.slug;
-        resolved[role] = found;
-      }
-    }
-    if (env[key] && !resolved[role]) {
-      const bySlug = await findProductBySlug(env[key]);
-      if (bySlug) {
-        spec.id = bySlug.id || spec.id;
-        spec.slug = bySlug.slug || spec.slug;
-        resolved[role] = bySlug;
-      }
-    }
-    if (spec.id && resolved[role] && !resolved[role].id) {
-      resolved[role].id = Number(spec.id) || 0;
-    }
+    if (spec.slug) env[key] = spec.slug;
+    if (!env[key] && applyFixtureRole(role)) continue;
     if (!env[key]) {
-      if (applyFixtureRole(role)) continue;
       env._roleSkips.push({
         check: `role-${role}`,
-        description: `${profile.id}: ${role} ürünü çözülemedi (ad=${spec.name || '—'}) → atla`,
+        description: `${profile.id}: ${role} ürünü çözülemedi → atla`,
       });
     }
   }
-
-  const extras = ['customSadaqah', 'customZakat', 'fixedQurbani'];
-  env._extraProducts = env._extraProducts || {};
-  for (const extra of extras) {
-    const spec = profile.products[extra];
-    if (!spec?.name) continue;
-    const found = await findProductByName(spec.name);
-    env._extraProducts[extra] = found || {
-      id: 0,
-      slug: '',
-      title: spec.name,
-      missing: true,
-    };
-  }
-  if (profile.hedefli?.name) {
-    const found = await findProductByName(profile.hedefli.name);
-    env._extraProducts.hedefli = found || {
-      id: 0,
-      slug: '',
-      title: profile.hedefli.name,
-      missing: true,
-    };
-  }
-
-  if (!env.E2E_LIST_PAGE && profile.listPageId) {
-    const loaded = loadDeployEnvSilent();
-    if (loaded.ok) {
-      const flag = wpCliPath(loaded.env);
-      const id = Number(profile.listPageId) || 0;
-      if (id) {
-        try {
-          const url = remote(
-            loaded.env,
-            `wp eval 'echo get_permalink(${id});' ${flag}`
-          );
-          if (url) {
-            const u = new URL(String(url).trim());
-            env.E2E_LIST_PAGE = u.pathname.replace(/\/$/, '') || '/';
-          }
-        } catch {
-          /* liste yolu boş kalabilir */
-        }
-      }
-    }
-  }
-  if (!env.E2E_SHOP_PAGE) {
-    env.E2E_SHOP_PAGE = profile.shopPage || '/shop/';
-  }
-  const mapLog = {
-    roles: Object.fromEntries(
-      ['fixed', 'custom', 'shares', 'campaign'].map((r) => [
-        r,
-        env[`E2E_PRODUCT_${r.toUpperCase()}`] || (resolved[r] ? resolved[r].slug : '(yok)'),
-      ])
-    ),
-    ids: Object.fromEntries(
-      Object.entries(resolved).map(([k, v]) => [k, v.id])
-    ),
-    extras: Object.fromEntries(
-      Object.entries(env._extraProducts || {}).map(([k, v]) => [
-        k,
-        v.missing ? `YOK:${v.title}` : `${v.title}#${v.id}`,
-      ])
-    ),
-  };
-  console.log(`[e2e] ürün eşlemesi ${profile.id}: ${JSON.stringify(mapLog)}`);
   return env;
 }

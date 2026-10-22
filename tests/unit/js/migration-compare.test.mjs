@@ -109,6 +109,7 @@ describe('migration-compare sınıfları', () => {
       wdp_cache_version: entry('1'),
       wdp_list_cache_version: entry('1'),
       wdp_migration_log: entry([]),
+      wdp_css_signature: entry('oldsig'),
     });
     const b = snap({
       wdp_version: entry('10.34.2'),
@@ -117,6 +118,7 @@ describe('migration-compare sınıfları', () => {
       wdp_list_cache_version: entry('99'),
       wdp_migration_log: entry([{ v: '10.34.0' }]),
       wdp_migrated_10_30_0: entry('1'),
+      wdp_css_signature: entry('newsig'),
     });
     const r = compareSnapshots(a, b);
     const keys = [
@@ -126,6 +128,7 @@ describe('migration-compare sınıfları', () => {
       'option:wdp_list_cache_version',
       'option:wdp_migration_log',
       'option:wdp_migrated_10_30_0',
+      'option:wdp_css_signature',
     ];
     for (const k of keys) {
       assert.equal(r.rows.find((x) => x.key === k).class, 'BEKLENEN DEĞİŞİM', k);

@@ -62,5 +62,14 @@
     }
   },
   "protectedProductIds": [],
-  "altDonationProductId": 0
+  "altDonationProductId": 0,
+  "remoteReadOnlyPostActions": [
+    "wmc_get_products_price",
+    "hdf_side_cart_v8_get",
+    "fusion_get_webfonts_ajax"
+  ],
+  "currencySwitch": {
+    "param": "wmc-currency",
+    "codes": ["EUR", "USD"]
+  }
 }

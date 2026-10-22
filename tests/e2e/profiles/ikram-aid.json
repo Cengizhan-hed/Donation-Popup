@@ -24,7 +24,6 @@
   "theme": "Blocksy",
   "pageBuilder": "Elementor",
   "listPage": "",
-  "listPageId": 100,
   "shopPage": "",
   "cachePurge": "sg-purge",
   "wpCliAuth": true,
@@ -51,41 +50,17 @@
   },
   "products": {
     "custom": {
-      "role": "custom",
-      "name": "Orphan Support",
-      "min": 5
-    },
-    "customSadaqah": {
-      "role": "custom",
-      "name": "Sadaqah",
-      "min": 5
-    },
-    "customZakat": {
-      "role": "custom",
-      "name": "Zakat",
-      "min": 5
+      "role": "custom"
     },
     "fixed": {
-      "role": "fixed",
-      "name": "Food Pack",
-      "amount": 40
+      "role": "fixed"
     },
-    "fixedQurbani": {
-      "role": "fixed",
-      "name": "Qurbani",
-      "amount": 120
+    "shares": {
+      "role": "shares"
     },
-    "campaign": null,
-    "shares": null
-  },
-  "unavailableRoles": {
-    "shares": "Ikram'da hisseli ürün yok → atla (neden: profil shares=null)",
-    "campaign": "Ikram'da kampanya ürünü yok → atla (neden: profil campaign=null; Water Well hedefli ürün olarak ayrıca çözülür)"
-  },
-  "hedefli": {
-    "role": "goal",
-    "name": "Water Well",
-    "goal": 3000
+    "campaign": {
+      "role": "campaign"
+    }
   },
   "protectedProductIds": [],
   "altDonationProductId": 0
