@@ -15,6 +15,7 @@ import {
 } from './checks.mjs';
 import { getProductMeta, setProductMeta } from './staging-wp-meta.mjs';
 import { requireFixtureRole, mutationBrowserContext } from './fixtures.mjs';
+import { popupPagePath } from './catalog-core.mjs';
 
 const CHECK_MS = 25000;
 
@@ -170,7 +171,7 @@ export async function runCampaignBlocksChecks({
 }) {
   const checks = [];
   const baseUrl = env.E2E_BASE_URL;
-  const listPath = listPagePath || env.E2E_LIST_PAGE;
+  const listPath = popupPagePath(env, listPagePath);
   let campaignId = productIds.campaign || 0;
   let campaignPath = productUrls.campaign;
   try {

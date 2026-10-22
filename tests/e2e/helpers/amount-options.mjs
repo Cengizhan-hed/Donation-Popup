@@ -17,6 +17,7 @@ import {
 } from './checks.mjs';
 import { getProductMeta, setProductMeta } from './staging-wp-meta.mjs';
 import { requireFixtureRole, mutationBrowserContext } from './fixtures.mjs';
+import { popupPagePath } from './catalog-core.mjs';
 
 const CHECK_MS = 20000;
 const RECOMMENDED_META = '_amount_preset_recommended';
@@ -212,7 +213,7 @@ export async function runAmountOptionsChecks({
 }) {
   const checks = [];
   const baseUrl = env.E2E_BASE_URL;
-  const listPath = listPagePath || env.E2E_LIST_PAGE;
+  const listPath = popupPagePath(env, listPagePath);
   let customId = productIds.custom || 0;
   let customPath = productUrls.custom;
   let fixedPath = productUrls.fixed;

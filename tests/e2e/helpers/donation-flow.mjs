@@ -17,6 +17,7 @@ import {
 } from './checks.mjs';
 import { e2eEmail, markOrderAsE2E } from './test-cleanup.mjs';
 import { getActiveProfile, isRemoteProfile } from './profile.mjs';
+import { popupPagePath } from './catalog-core.mjs';
 import { checkoutPathFromUrl } from './checkout-setup.mjs';
 import { comingSoonQuery } from './coming-soon.mjs';
 import { textHasFormattedAmount } from './currency.mjs';
@@ -78,11 +79,11 @@ export async function runDonationFlowChecks({
   const profile = getActiveProfile();
   const customPath = productUrls.custom || productUrls.fixed;
   const customId = productIds.custom || productIds.fixed || 0;
-  const listPath = listPagePath || env.E2E_LIST_PAGE;
+  const listPath = popupPagePath(env, listPagePath);
   if (!customPath || !listPath) {
     skips.push({
       check: `checkout-flow-${deviceId}`,
-      description: 'Ürün/liste yolu yok, akış atlandı',
+      description: 'Ürün/liste/mağaza yolu yok, akış atlandı',
     });
     stats.skipped += 1;
     return;

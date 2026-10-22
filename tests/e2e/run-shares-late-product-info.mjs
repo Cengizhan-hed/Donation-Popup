@@ -20,7 +20,7 @@ import {
 } from './helpers/checks.mjs';
 import { SEL } from './helpers/selectors.mjs';
 import { peekActiveProfile } from './helpers/profile.mjs';
-import { decideScenarioProduct } from './helpers/catalog-core.mjs';
+import { decideScenarioProduct, popupPagePath } from './helpers/catalog-core.mjs';
 import { installBrowserGuard } from './helpers/network-guard.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -170,7 +170,7 @@ export async function runSharesLateProductInfoChecks({
     const page = await ctx.newPage();
     try {
       await installProductInfoDelay(page, DELAY_MS);
-      const pagePath = mode === 'panel' ? sharesProductPath : listPagePath || env.E2E_LIST_PAGE;
+      const pagePath = mode === 'panel' ? sharesProductPath : popupPagePath(env, listPagePath);
       await page.goto(withCacheBust(env.E2E_BASE_URL, pagePath, guestExtra), {
         waitUntil: 'domcontentloaded',
       });

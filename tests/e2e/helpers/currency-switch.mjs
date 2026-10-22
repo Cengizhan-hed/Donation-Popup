@@ -15,6 +15,7 @@ import {
   clickShellTrigger,
 } from './checks.mjs';
 import { comingSoonQuery } from './coming-soon.mjs';
+import { popupPagePath } from './catalog-core.mjs';
 
 const CHECK_MS = 25000;
 
@@ -203,7 +204,7 @@ export async function runCurrencySwitchChecks({
   const profile = env._profile;
   const spec = currencySwitchFromProfile(profile);
   if (!spec) return;
-  const listPath = listPagePath || env.E2E_LIST_PAGE;
+  const listPath = popupPagePath(env, listPagePath);
   const productPath = productUrls.custom || productUrls.fixed || productUrls.campaign || '';
   const cartPath = env.E2E_CART_PAGE || '/cart/';
   if (!listPath || !productPath) {

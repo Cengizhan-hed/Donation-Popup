@@ -490,7 +490,7 @@ Anahtar çıkarıcı: `get_option`/`update_option`/`add_option`/`get_post_meta`/
 
 | Öğe | Değer |
 |-----|--------|
-| Komutlar | `e2e:quick`, `e2e:full`, `e2e:matrix`, `e2e`, `e2e:baseline`, `e2e:accept`, `e2e:stability`, `e2e:perf` (`package.json`) |
+| Komutlar | `e2e:quick`, `e2e:full`, `e2e:matrix`, `e2e`, `e2e:baseline`, `e2e:accept`, `e2e:stability`, `e2e:perf`, `e2e:catalog-explain` (`package.json`) |
 | Ortam | Profil JSON `tests/e2e/profiles/*.json` (uzak URL/SSH/yol tek kaynak) + sır dosyası `.env.e2e` / `.env.e2e.ikram` (parola vb.); yükleyici `tests/e2e/helpers/env.mjs` |
 | Çıktı | `build/e2e/current/<ortam>/<cihaz>/`; baseline `tests/e2e/__baseline__/<ortam>/<cihaz>/` |
 | Manifest | `run.json` (`tests/e2e/helpers/run-io.mjs`) |
@@ -506,7 +506,7 @@ Salt okunur envanter (yazma yok; `spawnGuarded` zorunlu). Claude çalıştırır
 
 | Öğe | Değer |
 |-----|--------|
-| Komut | `npm run remote:discover -- --env staging\|ikram` (yerel WP: `--env local`, SSH yok) |
+| Komut | `npm run remote:discover -- --env staging\|ikram` (yerel WP: `--env local`, SSH yok). Katalog teşhis: `npm run e2e:catalog-explain -- --env staging\|ikram` |
 | Betik | `scripts/remote-discover.mjs` + `scripts/lib/remote-discover-lib.mjs` |
 | Profil | `loadProfile` (`tests/e2e/profiles/*.json`); `ssh.alias` + `ssh.wpPath`; her `wp` çağrısında `--path`; `--skip-themes` yok |
 | Çıktı | `build/discovery/<env>.json` + `.md`; kanarya `build/e2e/canary/<env>-baseline.json` |
@@ -523,7 +523,7 @@ Salt okunur envanter (yazma yok; `spawnGuarded` zorunlu). Claude çalıştırır
 | Ikram Aid | `tests/e2e/profiles/ikram-aid.json` | `.env.e2e.ikram` + `.env.deploy.ikram` | Blocksy + Elementor | GBP `£` | açık (paylaşım çerezi; option yazılmaz) | alias `ikramaid`, `~/www/ikramaid.uk/public_html` |
 | Yerel | `tests/e2e/profiles/local.json` | `.env.e2e.local` | — | — | — | yok |
 
-Siteye özel değer (sembol, ayırıcı, telefon ön eki, dil) testte sabit yazılmaz; profilden okunur. Uzak sayfa/ürün **tek kaynak WordPress/WooCommerce** (WP-CLI eval-file `tests/e2e/helpers/catalog-resolve.php`, salt okunur): mağaza `wc_get_page_permalink('shop')`; sepet/ödeme `wc_get_cart_url` / `wc_get_checkout_url`; bağış listesi = eklenti kısa kodu/bloğu/Elementor widget’ı veya Avada/oluşturucu meta’sında geçen **ilk yayımlanmış** sayfa (yoksa senaryo ATLANIR). Roller `WDP_Donation_Type` kuralı (shares→campaign→custom→fixed); yalnız yayımlanmış + katalogda görünür gerçek ürünler okuma için (permalink, `/product/{slug}` tahmini yok). Mutasyon fixture. `E2E_SHOP_PAGE` / `E2E_LIST_PAGE` / `E2E_PRODUCT_*` env uzak profilde kullanılmaz (tek satır uyarı, değer yok). Profilde ürün adı/ID sabiti yok. Katalogda yayımlanmış ürün yoksa ziyaretçi/liste/mağaza **atlanır**; ürün sayfası/form/panel/doğrulama/sepet fixture + yönetici. Fixture: `build/e2e/fixtures-<profil>.json` (private, işaretli) yönetici oturumunda; adres `get_permalink()` (sorgu dizesi dahil) — path `"/"` ana sayfa olarak kullanılmaz (hata). Uzak `allowMetaMutation: false`; koşu başı `assertRunMutationTargetsAreFixtures`. Uzak `E2E_BASE_URL` / `DEPLOY_*` env’den okunmaz; `resolveAllowedRemoteTarget` + izin listesi. Env farklıysa uyarı (durmaz); spawn üçlüsü yine birebir.
+Siteye özel değer (sembol, ayırıcı, telefon ön eki, dil) testte sabit yazılmaz; profilden okunur. Uzak sayfa/ürün **tek kaynak WordPress/WooCommerce** (WP-CLI eval-file `tests/e2e/helpers/catalog-resolve.php`, salt okunur): mağaza `wc_get_page_permalink('shop')`; sepet/ödeme `wc_get_cart_url` / `wc_get_checkout_url`; bağış listesi = eklenti kısa kodu/bloğu/Elementor widget’ı veya Avada/oluşturucu meta’sında geçen **ilk yayımlanmış** sayfa. Liste yoksa popup **mağaza döngüsü** `.wdp-loop-donate` / Bağış Yap; o da yoksa senaryo **ATLANIR** (hata değil). Tip `WDP_Donation_Type::for_product` (kopya yok; göç etmiş meta). `--explain`: her yayımlanmış ürün (id, ad, durum, görünürlük, purchasable, tip + bayrak açık/kapalı nedeni) → `build/e2e/catalog-explain-<profil>.md`; müşteri/sipariş/meta değeri yok. Komut `npm run e2e:catalog-explain -- --env staging|ikram` (`scripts/e2e-catalog-explain.mjs`, `spawnGuarded`). Roller yalnız yayımlanmış + katalogda görünür gerçek bağış ürünleri (permalink, `/product/{slug}` tahmini yok). Mutasyon fixture. `E2E_SHOP_PAGE` / `E2E_LIST_PAGE` / `E2E_PRODUCT_*` env uzak profilde kullanılmaz (tek satır uyarı, değer yok). Profilde ürün adı/ID sabiti yok. Katalogda yayımlanmış ürün yoksa ziyaretçi/liste/mağaza **atlanır**; ürün sayfası/form/panel/doğrulama/sepet fixture + yönetici. Fixture: `build/e2e/fixtures-<profil>.json` (private, işaretli) yönetici oturumunda; adres `get_permalink()` (sorgu dizesi dahil) — path `"/"` ana sayfa olarak kullanılmaz (hata). Uzak `allowMetaMutation: false`; koşu başı `assertRunMutationTargetsAreFixtures`. Uzak `E2E_BASE_URL` / `DEPLOY_*` env’den okunmaz; `resolveAllowedRemoteTarget` + izin listesi. Env farklıysa uyarı (durmaz); spawn üçlüsü yine birebir.
 
 **E2E senaryo × ürün kaynağı** (`tests/e2e/helpers/catalog-core.mjs` `SCENARIO_PRODUCT_POLICY` / `decideScenarioProduct`):
 
@@ -531,9 +531,9 @@ Siteye özel değer (sembol, ayırıcı, telefon ön eki, dil) testte sabit yaz�
 |-----|------------|-------------------------|------------------------|
 | Ziyaretçi / liste / mağaza | `visitor`, `list`, `shop-loop`, `loop-donate` | evet | **ATLA** (neden; hata değil) |
 | Ürün / form / panel / sepet | `product-page`, `form`, `panel`, `validation`, `cart` | evet | fixture + **yönetici oturumu** |
-| Popup | `popup` (liste tetikleyici) | evet (listede görünür) | **ATLA** — private fixture listede yok |
+| Popup | `popup` (liste; yoksa mağaza döngüsü Bağış Yap) | evet | **ATLA** — kaynak yok veya private fixture |
 
-Private permalink (`https://site/?post_type=product&p=ID`) pathname `"/"` olsa da sorgu korunur (`navTargetFromUrl` / `pickFixtureNavTarget`). Panel fixture ürün sayfasından açılır; popup liste sayfasından açılmaz.
+Private permalink (`https://site/?post_type=product&p=ID`) pathname `"/"` olsa da sorgu korunur (`navTargetFromUrl` / `pickFixtureNavTarget`). Panel fixture ürün sayfasından açılır. Popup: `resolvePopupSource` liste → mağaza → atla (`tests/e2e/helpers/catalog-core.mjs`).
 
 **Sepet e-posta/ithaf gerileme (F9, `form-fields-cart-shows-email-dedication`):** Eklenti `display_donation_data_in_cart` 10.33.0 ile aynı (`includes/class-cart.php:388-479`; `git show 163fe09`). Store API `item_data` e-posta/ithaf basar (aynı filtre). 2/3 `form-fields` `onCart=/\/cart\/?/` + Hedef `wc_get_cart_url` kök/`/sepet/` 404. Asıl 404: Woo sepet sayfası `woocommerce_cart_page_id` **çöpte** (Hedef id 291 `trash`; `get_permalink` → `/?page_id=291` pathname `/`). Düzeltme (eklenti yok): `ensureWooCartPagePublished` (yalnız Hedef `allowMetaMutation`); `fillDonor` eksik alanda fail; teşhis JSON. `tests/e2e/helpers/staging-wp-meta.mjs`, `form-fields.mjs`.
 

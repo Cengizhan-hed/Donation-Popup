@@ -23,7 +23,15 @@ import {
   decideScenarioProduct,
   SCENARIO_PRODUCT_POLICY,
   productNavPath,
+  resolvePopupSource,
+  popupPagePath,
 } from '../../../tests/e2e/helpers/catalog-core.mjs';
+import {
+  formatCatalogExplainMarkdown,
+  parseCatalogExplainArgv,
+  createRemoteCatalogExplainRunner,
+  CATALOG_EVAL_FILE,
+} from '../../../scripts/e2e-catalog-explain.mjs';
 import { overlayFixtureRoles } from '../../../tests/e2e/helpers/resolve-products.mjs';
 
 function captureWarn(fn) {
@@ -146,6 +154,7 @@ describe('senaryo ürün politikası', () => {
     assert.equal(SCENARIO_PRODUCT_POLICY['visitor-list-shop'].source, 'published-only');
     assert.equal(SCENARIO_PRODUCT_POLICY['product-form-panel-cart'].ifMissing, 'fixture-admin');
     assert.equal(SCENARIO_PRODUCT_POLICY.popup.ifMissing, 'skip');
+    assert.equal(SCENARIO_PRODUCT_POLICY.popup.source, 'list-or-shop-loop');
     assert.ok(SCENARIO_PRODUCT_POLICY['visitor-list-shop'].kinds.includes('loop-donate'));
     assert.ok(SCENARIO_PRODUCT_POLICY['product-form-panel-cart'].kinds.includes('panel'));
     assert.ok(SCENARIO_PRODUCT_POLICY.popup.kinds.includes('popup'));
@@ -245,6 +254,43 @@ describe('yerel uzak-benzetim katalog', () => {
     setActiveProfile(null);
   });
 
+  it('liste yok + mağaza var → popup mağaza döngüsü; ikisi yok → atla', () => {
+    const env = { _profile: loadProfile('staging'), _roleSkips: [], _resolvedProducts: {} };
+    applyRemoteCatalog(env, {
+      shop: { path: '/bagislar/' },
+      cart: { path: '/sepet/' },
+      checkout: { path: '/odeme/' },
+      list: null,
+      products: FAKE_CATALOG.products.filter((p) => !p.fixture),
+    });
+    assert.equal(env.E2E_LIST_PAGE, '');
+    assert.ok(env._roleSkips.some((s) => s.check === 'list-page'));
+    const src = resolvePopupSource(env);
+    assert.equal(src.action, 'run');
+    assert.equal(src.source, 'shop');
+    assert.equal(src.path, '/bagislar/');
+    const d = decideScenarioProduct(env, 'fixed', 'popup');
+    assert.equal(d.action, 'run-visitor');
+    assert.equal(d.popupSource, 'shop');
+    assert.equal(d.pagePath, '/bagislar/');
+    assert.equal(popupPagePath(env), '/bagislar/');
+    assert.equal(env._roleSkips.some((s) => s.check === 'popup-source'), false);
+
+    const empty = { _profile: loadProfile('staging'), _roleSkips: [], _resolvedProducts: {} };
+    applyRemoteCatalog(empty, {
+      shop: { path: '' },
+      cart: { path: '/cart/' },
+      checkout: { path: '/checkout/' },
+      list: null,
+      products: FAKE_CATALOG.products.filter((p) => !p.fixture),
+    });
+    const skip = decideScenarioProduct(empty, 'custom', 'popup');
+    assert.equal(skip.action, 'skip');
+    assert.match(skip.reason, /mağaza|liste/);
+    assert.ok(empty._roleSkips.some((s) => s.check === 'popup-source'));
+    setActiveProfile(null);
+  });
+
   it('liste yoksa atla (hata değil); gizli/fixture rol seçilmez', () => {
     const env = { _profile: loadProfile('staging'), _roleSkips: [], _resolvedProducts: {} };
     applyRemoteCatalog(env, {
@@ -327,5 +373,83 @@ describe('yerel uzak-benzetim katalog', () => {
     overlayFixtureRoles(env, fixtures);
     assert.equal(env._roleSkips.filter((s) => s.check === 'popup-shares').length, 1);
     setActiveProfile(null);
+  });
+});
+
+describe('katalog --explain raporu', () => {
+  it('ürün adı var; müşteri/sipariş ve meta değeri yok', () => {
+    const md = formatCatalogExplainMarkdown({
+      profileId: 'staging-hedef',
+      resolver: 'WDP_Donation_Type::for_product',
+      plugin_loaded: true,
+      shop: { path: '/bagislar/' },
+      list: null,
+      publishedCount: 2,
+      pickedCount: 1,
+      picked: [{ id: 101, type: 'fixed', title: 'Adak Kurbanı', path: '/bagislar/adak-kurbani/' }],
+      published: [
+        {
+          id: 101,
+          title: 'Adak Kurbanı',
+          status: 'publish',
+          visibility: 'visible',
+          purchasable: true,
+          wc_type: 'simple',
+          donation: true,
+          fixture: false,
+          type: 'fixed',
+          flags: {
+            _allow_multiple_shares: 'kapalı',
+            _enable_progress_bar: 'kapalı',
+            _allow_custom_price: 'kapalı',
+          },
+          why: 'WDP_Donation_Type::for_product; öncelik shares→campaign→custom→fixed; _allow_multiple_shares=kapalı; sonuç=fixed',
+        },
+        {
+          id: 103,
+          title: 'Vacip Kurbanı',
+          status: 'publish',
+          visibility: 'visible',
+          purchasable: true,
+          wc_type: 'simple',
+          donation: true,
+          fixture: false,
+          type: 'shares',
+          flags: { _allow_multiple_shares: 'açık' },
+        },
+      ],
+    });
+    assert.match(md, /Adak Kurbanı/);
+    assert.match(md, /Vacip Kurbanı/);
+    assert.match(md, /WDP_Donation_Type::for_product/);
+    assert.match(md, /_allow_multiple_shares=açık/);
+    assert.equal(/@/.test(md), false);
+    assert.equal(/\byes\b/.test(md), false);
+    assert.equal(/order_id|customer_email|billing_/i.test(md), false);
+  });
+
+  it('argv --env staging; sahte spawn ssh atmaz', () => {
+    assert.equal(parseCatalogExplainArgv(['--env', 'staging']).envName, 'staging');
+    assert.equal(parseCatalogExplainArgv(['--env=ikram']).envName, 'ikram');
+    let n = 0;
+    const runner = createRemoteCatalogExplainRunner({
+      spawn: (bin, args) => {
+        n += 1;
+        assert.equal(bin, 'ssh');
+        assert.match(String(args[args.length - 1] || ''), /--explain/);
+        return {
+          status: 0,
+          stdout: JSON.stringify({ explain: true, published: [], picked: [], shop: { path: '/shop/' } }),
+          stderr: '',
+        };
+      },
+      alias: 'ikramaid',
+      wpPath: '~/www/ikramaid.uk/public_html',
+      siteUrl: 'https://ikramaid.uk',
+    });
+    const raw = runner();
+    assert.equal(n, 1);
+    assert.match(raw, /"explain":true/);
+    assert.equal(CATALOG_EVAL_FILE.includes('catalog-resolve.php'), true);
   });
 });

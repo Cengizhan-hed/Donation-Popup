@@ -40,7 +40,8 @@
     "migration:snapshot": "node scripts/migration-snapshot.mjs",
     "migration:rehearsal": "node scripts/migration-rehearsal.mjs",
     "migration:compare": "node scripts/migration-compare.mjs",
-    "remote:discover": "node scripts/remote-discover.mjs"
+    "remote:discover": "node scripts/remote-discover.mjs",
+    "e2e:catalog-explain": "node scripts/e2e-catalog-explain.mjs"
   },
   "repository": {
     "type": "git",

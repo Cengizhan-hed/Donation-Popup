@@ -31,7 +31,49 @@ if (!function_exists('wdp_e2e_catalog_plugin_needles')) {
 	}
 
 	/**
-	 * WDP_Donation_Type::infer_from_meta ile aynı kural (sınıf yoksa yedek).
+	 * WP-CLI / eval-file `--explain` (değer yok; yalnız bayrak).
+	 *
+	 * @param mixed $args CLI args.
+	 * @return bool
+	 */
+	function wdp_e2e_catalog_wants_explain($args = null) {
+		$list = null;
+		if (is_array($args)) {
+			$list = $args;
+		} elseif (isset($GLOBALS['wdp_eval_args']) && is_array($GLOBALS['wdp_eval_args'])) {
+			$list = $GLOBALS['wdp_eval_args'];
+		} elseif (isset($GLOBALS['argv']) && is_array($GLOBALS['argv'])) {
+			$list = $GLOBALS['argv'];
+		}
+		if (is_array($list)) {
+			foreach ($list as $a) {
+				if (!is_scalar($a)) {
+					continue;
+				}
+				$s = strtolower(trim((string) $a));
+				if ($s === '--explain' || $s === 'explain') {
+					return true;
+				}
+			}
+			if (is_array($args)) {
+				return false;
+			}
+		}
+		return function_exists('getenv') && getenv('WDP_E2E_CATALOG_EXPLAIN') === '1';
+	}
+
+	/**
+	 * Eklenti sıkı `yes` kuralı: açık/kapalı (ham değer yazılmaz).
+	 *
+	 * @param mixed $raw Meta.
+	 * @return string
+	 */
+	function wdp_e2e_catalog_flag_state($raw) {
+		return (is_string($raw) && $raw === 'yes') ? 'açık' : 'kapalı';
+	}
+
+	/**
+	 * WDP_Donation_Type::infer_from_meta — sınıf yoksa aynı öncelik yedek.
 	 *
 	 * @param array<string,string> $meta Meta map.
 	 * @return string
@@ -53,6 +95,48 @@ if (!function_exists('wdp_e2e_catalog_plugin_needles')) {
 			return 'custom';
 		}
 		return 'fixed';
+	}
+
+	/**
+	 * Tip: eklenti `for_product` (göç etmiş meta dahil); kopya yok.
+	 *
+	 * @param int                  $product_id Product ID.
+	 * @param array<string,string> $meta       Flag map.
+	 * @return string
+	 */
+	function wdp_e2e_catalog_detect_type($product_id, array $meta) {
+		$id = (int) $product_id;
+		if ($id > 0 && class_exists('WDP_Donation_Type') && method_exists('WDP_Donation_Type', 'for_product')) {
+			return WDP_Donation_Type::for_product($id);
+		}
+		return wdp_e2e_catalog_infer_type($meta);
+	}
+
+	/**
+	 * @param array<string,string> $meta Flag map (yes/other).
+	 * @return array<string,string>
+	 */
+	function wdp_e2e_catalog_flag_states(array $meta) {
+		$keys = array('_allow_multiple_shares', '_enable_progress_bar', '_allow_custom_price');
+		$out  = array();
+		foreach ($keys as $k) {
+			$out[ $k ] = wdp_e2e_catalog_flag_state(isset($meta[ $k ]) ? $meta[ $k ] : '');
+		}
+		return $out;
+	}
+
+	/**
+	 * @param string               $type     Role.
+	 * @param array<string,string> $states   açık/kapalı.
+	 * @param string               $resolver Class::method.
+	 * @return string
+	 */
+	function wdp_e2e_catalog_type_why($type, array $states, $resolver) {
+		$parts = array();
+		foreach ($states as $k => $v) {
+			$parts[] = $k . '=' . $v;
+		}
+		return (string) $resolver . '; öncelik shares→campaign→custom→fixed; ' . implode(', ', $parts) . '; sonuç=' . (string) $type;
 	}
 
 	/**
@@ -97,6 +181,129 @@ if (!function_exists('wdp_e2e_catalog_plugin_needles')) {
 			return '/';
 		}
 		return $path . $query;
+	}
+}
+
+if (!function_exists('wdp_e2e_catalog_type_meta')) {
+	/**
+	 * @param object $product WC_Product.
+	 * @return array<string,string>
+	 */
+	function wdp_e2e_catalog_type_meta($product) {
+		$keys = array('_allow_custom_price', '_allow_multiple_shares', '_enable_progress_bar');
+		$meta = array();
+		foreach ($keys as $k) {
+			$meta[ $k ] = method_exists($product, 'get_meta') ? (string) $product->get_meta($k) : '';
+		}
+		return $meta;
+	}
+
+	/**
+	 * @param object $product WC_Product.
+	 * @return bool
+	 */
+	function wdp_e2e_catalog_is_donation($product) {
+		if (class_exists('WDP_Donation_Scope')) {
+			return (bool) WDP_Donation_Scope::is_donation_product($product);
+		}
+		return method_exists($product, 'get_meta') && $product->get_meta('_wdp_donation_product') === 'yes';
+	}
+
+	/**
+	 * Yayımlanmış ürünler (görünürlük süzgeci yok — explain + katalog kaynağı).
+	 *
+	 * @return array<int,array<string,mixed>>
+	 */
+	function wdp_e2e_catalog_published_products() {
+		static $cached = null;
+		if (is_array($cached)) {
+			return $cached;
+		}
+		$out = array();
+		if (!function_exists('wc_get_products') || !function_exists('wc_get_product')) {
+			$cached = $out;
+			return $out;
+		}
+		$ids = wc_get_products(
+			array(
+				'status'  => 'publish',
+				'limit'   => -1,
+				'return'  => 'ids',
+				'orderby' => 'ID',
+				'order'   => 'ASC',
+			)
+		);
+		if (!is_array($ids)) {
+			return $out;
+		}
+		$resolver = class_exists('WDP_Donation_Type') ? 'WDP_Donation_Type::for_product' : 'yedek infer_from_meta';
+		foreach ($ids as $id) {
+			$id = (int) $id;
+			if ($id <= 0) {
+				continue;
+			}
+			$product = wc_get_product($id);
+			if (!$product) {
+				continue;
+			}
+			$meta   = wdp_e2e_catalog_type_meta($product);
+			$type   = wdp_e2e_catalog_detect_type($id, $meta);
+			$states = wdp_e2e_catalog_flag_states($meta);
+			$url    = function_exists('get_permalink') ? get_permalink($id) : '';
+			$url    = is_string($url) ? $url : '';
+			$out[]  = array(
+				'id'          => $id,
+				'slug'        => method_exists($product, 'get_slug') ? (string) $product->get_slug() : '',
+				'title'       => method_exists($product, 'get_name') ? (string) $product->get_name() : '',
+				'url'         => $url,
+				'path'        => wdp_e2e_catalog_path_from_url($url),
+				'type'        => $type,
+				'visibility'  => method_exists($product, 'get_catalog_visibility') ? (string) $product->get_catalog_visibility() : '',
+				'status'      => method_exists($product, 'get_status') ? (string) $product->get_status() : 'publish',
+				'purchasable' => method_exists($product, 'is_purchasable') ? (bool) $product->is_purchasable() : false,
+				'wc_type'     => method_exists($product, 'get_type') ? (string) $product->get_type() : '',
+				'donation'    => wdp_e2e_catalog_is_donation($product),
+				'fixture'     => function_exists('get_post_meta') && (bool) get_post_meta($id, '_wdp_e2e_test', true),
+				'resolver'    => $resolver,
+				'flags'       => $states,
+				'why'         => wdp_e2e_catalog_type_why($type, $states, $resolver),
+				'meta'        => $meta,
+			);
+		}
+		$cached = $out;
+		return $out;
+	}
+
+	/**
+	 * --explain: tüm yayımlanmış ürünler (müşteri/sipariş yok; meta değer yok).
+	 *
+	 * @return array<string,mixed>
+	 */
+	function wdp_e2e_catalog_explain() {
+		$catalog = wdp_e2e_catalog_resolve();
+		$rows    = array();
+		foreach (wdp_e2e_catalog_published_products() as $row) {
+			unset($row['meta'], $row['url']);
+			$rows[] = $row;
+		}
+		$picked = array();
+		foreach ($catalog['products'] as $p) {
+			unset($p['meta'], $p['url']);
+			$picked[] = $p;
+		}
+		return array(
+			'explain'        => true,
+			'resolver'       => class_exists('WDP_Donation_Type') ? 'WDP_Donation_Type::for_product' : 'yedek infer_from_meta',
+			'plugin_loaded'  => class_exists('WDP_Donation_Type'),
+			'shop'           => $catalog['shop'],
+			'cart'           => $catalog['cart'],
+			'checkout'       => $catalog['checkout'],
+			'list'           => $catalog['list'],
+			'picked'         => $picked,
+			'published'      => $rows,
+			'publishedCount' => count($rows),
+			'pickedCount'    => count($picked),
+		);
 	}
 }
 
@@ -159,67 +366,30 @@ if (!function_exists('wdp_e2e_catalog_resolve')) {
 		}
 
 		$products = array();
-		if (function_exists('wc_get_products') && function_exists('wc_get_product')) {
-			$ids = wc_get_products(
-				array(
-					'status'             => 'publish',
-					'limit'              => -1,
-					'return'             => 'ids',
-					'orderby'            => 'ID',
-					'order'              => 'ASC',
-					'catalog_visibility' => array('visible', 'catalog'),
-				)
+		foreach (wdp_e2e_catalog_published_products() as $row) {
+			if (!empty($row['fixture'])) {
+				continue;
+			}
+			if (empty($row['donation'])) {
+				continue;
+			}
+			$vis = (string) $row['visibility'];
+			if ($vis !== 'visible' && $vis !== 'catalog') {
+				continue;
+			}
+			$products[] = array(
+				'id'          => $row['id'],
+				'slug'        => $row['slug'],
+				'title'       => $row['title'],
+				'url'         => $row['url'],
+				'path'        => $row['path'],
+				'type'        => $row['type'],
+				'visibility'  => $vis,
+				'status'      => $row['status'],
+				'purchasable' => !empty($row['purchasable']),
+				'fixture'     => false,
+				'meta'        => $row['meta'],
 			);
-			if (!is_array($ids)) {
-				$ids = array();
-			}
-			foreach ($ids as $id) {
-				$id = (int) $id;
-				if ($id <= 0) {
-					continue;
-				}
-				if (function_exists('get_post_meta') && get_post_meta($id, '_wdp_e2e_test', true)) {
-					continue;
-				}
-				$product = wc_get_product($id);
-				if (!$product) {
-					continue;
-				}
-				$vis = method_exists($product, 'get_catalog_visibility') ? (string) $product->get_catalog_visibility() : 'visible';
-				if ($vis !== 'visible' && $vis !== 'catalog') {
-					continue;
-				}
-				$is_donation = true;
-				if (class_exists('WDP_Donation_Scope')) {
-					$is_donation = WDP_Donation_Scope::is_donation_product($product);
-				} elseif (method_exists($product, 'get_meta')) {
-					$is_donation = $product->get_meta('_wdp_donation_product') === 'yes';
-				}
-				if (!$is_donation) {
-					continue;
-				}
-				$meta = array(
-					'_allow_custom_price'    => method_exists($product, 'get_meta') ? (string) $product->get_meta('_allow_custom_price') : '',
-					'_allow_multiple_shares' => method_exists($product, 'get_meta') ? (string) $product->get_meta('_allow_multiple_shares') : '',
-					'_enable_progress_bar'   => method_exists($product, 'get_meta') ? (string) $product->get_meta('_enable_progress_bar') : '',
-				);
-				$type = class_exists('WDP_Donation_Type')
-					? WDP_Donation_Type::for_product($id)
-					: wdp_e2e_catalog_infer_type($meta);
-				$url  = function_exists('get_permalink') ? get_permalink($id) : '';
-				$products[] = array(
-					'id'         => $id,
-					'slug'       => method_exists($product, 'get_slug') ? (string) $product->get_slug() : '',
-					'title'      => method_exists($product, 'get_name') ? (string) $product->get_name() : '',
-					'url'        => is_string($url) ? $url : '',
-					'path'       => wdp_e2e_catalog_path_from_url(is_string($url) ? $url : ''),
-					'type'       => $type,
-					'visibility' => $vis,
-					'status'     => 'publish',
-					'fixture'    => false,
-					'meta'       => $meta,
-				);
-			}
 		}
 
 		return array(
@@ -232,8 +402,18 @@ if (!function_exists('wdp_e2e_catalog_resolve')) {
 	}
 }
 
+$wdp_e2e_catalog_cli_args = array();
+if (isset($args) && is_array($args)) {
+	$wdp_e2e_catalog_cli_args = $args;
+} elseif (!empty($GLOBALS['wdp_eval_args']) && is_array($GLOBALS['wdp_eval_args'])) {
+	$wdp_e2e_catalog_cli_args = $GLOBALS['wdp_eval_args'];
+}
+
 $wdp_e2e_catalog_should_emit = ((defined('WP_CLI') && WP_CLI) || !empty($GLOBALS['wdp_eval_target']))
 	&& !defined('PHPUNIT_COMPOSER_INSTALL');
 if ($wdp_e2e_catalog_should_emit && function_exists('wp_json_encode') && function_exists('get_option')) {
-	echo wp_json_encode(wdp_e2e_catalog_resolve());
+	$payload = wdp_e2e_catalog_wants_explain($wdp_e2e_catalog_cli_args)
+		? wdp_e2e_catalog_explain()
+		: wdp_e2e_catalog_resolve();
+	echo wp_json_encode($payload);
 }

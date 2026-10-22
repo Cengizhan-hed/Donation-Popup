@@ -265,6 +265,7 @@ describe('ham ssh/scp/sftp/rsync spawn yok', () => {
     const files = [
       'scripts/migration-snapshot.mjs',
       'scripts/remote-discover.mjs',
+      'scripts/e2e-catalog-explain.mjs',
       'scripts/e2e-bootstrap.mjs',
       'scripts/ikram-wp.mjs',
       'scripts/staging-wp.mjs',

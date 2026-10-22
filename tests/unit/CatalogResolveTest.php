@@ -21,6 +21,10 @@ final class CatalogResolveTest extends TestCase {
 		$this->assertFalse(wdp_e2e_catalog_has_plugin_marker('Avada fusion form'));
 	}
 
+	protected function setUp(): void {
+		WDP_Test_State::reset();
+	}
+
 	public function test_infer_type_matches_plugin(): void {
 		$this->assertSame('shares', wdp_e2e_catalog_infer_type(array('_allow_multiple_shares' => 'yes')));
 		$this->assertSame('campaign', wdp_e2e_catalog_infer_type(array('_enable_progress_bar' => 'yes')));
@@ -30,6 +34,33 @@ final class CatalogResolveTest extends TestCase {
 			WDP_Donation_Type::infer_from_meta(array('_allow_custom_price' => 'yes', '_enable_progress_bar' => 'yes')),
 			wdp_e2e_catalog_infer_type(array('_allow_custom_price' => 'yes', '_enable_progress_bar' => 'yes'))
 		);
+	}
+
+	public function test_detect_type_calls_plugin_for_product(): void {
+		WDP_Test_State::$post_meta[42] = array('_allow_multiple_shares' => 'yes');
+		$this->assertSame(
+			'shares',
+			wdp_e2e_catalog_detect_type(42, array('_allow_custom_price' => 'yes'))
+		);
+		$this->assertSame(WDP_Donation_Type::for_product(42), wdp_e2e_catalog_detect_type(42, array()));
+	}
+
+	public function test_explain_flag_and_why_have_no_raw_values(): void {
+		$this->assertTrue(wdp_e2e_catalog_wants_explain(array('--explain')));
+		$this->assertTrue(wdp_e2e_catalog_wants_explain(array('foo', 'explain')));
+		$this->assertFalse(wdp_e2e_catalog_wants_explain(array()));
+		$this->assertFalse(wdp_e2e_catalog_wants_explain(array('--json')));
+		$this->assertSame('açık', wdp_e2e_catalog_flag_state('yes'));
+		$this->assertSame('kapalı', wdp_e2e_catalog_flag_state('1'));
+		$this->assertSame('kapalı', wdp_e2e_catalog_flag_state('on'));
+		$states = wdp_e2e_catalog_flag_states(array('_allow_multiple_shares' => 'yes', '_enable_progress_bar' => 'no'));
+		$this->assertSame('açık', $states['_allow_multiple_shares']);
+		$this->assertSame('kapalı', $states['_enable_progress_bar']);
+		$why = wdp_e2e_catalog_type_why('shares', $states, 'WDP_Donation_Type::for_product');
+		$this->assertStringContainsString('WDP_Donation_Type::for_product', $why);
+		$this->assertStringContainsString('_allow_multiple_shares=açık', $why);
+		$this->assertStringNotContainsString('yes', $why);
+		$this->assertStringNotContainsString('@', $why);
 	}
 
 	public function test_path_from_permalink(): void {

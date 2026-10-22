@@ -20,7 +20,7 @@ export const DONATION_ROLES = ['fixed', 'custom', 'shares', 'campaign'];
  * |------|---------|-------------------------|------------------------|
  * | visitor-list-shop | ziyaretçi, liste, mağaza döngüsü, loop-donate | evet | ATLA (neden; hata değil) |
  * | product-form-panel-cart | ürün sayfası, form, panel, doğrulama, sepet | evet | fixture + yönetici oturumu |
- * | popup | popup (liste tetikleyici) | evet (listede görünür) | ATLA — private fixture listede yok |
+ * | popup | popup (liste; yoksa mağaza döngüsü Bağış Yap) | evet | ATLA — kaynak yok veya fixture |
  */
 export const SCENARIO_PRODUCT_POLICY = Object.freeze({
   'visitor-list-shop': Object.freeze({
@@ -36,9 +36,9 @@ export const SCENARIO_PRODUCT_POLICY = Object.freeze({
     ifMissing: 'fixture-admin',
   }),
   popup: Object.freeze({
-    label: 'Popup (liste tetikleyici)',
+    label: 'Popup (liste, yoksa mağaza döngüsü)',
     kinds: Object.freeze(['popup']),
-    source: 'published-only',
+    source: 'list-or-shop-loop',
     ifMissing: 'skip',
   }),
 });
@@ -81,24 +81,87 @@ export function isPublishedCatalogRole(env, role) {
 }
 
 /**
+ * Popup açılış sayfası: liste kısa kodu, yoksa Woo mağaza döngüsü.
+ * İkisi de yoksa atla (hata değil).
+ *
+ * @param {object} [env]
+ * @returns {{ action: 'run'|'skip', path: string, source: 'list'|'shop'|'', reason: string }}
+ */
+export function resolvePopupSource(env) {
+  const list = pathFromMaybeUrl(env?.E2E_LIST_PAGE || env?._catalog?.list?.path || env?._catalog?.list?.url || '');
+  if (list) {
+    return { action: 'run', path: list, source: 'list', reason: '' };
+  }
+  const shop = pathFromMaybeUrl(env?.E2E_SHOP_PAGE || env?._catalog?.shop?.path || env?._catalog?.shop?.url || '');
+  if (shop) {
+    return {
+      action: 'run',
+      path: shop,
+      source: 'shop',
+      reason: '',
+    };
+  }
+  return {
+    action: 'skip',
+    path: '',
+    source: '',
+    reason: 'liste sayfası yok ve mağaza döngüsünde Bağış Yap kaynağı yok → popup atlanır',
+  };
+}
+
+/**
+ * @param {object} [env]
+ * @param {string} [explicit]
+ * @returns {string}
+ */
+export function popupPagePath(env, explicit) {
+  const given = pathFromMaybeUrl(explicit || '');
+  if (given) return given;
+  return resolvePopupSource(env).path;
+}
+
+/**
  * @param {object} env
  * @param {string} role
  * @param {string} kind  SCENARIO_PRODUCT_POLICY kinds
- * @returns {{ action: 'run-visitor'|'run-admin'|'skip', admin: boolean, reason: string, group: string }}
+ * @returns {{ action: 'run-visitor'|'run-admin'|'skip', admin: boolean, reason: string, group: string, pagePath?: string, popupSource?: string }}
  */
 export function decideScenarioProduct(env, role, kind) {
   const group = scenarioPolicyGroup(kind) || String(kind || '');
   const published = isPublishedCatalogRole(env, role);
   const fixture = isFixtureRole(env, role);
-  if (group === 'visitor-list-shop' || group === 'popup') {
+  if (group === 'popup') {
+    if (!published) {
+      return {
+        action: 'skip',
+        admin: false,
+        reason: `${role}: popup tetikleyici; private fixture listede/mağazada görünmez → atla`,
+        group,
+      };
+    }
+    const src = resolvePopupSource(env);
+    if (src.action === 'skip') {
+      return { action: 'skip', admin: false, reason: `${role}: ${src.reason}`, group };
+    }
+    return {
+      action: 'run-visitor',
+      admin: false,
+      reason: '',
+      group,
+      pagePath: src.path,
+      popupSource: src.source,
+    };
+  }
+  if (group === 'visitor-list-shop') {
     if (published) {
       return { action: 'run-visitor', admin: false, reason: '', group };
     }
-    const reason =
-      group === 'popup'
-        ? `${role}: popup liste tetikleyicisi; private fixture listede görünmez → atla`
-        : `${role}: yayımlanmış katalog ürünü yok (liste/mağaza döngüsü) → atla`;
-    return { action: 'skip', admin: false, reason, group };
+    return {
+      action: 'skip',
+      admin: false,
+      reason: `${role}: yayımlanmış katalog ürünü yok (liste/mağaza döngüsü) → atla`,
+      group,
+    };
   }
   if (published) {
     return { action: 'run-visitor', admin: false, reason: '', group };
@@ -347,6 +410,13 @@ export function applyRemoteCatalog(env, catalog) {
     env._roleSkips.push({
       check: 'shop-page',
       description: 'Mağaza sayfası WooCommerce wc_get_page_permalink(shop) boş → atla',
+    });
+  }
+  env._popupSource = resolvePopupSource(env);
+  if (env._popupSource.action === 'skip') {
+    env._roleSkips.push({
+      check: 'popup-source',
+      description: env._popupSource.reason,
     });
   }
 

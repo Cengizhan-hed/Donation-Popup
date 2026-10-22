@@ -18,6 +18,7 @@ import {
 } from './checks.mjs';
 import { getProductMeta, setProductMeta, assertWooCartPagePublished } from './staging-wp-meta.mjs';
 import { requireFixtureRole, mutationBrowserContext } from './fixtures.mjs';
+import { popupPagePath } from './catalog-core.mjs';
 import { writeDebugJson } from './scenario-debug.mjs';
 
 const CHECK_MS = 20000;
@@ -141,7 +142,7 @@ export async function runFormFieldsChecks({
 }) {
   const checks = [];
   const baseUrl = env.E2E_BASE_URL;
-  const listPath = listPagePath || env.E2E_LIST_PAGE;
+  const listPath = popupPagePath(env, listPagePath);
   let customId = productIds.custom || 0;
   let customPath = productUrls.custom;
   try {

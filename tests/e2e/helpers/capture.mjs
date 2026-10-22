@@ -11,6 +11,7 @@ import {
   decideScenarioProduct,
   assertProductNavTarget,
   isFixtureRole as roleIsFixture,
+  popupPagePath,
 } from './catalog-core.mjs';
 import { currencySwitchFromProfile, runCurrencySwitchChecks } from './currency-switch.mjs';
 import { getDevicePreset } from './devices.mjs';
@@ -2116,7 +2117,7 @@ export async function runSadakaScenario({
     // popup: liste sayfasından ortadaki modal; panel: ürün sayfasından sağ panel
     const openPath =
       mode === 'popup'
-        ? listPagePath || env.E2E_LIST_PAGE
+        ? popupPagePath(env, listPagePath)
         : productPath;
     timeline.mark('goto-product');
     await page.goto(withCacheBust(env.E2E_BASE_URL, openPath, guestExtra), {
@@ -2877,10 +2878,22 @@ export async function captureAll({
       }
       continue;
     }
+    const popupPath = popupDecision.pagePath || popupPagePath(env);
+    if (!popupPath) {
+      const check = `popup-${key}`;
+      if (!skips.some((s) => s.check === check)) {
+        skips.push({
+          check,
+          description: `${key}: liste yok ve mağaza döngüsü yok → popup atlanır`,
+        });
+        functionalStats.skipped += 1;
+      }
+      continue;
+    }
     shellJobs.push({
       key,
       mode: /** @type {'popup'} */ ('popup'),
-      pagePath: env.E2E_LIST_PAGE,
+      pagePath: popupPath,
       productId: productIds[key] || 0,
     });
   }
@@ -3754,7 +3767,7 @@ export async function captureAll({
       contextOpts,
       env,
       sharesProductPath: productUrls.shares,
-      listPagePath: env.E2E_LIST_PAGE,
+      listPagePath: popupPagePath(env),
       sharesProductId: productIds.shares,
       guestExtra,
       failures,
@@ -3820,7 +3833,7 @@ export async function captureAll({
           productSlug: products[productKey],
           productKey,
           mode,
-          listPagePath: env.E2E_LIST_PAGE,
+          listPagePath: mode === 'popup' ? popupPagePath(env) : env.E2E_LIST_PAGE,
           productId: productIds[productKey] || 0,
           failures,
           skips,
@@ -3920,7 +3933,7 @@ export async function captureAll({
       flowPage.setDefaultNavigationTimeout(25000);
       try {
         const work = (async () => {
-          const listOrProduct = env.E2E_LIST_PAGE || productUrls.custom || productUrls.fixed || '/';
+          const listOrProduct = popupPagePath(env) || productUrls.custom || productUrls.fixed || '/';
           await flowPage.goto(withCacheBust(env.E2E_BASE_URL, listOrProduct, guestExtra), {
             waitUntil: 'domcontentloaded',
             timeout: 25000,
@@ -3959,7 +3972,7 @@ export async function captureAll({
               env,
               productUrls,
               productIds,
-              listPagePath: env.E2E_LIST_PAGE,
+              listPagePath: popupPagePath(env),
               failures,
               stats: functionalStats,
               skips,

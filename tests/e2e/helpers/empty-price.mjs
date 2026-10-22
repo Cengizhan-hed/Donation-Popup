@@ -7,6 +7,7 @@ import { SEL } from './selectors.mjs';
 import { withCacheBust } from './env.mjs';
 import { getActiveProfile } from './profile.mjs';
 import { requireFixtureRole, mutationBrowserContext, isFixtureProductId } from './fixtures.mjs';
+import { popupPagePath } from './catalog-core.mjs';
 import {
   emptyCart,
   openShellLocator,
@@ -136,7 +137,7 @@ export async function runEmptyPriceChecks({
 }) {
   const profile = getActiveProfile();
   const baseUrl = env.E2E_BASE_URL;
-  const listPath = listPagePath || env.E2E_LIST_PAGE;
+  const listPath = popupPagePath(env, listPagePath);
   const phone = profile.phone?.nationalExample || '5551234567';
   const amount = String(profile.products?.custom?.min || 100);
 

@@ -4,7 +4,7 @@
  */
 import { SEL } from './selectors.mjs';
 import { requireFixtureRole, mutationBrowserContext } from './fixtures.mjs';
-import { pickFixtureNavTarget, decideScenarioProduct } from './catalog-core.mjs';
+import { pickFixtureNavTarget, decideScenarioProduct, popupPagePath } from './catalog-core.mjs';
 import { withCacheBust } from './env.mjs';
 import { comingSoonQuery } from './coming-soon.mjs';
 import { getActiveProfile } from './profile.mjs';
@@ -345,7 +345,7 @@ export async function runLayoutChecks({
 }) {
   const profile = getActiveProfile();
   const baseUrl = env.E2E_BASE_URL;
-  const listPath = listPagePath || env.E2E_LIST_PAGE;
+  const listPath = popupPagePath(env, listPagePath);
   const extraQuery = comingSoonQuery(env, profile);
 
   const types = [
