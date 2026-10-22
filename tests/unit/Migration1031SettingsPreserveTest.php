@@ -106,4 +106,128 @@ final class Migration1031SettingsPreserveTest extends TestCase {
 		$this->assertSame($after_first['wdp_modal_layout_settings'], $after_second['wdp_modal_layout_settings']);
 		$this->assert_custom_values_kept($seed['button'], $seed['layout']);
 	}
+
+	/**
+	 * @return string[]
+	 */
+	private function radius_keys(): array {
+		return array( 'button_border_radius', 'input_border_radius', 'modal_border_radius', 'popup_button_border_radius' );
+	}
+
+	public function test_rewrite_keeps_zero_legacy_radius_and_seeds_ui_zero(): void {
+		$button = array();
+		foreach ( $this->radius_keys() as $key ) {
+			$button[ $key ] = 0;
+		}
+		WDP_Test_State::$options['wdp_button_settings'] = $button;
+		WDP_Admin_Settings_Normalizer::rewrite_stored_options();
+		$stored = WDP_Test_State::$options['wdp_button_settings'];
+		$this->assertSame( 0, (int) $stored['ui_border_radius'] );
+		foreach ( $this->radius_keys() as $key ) {
+			$this->assertSame( 0, (int) $stored[ $key ], $key );
+		}
+	}
+
+	public function test_rewrite_keeps_stored_ui_border_radius_zero(): void {
+		WDP_Test_State::$options['wdp_button_settings'] = array(
+			'ui_border_radius'           => 0,
+			'button_border_radius'       => 10,
+			'input_border_radius'        => 10,
+			'modal_border_radius'        => 10,
+			'popup_button_border_radius' => 10,
+		);
+		WDP_Admin_Settings_Normalizer::rewrite_stored_options();
+		$stored = WDP_Test_State::$options['wdp_button_settings'];
+		$this->assertSame( 0, (int) $stored['ui_border_radius'] );
+		foreach ( $this->radius_keys() as $key ) {
+			$this->assertSame( 10, (int) $stored[ $key ], $key );
+		}
+	}
+
+	public function test_rewrite_missing_or_empty_radius_defaults_to_ten(): void {
+		WDP_Test_State::$options['wdp_button_settings'] = array(
+			'button_primary_color' => '#ff0000',
+		);
+		WDP_Admin_Settings_Normalizer::rewrite_stored_options();
+		$stored = WDP_Test_State::$options['wdp_button_settings'];
+		$this->assertSame( 10, (int) $stored['ui_border_radius'] );
+		foreach ( $this->radius_keys() as $key ) {
+			$this->assertSame( 10, (int) $stored[ $key ], $key );
+		}
+
+		WDP_Test_State::reset();
+		$empty = array();
+		foreach ( $this->radius_keys() as $key ) {
+			$empty[ $key ] = '';
+		}
+		WDP_Test_State::$options['wdp_button_settings'] = $empty;
+		WDP_Admin_Settings_Normalizer::rewrite_stored_options();
+		$this->assertSame( 10, (int) WDP_Test_State::$options['wdp_button_settings']['ui_border_radius'] );
+	}
+
+	public function test_zero_radius_upgrade_from_1031_is_idempotent(): void {
+		$button = array();
+		foreach ( $this->radius_keys() as $key ) {
+			$button[ $key ] = 0;
+		}
+		WDP_Test_State::$options['wdp_version']         = '10.3.1';
+		WDP_Test_State::$options['wdp_button_settings'] = $button;
+		$this->assertTrue( WDP_Migrations::run() );
+		$after_first = WDP_Test_State::$options['wdp_button_settings'];
+		$this->assertSame( 0, (int) $after_first['ui_border_radius'] );
+		foreach ( $this->radius_keys() as $key ) {
+			$this->assertSame( 0, (int) $after_first[ $key ], $key );
+		}
+
+		unset( WDP_Test_State::$options[ WDP_Migrations::LOG_OPTION ] );
+		WDP_Test_State::$options[ WDP_Migrations::OPTION ] = '10.26.0';
+		foreach ( array_keys( WDP_Test_State::$options ) as $key ) {
+			if ( strpos( (string) $key, 'wdp_migrated_' ) === 0 ) {
+				unset( WDP_Test_State::$options[ $key ] );
+			}
+		}
+		$this->assertTrue( WDP_Migrations::run() );
+		$this->assertSame( $after_first, WDP_Test_State::$options['wdp_button_settings'] );
+		$this->assertSame( 0, (int) WDP_Test_State::$options['wdp_button_settings']['ui_border_radius'] );
+	}
+
+	public function test_normalize_keeps_request_ui_radius_zero(): void {
+		WDP_Test_State::$options['wdp_button_settings'] = array( 'ui_border_radius' => 10 );
+		$out = WDP_Admin_Settings_Normalizer::normalize_normal_form_settings( array( 'ui_border_radius' => 0 ) );
+		$this->assertSame( 0, (int) $out['ui_border_radius'] );
+		foreach ( $this->radius_keys() as $key ) {
+			$this->assertSame( 0, (int) $out[ $key ], $key );
+		}
+	}
+
+	public function test_rewrite_keeps_zero_blur_border_and_shareholder_radius(): void {
+		WDP_Test_State::$options['wdp_button_settings'] = array(
+			'button_shadow_sc_blur'     => 0,
+			'button_shadow_modal_blur'  => 0,
+			'glass_blur_px'             => 0,
+			'popup_button_border_size'  => 0,
+		);
+		WDP_Test_State::$options['wdp_shareholder_settings'] = array(
+			'shareholder_card_radius'  => 0,
+			'shareholders_area_radius' => 0,
+		);
+		WDP_Test_State::$options['wdp_success_settings'] = array(
+			'success_button_radius'  => 0,
+			'success_message_radius' => 0,
+			'mini_cart_radius'       => 0,
+		);
+		WDP_Admin_Settings_Normalizer::rewrite_stored_options();
+		$button = WDP_Test_State::$options['wdp_button_settings'];
+		$this->assertSame( 0, (int) $button['button_shadow_sc_blur'] );
+		$this->assertSame( 0, (int) $button['button_shadow_modal_blur'] );
+		$this->assertSame( 0, (int) $button['glass_blur_px'] );
+		$this->assertSame( 0, (int) $button['popup_button_border_size'] );
+		$share = WDP_Test_State::$options['wdp_shareholder_settings'];
+		$this->assertSame( 0, (int) $share['shareholder_card_radius'] );
+		$this->assertSame( 0, (int) $share['shareholders_area_radius'] );
+		$success = WDP_Test_State::$options['wdp_success_settings'];
+		$this->assertSame( 0, (int) $success['success_button_radius'] );
+		$this->assertSame( 0, (int) $success['success_message_radius'] );
+		$this->assertSame( 0, (int) $success['mini_cart_radius'] );
+	}
 }

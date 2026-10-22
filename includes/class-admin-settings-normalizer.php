@@ -40,9 +40,9 @@ class WDP_Admin_Settings_Normalizer {
 		$settings = array(
 			'button_primary_color'              => self::pick_hex($request, $existing, 'button_primary_color', '#0f608b'),
 			'button_primary_hover'              => self::pick_hex($request, $existing, 'button_primary_hover', '#0c4f72'),
-			'ui_border_radius'                  => isset($request['ui_border_radius'])
+			'ui_border_radius'                  => self::has_int_token($request, 'ui_border_radius')
 				? absint($request['ui_border_radius'])
-				: (isset($request['button_border_radius'])
+				: (self::has_int_token($request, 'button_border_radius')
 					? absint($request['button_border_radius'])
 					: self::pick_int($request, $existing, 'ui_border_radius', self::legacy_ui_radius_default($existing))),
 			'button_border_radius'              => self::pick_int($request, $existing, 'button_border_radius', 10),
@@ -283,10 +283,10 @@ class WDP_Admin_Settings_Normalizer {
 		};
 
 		$pick_int = static function ($key, $default) use ($request, $existing) {
-			if (isset($request[ $key ]) && '' !== $request[ $key ]) {
+			if (self::has_int_token($request, $key)) {
 				return absint($request[ $key ]);
 			}
-			if (isset($existing[ $key ]) && '' !== $existing[ $key ]) {
+			if (self::has_int_token($existing, $key)) {
 				return absint($existing[ $key ]);
 			}
 			return $default;
@@ -591,13 +591,24 @@ class WDP_Admin_Settings_Normalizer {
 	 * @return int
 	 */
 	private static function pick_int(array $request, array $existing, $key, $default) {
-		if (isset($request[ $key ]) && '' !== $request[ $key ]) {
+		if (self::has_int_token($request, $key)) {
 			return absint($request[ $key ]);
 		}
-		if (isset($existing[ $key ]) && '' !== $existing[ $key ]) {
+		if (self::has_int_token($existing, $key)) {
 			return absint($existing[ $key ]);
 		}
 		return (int) $default;
+	}
+
+	/**
+	 * True when the key exists and is not an empty string. Integer 0 counts as present.
+	 *
+	 * @param array  $source Source array.
+	 * @param string $key    Key.
+	 * @return bool
+	 */
+	private static function has_int_token(array $source, $key) {
+		return array_key_exists($key, $source) && null !== $source[ $key ] && '' !== $source[ $key ];
 	}
 
 	/**
@@ -663,14 +674,14 @@ class WDP_Admin_Settings_Normalizer {
 	}
 
 	/**
-	 * First stored legacy radius, else 10. Used when ui_border_radius is absent.
+	 * First stored legacy radius (0 = sharp corners), else 10. Used when ui_border_radius is absent.
 	 *
 	 * @param array $existing Stored button settings.
 	 * @return int
 	 */
 	private static function legacy_ui_radius_default(array $existing) {
 		foreach (array('button_border_radius', 'modal_border_radius', 'input_border_radius', 'popup_button_border_radius') as $key) {
-			if (isset($existing[ $key ]) && '' !== $existing[ $key ] && absint($existing[ $key ]) > 0) {
+			if (self::has_int_token($existing, $key)) {
 				return absint($existing[ $key ]);
 			}
 		}
@@ -679,20 +690,17 @@ class WDP_Admin_Settings_Normalizer {
 
 	/**
 	 * If ui_border_radius was never stored, copy from a legacy radius so CSS
-	 * (which prefers ui when set) keeps the user's corners.
+	 * (which prefers ui when set) keeps the user's corners. Stored 0 is kept.
 	 *
 	 * @param array $stored   Merged button settings.
 	 * @param array $original Option as stored before fill.
 	 * @return array
 	 */
 	public static function seed_ui_border_radius_from_legacy(array $stored, array $original) {
-		if (array_key_exists('ui_border_radius', $original) && '' !== $original['ui_border_radius'] && absint($original['ui_border_radius']) > 0) {
+		if (self::has_int_token($original, 'ui_border_radius')) {
 			return $stored;
 		}
-		$from = self::legacy_ui_radius_default($original);
-		if ($from > 0) {
-			$stored['ui_border_radius'] = $from;
-		}
+		$stored['ui_border_radius'] = self::legacy_ui_radius_default($original);
 		return $stored;
 	}
 

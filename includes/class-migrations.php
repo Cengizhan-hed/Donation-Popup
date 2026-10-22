@@ -938,7 +938,7 @@ class WDP_Migrations {
 
 	/**
 	 * Re-run each global option through its normalizer so missing keys get defaults.
-	 * Stored user values win (see WDP_Admin_Settings_Normalizer::rewrite_stored_options).
+	 * Stored user values win, including explicit 0 (see WDP_Admin_Settings_Normalizer::rewrite_stored_options).
 	 *
 	 * @return int Options rewritten.
 	 */
