@@ -16,6 +16,7 @@ import {
 import { getProductMeta, setProductMeta } from './staging-wp-meta.mjs';
 import { requireFixtureRole, mutationBrowserContext } from './fixtures.mjs';
 import { popupPagePath } from './catalog-core.mjs';
+import { openMutationProductShell } from './mutation-policy.mjs';
 
 const CHECK_MS = 25000;
 
@@ -39,7 +40,10 @@ const META_KEYS = [
  */
 async function waitShellReady(shell) {
   await shell.waitFor({ state: 'visible', timeout: CHECK_MS });
-  await shell.locator(SEL.donationForm).first().waitFor({ state: 'visible', timeout: CHECK_MS });
+  const form = shell.locator(SEL.donationForm);
+  if ((await form.count()) > 0) {
+    await form.first().waitFor({ state: 'visible', timeout: CHECK_MS });
+  }
 }
 
 /**
@@ -48,34 +52,32 @@ async function waitShellReady(shell) {
  * @param {{ productId?: number, listPath?: string, productPath?: string, baseUrl: string }} opts
  */
 async function openProductShell(page, mode, opts) {
-  const openPath = mode === 'popup' ? opts.listPath : opts.productPath;
-  await page.goto(withCacheBust(opts.baseUrl, openPath, { hdf_no_side_cart: '1' }), {
-    waitUntil: 'domcontentloaded',
-  });
-  if (mode === 'popup') {
-    await revealListProductTrigger(page, opts.productId || 0);
-  }
-  let trigger = shellTriggerLocator(page, mode, { productId: opts.productId || 0 });
-  if ((await trigger.count()) === 0) {
-    trigger =
-      mode === 'panel'
-        ? page.locator(SEL.sidePanelTrigger).first()
-        : page.locator(SEL.centeredPopupTrigger).first();
-  }
-  // aria-disabled="true" (hedef close) Playwright'te enabled sayılmaz → force / DOM click.
-  const one =
-    (await trigger.filter({ visible: true }).count().catch(() => 0)) > 0
-      ? trigger.filter({ visible: true }).first()
-      : trigger.first();
-  const force = (await one.getAttribute('data-wdp-goal-closed')) === '1';
-  if (force) {
+  void mode;
+  try {
+    const shell = await openMutationProductShell(page, {
+      baseUrl: opts.baseUrl,
+      productPath: opts.productPath,
+      productId: opts.productId || 0,
+      timeout: CHECK_MS,
+    });
+    await waitShellReady(shell);
+    return shell;
+  } catch (openErr) {
+    let trigger = shellTriggerLocator(page, 'panel', { productId: opts.productId || 0 });
+    if ((await trigger.count()) === 0) {
+      trigger = page.locator(`${SEL.sidePanelTrigger}, ${SEL.centeredPopupTrigger}`).first();
+    }
+    const one =
+      (await trigger.filter({ visible: true }).count().catch(() => 0)) > 0
+        ? trigger.filter({ visible: true }).first()
+        : trigger.first();
+    const force = (await one.getAttribute('data-wdp-goal-closed')) === '1';
+    if (!force) throw openErr;
     await one.click({ timeout: CHECK_MS, force: true });
-  } else {
-    await clickShellTrigger(trigger, CHECK_MS);
+    const shell = openShellLocator(page, '');
+    await waitShellReady(shell);
+    return shell;
   }
-  const shell = mode === 'popup' ? openShellLocator(page, '') : openShellLocator(page, mode);
-  await waitShellReady(shell);
-  return shell;
 }
 
 /**

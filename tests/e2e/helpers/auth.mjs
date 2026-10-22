@@ -4,10 +4,12 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
+import { spawnSync } from 'node:child_process';
 import { chromium } from '@playwright/test';
 import { ROOT } from './env.mjs';
 import { installBrowserGuard } from './network-guard.mjs';
 import { CURRENT_DIR } from './run-io.mjs';
+import { isRemoteProfile } from './profile.mjs';
 
 export const AUTH_DIR = path.join(ROOT, 'tests/e2e/.auth');
 export const AUTH_FILE = path.join(AUTH_DIR, 'user.json');
@@ -435,6 +437,103 @@ export function getInMemoryAdminCookies() {
  * Çerez değeri loglanmaz ve dosyaya yazılmaz.
  * @param {Record<string, string>} env
  */
+/**
+ * Yerel WP: PHP wp_generate_auth_cookie (HTTP → Secure=false). Çerez değeri loglanmaz.
+ * @param {Record<string, string>} env
+ */
+async function authViaLocalPhpCookie(env) {
+  const wpDir = String(process.env.WDP_LOCAL_WP_DIR || '').trim();
+  if (!wpDir) {
+    console.error('[e2e:catch-fail] local auth: WDP_LOCAL_WP_DIR yok');
+    return null;
+  }
+  const r = spawnSync(
+    'php',
+    ['-d', 'memory_limit=512M', path.join(ROOT, 'tests/local-wp/eval-file.php'), 'tests/local-wp/auth-cookies.php'],
+    {
+      encoding: 'utf8',
+      cwd: ROOT,
+      env: { ...process.env, WDP_LOCAL_WP_DIR: wpDir },
+      timeout: 60000,
+    }
+  );
+  if (r.status !== 0) {
+    console.error('[e2e:catch-fail] local auth php: başarısız');
+    return null;
+  }
+  const jsonLine = String(r.stdout || '')
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter((l) => l.startsWith('{') && l.endsWith('}'))
+    .pop();
+  let data;
+  try {
+    data = JSON.parse(jsonLine || '');
+  } catch {
+    console.error('[e2e:catch-fail] local auth JSON ayrıştırılamadı');
+    return null;
+  }
+  if (!data || !data.ok || !data.logged_in || !data.logged_in_name) {
+    console.error('[e2e:catch-fail] local auth: çerez alanları boş');
+    return null;
+  }
+  let base = '';
+  try {
+    base = new URL(env.E2E_BASE_URL).origin;
+  } catch {
+    return null;
+  }
+  const secure = /^https:/i.test(base);
+  const cookies = [
+    {
+      name: data.logged_in_name,
+      value: data.logged_in,
+      url: base,
+      httpOnly: true,
+      secure,
+      sameSite: 'Lax',
+    },
+  ];
+  for (const pair of [
+    [data.auth_name, data.auth],
+    [data.secure_auth_name, data.secure_auth],
+  ]) {
+    if (pair[0] && pair[1]) {
+      cookies.push({
+        name: pair[0],
+        value: pair[1],
+        url: base,
+        httpOnly: true,
+        secure,
+        sameSite: 'Lax',
+      });
+    }
+  }
+  const browser = await chromium.launch();
+  try {
+    installBrowserGuard(browser, env);
+    const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+    await context.addCookies(cookies);
+    const ok = await storageStateOpensAdmin(context, env);
+    if (!ok) {
+      console.error('[e2e:catch-fail] local auth: çerez kondu ama /wp-admin açılamadı');
+      await context.close();
+      inMemoryAdminCookies = null;
+      return null;
+    }
+    inMemoryAdminCookies = cookies;
+    const dest = getAuthFile();
+    fs.mkdirSync(path.dirname(dest), { recursive: true });
+    await context.storageState({ path: dest });
+    await context.close();
+    clearLoginFailureShot();
+    console.log('Giriş başarılı (local php cookie, storageState)');
+    return dest;
+  } finally {
+    await browser.close().catch(() => {});
+  }
+}
+
 async function authViaWpCliCookie(env) {
   const { wp } = await import('./wp-remote.mjs');
   let idRaw = '';
@@ -739,6 +838,14 @@ export async function ensureAuth(env, deps = {}) {
           }
         } finally {
           await probe.close().catch(() => {});
+        }
+      }
+
+      if (!isRemoteProfile(env?._profile)) {
+        const viaLocal = await authViaLocalPhpCookie(env);
+        if (viaLocal) {
+          markAuthValidated(profileId);
+          return viaLocal;
         }
       }
 

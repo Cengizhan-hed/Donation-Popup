@@ -18,6 +18,7 @@ import {
 import { getProductMeta, setProductMeta } from './staging-wp-meta.mjs';
 import { requireFixtureRole, mutationBrowserContext } from './fixtures.mjs';
 import { popupPagePath } from './catalog-core.mjs';
+import { openMutationProductShell } from './mutation-policy.mjs';
 
 const CHECK_MS = 20000;
 const RECOMMENDED_META = '_amount_preset_recommended';
@@ -25,7 +26,10 @@ const RECOMMENDED_META = '_amount_preset_recommended';
 /** @param {import('@playwright/test').Locator} shell */
 async function waitShellReady(shell) {
   await shell.waitFor({ state: 'visible', timeout: CHECK_MS });
-  await shell.locator(SEL.donationForm).first().waitFor({ state: 'visible', timeout: CHECK_MS });
+  const form = shell.locator(SEL.donationForm);
+  if ((await form.count()) > 0) {
+    await form.first().waitFor({ state: 'visible', timeout: CHECK_MS });
+  }
   // İskelet kilidi: CTA disabled kalmasın (panel açılışında sık).
   const checkout = shell.locator(SEL.goCheckout).first();
   if (await checkout.count()) {
@@ -74,22 +78,13 @@ async function firstPresetAmount(shell) {
  * @param {{ productId?: number, listPath?: string, productPath?: string, baseUrl: string }} opts
  */
 async function openProductShell(page, mode, opts) {
-  const openPath = mode === 'popup' ? opts.listPath : opts.productPath;
-  await page.goto(withCacheBust(opts.baseUrl, openPath, { hdf_no_side_cart: '1' }), {
-    waitUntil: 'domcontentloaded',
+  void mode;
+  const shell = await openMutationProductShell(page, {
+    baseUrl: opts.baseUrl,
+    productPath: opts.productPath,
+    productId: opts.productId || 0,
+    timeout: CHECK_MS,
   });
-  if (mode === 'popup') {
-    await revealListProductTrigger(page, opts.productId || 0);
-  }
-  let trigger = shellTriggerLocator(page, mode, { productId: opts.productId || 0 });
-  if ((await trigger.count()) === 0) {
-    trigger =
-      mode === 'panel'
-        ? page.locator(SEL.sidePanelTrigger).first()
-        : page.locator(SEL.centeredPopupTrigger).first();
-  }
-  await clickShellTrigger(trigger, CHECK_MS);
-  const shell = mode === 'popup' ? openShellLocator(page, '') : openShellLocator(page, mode);
   await waitShellReady(shell);
   return shell;
 }
@@ -444,7 +439,7 @@ export async function runAmountOptionsChecks({
       fail('amount-opts-d-same-product-persist', 'Aynı ürün seçim koruması', e);
     }
 
-    // a) Nafile 500 → kapat → Sadaka aç → boş
+    // a) Nafile tutar seç → kapat → Sadaka fixture ürün sayfası → boş
     try {
       await emptyCart(page, baseUrl);
       let shell = await openProductShell(page, 'popup', {
@@ -458,19 +453,13 @@ export async function runAmountOptionsChecks({
       await page.locator(SEL.modalClose).first().click({ timeout: 5000 }).catch(async () => {
         await page.keyboard.press('Escape');
       });
-      await page.waitForTimeout(300);
-      await page.goto(withCacheBust(baseUrl, listPath, { hdf_no_side_cart: '1' }), {
-        waitUntil: 'domcontentloaded',
+      const sadaka = requireFixtureRole(env, 'sadaka');
+      shell = await openProductShell(page, 'panel', {
+        baseUrl,
+        listPath,
+        productPath: sadaka.path || sadaka.url,
+        productId: sadaka.id,
       });
-      const otherTrigger = page
-        .locator(`${SEL.centeredPopupTrigger}[data-product-id]:not([data-product-id="${customId}"])`)
-        .first();
-      if ((await otherTrigger.count()) === 0) {
-        throw new Error('Sadaka/diğer ürün tetikleyicisi listede yok');
-      }
-      await otherTrigger.click({ timeout: CHECK_MS });
-      shell = openShellLocator(page, 'popup');
-      await waitShellReady(shell);
       await assertNoPresetSelected(shell);
       await page.locator(SEL.modalClose).first().click({ timeout: 5000 }).catch(async () => {
         await page.keyboard.press('Escape');

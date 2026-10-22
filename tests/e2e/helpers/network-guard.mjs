@@ -6,6 +6,11 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { ROOT } from './env-root.mjs';
 import { isRemoteProfile, peekActiveProfile } from './profile.mjs';
+import {
+  LIVE_HOST_BLOCKLIST,
+  ALLOWED_HEDEF_HOST,
+  extractHost,
+} from '../../../scripts/lib/deploy-guards.mjs';
 
 const INSTALLED = Symbol('wdpNetworkGuard');
 const AJAX_WATCH = Symbol('wdpPluginAjaxWatch');
@@ -82,12 +87,23 @@ export const EXPECTED_WDP_NOPRIV_AJAX = Object.freeze([
   'wdp_verify_submission_in_cart',
 ]);
 
+/** Emekli Hedef staging — her uzak koşuda GET dahil iptal + kırmızı. live-scan:allow-reject-test */
+export const RETIRED_HOST_SUFFIXES = Object.freeze([
+  'staging28.hedefdernegi.org', // live-scan:allow-reject-test
+]);
+
 /** @type {Map<string, number>} */
 const blockedByHost = new Map();
+/** @type {Map<string, number>} */
+const blockedLiveByHost = new Map();
 /** @type {string[]} */
 const orderBlocks = [];
 /** @type {string[]} */
 const adminWriteBlocks = [];
+/** @type {string[]} */
+const foreignWriteBlocks = [];
+/** @type {string[]} */
+const retiredHostBlocks = [];
 /** @type {Map<string, number>} */
 const blockedPosts = new Map();
 /** @type {Map<string, number>} */
@@ -133,6 +149,144 @@ export function isFirstPartyHost(hostname, siteHost) {
   if (!h || !s) return false;
   const bare = h.replace(/^www\./, '');
   return bare === s || bare.endsWith(`.${s}`);
+}
+
+function isIpOrLocalhost(hostname) {
+  const h = String(hostname || '').toLowerCase();
+  return h === 'localhost' || /^\d{1,3}(?:\.\d{1,3}){3}$/.test(h);
+}
+
+/**
+ * Canlı Hedef apeksi (www düşer). staging30 hariç; alt alanlar retired.
+ * LIVE_HOST_BLOCKLIST + ALLOWED_HEDEF_HOST. live-scan:blacklist-def
+ * @param {string} hostOrUrl
+ */
+export function isLiveBlockedHost(hostOrUrl) {
+  const h = extractHost(hostOrUrl);
+  if (!h) return false;
+  if (h === ALLOWED_HEDEF_HOST) return false;
+  return h === 'hedefdernegi.org'; // live-scan:blacklist-def
+}
+
+/**
+ * @param {string} hostname
+ */
+export function matchesLiveHostBlocklist(hostname) {
+  const h = String(hostname || '').toLowerCase().replace(/\.$/, '');
+  if (!h) return false;
+  return LIVE_HOST_BLOCKLIST.some((re) => re.test(h));
+}
+
+/**
+ * @param {string} hostname
+ */
+export function parentRegisteredDomain(hostname) {
+  const h = extractHost(hostname);
+  if (!h || isIpOrLocalhost(h)) return h;
+  const parts = h.split('.').filter(Boolean);
+  if (parts.length <= 2) return h;
+  return parts.slice(-2).join('.');
+}
+
+/**
+ * @param {string} hostname
+ * @param {string[]} [allowedHosts]
+ */
+export function isAllowedProfileHost(hostname, allowedHosts = []) {
+  const h = extractHost(hostname);
+  if (!h) return false;
+  for (const raw of allowedHosts || []) {
+    const a = extractHost(raw);
+    if (a && h === a) return true;
+  }
+  return false;
+}
+
+/**
+ * Bilinen emekli host veya izinli profilin aynı ebeveyn alanındaki izinsiz kardeş.
+ * @param {string} hostname
+ * @param {string[]} [allowedHosts]
+ */
+export function isRetiredSimilarHost(hostname, allowedHosts = []) {
+  const h = extractHost(hostname);
+  if (!h || isIpOrLocalhost(h)) return false;
+  if (isLiveBlockedHost(h)) return false;
+  if (isAllowedProfileHost(h, allowedHosts)) return false;
+  for (const suffix of RETIRED_HOST_SUFFIXES) {
+    if (hostMatchesSuffix(h, suffix)) return true;
+  }
+  if (matchesLiveHostBlocklist(h) && h !== ALLOWED_HEDEF_HOST) {
+    return true;
+  }
+  for (const raw of allowedHosts || []) {
+    const a = extractHost(raw);
+    if (!a || isIpOrLocalhost(a)) continue;
+    const parent = parentRegisteredDomain(a);
+    if (!parent) continue;
+    if (h === parent || h.endsWith(`.${parent}`)) return true;
+  }
+  return false;
+}
+
+/**
+ * @param {string} hostname
+ * @param {{ allowedHosts?: string[], siteHost?: string }} [opts]
+ * @returns {'allowed'|'live'|'retired'|'first-party'|'foreign'}
+ */
+export function classifyRemoteHost(hostname, opts = {}) {
+  const h = extractHost(hostname);
+  if (!h) return 'foreign';
+  const allowed = Array.isArray(opts.allowedHosts) ? opts.allowedHosts : [];
+  if (isAllowedProfileHost(h, allowed)) return 'allowed';
+  if (isLiveBlockedHost(h)) return 'live';
+  if (isRetiredSimilarHost(h, allowed)) return 'retired';
+  if (opts.siteHost && isFirstPartyHost(h, opts.siteHost)) return 'first-party';
+  return 'foreign';
+}
+
+/**
+ * Konsol metninden host/URL — font CORS ve iptal edilen istek.
+ * @param {string} text
+ */
+export function hostFromConsoleText(text) {
+  const t = String(text || '');
+  const m = t.match(/https?:\/\/([^/\s'"]+)/i);
+  if (m) return extractHost(m[1]);
+  const pathHost = t.match(/\/\/([a-z0-9.-]+\.[a-z]{2,})/i);
+  if (pathHost) return extractHost(pathHost[1]);
+  return '';
+}
+
+/**
+ * Konsol satırı: site/engellendi (canlı font, emekli host, iptal) eklenti hatası değil.
+ * @param {string} text
+ * @returns {'blocked-live'|'blocked-site'|'cancelled-ajax'|'plugin'|''}
+ */
+export function classifyBlockedConsoleError(text) {
+  const t = String(text || '');
+  const host = hostFromConsoleText(t);
+  const live = host && isLiveBlockedHost(host);
+  const retired = host && isRetiredSimilarHost(host, []);
+  const fontCors =
+    /access to font/i.test(t) ||
+    (/font/i.test(t) && /cors|access control/i.test(t));
+  if (live || (fontCors && (!host || live || /hedefdernegi\.org/i.test(t)))) {
+    return 'blocked-live';
+  }
+  if (retired) return 'blocked-site';
+  if (/ERR_BLOCKED_BY_CLIENT|blockedbyclient/i.test(t)) {
+    return 'blocked-site';
+  }
+  if (
+    (/net::ERR_FAILED/i.test(t) && (live || retired || /hedefdernegi\.org|staging28/i.test(t))) ||
+    (/access control checks/i.test(t) && (live || retired || /staging28|hedefdernegi\.org/i.test(t)))
+  ) {
+    return 'blocked-site';
+  }
+  if (/admin-ajax\.php/i.test(t) && /access control checks/i.test(t)) {
+    return 'cancelled-ajax';
+  }
+  return '';
 }
 
 /**
@@ -686,6 +840,7 @@ function recordTracker(hostname) {
 
 export function resetBlockedTrackers() {
   blockedByHost.clear();
+  blockedLiveByHost.clear();
 }
 
 export function snapshotBlockedTrackers() {
@@ -693,6 +848,22 @@ export function snapshotBlockedTrackers() {
   const byHost = {};
   let total = 0;
   for (const [host, n] of blockedByHost) {
+    byHost[host] = n;
+    total += n;
+  }
+  return { total, byHost };
+}
+
+function recordLiveBlock(hostname) {
+  const host = String(hostname || 'unknown').toLowerCase();
+  blockedLiveByHost.set(host, (blockedLiveByHost.get(host) || 0) + 1);
+}
+
+export function snapshotBlockedLive() {
+  /** @type {Record<string, number>} */
+  const byHost = {};
+  let total = 0;
+  for (const [host, n] of blockedLiveByHost) {
     byHost[host] = n;
     total += n;
   }
@@ -708,6 +879,8 @@ export function resetRemotePostBlocked() {
   blockedPosts.clear();
   allowedReads.clear();
   adminWriteBlocks.length = 0;
+  foreignWriteBlocks.length = 0;
+  retiredHostBlocks.length = 0;
   pluginAjaxFails.length = 0;
 }
 
@@ -741,7 +914,7 @@ export function snapshotRemotePostBlocked() {
 /**
  * @param {{ total?: number, byPath?: Record<string, number> }|null|undefined} snap
  */
-export function formatRemotePostBlockedLines(snap, allowed) {
+export function formatRemotePostBlockedLines(snap, allowed, extra = {}) {
   const s = snap && typeof snap === 'object' ? snap : { total: 0, byPath: {} };
   const total = Number(s.total) || 0;
   const lines = [`remote_post_blocked: ${total}`];
@@ -757,6 +930,17 @@ export function formatRemotePostBlockedLines(snap, allowed) {
     lines.push(`izinli-okuma: ${n}`);
     if (n > 0) {
       for (const [k, c] of Object.entries(a.byAction || {})) {
+        lines.push(`  • ${k}  ${c}`);
+      }
+    }
+  }
+  const live = extra?.blocked_live;
+  if (live && typeof live === 'object') {
+    const n = Number(live.total) || 0;
+    lines.push(`blocked_live: ${n}`);
+    if (n > 0) {
+      lines.push('UYARI: canlı alan isteği iptal edildi (sitenin önbellek kalıntısı; kırmızı değil)');
+      for (const [k, c] of Object.entries(live.byHost || {})) {
         lines.push(`  • ${k}  ${c}`);
       }
     }
@@ -818,6 +1002,28 @@ export class RemoteAdminWriteBlockedError extends Error {
   }
 }
 
+export class RemoteForeignWriteBlockedError extends Error {
+  /**
+   * @param {string} requestPath
+   */
+  constructor(requestPath) {
+    super(`REMOTE-FOREIGN-WRITE: ${requestPath}`);
+    this.name = 'RemoteForeignWriteBlockedError';
+    this.requestPath = requestPath;
+  }
+}
+
+export class RemoteRetiredHostBlockedError extends Error {
+  /**
+   * @param {string} requestPath
+   */
+  constructor(requestPath) {
+    super(`REMOTE-RETIRED-HOST: ${requestPath}`);
+    this.name = 'RemoteRetiredHostBlockedError';
+    this.requestPath = requestPath;
+  }
+}
+
 export function throwIfRemoteOrderBlocked() {
   const hits = consumeOrderBlocks();
   if (!hits.length) return;
@@ -828,6 +1034,30 @@ export function throwIfRemoteAdminWriteBlocked() {
   const hits = consumeAdminWriteBlocks();
   if (!hits.length) return;
   throw new RemoteAdminWriteBlockedError(hits[0]);
+}
+
+export function consumeForeignWriteBlocks() {
+  const out = foreignWriteBlocks.slice();
+  foreignWriteBlocks.length = 0;
+  return out;
+}
+
+export function consumeRetiredHostBlocks() {
+  const out = retiredHostBlocks.slice();
+  retiredHostBlocks.length = 0;
+  return out;
+}
+
+export function throwIfRemoteForeignWriteBlocked() {
+  const hits = consumeForeignWriteBlocks();
+  if (!hits.length) return;
+  throw new RemoteForeignWriteBlockedError(hits[0]);
+}
+
+export function throwIfRemoteRetiredHostBlocked() {
+  const hits = consumeRetiredHostBlocks();
+  if (!hits.length) return;
+  throw new RemoteRetiredHostBlockedError(hits[0]);
 }
 
 /**
@@ -899,6 +1129,11 @@ export function guardOptionsFromEnv(env, extra = {}) {
   }
   const remote =
     typeof extra.remote === 'boolean' ? extra.remote : isRemoteProfile(profile);
+  const allowedHosts = Array.isArray(extra.allowedHosts)
+    ? extra.allowedHosts
+    : Array.isArray(profile?.allowedHosts)
+      ? profile.allowedHosts
+      : [];
   return {
     remote,
     siteHost: extra.siteHost || siteHostFromEnv(env),
@@ -906,6 +1141,7 @@ export function guardOptionsFromEnv(env, extra = {}) {
     cartPath: pathFromMaybeUrl(extra.cartPath || '/cart/', '/cart/'),
     blockTrackers: true,
     readOnlyActions: profileReadOnlyPostActions(profile),
+    allowedHosts,
     profile,
   };
 }
@@ -925,6 +1161,13 @@ export async function applyNetworkGuard(context, opts = {}) {
   const readOnlyActions = Array.isArray(opts.readOnlyActions)
     ? opts.readOnlyActions
     : profileReadOnlyPostActions(opts.profile);
+  const allowedHosts = Array.isArray(opts.allowedHosts)
+    ? opts.allowedHosts
+    : Array.isArray(opts.profile?.allowedHosts)
+      ? opts.profile.allowedHosts
+      : siteHost
+        ? [siteHost]
+        : [];
 
   const existingPages = typeof context.pages === 'function' ? context.pages() : [];
   for (const page of existingPages || []) {
@@ -958,7 +1201,26 @@ export async function applyNetworkGuard(context, opts = {}) {
       }
       const write = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(String(method || '').toUpperCase());
       const parts = parseUrlParts(url);
-      const firstParty = !siteHost || isFirstPartyHost(parts?.hostname, siteHost);
+      const reqHost = parts?.hostname || '';
+      const kind = classifyRemoteHost(reqHost, { allowedHosts, siteHost });
+      if (kind === 'live') {
+        recordLiveBlock(reqHost);
+        await route.abort('blockedbyclient');
+        return;
+      }
+      if (kind === 'retired') {
+        retiredHostBlocks.push(safeRequestPath(url));
+        await route.abort('blockedbyclient');
+        return;
+      }
+      const onAllowed =
+        kind === 'allowed' || kind === 'first-party' || isAllowedProfileHost(reqHost, allowedHosts);
+      if (write && !onAllowed) {
+        foreignWriteBlocks.push(safeRequestPath(url));
+        await route.abort('blockedbyclient');
+        return;
+      }
+      const firstParty = onAllowed;
       if (write && firstParty) {
         const reqInfo = { method, url, postData, headers, checkoutPath, cartPath, readOnlyActions };
         const allowed = isRemoteWriteAllowed(reqInfo);

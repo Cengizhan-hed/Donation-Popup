@@ -60,9 +60,10 @@ export function readLocalPluginVersion() {
 /**
  * @param {object} data
  */
-export function writeRunManifest(data) {
-  fs.mkdirSync(CURRENT_DIR, { recursive: true });
-  fs.writeFileSync(RUN_JSON, JSON.stringify(data, null, 2) + '\n', 'utf8');
+export function writeRunManifest(data, dest = RUN_JSON) {
+  const file = dest || RUN_JSON;
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  fs.writeFileSync(file, JSON.stringify(data, null, 2) + '\n', 'utf8');
 }
 
 /**

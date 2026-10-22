@@ -756,6 +756,31 @@ try {
 		$result = array_merge($result, wdp_matrix_product_content($arg1 !== '' ? $arg1 : 'custom', $arg2));
 	} elseif ($cmd === 'placement-display') {
 		$result = array_merge($result, wdp_matrix_placement_display($arg1));
+	} elseif ($cmd === 'ensure-admin') {
+		$user = get_user_by('login', 'admin');
+		if (!$user) {
+			$id = wp_create_user('admin', 'admin', 'admin@local.test');
+			if (is_wp_error($id)) {
+				$result = array( 'ok' => false, 'error' => $id->get_error_message() );
+			} else {
+				$user = get_user_by('id', $id);
+			}
+		} else {
+			wp_set_password('admin', (int) $user->ID);
+			$user = get_user_by('id', $user->ID);
+		}
+		if ($user && !is_wp_error($user)) {
+			$user->set_role('administrator');
+			$check = wp_authenticate('admin', 'admin');
+			$result = array(
+				'ok'       => true,
+				'id'       => (int) $user->ID,
+				'auth_ok'  => !is_wp_error($check),
+				'auth_err' => is_wp_error($check) ? $check->get_error_code() : '',
+			);
+		} elseif (empty($result['error'])) {
+			$result = array( 'ok' => false, 'error' => 'admin yok' );
+		}
 	} else {
 		$result['error'] = 'bilinmeyen cmd';
 	}

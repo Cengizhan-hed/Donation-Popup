@@ -30,6 +30,9 @@ import {
   snapshotAllowedReads,
   consumeOrderBlocks,
   consumeAdminWriteBlocks,
+  consumeForeignWriteBlocks,
+  consumeRetiredHostBlocks,
+  snapshotBlockedLive,
   snapshotPluginAjaxFails,
   pausePluginAjaxWatch,
   resumePluginAjaxWatch,
@@ -2748,7 +2751,7 @@ export async function captureAll({
       failures: [
         {
           check: 'canary-preflight',
-          description: 'Kanarya / uzak kilit',
+          description: String(msg || 'Kanarya ön kontrol').slice(0, 280),
           error: msg,
         },
       ],
@@ -4094,33 +4097,36 @@ export async function captureAll({
       ['empty-price', './empty-price.mjs', 'runEmptyPriceChecks', 'Fiyatsız ürün E2E koşucusu çöktü'],
       ['layout', './layout.mjs', 'runLayoutChecks', 'Yerleşim E2E koşucusu çöktü'],
     ];
-    for (const [area, mod, fn, crash] of metaSuites) {
-      const tSuite = Date.now();
-      try {
-        if (!want(area)) {
-          /* alan süzgeci */
-        } else {
-          const imported = await import(mod);
-          await imported[fn]({
-            browser,
-            contextOpts,
-            env,
-            productUrls,
-            productIds,
-            listPagePath: env.E2E_LIST_PAGE,
-            failures,
-            stats: functionalStats,
-            skips,
-            createAdminContext: () => asAdmin(browser, env, contextOpts),
-          });
+    const { withEnvMutationLock } = await import('./mutation-lock.mjs');
+    await withEnvMutationLock(profile.id, async () => {
+      for (const [area, mod, fn, crash] of metaSuites) {
+        const tSuite = Date.now();
+        try {
+          if (!want(area)) {
+            /* alan süzgeci */
+          } else {
+            const imported = await import(mod);
+            await imported[fn]({
+              browser,
+              contextOpts,
+              env,
+              productUrls,
+              productIds,
+              listPagePath: env.E2E_LIST_PAGE,
+              failures,
+              stats: functionalStats,
+              skips,
+              createAdminContext: () => asAdmin(browser, env, contextOpts),
+            });
+          }
+        } catch (e) {
+          failures.push(makeFailure({ check: `${area}-runner`, description: crash, error: e }));
+          functionalStats.failed += 1;
+        } finally {
+          logSection(area, tSuite);
         }
-      } catch (e) {
-        failures.push(makeFailure({ check: `${area}-runner`, description: crash, error: e }));
-        functionalStats.failed += 1;
-      } finally {
-        logSection(area, tSuite);
       }
-    }
+    });
 
     const a11yCheckoutPromise =
       want('mobile-a11y') || want('checkout-flow')
@@ -4355,6 +4361,28 @@ export async function captureAll({
     functionalStats.failed += 1;
   }
 
+  const blockedForeignWrites = consumeForeignWriteBlocks();
+  for (const requestPath of blockedForeignWrites) {
+    failures.push(
+      makeFailure({
+        check: 'remote-foreign-write',
+        description: `REMOTE-FOREIGN-WRITE: ${requestPath}`,
+      })
+    );
+    functionalStats.failed += 1;
+  }
+
+  const blockedRetiredHosts = consumeRetiredHostBlocks();
+  for (const requestPath of blockedRetiredHosts) {
+    failures.push(
+      makeFailure({
+        check: 'remote-retired-host',
+        description: `REMOTE-RETIRED-HOST: ${requestPath}`,
+      })
+    );
+    functionalStats.failed += 1;
+  }
+
   try {
     assertNoPluginAjaxFailures(snapshotPluginAjaxFails());
   } catch (e) {
@@ -4368,9 +4396,10 @@ export async function captureAll({
   }
 
   const blockedTrackers = snapshotBlockedTrackers();
+  const blockedLive = snapshotBlockedLive();
   const remotePostBlocked = snapshotRemotePostBlocked();
   const izinliOkuma = snapshotAllowedReads();
-  console.log(formatRemotePostBlockedLines(remotePostBlocked, izinliOkuma));
+  console.log(formatRemotePostBlockedLines(remotePostBlocked, izinliOkuma, { blocked_live: blockedLive }));
 
   return {
     shots,
@@ -4390,6 +4419,7 @@ export async function captureAll({
     profileId: profile.id,
     a11yFindings,
     blocked_trackers: blockedTrackers,
+    blocked_live: blockedLive,
     remote_post_blocked: remotePostBlocked,
     izinli_okuma: izinliOkuma,
   };

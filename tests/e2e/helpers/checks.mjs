@@ -5,7 +5,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { ROOT, withCacheBust } from './env.mjs';
 import { SEL } from './selectors.mjs';
-import { extractAjaxActionFromRequest } from './network-guard.mjs';
+import { extractAjaxActionFromRequest, classifyBlockedConsoleError } from './network-guard.mjs';
 
 /** Kontrol başına en fazla bekleme (ms). Bulunamayan öğe hemen hata yazar. */
 export const CHECK_MS = 5000;
@@ -129,8 +129,9 @@ export function attachConsoleErrorCollector(page) {
     if (/pass(word)?=/i.test(text)) return;
     const loc = typeof msg.location === 'function' ? msg.location() : {};
     const locUrl = loc && loc.url ? String(loc.url) : '';
-    const kind = classifyResourceUrl(locUrl);
-    const extra = locUrl ? ` src=${locUrl.slice(0, 180)} kind=${kind}` : '';
+    const blocked = classifyBlockedConsoleError(text) || classifyBlockedConsoleError(locUrl);
+    const kind = blocked || classifyResourceUrl(locUrl) || classifyResourceUrl(text);
+    const extra = locUrl ? ` src=${locUrl.slice(0, 180)} kind=${kind}` : kind ? ` kind=${kind}` : '';
     errors.push(`${text.slice(0, 220)}${extra}`);
   });
   page.on('pageerror', (err) => {
@@ -157,10 +158,14 @@ export function attachConsoleErrorCollector(page) {
 export function assertNoConsoleErrors(errors) {
   const fatal = (errors || []).filter((e) => {
     const k = (String(e).match(/kind=([a-z-]+)/) || [])[1] || '';
-    if (k === 'upload' || k === 'favicon' || k === 'theme') return false;
+    if (k === 'upload' || k === 'favicon' || k === 'theme' || k === 'blocked-live' || k === 'blocked-site') {
+      return false;
+    }
     const t = String(e);
-    // WebKit: iptal edilen admin-ajax isteği "access control checks" yazar; gerçek eklenti 404/JS hatası değil.
-    if (/admin-ajax\.php/i.test(t) && /access control checks/i.test(t)) return false;
+    const blocked = classifyBlockedConsoleError(t);
+    if (blocked === 'blocked-live' || blocked === 'blocked-site' || blocked === 'cancelled-ajax') {
+      return false;
+    }
     return true;
   });
   if (fatal.length) {

@@ -6,7 +6,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import dotenv from 'dotenv';
 import { ROOT } from './env-root.mjs';
-import { loadProfile, setActiveProfile, productRole, isRemoteProfile, resolveAllowedRemoteTarget } from './profile.mjs';
+import { loadProfile, setActiveProfile, productRole, isRemoteProfile, resolveAllowedRemoteTarget, peekActiveProfile } from './profile.mjs';
+import { classifyRemoteHost } from './network-guard.mjs';
 import { setActiveDeployEnvFile } from './wp-remote.mjs';
 import { inspectEnvTargetKeys, validateE2EBaseUrl } from '../../../scripts/lib/deploy-guards.mjs';
 import { inspectEnvPageProductKeys } from './catalog-core.mjs';
@@ -31,6 +32,8 @@ export function parseE2ECli(argv = process.argv.slice(2)) {
   let all = false;
   let openReport = false;
   let noSideCart = false;
+  let noClean = false;
+  let child = false;
   for (let i = 0; i < a.length; i++) {
     const x = a[i];
     if (x === '--env' || x === '--profile') envId = String(a[++i] || envId);
@@ -50,8 +53,10 @@ export function parseE2ECli(argv = process.argv.slice(2)) {
     else if (x === '--all') all = true;
     else if (x === '--open-report') openReport = true;
     else if (x === '--no-side-cart') noSideCart = true;
+    else if (x === '--no-clean') noClean = true;
+    else if (x === '--child') child = true;
   }
-  return { envId, device, areas, all, openReport, noSideCart };
+  return { envId, device, areas, all, openReport, noSideCart, noClean, child };
 }
 
 /**
@@ -181,6 +186,27 @@ export function withCacheBust(base, pathOrUrl, extraParams = {}) {
   for (const [k, v] of Object.entries(extraParams || {})) {
     if (v === undefined || v === null || v === false || v === '') continue;
     url.searchParams.set(k, v === true ? '1' : String(v));
+  }
+  let profile = null;
+  try {
+    profile = peekActiveProfile();
+  } catch {
+    profile = null;
+  }
+  if (isRemoteProfile(profile)) {
+    const kind = classifyRemoteHost(url.hostname, {
+      allowedHosts: profile.allowedHosts || [],
+      siteHost: (() => {
+        try {
+          return new URL(String(base || '')).hostname;
+        } catch {
+          return '';
+        }
+      })(),
+    });
+    if (kind === 'live' || kind === 'retired' || kind === 'foreign') {
+      throw new Error(`uzak navigasyon host profil dışı (${kind})`);
+    }
   }
   return url.toString();
 }
