@@ -304,7 +304,19 @@ class WDP_Product_Page_Integration {
 			return;
 		}
 		self::$css_printed = true;
-		echo '<style id="wdp-hide-native-cart">.wdp-donation-product form.cart:not(.wdp-form):not(.wdp-donation-form-fields){display:none!important}</style>' . "\n";
+		echo '<style id="wdp-hide-native-cart">' . self::hide_native_cart_css() . '</style>' . "\n"; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+	}
+
+	/**
+	 * Hide only the main product native cart form (Woo .summary / .entry-summary).
+	 * Loop / related / upsell cards keep their form.cart (Bağış Yap).
+	 *
+	 * @return string
+	 */
+	public static function hide_native_cart_css() {
+		return 'body.single-product div.product .summary form.cart:not(.wdp-form):not(.wdp-donation-form-fields),'
+			. 'body.single-product div.product .entry-summary form.cart:not(.wdp-form):not(.wdp-donation-form-fields)'
+			. '{display:none!important}';
 	}
 
 	/**
@@ -331,7 +343,7 @@ class WDP_Product_Page_Integration {
 		if (self::content_already_has_shortcode($product)) {
 			return '';
 		}
-		$display = (string) WDP_Placement_Settings::value('display', 'button_panel');
+		$display = self::resolve_product_page_display($product);
 		$atts    = array(
 			'show_title' => WDP_Placement_Settings::value('show_form_title') === 'yes' ? 'yes' : 'no',
 		);
@@ -341,7 +353,49 @@ class WDP_Product_Page_Integration {
 		if ($display === 'button_panel') {
 			return WDP_Shortcodes::render_button($atts, 'wdp_donation_button_panel', 'side_panel');
 		}
-		return WDP_Shortcodes::render_form($atts);
+		if ($display === 'inline') {
+			return WDP_Shortcodes::render_form($atts);
+		}
+		return '';
+	}
+
+	/**
+	 * Product page UI: shortcode in content/excerpt wins, else placement display when auto-place is on.
+	 *
+	 * @param WC_Product $product Product.
+	 * @return string inline|button_popup|button_panel|''
+	 */
+	public static function resolve_product_page_display($product) {
+		if (!WDP_Product_Resolver::is_wc_product($product) || !WDP_Donation_Scope::is_donation_product($product)) {
+			return '';
+		}
+		$text = (string) $product->get_short_description() . "\n" . (string) $product->get_description();
+		if (self::text_has_named_shortcode($text, 'wdp_donation_form')) {
+			return 'inline';
+		}
+		if (self::text_has_named_shortcode($text, 'wdp_donation_button_panel')) {
+			return 'button_panel';
+		}
+		if (self::text_has_named_shortcode($text, 'wdp_donation_button')) {
+			return 'button_popup';
+		}
+		if (!self::should_auto_place($product)) {
+			return '';
+		}
+		$display = (string) WDP_Placement_Settings::value('display', 'button_panel');
+		return in_array($display, WDP_Placement_Settings::DISPLAYS, true) ? $display : 'button_panel';
+	}
+
+	/**
+	 * @param string $text HTML/content.
+	 * @param string $tag  Shortcode tag.
+	 * @return bool
+	 */
+	public static function text_has_named_shortcode($text, $tag) {
+		if (!is_string($text) || $text === '' || !is_string($tag) || $tag === '' || !function_exists('has_shortcode')) {
+			return false;
+		}
+		return has_shortcode($text, $tag);
 	}
 
 	/**

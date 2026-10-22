@@ -24,10 +24,12 @@ export async function probeSimilarDonations(page) {
       const root =
         (heading &&
           (heading.closest(
-            '.fusion-fullwidth, .fusion-builder-row, .related, section, .fusion-post-cards, .elementor-section'
+            '.fusion-fullwidth, .fusion-builder-row, .related, section, .fusion-post-cards, .elementor-section, .wp-block-woocommerce-product-collection, .wp-block-woocommerce-related-products'
           ) ||
             heading.parentElement)) ||
-        document.querySelector('.fusion-post-cards, .related.products, .related');
+        document.querySelector(
+          '.fusion-post-cards, .related.products, .related, .wp-block-woocommerce-product-collection, .wp-block-woocommerce-related-products'
+        );
       const cards = root
         ? Array.from(root.querySelectorAll(cardSel))
         : [];

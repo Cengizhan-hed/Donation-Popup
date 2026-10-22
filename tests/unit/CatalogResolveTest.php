@@ -82,4 +82,19 @@ final class CatalogResolveTest extends TestCase {
 		$this->assertTrue(function_exists('wdp_e2e_catalog_resolve'));
 		$this->assertFalse(defined('WP_CLI') && WP_CLI);
 	}
+
+	public function test_catalog_display_uses_plugin_resolver(): void {
+		WDP_Test_State::$options[ WDP_Placement_Settings::OPTION ] = array(
+			'auto_place'     => 'yes',
+			'display'        => 'button_panel',
+			'donation_scope' => 'all',
+		);
+		WDP_Placement_Settings::flush();
+		$p       = new WC_Product(41);
+		$p->type = 'simple';
+		WDP_Test_State::$products[41] = $p;
+		$this->assertSame('button_panel', wdp_e2e_catalog_product_display($p));
+		$p->description = '[wdp_donation_form]';
+		$this->assertSame('inline', wdp_e2e_catalog_product_display($p));
+	}
 }

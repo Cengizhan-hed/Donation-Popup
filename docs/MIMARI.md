@@ -1,4 +1,4 @@
-# MIMARI — woo-donation-popup (10.34.4)
+# MIMARI — woo-donation-popup (10.34.5)
 
 Kalıcı mimari harita. Sonraki görevler için ilk okuma noktası.  
 Dal referansı: `docs-mimari` / commit `220f4ec`.  
@@ -356,7 +356,8 @@ Kaynak rehber: `docs/AYARLAR.md`. Teknik varsayılanlar normalizer / placement /
 | Hızlı tutar düğmeleri | global `enable_amount_presets==='1'` → ürün `_enable_amount_presets==='no'` gizler; yalnız custom/campaign; min altı elenir; "Önerilen" yalnız ürün `_amount_preset_recommended` dolu ve görünen listedeyse (ortadaki/genel varsayılan yok; seçili gelmez) | `render_amount_presets` (`includes/templates/class-form-fields-renderer.php`) |
 | Modül sırası | ürün `_wdp_module_order` dolu → yoksa button `module_order` → defaults | `WDP_Form_Modules::resolve_order` (`includes/class-form-modules.php:74-84`) |
 | Güven rozetleri | global → ürün `_trust_badges` doluysa ürün | `resolve_trust_badges` (`includes/class-form-modules.php:145-175`) |
-| Otomatik yerleşim | global `auto_place` + ürün `_wdp_auto_place!=='no'` | `should_auto_place` / meta (`includes/class-product-page-integration.php:515+`) |
+| Otomatik yerleşim | global `auto_place` + ürün `_wdp_auto_place!=='no'` | `should_auto_place` / meta (`includes/class-product-page-integration.php`) |
+| Native sepet gizleme | yalnız ürün özeti `.summary` / `.entry-summary` `form.cart` | `hide_native_cart_css` — döngü/ilgili kart `form.cart` gizlenmez (`includes/class-product-page-integration.php`) |
 | Alt bağış WC ürünü | ürün `_sadaka_wc_product_id` → yoksa success `sadaka_wc_product_id` | `WDP_Utils::resolve_sadaka_wc_product_id` (`includes/class-utils.php:104+`) |
 
 ### Ürün sayfası ve liste (`wdp_placement_settings`)
@@ -365,7 +366,7 @@ Kaynak rehber: `docs/AYARLAR.md`. Teknik varsayılanlar normalizer / placement /
 |-----------------|--------------|------------|-------|
 | Sepete Ekle yerine Bağış | `auto_place` | `yes` (yeni kurulum defaults; option yoksa get() `auto_place=>no`) | `includes/class-placement-settings.php:33-45,84-91` |
 | Konum | `position` | `replace_cart` | aynı |
-| Görünüm | `display` | `button_panel` | aynı |
+| Görünüm | `display` | `button_panel` | `WDP_Product_Page_Integration::resolve_product_page_display` (içerikte `[wdp_donation_form]` → `inline`, `[wdp_donation_button_panel]` → `button_panel`, `[wdp_donation_button]` → `button_popup`; yoksa auto_place + bu alan). E2E katalog `display`. `data-wdp-display` düğme/form. |
 | Fiyat gizle | `hide_price` | `yes` | aynı |
 | Form başlığı | `show_form_title` | `no` | aynı |
 | Döngü butonu | `loop_button` | `panel` | aynı |
@@ -555,6 +556,8 @@ Coming soon: WP-CLI `woocommerce_share_key` okunur veya `E2E_COMING_SOON_SHARE_K
 Güvenli alan (10.34.0 + 10.34.4): alt CTA `env(safe-area-inset-bottom)` + JS `--wdp-safe-bottom` (iPhone-benzeri, env()=0 iken 34px taban). Kapat düğmesi başlık satırına hizalı (`top: 8px` mobil / `14px` masaüstü), form kutusuyla kesişmez, ≥44px dokunma; `--wdp-safe-top` 47px taban kapat `top`’una uygulanmaz (10.34.2 gerilemesi). Pay yalnız üst kenara yapışık kabukta (`wdp-flush-top`); yan panel içeriği zaten `padding-block-start` + `env(safe-area-inset-top)` alır. `viewport-fit=cover` enjekte edilmez. 10.34.2 `--wdp-cta-clearance` kaydırma payı. `assets/js/src/core/cta-viewport.js`, `assets/css/src` layout/mobile-polish/side-panel.
 
 **Tutar biçimi (10.34.4):** Tek yardımcı: PHP `WDP_Utils::format_localized_amount` (wc_price sayı kısmı, ondalık kırpılmaz) + `format_min_placeholder` (`min: ` öneki); JS `formatPrice` / `formatMinPlaceholder`. Açık / hata / `product_info` sonrası yer tutucu aynı. Sembol konumu `wdp-currency-pos-{left|left_space|right|right_space}` (right/right_space `flex-direction: row-reverse`). Liste kartı `format_price_html` / `wc_price`. Matris yer tutucu + sembol konumu iddiası `tests/e2e/helpers/matrix-scenarios.mjs`.
+
+**Ürün sayfası görünümü + ilgili ürünler (10.34.5):** Ürün sayfası birincil UI `resolve_product_page_display` (kısa kod > auto_place `display`). E2E `product-*` döngü kartlarını saymaz; düğme modunda tıklayıp panel/popup açıldığını doğrular. Native `form.cart` gizleme yalnız `.summary` / `.entry-summary` (Woo çekirdek; ilgili/upsell/loop formları görünür kalır). Ekran freeze CSS ekrandan sonra kaldırılır. Uzak `loop-cards-product`: görünür kart yoksa ATLA (tema ilgili bölümü gizleyebilir). Matris `related-cards`: TT5+Storefront × 3 cihaz, bölüm + kartlar görünür, her kartta başlık + Bağış Yap. `tests/e2e/helpers/{product-page-ui,loop-cards,capture,matrix-scenarios}.mjs`.
 
 **Çoklu para birimi gösterimi (uzak, salt okunur):** Profil `currencySwitch` (staging-hedef `{param:"wmc-currency",codes:["EUR","USD"]}`; Ikram yok). Senaryo liste + ürün formu + sepet (sepete ekleme serbest, sipariş yok): tutarlar o para biriminin Woo fiyat HTML’i ile; min/hedef dönüşmüş ve liste=form=sepet; konsol hatası 0. Curcy’ye özel eklenti kodu yok; test yalnız profil sorgu parametresi. `tests/e2e/helpers/currency-switch.mjs`.
 

@@ -18,6 +18,13 @@ import {
 import { applyNetworkGuard } from './network-guard.mjs';
 import { getDevicePreset } from './devices.mjs';
 import { matrixEval } from './matrix-setup.mjs';
+import {
+  classifyLoopCardsResult,
+  formatLoopCardFail,
+  RELATED_ROOT_SEL,
+  RELATED_CARD_SEL,
+  RELATED_TITLE_SEL,
+} from './loop-cards.mjs';
 
 const CHECK_MS = 25000;
 const CART_MS = 20000;
@@ -656,6 +663,76 @@ export async function runDeviceScenarios({
         throw new Error(`sipariş toplamı ${rec.total} ≠ ${amount} (hpos=${rec.hpos})`);
       }
       await shot(page, shotDir, 'place-order');
+    });
+
+    await runOne('related-cards', async () => {
+      await gotoPath(page, baseUrl, productPath);
+      await page.evaluate((rootSel) => {
+        const root = document.querySelector(rootSel);
+        if (root && typeof root.scrollIntoView === 'function') {
+          root.scrollIntoView({ block: 'center', inline: 'nearest' });
+        }
+      }, RELATED_ROOT_SEL);
+      await page.waitForFunction(
+        ({ rootSel, cardSel }) => {
+          const root = document.querySelector(rootSel);
+          if (!root) return false;
+          const stRoot = getComputedStyle(root);
+          if (stRoot.display === 'none' || stRoot.visibility === 'hidden') return false;
+          return Array.from(root.querySelectorAll(cardSel)).some((el) => {
+            const st = getComputedStyle(el);
+            const r = el.getBoundingClientRect();
+            return (
+              st.display !== 'none' &&
+              st.visibility !== 'hidden' &&
+              Number.parseFloat(st.opacity || '1') > 0.05 &&
+              r.width > 4 &&
+              r.height > 4
+            );
+          });
+        },
+        { rootSel: RELATED_ROOT_SEL, cardSel: RELATED_CARD_SEL },
+        { timeout: CHECK_MS }
+      );
+      const info = await page.evaluate(({ rootSel, cardSel, titleSel }) => {
+        const vis = (el) => {
+          if (!el) return false;
+          const st = getComputedStyle(el);
+          const r = el.getBoundingClientRect();
+          return (
+            st.display !== 'none' &&
+            st.visibility !== 'hidden' &&
+            Number.parseFloat(st.opacity || '1') > 0.05 &&
+            r.width > 4 &&
+            r.height > 4
+          );
+        };
+        const root = document.querySelector(rootSel);
+        const cards = root ? Array.from(root.querySelectorAll(cardSel)) : [];
+        const donateRe = /bağış\s*yap|donate/i;
+        const rows = cards.map((card, i) => {
+          const title = card.querySelector(titleSel);
+          const btn = Array.from(card.querySelectorAll('a, button')).find((el) =>
+            donateRe.test((el.textContent || '').trim())
+          );
+          return {
+            i,
+            titleText: (title && (title.textContent || '').trim().slice(0, 80)) || '',
+            titleVisible: vis(title),
+            btnText: (btn && (btn.textContent || '').trim().slice(0, 40)) || '',
+            btnVisible: vis(btn),
+            cardVisible: vis(card),
+          };
+        });
+        return { headingVisible: vis(root), cardCount: cards.length, rows };
+      }, { rootSel: RELATED_ROOT_SEL, cardSel: RELATED_CARD_SEL, titleSel: RELATED_TITLE_SEL });
+      const classified = classifyLoopCardsResult(info.rows, { requireVisible: true });
+      if (classified.status !== 'ok') {
+        throw new Error(
+          `ilgili ürünler görünür olmalı reason=${classified.reason} headingVis=${info.headingVisible} n=${info.cardCount} ${classified.bad.map(formatLoopCardFail).join(' | ')}`
+        );
+      }
+      await shot(page, shotDir, 'related-cards');
     });
 
     await runOne('appearance', async () => {

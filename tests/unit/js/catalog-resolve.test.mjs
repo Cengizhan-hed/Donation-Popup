@@ -61,6 +61,7 @@ const FAKE_CATALOG = {
       url: 'https://staging30.hedefdernegi.org/bagis/nafile-kurbani/',
       path: '/bagis/nafile-kurbani/',
       type: 'custom',
+      display: 'button_panel',
       visibility: 'visible',
       status: 'publish',
       fixture: false,
@@ -248,6 +249,7 @@ describe('yerel uzak-benzetim katalog', () => {
     assert.equal(env.E2E_CART_PAGE, '/sepet/');
     assert.equal(env.E2E_PRODUCT_SHARES, '/bagis/vacip-kurbani/');
     assert.equal(env.E2E_PRODUCT_CUSTOM, '/bagis/nafile-kurbani/');
+    assert.equal(env._resolvedProducts.custom.display, 'button_panel');
     assert.equal(env._resolvedProducts.shares.id, 103);
     assert.equal(String(env.E2E_SHOP_PAGE).includes('woocommerce-bagis'), false);
     assert.equal(env.E2E_PRODUCT_SHARES.includes('/product/'), false);

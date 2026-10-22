@@ -142,6 +142,7 @@ class WDP_Shortcodes {
 		?>
 		<button type="button" class="<?php echo esc_attr($button_classes); ?>"
 				data-product-id="<?php echo esc_attr((string) $product_id); ?>"
+				data-wdp-display="<?php echo esc_attr($is_side_panel ? 'button_panel' : 'button_popup'); ?>"
 				data-wdp-mode="<?php echo esc_attr($is_side_panel ? 'side_panel' : 'popup'); ?>"
 				<?php if ($goal_closed) : ?>aria-disabled="true" data-wdp-goal-closed="1" data-wdp-goal-message="<?php echo esc_attr(WDP_Campaign_Goal::resolve_message($product_id)); ?>"<?php endif; ?>
 				<?php if ($is_side_panel) : ?>data-wdp-modal-id="<?php echo esc_attr($modal_id); ?>" <?php endif; ?>
