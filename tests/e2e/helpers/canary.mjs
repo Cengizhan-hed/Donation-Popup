@@ -6,7 +6,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { ROOT } from './env-root.mjs';
-import { loadDeployEnvSilent, remote, resolveWpPath } from './wp-remote.mjs';
+import { loadDeployEnvSilent, remote } from './wp-remote.mjs';
 import { loadRegistry } from './run-registry.mjs';
 import { peekActiveProfile, isRemoteProfile, resolveAllowedRemoteTarget } from './profile.mjs';
 import { buildGuardedEvalFileCommand } from '../../../scripts/lib/deploy-guards.mjs';
@@ -146,7 +146,7 @@ export function snapshotCanary() {
   } else {
     const loaded = loadDeployEnvSilent();
     if (!loaded.ok) throw new Error(`canary: ${loaded.reason}`);
-    const wpPath = resolveWpPath(loaded.env);
+    const wpPath = String(loaded.env.DEPLOY_WP_PATH || '').trim();
     raw = remote(loaded.env, buildGuardedEvalFileCommand(wpPath, { tmpPrefix: 'wdp-canary', b64 }));
   }
   const snap = parseSnapshotOutput(raw);

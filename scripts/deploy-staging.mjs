@@ -16,6 +16,8 @@ import {
   parsePluginVersion,
   validateDeployEnv,
   validateRemoteSiteUrl,
+  wpPathFlag,
+  shellQuoteWpPath,
 } from './lib/deploy-guards.mjs';
 import { assertRemoteAllowed, spawnGuarded } from './lib/remote-guard.mjs';
 
@@ -111,14 +113,10 @@ function main() {
   }
 
   // Kilit c: uzak siteurl
-  const siteCheck = remote(
-    env,
-    `wp option get siteurl --path='${env.DEPLOY_WP_PATH.replace(/'/g, `'\\''`)}'`
-  );
+  const flag = wpPathFlag(env.DEPLOY_WP_PATH);
+  const siteCheck = remote(env, `wp option get siteurl ${flag}`);
   const urlGuard = validateRemoteSiteUrl(siteCheck, env.DEPLOY_SITE_URL);
   if (!urlGuard.ok) fail(urlGuard.reason);
-
-  const wpPath = env.DEPLOY_WP_PATH.replace(/'/g, `'\\''`);
   const listed = findTargetByAlias(env.DEPLOY_SSH_ALIAS);
   const siteRoot = String(listed?.allowedRoot || '').replace(/\/$/, '');
   const backupRoot = `${siteRoot}/wdp-backups`;
@@ -129,23 +127,20 @@ function main() {
     console.log('Staging geri alma…');
     const latestName = remote(
       env,
-      `ls -1t '${backupRoot}' 2>/dev/null | head -n 1`
+      `ls -1t ${shellQuoteWpPath(backupRoot)} 2>/dev/null | head -n 1`
     );
     const latest = latestName ? `${backupRoot}/${latestName}` : '';
     if (!latest) fail('Geri alınacak yedek bulunamadı.');
     remote(
       env,
-      `wp plugin install '${latest.replace(/'/g, `'\\''`)}' --force --activate --path='${wpPath}'`
+      `wp plugin install ${shellQuoteWpPath(latest)} --force --activate ${flag}`
     );
     remote(
       env,
-      `wp eval 'if (class_exists("WDP_Migrations")) { WDP_Migrations::maybe_run(); }' --path='${wpPath}'`
+      `wp eval 'if (class_exists("WDP_Migrations")) { WDP_Migrations::maybe_run(); }' ${flag}`
     );
-    remote(env, `(wp sg purge --path='${wpPath}' 2>/dev/null || wp cache flush --path='${wpPath}')`);
-    const installed = remote(
-      env,
-      `wp plugin get ${pluginSlug} --field=version --path='${wpPath}'`
-    );
+    remote(env, `(wp sg purge ${flag} 2>/dev/null || wp cache flush ${flag})`);
+    const installed = remote(env, `wp plugin get ${pluginSlug} --field=version ${flag}`);
     console.log(`Staging geri alındı: ${installed || '(sürüm okunamadı)'}`);
     return;
   }
@@ -162,16 +157,16 @@ function main() {
   const remoteZip = `${deployRoot}/${pluginSlug}-${localVersion}-${stamp}.zip`;
   const backupZip = `${backupRoot}/${pluginSlug}-pre-${localVersion}-${stamp}.zip`;
 
-  remote(env, `mkdir -p '${backupRoot}' '${deployRoot}'`);
+  remote(env, `mkdir -p ${shellQuoteWpPath(backupRoot)} ${shellQuoteWpPath(deployRoot)}`);
 
   // Mevcut eklenti klasörünü yedekle (son 3 tutulur)
   remote(
     env,
     [
-      `PLUGIN_DIR=$(wp plugin path ${pluginSlug} --path='${wpPath}' 2>/dev/null || true)`,
+      `PLUGIN_DIR=$(wp plugin path ${pluginSlug} ${flag} 2>/dev/null || true)`,
       `if [ -n "$PLUGIN_DIR" ] && [ -d "$PLUGIN_DIR" ]; then`,
-      `  (cd "$(dirname "$PLUGIN_DIR")" && zip -qr '${backupZip}' "$(basename "$PLUGIN_DIR")")`,
-      `  ls -1t '${backupRoot}' 2>/dev/null | tail -n +4 | while read -r f; do rm -f '${backupRoot}'/"$f"; done`,
+      `  (cd "$(dirname "$PLUGIN_DIR")" && zip -qr ${shellQuoteWpPath(backupZip)} "$(basename "$PLUGIN_DIR")")`,
+      `  ls -1t ${shellQuoteWpPath(backupRoot)} 2>/dev/null | tail -n +4 | while read -r f; do rm -f ${shellQuoteWpPath(backupRoot)}/"$f"; done`,
       `fi`,
     ].join('\n')
   );
@@ -193,23 +188,20 @@ function main() {
 
   remote(
     env,
-    `wp plugin install '${remoteZip.replace(/'/g, `'\\''`)}' --force --activate --path='${wpPath}'`
+    `wp plugin install ${shellQuoteWpPath(remoteZip)} --force --activate ${flag}`
   );
   remote(
     env,
-    `wp eval 'if (class_exists("WDP_Migrations")) { WDP_Migrations::maybe_run(); }' --path='${wpPath}'`
+    `wp eval 'if (class_exists("WDP_Migrations")) { WDP_Migrations::maybe_run(); }' ${flag}`
   );
 
-  const installed = remote(
-    env,
-    `wp plugin get ${pluginSlug} --field=version --path='${wpPath}'`
-  );
+  const installed = remote(env, `wp plugin get ${pluginSlug} --field=version ${flag}`);
   if (installed !== localVersion) {
     fail(`Kurulu sürüm yerel ile eşleşmiyor (yerel ${localVersion}).`);
   }
 
-  remote(env, `(wp sg purge --path='${wpPath}' 2>/dev/null || wp cache flush --path='${wpPath}')`);
-  remote(env, `rm -f '${remoteZip.replace(/'/g, `'\\''`)}'`);
+  remote(env, `(wp sg purge ${flag} 2>/dev/null || wp cache flush ${flag})`);
+  remote(env, `rm -f ${shellQuoteWpPath(remoteZip)}`);
 
   console.log(`Staging'e kuruldu: ${localVersion}`);
 }

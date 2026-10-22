@@ -3,6 +3,7 @@
  * Ağ yok; spawn yok. Uzak koşu scripts/remote-discover.mjs içinden geçer.
  */
 import { createHash } from 'node:crypto';
+import { wpPathFlag } from './deploy-guards.mjs';
 
 export const CANARY_EVAL_FILE = 'tests/e2e/helpers/canary-snapshot.php';
 export const WDP_SLUG = 'woo-donation-popup';
@@ -582,8 +583,7 @@ export function getEvalSnippets() {
 }
 
 export function buildRemoteWpCommand(wpPath, tail) {
-  const p = String(wpPath || '').replace(/'/g, `'\\''`);
-  return `wp ${tail} --path='${p}'`;
+  return `wp ${tail} ${wpPathFlag(wpPath)}`;
 }
 
 export function canonicalEnv(raw) {

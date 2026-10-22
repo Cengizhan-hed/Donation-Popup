@@ -2,7 +2,7 @@
  * Profildeki ürün adından slug/ID çöz (WP-CLI; içerik değiştirmez).
  * Store API / sabit ID yok: WP post list kaynak.
  */
-import { loadDeployEnvSilent, remote, resolveWpPath } from './wp-remote.mjs';
+import { loadDeployEnvSilent, remote, wpCliPath } from './wp-remote.mjs';
 
 /**
  * @param {string} name
@@ -13,11 +13,11 @@ export async function findProductByName(name) {
   if (!title) return null;
   const loaded = loadDeployEnvSilent();
   if (!loaded.ok) return null;
-  const wpPath = resolveWpPath(loaded.env).replace(/'/g, `'\\''`);
+  const flag = wpCliPath(loaded.env);
   const q = title.replace(/'/g, `'\\''`);
   const raw = remote(
     loaded.env,
-    `wp post list --post_type=product --s='${q}' --fields=ID,post_name,post_title --format=json --path='${wpPath}'`
+    `wp post list --post_type=product --s='${q}' --fields=ID,post_name,post_title --format=json ${flag}`
   );
   let rows = [];
   try {
@@ -46,11 +46,11 @@ export async function findProductBySlug(slug) {
   if (!s) return null;
   const loaded = loadDeployEnvSilent();
   if (!loaded.ok) return null;
-  const wpPath = resolveWpPath(loaded.env).replace(/'/g, `'\\''`);
+  const flag = wpCliPath(loaded.env);
   const q = s.replace(/'/g, `'\\''`);
   const raw = remote(
     loaded.env,
-    `wp post list --post_type=product --name='${q}' --fields=ID,post_name,post_title --format=json --path='${wpPath}'`
+    `wp post list --post_type=product --name='${q}' --fields=ID,post_name,post_title --format=json ${flag}`
   );
   let rows = [];
   try {
@@ -151,13 +151,13 @@ export async function fillMissingProductSlugs(env) {
   if (!env.E2E_LIST_PAGE && profile.listPageId) {
     const loaded = loadDeployEnvSilent();
     if (loaded.ok) {
-      const wpPath = resolveWpPath(loaded.env).replace(/'/g, `'\\''`);
+      const flag = wpCliPath(loaded.env);
       const id = Number(profile.listPageId) || 0;
       if (id) {
         try {
           const url = remote(
             loaded.env,
-            `wp eval 'echo get_permalink(${id});' --path='${wpPath}'`
+            `wp eval 'echo get_permalink(${id});' ${flag}`
           );
           if (url) {
             const u = new URL(String(url).trim());

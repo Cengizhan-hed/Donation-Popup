@@ -96,7 +96,7 @@ export function isLiveHedefHost(hostOrUrl) {
  * @returns {{ ok: true, path: string } | { ok: false, reason: string }}
  */
 export function inspectRemotePath(raw) {
-  const s = String(raw || '').trim();
+  const s = unquoteShellWpPath(String(raw || '').trim());
   if (!s) return { ok: false, reason: 'Yol boş.' };
   if (s.includes('..')) {
     return { ok: false, reason: 'Yol `..` içeremez.' };
@@ -161,6 +161,61 @@ export function findTargetById(id) {
 }
 
 /**
+ * Kabukta ~ / $HOME açılsın. `--path=~/` kelime ortasında ~ açılmaz;
+ * `"$HOME/…"` çift tırnakta $HOME açılır (kilit $HOME→~ normalize eder).
+ * Tilde veya $HOME köklü yol → "$HOME/…"  |  mutlak → tek tırnak.
+ * @param {string} wpPath
+ */
+export function shellQuoteWpPath(wpPath) {
+  const raw = String(wpPath || '').trim();
+  if (!raw) return "''";
+  const escSingle = (s) => String(s).replace(/'/g, `'\\''`);
+  const escD = (s) => String(s).replace(/["\\]/g, '\\$&');
+  if (raw === '~' || raw === '$HOME' || raw === '~/' || raw === '$HOME/') return '"$HOME"';
+  if (raw.startsWith('~/')) return `"$HOME/${escD(raw.slice(2))}"`;
+  if (raw.startsWith('$HOME/')) return `"$HOME/${escD(raw.slice('$HOME/'.length))}"`;
+  return `'${escSingle(raw)}'`;
+}
+
+/**
+ * @param {string} wpPath
+ */
+export function wpPathFlag(wpPath) {
+  return `--path=${shellQuoteWpPath(wpPath)}`;
+}
+
+/**
+ * --path=~/'www/x' / --path="$HOME"/'www/x' / --path='/abs' → mantıksal yol.
+ * @param {string} raw
+ */
+export function unquoteShellWpPath(raw) {
+  let s = String(raw || '').trim();
+  if (!s) return '';
+  const tildeQ = s.match(/^~\/'(.*)'$/);
+  if (tildeQ) s = `~/${tildeQ[1].replace(/'\\''/g, "'")}`;
+  else {
+    const homeSlash = s.match(/^"\$HOME"\/'(.*)'$/);
+    const homeConcat = s.match(/^"\$HOME"'(.*)'$/);
+    if (homeSlash) s = `$HOME/${homeSlash[1].replace(/'\\''/g, "'")}`;
+    else if (homeConcat) {
+      const rest = homeConcat[1].replace(/'\\''/g, "'");
+      s = rest.startsWith('/') ? `$HOME${rest}` : `$HOME/${rest}`;
+    } else if (s.length >= 2 && s.startsWith("'") && s.endsWith("'")) {
+      s = s.slice(1, -1).replace(/'\\''/g, "'");
+    } else if (s.length >= 2 && s.startsWith('"') && s.endsWith('"')) {
+      s = s.slice(1, -1);
+    }
+  }
+  if (s === '$HOME' || s === '$HOME/') return '~';
+  if (s.startsWith('$HOME/')) return `~/${s.slice('$HOME/'.length)}`;
+  return s;
+}
+
+/** --path= değerini (tırnaklı ~/'…' biçimi dahil) yakala. */
+export const WP_PATH_FLAG_VALUE_RE =
+  /--path(?:=|\s+)(~\/'[^']+'|"\$HOME"\/'[^']+'|"\$HOME"'[^']+'|"[^"]+"|'[^']+'|\S+)/;
+
+/**
  * Uzak komut / argüman metninden yol adayları.
  * @param {string} text
  * @returns {string[]}
@@ -169,17 +224,33 @@ export function extractPathsFromText(text) {
   const raw = String(text || '');
   if (!raw) return [];
   const out = [];
+  const seen = new Set();
+  const add = (p) => {
+    const n = unquoteShellWpPath(String(p || '').trim());
+    if (!n || n === '~' || n === '~/' || n === '$HOME' || n === '$HOME/' || n === '/home') return;
+    if (seen.has(n)) return;
+    seen.add(n);
+    out.push(n);
+  };
+
+  const pathFlag = new RegExp(WP_PATH_FLAG_VALUE_RE.source, 'g');
+  let f;
+  while ((f = pathFlag.exec(raw))) {
+    add(f[1] || '');
+  }
+
+  const quotedHome = /(?:~\/|"\$HOME"\/|"\$HOME")'([^']+)'/g;
+  let q;
+  while ((q = quotedHome.exec(raw))) {
+    if (q[0].startsWith('~/')) add(`~/${q[1]}`);
+    else add(`$HOME/${String(q[1] || '').replace(/^\//, '')}`);
+  }
+
   const re =
     /(?:^|[\s"'=]|--path=)(\$HOME\/[^\s"'`;|&]+|~\/[^\s"'`;|&]+|\/home\/[^\s"'`;|&]+)/g;
   let m;
   while ((m = re.exec(raw))) {
-    out.push(m[1].replace(/[\\/,;.]+$/, ''));
-  }
-  const pathFlag = /--path(?:=|\s+)(?:'([^']+)'|"([^"]+)"|(\S+))/g;
-  let f;
-  while ((f = pathFlag.exec(raw))) {
-    const p = f[1] || f[2] || f[3] || '';
-    if (p) out.push(p);
+    add(String(m[1] || '').replace(/[\\/,;.]+$/, ''));
   }
   return out;
 }
@@ -199,9 +270,9 @@ export function isWpCliRemoteCommand(cmd) {
 export function wpCliHasExactPath(cmd, expectedWpPath) {
   const s = String(cmd || '');
   const want = String(expectedWpPath || '').trim();
-  const m = s.match(/--path(?:=|\s+)(?:'([^']+)'|"([^"]+)"|(\S+))/);
+  const m = s.match(WP_PATH_FLAG_VALUE_RE);
   if (!m) return false;
-  const got = String(m[1] || m[2] || m[3] || '').trim();
+  const got = unquoteShellWpPath(m[1] || '');
   if (!got) return false;
   if (got === want) return true;
   const inspected = inspectRemotePath(got);
@@ -354,11 +425,11 @@ export function buildGuardedEvalFileCommand(wpPath, opts = {}) {
   const prefix = String(opts.tmpPrefix || 'wdp-eval').replace(/[^a-z0-9-]/gi, '') || 'wdp-eval';
   const extra = opts.extraArgs ? ` ${opts.extraArgs}` : '';
   const b64 = String(opts.b64 || 'YmFzZTY0');
-  const wp = String(wpPath || '').replace(/'/g, `'\\''`);
+  const flag = wpPathFlag(wpPath);
   return [
     `TMP=$(mktemp /tmp/${prefix}-XXXX.php)`,
     `echo '${b64}' | base64 -d > "$TMP"`,
-    `wp --path='${wp}' eval-file "$TMP"${extra}`,
+    `wp ${flag} eval-file "$TMP"${extra}`,
     `EC=$?`,
     `rm -f "$TMP"`,
     `exit $EC`,
@@ -372,23 +443,31 @@ export function buildGuardedEvalFileCommand(wpPath, opts = {}) {
  */
 export function plannedRemoteCommands(target) {
   const t = target || {};
-  const wp = String(t.wpPath || '').replace(/'/g, `'\\''`);
+  const flag = wpPathFlag(t.wpPath);
   const root = String(t.allowedRoot || '').replace(/\/$/, '');
   const backupRoot = `${root}/wdp-backups`;
   const deployRoot = `${root}/wdp-deploy`;
   const slug = 'woo-donation-popup';
+  const pluginDir = `${t.wpPath}/wp-content/plugins/${slug}`;
+  const debugLog = `${t.wpPath}/wp-content/debug.log`;
   const backupZip = `${backupRoot}/${slug}-pre-x.zip`;
+  const qBackup = shellQuoteWpPath(backupRoot);
+  const qDeploy = shellQuoteWpPath(deployRoot);
+  const qPlugin = shellQuoteWpPath(pluginDir);
+  const qLog = shellQuoteWpPath(debugLog);
+  const qZip = shellQuoteWpPath(`${deployRoot}/${slug}-x.zip`);
+  const qBackupZip = shellQuoteWpPath(backupZip);
   const list = [
-    `wp option get siteurl --path='${wp}'`,
-    `wp eval 'echo 1;' --path='${wp}'`,
-    `echo ${t.wpPath}`,
-    `mkdir -p '${backupRoot}' '${deployRoot}'`,
-    `ls -1t '${backupRoot}' 2>/dev/null | head -n 1`,
-    `wp plugin get ${slug} --field=version --path='${wp}'`,
-    `wp plugin activate ${slug} --path='${wp}'`,
-    `wp plugin path ${slug} --dir --path='${wp}' 2>/dev/null || echo '${wp}/wp-content/plugins/${slug}'`,
-    `(wp sg purge --path='${wp}' 2>/dev/null || wp cache flush --path='${wp}')`,
-    `LOG='${wp}/wp-content/debug.log'; if [ -f "$LOG" ]; then tail -n 80 "$LOG"; else echo "debug.log yok"; fi`,
+    `wp option get siteurl ${flag}`,
+    `wp eval 'echo 1;' ${flag}`,
+    `echo ${shellQuoteWpPath(t.wpPath)}`,
+    `mkdir -p ${qBackup} ${qDeploy}`,
+    `ls -1t ${qBackup} 2>/dev/null | head -n 1`,
+    `wp plugin get ${slug} --field=version ${flag}`,
+    `wp plugin activate ${slug} ${flag}`,
+    `wp plugin path ${slug} --dir ${flag} 2>/dev/null || echo ${qPlugin}`,
+    `(wp sg purge ${flag} 2>/dev/null || wp cache flush ${flag})`,
+    `LOG=${qLog}; if [ -f "$LOG" ]; then tail -n 80 "$LOG"; else echo "debug.log yok"; fi`,
     buildGuardedEvalFileCommand(t.wpPath, { tmpPrefix: 'wdp-disc' }),
     buildGuardedEvalFileCommand(t.wpPath, { tmpPrefix: 'wdp-read' }),
     buildGuardedEvalFileCommand(t.wpPath, { tmpPrefix: 'wdp-canary' }),
@@ -396,24 +475,24 @@ export function plannedRemoteCommands(target) {
     buildGuardedEvalFileCommand(t.wpPath, { tmpPrefix: 'wdp-eval' }),
     buildGuardedEvalFileCommand(t.wpPath, { tmpPrefix: 'wdp-cleanup', extraArgs: 'cleanup' }),
     [
-      `PLUGIN_DIR=$(wp plugin path ${slug} --path='${wp}' 2>/dev/null || true)`,
+      `PLUGIN_DIR=$(wp plugin path ${slug} ${flag} 2>/dev/null || true)`,
       `if [ -n "$PLUGIN_DIR" ] && [ -d "$PLUGIN_DIR" ]; then`,
-      `  (cd "$(dirname "$PLUGIN_DIR")" && zip -qr '${backupZip}' "$(basename "$PLUGIN_DIR")")`,
-      `  ls -1t '${backupRoot}' 2>/dev/null | tail -n +4 | while read -r f; do rm -f '${backupRoot}'/"$f"; done`,
+      `  (cd "$(dirname "$PLUGIN_DIR")" && zip -qr ${qBackupZip} "$(basename "$PLUGIN_DIR")")`,
+      `  ls -1t ${qBackup} 2>/dev/null | tail -n +4 | while read -r f; do rm -f ${qBackup}/"$f"; done`,
       `fi`,
     ].join('\n'),
     [
-      `DIR='${wp}/wp-content/plugins/${slug}'`,
+      `DIR=${qPlugin}`,
       `echo "plugin_dir=$DIR"`,
       `if [ -d "$DIR" ]; then echo "is_dir=1"; else echo "is_dir=0"; fi`,
       `if [ -f "$DIR/${slug}.php" ]; then echo "has_main=1"; else echo "has_main=0"; fi`,
       `echo -n "file_count="`,
       `if [ -d "$DIR" ]; then find "$DIR" -type f | wc -l | tr -d ' '; else echo 0; fi`,
     ].join('\n'),
-    `wp eval 'if (class_exists("WDP_Migrations")) { WDP_Migrations::maybe_run(); }' --path='${wp}'`,
-    `(wp sg purge --path='${wp}' 2>/dev/null || true; wp cache flush --path='${wp}' 2>/dev/null || true; wp eval 'if (function_exists("wp_cache_flush")) { wp_cache_flush(); } if (class_exists("WDP_Donations_List")) { WDP_Donations_List::reset_bump_guard(); WDP_Donations_List::bump_cache(); }' --path='${wp}')`,
-    `wp plugin install '${deployRoot}/${slug}-x.zip' --force --activate --path='${wp}'`,
-    `rm -f '${deployRoot}/${slug}-x.zip'`,
+    `wp eval 'if (class_exists("WDP_Migrations")) { WDP_Migrations::maybe_run(); }' ${flag}`,
+    `(wp sg purge ${flag} 2>/dev/null || true; wp cache flush ${flag} 2>/dev/null || true; wp eval 'if (function_exists("wp_cache_flush")) { wp_cache_flush(); } if (class_exists("WDP_Donations_List")) { WDP_Donations_List::reset_bump_guard(); WDP_Donations_List::bump_cache(); }' ${flag})`,
+    `wp plugin install ${qZip} --force --activate ${flag}`,
+    `rm -f ${qZip}`,
   ];
   return list;
 }

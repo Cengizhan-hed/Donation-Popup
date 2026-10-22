@@ -21,6 +21,8 @@ import {
   parsePluginVersion,
   validateDeployEnv,
   validateRemoteSiteUrl,
+  wpPathFlag,
+  shellQuoteWpPath,
 } from './lib/deploy-guards.mjs';
 import { assertRemoteAllowed, spawnGuarded } from './lib/remote-guard.mjs';
 import { rsyncExcludeArgs } from './lib/pack-excludes.mjs';
@@ -144,21 +146,17 @@ function rsyncTo(env, localDir, remoteDir, dry) {
   }
 }
 
-function resolveWpPath(env) {
-  const raw = String(env.DEPLOY_WP_PATH || '').trim();
-  if (raw.startsWith('~/') || raw.startsWith('$HOME')) {
-    return remote(env, `echo ${raw.replace(/'/g, `'\\''`)}`);
-  }
-  return raw;
+function logicalWpPath(env) {
+  return String(env.DEPLOY_WP_PATH || '').trim();
 }
 
 /**
  * Yalnız DİZİN. `wp plugin path SLUG` dosya döner; --dir şart.
  */
-function resolvePluginDir(env, wpPathEsc) {
+function resolvePluginDir(env, wpPath) {
   const raw = remote(
     env,
-    `wp plugin path ${PLUGIN_SLUG} --dir --path='${wpPathEsc}' 2>/dev/null || echo '${wpPathEsc}/wp-content/plugins/${PLUGIN_SLUG}'`
+    `wp plugin path ${PLUGIN_SLUG} --dir ${wpPathFlag(wpPath)} 2>/dev/null || echo ${shellQuoteWpPath(`${wpPath}/wp-content/plugins/${PLUGIN_SLUG}`)}`
   );
   const dir = normalizeRemotePluginDir(raw, PLUGIN_SLUG);
   if (!dir) fail('Uzak eklenti dizini çözülemedi.');
@@ -183,9 +181,10 @@ function main() {
   const localVersion = parsePluginVersion(fs.readFileSync(pluginFile, 'utf8'));
   if (!localVersion) fail('Yerel sürüm okunamadı (woo-donation-popup.php Version).');
 
-  const wpPath = resolveWpPath(env).replace(/'/g, `'\\''`);
+  const wpPath = logicalWpPath(env);
+  const flag = wpPathFlag(wpPath);
 
-  const siteCheck = remote(env, `wp option get siteurl --path='${wpPath}'`);
+  const siteCheck = remote(env, `wp option get siteurl ${flag}`);
   const urlGuard = validateRemoteSiteUrl(siteCheck, env.DEPLOY_SITE_URL);
   if (!urlGuard.ok) fail(urlGuard.reason);
 
@@ -199,20 +198,20 @@ function main() {
     console.log('Ikram geri alma…');
     const latestName = remote(
       env,
-      `ls -1t '${backupRoot}' 2>/dev/null | head -n 1`
+      `ls -1t ${shellQuoteWpPath(backupRoot)} 2>/dev/null | head -n 1`
     );
     const latest = latestName ? `${backupRoot}/${latestName}` : '';
     if (!latest) fail('Geri alınacak yedek bulunamadı.');
     remote(
       env,
-      `wp plugin install '${latest.replace(/'/g, `'\\''`)}' --force --activate --path='${wpPath}'`
+      `wp plugin install ${shellQuoteWpPath(latest)} --force --activate ${flag}`
     );
     remote(
       env,
-      `wp eval 'if (class_exists("WDP_Migrations")) { WDP_Migrations::maybe_run(); }' --path='${wpPath}'`
+      `wp eval 'if (class_exists("WDP_Migrations")) { WDP_Migrations::maybe_run(); }' ${flag}`
     );
-    remote(env, `(wp sg purge --path='${wpPath}' 2>/dev/null || wp cache flush --path='${wpPath}')`);
-    const installed = remote(env, `wp plugin get ${PLUGIN_SLUG} --field=version --path='${wpPath}'`);
+    remote(env, `(wp sg purge ${flag} 2>/dev/null || wp cache flush ${flag})`);
+    const installed = remote(env, `wp plugin get ${PLUGIN_SLUG} --field=version ${flag}`);
     console.log(`Ikram geri alındı: ${installed || '(sürüm okunamadı)'}`);
     return;
   }
@@ -256,16 +255,15 @@ function main() {
     return;
   }
 
-  remote(env, `mkdir -p '${backupRoot}'`);
+  remote(env, `mkdir -p ${shellQuoteWpPath(backupRoot)}`);
   const backupZip = `${backupRoot}/${PLUGIN_SLUG}-pre-${localVersion}-${stamp}.zip`;
-  const pluginDirEsc = pluginDir.replace(/'/g, `'\\''`);
   remote(
     env,
     [
-      `PLUGIN_DIR='${pluginDirEsc}'`,
+      `PLUGIN_DIR=${shellQuoteWpPath(pluginDir)}`,
       `if [ -d "$PLUGIN_DIR" ]; then`,
-      `  (cd "$(dirname "$PLUGIN_DIR")" && zip -qr '${backupZip}' "$(basename "$PLUGIN_DIR")")`,
-      `  ls -1t '${backupRoot}' 2>/dev/null | tail -n +4 | while read -r f; do rm -f '${backupRoot}'/"$f"; done`,
+      `  (cd "$(dirname "$PLUGIN_DIR")" && zip -qr ${shellQuoteWpPath(backupZip)} "$(basename "$PLUGIN_DIR")")`,
+      `  ls -1t ${shellQuoteWpPath(backupRoot)} 2>/dev/null | tail -n +4 | while read -r f; do rm -f ${shellQuoteWpPath(backupRoot)}/"$f"; done`,
       `fi`,
       `mkdir -p "$PLUGIN_DIR"`,
     ].join('\n')
@@ -274,25 +272,25 @@ function main() {
   rsyncTo(env, extracted, pluginDir, true);
   rsyncTo(env, extracted, pluginDir, false);
 
-  remote(env, `wp plugin activate ${PLUGIN_SLUG} --path='${wpPath}'`);
+  remote(env, `wp plugin activate ${PLUGIN_SLUG} ${flag}`);
   remote(
     env,
-    `wp eval 'if (class_exists("WDP_Migrations")) { WDP_Migrations::maybe_run(); }' --path='${wpPath}'`
+    `wp eval 'if (class_exists("WDP_Migrations")) { WDP_Migrations::maybe_run(); }' ${flag}`
   );
 
-  const installed = remote(env, `wp plugin get ${PLUGIN_SLUG} --field=version --path='${wpPath}'`);
+  const installed = remote(env, `wp plugin get ${PLUGIN_SLUG} --field=version ${flag}`);
   if (installed !== localVersion) {
     fail(`Kurulu sürüm yerel ile eşleşmiyor (yerel ${localVersion}, uzak ${installed}).`);
   }
 
-  const phpOk = remote(env, `wp eval 'echo 1;' --path='${wpPath}'`);
+  const phpOk = remote(env, `wp eval 'echo 1;' ${flag}`);
   if (String(phpOk).trim() !== '1') {
     fail(`PHP eval echo 1 beklenen 1 değil: ${String(phpOk).slice(0, 80)}`);
   }
 
   remote(
     env,
-    `(wp sg purge --path='${wpPath}' 2>/dev/null || true; wp cache flush --path='${wpPath}' 2>/dev/null || true; wp eval 'if (function_exists("wp_cache_flush")) { wp_cache_flush(); } if (class_exists("WDP_Donations_List")) { WDP_Donations_List::reset_bump_guard(); WDP_Donations_List::bump_cache(); }' --path='${wpPath}')`
+    `(wp sg purge ${flag} 2>/dev/null || true; wp cache flush ${flag} 2>/dev/null || true; wp eval 'if (function_exists("wp_cache_flush")) { wp_cache_flush(); } if (class_exists("WDP_Donations_List")) { WDP_Donations_List::reset_bump_guard(); WDP_Donations_List::bump_cache(); }' ${flag})`
   );
 
   try {

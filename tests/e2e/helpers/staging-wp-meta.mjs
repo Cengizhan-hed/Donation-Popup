@@ -3,7 +3,7 @@
  * Yazma yalnız fixture ürün + named op. Sayfa oluştur/sil/onar YOK.
  * .env.deploy değerleri asla loglanmaz / yazdırılmaz.
  */
-import { loadDeployEnvSilent, remote, resolveWpPath } from './wp-remote.mjs';
+import { loadDeployEnvSilent, remote, wpCliPath } from './wp-remote.mjs';
 import { assertProductWritable, safeDeleteMarked } from './safe-remote-write.mjs';
 import { isRunIdOk, loadRegistry, registerCreated, registerMutated } from './run-registry.mjs';
 import { E2E_META_KEY } from './run-registry.mjs';
@@ -18,12 +18,12 @@ export async function getProductMeta(productId, metaKey) {
   if (!loaded.ok) {
     throw new Error(`staging-wp-meta: ${loaded.reason}`);
   }
-  const wpPath = resolveWpPath(loaded.env).replace(/'/g, `'\\''`);
+  const flag = wpCliPath(loaded.env);
   const id = String(Math.abs(Number.parseInt(String(productId), 10) || 0));
   const key = String(metaKey).replace(/'/g, `'\\''`);
   return remote(
     loaded.env,
-    `wp post meta get ${id} '${key}' --path='${wpPath}' 2>/dev/null || true`
+    `wp post meta get ${id} '${key}' ${flag} 2>/dev/null || true`
   );
 }
 
@@ -39,7 +39,7 @@ export async function setProductMeta(productId, metaKey, value) {
     throw new Error(`staging-wp-meta: ${loaded.reason}`);
   }
   await assertProductWritable(productId, 'set-fixture-product-meta');
-  const wpPath = resolveWpPath(loaded.env).replace(/'/g, `'\\''`);
+  const flag = wpCliPath(loaded.env);
   const id = String(Math.abs(Number.parseInt(String(productId), 10) || 0));
   const key = String(metaKey).replace(/'/g, `'\\''`);
   if (id === '0') {
@@ -47,15 +47,15 @@ export async function setProductMeta(productId, metaKey, value) {
   }
   registerMutated({ id, type: 'product', keys: [String(metaKey)] });
   if (value === '' || value === null || value === undefined) {
-    remote(loaded.env, `wp post meta delete ${id} '${key}' --path='${wpPath}' 2>/dev/null || true`);
+    remote(loaded.env, `wp post meta delete ${id} '${key}' ${flag} 2>/dev/null || true`);
   } else {
     const val = String(value).replace(/'/g, `'\\''`);
-    remote(loaded.env, `wp post meta update ${id} '${key}' '${val}' --path='${wpPath}'`);
+    remote(loaded.env, `wp post meta update ${id} '${key}' '${val}' ${flag}`);
   }
   // product_info / bağış / donor önbelleğini düşür (meta hook kaçarsa diye).
   remote(
     loaded.env,
-    `wp eval 'if (class_exists("WDP_Utils")) { WDP_Utils::invalidate_product_donation_caches(${id}); } if (function_exists("wc_delete_product_transients")) { wc_delete_product_transients(${id}); } clean_post_cache(${id}); wp_cache_delete("wdp_donor_count_${id}", "wdp_donations"); wp_cache_delete("wdp_total_donation_${id}", "wdp_donations");' --path='${wpPath}' 2>/dev/null || true`
+    `wp eval 'if (class_exists("WDP_Utils")) { WDP_Utils::invalidate_product_donation_caches(${id}); } if (function_exists("wc_delete_product_transients")) { wc_delete_product_transients(${id}); } clean_post_cache(${id}); wp_cache_delete("wdp_donor_count_${id}", "wdp_donations"); wp_cache_delete("wdp_total_donation_${id}", "wdp_donations");' ${flag} 2>/dev/null || true`
   );
 }
 
@@ -72,7 +72,7 @@ export async function saveProductPrices(productId, amounts) {
     throw new Error(`staging-wp-meta: ${loaded.reason}`);
   }
   await assertProductWritable(productId, 'set-fixture-product-price');
-  const wpPath = resolveWpPath(loaded.env).replace(/'/g, `'\\''`);
+  const flag = wpCliPath(loaded.env);
   const id = String(Math.abs(Number.parseInt(String(productId), 10) || 0));
   if (id === '0') {
     throw new Error('staging-wp-meta: invalid product id');
@@ -83,7 +83,7 @@ export async function saveProductPrices(productId, amounts) {
   const sale = String(amounts.sale ?? '').replace(/'/g, `'\\''`);
   remote(
     loaded.env,
-    `wp eval '$p=wc_get_product(${id}); if(!$p){fwrite(STDERR,"missing product"); exit(1);} $p->set_regular_price("${regular}"); $p->set_sale_price("${sale}"); $p->set_price("${price}"); $p->save(); echo $p->get_price();' --path='${wpPath}'`
+    `wp eval '$p=wc_get_product(${id}); if(!$p){fwrite(STDERR,"missing product"); exit(1);} $p->set_regular_price("${regular}"); $p->set_sale_price("${sale}"); $p->set_price("${price}"); $p->save(); echo $p->get_price();' ${flag}`
   );
 }
 
@@ -96,10 +96,10 @@ export async function getWooCartPageInfo() {
   if (!loaded.ok) {
     throw new Error(`staging-wp-meta: ${loaded.reason}`);
   }
-  const wpPath = resolveWpPath(loaded.env).replace(/'/g, `'\\''`);
+  const flag = wpCliPath(loaded.env);
   const raw = remote(
     loaded.env,
-    `wp eval '$id=function_exists("wc_get_page_id")?wc_get_page_id("cart"):0; $url=function_exists("wc_get_cart_url")?wc_get_cart_url():""; echo wp_json_encode(array("id"=>(int)$id,"url"=>$url,"status"=>$id? (string)get_post_status($id):"","permalink"=>$id? (string)get_permalink($id):""));' --path='${wpPath}'`
+    `wp eval '$id=function_exists("wc_get_page_id")?wc_get_page_id("cart"):0; $url=function_exists("wc_get_cart_url")?wc_get_cart_url():""; echo wp_json_encode(array("id"=>(int)$id,"url"=>$url,"status"=>$id? (string)get_post_status($id):"","permalink"=>$id? (string)get_permalink($id):""));' ${flag}`
   );
   const line = String(raw || '')
     .split(/\r?\n/)
@@ -156,10 +156,10 @@ export async function bumpListCache() {
   if (!loaded.ok) {
     throw new Error(`staging-wp-meta: ${loaded.reason}`);
   }
-  const wpPath = resolveWpPath(loaded.env).replace(/'/g, `'\\''`);
+  const flag = wpCliPath(loaded.env);
   remote(
     loaded.env,
-    `wp eval 'if (class_exists("WDP_Donations_List")) { WDP_Donations_List::reset_bump_guard(); WDP_Donations_List::bump_cache(); }' --path='${wpPath}'`
+    `wp eval 'if (class_exists("WDP_Donations_List")) { WDP_Donations_List::reset_bump_guard(); WDP_Donations_List::bump_cache(); }' ${flag}`
   );
 }
 
@@ -180,14 +180,14 @@ export async function snapshotProductPrices(productId) {
   if (!loaded.ok) {
     throw new Error(`staging-wp-meta: ${loaded.reason}`);
   }
-  const wpPath = resolveWpPath(loaded.env).replace(/'/g, `'\\''`);
+  const flag = wpCliPath(loaded.env);
   const id = String(Math.abs(Number.parseInt(String(productId), 10) || 0));
   if (id === '0') {
     throw new Error('staging-wp-meta: invalid product id');
   }
   const raw = remote(
     loaded.env,
-    `wp eval '$p=wc_get_product(${id}); if(!$p){echo "{}"; return;} echo wp_json_encode(array("price"=>(string)$p->get_price(),"regular"=>(string)$p->get_regular_price(),"sale"=>(string)$p->get_sale_price()));' --path='${wpPath}'`
+    `wp eval '$p=wc_get_product(${id}); if(!$p){echo "{}"; return;} echo wp_json_encode(array("price"=>(string)$p->get_price(),"regular"=>(string)$p->get_regular_price(),"sale"=>(string)$p->get_sale_price()));' ${flag}`
   );
   const line = String(raw || '')
     .split(/\r?\n/)
@@ -221,7 +221,7 @@ export async function createMarkedDonationProduct(opts = {}) {
   if (!isRunIdOk(registry.runId)) {
     throw new Error('staging-wp-meta: runId yok; ürün oluşturulmaz');
   }
-  const wpPath = resolveWpPath(loaded.env).replace(/'/g, `'\\''`);
+  const flag = wpCliPath(loaded.env);
   const title = String(opts.title || 'WDP E2E Empty Price').replace(/'/g, `'\\''`);
   const min = String(opts.min || '5').replace(/[^0-9.]/g, '') || '5';
   const php = [
@@ -241,7 +241,7 @@ export async function createMarkedDonationProduct(opts = {}) {
     'if(!$id){fwrite(STDERR,"create-failed"); exit(1);}',
     'echo wp_json_encode(array("id"=>(int)$id,"url"=>get_permalink($id),"slug"=>$p->get_slug()));',
   ].join(' ');
-  const raw = remote(loaded.env, `wp eval '${php.replace(/'/g, `'\\''`)}' --path='${wpPath}'`);
+  const raw = remote(loaded.env, `wp eval '${php.replace(/'/g, `'\\''`)}' ${flag}`);
   const line = String(raw || '')
     .split(/\r?\n/)
     .map((l) => l.trim())

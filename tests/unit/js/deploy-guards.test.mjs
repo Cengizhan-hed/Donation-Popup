@@ -15,6 +15,9 @@ import {
   inspectRemoteCommand,
   plannedRemoteCommands,
   buildGuardedEvalFileCommand,
+  shellQuoteWpPath,
+  wpPathFlag,
+  unquoteShellWpPath,
   IKRAM_ALLOW_REMOVAL_NOTE,
   ALLOWED_DEPLOY_TARGETS,
 } from '../../../scripts/lib/deploy-guards.mjs';
@@ -146,6 +149,16 @@ describe('deploy-guards', () => {
       remoteCommand: `wp option get siteurl --path=${STAGING.wpPath}`,
     });
     assert.equal(r.ok, true);
+  });
+
+  it('shellQuoteWpPath ~ tırnak dışında; kilit tanır', () => {
+    assert.equal(shellQuoteWpPath(STAGING.wpPath), `"$HOME/www/staging30.hedefdernegi.org/public_html"`);
+    assert.equal(shellQuoteWpPath(IKRAM.wpPath), `"$HOME/www/ikramaid.uk/public_html"`);
+    assert.equal(unquoteShellWpPath(shellQuoteWpPath(STAGING.wpPath)), STAGING.wpPath);
+    const cmd = `wp option get siteurl ${wpPathFlag(STAGING.wpPath)}`;
+    assert.equal(checkRemoteTarget({ ...STAGING, remoteCommand: cmd }).ok, true);
+    const cmdHome = `wp option get siteurl ${wpPathFlag('$HOME/www/staging30.hedefdernegi.org/public_html')}`;
+    assert.equal(checkRemoteTarget({ ...STAGING, remoteCommand: cmdHome }).ok, true);
   });
 
   it('RED: glob / $(', () => {
@@ -298,7 +311,7 @@ describe('deploy-guards', () => {
       assert.ok(cmds.some((c) => c.includes('wdp-mig-')), 'snapshot eval-file');
       assert.ok(cmds.some((c) => c.includes('wdp-canary-')), 'canary eval-file');
       const snap = buildGuardedEvalFileCommand(target.wpPath, { tmpPrefix: 'wdp-mig' });
-      assert.match(snap, /wp --path='/);
+      assert.match(snap, /wp --path=/);
       assert.match(snap, /eval-file/);
       for (const remoteCommand of cmds) {
         const r = checkRemoteTarget({

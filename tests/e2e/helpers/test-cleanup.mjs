@@ -2,7 +2,7 @@
  * E2E sipariş/müşteri işaretleme ve temizlik.
  * Tek kaynak: cleanup-e2e.php (kayıt defteri + run_id + kara liste).
  */
-import { loadDeployEnvSilent, remote, resolveWpPath, runEvalFile } from './wp-remote.mjs';
+import { loadDeployEnvSilent, remote, wpCliPath, runEvalFile } from './wp-remote.mjs';
 import { isRunIdOk, loadRegistry, registerCreated, registryIds } from './run-registry.mjs';
 
 export const E2E_META_KEY = '_wdp_e2e_test';
@@ -16,11 +16,11 @@ export function e2eEmail(stamp = Date.now()) {
 export async function snapshotGuardOrder() {
   const loaded = loadDeployEnvSilent();
   if (!loaded.ok) return null;
-  const wpPath = resolveWpPath(loaded.env).replace(/'/g, `'\\''`);
+  const flag = wpCliPath(loaded.env);
   try {
     const raw = remote(
       loaded.env,
-      `wp eval 'if(!function_exists("wc_get_orders")){echo "0"; return;} $q=wc_get_orders(["limit"=>1,"orderby"=>"date","order"=>"DESC","return"=>"ids"]); echo $q? (int)$q[0]:0;' --path='${wpPath}'`
+      `wp eval 'if(!function_exists("wc_get_orders")){echo "0"; return;} $q=wc_get_orders(["limit"=>1,"orderby"=>"date","order"=>"DESC","return"=>"ids"]); echo $q? (int)$q[0]:0;' ${flag}`
     );
     const id = Math.abs(Number.parseInt(String(raw).trim(), 10) || 0);
     return id > 0 ? { id } : null;
@@ -36,13 +36,13 @@ export async function markOrderAsE2E(orderId) {
   if (!isRunIdOk(registry.runId)) {
     throw new Error('test-cleanup: runId yok; sipariş işaretlenmez');
   }
-  const wpPath = resolveWpPath(loaded.env).replace(/'/g, `'\\''`);
+  const flag = wpCliPath(loaded.env);
   const id = String(Math.abs(Number.parseInt(String(orderId), 10) || 0));
   if (id === '0') throw new Error('test-cleanup: invalid order id');
   const run = registry.runId.replace(/'/g, '');
   remote(
     loaded.env,
-    `wp eval '$o=wc_get_order(${id}); if(!$o){fwrite(STDERR,"missing"); exit(1);} $o->update_meta_data("${E2E_META_KEY}","${run}"); $o->save(); echo "ok";' --path='${wpPath}'`
+    `wp eval '$o=wc_get_order(${id}); if(!$o){fwrite(STDERR,"missing"); exit(1);} $o->update_meta_data("${E2E_META_KEY}","${run}"); $o->save(); echo "ok";' ${flag}`
   );
   registerCreated({ id: Number(id), type: 'order' });
 }

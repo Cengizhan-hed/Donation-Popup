@@ -20,6 +20,9 @@ import {
   findTargetByAlias,
   validateDeployEnv,
   validateRemoteSiteUrl,
+  wpPathFlag,
+  shellQuoteWpPath,
+  buildGuardedEvalFileCommand,
 } from './lib/deploy-guards.mjs';
 import { assertRemoteAllowed, spawnGuarded } from './lib/remote-guard.mjs';
 import {
@@ -104,29 +107,20 @@ function remote(env, remoteCmd) {
   return (res.stdout || '').trim();
 }
 
-function resolveWpPath(env) {
-  const raw = String(env.DEPLOY_WP_PATH || DEFAULT_WP).trim();
-  if (raw.startsWith('~/') || raw.startsWith('$HOME')) {
-    return remote(env, `echo ${raw.replace(/'/g, `'\\''`)}`);
-  }
-  return raw;
-}
-
-function wpPathEsc(env) {
-  return resolveWpPath(env).replace(/'/g, `'\\''`);
+function logicalWpPath(env) {
+  return String(env.DEPLOY_WP_PATH || DEFAULT_WP).trim();
 }
 
 function runWp(env, tail) {
-  const wpPath = wpPathEsc(env);
   const cmd = normalizeWpTail(tail);
-  return remote(env, `wp ${cmd} --path='${wpPath}'`);
+  return remote(env, `wp ${cmd} ${wpPathFlag(logicalWpPath(env))}`);
 }
 
 function builtinPluginHealth(env) {
-  const wpPath = wpPathEsc(env);
+  const wpPath = logicalWpPath(env);
   const rawPath = remote(
     env,
-    `wp plugin path ${IKRAM_WP_SLUG} --dir --path='${wpPath}' 2>/dev/null || echo '${wpPath}/wp-content/plugins/${IKRAM_WP_SLUG}'`
+    `wp plugin path ${IKRAM_WP_SLUG} --dir ${wpPathFlag(wpPath)} 2>/dev/null || echo ${shellQuoteWpPath(`${wpPath}/wp-content/plugins/${IKRAM_WP_SLUG}`)}`
   );
   const dir = normalizeRemotePluginDir(rawPath, IKRAM_WP_SLUG);
   const listing = remote(
@@ -174,10 +168,10 @@ function builtinGateways(env) {
 }
 
 function builtinDebugLog(env) {
-  const wpPath = wpPathEsc(env);
+  const wpPath = logicalWpPath(env);
   const out = remote(
     env,
-    `LOG='${wpPath}/wp-content/debug.log'; if [ -f "$LOG" ]; then tail -n 80 "$LOG"; else echo "debug.log yok"; fi`
+    `LOG=${shellQuoteWpPath(`${wpPath}/wp-content/debug.log`)}; if [ -f "$LOG" ]; then tail -n 80 "$LOG"; else echo "debug.log yok"; fi`
   );
   console.log(out);
 }
@@ -186,19 +180,15 @@ function runEvalFileCleanup(env, relFile) {
   const rel = relFile || CLEANUP_EVAL_FILE;
   const local = path.join(ROOT, rel);
   if (!fs.existsSync(local)) fail(`Yerel dosya yok: ${rel}`);
-  const wpPath = wpPathEsc(env);
   const b64 = fs.readFileSync(local).toString('base64');
-  const extra = rel === TEMP_PRODUCT_EVAL_FILE ? ' cleanup' : '';
+  const extra = rel === TEMP_PRODUCT_EVAL_FILE ? 'cleanup' : '';
   const out = remote(
     env,
-    [
-      `TMP=$(mktemp /tmp/wdp-cleanup-XXXX.php)`,
-      `echo '${b64}' | base64 -d > "$TMP"`,
-      `wp eval-file "$TMP"${extra} --path='${wpPath}'`,
-      `EC=$?`,
-      `rm -f "$TMP"`,
-      `exit $EC`,
-    ].join('\n')
+    buildGuardedEvalFileCommand(logicalWpPath(env), {
+      tmpPrefix: 'wdp-cleanup',
+      extraArgs: extra,
+      b64,
+    })
   );
   console.log(out);
 }
@@ -211,8 +201,8 @@ function main() {
     fail(e && e.message ? e.message : String(e));
   }
   const env = loadEnv();
-  const wpPath = resolveWpPath(env);
-  const siteCheck = remote(env, `wp option get siteurl --path='${wpPath.replace(/'/g, `'\\''`)}'`);
+  const wpPath = logicalWpPath(env);
+  const siteCheck = remote(env, `wp option get siteurl ${wpPathFlag(wpPath)}`);
   const urlGuard = validateRemoteSiteUrl(siteCheck, env.DEPLOY_SITE_URL);
   if (!urlGuard.ok) fail(urlGuard.reason);
 
