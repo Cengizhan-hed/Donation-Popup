@@ -490,7 +490,7 @@ Anahtar çıkarıcı: `get_option`/`update_option`/`add_option`/`get_post_meta`/
 
 | Öğe | Değer |
 |-----|--------|
-| Komutlar | `e2e:quick`, `e2e:full`, `e2e:matrix`, `e2e`, `e2e:baseline`, `e2e:accept`, `e2e:stability`, `e2e:perf`, `e2e:catalog-explain` (`package.json`) |
+| Komutlar | `e2e:quick`, `e2e:full`, `e2e:matrix`, `e2e:conflicts`, `e2e`, `e2e:baseline`, `e2e:accept`, `e2e:stability`, `e2e:perf`, `e2e:catalog-explain` (`package.json`) |
 | Ortam | Profil JSON `tests/e2e/profiles/*.json` (uzak URL/SSH/yol tek kaynak) + sır dosyası `.env.e2e` / `.env.e2e.ikram` (parola vb.); yükleyici `tests/e2e/helpers/env.mjs` |
 | Çıktı | `build/e2e/current/<ortam>/<cihaz>/`; baseline `tests/e2e/__baseline__/<ortam>/<cihaz>/` |
 | Manifest | `run.json` (`tests/e2e/helpers/run-io.mjs`) |
@@ -498,6 +498,7 @@ Anahtar çıkarıcı: `get_option`/`update_option`/`add_option`/`get_post_meta`/
 | Quick | Yalnız iPhone (WebKit) + değişen alan (`tests/e2e/area-map.json` + `git diff --name-only HEAD`); `--env ikram`; `--all --device desktop` eski 70’lik küme |
 | Full | 3 cihaz × gerçek ortam(lar), merge öncesi (`tests/e2e/run-full.mjs`) |
 | Matrix | Yerel tema × mağaza pairwise (`tests/e2e/matrix.json`): TT5 + Storefront; TRY/EUR/USD/GBP; blok + klasik ödeme; HPOS açık/kapalı (her tema her ödeme türü, HPOS her durumda ≥2). 3 cihaz. Sipariş yalnız yerel (`cheque`). Koşucu `tests/e2e/run-matrix.mjs`; `--only <id>` / `--device <ad>`. Özet `build/e2e/matrix/summary.md`; ekran `build/e2e/matrix/<yapılandırma>/<cihaz>/`. Anlık görüntü SQLite kopyası; yapılandırmalar ayrı port + WP kopyasıyla paralel (varsayılan 3 işçi). |
+| Conflicts | Uzak tema/eklenti çakışması: konsol kaynağı (eklenti kırmızı; başka eklenti/tema rapor, kırmızı değil), betik kopyası (intl-tel-input/select2/jQuery/Swiper + `window.wdp*` + `$`), telefon tek seçici, ödeme CFE/Woo telefon, Curcy, CSS sızıntısı (eklenti `.css` route iptal karşılaştırması), önbellek nonce/AJAX. Sipariş yok. `e2e:conflicts`; özet `build/e2e/conflicts/<env>/summary.md`. |
 | Accept | `--env` + `--device`; yalnız Değişti+Yeni; functional hata 0 |
 
 ### Uzak keşif
@@ -541,7 +542,7 @@ Coming soon: WP-CLI `woocommerce_share_key` okunur veya `E2E_COMING_SOON_SHARE_K
 
 ### Uzak koşu güvenliği
 
-Ölçüm/reklam ve sipariş yazımı `tests/e2e/helpers/network-guard.mjs` içinde. Her `BrowserContext` `installBrowserGuard` / `applyNetworkGuard` ile `context.route` alır (capture, auth, run-*, perf, diag).
+Ölçüm/reklam ve sipariş yazımı `tests/e2e/helpers/network-guard.mjs` içinde. Her `BrowserContext` `installBrowserGuard` / `applyNetworkGuard` ile `context.route` alır (capture, auth, run-*, perf, diag, conflicts).
 
 | Kural | Davranış |
 |-------|----------|
@@ -568,6 +569,7 @@ Güvenli alan (10.34.0 + 10.34.4): alt CTA `env(safe-area-inset-bottom)` + JS `-
 | `e2e:quick` | iPhone + alan süzgeci; hedef &lt; 5 dk |
 | `e2e:full` | 3 cihaz × ortam; cihazlar sırayla (meta yarışı yok); env içinde ürün URL/ID bir kez |
 | `e2e:matrix` | Yerel WP+SQLite tema/Woo matrisi; `--only` / `--device`; sipariş yalnız yerel |
+| `e2e:conflicts` | Uzak çakışma denetimi (konsol / betik kopyası / alan / CSS sızıntısı / önbellek nonce). `npm run e2e:conflicts -- --env staging\|ikram [--device iphone\|android\|desktop\|all]`. Sipariş yok; ödeme formu doldurulmaz. Çıktı `build/e2e/conflicts/<env>/summary.md`; ekran yalnız bulguda. Yerel kanıt: `--env local` (TT5+Storefront matris WP) + uzak benzetim (`--sim-remote`, varsayılan yerel). Uzak koşu yalnız Claude (REMOTE_FREEZE + operatör kapısı). Koşucu `tests/e2e/run-conflicts.mjs`; sınıflama `tests/e2e/helpers/conflicts.mjs`. |
 | `e2e:stability` | Aynı cihazda iki koşu; varsayılan iPhone |
 
 ### ship:ikram ve güvenlik kilidi
