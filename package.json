@@ -35,7 +35,8 @@
     "e2e:canary": "node tests/e2e/run-canary.mjs",
     "ship:staging": "node scripts/ship-staging.mjs",
     "ship:ikram": "node scripts/ship-ikram.mjs",
-    "handoff": "node scripts/handoff.mjs"
+    "handoff": "node scripts/handoff.mjs",
+    "remote:discover": "node scripts/remote-discover.mjs"
   },
   "repository": {
     "type": "git",

@@ -15,7 +15,7 @@ if ($target === '' || !is_file($root . '/' . $target) && !is_file($target)) {
 	fwrite(STDERR, "eval-file hedefi yok\n");
 	exit(1);
 }
-$file = is_file($target) ? $target : $root . '/' . $target;
+$wdp_local_eval_file = is_file($target) ? $target : $root . '/' . $target;
 if (empty($_SERVER['HTTP_HOST'])) {
 	$_SERVER['HTTP_HOST']   = '127.0.0.1';
 	$_SERVER['SERVER_NAME'] = '127.0.0.1';
@@ -23,4 +23,4 @@ if (empty($_SERVER['HTTP_HOST'])) {
 }
 require $wp_dir . '/wp-load.php';
 $args = array_slice($argv, 2);
-require $file;
+require $wdp_local_eval_file;
