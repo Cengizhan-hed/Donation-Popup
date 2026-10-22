@@ -1,17 +1,21 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import fs from 'node:fs';
 import path from 'node:path';
 import {
   isTrackerUrl,
   isRemoteOrderRequest,
   isRemoteWriteAllowed,
+  isRemoteAdminWrite,
   isWdpAjaxAction,
   storeBatchAllCart,
   remotePostBlockKey,
   hostMatchesSuffix,
   isFirstPartyHost,
   pathFromMaybeUrl,
+  extractAjaxAction,
+  listWdpAjaxFromIncludes,
+  EXPECTED_WDP_NOPRIV_AJAX,
+  formatRemotePostBlockedLines,
 } from '../../../tests/e2e/helpers/network-guard.mjs';
 import { isRemoteProfile } from '../../../tests/e2e/helpers/profile.mjs';
 import { ROOT } from '../../../tests/e2e/helpers/env-root.mjs';
@@ -204,7 +208,7 @@ describe('uzak POST varsayılan-red', () => {
     }
   });
 
-  it('add_to_cart, store cart, wdp_* geçer', () => {
+  it('add_to_cart, store cart, ziyaretçi wdp_nopriv geçer', () => {
     assert.equal(
       isRemoteWriteAllowed({
         method: 'POST',
@@ -311,19 +315,10 @@ describe('uzak POST varsayılan-red', () => {
     assert.equal(key.includes('?'), false);
   });
 
-  it('includes/ içindeki wdp_ ajax adları izinli önekle eşleşir', () => {
-    const inc = path.join(ROOT, 'includes');
-    const files = fs.readdirSync(inc).filter((f) => f.endsWith('.php'));
-    const names = new Set();
-    for (const f of files) {
-      const src = fs.readFileSync(path.join(inc, f), 'utf8');
-      const re = /wp_ajax(?:_nopriv)?_(wdp_[a-z0-9_]+)/gi;
-      let m;
-      while ((m = re.exec(src))) names.add(m[1]);
-    }
-    assert.ok(names.has('wdp_ajax_add_to_cart'));
-    assert.ok(names.has('wdp_render_modal'));
-    for (const n of names) {
+  it('includes/ nopriv listesi tam ve yönetici uçları uzakta RED', () => {
+    const { nopriv, adminOnly } = listWdpAjaxFromIncludes(path.join(ROOT, 'includes'));
+    assert.deepEqual(nopriv, [...EXPECTED_WDP_NOPRIV_AJAX]);
+    for (const n of EXPECTED_WDP_NOPRIV_AJAX) {
       assert.equal(isWdpAjaxAction(n), true, n);
       assert.equal(
         isRemoteWriteAllowed({
@@ -334,6 +329,143 @@ describe('uzak POST varsayılan-red', () => {
         true,
         n
       );
+      assert.equal(
+        isRemoteAdminWrite({
+          method: 'POST',
+          url: `${site}/wp-admin/admin-ajax.php`,
+          postData: `action=${n}`,
+        }),
+        false,
+        n
+      );
     }
+    const mustBlock = [
+      'wdp_save_placement_settings',
+      'wdp_apply_style_preset',
+      'wdp_import_style_preset',
+      'wdp_export_style_preset',
+      'wdp_recalculate_product_total',
+      'wdp_elementor_search_products',
+    ];
+    for (const n of mustBlock) {
+      assert.ok(adminOnly.includes(n), n);
+      assert.equal(
+        isRemoteWriteAllowed({
+          method: 'POST',
+          url: `${site}/wp-admin/admin-ajax.php`,
+          postData: `action=${n}`,
+        }),
+        false,
+        n
+      );
+      assert.equal(
+        isRemoteAdminWrite({
+          method: 'POST',
+          url: `${site}/wp-admin/admin-ajax.php`,
+          postData: `action=${n}`,
+        }),
+        true,
+        n
+      );
+    }
+    for (const n of adminOnly) {
+      assert.equal(
+        isRemoteWriteAllowed({
+          method: 'POST',
+          url: `${site}/wp-admin/admin-ajax.php`,
+          postData: `action=${n}`,
+        }),
+        false,
+        `admin ${n}`
+      );
+    }
+  });
+});
+
+function webkitMultipart(action, extra = {}) {
+  const boundary = '----WebKitFormBoundary7MA4YWxkTrZu0gW';
+  const fields = { action, ...extra };
+  const parts = Object.entries(fields).map(
+    ([k, v]) =>
+      `--${boundary}\r\nContent-Disposition: form-data; name="${k}"\r\n\r\n${v}\r\n`
+  );
+  return {
+    body: `${parts.join('')}--${boundary}--\r\n`,
+    headers: { 'content-type': `multipart/form-data; boundary=${boundary}` },
+  };
+}
+
+describe('extractAjaxAction dört gövde türü', () => {
+  const ajax = 'https://ornek.test/wp-admin/admin-ajax.php';
+
+  it('kök neden: URLSearchParams multipart action okuyamaz', () => {
+    const { body, headers } = webkitMultipart('wdp_get_product_info', { product_id: '9' });
+    assert.equal(new URLSearchParams(body).get('action'), null);
+    assert.equal(
+      extractAjaxAction({ url: ajax, postData: body, headers }),
+      'wdp_get_product_info'
+    );
+    assert.equal(
+      isRemoteWriteAllowed({ method: 'POST', url: ajax, postData: body, headers }),
+      true
+    );
+  });
+
+  it('application/x-www-form-urlencoded', () => {
+    assert.equal(
+      extractAjaxAction({
+        url: ajax,
+        postData: 'action=wdp_render_modal&product_id=1',
+        headers: { 'content-type': 'application/x-www-form-urlencoded; charset=UTF-8' },
+      }),
+      'wdp_render_modal'
+    );
+  });
+
+  it('application/json', () => {
+    assert.equal(
+      extractAjaxAction({
+        url: ajax,
+        postData: JSON.stringify({ action: 'wdp_get_cart_count', product_id: 3 }),
+        headers: { 'content-type': 'application/json' },
+      }),
+      'wdp_get_cart_count'
+    );
+  });
+
+  it('query string action', () => {
+    assert.equal(
+      extractAjaxAction({
+        url: `${ajax}?action=wdp_get_fresh_nonces`,
+        postData: '',
+      }),
+      'wdp_get_fresh_nonces'
+    );
+  });
+
+  it('multipart yönetici uç RED + remote_post_blocked anahtarı action yazar', () => {
+    const { body, headers } = webkitMultipart('wdp_save_placement_settings');
+    assert.equal(
+      isRemoteWriteAllowed({ method: 'POST', url: ajax, postData: body, headers }),
+      false
+    );
+    assert.equal(
+      isRemoteAdminWrite({ method: 'POST', url: ajax, postData: body, headers }),
+      true
+    );
+    const key = remotePostBlockKey(ajax, body, headers);
+    assert.match(key, /action=wdp_save_placement_settings/);
+    assert.equal(key.includes('?'), false);
+  });
+
+  it('formatRemotePostBlockedLines 0 iken de yazar', () => {
+    assert.equal(formatRemotePostBlockedLines({ total: 0, byPath: {} }), 'remote_post_blocked: 0');
+    assert.match(
+      formatRemotePostBlockedLines({
+        total: 2,
+        byPath: { '/wp-admin/admin-ajax.php action=heartbeat': 2 },
+      }),
+      /remote_post_blocked: 2/
+    );
   });
 });

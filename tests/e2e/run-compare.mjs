@@ -18,6 +18,7 @@ import {
   readLocalPluginVersion,
   writeRunManifest,
 } from './helpers/run-io.mjs';
+import { formatRemotePostBlockedLines } from './helpers/network-guard.mjs';
 
 async function main() {
   const flags = parseE2ECli(process.argv.slice(2));
@@ -48,6 +49,7 @@ async function main() {
     screens = [],
     shots = [],
     blocked_trackers = { total: 0, byHost: {} },
+    remote_post_blocked = { total: 0, byPath: {} },
   } = await captureAll({
     env,
     outDir,
@@ -96,6 +98,7 @@ async function main() {
     newBaselineScreens,
     flaky,
     blocked_trackers,
+    remote_post_blocked,
   });
 
   console.log('Report:', reportFile);
@@ -112,6 +115,7 @@ async function main() {
   console.log(
     `Görsel durum: Değişti=${changedCount} Yeni referans=${newBaselineCount} (eşik ≤ ${threshold}%)`
   );
+  console.log(formatRemotePostBlockedLines(remote_post_blocked));
   console.log(`Manifest: ${path.relative(ROOT, path.join(CURRENT_DIR, 'run.json'))}`);
   if (skips.length) {
     console.log('');

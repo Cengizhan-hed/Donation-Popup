@@ -13,6 +13,7 @@ import {
   clickShellTrigger,
   revealListProductTrigger,
   shellTriggerLocator,
+  assertNoUnexpectedPluginErrors,
 } from './checks.mjs';
 import { applyNetworkGuard } from './network-guard.mjs';
 import { getDevicePreset } from './devices.mjs';
@@ -196,6 +197,7 @@ async function openProductForm(page, baseUrl, productPath) {
   await gotoPath(page, baseUrl, productPath);
   const inline = page.locator(`${SEL.inlineDonationForm} ${SEL.donationForm}, ${SEL.donationForm}`).first();
   if ((await inline.count()) > 0 && (await inline.isVisible())) {
+    await assertNoUnexpectedPluginErrors(page, { scenarioId: 'product-cart' });
     return page.locator('body');
   }
   const trigger = page.locator(`${SEL.donateTrigger}, ${SEL.sidePanelTrigger}`).first();
@@ -204,6 +206,7 @@ async function openProductForm(page, baseUrl, productPath) {
   const shell = openShellLocator(page, '');
   await shell.waitFor({ state: 'visible', timeout: CHECK_MS });
   await waitFormReady(shell);
+  await assertNoUnexpectedPluginErrors(page, { scenarioId: 'product-cart' });
   return shell;
 }
 
@@ -216,6 +219,7 @@ async function openListPopup(page, baseUrl, listPath, productId) {
   const shell = openShellLocator(page, 'popup');
   await shell.waitFor({ state: 'visible', timeout: CHECK_MS });
   await waitFormReady(shell);
+  await assertNoUnexpectedPluginErrors(page, { scenarioId: 'list-checkout' });
   return shell;
 }
 

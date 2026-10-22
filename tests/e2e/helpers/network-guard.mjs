@@ -2,9 +2,13 @@
  * Uzak E2E ağ koruması: ölçüm/reklam isteklerini kes, uzakta sipariş yazımını RED et.
  * URL sorgu dizesi loglanmaz (kişisel veri içerebilir).
  */
+import fs from 'node:fs';
+import path from 'node:path';
+import { ROOT } from './env-root.mjs';
 import { isRemoteProfile, peekActiveProfile } from './profile.mjs';
 
 const INSTALLED = Symbol('wdpNetworkGuard');
+const AJAX_WATCH = Symbol('wdpPluginAjaxWatch');
 
 /** Host soneki (alt alan dahil). fonts.googleapis.com / gstatic burada YOK. */
 export const TRACKER_HOST_SUFFIXES = [
@@ -62,12 +66,33 @@ export const ALLOWED_ADMIN_AJAX = new Set([
   'woocommerce_get_refreshed_fragments',
 ]);
 
+/**
+ * includes/ içindeki `wp_ajax_nopriv_wdp_*` — ziyaretçi uçları (görev 1K kanıt listesi).
+ * Yönetici `wp_ajax_wdp_save_*` vb. burada YOK.
+ */
+export const EXPECTED_WDP_NOPRIV_AJAX = Object.freeze([
+  'wdp_ajax_add_to_cart',
+  'wdp_get_cart_contents',
+  'wdp_get_cart_count',
+  'wdp_get_fresh_nonces',
+  'wdp_get_product_info',
+  'wdp_get_product_name',
+  'wdp_remove_cart_item',
+  'wdp_render_modal',
+  'wdp_verify_submission_in_cart',
+]);
+
 /** @type {Map<string, number>} */
 const blockedByHost = new Map();
 /** @type {string[]} */
 const orderBlocks = [];
+/** @type {string[]} */
+const adminWriteBlocks = [];
 /** @type {Map<string, number>} */
 const blockedPosts = new Map();
+/** @type {Array<{ action: string, status: number }>} */
+const pluginAjaxFails = [];
+let ajaxWatchPaused = 0;
 
 /**
  * @param {string} url
@@ -134,22 +159,240 @@ export function isTrackerUrl(url, opts = {}) {
 }
 
 /**
- * @param {string|null|undefined} postData
- * @param {string} key
+ * @param {string|Buffer|null|undefined} postData
+ * @returns {string}
  */
-function formField(postData, key) {
-  const raw = String(postData || '');
-  if (!raw) return '';
+export function bodyToString(postData) {
+  if (postData == null) return '';
+  if (typeof Buffer !== 'undefined' && Buffer.isBuffer(postData)) {
+    return postData.toString('utf8');
+  }
+  if (typeof postData === 'string') return postData;
   try {
-    const params = new URLSearchParams(raw);
-    if (params.has(key)) return String(params.get(key) || '');
+    return String(postData);
+  } catch {
+    return '';
+  }
+}
+
+/**
+ * @param {Headers|Record<string, string>|null|undefined} headers
+ * @param {string} name
+ */
+function headerValue(headers, name) {
+  if (!headers) return '';
+  const want = String(name || '').toLowerCase();
+  if (typeof headers.get === 'function') {
+    return String(headers.get(name) || headers.get(want) || '');
+  }
+  for (const [k, v] of Object.entries(headers)) {
+    if (String(k).toLowerCase() === want) return String(v || '');
+  }
+  return '';
+}
+
+/**
+ * @param {string} raw
+ * @param {string} [contentType]
+ */
+function actionFromMultipart(raw, contentType = '') {
+  const body = String(raw || '');
+  if (!body) return '';
+  let boundary = '';
+  const bm = String(contentType || '').match(/boundary=(?:"([^"]+)"|([^;]+))/i);
+  if (bm) boundary = String(bm[1] || bm[2] || '').trim();
+  if (!boundary) {
+    const first = body.match(/^--+([^\r\n]+)/);
+    if (first) boundary = String(first[1] || '').replace(/--$/, '');
+  }
+  if (boundary) {
+    const esc = boundary.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const parts = body.split(new RegExp(`(?:\\r?\\n)?--+${esc}`));
+    for (const part of parts) {
+      if (!/Content-Disposition:/i.test(part)) continue;
+      const nameM = part.match(/\bname=(?:"action"|'action'|action)(?:[;\s"]|$)/i);
+      if (!nameM) continue;
+      const split = part.split(/\r?\n\r?\n/, 2);
+      if (split.length < 2) continue;
+      return String(split[1] || '')
+        .replace(/\r?\n[\s\S]*$/, '')
+        .trim();
+    }
+  }
+  const fallback = body.match(/name=["']?action["']?[^\r\n]*\r?\n\r?\n([^\r\n]*)/i);
+  return fallback ? String(fallback[1] || '').trim() : '';
+}
+
+/**
+ * @param {string} raw
+ */
+function actionFromUrlEncoded(raw) {
+  const body = String(raw || '');
+  if (!body) return '';
+  try {
+    const params = new URLSearchParams(body);
+    if (params.has('action')) return String(params.get('action') || '').trim();
   } catch {
     /* düz metin */
   }
-  const re = new RegExp(`(?:^|[&\\n])${key}=([^&\\n]*)`, 'i');
-  const m = raw.match(re);
-  return m ? decodeURIComponent(m[1].replace(/\+/g, ' ')) : '';
+  const m = body.match(/(?:^|[&\n])action=([^&\n]*)/i);
+  if (!m) return '';
+  try {
+    return decodeURIComponent(String(m[1] || '').replace(/\+/g, ' ')).trim();
+  } catch {
+    return String(m[1] || '').trim();
+  }
 }
+
+/**
+ * @param {string} raw
+ */
+function actionFromJson(raw) {
+  try {
+    const parsed = JSON.parse(String(raw || ''));
+    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed) && parsed.action != null) {
+      return String(parsed.action).trim();
+    }
+  } catch {
+    /* JSON değil */
+  }
+  return '';
+}
+
+/**
+ * admin-ajax `action` — query, urlencoded, multipart, JSON.
+ * @param {{ url?: string, postData?: string|Buffer|null, headers?: Headers|Record<string, string> }} [req]
+ */
+export function extractAjaxAction(req = {}) {
+  const url = String(req?.url || '');
+  try {
+    const u = new URL(url, 'http://local.test');
+    const q = String(u.searchParams.get('action') || '').trim();
+    if (q) return q;
+  } catch {
+    /* relative */
+  }
+  const raw = bodyToString(req?.postData);
+  const ctype = headerValue(req?.headers, 'content-type');
+  const looksMultipart =
+    /multipart\/form-data/i.test(ctype) || /^(?:--[A-Za-z0-9'()+_,\-./:=?]+)/.test(raw.trim());
+  if (looksMultipart) {
+    const fromMulti = actionFromMultipart(raw, ctype);
+    if (fromMulti) return fromMulti;
+  }
+  if (/application\/json/i.test(ctype) || /^\s*[{[]/.test(raw)) {
+    const fromJson = actionFromJson(raw);
+    if (fromJson) return fromJson;
+  }
+  const fromUrlenc = actionFromUrlEncoded(raw);
+  if (fromUrlenc) return fromUrlenc;
+  const fromMulti2 = actionFromMultipart(raw, ctype);
+  if (fromMulti2) return fromMulti2;
+  return '';
+}
+
+/**
+ * Playwright Request — postData() boşsa postDataBuffer (WebKit FormData).
+ * @param {import('@playwright/test').Request|null|undefined} request
+ */
+export function extractAjaxActionFromRequest(request) {
+  if (!request) return '';
+  let postData = '';
+  try {
+    postData = request.postData() || '';
+  } catch {
+    postData = '';
+  }
+  if (!postData && typeof request.postDataBuffer === 'function') {
+    try {
+      const buf = request.postDataBuffer();
+      if (buf && buf.length) postData = Buffer.from(buf).toString('utf8');
+    } catch {
+      /* ignore */
+    }
+  }
+  let headers = {};
+  try {
+    headers = typeof request.headers === 'function' ? request.headers() : {};
+  } catch {
+    headers = {};
+  }
+  let url = '';
+  try {
+    url = request.url();
+  } catch {
+    url = '';
+  }
+  return extractAjaxAction({ url, postData, headers });
+}
+
+/**
+ * @param {import('@playwright/test').Request|null|undefined} request
+ */
+export function readRequestBody(request) {
+  if (!request) return '';
+  try {
+    const s = request.postData();
+    if (s) return s;
+  } catch {
+    /* ignore */
+  }
+  if (typeof request.postDataBuffer === 'function') {
+    try {
+      const buf = request.postDataBuffer();
+      if (buf && buf.length) return Buffer.from(buf).toString('utf8');
+    } catch {
+      /* ignore */
+    }
+  }
+  return '';
+}
+
+/**
+ * includes/ (özyinelemeli) `wp_ajax_nopriv_wdp_*` ve yalnız `wp_ajax_wdp_*`.
+ * @param {string} [includesDir]
+ * @returns {{ nopriv: string[], adminOnly: string[] }}
+ */
+export function listWdpAjaxFromIncludes(includesDir) {
+  const dir = includesDir || path.join(ROOT, 'includes');
+  const nopriv = new Set();
+  const priv = new Set();
+  function walk(d) {
+    if (!d || !fs.existsSync(d)) return;
+    let ents;
+    try {
+      ents = fs.readdirSync(d, { withFileTypes: true });
+    } catch {
+      return;
+    }
+    for (const ent of ents) {
+      const p = path.join(d, ent.name);
+      if (ent.isDirectory()) {
+        walk(p);
+        continue;
+      }
+      if (!ent.name.endsWith('.php')) continue;
+      let src = '';
+      try {
+        src = fs.readFileSync(p, 'utf8');
+      } catch {
+        continue;
+      }
+      let m;
+      const noprivRe = /wp_ajax_nopriv_(wdp_[a-z0-9_]+)/gi;
+      while ((m = noprivRe.exec(src))) nopriv.add(m[1]);
+      const privRe = /wp_ajax_(?!nopriv_)(wdp_[a-z0-9_]+)/gi;
+      while ((m = privRe.exec(src))) priv.add(m[1]);
+    }
+  }
+  walk(dir);
+  return {
+    nopriv: [...nopriv].sort(),
+    adminOnly: [...priv].filter((a) => !nopriv.has(a)).sort(),
+  };
+}
+
+export const ALLOWED_WDP_NOPRIV_AJAX = new Set(listWdpAjaxFromIncludes().nopriv);
 
 /**
  * @param {string} pathname
@@ -218,7 +461,7 @@ export function isWdpAjaxAction(action) {
 }
 
 /**
- * @param {{ method?: string, url?: string, postData?: string|null, checkoutPath?: string }} req
+ * @param {{ method?: string, url?: string, postData?: string|null, headers?: Record<string, string>, checkoutPath?: string }} req
  */
 export function isRemoteOrderRequest(req) {
   const method = String(req?.method || 'GET').toUpperCase();
@@ -231,7 +474,8 @@ export function isRemoteOrderRequest(req) {
   }
   const pathname = normalizePath(u.pathname || '/');
   const search = u.searchParams;
-  const postData = req?.postData == null ? '' : String(req.postData);
+  const postData = bodyToString(req?.postData);
+  const headers = req?.headers || {};
 
   if (/\/wp-admin\/post-new\.php$/i.test(pathname) && search.get('post_type') === 'shop_order') {
     return true;
@@ -263,7 +507,7 @@ export function isRemoteOrderRequest(req) {
   }
 
   if (method === 'POST' && /\/admin-ajax\.php$/i.test(pathname)) {
-    const action = search.get('action') || formField(postData, 'action');
+    const action = extractAjaxAction({ url, postData, headers });
     if (action === 'woocommerce_checkout') return true;
   }
 
@@ -282,7 +526,7 @@ export function isRemoteOrderRequest(req) {
  * Uzak profilde site alanına giden yazma: yalnız izin listesi.
  * apply_coupon ve update_order_review yok (ödeme sayfasında da).
  *
- * @param {{ method?: string, url?: string, postData?: string|null, checkoutPath?: string, cartPath?: string }} req
+ * @param {{ method?: string, url?: string, postData?: string|null, headers?: Record<string, string>, checkoutPath?: string, cartPath?: string }} req
  */
 export function isRemoteWriteAllowed(req) {
   const method = String(req?.method || 'GET').toUpperCase();
@@ -296,7 +540,8 @@ export function isRemoteWriteAllowed(req) {
   }
   const pathname = normalizePath(u.pathname || '/');
   const search = u.searchParams;
-  const postData = req?.postData == null ? '' : String(req.postData);
+  const postData = bodyToString(req?.postData);
+  const headers = req?.headers || {};
   const storePath = pathname.replace(/^\/wp-json/, '');
 
   const ajax = wcAjaxName(pathname, search);
@@ -313,8 +558,8 @@ export function isRemoteWriteAllowed(req) {
   }
 
   if (/\/admin-ajax\.php$/i.test(pathname)) {
-    const action = String(search.get('action') || formField(postData, 'action') || '').trim();
-    if (isWdpAjaxAction(action)) return true;
+    const action = extractAjaxAction({ url, postData, headers });
+    if (ALLOWED_WDP_NOPRIV_AJAX.has(action)) return true;
     return ALLOWED_ADMIN_AJAX.has(action);
   }
 
@@ -331,18 +576,43 @@ export function isRemoteWriteAllowed(req) {
 }
 
 /**
+ * Yönetici wdp_* (nopriv değil) — uzakta iptal + kırmızı.
+ * @param {{ method?: string, url?: string, postData?: string|null, headers?: Record<string, string> }} req
+ */
+export function isRemoteAdminWrite(req) {
+  const method = String(req?.method || 'GET').toUpperCase();
+  if (!['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) return false;
+  const url = String(req?.url || '');
+  let pathname = '/';
+  try {
+    pathname = normalizePath(new URL(url, 'http://local.test').pathname || '/');
+  } catch {
+    return false;
+  }
+  if (!/\/admin-ajax\.php$/i.test(pathname)) return false;
+  const action = extractAjaxAction({
+    url,
+    postData: req?.postData,
+    headers: req?.headers,
+  });
+  if (!isWdpAjaxAction(action)) return false;
+  return !ALLOWED_WDP_NOPRIV_AJAX.has(action);
+}
+
+/**
  * Sayaç anahtarı: yol (sorgu yok); action adı serbest.
  * @param {string} url
  * @param {string} [postData]
+ * @param {Record<string, string>} [headers]
  */
-export function remotePostBlockKey(url, postData = '') {
+export function remotePostBlockKey(url, postData = '', headers = {}) {
   let pathname = '/';
   let action = '';
   let wcAjax = '';
   try {
     const u = new URL(String(url), 'http://local.test');
     pathname = u.pathname || '/';
-    action = String(u.searchParams.get('action') || formField(postData, 'action') || '').trim();
+    action = extractAjaxAction({ url, postData, headers });
     wcAjax = String(u.searchParams.get('wc-ajax') || '').trim();
   } catch {
     pathname = '/';
@@ -391,6 +661,8 @@ function recordRemotePost(key) {
 
 export function resetRemotePostBlocked() {
   blockedPosts.clear();
+  adminWriteBlocks.length = 0;
+  pluginAjaxFails.length = 0;
 }
 
 export function snapshotRemotePostBlocked() {
@@ -404,6 +676,22 @@ export function snapshotRemotePostBlocked() {
   return { total, byPath };
 }
 
+/**
+ * @param {{ total?: number, byPath?: Record<string, number> }|null|undefined} snap
+ */
+export function formatRemotePostBlockedLines(snap) {
+  const s = snap && typeof snap === 'object' ? snap : { total: 0, byPath: {} };
+  const total = Number(s.total) || 0;
+  const lines = [`remote_post_blocked: ${total}`];
+  if (total > 0) {
+    const byPath = s.byPath || {};
+    for (const [k, n] of Object.entries(byPath)) {
+      lines.push(`  • ${k}  ${n}`);
+    }
+  }
+  return lines.join('\n');
+}
+
 export function consumeOrderBlocks() {
   const out = orderBlocks.slice();
   orderBlocks.length = 0;
@@ -412,6 +700,28 @@ export function consumeOrderBlocks() {
 
 export function peekOrderBlocks() {
   return orderBlocks.slice();
+}
+
+export function consumeAdminWriteBlocks() {
+  const out = adminWriteBlocks.slice();
+  adminWriteBlocks.length = 0;
+  return out;
+}
+
+export function peekAdminWriteBlocks() {
+  return adminWriteBlocks.slice();
+}
+
+export function snapshotPluginAjaxFails() {
+  return pluginAjaxFails.slice();
+}
+
+export function pausePluginAjaxWatch() {
+  ajaxWatchPaused += 1;
+}
+
+export function resumePluginAjaxWatch() {
+  ajaxWatchPaused = Math.max(0, ajaxWatchPaused - 1);
 }
 
 export class RemoteOrderBlockedError extends Error {
@@ -425,10 +735,69 @@ export class RemoteOrderBlockedError extends Error {
   }
 }
 
+export class RemoteAdminWriteBlockedError extends Error {
+  /**
+   * @param {string} requestPath
+   */
+  constructor(requestPath) {
+    super(`REMOTE-ADMIN-WRITE-BLOCKED: ${requestPath}`);
+    this.name = 'RemoteAdminWriteBlockedError';
+    this.requestPath = requestPath;
+  }
+}
+
 export function throwIfRemoteOrderBlocked() {
   const hits = consumeOrderBlocks();
   if (!hits.length) return;
   throw new RemoteOrderBlockedError(hits[0]);
+}
+
+export function throwIfRemoteAdminWriteBlocked() {
+  const hits = consumeAdminWriteBlocks();
+  if (!hits.length) return;
+  throw new RemoteAdminWriteBlockedError(hits[0]);
+}
+
+/**
+ * Eklenti admin-ajax / REST yanıtı: HTTP ≥400 veya success=false.
+ * Gövde yazılmaz; yalnız action + durum kodu.
+ * @param {import('@playwright/test').Page} page
+ */
+export function attachPluginAjaxFailureCollector(page) {
+  if (!page || typeof page.on !== 'function') return pluginAjaxFails;
+  if (page[AJAX_WATCH]) return pluginAjaxFails;
+  page[AJAX_WATCH] = true;
+  page.on('response', async (res) => {
+    if (ajaxWatchPaused > 0) return;
+    try {
+      const url = res.url();
+      const isAjax = /\/admin-ajax\.php/i.test(url);
+      const isRest = /\/wp-json\//i.test(url);
+      if (!isAjax && !isRest) return;
+      const req = res.request();
+      const action = extractAjaxActionFromRequest(req);
+      const pluginAjax =
+        isWdpAjaxAction(action) || /woo-donation-popup|\/wdp[_/-]/i.test(url);
+      if (!pluginAjax) return;
+      const status = Number(res.status()) || 0;
+      if (status >= 400) {
+        pluginAjaxFails.push({ action: action || '(unknown)', status });
+        return;
+      }
+      let json = null;
+      try {
+        json = await res.json();
+      } catch {
+        return;
+      }
+      if (json && json.success === false) {
+        pluginAjaxFails.push({ action: action || '(unknown)', status });
+      }
+    } catch {
+      /* koleksiyon test akışını düşürmez */
+    }
+  });
+  return pluginAjaxFails;
 }
 
 /**
@@ -480,6 +849,16 @@ export async function applyNetworkGuard(context, opts = {}) {
   const cartPath = pathFromMaybeUrl(opts.cartPath || '/cart/', '/cart/');
   const blockTrackers = remote ? true : opts.blockTrackers !== false;
 
+  const existingPages = typeof context.pages === 'function' ? context.pages() : [];
+  for (const page of existingPages || []) {
+    attachPluginAjaxFailureCollector(page);
+  }
+  if (typeof context.on === 'function') {
+    context.on('page', (page) => {
+      attachPluginAjaxFailureCollector(page);
+    });
+  }
+
   await context.route('**/*', async (route) => {
     const request = route.request();
     const url = request.url();
@@ -493,22 +872,25 @@ export async function applyNetworkGuard(context, opts = {}) {
     }
 
     if (remote) {
-      let postData = '';
+      const postData = readRequestBody(request);
+      let headers = {};
       try {
-        postData = request.postData() || '';
+        headers = typeof request.headers === 'function' ? request.headers() : {};
       } catch {
-        postData = '';
+        headers = {};
       }
       const write = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(String(method || '').toUpperCase());
       const parts = parseUrlParts(url);
       const firstParty = !siteHost || isFirstPartyHost(parts?.hostname, siteHost);
       if (write && firstParty) {
-        const reqInfo = { method, url, postData, checkoutPath, cartPath };
+        const reqInfo = { method, url, postData, headers, checkoutPath, cartPath };
         const allowed = isRemoteWriteAllowed(reqInfo);
         if (!allowed) {
-          recordRemotePost(remotePostBlockKey(url, postData));
+          recordRemotePost(remotePostBlockKey(url, postData, headers));
           if (isRemoteOrderRequest(reqInfo)) {
             orderBlocks.push(safeRequestPath(url));
+          } else if (isRemoteAdminWrite(reqInfo)) {
+            adminWriteBlocks.push(remotePostBlockKey(url, postData, headers));
           }
           await route.abort('blockedbyclient');
           return;

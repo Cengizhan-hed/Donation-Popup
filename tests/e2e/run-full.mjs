@@ -24,6 +24,7 @@ import {
   writeRunManifest,
   CURRENT_DIR,
 } from './helpers/run-io.mjs';
+import { formatRemotePostBlockedLines } from './helpers/network-guard.mjs';
 
 function envList(envId) {
   const v = String(envId || '').trim().toLowerCase();
@@ -85,6 +86,7 @@ async function runOne({ envId, deviceId, noSideCart }) {
     a11yFindings: result.a11yFindings || [],
     reportFile: compared.reportFile,
     blocked_trackers: result.blocked_trackers || { total: 0, byHost: {} },
+    remote_post_blocked: result.remote_post_blocked || { total: 0, byPath: {} },
   };
 }
 
@@ -147,6 +149,18 @@ async function main() {
     total: Object.values(trackerHosts).reduce((a, b) => a + b, 0),
     byHost: trackerHosts,
   };
+  /** @type {Record<string, number>} */
+  const postPaths = {};
+  for (const r of rows) {
+    const byPath = r.remote_post_blocked?.byPath || {};
+    for (const [p, n] of Object.entries(byPath)) {
+      postPaths[p] = (postPaths[p] || 0) + Number(n || 0);
+    }
+  }
+  const remote_post_blocked = {
+    total: Object.values(postPaths).reduce((a, b) => a + b, 0),
+    byPath: postPaths,
+  };
 
   writeRunManifest({
     mode: 'full',
@@ -170,6 +184,7 @@ async function main() {
     })),
     a11yFindings,
     blocked_trackers,
+    remote_post_blocked,
   });
 
   console.log('\n=== e2e:full özet ===');
@@ -178,6 +193,7 @@ async function main() {
     console.log(`${r.env}\t${r.device}\t${r.passed}\t${r.skipped}\t${r.failed}\t${r.secs}s`);
   }
   console.log(`TOPLAM süre: ${durationSec}s  Geçti=${passedCount} Atlandı=${skippedCount} Hata=${failedCount}`);
+  console.log(formatRemotePostBlockedLines(remote_post_blocked));
   console.log(`Manifest: ${path.relative(ROOT, path.join(CURRENT_DIR, 'run.json'))}`);
 
   if (failedCount > 0) {

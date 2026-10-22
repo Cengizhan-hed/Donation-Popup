@@ -13,6 +13,7 @@ import {
   shellTriggerLocator,
   clickAddToCartWithRetry,
   makeFailure,
+  assertNoUnexpectedPluginErrors,
 } from './checks.mjs';
 import { e2eEmail, markOrderAsE2E } from './test-cleanup.mjs';
 import { getActiveProfile, isRemoteProfile } from './profile.mjs';
@@ -118,6 +119,7 @@ export async function runDonationFlowChecks({
     await clickShellTrigger(trigger, CHECK_MS);
     const shell = openShellLocator(page, '');
     await shell.waitFor({ state: 'visible', timeout: CHECK_MS });
+    await assertNoUnexpectedPluginErrors(page, { scenarioId: `checkout-flow-${deviceId}` });
 
     const amount = shell.locator(SEL.customPrice).first();
     if (await amount.count()) {

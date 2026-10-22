@@ -15,6 +15,7 @@ import {
   readLocalPluginVersion,
   writeRunManifest,
 } from './helpers/run-io.mjs';
+import { formatRemotePostBlockedLines } from './helpers/network-guard.mjs';
 
 async function main() {
   let env;
@@ -32,7 +33,7 @@ async function main() {
   const startedAt = new Date().toISOString();
   const started = Date.now();
   console.log('Capturing baseline → tests/e2e/__baseline__/');
-  const { failures, screens = [], shots = [], stats = {}, blocked_trackers = { total: 0, byHost: {} } } = await captureAll({
+  const { failures, screens = [], shots = [], stats = {}, blocked_trackers = { total: 0, byHost: {} }, remote_post_blocked = { total: 0, byPath: {} } } = await captureAll({
     env,
     outDir: BASELINE_DIR,
     runFunctional: false,
@@ -57,6 +58,7 @@ async function main() {
     newBaselineScreens: capturedScreens,
     note: 'e2e:baseline — ekranlar doğrudan __baseline__ altına yazıldı',
     blocked_trackers,
+    remote_post_blocked,
   });
 
   if (failures.length) {
@@ -64,6 +66,7 @@ async function main() {
     for (const f of failures) console.warn(' -', f.check || f);
   }
   console.log(`Baseline saved (${capturedScreens.length} ekran).`);
+  console.log(formatRemotePostBlockedLines(remote_post_blocked));
   console.log(`Manifest: ${path.relative(ROOT, path.join(CURRENT_DIR, 'run.json'))}`);
 }
 

@@ -5,6 +5,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { ROOT, withCacheBust } from './env.mjs';
 import { SEL } from './selectors.mjs';
+import { extractAjaxActionFromRequest } from './network-guard.mjs';
 
 /** Kontrol başına en fazla bekleme (ms). Bulunamayan öğe hemen hata yazar. */
 export const CHECK_MS = 5000;
@@ -13,48 +14,68 @@ export const CHECK_MS = 5000;
 export const CART_AJAX_MS = 15000;
 
 /**
- * POST gövdesinden action (url-encoded veya multipart FormData).
+ * POST gövdesinden action (urlencoded, multipart, JSON, query).
  * @param {import('@playwright/test').Request} req
  * @returns {string}
  */
 export function extractPostActionFromRequest(req) {
-  try {
-    const post = req.postData();
-    if (post) {
-      try {
-        const a = new URLSearchParams(post).get('action');
-        if (a) return a;
-      } catch (e) {
-        /* fall through */
-      }
-      const multi = String(post).match(/name=["']action["']\r?\n\r?\n([^\r\n]+)/);
-      if (multi) return multi[1].trim();
-      const m = String(post).match(/(?:^|&)action=([^&]*)/);
-      if (m) return decodeURIComponent(m[1]);
-    }
-    // multipart: Playwright postData() çoğu zaman null → buffer
-    if (typeof req.postDataBuffer === 'function') {
-      const buf = req.postDataBuffer();
-      if (buf && buf.length) {
-        const s = Buffer.from(buf).toString('utf8');
-        const multi = s.match(/name=["']?action["']?\r?\n\r?\n([^\r\n]+)/);
-        if (multi) return multi[1].trim();
-        const q = s.match(/(?:^|&)action=([^&\s]+)/);
-        if (q) return decodeURIComponent(q[1]);
-      }
-    }
-    // Son çare: URL query
-    try {
-      const u = new URL(req.url());
-      const qa = u.searchParams.get('action');
-      if (qa) return qa;
-    } catch (e) {
-      /* ignore */
-    }
-  } catch (e) {
-    /* ignore */
+  return extractAjaxActionFromRequest(req);
+}
+
+/** product.js / modal.js genel hata metinleri — doğrulama mesajı değil. */
+export const UNEXPECTED_PLUGIN_ERROR_RE =
+  /Ürün bilgileri alınamadı|Form tam yüklenemedi|sayfayı yenileyip|ağ hatası|network error|HTTP error/i;
+
+/** form/feedback.js .wdp-form-error; utils.js .wdp-toast--error */
+export const PLUGIN_ERROR_BANNER_SEL = `${SEL.formError}, .wdp-toast--error, #wdp-toast-host .wdp-toast--error, [role="alert"].wdp-form-error`;
+
+/**
+ * Açık kabuktaki genel hata kutusu metinleri (alan doğrulaması değil).
+ * @param {import('@playwright/test').Page} page
+ * @returns {Promise<string[]>}
+ */
+export async function collectVisiblePluginErrorNotices(page) {
+  const shell = openShellLocator(page);
+  const root = (await shell.count().catch(() => 0)) ? shell : page.locator('body');
+  const nodes = root.locator(PLUGIN_ERROR_BANNER_SEL);
+  const texts = [];
+  const n = await nodes.count().catch(() => 0);
+  for (let i = 0; i < n; i++) {
+    const el = nodes.nth(i);
+    const visible = await el.isVisible().catch(() => false);
+    if (!visible) continue;
+    const t = ((await el.innerText().catch(() => '')) || '').trim();
+    if (t && !texts.includes(t.slice(0, 200))) texts.push(t.slice(0, 200));
   }
-  return '';
+  return texts;
+}
+
+/**
+ * form/panel/popup açık ekran: genel hata kutusu KIRMIZI.
+ * `errors` senaryosunda yalnız beklenen doğrulama serbest; beklenmeyen genel hata yine KIRMIZI.
+ * @param {import('@playwright/test').Page} page
+ * @param {{ scenarioId?: string }} [opts]
+ */
+export async function assertNoUnexpectedPluginErrors(page, opts = {}) {
+  const scenarioId = String(opts.scenarioId || '');
+  const isErrors = /(?:^|[-_])errors(?:[-_]|$)/i.test(scenarioId);
+  const notices = await collectVisiblePluginErrorNotices(page);
+  const bad = isErrors ? notices.filter((t) => UNEXPECTED_PLUGIN_ERROR_RE.test(t)) : notices;
+  if (bad.length) {
+    throw new Error(`Görünür eklenti hatası: ${bad.slice(0, 2).join(' | ')}`);
+  }
+}
+
+/**
+ * @param {Array<{ action?: string, status?: number }>} hits
+ */
+export function assertNoPluginAjaxFailures(hits) {
+  const list = Array.isArray(hits) ? hits : [];
+  if (!list.length) return;
+  const first = list[0] || {};
+  throw new Error(
+    `Eklenti AJAX kırmızı: action=${first.action || '(unknown)'} status=${first.status ?? '?'}`
+  );
 }
 
 /**
@@ -624,6 +645,8 @@ export async function clickAddToCartAndWait(page, clickFn, opts = {}) {
     const isWcAjax = /[?&]wc-ajax=/i.test(url) || /\/wc-ajax\//i.test(url);
     if (!isAdminAjax && !isWcAjax) return false;
     if (isAdminAjax) {
+      const action = extractPostActionFromRequest(req);
+      if (action === 'wdp_ajax_add_to_cart') return true;
       return (
         post.includes('wdp_ajax_add_to_cart') ||
         post.includes('action=wdp_ajax_add_to_cart') ||

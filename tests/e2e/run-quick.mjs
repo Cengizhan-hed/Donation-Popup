@@ -25,6 +25,7 @@ import {
   writeRunManifest,
   CURRENT_DIR,
 } from './helpers/run-io.mjs';
+import { formatRemotePostBlockedLines } from './helpers/network-guard.mjs';
 
 function openReport(reportFile) {
   if (process.platform === 'darwin') {
@@ -79,6 +80,7 @@ async function main() {
     noSideCart = false,
     a11yFindings = [],
     blocked_trackers = { total: 0, byHost: {} },
+    remote_post_blocked = { total: 0, byPath: {} },
   } = await captureAll({
     env,
     outDir,
@@ -137,6 +139,7 @@ async function main() {
     baselineDir: path.relative(ROOT, baselineDir),
     currentDir: path.relative(ROOT, outDir),
     blocked_trackers,
+    remote_post_blocked,
   });
 
   console.log('Report:', reportFile);
@@ -160,6 +163,7 @@ async function main() {
     for (const name of newBaselineScreens) console.log(`  • ${name}`);
   }
   console.log(`Süre: ${durationSec}s`);
+  console.log(formatRemotePostBlockedLines(remote_post_blocked));
   console.log(`Manifest: ${path.relative(ROOT, path.join(CURRENT_DIR, 'run.json'))}`);
 
   if (flags.openReport) {
