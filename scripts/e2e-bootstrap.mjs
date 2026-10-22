@@ -17,8 +17,8 @@ import { ROOT } from '../tests/e2e/helpers/env-root.mjs';
 import { fixturesPathFor, describeBootstrapPlan } from '../tests/e2e/helpers/fixtures.mjs';
 import { isRemoteFrozen, FREEZE_MESSAGE } from './lib/remote-guard.mjs';
 import { ensureLocalWp } from './local-wp.mjs';
-import { resetRegistry, registerCreated, isRunIdOk } from '../tests/e2e/helpers/run-registry.mjs';
-import { loadProfile, isRemoteProfile } from '../tests/e2e/helpers/profile.mjs';
+import { resetRegistry, registerCreated, isRunIdOk, loadRegistry } from '../tests/e2e/helpers/run-registry.mjs';
+import { loadProfile, isRemoteProfile, setActiveProfile } from '../tests/e2e/helpers/profile.mjs';
 import { setActiveDeployEnvFile, runEvalFile } from '../tests/e2e/helpers/wp-remote.mjs';
 import {
   snapshotCanary,
@@ -26,6 +26,10 @@ import {
   compareWithRegistry,
   formatCanaryDiff,
   writeCanaryAlert,
+  formatCanaryStatusLine,
+  evaluateCanaryAgainstBaseline,
+  readBaseline,
+  preflightCanary,
 } from '../tests/e2e/helpers/canary.mjs';
 
 export const REMOTE_BOOTSTRAP_PHP = 'tests/e2e/helpers/bootstrap-e2e-products.php';
@@ -83,12 +87,23 @@ function runLocalPhp(action, envId, runId) {
   return parsePhpJson(r.stdout);
 }
 
-function compareAfter(before, after) {
-  const cmp = compareWithRegistry(before, after);
-  if (!cmp.ok) {
-    writeCanaryAlert(cmp, 'e2e:bootstrap kanarya');
-    fail(formatCanaryDiff(cmp));
+function createdProductCount(data) {
+  if (!Array.isArray(data?.created)) return 0;
+  return data.created.filter((row) => !row.type || String(row.type) === 'product').length;
+}
+
+function beforeCanaryOk(envId, snap) {
+  const pre = preflightCanary(snap);
+  let baseline = null;
+  try {
+    baseline = readBaseline(envId);
+  } catch (e) {
+    if (!/Kullanım:/.test(String(e && e.message ? e.message : e))) throw e;
+    baseline = null;
   }
+  if (!baseline) return pre.ok;
+  const evald = evaluateCanaryAgainstBaseline(baseline, snap, loadRegistry());
+  return pre.ok && evald.ok;
 }
 
 async function main() {
@@ -111,30 +126,46 @@ async function main() {
   }
 
   if (!remove) resetRegistry(runId);
+  if (remote) setActiveProfile(profile);
+  if (profile.deployEnvFile) setActiveDeployEnvFile(profile.deployEnvFile);
 
-  if (!remote) {
-    ensureLocalWp();
-    const before = remove ? null : snapshotCanaryLocal();
-    const data = runLocalPhp(remove ? 'remove' : 'upsert', profile.id || envId, runId);
-    const outFile = writeFixtures(profile.id || envId, data);
-    if (!remove) registerCreatedRows({ ...data, runId });
-    if (before) compareAfter(before, snapshotCanaryLocal());
-    console.log(`fixtures: ${outFile}`);
-    console.log(JSON.stringify({ roles: data.roles, skipped: data.skipped, removed: data.removed }, null, 2));
-    return;
+  const takeSnap = () => (remote ? snapshotCanary() : snapshotCanaryLocal());
+
+  if (!remote) ensureLocalWp();
+
+  const before = remove ? null : takeSnap();
+  const beforeOk = before ? beforeCanaryOk(envId, before) : true;
+  if (before && remote && !beforeOk) {
+    writeCanaryAlert({ ok: false, diffs: [{ change: 'pre-bootstrap' }] }, 'e2e:bootstrap önce kanarya');
+    fail('Kanarya önce KIRMIZI — bootstrap durdu.');
   }
 
-  if (profile.deployEnvFile) setActiveDeployEnvFile(profile.deployEnvFile);
-  const before = remove ? null : snapshotCanary();
-  const raw = runEvalFile(
-    REMOTE_BOOTSTRAP_PHP,
-    { WDP_E2E_RUN_ID: runId },
-    remove ? 'remove' : 'upsert'
-  );
-  const data = parsePhpJson(raw);
+  let data;
+  if (!remote) {
+    data = runLocalPhp(remove ? 'remove' : 'upsert', profile.id || envId, runId);
+  } else {
+    const raw = runEvalFile(
+      REMOTE_BOOTSTRAP_PHP,
+      { WDP_E2E_RUN_ID: runId },
+      remove ? 'remove' : 'upsert'
+    );
+    data = parsePhpJson(raw);
+  }
   const outFile = writeFixtures(profile.id || envId, data);
   if (!remove) registerCreatedRows({ ...data, runId });
-  if (before) compareAfter(before, snapshotCanary());
+
+  let afterOk = true;
+  if (before) {
+    const after = takeSnap();
+    const cmp = compareWithRegistry(before, after);
+    afterOk = cmp.ok;
+    console.log(formatCanaryStatusLine(beforeOk, afterOk, createdProductCount(data)));
+    if (!cmp.ok) {
+      writeCanaryAlert(cmp, 'e2e:bootstrap kanarya');
+      fail(formatCanaryDiff(cmp));
+    }
+  }
+
   console.log(`fixtures: ${outFile}`);
   console.log(JSON.stringify({ roles: data.roles, skipped: data.skipped, removed: data.removed }, null, 2));
 }

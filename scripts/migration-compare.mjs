@@ -97,7 +97,7 @@ export function runCompare(args) {
   }
   const counts = result.counts;
   console.log(
-    `sayılar: KORUNDU=${counts.KORUNDU} TAŞINDI=${counts.TAŞINDI} DEĞİŞTİ=${counts.DEĞİŞTİ} VARSAYILANA DÖNDÜ=${counts['VARSAYILANA DÖNDÜ']} KAYBOLDU=${counts.KAYBOLDU} YENİ=${counts.YENİ}`
+    `sayılar: KORUNDU=${counts.KORUNDU} TAŞINDI=${counts.TAŞINDI} DEĞİŞTİ=${counts.DEĞİŞTİ} VARSAYILANA DÖNDÜ=${counts['VARSAYILANA DÖNDÜ']} KAYBOLDU=${counts.KAYBOLDU} YENİ=${counts.YENİ} BEKLENEN=${counts['BEKLENEN DEĞİŞİM']}`
   );
   if (result.problems.length) {
     console.log('sorunlu:');

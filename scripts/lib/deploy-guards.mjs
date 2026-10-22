@@ -346,6 +346,26 @@ export function inspectRemoteCommand(cmd, allowedRoot) {
 }
 
 /**
+ * Salt okunur uzak eval-file kalıbı: `wp --path=<wpPath> eval-file …`
+ * @param {string} wpPath
+ * @param {{ tmpPrefix?: string, extraArgs?: string, b64?: string }} [opts]
+ */
+export function buildGuardedEvalFileCommand(wpPath, opts = {}) {
+  const prefix = String(opts.tmpPrefix || 'wdp-eval').replace(/[^a-z0-9-]/gi, '') || 'wdp-eval';
+  const extra = opts.extraArgs ? ` ${opts.extraArgs}` : '';
+  const b64 = String(opts.b64 || 'YmFzZTY0');
+  const wp = String(wpPath || '').replace(/'/g, `'\\''`);
+  return [
+    `TMP=$(mktemp /tmp/${prefix}-XXXX.php)`,
+    `echo '${b64}' | base64 -d > "$TMP"`,
+    `wp --path='${wp}' eval-file "$TMP"${extra}`,
+    `EC=$?`,
+    `rm -f "$TMP"`,
+    `exit $EC`,
+  ].join('\n');
+}
+
+/**
  * Betiklerin ürettiği gerçek uzak komut kalıpları (ağ yok; dry-run üretimi).
  * @param {RemoteTarget} target
  * @returns {string[]}
@@ -369,38 +389,12 @@ export function plannedRemoteCommands(target) {
     `wp plugin path ${slug} --dir --path='${wp}' 2>/dev/null || echo '${wp}/wp-content/plugins/${slug}'`,
     `(wp sg purge --path='${wp}' 2>/dev/null || wp cache flush --path='${wp}')`,
     `LOG='${wp}/wp-content/debug.log'; if [ -f "$LOG" ]; then tail -n 80 "$LOG"; else echo "debug.log yok"; fi`,
-    [
-      `TMP=$(mktemp /tmp/wdp-disc-XXXX.php)`,
-      `echo 'YmFzZTY0' | base64 -d > "$TMP"`,
-      `wp eval-file "$TMP" --path='${wp}'`,
-      `EC=$?`,
-      `rm -f "$TMP"`,
-      `exit $EC`,
-    ].join('\n'),
-    [
-      `TMP=$(mktemp /tmp/wdp-read-XXXX.php)`,
-      `echo 'YmFzZTY0' | base64 -d > "$TMP"`,
-      `wp eval-file "$TMP" --path='${wp}'`,
-      `EC=$?`,
-      `rm -f "$TMP"`,
-      `exit $EC`,
-    ].join('\n'),
-    [
-      `TMP=$(mktemp /tmp/wdp-canary-XXXX.php)`,
-      `echo 'YmFzZTY0' | base64 -d > "$TMP"`,
-      `wp eval-file "$TMP" --path='${wp}'`,
-      `EC=$?`,
-      `rm -f "$TMP"`,
-      `exit $EC`,
-    ].join('\n'),
-    [
-      `TMP=$(mktemp /tmp/wdp-cleanup-XXXX.php)`,
-      `echo 'YmFzZTY0' | base64 -d > "$TMP"`,
-      `wp eval-file "$TMP" cleanup --path='${wp}'`,
-      `EC=$?`,
-      `rm -f "$TMP"`,
-      `exit $EC`,
-    ].join('\n'),
+    buildGuardedEvalFileCommand(t.wpPath, { tmpPrefix: 'wdp-disc' }),
+    buildGuardedEvalFileCommand(t.wpPath, { tmpPrefix: 'wdp-read' }),
+    buildGuardedEvalFileCommand(t.wpPath, { tmpPrefix: 'wdp-canary' }),
+    buildGuardedEvalFileCommand(t.wpPath, { tmpPrefix: 'wdp-mig' }),
+    buildGuardedEvalFileCommand(t.wpPath, { tmpPrefix: 'wdp-eval' }),
+    buildGuardedEvalFileCommand(t.wpPath, { tmpPrefix: 'wdp-cleanup', extraArgs: 'cleanup' }),
     [
       `PLUGIN_DIR=$(wp plugin path ${slug} --path='${wp}' 2>/dev/null || true)`,
       `if [ -n "$PLUGIN_DIR" ] && [ -d "$PLUGIN_DIR" ]; then`,

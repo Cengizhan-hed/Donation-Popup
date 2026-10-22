@@ -18,7 +18,10 @@ import {
   findWriteFunctions,
 } from './lib/migration-keys.mjs';
 import { phpEvalFile, ensureLocalWp, LOCAL_WP_ROOT } from './local-wp.mjs';
-import { assertRemoteAllowed } from './lib/remote-guard.mjs';
+import { spawnGuarded } from './lib/remote-guard.mjs';
+import { buildGuardedEvalFileCommand } from './lib/deploy-guards.mjs';
+import { loadProfile, resolveAllowedRemoteTarget, setActiveProfile } from '../tests/e2e/helpers/profile.mjs';
+import { runGuardedSsh } from './lib/remote-discover-lib.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export const SNAPSHOT_PHP = 'tests/e2e/helpers/migration-snapshot.php';
@@ -128,7 +131,7 @@ export async function runSnapshot(args) {
       WDP_MIG_KEYS_FILE: keyFile,
     });
   } else if (args.env === 'staging' || args.env === 'ikram') {
-    return runRemoteSnapshot(args.env, phpText, keyset, outFile);
+    return runRemoteSnapshot(args.env, phpText, keyset, outFile, args.label);
   } else {
     throw new Error(`--env local|staging|ikram (gelen: ${args.env})`);
   }
@@ -143,50 +146,59 @@ export async function runSnapshot(args) {
 }
 
 /**
+ * 1A: profil ssh.alias/wpPath/siteUrl → izin listesi.
+ * @param {string} envId
+ */
+export function resolveSnapshotRemoteTarget(envId) {
+  const profile = loadProfile(envId);
+  const resolved = resolveAllowedRemoteTarget(profile);
+  setActiveProfile(profile);
+  return resolved;
+}
+
+/**
+ * @param {string} wpPath
+ * @param {string} b64
+ */
+export function buildSnapshotRemoteCommand(wpPath, b64) {
+  return buildGuardedEvalFileCommand(wpPath, { tmpPrefix: 'wdp-mig', b64 });
+}
+
+/**
  * Uzak: freeze / izin listesi spawnGuarded üzerinden. Bu süreçte Claude çalıştırır.
  * @param {string} envId
  * @param {string} phpText
  * @param {object} keyset
+ * @param {string} outFile
+ * @param {string} [label]
  */
-async function runRemoteSnapshot(envId, phpText, keyset, outFile) {
-  assertRemoteAllowed({ bin: 'ssh' });
-  const { setActiveDeployEnvFile, loadDeployEnvSilent, remote, resolveWpPath } = await import(
-    '../tests/e2e/helpers/wp-remote.mjs'
-  );
-  setActiveDeployEnvFile(envId === 'ikram' ? '.env.deploy.ikram' : '.env.deploy');
-  const loaded = loadDeployEnvSilent();
-  if (!loaded.ok) throw new Error(`uzak anlık görüntü: ${loaded.reason}`);
+function runRemoteSnapshot(envId, phpText, keyset, outFile, label = '') {
+  const resolved = resolveSnapshotRemoteTarget(envId);
   const injected =
     `<?php if (!defined('WDP_MIG_KEYSET_JSON')) define('WDP_MIG_KEYSET_JSON', '${JSON.stringify(keyset).replace(/\\/g, '\\\\').replace(/'/g, "\\'")}');\n` +
     phpText.replace(/^<\?php\s*/, '');
   const b64 = Buffer.from(injected, 'utf8').toString('base64');
-  const wpPath = resolveWpPath(loaded.env).replace(/'/g, `'\\''`);
-  const raw = remote(
-    loaded.env,
-    [
-      `TMP=$(mktemp /tmp/wdp-mig-XXXX.php)`,
-      `echo '${b64}' | base64 -d > "$TMP"`,
-      `wp eval-file "$TMP" --path='${wpPath}'`,
-      `EC=$?`,
-      `rm -f "$TMP"`,
-      `exit $EC`,
-    ].join('\n')
+  const remoteCmd = buildSnapshotRemoteCommand(resolved.wpPath, b64);
+  const res = runGuardedSsh(
+    spawnGuarded,
+    resolved.alias,
+    remoteCmd,
+    { encoding: 'utf8', cwd: ROOT, timeout: 120000 },
+    { alias: resolved.alias, wpPath: resolved.wpPath, siteUrl: resolved.siteUrl }
   );
-  const snap = extractJsonObject(raw);
+  const snap = extractJsonObject(res.stdout || '');
   snap.env = envId;
+  snap.label = label || snap.label || 'snap';
   fs.mkdirSync(path.dirname(outFile), { recursive: true });
   fs.writeFileSync(outFile, JSON.stringify(snap, null, 2) + '\n', 'utf8');
   console.log(`yazıldı: ${path.relative(ROOT, outFile)}`);
   console.log(formatSnapshotConsole(snap));
-  return { outFile, snap };
+  return { outFile, snap, target: resolved };
 }
 
 function main() {
   try {
     const args = parseSnapshotArgs(process.argv.slice(2));
-    if (args.env !== 'local') {
-      assertRemoteAllowed({ bin: 'ssh' });
-    }
     runSnapshot(args).catch((e) => fail(e && e.message ? e.message : String(e)));
   } catch (e) {
     fail(e && e.message ? e.message : String(e));

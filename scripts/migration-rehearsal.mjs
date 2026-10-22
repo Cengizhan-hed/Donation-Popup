@@ -71,8 +71,11 @@ export function resolveOncekiZip() {
 }
 
 export function resolve1031Source() {
-  const p = path.join(ROOT, 'build/migration/source/10.3.1/woo-donation-popup');
-  return fs.existsSync(path.join(p, 'woo-donation-popup.php')) ? p : '';
+  const candidates = [
+    path.join(ROOT, 'build/migration/source/10.3.1/woo-donation-popup'),
+    path.join(ROOT, '../Donation Popup/build/migration/source/10.3.1/woo-donation-popup'),
+  ];
+  return candidates.find((p) => fs.existsSync(path.join(p, 'woo-donation-popup.php'))) || '';
 }
 
 function download(url, dest) {
@@ -177,7 +180,7 @@ function writeCompare(result, outFile, title, beforeLabel, afterLabel) {
   console.log(`karşılaştırma: ${path.relative(ROOT, outFile)}`);
   const c = result.counts;
   console.log(
-    `sınıflar: KORUNDU=${c.KORUNDU} TAŞINDI=${c.TAŞINDI} DEĞİŞTİ=${c.DEĞİŞTİ} VARSAYILANA=${c['VARSAYILANA DÖNDÜ']} KAYBOLDU=${c.KAYBOLDU} YENİ=${c.YENİ}`
+    `sınıflar: KORUNDU=${c.KORUNDU} TAŞINDI=${c.TAŞINDI} DEĞİŞTİ=${c.DEĞİŞTİ} VARSAYILANA=${c['VARSAYILANA DÖNDÜ']} KAYBOLDU=${c.KAYBOLDU} YENİ=${c.YENİ} BEKLENEN=${c['BEKLENEN DEĞİŞİM']}`
   );
   if (result.problems.length) {
     console.log('sorunlu anahtarlar:');
@@ -220,7 +223,7 @@ export function runOneRehearsal(spec) {
     importInfo = ops(wpDir, 'import', spec.snapshot);
     if (!importInfo.ok) throw new Error(`içe aktarma: ${importInfo.error || ''}`);
   } else {
-    ops(wpDir, 'seed');
+    ops(wpDir, 'seed', spec.from === '10.3.1' ? '10.3.1' : '');
   }
 
   const probeOld = ops(wpDir, 'probe');
@@ -275,6 +278,9 @@ export function runOneRehearsal(spec) {
       counts: cmp1.counts,
       fail: cmp1.fail,
       problems: cmp1.problems.map((p) => ({ class: p.class, key: p.key, beforeHash: p.beforeHash, afterHash: p.afterHash })),
+      expectedChange: cmp1.rows
+        .filter((p) => p.class === 'BEKLENEN DEĞİŞİM')
+        .map((p) => p.key),
     },
     idempotent: {
       counts: cmp2.counts,
@@ -292,6 +298,9 @@ export function runOneRehearsal(spec) {
   const sumFile = path.join(MIGRATION_DIR, `rehearsal-${label}.json`);
   fs.writeFileSync(sumFile, JSON.stringify(summary, null, 2) + '\n');
   console.log(`özet: ${path.relative(ROOT, sumFile)}`);
+  console.log(
+    `is_fresh_install önce=${summary.probeOld.is_fresh_install} göç=${summary.migrate.is_fresh_install}`
+  );
   return summary;
 }
 
@@ -317,7 +326,9 @@ function main() {
       legs = defaultLegs().map((l) => ({ ...l, skipWc: args.skipWc }));
     }
     if (!legs.length) {
-      fail('Kaynak yok: build/handoff/onceki.zip veya --source verin.');
+      fail(
+        'Kaynak yok: build/migration/source/10.3.1/woo-donation-popup, build/handoff/onceki.zip veya --source verin.'
+      );
     }
     const results = [];
     for (const leg of legs) {

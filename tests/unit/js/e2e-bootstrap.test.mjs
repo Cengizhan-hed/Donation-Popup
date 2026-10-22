@@ -8,7 +8,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { ROOT } from '../../../tests/e2e/helpers/env-root.mjs';
 import { describeBootstrapPlan } from '../../../tests/e2e/helpers/fixtures.mjs';
-import { checkRemoteTarget, ALLOWED_DEPLOY_TARGETS } from '../../../scripts/lib/deploy-guards.mjs';
+import { checkRemoteTarget, ALLOWED_DEPLOY_TARGETS, buildGuardedEvalFileCommand } from '../../../scripts/lib/deploy-guards.mjs';
 
 const SCRIPT = path.join(ROOT, 'scripts/e2e-bootstrap.mjs');
 
@@ -65,15 +65,10 @@ describe('e2e:bootstrap dry-run', () => {
     assert.match(src, /set_catalog_visibility\('hidden'\)/);
     assert.match(src, /set_status\('private'\)/);
     for (const target of ALLOWED_DEPLOY_TARGETS) {
-      const wp = target.wpPath.replace(/'/g, `'\\''`);
-      const cmd = [
-        `TMP=$(mktemp /tmp/wdp-eval-XXXX.php)`,
-        `echo 'YmFzZTY0' | base64 -d > "$TMP"`,
-        `WDP_E2E_RUN_ID='boot-dry' wp eval-file "$TMP" upsert --path='${wp}'`,
-        `EC=$?`,
-        `rm -f "$TMP"`,
-        `exit $EC`,
-      ].join('\n');
+      const cmd = buildGuardedEvalFileCommand(target.wpPath, {
+        tmpPrefix: 'wdp-eval',
+        extraArgs: 'upsert',
+      }).replace(`wp --path=`, `WDP_E2E_RUN_ID='boot-dry' wp --path=`);
       const r = checkRemoteTarget({
         alias: target.sshAlias,
         wpPath: target.wpPath,

@@ -16,7 +16,9 @@ import {
   buildRemoteWpCommand,
   canonicalEnv,
   classifyPlugin,
+  classifyWooPageKind,
   compactPhp,
+  EVAL_WOO,
   getDiscoverWpTails,
   getEvalSnippets,
   parseJsonBlob,
@@ -201,6 +203,27 @@ describe('remote-discover sahte ssh', () => {
       assert.match(remote, /--path=/);
       assert.doesNotMatch(remote, /--skip-themes|--skip-plugins/);
     }
+  });
+
+  it('ödeme/sepet türü: block / classic / classic-in-builder / unknown', () => {
+    assert.equal(classifyWooPageKind({ hasBlock: true }), 'block');
+    assert.equal(classifyWooPageKind({ hasShortcode: true }), 'classic');
+    assert.equal(
+      classifyWooPageKind({ contentHasShortNeedle: true, builder: true }),
+      'classic-in-builder'
+    );
+    assert.equal(classifyWooPageKind({ hasShortcode: true, builder: true }), 'classic-in-builder');
+    assert.equal(classifyWooPageKind({ blockDefault: true }), 'block');
+    assert.equal(classifyWooPageKind({}), 'unknown');
+    const php = EVAL_WOO;
+    assert.match(php, /has_block/);
+    assert.match(php, /has_shortcode/);
+    assert.match(php, /is_checkout_block_default/);
+    assert.match(php, /is_cart_block_default/);
+    assert.match(php, /classic-in-builder/);
+    assert.doesNotMatch(php, /echo \$c\b/);
+    assert.doesNotMatch(php, /"content"\s*=>/);
+    assert.equal(php.includes("'"), false);
   });
 
   it('canonical env ve json blob', () => {

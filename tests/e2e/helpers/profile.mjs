@@ -51,10 +51,26 @@ export function assertRemoteProfileSafe(profile) {
   if (profile.allowMetaMutation === true) {
     throw new Error('Uzak profilde allowMetaMutation açılamaz.');
   }
+  resolveAllowedRemoteTarget(profile);
+}
+
+/**
+ * 1A: profil ssh.alias/wpPath/siteUrl → izin listesi kaydı.
+ * @param {string|object} idOrProfile
+ * @returns {{ profile: object, target: object, alias: string, wpPath: string, siteUrl: string }}
+ */
+export function resolveAllowedRemoteTarget(idOrProfile) {
+  const profile = typeof idOrProfile === 'string' ? loadProfile(idOrProfile) : idOrProfile;
+  if (!profile || typeof profile !== 'object') {
+    throw new Error('Profil yok.');
+  }
+  if (!isRemoteProfile(profile)) {
+    throw new Error('Profil uzak değil.');
+  }
   const alias = String(profile.ssh?.alias || '').trim();
   const listed = findTargetByAlias(alias) || findTargetById(profile.id);
   if (!listed) {
-    throw new Error('Profil SSH alias izin listesinde değil.');
+    throw new Error('SSH alias izin listesinde değil.');
   }
   if (alias !== listed.sshAlias) {
     throw new Error('eşleşmiyor');
@@ -63,10 +79,19 @@ export function assertRemoteProfileSafe(profile) {
   if (wpPath && wpPath !== listed.wpPath) {
     throw new Error('eşleşmiyor');
   }
-  const base = String(profile.baseUrl || '').trim().replace(/\/$/, '');
+  const base = String(profile.baseUrl || profile.ssh?.siteUrl || '')
+    .trim()
+    .replace(/\/$/, '');
   if (base && base !== listed.siteUrl) {
     throw new Error('eşleşmiyor');
   }
+  return {
+    profile,
+    target: listed,
+    alias: listed.sshAlias,
+    wpPath: listed.wpPath,
+    siteUrl: listed.siteUrl,
+  };
 }
 
 /**
