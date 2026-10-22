@@ -33,6 +33,7 @@ const CONSTRUCTOR_FILES = [
   'scripts/ikram-wp.mjs',
   'scripts/deploy-staging.mjs',
   'scripts/deploy-ikram.mjs',
+  'scripts/lib/ship-core.mjs',
   'tests/e2e/helpers/wp-remote.mjs',
   'tests/e2e/helpers/canary.mjs',
   'tests/e2e/helpers/safe-remote-write.mjs',

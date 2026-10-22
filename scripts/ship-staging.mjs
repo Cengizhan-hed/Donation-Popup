@@ -1,11 +1,12 @@
 #!/usr/bin/env node
 /**
- * Tek komut: staging deploy + e2e:quick + raporu aç.
- * Exit kodu e2e sonucunu yansıtır; rapor yine de açılır.
+ * Staging: güvenli ship zinciri + e2e:quick.
+ * Hedef = profil + izin listesi.
  */
 import { spawnSync } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { parseShipArgs, runShip } from './lib/ship-core.mjs';
 import { assertRemoteAllowed } from './lib/remote-guard.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -21,6 +22,7 @@ function run(cmd, args) {
   return r.status ?? 1;
 }
 
+const args = parseShipArgs(process.argv.slice(2));
 try {
   assertRemoteAllowed();
 } catch (e) {
@@ -28,9 +30,17 @@ try {
   process.exit(1);
 }
 
-const deployCode = run('npm', ['run', 'deploy:staging']);
-if (deployCode !== 0) {
-  process.exit(deployCode);
+let result;
+try {
+  result = await runShip({ envName: 'staging', argv: process.argv.slice(2) });
+} catch (e) {
+  console.error(e && e.message ? e.message : String(e));
+  process.exit(e && e.exitCode ? e.exitCode : 1);
+}
+if (result.summary) console.log(result.summary);
+if (result.reportFile) console.log(`özet: ${result.reportFile}`);
+if (result.exitCode !== 0 || result.dryRun || args.rollback) {
+  process.exit(result.exitCode);
 }
 
 const e2eCode = run('node', ['tests/e2e/run-quick.mjs', '--open-report']);
