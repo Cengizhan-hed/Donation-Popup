@@ -441,3 +441,12 @@ Kullanıcı yönergesi önceki tüm görev metinlerinin yerini aldı; CLAUDE.md 
 | F6 | Ikram: açık durumda "£ min: 5" (hata durumunda 5.00) — GBP 2 ondalık bozuk; kapat (×) form kenarına biniyor (10.34.2 güvenli alan) | 3A; Ikram accept bekletildi |
 | F7 | Ikram: "Bağış Yap", "Tümü", form etiketleri İngilizce sitede Türkçe | Faz 5 |
 | Not | staging30 snippet #27 sepete eklemeye bağlı (terk edilmiş sepet olayı); #29 ödeme tamamlanınca dış istek; #43 form gönderiminde API+e-posta. Testler sipariş/form göndermiyor | Raporlandı |
+
+### GÖRSEL AŞAMA eklemeleri (Faz 3 incelemesi, 2026-10-22)
+
+| # | Madde |
+|---|-------|
+| G28 | Hisseli form "1. Hisse" başlığı açık gri zemin üstünde neredeyse görünmez (kontrast, WCAG 2.2 AA) — staging30 panel-shares-open |
+| G29 | Popup'ta telefon yer tutucusu ayırıcı çizgiye yapışık (panelde boşluk var) |
+| G30 | "24 Saat İçerisinde Video" rozetinde simge kenara taşıyor (popup) |
+| G31 | Ikram WooCommerce mağaza sayfasındaki "Bağış Yap" açılır pencere açmıyor (Appeals listesinde açıyor) — davranış tutarlılığı, Faz 7'de karar |
