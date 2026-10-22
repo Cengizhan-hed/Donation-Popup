@@ -12,7 +12,7 @@ import {
   saveProductPrices,
   bumpListCache,
 } from './staging-wp-meta.mjs';
-import { requireFixtureRole } from './fixtures.mjs';
+import { requireFixtureRole, mutationBrowserContext } from './fixtures.mjs';
 
 const CHECK_MS = 40000;
 const FORBIDDEN_IDS = new Set([10695]);
@@ -79,6 +79,7 @@ export async function runShortcodeChecks({
   productIds,
   failures,
   stats,
+  createAdminContext,
 }) {
   let fixedId = Number(productIds.fixed || 0);
   try {
@@ -99,7 +100,7 @@ export async function runShortcodeChecks({
   const blocked = forbiddenIds(env);
   if (campaignId) blocked.add(campaignId);
 
-  const ctx = await browser.newContext(contextOpts);
+  const ctx = await mutationBrowserContext(browser, contextOpts, createAdminContext);
   const page = await ctx.newPage();
   /** @type {string[]} */
   const pageErrors = [];

@@ -11,7 +11,7 @@
   
   // Use centralized module dependency helper
   const utilsCheck = (WDPApp.utils && WDPApp.utils.ensureModule)
-    ? WDPApp.utils.ensureModule('utils', ['safeLog', 'getAjaxNonce', 'formatCurrency', 'formatPrice', 'announceStatus'])
+    ? WDPApp.utils.ensureModule('utils', ['safeLog', 'getAjaxNonce', 'formatCurrency', 'formatPrice', 'formatMinPlaceholder', 'applyCurrencyShellPosition', 'announceStatus'])
     : { module: WDPApp.utils || {}, isValid: false, missingMethods: [] };
   
   const stateCheck = (WDPApp.utils && WDPApp.utils.ensureModule)
@@ -20,7 +20,7 @@
   
   const utils = utilsCheck.module;
   const state = stateCheck.module;
-  const { safeLog, getAjaxNonce, formatCurrency, formatPrice, announceStatus } = utils;
+  const { safeLog, getAjaxNonce, formatCurrency, formatPrice, formatMinPlaceholder, applyCurrencyShellPosition, announceStatus } = utils;
   const { productPrices, productDataCache, productInfoRequests } = state;
   const wdp_ajax = window.wdp_ajax || {};
 
@@ -305,14 +305,18 @@
             priceField.style.display = "flex";
           }
 
-          const priceInput = (customPriceRow || priceField).querySelector('input[name="custom_price"]');
-          if (priceInput) {
-            const currencyEl = priceField.querySelector(".wdp-custom-price-currency");
-            if (currencyEl && WDPApp.utils && typeof WDPApp.utils.getCurrencySymbol === "function") {
-              currencyEl.textContent = WDPApp.utils.getCurrencySymbol();
-            } else if (currencyEl && wdp_ajax.currency && wdp_ajax.currency.symbol) {
-              currencyEl.textContent = wdp_ajax.currency.symbol;
-            }
+			const priceInput = (customPriceRow || priceField).querySelector('input[name="custom_price"]');
+			if (priceInput) {
+			const currencyEl = priceField.querySelector(".wdp-custom-price-currency");
+			if (currencyEl && WDPApp.utils && typeof WDPApp.utils.getCurrencySymbol === "function") {
+			  currencyEl.textContent = WDPApp.utils.getCurrencySymbol();
+			} else if (currencyEl && wdp_ajax.currency && wdp_ajax.currency.symbol) {
+			  currencyEl.textContent = wdp_ajax.currency.symbol;
+			}
+			const priceShell = priceField.querySelector('.wdp-custom-price-shell');
+			if (priceShell && typeof applyCurrencyShellPosition === 'function') {
+			  applyCurrencyShellPosition(priceShell);
+			}
 
 			const parseAmt = (WDPApp.utils && typeof WDPApp.utils.parseMoney === 'function')
 				? WDPApp.utils.parseMoney
@@ -354,8 +358,15 @@
 			}
 			const emptyPlaceholder = "";
 			let nextPlaceholder = emptyPlaceholder;
-			if (Number.isFinite(resolvedMin) && resolvedMin > 0) {
-			  nextPlaceholder = `min: ${formatPrice(resolvedMin)}`;
+			const fromServer = typeof data.custom_price_placeholder === 'string'
+			  ? String(data.custom_price_placeholder).trim()
+			  : '';
+			if (fromServer && /^min:\s/i.test(fromServer)) {
+			  nextPlaceholder = fromServer;
+			} else if (Number.isFinite(resolvedMin) && resolvedMin > 0) {
+			  nextPlaceholder = typeof formatMinPlaceholder === 'function'
+			    ? formatMinPlaceholder(resolvedMin)
+			    : `min: ${formatPrice(resolvedMin)}`;
 			}
 			const currentPlaceholder = String(priceInput.placeholder || '').trim();
 			if (currentPlaceholder !== nextPlaceholder) {

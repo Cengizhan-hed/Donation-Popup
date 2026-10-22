@@ -4,7 +4,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { SEL } from './selectors.mjs';
-import { formatMoney } from './currency.mjs';
+import { formatMoney, formatMinPlaceholder } from './currency.mjs';
 import { withCacheBust } from './env.mjs';
 import {
   attachConsoleErrorCollector,
@@ -130,6 +130,70 @@ async function waitFormReady(root) {
   const form = root.locator(SEL.donationForm).first();
   await form.waitFor({ state: 'visible', timeout: CHECK_MS });
   return form;
+}
+
+/**
+ * Yer tutucu = wc biçimi (ondalık kırpılmaz); sembol konumu left/right.
+ * @param {import('@playwright/test').Locator} scope
+ * @param {object} store
+ */
+async function assertMinPlaceholderAndSymbol(scope, store) {
+  const input = scope.locator(SEL.customPrice).first();
+  if ((await input.count()) === 0) return;
+  await input.waitFor({ state: 'visible', timeout: CHECK_MS });
+  const minRaw = await input.getAttribute('min');
+  const min = Number.parseFloat(String(minRaw || '10'));
+  const amount = Number.isFinite(min) && min > 0 ? min : 10;
+  const expected = formatMinPlaceholder(amount, store);
+  const ph = String((await input.getAttribute('placeholder')) || '').trim();
+  if (ph !== expected) {
+    throw new Error(`yer tutucu '${ph}' ≠ '${expected}' (${store.symbolPosition || 'left'})`);
+  }
+  const posOk = await scope.evaluate((root, want) => {
+    const shell = root.querySelector('.wdp-custom-price-shell') || document.querySelector('.wdp-custom-price-shell');
+    if (!shell) return true;
+    const sym = shell.querySelector('.wdp-custom-price-currency');
+    const inp = shell.querySelector('input[name="custom_price"]');
+    if (!sym || !inp) return true;
+    const sr = sym.getBoundingClientRect();
+    const ir = inp.getBoundingClientRect();
+    const leftish = want === 'left' || want === 'left_space';
+    return leftish ? sr.left <= ir.left + 1 : sr.left >= ir.left - 1;
+  }, String(store.symbolPosition || 'left'));
+  if (!posOk) {
+    throw new Error(`sembol konumu görsel olarak hatalı (${store.symbolPosition})`);
+  }
+}
+
+/**
+ * Kapat düğmesi form kutusuyla kesişmez, ≥44px.
+ * @param {import('@playwright/test').Page} page
+ */
+async function assertCloseNotOverlappingForm(page) {
+  const info = await page.evaluate(() => {
+    const root = document.querySelector('.hdf-donation-modal-wrapper.wdp-modal.show');
+    if (!root) return { skip: true };
+    const close = root.querySelector('button.wdp-modal-close');
+    const form =
+      root.querySelector('.wdp-donation-form-fields') ||
+      root.querySelector('form.wdp-donation-form-fields');
+    if (!close) return { error: 'kapat düğmesi yok' };
+    if (!form) return { error: 'form kutusu yok' };
+    const c = close.getBoundingClientRect();
+    const f = form.getBoundingClientRect();
+    const overlap = !(c.right <= f.left || c.left >= f.right || c.bottom <= f.top || c.top >= f.bottom);
+    return { overlap, cw: c.width, ch: c.height, cy: c.y, fy: f.y };
+  });
+  if (info.skip) return;
+  if (info.error) throw new Error(info.error);
+  if (info.cw + 1 < 44 || info.ch + 1 < 44) {
+    throw new Error(`kapat dokunma hedefi < 44px (${Math.round(info.cw)}x${Math.round(info.ch)})`);
+  }
+  if (info.overlap) {
+    throw new Error(
+      `kapat düğmesi form kutusuyla kesişiyor (close.y=${Number(info.cy).toFixed(1)} form.y=${Number(info.fy).toFixed(1)})`
+    );
+  }
 }
 
 /**
@@ -540,6 +604,7 @@ export async function runDeviceScenarios({
       await gotoPath(page, baseUrl, '/');
       await emptyCartStoreApi(page, baseUrl);
       const scope = await openProductForm(page, baseUrl, productPath);
+      await assertMinPlaceholderAndSymbol(scope, store);
       await fillDonationForm(scope, store);
       await addToCart(page, scope);
       await cartHasAmount(page, baseUrl, amount, store);
@@ -549,6 +614,8 @@ export async function runDeviceScenarios({
     await runOne('list-checkout', async () => {
       await emptyCartStoreApi(page, baseUrl);
       const shell = await openListPopup(page, baseUrl, listPath, productId);
+      await assertMinPlaceholderAndSymbol(shell, store);
+      await assertCloseNotOverlappingForm(page);
       await fillDonationForm(shell, store);
       await goCheckoutFromForm(page, shell);
       await checkoutHasProductAmount(page, amount, store, productName);
@@ -594,6 +661,8 @@ export async function runDeviceScenarios({
     await runOne('appearance', async () => {
       const scope = await openProductForm(page, baseUrl, productPath);
       await waitFormReady(scope);
+      await assertMinPlaceholderAndSymbol(scope, store);
+      await assertCloseNotOverlappingForm(page);
       await assertNoOverflow(page);
       await assertTouchAndButtons(page);
       await shot(page, shotDir, 'appearance-form');

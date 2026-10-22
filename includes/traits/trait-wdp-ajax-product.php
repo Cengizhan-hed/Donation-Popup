@@ -98,11 +98,15 @@ trait WDP_Ajax_Product_Trait {
 		$sadaka_ui_ready = $sadaka_block_html !== '' && strpos($sadaka_block_html, 'data-wdp-sadaka-donation') !== false;
 
 		$raw_price = $product->get_price();
+		$min_for_placeholder = $enable_progress_bar ? $progress_min_price : $min_price;
 		$response = array(
 			'product_name' => $product->get_name(),
 			'is_custom_price' => $allow_custom_price,
 			'min_price' => $min_price,
 			'progress_min_price' => $progress_min_price,
+			'custom_price_placeholder' => ((float) $min_for_placeholder > 0)
+				? WDP_Utils::format_min_placeholder($min_for_placeholder)
+				: '',
 			'enable_progress_bar' => $enable_progress_bar,
 			'regular_price' => $product->get_regular_price(),
 			'price' => $raw_price,

@@ -37,7 +37,7 @@ import {
 } from './similar-donations-probe.mjs';
 import { snapshotGuardOrder, cleanupE2EData } from './test-cleanup.mjs';
 import { resetRegistry } from './run-registry.mjs';
-import { fixtureProductRecords, loadFixtures } from './fixtures.mjs';
+import { fixtureProductRecords, loadFixtures, assertRunMutationTargetsAreFixtures } from './fixtures.mjs';
 import {
   snapshotCanary,
   preflightCanary,
@@ -2609,6 +2609,12 @@ export async function captureAll({
     const wpId = Number(env._resolvedProducts?.[key]?.id || profile.products?.[key]?.id || 0);
     productIds[key] = await resolveProductIdBySlug(probe, env.E2E_BASE_URL, slug, wpId);
   }
+  for (const [role, rec] of Object.entries(env._resolvedProducts || {})) {
+    if (!rec || !rec.fromFixture) continue;
+    const path = rec.path || rec.url || productUrls[role];
+    if (path) productUrls[role] = path;
+    if (rec.id) productIds[role] = Number(rec.id) || productIds[role] || 0;
+  }
   await probe.close();
   logSection('ürün URL/ID çözümü', tProbe);
 
@@ -2707,9 +2713,12 @@ export async function captureAll({
   const productPageHeights = {};
   const tProducts = Date.now();
   const productEntries = Object.entries(productUrls);
+  const isFixtureRole = (role) =>
+    Array.isArray(env._fixtureRoles) && env._fixtureRoles.includes(role);
   await mapPool(productEntries, maxWorkers, async ([key, rel]) => {
     const name = `${pfx}-product-${key}`;
-    const page = await visit(catalogCtx, rel, name, { checkImages: true });
+    const visitCtx = isFixtureRole(key) ? authed : catalogCtx;
+    const page = await visit(visitCtx, rel, name, { checkImages: true });
     productPageHeights[key] = await readPageScrollHeight(page);
     if (runFunctional) {
       try {
@@ -2789,7 +2798,11 @@ export async function captureAll({
       mode: /** @type {'panel'} */ ('panel'),
       pagePath: rel,
       productId: productIds[key] || 0,
+      asAdmin: isFixtureRole(key),
     });
+    if (isFixtureRole(key)) {
+      continue;
+    }
     shellJobs.push({
       key,
       mode: /** @type {'popup'} */ ('popup'),
@@ -2940,11 +2953,11 @@ export async function captureAll({
       .catch(() => {});
   }
 
-  const shellsPromise = mapPool(shellJobs, maxWorkers, async ({ key, pagePath, mode, productId }) => {
+  const shellsPromise = mapPool(shellJobs, maxWorkers, async ({ key, pagePath, mode, productId, asAdmin: useAdmin }) => {
     // Her kabuk işi temiz context (sepet / storage taşınmasın).
-    // Panel = ürün sayfası → Coming soon'da yönetici; popup = liste → ziyaretçi + share çerezi.
+    // Panel = ürün sayfası → Coming soon veya fixture (private) yönetici; popup = liste → ziyaretçi.
     const ctx =
-      mode === 'panel' && profile.comingSoon
+      useAdmin || (mode === 'panel' && profile.comingSoon)
         ? await asAdmin(browser, env, contextOpts)
         : await asVisitor(browser, env, contextOpts);
     const page = await ctx.newPage();
@@ -3628,6 +3641,18 @@ export async function captureAll({
 
   // Functional: shares-late + alt bağış (skel+cart yukarıda örtüştü)
   if (runFunctional) {
+    try {
+      assertRunMutationTargetsAreFixtures(env);
+    } catch (e) {
+      failures.push(
+        makeFailure({
+          check: 'mutation-targets-fixtures',
+          description: String(e && e.message ? e.message : e),
+          error: e,
+        })
+      );
+      functionalStats.failed += 1;
+    }
 
     // shares-late + alt bağış örtüşür (wall clock); shares-late admin config beklemez
     const tLateShares = Date.now();
@@ -3757,7 +3782,6 @@ export async function captureAll({
     await Promise.all([lateSharesPromise, sadakaPromise]);
     void sadakaProductIds;
 
-    const skipMeta = !profile.allowMetaMutation;
     const metaSuites = [
       ['amount-options', './amount-options.mjs', 'runAmountOptionsChecks', 'Tutar seçenekleri E2E koşucusu çöktü'],
       ['form-fields', './form-fields.mjs', 'runFormFieldsChecks', 'Form alanları E2E koşucusu çöktü'],
@@ -3770,14 +3794,7 @@ export async function captureAll({
     for (const [area, mod, fn, crash] of metaSuites) {
       const tSuite = Date.now();
       try {
-        const skipThisMeta = skipMeta && area !== 'empty-price' && area !== 'layout';
-        if (skipThisMeta) {
-          skips.push({
-            check: area,
-            description: `${profile.id}: ürün/sayfa içeriğine dokunulmaz (allowMetaMutation=false)`,
-          });
-          functionalStats.skipped += 1;
-        } else if (!want(area)) {
+        if (!want(area)) {
           /* alan süzgeci */
         } else {
           const imported = await import(mod);

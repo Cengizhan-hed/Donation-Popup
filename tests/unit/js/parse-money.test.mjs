@@ -107,6 +107,29 @@ test('USD symbol positions', () => {
   assert.equal(right.formatMoney(12.5), '12.50$');
 });
 
+test('formatMinPlaceholder keeps decimals and omits symbol', () => {
+  const gbp = loadUtils({
+    code: 'GBP',
+    symbol: '£',
+    decimals: 2,
+    thousandSeparator: ',',
+    decimalSeparator: '.',
+    symbolPosition: 'left',
+  });
+  assert.equal(gbp.formatMinPlaceholder(5), 'min: 5.00');
+  assert.equal(gbp.formatPrice(5), '5.00');
+  const eur = loadUtils({
+    code: 'EUR',
+    symbol: '€',
+    decimals: 2,
+    thousandSeparator: '.',
+    decimalSeparator: ',',
+    symbolPosition: 'right_space',
+  });
+  assert.equal(eur.formatMinPlaceholder(10), 'min: 10,00');
+  assert.equal(eur.formatMoney(10), '10,00 €');
+});
+
 test('JPY 0 decimal', () => {
   const u = loadUtils({
     code: 'JPY',

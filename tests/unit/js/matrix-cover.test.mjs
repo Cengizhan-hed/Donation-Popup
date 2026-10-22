@@ -9,7 +9,7 @@ import {
   resolveWorkerCount,
   MATRIX_JSON,
 } from '../../e2e/helpers/matrix-cover.mjs';
-import { formatMoney } from '../../e2e/helpers/currency.mjs';
+import { formatMoney, formatMinPlaceholder } from '../../e2e/helpers/currency.mjs';
 import { amountVisible, pluginConsoleErrors } from '../../e2e/helpers/matrix-scenarios.mjs';
 import { ROOT } from '../../e2e/helpers/env-root.mjs';
 
@@ -65,6 +65,10 @@ describe('e2e matrix covering', () => {
     assert.equal(formatMoney(12.5, usd), '$12.50');
     const gbp = matrix.stores.gbp;
     assert.equal(formatMoney(12.5, gbp), '£12.50');
+    assert.equal(formatMinPlaceholder(10, tryS), 'min: 10');
+    assert.equal(formatMinPlaceholder(10, eur), 'min: 10,00');
+    assert.equal(formatMinPlaceholder(10, usd), 'min: 10.00');
+    assert.equal(formatMinPlaceholder(5, gbp), 'min: 5.00');
     assert.equal(amountVisible('Toplam ₺1.234', 1234, tryS), true);
     assert.equal(amountVisible('Pay 12,50 € now', 12.5, eur), true);
   });

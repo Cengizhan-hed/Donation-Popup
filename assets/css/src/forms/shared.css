@@ -165,7 +165,7 @@ html body .wdp-donation-form .wdp-modal-content .wdp-form-title-wrapper .wdp-pro
 html body .wdp-modal .wdp-modal-content > .wdp-modal-close {
   font-family: var(--wdp-font-family);
   position: absolute;
-  top: max(4px, env(safe-area-inset-top, 0px));
+  top: 8px;
   right: max(4px, env(safe-area-inset-right, 0px));
   width: 36px;
   height: 36px;

@@ -1,8 +1,31 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { formatMoney, parseMoney, textHasFormattedAmount } from '../../../tests/e2e/helpers/currency.mjs';
+import { formatMoney, formatMinPlaceholder, parseMoney, textHasFormattedAmount } from '../../../tests/e2e/helpers/currency.mjs';
 
 describe('currency format from profile', () => {
+  it('min placeholder matches WC decimals without trimming', () => {
+    assert.equal(
+      formatMinPlaceholder(5, {
+        symbol: '£',
+        decimals: 2,
+        thousandSeparator: ',',
+        decimalSeparator: '.',
+        symbolPosition: 'left',
+      }),
+      'min: 5.00'
+    );
+    assert.equal(
+      formatMinPlaceholder(10, {
+        symbol: '€',
+        decimals: 2,
+        thousandSeparator: '.',
+        decimalSeparator: ',',
+        symbolPosition: 'right_space',
+      }),
+      'min: 10,00'
+    );
+  });
+
   it('GBP left symbol, comma thousands', () => {
     assert.equal(
       formatMoney(3000, {

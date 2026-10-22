@@ -10,7 +10,6 @@ import {
   loadRegistry,
   registryHas,
 } from './run-registry.mjs';
-import { peekActiveProfile } from './profile.mjs';
 import { isFixtureProductId } from './fixtures.mjs';
 
 export const E2E_EMAIL_NEEDLE = '@wdp-e2e.test';
@@ -238,12 +237,8 @@ export async function assertProductWritable(productId, op = 'set-fixture-product
   if (post && FORBIDDEN_POST_TYPES.has(post.type)) {
     throw new Error(`safe-remote-write: ${post.type} id=${id} yazılamaz`);
   }
-  if (!isFixtureProductId(id) && !registryHas(id, 'product')) {
-    throw new Error(`safe-remote-write: id=${id} fixture/kayıt defteri değil; gerçek ürüne yazılmaz`);
-  }
-  const profile = peekActiveProfile();
-  if (profile && profile.allowMetaMutation === false) {
-    throw new Error(`safe-remote-write: allowMetaMutation=false (id=${id})`);
+  if (!isFixtureProductId(id)) {
+    throw new Error(`mutasyon hedefi fixture listesinde değil: id=${id}`);
   }
   return { id, post, marked: !!(post && post.mark) };
 }

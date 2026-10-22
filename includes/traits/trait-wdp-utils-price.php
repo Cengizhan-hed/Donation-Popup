@@ -126,12 +126,13 @@ trait WDP_Utils_Price_Trait {
     }
 
     /**
-     * Minimum tutarı placeholder için sayısal gösterim (para birimi simgesi yok; ayırıcılar Woo ayarlarına uygun).
+     * WooCommerce sayı biçimi (sembol yok; ondalık kırpılmaz).
+     * wc_price sayı kısmı / JS formatPrice ile aynı ayarlar.
      *
      * @param float|string $amount Ham tutar.
      * @return string
      */
-    public static function format_amount_for_min_placeholder($amount) {
+    public static function format_localized_amount($amount) {
         if ($amount === '' || $amount === null) {
             return '';
         }
@@ -139,19 +140,48 @@ trait WDP_Utils_Price_Trait {
         if (!is_finite($numeric)) {
             return '';
         }
-        if (!function_exists('wc_get_price_decimal_separator')) {
-            return (string) (abs($numeric - round($numeric)) < 0.0000001 ? (int) round($numeric) : round($numeric, 2));
-        }
-        $dec = wc_get_price_decimal_separator();
-        $thousands = wc_get_price_thousand_separator();
-        $dp = absint(wc_get_price_decimals());
-        $formatted = number_format($numeric, $dp, $dec, $thousands);
-        if ($dp > 0 && strpos($formatted, $dec) !== false) {
-            $parts = explode($dec, $formatted, 2);
-            $whole = $parts[0];
-            $frac = isset($parts[1]) ? rtrim($parts[1], '0') : '';
-            $formatted = $frac !== '' ? $whole . $dec . $frac : $whole;
-        }
-        return $formatted;
+        $dp        = function_exists('wc_get_price_decimals') ? absint(wc_get_price_decimals()) : 2;
+        $dec       = function_exists('wc_get_price_decimal_separator') ? (string) wc_get_price_decimal_separator() : '.';
+        $thousands = function_exists('wc_get_price_thousand_separator') ? (string) wc_get_price_thousand_separator() : ',';
+        return number_format($numeric, $dp, $dec, $thousands);
+    }
+
+    /**
+     * Tutar alanı yer tutucusu: "min: " + format_localized_amount (açık/hata/AJAX aynı metin).
+     *
+     * @param float|string $amount Ham tutar.
+     * @return string
+     */
+    public static function format_min_placeholder($amount) {
+        $n = self::format_localized_amount($amount);
+        return $n === '' ? '' : ('min: ' . $n);
+    }
+
+    /**
+     * @param float|string $amount Ham tutar.
+     * @return string
+     */
+    public static function format_amount_for_min_placeholder($amount) {
+        return self::format_localized_amount($amount);
+    }
+
+    /**
+     * WooCommerce sembol konumu: left|left_space|right|right_space.
+     *
+     * @return string
+     */
+    public static function currency_position() {
+        $pos     = self::get_js_currency_settings()['symbolPosition'];
+        $allowed = array('left', 'left_space', 'right', 'right_space');
+        return in_array($pos, $allowed, true) ? $pos : 'left';
+    }
+
+    /**
+     * Tutar kabuğu CSS sınıfı (sembol konumu).
+     *
+     * @return string
+     */
+    public static function currency_position_class() {
+        return 'wdp-currency-pos-' . self::currency_position();
     }
 }

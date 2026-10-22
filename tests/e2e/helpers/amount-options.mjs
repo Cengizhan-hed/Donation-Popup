@@ -16,7 +16,7 @@ import {
   makeFailure,
 } from './checks.mjs';
 import { getProductMeta, setProductMeta } from './staging-wp-meta.mjs';
-import { requireFixtureRole } from './fixtures.mjs';
+import { requireFixtureRole, mutationBrowserContext } from './fixtures.mjs';
 
 const CHECK_MS = 20000;
 const RECOMMENDED_META = '_amount_preset_recommended';
@@ -208,6 +208,7 @@ export async function runAmountOptionsChecks({
   listPagePath,
   failures,
   stats,
+  createAdminContext,
 }) {
   const checks = [];
   const baseUrl = env.E2E_BASE_URL;
@@ -232,7 +233,7 @@ export async function runAmountOptionsChecks({
     return;
   }
 
-  const ctx = await browser.newContext(contextOpts);
+  const ctx = await mutationBrowserContext(browser, contextOpts, createAdminContext);
   const page = await ctx.newPage();
 
   const pass = (id) => {

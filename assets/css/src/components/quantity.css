@@ -105,6 +105,11 @@ html body :is(.wdp-modal, .wdp-donation-form) :is(
   transform: none;
 }
 
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-custom-price-shell.wdp-currency-pos-right,
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-custom-price-shell.wdp-currency-pos-right_space {
+  flex-direction: row-reverse;
+}
+
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-custom-price-currency {
   flex: 0 0 auto;
   display: flex;
@@ -119,6 +124,12 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-custom-price-currency {
   line-height: 1;
   user-select: none;
   pointer-events: none;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-custom-price-shell.wdp-currency-pos-right .wdp-custom-price-currency,
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-custom-price-shell.wdp-currency-pos-right_space .wdp-custom-price-currency {
+  padding-inline-start: var(--wdp-space-2, 0.5rem);
+  padding-inline-end: var(--wdp-input-padding-x, 14px);
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-custom-price-shell :is(
@@ -155,6 +166,18 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-custom-price-shell :is(
   cursor: text;
   position: relative;
   z-index: 2;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-custom-price-shell.wdp-currency-pos-right :is(
+  .wdp-custom-price-input,
+  .wdp-sadaka-custom-price-input
+)[type="number"],
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-custom-price-shell.wdp-currency-pos-right_space :is(
+  .wdp-custom-price-input,
+  .wdp-sadaka-custom-price-input
+)[type="number"] {
+  padding-inline-start: var(--wdp-input-padding-x, 14px);
+  padding-inline-end: 0;
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-custom-price-shell :is(

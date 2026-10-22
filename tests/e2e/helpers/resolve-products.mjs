@@ -3,6 +3,7 @@
  * Store API / sabit ID yok: WP post list kaynak.
  */
 import { loadDeployEnvSilent, remote, wpCliPath } from './wp-remote.mjs';
+import { loadFixtures } from './fixtures.mjs';
 
 /**
  * @param {string} name
@@ -81,11 +82,36 @@ export async function fillMissingProductSlugs(env) {
   /** @type {Array<{check:string,description:string}>} */
   env._roleSkips = Array.isArray(env._roleSkips) ? env._roleSkips : [];
 
+  function applyFixtureRole(role) {
+    const data = loadFixtures(env);
+    const row = data?.roles?.[role];
+    if (!row?.id) return false;
+    const key = `E2E_PRODUCT_${role.toUpperCase()}`;
+    const slug = String(row.slug || '').trim();
+    const path = String(row.path || '').trim();
+    const url = String(row.url || '').trim();
+    if (path) env[key] = path;
+    else if (slug) env[key] = slug;
+    else if (url) env[key] = url;
+    env._resolvedProducts[role] = {
+      id: Number(row.id) || 0,
+      slug,
+      title: String(row.name || ''),
+      path,
+      url,
+      fromFixture: true,
+    };
+    env._fixtureRoles = Array.isArray(env._fixtureRoles) ? env._fixtureRoles : [];
+    if (!env._fixtureRoles.includes(role)) env._fixtureRoles.push(role);
+    return true;
+  }
+
   const roles = ['fixed', 'custom', 'shares', 'campaign'];
   for (const role of roles) {
     const key = `E2E_PRODUCT_${role.toUpperCase()}`;
     const spec = profile.products[role];
     if (!spec) {
+      if (applyFixtureRole(role)) continue;
       env[key] = '';
       const note =
         profile.unavailableRoles?.[role] ||
@@ -118,6 +144,7 @@ export async function fillMissingProductSlugs(env) {
       resolved[role].id = Number(spec.id) || 0;
     }
     if (!env[key]) {
+      if (applyFixtureRole(role)) continue;
       env._roleSkips.push({
         check: `role-${role}`,
         description: `${profile.id}: ${role} ürünü çözülemedi (ad=${spec.name || '—'}) → atla`,
