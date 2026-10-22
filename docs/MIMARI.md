@@ -456,13 +456,15 @@ Kaynak rehber: `docs/AYARLAR.md`. Teknik varsayılanlar normalizer / placement /
 | `npm run pack` | `build` + `scripts/package-wp-plugin.sh` | `package.json:14` |
 | `.distignore` | ZIP dışı: node_modules, .env*, docs, tests, tools, scripts, vendor… | `.distignore:4-38` |
 | `scripts/package-wp-plugin.sh` | rsync exclude → admin CSS minify → (DEST’te tools yoksa bundle yeniden denemesi uyarıya düşebilir) → prune → `build/woo-donation-popup.zip` | `scripts/package-wp-plugin.sh:57-119` |
-| `npm run deploy:staging` | `scripts/deploy-staging.mjs` | `package.json` |
-| `npm run deploy:ikram` / `ship:ikram` | rsync + SSH alias `ikramaid` (`--dry-run` kuru çalıştırma); ardından `e2e:quick --env ikram` | `scripts/deploy-ikram.mjs`, `scripts/ship-ikram.mjs` |
+| `npm run deploy:staging` / `deploy:ikram` | Ortak `scripts/lib/ship-core.mjs` (e2e yok). `--dry-run` uzak yazmaz; `--rollback` son yedekten. | `scripts/deploy-staging.mjs`, `scripts/deploy-ikram.mjs` |
+| `npm run ship:staging` / `ship:ikram` | Güvenli zincir + (çıkış 0 ise) `e2e:quick`. Ortam farkı yalnız profil. | `scripts/ship-staging.mjs`, `scripts/ship-ikram.mjs`, `scripts/lib/ship-core.mjs` |
 | `npm run ikram:wp` | Ikram WP-CLI köprüsü (yalnız alias `ikramaid`; kara liste yıkıcı komutlar) | `scripts/ikram-wp.mjs`, `scripts/lib/ikram-wp-guard.mjs` |
 | Canlı kilidi | İzin listesi: `staging30.hedefdernegi.org` + `ikramaid.uk`. Kilit klasör yoluna göre (`allowedRoot`). Kara liste: `hedefdernegi.org` (canlı). Uzak hedef **tek kaynak** = profil JSON + `ALLOWED_DEPLOY_TARGETS`. `.env.deploy*` / `.env.e2e*` hedef anahtarları (`DEPLOY_SITE_URL`, `DEPLOY_WP_PATH`, `DEPLOY_SSH_ALIAS`, `DEPLOY_SSH_*`, `E2E_BASE_URL`) uzak profilde kullanılmaz (farklıysa tek satır uyarı; canlıysa `KARA LİSTE`; koşu profille devam). `spawnGuarded` üçlüsü yine izin listesiyle birebir. | `scripts/lib/deploy-guards.mjs` `applyAllowlistOverEnv` |
 | Uzak doğrulama | `validateRemoteSiteUrl` birebir eşleşme | `scripts/lib/deploy-guards.mjs` |
-| `npm run ship:staging` | deploy + `e2e:quick --open-report` | `scripts/ship-staging.mjs` |
+| `npm run ship:staging` | güvenli zincir + `e2e:quick --open-report` | `scripts/ship-staging.mjs` |
 | Rsync dışlama | `.distignore` tek kaynak (`pack-excludes.mjs`) | `scripts/lib/pack-excludes.mjs` |
+
+**Güvenli kurulum zinciri (`ship-core.mjs`, staging + ikram):** 1) `verify` + `test` + `pack`; kanarya TEMİZ değilse dur. 2) `remote:discover` REMOTE-BLOCKED kuralı (ölçüm/SMS aktif → çıkış 3, kurulum yok). 3) Ön anlık görüntü `build/migration/<env>-pre-<sürüm>-<zaman>.json` (git dışı; değer konsola yok). 4) Yedek: izinli kök `wdp-backups/` altında eklenti zip + yalnız `wdp_*` seçenek JSON. 5) rsync (`--delete` yalnız eklenti dizini) → etkinleştir + `WDP_Migrations::maybe_run` + önbellek. 6) Sağlık (otomatik, siteye özel URL yok): `wp eval-file` ile PHP fatal yok / eklenti aktif / sürüm = paket / `needs_run()=false`; HTTP (Node fetch, tarayıcısız) ana sayfa, Woo mağaza, ilk yayımlanmış gerçek ürün, kısa kod/blok sayfası (`[wdp_` / `wp:wdp` / `woo-donation` / Elementor `wdp-donation-form`/`wdp-donations`; yoksa atlanır), wp-admin. HTTP istekleri `wpCliAuth` çerezi ile (Coming soon duvarı yönetici gibi). Her biri 200, critical/fatal yok; ürün ve eklenti sayfasında `wdp-` işaret. Tek satır özet. 7) Sağlık KIRMIZI → otomatik geri dönüş (zip + `wdp_*` JSON + önbellek + sağlık tekrar) ve çıkış ≠ 0. 8) Son anlık + `migration-compare`: KAYBOLDU/VARSAYILANA/DEĞİŞTİ > 0 → UYARI, çıkış **2**, geri dönüş yok (Claude karar verir); sonra kanarya (yalnız eklenti seçenekleri değişebilir). `--dry-run`: uzak yazma 0, plan `build/ship/<env>-<zaman>.md`.
 
 ### Göç provası
 
@@ -556,7 +558,7 @@ Güvenli alan (10.34.0 + 10.34.2): alt CTA `env(safe-area-inset-bottom)` + JS `-
 
 ### ship:ikram ve güvenlik kilidi
 
-`scripts/deploy-ikram.mjs`: verify + test + pack → uzak eklenti **dizinini** (`wp plugin path SLUG --dir`; dosya yolu `normalizeRemotePluginDir` ile düzeltilir) zip yedekle (`$HOME/wdp-backups`) → rsync kaynak/hedef sonda slash + `--delete` yalnız eklenti dizini + `.distignore` dışlamaları → activate + migrations → `wp eval 'echo 1;'` → `wp sg purge` / `wp cache flush` / liste cache bump. `--dry-run` uzak yazmaz.
+`scripts/lib/ship-core.mjs` (ikram profili): yukarıdaki güvenli zincir; rsync kaynak/hedef sonda slash + `--delete` yalnız eklenti dizini + `.distignore`. Eklenti dizini `wp plugin path SLUG --dir` (`normalizeRemotePluginDir`). `--dry-run` uzak yazmaz. Özet `build/ship/ikram-<zaman>.md`.
 
 **Ikram etkileşimi yalnız repo içi node scriptleri üzerinden:** `npm run ikram:wp -- …` / `deploy:ikram` / `ship:ikram`. Doğrudan `ssh` / `rsync` yazılmaz (Cursor deny). `ikram:wp` kara listesi: `db drop/reset`, `site empty`, `user delete`, `post delete`, `plugin delete/uninstall`, `option update/delete`. İzin: plugin list/get/status/path, option get, post list/get, wc …, cache flush, sg purge, eval (yıkıcı PHP yok), eval-file `tests/e2e/helpers/cleanup-e2e.php` veya `tests/e2e/helpers/e2e-temp-product.php` (yalnız `_wdp_e2e_test=1`). Builtin: `plugin-health`, `php-ok`, `debug-log`, `gateways`.
 
