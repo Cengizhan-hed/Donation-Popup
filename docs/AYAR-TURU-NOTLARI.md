@@ -405,3 +405,14 @@ Kullanıcı yönergesi önceki tüm görev metinlerinin yerini aldı; CLAUDE.md 
 | Teknik karar (Claude) | Faz 1 üç paralel worktree parçası: 1A kilit/profil/cli.json/canlı tarama, 1B ölçüm engeli/uzakta sipariş yok/oturum, 1C salt okunur keşif |
 | Faz 2 riski | Canlı 10.3.1 git geçmişinde yok (ilk commit sonrası); göç adımları 10.27.0'dan başlıyor. 10.3.1 ayarları "ilk kurulum" sanılıp varsayılana dönebilir. Karar: önce staging30'dan 10.3.1 kaynağı + ayar anlık görüntüsü (yerel, git dışı) ile YEREL prova, sonra staging30 |
 | Site adı geçişleri (Faz 6) | `woo-donation-popup.php:4` açıklama "Bu eklenti Hedef Derneği tarafından hazırlanmaktadır"; `:5` Author "Hedef Derneği"; README.md:47 (`/hedefdev/` örneği), :71 (hedefdernegi yol örneği), :400 ("Ikram Aid uyumu" değişiklik günlüğü); betik adları `scripts/{deploy,ship}-ikram.mjs`, `ikram-wp.mjs`, `lib/ikram-wp-guard.mjs`; `.env.*.ikram.example`; docs/CLAUDE.md (iç belge). Eklenti kodu (includes/assets/templates/blocks) temiz |
+
+## FAZ 1 KEŞİF (2026-10-22, salt okunur)
+
+| Ortam | Bulgu |
+|------|-------|
+| staging30 | WP 7.1.3, WC 11.2.1, PHP 8.2, Avada, tr_TR, TRY 0 ondalık, binlik "." ondalık "." (ikisi aynı!), sembol solda, TR, vergi kapalı, HPOS açık, eklenti 10.3.1 (wdp seçeneği 10), 38 aktif eklenti. Ödeme: yalnız POS Entegratör (gpos) açık. E-posta: WP Mail SMTP (mailer `mail`). SMS: Netgsm. wp-cron 71 kanca |
+| staging30 ENGEL | facebook-for-woocommerce, official-facebook-pixel, google-listings-and-ads, google-site-kit AKTİF (kullanıcı etkisiz sanıyordu) → uzak koşu DURDURULDU, kullanıcıya bildirildi. Sepete ekleme kancasında: netgsm, google-site-kit, facebook-for-woocommerce, code-snippets (sunucu tarafı olay gönderebilir) |
+| staging30 görünürlük | blog_public=1, coming soon kapalı (arama motorlarına açık) — kritik kapı, kullanıcıya soruldu |
+| Ikram | WP 7.1.3, WC 11.2.1, blocksy-child, en_US, GBP 2 ondalık "," ".", GB, HPOS açık, eklenti 10.34.2, 10 aktif eklenti; ölçüm/SMS/SMTP/webhook yok; ödeme yöntemlerinin hepsi kapalı; coming soon açık, blog_public=0. Sepet/ödeme klasik |
+| Ikram bootstrap | 7 private + gizli işaretli test ürünü (id 913–919), fixtures build/e2e/fixtures-ikram-aid.json |
+| 10.3.1 kaynağı | staging30'dan salt okunur indirildi → build/migration/source/10.3.1 (git dışı) |
