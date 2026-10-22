@@ -8,6 +8,7 @@ import { spawnSync } from 'node:child_process';
 import { ROOT } from './env-root.mjs';
 import { loadDeployEnvSilent, remote } from './wp-remote.mjs';
 import { loadRegistry } from './run-registry.mjs';
+import { loadFixtures, verifiedFixtureIds } from './fixtures.mjs';
 import { peekActiveProfile, isRemoteProfile, resolveAllowedRemoteTarget } from './profile.mjs';
 import { buildGuardedEvalFileCommand } from '../../../scripts/lib/deploy-guards.mjs';
 import { spawnGuarded } from '../../../scripts/lib/remote-guard.mjs';
@@ -133,7 +134,7 @@ export function evaluateCanaryAgainstBaseline(baseline, current, registry, opts 
       diffs: updating ? [] : [{ change: 'missing-baseline' }],
     };
   }
-  const cmp = compareWithRegistry(baseline, current, registry);
+  const cmp = compareWithRegistry(baseline, current, registry, opts);
   return {
     ok: cmp.ok,
     missingBaseline: false,
@@ -141,6 +142,19 @@ export function evaluateCanaryAgainstBaseline(baseline, current, registry, opts 
     status: cmp.ok ? 'TEMİZ' : 'KIRMIZI',
     diffs: cmp.diffs || [],
   };
+}
+
+/**
+ * Bootstrap sonrası / fixture silinince: yalnız beklenen farklar varken baseline yaz.
+ * @param {string} envId
+ * @param {object} current
+ * @param {{ ok?: boolean }} cmp
+ */
+export function updateCanaryBaselineIfClean(envId, current, cmp) {
+  if (!cmp || !cmp.ok) return { updated: false, file: null };
+  const file = canaryBaselinePath(envId);
+  writeSnapshot(current, file);
+  return { updated: true, file };
 }
 
 export function formatCanaryStatusLine(beforeOk, afterOk, expectedNew = 0) {
@@ -186,6 +200,7 @@ export function snapshotCanary() {
 
 export function compareCanary(before, after, opts = {}) {
   const allowedCreated = new Set((opts.allowedCreatedIds || []).map((n) => Number(n)).filter((n) => n > 0));
+  const allowedDeleted = new Set((opts.allowedDeletedIds || []).map((n) => Number(n)).filter((n) => n > 0));
   const mutated = new Set((opts.mutatedIds || []).map((n) => Number(n)).filter((n) => n > 0));
   const diffs = [];
   const allowedNewProducts = [...(after.posts || [])].filter(
@@ -194,6 +209,12 @@ export function compareCanary(before, after, opts = {}) {
       !(before.posts || []).some((b) => Number(b.id) === Number(a.id)) &&
       String(a.type) === 'product'
   ).length;
+  const allowedDeletedProducts = [...(before.posts || [])].filter(
+    (b) =>
+      allowedDeleted.has(Number(b.id)) &&
+      !(after.posts || []).some((a) => Number(a.id) === Number(b.id)) &&
+      String(b.type) === 'product'
+  ).length;
   const beforeMap = new Map((before.posts || []).map((p) => [Number(p.id), p]));
   const afterMap = new Map((after.posts || []).map((p) => [Number(p.id), p]));
   const ids = new Set([...beforeMap.keys(), ...afterMap.keys()]);
@@ -201,6 +222,7 @@ export function compareCanary(before, after, opts = {}) {
     const b = beforeMap.get(id);
     const a = afterMap.get(id);
     if (b && !a) {
+      if (allowedDeleted.has(id)) continue;
       if (allowedCreated.has(id) && String(b.mark || '') && String(b.mark) !== '1') continue;
       diffs.push({ id, change: 'deleted', type: b.type, status: b.status, titleHint: b.type });
       continue;
@@ -237,6 +259,7 @@ export function compareCanary(before, after, opts = {}) {
     const right = Number(after[countKey] ?? 0);
     if (left === right) continue;
     if (countKey === 'product_count' && right - left === allowedNewProducts) continue;
+    if (countKey === 'product_count' && left - right === allowedDeletedProducts) continue;
     diffs.push({ option: countKey, change: 'count', from: String(left), to: String(right) });
   }
   return { ok: diffs.length === 0, diffs };
@@ -273,11 +296,27 @@ export function formatCanaryDiff(diff) {
   return parts.join('\n') || 'kanarya farkları (0):';
 }
 
-export function compareWithRegistry(before, after, registry) {
+/**
+ * Beklenen kayıtlar = koşu defteri ∪ doğrulanmış fixture ürünleri.
+ * Fixture: id dosyada + uzakta `_wdp_e2e_test` işaretle eşit + durum private.
+ * @param {object} before
+ * @param {object} after
+ * @param {object} [registry]
+ * @param {{ fixtures?: object|null, envId?: string, allowedDeletedIds?: number[] }} [opts]
+ */
+export function compareWithRegistry(before, after, registry, opts = {}) {
   const r = registry || loadRegistry();
+  let fixturesData = opts.fixtures;
+  if (fixturesData === undefined && opts.envId) {
+    fixturesData = loadFixtures(opts.envId);
+  }
+  const fixtureIds = fixturesData ? verifiedFixtureIds(after, fixturesData) : [];
+  const createdIds = (r.created || []).map((x) => x.id);
+  const allowedCreatedIds = [...new Set([...createdIds, ...fixtureIds].map(Number).filter((n) => n > 0))];
   return compareCanary(before, after, {
-    allowedCreatedIds: (r.created || []).map((x) => x.id),
+    allowedCreatedIds,
     mutatedIds: (r.mutated || []).map((x) => x.id),
+    allowedDeletedIds: opts.allowedDeletedIds,
   });
 }
 

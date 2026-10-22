@@ -106,6 +106,10 @@ function wdp_e2e_evaluate_delete($args) {
 	if ($mark !== $run_id) {
 		return array('ok' => false, 'reason' => 'unmarked');
 	}
+	$fixtures = isset($args['fixture_ids']) && is_array($args['fixture_ids']) ? array_map('intval', $args['fixture_ids']) : array();
+	if ($fixtures && in_array($id, $fixtures, true) && empty($args['allow_fixtures'])) {
+		return array('ok' => false, 'reason' => 'fixture-protected');
+	}
 	return array('ok' => true, 'reason' => '');
 }
 
@@ -203,6 +207,18 @@ function wdp_e2e_core_page_ids() {
 	return array_values(array_unique(array_filter($ids)));
 }
 
+$fixture_ids = array();
+$fx_raw      = (string) getenv('WDP_E2E_FIXTURE_IDS');
+if ($fx_raw !== '') {
+	foreach (explode(',', $fx_raw) as $piece) {
+		$nid = absint($piece);
+		if ($nid > 0) {
+			$fixture_ids[] = $nid;
+		}
+	}
+	$fixture_ids = array_values(array_unique($fixture_ids));
+}
+
 $order_ids   = wdp_e2e_registry_ids($registry, 'order');
 $product_ids = wdp_e2e_registry_ids($registry, 'product');
 $user_ids    = wdp_e2e_registry_ids($registry, 'user');
@@ -275,6 +291,7 @@ foreach ($product_ids as $pid) {
 			'core_ids'      => $core_ids,
 			'type'          => $type === 'product_variation' ? 'product' : $type,
 			'mark'          => $mark,
+			'fixture_ids'   => $fixture_ids,
 		)
 	);
 	if (!$g['ok']) {

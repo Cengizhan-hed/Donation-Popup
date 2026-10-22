@@ -110,6 +110,10 @@ export function evaluateDeleteGuard(args) {
     return { ok: false, reason: `type-mismatch:${type}` };
   }
   if (String(post.mark || '') !== String(args.runId)) return { ok: false, reason: 'unmarked' };
+  const fixtureIds = (args.fixtureIds || []).map(Number).filter((n) => n > 0);
+  if (!args.allowFixtures && fixtureIds.includes(id)) {
+    return { ok: false, reason: 'fixture-protected' };
+  }
   return { ok: true, reason: '' };
 }
 
@@ -185,6 +189,9 @@ export async function safeDeleteMarked(args) {
   if (!registryHas(id, expectedType) && !registryHas(id)) {
     throw new Error(`safe-remote-write: kayıt defterinde yok (id=${id} type=${expectedType})`);
   }
+  if (!args.allowFixtures && isFixtureProductId(id)) {
+    throw new Error('safe-remote-write: fixture ürün silinmez (yalnız --remove-fixtures)');
+  }
   const registryIds = registry.created.map((x) => Number(x.id));
   const coreIds = await loadCorePageIds();
   const post = await probePost(id);
@@ -195,6 +202,8 @@ export async function safeDeleteMarked(args) {
     coreIds,
     runId: registry.runId,
     post,
+    fixtureIds: args.fixtureIds,
+    allowFixtures: !!args.allowFixtures,
   });
   if (!guard.ok) {
     throw new Error(`safe-remote-write silme reddedildi: ${guard.reason} (id=${id})`);

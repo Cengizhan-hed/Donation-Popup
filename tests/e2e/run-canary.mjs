@@ -15,6 +15,7 @@ import { isRemoteFrozen, FREEZE_MESSAGE } from '../../scripts/lib/remote-guard.m
 import { canonicalEnv } from '../../scripts/lib/remote-discover-lib.mjs';
 import { loadProfile, isRemoteProfile, setActiveProfile } from './helpers/profile.mjs';
 import { loadRegistry } from './helpers/run-registry.mjs';
+import { loadFixtures } from './helpers/fixtures.mjs';
 import {
   snapshotCanary,
   snapshotCanaryLocal,
@@ -47,7 +48,7 @@ export function parseCanaryArgs(argv = process.argv.slice(2)) {
 }
 
 /**
- * @param {{ envName: string, updateBaseline?: boolean, snapshotFn?: () => object, registry?: object }} opts
+ * @param {{ envName: string, updateBaseline?: boolean, snapshotFn?: () => object, registry?: object, fixtures?: object|null, baseline?: object|null }} opts
  */
 export function runCanary(opts) {
   const envName = canonicalEnv(opts.envName);
@@ -62,9 +63,12 @@ export function runCanary(opts) {
       : snapshotCanaryLocal();
 
   const registry = opts.registry || loadRegistry();
+  const fixtures = opts.fixtures !== undefined ? opts.fixtures : loadFixtures(profile.id);
   const health = evaluateCanaryHealth(current, envName, registry, {
     updateBaseline: !!opts.updateBaseline,
     baseline: opts.baseline,
+    fixtures,
+    envId: profile.id,
   });
   const pre = health.pre;
   const evald = health.evald;

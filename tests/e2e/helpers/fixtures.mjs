@@ -5,7 +5,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { ROOT } from './env-root.mjs';
-import { peekActiveProfile } from './profile.mjs';
+import { loadProfile, peekActiveProfile } from './profile.mjs';
 
 export const FIXTURE_MARK_PREFIX = 'fixture';
 
@@ -136,8 +136,23 @@ export function profileIdOf(env) {
   return String(env?._profile?.id || peekActiveProfile()?.id || env?.E2E_PROFILE_ID || 'local');
 }
 
+/**
+ * `--env ikram` → `ikram-aid` (dosya `fixtures-ikram-aid.json`).
+ * @param {string|object|null|undefined} envOrId
+ */
+export function resolveFixtureProfileId(envOrId) {
+  if (envOrId && typeof envOrId === 'object') return profileIdOf(envOrId);
+  const raw = String(envOrId || '').trim();
+  if (!raw) return profileIdOf({});
+  try {
+    return String(loadProfile(raw).id || raw);
+  } catch {
+    return raw.replace(/[^a-z0-9._-]/gi, '') || 'local';
+  }
+}
+
 export function loadFixtures(envOrId) {
-  const id = typeof envOrId === 'string' ? envOrId : profileIdOf(envOrId || {});
+  const id = resolveFixtureProfileId(envOrId);
   const file = fixturesPathFor(id);
   if (!fs.existsSync(file)) return null;
   try {
@@ -147,12 +162,61 @@ export function loadFixtures(envOrId) {
   }
 }
 
+export function normalizeFixtureMark(raw) {
+  return String(raw || '')
+    .replace(/^_wdp_e2e_test=/, '')
+    .trim();
+}
+
+/**
+ * Fixture dosyasındaki ürün satırları (doğrulama yok).
+ * @param {object|null|undefined} data
+ * @returns {Array<{ id: number, role: string, mark: string, type: string }>}
+ */
+export function fixtureProductRecords(data) {
+  if (!data || !data.roles || typeof data.roles !== 'object') return [];
+  const fallback = normalizeFixtureMark(data.runId || data.mark || '');
+  const out = [];
+  for (const [role, row] of Object.entries(data.roles)) {
+    const id = Math.abs(Number.parseInt(String(row?.id), 10) || 0);
+    const mark = normalizeFixtureMark(row?.mark || fallback);
+    if (id <= 0 || !mark) continue;
+    out.push({
+      id,
+      role: String(role),
+      mark,
+      type: String(row?.type || 'product'),
+    });
+  }
+  return out;
+}
+
+/**
+ * Fixture ürünü beklenen sayılır: id dosyada, uzakta `_wdp_e2e_test` = işaret, durum private.
+ * Kanarya anlık görüntüsündeki `mark` zaten `_wdp_e2e_test` meta’sı (ek uzak komut yok).
+ * @param {object|null|undefined} snapshot
+ * @param {object|null|undefined} fixturesData
+ * @returns {number[]}
+ */
+export function verifiedFixtureIds(snapshot, fixturesData) {
+  const posts = Array.isArray(snapshot?.posts) ? snapshot.posts : [];
+  const byId = new Map(posts.map((p) => [Number(p.id), p]));
+  const ids = [];
+  for (const rec of fixtureProductRecords(fixturesData)) {
+    const post = byId.get(rec.id);
+    if (!post) continue;
+    if (normalizeFixtureMark(post.mark) !== rec.mark) continue;
+    if (String(post.status || '') !== 'private') continue;
+    ids.push(rec.id);
+  }
+  return ids;
+}
+
 export function isFixtureProductId(productId, env) {
   const id = Math.abs(Number.parseInt(String(productId), 10) || 0);
   if (id <= 0) return false;
   const data = loadFixtures(env);
-  if (!data || !data.roles) return false;
-  return Object.values(data.roles).some((r) => Number(r?.id) === id);
+  return fixtureProductRecords(data).some((r) => r.id === id);
 }
 
 /**

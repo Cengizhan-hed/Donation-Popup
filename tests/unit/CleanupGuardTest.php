@@ -87,6 +87,23 @@ class CleanupGuardTest extends TestCase {
 		$this->assertSame('core-blacklist', $g['reason']);
 	}
 
+	public function test_fixture_ids_are_protected() {
+		$g = wdp_e2e_evaluate_delete(
+			array(
+				'id'            => 913,
+				'run_id'        => 'run-abc',
+				'expected_type' => 'product',
+				'registry_ids'  => array(913),
+				'core_ids'      => array(),
+				'type'          => 'product',
+				'mark'          => 'run-abc',
+				'fixture_ids'   => array(913),
+			)
+		);
+		$this->assertFalse($g['ok']);
+		$this->assertSame('fixture-protected', $g['reason']);
+	}
+
 	public function test_mark_must_equal_run_id_not_one() {
 		$g = wdp_e2e_evaluate_delete(
 			array(

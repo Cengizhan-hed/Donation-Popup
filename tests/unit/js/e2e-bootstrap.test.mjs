@@ -8,6 +8,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { ROOT } from '../../../tests/e2e/helpers/env-root.mjs';
 import { describeBootstrapPlan } from '../../../tests/e2e/helpers/fixtures.mjs';
+import { parseArgs } from '../../../scripts/e2e-bootstrap.mjs';
+import { updateCanaryBaselineIfClean } from '../../../tests/e2e/helpers/canary.mjs';
 import { checkRemoteTarget, ALLOWED_DEPLOY_TARGETS, buildGuardedEvalFileCommand } from '../../../scripts/lib/deploy-guards.mjs';
 
 const SCRIPT = path.join(ROOT, 'scripts/e2e-bootstrap.mjs');
@@ -53,6 +55,20 @@ describe('e2e:bootstrap dry-run', () => {
     assert.equal(plan.would, 'create');
     const shaped = describeBootstrapPlan('local', 'boot-dry', { dryRun: true });
     assert.equal(shaped.createsPages, false);
+  });
+
+  it('--remove-fixtures bayrağı parse edilir', () => {
+    const a = parseArgs(['--env', 'ikram', '--remove-fixtures']);
+    assert.equal(a.remove, true);
+    assert.equal(a.envId, 'ikram');
+    const b = parseArgs(['--env', 'staging', '--remove']);
+    assert.equal(b.remove, true);
+  });
+
+  it('baseline yalnız TEMİZ karşılaştırmada yazılır (karar, disk yok)', () => {
+    const skip = updateCanaryBaselineIfClean('local', { posts: [] }, { ok: false });
+    assert.equal(skip.updated, false);
+    assert.equal(skip.file, null);
   });
 
   it('uzak bootstrap PHP yazma kancası (sayfa/option/menü) yok; kilitten geçer', () => {
