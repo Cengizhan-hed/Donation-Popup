@@ -32,7 +32,7 @@ async function main() {
   const startedAt = new Date().toISOString();
   const started = Date.now();
   console.log('Capturing baseline → tests/e2e/__baseline__/');
-  const { failures, screens = [], shots = [], stats = {} } = await captureAll({
+  const { failures, screens = [], shots = [], stats = {}, blocked_trackers = { total: 0, byHost: {} } } = await captureAll({
     env,
     outDir: BASELINE_DIR,
     runFunctional: false,
@@ -56,6 +56,7 @@ async function main() {
     changedScreens: [],
     newBaselineScreens: capturedScreens,
     note: 'e2e:baseline — ekranlar doğrudan __baseline__ altına yazıldı',
+    blocked_trackers,
   });
 
   if (failures.length) {

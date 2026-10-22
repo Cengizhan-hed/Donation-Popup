@@ -13,6 +13,7 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: 0,
   workers: 1,
+  // Yönetici oturumu: ensureAuth kilit dosyası; işçiler storageState paylaşır, kendileri giriş yapmaz.
   reporter: 'list',
   use: {
     trace: 'off',

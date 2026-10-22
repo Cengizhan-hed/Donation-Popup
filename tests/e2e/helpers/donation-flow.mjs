@@ -15,9 +15,10 @@ import {
   makeFailure,
 } from './checks.mjs';
 import { e2eEmail, markOrderAsE2E } from './test-cleanup.mjs';
-import { getActiveProfile } from './profile.mjs';
+import { getActiveProfile, isRemoteProfile } from './profile.mjs';
 import { checkoutPathFromUrl } from './checkout-setup.mjs';
 import { comingSoonQuery } from './coming-soon.mjs';
+import { textHasFormattedAmount } from './currency.mjs';
 
 const CHECK_MS = 25000;
 
@@ -89,6 +90,9 @@ export async function runDonationFlowChecks({
   const phone = profile.phone?.nationalExample || '5551234567';
   const email = e2eEmail();
   const checkoutPath = checkoutPathFromUrl(checkoutUrl || '', env.E2E_BASE_URL);
+  const remote = isRemoteProfile(profile);
+  const viewOnly = remote || !!skipOrderReason;
+  let filledAmount = profile.products?.custom?.min || 10;
 
   try {
     page.setDefaultTimeout(CHECK_MS);
@@ -118,6 +122,7 @@ export async function runDonationFlowChecks({
     const amount = shell.locator(SEL.customPrice).first();
     if (await amount.count()) {
       const min = profile.products?.custom?.min || 10;
+      filledAmount = min;
       await amount.fill(String(min));
     }
     const name = shell.locator(SEL.donorName).first();
@@ -190,10 +195,39 @@ export async function runDonationFlowChecks({
     }
     stats.passed += 1;
 
-    if (skipOrderReason || !offlineGateway) {
+    if (viewOnly) {
+      const nameEl = page.locator(
+        '.product-name, .wc-block-components-product-name, td.product-name, .cart_item .product-name a'
+      ).first();
+      let nameText = '';
+      if ((await nameEl.count()) > 0) {
+        nameText = ((await nameEl.textContent()) || '').trim();
+      }
+      if (!nameText) {
+        throw new Error('checkout-view-only: ödeme sayfasında ürün adı görünmüyor');
+      }
+      const bodyText = await page.locator('body').innerText();
+      if (!textHasFormattedAmount(bodyText, filledAmount, profile.currency)) {
+        throw new Error(
+          'checkout-view-only: WooCommerce biçimli tutar ödeme sayfasında görünmüyor'
+        );
+      }
       skips.push({
         check: `checkout-flow-order-${deviceId}`,
-        description: skipOrderReason || 'Sipariş tamamlama atlandı (çevrimdışı yöntem yok)',
+        description:
+          skipOrderReason ||
+          'Sipariş tamamlama atlandı (checkout-view-only; uzakta sipariş yok)',
+        detail: url,
+      });
+      stats.skipped += 1;
+      stats.passed += 1;
+      return;
+    }
+
+    if (!offlineGateway) {
+      skips.push({
+        check: `checkout-flow-order-${deviceId}`,
+        description: 'Sipariş tamamlama atlandı (çevrimdışı yöntem yok)',
         detail: url,
       });
       stats.skipped += 1;
