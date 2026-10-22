@@ -16,7 +16,15 @@ import {
   pathFromMaybeUrl,
   pickListPage,
   pickRoleProducts,
+  navTargetFromUrl,
+  isBareHomeNav,
+  assertProductNavTarget,
+  pickFixtureNavTarget,
+  decideScenarioProduct,
+  SCENARIO_PRODUCT_POLICY,
+  productNavPath,
 } from '../../../tests/e2e/helpers/catalog-core.mjs';
+import { overlayFixtureRoles } from '../../../tests/e2e/helpers/resolve-products.mjs';
 
 function captureWarn(fn) {
   const lines = [];
@@ -133,6 +141,46 @@ describe('permalink yolu', () => {
   });
 });
 
+describe('senaryo ürün politikası', () => {
+  it('üç grup tabloda; kinds boş değil', () => {
+    assert.equal(SCENARIO_PRODUCT_POLICY['visitor-list-shop'].source, 'published-only');
+    assert.equal(SCENARIO_PRODUCT_POLICY['product-form-panel-cart'].ifMissing, 'fixture-admin');
+    assert.equal(SCENARIO_PRODUCT_POLICY.popup.ifMissing, 'skip');
+    assert.ok(SCENARIO_PRODUCT_POLICY['visitor-list-shop'].kinds.includes('loop-donate'));
+    assert.ok(SCENARIO_PRODUCT_POLICY['product-form-panel-cart'].kinds.includes('panel'));
+    assert.ok(SCENARIO_PRODUCT_POLICY.popup.kinds.includes('popup'));
+  });
+});
+
+describe('fixture nav hedefi (private permalink)', () => {
+  const privateUrl = 'https://ikramaid.uk/?post_type=product&p=915';
+
+  it('sorgu dizesi korunur; path "/" ana sayfa sayılmaz', () => {
+    assert.equal(navTargetFromUrl(privateUrl), '/?post_type=product&p=915');
+    assert.equal(isBareHomeNav(privateUrl), false);
+    assert.equal(isBareHomeNav('/'), true);
+    assert.equal(isBareHomeNav('https://ikramaid.uk/'), true);
+    assert.equal(isBareHomeNav('/?post_type=product&p=915'), false);
+    assert.equal(productNavPath(privateUrl), '/?post_type=product&p=915');
+    assert.notEqual(productNavPath(privateUrl), '/');
+  });
+
+  it('path "/" ise tam URL veya ?p=; ana sayfa hata', () => {
+    assert.equal(
+      pickFixtureNavTarget({ id: 915, path: '/', url: privateUrl }),
+      privateUrl
+    );
+    assert.equal(
+      pickFixtureNavTarget({ id: 916, path: '/', url: 'https://ikramaid.uk/' }),
+      '/?post_type=product&p=916'
+    );
+    assert.equal(pickFixtureNavTarget({ id: 915, path: '/' }), '/?post_type=product&p=915');
+    assert.throws(() => assertProductNavTarget('/'), /ana sayfa/);
+    assert.throws(() => assertProductNavTarget('https://ikramaid.uk/'), /ana sayfa/);
+    assert.equal(assertProductNavTarget(privateUrl), privateUrl);
+  });
+});
+
 describe('env sayfa/ürün anahtarları uzak profilde yok sayılır', () => {
   it('uyarı değer içermez', () => {
     const r = inspectEnvPageProductKeys(
@@ -182,7 +230,7 @@ describe('yerel uzak-benzetim katalog', () => {
     const origLog = console.log;
     console.log = () => {};
     try {
-      await fillMissingProductSlugs(env, { catalog: FAKE_CATALOG });
+      await fillMissingProductSlugs(env, { catalog: FAKE_CATALOG, fixtures: null });
     } finally {
       console.log = origLog;
     }
@@ -223,5 +271,61 @@ describe('yerel uzak-benzetim katalog', () => {
     assert.equal(picked.custom.id, 101);
     assert.equal(picked.campaign.type, 'campaign');
     assert.equal(Object.prototype.hasOwnProperty.call(picked, 'hidden'), false);
+  });
+
+  it('Ikram: private fixture path "/" → tam URL; liste atlanır, panel yönetici', async () => {
+    const env = loadE2EEnv({ envId: 'ikram', parsed: {} });
+    const catalog = {
+      shop: { path: '/shop/' },
+      cart: { path: '/cart/' },
+      checkout: { path: '/checkout/' },
+      list: { path: '/donations/' },
+      products: FAKE_CATALOG.products.filter((p) => p.type === 'custom' || p.type === 'fixed'),
+    };
+    const fixtures = {
+      roles: {
+        shares: {
+          id: 915,
+          name: 'WDP E2E Shares',
+          slug: 'wdp-e2e-shares',
+          path: '/',
+          url: 'https://ikramaid.uk/?post_type=product&p=915',
+        },
+        campaign: {
+          id: 916,
+          name: 'WDP E2E Campaign',
+          slug: 'wdp-e2e-campaign',
+          path: '/',
+          url: 'https://ikramaid.uk/?post_type=product&p=916',
+        },
+      },
+    };
+    const origLog = console.log;
+    console.log = () => {};
+    try {
+      await fillMissingProductSlugs(env, { catalog, fixtures });
+    } finally {
+      console.log = origLog;
+    }
+    assert.equal(env.E2E_PRODUCT_SHARES, 'https://ikramaid.uk/?post_type=product&p=915');
+    assert.equal(env.E2E_PRODUCT_CAMPAIGN, 'https://ikramaid.uk/?post_type=product&p=916');
+    assert.notEqual(env.E2E_PRODUCT_SHARES, '/');
+    assert.equal(env._resolvedProducts.shares.fromFixture, true);
+    assert.equal(env._resolvedProducts.shares.id, 915);
+    assert.equal(env._fixtureRoles.includes('shares'), true);
+    assert.equal(env._roleSkips.some((s) => s.check === 'role-shares'), false);
+    assert.ok(env._roleSkips.some((s) => s.check === 'loop-donate-shop-shares'));
+    assert.ok(env._roleSkips.some((s) => s.check === 'loop-donate-list-shares'));
+    assert.ok(env._roleSkips.some((s) => s.check === 'popup-shares'));
+    assert.ok(env._roleSkips.some((s) => s.check === 'popup-campaign'));
+    assert.equal(decideScenarioProduct(env, 'shares', 'loop-donate').action, 'skip');
+    assert.equal(decideScenarioProduct(env, 'shares', 'popup').action, 'skip');
+    assert.equal(decideScenarioProduct(env, 'shares', 'panel').action, 'run-admin');
+    assert.equal(decideScenarioProduct(env, 'shares', 'product-page').admin, true);
+    assert.equal(decideScenarioProduct(env, 'custom', 'loop-donate').action, 'run-visitor');
+    assert.equal(decideScenarioProduct(env, 'custom', 'popup').action, 'run-visitor');
+    overlayFixtureRoles(env, fixtures);
+    assert.equal(env._roleSkips.filter((s) => s.check === 'popup-shares').length, 1);
+    setActiveProfile(null);
   });
 });

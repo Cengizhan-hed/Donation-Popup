@@ -72,6 +72,32 @@ if (!function_exists('wdp_e2e_catalog_plugin_needles')) {
 			: parse_url($url, PHP_URL_PATH);
 		return is_string($path) && $path !== '' ? $path : '';
 	}
+
+	/**
+	 * Ürün gezintisi: sorgu dizesi korunur (private permalink `?p=`).
+	 *
+	 * @param mixed $url Permalink.
+	 * @return string
+	 */
+	function wdp_e2e_catalog_nav_target_from_url($url) {
+		$url = is_string($url) ? trim($url) : '';
+		if ($url === '') {
+			return '';
+		}
+		if (isset($url[0]) && ($url[0] === '/' || $url[0] === '?')) {
+			return $url[0] === '?' ? '/' . $url : $url;
+		}
+		$parts = function_exists('wp_parse_url') ? wp_parse_url($url) : parse_url($url);
+		if (!is_array($parts)) {
+			return '';
+		}
+		$path  = isset($parts['path']) && is_string($parts['path']) && $parts['path'] !== '' ? $parts['path'] : '/';
+		$query = isset($parts['query']) && is_string($parts['query']) && $parts['query'] !== '' ? '?' . $parts['query'] : '';
+		if (($path === '/' || $path === '') && $query === '') {
+			return '/';
+		}
+		return $path . $query;
+	}
 }
 
 if (!function_exists('wdp_e2e_catalog_page_entry')) {

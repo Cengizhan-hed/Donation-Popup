@@ -4,6 +4,7 @@
  */
 import { SEL } from './selectors.mjs';
 import { requireFixtureRole, mutationBrowserContext } from './fixtures.mjs';
+import { pickFixtureNavTarget, decideScenarioProduct } from './catalog-core.mjs';
 import { withCacheBust } from './env.mjs';
 import { comingSoonQuery } from './coming-soon.mjs';
 import { getActiveProfile } from './profile.mjs';
@@ -381,7 +382,7 @@ export async function runLayoutChecks({
       if (!path) {
         try {
           const fx = requireFixtureRole(env, type.key);
-          path = fx.path || fx.url;
+          path = fx.path || pickFixtureNavTarget(fx) || fx.url;
           productId = fx.id;
           fromFixture = true;
         } catch {
@@ -391,8 +392,15 @@ export async function runLayoutChecks({
       }
       for (const mode of modes) {
         const prefix = `layout-${type.key}-${mode}`;
-        if (fromFixture && mode === 'popup') {
-          skip(`${prefix}-private-list`, 'fixture private, ziyaretçi listesinde yok');
+        const layoutEnv = {
+          ...env,
+          _fixtureRoles: fromFixture
+            ? [type.key, ...(Array.isArray(env._fixtureRoles) ? env._fixtureRoles : [])]
+            : env._fixtureRoles,
+        };
+        const decision = decideScenarioProduct(layoutEnv, type.key, mode);
+        if (decision.action === 'skip') {
+          skip(`${prefix}-private-list`, decision.reason);
           continue;
         }
         let shell;

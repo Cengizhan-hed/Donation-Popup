@@ -236,9 +236,14 @@ foreach ($catalog as $role => $row) {
 	}
 	$permalink = get_permalink($id);
 	$path      = '';
-	if ($permalink) {
-		$u    = wp_parse_url($permalink);
-		$path = isset($u['path']) ? $u['path'] : '';
+	if (is_string($permalink) && $permalink !== '') {
+		$u     = function_exists('wp_parse_url') ? wp_parse_url($permalink) : parse_url($permalink);
+		$ppath = is_array($u) && !empty($u['path']) ? $u['path'] : '/';
+		$query = is_array($u) && !empty($u['query']) ? '?' . $u['query'] : '';
+		$path  = $ppath . $query;
+	}
+	if ($path === '' || $path === '/') {
+		$path = '/?post_type=product&p=' . (int) $id;
 	}
 	$roles[ $role ] = array(
 		'id'   => (int) $id,

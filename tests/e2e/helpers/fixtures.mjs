@@ -6,6 +6,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { ROOT } from './env-root.mjs';
 import { loadProfile, peekActiveProfile, isRemoteProfile } from './profile.mjs';
+import { pickFixtureNavTarget, assertProductNavTarget } from './catalog-core.mjs';
 
 export const FIXTURE_MARK_PREFIX = 'fixture';
 
@@ -300,11 +301,12 @@ export function requireFixtureRole(env, role) {
   }
   const id = Number(row.id);
   assertMutationTargetIsFixture(id, env, role);
+  const nav = assertProductNavTarget(pickFixtureNavTarget(row), `fixture:${role}`);
   return {
     id,
     name: String(row.name || ''),
     slug: String(row.slug || ''),
-    url: String(row.url || ''),
-    path: String(row.path || ''),
+    url: String(row.url || nav),
+    path: nav,
   };
 }

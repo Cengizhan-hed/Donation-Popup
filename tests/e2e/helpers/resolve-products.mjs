@@ -8,6 +8,11 @@ import { isRemoteProfile } from './profile.mjs';
 import {
   applyRemoteCatalog,
   parseCatalogJson,
+  DONATION_ROLES,
+  pickFixtureNavTarget,
+  assertProductNavTarget,
+  navTargetFromUrl,
+  decideScenarioProduct,
 } from './catalog-core.mjs';
 
 /**
@@ -57,16 +62,21 @@ export async function fillMissingProductSlugs(env, opts = {}) {
       return env;
     }
     applyRemoteCatalog(env, fetched.catalog);
+    const fx = Object.prototype.hasOwnProperty.call(opts, 'fixtures')
+      ? opts.fixtures
+      : loadFixtures(env);
+    overlayFixtureRoles(env, fx);
     const mapLog = {
       roles: Object.fromEntries(
-        ['fixed', 'custom', 'shares', 'campaign'].map((r) => [
+        DONATION_ROLES.map((r) => [
           r,
-          env._resolvedProducts[r]?.path || '(yok)',
+          env._resolvedProducts[r]?.nav || env._resolvedProducts[r]?.path || '(yok)',
         ])
       ),
       ids: Object.fromEntries(
         Object.entries(env._resolvedProducts).map(([k, v]) => [k, v.id])
       ),
+      fixture: Array.isArray(env._fixtureRoles) ? env._fixtureRoles : [],
       shop: env.E2E_SHOP_PAGE || '(yok)',
       list: env.E2E_LIST_PAGE || '(yok)',
       cart: env.E2E_CART_PAGE || '(yok)',
@@ -88,26 +98,7 @@ function fillLocalProductSlugs(env) {
 
   function applyFixtureRole(role) {
     const data = loadFixtures(env);
-    const row = data?.roles?.[role];
-    if (!row?.id) return false;
-    const key = `E2E_PRODUCT_${role.toUpperCase()}`;
-    const slug = String(row.slug || '').trim();
-    const path = String(row.path || '').trim();
-    const url = String(row.url || '').trim();
-    if (path) env[key] = path;
-    else if (slug) env[key] = slug;
-    else if (url) env[key] = url;
-    env._resolvedProducts[role] = {
-      id: Number(row.id) || 0,
-      slug,
-      title: String(row.name || ''),
-      path,
-      url,
-      fromFixture: true,
-    };
-    env._fixtureRoles = Array.isArray(env._fixtureRoles) ? env._fixtureRoles : [];
-    if (!env._fixtureRoles.includes(role)) env._fixtureRoles.push(role);
-    return true;
+    return applyOneFixtureRole(env, role, data?.roles?.[role]);
   }
 
   const roles = ['fixed', 'custom', 'shares', 'campaign'];
@@ -133,4 +124,75 @@ function fillLocalProductSlugs(env) {
     }
   }
   return env;
+}
+
+/**
+ * Katalogda yayımlanmış ürün yoksa private fixture (yönetici oturumu).
+ * Liste/mağaza/popup senaryoları için skip kaydı düşer — private listede görünmez.
+ * @param {object} env
+ * @param {object|null|undefined} fixturesData
+ */
+export function overlayFixtureRoles(env, fixturesData) {
+  if (!env || typeof env !== 'object') return env;
+  env._fixtureRoles = Array.isArray(env._fixtureRoles) ? env._fixtureRoles : [];
+  env._roleSkips = Array.isArray(env._roleSkips) ? env._roleSkips : [];
+  env._resolvedProducts =
+    env._resolvedProducts && typeof env._resolvedProducts === 'object' ? env._resolvedProducts : {};
+  const roles = fixturesData?.roles && typeof fixturesData.roles === 'object' ? fixturesData.roles : {};
+  for (const role of DONATION_ROLES) {
+    const existing = env._resolvedProducts[role];
+    if (existing && existing.fromCatalog && !existing.fromFixture) continue;
+    applyOneFixtureRole(env, role, roles[role]);
+  }
+  return env;
+}
+
+/**
+ * @param {object} env
+ * @param {string} role
+ * @param {object|null|undefined} row
+ * @returns {boolean}
+ */
+function applyOneFixtureRole(env, role, row) {
+  if (!row?.id) return false;
+  const nav = pickFixtureNavTarget(row);
+  assertProductNavTarget(nav, `fixture:${role}`);
+  const key = `E2E_PRODUCT_${role.toUpperCase()}`;
+  const slug = String(row.slug || '').trim();
+  const url = String(row.url || '').trim();
+  env[key] = nav;
+  env._resolvedProducts[role] = {
+    id: Number(row.id) || 0,
+    slug,
+    title: String(row.name || ''),
+    path: navTargetFromUrl(nav) || nav,
+    url,
+    nav,
+    type: role,
+    fromFixture: true,
+  };
+  env._fixtureRoles = Array.isArray(env._fixtureRoles) ? env._fixtureRoles : [];
+  if (!env._fixtureRoles.includes(role)) env._fixtureRoles.push(role);
+  env._roleSkips = Array.isArray(env._roleSkips) ? env._roleSkips : [];
+  env._roleSkips = env._roleSkips.filter((s) => s.check !== `role-${role}`);
+  pushFixtureSurfaceSkips(env, role);
+  return true;
+}
+
+/**
+ * @param {object} env
+ * @param {string} role
+ */
+function pushFixtureSurfaceSkips(env, role) {
+  const entries = [
+    ['loop-donate', `loop-donate-shop-${role}`],
+    ['loop-donate', `loop-donate-list-${role}`],
+    ['popup', `popup-${role}`],
+  ];
+  for (const [kind, check] of entries) {
+    const d = decideScenarioProduct(env, role, kind);
+    if (d.action !== 'skip') continue;
+    if (env._roleSkips.some((s) => s.check === check)) continue;
+    env._roleSkips.push({ check, description: d.reason });
+  }
 }

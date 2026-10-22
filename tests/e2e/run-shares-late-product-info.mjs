@@ -20,6 +20,7 @@ import {
 } from './helpers/checks.mjs';
 import { SEL } from './helpers/selectors.mjs';
 import { peekActiveProfile } from './helpers/profile.mjs';
+import { decideScenarioProduct } from './helpers/catalog-core.mjs';
 import { installBrowserGuard } from './helpers/network-guard.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -141,6 +142,8 @@ export async function runSharesLateProductInfoChecks({
   guestExtra = {},
   failures: extFailures = null,
   stats = null,
+  skips = null,
+  createAdminContext = null,
 }) {
   const failures = extFailures || [];
   let passed = 0;
@@ -152,7 +155,18 @@ export async function runSharesLateProductInfoChecks({
    */
   async function one(mode, kind) {
     const check = `shares-late-product-info-${mode}-${kind}`;
-    const ctx = await browser.newContext(contextOpts);
+    const decision = decideScenarioProduct(env, 'shares', mode);
+    if (decision.action === 'skip') {
+      if (skips && !skips.some((s) => s.check === check)) {
+        skips.push({ check, description: decision.reason });
+        if (stats) stats.skipped = (stats.skipped || 0) + 1;
+      }
+      return;
+    }
+    const ctx =
+      decision.admin && typeof createAdminContext === 'function'
+        ? await createAdminContext()
+        : await browser.newContext(contextOpts);
     const page = await ctx.newPage();
     try {
       await installProductInfoDelay(page, DELAY_MS);

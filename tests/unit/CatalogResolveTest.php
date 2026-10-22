@@ -38,6 +38,15 @@ final class CatalogResolveTest extends TestCase {
 		$this->assertSame('', wdp_e2e_catalog_path_from_url(''));
 	}
 
+	public function test_nav_target_keeps_query(): void {
+		$this->assertSame(
+			'/?post_type=product&p=915',
+			wdp_e2e_catalog_nav_target_from_url('https://ikramaid.uk/?post_type=product&p=915')
+		);
+		$this->assertSame('/', wdp_e2e_catalog_nav_target_from_url('https://ikramaid.uk/'));
+		$this->assertSame('/?p=916', wdp_e2e_catalog_nav_target_from_url('/?p=916'));
+	}
+
 	public function test_eval_file_does_not_emit_during_phpunit(): void {
 		$this->assertTrue(function_exists('wdp_e2e_catalog_resolve'));
 		$this->assertFalse(defined('WP_CLI') && WP_CLI);

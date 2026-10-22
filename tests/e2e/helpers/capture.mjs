@@ -6,7 +6,12 @@ import path from 'node:path';
 import { chromium } from '@playwright/test';
 import { withCacheBust, productPaths, ROOT } from './env.mjs';
 import { getActiveProfile, isRemoteProfile, matchesProfilePattern } from './profile.mjs';
-import { productNavPath } from './catalog-core.mjs';
+import {
+  productNavPath,
+  decideScenarioProduct,
+  assertProductNavTarget,
+  isFixtureRole as roleIsFixture,
+} from './catalog-core.mjs';
 import { currencySwitchFromProfile, runCurrencySwitchChecks } from './currency-switch.mjs';
 import { getDevicePreset } from './devices.mjs';
 import { areaIncludes } from './area-filter.mjs';
@@ -1159,9 +1164,10 @@ async function runSkeletonUnlockChecks({
    */
   async function oneProductInfoFault(mode) {
     const profile = getActiveProfile();
-    const ctx = profile?.comingSoon
-      ? await asAdmin(browser, env, contextOpts)
-      : await contextWithBypass(browser, contextOpts, env);
+    const ctx =
+      profile?.comingSoon || decideScenarioProduct(env, 'fixed', 'product-page').admin
+        ? await asAdmin(browser, env, contextOpts)
+        : await contextWithBypass(browser, contextOpts, env);
     const page = await ctx.newPage();
     try {
       await page.route('**/admin-ajax.php*', async (route) => {
@@ -1907,6 +1913,8 @@ async function assertDonationLoopButtons({
     /** @type {Array<{key:string,slug:string,id:number,name:string}>} */
     const donationProducts = [];
     for (const [key, slug] of Object.entries(products)) {
+      const loopDecision = decideScenarioProduct(env, key, 'loop-donate');
+      if (loopDecision.action === 'skip') continue;
       const id = await resolveProductIdBySlug(page, env.E2E_BASE_URL, slug);
       let name = slug;
       if (id) {
@@ -2611,10 +2619,23 @@ export async function captureAll({
   const remote = isRemoteProfile(profile);
   for (const [key, val] of Object.entries(products)) {
     const rec = env._resolvedProducts?.[key];
-    if (rec?.path) productUrls[key] = rec.path;
-    else {
-      const p = productNavPath(val);
-      if (p) productUrls[key] = p;
+    const raw = rec?.nav || rec?.url || rec?.path || val;
+    if (raw) {
+      try {
+        if (rec?.fromFixture) {
+          productUrls[key] = assertProductNavTarget(raw, key);
+        } else {
+          const p = productNavPath(raw);
+          if (p) productUrls[key] = p;
+        }
+      } catch (e) {
+        failures.push(
+          makeFailure({
+            check: `product-${key}-url`,
+            description: String(e && e.message ? e.message : e),
+          })
+        );
+      }
     }
     if (rec?.id) productIds[key] = Number(rec.id) || 0;
   }
@@ -2641,8 +2662,21 @@ export async function captureAll({
   }
   for (const [role, rec] of Object.entries(env._resolvedProducts || {})) {
     if (!rec) continue;
-    const path = rec.path || rec.url || productUrls[role];
-    if (path) productUrls[role] = path;
+    const raw = rec.nav || rec.url || rec.path || productUrls[role];
+    if (raw) {
+      try {
+        productUrls[role] = rec.fromFixture
+          ? assertProductNavTarget(raw, role)
+          : productNavPath(raw) || productUrls[role] || raw;
+      } catch (e) {
+        failures.push(
+          makeFailure({
+            check: `product-${role}-url`,
+            description: String(e && e.message ? e.message : e),
+          })
+        );
+      }
+    }
     if (rec.id) productIds[role] = Number(rec.id) || productIds[role] || 0;
   }
   logSection('ürün URL/ID çözümü', tProbe);
@@ -2742,11 +2776,10 @@ export async function captureAll({
   const productPageHeights = {};
   const tProducts = Date.now();
   const productEntries = Object.entries(productUrls);
-  const isFixtureRole = (role) =>
-    Array.isArray(env._fixtureRoles) && env._fixtureRoles.includes(role);
   await mapPool(productEntries, maxWorkers, async ([key, rel]) => {
     const name = `${pfx}-product-${key}`;
-    const visitCtx = isFixtureRole(key) ? authed : catalogCtx;
+    const productDecision = decideScenarioProduct(env, key, 'product-page');
+    const visitCtx = productDecision.admin || roleIsFixture(env, key) ? authed : catalogCtx;
     const page = await visit(visitCtx, rel, name, { checkImages: true });
     productPageHeights[key] = await readPageScrollHeight(page);
     if (runFunctional) {
@@ -2822,14 +2855,26 @@ export async function captureAll({
   // desktop-popup-* adları korunur ama içerik ortadaki modal olur (liste kısa kodu).
   const shellJobs = [];
   for (const [key, rel] of Object.entries(productUrls)) {
-    shellJobs.push({
-      key,
-      mode: /** @type {'panel'} */ ('panel'),
-      pagePath: rel,
-      productId: productIds[key] || 0,
-      asAdmin: isFixtureRole(key),
-    });
-    if (isFixtureRole(key)) {
+    const panelDecision = decideScenarioProduct(env, key, 'panel');
+    if (panelDecision.action === 'skip') {
+      skips.push({ check: `panel-${key}`, description: panelDecision.reason });
+      functionalStats.skipped += 1;
+    } else {
+      shellJobs.push({
+        key,
+        mode: /** @type {'panel'} */ ('panel'),
+        pagePath: rel,
+        productId: productIds[key] || 0,
+        asAdmin: panelDecision.admin || roleIsFixture(env, key),
+      });
+    }
+    const popupDecision = decideScenarioProduct(env, key, 'popup');
+    if (popupDecision.action === 'skip') {
+      const check = `popup-${key}`;
+      if (!skips.some((s) => s.check === check)) {
+        skips.push({ check, description: popupDecision.reason });
+        functionalStats.skipped += 1;
+      }
       continue;
     }
     shellJobs.push({
@@ -3344,9 +3389,10 @@ export async function captureAll({
       const tCart = Date.now();
       const cartPaths = tracePaths(runLabel, 'fixed-cart');
       const cartTimeline = createTimeline('fixed-cart');
-      const cartCtx = getActiveProfile()?.comingSoon
-        ? await asAdmin(browser, env, contextOpts)
-        : await contextWithBypass(browser, contextOpts, env);
+      const cartCtx =
+        getActiveProfile()?.comingSoon || decideScenarioProduct(env, 'fixed', 'cart').admin
+          ? await asAdmin(browser, env, contextOpts)
+          : await contextWithBypass(browser, contextOpts, env);
       await installPageProbe(cartCtx).catch((e) => catchFail('installPageProbe:cart', e));
       const cartTrace = !quick;
       if (cartTrace) {
@@ -3713,6 +3759,8 @@ export async function captureAll({
       guestExtra,
       failures,
       stats: functionalStats,
+      skips,
+      createAdminContext: () => asAdmin(browser, env, contextOpts),
     })
       .catch((e) => {
         failures.push(
@@ -3744,9 +3792,18 @@ export async function captureAll({
     const sadakaPromise = mapPool(sadakaJobs, sadakaWorkers, async ({ productKey, mode }) => {
       const check = `sadaka-${productKey}-${mode}`;
       const paths = tracePaths(runLabel, check);
-      const ctx = getActiveProfile()?.comingSoon
-        ? await asAdmin(browser, env, contextOpts)
-        : await contextWithBypass(browser, contextOpts, env);
+      const sadakaDecision = decideScenarioProduct(env, productKey, mode);
+      if (sadakaDecision.action === 'skip') {
+        if (!skips.some((s) => s.check === check)) {
+          skips.push({ check, description: sadakaDecision.reason });
+          functionalStats.skipped += 1;
+        }
+        return;
+      }
+      const ctx =
+        getActiveProfile()?.comingSoon || sadakaDecision.admin
+          ? await asAdmin(browser, env, contextOpts)
+          : await contextWithBypass(browser, contextOpts, env);
       // Quick’te tracing pahalı (200s’nin büyük kısmı); full’da koru. Hata → debug JSON.
       const useTrace = !quick;
       if (useTrace) {

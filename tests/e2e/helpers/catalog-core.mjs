@@ -13,6 +13,107 @@ export const PAGE_PRODUCT_ENV_KEYS = [
 
 export const DONATION_ROLES = ['fixed', 'custom', 'shares', 'campaign'];
 
+/**
+ * E2E senaryo türü × ürün kaynağı (görev 3C).
+ *
+ * | Grup | Senaryo | Gerçek yayımlanmış ürün | Rol için gerçek yoksa |
+ * |------|---------|-------------------------|------------------------|
+ * | visitor-list-shop | ziyaretçi, liste, mağaza döngüsü, loop-donate | evet | ATLA (neden; hata değil) |
+ * | product-form-panel-cart | ürün sayfası, form, panel, doğrulama, sepet | evet | fixture + yönetici oturumu |
+ * | popup | popup (liste tetikleyici) | evet (listede görünür) | ATLA — private fixture listede yok |
+ */
+export const SCENARIO_PRODUCT_POLICY = Object.freeze({
+  'visitor-list-shop': Object.freeze({
+    label: 'Ziyaretçi / liste / mağaza döngüsü',
+    kinds: Object.freeze(['visitor', 'list', 'shop-loop', 'loop-donate']),
+    source: 'published-only',
+    ifMissing: 'skip',
+  }),
+  'product-form-panel-cart': Object.freeze({
+    label: 'Ürün sayfası / form / panel / doğrulama / sepet',
+    kinds: Object.freeze(['product-page', 'form', 'panel', 'validation', 'cart']),
+    source: 'published-or-fixture-admin',
+    ifMissing: 'fixture-admin',
+  }),
+  popup: Object.freeze({
+    label: 'Popup (liste tetikleyici)',
+    kinds: Object.freeze(['popup']),
+    source: 'published-only',
+    ifMissing: 'skip',
+  }),
+});
+
+/** @type {Record<string, keyof typeof SCENARIO_PRODUCT_POLICY>} */
+const SCENARIO_KIND_GROUP = (() => {
+  /** @type {Record<string, keyof typeof SCENARIO_PRODUCT_POLICY>} */
+  const map = {};
+  for (const [group, spec] of Object.entries(SCENARIO_PRODUCT_POLICY)) {
+    for (const kind of spec.kinds) map[kind] = /** @type {keyof typeof SCENARIO_PRODUCT_POLICY} */ (group);
+  }
+  return map;
+})();
+
+/**
+ * @param {string} kind
+ * @returns {keyof typeof SCENARIO_PRODUCT_POLICY | ''}
+ */
+export function scenarioPolicyGroup(kind) {
+  return SCENARIO_KIND_GROUP[String(kind || '')] || '';
+}
+
+/**
+ * @param {object} env
+ * @param {string} role
+ */
+export function isFixtureRole(env, role) {
+  if (Array.isArray(env?._fixtureRoles) && env._fixtureRoles.includes(role)) return true;
+  const rec = env?._resolvedProducts?.[role];
+  return !!(rec && rec.fromFixture);
+}
+
+/**
+ * @param {object} env
+ * @param {string} role
+ */
+export function isPublishedCatalogRole(env, role) {
+  const rec = env?._resolvedProducts?.[role];
+  return !!(rec && rec.fromCatalog && !rec.fromFixture);
+}
+
+/**
+ * @param {object} env
+ * @param {string} role
+ * @param {string} kind  SCENARIO_PRODUCT_POLICY kinds
+ * @returns {{ action: 'run-visitor'|'run-admin'|'skip', admin: boolean, reason: string, group: string }}
+ */
+export function decideScenarioProduct(env, role, kind) {
+  const group = scenarioPolicyGroup(kind) || String(kind || '');
+  const published = isPublishedCatalogRole(env, role);
+  const fixture = isFixtureRole(env, role);
+  if (group === 'visitor-list-shop' || group === 'popup') {
+    if (published) {
+      return { action: 'run-visitor', admin: false, reason: '', group };
+    }
+    const reason =
+      group === 'popup'
+        ? `${role}: popup liste tetikleyicisi; private fixture listede görünmez → atla`
+        : `${role}: yayımlanmış katalog ürünü yok (liste/mağaza döngüsü) → atla`;
+    return { action: 'skip', admin: false, reason, group };
+  }
+  if (published) {
+    return { action: 'run-visitor', admin: false, reason: '', group };
+  }
+  if (fixture) {
+    return {
+      action: 'run-admin',
+      admin: true,
+      reason: `${role}: fixture ürünü yönetici oturumunda`,
+      group,
+    };
+  }
+  return { action: 'skip', admin: false, reason: `${role}: ürün yok → atla`, group };
+}
+
 export const PLUGIN_CONTENT_NEEDLES = Object.freeze([
   '[wdp_',
   'wp:wdp',
@@ -84,6 +185,82 @@ export function pathFromMaybeUrl(urlOrPath) {
   if (raw.startsWith('/')) {
     return raw === '/' ? '/' : raw.endsWith('/') ? raw : `${raw}/`;
   }
+  return '';
+}
+
+/**
+ * Ürün gezintisi: sorgu dizesi korunur.
+ * `https://site/?post_type=product&p=915` → `/?post_type=product&p=915` (pathname "/" ana sayfa değildir).
+ * @param {string} urlOrPath
+ * @returns {string}
+ */
+export function navTargetFromUrl(urlOrPath) {
+  const raw = String(urlOrPath || '').trim();
+  if (!raw) return '';
+  try {
+    if (/^https?:\/\//i.test(raw)) {
+      const u = new URL(raw);
+      const path = u.pathname || '/';
+      const search = u.search || '';
+      if (path === '/' || path === '') return search ? `/${search}` : '/';
+      const withSlash = path.endsWith('/') ? path : `${path}/`;
+      return `${withSlash}${search}`;
+    }
+  } catch {
+    /* relative */
+  }
+  if (raw.startsWith('/')) return raw;
+  if (raw.startsWith('?')) return `/${raw}`;
+  return '';
+}
+
+/**
+ * Path "/" ve sorgu yok → ana sayfa (ürün adresi olamaz).
+ * @param {string} target
+ */
+export function isBareHomeNav(target) {
+  const t = String(target || '').trim();
+  if (!t) return true;
+  try {
+    const u = /^https?:\/\//i.test(t) ? new URL(t) : new URL(t, 'http://e2e.local/');
+    const path = u.pathname || '/';
+    return (path === '/' || path === '') && !u.search;
+  } catch {
+    return t === '/' || t === '';
+  }
+}
+
+/**
+ * @param {string} target
+ * @param {string} [label]
+ * @returns {string}
+ */
+export function assertProductNavTarget(target, label = '') {
+  const t = String(target || '').trim();
+  const tag = label ? ` (${label})` : '';
+  if (!t || isBareHomeNav(t)) {
+    throw new Error(
+      `ürün adresi ana sayfa ("/") olamaz${tag}; tam permalink veya ?post_type=product&p= gerekli`
+    );
+  }
+  return t;
+}
+
+/**
+ * Private fixture: get_permalink() (sorgu dahil) veya `/?post_type=product&p=ID`.
+ * path "/" sessiz ana sayfa olarak kullanılmaz.
+ * @param {{ url?: string, path?: string, id?: number|string }|null|undefined} row
+ * @returns {string}
+ */
+export function pickFixtureNavTarget(row) {
+  const url = String(row?.url || '').trim();
+  if (/^https?:\/\//i.test(url) && !isBareHomeNav(url)) return url;
+  const path = String(row?.path || '').trim();
+  if (path && !isBareHomeNav(path)) return path.startsWith('/') || path.startsWith('?') ? path : `/${path}`;
+  const fromUrl = navTargetFromUrl(url);
+  if (fromUrl && !isBareHomeNav(fromUrl)) return fromUrl;
+  const id = Math.abs(Number.parseInt(String(row?.id ?? ''), 10) || 0);
+  if (id > 0) return `/?post_type=product&p=${id}`;
   return '';
 }
 
@@ -192,6 +369,7 @@ export function applyRemoteCatalog(env, catalog) {
       title: String(hit.title || ''),
       path: hit.path,
       url: String(hit.url || ''),
+      nav: hit.path,
       type: role,
       fromCatalog: true,
     };
@@ -207,8 +385,8 @@ export function applyRemoteCatalog(env, catalog) {
 export function productNavPath(value) {
   const raw = String(value || '').trim();
   if (!raw) return '';
-  const fromUrl = pathFromMaybeUrl(raw);
-  if (fromUrl) return fromUrl;
+  const fromUrl = navTargetFromUrl(raw);
+  if (fromUrl && !isBareHomeNav(fromUrl)) return fromUrl;
   return '';
 }
 
