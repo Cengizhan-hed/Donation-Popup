@@ -73,6 +73,7 @@ async function main() {
   const {
     failures,
     skips = [],
+    warnings = [],
     flaky = [],
     debugFiles = [],
     stats = {},
@@ -110,6 +111,7 @@ async function main() {
     failedCount,
   } = compareAndReport(baselineDir, outDir, REPORT_DIR, failures, env.E2E_DIFF_THRESHOLD, {
     skips,
+    warnings,
     flaky,
     stats,
     capturedScreens,
@@ -134,7 +136,9 @@ async function main() {
       passed: passedCount,
       skipped: skippedCount,
       failed: failedCount,
+      warned: warnings.length,
     },
+    warnings,
     changedScreens,
     newBaselineScreens,
     flaky,
@@ -149,9 +153,16 @@ async function main() {
 
   console.log('Report:', reportFile);
   console.log(
-    `İşlevsel özet: Geçti=${passedCount} Atlandı=${skippedCount} Hata=${failedCount}` +
+    `İşlevsel özet: Geçti=${passedCount} Atlandı=${skippedCount} Hata=${failedCount} Uyarı=${warnings.length}` +
       ` | noSideCart=${noSideCart ? 'evet' : 'hayır'}`
   );
+  if (warnings.length) {
+    console.warn('=== Uyarılar (hata değil) ===');
+    for (const w of warnings) {
+      console.warn(`• [${w.check}] ${w.description}`);
+      if (w.detail) console.warn(`  ${w.detail}`);
+    }
+  }
   if (flaky.length) {
     console.warn(`Kararsız (yeniden denemede geçti): ${flaky.map((f) => f.check).join(', ')}`);
   }

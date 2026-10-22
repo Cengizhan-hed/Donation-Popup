@@ -14,6 +14,7 @@ if (!function_exists('get_option')) {
 $wdp_args = isset($wdp_eval_args) && is_array($wdp_eval_args) ? $wdp_eval_args : (isset($args) && is_array($args) ? $args : array_slice($argv, 2));
 $cmd      = isset($wdp_args[0]) ? (string) $wdp_args[0] : '';
 $arg1     = isset($wdp_args[1]) ? (string) $wdp_args[1] : '';
+$arg2     = isset($wdp_args[2]) ? (string) $wdp_args[2] : '';
 
 require_once ABSPATH . 'wp-admin/includes/plugin.php';
 require_once ABSPATH . 'wp-admin/includes/file.php';
@@ -389,6 +390,84 @@ function wdp_matrix_ensure_related_category(array $ids) {
 }
 
 /**
+ * Özet kancasına kısa kod bas (tema oluşturucu şablonu benzetimi).
+ * Ürün içeriğine yazılmaz — çözümleyici inline kalır; auto_place ürün meta ile kapanır.
+ *
+ * @param string $role custom|fixed
+ * @param string $mode button_panel|button_popup|form|''
+ * @return array<string,mixed>
+ */
+function wdp_matrix_inject_mu_file() {
+	$dir = trailingslashit(WP_CONTENT_DIR) . 'mu-plugins';
+	if (!is_dir($dir)) {
+		wp_mkdir_p($dir);
+	}
+	return $dir . '/wdp-e2e-inject-shortcode.php';
+}
+
+function wdp_matrix_product_content($role, $mode) {
+	$catalog = wdp_matrix_catalog();
+	if (!isset($catalog[ $role ])) {
+		return array( 'ok' => false, 'error' => 'rol yok: ' . $role );
+	}
+	$title = $catalog[ $role ][0];
+	$id    = wdp_matrix_find_marked($title);
+	if ($id <= 0) {
+		return array( 'ok' => false, 'error' => 'ürün yok: ' . $role );
+	}
+	$file = wdp_matrix_inject_mu_file();
+	$tag  = '';
+	if ($mode === 'button_panel') {
+		$tag = 'wdp_donation_button_panel';
+	} elseif ($mode === 'button_popup') {
+		$tag = 'wdp_donation_button';
+	} elseif ($mode === 'form') {
+		$tag = 'wdp_donation_form';
+	} elseif ($mode !== '' && $mode !== 'clear') {
+		return array( 'ok' => false, 'error' => 'mode geçersiz: ' . $mode );
+	}
+	if ($tag === '') {
+		if (is_file($file)) {
+			unlink($file);
+		}
+		delete_post_meta($id, '_wdp_auto_place');
+		wdp_matrix_checkpoint();
+		return array(
+			'ok'   => true,
+			'id'   => $id,
+			'role' => $role,
+			'mode' => '',
+		);
+	}
+	$php  = "<?php\nadd_action('wp_footer', static function () {\n";
+	$php .= "\tif (!function_exists('is_product') || !is_product()) { return; }\n";
+	$php .= "\tif ((int) get_queried_object_id() !== " . (int) $id . ") { return; }\n";
+	$php .= "\techo do_shortcode('[" . $tag . ' id="' . (int) $id . "\"]');\n";
+	$php .= "}, 20);\n";
+	if (file_put_contents($file, $php) === false) {
+		return array( 'ok' => false, 'error' => 'mu-plugin yazılamadı' );
+	}
+	if (function_exists('opcache_invalidate')) {
+		opcache_invalidate($file, true);
+	}
+	update_post_meta($id, '_wdp_auto_place', 'no');
+	if (function_exists('clean_post_cache')) {
+		clean_post_cache($id);
+	}
+	if (function_exists('wc_delete_product_transients')) {
+		wc_delete_product_transients($id);
+	}
+	wdp_matrix_checkpoint();
+	return array(
+		'ok'   => true,
+		'id'   => $id,
+		'role' => $role,
+		'mode' => $mode,
+		'tag'  => $tag,
+	);
+}
+
+/**
  * @param int $custom_id
  * @return array<string,mixed>
  */
@@ -643,6 +722,8 @@ try {
 		$result = array_merge($result, wdp_matrix_plugin($arg1 === 'off' ? 'off' : 'on'));
 	} elseif ($cmd === 'checkpoint') {
 		$result = array_merge($result, wdp_matrix_checkpoint());
+	} elseif ($cmd === 'product-content') {
+		$result = array_merge($result, wdp_matrix_product_content($arg1 !== '' ? $arg1 : 'custom', $arg2));
 	} else {
 		$result['error'] = 'bilinmeyen cmd';
 	}

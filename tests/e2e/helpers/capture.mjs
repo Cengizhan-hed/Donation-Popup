@@ -45,9 +45,9 @@ import {
   classifySimilarDonations,
 } from './similar-donations-probe.mjs';
 import {
-  expectedPrimaryKind,
   resolveDisplayFromSources,
-  matchPrimaryUi,
+  classifyVisiblePluginEntry,
+  displayMismatchWarning,
   LOOP_EXCLUDE_SEL,
 } from './product-page-ui.mjs';
 import { classifyLoopCardsResult, formatLoopCardFail } from './loop-cards.mjs';
@@ -1950,17 +1950,18 @@ async function assertLoopCardsTitleAndDonate(page, surface, screenName, failures
 }
 
 /**
- * Ürün sayfası birincil UI: çözümleyici görünümüne göre gömülü form / panel / popup.
- * Döngü kartları sayılmaz. Düğme modunda tıklayıp kabuk açılır.
+ * Ürün sayfası: görünür tam olarak BİR eklenti girişi (form veya eklenti düğmesi).
+ * Tema düğmesi sayılmaz. Çözümleyici farklıysa UYARI. Düğmeyse kabuk açılır.
  *
  * @param {import('@playwright/test').Page} page
  * @param {string} display
  * @param {string} productKey
  * @param {string} screenName
  * @param {ReturnType<typeof makeFailure>[]} failures
- * @param {{ passed?: number, failed?: number, skipped?: number }} [stats]
+ * @param {{ passed?: number, failed?: number, skipped?: number, warned?: number }} [stats]
+ * @param {Array<{check:string,description:string,detail?:string}>} [warnings]
  */
-async function assertProductPageDisplay(page, display, productKey, screenName, failures, stats) {
+async function assertProductPageDisplay(page, display, productKey, screenName, failures, stats, warnings) {
   const ui = await page.evaluate(
     ({ excludeSel, inlineSel, panelSel, popupSel }) => {
       const excluded = (el) => !!(el && el.closest(excludeSel));
@@ -2015,23 +2016,20 @@ async function assertProductPageDisplay(page, display, productKey, screenName, f
   }
 
   const resolved = resolveDisplayFromSources({ display, displayAttr: ui.displayAttr });
-  const kind = expectedPrimaryKind(resolved);
-  const matched = matchPrimaryUi({
-    kind,
+  const classified = classifyVisiblePluginEntry({
     inlineVisible: ui.inlineVisible,
     panelVisible: ui.panelVisible,
     popupVisible: ui.popupVisible,
   });
-  if (matched.reason === 'skip') {
-    if (stats) stats.skipped = (stats.skipped || 0) + 1;
-    return;
-  }
-  if (!matched.ok) {
+  if (!classified.ok) {
     failures.push(
       makeFailure({
         check: `product-${productKey}`,
-        description: 'Beklenen tek eklenti formu/butonu yok',
-        detail: `display=${resolved || '(boş)'} kind=${kind || '(boş)'} ${matched.reason}`,
+        description:
+          classified.total === 0
+            ? 'Görünür eklenti giriş noktası yok'
+            : 'Birden fazla eklenti giriş noktası',
+        detail: `display=${resolved || '(boş)'} inline=${ui.inlineVisible} panel=${ui.panelVisible} popup=${ui.popupVisible} ${classified.reason}`,
         screenshot: `${screenName}.png`,
       })
     );
@@ -2039,13 +2037,25 @@ async function assertProductPageDisplay(page, display, productKey, screenName, f
     return;
   }
 
-  if (kind === 'form') {
+  const warn = displayMismatchWarning(resolved, classified.kind);
+  if (warn) {
+    const row = {
+      check: `product-${productKey}`,
+      description: warn,
+      detail: `display=${resolved || '(boş)'} kind=${classified.kind}`,
+    };
+    if (Array.isArray(warnings)) warnings.push(row);
+    if (stats) stats.warned = (stats.warned || 0) + 1;
+    console.warn(`[${row.check}] ${warn} ${row.detail}`);
+  }
+
+  if (classified.kind === 'form') {
     if (stats) stats.passed = (stats.passed || 0) + 1;
     return;
   }
 
-  const mode = kind === 'panel' ? 'panel' : 'popup';
-  const triggerSel = kind === 'panel' ? SEL.sidePanelTrigger : SEL.centeredPopupTrigger;
+  const mode = classified.kind === 'panel' ? 'panel' : 'popup';
+  const triggerSel = classified.kind === 'panel' ? SEL.sidePanelTrigger : SEL.centeredPopupTrigger;
   const n = await page.locator(triggerSel).count();
   let clicked = false;
   for (let i = 0; i < n; i += 1) {
@@ -2080,7 +2090,7 @@ async function assertProductPageDisplay(page, display, productKey, screenName, f
     failures.push(
       makeFailure({
         check: `product-${productKey}-open`,
-        description: kind === 'panel' ? 'Panel açılmadı' : 'Popup açılmadı',
+        description: classified.kind === 'panel' ? 'Panel açılmadı' : 'Popup açılmadı',
         error: e,
         screenshot: `${screenName}.png`,
       })
@@ -2791,11 +2801,13 @@ export async function captureAll({
   const failures = [];
   /** @type {Array<{check:string,description:string,detail?:string}>} */
   const skips = [];
+  /** @type {Array<{check:string,description:string,detail?:string}>} */
+  const warnings = [];
   /** @type {Array<{check:string,firstError:string,attemptMs:number[]}>} */
   const flaky = [];
   /** @type {string[]} */
   const debugFiles = [];
-  const functionalStats = { passed: 0, skipped: 0, failed: 0 };
+  const functionalStats = { passed: 0, skipped: 0, failed: 0, warned: 0 };
   const shots = [];
   if (Array.isArray(env._roleSkips)) {
     for (const s of env._roleSkips) skips.push(s);
@@ -3015,7 +3027,7 @@ export async function captureAll({
         }
         const display =
           env._resolvedProducts?.[key]?.display || env._catalog?.placement?.display || '';
-        await assertProductPageDisplay(page, display, key, name, failures, functionalStats);
+        await assertProductPageDisplay(page, display, key, name, failures, functionalStats, warnings);
       } catch (e) {
         failures.push(
           makeFailure({
@@ -4357,6 +4369,7 @@ export async function captureAll({
     screens,
     failures,
     skips,
+    warnings,
     flaky,
     debugFiles: [...new Set(debugFiles)],
     stats: functionalStats,

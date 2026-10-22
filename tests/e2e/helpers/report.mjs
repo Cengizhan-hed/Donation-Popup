@@ -16,8 +16,9 @@ import pixelmatch from 'pixelmatch';
  * @param {number} [diffThreshold] yüzde; üstü "Değişti" (sayfa ekranları)
  * @param {{
  *   skips?: Array<{check:string,description:string,detail?:string}>,
+ *   warnings?: Array<{check:string,description:string,detail?:string}>,
  *   flaky?: Array<{check:string,firstError?:string,attemptMs?:number[]}>,
- *   stats?: { passed?: number, skipped?: number, failed?: number },
+ *   stats?: { passed?: number, skipped?: number, failed?: number, warned?: number },
  *   capturedScreens?: string[],
  *   mode?: string,
  *   autoCreateBaseline?: boolean,
@@ -26,6 +27,7 @@ import pixelmatch from 'pixelmatch';
  */
 export function compareAndReport(baselineDir, currentDir, reportDir, failures = [], diffThreshold = 0.5, extra = {}) {
   const skips = Array.isArray(extra.skips) ? extra.skips : [];
+  const warnings = Array.isArray(extra.warnings) ? extra.warnings : [];
   const flaky = Array.isArray(extra.flaky) ? extra.flaky : [];
   const stats = extra.stats || {};
   const passedCount = Number(stats.passed) || 0;
@@ -164,6 +166,22 @@ export function compareAndReport(baselineDir, currentDir, reportDir, failures = 
   });
   const changedCount = changedScreens.length;
 
+  const warningBlock =
+    warnings.length > 0
+      ? `<section class="skips"><h1>Uyarılar (hata değil)</h1>
+<p>Çözümleyici görünümü sayfadaki eklenti girişinden farklı — tema/oluşturucu şablonu.</p>
+${warnings
+  .map(
+    (s) => `<article class="skip-card">
+  <h2>${escapeHtml(s.check)}</h2>
+  <p class="desc">${escapeHtml(s.description || '')}</p>
+  <pre class="detail">${escapeHtml(s.detail || '')}</pre>
+</article>`
+  )
+  .join('\n')}
+</section>`
+      : '';
+
   const skipBlock =
     skips.length > 0
       ? `<section class="skips"><h1>Atlanan kontroller</h1>
@@ -273,10 +291,12 @@ figcaption{font-size:12px;color:#555;margin-bottom:4px}
   <div class="stat stat-pass">Geçti: <strong>${passedCount}</strong></div>
   <div class="stat stat-skip">Atlandı: <strong>${skippedCount}</strong></div>
   <div class="stat stat-fail">Hata: <strong>${failedCount}</strong></div>
+  <div class="stat stat-skip">Uyarı: <strong>${warnings.length}</strong></div>
   <div class="stat">Görsel değişti: <strong>${changedCount}</strong></div>
   <div class="stat">Bu çalıştırmada: <strong>${captured.length}</strong></div>
 </div>
 ${functionalBlock}
+${warningBlock}
 ${flakyBlock}
 ${skipBlock}
 ${notCapturedBlock}

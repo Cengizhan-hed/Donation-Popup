@@ -25,6 +25,11 @@ import {
   RELATED_CARD_SEL,
   RELATED_TITLE_SEL,
 } from './loop-cards.mjs';
+import {
+  classifyVisiblePluginEntry,
+  displayMismatchWarning,
+  LOOP_EXCLUDE_SEL,
+} from './product-page-ui.mjs';
 
 const CHECK_MS = 25000;
 const CART_MS = 20000;
@@ -733,6 +738,82 @@ export async function runDeviceScenarios({
         );
       }
       await shot(page, shotDir, 'related-cards');
+    });
+
+    await runOne('product-entry-button', async () => {
+      const set = matrixEval(wpDir, ['product-content', 'custom', 'button_panel']);
+      if (!set.ok) throw new Error(`kısa kod yazılamadı: ${set.error || ''}`);
+      try {
+        await gotoPath(page, baseUrl, productPath);
+        const ui = await page.evaluate(
+          ({ excludeSel, inlineSel, panelSel, popupSel }) => {
+            const excluded = (el) => !!(el && el.closest(excludeSel));
+            const vis = (el) => {
+              if (!el) return false;
+              const st = getComputedStyle(el);
+              const r = el.getBoundingClientRect();
+              return (
+                st.display !== 'none' &&
+                st.visibility !== 'hidden' &&
+                Number.parseFloat(st.opacity || '1') > 0.05 &&
+                r.width > 4 &&
+                r.height > 4
+              );
+            };
+            const pick = (sel) => Array.from(document.querySelectorAll(sel)).filter((el) => !excluded(el));
+            return {
+              inlineVisible: pick(inlineSel).filter(vis).length,
+              panelVisible: pick(panelSel).filter(vis).length,
+              popupVisible: pick(popupSel).filter(vis).length,
+            };
+          },
+          {
+            excludeSel: LOOP_EXCLUDE_SEL,
+            inlineSel: SEL.inlineDonationForm,
+            panelSel: SEL.sidePanelTrigger,
+            popupSel: SEL.centeredPopupTrigger,
+          }
+        );
+        const classified = classifyVisiblePluginEntry(ui);
+        if (!classified.ok || classified.kind !== 'panel') {
+          throw new Error(
+            `kısa kod düğme beklenirdi ok=${classified.ok} kind=${classified.kind} ${classified.reason} inline=${ui.inlineVisible} panel=${ui.panelVisible} popup=${ui.popupVisible}`
+          );
+        }
+        const warn = displayMismatchWarning('inline', classified.kind);
+        if (!/ayar inline, sayfa düğme/.test(warn)) {
+          throw new Error(`mismatch uyarısı yok: '${warn}'`);
+        }
+        await page.waitForFunction(() => !!(window.WDPApp && window.WDPApp.modal), { timeout: CHECK_MS });
+        const n = await page.locator(SEL.sidePanelTrigger).count();
+        let clicked = false;
+        for (let i = 0; i < n; i += 1) {
+          const btn = page.locator(SEL.sidePanelTrigger).nth(i);
+          const inLoop = await btn.evaluate(
+            (el, excludeSel) =>
+              !!(el.classList.contains('wdp-loop-donate') || (el.closest && el.closest(excludeSel))),
+            LOOP_EXCLUDE_SEL
+          );
+          if (inLoop) continue;
+          if (!(await btn.isVisible())) continue;
+          await btn.scrollIntoViewIfNeeded();
+          await clickShellTrigger(btn, CHECK_MS);
+          clicked = true;
+          break;
+        }
+        if (!clicked) throw new Error('birincil panel düğmesi tıklanamadı');
+        const anyShell = openShellLocator(page, '');
+        await anyShell.waitFor({ state: 'visible', timeout: CHECK_MS });
+        const isPanel = await anyShell.evaluate((el) => el.classList.contains('wdp-side-panel'));
+        if (!isPanel) {
+          throw new Error('kabuk panel değil (popup açıldı)');
+        }
+        await waitFormReady(anyShell);
+        await shot(page, shotDir, 'product-entry-button');
+      } finally {
+        const clr = matrixEval(wpDir, ['product-content', 'custom', 'clear']);
+        if (!clr.ok) throw new Error(`kısa kod geri alınamadı: ${clr.error || ''}`);
+      }
     });
 
     await runOne('appearance', async () => {

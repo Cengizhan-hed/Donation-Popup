@@ -7,7 +7,9 @@ import {
   normalizeDisplay,
   expectedPrimaryKind,
   resolveDisplayFromSources,
-  matchPrimaryUi,
+  classifyVisiblePluginEntry,
+  displayMismatchWarning,
+  LOOP_EXCLUDE_SEL,
 } from '../../../tests/e2e/helpers/product-page-ui.mjs';
 
 describe('normalizeDisplay', () => {
@@ -37,12 +39,61 @@ describe('resolveDisplayFromSources', () => {
   });
 });
 
-describe('matchPrimaryUi', () => {
-  it('panel düğmesi; döngü sayılmaz (yalnız birincil sayılar)', () => {
-    assert.equal(matchPrimaryUi({ kind: 'panel', inlineVisible: 0, panelVisible: 1, popupVisible: 0 }).ok, true);
-    assert.equal(matchPrimaryUi({ kind: 'panel', inlineVisible: 0, panelVisible: 0, popupVisible: 0 }).ok, false);
-    assert.equal(matchPrimaryUi({ kind: 'form', inlineVisible: 1, panelVisible: 0, popupVisible: 0 }).ok, true);
-    assert.equal(matchPrimaryUi({ kind: 'form', inlineVisible: 0, panelVisible: 1, popupVisible: 0 }).ok, false);
-    assert.equal(matchPrimaryUi({ kind: '', inlineVisible: 0, panelVisible: 0, popupVisible: 0 }).reason, 'skip');
+describe('LOOP_EXCLUDE_SEL', () => {
+  it('döngü/ilgili kartlar (klasik + Woo blok) ve wdp-loop-donate hariç', () => {
+    assert.match(LOOP_EXCLUDE_SEL, /\.related/);
+    assert.match(LOOP_EXCLUDE_SEL, /\.wp-block-woocommerce-related-products/);
+    assert.match(LOOP_EXCLUDE_SEL, /\.wp-block-woocommerce-product-collection/);
+    assert.match(LOOP_EXCLUDE_SEL, /\.wdp-loop-donate/);
+  });
+});
+
+describe('classifyVisiblePluginEntry', () => {
+  it('tam olarak 1 form veya 1 eklenti düğmesi geçer', () => {
+    assert.equal(classifyVisiblePluginEntry({ inlineVisible: 1, panelVisible: 0, popupVisible: 0 }).kind, 'form');
+    assert.equal(classifyVisiblePluginEntry({ inlineVisible: 0, panelVisible: 1, popupVisible: 0 }).kind, 'panel');
+    assert.equal(classifyVisiblePluginEntry({ inlineVisible: 0, panelVisible: 0, popupVisible: 1 }).kind, 'popup');
+    assert.equal(classifyVisiblePluginEntry({ inlineVisible: 1, panelVisible: 0, popupVisible: 0 }).ok, true);
+  });
+
+  it('0 giriş HATA — tema düğmesi sayılmaz, bağış alınamaz', () => {
+    const r = classifyVisiblePluginEntry({ inlineVisible: 0, panelVisible: 0, popupVisible: 0 });
+    assert.equal(r.ok, false);
+    assert.equal(r.total, 0);
+    assert.match(r.reason, /yok/);
+    assert.match(r.reason, /tema düğmesi sayılmaz/);
+  });
+
+  it('>1 giriş HATA', () => {
+    const formAndBtn = classifyVisiblePluginEntry({ inlineVisible: 1, panelVisible: 1, popupVisible: 0 });
+    assert.equal(formAndBtn.ok, false);
+    assert.equal(formAndBtn.total, 2);
+    const twoBtns = classifyVisiblePluginEntry({ inlineVisible: 0, panelVisible: 1, popupVisible: 1 });
+    assert.equal(twoBtns.ok, false);
+    assert.equal(twoBtns.total, 2);
+  });
+});
+
+describe('displayMismatchWarning', () => {
+  it('ayar inline, sayfa düğme → UYARI (HATA değil)', () => {
+    assert.equal(
+      displayMismatchWarning('inline', 'panel'),
+      'ayar inline, sayfa düğme gösteriyor — tema/oluşturucu şablonu'
+    );
+    assert.equal(
+      displayMismatchWarning('inline', 'popup'),
+      'ayar inline, sayfa düğme gösteriyor — tema/oluşturucu şablonu'
+    );
+  });
+
+  it('eşleşiyorsa boş', () => {
+    assert.equal(displayMismatchWarning('inline', 'form'), '');
+    assert.equal(displayMismatchWarning('button_panel', 'panel'), '');
+    assert.equal(displayMismatchWarning('button_popup', 'popup'), '');
+  });
+
+  it('ayar düğme, sayfa form', () => {
+    assert.match(displayMismatchWarning('button_panel', 'form'), /ayar button_panel, sayfa form/);
+    assert.match(displayMismatchWarning('button_panel', 'form'), /tema\/oluşturucu şablonu/);
   });
 });
