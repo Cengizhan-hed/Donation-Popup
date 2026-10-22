@@ -92,6 +92,41 @@ export const FIXTURE_CATALOG = [
   },
 ];
 
+/**
+ * Dry-run / RAPOR: uzak yazmadan ne oluşturulacağını listeler.
+ * @param {string} envId
+ * @param {string} runId
+ * @param {{ remove?: boolean, dryRun?: boolean }} [opts]
+ */
+export function describeBootstrapPlan(envId, runId, opts = {}) {
+  const mark = `_wdp_e2e_test=${runId}`;
+  return {
+    dryRun: opts.dryRun !== false,
+    env: envId,
+    would: opts.remove ? 'remove' : 'create',
+    remoteWrite: false,
+    runId,
+    mark,
+    status: 'private',
+    catalogVisible: false,
+    searchVisible: false,
+    createsPages: false,
+    createsMenus: false,
+    createsCategories: false,
+    uploadsMedia: false,
+    changesSiteSettings: false,
+    registry: true,
+    products: FIXTURE_CATALOG.map((c) => ({
+      role: c.role,
+      name: c.name,
+      status: 'private',
+      mark,
+      catalogVisible: false,
+      searchVisible: false,
+    })),
+  };
+}
+
 export function fixturesPathFor(envId) {
   const id = String(envId || 'local').replace(/[^a-z0-9._-]/gi, '');
   return path.join(ROOT, 'build/e2e', `fixtures-${id}.json`);

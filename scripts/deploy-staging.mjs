@@ -12,6 +12,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import dotenv from 'dotenv';
 import {
+  findTargetByAlias,
   parsePluginVersion,
   validateDeployEnv,
   validateRemoteSiteUrl,
@@ -33,19 +34,30 @@ function loadDeployEnv() {
     fail('Eksik .env.deploy (şablon: .env.deploy.example).');
   }
   const parsed = dotenv.parse(fs.readFileSync(envPath));
+  const alias = String(parsed.DEPLOY_SSH_ALIAS || 'hedef-staging').trim();
+  const listed = findTargetByAlias(alias);
+  const envWp = String(parsed.DEPLOY_WP_PATH || '').trim();
+  const envUrl = String(parsed.DEPLOY_SITE_URL || '').trim().replace(/\/$/, '');
+  if (listed) {
+    if (envWp && envWp !== listed.wpPath) fail('eşleşmiyor');
+    if (envUrl && envUrl !== listed.siteUrl) fail('eşleşmiyor');
+  }
   return {
+    DEPLOY_SSH_ALIAS: alias,
     DEPLOY_SSH_HOST: String(parsed.DEPLOY_SSH_HOST || '').trim(),
     DEPLOY_SSH_USER: String(parsed.DEPLOY_SSH_USER || '').trim(),
     DEPLOY_SSH_PORT: String(parsed.DEPLOY_SSH_PORT || '').trim(),
     DEPLOY_SSH_KEY: String(parsed.DEPLOY_SSH_KEY || '').trim(),
-    DEPLOY_WP_PATH: String(parsed.DEPLOY_WP_PATH || '').trim(),
-    DEPLOY_SITE_URL: String(parsed.DEPLOY_SITE_URL || '')
-      .trim()
-      .replace(/\/$/, ''),
+    DEPLOY_WP_PATH: envWp || listed?.wpPath || '',
+    DEPLOY_SITE_URL: envUrl || listed?.siteUrl || '',
   };
 }
 
 function sshBase(env) {
+  const alias = String(env.DEPLOY_SSH_ALIAS || '').trim();
+  if (alias) {
+    return ['ssh', '-o', 'BatchMode=yes', '-o', 'StrictHostKeyChecking=accept-new', alias];
+  }
   return [
     'ssh',
     '-i',
@@ -76,6 +88,7 @@ function run(cmd, args, opts = {}, guardOpts = {}) {
 function remote(env, remoteCmd) {
   const base = sshBase(env);
   return run(base[0], [...base.slice(1), remoteCmd], {}, {
+    alias: env?.DEPLOY_SSH_ALIAS,
     siteUrl: env?.DEPLOY_SITE_URL,
     wpPath: env?.DEPLOY_WP_PATH,
   });
@@ -106,17 +119,20 @@ function main() {
   if (!urlGuard.ok) fail(urlGuard.reason);
 
   const wpPath = env.DEPLOY_WP_PATH.replace(/'/g, `'\\''`);
-  const backupRoot = '/home/customer/wdp-backups';
-  const deployRoot = '/home/customer/wdp-deploy';
+  const listed = findTargetByAlias(env.DEPLOY_SSH_ALIAS);
+  const siteRoot = String(listed?.allowedRoot || '').replace(/\/$/, '');
+  const backupRoot = `${siteRoot}/wdp-backups`;
+  const deployRoot = `${siteRoot}/wdp-deploy`;
   const pluginSlug = 'woo-donation-popup';
 
   if (ROLLBACK) {
     console.log('Staging geri alma…');
-    const latest = remote(
+    const latestName = remote(
       env,
-      `ls -1t '${backupRoot}'/${pluginSlug}-*.zip 2>/dev/null | head -n 1`
+      `ls -1t '${backupRoot}' 2>/dev/null | head -n 1`
     );
-    if (!latest) fail('Geri alınacak yedek bulunamadı (/home/customer/wdp-backups).');
+    const latest = latestName ? `${backupRoot}/${latestName}` : '';
+    if (!latest) fail('Geri alınacak yedek bulunamadı.');
     remote(
       env,
       `wp plugin install '${latest.replace(/'/g, `'\\''`)}' --force --activate --path='${wpPath}'`
@@ -155,23 +171,22 @@ function main() {
       `PLUGIN_DIR=$(wp plugin path ${pluginSlug} --path='${wpPath}' 2>/dev/null || true)`,
       `if [ -n "$PLUGIN_DIR" ] && [ -d "$PLUGIN_DIR" ]; then`,
       `  (cd "$(dirname "$PLUGIN_DIR")" && zip -qr '${backupZip}' "$(basename "$PLUGIN_DIR")")`,
-      `  ls -1t '${backupRoot}'/${pluginSlug}-*.zip 2>/dev/null | tail -n +4 | while read -r f; do rm -f "$f"; done`,
+      `  ls -1t '${backupRoot}' 2>/dev/null | tail -n +4 | while read -r f; do rm -f '${backupRoot}'/"$f"; done`,
       `fi`,
     ].join('\n')
   );
 
   const scp = [
     'scp',
-    '-i',
-    env.DEPLOY_SSH_KEY,
-    '-P',
-    env.DEPLOY_SSH_PORT,
     '-o',
     'BatchMode=yes',
+    '-o',
+    'StrictHostKeyChecking=accept-new',
     zipLocal,
-    `${env.DEPLOY_SSH_USER}@${env.DEPLOY_SSH_HOST}:${remoteZip}`,
+    `${env.DEPLOY_SSH_ALIAS}:${remoteZip}`,
   ];
   run(scp[0], scp.slice(1), { stdio: 'inherit' }, {
+    alias: env.DEPLOY_SSH_ALIAS,
     siteUrl: env.DEPLOY_SITE_URL,
     wpPath: env.DEPLOY_WP_PATH,
   });

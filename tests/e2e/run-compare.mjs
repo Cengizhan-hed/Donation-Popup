@@ -40,7 +40,15 @@ async function main() {
   const startedAt = new Date().toISOString();
   const started = Date.now();
   console.log(`Capturing current → ${path.relative(ROOT, outDir)}/`);
-  const { failures, skips = [], flaky = [], stats = {}, screens = [], shots = [] } = await captureAll({
+  const {
+    failures,
+    skips = [],
+    flaky = [],
+    stats = {},
+    screens = [],
+    shots = [],
+    blocked_trackers = { total: 0, byHost: {} },
+  } = await captureAll({
     env,
     outDir,
     runFunctional: true,
@@ -87,6 +95,7 @@ async function main() {
     changedScreens,
     newBaselineScreens,
     flaky,
+    blocked_trackers,
   });
 
   console.log('Report:', reportFile);

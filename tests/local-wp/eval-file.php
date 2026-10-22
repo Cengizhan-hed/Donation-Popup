@@ -19,6 +19,7 @@ if ($target === '' || !is_file($root . '/' . $target) && !is_file($target)) {
 	exit(1);
 }
 // WP 7.1 pages.php foreach ($file) sızıntısı — çağıran kapsamı ezmesin.
+// Tek köprü: $wdp_eval_target / $wdp_eval_args (wp-load öncesi). $args yedek.
 $wdp_eval_target = is_file($target) ? $target : $root . '/' . $target;
 $wdp_eval_args   = array_slice($argv, 2);
 if (empty($_SERVER['HTTP_HOST'])) {

@@ -2,8 +2,8 @@
   "id": "staging-hedef",
   "name": "Hedef Derneği staging",
   "aliases": ["hedef", "staging"],
-  "baseUrl": "https://staging28.hedefdernegi.org",
-  "allowedHosts": ["staging28.hedefdernegi.org"],
+  "baseUrl": "https://staging30.hedefdernegi.org",
+  "allowedHosts": ["staging30.hedefdernegi.org"],
   "envFile": ".env.e2e",
   "deployEnvFile": ".env.deploy",
   "locale": "tr_TR",
@@ -28,10 +28,12 @@
   "cachePurge": "sg-purge",
   "comingSoon": false,
   "searchEngineBlock": false,
-  "allowMetaMutation": true,
+  "wpCliAuth": true,
+  "allowMetaMutation": false,
   "checkoutType": "classic",
   "ssh": {
-    "alias": ""
+    "alias": "hedef-staging",
+    "wpPath": "~/www/staging30.hedefdernegi.org/public_html"
   },
   "strings": {
     "donateButton": "Bağış Yap",
@@ -47,23 +49,18 @@
   },
   "products": {
     "custom": {
-      "role": "custom",
-      "name": "Nafile Kurbanı",
-      "id": 10695
+      "role": "custom"
     },
     "fixed": {
-      "role": "fixed",
-      "name": ""
+      "role": "fixed"
     },
     "shares": {
-      "role": "shares",
-      "name": ""
+      "role": "shares"
     },
     "campaign": {
-      "role": "campaign",
-      "name": "Akika"
+      "role": "campaign"
     }
   },
-  "protectedProductIds": [10695],
-  "altDonationProductId": 10721
+  "protectedProductIds": [],
+  "altDonationProductId": 0
 }

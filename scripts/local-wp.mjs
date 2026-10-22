@@ -93,14 +93,23 @@ function copyCachedZip(dest, fallbacks) {
 }
 
 /**
- * @param {string} [root]
+ * @param {string|{root?: string, quiet?: boolean}} [rootOrOpts]
  * @returns {string} wordpress dizini
  */
-export function ensureLocalWp(root = LOCAL_WP_ROOT) {
+export function ensureLocalWp(rootOrOpts = LOCAL_WP_ROOT) {
+  let root = LOCAL_WP_ROOT;
+  let quiet = false;
+  if (rootOrOpts && typeof rootOrOpts === 'object') {
+    root = rootOrOpts.root || LOCAL_WP_ROOT;
+    quiet = !!rootOrOpts.quiet;
+  } else if (typeof rootOrOpts === 'string') {
+    root = rootOrOpts;
+  }
+  const log = quiet ? () => {} : console.log;
   const { wpDir, wpZip, sqliteZip } = localWpPaths(root);
   fs.mkdirSync(root, { recursive: true });
   if (!fs.existsSync(path.join(wpDir, 'wp-load.php'))) {
-    console.log('WordPress indiriliyor (wordpress.org/latest.zip)…');
+    log('WordPress indiriliyor (wordpress.org/latest.zip)…');
     copyCachedZip(wpZip, [WP_ZIP, path.join(LOCAL_WP_ROOT, 'wordpress-latest.zip')]);
     download('https://wordpress.org/latest.zip', wpZip);
     run('unzip', ['-q', '-o', wpZip, '-d', root]);
@@ -112,7 +121,7 @@ export function ensureLocalWp(root = LOCAL_WP_ROOT) {
 
   const sqliteDest = path.join(wpDir, 'wp-content/plugins/sqlite-database-integration');
   if (!fs.existsSync(path.join(sqliteDest, 'db.php')) && !fs.existsSync(path.join(sqliteDest, 'load.php'))) {
-    console.log('SQLite eklentisi indiriliyor…');
+    log('SQLite eklentisi indiriliyor…');
     copyCachedZip(sqliteZip, [SQLITE_ZIP, path.join(LOCAL_WP_ROOT, 'sqlite-database-integration.zip')]);
     download(
       'https://downloads.wordpress.org/plugin/sqlite-database-integration.latest-stable.zip',
@@ -143,7 +152,7 @@ echo isset($result['url']) ? $result['url'] : get_option('siteurl');
 `
   );
   const out = run('php', [installPhp]);
-  console.log(String(out).trim().slice(0, 200));
+  log(String(out).trim().slice(0, 200));
   return wpDir;
 }
 

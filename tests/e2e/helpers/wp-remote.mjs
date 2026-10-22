@@ -6,7 +6,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import dotenv from 'dotenv';
 import { ROOT } from './env-root.mjs';
-import { validateDeployEnv } from '../../../scripts/lib/deploy-guards.mjs';
+import { findTargetByAlias, validateDeployEnv } from '../../../scripts/lib/deploy-guards.mjs';
 import { assertRemoteAllowed, spawnGuarded } from '../../../scripts/lib/remote-guard.mjs';
 import { peekActiveProfile } from './profile.mjs';
 
@@ -35,16 +35,26 @@ export function loadDeployEnvSilent() {
   }
   const parsed = dotenv.parse(fs.readFileSync(envPath));
   const profile = peekActiveProfile();
+  const alias = String(parsed.DEPLOY_SSH_ALIAS || profile?.ssh?.alias || '').trim();
+  const listed = findTargetByAlias(alias);
+  const envWp = String(parsed.DEPLOY_WP_PATH || '').trim();
+  const envUrl = String(parsed.DEPLOY_SITE_URL || '').trim().replace(/\/$/, '');
+  if (listed) {
+    if (envWp && envWp !== listed.wpPath) {
+      return { ok: false, reason: 'eşleşmiyor' };
+    }
+    if (envUrl && envUrl !== listed.siteUrl) {
+      return { ok: false, reason: 'eşleşmiyor' };
+    }
+  }
   const env = {
-    DEPLOY_SSH_ALIAS: String(parsed.DEPLOY_SSH_ALIAS || profile?.ssh?.alias || '').trim(),
+    DEPLOY_SSH_ALIAS: alias,
     DEPLOY_SSH_HOST: String(parsed.DEPLOY_SSH_HOST || '').trim(),
     DEPLOY_SSH_USER: String(parsed.DEPLOY_SSH_USER || '').trim(),
     DEPLOY_SSH_PORT: String(parsed.DEPLOY_SSH_PORT || '').trim(),
     DEPLOY_SSH_KEY: String(parsed.DEPLOY_SSH_KEY || '').trim(),
-    DEPLOY_WP_PATH: String(parsed.DEPLOY_WP_PATH || profile?.ssh?.wpPath || '').trim(),
-    DEPLOY_SITE_URL: String(parsed.DEPLOY_SITE_URL || profile?.baseUrl || '')
-      .trim()
-      .replace(/\/$/, ''),
+    DEPLOY_WP_PATH: envWp || listed?.wpPath || String(profile?.ssh?.wpPath || '').trim(),
+    DEPLOY_SITE_URL: envUrl || listed?.siteUrl || String(profile?.baseUrl || '').trim().replace(/\/$/, ''),
   };
   const guard = validateDeployEnv(env);
   if (!guard.ok) {
@@ -84,7 +94,11 @@ export function remote(env, remoteCmd) {
     'ssh',
     args,
     { encoding: 'utf8', cwd: ROOT, timeout: 45000 },
-    { siteUrl: env?.DEPLOY_SITE_URL, wpPath: env?.DEPLOY_WP_PATH }
+    {
+      alias: env?.DEPLOY_SSH_ALIAS,
+      siteUrl: env?.DEPLOY_SITE_URL,
+      wpPath: env?.DEPLOY_WP_PATH,
+    }
   );
   if (res.status !== 0) {
     const err = (res.stderr || res.stdout || '').trim().slice(0, 300);

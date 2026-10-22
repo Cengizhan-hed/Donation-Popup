@@ -4,6 +4,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { ROOT } from './env-root.mjs';
+import { findTargetByAlias, findTargetById } from '../../../scripts/lib/deploy-guards.mjs';
 
 const PROFILES_DIR = path.join(ROOT, 'tests/e2e/profiles');
 
@@ -35,10 +36,37 @@ export function loadProfile(idOrAlias) {
     const raw = JSON.parse(fs.readFileSync(path.join(PROFILES_DIR, `${id}.json`), 'utf8'));
     const aliases = [raw.id, ...(raw.aliases || [])].map((s) => String(s).toLowerCase());
     if (aliases.includes(want) || id.toLowerCase() === want) {
+      assertRemoteProfileSafe(raw);
       return raw;
     }
   }
   throw new Error(`Bilinmeyen E2E profili: ${idOrAlias}. Var: ${files.join(', ')}`);
+}
+
+/**
+ * @param {object} profile
+ */
+export function assertRemoteProfileSafe(profile) {
+  if (!isRemoteProfile(profile)) return;
+  if (profile.allowMetaMutation === true) {
+    throw new Error('Uzak profilde allowMetaMutation açılamaz.');
+  }
+  const alias = String(profile.ssh?.alias || '').trim();
+  const listed = findTargetByAlias(alias) || findTargetById(profile.id);
+  if (!listed) {
+    throw new Error('Profil SSH alias izin listesinde değil.');
+  }
+  if (alias !== listed.sshAlias) {
+    throw new Error('eşleşmiyor');
+  }
+  const wpPath = String(profile.ssh?.wpPath || '').trim();
+  if (wpPath && wpPath !== listed.wpPath) {
+    throw new Error('eşleşmiyor');
+  }
+  const base = String(profile.baseUrl || '').trim().replace(/\/$/, '');
+  if (base && base !== listed.siteUrl) {
+    throw new Error('eşleşmiyor');
+  }
 }
 
 /**
@@ -63,6 +91,28 @@ export function getActiveProfile() {
  */
 export function peekActiveProfile() {
   return activeProfile;
+}
+
+/**
+ * Uzak/yerel ayrımı profil JSON'una `remote` yazılmadan türetilir.
+ * `profile.remote` boolean ise o kullanılır; yoksa `ssh.alias` doluysa uzak.
+ * Yerel kanıt profili (`id: local`) her zaman yerel kalır.
+ *
+ * @param {object|null|undefined} profile
+ * @returns {boolean}
+ */
+export function isRemoteProfile(profile) {
+  if (!profile || typeof profile !== 'object') return false;
+  if (typeof profile.remote === 'boolean') return profile.remote;
+  if (String(profile.ssh?.alias || '').trim()) return true;
+  const id = String(profile.id || '').toLowerCase();
+  if (id === 'local') return false;
+  const hosts = Array.isArray(profile.allowedHosts) ? profile.allowedHosts : [];
+  for (const h of hosts) {
+    const x = String(h || '').toLowerCase();
+    if (x && x !== '127.0.0.1' && x !== 'localhost') return true;
+  }
+  return false;
 }
 
 /**

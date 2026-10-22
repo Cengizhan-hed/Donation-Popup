@@ -6,7 +6,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import dotenv from 'dotenv';
 import { ROOT } from './env-root.mjs';
-import { loadProfile, setActiveProfile, productRole } from './profile.mjs';
+import { loadProfile, setActiveProfile, productRole, isRemoteProfile } from './profile.mjs';
 import { setActiveDeployEnvFile } from './wp-remote.mjs';
 import { validateE2EBaseUrl } from '../../../scripts/lib/deploy-guards.mjs';
 
@@ -90,6 +90,15 @@ export function loadE2EEnv(opts = {}) {
   const urlGuard = validateE2EBaseUrl(base, profile.allowedHosts || []);
   if (!urlGuard.ok) {
     throw new Error(urlGuard.reason);
+  }
+  if (isRemoteProfile(profile)) {
+    const expected = String(profile.baseUrl || '').trim().replace(/\/$/, '');
+    if (base !== expected) {
+      throw new Error('E2E_BASE_URL profil baseUrl ile eşleşmiyor.');
+    }
+    if (profile.allowMetaMutation === true) {
+      throw new Error('Uzak profilde allowMetaMutation açılamaz.');
+    }
   }
 
   let loginPath = String(env.E2E_LOGIN_PATH || '').trim();

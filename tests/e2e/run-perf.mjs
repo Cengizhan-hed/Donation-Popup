@@ -12,6 +12,7 @@ import path from 'node:path';
 import { chromium } from '@playwright/test';
 import { loadE2EEnv, ROOT, productPaths, withCacheBust } from './helpers/env.mjs';
 import { ensureAuth } from './helpers/auth.mjs';
+import { installBrowserGuard } from './helpers/network-guard.mjs';
 import {
   CHECK_MS,
   extractPostActionFromRequest,
@@ -403,6 +404,7 @@ async function main() {
   await ensureAuth(env);
 
   const browser = await chromium.launch();
+  installBrowserGuard(browser, env);
   const probe = await browser.newContext({ viewport: DESKTOP, reducedMotion: 'reduce' });
   const probePage = await probe.newPage();
   await probePage.goto(withCacheBust(env.E2E_BASE_URL, '/'), { waitUntil: 'domcontentloaded' }).catch(() => {});

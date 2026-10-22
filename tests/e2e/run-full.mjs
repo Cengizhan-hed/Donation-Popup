@@ -84,6 +84,7 @@ async function runOne({ envId, deviceId, noSideCart }) {
     newBaselineScreens: compared.newBaselineScreens || [],
     a11yFindings: result.a11yFindings || [],
     reportFile: compared.reportFile,
+    blocked_trackers: result.blocked_trackers || { total: 0, byHost: {} },
   };
 }
 
@@ -134,6 +135,18 @@ async function main() {
   const changedScreens = [...new Set(rows.flatMap((r) => r.changedScreens || []))];
   const newBaselineScreens = [...new Set(rows.flatMap((r) => r.newBaselineScreens || []))];
   const a11yFindings = rows.flatMap((r) => r.a11yFindings || []);
+  /** @type {Record<string, number>} */
+  const trackerHosts = {};
+  for (const r of rows) {
+    const byHost = r.blocked_trackers?.byHost || {};
+    for (const [host, n] of Object.entries(byHost)) {
+      trackerHosts[host] = (trackerHosts[host] || 0) + Number(n || 0);
+    }
+  }
+  const blocked_trackers = {
+    total: Object.values(trackerHosts).reduce((a, b) => a + b, 0),
+    byHost: trackerHosts,
+  };
 
   writeRunManifest({
     mode: 'full',
@@ -156,6 +169,7 @@ async function main() {
       failed: r.failed,
     })),
     a11yFindings,
+    blocked_trackers,
   });
 
   console.log('\n=== e2e:full özet ===');

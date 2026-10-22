@@ -59,12 +59,16 @@ $option_keys = array(
 	'permalink_structure',
 );
 $options = array();
+$hash_option_keys = array( 'permalink_structure' );
 foreach ($option_keys as $key) {
 	$val = get_option( $key );
 	if ( is_bool( $val ) ) {
 		$options[ $key ] = $val ? '1' : '0';
 	} else {
 		$options[ $key ] = is_scalar( $val ) ? (string) $val : wp_json_encode( $val );
+	}
+	if ( in_array( $key, $hash_option_keys, true ) ) {
+		$options[ $key ] = hash( 'sha256', (string) $options[ $key ] );
 	}
 }
 
@@ -101,7 +105,7 @@ $att_q = new WP_Query(
 
 echo wp_json_encode(
 	array(
-		'siteurl'           => (string) get_option( 'siteurl' ),
+		'siteurl'           => hash( 'sha256', (string) get_option( 'siteurl' ) ),
 		'generated_at'      => gmdate( 'c' ),
 		'posts'             => $posts,
 		'options'           => $options,

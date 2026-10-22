@@ -459,7 +459,7 @@ Kaynak rehber: `docs/AYARLAR.md`. Teknik varsayılanlar normalizer / placement /
 | `npm run deploy:staging` | `scripts/deploy-staging.mjs` | `package.json` |
 | `npm run deploy:ikram` / `ship:ikram` | rsync + SSH alias `ikramaid` (`--dry-run` kuru çalıştırma); ardından `e2e:quick --env ikram` | `scripts/deploy-ikram.mjs`, `scripts/ship-ikram.mjs` |
 | `npm run ikram:wp` | Ikram WP-CLI köprüsü (yalnız alias `ikramaid`; kara liste yıkıcı komutlar) | `scripts/ikram-wp.mjs`, `scripts/lib/ikram-wp-guard.mjs` |
-| Canlı kilidi | İzin listesi: `staging28.hedefdernegi.org` + `ikramaid.uk`. Kara liste: `hedefdernegi.org` (canlı). Biri saparsa durur. | `scripts/lib/deploy-guards.mjs` |
+| Canlı kilidi | İzin listesi: `staging30.hedefdernegi.org` + `ikramaid.uk`. Kilit klasör yoluna göre (`allowedRoot`). Kara liste: `hedefdernegi.org` (canlı). | `scripts/lib/deploy-guards.mjs` |
 | Uzak doğrulama | `validateRemoteSiteUrl` birebir eşleşme | `scripts/lib/deploy-guards.mjs` |
 | `npm run ship:staging` | deploy + `e2e:quick --open-report` | `scripts/ship-staging.mjs` |
 | Rsync dışlama | `.distignore` tek kaynak (`pack-excludes.mjs`) | `scripts/lib/pack-excludes.mjs` |
@@ -496,18 +496,44 @@ Anahtar çıkarıcı: `get_option`/`update_option`/`add_option`/`get_post_meta`/
 | Matrix | Boş iskelet (görev 3/3) `npm run e2e:matrix` |
 | Accept | `--env` + `--device`; yalnız Değişti+Yeni; functional hata 0 |
 
+### Uzak keşif
+
+Salt okunur envanter (yazma yok; `spawnGuarded` zorunlu). Claude çalıştırır; Cursor yalnız `--env local` veya sahte ssh birim testi.
+
+| Öğe | Değer |
+|-----|--------|
+| Komut | `npm run remote:discover -- --env staging\|ikram` (yerel WP: `--env local`, SSH yok) |
+| Betik | `scripts/remote-discover.mjs` + `scripts/lib/remote-discover-lib.mjs` |
+| Profil | `loadProfile` (`tests/e2e/profiles/*.json`); `ssh.alias` + `ssh.wpPath`; her `wp` çağrısında `--path`; `--skip-themes` yok |
+| Çıktı | `build/discovery/<env>.json` + `.md`; kanarya `build/e2e/canary/<env>-baseline.json` |
+| Engel | `facebook-for-woocommerce`, `official-facebook-pixel`, `google-listings-and-ads`, `google-site-kit` aktifse `REMOTE-BLOCKED` ve çıkış **3** |
+| Güvenlik | Sabit eval listesi; değer/e-posta/URL/anahtar yazılmaz; bağlantı hatasında en fazla 1 tekrar |
+
 ### Test ortamları ve profiller
 
-| Profil | Dosya | Sırlar | Tema / oluşturucu | Para | Coming soon |
-|--------|-------|--------|-------------------|------|-------------|
-| Hedef staging | `tests/e2e/profiles/staging-hedef.json` | `.env.e2e` + `.env.deploy` | Avada Builder | TRY `₺` | kapalı |
-| Ikram Aid | `tests/e2e/profiles/ikram-aid.json` | `.env.e2e.ikram` + `.env.deploy.ikram` | Blocksy + Elementor | GBP `£` | açık (paylaşım çerezi; option yazılmaz) |
+| Profil | Dosya | Sırlar | Tema / oluşturucu | Para | Coming soon | SSH |
+|--------|-------|--------|-------------------|------|-------------|-----|
+| Hedef staging30 | `tests/e2e/profiles/staging-hedef.json` | `.env.e2e` + `.env.deploy` | Avada Builder | TRY `₺` | kapalı | alias `hedef-staging`, `~/www/staging30.hedefdernegi.org/public_html` |
+| Ikram Aid | `tests/e2e/profiles/ikram-aid.json` | `.env.e2e.ikram` + `.env.deploy.ikram` | Blocksy + Elementor | GBP `£` | açık (paylaşım çerezi; option yazılmaz) | alias `ikramaid`, `~/www/ikramaid.uk/public_html` |
+| Yerel | `tests/e2e/profiles/local.json` | `.env.e2e.local` | — | — | — | yok |
 
-Siteye özel değer (sembol, ayırıcı, telefon ön eki, dil, ürün adı, tema seçicisi) testte sabit yazılmaz; profilden okunur. Ürün eşlemesi rol bazlı (`custom` / `fixed` / `shares` / `campaign`). `shares: null` → hisseli testler atlanır (gizlenmez). Ikram’da `allowMetaMutation: false` — mevcut ürün/sayfa içeriği yazılmaz; istisna: işaretli private geçici ürün (şart b).
+Siteye özel değer (sembol, ayırıcı, telefon ön eki, dil) testte sabit yazılmaz; profilden okunur. Ürün eşlemesi rol bazlı (`custom` / `fixed` / `shares` / `campaign`); uzak profilde ürün adı/ID yok (bootstrap fixture). `shares: null` → hisseli testler atlanır (gizlenmez). Uzak profillerde `allowMetaMutation: false` (yükleyici reddeder); mutasyon yalnız bootstrap ürünlerinde. `E2E_BASE_URL` uzak profilde `baseUrl` ile birebir aynı olmalı.
 
 **Sepet e-posta/ithaf gerileme (F9, `form-fields-cart-shows-email-dedication`):** Eklenti `display_donation_data_in_cart` 10.33.0 ile aynı (`includes/class-cart.php:388-479`; `git show 163fe09`). Store API `item_data` e-posta/ithaf basar (aynı filtre). 2/3 `form-fields` `onCart=/\/cart\/?/` + Hedef `wc_get_cart_url` kök/`/sepet/` 404. Asıl 404: Woo sepet sayfası `woocommerce_cart_page_id` **çöpte** (Hedef id 291 `trash`; `get_permalink` → `/?page_id=291` pathname `/`). Düzeltme (eklenti yok): `ensureWooCartPagePublished` (yalnız Hedef `allowMetaMutation`); `fillDonor` eksik alanda fail; teşhis JSON. `tests/e2e/helpers/staging-wp-meta.mjs`, `form-fields.mjs`.
 
-Coming soon: WP-CLI `woocommerce_share_key` okunur veya `E2E_COMING_SOON_SHARE_KEY`; çerez `woo-share` (ziyaretçi liste). Ürün/mağaza/ödeme: `asAdmin` (`wpCliAuth`: `wp user list --role=administrator` + bellek çerezi; dosyaya yazılmaz). Ziyaretçi yüzeyleri (`asVisitor` + share): liste, popup kabuğu, boş-ürün mesaj sızıntısı. `blog_public` ve coming soon option **değiştirilmez**.
+Coming soon: WP-CLI `woocommerce_share_key` okunur veya `E2E_COMING_SOON_SHARE_KEY`; çerez `woo-share` (ziyaretçi liste). Ürün/mağaza/ödeme: `asAdmin` (`wpCliAuth`: `wp user list --role=administrator` + `tests/e2e/.auth/<profil>.json` storageState; geçerliyse yeniden kullanılır). Ziyaretçi yüzeyleri (`asVisitor` + share): liste, popup kabuğu, boş-ürün mesaj sızıntısı — oturumsuz context. `blog_public` ve coming soon option **değiştirilmez**.
+
+### Uzak koşu güvenliği
+
+Ölçüm/reklam ve sipariş yazımı `tests/e2e/helpers/network-guard.mjs` içinde. Her `BrowserContext` `installBrowserGuard` / `applyNetworkGuard` ile `context.route` alır (capture, auth, run-*, perf, diag).
+
+| Kural | Davranış |
+|-------|----------|
+| Tracker engeli | Uzak koşularda varsayılan ve **kapatılamaz** (env ile bile). Yerelde de açık. Liste: Facebook/Meta piksel, Google Analytics/GTM/Ads/pagead/ccm, DoubleClick, Bing, Clarity, Hotjar, TikTok, LinkedIn, Pinterest, Snap, Yandex (`mc.yandex.ru`), Segment, Plausible, Matomo (yaygın host/yol), `pixel.wp.com` / `stats.wp.com`. `fonts.googleapis.com` / `gstatic` ve sitenin kendi alanı engellenmez. Sayaç: hostname + adet (`blocked_trackers` → `run.json`); URL sorgu dizesi yazılmaz. |
+| Uzakta sipariş yok | Yalnız uzak profil (`isRemoteProfile`: `profile.remote` boolean varsa o; `ssh.alias` doluysa uzak; `id=local` yerel; `allowedHosts` yalnız 127.0.0.1/localhost ise yerel). POST `?wc-ajax=checkout`, Store API `/wc/store/v1/checkout` (POST/PUT), `admin-ajax.php?action=woocommerce_checkout`, ödeme formu POST (`wc_get_checkout_url()` yolu; sabit `/checkout/` veya `odeme` slug yok), `post-new.php?post_type=shop_order`, `wc-orders&action=new` → istek iptal + test kırmızı `REMOTE-ORDER-BLOCKED: <yol>`. GET ödeme sayfası serbest. |
+| Uzakta POST varsayılan-red | Site alanına giden POST/PUT/PATCH/DELETE yalnız izin listesindeyse geçer: `wc-ajax` `add_to_cart` / `get_refreshed_fragments` / `remove_from_cart` (`apply_coupon` ve `update_order_review` yok, ödeme sayfasında da); Store API `/wc/store(/v1)/cart/*` ve `/batch` (gövdedeki tüm istekler cart yolundaysa); `admin-ajax.php` action `wdp_*` + `woocommerce_add_to_cart` / `woocommerce_get_refreshed_fragments`; sepet formu (`wc_get_cart_url()`) `update_cart`/`remove_item`. Diğer yazım iptal + `remote_post_blocked` (yol, sorgu yok, action adı serbest). Sipariş benzeri ayrıca kırmızı. Yerelde POST serbest. |
+| checkout-view-only | Uzakta ödeme sayfası açılır, ürün adı + Woo biçimli tutar doğrulanır; `fill`/`type`/`selectOption`/`check` yok, “Sipariş ver” tıklanmaz. Sipariş tamamlama atlanır (neden `skips`). Sipariş/HPOS yalnız `local.json`. |
+| Oturum | Uzakta yönetici oturumu ortam başına bir kez (`tests/e2e/.auth/<profil>.json`). Geçerlilik (wp-admin) en fazla 1 kez; kilit dosyası ile işçiler paylaşır, kendileri giriş yapmaz. `wpCliAuth` form girişini hiç denemez. Form girişinde başarısızsa tekrar yok: “Giriş başarısız; Wordfence kilidini önlemek için tekrar denenmedi”. |
 
 Güvenli alan (10.34.0 + 10.34.2): alt CTA `env(safe-area-inset-bottom)` + JS `--wdp-safe-bottom` (iPhone-benzeri, env()=0 iken 34px taban); kapat düğmesi `env(safe-area-inset-top)` + `--wdp-safe-top` (47px taban). `viewport-fit=cover` enjekte edilmez. 10.34.2 `--wdp-cta-clearance` kaydırma payı. `assets/js/src/core/cta-viewport.js`, `assets/css/src` layout/mobile-polish/side-panel.
 
@@ -530,7 +556,9 @@ Güvenli alan (10.34.0 + 10.34.2): alt CTA `env(safe-area-inset-bottom)` + JS `-
 
 **Ikram etkileşimi yalnız repo içi node scriptleri üzerinden:** `npm run ikram:wp -- …` / `deploy:ikram` / `ship:ikram`. Doğrudan `ssh` / `rsync` yazılmaz (Cursor deny). `ikram:wp` kara listesi: `db drop/reset`, `site empty`, `user delete`, `post delete`, `plugin delete/uninstall`, `option update/delete`. İzin: plugin list/get/status/path, option get, post list/get, wc …, cache flush, sg purge, eval (yıkıcı PHP yok), eval-file `tests/e2e/helpers/cleanup-e2e.php` veya `tests/e2e/helpers/e2e-temp-product.php` (yalnız `_wdp_e2e_test=1`). Builtin: `plugin-health`, `php-ok`, `debug-log`, `gateways`.
 
-İzin: yalnız `staging28.hedefdernegi.org` ve `ikramaid.uk`. Kara liste `hedefdernegi.org`. **ikramaid.uk izni Ikram Aid yayına alınmadan önce KALDIRILACAK.**
+İzin: yalnız `staging30.hedefdernegi.org` (`hedef-staging` + `~/www/staging30.hedefdernegi.org/`) ve `ikramaid.uk` (`ikramaid` + `~/www/ikramaid.uk/`). Kara liste `hedefdernegi.org` / `~/www/hedefdernegi.org` (canlı). **ikramaid.uk izni Ikram Aid yayına alınmadan önce KALDIRILACAK.**
+
+Operatör kapısı: uzak spawn yalnız `CLAUDECODE=1` ve Cursor ajan işaretleri yokken (`scripts/lib/remote-guard.mjs`). Cursor CLI deny: `.cursor/cli.json`. Canlı yol taraması: `scripts/lib/live-target-scan.mjs` (`npm run verify`).
 
 ### Test verisi temizliği
 
@@ -641,11 +669,15 @@ Aynı commit’te `tests/e2e/helpers/cleanup-e2e.php`: `const EMAIL_NEEDLE` vark
 
 ### Yazma izin listesi / kara liste / kayıt defteri
 
-- Tek kapı: `scripts/lib/remote-guard.mjs` `assertRemoteAllowed` / `spawnGuarded`. `build/handoff/REMOTE_FREEZE` varken ssh/scp/rsync (uzak) yok.
-- İzinli deploy hedefleri: `scripts/lib/deploy-guards.mjs` `ALLOWED_DEPLOY_TARGETS` (**tek yer**; yeni adres yalnız kullanıcı verince). staging28 **çıkarıldı**. `hedefdernegi.org` kara listede. `ikramaid.uk` notu durur; freeze ikram’ı da keser.
+- Tek kapı: `scripts/lib/remote-guard.mjs` `assertRemoteAllowed` / `spawnGuarded` + `assertRemoteTarget`. `build/handoff/REMOTE_FREEZE` varken ssh/scp/sftp/rsync (uzak) yok.
+- Operatör kapısı: uzak işlem yalnız `process.env.CLAUDECODE === '1'` iken; Cursor ajan env işaretleri (`CURSOR_AGENT`, `CURSOR_INVOKED_AS`, `CURSOR_CONVERSATION_ID`, `CURSOR_REQUEST_ID`, `CURSOR_RIPGREP_PATH`, `__CURSOR_SANDBOX_ENV_RESTORE`) RED. Editörden gelen `CURSOR_EXTENSION_HOST_ROLE` / `CURSOR_LAYOUT` / `CURSOR_SPAWNED_BY_EXTENSION_ID` / `CURSOR_SPAWN_CHAIN` / `CURSOR_WORKSPACE_LABEL` hariç.
+- Klasör kilidi: alias + `wpPath` + `siteUrl` üçlüsü `ALLOWED_DEPLOY_TARGETS` kaydıyla birebir. Komut içi `~/` `/home/` `$HOME/` `--path=` yolları izinli kökün içinde. Uzak komutta `..` yol parçası, göreli/`cd ~`/`cd -`/`cd $HOME`/`cd`, `pushd`/`popd`, `ln -s`, `find /`, `ls ~`, `ls /` RED. `hedefdernegi.org` yalnız `staging30.hedefdernegi.org` biçiminde.
+- İzinli hedefler (**tek yer** `scripts/lib/deploy-guards.mjs`): `staging-hedef` (`hedef-staging`, `~/www/staging30.hedefdernegi.org/`), `ikram-aid` (`ikramaid`, `~/www/ikramaid.uk/`). Kara liste: `hedefdernegi.org`, `www.hedefdernegi.org`, `~/www/hedefdernegi.org`. `ikramaid.uk` kaldırma notu durur; freeze ikram’ı da keser.
+- Cursor deny: `.cursor/cli.json` (`Shell(ssh|scp|sftp|rsync|curl|wget|…)` + `.env*` okuma/yazma).
+- Canlı tarama: `scripts/lib/live-target-scan.mjs` `npm run verify` zincirinde; ihlal dosya:satır ile kırmızı.
 - Silme: `tests/e2e/helpers/cleanup-e2e.php` + `safe-remote-write.mjs`. Koşullar: (a) `_wdp_e2e_test=<run_id>` (sabit `"1"` değil), (b) `build/e2e/run-registry.json` içinde, (c) beklenen post_type. Defter boşsa hiçbir şey silinmez.
 - Kara liste: `page`, `attachment`, `nav_menu_item`, `wp_template*`, `elementor_library`, Woo/WP çekirdek sayfa ID’leri (`page_on_front`, `woocommerce_*_page_id`, eklenti başarı sayfası). Kullanıcı silme: meta + e-posta + defter; içerik varsa red; `wp_delete_user($id, null)` yalnız içerik 0 iken.
-- Fixture: `npm run e2e:bootstrap -- --env local`. Mutasyon testleri (amount-options, form-fields, campaign-blocks, product-theme, shortcodes, empty-price) fixture yoksa `e2e:bootstrap çalıştırın` ile FAIL.
+- Fixture: `npm run e2e:bootstrap -- --env local`. `--env staging\|ikram --dry-run` uzak yazmadan plan listeler (`_wdp_e2e_test=<run_id>`, `private`, katalog/arama gizli, sayfa/menü/kategori/görsel/ayar yok, kayıt defteri). Gerçek kurulum: kanarya → ürünler → kanarya (yalnız defterdeki yeni ürünler beklenir). Uzak gerçek koşu yalnız Claude. Mutasyon testleri (amount-options, form-fields, campaign-blocks, product-theme, shortcodes, empty-price) fixture yoksa `e2e:bootstrap çalıştırın` ile FAIL. Gizli ürün listede görünmez; liste/kart testleri gerçek katalog ürünlerini yalnız okur.
 
 ### Kanarya
 
@@ -653,6 +685,6 @@ Aynı commit’te `tests/e2e/helpers/cleanup-e2e.php`: `const EMAIL_NEEDLE` vark
 
 ### Yerel kanıt ortamı
 
-Docker / wp-env yok. `scripts/local-wp.mjs`: PHP + WordPress + SQLite (`build/local-wp/wordpress`). `npm run test:local-wp` reproduce + yeni temizlik + kanarya + bootstrap.
+Docker / wp-env yok. `scripts/local-wp.mjs`: PHP + WordPress + SQLite (`build/local-wp/wordpress`). `ensureLocalWp(kök)` veya `ensureLocalWp({ quiet, root })`; `resetLocalWp(kök)` prova kökünü sıfırlar. `tests/local-wp/eval-file.php` hedefi `$wdp_eval_target` / `$wdp_eval_args` (WP 7.1 `pages.php` `$file` sızıntısı). `npm run test:local-wp` reproduce + yeni temizlik + kanarya + bootstrap.
 
 Eklenti kodu (`includes/`, `uninstall.php`) sayfa oluşturmaz/silmez; `wp_trash_post` kancaları yalnız dinler (`includes/class-utils.php:55,72`). `update_option` eklentide `wdp_*` (migrasyon yedeği `BACKUP_OPTION_KEYS` de `wdp_*`; döngü süzgeci yok — yedek eklenti kendi dosyası).

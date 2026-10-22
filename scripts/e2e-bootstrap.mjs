@@ -1,19 +1,36 @@
 #!/usr/bin/env node
 /**
- * Fixture ürün bootstrap. Uzak ortamda REMOTE_FREEZE reddeder.
+ * Fixture ürün bootstrap.
  *
  *   npm run e2e:bootstrap -- --env local [--dry-run]
- *   npm run e2e:bootstrap -- --env local --remove
+ *   npm run e2e:bootstrap -- --env staging --dry-run
+ *   npm run e2e:bootstrap -- --env ikram --dry-run
+ *
+ * Dry-run uzak yazmaz (REMOTE_FREEZE olsa da listeler).
+ * Gerçek uzak kurulum yalnız Claude (spawnGuarded); Cursor çalıştırmaz.
  */
 import fs from 'node:fs';
 import path from 'node:path';
+import { spawnSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 import { ROOT } from '../tests/e2e/helpers/env-root.mjs';
-import { FIXTURE_CATALOG, fixturesPathFor } from '../tests/e2e/helpers/fixtures.mjs';
+import { fixturesPathFor, describeBootstrapPlan } from '../tests/e2e/helpers/fixtures.mjs';
 import { isRemoteFrozen, FREEZE_MESSAGE } from './lib/remote-guard.mjs';
 import { ensureLocalWp } from './local-wp.mjs';
-import { resetRegistry, registerCreated } from '../tests/e2e/helpers/run-registry.mjs';
+import { resetRegistry, registerCreated, isRunIdOk } from '../tests/e2e/helpers/run-registry.mjs';
+import { loadProfile, isRemoteProfile } from '../tests/e2e/helpers/profile.mjs';
+import { setActiveDeployEnvFile, runEvalFile } from '../tests/e2e/helpers/wp-remote.mjs';
+import {
+  snapshotCanary,
+  snapshotCanaryLocal,
+  compareWithRegistry,
+  formatCanaryDiff,
+  writeCanaryAlert,
+} from '../tests/e2e/helpers/canary.mjs';
 
-function parseArgs(argv) {
+export const REMOTE_BOOTSTRAP_PHP = 'tests/e2e/helpers/bootstrap-e2e-products.php';
+
+export function parseArgs(argv) {
   const a = argv.filter((x) => x !== '--');
   let envId = 'local';
   let dry = false;
@@ -31,57 +48,98 @@ function fail(msg) {
   process.exit(1);
 }
 
-async function main() {
-  const { envId, dry, remove } = parseArgs(process.argv.slice(2));
-  if (envId !== 'local' && isRemoteFrozen()) {
-    fail(FREEZE_MESSAGE);
-  }
-  if (envId !== 'local') {
-    fail('e2e:bootstrap bu görevde yalnız --env local (REMOTE_FREEZE).');
-  }
-  ensureLocalWp();
-  const runId = 'fixture';
-  if (!dry) resetRegistry(runId);
+function parsePhpJson(stdout) {
+  const line = String(stdout || '')
+    .split(/\n/)
+    .filter((l) => l.trim().startsWith('{'))
+    .pop();
+  return JSON.parse(line || '{}');
+}
 
-  if (dry) {
-    console.log(
-      JSON.stringify(
-        { dryRun: true, env: envId, would: remove ? 'remove' : 'create', catalog: FIXTURE_CATALOG.map((c) => c.role) },
-        null,
-        2
-      )
-    );
-    return;
-  }
+function writeFixtures(envId, data) {
+  const outFile = fixturesPathFor(envId);
+  fs.mkdirSync(path.dirname(outFile), { recursive: true });
+  fs.writeFileSync(outFile, JSON.stringify(data, null, 2) + '\n', 'utf8');
+  return outFile;
+}
 
+function registerCreatedRows(data) {
+  if (!Array.isArray(data.created)) return;
+  for (const row of data.created) {
+    const type = String(row.type || 'product');
+    registerCreated({ id: row.id, type, mark: `_wdp_e2e_test=${data.runId || ''}` });
+  }
+}
+
+function runLocalPhp(action, envId, runId) {
   const phpFile = path.join(ROOT, 'tests/local-wp/bootstrap-fixtures.php');
-  const { spawnSync } = await import('node:child_process');
-  const r = spawnSync('php', [phpFile, remove ? 'remove' : 'upsert', envId, runId], {
+  const r = spawnSync('php', [phpFile, action, envId, runId], {
     encoding: 'utf8',
     cwd: ROOT,
   });
   if (r.status !== 0) {
     fail(`bootstrap php: ${(r.stderr || r.stdout || '').slice(0, 600)}`);
   }
-  const line = String(r.stdout || '')
-    .split(/\n/)
-    .filter((l) => l.trim().startsWith('{'))
-    .pop();
-  const data = JSON.parse(line || '{}');
-  const outFile = fixturesPathFor(envId);
-  fs.mkdirSync(path.dirname(outFile), { recursive: true });
-  fs.writeFileSync(outFile, JSON.stringify(data, null, 2) + '\n', 'utf8');
-  if (!remove && Array.isArray(data.created)) {
-    for (const row of data.created) {
-      try {
-        registerCreated({ id: row.id, type: 'product' });
-      } catch {
-        /* zaten var */
-      }
-    }
+  return parsePhpJson(r.stdout);
+}
+
+function compareAfter(before, after) {
+  const cmp = compareWithRegistry(before, after);
+  if (!cmp.ok) {
+    writeCanaryAlert(cmp, 'e2e:bootstrap kanarya');
+    fail(formatCanaryDiff(cmp));
   }
+}
+
+async function main() {
+  const { envId, dry, remove } = parseArgs(process.argv.slice(2));
+  const profile = loadProfile(envId);
+  const remote = isRemoteProfile(profile);
+  const runId = dry ? 'boot-dry' : remote ? `boot-${Date.now()}` : 'fixture';
+  if (!dry && !isRunIdOk(runId)) {
+    fail('geçersiz runId');
+  }
+
+  if (dry) {
+    const plan = describeBootstrapPlan(profile.id || envId, runId, { remove, dryRun: true });
+    console.log(JSON.stringify(plan, null, 2));
+    return;
+  }
+
+  if (remote && isRemoteFrozen()) {
+    fail(FREEZE_MESSAGE);
+  }
+
+  if (!remove) resetRegistry(runId);
+
+  if (!remote) {
+    ensureLocalWp();
+    const before = remove ? null : snapshotCanaryLocal();
+    const data = runLocalPhp(remove ? 'remove' : 'upsert', profile.id || envId, runId);
+    const outFile = writeFixtures(profile.id || envId, data);
+    if (!remove) registerCreatedRows({ ...data, runId });
+    if (before) compareAfter(before, snapshotCanaryLocal());
+    console.log(`fixtures: ${outFile}`);
+    console.log(JSON.stringify({ roles: data.roles, skipped: data.skipped, removed: data.removed }, null, 2));
+    return;
+  }
+
+  if (profile.deployEnvFile) setActiveDeployEnvFile(profile.deployEnvFile);
+  const before = remove ? null : snapshotCanary();
+  const raw = runEvalFile(
+    REMOTE_BOOTSTRAP_PHP,
+    { WDP_E2E_RUN_ID: runId },
+    remove ? 'remove' : 'upsert'
+  );
+  const data = parsePhpJson(raw);
+  const outFile = writeFixtures(profile.id || envId, data);
+  if (!remove) registerCreatedRows({ ...data, runId });
+  if (before) compareAfter(before, snapshotCanary());
   console.log(`fixtures: ${outFile}`);
   console.log(JSON.stringify({ roles: data.roles, skipped: data.skipped, removed: data.removed }, null, 2));
 }
 
-main().catch((e) => fail(e.message || String(e)));
+const invoked = process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+if (invoked) {
+  main().catch((e) => fail(e.message || String(e)));
+}

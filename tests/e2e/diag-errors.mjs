@@ -15,6 +15,7 @@ import {
   shellTriggerLocator,
 } from './helpers/checks.mjs';
 import { SEL } from './helpers/selectors.mjs';
+import { installBrowserGuard } from './helpers/network-guard.mjs';
 
 const OUT = path.join(ROOT, 'build/e2e/debug');
 
@@ -180,6 +181,7 @@ async function main() {
   const env = loadE2EEnv();
   fs.mkdirSync(OUT, { recursive: true });
   const browser = await chromium.launch();
+  installBrowserGuard(browser, env);
   const probe = await browser.newContext({ viewport: { width: 1440, height: 900 } });
   const p = await probe.newPage();
   await p.goto(withCacheBust(env.E2E_BASE_URL, '/'), { waitUntil: 'domcontentloaded' }).catch(() => {});
