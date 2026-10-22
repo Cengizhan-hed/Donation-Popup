@@ -88,14 +88,23 @@ final class Shortcodes1033Test extends TestCase {
 		$html = WDP_Donations_List::render(array('orderby' => 'random'));
 		$this->assertNotSame('', $html);
 		$this->assertSame(array(), WDP_Test_State::$transients);
+		$this->assertStringNotContainsString('wdp-admin-notice', $html);
 
 		$html = WDP_Donations_List::render(array('limit' => 3));
-		$this->assertStringContainsString('wdp-admin-notice', $html);
+		$this->assertStringNotContainsString('wdp-admin-notice', $html);
 		$this->assertNotEmpty(WDP_Test_State::$transients);
 		foreach (WDP_Test_State::$transients as $cached) {
 			$this->assertStringNotContainsString('wdp-admin-notice', (string) $cached);
 			$this->assertStringNotContainsString('wdp-list-1', (string) $cached);
 			$this->assertStringContainsString(WDP_Donations_List::UID_PLACEHOLDER, (string) $cached);
+		}
+
+		WDP_Test_State::$is_admin = true;
+		WDP_Test_State::$transients = array();
+		$admin_html = WDP_Donations_List::render(array('limit' => 3));
+		$this->assertStringContainsString('wdp-admin-notice', $admin_html);
+		foreach (WDP_Test_State::$transients as $cached) {
+			$this->assertStringNotContainsString('wdp-admin-notice', (string) $cached);
 		}
 	}
 
@@ -163,11 +172,16 @@ final class Shortcodes1033Test extends TestCase {
 		$p->purchasable = true;
 		WDP_Test_State::$products[5] = $p;
 		WDP_Test_State::$caps        = array('edit_products');
+		$this->assertSame('', WDP_Shortcodes::unavailable_product_notice($p));
+		$this->assertSame('', WDP_Shortcodes::render_form(array('id' => 5)));
+
+		WDP_Test_State::$is_admin = true;
 		$notice = WDP_Shortcodes::unavailable_product_notice($p);
 		$this->assertStringContainsString('stokta yok', $notice);
 		$html = WDP_Shortcodes::render_form(array('id' => 5));
 		$this->assertStringContainsString('stokta yok', $html);
-		WDP_Test_State::$caps = array();
+		WDP_Test_State::$caps     = array();
+		WDP_Test_State::$is_admin = false;
 		$guest = WDP_Shortcodes::render_form(array('id' => 5));
 		$this->assertSame('', $guest);
 	}
@@ -295,5 +309,14 @@ final class Shortcodes1033Test extends TestCase {
 		$this->assertSame('list cache bumped', $summary);
 		$this->assertSame(5, (int) get_option(WDP_Donations_List::CACHE_VERSION, 1));
 		$this->assertArrayHasKey('10.33.0', WDP_Migrations::steps());
+	}
+
+	public function test_migration_10_34_0_bumps_list_cache(): void {
+		WDP_Test_State::$options[ WDP_Donations_List::CACHE_VERSION ] = 8;
+		WDP_Donations_List::reset_bump_guard();
+		$summary = WDP_Migrations::step_10_34_0(false);
+		$this->assertSame('list cache bumped', $summary);
+		$this->assertSame(9, (int) get_option(WDP_Donations_List::CACHE_VERSION, 1));
+		$this->assertArrayHasKey('10.34.0', WDP_Migrations::steps());
 	}
 }

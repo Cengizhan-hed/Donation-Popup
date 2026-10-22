@@ -25,10 +25,13 @@
   }
 
   function parseAmount(value) {
+    const utils = WDPApp.utils || {};
+    if (typeof utils.parseMoney === 'function') {
+      return utils.parseMoney(value);
+    }
     if (value === null || value === undefined || value === '') return NaN;
     if (typeof value === 'number') return value;
-    const cleaned = String(value).trim().replace(/\s+/g, '').replace(/\./g, '').replace(',', '.');
-    return Number.parseFloat(cleaned);
+    return Number.parseFloat(String(value).trim().replace(/\s+/g, ''));
   }
 
   function getButtonTexts() {
@@ -92,7 +95,7 @@
   function getCurrencySymbolDecoded() {
     const raw = (wdp_ajax && wdp_ajax.currency && wdp_ajax.currency.symbol)
       ? wdp_ajax.currency.symbol
-      : '₺';
+      : '';
     return decodeHtmlEntities(raw);
   }
 

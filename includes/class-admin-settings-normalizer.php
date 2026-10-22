@@ -85,7 +85,7 @@ class WDP_Admin_Settings_Normalizer {
 			'form_button_alignment'             => in_array(isset($request['form_button_alignment']) ? $request['form_button_alignment'] : (isset($existing['form_button_alignment']) ? $existing['form_button_alignment'] : 'left'), array('left', 'center', 'right'), true) ? sanitize_text_field(isset($request['form_button_alignment']) ? $request['form_button_alignment'] : (isset($existing['form_button_alignment']) ? $existing['form_button_alignment'] : 'left')) : 'left',
 			'enable_multi_step'                 => self::pick_flag($request, $existing, 'enable_multi_step', '0'),
 			'enable_amount_presets'             => self::pick_flag($request, $existing, 'enable_amount_presets', '0'),
-			'amount_presets'                    => self::pick_text($request, $existing, 'amount_presets', '100, 250, 500, 1000, 2500'),
+			'amount_presets'                    => self::pick_text($request, $existing, 'amount_presets', class_exists('WDP_Form_Modules') ? WDP_Form_Modules::default_amount_presets_csv() : '100, 250, 500, 1000, 2500'),
 			'style_preset_id'                   => isset($request['style_preset_id']) ? sanitize_key((string) wp_unslash($request['style_preset_id'])) : (isset($existing['style_preset_id']) ? sanitize_key((string) $existing['style_preset_id']) : 'classic'),
 			'brand_color'                       => (isset($request['brand_color']) && sanitize_hex_color($request['brand_color']))
 				? sanitize_hex_color($request['brand_color'])
@@ -207,7 +207,7 @@ class WDP_Admin_Settings_Normalizer {
 		// 10.29.0 (Y3/Y4/Y6): strict list validation. A changed, invalid value is rejected (the
 		// stored list is kept and last_validation_error is set); an UNCHANGED legacy value is
 		// tolerated and soft-cleaned so unrelated tabs (e.g. Design Studio) can still save.
-		$default_presets = '100, 250, 500, 1000, 2500';
+		$default_presets = class_exists('WDP_Form_Modules') ? WDP_Form_Modules::default_amount_presets_csv() : '100, 250, 500, 1000, 2500';
 		$preset_raw      = isset($settings['amount_presets']) ? trim((string) $settings['amount_presets']) : '';
 		$stored_presets  = isset($existing['amount_presets']) ? trim(sanitize_text_field((string) $existing['amount_presets'])) : '';
 		$preset_check    = WDP_Form_Modules::validate_amount_presets_for_save($preset_raw);

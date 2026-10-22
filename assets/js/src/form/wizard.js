@@ -421,8 +421,11 @@
       );
       if (price && !price.closest('[hidden]')) {
         const raw = String(price.value || '').trim();
-        const min = parseFloat(price.getAttribute('min') || price.dataset.baseMin || price.getAttribute('data-wdp-min-price') || '0');
-        const n = parseFloat(String(raw).replace(/[^\d.,]/g, '').replace(',', '.'));
+        const parseAmt = (window.WDPApp && WDPApp.utils && typeof WDPApp.utils.parseMoney === 'function')
+          ? WDPApp.utils.parseMoney
+          : parseFloat;
+        const min = parseAmt(price.getAttribute('min') || price.dataset.baseMin || price.getAttribute('data-wdp-min-price') || '0');
+        const n = parseAmt(raw);
         if (!raw || !Number.isFinite(n) || n <= 0 || (Number.isFinite(min) && min > 0 && n + 0.0001 < min)) {
           ok = false;
           firstInvalid = firstInvalid || price;

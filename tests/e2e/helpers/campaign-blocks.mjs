@@ -8,10 +8,13 @@ import { withCacheBust } from './env.mjs';
 import {
   emptyCart,
   openShellLocator,
+  clickShellTrigger,
+  revealListProductTrigger,
   shellTriggerLocator,
   makeFailure,
 } from './checks.mjs';
 import { getProductMeta, setProductMeta } from './staging-wp-meta.mjs';
+import { requireFixtureRole } from './fixtures.mjs';
 
 const CHECK_MS = 25000;
 
@@ -48,6 +51,9 @@ async function openProductShell(page, mode, opts) {
   await page.goto(withCacheBust(opts.baseUrl, openPath, { hdf_no_side_cart: '1' }), {
     waitUntil: 'domcontentloaded',
   });
+  if (mode === 'popup') {
+    await revealListProductTrigger(page, opts.productId || 0);
+  }
   let trigger = shellTriggerLocator(page, mode, { productId: opts.productId || 0 });
   if ((await trigger.count()) === 0) {
     trigger =
@@ -55,10 +61,18 @@ async function openProductShell(page, mode, opts) {
         ? page.locator(SEL.sidePanelTrigger).first()
         : page.locator(SEL.centeredPopupTrigger).first();
   }
-  // aria-disabled="true" (hedef close) Playwright'te enabled sayılmaz → force.
-  const force = (await trigger.getAttribute('data-wdp-goal-closed')) === '1';
-  await trigger.click({ timeout: CHECK_MS, force });
-  const shell = openShellLocator(page, mode);
+  // aria-disabled="true" (hedef close) Playwright'te enabled sayılmaz → force / DOM click.
+  const one =
+    (await trigger.filter({ visible: true }).count().catch(() => 0)) > 0
+      ? trigger.filter({ visible: true }).first()
+      : trigger.first();
+  const force = (await one.getAttribute('data-wdp-goal-closed')) === '1';
+  if (force) {
+    await one.click({ timeout: CHECK_MS, force: true });
+  } else {
+    await clickShellTrigger(trigger, CHECK_MS);
+  }
+  const shell = mode === 'popup' ? openShellLocator(page, '') : openShellLocator(page, mode);
   await waitShellReady(shell);
   return shell;
 }
@@ -155,9 +169,24 @@ export async function runCampaignBlocksChecks({
 }) {
   const checks = [];
   const baseUrl = env.E2E_BASE_URL;
-  const campaignId = productIds.campaign || 0;
-  const campaignPath = productUrls.campaign;
   const listPath = listPagePath || env.E2E_LIST_PAGE;
+  let campaignId = productIds.campaign || 0;
+  let campaignPath = productUrls.campaign;
+  try {
+    const fx = requireFixtureRole(env, 'campaign');
+    campaignId = fx.id;
+    campaignPath = fx.path || fx.url || campaignPath;
+  } catch (e) {
+    failures.push(
+      makeFailure({
+        check: 'campaign-blocks-fixture',
+        description: String(e.message || e),
+        error: e,
+      })
+    );
+    stats.failed += 1;
+    return;
+  }
 
   const ctx = await browser.newContext(contextOpts);
   const page = await ctx.newPage();

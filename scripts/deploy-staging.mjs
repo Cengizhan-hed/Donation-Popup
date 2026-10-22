@@ -10,13 +10,13 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { spawnSync } from 'node:child_process';
 import dotenv from 'dotenv';
 import {
   parsePluginVersion,
   validateDeployEnv,
   validateRemoteSiteUrl,
 } from './lib/deploy-guards.mjs';
+import { assertRemoteAllowed, spawnGuarded } from './lib/remote-guard.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
@@ -60,12 +60,12 @@ function sshBase(env) {
   ];
 }
 
-function run(cmd, args, opts = {}) {
-  const res = spawnSync(cmd, args, {
+function run(cmd, args, opts = {}, guardOpts = {}) {
+  const res = spawnGuarded(cmd, args, {
     encoding: 'utf8',
     cwd: ROOT,
     ...opts,
-  });
+  }, guardOpts);
   if (res.status !== 0) {
     const err = (res.stderr || res.stdout || '').trim().slice(0, 500);
     fail(`${cmd} başarısız${err ? `: ${err}` : ''}`);
@@ -75,10 +75,18 @@ function run(cmd, args, opts = {}) {
 
 function remote(env, remoteCmd) {
   const base = sshBase(env);
-  return run(base[0], [...base.slice(1), remoteCmd]);
+  return run(base[0], [...base.slice(1), remoteCmd], {}, {
+    siteUrl: env?.DEPLOY_SITE_URL,
+    wpPath: env?.DEPLOY_WP_PATH,
+  });
 }
 
 function main() {
+  try {
+    assertRemoteAllowed();
+  } catch (e) {
+    fail(e && e.message ? e.message : String(e));
+  }
   const env = loadDeployEnv();
   const guard = validateDeployEnv(env);
   if (!guard.ok) fail(guard.reason);
@@ -163,7 +171,10 @@ function main() {
     zipLocal,
     `${env.DEPLOY_SSH_USER}@${env.DEPLOY_SSH_HOST}:${remoteZip}`,
   ];
-  run(scp[0], scp.slice(1), { stdio: 'inherit' });
+  run(scp[0], scp.slice(1), { stdio: 'inherit' }, {
+    siteUrl: env.DEPLOY_SITE_URL,
+    wpPath: env.DEPLOY_WP_PATH,
+  });
 
   remote(
     env,

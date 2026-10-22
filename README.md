@@ -387,6 +387,24 @@ Formun içindeki SSS modülü 10.27.0’da tamamen kaldırıldı. SSS’ler ür�
 
 ## Sürüm notları
 
+### 10.34.2 — Sabit tutar etiketi ve CTA alt dolgu
+
+- “Bağış Tutarı” etiketi yalnız gerçek tutar girişi olan türlerde (bağışçı belirler, hedefli). Sabit tutar ve hisselide yok.
+- Form kaydırma alanı: son öğe alt eylem çubuğunun üstünde kalır (`--wdp-cta-clearance`).
+- E2E ekran görüntüsü: yönetici çubuğu ve WooCommerce Coming soon bandı yalnız çekimde gizlenir.
+
+### 10.34.1 — Ürün sayfası auto_place yedek (builder)
+
+- WooCommerce sepete-ekle öğesi olmayan Elementor/Avada ürün şablonlarında `auto_place=yes` iken Bağış Yap bir kez basılır (`wp_footer` / `woocommerce_after_single_product`; zaten basılmışsa yok).
+
+### 10.34.0 — Ikram Aid uyumu (kart, GBP biçim, güvenli alan)
+
+- Liste kartı: görsel ve başlık gerçek ürün bağlantısı; “Bağış Yap” popup/panelde sayfadan ayrılmaz; boş ve Uncategorized sekmeler yok.
+- Bağışçı belirler / hedefli: WooCommerce Genel fiyat boşken listede görünür ve sepete eklenir (min yalnız Bağış sekmesi). Genel fiyat değişmez.
+- Kart: custom’da yalnız min; kampanyada toplanan/hedef + çubuk (boş hedefte çubuk yok).
+- Para biçimi: Woo ayarları JS’e; `formatMoney` / `parseMoney`; varsayılan hızlı tutarlar para birimine göre.
+- iPhone güvenli alan: alt eylem çubuğu `env(safe-area-inset-bottom)` + taban dolgu.
+
 ### 10.33.0 — Kısa kod / blok / Elementor / Gelişmiş
 
 - `[wdp_donations]` önbelleği ürün kaydı, fiyat, bağış sekmesi ve sipariş durumunda yenilenir; `random` atlanır; admin notu cache’e girmez.

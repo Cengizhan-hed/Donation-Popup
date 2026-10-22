@@ -209,8 +209,8 @@ html body .wdp-donation-form .wdp-modal-content:has(form.wdp-has-shareholders) {
 /* —— Sticky zones inside content —— */
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content > .wdp-modal-close {
   position: absolute;
-  top: 14px;
-  inset-inline-end: 14px;
+  top: max(14px, env(safe-area-inset-top, 0px), var(--wdp-safe-top, 0px));
+  inset-inline-end: max(14px, env(safe-area-inset-right, 0px));
   z-index: var(--wdp-z-modal-close, 2147483647);
 }
 
@@ -262,7 +262,7 @@ html body .wdp-donation-form .wdp-donation-form-fields .wdp-form-cta-zone {
   z-index: 5;
   margin-top: 0;
   padding-top: 12px;
-  padding-bottom: max(10px, env(safe-area-inset-bottom, 0px));
+  padding-bottom: max(10px, env(safe-area-inset-bottom, 0px), var(--wdp-safe-bottom, 0px));
   background: #ffffff;
   background: linear-gradient(
     180deg,
@@ -279,7 +279,8 @@ html body .wdp-donation-form .wdp-donation-form-fields .wdp-form-cta-zone {
 html body .wdp-modal.show:not(.wdp-side-panel) .wdp-donation-form-fields,
 html body .wdp-donation-form .wdp-donation-form-fields {
   scroll-padding-bottom: calc(
-    var(--wdp-form-cta-height, 52px) + var(--wdp-keyboard-inset, 0px) + 28px
+    var(--wdp-cta-clearance, calc(var(--wdp-form-cta-height, 52px) + 28px))
+    + var(--wdp-keyboard-inset, 0px)
   );
 }
 

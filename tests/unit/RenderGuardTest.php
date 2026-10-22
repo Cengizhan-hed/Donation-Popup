@@ -33,8 +33,15 @@ final class RenderGuardTest extends TestCase {
 		$this->assertSame($level, ob_get_level());
 	}
 
-	public function test_product_editor_gets_admin_notice_without_partial_markup(): void {
+	public function test_live_frontend_hides_render_notice_even_for_editors(): void {
 		WDP_Test_State::$caps = array('edit_products');
+		$html = WDP_Render_Guard::html($this->failing(), 12, 'test');
+		$this->assertSame('', $html);
+	}
+
+	public function test_wp_admin_gets_admin_notice_without_partial_markup(): void {
+		WDP_Test_State::$caps     = array('edit_products');
+		WDP_Test_State::$is_admin = true;
 
 		$html = WDP_Render_Guard::html($this->failing(), 12, 'test');
 
@@ -63,9 +70,19 @@ final class RenderGuardTest extends TestCase {
 		$this->assertSame('', WDP_Utils::admin_notice_html('Ürün bulunamadı'));
 
 		WDP_Test_State::$caps = array('edit_products');
+		$this->assertSame('', WDP_Utils::admin_notice_html('Canlı sitede yöneticiye de gizlenir'));
+
+		WDP_Test_State::$is_admin = true;
 		$html = WDP_Utils::admin_notice_html('<b>Ürün</b> bulunamadı');
 
 		$this->assertSame('<div class="wdp-admin-notice" role="note">&lt;b&gt;Ürün&lt;/b&gt; bulunamadı</div>', $html);
+
+		WDP_Test_State::$is_admin = false;
+		WDP_Test_State::$caps     = array('edit_products');
+		$_GET['fb-edit']         = '1';
+		WDP_Builder_Detect::reset();
+		$preview = WDP_Utils::admin_notice_html('Önizleme notu');
+		$this->assertStringContainsString('wdp-admin-notice', $preview);
 	}
 
 	public function test_legacy_settings_helpers_accept_corrupt_option_values(): void {

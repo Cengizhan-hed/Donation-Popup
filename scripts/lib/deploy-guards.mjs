@@ -1,18 +1,22 @@
 /**
  * Kurulum kilitleri (ağ gerektirmeyen kontroller).
  *
- * İzinli ship hedefleri YALNIZ:
- *   - staging28.hedefdernegi.org
- *   - ikramaid.uk
+ * İzinli ship hedefleri YALNIZ bu listedekiler (ALLOWED_DEPLOY_TARGETS).
+ * Yeni Hedef staging adresi YALNIZ kullanıcı verince bu listeye eklenir — tek yer burası.
  *
+ * 2026-10-22: staging28.hedefdernegi.org ÇIKARILDI (ortam bozuldu; yeni adres bekleniyor).
  * Kara liste: hedefdernegi.org (canlı) — path veya URL sapması durur.
  *
  * KAYIT: ikramaid.uk izni Ikram Aid yayına alınmadan önce KALDIRILACAK.
+ * (REMOTE_FREEZE varken ikram da çalışmaz.)
  */
 
 /** Ikram Aid yayına alınmadan önce bu izin KALDIRILACAK. */
 export const IKRAM_ALLOW_REMOVAL_NOTE =
   'ikramaid.uk izni Ikram Aid yayına alınmadan önce KALDIRILACAK';
+
+export const RETIRED_HEDEF_STAGING_NOTE =
+  'Hedef staging (staging28.hedefdernegi.org) izin listesinden çıkarıldı (2026-10-22 olayı). Yeni adres kullanıcı verene kadar deploy yok.';
 
 /**
  * Canlı Hedef: alt alan adı staging* değilse reddet.
@@ -22,13 +26,15 @@ export const LIVE_HOST_BLOCKLIST = [
   /(^|\.)hedefdernegi\.org$/i,
 ];
 
+/** Eski Hedef staging — yeni adres verilene kadar kesin reddedilir. */
+export const RETIRED_HEDEF_STAGING_HOSTS = ['staging28.hedefdernegi.org'];
+
+/**
+ * Yeni hedef eklemek için TEK yer. Adres izin listesine yalnız kullanıcı verince eklenir.
+ *
+ * ikramaid.uk izni Ikram Aid yayına alınmadan önce KALDIRILACAK.
+ */
 export const ALLOWED_DEPLOY_TARGETS = [
-  {
-    id: 'staging-hedef',
-    hosts: [/staging28\.hedefdernegi\.org$/i],
-    urlIncludes: ['staging28.hedefdernegi.org'],
-    pathIncludes: ['staging28.hedefdernegi.org', 'staging'],
-  },
   {
     id: 'ikram-aid',
     hosts: [/(^|\.)ikramaid\.uk$/i],
@@ -42,18 +48,36 @@ export const ALLOWED_DEPLOY_TARGETS = [
 /**
  * @param {string} hostOrUrl
  */
-export function isLiveHedefHost(hostOrUrl) {
+export function extractHost(hostOrUrl) {
   const raw = String(hostOrUrl || '').trim().toLowerCase();
-  if (!raw) return false;
-  if (raw.includes('staging')) return false;
+  if (!raw) return '';
   let host = raw;
   try {
     if (/^https?:\/\//i.test(raw)) host = new URL(raw).hostname;
   } catch {
     host = raw.replace(/^https?:\/\//i, '').split('/')[0];
   }
-  host = host.replace(/^www\./, '');
+  return host.replace(/^www\./, '').split('/')[0];
+}
+
+/**
+ * @param {string} hostOrUrl
+ */
+export function isLiveHedefHost(hostOrUrl) {
+  const raw = String(hostOrUrl || '').trim().toLowerCase();
+  if (!raw) return false;
+  if (/\bstaging\d*\./i.test(raw) || raw.includes('staging')) return false;
+  const host = extractHost(raw) || raw.replace(/^www\./, '');
   return host === 'hedefdernegi.org' || /(^|\.)hedefdernegi\.org$/.test(host);
+}
+
+/**
+ * @param {string} hostOrUrl
+ */
+export function isRetiredHedefStaging(hostOrUrl) {
+  const raw = String(hostOrUrl || '').trim().toLowerCase();
+  if (!raw) return false;
+  return RETIRED_HEDEF_STAGING_HOSTS.some((h) => raw.includes(h));
 }
 
 /**
@@ -66,6 +90,9 @@ export function matchAllowedTarget(siteUrl, wpPath) {
   if (isLiveHedefHost(url) || isLiveHedefHost(p) || /\/www\/hedefdernegi\.org\//i.test(p)) {
     return { ok: false, reason: 'Kara liste: hedefdernegi.org (canlı) kesin engelli.' };
   }
+  if (isRetiredHedefStaging(url) || isRetiredHedefStaging(p)) {
+    return { ok: false, reason: RETIRED_HEDEF_STAGING_NOTE };
+  }
   for (const t of ALLOWED_DEPLOY_TARGETS) {
     const urlOk = t.urlIncludes.some((s) => url.includes(s));
     const pathOk = t.pathIncludes.some((s) => p.includes(String(s).toLowerCase()));
@@ -76,7 +103,7 @@ export function matchAllowedTarget(siteUrl, wpPath) {
   return {
     ok: false,
     reason:
-      'DEPLOY_SITE_URL / DEPLOY_WP_PATH izin listesinde değil. İzinli: staging28.hedefdernegi.org, ikramaid.uk.',
+      'DEPLOY_SITE_URL / DEPLOY_WP_PATH izin listesinde değil. İzinli: ikramaid.uk (Hedef staging adresi kullanıcı verene kadar yok).',
   };
 }
 
@@ -134,6 +161,9 @@ export function validateE2EBaseUrl(baseUrl, allowedHosts = []) {
   if (isLiveHedefHost(raw)) {
     return { ok: false, reason: 'Kara liste: hedefdernegi.org (canlı) E2E için kesin engelli.' };
   }
+  if (isRetiredHedefStaging(raw)) {
+    return { ok: false, reason: RETIRED_HEDEF_STAGING_NOTE };
+  }
   let host = '';
   try {
     host = new URL(raw).hostname.toLowerCase().replace(/^www\./, '');
@@ -148,11 +178,10 @@ export function validateE2EBaseUrl(baseUrl, allowedHosts = []) {
     };
   }
   const urlOk = matchAllowedTarget(raw, raw);
-  if (!urlOk.ok && !allowed.includes(host)) {
+  if (!urlOk.ok) {
     return {
       ok: false,
-      reason:
-        'E2E_BASE_URL izin listesinde değil. İzinli: staging28.hedefdernegi.org, ikramaid.uk.',
+      reason: urlOk.reason || 'E2E_BASE_URL izin listesinde değil. İzinli: ikramaid.uk.',
     };
   }
   return { ok: true };
@@ -172,6 +201,9 @@ export function validateRemoteSiteUrl(remoteSiteUrl, expectedSiteUrl) {
   }
   if (isLiveHedefHost(remote) || isLiveHedefHost(expected)) {
     return { ok: false, reason: 'Kara liste: hedefdernegi.org (canlı) kesin engelli.' };
+  }
+  if (isRetiredHedefStaging(remote) || isRetiredHedefStaging(expected)) {
+    return { ok: false, reason: RETIRED_HEDEF_STAGING_NOTE };
   }
   if (remote !== expected) {
     return {

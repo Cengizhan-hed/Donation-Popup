@@ -365,7 +365,7 @@ class WDP_Admin_Form_Tabs_Renderer {
 		$trigger_fg = isset($settings['popup_button_text_color']) ? $settings['popup_button_text_color'] : '#ffffff';
 		$wizard_on = !empty($settings['enable_multi_step']) && (string) $settings['enable_multi_step'] === '1';
 		$presets_on = !empty($settings['enable_amount_presets']) && (string) $settings['enable_amount_presets'] === '1';
-		$presets_raw = isset($settings['amount_presets']) ? $settings['amount_presets'] : '100, 250, 500, 1000';
+		$presets_raw = isset($settings['amount_presets']) ? $settings['amount_presets'] : (class_exists('WDP_Form_Modules') ? WDP_Form_Modules::default_amount_presets_csv() : '100, 250, 500, 1000, 2500');
 		$preset_parts = preg_split('/[\s,;]+/', (string) $presets_raw);
 		$preset_chips = array();
 		if ($presets_on && is_array($preset_parts)) {
@@ -407,11 +407,20 @@ class WDP_Admin_Form_Tabs_Renderer {
 		echo '<div class="wdp-admin-normal-preview__amount">';
 		echo '<label class="wdp-admin-normal-preview__label">' . esc_html__('Bağış tutarı', 'woo-donation-popup') . '</label>';
 		echo '<div class="wdp-admin-normal-preview__presets" data-lp-presets' . ($presets_on ? '' : ' hidden') . '>';
+		$preview_symbol = class_exists('WDP_Utils') ? WDP_Utils::get_display_currency_symbol() : '';
 		foreach ($preset_chips as $i => $chip) {
-			echo '<span class="wdp-admin-normal-preview__chip">₺' . esc_html((string) (int) $chip) . '</span>';
+			$chip_label = class_exists('WDP_Utils')
+				? wp_strip_all_tags(WDP_Utils::format_price_html($chip))
+				: ($preview_symbol . (string) (int) $chip);
+			echo '<span class="wdp-admin-normal-preview__chip">' . esc_html($chip_label) . '</span>';
 		}
 		echo '</div>';
-		echo '<div class="wdp-admin-normal-preview__input amount"><span>₺</span><em>' . esc_html__('500', 'woo-donation-popup') . '</em></div>';
+		$preview_vals   = class_exists('WDP_Form_Modules') ? WDP_Form_Modules::default_amount_preset_values() : array(100, 250, 500);
+		$preview_sample = isset($preview_vals[2]) ? $preview_vals[2] : 25;
+		$preview_sample_label = class_exists('WDP_Utils')
+			? wp_strip_all_tags(WDP_Utils::format_amount_for_min_placeholder($preview_sample))
+			: (string) $preview_sample;
+		echo '<div class="wdp-admin-normal-preview__input amount"><span>' . esc_html($preview_symbol) . '</span><em>' . esc_html($preview_sample_label) . '</em></div>';
 		echo '</div>';
 
 		echo '<div class="wdp-admin-normal-preview__stack">';
@@ -467,7 +476,7 @@ class WDP_Admin_Form_Tabs_Renderer {
 	private static function render_normal_wizard_section(array $settings) {
 		$enabled = !empty($settings['enable_multi_step']) && (string) $settings['enable_multi_step'] === '1';
 		$presets_enabled = !empty($settings['enable_amount_presets']) && (string) $settings['enable_amount_presets'] === '1';
-		$amount_presets = isset($settings['amount_presets']) ? $settings['amount_presets'] : '100, 250, 500, 1000, 2500';
+		$amount_presets = isset($settings['amount_presets']) ? $settings['amount_presets'] : (class_exists('WDP_Form_Modules') ? WDP_Form_Modules::default_amount_presets_csv() : '100, 250, 500, 1000, 2500');
 		echo '<div id="wdp-normal-sec-wizard" class="wdp-settings-section"><h2>' . esc_html__('Çok adımlı form', 'woo-donation-popup') . '</h2>';
 		echo '<p class="wdp-settings-section__hint">' . esc_html__('Açıldığında form adım adım ilerler. Hisseli: Hisseler → Onay. Standart/Progress: Bilgiler → Tutar → (Alt bağış) → Onay. Progress bar her zaman üstte kalır.', 'woo-donation-popup') . '</p>';
 		echo '<table class="form-table"><tr><th scope="row">' . esc_html__('Çok adımlı formu etkinleştir', 'woo-donation-popup') . '</th><td>';

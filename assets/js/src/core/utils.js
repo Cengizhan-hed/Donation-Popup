@@ -56,42 +56,6 @@
   // Burada export yok, export dosyanın sonunda yapılacak
   // console.log burada çok erken, dosyanın sonunda log yapılacak
 
-  // Fiyat formatı için yardımcı fonksiyon
-  function formatPrice(price) {
-    // Null, undefined veya boş string kontrolü
-    if (price === null || price === undefined || price === '') {
-      return '0'
-    }
-
-    let numericPrice;
-    if (typeof price === 'string') {
-      const cleaned = price.toString().trim().replace(/\s+/g, '').replace(/\./g, '').replace(',', '.');
-      numericPrice = Number.parseFloat(cleaned);
-    } else if (typeof price === 'number') {
-      numericPrice = price;
-    } else {
-      return '0'
-    }
-
-    if (!Number.isFinite(numericPrice) || isNaN(numericPrice)) {
-      return '0'
-    }
-
-    if (numericPrice < 0) {
-      numericPrice = 0;
-    }
-
-    try {
-      return new Intl.NumberFormat('tr-TR', {
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 2,
-      }).format(numericPrice)
-    } catch (e) {
-      return String(numericPrice)
-    }
-  }
-
-  // Modern para formatı
   function decodeHtmlEntities(value) {
     if (value === null || value === undefined) {
       return ''
@@ -105,43 +69,143 @@
     return textarea.value
   }
 
-  function getCurrencySymbol() {
-    const raw = (wdp_ajax && wdp_ajax.currency && wdp_ajax.currency.symbol) ? wdp_ajax.currency.symbol : '₺'
-    const decoded = decodeHtmlEntities(raw)
-    return decoded || '₺'
+  /**
+   * WooCommerce sayı ayarları (wdp_ajax.currency). Sabit locale/TRY yok.
+   */
+  function getCurrencyConfig() {
+    const c = (wdp_ajax && wdp_ajax.currency) ? wdp_ajax.currency : {}
+    const decimals = Number.isFinite(Number(c.decimals)) ? Number(c.decimals) : 2
+    return {
+      code: c.code || '',
+      symbol: decodeHtmlEntities(c.symbol || ''),
+      decimals: decimals,
+      thousandSeparator: (c.thousandSeparator !== undefined && c.thousandSeparator !== null) ? String(c.thousandSeparator) : ',',
+      decimalSeparator: (c.decimalSeparator !== undefined && c.decimalSeparator !== null) ? String(c.decimalSeparator) : '.',
+      symbolPosition: c.symbolPosition || 'left',
+    }
   }
 
-  function formatCurrency(amount, options = {}) {
-    const numericValue = Number((typeof amount === 'string' ? amount.replace(/\s+/g, '').replace(/\./g, '').replace(',', '.') : amount))
+  function getCurrencySymbol() {
+    return getCurrencyConfig().symbol
+  }
 
-    if (!Number.isFinite(numericValue)) {
-      const currencySymbol = getCurrencySymbol()
-      return `${currencySymbol}${formatPrice(0)}`
+  /**
+   * Kullanıcı girişini Woo ondalık/binlik ayırıcısına göre ham sayıya çevirir.
+   *
+   * Kural:
+   * - 0 ondalıklı para biriminde her ayırıcı binliktir ("1.000" ve "1,000" → 1000).
+   * - Ondalıklı birimde bilinen ondalık ayırıcı ondalık, binlik ayırıcı binliktir.
+   * - Belirsiz tek ayırıcı: karakter ondalık ayırıcıysa ondalık, binlikse binlik.
+   * DOM/sunucuya giden değer her zaman nokta-ondalıklı ham sayıdır.
+   */
+  function parseMoney(raw) {
+    if (raw === null || raw === undefined || raw === '') {
+      return NaN
+    }
+    if (typeof raw === 'number') {
+      return Number.isFinite(raw) ? raw : NaN
+    }
+    let s = String(raw).trim().replace(/\s+/g, '')
+    if (s === '') {
+      return NaN
+    }
+    s = s.replace(/[^\d.,\-]/g, '')
+    if (s === '' || s === '-' || s === '.' || s === ',') {
+      return NaN
+    }
+    const cfg = getCurrencyConfig()
+    const thousand = cfg.thousandSeparator
+    const decimal = cfg.decimalSeparator
+    const decimals = cfg.decimals
+
+    if (decimals <= 0) {
+      const stripped = s.replace(/[.,]/g, '')
+      const n = Number.parseFloat(stripped)
+      return Number.isFinite(n) ? n : NaN
     }
 
-    // Para birimi bilgisini al (Currency eklentisi desteği için)
-    const currencyCode = (wdp_ajax && wdp_ajax.currency && wdp_ajax.currency.code) ? wdp_ajax.currency.code : 'TRY'
-    const currencySymbol = getCurrencySymbol()
-    
-    // Locale belirle (para birimine göre)
-    let locale = 'tr-TR'
-    if (currencyCode === 'USD') {
-      locale = 'en-US'
-    } else if (currencyCode === 'EUR') {
-      locale = 'de-DE'
+    const hasThousand = thousand !== '' && s.indexOf(thousand) !== -1
+    const hasDecimal = decimal !== '' && decimal !== thousand && s.indexOf(decimal) !== -1
+
+    if (hasThousand && hasDecimal) {
+      s = s.split(thousand).join('').split(decimal).join('.')
+      const n = Number.parseFloat(s)
+      return Number.isFinite(n) ? n : NaN
     }
 
-    try {
-      return new Intl.NumberFormat(locale, Object.assign({
-        style: 'currency',
-        currency: currencyCode,
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 2,
-      }, options)).format(numericValue)
-    } catch (error) {
-      // Intl desteklemezse basit formata geri dön
-      return `${formatPrice(numericValue)} ${currencySymbol}`
+    if (hasDecimal && !hasThousand) {
+      s = s.split(decimal).join('.')
+      const n = Number.parseFloat(s)
+      return Number.isFinite(n) ? n : NaN
     }
+
+    if (hasThousand && !hasDecimal) {
+      s = s.split(thousand).join('')
+      const n = Number.parseFloat(s)
+      return Number.isFinite(n) ? n : NaN
+    }
+
+    const n = Number.parseFloat(s.replace(',', '.'))
+    return Number.isFinite(n) ? n : NaN
+  }
+
+  /**
+   * Ham sayıyı Woo ayarlarıyla biçimler (Intl yok).
+   */
+  function formatMoney(amount, options) {
+    const cfg = Object.assign({}, getCurrencyConfig(), options || {})
+    const n = typeof amount === 'number' ? amount : parseMoney(amount)
+    if (!Number.isFinite(n)) {
+      return formatMoney(0, cfg)
+    }
+    const neg = n < 0
+    const abs = Math.abs(n)
+    const decimals = Number.isFinite(Number(cfg.decimals)) ? Math.max(0, Number(cfg.decimals)) : 2
+    const fixed = abs.toFixed(decimals)
+    const parts = fixed.split('.')
+    const intRaw = parts[0]
+    const frac = parts[1] || ''
+    const thousand = cfg.thousandSeparator == null ? ',' : String(cfg.thousandSeparator)
+    const decimal = cfg.decimalSeparator == null ? '.' : String(cfg.decimalSeparator)
+    const intFmt = thousand ? intRaw.replace(/\B(?=(\d{3})+(?!\d))/g, thousand) : intRaw
+    const num = decimals > 0 ? `${intFmt}${decimal}${frac}` : intFmt
+    const signed = neg ? `-${num}` : num
+    const symbol = decodeHtmlEntities(cfg.symbol || '')
+    const pos = String(cfg.symbolPosition || 'left')
+    if (!symbol) {
+      return signed
+    }
+    if (pos === 'left') {
+      return `${symbol}${signed}`
+    }
+    if (pos === 'left_space') {
+      return `${symbol} ${signed}`
+    }
+    if (pos === 'right') {
+      return `${signed}${symbol}`
+    }
+    return `${signed} ${symbol}`
+  }
+
+  function formatPrice(price) {
+    if (price === null || price === undefined || price === '') {
+      return '0'
+    }
+    const n = typeof price === 'number' ? price : parseMoney(price)
+    if (!Number.isFinite(n)) {
+      return '0'
+    }
+    const safe = n < 0 ? 0 : n
+    const formatted = formatMoney(safe, { symbol: '' })
+    return formatted || '0'
+  }
+
+  function formatCurrency(amount, options) {
+    const n = typeof amount === 'number' ? amount : parseMoney(amount)
+    if (!Number.isFinite(n)) {
+      return formatMoney(0, options)
+    }
+    return formatMoney(n, options)
   }
 
   // Güvenli HTML çıktısı için yardımcı fonksiyon
@@ -662,6 +726,9 @@
   const utils = {
     formatPrice,
     formatCurrency,
+    formatMoney,
+    parseMoney,
+    getCurrencyConfig,
     decodeHtmlEntities,
     getCurrencySymbol,
     escapeHtml,

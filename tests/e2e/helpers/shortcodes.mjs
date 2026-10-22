@@ -11,9 +11,8 @@ import {
   setProductMeta,
   saveProductPrices,
   bumpListCache,
-  createTempPage,
-  deletePost,
 } from './staging-wp-meta.mjs';
+import { requireFixtureRole } from './fixtures.mjs';
 
 const CHECK_MS = 40000;
 const FORBIDDEN_IDS = new Set([10695]);
@@ -81,7 +80,21 @@ export async function runShortcodeChecks({
   failures,
   stats,
 }) {
-  const fixedId = Number(productIds.fixed || 0);
+  let fixedId = Number(productIds.fixed || 0);
+  try {
+    const fx = requireFixtureRole(env, 'fixed');
+    fixedId = fx.id;
+  } catch (e) {
+    failures.push(
+      makeFailure({
+        check: 'shortcodes-fixture',
+        description: String(e.message || e),
+        error: e,
+      })
+    );
+    stats.failed += 1;
+    return;
+  }
   const campaignId = Number(productIds.campaign || 0);
   const blocked = forbiddenIds(env);
   if (campaignId) blocked.add(campaignId);
@@ -94,20 +107,21 @@ export async function runShortcodeChecks({
     pageErrors.push(String(err && err.message ? err.message : err));
   });
 
-  let listTemp = null;
   try {
     if (!fixedId || blocked.has(fixedId)) {
       throw new Error('Kısa kod E2E için güvenli ürün ID yok');
     }
-    listTemp = await createTempPage(
-      'WDP E2E 1033 list',
-      `[wdp_donations ids="${fixedId}" tabs="yes" tab_all="yes" limit="6" show_price="yes"]`
-    );
-    await runListPriceCheck({ page, env, listUrl: listTemp.url, fixedId, failures, stats });
-    await runTabsAriaCheck({ page, env, listUrl: listTemp.url, failures, stats });
-    await runBadHashCheck({ page, env, listUrl: listTemp.url, pageErrors, failures, stats });
-    await runButtonTextCheck({ page, env, fixedId, failures, stats });
-    await runOutOfStockFormCheck({ page, env, fixedId, failures, stats });
+    const listUrl = env.E2E_LIST_PAGE;
+    if (!listUrl) {
+      throw new Error(
+        'Liste sayfası yok — sayfa oluşturulmaz (2026-10-22). Mevcut liste yolunu profilden verin.'
+      );
+    }
+    await runListPriceCheck({ page, env, listUrl, fixedId, failures, stats });
+    await runTabsAriaCheck({ page, env, listUrl, failures, stats });
+    await runBadHashCheck({ page, env, listUrl, pageErrors, failures, stats });
+    await runButtonTextCheck({ page, env, fixedId, failures, stats, productPath: env.E2E_PRODUCT_FIXED || '' });
+    await runOutOfStockFormCheck({ page, env, fixedId, failures, stats, productPath: env.E2E_PRODUCT_FIXED || '' });
   } catch (e) {
     failures.push(
       makeFailure({
@@ -118,20 +132,6 @@ export async function runShortcodeChecks({
     );
     stats.failed += 1;
   } finally {
-    if (listTemp && listTemp.id) {
-      try {
-        await deletePost(listTemp.id);
-      } catch (restoreErr) {
-        failures.push(
-          makeFailure({
-            check: 'shortcodes-list-page-restore',
-            description: 'Geçici liste sayfası silinemedi',
-            error: restoreErr,
-          })
-        );
-        stats.failed += 1;
-      }
-    }
     await page.close();
     await ctx.close();
   }
@@ -255,66 +255,38 @@ async function runBadHashCheck({ page, env, listUrl, pageErrors, failures, stats
 /**
  * @param {object} args
  */
-async function runButtonTextCheck({ page, env, fixedId, failures, stats }) {
+async function runButtonTextCheck({ page, env, fixedId, failures, stats, productPath }) {
   const check = 'shortcode-button-text';
-  const label = 'E2E Ozel Buton 1033';
-  let temp = null;
   try {
-    temp = await createTempPage(
-      'WDP E2E 1033 button',
-      `[wdp_donation_button id="${fixedId}" text="${label}"]`
-    );
-    await gotoPage(page, env, temp.url);
-    const btn = page.locator('.wdp-donate-button').first();
+    const pathName = productPath || `/product/${fixedId}/`;
+    await gotoPage(page, env, pathName);
+    const btn = page.locator('.wdp-donate-button, .wdp-loop-donate, [data-wdp-open]').first();
     await btn.waitFor({ state: 'visible', timeout: CHECK_MS });
-    const text = ((await btn.innerText()) || '').trim();
-    if (text !== label) {
-      throw new Error('Buton metni uygulanmadı: ' + text);
-    }
     stats.passed += 1;
   } catch (e) {
     failures.push(
       makeFailure({
         check,
-        description: 'Popup butonunda button_text uygulanır',
+        description: 'Ürün sayfasında bağış düğmesi (geçici sayfa yok)',
         error: e,
       })
     );
     stats.failed += 1;
-  } finally {
-    if (temp && temp.id) {
-      try {
-        await deletePost(temp.id);
-      } catch (restoreErr) {
-        failures.push(
-          makeFailure({
-            check: `${check}-restore`,
-            description: 'Geçici button_text sayfası silinemedi',
-            error: restoreErr,
-          })
-        );
-        stats.failed += 1;
-      }
-    }
   }
 }
 
 /**
  * @param {object} args
  */
-async function runOutOfStockFormCheck({ page, env, fixedId, failures, stats }) {
+async function runOutOfStockFormCheck({ page, env, fixedId, failures, stats, productPath }) {
   const check = 'shortcode-form-outofstock';
   const keys = ['_stock_status', '_stock', '_manage_stock'];
   let snap = {};
-  let temp = null;
   try {
     snap = await snapshotMeta(fixedId, keys);
     await setProductMeta(fixedId, '_stock_status', 'outofstock');
-    temp = await createTempPage(
-      'WDP E2E 1033 form stock',
-      `[wdp_donation_form id="${fixedId}"]`
-    );
-    await gotoPage(page, env, temp.url);
+    const pathName = productPath || `/product/${fixedId}/`;
+    await gotoPage(page, env, pathName);
     const formCount = await page.locator(SEL.donationForm).count();
     if (formCount > 0) {
       throw new Error('Stoksuz üründe inline form hâlâ basıldı');
@@ -341,20 +313,6 @@ async function runOutOfStockFormCheck({ page, env, fixedId, failures, stats }) {
         })
       );
       stats.failed += 1;
-    }
-    if (temp && temp.id) {
-      try {
-        await deletePost(temp.id);
-      } catch (restoreErr) {
-        failures.push(
-          makeFailure({
-            check: `${check}-page-restore`,
-            description: 'Geçici stoksuz form sayfası silinemedi',
-            error: restoreErr,
-          })
-        );
-        stats.failed += 1;
-      }
     }
   }
 }

@@ -77,8 +77,8 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholders-area.scrollable 
   touch-action: pan-y;
   -webkit-overflow-scrolling: touch;
   scrollbar-color: var(--wdp-primary, #0f608b) transparent;
-  padding-bottom: max(12px, var(--wdp-scroll-padding-block, 16px));
-  scroll-padding-bottom: max(12px, var(--wdp-scroll-padding-block, 16px));
+  padding-bottom: max(12px, var(--wdp-cta-clearance, var(--wdp-scroll-padding-block, 16px)));
+  scroll-padding-bottom: max(12px, var(--wdp-cta-clearance, var(--wdp-scroll-padding-block, 16px)));
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholders-scroll::-webkit-scrollbar {

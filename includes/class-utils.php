@@ -395,7 +395,10 @@ class WDP_Utils {
      * @return string Safe HTML (or '').
      */
     public static function admin_notice_html($message) {
-        if (!function_exists('current_user_can') || !current_user_can('edit_products')) {
+        $in_editor = class_exists('WDP_Builder_Detect') && WDP_Builder_Detect::is_builder_preview();
+        $in_admin  = function_exists('is_admin') && is_admin()
+            && !(function_exists('wp_doing_ajax') && wp_doing_ajax());
+        if (!$in_editor && !$in_admin) {
             return '';
         }
         $message = trim((string) $message);

@@ -64,6 +64,9 @@ class WDP_Product_Page_Integration {
 		add_filter('render_block_woocommerce/add-to-cart-with-options', array(__CLASS__, 'filter_block_add_to_cart'), 10, 3);
 		add_filter('render_block_woocommerce/product-price', array(__CLASS__, 'filter_block_price'), 10, 3);
 		add_filter('render_block_woocommerce/product-button', array(__CLASS__, 'filter_block_product_button'), 10, 3);
+
+		add_action('woocommerce_after_single_product', array(__CLASS__, 'render_builder_fallback'), 5);
+		add_action('wp_footer', array(__CLASS__, 'render_builder_fallback'), 4);
 	}
 
 	/**
@@ -198,6 +201,35 @@ class WDP_Product_Page_Integration {
 			return '';
 		}
 		return self::placed_markup();
+	}
+
+	/**
+	 * Builder layouts (Elementor / Avada) that omit the Woo add-to-cart element never
+	 * hit the template override or summary hooks. auto_place=yes still means the
+	 * Donate control belongs on the product page; print it once if nothing else did.
+	 *
+	 * @return void
+	 */
+	public static function render_builder_fallback() {
+		if (!function_exists('is_product') || !is_product()) {
+			return;
+		}
+		if (self::$template_override_used) {
+			return;
+		}
+		$product = self::current_product();
+		if (!$product || !WDP_Donation_Scope::is_donation_product($product)) {
+			return;
+		}
+		if (WDP_Render_Registry::has_product_ui((int) $product->get_id())) {
+			return;
+		}
+		if (!self::should_auto_place($product)) {
+			return;
+		}
+		echo '<div class="wdp-auto-place-fallback">'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		self::render_placed_form();
+		echo '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	}
 
 	/**
@@ -375,14 +407,17 @@ class WDP_Product_Page_Integration {
 		if ($goal_closed) {
 			$cls .= ' is-disabled wdp-goal-closed-trigger';
 		}
+		if ($mode === 'popup' || $mode === 'panel') {
+			$cls_extra = $mode === 'panel' ? ' wdp-open-modal wdp-open-side-panel' : ' wdp-open-modal';
+			$attrs     = ' type="button" class="' . esc_attr($cls . $cls_extra) . '" data-product-id="' . esc_attr((string) $id) . '" data-wdp-lazy="1" data-wdp-mode="' . esc_attr($mode === 'panel' ? 'side_panel' : 'popup') . '"';
+			if ($goal_closed) {
+				$attrs .= ' aria-disabled="true" data-wdp-goal-closed="1" data-wdp-goal-message="' . esc_attr(WDP_Campaign_Goal::resolve_message($product)) . '"';
+			}
+			return '<button' . $attrs . '>' . esc_html($text) . '</button>';
+		}
 		$attrs = ' href="' . esc_url($url) . '" class="' . esc_attr($cls) . '"';
 		if ($goal_closed) {
 			$attrs .= ' aria-disabled="true" data-wdp-goal-closed="1" data-wdp-goal-message="' . esc_attr(WDP_Campaign_Goal::resolve_message($product)) . '"';
-		}
-		if ($mode === 'popup' || $mode === 'panel') {
-			$attrs .= ' data-product-id="' . esc_attr((string) $id) . '" data-wdp-lazy="1" data-wdp-mode="' . esc_attr($mode === 'panel' ? 'side_panel' : 'popup') . '"';
-			$cls_extra = $mode === 'panel' ? ' wdp-open-modal wdp-open-side-panel' : ' wdp-open-modal';
-			$attrs = str_replace(' class="' . esc_attr($cls) . '"', ' class="' . esc_attr($cls . $cls_extra) . '"', $attrs);
 		}
 		return '<a' . $attrs . '>' . esc_html($text) . '</a>';
 	}

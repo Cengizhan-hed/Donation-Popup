@@ -6,6 +6,36 @@
  * @param {number|string} amount
  * @param {{decimals?:number,thousandSeparator?:string,decimalSeparator?:string,symbol?:string,symbolPosition?:string}} currency
  */
+/**
+ * Woo ayırıcılarına göre ham sayı.
+ * 0 ondalık: her ayırıcı binlik. Ondalıklı: bilinen ondalık/binlik karakterleri.
+ *
+ * @param {string|number} raw
+ * @param {{decimals?:number,thousandSeparator?:string,decimalSeparator?:string}} currency
+ */
+export function parseMoney(raw, currency) {
+  if (raw === null || raw === undefined || raw === '') return NaN;
+  if (typeof raw === 'number') return Number.isFinite(raw) ? raw : NaN;
+  let s = String(raw).trim().replace(/\s+/g, '').replace(/[^\d.,\-]/g, '');
+  if (!s || s === '-' || s === '.' || s === ',') return NaN;
+  const c = currency || {};
+  const decimals = Number.isFinite(Number(c.decimals)) ? Number(c.decimals) : 2;
+  const thousand = c.thousandSeparator != null ? String(c.thousandSeparator) : ',';
+  const decimal = c.decimalSeparator != null ? String(c.decimalSeparator) : '.';
+  if (decimals <= 0) {
+    const n = Number.parseFloat(s.replace(/[.,]/g, ''));
+    return Number.isFinite(n) ? n : NaN;
+  }
+  const hasT = thousand !== '' && s.includes(thousand);
+  const hasD = decimal !== '' && decimal !== thousand && s.includes(decimal);
+  if (hasT && hasD) s = s.split(thousand).join('').split(decimal).join('.');
+  else if (hasD) s = s.split(decimal).join('.');
+  else if (hasT) s = s.split(thousand).join('');
+  else s = s.replace(',', '.');
+  const n = Number.parseFloat(s);
+  return Number.isFinite(n) ? n : NaN;
+}
+
 export function formatMoney(amount, currency) {
   const c = currency || {};
   const decimals = Number.isFinite(Number(c.decimals)) ? Number(c.decimals) : 2;

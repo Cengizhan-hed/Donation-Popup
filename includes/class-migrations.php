@@ -92,6 +92,7 @@ class WDP_Migrations {
 			'10.31.0' => array(__CLASS__, 'step_10_31_0'),
 			'10.32.0' => array(__CLASS__, 'step_10_32_0'),
 			'10.33.0' => array(__CLASS__, 'step_10_33_0'),
+			'10.34.0' => array(__CLASS__, 'step_10_34_0'),
 		);
 	}
 
@@ -411,6 +412,28 @@ class WDP_Migrations {
 	 */
 	public static function step_10_33_0($is_fresh) {
 		$flag = 'wdp_migrated_10_33_0';
+		if (get_option($flag)) {
+			return 'already';
+		}
+		if (class_exists('WDP_Donations_List')) {
+			WDP_Donations_List::reset_bump_guard();
+			WDP_Donations_List::bump_cache();
+		} else {
+			$cv = (int) get_option('wdp_list_cache_version', 1);
+			update_option('wdp_list_cache_version', $cv + 1, false);
+		}
+		update_option($flag, '1', false);
+		return $is_fresh ? 'list cache initialized' : 'list cache bumped';
+	}
+
+	/**
+	 * 10.34.0: liste kartı HTML değişti (bağlantı, fiyat, ilerleme). Yalnız önbellek sürümü artar; veri silinmez.
+	 *
+	 * @param bool $is_fresh Fresh install.
+	 * @return string Summary for the log.
+	 */
+	public static function step_10_34_0($is_fresh) {
+		$flag = 'wdp_migrated_10_34_0';
 		if (get_option($flag)) {
 			return 'already';
 		}

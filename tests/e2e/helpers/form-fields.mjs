@@ -2,16 +2,23 @@
  * 10.30.0 — Form alanları davranış E2E (e-posta, ithaf, anonim, wizard/ikon üçlü, aydınlatma, sepet).
  * Staging Nafile (#custom): meta geçici yazılır / eski haline döner; geri yükleme hatası fail.
  */
+import path from 'node:path';
 import { SEL } from './selectors.mjs';
-import { withCacheBust } from './env.mjs';
+import { ROOT, withCacheBust } from './env.mjs';
 import {
   emptyCart,
   openShellLocator,
+  clickShellTrigger,
+  revealListProductTrigger,
   shellTriggerLocator,
   clickAddToCartWithRetry,
   makeFailure,
+  cartItemsDetail,
+  isWooCartUrl,
 } from './checks.mjs';
-import { getProductMeta, setProductMeta } from './staging-wp-meta.mjs';
+import { getProductMeta, setProductMeta, assertWooCartPagePublished } from './staging-wp-meta.mjs';
+import { requireFixtureRole } from './fixtures.mjs';
+import { writeDebugJson } from './scenario-debug.mjs';
 
 const CHECK_MS = 20000;
 
@@ -41,6 +48,9 @@ async function openProductShell(page, mode, opts) {
   await page.goto(withCacheBust(opts.baseUrl, openPath, { hdf_no_side_cart: '1' }), {
     waitUntil: 'domcontentloaded',
   });
+  if (mode === 'popup') {
+    await revealListProductTrigger(page, opts.productId || 0);
+  }
   let trigger = shellTriggerLocator(page, mode, { productId: opts.productId || 0 });
   if ((await trigger.count()) === 0) {
     trigger =
@@ -48,8 +58,8 @@ async function openProductShell(page, mode, opts) {
         ? page.locator(SEL.sidePanelTrigger).first()
         : page.locator(SEL.centeredPopupTrigger).first();
   }
-  await trigger.click({ timeout: CHECK_MS });
-  const shell = openShellLocator(page, mode);
+  await clickShellTrigger(trigger, CHECK_MS);
+  const shell = mode === 'popup' ? openShellLocator(page, '') : openShellLocator(page, mode);
   await waitShellReady(shell);
   return shell;
 }
@@ -78,15 +88,17 @@ async function fillDonor(shell, vals = {}) {
   }
   if (vals.email !== undefined) {
     const email = shell.locator('input[name="donation_email"]').first();
-    if (await email.count()) {
-      await email.fill(vals.email);
+    if ((await email.count()) === 0) {
+      throw new Error('E-posta alanı formda yok (istenmişti)');
     }
+    await email.fill(vals.email);
   }
   if (vals.dedication !== undefined) {
     const ded = shell.locator('input[name="donation_dedication"]').first();
-    if (await ded.count()) {
-      await ded.fill(vals.dedication);
+    if ((await ded.count()) === 0) {
+      throw new Error('İthaf alanı formda yok (istenmişti)');
     }
+    await ded.fill(vals.dedication);
   }
   if (vals.anonymous) {
     const anon = shell.locator('input[name="donation_anonymous"]').first();
@@ -128,9 +140,24 @@ export async function runFormFieldsChecks({
 }) {
   const checks = [];
   const baseUrl = env.E2E_BASE_URL;
-  const customId = productIds.custom || 0;
-  const customPath = productUrls.custom;
   const listPath = listPagePath || env.E2E_LIST_PAGE;
+  let customId = productIds.custom || 0;
+  let customPath = productUrls.custom;
+  try {
+    const fx = requireFixtureRole(env, 'custom');
+    customId = fx.id;
+    customPath = fx.path || fx.url || customPath;
+  } catch (e) {
+    failures.push(
+      makeFailure({
+        check: 'form-fields-fixture',
+        description: String(e.message || e),
+        error: e,
+      })
+    );
+    stats.failed += 1;
+    return;
+  }
 
   const ctx = await browser.newContext(contextOpts);
   const page = await ctx.newPage();
@@ -337,22 +364,87 @@ export async function runFormFieldsChecks({
         amount: '100',
       });
       const addBtn = shell.locator(SEL.addToCart).first();
+      /** @type {string} */
+      let postedEmail = '';
+      /** @type {string} */
+      let postedDedication = '';
+      const onReq = (req) => {
+        const post = req.postData() || '';
+        if (!/wdp_ajax_add_to_cart|donation_add_to_cart/i.test(post) && !/admin-ajax\.php/i.test(req.url())) {
+          return;
+        }
+        const em = post.match(/donation_email=([^&]*)/);
+        if (em) postedEmail = decodeURIComponent(em[1].replace(/\+/g, ' '));
+        const ded = post.match(/donation_dedication=([^&]*)/);
+        if (ded) postedDedication = decodeURIComponent(ded[1].replace(/\+/g, ' '));
+      };
+      page.on('request', onReq);
       const cartRes = await clickAddToCartWithRetry(page, addBtn, {
         checkId: 'form-fields-cart-shows-email-dedication',
       });
+      page.off('request', onReq);
       if (!cartRes.ok) {
         throw new Error(`Sepete ekleme başarısız: ${cartRes.bodyPreview || ''}`);
       }
-      await page.goto(withCacheBust(baseUrl, '/cart/', { hdf_no_side_cart: '1' }), {
+      const cartInfo = await assertWooCartPagePublished();
+      const dest = cartInfo.url || cartInfo.path || '/cart/';
+      await page.goto(withCacheBust(baseUrl, dest, { hdf_no_side_cart: '1' }), {
         waitUntil: 'domcontentloaded',
+        timeout: 20000,
       });
       await page.waitForTimeout(800);
-      const body = (await page.locator('body').innerText()) || '';
-      if (!/sepet@example\.com/i.test(body)) {
-        throw new Error('Sepet satırında e-posta yok');
-      }
-      if (!/Sepet Ithaf/i.test(body)) {
-        throw new Error('Sepet satırında ithaf yok');
+      const cartPageUrl = page.url();
+      const inner = (await page.locator('body').innerText().catch(() => '')) || '';
+      const html = (await page.content().catch(() => '')) || '';
+      const textAll = (await page.locator('body').textContent().catch(() => '')) || '';
+        const storeRaw = await page
+          .evaluate(async (base) => {
+            try {
+              const r = await fetch(`${base.replace(/\/$/, '')}/wp-json/wc/store/v1/cart`, {
+                credentials: 'same-origin',
+              });
+              if (!r.ok) return { status: r.status };
+              const data = await r.json();
+              return {
+                status: r.status,
+                item_data: (data.items || []).map((it) => ({
+                  name: it.name,
+                  item_data: it.item_data || [],
+                })),
+              };
+            } catch (e) {
+              return { error: String(e && e.message ? e.message : e) };
+            }
+          }, baseUrl)
+          .catch(() => ({}));
+        const storeItems = await cartItemsDetail(page, baseUrl).catch(() => []);
+      const haystack = `${inner}\n${textAll}\n${html}`;
+      const hasEmail = /sepet@example\.com/i.test(haystack);
+      const hasDed = /Sepet Ithaf/i.test(haystack);
+      if (!hasEmail || !hasDed) {
+        const diag = {
+          url: cartPageUrl,
+          isCart: isWooCartUrl(cartPageUrl),
+          postedEmail,
+          postedDedication,
+          storeItemCount: Array.isArray(storeItems) ? storeItems.length : -1,
+          storeNames: Array.isArray(storeItems) ? storeItems.map((i) => i.name).slice(0, 5) : [],
+          storeRaw,
+          cartInfo,
+          innerHasEmail: /sepet@example\.com/i.test(inner),
+          htmlHasEmail: /sepet@example\.com/i.test(html),
+          innerSnippet: inner.replace(/\s+/g, ' ').slice(0, 400),
+        };
+        writeDebugJson(
+          path.join(ROOT, 'build/e2e/debug/form-fields-cart-shows-email-dedication.json'),
+          diag
+        );
+        const bits = [];
+        if (!hasEmail) bits.push('e-posta yok');
+        if (!hasDed) bits.push('ithaf yok');
+        if (!postedEmail) bits.push('POST donation_email boş');
+        if (!Array.isArray(storeItems) || storeItems.length === 0) bits.push('Store API sepet boş');
+        throw new Error(`Sepet satırında ${bits.join('; ')} url=${cartPageUrl}`);
       }
       pass('form-fields-cart-shows-email-dedication');
     } catch (e) {

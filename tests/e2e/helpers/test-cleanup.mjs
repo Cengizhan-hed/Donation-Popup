@@ -1,18 +1,18 @@
 /**
- * E2E sipariş/müşteri işaretleme ve temizlik (HPOS, yalnız işaretliler).
+ * E2E sipariş/müşteri işaretleme ve temizlik.
+ * Tek kaynak: cleanup-e2e.php (kayıt defteri + run_id + kara liste).
  */
-import { loadDeployEnvSilent, remote, resolveWpPath } from './wp-remote.mjs';
+import { loadDeployEnvSilent, remote, resolveWpPath, runEvalFile } from './wp-remote.mjs';
+import { isRunIdOk, loadRegistry, registerCreated, registryIds } from './run-registry.mjs';
 
 export const E2E_META_KEY = '_wdp_e2e_test';
 export const E2E_EMAIL_DOMAIN = 'wdp-e2e.test';
+export const CLEANUP_EVAL_FILE = 'tests/e2e/helpers/cleanup-e2e.php';
 
 export function e2eEmail(stamp = Date.now()) {
   return `e2e.${stamp}@${E2E_EMAIL_DOMAIN}`;
 }
 
-/**
- * @returns {Promise<{id:number,email?:string}|null>}
- */
 export async function snapshotGuardOrder() {
   const loaded = loadDeployEnvSilent();
   if (!loaded.ok) return null;
@@ -24,56 +24,62 @@ export async function snapshotGuardOrder() {
     );
     const id = Math.abs(Number.parseInt(String(raw).trim(), 10) || 0);
     return id > 0 ? { id } : null;
-  } catch {
-    return null;
+  } catch (e) {
+    throw new Error(`snapshotGuardOrder: ${e && e.message ? e.message : e}`);
   }
 }
 
-/**
- * @param {number|string} orderId
- */
 export async function markOrderAsE2E(orderId) {
   const loaded = loadDeployEnvSilent();
   if (!loaded.ok) throw new Error(`test-cleanup: ${loaded.reason}`);
+  const registry = loadRegistry();
+  if (!isRunIdOk(registry.runId)) {
+    throw new Error('test-cleanup: runId yok; sipariş işaretlenmez');
+  }
   const wpPath = resolveWpPath(loaded.env).replace(/'/g, `'\\''`);
   const id = String(Math.abs(Number.parseInt(String(orderId), 10) || 0));
   if (id === '0') throw new Error('test-cleanup: invalid order id');
+  const run = registry.runId.replace(/'/g, '');
   remote(
     loaded.env,
-    `wp eval '$o=wc_get_order(${id}); if(!$o){fwrite(STDERR,"missing"); exit(1);} $o->update_meta_data("${E2E_META_KEY}","1"); $o->save(); echo "ok";' --path='${wpPath}'`
+    `wp eval '$o=wc_get_order(${id}); if(!$o){fwrite(STDERR,"missing"); exit(1);} $o->update_meta_data("${E2E_META_KEY}","${run}"); $o->save(); echo "ok";' --path='${wpPath}'`
   );
+  registerCreated({ id: Number(id), type: 'order' });
 }
 
 /**
- * @param {{guardOrderId?:number}} [opts]
- * @returns {Promise<object>}
+ * @param {{guardOrderId?:number, execFn?: (file:string, extra:object)=>string}} [opts]
  */
 export async function cleanupE2EData(opts = {}) {
-  const loaded = loadDeployEnvSilent();
-  if (!loaded.ok) {
-    throw new Error(`test-cleanup: ${loaded.reason}`);
+  const registry = loadRegistry();
+  const created = Array.isArray(registry.created) ? registry.created : [];
+  const empty = {
+    orders_deleted: 0,
+    customers_deleted: 0,
+    products_deleted: 0,
+    posts_deleted: 0,
+    guard_ok: true,
+    failed: [],
+    message: 'hiçbir şey silinmedi',
+    skipped: 'empty-registry',
+  };
+  if (!isRunIdOk(registry.runId) || !created.length) {
+    return empty;
   }
-  const wpPath = resolveWpPath(loaded.env).replace(/'/g, `'\\''`);
   const guard = Math.abs(Number.parseInt(String(opts.guardOrderId || '0'), 10) || 0);
-  const php = [
-    'if(!function_exists("wc_get_orders")){echo "{\\"failed\\":[\\"no-wc\\"]}"; return;}',
-    '$g=' + guard + ';',
-    '$ids=wc_get_orders(array("limit"=>-1,"status"=>array_keys(wc_get_order_statuses()),"meta_key"=>"_wdp_e2e_test","meta_value"=>"1","return"=>"ids"));',
-    '$del=array(); $fail=array();',
-    'foreach((array)$ids as $id){ $id=absint($id); if($g && $id===$g){$fail[]="guard"; continue;} $o=wc_get_order($id); if(!$o){continue;} $em=strtolower((string)$o->get_billing_email()); if(strpos($em,"@wdp-e2e.test")===false){$fail[]="untagged-".$id; continue;} if($o->delete(true)===false){$fail[]="del-".$id; continue;} $del[]=$id; }',
-    '$users=get_users(array("search"=>"*@wdp-e2e.test","search_columns"=>array("user_email"),"fields"=>array("ID","user_email"),"number"=>200)); $cd=array();',
-    'foreach($users as $u){ if(strpos(strtolower($u->user_email),"@wdp-e2e.test")===false) continue; if(!wp_delete_user((int)$u->ID)){$fail[]="user-".$u->ID; continue;} $cd[]=(int)$u->ID; }',
-    '$ok=true; if($g){ $ok=(bool)wc_get_order($g); if(!$ok) $fail[]="guard-missing"; }',
-    'echo wp_json_encode(array("orders_deleted"=>count($del),"customers_deleted"=>count($cd),"guard_ok"=>$ok,"failed"=>$fail));',
-  ].join(' ');
-  const raw = remote(
-    loaded.env,
-    `wp eval '${php.replace(/'/g, `'\\''`)}' --path='${wpPath}'`
-  );
+  const b64 = Buffer.from(JSON.stringify(created), 'utf8').toString('base64');
+  const extraEnv = {
+    WDP_E2E_REGISTRY_B64: b64,
+    WDP_E2E_RUN_ID: registry.runId,
+  };
+  if (guard) extraEnv.WDP_E2E_GUARD_ORDER_ID = String(guard);
+  const raw = opts.execFn
+    ? opts.execFn(CLEANUP_EVAL_FILE, extraEnv)
+    : runEvalFile(CLEANUP_EVAL_FILE, extraEnv);
   const jsonLine = String(raw || '')
     .split(/\r?\n/)
     .map((l) => l.trim())
-    .filter(Boolean)
+    .filter((l) => l.startsWith('{'))
     .pop();
   let parsed = {};
   try {
@@ -86,3 +92,5 @@ export async function cleanupE2EData(opts = {}) {
   }
   return parsed;
 }
+
+export { registryIds };

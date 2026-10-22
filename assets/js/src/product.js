@@ -314,14 +314,17 @@
               currencyEl.textContent = wdp_ajax.currency.symbol;
             }
 
-			const minPriceNumeric = Number.parseFloat((data.min_price || '').toString().trim().replace(/\s+/g, '').replace(/\./g, '').replace(',', '.'));
-			const progressMinNumeric = Number.parseFloat((data.progress_min_price || '').toString().trim().replace(/\s+/g, '').replace(/\./g, '').replace(',', '.'));
+			const parseAmt = (WDPApp.utils && typeof WDPApp.utils.parseMoney === 'function')
+				? WDPApp.utils.parseMoney
+				: function (v) { return Number.parseFloat(v); };
+			const minPriceNumeric = parseAmt(data.min_price || '');
+			const progressMinNumeric = parseAmt(data.progress_min_price || '');
 			const isShareForm = !!form.querySelector('input[name="share_count"]');
 			const isProgressForm =
 			  !!form.classList.contains('wdp-has-progress-bar') ||
 			  !!root.querySelector('.wdp-progress-bar-container') ||
 			  !!data.enable_progress_bar;
-			const basePriceNumeric = Number.parseFloat((data.price || data.regular_price || '').toString().trim().replace(/\s+/g, '').replace(/\./g, '').replace(',', '.'));
+			const basePriceNumeric = parseAmt(data.price || data.regular_price || '');
 			let resolvedMin = 0;
 			if (Number.isFinite(minPriceNumeric) && minPriceNumeric > 0) {
 			  resolvedMin = minPriceNumeric;

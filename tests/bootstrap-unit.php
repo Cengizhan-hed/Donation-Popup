@@ -19,7 +19,7 @@ if (!defined('WDP_PLUGIN_FILE')) {
 	define('WDP_PLUGIN_FILE', $root . '/woo-donation-popup.php');
 }
 if (!defined('WDP_VERSION')) {
-	define('WDP_VERSION', '10.33.0');
+	define('WDP_VERSION', '10.34.2');
 }
 if (!defined('MINUTE_IN_SECONDS')) {
 	define('MINUTE_IN_SECONDS', 60);
@@ -34,7 +34,7 @@ if (!defined('WDP_PLUGIN_URL')) {
 	define('WDP_PLUGIN_URL', 'https://example.test/wp-content/plugins/woo-donation-popup/');
 }
 if (!defined('WDP_ASSET_VERSION')) {
-	define('WDP_ASSET_VERSION', '10.33.0');
+	define('WDP_ASSET_VERSION', '10.34.2');
 }
 
 /**
@@ -104,6 +104,15 @@ final class WDP_Test_State {
 	/** @var string */
 	public static $currency = 'TRY';
 
+	/** @var int */
+	public static $price_decimals = 2;
+
+	/** @var string */
+	public static $price_thousand = '.';
+
+	/** @var string */
+	public static $price_decimal = ',';
+
 	/** @var array<int, string> post_id => post_type */
 	public static $post_types = array();
 
@@ -132,6 +141,9 @@ final class WDP_Test_State {
 		self::$cron          = array();
 		self::$timezone      = 'Europe/Istanbul';
 		self::$currency      = 'TRY';
+		self::$price_decimals = 2;
+		self::$price_thousand = '.';
+		self::$price_decimal  = ',';
 		self::$post_types    = array();
 		self::$unique_id     = 0;
 		$GLOBALS['wpdb']     = new WDP_Fake_Wpdb();
@@ -525,7 +537,26 @@ if (!function_exists('get_term')) {
 		$t          = new stdClass();
 		$t->term_id = $term_id;
 		$t->parent  = 0;
+		$t->slug    = 'term-' . $term_id;
+		$t->name    = 'Term ' . $term_id;
 		return $t;
+	}
+}
+if (!function_exists('get_ancestors')) {
+	function get_ancestors($object_id, $object_type = '', $resource_type = '') {
+		unset($object_type, $resource_type);
+		$out = array();
+		$id  = (int) $object_id;
+		for ($i = 0; $i < 20; $i++) {
+			$term = get_term($id);
+			$parent = is_object($term) ? (int) $term->parent : 0;
+			if ($parent <= 0) {
+				break;
+			}
+			$out[] = $parent;
+			$id    = $parent;
+		}
+		return $out;
 	}
 }
 if (!function_exists('wc_get_product_id_by_sku')) {
@@ -767,7 +798,49 @@ if (!class_exists('WP_Query')) {
 }
 if (!function_exists('wc_get_price_decimals')) {
 	function wc_get_price_decimals() {
-		return 2;
+		return (int) (WDP_Test_State::$price_decimals ?? 2);
+	}
+}
+if (!function_exists('wc_get_price_thousand_separator')) {
+	function wc_get_price_thousand_separator() {
+		return (string) (WDP_Test_State::$price_thousand ?? '.');
+	}
+}
+if (!function_exists('wc_get_price_decimal_separator')) {
+	function wc_get_price_decimal_separator() {
+		return (string) (WDP_Test_State::$price_decimal ?? ',');
+	}
+}
+if (!function_exists('wc_get_price_to_display')) {
+	function wc_get_price_to_display($product, $args = array()) {
+		unset($args);
+		if (is_object($product) && method_exists($product, 'get_price')) {
+			return $product->get_price();
+		}
+		return 0;
+	}
+}
+if (!function_exists('get_terms')) {
+	function get_terms($args = array()) {
+		$include = isset($args['include']) ? array_map('intval', (array) $args['include']) : array();
+		$out     = array();
+		foreach ($include as $id) {
+			if ($id <= 0) {
+				continue;
+			}
+			if (isset(WDP_Test_State::$terms[ $id ])) {
+				$out[] = WDP_Test_State::$terms[ $id ];
+				continue;
+			}
+			$t              = new stdClass();
+			$t->term_id     = $id;
+			$t->slug        = 'term-' . $id;
+			$t->name        = 'Term ' . $id;
+			$t->parent      = 0;
+			$t->term_order  = 0;
+			$out[]          = $t;
+		}
+		return $out;
 	}
 }
 

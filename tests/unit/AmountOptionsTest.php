@@ -188,7 +188,7 @@ final class AmountOptionsTest extends TestCase {
 			array('amount_presets' => '', 'amount_preset_recommended' => '250')
 		);
 		$this->assertSame('', WDP_Admin_Settings_Normalizer::$last_validation_error);
-		$this->assertSame('100, 250, 500, 1000, 2500', $ok['amount_presets']);
+		$this->assertSame(WDP_Form_Modules::default_amount_presets_csv(), $ok['amount_presets']);
 		$this->assertArrayNotHasKey('amount_preset_recommended', $ok);
 	}
 

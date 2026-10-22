@@ -1,7 +1,7 @@
 /**
  * Ödeme URL’si (WooCommerce wc_get_checkout_url) ve çevrimdışı yöntem.
- * Hedef staging: çek/BACS geçici açılır, sonra eski haline döner.
- * Ikram: ödeme ayarı YAZILMAZ.
+ * Uzak ortam: YAZMA YOK (cheque/bacs ayarı değiştirilmez, sipariş oluşturulmaz).
+ * Sipariş tamamlama yalnız yerel WordPress (test:local-wp).
  */
 import { wp, loadDeployEnvSilent } from './wp-remote.mjs';
 import { getActiveProfile, peekActiveProfile } from './profile.mjs';
@@ -72,20 +72,10 @@ export function pickOfflineGateway(gateways) {
   return list.find((g) => OFFLINE.includes(String(g.id || '')) && g.enabled) || null;
 }
 
-/**
- * @param {'yes'|'no'} flag
- */
-function setChequeEnabled(flag) {
-  const v = flag === 'yes' ? 'yes' : 'no';
-  wp(
-    `wp eval '$s=get_option("woocommerce_cheque_settings"); if(!is_array($s))$s=array(); $s["enabled"]="${v}"; update_option("woocommerce_cheque_settings",$s); echo "ok";'`
+function setChequeEnabled() {
+  throw new Error(
+    'checkout-setup: uzak ortamda woocommerce_cheque_settings yazılmaz (2026-10-22). Sipariş testleri yalnız yerel WP.'
   );
-}
-
-function readChequeEnabled() {
-  const php =
-    '$s=get_option("woocommerce_cheque_settings"); echo (is_array($s) && isset($s["enabled"]) && $s["enabled"]==="yes") ? "yes" : "no";';
-  return String(wp(`wp eval '${php}'`) || '').trim() === 'yes' ? 'yes' : 'no';
 }
 
 /**
@@ -117,34 +107,12 @@ export async function prepareCheckoutEnv() {
     }
   };
 
-  if (existing) {
-    return {
-      checkoutUrl,
-      offline: { id: existing.id, title: existing.title || existing.id },
-      mutated: false,
-      restore,
-      skipOrderReason: '',
-    };
-  }
-
-  if (!profile?.allowMetaMutation) {
-    return {
-      checkoutUrl,
-      offline: null,
-      mutated: false,
-      restore,
-      skipOrderReason: `${profile?.id || 'ortam'}: etkin çevrimdışı ödeme yöntemi yok; ödeme ayarı değiştirilmez — sipariş tamamlama atlandı`,
-    };
-  }
-
-  const prev = readChequeEnabled();
-  setChequeEnabled('yes');
-  restoreFns.push(() => setChequeEnabled(prev));
   return {
     checkoutUrl,
-    offline: { id: 'cheque', title: 'cheque' },
-    mutated: true,
+    offline: existing ? { id: existing.id, title: existing.title || existing.id } : null,
+    mutated: false,
     restore,
-    skipOrderReason: '',
+    skipOrderReason:
+      'uzak ortamda sipariş oluşturulmaz (yalnız yerel WordPress). Ödeme sayfası salt okunur.',
   };
 }

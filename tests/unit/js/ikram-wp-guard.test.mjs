@@ -7,6 +7,8 @@ import {
   allowIkramWpCommand,
   normalizeRemotePluginDir,
   CLEANUP_EVAL_FILE,
+  TEMP_PRODUCT_EVAL_FILE,
+  TRASH_REPORT_EVAL_FILE,
 } from '../../../scripts/lib/ikram-wp-guard.mjs';
 import { parseDistignore, rsyncExcludeArgs } from '../../../scripts/lib/pack-excludes.mjs';
 import { ROOT } from '../../../tests/e2e/helpers/env-root.mjs';
@@ -31,11 +33,17 @@ describe('ikram-wp-guard', () => {
     assert.equal(allowIkramWpCommand('option update blog_public 1').ok, false);
   });
 
-  it('eval-file only cleanup-e2e.php', () => {
+  it('eval-file only cleanup-e2e.php or e2e-temp-product.php or trash-report.php', () => {
     const ok = allowIkramWpCommand(`eval-file ${CLEANUP_EVAL_FILE}`);
     assert.equal(ok.ok, true);
+    const temp = allowIkramWpCommand(`eval-file ${TEMP_PRODUCT_EVAL_FILE}`);
+    assert.equal(temp.ok, true);
+    const report = allowIkramWpCommand(`eval-file ${TRASH_REPORT_EVAL_FILE}`);
+    assert.equal(report.ok, true);
     assert.equal(allowIkramWpCommand('eval-file /tmp/evil.php').ok, false);
     assert.equal(allowIkramWpCommand("eval 'wp_delete_user(1);'").ok, false);
+    assert.equal(allowIkramWpCommand("eval 'wp_untrash_post(1);'").ok, false);
+    assert.equal(allowIkramWpCommand("eval 'update_post_meta(1,\"k\",\"v\");'").ok, false);
   });
 
   it('mkdir bug: plugin path file → directory', () => {

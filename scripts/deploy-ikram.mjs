@@ -14,7 +14,6 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { spawnSync } from 'node:child_process';
 import dotenv from 'dotenv';
 import {
   IKRAM_ALLOW_REMOVAL_NOTE,
@@ -22,6 +21,7 @@ import {
   validateDeployEnv,
   validateRemoteSiteUrl,
 } from './lib/deploy-guards.mjs';
+import { assertRemoteAllowed, spawnGuarded } from './lib/remote-guard.mjs';
 import { rsyncExcludeArgs } from './lib/pack-excludes.mjs';
 import { normalizeRemotePluginDir, IKRAM_WP_SLUG } from './lib/ikram-wp-guard.mjs';
 
@@ -73,12 +73,12 @@ function sshArgs(env) {
   ];
 }
 
-function run(cmd, args, opts = {}) {
-  const res = spawnSync(cmd, args, {
+function run(cmd, args, opts = {}, guardOpts = {}) {
+  const res = spawnGuarded(cmd, args, {
     encoding: 'utf8',
     cwd: ROOT,
     ...opts,
-  });
+  }, guardOpts);
   if (res.status !== 0) {
     const err = (res.stderr || res.stdout || '').trim().slice(0, 500);
     fail(`${cmd} başarısız${err ? `: ${err}` : ''}`);
@@ -88,7 +88,10 @@ function run(cmd, args, opts = {}) {
 
 function remote(env, remoteCmd) {
   const args = sshArgs(env);
-  return run('ssh', [...args, remoteCmd]);
+  return run('ssh', [...args, remoteCmd], {}, {
+    siteUrl: env?.DEPLOY_SITE_URL,
+    wpPath: env?.DEPLOY_WP_PATH,
+  });
 }
 
 function sshTransport(env) {
@@ -120,7 +123,10 @@ function rsyncTo(env, localDir, remoteDir, dry) {
   ];
   if (dry) args.unshift('-n', '--itemize-changes');
   args.push(src, dest);
-  const out = run('rsync', args, { stdio: dry ? 'pipe' : 'inherit' });
+  const out = run('rsync', args, { stdio: dry ? 'pipe' : 'inherit' }, {
+    siteUrl: env?.DEPLOY_SITE_URL,
+    wpPath: env?.DEPLOY_WP_PATH,
+  });
   if (dry) {
     const lines = String(out || '').split(/\r?\n/).filter(Boolean);
     console.log(`rsync dry-run: ${lines.length} satır`);
@@ -155,6 +161,11 @@ function resolvePluginDir(env, wpPathEsc) {
 
 function main() {
   console.log(IKRAM_ALLOW_REMOVAL_NOTE);
+  try {
+    assertRemoteAllowed();
+  } catch (e) {
+    fail(e && e.message ? e.message : String(e));
+  }
   const env = loadDeployEnv();
   const guard = validateDeployEnv(env);
   if (!guard.ok) fail(guard.reason);

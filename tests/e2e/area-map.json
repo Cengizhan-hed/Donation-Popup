@@ -45,13 +45,21 @@
       "label": "Sepet + ödeme + sipariş",
       "tests": ["cart", "checkout-flow"]
     },
+    "empty-price": {
+      "label": "Fiyatsız custom/campaign satın alınabilirlik",
+      "tests": ["empty-price"]
+    },
+    "layout": {
+      "label": "Tutar etiketi, fiyat/adet oranı, CTA alt dolgu",
+      "tests": ["layout"]
+    },
     "admin": {
       "label": "Yönetici sekmeleri (full)",
       "tests": ["admin"]
     }
   },
   "paths": [
-    { "match": "includes/templates/class-form-fields-renderer.php", "areas": ["amount-options", "form-fields", "sadaka", "shell"] },
+    { "match": "includes/templates/class-form-fields-renderer.php", "areas": ["amount-options", "form-fields", "sadaka", "shell", "layout"] },
     { "match": "includes/templates/class-form-modules.php", "areas": ["form-fields", "amount-options", "sadaka"] },
     { "match": "includes/templates/class-modal-shell-renderer.php", "areas": ["shell", "mobile-a11y"] },
     { "match": "includes/class-form-fields-renderer.php", "areas": ["form-fields", "amount-options"] },
@@ -62,6 +70,8 @@
     { "match": "includes/class-blocks.php", "areas": ["shortcodes"] },
     { "match": "includes/elementor/", "areas": ["shortcodes", "core"] },
     { "match": "includes/class-cart.php", "areas": ["checkout-flow"] },
+    { "match": "includes/class-donation-purchasable.php", "areas": ["empty-price", "core"] },
+    { "match": "tests/e2e/helpers/empty-price.mjs", "areas": ["empty-price"] },
     { "match": "includes/class-order.php", "areas": ["checkout-flow"] },
     { "match": "includes/traits/trait-wdp-ajax-cart-add.php", "areas": ["checkout-flow", "sadaka"] },
     { "match": "includes/class-admin-", "areas": ["admin", "form-fields"] },
@@ -70,7 +80,9 @@
     { "match": "assets/js/src/phone-input.js", "areas": ["form-fields", "mobile-a11y"] },
     { "match": "assets/js/src/modal.js", "areas": ["shell", "mobile-a11y"] },
     { "match": "assets/js/src/cart/", "areas": ["checkout-flow"] },
-    { "match": "assets/css/src/", "areas": ["shell", "mobile-a11y"] },
+    { "match": "assets/css/src/", "areas": ["shell", "mobile-a11y", "layout"] },
+    { "match": "tests/e2e/helpers/layout.mjs", "areas": ["layout"] },
+    { "match": "tests/e2e/helpers/stabilize-shot-css.mjs", "areas": ["core"] },
     { "match": "tests/e2e/helpers/amount-options.mjs", "areas": ["amount-options"] },
     { "match": "tests/e2e/helpers/form-fields.mjs", "areas": ["form-fields"] },
     { "match": "tests/e2e/helpers/campaign-blocks.mjs", "areas": ["campaign-blocks"] },
@@ -79,8 +91,8 @@
     { "match": "tests/e2e/helpers/mobile-a11y.mjs", "areas": ["mobile-a11y"] },
     { "match": "tests/e2e/helpers/donation-flow.mjs", "areas": ["checkout-flow"] },
     { "match": "tests/e2e/run-shares-late-product-info.mjs", "areas": ["shares"] },
-    { "match": "tests/e2e/helpers/capture.mjs", "areas": ["core", "shell", "sadaka", "mobile-a11y", "checkout-flow"] },
-    { "match": "tests/e2e/helpers/checks.mjs", "areas": ["core", "shell"] },
+    { "match": "tests/e2e/helpers/capture.mjs", "areas": ["core", "shell", "sadaka", "mobile-a11y", "checkout-flow", "layout"] },
+    { "match": "tests/e2e/helpers/checks.mjs", "areas": ["core", "shell", "form-fields", "empty-price"] },
     { "match": "tests/e2e/helpers/selectors.mjs", "areas": ["core", "shell"] },
     { "match": "tests/e2e/helpers/profile.mjs", "areas": ["core"] },
     { "match": "tests/e2e/helpers/env.mjs", "areas": ["core"] },
@@ -96,7 +108,7 @@
     { "match": "tests/e2e/helpers/resolve-products.mjs", "areas": ["core"] },
     { "match": "tests/e2e/helpers/auth.mjs", "areas": ["core"] },
     { "match": "tests/e2e/helpers/run-io.mjs", "areas": ["core"] },
-    { "match": "tests/e2e/helpers/staging-wp-meta.mjs", "areas": ["amount-options"] },
+    { "match": "tests/e2e/helpers/staging-wp-meta.mjs", "areas": ["amount-options", "empty-price", "form-fields"] },
     { "match": "tests/e2e/profiles/", "areas": ["core"] },
     { "match": "tests/e2e/area-map.json", "areas": ["core"] },
     { "match": "tests/e2e/playwright.config.mjs", "areas": ["core"] },

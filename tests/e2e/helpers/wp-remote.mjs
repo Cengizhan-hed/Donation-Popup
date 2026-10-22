@@ -4,10 +4,10 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
-import { spawnSync } from 'node:child_process';
 import dotenv from 'dotenv';
 import { ROOT } from './env-root.mjs';
 import { validateDeployEnv } from '../../../scripts/lib/deploy-guards.mjs';
+import { assertRemoteAllowed, spawnGuarded } from '../../../scripts/lib/remote-guard.mjs';
 import { peekActiveProfile } from './profile.mjs';
 
 /** @type {string} */
@@ -24,6 +24,11 @@ export function setActiveDeployEnvFile(rel) {
  * @returns {{ ok: true, env: Record<string,string> } | { ok: false, reason: string }}
  */
 export function loadDeployEnvSilent() {
+  try {
+    assertRemoteAllowed();
+  } catch (e) {
+    return { ok: false, reason: e && e.message ? e.message : String(e) };
+  }
   const envPath = path.join(ROOT, activeDeployFile);
   if (!fs.existsSync(envPath)) {
     return { ok: false, reason: `missing ${activeDeployFile}` };
@@ -75,7 +80,12 @@ export function sshArgs(env) {
  */
 export function remote(env, remoteCmd) {
   const args = [...sshArgs(env), remoteCmd];
-  const res = spawnSync('ssh', args, { encoding: 'utf8', cwd: ROOT, timeout: 45000 });
+  const res = spawnGuarded(
+    'ssh',
+    args,
+    { encoding: 'utf8', cwd: ROOT, timeout: 45000 },
+    { siteUrl: env?.DEPLOY_SITE_URL, wpPath: env?.DEPLOY_WP_PATH }
+  );
   if (res.status !== 0) {
     const err = (res.stderr || res.stdout || '').trim().slice(0, 300);
     throw new Error(`ssh/wp failed${err ? `: ${err}` : ''}`);
@@ -110,6 +120,41 @@ export function wp(wpCliTail) {
  * SiteGround + object cache + bağış listesi önbelleği.
  * @param {Record<string,string>} [env]
  */
+/**
+ * Uzak wp eval-file (yerel dosya base64). extraEnv anahtarları yalnız WDP_E2E_*.
+ * @param {string} relFile
+ * @param {Record<string,string>} [extraEnv]
+ * @param {string} [extraArgs]
+ */
+export function runEvalFile(relFile, extraEnv = {}, extraArgs = '') {
+  const loaded = loadDeployEnvSilent();
+  if (!loaded.ok) throw new Error(`wp-remote: ${loaded.reason}`);
+  const local = path.join(ROOT, relFile);
+  if (!fs.existsSync(local)) throw new Error(`wp-remote: dosya yok ${relFile}`);
+  const wpPath = resolveWpPath(loaded.env).replace(/'/g, `'\\''`);
+  const b64 = fs.readFileSync(local).toString('base64');
+  const envParts = [];
+  for (const [k, v] of Object.entries(extraEnv || {})) {
+    if (!/^WDP_E2E_[A-Z0-9_]+$/.test(k)) {
+      throw new Error(`wp-remote: izinli olmayan env anahtarı ${k}`);
+    }
+    envParts.push(`${k}='${String(v).replace(/'/g, `'\\''`)}'`);
+  }
+  const prefix = envParts.length ? `${envParts.join(' ')} ` : '';
+  const extra = extraArgs ? ` ${extraArgs}` : '';
+  return remote(
+    loaded.env,
+    [
+      `TMP=$(mktemp /tmp/wdp-eval-XXXX.php)`,
+      `echo '${b64}' | base64 -d > "$TMP"`,
+      `${prefix}wp eval-file "$TMP"${extra} --path='${wpPath}'`,
+      `EC=$?`,
+      `rm -f "$TMP"`,
+      `exit $EC`,
+    ].join('\n')
+  );
+}
+
 export function purgeCaches(env) {
   const loaded = env ? { ok: true, env } : loadDeployEnvSilent();
   if (!loaded.ok) throw new Error(`wp-remote: ${loaded.reason}`);

@@ -102,10 +102,10 @@ class WDP_Campaign_Goal {
 			$raw = (string) get_post_meta(absint($product), '_progress_bar_limit', true);
 		}
 		if ($raw === '' || !is_numeric($raw)) {
-			$raw = class_exists('WDP_Donation_Type') ? WDP_Donation_Type::DEFAULT_GOAL : '100000';
+			return 0.0;
 		}
 		$goal = (float) $raw;
-		return $goal > 0 ? $goal : (float) (class_exists('WDP_Donation_Type') ? WDP_Donation_Type::DEFAULT_GOAL : 100000);
+		return $goal > 0 ? $goal : 0.0;
 	}
 
 	/**

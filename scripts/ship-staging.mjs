@@ -6,6 +6,7 @@
 import { spawnSync } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { assertRemoteAllowed } from './lib/remote-guard.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
@@ -18,6 +19,13 @@ function run(cmd, args) {
     shell: false,
   });
   return r.status ?? 1;
+}
+
+try {
+  assertRemoteAllowed();
+} catch (e) {
+  console.error(e && e.message ? e.message : String(e));
+  process.exit(1);
 }
 
 const deployCode = run('npm', ['run', 'deploy:staging']);

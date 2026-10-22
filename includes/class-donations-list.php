@@ -679,10 +679,8 @@ class WDP_Donations_List {
 		foreach ($products as $product) {
 			$ids = method_exists($product, 'get_category_ids') ? array_map('absint', (array) $product->get_category_ids()) : array();
 			foreach ($ids as $term_id) {
-				$used[ $term_id ] = true;
-				$ancestors        = function_exists('get_ancestors') ? get_ancestors($term_id, 'product_cat', 'taxonomy') : array();
-				foreach ($ancestors as $ancestor) {
-					$used[ absint($ancestor) ] = true;
+				if ($term_id > 0) {
+					$used[ $term_id ] = true;
 				}
 			}
 		}
@@ -785,44 +783,64 @@ class WDP_Donations_List {
 		if ($atts['button_full'] === 'yes') {
 			$cta_class .= ' wdp-card__cta--full';
 		}
+		$cta_tag = 'a';
 		$cta_attrs = ' href="' . esc_url($url) . '" class="' . esc_attr($cta_class) . '"';
 		if ($atts['button'] !== 'link') {
-			$mode      = $atts['button'] === 'panel' ? 'side_panel' : 'popup';
+			$mode       = $atts['button'] === 'panel' ? 'side_panel' : 'popup';
 			$cta_class .= ' wdp-open-modal' . ($mode === 'side_panel' ? ' wdp-open-side-panel' : '');
-			$cta_attrs = ' href="' . esc_url($url) . '" class="' . esc_attr($cta_class) . '" data-product-id="' . esc_attr((string) $id) . '" data-wdp-mode="' . esc_attr($mode) . '" data-wdp-lazy="1"';
+			$cta_tag    = 'button';
+			$cta_attrs  = ' type="button" class="' . esc_attr($cta_class) . '" data-product-id="' . esc_attr((string) $id) . '" data-wdp-mode="' . esc_attr($mode) . '" data-wdp-lazy="1"';
 		}
 
-		$type     = WDP_Donation_Type::for_product($id);
+		$type       = WDP_Donation_Type::for_product($id);
 		$price_html = '';
 		if ($atts['show_price'] === 'yes') {
 			if ($type === WDP_Donation_Type::SHARES) {
-				$price_html = esc_html(sprintf(
+				$share_price = WDP_Utils::format_product_display_price($product);
+				$price_html  = esc_html(sprintf(
 					/* translators: %s: formatted share price */
 					__('Hisse: %s', 'woo-donation-popup'),
-					wp_strip_all_tags(WDP_Utils::format_price_html($product->get_price()))
+					wp_strip_all_tags($share_price)
 				));
 			} elseif ($type === WDP_Donation_Type::CUSTOM) {
-				$price_html = esc_html__('Dilediğin tutar', 'woo-donation-popup');
-			} elseif ($type === WDP_Donation_Type::CAMPAIGN && $atts['show_progress'] === 'yes') {
-				$price_html = '';
+				$min = (float) $product->get_meta('_min_custom_price', true);
+				if ($min > 0) {
+					$price_html = esc_html(sprintf(
+						/* translators: %s: formatted minimum amount */
+						__('min. %s', 'woo-donation-popup'),
+						wp_strip_all_tags(WDP_Utils::format_price_html($min))
+					));
+				}
+			} elseif ($type === WDP_Donation_Type::CAMPAIGN) {
+				$goal  = (float) $product->get_meta('_progress_bar_limit', true);
+				$total = isset($totals[ $id ]) ? (float) $totals[ $id ] : 0.0;
+				if ($goal > 0) {
+					$price_html = esc_html(sprintf(
+						/* translators: 1: collected, 2: goal */
+						__('%1$s / %2$s', 'woo-donation-popup'),
+						wp_strip_all_tags(WDP_Utils::format_price_html($total)),
+						wp_strip_all_tags(WDP_Utils::format_price_html($goal))
+					));
+				}
 			} else {
-				$price_html = WDP_Utils::format_price_html($product->get_price());
+				$price_html = WDP_Utils::format_product_display_price($product);
 			}
 		}
 
 		$progress = '';
 		if ($atts['show_progress'] === 'yes' && $type === WDP_Donation_Type::CAMPAIGN) {
-			$goal  = (float) $product->get_meta('_progress_bar_limit', true);
-			$goal  = $goal > 0 ? $goal : (float) WDP_Donation_Type::DEFAULT_GOAL;
-			$total = isset($totals[ $id ]) ? (float) $totals[ $id ] : 0.0;
-			$pct   = $goal > 0 ? (int) min(100, floor(($total / $goal) * 100)) : 0;
-			$label = sprintf(
-				/* translators: 1: collected, 2: goal */
-				__('%1$s / %2$s toplandı', 'woo-donation-popup'),
-				wp_strip_all_tags(WDP_Utils::format_price_html($total)),
-				wp_strip_all_tags(WDP_Utils::format_price_html($goal))
-			);
-			$progress = '<div class="wdp-card__progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' . esc_attr((string) $pct) . '" aria-label="' . esc_attr($label) . '"><span class="wdp-card__progress-bar" style="width:' . esc_attr((string) $pct) . '%"></span></div>';
+			$goal = (float) $product->get_meta('_progress_bar_limit', true);
+			if ($goal > 0) {
+				$total = isset($totals[ $id ]) ? (float) $totals[ $id ] : 0.0;
+				$pct   = (int) min(100, floor(($total / $goal) * 100));
+				$label = sprintf(
+					/* translators: 1: collected, 2: goal */
+					__('%1$s / %2$s toplandı', 'woo-donation-popup'),
+					wp_strip_all_tags(WDP_Utils::format_price_html($total)),
+					wp_strip_all_tags(WDP_Utils::format_price_html($goal))
+				);
+				$progress = '<div class="wdp-card__progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' . esc_attr((string) $pct) . '" aria-label="' . esc_attr($label) . '"><span class="wdp-card__progress-bar" style="width:' . esc_attr((string) $pct) . '%"></span></div>';
+			}
 		}
 
 		$excerpt = '';
@@ -863,7 +881,7 @@ class WDP_Donations_List {
 		$html  = '<li class="wdp-list__item" data-wdp-cats="' . esc_attr(implode(' ', $slugs)) . '">';
 		$html .= '<article class="wdp-card">';
 		if ($image !== '') {
-			$html .= '<a class="wdp-card__media" href="' . esc_url($url) . '">' . $image . '</a>';
+			$html .= '<a class="wdp-card__media" href="' . esc_url($url) . '" aria-hidden="true" tabindex="-1">' . $image . '</a>';
 		}
 		$html .= '<div class="wdp-card__body">';
 		$html .= $cat_html;
@@ -875,7 +893,7 @@ class WDP_Donations_List {
 			$html .= '<p class="wdp-card__price">' . $price_html . '</p>';
 		}
 		$html .= $progress;
-		$html .= '<a' . $cta_attrs . '>' . esc_html($button_text) . '</a>';
+		$html .= '<' . $cta_tag . $cta_attrs . '>' . esc_html($button_text) . '</' . $cta_tag . '>';
 		$html .= '</div></article></li>';
 
 		/**

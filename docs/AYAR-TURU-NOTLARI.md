@@ -371,3 +371,24 @@ Görev: DİL = i18n/sayı biçimi/telefon; REF = refaktör; GÜV = güvenlik; FO
 | 16 | GÜV / FORM | Bu taramada ilke ihlali bulunmadı | | | |
 
 KARAR (Claude): 2/3'te yalnız GBP doğruluğunu sağlayan ÇEKİRDEK düzeltilir: Woo sayı ayarlarını wdp_ajax ile JS'e aktar + tek JS biçimleme/ayrıştırma yardımcısı (maddeler 1, 2) + GBP/USD için güvenli varsayılan hızlı tutar/hedef (madde 3) + madde 12-14. Metinlerin çevirisi, telefon ön eki ve geri kalan tüm biçimlendirme yayılımı DİL görevinde.
+
+## OLAY: Test temizliği staging28'de gerçek sayfaları çöpe attı (2026-10-22)
+
+| Konu | Not |
+|------|-----|
+| Belirti | staging28'de "Ana sayfa" ve "Bağış Doğrulama — Donation Success Page" çöpe gitti; WordPress Okuma ayarı "Son yazılarınız"a döndü. Daha önce 2b'de Woo sepet sayfası (id 291) de çöpte bulunmuştu (muhtemelen aynı kaynak) |
+| Durum | Koşular durduruldu; MERGE YOK (kullanıcı kararı). Sayfaların geri yüklenmesi KULLANICININ işi (Cursor/Claude yapmaz) |
+| Kural | CLAUDE.md "TEST GÜVENLİĞİ" maddesi eklendi |
+| İş | Görev 2d: kök neden (adli inceleme, salt okunur), düzeltme, kanarya denetimi, Ikram'da aynı olay var mı kontrolü |
+
+### Olay sonucu (Görev 2e, yalnız yerel; 2026-10-22)
+
+| Konu | Sonuç |
+|------|-------|
+| Mekanizma | KESİN: `wp_delete_user($id)` reassign'sız → o kullanıcının sayfaları ÇÖPE, medyası KALICI silinir. Yerelde yeniden üretildi (build/local-wp/evidence/scenarios.json) |
+| Kod | YÜKSEK OLASILIK: test-cleanup.mjs:64-65 (HEAD dbe472e) `@wdp-e2e.test` kullanıcıları siliyordu (işaret/kayıt defteri/içerik kontrolü yok); cleanup-e2e.php'de `$EMAIL_NEEDLE` tanımsız → search '*' tüm kullanıcılar riski. Hasar veren koşuda hangisinin çalıştığı BELİRSİZ (JSON saklı değil) |
+| Eklenti | Çürütüldü: sayfa/medya/kullanıcı oluşturma-silme-çöp YOK, WP/Woo sayfa ayarlarına yazmaz; tüm update_option/delete_option yalnız wdp_* |
+| Ikram | Hasar kanıtlanamadı (belirsiz): temizlik kullanıcı silme kodu Ikram'da da çalışabilirdi; kayıtta Ikram'da silme yok (bir koşuda SSH koptu). Kullanıcı elle kontrol edecek |
+| Düzeltme | Merkezi uzak koruma (spawnGuarded + REMOTE_FREEZE), staging28 izinden çıktı, tek korumalı temizlik (run_id + kayıt defteri + kara liste + kullanıcı içerik kontrolü), createTempPage/deletePost/ensureWooCartPagePublished kaldırıldı, uzak ayar yazımı kalktı, kanarya, e2e:bootstrap (fixture), yerel WP kanıt ortamı (`npm run test:local-wp`) |
+| Durum | REMOTE_FREEZE AKTİF; uzak komut yok; 2/3-2c-2e değişiklikleri UNCOMMITTED; merge/accept yok; yeni staging adresi bekleniyor |
+| Açık | Ikram baseline'ları ve Hedef accept bekliyor (yeni staging + fixture modu sonrası yeniden üretilecek); Görev 3/3 (tema/WooCommerce uyum matrisi) bekliyor |

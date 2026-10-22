@@ -20,6 +20,11 @@ if ! command -v rsync >/dev/null 2>&1; then
   echo "error: rsync is required (install Xcode CLT on macOS)." >&2
   exit 1
 fi
+if ! command -v node >/dev/null 2>&1; then
+  echo "error: node is required for remote-guard." >&2
+  exit 1
+fi
+node "$PLUGIN_ROOT/scripts/lib/remote-guard.mjs" --assert-local-pack || exit 1
 if ! command -v zip >/dev/null 2>&1; then
   echo "error: zip CLI not found." >&2
   exit 1
@@ -54,7 +59,7 @@ if [[ -f "$DISTIGNORE_FILE" ]]; then
   done < "$DISTIGNORE_FILE"
 fi
 
-rsync "${RSYNC_ARGS[@]}" "$PLUGIN_ROOT/" "$DEST/"
+node "$PLUGIN_ROOT/scripts/lib/remote-guard.mjs" --exec --local-pack -- rsync "${RSYNC_ARGS[@]}" "$PLUGIN_ROOT/" "$DEST/"
 
 # Minify admin CSS in the distribution copy only (source stays readable).
 if command -v php >/dev/null 2>&1 && [[ -f "$PLUGIN_ROOT/tools/minify-admin-css.php" ]]; then

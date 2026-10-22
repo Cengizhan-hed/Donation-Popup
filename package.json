@@ -1,6 +1,6 @@
 {
   "name": "donation-popup",
-  "version": "10.33.0",
+  "version": "10.34.2",
   "description": "WooCommerce donation popup — WordPress plugin.",
   "private": true,
   "scripts": {
@@ -9,6 +9,9 @@
     "build": "npm run build:css && npm run build:js",
     "smoke": "php tests/smoke/run.php",
     "test": "php vendor/bin/phpunit -c phpunit.xml.dist && node --test tests/unit/js/*.test.mjs",
+    "test:local-wp": "node scripts/test-local-wp.mjs",
+    "local-wp:ensure": "node scripts/local-wp.mjs ensure",
+    "e2e:bootstrap": "node scripts/e2e-bootstrap.mjs",
     "test:install": "composer install --no-interaction",
     "verify": "npm run build && npm run smoke",
     "pack": "npm run build && sh scripts/package-wp-plugin.sh",
@@ -28,6 +31,8 @@
     "deploy:ikram": "node scripts/deploy-ikram.mjs",
     "deploy:ikram:rollback": "node scripts/deploy-ikram.mjs --rollback",
     "ikram:wp": "node scripts/ikram-wp.mjs",
+    "staging:wp": "node scripts/staging-wp.mjs",
+    "e2e:canary": "node tests/e2e/run-canary.mjs",
     "ship:staging": "node scripts/ship-staging.mjs",
     "ship:ikram": "node scripts/ship-ikram.mjs",
     "handoff": "node scripts/handoff.mjs"

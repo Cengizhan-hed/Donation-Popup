@@ -264,3 +264,56 @@ export function extractPostAction(postData) {
   const m = String(postData).match(/(?:^|&)action=([^&]*)/);
   return m ? decodeURIComponent(m[1]) : '';
 }
+
+/**
+ * Liste/popup tetikleyici tıklanamama kök nedeni (overlay, z-index, JS, lazy).
+ * @param {import('@playwright/test').Page} page
+ * @param {import('@playwright/test').Locator} trigger
+ */
+export async function collectTriggerClickDiagnostics(page, trigger) {
+  const box = await trigger.boundingBox().catch(() => null);
+  return page.evaluate(async (point) => {
+    const btn =
+      document.querySelector('.wdp-open-modal[data-product-id]') ||
+      document.querySelector('.wdp-open-modal');
+    let topAtPoint = null;
+    if (point && Number.isFinite(point.x) && Number.isFinite(point.y)) {
+      const el = document.elementFromPoint(point.x, point.y);
+      if (el) {
+        const st = window.getComputedStyle(el);
+        topAtPoint = {
+          tag: el.tagName,
+          id: el.id || '',
+          className: String(el.className || '').slice(0, 160),
+          zIndex: st.zIndex,
+          pointerEvents: st.pointerEvents,
+          isTrigger: !!(el.closest && el.closest('.wdp-open-modal')),
+        };
+      }
+    }
+    const WDPApp = window.WDPApp || {};
+    const cons = [];
+    const hiddenParent = btn
+      ? !!btn.closest('.is-hidden, [hidden], [aria-hidden="true"]')
+      : null;
+    const style = btn ? window.getComputedStyle(btn) : null;
+    const rect = btn ? btn.getBoundingClientRect() : null;
+    return {
+      hasWdpApp: !!window.WDPApp,
+      eventManager: !!(WDPApp.eventManager && typeof WDPApp.eventManager === 'object'),
+      lazyModal: !!(WDPApp.lazyModal && typeof WDPApp.lazyModal.ensureAndOpen === 'function'),
+      triggerCount: document.querySelectorAll('.wdp-open-modal').length,
+      hiddenParent,
+      display: style ? style.display : null,
+      visibility: style ? style.visibility : null,
+      opacity: style ? style.opacity : null,
+      zIndex: style ? style.zIndex : null,
+      pointerEvents: style ? style.pointerEvents : null,
+      rect: rect
+        ? { w: Math.round(rect.width), h: Math.round(rect.height), t: Math.round(rect.top), b: Math.round(rect.bottom) }
+        : null,
+      topAtPoint,
+      sgCombined: !!document.querySelector('script[src*="siteground"], script[src*="sg-cachepress"]'),
+    };
+  }, box ? { x: box.x + box.width / 2, y: box.y + box.height / 2 } : null);
+}

@@ -6,6 +6,8 @@
 export const IKRAM_WP_SLUG = 'woo-donation-popup';
 export const IKRAM_WP_ALIAS = 'ikramaid';
 export const CLEANUP_EVAL_FILE = 'tests/e2e/helpers/cleanup-e2e.php';
+export const TEMP_PRODUCT_EVAL_FILE = 'tests/e2e/helpers/e2e-temp-product.php';
+export const TRASH_REPORT_EVAL_FILE = 'tests/e2e/helpers/trash-report.php';
 
 const BLOCKED = [
   /\bdb\s+(drop|reset|clean|repair|query)\b/i,
@@ -39,7 +41,7 @@ const ALLOWED_HEADS = [
 ];
 
 const EVAL_INLINE_BLOCK =
-  /\b(wp_delete_|DROP\s+|DELETE\s+FROM|update_option|delete_option|wp_update_user|wp_insert_user|wp_delete_user)\b/i;
+  /\b(wp_delete_post|wp_delete_user|wp_delete_attachment|wp_trash_post|wp_untrash_post|wp_update_post|wp_insert_post|DROP\s+|DELETE\s+FROM|update_option|delete_option|update_post_meta|delete_post_meta|wp_update_user|wp_insert_user)\b/i;
 
 /**
  * @param {string} tail `plugin list` veya `wp plugin list`
@@ -82,19 +84,29 @@ export function allowIkramWpCommand(tail) {
   }
 
   if (cmd === 'eval-file' || cmd.startsWith('eval-file ')) {
-    const rest = cmd.slice('eval-file'.length).trim();
-    const fileTok = rest.split(/\s+/)[0] || '';
-    const norm = fileTok.replace(/\\/g, '/').replace(/^\.\//, '');
-    if (!norm.endsWith(CLEANUP_EVAL_FILE) && norm !== CLEANUP_EVAL_FILE) {
+    const file = resolveAllowedEvalFile(cmd);
+    if (!file) {
       return {
         ok: false,
-        reason: `eval-file yalnız ${CLEANUP_EVAL_FILE} için izinli.`,
+        reason: `eval-file yalnız ${CLEANUP_EVAL_FILE}, ${TEMP_PRODUCT_EVAL_FILE} veya ${TRASH_REPORT_EVAL_FILE} için izinli.`,
       };
     }
-    return { ok: true, kind: 'eval-file' };
+    return { ok: true, kind: 'eval-file', file };
   }
 
   return { ok: true, kind: 'wp' };
+}
+
+/**
+ * @param {string} cmd normalizeWpTail çıktısı
+ * @returns {string} izinli göreli yol veya ''
+ */
+export function resolveAllowedEvalFile(cmd) {
+  const rest = String(cmd || '').replace(/^eval-file\s+/i, '').trim();
+  const fileTok = rest.split(/\s+/)[0] || '';
+  const norm = fileTok.replace(/\\/g, '/').replace(/^\.\//, '');
+  const allowedFiles = [CLEANUP_EVAL_FILE, TEMP_PRODUCT_EVAL_FILE, TRASH_REPORT_EVAL_FILE];
+  return allowedFiles.find((f) => norm.endsWith(f) || norm === f) || '';
 }
 
 /**

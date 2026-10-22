@@ -35,10 +35,49 @@ trait WDP_Utils_Price_Trait {
             $symbol = get_woocommerce_currency_symbol();
         }
         if ($symbol === '') {
-            $symbol = '₺';
+            $symbol = function_exists('get_woocommerce_currency') ? (string) get_woocommerce_currency() : '';
         }
 
         return self::decode_text_entities($symbol);
+    }
+
+    /**
+     * WooCommerce sayı/sembol ayarları (JS localize + biçimleme).
+     *
+     * @return array{code:string,symbol:string,decimals:int,thousandSeparator:string,decimalSeparator:string,symbolPosition:string}
+     */
+    public static function get_js_currency_settings() {
+        $code = function_exists('get_woocommerce_currency') ? (string) get_woocommerce_currency() : '';
+        $symbol = self::get_display_currency_symbol(
+            function_exists('get_woocommerce_currency_symbol') ? get_woocommerce_currency_symbol($code) : ''
+        );
+        return array(
+            'code'               => $code,
+            'symbol'             => $symbol,
+            'decimals'           => function_exists('wc_get_price_decimals') ? (int) wc_get_price_decimals() : 2,
+            'thousandSeparator'  => function_exists('wc_get_price_thousand_separator') ? (string) wc_get_price_thousand_separator() : ',',
+            'decimalSeparator'   => function_exists('wc_get_price_decimal_separator') ? (string) wc_get_price_decimal_separator() : '.',
+            'symbolPosition'     => function_exists('get_option') ? (string) get_option('woocommerce_currency_pos', 'left') : 'left',
+        );
+    }
+
+    /**
+     * Kart / form birim fiyatı: WooCommerce "vergi dahil/hariç göster" ayarına uyar.
+     *
+     * @param WC_Product $product Product.
+     * @return string HTML (or '').
+     */
+    public static function format_product_display_price($product) {
+        if (!is_object($product) || !method_exists($product, 'get_price')) {
+            return '';
+        }
+        $amount = function_exists('wc_get_price_to_display')
+            ? wc_get_price_to_display($product)
+            : $product->get_price();
+        if ($amount === '' || $amount === null) {
+            return '';
+        }
+        return self::format_price_html($amount);
     }
 
     public static function format_price_html($amount, array $args = array()) {

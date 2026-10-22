@@ -1,0 +1,16 @@
+{
+  "id": "local",
+  "name": "Yerel WordPress (kanıt ortamı)",
+  "aliases": ["local-wp"],
+  "baseUrl": "http://127.0.0.1:8899",
+  "allowedHosts": ["127.0.0.1", "localhost"],
+  "envFile": ".env.e2e.local",
+  "deployEnvFile": "",
+  "locale": "tr_TR",
+  "language": "tr",
+  "allowMetaMutation": true,
+  "wpCliAuth": false,
+  "comingSoon": false,
+  "products": {},
+  "protectedProductIds": []
+}

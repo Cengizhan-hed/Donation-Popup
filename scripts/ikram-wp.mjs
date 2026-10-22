@@ -14,13 +14,13 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { spawnSync } from 'node:child_process';
 import dotenv from 'dotenv';
 import {
   IKRAM_ALLOW_REMOVAL_NOTE,
   validateDeployEnv,
   validateRemoteSiteUrl,
 } from './lib/deploy-guards.mjs';
+import { assertRemoteAllowed, spawnGuarded } from './lib/remote-guard.mjs';
 import {
   allowIkramWpCommand,
   normalizeWpTail,
@@ -28,6 +28,8 @@ import {
   IKRAM_WP_SLUG,
   IKRAM_WP_ALIAS,
   CLEANUP_EVAL_FILE,
+  TEMP_PRODUCT_EVAL_FILE,
+  TRASH_REPORT_EVAL_FILE,
 } from './lib/ikram-wp-guard.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -84,11 +86,12 @@ function sshArgs(env) {
 }
 
 function remote(env, remoteCmd) {
-  const res = spawnSync('ssh', [...sshArgs(env), remoteCmd], {
-    encoding: 'utf8',
-    cwd: ROOT,
-    timeout: 60000,
-  });
+  const res = spawnGuarded(
+    'ssh',
+    [...sshArgs(env), remoteCmd],
+    { encoding: 'utf8', cwd: ROOT, timeout: 60000 },
+    { siteUrl: env?.DEPLOY_SITE_URL, wpPath: env?.DEPLOY_WP_PATH }
+  );
   if (res.status !== 0) {
     const err = (res.stderr || res.stdout || '').trim().slice(0, 500);
     fail(`ssh/wp başarısız${err ? `: ${err}` : ''}`);
@@ -174,17 +177,19 @@ function builtinDebugLog(env) {
   console.log(out);
 }
 
-function runEvalFileCleanup(env) {
-  const local = path.join(ROOT, CLEANUP_EVAL_FILE);
-  if (!fs.existsSync(local)) fail(`Yerel dosya yok: ${CLEANUP_EVAL_FILE}`);
+function runEvalFileCleanup(env, relFile) {
+  const rel = relFile || CLEANUP_EVAL_FILE;
+  const local = path.join(ROOT, rel);
+  if (!fs.existsSync(local)) fail(`Yerel dosya yok: ${rel}`);
   const wpPath = wpPathEsc(env);
   const b64 = fs.readFileSync(local).toString('base64');
+  const extra = rel === TEMP_PRODUCT_EVAL_FILE ? ' cleanup' : '';
   const out = remote(
     env,
     [
       `TMP=$(mktemp /tmp/wdp-cleanup-XXXX.php)`,
       `echo '${b64}' | base64 -d > "$TMP"`,
-      `wp eval-file "$TMP" --path='${wpPath}'`,
+      `wp eval-file "$TMP"${extra} --path='${wpPath}'`,
       `EC=$?`,
       `rm -f "$TMP"`,
       `exit $EC`,
@@ -195,6 +200,11 @@ function runEvalFileCleanup(env) {
 
 function main() {
   console.log(IKRAM_ALLOW_REMOVAL_NOTE);
+  try {
+    assertRemoteAllowed();
+  } catch (e) {
+    fail(e && e.message ? e.message : String(e));
+  }
   const env = loadEnv();
   const wpPath = resolveWpPath(env);
   const siteCheck = remote(env, `wp option get siteurl --path='${wpPath.replace(/'/g, `'\\''`)}'`);
@@ -203,10 +213,14 @@ function main() {
 
   const argv = process.argv.slice(2).filter((a) => a !== '--');
   if (!argv.length) {
-    fail('Kullanım: npm run ikram:wp -- plugin list | plugin-health | php-ok | debug-log | eval-file <dosya>');
+    fail('Kullanım: npm run ikram:wp -- plugin list | plugin-health | php-ok | debug-log | trash-report | eval-file <dosya>');
   }
 
   const builtin = argv[0];
+  if (builtin === 'trash-report') {
+    runEvalFileCleanup(env, TRASH_REPORT_EVAL_FILE);
+    return;
+  }
   if (builtin === 'plugin-health') {
     builtinPluginHealth(env);
     return;
@@ -233,7 +247,7 @@ function main() {
   if (!allowed.ok) fail(allowed.reason);
 
   if (allowed.kind === 'eval-file') {
-    runEvalFileCleanup(env);
+    runEvalFileCleanup(env, allowed.file);
     return;
   }
 

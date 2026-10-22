@@ -7,10 +7,13 @@ import { withCacheBust } from './env.mjs';
 import {
   emptyCart,
   openShellLocator,
+  clickShellTrigger,
+  revealListProductTrigger,
   shellTriggerLocator,
   makeFailure,
 } from './checks.mjs';
 import { getProductMeta, setProductMeta } from './staging-wp-meta.mjs';
+import { requireFixtureRole } from './fixtures.mjs';
 
 const CHECK_MS = 25000;
 
@@ -40,6 +43,9 @@ async function openProductShell(page, mode, opts) {
   await page.goto(withCacheBust(opts.baseUrl, openPath, { hdf_no_side_cart: '1' }), {
     waitUntil: 'domcontentloaded',
   });
+  if (mode === 'popup') {
+    await revealListProductTrigger(page, opts.productId || 0);
+  }
   let trigger = shellTriggerLocator(page, mode, { productId: opts.productId || 0 });
   if ((await trigger.count()) === 0) {
     trigger =
@@ -47,8 +53,8 @@ async function openProductShell(page, mode, opts) {
         ? page.locator(SEL.sidePanelTrigger).first()
         : page.locator(SEL.centeredPopupTrigger).first();
   }
-  await trigger.click({ timeout: CHECK_MS });
-  const shell = openShellLocator(page, mode);
+  await clickShellTrigger(trigger, CHECK_MS);
+  const shell = mode === 'popup' ? openShellLocator(page, '') : openShellLocator(page, mode);
   await waitShellReady(shell);
   return shell;
 }
@@ -128,10 +134,18 @@ export async function runProductThemeChecks(opts) {
     stats.failed += 1;
   };
 
-  const customId = Number(productIds?.custom || 0);
-  const customPath = productUrls?.custom || '';
   const baseUrl = env.E2E_BASE_URL;
   const listPath = listPagePath || env.E2E_LIST_PAGE;
+  let customId = Number(productIds?.custom || 0);
+  let customPath = productUrls?.custom || '';
+  try {
+    const fx = requireFixtureRole(env, 'custom');
+    customId = fx.id;
+    customPath = fx.path || fx.url || customPath;
+  } catch (e) {
+    fail('product-theme-fixture', String(e.message || e), e);
+    return;
+  }
 
   /** @type {Record<string,string>} */
   const snapshot = {};

@@ -621,7 +621,10 @@
       // Sunucu ücreti uygular — taban tutarı gönder (çift uygulama yok).
       const priceInput = form.querySelector('input[name="custom_price"]');
       if (priceInput && formData.has('custom_price')) {
-        const base = Number.parseFloat(String(formData.get('custom_price') || '').replace(',', '.'));
+        const parseAmt = (window.WDPApp && WDPApp.utils && typeof WDPApp.utils.parseMoney === 'function')
+          ? WDPApp.utils.parseMoney
+          : Number.parseFloat;
+        const base = parseAmt(formData.get('custom_price') || '');
         if (Number.isFinite(base) && base > 0) {
           formData.set('custom_price', String(base));
         }
@@ -638,8 +641,11 @@
       
       if (priceInput) {
         // Base price'ı al (dataset'ten veya mevcut fiyattan)
-        const baseMinValue = Number.parseFloat((priceInput.dataset.baseMin || '').toString().trim());
-        const currentPriceValue = Number.parseFloat((priceInput.value || '').toString().trim());
+        const parseAmtShare = (window.WDPApp && WDPApp.utils && typeof WDPApp.utils.parseMoney === 'function')
+          ? WDPApp.utils.parseMoney
+          : Number.parseFloat;
+        const baseMinValue = parseAmtShare(priceInput.dataset.baseMin || '');
+        const currentPriceValue = parseAmtShare(priceInput.value || '');
         
         let basePrice = baseMinValue;
         

@@ -318,18 +318,39 @@ async function finishSuccessfulLogin(context) {
   return dest;
 }
 
+/** @type {import('@playwright/test').Cookie[] | null} */
+let inMemoryAdminCookies = null;
+
+/**
+ * WP-CLI oturum çerezleri (bellekte; dosyaya yazılmaz, değer loglanmaz).
+ * @returns {import('@playwright/test').Cookie[] | null}
+ */
+export function getInMemoryAdminCookies() {
+  return inMemoryAdminCookies;
+}
+
 /**
  * WP-CLI oturum çerezi — şifre yok, görünürlük değişmez.
- * Çerez değeri loglanmaz.
+ * Çerez değeri loglanmaz ve dosyaya yazılmaz.
  * @param {Record<string, string>} env
  */
 async function authViaWpCliCookie(env) {
   const { wp } = await import('./wp-remote.mjs');
+  let idRaw = '';
+  try {
+    idRaw = wp('wp user list --role=administrator --field=ID --number=1');
+  } catch (e) {
+    console.error('[e2e:catch-fail] wpCliAuth: wp user list --role=administrator başarısız');
+    return null;
+  }
+  const adminId = parseInt(String(idRaw).trim().split(/\s+/)[0], 10);
+  if (!Number.isFinite(adminId) || adminId <= 0) {
+    console.error('[e2e:catch-fail] wpCliAuth: yönetici kullanıcı yok (wp user list --role=administrator boş)');
+    return null;
+  }
   const php = [
     'if (!function_exists("wp_generate_auth_cookie")) { echo ""; return; }',
-    '$ids = get_users(array("role"=>"administrator","number"=>1,"fields"=>"ID"));',
-    'if (!$ids) { echo ""; return; }',
-    '$id = (int) $ids[0];',
+    `$id = ${adminId};`,
     '$exp = time() + WEEK_IN_SECONDS;',
     'echo wp_json_encode(array(',
     '  "logged_in_name" => LOGGED_IN_COOKIE,',
@@ -344,7 +365,7 @@ async function authViaWpCliCookie(env) {
   try {
     raw = wp(`wp eval '${php.replace(/'/g, `'\\''`)}'`);
   } catch (e) {
-    console.error(`[e2e:catch-fail] wpCliAuth eval: ${e && e.message ? e.message : e}`);
+    console.error('[e2e:catch-fail] wpCliAuth eval: başarısız');
     return null;
   }
   const jsonLine = String(raw || '')
@@ -356,13 +377,11 @@ async function authViaWpCliCookie(env) {
   try {
     data = JSON.parse(jsonLine || String(raw).trim());
   } catch (e) {
-    console.error(
-      `[e2e:catch-fail] wpCliAuth JSON: ${e && e.message ? e.message : e} preview=${String(raw).slice(0, 80)}`
-    );
+    console.error('[e2e:catch-fail] wpCliAuth JSON ayrıştırılamadı');
     return null;
   }
   if (!data || !data.logged_in || !data.logged_in_name) {
-    console.error('[e2e:catch-fail] wpCliAuth: çerez alanları boş (yönetici kullanıcı yok olabilir)');
+    console.error('[e2e:catch-fail] wpCliAuth: çerez alanları boş');
     return null;
   }
   let host = '';
@@ -371,7 +390,34 @@ async function authViaWpCliCookie(env) {
   } catch {
     return null;
   }
-  fs.mkdirSync(AUTH_DIR, { recursive: true });
+  const cookieDomain = host.replace(/^www\./, '');
+  const cookies = [
+    {
+      name: data.logged_in_name,
+      value: data.logged_in,
+      domain: cookieDomain,
+      path: '/',
+      httpOnly: true,
+      secure: true,
+      sameSite: 'Lax',
+    },
+  ];
+  for (const pair of [
+    [data.auth_name, data.auth],
+    [data.secure_auth_name, data.secure_auth],
+  ]) {
+    if (pair[0] && pair[1]) {
+      cookies.push({
+        name: pair[0],
+        value: pair[1],
+        domain: cookieDomain,
+        path: '/',
+        httpOnly: true,
+        secure: true,
+        sameSite: 'Lax',
+      });
+    }
+  }
   const browser = await chromium.launch();
   try {
     const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
@@ -379,42 +425,19 @@ async function authViaWpCliCookie(env) {
       const { applyComingSoonBypass } = await import('./coming-soon.mjs');
       await applyComingSoonBypass(context, env._profile, env);
     }
-    const cookieDomain = host.replace(/^www\./, '');
-    const cookies = [
-      {
-        name: data.logged_in_name,
-        value: data.logged_in,
-        domain: cookieDomain,
-        path: '/',
-        httpOnly: true,
-        secure: true,
-        sameSite: 'Lax',
-      },
-    ];
-    for (const pair of [
-      [data.auth_name, data.auth],
-      [data.secure_auth_name, data.secure_auth],
-    ]) {
-      if (pair[0] && pair[1]) {
-        cookies.push({
-          name: pair[0],
-          value: pair[1],
-          domain: cookieDomain,
-          path: '/',
-          httpOnly: true,
-          secure: true,
-          sameSite: 'Lax',
-        });
-      }
-    }
     await context.addCookies(cookies);
     const ok = await storageStateOpensAdmin(context, env);
     if (!ok) {
       console.error('[e2e:catch-fail] wpCliAuth: çerez kondu ama /wp-admin açılamadı');
       await context.close();
+      inMemoryAdminCookies = null;
       return null;
     }
-    return await finishSuccessfulLogin(context);
+    inMemoryAdminCookies = cookies;
+    await context.close();
+    clearLoginFailureShot();
+    console.log('Giriş başarılı (wpCliAuth, bellek)');
+    return 'memory';
   } finally {
     await browser.close().catch(() => {});
   }
@@ -424,11 +447,14 @@ async function authViaWpCliCookie(env) {
  * @param {Record<string, string>} env
  */
 export async function ensureAuth(env) {
-  fs.mkdirSync(AUTH_DIR, { recursive: true });
   if (env && env.E2E_PROFILE_ID) setAuthFileForProfile(env.E2E_PROFILE_ID);
+  if (inMemoryAdminCookies && inMemoryAdminCookies.length) {
+    return 'memory';
+  }
+  fs.mkdirSync(AUTH_DIR, { recursive: true });
   const dest = getAuthFile();
 
-  if (fs.existsSync(dest)) {
+  if (!env?._profile?.wpCliAuth && fs.existsSync(dest)) {
     const probe = await chromium.launch();
     try {
       const context = await probe.newContext({

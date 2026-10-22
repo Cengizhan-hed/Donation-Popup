@@ -611,12 +611,13 @@ class WDP_Admin_Product_Data_Tab {
 		echo '</div>';
 
 		self::open_type_scope(array(WDP_Donation_Type::CUSTOM, WDP_Donation_Type::CAMPAIGN), $type);
+		echo '<p class="wdp-pp-note">' . esc_html__('Bağış tutarını bu sekmeden belirleyin. WooCommerce Genel fiyat alanı bu türlerde zorunlu değildir ve boş bırakılabilir; eklenti Genel fiyatı kendiliğinden değiştirmez.', 'woo-donation-popup') . '</p>';
 		/* translators: %s: currency symbol */
 		self::number(
 			'min_custom_price',
 			$values['min_custom_price'],
 			sprintf(__('En düşük tutar (%s)', 'woo-donation-popup'), $currency),
-			__('Bağışçının yazabileceği en düşük tutar. Hedefli kampanyada formda ürün fiyatı ile bu tutarın küçüğü kullanılır; ürün fiyatı yoksa veya 0 ise yalnız bu alan geçerlidir.', 'woo-donation-popup'),
+			__('Bağışçının yazabileceği en düşük tutar. Tek kaynak bu alandır (WooCommerce Genel fiyat yedek/uyumluluk içindir, min hesaplanmaz).', 'woo-donation-popup'),
 			array('step' => '1')
 		);
 		echo '</div>';

@@ -9,11 +9,14 @@ import { withCacheBust, ROOT } from './env.mjs';
 import {
   emptyCart,
   openShellLocator,
+  clickShellTrigger,
+  revealListProductTrigger,
   shellTriggerLocator,
   clickAddToCartWithRetry,
   makeFailure,
 } from './checks.mjs';
 import { getProductMeta, setProductMeta } from './staging-wp-meta.mjs';
+import { requireFixtureRole } from './fixtures.mjs';
 
 const CHECK_MS = 20000;
 const RECOMMENDED_META = '_amount_preset_recommended';
@@ -74,6 +77,9 @@ async function openProductShell(page, mode, opts) {
   await page.goto(withCacheBust(opts.baseUrl, openPath, { hdf_no_side_cart: '1' }), {
     waitUntil: 'domcontentloaded',
   });
+  if (mode === 'popup') {
+    await revealListProductTrigger(page, opts.productId || 0);
+  }
   let trigger = shellTriggerLocator(page, mode, { productId: opts.productId || 0 });
   if ((await trigger.count()) === 0) {
     trigger =
@@ -81,8 +87,8 @@ async function openProductShell(page, mode, opts) {
         ? page.locator(SEL.sidePanelTrigger).first()
         : page.locator(SEL.centeredPopupTrigger).first();
   }
-  await trigger.click({ timeout: CHECK_MS });
-  const shell = openShellLocator(page, mode);
+  await clickShellTrigger(trigger, CHECK_MS);
+  const shell = mode === 'popup' ? openShellLocator(page, '') : openShellLocator(page, mode);
   await waitShellReady(shell);
   return shell;
 }
@@ -205,11 +211,26 @@ export async function runAmountOptionsChecks({
 }) {
   const checks = [];
   const baseUrl = env.E2E_BASE_URL;
-  const customId = productIds.custom || 0;
-  const customPath = productUrls.custom;
   const listPath = listPagePath || env.E2E_LIST_PAGE;
-  const fixedPath = productUrls.fixed;
-  const fixedId = productIds.fixed || 0;
+  let customId = productIds.custom || 0;
+  let customPath = productUrls.custom;
+  let fixedPath = productUrls.fixed;
+  let fixedId = productIds.fixed || 0;
+  try {
+    const fx = requireFixtureRole(env, 'custom');
+    customId = fx.id;
+    customPath = fx.path || fx.url || customPath;
+  } catch (e) {
+    failures.push(
+      makeFailure({
+        check: 'amount-options-fixture',
+        description: String(e.message || e),
+        error: e,
+      })
+    );
+    stats.failed += 1;
+    return;
+  }
 
   const ctx = await browser.newContext(contextOpts);
   const page = await ctx.newPage();
@@ -405,7 +426,7 @@ export async function runAmountOptionsChecks({
       if ((await trigger.count()) === 0) {
         trigger = page.locator(SEL.centeredPopupTrigger).first();
       }
-      await trigger.click({ timeout: CHECK_MS });
+      await clickShellTrigger(trigger, CHECK_MS);
       shell = openShellLocator(page, 'popup');
       await waitShellReady(shell);
       const still = shell.locator(`.wdp-amount-preset[data-amount="${amt}"].selected`);

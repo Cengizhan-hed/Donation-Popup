@@ -10,10 +10,12 @@ import { chromium } from '@playwright/test';
 import { loadE2EEnv, productPaths, withCacheBust, ROOT } from './helpers/env.mjs';
 import {
   CHECK_MS,
+  clickShellTrigger,
   makeFailure,
   openShellLocator,
   resolveAllProductPaths,
   resolveProductIdBySlug,
+  revealListProductTrigger,
   shellTriggerLocator,
 } from './helpers/checks.mjs';
 import { SEL } from './helpers/selectors.mjs';
@@ -157,10 +159,11 @@ export async function runSharesLateProductInfoChecks({
       await page.goto(withCacheBust(env.E2E_BASE_URL, pagePath, guestExtra), {
         waitUntil: 'domcontentloaded',
       });
-      await shellTriggerLocator(page, mode, { productId: sharesProductId }).click({
-        timeout: CHECK_MS,
-      });
-      const shell = openShellLocator(page, mode);
+      if (mode === 'popup') {
+        await revealListProductTrigger(page, sharesProductId);
+      }
+      await clickShellTrigger(shellTriggerLocator(page, mode, { productId: sharesProductId }), CHECK_MS);
+      const shell = mode === 'popup' ? openShellLocator(page, '') : openShellLocator(page, mode);
       await waitShellInteractive(shell, page);
 
       if (kind === 'values') {

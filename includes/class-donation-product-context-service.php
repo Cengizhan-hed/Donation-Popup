@@ -62,19 +62,11 @@ class WDP_Donation_Product_Context_Service {
 		}
 
 		$progress_bar_limit = (string) $product->get_meta('_progress_bar_limit');
-		if ($progress_bar_limit === '') {
-			$progress_bar_limit = '100000';
-		}
 		$progress_bar_limit_value = (float) $progress_bar_limit;
 
 		$progress_min_price = $min_price;
 		if ($enable_progress_bar) {
-			$product_base_price = (float) $product->get_price();
-			if ($product_base_price > 0) {
-				$progress_min_price = ($min_price !== '' && (float) $min_price > 0) ? (string) min((float) $min_price, $product_base_price) : (string) $product_base_price;
-			} else {
-				$progress_min_price = ($min_price !== '' && (float) $min_price > 0) ? $min_price : '0';
-			}
+			$progress_min_price = ($min_price !== '' && (float) $min_price > 0) ? $min_price : '0';
 		}
 
 		$total_donation = 0.0;

@@ -8,6 +8,8 @@ import { withCacheBust } from './env.mjs';
 import {
   emptyCart,
   openShellLocator,
+  clickShellTrigger,
+  revealListProductTrigger,
   shellTriggerLocator,
   clickAddToCartWithRetry,
   makeFailure,
@@ -102,12 +104,15 @@ export async function runDonationFlowChecks({
       waitUntil: 'domcontentloaded',
       timeout: CHECK_MS,
     });
+    await revealListProductTrigger(page, customId);
     let trigger = shellTriggerLocator(page, 'popup', { productId: customId });
     if ((await trigger.count()) === 0) {
-      trigger = page.locator(SEL.centeredPopupTrigger).first();
+      trigger = page.locator(
+        `${SEL.centeredPopupTrigger}, ${SEL.sidePanelTrigger}, .wdp-card__cta, .wdp-loop-donate`
+      );
     }
-    await trigger.first().click({ timeout: CHECK_MS });
-    const shell = openShellLocator(page, 'popup');
+    await clickShellTrigger(trigger, CHECK_MS);
+    const shell = openShellLocator(page, '');
     await shell.waitFor({ state: 'visible', timeout: CHECK_MS });
 
     const amount = shell.locator(SEL.customPrice).first();
@@ -119,6 +124,10 @@ export async function runDonationFlowChecks({
     if (await name.count()) await name.fill('E2E Test');
     const phoneLoc = shell.locator(SEL.donorPhone).first();
     if (await phoneLoc.count()) await phoneLoc.fill(phone);
+    const emailLoc = shell.locator('input[name="donation_email"], input[type="email"]').first();
+    if ((await emailLoc.count()) > 0 && (await emailLoc.isVisible().catch(() => false))) {
+      await emailLoc.fill(email);
+    }
 
     const add = shell.locator(SEL.addToCart).first();
     const go = shell.locator(SEL.goCheckout).first();
@@ -126,8 +135,23 @@ export async function runDonationFlowChecks({
       await go.click({ timeout: CHECK_MS, noWaitAfter: true });
     } else {
       await clickAddToCartWithRetry(page, add, { timeout: CHECK_MS });
+    }
+    await page.waitForTimeout(400);
+    if (!/checkout|odeme|ödeme/i.test(page.url())) {
       await page.goto(withCacheBust(env.E2E_BASE_URL, checkoutPath, extra), {
         waitUntil: 'domcontentloaded',
+        timeout: 20000,
+      }).catch(async (navErr) => {
+        const msg = String(navErr && navErr.message);
+        if (/interrupted/i.test(msg)) return;
+        if (/ERR_ABORTED/i.test(msg)) {
+          await page.goto(withCacheBust(env.E2E_BASE_URL, checkoutPath, extra), {
+            waitUntil: 'domcontentloaded',
+            timeout: 20000,
+          });
+          return;
+        }
+        throw navErr;
       });
     }
 

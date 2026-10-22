@@ -280,11 +280,16 @@ trait WDP_Assets_Registry_Trait {
      * @return void
      */
     private static function localize_frontend_assets($plugin_url) {
-        // Get current currency (supports Currency switcher plugins)
-        $current_currency = function_exists('get_woocommerce_currency') ? get_woocommerce_currency() : 'TRY';
-        $currency_symbol = WDP_Utils::get_display_currency_symbol(
-            function_exists('get_woocommerce_currency_symbol') ? get_woocommerce_currency_symbol($current_currency) : '₺'
-        );
+        $currency_settings = class_exists('WDP_Utils')
+            ? WDP_Utils::get_js_currency_settings()
+            : array(
+                'code'              => function_exists('get_woocommerce_currency') ? get_woocommerce_currency() : '',
+                'symbol'            => function_exists('get_woocommerce_currency_symbol') ? get_woocommerce_currency_symbol() : '',
+                'decimals'          => function_exists('wc_get_price_decimals') ? (int) wc_get_price_decimals() : 2,
+                'thousandSeparator' => function_exists('wc_get_price_thousand_separator') ? wc_get_price_thousand_separator() : ',',
+                'decimalSeparator'  => function_exists('wc_get_price_decimal_separator') ? wc_get_price_decimal_separator() : '.',
+                'symbolPosition'    => function_exists('get_option') ? (string) get_option('woocommerce_currency_pos', 'left') : 'left',
+            );
 
         $localize_handle = 'wdp-utils-js';
         if (wp_script_is(self::FRONTEND_JS_HANDLE, 'registered')) {
@@ -308,10 +313,7 @@ trait WDP_Assets_Registry_Trait {
             'cart_url' => function_exists('wc_get_cart_url') ? wc_get_cart_url() : '',
             'version' => WDP_VERSION,
             'debug' => defined('WP_DEBUG') && WP_DEBUG,
-            'currency' => array(
-                'code' => $current_currency,
-                'symbol' => $currency_symbol,
-            ),
+            'currency' => $currency_settings,
             // Lazy modal: boşta ön yükleme üst sınırı (görünür ilk N; eşzamanlı 1). 0 = kapalı.
             'lazy' => array(
                 'idle_prefetch' => max(0, min(12, (int) apply_filters('wdp_lazy_idle_prefetch', 3))),

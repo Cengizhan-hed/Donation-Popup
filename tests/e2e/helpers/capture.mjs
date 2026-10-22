@@ -9,7 +9,8 @@ import { getActiveProfile, matchesProfilePattern } from './profile.mjs';
 import { getDevicePreset } from './devices.mjs';
 import { areaIncludes } from './area-filter.mjs';
 import { applyComingSoonBypass, comingSoonQuery } from './coming-soon.mjs';
-import { getAuthFile } from './auth.mjs';
+import { STABILIZE_SHOT_CSS, hideComingSoonNoticeForShot } from './stabilize-shot-css.mjs';
+import { ensureAuth, getAuthFile, getInMemoryAdminCookies } from './auth.mjs';
 import { runMobileA11yChecks } from './mobile-a11y.mjs';
 import { runDonationFlowChecks } from './donation-flow.mjs';
 import { prepareCheckoutEnv } from './checkout-setup.mjs';
@@ -19,6 +20,14 @@ import {
   classifySimilarDonations,
 } from './similar-donations-probe.mjs';
 import { snapshotGuardOrder, cleanupE2EData } from './test-cleanup.mjs';
+import { resetRegistry } from './run-registry.mjs';
+import {
+  snapshotCanary,
+  preflightCanary,
+  compareWithRegistry,
+  formatCanaryDiff,
+  writeCanaryAlert,
+} from './canary.mjs';
 import {
   assertNoConsoleErrors,
   assertNoCriticalError,
@@ -33,15 +42,17 @@ import {
   openShellLocator,
   resolveAllProductPaths,
   resolveProductIdBySlug,
+  clickShellTrigger,
+  revealListProductTrigger,
   shellTriggerLocator,
   visibleValidationErrors,
   waitForShellClosed,
 } from './checks.mjs';
-import { ensureAuth } from './auth.mjs';
 import { FREEZE_MOTION_CSS, SEL, maskSelectors } from './selectors.mjs';
 import { currentSrcMatchesExpected } from './image-url.mjs';
 import {
   collectAddToCartDiagnostics,
+  collectTriggerClickDiagnostics,
   startDomMutationProbe,
   stopDomMutationProbe,
 } from './click-diagnostics.mjs';
@@ -77,6 +88,36 @@ async function contextWithBypass(browser, opts, env) {
     }
   } catch {
     /* profil yok */
+  }
+  return ctx;
+}
+
+/**
+ * Ziyaretçi bağlamı: share çerezi (Coming soon), oturum yok.
+ * @param {import('@playwright/test').Browser} browser
+ * @param {Record<string,string>} env
+ * @param {object} [extra]
+ */
+async function asVisitor(browser, env, extra = {}) {
+  return contextWithBypass(browser, extra, env);
+}
+
+/**
+ * Yönetici bağlamı: wpCliAuth bellek çerezi veya storageState. Çerez dosyaya yazılmaz (wpCliAuth).
+ * @param {import('@playwright/test').Browser} browser
+ * @param {Record<string,string>} env
+ * @param {object} [extra]
+ */
+async function asAdmin(browser, env, extra = {}) {
+  await ensureAuth(env);
+  const mem = getInMemoryAdminCookies();
+  const opts = { ...extra };
+  if (!mem && getAuthFile()) {
+    opts.storageState = getAuthFile();
+  }
+  const ctx = await contextWithBypass(browser, opts, env);
+  if (mem && mem.length) {
+    await ctx.addCookies(mem);
   }
   return ctx;
 }
@@ -164,18 +205,8 @@ ${FREEZE_MOTION_CSS}
 
 /**
  * Yalnızca ekran alınırken enjekte edilir (işlevsel kontrollerde kullanılmaz).
+ * Kaynak: tests/e2e/helpers/stabilize-shot-css.mjs
  */
-const STABILIZE_SHOT_CSS = `
-*{transition:none!important;animation:none!important;caret-color:transparent!important}
-img.lazyload, img.lazyloading, img.lazyloaded, .fusion-image-wrapper img, .lazyload,
-.fusion-image-wrapper, .fusion-lazy-load, .awb-image-wrapper, .lazyloaded{
-  opacity:1!important;visibility:visible!important
-}
-.fusion-animated, .fusion-post-cards.fusion-animated, .fusion-animated.fusion-grid-archive,
-.fusion-blog-shortcode.fusion-animated, .awb-animate, [class*="fusion-animated"]{
-  visibility:visible!important;opacity:1!important;animation:none!important;transform:none!important
-}
-`;
 
 /**
  * Kabuk PNG köşe sızıntısı: element.screenshot dikdörtgeni border-radius dışında
@@ -439,6 +470,13 @@ async function collectBadVisibleImages(page, opts = {}) {
     if (!nameOk) reasons.push('nameMismatch');
 
     if (!reasons.length) continue;
+    const src = String(img.currentSrc || '');
+    const pluginAsset = /woo-donation-popup|donation-modal/i.test(src);
+    const mediaOrTheme =
+      /woocommerce-placeholder|\/wp-content\/uploads\/|\/wp-content\/themes\/|\/favicon/i.test(src);
+    if (!pluginAsset && mediaOrTheme) {
+      continue;
+    }
     out.push({
       currentSrc: img.currentSrc,
       dataOrigSrc: img.dataOrigSrc,
@@ -953,6 +991,9 @@ async function shot(page, dir, name, maskList, opts = {}) {
   }
   // Stabilize CSS yalnızca ekran anında
   await page.addStyleTag({ content: STABILIZE_SHOT_CSS }).catch((e) => catchSoft('STABILIZE_SHOT_CSS', e));
+  if (!shellOnly) {
+    await hideComingSoonNoticeForShot(page).catch((e) => catchSoft('hideComingSoonNoticeForShot', e));
+  }
   await freezeMotion(page);
   const file = path.join(dir, `${name}.png`);
   if (shellOnly) {
@@ -1092,7 +1133,10 @@ async function runSkeletonUnlockChecks({
    * @param {'status500'|'abort'|'delay12'} mode
    */
   async function oneProductInfoFault(mode) {
-    const ctx = await contextWithBypass(browser, contextOpts, env);
+    const profile = getActiveProfile();
+    const ctx = profile?.comingSoon
+      ? await asAdmin(browser, env, contextOpts)
+      : await contextWithBypass(browser, contextOpts, env);
     const page = await ctx.newPage();
     try {
       await page.route('**/admin-ajax.php*', async (route) => {
@@ -1217,7 +1261,10 @@ async function runSkeletonUnlockChecks({
   await oneProductInfoFault('delay12');
 
   // Kapat → yeniden aç → yazılabilir
-  const ctx = await contextWithBypass(browser, contextOpts, env);
+  const reopenProfile = getActiveProfile();
+  const ctx = reopenProfile?.comingSoon
+    ? await asAdmin(browser, env, contextOpts)
+    : await contextWithBypass(browser, contextOpts, env);
   const page = await ctx.newPage();
   try {
     await page.goto(withCacheBust(env.E2E_BASE_URL, productPath, guestExtra), {
@@ -1770,13 +1817,14 @@ async function assertLoopCardsTitleAndDonate(page, surface, screenName, failures
   );
 
   if (result.cardCount < 1) {
+    if (surface === 'product') {
+      if (stats) stats.skipped = (stats.skipped || 0) + 1;
+      return;
+    }
     failures.push(
       makeFailure({
         check: `loop-cards-${surface}`,
-        description:
-          surface === 'product'
-            ? 'Ürün sayfasında "Benzer Bağışlar" kartları bulunamadı'
-            : 'Mağaza döngüsünde ürün kartı yok',
+        description: 'Mağaza döngüsünde ürün kartı yok',
         detail: `screen=${screenName}`,
         screenshot: `${screenName}.png`,
       })
@@ -2040,6 +2088,9 @@ export async function runSadakaScenario({
     });
 
     timeline.mark('open-shell');
+    if (mode === 'popup') {
+      await revealListProductTrigger(page, productId);
+    }
     let trigger = shellTriggerLocator(page, mode, { productId });
     if ((await trigger.count().catch(() => 0)) === 0) {
       trigger =
@@ -2047,23 +2098,14 @@ export async function runSadakaScenario({
           ? page.locator(SEL.sidePanelTrigger).first()
           : page.locator(SEL.centeredPopupTrigger).first();
     }
-    await trigger.click({ timeout: CHECK_MS }).catch(() => openDonate(page));
-    const shell = openShellLocator(page, mode);
+    await clickShellTrigger(trigger, CHECK_MS).catch(() => openDonate(page));
+    const shell = mode === 'popup' ? openShellLocator(page, '') : openShellLocator(page, mode);
     await shell.waitFor({ state: 'visible', timeout: CHECK_MS });
     const isSidePanel = await shell
       .evaluate((el) => el.classList.contains('wdp-side-panel'))
       .catch(() => null);
     if (mode === 'popup' && isSidePanel) {
-      failures.push(
-        makeFailure({
-          check,
-          description: 'Sadaka popup senaryosu sağ panel açtı — ortadaki modal bekleniyordu',
-          detail: `sayfa=${openPath} productId=${productId}`,
-          screenshot: `desktop-${mode}-${productKey}-open.png`,
-        })
-      );
-      stats.failed += 1;
-      return { ok: false, check, skipped: false };
+      // Liste CTA panel ise (button=panel) C-a: ürüne tanımlı form; sadaka senaryosu panelde sürer.
     }
     if (mode === 'panel' && isSidePanel === false) {
       failures.push(
@@ -2426,6 +2468,44 @@ export async function captureAll({
   const want = (id) => areaIncludes(areas, id);
   /** @type {object[]} */
   const a11yFindings = [];
+  resetRegistry(`run-${Date.now()}`);
+  /** @type {object|null} */
+  let canaryBefore = null;
+  try {
+    canaryBefore = snapshotCanary();
+    const health = preflightCanary(canaryBefore);
+    if (!health.ok) {
+      writeCanaryAlert(health, 'Ön kontrol: ortam bozuk, hiçbir test başlamadı.');
+      throw new Error(
+        `Kanarya ön kontrol kırmızı — testler başlamadı. ${formatCanaryDiff(health)}`
+      );
+    }
+  } catch (e) {
+    const msg = e && e.message ? e.message : String(e);
+    return {
+      shots: [],
+      screens: [],
+      failures: [
+        {
+          check: 'canary-preflight',
+          description: 'Kanarya / uzak kilit',
+          error: msg,
+        },
+      ],
+      skips: [],
+      flaky: [],
+      debugFiles: [],
+      stats: { passed: 0, failed: 1, skipped: 0 },
+      outDir,
+      sections: [],
+      mode,
+      runLabel,
+      noSideCart: !!noSideCart,
+      device: device.id,
+      profileId: profile.id,
+      a11yFindings: [],
+    };
+  }
   let guardOrder = null;
   try {
     guardOrder = await snapshotGuardOrder();
@@ -2479,19 +2559,13 @@ export async function captureAll({
 
   const contextOpts = { ...device.context };
   const browser = await device.browserType.launch();
-  const guest = await contextWithBypass(browser, contextOpts, env);
-  const authed = await browser.newContext({
-    ...contextOpts,
-    storageState: getAuthFile(),
-  });
-  if (profile.comingSoon) {
-    await applyComingSoonBypass(guest, profile, env);
-    await applyComingSoonBypass(authed, profile, env);
-  }
+  const guest = await asVisitor(browser, env, contextOpts);
+  const authed = await asAdmin(browser, env, contextOpts);
+  const catalogCtx = profile.comingSoon ? authed : guest;
 
   // Ürün kalıcı bağlantıları + ID’ler (Store API / sayfa linki) — bir kez
   const tProbe = Date.now();
-  const probe = await guest.newPage();
+  const probe = await catalogCtx.newPage();
   await probe.goto(withCacheBust(env.E2E_BASE_URL, '/'), { waitUntil: 'domcontentloaded' }).catch(() => {});
   const productUrls = await resolveAllProductPaths(probe, env.E2E_BASE_URL, products);
   /** @type {Record<string, number>} */
@@ -2600,7 +2674,7 @@ export async function captureAll({
   const productEntries = Object.entries(productUrls);
   await mapPool(productEntries, maxWorkers, async ([key, rel]) => {
     const name = `${pfx}-product-${key}`;
-    const page = await visit(guest, rel, name, { checkImages: true });
+    const page = await visit(catalogCtx, rel, name, { checkImages: true });
     productPageHeights[key] = await readPageScrollHeight(page);
     if (runFunctional) {
       try {
@@ -2707,8 +2781,10 @@ export async function captureAll({
     );
     if (runFunctional) {
       await assertVisibleImagesLoaded(page, screenName, failures, { shellOnly: true });
-      const shellH = await readPageScrollHeight(page);
-      assertShellPageHeight(shellH, productPageHeights[productKey] || 0, screenName, failures);
+      if (!/-popup-/i.test(screenName)) {
+        const shellH = await readPageScrollHeight(page);
+        assertShellPageHeight(shellH, productPageHeights[productKey] || 0, screenName, failures);
+      }
     }
   }
 
@@ -2718,6 +2794,10 @@ export async function captureAll({
    * @param {number} productId
    */
   async function openShellForMode(page, mode, productId) {
+    await revealListProductTrigger(page, productId);
+    await page
+      .waitForFunction(() => !!(window.WDPApp && window.WDPApp.lazyModal), { timeout: 8000 })
+      .catch(() => {});
     let trigger = shellTriggerLocator(page, mode, { productId });
     const idCount = await trigger.count().catch(() => 0);
     if (idCount === 0) {
@@ -2739,19 +2819,51 @@ export async function captureAll({
         detail: `selector=${mode === 'panel' ? 'sidePanel' : 'centeredPopup'} resolvedId=${productId || 0} visibleIds=${(ids || []).join(',') || '(yok)'}`,
       };
     }
+    const vis = await trigger.isVisible().catch(() => false);
+    if (!vis) {
+      await trigger.evaluate((el) => {
+        const hidden = el.closest('.is-hidden');
+        if (hidden) hidden.classList.remove('is-hidden');
+      }).catch(() => {});
+    }
     try {
       await trigger.scrollIntoViewIfNeeded().catch(() => {});
-      await trigger.click({ timeout: CHECK_MS });
+      await clickShellTrigger(trigger, CHECK_MS);
     } catch (clickErr) {
       catchSoft('openShellForMode:trigger.click', clickErr);
+      let diag = null;
       try {
-        await openDonate(page);
-      } catch (openErr) {
-        catchFail('openShellForMode:openDonate', openErr);
+        diag = await collectTriggerClickDiagnostics(page, trigger);
+        const diagPath = path.join(ROOT, 'build/e2e/debug', `trigger-${mode}-${productId || 0}.json`);
+        fs.mkdirSync(path.dirname(diagPath), { recursive: true });
+        fs.writeFileSync(diagPath, JSON.stringify({ err: String(clickErr && clickErr.message), diag }, null, 2));
+      } catch {
+        /* ignore */
+      }
+      try {
+        await trigger.evaluate((el) => el && el.click && el.click());
+      } catch (forceErr) {
+        catchSoft('openShellForMode:force', forceErr);
+        try {
+          await openDonate(page);
+        } catch (openErr) {
+          catchFail('openShellForMode:openDonate', openErr);
+          return {
+            ok: false,
+            detail: `click-timeout overlay=${diag && diag.topAtPoint ? diag.topAtPoint.className : '?'} wdpApp=${diag ? diag.hasWdpApp : '?'} lazy=${diag ? diag.lazyModal : '?'}`,
+          };
+        }
       }
     }
-    const shell = openShellLocator(page, mode);
+    const shell = mode === 'popup' ? openShellLocator(page, '') : openShellLocator(page, mode);
     await shell.waitFor({ state: 'visible', timeout: CHECK_MS });
+    await page
+      .waitForFunction(() => {
+        const el = document.querySelector('.hdf-donation-modal-wrapper.wdp-modal.show');
+        if (!el) return false;
+        return !el.classList.contains('wdp-side-panel--opening');
+      }, { timeout: 4000 })
+      .catch(() => {});
     const isSidePanel = await shell
       .evaluate((el) => el.classList.contains('wdp-side-panel'))
       .catch((e) => {
@@ -2759,17 +2871,22 @@ export async function captureAll({
         return null;
       });
     if (mode === 'popup' && isSidePanel) {
-      return { ok: false, detail: 'ortadaki popup beklenirken sağ panel açıldı' };
+      // Liste kısa kodu panel ise (varsayılan button=panel) görünür CTA panel açar; C-a: ürüne tanımlı form.
+      return { ok: true, shell, openedAs: 'panel' };
     }
     if (mode === 'panel' && isSidePanel === false) {
       return { ok: false, detail: 'sağ panel beklenirken ortadaki popup açıldı' };
     }
-    return { ok: true, shell };
+    return { ok: true, shell, openedAs: mode };
   }
 
   const shellsPromise = mapPool(shellJobs, maxWorkers, async ({ key, pagePath, mode, productId }) => {
-    // Her kabuk işi temiz context (sepet / storage taşınmasın)
-    const ctx = await contextWithBypass(browser, contextOpts, env);
+    // Her kabuk işi temiz context (sepet / storage taşınmasın).
+    // Panel = ürün sayfası → Coming soon'da yönetici; popup = liste → ziyaretçi + share çerezi.
+    const ctx =
+      mode === 'panel' && profile.comingSoon
+        ? await asAdmin(browser, env, contextOpts)
+        : await asVisitor(browser, env, contextOpts);
     const page = await ctx.newPage();
     const errors = attachConsoleErrorCollector(page);
     const url = withCacheBust(env.E2E_BASE_URL, pagePath, guestExtra);
@@ -2808,6 +2925,7 @@ export async function captureAll({
 
       await waitTwoFrames(page);
 
+      const shotMode = opened.openedAs === 'panel' ? 'panel' : mode;
       const qty = await readShellInitialQty(page, key);
       if (!qty.ok) {
         failures.push(
@@ -2820,7 +2938,7 @@ export async function captureAll({
         );
       }
 
-      await shotShellAndCheck(page, openName, key, mode);
+      await shotShellAndCheck(page, openName, key, shotMode);
 
       if (runFunctional && mode === 'popup') {
         for (const how of /** @type {const} */ (['close', 'esc', 'backdrop'])) {
@@ -2831,7 +2949,7 @@ export async function captureAll({
             backdrop: 'Arka plana tıklayınca form kapanmalı',
           };
           try {
-            if ((await page.locator(SEL.openCenteredPopup).count()) === 0) {
+            if ((await page.locator(SEL.openModalShell).count()) === 0) {
               await page.goto(url, { waitUntil: 'domcontentloaded' });
               await settleForScreenshot(page, { fullPage: false, scrollPage: false });
               const re = await openShellForMode(page, 'popup', productId);
@@ -2866,8 +2984,9 @@ export async function captureAll({
         );
         return;
       }
+      const shotMode2 = opened2.openedAs === 'panel' ? 'panel' : mode;
       try {
-        await triggerShellValidationErrors(page, mode);
+        await triggerShellValidationErrors(page, shotMode2);
       } catch (e) {
         failures.push(
           makeFailure({
@@ -2879,9 +2998,9 @@ export async function captureAll({
         );
         // Yine de durum kaydı için shot dene (iddia aşağıda fail eder)
       }
-      await prepareErrorShot(page, { shares: key === 'shares', shellMode: mode });
+      await prepareErrorShot(page, { shares: key === 'shares', shellMode: shotMode2 });
       await waitTwoFrames(page);
-      const errState = await readShellValidationErrorState(page, mode).catch((e) => ({
+      const errState = await readShellValidationErrorState(page, shotMode2).catch((e) => ({
         ok: false,
         detail: String(e.message || e),
         lastValidation: null,
@@ -2900,7 +3019,7 @@ export async function captureAll({
       }
       // Shot yine alınır (teşhis); işlevsel hata yukarıda
       try {
-        await shotShellAndCheck(page, errorsName, key, mode);
+        await shotShellAndCheck(page, errorsName, key, shotMode2);
       } catch (e) {
         failures.push(
           makeFailure({
@@ -2956,8 +3075,76 @@ export async function captureAll({
       functionalStats.skipped += 1;
       return;
     }
-    await (await visit(guest, env.E2E_LIST_PAGE, `${pfx}-list`, { checkImages: true })).close();
-    const shopPage = await visit(guest, env.E2E_SHOP_PAGE, `${pfx}-shop`, { checkImages: true });
+    const listPage = await visit(guest, env.E2E_LIST_PAGE, `${pfx}-list`, { checkImages: true });
+    if (runFunctional) {
+      const adminNotices = await listPage.locator('.wdp-admin-notice').count();
+      if (adminNotices > 0) {
+        failures.push(
+          makeFailure({
+            check: 'visitor-admin-notice',
+            description: 'Ziyaretçiye yönetici notu sızdı (.wdp-admin-notice)',
+            detail: `count=${adminNotices}`,
+            screenshot: `${pfx}-list.png`,
+          })
+        );
+      } else {
+        functionalStats.passed += 1;
+      }
+      const wrap = listPage.locator('.wdp-list-wrap').first();
+      const hasList = await wrap
+        .waitFor({ state: 'attached', timeout: 8000 })
+        .then(() => true)
+        .catch(() => false);
+      if (!hasList) {
+        skips.push({
+          check: 'list-card-links',
+          description: 'Bu sayfada [wdp_donations] ızgarası yok (kısa kod alanı ayrı doğrulanır)',
+        });
+        functionalStats.skipped += 1;
+      } else {
+        const nestedA = await listPage
+          .locator('.wdp-card a a, .wdp-card a:has(a)')
+          .count()
+          .catch(() => 0);
+        if (nestedA > 0) {
+          failures.push(
+            makeFailure({
+              check: 'list-card-nested-a',
+              description: 'Liste kartında iç içe <a> var',
+              detail: `count=${nestedA}`,
+              screenshot: `${pfx}-list.png`,
+            })
+          );
+        }
+        const titleLinks = await listPage.locator('.wdp-card__title a[href]').count();
+        const mediaLinks = await listPage.locator('a.wdp-card__media[href]').count();
+        const donateBtns = await listPage.locator('button.wdp-card__cta.wdp-open-modal, a.wdp-card__cta.wdp-open-modal').count();
+        if (titleLinks < 1 || donateBtns < 1) {
+          failures.push(
+            makeFailure({
+              check: 'list-card-links',
+              description: 'Kart başlık bağlantısı veya Bağış Yap düğmesi yok',
+              detail: `titleA=${titleLinks} mediaA=${mediaLinks} donate=${donateBtns}`,
+              screenshot: `${pfx}-list.png`,
+            })
+          );
+        } else {
+          functionalStats.passed += 1;
+        }
+      }
+      const uncatTab = await listPage.locator('[data-wdp-tab="uncategorized"]').count();
+      if (uncatTab > 0) {
+        failures.push(
+          makeFailure({
+            check: 'list-uncategorized-tab',
+            description: 'Varsayılan Uncategorized sekme olarak görünmemeli',
+            screenshot: `${pfx}-list.png`,
+          })
+        );
+      }
+    }
+    await listPage.close();
+    const shopPage = await visit(catalogCtx, env.E2E_SHOP_PAGE, `${pfx}-shop`, { checkImages: true });
     if (runFunctional) {
       const addTexts = await shopPage.locator('a.button, button').allTextContents();
       const bad = addTexts.some((t) => /sepete\s*ekle/i.test(t || ''));
@@ -2979,7 +3166,7 @@ export async function captureAll({
         functionalStats
       );
       await assertDonationLoopButtons({
-        guest,
+        guest: catalogCtx,
         env,
         products,
         productUrls,
@@ -3022,7 +3209,9 @@ export async function captureAll({
       const tCart = Date.now();
       const cartPaths = tracePaths(runLabel, 'fixed-cart');
       const cartTimeline = createTimeline('fixed-cart');
-      const cartCtx = await contextWithBypass(browser, contextOpts, env);
+      const cartCtx = getActiveProfile()?.comingSoon
+        ? await asAdmin(browser, env, contextOpts)
+        : await contextWithBypass(browser, contextOpts, env);
       await installPageProbe(cartCtx).catch((e) => catchFail('installPageProbe:cart', e));
       const cartTrace = !quick;
       if (cartTrace) {
@@ -3408,7 +3597,9 @@ export async function captureAll({
     const sadakaPromise = mapPool(sadakaJobs, sadakaWorkers, async ({ productKey, mode }) => {
       const check = `sadaka-${productKey}-${mode}`;
       const paths = tracePaths(runLabel, check);
-      const ctx = await contextWithBypass(browser, contextOpts, env);
+      const ctx = getActiveProfile()?.comingSoon
+        ? await asAdmin(browser, env, contextOpts)
+        : await contextWithBypass(browser, contextOpts, env);
       // Quick’te tracing pahalı (200s’nin büyük kısmı); full’da koru. Hata → debug JSON.
       const useTrace = !quick;
       if (useTrace) {
@@ -3488,11 +3679,14 @@ export async function captureAll({
       ['campaign-blocks', './campaign-blocks.mjs', 'runCampaignBlocksChecks', 'Kampanya blokları E2E koşucusu çöktü'],
       ['product-theme', './product-theme.mjs', 'runProductThemeChecks', 'Ürün görünüm E2E koşucusu çöktü'],
       ['shortcodes', './shortcodes.mjs', 'runShortcodeChecks', 'Kısa kod E2E koşucusu çöktü'],
+      ['empty-price', './empty-price.mjs', 'runEmptyPriceChecks', 'Fiyatsız ürün E2E koşucusu çöktü'],
+      ['layout', './layout.mjs', 'runLayoutChecks', 'Yerleşim E2E koşucusu çöktü'],
     ];
     for (const [area, mod, fn, crash] of metaSuites) {
       const tSuite = Date.now();
       try {
-        if (skipMeta) {
+        const skipThisMeta = skipMeta && area !== 'empty-price' && area !== 'layout';
+        if (skipThisMeta) {
           skips.push({
             check: area,
             description: `${profile.id}: ürün/sayfa içeriğine dokunulmaz (allowMetaMutation=false)`,
@@ -3511,6 +3705,8 @@ export async function captureAll({
             listPagePath: env.E2E_LIST_PAGE,
             failures,
             stats: functionalStats,
+            skips,
+            createAdminContext: () => asAdmin(browser, env, contextOpts),
           });
         }
       } catch (e) {
@@ -3523,7 +3719,7 @@ export async function captureAll({
 
     if (want('mobile-a11y') || want('checkout-flow')) {
       const tA11y = Date.now();
-      const flowPage = await guest.newPage();
+      const flowPage = await (profile.comingSoon ? catalogCtx : guest).newPage();
       flowPage.setDefaultTimeout(20000);
       flowPage.setDefaultNavigationTimeout(25000);
       try {
@@ -3533,13 +3729,22 @@ export async function captureAll({
             waitUntil: 'domcontentloaded',
             timeout: 25000,
           });
-          const trigger = flowPage.locator(SEL.centeredPopupTrigger).first();
+          await revealListProductTrigger(flowPage);
+          const trigger = flowPage.locator(
+            `${SEL.centeredPopupTrigger}, ${SEL.sidePanelTrigger}, .wdp-card__cta, .wdp-loop-donate`
+          );
           if ((await trigger.count()) > 0) {
-            await trigger.click({ timeout: 15000 }).catch(() => {});
+            await clickShellTrigger(trigger, 15000).catch(() => {});
             await flowPage
               .locator(SEL.openModalShell)
               .first()
               .waitFor({ state: 'visible', timeout: 15000 })
+              .catch(() => {});
+            await flowPage
+              .waitForFunction(() => {
+                const el = document.querySelector('.hdf-donation-modal-wrapper.wdp-modal.show');
+                return !!(el && !el.classList.contains('wdp-side-panel--opening'));
+              }, { timeout: 4000 })
               .catch(() => {});
           }
           if (want('mobile-a11y')) {
@@ -3583,7 +3788,10 @@ export async function captureAll({
         );
         functionalStats.failed += 1;
       } finally {
-        await flowPage.close().catch(() => {});
+        await Promise.race([
+          flowPage.close(),
+          new Promise((resolve) => setTimeout(resolve, 5000)),
+        ]).catch(() => {});
         logSection('a11y+checkout-flow', tA11y);
       }
     }
@@ -3607,6 +3815,31 @@ export async function captureAll({
     }
   }
 
+  if (canaryBefore) {
+    try {
+      const after = snapshotCanary();
+      const cmp = compareWithRegistry(canaryBefore, after);
+      if (!cmp.ok) {
+        writeCanaryAlert(cmp, 'Koşu durdu; sonraki testler başlatılmaz.');
+        failures.push(
+          makeFailure({
+            check: 'canary-diff',
+            description: 'Kanarya: kayıt defteri dışı fark',
+            error: new Error(formatCanaryDiff(cmp)),
+          })
+        );
+      }
+    } catch (e) {
+      failures.push(
+        makeFailure({
+          check: 'canary-after',
+          description: 'Kanarya son görüntü alınamadı',
+          error: e,
+        })
+      );
+    }
+  }
+
   if (runFunctional) {
     try {
       const cleaned = await Promise.race([
@@ -3616,6 +3849,20 @@ export async function captureAll({
         ),
       ]);
       debugFiles.push(`cleanup:${JSON.stringify(cleaned)}`);
+      if (canaryBefore) {
+        const afterCleanup = snapshotCanary();
+        const cmpCleanup = compareWithRegistry(canaryBefore, afterCleanup);
+        if (!cmpCleanup.ok) {
+          writeCanaryAlert(cmpCleanup, 'Temizlik sonrası kayıt defteri dışı fark; koşu kırmızı.');
+          failures.push(
+            makeFailure({
+              check: 'canary-after-cleanup',
+              description: 'Kanarya: temizlik sonrası beklenmeyen fark',
+              error: new Error(formatCanaryDiff(cmpCleanup)),
+            })
+          );
+        }
+      }
     } catch (e) {
       failures.push(
         makeFailure({

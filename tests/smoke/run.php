@@ -303,12 +303,17 @@ wdp_smoke_assert(
     'Container queries CSS is on the frontend stack'
 );
 wdp_smoke_assert(
-    defined('WDP_VERSION') && WDP_VERSION === '10.33.0',
-    'Plugin version is 10.33.0'
+    defined('WDP_VERSION') && WDP_VERSION === '10.34.2',
+    'Plugin version is 10.34.2'
 );
 wdp_smoke_assert(
     file_exists(WDP_PLUGIN_DIR . 'templates/woocommerce/single-product/add-to-cart/simple.php'),
     'WooCommerce simple add-to-cart override template exists'
+);
+wdp_smoke_assert(
+    wdp_smoke_file_contains(WDP_PLUGIN_DIR . 'includes/class-product-page-integration.php', 'function render_builder_fallback')
+        && wdp_smoke_file_contains(WDP_PLUGIN_DIR . 'includes/class-product-page-integration.php', "add_action('wp_footer'"),
+    'Product page builder fallback is registered'
 );
 wdp_smoke_assert(
     wdp_smoke_file_contains(WDP_PLUGIN_DIR . 'includes/class-product-page-integration.php', 'filter_wc_get_template')

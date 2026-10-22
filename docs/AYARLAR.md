@@ -83,11 +83,11 @@ Aşağıdaki her alan için: ekran adı, ne işe yarar, hangi tipte görünür /
 ### En düşük tutar
 
 - **Ekran adı:** En düşük tutar  
-- **Ne işe yarar:** Bağışçının yazabileceği en düşük tutar. Hedefli kampanyada formda ürün fiyatı ile bu tutarın küçüğü kullanılır; ürün fiyatı yok/0 ise yalnız bu alan.  
+- **Ne işe yarar:** Bağışçının yazabileceği en düşük tutar. **Tek kaynak bu alandır** (WooCommerce Genel fiyat min hesaplanmaz; yedek/uyumluluk).  
 - **Tip:** Bağışçı belirler, Hedefli kampanya  
 - **Formda:** Tutar alanı doğrulaması.  
-- **Genel ayar:** Yok  
-- **Nasıl denenir:** Min altında tutar yazıp sepete eklemeyi deneyin; hata görünmeli.
+- **Genel ayar:** Yok. Bu türlerde WooCommerce Genel (normal) fiyat zorunlu değildir ve boş bırakılabilir; ürün listede görünür, “Bağış Yap” ve sepete ekleme çalışır. Eklenti Genel fiyatı kendiliğinden değiştirmez.  
+- **Nasıl denenir:** Min altında tutar yazıp sepete eklemeyi deneyin; hata görünmeli. Genel fiyatı boş bir Bağışçı belirler üründe liste + sepete eklemeyi deneyin.
 
 ### En fazla hisse
 
@@ -128,7 +128,7 @@ Aşağıdaki her alan için: ekran adı, ne işe yarar, hangi tipte görünür /
 ### Tutarlar (hızlı tutar düğmeleri listesi)
 
 - **Ekran adı:** Tutarlar (genel ayarda "Hızlı tutar düğmeleri")  
-- **Ne işe yarar:** Yalnız tam sayılar; virgül, boşluk veya noktalı virgülle ayırın (en fazla 6, genel ayarda da). "1.000", "1,5", "5o0" gibi değerler geçersizdir: kayıt durur ve hatalı değer hata mesajında gösterilir. Ürün alanı boşsa genel ayardaki tutarlar kullanılır.  
+- **Ne işe yarar:** Yalnız tam sayılar; virgül, boşluk veya noktalı virgülle ayırın (en fazla 6, genel ayarda da). "1.000", "1,5", "5o0" gibi değerler geçersizdir: kayıt durur ve hatalı değer hata mesajında gösterilir. Ürün alanı boşsa genel ayardaki tutarlar kullanılır. Hiç kaydedilmemiş genel liste: mağaza ondalık sayısına göre `5, 10, 25, 50, 100` (ondalıklı para) veya `100, 250, 500, 1000, 2500` (0 ondalık). Yönetici kaydı her zaman önceliklidir; mevcut değerler değişmez.  
 - **Tip:** Yukarıdaki gibi  
 - **Formda:** Hızlı tutar düğmeleri. Hiçbir tutar kendiliğinden seçili gelmez.  
 - **Genel ayar:** Normal → Hızlı tutar düğmeleri.  
@@ -402,7 +402,7 @@ Blok: **Bağış listesi** (`wdp/donations`). Elementor: **Bağış Listesi** (`
 | `gap` | `24` | 0–64 px | Kart boşluğu. |
 | `image_ratio` | `4:3` | `1:1` `4:3` `3:2` `16:9` `original` | Görsel oranı. |
 | `align` | `center` | `center` / `left` | Hiza. |
-| `button` | `panel` | `panel` / `popup` / `link` | Kart butonu. |
+| `button` | `panel` | `panel` / `popup` / `link` | Kart butonu (popup/panel sayfadan ayrılmaz; görsel+başlık ürün bağlantısı). |
 | `button_full` | `yes` | `yes` / `no` | Buton tam genişlik. |
 | `button_text` | (genel) | metin | Kart buton yazısı. |
 | `show_image` | `yes` | `yes` / `no` | Görsel. |

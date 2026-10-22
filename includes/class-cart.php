@@ -351,7 +351,8 @@ class WDP_Cart {
         if ($percent <= 0 || $amount <= 0) {
             return $amount;
         }
-        return round($amount * (1 + ($percent / 100)), 2);
+        $dp = function_exists('wc_get_price_decimals') ? (int) wc_get_price_decimals() : 2;
+        return round($amount * (1 + ($percent / 100)), max(0, $dp));
     }
 
     /**

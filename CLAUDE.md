@@ -4,6 +4,7 @@ Bu dosyayı her oturumun başında oku. Kullanıcıyla her zaman **Türkçe** ko
 
 ## TEMEL İLKELER (en üst kural; her görevde geçerli)
 
+- **TEST GÜVENLİĞİ (2026-10-22 olayından sonra, değişmez kural):** Testler ve scriptler ortamdaki (staging/Ikram/canlı) GERÇEK kayıtlara yazamaz, silemez, çöpe atamaz, durumunu değiştiremez (sayfa, yazı, ürün, sipariş, kullanıcı, seçenek, ayar). Yalnız testin KENDİ oluşturup işaretlediği kayıtları silebilir (işaret + sahiplik doğrulaması her silmeden önce). Ürün meta/fiyat/ayar geçici değişikliği yalnız izinli profilde (allowMetaMutation), eski değerin yedeğiyle ve doğrulanmış geri yüklemeyle. Her koşunun başında/sonunda "kanarya" denetimi: sayfa/yazı/ürün/ayar anlık görüntüsü karşılaştırılır; beklenmeyen değişiklik koşuyu KIRMIZI yapar. Gerçek bir kaydı onarmak gerekirse test onarmaz, kullanıcıya bildirir.
 - **Eklenti geneldir.** Hedef Derneği ya da Ikram Aid için değil, WooCommerce kurulu her bağış sitesi için yazılır. Kurulumdan sonra ek iş gerektirmeden harika çalışmalı. Hiçbir site, ülke, dil, para birimi ya da tema varsayımı koda gömülmez. Değerler ya WooCommerce/WordPress'ten okunur ya da ayar olur. Siteye özel değerler yalnız test ortam profillerinde durur.
 - **WooCommerce ile %100 uyumlu.** Para birimi, ondalık sayısı, binlik ve ondalık ayırıcı, mağaza ülkesi, vergi, sepet, ödeme sayfası (blok ve kısa kodlu), sipariş ve HPOS işleri yalnız WooCommerce'in standart yollarıyla yapılır. Herhangi bir ödeme yöntemi ya da WooCommerce uyumlu çoklu para birimi eklentisiyle kendiliğinden çalışır; belirli bir eklentiye özel kod yok.
 - **Tema ve sayfa oluşturucudan bağımsız.** Eklenti kodunda temaya özel seçici ya da düzeltme olmaz. Kısa kod, blok ve Elementor widget'ı hangi temada kullanılırsa kullanılsın aynı çalışır ve iyi görünür. Eklenti stilleri temayı bozmaz, tema da eklentiyi bozmaz.
@@ -142,6 +143,7 @@ Bitiş: verify + test → (gerekirse) npm run ship:staging → e2e:quick → RAP
 - Açık: KVKK dışa aktarma/silme eşleşmesi (yalnız fatura e-postası) → güvenlik denetimi.
 - Açık: mobil baseline'larda "Benzer Bağışlar" boş (Avada animasyon/lazy) → 2G'de düzelt, sonra mobil accept.
 - Açık: `wdp_render_modal` ~750 ms, nonce'suz (bilinçli) → güvenlik denetimi / Aşama 4.
+- OLAY 2026-10-22: test temizliği staging28'de gerçek sayfaları çöpe attı/medyayı sildi (kök neden: reassign'sız wp_delete_user). `build/handoff/REMOTE_FREEZE` AKTİF: kullanıcı yeni staging adresini verene ve dosyayı silmesini söyleyene kadar hiçbir uzak komut yok. Detay: docs/AYAR-TURU-NOTLARI.md "Olay sonucu", docs/MIMARI.md "Test güvenliği".
 - GÖRSEL AŞAMA listesi: docs/AYAR-TURU-NOTLARI.md (G1–G21).
 - Staging verisi (kullanıcı girdi): Nafile #10695 `_amount_presets`=50, 100; işlem ücreti %5; "Hızlı tutar düğmelerini göster" açık. E2E baseline bu duruma göre.
 - Karar sırası: Ikram Aid test ortamı → dil desteği (i18n) → refaktör → görsel aşama → güvenlik+KVKK denetimi → 2İ canlıya alma.

@@ -1,0 +1,11 @@
+# Cursor ajanının okumaması gereken gizli/hassas yollar (2026-10-22 olayı sonrası)
+.env
+.env.*
+!.env.*.example
+**/.ssh/**
+.ssh/
+**/*.pem
+**/id_rsa*
+**/id_ed25519*
+tests/e2e/.auth/
+build/e2e/**/*.json.auth

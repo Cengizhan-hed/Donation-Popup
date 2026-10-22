@@ -56,30 +56,22 @@
     }
   }
 
-  /** TR/EN formatlı tutar string'ini sayıya çevirir. */
   function parseNormalizedAmount(raw) {
-    if (raw === null || raw === undefined) {
-      return NaN;
+    const utils = WDPApp.utils || {};
+    if (typeof utils.parseMoney === 'function') {
+      return utils.parseMoney(raw);
     }
-    let s = String(raw).trim().replace(/\s+/g, '');
-    if (s === '') {
-      return NaN;
-    }
-    if (s.includes(',')) {
-      s = s.replace(/\./g, '').replace(',', '.');
-    } else {
-      const parts = s.split('.');
-      if (parts.length > 2) {
-        s = parts.join('');
-      } else if (parts.length === 2 && parts[1].length === 3 && /^\d+$/.test(parts[1])) {
-        s = parts[0] + parts[1];
-      }
-    }
-    return Number.parseFloat(s);
+    return NaN;
+  }
+
+  function priceDecimals() {
+    const d = window.wdp_ajax && window.wdp_ajax.currency && window.wdp_ajax.currency.decimals;
+    return Number.isFinite(Number(d)) ? Math.max(0, Number(d)) : 2;
   }
 
   function roundMoney(n) {
-    return Math.round(n * 100) / 100;
+    const f = Math.pow(10, priceDecimals());
+    return Math.round(n * f) / f;
   }
 
   function formatPriceInputValue(n) {

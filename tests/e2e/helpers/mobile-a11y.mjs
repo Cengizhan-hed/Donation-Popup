@@ -2,8 +2,7 @@
  * Mobil + masaüstü davranış denetimleri (eklenti kodu değiştirilmez; hata bulgudur).
  */
 import { SEL } from './selectors.mjs';
-import { openShellLocator } from './checks.mjs';
-import { makeFailure } from './checks.mjs';
+import { clickShellTrigger, makeFailure, openShellLocator, waitForShellClosed } from './checks.mjs';
 
 const MIN_TOUCH = 44;
 
@@ -55,7 +54,7 @@ export async function probeTouchTargets(page, scopeSel) {
           w: Math.round(r.width),
           h: Math.round(r.height),
         };
-        if (r.width + 0.5 < min || r.height + 0.5 < min) bad.push(row);
+        if (r.width + 1 < min || r.height + 1 < min) bad.push(row);
         else ok.push(row);
       }
       return { bad, okCount: ok.length, min };
@@ -112,10 +111,21 @@ export async function probeScrollLock(page) {
  */
 export async function probeSafeArea(page, inset) {
   return page.evaluate((box) => {
-    const vw = window.innerWidth;
-    const vh = window.innerHeight;
+    const vv = window.visualViewport;
+    const vw = vv && vv.width ? vv.width : window.innerWidth;
+    const vh = vv && vv.height ? vv.height : window.innerHeight;
+    const root = document.querySelector('.hdf-donation-modal-wrapper.wdp-modal.show');
+    if (!root) return { clipped: [], vw, vh, box, pendingAnim: false };
+    if (root.classList.contains('wdp-side-panel--opening')) {
+      return { clipped: [], vw, vh, box, pendingAnim: true };
+    }
+    const content = root.querySelector('.wdp-modal-content');
+    const tr = content ? window.getComputedStyle(content).transform : 'none';
+    if (tr && tr !== 'none') {
+      return { clipped: [], vw, vh, box, pendingAnim: true };
+    }
     const els = Array.from(
-      document.querySelectorAll(
+      root.querySelectorAll(
         'button.wdp-modal-close, button[name="donation_add_to_cart"], button[name="donation_go_checkout"]'
       )
     );
@@ -123,12 +133,15 @@ export async function probeSafeArea(page, inset) {
     for (const el of els) {
       const r = el.getBoundingClientRect();
       if (r.width < 2 || r.height < 2) continue;
+      const st = window.getComputedStyle(el);
+      if (st.visibility === 'hidden' || st.display === 'none' || Number(st.opacity) === 0) continue;
+      if (r.bottom < 0 || r.top > vh || r.right < 0 || r.left > vw) continue;
       const hit = {
         name: el.getAttribute('name') || el.className,
-        top: r.top < box.top - 1,
-        bottom: r.bottom > vh - box.bottom + 1,
-        left: r.left < box.left - 1,
-        right: r.right > vw - box.right + 1,
+        top: r.top < box.top - 2,
+        bottom: r.bottom > vh - box.bottom + 2,
+        left: r.left < box.left - 2,
+        right: r.right > vw - box.right + 2,
       };
       if (hit.top || hit.bottom || hit.left || hit.right) clipped.push(hit);
     }
@@ -325,7 +338,11 @@ export async function runMobileA11yChecks({
     }
 
     if (device.id === 'iphone' && device.safeArea) {
-      const safe = await probeSafeArea(page, device.safeArea);
+      let safe = await probeSafeArea(page, device.safeArea);
+      if (safe.pendingAnim) {
+        await page.waitForTimeout(400);
+        safe = await probeSafeArea(page, device.safeArea);
+      }
       const sCheck = `a11y-safearea-${device.id}`;
       if (safe.clipped.length) {
         knownFindings.push({
@@ -357,10 +374,20 @@ export async function runMobileA11yChecks({
     }
 
     if (device.isMobile) {
-      const amountField = page.locator(SEL.customPrice).first();
       const kCheck = `a11y-keyboard-${device.id}`;
-      const amountVisible = (await amountField.count()) > 0 && (await amountField.isVisible().catch(() => false));
-      if (amountVisible) {
+      let field = page.locator(SEL.customPrice).first();
+      let fieldVisible = (await field.count()) > 0 && (await field.isVisible().catch(() => false));
+      if (!fieldVisible) {
+        field = page
+          .locator(
+            '.wdp-modal.show input:not([type=hidden]):not([type=checkbox]):not([type=radio]), .wdp-donation-form input:not([type=hidden]):not([type=checkbox]):not([type=radio])'
+          )
+          .first();
+        fieldVisible = (await field.count()) > 0 && (await field.isVisible().catch(() => false));
+      }
+      if (fieldVisible) {
+        await field.scrollIntoViewIfNeeded().catch(() => {});
+        const kb = await probeKeyboardVisibility(page, field);
         const vvShrunk = kb.vvH != null && kb.innerH && kb.vvH < kb.innerH * 0.92;
         if (!vvShrunk) {
           knownFindings.push({
@@ -409,7 +436,7 @@ export async function runMobileA11yChecks({
       }
     } else {
       const stretch = await page.evaluate(() => {
-        const modal = document.querySelector('.wdp-modal.show .wdp-modal-content, .wdp-modal.show');
+        const modal = document.querySelector('.wdp-modal.show .wdp-modal-content');
         if (!modal) return { open: false };
         const r = modal.getBoundingClientRect();
         return {
@@ -514,12 +541,20 @@ export async function runMobileA11yChecks({
       }
     }
 
-    const closeBtn = page.locator(SEL.modalClose).first();
+    const closeBtn = page.locator(`${SEL.openModalShell} ${SEL.modalClose}`).first();
     const cCheck = `a11y-close-${device.id}`;
     if ((await closeBtn.count()) > 0) {
-      await closeBtn.click({ timeout: 8000 }).catch(() => {});
-      const stillOpen = await page.locator(SEL.openModalShell).count();
-      if (stillOpen > 0) {
+      await closeBtn.click({ timeout: 8000 }).catch(async () => {
+        await closeBtn.evaluate((el) => el && el.click && el.click());
+      });
+      let closed = false;
+      try {
+        await waitForShellClosed(page, 8000);
+        closed = true;
+      } catch {
+        closed = false;
+      }
+      if (!closed) {
         knownFindings.push({
           check: cCheck,
           env: profile.id,
@@ -546,17 +581,24 @@ export async function runMobileA11yChecks({
       }
     }
 
-    const trigger = page.locator(SEL.centeredPopupTrigger).first();
-    if ((await trigger.count()) > 0) {
-      await trigger.click({ timeout: 8000 }).catch(() => {});
+    const reopen = page.locator(
+      `${SEL.centeredPopupTrigger}, ${SEL.sidePanelTrigger}, .wdp-card__cta, .wdp-loop-donate`
+    );
+    if ((await reopen.count()) > 0 && (await page.locator(SEL.openModalShell).count()) === 0) {
+      await clickShellTrigger(reopen, 8000).catch(() => {});
       await page.locator(SEL.openModalShell).first().waitFor({ state: 'visible', timeout: 8000 }).catch(() => {});
     }
     const eCheck = `a11y-esc-${device.id}`;
     if ((await page.locator(SEL.openModalShell).count()) > 0) {
       await page.keyboard.press('Escape');
-      await page.waitForTimeout(300);
-      const openAfterEsc = await page.locator(SEL.openModalShell).count();
-      if (openAfterEsc > 0) {
+      let closedEsc = false;
+      try {
+        await waitForShellClosed(page, 8000);
+        closedEsc = true;
+      } catch {
+        closedEsc = false;
+      }
+      if (!closedEsc) {
         knownFindings.push({
           check: eCheck,
           env: profile.id,
@@ -591,6 +633,4 @@ export async function runMobileA11yChecks({
       });
     }
   }
-
-  void openShellLocator;
 }

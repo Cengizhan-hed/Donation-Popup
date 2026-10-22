@@ -195,6 +195,31 @@ class WDP_Form_Modules {
 	}
 
 	/**
+	 * Para biriminin küçük birimine göre varsayılan hızlı tutarlar (hiç kaydedilmemişken).
+	 *
+	 * Yönetici girişi her zaman önceliklidir; kayıtlı listeler değişmez.
+	 * 0 ondalık (JPY, çoğu TRY mağazası): 100, 250, 500, 1000, 2500.
+	 * Ondalıklı (GBP/EUR/USD…): 5, 10, 25, 50, 100.
+	 *
+	 * @return float[]
+	 */
+	public static function default_amount_preset_values() {
+		$decimals = function_exists('wc_get_price_decimals') ? (int) wc_get_price_decimals() : 2;
+		if ($decimals <= 0) {
+			return array(100, 250, 500, 1000, 2500);
+		}
+		return array(5, 10, 25, 50, 100);
+	}
+
+	/**
+	 * @return string CSV of default_amount_preset_values().
+	 */
+	public static function default_amount_presets_csv() {
+		$vals = self::default_amount_preset_values();
+		return implode(', ', array_map('strval', $vals));
+	}
+
+	/**
 	 * SOFT parse of an amount presets list — ONLY for READING already stored data / render.
 	 *
 	 * Tolerant: strips junk characters, accepts decimals and "1.000" style tokens, keeps

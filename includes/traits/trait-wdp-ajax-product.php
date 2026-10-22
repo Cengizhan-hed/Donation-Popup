@@ -76,20 +76,9 @@ trait WDP_Ajax_Product_Trait {
 			$min_price = '0';
 		}
 
-		// Progress forms: floor/default is WooCommerce product price when admin min is 0/empty.
 		$progress_min_price = $min_price;
 		if ($enable_progress_bar) {
-			$product_base_price = (float) $product->get_price();
-			if ($product_base_price > 0) {
-				$progress_min_price = ($min_price !== '' && (float) $min_price > 0)
-					? (string) min((float) $min_price, $product_base_price)
-					: (string) $product_base_price;
-			} elseif ($min_price !== '' && (float) $min_price > 0) {
-				$progress_min_price = (string) $min_price;
-			} else {
-				$progress_min_price = '0';
-			}
-			// Frontend min_price for progress should never advertise "0" when WC has a price.
+			$progress_min_price = ($min_price !== '' && (float) $min_price > 0) ? (string) $min_price : '0';
 			if ((float) $progress_min_price > 0) {
 				$min_price = $progress_min_price;
 			}

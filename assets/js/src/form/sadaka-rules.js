@@ -14,6 +14,9 @@
    * @returns {number}
    */
   function parseAmount(raw) {
+    if (window.WDPApp && WDPApp.utils && typeof WDPApp.utils.parseMoney === 'function') {
+      return WDPApp.utils.parseMoney(raw);
+    }
     if (raw === null || raw === undefined) {
       return NaN;
     }

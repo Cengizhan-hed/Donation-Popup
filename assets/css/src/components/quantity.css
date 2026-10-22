@@ -221,7 +221,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-custom-price-row:has(> .wdp-a
     "label field";
 }
 
-html body :is(.wdp-modal, .wdp-donation-form) .wdp-custom-price-row__label {
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-custom-price-row > .wdp-custom-price-row__label {
   grid-area: label;
   font-family: var(--wdp-font-family);
   font-size: 15px;

@@ -3,7 +3,7 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
-import { ROOT } from './env.mjs';
+import { ROOT, withCacheBust } from './env.mjs';
 import { SEL } from './selectors.mjs';
 
 /** Kontrol başına en fazla bekleme (ms). Bulunamayan öğe hemen hata yazar. */
@@ -128,11 +128,24 @@ export function attachConsoleErrorCollector(page) {
 /**
  * @param {string[]} errors
  */
+/**
+ * Tema/medya (upload, favicon, theme) 404 test başarısızlığı sayılmaz.
+ * Eklentinin kendi URL'lerinden gelen 404 hâlâ hata.
+ * @param {string[]} errors
+ */
 export function assertNoConsoleErrors(errors) {
-  if (errors.length) {
-    const kinds = [...new Set(errors.map((e) => (String(e).match(/kind=([a-z-]+)/) || [])[1] || 'unknown'))];
+  const fatal = (errors || []).filter((e) => {
+    const k = (String(e).match(/kind=([a-z-]+)/) || [])[1] || '';
+    if (k === 'upload' || k === 'favicon' || k === 'theme') return false;
+    const t = String(e);
+    // WebKit: iptal edilen admin-ajax isteği "access control checks" yazar; gerçek eklenti 404/JS hatası değil.
+    if (/admin-ajax\.php/i.test(t) && /access control checks/i.test(t)) return false;
+    return true;
+  });
+  if (fatal.length) {
+    const kinds = [...new Set(fatal.map((e) => (String(e).match(/kind=([a-z-]+)/) || [])[1] || 'unknown'))];
     throw new Error(
-      `Browser console errors (kinds=${kinds.join(',')}): ` + errors.slice(0, 5).join(' | ')
+      `Browser console errors (kinds=${kinds.join(',')}): ` + fatal.slice(0, 5).join(' | ')
     );
   }
 }
@@ -142,6 +155,115 @@ export function assertNoConsoleErrors(errors) {
  * @param {import('@playwright/test').Page} page
  * @param {string} baseUrl
  */
+/**
+ * WooCommerce sepet sayfası mı (permalink /cart/ veya /sepet/; checkout değil).
+ * @param {string} url
+ */
+export function isWooCartUrl(url) {
+  try {
+    const p = new URL(url).pathname.replace(/\/+$/, '') || '/';
+    if (/checkout|odeme|ödeme|order-pay|order-received/i.test(p)) return false;
+    return /\/(cart|sepet)$/i.test(p);
+  } catch {
+    return /\/(cart|sepet)\/?(?:[?#]|$)/i.test(String(url || '')) &&
+      !/checkout|odeme|ödeme/i.test(String(url || ''));
+  }
+}
+
+/**
+ * 404 / ana sayfa sepet değildir. Woo sepet formu veya boş-sepet metni aranır.
+ * @param {import('@playwright/test').Page} page
+ */
+export async function pageLooksLikeWooCart(page) {
+  if (!isWooCartUrl(page.url())) return false;
+  const body = (await page.locator('body').innerText().catch(() => '')) || '';
+  if (/sayfa bulunamadı|page not found|hata,\s*sayfa/i.test(body) &&
+      !/woocommerce-cart-form|sepetiniz|your cart/i.test(body)) {
+    return false;
+  }
+  const n = await page
+    .locator(
+      '.woocommerce-cart-form, .wc-block-cart, .wp-block-woocommerce-cart, .cart_item, .woocommerce-cart-item, .cart-empty, form.woocommerce-cart-form, .woocommerce-info'
+    )
+    .count()
+    .catch(() => 0);
+  return n > 0 || /sepetiniz|your cart|cart is currently empty|sepetinizde ürün yok/i.test(body);
+}
+
+/**
+ * Woo sepet yolu adayları. Kök `/` veya ana sayfa cart_url sayılmaz (Hedef wc_get_cart_url
+ * bazen site köküne düşer). /sepet/ (TR) ve /cart/ her zaman denenir.
+ * @param {import('@playwright/test').Page} page
+ * @param {string} baseUrl
+ * @returns {Promise<string[]>}
+ */
+export async function resolveCartPaths(page, baseUrl) {
+  /** @type {string[]} */
+  const out = [];
+  const add = (p) => {
+    const n = String(p || '').trim();
+    if (!n) return;
+    const pathOnly = n.startsWith('http')
+      ? (() => {
+          try {
+            return new URL(n, baseUrl).pathname || '';
+          } catch {
+            return '';
+          }
+        })()
+      : n.startsWith('/')
+        ? n
+        : `/${n}`;
+    const compact = pathOnly.replace(/\/+$/, '') || '/';
+    if (compact === '/') return;
+    if (!/cart|sepet/i.test(compact)) return;
+    if (!out.includes(pathOnly)) out.push(pathOnly.endsWith('/') ? pathOnly : `${pathOnly}/`);
+  };
+  try {
+    const raw = await page.evaluate(() => {
+      const w = window.wdp_ajax && window.wdp_ajax.cart_url;
+      const wc = window.wc_add_to_cart_params && window.wc_add_to_cart_params.cart_url;
+      return { w: String(w || ''), wc: String(wc || '') };
+    });
+    add(raw.w);
+    add(raw.wc);
+  } catch {
+    /* yedekler */
+  }
+  add('/cart/');
+  add('/sepet/');
+  return out.length ? out : ['/cart/'];
+}
+
+/**
+ * Sepet sayfasına git. Ana sayfa cart_url yok sayılır; /sepet/ sonra /cart/.
+ * @param {import('@playwright/test').Page} page
+ * @param {string} baseUrl
+ * @returns {Promise<string>} son URL
+ */
+export async function gotoWooCart(page, baseUrl) {
+  const paths = await resolveCartPaths(page, baseUrl);
+  for (const pathName of paths) {
+    if (await pageLooksLikeWooCart(page)) break;
+    const cartUrl = withCacheBust(baseUrl, pathName, { hdf_no_side_cart: '1' });
+    try {
+      await page.goto(cartUrl, { waitUntil: 'domcontentloaded', timeout: 20000 });
+    } catch (navErr) {
+      if (!/interrupted/i.test(String(navErr && navErr.message))) throw navErr;
+      await page.waitForLoadState('domcontentloaded').catch(() => {});
+    }
+  }
+  await page
+    .locator(
+      '.woocommerce-cart-form, .wc-block-cart, .wp-block-woocommerce-cart, .cart_item, .woocommerce-cart-item, .cart-empty, .woocommerce-info'
+    )
+    .first()
+    .waitFor({ state: 'visible', timeout: 10000 })
+    .catch(() => {});
+  await page.waitForTimeout(400);
+  return page.url();
+}
+
 export async function emptyCart(page, baseUrl) {
   await page.evaluate(async (base) => {
     const root = base.replace(/\/$/, '');
@@ -158,6 +280,7 @@ export async function emptyCart(page, baseUrl) {
   await page
     .goto(baseUrl.replace(/\/$/, '') + '/cart/?wdp_e2e=' + Date.now(), {
       waitUntil: 'domcontentloaded',
+      timeout: 15000,
     })
     .catch(() => {});
   const remove = page.locator('.woocommerce-cart-form .remove, a.remove');
@@ -378,20 +501,61 @@ export function openShellLocator(page, mode = '') {
  * @param {'popup'|'panel'} mode
  * @param {{ productId?: number }} [opts]
  */
+/**
+ * Liste sekmesi/hash gizlemesini aç: Tümü + ilgili kart .is-hidden kalksın.
+ * @param {import('@playwright/test').Page} page
+ * @param {number} [productId]
+ */
+export async function revealListProductTrigger(page, productId = 0) {
+  const allTab = page.locator('[data-wdp-tab="all"]').first();
+  if ((await allTab.count().catch(() => 0)) > 0) {
+    await allTab.click({ timeout: 4000 }).catch(() => {});
+  }
+  const id = Number(productId) || 0;
+  if (id > 0) {
+    await page
+      .evaluate((pid) => {
+        document.querySelectorAll('.wdp-list__item').forEach((item) => {
+          if (item.querySelector('[data-product-id="' + String(pid) + '"]')) {
+            item.classList.remove('is-hidden');
+          }
+        });
+      }, id)
+      .catch(() => {});
+  }
+}
+
 export function shellTriggerLocator(page, mode, opts = {}) {
   const productId = Number(opts.productId) > 0 ? Number(opts.productId) : 0;
-  if (mode === 'panel') {
-    const base = SEL.sidePanelTrigger;
-    if (productId) {
-      return page.locator(`${base}[data-product-id="${productId}"]`).first();
+  const idSel = productId ? `[data-product-id="${productId}"]` : '';
+  const anyId = productId ? `.wdp-open-modal${idSel}, .wdp-card__cta${idSel}, .wdp-loop-donate${idSel}` : '';
+  const preferred =
+    mode === 'panel'
+      ? `.wdp-card__cta.wdp-open-side-panel${idSel}, .wdp-loop-donate.wdp-open-side-panel${idSel}, ${SEL.sidePanelTrigger}${idSel}, ${anyId}`
+      : `.wdp-card__cta${idSel}, .wdp-loop-donate${idSel}, ${SEL.centeredPopupTrigger}${idSel}, ${anyId}`;
+  return page.locator(preferred.replace(/,\s*,/g, ',').replace(/,\s*$/, ''));
+}
+
+/**
+ * Görünür ilk eşleşmeyi tıkla; yoksa DOM click() (gizli kısa kod).
+ * @param {import('@playwright/test').Locator} trigger
+ * @param {number} [timeout]
+ */
+export async function clickShellTrigger(trigger, timeout = CHECK_MS) {
+  const vis = trigger.filter({ visible: true });
+  if ((await vis.count().catch(() => 0)) > 0) {
+    await vis.first().click({ timeout });
+    return;
+  }
+  const n = await trigger.count().catch(() => 0);
+  if (!n) {
+    throw new Error('Bağış tetikleyicisi yok');
+  }
+  await trigger.first().evaluate((el) => {
+    if (el && typeof el.click === 'function') {
+      el.click();
     }
-    return page.locator(base).first();
-  }
-  const base = SEL.centeredPopupTrigger;
-  if (productId) {
-    return page.locator(`${base}[data-product-id="${productId}"]`).first();
-  }
-  return page.locator(base).first();
+  });
 }
 
 /**

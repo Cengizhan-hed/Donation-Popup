@@ -22,11 +22,49 @@
     return overlap > 40 ? Math.round(overlap) : 0;
   }
 
+  function readEnvSafe(side) {
+    const prop = side === 'top' ? 'padding-top' : 'padding-bottom';
+    const envName = side === 'top' ? 'safe-area-inset-top' : 'safe-area-inset-bottom';
+    try {
+      const probe = document.createElement('div');
+      probe.style.cssText = 'position:absolute;visibility:hidden;' + prop + ':env(' + envName + ',0px)';
+      document.documentElement.appendChild(probe);
+      const px = parseFloat(window.getComputedStyle(probe)[side === 'top' ? 'paddingTop' : 'paddingBottom']) || 0;
+      probe.parentNode.removeChild(probe);
+      return px;
+    } catch (e) {
+      return 0;
+    }
+  }
+
+  function isIphoneLike() {
+    const nav = window.navigator || {};
+    const ua = String(nav.userAgent || '');
+    if (/iPhone|iPod/.test(ua)) {
+      return true;
+    }
+    return nav.platform === 'MacIntel' && Number(nav.maxTouchPoints) > 1;
+  }
+
+  /**
+   * viewport-fit=cover olmasa da iPhone home indicator için taban boşluk.
+   * env() 0 ise 34px taban; gerçek env varsa onu kullanır. Tema seçicisi yok.
+   */
+  function applySafeBottom() {
+    const envBottom = readEnvSafe('bottom');
+    const envTop = readEnvSafe('top');
+    const floorBottom = (isIphoneLike() && envBottom < 20) ? 34 : 0;
+    const floorTop = (isIphoneLike() && envTop < 20) ? 47 : 0;
+    document.documentElement.style.setProperty('--wdp-safe-bottom', Math.max(envBottom, floorBottom) + 'px');
+    document.documentElement.style.setProperty('--wdp-safe-top', Math.max(envTop, floorTop) + 'px');
+  }
+
   function roots() {
     return document.querySelectorAll('.hdf-donation-modal-wrapper.wdp-modal.show, .wdp-donation-form');
   }
 
   function applyInset() {
+    applySafeBottom();
     const inset = keyboardInsetPx();
     const value = inset + 'px';
     roots().forEach((root) => {
@@ -100,5 +138,6 @@
   WDPApp.ctaViewport = {
     init: init,
     refresh: applyInset,
+    applySafeBottom: applySafeBottom,
   };
 })(window);

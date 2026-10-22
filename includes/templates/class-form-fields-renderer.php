@@ -34,7 +34,9 @@ class WDP_Form_Fields_Renderer {
 	 */
 	public static function get_amount_presets($min_price = 0, $product_id = 0) {
 		$min      = max(0, (float) $min_price);
-		$defaults = array(100, 250, 500, 1000, 2500);
+		$defaults = class_exists('WDP_Form_Modules')
+			? WDP_Form_Modules::default_amount_preset_values()
+			: array(100, 250, 500, 1000, 2500);
 		$button_settings = get_option('wdp_button_settings', array());
 		if (!empty($button_settings['amount_presets']) && is_string($button_settings['amount_presets'])) {
 			$parsed = WDP_Form_Modules::parse_amount_presets_csv($button_settings['amount_presets']);
@@ -264,15 +266,19 @@ class WDP_Form_Fields_Renderer {
 	/**
 	 * Fixed-price quantity row shared by modal and inline form.
 	 *
+	 * Visible "Bağış Tutarı" label belongs only on real amount *inputs*
+	 * (custom / campaign). Fixed price has a display + qty, not an entry field.
+	 *
 	 * @param string|float $product_price Product unit price.
 	 * @return string
 	 */
 	public static function render_fixed_price_quantity_row($product_price) {
+		$sr_label = __('Satır tutarı', 'woo-donation-popup');
 		ob_start();
 		?>
-		<div class="wdp-price-quantity-row wdp-fixed-price-counter-row">
+		<div class="wdp-price-quantity-row wdp-fixed-price-counter-row" role="group" aria-label="<?php echo esc_attr($sr_label); ?>">
 			<div class="wdp-line-total-display" role="status" aria-live="polite">
-				<span class="screen-reader-text"><?php esc_html_e('Satır tutarı', 'woo-donation-popup'); ?></span>
+				<span class="screen-reader-text"><?php echo esc_html($sr_label); ?></span>
 				<span class="wdp-line-total-value"><?php echo $product_price !== '' ? esc_html(WDP_Utils::format_price_plain($product_price)) : '—'; ?></span>
 			</div>
 			<div class="wdp-quantity-counter">
@@ -294,43 +300,23 @@ class WDP_Form_Fields_Renderer {
 	public static function render_progress_amount_block($min_price = '0') {
 		$wdp_currency_symbol = WDP_Utils::get_display_currency_symbol();
 		$min_numeric         = (float) $min_price;
-		$wdp_custom_price_placeholder = ($min_numeric > 0)
+		$placeholder         = ($min_numeric > 0)
 			? ('min: ' . WDP_Utils::format_amount_for_min_placeholder($min_price))
-			: __('Bağış tutarı *', 'woo-donation-popup');
-
+			: '';
 		$preset_product_id = !empty($GLOBALS['wdp_current_donation_product_id'])
 			? absint($GLOBALS['wdp_current_donation_product_id'])
 			: 0;
-
-		ob_start();
-		?>
-		<div class="wdp-form-block wdp-form-block--amount">
-		<div class="wdp-price-quantity-row wdp-progress-bar-price-row">
-			<?php echo self::render_amount_presets($min_price, $wdp_currency_symbol, array('product_id' => $preset_product_id, 'type' => WDP_Donation_Type::CAMPAIGN)); ?>
-			<div class="wdp-price-field wdp-progress-bar-price-field">
-				<div class="wdp-custom-price-shell">
-					<span class="wdp-custom-price-currency" aria-hidden="true"><?php echo esc_html($wdp_currency_symbol); ?></span>
-					<input
-						type="number"
-						name="custom_price"
-						value=""
-						placeholder="<?php echo esc_attr($wdp_custom_price_placeholder); ?>"
-						min="<?php echo esc_attr($min_numeric > 0 ? $min_price : '0'); ?>"
-						step="1"
-						required
-						class="wdp-custom-price-input wdp-progress-bar-price-input"
-						data-base-min="<?php echo esc_attr($min_numeric > 0 ? $min_price : ''); ?>"
-						inputmode="decimal"
-						autocomplete="off"
-						aria-label="<?php echo esc_attr__('Bağış tutarı', 'woo-donation-popup'); ?>"
-					>
-				</div>
-			</div>
-			<input type="hidden" name="quantity" value="1">
-		</div>
-		</div>
-		<?php
-		return trim(ob_get_clean());
+		$row = self::render_custom_price_amount_row(
+			$min_price,
+			$placeholder,
+			$wdp_currency_symbol,
+			array(
+				'product_id'  => $preset_product_id,
+				'row_class'   => 'wdp-custom-price-row wdp-progress-bar-price-row',
+				'input_class' => 'wdp-custom-price-input wdp-progress-bar-price-input',
+			)
+		);
+		return '<div class="wdp-form-block wdp-form-block--amount">' . $row . '</div>';
 	}
 
 	/**
