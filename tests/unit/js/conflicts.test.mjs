@@ -13,6 +13,13 @@ import {
   scriptsVerdict,
   evaluatePhoneIntegrity,
   phoneVerdict,
+  phoneProbeFromSnaps,
+  isOpenVisiblePhoneSnap,
+  isOverflowIgnored,
+  pickOverflowHit,
+  formatOverflowFinding,
+  shopConflictPath,
+  shopSkipReason,
   evaluateCheckoutFields,
   evaluateCurcy,
   fieldsVerdict,
@@ -31,6 +38,10 @@ import {
   simRemoteCheckoutProbe,
   simRemoteCurcyProbe,
   simRemoteConsoleEvents,
+  simRemoteHiddenShopPhoneSnaps,
+  simRemoteOpenPhoneSnap,
+  simRemoteFalseOverflowNodes,
+  simRemoteRealOverflowHit,
 } from '../../../tests/e2e/helpers/conflicts.mjs';
 import { runSimRemote } from '../../../tests/e2e/run-conflicts.mjs';
 
@@ -174,6 +185,19 @@ describe('alan bütünlüğü', () => {
     assert.equal(v.verdict, VERDICT.red);
   });
 
+  it('kart içi gizli 15 telefon alanı sayılmaz; açık formda tek seçici geçer', () => {
+    const hidden = phoneProbeFromSnaps(simRemoteHiddenShopPhoneSnaps());
+    assert.equal(hidden.wdpPhoneCount, 0);
+    assert.equal(phoneVerdict(evaluatePhoneIntegrity(hidden)).verdict, VERDICT.pass);
+    const mixed = phoneProbeFromSnaps([...simRemoteHiddenShopPhoneSnaps(), simRemoteOpenPhoneSnap()]);
+    assert.equal(mixed.wdpPhoneCount, 1);
+    assert.equal(mixed.flagCount, 1);
+    assert.equal(mixed.countryBtnCount, 1);
+    assert.equal(phoneVerdict(evaluatePhoneIntegrity(mixed)).verdict, VERDICT.pass);
+    assert.equal(isOpenVisiblePhoneSnap(simRemoteHiddenShopPhoneSnaps()[0]), false);
+    assert.equal(isOpenVisiblePhoneSnap(simRemoteOpenPhoneSnap()), true);
+  });
+
   it('tek ülke seçici geçer', () => {
     const v = phoneVerdict(
       evaluatePhoneIntegrity({
@@ -220,8 +244,8 @@ describe('CSS sızıntısı ve form', () => {
     assert.equal(cssVerdict(leak, { formVisible: true }).verdict, VERDICT.red);
   });
 
-  it('yatay kaydırma / dokunma <24px kırmızı', () => {
-    assert.equal(cssVerdict({ leaked: [] }, { overflow: true, formVisible: true }).verdict, VERDICT.red);
+  it('dokunma <24px kırmızı; belge kaydırması tek başına kırmızı değil', () => {
+    assert.equal(cssVerdict({ leaked: [] }, { overflow: true, formVisible: true }).verdict, VERDICT.pass);
     assert.equal(
       cssVerdict(
         { leaked: [] },
@@ -229,6 +253,48 @@ describe('CSS sızıntısı ve form', () => {
       ).verdict,
       VERDICT.red
     );
+  });
+
+  it('gizli / sr-text / kapalı ülke listesi taşma sayılmaz', () => {
+    const hit = pickOverflowHit(simRemoteFalseOverflowNodes(), { vw: 390 });
+    assert.equal(hit, null);
+    assert.equal(isOverflowIgnored({ srText: true, width: 1, height: 1, left: -9999, right: -9998 }), true);
+    assert.equal(isOverflowIgnored({ closedCountry: true, width: 420, height: 320 }), true);
+    assert.equal(isOverflowIgnored({ display: 'none', width: 100, height: 40 }), true);
+    assert.equal(isOverflowIgnored({ ariaHidden: true, width: 100, height: 40 }), true);
+  });
+
+  it('görünür öğe taşmasını seçici+genişlik+kural ile yazar', () => {
+    const hit = pickOverflowHit([simRemoteRealOverflowHit()], { vw: 390 });
+    assert.ok(hit);
+    assert.equal(hit.selector, '.wdp-amount-preset');
+    assert.equal(hit.rule, 'kapsayıcı');
+    const v = cssVerdict({ leaked: [] }, { formVisible: true, clipped: true, hit });
+    assert.equal(v.verdict, VERDICT.red);
+    assert.match(v.finding, /form taşıyor/);
+    assert.match(v.finding, /kural=kapsayıcı/);
+    assert.ok(formatOverflowFinding(hit).includes('312>264'));
+  });
+
+  it('açık kabuk viewport dışındaysa kural=viewport', () => {
+    const hit = pickOverflowHit(
+      [
+        {
+          selector: '.wdp-modal-content',
+          role: 'content',
+          left: 200,
+          right: 590,
+          width: 390,
+          height: 700,
+          display: 'flex',
+          visibility: 'visible',
+        },
+      ],
+      { vw: 390 }
+    );
+    assert.ok(hit);
+    assert.equal(hit.rule, 'viewport');
+    assert.match(formatOverflowFinding(hit), /kural=viewport/);
   });
 
   it('eklenti CSS URL tanır', () => {
@@ -321,8 +387,18 @@ describe('CLI ve özet', () => {
 describe('uzak benzetim (yerel, ağ yok)', () => {
   it('tüm beklenen bulguları yakalar', () => {
     const sim = runSimRemote();
-    assert.ok(sim.length >= 7);
+    assert.ok(sim.length >= 11);
     const missed = sim.filter((s) => !s.ok);
     assert.deepEqual(missed, []);
+  });
+});
+
+describe('mağaza hedefi', () => {
+  it('shop yolu yalnız Woo shop; yoksa atlanır', () => {
+    assert.equal(shopConflictPath({ listPath: '/liste/', shopPath: '/magaza/' }, {}), '/magaza/');
+    assert.equal(shopConflictPath({ listPath: '/liste/' }, {}), '');
+    assert.ok(shopSkipReason({ shopPath: '' }).startsWith('atlandı:'));
+    assert.ok(shopSkipReason({ shopPath: '/magaza/', triggerVisible: false }).includes('düğmesi yok'));
+    assert.equal(shopSkipReason({ shopPath: '/magaza/', triggerVisible: true }), '');
   });
 });
