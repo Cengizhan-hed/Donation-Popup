@@ -19,7 +19,7 @@ if (!defined('WDP_PLUGIN_FILE')) {
 	define('WDP_PLUGIN_FILE', $root . '/woo-donation-popup.php');
 }
 if (!defined('WDP_VERSION')) {
-	define('WDP_VERSION', '10.34.5');
+	define('WDP_VERSION', '10.34.6');
 }
 if (!defined('MINUTE_IN_SECONDS')) {
 	define('MINUTE_IN_SECONDS', 60);
@@ -34,7 +34,7 @@ if (!defined('WDP_PLUGIN_URL')) {
 	define('WDP_PLUGIN_URL', 'https://example.test/wp-content/plugins/woo-donation-popup/');
 }
 if (!defined('WDP_ASSET_VERSION')) {
-	define('WDP_ASSET_VERSION', '10.34.5');
+	define('WDP_ASSET_VERSION', '10.34.6');
 }
 
 /**
@@ -447,8 +447,28 @@ if (!function_exists('delete_post_meta_by_key')) {
 }
 if (!function_exists('add_action')) {
 	function add_action($hook, $callback, $priority = 10, $accepted_args = 1) {
+		unset($priority, $accepted_args);
 		WDP_Test_State::$actions[ $hook ][] = $callback;
 		return true;
+	}
+}
+if (!function_exists('remove_action')) {
+	function remove_action($hook, $callback, $priority = 10) {
+		unset($priority);
+		if (!isset(WDP_Test_State::$actions[ $hook ])) {
+			return false;
+		}
+		$found = false;
+		$keep  = array();
+		foreach (WDP_Test_State::$actions[ $hook ] as $cb) {
+			if (!$found && $cb === $callback) {
+				$found = true;
+				continue;
+			}
+			$keep[] = $cb;
+		}
+		WDP_Test_State::$actions[ $hook ] = $keep;
+		return $found;
 	}
 }
 if (!function_exists('do_action')) {

@@ -27,8 +27,14 @@ import {
 } from './loop-cards.mjs';
 import {
   classifyVisiblePluginEntry,
+  classifyNativeCartVisibility,
   displayMismatchWarning,
+  nativeCartProbeBrowser,
   LOOP_EXCLUDE_SEL,
+  NATIVE_CART_FORM_SEL,
+  NATIVE_ATC_BTN_SEL,
+  STICKY_ATC_SEL,
+  DISPLAY_MODES,
 } from './product-page-ui.mjs';
 
 const CHECK_MS = 25000;
@@ -668,6 +674,96 @@ export async function runDeviceScenarios({
         throw new Error(`sipariş toplamı ${rec.total} ≠ ${amount} (hpos=${rec.hpos})`);
       }
       await shot(page, shotDir, 'place-order');
+    });
+
+    await runOne('native-cart-hidden', async () => {
+      try {
+        for (const display of DISPLAY_MODES) {
+          const set = matrixEval(wpDir, ['placement-display', display]);
+          if (!set.ok) throw new Error(`görünüm yazılamadı ${display}: ${set.error || ''}`);
+          await gotoPath(page, baseUrl, productPath);
+          const native = await page.evaluate(nativeCartProbeBrowser, {
+            excludeSel: LOOP_EXCLUDE_SEL,
+            formSel: NATIVE_CART_FORM_SEL,
+            btnSel: NATIVE_ATC_BTN_SEL,
+            stickySel: STICKY_ATC_SEL,
+          });
+          const nativeClassified = classifyNativeCartVisibility(native);
+          if (!nativeClassified.ok) {
+            throw new Error(`${display}: ${nativeClassified.reason}`);
+          }
+          const ui = await page.evaluate(
+            ({ excludeSel, inlineSel, panelSel, popupSel }) => {
+              const excluded = (el) => !!(el && el.closest(excludeSel));
+              const vis = (el) => {
+                if (!el) return false;
+                const st = getComputedStyle(el);
+                const r = el.getBoundingClientRect();
+                return (
+                  st.display !== 'none' &&
+                  st.visibility !== 'hidden' &&
+                  Number.parseFloat(st.opacity || '1') > 0.05 &&
+                  r.width > 4 &&
+                  r.height > 4
+                );
+              };
+              const pick = (sel) => Array.from(document.querySelectorAll(sel)).filter((el) => !excluded(el));
+              return {
+                inlineVisible: pick(inlineSel).filter(vis).length,
+                panelVisible: pick(panelSel).filter(vis).length,
+                popupVisible: pick(popupSel).filter(vis).length,
+              };
+            },
+            {
+              excludeSel: LOOP_EXCLUDE_SEL,
+              inlineSel: SEL.inlineDonationForm,
+              panelSel: SEL.sidePanelTrigger,
+              popupSel: SEL.centeredPopupTrigger,
+            }
+          );
+          const classified = classifyVisiblePluginEntry(ui);
+          if (!classified.ok) {
+            throw new Error(
+              `${display}: eklenti girişi ${classified.reason} inline=${ui.inlineVisible} panel=${ui.panelVisible} popup=${ui.popupVisible}`
+            );
+          }
+          if (classified.kind === 'form') {
+            const form = page.locator(`${SEL.inlineDonationForm}, ${SEL.donationForm}`).first();
+            await form.waitFor({ state: 'visible', timeout: CHECK_MS });
+          } else {
+            const triggerSel = classified.kind === 'panel' ? SEL.sidePanelTrigger : SEL.centeredPopupTrigger;
+            const n = await page.locator(triggerSel).count();
+            let clicked = false;
+            for (let i = 0; i < n; i += 1) {
+              const btn = page.locator(triggerSel).nth(i);
+              const inLoop = await btn.evaluate(
+                (el, excludeSel) =>
+                  !!(el.classList.contains('wdp-loop-donate') || (el.closest && el.closest(excludeSel))),
+                LOOP_EXCLUDE_SEL
+              );
+              if (inLoop) continue;
+              if (!(await btn.isVisible())) continue;
+              await btn.scrollIntoViewIfNeeded();
+              await clickShellTrigger(btn, CHECK_MS);
+              clicked = true;
+              break;
+            }
+            if (!clicked) throw new Error(`${display}: birincil bağış düğmesi tıklanamadı`);
+            const shell = openShellLocator(page, classified.kind === 'panel' ? 'panel' : 'popup');
+            await shell.waitFor({ state: 'visible', timeout: CHECK_MS });
+            await waitFormReady(shell);
+            const close = shell.locator(SEL.modalClose).first();
+            if ((await close.count()) > 0) {
+              await close.click({ timeout: CHECK_MS });
+              await shell.waitFor({ state: 'hidden', timeout: CHECK_MS });
+            }
+          }
+          await shot(page, shotDir, `native-cart-hidden-${display}`);
+        }
+      } finally {
+        const restore = matrixEval(wpDir, ['placement-display', 'inline']);
+        if (!restore.ok) throw new Error(`görünüm geri alınamadı: ${restore.error || ''}`);
+      }
     });
 
     await runOne('related-cards', async () => {

@@ -23,6 +23,7 @@ class WDP_Cart {
 
         // Sepete ekleme öncesi doğrulama (zorunlu alanlar kontrolü)
         add_filter('woocommerce_add_to_cart_validation', array(__CLASS__, 'validate_donation_fields'), 10, 5);
+        add_action('woocommerce_store_api_validate_add_to_cart', array(__CLASS__, 'validate_store_api_add_to_cart'), 10, 2);
 
         // Sepet sayfasında bağış bilgilerini göster
         add_filter('woocommerce_get_item_data', array(__CLASS__, 'display_donation_data_in_cart'), 10, 2);
@@ -184,6 +185,14 @@ class WDP_Cart {
             return $passed;
         }
 
+        // Native GET/POST ?add-to-cart= (bağış formu yok) — bağış ürününü sepete alma.
+        if ($passed && !self::is_donation_modal_request($request_data) && self::should_reject_native_add_to_cart($product_id)) {
+            if (function_exists('wc_add_notice')) {
+                wc_add_notice(self::native_add_to_cart_notice(), 'error');
+            }
+            return false;
+        }
+
         // Sadece bağış formundan gelen istekleri işleme al
         if (self::is_donation_modal_request($request_data)) {
             if (!self::is_valid_donation_form_nonce($request_data)) {
@@ -316,6 +325,72 @@ class WDP_Cart {
         return isset($request_data['action'], $request_data['wdp_ajax_flow'])
             && $request_data['action'] === 'wdp_ajax_add_to_cart'
             && $request_data['wdp_ajax_flow'] === '1';
+    }
+
+    /**
+     * Notice when a donation product is added without the plugin form.
+     *
+     * @return string
+     */
+    public static function native_add_to_cart_notice() {
+        return __('Lütfen bağış formunu kullanarak sepete ekleyin. Bağışçı bilgileri gereklidir.', 'woo-donation-popup');
+    }
+
+    /**
+     * Block Woo native add-to-cart (GET ?add-to-cart= / form.cart) for donation products.
+     * Explicit product flag or auto_place=yes (plugin owns the add-to-cart UI).
+     * Does not run for the plugin AJAX flow or donation_modal=1 POST.
+     *
+     * @param int $product_id Product ID.
+     * @return bool
+     */
+    public static function should_reject_native_add_to_cart($product_id) {
+        $product_id = absint($product_id);
+        if ($product_id <= 0 || !class_exists('WDP_Donation_Scope')) {
+            return false;
+        }
+        if (!WDP_Donation_Scope::is_donation_product($product_id)) {
+            return false;
+        }
+        $product = function_exists('wc_get_product') ? wc_get_product($product_id) : null;
+        $flag    = ($product && is_object($product)) ? WDP_Donation_Scope::product_flag($product) : '';
+        if ($flag === 'yes') {
+            return true;
+        }
+        return class_exists('WDP_Placement_Settings') && WDP_Placement_Settings::value('auto_place') === 'yes';
+    }
+
+    /**
+     * Store API add-to-cart (blocks) — same rule as woocommerce_add_to_cart_validation.
+     *
+     * @param mixed $product Product being added.
+     * @param mixed $request REST request (unused).
+     * @return void
+     */
+    public static function validate_store_api_add_to_cart($product, $request = null) {
+        unset($request);
+        $request_data = self::get_request_data();
+        if (self::is_ajax_add_to_cart_flow($request_data) || self::is_donation_modal_request($request_data)) {
+            return;
+        }
+        $id = 0;
+        if (is_object($product) && method_exists($product, 'get_id')) {
+            $id = (int) $product->get_id();
+        } elseif (is_numeric($product)) {
+            $id = (int) $product;
+        }
+        if (!self::should_reject_native_add_to_cart($id)) {
+            return;
+        }
+        $message = self::native_add_to_cart_notice();
+        if (class_exists('\Automattic\WooCommerce\StoreApi\Exceptions\RouteException')) {
+            throw new \Automattic\WooCommerce\StoreApi\Exceptions\RouteException(
+                'woocommerce_rest_cart_invalid_product',
+                $message,
+                400
+            );
+        }
+        throw new Exception($message); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- user-facing notice text.
     }
 
     /**

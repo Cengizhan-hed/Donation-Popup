@@ -96,6 +96,9 @@ class WDP_Product_Page_Integration {
 		if (!$product || !WDP_Donation_Scope::is_donation_product($product)) {
 			return;
 		}
+
+		self::unhook_native_single_add_to_cart();
+
 		if (!self::should_auto_place($product)) {
 			return;
 		}
@@ -288,6 +291,70 @@ class WDP_Product_Page_Integration {
 	}
 
 	/**
+	 * Remove WooCommerce's native single-product add-to-cart output.
+	 * Does not touch woocommerce_is_purchasable (plugin form still adds to cart).
+	 * Sticky/clone callbacks matching add-to-cart + sticky are unhooked without theme CSS selectors.
+	 *
+	 * @return int Number of matching sticky callbacks removed from $wp_filter.
+	 */
+	public static function unhook_native_single_add_to_cart() {
+		if (!function_exists('remove_action')) {
+			return 0;
+		}
+		remove_action('woocommerce_single_product_summary', 'woocommerce_template_single_add_to_cart', 30);
+		remove_action('woocommerce_after_single_product_summary', 'woocommerce_template_single_add_to_cart', 30);
+		remove_action('woocommerce_before_single_product_summary', 'woocommerce_template_single_add_to_cart', 30);
+		remove_action('woocommerce_after_single_product', 'woocommerce_template_single_add_to_cart', 30);
+		return self::unhook_callbacks_matching('/sticky.*add.?to.?cart|add.?to.?cart.*sticky/i');
+	}
+
+	/**
+	 * Drop any hook callback whose function name looks like a sticky add-to-cart clone.
+	 *
+	 * @param string $pattern PCRE against the callable name.
+	 * @return int
+	 */
+	public static function unhook_callbacks_matching($pattern) {
+		if (!function_exists('remove_action') || !is_string($pattern) || $pattern === '') {
+			return 0;
+		}
+		global $wp_filter;
+		if (!isset($wp_filter) || (!is_array($wp_filter) && !is_object($wp_filter))) {
+			return 0;
+		}
+		$removed = 0;
+		foreach ($wp_filter as $hook => $hook_obj) {
+			$by_priority = array();
+			if (is_object($hook_obj) && isset($hook_obj->callbacks) && is_array($hook_obj->callbacks)) {
+				$by_priority = $hook_obj->callbacks;
+			} elseif (is_array($hook_obj)) {
+				$by_priority = $hook_obj;
+			}
+			foreach ($by_priority as $priority => $callbacks) {
+				if (!is_array($callbacks)) {
+					continue;
+				}
+				foreach ($callbacks as $entry) {
+					$fn = (is_array($entry) && array_key_exists('function', $entry)) ? $entry['function'] : $entry;
+					$name = '';
+					if (is_string($fn)) {
+						$name = $fn;
+					} elseif (is_array($fn) && isset($fn[1]) && is_string($fn[1])) {
+						$name = $fn[1];
+					}
+					if ($name === '' || !preg_match($pattern, $name)) {
+						continue;
+					}
+					if (remove_action((string) $hook, $fn, (int) $priority)) {
+						$removed++;
+					}
+				}
+			}
+		}
+		return $removed;
+	}
+
+	/**
 	 * Hide a theme-reintroduced native cart form (plugin form/button keep their classes).
 	 *
 	 * @return void
@@ -300,7 +367,7 @@ class WDP_Product_Page_Integration {
 			return;
 		}
 		$product = self::current_product();
-		if (!$product || !WDP_Donation_Scope::is_donation_product($product) || !self::should_auto_place($product)) {
+		if (!$product || !WDP_Donation_Scope::is_donation_product($product)) {
 			return;
 		}
 		self::$css_printed = true;
@@ -308,21 +375,31 @@ class WDP_Product_Page_Integration {
 	}
 
 	/**
-	 * Hide only the main product native cart form (Woo .summary / .entry-summary).
-	 * Loop / related / upsell cards keep their form.cart (Bağış Yap).
+	 * Hide the main product native cart form and sticky clones; spare loop/related/upsell/collection.
+	 * Theme class names (storefront, fusion, ct-) are not used.
 	 *
 	 * @return string
 	 */
 	public static function hide_native_cart_css() {
-		return 'body.single-product div.product .summary form.cart:not(.wdp-form):not(.wdp-donation-form-fields),'
-			. 'body.single-product div.product .entry-summary form.cart:not(.wdp-form):not(.wdp-donation-form-fields)'
-			. '{display:none!important}';
+		$loop_form = ':not(.related form.cart):not(.upsells form.cart):not(ul.products form.cart)'
+			. ':not(.wdp-list form.cart):not(.wdp-donations form.cart)'
+			. ':not(.wp-block-woocommerce-related-products form.cart)'
+			. ':not(.wp-block-woocommerce-product-collection form.cart)';
+		$form      = 'body.single-product form.cart:not(.wdp-form):not(.wdp-donation-form-fields)' . $loop_form;
+		$loop_btn  = ':not(.related .single_add_to_cart_button):not(.upsells .single_add_to_cart_button)'
+			. ':not(ul.products .single_add_to_cart_button)'
+			. ':not(.wp-block-woocommerce-related-products .single_add_to_cart_button)'
+			. ':not(.wp-block-woocommerce-product-collection .single_add_to_cart_button)';
+		$btn       = 'body.single-product .single_add_to_cart_button:not(.wdp-donate-button):not(.wdp-open-modal):not(.wdp-loop-donate)' . $loop_btn;
+		$sticky    = 'body.single-product [class*="sticky-add-to-cart"],body.single-product [class*="sticky"][class*="add-to-cart"]';
+		return $form . ',' . $btn . ',' . $sticky . '{display:none!important}';
 	}
 
 	/**
 	 * @return void
 	 */
 	public static function render_placed_form() {
+		echo '<div class="wdp-product-page-entry">'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		echo WDP_Render_Guard::html( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			static function () {
 				return self::placed_markup();
@@ -330,6 +407,7 @@ class WDP_Product_Page_Integration {
 			self::current_product_id(),
 			'auto_place'
 		);
+		echo '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	}
 
 	/**

@@ -303,8 +303,8 @@ wdp_smoke_assert(
     'Container queries CSS is on the frontend stack'
 );
 wdp_smoke_assert(
-    defined('WDP_VERSION') && WDP_VERSION === '10.34.5',
-    'Plugin version is 10.34.5'
+    defined('WDP_VERSION') && WDP_VERSION === '10.34.6',
+    'Plugin version is 10.34.6'
 );
 wdp_smoke_assert(
     file_exists(WDP_PLUGIN_DIR . 'templates/woocommerce/single-product/add-to-cart/simple.php'),
@@ -314,6 +314,11 @@ wdp_smoke_assert(
     wdp_smoke_file_contains(WDP_PLUGIN_DIR . 'includes/class-product-page-integration.php', 'function render_builder_fallback')
         && wdp_smoke_file_contains(WDP_PLUGIN_DIR . 'includes/class-product-page-integration.php', "add_action('wp_footer'"),
     'Product page builder fallback is registered'
+);
+wdp_smoke_assert(
+    wdp_smoke_file_contains(WDP_PLUGIN_DIR . 'includes/class-product-page-integration.php', 'function unhook_native_single_add_to_cart')
+        && wdp_smoke_file_contains(WDP_PLUGIN_DIR . 'includes/class-cart.php', 'function should_reject_native_add_to_cart'),
+    'Native add-to-cart unhook + server reject exist'
 );
 wdp_smoke_assert(
     wdp_smoke_file_contains(WDP_PLUGIN_DIR . 'includes/class-product-page-integration.php', 'filter_wc_get_template')

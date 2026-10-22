@@ -47,8 +47,13 @@ import {
 import {
   resolveDisplayFromSources,
   classifyVisiblePluginEntry,
+  classifyNativeCartVisibility,
   displayMismatchWarning,
+  nativeCartProbeBrowser,
   LOOP_EXCLUDE_SEL,
+  NATIVE_CART_FORM_SEL,
+  NATIVE_ATC_BTN_SEL,
+  STICKY_ATC_SEL,
 } from './product-page-ui.mjs';
 import { classifyLoopCardsResult, formatLoopCardFail } from './loop-cards.mjs';
 import { snapshotGuardOrder, cleanupE2EData } from './test-cleanup.mjs';
@@ -1962,6 +1967,12 @@ async function assertLoopCardsTitleAndDonate(page, surface, screenName, failures
  * @param {Array<{check:string,description:string,detail?:string}>} [warnings]
  */
 async function assertProductPageDisplay(page, display, productKey, screenName, failures, stats, warnings) {
+  const native = await page.evaluate(nativeCartProbeBrowser, {
+    excludeSel: LOOP_EXCLUDE_SEL,
+    formSel: NATIVE_CART_FORM_SEL,
+    btnSel: NATIVE_ATC_BTN_SEL,
+    stickySel: STICKY_ATC_SEL,
+  });
   const ui = await page.evaluate(
     ({ excludeSel, inlineSel, panelSel, popupSel }) => {
       const excluded = (el) => !!(el && el.closest(excludeSel));
@@ -1983,15 +1994,11 @@ async function assertProductPageDisplay(page, display, productKey, screenName, f
       const popup = pick(popupSel);
       const displayAttr =
         [...panel, ...popup, ...inline].map((el) => el.getAttribute('data-wdp-display')).find(Boolean) || '';
-      const nativeCart = Array.from(
-        document.querySelectorAll('form.cart:not(.wdp-form):not(.wdp-donation-form-fields)')
-      ).filter((el) => !excluded(el) && vis(el)).length;
       return {
         inlineVisible: inline.filter(vis).length,
         panelVisible: panel.filter(vis).length,
         popupVisible: popup.filter(vis).length,
         displayAttr,
-        nativeCart,
       };
     },
     {
@@ -2002,12 +2009,13 @@ async function assertProductPageDisplay(page, display, productKey, screenName, f
     }
   );
 
-  if (ui.nativeCart > 0) {
+  const nativeClassified = classifyNativeCartVisibility(native);
+  if (!nativeClassified.ok) {
     failures.push(
       makeFailure({
         check: `product-${productKey}`,
-        description: 'Ürün sayfasında hâlâ yerel WooCommerce form.cart var',
-        detail: `form.cart sayısı: ${ui.nativeCart}`,
+        description: 'Ürün sayfasında hâlâ yerel WooCommerce sepete ekle var',
+        detail: nativeClassified.reason,
         screenshot: `${screenName}.png`,
       })
     );

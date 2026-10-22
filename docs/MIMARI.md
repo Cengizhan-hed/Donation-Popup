@@ -1,4 +1,4 @@
-# MIMARI — woo-donation-popup (10.34.5)
+# MIMARI — woo-donation-popup (10.34.6)
 
 Kalıcı mimari harita. Sonraki görevler için ilk okuma noktası.  
 Dal referansı: `docs-mimari` / commit `220f4ec`.  
@@ -81,18 +81,19 @@ Kural: her iddia `dosya:satır`; emin olunmayan yerler **DOĞRULANMADI**.
 | `wp_footer` | 1 | optional base pixel | `includes/class-meta-tracking.php:264` |
 | `wp_consent_api_registered_*` | — | `__return_true` | `includes/class-meta-tracking.php:268` |
 | `woocommerce_add_cart_item_data` | 10 | bağış cart data | `includes/class-cart.php:22` |
-| `woocommerce_add_to_cart_validation` | 10 | alan doğrulama | `includes/class-cart.php:25` |
-| `woocommerce_get_item_data` | 10 | sepet görüntü | `includes/class-cart.php:28` |
-| `woocommerce_before_calculate_totals` | 99 | özel fiyat | `includes/class-cart.php:31` |
-| `woocommerce_cart_item_price/subtotal` | 10 | fiyat HTML | `includes/class-cart.php:32-33` |
-| `woocommerce_cart_item_quantity` | 10 | hisse qty kilidi | `includes/class-cart.php:36` |
-| `woocommerce_update_cart_validation` | 10 | hisse qty engel | `includes/class-cart.php:37` |
-| `woocommerce_cart_item_class/name/thumbnail` | 10 | sadaka satır görünümü | `includes/class-cart.php:39-41` |
+| `woocommerce_add_to_cart_validation` | 10 | alan doğrulama + yerel add-to-cart reddi | `includes/class-cart.php:25` |
+| `woocommerce_store_api_validate_add_to_cart` | 10 | blok/Store API yerel ekleme reddi | `includes/class-cart.php:26` |
+| `woocommerce_get_item_data` | 10 | sepet görüntü | `includes/class-cart.php:29` |
+| `woocommerce_before_calculate_totals` | 99 | özel fiyat | `includes/class-cart.php:32` |
+| `woocommerce_cart_item_price/subtotal` | 10 | fiyat HTML | `includes/class-cart.php:33-34` |
+| `woocommerce_cart_item_quantity` | 10 | hisse qty kilidi | `includes/class-cart.php:37` |
+| `woocommerce_update_cart_validation` | 10 | hisse qty engel | `includes/class-cart.php:38` |
+| `woocommerce_cart_item_class/name/thumbnail` | 10 | sadaka satır görünümü | `includes/class-cart.php:40-42` |
 | `woocommerce_checkout_create_order_line_item` | 10 | sipariş meta yaz | `includes/class-order.php:22` |
 | `woocommerce_order_item_display_meta_key/value` | 10 | etiket çevirisi | `includes/class-order-meta-keys.php:345-346` |
 | `wp_privacy_personal_data_exporters` | 10 | exporter | `includes/class-privacy.php:26` |
 | `wp_privacy_personal_data_erasers` | 5 | eraser | `includes/class-privacy.php:28` |
-| `wp` | 20 | ürün sayfası fallback | `includes/class-product-page-integration.php:49` |
+| `wp` | 20 | native ATC unhook + fallback | `includes/class-product-page-integration.php:49` |
 | `body_class` / `post_class` | 10 | CSS sınıfları | `includes/class-product-page-integration.php:50-51` |
 | `wp_head` | 30 | hide cart CSS | `includes/class-product-page-integration.php:52` |
 | `wc_get_template` / `woocommerce_locate_template` | 20 | şablon override | `includes/class-product-page-integration.php:54-55` |
@@ -333,8 +334,9 @@ Liste önbelleği bump (10.33.0 + 10.34.0; aynı istekte bir kez): stok/kategori
 - Şablon: `templates/woocommerce/single-product/add-to-cart/simple.php` via `wc_get_template` / `locate_template` filtreleri (`includes/class-product-page-integration.php:54-55`)
 - Döngü: `woocommerce_loop_add_to_cart_link` (`includes/class-product-page-integration.php:58`) — popup/panel/lazy
 - Lazy modal: `data-wdp-lazy` + AJAX `wdp_render_modal` (`includes/class-lazy-modal.php`, `assets/js/src/lazy-modal.js`)
-- Fallback: summary hook’ları (`includes/class-product-page-integration.php:100-107`)
-- Ürün override: `_wdp_auto_place` (`includes/class-product-page-integration.php:515`, `includes/class-product-page-integration.php:556`)
+- Native ATC unhook: `unhook_native_single_add_to_cart` (`includes/class-product-page-integration.php` `on_wp`)
+- Fallback: summary hook’ları (`includes/class-product-page-integration.php`)
+- Ürün override: `_wdp_auto_place`
 
 ---
 
@@ -357,7 +359,7 @@ Kaynak rehber: `docs/AYARLAR.md`. Teknik varsayılanlar normalizer / placement /
 | Modül sırası | ürün `_wdp_module_order` dolu → yoksa button `module_order` → defaults | `WDP_Form_Modules::resolve_order` (`includes/class-form-modules.php:74-84`) |
 | Güven rozetleri | global → ürün `_trust_badges` doluysa ürün | `resolve_trust_badges` (`includes/class-form-modules.php:145-175`) |
 | Otomatik yerleşim | global `auto_place` + ürün `_wdp_auto_place!=='no'` | `should_auto_place` / meta (`includes/class-product-page-integration.php`) |
-| Native sepet gizleme | yalnız ürün özeti `.summary` / `.entry-summary` `form.cart` | `hide_native_cart_css` — döngü/ilgili kart `form.cart` gizlenmez (`includes/class-product-page-integration.php`) |
+| Native sepet gizleme | bağış ürünü tekil sayfada tüm `form.cart` + `.single_add_to_cart_button` + sticky-add-to-cart (tema sınıfı yok); döngü/ilgili/upsell/koleksiyon `:not()` ile hariç | `hide_native_cart_css` yedek; asıl yol `unhook_native_single_add_to_cart` (`woocommerce_template_single_add_to_cart` + sticky callback adı) |
 | Alt bağış WC ürünü | ürün `_sadaka_wc_product_id` → yoksa success `sadaka_wc_product_id` | `WDP_Utils::resolve_sadaka_wc_product_id` (`includes/class-utils.php:104+`) |
 
 ### Ürün sayfası ve liste (`wdp_placement_settings`)
@@ -557,7 +559,9 @@ Güvenli alan (10.34.0 + 10.34.4): alt CTA `env(safe-area-inset-bottom)` + JS `-
 
 **Tutar biçimi (10.34.4):** Tek yardımcı: PHP `WDP_Utils::format_localized_amount` (wc_price sayı kısmı, ondalık kırpılmaz) + `format_min_placeholder` (`min: ` öneki); JS `formatPrice` / `formatMinPlaceholder`. Açık / hata / `product_info` sonrası yer tutucu aynı. Sembol konumu `wdp-currency-pos-{left|left_space|right|right_space}` (right/right_space `flex-direction: row-reverse`). Liste kartı `format_price_html` / `wc_price`. Matris yer tutucu + sembol konumu iddiası `tests/e2e/helpers/matrix-scenarios.mjs`.
 
-**Ürün sayfası görünümü + ilgili ürünler (10.34.5):** Ürün sayfası birincil UI `resolve_product_page_display` (kısa kod > auto_place `display`). Native `form.cart` gizleme yalnız `.summary` / `.entry-summary` (Woo çekirdek; ilgili/upsell/loop formları görünür kalır). Ekran freeze CSS ekrandan sonra kaldırılır. Uzak `loop-cards-product`: görünür kart yoksa ATLA (tema ilgili bölümü gizleyebilir). Matris `related-cards`: TT5+Storefront × 3 cihaz, bölüm + kartlar görünür, her kartta başlık + Bağış Yap.
+**Ürün sayfası görünümü + ilgili ürünler (10.34.5):** Ürün sayfası birincil UI `resolve_product_page_display` (kısa kod > auto_place `display`). Native `form.cart` gizleme 10.34.5’te yalnız `.summary` / `.entry-summary` idi (ilgili kart formunu gizlememek için); 10.34.6 bunu genişletti. Ekran freeze CSS ekrandan sonra kaldırılır. Uzak `loop-cards-product`: görünür kart yoksa ATLA (tema ilgili bölümü gizleyebilir). Matris `related-cards`: TT5+Storefront × 3 cihaz, bölüm + kartlar görünür, her kartta başlık + Bağış Yap.
+
+**Yerel sepete ekle yok (10.34.6, veri bütünlüğü):** Bağış ürünü tekil sayfada Woo `woocommerce_template_single_add_to_cart` kancadan çıkarılır (`unhook_native_single_add_to_cart`); `sticky.*add.?to.?cart` adlı kopya callback’ler `$wp_filter` taramasıyla düşer (tema CSS seçicisi yok). CSS yedek: tüm `form.cart` / `.single_add_to_cart_button` / `[class*="sticky-add-to-cart"]` gizlenir, döngü/ilgili/upsell/koleksiyon `:not()` ile görünür kalır. `woocommerce_is_purchasable` değişmez. Sunucu: bağış formu/`wdp_ajax_add_to_cart` değilse `woocommerce_add_to_cart_validation` + Store API `woocommerce_store_api_validate_add_to_cart` bağış ürününü reddeder (`should_reject_native_add_to_cart`: ürün bayrağı `yes` veya `auto_place=yes`) + `wc_add_notice` hata. Matris `native-cart-hidden`: 3 görünüm × 3 cihaz × 2 tema. PHPUnit `CartNativeAddToCartTest`. `includes/class-product-page-integration.php`, `includes/class-cart.php`.
 
 **Ürün sayfası giriş noktası (E2E, 3G):** Sayfada görünür tam olarak **bir** eklenti girişi (gömülü form veya eklenti düğmesi — `data-wdp-display` / `.wdp-open-side-panel` / `.wdp-open-modal` / `.hdf-donation-modal-wrapper.wdp-donation-form`; tema düğmesi sayılmaz). 0 veya >1 → HATA. Düğmeyse tıklanır, kabuk (panel/popup) gerçek tipe göre açılır; form ise doğrudan. `resolve_product_page_display` farklıysa **UYARI** (`ayar inline, sayfa düğme gösteriyor — tema/oluşturucu şablonu`) — HATA değil (Avada oluşturucu şablonu). Döngü/ilgili kartlar `LOOP_EXCLUDE_SEL` (klasik + Woo blok + `.wdp-loop-donate`). Matris `product-entry-button`: TT5 kısa kod `[wdp_donation_button_panel]`. `tests/e2e/helpers/{product-page-ui,capture,matrix-scenarios}.mjs`.
 

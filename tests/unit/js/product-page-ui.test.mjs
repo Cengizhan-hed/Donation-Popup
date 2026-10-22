@@ -8,8 +8,11 @@ import {
   expectedPrimaryKind,
   resolveDisplayFromSources,
   classifyVisiblePluginEntry,
+  classifyNativeCartVisibility,
   displayMismatchWarning,
   LOOP_EXCLUDE_SEL,
+  NATIVE_CART_FORM_SEL,
+  STICKY_ATC_SEL,
 } from '../../../tests/e2e/helpers/product-page-ui.mjs';
 
 describe('normalizeDisplay', () => {
@@ -71,6 +74,35 @@ describe('classifyVisiblePluginEntry', () => {
     const twoBtns = classifyVisiblePluginEntry({ inlineVisible: 0, panelVisible: 1, popupVisible: 1 });
     assert.equal(twoBtns.ok, false);
     assert.equal(twoBtns.total, 2);
+  });
+});
+
+describe('classifyNativeCartVisibility', () => {
+  it('0 yerel form/düğme/sticky geçer', () => {
+    assert.equal(classifyNativeCartVisibility({ nativeFormsVisible: 0, nativeButtonsVisible: 0, stickyVisible: 0 }).ok, true);
+  });
+
+  it('görünür yerel form HATA', () => {
+    const r = classifyNativeCartVisibility({ nativeFormsVisible: 1, probe: 'chain=form.cart < div.summary' });
+    assert.equal(r.ok, false);
+    assert.match(r.reason, /form=1/);
+    assert.match(r.reason, /chain=form\.cart/);
+  });
+
+  it('sticky HATA', () => {
+    const r = classifyNativeCartVisibility({ stickyVisible: 1 });
+    assert.equal(r.ok, false);
+    assert.match(r.reason, /sticky=1/);
+  });
+});
+
+describe('native selectors', () => {
+  it('tema sınıfı yok, döngü hariç', () => {
+    assert.match(NATIVE_CART_FORM_SEL, /form\.cart/);
+    assert.match(NATIVE_CART_FORM_SEL, /wdp-form/);
+    assert.doesNotMatch(NATIVE_CART_FORM_SEL, /storefront/);
+    assert.match(STICKY_ATC_SEL, /sticky-add-to-cart/);
+    assert.doesNotMatch(STICKY_ATC_SEL, /storefront/);
   });
 });
 

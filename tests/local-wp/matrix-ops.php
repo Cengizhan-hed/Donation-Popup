@@ -252,6 +252,30 @@ function wdp_matrix_wdp_settings() {
 }
 
 /**
+ * @param string $display inline|button_panel|button_popup
+ * @return array<string,mixed>
+ */
+function wdp_matrix_placement_display($display) {
+	$allowed = array( 'inline', 'button_panel', 'button_popup' );
+	if (!in_array($display, $allowed, true)) {
+		return array( 'ok' => false, 'error' => 'display geçersiz: ' . $display );
+	}
+	$place = get_option('wdp_placement_settings', array());
+	if (!is_array($place)) {
+		$place = array();
+	}
+	$place['auto_place'] = 'yes';
+	$place['display']    = $display;
+	$place['position']   = 'replace_cart';
+	update_option('wdp_placement_settings', $place, false);
+	wdp_matrix_checkpoint();
+	return array(
+		'ok'      => true,
+		'display' => $display,
+	);
+}
+
+/**
  * @return array<string,array<string,mixed>>
  */
 function wdp_matrix_catalog() {
@@ -439,11 +463,17 @@ function wdp_matrix_product_content($role, $mode) {
 			'mode' => '',
 		);
 	}
-	$php  = "<?php\nadd_action('wp_footer', static function () {\n";
+	$php  = "<?php\n";
+	$php .= "\$wdp_e2e_print_sc = static function () {\n";
+	$php .= "\tstatic \$done = false;\n";
+	$php .= "\tif (\$done) { return; }\n";
 	$php .= "\tif (!function_exists('is_product') || !is_product()) { return; }\n";
 	$php .= "\tif ((int) get_queried_object_id() !== " . (int) $id . ") { return; }\n";
+	$php .= "\t\$done = true;\n";
 	$php .= "\techo do_shortcode('[" . $tag . ' id="' . (int) $id . "\"]');\n";
-	$php .= "}, 20);\n";
+	$php .= "};\n";
+	$php .= "add_action('woocommerce_single_product_summary', \$wdp_e2e_print_sc, 31);\n";
+	$php .= "add_action('wp_footer', \$wdp_e2e_print_sc, 20);\n";
 	if (file_put_contents($file, $php) === false) {
 		return array( 'ok' => false, 'error' => 'mu-plugin yazılamadı' );
 	}
@@ -724,6 +754,8 @@ try {
 		$result = array_merge($result, wdp_matrix_checkpoint());
 	} elseif ($cmd === 'product-content') {
 		$result = array_merge($result, wdp_matrix_product_content($arg1 !== '' ? $arg1 : 'custom', $arg2));
+	} elseif ($cmd === 'placement-display') {
+		$result = array_merge($result, wdp_matrix_placement_display($arg1));
 	} else {
 		$result['error'] = 'bilinmeyen cmd';
 	}

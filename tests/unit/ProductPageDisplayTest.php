@@ -61,11 +61,59 @@ final class ProductPageDisplayTest extends TestCase {
 
 	public function test_hide_cart_css_spares_loop_forms(): void {
 		$css = WDP_Product_Page_Integration::hide_native_cart_css();
-		$this->assertStringContainsString('.summary form.cart', $css);
-		$this->assertStringContainsString('.entry-summary form.cart', $css);
+		$this->assertStringContainsString('form.cart:not(.wdp-form)', $css);
+		$this->assertStringContainsString('.related form.cart', $css);
+		$this->assertStringContainsString('.upsells form.cart', $css);
+		$this->assertStringContainsString('ul.products form.cart', $css);
+		$this->assertStringContainsString('wp-block-woocommerce-related-products', $css);
+		$this->assertStringContainsString('wp-block-woocommerce-product-collection', $css);
+		$this->assertStringContainsString('sticky-add-to-cart', $css);
 		$this->assertStringNotContainsString('.wdp-donation-product form.cart', $css);
-		$this->assertStringNotContainsString('ul.products', $css);
-		$this->assertStringNotContainsString('.related', $css);
+		$this->assertStringNotContainsString('.storefront', $css);
+		$this->assertStringNotContainsString('.fusion-', $css);
+		$this->assertStringNotContainsString('.ct-', $css);
+	}
+
+	public function test_unhook_removes_woo_single_add_to_cart(): void {
+		$this->product(41);
+		WDP_Test_State::$queried_id = 41;
+		WDP_Test_State::$is_product = true;
+		$GLOBALS['product']         = WDP_Test_State::$products[41];
+		add_action('woocommerce_single_product_summary', 'woocommerce_template_single_add_to_cart');
+		add_action('wp_footer', 'storefront_sticky_single_add_to_cart');
+		$GLOBALS['wp_filter']       = array(
+			'wp_footer' => (object) array(
+				'callbacks' => array(
+					999 => array(
+						array(
+							'function'      => 'storefront_sticky_single_add_to_cart',
+							'accepted_args' => 1,
+						),
+					),
+				),
+			),
+		);
+		WDP_Product_Page_Integration::on_wp();
+		$summary = WDP_Test_State::$actions['woocommerce_single_product_summary'] ?? array();
+		$footer  = WDP_Test_State::$actions['wp_footer'] ?? array();
+		$this->assertNotContains('woocommerce_template_single_add_to_cart', $summary);
+		$this->assertNotContains('storefront_sticky_single_add_to_cart', $footer);
+		$this->assertContains(array('WDP_Product_Page_Integration', 'render_fallback_placed_form'), $summary);
+		unset($GLOBALS['wp_filter']);
+	}
+
+	public function test_unhook_runs_when_auto_place_meta_off(): void {
+		$p = $this->product(42);
+		$p->update_meta_data('_wdp_auto_place', 'no');
+		WDP_Donation_Scope::flush(42);
+		WDP_Test_State::$queried_id = 42;
+		WDP_Test_State::$is_product = true;
+		$GLOBALS['product']         = $p;
+		add_action('woocommerce_single_product_summary', 'woocommerce_template_single_add_to_cart');
+		WDP_Product_Page_Integration::on_wp();
+		$summary = WDP_Test_State::$actions['woocommerce_single_product_summary'] ?? array();
+		$this->assertNotContains('woocommerce_template_single_add_to_cart', $summary);
+		$this->assertNotContains(array('WDP_Product_Page_Integration', 'render_fallback_placed_form'), $summary);
 	}
 
 	public function test_placed_markup_panel_contains_display_attr(): void {

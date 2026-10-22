@@ -13,6 +13,12 @@ export const DISPLAY_MODES = Object.freeze(['inline', 'button_popup', 'button_pa
 export const LOOP_EXCLUDE_SEL =
   '.related, .upsells, ul.products, .wdp-list, .wdp-donations, .fusion-post-cards, .wp-block-woocommerce-related-products, .wp-block-woocommerce-product-collection, .wdp-loop-donate';
 
+/** Yerel Woo sepete ekle (eklenti formu değil). */
+export const NATIVE_CART_FORM_SEL = 'form.cart:not(.wdp-form):not(.wdp-donation-form-fields)';
+export const NATIVE_ATC_BTN_SEL =
+  '.single_add_to_cart_button:not(.wdp-donate-button):not(.wdp-open-modal):not(.wdp-loop-donate)';
+export const STICKY_ATC_SEL = '[class*="sticky-add-to-cart"], [class*="sticky"][class*="add-to-cart"]';
+
 /**
  * @param {unknown} raw
  * @returns {''|'inline'|'button_popup'|'button_panel'}
@@ -94,6 +100,85 @@ export function displayMismatchWarning(resolvedDisplay, actualKind) {
   const page =
     actual === 'form' ? 'form' : actual === 'panel' ? 'düğme (panel)' : actual === 'popup' ? 'düğme (popup)' : actual;
   return `ayar ${setting}, sayfa ${page} gösteriyor — tema/oluşturucu şablonu`;
+}
+
+/**
+ * Yerel sepete ekle görünür mü (döngü kartları hariç).
+ *
+ * @param {{ nativeFormsVisible?: number, nativeButtonsVisible?: number, stickyVisible?: number, probe?: string }} info
+ * @returns {{ ok: boolean, reason: string }}
+ */
+export function classifyNativeCartVisibility(info) {
+  const forms = Number(info?.nativeFormsVisible || 0);
+  const btns = Number(info?.nativeButtonsVisible || 0);
+  const sticky = Number(info?.stickyVisible || 0);
+  if (forms > 0 || btns > 0 || sticky > 0) {
+    const extra = info?.probe ? ` ${info.probe}` : '';
+    return { ok: false, reason: `yerel sepete ekle görünür form=${forms} düğme=${btns} sticky=${sticky}${extra}` };
+  }
+  return { ok: true, reason: '' };
+}
+
+/**
+ * Tarayıcıda çalışır (page.evaluate). Döngü hariç yerel form/düğme/sticky + ebeveyn zinciri.
+ *
+ * @param {{ excludeSel: string, formSel: string, btnSel: string, stickySel: string }} args
+ * @returns {{ nativeFormsVisible: number, nativeButtonsVisible: number, stickyVisible: number, probe: string, forms: Array<object> }}
+ */
+export function nativeCartProbeBrowser(args) {
+  const excludeSel = args.excludeSel;
+  const formSel = args.formSel;
+  const btnSel = args.btnSel;
+  const stickySel = args.stickySel;
+  const excluded = (el) => !!(el && el.closest && el.closest(excludeSel));
+  const vis = (el) => {
+    if (!el) return false;
+    const st = getComputedStyle(el);
+    const r = el.getBoundingClientRect();
+    return (
+      st.display !== 'none' &&
+      st.visibility !== 'hidden' &&
+      Number.parseFloat(st.opacity || '1') > 0.05 &&
+      r.width > 4 &&
+      r.height > 4
+    );
+  };
+  const chain = (el) => {
+    const parts = [];
+    let n = el;
+    for (let i = 0; i < 8 && n && n !== document.body; i += 1) {
+      const id = n.id ? `#${n.id}` : '';
+      const raw = n.className && typeof n.className === 'string' ? n.className.trim() : '';
+      const cls = raw
+        ? `.${raw
+            .split(/\s+/)
+            .slice(0, 5)
+            .join('.')}`
+        : '';
+      parts.push(`${(n.tagName || '').toLowerCase()}${id}${cls}`);
+      n = n.parentElement;
+    }
+    return parts.join(' < ');
+  };
+  const forms = Array.from(document.querySelectorAll(formSel)).filter((el) => !excluded(el));
+  const btns = Array.from(document.querySelectorAll(btnSel)).filter((el) => !excluded(el));
+  const sticky = Array.from(document.querySelectorAll(stickySel)).filter((el) => !excluded(el));
+  const visForms = forms.filter(vis);
+  const visBtns = btns.filter(vis);
+  const visSticky = sticky.filter(vis);
+  const sample = visForms[0] || visBtns[0] || visSticky[0] || forms[0] || null;
+  const st = sample ? getComputedStyle(sample) : null;
+  const probe = sample
+    ? `tag=${sample.tagName} chain=${chain(sample)} display=${st && st.display} vis=${st && st.visibility} pos=${st && st.position}`
+    : 'yerel form yok';
+  return {
+    nativeFormsVisible: visForms.length,
+    nativeButtonsVisible: visBtns.length,
+    stickyVisible: visSticky.length,
+    nativeCart: visForms.length,
+    probe,
+    forms: visForms.slice(0, 3).map((el) => ({ chain: chain(el), display: getComputedStyle(el).display })),
+  };
 }
 
 /**
