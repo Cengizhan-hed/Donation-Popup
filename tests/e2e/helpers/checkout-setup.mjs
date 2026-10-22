@@ -4,7 +4,7 @@
  * Sipariş tamamlama yalnız yerel WordPress (test:local-wp).
  */
 import { wp, loadDeployEnvSilent } from './wp-remote.mjs';
-import { getActiveProfile, peekActiveProfile } from './profile.mjs';
+import { getActiveProfile, peekActiveProfile, isRemoteProfile } from './profile.mjs';
 
 const OFFLINE = ['cheque', 'bacs', 'cod'];
 
@@ -107,12 +107,16 @@ export async function prepareCheckoutEnv() {
     }
   };
 
+  const remote = isRemoteProfile(profile);
   return {
     checkoutUrl,
     offline: existing ? { id: existing.id, title: existing.title || existing.id } : null,
     mutated: false,
     restore,
-    skipOrderReason:
-      'uzak ortamda sipariş oluşturulmaz (yalnız yerel WordPress). Ödeme sayfası salt okunur.',
+    skipOrderReason: remote
+      ? 'uzak ortamda sipariş oluşturulmaz (yalnız yerel WordPress). Ödeme sayfası salt okunur (checkout-view-only).'
+      : existing
+        ? ''
+        : 'Sipariş tamamlama atlandı (çevrimdışı yöntem yok)',
   };
 }

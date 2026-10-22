@@ -78,6 +78,7 @@ async function main() {
     shots = [],
     noSideCart = false,
     a11yFindings = [],
+    blocked_trackers = { total: 0, byHost: {} },
   } = await captureAll({
     env,
     outDir,
@@ -135,6 +136,7 @@ async function main() {
     a11yFindings,
     baselineDir: path.relative(ROOT, baselineDir),
     currentDir: path.relative(ROOT, outDir),
+    blocked_trackers,
   });
 
   console.log('Report:', reportFile);

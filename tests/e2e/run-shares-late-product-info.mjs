@@ -20,6 +20,7 @@ import {
 } from './helpers/checks.mjs';
 import { SEL } from './helpers/selectors.mjs';
 import { peekActiveProfile } from './helpers/profile.mjs';
+import { installBrowserGuard } from './helpers/network-guard.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -261,6 +262,7 @@ export async function runSharesLateProductInfoChecks({
 async function main() {
   const env = loadE2EEnv();
   const browser = await chromium.launch();
+  installBrowserGuard(browser, env);
   const contextOpts = {
     viewport: { width: 1440, height: 900 },
     reducedMotion: 'reduce',

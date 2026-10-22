@@ -6,6 +6,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { chromium } from '@playwright/test';
 import { ROOT } from './env.mjs';
+import { installBrowserGuard } from './network-guard.mjs';
+import { CURRENT_DIR } from './run-io.mjs';
 
 export const AUTH_DIR = path.join(ROOT, 'tests/e2e/.auth');
 export const AUTH_FILE = path.join(AUTH_DIR, 'user.json');
@@ -27,6 +29,105 @@ export function getAuthFile() {
 }
 const DEBUG_DIR = path.join(ROOT, 'build/e2e/debug');
 const LOGIN_FAILURE_SHOT = path.join(DEBUG_DIR, 'login-failure.png');
+
+export const AUTH_NO_RETRY =
+  'Giriş başarısız; Wordfence kilidini önlemek için tekrar denenmedi';
+
+/** @type {Set<string>} */
+const validatedProfileIds = new Set();
+/** @type {Map<string, Promise<string>>} */
+const inflightAuth = new Map();
+/** @type {number} */
+let formLoginAttempts = 0;
+
+export function getFormLoginAttemptCount() {
+  return formLoginAttempts;
+}
+
+export function resetAuthStateForTests() {
+  validatedProfileIds.clear();
+  inflightAuth.clear();
+  formLoginAttempts = 0;
+  inMemoryAdminCookies = null;
+  authFileOverride = null;
+  try {
+    if (fs.existsSync(CURRENT_DIR)) {
+      for (const name of fs.readdirSync(CURRENT_DIR)) {
+        if (name.startsWith('.auth-ok-')) {
+          fs.unlinkSync(path.join(CURRENT_DIR, name));
+        }
+      }
+    }
+  } catch (e) {
+    console.error(`[e2e:catch-fail] resetAuth markers: ${e && e.message ? e.message : e}`);
+  }
+}
+
+/**
+ * @param {string} profileId
+ */
+function authValidatedMarker(profileId) {
+  const id = String(profileId || 'default').replace(/[^a-z0-9._-]/gi, '') || 'default';
+  return path.join(CURRENT_DIR, `.auth-ok-${id}`);
+}
+
+function markAuthValidated(profileId) {
+  const id = String(profileId || 'default');
+  validatedProfileIds.add(id);
+  try {
+    fs.mkdirSync(CURRENT_DIR, { recursive: true });
+    fs.writeFileSync(authValidatedMarker(id), String(Date.now()), 'utf8');
+  } catch {
+    /* current dir yoksa süreç içi Set yeter */
+  }
+}
+
+function wasAuthValidated(profileId) {
+  const id = String(profileId || 'default');
+  if (validatedProfileIds.has(id)) return true;
+  try {
+    return fs.existsSync(authValidatedMarker(id));
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * @param {string} lockDir
+ * @param {() => Promise<T>} fn
+ * @template T
+ */
+async function withAuthLock(lockDir, fn) {
+  const started = Date.now();
+  while (Date.now() - started < 120000) {
+    try {
+      fs.mkdirSync(lockDir, { recursive: false });
+      try {
+        return await fn();
+      } finally {
+        try {
+          fs.rmdirSync(lockDir);
+        } catch {
+          /* kilit bırakılamadı */
+        }
+      }
+    } catch (e) {
+      if (!e || e.code !== 'EEXIST') throw e;
+      const staleMs = 180000;
+      try {
+        const st = fs.statSync(lockDir);
+        if (Date.now() - st.mtimeMs > staleMs) {
+          fs.rmdirSync(lockDir);
+          continue;
+        }
+      } catch {
+        /* yarış */
+      }
+      await new Promise((r) => setTimeout(r, 50));
+    }
+  }
+  throw new Error('ensureAuth: oturum kilidi zaman aşımı');
+}
 
 /** Real 2FA / OTP fields only — no free-text keyword matching. */
 const TWO_FA_INPUT_RE =
@@ -420,6 +521,7 @@ async function authViaWpCliCookie(env) {
   }
   const browser = await chromium.launch();
   try {
+    installBrowserGuard(browser, env);
     const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
     if (env?._profile?.comingSoon) {
       const { applyComingSoonBypass } = await import('./coming-soon.mjs');
@@ -434,10 +536,13 @@ async function authViaWpCliCookie(env) {
       return null;
     }
     inMemoryAdminCookies = cookies;
+    const dest = getAuthFile();
+    fs.mkdirSync(path.dirname(dest), { recursive: true });
+    await context.storageState({ path: dest });
     await context.close();
     clearLoginFailureShot();
-    console.log('Giriş başarılı (wpCliAuth, bellek)');
-    return 'memory';
+    console.log('Giriş başarılı (wpCliAuth, storageState)');
+    return dest;
   } finally {
     await browser.close().catch(() => {});
   }
@@ -445,42 +550,21 @@ async function authViaWpCliCookie(env) {
 
 /**
  * @param {Record<string, string>} env
+ * @param {import('@playwright/test').BrowserContext} context
  */
-export async function ensureAuth(env) {
-  if (env && env.E2E_PROFILE_ID) setAuthFileForProfile(env.E2E_PROFILE_ID);
-  if (inMemoryAdminCookies && inMemoryAdminCookies.length) {
-    return 'memory';
-  }
-  fs.mkdirSync(AUTH_DIR, { recursive: true });
-  const dest = getAuthFile();
+async function defaultValidateStorageState(env, context) {
+  return storageStateOpensAdmin(context, env);
+}
 
-  if (!env?._profile?.wpCliAuth && fs.existsSync(dest)) {
-    const probe = await chromium.launch();
-    try {
-      const context = await probe.newContext({
-        viewport: { width: 1440, height: 900 },
-        storageState: dest,
-      });
-      const ok = await storageStateOpensAdmin(context, env);
-      await context.close();
-      if (ok) {
-        clearLoginFailureShot();
-        return dest;
-      }
-    } finally {
-      await probe.close().catch(() => {});
-    }
-  }
-
-  if (env?._profile?.wpCliAuth) {
-    const viaCli = await authViaWpCliCookie(env);
-    if (viaCli) return viaCli;
-    throw new Error(
-      'wpCliAuth: WP-CLI oturum çerezi ile /wp-admin açılamadı (form girişi atlandı).'
-    );
-  }
-
+/**
+ * Form girişi — tek deneme. Başarısızsa tekrar yok (Wordfence).
+ * @param {Record<string, string>} env
+ * @returns {Promise<string>}
+ */
+async function defaultFormLogin(env) {
+  formLoginAttempts += 1;
   const browser = await chromium.launch();
+  installBrowserGuard(browser, env);
   const context = await browser.newContext({
     viewport: { width: 1440, height: 900 },
   });
@@ -488,7 +572,6 @@ export async function ensureAuth(env) {
     const { applyComingSoonBypass } = await import('./coming-soon.mjs');
     await applyComingSoonBypass(context, env._profile, env);
   }
-  // Keep traces off during login so credentials never land in a trace.
   await context.tracing.stop().catch(() => {});
   const page = await context.newPage();
 
@@ -503,7 +586,9 @@ export async function ensureAuth(env) {
       timeout: 60000,
     });
     status = res ? res.status() : 0;
-    await page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {});
+    await page.waitForLoadState('networkidle', { timeout: 15000 }).catch((e) => {
+      console.error(`[e2e:catch-fail] login networkidle: ${e && e.message ? e.message : e}`);
+    });
 
     const formKind = await detectLoginForm(page);
     if (!formKind) {
@@ -512,11 +597,10 @@ export async function ensureAuth(env) {
         status,
         null,
         env,
-        'Giriş formu bulunamadı (#user_login / #username).'
+        `${AUTH_NO_RETRY} Giriş formu bulunamadı (#user_login / #username).`
       );
     }
 
-    // Capture before password fill; published only on failure.
     fs.mkdirSync(DEBUG_DIR, { recursive: true });
     prePasswordShot = path.join(DEBUG_DIR, '.login-pre.png');
     await page.screenshot({ path: prePasswordShot, fullPage: true });
@@ -525,19 +609,25 @@ export async function ensureAuth(env) {
       await page.fill('#user_login', env.E2E_USER);
       await page.fill('#user_pass', env.E2E_PASS);
       await Promise.all([
-        page.waitForNavigation({ waitUntil: 'domcontentloaded', timeout: 60000 }).catch(() => {}),
+        page.waitForNavigation({ waitUntil: 'domcontentloaded', timeout: 60000 }).catch((e) => {
+          console.error(`[e2e:catch-fail] login nav wp: ${e && e.message ? e.message : e}`);
+        }),
         page.click('#wp-submit'),
       ]);
     } else {
       await page.fill('#username', env.E2E_USER);
       await page.fill('#password', env.E2E_PASS);
       await Promise.all([
-        page.waitForNavigation({ waitUntil: 'domcontentloaded', timeout: 60000 }).catch(() => {}),
+        page.waitForNavigation({ waitUntil: 'domcontentloaded', timeout: 60000 }).catch((e) => {
+          console.error(`[e2e:catch-fail] login nav woo: ${e && e.message ? e.message : e}`);
+        }),
         page.click('button[name="login"]'),
       ]);
     }
 
-    await page.waitForLoadState('domcontentloaded').catch(() => {});
+    await page.waitForLoadState('domcontentloaded').catch((e) => {
+      console.error(`[e2e:catch-fail] login domcontentloaded: ${e && e.message ? e.message : e}`);
+    });
 
     const postUrl = page.url();
     const postHtml = await page.content().catch(() => '');
@@ -553,19 +643,18 @@ export async function ensureAuth(env) {
         status,
         prePasswordShot,
         env,
-        'Giriş sonrası ek doğrulama isteniyor.'
+        `${AUTH_NO_RETRY} Giriş sonrası ek doğrulama isteniyor.`
       );
     }
 
     if (classified.outcome === 'captcha') {
-      await failLogin(page, status, prePasswordShot, env, 'Girişte CAPTCHA engeli var.');
+      await failLogin(page, status, prePasswordShot, env, `${AUTH_NO_RETRY} Girişte CAPTCHA engeli var.`);
     }
 
     if (classified.outcome === 'login_error') {
-      await failLogin(page, status, prePasswordShot, env, 'Giriş formu hata döndürdü.');
+      await failLogin(page, status, prePasswordShot, env, `${AUTH_NO_RETRY} Giriş formu hata döndürdü.`);
     }
 
-    // Not definite success and not a login-screen challenge (e.g. Woo my-account): probe /wp-admin/.
     const admin = await adminLooksLoggedIn(page, env);
     if (!admin.ok) {
       await failLogin(
@@ -573,11 +662,15 @@ export async function ensureAuth(env) {
         admin.status || status,
         prePasswordShot,
         env,
-        'Giriş sonrası /wp-admin/ açılamadı.'
+        `${AUTH_NO_RETRY} Giriş sonrası /wp-admin/ açılamadı.`
       );
     }
 
     return await finishSuccessfulLogin(context);
+  } catch (e) {
+    const msg = String(e && e.message ? e.message : e);
+    if (msg.includes(AUTH_NO_RETRY)) throw e;
+    throw new Error(`${AUTH_NO_RETRY} ${msg}`);
   } finally {
     if (prePasswordShot && fs.existsSync(prePasswordShot)) {
       try {
@@ -587,5 +680,95 @@ export async function ensureAuth(env) {
       }
     }
     await browser.close().catch(() => {});
+  }
+}
+
+/**
+ * Yönetici oturumu: uzak ortamda koşu başına değil, ortam başına bir kez.
+ * Paralel işçiler aynı storageState dosyasını paylaşır (kilit).
+ *
+ * @param {Record<string, string>} env
+ * @param {{
+ *   validateStorageState?: (env: Record<string,string>, context: import('@playwright/test').BrowserContext) => Promise<boolean>,
+ *   performFormLogin?: (env: Record<string,string>) => Promise<string>,
+ *   launchBrowser?: () => Promise<import('@playwright/test').Browser>,
+ * }} [deps]
+ */
+export async function ensureAuth(env, deps = {}) {
+  if (env && env.E2E_PROFILE_ID) setAuthFileForProfile(env.E2E_PROFILE_ID);
+  const profileId = String(env?.E2E_PROFILE_ID || 'default');
+
+  if (inflightAuth.has(profileId)) {
+    return inflightAuth.get(profileId);
+  }
+
+  const work = (async () => {
+    if (inMemoryAdminCookies && inMemoryAdminCookies.length) {
+      return 'memory';
+    }
+    fs.mkdirSync(AUTH_DIR, { recursive: true });
+    const dest = getAuthFile();
+    const lockDir = `${dest}.lock`;
+    const validateStorageState = deps.validateStorageState || defaultValidateStorageState;
+    const performFormLogin = deps.performFormLogin || defaultFormLogin;
+    const launchBrowser = deps.launchBrowser || (() => chromium.launch());
+
+    return withAuthLock(lockDir, async () => {
+      if (inMemoryAdminCookies && inMemoryAdminCookies.length) {
+        return 'memory';
+      }
+
+      if (fs.existsSync(dest)) {
+        if (wasAuthValidated(profileId)) {
+          clearLoginFailureShot();
+          return dest;
+        }
+        const probe = await launchBrowser();
+        try {
+          installBrowserGuard(probe, env);
+          const context = await probe.newContext({
+            viewport: { width: 1440, height: 900 },
+            storageState: dest,
+          });
+          const ok = await validateStorageState(env, context);
+          await context.close();
+          if (ok) {
+            markAuthValidated(profileId);
+            clearLoginFailureShot();
+            return dest;
+          }
+        } finally {
+          await probe.close().catch(() => {});
+        }
+      }
+
+      if (env?._profile?.wpCliAuth) {
+        const viaCli = await authViaWpCliCookie(env);
+        if (viaCli) {
+          markAuthValidated(profileId);
+          return viaCli;
+        }
+        throw new Error(
+          'wpCliAuth: WP-CLI oturum çerezi ile /wp-admin açılamadı (form girişi atlandı).'
+        );
+      }
+
+      try {
+        const result = await performFormLogin(env);
+        markAuthValidated(profileId);
+        return result;
+      } catch (e) {
+        const msg = String(e && e.message ? e.message : e);
+        if (msg.includes(AUTH_NO_RETRY)) throw e;
+        throw new Error(`${AUTH_NO_RETRY} ${msg}`);
+      }
+    });
+  })();
+
+  inflightAuth.set(profileId, work);
+  try {
+    return await work;
+  } finally {
+    inflightAuth.delete(profileId);
   }
 }

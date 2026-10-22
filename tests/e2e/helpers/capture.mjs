@@ -11,6 +11,14 @@ import { areaIncludes } from './area-filter.mjs';
 import { applyComingSoonBypass, comingSoonQuery } from './coming-soon.mjs';
 import { STABILIZE_SHOT_CSS, hideComingSoonNoticeForShot } from './stabilize-shot-css.mjs';
 import { ensureAuth, getAuthFile, getInMemoryAdminCookies } from './auth.mjs';
+import {
+  installBrowserGuard,
+  applyNetworkGuard,
+  guardOptionsFromEnv,
+  resetBlockedTrackers,
+  snapshotBlockedTrackers,
+  consumeOrderBlocks,
+} from './network-guard.mjs';
 import { runMobileA11yChecks } from './mobile-a11y.mjs';
 import { runDonationFlowChecks } from './donation-flow.mjs';
 import { prepareCheckoutEnv } from './checkout-setup.mjs';
@@ -81,6 +89,7 @@ const MOBILE = { width: 390, height: 844 };
  */
 async function contextWithBypass(browser, opts, env) {
   const ctx = await browser.newContext(opts);
+  await applyNetworkGuard(ctx, guardOptionsFromEnv(env));
   try {
     const profile = getActiveProfile();
     if (profile?.comingSoon && env) {
@@ -93,7 +102,7 @@ async function contextWithBypass(browser, opts, env) {
 }
 
 /**
- * Ziyaretçi bağlamı: share çerezi (Coming soon), oturum yok.
+ * Ziyaretçi bağlamı: share çerezi (Coming soon), oturum yok (storageState yok).
  * @param {import('@playwright/test').Browser} browser
  * @param {Record<string,string>} env
  * @param {object} [extra]
@@ -2504,6 +2513,7 @@ export async function captureAll({
       device: device.id,
       profileId: profile.id,
       a11yFindings: [],
+      blocked_trackers: { total: 0, byHost: {} },
     };
   }
   let guardOrder = null;
@@ -2558,7 +2568,11 @@ export async function captureAll({
   }
 
   const contextOpts = { ...device.context };
+  resetBlockedTrackers();
   const browser = await device.browserType.launch();
+  installBrowserGuard(browser, env, {
+    checkoutPath: checkoutEnv?.checkoutUrl || '/checkout/',
+  });
   const guest = await asVisitor(browser, env, contextOpts);
   const authed = await asAdmin(browser, env, contextOpts);
   const catalogCtx = profile.comingSoon ? authed : guest;
@@ -3892,6 +3906,19 @@ export async function captureAll({
     ),
   ].sort();
 
+  const blockedOrders = consumeOrderBlocks();
+  for (const requestPath of blockedOrders) {
+    failures.push(
+      makeFailure({
+        check: 'remote-order-block',
+        description: `REMOTE-ORDER-BLOCKED: ${requestPath}`,
+      })
+    );
+    functionalStats.failed += 1;
+  }
+
+  const blockedTrackers = snapshotBlockedTrackers();
+
   return {
     shots,
     screens,
@@ -3908,5 +3935,6 @@ export async function captureAll({
     device: device.id,
     profileId: profile.id,
     a11yFindings,
+    blocked_trackers: blockedTrackers,
   };
 }

@@ -11,6 +11,7 @@ import path from 'node:path';
 import { chromium } from '@playwright/test';
 import { loadE2EEnv, ROOT, productPaths, withCacheBust } from './helpers/env.mjs';
 import { ensureAuth, AUTH_FILE } from './helpers/auth.mjs';
+import { installBrowserGuard } from './helpers/network-guard.mjs';
 import { resolveAllProductPaths, resolveProductIdBySlug } from './helpers/checks.mjs';
 import {
   readProductSadakaAdminConfig,
@@ -294,6 +295,7 @@ async function main() {
   await ensureAuth(env);
 
   const browser = await chromium.launch();
+  installBrowserGuard(browser, env);
   const contextOpts = {
     viewport: { width: 1440, height: 900 },
     reducedMotion: /** @type {'reduce'} */ ('reduce'),

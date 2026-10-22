@@ -66,6 +66,28 @@ export function peekActiveProfile() {
 }
 
 /**
+ * Uzak/yerel ayrımı profil JSON'una `remote` yazılmadan türetilir.
+ * `profile.remote` boolean ise o kullanılır; yoksa `ssh.alias` doluysa uzak.
+ * Yerel kanıt profili (`id: local`) her zaman yerel kalır.
+ *
+ * @param {object|null|undefined} profile
+ * @returns {boolean}
+ */
+export function isRemoteProfile(profile) {
+  if (!profile || typeof profile !== 'object') return false;
+  if (typeof profile.remote === 'boolean') return profile.remote;
+  if (String(profile.ssh?.alias || '').trim()) return true;
+  const id = String(profile.id || '').toLowerCase();
+  if (id === 'local') return false;
+  const hosts = Array.isArray(profile.allowedHosts) ? profile.allowedHosts : [];
+  for (const h of hosts) {
+    const x = String(h || '').toLowerCase();
+    if (x && x !== '127.0.0.1' && x !== 'localhost') return true;
+  }
+  return false;
+}
+
+/**
  * @param {object} profile
  * @param {string} role custom|fixed|shares|campaign
  * @returns {object|null}
