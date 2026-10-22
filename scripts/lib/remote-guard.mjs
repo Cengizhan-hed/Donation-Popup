@@ -30,6 +30,25 @@ export const FREEZE_MESSAGE =
 export const OPERATOR_GATE_MESSAGE =
   'Uzak işlemler yalnız Claude tarafından merkezi koruma üzerinden çalıştırılır.';
 
+export const UNIT_TEST_SPAWN_MESSAGE =
+  'Birim testte gerçek ssh/scp/sftp/rsync çalıştırılamaz. Sahte ikili enjekte edin (spawnImpl).';
+
+/**
+ * node --test / npm test altında gerçek uzak ikili yok.
+ * @param {NodeJS.ProcessEnv} [env]
+ */
+export function isUnitTestProcess(env = process.env) {
+  const e = env || {};
+  if (String(e.NODE_TEST_CONTEXT || '') !== '') return true;
+  if (String(e.WDP_UNIT_TEST || '') === '1') return true;
+  const life = String(e.npm_lifecycle_event || '');
+  if (life === 'test' || life === 'e2e:selftest') return true;
+  if (Array.isArray(process.execArgv) && process.execArgv.some((a) => a === '--test' || String(a).startsWith('--test-'))) {
+    return true;
+  }
+  return false;
+}
+
 /**
  * Cursor ajan kabuğunda görülen adlar (değer yok).
  * Editörden gelenler HARİÇ: CURSOR_EXTENSION_HOST_ROLE, CURSOR_LAYOUT,
@@ -258,7 +277,7 @@ export function assertRemoteAllowed(opts = {}) {
  * @param {string} bin
  * @param {string[]} args
  * @param {import('node:child_process').SpawnSyncOptions} [spawnOpts]
- * @param {{ siteUrl?: string, wpPath?: string, alias?: string, localPack?: boolean, env?: NodeJS.ProcessEnv }} [guardOpts]
+ * @param {{ siteUrl?: string, wpPath?: string, alias?: string, localPack?: boolean, env?: NodeJS.ProcessEnv, freezePath?: string, spawnImpl?: Function }} [guardOpts]
  */
 export function spawnGuarded(bin, args, spawnOpts = {}, guardOpts = {}) {
   const base = path.basename(String(bin));
@@ -275,16 +294,22 @@ export function spawnGuarded(bin, args, spawnOpts = {}, guardOpts = {}) {
       rsyncDest: parsed.rsyncDest,
       localPack: !!guardOpts.localPack,
       env: guardOpts.env,
+      freezePath: guardOpts.freezePath,
     });
   }
 
   const remoteSsh = REMOTE_BINS.has(base) && !(guardOpts.localPack && base === 'rsync' && !isRemoteRsync(list));
-  let res = spawnSync(bin, list, spawnOpts);
+  const spawnImpl = typeof guardOpts.spawnImpl === 'function' ? guardOpts.spawnImpl : null;
+  if (remoteSsh && isUnitTestProcess(process.env) && !spawnImpl) {
+    throw new Error(UNIT_TEST_SPAWN_MESSAGE);
+  }
+  const run = spawnImpl || spawnSync;
+  let res = run(bin, list, spawnOpts);
   if (remoteSsh && isSshConnectionError(res)) {
     let retries = 0;
     while (retries < MAX_SSH_RETRIES) {
       retries += 1;
-      res = spawnSync(bin, list, spawnOpts);
+      res = run(bin, list, spawnOpts);
       if (!isSshConnectionError(res)) break;
     }
   }

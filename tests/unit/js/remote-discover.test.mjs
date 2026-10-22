@@ -61,7 +61,7 @@ describe('remote-discover komut listesi', () => {
   it('uzak wp komutunda --path var, skip-themes yok', () => {
     for (const tail of getDiscoverWpTails()) {
       const cmd = buildRemoteWpCommand('~/www/staging30.hedefdernegi.org/public_html', tail);
-      assert.match(cmd, /--path='/);
+      assert.match(cmd, /--path=/);
       assert.doesNotMatch(cmd, /--skip-themes/);
       assert.doesNotMatch(cmd, /--skip-plugins/);
       assert.match(cmd, /^wp /);

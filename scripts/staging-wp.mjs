@@ -10,7 +10,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadDeployEnvSilent, remote, resolveWpPath, setActiveDeployEnvFile } from '../tests/e2e/helpers/wp-remote.mjs';
 import { TRASH_REPORT_EVAL_FILE } from './lib/ikram-wp-guard.mjs';
-import { validateRemoteSiteUrl, buildGuardedEvalFileCommand } from './lib/deploy-guards.mjs';
+import { validateRemoteSiteUrl, buildGuardedEvalFileCommand, wpPathFlag } from './lib/deploy-guards.mjs';
 import { loadProfile, resolveAllowedRemoteTarget, setActiveProfile } from '../tests/e2e/helpers/profile.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -28,7 +28,7 @@ function runEvalFileReadOnly(env, relFile) {
   if (/\b(wp_delete_|wp_trash_|wp_untrash_|wp_update_post|wp_insert_post|update_option|delete_option|update_post_meta)\b/i.test(src)) {
     fail(`Salt okunur rapor dosyası yazma çağrısı içeriyor: ${relFile}`);
   }
-  const wpPath = resolveWpPath(env);
+  const wpPath = String(env.DEPLOY_WP_PATH || resolveWpPath(env)).trim();
   const b64 = fs.readFileSync(local).toString('base64');
   const out = remote(env, buildGuardedEvalFileCommand(wpPath, { tmpPrefix: 'wdp-read', b64 }));
   console.log(out);
@@ -43,8 +43,8 @@ function main() {
   if (!loaded.ok) fail(`staging:wp: ${loaded.reason}`);
   if (loaded.env.DEPLOY_SSH_ALIAS !== resolved.alias) fail('eşleşmiyor');
   const env = loaded.env;
-  const wpPath = resolveWpPath(env);
-  const siteCheck = remote(env, `wp option get siteurl --path='${wpPath.replace(/'/g, `'\\''`)}'`);
+  const wpPath = String(env.DEPLOY_WP_PATH || resolveWpPath(env)).trim();
+  const siteCheck = remote(env, `wp option get siteurl ${wpPathFlag(wpPath)}`);
   const urlGuard = validateRemoteSiteUrl(siteCheck, env.DEPLOY_SITE_URL);
   if (!urlGuard.ok) fail(urlGuard.reason);
 

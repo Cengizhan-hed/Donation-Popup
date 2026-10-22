@@ -13,9 +13,12 @@ import {
   isRemoteRsync,
   redactSpawnArgs,
   parseRemoteInvocation,
+  spawnGuarded,
+  isUnitTestProcess,
   REMOTE_FREEZE_PATH,
   FREEZE_MESSAGE,
   OPERATOR_GATE_MESSAGE,
+  UNIT_TEST_SPAWN_MESSAGE,
   CURSOR_AGENT_ENV_KEYS,
 } from '../../../scripts/lib/remote-guard.mjs';
 import { scanDirectRemoteSpawns } from '../../../scripts/lib/live-target-scan.mjs';
@@ -144,6 +147,82 @@ describe('remote-guard', () => {
     ]);
     assert.equal(p.alias, 'hedef-staging');
     assert.match(p.remoteCommand, /wp option get/);
+  });
+
+  it('spawnGuarded birim testte gerçek ssh atmaz (CLAUDECODE=1, freeze yok)', () => {
+    assert.equal(isUnitTestProcess(process.env), true);
+    const missingFreeze = path.join(os.tmpdir(), 'wdp-no-freeze-missing');
+    assert.throws(
+      () =>
+        spawnGuarded(
+          'ssh',
+          ['-o', 'BatchMode=yes', 'hedef-staging', 'true'],
+          {},
+          {
+            env: CLAUDE_ONLY,
+            freezePath: missingFreeze,
+            alias: 'hedef-staging',
+            wpPath: '~/www/staging30.hedefdernegi.org/public_html',
+            siteUrl: 'https://staging30.hedefdernegi.org',
+          }
+        ),
+      (e) => {
+        assert.equal(e.message, UNIT_TEST_SPAWN_MESSAGE);
+        return true;
+      }
+    );
+  });
+
+  it('freeze dosyası testte verilir; spawnGuarded freeze ile RED (ssh yok)', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'wdp-freeze-'));
+    const freeze = path.join(dir, 'REMOTE_FREEZE');
+    fs.writeFileSync(freeze, 'lock');
+    try {
+      assert.throws(
+        () =>
+          spawnGuarded(
+            'ssh',
+            ['hedef-staging', 'true'],
+            {},
+            {
+              env: CLAUDE_ONLY,
+              freezePath: freeze,
+              alias: 'hedef-staging',
+              wpPath: '~/www/staging30.hedefdernegi.org/public_html',
+              siteUrl: 'https://staging30.hedefdernegi.org',
+            }
+          ),
+        (e) => {
+          assert.equal(e.message, FREEZE_MESSAGE);
+          return true;
+        }
+      );
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('spawnImpl enjeksiyonu birim testte sahte ssh çalıştırır', () => {
+    let n = 0;
+    const fake = () => {
+      n += 1;
+      return { status: 0, stdout: 'ok', stderr: '' };
+    };
+    const res = spawnGuarded(
+      'ssh',
+      ['-o', 'BatchMode=yes', 'ikramaid', 'true'],
+      {},
+      {
+        env: CLAUDE_ONLY,
+        freezePath: path.join(os.tmpdir(), 'wdp-no-freeze-missing'),
+        spawnImpl: fake,
+        alias: 'ikramaid',
+        wpPath: '~/www/ikramaid.uk/public_html',
+        siteUrl: 'https://ikramaid.uk',
+      }
+    );
+    assert.equal(n, 1);
+    assert.equal(res.stdout, 'ok');
   });
 });
 

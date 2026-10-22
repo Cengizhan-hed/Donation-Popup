@@ -2,7 +2,7 @@
  * Tek korumalı yazma/silme kapısı.
  * Adlandırılmış işlem + izin listesi. İşaretsiz / defter dışı / kara liste → yazma yok.
  */
-import { loadDeployEnvSilent, remote, resolveWpPath } from './wp-remote.mjs';
+import { loadDeployEnvSilent, remote, wpCliPath } from './wp-remote.mjs';
 import {
   BLACKLISTED_TYPES,
   E2E_META_KEY,
@@ -43,10 +43,10 @@ export function resetSafeRemoteTestHooks() {
   coreIdsOverride = null;
 }
 
-function wpPathEsc() {
+function wpPathFlagArg() {
   const loaded = loadDeployEnvSilent();
   if (!loaded.ok) throw new Error(`safe-remote-write: ${loaded.reason}`);
-  return resolveWpPath(loaded.env).replace(/'/g, `'\\''`);
+  return wpCliPath(loaded.env);
 }
 
 function execRemote(cmd) {
@@ -57,8 +57,8 @@ function execRemote(cmd) {
 }
 
 function wpEval(php) {
-  const wpPath = wpPathEsc();
-  return execRemote(`wp eval '${String(php).replace(/'/g, `'\\''`)}' --path='${wpPath}'`);
+  const flag = wpPathFlagArg();
+  return execRemote(`wp eval '${String(php).replace(/'/g, `'\\''`)}' ${flag}`);
 }
 
 function parseJsonLine(raw) {

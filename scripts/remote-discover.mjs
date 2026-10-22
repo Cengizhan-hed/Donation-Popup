@@ -112,27 +112,9 @@ export function createRemoteRunner({ spawn, alias, wpPath, siteUrl }) {
   const spawnOpts = { encoding: 'utf8', cwd: ROOT, timeout: 120000 };
   const runnerSpawn = spawn || spawnGuarded;
 
-  let resolvedPath = '';
-  function pathResolved() {
-    if (resolvedPath) return resolvedPath;
-    const raw = String(wpPath).trim();
-    if (raw.startsWith('~/') || raw.startsWith('$HOME')) {
-      const res = runGuardedSsh(
-        runnerSpawn,
-        alias,
-        `echo ${raw.replace(/'/g, `'\\''`)}`,
-        spawnOpts,
-        guardOpts
-      );
-      resolvedPath = String(res.stdout || '').trim() || raw;
-    } else {
-      resolvedPath = raw;
-    }
-    return resolvedPath;
-  }
+  const p = String(wpPath).trim();
 
   return function runRemote(step) {
-    const p = pathResolved();
     if (step.kind === 'eval-file') {
       const abs = path.join(ROOT, step.file);
       if (!fs.existsSync(abs)) throw new Error(`eval-file yok: ${step.file}`);

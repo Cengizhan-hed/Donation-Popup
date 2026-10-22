@@ -6,7 +6,13 @@ import fs from 'node:fs';
 import path from 'node:path';
 import dotenv from 'dotenv';
 import { ROOT } from './env-root.mjs';
-import { findTargetByAlias, validateDeployEnv, buildGuardedEvalFileCommand } from '../../../scripts/lib/deploy-guards.mjs';
+import {
+  findTargetByAlias,
+  validateDeployEnv,
+  buildGuardedEvalFileCommand,
+  wpPathFlag,
+  shellQuoteWpPath,
+} from '../../../scripts/lib/deploy-guards.mjs';
 import { assertRemoteAllowed, spawnGuarded } from '../../../scripts/lib/remote-guard.mjs';
 import { peekActiveProfile, isRemoteProfile, resolveAllowedRemoteTarget } from './profile.mjs';
 
@@ -130,6 +136,17 @@ export function resolveWpPath(env) {
 }
 
 /**
+ * Mantıksal wpPath için `--path="$HOME/…"` ($HOME açılır; tırnak ~'yi yutmaz).
+ * @param {Record<string,string>|string} envOrPath
+ */
+export function wpCliPath(envOrPath) {
+  const raw = typeof envOrPath === 'string' ? envOrPath : String(envOrPath?.DEPLOY_WP_PATH || '').trim();
+  return wpPathFlag(raw);
+}
+
+export { wpPathFlag, shellQuoteWpPath };
+
+/**
  * @param {string} wpEvalOrCmd WP-CLI after --path
  */
 export function wp(wpCliTail) {
@@ -137,8 +154,7 @@ export function wp(wpCliTail) {
   if (!loaded.ok) {
     throw new Error(`wp-remote: ${loaded.reason}`);
   }
-  const wpPath = resolveWpPath(loaded.env).replace(/'/g, `'\\''`);
-  return remote(loaded.env, `${wpCliTail} --path='${wpPath}'`);
+  return remote(loaded.env, `${wpCliTail} ${wpCliPath(loaded.env)}`);
 }
 
 /**
@@ -156,7 +172,7 @@ export function runEvalFile(relFile, extraEnv = {}, extraArgs = '') {
   if (!loaded.ok) throw new Error(`wp-remote: ${loaded.reason}`);
   const local = path.join(ROOT, relFile);
   if (!fs.existsSync(local)) throw new Error(`wp-remote: dosya yok ${relFile}`);
-  const wpPath = resolveWpPath(loaded.env);
+  const wpPath = String(loaded.env.DEPLOY_WP_PATH || '').trim();
   const b64 = fs.readFileSync(local).toString('base64');
   const envParts = [];
   for (const [k, v] of Object.entries(extraEnv || {})) {
@@ -178,9 +194,9 @@ export function runEvalFile(relFile, extraEnv = {}, extraArgs = '') {
 export function purgeCaches(env) {
   const loaded = env ? { ok: true, env } : loadDeployEnvSilent();
   if (!loaded.ok) throw new Error(`wp-remote: ${loaded.reason}`);
-  const wpPath = resolveWpPath(loaded.env).replace(/'/g, `'\\''`);
+  const flag = wpCliPath(loaded.env);
   remote(
     loaded.env,
-    `(wp sg purge --path='${wpPath}' 2>/dev/null || true; wp cache flush --path='${wpPath}' 2>/dev/null || true; wp eval 'if (function_exists("wp_cache_flush")) { wp_cache_flush(); } if (class_exists("WDP_Donations_List")) { WDP_Donations_List::reset_bump_guard(); WDP_Donations_List::bump_cache(); }' --path='${wpPath}' 2>/dev/null || true)`
+    `(wp sg purge ${flag} 2>/dev/null || true; wp cache flush ${flag} 2>/dev/null || true; wp eval 'if (function_exists("wp_cache_flush")) { wp_cache_flush(); } if (class_exists("WDP_Donations_List")) { WDP_Donations_List::reset_bump_guard(); WDP_Donations_List::bump_cache(); }' ${flag} 2>/dev/null || true)`
   );
 }

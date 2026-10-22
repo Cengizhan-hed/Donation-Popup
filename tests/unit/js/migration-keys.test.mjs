@@ -16,6 +16,7 @@ import {
   optionPrefixes,
   buildKeyset,
 } from '../../../scripts/lib/migration-keys.mjs';
+import { CURSOR_AGENT_ENV_KEYS } from '../../../scripts/lib/remote-guard.mjs';
 
 const SAMPLE_PHP = `<?php
 class Sample {
@@ -79,19 +80,28 @@ describe('migration-snapshot.php salt okunur', () => {
   });
 });
 
+function envNoClaude() {
+  const env = { ...process.env, WDP_UNIT_TEST: '1' };
+  delete env.CLAUDECODE;
+  for (const k of CURSOR_AGENT_ENV_KEYS) delete env[k];
+  return env;
+}
+
 describe('migration:snapshot uzak', () => {
-  it('REMOTE_FREEZE / operatör kapısı varken --env staging reddedilir', () => {
+  it('operatör kapısı yokken --env staging reddedilir (ağ yok; ortam testte kurulur)', () => {
     const r = spawnSync('node', [path.join(ROOT, 'scripts/migration-snapshot.mjs'), '--env', 'staging', '--label', 'x'], {
       encoding: 'utf8',
       cwd: ROOT,
+      env: envNoClaude(),
     });
     assert.notEqual(r.status, 0);
     const msg = String(r.stderr || r.stdout || '');
     assert.match(
       msg,
-      /UZAK|REMOTE_FREEZE|missing \.env|Kara liste|izin listesi|2026-10-22|yalnız Claude|merkezi koruma/i
+      /UZAK|REMOTE_FREEZE|missing \.env|Kara liste|izin listesi|2026-10-22|yalnız Claude|merkezi koruma|Birim testte gerçek ssh/i
     );
     assert.doesNotMatch(msg, /ssh\s+\S+@/);
+    assert.doesNotMatch(msg, /This does not seem to be a WordPress/i);
   });
 
   it('1A profil hedefi + snapshot komutu kilitten geçer (ağ yok)', async () => {
@@ -104,7 +114,7 @@ describe('migration:snapshot uzak', () => {
       assert.ok(resolved.alias);
       assert.ok(resolved.wpPath);
       const cmd = buildSnapshotRemoteCommand(resolved.wpPath, 'YmFzZTY0');
-      assert.match(cmd, /wp --path='/);
+      assert.match(cmd, /wp --path=/);
       assert.match(cmd, /eval-file/);
       assert.match(cmd, /wdp-mig-/);
       const r = checkRemoteTarget({
