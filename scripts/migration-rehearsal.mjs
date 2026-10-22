@@ -180,7 +180,7 @@ function writeCompare(result, outFile, title, beforeLabel, afterLabel) {
   console.log(`karşılaştırma: ${path.relative(ROOT, outFile)}`);
   const c = result.counts;
   console.log(
-    `sınıflar: KORUNDU=${c.KORUNDU} TAŞINDI=${c.TAŞINDI} DEĞİŞTİ=${c.DEĞİŞTİ} VARSAYILANA=${c['VARSAYILANA DÖNDÜ']} KAYBOLDU=${c.KAYBOLDU} YENİ=${c.YENİ} BEKLENEN=${c['BEKLENEN DEĞİŞİM']}`
+    `sınıflar: KORUNDU=${c.KORUNDU} KORUNDU(tür)=${c['KORUNDU (tür)']} TAŞINDI=${c.TAŞINDI} DEĞİŞTİ=${c.DEĞİŞTİ} VARSAYILANA=${c['VARSAYILANA DÖNDÜ']} KAYBOLDU=${c.KAYBOLDU} YENİ=${c.YENİ} BEKLENEN=${c['BEKLENEN DEĞİŞİM']}`
   );
   if (result.problems.length) {
     console.log('sorunlu anahtarlar:');

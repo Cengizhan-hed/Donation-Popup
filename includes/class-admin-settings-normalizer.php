@@ -44,7 +44,7 @@ class WDP_Admin_Settings_Normalizer {
 				? absint($request['ui_border_radius'])
 				: (isset($request['button_border_radius'])
 					? absint($request['button_border_radius'])
-					: self::pick_int($request, $existing, 'ui_border_radius', 10)),
+					: self::pick_int($request, $existing, 'ui_border_radius', self::legacy_ui_radius_default($existing))),
 			'button_border_radius'              => self::pick_int($request, $existing, 'button_border_radius', 10),
 			'button_text_add_to_cart'           => self::pick_text($request, $existing, 'button_text_add_to_cart', 'Sepete Ekle'),
 			'button_text_go_checkout'           => self::pick_text($request, $existing, 'button_text_go_checkout', 'Ödemeye Git'),
@@ -621,15 +621,11 @@ class WDP_Admin_Settings_Normalizer {
 	}
 
 	/**
-	 * Clamp value between min and max.
-	 *
-	 * @param int $value Value.
-	 * @param int $min Minimum.
-	 * @param int $max Maximum.
-	 * @return int
-	 */
-	/**
 	 * Re-save stored option groups so missing keys receive defaults (user values are kept).
+	 *
+	 * User keys always win over normalizer output. Passing an empty request into a
+	 * normalizer fills every known key with a default; merging that on top of the
+	 * stored option (the previous order) reset customized radii and layout sizes.
 	 *
 	 * @return int Number of options written.
 	 */
@@ -651,16 +647,63 @@ class WDP_Admin_Settings_Normalizer {
 				continue;
 			}
 			$current = get_option($option, array());
+			$current = is_array($current) ? $current : array();
 			$clean   = call_user_func(array(__CLASS__, $method), array());
-			if (is_array($clean)) {
-				$merged = is_array($current) ? array_merge($current, $clean) : $clean;
-				update_option($option, $merged, false);
-				$written++;
+			if (!is_array($clean)) {
+				continue;
 			}
+			$merged = array_merge($clean, $current);
+			if ($option === 'wdp_button_settings') {
+				$merged = self::seed_ui_border_radius_from_legacy($merged, $current);
+			}
+			update_option($option, $merged, false);
+			$written++;
 		}
 		return $written;
 	}
 
+	/**
+	 * First stored legacy radius, else 10. Used when ui_border_radius is absent.
+	 *
+	 * @param array $existing Stored button settings.
+	 * @return int
+	 */
+	private static function legacy_ui_radius_default(array $existing) {
+		foreach (array('button_border_radius', 'modal_border_radius', 'input_border_radius', 'popup_button_border_radius') as $key) {
+			if (isset($existing[ $key ]) && '' !== $existing[ $key ] && absint($existing[ $key ]) > 0) {
+				return absint($existing[ $key ]);
+			}
+		}
+		return 10;
+	}
+
+	/**
+	 * If ui_border_radius was never stored, copy from a legacy radius so CSS
+	 * (which prefers ui when set) keeps the user's corners.
+	 *
+	 * @param array $stored   Merged button settings.
+	 * @param array $original Option as stored before fill.
+	 * @return array
+	 */
+	public static function seed_ui_border_radius_from_legacy(array $stored, array $original) {
+		if (array_key_exists('ui_border_radius', $original) && '' !== $original['ui_border_radius'] && absint($original['ui_border_radius']) > 0) {
+			return $stored;
+		}
+		$from = self::legacy_ui_radius_default($original);
+		if ($from > 0) {
+			$stored['ui_border_radius'] = $from;
+		}
+		return $stored;
+	}
+
+	/**
+	 * Clamp value between min and max.
+	 *
+	 * @param int $value Value.
+	 * @param int $min   Minimum.
+	 * @param int $max   Maximum.
+	 * @return int
+	 */
 	private static function clamp_range($value, $min, $max) {
 		return max($min, min($value, $max));
 	}
