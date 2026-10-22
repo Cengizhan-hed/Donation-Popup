@@ -493,7 +493,7 @@ Anahtar çıkarıcı: `get_option`/`update_option`/`add_option`/`get_post_meta`/
 | Eşik | sayfa varsayılan **%0.5**; kabuk popup/panel **%0.1** |
 | Quick | Yalnız iPhone (WebKit) + değişen alan (`tests/e2e/area-map.json` + `git diff --name-only HEAD`); `--env ikram`; `--all --device desktop` eski 70’lik küme |
 | Full | 3 cihaz × gerçek ortam(lar), merge öncesi (`tests/e2e/run-full.mjs`) |
-| Matrix | Boş iskelet (görev 3/3) `npm run e2e:matrix` |
+| Matrix | Yerel tema × mağaza pairwise (`tests/e2e/matrix.json`): TT5 + Storefront; TRY/EUR/USD/GBP; blok + klasik ödeme; HPOS açık/kapalı (her tema her ödeme türü, HPOS her durumda ≥2). 3 cihaz. Sipariş yalnız yerel (`cheque`). Koşucu `tests/e2e/run-matrix.mjs`; `--only <id>` / `--device <ad>`. Özet `build/e2e/matrix/summary.md`; ekran `build/e2e/matrix/<yapılandırma>/<cihaz>/`. Anlık görüntü SQLite kopyası; yapılandırmalar ayrı port + WP kopyasıyla paralel (varsayılan 3 işçi). |
 | Accept | `--env` + `--device`; yalnız Değişti+Yeni; functional hata 0 |
 
 ### Uzak keşif
@@ -548,7 +548,7 @@ Güvenli alan (10.34.0 + 10.34.2): alt CTA `env(safe-area-inset-bottom)` + JS `-
 |-------|----------|
 | `e2e:quick` | iPhone + alan süzgeci; hedef &lt; 5 dk |
 | `e2e:full` | 3 cihaz × ortam; cihazlar sırayla (meta yarışı yok); env içinde ürün URL/ID bir kez |
-| `e2e:matrix` | 3/3 iskelet |
+| `e2e:matrix` | Yerel WP+SQLite tema/Woo matrisi; `--only` / `--device`; sipariş yalnız yerel |
 | `e2e:stability` | Aynı cihazda iki koşu; varsayılan iPhone |
 
 ### ship:ikram ve güvenlik kilidi
