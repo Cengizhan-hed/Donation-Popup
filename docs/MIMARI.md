@@ -484,6 +484,19 @@ Kaynak rehber: `docs/AYARLAR.md`. Teknik varsayılanlar normalizer / placement /
 | Matrix | Boş iskelet (görev 3/3) `npm run e2e:matrix` |
 | Accept | `--env` + `--device`; yalnız Değişti+Yeni; functional hata 0 |
 
+### Uzak keşif
+
+Salt okunur envanter (yazma yok; `spawnGuarded` zorunlu). Claude çalıştırır; Cursor yalnız `--env local` veya sahte ssh birim testi.
+
+| Öğe | Değer |
+|-----|--------|
+| Komut | `npm run remote:discover -- --env staging\|ikram` (yerel WP: `--env local`, SSH yok) |
+| Betik | `scripts/remote-discover.mjs` + `scripts/lib/remote-discover-lib.mjs` |
+| Profil | `loadProfile` (`tests/e2e/profiles/*.json`); `ssh.alias` + `ssh.wpPath`; her `wp` çağrısında `--path`; `--skip-themes` yok |
+| Çıktı | `build/discovery/<env>.json` + `.md`; kanarya `build/e2e/canary/<env>-baseline.json` |
+| Engel | `facebook-for-woocommerce`, `official-facebook-pixel`, `google-listings-and-ads`, `google-site-kit` aktifse `REMOTE-BLOCKED` ve çıkış **3** |
+| Güvenlik | Sabit eval listesi; değer/e-posta/URL/anahtar yazılmaz; bağlantı hatasında en fazla 1 tekrar |
+
 ### Test ortamları ve profiller
 
 | Profil | Dosya | Sırlar | Tema / oluşturucu | Para | Coming soon | SSH |

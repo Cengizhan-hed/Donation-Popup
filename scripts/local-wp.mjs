@@ -66,10 +66,11 @@ require_once ABSPATH . 'wp-settings.php';
   fs.writeFileSync(path.join(WP_DIR, 'wp-config.php'), cfg.replace(/\\\$/g, '$'), 'utf8');
 }
 
-export function ensureLocalWp() {
+export function ensureLocalWp(opts = {}) {
+  const log = opts.quiet ? () => {} : console.log;
   fs.mkdirSync(LOCAL_WP_ROOT, { recursive: true });
   if (!fs.existsSync(path.join(WP_DIR, 'wp-load.php'))) {
-    console.log('WordPress indiriliyor (wordpress.org/latest.zip)…');
+    log('WordPress indiriliyor (wordpress.org/latest.zip)…');
     download('https://wordpress.org/latest.zip', WP_ZIP);
     run('unzip', ['-q', '-o', WP_ZIP, '-d', LOCAL_WP_ROOT]);
   }
@@ -80,7 +81,7 @@ export function ensureLocalWp() {
 
   const sqliteDest = path.join(WP_DIR, 'wp-content/plugins/sqlite-database-integration');
   if (!fs.existsSync(path.join(sqliteDest, 'db.php')) && !fs.existsSync(path.join(sqliteDest, 'load.php'))) {
-    console.log('SQLite eklentisi indiriliyor…');
+    log('SQLite eklentisi indiriliyor…');
     download(
       'https://downloads.wordpress.org/plugin/sqlite-database-integration.latest-stable.zip',
       SQLITE_ZIP
@@ -110,7 +111,7 @@ echo isset($result['url']) ? $result['url'] : get_option('siteurl');
 `
   );
   const out = run('php', [installPhp]);
-  console.log(String(out).trim().slice(0, 200));
+  log(String(out).trim().slice(0, 200));
   return WP_DIR;
 }
 
