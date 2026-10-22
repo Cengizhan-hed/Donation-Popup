@@ -112,7 +112,10 @@
       "Edit(composer.json)",
       "Edit(.distignore)",
       "Edit(.gitignore)",
-      "Edit(.cursor/**)"
+      "Edit(.cursor/**)",
+      "Read(tests/e2e/.auth/**)",
+      "Read(**/*.pem)",
+      "Read(**/*.key)"
     ]
   }
 }
