@@ -296,6 +296,27 @@ foreach ($hooks as $h) {
 echo json_encode(array("hooks" => $out));
 `;
 
+/**
+ * Ödeme/sepet sayfa türü (içerik yazılmaz).
+ * Sonuç: block | classic | classic-in-builder | unknown
+ *
+ * @param {{
+ *   hasBlock?: boolean,
+ *   hasShortcode?: boolean,
+ *   contentHasShortNeedle?: boolean,
+ *   builder?: boolean,
+ *   blockDefault?: boolean,
+ * }} flags
+ */
+export function classifyWooPageKind(flags = {}) {
+  if (flags.hasBlock) return 'block';
+  const classicMark = !!(flags.hasShortcode || flags.contentHasShortNeedle);
+  if (classicMark && flags.builder) return 'classic-in-builder';
+  if (classicMark) return 'classic';
+  if (flags.blockDefault) return 'block';
+  return 'unknown';
+}
+
 export const EVAL_WOO = `
 $country = (string) get_option("woocommerce_default_country");
 $cc = $country;
@@ -303,7 +324,7 @@ $colon = strpos($country, ":");
 if ($colon !== false) {
   $cc = substr($country, 0, $colon);
 }
-function wdp_disc_pg($id, $blockNeedle, $shortNeedle) {
+function wdp_disc_page_kind($id, $blockName, $shortName) {
   $id = (int) $id;
   if ($id <= 0) {
     return array("status" => "missing", "kind" => "none");
@@ -313,11 +334,30 @@ function wdp_disc_pg($id, $blockNeedle, $shortNeedle) {
     return array("status" => "missing", "kind" => "none");
   }
   $c = (string) $p->post_content;
+  $hasBlock = $blockName !== "" && function_exists("has_block") && has_block($blockName, $id);
+  $hasShort = $shortName !== "" && function_exists("has_shortcode") && has_shortcode($c, $shortName);
+  $needle = $shortName !== "" ? "[" . $shortName : "";
+  $inContent = $needle !== "" && strpos($c, $needle) !== false;
+  $builder = (strpos($c, "fusion_") !== false) || (stripos($c, "elementor") !== false);
+  $blockDefault = false;
+  $cls = implode(chr(92), array("Automattic", "WooCommerce", "Blocks", "Utils", "CartCheckoutUtils"));
+  if (class_exists($cls)) {
+    if ($shortName === "woocommerce_checkout" && method_exists($cls, "is_checkout_block_default")) {
+      $blockDefault = $cls::is_checkout_block_default() ? true : false;
+    }
+    if ($shortName === "woocommerce_cart" && method_exists($cls, "is_cart_block_default")) {
+      $blockDefault = $cls::is_cart_block_default() ? true : false;
+    }
+  }
   $kind = "unknown";
-  if ($blockNeedle !== "" && strpos($c, $blockNeedle) !== false) {
+  if ($hasBlock) {
     $kind = "block";
-  } else if ($shortNeedle !== "" && strpos($c, $shortNeedle) !== false) {
+  } else if (($hasShort || $inContent) && $builder) {
+    $kind = "classic-in-builder";
+  } else if ($hasShort || $inContent) {
     $kind = "classic";
+  } else if ($blockDefault) {
+    $kind = "block";
   }
   return array("status" => (string) $p->post_status, "kind" => $kind);
 }
@@ -336,11 +376,11 @@ $out = array(
   "hpos_compat" => (string) get_option("woocommerce_custom_orders_table_data_sync_enabled"),
   "coming_soon" => (string) get_option("woocommerce_coming_soon"),
   "blog_public" => (string) get_option("blog_public"),
-  "checkout_page" => wdp_disc_pg(get_option("woocommerce_checkout_page_id"), "wp:woocommerce/checkout", "[woocommerce_checkout]"),
-  "cart_page" => wdp_disc_pg(get_option("woocommerce_cart_page_id"), "wp:woocommerce/cart", "[woocommerce_cart]"),
-  "shop_page" => wdp_disc_pg(get_option("woocommerce_shop_page_id"), "", ""),
-  "myaccount_page" => wdp_disc_pg(get_option("woocommerce_myaccount_page_id"), "", ""),
-  "terms_page" => wdp_disc_pg(get_option("woocommerce_terms_page_id"), "", "")
+  "checkout_page" => wdp_disc_page_kind(get_option("woocommerce_checkout_page_id"), "woocommerce/checkout", "woocommerce_checkout"),
+  "cart_page" => wdp_disc_page_kind(get_option("woocommerce_cart_page_id"), "woocommerce/cart", "woocommerce_cart"),
+  "shop_page" => wdp_disc_page_kind(get_option("woocommerce_shop_page_id"), "", ""),
+  "myaccount_page" => wdp_disc_page_kind(get_option("woocommerce_myaccount_page_id"), "", ""),
+  "terms_page" => wdp_disc_page_kind(get_option("woocommerce_terms_page_id"), "", "")
 );
 echo json_encode($out);
 `;

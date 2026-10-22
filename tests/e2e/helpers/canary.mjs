@@ -8,6 +8,10 @@ import { spawnSync } from 'node:child_process';
 import { ROOT } from './env-root.mjs';
 import { loadDeployEnvSilent, remote, resolveWpPath } from './wp-remote.mjs';
 import { loadRegistry } from './run-registry.mjs';
+import { peekActiveProfile, isRemoteProfile, resolveAllowedRemoteTarget } from './profile.mjs';
+import { buildGuardedEvalFileCommand } from '../../../scripts/lib/deploy-guards.mjs';
+import { spawnGuarded } from '../../../scripts/lib/remote-guard.mjs';
+import { runGuardedSsh, canonicalEnv } from '../../../scripts/lib/remote-discover-lib.mjs';
 
 export const CANARY_SNAPSHOT_FILE = 'tests/e2e/helpers/canary-snapshot.php';
 export const CANARY_ALERT_PATH = path.join(ROOT, 'build/e2e/CANARY-ALERT.txt');
@@ -72,29 +76,79 @@ export function snapshotCanaryLocal() {
   return snap;
 }
 
+export function canaryBaselinePath(envId) {
+  const env = canonicalEnv(String(envId || 'local'));
+  return path.join(ROOT, 'build/e2e/canary', `${env}-baseline.json`);
+}
+
+export function readBaseline(envId) {
+  const file = canaryBaselinePath(envId);
+  if (!fs.existsSync(file)) return null;
+  return readSnapshot(file);
+}
+
+/**
+ * Baseline vs current; kayıt defteri dışındaki fark KIRMIZI.
+ * @param {object|null} baseline
+ * @param {object} current
+ * @param {object} [registry]
+ * @param {{ updateBaseline?: boolean }} [opts]
+ */
+export function evaluateCanaryAgainstBaseline(baseline, current, registry, opts = {}) {
+  if (!baseline) {
+    const updating = !!opts.updateBaseline;
+    return {
+      ok: updating,
+      missingBaseline: true,
+      canUpdate: updating,
+      status: updating ? 'TEMİZ' : 'KIRMIZI',
+      diffs: updating ? [] : [{ change: 'missing-baseline' }],
+    };
+  }
+  const cmp = compareWithRegistry(baseline, current, registry);
+  return {
+    ok: cmp.ok,
+    missingBaseline: false,
+    canUpdate: cmp.ok,
+    status: cmp.ok ? 'TEMİZ' : 'KIRMIZI',
+    diffs: cmp.diffs || [],
+  };
+}
+
+export function formatCanaryStatusLine(beforeOk, afterOk, expectedNew = 0) {
+  const b = beforeOk ? 'TEMİZ' : 'KIRMIZI';
+  const a = afterOk ? 'TEMİZ' : 'KIRMIZI';
+  return `Kanarya: önce ${b}, sonra ${a} (beklenen yeni: ${Number(expectedNew) || 0} ürün)`;
+}
+
 export function snapshotCanary() {
   if (snapshotOverride) return snapshotOverride();
-  const loaded = loadDeployEnvSilent();
-  if (!loaded.ok) throw new Error(`canary: ${loaded.reason}`);
   const local = path.join(ROOT, CANARY_SNAPSHOT_FILE);
   if (!fs.existsSync(local)) throw new Error(`canary: ${CANARY_SNAPSHOT_FILE} yok`);
   const src = fs.readFileSync(local, 'utf8');
   if (/\b(wp_delete_|wp_trash_|wp_untrash_|wp_update_post|wp_insert_post|update_option|delete_option)\b/i.test(src)) {
     throw new Error('canary-snapshot.php yazma çağrısı içeriyor');
   }
-  const wpPath = resolveWpPath(loaded.env).replace(/'/g, `'\\''`);
   const b64 = fs.readFileSync(local).toString('base64');
-  const raw = remote(
-    loaded.env,
-    [
-      `TMP=$(mktemp /tmp/wdp-canary-XXXX.php)`,
-      `echo '${b64}' | base64 -d > "$TMP"`,
-      `wp eval-file "$TMP" --path='${wpPath}'`,
-      `EC=$?`,
-      `rm -f "$TMP"`,
-      `exit $EC`,
-    ].join('\n')
-  );
+  const profile = peekActiveProfile();
+  let raw = '';
+  if (profile && isRemoteProfile(profile)) {
+    const resolved = resolveAllowedRemoteTarget(profile);
+    const remoteCmd = buildGuardedEvalFileCommand(resolved.wpPath, { tmpPrefix: 'wdp-canary', b64 });
+    const res = runGuardedSsh(
+      spawnGuarded,
+      resolved.alias,
+      remoteCmd,
+      { encoding: 'utf8', cwd: ROOT, timeout: 120000 },
+      { alias: resolved.alias, wpPath: resolved.wpPath, siteUrl: resolved.siteUrl }
+    );
+    raw = res.stdout || '';
+  } else {
+    const loaded = loadDeployEnvSilent();
+    if (!loaded.ok) throw new Error(`canary: ${loaded.reason}`);
+    const wpPath = resolveWpPath(loaded.env);
+    raw = remote(loaded.env, buildGuardedEvalFileCommand(wpPath, { tmpPrefix: 'wdp-canary', b64 }));
+  }
   const snap = parseSnapshotOutput(raw);
   if (!snap || !Array.isArray(snap.posts) || !snap.options) {
     throw new Error('canary: anlık görüntü eksik (posts/options)');

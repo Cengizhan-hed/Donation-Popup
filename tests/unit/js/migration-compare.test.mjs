@@ -74,12 +74,44 @@ describe('migration-compare sınıfları', () => {
     assert.equal(r.fail, true);
   });
 
-  it('YENİ: yalnız sonra, varsayılan', () => {
+  it('YENİ: yalnız sonra, varsayılan (kullanıcı anahtarı)', () => {
     const a = snap({});
-    const b = snap({ wdp_migrated_10_30_0: entry('1') });
-    const r = compareSnapshots(a, b, { defaults: { wdp_migrated_10_30_0: '1' } });
-    assert.equal(r.rows.find((x) => x.key === 'option:wdp_migrated_10_30_0').class, 'YENİ');
+    const b = snap({ wdp_new_flag: entry('1') });
+    const r = compareSnapshots(a, b, { defaults: { wdp_new_flag: '1' } });
+    assert.equal(r.rows.find((x) => x.key === 'option:wdp_new_flag').class, 'YENİ');
     assert.equal(r.fail, false);
+  });
+
+  it('BEKLENEN DEĞİŞİM: sürüm/önbellek/log ve wdp_migrated_* çıkış 2 üretmez', () => {
+    const a = snap({
+      wdp_version: entry('10.3.1'),
+      wdp_db_version: entry(''),
+      wdp_cache_version: entry('1'),
+      wdp_list_cache_version: entry('1'),
+      wdp_migration_log: entry([]),
+    });
+    const b = snap({
+      wdp_version: entry('10.34.2'),
+      wdp_db_version: entry('10.34.2'),
+      wdp_cache_version: entry('99'),
+      wdp_list_cache_version: entry('99'),
+      wdp_migration_log: entry([{ v: '10.34.0' }]),
+      wdp_migrated_10_30_0: entry('1'),
+    });
+    const r = compareSnapshots(a, b);
+    const keys = [
+      'option:wdp_version',
+      'option:wdp_db_version',
+      'option:wdp_cache_version',
+      'option:wdp_list_cache_version',
+      'option:wdp_migration_log',
+      'option:wdp_migrated_10_30_0',
+    ];
+    for (const k of keys) {
+      assert.equal(r.rows.find((x) => x.key === k).class, 'BEKLENEN DEĞİŞİM', k);
+    }
+    assert.equal(r.fail, false);
+    assert.equal(r.problems.length, 0);
   });
 });
 

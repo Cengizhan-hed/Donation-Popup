@@ -152,4 +152,29 @@ describe('ham ssh/scp/sftp/rsync spawn yok', () => {
     const hits = scanDirectRemoteSpawns(ROOT);
     assert.deepEqual(hits, [], hits.map((h) => `${h.file}:${h.line}`).join('\n'));
   });
+
+  it('spawnGuarded çağıranlar alias’sız assertRemoteAllowed({bin:ssh}) kullanmaz', () => {
+    const files = [
+      'scripts/migration-snapshot.mjs',
+      'scripts/remote-discover.mjs',
+      'scripts/e2e-bootstrap.mjs',
+      'scripts/ikram-wp.mjs',
+      'scripts/staging-wp.mjs',
+      'scripts/deploy-staging.mjs',
+      'scripts/deploy-ikram.mjs',
+      'tests/e2e/helpers/wp-remote.mjs',
+      'tests/e2e/helpers/canary.mjs',
+      'tests/e2e/run-canary.mjs',
+      'tests/e2e/helpers/test-cleanup.mjs',
+    ];
+    const bare = /assertRemoteAllowed\(\s*\{\s*bin:\s*['"]ssh['"]\s*\}\s*\)/;
+    for (const rel of files) {
+      const src = fs.readFileSync(path.join(ROOT, rel), 'utf8');
+      assert.equal(bare.test(src), false, rel);
+      assert.ok(
+        /findTargetByAlias|findTargetById|resolveAllowedRemoteTarget|loadProfile|loadDeployEnvSilent/.test(src),
+        rel
+      );
+    }
+  });
 });

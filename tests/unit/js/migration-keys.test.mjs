@@ -80,14 +80,40 @@ describe('migration-snapshot.php salt okunur', () => {
 });
 
 describe('migration:snapshot uzak', () => {
-  it('REMOTE_FREEZE varken --env staging reddedilir', () => {
+  it('REMOTE_FREEZE / operatör kapısı varken --env staging reddedilir', () => {
     const r = spawnSync('node', [path.join(ROOT, 'scripts/migration-snapshot.mjs'), '--env', 'staging', '--label', 'x'], {
       encoding: 'utf8',
       cwd: ROOT,
     });
     assert.notEqual(r.status, 0);
     const msg = String(r.stderr || r.stdout || '');
-    assert.match(msg, /UZAK|REMOTE_FREEZE|missing \.env|Kara liste|izin listesi|2026-10-22/i);
+    assert.match(
+      msg,
+      /UZAK|REMOTE_FREEZE|missing \.env|Kara liste|izin listesi|2026-10-22|yalnız Claude|merkezi koruma/i
+    );
     assert.doesNotMatch(msg, /ssh\s+\S+@/);
+  });
+
+  it('1A profil hedefi + snapshot komutu kilitten geçer (ağ yok)', async () => {
+    const { resolveSnapshotRemoteTarget, buildSnapshotRemoteCommand } = await import(
+      '../../../scripts/migration-snapshot.mjs'
+    );
+    const { checkRemoteTarget } = await import('../../../scripts/lib/deploy-guards.mjs');
+    for (const envId of ['staging', 'ikram']) {
+      const resolved = resolveSnapshotRemoteTarget(envId);
+      assert.ok(resolved.alias);
+      assert.ok(resolved.wpPath);
+      const cmd = buildSnapshotRemoteCommand(resolved.wpPath, 'YmFzZTY0');
+      assert.match(cmd, /wp --path='/);
+      assert.match(cmd, /eval-file/);
+      assert.match(cmd, /wdp-mig-/);
+      const r = checkRemoteTarget({
+        alias: resolved.alias,
+        wpPath: resolved.wpPath,
+        siteUrl: resolved.siteUrl,
+        remoteCommand: cmd,
+      });
+      assert.equal(r.ok, true, `${envId}: ${r.reason || ''}`);
+    }
   });
 });

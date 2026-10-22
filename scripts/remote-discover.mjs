@@ -12,6 +12,7 @@ import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { loadProfile } from '../tests/e2e/helpers/profile.mjs';
 import { spawnGuarded } from './lib/remote-guard.mjs';
+import { buildGuardedEvalFileCommand } from './lib/deploy-guards.mjs';
 import { ensureLocalWp } from './local-wp.mjs';
 import {
   DISCOVER_STEPS,
@@ -137,14 +138,7 @@ export function createRemoteRunner({ spawn, alias, wpPath, siteUrl }) {
       if (!fs.existsSync(abs)) throw new Error(`eval-file yok: ${step.file}`);
       assertEvalFileReadOnly(abs);
       const b64 = fs.readFileSync(abs).toString('base64');
-      const remoteCmd = [
-        `TMP=$(mktemp /tmp/wdp-disc-XXXX.php)`,
-        `echo '${b64}' | base64 -d > "$TMP"`,
-        `wp eval-file "$TMP" --path='${p.replace(/'/g, `'\\''`)}'`,
-        `EC=$?`,
-        `rm -f "$TMP"`,
-        `exit $EC`,
-      ].join('\n');
+      const remoteCmd = buildGuardedEvalFileCommand(p, { tmpPrefix: 'wdp-disc', b64 });
       if (!/--path=/.test(remoteCmd) || /--skip-themes|--skip-plugins/.test(remoteCmd)) {
         throw new Error('eval-file uzak komut --path eksik veya skip-themes');
       }

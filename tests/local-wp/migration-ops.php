@@ -43,7 +43,7 @@ function wdp_mig_activate($slug_file) {
 /**
  * @return array<string,mixed>
  */
-function wdp_mig_seed() {
+function wdp_mig_seed($variant = '') {
 	$button = get_option('wdp_button_settings', array());
 	if (!is_array($button)) {
 		$button = array();
@@ -51,6 +51,40 @@ function wdp_mig_seed() {
 	$button['button_primary_color'] = '#c0ffee';
 	$button['popup_button_text']    = 'MIG-REHEARSE-CTA';
 	update_option('wdp_button_settings', $button, false);
+
+	$success = get_option('wdp_success_settings', array());
+	if (!is_array($success)) {
+		$success = array();
+	}
+	$success['success_title'] = 'MIG-REHEARSE-OK';
+	update_option('wdp_success_settings', $success, false);
+
+	$share = get_option('wdp_shareholder_settings', array());
+	if (!is_array($share)) {
+		$share = array();
+	}
+	$share['shareholder_label']              = 'MIG-REHEARSE-HISS';
+	$share['shareholder_enable_copy_button'] = '1';
+	update_option('wdp_shareholder_settings', $share, false);
+
+	$progress = get_option('wdp_progress_bar_settings', array());
+	if (!is_array($progress)) {
+		$progress = array();
+	}
+	$progress['progress_bar_fill_color'] = '#00c1de';
+	update_option('wdp_progress_bar_settings', $progress, false);
+
+	$layout = get_option('wdp_modal_layout_settings', array());
+	if (!is_array($layout)) {
+		$layout = array();
+	}
+	$layout['modal_max_width'] = 720;
+	update_option('wdp_modal_layout_settings', $layout, false);
+
+	if ($variant === '10.3.1') {
+		update_option('wdp_legacy_render_count', 3, false);
+		update_option('wdp_css_signature', 'mig1031deadbeef', false);
+	}
 
 	$type = post_type_exists('product') ? 'product' : 'post';
 	$existing = get_posts(
@@ -79,10 +113,17 @@ function wdp_mig_seed() {
 		update_post_meta($id, '_min_custom_price', '42');
 		update_post_meta($id, '_amount_presets', '42,84');
 		update_post_meta($id, '_wdp_donation_product', 'yes');
+		update_post_meta($id, '_enable_progress_bar', 'yes');
+		update_post_meta($id, '_enable_product_note', 'yes');
+		update_post_meta($id, '_enable_sadaka_donation', 'no');
+		update_post_meta($id, '_sadaka_min_price', '5');
+		update_post_meta($id, '_sadaka_fixed_price', '10');
+		update_post_meta($id, '_sadaka_donation_message', 'MIG-SADAKA');
 	}
 
 	return array(
 		'option_seeded' => true,
+		'variant'       => $variant,
 		'product_id'    => $id,
 		'post_type'     => $type,
 	);
@@ -221,7 +262,7 @@ if ($cmd === 'activate') {
 	$plugin = $arg1 !== '' ? $arg1 : 'woo-donation-popup/woo-donation-popup.php';
 	$result = array_merge($result, wdp_mig_activate($plugin));
 } elseif ($cmd === 'seed') {
-	$result = array_merge($result, wdp_mig_seed());
+	$result = array_merge($result, wdp_mig_seed($arg1));
 } elseif ($cmd === 'import') {
 	$result = array_merge($result, wdp_mig_import($arg1));
 } elseif ($cmd === 'migrate') {

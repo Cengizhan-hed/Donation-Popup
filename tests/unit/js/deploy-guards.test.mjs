@@ -14,6 +14,7 @@ import {
   checkRemoteTarget,
   inspectRemoteCommand,
   plannedRemoteCommands,
+  buildGuardedEvalFileCommand,
   IKRAM_ALLOW_REMOVAL_NOTE,
   ALLOWED_DEPLOY_TARGETS,
 } from '../../../scripts/lib/deploy-guards.mjs';
@@ -294,6 +295,11 @@ describe('deploy-guards', () => {
     for (const target of ALLOWED_DEPLOY_TARGETS) {
       const cmds = plannedRemoteCommands(target);
       assert.ok(cmds.length > 8, target.id);
+      assert.ok(cmds.some((c) => c.includes('wdp-mig-')), 'snapshot eval-file');
+      assert.ok(cmds.some((c) => c.includes('wdp-canary-')), 'canary eval-file');
+      const snap = buildGuardedEvalFileCommand(target.wpPath, { tmpPrefix: 'wdp-mig' });
+      assert.match(snap, /wp --path='/);
+      assert.match(snap, /eval-file/);
       for (const remoteCommand of cmds) {
         const r = checkRemoteTarget({
           alias: target.sshAlias,

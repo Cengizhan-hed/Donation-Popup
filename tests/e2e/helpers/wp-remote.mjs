@@ -6,9 +6,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 import dotenv from 'dotenv';
 import { ROOT } from './env-root.mjs';
-import { findTargetByAlias, validateDeployEnv } from '../../../scripts/lib/deploy-guards.mjs';
+import { findTargetByAlias, validateDeployEnv, buildGuardedEvalFileCommand } from '../../../scripts/lib/deploy-guards.mjs';
 import { assertRemoteAllowed, spawnGuarded } from '../../../scripts/lib/remote-guard.mjs';
-import { peekActiveProfile } from './profile.mjs';
+import { peekActiveProfile, isRemoteProfile, resolveAllowedRemoteTarget } from './profile.mjs';
 
 /** @type {string} */
 let activeDeployFile = '.env.deploy';
@@ -29,14 +29,24 @@ export function loadDeployEnvSilent() {
   } catch (e) {
     return { ok: false, reason: e && e.message ? e.message : String(e) };
   }
+  const profile = peekActiveProfile();
+  let fromProfile = null;
+  if (profile && isRemoteProfile(profile)) {
+    try {
+      fromProfile = resolveAllowedRemoteTarget(profile);
+    } catch (e) {
+      return { ok: false, reason: e && e.message ? e.message : String(e) };
+    }
+  }
+
   const envPath = path.join(ROOT, activeDeployFile);
-  if (!fs.existsSync(envPath)) {
+  const hasEnvFile = fs.existsSync(envPath);
+  if (!hasEnvFile && !fromProfile) {
     return { ok: false, reason: `missing ${activeDeployFile}` };
   }
-  const parsed = dotenv.parse(fs.readFileSync(envPath));
-  const profile = peekActiveProfile();
-  const alias = String(parsed.DEPLOY_SSH_ALIAS || profile?.ssh?.alias || '').trim();
-  const listed = findTargetByAlias(alias);
+  const parsed = hasEnvFile ? dotenv.parse(fs.readFileSync(envPath)) : {};
+  const alias = String(parsed.DEPLOY_SSH_ALIAS || fromProfile?.alias || profile?.ssh?.alias || '').trim();
+  const listed = findTargetByAlias(alias) || fromProfile?.target;
   const envWp = String(parsed.DEPLOY_WP_PATH || '').trim();
   const envUrl = String(parsed.DEPLOY_SITE_URL || '').trim().replace(/\/$/, '');
   if (listed) {
@@ -53,8 +63,9 @@ export function loadDeployEnvSilent() {
     DEPLOY_SSH_USER: String(parsed.DEPLOY_SSH_USER || '').trim(),
     DEPLOY_SSH_PORT: String(parsed.DEPLOY_SSH_PORT || '').trim(),
     DEPLOY_SSH_KEY: String(parsed.DEPLOY_SSH_KEY || '').trim(),
-    DEPLOY_WP_PATH: envWp || listed?.wpPath || String(profile?.ssh?.wpPath || '').trim(),
-    DEPLOY_SITE_URL: envUrl || listed?.siteUrl || String(profile?.baseUrl || '').trim().replace(/\/$/, ''),
+    DEPLOY_WP_PATH: envWp || listed?.wpPath || fromProfile?.wpPath || String(profile?.ssh?.wpPath || '').trim(),
+    DEPLOY_SITE_URL:
+      envUrl || listed?.siteUrl || fromProfile?.siteUrl || String(profile?.baseUrl || '').trim().replace(/\/$/, ''),
   };
   const guard = validateDeployEnv(env);
   if (!guard.ok) {
@@ -145,7 +156,7 @@ export function runEvalFile(relFile, extraEnv = {}, extraArgs = '') {
   if (!loaded.ok) throw new Error(`wp-remote: ${loaded.reason}`);
   const local = path.join(ROOT, relFile);
   if (!fs.existsSync(local)) throw new Error(`wp-remote: dosya yok ${relFile}`);
-  const wpPath = resolveWpPath(loaded.env).replace(/'/g, `'\\''`);
+  const wpPath = resolveWpPath(loaded.env);
   const b64 = fs.readFileSync(local).toString('base64');
   const envParts = [];
   for (const [k, v] of Object.entries(extraEnv || {})) {
@@ -155,18 +166,13 @@ export function runEvalFile(relFile, extraEnv = {}, extraArgs = '') {
     envParts.push(`${k}='${String(v).replace(/'/g, `'\\''`)}'`);
   }
   const prefix = envParts.length ? `${envParts.join(' ')} ` : '';
-  const extra = extraArgs ? ` ${extraArgs}` : '';
-  return remote(
-    loaded.env,
-    [
-      `TMP=$(mktemp /tmp/wdp-eval-XXXX.php)`,
-      `echo '${b64}' | base64 -d > "$TMP"`,
-      `${prefix}wp eval-file "$TMP"${extra} --path='${wpPath}'`,
-      `EC=$?`,
-      `rm -f "$TMP"`,
-      `exit $EC`,
-    ].join('\n')
-  );
+  const cmd = buildGuardedEvalFileCommand(wpPath, {
+    tmpPrefix: 'wdp-eval',
+    extraArgs,
+    b64,
+  });
+  const withEnv = prefix ? cmd.replace(`wp --path=`, `${prefix}wp --path=`) : cmd;
+  return remote(loaded.env, withEnv);
 }
 
 export function purgeCaches(env) {

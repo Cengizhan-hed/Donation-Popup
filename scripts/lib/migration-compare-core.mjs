@@ -3,7 +3,34 @@
  */
 import { canonical, valueHash, valueType, flattenOptionEntries, flattenValue } from './migration-util.mjs';
 
-export const CLASSES = ['KORUNDU', 'TAŞINDI', 'DEĞİŞTİ', 'VARSAYILANA DÖNDÜ', 'KAYBOLDU', 'YENİ'];
+export const CLASSES = [
+  'KORUNDU',
+  'TAŞINDI',
+  'DEĞİŞTİ',
+  'VARSAYILANA DÖNDÜ',
+  'KAYBOLDU',
+  'YENİ',
+  'BEKLENEN DEĞİŞİM',
+];
+
+export const EXPECTED_CHANGE_KEYS = [
+  'wdp_version',
+  'wdp_db_version',
+  'wdp_cache_version',
+  'wdp_list_cache_version',
+  'wdp_migration_log',
+];
+
+/**
+ * Sürüm / önbellek / log / wdp_migrated_* — çıkış 2 üretmez.
+ * @param {string} key
+ */
+export function isExpectedChangeKey(key) {
+  const k = String(key || '').replace(/^option:/, '');
+  if (EXPECTED_CHANGE_KEYS.includes(k)) return true;
+  if (k.startsWith('wdp_migrated_')) return true;
+  return false;
+}
 
 const MISSING = Symbol('missing');
 
@@ -91,7 +118,9 @@ export function compareSnapshots(before, after, opts = {}) {
   const counts = Object.fromEntries(CLASSES.map((c) => [c, 0]));
   for (const r of rows) counts[r.class] += 1;
 
-  const problems = rows.filter((r) => r.class === 'KAYBOLDU' || r.class === 'VARSAYILANA DÖNDÜ' || r.class === 'DEĞİŞTİ');
+  const problems = rows.filter(
+    (r) => r.class === 'KAYBOLDU' || r.class === 'VARSAYILANA DÖNDÜ' || r.class === 'DEĞİŞTİ'
+  );
   const byteIdentical = canonical(a) === canonical(b);
 
   return {
@@ -122,9 +151,10 @@ function expandRemap(remap, a, b) {
 function classify(key, va, vb, defaults, fieldDefaults) {
   const hasA = va !== MISSING;
   const hasB = vb !== MISSING;
-  if (!hasA && hasB) return 'YENİ';
-  if (hasA && !hasB) return 'KAYBOLDU';
+  if (!hasA && hasB) return isExpectedChangeKey(key) ? 'BEKLENEN DEĞİŞİM' : 'YENİ';
+  if (hasA && !hasB) return isExpectedChangeKey(key) ? 'BEKLENEN DEĞİŞİM' : 'KAYBOLDU';
   if (canonical(va) === canonical(vb)) return 'KORUNDU';
+  if (isExpectedChangeKey(key)) return 'BEKLENEN DEĞİŞİM';
   const def = lookupDefault(key, defaults, fieldDefaults);
   if (def !== undefined && canonical(vb) === canonical(def) && canonical(va) !== canonical(def)) {
     return 'VARSAYILANA DÖNDÜ';
@@ -214,10 +244,10 @@ export function formatCompareMarkdown(result, meta = {}) {
  */
 export function compareIdempotent(a, b) {
   const r = compareSnapshots(a, b, {});
-  const notSame = r.rows.filter((row) => row.class !== 'KORUNDU');
+  const notSame = r.rows.filter((row) => row.class !== 'KORUNDU' && row.class !== 'BEKLENEN DEĞİŞİM');
   return {
     ...r,
-    fail: notSame.length > 0 || !r.identical,
+    fail: notSame.length > 0,
     problems: notSame,
   };
 }

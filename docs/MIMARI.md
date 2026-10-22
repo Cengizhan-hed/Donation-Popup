@@ -470,11 +470,11 @@ Canlı/staging’de göçü çalıştırmadan önce yerel prova. Eklenti kodu (P
 
 | Komut | Ne yapar | Kanıt |
 |-------|----------|-------|
-| `npm run migration:snapshot -- --env local --label <etiket>` | Eski+güncel kaynak ağacından anahtar çıkarır; `wdp_%` + eski önekler + ürün meta; WC mağaza ayarları salt okunur. `--env staging\|ikram` `spawnGuarded` (yalnız Claude). Eval yazma yok. | `scripts/migration-snapshot.mjs`, `tests/e2e/helpers/migration-snapshot.php` |
-| `npm run migration:rehearsal` | Temiz yerel WP+WC → eski eklenti (önce `build/handoff/onceki.zip` 10.28.12, varsa 10.3.1) → görüntü → güncel kopya + `upgrader_process_complete`/`maybe_run` → görüntü → karşılaştır → göç 2. kez (idempotent). | `scripts/migration-rehearsal.mjs`, `tests/local-wp/migration-ops.php` |
-| `npm run migration:compare -- --before a.json --after b.json` | Sınıflar: KORUNDU, TAŞINDI (eşleme `class-migrations.php`), DEĞİŞTİ, VARSAYILANA DÖNDÜ, KAYBOLDU, YENİ. Çıkış 2: KAYBOLDU/VARSAYILANA DÖNDÜ/DEĞİŞTİ > 0. `--idempotent` birebir. | `scripts/lib/migration-compare-core.mjs` |
+| `npm run migration:snapshot -- --env local --label <etiket>` | Eski+güncel kaynak ağacından anahtar çıkarır; `wdp_%` + eski önekler + ürün meta; WC mağaza ayarları salt okunur. `--env staging\|ikram`: profil `ssh.alias/wpPath/siteUrl` + `findTargetById`/`findTargetByAlias`; komut `wp --path=<wpPath> eval-file` (`spawnGuarded`, yalnız Claude). Eval yazma yok. | `scripts/migration-snapshot.mjs`, `tests/e2e/helpers/migration-snapshot.php`, `buildGuardedEvalFileCommand` |
+| `npm run migration:rehearsal -- --from 10.3.1` | Temiz yerel WP+WC → eski eklenti (`build/migration/source/10.3.1/woo-donation-popup` veya `onceki.zip` 10.28.12) → görüntü → güncel kopya + `upgrader_process_complete`/`maybe_run` → görüntü → karşılaştır → göç 2. kez (idempotent). | `scripts/migration-rehearsal.mjs`, `tests/local-wp/migration-ops.php` |
+| `npm run migration:compare -- --before a.json --after b.json` | Sınıflar: KORUNDU, TAŞINDI, DEĞİŞTİ, VARSAYILANA DÖNDÜ, KAYBOLDU, YENİ, **BEKLENEN DEĞİŞİM**. Çıkış 2: KAYBOLDU/VARSAYILANA DÖNDÜ/DEĞİŞTİ > 0 (sürüm/önbellek/log/`wdp_migrated_*` hariç). `--idempotent` birebir (BEKLENEN DEĞİŞİM fail değil). | `scripts/lib/migration-compare-core.mjs` |
 
-Anahtar çıkarıcı: `get_option`/`update_option`/`add_option`/`get_post_meta`/`update_post_meta` + `wdp_` / `_wdp_` dizgi sabitleri (`scripts/lib/migration-keys.mjs`). TAŞINDI tablosu: `WDP_Migrations::BACKUP_OPTION` → `BACKUP_RESTORED_OPTION`. 10.3.1 kaynağı yoksa prova 10.28.12 ile kanıtlanır; 10.3.1 çalıştırmasını Claude yapar.
+Anahtar çıkarıcı: `get_option`/`update_option`/`add_option`/`get_post_meta`/`update_post_meta` + `wdp_` / `_wdp_` dizgi sabitleri (`scripts/lib/migration-keys.mjs`). TAŞINDI tablosu: `WDP_Migrations::BACKUP_OPTION` → `BACKUP_RESTORED_OPTION`. BEKLENEN DEĞİŞİM: `wdp_version`, `wdp_db_version`, `wdp_cache_version`, `wdp_list_cache_version`, `wdp_migration_log`, `wdp_migrated_*`. 10.3.1 kaynağı `build/migration/source/10.3.1/woo-donation-popup/` (git dışı).
 
 `.env.deploy` / `.env.e2e` / `.env.*.ikram` **okunmadı** (görev yasağı); yalnızca anahtar adları şablonlarda belgelidir.
 
@@ -508,6 +508,7 @@ Salt okunur envanter (yazma yok; `spawnGuarded` zorunlu). Claude çalıştırır
 | Çıktı | `build/discovery/<env>.json` + `.md`; kanarya `build/e2e/canary/<env>-baseline.json` |
 | Engel | `facebook-for-woocommerce`, `official-facebook-pixel`, `google-listings-and-ads`, `google-site-kit` aktifse `REMOTE-BLOCKED` ve çıkış **3** |
 | Güvenlik | Sabit eval listesi; değer/e-posta/URL/anahtar yazılmaz; bağlantı hatasında en fazla 1 tekrar |
+| Woo sayfa türü | `has_block('woocommerce/checkout'\|'woocommerce/cart')`, `has_shortcode`, içerikte `[woocommerce_checkout` / `[woocommerce_cart`, `CartCheckoutUtils::is_*_block_default()`. Sonuç: `block` / `classic` / `classic-in-builder` / `unknown`. İçerik yazılmaz. | `scripts/lib/remote-discover-lib.mjs` `classifyWooPageKind` / `EVAL_WOO` |
 
 ### Test ortamları ve profiller
 
@@ -677,11 +678,11 @@ Aynı commit’te `tests/e2e/helpers/cleanup-e2e.php`: `const EMAIL_NEEDLE` vark
 - Canlı tarama: `scripts/lib/live-target-scan.mjs` `npm run verify` zincirinde; ihlal dosya:satır ile kırmızı.
 - Silme: `tests/e2e/helpers/cleanup-e2e.php` + `safe-remote-write.mjs`. Koşullar: (a) `_wdp_e2e_test=<run_id>` (sabit `"1"` değil), (b) `build/e2e/run-registry.json` içinde, (c) beklenen post_type. Defter boşsa hiçbir şey silinmez.
 - Kara liste: `page`, `attachment`, `nav_menu_item`, `wp_template*`, `elementor_library`, Woo/WP çekirdek sayfa ID’leri (`page_on_front`, `woocommerce_*_page_id`, eklenti başarı sayfası). Kullanıcı silme: meta + e-posta + defter; içerik varsa red; `wp_delete_user($id, null)` yalnız içerik 0 iken.
-- Fixture: `npm run e2e:bootstrap -- --env local`. `--env staging\|ikram --dry-run` uzak yazmadan plan listeler (`_wdp_e2e_test=<run_id>`, `private`, katalog/arama gizli, sayfa/menü/kategori/görsel/ayar yok, kayıt defteri). Gerçek kurulum: kanarya → ürünler → kanarya (yalnız defterdeki yeni ürünler beklenir). Uzak gerçek koşu yalnız Claude. Mutasyon testleri (amount-options, form-fields, campaign-blocks, product-theme, shortcodes, empty-price) fixture yoksa `e2e:bootstrap çalıştırın` ile FAIL. Gizli ürün listede görünmez; liste/kart testleri gerçek katalog ürünlerini yalnız okur.
+- Fixture: `npm run e2e:bootstrap -- --env local`. `--env staging\|ikram --dry-run` uzak yazmadan plan listeler (`_wdp_e2e_test=<run_id>`, `private`, katalog/arama gizli, sayfa/menü/kategori/görsel/ayar yok, kayıt defteri). Gerçek kurulum: kanarya → ürünler → kanarya (yalnız defterdeki yeni ürünler beklenir). Tek satır: `Kanarya: önce TEMİZ/KIRMIZI, sonra TEMİZ/KIRMIZI (beklenen yeni: N ürün)`. Uzak gerçek koşu yalnız Claude. Mutasyon testleri (amount-options, form-fields, campaign-blocks, product-theme, shortcodes, empty-price) fixture yoksa `e2e:bootstrap çalıştırın` ile FAIL. Gizli ürün listede görünmez; liste/kart testleri gerçek katalog ürünlerini yalnız okur.
 
 ### Kanarya
 
-`tests/e2e/helpers/canary.mjs` + `canary-snapshot.php` yalnız okur. Koşu başı/sonu karşılaştırma; defter dışı fark → `build/e2e/CANARY-ALERT.txt` + kırmızı durdurma. Ön kontrol: sepet/ödeme/ana sayfa çöpteyse test başlamaz.
+`tests/e2e/helpers/canary.mjs` + `canary-snapshot.php` yalnız okur. `npm run e2e:canary -- --env staging\|ikram\|local`: salt okunur ölçüm → `build/e2e/canary/<env>-baseline.json` ile karşılaştır (kayıt defteri `build/e2e/run-registry.json`). Defter dışı fark → `build/e2e/CANARY-ALERT.txt` + kırmızı durdurma. `--update-baseline` yalnız TEMİZ iken (fark yok veya yalnız defterde). Profil `ssh.alias/wpPath/siteUrl` + `spawnGuarded`; komut `wp --path=<wpPath> eval-file`. Ön kontrol: sepet/ödeme/ana sayfa çöpteyse test başlamaz.
 
 ### Yerel kanıt ortamı
 
