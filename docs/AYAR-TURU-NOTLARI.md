@@ -416,3 +416,13 @@ Kullanıcı yönergesi önceki tüm görev metinlerinin yerini aldı; CLAUDE.md 
 | Ikram | WP 7.1.3, WC 11.2.1, blocksy-child, en_US, GBP 2 ondalık "," ".", GB, HPOS açık, eklenti 10.34.2, 10 aktif eklenti; ölçüm/SMS/SMTP/webhook yok; ödeme yöntemlerinin hepsi kapalı; coming soon açık, blog_public=0. Sepet/ödeme klasik |
 | Ikram bootstrap | 7 private + gizli işaretli test ürünü (id 913–919), fixtures build/e2e/fixtures-ikram-aid.json |
 | 10.3.1 kaynağı | staging30'dan salt okunur indirildi → build/migration/source/10.3.1 (git dışı) |
+
+## FAZ 4 yerel matris bulguları (4A, 2026-10-22; testler 60/60 geçti ama ekran incelemesinde)
+
+| # | Bulgu | Görev |
+|---|-------|-------|
+| M1 | Tutar alanı yer tutucusu `€ min: 10`: sembol mağaza ayarı (right_space) yerine hep solda | Faz 5 (Woo sayı/sembol biçimi) + matris testine sembol konumu kontrolü eklenecek |
+| M2 | İngilizce sitede sepet satırı etiketleri Türkçe (Bağışçı, E-posta, İthaf) | Faz 5 |
+| M3 | Sepette telefon `(905551234567)`: `+` ve biçim yok | Faz 5 |
+| M4 | Telefon ön eki EUR/US mağazada `+90` (mağaza ülkesinden gelmeli) | Faz 5 (bilinen) |
+| M5 | TT5: form alanı metinleri soldan girintili, simge yok → boşluk (hizasız) | Faz 7 (G26) |
