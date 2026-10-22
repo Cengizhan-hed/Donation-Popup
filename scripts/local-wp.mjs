@@ -41,7 +41,13 @@ function download(url, dest) {
   run('curl', ['-fsSL', '-o', dest, url]);
 }
 
-function writeWpConfig(wpDir = WP_DIR) {
+/**
+ * @param {string} [wpDir]
+ * @param {{ homeUrl?: string }} [opts]
+ */
+export function writeWpConfig(wpDir = WP_DIR, opts = {}) {
+  const home = String(opts.homeUrl || 'http://127.0.0.1:8080').replace(/\/$/, '');
+  const homePhp = home.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
   const cfg = `<?php
 define('DB_NAME', 'local_wdp');
 define('DB_USER', 'root');
@@ -65,8 +71,8 @@ define('WP_DEBUG_DISPLAY', false);
 define('WP_DEBUG_LOG', false);
 define('WP_MEMORY_LIMIT', '512M');
 define('DISABLE_WP_CRON', true);
-define('WP_HOME', 'http://127.0.0.1:8080');
-define('WP_SITEURL', 'http://127.0.0.1:8080');
+define('WP_HOME', '${homePhp}');
+define('WP_SITEURL', '${homePhp}');
 if (empty(\\$_SERVER['HTTP_HOST'])) {
   \\$_SERVER['HTTP_HOST'] = '127.0.0.1';
   \\$_SERVER['SERVER_NAME'] = '127.0.0.1';
@@ -78,6 +84,16 @@ if (!defined('ABSPATH')) {
 require_once ABSPATH . 'wp-settings.php';
 `;
   fs.writeFileSync(path.join(wpDir, 'wp-config.php'), cfg.replace(/\\\$/g, '$'), 'utf8');
+}
+
+/** @param {string} [wpDir] */
+export function sqliteDbDir(wpDir = WP_DIR) {
+  return path.join(wpDir, 'wp-content/database');
+}
+
+/** @param {string} [wpDir] */
+export function sqliteDbFile(wpDir = WP_DIR) {
+  return path.join(sqliteDbDir(wpDir), '.ht.sqlite');
 }
 
 function copyCachedZip(dest, fallbacks) {

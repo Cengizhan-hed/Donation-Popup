@@ -1,0 +1,100 @@
+{
+  "version": 1,
+  "basePort": 8899,
+  "defaultWorkers": 3,
+  "themes": {
+    "twentytwentyfive": { "slug": "twentytwentyfive", "kind": "block" },
+    "storefront": { "slug": "storefront", "kind": "classic" }
+  },
+  "stores": {
+    "try": {
+      "currency": "TRY",
+      "decimals": 0,
+      "thousandSeparator": ".",
+      "decimalSeparator": ",",
+      "symbolPosition": "left",
+      "symbol": "₺",
+      "country": "TR",
+      "city": "Istanbul",
+      "postcode": "34000",
+      "address": "Test Cad. 1",
+      "state": "TR34",
+      "stateLabel": "Istanbul",
+      "amount": 1234
+    },
+    "eur": {
+      "currency": "EUR",
+      "decimals": 2,
+      "thousandSeparator": ".",
+      "decimalSeparator": ",",
+      "symbolPosition": "right_space",
+      "symbol": "€",
+      "country": "DE",
+      "city": "Berlin",
+      "postcode": "10115",
+      "address": "Teststr. 1",
+      "state": "DE-BE",
+      "stateLabel": "Berlin",
+      "amount": 12.5
+    },
+    "usd": {
+      "currency": "USD",
+      "decimals": 2,
+      "thousandSeparator": ",",
+      "decimalSeparator": ".",
+      "symbolPosition": "left",
+      "symbol": "$",
+      "country": "US",
+      "city": "New York",
+      "postcode": "10001",
+      "address": "1 Test St",
+      "state": "NY",
+      "stateLabel": "New York",
+      "amount": 12.5
+    },
+    "gbp": {
+      "currency": "GBP",
+      "decimals": 2,
+      "thousandSeparator": ",",
+      "decimalSeparator": ".",
+      "symbolPosition": "left",
+      "symbol": "£",
+      "country": "GB",
+      "city": "London",
+      "postcode": "SW1A 1AA",
+      "address": "1 Test Road",
+      "state": "",
+      "amount": 12.5
+    }
+  },
+  "configs": [
+    {
+      "id": "tt5-try-blocks-hpos",
+      "theme": "twentytwentyfive",
+      "store": "try",
+      "checkout": "blocks",
+      "hpos": true
+    },
+    {
+      "id": "tt5-eur-classic-nohpos",
+      "theme": "twentytwentyfive",
+      "store": "eur",
+      "checkout": "classic",
+      "hpos": false
+    },
+    {
+      "id": "sf-usd-blocks-nohpos",
+      "theme": "storefront",
+      "store": "usd",
+      "checkout": "blocks",
+      "hpos": false
+    },
+    {
+      "id": "sf-gbp-classic-hpos",
+      "theme": "storefront",
+      "store": "gbp",
+      "checkout": "classic",
+      "hpos": true
+    }
+  ]
+}
