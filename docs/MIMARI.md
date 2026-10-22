@@ -684,7 +684,7 @@ Aynı commit’te `tests/e2e/helpers/cleanup-e2e.php`: `const EMAIL_NEEDLE` vark
 
 ### Kanarya
 
-`tests/e2e/helpers/canary.mjs` + `canary-snapshot.php` yalnız okur. `npm run e2e:canary -- --env staging\|ikram\|local`: salt okunur ölçüm → `build/e2e/canary/<env>-baseline.json` ile karşılaştır (kayıt defteri `build/e2e/run-registry.json`). Defter dışı fark → `build/e2e/CANARY-ALERT.txt` + kırmızı durdurma. `--update-baseline` yalnız TEMİZ iken (fark yok veya yalnız defterde). Profil `ssh.alias/wpPath/siteUrl` + `spawnGuarded`; komut `wp --path=<wpPath> eval-file`. Ön kontrol: sepet/ödeme/ana sayfa çöpteyse test başlamaz.
+`tests/e2e/helpers/canary.mjs` + `canary-snapshot.php` yalnız okur. `npm run e2e:canary -- --env staging\|ikram\|local`: salt okunur ölçüm → `build/e2e/canary/<env>-baseline.json` ile karşılaştır (kayıt defteri `build/e2e/run-registry.json`). Defter dışı fark → `build/e2e/CANARY-ALERT.txt` + kırmızı durdurma. `--update-baseline` yalnız TEMİZ iken (fark yok veya yalnız defterde). Profil `ssh.alias/wpPath/siteUrl` + `spawnGuarded`; komut `wp --path=<wpPath> eval-file`. Ön kontrol (site-bağımsız): id 0 = ayarlı değil, sorun değil (`page_for_posts`, `page_on_front`, `woocommerce_terms_page_id`, `woocommerce_myaccount_page_id`, `woocommerce_shop_page_id`). `page_on_front` yalnız `show_on_front=page` ve id>0 iken var/publish olmalı. KIRMIZI yalnız ayarlı (id>0) sayfa yok/çöp/taslak. `woocommerce_cart_page_id` / `woocommerce_checkout_page_id` id 0 → UYARI (engel değil; blok sepet/ödeme şablon da olabilir). KIRMIZI olunca CANARY-ALERT option adı + id + durum yazar (içerik yok; boş `pre-bootstrap` etiketi yok).
 
 ### Yerel kanıt ortamı
 

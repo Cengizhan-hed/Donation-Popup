@@ -9,6 +9,7 @@
  * Kayıt defteri dışındaki fark: KIRMIZI + build/e2e/CANARY-ALERT.txt
  * --update-baseline yalnız TEMİZ iken (fark yok veya yalnız defterde).
  */
+import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { isRemoteFrozen, FREEZE_MESSAGE } from '../../scripts/lib/remote-guard.mjs';
 import { canonicalEnv } from '../../scripts/lib/remote-discover-lib.mjs';
@@ -18,12 +19,10 @@ import {
   snapshotCanary,
   snapshotCanaryLocal,
   canaryBaselinePath,
-  readBaseline,
-  evaluateCanaryAgainstBaseline,
   writeSnapshot,
   writeCanaryAlert,
   formatCanaryDiff,
-  preflightCanary,
+  evaluateCanaryHealth,
 } from './helpers/canary.mjs';
 
 function fail(msg, code = 1) {
@@ -62,25 +61,29 @@ export function runCanary(opts) {
       ? snapshotCanary()
       : snapshotCanaryLocal();
 
-  const pre = preflightCanary(current);
-  const baseline = readBaseline(envName);
   const registry = opts.registry || loadRegistry();
-  const evald = evaluateCanaryAgainstBaseline(baseline, current, registry, {
+  const health = evaluateCanaryHealth(current, envName, registry, {
     updateBaseline: !!opts.updateBaseline,
+    baseline: opts.baseline,
   });
-
-  const ok = evald.ok && pre.ok;
+  const pre = health.pre;
+  const evald = health.evald;
+  const diffs = health.diffs;
+  const warnings = health.warnings;
+  const ok = health.ok;
   const status = ok ? 'TEMİZ' : 'KIRMIZI';
-  const diffs = [...(evald.diffs || []), ...(pre.ok ? [] : pre.diffs || [])];
+  const alertDiff = { ok: false, diffs, warnings };
 
   if (!ok) {
-    writeCanaryAlert({ ok: false, diffs }, `e2e:canary --env ${envName}`);
+    writeCanaryAlert(alertDiff, `e2e:canary --env ${envName}`);
+  } else if (warnings.length) {
+    console.warn(formatCanaryDiff({ ok: true, diffs: [], warnings }));
   }
 
   if (opts.updateBaseline) {
     if (!evald.canUpdate || !pre.ok) {
       throw new Error(
-        `--update-baseline reddedildi: fark kayıt defteri dışında veya ön kontrol kırmızı (${formatCanaryDiff({ ok: false, diffs })})`
+        `--update-baseline reddedildi: fark kayıt defteri dışında veya ön kontrol kırmızı (${formatCanaryDiff(alertDiff)})`
       );
     }
     const file = canaryBaselinePath(envName);
@@ -90,9 +93,9 @@ export function runCanary(opts) {
 
   console.log(`Kanarya ${envName}: ${status}`);
   if (!ok) {
-    console.error(formatCanaryDiff({ ok: false, diffs }));
+    console.error(formatCanaryDiff(alertDiff));
   }
-  return { status, ok, diffs, evald, pre, current };
+  return { status, ok, diffs, warnings, evald, pre, current };
 }
 
 function main() {

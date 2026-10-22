@@ -16,7 +16,22 @@ import { runGuardedSsh, canonicalEnv } from '../../../scripts/lib/remote-discove
 export const CANARY_SNAPSHOT_FILE = 'tests/e2e/helpers/canary-snapshot.php';
 export const CANARY_ALERT_PATH = path.join(ROOT, 'build/e2e/CANARY-ALERT.txt');
 
-const CORE_OPTION_IDS = [
+/** Ayarlı (id>0) iken var/yayında olmalı; id 0 = ayarlı değil, sorun değil. */
+export const CORE_OPTIONAL_PAGE_IDS = [
+  'page_for_posts',
+  'page_on_front',
+  'woocommerce_myaccount_page_id',
+  'woocommerce_shop_page_id',
+  'woocommerce_terms_page_id',
+];
+
+/** id 0 ise UYARI (engel değil: blok sepet/ödeme şablon da olabilir). */
+export const CORE_WARN_IF_UNSET_IDS = [
+  'woocommerce_cart_page_id',
+  'woocommerce_checkout_page_id',
+];
+
+export const CORE_OPTION_IDS = [
   'page_on_front',
   'page_for_posts',
   'woocommerce_cart_page_id',
@@ -25,6 +40,19 @@ const CORE_OPTION_IDS = [
   'woocommerce_shop_page_id',
   'woocommerce_terms_page_id',
 ];
+
+/**
+ * @param {object} options
+ * @param {string} key
+ * @returns {number}
+ */
+export function optionPageId(options, key) {
+  const raw = options?.[key];
+  if (raw === undefined || raw === null || raw === '') return 0;
+  const n = Number.parseInt(String(raw), 10);
+  if (!Number.isFinite(n) || n <= 0) return 0;
+  return n;
+}
 
 /** @type {null | (() => object)} */
 let snapshotOverride = null;
@@ -214,21 +242,35 @@ export function compareCanary(before, after, opts = {}) {
   return { ok: diffs.length === 0, diffs };
 }
 
+function formatDiffLine(d) {
+  if (d.change === 'core-bad-status') {
+    return `çekirdek sayfa id=${d.id} (${d.option}) çöpte/taslakta: ${d.status} — elle düzeltin`;
+  }
+  if (d.change === 'core-missing') return `çekirdek sayfa yok: ${d.option} id=${d.id}`;
+  if (d.change === 'core-unset') return `uyarı: ${d.option} ayarlı değil (id=0)`;
+  if (d.change === 'missing-baseline') return 'baseline yok';
+  if (d.option) return `${d.change === 'count' ? 'sayı' : 'option'} ${d.option}: ${d.from} → ${d.to}`;
+  if (d.change === 'deleted') return `silindi id=${d.id} type=${d.type} status=${d.status}`;
+  if (d.change === 'created') return `yeni id=${d.id} type=${d.type} status=${d.status}`;
+  if (d.change === 'status') return `durum id=${d.id} type=${d.type}: ${d.from} → ${d.to}`;
+  if (d.change === 'modified') return `modified id=${d.id} type=${d.type}: ${d.from} → ${d.to}`;
+  if (d.change) return `${d.change}${d.option ? ` ${d.option}` : ''}${d.id != null ? ` id=${d.id}` : ''}${d.status ? ` status=${d.status}` : ''}`;
+  return JSON.stringify(d);
+}
+
 export function formatCanaryDiff(diff) {
-  if (diff.ok) return 'kanarya: fark yok';
-  const lines = (diff.diffs || []).map((d) => {
-    if (d.change === 'core-bad-status') {
-      return `çekirdek sayfa id=${d.id} (${d.option}) çöpte/taslakta: ${d.status} — elle düzeltin`;
-    }
-    if (d.change === 'core-missing') return `çekirdek sayfa yok: ${d.option} id=${d.id}`;
-    if (d.option) return `${d.change === 'count' ? 'sayı' : 'option'} ${d.option}: ${d.from} → ${d.to}`;
-    if (d.change === 'deleted') return `silindi id=${d.id} type=${d.type} status=${d.status}`;
-    if (d.change === 'created') return `yeni id=${d.id} type=${d.type} status=${d.status}`;
-    if (d.change === 'status') return `durum id=${d.id} type=${d.type}: ${d.from} → ${d.to}`;
-    if (d.change === 'modified') return `modified id=${d.id} type=${d.type}: ${d.from} → ${d.to}`;
-    return JSON.stringify(d);
-  });
-  return `kanarya farkları (${lines.length}):\n${lines.join('\n')}`;
+  const diffs = diff.diffs || [];
+  const warnings = diff.warnings || [];
+  if (diff.ok && warnings.length === 0) return 'kanarya: fark yok';
+  const lines = diffs.map(formatDiffLine);
+  const warnLines = warnings.map(formatDiffLine);
+  const parts = [];
+  if (!diff.ok && lines.length) parts.push(`kanarya farkları (${lines.length}):\n${lines.join('\n')}`);
+  if (warnLines.length) parts.push(`kanarya uyarıları (${warnLines.length}):\n${warnLines.join('\n')}`);
+  if (diff.ok) {
+    return parts.length ? `kanarya: fark yok\n${parts.join('\n')}` : 'kanarya: fark yok';
+  }
+  return parts.join('\n') || 'kanarya farkları (0):';
 }
 
 export function compareWithRegistry(before, after, registry) {
@@ -239,44 +281,107 @@ export function compareWithRegistry(before, after, registry) {
   });
 }
 
+function findPostById(posts, id) {
+  return posts.find((p) => Number(p.id) === id);
+}
+
+function pushConfiguredPageIssue(diffs, key, id, post, { requirePublish = false } = {}) {
+  if (!post) {
+    diffs.push({ option: key, change: 'core-missing', id });
+    return;
+  }
+  const status = String(post.status || '');
+  const bad = requirePublish
+    ? status !== 'publish'
+    : status === 'trash' || status === 'draft';
+  if (bad) {
+    diffs.push({
+      option: key,
+      change: 'core-bad-status',
+      id,
+      status,
+    });
+  }
+}
+
 /**
- * Koşu başlamadan: sepet/ödeme/ana sayfa çöpte mi, ayarlar bozuk mu?
+ * Koşu başlamadan: ayarlı çekirdek sayfa yok/çöp/taslak mı?
+ * id 0 = ayarlı değil → sorun değil (yazılar sayfası, vitrin, hesap, şartlar, ana sayfa).
+ * page_on_front yalnız show_on_front=page ve id>0 iken var/publish olmalı.
+ * sepet/ödeme id 0 → UYARI (engel değil; blok şablon da olabilir).
  */
 export function preflightCanary(snap) {
   const diffs = [];
+  const warnings = [];
   const posts = Array.isArray(snap?.posts) ? snap.posts : [];
   const options = snap?.options || {};
+  const showOnFront = String(options.show_on_front || 'posts');
+
   for (const key of CORE_OPTION_IDS) {
-    const id = Math.abs(Number.parseInt(String(options[key] || '0'), 10) || 0);
+    const id = optionPageId(options, key);
+    if (key === 'page_on_front') {
+      if (showOnFront !== 'page' || !id) continue;
+      pushConfiguredPageIssue(diffs, key, id, findPostById(posts, id), { requirePublish: true });
+      continue;
+    }
     if (!id) {
-      diffs.push({ option: key, change: 'core-missing', id: 0 });
+      if (CORE_WARN_IF_UNSET_IDS.includes(key)) {
+        warnings.push({ option: key, change: 'core-unset', id: 0 });
+      }
       continue;
     }
-    const post = posts.find((p) => Number(p.id) === id);
-    if (!post) {
-      diffs.push({ option: key, change: 'core-missing', id });
-      continue;
-    }
-    if (post.status === 'trash' || post.status === 'draft') {
-      diffs.push({
-        option: key,
-        change: 'core-bad-status',
-        id,
-        status: post.status,
-      });
+    pushConfiguredPageIssue(diffs, key, id, findPostById(posts, id));
+  }
+  return { ok: diffs.length === 0, diffs, warnings };
+}
+
+/**
+ * Ön kontrol + baseline. Bootstrap için allowMissingBaseline: baseline yoksa yalnız ön kontrol.
+ * @param {object} snap
+ * @param {string} envId
+ * @param {object} [registry]
+ * @param {{ updateBaseline?: boolean, allowMissingBaseline?: boolean, baseline?: object|null }} [opts]
+ */
+export function evaluateCanaryHealth(snap, envId, registry, opts = {}) {
+  const pre = preflightCanary(snap);
+  let baseline = opts.baseline;
+  if (baseline === undefined) {
+    try {
+      baseline = readBaseline(envId);
+    } catch (e) {
+      const msg = String(e && e.message ? e.message : e);
+      if (!/Kullanım:/.test(msg)) throw e;
+      baseline = null;
     }
   }
-  const front = String(options.show_on_front || '');
-  const pageOnFront = Math.abs(Number.parseInt(String(options.page_on_front || '0'), 10) || 0);
-  if (front === 'posts' && pageOnFront === 0) {
-    diffs.push({
-      option: 'show_on_front',
-      change: 'option',
-      from: 'page',
-      to: 'posts',
-    });
+  if (!baseline && opts.allowMissingBaseline) {
+    return {
+      ok: pre.ok,
+      diffs: [...(pre.diffs || [])],
+      warnings: [...(pre.warnings || [])],
+      pre,
+      evald: {
+        ok: true,
+        missingBaseline: true,
+        canUpdate: false,
+        status: pre.ok ? 'TEMİZ' : 'KIRMIZI',
+        diffs: [],
+      },
+    };
   }
-  return { ok: diffs.length === 0, diffs };
+  const evald = evaluateCanaryAgainstBaseline(
+    baseline,
+    snap,
+    registry || { created: [], mutated: [] },
+    opts
+  );
+  return {
+    ok: evald.ok && pre.ok,
+    diffs: [...(evald.diffs || []), ...(pre.diffs || [])],
+    warnings: [...(pre.warnings || [])],
+    pre,
+    evald,
+  };
 }
 
 export function writeCanaryAlert(diff, extra = '') {

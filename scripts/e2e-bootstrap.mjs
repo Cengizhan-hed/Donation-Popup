@@ -27,9 +27,7 @@ import {
   formatCanaryDiff,
   writeCanaryAlert,
   formatCanaryStatusLine,
-  evaluateCanaryAgainstBaseline,
-  readBaseline,
-  preflightCanary,
+  evaluateCanaryHealth,
 } from '../tests/e2e/helpers/canary.mjs';
 
 export const REMOTE_BOOTSTRAP_PHP = 'tests/e2e/helpers/bootstrap-e2e-products.php';
@@ -92,18 +90,18 @@ function createdProductCount(data) {
   return data.created.filter((row) => !row.type || String(row.type) === 'product').length;
 }
 
-function beforeCanaryOk(envId, snap) {
-  const pre = preflightCanary(snap);
-  let baseline = null;
-  try {
-    baseline = readBaseline(envId);
-  } catch (e) {
-    if (!/Kullanım:/.test(String(e && e.message ? e.message : e))) throw e;
-    baseline = null;
-  }
-  if (!baseline) return pre.ok;
-  const evald = evaluateCanaryAgainstBaseline(baseline, snap, loadRegistry());
-  return pre.ok && evald.ok;
+/**
+ * Bootstrap ön kanarya: baseline yoksa yalnız ön kontrol.
+ * KIRMIZI olunca CANARY-ALERT gerçek option/id/durum maddelerini alır.
+ * @param {string} envId
+ * @param {object} snap
+ * @param {object} [registry]
+ */
+export function evaluateBootstrapCanary(envId, snap, registry, opts = {}) {
+  return evaluateCanaryHealth(snap, envId, registry || loadRegistry(), {
+    allowMissingBaseline: true,
+    ...opts,
+  });
 }
 
 async function main() {
@@ -134,10 +132,14 @@ async function main() {
   if (!remote) ensureLocalWp();
 
   const before = remove ? null : takeSnap();
-  const beforeOk = before ? beforeCanaryOk(envId, before) : true;
+  const beforeState = before ? evaluateBootstrapCanary(envId, before) : { ok: true, diffs: [], warnings: [] };
+  const beforeOk = beforeState.ok;
   if (before && remote && !beforeOk) {
-    writeCanaryAlert({ ok: false, diffs: [{ change: 'pre-bootstrap' }] }, 'e2e:bootstrap önce kanarya');
-    fail('Kanarya önce KIRMIZI — bootstrap durdu.');
+    writeCanaryAlert(
+      { ok: false, diffs: beforeState.diffs, warnings: beforeState.warnings },
+      'e2e:bootstrap önce kanarya'
+    );
+    fail(`Kanarya önce KIRMIZI — bootstrap durdu.\n${formatCanaryDiff({ ok: false, diffs: beforeState.diffs, warnings: beforeState.warnings })}`);
   }
 
   let data;
