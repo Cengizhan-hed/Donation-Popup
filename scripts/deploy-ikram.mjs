@@ -2,7 +2,7 @@
 /**
  * Ikram Aid kurulum / geri alma.
  * Zip yerine rsync; SSH alias "ikramaid".
- * .env.deploy.ikram değerleri yazdırılmaz.
+ * Hedef = profil + izin listesi. .env.deploy.ikram hedef anahtarları kullanılmaz.
  *
  * KAYIT: ikramaid.uk izni Ikram Aid yayına alınmadan önce KALDIRILACAK.
  *
@@ -14,12 +14,10 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import dotenv from 'dotenv';
 import {
   IKRAM_ALLOW_REMOVAL_NOTE,
   findTargetByAlias,
   parsePluginVersion,
-  validateDeployEnv,
   validateRemoteSiteUrl,
   wpPathFlag,
   shellQuoteWpPath,
@@ -27,6 +25,8 @@ import {
 import { assertRemoteAllowed, spawnGuarded } from './lib/remote-guard.mjs';
 import { rsyncExcludeArgs } from './lib/pack-excludes.mjs';
 import { normalizeRemotePluginDir, IKRAM_WP_SLUG } from './lib/ikram-wp-guard.mjs';
+import { loadProfile, setActiveProfile } from '../tests/e2e/helpers/profile.mjs';
+import { loadDeployEnvSilent, setActiveDeployEnvFile } from '../tests/e2e/helpers/wp-remote.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
@@ -40,46 +40,18 @@ function fail(msg) {
 }
 
 function loadDeployEnv() {
-  const envPath = path.join(ROOT, '.env.deploy.ikram');
-  if (!fs.existsSync(envPath)) {
-    fail('Eksik .env.deploy.ikram (şablon: .env.deploy.ikram.example).');
-  }
-  const parsed = dotenv.parse(fs.readFileSync(envPath));
-  const alias = String(parsed.DEPLOY_SSH_ALIAS || 'ikramaid').trim();
-  const listed = findTargetByAlias(alias);
-  const envWp = String(parsed.DEPLOY_WP_PATH || '').trim();
-  const envUrl = String(parsed.DEPLOY_SITE_URL || '').trim().replace(/\/$/, '');
-  if (listed) {
-    if (envWp && envWp !== listed.wpPath) fail('eşleşmiyor');
-    if (envUrl && envUrl !== listed.siteUrl) fail('eşleşmiyor');
-  }
-  return {
-    DEPLOY_SSH_ALIAS: alias,
-    DEPLOY_SSH_HOST: String(parsed.DEPLOY_SSH_HOST || '').trim(),
-    DEPLOY_SSH_USER: String(parsed.DEPLOY_SSH_USER || '').trim(),
-    DEPLOY_SSH_PORT: String(parsed.DEPLOY_SSH_PORT || '').trim(),
-    DEPLOY_SSH_KEY: String(parsed.DEPLOY_SSH_KEY || '').trim(),
-    DEPLOY_WP_PATH: envWp || listed?.wpPath || '',
-    DEPLOY_SITE_URL: envUrl || listed?.siteUrl || '',
-  };
+  const profile = loadProfile('ikram');
+  setActiveProfile(profile);
+  setActiveDeployEnvFile(profile.deployEnvFile || '.env.deploy.ikram');
+  const loaded = loadDeployEnvSilent();
+  if (!loaded.ok) fail(loaded.reason);
+  return loaded.env;
 }
 
 function sshArgs(env) {
   const alias = String(env.DEPLOY_SSH_ALIAS || '').trim();
-  if (alias) {
-    return ['-o', 'BatchMode=yes', '-o', 'StrictHostKeyChecking=accept-new', alias];
-  }
-  return [
-    '-i',
-    env.DEPLOY_SSH_KEY,
-    '-p',
-    env.DEPLOY_SSH_PORT,
-    '-o',
-    'BatchMode=yes',
-    '-o',
-    'StrictHostKeyChecking=accept-new',
-    `${env.DEPLOY_SSH_USER}@${env.DEPLOY_SSH_HOST}`,
-  ];
+  if (!alias) fail('SSH alias yok (profil tek kaynak).');
+  return ['-o', 'BatchMode=yes', '-o', 'StrictHostKeyChecking=accept-new', alias];
 }
 
 function run(cmd, args, opts = {}, guardOpts = {}) {
@@ -106,15 +78,15 @@ function remote(env, remoteCmd) {
 
 function sshTransport(env) {
   const alias = String(env.DEPLOY_SSH_ALIAS || '').trim();
-  if (alias) return 'ssh -o BatchMode=yes -o StrictHostKeyChecking=accept-new';
-  return `ssh -i ${env.DEPLOY_SSH_KEY} -p ${env.DEPLOY_SSH_PORT} -o BatchMode=yes`;
+  if (!alias) fail('SSH alias yok (profil tek kaynak).');
+  return 'ssh -o BatchMode=yes -o StrictHostKeyChecking=accept-new';
 }
 
 function rsyncDest(env, remoteDir) {
   const alias = String(env.DEPLOY_SSH_ALIAS || '').trim();
   const dir = String(remoteDir || '').replace(/\/$/, '');
-  if (alias) return `${alias}:${dir}/`;
-  return `${env.DEPLOY_SSH_USER}@${env.DEPLOY_SSH_HOST}:${dir}/`;
+  if (!alias) fail('SSH alias yok (profil tek kaynak).');
+  return `${alias}:${dir}/`;
 }
 
 /**
@@ -174,8 +146,6 @@ function main() {
     fail(e && e.message ? e.message : String(e));
   }
   const env = loadDeployEnv();
-  const guard = validateDeployEnv(env);
-  if (!guard.ok) fail(guard.reason);
 
   const pluginFile = path.join(ROOT, 'woo-donation-popup.php');
   const localVersion = parsePluginVersion(fs.readFileSync(pluginFile, 'utf8'));

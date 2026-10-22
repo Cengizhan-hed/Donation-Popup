@@ -11,7 +11,7 @@ import { fileURLToPath } from 'node:url';
 import { loadDeployEnvSilent, remote, resolveWpPath, setActiveDeployEnvFile } from '../tests/e2e/helpers/wp-remote.mjs';
 import { TRASH_REPORT_EVAL_FILE } from './lib/ikram-wp-guard.mjs';
 import { validateRemoteSiteUrl, buildGuardedEvalFileCommand, wpPathFlag } from './lib/deploy-guards.mjs';
-import { loadProfile, resolveAllowedRemoteTarget, setActiveProfile } from '../tests/e2e/helpers/profile.mjs';
+import { loadProfile, setActiveProfile } from '../tests/e2e/helpers/profile.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
@@ -36,12 +36,10 @@ function runEvalFileReadOnly(env, relFile) {
 
 function main() {
   const profile = loadProfile('staging');
-  const resolved = resolveAllowedRemoteTarget(profile);
   setActiveProfile(profile);
   setActiveDeployEnvFile(profile.deployEnvFile || '.env.deploy');
   const loaded = loadDeployEnvSilent();
   if (!loaded.ok) fail(`staging:wp: ${loaded.reason}`);
-  if (loaded.env.DEPLOY_SSH_ALIAS !== resolved.alias) fail('eşleşmiyor');
   const env = loaded.env;
   const wpPath = String(env.DEPLOY_WP_PATH || resolveWpPath(env)).trim();
   const siteCheck = remote(env, `wp option get siteurl ${wpPathFlag(wpPath)}`);

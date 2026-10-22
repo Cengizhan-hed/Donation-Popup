@@ -459,7 +459,7 @@ Kaynak rehber: `docs/AYARLAR.md`. Teknik varsayılanlar normalizer / placement /
 | `npm run deploy:staging` | `scripts/deploy-staging.mjs` | `package.json` |
 | `npm run deploy:ikram` / `ship:ikram` | rsync + SSH alias `ikramaid` (`--dry-run` kuru çalıştırma); ardından `e2e:quick --env ikram` | `scripts/deploy-ikram.mjs`, `scripts/ship-ikram.mjs` |
 | `npm run ikram:wp` | Ikram WP-CLI köprüsü (yalnız alias `ikramaid`; kara liste yıkıcı komutlar) | `scripts/ikram-wp.mjs`, `scripts/lib/ikram-wp-guard.mjs` |
-| Canlı kilidi | İzin listesi: `staging30.hedefdernegi.org` + `ikramaid.uk`. Kilit klasör yoluna göre (`allowedRoot`). Kara liste: `hedefdernegi.org` (canlı). | `scripts/lib/deploy-guards.mjs` |
+| Canlı kilidi | İzin listesi: `staging30.hedefdernegi.org` + `ikramaid.uk`. Kilit klasör yoluna göre (`allowedRoot`). Kara liste: `hedefdernegi.org` (canlı). Uzak hedef **tek kaynak** = profil JSON + `ALLOWED_DEPLOY_TARGETS`. `.env.deploy*` / `.env.e2e*` hedef anahtarları (`DEPLOY_SITE_URL`, `DEPLOY_WP_PATH`, `DEPLOY_SSH_ALIAS`, `DEPLOY_SSH_*`, `E2E_BASE_URL`) uzak profilde kullanılmaz (farklıysa tek satır uyarı; canlıysa `KARA LİSTE`; koşu profille devam). `spawnGuarded` üçlüsü yine izin listesiyle birebir. | `scripts/lib/deploy-guards.mjs` `applyAllowlistOverEnv` |
 | Uzak doğrulama | `validateRemoteSiteUrl` birebir eşleşme | `scripts/lib/deploy-guards.mjs` |
 | `npm run ship:staging` | deploy + `e2e:quick --open-report` | `scripts/ship-staging.mjs` |
 | Rsync dışlama | `.distignore` tek kaynak (`pack-excludes.mjs`) | `scripts/lib/pack-excludes.mjs` |
@@ -476,7 +476,7 @@ Canlı/staging’de göçü çalıştırmadan önce yerel prova. Eklenti kodu (P
 
 Anahtar çıkarıcı: `get_option`/`update_option`/`add_option`/`get_post_meta`/`update_post_meta` + `wdp_` / `_wdp_` dizgi sabitleri (`scripts/lib/migration-keys.mjs`). TAŞINDI tablosu: `WDP_Migrations::BACKUP_OPTION` → `BACKUP_RESTORED_OPTION`. BEKLENEN DEĞİŞİM: `wdp_version`, `wdp_db_version`, `wdp_cache_version`, `wdp_list_cache_version`, `wdp_migration_log`, `wdp_migrated_*`. 10.3.1 kaynağı `build/migration/source/10.3.1/woo-donation-popup/` (git dışı).
 
-`.env.deploy` / `.env.e2e` / `.env.*.ikram` **okunmadı** (görev yasağı); yalnızca anahtar adları şablonlarda belgelidir.
+`.env.deploy` / `.env.e2e` / `.env.*.ikram` **okunmadı** (görev yasağı); yalnızca anahtar adları şablonlarda belgelidir. Uzak hedef env’den gelmez: `tests/e2e/profiles/*.json` + `ALLOWED_DEPLOY_TARGETS`. Env’de hedef anahtarı varsa ve listedekinden farklıysa koşu durmaz; `UYARI: <dosya> içindeki hedef anahtarları kullanılmıyor (profil tek kaynak)` (canlıysa ayrıca `KARA LİSTE`). Değer yazılmaz. Sır anahtarları (`E2E_USER` / `E2E_PASS` / coming soon) okunur; `wpCliAuth` profillerinde parola gerekmez.
 
 **KAYIT:** `ikramaid.uk` izni Ikram Aid yayına alınmadan önce **KALDIRILACAK** (`IKRAM_ALLOW_REMOVAL_NOTE` in `scripts/lib/deploy-guards.mjs`).
 
@@ -487,7 +487,7 @@ Anahtar çıkarıcı: `get_option`/`update_option`/`add_option`/`get_post_meta`/
 | Öğe | Değer |
 |-----|--------|
 | Komutlar | `e2e:quick`, `e2e:full`, `e2e:matrix`, `e2e`, `e2e:baseline`, `e2e:accept`, `e2e:stability`, `e2e:perf` (`package.json`) |
-| Ortam | Profil JSON `tests/e2e/profiles/*.json` + sır dosyası `.env.e2e` / `.env.e2e.ikram`; yükleyici `tests/e2e/helpers/env.mjs` |
+| Ortam | Profil JSON `tests/e2e/profiles/*.json` (uzak URL/SSH/yol tek kaynak) + sır dosyası `.env.e2e` / `.env.e2e.ikram` (parola vb.); yükleyici `tests/e2e/helpers/env.mjs` |
 | Çıktı | `build/e2e/current/<ortam>/<cihaz>/`; baseline `tests/e2e/__baseline__/<ortam>/<cihaz>/` |
 | Manifest | `run.json` (`tests/e2e/helpers/run-io.mjs`) |
 | Eşik | sayfa varsayılan **%0.5**; kabuk popup/panel **%0.1** |
@@ -519,7 +519,7 @@ Salt okunur envanter (yazma yok; `spawnGuarded` zorunlu). Claude çalıştırır
 | Ikram Aid | `tests/e2e/profiles/ikram-aid.json` | `.env.e2e.ikram` + `.env.deploy.ikram` | Blocksy + Elementor | GBP `£` | açık (paylaşım çerezi; option yazılmaz) | alias `ikramaid`, `~/www/ikramaid.uk/public_html` |
 | Yerel | `tests/e2e/profiles/local.json` | `.env.e2e.local` | — | — | — | yok |
 
-Siteye özel değer (sembol, ayırıcı, telefon ön eki, dil) testte sabit yazılmaz; profilden okunur. Ürün eşlemesi rol bazlı (`custom` / `fixed` / `shares` / `campaign`); uzak profilde ürün adı/ID yok (bootstrap fixture). `shares: null` → hisseli testler atlanır (gizlenmez). Uzak profillerde `allowMetaMutation: false` (yükleyici reddeder); mutasyon yalnız bootstrap ürünlerinde. `E2E_BASE_URL` uzak profilde `baseUrl` ile birebir aynı olmalı.
+Siteye özel değer (sembol, ayırıcı, telefon ön eki, dil) testte sabit yazılmaz; profilden okunur. Ürün eşlemesi rol bazlı (`custom` / `fixed` / `shares` / `campaign`); uzak profilde ürün adı/ID yok (bootstrap fixture). `shares: null` → hisseli testler atlanır (gizlenmez). Uzak profillerde `allowMetaMutation: false` (yükleyici reddeder); mutasyon yalnız bootstrap ürünlerinde. Uzak `E2E_BASE_URL` / `DEPLOY_*` env’den okunmaz; `resolveAllowedRemoteTarget` + izin listesi. Env farklıysa uyarı (durmaz); spawn üçlüsü yine birebir.
 
 **Sepet e-posta/ithaf gerileme (F9, `form-fields-cart-shows-email-dedication`):** Eklenti `display_donation_data_in_cart` 10.33.0 ile aynı (`includes/class-cart.php:388-479`; `git show 163fe09`). Store API `item_data` e-posta/ithaf basar (aynı filtre). 2/3 `form-fields` `onCart=/\/cart\/?/` + Hedef `wc_get_cart_url` kök/`/sepet/` 404. Asıl 404: Woo sepet sayfası `woocommerce_cart_page_id` **çöpte** (Hedef id 291 `trash`; `get_permalink` → `/?page_id=291` pathname `/`). Düzeltme (eklenti yok): `ensureWooCartPagePublished` (yalnız Hedef `allowMetaMutation`); `fillDonor` eksik alanda fail; teşhis JSON. `tests/e2e/helpers/staging-wp-meta.mjs`, `form-fields.mjs`.
 
@@ -674,8 +674,8 @@ Aynı commit’te `tests/e2e/helpers/cleanup-e2e.php`: `const EMAIL_NEEDLE` vark
 - Tek kapı: `scripts/lib/remote-guard.mjs` `assertRemoteAllowed` / `spawnGuarded` + `assertRemoteTarget`. `build/handoff/REMOTE_FREEZE` varken ssh/scp/sftp/rsync (uzak) yok. `node --test` / `WDP_UNIT_TEST=1` / `npm test` altında `spawnGuarded` gerçek ssh/scp/sftp/rsync çalıştırmaz (yalnız `spawnImpl`); birim test ağa çıkamaz.
 - Uzak WP `--path`: `shellQuoteWpPath` / `wpPathFlag` (`~/www/x` → `"$HOME/www/x"`) — `--path=~/…` kelime ortasında `~` açılmaz; `$HOME` çift tırnakta açılır. Kilit `unquoteShellWpPath` + `normalizeRemotePath` (`$HOME`/`/home/<user>` → `~`) ile aynı yolu tanır.
 - Operatör kapısı: uzak işlem yalnız `process.env.CLAUDECODE === '1'` iken; Cursor ajan env işaretleri (`CURSOR_AGENT`, `CURSOR_INVOKED_AS`, `CURSOR_CONVERSATION_ID`, `CURSOR_REQUEST_ID`, `CURSOR_RIPGREP_PATH`, `__CURSOR_SANDBOX_ENV_RESTORE`) RED. Editörden gelen `CURSOR_EXTENSION_HOST_ROLE` / `CURSOR_LAYOUT` / `CURSOR_SPAWNED_BY_EXTENSION_ID` / `CURSOR_SPAWN_CHAIN` / `CURSOR_WORKSPACE_LABEL` hariç.
-- Klasör kilidi: alias + `wpPath` + `siteUrl` üçlüsü `ALLOWED_DEPLOY_TARGETS` kaydıyla birebir. Komut içi `~/` `/home/` `$HOME/` `--path=` yolları izinli kökün içinde. Uzak komutta `..` yol parçası, göreli/`cd ~`/`cd -`/`cd $HOME`/`cd`, `pushd`/`popd`, `ln -s`, `find /`, `ls ~`, `ls /` RED. `hedefdernegi.org` yalnız `staging30.hedefdernegi.org` biçiminde.
-- İzinli hedefler (**tek yer** `scripts/lib/deploy-guards.mjs`): `staging-hedef` (`hedef-staging`, `~/www/staging30.hedefdernegi.org/`), `ikram-aid` (`ikramaid`, `~/www/ikramaid.uk/`). Kara liste: `hedefdernegi.org`, `www.hedefdernegi.org`, `~/www/hedefdernegi.org`. `ikramaid.uk` kaldırma notu durur; freeze ikram’ı da keser.
+- Klasör kilidi: `spawnGuarded` / `checkRemoteTarget` alias + `wpPath` + `siteUrl` üçlüsü `ALLOWED_DEPLOY_TARGETS` kaydıyla birebir (env farklı olsa da spawn’a listedeki üçlü gider). Komut içi `~/` `/home/` `$HOME/` `--path=` yolları izinli kökün içinde. Uzak komutta `..` yol parçası, göreli/`cd ~`/`cd -`/`cd $HOME`/`cd`, `pushd`/`popd`, `ln -s`, `find /`, `ls ~`, `ls /` RED. `hedefdernegi.org` yalnız `staging30.hedefdernegi.org` biçiminde.
+- İzinli hedefler (**tek yer** `scripts/lib/deploy-guards.mjs`): `staging-hedef` (`hedef-staging`, `~/www/staging30.hedefdernegi.org/`), `ikram-aid` (`ikramaid`, `~/www/ikramaid.uk/`). Kara liste: `hedefdernegi.org`, `www.hedefdernegi.org`, `~/www/hedefdernegi.org`. Env’deki canlı değer kullanılmaz + `KARA LİSTE` uyarısı; koşu profille devam. `ikramaid.uk` kaldırma notu durur; freeze ikram’ı da keser.
 - Cursor deny: `.cursor/cli.json` (`Shell(ssh|scp|sftp|rsync|curl|wget|…)` + `.env*` okuma/yazma).
 - Canlı tarama: `scripts/lib/live-target-scan.mjs` `npm run verify` zincirinde; ihlal dosya:satır ile kırmızı.
 - Silme: `tests/e2e/helpers/cleanup-e2e.php` + `safe-remote-write.mjs`. Koşullar: (a) `_wdp_e2e_test=<run_id>` (sabit `"1"` değil), (b) `build/e2e/run-registry.json` içinde, (c) beklenen post_type. Defter boşsa hiçbir şey silinmez.

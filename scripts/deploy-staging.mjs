@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Yalnızca staging’e kurulum / geri alma.
- * .env.deploy okunur; gizli değerler yazdırılmaz. Canlıya kurulum yok.
+ * Hedef = profil + izin listesi. .env.deploy hedef anahtarları kullanılmaz.
  *
  * Kullanım:
  *   node scripts/deploy-staging.mjs
@@ -10,16 +10,16 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import dotenv from 'dotenv';
 import {
   findTargetByAlias,
   parsePluginVersion,
-  validateDeployEnv,
   validateRemoteSiteUrl,
   wpPathFlag,
   shellQuoteWpPath,
 } from './lib/deploy-guards.mjs';
 import { assertRemoteAllowed, spawnGuarded } from './lib/remote-guard.mjs';
+import { loadProfile, setActiveProfile } from '../tests/e2e/helpers/profile.mjs';
+import { loadDeployEnvSilent, setActiveDeployEnvFile } from '../tests/e2e/helpers/wp-remote.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
@@ -31,47 +31,18 @@ function fail(msg) {
 }
 
 function loadDeployEnv() {
-  const envPath = path.join(ROOT, '.env.deploy');
-  if (!fs.existsSync(envPath)) {
-    fail('Eksik .env.deploy (şablon: .env.deploy.example).');
-  }
-  const parsed = dotenv.parse(fs.readFileSync(envPath));
-  const alias = String(parsed.DEPLOY_SSH_ALIAS || 'hedef-staging').trim();
-  const listed = findTargetByAlias(alias);
-  const envWp = String(parsed.DEPLOY_WP_PATH || '').trim();
-  const envUrl = String(parsed.DEPLOY_SITE_URL || '').trim().replace(/\/$/, '');
-  if (listed) {
-    if (envWp && envWp !== listed.wpPath) fail('eşleşmiyor');
-    if (envUrl && envUrl !== listed.siteUrl) fail('eşleşmiyor');
-  }
-  return {
-    DEPLOY_SSH_ALIAS: alias,
-    DEPLOY_SSH_HOST: String(parsed.DEPLOY_SSH_HOST || '').trim(),
-    DEPLOY_SSH_USER: String(parsed.DEPLOY_SSH_USER || '').trim(),
-    DEPLOY_SSH_PORT: String(parsed.DEPLOY_SSH_PORT || '').trim(),
-    DEPLOY_SSH_KEY: String(parsed.DEPLOY_SSH_KEY || '').trim(),
-    DEPLOY_WP_PATH: envWp || listed?.wpPath || '',
-    DEPLOY_SITE_URL: envUrl || listed?.siteUrl || '',
-  };
+  const profile = loadProfile('staging');
+  setActiveProfile(profile);
+  setActiveDeployEnvFile(profile.deployEnvFile || '.env.deploy');
+  const loaded = loadDeployEnvSilent();
+  if (!loaded.ok) fail(loaded.reason);
+  return loaded.env;
 }
 
 function sshBase(env) {
   const alias = String(env.DEPLOY_SSH_ALIAS || '').trim();
-  if (alias) {
-    return ['ssh', '-o', 'BatchMode=yes', '-o', 'StrictHostKeyChecking=accept-new', alias];
-  }
-  return [
-    'ssh',
-    '-i',
-    env.DEPLOY_SSH_KEY,
-    '-p',
-    env.DEPLOY_SSH_PORT,
-    '-o',
-    'BatchMode=yes',
-    '-o',
-    'StrictHostKeyChecking=accept-new',
-    `${env.DEPLOY_SSH_USER}@${env.DEPLOY_SSH_HOST}`,
-  ];
+  if (!alias) fail('SSH alias yok (profil tek kaynak).');
+  return ['ssh', '-o', 'BatchMode=yes', '-o', 'StrictHostKeyChecking=accept-new', alias];
 }
 
 function run(cmd, args, opts = {}, guardOpts = {}) {
@@ -103,8 +74,6 @@ function main() {
     fail(e && e.message ? e.message : String(e));
   }
   const env = loadDeployEnv();
-  const guard = validateDeployEnv(env);
-  if (!guard.ok) fail(guard.reason);
 
   const pluginFile = path.join(ROOT, 'woo-donation-popup.php');
   const localVersion = parsePluginVersion(fs.readFileSync(pluginFile, 'utf8'));

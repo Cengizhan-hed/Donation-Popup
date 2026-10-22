@@ -1,18 +1,17 @@
 /**
  * .env.e2e / .env.e2e.ikram yükle + profil birleştir.
- * Sır değerleri loglanmaz — yalnız anahtar adları.
+ * Uzak hedef (E2E_BASE_URL) env’den gelmez; sır değerleri loglanmaz.
  */
 import fs from 'node:fs';
 import path from 'node:path';
 import dotenv from 'dotenv';
 import { ROOT } from './env-root.mjs';
-import { loadProfile, setActiveProfile, productRole, isRemoteProfile } from './profile.mjs';
+import { loadProfile, setActiveProfile, productRole, isRemoteProfile, resolveAllowedRemoteTarget } from './profile.mjs';
 import { setActiveDeployEnvFile } from './wp-remote.mjs';
-import { validateE2EBaseUrl } from '../../../scripts/lib/deploy-guards.mjs';
+import { inspectEnvTargetKeys, validateE2EBaseUrl } from '../../../scripts/lib/deploy-guards.mjs';
 
 export { ROOT };
 
-const ALWAYS_REQUIRED = ['E2E_BASE_URL'];
 const PRODUCT_KEYS = [
   ['E2E_PRODUCT_FIXED', 'fixed'],
   ['E2E_PRODUCT_CUSTOM', 'custom'],
@@ -65,40 +64,49 @@ export function loadE2EEnv(opts = {}) {
   if (profile.deployEnvFile) setActiveDeployEnvFile(profile.deployEnvFile);
 
   const envPath = path.join(ROOT, profile.envFile || '.env.e2e');
-  if (!fs.existsSync(envPath)) {
+  const hasEnvFile = fs.existsSync(envPath);
+  const parsed =
+    opts.parsed !== undefined
+      ? opts.parsed
+      : hasEnvFile
+        ? dotenv.parse(fs.readFileSync(envPath))
+        : {};
+  const env = { ...parsed };
+  const remote = isRemoteProfile(profile);
+  const envFileName = path.basename(profile.envFile || '.env.e2e');
+
+  if (opts.parsed === undefined && !hasEnvFile && !remote) {
     throw new Error(`Missing ${profile.envFile} (copy ${profile.envFile}.example and fill values).`);
   }
 
-  const parsed = dotenv.parse(fs.readFileSync(envPath));
-  const env = { ...parsed };
-
-  const missing = ALWAYS_REQUIRED.filter((key) => {
-    const v = env[key];
-    return v === undefined || String(v).trim() === '';
-  });
+  const missing = [];
   const user = String(env.E2E_USER || '').trim();
   const pass = env.E2E_PASS;
   const wpCliAuth = !!profile.wpCliAuth;
   if (!wpCliAuth && (!user || pass === undefined || String(pass) === '')) {
     missing.push('E2E_USER', 'E2E_PASS');
   }
+
+  let base = '';
+  if (remote) {
+    const resolved = resolveAllowedRemoteTarget(profile);
+    const inspect = inspectEnvTargetKeys(parsed, envFileName, resolved.target);
+    if (inspect.warning) console.warn(inspect.warning);
+    base = resolved.siteUrl;
+    if (profile.allowMetaMutation === true) {
+      throw new Error('Uzak profilde allowMetaMutation açılamaz.');
+    }
+  } else {
+    base = String(env.E2E_BASE_URL || profile.baseUrl || '').trim().replace(/\/$/, '');
+    if (!base) missing.push('E2E_BASE_URL');
+  }
   if (missing.length) {
     throw new Error('Missing E2E env key(s): ' + missing.join(', '));
   }
 
-  const base = String(env.E2E_BASE_URL).trim().replace(/\/$/, '');
   const urlGuard = validateE2EBaseUrl(base, profile.allowedHosts || []);
   if (!urlGuard.ok) {
     throw new Error(urlGuard.reason);
-  }
-  if (isRemoteProfile(profile)) {
-    const expected = String(profile.baseUrl || '').trim().replace(/\/$/, '');
-    if (base !== expected) {
-      throw new Error('E2E_BASE_URL profil baseUrl ile eşleşmiyor.');
-    }
-    if (profile.allowMetaMutation === true) {
-      throw new Error('Uzak profilde allowMetaMutation açılamaz.');
-    }
   }
 
   let loginPath = String(env.E2E_LOGIN_PATH || '').trim();
@@ -120,8 +128,8 @@ export function loadE2EEnv(opts = {}) {
 
   const out = {
     E2E_BASE_URL: base,
-    E2E_USER: String(env.E2E_USER).trim(),
-    E2E_PASS: String(env.E2E_PASS),
+    E2E_USER: user,
+    E2E_PASS: pass === undefined || pass === null ? '' : String(pass),
     E2E_LOGIN_PATH: loginPath,
     E2E_PRODUCT_FIXED: products.E2E_PRODUCT_FIXED,
     E2E_PRODUCT_CUSTOM: products.E2E_PRODUCT_CUSTOM,

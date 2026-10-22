@@ -202,6 +202,35 @@ describe('remote-guard', () => {
     }
   });
 
+  it('spawnGuarded izin listesiyle eşleşmeyen wpPath RED (ssh yok)', () => {
+    const missingFreeze = path.join(os.tmpdir(), 'wdp-no-freeze-missing');
+    let n = 0;
+    assert.throws(
+      () =>
+        spawnGuarded(
+          'ssh',
+          ['-o', 'BatchMode=yes', 'hedef-staging', 'true'],
+          {},
+          {
+            env: CLAUDE_ONLY,
+            freezePath: missingFreeze,
+            spawnImpl: () => {
+              n += 1;
+              return { status: 0, stdout: '', stderr: '' };
+            },
+            alias: 'hedef-staging',
+            wpPath: '/var/www/other/public_html',
+            siteUrl: 'https://staging30.hedefdernegi.org',
+          }
+        ),
+      (e) => {
+        assert.match(String(e.message), /eşleşmiyor|izin|kök/i);
+        return true;
+      }
+    );
+    assert.equal(n, 0);
+  });
+
   it('spawnImpl enjeksiyonu birim testte sahte ssh çalıştırır', () => {
     let n = 0;
     const fake = () => {

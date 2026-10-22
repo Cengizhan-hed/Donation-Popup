@@ -18,6 +18,9 @@ import {
   shellQuoteWpPath,
   wpPathFlag,
   unquoteShellWpPath,
+  inspectEnvTargetKeys,
+  applyAllowlistOverEnv,
+  envTargetFromAllowlist,
   IKRAM_ALLOW_REMOVAL_NOTE,
   ALLOWED_DEPLOY_TARGETS,
 } from '../../../scripts/lib/deploy-guards.mjs';
@@ -174,15 +177,79 @@ describe('deploy-guards', () => {
     assert.equal(sub.ok, false);
   });
 
-  it('env değeri listeden farklıysa eşleşmiyor (değer yok)', () => {
+  it('env değeri listeden farklıysa uyarı, hedef listedeki (değer yok)', () => {
     const r = validateDeployEnv({
       DEPLOY_SSH_ALIAS: 'hedef-staging',
       DEPLOY_WP_PATH: '/var/www/other/public_html',
       DEPLOY_SITE_URL: STAGING.siteUrl,
     });
-    assert.equal(r.ok, false);
-    assert.equal(r.reason, 'eşleşmiyor');
-    assert.equal(/other|public_html/.test(r.reason), false);
+    assert.equal(r.ok, true);
+    assert.equal(r.target?.wpPath, STAGING.wpPath);
+    assert.equal(r.env.DEPLOY_WP_PATH, STAGING.wpPath);
+    assert.equal(r.env.DEPLOY_SITE_URL, STAGING.siteUrl);
+    assert.match(r.warning, /kullanılmıyor \(profil tek kaynak\)/);
+    assert.equal(/other|public_html/.test(r.warning), false);
+  });
+
+  it('env hedefi staging28/canlı/boş iken hedef profilden; uyarı değer içermez', () => {
+    const listed = ALLOWED_DEPLOY_TARGETS.find((t) => t.id === 'staging-hedef');
+    const file = '.env.deploy';
+    const empty = inspectEnvTargetKeys({}, file, listed);
+    assert.equal(empty.warning, '');
+    assert.equal(applyAllowlistOverEnv({}, listed, file).env.DEPLOY_SITE_URL, STAGING.siteUrl);
+
+    const retired = {
+      DEPLOY_SSH_ALIAS: 'hedef-staging',
+      DEPLOY_WP_PATH: '~/www/staging28.hedefdernegi.org/public_html', // live-scan:allow-reject-test
+      DEPLOY_SITE_URL: 'https://staging28.hedefdernegi.org', // live-scan:allow-reject-test
+    };
+    const retiredR = applyAllowlistOverEnv(retired, listed, file);
+    assert.equal(retiredR.env.DEPLOY_SITE_URL, STAGING.siteUrl);
+    assert.equal(retiredR.env.DEPLOY_WP_PATH, STAGING.wpPath);
+    assert.equal(retiredR.target.sshAlias, STAGING.alias);
+    assert.match(retiredR.warning, /KARA LİSTE/);
+    assert.match(retiredR.warning, /profil tek kaynak/);
+    assert.equal(/staging28|public_html|https?:\/\//.test(retiredR.warning), false);
+
+    const live = {
+      DEPLOY_SITE_URL: 'https://hedefdernegi.org', // live-scan:allow-reject-test
+      DEPLOY_WP_PATH: '~/www/hedefdernegi.org/public_html', // live-scan:allow-reject-test
+    };
+    const liveR = applyAllowlistOverEnv(live, listed, file);
+    assert.equal(liveR.env.DEPLOY_SITE_URL, STAGING.siteUrl);
+    assert.match(liveR.warning, /KARA LİSTE/);
+    assert.equal(/hedefdernegi\.org|www\//.test(liveR.warning), false);
+
+    const cmds = plannedRemoteCommands(retiredR.target);
+    for (const remoteCommand of cmds) {
+      const cr = checkRemoteTarget({
+        alias: listed.sshAlias,
+        wpPath: listed.wpPath,
+        siteUrl: listed.siteUrl,
+        remoteCommand,
+      });
+      assert.equal(cr.ok, true, cr.reason);
+      assert.match(remoteCommand, /staging30\.hedefdernegi\.org|wdp-/);
+      assert.equal(/staging28/.test(remoteCommand), false);
+    }
+  });
+
+  it('Ikram env hedefi boş/farklı: hedef izin listesinden', () => {
+    const listed = ALLOWED_DEPLOY_TARGETS.find((t) => t.id === 'ikram-aid');
+    const applied = applyAllowlistOverEnv(
+      { E2E_BASE_URL: 'https://example.com', DEPLOY_SSH_HOST: 'other' },
+      listed,
+      '.env.deploy.ikram'
+    );
+    assert.equal(applied.env.DEPLOY_SSH_ALIAS, IKRAM.alias);
+    assert.equal(applied.env.DEPLOY_WP_PATH, IKRAM.wpPath);
+    assert.equal(applied.env.DEPLOY_SITE_URL, IKRAM.siteUrl);
+    assert.equal(applied.env.DEPLOY_SSH_HOST, '');
+    assert.match(applied.warning, /\.env\.deploy\.ikram/);
+    assert.match(applied.warning, /kullanılmıyor \(profil tek kaynak\)/);
+    assert.equal(/example\.com|other/.test(applied.warning), false);
+    const fromList = envTargetFromAllowlist(listed);
+    assert.equal(fromList.DEPLOY_SSH_ALIAS, IKRAM.alias);
   });
 
   it('rejects unknown host', () => {

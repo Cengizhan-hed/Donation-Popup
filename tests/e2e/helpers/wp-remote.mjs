@@ -1,14 +1,14 @@
 /**
  * Aktif ortamın SSH + WP-CLI köprüsü.
- * .env.deploy / .env.deploy.ikram değerleri asla loglanmaz.
+ * Uzak hedef = profil + izin listesi; .env.deploy* hedef anahtarları yok sayılır.
+ * Sır değerleri asla loglanmaz.
  */
 import fs from 'node:fs';
 import path from 'node:path';
 import dotenv from 'dotenv';
 import { ROOT } from './env-root.mjs';
 import {
-  findTargetByAlias,
-  validateDeployEnv,
+  applyAllowlistOverEnv,
   buildGuardedEvalFileCommand,
   wpPathFlag,
   shellQuoteWpPath,
@@ -27,57 +27,55 @@ export function setActiveDeployEnvFile(rel) {
 }
 
 /**
- * @returns {{ ok: true, env: Record<string,string> } | { ok: false, reason: string }}
+ * Profil + izin listesi → uzak hedef. Env hedef anahtarları yok sayılır.
+ *
+ * @param {object} profile
+ * @param {Record<string,string>} [parsed]
+ * @param {string} [envFileName]
+ * @returns {{ ok: true, env: Record<string,string>, target: object, warning: string } | { ok: false, reason: string }}
  */
-export function loadDeployEnvSilent() {
+export function mergeDeployEnvFromProfile(profile, parsed = {}, envFileName = '.env.deploy') {
+  if (!profile || !isRemoteProfile(profile)) {
+    return { ok: false, reason: 'E2E profili yüklenmedi veya uzak değil.' };
+  }
+  let resolved;
   try {
-    assertRemoteAllowed();
+    resolved = resolveAllowedRemoteTarget(profile);
   } catch (e) {
     return { ok: false, reason: e && e.message ? e.message : String(e) };
   }
-  const profile = peekActiveProfile();
-  let fromProfile = null;
-  if (profile && isRemoteProfile(profile)) {
+  const applied = applyAllowlistOverEnv(parsed, resolved.target, envFileName);
+  return {
+    ok: true,
+    env: applied.env,
+    target: applied.target,
+    warning: applied.warning,
+  };
+}
+
+/**
+ * @param {{ parsed?: Record<string,string>, envFileName?: string, profile?: object, skipGate?: boolean }} [opts]
+ * @returns {{ ok: true, env: Record<string,string>, warning?: string } | { ok: false, reason: string }}
+ */
+export function loadDeployEnvSilent(opts = {}) {
+  if (!opts.skipGate) {
     try {
-      fromProfile = resolveAllowedRemoteTarget(profile);
+      assertRemoteAllowed();
     } catch (e) {
       return { ok: false, reason: e && e.message ? e.message : String(e) };
     }
   }
-
-  const envPath = path.join(ROOT, activeDeployFile);
-  const hasEnvFile = fs.existsSync(envPath);
-  if (!hasEnvFile && !fromProfile) {
-    return { ok: false, reason: `missing ${activeDeployFile}` };
+  const profile = opts.profile || peekActiveProfile();
+  let parsed = opts.parsed;
+  const fileName = opts.envFileName || path.basename(activeDeployFile);
+  if (parsed === undefined) {
+    const envPath = path.join(ROOT, activeDeployFile);
+    parsed = fs.existsSync(envPath) ? dotenv.parse(fs.readFileSync(envPath)) : {};
   }
-  const parsed = hasEnvFile ? dotenv.parse(fs.readFileSync(envPath)) : {};
-  const alias = String(parsed.DEPLOY_SSH_ALIAS || fromProfile?.alias || profile?.ssh?.alias || '').trim();
-  const listed = findTargetByAlias(alias) || fromProfile?.target;
-  const envWp = String(parsed.DEPLOY_WP_PATH || '').trim();
-  const envUrl = String(parsed.DEPLOY_SITE_URL || '').trim().replace(/\/$/, '');
-  if (listed) {
-    if (envWp && envWp !== listed.wpPath) {
-      return { ok: false, reason: 'eşleşmiyor' };
-    }
-    if (envUrl && envUrl !== listed.siteUrl) {
-      return { ok: false, reason: 'eşleşmiyor' };
-    }
-  }
-  const env = {
-    DEPLOY_SSH_ALIAS: alias,
-    DEPLOY_SSH_HOST: String(parsed.DEPLOY_SSH_HOST || '').trim(),
-    DEPLOY_SSH_USER: String(parsed.DEPLOY_SSH_USER || '').trim(),
-    DEPLOY_SSH_PORT: String(parsed.DEPLOY_SSH_PORT || '').trim(),
-    DEPLOY_SSH_KEY: String(parsed.DEPLOY_SSH_KEY || '').trim(),
-    DEPLOY_WP_PATH: envWp || listed?.wpPath || fromProfile?.wpPath || String(profile?.ssh?.wpPath || '').trim(),
-    DEPLOY_SITE_URL:
-      envUrl || listed?.siteUrl || fromProfile?.siteUrl || String(profile?.baseUrl || '').trim().replace(/\/$/, ''),
-  };
-  const guard = validateDeployEnv(env);
-  if (!guard.ok) {
-    return { ok: false, reason: guard.reason || 'deploy env invalid' };
-  }
-  return { ok: true, env };
+  const merged = mergeDeployEnvFromProfile(profile, parsed, fileName);
+  if (!merged.ok) return merged;
+  if (merged.warning) console.warn(merged.warning);
+  return merged;
 }
 
 /**
@@ -85,20 +83,10 @@ export function loadDeployEnvSilent() {
  */
 export function sshArgs(env) {
   const alias = String(env.DEPLOY_SSH_ALIAS || '').trim();
-  if (alias) {
-    return ['-o', 'BatchMode=yes', '-o', 'StrictHostKeyChecking=accept-new', alias];
+  if (!alias) {
+    throw new Error('SSH alias yok (profil tek kaynak).');
   }
-  return [
-    '-i',
-    env.DEPLOY_SSH_KEY,
-    '-p',
-    env.DEPLOY_SSH_PORT,
-    '-o',
-    'BatchMode=yes',
-    '-o',
-    'StrictHostKeyChecking=accept-new',
-    `${env.DEPLOY_SSH_USER}@${env.DEPLOY_SSH_HOST}`,
-  ];
+  return ['-o', 'BatchMode=yes', '-o', 'StrictHostKeyChecking=accept-new', alias];
 }
 
 /**
