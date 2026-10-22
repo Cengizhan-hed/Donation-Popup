@@ -464,6 +464,18 @@ Kaynak rehber: `docs/AYARLAR.md`. Teknik varsayılanlar normalizer / placement /
 | `npm run ship:staging` | deploy + `e2e:quick --open-report` | `scripts/ship-staging.mjs` |
 | Rsync dışlama | `.distignore` tek kaynak (`pack-excludes.mjs`) | `scripts/lib/pack-excludes.mjs` |
 
+### Göç provası
+
+Canlı/staging’de göçü çalıştırmadan önce yerel prova. Eklenti kodu (PHP/JS/CSS) bu araçlarla değişmez. Değerler yalnız `build/migration/*.json` içine yazılır (git dışı); konsol ve `.md` özetinde anahtar adı, sınıf, tür, sha256 ilk 12.
+
+| Komut | Ne yapar | Kanıt |
+|-------|----------|-------|
+| `npm run migration:snapshot -- --env local --label <etiket>` | Eski+güncel kaynak ağacından anahtar çıkarır; `wdp_%` + eski önekler + ürün meta; WC mağaza ayarları salt okunur. `--env staging\|ikram` `spawnGuarded` (yalnız Claude). Eval yazma yok. | `scripts/migration-snapshot.mjs`, `tests/e2e/helpers/migration-snapshot.php` |
+| `npm run migration:rehearsal` | Temiz yerel WP+WC → eski eklenti (önce `build/handoff/onceki.zip` 10.28.12, varsa 10.3.1) → görüntü → güncel kopya + `upgrader_process_complete`/`maybe_run` → görüntü → karşılaştır → göç 2. kez (idempotent). | `scripts/migration-rehearsal.mjs`, `tests/local-wp/migration-ops.php` |
+| `npm run migration:compare -- --before a.json --after b.json` | Sınıflar: KORUNDU, TAŞINDI (eşleme `class-migrations.php`), DEĞİŞTİ, VARSAYILANA DÖNDÜ, KAYBOLDU, YENİ. Çıkış 2: KAYBOLDU/VARSAYILANA DÖNDÜ/DEĞİŞTİ > 0. `--idempotent` birebir. | `scripts/lib/migration-compare-core.mjs` |
+
+Anahtar çıkarıcı: `get_option`/`update_option`/`add_option`/`get_post_meta`/`update_post_meta` + `wdp_` / `_wdp_` dizgi sabitleri (`scripts/lib/migration-keys.mjs`). TAŞINDI tablosu: `WDP_Migrations::BACKUP_OPTION` → `BACKUP_RESTORED_OPTION`. 10.3.1 kaynağı yoksa prova 10.28.12 ile kanıtlanır; 10.3.1 çalıştırmasını Claude yapar.
+
 `.env.deploy` / `.env.e2e` / `.env.*.ikram` **okunmadı** (görev yasağı); yalnızca anahtar adları şablonlarda belgelidir.
 
 **KAYIT:** `ikramaid.uk` izni Ikram Aid yayına alınmadan önce **KALDIRILACAK** (`IKRAM_ALLOW_REMOVAL_NOTE` in `scripts/lib/deploy-guards.mjs`).

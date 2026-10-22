@@ -35,7 +35,10 @@
     "e2e:canary": "node tests/e2e/run-canary.mjs",
     "ship:staging": "node scripts/ship-staging.mjs",
     "ship:ikram": "node scripts/ship-ikram.mjs",
-    "handoff": "node scripts/handoff.mjs"
+    "handoff": "node scripts/handoff.mjs",
+    "migration:snapshot": "node scripts/migration-snapshot.mjs",
+    "migration:rehearsal": "node scripts/migration-rehearsal.mjs",
+    "migration:compare": "node scripts/migration-compare.mjs"
   },
   "repository": {
     "type": "git",
