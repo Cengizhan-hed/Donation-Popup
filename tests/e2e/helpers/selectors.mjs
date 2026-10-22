@@ -42,7 +42,10 @@ export const SEL = {
   donationForm: 'form.wdp-donation-form-fields',
 
   // includes/templates/class-modal-shell-renderer.php — .wdp-form-error
+  // assets/js/src/form/feedback.js showFormError; product.js displayProductInfoError
   formError: '.wdp-form-error',
+  // assets/js/src/core/utils.js showToast type=error
+  toastError: '.wdp-toast--error, #wdp-toast-host .wdp-toast--error',
 
   // assets/js/src/form/feedback.js — .wdp-input-error / .wdp-error
   fieldError: '.wdp-input-error, .wdp-error',

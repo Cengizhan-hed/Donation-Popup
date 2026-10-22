@@ -20,6 +20,12 @@ import {
   snapshotBlockedTrackers,
   snapshotRemotePostBlocked,
   consumeOrderBlocks,
+  consumeAdminWriteBlocks,
+  snapshotPluginAjaxFails,
+  pausePluginAjaxWatch,
+  resumePluginAjaxWatch,
+  formatRemotePostBlockedLines,
+  extractAjaxActionFromRequest,
 } from './network-guard.mjs';
 import { runMobileA11yChecks } from './mobile-a11y.mjs';
 import { runDonationFlowChecks } from './donation-flow.mjs';
@@ -57,6 +63,8 @@ import {
   shellTriggerLocator,
   visibleValidationErrors,
   waitForShellClosed,
+  assertNoUnexpectedPluginErrors,
+  assertNoPluginAjaxFailures,
 } from './checks.mjs';
 import { FREEZE_MOTION_CSS, SEL, maskSelectors } from './selectors.mjs';
 import { currentSrcMatchesExpected } from './image-url.mjs';
@@ -1139,6 +1147,8 @@ async function runSkeletonUnlockChecks({
 }) {
   const UNLOCK_MS = 11000;
   const STALL_RE = /Form tam yüklenemedi|Ürün bilgileri alınamadı|bilgilerinizi kontrol|sayfayı yenileyip/i;
+  pausePluginAjaxWatch();
+  try {
 
   /**
    * @param {'status500'|'abort'|'delay12'} mode
@@ -1152,10 +1162,10 @@ async function runSkeletonUnlockChecks({
     try {
       await page.route('**/admin-ajax.php*', async (route) => {
         const req = route.request();
-        const post = req.postData() || '';
         const url = req.url();
+        const action = extractAjaxActionFromRequest(req);
         const isProductInfo =
-          /wdp_get_product_info/i.test(post) || /wdp_get_product_info/i.test(url);
+          action === 'wdp_get_product_info' || /wdp_get_product_info/i.test(url);
         if (!isProductInfo) {
           await route.continue();
           return;
@@ -1324,6 +1334,9 @@ async function runSkeletonUnlockChecks({
   } finally {
     await page.close().catch(() => {});
     await ctx.close().catch(() => {});
+  }
+  } finally {
+    resumePluginAjaxWatch();
   }
 }
 
@@ -2899,6 +2912,31 @@ export async function captureAll({
     return { ok: true, shell, openedAs: mode };
   }
 
+  /**
+   * product_info gelsin veya görünür hata kutusu dolsun (ekran çekiminden önce).
+   * @param {import('@playwright/test').Page} page
+   */
+  async function waitForShellProductReady(page) {
+    await page
+      .waitForFunction(() => {
+        const el = document.querySelector('.hdf-donation-modal-wrapper.wdp-modal.show');
+        if (!el) return false;
+        if (el.classList.contains('wdp-is-skeleton') || el.getAttribute('aria-busy') === 'true') {
+          return false;
+        }
+        const err = el.querySelector('.wdp-form-error');
+        const errText = err ? String(err.textContent || '').trim() : '';
+        const errVisible = !!(err && errText && err.offsetParent !== null);
+        if (errVisible) return true;
+        const total = el.querySelector('.wdp-line-total-value');
+        const totalText = total ? String(total.textContent || '').replace(/\s+/g, '') : '';
+        if (totalText.length > 1) return true;
+        const name = el.querySelector('input[name="donation_full_name"]');
+        return !!(name && !name.disabled && name.isConnected);
+      }, { timeout: 8000 })
+      .catch(() => {});
+  }
+
   const shellsPromise = mapPool(shellJobs, maxWorkers, async ({ key, pagePath, mode, productId }) => {
     // Her kabuk işi temiz context (sepet / storage taşınmasın).
     // Panel = ürün sayfası → Coming soon'da yönetici; popup = liste → ziyaretçi + share çerezi.
@@ -2943,6 +2981,19 @@ export async function captureAll({
       }
 
       await waitTwoFrames(page);
+      await waitForShellProductReady(page);
+      try {
+        await assertNoUnexpectedPluginErrors(page, { scenarioId: openName });
+      } catch (e) {
+        failures.push(
+          makeFailure({
+            check: `${mode}-${key}-open-plugin-error`,
+            description: 'Açık kabukta beklenmeyen eklenti hata bildirimi',
+            error: e,
+            screenshot: `${openName}.png`,
+          })
+        );
+      }
 
       const shotMode = opened.openedAs === 'panel' ? 'panel' : mode;
       const qty = await readShellInitialQty(page, key);
@@ -3019,6 +3070,18 @@ export async function captureAll({
       }
       await prepareErrorShot(page, { shares: key === 'shares', shellMode: shotMode2 });
       await waitTwoFrames(page);
+      try {
+        await assertNoUnexpectedPluginErrors(page, { scenarioId: errorsName });
+      } catch (e) {
+        failures.push(
+          makeFailure({
+            check: `${mode}-${key}-errors-plugin-error`,
+            description: 'Errors ekranında beklenmeyen genel eklenti hatası',
+            error: e,
+            screenshot: `${errorsName}.png`,
+          })
+        );
+      }
       const errState = await readShellValidationErrorState(page, shotMode2).catch((e) => ({
         ok: false,
         detail: String(e.message || e),
@@ -3922,8 +3985,32 @@ export async function captureAll({
     functionalStats.failed += 1;
   }
 
+  const blockedAdminWrites = consumeAdminWriteBlocks();
+  for (const requestPath of blockedAdminWrites) {
+    failures.push(
+      makeFailure({
+        check: 'remote-admin-write-block',
+        description: `REMOTE-ADMIN-WRITE-BLOCKED: ${requestPath}`,
+      })
+    );
+    functionalStats.failed += 1;
+  }
+
+  try {
+    assertNoPluginAjaxFailures(snapshotPluginAjaxFails());
+  } catch (e) {
+    failures.push(
+      makeFailure({
+        check: 'plugin-ajax-fail',
+        description: String(e && e.message ? e.message : e),
+      })
+    );
+    functionalStats.failed += 1;
+  }
+
   const blockedTrackers = snapshotBlockedTrackers();
   const remotePostBlocked = snapshotRemotePostBlocked();
+  console.log(formatRemotePostBlockedLines(remotePostBlocked));
 
   return {
     shots,
