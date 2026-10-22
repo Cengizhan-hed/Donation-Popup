@@ -210,6 +210,22 @@ if (!function_exists('wdp_e2e_catalog_type_meta')) {
 	}
 
 	/**
+	 * Ürün sayfası görünümü: eklenti çözümleyicisi (kısa kod / auto_place + placement).
+	 *
+	 * @param object $product WC_Product.
+	 * @return string inline|button_popup|button_panel|''
+	 */
+	function wdp_e2e_catalog_product_display($product) {
+		if (class_exists('WDP_Product_Page_Integration') && method_exists('WDP_Product_Page_Integration', 'resolve_product_page_display')) {
+			return (string) WDP_Product_Page_Integration::resolve_product_page_display($product);
+		}
+		if (class_exists('WDP_Placement_Settings')) {
+			return (string) WDP_Placement_Settings::value('display', 'button_panel');
+		}
+		return '';
+	}
+
+	/**
 	 * Yayımlanmış ürünler (görünürlük süzgeci yok — explain + katalog kaynağı).
 	 *
 	 * @return array<int,array<string,mixed>>
@@ -263,6 +279,7 @@ if (!function_exists('wdp_e2e_catalog_type_meta')) {
 				'purchasable' => method_exists($product, 'is_purchasable') ? (bool) $product->is_purchasable() : false,
 				'wc_type'     => method_exists($product, 'get_type') ? (string) $product->get_type() : '',
 				'donation'    => wdp_e2e_catalog_is_donation($product),
+				'display'     => wdp_e2e_catalog_product_display($product),
 				'fixture'     => function_exists('get_post_meta') && (bool) get_post_meta($id, '_wdp_e2e_test', true),
 				'resolver'    => $resolver,
 				'flags'       => $states,
@@ -387,6 +404,7 @@ if (!function_exists('wdp_e2e_catalog_resolve')) {
 				'visibility'  => $vis,
 				'status'      => $row['status'],
 				'purchasable' => !empty($row['purchasable']),
+				'display'     => isset($row['display']) ? (string) $row['display'] : '',
 				'fixture'     => false,
 				'meta'        => $row['meta'],
 			);

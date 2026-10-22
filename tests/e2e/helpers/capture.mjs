@@ -44,6 +44,13 @@ import {
   writeSimilarDonationsProbe,
   classifySimilarDonations,
 } from './similar-donations-probe.mjs';
+import {
+  expectedPrimaryKind,
+  resolveDisplayFromSources,
+  matchPrimaryUi,
+  LOOP_EXCLUDE_SEL,
+} from './product-page-ui.mjs';
+import { classifyLoopCardsResult, formatLoopCardFail } from './loop-cards.mjs';
 import { snapshotGuardOrder, cleanupE2EData } from './test-cleanup.mjs';
 import { resetRegistry } from './run-registry.mjs';
 import { fixtureProductRecords, loadFixtures, assertRunMutationTargetsAreFixtures } from './fixtures.mjs';
@@ -584,24 +591,45 @@ async function settleForScreenshot(page, opts = {}) {
   // Aşılırsa ekran yine alınır; assertVisibleImagesLoaded images-loaded hatası yazar
   await waitUntilImagesReallyLoaded(page);
 
-  // Avada Post Cards: .fusion-animated başlangıçta visibility:hidden; animasyon bitmeden
-  // ekran alınırsa "Benzer Bağışlar" yalnız resim / boş görünür (gerçek DOM’da başlık+buton var).
+  // Avada Post Cards: .fusion-animated başlangıçta visibility:hidden.
+  // Woo .related.products kartları (tema seçicisi yok) kaydırılıp boyut/opacity beklenir.
   if (scrollPage && fullPage) {
     await page
       .evaluate(async () => {
         const deadline = Date.now() + 5000;
-        const sel =
+        const animSel =
           '.fusion-post-cards.fusion-animated, .fusion-animated.fusion-grid-archive, .fusion-blog-shortcode.fusion-animated';
+        const related = document.querySelector(
+          '.related.products, .upsells.products, section.related, .wp-block-woocommerce-related-products, .wp-block-woocommerce-product-collection'
+        );
+        const isVis = (el) => {
+          if (!el) return false;
+          const st = window.getComputedStyle(el);
+          const r = el.getBoundingClientRect();
+          return (
+            st.display !== 'none' &&
+            st.visibility !== 'hidden' &&
+            Number.parseFloat(st.opacity || '1') > 0.05 &&
+            r.width > 4 &&
+            r.height > 4
+          );
+        };
         while (Date.now() < deadline) {
-          const nodes = Array.from(document.querySelectorAll(sel));
-          const blocked = nodes.filter((el) => {
+          const animBlocked = Array.from(document.querySelectorAll(animSel)).filter((el) => {
             const st = window.getComputedStyle(el);
             if (st.display === 'none' || st.visibility !== 'hidden') return false;
             const r = el.getBoundingClientRect();
             return r.height > 8 && r.width > 8;
           });
-          if (!blocked.length) break;
-          for (const el of blocked.slice(0, 4)) {
+          const relatedCards = related
+            ? Array.from(related.querySelectorAll('li.product, li.wc-block-product'))
+            : [];
+          const relatedHidden = relatedCards.filter((el) => !isVis(el));
+          if (!animBlocked.length && (relatedCards.length === 0 || relatedHidden.length < relatedCards.length)) {
+            break;
+          }
+          const toShow = animBlocked.length ? animBlocked : relatedHidden;
+          for (const el of toShow.slice(0, 4)) {
             try {
               el.scrollIntoView({ block: 'center', inline: 'nearest' });
             } catch (e) {
@@ -611,7 +639,7 @@ async function settleForScreenshot(page, opts = {}) {
           await new Promise((r) => setTimeout(r, 120));
         }
       })
-      .catch(() => {});
+      .catch((e) => catchSoft('waitRelatedCards', e));
   }
 
   await page
@@ -1018,58 +1046,79 @@ async function shot(page, dir, name, maskList, opts = {}) {
   if (!shellOnly) {
     await preparePageShotChrome(page);
   }
-  // Stabilize CSS yalnızca ekran anında
-  await page.addStyleTag({ content: STABILIZE_SHOT_CSS }).catch((e) => catchSoft('STABILIZE_SHOT_CSS', e));
+  /** @type {import('@playwright/test').ElementHandle[]} */
+  const shotStyles = [];
+  const addShotStyle = async (content, label) => {
+    try {
+      const handle = await page.addStyleTag({ content });
+      if (handle) shotStyles.push(handle);
+    } catch (e) {
+      catchSoft(label, e);
+    }
+  };
+  // Stabilize / freeze yalnız ekran anında; işlevsel kontroller gerçek CSS görür.
+  await addShotStyle(STABILIZE_SHOT_CSS, 'STABILIZE_SHOT_CSS');
   if (!shellOnly) {
     await hideComingSoonNoticeForShot(page).catch((e) => catchSoft('hideComingSoonNoticeForShot', e));
   }
-  await freezeMotion(page);
+  await addShotStyle(FREEZE_MOTION_CSS, 'freezeMotion');
   const file = path.join(dir, `${name}.png`);
-  if (shellOnly) {
-    await page
-      .addStyleTag({ content: SHELL_CAPTURE_FLAT_BACKDROP_CSS })
-      .catch((e) => catchSoft('SHELL_CAPTURE_FLAT_BACKDROP_CSS', e));
-    // Wrapper (.hdf-donation-modal-wrapper) tam viewport + backdrop — kutu değil.
-    // Ortadaki popup / sağ panel kutusu: .wdp-modal-content (panelde + .wdp-side-panel-content).
-    const shell = openShellLocator(page, shellMode);
-    const content =
-      shellMode === 'panel'
-        ? shell.locator(SEL.sidePanelContent).first()
-        : shell.locator(SEL.modalContent).first();
-    const box = (await content.count().catch(() => 0)) > 0 ? content : shell;
-    const visible = (await box.count().catch(() => 0)) > 0 && (await box.isVisible().catch(() => false));
-    if (visible) {
-      await box.screenshot({
-        path: file,
-        animations: 'disabled',
-      });
-      return file;
-    }
-    // Kabuk yoksa tam sayfaya düşme — boş/yanlış viewport baseline üretmesin
-    throw new Error(
-      `shellOnly screenshot: açık kabuk içeriği yok (mode=${shellMode || 'any'} sel=${shellMode === 'panel' ? SEL.sidePanelContent : SEL.modalContent})`
-    );
-  }
-  const masks = [];
-  for (const sel of maskList) {
-    const loc = page.locator(sel);
-    const n = await loc.count().catch(() => 0);
-    for (let i = 0; i < n; i++) {
-      const el = loc.nth(i);
-      if (await el.isVisible().catch(() => false)) {
-        masks.push(el);
+  const removeShotStyles = async () => {
+    for (const handle of shotStyles) {
+      try {
+        await handle.evaluate((el) => el.remove());
+      } catch (e) {
+        catchSoft('shotStyleRemove', e);
       }
     }
+  };
+  try {
+    if (shellOnly) {
+      await addShotStyle(SHELL_CAPTURE_FLAT_BACKDROP_CSS, 'SHELL_CAPTURE_FLAT_BACKDROP_CSS');
+      // Wrapper (.hdf-donation-modal-wrapper) tam viewport + backdrop — kutu değil.
+      // Ortadaki popup / sağ panel kutusu: .wdp-modal-content (panelde + .wdp-side-panel-content).
+      const shell = openShellLocator(page, shellMode);
+      const content =
+        shellMode === 'panel'
+          ? shell.locator(SEL.sidePanelContent).first()
+          : shell.locator(SEL.modalContent).first();
+      const box = (await content.count().catch(() => 0)) > 0 ? content : shell;
+      const visible = (await box.count().catch(() => 0)) > 0 && (await box.isVisible().catch(() => false));
+      if (visible) {
+        await box.screenshot({
+          path: file,
+          animations: 'disabled',
+        });
+        return file;
+      }
+      // Kabuk yoksa tam sayfaya düşme — boş/yanlış viewport baseline üretmesin
+      throw new Error(
+        `shellOnly screenshot: açık kabuk içeriği yok (mode=${shellMode || 'any'} sel=${shellMode === 'panel' ? SEL.sidePanelContent : SEL.modalContent})`
+      );
+    }
+    const masks = [];
+    for (const sel of maskList) {
+      const loc = page.locator(sel);
+      const n = await loc.count().catch(() => 0);
+      for (let i = 0; i < n; i++) {
+        const el = loc.nth(i);
+        if (await el.isVisible().catch(() => false)) {
+          masks.push(el);
+        }
+      }
+    }
+    await page.screenshot({
+      path: file,
+      fullPage,
+      animations: 'disabled',
+      caret: 'hide',
+      mask: masks.length ? masks : undefined,
+      maskColor: '#D0D0D0',
+    });
+    return file;
+  } finally {
+    await removeShotStyles();
   }
-  await page.screenshot({
-    path: file,
-    fullPage,
-    animations: 'disabled',
-    caret: 'hide',
-    mask: masks.length ? masks : undefined,
-    maskColor: '#D0D0D0',
-  });
-  return file;
 }
 
 /**
@@ -1787,8 +1836,8 @@ async function settleLoopPage(page) {
 async function assertLoopCardsTitleAndDonate(page, surface, screenName, failures, stats) {
   let similarPat = 'benzer\\s*bağış';
   let donatePat = 'bağış\\s*yap';
-  let cardSel = 'li.post-card, li.fusion-grid-column, .post-card, li.product';
-  let titleSel = '.fusion-title, .woocommerce-loop-product__title, .product-title, h2, h3';
+  let cardSel = 'li.post-card, li.fusion-grid-column, .post-card, li.product, li.wc-block-product';
+  let titleSel = '.fusion-title, .woocommerce-loop-product__title, .product-title, .wp-block-post-title, h2, h3';
   try {
     const p = getActiveProfile();
     similarPat = p.strings?.similarDonationsPattern || similarPat;
@@ -1821,9 +1870,13 @@ async function assertLoopCardsTitleAndDonate(page, surface, screenName, failures
       const benzer = headings.find((h) => benzerRe.test(h.textContent || ''));
       const root =
         (benzer &&
-          (benzer.closest('.fusion-fullwidth, .fusion-builder-row, .related, section, .fusion-post-cards') ||
+          (benzer.closest(
+            '.fusion-fullwidth, .fusion-builder-row, .related, section, .fusion-post-cards, .wp-block-woocommerce-product-collection, .wp-block-woocommerce-related-products'
+          ) ||
             benzer.parentElement)) ||
-        document.querySelector('.fusion-post-cards, .related.products');
+        document.querySelector(
+          '.fusion-post-cards, .related.products, .wp-block-woocommerce-product-collection, .wp-block-woocommerce-related-products'
+        );
       if (root) {
         cards = Array.from(root.querySelectorAll(cardSel));
       }
@@ -1868,22 +1921,25 @@ async function assertLoopCardsTitleAndDonate(page, surface, screenName, failures
     return;
   }
 
-  const bad = result.rows.filter((r) => !r.titleVisible || !r.btnVisible || !r.cardVisible);
-  if (bad.length) {
+  const classified = classifyLoopCardsResult(result.rows, {
+    requireVisible: surface === 'shop',
+  });
+  if (classified.status === 'skip') {
+    if (stats) stats.skipped = (stats.skipped || 0) + 1;
+    return;
+  }
+  if (classified.status === 'fail') {
     failures.push(
       makeFailure({
         check: `loop-cards-${surface}`,
         description:
           surface === 'product'
-            ? 'Benzer Bağışlar: her kartta görünür başlık + "Bağış Yap" olmalı'
+            ? 'Benzer Bağışlar: her görünür kartta başlık + "Bağış Yap" olmalı'
             : 'Mağaza: her kartta görünür başlık + "Bağış Yap" olmalı',
-        detail: bad
-          .slice(0, 6)
-          .map(
-            (r) =>
-              `#${r.i} titleVis=${r.titleVisible} "${r.titleText}" btnVis=${r.btnVisible} "${r.btnText}" cardVis=${r.cardVisible}`
-          )
-          .join(' | '),
+        detail:
+          classified.reason +
+          ' ' +
+          (classified.bad.length ? classified.bad.slice(0, 6).map(formatLoopCardFail).join(' | ') : ''),
         screenshot: `${screenName}.png`,
       })
     );
@@ -1891,6 +1947,153 @@ async function assertLoopCardsTitleAndDonate(page, surface, screenName, failures
   } else if (stats) {
     stats.passed = (stats.passed || 0) + 1;
   }
+}
+
+/**
+ * Ürün sayfası birincil UI: çözümleyici görünümüne göre gömülü form / panel / popup.
+ * Döngü kartları sayılmaz. Düğme modunda tıklayıp kabuk açılır.
+ *
+ * @param {import('@playwright/test').Page} page
+ * @param {string} display
+ * @param {string} productKey
+ * @param {string} screenName
+ * @param {ReturnType<typeof makeFailure>[]} failures
+ * @param {{ passed?: number, failed?: number, skipped?: number }} [stats]
+ */
+async function assertProductPageDisplay(page, display, productKey, screenName, failures, stats) {
+  const ui = await page.evaluate(
+    ({ excludeSel, inlineSel, panelSel, popupSel }) => {
+      const excluded = (el) => !!(el && el.closest(excludeSel));
+      const vis = (el) => {
+        if (!el) return false;
+        const st = getComputedStyle(el);
+        const r = el.getBoundingClientRect();
+        return (
+          st.display !== 'none' &&
+          st.visibility !== 'hidden' &&
+          Number.parseFloat(st.opacity || '1') > 0.05 &&
+          r.width > 4 &&
+          r.height > 4
+        );
+      };
+      const pick = (sel) => Array.from(document.querySelectorAll(sel)).filter((el) => !excluded(el));
+      const inline = pick(inlineSel);
+      const panel = pick(panelSel);
+      const popup = pick(popupSel);
+      const displayAttr =
+        [...panel, ...popup, ...inline].map((el) => el.getAttribute('data-wdp-display')).find(Boolean) || '';
+      const nativeCart = Array.from(
+        document.querySelectorAll('form.cart:not(.wdp-form):not(.wdp-donation-form-fields)')
+      ).filter((el) => !excluded(el) && vis(el)).length;
+      return {
+        inlineVisible: inline.filter(vis).length,
+        panelVisible: panel.filter(vis).length,
+        popupVisible: popup.filter(vis).length,
+        displayAttr,
+        nativeCart,
+      };
+    },
+    {
+      excludeSel: LOOP_EXCLUDE_SEL,
+      inlineSel: SEL.inlineDonationForm,
+      panelSel: SEL.sidePanelTrigger,
+      popupSel: SEL.centeredPopupTrigger,
+    }
+  );
+
+  if (ui.nativeCart > 0) {
+    failures.push(
+      makeFailure({
+        check: `product-${productKey}`,
+        description: 'Ürün sayfasında hâlâ yerel WooCommerce form.cart var',
+        detail: `form.cart sayısı: ${ui.nativeCart}`,
+        screenshot: `${screenName}.png`,
+      })
+    );
+    if (stats) stats.failed = (stats.failed || 0) + 1;
+    return;
+  }
+
+  const resolved = resolveDisplayFromSources({ display, displayAttr: ui.displayAttr });
+  const kind = expectedPrimaryKind(resolved);
+  const matched = matchPrimaryUi({
+    kind,
+    inlineVisible: ui.inlineVisible,
+    panelVisible: ui.panelVisible,
+    popupVisible: ui.popupVisible,
+  });
+  if (matched.reason === 'skip') {
+    if (stats) stats.skipped = (stats.skipped || 0) + 1;
+    return;
+  }
+  if (!matched.ok) {
+    failures.push(
+      makeFailure({
+        check: `product-${productKey}`,
+        description: 'Beklenen tek eklenti formu/butonu yok',
+        detail: `display=${resolved || '(boş)'} kind=${kind || '(boş)'} ${matched.reason}`,
+        screenshot: `${screenName}.png`,
+      })
+    );
+    if (stats) stats.failed = (stats.failed || 0) + 1;
+    return;
+  }
+
+  if (kind === 'form') {
+    if (stats) stats.passed = (stats.passed || 0) + 1;
+    return;
+  }
+
+  const mode = kind === 'panel' ? 'panel' : 'popup';
+  const triggerSel = kind === 'panel' ? SEL.sidePanelTrigger : SEL.centeredPopupTrigger;
+  const n = await page.locator(triggerSel).count();
+  let clicked = false;
+  for (let i = 0; i < n; i += 1) {
+    const btn = page.locator(triggerSel).nth(i);
+    const inLoop = await btn.evaluate(
+      (el, excludeSel) =>
+        !!(el.classList.contains('wdp-loop-donate') || (el.closest && el.closest(excludeSel))),
+      LOOP_EXCLUDE_SEL
+    );
+    if (inLoop) continue;
+    if (!(await btn.isVisible())) continue;
+    await clickShellTrigger(btn, CHECK_MS);
+    clicked = true;
+    break;
+  }
+  if (!clicked) {
+    failures.push(
+      makeFailure({
+        check: `product-${productKey}-open`,
+        description: 'Birincil bağış düğmesi tıklanamadı',
+        detail: `display=${resolved} mode=${mode}`,
+        screenshot: `${screenName}.png`,
+      })
+    );
+    if (stats) stats.failed = (stats.failed || 0) + 1;
+    return;
+  }
+  const shell = openShellLocator(page, mode);
+  try {
+    await shell.waitFor({ state: 'visible', timeout: CHECK_MS });
+  } catch (e) {
+    failures.push(
+      makeFailure({
+        check: `product-${productKey}-open`,
+        description: kind === 'panel' ? 'Panel açılmadı' : 'Popup açılmadı',
+        error: e,
+        screenshot: `${screenName}.png`,
+      })
+    );
+    if (stats) stats.failed = (stats.failed || 0) + 1;
+    return;
+  }
+  const closer = page.locator(SEL.modalClose).first();
+  if ((await closer.count()) > 0) {
+    await closer.click({ timeout: CHECK_MS });
+    await waitForShellClosed(page, CHECK_MS);
+  }
+  if (stats) stats.passed = (stats.passed || 0) + 1;
 }
 
 /**
@@ -2810,32 +3013,9 @@ export async function captureAll({
             debugFiles.push(`similar-donations-probe-error:${String(e.message || e)}`);
           }
         }
-        const cartForms = await page
-          .locator('form.cart:not(.wdp-form):not(.wdp-donation-form-fields)')
-          .count();
-        const wdpUi = await page.locator(`${SEL.donateTrigger}, ${SEL.inlineDonationForm}`).count();
-        if (cartForms > 0) {
-          failures.push(
-            makeFailure({
-              check: `product-${key}`,
-              description: 'Ürün sayfasında hâlâ yerel WooCommerce form.cart var',
-              detail: `form.cart sayısı: ${cartForms}`,
-              screenshot: `${name}.png`,
-            })
-          );
-        }
-        if (wdpUi !== 1) {
-          failures.push(
-            makeFailure({
-              check: `product-${key}`,
-              description: 'Beklenen tek eklenti formu/butonu yok',
-              detail: `bulunan: ${wdpUi}`,
-              screenshot: `${name}.png`,
-            })
-          );
-        } else {
-          functionalStats.passed += 1;
-        }
+        const display =
+          env._resolvedProducts?.[key]?.display || env._catalog?.placement?.display || '';
+        await assertProductPageDisplay(page, display, key, name, failures, functionalStats);
       } catch (e) {
         failures.push(
           makeFailure({

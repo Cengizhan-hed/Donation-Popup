@@ -530,7 +530,7 @@ class WDP_Modal_Shell_Renderer {
 
 		ob_start();
 		?>
-		<div id="<?php echo esc_attr($form_id); ?>" class="hdf-donation-modal-wrapper wdp-donation-form<?php echo esc_attr($layout_class); ?> <?php echo esc_attr($custom_class); ?>" data-product-id="<?php echo esc_attr($product_id); ?>" data-wdp-unit-price="<?php echo esc_attr($product_price !== '' ? $product_price : ''); ?>" data-wdp-enable-sadaka="<?php echo $show_sadaka_ui ? '1' : '0'; ?>" data-wdp-progress-celebrate="<?php echo (!isset($context['progress_celebrate']) || !empty($context['progress_celebrate'])) ? '1' : '0'; ?>" data-wdp-layout="<?php echo esc_attr($shell['layout']); ?>"<?php echo $theme_style_attr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
+		<div id="<?php echo esc_attr($form_id); ?>" class="hdf-donation-modal-wrapper wdp-donation-form<?php echo esc_attr($layout_class); ?> <?php echo esc_attr($custom_class); ?>" data-product-id="<?php echo esc_attr($product_id); ?>" data-wdp-display="inline" data-wdp-unit-price="<?php echo esc_attr($product_price !== '' ? $product_price : ''); ?>" data-wdp-enable-sadaka="<?php echo $show_sadaka_ui ? '1' : '0'; ?>" data-wdp-progress-celebrate="<?php echo (!isset($context['progress_celebrate']) || !empty($context['progress_celebrate'])) ? '1' : '0'; ?>" data-wdp-layout="<?php echo esc_attr($shell['layout']); ?>"<?php echo $theme_style_attr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
 			<div class="wdp-modal-content">
 				<?php if ($is_story) : ?><div class="wdp-story-rail"><?php endif; ?>
 				<?php if ($show_title || $header_modules !== '') : ?>

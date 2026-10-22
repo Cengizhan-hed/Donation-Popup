@@ -356,7 +356,36 @@ function wdp_matrix_bootstrap_products() {
 			'url'  => $permalink,
 		);
 	}
+	wdp_matrix_ensure_related_category(array_column($roles, 'id'));
 	return array( 'roles' => $roles, 'created' => $created );
+}
+
+/**
+ * Aynı kategori → Woo related products görünür (TT5/Storefront).
+ *
+ * @param int[] $ids Product ids.
+ * @return void
+ */
+function wdp_matrix_ensure_related_category(array $ids) {
+	$tax = 'product_cat';
+	if (!function_exists('taxonomy_exists') || !taxonomy_exists($tax)) {
+		return;
+	}
+	$term = function_exists('get_term_by') ? get_term_by('slug', 'wdp-e2e', $tax) : false;
+	$term_id = ($term && isset($term->term_id)) ? (int) $term->term_id : 0;
+	if ($term_id <= 0 && function_exists('wp_insert_term')) {
+		$created = wp_insert_term('WDP E2E', $tax, array( 'slug' => 'wdp-e2e' ));
+		$term_id = is_array($created) && isset($created['term_id']) ? (int) $created['term_id'] : 0;
+	}
+	if ($term_id <= 0 || !function_exists('wp_set_object_terms')) {
+		return;
+	}
+	foreach ($ids as $id) {
+		$id = (int) $id;
+		if ($id > 0) {
+			wp_set_object_terms($id, array( $term_id ), $tax, false);
+		}
+	}
 }
 
 /**

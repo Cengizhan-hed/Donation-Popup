@@ -441,6 +441,7 @@ export function applyRemoteCatalog(env, catalog) {
       url: String(hit.url || ''),
       nav: hit.path,
       type: role,
+      display: String(hit.display || ''),
       fromCatalog: true,
     };
   }
