@@ -10,7 +10,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { loadProfile } from '../tests/e2e/helpers/profile.mjs';
+import { loadProfile, resolveAllowedRemoteTarget } from '../tests/e2e/helpers/profile.mjs';
 import { spawnGuarded } from './lib/remote-guard.mjs';
 import { buildGuardedEvalFileCommand } from './lib/deploy-guards.mjs';
 import { ensureLocalWp } from './local-wp.mjs';
@@ -187,11 +187,12 @@ function main() {
     runner = createLocalRunner();
   } else {
     const profile = loadProfile(profileKeyForEnv(envName));
+    const resolved = resolveAllowedRemoteTarget(profile);
     runner = createRemoteRunner({
       spawn: spawnGuarded,
-      alias: String(profile.ssh?.alias || '').trim(),
-      wpPath: String(profile.ssh?.wpPath || '').trim(),
-      siteUrl: String(profile.baseUrl || '').trim(),
+      alias: resolved.alias,
+      wpPath: resolved.wpPath,
+      siteUrl: resolved.siteUrl,
     });
   }
   const { summary, exitCode } = runDiscover({ envName, runner, outRoot: ROOT, writeFiles: true });

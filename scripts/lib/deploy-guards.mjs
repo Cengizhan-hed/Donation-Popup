@@ -664,32 +664,141 @@ export function matchAllowedTarget(siteUrl, wpPath) {
   return deny('DEPLOY_SITE_URL / DEPLOY_WP_PATH izin listesinde değil.');
 }
 
+/** .env.deploy* / .env.e2e* içinde uzak hedef için kullanılmayan anahtarlar. */
+export const REMOTE_TARGET_ENV_KEYS = Object.freeze([
+  'DEPLOY_SITE_URL',
+  'DEPLOY_WP_PATH',
+  'DEPLOY_SSH_ALIAS',
+  'DEPLOY_SSH_HOST',
+  'DEPLOY_SSH_USER',
+  'DEPLOY_SSH_PORT',
+  'DEPLOY_SSH_KEY',
+  'E2E_BASE_URL',
+]);
+
 /**
- * .env.deploy* değerleri varsa listedeki kayıtla birebir aynı olmalı (değer yazılmaz).
+ * @param {RemoteTarget} target
+ * @returns {Record<string, string>}
+ */
+export function envTargetFromAllowlist(target) {
+  const t = target || {};
+  return {
+    DEPLOY_SSH_ALIAS: String(t.sshAlias || '').trim(),
+    DEPLOY_WP_PATH: String(t.wpPath || '').trim(),
+    DEPLOY_SITE_URL: String(t.siteUrl || '').trim().replace(/\/$/, ''),
+    DEPLOY_SSH_HOST: '',
+    DEPLOY_SSH_USER: '',
+    DEPLOY_SSH_PORT: '',
+    DEPLOY_SSH_KEY: '',
+  };
+}
+
+/**
+ * Uyarı metni değer içermez (URL/yol/alias yazılmaz).
+ * @param {string} fileName
+ * @param {boolean} [blacklisted]
+ */
+export function formatIgnoredTargetWarning(fileName, blacklisted = false) {
+  const name = String(fileName || '.env').replace(/^.*[/\\]/, '') || '.env';
+  if (blacklisted) {
+    return `UYARI: ${name} içindeki hedef anahtarları KARA LİSTE (kullanılmıyor; profil tek kaynak)`;
+  }
+  return `UYARI: ${name} içindeki hedef anahtarları kullanılmıyor (profil tek kaynak)`;
+}
+
+/**
+ * Env hedef anahtarlarını incele; asla kullanma. Değer döndürmez.
+ *
+ * @param {Record<string, string>} parsed
+ * @param {string} fileName
+ * @param {RemoteTarget} listed
+ * @returns {{ hasTargetKeys: boolean, differs: boolean, blacklisted: boolean, warning: string }}
+ */
+export function inspectEnvTargetKeys(parsed, fileName, listed) {
+  const env = parsed && typeof parsed === 'object' ? parsed : {};
+  /** @type {Record<string, string>} */
+  const present = {};
+  for (const k of REMOTE_TARGET_ENV_KEYS) {
+    const v = String(env[k] ?? '').trim();
+    if (v) present[k] = v;
+  }
+  const hay = Object.values(present).join('\n');
+  const blacklisted = hasBlockedHedefMention(hay);
+  const envAlias = present.DEPLOY_SSH_ALIAS || '';
+  const envWp = present.DEPLOY_WP_PATH || '';
+  const listedUrl = String(listed?.siteUrl || '')
+    .trim()
+    .replace(/\/$/, '');
+  const deployUrl = String(present.DEPLOY_SITE_URL || '').replace(/\/$/, '');
+  const e2eUrl = String(present.E2E_BASE_URL || '').replace(/\/$/, '');
+  const connectionOverride = Boolean(
+    present.DEPLOY_SSH_HOST ||
+      present.DEPLOY_SSH_USER ||
+      present.DEPLOY_SSH_PORT ||
+      present.DEPLOY_SSH_KEY
+  );
+  const differs = Boolean(
+    (envAlias && envAlias !== listed?.sshAlias) ||
+      (envWp && envWp !== listed?.wpPath) ||
+      (deployUrl && deployUrl !== listedUrl) ||
+      (e2eUrl && e2eUrl !== listedUrl) ||
+      connectionOverride
+  );
+  const hasTargetKeys = Object.keys(present).length > 0;
+  let warning = '';
+  if (blacklisted) warning = formatIgnoredTargetWarning(fileName, true);
+  else if (hasTargetKeys && differs) warning = formatIgnoredTargetWarning(fileName, false);
+  return {
+    hasTargetKeys,
+    differs: Boolean(differs || blacklisted),
+    blacklisted,
+    warning,
+  };
+}
+
+/**
+ * Uzak hedef = izin listesi. Env hedef anahtarları yok sayılır.
+ *
+ * @param {Record<string, string>} parsed
+ * @param {RemoteTarget} listed
+ * @param {string} fileName
+ * @returns {{ env: Record<string, string>, target: RemoteTarget, warning: string, blacklisted: boolean }}
+ */
+export function applyAllowlistOverEnv(parsed, listed, fileName) {
+  if (!listed || !listed.sshAlias) {
+    throw new Error('SSH alias izin listesinde değil.');
+  }
+  const inspect = inspectEnvTargetKeys(parsed, fileName, listed);
+  return {
+    env: envTargetFromAllowlist(listed),
+    target: listed,
+    warning: inspect.warning,
+    blacklisted: inspect.blacklisted,
+  };
+}
+
+/**
+ * .env.deploy* hedef anahtarları kullanılmaz (profil + izin listesi tek kaynak).
+ * Alias izinliyse path/url farklı olsa da listedeki hedef döner; uyarı değer yazmaz.
  * @param {Record<string, string>} env
- * @returns {{ ok: true, target: RemoteTarget } | { ok: false, reason: string }}
+ * @returns {{ ok: true, target: RemoteTarget, env: Record<string, string>, warning: string } | { ok: false, reason: string }}
  */
 export function validateDeployEnv(env) {
-  const pathVal = String(env.DEPLOY_WP_PATH || '').trim();
-  const siteUrl = String(env.DEPLOY_SITE_URL || '').trim().replace(/\/$/, '');
-  const alias = String(env.DEPLOY_SSH_ALIAS || '').trim();
-
+  const alias = String(env?.DEPLOY_SSH_ALIAS || '').trim();
   if (!alias) {
     return deny('DEPLOY_SSH_ALIAS gerekli.');
   }
-
-  const checked = checkRemoteTarget({
-    alias,
-    wpPath: pathVal || undefined,
-    siteUrl: siteUrl || undefined,
-  });
-  if (!checked.ok) return checked;
-
-  if (pathVal && !pathVal.startsWith('/') && !pathVal.startsWith('~/') && !pathVal.startsWith('$HOME')) {
-    return deny('DEPLOY_WP_PATH mutlak yol veya ~/… olmalı.');
+  const listed = findTargetByAlias(alias);
+  if (!listed) {
+    return deny('SSH alias izin listesinde değil.');
   }
-
-  return { ok: true, target: checked.target };
+  const applied = applyAllowlistOverEnv(env, listed, '.env.deploy');
+  return {
+    ok: true,
+    target: applied.target,
+    env: applied.env,
+    warning: applied.warning,
+  };
 }
 
 /**

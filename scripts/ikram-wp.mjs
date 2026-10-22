@@ -14,17 +14,17 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import dotenv from 'dotenv';
 import {
   IKRAM_ALLOW_REMOVAL_NOTE,
   findTargetByAlias,
-  validateDeployEnv,
   validateRemoteSiteUrl,
   wpPathFlag,
   shellQuoteWpPath,
   buildGuardedEvalFileCommand,
 } from './lib/deploy-guards.mjs';
 import { assertRemoteAllowed, spawnGuarded } from './lib/remote-guard.mjs';
+import { loadProfile, setActiveProfile } from '../tests/e2e/helpers/profile.mjs';
+import { loadDeployEnvSilent, setActiveDeployEnvFile } from '../tests/e2e/helpers/wp-remote.mjs';
 import {
   allowIkramWpCommand,
   normalizeWpTail,
@@ -46,47 +46,23 @@ function fail(msg) {
 }
 
 function loadEnv() {
-  const envPath = path.join(ROOT, '.env.deploy.ikram');
-  if (!fs.existsSync(envPath)) {
-    fail('Eksik .env.deploy.ikram (şablon: .env.deploy.ikram.example).');
-  }
-  const parsed = dotenv.parse(fs.readFileSync(envPath));
-  const env = {
-    DEPLOY_SSH_ALIAS: String(parsed.DEPLOY_SSH_ALIAS || IKRAM_WP_ALIAS).trim(),
-    DEPLOY_SSH_HOST: String(parsed.DEPLOY_SSH_HOST || '').trim(),
-    DEPLOY_SSH_USER: String(parsed.DEPLOY_SSH_USER || '').trim(),
-    DEPLOY_SSH_PORT: String(parsed.DEPLOY_SSH_PORT || '').trim(),
-    DEPLOY_SSH_KEY: String(parsed.DEPLOY_SSH_KEY || '').trim(),
-    DEPLOY_WP_PATH: String(parsed.DEPLOY_WP_PATH || DEFAULT_WP).trim(),
-    DEPLOY_SITE_URL: String(parsed.DEPLOY_SITE_URL || 'https://ikramaid.uk')
-      .trim()
-      .replace(/\/$/, ''),
-  };
+  const profile = loadProfile('ikram');
+  setActiveProfile(profile);
+  setActiveDeployEnvFile(profile.deployEnvFile || '.env.deploy.ikram');
+  const loaded = loadDeployEnvSilent();
+  if (!loaded.ok) fail(loaded.reason);
+  const env = loaded.env;
   if (env.DEPLOY_SSH_ALIAS !== IKRAM_WP_ALIAS) {
     fail('eşleşmiyor');
   }
-  const guard = validateDeployEnv(env);
-  if (!guard.ok) fail(guard.reason);
-  if (guard.target?.id !== 'ikram-aid') fail('ikram:wp yalnız ikramaid.uk hedefine gider.');
+  if (loaded.target?.id !== 'ikram-aid') fail('ikram:wp yalnız ikramaid.uk hedefine gider.');
   return env;
 }
 
 function sshArgs(env) {
   const alias = String(env.DEPLOY_SSH_ALIAS || '').trim();
-  if (alias) {
-    return ['-o', 'BatchMode=yes', '-o', 'StrictHostKeyChecking=accept-new', alias];
-  }
-  return [
-    '-i',
-    env.DEPLOY_SSH_KEY,
-    '-p',
-    env.DEPLOY_SSH_PORT,
-    '-o',
-    'BatchMode=yes',
-    '-o',
-    'StrictHostKeyChecking=accept-new',
-    `${env.DEPLOY_SSH_USER}@${env.DEPLOY_SSH_HOST}`,
-  ];
+  if (!alias) fail('SSH alias yok (profil tek kaynak).');
+  return ['-o', 'BatchMode=yes', '-o', 'StrictHostKeyChecking=accept-new', alias];
 }
 
 function remote(env, remoteCmd) {
