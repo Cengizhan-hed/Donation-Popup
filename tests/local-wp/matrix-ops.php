@@ -440,6 +440,14 @@ function wdp_matrix_probe() {
 		$lu        = wp_parse_url((string) get_permalink($list));
 		$list_path = isset($lu['path']) ? $lu['path'] : '';
 	}
+	$shop_path = '';
+	if (function_exists('wc_get_page_permalink')) {
+		$shop = wc_get_page_permalink('shop');
+		if ($shop) {
+			$su        = wp_parse_url((string) $shop);
+			$shop_path = isset($su['path']) ? $su['path'] : '';
+		}
+	}
 	return array(
 		'ok'            => true,
 		'theme'         => get_stylesheet(),
@@ -454,6 +462,7 @@ function wdp_matrix_probe() {
 		'pos'           => get_option('woocommerce_currency_pos'),
 		'products'      => $products,
 		'listPath'      => $list_path,
+		'shopPath'      => $shop_path,
 		'wdpActive'     => function_exists('is_plugin_active') && is_plugin_active('woo-donation-popup/woo-donation-popup.php'),
 		'wcActive'      => function_exists('is_plugin_active') && is_plugin_active('woocommerce/woocommerce.php'),
 	);

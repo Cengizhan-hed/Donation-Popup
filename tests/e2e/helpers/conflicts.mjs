@@ -10,6 +10,12 @@ import { DEVICE_ORDER, parseDeviceList } from './devices.mjs';
 export const PLUGIN_SLUG = 'woo-donation-popup';
 export const PLUGIN_URL_RE = /\/wp-content\/plugins\/woo-donation-popup(?:\/|$)/i;
 export const MIN_TOUCH_PX = 24;
+/** Kabuk vs görsel viewport: 92vw panel / güvenli alan (layout.mjs ile aynı). */
+export const OVERFLOW_SHELL_EDGE_PX = 16;
+export const OVERFLOW_CHILD_EDGE_PX = 2;
+/** Mağaza döngüsü + eklenti düğmesi (liste kartı değil). */
+export const SHOP_DONATE_SEL =
+  '.wdp-loop-donate, .wdp-donate-button, .wdp-open-modal, .wdp-open-side-panel, .wdp-card__cta';
 export const CONFLICTS_OUT_DIR = path.join(ROOT, 'build/e2e/conflicts');
 export const CHECK_IDS = Object.freeze(['console', 'scripts', 'fields', 'css', 'cache']);
 export const PAGE_IDS = Object.freeze(['product', 'shop', 'panel', 'cart', 'checkout']);
@@ -322,6 +328,46 @@ export function evaluatePhoneIntegrity(p = {}) {
 }
 
 /**
+ * Yalnız açık/görünür formdaki telefon alanı (kart içi tembel/gizli form yok).
+ * @param {{
+ *   inOpenVisibleForm?: boolean,
+ *   display?: string,
+ *   visibility?: string,
+ *   hidden?: boolean,
+ *   ariaHidden?: boolean,
+ *   width?: number,
+ *   height?: number,
+ *   flags?: number,
+ *   btns?: number,
+ *   iti?: number,
+ *   wcipi?: number,
+ *   itiGlobal?: boolean
+ * }} s
+ */
+export function isOpenVisiblePhoneSnap(s = {}) {
+  if (!s.inOpenVisibleForm) return false;
+  if (s.display === 'none' || s.visibility === 'hidden') return false;
+  if (s.hidden || s.ariaHidden) return false;
+  if (Number(s.width || 0) <= 0 || Number(s.height || 0) <= 0) return false;
+  return true;
+}
+
+/**
+ * @param {Array<Parameters<typeof isOpenVisiblePhoneSnap>[0]>} snaps
+ */
+export function phoneProbeFromSnaps(snaps) {
+  const vis = (snaps || []).filter(isOpenVisiblePhoneSnap);
+  return {
+    wdpPhoneCount: vis.length,
+    flagCount: vis.reduce((n, s) => n + Number(s.flags || 0), 0),
+    countryBtnCount: vis.reduce((n, s) => n + Number(s.btns || 0), 0),
+    itiOnWdp: vis.reduce((n, s) => n + Number(s.iti || 0), 0),
+    wcipiOnWdp: vis.reduce((n, s) => n + Number(s.wcipi || 0), 0),
+    itiGlobalOnWdp: vis.some((s) => s.itiGlobal === true),
+  };
+}
+
+/**
  * @param {ReturnType<typeof evaluatePhoneIntegrity>} phone
  */
 export function phoneVerdict(phone) {
@@ -415,16 +461,106 @@ export function diffChromeStyles(withCss, withoutCss) {
 }
 
 /**
+ * Taşma ölçümünden hariç: gizli, aria-hidden kapalı liste, ekran okuyucu, kapalı ülke paneli.
+ * @param {{
+ *   display?: string,
+ *   visibility?: string,
+ *   hidden?: boolean,
+ *   ariaHidden?: boolean,
+ *   ancestorHidden?: boolean,
+ *   ancestorAriaHidden?: boolean,
+ *   srText?: boolean,
+ *   closedCountry?: boolean,
+ *   closedDisclosure?: boolean,
+ *   width?: number,
+ *   height?: number
+ * }} n
+ */
+export function isOverflowIgnored(n = {}) {
+  if (n.display === 'none' || n.visibility === 'hidden') return true;
+  if (n.hidden || n.ariaHidden || n.ancestorHidden || n.ancestorAriaHidden) return true;
+  if (n.srText || n.closedCountry || n.closedDisclosure) return true;
+  if (Number(n.width || 0) <= 0 || Number(n.height || 0) <= 0) return true;
+  return false;
+}
+
+/**
+ * @param {{ selector?: string, width?: number, containerWidth?: number, rule?: string }} hit
+ */
+export function formatOverflowFinding(hit) {
+  if (!hit) return '';
+  const sel = String(hit.selector || '').slice(0, 80);
+  const w = Math.round(Number(hit.width) || 0);
+  const cw = Math.round(Number(hit.containerWidth) || 0);
+  const rule = String(hit.rule || 'viewport');
+  return `form taşıyor ${sel} ${w}>${cw} kural=${rule}`.trim();
+}
+
+/**
+ * @param {Array<object>} nodes
+ * @param {{ vw?: number, shellEdge?: number, childEdge?: number }} [opts]
+ * @returns {object|null}
+ */
+export function pickOverflowHit(nodes, opts = {}) {
+  const vw = Number(opts.vw || 0);
+  const shellEdge = Number(opts.shellEdge ?? OVERFLOW_SHELL_EDGE_PX);
+  const childEdge = Number(opts.childEdge ?? OVERFLOW_CHILD_EDGE_PX);
+  const list = Array.isArray(nodes) ? nodes : [];
+  for (const n of list) {
+    if (!n || isOverflowIgnored(n)) continue;
+    const left = Number(n.left);
+    const right = Number(n.right);
+    const width = Number(n.width);
+    const isShell = n.role === 'shell' || n.role === 'content';
+    const edge = isShell ? shellEdge : childEdge;
+    if (vw > 0 && (right > vw + edge || left < -edge)) {
+      return {
+        selector: n.selector || n.name || '',
+        width,
+        containerWidth: vw,
+        rule: 'viewport',
+        left,
+        right,
+        vw,
+      };
+    }
+    const cL = Number(n.containerLeft);
+    const cR = Number(n.containerRight);
+    const cW = Number(n.containerWidth);
+    if (Number.isFinite(cL) && Number.isFinite(cR) && cR > cL) {
+      if (left < cL - childEdge || right > cR + childEdge) {
+        return {
+          selector: n.selector || n.name || '',
+          width,
+          containerWidth: cW || cR - cL,
+          rule: 'kapsayıcı',
+          left,
+          right,
+          containerLeft: cL,
+          containerRight: cR,
+        };
+      }
+    }
+  }
+  return null;
+}
+
+/**
  * @param {{ leaked: string[] }} diff
- * @param {{ overflow?: boolean, clipped?: boolean, badTouch?: Array<{name?: string, w?: number, h?: number}>, formVisible?: boolean }} form
+ * @param {{ overflow?: boolean, clipped?: boolean, hit?: object|null, badTouch?: Array<{name?: string, w?: number, h?: number}>, formVisible?: boolean }} form
  */
 export function cssVerdict(diff, form = {}) {
   if (form.formVisible === false) {
     return { verdict: VERDICT.red, finding: 'form görünmez' };
   }
   if (form.formVisible === true) {
-    if (form.overflow) return { verdict: VERDICT.red, finding: 'yatay kaydırma' };
-    if (form.clipped) return { verdict: VERDICT.red, finding: 'form taşıyor' };
+    const hit = form.hit || null;
+    if (hit) {
+      return { verdict: VERDICT.red, finding: formatOverflowFinding(hit) };
+    }
+    if (form.clipped) {
+      return { verdict: VERDICT.red, finding: formatOverflowFinding(form.hit) || 'form taşıyor' };
+    }
     if (Array.isArray(form.badTouch) && form.badTouch.length) {
       const s = form.badTouch[0];
       return {
@@ -437,6 +573,29 @@ export function cssVerdict(diff, form = {}) {
     return { verdict: VERDICT.red, finding: `CSS sızıntısı ${diff.leaked[0]}` };
   }
   return { verdict: VERDICT.pass, finding: '' };
+}
+
+/**
+ * Mağaza sayfası: yalnız Woo shop (liste kısa kodu değil).
+ * @param {object} [probe]
+ * @param {object} [env]
+ */
+export function shopConflictPath(probe, env) {
+  const p =
+    probe?.shopPath ||
+    env?.E2E_SHOP_PAGE ||
+    env?._catalog?.shop?.path ||
+    '';
+  return String(p || '').trim();
+}
+
+/**
+ * @param {{ shopPath?: string, triggerVisible?: boolean }} p
+ */
+export function shopSkipReason(p = {}) {
+  if (!p.shopPath) return 'atlandı: mağaza sayfası WP\'den çözülemedi';
+  if (!p.triggerVisible) return 'atlandı: mağaza döngüsünde eklenti düğmesi yok';
+  return '';
 }
 
 /**
@@ -583,6 +742,97 @@ export function simRemotePhoneProbe() {
     itiOnWdp: 1,
     wcipiOnWdp: 1,
     itiGlobalOnWdp: true,
+  };
+}
+
+/** Kart içi gizli tembel formlar (mağaza döngüsü) — sayılmaz. */
+export function simRemoteHiddenShopPhoneSnaps() {
+  const hidden = [];
+  for (let i = 0; i < 15; i++) {
+    hidden.push({
+      inOpenVisibleForm: false,
+      display: 'none',
+      visibility: 'hidden',
+      hidden: true,
+      width: 0,
+      height: 0,
+      flags: 0,
+      btns: 1,
+    });
+  }
+  return hidden;
+}
+
+/** Açık formda tek bayrak/tek seçici. */
+export function simRemoteOpenPhoneSnap() {
+  return {
+    inOpenVisibleForm: true,
+    display: 'flex',
+    visibility: 'visible',
+    hidden: false,
+    width: 280,
+    height: 52,
+    flags: 1,
+    btns: 1,
+    iti: 0,
+    wcipi: 0,
+  };
+}
+
+/** Avada/Blocksy benzeri: ekran okuyucu + kapalı ülke listesi taşma sayılmaz. */
+export function simRemoteFalseOverflowNodes() {
+  return [
+    {
+      selector: '.screen-reader-text',
+      role: 'child',
+      srText: true,
+      left: -9999,
+      right: -9998,
+      width: 1,
+      height: 1,
+      display: 'block',
+      visibility: 'visible',
+    },
+    {
+      selector: '.wdp-phone-country-panel',
+      role: 'child',
+      closedCountry: true,
+      hidden: true,
+      ariaHidden: true,
+      left: 0,
+      right: 420,
+      width: 420,
+      height: 320,
+      display: 'block',
+      visibility: 'hidden',
+    },
+    {
+      selector: '.wdp-modal-content',
+      role: 'content',
+      left: 40,
+      right: 380,
+      width: 340,
+      height: 600,
+      display: 'flex',
+      visibility: 'visible',
+    },
+  ];
+}
+
+/** Görünür eklenti öğesi gerçekten taşıyor (kapsayıcı; viewport içinde). */
+export function simRemoteRealOverflowHit() {
+  return {
+    selector: '.wdp-amount-preset',
+    role: 'child',
+    left: 8,
+    right: 320,
+    width: 312,
+    height: 44,
+    display: 'block',
+    visibility: 'visible',
+    containerLeft: 16,
+    containerRight: 280,
+    containerWidth: 264,
   };
 }
 

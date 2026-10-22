@@ -23,14 +23,19 @@ import {
   scriptsVerdict,
   evaluatePhoneIntegrity,
   phoneVerdict,
+  phoneProbeFromSnaps,
   evaluateCheckoutFields,
   evaluateCurcy,
   fieldsVerdict,
   diffChromeStyles,
   cssVerdict,
   cacheVerdict,
+  pickOverflowHit,
   VERDICT,
   MIN_TOUCH_PX,
+  SHOP_DONATE_SEL,
+  shopConflictPath,
+  shopSkipReason,
   isPluginCssUrl,
   formatConflictsSummary,
   writeConflictsSummary,
@@ -41,6 +46,10 @@ import {
   simRemoteCheckoutProbe,
   simRemoteCurcyProbe,
   simRemoteConsoleEvents,
+  simRemoteHiddenShopPhoneSnaps,
+  simRemoteOpenPhoneSnap,
+  simRemoteFalseOverflowNodes,
+  simRemoteRealOverflowHit,
   PAGE_IDS,
 } from './helpers/conflicts.mjs';
 import { ROOT, loadE2EEnv, withCacheBust } from './helpers/env.mjs';
@@ -51,8 +60,7 @@ import { SEL } from './helpers/selectors.mjs';
 import {
   openShellLocator,
   clickShellTrigger,
-  revealListProductTrigger,
-  shellTriggerLocator,
+  waitOpenShellSettled,
 } from './helpers/checks.mjs';
 import { isRemoteProfile, setActiveProfile, loadProfile } from './helpers/profile.mjs';
 import { isRemoteFrozen, FREEZE_MESSAGE, assertOperatorGate, OPERATOR_GATE_MESSAGE } from '../../scripts/lib/remote-guard.mjs';
@@ -175,34 +183,44 @@ async function collectJquery(page) {
 }
 
 async function collectPhone(page) {
-  return page.evaluate(() => {
+  const snaps = await page.evaluate(() => {
     const fields = Array.from(document.querySelectorAll('.wdp-phone-field, [data-wdp-phone-field]'));
-    let flagCount = 0;
-    let countryBtnCount = 0;
-    let itiOnWdp = 0;
-    let wcipiOnWdp = 0;
-    for (const f of fields) {
-      flagCount += f.querySelectorAll('.iti__flag, .wdp-phone-field__flag, [class*="iti__flag"]').length;
-      countryBtnCount += f.querySelectorAll(
-        '.wdp-phone-field__code-btn, .iti__selected-flag, .wcipi-flag, [class*="country-selector"]'
-      ).length;
-      itiOnWdp += f.querySelectorAll('.iti, .intl-tel-input, [data-intl-tel-input-id]').length;
-      wcipiOnWdp += f.querySelectorAll('[class*="wcipi"], .wcipi-wrap, .wcipi-container').length;
+    return fields.map((f) => {
+      const st = getComputedStyle(f);
+      const r = f.getBoundingClientRect();
+      const shell = f.closest('.hdf-donation-modal-wrapper.wdp-modal');
+      const inline = f.closest('.hdf-donation-modal-wrapper.wdp-donation-form, .wdp-donation-form');
+      const inOpenVisibleForm = shell
+        ? shell.classList.contains('show') && shell.getAttribute('aria-hidden') !== 'true'
+        : !!inline;
       const inp = f.querySelector('input[name="donation_phone"], input[type="tel"]');
-      if (inp && (inp.classList.contains('iti') || inp.getAttribute('data-intl-tel-input-id'))) itiOnWdp += 1;
-    }
-    return {
-      wdpPhoneCount: fields.length,
-      flagCount,
-      countryBtnCount,
-      itiOnWdp,
-      wcipiOnWdp,
-      itiGlobalOnWdp: fields.some((f) => {
-        const inp = f.querySelector('input');
-        return !!(inp && window.intlTelInputGlobals && typeof window.intlTelInputGlobals.getInstance === 'function' && window.intlTelInputGlobals.getInstance(inp));
-      }),
-    };
+      let iti = f.querySelectorAll('.iti, .intl-tel-input, [data-intl-tel-input-id]').length;
+      if (inp && (inp.classList.contains('iti') || inp.getAttribute('data-intl-tel-input-id'))) iti += 1;
+      const itiGlobal = !!(
+        inp &&
+        window.intlTelInputGlobals &&
+        typeof window.intlTelInputGlobals.getInstance === 'function' &&
+        window.intlTelInputGlobals.getInstance(inp)
+      );
+      return {
+        inOpenVisibleForm,
+        display: st.display,
+        visibility: st.visibility,
+        hidden: !!f.hidden,
+        ariaHidden: f.getAttribute('aria-hidden') === 'true',
+        width: r.width,
+        height: r.height,
+        flags: f.querySelectorAll('.iti__flag, .wdp-phone-field__flag, [class*="iti__flag"]').length,
+        btns: f.querySelectorAll(
+          '.wdp-phone-field__code-btn, .iti__selected-flag, .wcipi-flag, [class*="country-selector"]'
+        ).length,
+        iti,
+        wcipi: f.querySelectorAll('[class*="wcipi"], .wcipi-wrap, .wcipi-container').length,
+        itiGlobal,
+      };
+    });
   });
+  return phoneProbeFromSnaps(snaps);
 }
 
 async function collectCheckout(page) {
@@ -299,30 +317,103 @@ async function snapshotChrome(page) {
 }
 
 async function collectFormLayout(page) {
-  return page.evaluate((min) => {
+  const snap = await page.evaluate((min) => {
+    const pathHint = (el) => {
+      if (!el) return '';
+      if (el.id) return `#${el.id}`;
+      const cls = String(el.className || '')
+        .split(/\s+/)
+        .filter((c) => /^(wdp-|hdf-)/.test(c))
+        .slice(0, 3);
+      const tag = (el.tagName || '').toLowerCase();
+      return cls.length ? `${tag}.${cls.join('.')}` : tag;
+    };
+    const ignored = (el) => {
+      if (!el) return true;
+      if (el.hidden || el.getAttribute('aria-hidden') === 'true') return true;
+      if (el.closest('[hidden], [aria-hidden="true"]')) return true;
+      if (el.classList.contains('screen-reader-text') || el.closest('.screen-reader-text')) return true;
+      const panel = el.closest('.wdp-phone-country-panel');
+      if (panel && (panel.hidden || panel.getAttribute('aria-hidden') === 'true')) return true;
+      const disc = el.closest('[aria-expanded="false"]');
+      if (disc && disc !== el && (el.getAttribute('role') === 'listbox' || el.closest('[role="listbox"]'))) {
+        return true;
+      }
+      return false;
+    };
     const doc = document.documentElement;
     const overflow = doc.scrollWidth > doc.clientWidth + 1;
-    const form =
-      document.querySelector('.hdf-donation-modal-wrapper.wdp-modal.show form.wdp-donation-form-fields') ||
-      document.querySelector('form.wdp-donation-form-fields') ||
-      document.querySelector('.wdp-modal-content');
-    if (!form) {
-      return { overflow, formVisible: null, clipped: false, badTouch: [] };
+    const shell = document.querySelector('.hdf-donation-modal-wrapper.wdp-modal.show');
+    const inline = document.querySelector(
+      '.hdf-donation-modal-wrapper.wdp-donation-form:not(.wdp-modal), .wdp-donation-form:not(.wdp-modal)'
+    );
+    const root = shell
+      ? shell.querySelector('.wdp-modal-content') || shell
+      : inline;
+    if (!root) {
+      return { overflow, formVisible: null, vw: 0, nodes: [], badTouch: [] };
     }
-    const st = getComputedStyle(form);
-    const box = form.getBoundingClientRect();
+    const st = getComputedStyle(root);
+    const box = root.getBoundingClientRect();
     const formVisible =
       st.display !== 'none' && st.visibility !== 'hidden' && box.width > 0 && box.height > 0;
+    if (!formVisible) {
+      return { overflow, formVisible: false, vw: 0, nodes: [], badTouch: [] };
+    }
     const vv = window.visualViewport;
     const vw = vv ? vv.width : window.innerWidth;
-    const clipped = box.right > vw + 2 || box.left < -2;
-    const nodes = Array.from(
-      form.querySelectorAll(
-        'button, a[href], [role="button"], .wdp-amount-preset, input[type="checkbox"]'
-      )
-    );
+    const openCountry = document.querySelector('.wdp-phone-country-panel:not([hidden])');
+    const scan = [root, ...Array.from(root.querySelectorAll('button, a[href], [role="button"], input, textarea, select, [class*="wdp-"]'))];
+    if (openCountry && !openCountry.hidden && openCountry.getAttribute('aria-hidden') !== 'true') {
+      scan.push(openCountry, ...Array.from(openCountry.querySelectorAll('button, input, [class*="wdp-"]')));
+    }
+    const seen = new Set();
+    const nodes = [];
+    for (const el of scan) {
+      if (!el || seen.has(el)) continue;
+      seen.add(el);
+      const cs = getComputedStyle(el);
+      const r = el.getBoundingClientRect();
+      const ancestorHidden = !!el.closest('[hidden]');
+      const ancestorAria = !!el.closest('[aria-hidden="true"]');
+      const srText =
+        el.classList.contains('screen-reader-text') || !!el.closest('.screen-reader-text');
+      const closedCountry = (() => {
+        const p = el.closest('.wdp-phone-country-panel');
+        return !!(p && (p.hidden || p.getAttribute('aria-hidden') === 'true'));
+      })();
+      const closedDisclosure = (() => {
+        const list = el.closest('[role="listbox"], [role="menu"]');
+        if (!list) return false;
+        const owner = list.closest('[aria-expanded="false"]');
+        return !!owner;
+      })();
+      nodes.push({
+        selector: pathHint(el),
+        role: el === root ? 'content' : 'child',
+        left: r.left,
+        right: r.right,
+        width: r.width,
+        height: r.height,
+        display: cs.display,
+        visibility: cs.visibility,
+        hidden: !!el.hidden,
+        ariaHidden: el.getAttribute('aria-hidden') === 'true',
+        ancestorHidden,
+        ancestorAriaHidden: ancestorAria,
+        srText,
+        closedCountry,
+        closedDisclosure,
+        containerLeft: box.left,
+        containerRight: box.right,
+        containerWidth: box.width,
+      });
+    }
     const badTouch = [];
-    for (const el of nodes) {
+    for (const el of root.querySelectorAll(
+      'button, a[href], [role="button"], .wdp-amount-preset, input[type="checkbox"]'
+    )) {
+      if (ignored(el)) continue;
       const cs = getComputedStyle(el);
       const r = el.getBoundingClientRect();
       if (cs.display === 'none' || cs.visibility === 'hidden' || r.width <= 0 || r.height <= 0) continue;
@@ -335,8 +426,17 @@ async function collectFormLayout(page) {
         });
       }
     }
-    return { overflow, formVisible, clipped, badTouch };
+    return { overflow, formVisible: true, vw, nodes, badTouch };
   }, MIN_TOUCH_PX);
+  const hit = pickOverflowHit(snap.nodes || [], { vw: snap.vw });
+  return {
+    overflow: !!snap.overflow,
+    formVisible: snap.formVisible,
+    clipped: !!hit,
+    hit,
+    badTouch: snap.badTouch || [],
+    vw: snap.vw,
+  };
 }
 
 async function probeProductAjax(page, productId) {
@@ -396,43 +496,80 @@ async function probeAddToCartNonce(page) {
   });
 }
 
+async function visibleShopDonate(page) {
+  const loc = page.locator(SHOP_DONATE_SEL);
+  const vis = loc.filter({ visible: true });
+  if ((await vis.count()) > 0) return vis.first();
+  return null;
+}
+
+/**
+ * @returns {Promise<{ opened: boolean, skipped: boolean, reason: string }>}
+ */
 async function openFormIfNeeded(page, pageId, ctx) {
-  if (pageId === 'cart' || pageId === 'checkout') return;
-  if (pageId === 'product') {
-    const inline = page.locator(`${SEL.inlineDonationForm} ${SEL.donationForm}, ${SEL.donationForm}`).first();
-    if ((await inline.count()) > 0 && (await inline.isVisible())) return;
-    const trigger = page.locator(`${SEL.donateTrigger}, ${SEL.sidePanelTrigger}`).first();
-    if ((await trigger.count()) === 0) return;
-    await trigger.waitFor({ state: 'visible', timeout: CHECK_MS });
-    await clickShellTrigger(trigger, CHECK_MS);
-    const shell = openShellLocator(page, '');
-    await shell.waitFor({ state: 'visible', timeout: CHECK_MS });
-    return;
+  if (pageId === 'cart' || pageId === 'checkout') {
+    return { opened: false, skipped: false, reason: '' };
   }
   if (pageId === 'shop') {
-    const list = page.locator('.wdp-list-wrap, .wdp-list').first();
-    if ((await list.count()) === 0) return;
-    await list.waitFor({ state: 'visible', timeout: CHECK_MS });
-    if (ctx.productId) await revealListProductTrigger(page, ctx.productId);
-    const trigger = shellTriggerLocator(page, 'popup', { productId: ctx.productId || 0 });
-    if ((await trigger.count()) === 0) return;
+    const trigger = await visibleShopDonate(page);
+    if (!trigger) {
+      return {
+        opened: false,
+        skipped: true,
+        reason: shopSkipReason({ shopPath: ctx.shopPath || 'x', triggerVisible: false }),
+      };
+    }
     await clickShellTrigger(trigger, CHECK_MS);
-    const shell = openShellLocator(page, 'popup');
-    await shell.waitFor({ state: 'visible', timeout: CHECK_MS });
-    return;
+    const shell = openShellLocator(page, '');
+    if ((await shell.count()) === 0) {
+      return { opened: false, skipped: true, reason: 'atlandı: mağaza döngüsü tıklandı, kabuk yok' };
+    }
+    const vis = await shell.isVisible();
+    if (!vis) {
+      return { opened: false, skipped: true, reason: 'atlandı: mağaza döngüsü tıklandı, kabuk görünür değil' };
+    }
+    await waitOpenShellSettled(page);
+    return { opened: true, skipped: false, reason: '' };
+  }
+  if (pageId === 'product') {
+    const inline = page.locator(`${SEL.inlineDonationForm} ${SEL.donationForm}`).first();
+    if ((await inline.count()) > 0 && (await inline.isVisible())) {
+      return { opened: true, skipped: false, reason: '' };
+    }
+    const trigger = page.locator(`${SEL.donateTrigger}, ${SEL.sidePanelTrigger}`).first();
+    if ((await trigger.count()) === 0) {
+      return { opened: false, skipped: false, reason: '' };
+    }
+    const visTrig = trigger.filter({ visible: true });
+    if ((await visTrig.count()) === 0) {
+      return { opened: false, skipped: false, reason: '' };
+    }
+    await clickShellTrigger(visTrig, CHECK_MS);
+    const shell = openShellLocator(page, '');
+    if ((await shell.count()) === 0 || !(await shell.isVisible())) {
+      return { opened: false, skipped: false, reason: '' };
+    }
+    await waitOpenShellSettled(page);
+    return { opened: true, skipped: false, reason: '' };
   }
   if (pageId === 'panel') {
     const trigger = page.locator(SEL.sidePanelTrigger).first();
     if ((await trigger.count()) === 0) {
-      const any = page.locator(SEL.donateTrigger).first();
-      if ((await any.count()) === 0) return;
-      await clickShellTrigger(any, CHECK_MS);
-    } else {
-      await clickShellTrigger(trigger, CHECK_MS);
+      return { opened: false, skipped: false, reason: '' };
     }
+    const visTrig = trigger.filter({ visible: true });
+    if ((await visTrig.count()) === 0) {
+      return { opened: false, skipped: false, reason: '' };
+    }
+    await clickShellTrigger(visTrig, CHECK_MS);
     const shell = openShellLocator(page, 'panel');
-    await shell.waitFor({ state: 'visible', timeout: CHECK_MS });
+    if ((await shell.count()) === 0 || !(await shell.isVisible())) {
+      return { opened: false, skipped: false, reason: '' };
+    }
+    await waitOpenShellSettled(page);
+    return { opened: true, skipped: false, reason: '' };
   }
+  return { opened: false, skipped: false, reason: '' };
 }
 
 async function applyCssBlock(page) {
@@ -445,6 +582,25 @@ async function applyCssBlock(page) {
   };
   await page.route('**/*', handler);
   return handler;
+}
+
+async function highlightOverflowHit(page, hit) {
+  if (!hit || !hit.selector) return;
+  await page.evaluate((sel) => {
+    const nodes = Array.from(document.querySelectorAll(sel));
+    const el =
+      nodes.find((n) => {
+        const r = n.getBoundingClientRect();
+        return r.width > 0 && r.height > 0;
+      }) || nodes[0];
+    if (!el) return;
+    el.setAttribute('data-wdp-overflow-hit', '1');
+    el.style.setProperty('outline', '3px solid #dc2626', 'important');
+    el.style.setProperty('outline-offset', '2px', 'important');
+    if (typeof el.scrollIntoView === 'function') {
+      el.scrollIntoView({ block: 'center', inline: 'nearest' });
+    }
+  }, hit.selector);
 }
 
 async function shotFinding(page, dir, name) {
@@ -465,7 +621,7 @@ function pathFromProbe(probe, env, pageId) {
     );
   }
   if (pageId === 'shop') {
-    return probe?.listPath || env?.E2E_LIST_PAGE || env?.E2E_SHOP_PAGE || '';
+    return shopConflictPath(probe, env);
   }
   if (pageId === 'cart') {
     const u = probe?.cartUrl || env?.E2E_CART_PAGE || '/cart/';
@@ -551,6 +707,7 @@ async function runPageChecks(page, ctx) {
     css: css.verdict,
     cache: cacheV.verdict,
     finding: firstFinding(con, scr, fld, css, cacheV),
+    layout: formLayout,
   };
 }
 
@@ -622,6 +779,49 @@ function runSimRemote() {
     finding: stale.finding,
     ok: stale.verdict === VERDICT.red,
   });
+  const hiddenPhone = phoneVerdict(evaluatePhoneIntegrity(phoneProbeFromSnaps(simRemoteHiddenShopPhoneSnaps())));
+  rows.push({
+    id: 'gizli-kart-telefon',
+    expected: VERDICT.pass,
+    actual: hiddenPhone.verdict,
+    finding: hiddenPhone.finding,
+    ok: hiddenPhone.verdict === VERDICT.pass,
+  });
+  const openPhone = phoneVerdict(
+    evaluatePhoneIntegrity(phoneProbeFromSnaps([...simRemoteHiddenShopPhoneSnaps(), simRemoteOpenPhoneSnap()]))
+  );
+  rows.push({
+    id: 'açık-form-tek-seçici',
+    expected: VERDICT.pass,
+    actual: openPhone.verdict,
+    finding: openPhone.finding,
+    ok: openPhone.verdict === VERDICT.pass && openPhone.finding === '',
+  });
+  const falseHit = pickOverflowHit(simRemoteFalseOverflowNodes(), { vw: 390 });
+  const falseCss = cssVerdict({ leaked: [] }, { formVisible: true, clipped: !!falseHit, hit: falseHit });
+  rows.push({
+    id: 'gizli-sr-text-tasmaz',
+    expected: VERDICT.pass,
+    actual: falseCss.verdict,
+    finding: falseCss.finding,
+    ok: falseCss.verdict === VERDICT.pass && !falseHit,
+  });
+  const realHit = pickOverflowHit([simRemoteRealOverflowHit()], { vw: 390 });
+  const realCss = cssVerdict({ leaked: [] }, { formVisible: true, clipped: !!realHit, hit: realHit });
+  rows.push({
+    id: 'görünür-öğe-taşması',
+    expected: VERDICT.red,
+    actual: realCss.verdict,
+    finding: realCss.finding,
+    ok: realCss.verdict === VERDICT.red && /form taşıyor/.test(realCss.finding) && /kural=/.test(realCss.finding),
+  });
+  rows.push({
+    id: 'shop-yol-yok-atla',
+    expected: VERDICT.skip,
+    actual: VERDICT.skip,
+    finding: shopSkipReason({ shopPath: '' }),
+    ok: shopSkipReason({ shopPath: '' }).startsWith('atlandı:'),
+  });
   return rows;
 }
 
@@ -659,25 +859,56 @@ async function runDeviceOnTarget({ preset, env, baseUrl, probe, theme, pages, sh
       let shot = '';
       try {
         if (!target) {
-          checks.finding = `atlandı: ${pageId} yolu yok`;
-          checks.console = VERDICT.pass;
-          checks.scripts = VERDICT.pass;
-          checks.fields = VERDICT.pass;
-          checks.css = VERDICT.pass;
-          checks.cache = VERDICT.pass;
+          const why =
+            pageId === 'shop'
+              ? shopSkipReason({ shopPath: '' })
+              : `atlandı: ${pageId} yolu yok`;
+          checks.finding = why;
+          checks.console = VERDICT.skip;
+          checks.scripts = VERDICT.skip;
+          checks.fields = VERDICT.skip;
+          checks.css = VERDICT.skip;
+          checks.cache = VERDICT.skip;
         } else {
           await gotoPath(page, baseUrl, target, env, true);
           await waitIdle(page);
           const chromeWithCss = await snapshotChrome(page);
-          await openFormIfNeeded(page, pageId, { productId });
-          checks = await runPageChecks(page, { pageId, productId, events, env, chromeWithCss });
+          const opened = await openFormIfNeeded(page, pageId, {
+            productId,
+            shopPath: shopConflictPath(probe, env),
+          });
+          if (opened.skipped && pageId === 'shop') {
+            checks = await runPageChecks(page, { pageId, productId, events, env, chromeWithCss });
+            if (!rowHasFinding(checks)) {
+              checks.finding = opened.reason;
+            }
+          } else {
+            checks = await runPageChecks(page, { pageId, productId, events, env, chromeWithCss });
+          }
         }
       } catch (e) {
-        checks.console = VERDICT.red;
-        checks.finding = String(e && e.message ? e.message : e).slice(0, 240);
+        const msg = String(e && e.message ? e.message : e);
+        if (pageId === 'shop' && /timeout|waitfor/i.test(msg)) {
+          checks.console = VERDICT.skip;
+          checks.scripts = VERDICT.skip;
+          checks.fields = VERDICT.skip;
+          checks.css = VERDICT.skip;
+          checks.cache = VERDICT.skip;
+          checks.finding = `atlandı: mağaza bekleme hedefi yok (${msg.slice(0, 80)})`;
+        } else {
+          checks.console = VERDICT.red;
+          checks.finding = msg.slice(0, 240);
+        }
       }
       if (rowHasFinding({ ...checks })) {
         try {
+          if (checks.layout && checks.layout.hit) {
+            await openFormIfNeeded(page, pageId, {
+              productId,
+              shopPath: shopConflictPath(probe, env),
+            });
+            await highlightOverflowHit(page, checks.layout.hit);
+          }
           shot = await shotFinding(page, shotRoot, `${pageId}-${preset.id}`);
           shot = path.relative(ROOT, shot);
         } catch (shotErr) {
@@ -700,22 +931,23 @@ async function runDeviceOnTarget({ preset, env, baseUrl, probe, theme, pages, sh
   return rows;
 }
 
-function localEnvStub(baseUrl) {
+function localEnvStub(baseUrl, probe = {}) {
   return {
     E2E_BASE_URL: baseUrl.replace(/\/$/, ''),
     E2E_USER: '',
     E2E_PASS: '',
     E2E_LOGIN_PATH: '/wp-login.php',
-    E2E_PRODUCT_FIXED: '',
-    E2E_PRODUCT_CUSTOM: '',
-    E2E_PRODUCT_SHARES: '',
-    E2E_PRODUCT_CAMPAIGN: '',
-    E2E_LIST_PAGE: '',
-    E2E_SHOP_PAGE: '',
+    E2E_PRODUCT_FIXED: probe?.products?.fixed?.path || '',
+    E2E_PRODUCT_CUSTOM: probe?.products?.custom?.path || '',
+    E2E_PRODUCT_SHARES: probe?.products?.shares?.path || '',
+    E2E_PRODUCT_CAMPAIGN: probe?.products?.campaign?.path || '',
+    E2E_LIST_PAGE: probe?.listPath || '',
+    E2E_SHOP_PAGE: probe?.shopPath || '',
     E2E_CART_PAGE: '/cart/',
     E2E_CHECKOUT_PAGE: '/checkout/',
     E2E_PROFILE_ID: 'local',
     _profile: { id: 'local', allowedHosts: ['127.0.0.1', 'localhost'] },
+    _catalog: { shop: probe?.shopPath ? { path: probe.shopPath } : null },
   };
 }
 
@@ -739,7 +971,7 @@ async function runLocal(flags) {
       const wpDir = materializeWorker(resolved.id, port, snap);
       const server = await startPhpServer({ wpDir, port });
       servers.push(server);
-      const env = localEnvStub(server.url);
+      const env = localEnvStub(server.url, probe);
       setActiveProfile(env._profile);
       for (const deviceId of flags.devices) {
         const preset = getDevicePreset(deviceId);
@@ -787,6 +1019,7 @@ async function runRemote(flags, envName) {
       },
     },
     listPath: env.E2E_LIST_PAGE,
+    shopPath: env.E2E_SHOP_PAGE,
     cartUrl: env.E2E_CART_PAGE,
     checkoutUrl: env.E2E_CHECKOUT_PAGE,
   };

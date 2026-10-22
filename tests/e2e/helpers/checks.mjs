@@ -522,6 +522,42 @@ export function openShellLocator(page, mode = '') {
 }
 
 /**
+ * Açılış animasyonu bitsin (wdp-side-panel--opening + translateX). Sabit uyku yok.
+ * @param {import('@playwright/test').Page} page
+ * @param {number} [timeout]
+ * @returns {Promise<boolean>}
+ */
+export async function waitOpenShellSettled(page, timeout = 8000) {
+  try {
+    await page.waitForFunction(() => {
+      const el = document.querySelector('.hdf-donation-modal-wrapper.wdp-modal.show');
+      if (!el) return false;
+      if (el.classList.contains('wdp-side-panel--opening')) return false;
+      const box = (el.querySelector('.wdp-modal-content') || el).getBoundingClientRect();
+      return box.width > 80;
+    }, { timeout });
+    await page.waitForFunction(() => {
+      const el = document.querySelector(
+        '.hdf-donation-modal-wrapper.wdp-modal.show .wdp-modal-content'
+      );
+      if (!el) return true;
+      const st = getComputedStyle(el);
+      if (st.animationPlayState === 'running') return false;
+      const t = st.transform;
+      if (!t || t === 'none') return true;
+      const m = t.match(/matrix\(([^)]+)\)/);
+      if (!m) return true;
+      const parts = m[1].split(',').map(Number);
+      const tx = parts.length === 6 ? parts[4] : 0;
+      return Math.abs(tx) < 2;
+    }, { timeout });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Kabuk tetikleyici: panel → side-panel sınıfı; popup → ortadaki (side-panel değil).
  * @param {import('@playwright/test').Page} page
  * @param {'popup'|'panel'} mode
