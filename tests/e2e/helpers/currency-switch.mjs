@@ -9,7 +9,7 @@ import {
   attachConsoleErrorCollector,
   assertNoConsoleErrors,
   clickAddToCartWithRetry,
-  emptyCart,
+  emptyCartViaPageHtml,
   makeFailure,
   openShellLocator,
   clickShellTrigger,
@@ -217,81 +217,88 @@ export async function runCurrencySwitchChecks({
   }
 
   const extraBase = comingSoonQuery(env, profile);
-  for (const code of spec.codes) {
-    const check = `currency-switch-${code.toLowerCase()}`;
-    const ctx = await browser.newContext(contextOpts);
-    const page = await ctx.newPage();
-    const errors = attachConsoleErrorCollector(page);
-    try {
-      page.setDefaultTimeout(CHECK_MS);
-      page.setDefaultNavigationTimeout(CHECK_MS);
-      await emptyCart(page, env.E2E_BASE_URL);
-      const extra = { ...extraBase, [spec.param]: code };
+  const ctx = await browser.newContext(contextOpts);
+  const page = await ctx.newPage();
+  const errors = attachConsoleErrorCollector(page);
+  page.setDefaultTimeout(CHECK_MS);
+  page.setDefaultNavigationTimeout(CHECK_MS);
+  try {
+    for (const code of spec.codes) {
+      const check = `currency-switch-${code.toLowerCase()}`;
+      const errFrom = errors.length;
+      try {
+        const extra = { ...extraBase, [spec.param]: code };
+        await page.goto(withCacheBust(env.E2E_BASE_URL, cartPath, extra), {
+          waitUntil: 'domcontentloaded',
+          timeout: CHECK_MS,
+        });
+        await emptyCartViaPageHtml(page, env.E2E_BASE_URL);
 
-      await page.goto(withCacheBust(env.E2E_BASE_URL, listPath, extra), {
-        waitUntil: 'domcontentloaded',
-        timeout: CHECK_MS,
-      });
-      const listHtml = await page.content();
-      const listSnap = extractPriceSnapshot(listHtml, profile.currency);
+        await page.goto(withCacheBust(env.E2E_BASE_URL, listPath, extra), {
+          waitUntil: 'domcontentloaded',
+          timeout: CHECK_MS,
+        });
+        const listHtml = await page.content();
+        const listSnap = extractPriceSnapshot(listHtml, profile.currency);
 
-      await page.goto(withCacheBust(env.E2E_BASE_URL, productPath, extra), {
-        waitUntil: 'domcontentloaded',
-        timeout: CHECK_MS,
-      });
-      const trigger = page.locator(
-        `${SEL.centeredPopupTrigger}, ${SEL.sidePanelTrigger}, .wdp-card__cta, .wdp-loop-donate, .single_add_to_cart_button`
-      );
-      if ((await trigger.count()) > 0) {
-        await clickShellTrigger(trigger, CHECK_MS);
-        await openShellLocator(page, '').waitFor({ state: 'visible', timeout: CHECK_MS });
-      }
-      const formHtml = await page.content();
-      const formSnap = extractPriceSnapshot(formHtml, profile.currency);
+        await page.goto(withCacheBust(env.E2E_BASE_URL, productPath, extra), {
+          waitUntil: 'domcontentloaded',
+          timeout: CHECK_MS,
+        });
+        const trigger = page.locator(
+          `${SEL.centeredPopupTrigger}, ${SEL.sidePanelTrigger}, .wdp-card__cta, .wdp-loop-donate, .single_add_to_cart_button`
+        );
+        if ((await trigger.count()) > 0) {
+          await clickShellTrigger(trigger, CHECK_MS);
+          await openShellLocator(page, '').waitFor({ state: 'visible', timeout: CHECK_MS });
+        }
+        const formHtml = await page.content();
+        const formSnap = extractPriceSnapshot(formHtml, profile.currency);
 
-      const add = page.locator(SEL.addToCart).first();
-      if ((await add.count()) > 0) {
-        await clickAddToCartWithRetry(page, add, { timeout: CHECK_MS });
-      }
-      await page.goto(withCacheBust(env.E2E_BASE_URL, cartPath, extra), {
-        waitUntil: 'domcontentloaded',
-        timeout: CHECK_MS,
-      });
-      const cartHtml = await page.content();
-      const cartSnap = extractPriceSnapshot(cartHtml, profile.currency);
+        const add = page.locator(SEL.addToCart).first();
+        if ((await add.count()) > 0) {
+          await clickAddToCartWithRetry(page, add, { timeout: CHECK_MS });
+        }
+        await page.goto(withCacheBust(env.E2E_BASE_URL, cartPath, extra), {
+          waitUntil: 'domcontentloaded',
+          timeout: CHECK_MS,
+        });
+        const cartHtml = await page.content();
+        const cartSnap = extractPriceSnapshot(cartHtml, profile.currency);
 
-      const cmp = assertCurrencySurfacesConsistent({
-        list: listSnap,
-        form: formSnap,
-        cart: cartSnap,
-        code,
-      });
-      if (!cmp.ok) {
+        const cmp = assertCurrencySurfacesConsistent({
+          list: listSnap,
+          form: formSnap,
+          cart: cartSnap,
+          code,
+        });
+        if (!cmp.ok) {
+          failures.push(
+            makeFailure({
+              check,
+              description: `Para birimi ${code}: liste/form/sepet tutarsız`,
+              detail: cmp.reason,
+            })
+          );
+          stats.failed += 1;
+        } else {
+          stats.passed += 1;
+        }
+        assertNoConsoleErrors(errors.slice(errFrom));
+      } catch (e) {
         failures.push(
           makeFailure({
             check,
-            description: `Para birimi ${code}: liste/form/sepet tutarsız`,
-            detail: cmp.reason,
+            description: `Para birimi ${code} gösterimi hata verdi`,
+            error: e,
           })
         );
         stats.failed += 1;
-      } else {
-        stats.passed += 1;
       }
-      assertNoConsoleErrors(errors);
-    } catch (e) {
-      failures.push(
-        makeFailure({
-          check,
-          description: `Para birimi ${code} gösterimi hata verdi`,
-          error: e,
-        })
-      );
-      stats.failed += 1;
-    } finally {
-      await page.close();
-      await ctx.close();
     }
+  } finally {
+    await page.close();
+    await ctx.close();
   }
   void productIds;
 }

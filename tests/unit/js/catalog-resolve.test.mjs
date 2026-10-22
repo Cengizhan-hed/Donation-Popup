@@ -31,6 +31,8 @@ import {
   parseCatalogExplainArgv,
   createRemoteCatalogExplainRunner,
   CATALOG_EVAL_FILE,
+  CATALOG_EXPLAIN_ARG,
+  CATALOG_EXPLAIN_ENV,
 } from '../../../scripts/e2e-catalog-explain.mjs';
 import { overlayFixtureRoles } from '../../../tests/e2e/helpers/resolve-products.mjs';
 
@@ -438,7 +440,10 @@ describe('katalog --explain raporu', () => {
       spawn: (bin, args) => {
         n += 1;
         assert.equal(bin, 'ssh');
-        assert.match(String(args[args.length - 1] || ''), /--explain/);
+        const cmd = String(args[args.length - 1] || '');
+        assert.doesNotMatch(cmd, /eval-file "\$TMP" --explain(\s|$)/);
+        assert.match(cmd, new RegExp(`eval-file "\\$TMP" ${CATALOG_EXPLAIN_ARG}`));
+        assert.match(cmd, new RegExp(`${CATALOG_EXPLAIN_ENV}='1'`));
         return {
           status: 0,
           stdout: JSON.stringify({ explain: true, published: [], picked: [], shop: { path: '/shop/' } }),

@@ -50,6 +50,10 @@ final class CatalogResolveTest extends TestCase {
 		$this->assertTrue(wdp_e2e_catalog_wants_explain(array('foo', 'explain')));
 		$this->assertFalse(wdp_e2e_catalog_wants_explain(array()));
 		$this->assertFalse(wdp_e2e_catalog_wants_explain(array('--json')));
+		putenv('WDP_E2E_CATALOG_EXPLAIN=1');
+		$this->assertTrue(wdp_e2e_catalog_wants_explain(array()));
+		putenv('WDP_E2E_CATALOG_EXPLAIN');
+		$this->assertFalse(wdp_e2e_catalog_wants_explain(array()));
 		$this->assertSame('açık', wdp_e2e_catalog_flag_state('yes'));
 		$this->assertSame('kapalı', wdp_e2e_catalog_flag_state('1'));
 		$this->assertSame('kapalı', wdp_e2e_catalog_flag_state('on'));

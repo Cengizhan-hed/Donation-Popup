@@ -3597,13 +3597,9 @@ export async function captureAll({
       /** @type {object|null} */
       let cartFirstAttempt = null;
       try {
-        cartTimeline.mark('goto-product');
-        await page.goto(withCacheBust(env.E2E_BASE_URL, productUrls.fixed, guestExtra), {
-          waitUntil: 'domcontentloaded',
-        });
         cartTimeline.mark('empty-cart');
         await emptyCart(page, env.E2E_BASE_URL);
-        cartTimeline.mark('goto-product-2');
+        cartTimeline.mark('goto-product');
         await page.goto(withCacheBust(env.E2E_BASE_URL, productUrls.fixed, guestExtra), {
           waitUntil: 'domcontentloaded',
         });
@@ -4106,111 +4102,120 @@ export async function captureAll({
       }
     }
 
-    if (want('mobile-a11y') || want('checkout-flow')) {
-      const tA11y = Date.now();
-      const flowPage = await (profile.comingSoon ? catalogCtx : guest).newPage();
-      flowPage.setDefaultTimeout(20000);
-      flowPage.setDefaultNavigationTimeout(25000);
-      try {
-        const work = (async () => {
-          const listOrProduct = popupPagePath(env) || productUrls.custom || productUrls.fixed || '/';
-          await flowPage.goto(withCacheBust(env.E2E_BASE_URL, listOrProduct, guestExtra), {
-            waitUntil: 'domcontentloaded',
-            timeout: 25000,
-          });
-          await revealListProductTrigger(flowPage);
-          const trigger = flowPage.locator(
-            `${SEL.centeredPopupTrigger}, ${SEL.sidePanelTrigger}, .wdp-card__cta, .wdp-loop-donate`
-          );
-          if ((await trigger.count()) > 0) {
-            await clickShellTrigger(trigger, 15000).catch(() => {});
-            await flowPage
-              .locator(SEL.openModalShell)
-              .first()
-              .waitFor({ state: 'visible', timeout: 15000 })
-              .catch(() => {});
-            await flowPage
-              .waitForFunction(() => {
-                const el = document.querySelector('.hdf-donation-modal-wrapper.wdp-modal.show');
-                return !!(el && !el.classList.contains('wdp-side-panel--opening'));
-              }, { timeout: 4000 })
-              .catch(() => {});
-          }
-          if (want('mobile-a11y')) {
-            await runMobileA11yChecks({
-              page: flowPage,
-              device,
-              profile,
-              failures,
-              stats: functionalStats,
-              knownFindings: a11yFindings,
-            });
-          }
-          if (want('checkout-flow')) {
-            await runDonationFlowChecks({
-              page: flowPage,
-              env,
-              productUrls,
-              productIds,
-              listPagePath: popupPagePath(env),
-              failures,
-              stats: functionalStats,
-              skips,
-              deviceId: device.id,
-              checkoutUrl: checkoutEnv?.checkoutUrl || '',
-              offlineGateway: checkoutEnv?.offline || null,
-              skipOrderReason: checkoutEnv?.skipOrderReason || '',
-            });
-          }
-        })();
-        const timeout = new Promise((_, reject) => {
-          setTimeout(() => reject(new Error('a11y+checkout-flow 120s zaman aşımı')), 120000);
-        });
-        await Promise.race([work, timeout]);
-      } catch (e) {
-        failures.push(
-          makeFailure({
-            check: `device-flow-${device.id}`,
-            description: 'Cihaz akışı / a11y koşucusu çöktü',
-            error: e,
-          })
-        );
-        functionalStats.failed += 1;
-      } finally {
-        await Promise.race([
-          flowPage.close(),
-          new Promise((resolve) => setTimeout(resolve, 5000)),
-        ]).catch(() => {});
-        logSection('a11y+checkout-flow', tA11y);
-      }
-    }
-    if (runFunctional && currencySwitchFromProfile(profile) && (want('core') || want('checkout-flow'))) {
-      const tCur = Date.now();
-      try {
-        await runCurrencySwitchChecks({
-          browser,
-          contextOpts,
-          env,
-          productUrls,
-          productIds,
-          listPagePath: env.E2E_LIST_PAGE,
-          failures,
-          stats: functionalStats,
-          skips,
-        });
-      } catch (e) {
-        failures.push(
-          makeFailure({
-            check: 'currency-switch-runner',
-            description: 'Para birimi gösterimi koşucusu çöktü',
-            error: e,
-          })
-        );
-        functionalStats.failed += 1;
-      } finally {
-        logSection('currency-switch', tCur);
-      }
-    }
+    const a11yCheckoutPromise =
+      want('mobile-a11y') || want('checkout-flow')
+        ? (async () => {
+            const tA11y = Date.now();
+            const flowPage = await (profile.comingSoon ? catalogCtx : guest).newPage();
+            flowPage.setDefaultTimeout(20000);
+            flowPage.setDefaultNavigationTimeout(25000);
+            try {
+              const work = (async () => {
+                const listOrProduct = popupPagePath(env) || productUrls.custom || productUrls.fixed || '/';
+                await flowPage.goto(withCacheBust(env.E2E_BASE_URL, listOrProduct, guestExtra), {
+                  waitUntil: 'domcontentloaded',
+                  timeout: 25000,
+                });
+                await revealListProductTrigger(flowPage);
+                const trigger = flowPage.locator(
+                  `${SEL.centeredPopupTrigger}, ${SEL.sidePanelTrigger}, .wdp-card__cta, .wdp-loop-donate`
+                );
+                if ((await trigger.count()) > 0) {
+                  await clickShellTrigger(trigger, 15000).catch(() => {});
+                  await flowPage
+                    .locator(SEL.openModalShell)
+                    .first()
+                    .waitFor({ state: 'visible', timeout: 15000 })
+                    .catch(() => {});
+                  await flowPage
+                    .waitForFunction(() => {
+                      const el = document.querySelector('.hdf-donation-modal-wrapper.wdp-modal.show');
+                      return !!(el && !el.classList.contains('wdp-side-panel--opening'));
+                    }, { timeout: 4000 })
+                    .catch(() => {});
+                }
+                if (want('mobile-a11y')) {
+                  await runMobileA11yChecks({
+                    page: flowPage,
+                    device,
+                    profile,
+                    failures,
+                    stats: functionalStats,
+                    knownFindings: a11yFindings,
+                  });
+                }
+                if (want('checkout-flow')) {
+                  await runDonationFlowChecks({
+                    page: flowPage,
+                    env,
+                    productUrls,
+                    productIds,
+                    listPagePath: popupPagePath(env),
+                    failures,
+                    stats: functionalStats,
+                    skips,
+                    deviceId: device.id,
+                    checkoutUrl: checkoutEnv?.checkoutUrl || '',
+                    offlineGateway: checkoutEnv?.offline || null,
+                    skipOrderReason: checkoutEnv?.skipOrderReason || '',
+                  });
+                }
+              })();
+              const timeout = new Promise((_, reject) => {
+                setTimeout(() => reject(new Error('a11y+checkout-flow 120s zaman aşımı')), 120000);
+              });
+              await Promise.race([work, timeout]);
+            } catch (e) {
+              failures.push(
+                makeFailure({
+                  check: `device-flow-${device.id}`,
+                  description: 'Cihaz akışı / a11y koşucusu çöktü',
+                  error: e,
+                })
+              );
+              functionalStats.failed += 1;
+            } finally {
+              await Promise.race([
+                flowPage.close(),
+                new Promise((resolve) => setTimeout(resolve, 5000)),
+              ]).catch(() => {});
+              logSection('a11y+checkout-flow', tA11y);
+            }
+          })()
+        : Promise.resolve();
+
+    const currencyPromise =
+      currencySwitchFromProfile(profile) && (want('core') || want('checkout-flow'))
+        ? (async () => {
+            const tCur = Date.now();
+            try {
+              await runCurrencySwitchChecks({
+                browser,
+                contextOpts,
+                env,
+                productUrls,
+                productIds,
+                listPagePath: env.E2E_LIST_PAGE,
+                failures,
+                stats: functionalStats,
+                skips,
+              });
+            } catch (e) {
+              failures.push(
+                makeFailure({
+                  check: 'currency-switch-runner',
+                  description: 'Para birimi gösterimi koşucusu çöktü',
+                  error: e,
+                })
+              );
+              functionalStats.failed += 1;
+            } finally {
+              logSection('currency-switch', tCur);
+            }
+          })()
+        : Promise.resolve();
+
+    await Promise.all([a11yCheckoutPromise, currencyPromise]);
   }
 
   await guest.close();

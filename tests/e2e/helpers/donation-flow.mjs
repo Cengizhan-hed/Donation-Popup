@@ -144,7 +144,13 @@ export async function runDonationFlowChecks({
     } else {
       await clickAddToCartWithRetry(page, add, { timeout: CHECK_MS });
     }
-    await page.waitForTimeout(400);
+    if (!/checkout|odeme|ödeme/i.test(page.url())) {
+      try {
+        await page.waitForURL(/checkout|odeme|ödeme/i, { timeout: 4000 });
+      } catch {
+        /* ödeme URL’sine gitmediyse aşağıda goto */
+      }
+    }
     if (!/checkout|odeme|ödeme/i.test(page.url())) {
       await page.goto(withCacheBust(env.E2E_BASE_URL, checkoutPath, extra), {
         waitUntil: 'domcontentloaded',

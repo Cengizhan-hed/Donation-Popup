@@ -172,11 +172,6 @@ export function assertNoConsoleErrors(errors) {
 }
 
 /**
- * Empty WooCommerce cart via Store API.
- * @param {import('@playwright/test').Page} page
- * @param {string} baseUrl
- */
-/**
  * WooCommerce sepet sayfası mı (permalink /cart/ veya /sepet/; checkout değil).
  * @param {string} url
  */
@@ -274,42 +269,102 @@ export async function gotoWooCart(page, baseUrl) {
       await page.waitForLoadState('domcontentloaded').catch(() => {});
     }
   }
-  await page
-    .locator(
-      '.woocommerce-cart-form, .wc-block-cart, .wp-block-woocommerce-cart, .cart_item, .woocommerce-cart-item, .cart-empty, .woocommerce-info'
-    )
-    .first()
-    .waitFor({ state: 'visible', timeout: 10000 })
-    .catch(() => {});
-  await page.waitForTimeout(400);
+  const cartUi = page.locator(
+    '.woocommerce-cart-form, .wc-block-cart, .wp-block-woocommerce-cart, .cart_item, .woocommerce-cart-item, .cart-empty, .woocommerce-info'
+  );
+  if ((await cartUi.count()) > 0) {
+    await cartUi.first().waitFor({ state: 'visible', timeout: 10000 });
+  }
   return page.url();
 }
 
-export async function emptyCart(page, baseUrl) {
-  await page.evaluate(async (base) => {
-    const root = base.replace(/\/$/, '');
-    const res = await fetch(`${root}/wp-json/wc/store/v1/cart/items`, {
-      method: 'DELETE',
-      credentials: 'same-origin',
-      headers: { Nonce: window?.wcSettings?.storeApiNonce || '' },
-    }).catch(() => null);
-    if (!res || !res.ok) {
-      return;
-    }
-  }, baseUrl);
+const CART_REMOVE_SEL =
+  '.woocommerce-cart-form .remove, a.remove, .wc-block-cart-item__remove-link';
+const CART_EMPTY_SEL = '.cart-empty, .wc-block-cart__empty-cart, .woocommerce-info';
 
-  await page
-    .goto(baseUrl.replace(/\/$/, '') + '/cart/?wdp_e2e=' + Date.now(), {
-      waitUntil: 'domcontentloaded',
-      timeout: 15000,
-    })
-    .catch(() => {});
-  const remove = page.locator('.woocommerce-cart-form .remove, a.remove');
-  const count = await remove.count();
-  for (let i = 0; i < count; i++) {
-    await remove.nth(0).click().catch(() => {});
-    await page.waitForTimeout(400);
+/**
+ * Playwright sayfası sitenin http(s) origin'inde mi?
+ * about:blank / origin null → Store API CORS 401.
+ * @param {string} pageUrl
+ * @param {string} baseUrl
+ */
+export function pageHasSiteOrigin(pageUrl, baseUrl) {
+  try {
+    const raw = String(pageUrl || '').trim();
+    if (!raw || raw === 'about:blank' || raw.startsWith('chrome') || raw.startsWith('data:')) {
+      return false;
+    }
+    const pageOrigin = new URL(raw).origin;
+    if (!pageOrigin || pageOrigin === 'null') return false;
+    const siteOrigin = new URL(String(baseUrl || '')).origin;
+    return pageOrigin === siteOrigin;
+  } catch {
+    return false;
   }
+}
+
+/**
+ * Sepeti sepet sayfası HTML'i ile boşalt (Store API yok).
+ * @param {import('@playwright/test').Page} page
+ * @param {string} baseUrl
+ */
+export async function emptyCartViaPageHtml(page, baseUrl) {
+  if (!(await pageLooksLikeWooCart(page))) {
+    await gotoWooCart(page, baseUrl);
+  }
+  for (let i = 0; i < 12; i++) {
+    const n = await page.locator(CART_REMOVE_SEL).count();
+    if (n === 0) return;
+    await page.locator(CART_REMOVE_SEL).first().click({ timeout: 5000 });
+    try {
+      await page.waitForFunction(
+        ({ remove, empty, prev }) => {
+          const left = document.querySelectorAll(remove).length;
+          if (left < prev) return true;
+          return !!document.querySelector(empty);
+        },
+        { remove: CART_REMOVE_SEL, empty: CART_EMPTY_SEL, prev: n },
+        { timeout: 8000 }
+      );
+    } catch (e) {
+      if (page.isClosed()) throw e;
+      const left = await page.locator(CART_REMOVE_SEL).count();
+      if (left < n) continue;
+      if ((await page.locator(CART_EMPTY_SEL).count()) > 0) return;
+      throw e;
+    }
+  }
+}
+
+/**
+ * Sepeti boşalt. Store API yalnız sayfa site origin'indeyken (about:blank yok).
+ * Yedek: sepet sayfası HTML remove.
+ * @param {import('@playwright/test').Page} page
+ * @param {string} baseUrl
+ */
+export async function emptyCart(page, baseUrl) {
+  if (pageHasSiteOrigin(page.url(), baseUrl)) {
+    await page.evaluate(async (base) => {
+      const root = String(base || '').replace(/\/$/, '');
+      const nonce =
+        (window.wcSettings && window.wcSettings.storeApiNonce) ||
+        (window.wpApiSettings && window.wpApiSettings.nonce) ||
+        '';
+      const headers = { Accept: 'application/json' };
+      if (nonce) headers.Nonce = nonce;
+      try {
+        await fetch(`${root}/wp-json/wc/store/v1/cart/items`, {
+          method: 'DELETE',
+          credentials: 'same-origin',
+          headers,
+        });
+      } catch (e) {
+        return String(e && e.message ? e.message : e);
+      }
+      return '';
+    }, baseUrl);
+  }
+  await emptyCartViaPageHtml(page, baseUrl);
 }
 
 /**

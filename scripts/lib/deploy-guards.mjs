@@ -455,14 +455,46 @@ function decodeGzipPayloadLines(gzB64, destRef, rmRefs) {
 }
 
 /**
+ * WP-CLI `eval-file` `--foo` bayrağını komut parametresi sanır (unknown --explain).
+ * PHP dosyasına giden argüman konumsal olmalı; `--flag` varsa `--` sonrası.
+ * @param {string} [extraArgs]
+ * @returns {string} başında boşluk, yoksa ''
+ */
+export function evalFileScriptArgs(extraArgs) {
+  const extra = String(extraArgs || '').trim();
+  if (!extra) return '';
+  if (extra === '--' || extra.startsWith('-- ')) return ` ${extra}`;
+  if (/(?:^|\s)--[A-Za-z]/.test(extra)) return ` -- ${extra}`;
+  return ` ${extra}`;
+}
+
+/**
+ * Yalnız `WDP_E2E_*` anahtarları. WP-CLI bayrağı yerine ortam değişkeni.
+ * @param {Record<string, string>|null|undefined} extraEnv
+ * @returns {string} `KEY='val' ` veya ''
+ */
+export function evalFileEnvPrefix(extraEnv) {
+  if (!extraEnv || typeof extraEnv !== 'object') return '';
+  const parts = [];
+  for (const [k, v] of Object.entries(extraEnv)) {
+    if (!/^WDP_E2E_[A-Z0-9_]+$/.test(k)) {
+      throw new Error(`eval-file: izinli olmayan env anahtarı ${k}`);
+    }
+    parts.push(`${k}='${String(v).replace(/'/g, `'\\''`)}'`);
+  }
+  return parts.length ? `${parts.join(' ')} ` : '';
+}
+
+/**
  * Salt okunur uzak eval-file kalıbı: `wp --path=<wpPath> eval-file …`
  * Payload gzip+base64; `base64 -d` boş/başarısızsa çıkış 97.
  * @param {string} wpPath
- * @param {{ tmpPrefix?: string, extraArgs?: string, b64?: string, envFile?: { envName: string, b64: string, suffix?: string } }} [opts]
+ * @param {{ tmpPrefix?: string, extraArgs?: string, extraEnv?: Record<string,string>, b64?: string, envFile?: { envName: string, b64: string, suffix?: string } }} [opts]
  */
 export function buildGuardedEvalFileCommand(wpPath, opts = {}) {
   const prefix = String(opts.tmpPrefix || 'wdp-eval').replace(/[^a-z0-9-]/gi, '') || 'wdp-eval';
-  const extra = opts.extraArgs ? ` ${opts.extraArgs}` : '';
+  const extra = evalFileScriptArgs(opts.extraArgs);
+  const envPrefix = evalFileEnvPrefix(opts.extraEnv);
   const b64 = opts.b64 == null ? 'YmFzZTY0' : String(opts.b64);
   const flag = wpPathFlag(wpPath);
   const phpGz = gzipBase64Payload(b64);
@@ -490,7 +522,7 @@ export function buildGuardedEvalFileCommand(wpPath, opts = {}) {
     wpPrefix = `${envName}="$ENVF" `;
   }
   lines.push(
-    `${wpPrefix}wp ${flag} eval-file "$TMP"${extra}`,
+    `${envPrefix}${wpPrefix}wp ${flag} eval-file "$TMP"${extra}`,
     `EC=$?`,
     `rm -f ${rmRefs.join(' ')}`,
     `exit $EC`

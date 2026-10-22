@@ -24,6 +24,7 @@ import {
   readLocalPluginVersion,
   writeRunManifest,
   CURRENT_DIR,
+  slowestSections,
 } from './helpers/run-io.mjs';
 import { formatRemotePostBlockedLines } from './helpers/network-guard.mjs';
 
@@ -82,6 +83,7 @@ async function main() {
     blocked_trackers = { total: 0, byHost: {} },
     remote_post_blocked = { total: 0, byPath: {} },
     izinli_okuma = { total: 0, byAction: {} },
+    sections = [],
   } = await captureAll({
     env,
     outDir,
@@ -142,6 +144,7 @@ async function main() {
     blocked_trackers,
     remote_post_blocked,
     izinli_okuma,
+    sections,
   });
 
   console.log('Report:', reportFile);
@@ -165,6 +168,11 @@ async function main() {
     for (const name of newBaselineScreens) console.log(`  • ${name}`);
   }
   console.log(`Süre: ${durationSec}s`);
+  const slow = slowestSections(sections, 5);
+  if (slow.length) {
+    console.log('En yavaş 5 bölüm:');
+    for (const s of slow) console.log(`  ${s.label}: ${s.secs.toFixed(1)}s`);
+  }
   console.log(formatRemotePostBlockedLines(remote_post_blocked, izinli_okuma));
   console.log(`Manifest: ${path.relative(ROOT, path.join(CURRENT_DIR, 'run.json'))}`);
 

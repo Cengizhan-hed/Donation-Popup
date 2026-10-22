@@ -19,6 +19,9 @@ import { canonicalEnv, profileKeyForEnv, runGuardedSsh } from './lib/remote-disc
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export const ROOT = path.resolve(__dirname, '..');
 export const CATALOG_EVAL_FILE = 'tests/e2e/helpers/catalog-resolve.php';
+/** WP-CLI eval-file `--explain` komut parametresi sanır; konumsal + env. */
+export const CATALOG_EXPLAIN_ARG = 'explain';
+export const CATALOG_EXPLAIN_ENV = 'WDP_E2E_CATALOG_EXPLAIN';
 const WRITE_EVAL_RE =
   /\b(wp_delete_|wp_trash_|wp_untrash_|wp_update_post|wp_insert_post|update_option|delete_option|update_post_meta|delete_post_meta)\b/i;
 
@@ -160,10 +163,11 @@ export function createLocalCatalogExplainRunner() {
     const abs = path.join(ROOT, CATALOG_EVAL_FILE);
     if (!fs.existsSync(abs)) throw new Error(`eval-file yok: ${CATALOG_EVAL_FILE}`);
     assertCatalogEvalReadOnly(abs);
-    const r = spawnSync('php', [evalFileBridge, CATALOG_EVAL_FILE, '--explain'], {
+    const r = spawnSync('php', [evalFileBridge, CATALOG_EVAL_FILE, CATALOG_EXPLAIN_ARG], {
       encoding: 'utf8',
       cwd: ROOT,
       timeout: 120000,
+      env: { ...process.env, [CATALOG_EXPLAIN_ENV]: '1' },
     });
     if (r.status !== 0) {
       throw new Error(`yerel eval-file: ${(r.stderr || r.stdout || '').slice(0, 400)}`);
@@ -190,7 +194,8 @@ export function createRemoteCatalogExplainRunner(opts) {
     const b64 = fs.readFileSync(abs).toString('base64');
     const remoteCmd = buildGuardedEvalFileCommand(p, {
       tmpPrefix: 'wdp-catx',
-      extraArgs: '--explain',
+      extraArgs: CATALOG_EXPLAIN_ARG,
+      extraEnv: { [CATALOG_EXPLAIN_ENV]: '1' },
       b64,
     });
     if (!/--path=/.test(remoteCmd) || /--skip-themes|--skip-plugins/.test(remoteCmd)) {

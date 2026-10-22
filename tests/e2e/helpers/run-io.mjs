@@ -78,6 +78,24 @@ export function readRunManifest() {
 }
 
 /**
+ * @param {Array<{label?: string, secs?: number}>|null|undefined} sections
+ * @param {number} [n]
+ * @returns {Array<{label: string, secs: number}>}
+ */
+export function slowestSections(sections, n = 5) {
+  const limit = Number(n);
+  const take = Number.isFinite(limit) && limit > 0 ? Math.floor(limit) : 5;
+  return (Array.isArray(sections) ? sections : [])
+    .map((s) => ({
+      label: String(s && s.label != null ? s.label : ''),
+      secs: Number(s && s.secs),
+    }))
+    .filter((s) => s.label && Number.isFinite(s.secs))
+    .sort((a, b) => b.secs - a.secs)
+    .slice(0, take);
+}
+
+/**
  * @param {string[]} shotPaths Absolute or relative PNG paths from capture.
  * @returns {string[]} basename .png list
  */

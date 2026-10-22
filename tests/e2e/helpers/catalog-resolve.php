@@ -31,7 +31,8 @@ if (!function_exists('wdp_e2e_catalog_plugin_needles')) {
 	}
 
 	/**
-	 * WP-CLI / eval-file `--explain` (değer yok; yalnız bayrak).
+	 * WP-CLI eval-file `--explain` komut parametresi sanır (unknown --explain).
+	 * Konumsal `explain` veya `WDP_E2E_CATALOG_EXPLAIN=1`. `--explain` yedek (yerel argv).
 	 *
 	 * @param mixed $args CLI args.
 	 * @return bool
@@ -54,9 +55,6 @@ if (!function_exists('wdp_e2e_catalog_plugin_needles')) {
 				if ($s === '--explain' || $s === 'explain') {
 					return true;
 				}
-			}
-			if (is_array($args)) {
-				return false;
 			}
 		}
 		return function_exists('getenv') && getenv('WDP_E2E_CATALOG_EXPLAIN') === '1';

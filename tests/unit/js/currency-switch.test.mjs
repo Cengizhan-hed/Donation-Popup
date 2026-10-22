@@ -10,6 +10,7 @@ import {
   extractPriceSnapshot,
   symbolForCode,
 } from '../../../tests/e2e/helpers/currency-switch.mjs';
+import { pageHasSiteOrigin } from '../../../tests/e2e/helpers/checks.mjs';
 
 const EUR_CURRENCY = {
   decimals: 2,
@@ -18,6 +19,14 @@ const EUR_CURRENCY = {
 };
 
 describe('profil currencySwitch', () => {
+  it('about:blank / origin null Store API çağrılmaz', () => {
+    const site = 'https://staging30.hedefdernegi.org/';
+    assert.equal(pageHasSiteOrigin('about:blank', site), false);
+    assert.equal(pageHasSiteOrigin('', site), false);
+    assert.equal(pageHasSiteOrigin('https://staging30.hedefdernegi.org/cart/', site), true);
+    assert.equal(pageHasSiteOrigin('https://other.example/cart/', site), false);
+  });
+
   it('staging-hedef param+EUR/USD; ikram yok', () => {
     const st = currencySwitchFromProfile(loadProfile('staging'));
     assert.equal(st.param, 'wmc-currency');
