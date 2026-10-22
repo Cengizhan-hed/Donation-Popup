@@ -8,9 +8,14 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {
   BLOCKED_ACTIVE_SLUGS,
+  CRON_ORPHAN,
   DISCOVER_STEPS,
+  EVAL_STATIC_OUTBOUND,
+  EVAL_WOO,
+  STATIC_SCAN_HOOKS,
   WRITE_PHP_RE,
   WRITE_TAIL_RE,
+  assembleReport,
   blockedActivePlugins,
   blockedExitCode,
   buildRemoteWpCommand,
@@ -18,10 +23,11 @@ import {
   classifyPlugin,
   classifyWooPageKind,
   compactPhp,
-  EVAL_WOO,
+  detectOutboundCalls,
   getDiscoverWpTails,
   getEvalSnippets,
   parseJsonBlob,
+  renderMarkdown,
   runGuardedSsh,
   sanitizeDiscoveryOutput,
   tailsForWriteScan,
@@ -53,7 +59,7 @@ describe('remote-discover komut listesi', () => {
     for (const php of snippets) {
       assert.equal(php.includes("'"), false, 'eval tek tırnak içeremez');
       assert.doesNotMatch(php, WRITE_PHP_RE);
-      assert.doesNotMatch(php, /do_action|apply_filters/);
+      assert.doesNotMatch(php, /do_action|apply_filters|wp_schedule|spawn_cron/);
       assert.doesNotMatch(compactPhp(php), WRITE_PHP_RE);
     }
   });
@@ -232,6 +238,123 @@ describe('remote-discover sahte ssh', () => {
     assert.deepEqual(parseJsonBlob('Notice: x\n{"a":1}\n'), { a: 1 });
     assert.equal(classifyPlugin('google-site-kit'), 'measurement');
     assert.equal(classifyPlugin('hello-dolly'), 'unclassified');
+  });
+});
+
+describe('remote-discover giden veri statik denetimi', () => {
+  it('sahte kaynaklarda çağrı türleri tespit edilir', () => {
+    const src = `
+      wp_remote_get($u);
+      wp_safe_remote_post($u);
+      $h = new WP_Http();
+      curl_init();
+      fsockopen($host, 80);
+      stream_socket_client($tcp);
+      file_get_contents('http://example.test/x');
+      file_get_contents("https://example.test/y");
+      wp_mail($to, $s, $b);
+      WC()->mailer();
+      $mailer->send($email);
+    `;
+    const c = detectOutboundCalls(src);
+    assert.equal(c['wp_remote_*'], 1);
+    assert.equal(c['wp_safe_remote_*'], 1);
+    assert.equal(c.WP_Http, 1);
+    assert.equal(c['curl_*'], 1);
+    assert.equal(c.fsockopen, 1);
+    assert.equal(c.stream_socket_client, 1);
+    assert.equal(c.file_get_contents_http, 2);
+    assert.equal(c.wp_mail, 1);
+    assert.equal(c.WC_mailer, 1);
+    assert.equal(c.send, 1);
+  });
+
+  it('snippet kodu ve adı rapora sızmıyor', () => {
+    const report = assembleReport({
+      envName: 'local',
+      profileId: 't',
+      stepData: {
+        plugins: { plugins: [{ slug: 'code-snippets', status: 'active', version: '3' }] },
+        static_outbound: {
+          snippets: [
+            {
+              id: 42,
+              name: 'LEAK_NAME_XYZ',
+              code: 'add_action("init", "x"); wp_mail("donor@secret.org", "hi", "body");',
+              scope: 'global',
+              priority: 10,
+              active: 1,
+            },
+          ],
+          cron: [{ hook: 'orphan_job', owner: 'sahipsiz', next_run: 1, schedule: 'once', calls: {} }],
+        },
+      },
+      canaryRel: '',
+    });
+    const blob = `${JSON.stringify(report)}\n${renderMarkdown(report)}`;
+    assert.equal(blob.includes('LEAK_NAME_XYZ'), false);
+    assert.equal(blob.includes('donor@secret.org'), false);
+    assert.equal(blob.includes('add_action("init"'), false);
+    const sn = report.outbound_static.snippets.find((s) => s.id === 42);
+    assert.ok(sn);
+    assert.equal('name' in sn, false);
+    assert.equal('code' in sn, false);
+    assert.ok(sn.hooks.includes('init'));
+    assert.ok(sn.calls.wp_mail >= 1);
+    assert.match(renderMarkdown(report), /Giden veri statik denetimi/);
+    assert.equal(
+      report.outbound_static.cron[0].owner,
+      CRON_ORPHAN
+    );
+    assert.equal(JSON.stringify(report).includes('/wp-content/'), false);
+  });
+
+  it('aktif SMS eklentisi REMOTE-BLOCKED çıkış 3; pasif değil', () => {
+    assert.equal(blockedExitCode([{ slug: 'netgsm', status: 'active' }]), 3);
+    assert.deepEqual(blockedActivePlugins([{ slug: 'netgsm', status: 'active' }]), ['netgsm']);
+    assert.equal(blockedExitCode([{ slug: 'netgsm', status: 'inactive' }]), 0);
+    const report = assembleReport({
+      envName: 'local',
+      profileId: 't',
+      stepData: { plugins: { plugins: [{ slug: 'woocommerce', status: 'active' }] } },
+      canaryRel: '',
+    });
+    assert.equal(report.outbound_static.sms, 'pasif');
+    assert.equal(blockedExitCode(report.plugins), 0);
+  });
+
+  it('WP Mail SMTP Do Not Send=false + mailer smtp → uyarı, engel değil', () => {
+    const report = assembleReport({
+      envName: 'local',
+      profileId: 't',
+      stepData: {
+        plugins: { plugins: [{ slug: 'wp-mail-smtp', status: 'active' }] },
+        outbound: {
+          mail: { active: 1, plugin: 'wp-mail-smtp', mailer: 'smtp', do_not_send: false },
+        },
+      },
+      canaryRel: '',
+    });
+    assert.equal(report.outbound.mail.do_not_send, false);
+    assert.equal(report.outbound_static.mail.do_not_send, false);
+    assert.equal(report.outbound_static.mail.mailer, 'smtp');
+    assert.ok(report.outbound_static.warnings.some((w) => /Do Not Send=false/.test(w)));
+    assert.equal(blockedExitCode(report.plugins), 0);
+  });
+
+  it('EVAL_STATIC_OUTBOUND taraması tetiklemez ve kancaları içerir', () => {
+    const php = EVAL_STATIC_OUTBOUND;
+    assert.equal(php.includes("'"), false);
+    assert.doesNotMatch(php, WRITE_PHP_RE);
+    assert.doesNotMatch(php, /do_action|apply_filters|wp_schedule|spawn_cron/);
+    assert.match(php, /ReflectionMethod|ReflectionFunction/);
+    assert.match(php, /SELECT id, scope, priority, active, code/);
+    assert.doesNotMatch(php, /echo \$src\b/);
+    assert.doesNotMatch(php, /"code"\s*=>/);
+    assert.doesNotMatch(php, /"name"\s*=>/);
+    for (const h of STATIC_SCAN_HOOKS) {
+      assert.equal(php.includes(`"${h}"`), true, h);
+    }
   });
 });
 

@@ -15,7 +15,7 @@ export const BLOCKED_ACTIVE_SLUGS = [
 ];
 
 export const WRITE_PHP_RE =
-  /update_|delete_|wp_insert|wp_update|wp_delete|add_option|do_action|apply_filters/;
+  /update_|delete_|wp_insert|wp_update|wp_delete|add_option|do_action|apply_filters|wp_schedule|spawn_cron/;
 
 export const WRITE_TAIL_RE =
   /\boption\s+(update|delete|add|set)\b|\bpost\s+(create|update|delete)\b|(?:^|\s)user(?:\s|$)|(?<![a-z])db\s+query\b|\bplugin\s+(activate|deactivate|install|delete)\b/i;
@@ -129,6 +129,171 @@ export const PLUGIN_CATALOG = {
   'hummingbird-performance': 'cache_cdn',
   'cache-enabler': 'cache_cdn',
 };
+
+export const STATIC_SCAN_HOOKS = [
+  'woocommerce_add_to_cart',
+  'woocommerce_cart_item_set_quantity',
+  'woocommerce_cart_updated',
+  'woocommerce_before_calculate_totals',
+  'init',
+  'wp_loaded',
+  'wp',
+  'template_redirect',
+  'wp_head',
+  'wp_footer',
+  'wp_enqueue_scripts',
+  'woocommerce_after_single_product',
+  'woocommerce_thankyou',
+  'woocommerce_new_order',
+  'woocommerce_order_status_changed',
+  'shutdown',
+];
+
+export const OUTBOUND_CALL_TYPES = [
+  'wp_remote_*',
+  'wp_safe_remote_*',
+  'WP_Http',
+  'curl_*',
+  'fsockopen',
+  'stream_socket_client',
+  'file_get_contents_http',
+  'wp_mail',
+  'WC_mailer',
+  'send',
+];
+
+export const CRON_ORPHAN = 'sahipsiz — çalışınca hiçbir şey yapmaz';
+
+export const STATIC_SCAN_LIMITATION =
+  'Geri çağrı başka fonksiyonları çağırıyorsa yalnız bir seviye derinlik taranır; kancalar/cron/snippet tetiklenmez.';
+
+function wdpWordChar(ch) {
+  return /[A-Za-z0-9_]/.test(ch || '');
+}
+
+function countFnCalls(src, fn) {
+  let n = 0;
+  let p = 0;
+  const s = String(src);
+  while ((p = s.indexOf(fn, p)) !== -1) {
+    const before = p > 0 ? s[p - 1] : '';
+    if (wdpWordChar(before)) {
+      p += fn.length;
+      continue;
+    }
+    let i = p + fn.length;
+    if (i < s.length && wdpWordChar(s[i])) {
+      p += fn.length;
+      continue;
+    }
+    while (i < s.length && /\s/.test(s[i])) i += 1;
+    if (s[i] === '(') n += 1;
+    p += fn.length;
+  }
+  return n;
+}
+
+function countPrefixCalls(src, prefix) {
+  let n = 0;
+  let p = 0;
+  const s = String(src);
+  while ((p = s.indexOf(prefix, p)) !== -1) {
+    const before = p > 0 ? s[p - 1] : '';
+    if (wdpWordChar(before)) {
+      p += prefix.length;
+      continue;
+    }
+    let i = p + prefix.length;
+    while (i < s.length && wdpWordChar(s[i])) i += 1;
+    while (i < s.length && /\s/.test(s[i])) i += 1;
+    if (s[i] === '(') n += 1;
+    p += prefix.length;
+  }
+  return n;
+}
+
+/** Sahte kaynaklarda giden çağrı türü + adet (PHP EVAL ile aynı iğneler). */
+export function detectOutboundCalls(source) {
+  const src = String(source || '');
+  const counts = {};
+  const add = (type, n) => {
+    if (n > 0) counts[type] = n;
+  };
+  add('wp_remote_*', countPrefixCalls(src, 'wp_remote_'));
+  add('wp_safe_remote_*', countPrefixCalls(src, 'wp_safe_remote_'));
+  add('WP_Http', (src.match(/\bWP_Http\b/g) || []).length);
+  add('curl_*', countPrefixCalls(src, 'curl_'));
+  add('fsockopen', countFnCalls(src, 'fsockopen'));
+  add('stream_socket_client', countFnCalls(src, 'stream_socket_client'));
+  add('file_get_contents_http', (src.match(/file_get_contents\s*\(\s*['"]https?:/g) || []).length);
+  add('wp_mail', countFnCalls(src, 'wp_mail'));
+  add('WC_mailer', (src.match(/WC\s*\(\s*\)\s*->\s*mailer\s*\(/g) || []).length);
+  add('send', (src.match(/->\s*send\s*\(/g) || []).length);
+  return counts;
+}
+
+export function detectSnippetHooks(code) {
+  const hooks = [];
+  const re = /add_(?:action|filter)\s*\(\s*['"]([^'"]+)['"]/g;
+  let m;
+  while ((m = re.exec(String(code || ''))) !== null) hooks.push(m[1]);
+  return [...new Set(hooks)];
+}
+
+export function scrubSnippetRow(raw) {
+  const s = raw && typeof raw === 'object' ? raw : {};
+  let calls = s.calls && typeof s.calls === 'object' && !Array.isArray(s.calls) ? { ...s.calls } : {};
+  let hooks = Array.isArray(s.hooks) ? s.hooks.map(String) : [];
+  if (typeof s.code === 'string' && s.code) {
+    const fromCode = detectOutboundCalls(s.code);
+    for (const [k, v] of Object.entries(fromCode)) {
+      calls[k] = Math.max(Number(calls[k] || 0), Number(v) || 0);
+    }
+    hooks = [...new Set([...hooks, ...detectSnippetHooks(s.code)])];
+  }
+  const callCount = Object.values(calls).reduce((a, b) => a + Number(b || 0), 0);
+  return {
+    id: Number(s.id) || 0,
+    scope: String(s.scope || ''),
+    priority: Number.isFinite(Number(s.priority)) ? Number(s.priority) : 10,
+    active: s.active === true || s.active === 1 || s.active === '1' ? 1 : 0,
+    hooks,
+    calls,
+    count: callCount,
+  };
+}
+
+export function formatCallTypes(calls) {
+  const entries = Object.entries(calls || {}).filter(([, n]) => Number(n) > 0);
+  if (!entries.length) return '—';
+  return entries.map(([t, n]) => `${t}×${n}`).join(', ');
+}
+
+export function sourceLabel(kind, slug) {
+  const k = String(kind || '');
+  const s = String(slug || '');
+  if (k === 'snippet') return 'snippet';
+  if (k === 'core') return 'core';
+  if (k === 'theme') return s ? `theme:${s}` : 'theme';
+  if (k === 'plugin' || k === 'mu-plugin') return s || k;
+  return s ? `${k}:${s}` : k || '—';
+}
+
+export function cronOwnerLabel(owner) {
+  const o = String(owner || '').trim();
+  if (!o || o === 'sahipsiz') return CRON_ORPHAN;
+  return o;
+}
+
+export function hasOutboundCallTypes(calls) {
+  return Object.entries(calls || {}).some(
+    ([k, n]) => OUTBOUND_CALL_TYPES.includes(k) && Number(n) > 0
+  );
+}
+
+export function mailDoNotSend(value) {
+  return value === true || value === 1 || value === '1' || value === 'true';
+}
 
 const CLASSIFY_PATTERNS = [
   [/sms|twilio|netgsm|iletimerkezi|messagebird|vonage/, 'sms'],
@@ -255,15 +420,20 @@ $hooks = array(
   "woocommerce_add_to_cart",
   "woocommerce_cart_item_set_quantity",
   "woocommerce_cart_updated",
-  "template_redirect",
+  "woocommerce_before_calculate_totals",
+  "init",
+  "wp_loaded",
   "wp",
+  "template_redirect",
   "wp_head",
   "wp_footer",
+  "wp_enqueue_scripts",
   "woocommerce_after_single_product",
   "woocommerce_thankyou",
   "woocommerce_checkout_order_processed",
   "woocommerce_new_order",
   "woocommerce_order_status_changed",
+  "shutdown",
   "wp_login"
 );
 global $wp_filter;
@@ -294,6 +464,421 @@ foreach ($hooks as $h) {
   $out[$h] = array_values($counts);
 }
 echo json_encode(array("hooks" => $out));
+`;
+
+export const EVAL_STATIC_OUTBOUND = `
+function wdp_st_word($ch) {
+  return ($ch >= "a" && $ch <= "z") || ($ch >= "A" && $ch <= "Z") || ($ch >= "0" && $ch <= "9") || $ch === "_";
+}
+function wdp_st_tight($src) {
+  return str_replace(array(" ", "\\t", "\\n", "\\r"), "", (string) $src);
+}
+function wdp_st_count_fn($src, $fn) {
+  $n = 0;
+  $p = 0;
+  $len = strlen($fn);
+  $L = strlen($src);
+  while (($p = strpos($src, $fn, $p)) !== false) {
+    $before = $p > 0 ? $src[$p - 1] : "";
+    if ($before !== "" && wdp_st_word($before)) { $p += $len; continue; }
+    $i = $p + $len;
+    if ($i < $L && wdp_st_word($src[$i])) { $p += $len; continue; }
+    while ($i < $L && ($src[$i] === " " || $src[$i] === "\\t" || $src[$i] === "\\n" || $src[$i] === "\\r")) $i++;
+    if ($i < $L && $src[$i] === "(") $n++;
+    $p += $len;
+  }
+  return $n;
+}
+function wdp_st_count_prefix($src, $prefix) {
+  $n = 0;
+  $p = 0;
+  $len = strlen($prefix);
+  $L = strlen($src);
+  while (($p = strpos($src, $prefix, $p)) !== false) {
+    $before = $p > 0 ? $src[$p - 1] : "";
+    if ($before !== "" && wdp_st_word($before)) { $p += $len; continue; }
+    $i = $p + $len;
+    while ($i < $L && wdp_st_word($src[$i])) $i++;
+    while ($i < $L && ($src[$i] === " " || $src[$i] === "\\t" || $src[$i] === "\\n" || $src[$i] === "\\r")) $i++;
+    if ($i < $L && $src[$i] === "(") $n++;
+    $p += $len;
+  }
+  return $n;
+}
+function wdp_st_count_ident($src, $ident) {
+  $n = 0;
+  $p = 0;
+  $len = strlen($ident);
+  $L = strlen($src);
+  while (($p = strpos($src, $ident, $p)) !== false) {
+    $before = $p > 0 ? $src[$p - 1] : "";
+    $after = $p + $len < $L ? $src[$p + $len] : "";
+    $okB = ($before === "" || !wdp_st_word($before));
+    $okA = ($after === "" || !wdp_st_word($after));
+    if ($okB && $okA) $n++;
+    $p += $len;
+  }
+  return $n;
+}
+function wdp_st_count_send($src) {
+  $n = 0;
+  $p = 0;
+  $L = strlen($src);
+  while (($p = strpos($src, "->", $p)) !== false) {
+    $i = $p + 2;
+    while ($i < $L && ($src[$i] === " " || $src[$i] === "\\t" || $src[$i] === "\\n" || $src[$i] === "\\r")) $i++;
+    if (substr($src, $i, 4) === "send") {
+      $j = $i + 4;
+      if ($j >= $L || !wdp_st_word($src[$j])) {
+        while ($j < $L && ($src[$j] === " " || $src[$j] === "\\t" || $src[$j] === "\\n" || $src[$j] === "\\r")) $j++;
+        if ($j < $L && $src[$j] === "(") $n++;
+      }
+    }
+    $p += 2;
+  }
+  return $n;
+}
+function wdp_st_count_fgc_http($src) {
+  $n = 0;
+  $p = 0;
+  $fn = "file_get_contents";
+  $len = strlen($fn);
+  $L = strlen($src);
+  while (($p = strpos($src, $fn, $p)) !== false) {
+    $before = $p > 0 ? $src[$p - 1] : "";
+    if ($before !== "" && wdp_st_word($before)) { $p += $len; continue; }
+    $i = $p + $len;
+    while ($i < $L && ($src[$i] === " " || $src[$i] === "\\t" || $src[$i] === "\\n" || $src[$i] === "\\r")) $i++;
+    if ($i < $L && $src[$i] === "(") {
+      $i++;
+      while ($i < $L && ($src[$i] === " " || $src[$i] === "\\t" || $src[$i] === "\\n" || $src[$i] === "\\r")) $i++;
+      $q = $i < $L ? $src[$i] : "";
+      if ($q === "\\"" || ord($q) === 39) $i++;
+      $rest = substr($src, $i, 8);
+      if (strpos($rest, "http://") === 0 || strpos($rest, "https:") === 0) $n++;
+    }
+    $p += $len;
+  }
+  return $n;
+}
+function wdp_st_calls($src) {
+  $src = (string) $src;
+  $out = array();
+  $n = wdp_st_count_prefix($src, "wp_remote_");
+  if ($n) $out["wp_remote_*"] = $n;
+  $n = wdp_st_count_prefix($src, "wp_safe_remote_");
+  if ($n) $out["wp_safe_remote_*"] = $n;
+  $n = wdp_st_count_ident($src, "WP_Http");
+  if ($n) $out["WP_Http"] = $n;
+  $n = wdp_st_count_prefix($src, "curl_");
+  if ($n) $out["curl_*"] = $n;
+  $n = wdp_st_count_fn($src, "fsockopen");
+  if ($n) $out["fsockopen"] = $n;
+  $n = wdp_st_count_fn($src, "stream_socket_client");
+  if ($n) $out["stream_socket_client"] = $n;
+  $n = wdp_st_count_fgc_http($src);
+  if ($n) $out["file_get_contents_http"] = $n;
+  $n = wdp_st_count_fn($src, "wp_mail");
+  if ($n) $out["wp_mail"] = $n;
+  $n = wdp_st_count_fn(wdp_st_tight($src), "WC()->mailer");
+  if ($n) $out["WC_mailer"] = $n;
+  $n = wdp_st_count_send($src);
+  if ($n) $out["send"] = $n;
+  return $out;
+}
+function wdp_st_merge($a, $b) {
+  foreach ($b as $k => $v) {
+    $a[$k] = isset($a[$k]) ? $a[$k] + (int) $v : (int) $v;
+  }
+  return $a;
+}
+function wdp_st_read($file, $start, $end) {
+  $file = (string) $file;
+  if ($file === "" || !is_file($file) || !is_readable($file)) return "";
+  $lines = @file($file);
+  if (!is_array($lines)) return "";
+  $start = max(1, (int) $start);
+  $end = max($start, (int) $end);
+  return implode("", array_slice($lines, $start - 1, $end - $start + 1));
+}
+function wdp_st_meta($fn) {
+  try {
+    $r = null;
+    if (is_string($fn) && strpos($fn, "::") !== false) {
+      $parts = explode("::", $fn, 2);
+      $r = new ReflectionMethod($parts[0], $parts[1]);
+    } else if (is_string($fn) && function_exists($fn)) {
+      $r = new ReflectionFunction($fn);
+    } else if ($fn instanceof Closure) {
+      $r = new ReflectionFunction($fn);
+    } else if (is_array($fn) && isset($fn[0]) && isset($fn[1])) {
+      $r = new ReflectionMethod($fn[0], $fn[1]);
+    } else if (is_object($fn)) {
+      $r = new ReflectionMethod($fn, "__invoke");
+    }
+    if (!$r) return array("file" => "", "start" => 0, "end" => 0);
+    return array("file" => (string) $r->getFileName(), "start" => (int) $r->getStartLine(), "end" => (int) $r->getEndLine());
+  } catch (Throwable $ex) {
+    return array("file" => "", "start" => 0, "end" => 0);
+  }
+}
+function wdp_st_origin($file) {
+  $file = str_replace(chr(92), "/", (string) $file);
+  if (strpos($file, "eval()") !== false) {
+    return array("kind" => "snippet", "slug" => "snippet");
+  }
+  $mark = "/wp-content/plugins/";
+  $i = strpos($file, $mark);
+  if ($i !== false) {
+    $rest = substr($file, $i + strlen($mark));
+    $slug = explode("/", $rest)[0];
+    if ($slug === "code-snippets" || $slug === "code-snippets-pro") {
+      return array("kind" => "snippet", "slug" => "snippet");
+    }
+    return array("kind" => "plugin", "slug" => $slug);
+  }
+  $mark = "/wp-content/mu-plugins/";
+  $i = strpos($file, $mark);
+  if ($i !== false) {
+    $rest = substr($file, $i + strlen($mark));
+    $slug = explode("/", $rest)[0];
+    $slug = explode(".", $slug)[0];
+    return array("kind" => "mu-plugin", "slug" => $slug);
+  }
+  $mark = "/wp-content/themes/";
+  $i = strpos($file, $mark);
+  if ($i !== false) {
+    $rest = substr($file, $i + strlen($mark));
+    $slug = explode("/", $rest)[0];
+    return array("kind" => "theme", "slug" => $slug);
+  }
+  return array("kind" => "core", "slug" => "core");
+}
+function wdp_st_skip_child($name) {
+  $n = strtolower((string) $name);
+  if (strpos($n, "wp_remote_") === 0) return 1;
+  if (strpos($n, "wp_safe_remote_") === 0) return 1;
+  if (strpos($n, "curl_") === 0) return 1;
+  if ($n === "wp_mail" || $n === "fsockopen" || $n === "stream_socket_client" || $n === "file_get_contents") return 1;
+  if ($n === "send" || $n === "mailer") return 1;
+  return 0;
+}
+function wdp_st_called($src) {
+  $names = array();
+  $tokens = @token_get_all("<?php " . (string) $src);
+  if (!is_array($tokens)) return $names;
+  $skip = array("if"=>1,"elseif"=>1,"else"=>1,"while"=>1,"for"=>1,"foreach"=>1,"switch"=>1,"catch"=>1,"echo"=>1,"print"=>1,"isset"=>1,"empty"=>1,"unset"=>1,"return"=>1,"include"=>1,"require"=>1,"array"=>1,"list"=>1,"exit"=>1,"die"=>1,"function"=>1,"class"=>1,"new"=>1,"clone"=>1,"throw"=>1,"try"=>1,"match"=>1,"parent"=>1,"self"=>1,"static"=>1,"true"=>1,"false"=>1,"null"=>1,"and"=>1,"or"=>1,"xor"=>1);
+  $n = count($tokens);
+  for ($i = 0; $i < $n; $i++) {
+    $t = $tokens[$i];
+    if (!is_array($t) || $t[0] !== T_STRING) continue;
+    $name = $t[1];
+    if (isset($skip[strtolower($name)])) continue;
+    $j = $i + 1;
+    while ($j < $n && is_array($tokens[$j]) && $tokens[$j][0] === T_WHITESPACE) $j++;
+    if ($j < $n && $tokens[$j] === "(") $names[] = $name;
+  }
+  return array_values(array_unique($names));
+}
+function wdp_st_child_src($name, $fn) {
+  if (wdp_st_skip_child($name)) return "";
+  try {
+    if (function_exists($name)) {
+      $r = new ReflectionFunction($name);
+      return wdp_st_read((string) $r->getFileName(), $r->getStartLine(), $r->getEndLine());
+    }
+    if (is_array($fn) && isset($fn[0]) && method_exists($fn[0], $name)) {
+      $r = new ReflectionMethod($fn[0], $name);
+      return wdp_st_read((string) $r->getFileName(), $r->getStartLine(), $r->getEndLine());
+    }
+  } catch (Throwable $ex) {
+    return "";
+  }
+  return "";
+}
+function wdp_st_scan_fn($fn) {
+  $meta = wdp_st_meta($fn);
+  $src = wdp_st_read($meta["file"], $meta["start"], $meta["end"]);
+  $calls = wdp_st_calls($src);
+  foreach (wdp_st_called($src) as $name) {
+    $child = wdp_st_child_src($name, $fn);
+    if ($child !== "") $calls = wdp_st_merge($calls, wdp_st_calls($child));
+  }
+  return array("origin" => wdp_st_origin($meta["file"]), "calls" => $calls);
+}
+function wdp_st_cbs($hook) {
+  global $wp_filter;
+  $list = array();
+  if (!isset($wp_filter[$hook])) return $list;
+  $f = $wp_filter[$hook];
+  $cb_lists = array();
+  if (is_object($f) && isset($f->callbacks)) $cb_lists = $f->callbacks;
+  else if (is_array($f)) $cb_lists = $f;
+  foreach ((array) $cb_lists as $group) {
+    foreach ((array) $group as $cb) {
+      $fn = is_array($cb) && isset($cb["function"]) ? $cb["function"] : null;
+      $list[] = $fn;
+    }
+  }
+  return $list;
+}
+function wdp_st_agg($fns) {
+  $map = array();
+  foreach ($fns as $fn) {
+    $row = wdp_st_scan_fn($fn);
+    $o = $row["origin"];
+    $key = $o["kind"] . ":" . $o["slug"];
+    if (!isset($map[$key])) {
+      $map[$key] = array("kind" => $o["kind"], "slug" => $o["slug"], "calls" => array());
+    }
+    $map[$key]["calls"] = wdp_st_merge($map[$key]["calls"], $row["calls"]);
+  }
+  $rows = array();
+  foreach ($map as $v) {
+    $n = 0;
+    foreach ($v["calls"] as $c) $n += (int) $c;
+    $rows[] = array("kind" => $v["kind"], "slug" => $v["slug"], "calls" => $v["calls"], "count" => $n);
+  }
+  return $rows;
+}
+function wdp_st_snip_hooks($code) {
+  $hooks = array();
+  $code = (string) $code;
+  foreach (array("add_" . "action", "add_" . "filter") as $fn) {
+    $p = 0;
+    $flen = strlen($fn);
+    $L = strlen($code);
+    while (($p = strpos($code, $fn, $p)) !== false) {
+      $i = $p + $flen;
+      while ($i < $L && ($code[$i] === " " || $code[$i] === "\\t" || $code[$i] === "\\n" || $code[$i] === "\\r")) $i++;
+      if ($i < $L && $code[$i] === "(") {
+        $i++;
+        while ($i < $L && ($code[$i] === " " || $code[$i] === "\\t" || $code[$i] === "\\n" || $code[$i] === "\\r")) $i++;
+        $q = $i < $L ? $code[$i] : "";
+        if ($q === "\\"" || ord($q) === 39) {
+          $i++;
+          $start = $i;
+          while ($i < $L && $code[$i] !== $q) $i++;
+          $hooks[] = substr($code, $start, $i - $start);
+        }
+      }
+      $p += $flen;
+    }
+  }
+  return array_values(array_unique($hooks));
+}
+$scan_hooks = array(
+  "woocommerce_add_to_cart",
+  "woocommerce_cart_item_set_quantity",
+  "woocommerce_cart_updated",
+  "woocommerce_before_calculate_totals",
+  "init",
+  "wp_loaded",
+  "wp",
+  "template_redirect",
+  "wp_head",
+  "wp_footer",
+  "wp_enqueue_scripts",
+  "woocommerce_after_single_product",
+  "woocommerce_thankyou",
+  "woocommerce_new_order",
+  "woocommerce_order_status_changed",
+  "shutdown"
+);
+$hook_scan = array();
+foreach ($scan_hooks as $h) {
+  foreach (wdp_st_agg(wdp_st_cbs($h)) as $row) {
+    $hook_scan[] = array("hook" => $h, "kind" => $row["kind"], "slug" => $row["slug"], "calls" => $row["calls"], "count" => $row["count"]);
+  }
+}
+$snippets = array();
+global $wpdb;
+if (isset($wpdb) && isset($wpdb->prefix)) {
+  $table = $wpdb->prefix . "snippets";
+  $prev = $wpdb->suppress_errors(true);
+  $like = $wpdb->esc_like($table);
+  $found = $wpdb->get_var($wpdb->prepare("SHOW TABLES LIKE %s", $like));
+  if ($found) {
+    $q = "SELECT id, scope, priority, active, code FROM " . $table . " WHERE active = 1";
+    $rows = $wpdb->get_results($q, ARRAY_A);
+    foreach ((array) $rows as $row) {
+      $code = isset($row["code"]) ? (string) $row["code"] : "";
+      $snippets[] = array(
+        "id" => (int) $row["id"],
+        "scope" => isset($row["scope"]) ? (string) $row["scope"] : "",
+        "priority" => isset($row["priority"]) ? (int) $row["priority"] : 10,
+        "active" => !empty($row["active"]) ? 1 : 0,
+        "hooks" => wdp_st_snip_hooks($code),
+        "calls" => wdp_st_calls($code)
+      );
+    }
+  }
+  $wpdb->suppress_errors($prev);
+}
+$cron = array();
+$crons = function_exists("_get_cron_array") ? _get_cron_array() : array();
+if (is_array($crons)) {
+  $by = array();
+  foreach ($crons as $ts => $hooksMap) {
+    if (!is_array($hooksMap)) continue;
+    foreach ($hooksMap as $hook => $evts) {
+      $hook = (string) $hook;
+      if (!isset($by[$hook])) {
+        $by[$hook] = array("hook" => $hook, "next_run" => (int) $ts, "schedule" => "", "n" => 0);
+      }
+      $by[$hook]["n"] += is_array($evts) ? count($evts) : 1;
+      if ((int) $ts < $by[$hook]["next_run"]) $by[$hook]["next_run"] = (int) $ts;
+      if ($by[$hook]["schedule"] === "" && is_array($evts)) {
+        foreach ($evts as $ev) {
+          if (is_array($ev) && isset($ev["schedule"])) {
+            $by[$hook]["schedule"] = (string) $ev["schedule"];
+            break;
+          }
+        }
+      }
+    }
+  }
+  foreach ($by as $hook => $info) {
+    $fns = wdp_st_cbs($hook);
+    $calls = array();
+    $owner = "sahipsiz";
+    if ($fns) {
+      $kinds = array();
+      foreach ($fns as $fn) {
+        $row = wdp_st_scan_fn($fn);
+        $calls = wdp_st_merge($calls, $row["calls"]);
+        $o = $row["origin"];
+        $kinds[$o["kind"] . ":" . $o["slug"]] = $o;
+      }
+      $bits = array();
+      foreach ($kinds as $o) $bits[] = $o["kind"] . ":" . $o["slug"];
+      $owner = implode(",", $bits);
+    }
+    $ncall = 0;
+    foreach ($calls as $c) $ncall += (int) $c;
+    $cron[] = array(
+      "hook" => $info["hook"],
+      "owner" => $owner,
+      "next_run" => $info["next_run"],
+      "schedule" => $info["schedule"] === "" ? "once" : $info["schedule"],
+      "calls" => $calls,
+      "count" => $ncall
+    );
+  }
+}
+$pre_wp_mail = array();
+foreach (wdp_st_cbs("pre_wp_mail") as $fn) {
+  $o = wdp_st_origin(wdp_st_meta($fn)["file"]);
+  $slug = ($o["kind"] === "plugin" || $o["kind"] === "mu-plugin") ? $o["slug"] : ($o["kind"] . ":" . $o["slug"]);
+  if ($slug && !in_array($slug, $pre_wp_mail, true)) $pre_wp_mail[] = $slug;
+}
+echo json_encode(array(
+  "hook_scan" => $hook_scan,
+  "snippets" => $snippets,
+  "cron" => $cron,
+  "pre_wp_mail" => $pre_wp_mail,
+  "scan_depth" => 1
+));
 `;
 
 /**
@@ -415,13 +1000,16 @@ export const EVAL_OUTBOUND = `
 if (!function_exists("get_plugins")) {
   require_once ABSPATH . "wp-admin/includes/plugin.php";
 }
-$mail = array("active" => 0, "plugin" => "", "mailer" => "");
+$mail = array("active" => 0, "plugin" => "", "mailer" => "", "do_not_send" => false);
 if (function_exists("is_plugin_active") && is_plugin_active("wp-mail-smtp/wp_mail_smtp.php")) {
   $mail["active"] = 1;
   $mail["plugin"] = "wp-mail-smtp";
   $opt = get_option("wp_mail_smtp");
   if (is_array($opt) && isset($opt["mail"]) && is_array($opt["mail"]) && isset($opt["mail"]["mailer"])) {
     $mail["mailer"] = (string) $opt["mail"]["mailer"];
+  }
+  if (is_array($opt) && isset($opt["general"]) && is_array($opt["general"]) && !empty($opt["general"]["do_not_send"])) {
+    $mail["do_not_send"] = true;
   }
 }
 if (!$mail["active"] && function_exists("is_plugin_active") && is_plugin_active("fluent-smtp/fluent-smtp.php")) {
@@ -477,6 +1065,9 @@ if (class_exists("WC_Data_Store")) {
   } catch (Throwable $ex) {
     $wh_total = 0;
   }
+}
+if (defined("WPMS_DO_NOT_SEND") && WPMS_DO_NOT_SEND) {
+  $mail["do_not_send"] = true;
 }
 $cron = array();
 $crons = function_exists("_get_cron_array") ? _get_cron_array() : array();
@@ -546,6 +1137,7 @@ export const DISCOVER_STEPS = [
   { id: 'woo', kind: 'eval', php: EVAL_WOO },
   { id: 'gateways', kind: 'eval', php: EVAL_GATEWAYS },
   { id: 'outbound', kind: 'eval', php: EVAL_OUTBOUND },
+  { id: 'static_outbound', kind: 'eval', php: EVAL_STATIC_OUTBOUND },
   { id: 'counts', kind: 'eval', php: EVAL_COUNTS },
   { id: 'canary', kind: 'eval-file', file: CANARY_EVAL_FILE },
 ];
@@ -604,7 +1196,7 @@ export function profileKeyForEnv(envName) {
 
 export function blockedActivePlugins(plugins) {
   const list = Array.isArray(plugins) ? plugins : [];
-  return BLOCKED_ACTIVE_SLUGS.filter((slug) =>
+  const blocked = BLOCKED_ACTIVE_SLUGS.filter((slug) =>
     list.some((p) => {
       const id = String(p.slug || p.name || '')
         .toLowerCase()
@@ -615,6 +1207,10 @@ export function blockedActivePlugins(plugins) {
       return id === slug && status === 'active';
     })
   );
+  for (const slug of smsPluginsFromActive(list)) {
+    if (!blocked.includes(slug)) blocked.push(slug);
+  }
+  return blocked;
 }
 
 export function blockedExitCode(plugins) {
@@ -827,6 +1423,51 @@ export function assembleReport({ envName, profileId, stepData, canaryRel }) {
     dropin: plugins.filter((p) => p.status === 'dropin').length,
   };
 
+  const staticRaw = stepData.static_outbound || {};
+  const smsList = smsPluginsFromActive(plugins);
+  const mailIn = outbound.mail || {};
+  const mail = {
+    active: Number(mailIn.active) ? 1 : 0,
+    plugin: String(mailIn.plugin || ''),
+    mailer: String(mailIn.mailer || ''),
+    do_not_send: mailDoNotSend(mailIn.do_not_send),
+  };
+  const hookScan = (Array.isArray(staticRaw.hook_scan) ? staticRaw.hook_scan : []).map((row) => {
+    const calls = row.calls && typeof row.calls === 'object' && !Array.isArray(row.calls) ? row.calls : {};
+    const count = Number(row.count) || Object.values(calls).reduce((a, b) => a + Number(b || 0), 0);
+    return {
+      hook: String(row.hook || ''),
+      source: sourceLabel(row.kind, row.slug),
+      calls,
+      count,
+    };
+  });
+  const snippets = (Array.isArray(staticRaw.snippets) ? staticRaw.snippets : []).map(scrubSnippetRow);
+  const cronStatic = (Array.isArray(staticRaw.cron) ? staticRaw.cron : []).map((row) => {
+    const calls = row.calls && typeof row.calls === 'object' && !Array.isArray(row.calls) ? row.calls : {};
+    return {
+      hook: String(row.hook || ''),
+      owner: cronOwnerLabel(row.owner),
+      next_run: Number(row.next_run) || 0,
+      schedule: String(row.schedule || ''),
+      calls,
+      count: Number(row.count) || Object.values(calls).reduce((a, b) => a + Number(b || 0), 0),
+    };
+  });
+  const cronOutbound = cronStatic.filter((r) => hasOutboundCallTypes(r.calls));
+  const preWpMail = Array.isArray(staticRaw.pre_wp_mail)
+    ? staticRaw.pre_wp_mail.map(String).filter(Boolean)
+    : [];
+  const warnings = [];
+  if (
+    mail.active &&
+    mail.plugin === 'wp-mail-smtp' &&
+    mail.do_not_send === false &&
+    ['mail', 'smtp'].includes(String(mail.mailer).toLowerCase())
+  ) {
+    warnings.push(`WP Mail SMTP aktif, Do Not Send=false, mailer=${mail.mailer} (uyarı, engel değil)`);
+  }
+
   const report = {
     env: envName,
     profile_id: profileId || '',
@@ -879,14 +1520,29 @@ export function assembleReport({ envName, profileId, stepData, canaryRel }) {
       enabled: g.enabled,
     })),
     outbound: {
-      mail: outbound.mail || { active: 0, plugin: '', mailer: '' },
-      sms_plugins: smsPluginsFromActive(plugins),
+      mail,
+      sms_plugins: smsList,
       webhooks: {
         total: Number(outbound.webhooks?.total || 0),
         by_status: asCountMap(outbound.webhooks?.by_status),
         by_topic: asCountMap(outbound.webhooks?.by_topic),
       },
       cron: outbound.cron && !Array.isArray(outbound.cron) ? outbound.cron : {},
+    },
+    outbound_static: {
+      limitation: STATIC_SCAN_LIMITATION,
+      hooks: hookScan,
+      snippets,
+      cron: cronStatic,
+      cron_outbound: cronOutbound,
+      mail: {
+        do_not_send: mail.do_not_send,
+        mailer: mail.mailer,
+        plugin: mail.plugin,
+        pre_wp_mail: preWpMail,
+      },
+      sms: smsList.length ? smsList : 'pasif',
+      warnings,
     },
     wdp: {
       version: counts.wdp_version || '',
@@ -940,6 +1596,34 @@ export function renderMarkdown(report) {
   const cronRows = Object.entries(cron)
     .sort((a, b) => b[1] - a[1])
     .map(([hook, n]) => [hook, String(n)]);
+  const stOut = r.outbound_static || {};
+  const hookScanRows = (stOut.hooks || []).map((x) => [
+    x.hook,
+    x.source,
+    formatCallTypes(x.calls),
+    String(x.count ?? 0),
+  ]);
+  const snippetRows = (stOut.snippets || []).map((x) => [
+    String(x.id ?? ''),
+    x.scope || '—',
+    String(x.priority ?? ''),
+    Number(x.active) ? 'evet' : 'hayır',
+    (x.hooks || []).join(', ') || '—',
+    formatCallTypes(x.calls),
+  ]);
+  const cronStaticRows = (stOut.cron || []).map((x) => [
+    x.hook,
+    x.owner || CRON_ORPHAN,
+    String(x.next_run ?? ''),
+    x.schedule || '—',
+    formatCallTypes(x.calls),
+  ]);
+  const cronOutRows = (stOut.cron_outbound || []).map((x) => [
+    x.hook,
+    x.owner || CRON_ORPHAN,
+    formatCallTypes(x.calls),
+  ]);
+  const smsVal = Array.isArray(stOut.sms) ? stOut.sms.join(', ') : stOut.sms || 'pasif';
   const pluginRows = (r.plugins || []).map((p) => [p.slug, p.status, p.version || '']);
   const gwRows = (r.gateways || []).map((g) => [g.id, g.method_title || '', g.enabled || '']);
   const pageRows = Object.entries(pages).map(([name, info]) => [
@@ -1013,6 +1697,7 @@ export function renderMarkdown(report) {
       [
         ['wp_mail eklenti', r.outbound?.mail?.active ? r.outbound.mail.plugin : 'yok'],
         ['mailer türü', r.outbound?.mail?.mailer || '—'],
+        ['Do Not Send', r.outbound?.mail?.do_not_send === true ? 'true' : 'false'],
         ['SMS eklentileri', (r.outbound?.sms_plugins || []).join(', ') || 'yok'],
         ['webhook toplam', String(r.outbound?.webhooks?.total ?? 0)],
         ['webhook durum sayıları', JSON.stringify(r.outbound?.webhooks?.by_status || {})],
@@ -1024,6 +1709,46 @@ export function renderMarkdown(report) {
     cronRows.length
       ? mdTable(['hook', 'adet'], cronRows)
       : '_kayıt yok_',
+    '',
+    '## Giden veri statik denetimi',
+    stOut.limitation || STATIC_SCAN_LIMITATION,
+    '',
+    '### Kanca geri çağrıları',
+    hookScanRows.length
+      ? mdTable(['kanca', 'kaynak', 'çağrı türleri', 'adet'], hookScanRows)
+      : '_kayıt yok_',
+    '',
+    '### Code Snippets (yalnız id)',
+    snippetRows.length
+      ? mdTable(['id', 'scope', 'priority', 'etkin', 'kancalar', 'çağrı türleri'], snippetRows)
+      : '_aktif snippet yok_',
+    '',
+    '### wp-cron',
+    cronStaticRows.length
+      ? mdTable(['hook', 'sahip', 'sonraki', 'sıklık', 'çağrı türleri'], cronStaticRows)
+      : '_kayıt yok_',
+    '',
+    '### wp-cron (giden e-posta/SMS/istek)',
+    cronOutRows.length
+      ? mdTable(['hook', 'sahip', 'çağrı türleri'], cronOutRows)
+      : '_yok_',
+    '',
+    '### WP Mail SMTP',
+    mdTable(
+      ['öğe', 'değer'],
+      [
+        ['Do Not Send', stOut.mail?.do_not_send === true ? 'true' : 'false'],
+        ['mailer', stOut.mail?.mailer || '—'],
+        ['pre_wp_mail', (stOut.mail?.pre_wp_mail || []).join(', ') || '—'],
+      ]
+    ),
+    '',
+    '### SMS',
+    smsVal,
+    '',
+    (stOut.warnings || []).length
+      ? `Uyarı: ${(stOut.warnings || []).join('; ')}`
+      : 'Uyarı: yok',
     '',
     '## woo-donation-popup',
     mdTable(
@@ -1078,7 +1803,7 @@ export function formatSummary(report) {
     `Engellenen: ${blocked}`,
     `Woo: ${woo.currency || '—'} ondalık ${woo.price_num_decimals || '—'} HPOS ${woo.hpos || '—'} sepet ${woo.pages?.cart?.kind || '—'} ödeme ${woo.pages?.checkout?.kind || '—'}`,
     `Ödeme: ${(r.gateways || []).length} yöntem (${(r.gateways || []).filter((g) => g.enabled === 'yes').length} açık)`,
-    `Giden: SMTP ${mail.active ? `${mail.plugin}/${mail.mailer || '?'}` : 'yok'} | SMS ${(r.outbound?.sms_plugins || []).join(',') || 'yok'} | webhook ${r.outbound?.webhooks?.total ?? 0} | cron ${Object.keys(r.outbound?.cron || {}).length} kanca`,
+    `Giden: SMTP ${mail.active ? `${mail.plugin}/${mail.mailer || '?'}${mail.do_not_send ? '/DoNotSend' : ''}` : 'yok'} | SMS ${Array.isArray(r.outbound_static?.sms) ? r.outbound_static.sms.join(',') : r.outbound_static?.sms || (r.outbound?.sms_plugins || []).join(',') || 'pasif'} | webhook ${r.outbound?.webhooks?.total ?? 0} | cron ${Object.keys(r.outbound?.cron || {}).length} kanca`,
     `wdp: ${r.wdp?.installed ? r.wdp.version || 'kurulu' : 'yok'}, option=${r.wdp?.option_count ?? 0}`,
     `Sayılar: sipariş ${r.counts?.orders ?? 0} / ürün ${r.counts?.products ?? 0} / kullanıcı ${r.counts?.users ?? 0} / sayfa ${r.counts?.pages ?? 0}`,
     `Kanarya: ${r.canary?.file || '—'}`,
