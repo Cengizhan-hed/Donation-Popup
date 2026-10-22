@@ -450,3 +450,15 @@ Kullanıcı yönergesi önceki tüm görev metinlerinin yerini aldı; CLAUDE.md 
 | G29 | Popup'ta telefon yer tutucusu ayırıcı çizgiye yapışık (panelde boşluk var) |
 | G30 | "24 Saat İçerisinde Video" rozetinde simge kenara taşıyor (popup) |
 | G31 | Ikram WooCommerce mağaza sayfasındaki "Bağış Yap" açılır pencere açmıyor (Appeals listesinde açıyor) — davranış tutarlılığı, Faz 7'de karar |
+
+## Faz 3 tam paket bulguları (2026-10-22, e2e:full android+desktop, 10.34.5)
+
+| # | Bulgu | Durum |
+|---|-------|-------|
+| T1 | Tarayıcı Ikram koşusunda emekli staging28'in admin-ajax.php adresine istek attı (CORS ile yanıt engellendi; isteğin sunucuya ulaşıp ulaşmadığı belirsiz). Kaynak: eski .env değerini kullanan test kod yolu | 3I; düzeltilene kadar uzak tarayıcı koşusu YOK |
+| T2 | staging30 sayfaları Avada önbellek CSS'i yüzünden CANLI alan adından yazı tipi (GET) yüklüyor — site yapılandırması (staging kopyasında Avada önbellek/CSS yeniden üretilmemiş). Testler canlıya yalnız font GET'i attı | 3I: canlı alan adı tüm uzak koşularda engellenecek; kullanıcıya bildirildi (Avada > Performance > Reset Avada Caches önerisi) |
+| T3 | Değişiklik yapan senaryolar (amount-opts, form-fields, campaign-blocks, product-theme, shortcodes) uzakta çalışamıyor (yeni kural: site ayarı yazılmaz) | 3I: ürün metası → fixture+yönetici; global ayar → yalnız yerel |
+| T4 | Hisseli/kampanya doğrulama hataları panelde görünmüyor (katlanmış bölüm) | 3J (10.34.7) |
+| T5 | staging30'da "Ödemeye Git" sepete gidiyor | 3I teşhis |
+| T6 | 10.34.6: Storefront mobilde yerel "Add to cart" görünüyordu (bağışçı bilgisi olmadan sepete ekleme) — DÜZELTİLDİ; sunucu tarafı formsuz add-to-cart reddi. Yan etki: "Tekrar sipariş ver" bağış ürünlerinde çalışmaz (bilinçli) | Kapandı |
+| T7 | 10.34.5: eklentinin yerel sepet formu gizleme CSS'i "Benzer Bağışlar" kartlarını da gizliyordu (Hedef mobil "boş" açığının kökü) — DÜZELTİLDİ | Kapandı |
