@@ -506,8 +506,9 @@ Salt okunur envanter (yazma yok; `spawnGuarded` zorunlu). Claude çalıştırır
 | Betik | `scripts/remote-discover.mjs` + `scripts/lib/remote-discover-lib.mjs` |
 | Profil | `loadProfile` (`tests/e2e/profiles/*.json`); `ssh.alias` + `ssh.wpPath`; her `wp` çağrısında `--path`; `--skip-themes` yok |
 | Çıktı | `build/discovery/<env>.json` + `.md`; kanarya `build/e2e/canary/<env>-baseline.json` |
-| Engel | `facebook-for-woocommerce`, `official-facebook-pixel`, `google-listings-and-ads`, `google-site-kit` aktifse `REMOTE-BLOCKED` ve çıkış **3** |
-| Güvenlik | Sabit eval listesi; değer/e-posta/URL/anahtar yazılmaz; bağlantı hatasında en fazla 1 tekrar |
+| Engel | `facebook-for-woocommerce`, `official-facebook-pixel`, `google-listings-and-ads`, `google-site-kit` **veya herhangi bir aktif SMS eklentisi** (katalog/sınıf `sms`, ör. Netgsm) aktifse `REMOTE-BLOCKED` ve çıkış **3** |
+| Giden veri statik | Kanca geri çağrıları Reflection + kaynak okuma (tetiklemez; tek seviye derinlik); Code Snippets `SELECT` (id/scope/priority/etkin + kanca/çağrı türü; ad/kod yazılmaz); wp-cron sahip/sıklık/sonraki; WP Mail SMTP `Do Not Send` true/false + mailer + `pre_wp_mail` slug. SMTP `mail`/`smtp` ve Do Not Send=false → uyarı (engel değil). Çıktı `outbound_static` + MD «Giden veri statik denetimi». | `scripts/lib/remote-discover-lib.mjs` `EVAL_STATIC_OUTBOUND` / `detectOutboundCalls` / `assembleReport` |
+| Güvenlik | Sabit eval listesi; kanca/cron/snippet tetiklenmez (`do_action`/`apply_filters`/`wp_schedule`/`spawn_cron` yok); değer/e-posta/URL/anahtar yazılmaz; bağlantı hatasında en fazla 1 tekrar |
 | Woo sayfa türü | `has_block('woocommerce/checkout'\|'woocommerce/cart')`, `has_shortcode`, içerikte `[woocommerce_checkout` / `[woocommerce_cart`, `CartCheckoutUtils::is_*_block_default()`. Sonuç: `block` / `classic` / `classic-in-builder` / `unknown`. İçerik yazılmaz. | `scripts/lib/remote-discover-lib.mjs` `classifyWooPageKind` / `EVAL_WOO` |
 
 ### Test ortamları ve profiller
