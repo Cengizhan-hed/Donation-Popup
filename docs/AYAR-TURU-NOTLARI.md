@@ -392,3 +392,16 @@ KARAR (Claude): 2/3'te yalnız GBP doğruluğunu sağlayan ÇEKİRDEK düzeltili
 | Düzeltme | Merkezi uzak koruma (spawnGuarded + REMOTE_FREEZE), staging28 izinden çıktı, tek korumalı temizlik (run_id + kayıt defteri + kara liste + kullanıcı içerik kontrolü), createTempPage/deletePost/ensureWooCartPagePublished kaldırıldı, uzak ayar yazımı kalktı, kanarya, e2e:bootstrap (fixture), yerel WP kanıt ortamı (`npm run test:local-wp`) |
 | Durum | REMOTE_FREEZE AKTİF; uzak komut yok; 2/3-2c-2e değişiklikleri UNCOMMITTED; merge/accept yok; yeni staging adresi bekleniyor |
 | Açık | Ikram baseline'ları ve Hedef accept bekliyor (yeni staging + fixture modu sonrası yeniden üretilecek); Görev 3/3 (tema/WooCommerce uyum matrisi) bekliyor |
+
+## YENİ OTURUM: ANA YÖNERGE (2026-10-22)
+
+Kullanıcı yönergesi önceki tüm görev metinlerinin yerini aldı; CLAUDE.md buna göre yeniden yazıldı. Bu oturum: Faz 1–4, Faz 5'ten önce AŞAMA ÖZETİ.
+
+| Konu | Not |
+|------|-----|
+| Uzak ortamlar | staging30 (`hedef-staging`, `~/www/staging30.hedefdernegi.org/public_html`) + Ikram (`ikramaid`, `~/www/ikramaid.uk/public_html`). staging28 emekli. Kilit klasör yoluna göre |
+| Toplu onay | Accept, commit, push, main'e merge: parça testleri geçince Claude yapar. Kritik kapı: site görünürlüğü, canlı, ödeme/e-posta/SMS ayarları |
+| Teknik karar (Claude) | Cursor `env -u CLAUDECODE` ile başlatılır; uzak işlem operatör kapısı `CLAUDECODE=1` ister → Cursor uzak komut çalıştıramaz (cli.json deny'a ek ikinci katman) |
+| Teknik karar (Claude) | Faz 1 üç paralel worktree parçası: 1A kilit/profil/cli.json/canlı tarama, 1B ölçüm engeli/uzakta sipariş yok/oturum, 1C salt okunur keşif |
+| Faz 2 riski | Canlı 10.3.1 git geçmişinde yok (ilk commit sonrası); göç adımları 10.27.0'dan başlıyor. 10.3.1 ayarları "ilk kurulum" sanılıp varsayılana dönebilir. Karar: önce staging30'dan 10.3.1 kaynağı + ayar anlık görüntüsü (yerel, git dışı) ile YEREL prova, sonra staging30 |
+| Site adı geçişleri (Faz 6) | `woo-donation-popup.php:4` açıklama "Bu eklenti Hedef Derneği tarafından hazırlanmaktadır"; `:5` Author "Hedef Derneği"; README.md:47 (`/hedefdev/` örneği), :71 (hedefdernegi yol örneği), :400 ("Ikram Aid uyumu" değişiklik günlüğü); betik adları `scripts/{deploy,ship}-ikram.mjs`, `ikram-wp.mjs`, `lib/ikram-wp-guard.mjs`; `.env.*.ikram.example`; docs/CLAUDE.md (iç belge). Eklenti kodu (includes/assets/templates/blocks) temiz |
