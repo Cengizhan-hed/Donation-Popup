@@ -12,6 +12,7 @@
   let listenersBound = false;
   let vvBound = false;
   let rafId = null;
+  const observedRoots = typeof WeakSet !== 'undefined' ? new WeakSet() : null;
 
   function keyboardInsetPx() {
     const vv = window.visualViewport;
@@ -75,26 +76,92 @@
     return document.querySelectorAll('.hdf-donation-modal-wrapper.wdp-modal.show, .wdp-donation-form');
   }
 
+  /**
+   * Sticky overlay + spacer only when a body actually scrolls.
+   * Short forms keep the bar in flow (design gap = flex gap + CTA padding).
+   */
   function applyCtaClearance() {
     roots().forEach((root) => {
       const cta = root.querySelector('.wdp-form-cta-zone, .wdp-side-panel-footer-zone');
       if (!cta) {
+        root.style.removeProperty('--wdp-cta-clearance');
         return;
       }
-      const height = Math.ceil(cta.getBoundingClientRect().height);
+      cta.classList.remove('wdp-cta-overlays');
+      root.style.setProperty('--wdp-cta-clearance', '0px');
+      void cta.offsetHeight;
+
+      const scrollers = root.querySelectorAll(
+        '.wdp-side-panel-main, .wdp-donation-form-fields, .wdp-shareholders-scroll'
+      );
+      let overflowing = false;
+      for (let i = 0; i < scrollers.length; i++) {
+        if (scrollers[i].scrollHeight > scrollers[i].clientHeight + 1) {
+          overflowing = true;
+          break;
+        }
+      }
+      if (!overflowing) {
+        return;
+      }
+
+      cta.classList.add('wdp-cta-overlays');
+      void cta.offsetHeight;
+
+      const ctaBox = cta.getBoundingClientRect();
+      const height = Math.ceil(ctaBox.height);
       if (height < 1) {
         return;
       }
-      const safeRaw = window.getComputedStyle(document.documentElement).getPropertyValue('--wdp-safe-bottom');
-      const safe = parseFloat(safeRaw) || 0;
-      const clearance = height + Math.max(10, safe);
-      root.style.setProperty('--wdp-cta-clearance', clearance + 'px');
+      const pos = window.getComputedStyle(cta).position;
+      if (pos !== 'sticky' && pos !== 'fixed') {
+        return;
+      }
+
+      let need = 0;
+      for (let j = 0; j < scrollers.length; j++) {
+        const el = scrollers[j];
+        if (el.scrollHeight <= el.clientHeight + 1) {
+          continue;
+        }
+        const r = el.getBoundingClientRect();
+        const overlaps =
+          ctaBox.top < r.bottom - 2 &&
+          ctaBox.bottom > r.top + 2 &&
+          ctaBox.left < r.right - 2 &&
+          ctaBox.right > r.left + 2;
+        if (!overlaps) {
+          continue;
+        }
+        const overlap = Math.ceil(r.bottom - ctaBox.top);
+        if (overlap > need) {
+          need = overlap;
+        }
+      }
+      if (need < 2) {
+        return;
+      }
+      root.style.setProperty('--wdp-cta-clearance', Math.min(height, need) + 'px');
+    });
+  }
+
+  function observeOpenRoots() {
+    roots().forEach((root) => {
+      if (observedRoots) {
+        if (observedRoots.has(root)) {
+          return;
+        }
+        observedRoots.add(root);
+      }
+      const obs = new MutationObserver(scheduleApply);
+      obs.observe(root, { childList: true, subtree: true });
     });
   }
 
   function applyInset() {
     applySafeBottom();
     applyCtaClearance();
+    observeOpenRoots();
     const inset = keyboardInsetPx();
     const value = inset + 'px';
     roots().forEach((root) => {
@@ -162,6 +229,7 @@
     document.addEventListener('focusin', onFocusIn, true);
     document.addEventListener('focusout', onFocusOut, true);
     window.addEventListener('orientationchange', scheduleApply, { passive: true });
+    document.addEventListener('wdp:form:open', scheduleApply);
     scheduleApply();
   }
 

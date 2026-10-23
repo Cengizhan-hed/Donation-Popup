@@ -443,6 +443,9 @@
       }
 
       syncModalStateClasses(modal)
+      if (WDPApp.ctaViewport && typeof WDPApp.ctaViewport.refresh === 'function') {
+        WDPApp.ctaViewport.refresh()
+      }
 
       trackModalViewContent(modal, productId, sidePanelMode)
       bindModalGlobalListeners()

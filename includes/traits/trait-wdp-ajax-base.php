@@ -30,8 +30,8 @@ trait WDP_Ajax_Base_Trait {
      * @throws WDP_Security_Exception Limit aşıldığında.
      */
     private static function enforce_rate_limit($action, $max_requests, $window_seconds) {
-        $rate_limit_key = WDP_Security::get_rate_limit_key($action);
-        if (!WDP_Security::check_rate_limit($rate_limit_key, $max_requests, $window_seconds)) {
+        $layered = ('get_product_info' === $action || 'render_modal' === $action);
+        if (!WDP_Security::check_action_rate_limit($action, $max_requests, $window_seconds, $layered)) {
             throw new WDP_Security_Exception(
                 __('Çok fazla istek gönderildi. Lütfen bir süre bekleyip tekrar deneyin.', 'woo-donation-popup'),
                 'rate_limit',

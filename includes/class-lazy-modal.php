@@ -35,8 +35,7 @@ class WDP_Lazy_Modal {
 			// hem tıklama kırılır. Koruma: origin + rate limit. İstemci security
 			// gönderir; boş/403 yanıtında tıklama fresh nonce + yeniden dener
 			// (assets/js/src/lazy-modal.js ensureAndOpen).
-			$key = WDP_Security::get_rate_limit_key('render_modal');
-			if (!WDP_Security::check_rate_limit($key, 60, 60)) {
+			if (!WDP_Security::check_action_rate_limit('render_modal', 60, 60, true)) {
 				if (!headers_sent()) {
 					header('Retry-After: 60', true);
 				}

@@ -18,6 +18,7 @@ import {
 } from './checks.mjs';
 import { comingSoonQuery } from './coming-soon.mjs';
 import { popupPagePath } from './catalog-core.mjs';
+import { classifySkipReason } from './skip-policy.mjs';
 
 const CHECK_MS = 25000;
 
@@ -210,9 +211,15 @@ export async function runCurrencySwitchChecks({
   const productPath = productUrls.custom || productUrls.fixed || productUrls.campaign || '';
   const cartPath = env.E2E_CART_PAGE || '/cart/';
   if (!listPath || !productPath) {
+    const description = 'Liste/ürün yolu yok, para birimi gösterimi atlandı';
+    if (classifySkipReason(description) === 'fail') {
+      failures.push(makeFailure({ check: 'currency-switch', description: `Altyapı atlaması hata: ${description}` }));
+      stats.failed += 1;
+      return;
+    }
     skips.push({
       check: 'currency-switch',
-      description: 'Liste/ürün yolu yok, para birimi gösterimi atlandı',
+      description,
     });
     stats.skipped += 1;
     return;

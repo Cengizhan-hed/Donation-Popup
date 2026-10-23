@@ -257,8 +257,8 @@ html body .wdp-donation-form .wdp-donation-form-fields {
 html body .wdp-modal.show:not(.wdp-side-panel) .wdp-donation-form-fields .wdp-form-cta-zone,
 html body .wdp-donation-form .wdp-donation-form-fields .wdp-form-cta-zone {
   flex: 0 0 auto;
-  position: sticky;
-  bottom: var(--wdp-keyboard-inset, 0px);
+  position: relative;
+  bottom: auto;
   z-index: 5;
   margin-top: 0;
   padding-top: 12px;
@@ -276,6 +276,12 @@ html body .wdp-donation-form .wdp-donation-form-fields .wdp-form-cta-zone {
   transition: bottom 0.12s ease;
 }
 
+html body .wdp-modal.show:not(.wdp-side-panel) .wdp-donation-form-fields .wdp-form-cta-zone.wdp-cta-overlays,
+html body .wdp-donation-form .wdp-donation-form-fields .wdp-form-cta-zone.wdp-cta-overlays {
+  position: sticky;
+  bottom: var(--wdp-keyboard-inset, 0px);
+}
+
 html body .wdp-modal.show:not(.wdp-side-panel) .wdp-donation-form-fields,
 html body .wdp-donation-form .wdp-donation-form-fields {
   scroll-padding-bottom: calc(
@@ -284,13 +290,19 @@ html body .wdp-donation-form .wdp-donation-form-fields {
   );
 }
 
-/* Form gövdesi alt boşluğu = eylem çubuğu + güvenli alan (sticky CTA’nın arkasında kaydırılabilir). */
+/* Overlay spacer: height 0 unless JS sets --wdp-cta-clearance (sticky/fixed + scrollable). */
 html body .wdp-modal.show:not(.wdp-side-panel) .wdp-donation-form-fields > :has(+ .wdp-form-cta-zone)::after,
 html body .wdp-donation-form .wdp-donation-form-fields > :has(+ .wdp-form-cta-zone)::after {
   content: '';
   display: block;
-  height: var(--wdp-cta-clearance, calc(var(--wdp-form-cta-height, 52px) + env(safe-area-inset-bottom, 0px)));
+  height: var(--wdp-cta-clearance, 0px);
   pointer-events: none;
+}
+
+/* Hisseli: iç kaydırma padding’i spacer’ı taşır; dış ::after çift boşluk açmasın. */
+html body .wdp-modal.show:not(.wdp-side-panel) .wdp-donation-form-fields:has(.wdp-shareholders-scroll) > :has(+ .wdp-form-cta-zone)::after,
+html body .wdp-donation-form .wdp-donation-form-fields:has(.wdp-shareholders-scroll) > :has(+ .wdp-form-cta-zone)::after {
+  height: 0;
 }
 
 html body .wdp-modal.show:not(.wdp-side-panel) .wdp-donation-form-fields .wdp-button-group,
