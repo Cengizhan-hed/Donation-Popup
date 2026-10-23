@@ -70,29 +70,54 @@ export function resetAuthStateForTests() {
 }
 
 /**
- * @param {string} profileId
+ * Origin (şema+host+port) — port değişince eski .auth-ok işareti kullanılmasın.
+ * @param {Record<string, string>|string} [envOrUrl]
  */
-function authValidatedMarker(profileId) {
-  const id = String(profileId || 'default').replace(/[^a-z0-9._-]/gi, '') || 'default';
-  return path.join(CURRENT_DIR, `.auth-ok-${id}`);
+export function authOriginKey(envOrUrl) {
+  const raw =
+    typeof envOrUrl === 'string' ? envOrUrl : String(envOrUrl?.E2E_BASE_URL || '');
+  try {
+    return new URL(raw).origin.toLowerCase();
+  } catch {
+    return '';
+  }
 }
 
-function markAuthValidated(profileId) {
-  const id = String(profileId || 'default');
-  validatedProfileIds.add(id);
+/**
+ * @param {string} profileId
+ * @param {Record<string, string>|string} [envOrUrl]
+ */
+function authValidatedKey(profileId, envOrUrl) {
+  const id = String(profileId || 'default').replace(/[^a-z0-9._-]/gi, '') || 'default';
+  const origin = authOriginKey(envOrUrl).replace(/[^a-z0-9._-]+/gi, '_') || 'none';
+  return `${id}::${origin}`;
+}
+
+/**
+ * @param {string} profileId
+ * @param {Record<string, string>|string} [envOrUrl]
+ */
+function authValidatedMarker(profileId, envOrUrl) {
+  const key = authValidatedKey(profileId, envOrUrl).replace(/::/g, '-');
+  return path.join(CURRENT_DIR, `.auth-ok-${key}`);
+}
+
+function markAuthValidated(profileId, env) {
+  const key = authValidatedKey(profileId, env);
+  validatedProfileIds.add(key);
   try {
     fs.mkdirSync(CURRENT_DIR, { recursive: true });
-    fs.writeFileSync(authValidatedMarker(id), String(Date.now()), 'utf8');
+    fs.writeFileSync(authValidatedMarker(profileId, env), String(Date.now()), 'utf8');
   } catch {
     /* current dir yoksa süreç içi Set yeter */
   }
 }
 
-function wasAuthValidated(profileId) {
-  const id = String(profileId || 'default');
-  if (validatedProfileIds.has(id)) return true;
+function wasAuthValidated(profileId, env) {
+  const key = authValidatedKey(profileId, env);
+  if (validatedProfileIds.has(key)) return true;
   try {
-    return fs.existsSync(authValidatedMarker(id));
+    return fs.existsSync(authValidatedMarker(profileId, env));
   } catch {
     return false;
   }
@@ -208,6 +233,39 @@ export function isDefiniteAdminSuccess(url, html) {
 export function isLoginScreen(url, html) {
   if (/wp-login\.php/i.test(url) || /sgs-token/i.test(url)) return true;
   return htmlHasId(html, 'loginform');
+}
+
+/**
+ * post.php / wp-admin: giriş veya yönetici gövdesi. PII yok (yalnız path + kind).
+ * @param {import('@playwright/test').Page} page
+ * @param {number} [timeout]
+ * @returns {Promise<{ ok: boolean, kind: 'admin'|'login'|'other', path: string, title: string }>}
+ */
+export async function waitForWpAdminPage(page, timeout = 20000) {
+  try {
+    await page
+      .locator('body.wp-admin, #wpadminbar, body.login, #loginform')
+      .first()
+      .waitFor({ state: 'attached', timeout });
+  } catch {
+    /* sınıflandır */
+  }
+  const url = page.url();
+  const html = await page.content().catch(() => '');
+  const title = String(await page.title().catch(() => '')).slice(0, 80);
+  let path = '';
+  try {
+    path = new URL(url).pathname;
+  } catch {
+    path = '';
+  }
+  if (isLoginScreen(url, html)) {
+    return { ok: false, kind: 'login', path, title };
+  }
+  if (isDefiniteAdminSuccess(url, html)) {
+    return { ok: true, kind: 'admin', path, title };
+  }
+  return { ok: false, kind: 'other', path, title };
 }
 
 /**
@@ -827,7 +885,7 @@ export async function ensureAuth(env, deps = {}) {
       }
 
       if (fs.existsSync(dest)) {
-        if (wasAuthValidated(profileId)) {
+        if (wasAuthValidated(profileId, env)) {
           clearLoginFailureShot();
           return dest;
         }
@@ -841,7 +899,7 @@ export async function ensureAuth(env, deps = {}) {
           const ok = await validateStorageState(env, context);
           await context.close();
           if (ok) {
-            markAuthValidated(profileId);
+            markAuthValidated(profileId, env);
             clearLoginFailureShot();
             return dest;
           }
@@ -853,7 +911,7 @@ export async function ensureAuth(env, deps = {}) {
       if (!isRemoteProfile(env?._profile)) {
         const viaLocal = await authViaLocalPhpCookie(env);
         if (viaLocal) {
-          markAuthValidated(profileId);
+          markAuthValidated(profileId, env);
           return viaLocal;
         }
       }
@@ -861,7 +919,7 @@ export async function ensureAuth(env, deps = {}) {
       if (env?._profile?.wpCliAuth) {
         const viaCli = await authViaWpCliCookie(env);
         if (viaCli) {
-          markAuthValidated(profileId);
+          markAuthValidated(profileId, env);
           return viaCli;
         }
         throw new Error(
@@ -871,7 +929,7 @@ export async function ensureAuth(env, deps = {}) {
 
       try {
         const result = await performFormLogin(env);
-        markAuthValidated(profileId);
+        markAuthValidated(profileId, env);
         return result;
       } catch (e) {
         const msg = String(e && e.message ? e.message : e);

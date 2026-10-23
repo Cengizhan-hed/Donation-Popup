@@ -62,6 +62,7 @@ import {
   clickShellTrigger,
   waitOpenShellSettled,
 } from './helpers/checks.mjs';
+import { waitAndAssertShellOverlap } from './helpers/shell-overlap.mjs';
 import { isRemoteProfile, setActiveProfile, loadProfile } from './helpers/profile.mjs';
 import { isRemoteFrozen, FREEZE_MESSAGE, assertOperatorGate, OPERATOR_GATE_MESSAGE } from '../../scripts/lib/remote-guard.mjs';
 import { ensureAuth } from './helpers/auth.mjs';
@@ -606,7 +607,11 @@ async function highlightOverflowHit(page, hit) {
 async function shotFinding(page, dir, name) {
   fs.mkdirSync(dir, { recursive: true });
   const file = path.join(dir, `${name}.png`);
-  await page.screenshot({ path: file, fullPage: false });
+  const shellOpen = (await page.locator(SEL.openModalShell).count()) > 0;
+  if (shellOpen) {
+    await waitAndAssertShellOverlap(page, 8000);
+  }
+  await page.screenshot({ path: file, fullPage: false, animations: 'disabled' });
   return file;
 }
 
@@ -889,12 +894,12 @@ async function runDeviceOnTarget({ preset, env, baseUrl, probe, theme, pages, sh
       } catch (e) {
         const msg = String(e && e.message ? e.message : e);
         if (pageId === 'shop' && /timeout|waitfor/i.test(msg)) {
-          checks.console = VERDICT.skip;
-          checks.scripts = VERDICT.skip;
-          checks.fields = VERDICT.skip;
-          checks.css = VERDICT.skip;
-          checks.cache = VERDICT.skip;
-          checks.finding = `atlandı: mağaza bekleme hedefi yok (${msg.slice(0, 80)})`;
+          checks.console = VERDICT.red;
+          checks.scripts = VERDICT.red;
+          checks.fields = VERDICT.red;
+          checks.css = VERDICT.red;
+          checks.cache = VERDICT.red;
+          checks.finding = `mağaza açılamadı: ${msg.slice(0, 80)}`;
         } else {
           checks.console = VERDICT.red;
           checks.finding = msg.slice(0, 240);

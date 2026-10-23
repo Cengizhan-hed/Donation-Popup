@@ -615,6 +615,7 @@ async function shot(page, dir, name) {
   /** @type {Error | null} */
   let overlapErr = null;
   if (shellOpen) {
+    await waitAndAssertShellOverlap(page, 8000);
     try {
       const probe = await probeShellOverlapBeforeAfter(page, 8000);
       appendOverlapKanit(dir, {

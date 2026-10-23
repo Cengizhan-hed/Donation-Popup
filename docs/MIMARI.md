@@ -1,4 +1,4 @@
-# MIMARI — woo-donation-popup (10.34.9)
+# MIMARI — woo-donation-popup (10.34.10)
 
 Kalıcı mimari harita. Sonraki görevler için ilk okuma noktası.  
 Dal referansı: `docs-mimari` / commit `220f4ec`.  
@@ -241,15 +241,16 @@ Eski çevrilmiş etiket anahtarları `normalize_key` ile okunur (`includes/class
 | `wdp_product_info_{id}` | transient + `wdp_product_info` cache | get_product_info (`includes/traits/trait-wdp-ajax-product.php:32-68`) |
 | `wdp_total_donation_*` / `wdp_donor_count_*` | object cache `wdp_donations` | Utils |
 | `wdp_cart_count_*` / `wdp_cart_contents_*` | object cache `wdp_cart` | cart query (kısa TTL) |
-| `wdp_rate_limit_*` | transient | Security rate limit (`includes/class-security.php:149-160`) |
+| `wdp_rate_limit_*` | transient | Security rate limit (`includes/class-security.php:201-219`) |
 | `wdp_migration_lock` | transient | Migrations |
 | `wdp_sadaka_line_ids` | transient | Sadaka visibility (`TRANSIENT` const) |
 | Liste HTML | 1 gün transient; `wdp_list_cache_version`; `orderby=random` atlar; UID/panel yer tutucu + admin notu cache dışı | `includes/class-donations-list.php` `render` / `bump_cache` |
 | `wdp_css_version_*` / `wdp_js_version_*` | transient+cache | assets |
 | WC session `get_customer_id()` | session | rate-limit / cart cache suffix (`includes/traits/trait-wdp-ajax-base.php:113-114`) |
 | Curcy/WPML cookie (istemci) | cookie okuma JS | lazy-modal para/dil anahtarı (`assets/js/src/lazy-modal.js:61-93`) — eklenti set etmez |
+| `wdp_vid` | HttpOnly, SameSite=Lax, 12 saat, HMAC | Misafir salt-okunur kova ayırıcı (`includes/class-security.php:18-24,300-378`). Sayfa HTML’sinde Set-Cookie yok (önbellek); AJAX `get_product_info` / `render_modal` sırasında yoksa basılır. |
 
-Eklenti tarafında özel `setcookie` **DOĞRULANMADI** (grep: PHP’de setcookie yok; JS yalnız okur).
+Eklenti `setcookie` yalnız `wdp_vid` (10.34.10). JS çerez yazmaz.
 
 ---
 
@@ -259,9 +260,9 @@ Eklenti tarafında özel `setcookie` **DOĞRULANMADI** (grep: PHP’de setcookie
 
 Yetki notu: `run_secured_ajax` varsayılan capability `read`; misafir için `check_capability('read')` → true (`includes/class-security.php:289-296`). `get_product_info` / `get_product_name` capability=`false` (`includes/traits/trait-wdp-ajax-product.php:65,197`).
 
-Güvenlik reddi HTTP (`WDP_Utils::json_error`, 10.34.9): asla `200` + `success:false`. `WDP_Security_Exception` türü → HTTP: `nonce`/`capability`/`origin`/`method` = 403, `rate_limit` = 429 + `Retry-After` (`includes/class-exceptions.php`, `includes/class-utils.php`). JSON `code` = tür dizesi. Giriş yapmış kullanıcıda istek sınırı anahtarı `u:<id>|a:<action>` (`includes/class-security.php:219-224`); misafir `g:<hash>|a:<action>`. `get_product_info` 60/dk (salt okunur, önbellekli; liste 24 kart + idle prefetch 3 `wdp_render_modal` — product_info form açılınca). Ön yüz: 403 nonce’ta bir kez `refreshWdpAjaxNonces` + yeniden dene; 429 görünür mesaj (`assets/js/src/product.js`, `assets/js/src/form/ajax.js`).
+Güvenlik reddi HTTP (`WDP_Utils::json_error`, 10.34.9): asla `200` + `success:false`. `WDP_Security_Exception` türü → HTTP: `nonce`/`capability`/`origin`/`method` = 403, `rate_limit` = 429 + `Retry-After` (`includes/class-exceptions.php`, `includes/class-utils.php`). JSON `code` = tür dizesi. Giriş yapmış kullanıcıda istek sınırı anahtarı `u:<id>|a:<action>` (10.34.10’da değişmez). Misafir **yazma** (`add_to_cart` vb.) `g:<hash(session\|ip\|ua)>|a:<action>`. Misafir **salt okunur** (`get_product_info`, `render_modal`): ziyaretçi kovası `v:<hash(wdp_vid)>|a:<action>` 60/dk + IP kovası `ip:<hash(ip)>|a:<action>` 600/dk (`wdp_rate_limit_ip_max` filtresi). Tehdit: CGNAT + aynı UA gerçek bağışçıları tek 60/dk kovasına düşürmesin; sahte `wdp_vid` HMAC’siz geçersiz (IP+UA 60’a düşer); geçerli belirteç çoğaltmak IP 600/dk ile sınırlı. Yazma uçları tek katman (eski davranış). `includes/class-security.php:234-290`, `includes/traits/trait-wdp-ajax-base.php:32-40`, `includes/class-lazy-modal.php`. `get_product_info` 60/dk (salt okunur, önbellekli; liste 24 kart + idle prefetch 3 `wdp_render_modal` — product_info form açılınca). Ön yüz: 403 nonce’ta bir kez `refreshWdpAjaxNonces` + yeniden dene; 429 görünür mesaj (`assets/js/src/product.js`, `assets/js/src/form/ajax.js`).
 
-E2E bağışçı akışı ziyaretçi (`asVisitor`, storageState yok): ürün sayfası / popup / panel / layout yayımlı katalog. Yönetici yalnız `decideScenarioProduct.admin` (private fixture) ve admin sekmeleri. Mutasyon paketleri (form-fields, amount-options, campaign-blocks, product-theme, shortcodes, empty-price) yayımlı katalogda ziyaretçi, private fixture’da yönetici; meta yazımı tarayıcıda değil PHP eval (`mutationBrowserContext`). Teşhis: `[e2e:ajax-kind] action=… http=… kind=nonce|rate|capability|id` (`tests/e2e/helpers/ajax-error-kind.mjs`).
+E2E bağışçı akışı ziyaretçi (`asVisitor`, storageState yok): ürün sayfası / popup / panel / layout yayımlı katalog. Yönetici: `decideScenarioProduct.admin` (private fixture), admin sekmeleri, **alt bağış yapılandırması** (`readProductSadakaAdminConfig` → `post.php`, masaüstü viewport, `waitForWpAdminPage`; bağışçı senaryosu yine ziyaretçi). Auth işaret dosyası origin (şema+host+port) içerir — `WDP_LOCAL_E2E_PORT` değişince eski `.auth-ok` ile wp-login’e düşülmez. Atlama yalnız `tests/e2e/helpers/skip-policy.mjs` sabit listesi (uzak sipariş yok, local-only, katalog yok, sadaka ayar kapalı, Benzer Bağışlar boş); **açılamadı / timeout / admin okuma / bilinmeyen gerekçe → hata** (`promoteIllegalSkips`). Mutasyon paketleri (form-fields, amount-options, campaign-blocks, product-theme, shortcodes, empty-price) yayımlı katalogda ziyaretçi, private fixture’da yönetici; meta yazımı tarayıcıda değil PHP eval (`mutationBrowserContext`). Teşhis: `[e2e:ajax-kind] action=… http=… kind=nonce|rate|capability|id` (`tests/e2e/helpers/ajax-error-kind.mjs`).
 
 | Action | nopriv | Nonce | Yetki | Girdi temizleme (özet) | Çıktı | Dosya:satır |
 |--------|--------|-------|-------|------------------------|-------|-------------|
@@ -319,7 +320,7 @@ Liste önbelleği bump (10.33.0 + 10.34.0; aynı istekte bir kez): stok/kategori
 
 **Tutar etiketi koşulu (10.34.2):** Görünür “Bağış Tutarı” yalnız gerçek tutar *girişi* olan türlerde (bağışçı belirler `render_custom_price_amount_row`, hedefli/kampanya `render_progress_amount_block`). Sabit tutar `render_fixed_price_quantity_row` fiyat kutusu + adet (eşit ızgara); etiket yok (yalnız `screen-reader-text` / `aria-label`). Hisselide tutar girişi yok → etiket yok. CSS ile gizleme yok. `includes/templates/class-form-fields-renderer.php`.
 
-**CTA alt dolgu (10.34.2 + 10.34.9):** `--wdp-cta-clearance` = `--wdp-form-cta-height` + 36px tampon + `max(10px, env(safe-area-inset-bottom), --wdp-safe-bottom)`. JS `applyCtaClearance` gerçek çubuk yüksekliğini ölçer. Popup form gövdesi son kardeş `::after` spacer (yükseklik = clearance). Panel `.wdp-side-panel-main` `max-height: 100%` yok (footer kardeş, örtmez). E2E `tests/e2e/helpers/layout.mjs` (boundingBox + PNG). `assets/js/src/core/cta-viewport.js`, `assets/css/src/foundation/tokens.css`, `layout.css`, `side-panel.css`.
+**CTA alt dolgu (10.34.2 + 10.34.10):** `--wdp-cta-clearance` varsayılan `0`. CTA varsayılan `position: relative` (akışta, son alanın altında ≈16–24px). JS `applyCtaClearance` kaydırma yoksa sınıf/spacer 0; gövde taşınca `.wdp-cta-overlays` → `sticky` + spacer = min(çubuk, bindirme). Panel footer `margin-block-start: 0`; panel main `flex: 0 1 auto` (kısa formda büyümez, taşınca küçülür). Hisselide dış `::after` 0. E2E: son öğe (görünür en alt, CTA dışı) çubuğun arkasında değil + kaydırma sonunda boşluk ≤48px (`CTA-GAP`); PNG `waitAndAssertShellOverlap`. `assets/js/src/core/cta-viewport.js`, `assets/css/src/foundation/tokens.css:186`, `layout.css`, `side-panel.css`, `tests/e2e/helpers/layout.mjs`, `shell-overlap.mjs`.
 
 ### Gutenberg
 
@@ -555,7 +556,7 @@ Uzakta site ayarı/sayfa yazılmaz. `npm run e2e:full -- --env local` yerel kan�
 
 **Sepet e-posta/ithaf gerileme (F9, `form-fields-cart-shows-email-dedication`):** Eklenti `display_donation_data_in_cart` 10.33.0 ile aynı (`includes/class-cart.php:388-479`; `git show 163fe09`). Store API `item_data` e-posta/ithaf basar (aynı filtre). 2/3 `form-fields` `onCart=/\/cart\/?/` + Hedef `wc_get_cart_url` kök/`/sepet/` 404. Asıl 404: Woo sepet sayfası `woocommerce_cart_page_id` **çöpte** (Hedef id 291 `trash`; `get_permalink` → `/?page_id=291` pathname `/`). Düzeltme (eklenti yok): `ensureWooCartPagePublished` (yalnız Hedef `allowMetaMutation`); `fillDonor` eksik alanda fail; teşhis JSON. `tests/e2e/helpers/staging-wp-meta.mjs`, `form-fields.mjs`.
 
-Coming soon: WP-CLI `woocommerce_share_key` okunur veya `E2E_COMING_SOON_SHARE_KEY`; çerez `woo-share` (ziyaretçi liste). `asAdmin` yalnız private fixture ve admin sekmeleri (`wpCliAuth`: `wp user list --role=administrator` + `tests/e2e/.auth/<profil>.json` storageState; geçerliyse yeniden kullanılır). Bağışçı yüzeyleri (`asVisitor` + share): liste, popup/panel kabuğu, layout, yayımlı mutasyon formları — oturumsuz context. `blog_public` ve coming soon option **değiştirilmez**.
+Coming soon: WP-CLI `woocommerce_share_key` okunur veya `E2E_COMING_SOON_SHARE_KEY`; çerez `woo-share` (ziyaretçi liste). `asAdmin` private fixture, admin sekmeleri ve alt bağış `post.php` okuması (`wpCliAuth`: `wp user list --role=administrator` + `tests/e2e/.auth/<profil>.json` storageState; geçerliyse **aynı origin** için yeniden kullanılır). Bağışçı yüzeyleri (`asVisitor` + share): liste, popup/panel kabuğu, layout, yayımlı mutasyon formları, sadaka bağışçı adımı — oturumsuz context. `blog_public` ve coming soon option **değiştirilmez**.
 
 ### Uzak koşu güvenliği
 

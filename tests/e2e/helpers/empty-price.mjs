@@ -19,6 +19,7 @@ import {
   cartItemsDetail,
   gotoWooCart,
 } from './checks.mjs';
+import { classifySkipReason } from './skip-policy.mjs';
 import {
   bumpListCache,
   saveProductPrices,
@@ -151,6 +152,10 @@ export async function runEmptyPriceChecks({
     stats.failed += 1;
   };
   const skip = (id, description) => {
+    if (classifySkipReason(description) === 'fail') {
+      fail(id, `Altyapı atlaması hata: ${description}`);
+      return;
+    }
     skips.push({ check: id, description });
     stats.skipped += 1;
   };

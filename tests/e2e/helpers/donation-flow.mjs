@@ -23,6 +23,7 @@ import {
   writeCheckoutFlowDebug,
 } from './checks.mjs';
 import { markOrderAsE2E } from './test-cleanup.mjs';
+import { classifySkipReason } from './skip-policy.mjs';
 import { getActiveProfile, isRemoteProfile } from './profile.mjs';
 import { popupPagePath } from './catalog-core.mjs';
 import { checkoutPathFromUrl } from './checkout-setup.mjs';
@@ -140,9 +141,15 @@ export async function runDonationFlowChecks({
   const customId = productIds.custom || productIds.fixed || 0;
   const listPath = popupPagePath(env, listPagePath);
   if (!customPath || !listPath) {
+    const description = 'Ürün/liste/mağaza yolu yok, akış atlandı';
+    if (classifySkipReason(description) === 'fail') {
+      failures.push(makeFailure({ check: `checkout-flow-${deviceId}`, description: `Altyapı atlaması hata: ${description}` }));
+      stats.failed += 1;
+      return;
+    }
     skips.push({
       check: `checkout-flow-${deviceId}`,
-      description: 'Ürün/liste/mağaza yolu yok, akış atlandı',
+      description,
     });
     stats.skipped += 1;
     return;
@@ -322,11 +329,15 @@ export async function runDonationFlowChecks({
           'checkout-view-only: WooCommerce biçimli tutar ödeme sayfasında görünmüyor'
         );
       }
+      const orderSkip =
+        skipOrderReason ||
+        'Sipariş tamamlama atlandı (checkout-view-only; uzakta sipariş yok)';
+      if (classifySkipReason(orderSkip) === 'fail') {
+        throw new Error(`Altyapı atlaması hata: ${orderSkip}`);
+      }
       skips.push({
         check: `checkout-flow-order-${deviceId}`,
-        description:
-          skipOrderReason ||
-          'Sipariş tamamlama atlandı (checkout-view-only; uzakta sipariş yok)',
+        description: orderSkip,
         detail: url,
       });
       stats.skipped += 1;

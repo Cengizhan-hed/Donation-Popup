@@ -14,6 +14,15 @@ if (!defined('ABSPATH')) {
  */
 class WDP_Security {
 
+    /** Misafir ziyaretçi çerezi (salt okunur kovalar). */
+    const VISITOR_COOKIE = 'wdp_vid';
+
+    /** Ziyaretçi belirteci ömrü (saniye). */
+    const VISITOR_TTL = 43200;
+
+    /** IP katmanı üst sınırı (salt okunur uçlar, /dk). */
+    const READ_IP_RATE_LIMIT = 600;
+
     /**
      * Sanitize text field with additional checks
      *
@@ -213,14 +222,27 @@ class WDP_Security {
     /**
      * Build a rate-limit key that is stable per visitor/session.
      *
-     * @param string $action Action scope.
+     * Logged-in: `u:<id>|a:<action>` (unchanged).
+     * Guest write (default): IP + UA + WC session (unchanged).
+     * Guest read (`$use_visitor_token`): signed `wdp_vid` cookie — splits CGNAT users
+     * without trusting a client-minted id. Missing/invalid token falls back to IP+UA.
+     *
+     * @param string $action             Action scope.
+     * @param bool   $use_visitor_token  True for cached read endpoints.
      * @return string
      */
-    public static function get_rate_limit_key($action = 'default') {
+    public static function get_rate_limit_key($action = 'default', $use_visitor_token = false) {
         $action = sanitize_key((string) $action);
 
         if (is_user_logged_in()) {
             return 'u:' . get_current_user_id() . '|a:' . $action;
+        }
+
+        if ($use_visitor_token) {
+            $vid = self::get_visitor_id(true);
+            if ($vid !== '') {
+                return 'v:' . md5($vid) . '|a:' . $action;
+            }
         }
 
         $session_id = '';
@@ -232,6 +254,148 @@ class WDP_Security {
         $ua = isset($_SERVER['HTTP_USER_AGENT']) ? sanitize_text_field(wp_unslash($_SERVER['HTTP_USER_AGENT'])) : 'unknown';
 
         return 'g:' . md5($session_id . '|' . $ip . '|' . $ua) . '|a:' . $action;
+    }
+
+    /**
+     * IP-layer key (second bucket for cached read endpoints).
+     *
+     * @param string $action Action scope.
+     * @return string
+     */
+    public static function get_rate_limit_ip_key($action = 'default') {
+        $action = sanitize_key((string) $action);
+        return 'ip:' . md5(self::get_client_ip()) . '|a:' . $action;
+    }
+
+    /**
+     * Visitor + optional IP layer. Logged-in uses a single user key (no IP layer).
+     *
+     * @param string $action            Action scope.
+     * @param int    $limit             Per-visitor / per-user limit.
+     * @param int    $period            Window seconds.
+     * @param bool   $use_visitor_token Guest read endpoints.
+     * @return bool False when limited.
+     */
+    public static function check_action_rate_limit($action, $limit, $period, $use_visitor_token = false) {
+        $key = self::get_rate_limit_key($action, $use_visitor_token);
+        if (!self::check_rate_limit($key, $limit, $period)) {
+            return false;
+        }
+        if ($use_visitor_token && !is_user_logged_in()) {
+            $ip_limit = (int) apply_filters('wdp_rate_limit_ip_max', self::READ_IP_RATE_LIMIT, $action);
+            if ($ip_limit > 0 && !self::check_rate_limit(self::get_rate_limit_ip_key($action), $ip_limit, $period)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Signed visitor token (`id.exp.hmac`). Public so tests can mint two distinct cookies.
+     *
+     * @param string $id Hex id; empty generates a new one.
+     * @param int    $expires Unix expiry; 0 = now + TTL.
+     * @return string
+     */
+    public static function mint_visitor_token($id = '', $expires = 0) {
+        $id = preg_replace('/[^a-f0-9]/', '', strtolower((string) $id));
+        if ($id === '' || strlen($id) < 16) {
+            try {
+                $id = bin2hex(random_bytes(16));
+            } catch (Exception $e) {
+                $id = md5(uniqid((string) mt_rand(), true));
+            }
+        }
+        $expires = (int) $expires;
+        if ($expires <= 0) {
+            $expires = time() + self::VISITOR_TTL;
+        }
+        $payload = $id . '.' . $expires;
+        return $payload . '.' . hash_hmac('sha256', $payload, self::visitor_signing_key());
+    }
+
+    /**
+     * @param string $token Cookie value.
+     * @return string Visitor id or empty.
+     */
+    public static function parse_visitor_token($token) {
+        $token = (string) $token;
+        $parts = explode('.', $token);
+        if (count($parts) !== 3) {
+            return '';
+        }
+        list($id, $exp, $sig) = $parts;
+        $id = preg_replace('/[^a-f0-9]/', '', strtolower($id));
+        $exp = (int) $exp;
+        if ($id === '' || $exp < time() || $sig === '') {
+            return '';
+        }
+        $payload = $id . '.' . $exp;
+        $expect  = hash_hmac('sha256', $payload, self::visitor_signing_key());
+        if (!hash_equals($expect, $sig)) {
+            return '';
+        }
+        return $id;
+    }
+
+    /**
+     * @param bool $issue_if_missing Mint + store cookie when absent/invalid.
+     * @return string
+     */
+    public static function get_visitor_id($issue_if_missing = true) {
+        $raw = isset($_COOKIE[ self::VISITOR_COOKIE ])
+            ? (string) wp_unslash($_COOKIE[ self::VISITOR_COOKIE ])
+            : '';
+        $id = self::parse_visitor_token($raw);
+        if ($id !== '') {
+            return $id;
+        }
+        if (!$issue_if_missing) {
+            return '';
+        }
+        $token = self::mint_visitor_token();
+        self::store_visitor_cookie($token);
+        return self::parse_visitor_token($token);
+    }
+
+    /**
+     * @param string $token Cookie value.
+     * @return void
+     */
+    private static function store_visitor_cookie($token) {
+        $_COOKIE[ self::VISITOR_COOKIE ] = $token;
+        if (defined('WDP_UNIT_TEST') && WDP_UNIT_TEST) {
+            return;
+        }
+        if (headers_sent()) {
+            return;
+        }
+        $path = (defined('COOKIEPATH') && COOKIEPATH !== '') ? COOKIEPATH : '/';
+        $secure = function_exists('is_ssl') ? (bool) is_ssl() : false;
+        setcookie(
+            self::VISITOR_COOKIE,
+            $token,
+            array(
+                'expires'  => time() + self::VISITOR_TTL,
+                'path'     => $path,
+                'secure'   => $secure,
+                'httponly' => true,
+                'samesite' => 'Lax',
+            )
+        );
+    }
+
+    /**
+     * @return string
+     */
+    private static function visitor_signing_key() {
+        if (function_exists('wp_salt')) {
+            return (string) wp_salt('auth');
+        }
+        if (defined('AUTH_KEY')) {
+            return (string) AUTH_KEY;
+        }
+        return 'wdp-vid-fallback';
     }
 
     /**

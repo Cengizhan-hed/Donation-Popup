@@ -17,6 +17,10 @@ import {
   shellTriggerLocator,
   makeFailure,
 } from './checks.mjs';
+import { waitAndAssertShellOverlap } from './shell-overlap.mjs';
+import { classifySkipReason } from './skip-policy.mjs';
+
+const CTA_GAP_MAX_PX = 48;
 
 const CHECK_MS = 20000;
 const RATIO_TOLERANCE = 0.02;
@@ -31,19 +35,18 @@ const SHELL_EDGE_PX = 16;
 async function waitShellReady(shell, page) {
   await shell.waitFor({ state: 'visible', timeout: CHECK_MS });
   await shell.locator(SEL.donationForm).first().waitFor({ state: 'visible', timeout: CHECK_MS });
-  await page
-    .waitForFunction(() => {
-      const el = document.querySelector('.hdf-donation-modal-wrapper.wdp-modal.show');
-      if (!el) return false;
-      if (el.classList.contains('wdp-side-panel--opening')) return false;
-      const box = (el.querySelector('.wdp-modal-content') || el).getBoundingClientRect();
-      const vv = window.visualViewport;
-      const vw = vv ? vv.width : window.innerWidth;
-      return box.width > 80 && box.left >= -16 && box.right <= vw + 16;
-    }, { timeout: 8000 })
-    .catch(() => {
-      throw new Error('Kabuk açılış animasyonu bitmedi veya içerik viewport dışında');
+  const overlap = await waitAndAssertShellOverlap(page, 8000);
+  if (overlap && overlap.skipped) {
+    throw new Error('Kabuk açıldı ama POPUP-OVERLAP kontrolü atlandı');
+  }
+  await page.evaluate(async () => {
+    if (window.WDPApp && window.WDPApp.ctaViewport && typeof window.WDPApp.ctaViewport.refresh === 'function') {
+      window.WDPApp.ctaViewport.refresh();
+    }
+    await new Promise((r) => {
+      window.requestAnimationFrame(() => window.requestAnimationFrame(r));
     });
+  });
 }
 
 /**
@@ -113,7 +116,7 @@ async function scrollFormToEnd(shell) {
  * @param {import('@playwright/test').Locator} shell
  */
 async function assertLastItemAboveCta(shell) {
-  const result = await shell.evaluate((root) => {
+  const result = await shell.evaluate((root, gapMax) => {
     const cta = root.querySelector('.wdp-form-cta-zone, .wdp-side-panel-footer-zone');
     if (!cta) {
       return { ok: false, error: 'eylem çubuğu yok (.wdp-form-cta-zone / .wdp-side-panel-footer-zone)' };
@@ -131,37 +134,46 @@ async function assertLastItemAboveCta(shell) {
       return st.display !== 'none' && st.visibility !== 'hidden' && r.width > 0 && r.height > 0;
     };
     const inCta = (el) => !!(cta.contains(el) || el.closest('.wdp-form-cta-zone, .wdp-side-panel-footer-zone'));
-    const controls = Array.from(
+    const nodes = Array.from(
       scroll.querySelectorAll(
-        'input:not([type="hidden"]), textarea, select, .wdp-sadaka-donation__toggle, .wdp-cover-fee, .wdp-shareholder-form'
+        'input:not([type="hidden"]), textarea, select, button, .wdp-sadaka-donation, .wdp-cover-fee, .wdp-shareholder-form, .wdp-shareholders-area'
       )
     ).filter((el) => vis(el) && !inCta(el));
-    const candidates = Array.from(scroll.children).filter(
-      (el) => vis(el) && !skip.test(el.className || '')
-    );
-    let last = controls[controls.length - 1] || candidates[candidates.length - 1] || null;
-    if (last && last.querySelector && !last.matches('input, textarea, select')) {
-      const inner = last.querySelector(
-        '.wdp-sadaka-donation__toggle, .wdp-cover-fee, .wdp-shareholder-form, .wdp-form-total'
-      );
-      if (inner && vis(inner) && !inCta(inner)) last = inner;
-    }
+    Array.from(scroll.children)
+      .filter((el) => vis(el) && !skip.test(el.className || '') && !inCta(el))
+      .forEach((el) => nodes.push(el));
+    let last = null;
+    let lastBottom = -Infinity;
+    nodes.forEach((el) => {
+      const b = el.getBoundingClientRect().bottom;
+      if (b > lastBottom) {
+        lastBottom = b;
+        last = el;
+      }
+    });
     if (!last) {
       return { ok: false, error: 'son form öğesi yok (kaydırma kapsayıcısında görünür içerik yok)' };
     }
     const lastBox = last.getBoundingClientRect();
     const ctaBox = cta.getBoundingClientRect();
-    const ok = lastBox.bottom <= ctaBox.top + 2;
+    const gap = Math.round(ctaBox.top - lastBox.bottom);
+    const behind = lastBox.bottom > ctaBox.top + 2;
+    const tooWide = gap > gapMax;
+    let error = '';
+    if (behind) {
+      error = `son öğe alt kenarı (${Math.round(lastBox.bottom)}) eylem çubuğu üst kenarının (${Math.round(ctaBox.top)}) altında`;
+    } else if (tooWide) {
+      error = `CTA-GAP: son öğe ile eylem çubuğu arası ${gap}px (>${gapMax})`;
+    }
     return {
-      ok,
-      error: ok
-        ? ''
-        : `son öğe alt kenarı (${Math.round(lastBox.bottom)}) eylem çubuğu üst kenarının (${Math.round(ctaBox.top)}) altında`,
+      ok: !behind && !tooWide,
+      error,
       lastClass: last.className || last.tagName,
       lastBottom: Math.round(lastBox.bottom),
       ctaTop: Math.round(ctaBox.top),
+      gap,
     };
-  });
+  }, CTA_GAP_MAX_PX);
   if (!result || result.ok === false) {
     throw new Error(result && result.error ? result.error : 'CTA / son öğe ölçülemedi');
   }
@@ -410,6 +422,10 @@ export async function runLayoutChecks({
     stats.failed += 1;
   };
   const skip = (id, description) => {
+    if (classifySkipReason(description) === 'fail') {
+      fail(id, `Altyapı atlaması hata: ${description}`);
+      return;
+    }
     if (skips) skips.push({ check: id, description });
     stats.skipped += 1;
   };
@@ -424,9 +440,11 @@ export async function runLayoutChecks({
     fs.mkdirSync(dir, { recursive: true });
     const file = nodePath.join(dir, `${prefix}-cta-clearance${failed ? '-fail' : ''}.png`);
     try {
-      await shell.screenshot({ path: file });
+      await waitAndAssertShellOverlap(shell.page(), 8000);
+      await shell.screenshot({ path: file, animations: 'disabled' });
     } catch (e) {
       console.error(`[e2e:catch-fail] cta-shot ${prefix}: ${e && e.message ? e.message : e}`);
+      throw e instanceof Error ? e : new Error(String(e));
     }
   }
 
@@ -526,13 +544,24 @@ export async function runLayoutChecks({
         try {
           await scrollFormToEnd(shell);
           await assertLastItemAboveCta(shell);
-          if (type.key === 'fixed' || type.key === 'shares') {
-            await shotCta(shell, prefix, false);
-          }
+          await shotCta(shell, prefix, false);
           pass(`${prefix}-cta-clearance`);
         } catch (e) {
-          await shotCta(shell, prefix, true);
-          fail(`${prefix}-cta-clearance`, 'Son form öğesi eylem çubuğunun arkasında', e);
+          const msg = e && e.message ? String(e.message) : '';
+          try {
+            await shotCta(shell, prefix, true);
+          } catch (shotErr) {
+            console.error(
+              `[e2e:catch-fail] cta-shot-fail ${prefix}: ${shotErr && shotErr.message ? shotErr.message : shotErr}`
+            );
+          }
+          fail(
+            `${prefix}-cta-clearance`,
+            msg.indexOf('CTA-GAP') === 0
+              ? 'Son form öğesi ile eylem çubuğu arası >48px'
+              : 'Son form öğesi eylem çubuğunun arkasında',
+            e
+          );
         }
 
         await closeShell(page);

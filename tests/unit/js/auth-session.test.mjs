@@ -14,6 +14,7 @@ import {
   getFormLoginAttemptCount,
   AUTH_NO_RETRY,
   AUTH_DIR,
+  authOriginKey,
 } from '../../../tests/e2e/helpers/auth.mjs';
 
 function fakeEnv(baseUrl) {
@@ -61,6 +62,14 @@ function fakeBrowser() {
   };
 }
 
+describe('authOriginKey', () => {
+  it('port origin’e dahildir', () => {
+    assert.equal(authOriginKey('http://127.0.0.1:8980'), 'http://127.0.0.1:8980');
+    assert.equal(authOriginKey({ E2E_BASE_URL: 'http://127.0.0.1:8990' }), 'http://127.0.0.1:8990');
+    assert.notEqual(authOriginKey('http://127.0.0.1:8980'), authOriginKey('http://127.0.0.1:8990'));
+  });
+});
+
 describe('auth oturum yeniden kullanımı', () => {
   const dest = path.join(AUTH_DIR, 'selftest-1b.json');
 
@@ -97,6 +106,24 @@ describe('auth oturum yeniden kullanımı', () => {
     assert.equal(formCalls, 0);
     assert.equal(validateCalls, 1);
     assert.equal(getFormLoginAttemptCount(), 0);
+  });
+
+  it('farklı E2E_BASE_URL origin’de storageState yeniden doğrulanır', async () => {
+    let validateCalls = 0;
+    const opts = {
+      launchBrowser: async () => fakeBrowser(),
+      validateStorageState: async () => {
+        validateCalls += 1;
+        return true;
+      },
+      performFormLogin: async () => dest,
+    };
+    const envA = fakeEnv('http://127.0.0.1:8980');
+    const envB = fakeEnv('http://127.0.0.1:8990');
+    envB.E2E_PROFILE_ID = envA.E2E_PROFILE_ID;
+    await ensureAuth(envA, opts);
+    await ensureAuth(envB, opts);
+    assert.equal(validateCalls, 2);
   });
 });
 

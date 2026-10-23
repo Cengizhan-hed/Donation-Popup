@@ -18,7 +18,8 @@ import { getDevicePreset } from './devices.mjs';
 import { areaIncludes } from './area-filter.mjs';
 import { applyComingSoonBypass, comingSoonQuery } from './coming-soon.mjs';
 import { STABILIZE_SHOT_CSS, hideComingSoonNoticeForShot } from './stabilize-shot-css.mjs';
-import { ensureAuth, getAuthFile, getInMemoryAdminCookies } from './auth.mjs';
+import { ensureAuth, getAuthFile, getInMemoryAdminCookies, waitForWpAdminPage } from './auth.mjs';
+import { classifySkipReason, promoteIllegalSkips } from './skip-policy.mjs';
 import {
   installBrowserGuard,
   applyNetworkGuard,
@@ -172,6 +173,11 @@ async function asAdmin(browser, env, extra = {}) {
     await ctx.addCookies(mem);
   }
   return ctx;
+}
+
+/** Ürün düzenleme / ayar: cihaz isMobile yok (klasik wp-admin). */
+async function asAdminDesktop(browser, env) {
+  return asAdmin(browser, env, { viewport: { width: 1440, height: 900 } });
 }
 
 /** @type {Array<{label:string,secs:number}>} */
@@ -1076,11 +1082,7 @@ async function shot(page, dir, name, maskList, opts = {}) {
   const shellMode = opts.shellMode || '';
   const shellOpen = (await page.locator(SEL.openModalShell).count().catch(() => 0)) > 0;
   if (shellOpen || shellOnly) {
-    try {
-      await waitShellAnimationsDone(page, CHECK_MS);
-    } catch (eWait) {
-      catchSoft('shot:waitShell', eWait);
-    }
+    await waitAndAssertShellOverlap(page, CHECK_MS);
   }
   await settleForScreenshot(page, { fullPage: shellOnly ? false : fullPage, scrollPage: shellOnly ? false : scrollPage });
   if (!shellOnly) {
@@ -1581,6 +1583,10 @@ export async function readGlobalSadakaWcId(authed, env) {
       withCacheBust(env.E2E_BASE_URL, '/wp-admin/admin.php?page=wdp-popup-settings'),
       { waitUntil: 'domcontentloaded' }
     );
+    const admin = await waitForWpAdminPage(page, 20000);
+    if (!admin.ok) {
+      return 0;
+    }
     const successTab = page.locator('[data-tab="success-screen"]').first();
     if (await successTab.count()) {
       await successTab.click().catch(() => {});
@@ -1608,13 +1614,13 @@ export async function readGlobalSadakaWcId(authed, env) {
  */
 export async function readProductSadakaAdminConfig(authed, env, productSlug, opts = {}) {
   const page = await authed.newPage();
-  const empty = (reason) => ({
+  const empty = (reason, status = /** @type {'atlandı'|'hata'} */ ('atlandı')) => ({
     enabled: false,
     productWcId: 0,
     globalWcId: 0,
     resolvedWcId: 0,
     expected: false,
-    status: /** @type {'atlandı'} */ ('atlandı'),
+    status,
     reason,
     detail: reason,
   });
@@ -1626,21 +1632,27 @@ export async function readProductSadakaAdminConfig(authed, env, productSlug, opt
       productId = await resolveProductIdBySlug(page, env.E2E_BASE_URL, productSlug);
     }
     if (!productId) {
-      return empty('Store API’den ürün ID bulunamadı');
+      return empty('Store API’den ürün ID bulunamadı', 'hata');
     }
     await page.goto(
       withCacheBust(env.E2E_BASE_URL, `/wp-admin/post.php?post=${productId}&action=edit`),
-      { waitUntil: 'domcontentloaded' }
+      { waitUntil: 'domcontentloaded', timeout: 20000 }
     );
-    const titleField = page.locator('#title, #post-title-0, .editor-post-title__input').first();
-    if ((await titleField.count()) === 0 && (await page.locator('body.wp-admin').count()) === 0) {
-      return empty(`ürün düzenleme sayfası açılamadı (#${productId})`);
+    const opened = await waitForWpAdminPage(page, 20000);
+    if (!opened.ok) {
+      console.error(
+        `[e2e:catch-fail] sadaka admin: kind=${opened.kind} path=${opened.path} id=${productId}`
+      );
+      return empty(
+        `ürün düzenleme sayfası açılamadı (#${productId}) kind=${opened.kind} path=${opened.path}`,
+        'hata'
+      );
     }
     await page.locator(SEL.productDonationTab).first().click().catch(() => {});
     await page
       .locator('#wdp_enable_sadaka_donation, #wdp_sadaka_wc_product_id')
       .first()
-      .waitFor({ state: 'attached', timeout: CHECK_MS })
+      .waitFor({ state: 'attached', timeout: 20000 })
       .catch(() => {});
 
     const enabled = await page
@@ -1704,7 +1716,7 @@ export async function readProductSadakaAdminConfig(authed, env, productSlug, opt
       detail: `enable=${enabled} ürün_id=${productWcId} genel_id=${globalWcId} → ${reason}`,
     };
   } catch (e) {
-    return empty(`admin okuma hata: ${String(e.message || e)}`);
+    return empty(`admin okuma hata: ${String(e.message || e)}`, 'hata');
   } finally {
     await page.close();
   }
@@ -1888,7 +1900,7 @@ async function settleLoopPage(page) {
  * @param {ReturnType<typeof makeFailure>[]} failures
  * @param {{ passed?: number, failed?: number }} [stats]
  */
-async function assertLoopCardsTitleAndDonate(page, surface, screenName, failures, stats) {
+async function assertLoopCardsTitleAndDonate(page, surface, screenName, failures, stats, skips) {
   if (surface === 'shop') {
     const shopCards = page.locator(SHOP_CARD_SEL);
     const visibleCard = shopCards.locator('visible=true');
@@ -1984,6 +1996,12 @@ async function assertLoopCardsTitleAndDonate(page, surface, screenName, failures
 
   if (result.cardCount < 1) {
     if (surface === 'product') {
+      if (skips) {
+        skips.push({
+          check: 'loop-cards-product',
+          description: 'Benzer Bağışlar kartı yok (tema gizleyebilir)',
+        });
+      }
       if (stats) stats.skipped = (stats.skipped || 0) + 1;
       return;
     }
@@ -2003,6 +2021,15 @@ async function assertLoopCardsTitleAndDonate(page, surface, screenName, failures
     requireVisible: surface === 'shop',
   });
   if (classified.status === 'skip') {
+    if (skips) {
+      skips.push({
+        check: `loop-cards-${surface}`,
+        description:
+          surface === 'product'
+            ? 'Benzer Bağışlar kartı yok (tema gizleyebilir)'
+            : 'Mağaza döngüsü kartı yok (uzak tema gizleyebilir)',
+      });
+    }
     if (stats) stats.skipped = (stats.skipped || 0) + 1;
     return;
   }
@@ -2404,9 +2431,21 @@ export async function runSadakaScenario({
     }
 
     if (!cfg.expected) {
+      const desc = `Atlandı — ${cfg.reason}`;
+      if (cfg.status === 'hata' || classifySkipReason(desc) === 'fail') {
+        failures.push(
+          makeFailure({
+            check,
+            description: `Altyapı atlaması hata: ${cfg.reason}`,
+            detail: cfg.detail || cfg.reason,
+          })
+        );
+        stats.failed += 1;
+        return { ok: false, check, skipped: false };
+      }
       skips.push({
         check,
-        description: `Atlandı — ${cfg.reason}`,
+        description: desc,
         detail: cfg.detail,
       });
       stats.skipped += 1;
@@ -2996,19 +3035,24 @@ export async function captureAll({
     runFunctional
       ? (async () => {
           const tSadakaAdmin = Date.now();
-          const globalWcId = await readGlobalSadakaWcId(authed, env);
-          await mapPool(
-            /** @type {const} */ (['fixed', 'custom']),
-            2,
-            async (productKey) => {
-              const slug = products[productKey];
-              const cfg = await readProductSadakaAdminConfig(authed, env, slug, {
-                globalWcId,
-                productId: productIds[productKey] || 0,
-              });
-              adminConfigCache.set(slug, cfg);
-            }
-          );
+          const adminRead = await asAdminDesktop(browser, env);
+          try {
+            const globalWcId = await readGlobalSadakaWcId(adminRead, env);
+            await mapPool(
+              /** @type {const} */ (['fixed', 'custom']),
+              2,
+              async (productKey) => {
+                const slug = products[productKey];
+                const cfg = await readProductSadakaAdminConfig(adminRead, env, slug, {
+                  globalWcId,
+                  productId: productIds[productKey] || 0,
+                });
+                adminConfigCache.set(slug, cfg);
+              }
+            );
+          } finally {
+            await adminRead.close().catch(() => {});
+          }
           logSection('alt bağış admin config', tSadakaAdmin);
         })()
       : Promise.resolve();
@@ -3093,7 +3137,7 @@ export async function captureAll({
     if (runFunctional) {
       try {
         // Benzer Bağışlar: görünür başlık + Bağış Yap (Avada post-card animasyonu)
-        await assertLoopCardsTitleAndDonate(page, 'product', name, failures, functionalStats);
+        await assertLoopCardsTitleAndDonate(page, 'product', name, failures, functionalStats, skips);
         if (device.isMobile && key === Object.keys(productUrls)[0]) {
           try {
             const probeSim = await probeSimilarDonations(page);
@@ -3663,7 +3707,8 @@ export async function captureAll({
         'shop',
         'desktop-shop',
         failures,
-        functionalStats
+        functionalStats,
+        skips
       );
       await assertDonationLoopButtons({
         guest: catalogCtx,
@@ -4514,6 +4559,8 @@ export async function captureAll({
     );
     functionalStats.failed += 1;
   }
+
+  promoteIllegalSkips({ skips, failures, stats: functionalStats, makeFailure });
 
   const blockedTrackers = snapshotBlockedTrackers();
   const blockedLive = snapshotBlockedLive();

@@ -182,12 +182,8 @@
 
   --wdp-form-cta-height: 52px;
   --wdp-form-cta-height-mobile: 52px;
-  /* Last form content vs sticky/flex CTA: bar height + home-indicator / safe bottom. */
-  --wdp-cta-clearance: calc(
-    var(--wdp-form-cta-height, 52px)
-    + 36px
-    + max(10px, env(safe-area-inset-bottom, 0px), var(--wdp-safe-bottom, 0px))
-  );
+  /* Overlay spacer only; JS sets this when sticky/fixed CTA covers a scrollable body. 0 = in-flow gap. */
+  --wdp-cta-clearance: 0px;
   --wdp-touch-target-min: 44px;
   --wdp-touch-target-comfortable: 48px;
   --wdp-button-height: 52px;
