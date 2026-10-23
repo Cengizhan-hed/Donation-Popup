@@ -301,6 +301,28 @@ function wdp_matrix_catalog() {
 				'_price'                => '100',
 			),
 		),
+		'shares' => array(
+			'WDP E2E Shares',
+			array(
+				'_wdp_donation_product'  => 'yes',
+				'_allow_multiple_shares' => 'yes',
+				'_max_shares'            => '7',
+				'_regular_price'         => '50',
+				'_price'                 => '50',
+			),
+		),
+		'campaign' => array(
+			'WDP E2E Campaign',
+			array(
+				'_wdp_donation_product' => 'yes',
+				'_enable_progress_bar'  => 'yes',
+				'_progress_bar_limit'   => '500',
+				'_allow_custom_price'   => 'yes',
+				'_min_custom_price'     => '10',
+				'_regular_price'        => '',
+				'_price'                => '',
+			),
+		),
 	);
 }
 
@@ -559,7 +581,12 @@ function wdp_matrix_probe() {
 	$checkout_html = $checkout_id ? (string) get_post_field('post_content', $checkout_id) : '';
 	$is_blocks     = strpos($checkout_html, 'wp:woocommerce/checkout') !== false;
 	$products      = array();
-	foreach (array( 'custom' => 'WDP E2E Custom', 'fixed' => 'WDP E2E Fixed' ) as $role => $title) {
+	foreach (array(
+		'custom'   => 'WDP E2E Custom',
+		'fixed'    => 'WDP E2E Fixed',
+		'shares'   => 'WDP E2E Shares',
+		'campaign' => 'WDP E2E Campaign',
+	) as $role => $title) {
 		$id = wdp_matrix_find_marked($title);
 		if (!$id) {
 			continue;

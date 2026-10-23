@@ -100,6 +100,20 @@ final class ProductThemeTest extends TestCase {
 		$blue = WDP_Color_Palette::from_hex('#0f608b');
 		$this->assertSame('#ffffff', $blue['on_primary']);
 		$this->assertGreaterThanOrEqual(4.5, WDP_Color_Palette::contrast_ratio('#0f608b', $blue['on_primary']));
+
+		$style = WDP_Form_Modules::build_product_theme_style(12);
+		$this->assertStringContainsString('--wdp-shareholder-header-bg:#036a37', $style);
+		$this->assertStringContainsString('--wdp-shareholder-header-color:', $style);
+	}
+
+	public function test_readable_ink_meets_aa_on_light_and_dark(): void {
+		$light = WDP_Color_Palette::readable_ink('#fafbfc', '#ffffff');
+		$this->assertSame('#0f172a', $light);
+		$this->assertGreaterThanOrEqual(4.5, WDP_Color_Palette::contrast_ratio('#fafbfc', $light));
+
+		$dark = WDP_Color_Palette::readable_ink('#0f608b', '#ffffff');
+		$this->assertSame('#ffffff', $dark);
+		$this->assertGreaterThanOrEqual(4.5, WDP_Color_Palette::contrast_ratio('#0f608b', $dark));
 	}
 
 	public function test_contrast_warning_note_does_not_block(): void {

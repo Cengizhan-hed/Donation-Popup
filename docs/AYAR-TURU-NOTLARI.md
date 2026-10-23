@@ -446,7 +446,8 @@ Kullanıcı yönergesi önceki tüm görev metinlerinin yerini aldı; CLAUDE.md 
 
 | # | Madde |
 |---|-------|
-| G28 | Hisseli form "1. Hisse" başlığı açık gri zemin üstünde neredeyse görünmez (kontrast, WCAG 2.2 AA) — staging30 panel-shares-open |
+| G28 | Hisseli form "1. Hisse" başlığı açık gri zemin üstünde neredeyse görünmez (kontrast, WCAG 2.2 AA) — staging30 panel-shares-open | 10.34.7: başlık/rozet `readable_ink` + `--wdp-on-primary`; tema `h3` rengi ezilmesin diye header `background-color`/`color` izolasyonu |
 | G29 | Popup'ta telefon yer tutucusu ayırıcı çizgiye yapışık (panelde boşluk var) |
 | G30 | "24 Saat İçerisinde Video" rozetinde simge kenara taşıyor (popup) |
 | G31 | Ikram WooCommerce mağaza sayfasındaki "Bağış Yap" açılır pencere açmıyor (Appeals listesinde açıyor) — davranış tutarlılığı, Faz 7'de karar |
+| G32 | Desktop matris popup PNG yarı saydam (sayfa başlığı/«Bağış Yap» kartın içinden); iPhone opak. 3J3 kanıt: canlı opacity=1, elementFromPoint modal içinde (eklenti katmanı sağlam). Neden: `fullPage` + `position:fixed` compositor. Düzeltme: olay bazlı bekleme + viewport kabuk ekranı; kalıcı **POPUP-OVERLAP** |

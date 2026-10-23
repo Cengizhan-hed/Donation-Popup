@@ -36,6 +36,11 @@ import {
   STICKY_ATC_SEL,
   DISPLAY_MODES,
 } from './product-page-ui.mjs';
+import {
+  probeShellOverlapBeforeAfter,
+  waitAndAssertShellOverlap,
+} from './shell-overlap.mjs';
+import { FREEZE_MOTION_CSS } from './selectors.mjs';
 
 const CHECK_MS = 25000;
 const CART_MS = 20000;
@@ -148,6 +153,153 @@ async function waitFormReady(root) {
   const form = root.locator(SEL.donationForm).first();
   await form.waitFor({ state: 'visible', timeout: CHECK_MS });
   return form;
+}
+
+/**
+ * Popup/panel açıldıktan sonra animasyon bitsin + POPUP-OVERLAP.
+ * @param {import('@playwright/test').Page} page
+ */
+async function settleOpenShell(page) {
+  await waitAndAssertShellOverlap(page, CHECK_MS);
+}
+
+/**
+ * Doğrulama hatalarını tetikle: görünür canlı formdaki ödeme düğmesi.
+ * Gönderim bağlanmamışsa validateForm yedeği (hata UI'sini ölçer).
+ * @param {import('@playwright/test').Page} page
+ * @param {import('@playwright/test').Locator} scope
+ * @param {string} type
+ * @param {string} modeId
+ */
+async function triggerEmptyFormValidation(page, scope, type, modeId) {
+  const formLoc = scope.locator(SEL.donationForm).first();
+  await formLoc.waitFor({ state: 'visible', timeout: CHECK_MS });
+  if (type === 'shares') {
+    await scope.locator('.wdp-shareholder-form').first().waitFor({ state: 'attached', timeout: CHECK_MS });
+  }
+  await page.waitForFunction(
+    (formSel) => {
+      const forms = Array.from(document.querySelectorAll(formSel));
+      const live = forms.find((f) => {
+        const modal = f.closest && f.closest('.wdp-modal');
+        if (modal && !modal.classList.contains('show')) return false;
+        const shell = f.closest('.wdp-modal, .wdp-donation-form, .hdf-donation-modal-wrapper');
+        if (shell && (shell.classList.contains('wdp-is-skeleton') || shell.getAttribute('aria-busy') === 'true')) {
+          return false;
+        }
+        return true;
+      });
+      return !!(
+        live &&
+        window.WDPApp &&
+        window.WDPApp.formValidate &&
+        typeof window.WDPApp.formValidate.validateForm === 'function'
+      );
+    },
+    SEL.donationForm,
+    { timeout: CHECK_MS }
+  );
+  await page.evaluate(() => {
+    const app = window.WDPApp;
+    if (app && app.form) app.form.lastValidation = null;
+    if (app && app.formValidate) app.formValidate.lastValidation = null;
+  });
+  const go = formLoc.locator(SEL.goCheckout).first();
+  await go.waitFor({ state: 'visible', timeout: CHECK_MS });
+  await go.evaluate((btn) => {
+    const form = btn.form || (btn.closest && btn.closest('form'));
+    const app = window.WDPApp || {};
+    if (form && app.form && typeof app.form.setup === 'function' && !form._wdpSubmitHandler) {
+      app.form.setup(form);
+    }
+    if (form && typeof form.requestSubmit === 'function') {
+      try {
+        form.requestSubmit(btn);
+        return;
+      } catch (eRs) {
+        /* WebKit disabled/not-a-submitter */
+      }
+    }
+    if (typeof btn.click === 'function') {
+      btn.click();
+    }
+  });
+  const lastFailed = async () =>
+    page.evaluate(() => {
+      const app = window.WDPApp || {};
+      const last =
+        (app.form && app.form.lastValidation) ||
+        (app.formValidate && app.formValidate.lastValidation) ||
+        null;
+      return !!(last && last.ok === false && Array.isArray(last.failures) && last.failures.length);
+    });
+  try {
+    await page.waitForFunction(() => {
+      const app = window.WDPApp || {};
+      const last =
+        (app.form && app.form.lastValidation) ||
+        (app.formValidate && app.formValidate.lastValidation) ||
+        null;
+      return !!(last && last.ok === false && Array.isArray(last.failures) && last.failures.length);
+    }, { timeout: 4000 });
+  } catch (eFirst) {
+    if (!(await lastFailed())) {
+      await formLoc.evaluate((form) => {
+        const app = window.WDPApp || {};
+        const validate =
+          (app.formValidate && app.formValidate.validateForm) ||
+          (app.form && app.form.validateForm) ||
+          null;
+        if (typeof validate === 'function') {
+          validate(form);
+        }
+      });
+    }
+  }
+  try {
+    await page.waitForFunction(() => {
+      const app = window.WDPApp || {};
+      const last =
+        (app.form && app.form.lastValidation) ||
+        (app.formValidate && app.formValidate.lastValidation) ||
+        null;
+      return !!(last && last.ok === false && Array.isArray(last.failures) && last.failures.length);
+    }, { timeout: CHECK_MS });
+  } catch (eWait) {
+    const diag = await page.evaluate((formSel) => {
+      const app = window.WDPApp || {};
+      const last =
+        (app.form && app.form.lastValidation) ||
+        (app.formValidate && app.formValidate.lastValidation) ||
+        null;
+      const forms = Array.from(document.querySelectorAll(formSel));
+      const live = forms.find((f) => {
+        const modal = f.closest && f.closest('.wdp-modal');
+        return !(modal && !modal.classList.contains('show'));
+      });
+      const btn = live && live.querySelector('button[name="donation_go_checkout"]');
+      return {
+        href: String(location.href || '').replace(/https?:\/\/[^/]+/i, ''),
+        lastOk: last && last.ok,
+        failN: last && last.failures ? last.failures.length : 0,
+        rows: document.querySelectorAll('.wdp-shareholder-form').length,
+        btns: document.querySelectorAll('button[name="donation_go_checkout"]').length,
+        hasHandler: !!(live && live._wdpSubmitHandler),
+        btnDisabled: !!(btn && btn.disabled),
+        btnType: btn ? String(btn.getAttribute('type') || btn.type || '') : '',
+        wizard: !!(live && live.classList.contains('wdp-wizard-ready')),
+      };
+    }, SEL.donationForm);
+    throw new Error(
+      `${type}/${modeId}: lastValidation.ok===false yok path=${diag.href} lastOk=${diag.lastOk} failN=${diag.failN} rows=${diag.rows} btns=${diag.btns} handler=${diag.hasHandler} disabled=${diag.btnDisabled} type=${diag.btnType} wizard=${diag.wizard}`
+    );
+  }
+  await page.evaluate(
+    () =>
+      new Promise((resolve) => {
+        window.requestAnimationFrame(() => window.requestAnimationFrame(resolve));
+      })
+  );
 }
 
 /**
@@ -287,6 +439,7 @@ async function openProductForm(page, baseUrl, productPath) {
   await clickShellTrigger(trigger, CHECK_MS);
   const shell = openShellLocator(page, '');
   await shell.waitFor({ state: 'visible', timeout: CHECK_MS });
+  await settleOpenShell(page);
   await waitFormReady(shell);
   await assertNoUnexpectedPluginErrors(page, { scenarioId: 'product-cart' });
   return shell;
@@ -300,6 +453,7 @@ async function openListPopup(page, baseUrl, listPath, productId) {
   await clickShellTrigger(trigger, CHECK_MS);
   const shell = openShellLocator(page, 'popup');
   await shell.waitFor({ state: 'visible', timeout: CHECK_MS });
+  await settleOpenShell(page);
   await waitFormReady(shell);
   await assertNoUnexpectedPluginErrors(page, { scenarioId: 'list-checkout' });
   return shell;
@@ -561,10 +715,63 @@ function stylesEqual(a, b) {
   return JSON.stringify(a) === JSON.stringify(b);
 }
 
+function appendOverlapKanit(dir, row) {
+  fs.mkdirSync(dir, { recursive: true });
+  fs.appendFileSync(path.join(dir, '_overlap.jsonl'), `${JSON.stringify(row)}\n`, 'utf8');
+}
+
+/**
+ * Popup/panel açıkken olay bazlı bekle + POPUP-OVERLAP; kabuk ekranı viewport.
+ * @param {import('@playwright/test').Page} page
+ * @param {string} dir
+ * @param {string} name
+ */
 async function shot(page, dir, name) {
   fs.mkdirSync(dir, { recursive: true });
   const file = path.join(dir, `${name}.png`);
-  await page.screenshot({ path: file, fullPage: true });
+  const shellOpen = (await page.locator(SEL.openModalShell).count()) > 0;
+  const popupOrPanel = /(?:^|-)(popup|panel)(?:-|$)/i.test(String(name || ''));
+  /** @type {Error | null} */
+  let overlapErr = null;
+  if (shellOpen) {
+    try {
+      const probe = await probeShellOverlapBeforeAfter(page, 8000);
+      appendOverlapKanit(dir, {
+        name,
+        immediateOk: !!(probe.immediateClass && probe.immediateClass.ok),
+        afterOk: !!(probe.afterClass && probe.afterClass.ok),
+        immediateMinOp: probe.immediateClass ? probe.immediateClass.minOpacity : null,
+        afterMinOp: probe.afterClass ? probe.afterClass.minOpacity : null,
+        immediateOutside: probe.immediateClass ? probe.immediateClass.outside : null,
+        afterOutside: probe.afterClass ? probe.afterClass.outside : null,
+        immediateAnim: probe.immediate && probe.immediate.animRunning,
+        afterAnim: probe.afterWait && probe.afterWait.animRunning,
+        parentIsBody: probe.afterWait && probe.afterWait.parentIsBody,
+        immediateReasons: probe.immediateClass ? probe.immediateClass.reasons : [],
+        afterReasons: probe.afterClass ? probe.afterClass.reasons : [],
+      });
+    } catch (eProbe) {
+      overlapErr = eProbe instanceof Error ? eProbe : new Error(String(eProbe));
+      appendOverlapKanit(dir, { name, error: overlapErr.message });
+    }
+  }
+  /** @type {import('@playwright/test').ElementHandle | null} */
+  let freezeHandle = null;
+  if (shellOpen) {
+    freezeHandle = await page.addStyleTag({ content: FREEZE_MOTION_CSS });
+  }
+  try {
+    await page.screenshot({
+      path: file,
+      fullPage: !(shellOpen && popupOrPanel),
+      animations: 'disabled',
+    });
+  } finally {
+    if (freezeHandle) {
+      await freezeHandle.evaluate((el) => el.remove());
+    }
+  }
+  if (overlapErr) throw overlapErr;
   return file;
 }
 
@@ -596,6 +803,8 @@ export async function runDeviceScenarios({
   const listPath = probe.listPath || '/wdp-e2e-list/';
   const amount = store.amount;
   const productName = 'WDP E2E Custom';
+  const overlapLog = path.join(shotDir, '_overlap.jsonl');
+  if (fs.existsSync(overlapLog)) fs.unlinkSync(overlapLog);
 
   const runOne = async (id, fn) => {
     const started = Date.now();
@@ -751,6 +960,7 @@ export async function runDeviceScenarios({
             if (!clicked) throw new Error(`${display}: birincil bağış düğmesi tıklanamadı`);
             const shell = openShellLocator(page, classified.kind === 'panel' ? 'panel' : 'popup');
             await shell.waitFor({ state: 'visible', timeout: CHECK_MS });
+            await settleOpenShell(page);
             await waitFormReady(shell);
             const close = shell.locator(SEL.modalClose).first();
             if ((await close.count()) > 0) {
@@ -904,6 +1114,7 @@ export async function runDeviceScenarios({
         if (!isPanel) {
           throw new Error('kabuk panel değil (popup açıldı)');
         }
+        await settleOpenShell(page);
         await waitFormReady(anyShell);
         await shot(page, shotDir, 'product-entry-button');
       } finally {
@@ -935,6 +1146,216 @@ export async function runDeviceScenarios({
         matrixEval(wpDir, ['plugin', 'on']);
       }
       await shot(page, shotDir, 'appearance-home');
+    });
+
+    await runOne('validation-errors', async () => {
+      const types = ['fixed', 'custom', 'shares', 'campaign'];
+      const modes = [
+        { id: 'inline', display: 'inline' },
+        { id: 'panel', display: 'button_panel' },
+        { id: 'popup', display: 'button_popup' },
+      ];
+      const missing = types.filter((t) => !probe.products?.[t]?.path);
+      if (missing.length) {
+        throw new Error(`matris ürün eksik: ${missing.join(',')}`);
+      }
+      try {
+        for (const mode of modes) {
+          const set = matrixEval(wpDir, ['placement-display', mode.display]);
+          if (!set.ok) throw new Error(`görünüm ${mode.display}: ${set.error || ''}`);
+          for (const type of types) {
+            const product = probe.products[type];
+            await gotoPath(page, baseUrl, product.path);
+            let scope;
+            if (mode.id === 'inline') {
+              const wrap = page.locator(SEL.inlineDonationForm).first();
+              await wrap.waitFor({ state: 'visible', timeout: CHECK_MS });
+              await waitFormReady(wrap);
+              scope = wrap;
+            } else {
+              const triggerSel = mode.id === 'panel' ? SEL.sidePanelTrigger : SEL.centeredPopupTrigger;
+              const n = await page.locator(triggerSel).count();
+              let clicked = false;
+              for (let i = 0; i < n; i += 1) {
+                const btn = page.locator(triggerSel).nth(i);
+                const inLoop = await btn.evaluate(
+                  (el, excludeSel) =>
+                    !!(el.classList.contains('wdp-loop-donate') || (el.closest && el.closest(excludeSel))),
+                  LOOP_EXCLUDE_SEL
+                );
+                if (inLoop) continue;
+                if (!(await btn.isVisible())) continue;
+                await btn.scrollIntoViewIfNeeded();
+                await clickShellTrigger(btn, CHECK_MS);
+                clicked = true;
+                break;
+              }
+              if (!clicked) throw new Error(`${type}/${mode.id}: tetikleyici yok`);
+              scope = openShellLocator(page, mode.id);
+              await scope.waitFor({ state: 'visible', timeout: CHECK_MS });
+              await settleOpenShell(page);
+              await waitFormReady(scope);
+            }
+            await triggerEmptyFormValidation(page, scope, type, mode.id);
+            const state = await scope.evaluate((root) => {
+              const app = window.WDPApp || {};
+              const last =
+                (app.form && app.form.lastValidation) ||
+                (app.formValidate && app.formValidate.lastValidation) ||
+                null;
+              const failures = (last && last.failures) || [];
+              const missingMsgs = [];
+              const collapsedStill = [];
+              for (const f of failures) {
+                const field = f && f.field ? String(f.field) : '';
+                if (!field) continue;
+                const input = root.querySelector(`[name="${field}"]`);
+                if (!input) {
+                  missingMsgs.push(`${field}:yok`);
+                  continue;
+                }
+                const row = input.closest && input.closest('.wdp-shareholder-form');
+                if (row && row.classList.contains('collapsed')) {
+                  collapsedStill.push(field);
+                }
+                let err = null;
+                const did = input.getAttribute && input.getAttribute('aria-describedby');
+                if (did) {
+                  const ids = String(did)
+                    .split(/\s+/)
+                    .filter(Boolean);
+                  for (const id of ids) {
+                    try {
+                      err = root.querySelector('#' + CSS.escape(id)) || document.getElementById(id);
+                    } catch (eId) {
+                      err = root.querySelector('#' + id) || document.getElementById(id);
+                    }
+                    if (err) break;
+                  }
+                }
+                if (!err) {
+                  const near =
+                    input.closest &&
+                    input.closest('.wdp-price-field, .wdp-field-stack__row, .wdp-form-group');
+                  err = near && near.querySelector && near.querySelector('.wdp-input-error');
+                }
+                const st = err ? window.getComputedStyle(err) : null;
+                const r = err ? err.getBoundingClientRect() : { width: 0, height: 0 };
+                const shown =
+                  err &&
+                  st &&
+                  st.display !== 'none' &&
+                  st.visibility !== 'hidden' &&
+                  Number.parseFloat(st.opacity || '1') > 0.05 &&
+                  r.width > 0 &&
+                  r.height > 0 &&
+                  String(err.textContent || '').trim();
+                if (!shown) missingMsgs.push(field);
+              }
+              let firstDomName = '';
+              for (const el of root.querySelectorAll('.wdp-error')) {
+                if (el.closest && el.closest('.wdp-shareholder-form.collapsed')) continue;
+                if (el.closest && el.closest('[hidden]')) continue;
+                const st = window.getComputedStyle(el);
+                const box = el.getBoundingClientRect();
+                if (st.display === 'none' || st.visibility === 'hidden' || box.width < 1 || box.height < 1) {
+                  continue;
+                }
+                firstDomName = el.getAttribute && el.getAttribute('name') ? el.getAttribute('name') : '';
+                if (firstDomName) break;
+              }
+              const active = document.activeElement;
+              const focusName = active && active.getAttribute ? active.getAttribute('name') || '' : '';
+              const focusOnFailure = (f) => {
+                if (!f || !f.field) return false;
+                if (f.field === focusName) return true;
+                const input = root.querySelector(`[name="${f.field}"]`);
+                if (!input) return false;
+                if (active === input) return true;
+                if (input.contains && input.contains(active)) return true;
+                const wrap =
+                  (input.closest && input.closest('.wdp-phone-field, .iti, .wdp-field-stack__row, .wdp-shareholder-form')) ||
+                  null;
+                return !!(wrap && wrap.contains && wrap.contains(active));
+              };
+              const header = root.querySelector('.wdp-shareholder-header');
+              const title = header && header.querySelector('h3');
+              const badge = header && header.querySelector('.wdp-unit-price-badge');
+              const parseRgb = (s) => {
+                const m = String(s || '').match(/rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/i);
+                return m ? [Number(m[1]), Number(m[2]), Number(m[3])] : null;
+              };
+              const lum = (rgb) => {
+                const lin = rgb.map((c) => {
+                  const v = c / 255;
+                  return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+                });
+                return 0.2126 * lin[0] + 0.7152 * lin[1] + 0.0722 * lin[2];
+              };
+              const ratio = (a, b) => {
+                if (!a || !b) return 0;
+                const hi = Math.max(lum(a), lum(b));
+                const lo = Math.min(lum(a), lum(b));
+                return (hi + 0.05) / (lo + 0.05);
+              };
+              let titleRatio = 0;
+              let badgeRatio = 0;
+              if (header && title) {
+                const hs = getComputedStyle(header);
+                const ts = getComputedStyle(title);
+                titleRatio = ratio(parseRgb(hs.backgroundColor), parseRgb(ts.color));
+                if (badge) {
+                  const bs = getComputedStyle(badge);
+                  const bg = parseRgb(bs.backgroundColor);
+                  const headerBg = parseRgb(hs.backgroundColor);
+                  badgeRatio = ratio(bg && bg[0] + bg[1] + bg[2] > 0 ? bg : headerBg, parseRgb(bs.color));
+                }
+              }
+              return {
+                missingMsgs,
+                collapsedStill,
+                focusName,
+                firstDomName,
+                titleRatio,
+                badgeRatio,
+                failCount: failures.length,
+                focusOk: failures.some(focusOnFailure),
+              };
+            });
+            if (state.missingMsgs.length) {
+              throw new Error(
+                `${type}/${mode.id}: görünür alan mesajı yok ${state.missingMsgs.join(',')}`
+              );
+            }
+            if (state.collapsedStill.length) {
+              throw new Error(
+                `${type}/${mode.id}: katlanmış kaldı ${state.collapsedStill.join(',')}`
+              );
+            }
+            if (!state.focusOk) {
+              throw new Error(
+                `${type}/${mode.id}: odak ${state.focusName || '(yok)'} hatalı alanda değil`
+              );
+            }
+            if (type === 'shares') {
+              if (state.titleRatio < 4.5) {
+                throw new Error(
+                  `${type}/${mode.id}: başlık kontrast ${state.titleRatio.toFixed(2)} < 4.5`
+                );
+              }
+              if (state.badgeRatio < 4.5) {
+                throw new Error(
+                  `${type}/${mode.id}: rozet kontrast ${state.badgeRatio.toFixed(2)} < 4.5`
+                );
+              }
+            }
+            await shot(page, shotDir, `errors-${type}-${mode.id}`);
+          }
+        }
+      } finally {
+        const restore = matrixEval(wpDir, ['placement-display', 'inline']);
+        if (!restore.ok) throw new Error(`görünüm geri alınamadı: ${restore.error || ''}`);
+      }
     });
 
     await runOne('console', async () => {

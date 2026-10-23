@@ -195,7 +195,7 @@ async function main() {
     fail(`--only eşleşmedi. Var: ${matrix.configs.map((c) => c.id).join(', ')}`);
   }
   const workers = resolveWorkerCount(flags.workers, matrix.defaultWorkers || 3);
-  const basePort = Number(matrix.basePort) || 8899;
+  const basePort = Number(process.env.WDP_MATRIX_BASE_PORT || matrix.basePort) || 8899;
   const startedAt = new Date().toISOString();
   const t0 = Date.now();
 

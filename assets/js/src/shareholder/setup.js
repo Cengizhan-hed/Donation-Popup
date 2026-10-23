@@ -255,6 +255,15 @@
 
       setupWdpPhoneFields(shareholdersList);
 
+      // Hisse satırları form çocuklarını yeniler; gönderim dinleyicisi yoksa bağla.
+      if (hostForm && WDPApp.form && typeof WDPApp.form.setup === 'function' && !hostForm._wdpSubmitHandler) {
+        try {
+          WDPApp.form.setup(hostForm);
+        } catch (eBindSubmit) {
+          safeLog('setupShareholderForms: form.setup', eBindSubmit);
+        }
+      }
+
       syncShareholderUnitPricesFromModal(modal);
       updateSharesTotalBar(modal);
       

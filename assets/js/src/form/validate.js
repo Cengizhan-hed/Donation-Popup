@@ -15,7 +15,6 @@
 
   const formatCurrency = typeof utils.formatCurrency === 'function' ? utils.formatCurrency.bind(utils) : function(n) { return String(n); };
   const safeLog = typeof utils.safeLog === 'function' ? utils.safeLog.bind(utils) : function() {};
-  const announceStatus = typeof utils.announceStatus === 'function' ? utils.announceStatus.bind(utils) : function() {};
   const clearAlerts = typeof utils.clearAlerts === 'function' ? utils.clearAlerts.bind(utils) : function() {};
 
   const GENERAL_VALIDATION_MESSAGE = 'Lütfen işaretli alanları kontrol edin.';
@@ -306,6 +305,67 @@
     return rows;
   }
 
+  /** Hatalı alanı gizleyen hissedar kartı / sihirbaz adımını açar. */
+  function revealInvalidFieldContainers(form) {
+    if (!form) {
+      return;
+    }
+    const invalids = Array.prototype.slice.call(form.querySelectorAll('.wdp-error, [aria-invalid="true"]'));
+    const rows = new Set();
+    invalids.forEach((el) => {
+      const row = el.closest && el.closest('.wdp-shareholder-form');
+      if (row) {
+        rows.add(row);
+      }
+      let node = el;
+      while (node && node !== form) {
+        const isStep =
+          node.classList &&
+          (node.classList.contains('wdp-wizard-section') ||
+            (node.getAttribute && node.getAttribute('data-wdp-step')));
+        const isShareContent = node.classList && node.classList.contains('wdp-shareholder-content');
+        if (
+          (isStep || isShareContent) &&
+          (node.hidden || (node.hasAttribute && node.hasAttribute('hidden')))
+        ) {
+          node.hidden = false;
+          if (typeof node.removeAttribute === 'function') {
+            node.removeAttribute('hidden');
+          }
+          if (typeof node.setAttribute === 'function') {
+            node.setAttribute('aria-hidden', 'false');
+          }
+          if (node.classList) {
+            node.classList.add('is-wdp-step-active');
+          }
+          if (isShareContent) {
+            node.style.display = 'flex';
+          }
+        }
+        node = node.parentNode;
+      }
+    });
+    rows.forEach((row) => {
+      row.classList.remove('collapsed');
+      row.classList.add('is-active');
+      const content = row.querySelector('.wdp-shareholder-content');
+      if (content) {
+        content.style.display = 'flex';
+        content.hidden = false;
+        if (typeof content.removeAttribute === 'function') {
+          content.removeAttribute('hidden');
+        }
+      }
+    });
+    if (WDPApp.formWizard && typeof WDPApp.formWizard.revealInvalidSteps === 'function') {
+      WDPApp.formWizard.revealInvalidSteps(form);
+    }
+    if (rows.size && WDPApp.shareholder && typeof WDPApp.shareholder.updateCollapsedCount === 'function') {
+      const host = form.closest('.wdp-modal') || form.closest('.wdp-donation-form') || form;
+      WDPApp.shareholder.updateCollapsedCount(host);
+    }
+  }
+
   /** Hatalı hissedar kartını açar, scroll eder ve ilgili alana odaklanır. */
   function focusShareholderIssue(issue) {
     if (!issue || !issue.row) {
@@ -362,6 +422,17 @@
         }
       }
     });
+    if (targetField && typeof targetField.focus === "function") {
+      try {
+        targetField.focus({ preventScroll: true });
+      } catch (eSync) {
+        try {
+          targetField.focus();
+        } catch (eSync2) {
+          /* ignore */
+        }
+      }
+    }
     return true;
   }
 
@@ -390,6 +461,11 @@
         form = live;
       }
     }
+    const fbBatch = WDPApp.formFeedback || formFeedback;
+    if (fbBatch && typeof fbBatch.beginErrorBatch === 'function') {
+      fbBatch.beginErrorBatch();
+    }
+    try {
     let isValid = true;
     let errorMessages = [];
     /** @type {Array<{field:string,rule:string,value:string}>} */
@@ -537,9 +613,6 @@
         return;
       }
       if (field.name === 'sadaka_custom_price' || (field.closest && field.closest('[data-wdp-sadaka-donation]'))) {
-        return;
-      }
-      if (field.closest && field.closest('[hidden]')) {
         return;
       }
       // type=number geçersiz değerde .value "" döner; yine de trim ile boşluk kontrolü yeterli.
@@ -697,6 +770,7 @@
 
     if (!isValid) {
       safeLog("Form is invalid; showing field-anchored errors + banner fallback");
+      revealInvalidFieldContainers(form);
       if (firstShareholderIssue && firstShareholderIssue.row && incompleteShareholderCount > 0) {
         const firstRowIndex =
           Number.parseInt(firstShareholderIssue.row.getAttribute("data-index") || "0", 10) || 0;
@@ -739,12 +813,6 @@
       if (!form.querySelector('.wdp-error') && !shareholderFocused) {
         focusFirstInvalidField(form);
       }
-      announceStatus(
-        summaryLines.length
-          ? summaryLines[0]
-          : fallbackMsg,
-        "assertive"
-      );
     } else if (WDPApp.shareholder && typeof WDPApp.shareholder.setValidationArmed === "function") {
       WDPApp.shareholder.setValidationArmed(form, false, 0);
       if (typeof WDPApp.shareholder.clearSubmitSummary === 'function') {
@@ -755,16 +823,53 @@
     }
 
     return isValid;
+    } finally {
+      if (fbBatch && typeof fbBatch.endErrorBatch === 'function') {
+        fbBatch.endErrorBatch();
+      }
+    }
   }
 
-  /** İlk .wdp-error alanına odaklanır ve görünür alana kaydırır. */
+  function isFocusableInvalidField(el) {
+    if (!el || typeof el.focus !== 'function') {
+      return false;
+    }
+    if (el.disabled || el.readOnly) {
+      return false;
+    }
+    if (el.closest && (el.closest('.wdp-shareholder-form.collapsed') || el.closest('[hidden]'))) {
+      return false;
+    }
+    if (el.getClientRects && el.getClientRects().length === 0) {
+      return false;
+    }
+    return true;
+  }
+
+  /** İlk görünür .wdp-error alanına odaklanır ve görünür alana kaydırır. */
   function focusFirstInvalidField(form) {
     if (!form) {
       return;
     }
-    const firstBad = form.querySelector(".wdp-error");
-    if (!firstBad || typeof firstBad.focus !== "function") {
+    const candidates = form.querySelectorAll(".wdp-error");
+    let firstBad = null;
+    for (let i = 0; i < candidates.length; i += 1) {
+      if (isFocusableInvalidField(candidates[i])) {
+        firstBad = candidates[i];
+        break;
+      }
+    }
+    if (!firstBad) {
       return;
+    }
+    try {
+      firstBad.focus({ preventScroll: true });
+    } catch (e0) {
+      try {
+        firstBad.focus();
+      } catch (e00) {
+        /* ignore */
+      }
     }
     window.requestAnimationFrame(() => {
       try {
@@ -800,6 +905,7 @@
     validatePhoneInputInForm: validatePhoneInputInForm,
     validateShareholderRow: validateShareholderRow,
     focusShareholderIssue: focusShareholderIssue,
+    revealInvalidFieldContainers: revealInvalidFieldContainers,
     getOrderedShareholderRows: getOrderedShareholderRows,
     ensureShareholderRowsReady: ensureShareholderRowsReady,
     getDonorNameRequiredMessage: getDonorNameRequiredMessage,

@@ -778,8 +778,13 @@ trait WDP_Assets_Inline_Styles_Trait {
         $css .= "  --wdp-shareholder-card-border: " . esc_attr($shareholder_settings['shareholder_card_border']) . ";\n";
         $css .= "  --wdp-shareholder-card-radius: " . esc_attr($ui_radius_share) . "px;\n";
         $css .= "  --wdp-shareholder-card-shadow: none;\n";
-        $css .= "  --wdp-shareholder-header-bg: " . esc_attr($shareholder_settings['shareholder_header_bg']) . ";\n";
-        $css .= "  --wdp-shareholder-header-color: " . esc_attr($shareholder_settings['shareholder_header_color']) . ";\n";
+        $share_header_bg = $shareholder_settings['shareholder_header_bg'];
+        $share_header_fg = $shareholder_settings['shareholder_header_color'];
+        if (class_exists('WDP_Color_Palette')) {
+            $share_header_fg = WDP_Color_Palette::readable_ink($share_header_bg, $share_header_fg);
+        }
+        $css .= "  --wdp-shareholder-header-bg: " . esc_attr($share_header_bg) . ";\n";
+        $css .= "  --wdp-shareholder-header-color: " . esc_attr($share_header_fg) . ";\n";
         $css .= "  --wdp-shareholder-header-bg-hover: " . esc_attr($shareholder_settings['shareholder_header_bg_hover']) . ";\n";
         $css .= "  --wdp-shareholder-content-padding: " . esc_attr($shareholder_settings['shareholder_content_padding']) . "px;\n";
         $shareholders_area_bg = WDP_Utils::coerce_solid_hex_background(

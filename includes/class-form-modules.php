@@ -612,6 +612,8 @@ class WDP_Form_Modules {
 			$vars[]  = '--wdp-primary-muted:' . $palette['primary_muted'];
 			$vars[]  = '--wdp-primary-border:' . $palette['primary_border'];
 			$vars[]  = '--wdp-on-primary:' . $on;
+			$vars[]  = '--wdp-shareholder-header-bg:' . $palette['primary'];
+			$vars[]  = '--wdp-shareholder-header-color:' . $on;
 			$vars[]  = '--wdp-title-color:' . $palette['primary_dark'];
 		} elseif ($primary !== '') {
 			$vars[] = '--wdp-primary:' . $primary;

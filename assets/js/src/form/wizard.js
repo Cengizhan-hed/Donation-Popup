@@ -667,11 +667,37 @@
     goTo(form._wdpWizard, 0, true);
   }
 
+  function revealInvalidSteps(form) {
+    if (!form) return;
+    const state = form._wdpWizard;
+    if (!isStateLive(state)) return;
+    let firstIdx = -1;
+    state.steps.forEach(function(step, i) {
+      const hasError = (step.nodes || []).some(function(n) {
+        return n && n.querySelector && n.querySelector('.wdp-error, .wdp-input-error, [aria-invalid="true"]');
+      });
+      if (!hasError) return;
+      if (firstIdx < 0) firstIdx = i;
+      (step.nodes || []).forEach(function(el) {
+        if (!el) return;
+        el.hidden = false;
+        if (typeof el.removeAttribute === 'function') el.removeAttribute('hidden');
+        if (typeof el.setAttribute === 'function') el.setAttribute('aria-hidden', 'false');
+        if (el.classList) el.classList.add('is-wdp-step-active');
+      });
+    });
+    if (firstIdx >= 0) {
+      state.index = firstIdx;
+      updateChrome(state);
+    }
+  }
+
   WDPApp.formWizard = {
     setup: setup,
     reset: reset,
     destroy: destroy,
     isEnabled: isEnabled,
+    revealInvalidSteps: revealInvalidSteps,
     goTo: function(form, index) {
       if (!form) return;
       if (!isStateLive(form._wdpWizard)) {
