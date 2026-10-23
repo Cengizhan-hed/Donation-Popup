@@ -2771,8 +2771,12 @@ export async function captureAll({
   const want = (id) => areaIncludes(areas, id);
   /** @type {object[]} */
   const a11yFindings = [];
-  resetRegistry(`run-${Date.now()}`, {
+  const sharedRunId = String(process.env.WDP_E2E_RUN_ID || '').trim();
+  resetRegistry(sharedRunId || `run-${Date.now()}`, {
     fixtureRecords: fixtureProductRecords(loadFixtures(profile.id)),
+    envId: profile.id,
+    siteUrl: env.E2E_BASE_URL || profile.baseUrl,
+    reuseExisting: !!sharedRunId,
   });
   /** @type {object|null} */
   let canaryBefore = null;

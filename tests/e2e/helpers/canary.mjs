@@ -6,15 +6,20 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { ROOT } from './env-root.mjs';
-import { loadRegistry } from './run-registry.mjs';
+import { assertRegistryMatchesActiveEnv, loadRegistry } from './run-registry.mjs';
 import { loadFixtures, verifiedFixtureIds } from './fixtures.mjs';
 import { peekActiveProfile, isRemoteProfile, resolveAllowedRemoteTarget } from './profile.mjs';
 import { buildGuardedEvalFileCommand } from '../../../scripts/lib/deploy-guards.mjs';
 import { spawnGuarded } from '../../../scripts/lib/remote-guard.mjs';
 import { runGuardedSsh, canonicalEnv } from '../../../scripts/lib/remote-discover-lib.mjs';
+import { canaryAlertPathFor, outputProfileId } from './e2e-paths.mjs';
 
 export const CANARY_SNAPSHOT_FILE = 'tests/e2e/helpers/canary-snapshot.php';
-export const CANARY_ALERT_PATH = path.join(ROOT, 'build/e2e/CANARY-ALERT.txt');
+export function canaryAlertPath(envId) {
+  return canaryAlertPathFor(envId);
+}
+/** Varsayılan: etkin profil veya local. */
+export const CANARY_ALERT_PATH = canaryAlertPathFor('local');
 
 /** Ayarlı (id>0) iken var/yayında olmalı; id 0 = ayarlı değil, sorun değil. */
 export const CORE_OPTIONAL_PAGE_IDS = [
@@ -165,6 +170,7 @@ export function formatCanaryStatusLine(beforeOk, afterOk, expectedNew = 0) {
 export function snapshotCanary() {
   if (snapshotOverride) return snapshotOverride();
   const profile = peekActiveProfile();
+  assertRegistryMatchesActiveEnv(loadRegistry(profile?.id), profile?.id);
   if (!profile || !isRemoteProfile(profile)) {
     return snapshotCanaryLocal();
   }
@@ -299,7 +305,8 @@ export function formatCanaryDiff(diff) {
  * @param {{ fixtures?: object|null, envId?: string, allowedDeletedIds?: number[] }} [opts]
  */
 export function compareWithRegistry(before, after, registry, opts = {}) {
-  const r = registry || loadRegistry();
+  const r = registry || loadRegistry(opts.envId);
+  assertRegistryMatchesActiveEnv(r, opts.envId);
   let fixturesData = opts.fixtures;
   if (fixturesData === undefined && opts.envId) {
     fixturesData = loadFixtures(opts.envId);
@@ -376,6 +383,7 @@ export function preflightCanary(snap) {
  * @param {{ updateBaseline?: boolean, allowMissingBaseline?: boolean, baseline?: object|null }} [opts]
  */
 export function evaluateCanaryHealth(snap, envId, registry, opts = {}) {
+  if (registry) assertRegistryMatchesActiveEnv(registry, envId);
   const pre = preflightCanary(snap);
   let baseline = opts.baseline;
   if (baseline === undefined) {
@@ -417,15 +425,16 @@ export function evaluateCanaryHealth(snap, envId, registry, opts = {}) {
   };
 }
 
-export function writeCanaryAlert(diff, extra = '') {
+export function writeCanaryAlert(diff, extra = '', envId) {
+  const file = canaryAlertPath(envId || outputProfileId());
   const text =
     `KANARYA KIRMIZI — 2026-10-22 koruması\n` +
     `Koşu durdu. Kayıt defteri dışındaki farklar:\n\n` +
     formatCanaryDiff(diff) +
     (extra ? `\n\n${extra}` : '') +
     '\n';
-  fs.mkdirSync(path.dirname(CANARY_ALERT_PATH), { recursive: true });
-  fs.writeFileSync(CANARY_ALERT_PATH, text, 'utf8');
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  fs.writeFileSync(file, text, 'utf8');
   console.error(text);
-  return CANARY_ALERT_PATH;
+  return file;
 }

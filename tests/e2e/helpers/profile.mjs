@@ -99,6 +99,11 @@ export function resolveAllowedRemoteTarget(idOrProfile) {
  */
 export function setActiveProfile(profile) {
   activeProfile = profile;
+  if (profile?.id) process.env.WDP_E2E_PROFILE_ID = String(profile.id);
+}
+
+export function clearActiveProfile() {
+  activeProfile = null;
 }
 
 /**

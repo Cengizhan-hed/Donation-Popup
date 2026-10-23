@@ -18,15 +18,16 @@ import { resolveQuickAreas } from './helpers/area-filter.mjs';
 import {
   baselineDirFor,
   currentDirFor,
-  REPORT_DIR,
   cleanE2EOutputDirs,
   normalizeScreenNames,
   readLocalPluginVersion,
   writeRunManifest,
-  CURRENT_DIR,
   slowestSections,
+  reportDirFor,
+  runJsonFor,
 } from './helpers/run-io.mjs';
 import { formatRemotePostBlockedLines } from './helpers/network-guard.mjs';
+import { withEnvRunLock } from './helpers/env-lock.mjs';
 
 function openReport(reportFile) {
   if (process.platform === 'darwin') {
@@ -59,7 +60,8 @@ async function main() {
   const outDir = currentDirFor(profileId, deviceId);
   const baselineDir = baselineDirFor(profileId, deviceId);
 
-  cleanE2EOutputDirs();
+  const code = await withEnvRunLock(profileId, async () => {
+  cleanE2EOutputDirs(profileId);
   const startedAt = new Date().toISOString();
   const started = Date.now();
   console.log(
@@ -109,7 +111,7 @@ async function main() {
     passedCount,
     skippedCount,
     failedCount,
-  } = compareAndReport(baselineDir, outDir, REPORT_DIR, failures, env.E2E_DIFF_THRESHOLD, {
+  } = compareAndReport(baselineDir, outDir, reportDirFor(profileId), failures, env.E2E_DIFF_THRESHOLD, {
     skips,
     warnings,
     flaky,
@@ -120,6 +122,7 @@ async function main() {
   });
 
   const durationSec = Number(((Date.now() - started) / 1000).toFixed(1));
+  const manifestFile = runJsonFor(profileId);
   writeRunManifest({
     mode: 'quick',
     env: profileId,
@@ -149,7 +152,7 @@ async function main() {
     remote_post_blocked,
     izinli_okuma,
     sections,
-  });
+  }, manifestFile);
 
   console.log('Report:', reportFile);
   console.log(
@@ -185,7 +188,7 @@ async function main() {
     for (const s of slow) console.log(`  ${s.label}: ${s.secs.toFixed(1)}s`);
   }
   console.log(formatRemotePostBlockedLines(remote_post_blocked, izinli_okuma));
-  console.log(`Manifest: ${path.relative(ROOT, path.join(CURRENT_DIR, 'run.json'))}`);
+  console.log(`Manifest: ${path.relative(ROOT, manifestFile)}`);
 
   if (flags.openReport) {
     openReport(reportFile);
@@ -204,9 +207,12 @@ async function main() {
       console.error('=== Teşhis dosyaları ===');
       for (const p of debugFiles) console.error(`  • ${p}`);
     }
-    process.exit(1);
+    return 1;
   }
   console.log('E2E quick passed.');
+  return 0;
+  });
+  if (code) process.exit(code);
 }
 
 main().catch((e) => {

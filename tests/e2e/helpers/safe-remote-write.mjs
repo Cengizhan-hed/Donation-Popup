@@ -9,6 +9,7 @@ import {
   isRunIdOk,
   loadRegistry,
   registryHas,
+  assertRegistryEnvForMutation,
 } from './run-registry.mjs';
 import { isFixtureProductId } from './fixtures.mjs';
 
@@ -180,6 +181,7 @@ export async function safeDeleteMarked(args) {
   const id = Math.abs(Number.parseInt(String(args.id), 10) || 0);
   const expectedType = String(args.expectedType || '');
   const registry = loadRegistry();
+  assertRegistryEnvForMutation(registry);
   if (!isRunIdOk(registry.runId)) {
     throw new Error('safe-remote-write: kayıt defteri runId yok; hiçbir şey silinmez');
   }

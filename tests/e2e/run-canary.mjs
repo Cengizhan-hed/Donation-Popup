@@ -14,7 +14,8 @@ import { fileURLToPath } from 'node:url';
 import { isRemoteFrozen, FREEZE_MESSAGE } from '../../scripts/lib/remote-guard.mjs';
 import { canonicalEnv } from '../../scripts/lib/remote-discover-lib.mjs';
 import { loadProfile, isRemoteProfile, setActiveProfile } from './helpers/profile.mjs';
-import { loadRegistry } from './helpers/run-registry.mjs';
+import { assertRegistryMatchesActiveEnv, loadRegistry } from './helpers/run-registry.mjs';
+import { withEnvRunLock } from './helpers/env-lock.mjs';
 import { loadFixtures } from './helpers/fixtures.mjs';
 import {
   snapshotCanary,
@@ -54,15 +55,16 @@ export function runCanary(opts) {
   const envName = canonicalEnv(opts.envName);
   const profile = loadProfile(envName);
   const remote = isRemoteProfile(profile);
-  if (remote) setActiveProfile(profile);
+  setActiveProfile(profile);
+
+  const registry = opts.registry || loadRegistry(profile.id);
+  assertRegistryMatchesActiveEnv(registry, profile.id);
 
   const current = opts.snapshotFn
     ? opts.snapshotFn()
     : remote
       ? snapshotCanary()
       : snapshotCanaryLocal();
-
-  const registry = opts.registry || loadRegistry();
   const fixtures = opts.fixtures !== undefined ? opts.fixtures : loadFixtures(profile.id);
   const health = evaluateCanaryHealth(current, envName, registry, {
     updateBaseline: !!opts.updateBaseline,
@@ -102,18 +104,21 @@ export function runCanary(opts) {
   return { status, ok, diffs, warnings, evald, pre, current };
 }
 
-function main() {
+async function main() {
   const args = parseCanaryArgs();
   const profile = loadProfile(args.envName);
   if (isRemoteProfile(profile) && isRemoteFrozen()) {
     fail(FREEZE_MESSAGE);
   }
-  try {
-    const r = runCanary(args);
-    if (!r.ok) process.exit(1);
-  } catch (e) {
-    fail(e && e.message ? e.message : String(e));
-  }
+  const code = await withEnvRunLock(
+    profile.id,
+    () => {
+      const r = runCanary(args);
+      return r.ok ? 0 : 1;
+    },
+    { command: 'e2e:canary' }
+  );
+  if (code) process.exit(code);
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

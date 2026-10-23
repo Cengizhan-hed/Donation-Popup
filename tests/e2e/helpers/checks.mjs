@@ -7,6 +7,15 @@ import { ROOT, withCacheBust } from './env.mjs';
 import { SEL } from './selectors.mjs';
 import { extractAjaxActionFromRequest, classifyBlockedConsoleError } from './network-guard.mjs';
 import { waitShellAnimationsDone } from './shell-overlap.mjs';
+import {
+  emptyCartStoreApiWithFetch,
+  playwrightStoreFetch,
+  readStoreApiNonceGlobals,
+  storeApiCartUrl,
+  storeApiFetch,
+  storeApiNonceFromGlobals,
+  storeApiNonceFromHeaders,
+} from './store-api.mjs';
 
 /** Kontrol başına en fazla bekleme (ms). Bulunamayan öğe hemen hata yazar. */
 export const CHECK_MS = 5000;
@@ -434,27 +443,15 @@ export async function emptyCartViaPageHtml(page, baseUrl) {
  */
 export async function emptyCart(page, baseUrl) {
   if (pageHasSiteOrigin(page.url(), baseUrl)) {
-    await page.evaluate(async (base) => {
-      const root = String(base || '').replace(/\/$/, '');
-      const nonce =
-        (window.wcSettings && window.wcSettings.storeApiNonce) ||
-        (window.wpApiSettings && window.wpApiSettings.nonce) ||
-        '';
-      const headers = { Accept: 'application/json' };
-      if (nonce) headers.Nonce = nonce;
-      try {
-        await fetch(`${root}/wp-json/wc/store/v1/cart/items`, {
-          method: 'DELETE',
-          credentials: 'same-origin',
-          headers,
-        });
-      } catch (e) {
-        return String(e && e.message ? e.message : e);
-      }
-      return '';
-    }, baseUrl);
-    const n = await cartItemCount(page, baseUrl);
-    if (n === 0) return;
+    const globals = await readStoreApiNonceGlobals(page);
+    const result = await emptyCartStoreApiWithFetch(playwrightStoreFetch(page), {
+      baseUrl,
+      globals,
+    });
+    if (result.emptied) {
+      const n = await cartItemCount(page, baseUrl);
+      if (n === 0) return;
+    }
   }
   await emptyCartViaPageHtml(page, baseUrl);
 }
@@ -463,22 +460,31 @@ export async function emptyCart(page, baseUrl) {
  * @param {import('@playwright/test').Page} page
  * @param {string} baseUrl
  */
+async function storeApiGetCartData(page, baseUrl) {
+  const globals = await readStoreApiNonceGlobals(page);
+  let nonce = storeApiNonceFromGlobals(globals);
+  const res = await storeApiFetch(playwrightStoreFetch(page), {
+    url: storeApiCartUrl(baseUrl, '/cart'),
+    method: 'GET',
+    nonce,
+  });
+  const headerNonce = storeApiNonceFromHeaders(res.headers);
+  if (headerNonce) nonce = headerNonce;
+  if (!res.ok) return { ok: false, status: res.status, data: null, nonce };
+  const data = await res.json();
+  return { ok: true, status: res.status, data, nonce };
+}
+
 export async function cartItemCount(page, baseUrl) {
-  return page.evaluate(async (base) => {
-    const root = base.replace(/\/$/, '');
-    try {
-      const res = await fetch(`${root}/wp-json/wc/store/v1/cart`, {
-        credentials: 'same-origin',
-      });
-      if (!res.ok) {
-        return -1;
-      }
-      const data = await res.json();
-      return Array.isArray(data.items) ? data.items.length : (data.items_count ?? -1);
-    } catch (e) {
-      return -1;
-    }
-  }, baseUrl);
+  try {
+    const got = await storeApiGetCartData(page, baseUrl);
+    if (!got.ok || !got.data) return -1;
+    const data = got.data;
+    return Array.isArray(data.items) ? data.items.length : (data.items_count ?? -1);
+  } catch (e) {
+    console.error(`[e2e:catch-fail] cartItemCount: ${e && e.message ? e.message : e}`);
+    return -1;
+  }
 }
 
 /**
@@ -488,53 +494,49 @@ export async function cartItemCount(page, baseUrl) {
  * @param {string} baseUrl
  * @returns {Promise<Array<{id:number,name:string,totals:string,quantity:number}>>}
  */
-export async function cartItemsDetail(page, baseUrl) {
-  return page.evaluate(async (base) => {
-    const root = base.replace(/\/$/, '');
-    try {
-      const res = await fetch(`${root}/wp-json/wc/store/v1/cart`, {
-        credentials: 'same-origin',
-      });
-      if (!res.ok) return [];
-      const data = await res.json();
-      const items = Array.isArray(data.items) ? data.items : [];
-      const cartMinor =
-        data.totals && data.totals.currency_minor_unit != null
-          ? Number(data.totals.currency_minor_unit)
-          : NaN;
-      return items.map((it) => {
-        const totals = it.totals || {};
-        const raw =
-          totals.line_subtotal != null
-            ? totals.line_subtotal
-            : totals.line_total != null
-              ? totals.line_total
-              : null;
-        const minor = raw != null ? Number(raw) : NaN;
-        const itemMinor =
-          totals.currency_minor_unit != null
-            ? Number(totals.currency_minor_unit)
-            : NaN;
-        // ?? : 0 (TRY) geçerli; yalnızca null/undefined iken üst/varsayılan
-        let decimals = 2;
-        if (Number.isFinite(itemMinor)) {
-          decimals = itemMinor;
-        } else if (Number.isFinite(cartMinor)) {
-          decimals = cartMinor;
-        }
-        const amount = Number.isFinite(minor) ? minor / Math.pow(10, decimals) : NaN;
-        const id = Number(it.id) || Number(it.product_id) || 0;
-        return {
-          id,
-          name: String(it.name || '').trim(),
-          totals: Number.isFinite(amount) ? String(amount) : '',
-          quantity: Number(it.quantity) || 0,
-        };
-      });
-    } catch (e) {
-      return [];
+export function mapStoreCartItems(data) {
+  const items = Array.isArray(data?.items) ? data.items : [];
+  const cartMinor =
+    data?.totals && data.totals.currency_minor_unit != null
+      ? Number(data.totals.currency_minor_unit)
+      : NaN;
+  return items.map((it) => {
+    const totals = it.totals || {};
+    const raw =
+      totals.line_subtotal != null
+        ? totals.line_subtotal
+        : totals.line_total != null
+          ? totals.line_total
+          : null;
+    const minor = raw != null ? Number(raw) : NaN;
+    const itemMinor =
+      totals.currency_minor_unit != null ? Number(totals.currency_minor_unit) : NaN;
+    let decimals = 2;
+    if (Number.isFinite(itemMinor)) {
+      decimals = itemMinor;
+    } else if (Number.isFinite(cartMinor)) {
+      decimals = cartMinor;
     }
-  }, baseUrl);
+    const amount = Number.isFinite(minor) ? minor / Math.pow(10, decimals) : NaN;
+    const id = Number(it.id) || Number(it.product_id) || 0;
+    return {
+      id,
+      name: String(it.name || '').trim(),
+      totals: Number.isFinite(amount) ? String(amount) : '',
+      quantity: Number(it.quantity) || 0,
+    };
+  });
+}
+
+export async function cartItemsDetail(page, baseUrl) {
+  try {
+    const got = await storeApiGetCartData(page, baseUrl);
+    if (!got.ok || !got.data) return [];
+    return mapStoreCartItems(got.data);
+  } catch (e) {
+    console.error(`[e2e:catch-fail] cartItemsDetail: ${e && e.message ? e.message : e}`);
+    return [];
+  }
 }
 
 /**
@@ -544,26 +546,21 @@ export async function cartItemsDetail(page, baseUrl) {
  * @returns {Promise<{items_count:number,currency_code:string,currency_symbol:string,items:Array<{id:number,name:string,totals:string,quantity:number}>}>}
  */
 export async function cartStoreSnapshot(page, baseUrl) {
-  const items = await cartItemsDetail(page, baseUrl);
-  const meta = await page.evaluate(async (base) => {
-    const root = String(base || '').replace(/\/$/, '');
-    const res = await fetch(`${root}/wp-json/wc/store/v1/cart`, {
-      credentials: 'same-origin',
-    });
-    if (!res.ok) {
-      throw new Error(`Store API sepet HTTP ${res.status}`);
-    }
-    const data = await res.json();
-    const totals = data && data.totals ? data.totals : {};
-    return {
-      items_count: Array.isArray(data.items)
-        ? data.items.length
-        : Number(data.items_count) || 0,
-      currency_code: String(totals.currency_code || ''),
-      currency_symbol: String(totals.currency_symbol || ''),
-    };
-  }, baseUrl);
-  return { ...meta, items };
+  const got = await storeApiGetCartData(page, baseUrl);
+  if (!got.ok || !got.data) {
+    throw new Error(`Store API sepet HTTP ${got.status || 0}`);
+  }
+  const data = got.data;
+  const totals = data && data.totals ? data.totals : {};
+  const items = mapStoreCartItems(data);
+  return {
+    items_count: Array.isArray(data.items)
+      ? data.items.length
+      : Number(data.items_count) || 0,
+    currency_code: String(totals.currency_code || ''),
+    currency_symbol: String(totals.currency_symbol || ''),
+    items,
+  };
 }
 
 /**
@@ -1071,7 +1068,7 @@ export async function clickAddToCartWithRetry(page, button, opts = {}) {
  * @returns {{ short: string, debugFile: string }}
  */
 export function shortenAndStoreError(checkId, fullMessage) {
-  const debugDir = path.join(ROOT, 'build/e2e/debug');
+  const debugDir = path.join(ROOT, 'build/e2e/debug', String(process.env.WDP_E2E_PROFILE_ID || 'local'));
   fs.mkdirSync(debugDir, { recursive: true });
   const safe = String(checkId || 'error').replace(/[^\w.-]+/g, '_');
   const debugFile = path.join(debugDir, `${safe}.txt`);

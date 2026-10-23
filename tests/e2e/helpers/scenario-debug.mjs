@@ -4,7 +4,11 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { ROOT } from './env.mjs';
+import { tracesDirFor } from './e2e-paths.mjs';
 
+export function tracesDir() {
+  return tracesDirFor();
+}
 export const TRACES_DIR = path.join(ROOT, 'build/e2e/traces');
 
 /** @type {Map<string, { name: string, step: string, startedAt: number }>} */
@@ -76,12 +80,13 @@ export function createTimeline(name) {
  * @param {string} scenario
  */
 export function tracePaths(runLabel, scenario) {
-  fs.mkdirSync(TRACES_DIR, { recursive: true });
+  const dir = tracesDir();
+  fs.mkdirSync(dir, { recursive: true });
   const base = `${safeName(runLabel)}-${safeName(scenario)}`;
   return {
-    zip: path.join(TRACES_DIR, `${base}.zip`),
-    json: path.join(TRACES_DIR, `${base}.json`),
-    firstAttemptJson: path.join(TRACES_DIR, `${base}-attempt1.json`),
+    zip: path.join(dir, `${base}.zip`),
+    json: path.join(dir, `${base}.json`),
+    firstAttemptJson: path.join(dir, `${base}-attempt1.json`),
   };
 }
 

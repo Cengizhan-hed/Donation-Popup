@@ -32,6 +32,7 @@ import {
   setRegistryFixtures,
 } from '../tests/e2e/helpers/run-registry.mjs';
 import { loadProfile, isRemoteProfile, setActiveProfile } from '../tests/e2e/helpers/profile.mjs';
+import { acquireEnvLock, releaseEnvLock } from '../tests/e2e/helpers/env-lock.mjs';
 import { setActiveDeployEnvFile, runEvalFile } from '../tests/e2e/helpers/wp-remote.mjs';
 import {
   snapshotCanary,
@@ -159,10 +160,16 @@ async function main() {
     fail(FREEZE_MESSAGE);
   }
 
+  setActiveProfile(profile);
+  const lock = acquireEnvLock(profileId, { command: 'e2e:bootstrap', runId });
+  try {
   if (!remove) {
-    resetRegistry(runId, { fixtureRecords: fixtureProductRecords(existingFx) });
+    resetRegistry(runId, {
+      envId: profileId,
+      siteUrl: profile.baseUrl,
+      fixtureRecords: fixtureProductRecords(existingFx),
+    });
   }
-  if (remote) setActiveProfile(profile);
   if (profile.deployEnvFile) setActiveDeployEnvFile(profile.deployEnvFile);
 
   const takeSnap = () => (remote ? snapshotCanary() : snapshotCanaryLocal());
@@ -202,7 +209,7 @@ async function main() {
   }
   const outFile = writeFixtures(profileId, data);
   if (remove) {
-    resetRegistry(runId, { clearFixtures: true });
+    resetRegistry(runId, { clearFixtures: true, envId: profileId, siteUrl: profile.baseUrl });
   } else {
     registerCreatedRows({ ...data, runId });
   }
@@ -222,6 +229,9 @@ async function main() {
 
   console.log(`fixtures: ${outFile}`);
   console.log(JSON.stringify({ roles: data.roles, skipped: data.skipped, removed: data.removed }, null, 2));
+  } finally {
+    releaseEnvLock(lock);
+  }
 }
 
 const invoked = process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);

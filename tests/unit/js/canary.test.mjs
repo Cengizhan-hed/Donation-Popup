@@ -14,7 +14,7 @@ import {
   formatCanaryStatusLine,
   writeCanaryAlert,
   updateCanaryBaselineIfClean,
-  CANARY_ALERT_PATH,
+  canaryAlertPath,
 } from '../../../tests/e2e/helpers/canary.mjs';
 import { verifiedFixtureIds } from '../../../tests/e2e/helpers/fixtures.mjs';
 import { parseCanaryArgs, runCanary } from '../../../tests/e2e/run-canary.mjs';
@@ -257,7 +257,7 @@ describe('canary', () => {
       'e2e:bootstrap önce kanarya'
     );
     const text = fs.readFileSync(file, 'utf8');
-    assert.equal(file, CANARY_ALERT_PATH);
+    assert.equal(file, canaryAlertPath('local'));
     assert.match(text, /woocommerce_cart_page_id/);
     assert.match(text, /id=8/);
     assert.match(text, /trash/);
@@ -331,7 +331,7 @@ describe('run-canary', () => {
       fixtures: null,
     });
     assert.equal(r.ok, false);
-    const text = fs.readFileSync(CANARY_ALERT_PATH, 'utf8');
+    const text = fs.readFileSync(canaryAlertPath('local'), 'utf8');
     assert.match(text, /woocommerce_cart_page_id/);
     assert.match(text, /id=8/);
     assert.doesNotMatch(text, /\{"change":"pre-bootstrap"\}/);

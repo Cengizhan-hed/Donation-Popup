@@ -38,10 +38,10 @@ function basenames(list) {
 }
 
 const flags = parseE2ECli(process.argv.slice(2));
-const run = readRunManifest();
+const run = readRunManifest(flags.envId);
 if (!run || !Array.isArray(run.screens) || !run.screens.length) {
   console.error(
-    'Kabul reddedildi: build/e2e/current/run.json yok veya ekran listesi boş. Önce npm run e2e:quick veya ship:staging çalıştırın.'
+    'Kabul reddedildi: build/e2e/current/<profil>/run.json yok veya ekran listesi boş. Önce npm run e2e:quick veya ship:staging çalıştırın.'
   );
   process.exit(1);
 }
