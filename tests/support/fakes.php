@@ -186,6 +186,10 @@ if (!class_exists('WC_Product')) {
 		public $visible = true;
 		/** @var string */
 		public $post_password = '';
+		/** @var int[] */
+		public $upsell_ids = array();
+		/** @var int[] */
+		public $related_ids = array();
 
 		public function __construct($id = 0) {
 			$this->id = (int) $id;
@@ -264,6 +268,14 @@ if (!class_exists('WC_Product')) {
 
 		public function get_post_password() {
 			return $this->post_password;
+		}
+
+		public function get_upsell_ids() {
+			return array_values(array_map('intval', $this->upsell_ids));
+		}
+
+		public function get_related($limit = 5) {
+			return array_slice(array_values(array_map('intval', $this->related_ids)), 0, (int) $limit);
 		}
 
 		public function get_meta($key, $single = true) {
