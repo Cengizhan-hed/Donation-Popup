@@ -31,9 +31,15 @@ import {
 } from './helpers/run-io.mjs';
 import { formatRemotePostBlockedLines } from './helpers/network-guard.mjs';
 import { acquireEnvLock, releaseEnvLock } from './helpers/env-lock.mjs';
-import { loadProfile } from './helpers/profile.mjs';
+import { loadProfile, setActiveProfile } from './helpers/profile.mjs';
 import { resetRegistry } from './helpers/run-registry.mjs';
 import { fixtureProductRecords, loadFixtures } from './helpers/fixtures.mjs';
+import { killChildTree } from './helpers/run-signals.mjs';
+import { snapshotCanary } from './helpers/canary.mjs';
+import { cleanupE2EData } from './helpers/test-cleanup.mjs';
+import { runRepairForProfile } from '../../scripts/e2e-bootstrap.mjs';
+
+const CHILD_TIMEOUT_MS = 25 * 60 * 1000;
 
 function envList(envId) {
   const v = String(envId || '').trim().toLowerCase();
@@ -126,7 +132,7 @@ async function runOne({ envId, deviceId, noSideCart }) {
   return row;
 }
 
-function spawnCombo(envId, deviceId, extraArgs, extraEnv = {}) {
+function spawnCombo(envId, deviceId, extraArgs, extraEnv = {}, liveChildren = []) {
   const script = fileURLToPath(import.meta.url);
   return new Promise((resolve) => {
     const args = [script, '--env', envId, '--device', deviceId, '--no-clean', '--child', ...extraArgs];
@@ -134,13 +140,32 @@ function spawnCombo(envId, deviceId, extraArgs, extraEnv = {}) {
       cwd: ROOT,
       env: { ...process.env, ...extraEnv },
     });
+    liveChildren.push(child);
+    let settled = false;
+    const finish = (row) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      resolve(row);
+    };
+    const timer = setTimeout(() => {
+      console.error(`[e2e:full] çocuk üst süre ${envId}/${deviceId} (${CHILD_TIMEOUT_MS / 1000}s)`);
+      killChildTree(child, 15000);
+      finish({
+        envId,
+        deviceId,
+        code: 1,
+        timedOut: true,
+        error: `çocuk 25 dk üst süre (${envId}/${deviceId})`,
+      });
+    }, CHILD_TIMEOUT_MS);
     child.stdout.on('data', (d) => process.stdout.write(d));
     child.stderr.on('data', (d) => process.stderr.write(d));
     child.on('close', (code) => {
-      resolve({ envId, deviceId, code: Number(code) || 0 });
+      finish({ envId, deviceId, code: Number(code) || 0 });
     });
     child.on('error', (e) => {
-      resolve({
+      finish({
         envId,
         deviceId,
         code: 1,
@@ -148,6 +173,24 @@ function spawnCombo(envId, deviceId, extraArgs, extraEnv = {}) {
       });
     });
   });
+}
+
+async function runParentPostSafety(envIds, reason) {
+  console.error(`[e2e:full] koşu sonu güvenlik: ${reason}`);
+  for (const envId of envIds || []) {
+    try {
+      const profile = loadProfile(isLocalEnvId(envId) ? 'local' : envId);
+      setActiveProfile(profile);
+      const repaired = await runRepairForProfile(profile, {});
+      console.error(`[e2e:full] meta onarım ${profile.id}: ${repaired.targets.length} ürün`);
+      snapshotCanary();
+      await cleanupE2EData({ envId: profile.id });
+    } catch (e) {
+      console.error(
+        `[e2e:catch-fail] post-safety ${envId}: ${e && e.message ? e.message : e}`
+      );
+    }
+  }
 }
 
 function collectChildRows(envIds = []) {
@@ -214,6 +257,15 @@ async function main() {
   /** @type {object[]} */
   let rows = [];
   let exitCode = 0;
+  /** @type {import('node:child_process').ChildProcess[]} */
+  const liveChildren = [];
+  let parentAborted = false;
+  const onParentSignal = () => {
+    parentAborted = true;
+    for (const c of liveChildren) killChildTree(c, 15000);
+  };
+  process.once('SIGTERM', onParentSignal);
+  process.once('SIGINT', onParentSignal);
 
   try {
   if (!flags.child) {
@@ -249,11 +301,30 @@ async function main() {
         WDP_E2E_ENV_LOCK_PID: String(process.pid),
       };
       for (const deviceId of devices) {
-        jobs.push(spawnCombo(envId, deviceId, extra, childEnv));
+        jobs.push(spawnCombo(envId, deviceId, extra, childEnv, liveChildren));
       }
     }
-    await Promise.all(jobs);
+    const jobRows = await Promise.all(jobs);
+    const dirty = parentAborted || jobRows.some((j) => j.code !== 0 || j.timedOut);
+    if (dirty) {
+      await runParentPostSafety(envs, parentAborted ? 'SIGTERM/SIGINT' : 'çocuk hata/üst süre');
+    }
     rows = collectChildRows(envs);
+    for (const j of jobRows) {
+      if (!j.timedOut && !j.error) continue;
+      const profileId = isLocalEnvId(j.envId) ? 'local' : loadProfile(j.envId).id;
+      const has = rows.some((r) => r.env === profileId && r.device === j.deviceId);
+      if (has) continue;
+      rows.push({
+        env: profileId,
+        device: j.deviceId,
+        secs: 0,
+        passed: 0,
+        skipped: 0,
+        failed: 1,
+        failures: [{ check: 'runner', description: j.error || 'çocuk üst süre' }],
+      });
+    }
     if (!rows.length) {
       for (const envId of envs) {
         for (const deviceId of devices) {
@@ -439,6 +510,15 @@ async function main() {
     console.log('E2E full passed.');
   }
   } finally {
+    process.removeListener('SIGTERM', onParentSignal);
+    process.removeListener('SIGINT', onParentSignal);
+    if (parentAborted) {
+      try {
+        await runParentPostSafety(envs, 'finally SIGTERM');
+      } catch (e) {
+        console.error(`[e2e:catch-fail] finally safety: ${e && e.message ? e.message : e}`);
+      }
+    }
     for (const h of lockHandles) {
       try {
         releaseEnvLock(h);

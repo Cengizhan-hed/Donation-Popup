@@ -8,7 +8,7 @@ import { spawnSync } from 'node:child_process';
 import { ROOT } from './env-root.mjs';
 import { assertRegistryMatchesActiveEnv, loadRegistry } from './run-registry.mjs';
 import { loadFixtures, verifiedFixtureIds } from './fixtures.mjs';
-import { peekActiveProfile, isRemoteProfile, resolveAllowedRemoteTarget } from './profile.mjs';
+import { peekActiveProfile, isRemoteProfile, resolveAllowedRemoteTarget, resolveProfileId } from './profile.mjs';
 import { buildGuardedEvalFileCommand } from '../../../scripts/lib/deploy-guards.mjs';
 import { spawnGuarded } from '../../../scripts/lib/remote-guard.mjs';
 import { runGuardedSsh, canonicalEnv } from '../../../scripts/lib/remote-discover-lib.mjs';
@@ -110,14 +110,25 @@ export function snapshotCanaryLocal() {
 }
 
 export function canaryBaselinePath(envId) {
-  const env = canonicalEnv(String(envId || 'local'));
+  const env = resolveProfileId(envId) || 'local';
   return path.join(ROOT, 'build/e2e/canary', `${env}-baseline.json`);
+}
+
+function legacyCanaryBaselinePath(envId) {
+  try {
+    const env = canonicalEnv(String(envId || resolveProfileId(envId) || 'local'));
+    return path.join(ROOT, 'build/e2e/canary', `${env}-baseline.json`);
+  } catch {
+    return '';
+  }
 }
 
 export function readBaseline(envId) {
   const file = canaryBaselinePath(envId);
-  if (!fs.existsSync(file)) return null;
-  return readSnapshot(file);
+  if (fs.existsSync(file)) return readSnapshot(file);
+  const legacy = legacyCanaryBaselinePath(envId);
+  if (legacy && legacy !== file && fs.existsSync(legacy)) return readSnapshot(legacy);
+  return null;
 }
 
 /**

@@ -12,8 +12,7 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { isRemoteFrozen, FREEZE_MESSAGE } from '../../scripts/lib/remote-guard.mjs';
-import { canonicalEnv } from '../../scripts/lib/remote-discover-lib.mjs';
-import { loadProfile, isRemoteProfile, setActiveProfile } from './helpers/profile.mjs';
+import { loadProfile, isRemoteProfile, setActiveProfile, resolveProfileId } from './helpers/profile.mjs';
 import { assertRegistryMatchesActiveEnv, loadRegistry } from './helpers/run-registry.mjs';
 import { withEnvRunLock } from './helpers/env-lock.mjs';
 import { loadFixtures } from './helpers/fixtures.mjs';
@@ -45,14 +44,14 @@ export function parseCanaryArgs(argv = process.argv.slice(2)) {
     else if (x.startsWith('--env=')) envRaw = x.slice('--env='.length);
     else if (x === '--update-baseline') updateBaseline = true;
   }
-  return { envName: canonicalEnv(envRaw), updateBaseline };
+  return { envName: resolveProfileId(envRaw) || 'local', updateBaseline };
 }
 
 /**
  * @param {{ envName: string, updateBaseline?: boolean, snapshotFn?: () => object, registry?: object, fixtures?: object|null, baseline?: object|null }} opts
  */
 export function runCanary(opts) {
-  const envName = canonicalEnv(opts.envName);
+  const envName = resolveProfileId(opts.envName) || 'local';
   const profile = loadProfile(envName);
   const remote = isRemoteProfile(profile);
   setActiveProfile(profile);

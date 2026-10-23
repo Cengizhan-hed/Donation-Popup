@@ -65,6 +65,20 @@ describe('e2e:bootstrap dry-run', () => {
     assert.equal(b.remove, true);
   });
 
+  it('--repair --dry-run uzak yazmadan liste üretir', () => {
+    const a = parseArgs(['--env', 'staging', '--repair', '--dry-run']);
+    assert.equal(a.repair, true);
+    assert.equal(a.dry, true);
+    const r = runBootstrap(['--env', 'local', '--repair', '--dry-run']);
+    assert.equal(r.status, 0, r.stderr || r.stdout);
+    const plan = JSON.parse(r.stdout);
+    assert.equal(plan.dryRun, true);
+    assert.equal(plan.action, 'repair');
+    assert.equal(plan.remoteWrite, false);
+    assert.equal(plan.changesSiteSettings, false);
+    assert.equal(plan.createsPages, false);
+  });
+
   it('baseline yalnız TEMİZ karşılaştırmada yazılır (karar, disk yok)', () => {
     const skip = updateCanaryBaselineIfClean('local', { posts: [] }, { ok: false });
     assert.equal(skip.updated, false);

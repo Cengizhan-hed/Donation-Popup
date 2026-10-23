@@ -4,10 +4,11 @@
 import { createHash } from 'node:crypto';
 import path from 'node:path';
 import { ROOT } from './env-root.mjs';
-import { peekActiveProfile } from './profile.mjs';
+import { peekActiveProfile, resolveProfileId } from './profile.mjs';
 
 export function safeProfileId(raw) {
-  return String(raw || '')
+  const resolved = resolveProfileId(raw);
+  return String(resolved || '')
     .trim()
     .toLowerCase()
     .replace(/[^a-z0-9._-]/g, '');

@@ -6,6 +6,7 @@ import {
   KIND_LOCAL_ONLY,
   mutationScenarioKind,
   skipLocalOnlyOnRemote,
+  deviceRunsMutations,
 } from '../../../tests/e2e/helpers/mutation-policy.mjs';
 
 describe('mutasyon senaryo sınıfı', () => {
@@ -37,6 +38,12 @@ describe('mutasyon senaryo sınıfı', () => {
       skipLocalOnlyOnRemote({ _profile: { id: 'staging-hedef', ssh: { alias: 'hedef-staging' } } }, 'amount-opts-g-min-hides-below', skips, stats),
       false
     );
+  });
+
+  it('mutasyon yalnız iphone', () => {
+    assert.equal(deviceRunsMutations('iphone'), true);
+    assert.equal(deviceRunsMutations('android'), false);
+    assert.equal(deviceRunsMutations('desktop'), false);
   });
 
   it('tabloda her satırın id/kind/suite’si var', () => {

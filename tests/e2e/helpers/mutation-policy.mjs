@@ -15,6 +15,16 @@ import { SEL } from './selectors.mjs';
 export const KIND_PRODUCT_META = 'product-meta';
 export const KIND_LOCAL_ONLY = 'local-only';
 
+/** Mutasyon suite’leri yalnız bu cihazda (diğerleri salt okunur). */
+export const MUTATION_DEVICE_ID = 'iphone';
+
+/**
+ * @param {string} [deviceId]
+ */
+export function deviceRunsMutations(deviceId) {
+  return String(deviceId || '').toLowerCase() === MUTATION_DEVICE_ID;
+}
+
 /** @type {Array<{ id: string, kind: string, suite: string, reason?: string }>} */
 export const MUTATION_SCENARIOS = [
   { id: 'amount-opts-e-initial-empty-no-recommended', kind: KIND_PRODUCT_META, suite: 'amount-options' },

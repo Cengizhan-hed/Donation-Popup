@@ -7,7 +7,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { ROOT } from './env-root.mjs';
-import { peekActiveProfile } from './profile.mjs';
+import { peekActiveProfile, resolveProfileId, sameProfileId } from './profile.mjs';
 import {
   activeProfileId,
   hashSiteUrl,
@@ -204,9 +204,9 @@ function normalizeLoaded(parsed) {
  * @param {string} [envId]
  */
 export function assertRegistryMatchesActiveEnv(registry, envId) {
-  const want = safeProfileId(envId || activeProfileId());
-  const got = safeProfileId(registry?.envId);
-  if (got && want && got !== want) {
+  const want = resolveProfileId(envId || activeProfileId());
+  const got = resolveProfileId(registry?.envId);
+  if (got && want && !sameProfileId(got, want)) {
     throw new Error(`${REGISTRY_ENV_MISMATCH}: defter envId=${got} etkin=${want}`);
   }
   return registry;
@@ -219,8 +219,8 @@ export function assertRegistryMatchesActiveEnv(registry, envId) {
  */
 export function assertRegistryEnvForMutation(registry, envId) {
   assertRegistryMatchesActiveEnv(registry, envId);
-  const want = safeProfileId(envId || activeProfileId());
-  const got = safeProfileId(registry?.envId);
+  const want = resolveProfileId(envId || activeProfileId());
+  const got = resolveProfileId(registry?.envId);
   const hasIds =
     (registry?.created?.length || 0) + (registry?.mutated?.length || 0) > 0;
   if (hasIds && !want) {
@@ -229,7 +229,7 @@ export function assertRegistryEnvForMutation(registry, envId) {
   if (hasIds && !got) {
     throw new Error(`${REGISTRY_ENV_MISMATCH}: defterde envId yok (etkin=${want})`);
   }
-  if (hasIds && got && want && got !== want) {
+  if (hasIds && got && want && !sameProfileId(got, want)) {
     throw new Error(`${REGISTRY_ENV_MISMATCH}: defter envId=${got} etkin=${want}`);
   }
   return registry;
