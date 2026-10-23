@@ -9,9 +9,10 @@ import { fileURLToPath } from 'node:url';
 import {
   classifyPageHeight,
   classifyShellCompleteness,
+  collectPageCompletenessMetrics,
   screenKindFromName,
   screenCompletenessFailure,
-  PAGE_HEIGHT_RATIO,
+  PAGE_HEIGHT_TOLERANCE_PX,
 } from '../../../tests/e2e/helpers/screen-completeness.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
@@ -27,20 +28,90 @@ describe('screenKindFromName', () => {
   });
 });
 
-describe('classifyPageHeight (yalnız tam sayfa)', () => {
-  it('referans yok veya eşit → geç', () => {
-    assert.equal(classifyPageHeight(800, 0).ok, true);
-    assert.equal(classifyPageHeight(0, 2000).ok, true);
-    assert.equal(classifyPageHeight(2000, 2000).ok, true);
-    assert.equal(classifyPageHeight(1900, 2000).ok, true);
+function pageBase(over = {}) {
+  return {
+    readyState: 'complete',
+    screenshotH: 2400,
+    scrollHeight: 2400,
+    fullPage: true,
+    lastRegionKind: 'footer',
+    lastRegionInDom: true,
+    lastRegionTop: 2200,
+    lastRegionBottom: 2380,
+    ...over,
+  };
+}
+
+describe('classifyPageHeight (yalnız tam sayfa, tema bağımsız)', () => {
+  it('kesik çekim (ekran viewport, footer ekran dışında) → kırmızı', () => {
+    const r = classifyPageHeight(
+      pageBase({
+        screenshotH: 844,
+        scrollHeight: 2400,
+        lastRegionTop: 2200,
+        lastRegionBottom: 2380,
+      })
+    );
+    assert.equal(r.ok, false);
+    assert.equal(r.reason, 'last-region-clipped');
+    const half = classifyPageHeight(
+      pageBase({
+        screenshotH: 844,
+        scrollHeight: 2400,
+        lastRegionInShot: true,
+        lastRegionTop: 10,
+        lastRegionBottom: 80,
+      })
+    );
+    assert.equal(half.ok, false);
+    assert.equal(half.reason, 'half-page');
+    assert.ok(844 < 2400 - PAGE_HEIGHT_TOLERANCE_PX);
   });
 
-  it('görüntü alanı kadar kısa sayfa referansa göre kırmızı', () => {
-    const r = classifyPageHeight(844, 2400);
+  it('tam çekim: complete + footer ekranda + yükseklik ≥ scrollHeight → geç', () => {
+    const r = classifyPageHeight(pageBase());
+    assert.equal(r.ok, true);
+    assert.equal(r.reason, 'footer');
+  });
+
+  it('footer’sız tema → son görünür blok ölçütü', () => {
+    const ok = classifyPageHeight(
+      pageBase({
+        lastRegionKind: 'last-block',
+        lastRegionInDom: true,
+        lastRegionTop: 2100,
+        lastRegionBottom: 2390,
+      })
+    );
+    assert.equal(ok.ok, true);
+    assert.equal(ok.reason, 'last-block');
+    const missing = classifyPageHeight(
+      pageBase({
+        lastRegionKind: '',
+        lastRegionInDom: false,
+        lastRegionTop: 0,
+        lastRegionBottom: 0,
+      })
+    );
+    assert.equal(missing.ok, false);
+    assert.equal(missing.reason, 'last-region-missing');
+  });
+
+  it('readyState complete değil → kırmızı', () => {
+    const r = classifyPageHeight(pageBase({ readyState: 'interactive' }));
     assert.equal(r.ok, false);
-    assert.equal(r.reason, 'half-page');
-    assert.match(r.detail, /sayfa=844/);
-    assert.ok(844 < 2400 * PAGE_HEIGHT_RATIO);
+    assert.equal(r.reason, 'not-complete');
+  });
+});
+
+describe('collectPageCompletenessMetrics kaynak', () => {
+  it('footer / contentinfo / son görünür blok seçicileri var', () => {
+    const src = collectPageCompletenessMetrics.toString();
+    assert.match(src, /footer/);
+    assert.match(src, /role=["']contentinfo["']/);
+    assert.match(src, /last-block/);
+    assert.match(src, /scrollingElement/);
+    assert.match(src, /readyState/);
   });
 });
 
@@ -161,17 +232,22 @@ describe('screenCompletenessFailure', () => {
       reason: 'half-page',
       detail: 'sayfa=800px',
     });
-    assert.match(page.description, /yarım kalmış/);
+    assert.match(page.description, /yarım kaldı/);
   });
 });
 
 describe('capture.mjs kabukta ürün sayfası yüksekliği kıyaslamaz', () => {
-  it('assertShellPageHeight yok; classifyShellCompleteness var', () => {
+  it('assertShellPageHeight yok; classifyShellCompleteness + sayfa ölçütü var', () => {
     const src = fs.readFileSync(path.join(root, 'tests/e2e/helpers/capture.mjs'), 'utf8');
     assert.match(src, /classifyShellCompleteness/);
     assert.match(src, /classifyPageHeight/);
+    assert.match(src, /collectPageCompletenessMetrics/);
+    assert.match(src, /productPageCache/);
+    assert.match(src, /beginNavCache/);
     assert.match(src, /screenKindFromName/);
     assert.doesNotMatch(src, /function assertShellPageHeight/);
     assert.doesNotMatch(src, /Kabuk ekranı ürün sayfasından belirgin kısa/);
+    assert.doesNotMatch(src, /errors: taze goto/);
+    assert.doesNotMatch(src, /referencePageHeight/);
   });
 });

@@ -14,6 +14,23 @@ import { inspectEnvPageProductKeys } from './catalog-core.mjs';
 
 export { ROOT };
 
+/** Aynı e2e koşusunda tekrarlı goto’ların tarayıcı önbelleğini paylaşması. */
+let navCacheEpoch = '';
+let navSeq = 0;
+
+/**
+ * Koşu başı sabit `wdp_e2e` jetonu. Mutasyon öncesi `endNavCache` ile kapatılır.
+ * @param {string|number} [token]
+ */
+export function beginNavCache(token) {
+  navCacheEpoch = String(token == null || token === '' ? Date.now() : token);
+  return navCacheEpoch;
+}
+
+export function endNavCache() {
+  navCacheEpoch = '';
+}
+
 const PRODUCT_KEYS = [
   ['E2E_PRODUCT_FIXED', 'fixed'],
   ['E2E_PRODUCT_CUSTOM', 'custom'],
@@ -174,7 +191,7 @@ export function loadE2EEnv(opts = {}) {
  * @param {Record<string, string|number|boolean>} [extraParams]
  */
 export function withCacheBust(base, pathOrUrl, extraParams = {}) {
-  const ts = Date.now();
+  const ts = navCacheEpoch || `${Date.now()}-${++navSeq}`;
   let url;
   if (/^https?:\/\//i.test(pathOrUrl)) {
     url = new URL(pathOrUrl);

@@ -41,16 +41,42 @@ function openReport(reportFile) {
   spawn('xdg-open', [reportFile], { detached: true, stdio: 'ignore' }).unref();
 }
 
+function isLocalEnvId(envId) {
+  const v = String(envId || '').toLowerCase();
+  return v === 'local' || v === 'local-wp';
+}
+
 async function main() {
   const flags = parseE2ECli(process.argv.slice(2));
   const deviceId = flags.device || 'iphone';
+  const localPort = Number(process.env.WDP_LOCAL_E2E_PORT || 8899) || 8899;
+  /** @type {{ stop: () => Promise<void> } | null} */
+  let localServer = null;
+  let code = 0;
+  try {
+  if (isLocalEnvId(flags.envId)) {
+    const tPrep = Date.now();
+    const { prepareLocalFullStack } = await import('./helpers/matrix-setup.mjs');
+    const stack = await prepareLocalFullStack(localPort);
+    localServer = stack.server;
+    console.log(`[e2e] prepareLocalFullStack: ${((Date.now() - tPrep) / 1000).toFixed(1)}s`);
+  }
   let env;
   try {
-    env = loadE2EEnv({ envId: flags.envId });
+    env = isLocalEnvId(flags.envId)
+      ? loadE2EEnv({
+          envId: 'local',
+          parsed: {
+            E2E_USER: 'admin',
+            E2E_PASS: 'admin',
+            E2E_BASE_URL: `http://127.0.0.1:${localPort}`,
+          },
+        })
+      : loadE2EEnv({ envId: flags.envId });
     env = await fillMissingProductSlugs(env);
   } catch (e) {
     console.error(String(e.message || e));
-    process.exit(1);
+    throw e;
   }
 
   const areaInfo = flags.all
@@ -60,7 +86,7 @@ async function main() {
   const outDir = currentDirFor(profileId, deviceId);
   const baselineDir = baselineDirFor(profileId, deviceId);
 
-  const code = await withEnvRunLock(profileId, async () => {
+  code = await withEnvRunLock(profileId, async () => {
   cleanE2EOutputDirs(profileId);
   const startedAt = new Date().toISOString();
   const started = Date.now();
@@ -92,7 +118,7 @@ async function main() {
     outDir,
     runFunctional: true,
     mode: 'quick',
-    workers: deviceId === 'iphone' ? 2 : 4,
+    workers: 4,
     runLabel: 'quick',
     noSideCart: flags.noSideCart,
     device: deviceId,
@@ -212,6 +238,9 @@ async function main() {
   console.log('E2E quick passed.');
   return 0;
   });
+  } finally {
+    if (localServer) await localServer.stop();
+  }
   if (code) process.exit(code);
 }
 
