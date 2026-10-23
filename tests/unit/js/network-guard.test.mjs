@@ -173,6 +173,60 @@ describe('network-guard sipariş yasağı eşleşmesi', () => {
       true
     );
   });
+
+  it('update_order_review gövde nonce sipariş değil; checkout ve place_order sipariş', () => {
+    const site = 'https://ornek.test';
+    // Woo checkout.js: post_data = form.serialize() — nonce iç içe, yerinde sipariş yok.
+    const reviewBody =
+      'security=deadbeef&payment_method=cheque&country=GB&state=&postcode=&city=' +
+      '&address=&address_2=&s_country=GB&s_state=&s_postcode=&s_city=&s_address=' +
+      '&s_address_2=&has_full_address=false&post_data=' +
+      encodeURIComponent(
+        'billing_first_name=&billing_last_name=&billing_country=GB' +
+          '&woocommerce-process-checkout-nonce=a1b2c3d4e5' +
+          '&_wp_http_referer=/checkout/'
+      );
+    const reviewReq = {
+      method: 'POST',
+      url: `${site}/?wc-ajax=update_order_review`,
+      postData: reviewBody,
+    };
+    assert.equal(isRemoteOrderRequest(reviewReq), false);
+    assert.equal(isRemoteWriteAllowed(reviewReq), false);
+    assert.equal(
+      isRemoteOrderRequest({
+        method: 'POST',
+        url: `${site}/?wc-ajax=update_shipping_method`,
+        postData: reviewBody,
+      }),
+      false
+    );
+    assert.equal(
+      isRemoteWriteAllowed({
+        method: 'POST',
+        url: `${site}/?wc-ajax=update_shipping_method`,
+        postData: reviewBody,
+      }),
+      false
+    );
+    assert.equal(
+      isRemoteOrderRequest({
+        method: 'POST',
+        url: `${site}/?wc-ajax=checkout`,
+        postData: reviewBody,
+      }),
+      true
+    );
+    assert.equal(
+      isRemoteOrderRequest({
+        method: 'POST',
+        url: `${site}/checkout/`,
+        postData: 'woocommerce_checkout_place_order=Place+order',
+        checkoutPath: '/checkout/',
+      }),
+      true
+    );
+  });
 });
 
 describe('isRemoteProfile türetme', () => {

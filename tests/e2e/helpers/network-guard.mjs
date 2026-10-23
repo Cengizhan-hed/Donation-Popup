@@ -657,6 +657,11 @@ export function isWdpAjaxAction(action) {
 }
 
 /**
+ * Uzakta sipariş yazımı. Klasik checkout.js `update_order_review` /
+ * `update_shipping_method` sipariş değildir (yine iptal: izin listesinde yok).
+ * `woocommerce-process-checkout-nonce` yalnız checkout ajax / ödeme yolu /
+ * admin-ajax `woocommerce_checkout` için kanıt; `woocommerce_checkout_place_order` gerçek gönderim.
+ *
  * @param {{ method?: string, url?: string, postData?: string|null, headers?: Record<string, string>, checkoutPath?: string }} req
  */
 export function isRemoteOrderRequest(req) {
@@ -672,6 +677,12 @@ export function isRemoteOrderRequest(req) {
   const search = u.searchParams;
   const postData = bodyToString(req?.postData);
   const headers = req?.headers || {};
+  const ajax = wcAjaxName(pathname, search);
+
+  // Klasik checkout.js yenilemesi sipariş değil (izin listesinde yok → iptal + remote_post_blocked).
+  if (ajax === 'update_order_review' || ajax === 'update_shipping_method') {
+    return false;
+  }
 
   if (/\/wp-admin\/post-new\.php$/i.test(pathname) && search.get('post_type') === 'shop_order') {
     return true;
@@ -691,7 +702,7 @@ export function isRemoteOrderRequest(req) {
     return false;
   }
 
-  if (method === 'POST' && search.get('wc-ajax') === 'checkout') {
+  if (method === 'POST' && ajax === 'checkout') {
     return true;
   }
 
@@ -708,11 +719,14 @@ export function isRemoteOrderRequest(req) {
   }
 
   if (method === 'POST') {
-    if (/woocommerce_checkout_place_order|woocommerce-process-checkout-nonce/i.test(postData)) {
+    if (/woocommerce_checkout_place_order/i.test(postData)) {
       return true;
     }
     const configured = pathFromMaybeUrl(req?.checkoutPath || '/checkout/', '/checkout/');
     if (pathname === configured || pathname === `${configured}/`) return true;
+    // woocommerce-process-checkout-nonce tek başına sipariş değil
+    // (update_order_review post_data); kanıt yalnız checkout ajax / ödeme yolu /
+    // admin-ajax woocommerce_checkout (yukarıda).
   }
 
   return false;
