@@ -193,23 +193,12 @@ export function isWooCartUrl(url) {
 }
 
 /**
- * 404 / ana sayfa sepet değildir. Woo sepet formu veya boş-sepet metni aranır.
+ * Woo sepet sayfası mı? Dil bağımsız: `body.woocommerce-cart` (Woo her temada ekler).
  * @param {import('@playwright/test').Page} page
  */
 export async function pageLooksLikeWooCart(page) {
-  if (!isWooCartUrl(page.url())) return false;
-  const body = (await page.locator('body').innerText().catch(() => '')) || '';
-  if (/sayfa bulunamadı|page not found|hata,\s*sayfa/i.test(body) &&
-      !/woocommerce-cart-form|sepetiniz|your cart/i.test(body)) {
-    return false;
-  }
-  const n = await page
-    .locator(
-      '.woocommerce-cart-form, .wc-block-cart, .wp-block-woocommerce-cart, .cart_item, .woocommerce-cart-item, .cart-empty, form.woocommerce-cart-form, .woocommerce-info'
-    )
-    .count()
-    .catch(() => 0);
-  return n > 0 || /sepetiniz|your cart|cart is currently empty|sepetinizde ürün yok/i.test(body);
+  const n = await page.locator('body.woocommerce-cart').count().catch(() => 0);
+  return n > 0;
 }
 
 /**
@@ -222,7 +211,7 @@ export async function pageLooksLikeWooCart(page) {
 export async function resolveCartPaths(page, baseUrl) {
   /** @type {string[]} */
   const out = [];
-  const add = (p) => {
+  const add = (p, requireName = true) => {
     const n = String(p || '').trim();
     if (!n) return;
     const pathOnly = n.startsWith('http')
@@ -238,7 +227,7 @@ export async function resolveCartPaths(page, baseUrl) {
         : `/${n}`;
     const compact = pathOnly.replace(/\/+$/, '') || '/';
     if (compact === '/') return;
-    if (!/cart|sepet/i.test(compact)) return;
+    if (requireName && !/cart|sepet/i.test(compact)) return;
     if (!out.includes(pathOnly)) out.push(pathOnly.endsWith('/') ? pathOnly : `${pathOnly}/`);
   };
   try {
@@ -247,8 +236,8 @@ export async function resolveCartPaths(page, baseUrl) {
       const wc = window.wc_add_to_cart_params && window.wc_add_to_cart_params.cart_url;
       return { w: String(w || ''), wc: String(wc || '') };
     });
-    add(raw.w);
-    add(raw.wc);
+    add(raw.w, false);
+    add(raw.wc, false);
   } catch {
     /* yedekler */
   }
@@ -258,7 +247,9 @@ export async function resolveCartPaths(page, baseUrl) {
 }
 
 /**
- * Sepet sayfasına git. Ana sayfa cart_url yok sayılır; /sepet/ sonra /cart/.
+ * Sepet sayfasına git. Hazır = wc_get_cart_url yolu + body.woocommerce-cart + DOMContentLoaded.
+ * Klasik/blok işaret VARSA görünür olmalarını bekle; yoksa (Avada/oluşturucu) bekleme yok.
+ * Dil bazlı gövde metni yok. Sepet içeriği Store API ile doğrulanır.
  * @param {import('@playwright/test').Page} page
  * @param {string} baseUrl
  * @returns {Promise<string>} son URL
@@ -275,16 +266,90 @@ export async function gotoWooCart(page, baseUrl) {
       await page.waitForLoadState('domcontentloaded');
     }
   }
-  const ready = page.locator(CART_READY_SEL);
-  try {
-    await ready.filter({ visible: true }).first().waitFor({ state: 'visible', timeout: 10000 });
-  } catch (e) {
-    const body = ((await page.locator('body').innerText()) || '').slice(0, 400);
-    if (!/sepetiniz|your cart|cart is currently empty|sepetinizde ürün yok/i.test(body)) {
-      throw e;
-    }
-  }
+  await waitForWooCartReady(page);
   return page.url();
+}
+
+/**
+ * Dil bağımsız sepet-hazır: body.woocommerce-cart zorunlu; standart işaret isteğe bağlı.
+ * @param {string} html
+ * @returns {{ ready: true } | { ready: false, error: string }}
+ */
+export function assessWooCartReadyFromHtml(html) {
+  const s = String(html || '');
+  const bodyOpen = s.match(/<body\b([^>]*)>/i);
+  const classAttr = bodyOpen
+    ? (bodyOpen[1].match(/\bclass\s*=\s*["']([^"']*)["']/i) || [])[1] || ''
+    : '';
+  if (!/(?:^|\s)woocommerce-cart(?:\s|$)/.test(classAttr)) {
+    return { ready: false, error: 'body.woocommerce-cart yok' };
+  }
+  const present = cartReadyMarkerPresent(s);
+  if (present.count > 0 && present.visible === 0) {
+    return { ready: false, error: 'standart sepet işareti gizli' };
+  }
+  return { ready: true };
+}
+
+const CART_READY_CLASSES = [
+  'woocommerce-cart-form',
+  'wc-block-cart-items',
+  'wc-block-cart__empty-cart',
+  'wp-block-woocommerce-empty-cart-block',
+  'wp-block-woocommerce-filled-cart-block',
+  'wp-block-woocommerce-cart',
+  'wc-empty-cart-message',
+  'cart_item',
+  'woocommerce-cart-item',
+  'cart-empty',
+  'woocommerce-info',
+];
+
+/**
+ * @param {string} html
+ * @returns {{ count: number, visible: number }}
+ */
+function cartReadyMarkerPresent(html) {
+  const s = String(html || '');
+  let count = 0;
+  let visible = 0;
+  const tagRe = /<([a-zA-Z0-9]+)([^>]*?)>/g;
+  let m;
+  while ((m = tagRe.exec(s))) {
+    const attrs = m[2] || '';
+    const cls = (attrs.match(/\bclass\s*=\s*["']([^"']*)["']/i) || [])[1] || '';
+    const names = cls.split(/\s+/).filter(Boolean);
+    const hit = CART_READY_CLASSES.some((c) => names.includes(c));
+    if (!hit) continue;
+    const hidden =
+      /\bhidden\b/i.test(attrs) ||
+      /\bhidden\s*=/i.test(attrs) ||
+      /style\s*=\s*["'][^"']*display\s*:\s*none/i.test(attrs);
+    if (names.includes('wp-block-woocommerce-cart') && hidden) continue;
+    count += 1;
+    if (!hidden) visible += 1;
+  }
+  return { count, visible };
+}
+
+/**
+ * @param {import('@playwright/test').Page} page
+ */
+export async function waitForWooCartReady(page) {
+  await page.waitForLoadState('domcontentloaded');
+  try {
+    await page.locator('body.woocommerce-cart').waitFor({ state: 'attached', timeout: 10000 });
+  } catch {
+    throw new Error('sepet sayfası hazır değil: body.woocommerce-cart yok');
+  }
+  const n = await page.locator(CART_READY_SEL).count().catch(() => 0);
+  if (n > 0) {
+    await page
+      .locator(CART_READY_SEL)
+      .filter({ visible: true })
+      .first()
+      .waitFor({ state: 'visible', timeout: 10000 });
+  }
 }
 
 const CART_REMOVE_SEL =
@@ -470,6 +535,35 @@ export async function cartItemsDetail(page, baseUrl) {
       return [];
     }
   }, baseUrl);
+}
+
+/**
+ * Store API sepet özeti (adet / ürün / tutar / para birimi). DOM yok.
+ * @param {import('@playwright/test').Page} page
+ * @param {string} baseUrl
+ * @returns {Promise<{items_count:number,currency_code:string,currency_symbol:string,items:Array<{id:number,name:string,totals:string,quantity:number}>}>}
+ */
+export async function cartStoreSnapshot(page, baseUrl) {
+  const items = await cartItemsDetail(page, baseUrl);
+  const meta = await page.evaluate(async (base) => {
+    const root = String(base || '').replace(/\/$/, '');
+    const res = await fetch(`${root}/wp-json/wc/store/v1/cart`, {
+      credentials: 'same-origin',
+    });
+    if (!res.ok) {
+      throw new Error(`Store API sepet HTTP ${res.status}`);
+    }
+    const data = await res.json();
+    const totals = data && data.totals ? data.totals : {};
+    return {
+      items_count: Array.isArray(data.items)
+        ? data.items.length
+        : Number(data.items_count) || 0,
+      currency_code: String(totals.currency_code || ''),
+      currency_symbol: String(totals.currency_symbol || ''),
+    };
+  }, baseUrl);
+  return { ...meta, items };
 }
 
 /**

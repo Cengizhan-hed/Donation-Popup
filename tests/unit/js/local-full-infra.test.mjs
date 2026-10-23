@@ -32,6 +32,7 @@ describe('yerel e2e:full altyapı (3K)', () => {
     assert.match(CART_READY_SEL, /wc-block-cart-items|empty-cart/);
     assert.match(CART_READY_SEL, /wp-block-woocommerce-cart:not\(\[hidden\]\)/);
     assert.doesNotMatch(CART_READY_SEL, /(^|,\s*)\.wp-block-woocommerce-cart(,|$)/);
+    assert.doesNotMatch(CART_READY_SEL, /sepetiniz|your cart/i);
   });
 
   it('loopProductSlug tam URL değil path slug döner', () => {
