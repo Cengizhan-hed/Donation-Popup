@@ -1,4 +1,4 @@
-# MIMARI — woo-donation-popup (10.34.6)
+# MIMARI — woo-donation-popup (10.34.7)
 
 Kalıcı mimari harita. Sonraki görevler için ilk okuma noktası.  
 Dal referansı: `docs-mimari` / commit `220f4ec`.  
@@ -443,7 +443,7 @@ Kaynak rehber: `docs/AYARLAR.md`. Teknik varsayılanlar normalizer / placement /
 
 ### D) Doğrulama → sepete ekle / ödemeye git
 
-1. CTA tık → `WDPApp.form` validate (`assets/js/src/form/validate.js`, `assets/js/src/form.js` submit yolu)  
+1. CTA tık → `WDPApp.form` validate (`assets/js/src/form/validate.js`, `assets/js/src/form.js` submit yolu). False ise: hatalı alanı içeren her katlanmış hissedar kartı + sihirbaz adımı açılır (`revealInvalidFieldContainers` / `formWizard.revealInvalidSteps`); ilk hatalı alana odak + kaydır; her alanın altında `.wdp-input-error` (aria-invalid + aria-describedby; ilk mesaj `role=alert` bir kez duyurulur). Fiyat alanı: mesaj `.wdp-price-field` altına (para birimi kabuğunun içine değil). Açık kabuk `getLiveDonationForm` ile `.wdp-modal.show` / gömülü form (gizli tembel modal seçilmez).  
 2. `submitFormData(form, isCheckout)` → `formAjax.submitFormData` (`assets/js/src/form.js:205-207`, `assets/js/src/form/ajax.js:576+`)  
 3. POST `action=wdp_ajax_add_to_cart` + `security` + alanlar + `wdp_ajax_flow`  
 4. PHP: `ajax_add_to_cart` → rate/nonce → doğrulama → `WC()->cart->add_to_cart` (+ sadaka satırı) (`includes/traits/trait-wdp-ajax-cart-add.php`)  
@@ -500,7 +500,7 @@ Anahtar çıkarıcı: `get_option`/`update_option`/`add_option`/`get_post_meta`/
 | Eşik | sayfa varsayılan **%0.5**; kabuk popup/panel **%0.1** |
 | Quick | Yalnız iPhone (WebKit) + değişen alan (`tests/e2e/area-map.json` + `git diff --name-only HEAD`); `--env ikram`; `--all --device desktop` eski 70’lik küme |
 | Full | 3 cihaz × gerçek ortam(lar), merge öncesi (`tests/e2e/run-full.mjs`) |
-| Matrix | Yerel tema × mağaza pairwise (`tests/e2e/matrix.json`): TT5 + Storefront; TRY/EUR/USD/GBP; blok + klasik ödeme; HPOS açık/kapalı (her tema her ödeme türü, HPOS her durumda ≥2). 3 cihaz. Sipariş yalnız yerel (`cheque`). Koşucu `tests/e2e/run-matrix.mjs`; `--only <id>` / `--device <ad>`. Özet `build/e2e/matrix/summary.md`; ekran `build/e2e/matrix/<yapılandırma>/<cihaz>/`. Anlık görüntü SQLite kopyası; yapılandırmalar ayrı port + WP kopyasıyla paralel (varsayılan 3 işçi). |
+| Matrix | Yerel tema × mağaza pairwise (`tests/e2e/matrix.json`): TT5 + Storefront; TRY/EUR/USD/GBP; blok + klasik ödeme; HPOS açık/kapalı (her tema her ödeme türü, HPOS her durumda ≥2). 3 cihaz. Sipariş yalnız yerel (`cheque`). Koşucu `tests/e2e/run-matrix.mjs`; `--only <id>` / `--device <ad>`. Özet `build/e2e/matrix/summary.md`; ekran `build/e2e/matrix/<yapılandırma>/<cihaz>/`. Anlık görüntü SQLite kopyası; yapılandırmalar ayrı port + WP kopyasıyla paralel (varsayılan 3 işçi). Açık popup/panel: `getAnimations` bitişi + hesaplanan opaklık ≥0.99; form alanı merkezinde `elementFromPoint` modal içinde değilse **POPUP-OVERLAP** (`tests/e2e/helpers/shell-overlap.mjs`; matris + capture, uzak quick salt okur). |
 | Conflicts | Uzak tema/eklenti çakışması: konsol kaynağı (eklenti kırmızı; başka eklenti/tema rapor, kırmızı değil), betik kopyası (intl-tel-input/select2/jQuery/Swiper + `window.wdp*` + `$`), telefon tek seçici **yalnız açık/görünür form** (kart içi gizli tembel form sayılmaz), ödeme CFE/Woo telefon, Curcy, CSS sızıntısı (eklenti `.css` route iptal karşılaştırması), form taşması **yalnız görünür eklenti öğesi** (display:none / visibility:hidden / aria-hidden kapalı liste / ekran okuyucu / kapalı ülke paneli hariç; bulgu `seçici genişlik>kapsayıcı kural=` + vurgulu ekran, kabuk açık). Mağaza: Woo `shopPath` + `.wdp-loop-donate`; hedef yoksa **atla** (zaman aşımı yok). Sipariş yok. `e2e:conflicts`; özet `build/e2e/conflicts/<env>/summary.md`. |
 | Accept | `--env` + `--device`; yalnız Değişti+Yeni; functional hata 0 |
 

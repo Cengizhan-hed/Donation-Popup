@@ -263,7 +263,7 @@
   --wdp-share-counter-bg: #ffffff;
   --wdp-share-counter-border: #e5e9ec;
   --wdp-shareholder-header-bg: var(--wdp-primary);
-  --wdp-shareholder-header-color: #ffffff;
+  --wdp-shareholder-header-color: var(--wdp-on-primary, #ffffff);
   --wdp-shareholder-header-bg-hover: var(--wdp-primary-hover);
   --wdp-shareholder-header-valid-bg: color-mix(in srgb, var(--wdp-success) 88%, #0f172a);
   --wdp-shareholder-header-invalid-bg: color-mix(in srgb, var(--wdp-error) 72%, #ffffff);

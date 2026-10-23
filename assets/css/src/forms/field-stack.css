@@ -19,6 +19,10 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stac
   transition: border-color 0.16s ease;
 }
 
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack:has(.wdp-input-error) {
+  overflow: visible;
+}
+
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack:focus-within {
   border-color: var(--wdp-primary, #0f608b);
   border-radius: var(--wdp-field-stack-radius, var(--wdp-radius-ui, 12px));

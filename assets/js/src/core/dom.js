@@ -242,20 +242,28 @@
 
   /**
    * Açık kabuktaki güncel bağış formunu bul (ayrılmış/eski node yerine).
+   * Gizli tembel modal (`aria-hidden=false` ama `.show` yok) seçilmez — panel/popup
+   * ayrımında hataların yanlış forma yazılmasını önler.
    * @param {HTMLFormElement|null} preferred
    * @returns {HTMLFormElement|null}
    */
+  function isOpenDonationShell(node) {
+    if (!node || typeof node.closest !== 'function') {
+      return false;
+    }
+    const modal = node.closest('.wdp-modal');
+    if (modal) {
+      return modal.classList.contains('show') && modal.getAttribute('aria-hidden') !== 'true';
+    }
+    return !!node.closest('.hdf-donation-modal-wrapper.wdp-donation-form, .wdp-donation-form');
+  }
+
   function getLiveDonationForm(preferred) {
-    if (
-      preferred &&
-      preferred.isConnected &&
-      preferred.closest &&
-      preferred.closest('.wdp-modal.show, .wdp-modal[aria-hidden="false"], .wdp-donation-form')
-    ) {
+    if (preferred && preferred.isConnected && isOpenDonationShell(preferred)) {
       return preferred;
     }
     const openModal = document.querySelector(
-      '.wdp-modal.show form.wdp-donation-form-fields, .wdp-modal.show form, .wdp-modal[aria-hidden="false"] form.wdp-donation-form-fields'
+      '.wdp-modal.show form.wdp-donation-form-fields, .wdp-modal.show form.wdp-donation-form-fields, .wdp-side-panel.show form.wdp-donation-form-fields'
     );
     if (openModal) {
       return openModal;
@@ -263,7 +271,10 @@
     if (preferred && preferred.isConnected) {
       return preferred;
     }
-    return document.querySelector('form.wdp-donation-form-fields');
+    const inline = document.querySelector(
+      '.hdf-donation-modal-wrapper.wdp-donation-form form.wdp-donation-form-fields, .wdp-donation-form:not(.wdp-modal) form.wdp-donation-form-fields'
+    );
+    return inline || document.querySelector('form.wdp-donation-form-fields');
   }
 
   // DOM değişikliklerini izle - OPTIMIZED: Sadece plugin container'larını izle

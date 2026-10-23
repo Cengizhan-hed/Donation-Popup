@@ -446,7 +446,7 @@ Kullanıcı yönergesi önceki tüm görev metinlerinin yerini aldı; CLAUDE.md 
 
 | # | Madde |
 |---|-------|
-| G28 | Hisseli form "1. Hisse" başlığı açık gri zemin üstünde neredeyse görünmez (kontrast, WCAG 2.2 AA) — staging30 panel-shares-open |
+| G28 | Hisseli form "1. Hisse" başlığı açık gri zemin üstünde neredeyse görünmez (kontrast, WCAG 2.2 AA) — staging30 panel-shares-open | 10.34.7: başlık/rozet `readable_ink` + `--wdp-on-primary`; tema `h3` rengi ezilmesin diye header `background-color`/`color` izolasyonu |
 | G29 | Popup'ta telefon yer tutucusu ayırıcı çizgiye yapışık (panelde boşluk var) |
 | G30 | "24 Saat İçerisinde Video" rozetinde simge kenara taşıyor (popup) |
 | G31 | Ikram WooCommerce mağaza sayfasındaki "Bağış Yap" açılır pencere açmıyor (Appeals listesinde açıyor) — davranış tutarlılığı, Faz 7'de karar |
@@ -462,3 +462,4 @@ Kullanıcı yönergesi önceki tüm görev metinlerinin yerini aldı; CLAUDE.md 
 | T5 | staging30'da "Ödemeye Git" sepete gidiyor | 3I teşhis |
 | T6 | 10.34.6: Storefront mobilde yerel "Add to cart" görünüyordu (bağışçı bilgisi olmadan sepete ekleme) — DÜZELTİLDİ; sunucu tarafı formsuz add-to-cart reddi. Yan etki: "Tekrar sipariş ver" bağış ürünlerinde çalışmaz (bilinçli) | Kapandı |
 | T7 | 10.34.5: eklentinin yerel sepet formu gizleme CSS'i "Benzer Bağışlar" kartlarını da gizliyordu (Hedef mobil "boş" açığının kökü) — DÜZELTİLDİ | Kapandı |
+| G32 | Desktop matris popup PNG yarı saydam (sayfa başlığı/«Bağış Yap» kartın içinden); iPhone opak. 3J3 kanıt: canlı opacity=1, elementFromPoint modal içinde (eklenti katmanı sağlam). Neden: `fullPage` + `position:fixed` compositor. Düzeltme: olay bazlı bekleme + viewport kabuk ekranı; kalıcı **POPUP-OVERLAP** |

@@ -99,6 +99,7 @@ import {
   startDomMutationProbe,
   stopDomMutationProbe,
 } from './click-diagnostics.mjs';
+import { waitAndAssertShellOverlap, waitShellAnimationsDone } from './shell-overlap.mjs';
 import {
   attachDocumentCacheProbe,
   createTimeline,
@@ -893,20 +894,31 @@ async function readShellValidationErrorState(page, mode) {
       if (input.closest && input.closest('.wdp-shareholder-form.collapsed')) {
         return null;
       }
-      const anchor =
-        (input.closest && input.closest('.wdp-field-stack__row')) || input.parentElement;
-      const errDiv = anchor && anchor.querySelector && anchor.querySelector('.wdp-input-error');
+      const described = input.getAttribute && input.getAttribute('aria-describedby');
+      if (described) {
+        const ids = String(described)
+          .split(/\s+/)
+          .filter(Boolean);
+        for (const id of ids) {
+          let byId = null;
+          try {
+            byId = root.querySelector('#' + CSS.escape(id)) || document.getElementById(id);
+          } catch (eId) {
+            byId = root.querySelector('#' + id) || document.getElementById(id);
+          }
+          if (byId && byId.classList && byId.classList.contains('wdp-input-error') && isShown(byId)) {
+            const t = (byId.textContent || '').trim();
+            return t || null;
+          }
+        }
+      }
+      const near =
+        input.closest &&
+        input.closest('.wdp-price-field, .wdp-field-stack__row, .wdp-form-group');
+      const errDiv = near && near.querySelector && near.querySelector('.wdp-input-error');
       if (errDiv && isShown(errDiv)) {
         const t = (errDiv.textContent || '').trim();
         return t || null;
-      }
-      const described = input.getAttribute && input.getAttribute('aria-describedby');
-      if (described) {
-        const byId = root.querySelector('#' + described) || document.getElementById(described);
-        if (byId && isShown(byId)) {
-          const t = (byId.textContent || '').trim();
-          return t || null;
-        }
       }
       return null;
     }
@@ -1050,6 +1062,14 @@ async function shot(page, dir, name, maskList, opts = {}) {
   const scrollPage = opts.scrollPage !== false;
   const shellOnly = !!opts.shellOnly;
   const shellMode = opts.shellMode || '';
+  const shellOpen = (await page.locator(SEL.openModalShell).count().catch(() => 0)) > 0;
+  if (shellOpen || shellOnly) {
+    try {
+      await waitShellAnimationsDone(page, CHECK_MS);
+    } catch (eWait) {
+      catchSoft('shot:waitShell', eWait);
+    }
+  }
   await settleForScreenshot(page, { fullPage: shellOnly ? false : fullPage, scrollPage: shellOnly ? false : scrollPage });
   if (!shellOnly) {
     await preparePageShotChrome(page);
@@ -3109,6 +3129,20 @@ export async function captureAll({
    * @param {'popup'|'panel'} shellMode
    */
   async function shotShellAndCheck(page, screenName, productKey, shellMode) {
+    if (runFunctional) {
+      try {
+        await waitAndAssertShellOverlap(page);
+      } catch (eOverlap) {
+        failures.push(
+          makeFailure({
+            check: 'POPUP-OVERLAP',
+            description: 'Açık popup/panel form alanının üstünde başka katman veya opaklık < 0.99',
+            error: eOverlap,
+            screenshot: `${screenName}.png`,
+          })
+        );
+      }
+    }
     shots.push(
       await shot(page, outDir, screenName, maskList, {
         scrollPage: false,
@@ -3195,13 +3229,11 @@ export async function captureAll({
     }
     const shell = mode === 'popup' ? openShellLocator(page, '') : openShellLocator(page, mode);
     await shell.waitFor({ state: 'visible', timeout: CHECK_MS });
-    await page
-      .waitForFunction(() => {
-        const el = document.querySelector('.hdf-donation-modal-wrapper.wdp-modal.show');
-        if (!el) return false;
-        return !el.classList.contains('wdp-side-panel--opening');
-      }, { timeout: 4000 })
-      .catch(() => {});
+    try {
+      await waitShellAnimationsDone(page, 8000);
+    } catch (eWait) {
+      catchSoft('openShellForMode:waitShell', eWait);
+    }
     const isSidePanel = await shell
       .evaluate((el) => el.classList.contains('wdp-side-panel'))
       .catch((e) => {

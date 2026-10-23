@@ -163,6 +163,8 @@ class WDP_Color_Palette {
 			'--wdp-primary-muted: ' . $p['primary_muted'],
 			'--wdp-primary-border: ' . $p['primary_border'],
 			'--wdp-on-primary: ' . $p['on_primary'],
+			'--wdp-shareholder-header-bg: ' . $p['primary'],
+			'--wdp-shareholder-header-color: ' . $p['on_primary'],
 			'--wdp-success: ' . $p['success'],
 			'--wdp-autofill-row-bg: ' . $p['primary_soft_2'],
 			'--wdp-a-soft: color-mix(in srgb, ' . $p['primary'] . ' 10%, transparent)',
@@ -244,6 +246,25 @@ class WDP_Color_Palette {
 		$r_light = self::contrast_ratio($bg, $light);
 		$r_dark  = self::contrast_ratio($bg, $dark);
 		return ($r_dark >= $r_light) ? $dark : $light;
+	}
+
+	/**
+	 * Ink that meets WCAG AA (≥4.5:1) on $bg. Keeps $preferred when it already qualifies.
+	 *
+	 * @param string $bg        Background hex.
+	 * @param string $preferred Preferred ink hex (optional).
+	 * @return string
+	 */
+	public static function readable_ink($bg, $preferred = '') {
+		$bg        = self::normalize_hex($bg);
+		$preferred = self::normalize_hex($preferred);
+		if ($bg === '') {
+			return $preferred !== '' ? $preferred : '#ffffff';
+		}
+		if ($preferred !== '' && self::contrast_ratio($bg, $preferred) >= 4.5) {
+			return $preferred;
+		}
+		return self::pick_on_color($bg);
 	}
 
 	/**

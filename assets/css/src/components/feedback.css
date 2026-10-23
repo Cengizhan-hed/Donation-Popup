@@ -132,6 +132,21 @@ html body .wdp-field-stack__row .wdp-input-error {
   margin: 2px 0 8px;
 }
 
+/* Fiyat hatası para birimi kabuğunun içine değil altına */
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-price-field:has(> .wdp-input-error) {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  overflow: visible;
+}
+
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-price-field > .wdp-input-error {
+  flex: 0 0 auto;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
 @keyframes wdp-field-error-in {
   from {
     opacity: 0;

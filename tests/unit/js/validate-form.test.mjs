@@ -237,6 +237,12 @@ function createDom() {
         }
         return null;
       },
+      contains(node) {
+        if (node === this) return true;
+        return (this.childNodes || []).some(
+          (c) => c === node || (c.contains && c.contains(node))
+        );
+      },
       focus() {
         focused = this;
       },
@@ -329,6 +335,46 @@ function visibleErrorTexts(form) {
   return out;
 }
 
+/** Mesajı parentElement konumuna göre değil aria-describedby / yakın kökle bulur. */
+function fieldErrorEl(input, form) {
+  if (!input) return null;
+  const described = input.getAttribute && input.getAttribute('aria-describedby');
+  if (described) {
+    const ids = String(described)
+      .split(/\s+/)
+      .filter(Boolean);
+    for (const id of ids) {
+      const byId = form.querySelector('#' + id);
+      if (byId && byId.classList && byId.classList.contains('wdp-input-error')) {
+        return byId;
+      }
+    }
+  }
+  const near =
+    input.closest && input.closest('.wdp-price-field, .wdp-field-stack__row, .wdp-form-group');
+  return (near && near.querySelector && near.querySelector('.wdp-input-error')) || null;
+}
+
+function attachCustomPrice(form, el, attrs = {}) {
+  const wrap = el('div');
+  wrap.className = 'wdp-price-field wdp-custom-price-field';
+  const shell = el('div');
+  shell.className = 'wdp-custom-price-shell';
+  const currency = el('span');
+  currency.className = 'wdp-custom-price-currency';
+  currency.textContent = '₺';
+  shell.appendChild(currency);
+  const price = el('input');
+  price.setAttribute('name', attrs.name || 'custom_price');
+  price.className = 'wdp-custom-price-input';
+  price.value = attrs.value != null ? attrs.value : '';
+  if (attrs.min) price.setAttribute('min', attrs.min);
+  shell.appendChild(price);
+  wrap.appendChild(shell);
+  form.appendChild(wrap);
+  return { wrap, shell, price };
+}
+
 test('false: donation_full_name boş → görünür hata + odak + lastValidation', () => {
   const dom = createDom();
   const WDPApp = loadValidateStack(dom);
@@ -412,19 +458,19 @@ test('false: custom_price boş (pricing yüklü) → görünür hata + odak', ()
     },
   };
   const WDPApp = loadValidateStack(dom);
+  let priceRef = null;
+  let shellRef = null;
+  let wrapRef = null;
   const form = dom.attachForm((form, el) => {
     const name = el('input');
     name.setAttribute('name', 'donation_full_name');
     name.required = true;
     name.value = 'Ali';
     form.appendChild(name);
-    const price = el('input');
-    price.setAttribute('name', 'custom_price');
-    price.value = '';
-    const wrap = el('div');
-    wrap.className = 'wdp-price-field';
-    wrap.appendChild(price);
-    form.appendChild(wrap);
+    const attached = attachCustomPrice(form, el, { value: '' });
+    priceRef = attached.price;
+    shellRef = attached.shell;
+    wrapRef = attached.wrap;
   });
 
   const ok = WDPApp.formValidate.validateForm(form);
@@ -435,6 +481,15 @@ test('false: custom_price boş (pricing yüklü) → görünür hata + odak', ()
     WDPApp.form.lastValidation.failures.some((f) => f.rule === 'price_empty')
   );
   assert.equal(dom.getFocused()?.name, 'custom_price');
+  const msg = fieldErrorEl(priceRef, form);
+  assert.ok(msg, 'mesaj aria-describedby / yakın kökle bulunmalı');
+  assert.equal(msg.parentNode, wrapRef, 'hata .wdp-price-field altında');
+  assert.notEqual(msg.parentNode, shellRef, 'hata para birimi kabuğunun içinde olmamalı');
+  assert.equal(
+    WDPApp.formFeedback.getInputErrorAnchor(priceRef),
+    wrapRef,
+    'anchor custom_price → .wdp-price-field'
+  );
 });
 
 test('false: custom_price min altı → price_below_min', () => {
@@ -447,20 +502,19 @@ test('false: custom_price min altı → price_below_min', () => {
     utils: { formatCurrency: (n) => n + ' TL' },
   };
   const WDPApp = loadValidateStack(dom);
+  let priceRef = null;
+  let shellRef = null;
+  let wrapRef = null;
   const form = dom.attachForm((form, el) => {
     const name = el('input');
     name.setAttribute('name', 'donation_full_name');
     name.required = true;
     name.value = 'Ali';
     form.appendChild(name);
-    const price = el('input');
-    price.setAttribute('name', 'custom_price');
-    price.setAttribute('min', '100');
-    price.value = '50';
-    const wrap = el('div');
-    wrap.className = 'wdp-price-field';
-    wrap.appendChild(price);
-    form.appendChild(wrap);
+    const attached = attachCustomPrice(form, el, { value: '50', min: '100' });
+    priceRef = attached.price;
+    shellRef = attached.shell;
+    wrapRef = attached.wrap;
   });
 
   assert.equal(WDPApp.formValidate.validateForm(form), false);
@@ -468,6 +522,10 @@ test('false: custom_price min altı → price_below_min', () => {
     WDPApp.form.lastValidation.failures.some((f) => f.rule === 'price_below_min')
   );
   assert.ok(visibleErrorTexts(form).length > 0);
+  const msg = fieldErrorEl(priceRef, form);
+  assert.ok(msg, 'min altı mesajı aria-describedby ile bulunmalı');
+  assert.equal(msg.parentNode, wrapRef);
+  assert.notEqual(msg.parentNode, shellRef);
 });
 
 test('false: hissedar adı boş → görünür hata', () => {
@@ -556,6 +614,67 @@ test('false: sadaka invalid → görünür geri bildirim + lastValidation', () =
     WDPApp.form.lastValidation.failures.some((f) => f.rule === 'sadaka_invalid')
   );
   assert.ok(visibleErrorTexts(form).length > 0, 'görünür hata olmalı');
+});
+
+test('false: katlanmış hissedar kartı açılır + görünür mesaj + aria', () => {
+  const dom = createDom();
+  const WDPApp = loadValidateStack(dom);
+  const form = dom.attachForm((form, el) => {
+    const name = el('input');
+    name.setAttribute('name', 'donation_full_name');
+    name.required = true;
+    name.value = 'Ali';
+    form.appendChild(name);
+    const shareCount = el('input');
+    shareCount.setAttribute('name', 'share_count');
+    shareCount.value = '1';
+    form.appendChild(shareCount);
+    const row = el('div');
+    row.className = 'wdp-shareholder-form collapsed';
+    row.setAttribute('data-index', '1');
+    const header = el('div');
+    header.className = 'wdp-shareholder-header';
+    row.appendChild(header);
+    const content = el('div');
+    content.className = 'wdp-shareholder-content';
+    content.style.display = 'none';
+    const nameRow = el('div');
+    nameRow.className = 'wdp-field-stack__row';
+    const sn = el('input');
+    sn.setAttribute('name', 'shareholder_name_1');
+    sn.value = '';
+    nameRow.appendChild(sn);
+    const phoneRow = el('div');
+    phoneRow.className = 'wdp-field-stack__row';
+    const sp = el('input');
+    sp.setAttribute('type', 'tel');
+    sp.setAttribute('name', 'shareholder_phone_1');
+    sp.value = '';
+    phoneRow.appendChild(sp);
+    content.appendChild(nameRow);
+    content.appendChild(phoneRow);
+    row.appendChild(content);
+    form.appendChild(row);
+  });
+
+  assert.equal(WDPApp.formValidate.validateForm(form), false);
+  const row = form.querySelector('.wdp-shareholder-form');
+  assert.equal(row.classList.contains('collapsed'), false, 'hatalı kart açık olmalı');
+  const texts = visibleErrorTexts(form);
+  assert.ok(texts.some((t) => /Hissedar|zorunlu/i.test(t)), texts.join(' | '));
+  const sn = form.querySelector('[name="shareholder_name_1"]');
+  assert.equal(sn.getAttribute('aria-invalid'), 'true');
+  const desc = sn.getAttribute('aria-describedby');
+  assert.ok(desc, 'aria-describedby bağlı');
+  const msg = form.querySelector('#' + desc);
+  assert.ok(msg, 'mesaj id ile bulunmalı');
+  assert.equal(msg.getAttribute('role'), 'alert');
+  const phoneErr = form.querySelector('[name="shareholder_phone_1"]');
+  const phoneDesc = phoneErr.getAttribute('aria-describedby');
+  const phoneMsg = phoneDesc ? form.querySelector('#' + phoneDesc) : null;
+  assert.ok(phoneMsg, 'telefon mesajı var');
+  assert.equal(phoneMsg.getAttribute('role'), 'status');
+  assert.equal(dom.getFocused()?.name, 'shareholder_name_1');
 });
 
 test('ok: geçerli form → lastValidation.ok true, hata yok', () => {

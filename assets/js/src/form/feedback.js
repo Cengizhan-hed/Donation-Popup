@@ -100,7 +100,18 @@
     return 'wdp-field-err-' + wdpFieldErrorIdSeq;
   }
 
-  const ERROR_AUTO_DISMISS_MS = 4500;
+  /** Gönderim doğrulamasında alan mesajı kullanıcı düzeltine kadar kalır (otomatik silinmez). */
+  let errorBatchActive = false;
+  let errorBatchAnnounced = false;
+
+  function beginErrorBatch() {
+    errorBatchActive = true;
+    errorBatchAnnounced = false;
+  }
+
+  function endErrorBatch() {
+    errorBatchActive = false;
+  }
 
   function clearInputError(input) {
     if (!input) return;
@@ -164,15 +175,6 @@
     input._wdpOnErrorEdit = onEdit;
     input.addEventListener('input', onEdit);
     input.addEventListener('change', onEdit);
-
-    if (input._wdpErrorTimer) {
-      window.clearTimeout(input._wdpErrorTimer);
-    }
-    input._wdpErrorTimer = window.setTimeout(function() {
-      clearInputError(input);
-      const form = input.closest && input.closest('form');
-      if (form) clearFormBanner(form);
-    }, ERROR_AUTO_DISMISS_MS);
   }
 
   function isFormProcessing(form) {
@@ -233,7 +235,13 @@
     }
     errorDiv = document.createElement('div');
     errorDiv.className = 'wdp-input-error';
-    errorDiv.setAttribute('role', 'alert');
+    const announceThis = !errorBatchActive || !errorBatchAnnounced;
+    errorDiv.setAttribute('role', announceThis ? 'alert' : 'status');
+    if (announceThis) {
+      errorDiv.setAttribute('aria-live', 'assertive');
+    } else {
+      errorDiv.setAttribute('aria-live', 'off');
+    }
     const errorId = nextFieldErrorId();
     errorDiv.id = errorId;
     errorDiv.textContent = typeof message === 'string' && message.trim() ? message.trim() : 'Bu alan zorunludur.';
@@ -253,7 +261,10 @@
     }
 
     bindImmediateErrorClear(input, errorDiv, errorId);
-    announceStatus(errorDiv.textContent, 'assertive');
+    if (announceThis) {
+      announceStatus(errorDiv.textContent, 'assertive');
+      errorBatchAnnounced = true;
+    }
 
     // Alanı görünür kıl (sticky CTA altında kalmasın)
     try {
@@ -306,13 +317,6 @@
     formError.textContent = message;
     formError.style.display = 'block';
 
-    if (form._wdpFormErrorTimer) {
-      window.clearTimeout(form._wdpFormErrorTimer);
-    }
-    form._wdpFormErrorTimer = window.setTimeout(function() {
-      clearFormBanner(form);
-    }, ERROR_AUTO_DISMISS_MS);
-
     if (form.dataset.wdpFormErrorInputBound !== '1') {
       form.dataset.wdpFormErrorInputBound = '1';
       form.addEventListener('input', function onFormInputClearBanner() {
@@ -320,7 +324,10 @@
       });
     }
 
-    announceStatus(message, 'assertive');
+    if (!errorBatchActive || !errorBatchAnnounced) {
+      announceStatus(message, 'assertive');
+      errorBatchAnnounced = true;
+    }
   }
 
   /**
@@ -396,5 +403,7 @@
     collectVisibleFieldErrorMessages: collectVisibleFieldErrorMessages,
     ensureVisibleValidationFeedback: ensureVisibleValidationFeedback,
     showShareholderValidationFeedback: showShareholderValidationFeedback,
+    beginErrorBatch: beginErrorBatch,
+    endErrorBatch: endErrorBatch,
   };
 })(window);
