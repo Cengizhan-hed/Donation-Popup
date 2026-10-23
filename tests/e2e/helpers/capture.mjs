@@ -4,7 +4,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { chromium } from '@playwright/test';
-import { withCacheBust, productPaths, ROOT } from './env.mjs';
+import { withCacheBust, productPaths, ROOT, beginNavCache, endNavCache } from './env.mjs';
 import { getActiveProfile, isRemoteProfile, matchesProfilePattern } from './profile.mjs';
 import {
   productNavPath,
@@ -112,6 +112,7 @@ import { waitAndAssertShellOverlap, waitShellAnimationsDone } from './shell-over
 import {
   classifyPageHeight,
   classifyShellCompleteness,
+  collectPageCompletenessMetrics,
   collectShellCompletenessMetrics,
   screenCompletenessFailure,
   screenKindFromName,
@@ -728,16 +729,45 @@ async function readPageScrollHeight(page) {
 }
 
 /**
- * Tam sayfa: yükseklik referanstan belirgin kısa mı?
- * Kabuk ekranında çağrılmaz (viewport çekimi; ürün sayfası ile kıyas yok).
- * @param {number} actualH
- * @param {number} referenceH
+ * PNG IHDR yükseklik (bayt 20–23). Dosya yok/bozuk → 0.
+ * @param {string} file
+ * @returns {number}
+ */
+function readPngHeight(file) {
+  try {
+    if (!file || !fs.existsSync(file)) return 0;
+    const buf = Buffer.alloc(24);
+    const fd = fs.openSync(file, 'r');
+    try {
+      fs.readSync(fd, buf, 0, 24, 0);
+    } finally {
+      fs.closeSync(fd);
+    }
+    if (buf.toString('ascii', 1, 4) !== 'PNG') return 0;
+    return buf.readUInt32BE(20);
+  } catch (e) {
+    catchSoft('readPngHeight', e);
+    return 0;
+  }
+}
+
+/**
+ * Tam sayfa: readyState complete + son içerik bölgesi çekimde + ekran ≥ scrollHeight.
+ * Kabuk ekranında çağrılmaz.
+ * @param {import('@playwright/test').Page} page
  * @param {string} screenName
  * @param {ReturnType<typeof makeFailure>[]} failures
+ * @param {string} [screenshotFile]
  */
-function assertFullPageHeight(actualH, referenceH, screenName, failures) {
+async function assertFullPageHeight(page, screenName, failures, screenshotFile) {
   if (screenKindFromName(screenName) !== 'page') return;
-  const result = classifyPageHeight(actualH, referenceH);
+  const metrics = await page.evaluate(collectPageCompletenessMetrics).catch((e) => {
+    catchSoft('collectPageCompletenessMetrics', e);
+    return { readyState: '', lastRegionInDom: false, scrollHeight: 0 };
+  });
+  metrics.screenshotH = screenshotFile ? readPngHeight(screenshotFile) : 0;
+  metrics.fullPage = true;
+  const result = classifyPageHeight(metrics);
   if (!result.ok) {
     failures.push(makeFailure(screenCompletenessFailure(screenName, result)));
   }
@@ -1654,10 +1684,21 @@ export async function readProductSadakaAdminConfig(authed, env, productSlug, opt
     if (!productId) {
       return empty('Store API’den ürün ID bulunamadı', 'hata');
     }
-    await page.goto(
-      withCacheBust(env.E2E_BASE_URL, `/wp-admin/post.php?post=${productId}&action=edit`),
-      { waitUntil: 'domcontentloaded', timeout: 20000 }
-    );
+    let lastGotoErr = null;
+    for (let attempt = 1; attempt <= 3; attempt += 1) {
+      try {
+        await page.goto(
+          withCacheBust(env.E2E_BASE_URL, `/wp-admin/post.php?post=${productId}&action=edit`),
+          { waitUntil: 'domcontentloaded', timeout: 20000 }
+        );
+        lastGotoErr = null;
+        break;
+      } catch (e) {
+        lastGotoErr = e;
+        if (attempt === 3) throw e;
+      }
+    }
+    if (lastGotoErr) throw lastGotoErr;
     const opened = await waitForWpAdminPage(page, 20000);
     if (!opened.ok) {
       console.error(
@@ -2475,9 +2516,11 @@ export async function runSadakaScenario({
     // Önce admin yapılandırması (atlandı / beklenir)
     timeline.mark('admin-config');
     let cfg = adminConfigCache.get(productSlug);
-    if (!cfg) {
-      cfg = await readProductSadakaAdminConfig(authed, env, productSlug);
-      adminConfigCache.set(productSlug, cfg);
+    if (!cfg || cfg.status === 'hata') {
+      cfg = await readProductSadakaAdminConfig(authed, env, productSlug, {
+        productId: Number(productId) || 0,
+      });
+      if (cfg.status !== 'hata') adminConfigCache.set(productSlug, cfg);
     }
     if (cfg.resolvedWcId > 0 && Array.isArray(sadakaProductIds)) {
       sadakaProductIds.push(cfg.resolvedWcId);
@@ -2892,6 +2935,7 @@ export async function captureAll({
   areas = null,
 }) {
   sectionTimings.length = 0;
+  beginNavCache();
   fs.mkdirSync(outDir, { recursive: true });
   const profile = env._profile || getActiveProfile();
   const device = getDevicePreset(deviceId);
@@ -2918,6 +2962,7 @@ export async function captureAll({
       );
     }
   } catch (e) {
+    endNavCache();
     const msg = e && e.message ? e.message : String(e);
     return {
       shots: [],
@@ -3086,7 +3131,7 @@ export async function captureAll({
   }
   logSection('ürün URL/ID çözümü', tProbe);
 
-  // Alt bağış admin — ürün/shell/liste ile örtüşür (wall clock)
+  // Alt bağış admin — ürün/shell’den önce (yerel PHP tek iş parçacığı; örtüşünce post.php zaman aşımı)
   /** @type {Map<string, Awaited<ReturnType<typeof readProductSadakaAdminConfig>>>} */
   const adminConfigCache = new Map();
   const adminConfigPromise =
@@ -3098,14 +3143,14 @@ export async function captureAll({
             const globalWcId = await readGlobalSadakaWcId(adminRead, env);
             await mapPool(
               /** @type {const} */ (['fixed', 'custom']),
-              2,
+              1,
               async (productKey) => {
                 const slug = products[productKey];
                 const cfg = await readProductSadakaAdminConfig(adminRead, env, slug, {
                   globalWcId,
                   productId: productIds[productKey] || 0,
                 });
-                adminConfigCache.set(slug, cfg);
+                if (cfg.status !== 'hata') adminConfigCache.set(slug, cfg);
               }
             );
           } finally {
@@ -3125,7 +3170,10 @@ export async function captureAll({
     const page = await context.newPage();
     const errors = attachConsoleErrorCollector(page);
     const url = withCacheBust(env.E2E_BASE_URL, rel, guestExtra);
-    await page.goto(url, { waitUntil: 'domcontentloaded' }).catch(() => {});
+    await page.goto(url, { waitUntil: 'domcontentloaded' }).catch((e) => catchSoft('visit:goto', e));
+    await page
+      .waitForFunction(() => document.readyState === 'complete', { timeout: 8000 })
+      .catch((e) => catchSoft('visit:readyState', e));
     if (runFunctional && device.isMobile && /^[^-]+-product-/.test(name) && name.endsWith(`-${Object.keys(productUrls)[0]}`)) {
       try {
         const probeBefore = await probeSimilarDonations(page);
@@ -3166,9 +3214,7 @@ export async function captureAll({
     try {
       shots.push(await shot(page, outDir, name, maskList));
       if (runFunctional) {
-        const pageH = await readPageScrollHeight(page);
-        const settledH = visitOpts.referencePageHeight || pageH;
-        assertFullPageHeight(pageH, settledH, name, failures);
+        await assertFullPageHeight(page, name, failures, path.join(outDir, `${name}.png`));
         if (visitOpts.checkImages) {
           await assertVisibleImagesLoaded(page, name, failures);
         }
@@ -3186,10 +3232,14 @@ export async function captureAll({
     return page;
   }
 
-  // a) product pages desktop (paralel)
+  await adminConfigPromise;
+
+  // a) product pages desktop (paralel) — sayfa kapatılmaz; panel aynı sekmeyi kullanır
   const tProducts = Date.now();
+  /** @type {Map<string, { page: import('@playwright/test').Page, admin: boolean }>} */
+  const productPageCache = new Map();
   const productEntries = Object.entries(productUrls);
-  await mapPool(productEntries, maxWorkers, async ([key, rel]) => {
+  const productsPromise = mapPool(productEntries, maxWorkers, async ([key, rel]) => {
     const name = `${pfx}-product-${key}`;
     const productDecision = decideScenarioProduct(env, key, 'product-page');
     const visitCtx = productDecision.admin ? authed : catalogCtx;
@@ -3239,9 +3289,10 @@ export async function captureAll({
         );
       }
     }
-    await page.close();
+    productPageCache.set(key, { page, admin: !!productDecision.admin });
+  }).finally(() => {
+    logSection('ürün sayfaları', tProducts);
   });
-  logSection('ürün sayfaları', tProducts);
 
   // b/c/d) gerçek popup (liste) + panel (ürün sayfası) open/errors
   // Karar: ürün sayfasında display=button_panel iken donateTrigger de paneli açar;
@@ -3468,21 +3519,34 @@ export async function captureAll({
       .catch(() => {});
   }
 
-  const shellsPromise = mapPool(shellJobs, maxWorkers, async ({ key, pagePath, mode, productId, asAdmin: useAdmin }) => {
-    // Her kabuk işi temiz context (sepet / storage taşınmasın).
-    // Panel = ürün sayfası → Coming soon veya fixture (private) yönetici; popup = liste → ziyaretçi.
-    const ctx = useAdmin
-      ? await asAdmin(browser, env, contextOpts)
-      : await asVisitor(browser, env, contextOpts);
-    const page = await ctx.newPage();
+  const runShellJob = async ({ key, pagePath, mode, productId, asAdmin: useAdmin }) => {
+    // Aynı koşu context’i (çoklu sekme). Yeni context yok — HTTP önbelleği paylaşılır.
+    // Panel = ürün sayfası önbelleği; popup = ziyaretçi/catalog sekmesi.
+    const cached = productPageCache.get(key);
+    const reuseProduct =
+      mode === 'panel' &&
+      cached &&
+      cached.page &&
+      !cached.page.isClosed() &&
+      !!cached.admin === !!useAdmin;
+    const ctx = useAdmin ? authed : catalogCtx;
+    /** @type {import('@playwright/test').Page} */
+    let page;
+    if (reuseProduct) {
+      page = cached.page;
+      productPageCache.delete(key);
+    } else {
+      page = await ctx.newPage();
+    }
     const errors = attachConsoleErrorCollector(page);
     const url = withCacheBust(env.E2E_BASE_URL, pagePath, guestExtra);
     const openName = `${pfx}-${mode}-${key}-open`;
     const errorsName = `${pfx}-${mode}-${key}-errors`;
     try {
-      await page.goto(url, { waitUntil: 'domcontentloaded' });
-      // Kabuk ekranı: tam sayfa kaydırma gerekmez (süre)
-      await settleForScreenshot(page, { fullPage: false, scrollPage: false });
+      if (!reuseProduct) {
+        await page.goto(url, { waitUntil: 'domcontentloaded' });
+        await settleForScreenshot(page, { fullPage: false, scrollPage: false });
+      }
 
       const opened = await openShellForMode(page, mode, productId);
       if (!opened.ok) {
@@ -3550,8 +3614,6 @@ export async function captureAll({
           };
           try {
             if ((await page.locator(SEL.openModalShell).count()) === 0) {
-              await page.goto(url, { waitUntil: 'domcontentloaded' });
-              await settleForScreenshot(page, { fullPage: false, scrollPage: false });
               const re = await openShellForMode(page, 'popup', productId);
               if (!re.ok) throw new Error(re.detail || 'popup yeniden açılamadı');
             }
@@ -3569,10 +3631,11 @@ export async function captureAll({
         }
       }
 
-      // errors: taze goto → kabuk içi goCheckout → zorunlu hata iddiası → shot
-      await page.goto(url, { waitUntil: 'domcontentloaded' });
-      await settleForScreenshot(page, { fullPage: false, scrollPage: false });
-      const opened2 = await openShellForMode(page, mode, productId);
+      // errors: aynı sayfada yeniden aç (goto yok) → goCheckout → iddia → shot
+      let opened2 = { ok: true, openedAs: shotMode, shell: null };
+      if ((await page.locator(SEL.openModalShell).count()) === 0) {
+        opened2 = await openShellForMode(page, mode, productId);
+      }
       if (!opened2.ok) {
         failures.push(
           makeFailure({
@@ -3675,10 +3738,18 @@ export async function captureAll({
         /* ignore */
       }
     } finally {
-      await page.close().catch(() => {});
-      await ctx.close().catch(() => {});
+      await page.close().catch((e) => catchSoft('shell:page.close', e));
     }
-  }).finally(() => {
+  };
+  const popupJobs = shellJobs.filter((j) => j.mode === 'popup');
+  const panelJobs = shellJobs.filter((j) => j.mode === 'panel');
+  const shellsPromise = productsPromise
+    .then(() => mapPool([...popupJobs, ...panelJobs], maxWorkers, runShellJob))
+    .finally(async () => {
+    for (const leftover of productPageCache.values()) {
+      await leftover.page.close().catch((e) => catchSoft('productCache.close', e));
+    }
+    productPageCache.clear();
     if (shellJobs.length) logSection('popup/panel ekranları', tShells);
   });
 
@@ -4102,7 +4173,11 @@ export async function captureAll({
       })()
     : Promise.resolve();
 
-  await Promise.all([shellsPromise, listShopPromise, skelCartPromise]);
+  try {
+    await Promise.all([productsPromise, shellsPromise, listShopPromise, skelCartPromise]);
+  } finally {
+    endNavCache();
+  }
 
 
   // f) admin settings tabs + product Bağış tab (quick’te atlanır)

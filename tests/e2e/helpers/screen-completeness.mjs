@@ -1,9 +1,11 @@
 /**
  * Ekran bütünlüğü: kabuk (popup/panel) ≠ tam sayfa.
- * Kabuk viewport çekilir; “yarım sayfa” yalnız tam sayfa ekranında.
+ * Kabuk viewport çekilir; “yarım sayfa” yalnız tam sayfa ekranında
+ * (readyState + son içerik bölgesi + ekran ≥ scrollHeight).
  */
 
-export const PAGE_HEIGHT_RATIO = 0.9;
+/** Tam sayfa çekim: ekran yüksekliği scrollHeight’tan en fazla bu kadar kısa olabilir. */
+export const PAGE_HEIGHT_TOLERANCE_PX = 16;
 export const SHELL_EDGE_SLACK_PX = 2;
 export const SHELL_MIN_PX = 8;
 
@@ -16,26 +18,117 @@ export function screenKindFromName(screenName) {
 }
 
 /**
- * Tam sayfa: çekilen yükseklik referansın %90’ının altındaysa yarım kalmış.
- * Referans yoksa kontrol yok (ilk ölçüm).
- * @param {number} actualH
- * @param {number} referenceH
+ * @typedef {{
+ *   readyState?: string,
+ *   screenshotH?: number,
+ *   scrollHeight?: number,
+ *   fullPage?: boolean,
+ *   lastRegionKind?: 'footer'|'contentinfo'|'last-block'|'',
+ *   lastRegionInDom?: boolean,
+ *   lastRegionInShot?: boolean,
+ *   lastRegionTop?: number,
+ *   lastRegionBottom?: number,
+ * }} PageCompletenessMetrics
+ */
+
+/**
+ * Tam sayfa, tema bağımsız: readyState complete + son içerik bölgesi DOM’da ve
+ * çekilen ekranın içinde + (fullPage) ekran yüksekliği ≥ scrollHeight − tolerans.
+ * Kendi settle yüksekliğiyle kıyas yok (3Y no-op).
+ * @param {PageCompletenessMetrics} metrics
  * @returns {{ ok: boolean, reason: string, detail: string }}
  */
-export function classifyPageHeight(actualH, referenceH) {
-  const actual = Number(actualH) || 0;
-  const reference = Number(referenceH) || 0;
-  if (!reference || reference <= 0 || !actual) {
-    return { ok: true, reason: '', detail: '' };
+export function classifyPageHeight(metrics) {
+  const x = metrics && typeof metrics === 'object' ? metrics : {};
+  const ready = String(x.readyState || '');
+  if (ready !== 'complete') {
+    return { ok: false, reason: 'not-complete', detail: `readyState=${ready || '(yok)'}` };
   }
-  if (actual < reference * PAGE_HEIGHT_RATIO) {
+  if (!x.lastRegionInDom) {
+    return {
+      ok: false,
+      reason: 'last-region-missing',
+      detail: 'footer / [role=contentinfo] / son görünür blok yok',
+    };
+  }
+  const shotH = Number(x.screenshotH) || 0;
+  const top = Number(x.lastRegionTop) || 0;
+  const bottom = Number(x.lastRegionBottom) || 0;
+  const inShot =
+    typeof x.lastRegionInShot === 'boolean'
+      ? x.lastRegionInShot
+      : bottom <= shotH + PAGE_HEIGHT_TOLERANCE_PX && top >= -PAGE_HEIGHT_TOLERANCE_PX;
+  if (!inShot) {
+    return {
+      ok: false,
+      reason: 'last-region-clipped',
+      detail: `kind=${x.lastRegionKind || '?'} top=${Math.round(top)} bottom=${Math.round(bottom)} ekran=${Math.round(shotH)}px`,
+    };
+  }
+  const scrollH = Number(x.scrollHeight) || 0;
+  const fullPage = x.fullPage !== false;
+  if (fullPage && scrollH > 0 && shotH < scrollH - PAGE_HEIGHT_TOLERANCE_PX) {
     return {
       ok: false,
       reason: 'half-page',
-      detail: `sayfa=${actual}px referans=${reference}px eşik=<%${Math.round((1 - PAGE_HEIGHT_RATIO) * 100)}`,
+      detail: `ekran=${Math.round(shotH)}px scrollHeight=${Math.round(scrollH)}px tol=${PAGE_HEIGHT_TOLERANCE_PX}`,
     };
   }
-  return { ok: true, reason: '', detail: '' };
+  return { ok: true, reason: x.lastRegionKind || 'complete', detail: '' };
+}
+
+/**
+ * Tarayıcıda çalışır (page.evaluate). Footer yoksa body’nin son görünür bloğu.
+ * @returns {PageCompletenessMetrics}
+ */
+export function collectPageCompletenessMetrics() {
+  const scroller = document.scrollingElement || document.documentElement;
+  const scrollHeight = scroller ? scroller.scrollHeight : 0;
+  const readyState = document.readyState || '';
+  const hasBox = (el) => {
+    if (!el) return false;
+    const st = getComputedStyle(el);
+    const r = el.getBoundingClientRect();
+    return st.display !== 'none' && st.visibility !== 'hidden' && r.width >= 1 && r.height >= 1;
+  };
+  const docY = (el) => {
+    const r = el.getBoundingClientRect();
+    return { top: r.top + window.scrollY, bottom: r.bottom + window.scrollY };
+  };
+  /** @type {{ el: Element, kind: 'footer'|'contentinfo'|'last-block' }|null} */
+  let picked = null;
+  const footer = document.querySelector('footer');
+  if (footer && hasBox(footer)) {
+    picked = { el: footer, kind: 'footer' };
+  } else {
+    const info = document.querySelector('[role="contentinfo"]');
+    if (info && hasBox(info)) {
+      picked = { el: info, kind: 'contentinfo' };
+    }
+  }
+  if (!picked && document.body) {
+    const skip = /^(SCRIPT|STYLE|LINK|NOSCRIPT|TEMPLATE|META)$/;
+    let last = null;
+    let lastBottom = -Infinity;
+    Array.from(document.body.children).forEach((el) => {
+      if (skip.test(el.tagName) || !hasBox(el)) return;
+      const y = docY(el);
+      if (y.bottom >= lastBottom) {
+        lastBottom = y.bottom;
+        last = el;
+      }
+    });
+    if (last) picked = { el: last, kind: 'last-block' };
+  }
+  const y = picked ? docY(picked.el) : { top: 0, bottom: 0 };
+  return {
+    readyState,
+    scrollHeight,
+    lastRegionKind: picked ? picked.kind : '',
+    lastRegionInDom: !!picked,
+    lastRegionTop: y.top,
+    lastRegionBottom: y.bottom,
+  };
 }
 
 /**
@@ -252,7 +345,7 @@ export function screenCompletenessFailure(screenName, result) {
     check: `${screenName}-page-height`,
     description: shell
       ? 'Kabuk kesilmiş veya eksik (kök görünür değil / son öğe+eylem çubuğuna erişilemedi)'
-      : 'Sayfa belirgin kısa (sayfa yarım kalmış olabilir)',
+      : 'Sayfa yarım kaldı (readyState/son içerik bölgesi/ekran yüksekliği)',
     detail: `${result.reason || ''} ${result.detail || ''}`.trim(),
     screenshot: `${screenName}.png`,
   };
