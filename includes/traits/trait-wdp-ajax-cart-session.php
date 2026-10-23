@@ -18,7 +18,7 @@ trait WDP_Ajax_Cart_Session_Trait {
         try {
             self::require_post_method();
             if (!WDP_Security::validate_request_origin(true)) {
-                throw new WDP_Security_Exception(__('Geçersiz istek kaynağı', 'woo-donation-popup'));
+                throw new WDP_Security_Exception(__('Geçersiz istek kaynağı', 'woo-donation-popup'), 'origin');
             }
 
             self::enforce_rate_limit('fresh_nonces', 60, 60);

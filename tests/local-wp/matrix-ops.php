@@ -95,14 +95,15 @@ function wdp_matrix_permalinks() {
  */
 function wdp_matrix_set_hpos($on) {
 	$val = $on ? 'yes' : 'no';
-	update_option('woocommerce_custom_orders_table_enabled', $val, false);
-	update_option('woocommerce_feature_custom_order_tables_enabled', $val, false);
-	update_option('woocommerce_custom_orders_table_data_sync_enabled', 'yes', false);
+	update_option('woocommerce_custom_orders_table_enabled', $val, true);
+	update_option('woocommerce_feature_custom_order_tables_enabled', $val, true);
+	update_option('woocommerce_custom_orders_table_data_sync_enabled', $val, true);
 	if (function_exists('wc_get_container')) {
 		try {
 			$features = wc_get_container()->get(\Automattic\WooCommerce\Internal\Features\FeaturesController::class);
-			if ($features && method_exists($features, 'change_feature_enabled')) {
-				$features->change_feature_enabled('custom_order_tables', (bool) $on);
+			if ($features && method_exists($features, 'change_feature_enable')) {
+				$features->change_feature_enable('custom_order_tables', (bool) $on);
+				$features->change_feature_enable('woocommerce_custom_orders_table_enabled', (bool) $on);
 			}
 		} catch (Throwable $e) {
 			// konteyner yoksa option yeter

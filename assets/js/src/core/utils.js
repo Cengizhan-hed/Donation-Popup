@@ -83,6 +83,35 @@
   }
 
   /**
+   * AJAX güvenlik/ürün hata türü (kişisel veri yok).
+   * @param {number} status HTTP
+   * @param {*} data JSON gövde
+   * @returns {'nonce'|'rate'|'capability'|'origin'|'id'|''}
+   */
+  function classifyAjaxFailure(status, data) {
+    const st = Number(status) || 0;
+    const inner = data && typeof data === 'object' ? (data.data && typeof data.data === 'object' ? data.data : data) : null;
+    const code = inner && inner.code !== undefined ? inner.code : (data && data.code);
+    const msg = String((inner && inner.message) || (data && data.message) || '').toLowerCase();
+    if (st === 429 || code === 'rate_limit' || /çok fazla istek/.test(msg)) {
+      return 'rate';
+    }
+    if (code === 'capability' || /yetkiniz/.test(msg)) {
+      return 'capability';
+    }
+    if (code === 'origin' || /istek kaynağı/.test(msg)) {
+      return 'origin';
+    }
+    if (/geçersiz ürün|ürün bulunamadı/.test(msg)) {
+      return 'id';
+    }
+    if (st === 403 || code === 'nonce' || /güvenlik|nonce/.test(msg)) {
+      return 'nonce';
+    }
+    return '';
+  }
+
+  /**
    * get_product_info hata gövdesi (düz message veya wp_send_json_error data.message).
    *
    * @param {*} data
@@ -829,6 +858,7 @@
     resolveStorefrontUrl,
     isValidProductId,
     productInfoErrorMessage,
+    classifyAjaxFailure,
   };
 
   // Backward compatibility for themes/snippets that called WDPApp.alerts.clear().

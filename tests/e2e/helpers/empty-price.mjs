@@ -134,6 +134,7 @@ export async function runEmptyPriceChecks({
   stats,
   skips,
   createAdminContext,
+  createVisitorContext,
 }) {
   const profile = getActiveProfile();
   const baseUrl = env.E2E_BASE_URL;
@@ -175,6 +176,7 @@ export async function runEmptyPriceChecks({
       fail,
       skip,
       createAdminContext,
+      createVisitorContext,
     });
     return;
   }
@@ -199,6 +201,7 @@ export async function runEmptyPriceChecks({
     fail,
     skip,
     createAdminContext,
+    createVisitorContext,
   });
 }
 
@@ -219,6 +222,7 @@ async function runHedefEmptyPrice({
   fail,
   skip,
   createAdminContext,
+  createVisitorContext,
 }) {
   const targets = [
     { role: 'custom', id: productIds.custom || 0, path: productUrls.custom, list: true },
@@ -236,7 +240,11 @@ async function runHedefEmptyPrice({
 
     let snapshot = { price: '', regular: '', sale: '' };
     let restored = false;
-    const ctx = await mutationBrowserContext(browser, contextOpts, createAdminContext);
+    const ctx = await mutationBrowserContext(browser, contextOpts, createAdminContext, {
+      createVisitorContext,
+      env,
+      role: t.role,
+    });
     const page = await ctx.newPage();
     try {
       snapshot = await snapshotProductPrices(t.id);

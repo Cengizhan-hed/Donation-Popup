@@ -6,7 +6,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { ROOT } from './env-root.mjs';
 import { loadProfile, peekActiveProfile, isRemoteProfile } from './profile.mjs';
-import { pickFixtureNavTarget, assertProductNavTarget } from './catalog-core.mjs';
+import { pickFixtureNavTarget, assertProductNavTarget, isPublishedCatalogRole } from './catalog-core.mjs';
 
 export const FIXTURE_MARK_PREFIX = 'fixture';
 
@@ -274,14 +274,46 @@ export function assertRunMutationTargetsAreFixtures(env) {
 }
 
 /**
- * Private fixture ürünü yönetici oturumunda açmak için.
+ * Form görüntüleme: yayımlı katalog → ziyaretçi; private fixture → yönetici.
+ * Meta yazımı tarayıcıda değil PHP eval ile yapılır.
  * @param {import('@playwright/test').Browser} browser
  * @param {object} contextOpts
  * @param {() => Promise<import('@playwright/test').BrowserContext>} [createAdminContext]
+ * @param {{ createVisitorContext?: () => Promise<import('@playwright/test').BrowserContext>, env?: object, role?: string, admin?: boolean }} [extra]
  */
-export async function mutationBrowserContext(browser, contextOpts, createAdminContext) {
+export async function mutationBrowserContext(browser, contextOpts, createAdminContext, extra = {}) {
+  const visitor = extra.createVisitorContext;
+  let admin = extra.admin;
+  if (admin === undefined && extra.env && extra.role) {
+    admin = !isPublishedCatalogRole(extra.env, extra.role);
+  }
+  if (admin === undefined) {
+    admin = typeof visitor !== 'function';
+  }
+  if (admin && typeof createAdminContext === 'function') {
+    return createAdminContext();
+  }
+  if (typeof visitor === 'function') {
+    return visitor();
+  }
   if (typeof createAdminContext === 'function') {
     return createAdminContext();
+  }
+  return browser.newContext(contextOpts);
+}
+
+/**
+ * Bağış formu görüntüleme: yayımlı ürün → ziyaretçi; private fixture → yönetici.
+ * @param {import('@playwright/test').Browser} browser
+ * @param {object} contextOpts
+ * @param {{ admin?: boolean, createAdminContext?: () => Promise<import('@playwright/test').BrowserContext>, createVisitorContext?: () => Promise<import('@playwright/test').BrowserContext> }} [opts]
+ */
+export async function donationViewContext(browser, contextOpts, opts = {}) {
+  if (opts.admin && typeof opts.createAdminContext === 'function') {
+    return opts.createAdminContext();
+  }
+  if (typeof opts.createVisitorContext === 'function') {
+    return opts.createVisitorContext();
   }
   return browser.newContext(contextOpts);
 }

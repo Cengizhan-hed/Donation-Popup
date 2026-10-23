@@ -284,12 +284,25 @@ export function ensureMatrixTemplate() {
 /**
  * @param {object} resolved resolveConfig sonucu
  */
+function snapshotHasRequiredProducts(meta) {
+  const products = (meta && meta.probe && meta.probe.products) || (meta && meta.products) || {};
+  return ['fixed', 'custom', 'shares', 'campaign'].every((k) => products[k] && products[k].path);
+}
+
 export function prepareConfigSnapshot(resolved) {
   const wpDir = ensureMatrixTemplate();
   const snap = path.join(SNAPSHOT_DIR, `${resolved.id}.sqlite`);
   const metaFile = path.join(SNAPSHOT_DIR, `${resolved.id}.json`);
   if (fs.existsSync(snap) && fs.existsSync(metaFile)) {
-    return { snap, meta: JSON.parse(fs.readFileSync(metaFile, 'utf8')) };
+    const meta = JSON.parse(fs.readFileSync(metaFile, 'utf8'));
+    if (snapshotHasRequiredProducts(meta)) {
+      return { snap, meta };
+    }
+    fs.rmSync(snap, { force: true });
+    fs.rmSync(metaFile, { force: true });
+    for (const ext of ['-wal', '-shm']) {
+      fs.rmSync(snap + ext, { force: true });
+    }
   }
   restoreSqlite(wpDir, path.join(SNAPSHOT_DIR, '_base.sqlite'));
   const spec = {
@@ -471,7 +484,7 @@ export async function prepareLocalFullStack(port = 8899) {
   const matrix = loadMatrix();
   const resolved = resolveConfig(matrix, 'tt5-try-blocks-hpos');
   const { snap } = prepareConfigSnapshot(resolved);
-  const wpDir = materializeWorker(resolved.id, port, snap);
+  const wpDir = materializeWorker(resolved.id, port, snap, { hpos: !!resolved.hpos });
   process.env.WDP_LOCAL_WP_DIR = wpDir;
   process.env.WDP_E2E_PUBLISH_FIXTURES = '1';
   const admin = matrixEval(wpDir, ['ensure-admin']);
@@ -516,11 +529,27 @@ export async function prepareLocalFullStack(port = 8899) {
 }
 
 /**
+ * WC 11 koşu sırasında HPOS seçeneğini evet yapabiliyor; matris beklenen değeri kilitler.
+ * @param {string} wpDir
+ * @param {boolean} hposOn
+ */
+function writeHposLock(wpDir, hposOn) {
+  const dir = path.join(wpDir, 'wp-content/mu-plugins');
+  fs.mkdirSync(dir, { recursive: true });
+  const val = hposOn ? 'yes' : 'no';
+  fs.writeFileSync(
+    path.join(dir, 'wdp-matrix-hpos-lock.php'),
+    `<?php\nadd_filter('pre_option_woocommerce_custom_orders_table_enabled', static function () { return '${val}'; });\n`
+  );
+}
+
+/**
  * @param {string} configId
  * @param {number} port
  * @param {string} snapshotFile
+ * @param {{ hpos?: boolean }} [opts]
  */
-export function materializeWorker(configId, port, snapshotFile) {
+export function materializeWorker(configId, port, snapshotFile, opts = {}) {
   const templateWp = path.join(TEMPLATE_ROOT, 'wordpress');
   const destRoot = path.join(WORKER_DIR, `${configId}-${port}`);
   const destWp = path.join(destRoot, 'wordpress');
@@ -528,5 +557,8 @@ export function materializeWorker(configId, port, snapshotFile) {
   restoreSqlite(destWp, snapshotFile);
   writeWpConfig(destWp, { homeUrl: `http://127.0.0.1:${port}` });
   copyRouter(destWp);
+  if (typeof opts.hpos === 'boolean') {
+    writeHposLock(destWp, opts.hpos);
+  }
   return destWp;
 }

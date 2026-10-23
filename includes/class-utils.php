@@ -439,36 +439,66 @@ class WDP_Utils {
      */
     public static function json_error($message, array $extra = array()) {
         $error_message = is_string($message) ? $message : '';
-        $error_code = 500;
-        $error_data = array();
+        $error_code    = 'error';
+        $http_status   = 400;
+        $error_data    = array();
+        $retry_after   = 0;
 
         // Handle exception objects
         if ($message instanceof WDP_Exception) {
             $error_message = $message->getMessage();
-            $error_code = $message->getCode();
-            
-            // Log the exception
+            $raw_code      = (int) $message->getCode();
+            $http_status   = ($raw_code >= 400 && $raw_code < 600) ? $raw_code : 500;
+            $error_code    = $raw_code > 0 ? $raw_code : 'error';
+
             $message->log();
-            
-            // Include validation errors if available
-            if ($message instanceof WDP_Validation_Exception) {
+
+            if ($message instanceof WDP_Security_Exception) {
+                $error_code  = $message->getKind();
+                $http_status = ('rate_limit' === $error_code) ? 429 : 403;
+                $retry_after = $message->getRetryAfter();
+            } elseif ($message instanceof WDP_Validation_Exception) {
                 $error_data['errors'] = $message->getErrors();
+                $error_code           = 'validation_error';
+                $http_status          = 400;
+            }
+
+            if ($http_status === 200) {
+                $http_status = 400;
             }
         } elseif (is_string($message)) {
             $error_message = $message;
+            $error_code    = 400;
+            $http_status   = 400;
+        }
+
+        if (isset($extra['http_status'])) {
+            $http_status = (int) $extra['http_status'];
+            unset($extra['http_status']);
+        }
+
+        if ($http_status < 400 || $http_status > 599) {
+            $http_status = 400;
         }
 
         $response = array_merge(
             array(
                 'success' => false,
                 'message' => $error_message,
-                'code' => $error_code,
+                'code'    => $error_code,
             ),
             $error_data,
             $extra
         );
 
-        wp_send_json($response);
+        if ($http_status === 429 && $retry_after > 0) {
+            $response['retry_after'] = (int) $retry_after;
+            if (!headers_sent()) {
+                header('Retry-After: ' . (int) $retry_after, true);
+            }
+        }
+
+        wp_send_json($response, $http_status);
         wp_die();
     }
     
@@ -492,15 +522,15 @@ class WDP_Utils {
         ));
 
         if ($json_response) {
-            $message = __('Bir hata oluştu. Lütfen tekrar deneyin.', 'woo-donation-popup');
-            
             if ($exception instanceof WDP_Exception) {
-                $message = $exception->getMessage();
-            } elseif (self::$debug_enabled) {
+                self::json_error($exception);
+                return;
+            }
+            $message = __('Bir hata oluştu. Lütfen tekrar deneyin.', 'woo-donation-popup');
+            if (self::$debug_enabled) {
                 $message = $exception->getMessage();
             }
-
-            self::json_error($message);
+            self::json_error($message, array('http_status' => 500));
         }
     }
 

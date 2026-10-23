@@ -75,8 +75,26 @@
     return document.querySelectorAll('.hdf-donation-modal-wrapper.wdp-modal.show, .wdp-donation-form');
   }
 
+  function applyCtaClearance() {
+    roots().forEach((root) => {
+      const cta = root.querySelector('.wdp-form-cta-zone, .wdp-side-panel-footer-zone');
+      if (!cta) {
+        return;
+      }
+      const height = Math.ceil(cta.getBoundingClientRect().height);
+      if (height < 1) {
+        return;
+      }
+      const safeRaw = window.getComputedStyle(document.documentElement).getPropertyValue('--wdp-safe-bottom');
+      const safe = parseFloat(safeRaw) || 0;
+      const clearance = height + Math.max(10, safe);
+      root.style.setProperty('--wdp-cta-clearance', clearance + 'px');
+    });
+  }
+
   function applyInset() {
     applySafeBottom();
+    applyCtaClearance();
     const inset = keyboardInsetPx();
     const value = inset + 'px';
     roots().forEach((root) => {
@@ -151,5 +169,6 @@
     init: init,
     refresh: applyInset,
     applySafeBottom: applySafeBottom,
+    applyCtaClearance: applyCtaClearance,
   };
 })(window);

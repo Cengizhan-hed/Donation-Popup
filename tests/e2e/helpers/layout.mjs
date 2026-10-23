@@ -2,10 +2,12 @@
  * 10.34.2 — Yerleşim regresyonu: tutar etiketi koşulu, fiyat/adet oranı, CTA alt dolgu, taşma.
  * Meta yazılmaz. Öğesi yoksa atlanmaz — fail.
  */
+import fs from 'node:fs';
+import nodePath from 'node:path';
 import { SEL } from './selectors.mjs';
-import { requireFixtureRole, mutationBrowserContext } from './fixtures.mjs';
+import { requireFixtureRole, donationViewContext } from './fixtures.mjs';
 import { pickFixtureNavTarget, decideScenarioProduct, popupPagePath } from './catalog-core.mjs';
-import { withCacheBust } from './env.mjs';
+import { ROOT, withCacheBust } from './env.mjs';
 import { comingSoonQuery } from './coming-soon.mjs';
 import { getActiveProfile } from './profile.mjs';
 import {
@@ -128,15 +130,21 @@ async function assertLastItemAboveCta(shell) {
       const r = el.getBoundingClientRect();
       return st.display !== 'none' && st.visibility !== 'hidden' && r.width > 0 && r.height > 0;
     };
+    const inCta = (el) => !!(cta.contains(el) || el.closest('.wdp-form-cta-zone, .wdp-side-panel-footer-zone'));
+    const controls = Array.from(
+      scroll.querySelectorAll(
+        'input:not([type="hidden"]), textarea, select, .wdp-sadaka-donation__toggle, .wdp-cover-fee, .wdp-shareholder-form'
+      )
+    ).filter((el) => vis(el) && !inCta(el));
     const candidates = Array.from(scroll.children).filter(
       (el) => vis(el) && !skip.test(el.className || '')
     );
-    let last = candidates[candidates.length - 1] || null;
-    if (last && last.querySelector) {
+    let last = controls[controls.length - 1] || candidates[candidates.length - 1] || null;
+    if (last && last.querySelector && !last.matches('input, textarea, select')) {
       const inner = last.querySelector(
         '.wdp-sadaka-donation__toggle, .wdp-cover-fee, .wdp-shareholder-form, .wdp-form-total'
       );
-      if (inner && vis(inner)) last = inner;
+      if (inner && vis(inner) && !inCta(inner)) last = inner;
     }
     if (!last) {
       return { ok: false, error: 'son form öğesi yok (kaydırma kapsayıcısında görünür içerik yok)' };
@@ -342,6 +350,7 @@ export async function runLayoutChecks({
   stats,
   skips,
   createAdminContext,
+  createVisitorContext,
 }) {
   const profile = getActiveProfile();
   const baseUrl = env.E2E_BASE_URL;
@@ -356,10 +365,41 @@ export async function runLayoutChecks({
   ];
   const modes = /** @type {const} */ (['popup', 'panel']);
 
-  const ctx = await mutationBrowserContext(browser, contextOpts, createAdminContext);
-  const page = await ctx.newPage();
-  page.setDefaultTimeout(CHECK_MS);
-  page.setDefaultNavigationTimeout(25000);
+  /** @type {import('@playwright/test').BrowserContext|null} */
+  let visitorCtx = null;
+  /** @type {import('@playwright/test').BrowserContext|null} */
+  let adminCtx = null;
+  /** @type {import('@playwright/test').Page|null} */
+  let visitorPage = null;
+  /** @type {import('@playwright/test').Page|null} */
+  let adminPage = null;
+
+  async function pageFor(admin) {
+    if (admin) {
+      if (!adminCtx) {
+        adminCtx = await donationViewContext(browser, contextOpts, {
+          admin: true,
+          createAdminContext,
+          createVisitorContext,
+        });
+        adminPage = await adminCtx.newPage();
+        adminPage.setDefaultTimeout(CHECK_MS);
+        adminPage.setDefaultNavigationTimeout(25000);
+      }
+      return adminPage;
+    }
+    if (!visitorCtx) {
+      visitorCtx = await donationViewContext(browser, contextOpts, {
+        admin: false,
+        createAdminContext,
+        createVisitorContext,
+      });
+      visitorPage = await visitorCtx.newPage();
+      visitorPage.setDefaultTimeout(CHECK_MS);
+      visitorPage.setDefaultNavigationTimeout(25000);
+    }
+    return visitorPage;
+  }
 
   const pass = (id) => {
     stats.passed += 1;
@@ -374,15 +414,31 @@ export async function runLayoutChecks({
     stats.skipped += 1;
   };
 
+  /**
+   * @param {import('@playwright/test').Locator} shell
+   * @param {string} prefix
+   * @param {boolean} failed
+   */
+  async function shotCta(shell, prefix, failed) {
+    const dir = nodePath.join(ROOT, 'build/e2e/debug');
+    fs.mkdirSync(dir, { recursive: true });
+    const file = nodePath.join(dir, `${prefix}-cta-clearance${failed ? '-fail' : ''}.png`);
+    try {
+      await shell.screenshot({ path: file });
+    } catch (e) {
+      console.error(`[e2e:catch-fail] cta-shot ${prefix}: ${e && e.message ? e.message : e}`);
+    }
+  }
+
   try {
     for (const type of types) {
-      let path = productUrls[type.key];
+      let productPath = productUrls[type.key];
       let productId = productIds[type.key] || 0;
       let fromFixture = Array.isArray(env._fixtureRoles) && env._fixtureRoles.includes(type.key);
-      if (!path) {
+      if (!productPath) {
         try {
           const fx = requireFixtureRole(env, type.key);
-          path = fx.path || pickFixtureNavTarget(fx) || fx.url;
+          productPath = fx.path || pickFixtureNavTarget(fx) || fx.url;
           productId = fx.id;
           fromFixture = true;
         } catch {
@@ -403,12 +459,13 @@ export async function runLayoutChecks({
           skip(`${prefix}-private-list`, decision.reason);
           continue;
         }
+        const page = await pageFor(!!decision.admin);
         let shell;
         try {
           shell = await openProductShell(page, mode, {
             baseUrl,
             listPath,
-            productPath: path,
+            productPath,
             productId,
             extraQuery,
           });
@@ -469,8 +526,12 @@ export async function runLayoutChecks({
         try {
           await scrollFormToEnd(shell);
           await assertLastItemAboveCta(shell);
+          if (type.key === 'fixed' || type.key === 'shares') {
+            await shotCta(shell, prefix, false);
+          }
           pass(`${prefix}-cta-clearance`);
         } catch (e) {
+          await shotCta(shell, prefix, true);
           fail(`${prefix}-cta-clearance`, 'Son form öğesi eylem çubuğunun arkasında', e);
         }
 
@@ -478,7 +539,17 @@ export async function runLayoutChecks({
       }
     }
   } finally {
-    await page.close().catch(() => {});
-    await ctx.close().catch(() => {});
+    const closeQuiet = async (target, label) => {
+      if (!target) return;
+      try {
+        await target.close();
+      } catch (e) {
+        console.error(`[e2e:catch-fail] layout-close ${label}: ${e && e.message ? e.message : e}`);
+      }
+    };
+    await closeQuiet(visitorPage, 'visitorPage');
+    await closeQuiet(adminPage, 'adminPage');
+    await closeQuiet(visitorCtx, 'visitorCtx');
+    await closeQuiet(adminCtx, 'adminCtx');
   }
 }

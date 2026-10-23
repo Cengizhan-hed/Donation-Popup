@@ -1,4 +1,4 @@
-# MIMARI — woo-donation-popup (10.34.8)
+# MIMARI — woo-donation-popup (10.34.9)
 
 Kalıcı mimari harita. Sonraki görevler için ilk okuma noktası.  
 Dal referansı: `docs-mimari` / commit `220f4ec`.  
@@ -257,7 +257,11 @@ Eklenti tarafında özel `setcookie` **DOĞRULANMADI** (grep: PHP’de setcookie
 
 `register_rest_route` / `admin_post_` / eklenti `wc_ajax_` kaydı: **yok** (grep). WC fragment yalnız istemci `get_refreshed_fragments` (`assets/js/src/cart/woo.js:35`).
 
-Yetki notu: `run_secured_ajax` varsayılan capability `read`; misafir için `check_capability('read')` → true (`includes/class-security.php:240-244`). `get_product_info` / `get_product_name` capability=`false` (`includes/traits/trait-wdp-ajax-product.php:13,151`).
+Yetki notu: `run_secured_ajax` varsayılan capability `read`; misafir için `check_capability('read')` → true (`includes/class-security.php:289-296`). `get_product_info` / `get_product_name` capability=`false` (`includes/traits/trait-wdp-ajax-product.php:65,197`).
+
+Güvenlik reddi HTTP (`WDP_Utils::json_error`, 10.34.9): asla `200` + `success:false`. `WDP_Security_Exception` türü → HTTP: `nonce`/`capability`/`origin`/`method` = 403, `rate_limit` = 429 + `Retry-After` (`includes/class-exceptions.php`, `includes/class-utils.php`). JSON `code` = tür dizesi. Giriş yapmış kullanıcıda istek sınırı anahtarı `u:<id>|a:<action>` (`includes/class-security.php:219-224`); misafir `g:<hash>|a:<action>`. `get_product_info` 60/dk (salt okunur, önbellekli; liste 24 kart + idle prefetch 3 `wdp_render_modal` — product_info form açılınca). Ön yüz: 403 nonce’ta bir kez `refreshWdpAjaxNonces` + yeniden dene; 429 görünür mesaj (`assets/js/src/product.js`, `assets/js/src/form/ajax.js`).
+
+E2E bağışçı akışı ziyaretçi (`asVisitor`, storageState yok): ürün sayfası / popup / panel / layout yayımlı katalog. Yönetici yalnız `decideScenarioProduct.admin` (private fixture) ve admin sekmeleri. Mutasyon paketleri (form-fields, amount-options, campaign-blocks, product-theme, shortcodes, empty-price) yayımlı katalogda ziyaretçi, private fixture’da yönetici; meta yazımı tarayıcıda değil PHP eval (`mutationBrowserContext`). Teşhis: `[e2e:ajax-kind] action=… http=… kind=nonce|rate|capability|id` (`tests/e2e/helpers/ajax-error-kind.mjs`).
 
 | Action | nopriv | Nonce | Yetki | Girdi temizleme (özet) | Çıktı | Dosya:satır |
 |--------|--------|-------|-------|------------------------|-------|-------------|
@@ -315,7 +319,7 @@ Liste önbelleği bump (10.33.0 + 10.34.0; aynı istekte bir kez): stok/kategori
 
 **Tutar etiketi koşulu (10.34.2):** Görünür “Bağış Tutarı” yalnız gerçek tutar *girişi* olan türlerde (bağışçı belirler `render_custom_price_amount_row`, hedefli/kampanya `render_progress_amount_block`). Sabit tutar `render_fixed_price_quantity_row` fiyat kutusu + adet (eşit ızgara); etiket yok (yalnız `screen-reader-text` / `aria-label`). Hisselide tutar girişi yok → etiket yok. CSS ile gizleme yok. `includes/templates/class-form-fields-renderer.php`.
 
-**CTA alt dolgu (10.34.2):** `--wdp-cta-clearance` = `--wdp-form-cta-height` + `max(10px, env(safe-area-inset-bottom), --wdp-safe-bottom)`. Popup `scroll-padding-bottom`; panel `.wdp-side-panel-main` `max-height: 100%` yok (footer kardeş, örtmez), son içerik kaydırınca çubuğun üstünde. E2E `tests/e2e/helpers/layout.mjs` (boundingBox; öğe yoksa fail). `assets/css/src/foundation/tokens.css`, `layout.css`, `side-panel.css`.
+**CTA alt dolgu (10.34.2 + 10.34.9):** `--wdp-cta-clearance` = `--wdp-form-cta-height` + 36px tampon + `max(10px, env(safe-area-inset-bottom), --wdp-safe-bottom)`. JS `applyCtaClearance` gerçek çubuk yüksekliğini ölçer. Popup form gövdesi son kardeş `::after` spacer (yükseklik = clearance). Panel `.wdp-side-panel-main` `max-height: 100%` yok (footer kardeş, örtmez). E2E `tests/e2e/helpers/layout.mjs` (boundingBox + PNG). `assets/js/src/core/cta-viewport.js`, `assets/css/src/foundation/tokens.css`, `layout.css`, `side-panel.css`.
 
 ### Gutenberg
 
@@ -438,7 +442,7 @@ Kaynak rehber: `docs/AYARLAR.md`. Teknik varsayılanlar normalizer / placement /
 1. `modal.open` → skeleton busy: `wdp-is-skeleton`, `aria-busy`, kontrol kilidi (`assets/js/src/modal.js:318-341`)  
 2. `runModalOpenInit`: değer koru → `resetForm` → `form.setup` → phone → shareholder → wizard → restore → **yeniden kilit** (`assets/js/src/modal.js:357-401`)  
 3. `WDPApp.product.fetchProductInfo` → POST `wdp_get_product_info` + nonce; `product_id≤0` ile istek yok (`assets/js/src/product.js` `isValidProductId`, `assets/js/src/modal.js` `openModal`)  
-4. PHP: eksik/geçersiz id `wp_send_json_error(..., 400)`; yayımlı ürün `success:true` (katalog gizliliği düşürmez) (`includes/traits/trait-wdp-ajax-product.php`). Ön yüz 400/`success:false` için form hatası veya toast.  
+4. PHP: eksik/geçersiz id `wp_send_json_error(..., 400)`; güvenlik reddi 403/429 (`json_error`); yayımlı ürün `success:true` (katalog gizliliği düşürmez) (`includes/traits/trait-wdp-ajax-product.php`). Ön yüz 400/403/429 için form hatası veya toast; 403 nonce bir kez yenilenir.  
 5. Yanıt: fiyat/hisse/sadaka HTML normalize; skeleton kapanır (product/modal işbirliği)  
 6. Watchdog: uzun skeleton uyarısı (`assets/js/src/modal.js:304-314`)
 
@@ -544,14 +548,14 @@ Private permalink (`https://site/?post_type=product&p=ID`) pathname `"/"` olsa d
 
 | Sınıf | Senaryolar | Uzak | Yerel |
 |-------|------------|------|-------|
-| (i) product-meta | `amount-opts-*`, `form-fields-*`, `campaign-blocks-*`, `product-theme-*`, `shortcode-button-text`, `shortcode-form-outofstock` | Fixture ürün sayfası, **yönetici** oturumu (`openMutationProductShell`; liste yok) | Aynı |
+| (i) product-meta | `amount-opts-*`, `form-fields-*`, `campaign-blocks-*`, `product-theme-*`, `shortcode-button-text`, `shortcode-form-outofstock` | Fixture ürün sayfası; yayımlı katalogda **ziyaretçi**, private fixture’da yönetici (`mutationBrowserContext`; liste yok) | Aynı |
 | (ii) local-only | `shortcodes-setup`, `shortcode-list-price-refresh`, `shortcode-tabs-aria`, `shortcode-bad-hash` | **ATLA** (neden; hata değil) — sayfa/kısa kod oluşturulmaz | Matris WP / `local` profil — liste sayfası `prepare-full` ile oluşturulur, **koşar** |
 
 Uzakta site ayarı/sayfa yazılmaz. `npm run e2e:full -- --env local` yerel kanıt (üç cihaz; product-meta PHP `tests/local-wp/product-meta.php`, SSH yok). Yerel fixture’lar `WDP_E2E_PUBLISH_FIXTURES=1` ile yayımlanır (katalog/liste/popup koşar); uzakta private kalır.
 
 **Sepet e-posta/ithaf gerileme (F9, `form-fields-cart-shows-email-dedication`):** Eklenti `display_donation_data_in_cart` 10.33.0 ile aynı (`includes/class-cart.php:388-479`; `git show 163fe09`). Store API `item_data` e-posta/ithaf basar (aynı filtre). 2/3 `form-fields` `onCart=/\/cart\/?/` + Hedef `wc_get_cart_url` kök/`/sepet/` 404. Asıl 404: Woo sepet sayfası `woocommerce_cart_page_id` **çöpte** (Hedef id 291 `trash`; `get_permalink` → `/?page_id=291` pathname `/`). Düzeltme (eklenti yok): `ensureWooCartPagePublished` (yalnız Hedef `allowMetaMutation`); `fillDonor` eksik alanda fail; teşhis JSON. `tests/e2e/helpers/staging-wp-meta.mjs`, `form-fields.mjs`.
 
-Coming soon: WP-CLI `woocommerce_share_key` okunur veya `E2E_COMING_SOON_SHARE_KEY`; çerez `woo-share` (ziyaretçi liste). Ürün/mağaza/ödeme: `asAdmin` (`wpCliAuth`: `wp user list --role=administrator` + `tests/e2e/.auth/<profil>.json` storageState; geçerliyse yeniden kullanılır). Ziyaretçi yüzeyleri (`asVisitor` + share): liste, popup kabuğu, boş-ürün mesaj sızıntısı — oturumsuz context. `blog_public` ve coming soon option **değiştirilmez**.
+Coming soon: WP-CLI `woocommerce_share_key` okunur veya `E2E_COMING_SOON_SHARE_KEY`; çerez `woo-share` (ziyaretçi liste). `asAdmin` yalnız private fixture ve admin sekmeleri (`wpCliAuth`: `wp user list --role=administrator` + `tests/e2e/.auth/<profil>.json` storageState; geçerliyse yeniden kullanılır). Bağışçı yüzeyleri (`asVisitor` + share): liste, popup/panel kabuğu, layout, yayımlı mutasyon formları — oturumsuz context. `blog_public` ve coming soon option **değiştirilmez**.
 
 ### Uzak koşu güvenliği
 

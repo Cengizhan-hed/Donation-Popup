@@ -144,6 +144,7 @@ export async function runSharesLateProductInfoChecks({
   stats = null,
   skips = null,
   createAdminContext = null,
+  createVisitorContext = null,
 }) {
   const failures = extFailures || [];
   let passed = 0;
@@ -166,7 +167,9 @@ export async function runSharesLateProductInfoChecks({
     const ctx =
       decision.admin && typeof createAdminContext === 'function'
         ? await createAdminContext()
-        : await browser.newContext(contextOpts);
+        : typeof createVisitorContext === 'function'
+          ? await createVisitorContext()
+          : await browser.newContext(contextOpts);
     const page = await ctx.newPage();
     try {
       await installProductInfoDelay(page, DELAY_MS);

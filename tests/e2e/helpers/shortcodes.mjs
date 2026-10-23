@@ -82,6 +82,7 @@ export async function runShortcodeChecks({
   stats,
   skips = [],
   createAdminContext,
+  createVisitorContext,
 }) {
   let fixedId = Number(productIds.fixed || 0);
   try {
@@ -102,7 +103,11 @@ export async function runShortcodeChecks({
   const blocked = forbiddenIds(env);
   if (campaignId) blocked.add(campaignId);
 
-  const ctx = await mutationBrowserContext(browser, contextOpts, createAdminContext);
+  const ctx = await mutationBrowserContext(browser, contextOpts, createAdminContext, {
+    createVisitorContext,
+    env,
+    role: 'fixed',
+  });
   const page = await ctx.newPage();
   /** @type {string[]} */
   const pageErrors = [];

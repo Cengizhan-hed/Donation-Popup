@@ -10,7 +10,6 @@ import {
   productNavPath,
   decideScenarioProduct,
   assertProductNavTarget,
-  isFixtureRole as roleIsFixture,
   popupPagePath,
   loopProductSlug,
 } from './catalog-core.mjs';
@@ -120,6 +119,7 @@ import {
   wrapWdpValidationHooks,
 } from './page-probe.mjs';
 import { runSharesLateProductInfoChecks } from '../run-shares-late-product-info.mjs';
+import { attachAjaxErrorKindLoggerOnContext } from './ajax-error-kind.mjs';
 
 const DESKTOP = { width: 1440, height: 900 };
 const MOBILE = { width: 390, height: 844 };
@@ -131,6 +131,7 @@ const MOBILE = { width: 390, height: 844 };
  */
 async function contextWithBypass(browser, opts, env) {
   const ctx = await browser.newContext(opts);
+  attachAjaxErrorKindLoggerOnContext(ctx);
   await applyNetworkGuard(ctx, guardOptionsFromEnv(env));
   try {
     const profile = getActiveProfile();
@@ -3086,7 +3087,7 @@ export async function captureAll({
   await mapPool(productEntries, maxWorkers, async ([key, rel]) => {
     const name = `${pfx}-product-${key}`;
     const productDecision = decideScenarioProduct(env, key, 'product-page');
-    const visitCtx = productDecision.admin || roleIsFixture(env, key) ? authed : catalogCtx;
+    const visitCtx = productDecision.admin ? authed : catalogCtx;
     const page = await visit(visitCtx, rel, name, { checkImages: true });
     productPageHeights[key] = await readPageScrollHeight(page);
     if (runFunctional) {
@@ -3149,7 +3150,7 @@ export async function captureAll({
         mode: /** @type {'panel'} */ ('panel'),
         pagePath: rel,
         productId: productIds[key] || 0,
-        asAdmin: panelDecision.admin || roleIsFixture(env, key),
+        asAdmin: panelDecision.admin,
       });
     }
     const popupDecision = decideScenarioProduct(env, key, 'popup');
@@ -3347,10 +3348,9 @@ export async function captureAll({
   const shellsPromise = mapPool(shellJobs, maxWorkers, async ({ key, pagePath, mode, productId, asAdmin: useAdmin }) => {
     // Her kabuk işi temiz context (sepet / storage taşınmasın).
     // Panel = ürün sayfası → Coming soon veya fixture (private) yönetici; popup = liste → ziyaretçi.
-    const ctx =
-      useAdmin || (mode === 'panel' && profile.comingSoon)
-        ? await asAdmin(browser, env, contextOpts)
-        : await asVisitor(browser, env, contextOpts);
+    const ctx = useAdmin
+      ? await asAdmin(browser, env, contextOpts)
+      : await asVisitor(browser, env, contextOpts);
     const page = await ctx.newPage();
     const errors = attachConsoleErrorCollector(page);
     const url = withCacheBust(env.E2E_BASE_URL, pagePath, guestExtra);
@@ -4077,6 +4077,7 @@ export async function captureAll({
       stats: functionalStats,
       skips,
       createAdminContext: () => asAdmin(browser, env, contextOpts),
+      createVisitorContext: () => asVisitor(browser, env, contextOpts),
     })
       .catch((e) => {
         failures.push(
@@ -4224,6 +4225,7 @@ export async function captureAll({
               stats: functionalStats,
               skips,
               createAdminContext: () => asAdmin(browser, env, contextOpts),
+              createVisitorContext: () => asVisitor(browser, env, contextOpts),
             });
           }
         } catch (e) {

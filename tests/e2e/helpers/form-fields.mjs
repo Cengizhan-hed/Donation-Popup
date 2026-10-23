@@ -134,6 +134,7 @@ export async function runFormFieldsChecks({
   failures,
   stats,
   createAdminContext,
+  createVisitorContext,
 }) {
   const checks = [];
   const baseUrl = env.E2E_BASE_URL;
@@ -156,7 +157,11 @@ export async function runFormFieldsChecks({
     return;
   }
 
-  const ctx = await mutationBrowserContext(browser, contextOpts, createAdminContext);
+  const ctx = await mutationBrowserContext(browser, contextOpts, createAdminContext, {
+    createVisitorContext,
+    env,
+    role: 'custom',
+  });
   const page = await ctx.newPage();
 
   const pass = (id) => {
