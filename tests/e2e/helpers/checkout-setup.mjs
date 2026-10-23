@@ -78,13 +78,19 @@ export function checkoutPathFromUrl(checkoutUrl, baseUrl) {
   }
 }
 
+function localEvalGateways(cmd) {
+  return parseLocalEvalJson(runLocalEvalFile('tests/local-wp/matrix-ops.php', [cmd]));
+}
+
 /**
  * @returns {{ id: string, title: string, enabled: boolean }[]}
  */
 export function listPaymentGateways() {
   const profile = peekActiveProfile();
   if (!isRemoteProfile(profile)) {
-    return [{ id: 'cheque', title: 'Check payments', enabled: true }];
+    if (!process.env.WDP_LOCAL_WP_DIR) return [];
+    const data = localEvalGateways('list-gateways');
+    return Array.isArray(data.gateways) ? data.gateways : [];
   }
   const php =
     'if(!function_exists("WC")){echo "[]"; return;} WC()->payment_gateways(); $g=WC()->payment_gateways()->payment_gateways(); $o=array(); foreach((array)$g as $id=>$gw){ $o[]=array("id"=>$id,"title"=>(string)$gw->get_title(),"enabled"=>$gw->enabled==="yes"); } echo wp_json_encode($o);';
@@ -110,6 +116,25 @@ export function pickOfflineGateway(gateways) {
   return list.find((g) => OFFLINE.includes(String(g.id || '')) && g.enabled) || null;
 }
 
+/**
+ * Uzakta sipariş atlanır; yerelde atlama yok (yöntem yoksa hata).
+ * @param {{ remote: boolean, offline: {id:string}|null }} args
+ */
+export function skipOrderReasonFor({ remote, offline }) {
+  if (remote) {
+    return 'uzak ortamda sipariş oluşturulmaz (yalnız yerel WordPress). Ödeme sayfası salt okunur (checkout-view-only).';
+  }
+  void offline;
+  return '';
+}
+
+function enableLocalOfflineGateways() {
+  if (!process.env.WDP_LOCAL_WP_DIR) {
+    throw new Error('yerel WP: WDP_LOCAL_WP_DIR yok; çevrimdışı yöntem açılamaz');
+  }
+  return localEvalGateways('enable-offline-gateways');
+}
+
 function setChequeEnabled() {
   throw new Error(
     'checkout-setup: uzak ortamda woocommerce_cheque_settings yazılmaz (2026-10-22). Sipariş testleri yalnız yerel WP.'
@@ -119,6 +144,7 @@ function setChequeEnabled() {
 /**
  * Hedef: çevrimdışı yöntem yoksa çek’i geçici aç.
  * Ikram / allowMetaMutation=false: yazma yok.
+ * Yerel: Woo çekirdek cheque/cod/bacs etkinleştirilir; sipariş tamamlama atlanmaz.
  * @returns {Promise<{
  *   checkoutUrl: string,
  *   cartUrl: string,
@@ -132,8 +158,6 @@ export async function prepareCheckoutEnv() {
   const profile = peekActiveProfile() || getActiveProfile();
   const checkoutUrl = readCheckoutUrl();
   const cartUrl = readCartUrl();
-  const gateways = listPaymentGateways();
-  const existing = pickOfflineGateway(gateways);
   /** @type {Array<() => void>} */
   const restoreFns = [];
 
@@ -148,16 +172,31 @@ export async function prepareCheckoutEnv() {
   };
 
   const remote = isRemoteProfile(profile);
+  if (remote) {
+    const gateways = listPaymentGateways();
+    const existing = pickOfflineGateway(gateways);
+    return {
+      checkoutUrl,
+      cartUrl,
+      offline: existing ? { id: existing.id, title: existing.title || existing.id } : null,
+      mutated: false,
+      restore,
+      skipOrderReason: skipOrderReasonFor({ remote: true, offline: existing }),
+    };
+  }
+
+  enableLocalOfflineGateways();
+  const gateways = listPaymentGateways();
+  const existing = pickOfflineGateway(gateways);
+  if (!existing) {
+    throw new Error('yerel çevrimdışı ödeme yöntemi yok (cod/cheque/bacs etkinleştirilemedi)');
+  }
   return {
     checkoutUrl,
     cartUrl,
-    offline: existing ? { id: existing.id, title: existing.title || existing.id } : null,
+    offline: { id: existing.id, title: existing.title || existing.id },
     mutated: false,
     restore,
-    skipOrderReason: remote
-      ? 'uzak ortamda sipariş oluşturulmaz (yalnız yerel WordPress). Ödeme sayfası salt okunur (checkout-view-only).'
-      : existing
-        ? ''
-        : 'Sipariş tamamlama atlandı (çevrimdışı yöntem yok)',
+    skipOrderReason: '',
   };
 }

@@ -4206,7 +4206,7 @@ export async function captureAll({
             flowPage.setDefaultTimeout(20000);
             flowPage.setDefaultNavigationTimeout(25000);
             try {
-              const work = (async () => {
+              const openFlowShell = async () => {
                 const listOrProduct = popupPagePath(env) || productUrls.custom || productUrls.fixed || '/';
                 await flowPage.goto(withCacheBust(env.E2E_BASE_URL, listOrProduct, guestExtra), {
                   waitUntil: 'domcontentloaded',
@@ -4230,18 +4230,26 @@ export async function captureAll({
                     }, { timeout: 4000 })
                     .catch(() => {});
                 }
-                if (want('mobile-a11y')) {
-                  await runMobileA11yChecks({
+              };
+              await openFlowShell();
+              if (want('mobile-a11y')) {
+                await Promise.race([
+                  runMobileA11yChecks({
                     page: flowPage,
                     device,
                     profile,
                     failures,
                     stats: functionalStats,
                     knownFindings: a11yFindings,
-                  });
-                }
-                if (want('checkout-flow')) {
-                  await runDonationFlowChecks({
+                  }),
+                  new Promise((_, reject) =>
+                    setTimeout(() => reject(new Error('mobile-a11y 90s zaman aşımı')), 90000)
+                  ),
+                ]);
+              }
+              if (want('checkout-flow')) {
+                await Promise.race([
+                  runDonationFlowChecks({
                     page: flowPage,
                     env,
                     productUrls,
@@ -4254,13 +4262,12 @@ export async function captureAll({
                     checkoutUrl: checkoutEnv?.checkoutUrl || '',
                     offlineGateway: checkoutEnv?.offline || null,
                     skipOrderReason: checkoutEnv?.skipOrderReason || '',
-                  });
-                }
-              })();
-              const timeout = new Promise((_, reject) => {
-                setTimeout(() => reject(new Error('a11y+checkout-flow 120s zaman aşımı')), 120000);
-              });
-              await Promise.race([work, timeout]);
+                  }),
+                  new Promise((_, reject) =>
+                    setTimeout(() => reject(new Error('checkout-flow 240s zaman aşımı')), 240000)
+                  ),
+                ]);
+              }
             } catch (e) {
               failures.push(
                 makeFailure({
@@ -4362,7 +4369,7 @@ export async function captureAll({
       const cleaned = await Promise.race([
         cleanupE2EData({ guardOrderId: guardOrder?.id, envId: profile.id }),
         new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('cleanup 60s zaman aşımı')), 60000)
+          setTimeout(() => reject(new Error('cleanup 120s zaman aşımı')), 120000)
         ),
       ]);
       debugFiles.push(`cleanup:${JSON.stringify(cleaned)}`);

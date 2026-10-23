@@ -28,5 +28,12 @@ if (empty($_SERVER['HTTP_HOST'])) {
 	$_SERVER['REQUEST_URI'] = '/';
 }
 require $wp_dir . '/wp-load.php';
+global $wpdb;
+if (isset($wpdb) && method_exists($wpdb, 'hide_errors')) {
+	$wpdb->hide_errors();
+	if (method_exists($wpdb, 'suppress_errors')) {
+		$wpdb->suppress_errors(true);
+	}
+}
 $args = $wdp_eval_args;
 require $wdp_eval_target;

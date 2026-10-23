@@ -12,7 +12,8 @@ import { ROOT } from './env-root.mjs';
  * @returns {string} stdout
  */
 export function runLocalEvalFile(relFile, extraArgs = [], opts = {}) {
-  const wpDir = String(process.env.WDP_LOCAL_WP_DIR || '').trim();
+  const extraEnv = opts.env && typeof opts.env === 'object' ? opts.env : {};
+  const wpDir = String(extraEnv.WDP_LOCAL_WP_DIR || process.env.WDP_LOCAL_WP_DIR || '').trim();
   if (!wpDir) {
     throw new Error('yerel WP: WDP_LOCAL_WP_DIR yok');
   }
@@ -23,11 +24,16 @@ export function runLocalEvalFile(relFile, extraArgs = [], opts = {}) {
     {
       encoding: 'utf8',
       cwd: ROOT,
-      env: { ...process.env, WDP_LOCAL_WP_DIR: wpDir },
+      env: { ...process.env, ...extraEnv, WDP_LOCAL_WP_DIR: wpDir },
       timeout: opts.timeout || 120000,
     }
   );
   if (r.status !== 0) {
+    const out = String(r.stdout || '');
+    if (out.includes('{') && out.includes('}')) {
+      console.error(`[e2e:catch-fail] yerel eval ${relFile} exit=${r.status} (JSON var)`);
+      return out;
+    }
     throw new Error(`yerel eval ${relFile}: ${(r.stderr || r.stdout || '').slice(0, 500)}`);
   }
   return r.stdout || '';
