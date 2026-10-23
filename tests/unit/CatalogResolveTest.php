@@ -87,6 +87,19 @@ final class CatalogResolveTest extends TestCase {
 		$this->assertFalse(defined('WP_CLI') && WP_CLI);
 	}
 
+	public function test_related_and_upsell_ids_from_product(): void {
+		$p              = new WC_Product(41);
+		$p->related_ids = array(41, 9, 10);
+		$p->upsell_ids  = array(7, 8, 41);
+		WDP_Test_State::$products[41] = $p;
+		$ids = wdp_e2e_catalog_related_ids($p);
+		$this->assertSame(array(9, 10), $ids['related_ids']);
+		$this->assertSame(array(7, 8), $ids['upsell_ids']);
+		$empty = wdp_e2e_catalog_related_ids(new WC_Product(99));
+		$this->assertSame(array(), $empty['related_ids']);
+		$this->assertSame(array(), $empty['upsell_ids']);
+	}
+
 	public function test_catalog_display_uses_plugin_resolver(): void {
 		WDP_Test_State::$options[ WDP_Placement_Settings::OPTION ] = array(
 			'auto_place'     => 'yes',

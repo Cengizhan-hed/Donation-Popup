@@ -658,6 +658,15 @@ if (!function_exists('wc_get_product')) {
 		return WDP_Test_State::$products[ $id ] ?? null;
 	}
 }
+if (!function_exists('wc_get_related_products')) {
+	function wc_get_related_products($id, $limit = 5) {
+		$p = wc_get_product($id);
+		if (!$p || !isset($p->related_ids) || !is_array($p->related_ids)) {
+			return array();
+		}
+		return array_slice(array_values(array_map('intval', $p->related_ids)), 0, (int) $limit);
+	}
+}
 if (!function_exists('wc_get_product_term_ids')) {
 	function wc_get_product_term_ids($product_id, $taxonomy = '') {
 		unset($taxonomy);

@@ -35,6 +35,7 @@ import {
   CATALOG_EXPLAIN_ENV,
 } from '../../../scripts/e2e-catalog-explain.mjs';
 import { overlayFixtureRoles } from '../../../tests/e2e/helpers/resolve-products.mjs';
+import { readRelatedProductIds } from '../../../tests/e2e/helpers/loop-cards.mjs';
 
 function captureWarn(fn) {
   const lines = [];
@@ -317,6 +318,38 @@ describe('yerel uzak-benzetim katalog', () => {
   it('parseCatalogJson gürültülü stdout', () => {
     const cat = parseCatalogJson("Notice: x\n{\"shop\":{\"path\":\"/magaza/\"}}\n");
     assert.equal(cat.shop.path, '/magaza/');
+  });
+
+  it('sahte katalog related_ids/upsell_ids → applyRemoteCatalog + readRelatedProductIds', () => {
+    const env = { _profile: loadProfile('staging'), _roleSkips: [], _resolvedProducts: {} };
+    const products = FAKE_CATALOG.products.map((p) =>
+      p.id === 101
+        ? { ...p, related_ids: [101, 202], upsell_ids: ['303', 0] }
+        : p.id === 102
+          ? { ...p, related_ids: [], upsell_ids: [] }
+          : p
+    );
+    applyRemoteCatalog(env, {
+      shop: FAKE_CATALOG.shop,
+      cart: FAKE_CATALOG.cart,
+      checkout: FAKE_CATALOG.checkout,
+      list: FAKE_CATALOG.list,
+      products,
+    });
+    assert.deepEqual(env._resolvedProducts.custom.relatedIds, [101, 202]);
+    assert.deepEqual(env._resolvedProducts.custom.upsellIds, [303]);
+    assert.deepEqual(env._resolvedProducts.fixed.relatedIds, []);
+    assert.deepEqual(env._resolvedProducts.fixed.upsellIds, []);
+    const withIds = readRelatedProductIds(101, env._resolvedProducts.custom);
+    assert.equal(withIds.ok, true);
+    assert.deepEqual(withIds.ids, [202, 303]);
+    assert.equal(withIds.evidence, 'wp-data');
+    const empty = readRelatedProductIds(102, env._resolvedProducts.fixed);
+    assert.equal(empty.ok, true);
+    assert.deepEqual(empty.ids, []);
+    assert.equal(env._resolvedProducts.shares.relatedIds, undefined);
+    assert.equal(env._resolvedProducts.shares.upsellIds, undefined);
+    setActiveProfile(null);
   });
 
   it('pickRoleProducts catalog visibility', () => {

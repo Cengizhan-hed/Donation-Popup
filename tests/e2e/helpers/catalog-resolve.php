@@ -208,6 +208,37 @@ if (!function_exists('wdp_e2e_catalog_type_meta')) {
 	}
 
 	/**
+	 * Woo related + upsell ID (salt okunur; müşteri/sipariş yok).
+	 *
+	 * @param object $product WC_Product.
+	 * @return array{related_ids:int[],upsell_ids:int[]}
+	 */
+	function wdp_e2e_catalog_related_ids($product) {
+		$id = (method_exists($product, 'get_id')) ? (int) $product->get_id() : 0;
+		$related = array();
+		if ($id > 0 && function_exists('wc_get_related_products')) {
+			$raw = wc_get_related_products($id, 12);
+			$related = is_array($raw) ? array_map('intval', $raw) : array();
+		} elseif (method_exists($product, 'get_related')) {
+			$raw     = $product->get_related(12);
+			$related = is_array($raw) ? array_map('intval', $raw) : array();
+		}
+		$upsell = array();
+		if (method_exists($product, 'get_upsell_ids')) {
+			$raw    = $product->get_upsell_ids();
+			$upsell = is_array($raw) ? array_map('intval', $raw) : array();
+		}
+		$keep = static function ($n) use ($id) {
+			$n = (int) $n;
+			return $n > 0 && $n !== $id;
+		};
+		return array(
+			'related_ids' => array_values(array_unique(array_filter($related, $keep))),
+			'upsell_ids'  => array_values(array_unique(array_filter($upsell, $keep))),
+		);
+	}
+
+	/**
 	 * Ürün sayfası görünümü: eklenti çözümleyicisi (kısa kod / auto_place + placement).
 	 *
 	 * @param object $product WC_Product.
@@ -263,9 +294,10 @@ if (!function_exists('wdp_e2e_catalog_type_meta')) {
 			$meta   = wdp_e2e_catalog_type_meta($product);
 			$type   = wdp_e2e_catalog_detect_type($id, $meta);
 			$states = wdp_e2e_catalog_flag_states($meta);
-			$url    = function_exists('get_permalink') ? get_permalink($id) : '';
-			$url    = is_string($url) ? $url : '';
-			$out[]  = array(
+			$url     = function_exists('get_permalink') ? get_permalink($id) : '';
+			$url     = is_string($url) ? $url : '';
+			$related = wdp_e2e_catalog_related_ids($product);
+			$out[]   = array(
 				'id'          => $id,
 				'slug'        => method_exists($product, 'get_slug') ? (string) $product->get_slug() : '',
 				'title'       => method_exists($product, 'get_name') ? (string) $product->get_name() : '',
@@ -278,6 +310,8 @@ if (!function_exists('wdp_e2e_catalog_type_meta')) {
 				'wc_type'     => method_exists($product, 'get_type') ? (string) $product->get_type() : '',
 				'donation'    => wdp_e2e_catalog_is_donation($product),
 				'display'     => wdp_e2e_catalog_product_display($product),
+				'related_ids' => $related['related_ids'],
+				'upsell_ids'  => $related['upsell_ids'],
 				'fixture'     => function_exists('get_post_meta') && (bool) get_post_meta($id, '_wdp_e2e_test', true),
 				'resolver'    => $resolver,
 				'flags'       => $states,
@@ -403,6 +437,8 @@ if (!function_exists('wdp_e2e_catalog_resolve')) {
 				'status'      => $row['status'],
 				'purchasable' => !empty($row['purchasable']),
 				'display'     => isset($row['display']) ? (string) $row['display'] : '',
+				'related_ids' => isset($row['related_ids']) && is_array($row['related_ids']) ? $row['related_ids'] : array(),
+				'upsell_ids'  => isset($row['upsell_ids']) && is_array($row['upsell_ids']) ? $row['upsell_ids'] : array(),
 				'fixture'     => false,
 				'meta'        => $row['meta'],
 			);

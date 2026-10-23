@@ -110,6 +110,13 @@ import {
 } from './click-diagnostics.mjs';
 import { waitAndAssertShellOverlap, waitShellAnimationsDone } from './shell-overlap.mjs';
 import {
+  classifyPageHeight,
+  classifyShellCompleteness,
+  collectShellCompletenessMetrics,
+  screenCompletenessFailure,
+  screenKindFromName,
+} from './screen-completeness.mjs';
+import {
   attachDocumentCacheProbe,
   createTimeline,
   listActiveScenarios,
@@ -721,23 +728,33 @@ async function readPageScrollHeight(page) {
 }
 
 /**
- * Kabuk ekranı ürün sayfasından belirgin kısa mı?
- * @param {number} shellH
- * @param {number} productH
+ * Tam sayfa: yükseklik referanstan belirgin kısa mı?
+ * Kabuk ekranında çağrılmaz (viewport çekimi; ürün sayfası ile kıyas yok).
+ * @param {number} actualH
+ * @param {number} referenceH
  * @param {string} screenName
  * @param {ReturnType<typeof makeFailure>[]} failures
  */
-function assertShellPageHeight(shellH, productH, screenName, failures) {
-  if (!productH || productH <= 0 || !shellH) return;
-  if (shellH < productH * 0.9) {
-    failures.push(
-      makeFailure({
-        check: `${screenName}-page-height`,
-        description: 'Kabuk ekranı ürün sayfasından belirgin kısa (sayfa yarım kalmış olabilir)',
-        detail: `kabuk=${shellH}px ürün=${productH}px eşik=<%10`,
-        screenshot: `${screenName}.png`,
-      })
-    );
+function assertFullPageHeight(actualH, referenceH, screenName, failures) {
+  if (screenKindFromName(screenName) !== 'page') return;
+  const result = classifyPageHeight(actualH, referenceH);
+  if (!result.ok) {
+    failures.push(makeFailure(screenCompletenessFailure(screenName, result)));
+  }
+}
+
+/**
+ * Kabuk: kök görüntü alanında tam veya kaydırınca son öğe + eylem çubuğu.
+ * Kesik/eksik kabuk kırmızı.
+ * @param {import('@playwright/test').Page} page
+ * @param {string} screenName
+ * @param {ReturnType<typeof makeFailure>[]} failures
+ */
+async function assertShellCompleteness(page, screenName, failures) {
+  const metrics = await page.evaluate(collectShellCompletenessMetrics);
+  const result = classifyShellCompleteness(metrics);
+  if (!result.ok) {
+    failures.push(makeFailure(screenCompletenessFailure(screenName, result)));
   }
 }
 
@@ -3148,8 +3165,13 @@ export async function captureAll({
     }
     try {
       shots.push(await shot(page, outDir, name, maskList));
-      if (runFunctional && visitOpts.checkImages) {
-        await assertVisibleImagesLoaded(page, name, failures);
+      if (runFunctional) {
+        const pageH = await readPageScrollHeight(page);
+        const settledH = visitOpts.referencePageHeight || pageH;
+        assertFullPageHeight(pageH, settledH, name, failures);
+        if (visitOpts.checkImages) {
+          await assertVisibleImagesLoaded(page, name, failures);
+        }
       }
     } catch (e) {
       failures.push(
@@ -3164,9 +3186,7 @@ export async function captureAll({
     return page;
   }
 
-  // a) product pages desktop (paralel) — yükseklik kabuk karşılaştırması için saklanır
-  /** @type {Record<string, number>} */
-  const productPageHeights = {};
+  // a) product pages desktop (paralel)
   const tProducts = Date.now();
   const productEntries = Object.entries(productUrls);
   await mapPool(productEntries, maxWorkers, async ([key, rel]) => {
@@ -3174,7 +3194,6 @@ export async function captureAll({
     const productDecision = decideScenarioProduct(env, key, 'product-page');
     const visitCtx = productDecision.admin ? authed : catalogCtx;
     const page = await visit(visitCtx, rel, name, { checkImages: true });
-    productPageHeights[key] = await readPageScrollHeight(page);
     if (runFunctional) {
       try {
         // Benzer Bağışlar: görünür başlık + Bağış Yap (Avada post-card animasyonu)
@@ -3290,7 +3309,7 @@ export async function captureAll({
   }
   const tShells = Date.now();
   /**
-   * Kabuk ekranı: shot + images-loaded + page-height.
+   * Kabuk ekranı: shot + images-loaded + kabuk bütünlüğü (viewport / kaydırma sonu).
    * @param {import('@playwright/test').Page} page
    * @param {string} screenName
    * @param {string} productKey
@@ -3321,10 +3340,7 @@ export async function captureAll({
     );
     if (runFunctional) {
       await assertVisibleImagesLoaded(page, screenName, failures, { shellOnly: true });
-      if (!/-popup-/i.test(screenName)) {
-        const shellH = await readPageScrollHeight(page);
-        assertShellPageHeight(shellH, productPageHeights[productKey] || 0, screenName, failures);
-      }
+      await assertShellCompleteness(page, screenName, failures);
     }
   }
 
