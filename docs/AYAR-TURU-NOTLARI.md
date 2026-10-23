@@ -463,3 +463,16 @@ Kullanıcı yönergesi önceki tüm görev metinlerinin yerini aldı; CLAUDE.md 
 | T6 | 10.34.6: Storefront mobilde yerel "Add to cart" görünüyordu (bağışçı bilgisi olmadan sepete ekleme) — DÜZELTİLDİ; sunucu tarafı formsuz add-to-cart reddi. Yan etki: "Tekrar sipariş ver" bağış ürünlerinde çalışmaz (bilinçli) | Kapandı |
 | T7 | 10.34.5: eklentinin yerel sepet formu gizleme CSS'i "Benzer Bağışlar" kartlarını da gizliyordu (Hedef mobil "boş" açığının kökü) — DÜZELTİLDİ | Kapandı |
 | G32 | Desktop matris popup PNG yarı saydam (sayfa başlığı/«Bağış Yap» kartın içinden); iPhone opak. 3J3 kanıt: canlı opacity=1, elementFromPoint modal içinde (eklenti katmanı sağlam). Neden: `fullPage` + `position:fixed` compositor. Düzeltme: olay bazlı bekleme + viewport kabuk ekranı; kalıcı **POPUP-OVERLAP** |
+
+## Faz 3 kapanış bulguları (2026-10-23)
+
+| # | Bulgu | Durum |
+|---|-------|-------|
+| T5 | "Ödemeye Git" `/sepet/`: eklentide JS yedek sabit `/odeme-sayfasi/` + `/sepet/` (tek siteye özgü) | 10.34.8: adres yalnız WooCommerce'ten; URL yoksa yönlendirme yok |
+| T8 | `wdp_get_product_info` ön yüz `product_id=0` gönderiyordu; katalog-gizli yayımlı ürün reddediliyordu (HTTP 200 + success:false) | 10.34.8: 0 id isteği yok, geçersiz id 400 + görünür mesaj |
+| T9 | Test sepet-hazır kuralı tema işaretlemesine bağlıydı (Avada boş sepette standart öğe yok) | 3N: `body.woocommerce-cart` + Store API |
+| T10 | Yerel matris kurulumu WooCommerce sepet sayfasını çöpe atıp yeni sayfa açabiliyordu (yerel kanarya yakaladı) | 3N: aynı ID, yalnız içerik |
+| T11 | Yerelde sipariş tamamlama atlanıyordu (#place_order varsayımı) | 3M: blok+klasik, HPOS açık/kapalı, TR karakter, anonim maskelemez |
+| G32 | Masaüstü popup ekran görüntüsü yarı saydam — çekim yöntemi (fullPage + fixed); gerçek DOM opak | 3J3: viewport çekimi + kalıcı POPUP-OVERLAP kontrolü |
+| G33 | Storefront: "There are no reviews yet" bildirimi popup karartmasının üstünde parlak kalıyor (tema bildirimi z-index) | Faz 7 |
+| A1 | Açık test işleri: hissedar siparişi e2e:full'da yok (yalnız custom); `checkout-setup.mjs` JSDoc'ta eski "Hedef: çek geçici aç" yorumu; TT5 mağaza `li.product` Playwright'ta gizli görünüyor; yerel full ~12.8 dk (hedef ≤10) | sonraki test parçası |
