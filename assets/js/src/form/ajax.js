@@ -8,7 +8,7 @@
 
   const WDPApp = window.WDPApp || (window.WDPApp = {});
   const utilsCheck = (WDPApp.utils && WDPApp.utils.ensureModule)
-    ? WDPApp.utils.ensureModule('utils', ['formatCurrency', 'getAjaxNonce', 'announceStatus', 'safeLog', 'refreshWdpAjaxNonces', 'clearAlerts'])
+    ? WDPApp.utils.ensureModule('utils', ['formatCurrency', 'getAjaxNonce', 'announceStatus', 'safeLog', 'refreshWdpAjaxNonces', 'clearAlerts', 'classifyAjaxFailure'])
     : { module: WDPApp.utils || {}, isValid: false, missingMethods: [] };
   const stateCheck = (WDPApp.utils && WDPApp.utils.ensureModule)
     ? WDPApp.utils.ensureModule('state', [])
@@ -22,6 +22,10 @@
   const cart = cartCheck.module;
   const { originalForms } = state;
   const { formatCurrency, getAjaxNonce, announceStatus, safeLog, refreshWdpAjaxNonces, clearAlerts } = utils;
+  const classifyAjaxFailure = typeof utils.classifyAjaxFailure === 'function'
+    ? utils.classifyAjaxFailure
+    : function () { return ''; };
+  const RATE_LIMIT_MESSAGE = 'Çok fazla istek gönderildi. Lütfen bir süre bekleyip tekrar deneyin.';
   const {
     fetchContents: fetchCartContents,
     updateCountElements: updateCartCountElements,
@@ -204,6 +208,7 @@
 
     // Başarı durumunda
     if (data.success) {
+      form._wdpNonceRetried = false;
       trackMetaPixelAfterAddToCartSuccess(data, form);
       clearAlerts();
       // Sepet sayısını güncelle
@@ -777,7 +782,35 @@
         error: (jqXHR, textStatus, errorThrown) => {
           safeLog("jQuery AJAX error:", { textStatus, errorThrown, status: jqXHR.status });
 
-          const rescued = parseWdpAjaxResponseText(jqXHR.responseText);
+          const rescued = parseWdpAjaxResponseText(jqXHR.responseText) || jqXHR.responseJSON || null;
+          const kind = classifyAjaxFailure(jqXHR.status, rescued);
+          if (kind === 'nonce' && !form._wdpNonceRetried && refreshWdpAjaxNonces) {
+            form._wdpNonceRetried = true;
+            refreshWdpAjaxNonces({ force: true }).then(function () {
+              if (form._wdpLastSubmit && typeof form._wdpLastSubmit.resubmit === 'function') {
+                form._wdpLastSubmit.resubmit();
+              }
+            }).catch(function () {
+              handleAjaxResponse(
+                rescued || { success: false, message: errorThrown || textStatus, code: 'nonce' },
+                form,
+                isCheckout,
+                addToCartBtn,
+                checkoutBtn
+              );
+            });
+            return;
+          }
+          if (kind === 'rate') {
+            handleAjaxResponse(
+              rescued || { success: false, message: RATE_LIMIT_MESSAGE, code: 'rate_limit' },
+              form,
+              isCheckout,
+              addToCartBtn,
+              checkoutBtn
+            );
+            return;
+          }
           if (rescued) {
             handleAjaxResponse(rescued, form, isCheckout, addToCartBtn, checkoutBtn);
             return;
@@ -836,30 +869,55 @@
       })
         .then((response) => {
           safeLog("Fetch response received:", { status: response.status, ok: response.ok });
-          if (!response.ok && response.status !== 200) {
-            const httpErr = new Error(`HTTP error! Status: ${response.status}`);
-            httpErr.status = response.status;
-            throw httpErr;
-          }
           return response.text().then((text) => {
-            safeLog("Response text:", text.substring(0, 200)); // İlk 200 karakter
-            const loose = parseWdpAjaxResponseText(text);
-            if (loose) {
-              return loose;
+            safeLog("Response text:", text.substring(0, 200));
+            let data = parseWdpAjaxResponseText(text);
+            if (!data && text) {
+              try {
+                data = JSON.parse(text);
+              } catch (e) {
+                if (!response.ok) {
+                  const parseErr = new Error("INVALID_JSON_RESPONSE");
+                  parseErr.status = response.status;
+                  parseErr.wdpRecoverCart = true;
+                  throw parseErr;
+                }
+                safeLog("JSON parse error:", e);
+                const parseErr = new Error("INVALID_JSON_RESPONSE");
+                parseErr.status = response.status;
+                parseErr.wdpRecoverCart = true;
+                throw parseErr;
+              }
             }
-            try {
-              return JSON.parse(text);
-            } catch (e) {
-              safeLog("JSON parse error:", e);
-              const parseErr = new Error("INVALID_JSON_RESPONSE");
-              parseErr.status = response.status;
-              parseErr.wdpRecoverCart = true;
-              throw parseErr;
-            }
+            return { status: response.status, ok: response.ok, data: data };
           });
         })
-        .then((data) => {
-          handleAjaxResponse(data, form, isCheckout, addToCartBtn, checkoutBtn);
+        .then((pack) => {
+          const kind = classifyAjaxFailure(pack.status, pack.data);
+          if (kind === 'nonce' && !form._wdpNonceRetried && refreshWdpAjaxNonces) {
+            form._wdpNonceRetried = true;
+            return refreshWdpAjaxNonces({ force: true }).then(function () {
+              if (form._wdpLastSubmit && typeof form._wdpLastSubmit.resubmit === 'function') {
+                form._wdpLastSubmit.resubmit();
+              }
+            });
+          }
+          if (kind === 'rate') {
+            handleAjaxResponse(
+              pack.data || { success: false, message: RATE_LIMIT_MESSAGE, code: 'rate_limit' },
+              form,
+              isCheckout,
+              addToCartBtn,
+              checkoutBtn
+            );
+            return;
+          }
+          if (!pack.ok && pack.status !== 200) {
+            const httpErr = new Error(`HTTP error! Status: ${pack.status}`);
+            httpErr.status = pack.status;
+            throw httpErr;
+          }
+          handleAjaxResponse(pack.data, form, isCheckout, addToCartBtn, checkoutBtn);
         })
         .catch((error) => {
           safeLog("Fetch error:", error);

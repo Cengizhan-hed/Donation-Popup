@@ -37,7 +37,10 @@ class WDP_Lazy_Modal {
 			// (assets/js/src/lazy-modal.js ensureAndOpen).
 			$key = WDP_Security::get_rate_limit_key('render_modal');
 			if (!WDP_Security::check_rate_limit($key, 60, 60)) {
-				wp_send_json_error(array('message' => __('Çok fazla istek gönderildi. Lütfen kısa süre sonra tekrar deneyin.', 'woo-donation-popup')), 429);
+				if (!headers_sent()) {
+					header('Retry-After: 60', true);
+				}
+				wp_send_json_error(array('message' => __('Çok fazla istek gönderildi. Lütfen kısa süre sonra tekrar deneyin.', 'woo-donation-popup'), 'code' => 'rate_limit', 'retry_after' => 60), 429);
 			}
 
 			$product_id = isset($_REQUEST['product_id']) ? absint(wp_unslash($_REQUEST['product_id'])) : 0;

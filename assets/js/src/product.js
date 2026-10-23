@@ -11,7 +11,7 @@
   
   // Use centralized module dependency helper
   const utilsCheck = (WDPApp.utils && WDPApp.utils.ensureModule)
-    ? WDPApp.utils.ensureModule('utils', ['safeLog', 'getAjaxNonce', 'formatCurrency', 'formatPrice', 'formatMinPlaceholder', 'applyCurrencyShellPosition', 'announceStatus', 'isValidProductId', 'productInfoErrorMessage', 'showToast'])
+    ? WDPApp.utils.ensureModule('utils', ['safeLog', 'getAjaxNonce', 'formatCurrency', 'formatPrice', 'formatMinPlaceholder', 'applyCurrencyShellPosition', 'announceStatus', 'isValidProductId', 'productInfoErrorMessage', 'showToast', 'refreshWdpAjaxNonces', 'classifyAjaxFailure'])
     : { module: WDPApp.utils || {}, isValid: false, missingMethods: [] };
   
   const stateCheck = (WDPApp.utils && WDPApp.utils.ensureModule)
@@ -21,6 +21,8 @@
   const utils = utilsCheck.module;
   const state = stateCheck.module;
   const { safeLog, getAjaxNonce, formatCurrency, formatPrice, formatMinPlaceholder, applyCurrencyShellPosition, announceStatus, showToast } = utils;
+  const refreshWdpAjaxNonces = typeof utils.refreshWdpAjaxNonces === 'function' ? utils.refreshWdpAjaxNonces : null;
+  const classifyAjaxFailure = typeof utils.classifyAjaxFailure === 'function' ? utils.classifyAjaxFailure : function () { return ''; };
   const isValidProductId = typeof utils.isValidProductId === 'function'
     ? utils.isValidProductId
     : function (value) {
@@ -58,11 +60,6 @@
       return productInfoRequests.get(id);
     }
 
-    const formData = new FormData();
-    formData.append("action", "wdp_get_product_info");
-    formData.append("product_id", id);
-    formData.append("security", getAjaxNonce("get_product_info"));
-
     let abortTimer = null;
     const controller =
       typeof AbortController !== "undefined" ? new AbortController() : null;
@@ -76,17 +73,20 @@
       }, PRODUCT_INFO_TIMEOUT_MS);
     }
 
-    const fetchOpts = {
-      method: "POST",
-      body: formData,
-      credentials: "same-origin",
-    };
-    if (controller) {
-      fetchOpts.signal = controller.signal;
-    }
-
-    const request = fetch(wdp_ajax.ajax_url, fetchOpts)
-      .then((response) => {
+    function sendProductInfo(allowNonceRetry) {
+      const formData = new FormData();
+      formData.append("action", "wdp_get_product_info");
+      formData.append("product_id", id);
+      formData.append("security", getAjaxNonce("get_product_info"));
+      const fetchOpts = {
+        method: "POST",
+        body: formData,
+        credentials: "same-origin",
+      };
+      if (controller) {
+        fetchOpts.signal = controller.signal;
+      }
+      return fetch(wdp_ajax.ajax_url, fetchOpts).then((response) => {
         return response.text().then((text) => {
           let parsed = null;
           try {
@@ -95,10 +95,16 @@
             safeLog("Error parsing JSON response:", e);
             parsed = null;
           }
+          const kind = classifyAjaxFailure(response.status, parsed);
+          if (kind === "nonce" && allowNonceRetry && refreshWdpAjaxNonces) {
+            return refreshWdpAjaxNonces({ force: true }).then(function () {
+              return sendProductInfo(false);
+            });
+          }
           if (!response.ok) {
             const msg = productInfoErrorMessage(parsed);
-            if (msg && /geçersiz ürün|ürün bulunamadı/i.test(msg)) {
-              return { success: false, message: msg };
+            if (kind === "rate" || kind === "id" || (msg && /geçersiz ürün|ürün bulunamadı|çok fazla istek/i.test(msg))) {
+              return parsed || { success: false, message: msg, code: kind || "error" };
             }
             const err = new Error(msg || ("HTTP error! Status: " + response.status));
             err.status = response.status;
@@ -106,7 +112,10 @@
           }
           return parsed;
         });
-      })
+      });
+    }
+
+    const request = sendProductInfo(true)
       .then((data) => {
         if (data && data.success) {
           productDataCache.set(id, data);
@@ -465,7 +474,7 @@
           const serverMsg = productInfoErrorMessage(data);
           displayProductInfoError(
             productId,
-            serverMsg && /geçersiz ürün|ürün bulunamadı|alınamadı|yenileyip/i.test(serverMsg)
+            serverMsg && /geçersiz ürün|ürün bulunamadı|alınamadı|yenileyip|çok fazla istek/i.test(serverMsg)
               ? serverMsg
               : undefined
           );

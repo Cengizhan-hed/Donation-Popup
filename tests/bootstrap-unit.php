@@ -19,7 +19,7 @@ if (!defined('WDP_PLUGIN_FILE')) {
 	define('WDP_PLUGIN_FILE', $root . '/woo-donation-popup.php');
 }
 if (!defined('WDP_VERSION')) {
-	define('WDP_VERSION', '10.34.8');
+	define('WDP_VERSION', '10.34.9');
 }
 if (!defined('MINUTE_IN_SECONDS')) {
 	define('MINUTE_IN_SECONDS', 60);
@@ -34,7 +34,7 @@ if (!defined('WDP_PLUGIN_URL')) {
 	define('WDP_PLUGIN_URL', 'https://example.test/wp-content/plugins/woo-donation-popup/');
 }
 if (!defined('WDP_ASSET_VERSION')) {
-	define('WDP_ASSET_VERSION', '10.34.8');
+	define('WDP_ASSET_VERSION', '10.34.9');
 }
 
 /**
@@ -119,6 +119,9 @@ final class WDP_Test_State {
 	/** @var int */
 	public static $unique_id = 0;
 
+	/** @var int Simulated logged-in user id. */
+	public static $user_id = 0;
+
 	/** @var mixed */
 	public static $last_json = null;
 
@@ -152,6 +155,7 @@ final class WDP_Test_State {
 		self::$price_decimal  = ',';
 		self::$post_types    = array();
 		self::$unique_id     = 0;
+		self::$user_id       = 0;
 		self::$last_json     = null;
 		self::$json_status   = 0;
 		$GLOBALS['wpdb']     = new WDP_Fake_Wpdb();
@@ -196,7 +200,7 @@ if (!function_exists('is_user_logged_in')) {
 }
 if (!function_exists('get_current_user_id')) {
 	function get_current_user_id() {
-		return 0;
+		return (int) WDP_Test_State::$user_id;
 	}
 }
 if (!function_exists('check_ajax_referer')) {

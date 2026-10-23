@@ -185,6 +185,7 @@
   /* Last form content vs sticky/flex CTA: bar height + home-indicator / safe bottom. */
   --wdp-cta-clearance: calc(
     var(--wdp-form-cta-height, 52px)
+    + 36px
     + max(10px, env(safe-area-inset-bottom, 0px), var(--wdp-safe-bottom, 0px))
   );
   --wdp-touch-target-min: 44px;

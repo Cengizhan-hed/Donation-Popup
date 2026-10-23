@@ -170,6 +170,7 @@ export async function runCampaignBlocksChecks({
   failures,
   stats,
   createAdminContext,
+  createVisitorContext,
 }) {
   const checks = [];
   const baseUrl = env.E2E_BASE_URL;
@@ -192,7 +193,11 @@ export async function runCampaignBlocksChecks({
     return;
   }
 
-  const ctx = await mutationBrowserContext(browser, contextOpts, createAdminContext);
+  const ctx = await mutationBrowserContext(browser, contextOpts, createAdminContext, {
+    createVisitorContext,
+    env,
+    role: 'campaign',
+  });
   const page = await ctx.newPage();
 
   const pass = (id) => {

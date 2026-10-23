@@ -32,7 +32,11 @@ trait WDP_Ajax_Base_Trait {
     private static function enforce_rate_limit($action, $max_requests, $window_seconds) {
         $rate_limit_key = WDP_Security::get_rate_limit_key($action);
         if (!WDP_Security::check_rate_limit($rate_limit_key, $max_requests, $window_seconds)) {
-            throw new WDP_Security_Exception(__('Çok fazla istek gönderildi. Lütfen bir süre bekleyip tekrar deneyin.', 'woo-donation-popup'));
+            throw new WDP_Security_Exception(
+                __('Çok fazla istek gönderildi. Lütfen bir süre bekleyip tekrar deneyin.', 'woo-donation-popup'),
+                'rate_limit',
+                (int) $window_seconds
+            );
         }
     }
 
@@ -44,7 +48,7 @@ trait WDP_Ajax_Base_Trait {
      */
     private static function enforce_capability($capability = 'read') {
         if (!WDP_Security::check_capability($capability)) {
-            throw new WDP_Security_Exception(__('Yetkiniz bulunmuyor', 'woo-donation-popup'));
+            throw new WDP_Security_Exception(__('Yetkiniz bulunmuyor', 'woo-donation-popup'), 'capability');
         }
     }
 
@@ -58,11 +62,11 @@ trait WDP_Ajax_Base_Trait {
         self::require_post_method();
 
         if (!check_ajax_referer($nonce_action, 'security', false)) {
-            throw new WDP_Security_Exception();
+            throw new WDP_Security_Exception(null, 'nonce');
         }
 
         if (!WDP_Security::validate_request_origin()) {
-            throw new WDP_Security_Exception(__('Geçersiz istek kaynağı', 'woo-donation-popup'));
+            throw new WDP_Security_Exception(__('Geçersiz istek kaynağı', 'woo-donation-popup'), 'origin');
         }
     }
 
@@ -74,7 +78,7 @@ trait WDP_Ajax_Base_Trait {
     private static function require_post_method() {
         $method = isset($_SERVER['REQUEST_METHOD']) ? strtoupper((string) wp_unslash($_SERVER['REQUEST_METHOD'])) : '';
         if ('POST' !== $method) {
-            throw new WDP_Security_Exception(__('Geçersiz istek metodu', 'woo-donation-popup'));
+            throw new WDP_Security_Exception(__('Geçersiz istek metodu', 'woo-donation-popup'), 'method');
         }
     }
 

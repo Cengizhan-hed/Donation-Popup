@@ -85,17 +85,47 @@ class WDP_Validation_Exception extends WDP_Exception {
  * Security exception
  */
 class WDP_Security_Exception extends WDP_Exception {
-    
+
+    /** @var string nonce|rate_limit|capability|origin|method */
+    private $kind = 'nonce';
+
+    /** @var int Retry-After seconds (429). */
+    private $retry_after = 0;
+
     /**
      * Constructor
      *
-     * @param string $message Error message.
+     * @param string|null $message     Error message.
+     * @param string      $kind        nonce|rate_limit|capability|origin|method.
+     * @param int         $retry_after Retry-After seconds for rate_limit.
      */
-    public function __construct($message = null) {
+    public function __construct($message = null, $kind = 'nonce', $retry_after = 0) {
+        $kind = strtolower(preg_replace('/[^a-z0-9_]/', '', (string) $kind));
+        $allowed = array('nonce', 'rate_limit', 'capability', 'origin', 'method');
+        if (!in_array($kind, $allowed, true)) {
+            $kind = 'nonce';
+        }
+        $this->kind        = $kind;
+        $this->retry_after = max(0, (int) $retry_after);
         if (null === $message) {
             $message = __('Güvenlik doğrulaması başarısız oldu. Lütfen sayfayı yenileyip tekrar deneyin.', 'woo-donation-popup');
         }
-        parent::__construct($message, 403);
+        $http = ('rate_limit' === $kind) ? 429 : 403;
+        parent::__construct($message, $http);
+    }
+
+    /**
+     * @return string
+     */
+    public function getKind() {
+        return $this->kind;
+    }
+
+    /**
+     * @return int
+     */
+    public function getRetryAfter() {
+        return $this->retry_after;
     }
 }
 

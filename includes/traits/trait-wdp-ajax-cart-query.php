@@ -279,13 +279,13 @@ trait WDP_Ajax_Cart_Query_Trait {
             ));
 
         } catch (WDP_Security_Exception $e) {
-            WDP_Utils::json_error($e->getMessage(), array('code' => 'security_error'));
+            WDP_Utils::json_error($e, array('code' => 'security_error'));
         } catch (WDP_Validation_Exception $e) {
-            WDP_Utils::json_error($e->getMessage(), array('code' => 'validation_error'));
+            WDP_Utils::json_error($e, array('code' => 'validation_error'));
         } catch (WDP_Exception $e) {
-            WDP_Utils::json_error($e->getMessage(), array('code' => 'general_error'));
+            WDP_Utils::json_error($e, array('code' => 'general_error'));
         } catch (Exception $e) {
-            WDP_Utils::json_error(__('Beklenmeyen bir hata oluştu.', 'woo-donation-popup'), array('code' => 'unknown_error'));
+            WDP_Utils::json_error(__('Beklenmeyen bir hata oluştu.', 'woo-donation-popup'), array('code' => 'unknown_error', 'http_status' => 500));
         }
     }
 }

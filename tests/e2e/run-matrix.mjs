@@ -123,7 +123,7 @@ async function runPool(items, limit, fn) {
 async function runConfig(resolved, devices, port) {
   const { snap, meta } = prepareConfigSnapshot(resolved);
   const probe = meta.probe || meta;
-  const wpDir = materializeWorker(resolved.id, port, snap);
+  const wpDir = materializeWorker(resolved.id, port, snap, { hpos: !!resolved.hpos });
   const rows = [];
   for (const deviceId of devices) {
     restoreSqlite(wpDir, snap);

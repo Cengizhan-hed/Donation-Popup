@@ -57,6 +57,19 @@ function loadProduct(fetchImpl) {
       return '';
     },
     showToast(opts) { toasts.push(opts || {}); },
+    classifyAjaxFailure(status, data) {
+      const st = Number(status) || 0;
+      const code = data && data.code;
+      const msg = String((data && data.message) || (data && data.data && data.data.message) || '').toLowerCase();
+      if (st === 429 || code === 'rate_limit' || /çok fazla istek/.test(msg)) return 'rate';
+      if (/geçersiz ürün|ürün bulunamadı/.test(msg)) return 'id';
+      if (st === 403 || code === 'nonce') return 'nonce';
+      return '';
+    },
+    refreshWdpAjaxNonces() {
+      win.wdp_ajax.nonces.get_product_info = 'fresh';
+      return Promise.resolve(true);
+    },
   };
   const win = {
     wdp_ajax: {
@@ -123,6 +136,47 @@ test('geçerli id ile fetch gider', async () => {
     assert.equal(body.get('action'), 'wdp_get_product_info');
   }
   assert.equal(data.success, true);
+});
+
+test('403 nonce yanıtında bir kez taze nonce ile yeniden dener', async () => {
+  let n = 0;
+  const fetchImpl = () => {
+    n += 1;
+    if (n === 1) {
+      return Promise.resolve({
+        ok: false,
+        status: 403,
+        text: () => Promise.resolve(JSON.stringify({ success: false, code: 'nonce', message: 'Güvenlik' })),
+      });
+    }
+    return Promise.resolve({
+      ok: true,
+      status: 200,
+      text: () => Promise.resolve(JSON.stringify({ success: true, product_name: 'Y' })),
+    });
+  };
+  fetchImpl._calls = [];
+  const { product } = loadProduct(fetchImpl);
+  const data = await product.getData(8);
+  assert.equal(n, 2);
+  assert.equal(data.success, true);
+});
+
+test('429 yanıtında kullanıcıya istek sınırı mesajı', async () => {
+  const fetchImpl = () => Promise.resolve({
+    ok: false,
+    status: 429,
+    text: () => Promise.resolve(JSON.stringify({
+      success: false,
+      code: 'rate_limit',
+      message: 'Çok fazla istek gönderildi. Lütfen bir süre bekleyip tekrar deneyin.',
+    })),
+  });
+  fetchImpl._calls = [];
+  const { product, toasts, announced } = loadProduct(fetchImpl);
+  await product.fetch(12, {});
+  const texts = [...toasts.map((t) => t.message), ...announced].join(' ');
+  assert.match(texts, /çok fazla istek/i);
 });
 
 test('400 yanıtında kullanıcıya görünür mesaj', async () => {
