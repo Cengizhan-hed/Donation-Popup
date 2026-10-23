@@ -445,6 +445,41 @@ describe('yerel uzak-benzetim katalog', () => {
     assert.equal(decideScenarioProduct(env, 'shares', 'panel').action, 'run-visitor');
     assert.equal(env._roleSkips.some((s) => /popup-shares|loop-donate/.test(s.check)), false);
   });
+
+  it('private fixture related/upsell katalog fixture_related ile dolar', () => {
+    const env = {
+      _profile: { id: 'ikram-aid', allowedHosts: ['ikramaid.uk'] },
+      _resolvedProducts: {},
+      _roleSkips: [],
+      _fixtureRoles: [],
+    };
+    applyRemoteCatalog(env, {
+      shop: { path: '/shop/' },
+      list: { path: '/donations/' },
+      products: [],
+      fixture_related: {
+        915: { related_ids: [916, 917], upsell_ids: [50] },
+      },
+    });
+    overlayFixtureRoles(env, {
+      roles: {
+        shares: {
+          id: 915,
+          name: 'WDP E2E Shares',
+          slug: 'wdp-e2e-shares',
+          path: '/?post_type=product&p=915',
+          url: 'https://ikramaid.uk/?post_type=product&p=915',
+          published: false,
+          status: 'private',
+        },
+      },
+    });
+    assert.deepEqual(env._resolvedProducts.shares.relatedIds, [916, 917]);
+    assert.deepEqual(env._resolvedProducts.shares.upsellIds, [50]);
+    const related = readRelatedProductIds(915, env._resolvedProducts.shares);
+    assert.equal(related.ok, true);
+    assert.deepEqual(related.ids, [916, 917, 50]);
+  });
 });
 
 describe('katalog --explain raporu', () => {

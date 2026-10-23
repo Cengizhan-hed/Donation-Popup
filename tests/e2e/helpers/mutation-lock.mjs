@@ -6,6 +6,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { CURRENT_DIR } from './run-io.mjs';
 import { resolveProfileId } from './profile.mjs';
+import { deviceRunsMutations } from './mutation-policy.mjs';
 
 let abortWait = false;
 
@@ -20,8 +21,12 @@ export function resetMutationLockAbort() {
 /**
  * @param {string} envId
  * @param {() => Promise<unknown>} fn
+ * @param {{ deviceId?: string, skipIfNotMutationDevice?: boolean }} [opts]
  */
-export async function withEnvMutationLock(envId, fn) {
+export async function withEnvMutationLock(envId, fn, opts = {}) {
+  if (opts.skipIfNotMutationDevice && !deviceRunsMutations(opts.deviceId)) {
+    return fn();
+  }
   const id = resolveProfileId(envId) || 'local';
   fs.mkdirSync(CURRENT_DIR, { recursive: true });
   const lockPath = path.join(CURRENT_DIR, `.mut-${id}.lock`);

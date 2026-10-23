@@ -98,6 +98,26 @@ trait WDP_Assets_Registry_Trait {
     private static function should_use_js_bundle() {
         return (bool) apply_filters('wdp_use_js_bundle', true);
     }
+
+    /**
+     * CTA kuyruğu bundle’dan önce: yavaş ağda erken dokunuş sessiz yutulmasın.
+     *
+     * @param string     $plugin_url        Plugin URL.
+     * @param string|int $js_module_version Script version.
+     * @return void
+     */
+    private static function register_cta_ready_script($plugin_url, $js_module_version) {
+        if (wp_script_is('wdp-form-cta-ready-js', 'registered')) {
+            return;
+        }
+        wp_register_script(
+            'wdp-form-cta-ready-js',
+            $plugin_url . 'assets/js/src/form/cta-ready.js',
+            array(),
+            $js_module_version,
+            true
+        );
+    }
     private static function get_built_css_manifest($plugin_dir) {
         $manifest_path = $plugin_dir . 'assets/css/build/manifest.json';
         if (!file_exists($manifest_path) || !is_readable($manifest_path)) {
@@ -168,10 +188,13 @@ trait WDP_Assets_Registry_Trait {
         if (self::should_use_js_bundle()) {
             $built_js = self::get_built_js_manifest($plugin_dir);
             if (is_array($built_js) && !empty($built_js['file'])) {
+                self::register_cta_ready_script($plugin_url, $js_module_version);
+                $bundle_deps = is_array($dependencies) ? $dependencies : array('jquery');
+                $bundle_deps[] = 'wdp-form-cta-ready-js';
                 wp_register_script(
                     self::FRONTEND_JS_HANDLE,
                     $plugin_url . 'assets/js/' . $built_js['file'],
-                    is_array($dependencies) ? $dependencies : array('jquery'),
+                    $bundle_deps,
                     $js_module_version,
                     true
                 );
@@ -542,6 +565,9 @@ trait WDP_Assets_Registry_Trait {
             }
         }
         
+        if (wp_script_is('wdp-form-cta-ready-js', 'registered')) {
+            wp_enqueue_script('wdp-form-cta-ready-js');
+        }
         if (wp_script_is(self::FRONTEND_JS_HANDLE, 'registered')) {
             wp_enqueue_script(self::FRONTEND_JS_HANDLE);
         } else {

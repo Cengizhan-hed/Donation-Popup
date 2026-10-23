@@ -239,7 +239,11 @@
       }
       if (lock) {
         if (el.dataset.wdpSkeletonLock == null) {
-          el.dataset.wdpSkeletonLock = el.disabled ? '1' : '0'
+          if (el.getAttribute && el.getAttribute('data-wdp-await-js') === '1') {
+            el.dataset.wdpSkeletonLock = 'await'
+          } else {
+            el.dataset.wdpSkeletonLock = el.disabled ? '1' : '0'
+          }
         }
         el.disabled = true
         return
@@ -252,6 +256,15 @@
       }
       delete el.dataset.wdpSkeletonLock
     })
+    if (!lock) {
+      const form = modal.querySelector('form')
+      if (form && WDPApp.formCtaReady && typeof WDPApp.formCtaReady.markFormReady === 'function') {
+        WDPApp.formCtaReady.markFormReady(form)
+        if (typeof WDPApp.formCtaReady.flushQueuedCta === 'function') {
+          WDPApp.formCtaReady.flushQueuedCta(form)
+        }
+      }
+    }
   }
 
   function bumpModalOpenToken(modal) {
@@ -376,6 +389,12 @@
       const donationForm = modal.querySelector('form')
       if (donationForm && WDPApp.form && typeof WDPApp.form.setup === 'function') {
         WDPApp.form.setup(donationForm)
+      } else if (donationForm && WDPApp.formCtaReady && typeof WDPApp.formCtaReady.waitForFormReady === 'function') {
+        WDPApp.formCtaReady.waitForFormReady(donationForm, function () {
+          if (WDPApp.form && typeof WDPApp.form.setup === 'function' && !donationForm._wdpSubmitHandler) {
+            WDPApp.form.setup(donationForm)
+          }
+        })
       }
       if (donationForm && WDPApp.formWizard && typeof WDPApp.formWizard.reset === 'function') {
         WDPApp.formWizard.reset(donationForm)

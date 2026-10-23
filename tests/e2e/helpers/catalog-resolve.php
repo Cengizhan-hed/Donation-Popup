@@ -279,6 +279,31 @@ if (!function_exists('wdp_e2e_catalog_type_meta')) {
 			)
 		);
 		if (!is_array($ids)) {
+			$ids = array();
+		}
+		// İşaretli private fixture (salt okunur related/upsell; rol seçimine girmez).
+		if (function_exists('get_posts')) {
+			$fx = get_posts(
+				array(
+					'post_type'              => 'product',
+					'post_status'            => 'private',
+					'meta_key'               => '_wdp_e2e_test',
+					'meta_compare'           => 'EXISTS',
+					'fields'                 => 'ids',
+					'posts_per_page'         => 40,
+					'orderby'                => 'ID',
+					'order'                  => 'ASC',
+					'no_found_rows'          => true,
+					'update_post_meta_cache' => false,
+					'update_post_term_cache' => false,
+				)
+			);
+			if (is_array($fx)) {
+				$ids = array_values(array_unique(array_merge(array_map('intval', $ids), array_map('intval', $fx))));
+			}
+		}
+		if (!$ids) {
+			$cached = $out;
 			return $out;
 		}
 		$resolver = class_exists('WDP_Donation_Type') ? 'WDP_Donation_Type::for_product' : 'yedek infer_from_meta';
@@ -414,9 +439,17 @@ if (!function_exists('wdp_e2e_catalog_resolve')) {
 			}
 		}
 
-		$products = array();
+		$products         = array();
+		$fixture_related  = array();
 		foreach (wdp_e2e_catalog_published_products() as $row) {
 			if (!empty($row['fixture'])) {
+				$fid = (int) $row['id'];
+				if ($fid > 0) {
+					$fixture_related[ (string) $fid ] = array(
+						'related_ids' => isset($row['related_ids']) && is_array($row['related_ids']) ? $row['related_ids'] : array(),
+						'upsell_ids'  => isset($row['upsell_ids']) && is_array($row['upsell_ids']) ? $row['upsell_ids'] : array(),
+					);
+				}
 				continue;
 			}
 			if (empty($row['donation'])) {
@@ -445,11 +478,12 @@ if (!function_exists('wdp_e2e_catalog_resolve')) {
 		}
 
 		return array(
-			'shop'     => $shop,
-			'cart'     => $cart,
-			'checkout' => $checkout,
-			'list'     => $list,
-			'products' => $products,
+			'shop'             => $shop,
+			'cart'             => $cart,
+			'checkout'         => $checkout,
+			'list'             => $list,
+			'products'         => $products,
+			'fixture_related'  => $fixture_related,
 		);
 	}
 }

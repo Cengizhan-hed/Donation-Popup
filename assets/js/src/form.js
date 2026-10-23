@@ -610,6 +610,13 @@
     form._wdpSubmitHandler = onWdpFormSubmit;
     form.addEventListener("submit", form._wdpSubmitHandler, WDP_FORM_SUBMIT_CAPTURE);
 
+    if (WDPApp.formCtaReady && typeof WDPApp.formCtaReady.markFormReady === "function") {
+      WDPApp.formCtaReady.markFormReady(form);
+      if (typeof WDPApp.formCtaReady.flushQueuedCta === "function") {
+        WDPApp.formCtaReady.flushQueuedCta(form);
+      }
+    }
+
     form.querySelectorAll('button[name="donation_add_to_cart"], button[name="donation_go_checkout"]').forEach((btn) => {
       if (btn.dataset.wdpActionClickBound === '1') {
         return;

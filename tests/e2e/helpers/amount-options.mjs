@@ -17,12 +17,16 @@ import {
   waitForShellClosed,
 } from './checks.mjs';
 import { getProductMeta, setProductMeta } from './staging-wp-meta.mjs';
-import { requireFixtureRole, mutationBrowserContext } from './fixtures.mjs';
+import { requireFixtureRole, mutationBrowserContext, AMOUNT_PRESET_FIXTURE_META } from './fixtures.mjs';
 import { popupPagePath } from './catalog-core.mjs';
 import { openMutationProductShell } from './mutation-policy.mjs';
 
 const CHECK_MS = 20000;
 const RECOMMENDED_META = '_amount_preset_recommended';
+const PRESET_ENABLE_META = '_enable_amount_presets';
+const PRESET_LIST_META = '_amount_presets';
+const PRESET_ENABLE_VALUE = AMOUNT_PRESET_FIXTURE_META._enable_amount_presets;
+const PRESET_LIST_VALUE = AMOUNT_PRESET_FIXTURE_META._amount_presets;
 
 /** @param {import('@playwright/test').Locator} shell */
 async function waitShellReady(shell) {
@@ -248,14 +252,23 @@ export async function runAmountOptionsChecks({
   };
 
   let previousRecommended = '';
+  let previousEnable = '';
+  let previousList = '';
   let metaTouched = false;
 
   try {
+    if (customId > 0) {
+      previousRecommended = await getProductMeta(customId, RECOMMENDED_META);
+      previousEnable = await getProductMeta(customId, PRESET_ENABLE_META);
+      previousList = await getProductMeta(customId, PRESET_LIST_META);
+      await setProductMeta(customId, PRESET_ENABLE_META, PRESET_ENABLE_VALUE);
+      await setProductMeta(customId, PRESET_LIST_META, PRESET_LIST_VALUE);
+      metaTouched = true;
+    }
     // e) İlk açılış: seçili yok; önerilen meta boşsa etiket yok
     try {
       await emptyCart(page, baseUrl);
       if (customId > 0) {
-        previousRecommended = await getProductMeta(customId, RECOMMENDED_META);
         await setProductMeta(customId, RECOMMENDED_META, '');
         metaTouched = true;
       }
@@ -663,10 +676,12 @@ export async function runAmountOptionsChecks({
     if (metaTouched && customId > 0) {
       try {
         await setProductMeta(customId, RECOMMENDED_META, previousRecommended || '');
+        await setProductMeta(customId, PRESET_ENABLE_META, previousEnable || '');
+        await setProductMeta(customId, PRESET_LIST_META, previousList || '');
       } catch (restoreErr) {
         fail(
           'amount-opts-meta-restore-final',
-          'Önerilen meta geri yükleme (finally) başarısız',
+          'Tutar ön ayarı meta geri yükleme (finally) başarısız',
           restoreErr
         );
       }

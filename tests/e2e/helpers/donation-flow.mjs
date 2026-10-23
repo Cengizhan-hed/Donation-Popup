@@ -21,6 +21,7 @@ import {
   classifyCheckoutNavFailure,
   urlPathnameOnly,
   writeCheckoutFlowDebug,
+  visibleValidationErrors,
 } from './checks.mjs';
 import { markOrderAsE2E } from './test-cleanup.mjs';
 import { SKIP_EVIDENCE, SKIP_REASONS, classifySkip, makeSkip } from './skip-policy.mjs';
@@ -98,6 +99,111 @@ async function fillDonationShell(shell, spec) {
   if ((await ded.count()) > 0) await ded.fill(DEDICATION);
   const anon = shell.locator('input[name="donation_anonymous"]').first();
   if ((await anon.count()) > 0) await anon.check();
+}
+
+/**
+ * CTA hazırlık teşhisi (kişisel veri yok).
+ * @param {import('@playwright/test').Locator} shell
+ */
+async function collectCtaReadyState(shell) {
+  return shell.evaluate(() => {
+    const form =
+      document.querySelector('.wdp-modal.show form') ||
+      document.querySelector('.wdp-donation-form form') ||
+      document.querySelector('form.wdp-donation-form');
+    const go = form
+      ? form.querySelector('button[name="donation_go_checkout"]')
+      : document.querySelector('button[name="donation_go_checkout"]');
+    const gate = form
+      ? form.querySelector('.wdp-cta-gate__hit')
+      : document.querySelector('.wdp-cta-gate__hit');
+    return {
+      form_ready: !!(form && (form._wdpSubmitHandler || (form.dataset && form.dataset.wdpFormReady === '1'))),
+      await_js: go ? go.getAttribute('data-wdp-await-js') : null,
+      disabled: go ? !!go.disabled : null,
+      has_gate: !!gate,
+      queued: !!(form && form._wdpQueuedSubmitter),
+    };
+  });
+}
+
+/**
+ * Yerel kanıt: handler yokken erken CTA — sessiz yutma olmamalı (kuyruk → add_to_cart).
+ * @param {import('@playwright/test').Page} page
+ * @param {import('@playwright/test').Locator} shell
+ * @param {Record<string,string>} env
+ */
+async function proveEarlyCtaTap(page, shell, env) {
+  const delayMs = 2000;
+  const delayProductInfo = async (route) => {
+    const req = route.request();
+    const post = req.postData() || '';
+    if (/wdp_get_product_info/.test(post)) {
+      await new Promise((r) => setTimeout(r, delayMs));
+    }
+    await route.continue();
+  };
+  await page.route(/admin-ajax\.php/i, delayProductInfo);
+
+  await shell.evaluate(() => {
+    const form =
+      document.querySelector('.wdp-modal.show form') ||
+      document.querySelector('.wdp-donation-form form') ||
+      document.querySelector('form.wdp-donation-form');
+    if (!form) return;
+    if (form._wdpSubmitHandler) {
+      form.removeEventListener('submit', form._wdpSubmitHandler, true);
+      form.removeEventListener('submit', form._wdpSubmitHandler, false);
+      form._wdpSubmitHandler = null;
+    }
+    if (form.dataset) form.dataset.wdpFormReady = '0';
+    form.querySelectorAll(
+      'button[name="donation_go_checkout"], button[name="donation_add_to_cart"]'
+    ).forEach((btn) => {
+      btn.disabled = true;
+      btn.setAttribute('data-wdp-await-js', '1');
+      btn.setAttribute('aria-disabled', 'true');
+      btn.classList.add('wdp-cta-await-js', 'wdp-loading');
+      const gate = btn.closest('.wdp-cta-gate');
+      if (gate) gate.classList.remove('is-ready');
+    });
+  });
+
+  const ctaState = await collectCtaReadyState(shell);
+  const probes = attachCheckoutFlowProbes(page);
+  try {
+    const dispatched = await shell.evaluate(() => {
+      const form =
+        document.querySelector('.wdp-modal.show form') ||
+        document.querySelector('.wdp-donation-form form') ||
+        document.querySelector('form.wdp-donation-form');
+      const hit = form && form.querySelector('.wdp-cta-gate__hit');
+      const go = form && form.querySelector('button[name="donation_go_checkout"]');
+      const target = hit || go;
+      if (!target) return false;
+      target.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
+      return true;
+    });
+    if (!dispatched) {
+      const go = shell.locator(SEL.goCheckout).first();
+      await go.click({ timeout: CHECK_MS, force: true, noWaitAfter: true });
+    }
+    const addHit = await probes.waitForAddToCart(12000);
+    if (!addHit) {
+      const errs = await visibleValidationErrors(page);
+      writeCheckoutFlowDebug('early-cta', { ...ctaState, class: 'early-tap-silent', errors: errs });
+      throw new Error(
+        `erken-dokunuş sessiz yutma: add_to_cart yok form_ready=${ctaState.form_ready} await=${ctaState.await_js} err=${JSON.stringify(errs)}`
+      );
+    }
+    writeCheckoutFlowDebug('early-cta', { ...ctaState, class: 'ok', add_to_cart: addHit });
+  } finally {
+    probes.dispose();
+    await page.unroute(/admin-ajax\.php/i, delayProductInfo).catch((e) => {
+      console.error(`[e2e:catch-fail] early-cta unroute: ${e && e.message ? e.message : e}`);
+    });
+  }
+  void env;
 }
 
 function localStore(profile, amount) {
@@ -222,10 +328,26 @@ export async function runDonationFlowChecks({
       diag.items_count_before_click = await cartItemCount(page, env.E2E_BASE_URL);
       diag.click_pathname = urlPathnameOnly(page.url());
 
+      diag.cta_ready = await collectCtaReadyState(shell);
+
       const add = shell.locator(SEL.addToCart).first();
       const go = shell.locator(SEL.goCheckout).first();
+      const gate = shell.locator('.wdp-cta-gate__hit').first();
       if ((await go.count()) > 0) {
-        await go.click({ timeout: CHECK_MS, noWaitAfter: true });
+        try {
+          await go.click({ timeout: CHECK_MS, noWaitAfter: true });
+        } catch (clickErr) {
+          const msg = String(clickErr && clickErr.message ? clickErr.message : clickErr);
+          if (/intercepts pointer events|not stable/i.test(msg) && (await gate.count()) > 0) {
+            await gate.click({ timeout: CHECK_MS, force: true, noWaitAfter: true });
+          } else if (/intercepts pointer events|not stable/i.test(msg)) {
+            await go.click({ timeout: CHECK_MS, force: true, noWaitAfter: true });
+          } else {
+            throw clickErr;
+          }
+        }
+      } else if ((await gate.count()) > 0) {
+        await gate.click({ timeout: CHECK_MS, force: true, noWaitAfter: true });
       } else {
         await clickAddToCartWithRetry(page, add, { timeout: CHECK_MS });
       }
@@ -461,6 +583,55 @@ export async function runDonationFlowChecks({
         new Promise((resolve) => setTimeout(resolve, 15000)),
       ]).catch((e) => {
         console.error(`[e2e:catch-fail] emptyCart-finally: ${e && e.message ? e.message : e}`);
+      });
+    }
+  }
+
+  if (!remote && deviceId === 'iphone' && customId && listPath) {
+    const check = `checkout-flow-early-cta-${deviceId}`;
+    const tJob = Date.now();
+    try {
+      await Promise.race([
+        emptyCart(page, env.E2E_BASE_URL),
+        new Promise((_, rej) => setTimeout(() => rej(new Error('emptyCart timeout')), 15000)),
+      ]).catch((e) => {
+        console.error(`[e2e:catch-fail] emptyCart-early-cta: ${e && e.message ? e.message : e}`);
+      });
+      const extra = { hdf_no_side_cart: '1', ...comingSoonQuery(env, profile) };
+      await page.goto(withCacheBust(env.E2E_BASE_URL, listPath, extra), {
+        waitUntil: 'domcontentloaded',
+        timeout: CHECK_MS,
+      });
+      await revealListProductTrigger(page, customId);
+      let trigger = shellTriggerLocator(page, 'popup', { productId: customId });
+      if ((await trigger.count()) === 0) {
+        trigger = page.locator(
+          `${SEL.centeredPopupTrigger}, ${SEL.sidePanelTrigger}, .wdp-card__cta, .wdp-loop-donate`
+        );
+      }
+      await clickShellTrigger(trigger, CHECK_MS);
+      const shell = openShellLocator(page, '');
+      await shell.waitFor({ state: 'visible', timeout: CHECK_MS });
+      filledAmount = profile.products?.custom?.min || 10;
+      await fillDonationShell(shell, { kind: 'custom', amount: filledAmount });
+      await proveEarlyCtaTap(page, shell, env);
+      stats.passed += 1;
+      console.log(`[e2e] ${check}: ${((Date.now() - tJob) / 1000).toFixed(1)}s`);
+    } catch (e) {
+      failures.push(
+        makeFailure({
+          check,
+          description: 'Erken CTA dokunuşu sessiz yutulmamalı (kuyruk veya görünür hata)',
+          error: e,
+        })
+      );
+      stats.failed += 1;
+    } finally {
+      await Promise.race([
+        emptyCart(page, env.E2E_BASE_URL),
+        new Promise((resolve) => setTimeout(resolve, 15000)),
+      ]).catch((e) => {
+        console.error(`[e2e:catch-fail] emptyCart-early-cta-finally: ${e && e.message ? e.message : e}`);
       });
     }
   }

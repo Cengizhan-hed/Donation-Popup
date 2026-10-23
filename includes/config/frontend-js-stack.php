@@ -125,6 +125,11 @@ return array(
 		'deps'   => array('wdp-utils-js', 'wdp-form-feedback-js', 'wdp-form-validate-js'),
 	),
 	array(
+		'handle' => 'wdp-form-cta-ready-js',
+		'file'   => 'src/form/cta-ready.js',
+		'deps'   => array(),
+	),
+	array(
 		'handle' => 'wdp-form-js',
 		'file'   => 'src/form.js',
 		'deps'   => array(
@@ -139,6 +144,7 @@ return array(
 			'wdp-form-ajax-js',
 			'wdp-form-validate-js',
 			'wdp-form-wizard-js',
+			'wdp-form-cta-ready-js',
 		),
 	),
 	array(
@@ -229,7 +235,7 @@ return array(
 	array(
 		'handle' => 'wdp-event-manager-js',
 		'file'   => 'src/bootstrap/event-manager.js',
-		'deps'   => array('wdp-utils-js', 'wdp-modal-js', 'wdp-form-js', 'wdp-lazy-modal-js'),
+		'deps'   => array('wdp-utils-js', 'wdp-modal-js', 'wdp-form-js', 'wdp-form-cta-ready-js', 'wdp-lazy-modal-js'),
 	),
 	array(
 		'handle' => 'wdp-module-loader-js',

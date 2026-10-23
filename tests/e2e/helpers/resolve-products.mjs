@@ -210,6 +210,10 @@ function applyOneFixtureRole(env, role, row) {
     row.catalogVisible === true ||
     String(row.status || '').toLowerCase() === 'publish';
   env[key] = nav;
+  const hasFxMap = !!(env._catalog && typeof env._catalog.fixtureRelated === 'object');
+  const fxRel = hasFxMap
+    ? env._catalog.fixtureRelated[String(row.id)] || env._catalog.fixtureRelated[row.id] || null
+    : null;
   env._resolvedProducts[role] = {
     id: Number(row.id) || 0,
     slug,
@@ -220,6 +224,12 @@ function applyOneFixtureRole(env, role, row) {
     type: role,
     fromFixture: true,
     fromCatalog: published,
+    relatedIds: hasFxMap
+      ? (Array.isArray(fxRel?.related_ids) ? fxRel.related_ids : []).map((n) => Number(n) || 0).filter(Boolean)
+      : undefined,
+    upsellIds: hasFxMap
+      ? (Array.isArray(fxRel?.upsell_ids) ? fxRel.upsell_ids : []).map((n) => Number(n) || 0).filter(Boolean)
+      : undefined,
   };
   env._fixtureRoles = Array.isArray(env._fixtureRoles) ? env._fixtureRoles : [];
   if (!env._fixtureRoles.includes(role)) env._fixtureRoles.push(role);

@@ -28,7 +28,9 @@ import {
   reportDirFor,
   runJsonFor,
   slowestSections,
+  dedupeFullSummaryRows,
 } from './helpers/run-io.mjs';
+import { resolveProfileId } from './helpers/profile.mjs';
 import { formatRemotePostBlockedLines } from './helpers/network-guard.mjs';
 import { acquireEnvLock, releaseEnvLock } from './helpers/env-lock.mjs';
 import { loadProfile, setActiveProfile } from './helpers/profile.mjs';
@@ -194,13 +196,12 @@ async function runParentPostSafety(envIds, reason) {
 }
 
 function collectChildRows(envIds = []) {
-  const allow = new Set(
-    (envIds || []).map((e) => (isLocalEnvId(e) ? 'local' : String(e)))
-  );
+  const allow = new Set();
   try {
     for (const envId of envIds || []) {
-      const p = loadProfile(isLocalEnvId(envId) ? 'local' : envId);
-      if (p?.id) allow.add(p.id);
+      const raw = isLocalEnvId(envId) ? 'local' : String(envId);
+      const id = resolveProfileId(raw) || raw;
+      if (id) allow.add(id);
     }
   } catch (e) {
     console.error(`[e2e:catch-fail] collectChildRows profil: ${e && e.message ? e.message : e}`);
@@ -309,7 +310,7 @@ async function main() {
     if (dirty) {
       await runParentPostSafety(envs, parentAborted ? 'SIGTERM/SIGINT' : 'çocuk hata/üst süre');
     }
-    rows = collectChildRows(envs);
+    rows = dedupeFullSummaryRows(collectChildRows(envs));
     for (const j of jobRows) {
       if (!j.timedOut && !j.error) continue;
       const profileId = isLocalEnvId(j.envId) ? 'local' : loadProfile(j.envId).id;
@@ -349,7 +350,7 @@ async function main() {
           deviceRuns.push(await runOne({ envId, deviceId, noSideCart: flags.noSideCart }));
         } catch (e) {
           const failRow = {
-            env: envId,
+            env: resolveProfileId(isLocalEnvId(envId) ? 'local' : envId) || envId,
             device: deviceId,
             secs: 0,
             passed: 0,
@@ -365,7 +366,10 @@ async function main() {
           };
           console.error(`[e2e:catch-fail] runOne ${envId}/${deviceId}: ${e && e.message ? e.message : e}`);
           try {
-            const dest = currentDirFor(isLocalEnvId(envId) ? 'local' : envId, deviceId);
+            const dest = currentDirFor(
+              resolveProfileId(isLocalEnvId(envId) ? 'local' : envId) || envId,
+              deviceId
+            );
             fs.mkdirSync(dest, { recursive: true });
             fs.writeFileSync(path.join(dest, 'run.json'), JSON.stringify(failRow, null, 2) + '\n');
           } catch (writeErr) {
@@ -375,6 +379,7 @@ async function main() {
         }
       }
       rows.push(...deviceRuns);
+      rows = dedupeFullSummaryRows(rows);
       console.log(`Ortam ${envId} cihazları: ${((Date.now() - tEnv) / 1000).toFixed(1)}s`);
     }
   }

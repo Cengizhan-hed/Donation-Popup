@@ -185,46 +185,47 @@
 
         e.preventDefault();
         e.stopPropagation();
-        const submitter = e.submitter || null;
+        const submitter = e.submitter || formElement._wdpLastClickSubmitter || null;
+        const ctaReady = WDPApp.formCtaReady;
 
-        function retrySubmitAfterSetup() {
-          // Avoid accidental loops; only retry once per missing-handler submit.
-          if (formElement.dataset && formElement.dataset.wdpRetryingSubmit === "1") {
-            return;
-          }
-          if (!formElement._wdpSubmitHandler) {
-            return;
-          }
-          if (formElement.dataset) {
-            formElement.dataset.wdpRetryingSubmit = "1";
-          }
-          requestAnimationFrame(function() {
-            try {
-              if (typeof formElement.requestSubmit === "function") {
-                if (submitter && submitter.form === formElement) {
-                  formElement.requestSubmit(submitter);
-                } else {
-                  formElement.requestSubmit();
-                }
-              } else {
-                // Legacy-safe fallback: trigger a real submit event path (do not bypass handlers).
-                const fallbackSubmit = document.createElement("button");
-                fallbackSubmit.type = "submit";
-                fallbackSubmit.hidden = true;
-                formElement.appendChild(fallbackSubmit);
-                fallbackSubmit.click();
-                fallbackSubmit.remove();
-              }
-            } finally {
-              if (formElement.dataset) {
-                delete formElement.dataset.wdpRetryingSubmit;
-              }
-            }
-          });
+        if (ctaReady && typeof ctaReady.queueCta === "function") {
+          ctaReady.queueCta(formElement, submitter);
+        } else {
+          formElement._wdpQueuedSubmitter = submitter;
         }
 
         invokeModuleMethod('form', 'setup', [formElement]);
-        requestAnimationFrame(retrySubmitAfterSetup);
+
+        if (ctaReady && typeof ctaReady.waitForFormReady === "function") {
+          ctaReady.waitForFormReady(
+            formElement,
+            function onFormReady() {
+              if (ctaReady.flushQueuedCta) {
+                ctaReady.flushQueuedCta(formElement);
+              }
+            },
+            function onTimeout() {
+              if (ctaReady.showSetupFailed) {
+                ctaReady.showSetupFailed(formElement);
+              }
+            }
+          );
+          return;
+        }
+
+        // Yedek: cta-ready yoksa tek kare (eski davranış; sessiz dönüş yok)
+        requestAnimationFrame(function () {
+          if (formElement._wdpSubmitHandler && typeof formElement.requestSubmit === "function") {
+            formElement.requestSubmit(submitter && submitter.form === formElement ? submitter : undefined);
+            return;
+          }
+          const errorMsg = formElement.querySelector(".wdp-form-error");
+          if (errorMsg) {
+            errorMsg.textContent = "Form henüz yüklenemedi. Lütfen birkaç saniye bekleyip tekrar deneyin.";
+            errorMsg.style.display = "block";
+            errorMsg.setAttribute("role", "alert");
+          }
+        });
       });
 
       // State'i güncelle

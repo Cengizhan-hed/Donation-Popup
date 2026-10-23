@@ -87,6 +87,7 @@ $js_paths = array(
     'src/form/sadaka.js',
     'src/form/ajax.js',
     'src/form/validate.js',
+    'src/form/cta-ready.js',
     'src/cart/ui.js',
     'src/cart/woo.js',
     'src/cart/actions.js',
@@ -227,6 +228,14 @@ wdp_smoke_assert(
     wdp_smoke_file_contains(WDP_PLUGIN_DIR . 'assets/js/src/form/validate.js', 'function validateForm('),
     'Form validation defines validateForm helper'
 );
+wdp_smoke_assert(
+    wdp_smoke_file_contains(WDP_PLUGIN_DIR . 'assets/js/src/form/cta-ready.js', 'WDPApp.formCtaReady'),
+    'CTA ready queue exports formCtaReady'
+);
+wdp_smoke_assert(
+    wdp_smoke_file_contains(WDP_PLUGIN_DIR . 'includes/templates/class-modal-shell-renderer.php', 'wdp-cta-gate__hit'),
+    'Form CTA has early-tap gate overlay'
+);
 
 // Admin: product "Bağış" tab + Settings → Ürünler table.
 wdp_smoke_assert(class_exists('WDP_Donation_Type'), 'WDP_Donation_Type loads');
@@ -303,8 +312,8 @@ wdp_smoke_assert(
     'Container queries CSS is on the frontend stack'
 );
 wdp_smoke_assert(
-    defined('WDP_VERSION') && WDP_VERSION === '10.34.10',
-    'Plugin version is 10.34.10'
+    defined('WDP_VERSION') && WDP_VERSION === '10.34.11',
+    'Plugin version is 10.34.11'
 );
 wdp_smoke_assert(
     file_exists(WDP_PLUGIN_DIR . 'templates/woocommerce/single-product/add-to-cart/simple.php'),

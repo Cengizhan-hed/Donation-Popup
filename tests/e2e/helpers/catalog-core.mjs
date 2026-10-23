@@ -441,6 +441,7 @@ export function applyRemoteCatalog(env, catalog) {
     cart: cat.cart || null,
     checkout: cat.checkout || null,
     list: list || null,
+    fixtureRelated: cat.fixture_related && typeof cat.fixture_related === 'object' ? cat.fixture_related : {},
   };
   env._roleSkips = Array.isArray(env._roleSkips) ? env._roleSkips : [];
   env._resolvedProducts = env._resolvedProducts && typeof env._resolvedProducts === 'object'

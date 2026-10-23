@@ -13,6 +13,7 @@ import {
   runJsonFor,
   tracesDirFor,
 } from './e2e-paths.mjs';
+import { resolveProfileId } from './profile.mjs';
 
 export const CURRENT_DIR = path.join(ROOT, 'build/e2e/current');
 export const DIFF_DIR = path.join(ROOT, 'build/e2e/diff');
@@ -132,6 +133,31 @@ export function slowestSections(sections, n = 5) {
  * @param {string[]} shotPaths Absolute or relative PNG paths from capture.
  * @returns {string[]} basename .png list
  */
+/**
+ * e2e:full özet satırları: takma ad (staging/ikram) → profil id; aynı cihaz tek satır.
+ * @param {object[]} rows
+ * @returns {object[]}
+ */
+export function dedupeFullSummaryRows(rows) {
+  const map = new Map();
+  for (const r of Array.isArray(rows) ? rows : []) {
+    if (!r || typeof r !== 'object') continue;
+    const env = resolveProfileId(r.env) || String(r.env || '');
+    const device = String(r.device || '');
+    const key = `${env}\t${device}`;
+    const cur = { ...r, env };
+    const prev = map.get(key);
+    if (!prev) {
+      map.set(key, cur);
+      continue;
+    }
+    const prevScore = (Number(prev.passed) || 0) + (Number(prev.secs) || 0);
+    const curScore = (Number(cur.passed) || 0) + (Number(cur.secs) || 0);
+    if (curScore >= prevScore) map.set(key, cur);
+  }
+  return [...map.values()];
+}
+
 export function normalizeScreenNames(shotPaths) {
   const out = [];
   for (const p of shotPaths || []) {
