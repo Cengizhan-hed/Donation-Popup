@@ -40,6 +40,11 @@ function isLocalEnvId(envId) {
   return v === 'local' || v === 'local-wp';
 }
 
+function localE2EPort() {
+  const n = Number(process.env.WDP_LOCAL_E2E_PORT || 8899);
+  return Number.isFinite(n) && n > 0 ? n : 8899;
+}
+
 async function runOne({ envId, deviceId, noSideCart }) {
   let env;
   if (isLocalEnvId(envId)) {
@@ -48,7 +53,7 @@ async function runOne({ envId, deviceId, noSideCart }) {
       parsed: {
         E2E_USER: 'admin',
         E2E_PASS: 'admin',
-        E2E_BASE_URL: 'http://127.0.0.1:8899',
+        E2E_BASE_URL: `http://127.0.0.1:${localE2EPort()}`,
       },
     });
   } else {
@@ -173,7 +178,7 @@ async function main() {
   let localServer = null;
   if (localOnly && !flags.child) {
     const { prepareLocalFullStack } = await import('./helpers/matrix-setup.mjs');
-    const stack = await prepareLocalFullStack(8899);
+    const stack = await prepareLocalFullStack(localE2EPort());
     localServer = stack.server;
   }
   if (!flags.noClean && !flags.child) {

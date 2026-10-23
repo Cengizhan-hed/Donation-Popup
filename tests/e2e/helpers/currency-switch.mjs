@@ -8,8 +8,10 @@ import { SEL } from './selectors.mjs';
 import {
   attachConsoleErrorCollector,
   assertNoConsoleErrors,
+  cartStoreSnapshot,
   clickAddToCartWithRetry,
-  emptyCartViaPageHtml,
+  emptyCart,
+  gotoWooCart,
   makeFailure,
   openShellLocator,
   clickShellTrigger,
@@ -232,7 +234,8 @@ export async function runCurrencySwitchChecks({
           waitUntil: 'domcontentloaded',
           timeout: CHECK_MS,
         });
-        await emptyCartViaPageHtml(page, env.E2E_BASE_URL);
+        await gotoWooCart(page, env.E2E_BASE_URL);
+        await emptyCart(page, env.E2E_BASE_URL);
 
         await page.goto(withCacheBust(env.E2E_BASE_URL, listPath, extra), {
           waitUntil: 'domcontentloaded',
@@ -259,12 +262,15 @@ export async function runCurrencySwitchChecks({
         if ((await add.count()) > 0) {
           await clickAddToCartWithRetry(page, add, { timeout: CHECK_MS });
         }
-        await page.goto(withCacheBust(env.E2E_BASE_URL, cartPath, extra), {
-          waitUntil: 'domcontentloaded',
-          timeout: CHECK_MS,
-        });
-        const cartHtml = await page.content();
-        const cartSnap = extractPriceSnapshot(cartHtml, profile.currency);
+        await gotoWooCart(page, env.E2E_BASE_URL);
+        const store = await cartStoreSnapshot(page, env.E2E_BASE_URL);
+        const cartSnap = {
+          symbols: store.currency_symbol ? [store.currency_symbol] : [],
+          amounts: store.items
+            .map((it) => Number(it.totals))
+            .filter((n) => Number.isFinite(n)),
+          texts: store.items.map((it) => it.totals),
+        };
 
         const cmp = assertCurrencySurfacesConsistent({
           list: listSnap,

@@ -134,12 +134,115 @@ function wdp_matrix_enable_cheque() {
 }
 
 /**
+ * Woo çekirdek sayfa içeriği. ID ve durum korunur; silme/çöp/yeni sayfa yok.
+ * Çöpteyse aynı ID untrash (önceki durum, yoksa publish).
+ *
+ * @param int    $page_id
+ * @param string $html
+ * @return array<string,mixed>
+ */
+function wdp_matrix_update_woo_page_content($page_id, $html) {
+	$page_id = (int) $page_id;
+	if ($page_id <= 0) {
+		return array( 'ok' => false, 'error' => 'woo sayfa id yok' );
+	}
+	$post = get_post($page_id);
+	if (!$post || $post->post_type !== 'page') {
+		return array( 'ok' => false, 'error' => 'woo sayfa yok' );
+	}
+	$status = (string) $post->post_status;
+	if ($status === 'trash' && function_exists('wp_untrash_post')) {
+		$prev = (string) get_post_meta($page_id, '_wp_trash_meta_status', true);
+		wp_untrash_post($page_id);
+		$post   = get_post($page_id);
+		$status = $prev !== '' && $prev !== 'trash' ? $prev : 'publish';
+	}
+	if ($status === 'trash' || $status === '') {
+		$status = 'publish';
+	}
+	$payload = array(
+		'ID'           => $page_id,
+		'post_content' => (string) $html,
+		'post_status'  => $status,
+		'post_type'    => 'page',
+	);
+	if ($post && $post->post_name) {
+		$payload['post_name'] = $post->post_name;
+	}
+	if ($post && $post->post_title) {
+		$payload['post_title'] = $post->post_title;
+	}
+	$r = wp_update_post($payload, true);
+	if (is_wp_error($r)) {
+		return array( 'ok' => false, 'error' => $r->get_error_message(), 'id' => $page_id );
+	}
+	return array(
+		'ok'     => true,
+		'id'     => $page_id,
+		'status' => (string) get_post_status($page_id),
+	);
+}
+
+/**
+ * Woo çekirdek sayfalar: çöpteyse aynı ID untrash. create_pages yalnız id=0 iken.
+ *
+ * @return array<string,mixed>
+ */
+function wdp_matrix_ensure_woo_core_pages() {
+	$keys = array( 'cart', 'checkout', 'myaccount', 'shop' );
+	$pages = array();
+	$need_create = false;
+	foreach ($keys as $key) {
+		$id = function_exists('wc_get_page_id') ? (int) wc_get_page_id($key) : 0;
+		$row = array( 'key' => $key, 'id' => $id, 'status' => '', 'restored' => false );
+		if ($id <= 0) {
+			$need_create = true;
+			$pages[ $key ] = $row;
+			continue;
+		}
+		$status = (string) get_post_status($id);
+		$row['status'] = $status;
+		if ($status === 'trash' && function_exists('wp_untrash_post')) {
+			$prev = (string) get_post_meta($id, '_wp_trash_meta_status', true);
+			wp_untrash_post($id);
+			$restore = $prev !== '' && $prev !== 'trash' ? $prev : 'publish';
+			wp_update_post(
+				array(
+					'ID'          => $id,
+					'post_status' => $restore,
+				),
+				true
+			);
+			$row['restored'] = true;
+			$row['status']   = (string) get_post_status($id);
+		}
+		$pages[ $key ] = $row;
+	}
+	$created = false;
+	if ($need_create && class_exists('WC_Install') && method_exists('WC_Install', 'create_pages')) {
+		WC_Install::create_pages();
+		$created = true;
+		foreach ($keys as $key) {
+			$id = function_exists('wc_get_page_id') ? (int) wc_get_page_id($key) : 0;
+			$pages[ $key ]['id']     = $id;
+			$pages[ $key ]['status'] = $id > 0 ? (string) get_post_status($id) : '';
+		}
+	}
+	return array(
+		'ok'      => true,
+		'created' => $created,
+		'pages'   => $pages,
+	);
+}
+
+/**
  * @param string $kind blocks|classic
  */
 function wdp_matrix_set_checkout($kind) {
 	if (!function_exists('wc_get_page_id')) {
 		return array( 'ok' => false, 'error' => 'wc_get_page_id yok' );
 	}
+	wdp_matrix_ensure_woo_core_pages();
 	$checkout_id = (int) wc_get_page_id('checkout');
 	$cart_id     = (int) wc_get_page_id('cart');
 	if ($kind === 'classic') {
@@ -151,23 +254,17 @@ function wdp_matrix_set_checkout($kind) {
 	}
 	$updated = array();
 	if ($checkout_id > 0) {
-		wp_update_post(
-			array(
-				'ID'           => $checkout_id,
-				'post_status'  => 'publish',
-				'post_content' => $checkout_html,
-			)
-		);
+		$chk = wdp_matrix_update_woo_page_content($checkout_id, $checkout_html);
+		if (empty($chk['ok'])) {
+			return array( 'ok' => false, 'error' => $chk['error'] ?? 'checkout içerik', 'pages' => $updated );
+		}
 		$updated['checkout'] = $checkout_id;
 	}
 	if ($cart_id > 0) {
-		wp_update_post(
-			array(
-				'ID'           => $cart_id,
-				'post_status'  => 'publish',
-				'post_content' => $cart_html,
-			)
-		);
+		$cart = wdp_matrix_update_woo_page_content($cart_id, $cart_html);
+		if (empty($cart['ok'])) {
+			return array( 'ok' => false, 'error' => $cart['error'] ?? 'cart içerik', 'pages' => $updated );
+		}
 		$updated['cart'] = $cart_id;
 	}
 	return array( 'ok' => true, 'pages' => $updated, 'kind' => $kind );
@@ -775,30 +872,22 @@ function wdp_matrix_prepare_full() {
 	wdp_matrix_permalinks();
 	wdp_matrix_checkpoint();
 
+	wdp_matrix_ensure_woo_core_pages();
 	$shop_id     = function_exists('wc_get_page_id') ? (int) wc_get_page_id('shop') : 0;
 	$cart_id     = function_exists('wc_get_page_id') ? (int) wc_get_page_id('cart') : 0;
 	$checkout_id = function_exists('wc_get_page_id') ? (int) wc_get_page_id('checkout') : 0;
-	foreach (array( $shop_id, $cart_id, $checkout_id ) as $pid) {
-		if ($pid > 0 && get_post_status($pid) !== 'publish') {
-			wp_update_post(array( 'ID' => $pid, 'post_status' => 'publish' ));
-		}
-	}
 	if ($cart_id > 0) {
-		wp_update_post(
-			array(
-				'ID'           => $cart_id,
-				'post_content' => '<!-- wp:shortcode -->[woocommerce_cart]<!-- /wp:shortcode -->',
-			)
+		wdp_matrix_update_woo_page_content(
+			$cart_id,
+			'<!-- wp:shortcode -->[woocommerce_cart]<!-- /wp:shortcode -->'
 		);
 	}
 	if ($shop_id > 0) {
 		$shop_html = (string) get_post_field('post_content', $shop_id);
 		if (strpos($shop_html, '[products') === false && strpos($shop_html, 'woocommerce/product') === false) {
-			wp_update_post(
-				array(
-					'ID'           => $shop_id,
-					'post_content' => '<!-- wp:shortcode -->[products limit="16" columns="4"]<!-- /wp:shortcode -->',
-				)
+			wdp_matrix_update_woo_page_content(
+				$shop_id,
+				'<!-- wp:shortcode -->[products limit="16" columns="4"]<!-- /wp:shortcode -->'
 			);
 		}
 	}
@@ -996,9 +1085,7 @@ function wdp_matrix_base() {
 	if (class_exists('WC_Install') && method_exists('WC_Install', 'install')) {
 		WC_Install::install();
 	}
-	if (class_exists('WC_Install') && method_exists('WC_Install', 'create_pages')) {
-		WC_Install::create_pages();
-	}
+	wdp_matrix_ensure_woo_core_pages();
 	$wdp = wdp_matrix_activate('woo-donation-popup/woo-donation-popup.php');
 	wdp_matrix_coming_soon_off();
 	wdp_matrix_guest_checkout();
@@ -1081,6 +1168,8 @@ try {
 		$result = array_merge($result, wdp_matrix_placement_display($arg1));
 	} elseif ($cmd === 'prepare-full') {
 		$result = array_merge($result, wdp_matrix_prepare_full());
+	} elseif ($cmd === 'ensure-woo-pages') {
+		$result = array_merge($result, wdp_matrix_ensure_woo_core_pages());
 	} elseif ($cmd === 'ensure-admin') {
 		$user = get_user_by('login', 'admin');
 		if (!$user) {
