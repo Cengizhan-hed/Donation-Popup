@@ -16,6 +16,8 @@ import {
   storeApiNonceFromGlobals,
   storeApiNonceFromHeaders,
 } from './store-api.mjs';
+import { writeDebugJson } from './scenario-debug.mjs';
+import { debugDirFor } from './e2e-paths.mjs';
 
 /** Kontrol başına en fazla bekleme (ms). Bulunamayan öğe hemen hata yazar. */
 export const CHECK_MS = 5000;
@@ -199,6 +201,324 @@ export function isWooCartUrl(url) {
     return /\/(cart|sepet)\/?(?:[?#]|$)/i.test(String(url || '')) &&
       !/checkout|odeme|ödeme/i.test(String(url || ''));
   }
+}
+
+/**
+ * URL’den yalnız pathname (sorgu / hash yok).
+ * @param {string} url
+ * @param {string} [base]
+ * @returns {string}
+ */
+export function urlPathnameOnly(url, base) {
+  const raw = String(url || '').trim();
+  if (!raw) return '';
+  try {
+    const origin = String(base || '').trim() || 'https://e2e.invalid';
+    return new URL(raw, origin).pathname || '';
+  } catch {
+    const noQuery = raw.split('#')[0].split('?')[0];
+    return noQuery.startsWith('/') ? noQuery : '';
+  }
+}
+
+/**
+ * @param {string} pathname
+ */
+export function isWooCartPath(pathname) {
+  const p = urlPathnameOnly(pathname) || String(pathname || '');
+  if (!p) return false;
+  return isWooCartUrl(`https://e2e.invalid${p.startsWith('/') ? p : `/${p}`}`);
+}
+
+/**
+ * @param {string} pathname
+ */
+export function isWooCheckoutPath(pathname) {
+  const p = urlPathnameOnly(pathname) || String(pathname || '');
+  return /checkout|order-pay|order-received|odeme|ödeme/i.test(p);
+}
+
+/**
+ * Woo oturum çerez adı (değer yok).
+ * @param {string} name
+ */
+export function isWooSessionCookieName(name) {
+  const n = String(name || '');
+  return /^wp_woocommerce_session_/i.test(n) || n === 'woocommerce_items_in_cart';
+}
+
+/**
+ * admin-ajax JSON’dan yalnız checkout_url pathname. Gövde saklanmaz.
+ * @param {string} text
+ */
+export function extractAjaxCheckoutPathname(text) {
+  try {
+    const json = JSON.parse(String(text || ''));
+    const data = json && typeof json === 'object' ? json.data : null;
+    const raw =
+      (data && typeof data === 'object' && data.checkout_url) ||
+      (json && json.checkout_url) ||
+      '';
+    return urlPathnameOnly(String(raw || ''));
+  } catch {
+    return '';
+  }
+}
+
+/**
+ * @param {string} text
+ * @param {boolean} httpOk
+ */
+export function extractAjaxSuccessFlag(text, httpOk) {
+  try {
+    const json = JSON.parse(String(text || ''));
+    if (json && typeof json.success === 'boolean') return json.success;
+  } catch {
+    /* non-JSON */
+  }
+  return !!httpOk;
+}
+
+function normCheckoutPath(p) {
+  return String(p || '').replace(/\/+$/, '') || '/';
+}
+
+function hasCheckoutToCartRedirect(redirects) {
+  return (Array.isArray(redirects) ? redirects : []).some((r) => {
+    const code = Number(r && (r.status ?? r.code));
+    if (!(code >= 300 && code < 400)) return false;
+    return isWooCheckoutPath(r.from || r.source || '') && isWooCartPath(r.to || r.target || '');
+  });
+}
+
+/**
+ * checkout-flow gezinme hatası sınıfı.
+ * Öncelik: tıklama-gezinmedi → eklenti-checkout-url-yanlış → sepet-boş-yönlendirme → tema-yönlendirmesi.
+ *
+ * @param {object} diag
+ * @returns {'sepet-boş-yönlendirme'|'eklenti-checkout-url-yanlış'|'tema-yönlendirmesi'|'tıklama-gezinmedi'}
+ */
+export function classifyCheckoutNavFailure(diag) {
+  const d = diag && typeof diag === 'object' ? diag : {};
+  const items = Number(d.items_count);
+  const finalPath = String(d.final_pathname || '');
+  const clickPath = String(d.click_pathname || '');
+  const redirects = Array.isArray(d.redirects) ? d.redirects : [];
+  const pluginPath = String(d.wdp_ajax_checkout_pathname || '');
+  const ajaxPath = String((d.add_to_cart && d.add_to_cart.checkout_url_pathname) || '');
+  const endedOnCart = isWooCartPath(finalPath);
+  const endedOnCheckout = isWooCheckoutPath(finalPath);
+  const navigated =
+    typeof d.navigated === 'boolean'
+      ? d.navigated
+      : redirects.length > 0 ||
+        (!!finalPath && !!clickPath && normCheckoutPath(finalPath) !== normCheckoutPath(clickPath));
+
+  if (!navigated && !endedOnCart && !endedOnCheckout) {
+    return 'tıklama-gezinmedi';
+  }
+  if (isWooCartPath(pluginPath) || isWooCartPath(ajaxPath)) {
+    return 'eklenti-checkout-url-yanlış';
+  }
+  if (items === 0) {
+    return 'sepet-boş-yönlendirme';
+  }
+  if (items > 0 && (hasCheckoutToCartRedirect(redirects) || endedOnCart)) {
+    return 'tema-yönlendirmesi';
+  }
+  return 'tıklama-gezinmedi';
+}
+
+/**
+ * Teşhis JSON: yalnız yol / durum / sayı. Sorgu, gövde, çerez değeri yok.
+ * @param {object} raw
+ */
+export function buildCheckoutFlowDebugPayload(raw) {
+  const r = raw && typeof raw === 'object' ? raw : {};
+  const add = r.add_to_cart && typeof r.add_to_cart === 'object' ? r.add_to_cart : {};
+  const redirects = Array.isArray(r.redirects)
+    ? r.redirects.map((x) => ({
+        from: urlPathnameOnly(x && x.from),
+        to: urlPathnameOnly(x && x.to),
+        status: Number(x && x.status) || 0,
+      }))
+    : [];
+  const cookies = r.cookies && typeof r.cookies === 'object' ? r.cookies : {};
+  return {
+    device: String(r.device || ''),
+    add_to_cart: {
+      action: String(add.action || ''),
+      endpoint: urlPathnameOnly(add.endpoint) || String(add.endpoint || '').split('?')[0],
+      status: Number(add.status) || 0,
+      success: add.success === true,
+      checkout_url_pathname: urlPathnameOnly(add.checkout_url_pathname),
+    },
+    items_count_before_click: Number.isFinite(Number(r.items_count_before_click))
+      ? Number(r.items_count_before_click)
+      : -1,
+    items_count: Number.isFinite(Number(r.items_count)) ? Number(r.items_count) : -1,
+    redirects,
+    final_pathname: urlPathnameOnly(r.final_pathname),
+    expected_checkout_pathname: urlPathnameOnly(r.expected_checkout_pathname),
+    cookies: {
+      wp_woocommerce_session: cookies.wp_woocommerce_session === true,
+      woocommerce_items_in_cart: cookies.woocommerce_items_in_cart === true,
+    },
+    wdp_ajax_checkout_pathname: urlPathnameOnly(r.wdp_ajax_checkout_pathname),
+    navigated: r.navigated === true,
+    class: String(r.class || ''),
+  };
+}
+
+/**
+ * @param {string} deviceId
+ * @param {object} raw
+ * @returns {string} repo-göreli yol
+ */
+export function writeCheckoutFlowDebug(deviceId, raw) {
+  const payload = buildCheckoutFlowDebugPayload({ ...raw, device: deviceId });
+  const file = path.join(debugDirFor(), `checkout-flow-${String(deviceId || 'device')}.json`);
+  writeDebugJson(file, payload);
+  return path.relative(ROOT, file);
+}
+
+/**
+ * @param {import('@playwright/test').Page} page
+ */
+export async function collectWooSessionCookieFlags(page) {
+  const cookies = await page.context().cookies();
+  let wp_woocommerce_session = false;
+  let woocommerce_items_in_cart = false;
+  for (const c of cookies) {
+    const n = String(c.name || '');
+    if (/^wp_woocommerce_session_/i.test(n)) wp_woocommerce_session = true;
+    if (n === 'woocommerce_items_in_cart') woocommerce_items_in_cart = true;
+  }
+  return { wp_woocommerce_session, woocommerce_items_in_cart };
+}
+
+/**
+ * @param {import('@playwright/test').Page} page
+ */
+export async function collectWdpAjaxCheckoutPathname(page) {
+  try {
+    const raw = await page.evaluate(() => {
+      const w = window.wdp_ajax;
+      return w && w.checkout_url ? String(w.checkout_url) : '';
+    });
+    return urlPathnameOnly(raw);
+  } catch (e) {
+    console.error(`[e2e:catch-fail] wdp_ajax.checkout_url: ${e && e.message ? e.message : e}`);
+    return '';
+  }
+}
+
+/**
+ * Sepete ekle POST (admin-ajax wdp_ajax_add_to_cart veya wc-ajax add_to_cart).
+ * @param {import('@playwright/test').Request} req
+ */
+export function isDonationAddToCartRequest(req) {
+  if (!req || typeof req.method !== 'function' || req.method() !== 'POST') return false;
+  const url = req.url();
+  const post = req.postData() || '';
+  const isAdminAjax = /admin-ajax\.php/i.test(url);
+  const isWcAjax = /[?&]wc-ajax=/i.test(url) || /\/wc-ajax\//i.test(url);
+  if (!isAdminAjax && !isWcAjax) return false;
+  if (isAdminAjax) {
+    const action = extractPostActionFromRequest(req);
+    if (action === 'wdp_ajax_add_to_cart') return true;
+    return (
+      post.includes('wdp_ajax_add_to_cart') ||
+      post.includes('action=wdp_ajax_add_to_cart') ||
+      post.includes('donation_add_to_cart')
+    );
+  }
+  try {
+    const u = new URL(url);
+    if (u.searchParams.get('wc-ajax') === 'add_to_cart') return true;
+  } catch {
+    /* pathname */
+  }
+  return /\/wc-ajax\/add_to_cart/i.test(url) || /add_to_cart/i.test(post);
+}
+
+/**
+ * Tıklama sonrası 3xx zinciri + sepete ekleme yanıtı (gövde saklanmaz).
+ * @param {import('@playwright/test').Page} page
+ */
+export function attachCheckoutFlowProbes(page) {
+  /** @type {Array<{ action: string, endpoint: string, status: number, success: boolean, checkout_url_pathname: string }>} */
+  const addToCartHits = [];
+  /** @type {Array<{ from: string, to: string, status: number }>} */
+  const redirects = [];
+  /** @type {Promise<void>[]} */
+  const pending = [];
+
+  const onResponse = (res) => {
+    const status = res.status();
+    const req = res.request();
+    const type = typeof req.resourceType === 'function' ? req.resourceType() : '';
+    if (status >= 300 && status < 400 && (type === 'document' || type === 'other')) {
+      const headers = res.headers();
+      const loc = headers.location || headers.Location || '';
+      redirects.push({
+        from: urlPathnameOnly(res.url()),
+        to: loc ? urlPathnameOnly(loc, res.url()) : '',
+        status,
+      });
+    }
+    if (!isDonationAddToCartRequest(req)) return;
+    pending.push(
+      res
+        .text()
+        .then((text) => {
+          addToCartHits.push({
+            action: extractPostActionFromRequest(req) || '',
+            endpoint: urlPathnameOnly(res.url()),
+            status,
+            success: extractAjaxSuccessFlag(text, res.ok()),
+            checkout_url_pathname: extractAjaxCheckoutPathname(text),
+          });
+        })
+        .catch((e) => {
+          addToCartHits.push({
+            action: extractPostActionFromRequest(req) || '',
+            endpoint: urlPathnameOnly(res.url()),
+            status,
+            success: res.ok(),
+            checkout_url_pathname: '',
+          });
+          console.error(`[e2e:catch-fail] addToCartDiag: ${e && e.message ? e.message : e}`);
+        })
+    );
+  };
+  page.on('response', onResponse);
+  return {
+    addToCartHits,
+    redirects,
+    async flush() {
+      await Promise.all(pending);
+    },
+    /**
+     * POST göründüğü anda flush; yoksa zaman aşımı.
+     * @param {number} timeoutMs
+     */
+    async waitForAddToCart(timeoutMs) {
+      const t0 = Date.now();
+      while (Date.now() - t0 < timeoutMs) {
+        if (pending.length > 0) {
+          await Promise.all(pending);
+          if (addToCartHits.length) return addToCartHits[0];
+        }
+        await new Promise((r) => setTimeout(r, 50));
+      }
+      await Promise.all(pending);
+      return addToCartHits[0] || null;
+    },
+    dispose() {
+      page.off('response', onResponse);
+    },
+  };
 }
 
 /**
@@ -836,25 +1156,7 @@ export async function visibleValidationErrors(page) {
 export async function clickAddToCartAndWait(page, clickFn, opts = {}) {
   const timeout = Number(opts.timeout) > 0 ? Number(opts.timeout) : CART_AJAX_MS;
   const t0 = Date.now();
-  const matchAjax = (res) => {
-    const req = res.request();
-    if (req.method() !== 'POST') return false;
-    const url = res.url();
-    const post = req.postData() || '';
-    const isAdminAjax = /admin-ajax\.php/i.test(url);
-    const isWcAjax = /[?&]wc-ajax=/i.test(url) || /\/wc-ajax\//i.test(url);
-    if (!isAdminAjax && !isWcAjax) return false;
-    if (isAdminAjax) {
-      const action = extractPostActionFromRequest(req);
-      if (action === 'wdp_ajax_add_to_cart') return true;
-      return (
-        post.includes('wdp_ajax_add_to_cart') ||
-        post.includes('action=wdp_ajax_add_to_cart') ||
-        post.includes('donation_add_to_cart')
-      );
-    }
-    return true;
-  };
+  const matchAjax = (res) => isDonationAddToCartRequest(res.request());
 
   let status = 0;
   let bodyPreview = '';

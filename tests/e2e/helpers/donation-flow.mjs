@@ -14,6 +14,13 @@ import {
   clickAddToCartWithRetry,
   makeFailure,
   assertNoUnexpectedPluginErrors,
+  cartItemCount,
+  attachCheckoutFlowProbes,
+  collectWooSessionCookieFlags,
+  collectWdpAjaxCheckoutPathname,
+  classifyCheckoutNavFailure,
+  urlPathnameOnly,
+  writeCheckoutFlowDebug,
 } from './checks.mjs';
 import { markOrderAsE2E } from './test-cleanup.mjs';
 import { getActiveProfile, isRemoteProfile } from './profile.mjs';
@@ -156,38 +163,6 @@ export async function runDonationFlowChecks({
     }
     await fillDonationShell(shell, { kind: job.kind, amount: filledAmount });
 
-    const add = shell.locator(SEL.addToCart).first();
-    const go = shell.locator(SEL.goCheckout).first();
-    if ((await go.count()) > 0) {
-      await go.click({ timeout: CHECK_MS, noWaitAfter: true });
-    } else {
-      await clickAddToCartWithRetry(page, add, { timeout: CHECK_MS });
-    }
-    if (!/checkout|odeme|ödeme/i.test(page.url())) {
-      try {
-        await page.waitForURL(/checkout|odeme|ödeme/i, { timeout: 4000 });
-      } catch {
-        /* ödeme URL’sine gitmediyse aşağıda goto */
-      }
-    }
-    if (!/checkout|odeme|ödeme/i.test(page.url())) {
-      await page.goto(withCacheBust(env.E2E_BASE_URL, checkoutPath, extra), {
-        waitUntil: 'domcontentloaded',
-        timeout: 20000,
-      }).catch(async (navErr) => {
-        const msg = String(navErr && navErr.message);
-        if (/interrupted/i.test(msg)) return;
-        if (/ERR_ABORTED/i.test(msg)) {
-          await page.goto(withCacheBust(env.E2E_BASE_URL, checkoutPath, extra), {
-            waitUntil: 'domcontentloaded',
-            timeout: 20000,
-          });
-          return;
-        }
-        throw navErr;
-      });
-    }
-
     const checkoutHost = (() => {
       try {
         return new URL(checkoutUrl || checkoutPath, env.E2E_BASE_URL).pathname.replace(/\/$/, '');
@@ -195,37 +170,114 @@ export async function runDonationFlowChecks({
         return checkoutPath.replace(/\/$/, '');
       }
     })();
-    await page
-      .waitForURL(
-        (u) => {
-          const p = u.pathname.replace(/\/$/, '');
-          return (
-            p === checkoutHost ||
-            /checkout|order-pay|order-received|odeme|ödeme/i.test(u.pathname + u.search)
-          );
-        },
-        { timeout: CHECK_MS }
-      )
-      .catch(() => {});
-    const url = page.url();
-    let onCheckout = false;
+    const expectedPath = urlPathnameOnly(checkoutUrl || checkoutPath, env.E2E_BASE_URL) || checkoutPath;
+    const diag = {
+      items_count_before_click: -1,
+      items_count: -1,
+      redirects: [],
+      cookies: { wp_woocommerce_session: false, woocommerce_items_in_cart: false },
+      add_to_cart: {},
+      wdp_ajax_checkout_pathname: '',
+      click_pathname: '',
+      final_pathname: '',
+      expected_checkout_pathname: expectedPath,
+      navigated: false,
+    };
+
+    const probes = attachCheckoutFlowProbes(page);
     try {
-      const now = new URL(url);
-      const dest = new URL(checkoutUrl || checkoutPath, env.E2E_BASE_URL);
-      onCheckout =
-        now.pathname.replace(/\/$/, '') === dest.pathname.replace(/\/$/, '') ||
-        /checkout|order-pay|odeme|ödeme/i.test(now.pathname + now.search);
-    } catch {
-      onCheckout = /checkout|order-pay|odeme|ödeme/i.test(url);
-    }
-    if (!onCheckout) {
-      let pathNow = url;
-      try {
-        pathNow = new URL(url).pathname;
-      } catch {
-        pathNow = url;
+      diag.wdp_ajax_checkout_pathname = await collectWdpAjaxCheckoutPathname(page);
+      diag.items_count_before_click = await cartItemCount(page, env.E2E_BASE_URL);
+      diag.click_pathname = urlPathnameOnly(page.url());
+
+      const add = shell.locator(SEL.addToCart).first();
+      const go = shell.locator(SEL.goCheckout).first();
+      if ((await go.count()) > 0) {
+        await go.click({ timeout: CHECK_MS, noWaitAfter: true });
+      } else {
+        await clickAddToCartWithRetry(page, add, { timeout: CHECK_MS });
       }
-      throw new Error(`ödeme sayfasına gidilmedi: ${pathNow} (beklenen ${checkoutPath})`);
+
+      const addHit = await probes.waitForAddToCart(8000);
+      if (addHit) diag.add_to_cart = addHit;
+
+      diag.items_count = await cartItemCount(page, env.E2E_BASE_URL);
+
+      if (!/checkout|odeme|ödeme/i.test(page.url())) {
+        try {
+          await page.waitForURL(/checkout|odeme|ödeme/i, { timeout: 4000 });
+        } catch (waitErr) {
+          console.error(
+            `[e2e:catch-fail] checkout-wait: ${waitErr && waitErr.message ? waitErr.message : waitErr}`
+          );
+        }
+      }
+      if (!/checkout|odeme|ödeme/i.test(page.url())) {
+        await page.goto(withCacheBust(env.E2E_BASE_URL, checkoutPath, extra), {
+          waitUntil: 'domcontentloaded',
+          timeout: 20000,
+        }).catch(async (navErr) => {
+          const msg = String(navErr && navErr.message);
+          if (/interrupted/i.test(msg)) return;
+          if (/ERR_ABORTED/i.test(msg)) {
+            await page.goto(withCacheBust(env.E2E_BASE_URL, checkoutPath, extra), {
+              waitUntil: 'domcontentloaded',
+              timeout: 20000,
+            });
+            return;
+          }
+          throw navErr;
+        });
+      }
+
+      try {
+        await page.waitForURL(
+          (u) => {
+            const p = u.pathname.replace(/\/$/, '');
+            return (
+              p === checkoutHost ||
+              /checkout|order-pay|order-received|odeme|ödeme/i.test(u.pathname + u.search)
+            );
+          },
+          { timeout: CHECK_MS }
+        );
+      } catch (settleErr) {
+        console.error(
+          `[e2e:catch-fail] checkout-settle: ${settleErr && settleErr.message ? settleErr.message : settleErr}`
+        );
+      }
+
+      const url = page.url();
+      let onCheckout = false;
+      try {
+        const now = new URL(url);
+        const dest = new URL(checkoutUrl || checkoutPath, env.E2E_BASE_URL);
+        onCheckout =
+          now.pathname.replace(/\/$/, '') === dest.pathname.replace(/\/$/, '') ||
+          /checkout|order-pay|odeme|ödeme/i.test(now.pathname + now.search);
+      } catch {
+        onCheckout = /checkout|order-pay|odeme|ödeme/i.test(url);
+      }
+
+      diag.redirects = probes.redirects.slice();
+      diag.final_pathname = urlPathnameOnly(url);
+      diag.navigated =
+        (!!diag.final_pathname &&
+          !!diag.click_pathname &&
+          diag.final_pathname.replace(/\/+$/, '') !== diag.click_pathname.replace(/\/+$/, '')) ||
+        diag.redirects.length > 0;
+      diag.cookies = await collectWooSessionCookieFlags(page);
+
+      if (!onCheckout) {
+        const cls = classifyCheckoutNavFailure(diag);
+        writeCheckoutFlowDebug(deviceId, { ...diag, class: cls });
+        throw new Error(
+          `ödeme sayfasına gidilmedi [${cls}]: ${diag.final_pathname} (beklenen ${checkoutPath})`
+        );
+      }
+      writeCheckoutFlowDebug(deviceId, { ...diag, class: 'ok' });
+    } finally {
+      probes.dispose();
     }
     stats.passed += 1;
 
