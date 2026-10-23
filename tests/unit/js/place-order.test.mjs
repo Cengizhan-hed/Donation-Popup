@@ -8,6 +8,7 @@ import {
   CONTINUE_NAME_RE,
   DONOR_NAME,
   SHAREHOLDER_NAME,
+  SHAREHOLDERS,
   parseOrderIdFromUrl,
   assertLocalOrderRecord,
 } from '../../../tests/e2e/helpers/place-order.mjs';
@@ -29,6 +30,9 @@ describe('yerel sipariş (3M)', () => {
     assert.match(DONOR_NAME, /Öztürk/);
     assert.match(DONOR_NAME, /İğdır/);
     assert.match(SHAREHOLDER_NAME, /Gülşen|Çığ|İğdır/);
+    assert.equal(SHAREHOLDERS.length >= 2, true);
+    assert.match(SHAREHOLDERS[0].name, /Ayşe|Gül|Çiftçi/);
+    assert.match(SHAREHOLDERS[1].name, /Ömer|Şahin|İnce/);
   });
 
   it('order-received URL’den id okur', () => {
@@ -117,9 +121,67 @@ describe('yerel sipariş (3M)', () => {
     const flow = fs.readFileSync(path.join(ROOT, 'tests/e2e/helpers/donation-flow.mjs'), 'utf8');
     assert.doesNotMatch(flow, /place_order yok/);
     assert.match(flow, /completeLocalCheckout/);
+    assert.match(flow, /deviceId === 'iphone'/);
+    assert.match(flow, /kind: 'shares'/);
+    assert.match(flow, /kind: 'campaign'/);
+    assert.doesNotMatch(flow, /\.catch\(\(\) => \{\}\)/);
     const matrix = fs.readFileSync(path.join(ROOT, 'tests/e2e/helpers/matrix-scenarios.mjs'), 'utf8');
     assert.match(matrix, /from '\.\/place-order\.mjs'/);
     assert.doesNotMatch(matrix, /async function placeOrder/);
     assert.doesNotMatch(matrix, /async function fillBlocksCheckout/);
+  });
+
+  it('iki hissedar adı/telefon meta’da zorunlu', () => {
+    const rec = {
+      ok: true,
+      total: '2800',
+      currency: 'TRY',
+      items: [
+        {
+          name: 'WDP E2E Shares',
+          meta: {
+            wdp_shareholder_1_name: SHAREHOLDERS[0].name,
+            wdp_shareholder_1_phone: SHAREHOLDERS[0].phone,
+            wdp_shareholder_2_name: SHAREHOLDERS[1].name,
+            wdp_shareholder_2_phone: SHAREHOLDERS[1].phone,
+          },
+        },
+      ],
+    };
+    assert.doesNotThrow(() =>
+      assertLocalOrderRecord(rec, { shareholders: SHAREHOLDERS.slice(0, 2), productName: 'WDP E2E Shares' })
+    );
+    assert.throws(
+      () =>
+        assertLocalOrderRecord(
+          {
+            ...rec,
+            items: [
+              {
+                ...rec.items[0],
+                meta: { ...rec.items[0].meta, wdp_shareholder_2_name: 'Omer Sahin Ince' },
+              },
+            ],
+          },
+          { shareholders: SHAREHOLDERS.slice(0, 2) }
+        ),
+      /2\. hissedar adı/
+    );
+  });
+
+  it('checkout-setup uzakta ödeme yazmaz; setChequeEnabled yok', () => {
+    const src = fs.readFileSync(path.join(ROOT, 'tests/e2e/helpers/checkout-setup.mjs'), 'utf8');
+    assert.doesNotMatch(src, /function setChequeEnabled/);
+    assert.doesNotMatch(src, /Hedef: çevrimdışı yöntem yoksa çek/);
+    assert.match(src, /hiçbir ödeme ayarı yazılmaz/);
+  });
+
+  it('loop-cards-shop timeout yutulmaz', () => {
+    const src = fs.readFileSync(path.join(ROOT, 'tests/e2e/helpers/capture.mjs'), 'utf8');
+    assert.match(src, /shopCardsHiddenFailure/);
+    assert.doesNotMatch(
+      src,
+      /loop-cards-shop görünür kart:[\s\S]{0,120}console\.error/
+    );
   });
 });

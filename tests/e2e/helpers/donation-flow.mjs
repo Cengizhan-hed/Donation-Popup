@@ -27,8 +27,7 @@ import {
   DONOR_EMAIL,
   DONOR_PHONE,
   DEDICATION,
-  SHAREHOLDER_NAME,
-  SHAREHOLDER_PHONE,
+  SHAREHOLDERS,
   completeLocalCheckout,
 } from './place-order.mjs';
 
@@ -36,19 +35,43 @@ const CHECK_MS = 25000;
 
 /**
  * @param {import('@playwright/test').Locator} shell
- * @param {{ kind: 'custom'|'shares', amount: number }} spec
+ * @param {number} index 1-based
+ */
+async function revealShareholderRow(shell, index) {
+  const shName = shell.locator(`input[name="shareholder_name_${index}"]`).first();
+  if ((await shName.count()) === 0) return shName;
+  if (await shName.isVisible()) return shName;
+  const header = shell.locator('.wdp-shareholder-header').nth(index - 1);
+  if ((await header.count()) > 0) await header.click({ timeout: CHECK_MS });
+  return shName;
+}
+
+/**
+ * @param {import('@playwright/test').Locator} shell
+ * @param {{ kind: 'custom'|'shares'|'campaign', amount: number }} spec
  */
 async function fillDonationShell(shell, spec) {
   if (spec.kind === 'shares') {
-    const shName = shell.locator('input[name="shareholder_name_1"]').first();
-    if ((await shName.count()) > 0 && !(await shName.isVisible())) {
-      const header = shell.locator('.wdp-shareholder-header').first();
-      if ((await header.count()) > 0) await header.click({ timeout: CHECK_MS });
+    const people = SHAREHOLDERS.slice(0, 2);
+    const increase = shell.locator('.wdp-share-btn-increase').first();
+    await increase.waitFor({ state: 'visible', timeout: CHECK_MS });
+    const name1 = await revealShareholderRow(shell, 1);
+    await name1.waitFor({ state: 'visible', timeout: CHECK_MS });
+    if (people.length >= 2) {
+      await increase.click({ timeout: CHECK_MS });
+      await shell.locator('input[name="shareholder_name_2"]').first().waitFor({
+        state: 'attached',
+        timeout: CHECK_MS,
+      });
     }
-    await shName.waitFor({ state: 'visible', timeout: CHECK_MS });
-    await shName.fill(SHAREHOLDER_NAME);
-    const shPhone = shell.locator('input[name="shareholder_phone_1"]').first();
-    if ((await shPhone.count()) > 0) await shPhone.fill(SHAREHOLDER_PHONE);
+    for (let i = 0; i < people.length; i += 1) {
+      const idx = i + 1;
+      const shName = await revealShareholderRow(shell, idx);
+      await shName.waitFor({ state: 'visible', timeout: CHECK_MS });
+      await shName.fill(people[i].name);
+      const shPhone = shell.locator(`input[name="shareholder_phone_${idx}"]`).first();
+      if ((await shPhone.count()) > 0) await shPhone.fill(people[i].phone);
+    }
     return;
   }
   const amount = shell.locator(SEL.customPrice).first();
@@ -124,7 +147,7 @@ export async function runDonationFlowChecks({
   let filledAmount = profile.products?.custom?.min || 10;
 
   /**
-   * @param {{ kind: 'custom'|'shares', productId: number, productPath: string, productName: string }} job
+   * @param {{ kind: 'custom'|'shares'|'campaign', productId: number, productPath: string, productName: string, check: string }} job
    */
   const runOneJob = async (job) => {
     await Promise.race([
@@ -151,8 +174,9 @@ export async function runDonationFlowChecks({
     await assertNoUnexpectedPluginErrors(page, { scenarioId: `checkout-flow-${deviceId}` });
 
     if (job.kind === 'custom') {
-      const min = profile.products?.custom?.min || 10;
-      filledAmount = min;
+      filledAmount = profile.products?.custom?.min || 10;
+    } else if (job.kind === 'campaign') {
+      filledAmount = Number(profile.products?.campaign?.min) || 50;
     }
     await fillDonationShell(shell, { kind: job.kind, amount: filledAmount });
 
@@ -166,8 +190,8 @@ export async function runDonationFlowChecks({
     if (!/checkout|odeme|ödeme/i.test(page.url())) {
       try {
         await page.waitForURL(/checkout|odeme|ödeme/i, { timeout: 4000 });
-      } catch {
-        /* ödeme URL’sine gitmediyse aşağıda goto */
+      } catch (e) {
+        console.error(`[e2e:catch-fail] goCheckout URL: ${e && e.message ? e.message : e}`);
       }
     }
     if (!/checkout|odeme|ödeme/i.test(page.url())) {
@@ -195,18 +219,22 @@ export async function runDonationFlowChecks({
         return checkoutPath.replace(/\/$/, '');
       }
     })();
-    await page
-      .waitForURL(
-        (u) => {
-          const p = u.pathname.replace(/\/$/, '');
-          return (
-            p === checkoutHost ||
-            /checkout|order-pay|order-received|odeme|ödeme/i.test(u.pathname + u.search)
-          );
-        },
-        { timeout: CHECK_MS }
-      )
-      .catch(() => {});
+    if (!/checkout|order-pay|odeme|ödeme/i.test(page.url())) {
+      try {
+        await page.waitForURL(
+          (u) => {
+            const p = u.pathname.replace(/\/$/, '');
+            return (
+              p === checkoutHost ||
+              /checkout|order-pay|order-received|odeme|ödeme/i.test(u.pathname + u.search)
+            );
+          },
+          { timeout: CHECK_MS }
+        );
+      } catch (e) {
+        console.error(`[e2e:catch-fail] checkout waitForURL: ${e && e.message ? e.message : e}`);
+      }
+    }
     const url = page.url();
     let onCheckout = false;
     try {
@@ -266,7 +294,7 @@ export async function runDonationFlowChecks({
     const expected =
       job.kind === 'shares'
         ? {
-            shareholderName: SHAREHOLDER_NAME,
+            shareholders: SHAREHOLDERS.slice(0, 2),
             currency: store.currency,
             productName: job.productName,
           }
@@ -296,30 +324,85 @@ export async function runDonationFlowChecks({
     return 'ordered';
   };
 
-  try {
-    page.setDefaultTimeout(CHECK_MS);
-    page.setDefaultNavigationTimeout(CHECK_MS);
-    await runOneJob({
+  /** @type {Array<{ kind: 'custom'|'shares'|'campaign', productId: number, productPath: string, productName: string, check: string }>} */
+  const jobs = [
+    {
       kind: 'custom',
       productId: customId,
       productPath: customPath,
       productName: 'WDP E2E Custom',
-    });
-  } catch (e) {
-    failures.push(
-      makeFailure({
-        check: `checkout-flow-${deviceId}`,
-        description: 'Bağış akışı (liste→form→sepet→ödeme) başarısız',
-        error: e,
-      })
-    );
-    stats.failed += 1;
-  } finally {
-    await Promise.race([
-      emptyCart(page, env.E2E_BASE_URL),
-      new Promise((resolve) => setTimeout(resolve, 15000)),
-    ]).catch((e) => {
-      console.error(`[e2e:catch-fail] emptyCart-finally: ${e && e.message ? e.message : e}`);
-    });
+      check: `checkout-flow-${deviceId}`,
+    },
+  ];
+  // Hisseli + kampanya siparişi yalnız iphone: sunucu meta cihazdan bağımsız;
+  // üç cihazda tekrarı e2e:full süresini şişirir (hedef ≤10 dk).
+  if (deviceId === 'iphone' && !remote) {
+    if (productIds.shares && productUrls.shares) {
+      jobs.push({
+        kind: 'shares',
+        productId: productIds.shares,
+        productPath: productUrls.shares,
+        productName: 'WDP E2E Shares',
+        check: `checkout-flow-shares-${deviceId}`,
+      });
+    } else {
+      failures.push(
+        makeFailure({
+          check: `checkout-flow-shares-${deviceId}`,
+          description: 'Yerel hisseli sipariş: shares ürünü yok',
+        })
+      );
+      stats.failed += 1;
+    }
+    if (productIds.campaign && productUrls.campaign) {
+      jobs.push({
+        kind: 'campaign',
+        productId: productIds.campaign,
+        productPath: productUrls.campaign,
+        productName: 'WDP E2E Campaign',
+        check: `checkout-flow-campaign-${deviceId}`,
+      });
+    } else {
+      failures.push(
+        makeFailure({
+          check: `checkout-flow-campaign-${deviceId}`,
+          description: 'Yerel kampanya siparişi: campaign ürünü yok',
+        })
+      );
+      stats.failed += 1;
+    }
+  }
+
+  page.setDefaultTimeout(CHECK_MS);
+  page.setDefaultNavigationTimeout(CHECK_MS);
+  for (const job of jobs) {
+    const tJob = Date.now();
+    try {
+      await runOneJob(job);
+      console.log(
+        `[e2e] ${job.check}: ${((Date.now() - tJob) / 1000).toFixed(1)}s`
+      );
+    } catch (e) {
+      failures.push(
+        makeFailure({
+          check: job.check,
+          description:
+            job.kind === 'shares'
+              ? 'Hisseli bağış akışı (liste→form→ödeme→sipariş) başarısız'
+              : job.kind === 'campaign'
+                ? 'Kampanya bağış akışı (liste→form→ödeme→sipariş) başarısız'
+                : 'Bağış akışı (liste→form→sepet→ödeme) başarısız',
+          error: e,
+        })
+      );
+      stats.failed += 1;
+    } finally {
+      await Promise.race([
+        emptyCart(page, env.E2E_BASE_URL),
+        new Promise((resolve) => setTimeout(resolve, 15000)),
+      ]).catch((e) => {
+        console.error(`[e2e:catch-fail] emptyCart-finally: ${e && e.message ? e.message : e}`);
+      });
+    }
   }
 }

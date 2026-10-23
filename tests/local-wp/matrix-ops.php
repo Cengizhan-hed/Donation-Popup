@@ -834,7 +834,7 @@ function wdp_matrix_read_order($order_id) {
 				$meta[ $key ] = is_scalar($val) ? (string) $val : wp_json_encode($val);
 			}
 		}
-		foreach (array( 'wdp_donor_name', 'wdp_donor_phone', 'wdp_donor_email', 'wdp_dedication', 'wdp_donation_note', 'wdp_anonymous', 'wdp_shareholder_1_name', 'wdp_shareholder_1_phone' ) as $key) {
+		foreach (array( 'wdp_donor_name', 'wdp_donor_phone', 'wdp_donor_email', 'wdp_dedication', 'wdp_donation_note', 'wdp_anonymous', 'wdp_shareholder_1_name', 'wdp_shareholder_1_phone', 'wdp_shareholder_2_name', 'wdp_shareholder_2_phone' ) as $key) {
 			if (!isset($meta[ $key ])) {
 				$meta[ $key ] = (string) $item->get_meta($key);
 			}

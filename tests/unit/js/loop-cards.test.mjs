@@ -7,6 +7,8 @@ import {
   isLoopNodeVisible,
   classifyLoopCardsResult,
   formatLoopCardFail,
+  shopCardsHiddenFailure,
+  SHOP_CARD_SEL,
 } from '../../../tests/e2e/helpers/loop-cards.mjs';
 
 describe('isLoopNodeVisible', () => {
@@ -63,5 +65,16 @@ describe('classifyLoopCardsResult', () => {
   it('kart yok: uzak skip, matris fail', () => {
     assert.equal(classifyLoopCardsResult([], { requireVisible: false }).status, 'skip');
     assert.equal(classifyLoopCardsResult([], { requireVisible: true }).status, 'fail');
+  });
+});
+
+describe('shopCardsHiddenFailure', () => {
+  it('timeout kırmızı (sessiz yutma yok)', () => {
+    const f = shopCardsHiddenFailure(24, 'Timeout 10000ms');
+    assert.equal(f.check, 'loop-cards-shop');
+    assert.match(f.description, /görünür ürün kartı yok/);
+    assert.match(f.detail, /attached=24/);
+    assert.match(f.detail, /Timeout/);
+    assert.match(SHOP_CARD_SEL, /wdp-e2e-shop-products/);
   });
 });

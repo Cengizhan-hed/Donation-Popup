@@ -475,4 +475,4 @@ Kullanıcı yönergesi önceki tüm görev metinlerinin yerini aldı; CLAUDE.md 
 | T11 | Yerelde sipariş tamamlama atlanıyordu (#place_order varsayımı) | 3M: blok+klasik, HPOS açık/kapalı, TR karakter, anonim maskelemez |
 | G32 | Masaüstü popup ekran görüntüsü yarı saydam — çekim yöntemi (fullPage + fixed); gerçek DOM opak | 3J3: viewport çekimi + kalıcı POPUP-OVERLAP kontrolü |
 | G33 | Storefront: "There are no reviews yet" bildirimi popup karartmasının üstünde parlak kalıyor (tema bildirimi z-index) | Faz 7 |
-| A1 | Açık test işleri: hissedar siparişi e2e:full'da yok (yalnız custom); `checkout-setup.mjs` JSDoc'ta eski "Hedef: çek geçici aç" yorumu; TT5 mağaza `li.product` Playwright'ta gizli görünüyor; yerel full ~12.8 dk (hedef ≤10) | sonraki test parçası |
+| A1 | Açık test işleri: hissedar siparişi e2e:full'da yok (yalnız custom); `checkout-setup.mjs` JSDoc'ta eski "Hedef: çek geçici aç" yorumu; TT5 mağaza `li.product` Playwright'ta gizli görünüyor; yerel full ~12.8 dk (hedef ≤10) | 3O: hisseli+kampanya siparişi iphone; JSDoc/uzak yazma yok; `loop-cards-shop` timeout kırmızı; süre ölçümü |

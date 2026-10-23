@@ -59,7 +59,12 @@ import {
   NATIVE_ATC_BTN_SEL,
   STICKY_ATC_SEL,
 } from './product-page-ui.mjs';
-import { classifyLoopCardsResult, formatLoopCardFail } from './loop-cards.mjs';
+import {
+  classifyLoopCardsResult,
+  formatLoopCardFail,
+  SHOP_CARD_SEL,
+  shopCardsHiddenFailure,
+} from './loop-cards.mjs';
 import { snapshotGuardOrder, cleanupE2EData } from './test-cleanup.mjs';
 import { resetRegistry } from './run-registry.mjs';
 import { fixtureProductRecords, loadFixtures, assertRunMutationTargetsAreFixtures } from './fixtures.mjs';
@@ -194,6 +199,11 @@ function printSectionTable() {
   }
   console.log('──────────────────────────────┼────────');
   console.log(`${'TOPLAM'.padEnd(28)} │ ${total.toFixed(1).padStart(6)}s`);
+  const slow = [...sectionTimings].sort((a, b) => b.secs - a.secs).slice(0, 5);
+  if (slow.length) {
+    console.log('En yavaş 5 bölüm:');
+    for (const s of slow) console.log(`  ${s.label}: ${s.secs.toFixed(1)}s`);
+  }
 }
 
 /**
@@ -1848,7 +1858,22 @@ async function findProductNodes(page, { slug, id = 0, name = '' }) {
  * @param {import('@playwright/test').Page} page
  */
 async function settleLoopPage(page) {
-  await page.waitForLoadState('networkidle', { timeout: 8000 }).catch(() => {});
+  const shopVisible = page.locator(SHOP_CARD_SEL).locator('visible=true');
+  const listVisible = page
+    .locator('.wdp-card, .wdp-list .wdp-card, .wdp-donations')
+    .locator('visible=true');
+  const shopN = await shopVisible.count();
+  const listN = await listVisible.count();
+  if (shopN === 0 && listN === 0) {
+    try {
+      await Promise.race([
+        shopVisible.first().waitFor({ state: 'visible', timeout: 5000 }),
+        listVisible.first().waitFor({ state: 'visible', timeout: 5000 }),
+      ]);
+    } catch (e) {
+      console.error(`[e2e:catch-fail] settleLoopPage kart: ${e && e.message ? e.message : e}`);
+    }
+  }
   await settleForScreenshot(page, { fullPage: true, scrollPage: true });
 }
 
@@ -1864,13 +1889,26 @@ async function settleLoopPage(page) {
  */
 async function assertLoopCardsTitleAndDonate(page, surface, screenName, failures, stats) {
   if (surface === 'shop') {
-    const shopCards = page.locator(
-      '.wdp-e2e-shop-products li.product, ul.products li.product, li.wc-block-product'
-    );
+    const shopCards = page.locator(SHOP_CARD_SEL);
+    const visibleCard = shopCards.locator('visible=true');
     try {
-      await shopCards.first().waitFor({ state: 'visible', timeout: 10000 });
+      await visibleCard.first().waitFor({ state: 'visible', timeout: 10000 });
     } catch (e) {
-      console.error(`[e2e:catch-fail] loop-cards-shop görünür kart: ${e && e.message ? e.message : e}`);
+      const attached = await shopCards.count();
+      const fail = shopCardsHiddenFailure(
+        attached,
+        e && e.message ? e.message : String(e)
+      );
+      failures.push(
+        makeFailure({
+          check: fail.check,
+          description: fail.description,
+          detail: `${fail.detail} screen=${screenName}`,
+          screenshot: `${screenName}.png`,
+        })
+      );
+      if (stats) stats.failed = (stats.failed || 0) + 1;
+      return;
     }
   }
   let similarPat = 'benzer\\s*bağış';
@@ -1887,7 +1925,7 @@ async function assertLoopCardsTitleAndDonate(page, surface, screenName, failures
     /* profil yok */
   }
   const result = await page.evaluate(
-    ({ surfaceKind, similarPat, donatePat, cardSel, titleSel }) => {
+    ({ surfaceKind, similarPat, donatePat, cardSel, titleSel, shopCardSel }) => {
     function visible(el) {
       if (!el) return false;
       const st = getComputedStyle(el);
@@ -1920,11 +1958,7 @@ async function assertLoopCardsTitleAndDonate(page, surface, screenName, failures
         cards = Array.from(root.querySelectorAll(cardSel));
       }
     } else {
-      cards = Array.from(
-        document.querySelectorAll(
-          '.wdp-e2e-shop-products li.product, ul.products li.product, li.wc-block-product'
-        )
-      ).slice(0, 12);
+      cards = Array.from(document.querySelectorAll(shopCardSel)).slice(0, 12);
     }
 
     const rows = cards.map((card, i) => {
@@ -1944,7 +1978,7 @@ async function assertLoopCardsTitleAndDonate(page, surface, screenName, failures
     });
     return { cardCount: cards.length, rows };
   },
-    { surfaceKind: surface, similarPat, donatePat, cardSel, titleSel }
+    { surfaceKind: surface, similarPat, donatePat, cardSel, titleSel, shopCardSel: SHOP_CARD_SEL }
   );
 
   if (result.cardCount < 1) {
@@ -4264,7 +4298,10 @@ export async function captureAll({
                     skipOrderReason: checkoutEnv?.skipOrderReason || '',
                   }),
                   new Promise((_, reject) =>
-                    setTimeout(() => reject(new Error('checkout-flow 240s zaman aşımı')), 240000)
+                    setTimeout(
+                      () => reject(new Error('checkout-flow 420s zaman aşımı')),
+                      420000
+                    )
                   ),
                 ]);
               }
