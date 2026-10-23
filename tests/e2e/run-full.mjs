@@ -27,6 +27,7 @@ import {
   CURRENT_DIR,
   reportDirFor,
   runJsonFor,
+  slowestSections,
 } from './helpers/run-io.mjs';
 import { formatRemotePostBlockedLines } from './helpers/network-guard.mjs';
 import { acquireEnvLock, releaseEnvLock } from './helpers/env-lock.mjs';
@@ -119,6 +120,7 @@ async function runOne({ envId, deviceId, noSideCart }) {
     blocked_live: result.blocked_live || { total: 0, byHost: {} },
     remote_post_blocked: result.remote_post_blocked || { total: 0, byPath: {} },
     izinli_okuma: result.izinli_okuma || { total: 0, byAction: {} },
+    sections: result.sections || [],
   };
   fs.writeFileSync(path.join(outDir, 'run.json'), JSON.stringify(row, null, 2) + '\n');
   return row;
@@ -197,9 +199,11 @@ async function main() {
   /** @type {{ stop: () => Promise<void> } | null} */
   let localServer = null;
   if (localOnly && !flags.child) {
+    const tPrep = Date.now();
     const { prepareLocalFullStack } = await import('./helpers/matrix-setup.mjs');
     const stack = await prepareLocalFullStack(localE2EPort());
     localServer = stack.server;
+    console.log(`[e2e] prepareLocalFullStack: ${((Date.now() - tPrep) / 1000).toFixed(1)}s`);
   }
   /** @type {Array<{ path: string, shared?: boolean }>} */
   const lockHandles = [];
@@ -403,6 +407,19 @@ async function main() {
     console.log(`${r.env}\t${r.device}\t${r.passed}\t${r.skipped}\t${r.failed}\t${r.secs}s`);
   }
   console.log(`TOPLAM süre: ${durationSec}s  Geçti=${passedCount} Atlandı=${skippedCount} Hata=${failedCount}`);
+  const slow = slowestSections(
+    rows.flatMap((r) =>
+      (r.sections || []).map((s) => ({
+        label: `${r.device || r.env || ''}/${s.label}`,
+        secs: s.secs,
+      }))
+    ),
+    5
+  );
+  if (slow.length) {
+    console.log('En yavaş 5 bölüm:');
+    for (const s of slow) console.log(`  ${s.label}: ${s.secs.toFixed(1)}s`);
+  }
   console.log(formatRemotePostBlockedLines(remote_post_blocked, izinli_okuma, { blocked_live }));
   const manifestNote =
     envs.length === 1

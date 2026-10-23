@@ -14,6 +14,12 @@ export const DEDICATION = 'Çağrı Şükrü Öztürk İğdır';
 export const SHAREHOLDER_NAME = 'Gülşen Çığ İğdır';
 export const SHAREHOLDER_PHONE = '5559876543';
 
+/** e2e:full hisseli sipariş (≥2 hisse, Türkçe karakter). */
+export const SHAREHOLDERS = [
+  { name: 'Ayşe Gül Çiftçi', phone: '5551234567' },
+  { name: 'Ömer Şahin İnce', phone: '5559876543' },
+];
+
 export const PLACE_ORDER_NAME_RE =
   /place order|sipariş ver|siparişi onayla|siparişi tamamla|ödenecek tutarı öde/i;
 export const CONTINUE_NAME_RE = /^(continue|devam et|devam|next|ileri)$/i;
@@ -290,6 +296,13 @@ export function readLocalOrder(orderId, wpDir = '') {
 
 function metaHay(rec, item) {
   const meta = (item && item.meta) || {};
+  const shareholders = [];
+  for (let i = 1; i <= 12; i += 1) {
+    const n = String(meta[`wdp_shareholder_${i}_name`] || '');
+    const p = String(meta[`wdp_shareholder_${i}_phone`] || '');
+    if (!n && !p) continue;
+    shareholders.push({ name: n, phone: p, index: i });
+  }
   return {
     meta,
     name: String(meta.wdp_donor_name || rec.billingName || ''),
@@ -298,6 +311,8 @@ function metaHay(rec, item) {
     dedication: String(meta.wdp_dedication || ''),
     anonymous: String(meta.wdp_anonymous || ''),
     shareholder: String(meta.wdp_shareholder_1_name || ''),
+    shareholderPhone: String(meta.wdp_shareholder_1_phone || ''),
+    shareholders,
   };
 }
 
@@ -318,6 +333,8 @@ function assertUnmasked(label, value, expected) {
  *   donorPhone?: string,
  *   dedication?: string,
  *   shareholderName?: string,
+ *   shareholderPhone?: string,
+ *   shareholders?: Array<{ name: string, phone?: string }>,
  *   amount?: number|string,
  *   currency?: string,
  *   anonymous?: boolean,
@@ -374,6 +391,35 @@ export function assertLocalOrderRecord(rec, expected = {}) {
       throw new Error(
         `hissedar adı bozulmuş: '${hay.shareholder}' ≠ '${expected.shareholderName}'`
       );
+    }
+  }
+  if (expected.shareholderPhone) {
+    const digits = (s) => String(s || '').replace(/\D+/g, '');
+    if (!digits(hay.shareholderPhone).endsWith(digits(expected.shareholderPhone).slice(-7))) {
+      throw new Error(`hissedar telefonu uyuşmuyor: ${hay.shareholderPhone}`);
+    }
+  }
+  if (Array.isArray(expected.shareholders) && expected.shareholders.length) {
+    if (hay.shareholders.length < expected.shareholders.length) {
+      throw new Error(
+        `hissedar sayısı ${hay.shareholders.length} < ${expected.shareholders.length}`
+      );
+    }
+    const digits = (s) => String(s || '').replace(/\D+/g, '');
+    for (let i = 0; i < expected.shareholders.length; i += 1) {
+      const want = expected.shareholders[i] || {};
+      const got = hay.shareholders[i] || { name: '', phone: '' };
+      if (want.name) {
+        assertUnmasked(`${i + 1}. hissedar adı`, got.name, want.name);
+        if (got.name !== want.name) {
+          throw new Error(`${i + 1}. hissedar adı bozulmuş: '${got.name}' ≠ '${want.name}'`);
+        }
+      }
+      if (want.phone) {
+        if (!digits(got.phone).endsWith(digits(want.phone).slice(-7))) {
+          throw new Error(`${i + 1}. hissedar telefonu uyuşmuyor: ${got.phone}`);
+        }
+      }
     }
   }
   if (expected.anonymous) {

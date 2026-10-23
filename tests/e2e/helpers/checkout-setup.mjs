@@ -135,16 +135,9 @@ function enableLocalOfflineGateways() {
   return localEvalGateways('enable-offline-gateways');
 }
 
-function setChequeEnabled() {
-  throw new Error(
-    'checkout-setup: uzak ortamda woocommerce_cheque_settings yazılmaz (2026-10-22). Sipariş testleri yalnız yerel WP.'
-  );
-}
-
 /**
- * Hedef: çevrimdışı yöntem yoksa çek’i geçici aç.
- * Ikram / allowMetaMutation=false: yazma yok.
- * Yerel: Woo çekirdek cheque/cod/bacs etkinleştirilir; sipariş tamamlama atlanmaz.
+ * Uzak: hiçbir ödeme ayarı yazılmaz (cheque/bacs/cod değiştirilmez); sipariş yok.
+ * Yerel: Woo çekirdek cheque/cod/bacs `enable-offline-gateways` ile açılır; sipariş atlanmaz.
  * @returns {Promise<{
  *   checkoutUrl: string,
  *   cartUrl: string,

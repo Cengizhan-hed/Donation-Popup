@@ -12,6 +12,23 @@ export const RELATED_CARD_SEL = 'li.product, li.wc-block-product, .wc-block-prod
 export const RELATED_TITLE_SEL =
   '.woocommerce-loop-product__title, .product-title, .wp-block-post-title, .fusion-title, h2, h3';
 
+/** Mağaza [products] / klasik döngü / Woo blok kartı. */
+export const SHOP_CARD_SEL =
+  '.wdp-e2e-shop-products li.product, ul.products li.product, li.wc-block-product';
+
+/**
+ * Playwright `.first()` gizli şablon kartına denk gelirse timeout yutulmamalı.
+ * @param {number} attachedCount
+ * @param {string} errMsg
+ */
+export function shopCardsHiddenFailure(attachedCount, errMsg) {
+  return {
+    check: 'loop-cards-shop',
+    description: 'Mağaza döngüsünde görünür ürün kartı yok (Playwright hidden)',
+    detail: `attached=${Number(attachedCount) || 0} ${String(errMsg || '')}`.trim(),
+  };
+}
+
 /**
  * @param {{ display?: string, visibility?: string, opacity?: string, w?: number, h?: number }} m
  */
