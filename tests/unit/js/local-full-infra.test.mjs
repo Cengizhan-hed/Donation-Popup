@@ -49,6 +49,17 @@ describe('yerel e2e:full altyapı (3K)', () => {
     );
   });
 
+  it('yerel eval extra env WDP_LOCAL_WP_DIR birleştirir (SSH yok)', async () => {
+    const { runLocalEvalFile } = await import('../../../tests/e2e/helpers/local-wp-eval.mjs');
+    const prev = process.env.WDP_LOCAL_WP_DIR;
+    delete process.env.WDP_LOCAL_WP_DIR;
+    try {
+      assert.throws(() => runLocalEvalFile('tests/local-wp/matrix-ops.php', ['probe']), /WDP_LOCAL_WP_DIR yok/);
+    } finally {
+      if (prev !== undefined) process.env.WDP_LOCAL_WP_DIR = prev;
+    }
+  });
+
   it('shortcodes-setup yerelde atlanmaz', () => {
     const skips = [];
     const stats = { skipped: 0 };

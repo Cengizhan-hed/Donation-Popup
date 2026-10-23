@@ -41,13 +41,18 @@ import {
   waitAndAssertShellOverlap,
 } from './shell-overlap.mjs';
 import { FREEZE_MOTION_CSS } from './selectors.mjs';
+import {
+  DONOR_NAME,
+  DONOR_EMAIL,
+  DONOR_PHONE,
+  DEDICATION,
+  SHAREHOLDER_NAME,
+  SHAREHOLDER_PHONE,
+  completeLocalCheckout,
+} from './place-order.mjs';
 
 const CHECK_MS = 25000;
 const CART_MS = 20000;
-const DONOR_NAME = 'Çağrı Şükür İğde Öznur';
-const DONOR_PHONE = '5551234567';
-const DONOR_EMAIL = 'cagri.sukr@wdp-e2e.test';
-const DEDICATION = 'Çağrı Şükür İğde Öznur';
 const PLUGIN_URL_RE = /\/wp-content\/plugins\/woo-donation-popup\//i;
 const MIN_TOUCH = 24;
 
@@ -389,6 +394,12 @@ async function fillDonationForm(scope, store) {
   if ((await email.count()) > 0) await email.fill(DONOR_EMAIL);
   const ded = scope.locator('input[name="donation_dedication"]').first();
   if ((await ded.count()) > 0) await ded.fill(DEDICATION);
+  const anon = scope.locator('input[name="donation_anonymous"]').first();
+  if ((await anon.count()) > 0) await anon.check();
+  const shName = scope.locator('input[name="shareholder_name_1"]').first();
+  if ((await shName.count()) > 0) await shName.fill(SHAREHOLDER_NAME);
+  const shPhone = scope.locator('input[name="shareholder_phone_1"]').first();
+  if ((await shPhone.count()) > 0) await shPhone.fill(SHAREHOLDER_PHONE);
 }
 
 async function addToCart(page, scope) {
@@ -490,133 +501,6 @@ async function checkoutHasProductAmount(page, amount, store, productName) {
   if (!amountVisible(body, amount, store)) {
     throw new Error(`ödeme tutar biçimi yok (beklenen ${formatMoney(amount, store)})`);
   }
-}
-
-async function fillStateField(page, selector, store) {
-  let el = page.locator(selector).first();
-  if ((await el.count()) === 0) {
-    el = page.getByLabel(/province|state|il \/ ilçe|bundesland/i).first();
-  }
-  if ((await el.count()) === 0) return;
-  if (!(await el.isVisible())) return;
-  const tag = await el.evaluate((node) => node.tagName.toLowerCase());
-  if (tag === 'select') {
-    if (store.state) {
-      try {
-        await el.selectOption(store.state);
-        return;
-      } catch {
-        await el.selectOption({ label: store.stateLabel || store.city || store.state });
-        return;
-      }
-    }
-    const value = await el.evaluate((s) => {
-      const opt = [...s.options].find((o) => o.value);
-      return opt ? opt.value : '';
-    });
-    if (value) await el.selectOption(value);
-    return;
-  }
-  await el.click();
-  const name = store.stateLabel || store.city || store.state;
-  if (name) {
-    const option = page.getByRole('option', { name: new RegExp(name, 'i') }).first();
-    if ((await option.count()) > 0) {
-      await option.click();
-      return;
-    }
-  }
-  const firstOpt = page.locator('[role="option"]').nth(1);
-  if ((await firstOpt.count()) > 0) await firstOpt.click();
-}
-
-async function fillClassicCheckout(page, store) {
-  const first = page.locator('#billing_first_name').first();
-  await first.waitFor({ state: 'visible', timeout: CHECK_MS });
-  const parts = DONOR_NAME.split(' ');
-  await first.fill(parts[0] || 'Cagri');
-  const last = page.locator('#billing_last_name').first();
-  if ((await last.count()) > 0) await last.fill(parts.slice(1).join(' ') || 'Test');
-  const email = page.locator('#billing_email').first();
-  if ((await email.count()) > 0) await email.fill(DONOR_EMAIL);
-  const phone = page.locator('#billing_phone').first();
-  if ((await phone.count()) > 0) await phone.fill(DONOR_PHONE);
-  const addr = page.locator('#billing_address_1').first();
-  if ((await addr.count()) > 0) await addr.fill(store.address || 'Test Cad. 1');
-  const city = page.locator('#billing_city').first();
-  if ((await city.count()) > 0) await city.fill(store.city || 'Istanbul');
-  const post = page.locator('#billing_postcode').first();
-  if ((await post.count()) > 0) await post.fill(store.postcode || '34000');
-  const country = page.locator('#billing_country').first();
-  if ((await country.count()) > 0 && store.country) {
-    await country.selectOption(store.country);
-  }
-  await fillStateField(page, '#billing_state', store);
-}
-
-async function fillBlocksCheckout(page, store) {
-  const email = page.locator('#email, input[type="email"]').first();
-  await email.waitFor({ state: 'visible', timeout: CHECK_MS });
-  await email.fill(DONOR_EMAIL);
-  const parts = DONOR_NAME.split(' ');
-  const first = page.locator('#billing-first_name, #shipping-first_name').first();
-  if ((await first.count()) > 0) await first.fill(parts[0] || 'Cagri');
-  const last = page.locator('#billing-last_name, #shipping-last_name').first();
-  if ((await last.count()) > 0) await last.fill(parts.slice(1).join(' ') || 'Test');
-  const addr = page.locator('#billing-address_1, #shipping-address_1').first();
-  if ((await addr.count()) > 0) await addr.fill(store.address || 'Test Cad. 1');
-  const city = page.locator('#billing-city, #shipping-city').first();
-  if ((await city.count()) > 0) await city.fill(store.city || 'Istanbul');
-  const post = page.locator('#billing-postcode, #shipping-postcode').first();
-  if ((await post.count()) > 0) await post.fill(store.postcode || '34000');
-  const phone = page.locator('#billing-phone, #shipping-phone').first();
-  if ((await phone.count()) > 0) await phone.fill(DONOR_PHONE);
-  await fillStateField(page, '#billing-state, #shipping-state, .wc-block-components-state-input input', store);
-  const place = page.locator('.wc-block-components-checkout-place-order-button').first();
-  if ((await place.count()) === 0 || !(await place.isVisible())) {
-    const cont = page.getByRole('button', { name: /continue|devam|sipariş ver|place order/i }).first();
-    if ((await cont.count()) > 0) await cont.click({ timeout: 8000 });
-  }
-}
-
-async function selectCheque(page) {
-  const radio = page.locator('#payment_method_cheque, input[name="radio-control-wc-payment-method-options"][value="cheque"], #radio-control-wc-payment-method-options-cheque').first();
-  if ((await radio.count()) > 0) {
-    await radio.check({ force: true });
-    return;
-  }
-  const label = page.getByText(/cheque|check payments|çek/i).first();
-  if ((await label.count()) > 0) {
-    await label.click({ timeout: 8000 });
-    return;
-  }
-  throw new Error('cheque ödeme yöntemi formda yok');
-}
-
-async function placeOrder(page) {
-  const btn = page
-    .locator(
-      '#place_order, button[name="woocommerce_checkout_place_order"], .wc-block-components-checkout-place-order-button, button.wc-block-components-checkout-place-order-button'
-    )
-    .first();
-  await btn.waitFor({ state: 'visible', timeout: CHECK_MS });
-  await btn.click({ timeout: CHECK_MS, noWaitAfter: true });
-  try {
-    await page.waitForURL(/order-received|order-pay|key=wc_order/i, {
-      timeout: CHECK_MS,
-      waitUntil: 'domcontentloaded',
-    });
-  } catch (e) {
-    const body = normalizePriceText(await page.locator('body').innerText());
-    const err = page.locator('.wc-block-components-validation-error, .woocommerce-error, [role="alert"]').first();
-    const errText = (await err.count()) > 0 ? await err.innerText() : '';
-    throw new Error(`sipariş tamamlanmadı url=${page.url()} validasyon=${errText || body.slice(0, 240)} (${e.message})`);
-  }
-  const thanks = page.url();
-  const idMatch = thanks.match(/order-received\/(\d+)/i) || thanks.match(/[?&]order[=-](\d+)/i);
-  const orderId = idMatch ? Number(idMatch[1]) : 0;
-  if (!orderId) throw new Error(`sipariş id yok: ${thanks}`);
-  return orderId;
 }
 
 async function assertNoOverflow(page) {
@@ -854,34 +738,24 @@ export async function runDeviceScenarios({
       const scope = await openProductForm(page, baseUrl, productPath);
       await fillDonationForm(scope, store);
       await goCheckoutFromForm(page, scope);
-      if (checkoutKind === 'blocks' || probe.checkoutBlocks) {
-        await fillBlocksCheckout(page, store);
-      } else {
-        await fillClassicCheckout(page, store);
-      }
-      await selectCheque(page);
-      const orderId = await placeOrder(page);
-      const rec = matrixEval(wpDir, ['read-order', String(orderId)]);
-      if (!rec.ok) throw new Error(`wc_get_order okunamadı: ${rec.error || ''}`);
-      const item = (rec.items || [])[0] || { meta: {} };
-      const meta = item.meta || {};
-      const hay = [meta.wdp_donor_name, rec.billingName, JSON.stringify(rec)].join(' ');
-      if (!hay.includes('Çağrı') && !hay.includes('Şükür') && !String(meta.wdp_donor_name).includes('Çağrı')) {
-        throw new Error(`bağışçı adı eksik/bozuk: ${JSON.stringify(meta).slice(0, 240)}`);
-      }
-      if (String(meta.wdp_donor_name || rec.billingName).indexOf('Çağrı') < 0) {
-        throw new Error(`Türkçe karakter kaybı (ad): ${meta.wdp_donor_name || rec.billingName}`);
-      }
-      if (meta.wdp_donor_email && meta.wdp_donor_email !== DONOR_EMAIL && rec.billingEmail !== DONOR_EMAIL) {
-        throw new Error(`e-posta uyuşmuyor: ${meta.wdp_donor_email || rec.billingEmail}`);
-      }
-      if (meta.wdp_dedication && meta.wdp_dedication.indexOf('Çağrı') < 0) {
-        throw new Error(`ithaf eksik/bozuk: ${meta.wdp_dedication}`);
-      }
-      const total = Number(rec.total);
-      if (!Number.isFinite(total) || Math.abs(total - Number(amount)) > 0.009) {
-        throw new Error(`sipariş toplamı ${rec.total} ≠ ${amount} (hpos=${rec.hpos})`);
-      }
+      const kind = checkoutKind === 'blocks' || probe.checkoutBlocks ? 'blocks' : 'classic';
+      await completeLocalCheckout(page, {
+        store,
+        checkoutKind: kind,
+        gatewayId: 'cheque',
+        wpDir,
+        expected: {
+          donorName: DONOR_NAME,
+          donorEmail: DONOR_EMAIL,
+          donorPhone: DONOR_PHONE,
+          dedication: DEDICATION,
+          amount,
+          currency: store.currency,
+          anonymous: true,
+          hpos: !!probe.hpos,
+          productName,
+        },
+      });
       await shot(page, shotDir, 'place-order');
     });
 

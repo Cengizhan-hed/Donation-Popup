@@ -90,6 +90,8 @@
     { "match": "tests/e2e/helpers/shortcodes.mjs", "areas": ["shortcodes"] },
     { "match": "tests/e2e/helpers/mobile-a11y.mjs", "areas": ["mobile-a11y"] },
     { "match": "tests/e2e/helpers/donation-flow.mjs", "areas": ["checkout-flow"] },
+    { "match": "tests/e2e/helpers/place-order.mjs", "areas": ["checkout-flow"] },
+    { "match": "tests/e2e/helpers/checkout-setup.mjs", "areas": ["checkout-flow"] },
     { "match": "tests/e2e/run-shares-late-product-info.mjs", "areas": ["shares"] },
     { "match": "tests/e2e/helpers/capture.mjs", "areas": ["core", "shell", "sadaka", "mobile-a11y", "checkout-flow", "layout"] },
     { "match": "tests/e2e/helpers/checks.mjs", "areas": ["core", "shell", "form-fields", "empty-price"] },
@@ -134,7 +136,6 @@
     { "match": "scripts/ikram-wp.mjs", "areas": ["core"] },
     { "match": "scripts/lib/ikram-wp-guard.mjs", "areas": ["core"] },
     { "match": "scripts/lib/pack-excludes.mjs", "areas": ["core"] },
-    { "match": "tests/e2e/helpers/checkout-setup.mjs", "areas": ["checkout-flow"] },
     { "match": "tests/unit/js/", "areas": ["core"] }
   ]
 }

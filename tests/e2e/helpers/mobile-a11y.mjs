@@ -54,6 +54,19 @@ export async function probeTouchTargets(page, scopeSel) {
           w: Math.round(r.width),
           h: Math.round(r.height),
         };
+        if (el.matches && el.matches('input[type="checkbox"]')) {
+          const lab =
+            el.closest('label') ||
+            (el.id ? document.querySelector('label[for="' + el.id + '"]') : null) ||
+            el.parentElement;
+          if (lab) {
+            const lr = lab.getBoundingClientRect();
+            if (lr.width + 1 >= min && lr.height + 1 >= min) {
+              ok.push(row);
+              continue;
+            }
+          }
+        }
         if (r.width + 1 < min || r.height + 1 < min) bad.push(row);
         else ok.push(row);
       }

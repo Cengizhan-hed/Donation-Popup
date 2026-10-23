@@ -1,7 +1,7 @@
 /**
  * Cihaz-bağımsız bağış akışı: listeden form → tutar → sepet → ödeme → sipariş.
  * Gerçek kart yok. Ödeme URL’si wc_get_checkout_url().
- * Hedef: çek/BACS geçici (prepareCheckoutEnv). Ikram: ayar yazılmaz.
+ * Sipariş tamamlama yalnız yerel; uzakta checkout-view-only.
  */
 import { SEL } from './selectors.mjs';
 import { withCacheBust } from './env.mjs';
@@ -15,48 +15,77 @@ import {
   makeFailure,
   assertNoUnexpectedPluginErrors,
 } from './checks.mjs';
-import { e2eEmail, markOrderAsE2E } from './test-cleanup.mjs';
+import { markOrderAsE2E } from './test-cleanup.mjs';
 import { getActiveProfile, isRemoteProfile } from './profile.mjs';
 import { popupPagePath } from './catalog-core.mjs';
 import { checkoutPathFromUrl } from './checkout-setup.mjs';
 import { comingSoonQuery } from './coming-soon.mjs';
 import { textHasFormattedAmount } from './currency.mjs';
+import { withEnvMutationLock } from './mutation-lock.mjs';
+import {
+  DONOR_NAME,
+  DONOR_EMAIL,
+  DONOR_PHONE,
+  DEDICATION,
+  SHAREHOLDER_NAME,
+  SHAREHOLDER_PHONE,
+  completeLocalCheckout,
+} from './place-order.mjs';
 
 const CHECK_MS = 25000;
 
 /**
- * @param {import('@playwright/test').Page} page
- * @param {string} gatewayId
+ * @param {import('@playwright/test').Locator} shell
+ * @param {{ kind: 'custom'|'shares', amount: number }} spec
  */
-async function selectOfflineGateway(page, gatewayId) {
-  const id = String(gatewayId || 'cheque');
-  const radio = page.locator(`#payment_method_${id}, input[name="payment_method"][value="${id}"]`).first();
-  if ((await radio.count()) > 0) {
-    await radio.check({ force: true }).catch(() => radio.click({ force: true }));
-    return true;
+async function fillDonationShell(shell, spec) {
+  if (spec.kind === 'shares') {
+    const shName = shell.locator('input[name="shareholder_name_1"]').first();
+    if ((await shName.count()) > 0 && !(await shName.isVisible())) {
+      const header = shell.locator('.wdp-shareholder-header').first();
+      if ((await header.count()) > 0) await header.click({ timeout: CHECK_MS });
+    }
+    await shName.waitFor({ state: 'visible', timeout: CHECK_MS });
+    await shName.fill(SHAREHOLDER_NAME);
+    const shPhone = shell.locator('input[name="shareholder_phone_1"]').first();
+    if ((await shPhone.count()) > 0) await shPhone.fill(SHAREHOLDER_PHONE);
+    return;
   }
-  const label = page.getByText(/cheque|check|bacs|bank transfer|havale|çek|eft/i).first();
-  if ((await label.count()) > 0) {
-    await label.click({ timeout: 5000 }).catch(() => {});
-    return true;
+  const amount = shell.locator(SEL.customPrice).first();
+  if (await amount.count()) {
+    await amount.fill(String(spec.amount));
   }
-  return false;
+  const name = shell.locator(SEL.donorName).first();
+  if (await name.count()) await name.fill(DONOR_NAME);
+  const phoneLoc = shell.locator(SEL.donorPhone).first();
+  if (await phoneLoc.count()) await phoneLoc.fill(DONOR_PHONE);
+  const emailLoc = shell.locator('input[name="donation_email"], input[type="email"]').first();
+  if ((await emailLoc.count()) > 0 && (await emailLoc.isVisible())) {
+    await emailLoc.fill(DONOR_EMAIL);
+  }
+  const ded = shell.locator('input[name="donation_dedication"]').first();
+  if ((await ded.count()) > 0) await ded.fill(DEDICATION);
+  const anon = shell.locator('input[name="donation_anonymous"]').first();
+  if ((await anon.count()) > 0) await anon.check();
 }
 
-/**
- * @param {import('@playwright/test').Page} page
- */
-async function fillClassicCheckout(page, { name, email, phone }) {
-  const first = page.locator('#billing_first_name').first();
-  if ((await first.count()) > 0) {
-    await first.fill(name.split(' ')[0] || 'E2E');
-    const last = page.locator('#billing_last_name').first();
-    if ((await last.count()) > 0) await last.fill(name.split(' ').slice(1).join(' ') || 'Test');
-    const em = page.locator('#billing_email').first();
-    if ((await em.count()) > 0) await em.fill(email);
-    const ph = page.locator('#billing_phone').first();
-    if ((await ph.count()) > 0) await ph.fill(phone);
-  }
+function localStore(profile, amount) {
+  const c = profile.currency || {};
+  return {
+    amount,
+    currency: c.code || 'TRY',
+    decimals: Number.isFinite(Number(c.decimals)) ? Number(c.decimals) : 0,
+    thousandSeparator: c.thousandSeparator ?? '.',
+    decimalSeparator: c.decimalSeparator ?? ',',
+    symbolPosition: c.symbolPosition || 'left',
+    symbol: c.symbol || '₺',
+    country: 'TR',
+    city: 'Istanbul',
+    postcode: '34000',
+    address: 'Test Cad. 1',
+    state: 'TR34',
+    stateLabel: 'Istanbul',
+  };
 }
 
 /**
@@ -89,16 +118,15 @@ export async function runDonationFlowChecks({
     return;
   }
 
-  const phone = profile.phone?.nationalExample || '5551234567';
-  const email = e2eEmail();
   const checkoutPath = checkoutPathFromUrl(checkoutUrl || '', env.E2E_BASE_URL);
   const remote = isRemoteProfile(profile);
-  const viewOnly = remote || !!skipOrderReason;
+  const viewOnly = remote;
   let filledAmount = profile.products?.custom?.min || 10;
 
-  try {
-    page.setDefaultTimeout(CHECK_MS);
-    page.setDefaultNavigationTimeout(CHECK_MS);
+  /**
+   * @param {{ kind: 'custom'|'shares', productId: number, productPath: string, productName: string }} job
+   */
+  const runOneJob = async (job) => {
     await Promise.race([
       emptyCart(page, env.E2E_BASE_URL),
       new Promise((_, rej) => setTimeout(() => rej(new Error('emptyCart timeout')), 15000)),
@@ -110,8 +138,8 @@ export async function runDonationFlowChecks({
       waitUntil: 'domcontentloaded',
       timeout: CHECK_MS,
     });
-    await revealListProductTrigger(page, customId);
-    let trigger = shellTriggerLocator(page, 'popup', { productId: customId });
+    await revealListProductTrigger(page, job.productId);
+    let trigger = shellTriggerLocator(page, 'popup', { productId: job.productId });
     if ((await trigger.count()) === 0) {
       trigger = page.locator(
         `${SEL.centeredPopupTrigger}, ${SEL.sidePanelTrigger}, .wdp-card__cta, .wdp-loop-donate`
@@ -122,20 +150,11 @@ export async function runDonationFlowChecks({
     await shell.waitFor({ state: 'visible', timeout: CHECK_MS });
     await assertNoUnexpectedPluginErrors(page, { scenarioId: `checkout-flow-${deviceId}` });
 
-    const amount = shell.locator(SEL.customPrice).first();
-    if (await amount.count()) {
+    if (job.kind === 'custom') {
       const min = profile.products?.custom?.min || 10;
       filledAmount = min;
-      await amount.fill(String(min));
     }
-    const name = shell.locator(SEL.donorName).first();
-    if (await name.count()) await name.fill('E2E Test');
-    const phoneLoc = shell.locator(SEL.donorPhone).first();
-    if (await phoneLoc.count()) await phoneLoc.fill(phone);
-    const emailLoc = shell.locator('input[name="donation_email"], input[type="email"]').first();
-    if ((await emailLoc.count()) > 0 && (await emailLoc.isVisible().catch(() => false))) {
-      await emailLoc.fill(email);
-    }
+    await fillDonationShell(shell, { kind: job.kind, amount: filledAmount });
 
     const add = shell.locator(SEL.addToCart).first();
     const go = shell.locator(SEL.goCheckout).first();
@@ -236,49 +255,56 @@ export async function runDonationFlowChecks({
       });
       stats.skipped += 1;
       stats.passed += 1;
-      return;
+      return 'view-only';
     }
 
     if (!offlineGateway) {
-      skips.push({
-        check: `checkout-flow-order-${deviceId}`,
-        description: 'Sipariş tamamlama atlandı (çevrimdışı yöntem yok)',
-        detail: url,
-      });
-      stats.skipped += 1;
-      return;
+      throw new Error('yerel sipariş: çevrimdışı ödeme yöntemi yok (cod/cheque/bacs)');
     }
 
-    await fillClassicCheckout(page, { name: 'E2E Test', email, phone });
-    const selected = await selectOfflineGateway(page, offlineGateway.id);
-    if (!selected) {
-      skips.push({
-        check: `checkout-flow-order-${deviceId}`,
-        description: `Ödeme yöntemi ${offlineGateway.id} formda yok → sipariş tamamlama atlandı`,
-        detail: url,
-      });
-      stats.skipped += 1;
-      return;
-    }
-    const place = page.locator('#place_order, button[name="woocommerce_checkout_place_order"]').first();
-    if ((await place.count()) === 0) {
-      skips.push({
-        check: `checkout-flow-order-${deviceId}`,
-        description: 'place_order yok (blok ödeme?) → sipariş tamamlama atlandı',
-        detail: url,
-      });
-      stats.skipped += 1;
-      return;
-    }
-    await place.click({ timeout: CHECK_MS, noWaitAfter: true });
-    await page.waitForURL(/order-received|order-pay|key=/, { timeout: CHECK_MS }).catch(() => {});
-    const thanks = page.url();
-    const idMatch = thanks.match(/order-received\/(\d+)/i) || thanks.match(/[?&]order[=-](\d+)/i);
-    const orderId = idMatch ? Number(idMatch[1]) : 0;
+    const store = localStore(profile, job.kind === 'shares' ? 50 : filledAmount);
+    const expected =
+      job.kind === 'shares'
+        ? {
+            shareholderName: SHAREHOLDER_NAME,
+            currency: store.currency,
+            productName: job.productName,
+          }
+        : {
+            donorName: DONOR_NAME,
+            donorEmail: DONOR_EMAIL,
+            donorPhone: DONOR_PHONE,
+            dedication: DEDICATION,
+            amount: filledAmount,
+            currency: store.currency,
+            anonymous: true,
+            productName: job.productName,
+          };
+
+    const { orderId } = await withEnvMutationLock(profile.id || 'local', async () =>
+      completeLocalCheckout(page, {
+        store,
+        gatewayId: offlineGateway.id,
+        donor: { name: DONOR_NAME, email: DONOR_EMAIL, phone: DONOR_PHONE },
+        expected,
+      })
+    );
     if (orderId) {
       await markOrderAsE2E(orderId);
     }
     stats.passed += 1;
+    return 'ordered';
+  };
+
+  try {
+    page.setDefaultTimeout(CHECK_MS);
+    page.setDefaultNavigationTimeout(CHECK_MS);
+    await runOneJob({
+      kind: 'custom',
+      productId: customId,
+      productPath: customPath,
+      productName: 'WDP E2E Custom',
+    });
   } catch (e) {
     failures.push(
       makeFailure({

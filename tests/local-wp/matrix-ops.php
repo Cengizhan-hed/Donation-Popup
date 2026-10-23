@@ -4,7 +4,7 @@
  *
  *   php tests/local-wp/eval-file.php tests/local-wp/matrix-ops.php <cmd> [json-path|args]
  *
- * cmd: base | apply | probe | read-order | plugin | checkpoint
+ * cmd: base | apply | probe | read-order | list-gateways | enable-offline-gateways | mark-order | plugin | checkpoint
  */
 if (!function_exists('get_option')) {
 	fwrite(STDERR, "wordpress missing\n");
@@ -110,27 +110,95 @@ function wdp_matrix_set_hpos($on) {
 	}
 }
 
-function wdp_matrix_enable_cheque() {
-	$settings = get_option('woocommerce_cheque_settings', array());
-	if (!is_array($settings)) {
-		$settings = array();
+/**
+ * WooCommerce çekirdek çevrimdışı yöntemler (eklentiye özel kod yok).
+ *
+ * @return array<string,mixed>
+ */
+function wdp_matrix_enable_offline_gateways() {
+	$defaults = array(
+		'cheque' => 'Check payments',
+		'cod'    => 'Cash on delivery',
+		'bacs'   => 'Direct bank transfer',
+	);
+	$order = get_option('woocommerce_gateway_order', array());
+	if (!is_array($order)) {
+		$order = array();
 	}
-	$settings['enabled']      = 'yes';
-	$settings['title']        = isset($settings['title']) && $settings['title'] !== '' ? $settings['title'] : 'Check payments';
-	$settings['instructions'] = isset($settings['instructions']) ? $settings['instructions'] : '';
-	update_option('woocommerce_cheque_settings', $settings, false);
-	$gateways   = get_option('woocommerce_gateway_order', array());
-	if (!is_array($gateways)) {
-		$gateways = array();
+	$i = 0;
+	foreach ($defaults as $id => $title) {
+		$opt      = 'woocommerce_' . $id . '_settings';
+		$settings = get_option($opt, array());
+		if (!is_array($settings)) {
+			$settings = array();
+		}
+		$settings['enabled']      = 'yes';
+		$settings['title']        = isset($settings['title']) && $settings['title'] !== '' ? $settings['title'] : $title;
+		$settings['instructions'] = isset($settings['instructions']) ? $settings['instructions'] : '';
+		update_option($opt, $settings, false);
+		$order[ $id ] = $i;
+		$i++;
 	}
-	$gateways['cheque'] = 0;
-	update_option('woocommerce_gateway_order', $gateways, false);
+	update_option('woocommerce_gateway_order', $order, false);
 	if (function_exists('WC') && WC() && isset(WC()->payment_gateways)) {
 		$gws = WC()->payment_gateways();
 		if ($gws && method_exists($gws, 'init')) {
 			$gws->init();
 		}
 	}
+	return array(
+		'ok'       => true,
+		'gateways' => array_keys($defaults),
+	);
+}
+
+function wdp_matrix_enable_cheque() {
+	return wdp_matrix_enable_offline_gateways();
+}
+
+/**
+ * @return array<string,mixed>
+ */
+function wdp_matrix_list_gateways() {
+	$out = array();
+	if (function_exists('WC') && WC()) {
+		WC()->payment_gateways();
+		$gws = WC()->payment_gateways()->payment_gateways();
+		foreach ((array) $gws as $id => $gw) {
+			$out[] = array(
+				'id'      => (string) $id,
+				'title'   => method_exists($gw, 'get_title') ? (string) $gw->get_title() : (string) $id,
+				'enabled' => isset($gw->enabled) && $gw->enabled === 'yes',
+			);
+		}
+	}
+	return array(
+		'ok'       => true,
+		'gateways' => $out,
+	);
+}
+
+/**
+ * @param int    $order_id
+ * @param string $run_id
+ * @return array<string,mixed>
+ */
+function wdp_matrix_mark_order($order_id, $run_id) {
+	$order_id = (int) $order_id;
+	$run_id   = (string) $run_id;
+	if ($order_id <= 0 || $run_id === '' || $run_id === '1' || !function_exists('wc_get_order')) {
+		return array( 'ok' => false, 'error' => 'sipariş/run_id geçersiz' );
+	}
+	$order = wc_get_order($order_id);
+	if (!$order) {
+		return array( 'ok' => false, 'error' => 'wc_get_order boş', 'id' => $order_id );
+	}
+	$order->update_meta_data('_wdp_e2e_test', $run_id);
+	$order->save();
+	return array(
+		'ok' => true,
+		'id' => $order->get_id(),
+	);
 }
 
 /**
@@ -755,13 +823,27 @@ function wdp_matrix_read_order($order_id) {
 	$items = array();
 	foreach ($order->get_items() as $item) {
 		$meta = array();
-		foreach (array( 'wdp_donor_name', 'wdp_donor_phone', 'wdp_donor_email', 'wdp_dedication', 'wdp_donation_note' ) as $key) {
-			$meta[ $key ] = (string) $item->get_meta($key);
+		if (method_exists($item, 'get_meta_data')) {
+			foreach ($item->get_meta_data() as $m) {
+				$data = method_exists($m, 'get_data') ? $m->get_data() : array();
+				$key  = isset($data['key']) ? (string) $data['key'] : '';
+				if ($key === '' || strpos($key, 'wdp_') !== 0) {
+					continue;
+				}
+				$val = isset($data['value']) ? $data['value'] : '';
+				$meta[ $key ] = is_scalar($val) ? (string) $val : wp_json_encode($val);
+			}
+		}
+		foreach (array( 'wdp_donor_name', 'wdp_donor_phone', 'wdp_donor_email', 'wdp_dedication', 'wdp_donation_note', 'wdp_anonymous', 'wdp_shareholder_1_name', 'wdp_shareholder_1_phone' ) as $key) {
+			if (!isset($meta[ $key ])) {
+				$meta[ $key ] = (string) $item->get_meta($key);
+			}
 		}
 		$items[] = array(
-			'name'  => $item->get_name(),
-			'total' => (string) $item->get_total(),
-			'meta'  => $meta,
+			'name'       => $item->get_name(),
+			'total'      => (string) $item->get_total(),
+			'product_id' => method_exists($item, 'get_product_id') ? (int) $item->get_product_id() : 0,
+			'meta'       => $meta,
 		);
 	}
 	return array(
@@ -814,6 +896,8 @@ function wdp_matrix_prepare_full() {
 			if ((string) get_post_meta($id, '_amount_presets', true) === '') {
 				update_post_meta($id, '_amount_presets', '10,25,50,1234');
 			}
+			update_post_meta($id, '_enable_email', 'yes');
+			update_post_meta($id, '_enable_dedication', 'yes');
 		}
 		if (function_exists('wc_get_product')) {
 			$p = wc_get_product($id);
@@ -1158,6 +1242,12 @@ try {
 		$result = array_merge($result, wdp_matrix_probe());
 	} elseif ($cmd === 'read-order') {
 		$result = array_merge($result, wdp_matrix_read_order((int) $arg1));
+	} elseif ($cmd === 'list-gateways') {
+		$result = array_merge($result, wdp_matrix_list_gateways());
+	} elseif ($cmd === 'enable-offline-gateways') {
+		$result = array_merge($result, wdp_matrix_enable_offline_gateways());
+	} elseif ($cmd === 'mark-order') {
+		$result = array_merge($result, wdp_matrix_mark_order((int) $arg1, $arg2));
 	} elseif ($cmd === 'plugin') {
 		$result = array_merge($result, wdp_matrix_plugin($arg1 === 'off' ? 'off' : 'on'));
 	} elseif ($cmd === 'checkpoint') {

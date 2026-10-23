@@ -5,6 +5,7 @@
 import { loadDeployEnvSilent, remote, wpCliPath, runEvalFile } from './wp-remote.mjs';
 import { isRunIdOk, loadRegistry, registerCreated, registryIds, createdForCleanup } from './run-registry.mjs';
 import { fixtureProductRecords, loadFixtures } from './fixtures.mjs';
+import { parseLocalEvalJson, runLocalEvalFile } from './local-wp-eval.mjs';
 
 export const E2E_META_KEY = '_wdp_e2e_test';
 export const E2E_EMAIL_DOMAIN = 'wdp-e2e.test';
@@ -14,7 +15,12 @@ export function e2eEmail(stamp = Date.now()) {
   return `e2e.${stamp}@${E2E_EMAIL_DOMAIN}`;
 }
 
+function localWpDir() {
+  return String(process.env.WDP_LOCAL_WP_DIR || '').trim();
+}
+
 export async function snapshotGuardOrder() {
+  if (localWpDir()) return null;
   const loaded = loadDeployEnvSilent();
   if (!loaded.ok) return null;
   const flag = wpCliPath(loaded.env);
@@ -31,15 +37,23 @@ export async function snapshotGuardOrder() {
 }
 
 export async function markOrderAsE2E(orderId) {
-  const loaded = loadDeployEnvSilent();
-  if (!loaded.ok) throw new Error(`test-cleanup: ${loaded.reason}`);
   const registry = loadRegistry();
   if (!isRunIdOk(registry.runId)) {
     throw new Error('test-cleanup: runId yok; sipariş işaretlenmez');
   }
-  const flag = wpCliPath(loaded.env);
   const id = String(Math.abs(Number.parseInt(String(orderId), 10) || 0));
   if (id === '0') throw new Error('test-cleanup: invalid order id');
+  if (localWpDir()) {
+    const rec = parseLocalEvalJson(
+      runLocalEvalFile('tests/local-wp/matrix-ops.php', ['mark-order', id, registry.runId])
+    );
+    if (!rec.ok) throw new Error(`yerel sipariş işaretlenemedi: ${rec.error || ''}`);
+    registerCreated({ id: Number(id), type: 'order' });
+    return;
+  }
+  const loaded = loadDeployEnvSilent();
+  if (!loaded.ok) throw new Error(`test-cleanup: ${loaded.reason}`);
+  const flag = wpCliPath(loaded.env);
   const run = registry.runId.replace(/'/g, '');
   remote(
     loaded.env,
@@ -78,7 +92,9 @@ export async function cleanupE2EData(opts = {}) {
   if (fixtureIds.length) extraEnv.WDP_E2E_FIXTURE_IDS = fixtureIds.join(',');
   const raw = opts.execFn
     ? opts.execFn(CLEANUP_EVAL_FILE, extraEnv)
-    : runEvalFile(CLEANUP_EVAL_FILE, extraEnv);
+    : localWpDir()
+      ? runLocalEvalFile(CLEANUP_EVAL_FILE, [], { env: extraEnv })
+      : runEvalFile(CLEANUP_EVAL_FILE, extraEnv);
   const jsonLine = String(raw || '')
     .split(/\r?\n/)
     .map((l) => l.trim())
