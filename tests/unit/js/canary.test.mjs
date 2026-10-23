@@ -1,6 +1,7 @@
 import { describe, it, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
@@ -15,6 +16,8 @@ import {
   writeCanaryAlert,
   updateCanaryBaselineIfClean,
   canaryAlertPath,
+  writeSnapshot,
+  readSnapshot,
 } from '../../../tests/e2e/helpers/canary.mjs';
 import { verifiedFixtureIds } from '../../../tests/e2e/helpers/fixtures.mjs';
 import { parseCanaryArgs, runCanary } from '../../../tests/e2e/run-canary.mjs';
@@ -546,5 +549,63 @@ describe('kanarya fixture birleşimi', () => {
     const snap = countSnap(catalogPosts());
     const cmp = compareWithRegistry(snap, snap, { created: [], mutated: [] });
     assert.equal(cmp.ok, true);
+  });
+});
+
+describe('repair kanarya + baseline (3W)', () => {
+  it('repair hedefleri beklenen modified → TEMİZ; baseline yalnız işaretli modified', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'wdp-3w-clean-'));
+    const file = path.join(dir, 'baseline.json');
+    const before = countSnap([...catalogPosts(), ...fixturePosts({ modified: 'old' })]);
+    const after = countSnap([...catalogPosts(), ...fixturePosts({ modified: 'new' })]);
+    writeSnapshot(before, file);
+    const registry = {
+      created: [],
+      mutated: FIXTURE_IDS.map((id) => ({ id, type: 'product', keys: ['_price'] })),
+      fixtures: FIXTURE_IDS.map((id) => ({ id, type: 'product', mark: FIXTURE_MARK })),
+    };
+    const cmp = compareWithRegistry(before, after, registry, { fixtures: fixtureFile() });
+    assert.equal(cmp.ok, true, JSON.stringify(cmp.diffs));
+    const upd = updateCanaryBaselineIfClean('local', after, cmp, {
+      file,
+      markedIds: FIXTURE_IDS,
+    });
+    assert.equal(upd.updated, true);
+    const next = readSnapshot(file);
+    assert.equal(next.posts.find((p) => p.id === 1).modified, 'a');
+    assert.equal(next.posts.find((p) => p.id === 913).modified, 'new');
+    assert.equal(next.posts.find((p) => p.id === 919).modified, 'new');
+  });
+
+  it('işaretsiz ürün farkı → KIRMIZI ve baseline değişmez', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'wdp-3w-red-'));
+    const file = path.join(dir, 'baseline.json');
+    const before = countSnap([...catalogPosts(), ...fixturePosts({ modified: 'old' })]);
+    const after = countSnap([
+      { id: 1, type: 'product', status: 'publish', modified: 'hacked', mark: '' },
+      ...catalogPosts().slice(1),
+      ...fixturePosts({ modified: 'new' }),
+    ]);
+    writeSnapshot(before, file);
+    const beforeRaw = fs.readFileSync(file, 'utf8');
+    const registry = {
+      created: [],
+      mutated: FIXTURE_IDS.map((id) => ({ id, type: 'product', keys: ['_price'] })),
+    };
+    const cmp = compareWithRegistry(before, after, registry, { fixtures: fixtureFile() });
+    assert.equal(cmp.ok, false);
+    assert.ok(cmp.diffs.some((d) => d.id === 1 && d.change === 'modified'));
+    const upd = updateCanaryBaselineIfClean('local', after, cmp, {
+      file,
+      markedIds: FIXTURE_IDS,
+    });
+    assert.equal(upd.updated, false);
+    assert.equal(fs.readFileSync(file, 'utf8'), beforeRaw);
+    const forced = updateCanaryBaselineIfClean('local', after, { ok: true }, {
+      file,
+      markedIds: FIXTURE_IDS,
+    });
+    assert.equal(forced.updated, false);
+    assert.equal(fs.readFileSync(file, 'utf8'), beforeRaw);
   });
 });

@@ -160,15 +160,85 @@ export function evaluateCanaryAgainstBaseline(baseline, current, registry, opts 
 }
 
 /**
- * Bootstrap sonrası / fixture silinince: yalnız beklenen farklar varken baseline yaz.
+ * İşaretli test ürünü: mark dolu ve sabit "1" değil.
+ * @param {object} [post]
+ */
+export function isMarkedTestPost(post) {
+  const mark = String(post?.mark || '');
+  return mark !== '' && mark !== '1';
+}
+
+/**
+ * Anlık görüntüdeki işaretli ürün id’leri.
+ * @param {object} [snap]
+ * @returns {number[]}
+ */
+export function markedProductIdsFromSnap(snap) {
+  return (snap?.posts || [])
+    .filter((p) => String(p.type) === 'product' && isMarkedTestPost(p))
+    .map((p) => Number(p.id))
+    .filter((n) => n > 0);
+}
+
+/**
+ * Baseline’da yalnız işaretli ürünlerin `modified` alanını current ile eşle.
+ * Gerçek (işaretsiz) kayıtlar değişmez; yeni post eklenmez.
+ * @param {object} baseline
+ * @param {object} current
+ * @param {Array<number|string>} [markedIds]
+ * @returns {{ baseline: object, changed: boolean }}
+ */
+export function patchBaselineMarkedModified(baseline, current, markedIds) {
+  if (!baseline || !Array.isArray(baseline.posts)) {
+    return { baseline, changed: false };
+  }
+  const allow = new Set(
+    (markedIds || []).map((n) => Number(n)).filter((n) => n > 0)
+  );
+  const currentMap = new Map((current?.posts || []).map((p) => [Number(p.id), p]));
+  let changed = false;
+  const posts = baseline.posts.map((p) => {
+    const id = Number(p.id);
+    if (!allow.has(id)) return p;
+    const cur = currentMap.get(id);
+    if (!cur) return p;
+    if (!isMarkedTestPost(p) && !isMarkedTestPost(cur)) return p;
+    if (String(p.modified) === String(cur.modified)) return p;
+    changed = true;
+    return { ...p, modified: cur.modified };
+  });
+  return { baseline: changed ? { ...baseline, posts } : baseline, changed };
+}
+
+/**
+ * Bootstrap / repair sonrası: TEMİZ iken yalnız işaretli ürün `modified`.
+ * Başka fark veya KIRMIZI → yazma yok. Baseline yoksa ilk yazı (current).
  * @param {string} envId
  * @param {object} current
  * @param {{ ok?: boolean }} cmp
+ * @param {{ file?: string, markedIds?: Array<number|string> }} [opts]
  */
-export function updateCanaryBaselineIfClean(envId, current, cmp) {
+export function updateCanaryBaselineIfClean(envId, current, cmp, opts = {}) {
   if (!cmp || !cmp.ok) return { updated: false, file: null };
-  const file = canaryBaselinePath(envId);
-  writeSnapshot(current, file);
+  const file = opts.file || canaryBaselinePath(envId);
+  const markedIds = [
+    ...new Set(
+      (opts.markedIds || markedProductIdsFromSnap(current)).map(Number).filter((n) => n > 0)
+    ),
+  ];
+  if (!fs.existsSync(file)) {
+    writeSnapshot(current, file);
+    return { updated: true, file };
+  }
+  const baseline = readSnapshot(file);
+  const vsBaseline = compareCanary(baseline, current, {
+    mutatedIds: markedIds,
+    allowedCreatedIds: markedIds,
+  });
+  if (!vsBaseline.ok) return { updated: false, file };
+  const { baseline: next, changed } = patchBaselineMarkedModified(baseline, current, markedIds);
+  if (!changed) return { updated: false, file };
+  writeSnapshot(next, file);
   return { updated: true, file };
 }
 

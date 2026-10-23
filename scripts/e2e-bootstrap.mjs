@@ -23,15 +23,18 @@ import {
   fixtureProductRecords,
   verifiedFixtureIds,
   assertRepairTargetMarked,
+  repairKeysForRole,
 } from '../tests/e2e/helpers/fixtures.mjs';
 import { isRemoteFrozen, FREEZE_MESSAGE } from './lib/remote-guard.mjs';
 import { ensureLocalWp } from './local-wp.mjs';
 import {
   resetRegistry,
   registerCreated,
+  registerMutated,
   isRunIdOk,
   loadRegistry,
   setRegistryFixtures,
+  assertRegistryMatchesActiveEnv,
 } from '../tests/e2e/helpers/run-registry.mjs';
 import { loadProfile, isRemoteProfile, setActiveProfile } from '../tests/e2e/helpers/profile.mjs';
 import { acquireEnvLock, releaseEnvLock } from '../tests/e2e/helpers/env-lock.mjs';
@@ -102,6 +105,46 @@ export function collectRepairTargets(fixturesData, registry = {}, extraIds = [])
     add({ id: raw }, 'extra');
   }
   return rows;
+}
+
+/**
+ * Onarım defteri: mevcut koşu varsa kullan, yoksa fixture runId ile aç.
+ * @param {object} profile
+ * @param {string} runId
+ * @param {object|null} existingFx
+ */
+export function ensureRepairRegistry(profile, runId, existingFx) {
+  const profileId = profile.id;
+  const existing = loadRegistry(profileId);
+  if (isRunIdOk(existing.runId)) {
+    assertRegistryMatchesActiveEnv(existing, profileId);
+    return existing;
+  }
+  return resetRegistry(runId, {
+    envId: profileId,
+    siteUrl: profile.baseUrl || profile.ssh?.siteUrl || '',
+    fixtureRecords: fixtureProductRecords(existingFx),
+  });
+}
+
+/**
+ * Yazmadan ÖNCE: her işaretli hedefi etkin profil defterine mutated yaz.
+ * @param {Array<{ id: number|string, role?: string }>} targets
+ * @param {object|null} [fixturesData]
+ * @returns {number[]}
+ */
+export function registerRepairTargetsMutated(targets, fixturesData) {
+  const ids = [];
+  for (const t of targets || []) {
+    if (fixturesData) assertRepairTargetMarked(t.id, fixturesData, t.role || '');
+    const id = registerMutated({
+      id: t.id,
+      type: 'product',
+      keys: repairKeysForRole(t.role),
+    });
+    ids.push(id);
+  }
+  return ids;
 }
 
 /**
@@ -212,6 +255,7 @@ export function evaluateBootstrapCanary(envId, snap, registry, opts = {}) {
  */
 export async function runRepairForProfile(profile, opts = {}) {
   const profileId = profile.id;
+  setActiveProfile(profile);
   const remote = isRemoteProfile(profile);
   const existingFx = loadFixtures(profileId);
   const targets = collectRepairTargets(existingFx, loadRegistry(profileId), opts.extraIds || []);
@@ -219,6 +263,8 @@ export async function runRepairForProfile(profile, opts = {}) {
   if (!isRunIdOk(runId)) {
     throw new Error('fixture runId yok; --repair için önce e2e:bootstrap');
   }
+  ensureRepairRegistry(profile, runId, existingFx);
+  registerRepairTargetsMutated(targets, existingFx);
   if (profile.deployEnvFile) setActiveDeployEnvFile(profile.deployEnvFile);
   const takeSnap = () => (remote ? snapshotCanary() : snapshotCanaryLocal());
   if (!remote) ensureLocalWp();
@@ -234,7 +280,18 @@ export async function runRepairForProfile(profile, opts = {}) {
     data = parsePhpJson(raw);
   }
   const after = opts.skipCanary ? null : takeSnap();
-  const cmp = before && after ? compareCanary(before, after, {}) : { ok: true, diffs: [] };
+  const cmp =
+    before && after
+      ? compareWithRegistry(before, after, loadRegistry(profileId), {
+          envId: profileId,
+          fixtures: existingFx,
+        })
+      : { ok: true, diffs: [] };
+  if (!opts.skipCanary && after) {
+    updateCanaryBaselineIfClean(profileId, after, cmp, {
+      markedIds: targets.map((t) => t.id),
+    });
+  }
   return { ok: cmp.ok, data, targets, cmp, before, after };
 }
 
