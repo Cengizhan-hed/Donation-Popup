@@ -10,6 +10,12 @@ import { pickFixtureNavTarget, assertProductNavTarget } from './catalog-core.mjs
 
 export const FIXTURE_MARK_PREFIX = 'fixture';
 
+/** amount-opts + bootstrap tek kaynak (custom fixture). */
+export const AMOUNT_PRESET_FIXTURE_META = Object.freeze({
+  _enable_amount_presets: 'yes',
+  _amount_presets: '10,25,50,1234',
+});
+
 /** @type {Array<{ role: string, name: string, settings: Record<string,string> }>} */
 export const FIXTURE_CATALOG = [
   {
@@ -18,6 +24,7 @@ export const FIXTURE_CATALOG = [
     settings: {
       _allow_custom_price: 'yes',
       _min_custom_price: '10',
+      ...AMOUNT_PRESET_FIXTURE_META,
       _wdp_donation_product: 'yes',
       _regular_price: '',
       _price: '',
@@ -197,6 +204,9 @@ export function fixtureProductRecords(data) {
       role: String(role),
       mark,
       type: String(row?.type || 'product'),
+      published: row?.published === true,
+      catalogVisible: row?.catalogVisible === true,
+      status: String(row?.status || ''),
     });
   }
   return out;
@@ -228,6 +238,24 @@ export function isFixtureProductId(productId, env) {
   if (id <= 0) return false;
   const data = loadFixtures(env);
   return fixtureProductRecords(data).some((r) => r.id === id);
+}
+
+/**
+ * İşaretli fixture ve yayımlı değil (uzakta private; listede görünmez).
+ * @param {number|string} productId
+ * @param {object} [env]
+ */
+export function isPrivateFixtureProductId(productId, env) {
+  const id = Math.abs(Number.parseInt(String(productId), 10) || 0);
+  if (id <= 0) return false;
+  const rec = fixtureProductRecords(loadFixtures(env)).find((r) => r.id === id);
+  if (!rec) return false;
+  if (rec.published === true || rec.catalogVisible === true) return false;
+  const st = String(rec.status || '').toLowerCase();
+  if (st === 'publish') return false;
+  if (st === 'private') return true;
+  const profile = peekActiveProfile();
+  return isRemoteProfile(profile);
 }
 
 /** Mutasyon suite'lerinin ihtiyaç duyduğu fixture rolleri. */

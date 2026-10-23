@@ -71,6 +71,7 @@ import { resetRegistry } from './run-registry.mjs';
 import { fixtureProductRecords, loadFixtures, assertRunMutationTargetsAreFixtures } from './fixtures.mjs';
 import { installRunSignalHandlers } from './run-signals.mjs';
 import { abortMutationLockWait, resetMutationLockAbort } from './mutation-lock.mjs';
+import { readSadakaConfigViaEval } from './sadaka-admin-read.mjs';
 import {
   snapshotCanary,
   preflightCanary,
@@ -1663,7 +1664,6 @@ export async function readGlobalSadakaWcId(authed, env) {
  * @param {{ globalWcId?: number, productId?: number }} [opts]
  */
 export async function readProductSadakaAdminConfig(authed, env, productSlug, opts = {}) {
-  const page = await authed.newPage();
   const empty = (reason, status = /** @type {'atlandı'|'hata'} */ ('atlandı')) => ({
     enabled: false,
     productWcId: 0,
@@ -1674,32 +1674,56 @@ export async function readProductSadakaAdminConfig(authed, env, productSlug, opt
     reason,
     detail: reason,
   });
+  let productId = Number(opts.productId) > 0 ? Number(opts.productId) : 0;
+  if (productId > 0) {
+    try {
+      const viaEval = readSadakaConfigViaEval(productId);
+      if (viaEval && viaEval.status) {
+        return viaEval;
+      }
+    } catch (evalErr) {
+      console.error(
+        `[e2e:catch-fail] sadaka eval: ${evalErr && evalErr.message ? evalErr.message : evalErr}`
+      );
+    }
+  }
+  const page = await authed.newPage();
   try {
     // Mağaza yöneticisi: ürün listesi araması yerine doğrudan post.php (Store API ID).
-    let productId = Number(opts.productId) > 0 ? Number(opts.productId) : 0;
     if (!productId) {
-      await page.goto(withCacheBust(env.E2E_BASE_URL, '/'), { waitUntil: 'domcontentloaded' }).catch(() => {});
+      await page.goto(withCacheBust(env.E2E_BASE_URL, '/'), { waitUntil: 'domcontentloaded' }).catch((e) => {
+        console.error(`[e2e:catch-fail] sadaka home: ${e && e.message ? e.message : e}`);
+      });
       productId = await resolveProductIdBySlug(page, env.E2E_BASE_URL, productSlug);
     }
     if (!productId) {
       return empty('Store API’den ürün ID bulunamadı', 'hata');
     }
-    let lastGotoErr = null;
-    for (let attempt = 1; attempt <= 3; attempt += 1) {
-      try {
-        await page.goto(
-          withCacheBust(env.E2E_BASE_URL, `/wp-admin/post.php?post=${productId}&action=edit`),
-          { waitUntil: 'domcontentloaded', timeout: 20000 }
-        );
-        lastGotoErr = null;
-        break;
-      } catch (e) {
-        lastGotoErr = e;
-        if (attempt === 3) throw e;
+    try {
+      const viaEval = readSadakaConfigViaEval(productId);
+      if (viaEval && viaEval.status) {
+        return viaEval;
       }
+    } catch (evalErr) {
+      console.error(
+        `[e2e:catch-fail] sadaka eval: ${evalErr && evalErr.message ? evalErr.message : evalErr}`
+      );
     }
-    if (lastGotoErr) throw lastGotoErr;
-    const opened = await waitForWpAdminPage(page, 20000);
+    async function gotoAdminEdit() {
+      await page.goto(
+        withCacheBust(env.E2E_BASE_URL, `/wp-admin/post.php?post=${productId}&action=edit`),
+        { waitUntil: 'domcontentloaded', timeout: 45000 }
+      );
+    }
+    try {
+      await gotoAdminEdit();
+    } catch (navErr) {
+      console.error(
+        `[e2e:catch-fail] sadaka admin goto deneme 1: ${navErr && navErr.message ? navErr.message : navErr}`
+      );
+      await gotoAdminEdit();
+    }
+    const opened = await waitForWpAdminPage(page, 45000);
     if (!opened.ok) {
       console.error(
         `[e2e:catch-fail] sadaka admin: kind=${opened.kind} path=${opened.path} id=${productId}`
@@ -2300,9 +2324,18 @@ async function assertProductPageDisplay(page, display, productKey, screenName, f
     if (stats) stats.failed = (stats.failed || 0) + 1;
     return;
   }
-  const closer = page.locator(SEL.modalClose).first();
+  const closer = shell.locator(SEL.modalClose).first();
   if ((await closer.count()) > 0) {
-    await closer.click({ timeout: CHECK_MS });
+    try {
+      await closer.click({ timeout: CHECK_MS });
+    } catch (clickErr) {
+      const msg = String(clickErr && clickErr.message ? clickErr.message : clickErr);
+      if (/intercepts pointer events|not stable|Timeout/i.test(msg)) {
+        await closer.click({ timeout: CHECK_MS, force: true });
+      } else {
+        throw clickErr;
+      }
+    }
     await waitForShellClosed(page, CHECK_MS);
   }
   if (stats) stats.passed = (stats.passed || 0) + 1;
@@ -4461,7 +4494,10 @@ export async function captureAll({
     try {
       if (deviceRunsMutations(device.id)) {
         for (const suite of mutationSuites) {
-          await withEnvMutationLock(profile.id, () => runOneMeta(suite, true));
+          await withEnvMutationLock(profile.id, () => runOneMeta(suite, true), {
+            deviceId: device.id,
+            skipIfNotMutationDevice: true,
+          });
         }
       }
       await runOneMeta(layoutSuite, false);

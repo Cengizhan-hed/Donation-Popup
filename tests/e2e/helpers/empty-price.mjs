@@ -6,8 +6,8 @@
 import { SEL } from './selectors.mjs';
 import { withCacheBust } from './env.mjs';
 import { getActiveProfile } from './profile.mjs';
-import { requireFixtureRole, mutationBrowserContext, isFixtureProductId } from './fixtures.mjs';
-import { popupPagePath, isPublishedCatalogRole } from './catalog-core.mjs';
+import { requireFixtureRole, mutationBrowserContext, isPrivateFixtureProductId } from './fixtures.mjs';
+import { popupPagePath } from './catalog-core.mjs';
 import {
   emptyCart,
   openShellLocator,
@@ -140,6 +140,7 @@ export async function runEmptyPriceChecks({
   const profile = getActiveProfile();
   const baseUrl = env.E2E_BASE_URL;
   const listPath = popupPagePath(env, listPagePath);
+  const listPageOnly = String(env.E2E_LIST_PAGE || '').trim();
   const phone = profile.phone?.nationalExample || '5551234567';
   const amount = String(profile.products?.custom?.min || 100);
 
@@ -195,6 +196,7 @@ export async function runEmptyPriceChecks({
     },
     productIds: { custom: customFx.id, campaign: campaignFx.id },
     listPath,
+    listPageOnly,
     baseUrl,
     phone,
     amount,
@@ -216,6 +218,7 @@ async function runHedefEmptyPrice({
   productUrls,
   productIds,
   listPath,
+  listPageOnly,
   baseUrl,
   phone,
   amount,
@@ -253,10 +256,10 @@ async function runHedefEmptyPrice({
       await saveProductPrices(t.id, { price: '', regular: '', sale: '' });
       await bumpListCache();
 
-      const fixturePrivate = isFixtureProductId(t.id, env) && !isPublishedCatalogRole(env, t.role);
-      if (t.list && listPath && !fixturePrivate) {
+      const fixturePrivate = isPrivateFixtureProductId(t.id, env);
+      if (t.list && listPageOnly && !fixturePrivate) {
         try {
-          await page.goto(withCacheBust(baseUrl, listPath, { hdf_no_side_cart: '1' }), {
+          await page.goto(withCacheBust(baseUrl, listPageOnly, { hdf_no_side_cart: '1' }), {
             waitUntil: 'domcontentloaded',
           });
           await revealListProductTrigger(page, t.id);

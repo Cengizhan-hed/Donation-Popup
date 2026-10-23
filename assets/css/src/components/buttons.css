@@ -201,6 +201,27 @@ html body :is(.hdf-donation-modal-wrapper, .wdp-modal, .wdp-donation-form) :is(.
   gap: 12px;
 }
 
+html body :is(.hdf-donation-modal-wrapper, .wdp-modal, .wdp-donation-form) :is(.wdp-modal-content form, .wdp-modal-content) .wdp-button-group .wdp-cta-gate {
+  position: relative;
+  display: inline-flex;
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+}
+
+html body :is(.hdf-donation-modal-wrapper, .wdp-modal, .wdp-donation-form) .wdp-cta-gate__hit {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  cursor: wait;
+}
+
+html body :is(.hdf-donation-modal-wrapper, .wdp-modal, .wdp-donation-form) .wdp-cta-gate.is-ready .wdp-cta-gate__hit,
+html body :is(.hdf-donation-modal-wrapper, .wdp-modal, .wdp-donation-form) form[data-wdp-form-ready="1"] .wdp-cta-gate__hit {
+  display: none;
+  pointer-events: none;
+}
+
 html body :is(.hdf-donation-modal-wrapper, .wdp-modal, .wdp-donation-form) :is(.wdp-modal-content form, .wdp-modal-content) .wdp-button-group button {
   display: inline-flex;
   align-items: center;

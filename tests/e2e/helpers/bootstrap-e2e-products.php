@@ -27,11 +27,13 @@ $catalog = array(
 	'custom'       => array(
 		'WDP E2E Custom',
 		array(
-			'_allow_custom_price'   => 'yes',
-			'_min_custom_price'     => '10',
-			'_wdp_donation_product' => 'yes',
-			'_regular_price'        => '',
-			'_price'                => '',
+			'_allow_custom_price'      => 'yes',
+			'_min_custom_price'        => '10',
+			'_enable_amount_presets'   => 'yes',
+			'_amount_presets'          => '10,25,50,1234',
+			'_wdp_donation_product'    => 'yes',
+			'_regular_price'           => '',
+			'_price'                   => '',
 		),
 	),
 	'fixed'        => array(

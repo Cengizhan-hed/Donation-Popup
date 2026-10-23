@@ -8,7 +8,11 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { ROOT } from '../../../tests/e2e/helpers/env-root.mjs';
-import { describeBootstrapPlan } from '../../../tests/e2e/helpers/fixtures.mjs';
+import {
+  describeBootstrapPlan,
+  AMOUNT_PRESET_FIXTURE_META,
+  fixtureProductRecords,
+} from '../../../tests/e2e/helpers/fixtures.mjs';
 import {
   parseArgs,
   registerRepairTargetsMutated,
@@ -173,5 +177,29 @@ describe('e2e:bootstrap dry-run', () => {
     } finally {
       restore();
     }
+  });
+
+  it('custom fixture tutar ön ayarı bootstrap PHP ile aynı kaynak', () => {
+    const php = fs.readFileSync(path.join(ROOT, 'tests/e2e/helpers/bootstrap-e2e-products.php'), 'utf8');
+    assert.equal(AMOUNT_PRESET_FIXTURE_META._enable_amount_presets, 'yes');
+    assert.equal(AMOUNT_PRESET_FIXTURE_META._amount_presets, '10,25,50,1234');
+    assert.match(php, /'_enable_amount_presets'\s*=>\s*'yes'/);
+    assert.match(php, /'_amount_presets'\s*=>\s*'10,25,50,1234'/);
+  });
+
+  it('fixtureProductRecords published/status kopyalar (list-visible önkoşul)', () => {
+    const recs = fixtureProductRecords({
+      runId: 'run-a',
+      roles: {
+        custom: { id: 12, mark: 'run-a', published: true, status: 'publish' },
+        shares: { id: 14, mark: 'run-a', status: 'private' },
+      },
+    });
+    const custom = recs.find((r) => r.id === 12);
+    const shares = recs.find((r) => r.id === 14);
+    assert.equal(custom.published, true);
+    assert.equal(custom.status, 'publish');
+    assert.equal(shares.status, 'private');
+    assert.equal(shares.published, false);
   });
 });
