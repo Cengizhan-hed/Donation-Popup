@@ -7,7 +7,7 @@ import { SEL } from './selectors.mjs';
 import { withCacheBust } from './env.mjs';
 import { getActiveProfile } from './profile.mjs';
 import { requireFixtureRole, mutationBrowserContext, isFixtureProductId } from './fixtures.mjs';
-import { popupPagePath } from './catalog-core.mjs';
+import { popupPagePath, isPublishedCatalogRole } from './catalog-core.mjs';
 import {
   emptyCart,
   openShellLocator,
@@ -154,6 +154,30 @@ export async function runEmptyPriceChecks({
     stats.skipped += 1;
   };
 
+  const customId = Number(productIds?.custom || env._resolvedProducts?.custom?.id || 0);
+  const campaignId = Number(productIds?.campaign || env._resolvedProducts?.campaign?.id || 0);
+  if (customId > 0 && campaignId > 0 && customId !== campaignId) {
+    await runHedefEmptyPrice({
+      browser,
+      contextOpts,
+      env,
+      productUrls: {
+        custom: productUrls.custom || env._resolvedProducts?.custom?.nav || env._resolvedProducts?.custom?.path,
+        campaign:
+          productUrls.campaign || env._resolvedProducts?.campaign?.nav || env._resolvedProducts?.campaign?.path,
+      },
+      productIds: { custom: customId, campaign: campaignId },
+      listPath,
+      baseUrl,
+      phone,
+      amount,
+      pass,
+      fail,
+      skip,
+      createAdminContext,
+    });
+    return;
+  }
   let fx;
   try {
     fx = requireFixtureRole(env, 'empty-price');
@@ -219,7 +243,8 @@ async function runHedefEmptyPrice({
       await saveProductPrices(t.id, { price: '', regular: '', sale: '' });
       await bumpListCache();
 
-      if (t.list && listPath && !isFixtureProductId(t.id, env)) {
+      const fixturePrivate = isFixtureProductId(t.id, env) && !isPublishedCatalogRole(env, t.role);
+      if (t.list && listPath && !fixturePrivate) {
         try {
           await page.goto(withCacheBust(baseUrl, listPath, { hdf_no_side_cart: '1' }), {
             waitUntil: 'domcontentloaded',
@@ -244,7 +269,7 @@ async function runHedefEmptyPrice({
         } catch (e) {
           fail(`empty-price-${t.role}-list-visible`, `${t.role} fiyatsız listede görünür`, e);
         }
-      } else if (isFixtureProductId(t.id, env)) {
+      } else if (fixturePrivate) {
         skip(`empty-price-${t.role}-list-visible`, 'fixture private, ziyaretçi listesinde yok');
       } else {
         skip(`empty-price-${t.role}-list-visible`, 'Liste yolu yok');

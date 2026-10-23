@@ -1,12 +1,49 @@
 /**
- * Ürün meta okuma/yazma — aktif ortamın SSH + wp-cli yolu.
- * Yazma yalnız fixture ürün + named op. Sayfa oluştur/sil/onar YOK.
+ * Ürün meta okuma/yazma.
+ * Uzak: SSH + wp-cli. Yerel: PHP eval-file (WDP_LOCAL_WP_DIR). SSH yok.
+ * Yazma yalnız fixture ürün + named op. Sayfa oluştur/sil/onar YOK (yerel prepare-full hariç).
  * .env.deploy değerleri asla loglanmaz / yazdırılmaz.
  */
 import { loadDeployEnvSilent, remote, wpCliPath } from './wp-remote.mjs';
 import { assertProductWritable, safeDeleteMarked } from './safe-remote-write.mjs';
 import { isRunIdOk, loadRegistry, registerCreated, registerMutated } from './run-registry.mjs';
 import { E2E_META_KEY } from './run-registry.mjs';
+import { peekActiveProfile, isRemoteProfile } from './profile.mjs';
+import { isFixtureProductId } from './fixtures.mjs';
+import { parseLocalEvalJson, runLocalEvalFile } from './local-wp-eval.mjs';
+
+const LOCAL_META_PHP = 'tests/local-wp/product-meta.php';
+
+/**
+ * Yerel WP meta yolu (SSH yok).
+ * @param {object} [profile]
+ */
+export function usesLocalWpMeta(profile) {
+  const p = profile || peekActiveProfile();
+  if (isRemoteProfile(p)) return false;
+  const id = String(p?.id || '').toLowerCase();
+  if (id === 'local' || id === 'local-wp') return true;
+  return !!String(process.env.WDP_LOCAL_WP_DIR || '').trim();
+}
+
+function localMeta(cmd, extra = []) {
+  const data = parseLocalEvalJson(runLocalEvalFile(LOCAL_META_PHP, [cmd, ...extra]));
+  if (!data.ok) {
+    throw new Error(`staging-wp-meta yerel: ${data.error || JSON.stringify(data).slice(0, 200)}`);
+  }
+  return data;
+}
+
+function assertLocalFixtureWritable(productId, op) {
+  const id = Math.abs(Number.parseInt(String(productId), 10) || 0);
+  if (id <= 0) {
+    throw new Error('staging-wp-meta: invalid product id');
+  }
+  if (!isFixtureProductId(id)) {
+    throw new Error(`mutasyon hedefi fixture listesinde değil: id=${id} (${op})`);
+  }
+  return id;
+}
 
 /**
  * @param {number|string} productId
@@ -14,6 +51,11 @@ import { E2E_META_KEY } from './run-registry.mjs';
  * @returns {Promise<string>}
  */
 export async function getProductMeta(productId, metaKey) {
+  if (usesLocalWpMeta()) {
+    const id = Math.abs(Number.parseInt(String(productId), 10) || 0);
+    const data = localMeta('get', [id, String(metaKey)]);
+    return String(data.value ?? '');
+  }
   const loaded = loadDeployEnvSilent();
   if (!loaded.ok) {
     throw new Error(`staging-wp-meta: ${loaded.reason}`);
@@ -34,6 +76,13 @@ export async function getProductMeta(productId, metaKey) {
  * @returns {Promise<void>}
  */
 export async function setProductMeta(productId, metaKey, value) {
+  if (usesLocalWpMeta()) {
+    const id = assertLocalFixtureWritable(productId, 'set-fixture-product-meta');
+    registerMutated({ id: String(id), type: 'product', keys: [String(metaKey)] });
+    const encoded = JSON.stringify(value === undefined || value === null ? '' : String(value));
+    localMeta('set', [id, String(metaKey), encoded]);
+    return;
+  }
   const loaded = loadDeployEnvSilent();
   if (!loaded.ok) {
     throw new Error(`staging-wp-meta: ${loaded.reason}`);
@@ -67,6 +116,19 @@ export async function setProductMeta(productId, metaKey, value) {
  * @returns {Promise<void>}
  */
 export async function saveProductPrices(productId, amounts) {
+  if (usesLocalWpMeta()) {
+    const id = assertLocalFixtureWritable(productId, 'set-fixture-product-price');
+    registerMutated({ id: String(id), type: 'product', keys: ['_price', '_regular_price', '_sale_price'] });
+    localMeta('prices-set', [
+      id,
+      JSON.stringify({
+        price: String(amounts.price ?? ''),
+        regular: String(amounts.regular ?? amounts.price ?? ''),
+        sale: String(amounts.sale ?? ''),
+      }),
+    ]);
+    return;
+  }
   const loaded = loadDeployEnvSilent();
   if (!loaded.ok) {
     throw new Error(`staging-wp-meta: ${loaded.reason}`);
@@ -92,25 +154,29 @@ export async function saveProductPrices(productId, amounts) {
  * @returns {Promise<{url:string,path:string,status:string,id:number}>}
  */
 export async function getWooCartPageInfo() {
-  const loaded = loadDeployEnvSilent();
-  if (!loaded.ok) {
-    throw new Error(`staging-wp-meta: ${loaded.reason}`);
-  }
-  const flag = wpCliPath(loaded.env);
-  const raw = remote(
-    loaded.env,
-    `wp eval '$id=function_exists("wc_get_page_id")?wc_get_page_id("cart"):0; $url=function_exists("wc_get_cart_url")?wc_get_cart_url():""; echo wp_json_encode(array("id"=>(int)$id,"url"=>$url,"status"=>$id? (string)get_post_status($id):"","permalink"=>$id? (string)get_permalink($id):""));' ${flag}`
-  );
-  const line = String(raw || '')
-    .split(/\r?\n/)
-    .map((l) => l.trim())
-    .filter((l) => l.startsWith('{'))
-    .pop();
   let parsed = {};
-  try {
-    parsed = JSON.parse(line || '{}');
-  } catch {
-    parsed = {};
+  if (usesLocalWpMeta()) {
+    parsed = localMeta('cart-info');
+  } else {
+    const loaded = loadDeployEnvSilent();
+    if (!loaded.ok) {
+      throw new Error(`staging-wp-meta: ${loaded.reason}`);
+    }
+    const flag = wpCliPath(loaded.env);
+    const raw = remote(
+      loaded.env,
+      `wp eval '$id=function_exists("wc_get_page_id")?wc_get_page_id("cart"):0; $url=function_exists("wc_get_cart_url")?wc_get_cart_url():""; echo wp_json_encode(array("id"=>(int)$id,"url"=>$url,"status"=>$id? (string)get_post_status($id):"","permalink"=>$id? (string)get_permalink($id):""));' ${flag}`
+    );
+    const line = String(raw || '')
+      .split(/\r?\n/)
+      .map((l) => l.trim())
+      .filter((l) => l.startsWith('{'))
+      .pop();
+    try {
+      parsed = JSON.parse(line || '{}');
+    } catch {
+      parsed = {};
+    }
   }
   let pathName = '/cart/';
   const href = String(parsed.permalink || parsed.url || '');
@@ -152,6 +218,10 @@ export async function assertWooCartPagePublished() {
  * @returns {Promise<void>}
  */
 export async function bumpListCache() {
+  if (usesLocalWpMeta()) {
+    localMeta('bump-list');
+    return;
+  }
   const loaded = loadDeployEnvSilent();
   if (!loaded.ok) {
     throw new Error(`staging-wp-meta: ${loaded.reason}`);
@@ -176,29 +246,33 @@ export async function createTempPage() {
  * @returns {Promise<{price:string,regular:string,sale:string}>}
  */
 export async function snapshotProductPrices(productId) {
-  const loaded = loadDeployEnvSilent();
-  if (!loaded.ok) {
-    throw new Error(`staging-wp-meta: ${loaded.reason}`);
-  }
-  const flag = wpCliPath(loaded.env);
   const id = String(Math.abs(Number.parseInt(String(productId), 10) || 0));
   if (id === '0') {
     throw new Error('staging-wp-meta: invalid product id');
   }
-  const raw = remote(
-    loaded.env,
-    `wp eval '$p=wc_get_product(${id}); if(!$p){echo "{}"; return;} echo wp_json_encode(array("price"=>(string)$p->get_price(),"regular"=>(string)$p->get_regular_price(),"sale"=>(string)$p->get_sale_price()));' ${flag}`
-  );
-  const line = String(raw || '')
-    .split(/\r?\n/)
-    .map((l) => l.trim())
-    .filter((l) => l.startsWith('{'))
-    .pop();
   let parsed = { price: '', regular: '', sale: '' };
-  try {
-    parsed = { ...parsed, ...JSON.parse(line || '{}') };
-  } catch {
-    throw new Error(`staging-wp-meta: price snapshot JSON yok (${String(raw).slice(0, 80)})`);
+  if (usesLocalWpMeta()) {
+    parsed = { ...parsed, ...localMeta('prices-get', [id]) };
+  } else {
+    const loaded = loadDeployEnvSilent();
+    if (!loaded.ok) {
+      throw new Error(`staging-wp-meta: ${loaded.reason}`);
+    }
+    const flag = wpCliPath(loaded.env);
+    const raw = remote(
+      loaded.env,
+      `wp eval '$p=wc_get_product(${id}); if(!$p){echo "{}"; return;} echo wp_json_encode(array("price"=>(string)$p->get_price(),"regular"=>(string)$p->get_regular_price(),"sale"=>(string)$p->get_sale_price()));' ${flag}`
+    );
+    const line = String(raw || '')
+      .split(/\r?\n/)
+      .map((l) => l.trim())
+      .filter((l) => l.startsWith('{'))
+      .pop();
+    try {
+      parsed = { ...parsed, ...JSON.parse(line || '{}') };
+    } catch {
+      throw new Error(`staging-wp-meta: price snapshot JSON yok (${String(raw).slice(0, 80)})`);
+    }
   }
   return {
     price: String(parsed.price ?? ''),

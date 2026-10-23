@@ -5,6 +5,24 @@
  */
 import { wp, loadDeployEnvSilent } from './wp-remote.mjs';
 import { getActiveProfile, peekActiveProfile, isRemoteProfile } from './profile.mjs';
+import { parseLocalEvalJson, runLocalEvalFile } from './local-wp-eval.mjs';
+
+function localPageUrl(kind, fallback) {
+  if (!process.env.WDP_LOCAL_WP_DIR) return fallback;
+  try {
+    const data = parseLocalEvalJson(runLocalEvalFile('tests/local-wp/product-meta.php', ['pages-info']));
+    const href = String(data?.[kind]?.url || '').trim();
+    if (!href) return fallback;
+    try {
+      return new URL(href).pathname || fallback;
+    } catch {
+      return href.startsWith('/') ? href : fallback;
+    }
+  } catch (e) {
+    console.error(`[e2e:catch-fail] localPageUrl ${kind}: ${e && e.message ? e.message : e}`);
+    return fallback;
+  }
+}
 
 const OFFLINE = ['cheque', 'bacs', 'cod'];
 
@@ -13,7 +31,7 @@ const OFFLINE = ['cheque', 'bacs', 'cod'];
  */
 export function readCheckoutUrl() {
   const profile = peekActiveProfile();
-  if (!isRemoteProfile(profile)) return '/checkout/';
+  if (!isRemoteProfile(profile)) return localPageUrl('checkout', '/checkout/');
   const loaded = loadDeployEnvSilent();
   if (!loaded.ok) return '/checkout/';
   const raw = wp(
@@ -27,7 +45,7 @@ export function readCheckoutUrl() {
  */
 export function readCartUrl() {
   const profile = peekActiveProfile();
-  if (!isRemoteProfile(profile)) return '/cart/';
+  if (!isRemoteProfile(profile)) return localPageUrl('cart', '/cart/');
   const loaded = loadDeployEnvSilent();
   if (!loaded.ok) return '/cart/';
   const raw = wp(
