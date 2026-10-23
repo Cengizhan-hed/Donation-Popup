@@ -398,7 +398,7 @@ describe('mağaza hedefi', () => {
     assert.equal(shopConflictPath({ listPath: '/liste/', shopPath: '/magaza/' }, {}), '/magaza/');
     assert.equal(shopConflictPath({ listPath: '/liste/' }, {}), '');
     assert.ok(shopSkipReason({ shopPath: '' }).startsWith('atlandı:'));
-    assert.ok(shopSkipReason({ shopPath: '/magaza/', triggerVisible: false }).includes('düğmesi yok'));
+    assert.equal(shopSkipReason({ shopPath: '/magaza/', triggerVisible: false }), '');
     assert.equal(shopSkipReason({ shopPath: '/magaza/', triggerVisible: true }), '');
   });
 });

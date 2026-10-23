@@ -21,7 +21,7 @@ import {
 import { SEL } from './helpers/selectors.mjs';
 import { peekActiveProfile } from './helpers/profile.mjs';
 import { decideScenarioProduct, popupPagePath } from './helpers/catalog-core.mjs';
-import { classifySkipReason } from './helpers/skip-policy.mjs';
+import { SKIP_EVIDENCE, classifySkip, makeSkip } from './helpers/skip-policy.mjs';
 import { installBrowserGuard } from './helpers/network-guard.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -159,18 +159,24 @@ export async function runSharesLateProductInfoChecks({
     const check = `shares-late-product-info-${mode}-${kind}`;
     const decision = decideScenarioProduct(env, 'shares', mode);
     if (decision.action === 'skip') {
-      if (classifySkipReason(decision.reason) === 'fail') {
+      const row = makeSkip({
+        check,
+        reason: decision.reason,
+        evidence: decision.evidence || SKIP_EVIDENCE.WP_DATA,
+        detail: decision.detail,
+      });
+      if (classifySkip(row) === 'fail') {
         failures.push(
           makeFailure({
             check,
-            description: `Altyapı atlaması hata: ${decision.reason}`,
+            description: `Altyapı atlaması hata: ${row.description || decision.reason}`,
           })
         );
         if (stats) stats.failed = (stats.failed || 0) + 1;
         return;
       }
       if (skips && !skips.some((s) => s.check === check)) {
-        skips.push({ check, description: decision.reason });
+        skips.push(row);
         if (stats) stats.skipped = (stats.skipped || 0) + 1;
       }
       return;

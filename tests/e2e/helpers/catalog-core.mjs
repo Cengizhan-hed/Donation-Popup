@@ -2,6 +2,7 @@
  * Uzak E2E sayfa/ürün çözümü: tek kaynak WP/Woo JSON (slug tahmini yok).
  * Env E2E_SHOP_PAGE / E2E_LIST_PAGE / E2E_PRODUCT_* uzak profilde kullanılmaz.
  */
+import { SKIP_EVIDENCE, SKIP_REASONS, makeSkip } from './skip-policy.mjs';
 export const PAGE_PRODUCT_ENV_KEYS = [
   'E2E_SHOP_PAGE',
   'E2E_LIST_PAGE',
@@ -85,7 +86,7 @@ export function isPublishedCatalogRole(env, role) {
  * İkisi de yoksa atla (hata değil).
  *
  * @param {object} [env]
- * @returns {{ action: 'run'|'skip', path: string, source: 'list'|'shop'|'', reason: string }}
+ * @returns {{ action: 'run'|'skip', path: string, source: 'list'|'shop'|'', reason: string, evidence?: string, detail?: string }}
  */
 export function resolvePopupSource(env) {
   const list = pathFromMaybeUrl(env?.E2E_LIST_PAGE || env?._catalog?.list?.path || env?._catalog?.list?.url || '');
@@ -105,7 +106,9 @@ export function resolvePopupSource(env) {
     action: 'skip',
     path: '',
     source: '',
-    reason: 'liste sayfası yok ve mağaza döngüsünde Bağış Yap kaynağı yok → popup atlanır',
+    reason: SKIP_REASONS.NO_POPUP_SOURCE,
+    evidence: SKIP_EVIDENCE.WP_DATA,
+    detail: 'liste sayfası yok ve mağaza döngüsü yok',
   };
 }
 
@@ -124,7 +127,7 @@ export function popupPagePath(env, explicit) {
  * @param {object} env
  * @param {string} role
  * @param {string} kind  SCENARIO_PRODUCT_POLICY kinds
- * @returns {{ action: 'run-visitor'|'run-admin'|'skip', admin: boolean, reason: string, group: string, pagePath?: string, popupSource?: string }}
+ * @returns {{ action: 'run-visitor'|'run-admin'|'skip', admin: boolean, reason: string, evidence?: string, detail?: string, group: string, pagePath?: string, popupSource?: string }}
  */
 export function decideScenarioProduct(env, role, kind) {
   const group = scenarioPolicyGroup(kind) || String(kind || '');
@@ -135,13 +138,22 @@ export function decideScenarioProduct(env, role, kind) {
       return {
         action: 'skip',
         admin: false,
-        reason: `${role}: popup tetikleyici; private fixture listede/mağazada görünmez → atla`,
+        reason: SKIP_REASONS.PRIVATE_FIXTURE,
+        evidence: SKIP_EVIDENCE.WP_DATA,
+        detail: String(role || ''),
         group,
       };
     }
     const src = resolvePopupSource(env);
     if (src.action === 'skip') {
-      return { action: 'skip', admin: false, reason: `${role}: ${src.reason}`, group };
+      return {
+        action: 'skip',
+        admin: false,
+        reason: src.reason || SKIP_REASONS.NO_POPUP_SOURCE,
+        evidence: src.evidence || SKIP_EVIDENCE.WP_DATA,
+        detail: src.detail || String(role || ''),
+        group,
+      };
     }
     return {
       action: 'run-visitor',
@@ -159,7 +171,9 @@ export function decideScenarioProduct(env, role, kind) {
     return {
       action: 'skip',
       admin: false,
-      reason: `${role}: yayımlanmış katalog ürünü yok (liste/mağaza döngüsü) → atla`,
+      reason: SKIP_REASONS.NO_PUBLISHED_PRODUCT,
+      evidence: SKIP_EVIDENCE.WP_DATA,
+      detail: String(role || ''),
       group,
     };
   }
@@ -174,7 +188,14 @@ export function decideScenarioProduct(env, role, kind) {
       group,
     };
   }
-  return { action: 'skip', admin: false, reason: `${role}: ürün yok → atla`, group };
+  return {
+    action: 'skip',
+    admin: false,
+    reason: SKIP_REASONS.NO_PUBLISHED_PRODUCT,
+    evidence: SKIP_EVIDENCE.WP_DATA,
+    detail: String(role || ''),
+    group,
+  };
 }
 
 export const PLUGIN_CONTENT_NEEDLES = Object.freeze([
@@ -427,23 +448,33 @@ export function applyRemoteCatalog(env, catalog) {
     : {};
 
   if (!env.E2E_LIST_PAGE) {
-    env._roleSkips.push({
-      check: 'list-page',
-      description: 'Bağış listesi sayfası WP içeriğinde eklenti kısa kodu/bloğu bulunamadı → atla',
-    });
+    env._roleSkips.push(
+      makeSkip({
+        check: 'list-page',
+        reason: SKIP_REASONS.NO_LIST_PAGE,
+        evidence: SKIP_EVIDENCE.WP_DATA,
+      })
+    );
   }
   if (!env.E2E_SHOP_PAGE) {
-    env._roleSkips.push({
-      check: 'shop-page',
-      description: 'Mağaza sayfası WooCommerce wc_get_page_permalink(shop) boş → atla',
-    });
+    env._roleSkips.push(
+      makeSkip({
+        check: 'shop-page',
+        reason: SKIP_REASONS.NO_SHOP_PAGE,
+        evidence: SKIP_EVIDENCE.WP_DATA,
+      })
+    );
   }
   env._popupSource = resolvePopupSource(env);
   if (env._popupSource.action === 'skip') {
-    env._roleSkips.push({
-      check: 'popup-source',
-      description: env._popupSource.reason,
-    });
+    env._roleSkips.push(
+      makeSkip({
+        check: 'popup-source',
+        reason: env._popupSource.reason || SKIP_REASONS.NO_POPUP_SOURCE,
+        evidence: env._popupSource.evidence || SKIP_EVIDENCE.WP_DATA,
+        detail: env._popupSource.detail,
+      })
+    );
   }
 
   const picked = pickRoleProducts(cat.products || []);
@@ -452,10 +483,14 @@ export function applyRemoteCatalog(env, catalog) {
     const hit = picked[role];
     if (!hit) {
       env[key] = '';
-      env._roleSkips.push({
-        check: `role-${role}`,
-        description: `${env._profile?.id || 'uzak'}: katalogda yayımlanmış ${role} ürünü yok → atla`,
-      });
+      env._roleSkips.push(
+        makeSkip({
+          check: `role-${role}`,
+          reason: role === 'shares' ? SKIP_REASONS.NO_PUBLISHED_SHARES : SKIP_REASONS.NO_PUBLISHED_PRODUCT,
+          evidence: SKIP_EVIDENCE.WP_DATA,
+          detail: String(role),
+        })
+      );
       continue;
     }
     env[key] = hit.path;
@@ -469,6 +504,8 @@ export function applyRemoteCatalog(env, catalog) {
       type: role,
       display: String(hit.display || ''),
       fromCatalog: true,
+      relatedIds: Array.isArray(hit.related_ids) ? hit.related_ids.map((n) => Number(n) || 0).filter(Boolean) : undefined,
+      upsellIds: Array.isArray(hit.upsell_ids) ? hit.upsell_ids.map((n) => Number(n) || 0).filter(Boolean) : undefined,
     };
   }
   return env;

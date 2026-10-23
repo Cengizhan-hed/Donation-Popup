@@ -6,6 +6,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { ROOT } from './env-root.mjs';
 import { DEVICE_ORDER, parseDeviceList } from './devices.mjs';
+import { SKIP_EVIDENCE, SKIP_REASONS } from './skip-policy.mjs';
 
 export const PLUGIN_SLUG = 'woo-donation-popup';
 export const PLUGIN_URL_RE = /\/wp-content\/plugins\/woo-donation-popup(?:\/|$)/i;
@@ -590,11 +591,28 @@ export function shopConflictPath(probe, env) {
 }
 
 /**
+ * Mağaza yolu WP'den yoksa atlama; tetikleyici/kabuk yoksa atlama değil (HATA).
+ * @param {{ shopPath?: string, triggerVisible?: boolean }} p
+ * @returns {{ skip: boolean, reason: string, evidence: string, detail: string }}
+ */
+export function shopSkipRecord(p = {}) {
+  if (!p.shopPath) {
+    return {
+      skip: true,
+      reason: SKIP_REASONS.NO_SHOP_PAGE,
+      evidence: SKIP_EVIDENCE.WP_DATA,
+      detail: 'mağaza sayfası WP\'den çözülemedi',
+    };
+  }
+  return { skip: false, reason: '', evidence: '', detail: '' };
+}
+
+/**
  * @param {{ shopPath?: string, triggerVisible?: boolean }} p
  */
 export function shopSkipReason(p = {}) {
-  if (!p.shopPath) return 'atlandı: mağaza sayfası WP\'den çözülemedi';
-  if (!p.triggerVisible) return 'atlandı: mağaza döngüsünde eklenti düğmesi yok';
+  const rec = shopSkipRecord(p);
+  if (rec.skip) return `atlandı: ${rec.detail}`;
   return '';
 }
 

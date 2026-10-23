@@ -268,7 +268,10 @@ describe('yerel uzak-benzetim katalog', () => {
       products: FAKE_CATALOG.products.filter((p) => !p.fixture),
     });
     assert.equal(env.E2E_LIST_PAGE, '');
-    assert.ok(env._roleSkips.some((s) => s.check === 'list-page'));
+    const listSkip = env._roleSkips.find((s) => s.check === 'list-page');
+    assert.ok(listSkip);
+    assert.equal(listSkip.reason, 'no-list-page');
+    assert.equal(listSkip.evidence, 'wp-data');
     const src = resolvePopupSource(env);
     assert.equal(src.action, 'run');
     assert.equal(src.source, 'shop');
@@ -290,7 +293,8 @@ describe('yerel uzak-benzetim katalog', () => {
     });
     const skip = decideScenarioProduct(empty, 'custom', 'popup');
     assert.equal(skip.action, 'skip');
-    assert.match(skip.reason, /mağaza|liste/);
+    assert.equal(skip.reason, 'no-popup-source');
+    assert.equal(skip.evidence, 'wp-data');
     assert.ok(empty._roleSkips.some((s) => s.check === 'popup-source'));
     setActiveProfile(null);
   });

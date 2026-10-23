@@ -14,6 +14,7 @@ import {
   navTargetFromUrl,
   decideScenarioProduct,
 } from './catalog-core.mjs';
+import { SKIP_EVIDENCE, SKIP_REASONS, makeSkip } from './skip-policy.mjs';
 
 /**
  * @returns {Promise<{ ok: true, catalog: object } | { ok: false, reason: string }>}
@@ -57,6 +58,7 @@ export async function fillMissingProductSlugs(env, opts = {}) {
       env._roleSkips.push({
         check: 'catalog',
         description: `WP katalog okunamadı (${fetched.reason}) → sayfa/ürün senaryoları atlanır`,
+        detail: fetched.reason,
       });
       console.log(`[e2e] ürün eşlemesi ${profile.id}: katalog yok`);
       return env;
@@ -109,18 +111,27 @@ function fillLocalProductSlugs(env) {
     if (!spec) {
       if (applyFixtureRole(role)) continue;
       env[key] = '';
-      const note =
-        profile.unavailableRoles?.[role] || `${profile.id}: ${role} ürünü yok → atla`;
-      env._roleSkips.push({ check: `role-${role}`, description: note });
+      env._roleSkips.push(
+        makeSkip({
+          check: `role-${role}`,
+          reason: role === 'shares' ? SKIP_REASONS.NO_PUBLISHED_SHARES : SKIP_REASONS.NO_PUBLISHED_PRODUCT,
+          evidence: SKIP_EVIDENCE.WP_DATA,
+          detail: String(role),
+        })
+      );
       continue;
     }
     if (spec.slug) env[key] = spec.slug;
     if (!env[key] && applyFixtureRole(role)) continue;
     if (!env[key]) {
-      env._roleSkips.push({
-        check: `role-${role}`,
-        description: `${profile.id}: ${role} ürünü çözülemedi → atla`,
-      });
+      env._roleSkips.push(
+        makeSkip({
+          check: `role-${role}`,
+          reason: SKIP_REASONS.NO_PRODUCT_PATH,
+          evidence: SKIP_EVIDENCE.WP_DATA,
+          detail: String(role),
+        })
+      );
     }
   }
   applyLocalPages(env, data);
@@ -232,6 +243,13 @@ function pushFixtureSurfaceSkips(env, role) {
     const d = decideScenarioProduct(env, role, kind);
     if (d.action !== 'skip') continue;
     if (env._roleSkips.some((s) => s.check === check)) continue;
-    env._roleSkips.push({ check, description: d.reason });
+    env._roleSkips.push(
+      makeSkip({
+        check,
+        reason: d.reason,
+        evidence: d.evidence || SKIP_EVIDENCE.WP_DATA,
+        detail: d.detail,
+      })
+    );
   }
 }

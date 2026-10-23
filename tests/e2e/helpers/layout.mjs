@@ -18,7 +18,7 @@ import {
   makeFailure,
 } from './checks.mjs';
 import { waitAndAssertShellOverlap } from './shell-overlap.mjs';
-import { classifySkipReason } from './skip-policy.mjs';
+import { SKIP_EVIDENCE, SKIP_REASONS, classifySkip, makeSkip } from './skip-policy.mjs';
 
 const CTA_GAP_MAX_PX = 48;
 
@@ -421,12 +421,18 @@ export async function runLayoutChecks({
     failures.push(makeFailure({ check: id, description, error }));
     stats.failed += 1;
   };
-  const skip = (id, description) => {
-    if (classifySkipReason(description) === 'fail') {
-      fail(id, `Altyapı atlaması hata: ${description}`);
+  const skip = (id, record) => {
+    const row = makeSkip({
+      check: id,
+      reason: record?.reason,
+      evidence: record?.evidence,
+      detail: record?.detail,
+    });
+    if (classifySkip(row) === 'fail') {
+      fail(id, `Altyapı atlaması hata: ${row.description || row.reason || ''}`);
       return;
     }
-    if (skips) skips.push({ check: id, description });
+    if (skips) skips.push(row);
     stats.skipped += 1;
   };
 
@@ -460,7 +466,11 @@ export async function runLayoutChecks({
           productId = fx.id;
           fromFixture = true;
         } catch {
-          skip(`layout-${type.key}-missing`, `${type.key} ürün yolu yok`);
+          skip(`layout-${type.key}-missing`, {
+            reason: SKIP_REASONS.NO_PRODUCT_PATH,
+            evidence: SKIP_EVIDENCE.WP_DATA,
+            detail: type.key,
+          });
           continue;
         }
       }
@@ -474,7 +484,11 @@ export async function runLayoutChecks({
         };
         const decision = decideScenarioProduct(layoutEnv, type.key, mode);
         if (decision.action === 'skip') {
-          skip(`${prefix}-private-list`, decision.reason);
+          skip(`${prefix}-private-list`, {
+            reason: decision.reason,
+            evidence: decision.evidence || SKIP_EVIDENCE.WP_DATA,
+            detail: decision.detail,
+          });
           continue;
         }
         const page = await pageFor(!!decision.admin);

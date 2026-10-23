@@ -18,7 +18,7 @@ import {
 } from './checks.mjs';
 import { comingSoonQuery } from './coming-soon.mjs';
 import { popupPagePath } from './catalog-core.mjs';
-import { classifySkipReason } from './skip-policy.mjs';
+import { SKIP_EVIDENCE, SKIP_REASONS, classifySkip, makeSkip } from './skip-policy.mjs';
 
 const CHECK_MS = 25000;
 
@@ -211,16 +211,17 @@ export async function runCurrencySwitchChecks({
   const productPath = productUrls.custom || productUrls.fixed || productUrls.campaign || '';
   const cartPath = env.E2E_CART_PAGE || '/cart/';
   if (!listPath || !productPath) {
-    const description = 'Liste/ürün yolu yok, para birimi gösterimi atlandı';
-    if (classifySkipReason(description) === 'fail') {
-      failures.push(makeFailure({ check: 'currency-switch', description: `Altyapı atlaması hata: ${description}` }));
+    const row = makeSkip({
+      check: 'currency-switch',
+      reason: !productPath ? SKIP_REASONS.NO_PRODUCT_PATH : SKIP_REASONS.NO_LIST_PAGE,
+      evidence: SKIP_EVIDENCE.WP_DATA,
+    });
+    if (classifySkip(row) === 'fail') {
+      failures.push(makeFailure({ check: 'currency-switch', description: `Altyapı atlaması hata: ${row.description}` }));
       stats.failed += 1;
       return;
     }
-    skips.push({
-      check: 'currency-switch',
-      description,
-    });
+    skips.push(row);
     stats.skipped += 1;
     return;
   }

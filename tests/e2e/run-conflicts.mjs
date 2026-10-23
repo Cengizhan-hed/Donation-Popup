@@ -516,18 +516,19 @@ async function openFormIfNeeded(page, pageId, ctx) {
     if (!trigger) {
       return {
         opened: false,
-        skipped: true,
-        reason: shopSkipReason({ shopPath: ctx.shopPath || 'x', triggerVisible: false }),
+        skipped: false,
+        failed: true,
+        reason: 'mağaza döngüsünde eklenti düğmesi yok',
       };
     }
     await clickShellTrigger(trigger, CHECK_MS);
     const shell = openShellLocator(page, '');
     if ((await shell.count()) === 0) {
-      return { opened: false, skipped: true, reason: 'atlandı: mağaza döngüsü tıklandı, kabuk yok' };
+      return { opened: false, skipped: false, failed: true, reason: 'mağaza döngüsü tıklandı, kabuk yok' };
     }
     const vis = await shell.isVisible();
     if (!vis) {
-      return { opened: false, skipped: true, reason: 'atlandı: mağaza döngüsü tıklandı, kabuk görünür değil' };
+      return { opened: false, skipped: false, failed: true, reason: 'mağaza döngüsü tıklandı, kabuk görünür değil' };
     }
     await waitOpenShellSettled(page);
     return { opened: true, skipped: false, reason: '' };
@@ -688,7 +689,7 @@ async function runPageChecks(page, ctx) {
 
   await page.reload({ waitUntil: 'domcontentloaded', timeout: CHECK_MS });
   await waitIdle(page);
-  let ajax = { skipped: true, reason: 'wdp_ajax yok' };
+  let ajax = { skipped: false, noncePresent: false, ok: false, reason: 'wdp_ajax yok' };
   const hasAjax = await page.evaluate(() => !!(window.wdp_ajax && window.wdp_ajax.ajax_url));
   if (hasAjax && ctx.productId && ctx.pageId !== 'checkout') {
     const first = await probeProductAjax(page, ctx.productId);
@@ -701,6 +702,8 @@ async function runPageChecks(page, ctx) {
     if (!first.noncePresent && second.noncePresent) ajax = second;
   } else if (ctx.pageId === 'checkout') {
     ajax = { skipped: true, reason: 'checkout-view-only' };
+  } else if (!hasAjax) {
+    ajax = { skipped: false, noncePresent: false, ok: false, reason: 'wdp_ajax yok' };
   }
   const cache = cacheVerdict(ajax);
   const cacheV = cache.verdict === VERDICT.skip ? { verdict: VERDICT.pass, finding: '' } : cache;
@@ -864,16 +867,25 @@ async function runDeviceOnTarget({ preset, env, baseUrl, probe, theme, pages, sh
       let shot = '';
       try {
         if (!target) {
-          const why =
-            pageId === 'shop'
-              ? shopSkipReason({ shopPath: '' })
-              : `atlandı: ${pageId} yolu yok`;
-          checks.finding = why;
-          checks.console = VERDICT.skip;
-          checks.scripts = VERDICT.skip;
-          checks.fields = VERDICT.skip;
-          checks.css = VERDICT.skip;
-          checks.cache = VERDICT.skip;
+          const catalogSkip = pageId === 'shop' || pageId === 'product' || pageId === 'panel';
+          if (catalogSkip) {
+            checks.finding =
+              pageId === 'shop'
+                ? shopSkipReason({ shopPath: '' })
+                : 'atlandı: ürün yolu katalogda yok';
+            checks.console = VERDICT.skip;
+            checks.scripts = VERDICT.skip;
+            checks.fields = VERDICT.skip;
+            checks.css = VERDICT.skip;
+            checks.cache = VERDICT.skip;
+          } else {
+            checks.finding = `${pageId} yolu WP/Woo katalogunda yok`;
+            checks.console = VERDICT.red;
+            checks.scripts = VERDICT.red;
+            checks.fields = VERDICT.red;
+            checks.css = VERDICT.red;
+            checks.cache = VERDICT.red;
+          }
         } else {
           await gotoPath(page, baseUrl, target, env, true);
           await waitIdle(page);
@@ -882,7 +894,14 @@ async function runDeviceOnTarget({ preset, env, baseUrl, probe, theme, pages, sh
             productId,
             shopPath: shopConflictPath(probe, env),
           });
-          if (opened.skipped && pageId === 'shop') {
+          if (opened.failed) {
+            checks.console = VERDICT.red;
+            checks.scripts = VERDICT.red;
+            checks.fields = VERDICT.red;
+            checks.css = VERDICT.red;
+            checks.cache = VERDICT.red;
+            checks.finding = opened.reason;
+          } else if (opened.skipped && pageId === 'shop') {
             checks = await runPageChecks(page, { pageId, productId, events, env, chromeWithCss });
             if (!rowHasFinding(checks)) {
               checks.finding = opened.reason;
