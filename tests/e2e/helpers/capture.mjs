@@ -19,7 +19,7 @@ import { areaIncludes } from './area-filter.mjs';
 import { applyComingSoonBypass, comingSoonQuery } from './coming-soon.mjs';
 import { STABILIZE_SHOT_CSS, hideComingSoonNoticeForShot } from './stabilize-shot-css.mjs';
 import { ensureAuth, getAuthFile, getInMemoryAdminCookies, waitForWpAdminPage } from './auth.mjs';
-import { classifySkipReason, promoteIllegalSkips } from './skip-policy.mjs';
+import { SKIP_EVIDENCE, SKIP_REASONS, classifySkip, makeSkip, promoteIllegalSkips } from './skip-policy.mjs';
 import {
   installBrowserGuard,
   applyNetworkGuard,
@@ -62,6 +62,7 @@ import {
 import {
   classifyLoopCardsResult,
   formatLoopCardFail,
+  readRelatedProductIds,
   SHOP_CARD_SEL,
   shopCardsHiddenFailure,
 } from './loop-cards.mjs';
@@ -1699,10 +1700,10 @@ export async function readProductSadakaAdminConfig(authed, env, productSlug, opt
     let status = /** @type {'beklenir'|'atlandı'} */ ('beklenir');
     if (!enabled) {
       status = 'atlandı';
-      reason = 'Alt bağış ekle işaretli değil';
+      reason = SKIP_REASONS.SETTING_OFF;
     } else if (resolvedWcId <= 0) {
       status = 'atlandı';
-      reason = 'ürün ID boş ve genel varsayılan yok';
+      reason = SKIP_REASONS.NO_WC_PRODUCT_ID;
     } else {
       reason = `beklenir — WC ürün #${resolvedWcId}`;
     }
@@ -1715,6 +1716,7 @@ export async function readProductSadakaAdminConfig(authed, env, productSlug, opt
       expected: status === 'beklenir',
       status,
       reason,
+      evidence: status === 'atlandı' ? SKIP_EVIDENCE.WP_DATA : '',
       detail: `enable=${enabled} ürün_id=${productWcId} genel_id=${globalWcId} → ${reason}`,
     };
   } catch (e) {
@@ -1900,9 +1902,10 @@ async function settleLoopPage(page) {
  * @param {'product'|'shop'} surface
  * @param {string} screenName
  * @param {ReturnType<typeof makeFailure>[]} failures
- * @param {{ passed?: number, failed?: number }} [stats]
+ * @param {{ passed?: number, failed?: number, skipped?: number }} [stats]
+ * @param {{ productId?: number, role?: string, env?: object }} [ctx]
  */
-async function assertLoopCardsTitleAndDonate(page, surface, screenName, failures, stats, skips) {
+async function assertLoopCardsTitleAndDonate(page, surface, screenName, failures, stats, skips, ctx = {}) {
   if (surface === 'shop') {
     const shopCards = page.locator(SHOP_CARD_SEL);
     const visibleCard = shopCards.locator('visible=true');
@@ -1996,22 +1999,38 @@ async function assertLoopCardsTitleAndDonate(page, surface, screenName, failures
     { surfaceKind: surface, similarPat, donatePat, cardSel, titleSel, shopCardSel: SHOP_CARD_SEL }
   );
 
+  const rec = ctx.env?._resolvedProducts?.[ctx.role] || {};
+  const related =
+    surface === 'product'
+      ? readRelatedProductIds(Number(ctx.productId || rec.id || 0), {
+          relatedIds: rec.relatedIds,
+          upsellIds: rec.upsellIds,
+        })
+      : { ok: false, ids: [], evidence: '' };
+  const noRelatedFromWp = surface === 'product' && related.ok && related.ids.length === 0;
+
   if (result.cardCount < 1) {
-    if (surface === 'product') {
-      if (skips) {
-        skips.push({
-          check: 'loop-cards-product',
-          description: 'Benzer Bağışlar kartı yok (tema gizleyebilir)',
-        });
+    if (noRelatedFromWp) {
+      const row = makeSkip({
+        check: 'loop-cards-product',
+        reason: SKIP_REASONS.NO_RELATED_PRODUCTS,
+        evidence: SKIP_EVIDENCE.WP_DATA,
+        detail: `product=${ctx.productId || rec.id || 0}`,
+      });
+      if (skips && classifySkip(row) === 'skip') {
+        skips.push(row);
+        if (stats) stats.skipped = (stats.skipped || 0) + 1;
+        return;
       }
-      if (stats) stats.skipped = (stats.skipped || 0) + 1;
-      return;
     }
     failures.push(
       makeFailure({
         check: `loop-cards-${surface}`,
-        description: 'Mağaza döngüsünde ürün kartı yok',
-        detail: `screen=${screenName}`,
+        description:
+          surface === 'product'
+            ? 'Benzer Bağışlar kartı yok (WooCommerce related/upsell ID dolu veya okunamadı)'
+            : 'Mağaza döngüsünde ürün kartı yok',
+        detail: `screen=${screenName} relatedOk=${related.ok} relatedN=${related.ids.length}`,
         screenshot: `${screenName}.png`,
       })
     );
@@ -2020,19 +2039,34 @@ async function assertLoopCardsTitleAndDonate(page, surface, screenName, failures
   }
 
   const classified = classifyLoopCardsResult(result.rows, {
-    requireVisible: surface === 'shop',
+    requireVisible: surface === 'shop' || !noRelatedFromWp,
   });
   if (classified.status === 'skip') {
-    if (skips) {
-      skips.push({
+    if (noRelatedFromWp) {
+      const row = makeSkip({
+        check: 'loop-cards-product',
+        reason: SKIP_REASONS.NO_RELATED_PRODUCTS,
+        evidence: SKIP_EVIDENCE.WP_DATA,
+        detail: `product=${ctx.productId || rec.id || 0}`,
+      });
+      if (skips && classifySkip(row) === 'skip') {
+        skips.push(row);
+        if (stats) stats.skipped = (stats.skipped || 0) + 1;
+        return;
+      }
+    }
+    failures.push(
+      makeFailure({
         check: `loop-cards-${surface}`,
         description:
           surface === 'product'
-            ? 'Benzer Bağışlar kartı yok (tema gizleyebilir)'
-            : 'Mağaza döngüsü kartı yok (uzak tema gizleyebilir)',
-      });
-    }
-    if (stats) stats.skipped = (stats.skipped || 0) + 1;
+            ? 'Benzer Bağışlar kartı görünür değil (WooCommerce related/upsell ID dolu)'
+            : 'Mağaza döngüsü kartı yok',
+        detail: `${classified.reason} screen=${screenName}`,
+        screenshot: `${screenName}.png`,
+      })
+    );
+    if (stats) stats.failed = (stats.failed || 0) + 1;
     return;
   }
   if (classified.status === 'fail') {
@@ -2433,8 +2467,13 @@ export async function runSadakaScenario({
     }
 
     if (!cfg.expected) {
-      const desc = `Atlandı — ${cfg.reason}`;
-      if (cfg.status === 'hata' || classifySkipReason(desc) === 'fail') {
+      const row = makeSkip({
+        check,
+        reason: cfg.reason,
+        evidence: cfg.evidence || SKIP_EVIDENCE.WP_DATA,
+        detail: cfg.detail,
+      });
+      if (cfg.status === 'hata' || classifySkip(row) === 'fail') {
         failures.push(
           makeFailure({
             check,
@@ -2445,11 +2484,7 @@ export async function runSadakaScenario({
         stats.failed += 1;
         return { ok: false, check, skipped: false };
       }
-      skips.push({
-        check,
-        description: desc,
-        detail: cfg.detail,
-      });
+      skips.push(row);
       stats.skipped += 1;
       return { ok: true, check, skipped: true };
     }
@@ -3143,7 +3178,11 @@ export async function captureAll({
     if (runFunctional) {
       try {
         // Benzer Bağışlar: görünür başlık + Bağış Yap (Avada post-card animasyonu)
-        await assertLoopCardsTitleAndDonate(page, 'product', name, failures, functionalStats, skips);
+        await assertLoopCardsTitleAndDonate(page, 'product', name, failures, functionalStats, skips, {
+          productId: productIds[key] || 0,
+          role: key,
+          env,
+        });
         if (device.isMobile && key === Object.keys(productUrls)[0]) {
           try {
             const probeSim = await probeSimilarDonations(page);
@@ -3192,7 +3231,14 @@ export async function captureAll({
   for (const [key, rel] of Object.entries(productUrls)) {
     const panelDecision = decideScenarioProduct(env, key, 'panel');
     if (panelDecision.action === 'skip') {
-      skips.push({ check: `panel-${key}`, description: panelDecision.reason });
+      skips.push(
+        makeSkip({
+          check: `panel-${key}`,
+          reason: panelDecision.reason,
+          evidence: panelDecision.evidence || SKIP_EVIDENCE.WP_DATA,
+          detail: panelDecision.detail,
+        })
+      );
       functionalStats.skipped += 1;
     } else {
       shellJobs.push({
@@ -3207,7 +3253,14 @@ export async function captureAll({
     if (popupDecision.action === 'skip') {
       const check = `popup-${key}`;
       if (!skips.some((s) => s.check === check)) {
-        skips.push({ check, description: popupDecision.reason });
+        skips.push(
+          makeSkip({
+            check,
+            reason: popupDecision.reason,
+            evidence: popupDecision.evidence || SKIP_EVIDENCE.WP_DATA,
+            detail: popupDecision.detail,
+          })
+        );
         functionalStats.skipped += 1;
       }
       continue;
@@ -3216,10 +3269,14 @@ export async function captureAll({
     if (!popupPath) {
       const check = `popup-${key}`;
       if (!skips.some((s) => s.check === check)) {
-        skips.push({
-          check,
-          description: `${key}: liste yok ve mağaza döngüsü yok → popup atlanır`,
-        });
+        skips.push(
+          makeSkip({
+            check,
+            reason: SKIP_REASONS.NO_POPUP_SOURCE,
+            evidence: SKIP_EVIDENCE.WP_DATA,
+            detail: key,
+          })
+        );
         functionalStats.skipped += 1;
       }
       continue;
@@ -3613,7 +3670,13 @@ export async function captureAll({
   const tList = Date.now();
   const listShopPromise = (async () => {
     if (!env.E2E_LIST_PAGE) {
-      skips.push({ check: `${pfx}-list`, description: 'Liste sayfası yolu yok' });
+      skips.push(
+        makeSkip({
+          check: `${pfx}-list`,
+          reason: SKIP_REASONS.NO_LIST_PAGE,
+          evidence: SKIP_EVIDENCE.WP_DATA,
+        })
+      );
       functionalStats.skipped += 1;
       return;
     }
@@ -3638,11 +3701,14 @@ export async function captureAll({
         .then(() => true)
         .catch(() => false);
       if (!hasList) {
-        skips.push({
-          check: 'list-card-links',
-          description: 'Bu sayfada [wdp_donations] ızgarası yok (kısa kod alanı ayrı doğrulanır)',
-        });
-        functionalStats.skipped += 1;
+        failures.push(
+          makeFailure({
+            check: 'list-card-links',
+            description: 'Liste sayfasında [wdp_donations] ızgarası yok (WP içeriğinde kısa kod/blok var)',
+            screenshot: `${pfx}-list.png`,
+          })
+        );
+        functionalStats.failed += 1;
       } else {
         const nestedA = await listPage
           .locator('.wdp-card a a, .wdp-card a:has(a)')
@@ -3687,10 +3753,13 @@ export async function captureAll({
     }
     await listPage.close();
     if (!env.E2E_SHOP_PAGE) {
-      skips.push({
-        check: `${pfx}-shop`,
-        description: 'Mağaza sayfası WooCommerce’den çözülemedi → atla',
-      });
+      skips.push(
+        makeSkip({
+          check: `${pfx}-shop`,
+          reason: SKIP_REASONS.NO_SHOP_PAGE,
+          evidence: SKIP_EVIDENCE.WP_DATA,
+        })
+      );
       functionalStats.skipped += 1;
       return;
     }
@@ -4109,10 +4178,13 @@ export async function captureAll({
     const lateSharesPromise = (!productUrls.shares || !want('shares'))
       ? Promise.resolve().then(() => {
           if (!productUrls.shares) {
-            skips.push({
-              check: 'shares-late-product-info',
-              description: `${profile.id}: hisseli ürün yok, atlandı`,
-            });
+            skips.push(
+              makeSkip({
+                check: 'shares-late-product-info',
+                reason: SKIP_REASONS.NO_PUBLISHED_SHARES,
+                evidence: SKIP_EVIDENCE.WP_DATA,
+              })
+            );
             functionalStats.skipped += 1;
           }
         })
@@ -4163,7 +4235,14 @@ export async function captureAll({
       const sadakaDecision = decideScenarioProduct(env, productKey, mode);
       if (sadakaDecision.action === 'skip') {
         if (!skips.some((s) => s.check === check)) {
-          skips.push({ check, description: sadakaDecision.reason });
+          skips.push(
+            makeSkip({
+              check,
+              reason: sadakaDecision.reason,
+              evidence: sadakaDecision.evidence || SKIP_EVIDENCE.WP_DATA,
+              detail: sadakaDecision.detail,
+            })
+          );
           functionalStats.skipped += 1;
         }
         return;

@@ -23,7 +23,7 @@ import {
   writeCheckoutFlowDebug,
 } from './checks.mjs';
 import { markOrderAsE2E } from './test-cleanup.mjs';
-import { classifySkipReason } from './skip-policy.mjs';
+import { SKIP_EVIDENCE, SKIP_REASONS, classifySkip, makeSkip } from './skip-policy.mjs';
 import { getActiveProfile, isRemoteProfile } from './profile.mjs';
 import { popupPagePath } from './catalog-core.mjs';
 import { checkoutPathFromUrl } from './checkout-setup.mjs';
@@ -141,16 +141,17 @@ export async function runDonationFlowChecks({
   const customId = productIds.custom || productIds.fixed || 0;
   const listPath = popupPagePath(env, listPagePath);
   if (!customPath || !listPath) {
-    const description = 'Ürün/liste/mağaza yolu yok, akış atlandı';
-    if (classifySkipReason(description) === 'fail') {
-      failures.push(makeFailure({ check: `checkout-flow-${deviceId}`, description: `Altyapı atlaması hata: ${description}` }));
+    const row = makeSkip({
+      check: `checkout-flow-${deviceId}`,
+      reason: !customPath ? SKIP_REASONS.NO_PRODUCT_PATH : SKIP_REASONS.NO_LIST_PAGE,
+      evidence: SKIP_EVIDENCE.WP_DATA,
+    });
+    if (classifySkip(row) === 'fail') {
+      failures.push(makeFailure({ check: row.check, description: `Altyapı atlaması hata: ${row.description}` }));
       stats.failed += 1;
       return;
     }
-    skips.push({
-      check: `checkout-flow-${deviceId}`,
-      description,
-    });
+    skips.push(row);
     stats.skipped += 1;
     return;
   }
@@ -329,17 +330,16 @@ export async function runDonationFlowChecks({
           'checkout-view-only: WooCommerce biçimli tutar ödeme sayfasında görünmüyor'
         );
       }
-      const orderSkip =
-        skipOrderReason ||
-        'Sipariş tamamlama atlandı (checkout-view-only; uzakta sipariş yok)';
-      if (classifySkipReason(orderSkip) === 'fail') {
-        throw new Error(`Altyapı atlaması hata: ${orderSkip}`);
-      }
-      skips.push({
+      const orderSkip = makeSkip({
         check: `checkout-flow-order-${deviceId}`,
-        description: orderSkip,
-        detail: url,
+        reason: SKIP_REASONS.NO_REMOTE_ORDERS,
+        evidence: SKIP_EVIDENCE.POLICY,
+        detail: skipOrderReason || url,
       });
+      if (classifySkip(orderSkip) === 'fail') {
+        throw new Error(`Altyapı atlaması hata: ${orderSkip.description}`);
+      }
+      skips.push(orderSkip);
       stats.skipped += 1;
       stats.passed += 1;
       return 'view-only';

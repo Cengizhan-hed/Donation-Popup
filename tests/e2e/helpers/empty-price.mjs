@@ -19,7 +19,7 @@ import {
   cartItemsDetail,
   gotoWooCart,
 } from './checks.mjs';
-import { classifySkipReason } from './skip-policy.mjs';
+import { SKIP_EVIDENCE, SKIP_REASONS, classifySkip, makeSkip } from './skip-policy.mjs';
 import {
   bumpListCache,
   saveProductPrices,
@@ -151,12 +151,18 @@ export async function runEmptyPriceChecks({
     failures.push(makeFailure({ check: id, description, error }));
     stats.failed += 1;
   };
-  const skip = (id, description) => {
-    if (classifySkipReason(description) === 'fail') {
-      fail(id, `Altyapı atlaması hata: ${description}`);
+  const skip = (id, record) => {
+    const row = makeSkip({
+      check: id,
+      reason: record?.reason,
+      evidence: record?.evidence,
+      detail: record?.detail,
+    });
+    if (classifySkip(row) === 'fail') {
+      fail(id, `Altyapı atlaması hata: ${row.description || row.reason || ''}`);
       return;
     }
-    skips.push({ check: id, description });
+    skips.push(row);
     stats.skipped += 1;
   };
 
@@ -226,10 +232,11 @@ async function runHedefEmptyPrice({
 
   for (const t of targets) {
     if (!t.id || !t.path) {
-      skip(
-        `empty-price-${t.role}-missing`,
-        `${t.role} ürünü yok → Genel fiyat boş doğrulaması atlandı`
-      );
+      skip(`empty-price-${t.role}-missing`, {
+        reason: SKIP_REASONS.NO_PRODUCT_PATH,
+        evidence: SKIP_EVIDENCE.WP_DATA,
+        detail: t.role,
+      });
       continue;
     }
 
@@ -273,9 +280,16 @@ async function runHedefEmptyPrice({
           fail(`empty-price-${t.role}-list-visible`, `${t.role} fiyatsız listede görünür`, e);
         }
       } else if (fixturePrivate) {
-        skip(`empty-price-${t.role}-list-visible`, 'fixture private, ziyaretçi listesinde yok');
+        skip(`empty-price-${t.role}-list-visible`, {
+          reason: SKIP_REASONS.PRIVATE_FIXTURE,
+          evidence: SKIP_EVIDENCE.WP_DATA,
+          detail: t.role,
+        });
       } else {
-        skip(`empty-price-${t.role}-list-visible`, 'Liste yolu yok');
+        skip(`empty-price-${t.role}-list-visible`, {
+          reason: SKIP_REASONS.NO_LIST_PAGE,
+          evidence: SKIP_EVIDENCE.WP_DATA,
+        });
       }
 
       try {
@@ -347,10 +361,11 @@ async function runIkramPrivateProduct({
   fail,
   skip,
 }) {
-  skip(
-    'empty-price-list-ikram',
-    'Ikram: private ürün listede görünmez; liste kontrolü Hedef’te. Coming soon/görünürlük ayarına dokunulmadı.'
-  );
+  skip('empty-price-list-ikram', {
+    reason: SKIP_REASONS.PRIVATE_FIXTURE,
+    evidence: SKIP_EVIDENCE.POLICY,
+    detail: 'private ürün listede görünmez',
+  });
 
   let created = { id: 0, url: '', slug: '' };
   const ctx = createAdminContext

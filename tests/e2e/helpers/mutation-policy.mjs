@@ -5,6 +5,7 @@
  */
 import { withCacheBust } from './env.mjs';
 import { isRemoteProfile } from './profile.mjs';
+import { SKIP_EVIDENCE, SKIP_REASONS, makeSkip } from './skip-policy.mjs';
 import {
   openShellLocator,
   clickShellTrigger,
@@ -113,10 +114,14 @@ export function skipLocalOnlyOnRemote(env, checkId, skips, stats) {
   const row = mutationScenarioOf(checkId);
   if (!row || row.kind !== KIND_LOCAL_ONLY) return false;
   if (!isRemoteProfile(env?._profile)) return false;
-  skips.push({
-    check: checkId,
-    description: `yalnız yerel: ${row.reason || 'global ayar/sayfa'}`,
-  });
+  skips.push(
+    makeSkip({
+      check: checkId,
+      reason: SKIP_REASONS.LOCAL_ONLY,
+      evidence: SKIP_EVIDENCE.POLICY,
+      detail: row.reason || 'global ayar/sayfa',
+    })
+  );
   if (stats) stats.skipped = (stats.skipped || 0) + 1;
   return true;
 }

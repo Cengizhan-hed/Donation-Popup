@@ -3,6 +3,49 @@
  * Woo çekirdek: klasik `.related.products li.product` + blok
  * `.wp-block-woocommerce-product-collection li.wc-block-product`. Tema seçicisi yok.
  */
+import { parseLocalEvalJson, runLocalEvalFile } from './local-wp-eval.mjs';
+import { SKIP_EVIDENCE } from './skip-policy.mjs';
+
+/** @type {Map<number, { ok: boolean, ids: number[], evidence: string }>} */
+const relatedIdsCache = new Map();
+
+/**
+ * WooCommerce related + upsell ID (WP eval). Kanıt yoksa atlama yok.
+ * @param {number} productId
+ * @param {{ relatedIds?: number[], upsellIds?: number[] }} [fromCatalog]
+ * @returns {{ ok: boolean, ids: number[], evidence: string }}
+ */
+export function readRelatedProductIds(productId, fromCatalog = {}) {
+  const id = Number(productId) || 0;
+  if (id <= 0) return { ok: false, ids: [], evidence: '' };
+  const catalogRelated = [
+    ...(Array.isArray(fromCatalog.relatedIds) ? fromCatalog.relatedIds : []),
+    ...(Array.isArray(fromCatalog.upsellIds) ? fromCatalog.upsellIds : []),
+  ]
+    .map((n) => Number(n) || 0)
+    .filter((n) => n > 0 && n !== id);
+  if (Array.isArray(fromCatalog.relatedIds) || Array.isArray(fromCatalog.upsellIds)) {
+    return { ok: true, ids: [...new Set(catalogRelated)], evidence: SKIP_EVIDENCE.WP_DATA };
+  }
+  if (relatedIdsCache.has(id)) return relatedIdsCache.get(id);
+  if (!String(process.env.WDP_LOCAL_WP_DIR || '').trim()) {
+    return { ok: false, ids: [], evidence: '' };
+  }
+  try {
+    const data = parseLocalEvalJson(
+      runLocalEvalFile('tests/local-wp/product-meta.php', ['related-ids', String(id)])
+    );
+    const related = Array.isArray(data.related) ? data.related : [];
+    const upsell = Array.isArray(data.upsell) ? data.upsell : [];
+    const ids = [...new Set([...related, ...upsell].map((n) => Number(n) || 0).filter((n) => n > 0 && n !== id))];
+    const result = { ok: !!data.ok, ids, evidence: SKIP_EVIDENCE.WP_DATA };
+    relatedIdsCache.set(id, result);
+    return result;
+  } catch (e) {
+    console.error(`[e2e:catch-fail] related-ids #${id}: ${e && e.message ? e.message : e}`);
+    return { ok: false, ids: [], evidence: '' };
+  }
+}
 
 export const RELATED_ROOT_SEL =
   '.related.products, .upsells.products, section.related, .wp-block-woocommerce-related-products, .wp-block-woocommerce-product-collection';

@@ -4,7 +4,7 @@
  *
  *   php tests/local-wp/eval-file.php tests/local-wp/product-meta.php <cmd> ...
  *
- * cmd: get | set | prices-get | prices-set | cart-info | bump-list | invalidate
+ * cmd: get | set | prices-get | prices-set | cart-info | related-ids | bump-list | invalidate
  */
 if (!function_exists('get_post_meta')) {
 	fwrite(STDERR, "wordpress missing\n");
@@ -156,6 +156,25 @@ try {
 				'url'    => function_exists('wc_get_page_permalink') ? (string) wc_get_page_permalink('shop') : '',
 				'status' => $shop_id ? (string) get_post_status($shop_id) : '',
 			),
+		);
+	} elseif ($cmd === 'related-ids') {
+		$id = wdp_local_product_id(isset($args[1]) ? $args[1] : 0);
+		if (!function_exists('wc_get_product')) {
+			throw new RuntimeException('WooCommerce yok');
+		}
+		$p = wc_get_product($id);
+		if (!$p) {
+			throw new RuntimeException('ürün yok');
+		}
+		$related = function_exists('wc_get_related_products')
+			? array_map('intval', wc_get_related_products($id, 12))
+			: array();
+		$upsell = method_exists($p, 'get_upsell_ids') ? array_map('intval', $p->get_upsell_ids()) : array();
+		$result = array(
+			'ok'      => true,
+			'id'      => $id,
+			'related' => array_values(array_filter($related)),
+			'upsell'  => array_values(array_filter($upsell)),
 		);
 	} elseif ($cmd === 'bump-list') {
 		if (class_exists('WDP_Donations_List')) {

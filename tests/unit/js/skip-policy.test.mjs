@@ -1,71 +1,138 @@
 /**
- * Atlama politikası: bilinmeyen / altyapı gerekçe → hata.
+ * Atlama politikası: yalnız enum kod + wp-data|policy; DOM / bilinmeyen → hata.
  */
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  SKIP_REASONS,
+  SKIP_EVIDENCE,
+  makeSkip,
+  classifySkip,
   classifySkipReason,
   promoteIllegalSkips,
 } from '../../../tests/e2e/helpers/skip-policy.mjs';
 
-describe('classifySkipReason', () => {
-  it('bilinçli uzak sipariş / local-only atlanır', () => {
+describe('classifySkip', () => {
+  it('liste sayfası yok (wp-data) → atlama', () => {
+    const rec = makeSkip({
+      check: 'list-page',
+      reason: SKIP_REASONS.NO_LIST_PAGE,
+      evidence: SKIP_EVIDENCE.WP_DATA,
+    });
+    assert.equal(rec.reason, 'no-list-page');
+    assert.equal(rec.evidence, 'wp-data');
+    assert.equal(classifySkip(rec), 'skip');
+    assert.equal(classifySkipReason(rec), 'skip');
+  });
+
+  it('enum dışı kod → hata', () => {
     assert.equal(
-      classifySkipReason('Sipariş tamamlama atlandı (checkout-view-only; uzakta sipariş yok)'),
-      'skip'
-    );
-    assert.equal(classifySkipReason('yalnız yerel: kısa kod liste sayfası (uzakta sayfa oluşturulmaz)'), 'skip');
-  });
-
-  it('sadaka ayar kapalı / WC id yok atlanır', () => {
-    assert.equal(classifySkipReason('Atlandı — Alt bağış ekle işaretli değil'), 'skip');
-    assert.equal(classifySkipReason('Atlandı — ürün ID boş ve genel varsayılan yok'), 'skip');
-  });
-
-  it('Benzer Bağışlar boş atlanır', () => {
-    assert.equal(classifySkipReason('Benzer Bağışlar kartı yok (tema gizleyebilir)'), 'skip');
-  });
-
-  it('eksik sayfa yolu atlanır, açılamadı hata kalır', () => {
-    assert.equal(classifySkipReason('atlandı: shop yolu yok'), 'skip');
-    assert.equal(classifySkipReason('Atlandı — ürün düzenleme sayfası açılamadı (#12)'), 'fail');
-  });
-
-  it('yönetici sayfası açılamadı → hata', () => {
-    assert.equal(
-      classifySkipReason('Atlandı — ürün düzenleme sayfası açılamadı (#13)'),
+      classifySkip({ reason: 'popup-tetikleyici', evidence: SKIP_EVIDENCE.WP_DATA }),
       'fail'
     );
-    assert.equal(classifySkipReason('admin okuma hata: Timeout 20000ms exceeded'), 'fail');
-    assert.equal(classifySkipReason('yönetici oturumu yok path=/wp-login.php'), 'fail');
+    assert.equal(classifySkip({ reason: 'skip-desktop', evidence: SKIP_EVIDENCE.POLICY }), 'fail');
+    assert.equal(classifySkipReason('Sipariş tamamlama atlandı (checkout-view-only)'), 'fail');
+    assert.equal(classifySkipReason(''), 'fail');
+    assert.equal(classifySkip(null), 'fail');
   });
 
-  it('bilinmeyen atlama gerekçesi → hata', () => {
-    assert.equal(classifySkipReason('bir şey ters gitti'), 'fail');
-    assert.equal(classifySkipReason(''), 'fail');
+  it('evidence dom → hata', () => {
+    assert.equal(
+      classifySkip({
+        reason: SKIP_REASONS.NO_RELATED_PRODUCTS,
+        evidence: 'dom',
+      }),
+      'fail'
+    );
+  });
+
+  it('politika atlamaları geçer', () => {
+    assert.equal(
+      classifySkip(
+        makeSkip({
+          reason: SKIP_REASONS.NO_REMOTE_ORDERS,
+          evidence: SKIP_EVIDENCE.POLICY,
+        })
+      ),
+      'skip'
+    );
+    assert.equal(
+      classifySkip(
+        makeSkip({
+          reason: SKIP_REASONS.LOCAL_ONLY,
+          evidence: SKIP_EVIDENCE.POLICY,
+          detail: 'kısa kod liste sayfası',
+        })
+      ),
+      'skip'
+    );
+    assert.equal(
+      classifySkip(
+        makeSkip({
+          reason: SKIP_REASONS.SETTING_OFF,
+          evidence: SKIP_EVIDENCE.WP_DATA,
+        })
+      ),
+      'skip'
+    );
   });
 });
 
 describe('promoteIllegalSkips', () => {
-  it('altyapı atlamasını failures listesine taşır', () => {
+  it('yapılandırılmamış / altyapı atlamasını failures listesine taşır', () => {
     const skips = [
       { check: 'sadaka-fixed-popup', description: 'Atlandı — ürün düzenleme sayfası açılamadı (#13)' },
-      { check: 'ok', description: 'yalnız yerel: kısa kod liste sayfası' },
+      makeSkip({
+        check: 'ok',
+        reason: SKIP_REASONS.LOCAL_ONLY,
+        evidence: SKIP_EVIDENCE.POLICY,
+        detail: 'kısa kod liste sayfası',
+      }),
+      {
+        check: 'loop-cards-product',
+        reason: SKIP_REASONS.NO_RELATED_PRODUCTS,
+        evidence: 'dom',
+        description: 'Benzer Bağışlar kartı yok',
+      },
     ];
     const failures = [];
-    const stats = { skipped: 2, failed: 0 };
+    const stats = { skipped: 3, failed: 0 };
     const n = promoteIllegalSkips({
       skips,
       failures,
       stats,
       makeFailure: (row) => row,
     });
-    assert.equal(n, 1);
+    assert.equal(n, 2);
     assert.equal(skips.length, 1);
     assert.equal(skips[0].check, 'ok');
-    assert.equal(failures.length, 1);
+    assert.equal(skips[0].reason, SKIP_REASONS.LOCAL_ONLY);
+    assert.equal(failures.length, 2);
     assert.match(failures[0].description, /Altyapı atlaması hata/);
     assert.equal(stats.skipped, 1);
-    assert.equal(stats.failed, 1);
+    assert.equal(stats.failed, 2);
+  });
+
+  it('liste sayfası yok (wp-data) atlama kalır', () => {
+    const skips = [
+      makeSkip({
+        check: 'list-page',
+        reason: SKIP_REASONS.NO_LIST_PAGE,
+        evidence: SKIP_EVIDENCE.WP_DATA,
+      }),
+    ];
+    const failures = [];
+    const stats = { skipped: 1, failed: 0 };
+    const n = promoteIllegalSkips({
+      skips,
+      failures,
+      stats,
+      makeFailure: (row) => row,
+    });
+    assert.equal(n, 0);
+    assert.equal(skips.length, 1);
+    assert.equal(failures.length, 0);
+    assert.equal(stats.skipped, 1);
+    assert.equal(stats.failed, 0);
   });
 });

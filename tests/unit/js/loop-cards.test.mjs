@@ -8,6 +8,7 @@ import {
   classifyLoopCardsResult,
   formatLoopCardFail,
   shopCardsHiddenFailure,
+  readRelatedProductIds,
   SHOP_CARD_SEL,
 } from '../../../tests/e2e/helpers/loop-cards.mjs';
 
@@ -65,6 +66,22 @@ describe('classifyLoopCardsResult', () => {
   it('kart yok: uzak skip, matris fail', () => {
     assert.equal(classifyLoopCardsResult([], { requireVisible: false }).status, 'skip');
     assert.equal(classifyLoopCardsResult([], { requireVisible: true }).status, 'fail');
+  });
+});
+
+describe('readRelatedProductIds', () => {
+  it('katalog related/upsell boş → wp-data', () => {
+    const r = readRelatedProductIds(12, { relatedIds: [], upsellIds: [] });
+    assert.equal(r.ok, true);
+    assert.deepEqual(r.ids, []);
+    assert.equal(r.evidence, 'wp-data');
+  });
+
+  it('katalog ID birleşir, kendi id elenir', () => {
+    const r = readRelatedProductIds(12, { relatedIds: [12, 20], upsellIds: ['20', 33] });
+    assert.equal(r.ok, true);
+    assert.deepEqual(r.ids, [20, 33]);
+    assert.equal(r.evidence, 'wp-data');
   });
 });
 
