@@ -96,8 +96,8 @@ function fillLocalProductSlugs(env) {
   const profile = env._profile;
   if (!profile) return env;
 
+  const data = loadFixtures(env);
   function applyFixtureRole(role) {
-    const data = loadFixtures(env);
     return applyOneFixtureRole(env, role, data?.roles?.[role]);
   }
 
@@ -123,7 +123,41 @@ function fillLocalProductSlugs(env) {
       });
     }
   }
+  applyLocalPages(env, data);
+  const mapLog = {
+    roles: Object.fromEntries(
+      roles.map((r) => [
+        r,
+        env._resolvedProducts[r]?.nav || env._resolvedProducts[r]?.path || env[`E2E_PRODUCT_${r.toUpperCase()}`] || '(yok)',
+      ])
+    ),
+    ids: Object.fromEntries(
+      Object.entries(env._resolvedProducts || {}).map(([k, v]) => [k, v.id])
+    ),
+    fixture: Array.isArray(env._fixtureRoles) ? env._fixtureRoles : [],
+    shop: env.E2E_SHOP_PAGE || '(yok)',
+    list: env.E2E_LIST_PAGE || '(yok)',
+    cart: env.E2E_CART_PAGE || '(yok)',
+  };
+  console.log(`[e2e] ürün eşlemesi ${profile.id}: ${JSON.stringify(mapLog)}`);
   return env;
+}
+
+/**
+ * Yerel liste/mağaza/sepet/ödeme — fixtures-local.json pages (prepare-full).
+ * @param {object} env
+ * @param {object|null|undefined} data
+ */
+function applyLocalPages(env, data) {
+  const pages = data?.pages && typeof data.pages === 'object' ? data.pages : {};
+  const pick = (row, fallback) => {
+    const pathName = String(row?.path || row?.url || fallback || '').trim();
+    return pathName;
+  };
+  if (!env.E2E_LIST_PAGE) env.E2E_LIST_PAGE = pick(pages.list, '');
+  if (!env.E2E_SHOP_PAGE) env.E2E_SHOP_PAGE = pick(pages.shop, '');
+  if (!env.E2E_CART_PAGE) env.E2E_CART_PAGE = pick(pages.cart, '');
+  if (!env.E2E_CHECKOUT_PAGE) env.E2E_CHECKOUT_PAGE = pick(pages.checkout, '');
 }
 
 /**
@@ -160,6 +194,10 @@ function applyOneFixtureRole(env, role, row) {
   const key = `E2E_PRODUCT_${role.toUpperCase()}`;
   const slug = String(row.slug || '').trim();
   const url = String(row.url || '').trim();
+  const published =
+    row.published === true ||
+    row.catalogVisible === true ||
+    String(row.status || '').toLowerCase() === 'publish';
   env[key] = nav;
   env._resolvedProducts[role] = {
     id: Number(row.id) || 0,
@@ -170,12 +208,13 @@ function applyOneFixtureRole(env, role, row) {
     nav,
     type: role,
     fromFixture: true,
+    fromCatalog: published,
   };
   env._fixtureRoles = Array.isArray(env._fixtureRoles) ? env._fixtureRoles : [];
   if (!env._fixtureRoles.includes(role)) env._fixtureRoles.push(role);
   env._roleSkips = Array.isArray(env._roleSkips) ? env._roleSkips : [];
   env._roleSkips = env._roleSkips.filter((s) => s.check !== `role-${role}`);
-  pushFixtureSurfaceSkips(env, role);
+  if (!published) pushFixtureSurfaceSkips(env, role);
   return true;
 }
 

@@ -12,6 +12,7 @@ import {
   assertProductNavTarget,
   isFixtureRole as roleIsFixture,
   popupPagePath,
+  loopProductSlug,
 } from './catalog-core.mjs';
 import { currencySwitchFromProfile, runCurrencySwitchChecks } from './currency-switch.mjs';
 import { getDevicePreset } from './devices.mjs';
@@ -1862,6 +1863,16 @@ async function settleLoopPage(page) {
  * @param {{ passed?: number, failed?: number }} [stats]
  */
 async function assertLoopCardsTitleAndDonate(page, surface, screenName, failures, stats) {
+  if (surface === 'shop') {
+    const shopCards = page.locator(
+      '.wdp-e2e-shop-products li.product, ul.products li.product, li.wc-block-product'
+    );
+    try {
+      await shopCards.first().waitFor({ state: 'visible', timeout: 10000 });
+    } catch (e) {
+      console.error(`[e2e:catch-fail] loop-cards-shop görünür kart: ${e && e.message ? e.message : e}`);
+    }
+  }
   let similarPat = 'benzer\\s*bağış';
   let donatePat = 'bağış\\s*yap';
   let cardSel = 'li.post-card, li.fusion-grid-column, .post-card, li.product, li.wc-block-product';
@@ -1909,7 +1920,11 @@ async function assertLoopCardsTitleAndDonate(page, surface, screenName, failures
         cards = Array.from(root.querySelectorAll(cardSel));
       }
     } else {
-      cards = Array.from(document.querySelectorAll('ul.products li.product')).slice(0, 12);
+      cards = Array.from(
+        document.querySelectorAll(
+          '.wdp-e2e-shop-products li.product, ul.products li.product, li.wc-block-product'
+        )
+      ).slice(0, 12);
     }
 
     const rows = cards.map((card, i) => {
@@ -2152,16 +2167,23 @@ async function assertDonationLoopButtons({
 }) {
   const page = await guest.newPage();
   try {
-    await page
-      .goto(withCacheBust(env.E2E_BASE_URL, '/', guestExtra), { waitUntil: 'domcontentloaded' })
-      .catch(() => {});
+    try {
+      await page.goto(withCacheBust(env.E2E_BASE_URL, '/', guestExtra), {
+        waitUntil: 'domcontentloaded',
+      });
+    } catch (e) {
+      console.error(`[e2e:catch-fail] loop-donate ana sayfa: ${e && e.message ? e.message : e}`);
+    }
     /** @type {Array<{key:string,slug:string,id:number,name:string}>} */
     const donationProducts = [];
     for (const [key, slug] of Object.entries(products)) {
       const loopDecision = decideScenarioProduct(env, key, 'loop-donate');
       if (loopDecision.action === 'skip') continue;
-      const id = await resolveProductIdBySlug(page, env.E2E_BASE_URL, slug);
-      let name = slug;
+      const rec = env._resolvedProducts?.[key];
+      const pathSlug = loopProductSlug(rec, slug);
+      const recId = Number(rec?.id || 0) || 0;
+      const id = recId || (await resolveProductIdBySlug(page, env.E2E_BASE_URL, pathSlug, recId));
+      let name = rec?.title || pathSlug || slug;
       if (id) {
         const info = await page.evaluate(
           async ({ base, pid }) => {
@@ -2180,7 +2202,7 @@ async function assertDonationLoopButtons({
         );
         if (info && info.name) name = info.name;
       }
-      donationProducts.push({ key, slug, id: id || 0, name });
+      donationProducts.push({ key, slug: pathSlug, id: id || 0, name });
     }
 
     for (const [label, rel] of [
@@ -3166,6 +3188,15 @@ export async function captureAll({
    * @param {number} productId
    */
   async function openShellForMode(page, mode, productId) {
+    const visibleForm = page.locator(SEL.donationForm).filter({ visible: true }).first();
+    if ((await visibleForm.count()) > 0) {
+      const wrap = page
+        .locator('.hdf-donation-modal-wrapper, .wdp-donation-form')
+        .filter({ has: page.locator(SEL.donationForm) })
+        .first();
+      const shell = (await wrap.count()) > 0 ? wrap : visibleForm;
+      return { ok: true, shell, openedAs: mode };
+    }
     await revealListProductTrigger(page, productId);
     await page
       .waitForFunction(() => !!(window.WDPApp && window.WDPApp.lazyModal), { timeout: 8000 })
@@ -3393,6 +3424,7 @@ export async function captureAll({
         return;
       }
       const shotMode2 = opened2.openedAs === 'panel' ? 'panel' : mode;
+      pausePluginAjaxWatch();
       try {
         await triggerShellValidationErrors(page, shotMode2);
       } catch (e) {
@@ -3405,6 +3437,8 @@ export async function captureAll({
           })
         );
         // Yine de durum kaydı için shot dene (iddia aşağıda fail eder)
+      } finally {
+        resumePluginAjaxWatch();
       }
       await prepareErrorShot(page, { shares: key === 'shares', shellMode: shotMode2 });
       await waitTwoFrames(page);
@@ -4130,9 +4164,12 @@ export async function captureAll({
       ['layout', './layout.mjs', 'runLayoutChecks', 'Yerleşim E2E koşucusu çöktü'],
     ];
     const { withEnvMutationLock } = await import('./mutation-lock.mjs');
+    const expectAjaxError = new Set(['form-fields', 'campaign-blocks', 'shortcodes']);
     await withEnvMutationLock(profile.id, async () => {
       for (const [area, mod, fn, crash] of metaSuites) {
         const tSuite = Date.now();
+        const pauseAjax = expectAjaxError.has(area);
+        if (pauseAjax) pausePluginAjaxWatch();
         try {
           if (!want(area)) {
             /* alan süzgeci */
@@ -4155,6 +4192,7 @@ export async function captureAll({
           failures.push(makeFailure({ check: `${area}-runner`, description: crash, error: e }));
           functionalStats.failed += 1;
         } finally {
+          if (pauseAjax) resumePluginAjaxWatch();
           logSection(area, tSuite);
         }
       }

@@ -237,8 +237,12 @@ function wdp_matrix_wdp_settings() {
 	if (!is_array($button)) {
 		$button = array();
 	}
-	$button['enable_donor_email'] = '1';
-	$button['enable_dedication']  = '1';
+	$button['enable_donor_email']     = '1';
+	$button['enable_dedication']      = '1';
+	$button['enable_amount_presets']  = '1';
+	if (empty($button['amount_presets'])) {
+		$button['amount_presets'] = '10,25,50,1234';
+	}
 	update_option('wdp_button_settings', $button, false);
 
 	$place = get_option('wdp_placement_settings', array());
@@ -285,8 +289,9 @@ function wdp_matrix_catalog() {
 			array(
 				'_allow_custom_price'   => 'yes',
 				'_min_custom_price'     => '10',
-				'_amount_presets'       => '10,25,50,1234',
-				'_wdp_donation_product' => 'yes',
+				'_amount_presets'          => '10,25,50,1234',
+				'_enable_amount_presets'   => 'yes',
+				'_wdp_donation_product'    => 'yes',
 				'_enable_email'         => 'yes',
 				'_enable_dedication'    => 'yes',
 				'_regular_price'        => '',
@@ -678,6 +683,297 @@ function wdp_matrix_read_order($order_id) {
 /**
  * @param string $state on|off
  */
+/**
+ * e2e:full --env local: panel görünümü, yayımlanmış fixture, liste kısa kodu, alt bağış.
+ *
+ * @return array<string,mixed>
+ */
+function wdp_matrix_prepare_full() {
+	wdp_matrix_coming_soon_off();
+	wdp_matrix_guest_checkout();
+	wdp_matrix_enable_cheque();
+	wdp_matrix_wdp_settings();
+	wdp_matrix_placement_display('button_panel');
+
+	$titles = array(
+		'custom'       => 'WDP E2E Custom',
+		'fixed'        => 'WDP E2E Fixed',
+		'shares'       => 'WDP E2E Shares',
+		'campaign'     => 'WDP E2E Campaign',
+		'sadaka'       => 'WDP E2E Sadaka',
+		'goal-reached' => 'WDP E2E Goal Reached',
+		'empty-price'  => 'WDP E2E Empty Price',
+	);
+	$roles = array();
+	$ids   = array();
+	foreach ($titles as $role => $title) {
+		$id = wdp_matrix_find_by_title($title);
+		if ($id <= 0) {
+			continue;
+		}
+		update_post_meta($id, '_wdp_auto_place', 'no');
+		if ($role === 'custom') {
+			update_post_meta($id, '_enable_amount_presets', 'yes');
+			if ((string) get_post_meta($id, '_amount_presets', true) === '') {
+				update_post_meta($id, '_amount_presets', '10,25,50,1234');
+			}
+		}
+		if (function_exists('wc_get_product')) {
+			$p = wc_get_product($id);
+			if ($p) {
+				$p->set_catalog_visibility('visible');
+				$p->set_status('publish');
+				$p->save();
+			}
+		} else {
+			wp_update_post(array( 'ID' => $id, 'post_status' => 'publish' ));
+		}
+		$permalink = get_permalink($id);
+		$path      = wdp_matrix_path_from_url($permalink, $id);
+		$roles[ $role ] = array(
+			'id'             => $id,
+			'name'           => $title,
+			'slug'           => get_post_field('post_name', $id),
+			'url'            => $permalink,
+			'path'           => $path,
+			'status'         => 'publish',
+			'published'      => true,
+			'catalogVisible' => true,
+		);
+		$ids[] = $id;
+		if (function_exists('wc_delete_product_transients')) {
+			wc_delete_product_transients($id);
+		}
+	}
+
+	$sadaka_id = isset($roles['sadaka']['id']) ? (int) $roles['sadaka']['id'] : 0;
+	if ($sadaka_id > 0) {
+		foreach (array( 'fixed', 'custom' ) as $host_role) {
+			if (empty($roles[ $host_role ]['id'])) {
+				continue;
+			}
+			$hid = (int) $roles[ $host_role ]['id'];
+			update_post_meta($hid, '_enable_sadaka_donation', 'yes');
+			update_post_meta($hid, '_sadaka_wc_product_id', $sadaka_id);
+		}
+		$success = get_option('wdp_success_settings', array());
+		if (!is_array($success)) {
+			$success = array();
+		}
+		$success['sadaka_wc_product_id'] = $sadaka_id;
+		update_option('wdp_success_settings', $success, false);
+	}
+
+	$donate_ids = array();
+	foreach (array( 'custom', 'fixed', 'shares', 'campaign' ) as $role) {
+		if (!empty($roles[ $role ]['id'])) {
+			$donate_ids[] = (int) $roles[ $role ]['id'];
+		}
+	}
+	$list = wdp_matrix_list_page_full($donate_ids);
+	$mu   = wdp_matrix_inject_panel_buttons($ids);
+	wdp_matrix_permalinks();
+	wdp_matrix_checkpoint();
+
+	$shop_id     = function_exists('wc_get_page_id') ? (int) wc_get_page_id('shop') : 0;
+	$cart_id     = function_exists('wc_get_page_id') ? (int) wc_get_page_id('cart') : 0;
+	$checkout_id = function_exists('wc_get_page_id') ? (int) wc_get_page_id('checkout') : 0;
+	foreach (array( $shop_id, $cart_id, $checkout_id ) as $pid) {
+		if ($pid > 0 && get_post_status($pid) !== 'publish') {
+			wp_update_post(array( 'ID' => $pid, 'post_status' => 'publish' ));
+		}
+	}
+	if ($cart_id > 0) {
+		wp_update_post(
+			array(
+				'ID'           => $cart_id,
+				'post_content' => '<!-- wp:shortcode -->[woocommerce_cart]<!-- /wp:shortcode -->',
+			)
+		);
+	}
+	if ($shop_id > 0) {
+		$shop_html = (string) get_post_field('post_content', $shop_id);
+		if (strpos($shop_html, '[products') === false && strpos($shop_html, 'woocommerce/product') === false) {
+			wp_update_post(
+				array(
+					'ID'           => $shop_id,
+					'post_content' => '<!-- wp:shortcode -->[products limit="16" columns="4"]<!-- /wp:shortcode -->',
+				)
+			);
+		}
+	}
+
+	return array(
+		'ok'      => true,
+		'display' => 'button_panel',
+		'roles'   => $roles,
+		'list'    => $list,
+		'mu'      => $mu,
+		'pages'   => array(
+			'list'     => $list,
+			'shop'     => wdp_matrix_page_ref($shop_id, function_exists('wc_get_page_permalink') ? wc_get_page_permalink('shop') : ''),
+			'cart'     => wdp_matrix_page_ref($cart_id, function_exists('wc_get_cart_url') ? wc_get_cart_url() : ''),
+			'checkout' => wdp_matrix_page_ref($checkout_id, function_exists('wc_get_checkout_url') ? wc_get_checkout_url() : ''),
+		),
+	);
+}
+
+/**
+ * @param string $title
+ * @return int
+ */
+function wdp_matrix_find_by_title($title) {
+	$found = get_posts(
+		array(
+			'post_type'        => array( 'product', 'page', 'post' ),
+			'post_status'      => 'any',
+			'title'            => $title,
+			'numberposts'      => 1,
+			'suppress_filters' => true,
+		)
+	);
+	return $found ? (int) $found[0]->ID : 0;
+}
+
+/**
+ * @param string $permalink
+ * @param int    $id
+ * @return string
+ */
+function wdp_matrix_path_from_url($permalink, $id = 0) {
+	$path = '';
+	if (is_string($permalink) && $permalink !== '') {
+		$u     = function_exists('wp_parse_url') ? wp_parse_url($permalink) : parse_url($permalink);
+		$ppath = is_array($u) && !empty($u['path']) ? $u['path'] : '/';
+		$query = is_array($u) && !empty($u['query']) ? '?' . $u['query'] : '';
+		$path  = $ppath . $query;
+	}
+	if ($path === '' || $path === '/') {
+		$path = '/?post_type=product&p=' . (int) $id;
+	}
+	return $path;
+}
+
+/**
+ * @param int    $id
+ * @param string $url
+ * @return array<string,mixed>
+ */
+function wdp_matrix_page_ref($id, $url) {
+	$path = '';
+	if (is_string($url) && $url !== '') {
+		$u    = function_exists('wp_parse_url') ? wp_parse_url($url) : parse_url($url);
+		$path = is_array($u) && !empty($u['path']) ? $u['path'] : '';
+	}
+	return array(
+		'id'   => (int) $id,
+		'path' => $path,
+		'url'  => (string) $url,
+	);
+}
+
+/**
+ * @param int[] $ids
+ * @return array<string,mixed>
+ */
+function wdp_matrix_list_page_full(array $ids) {
+	$title   = 'WDP E2E List';
+	$page_id = wdp_matrix_find_marked($title);
+	if (!$page_id) {
+		$page_id = wdp_matrix_find_by_title($title);
+	}
+	$id_list = implode(',', array_filter(array_map('intval', $ids)));
+	$content = '[wdp_donations button="popup" ids="' . esc_attr($id_list) . '" limit="12" tabs="yes"]';
+	if (!$page_id) {
+		$page_id = (int) wp_insert_post(
+			array(
+				'post_title'   => $title,
+				'post_status'  => 'publish',
+				'post_type'    => 'page',
+				'post_name'    => 'wdp-e2e-list',
+				'post_content' => $content,
+			),
+			true
+		);
+		if (!$page_id || is_wp_error($page_id)) {
+			throw new RuntimeException('liste sayfası oluşturulamadı');
+		}
+	} else {
+		wp_update_post(
+			array(
+				'ID'           => $page_id,
+				'post_status'  => 'publish',
+				'post_content' => $content,
+			)
+		);
+	}
+	update_post_meta($page_id, '_wdp_e2e_test', WDP_MATRIX_MARK);
+	$permalink = get_permalink($page_id);
+	return array(
+		'id'   => $page_id,
+		'path' => wdp_matrix_path_from_url($permalink, $page_id),
+		'url'  => $permalink,
+	);
+}
+
+/**
+ * TT5 blok teması klasik Woo kancasını atlayabilir — panel kısa kodu (tek giriş).
+ *
+ * @param int[] $ids
+ * @return array<string,mixed>
+ */
+function wdp_matrix_inject_panel_buttons(array $ids) {
+	$ids  = array_values(array_unique(array_filter(array_map('intval', $ids))));
+	$file = wdp_matrix_inject_mu_file();
+	if (!$ids) {
+		if (is_file($file)) {
+			unlink($file);
+		}
+		return array( 'ok' => true, 'ids' => array(), 'file' => $file );
+	}
+	$list = implode(',', $ids);
+	$php  = "<?php\n";
+	$php .= "\$wdp_e2e_print_sc = static function () {\n";
+	$php .= "\tstatic \$done = false;\n";
+	$php .= "\tif (\$done) { return; }\n";
+	$php .= "\tif (!function_exists('is_product') || !is_product()) { return; }\n";
+	$php .= "\t\$id = (int) get_queried_object_id();\n";
+	$php .= "\tif (!in_array(\$id, array({$list}), true)) { return; }\n";
+	$php .= "\t\$done = true;\n";
+	$php .= "\techo do_shortcode('[wdp_donation_button_panel id=\"' . \$id . '\"]');\n";
+	$php .= "};\n";
+	$php .= "add_action('woocommerce_single_product_summary', \$wdp_e2e_print_sc, 31);\n";
+	$php .= "add_action('wp_footer', \$wdp_e2e_print_sc, 20);\n";
+	$php .= "add_filter('action_scheduler_allow_async_request_runner', '__return_false');\n";
+	$php .= "add_action('init', static function () {\n";
+	$php .= "\tglobal \$wpdb;\n";
+	$php .= "\tif (isset(\$wpdb) && method_exists(\$wpdb, 'query')) {\n";
+	$php .= "\t\t\$wpdb->query('PRAGMA busy_timeout=8000');\n";
+	$php .= "\t\t\$wpdb->query('PRAGMA journal_mode=WAL');\n";
+	$php .= "\t}\n";
+	$php .= "}, 0);\n";
+	$php .= "add_action('wp_body_open', static function () {\n";
+	$php .= "\tif (!function_exists('is_shop') || !is_shop()) { return; }\n";
+	$php .= "\tstatic \$shop_done = false;\n";
+	$php .= "\tif (\$shop_done) { return; }\n";
+	$php .= "\t\$shop_done = true;\n";
+	$php .= "\techo '<div class=\"wdp-e2e-shop-products\" style=\"display:block;visibility:visible\">';\n";
+	$php .= "\techo do_shortcode('[products ids=\"{$list}\" columns=\"4\"]');\n";
+	$php .= "\techo '</div>';\n";
+	$php .= "}, 5);\n";
+	if (file_put_contents($file, $php) === false) {
+		return array( 'ok' => false, 'error' => 'mu-plugin yazılamadı' );
+	}
+	if (function_exists('opcache_invalidate')) {
+		opcache_invalidate($file, true);
+	}
+	return array(
+		'ok'   => true,
+		'ids'  => $ids,
+		'file' => $file,
+	);
+}
+
 function wdp_matrix_plugin($state) {
 	$file = 'woo-donation-popup/woo-donation-popup.php';
 	if ($state === 'off') {
@@ -783,6 +1079,8 @@ try {
 		$result = array_merge($result, wdp_matrix_product_content($arg1 !== '' ? $arg1 : 'custom', $arg2));
 	} elseif ($cmd === 'placement-display') {
 		$result = array_merge($result, wdp_matrix_placement_display($arg1));
+	} elseif ($cmd === 'prepare-full') {
+		$result = array_merge($result, wdp_matrix_prepare_full());
 	} elseif ($cmd === 'ensure-admin') {
 		$user = get_user_by('login', 'admin');
 		if (!$user) {

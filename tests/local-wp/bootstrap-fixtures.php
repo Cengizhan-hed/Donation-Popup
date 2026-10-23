@@ -21,13 +21,76 @@ $run_id = isset($argv[3]) ? $argv[3] : 'fixture';
 $meta   = '_wdp_e2e_test';
 
 $catalog = array(
-	'custom'       => array( 'WDP E2E Custom', array( '_allow_custom_price' => 'yes', '_min_custom_price' => '10', '_wdp_donation_product' => 'yes' ) ),
-	'fixed'        => array( 'WDP E2E Fixed', array( '_wdp_donation_product' => 'yes', '_regular_price' => '100', '_price' => '100' ) ),
-	'shares'       => array( 'WDP E2E Shares', array( '_wdp_donation_product' => 'yes', '_allow_multiple_shares' => 'yes', '_max_shares' => '7' ) ),
-	'campaign'     => array( 'WDP E2E Campaign', array( '_wdp_donation_product' => 'yes', '_enable_progress_bar' => 'yes', '_progress_bar_limit' => '500' ) ),
-	'sadaka'       => array( 'WDP E2E Sadaka', array( '_allow_custom_price' => 'yes', '_min_custom_price' => '10' ) ),
-	'goal-reached' => array( 'WDP E2E Goal Reached', array( '_enable_progress_bar' => 'yes', '_progress_bar_limit' => '100', '_wdp_total_donation_amount' => '100' ) ),
-	'empty-price'  => array( 'WDP E2E Empty Price', array( '_allow_custom_price' => 'yes', '_min_custom_price' => '5' ) ),
+	'custom'       => array(
+		'WDP E2E Custom',
+		array(
+			'_allow_custom_price'   => 'yes',
+			'_min_custom_price'     => '10',
+			'_amount_presets'          => '10,25,50,1234',
+			'_enable_amount_presets'   => 'yes',
+			'_wdp_donation_product'    => 'yes',
+			'_enable_email'         => 'yes',
+			'_enable_dedication'    => 'yes',
+		),
+	),
+	'fixed'        => array(
+		'WDP E2E Fixed',
+		array(
+			'_wdp_donation_product' => 'yes',
+			'_regular_price'        => '100',
+			'_price'                => '100',
+		),
+	),
+	'shares'       => array(
+		'WDP E2E Shares',
+		array(
+			'_wdp_donation_product'  => 'yes',
+			'_allow_multiple_shares' => 'yes',
+			'_max_shares'            => '7',
+			'_regular_price'         => '1400',
+			'_price'                 => '1400',
+		),
+	),
+	'campaign'     => array(
+		'WDP E2E Campaign',
+		array(
+			'_wdp_donation_product'      => 'yes',
+			'_enable_progress_bar'       => 'yes',
+			'_progress_bar_limit'        => '500',
+			'_wdp_total_donation_amount' => '100',
+			'_goal_reached_action'       => 'continue',
+			'_regular_price'             => '50',
+			'_price'                     => '50',
+		),
+	),
+	'sadaka'       => array(
+		'WDP E2E Sadaka',
+		array(
+			'_allow_custom_price'   => 'yes',
+			'_min_custom_price'     => '10',
+			'_wdp_donation_product' => 'yes',
+		),
+	),
+	'goal-reached' => array(
+		'WDP E2E Goal Reached',
+		array(
+			'_enable_progress_bar'       => 'yes',
+			'_progress_bar_limit'        => '100',
+			'_wdp_total_donation_amount' => '100',
+			'_goal_reached_action'       => 'message',
+			'_wdp_donation_product'      => 'yes',
+			'_regular_price'             => '25',
+			'_price'                     => '25',
+		),
+	),
+	'empty-price'  => array(
+		'WDP E2E Empty Price',
+		array(
+			'_allow_custom_price'   => 'yes',
+			'_min_custom_price'     => '5',
+			'_wdp_donation_product' => 'yes',
+		),
+	),
 );
 
 function wdp_local_fixture_post_type() {
@@ -35,18 +98,39 @@ function wdp_local_fixture_post_type() {
 }
 
 function wdp_local_find_fixture($title, $meta, $run_id) {
-	$found = get_posts(
+	$queries = array(
 		array(
-			'post_type'              => wdp_local_fixture_post_type(),
-			'post_status'            => 'any',
-			'title'                  => $title,
-			'numberposts'            => 5,
-			'meta_key'               => $meta,
-			'meta_value'             => $run_id,
-			'suppress_filters'       => true,
-		)
+			'post_type'        => wdp_local_fixture_post_type(),
+			'post_status'      => 'any',
+			'title'            => $title,
+			'numberposts'      => 5,
+			'meta_key'         => $meta,
+			'meta_value'       => $run_id,
+			'suppress_filters' => true,
+		),
+		array(
+			'post_type'        => wdp_local_fixture_post_type(),
+			'post_status'      => 'any',
+			'title'            => $title,
+			'numberposts'      => 5,
+			'meta_key'         => $meta,
+			'suppress_filters' => true,
+		),
+		array(
+			'post_type'        => wdp_local_fixture_post_type(),
+			'post_status'      => 'any',
+			'title'            => $title,
+			'numberposts'      => 5,
+			'suppress_filters' => true,
+		),
 	);
-	return $found ? (int) $found[0]->ID : 0;
+	foreach ($queries as $q) {
+		$found = get_posts($q);
+		if ($found) {
+			return (int) $found[0]->ID;
+		}
+	}
+	return 0;
 }
 
 $roles   = array();
@@ -115,17 +199,19 @@ if ($action === 'remove') {
 	return;
 }
 
+$publish = (string) getenv('WDP_E2E_PUBLISH_FIXTURES') === '1';
+
 foreach ($catalog as $role => $row) {
 	$title = $row[0];
 	$id    = wdp_local_find_fixture($title, $meta, $run_id);
+	$type  = wdp_local_fixture_post_type();
 	if ($id) {
 		$skipped[] = $role . ':exists';
 	} else {
-		$type = wdp_local_fixture_post_type();
 		$id = wp_insert_post(
 			array(
 				'post_title'  => $title,
-				'post_status' => 'private',
+				'post_status' => $publish ? 'publish' : 'private',
 				'post_type'   => $type,
 				'post_name'   => sanitize_title($title),
 			),
@@ -136,20 +222,27 @@ foreach ($catalog as $role => $row) {
 			exit(1);
 		}
 		$id = (int) $id;
-		update_post_meta($id, $meta, $run_id);
-		update_post_meta($id, '_visibility', 'hidden');
-		foreach ($row[1] as $k => $v) {
-			update_post_meta($id, $k, $v);
-		}
-		if ($type === 'product' && function_exists('wc_get_product')) {
-			$p = wc_get_product($id);
-			if ($p) {
-				$p->set_catalog_visibility('hidden');
-				$p->set_status('private');
-				$p->save();
-			}
-		}
 		$created[] = array( 'role' => $role, 'id' => $id );
+	}
+	update_post_meta($id, $meta, $run_id);
+	update_post_meta($id, '_visibility', $publish ? 'visible' : 'hidden');
+	foreach ($row[1] as $k => $v) {
+		update_post_meta($id, $k, $v);
+	}
+	if ($type === 'product' && function_exists('wc_get_product')) {
+		$p = wc_get_product($id);
+		if ($p) {
+			$p->set_catalog_visibility($publish ? 'visible' : 'hidden');
+			$p->set_status($publish ? 'publish' : 'private');
+			$p->set_virtual(true);
+			$p->set_sold_individually(false);
+			$p->set_stock_status('instock');
+			if (isset($row[1]['_regular_price']) && $row[1]['_regular_price'] !== '') {
+				$p->set_regular_price($row[1]['_regular_price']);
+				$p->set_price(isset($row[1]['_price']) ? $row[1]['_price'] : $row[1]['_regular_price']);
+			}
+			$p->save();
+		}
 	}
 	$permalink = get_permalink($id);
 	$path      = '';
@@ -163,12 +256,15 @@ foreach ($catalog as $role => $row) {
 		$path = '/?post_type=product&p=' . (int) $id;
 	}
 	$roles[ $role ] = array(
-		'id'   => (int) $id,
-		'name' => $title,
-		'slug' => get_post_field('post_name', $id),
-		'url'  => $permalink,
-		'path' => $path,
-		'mark' => $run_id,
+		'id'             => (int) $id,
+		'name'           => $title,
+		'slug'           => get_post_field('post_name', $id),
+		'url'            => $permalink,
+		'path'           => $path,
+		'mark'           => $run_id,
+		'status'         => $publish ? 'publish' : 'private',
+		'published'      => $publish,
+		'catalogVisible' => $publish,
 	);
 }
 

@@ -77,7 +77,7 @@ export function isFixtureRole(env, role) {
  */
 export function isPublishedCatalogRole(env, role) {
   const rec = env?._resolvedProducts?.[role];
-  return !!(rec && rec.fromCatalog && !rec.fromFixture);
+  return !!(rec && rec.fromCatalog);
 }
 
 /**
@@ -275,6 +275,32 @@ export function navTargetFromUrl(urlOrPath) {
   if (raw.startsWith('/')) return raw;
   if (raw.startsWith('?')) return `/${raw}`;
   return '';
+}
+
+/**
+ * Döngü eşlemesi için path slug (tam URL Store API’de id=#0 üretir).
+ * @param {{ slug?: string, path?: string, nav?: string, url?: string }|null|undefined} rec
+ * @param {string} [raw]
+ * @returns {string}
+ */
+export function loopProductSlug(rec, raw = '') {
+  const fromRec = String(rec?.slug || '').trim();
+  if (fromRec && !/[:/?#]/.test(fromRec)) return fromRec;
+  const s = String(raw || rec?.path || rec?.nav || rec?.url || fromRec || '').trim();
+  if (!s) return '';
+  try {
+    const u = new URL(s, 'http://127.0.0.1');
+    const parts = String(u.pathname || '')
+      .split('/')
+      .filter(Boolean);
+    const last = parts[parts.length - 1] || '';
+    if (last && last !== 'product' && last !== 'urun') return last;
+  } catch {
+    const parts = s.split('/').filter(Boolean);
+    const last = parts[parts.length - 1] || '';
+    if (last && !/[:?#]/.test(last)) return last;
+  }
+  return fromRec;
 }
 
 /**

@@ -14,6 +14,7 @@ import {
   shellTriggerLocator,
   clickAddToCartWithRetry,
   makeFailure,
+  waitForShellClosed,
 } from './checks.mjs';
 import { getProductMeta, setProductMeta } from './staging-wp-meta.mjs';
 import { requireFixtureRole, mutationBrowserContext } from './fixtures.mjs';
@@ -298,8 +299,6 @@ export async function runAmountOptionsChecks({
       });
       await setProductMeta(customId, RECOMMENDED_META, recommendedAmount);
       metaTouched = true;
-      // Meta sonrası product_info önbelleği — kısa bekleme + hard reload yolu
-      await page.waitForTimeout(500);
       shell = await openProductShell(page, 'popup', {
         baseUrl,
         listPath,
@@ -417,14 +416,16 @@ export async function runAmountOptionsChecks({
       await page.locator(SEL.modalClose).first().click({ timeout: 5000 }).catch(async () => {
         await page.keyboard.press('Escape');
       });
-      await openShellLocator(page, 'popup').waitFor({ state: 'hidden', timeout: CHECK_MS }).catch(() => {});
-      await page.waitForTimeout(400);
-      let trigger = shellTriggerLocator(page, 'popup', { productId: customId });
+      await waitForShellClosed(page, CHECK_MS);
+      let trigger = shellTriggerLocator(page, 'panel', { productId: customId });
       if ((await trigger.count()) === 0) {
-        trigger = page.locator(SEL.centeredPopupTrigger).first();
+        trigger = shellTriggerLocator(page, 'popup', { productId: customId });
+      }
+      if ((await trigger.count()) === 0) {
+        trigger = page.locator(`${SEL.sidePanelTrigger}, ${SEL.centeredPopupTrigger}`).first();
       }
       await clickShellTrigger(trigger, CHECK_MS);
-      shell = openShellLocator(page, 'popup');
+      shell = openShellLocator(page, '');
       await waitShellReady(shell);
       const still = shell.locator(`.wdp-amount-preset[data-amount="${amt}"].selected`);
       const priceVal = ((await shell.locator(SEL.customPrice).first().inputValue().catch(() => '')) || '').trim();

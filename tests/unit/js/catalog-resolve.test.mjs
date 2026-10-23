@@ -378,6 +378,36 @@ describe('yerel uzak-benzetim katalog', () => {
     assert.equal(env._roleSkips.filter((s) => s.check === 'popup-shares').length, 1);
     setActiveProfile(null);
   });
+
+  it('yerel yayımlanmış fixture loop/popup koşar (private skip yok)', () => {
+    const env = {
+      _profile: { id: 'local', allowedHosts: ['127.0.0.1'] },
+      _resolvedProducts: {},
+      _roleSkips: [],
+      _fixtureRoles: [],
+      E2E_LIST_PAGE: '/wdp-e2e-list/',
+    };
+    overlayFixtureRoles(env, {
+      roles: {
+        shares: {
+          id: 17,
+          name: 'WDP E2E Shares',
+          slug: 'wdp-e2e-shares',
+          path: '/?post_type=product&p=17',
+          url: 'http://127.0.0.1:8899/?post_type=product&p=17',
+          published: true,
+          catalogVisible: true,
+          status: 'publish',
+        },
+      },
+    });
+    assert.equal(env._resolvedProducts.shares.fromFixture, true);
+    assert.equal(env._resolvedProducts.shares.fromCatalog, true);
+    assert.equal(decideScenarioProduct(env, 'shares', 'loop-donate').action, 'run-visitor');
+    assert.equal(decideScenarioProduct(env, 'shares', 'popup').action, 'run-visitor');
+    assert.equal(decideScenarioProduct(env, 'shares', 'panel').action, 'run-visitor');
+    assert.equal(env._roleSkips.some((s) => /popup-shares|loop-donate/.test(s.check)), false);
+  });
 });
 
 describe('katalog --explain raporu', () => {

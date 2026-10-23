@@ -310,21 +310,53 @@ export function prepareConfigSnapshot(resolved) {
   return { snap, meta };
 }
 
-function killPortListeners(port) {
+/**
+ * @param {number} port
+ * @returns {number[]}
+ */
+export function listenPids(port) {
   const r = spawnSync('lsof', ['-nP', `-iTCP:${port}`, '-sTCP:LISTEN', '-t'], {
     encoding: 'utf8',
   });
-  const pids = String(r.stdout || '')
+  return String(r.stdout || '')
     .trim()
     .split(/\s+/)
     .map((x) => Number(x))
     .filter((n) => Number.isFinite(n) && n > 1);
+}
+
+/**
+ * Portu dinleyen süreçleri kapat; kalıntı kalmayınca döner.
+ * @param {number} port
+ * @param {number} [timeoutMs]
+ */
+export async function freeListenPort(port, timeoutMs = 8000) {
+  const t0 = Date.now();
+  let pids = listenPids(port);
   for (const pid of pids) {
     try {
       process.kill(pid, 'SIGTERM');
-    } catch {
-      /* already gone */
+    } catch (e) {
+      if (e && e.code !== 'ESRCH') throw e;
     }
+  }
+  while (Date.now() - t0 < timeoutMs) {
+    pids = listenPids(port);
+    if (!pids.length) return;
+    if (Date.now() - t0 > 1500) {
+      for (const pid of pids) {
+        try {
+          process.kill(pid, 'SIGKILL');
+        } catch (e) {
+          if (e && e.code !== 'ESRCH') throw e;
+        }
+      }
+    }
+    await new Promise((r) => setTimeout(r, 40));
+  }
+  pids = listenPids(port);
+  if (pids.length) {
+    throw new Error(`port ${port} hâlâ dinleniyor: ${pids.join(',')}`);
   }
 }
 
@@ -364,45 +396,68 @@ export async function startPhpServer(opts) {
   const port = Number(opts.port);
   const wpDir = opts.wpDir;
   copyRouter(wpDir);
-  killPortListeners(port);
-  await new Promise((r) => setTimeout(r, 300));
   const logFile = path.join(MATRIX_DIR, `php-${port}.log`);
   fs.mkdirSync(path.dirname(logFile), { recursive: true });
-  const logFd = fs.openSync(logFile, 'a');
-  const child = spawn('php', ['-S', `${host}:${port}`, '-t', wpDir, path.join(wpDir, 'router.php')], {
-    cwd: wpDir,
-    stdio: ['ignore', logFd, logFd],
-    env: { ...process.env },
-  });
-  fs.closeSync(logFd);
+  fs.writeFileSync(logFile, '', 'utf8');
   const url = `http://${host}:${port}/`;
-  try {
+  /** @type {import('node:child_process').ChildProcess | null} */
+  let child = null;
+  let stopping = false;
+  let spawnCount = 0;
+
+  async function spawnOnce() {
+    await freeListenPort(port);
+    spawnCount += 1;
+    const logFd = fs.openSync(logFile, 'a');
+    const proc = spawn('php', ['-S', `${host}:${port}`, '-t', wpDir, path.join(wpDir, 'router.php')], {
+      cwd: wpDir,
+      stdio: ['ignore', logFd, logFd],
+      env: { ...process.env },
+    });
+    fs.closeSync(logFd);
+    child = proc;
+    proc.on('exit', (code, sig) => {
+      if (stopping) return;
+      console.error(`[e2e] PHP ${port} çıktı kod=${code} sig=${sig} — yeniden başlat`);
+      spawnOnce().catch((e) => {
+        console.error(`[e2e:catch-fail] PHP restart: ${e && e.message ? e.message : e}`);
+      });
+    });
     await waitHttp(url);
-    if (child.exitCode != null) {
-      throw new Error(`PHP sunucu çıktı (kod ${child.exitCode})`);
+    if (proc.exitCode != null) {
+      throw new Error(`PHP sunucu çıktı (kod ${proc.exitCode})`);
     }
-  } catch (e) {
-    if (child.exitCode == null) child.kill('SIGTERM');
-    throw new Error(`${e.message}`);
   }
+
+  await spawnOnce();
+
   return {
-    child,
+    get child() {
+      return child;
+    },
     url,
     port,
     wpDir,
+    spawnCount: () => spawnCount,
     async stop() {
-      if (child.exitCode != null) return;
-      child.kill('SIGTERM');
+      stopping = true;
+      const proc = child;
+      if (!proc || proc.exitCode != null) {
+        await freeListenPort(port, 3000);
+        return;
+      }
+      proc.kill('SIGTERM');
       await new Promise((resolve) => {
         const t = setTimeout(() => {
-          if (child.exitCode == null) child.kill('SIGKILL');
+          if (proc.exitCode == null) proc.kill('SIGKILL');
           resolve();
         }, 3000);
-        child.once('exit', () => {
+        proc.once('exit', () => {
           clearTimeout(t);
           resolve();
         });
       });
+      await freeListenPort(port, 3000);
     },
   };
 }
@@ -418,6 +473,7 @@ export async function prepareLocalFullStack(port = 8899) {
   const { snap } = prepareConfigSnapshot(resolved);
   const wpDir = materializeWorker(resolved.id, port, snap);
   process.env.WDP_LOCAL_WP_DIR = wpDir;
+  process.env.WDP_E2E_PUBLISH_FIXTURES = '1';
   const admin = matrixEval(wpDir, ['ensure-admin']);
   if (!admin.ok) {
     throw new Error(`local admin: ${admin.error || JSON.stringify(admin).slice(0, 200)}`);
@@ -426,13 +482,32 @@ export async function prepareLocalFullStack(port = 8899) {
   const r = spawnSync('php', [phpFile, 'upsert', 'local', 'fixture'], {
     encoding: 'utf8',
     cwd: ROOT,
-    env: { ...process.env, WDP_LOCAL_WP_DIR: wpDir },
+    env: { ...process.env, WDP_LOCAL_WP_DIR: wpDir, WDP_E2E_PUBLISH_FIXTURES: '1' },
     timeout: 120000,
   });
   if (r.status !== 0) {
     throw new Error(`local fixtures: ${(r.stderr || r.stdout || '').slice(0, 500)}`);
   }
   const data = parseJsonLine(r.stdout);
+  const prepared = matrixEval(wpDir, ['prepare-full']);
+  if (!prepared.ok) {
+    throw new Error(`local prepare-full: ${prepared.error || JSON.stringify(prepared).slice(0, 300)}`);
+  }
+  if (prepared.roles && typeof prepared.roles === 'object') {
+    data.roles = { ...(data.roles || {}), ...prepared.roles };
+    for (const [role, row] of Object.entries(data.roles)) {
+      if (!row || typeof row !== 'object') continue;
+      data.roles[role] = {
+        ...row,
+        mark: row.mark || data.runId || 'fixture',
+        published: true,
+        catalogVisible: true,
+        status: 'publish',
+      };
+    }
+  }
+  data.pages = prepared.pages || {};
+  data.published = true;
   const outFile = path.join(ROOT, 'build/e2e', 'fixtures-local.json');
   fs.mkdirSync(path.dirname(outFile), { recursive: true });
   fs.writeFileSync(outFile, JSON.stringify(data, null, 2) + '\n');

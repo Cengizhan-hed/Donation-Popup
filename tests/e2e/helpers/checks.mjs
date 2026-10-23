@@ -272,21 +272,40 @@ export async function gotoWooCart(page, baseUrl) {
       await page.goto(cartUrl, { waitUntil: 'domcontentloaded', timeout: 20000 });
     } catch (navErr) {
       if (!/interrupted/i.test(String(navErr && navErr.message))) throw navErr;
-      await page.waitForLoadState('domcontentloaded').catch(() => {});
+      await page.waitForLoadState('domcontentloaded');
     }
   }
-  const cartUi = page.locator(
-    '.woocommerce-cart-form, .wc-block-cart, .wp-block-woocommerce-cart, .cart_item, .woocommerce-cart-item, .cart-empty, .woocommerce-info'
-  );
-  if ((await cartUi.count()) > 0) {
-    await cartUi.first().waitFor({ state: 'visible', timeout: 10000 });
+  const ready = page.locator(CART_READY_SEL);
+  try {
+    await ready.filter({ visible: true }).first().waitFor({ state: 'visible', timeout: 10000 });
+  } catch (e) {
+    const body = ((await page.locator('body').innerText()) || '').slice(0, 400);
+    if (!/sepetiniz|your cart|cart is currently empty|sepetinizde ürün yok/i.test(body)) {
+      throw e;
+    }
   }
   return page.url();
 }
 
 const CART_REMOVE_SEL =
   '.woocommerce-cart-form .remove, a.remove, .wc-block-cart-item__remove-link';
-const CART_EMPTY_SEL = '.cart-empty, .wc-block-cart__empty-cart, .woocommerce-info';
+const CART_EMPTY_SEL =
+  '.cart-empty, .wc-block-cart__empty-cart, .wc-empty-cart-message, .wp-block-woocommerce-empty-cart-block, .woocommerce-info';
+
+/** Görünür sepet hazır (gizli `.wp-block-woocommerce-cart` sarmalayıcı değil). */
+export const CART_READY_SEL = [
+  '.woocommerce-cart-form',
+  '.wc-block-cart-items',
+  '.wc-block-cart__empty-cart',
+  '.wp-block-woocommerce-empty-cart-block',
+  '.wp-block-woocommerce-filled-cart-block',
+  '.wp-block-woocommerce-cart:not([hidden])',
+  '.wc-empty-cart-message',
+  '.cart_item',
+  '.woocommerce-cart-item',
+  '.cart-empty',
+  '.woocommerce-info',
+].join(', ');
 
 /**
  * Playwright sayfası sitenin http(s) origin'inde mi?
@@ -369,6 +388,8 @@ export async function emptyCart(page, baseUrl) {
       }
       return '';
     }, baseUrl);
+    const n = await cartItemCount(page, baseUrl);
+    if (n === 0) return;
   }
   await emptyCartViaPageHtml(page, baseUrl);
 }
