@@ -7,25 +7,78 @@
 if (!defined("ABSPATH")) { exit; }
 
 trait WDP_Ajax_Product_Trait {
+    /**
+     * POST/istek gövdesinden ürün ID (0 = eksik/geçersiz).
+     *
+     * @param mixed $raw Ham product_id.
+     * @return int
+     */
+    public static function parse_product_info_id($raw) {
+        return absint(wp_unslash($raw));
+    }
+
+    /**
+     * get_product_info için ürün: yayımlı (veya düzenlenebilir) yeterli.
+     * Katalog gizliliği / is_visible bu uçta formu düşürmez (döngü/kısa kod).
+     *
+     * @param int             $product_id  Ürün ID.
+     * @param WC_Product|null $product_out Çözülen ürün.
+     * @return bool
+     */
+    public static function resolve_product_for_info($product_id, &$product_out = null) {
+        $product_id  = absint($product_id);
+        $product_out = null;
+        if ($product_id <= 0) {
+            return false;
+        }
+
+        $product = function_exists('wc_get_product') ? wc_get_product($product_id) : null;
+        if (!$product) {
+            return false;
+        }
+
+        if (function_exists('current_user_can') && current_user_can('edit_post', $product_id)) {
+            $product_out = $product;
+            return true;
+        }
+
+        $status = method_exists($product, 'get_status') ? (string) $product->get_status() : '';
+        if ($status !== 'publish') {
+            return false;
+        }
+
+        $password = '';
+        if (method_exists($product, 'get_post_password')) {
+            $password = (string) $product->get_post_password();
+        }
+        if ($password !== '') {
+            return false;
+        }
+
+        $product_out = $product;
+        return true;
+    }
+
     /** Ürün meta verilerini önbellekleyerek ön yüze JSON döndürür. */
     public static function get_product_info() {
         try {
             self::run_secured_ajax('wdp_get_product_info', 'get_product_info', 60, 60, false);
 
-            $product_id = isset($_POST['product_id']) ? absint(wp_unslash($_POST['product_id'])) : 0;
+            $product_id = isset($_POST['product_id']) ? self::parse_product_info_id($_POST['product_id']) : 0;
 
             if (!$product_id) {
-                throw new WDP_Validation_Exception(__('Geçersiz ürün ID', 'woo-donation-popup'));
-            }
-            
-            $product = null;
-            // SECURITY: Validate product ID and reuse resolved product instance.
-            if (!WDP_Security::validate_product_id($product_id, $product)) {
-                throw new WDP_Validation_Exception(__('Geçersiz ürün ID', 'woo-donation-popup'));
+                wp_send_json_error(
+                    array('message' => __('Geçersiz ürün ID', 'woo-donation-popup')),
+                    400
+                );
             }
 
-            if (!$product) {
-                throw new WDP_Product_Not_Found_Exception($product_id);
+            $product = null;
+            if (!self::resolve_product_for_info($product_id, $product) || !$product) {
+                wp_send_json_error(
+                    array('message' => __('Geçersiz ürün ID', 'woo-donation-popup')),
+                    400
+                );
             }
 
         // PERFORMANCE: Use object cache if available (faster than transient)

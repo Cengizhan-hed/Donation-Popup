@@ -219,12 +219,21 @@
       }
 
       // Başarı mesajını göster
-      if (isCheckout) {
-        // Ödeme sayfasına yönlendir
-        safeLog("Redirecting to checkout:", data.checkout_url);
+      const resolveStorefrontUrl =
+        (WDPApp.utils && typeof WDPApp.utils.resolveStorefrontUrl === 'function')
+          ? WDPApp.utils.resolveStorefrontUrl
+          : function (kind, payload) {
+              const key = kind === 'cart' ? 'cart_url' : 'checkout_url';
+              const pick = (v) => (typeof v === 'string' && v.trim() !== '' ? v.trim() : '');
+              return pick(payload && payload[key]) || pick(wdp_ajax[key]);
+            };
+      const checkoutDest = isCheckout ? resolveStorefrontUrl('checkout', data) : '';
+      if (isCheckout && checkoutDest) {
+        // Ödeme adresi yalnız WooCommerce (wdp_ajax / AJAX yanıtı). Sabit slug yok.
+        safeLog("Redirecting to checkout:", checkoutDest);
         announceStatus('Ödeme adımına yönlendiriliyorsunuz.', 'assertive');
         trackMetaPixelInitiateCheckoutIfEnabled(form, data);
-        window.location.href = data.checkout_url || wdp_ajax.checkout_url || "/odeme-sayfasi/";
+        window.location.href = checkoutDest;
       } else {
         // Sepete Ekle için başarı mesajını göster
         safeLog("Showing success message", data);

@@ -17,7 +17,7 @@
       ajax_url: '',
       wc_ajax_url: '/?wc-ajax=%%endpoint%%',
       i18n_view_cart: 'Sepeti görüntüle',
-      cart_url: '/sepet/',
+      cart_url: '',
       is_cart: false,
       is_single_product: true,
       cart_redirect_after_add: false,
@@ -33,8 +33,8 @@
       ajax_url: window.location.origin + '/wp-admin/admin-ajax.php',
       nonce: '',
       version: '10.0',
-      cart_url: '/sepet/',
-      checkout_url: '/odeme-sayfasi/',
+      cart_url: '',
+      checkout_url: '',
       theme: '',
       theme_slug: '',
       debug: false,
@@ -55,6 +55,55 @@
 
   // Burada export yok, export dosyanın sonunda yapılacak
   // console.log burada çok erken, dosyanın sonunda log yapılacak
+
+  /**
+   * WooCommerce sepet/ödeme adresi (wdp_ajax veya AJAX yanıtı). Sabit slug yok.
+   *
+   * @param {'checkout'|'cart'} kind
+   * @param {object} [data]
+   * @returns {string}
+   */
+  function resolveStorefrontUrl(kind, data) {
+    const key = kind === 'cart' ? 'cart_url' : 'checkout_url'
+    const pick = (v) => (typeof v === 'string' && v.trim() !== '' ? v.trim() : '')
+    const fromData = data && typeof data === 'object' ? pick(data[key]) : ''
+    const ajax = (typeof window !== 'undefined' && window.wdp_ajax) ? window.wdp_ajax : (wdp_ajax || {})
+    return fromData || pick(ajax[key])
+  }
+
+  /**
+   * Woo ürün ID: yalnız pozitif tam sayı. 0 / NaN / boş geçersizdir.
+   *
+   * @param {*} value
+   * @returns {boolean}
+   */
+  function isValidProductId(value) {
+    const id = Number.parseInt(value, 10)
+    return Number.isFinite(id) && id > 0
+  }
+
+  /**
+   * get_product_info hata gövdesi (düz message veya wp_send_json_error data.message).
+   *
+   * @param {*} data
+   * @returns {string}
+   */
+  function productInfoErrorMessage(data) {
+    if (!data || typeof data !== 'object') {
+      return ''
+    }
+    if (typeof data.message === 'string' && data.message.trim()) {
+      return data.message.trim()
+    }
+    const inner = data.data
+    if (inner && typeof inner === 'object' && typeof inner.message === 'string' && inner.message.trim()) {
+      return inner.message.trim()
+    }
+    if (typeof inner === 'string' && inner.trim()) {
+      return inner.trim()
+    }
+    return ''
+  }
 
   function decodeHtmlEntities(value) {
     if (value === null || value === undefined) {
@@ -777,6 +826,9 @@
     clearAlerts,
     prefersReducedMotion,
     scrollIntoViewSafe,
+    resolveStorefrontUrl,
+    isValidProductId,
+    productInfoErrorMessage,
   };
 
   // Backward compatibility for themes/snippets that called WDPApp.alerts.clear().

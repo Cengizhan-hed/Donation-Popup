@@ -1,4 +1,4 @@
-# MIMARI — woo-donation-popup (10.34.7)
+# MIMARI — woo-donation-popup (10.34.8)
 
 Kalıcı mimari harita. Sonraki görevler için ilk okuma noktası.  
 Dal referansı: `docs-mimari` / commit `220f4ec`.  
@@ -437,9 +437,10 @@ Kaynak rehber: `docs/AYARLAR.md`. Teknik varsayılanlar normalizer / placement /
 
 1. `modal.open` → skeleton busy: `wdp-is-skeleton`, `aria-busy`, kontrol kilidi (`assets/js/src/modal.js:318-341`)  
 2. `runModalOpenInit`: değer koru → `resetForm` → `form.setup` → phone → shareholder → wizard → restore → **yeniden kilit** (`assets/js/src/modal.js:357-401`)  
-3. `WDPApp.product.fetchProductInfo` → POST `wdp_get_product_info` + nonce (`assets/js/src/product.js:45-47`, `assets/js/src/modal.js:403-405`)  
-4. Yanıt: fiyat/hisse/sadaka HTML normalize; skeleton kapanır (product/modal işbirliği)  
-5. Watchdog: uzun skeleton uyarısı (`assets/js/src/modal.js:304-314`)
+3. `WDPApp.product.fetchProductInfo` → POST `wdp_get_product_info` + nonce; `product_id≤0` ile istek yok (`assets/js/src/product.js` `isValidProductId`, `assets/js/src/modal.js` `openModal`)  
+4. PHP: eksik/geçersiz id `wp_send_json_error(..., 400)`; yayımlı ürün `success:true` (katalog gizliliği düşürmez) (`includes/traits/trait-wdp-ajax-product.php`). Ön yüz 400/`success:false` için form hatası veya toast.  
+5. Yanıt: fiyat/hisse/sadaka HTML normalize; skeleton kapanır (product/modal işbirliği)  
+6. Watchdog: uzun skeleton uyarısı (`assets/js/src/modal.js:304-314`)
 
 ### D) Doğrulama → sepete ekle / ödemeye git
 
@@ -447,7 +448,7 @@ Kaynak rehber: `docs/AYARLAR.md`. Teknik varsayılanlar normalizer / placement /
 2. `submitFormData(form, isCheckout)` → `formAjax.submitFormData` (`assets/js/src/form.js:205-207`, `assets/js/src/form/ajax.js:576+`)  
 3. POST `action=wdp_ajax_add_to_cart` + `security` + alanlar + `wdp_ajax_flow`  
 4. PHP: `ajax_add_to_cart` → rate/nonce → doğrulama → `WC()->cart->add_to_cart` (+ sadaka satırı) (`includes/traits/trait-wdp-ajax-cart-add.php`)  
-5. Başarı: mini-cart UI, Meta AddToCart, checkout ise yönlendirme (`assets/js/src/form/ajax.js` `handleAjaxResponse`)  
+5. Başarı: mini-cart UI, Meta AddToCart; checkout ise yalnız `checkout_url` (Woo) ile yönlendirme — URL yoksa sepete eklendi bildirimi (`assets/js/src/form/ajax.js` `handleAjaxResponse`)  
 6. Ağ hatası: `verify_submission_in_cart` kurtarma (`tryRecoverCartAfterAjaxFailure` `assets/js/src/form/ajax.js:517+`)
 
 ---
@@ -611,7 +612,7 @@ Operatör kapısı: uzak spawn yalnız `CLAUDECODE=1` ve Cursor ajan işaretleri
 Sipariş/müşteri/ürün: e-posta `*@wdp-e2e.test` + meta `_wdp_e2e_test=1`. Her functional koşu sonunda `tests/e2e/helpers/test-cleanup.mjs` SSH `wp eval` (HPOS `wc_get_orders`, işaretli ürün `WP_Query`; yedek PHP `cleanup-e2e.php`). Silme hatası koşuyu fail eder. Koruma siparişi ve işaretsiz ürün silinmez.
 
 Ödeme URL: `wc_get_checkout_url()` (`tests/e2e/helpers/checkout-setup.mjs`). Hedef (`allowMetaMutation`): çek geçici açılır, sonra eski haline döner. Ikram: ödeme ayarı yazılmaz; çevrimdışı yöntem yoksa sipariş tamamlama atlanır (neden yazılı). Ürün ID: WP-CLI `post list` + Store API yedek (`resolve-products.mjs`). Konsol 404: istek URL + `kind=` (favicon/theme/plugin/blocked-live/blocked-site) — gizlenmez.
-Eklenti `checkout_url` PHP: `wc_get_checkout_url()` (`includes/traits/trait-wdp-assets-registry.php` ~312; ajax-cart-add ~247/330). JS yedek sabit `/odeme-sayfasi/` (`assets/js/src/form/ajax.js:227`, `cart/ui.js:264`, `core/utils.js:37`) — siteye özel; 3J/Faz 6. Test beklenen yol WP `wc_get_checkout_url`; `/sepet/` kalanı çoğu kez Woo boş sepet yönlendirmesi (eklentiye bu görevde dokunulmadı).
+Eklenti `checkout_url` / `cart_url` PHP: `wc_get_checkout_url()` / `wc_get_cart_url()` (`includes/traits/trait-wdp-assets-registry.php` ~312; ajax-cart-add ~247/330). JS yalnız `resolveStorefrontUrl` (`assets/js/src/core/utils.js`); URL yoksa yönlendirme yok, başarı bildirimi kalır (sabit `/odeme-sayfasi/` `/sepet/` `/checkout/` yok). Test beklenen yol WP `wc_get_checkout_url`.
 
 ---
 

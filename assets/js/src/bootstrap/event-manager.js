@@ -111,7 +111,12 @@
           }
 
           const productId = button.getAttribute("data-product-id");
-          if (productId) {
+          const parsedId = Number.parseInt(productId, 10);
+          const idOk =
+            WDPApp.utils && typeof WDPApp.utils.isValidProductId === "function"
+              ? WDPApp.utils.isValidProductId(parsedId)
+              : Number.isFinite(parsedId) && parsedId > 0;
+          if (idOk) {
             try {
               const ajax = window.wdp_ajax || {};
               const meta = ajax.meta || {};

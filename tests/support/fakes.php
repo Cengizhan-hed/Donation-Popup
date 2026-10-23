@@ -214,6 +214,10 @@ if (!class_exists('WC_Product')) {
 			return $this->price;
 		}
 
+		public function get_regular_price() {
+			return $this->price;
+		}
+
 		public function get_slug() {
 			return $this->slug;
 		}

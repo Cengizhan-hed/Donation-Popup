@@ -19,7 +19,7 @@ if (!defined('WDP_PLUGIN_FILE')) {
 	define('WDP_PLUGIN_FILE', $root . '/woo-donation-popup.php');
 }
 if (!defined('WDP_VERSION')) {
-	define('WDP_VERSION', '10.34.7');
+	define('WDP_VERSION', '10.34.8');
 }
 if (!defined('MINUTE_IN_SECONDS')) {
 	define('MINUTE_IN_SECONDS', 60);
@@ -34,7 +34,7 @@ if (!defined('WDP_PLUGIN_URL')) {
 	define('WDP_PLUGIN_URL', 'https://example.test/wp-content/plugins/woo-donation-popup/');
 }
 if (!defined('WDP_ASSET_VERSION')) {
-	define('WDP_ASSET_VERSION', '10.34.7');
+	define('WDP_ASSET_VERSION', '10.34.8');
 }
 
 /**
@@ -119,6 +119,12 @@ final class WDP_Test_State {
 	/** @var int */
 	public static $unique_id = 0;
 
+	/** @var mixed */
+	public static $last_json = null;
+
+	/** @var int */
+	public static $json_status = 0;
+
 	public static function reset(): void {
 		self::$options       = array();
 		self::$post_meta     = array();
@@ -146,6 +152,8 @@ final class WDP_Test_State {
 		self::$price_decimal  = ',';
 		self::$post_types    = array();
 		self::$unique_id     = 0;
+		self::$last_json     = null;
+		self::$json_status   = 0;
 		$GLOBALS['wpdb']     = new WDP_Fake_Wpdb();
 		if (class_exists('WDP_Donations_List') && method_exists('WDP_Donations_List', 'reset_for_tests')) {
 			WDP_Donations_List::reset_for_tests();
@@ -179,6 +187,92 @@ final class WDP_Test_State {
 if (!function_exists('current_user_can')) {
 	function current_user_can($capability, ...$args) {
 		return in_array((string) $capability, WDP_Test_State::$caps, true);
+	}
+}
+if (!function_exists('is_user_logged_in')) {
+	function is_user_logged_in() {
+		return in_array('read', WDP_Test_State::$caps, true) || get_current_user_id() > 0;
+	}
+}
+if (!function_exists('get_current_user_id')) {
+	function get_current_user_id() {
+		return 0;
+	}
+}
+if (!function_exists('check_ajax_referer')) {
+	function check_ajax_referer($action = -1, $query_arg = false, $die = true) {
+		unset($action);
+		$nonce = '';
+		if (is_string($query_arg) && $query_arg !== '' && isset($_REQUEST[ $query_arg ])) {
+			$nonce = (string) $_REQUEST[ $query_arg ];
+		} elseif (isset($_REQUEST['security'])) {
+			$nonce = (string) $_REQUEST['security'];
+		} elseif (isset($_REQUEST['_wpnonce'])) {
+			$nonce = (string) $_REQUEST['_wpnonce'];
+		}
+		$ok = $nonce !== '' && $nonce !== '0';
+		if (!$ok && $die) {
+			wp_die('invalid nonce');
+		}
+		return $ok;
+	}
+}
+if (!class_exists('WDP_Json_Sent')) {
+	class WDP_Json_Sent extends Error {
+		/** @var mixed */
+		public $payload;
+		/** @var int */
+		public $status;
+
+		public function __construct($payload, $status = 200) {
+			$this->payload = $payload;
+			$this->status  = (int) $status;
+			parent::__construct('json');
+		}
+	}
+}
+if (!function_exists('status_header')) {
+	function status_header($code) {
+		WDP_Test_State::$json_status = (int) $code;
+	}
+}
+if (!function_exists('wp_die')) {
+	function wp_die($message = '') {
+		$payload = WDP_Test_State::$last_json;
+		$status  = WDP_Test_State::$json_status ? WDP_Test_State::$json_status : 200;
+		if ($payload !== null) {
+			throw new WDP_Json_Sent($payload, $status);
+		}
+		throw new RuntimeException($message === '' ? 'wp_die' : (string) $message);
+	}
+}
+if (!function_exists('wp_send_json')) {
+	function wp_send_json($response, $status_code = null) {
+		if ($status_code) {
+			status_header($status_code);
+		} elseif (!WDP_Test_State::$json_status) {
+			WDP_Test_State::$json_status = 200;
+		}
+		WDP_Test_State::$last_json = $response;
+		wp_die();
+	}
+}
+if (!function_exists('wp_send_json_error')) {
+	function wp_send_json_error($data = null, $status_code = null) {
+		$response = array('success' => false);
+		if (isset($data)) {
+			$response['data'] = $data;
+		}
+		wp_send_json($response, $status_code === null ? 200 : $status_code);
+	}
+}
+if (!function_exists('wp_send_json_success')) {
+	function wp_send_json_success($data = null, $status_code = null) {
+		$response = array('success' => true);
+		if (isset($data)) {
+			$response['data'] = $data;
+		}
+		wp_send_json($response, $status_code === null ? 200 : $status_code);
 	}
 }
 
