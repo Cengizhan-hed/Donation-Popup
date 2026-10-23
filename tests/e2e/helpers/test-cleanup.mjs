@@ -3,7 +3,14 @@
  * Tek kaynak: cleanup-e2e.php (kayıt defteri + run_id + kara liste).
  */
 import { loadDeployEnvSilent, remote, wpCliPath, runEvalFile } from './wp-remote.mjs';
-import { isRunIdOk, loadRegistry, registerCreated, registryIds, createdForCleanup } from './run-registry.mjs';
+import {
+  isRunIdOk,
+  loadRegistry,
+  registerCreated,
+  registryIds,
+  createdForCleanup,
+  assertRegistryEnvForMutation,
+} from './run-registry.mjs';
 import { fixtureProductRecords, loadFixtures } from './fixtures.mjs';
 import { parseLocalEvalJson, runLocalEvalFile } from './local-wp-eval.mjs';
 
@@ -66,7 +73,8 @@ export async function markOrderAsE2E(orderId) {
  * @param {{guardOrderId?:number, execFn?: (file:string, extra:object)=>string}} [opts]
  */
 export async function cleanupE2EData(opts = {}) {
-  const registry = loadRegistry();
+  const registry = loadRegistry(opts.envId);
+  assertRegistryEnvForMutation(registry, opts.envId);
   const fixtureIds = fixtureProductRecords(loadFixtures(opts.envId)).map((r) => r.id);
   const created = createdForCleanup(registry, fixtureIds);
   const empty = {

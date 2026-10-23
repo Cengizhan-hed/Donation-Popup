@@ -27,7 +27,7 @@ async function main() {
   }
 
   // Bayat current/diff temizlenir; __baseline__ silinmez (üzerine yazılır).
-  cleanE2EOutputDirs();
+  cleanE2EOutputDirs(env.E2E_PROFILE_ID);
   fs.mkdirSync(BASELINE_DIR, { recursive: true });
 
   const startedAt = new Date().toISOString();

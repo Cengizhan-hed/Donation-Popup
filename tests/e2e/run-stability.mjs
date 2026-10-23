@@ -93,7 +93,7 @@ async function main() {
     console.log(`\n######## Stability tur ${round}/${maxRuns} ########`);
 
     for (const label of ['run1', 'run2']) {
-      cleanE2EOutputDirs();
+      cleanE2EOutputDirs(env.E2E_PROFILE_ID);
       const outDir = path.join(STAB_DIR, label);
       fs.mkdirSync(outDir, { recursive: true });
       console.log(`\n=== Stability ${label} (tur ${round}) ===`);

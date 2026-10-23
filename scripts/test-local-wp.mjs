@@ -68,7 +68,7 @@ async function main() {
   if (health.ok) fail('kanarya ön kontrol yeşil kaldı (çöp sepet)');
   writeCanaryAlert(health, 'yerel kanıt: kasıtlı çöp sepet');
   fs.copyFileSync(
-    path.join(ROOT, 'build/e2e/CANARY-ALERT.txt'),
+    path.join(ROOT, 'build/e2e/CANARY-ALERT-local.txt'),
     path.join(EVIDENCE, 'CANARY-ALERT.txt')
   );
   console.log('3) kanarya kırmızı ve durdurma — geçti');

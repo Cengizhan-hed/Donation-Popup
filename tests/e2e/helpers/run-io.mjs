@@ -4,6 +4,15 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { ROOT } from './env.mjs';
+import {
+  currentProfileDir,
+  debugDirFor,
+  diffDirFor,
+  outputProfileId,
+  reportDirFor,
+  runJsonFor,
+  tracesDirFor,
+} from './e2e-paths.mjs';
 
 export const CURRENT_DIR = path.join(ROOT, 'build/e2e/current');
 export const DIFF_DIR = path.join(ROOT, 'build/e2e/diff');
@@ -13,6 +22,8 @@ export const BASELINE_ROOT = path.join(ROOT, 'tests/e2e/__baseline__');
 /** @deprecated kök; ortam+cihaz için baselineDirFor kullan */
 export const BASELINE_DIR = BASELINE_ROOT;
 export const BASELINE_PREV_DIR = path.join(ROOT, 'tests/e2e/__baseline_prev__');
+
+export { reportDirFor, runJsonFor, debugDirFor, tracesDirFor };
 
 /**
  * @param {string} envId
@@ -29,15 +40,24 @@ export function baselineDirFor(envId, deviceId) {
  * @param {string} deviceId
  */
 export function currentDirFor(envId, deviceId) {
-  return path.join(CURRENT_DIR, String(envId || 'staging-hedef'), String(deviceId || 'desktop'));
+  return path.join(CURRENT_DIR, outputProfileId(envId), String(deviceId || 'desktop'));
 }
 
 /**
- * build/e2e/current ve build/e2e/diff silinip yeniden oluşturulur.
- * tests/e2e/__baseline__ dokunulmaz.
+ * Yalnız bu profilin current/diff/debug/traces/report klasörleri.
+ * tests/e2e/__baseline__ ve diğer ortamların çıktısı dokunulmaz.
+ * @param {string} [profileId]
  */
-export function cleanE2EOutputDirs() {
-  for (const dir of [CURRENT_DIR, DIFF_DIR]) {
+export function cleanE2EOutputDirs(profileId) {
+  const id = outputProfileId(profileId);
+  const dirs = [
+    currentProfileDir(id),
+    diffDirFor(id),
+    debugDirFor(id),
+    tracesDirFor(id),
+    reportDirFor(id),
+  ];
+  for (const dir of dirs) {
     if (fs.existsSync(dir)) {
       fs.rmSync(dir, { recursive: true, force: true });
     }
@@ -69,13 +89,25 @@ export function writeRunManifest(data, dest = RUN_JSON) {
 /**
  * @returns {object|null}
  */
-export function readRunManifest() {
-  if (!fs.existsSync(RUN_JSON)) return null;
-  try {
-    return JSON.parse(fs.readFileSync(RUN_JSON, 'utf8'));
-  } catch (e) {
-    return null;
+export function readRunManifest(profileId) {
+  const candidates = [];
+  if (profileId) candidates.push(runJsonFor(profileId));
+  candidates.push(RUN_JSON);
+  if (fs.existsSync(CURRENT_DIR)) {
+    for (const name of fs.readdirSync(CURRENT_DIR)) {
+      const nested = path.join(CURRENT_DIR, name, 'run.json');
+      if (!candidates.includes(nested)) candidates.push(nested);
+    }
   }
+  for (const file of candidates) {
+    if (!fs.existsSync(file)) continue;
+    try {
+      return JSON.parse(fs.readFileSync(file, 'utf8'));
+    } catch {
+      continue;
+    }
+  }
+  return null;
 }
 
 /**

@@ -9,15 +9,16 @@ import { fillMissingProductSlugs } from './helpers/resolve-products.mjs';
 import { captureAll } from './helpers/capture.mjs';
 import { compareAndReport } from './helpers/report.mjs';
 import {
-  CURRENT_DIR,
-  REPORT_DIR,
   baselineDirFor,
   currentDirFor,
   cleanE2EOutputDirs,
   normalizeScreenNames,
   readLocalPluginVersion,
   writeRunManifest,
+  reportDirFor,
+  runJsonFor,
 } from './helpers/run-io.mjs';
+import { withEnvRunLock } from './helpers/env-lock.mjs';
 import { formatRemotePostBlockedLines } from './helpers/network-guard.mjs';
 
 async function main() {
@@ -35,7 +36,8 @@ async function main() {
   const profileId = env.E2E_PROFILE_ID || 'staging-hedef';
   const baselineDir = baselineDirFor(profileId, deviceId);
   const outDir = currentDirFor(profileId, deviceId);
-  cleanE2EOutputDirs();
+  const code = await withEnvRunLock(profileId, async () => {
+  cleanE2EOutputDirs(profileId);
   fs.mkdirSync(baselineDir, { recursive: true });
 
   const startedAt = new Date().toISOString();
@@ -74,7 +76,7 @@ async function main() {
     passedCount,
     skippedCount,
     failedCount,
-  } = compareAndReport(baselineDir, outDir, REPORT_DIR, failures, env.E2E_DIFF_THRESHOLD, {
+  } = compareAndReport(baselineDir, outDir, reportDirFor(profileId), failures, env.E2E_DIFF_THRESHOLD, {
     skips,
     flaky,
     stats,
@@ -85,6 +87,7 @@ async function main() {
 
   writeRunManifest({
     mode: 'full',
+    env: profileId,
     startedAt,
     endedAt: new Date().toISOString(),
     durationSec: Number(((Date.now() - started) / 1000).toFixed(1)),
@@ -101,7 +104,7 @@ async function main() {
     blocked_trackers,
     remote_post_blocked,
     izinli_okuma,
-  });
+  }, runJsonFor(profileId));
 
   console.log('Report:', reportFile);
   const top = rows.slice(0, 5).map((r) => `${r.name}: ${r.pct.toFixed(2)}%`).join(', ');
@@ -118,7 +121,7 @@ async function main() {
     `Görsel durum: Değişti=${changedCount} Yeni referans=${newBaselineCount} (eşik ≤ ${threshold}%)`
   );
   console.log(formatRemotePostBlockedLines(remote_post_blocked, izinli_okuma));
-  console.log(`Manifest: ${path.relative(ROOT, path.join(CURRENT_DIR, 'run.json'))}`);
+  console.log(`Manifest: ${path.relative(ROOT, runJsonFor(profileId))}`);
   if (skips.length) {
     console.log('');
     console.log('=== Atlanan kontroller ===');
@@ -144,9 +147,12 @@ async function main() {
       if (f.debugFile) console.error(`  tam log: ${f.debugFile}`);
       console.error('');
     }
-    process.exit(1);
+    return 1;
   }
   console.log('E2E functional checks passed (skips allowed).');
+  return 0;
+  });
+  if (code) process.exit(code);
 }
 
 main().catch((e) => {
@@ -154,7 +160,7 @@ main().catch((e) => {
   const lines = msg.split(/\r?\n/);
   console.error(lines.slice(0, 3).join('\n'));
   if (lines.length > 3) {
-    const debugDir = path.join(ROOT, 'build/e2e/debug');
+    const debugDir = path.join(ROOT, 'build/e2e/debug', String(process.env.WDP_E2E_PROFILE_ID || 'local'));
     fs.mkdirSync(debugDir, { recursive: true });
     const debugFile = path.join(debugDir, 'uncaught.txt');
     fs.writeFileSync(debugFile, msg, 'utf8');

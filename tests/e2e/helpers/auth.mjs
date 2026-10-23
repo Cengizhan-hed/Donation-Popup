@@ -29,8 +29,12 @@ export function setAuthFileForProfile(profileId) {
 export function getAuthFile() {
   return authFileOverride || AUTH_FILE;
 }
-const DEBUG_DIR = path.join(ROOT, 'build/e2e/debug');
-const LOGIN_FAILURE_SHOT = path.join(DEBUG_DIR, 'login-failure.png');
+function debugDir() {
+  return path.join(ROOT, 'build/e2e/debug', String(process.env.WDP_E2E_PROFILE_ID || 'local'));
+}
+function loginFailureShot() {
+  return path.join(debugDir(), 'login-failure.png');
+}
 
 export const AUTH_NO_RETRY =
   'Giriş başarısız; Wordfence kilidini önlemek için tekrar denenmedi';
@@ -265,11 +269,14 @@ export function classifyPostLoginPage(url, html) {
 }
 
 function clearLoginFailureShot() {
-  if (!fs.existsSync(LOGIN_FAILURE_SHOT)) return;
+  const shot = loginFailureShot();
+  if (!fs.existsSync(shot)) return;
   try {
-    fs.unlinkSync(LOGIN_FAILURE_SHOT);
-  } catch {
-    /* ignore */
+    fs.unlinkSync(shot);
+  } catch (e) {
+    if (!e || e.code !== 'ENOENT') {
+      console.error(`[e2e:catch-fail] login-failure shot: ${e && e.message ? e.message : e}`);
+    }
   }
 }
 
@@ -386,11 +393,13 @@ async function collectFailureHints(page, status, env) {
  * @param {string} reason
  */
 async function failLogin(page, status, prePasswordShot, env, reason) {
-  fs.mkdirSync(DEBUG_DIR, { recursive: true });
+  const shotDir = debugDir();
+  const shot = loginFailureShot();
+  fs.mkdirSync(shotDir, { recursive: true });
   if (prePasswordShot && fs.existsSync(prePasswordShot)) {
-    fs.copyFileSync(prePasswordShot, LOGIN_FAILURE_SHOT);
+    fs.copyFileSync(prePasswordShot, shot);
   } else {
-    await page.screenshot({ path: LOGIN_FAILURE_SHOT, fullPage: true }).catch(() => {});
+    await page.screenshot({ path: shot, fullPage: true });
   }
 
   const title = redactSecrets(await page.title().catch(() => ''), env);
@@ -402,7 +411,7 @@ async function failLogin(page, status, prePasswordShot, env, reason) {
     `Son URL: ${url}`,
     `HTTP durum: ${status || 'bilinmiyor'}`,
     `Sayfa başlığı: ${title || '(boş)'}`,
-    'Ekran görüntüsü: build/e2e/debug/login-failure.png',
+    `Ekran görüntüsü: ${shot}`,
   ];
   for (const h of hints) {
     lines.push(`İpucu: ${h}`);
@@ -700,8 +709,8 @@ async function defaultFormLogin(env) {
       );
     }
 
-    fs.mkdirSync(DEBUG_DIR, { recursive: true });
-    prePasswordShot = path.join(DEBUG_DIR, '.login-pre.png');
+    fs.mkdirSync(debugDir(), { recursive: true });
+    prePasswordShot = path.join(debugDir(), '.login-pre.png');
     await page.screenshot({ path: prePasswordShot, fullPage: true });
 
     if (formKind === 'wp') {

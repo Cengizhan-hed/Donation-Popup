@@ -1,14 +1,28 @@
 /**
- * Koşu kayıt defteri: bu koşuda oluşturulan ID’ler.
+ * Koşu kayıt defteri: ortam başına + koşu başına.
+ * build/e2e/registry/<profilId>/<runId>.json
  * Defter yoksa/boşsa temizlik hiçbir şey silmez.
  * İşaret = bu koşunun run_id'si (sabit "1" değil).
  */
 import fs from 'node:fs';
 import path from 'node:path';
 import { ROOT } from './env-root.mjs';
+import { peekActiveProfile } from './profile.mjs';
+import {
+  activeProfileId,
+  hashSiteUrl,
+  registryDir as defaultRegistryDir,
+  registryFilePath as defaultRegistryFilePath,
+  registryPointerPath as defaultPointerPath,
+  requireProfileId,
+  safeProfileId,
+} from './e2e-paths.mjs';
 
-export const REGISTRY_PATH = path.join(ROOT, 'build/e2e/run-registry.json');
+export const REGISTRY_ENV_MISMATCH = 'REGISTRY-ENV-MISMATCH';
 export const E2E_META_KEY = '_wdp_e2e_test';
+
+/** Eski tek dosya (okunmaz; yalnız tarama/uyarı). */
+export const REGISTRY_PATH = path.join(ROOT, 'build/e2e/run-registry.json');
 
 export const BLACKLISTED_TYPES = new Set([
   'page',
@@ -22,11 +36,57 @@ export const BLACKLISTED_TYPES = new Set([
   'wp_block',
 ]);
 
+/** @type {string|null} */
+let registryRootOverride = null;
+
+export function setRegistryRootForTest(dir) {
+  registryRootOverride = dir ? String(dir) : null;
+}
+
+export function resetRegistryTestHooks() {
+  registryRootOverride = null;
+}
+
+function envDir(envId) {
+  const id = requireProfileId(envId);
+  if (registryRootOverride) return path.join(registryRootOverride, id);
+  return defaultRegistryDir(id);
+}
+
+function pointerPath(envId) {
+  if (registryRootOverride) return path.join(envDir(envId), 'CURRENT');
+  return defaultPointerPath(envId);
+}
+
+function filePath(envId, runId) {
+  if (registryRootOverride) {
+    const id = String(runId || '').replace(/[^A-Za-z0-9._:-]/g, '');
+    if (!id) throw new Error('registryFilePath: runId yok');
+    return path.join(envDir(envId), `${id}.json`);
+  }
+  return defaultRegistryFilePath(envId, runId);
+}
+
+function siteUrlFromProfile() {
+  const p = peekActiveProfile();
+  return String(p?.baseUrl || p?.ssh?.siteUrl || '')
+    .trim()
+    .replace(/\/+$/, '');
+}
+
 /**
- * @returns {{ runId: string, startedAt: string, created: object[], mutated: object[], fixtures: object[] }}
+ * @returns {{ runId: string, envId: string, siteUrlHash: string, startedAt: string, created: object[], mutated: object[], fixtures: object[] }}
  */
 export function emptyRegistry() {
-  return { runId: '', startedAt: '', created: [], mutated: [], fixtures: [] };
+  return {
+    runId: '',
+    envId: '',
+    siteUrlHash: '',
+    startedAt: '',
+    created: [],
+    mutated: [],
+    fixtures: [],
+  };
 }
 
 function asId(raw) {
@@ -77,15 +137,21 @@ export function preservedFixtures(prev, opts = {}) {
  * Saf: sıfırlanmış defter (disk yok).
  * @param {object} [prev]
  * @param {string} runId
- * @param {{ clearFixtures?: boolean, fixtures?: object[], fixtureRecords?: object[], now?: string }} [opts]
+ * @param {{ clearFixtures?: boolean, fixtures?: object[], fixtureRecords?: object[], now?: string, envId?: string, siteUrl?: string, siteUrlHash?: string }} [opts]
  */
 export function nextRegistryAfterReset(prev, runId, opts = {}) {
   const id = String(runId || '');
   if (!isRunIdOk(id)) {
     throw new Error(`resetRegistry: geçersiz runId (${id})`);
   }
+  const envId = safeProfileId(opts.envId || activeProfileId());
+  const hash = opts.siteUrlHash
+    ? String(opts.siteUrlHash)
+    : hashSiteUrl(opts.siteUrl || siteUrlFromProfile());
   return {
     runId: id,
+    envId,
+    siteUrlHash: hash,
     startedAt: String(opts.now || new Date().toISOString()),
     created: [],
     mutated: [],
@@ -120,40 +186,121 @@ export function isRunIdOk(runId) {
   return /^[A-Za-z0-9._:-]{4,80}$/.test(s);
 }
 
-/**
- * @param {object} data
- */
-export function saveRegistry(data) {
-  fs.mkdirSync(path.dirname(REGISTRY_PATH), { recursive: true });
-  fs.writeFileSync(REGISTRY_PATH, JSON.stringify(data, null, 2) + '\n', 'utf8');
+function normalizeLoaded(parsed) {
+  return {
+    runId: String(parsed.runId || ''),
+    envId: String(parsed.envId || ''),
+    siteUrlHash: String(parsed.siteUrlHash || ''),
+    startedAt: String(parsed.startedAt || ''),
+    created: Array.isArray(parsed.created) ? parsed.created : [],
+    mutated: Array.isArray(parsed.mutated) ? parsed.mutated : [],
+    fixtures: Array.isArray(parsed.fixtures) ? parsed.fixtures : [],
+  };
 }
 
 /**
- * @returns {{ runId: string, startedAt: string, created: object[], mutated: object[], fixtures: object[] }}
+ * Defter envId etkin profil ile aynı değilse DUR.
+ * @param {object} [registry]
+ * @param {string} [envId]
  */
-export function loadRegistry() {
-  if (!fs.existsSync(REGISTRY_PATH)) return emptyRegistry();
+export function assertRegistryMatchesActiveEnv(registry, envId) {
+  const want = safeProfileId(envId || activeProfileId());
+  const got = safeProfileId(registry?.envId);
+  if (got && want && got !== want) {
+    throw new Error(`${REGISTRY_ENV_MISMATCH}: defter envId=${got} etkin=${want}`);
+  }
+  return registry;
+}
+
+/**
+ * Temizlik / uzak yazma: ID’ler başka ortamın olamaz.
+ * @param {object} [registry]
+ * @param {string} [envId]
+ */
+export function assertRegistryEnvForMutation(registry, envId) {
+  assertRegistryMatchesActiveEnv(registry, envId);
+  const want = safeProfileId(envId || activeProfileId());
+  const got = safeProfileId(registry?.envId);
+  const hasIds =
+    (registry?.created?.length || 0) + (registry?.mutated?.length || 0) > 0;
+  if (hasIds && !want) {
+    throw new Error(`${REGISTRY_ENV_MISMATCH}: etkin profil yok`);
+  }
+  if (hasIds && !got) {
+    throw new Error(`${REGISTRY_ENV_MISMATCH}: defterde envId yok (etkin=${want})`);
+  }
+  if (hasIds && got && want && got !== want) {
+    throw new Error(`${REGISTRY_ENV_MISMATCH}: defter envId=${got} etkin=${want}`);
+  }
+  return registry;
+}
+
+/**
+ * @param {object} data
+ * @param {string} [envId]
+ */
+export function saveRegistry(data, envId) {
+  const id = requireProfileId(envId || data.envId);
+  const runId = String(data.runId || '');
+  if (!isRunIdOk(runId)) {
+    throw new Error('saveRegistry: geçersiz runId');
+  }
+  const file = filePath(id, runId);
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  const payload = normalizeLoaded({ ...data, envId: data.envId || id });
+  fs.writeFileSync(file, JSON.stringify(payload, null, 2) + '\n', 'utf8');
+  fs.writeFileSync(pointerPath(id), `${runId}\n`, 'utf8');
+}
+
+function readPointer(envId) {
+  const file = pointerPath(envId);
+  if (!fs.existsSync(file)) return '';
+  return String(fs.readFileSync(file, 'utf8') || '')
+    .trim()
+    .split(/\r?\n/)[0];
+}
+
+/**
+ * @param {string} [envId]
+ * @returns {{ runId: string, envId: string, siteUrlHash: string, startedAt: string, created: object[], mutated: object[], fixtures: object[] }}
+ */
+export function loadRegistry(envId) {
+  const id = safeProfileId(envId) || activeProfileId();
+  if (!id) return emptyRegistry();
+  const runId = readPointer(id);
+  if (!runId) return emptyRegistry();
+  const file = filePath(id, runId);
+  if (!fs.existsSync(file)) return emptyRegistry();
   try {
-    const parsed = JSON.parse(fs.readFileSync(REGISTRY_PATH, 'utf8'));
-    return {
-      runId: String(parsed.runId || ''),
-      startedAt: String(parsed.startedAt || ''),
-      created: Array.isArray(parsed.created) ? parsed.created : [],
-      mutated: Array.isArray(parsed.mutated) ? parsed.mutated : [],
-      fixtures: Array.isArray(parsed.fixtures) ? parsed.fixtures : [],
-    };
+    const parsed = JSON.parse(fs.readFileSync(file, 'utf8'));
+    return normalizeLoaded(parsed);
   } catch {
-    throw new Error(`run-registry.json okunamadı: ${REGISTRY_PATH}`);
+    throw new Error(`run-registry okunamadı: ${file}`);
   }
 }
 
 /**
  * @param {string} [runId]
- * @param {{ clearFixtures?: boolean, fixtures?: object[], fixtureRecords?: object[] }} [opts]
+ * @param {{ clearFixtures?: boolean, fixtures?: object[], fixtureRecords?: object[], envId?: string, siteUrl?: string, reuseExisting?: boolean }} [opts]
  */
 export function resetRegistry(runId = `run-${Date.now()}`, opts = {}) {
-  const data = nextRegistryAfterReset(loadRegistry(), runId, opts);
-  saveRegistry(data);
+  const envId = requireProfileId(opts.envId || activeProfileId());
+  const id = String(runId || process.env.WDP_E2E_RUN_ID || `run-${Date.now()}`);
+  if (opts.reuseExisting) {
+    const existing = loadRegistry(envId);
+    if (existing.runId === id && safeProfileId(existing.envId) === envId) {
+      assertRegistryMatchesActiveEnv(existing, envId);
+      return existing;
+    }
+  }
+  const data = nextRegistryAfterReset(loadRegistry(envId), id, {
+    ...opts,
+    envId,
+    siteUrl: opts.siteUrl || siteUrlFromProfile(),
+  });
+  saveRegistry(data, envId);
+  process.env.WDP_E2E_RUN_ID = data.runId;
+  process.env.WDP_E2E_PROFILE_ID = envId;
   return data;
 }
 
@@ -181,6 +328,7 @@ export function registerCreated(rec) {
     throw new Error(`registerCreated: post_type=${type} kayıt defterine alınmaz`);
   }
   const r = loadRegistry();
+  assertRegistryMatchesActiveEnv(r);
   if (!isRunIdOk(r.runId)) {
     throw new Error('registerCreated: kayıt defteri runId yok — resetRegistry çağırın');
   }
@@ -215,6 +363,7 @@ export function registerMutated(rec) {
     throw new Error('registerMutated: id ve type zorunlu');
   }
   const r = loadRegistry();
+  assertRegistryMatchesActiveEnv(r);
   if (!isRunIdOk(r.runId)) {
     throw new Error('registerMutated: kayıt defteri runId yok — resetRegistry çağırın');
   }

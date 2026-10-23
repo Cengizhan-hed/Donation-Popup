@@ -16,6 +16,11 @@ import {
   assertNoUnexpectedPluginErrors,
 } from './checks.mjs';
 import { applyNetworkGuard } from './network-guard.mjs';
+import {
+  emptyCartStoreApiWithFetch,
+  playwrightStoreFetch,
+  readStoreApiNonceGlobals,
+} from './store-api.mjs';
 import { getDevicePreset } from './devices.mjs';
 import { matrixEval } from './matrix-setup.mjs';
 import {
@@ -136,21 +141,13 @@ async function emptyCartStoreApi(page, baseUrl) {
   if (!/^https?:\/\//i.test(page.url())) {
     await gotoPath(page, baseUrl, '/');
   }
-  const result = await page.evaluate(async (base) => {
-    const root = String(base).replace(/\/$/, '');
-    const get = await fetch(`${root}/wp-json/wc/store/v1/cart`, { credentials: 'same-origin' });
-    const nonce = get.headers.get('Nonce') || get.headers.get('X-WC-Store-API-Nonce') || '';
-    const headers = {};
-    if (nonce) headers.Nonce = nonce;
-    const res = await fetch(`${root}/wp-json/wc/store/v1/cart/items`, {
-      method: 'DELETE',
-      credentials: 'same-origin',
-      headers,
-    });
-    return { ok: !!res && (res.ok || res.status === 409), status: res ? res.status : 0 };
-  }, baseUrl);
-  if (!result.ok) {
-    throw new Error(`Store API sepet silinemedi status=${result.status}`);
+  const globals = await readStoreApiNonceGlobals(page);
+  const result = await emptyCartStoreApiWithFetch(playwrightStoreFetch(page), {
+    baseUrl,
+    globals,
+  });
+  if (!result.emptied) {
+    throw new Error(`Store API sepet silinemedi status=${result.status} ${result.reason}`);
   }
 }
 

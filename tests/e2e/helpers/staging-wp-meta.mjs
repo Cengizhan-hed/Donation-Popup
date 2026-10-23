@@ -6,7 +6,13 @@
  */
 import { loadDeployEnvSilent, remote, wpCliPath } from './wp-remote.mjs';
 import { assertProductWritable, safeDeleteMarked } from './safe-remote-write.mjs';
-import { isRunIdOk, loadRegistry, registerCreated, registerMutated } from './run-registry.mjs';
+import {
+  isRunIdOk,
+  loadRegistry,
+  registerCreated,
+  registerMutated,
+  assertRegistryEnvForMutation,
+} from './run-registry.mjs';
 import { E2E_META_KEY } from './run-registry.mjs';
 import { peekActiveProfile, isRemoteProfile } from './profile.mjs';
 import { isFixtureProductId } from './fixtures.mjs';
@@ -75,7 +81,12 @@ export async function getProductMeta(productId, metaKey) {
  * @param {string} value Empty string → delete meta.
  * @returns {Promise<void>}
  */
+function assertMetaRegistry() {
+  assertRegistryEnvForMutation(loadRegistry());
+}
+
 export async function setProductMeta(productId, metaKey, value) {
+  assertMetaRegistry();
   if (usesLocalWpMeta()) {
     const id = assertLocalFixtureWritable(productId, 'set-fixture-product-meta');
     registerMutated({ id: String(id), type: 'product', keys: [String(metaKey)] });
@@ -116,6 +127,7 @@ export async function setProductMeta(productId, metaKey, value) {
  * @returns {Promise<void>}
  */
 export async function saveProductPrices(productId, amounts) {
+  assertMetaRegistry();
   if (usesLocalWpMeta()) {
     const id = assertLocalFixtureWritable(productId, 'set-fixture-product-price');
     registerMutated({ id: String(id), type: 'product', keys: ['_price', '_regular_price', '_sale_price'] });
@@ -292,6 +304,7 @@ export async function createMarkedDonationProduct(opts = {}) {
     throw new Error(`staging-wp-meta: ${loaded.reason}`);
   }
   const registry = loadRegistry();
+  assertRegistryEnvForMutation(registry);
   if (!isRunIdOk(registry.runId)) {
     throw new Error('staging-wp-meta: runId yok; ürün oluşturulmaz');
   }

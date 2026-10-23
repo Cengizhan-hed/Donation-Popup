@@ -31,6 +31,7 @@ import { runSnapshot } from '../migration-snapshot.mjs';
 import { runCompare } from '../migration-compare.mjs';
 import { evaluateCanaryHealth, snapshotCanary } from '../../tests/e2e/helpers/canary.mjs';
 import { loadRegistry } from '../../tests/e2e/helpers/run-registry.mjs';
+import { acquireEnvLock, releaseEnvLock } from '../../tests/e2e/helpers/env-lock.mjs';
 import { loadFixtures } from '../../tests/e2e/helpers/fixtures.mjs';
 import { phpEvalFile, ensureLocalWp, writeWpConfig, LOCAL_WP_ROOT } from '../local-wp.mjs';
 
@@ -826,6 +827,11 @@ export async function runShip(opts = {}) {
   const profile = loadProfile(envName);
   const resolved = resolveAllowedRemoteTarget(profile);
   setActiveProfile(profile);
+  const lock =
+    opts.spawnImpl || opts.skipEnvLock
+      ? null
+      : acquireEnvLock(profile.id, { command: `ship:${envName}` });
+  try {
   const ctx = createCtx(opts);
   const fetchImpl = opts.fetchImpl || globalThis.fetch;
 
@@ -879,7 +885,7 @@ export async function runShip(opts = {}) {
 
   const canaryBefore = opts.canaryFn
     ? await opts.canaryFn({ phase: 'before', envName })
-    : evaluateCanaryHealth(snapshotCanary(), envName, loadRegistry(), {
+    : evaluateCanaryHealth(snapshotCanary(), envName, loadRegistry(profile.id), {
         fixtures: loadFixtures(profile.id),
         envId: profile.id,
       });
@@ -978,7 +984,7 @@ export async function runShip(opts = {}) {
 
   const canaryAfter = opts.canaryFn
     ? await opts.canaryFn({ phase: 'after', envName })
-    : evaluateCanaryHealth(snapshotCanary(), envName, loadRegistry(), {
+    : evaluateCanaryHealth(snapshotCanary(), envName, loadRegistry(profile.id), {
         fixtures: loadFixtures(profile.id),
         envId: profile.id,
       });
@@ -1006,6 +1012,9 @@ export async function runShip(opts = {}) {
     remoteWrites: ctx.calls.filter((c) => c.write).length,
     summary: [health.line, compareLine, `çıkış ${exitCode}`].join(' | '),
   };
+  } finally {
+    releaseEnvLock(lock);
+  }
 }
 
 /**

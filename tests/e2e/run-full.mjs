@@ -20,14 +20,19 @@ import { DEVICE_ORDER, parseDeviceList } from './helpers/devices.mjs';
 import {
   baselineDirFor,
   currentDirFor,
-  REPORT_DIR,
   cleanE2EOutputDirs,
   normalizeScreenNames,
   readLocalPluginVersion,
   writeRunManifest,
   CURRENT_DIR,
+  reportDirFor,
+  runJsonFor,
 } from './helpers/run-io.mjs';
 import { formatRemotePostBlockedLines } from './helpers/network-guard.mjs';
+import { acquireEnvLock, releaseEnvLock } from './helpers/env-lock.mjs';
+import { loadProfile } from './helpers/profile.mjs';
+import { resetRegistry } from './helpers/run-registry.mjs';
+import { fixtureProductRecords, loadFixtures } from './helpers/fixtures.mjs';
 
 function envList(envId) {
   const v = String(envId || '').trim().toLowerCase();
@@ -83,7 +88,7 @@ async function runOne({ envId, deviceId, noSideCart }) {
   const compared = compareAndReport(
     baselineDir,
     outDir,
-    REPORT_DIR,
+    reportDirFor(profileId),
     result.failures || [],
     env.E2E_DIFF_THRESHOLD,
     {
@@ -119,11 +124,14 @@ async function runOne({ envId, deviceId, noSideCart }) {
   return row;
 }
 
-function spawnCombo(envId, deviceId, extraArgs) {
+function spawnCombo(envId, deviceId, extraArgs, extraEnv = {}) {
   const script = fileURLToPath(import.meta.url);
   return new Promise((resolve) => {
     const args = [script, '--env', envId, '--device', deviceId, '--no-clean', '--child', ...extraArgs];
-    const child = spawn(process.execPath, args, { cwd: ROOT, env: process.env });
+    const child = spawn(process.execPath, args, {
+      cwd: ROOT,
+      env: { ...process.env, ...extraEnv },
+    });
     child.stdout.on('data', (d) => process.stdout.write(d));
     child.stderr.on('data', (d) => process.stderr.write(d));
     child.on('close', (code) => {
@@ -140,10 +148,22 @@ function spawnCombo(envId, deviceId, extraArgs) {
   });
 }
 
-function collectChildRows() {
+function collectChildRows(envIds = []) {
+  const allow = new Set(
+    (envIds || []).map((e) => (isLocalEnvId(e) ? 'local' : String(e)))
+  );
+  try {
+    for (const envId of envIds || []) {
+      const p = loadProfile(isLocalEnvId(envId) ? 'local' : envId);
+      if (p?.id) allow.add(p.id);
+    }
+  } catch (e) {
+    console.error(`[e2e:catch-fail] collectChildRows profil: ${e && e.message ? e.message : e}`);
+  }
   const rows = [];
   if (!fs.existsSync(CURRENT_DIR)) return rows;
   for (const envName of fs.readdirSync(CURRENT_DIR)) {
+    if (allow.size && !allow.has(envName)) continue;
     const envDir = path.join(CURRENT_DIR, envName);
     if (!fs.statSync(envDir).isDirectory()) continue;
     for (const deviceName of fs.readdirSync(envDir)) {
@@ -181,25 +201,55 @@ async function main() {
     const stack = await prepareLocalFullStack(localE2EPort());
     localServer = stack.server;
   }
-  if (!flags.noClean && !flags.child) {
-    cleanE2EOutputDirs();
-  }
+  /** @type {Array<{ path: string, shared?: boolean }>} */
+  const lockHandles = [];
+  /** @type {Record<string, string>} */
+  const runIds = {};
   const startedAt = new Date().toISOString();
   const started = Date.now();
   /** @type {object[]} */
   let rows = [];
+  let exitCode = 0;
 
+  try {
+  if (!flags.child) {
+    for (const envId of envs) {
+      const profile = loadProfile(isLocalEnvId(envId) ? 'local' : envId);
+      const profileId = profile.id;
+      lockHandles.push(acquireEnvLock(profileId, { command: 'e2e:full' }));
+      if (!flags.noClean) cleanE2EOutputDirs(profileId);
+      const runId = `run-${Date.now()}-${profileId}`;
+      runIds[envId] = runId;
+      resetRegistry(runId, {
+        envId: profileId,
+        siteUrl: profile.baseUrl,
+        fixtureRecords: fixtureProductRecords(loadFixtures(profileId)),
+      });
+    }
+  }
   if (parentParallel) {
     const extra = [];
     if (flags.noSideCart) extra.push('--no-side-cart');
     const jobs = [];
     for (const envId of envs) {
+      let profileId = isLocalEnvId(envId) ? 'local' : envId;
+      try {
+        profileId = loadProfile(profileId).id;
+      } catch (e) {
+        console.error(`[e2e:catch-fail] spawn profil: ${e && e.message ? e.message : e}`);
+      }
+      const childEnv = {
+        WDP_E2E_RUN_ID: runIds[envId] || '',
+        WDP_E2E_PROFILE_ID: profileId,
+        WDP_E2E_ENV_LOCK_SHARED: '1',
+        WDP_E2E_ENV_LOCK_PID: String(process.pid),
+      };
       for (const deviceId of devices) {
-        jobs.push(spawnCombo(envId, deviceId, extra));
+        jobs.push(spawnCombo(envId, deviceId, extra, childEnv));
       }
     }
     await Promise.all(jobs);
-    rows = collectChildRows();
+    rows = collectChildRows(envs);
     if (!rows.length) {
       for (const envId of envs) {
         for (const deviceId of devices) {
@@ -312,11 +362,13 @@ async function main() {
   };
 
   if (flags.child) {
-    if (failedCount > 0) process.exit(1);
+    if (failedCount > 0) exitCode = 1;
     return;
   }
 
   if (!flags.child) {
+    const manifestEnv = envs.length === 1 ? (isLocalEnvId(envs[0]) ? 'local' : envs[0]) : '';
+    const manifestFile = manifestEnv ? runJsonFor(loadProfile(manifestEnv).id) : path.join(CURRENT_DIR, 'run.json');
     writeRunManifest({
       mode: 'full',
       envs,
@@ -342,7 +394,7 @@ async function main() {
       blocked_live,
       remote_post_blocked,
       izinli_okuma,
-    });
+    }, manifestFile);
   }
 
   console.log('\n=== e2e:full özet ===');
@@ -352,7 +404,11 @@ async function main() {
   }
   console.log(`TOPLAM süre: ${durationSec}s  Geçti=${passedCount} Atlandı=${skippedCount} Hata=${failedCount}`);
   console.log(formatRemotePostBlockedLines(remote_post_blocked, izinli_okuma, { blocked_live }));
-  console.log(`Manifest: ${path.relative(ROOT, path.join(CURRENT_DIR, 'run.json'))}`);
+  const manifestNote =
+    envs.length === 1
+      ? runJsonFor(loadProfile(isLocalEnvId(envs[0]) ? 'local' : envs[0]).id)
+      : path.join(CURRENT_DIR, 'run.json');
+  console.log(`Manifest: ${path.relative(ROOT, manifestNote)}`);
 
   if (failedCount > 0) {
     console.error('\n=== Hatalar ===');
@@ -361,11 +417,21 @@ async function main() {
         console.error(`• [${r.env}/${r.device}/${f.check}] ${f.description}`);
       }
     }
-    if (localServer) await localServer.stop();
-    process.exit(1);
+    exitCode = 1;
+  } else {
+    console.log('E2E full passed.');
   }
-  if (localServer) await localServer.stop();
-  console.log('E2E full passed.');
+  } finally {
+    for (const h of lockHandles) {
+      try {
+        releaseEnvLock(h);
+      } catch (e) {
+        console.error(`[e2e:catch-fail] env-lock release: ${e && e.message ? e.message : e}`);
+      }
+    }
+    if (localServer) await localServer.stop();
+  }
+  if (exitCode) process.exit(exitCode);
 }
 
 main().catch(async (e) => {
