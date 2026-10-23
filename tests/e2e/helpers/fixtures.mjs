@@ -94,6 +94,20 @@ export const FIXTURE_CATALOG = [
 ];
 
 /**
+ * --repair yazacağı meta anahtarları (rol kataloğu + fiyat).
+ * @param {string} [role]
+ * @returns {string[]}
+ */
+export function repairKeysForRole(role) {
+  const row = FIXTURE_CATALOG.find((c) => c.role === String(role || ''));
+  const keys = new Set(
+    row ? Object.keys(row.settings) : ['_price', '_regular_price', '_wdp_donation_product']
+  );
+  keys.add('_sale_price');
+  return [...keys];
+}
+
+/**
  * Dry-run / RAPOR: uzak yazmadan ne oluşturulacağını listeler.
  * @param {string} envId
  * @param {string} runId

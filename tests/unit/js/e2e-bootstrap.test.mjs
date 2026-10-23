@@ -1,22 +1,37 @@
 /**
  * e2e:bootstrap dry-run — uzak yazma yok.
  */
-import { describe, it } from 'node:test';
+import { describe, it, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import { ROOT } from '../../../tests/e2e/helpers/env-root.mjs';
 import { describeBootstrapPlan } from '../../../tests/e2e/helpers/fixtures.mjs';
-import { parseArgs } from '../../../scripts/e2e-bootstrap.mjs';
+import {
+  parseArgs,
+  registerRepairTargetsMutated,
+  ensureRepairRegistry,
+} from '../../../scripts/e2e-bootstrap.mjs';
 import { updateCanaryBaselineIfClean } from '../../../tests/e2e/helpers/canary.mjs';
 import { checkRemoteTarget, ALLOWED_DEPLOY_TARGETS, buildGuardedEvalFileCommand } from '../../../scripts/lib/deploy-guards.mjs';
+import {
+  loadRegistry,
+  setRegistryRootForTest,
+  resetRegistryTestHooks,
+} from '../../../tests/e2e/helpers/run-registry.mjs';
+import { isolateUnitProfile, setActiveProfile } from '../../../tests/e2e/helpers/profile.mjs';
 
 const SCRIPT = path.join(ROOT, 'scripts/e2e-bootstrap.mjs');
 
 function runBootstrap(args) {
   return spawnSync('node', [SCRIPT, ...args], { encoding: 'utf8', cwd: ROOT, timeout: 20000 });
 }
+
+afterEach(() => {
+  resetRegistryTestHooks();
+});
 
 describe('e2e:bootstrap dry-run', () => {
   it('--env staging --dry-run uzak yazmadan plan listeler', () => {
@@ -106,6 +121,57 @@ describe('e2e:bootstrap dry-run', () => {
         remoteCommand: cmd,
       });
       assert.equal(r.ok, true, r.reason);
+    }
+  });
+
+  it('--repair yazmadan önce registerMutated (kaynak sırası)', () => {
+    const src = fs.readFileSync(SCRIPT, 'utf8');
+    const reg = src.indexOf('registerRepairTargetsMutated(');
+    const writeLocal = src.indexOf("runLocalPhp('repair'");
+    const writeRemote = src.indexOf('runEvalFile(REMOTE_BOOTSTRAP_PHP');
+    assert.ok(reg > 0, 'registerRepairTargetsMutated yok');
+    assert.ok(reg < writeLocal && reg < writeRemote, 'registerMutated yazmadan önce olmalı');
+    assert.match(src, /compareWithRegistry\(before, after/);
+  });
+
+  it('etkin profil uzakken repair mutated yazar; işaretsiz RED (ağ yok)', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'wdp-3w-reg-'));
+    setRegistryRootForTest(dir);
+    const restore = isolateUnitProfile({
+      id: 'staging-hedef',
+      remote: true,
+      allowedHosts: ['staging30.example.test'],
+      baseUrl: 'https://staging30.example.test',
+    });
+    try {
+      setActiveProfile({
+        id: 'staging-hedef',
+        remote: true,
+        baseUrl: 'https://staging30.example.test',
+      });
+      const fixtures = {
+        runId: 'boot-3w-aaaa',
+        roles: { custom: { id: 25914, mark: 'boot-3w-aaaa', type: 'product' } },
+      };
+      ensureRepairRegistry(
+        { id: 'staging-hedef', baseUrl: 'https://staging30.example.test' },
+        'boot-3w-aaaa',
+        fixtures
+      );
+      registerRepairTargetsMutated([{ id: 25914, role: 'custom' }], fixtures);
+      const r = loadRegistry('staging-hedef');
+      assert.equal(r.envId, 'staging-hedef');
+      assert.equal(r.mutated.length, 1);
+      assert.equal(r.mutated[0].id, 25914);
+      assert.equal(r.mutated[0].type, 'product');
+      assert.ok(r.mutated[0].keys.includes('_price'));
+      assert.throws(
+        () => registerRepairTargetsMutated([{ id: 10720, role: 'catalog' }], fixtures),
+        /REPAIR-RED: işaretsiz/
+      );
+      assert.equal(loadRegistry('staging-hedef').mutated.length, 1);
+    } finally {
+      restore();
     }
   });
 });
