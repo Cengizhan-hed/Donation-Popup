@@ -68,6 +68,8 @@ import {
 import { snapshotGuardOrder, cleanupE2EData } from './test-cleanup.mjs';
 import { resetRegistry } from './run-registry.mjs';
 import { fixtureProductRecords, loadFixtures, assertRunMutationTargetsAreFixtures } from './fixtures.mjs';
+import { installRunSignalHandlers } from './run-signals.mjs';
+import { abortMutationLockWait, resetMutationLockAbort } from './mutation-lock.mjs';
 import {
   snapshotCanary,
   preflightCanary,
@@ -2955,6 +2957,10 @@ export async function captureAll({
   });
   const guest = await asVisitor(browser, env, contextOpts);
   const authed = await asAdmin(browser, env, contextOpts);
+  resetMutationLockAbort();
+  const removeSignals = installRunSignalHandlers([guest, authed, browser], () => {
+    abortMutationLockWait();
+  });
   const catalogCtx = profile.comingSoon ? authed : guest;
 
   // Ürün kalıcı bağlantıları + ID’ler — uzak: WP katalog permalink; yerel: Store API
@@ -4238,50 +4244,78 @@ export async function captureAll({
     await Promise.all([lateSharesPromise, sadakaPromise]);
     void sadakaProductIds;
 
-    const metaSuites = [
+    const mutationSuites = [
       ['amount-options', './amount-options.mjs', 'runAmountOptionsChecks', 'Tutar seçenekleri E2E koşucusu çöktü'],
       ['form-fields', './form-fields.mjs', 'runFormFieldsChecks', 'Form alanları E2E koşucusu çöktü'],
       ['campaign-blocks', './campaign-blocks.mjs', 'runCampaignBlocksChecks', 'Kampanya blokları E2E koşucusu çöktü'],
       ['product-theme', './product-theme.mjs', 'runProductThemeChecks', 'Ürün görünüm E2E koşucusu çöktü'],
       ['shortcodes', './shortcodes.mjs', 'runShortcodeChecks', 'Kısa kod E2E koşucusu çöktü'],
       ['empty-price', './empty-price.mjs', 'runEmptyPriceChecks', 'Fiyatsız ürün E2E koşucusu çöktü'],
-      ['layout', './layout.mjs', 'runLayoutChecks', 'Yerleşim E2E koşucusu çöktü'],
     ];
+    const layoutSuite = ['layout', './layout.mjs', 'runLayoutChecks', 'Yerleşim E2E koşucusu çöktü'];
     const { withEnvMutationLock } = await import('./mutation-lock.mjs');
+    const { deviceRunsMutations } = await import('./mutation-policy.mjs');
     const expectAjaxError = new Set(['form-fields', 'campaign-blocks', 'shortcodes']);
-    await withEnvMutationLock(profile.id, async () => {
-      for (const [area, mod, fn, crash] of metaSuites) {
-        const tSuite = Date.now();
-        const pauseAjax = expectAjaxError.has(area);
-        if (pauseAjax) pausePluginAjaxWatch();
-        try {
-          if (!want(area)) {
-            /* alan süzgeci */
-          } else {
-            const imported = await import(mod);
-            await imported[fn]({
-              browser,
-              contextOpts,
-              env,
-              productUrls,
-              productIds,
-              listPagePath: env.E2E_LIST_PAGE,
-              failures,
-              stats: functionalStats,
-              skips,
-              createAdminContext: () => asAdmin(browser, env, contextOpts),
-              createVisitorContext: () => asVisitor(browser, env, contextOpts),
-            });
-          }
-        } catch (e) {
-          failures.push(makeFailure({ check: `${area}-runner`, description: crash, error: e }));
-          functionalStats.failed += 1;
-        } finally {
-          if (pauseAjax) resumePluginAjaxWatch();
-          logSection(area, tSuite);
+    const runOneMeta = async ([area, mod, fn, crash], locked) => {
+      const tSuite = Date.now();
+      const pauseAjax = expectAjaxError.has(area);
+      if (pauseAjax) pausePluginAjaxWatch();
+      try {
+        if (!want(area)) {
+          /* alan süzgeci */
+        } else {
+          const imported = await import(mod);
+          await imported[fn]({
+            browser,
+            contextOpts,
+            env,
+            productUrls,
+            productIds,
+            listPagePath: env.E2E_LIST_PAGE,
+            failures,
+            stats: functionalStats,
+            skips,
+            createAdminContext: () => asAdmin(browser, env, contextOpts),
+            createVisitorContext: () => asVisitor(browser, env, contextOpts),
+          });
+        }
+      } catch (e) {
+        failures.push(makeFailure({ check: `${area}-runner`, description: crash, error: e }));
+        functionalStats.failed += 1;
+      } finally {
+        if (pauseAjax) resumePluginAjaxWatch();
+        logSection(area, tSuite);
+      }
+      void locked;
+    };
+    try {
+      if (deviceRunsMutations(device.id)) {
+        for (const suite of mutationSuites) {
+          await withEnvMutationLock(profile.id, () => runOneMeta(suite, true));
         }
       }
-    });
+      await runOneMeta(layoutSuite, false);
+    } catch (e) {
+      failures.push(
+        makeFailure({
+          check: 'mutation-lock',
+          description: String(e && e.message ? e.message : e),
+          error: e,
+        })
+      );
+      functionalStats.failed += 1;
+      await Promise.all([
+        guest.close().catch((err) => {
+          console.error(`[e2e:catch-fail] guest close: ${err && err.message ? err.message : err}`);
+        }),
+        authed.close().catch((err) => {
+          console.error(`[e2e:catch-fail] authed close: ${err && err.message ? err.message : err}`);
+        }),
+        browser.close().catch((err) => {
+          console.error(`[e2e:catch-fail] browser close: ${err && err.message ? err.message : err}`);
+        }),
+      ]);
+    }
 
     const a11yCheckoutPromise =
       want('mobile-a11y') || want('checkout-flow')
@@ -4567,6 +4601,9 @@ export async function captureAll({
   const remotePostBlocked = snapshotRemotePostBlocked();
   const izinliOkuma = snapshotAllowedReads();
   console.log(formatRemotePostBlockedLines(remotePostBlocked, izinliOkuma, { blocked_live: blockedLive }));
+
+  removeSignals();
+  resetMutationLockAbort();
 
   return {
     shots,

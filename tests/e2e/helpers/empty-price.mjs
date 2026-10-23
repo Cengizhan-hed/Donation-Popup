@@ -160,44 +160,34 @@ export async function runEmptyPriceChecks({
     stats.skipped += 1;
   };
 
-  const customId = Number(productIds?.custom || env._resolvedProducts?.custom?.id || 0);
-  const campaignId = Number(productIds?.campaign || env._resolvedProducts?.campaign?.id || 0);
-  if (customId > 0 && campaignId > 0 && customId !== campaignId) {
-    await runHedefEmptyPrice({
-      browser,
-      contextOpts,
-      env,
-      productUrls: {
-        custom: productUrls.custom || env._resolvedProducts?.custom?.nav || env._resolvedProducts?.custom?.path,
-        campaign:
-          productUrls.campaign || env._resolvedProducts?.campaign?.nav || env._resolvedProducts?.campaign?.path,
-      },
-      productIds: { custom: customId, campaign: campaignId },
-      listPath,
-      baseUrl,
-      phone,
-      amount,
-      pass,
-      fail,
-      skip,
-      createAdminContext,
-      createVisitorContext,
-    });
-    return;
-  }
-  let fx;
+  let customFx;
+  let campaignFx;
   try {
-    fx = requireFixtureRole(env, 'empty-price');
+    customFx = requireFixtureRole(env, 'custom');
   } catch (e) {
-    fail('empty-price-fixture', String(e.message || e), e);
-    return;
+    try {
+      customFx = requireFixtureRole(env, 'empty-price');
+    } catch (e2) {
+      fail('empty-price-fixture', String(e2.message || e2), e2);
+      return;
+    }
   }
+  try {
+    campaignFx = requireFixtureRole(env, 'campaign');
+  } catch {
+    campaignFx = customFx;
+  }
+  void productUrls;
+  void productIds;
   await runHedefEmptyPrice({
     browser,
     contextOpts,
     env,
-    productUrls: { custom: fx.path || fx.url, campaign: fx.path || fx.url },
-    productIds: { custom: fx.id, campaign: fx.id },
+    productUrls: {
+      custom: customFx.path || customFx.url,
+      campaign: campaignFx.path || campaignFx.url,
+    },
+    productIds: { custom: customFx.id, campaign: campaignFx.id },
     listPath,
     baseUrl,
     phone,

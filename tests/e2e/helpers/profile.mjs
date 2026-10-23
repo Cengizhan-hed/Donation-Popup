@@ -44,6 +44,45 @@ export function loadProfile(idOrAlias) {
 }
 
 /**
+ * Takma ad → profil id (tek yer). Bilinmeyen değer sanitize edilir.
+ * staging|hedef|staging-hedef → staging-hedef; ikram|ikram-aid → ikram-aid; local → local.
+ * @param {string|object|null|undefined} idOrAlias
+ * @returns {string}
+ */
+export function resolveProfileId(idOrAlias) {
+  if (idOrAlias && typeof idOrAlias === 'object') {
+    const fromObj = String(idOrAlias.id || '').trim().toLowerCase();
+    if (fromObj) {
+      try {
+        return String(loadProfile(fromObj).id || fromObj);
+      } catch {
+        return fromObj.replace(/[^a-z0-9._-]/g, '');
+      }
+    }
+    return '';
+  }
+  const want = String(idOrAlias || '')
+    .trim()
+    .toLowerCase();
+  if (!want) return '';
+  try {
+    return String(loadProfile(want).id || want);
+  } catch {
+    return want.replace(/[^a-z0-9._-]/g, '');
+  }
+}
+
+/**
+ * @param {string|object|null|undefined} a
+ * @param {string|object|null|undefined} b
+ */
+export function sameProfileId(a, b) {
+  const x = resolveProfileId(a);
+  const y = resolveProfileId(b);
+  return !!(x && y && x === y);
+}
+
+/**
  * @param {object} profile
  */
 export function assertRemoteProfileSafe(profile) {
@@ -104,6 +143,32 @@ export function setActiveProfile(profile) {
 
 export function clearActiveProfile() {
   activeProfile = null;
+}
+
+/**
+ * Birim test: etkin profil + WDP_E2E_PROFILE(_ID) yalıtımı. Dönüş: geri alıcı.
+ * @param {object} [profile]
+ * @returns {() => void}
+ */
+export function isolateUnitProfile(profile = { id: 'local', remote: false, allowedHosts: ['127.0.0.1'] }) {
+  const prevId = process.env.WDP_E2E_PROFILE_ID;
+  const prevProf = process.env.WDP_E2E_PROFILE;
+  const prevActive = peekActiveProfile();
+  setActiveProfile(profile);
+  if (profile?.id) process.env.WDP_E2E_PROFILE_ID = String(profile.id);
+  else delete process.env.WDP_E2E_PROFILE_ID;
+  delete process.env.WDP_E2E_PROFILE;
+  let done = false;
+  return () => {
+    if (done) return;
+    done = true;
+    if (prevActive) setActiveProfile(prevActive);
+    else clearActiveProfile();
+    if (prevId === undefined) delete process.env.WDP_E2E_PROFILE_ID;
+    else process.env.WDP_E2E_PROFILE_ID = prevId;
+    if (prevProf === undefined) delete process.env.WDP_E2E_PROFILE;
+    else process.env.WDP_E2E_PROFILE = prevProf;
+  };
 }
 
 /**

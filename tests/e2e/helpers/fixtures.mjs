@@ -5,8 +5,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { ROOT } from './env-root.mjs';
-import { loadProfile, peekActiveProfile, isRemoteProfile } from './profile.mjs';
-import { pickFixtureNavTarget, assertProductNavTarget, isPublishedCatalogRole } from './catalog-core.mjs';
+import { peekActiveProfile, isRemoteProfile, resolveProfileId } from './profile.mjs';
+import { pickFixtureNavTarget, assertProductNavTarget } from './catalog-core.mjs';
 
 export const FIXTURE_MARK_PREFIX = 'fixture';
 
@@ -142,14 +142,10 @@ export function profileIdOf(env) {
  * @param {string|object|null|undefined} envOrId
  */
 export function resolveFixtureProfileId(envOrId) {
-  if (envOrId && typeof envOrId === 'object') return profileIdOf(envOrId);
+  if (envOrId && typeof envOrId === 'object') return resolveProfileId(profileIdOf(envOrId)) || profileIdOf(envOrId);
   const raw = String(envOrId || '').trim();
-  if (!raw) return profileIdOf({});
-  try {
-    return String(loadProfile(raw).id || raw);
-  } catch {
-    return raw.replace(/[^a-z0-9._-]/gi, '') || 'local';
-  }
+  if (!raw) return resolveProfileId(profileIdOf({})) || profileIdOf({});
+  return resolveProfileId(raw) || raw.replace(/[^a-z0-9._-]/gi, '') || 'local';
 }
 
 export function loadFixtures(envOrId) {
@@ -274,48 +270,114 @@ export function assertRunMutationTargetsAreFixtures(env) {
 }
 
 /**
+ * Görüntüleme kararı (saf): uzak + private → yönetici; yayımlı → ziyaretçi.
+ * @param {{ profile?: object, product?: object, admin?: boolean }} [opts]
+ * @returns {'admin'|'visitor'}
+ */
+export function decideDonationViewContext(opts = {}) {
+  if (opts.admin === true) return 'admin';
+  if (opts.admin === false) return 'visitor';
+  const product = opts.product && typeof opts.product === 'object' ? opts.product : {};
+  const status = String(product.status || '').toLowerCase();
+  const published =
+    product.published === true ||
+    status === 'publish' ||
+    (product.fromCatalog === true && product.fromFixture !== true && status !== 'private');
+  const isPrivate =
+    status === 'private' ||
+    product.published === false ||
+    (product.fromFixture === true && !published);
+  if (isPrivate && isRemoteProfile(opts.profile)) return 'admin';
+  if (published) return 'visitor';
+  if (isPrivate) return 'admin';
+  return 'visitor';
+}
+
+function productForView(extra = {}) {
+  if (extra.product && typeof extra.product === 'object') return extra.product;
+  const role = extra.role;
+  const env = extra.env;
+  if (env && role) {
+    const data = loadFixtures(env);
+    const fxRow = data?.roles?.[role];
+    if (fxRow?.id) {
+      const published =
+        fxRow.published === true ||
+        fxRow.catalogVisible === true ||
+        String(fxRow.status || '').toLowerCase() === 'publish';
+      return {
+        id: fxRow.id,
+        fromFixture: true,
+        status: published ? 'publish' : 'private',
+        published,
+      };
+    }
+    const rec = env._resolvedProducts?.[role];
+    if (rec) return rec;
+  }
+  return {};
+}
+
+/**
  * Form görüntüleme: yayımlı katalog → ziyaretçi; private fixture → yönetici.
  * Meta yazımı tarayıcıda değil PHP eval ile yapılır.
  * @param {import('@playwright/test').Browser} browser
  * @param {object} contextOpts
  * @param {() => Promise<import('@playwright/test').BrowserContext>} [createAdminContext]
- * @param {{ createVisitorContext?: () => Promise<import('@playwright/test').BrowserContext>, env?: object, role?: string, admin?: boolean }} [extra]
+ * @param {{ createVisitorContext?: () => Promise<import('@playwright/test').BrowserContext>, env?: object, role?: string, admin?: boolean, product?: object }} [extra]
  */
 export async function mutationBrowserContext(browser, contextOpts, createAdminContext, extra = {}) {
-  const visitor = extra.createVisitorContext;
-  let admin = extra.admin;
-  if (admin === undefined && extra.env && extra.role) {
-    admin = !isPublishedCatalogRole(extra.env, extra.role);
-  }
-  if (admin === undefined) {
-    admin = typeof visitor !== 'function';
-  }
-  if (admin && typeof createAdminContext === 'function') {
-    return createAdminContext();
-  }
-  if (typeof visitor === 'function') {
-    return visitor();
-  }
-  if (typeof createAdminContext === 'function') {
-    return createAdminContext();
-  }
-  return browser.newContext(contextOpts);
+  return donationViewContext(browser, contextOpts, {
+    admin: extra.admin,
+    env: extra.env,
+    role: extra.role,
+    product: extra.product,
+    createAdminContext,
+    createVisitorContext: extra.createVisitorContext,
+  });
 }
 
 /**
  * Bağış formu görüntüleme: yayımlı ürün → ziyaretçi; private fixture → yönetici.
  * @param {import('@playwright/test').Browser} browser
  * @param {object} contextOpts
- * @param {{ admin?: boolean, createAdminContext?: () => Promise<import('@playwright/test').BrowserContext>, createVisitorContext?: () => Promise<import('@playwright/test').BrowserContext> }} [opts]
+ * @param {{ admin?: boolean, env?: object, role?: string, product?: object, createAdminContext?: () => Promise<import('@playwright/test').BrowserContext>, createVisitorContext?: () => Promise<import('@playwright/test').BrowserContext> }} [opts]
  */
 export async function donationViewContext(browser, contextOpts, opts = {}) {
-  if (opts.admin && typeof opts.createAdminContext === 'function') {
+  const who = decideDonationViewContext({
+    profile: opts.env?._profile || peekActiveProfile(),
+    product: productForView(opts),
+    admin: opts.admin,
+  });
+  if (who === 'admin' && typeof opts.createAdminContext === 'function') {
     return opts.createAdminContext();
   }
   if (typeof opts.createVisitorContext === 'function') {
     return opts.createVisitorContext();
   }
+  if (who === 'admin' && typeof opts.createAdminContext === 'function') {
+    return opts.createAdminContext();
+  }
   return browser.newContext(contextOpts);
+}
+
+/**
+ * --repair: yalnız işaretli fixture id. İşaretsiz → RED.
+ * @param {number|string} productId
+ * @param {object|null|undefined} fixturesData
+ * @param {string} [label]
+ */
+export function assertRepairTargetMarked(productId, fixturesData, label = '') {
+  const id = Math.abs(Number.parseInt(String(productId), 10) || 0);
+  const tag = label ? ` ${label}` : '';
+  if (id <= 0) {
+    throw new Error(`REPAIR-RED: geçersiz id${tag}`);
+  }
+  const rec = fixtureProductRecords(fixturesData).find((r) => r.id === id);
+  if (!rec) {
+    throw new Error(`REPAIR-RED: işaretsiz ürün id=${id}${tag}`);
+  }
+  return rec;
 }
 
 /**

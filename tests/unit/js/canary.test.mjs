@@ -1,4 +1,4 @@
-import { describe, it } from 'node:test';
+import { describe, it, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -21,6 +21,15 @@ import { parseCanaryArgs, runCanary } from '../../../tests/e2e/run-canary.mjs';
 import { evaluateBootstrapCanary } from '../../../scripts/e2e-bootstrap.mjs';
 import { evaluateDeleteGuard, evaluateUserDeleteGuard } from '../../../tests/e2e/helpers/safe-remote-write.mjs';
 import { ROOT } from '../../../tests/e2e/helpers/env-root.mjs';
+import { isolateUnitProfile } from '../../../tests/e2e/helpers/profile.mjs';
+
+let restoreUnitProfile = () => {};
+beforeEach(() => {
+  restoreUnitProfile = isolateUnitProfile({ id: 'local', remote: false, allowedHosts: ['127.0.0.1'] });
+});
+afterEach(() => {
+  restoreUnitProfile();
+});
 
 function blogHomeSnap(extraOptions = {}, extraPosts = []) {
   return {
@@ -254,7 +263,8 @@ describe('canary', () => {
     );
     const file = writeCanaryAlert(
       { ok: false, diffs: health.diffs, warnings: health.warnings },
-      'e2e:bootstrap önce kanarya'
+      'e2e:bootstrap önce kanarya',
+      'local'
     );
     const text = fs.readFileSync(file, 'utf8');
     assert.equal(file, canaryAlertPath('local'));

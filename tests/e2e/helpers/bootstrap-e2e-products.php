@@ -98,6 +98,30 @@ $catalog = array(
 	),
 );
 
+function wdp_boot_apply_defaults($id, $settings) {
+	if (class_exists('WC_Product') && function_exists('wc_get_product')) {
+		$p = wc_get_product($id);
+		if ($p) {
+			foreach ($settings as $k => $v) {
+				if ($k === '_regular_price') {
+					$p->set_regular_price($v);
+					continue;
+				}
+				if ($k === '_price') {
+					$p->set_price($v);
+					continue;
+				}
+				$p->update_meta_data($k, $v);
+			}
+			$p->save();
+			return;
+		}
+	}
+	foreach ($settings as $k => $v) {
+		update_post_meta($id, $k, $v);
+	}
+}
+
 function wdp_boot_find_product($title, $run_id) {
 	$found = get_posts(
 		array(
@@ -117,6 +141,65 @@ $roles   = array();
 $created = array();
 $removed = array();
 $skipped = array();
+
+if ($action === 'repair') {
+	$repair_ids_raw = (string) getenv('WDP_E2E_REPAIR_IDS');
+	$repair_by_id   = array();
+	if ($repair_ids_raw !== '') {
+		foreach (explode(',', $repair_ids_raw) as $piece) {
+			$nid = absint($piece);
+			if ($nid > 0) {
+				$repair_by_id[] = $nid;
+			}
+		}
+		$repair_by_id = array_values(array_unique($repair_by_id));
+	}
+	$by_id_role = array();
+	foreach ($catalog as $role => $row) {
+		$found = wdp_boot_find_product($row[0], $run_id);
+		if ($found) {
+			$by_id_role[ $found ] = $role;
+		}
+	}
+	if (!$repair_by_id) {
+		$repair_by_id = array_keys($by_id_role);
+	}
+	$repaired = array();
+	foreach ($repair_by_id as $id) {
+		$post = get_post($id);
+		if (!$post) {
+			$skipped[] = 'id:' . $id . ':missing';
+			continue;
+		}
+		if ((string) get_post_meta($id, META_KEY, true) !== $run_id) {
+			fwrite(STDERR, "REPAIR-RED: unmarked id={$id}\n");
+			exit(2);
+		}
+		if ($post->post_type === 'page') {
+			fwrite(STDERR, "REPAIR-RED: page id={$id}\n");
+			exit(2);
+		}
+		$role = isset($by_id_role[ $id ]) ? $by_id_role[ $id ] : '';
+		if ($role === '' || !isset($catalog[ $role ])) {
+			fwrite(STDERR, "REPAIR-RED: no-role id={$id}\n");
+			exit(2);
+		}
+		wdp_boot_apply_defaults($id, $catalog[ $role ][1]);
+		$repaired[] = array( 'role' => $role, 'id' => $id );
+	}
+	echo wp_json_encode(
+		array(
+			'runId'    => $run_id,
+			'action'   => 'repair',
+			'roles'    => (object) array(),
+			'repaired' => $repaired,
+			'skipped'  => $skipped,
+			'created'  => array(),
+			'removed'  => array(),
+		)
+	);
+	return;
+}
 
 if ($action === 'remove') {
 	$remove_ids_raw = (string) getenv('WDP_E2E_REMOVE_IDS');
