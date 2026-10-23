@@ -29,16 +29,21 @@
       return null;
     }
     let productId = container.getAttribute('data-product-id');
-    if (productId) {
-      return productId;
+    const parsedAttr = Number.parseInt(productId, 10);
+    if (Number.isFinite(parsedAttr) && parsedAttr > 0) {
+      return String(parsedAttr);
     }
     const idAttr = container.id || '';
     const m = /^wdp-(?:modal|side-panel)-(\d+)$/.exec(idAttr);
     if (m) {
-      return m[1];
+      const fromId = Number.parseInt(m[1], 10);
+      if (Number.isFinite(fromId) && fromId > 0) {
+        return String(fromId);
+      }
     }
     const pidInput = container.querySelector('input[name="wdp_product_id"], input[name="add-to-cart"]');
-    return pidInput && pidInput.value ? String(pidInput.value) : null;
+    const fromInput = pidInput && pidInput.value ? Number.parseInt(pidInput.value, 10) : 0;
+    return Number.isFinite(fromInput) && fromInput > 0 ? String(fromInput) : null;
   }
 
   function setupInlineMetaViewContent(container, productId, formElement) {

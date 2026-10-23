@@ -364,9 +364,17 @@
       : "popup";
   }
 
+  function isLazyProductId(value) {
+    const n = Number.parseInt(value, 10);
+    if (WDPApp.utils && typeof WDPApp.utils.isValidProductId === "function") {
+      return WDPApp.utils.isValidProductId(n);
+    }
+    return Number.isFinite(n) && n > 0;
+  }
+
   function ensureAndOpen(button) {
     const productId = button.getAttribute("data-product-id");
-    if (!productId) return Promise.resolve();
+    if (!isLazyProductId(productId)) return Promise.resolve();
     syncLocaleState();
     const mode = resolveMode(button);
     if (existingModal(productId, mode)) {
@@ -409,7 +417,7 @@
   function prefetch(button) {
     if (!button) return;
     const productId = button.getAttribute("data-product-id");
-    if (!productId) return;
+    if (!isLazyProductId(productId)) return;
     syncLocaleState();
     const mode = resolveMode(button);
     const key = cacheKey(productId, mode);
@@ -484,7 +492,7 @@
       const next = queue.shift();
       if (!next) return;
       const productId = next.getAttribute("data-product-id");
-      if (!productId) {
+      if (!isLazyProductId(productId)) {
         scheduleIdle(pump);
         return;
       }
@@ -525,7 +533,7 @@
   }
 
   function isLazyTrigger(el) {
-    return !!(el && el.getAttribute && el.getAttribute("data-wdp-lazy") && el.getAttribute("data-product-id"));
+    return !!(el && el.getAttribute && el.getAttribute("data-wdp-lazy") && isLazyProductId(el.getAttribute("data-product-id")));
   }
 
   // İlk yüklemede locale izle

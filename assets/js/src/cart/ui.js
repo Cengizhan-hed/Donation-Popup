@@ -259,14 +259,35 @@
     const btnWrap = document.createElement('div');
     btnWrap.className = 'wdp-success-buttons';
 
+    const resolveStorefrontUrl =
+      (utils && typeof utils.resolveStorefrontUrl === 'function')
+        ? utils.resolveStorefrontUrl
+        : function (kind) {
+            const key = kind === 'cart' ? 'cart_url' : 'checkout_url';
+            const raw = wdp_ajax && wdp_ajax[key];
+            return typeof raw === 'string' ? raw.trim() : '';
+          };
+    const checkoutUrl = resolveStorefrontUrl('checkout');
+    const cartUrl = resolveStorefrontUrl('cart');
+
     const checkout = document.createElement('a');
     checkout.className = 'wdp-success-button wdp-checkout wdp-success-button--primary';
-    checkout.href = wdp_ajax.checkout_url || "/odeme-sayfasi/";
+    if (checkoutUrl) {
+      checkout.href = checkoutUrl;
+    } else {
+      checkout.href = '#';
+      checkout.setAttribute('aria-disabled', 'true');
+    }
     fillSuccessButtonWithIcon(checkout, iconCheckout, goCheckoutText);
 
     const viewCart = document.createElement('a');
     viewCart.className = 'wdp-success-button wdp-view-cart wdp-success-button--outline';
-    viewCart.href = wdp_ajax.cart_url || "/sepet/";
+    if (cartUrl) {
+      viewCart.href = cartUrl;
+    } else {
+      viewCart.href = '#';
+      viewCart.setAttribute('aria-disabled', 'true');
+    }
     fillSuccessButtonWithIcon(viewCart, iconCart, viewCartText);
 
     const newDonation = document.createElement('a');

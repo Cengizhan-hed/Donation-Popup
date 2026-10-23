@@ -477,6 +477,14 @@
     let modal = null
     try {
       productId = Number.parseInt(productId, 10)
+      const idOk =
+        WDPApp.utils && typeof WDPApp.utils.isValidProductId === 'function'
+          ? WDPApp.utils.isValidProductId(productId)
+          : Number.isFinite(productId) && productId > 0
+      if (!idOk) {
+        safeLog("ERROR: Invalid product ID for modal open:", productId)
+        return
+      }
       const modalId = resolveModalId(productId, options)
       modal = document.getElementById(modalId)
       safeLog("Modal element found:", modal)

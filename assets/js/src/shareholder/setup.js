@@ -339,7 +339,11 @@
       }
 
       const directProductId = Number.parseInt(productIdInput.value, 10);
-      if (!Number.isFinite(directProductId)) {
+      const idOk =
+        WDPApp.utils && typeof WDPApp.utils.isValidProductId === 'function'
+          ? WDPApp.utils.isValidProductId(directProductId)
+          : Number.isFinite(directProductId) && directProductId > 0;
+      if (!idOk) {
         safeLog("Invalid product ID for direct form:", productIdInput.value);
         return;
       }

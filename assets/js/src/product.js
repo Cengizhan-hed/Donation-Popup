@@ -11,7 +11,7 @@
   
   // Use centralized module dependency helper
   const utilsCheck = (WDPApp.utils && WDPApp.utils.ensureModule)
-    ? WDPApp.utils.ensureModule('utils', ['safeLog', 'getAjaxNonce', 'formatCurrency', 'formatPrice', 'formatMinPlaceholder', 'applyCurrencyShellPosition', 'announceStatus'])
+    ? WDPApp.utils.ensureModule('utils', ['safeLog', 'getAjaxNonce', 'formatCurrency', 'formatPrice', 'formatMinPlaceholder', 'applyCurrencyShellPosition', 'announceStatus', 'isValidProductId', 'productInfoErrorMessage', 'showToast'])
     : { module: WDPApp.utils || {}, isValid: false, missingMethods: [] };
   
   const stateCheck = (WDPApp.utils && WDPApp.utils.ensureModule)
@@ -20,7 +20,24 @@
   
   const utils = utilsCheck.module;
   const state = stateCheck.module;
-  const { safeLog, getAjaxNonce, formatCurrency, formatPrice, formatMinPlaceholder, applyCurrencyShellPosition, announceStatus } = utils;
+  const { safeLog, getAjaxNonce, formatCurrency, formatPrice, formatMinPlaceholder, applyCurrencyShellPosition, announceStatus, showToast } = utils;
+  const isValidProductId = typeof utils.isValidProductId === 'function'
+    ? utils.isValidProductId
+    : function (value) {
+        const n = Number.parseInt(value, 10);
+        return Number.isFinite(n) && n > 0;
+      };
+  const productInfoErrorMessage = typeof utils.productInfoErrorMessage === 'function'
+    ? utils.productInfoErrorMessage
+    : function (data) {
+        if (data && typeof data.message === 'string' && data.message.trim()) {
+          return data.message.trim();
+        }
+        if (data && data.data && typeof data.data.message === 'string') {
+          return data.data.message.trim();
+        }
+        return '';
+      };
   const { productPrices, productDataCache, productInfoRequests } = state;
   const wdp_ajax = window.wdp_ajax || {};
 
@@ -28,7 +45,7 @@
 
   function getProductInfoData(productId) {
     const id = Number.parseInt(productId, 10);
-    if (!Number.isFinite(id)) {
+    if (!isValidProductId(id)) {
       return Promise.resolve(null);
     }
 
@@ -70,18 +87,25 @@
 
     const request = fetch(wdp_ajax.ajax_url, fetchOpts)
       .then((response) => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        return response.text();
-      })
-      .then((text) => {
-        try {
-          return JSON.parse(text);
-        } catch (e) {
-          safeLog("Error parsing JSON response:", e);
-          return null;
-        }
+        return response.text().then((text) => {
+          let parsed = null;
+          try {
+            parsed = text ? JSON.parse(text) : null;
+          } catch (e) {
+            safeLog("Error parsing JSON response:", e);
+            parsed = null;
+          }
+          if (!response.ok) {
+            const msg = productInfoErrorMessage(parsed);
+            if (msg && /geçersiz ürün|ürün bulunamadı/i.test(msg)) {
+              return { success: false, message: msg };
+            }
+            const err = new Error(msg || ("HTTP error! Status: " + response.status));
+            err.status = response.status;
+            throw err;
+          }
+          return parsed;
+        });
       })
       .then((data) => {
         if (data && data.success) {
@@ -148,7 +172,18 @@
     });
     if (wrote) {
       announceStatus(fallbackMessage, "assertive");
+      return;
     }
+    if (typeof showToast === "function") {
+      showToast({
+        type: "error",
+        title: (wdp_ajax.strings && wdp_ajax.strings.error) || "Bir hata oluştu",
+        message: fallbackMessage,
+        duration: 6000,
+      });
+      return;
+    }
+    announceStatus(fallbackMessage, "assertive");
   }
 
   function isStaleProductInfoRequest(modal, openToken) {
@@ -427,13 +462,22 @@
         if (data.success) {
           applyProductInfo(productId, data, { openToken: openToken, modal: modal });
         } else {
-          displayProductInfoError(productId, data.message);
+          const serverMsg = productInfoErrorMessage(data);
+          displayProductInfoError(
+            productId,
+            serverMsg && /geçersiz ürün|ürün bulunamadı|alınamadı|yenileyip/i.test(serverMsg)
+              ? serverMsg
+              : undefined
+          );
         }
       })
       .catch((error) => {
         safeLog("Error fetching product info:", error);
         if (!isStaleProductInfoRequest(modal, openToken)) {
-          displayProductInfoError(productId);
+          displayProductInfoError(
+            productId,
+            (error && error.message) || productInfoErrorMessage(error && error.payload)
+          );
         }
       });
   }
