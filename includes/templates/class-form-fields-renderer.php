@@ -199,11 +199,11 @@ class WDP_Form_Fields_Renderer {
 			'input_class'  => 'wdp-custom-price-input',
 			'include_qty'  => true,
 			'filter_label' => 'wdp_custom_price_label',
-			'input_type'   => 'number',
+			'input_type'   => 'text',
 			'show_presets' => true,
 		);
 		$opts        = array_merge($defaults, $options);
-		$input_type  = ($opts['input_type'] === 'text') ? 'text' : 'number';
+		$input_type  = ($opts['input_type'] === 'number') ? 'number' : 'text';
 
 		$label = apply_filters($opts['filter_label'], $opts['label']);
 		$label = is_string($label) ? trim($label) : (string) $opts['label'];
@@ -225,11 +225,12 @@ class WDP_Form_Fields_Renderer {
 		$row_class     = trim((string) $opts['row_class']);
 		$input_class   = trim((string) $opts['input_class']);
 		$required_attr = !empty($opts['required']) ? ' required' : '';
-		$min_attr      = '';
-		if ($input_type === 'number') {
-			$min_attr = ' min="' . esc_attr($min_price) . '" step="1"';
-		} elseif ($min_price !== '' && $min_price !== null) {
-			$min_attr = ' data-wdp-min-price="' . esc_attr($min_price) . '"';
+		$min_attr = '';
+		if ($min_price !== '' && $min_price !== null) {
+			$min_attr = ' min="' . esc_attr($min_price) . '" data-wdp-min-price="' . esc_attr($min_price) . '"';
+			if ($input_type === 'number') {
+				$min_attr .= ' step="any"';
+			}
 		}
 
 		$presets_html = '';

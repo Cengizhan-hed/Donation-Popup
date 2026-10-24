@@ -140,9 +140,14 @@ class WDP_Cart {
                 $cart_item_data['unique_key'] = md5(serialize($unique_data));
             }
 
-            // Özel fiyat değerini ekle
+            // Özel fiyat değerini ekle (aynı bağışçı kuralı; belirsiz sessiz dönüşmez)
             if (isset($request_data['custom_price']) && '' !== $request_data['custom_price']) {
-                $custom_price = self::sanitize_custom_price($request_data['custom_price']);
+                $parsed_line = class_exists('WDP_Utils')
+                    ? WDP_Utils::parse_donor_amount($request_data['custom_price'])
+                    : array('ok' => false, 'amount' => 0.0);
+                $custom_price = (!empty($parsed_line['ok']))
+                    ? self::sanitize_custom_price($parsed_line['amount'])
+                    : null;
                 if (null !== $custom_price) {
                     $cart_item_data['custom_price'] = self::apply_cover_fee_to_amount($custom_price, $cover_fee_pct);
                 }
@@ -269,7 +274,17 @@ class WDP_Cart {
                     return false;
                 }
 
-                $custom_price = self::sanitize_custom_price($request_data['custom_price']);
+                $parsed_amount = class_exists('WDP_Utils')
+                    ? WDP_Utils::parse_donor_amount($request_data['custom_price'])
+                    : array('ok' => false, 'error' => __('Geçersiz bağış miktarı girdiniz.', 'woo-donation-popup'));
+                if (empty($parsed_amount['ok'])) {
+                    $parse_error = isset($parsed_amount['error']) && $parsed_amount['error'] !== ''
+                        ? (string) $parsed_amount['error']
+                        : __('Geçersiz bağış miktarı girdiniz.', 'woo-donation-popup');
+                    wc_add_notice($parse_error, 'error');
+                    return false;
+                }
+                $custom_price = self::sanitize_custom_price($parsed_amount['amount']);
                 if (null === $custom_price) {
                     wc_add_notice(__('Geçersiz bağış miktarı girdiniz.', 'woo-donation-popup'), 'error');
                     return false;

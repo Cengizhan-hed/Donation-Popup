@@ -347,6 +347,8 @@ trait WDP_Assets_Registry_Trait {
                 'success' => __('Başarılı', 'woo-donation-popup'),
                 'required_field' => __('Bu alan zorunludur', 'woo-donation-popup'),
                 'invalid_price' => __('Geçersiz fiyat', 'woo-donation-popup'),
+                'amount_ambiguous_integer' => __('Lütfen tutarı tam sayı olarak yazın, örn. %s', 'woo-donation-popup'),
+                'amount_ambiguous_format' => __('Lütfen tutarı şu biçimde yazın, örn. %s', 'woo-donation-popup'),
                 'min_price_error' => __('Minimum fiyat: ', 'woo-donation-popup'),
                 'max_shares_error' => __('Maksimum hisse sayısı: ', 'woo-donation-popup'),
                 'custom_price_placeholder_empty' => __('Bağış tutarı *', 'woo-donation-popup'),

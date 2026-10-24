@@ -640,7 +640,10 @@
           : Number.parseFloat;
         const base = parseAmt(formData.get('custom_price') || '');
         if (Number.isFinite(base) && base > 0) {
-          formData.set('custom_price', String(base));
+          const formatted = (window.WDPApp && WDPApp.utils && typeof WDPApp.utils.formatAmountForSubmit === 'function')
+            ? WDPApp.utils.formatAmountForSubmit(base)
+            : String(base);
+          formData.set('custom_price', formatted || String(base));
         }
       }
     } else {
@@ -683,7 +686,9 @@
           
           // Ama sepete BASE PRICE gönder (quantity ile çarpılacak)
           // PHP tarafında: subtotal = custom_price × quantity (quantity = shareCount)
-          const roundedBasePrice = Number.isInteger(basePrice) ? basePrice.toFixed(0) : basePrice.toFixed(2);
+          const roundedBasePrice = (window.WDPApp && WDPApp.utils && typeof WDPApp.utils.formatAmountForSubmit === 'function')
+            ? WDPApp.utils.formatAmountForSubmit(basePrice)
+            : (Number.isInteger(basePrice) ? basePrice.toFixed(0) : basePrice.toFixed(2));
           formData.set('custom_price', roundedBasePrice);
           safeLog("Fiyat hesaplandı - Base:", basePrice, "x Quantity (ShareCount):", shareCount, "= Total:", totalPrice, "-> Sepete base price gönderiliyor:", roundedBasePrice);
         } else if (shareCount > 1) {

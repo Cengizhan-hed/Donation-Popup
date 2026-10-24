@@ -4,7 +4,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { SEL } from './selectors.mjs';
-import { formatMoney, formatMinPlaceholder } from './currency.mjs';
+import { formatMoney, formatMinPlaceholder, formatFillAmount } from './currency.mjs';
 import { withCacheBust } from './env.mjs';
 import {
   attachConsoleErrorCollector,
@@ -378,7 +378,7 @@ async function fillDonationForm(scope, store) {
   const price = scope.locator(SEL.customPrice).first();
   if ((await price.count()) > 0) {
     await price.waitFor({ state: 'visible', timeout: CHECK_MS });
-    await price.fill(String(amount));
+    await price.fill(formatFillAmount(amount, store) || String(amount));
   } else {
     const preset = scope.locator('.wdp-amount-preset, [data-wdp-amount]').first();
     if ((await preset.count()) > 0) await preset.click({ timeout: CHECK_MS });
@@ -783,6 +783,44 @@ export async function runDeviceScenarios({
       await addToCart(page, scope);
       await cartHasAmount(page, baseUrl, amount, store);
       await shot(page, shotDir, 'product-cart');
+    });
+
+    await runOne('amount-ambiguous', async () => {
+      await gotoPath(page, baseUrl, '/');
+      await emptyCartStoreApi(page, baseUrl);
+      const scope = await openProductForm(page, baseUrl, productPath);
+      const price = scope.locator(SEL.customPrice).first();
+      await price.waitFor({ state: 'visible', timeout: CHECK_MS });
+      const code = String(store.currency || '').toUpperCase();
+      if (code === 'TRY') {
+        await price.fill('10.00');
+        const name = scope.locator(SEL.donorName).first();
+        if ((await name.count()) > 0) await name.fill(DONOR_NAME);
+        const phone = scope.locator(SEL.donorPhone).first();
+        if ((await phone.count()) > 0) await phone.fill(DONOR_PHONE);
+        const add = scope.locator(SEL.addToCart).first();
+        await add.waitFor({ state: 'visible', timeout: CHECK_MS });
+        const probe = attachSubmitNetworkProbe(page);
+        try {
+          await add.click({ timeout: CHECK_MS });
+          await page.waitForFunction(() => {
+            const nodes = Array.from(document.querySelectorAll('.wdp-input-error, .wdp-form-error'));
+            return nodes.some((el) => /tam sayı|biçiminde|Lütfen tutarı/i.test(String(el.textContent || '')));
+          }, { timeout: CHECK_MS });
+          if (probe.ajax.length) {
+            throw new Error(`TRY 10.00 sepete eklendi (${probe.ajax.length} istek)`);
+          }
+        } finally {
+          probe.detach();
+        }
+        await shot(page, shotDir, 'amount-ambiguous-try');
+        return;
+      }
+      const fillAmount = code === 'EUR' ? 10.5 : 10;
+      await fillDonationForm(scope, { ...store, amount: fillAmount });
+      await addToCart(page, scope);
+      await cartHasAmount(page, baseUrl, fillAmount, store);
+      await shot(page, shotDir, `amount-ambiguous-${code.toLowerCase()}`);
     });
 
     await runOne('list-checkout', async () => {

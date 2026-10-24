@@ -632,7 +632,7 @@
     });
 
     // Input alanlarına olay dinleyicileri ekle
-    form.querySelectorAll('input[type="text"], input[type="tel"], input[type="number"]').forEach((input) => {
+    form.querySelectorAll('input[type="text"], input[type="tel"], input[type="number"], input[inputmode="decimal"]').forEach((input) => {
       if (input.dataset.wdpBaseInputBound !== '1') {
         input.dataset.wdpBaseInputBound = '1';
         input.addEventListener("focus", function () {
@@ -650,6 +650,28 @@
               if (minWarn) minWarn.style.display = "none";
             }
           }
+        });
+      }
+
+      if ((input.name === "custom_price" || input.name === "sadaka_custom_price") && input.dataset.wdpAmountPasteBound !== '1') {
+        input.dataset.wdpAmountPasteBound = '1';
+        input.addEventListener("paste", function onAmountPaste(event) {
+          const clip = event.clipboardData || window.clipboardData;
+          if (!clip) {
+            return;
+          }
+          const text = clip.getData("text");
+          if (text == null || String(text).trim() === "") {
+            return;
+          }
+          const u = window.WDPApp && WDPApp.utils ? WDPApp.utils : {};
+          if (typeof u.normalizeAmountInput !== "function") {
+            return;
+          }
+          event.preventDefault();
+          const normalized = u.normalizeAmountInput(text);
+          this.value = normalized;
+          this.dispatchEvent(new Event("input", { bubbles: true }));
         });
       }
 

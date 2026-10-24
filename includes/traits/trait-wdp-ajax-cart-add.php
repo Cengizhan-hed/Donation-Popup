@@ -193,9 +193,17 @@ trait WDP_Ajax_Cart_Add_Trait {
                     throw new WDP_Validation_Exception(__('Lütfen bağış miktarını giriniz.', 'woo-donation-popup'), array('custom_price'));
                 }
 
-                // Sanitize and validate price
-                $custom_price_value = WDP_Security::sanitize_numeric($custom_price_raw, 0, 999999);
-                
+                $parsed_amount = class_exists('WDP_Utils')
+                    ? WDP_Utils::parse_donor_amount($custom_price_raw)
+                    : array('ok' => false, 'amount' => 0.0, 'status' => 'invalid', 'error' => __('Geçersiz fiyat değeri.', 'woo-donation-popup'));
+                if (empty($parsed_amount['ok'])) {
+                    $parse_error = isset($parsed_amount['error']) && $parsed_amount['error'] !== ''
+                        ? (string) $parsed_amount['error']
+                        : __('Geçersiz fiyat değeri.', 'woo-donation-popup');
+                    throw new WDP_Validation_Exception($parse_error, array('custom_price'));
+                }
+                $custom_price_value = WDP_Security::sanitize_numeric($parsed_amount['amount'], 0, 999999);
+
                 if (null === $custom_price_value) {
                     throw new WDP_Validation_Exception(__('Geçersiz fiyat değeri.', 'woo-donation-popup'), array('custom_price'));
                 }

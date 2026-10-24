@@ -86,6 +86,10 @@
   }
 
   function formatSubmitUnitPrice(unit) {
+    const u = WDPApp.utils || {};
+    if (typeof u.formatAmountForSubmit === 'function') {
+      return u.formatAmountForSubmit(unit);
+    }
     if (!Number.isFinite(unit) || unit <= 0) {
       return '';
     }

@@ -421,12 +421,24 @@
       );
       if (price && !price.closest('[hidden]')) {
         const raw = String(price.value || '').trim();
-        const parseAmt = (window.WDPApp && WDPApp.utils && typeof WDPApp.utils.parseMoney === 'function')
-          ? WDPApp.utils.parseMoney
-          : parseFloat;
+        const utilsW = window.WDPApp && WDPApp.utils ? WDPApp.utils : {};
+        const parseAmt = typeof utilsW.parseMoney === 'function' ? utilsW.parseMoney : parseFloat;
+        const detailed = raw && typeof utilsW.parseMoneyDetailed === 'function'
+          ? utilsW.parseMoneyDetailed(raw)
+          : null;
         const min = parseAmt(price.getAttribute('min') || price.dataset.baseMin || price.getAttribute('data-wdp-min-price') || '0');
-        const n = parseAmt(raw);
-        if (!raw || !Number.isFinite(n) || n <= 0 || (Number.isFinite(min) && min > 0 && n + 0.0001 < min)) {
+        const n = detailed && detailed.status === 'ok' ? detailed.amount : parseAmt(raw);
+        if (detailed && detailed.status === 'ambiguous') {
+          ok = false;
+          firstInvalid = firstInvalid || price;
+          const msg = typeof utilsW.getAmbiguousAmountMessage === 'function'
+            ? utilsW.getAmbiguousAmountMessage()
+            : (detailed.error || 'Lütfen tutarı tam sayı olarak yazın, örn. 10');
+          messages.push(msg);
+          if (typeof feedback.showInputError === 'function') {
+            feedback.showInputError(price, msg);
+          }
+        } else if (!raw || !Number.isFinite(n) || n <= 0 || (Number.isFinite(min) && min > 0 && n + 0.0001 < min)) {
           ok = false;
           firstInvalid = firstInvalid || price;
           const msg =
