@@ -10,9 +10,11 @@ import {
   classifyPageHeight,
   classifyShellCompleteness,
   collectPageCompletenessMetrics,
+  lastRegionFitsShot,
   screenKindFromName,
   screenCompletenessFailure,
   PAGE_HEIGHT_TOLERANCE_PX,
+  LAST_REGION_BOTTOM_SLACK_PX,
 } from '../../../tests/e2e/helpers/screen-completeness.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
@@ -101,6 +103,45 @@ describe('classifyPageHeight (yalnız tam sayfa, tema bağımsız)', () => {
     const r = classifyPageHeight(pageBase({ readyState: 'interactive' }));
     assert.equal(r.ok, false);
     assert.equal(r.reason, 'not-complete');
+  });
+
+  it('son bölge üst kenar ekranda + %90/32 px → geç; tam kesik kırmızı', () => {
+    const avada = classifyPageHeight(
+      pageBase({
+        screenshotH: 2105,
+        scrollHeight: 2105,
+        lastRegionTop: 1704,
+        lastRegionBottom: 2125,
+      })
+    );
+    assert.equal(avada.ok, true, avada.detail);
+    assert.equal(avada.reason, 'footer');
+    assert.equal(
+      lastRegionFitsShot({ top: 1704, bottom: 2125, shotH: 2105 }),
+      true
+    );
+    assert.ok(2125 - 2105 <= LAST_REGION_BOTTOM_SLACK_PX);
+    const topOut = classifyPageHeight(
+      pageBase({
+        screenshotH: 2105,
+        scrollHeight: 2500,
+        lastRegionTop: 2110,
+        lastRegionBottom: 2500,
+      })
+    );
+    assert.equal(topOut.ok, false);
+    assert.equal(topOut.reason, 'last-region-clipped');
+    const mostlyOut = classifyPageHeight(
+      pageBase({
+        screenshotH: 2000,
+        scrollHeight: 2400,
+        lastRegionTop: 1900,
+        lastRegionBottom: 2400,
+      })
+    );
+    assert.equal(mostlyOut.ok, false);
+    assert.equal(mostlyOut.reason, 'last-region-clipped');
+    assert.ok(PAGE_HEIGHT_TOLERANCE_PX < LAST_REGION_BOTTOM_SLACK_PX);
   });
 });
 

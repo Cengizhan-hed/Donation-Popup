@@ -8,6 +8,9 @@
 export const PAGE_HEIGHT_TOLERANCE_PX = 16;
 export const SHELL_EDGE_SLACK_PX = 2;
 export const SHELL_MIN_PX = 8;
+/** Son bölge: üst kenar ekranda + ≥%90 görünür veya alt kenar farkı ≤ bu (Avada 20 px). */
+export const LAST_REGION_MIN_VISIBLE_RATIO = 0.9;
+export const LAST_REGION_BOTTOM_SLACK_PX = 32;
 
 /**
  * @param {string} screenName
@@ -32,8 +35,32 @@ export function screenKindFromName(screenName) {
  */
 
 /**
+ * Son bölge görünürlüğü: üst kenar ekranda ve (≥%90 görünür veya alt fark ≤ 32 px).
+ * Üst kenar dışarıda / bölge yok → false (tam kesik kırmızı).
+ * @param {{ top: number, bottom: number, shotH: number, lastRegionInShot?: boolean }} x
+ */
+export function lastRegionFitsShot(x) {
+  const shotH = Number(x && x.shotH) || 0;
+  const top = Number(x && x.top) || 0;
+  const bottom = Number(x && x.bottom) || 0;
+  if (!(shotH > 0)) {
+    return typeof (x && x.lastRegionInShot) === 'boolean' ? !!x.lastRegionInShot : false;
+  }
+  const topOnScreen = top >= -PAGE_HEIGHT_TOLERANCE_PX && top < shotH;
+  if (!topOnScreen) return false;
+  const height = Math.max(0, bottom - top);
+  const visTop = Math.max(top, 0);
+  const visBottom = Math.min(bottom, shotH);
+  const visible = Math.max(0, visBottom - visTop);
+  const ratio = height > 0 ? visible / height : 1;
+  const bottomSlack = bottom - shotH;
+  return ratio >= LAST_REGION_MIN_VISIBLE_RATIO || bottomSlack <= LAST_REGION_BOTTOM_SLACK_PX;
+}
+
+/**
  * Tam sayfa, tema bağımsız: readyState complete + son içerik bölgesi DOM’da ve
- * çekilen ekranın içinde + (fullPage) ekran yüksekliği ≥ scrollHeight − tolerans.
+ * çekilen ekranın içinde (üst kenar + ≥%90 / alt ≤32 px) + (fullPage)
+ * ekran yüksekliği ≥ scrollHeight − tolerans.
  * Kendi settle yüksekliğiyle kıyas yok (3Y no-op).
  * @param {PageCompletenessMetrics} metrics
  * @returns {{ ok: boolean, reason: string, detail: string }}
@@ -54,10 +81,12 @@ export function classifyPageHeight(metrics) {
   const shotH = Number(x.screenshotH) || 0;
   const top = Number(x.lastRegionTop) || 0;
   const bottom = Number(x.lastRegionBottom) || 0;
-  const inShot =
-    typeof x.lastRegionInShot === 'boolean'
-      ? x.lastRegionInShot
-      : bottom <= shotH + PAGE_HEIGHT_TOLERANCE_PX && top >= -PAGE_HEIGHT_TOLERANCE_PX;
+  const inShot = lastRegionFitsShot({
+    top,
+    bottom,
+    shotH,
+    lastRegionInShot: x.lastRegionInShot,
+  });
   if (!inShot) {
     return {
       ok: false,
