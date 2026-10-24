@@ -14,7 +14,7 @@ parameters:
         - vendor
         - vendor-dev
         - node_modules
-        - tools/bin
+        - tools/bin (?)
     bootstrapFiles:
         - tools/phpstan-bootstrap.php
     scanFiles:

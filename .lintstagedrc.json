@@ -1,0 +1,5 @@
+{
+  "*.php": "node scripts/lint-staged-php.mjs",
+  "assets/js/**/*.js": "node scripts/lint-front.mjs js --files",
+  "assets/css/**/*.css": "node scripts/lint-front.mjs css --files"
+}

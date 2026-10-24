@@ -496,6 +496,14 @@ Yalnız geliştirme bağımlılığı. Dağıtım ZIP’ine ve hiçbir siteye gi
 | PHPStan 5 + WP/Woo stubs | `npm run analyse:php` | `phpstan.neon` (`includes/`, `templates/`, `blocks/`, `woo-donation-popup.php`; `tests/` `build/` hariç) | `scripts/analyse-php.mjs` → `build/lint/phpstan.json\|md` |
 | WordPress Plugin Check | `npm run plugin-check` | Yerel WP `build/local-wp` + WP-CLI phar; eklenti **dağıtım ZIP**’inden; ağ yoksa atla | `scripts/plugin-check.mjs` → `build/lint/plugin-check.json\|md` |
 | Baseline | `tools/lint-baseline/` (git) + kopya `build/lint/` | PHPCS JSON parmak izi; PHPStan `phpstan-baseline.neon` | `scripts/lib/lint-baseline.mjs` |
+| PHPCBF (WPCS) | `npm run lint:php:fix [-- dosya]` | `phpcs.xml.dist` | `scripts/lint-php-fix.mjs` (dosyayı yerinde düzeltir; sonra `lint:php`) |
+| Rector | `npm run rector:dry` | `rector.php` (kural kümesi boş; `WDP_RECTOR_RENAME=1` → 6-C "sadaka"→"addon" sınıf/yöntem adı kuralları, `tools/rector/rename-map.json`) | `scripts/rector-dry.mjs`; harita: `npm run sadaka:inventory` (DB/meta anahtarı + kanca adı **dokunma** listesi dahil). Yalnız kuru çalıştırma |
+| ESLint / Stylelint | `npm run lint:js` / `lint:css` | `eslint.config.mjs` (assets/js, ES2022 betik), `.stylelintrc.json` (recommended) | `scripts/lint-front.mjs`; baseline `tools/lint-baseline/baseline-eslint.json`, `baseline-stylelint.json` (`lint:js:baseline`/`lint:css:baseline`); **`verify:lint-front` yalnız YENİ hatada kırmızı** |
+| jscpd | `npm run dup:js` | `.jscpd.json` (assets/js + assets/css) | `scripts/dev-audit.mjs dup` → özet `build/handoff/FAZ6-HEDEF-LISTESI.md` (JSCPD bölümü) |
+| Ölü kod (shipmonk/dead-code-detector) | `npm run dead:php` | `phpstan.dead.neon` (phpstan.neon + rules.neon; baseline'sız) | `scripts/dev-audit.mjs dead` → FAZ6-HEDEF-LISTESI.md (DEADCODE bölümü). WP kanca/dinamik geri çağrılar tanınmaz: silmeden elle doğrula |
+| lint-staged | `npm run lint:staged` | `.lintstagedrc.json` (PHP: `scripts/lint-staged-php.mjs`; JS/CSS: lint-front `--files`) | Yalnız verilen dosyalarda baseline dışı yeni hata → çıkış 1 (git hook'a bağlı değil) |
+
+Bu araçların yapılandırmaları (`rector.php`, `eslint.config.mjs`, `.stylelintrc.json`, `.jscpd.json`, `.lintstagedrc.json`, `phpstan.dead.neon`) `.distignore` ve `package-wp-plugin.sh` ile dağıtım paketinden dışlanır; hiçbiri siteye kurulmaz (doğrulandı: ZIP içinde 0 eşleşme).
 | verify kapısı | `npm run verify:lint` (`verify` zinciri) | `git diff -U0` değişen satırda baseline dışı yeni hata → kırmızı; mevcut hata uyarı. Tam tarama yok. | `scripts/lint-verify-gate.mjs` |
 | Kurulum | `node scripts/install-lint-tools.mjs` | composer 2.10.3 + WP-CLI 2.12.0 SHA256; `vendor-dev/` | `tools/lint-tools.json` |
 
