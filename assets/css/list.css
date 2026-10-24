@@ -27,6 +27,7 @@
 }
 
 .wdp-list-wrap--left {
+  /* Kullanıcı "sola hizala" seçimi — fiziksel sol (LTR=RTL piksel aynı ayar). */
   text-align: left;
 }
 

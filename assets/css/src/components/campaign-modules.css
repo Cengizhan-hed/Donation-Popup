@@ -165,7 +165,7 @@ html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel .wdp-campaign-med
 
 /* Layout: campaign — media/impact prominence, amount-first feel via order helpers */
 .hdf-donation-modal-wrapper.wdp-layout-campaign .wdp-form-title-wrapper {
-  text-align: left;
+  text-align: start;
 }
 
 .hdf-donation-modal-wrapper.wdp-layout-campaign .wdp-impact-line {

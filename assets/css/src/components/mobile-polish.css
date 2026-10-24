@@ -67,7 +67,7 @@
 
   html body .wdp-modal .wdp-modal-content > .wdp-modal-close {
     top: 8px;
-    right: max(8px, env(safe-area-inset-right, 0px));
+    inset-inline-end: max(8px, env(safe-area-inset-right, 0px));
     width: var(--wdp-touch-target-min, 44px);
     height: var(--wdp-touch-target-min, 44px);
     min-width: var(--wdp-touch-target-min, 44px);
@@ -78,7 +78,7 @@
   html body .wdp-modal .wdp-modal-header .wdp-modal-title-wrapper,
   html body .wdp-donation-form .wdp-modal-content .wdp-form-title-wrapper {
     row-gap: 8px;
-    padding-right: 44px;
+    padding-inline-end: 44px;
     min-width: 0;
   }
 
@@ -309,7 +309,7 @@
   }
 
   html body :is(.hdf-donation-modal-wrapper, .wdp-modal, .wdp-donation-form) :is(.wdp-success-screen, .wdp-modal-content .wdp-success-screen) .wdp-success-top-bar {
-    padding-right: 48px;
+    padding-inline-end: 48px;
   }
 }
 

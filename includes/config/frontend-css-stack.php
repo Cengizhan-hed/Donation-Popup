@@ -37,4 +37,5 @@ return array(
 	'src/components/campaign-modules.css',
 	'src/components/mobile-polish.css',
 	'src/overrides/theme-isolation-overrides.css',
+	'src/foundation/rtl.css',
 );

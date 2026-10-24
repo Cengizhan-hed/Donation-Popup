@@ -235,8 +235,8 @@
       const infoElement = item.querySelector(".wdp-mini-cart-item-info");
       if (infoElement) {
         infoElement.style.flex = "1";
-        infoElement.style.textAlign = "left";
-        infoElement.style.paddingRight = "10px";
+        infoElement.style.textAlign = "start";
+        infoElement.style.paddingInlineEnd = "10px";
         infoElement.style.minWidth = "0";
         infoElement.style.maxWidth = "70%";
         infoElement.style.boxSizing = "border-box";
@@ -246,7 +246,7 @@
       // Sağ taraf için stiller
       const detailsElement = item.querySelector(".wdp-mini-cart-item-details");
       if (detailsElement) {
-        detailsElement.style.textAlign = "right";
+        detailsElement.style.textAlign = "end";
         detailsElement.style.whiteSpace = "nowrap";
         detailsElement.style.fontWeight = "600";
         detailsElement.style.color = "#333";

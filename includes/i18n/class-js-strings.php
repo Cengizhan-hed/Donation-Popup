@@ -1,11 +1,11 @@
-<?php
+<?php // phpcs:ignore WordPress.Files.FileName.InvalidClassFileName -- I18N0 sözlük yolu (gen-js-strings.mjs).
 /**
  * Frontend JS i18n dictionary — generated region is rewritten by tools/i18n/gen-js-strings.mjs.
  *
  * @package WooCommerce\Donation_Popup
  */
 
-if (!defined('ABSPATH')) {
+if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 

@@ -194,7 +194,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-header__primary h
   min-width: 0;
   overflow: hidden;
   word-break: break-word;
-  text-align: left;
+  text-align: start;
   text-transform: none;
 }
 
@@ -308,7 +308,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-content > .wdp-fi
 
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-content > .wdp-field-stack .wdp-field-stack__icon {
   width: 20px;
-  padding-left: 8px;
+  padding-inline-start: 8px;
   box-sizing: border-box;
 }
 

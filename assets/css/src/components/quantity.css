@@ -155,7 +155,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-custom-price-shell :is(
   min-height: 100%;
   height: auto;
   align-self: stretch;
-  text-align: left;
+  text-align: start;
   font-family: var(--wdp-font-family);
   font-size: var(--wdp-amount-font-size, 20px);
   font-weight: var(--wdp-amount-font-weight, 700);
