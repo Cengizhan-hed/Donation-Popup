@@ -36,9 +36,9 @@ class WDP_Admin_Bulk_Actions {
 	 */
 	public static function register_wc_actions($actions) {
 		$actions = is_array($actions) ? $actions : array();
-		$actions['wdp_mark_donation'] = __('Bağış ürünü yap', 'woo-donation-popup');
-		$actions['wdp_mark_normal']   = __('Normal ürün yap', 'woo-donation-popup');
-		$actions['wdp_mark_global']   = __('Genel ayara döndür', 'woo-donation-popup');
+		$actions['wdp_mark_donation'] = __('Make donation product', 'woo-donation-popup');
+		$actions['wdp_mark_normal']   = __('Make regular product', 'woo-donation-popup');
+		$actions['wdp_mark_global']   = __('Revert to the global setting', 'woo-donation-popup');
 		return $actions;
 	}
 
@@ -67,7 +67,7 @@ class WDP_Admin_Bulk_Actions {
 		echo '<div class="notice notice-success is-dismissible"><p>';
 		echo esc_html(sprintf(
 			/* translators: %d: product count */
-			__('%d ürünün bağış işareti güncellendi.', 'woo-donation-popup'),
+			__('Updated the donation flag for %d products.', 'woo-donation-popup'),
 			$n
 		));
 		echo '</p></div>';

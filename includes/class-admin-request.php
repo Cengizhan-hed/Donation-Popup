@@ -22,7 +22,7 @@ class WDP_Admin_Request {
 		check_ajax_referer('wdp_admin_nonce', 'nonce');
 
 		if (!current_user_can('manage_woocommerce')) {
-			self::json_error(__('Bu işlem için yetkiniz yok.', 'woo-donation-popup'), 'forbidden', 403);
+			self::json_error(__('You do not have permission to do this.', 'woo-donation-popup'), 'forbidden', 403);
 		}
 
 		return true;

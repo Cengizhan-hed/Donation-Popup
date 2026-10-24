@@ -1,0 +1,1430 @@
+# Turkish translation part A2 (admin remaining PHP).
+# Copyright (C) WooCommerce Donation Panel
+msgid ""
+msgstr ""
+"Project-Id-Version: woo-donation-popup\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-10-24 13:06:14+0000\n"
+"PO-Revision-Date: 2026-10-24 13:06:14+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: tr_TR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Text-Domain: woo-donation-popup\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: includes/class-admin-products-list-table.php:253
+msgid "(opens in a new tab)"
+msgstr "(yeni sekmede açılır)"
+
+#: includes/class-admin-placement-tab-renderer.php:149
+msgid "(the “Donation List” widget in Elementor, the “Donation list” block in Gutenberg). For a single product:"
+msgstr "(Elementor’da “Bağış Listesi” widget’ı, Gutenberg’de “Bağış listesi” bloğu). Tek ürün için:"
+
+#: includes/class-admin-category-colors-tab-renderer.php:110
+msgid "%d product"
+msgid_plural "%d products"
+msgstr[0] "%d ürün"
+msgstr[1] "%d ürün"
+
+#: includes/class-admin-placement-tab-renderer.php:37
+msgid "%d products are currently donation products."
+msgstr "Şu an %d ürün bağış ürünü."
+
+#: includes/class-admin-form-tabs-renderer.php:428
+msgid "+1 555 000 0000"
+msgstr "+90 5xx xxx xx xx"
+
+#: includes/class-admin-form-tabs-renderer.php:401
+msgid "1 Details"
+msgstr "1 Bilgi"
+
+#: includes/class-admin-form-tabs-renderer.php:511
+msgid "1) Shortcode / trigger buttons"
+msgstr "1) Shortcode / tetikleyici butonları"
+
+#: includes/class-admin-form-tabs-renderer.php:402
+msgid "2 Amount"
+msgstr "2 Tutar"
+
+#: includes/class-admin-form-tabs-renderer.php:512
+msgid "2) Buttons inside the popup and inline form"
+msgstr "2) Popup ve gömülü form içindeki butonlar"
+
+#: includes/class-admin-form-tabs-renderer.php:403
+msgid "3 Confirm"
+msgstr "3 Onay"
+
+#: includes/class-admin-form-tabs-renderer.php:232
+msgid "Action button, mini-cart card, and product row colors."
+msgstr "Aksiyon butonları, mini sepet kartı ve ürün satırı renkleri."
+
+#: includes/class-admin-products-list-table.php:48
+msgid "Actions"
+msgstr "İşlemler"
+
+#: includes/class-admin-form-tabs-renderer.php:207
+#: includes/class-admin-settings-normalizer.php:377
+#: includes/class-admin-settings-normalizer.php:383
+msgid "Add add-on donation"
+msgstr "Alt Bağış Ekle"
+
+#. YENI-SARMA
+#: includes/class-admin-form-tabs-renderer.php:33
+#: includes/class-admin-form-tabs-renderer.php:361
+#: includes/class-admin-settings-normalizer.php:49
+msgid "Add to cart"
+msgstr "Sepete Ekle"
+
+#: includes/class-admin-form-tabs-renderer.php:514
+msgid "Add to cart button"
+msgstr "Sepete Ekle Butonu"
+
+#: includes/class-admin-form-tabs-renderer.php:249
+msgid "Add-on donation (default)"
+msgstr "Alt bağış (varsayılan)"
+
+#: includes/class-admin-form-tabs-renderer.php:272
+msgid "Add-on donation toggle text"
+msgstr "Alt Bağış Toggle Metni"
+
+#: includes/class-admin-page-renderer.php:65
+msgid "Advanced"
+msgstr "Gelişmiş"
+
+#: includes/class-woo-donation-popup-admin.php:359
+msgid "Advanced settings saved."
+msgstr "Gelişmiş ayarlar kaydedildi."
+
+#: includes/class-admin-form-tabs-renderer.php:580
+msgid "Affects only the trigger button added with the shortcode; it does not affect buttons inside the popup or form."
+msgstr "Yalnızca shortcode ile eklenen tetikleyici butonu etkiler; popup veya form içi butonları etkilemez."
+
+#: includes/class-admin-form-tabs-renderer.php:163
+msgid "Affects spacing, input, and CTA height on all form surfaces."
+msgstr "Tüm form yüzeylerinde boşluk, input ve CTA yüksekliğini etkiler."
+
+#: includes/class-admin-products-list-table.php:167
+msgid "All categories"
+msgstr "Tüm kategoriler"
+
+#: includes/class-admin-products-list-table.php:177
+msgid "All donation types"
+msgstr "Tüm bağış tipleri"
+
+#: includes/class-admin-page-renderer.php:138
+msgid "All product settings and plugin options are deleted. Orders and order records are not touched. This cannot be undone."
+msgstr "Eklentinin tüm ürün ayarları ve eklenti seçenekleri silinir. Siparişlere ve sipariş kayıtlarına dokunulmaz. Bu işlem geri alınamaz."
+
+#: includes/class-admin-placement-tab-renderer.php:47
+msgid "All simple products"
+msgstr "Tüm basit ürünler"
+
+#: includes/class-admin-placement-tab-renderer.php:103
+msgid "Always show"
+msgstr "Her zaman göster"
+
+#: includes/class-admin-assets.php:78
+#: includes/class-woo-donation-popup-admin.php:392
+#: includes/class-woo-donation-popup-admin.php:422
+msgid "An error occurred while saving settings."
+msgstr "Ayarlar kaydedilirken bir hata oluştu."
+
+#: includes/class-admin-placement-tab-renderer.php:129
+msgid "Automatic"
+msgstr "Otomatik"
+
+#: includes/class-admin-placement-tab-renderer.php:127
+msgid "Automatic: Product markup is not printed on donor-entered and campaign products that have no price. A wdp_product_schema filter is provided for Yoast / SEOPress / AIOSEO."
+msgstr "Otomatik: fiyatı olmayan bağışçı-belirler ve kampanya ürünlerinde Product markup basılmaz. Yoast / SEOPress / AIOSEO için wdp_product_schema filtresi sunulur."
+
+#: includes/class-admin-placement-tab-renderer.php:144
+msgid "Avada: Layouts → product layout → Code Block → paste → Save."
+msgstr "Avada: Layouts → ürün layout’u → Code Block → yapıştır → Save."
+
+#: includes/class-admin-form-tabs-renderer.php:554
+#: includes/class-admin-form-tabs-renderer.php:566
+msgid "Blur"
+msgstr "Bulanık"
+
+#. YENI-SARMA
+#: includes/class-admin-form-tabs-renderer.php:467
+msgid "Bold (700)"
+msgstr "Kalın (700)"
+
+#: includes/class-admin-form-tabs-renderer.php:442
+msgid "Box inside the popup"
+msgstr "Modal içi kutu"
+
+#: includes/class-admin-form-tabs-renderer.php:457
+msgid "Box inside the popup (background and corners)"
+msgstr "Modal içi kutu (arka plan ve köşeler)"
+
+#: includes/class-admin-placement-tab-renderer.php:81
+msgid "Button + popup"
+msgstr "Buton + ortada açılan"
+
+#: includes/class-admin-placement-tab-renderer.php:82
+msgid "Button + side panel"
+msgstr "Buton + sağ panel"
+
+#: includes/class-admin-form-tabs-renderer.php:235
+#: includes/class-admin-form-tabs-renderer.php:580
+msgid "Button color"
+msgstr "Buton Rengi"
+
+#: includes/class-admin-form-tabs-renderer.php:506
+msgid "Button colors"
+msgstr "Buton Renkleri"
+
+#: includes/class-admin-form-tabs-renderer.php:236
+msgid "Button hover"
+msgstr "Buton Hover"
+
+#: includes/class-admin-form-tabs-renderer.php:506
+#: includes/class-admin-form-tabs-renderer.php:580
+msgid "Button hover color"
+msgstr "Buton Hover Rengi"
+
+#: includes/class-admin-form-tabs-renderer.php:514
+msgid "Button labels"
+msgstr "Buton Metinleri"
+
+#: includes/class-admin-placement-tab-renderer.php:88
+msgid "Button on shop and category pages"
+msgstr "Mağaza ve kategori sayfalarında buton"
+
+#: includes/class-admin-form-tabs-renderer.php:237
+msgid "Button radius (px)"
+msgstr "Buton Radius (px)"
+
+#: includes/class-admin-form-tabs-renderer.php:508
+msgid "Button shadow (plugin buttons only)"
+msgstr "Buton gölgesi (yalnızca eklenti butonları)"
+
+#: includes/class-admin-form-tabs-renderer.php:580
+msgid "Button text"
+msgstr "Buton Metni"
+
+#: includes/class-admin-form-tabs-renderer.php:580
+msgid "Button text color"
+msgstr "Buton metin rengi"
+
+#: includes/class-admin-form-tabs-renderer.php:231
+msgid "Buttons and mini cart"
+msgstr "Butonlar ve mini sepet"
+
+#: includes/class-admin-form-tabs-renderer.php:442
+msgid "Buttons below the form"
+msgstr "Form altı butonları"
+
+#: includes/class-admin-form-tabs-renderer.php:169
+msgid "Card and field appearance"
+msgstr "Kart ve alan görünümü"
+
+#: includes/class-admin-form-tabs-renderer.php:175
+msgid "Card background"
+msgstr "Kart Arka Plan"
+
+#: includes/class-admin-form-tabs-renderer.php:176
+msgid "Card border"
+msgstr "Kart Border"
+
+#: includes/class-admin-form-tabs-renderer.php:177
+msgid "Card radius (px)"
+msgstr "Kart Radius (px)"
+
+#: includes/class-admin-page-renderer.php:64
+#: includes/class-admin-placement-tab-renderer.php:52
+msgid "Categories"
+msgstr "Kategoriler"
+
+#: includes/class-admin-products-list-table.php:44
+msgid "Category"
+msgstr "Kategori"
+
+#: includes/class-woo-donation-popup-admin.php:396
+msgid "Category colors saved."
+msgstr "Kategori renkleri kaydedildi."
+
+#: includes/class-admin-category-colors-tab-renderer.php:39
+msgid "Category heading colors"
+msgstr "Kategori başlık renkleri"
+
+#: includes/class-admin-placement-tab-renderer.php:92
+msgid "Centered popup"
+msgstr "Ortada açılan"
+
+#: includes/class-admin-products-list-table.php:186
+msgid "Clear filters"
+msgstr "Filtreleri temizle"
+
+#: includes/class-admin-page-renderer.php:163
+msgid "Click “Edit” to change settings; the “Donation” tab on the product edit screen opens and is saved with the product."
+msgstr "Ayarları değiştirmek için \"Düzenle\"ye tıklayın; ürün düzenleme ekranındaki \"Bağış\" sekmesi açılır ve ürünle birlikte kaydedilir."
+
+#: includes/class-admin-form-tabs-renderer.php:451
+msgid "Close button color"
+msgstr "Kapat Butonu Rengi"
+
+#: includes/class-admin-form-tabs-renderer.php:451
+msgid "Close button settings"
+msgstr "Kapat Butonu Ayarları"
+
+#: includes/class-admin-category-colors-tab-renderer.php:115
+msgid "Color"
+msgstr "Renk"
+
+#: includes/class-admin-form-tabs-renderer.php:221
+msgid "Color and corner settings for the thank-you row."
+msgstr "Teşekkür satırının renk ve köşe ayarları."
+
+#: includes/class-admin-form-tabs-renderer.php:163
+msgid "Compact"
+msgstr "Kompakt"
+
+#: includes/class-admin-form-tabs-renderer.php:195
+#: includes/class-admin-form-tabs-renderer.php:239
+#: includes/class-admin-settings-normalizer.php:365
+msgid "Complete donation"
+msgstr "Bağışı Tamamla"
+
+#: includes/class-admin-meta-tracking-tab-renderer.php:59
+msgid "Console debug log (no personal data)"
+msgstr "Konsol hata ayıklama günlüğü (kişisel veri yok)"
+
+#. YENI-SARMA
+#: includes/class-admin-form-tabs-renderer.php:196
+#: includes/class-admin-settings-normalizer.php:366
+msgid "Continue adding donations"
+msgstr "Bağış eklemeye devam edin"
+
+#: includes/class-admin-assets.php:120
+msgid "Copied"
+msgstr "Kopyalandı"
+
+#: includes/class-admin-placement-tab-renderer.php:190
+#: includes/class-admin-products-list-table.php:298
+msgid "Copy"
+msgstr "Kopyala"
+
+#: includes/class-admin-form-tabs-renderer.php:161
+msgid "Copy button"
+msgstr "Kopya Butonu"
+
+#: includes/class-admin-products-list-table.php:298
+msgid "Copy shortcode: %s"
+msgstr "Kısa kodu kopyala: %s"
+
+#: includes/class-admin-assets.php:121
+msgid "Could not copy; select the text and copy it manually."
+msgstr "Kopyalanamadı; metni seçip elle kopyalayın."
+
+#. YENI-SARMA
+#: includes/class-admin-form-tabs-renderer.php:122
+#: includes/class-admin-settings-normalizer.php:325
+msgid "Create a copy"
+msgstr "Kopyasını Oluştur"
+
+#: includes/class-admin-form-tabs-renderer.php:160
+msgid "Create-copy button"
+msgstr "Kopya Oluştur Butonu"
+
+#: includes/class-admin-meta-tracking-tab-renderer.php:58
+msgid "Custom debug events (DonationFormOpen, etc.)"
+msgstr "Özel hata ayıklama olayları (DonationFormOpen vb.)"
+
+#: includes/class-admin-page-renderer.php:129
+msgid "Data and removal"
+msgstr "Veri ve kaldırma"
+
+#: includes/class-admin-form-tabs-renderer.php:253
+msgid "Default add-on donation product"
+msgstr "Varsayılan alt bağış ürünü"
+
+#: includes/class-admin-page-renderer.php:135
+msgid "Delete data when the plugin is removed"
+msgstr "Eklenti kaldırılınca verileri sil"
+
+#: includes/class-admin-page-renderer.php:53
+msgid "Design"
+msgstr "Tasarım"
+
+#: includes/class-woo-donation-popup-admin.php:245
+msgid "Design Studio settings saved."
+msgstr "Tasarım Stüdyosu ayarları kaydedildi."
+
+#: includes/class-admin-placement-tab-renderer.php:77
+msgid "Display on the product page"
+msgstr "Ürün sayfasında gösterim"
+
+#. YENI-SARMA
+#: includes/class-admin-form-tabs-renderer.php:35
+#: includes/class-admin-form-tabs-renderer.php:36
+#: includes/class-admin-form-tabs-renderer.php:363
+#: includes/class-admin-form-tabs-renderer.php:572
+#: includes/class-admin-settings-normalizer.php:63
+msgid "Donate"
+msgstr "Bağış Yap"
+
+#: includes/class-admin-form-tabs-renderer.php:408
+msgid "Donation amount"
+msgstr "Bağış tutarı"
+
+#: includes/class-admin-page-renderer.php:35
+msgid "Donation Popup"
+msgstr "Donation Popup"
+
+#: includes/class-admin-page-renderer.php:36
+#: includes/class-woo-donation-popup-admin.php:50
+#: includes/class-woo-donation-popup-admin.php:51
+msgid "Donation Popup settings"
+msgstr "Bağış Popup Ayarları"
+
+#: includes/class-admin-page-renderer.php:49
+msgid "Donation popup settings tabs"
+msgstr "Bağış popup ayar sekmeleri"
+
+#: includes/class-admin-products-list-table.php:222
+msgid "Donation product"
+msgstr "Bağış ürünü"
+
+#: includes/class-admin-placement-tab-renderer.php:34
+msgid "Donation products"
+msgstr "Bağış ürünleri"
+
+#: includes/class-admin-products-list-table.php:250
+msgid "Donation settings"
+msgstr "Bağış ayarları"
+
+#: includes/class-admin-products-list-table.php:45
+msgid "Donation type"
+msgstr "Bağış tipi"
+
+#: includes/class-admin-form-tabs-renderer.php:268
+msgid "e.g. 123"
+msgstr "Örn: 123"
+
+#: includes/class-admin-products-list-table.php:329
+msgid "Edit"
+msgstr "Düzenle"
+
+#: includes/class-admin-products-list-table.php:328
+msgid "Edit donation settings for %s"
+msgstr "%s bağış ayarlarını düzenle"
+
+#. YENI-SARMA
+#: includes/class-admin-form-tabs-renderer.php:127
+#: includes/class-admin-settings-normalizer.php:338
+msgid "Email (optional)"
+msgstr "E-posta (isteğe bağlı)"
+
+#: includes/class-admin-form-tabs-renderer.php:164
+msgid "Email field"
+msgstr "E-posta Alanı"
+
+#: includes/class-admin-form-tabs-renderer.php:165
+msgid "Email placeholder"
+msgstr "E-posta Placeholder"
+
+#: includes/class-admin-form-tabs-renderer.php:548
+msgid "Enable button shadow"
+msgstr "Buton gölgesini etkinleştir"
+
+#: includes/class-admin-form-tabs-renderer.php:557
+msgid "Enable hover shadow"
+msgstr "Hover gölgesini etkinleştir"
+
+#: includes/class-admin-meta-tracking-tab-renderer.php:38
+msgid "Enable Meta tracking"
+msgstr "Meta izlemeyi etkinleştir"
+
+#: includes/class-admin-form-tabs-renderer.php:482
+msgid "Enable the multi-step form"
+msgstr "Çok adımlı formu etkinleştir"
+
+#: includes/class-admin-meta-tracking-tab-renderer.php:92
+#: includes/class-admin-page-renderer.php:137
+msgid "Enabled"
+msgstr "Etkin"
+
+#: includes/class-admin-form-tabs-renderer.php:580
+msgid "Extra large"
+msgstr "Çok büyük"
+
+#: includes/class-admin-form-tabs-renderer.php:178
+msgid "Field background"
+msgstr "Alan Arka Plan"
+
+#: includes/class-admin-form-tabs-renderer.php:179
+msgid "Field border"
+msgstr "Alan Border"
+
+#: includes/class-admin-form-tabs-renderer.php:162
+msgid "Field layout"
+msgstr "Alan Düzeni"
+
+#: includes/class-admin-form-tabs-renderer.php:442
+msgid "Fields and labels"
+msgstr "Alanlar ve etiketler"
+
+#: includes/class-admin-products-list-table.php:183
+msgid "Filter"
+msgstr "Filtrele"
+
+#: includes/class-admin-products-list-table.php:160
+msgid "Filter by category"
+msgstr "Kategoriye göre filtrele"
+
+#: includes/class-admin-products-list-table.php:175
+msgid "Filter by donation type"
+msgstr "Bağış tipine göre filtrele"
+
+#: includes/class-admin-placement-tab-renderer.php:147
+msgid "For a list:"
+msgstr "Liste için:"
+
+#: includes/class-admin-form-tabs-renderer.php:163
+msgid "Form density"
+msgstr "Form Yoğunluğu"
+
+#: includes/class-admin-page-renderer.php:55
+msgid "Forms"
+msgstr "Formlar"
+
+#: includes/class-admin-placement-tab-renderer.php:29
+msgid "From here you manage which products count as donation products and the “Donate” behavior on WooCommerce shop / product pages."
+msgstr "Hangi ürünlerin bağış ürünü sayılacağını ve WooCommerce mağaza / ürün sayfalarında “Bağış Yap” davranışını buradan yönetirsiniz."
+
+#: includes/class-admin-form-tabs-renderer.php:119
+#: includes/class-admin-form-tabs-renderer.php:427
+#: includes/class-admin-settings-normalizer.php:322
+msgid "Full name *"
+msgstr "Ad Soyad *"
+
+#: includes/class-admin-form-tabs-renderer.php:157
+msgid "Full name placeholder"
+msgstr "Ad Soyad Placeholder"
+
+#: includes/class-admin-form-tabs-renderer.php:194
+#: includes/class-admin-form-tabs-renderer.php:238
+#: includes/class-admin-settings-normalizer.php:364
+msgid "Go to cart"
+msgstr "Sepete Git"
+
+#. YENI-SARMA
+#: includes/class-admin-form-tabs-renderer.php:34
+#: includes/class-admin-form-tabs-renderer.php:362
+#: includes/class-admin-settings-normalizer.php:50
+msgid "Go to checkout"
+msgstr "Ödemeye Git"
+
+#: includes/class-admin-form-tabs-renderer.php:514
+msgid "Go to checkout button"
+msgstr "Ödemeye Git Butonu"
+
+#: includes/class-admin-placement-tab-renderer.php:91
+msgid "Go to the product page"
+msgstr "Ürün sayfasına git"
+
+#: includes/class-admin-products-list-table.php:47
+msgid "Goal / Raised"
+msgstr "Hedef / Toplanan"
+
+#: includes/class-admin-form-tabs-renderer.php:442
+msgid "Heading and close"
+msgstr "Başlık ve kapat"
+
+#: includes/class-admin-form-tabs-renderer.php:173
+msgid "Heading background"
+msgstr "Başlık Arka Plan"
+
+#: includes/class-admin-form-tabs-renderer.php:450
+msgid "Heading color"
+msgstr "Başlık Rengi"
+
+#: includes/class-admin-form-tabs-renderer.php:450
+msgid "Heading font size (desktop, px)"
+msgstr "Başlık Font Boyutu (Masaüstü, px)"
+
+#: includes/class-admin-form-tabs-renderer.php:450
+msgid "Heading font size (mobile, px)"
+msgstr "Başlık Font Boyutu (Mobil, px)"
+
+#: includes/class-admin-form-tabs-renderer.php:450
+msgid "Heading settings"
+msgstr "Başlık Ayarları"
+
+#: includes/class-admin-form-tabs-renderer.php:174
+msgid "Heading text"
+msgstr "Başlık Metin"
+
+#: includes/class-admin-form-tabs-renderer.php:153
+msgid "Heading, placeholders, copy button, and field layout."
+msgstr "Başlık, placeholder’lar, kopya butonu ve alan düzeni."
+
+#: includes/class-admin-form-tabs-renderer.php:224
+msgid "Hex or rgba is accepted."
+msgstr "Hex veya rgba kabul edilir."
+
+#: includes/class-admin-form-tabs-renderer.php:562
+msgid "Hover shadow color (hex)"
+msgstr "Hover gölge rengi (hex)"
+
+#: includes/class-admin-form-tabs-renderer.php:563
+msgid "Hover shadow: X/Y/blur/spread (px)"
+msgstr "Hover gölge: X/Y/bulanık/yayılım (px)"
+
+#: includes/class-admin-placement-tab-renderer.php:146
+msgid "I am building my own donation page"
+msgstr "Kendi bağış sayfamı yapıyorum"
+
+#: includes/class-admin-placement-tab-renderer.php:137
+msgid "I am using WooCommerce pages"
+msgstr "WooCommerce sayfalarını kullanıyorum"
+
+#: includes/class-admin-form-tabs-renderer.php:442
+msgid "Icons"
+msgstr "İkonlar"
+
+#: includes/class-admin-form-tabs-renderer.php:441
+msgid "If “Multiple shares” or “Progress bar” is on in the product card, some settings live on the share/progress tabs."
+msgstr "Ürün kartında “Çoklu Hisse” veya “Progress Bar” açıksa bir kısım ayar hisse/progress sekmelerindedir."
+
+#: includes/class-admin-category-colors-tab-renderer.php:41
+msgid "If a product is in more than one category, the deepest (most specific) category color is used. If that category also has no color, the global brand color applies."
+msgstr "Ürün birden fazla kategorideyse en alt (en spesifik) kategori rengi kullanılır. Kategori rengi de yoksa genel marka rengi geçerlidir."
+
+#: includes/class-admin-form-tabs-renderer.php:270
+msgid "If empty/0, the add-on donation row is not added. The selected product is hidden from the shop/list/search; the direct URL and cart still work."
+msgstr "Boş/0 ise alt bağış satırı eklenmez. Seçilen ürün mağaza/liste/aramadan gizlenir; doğrudan URL ve sepet çalışmaya devam eder."
+
+#: includes/class-admin-placement-tab-renderer.php:141
+msgid "If the template has WooCommerce’s Add to cart element, it is converted to Donate automatically. Otherwise add this shortcode to the template once:"
+msgstr "Şablonda WooCommerce’in Sepete Ekle elemanı varsa otomatik olarak Bağış Yap’a dönüşür. Yoksa şablona bir kez şu kısa kodu ekleyin:"
+
+#: includes/class-admin-placement-tab-renderer.php:80
+msgid "Inline form"
+msgstr "Sayfa içi form"
+
+#: includes/class-admin-form-tabs-renderer.php:467
+msgid "Input border color"
+msgstr "Input Border Rengi"
+
+#: includes/class-admin-form-tabs-renderer.php:467
+msgid "Input field settings"
+msgstr "Input Alanları Ayarları"
+
+#: includes/class-woo-donation-popup-admin.php:546
+msgid "Invalid JSON pack."
+msgstr "Geçersiz JSON paketi."
+
+#: includes/class-admin-product-settings-ajax.php:27
+msgid "Invalid product ID."
+msgstr "Geçersiz ürün ID."
+
+#: includes/class-woo-donation-popup-admin.php:494
+msgid "Invalid style pack."
+msgstr "Geçersiz stil paketi."
+
+#: includes/class-admin-form-tabs-renderer.php:467
+msgid "Label color"
+msgstr "Label Rengi"
+
+#: includes/class-admin-form-tabs-renderer.php:467
+msgid "Label font size (px)"
+msgstr "Label Font Boyutu (px)"
+
+#: includes/class-admin-form-tabs-renderer.php:467
+msgid "Label font weight"
+msgstr "Label Font Kalınlığı"
+
+#: includes/class-admin-form-tabs-renderer.php:580
+msgid "Large"
+msgstr "Büyük"
+
+#: includes/class-admin-placement-tab-renderer.php:138
+msgid "Leave the setting above On. You do not need to do anything else; the Shop page and product pages become donation pages automatically."
+msgstr "Yukarıdaki ayarı Açık bırakın. Başka bir şey yapmanız gerekmez; Mağaza sayfası ve ürün sayfaları otomatik olarak bağış sayfasına dönüşür."
+
+#: includes/class-admin-renderer-helpers.php:66
+msgid "Live preview"
+msgstr "Canlı önizleme"
+
+#: includes/class-admin-meta-tracking-tab-renderer.php:60
+msgid "Load the base Meta pixel from this plugin (off by default)"
+msgstr "Temel Meta pikselini bu eklentiden yükle (varsayılan kapalı)"
+
+#: includes/class-admin-bulk-actions.php:39
+#: includes/class-admin-products-list-table.php:354
+msgid "Make donation product"
+msgstr "Bağış ürünü yap"
+
+#: includes/class-admin-bulk-actions.php:40
+#: includes/class-admin-products-list-table.php:355
+msgid "Make regular product"
+msgstr "Normal ürün yap"
+
+#: includes/class-admin-page-renderer.php:37
+msgid "Manage product behavior, form look, and the success screen in one place — changes show up instantly in the live preview."
+msgstr "Ürün davranışını, form görünümünü ve başarı ekranını tek yerden yönetin — değişiklikler canlı önizlemede anında görünür."
+
+#: includes/class-admin-placement-tab-renderer.php:49
+msgid "Marked products only"
+msgstr "Yalnızca işaretli ürünler"
+
+#: includes/class-admin-form-tabs-renderer.php:580
+msgid "Medium"
+msgstr "Orta"
+
+#. YENI-SARMA
+#: includes/class-admin-form-tabs-renderer.php:467
+msgid "Medium (500)"
+msgstr "Orta (500)"
+
+#: includes/class-admin-form-tabs-renderer.php:224
+msgid "Message background"
+msgstr "Mesaj Arka Plan"
+
+#: includes/class-admin-form-tabs-renderer.php:226
+msgid "Message border"
+msgstr "Mesaj Border"
+
+#: includes/class-admin-form-tabs-renderer.php:227
+msgid "Message radius (px)"
+msgstr "Mesaj Radius (px)"
+
+#: includes/class-admin-form-tabs-renderer.php:225
+msgid "Message text"
+msgstr "Mesaj Metin"
+
+#: includes/class-admin-page-renderer.php:63
+msgid "Meta Pixel"
+msgstr "Meta Pixel"
+
+#: includes/class-admin-meta-tracking-tab-renderer.php:31
+msgid "Meta Pixel (WDP)"
+msgstr "Meta Pixel (WDP)"
+
+#: includes/class-woo-donation-popup-admin.php:330
+msgid "Meta Pixel settings saved successfully."
+msgstr "Meta Pixel ayarları başarıyla kaydedildi."
+
+#: includes/class-admin-form-tabs-renderer.php:241
+msgid "Mini cart background"
+msgstr "Mini Sepet Arka Plan"
+
+#: includes/class-admin-form-tabs-renderer.php:242
+msgid "Mini cart border"
+msgstr "Mini Sepet Border"
+
+#: includes/class-admin-form-tabs-renderer.php:243
+msgid "Mini cart radius"
+msgstr "Mini Sepet Radius"
+
+#: includes/class-admin-page-renderer.php:62
+msgid "More"
+msgstr "Ek"
+
+#: includes/class-admin-form-tabs-renderer.php:442
+#: includes/class-admin-form-tabs-renderer.php:480
+msgid "Multi-step form"
+msgstr "Çok adımlı form"
+
+#: includes/class-admin-placement-tab-renderer.php:140
+msgid "My product page uses a custom design (Avada Layout, Elementor Pro template)"
+msgstr "Ürün sayfam özel tasarım (Avada Layout, Elementor Pro şablonu)"
+
+#: includes/class-admin-form-tabs-renderer.php:240
+msgid "New donation"
+msgstr "Yeni Bağış"
+
+#: includes/class-admin-placement-tab-renderer.php:113
+msgid "No"
+msgstr "Hayır"
+
+#: includes/class-admin-products-list-table.php:266
+msgid "No category"
+msgstr "Kategori yok"
+
+#: includes/class-admin-products-list-table.php:314
+msgid "No goal"
+msgstr "Hedef yok"
+
+#: includes/class-admin-category-colors-tab-renderer.php:132
+msgid "No products are assigned directly to this category."
+msgstr "Bu kategoriye doğrudan atanmış ürün yok."
+
+#: includes/class-admin-products-list-table.php:81
+msgid "No products match these filters."
+msgstr "Bu filtrelere uyan ürün bulunamadı."
+
+#: includes/class-admin-form-tabs-renderer.php:163
+#: includes/class-admin-page-renderer.php:57
+msgid "Normal"
+msgstr "Normal"
+
+#. YENI-SARMA
+#: includes/class-admin-form-tabs-renderer.php:467
+msgid "Normal (400)"
+msgstr "Normal (400)"
+
+#: includes/class-admin-form-tabs-renderer.php:121
+#: includes/class-admin-form-tabs-renderer.php:429
+#: includes/class-admin-settings-normalizer.php:324
+msgid "Note (optional)"
+msgstr "Not (isteğe bağlı)"
+
+#: includes/class-admin-form-tabs-renderer.php:159
+msgid "Note placeholder"
+msgstr "Not Placeholder"
+
+#: includes/class-admin-placement-tab-renderer.php:71
+#: includes/class-admin-placement-tab-renderer.php:130
+msgid "Off"
+msgstr "Kapalı"
+
+#: includes/class-admin-placement-tab-renderer.php:110
+msgid "Off by default because the product page already has a title."
+msgstr "Ürün sayfasında zaten başlık olduğu için varsayılan kapalıdır."
+
+#: includes/class-admin-placement-tab-renderer.php:70
+msgid "On"
+msgstr "Açık"
+
+#: includes/class-admin-settings-normalizer.php:149
+msgid "On behalf of? (optional)"
+msgstr "Kimin adına? (isteğe bağlı)"
+
+#: includes/class-admin-form-tabs-renderer.php:442
+msgid "On this page:"
+msgstr "Bu sayfada:"
+
+#: includes/class-admin-form-tabs-renderer.php:442
+msgid "On-page trigger button"
+msgstr "Sayfadaki açan buton"
+
+#: includes/class-admin-form-tabs-renderer.php:580
+msgid "On-page trigger button (shortcode)"
+msgstr "Sayfadaki açan buton (shortcode)"
+
+#: includes/class-admin-form-tabs-renderer.php:162
+msgid "One column"
+msgstr "Tek Sütun"
+
+#: includes/class-admin-form-tabs-renderer.php:457
+msgid "One radius for the popup, inputs, buttons, and cards (default 10)."
+msgstr "Modal, input, buton ve kartlar için tek radius (varsayılan 10)."
+
+#: includes/class-admin-form-tabs-renderer.php:492
+msgid "One-click buttons such as $100 / $250 above the amount box."
+msgstr "Tutar kutusunun üstünde 100 ₺ / 250 ₺ gibi tek tıkla seçilen düğmeler."
+
+#: includes/class-admin-form-tabs-renderer.php:580
+msgid "Only on the shortcode trigger; use it for readability on a light background."
+msgstr "Yalnızca shortcode tetikleyicide; açık arka planda okunabilirlik için kullanın."
+
+#: includes/class-admin-placement-tab-renderer.php:153
+msgid "Open the form test page"
+msgstr "Form test sayfasını aç"
+
+#: includes/class-admin-meta-tracking-tab-renderer.php:66
+msgid "Optional Pixel ID"
+msgstr "İsteğe bağlı Pixel ID"
+
+#: includes/class-admin-assets.php:126
+msgid "Order updated."
+msgstr "Sıra güncellendi."
+
+#: includes/class-admin-form-tabs-renderer.php:506
+msgid "Pay button color"
+msgstr "Ödeme Yap Butonu Rengi"
+
+#: includes/class-admin-form-tabs-renderer.php:506
+msgid "Pay button hover color"
+msgstr "Ödeme Yap Butonu Hover Rengi"
+
+#: includes/class-admin-page-renderer.php:130
+msgid "Personal data export and erase requests (Tools → Export / erase personal data) include donor and shareholder fields on orders; on erase, values are anonymized as “[deleted]”."
+msgstr "Kişisel veri dışa aktarma ve silme talepleri (Araçlar → Kişisel verileri dışa aktar / sil) siparişlerdeki bağışçı ve hissedar alanlarını kapsar; silmede değerler “[deleted]” ile anonimleştirilir."
+
+#. YENI-SARMA
+#: includes/class-admin-form-tabs-renderer.php:120
+#: includes/class-admin-settings-normalizer.php:323
+msgid "Phone number *"
+msgstr "Telefon Numarası *"
+
+#: includes/class-admin-form-tabs-renderer.php:158
+msgid "Phone placeholder"
+msgstr "Telefon Placeholder"
+
+#: includes/class-admin-category-colors-tab-renderer.php:40
+msgid "Pick a color for each category; if the product has no primary color of its own, the panel heading and accent use this category color."
+msgstr "Her kategori için renk seçin; ürünün kendi ana rengi boşsa panel başlığı ve vurgu rengi bu kategoriden alınır."
+
+#: includes/class-admin-form-tabs-renderer.php:467
+msgid "Placeholder color"
+msgstr "Placeholder Rengi"
+
+#: includes/class-admin-page-renderer.php:40
+msgid "Plugin version"
+msgstr "Eklenti sürümü"
+
+#: includes/class-admin-page-renderer.php:56
+msgid "Popup"
+msgstr "Modal"
+
+#: includes/class-admin-form-tabs-renderer.php:457
+msgid "Popup background color"
+msgstr "Modal Arka Plan Rengi"
+
+#: includes/class-woo-donation-popup-admin.php:427
+msgid "Popup layout settings saved successfully."
+msgstr "Modal görünüm ayarları başarıyla kaydedildi."
+
+#: includes/class-admin-form-tabs-renderer.php:245
+msgid "Price color"
+msgstr "Fiyat Rengi"
+
+#: includes/class-admin-placement-tab-renderer.php:99
+msgid "Price display"
+msgstr "Fiyat gösterimi"
+
+#: includes/class-admin-placement-tab-renderer.php:100
+msgid "Prices in the cart, checkout, and emails do not change."
+msgstr "Sepet, ödeme ve e-postalardaki fiyatlar değişmez."
+
+#: includes/class-admin-form-tabs-renderer.php:506
+msgid "Primary button color"
+msgstr "Birincil Buton Rengi"
+
+#: includes/class-admin-settings-normalizer.php:157
+msgid "Privacy notice about the processing of personal data"
+msgstr "Kişisel verilerin işlenmesine ilişkin aydınlatma metni"
+
+#: includes/class-admin-products-list-table.php:43
+msgid "Product"
+msgstr "Ürün"
+
+#: includes/class-admin-placement-tab-renderer.php:126
+msgid "Product markup"
+msgstr "Product işaretlemesi"
+
+#: includes/class-admin-form-tabs-renderer.php:244
+msgid "Product name color"
+msgstr "Ürün Adı Rengi"
+
+#: includes/class-admin-product-settings-ajax.php:32
+msgid "Product not found."
+msgstr "Ürün bulunamadı."
+
+#: includes/class-admin-page-renderer.php:52
+#: includes/class-admin-placement-tab-renderer.php:28
+msgid "Product page and list"
+msgstr "Ürün sayfası ve liste"
+
+#: includes/class-woo-donation-popup-admin.php:100
+msgid "Product page and list settings saved."
+msgstr "Ürün sayfası ve liste ayarları kaydedildi."
+
+#: includes/class-admin-page-renderer.php:51
+msgid "Products"
+msgstr "Ürünler"
+
+#: includes/class-admin-page-renderer.php:59
+msgid "Progress"
+msgstr "Progress"
+
+#: includes/class-woo-donation-popup-admin.php:307
+msgid "Progress bar settings saved successfully."
+msgstr "Progress bar ayarları başarıyla kaydedildi."
+
+#: includes/class-admin-meta-tracking-tab-renderer.php:62
+msgid "Purchase: also allow on-hold orders (bank transfer, etc.)"
+msgstr "Purchase: on-hold siparişlere de izin ver (havale vb.)"
+
+#: includes/class-admin-form-tabs-renderer.php:442
+msgid "Quick amount"
+msgstr "Hızlı tutar"
+
+#: includes/class-admin-form-tabs-renderer.php:488
+#: includes/class-admin-form-tabs-renderer.php:495
+msgid "Quick amount buttons"
+msgstr "Hızlı tutar düğmeleri"
+
+#: includes/class-admin-placement-tab-renderer.php:120
+msgid "Rank Math detected, compatibility is on."
+msgstr "Rank Math algılandı, uyum açık."
+
+#: includes/class-admin-product-settings-ajax.php:45
+msgid "Recalculated the total for \"%1$s\": %2$s (%3$d orders)."
+msgstr "\"%1$s\" toplamı yeniden hesaplandı: %2$s (%3$d sipariş)."
+
+#: includes/class-admin-assets.php:122
+msgid "Recalculating the total…"
+msgstr "Toplam yeniden hesaplanıyor…"
+
+#: includes/class-admin-products-list-table.php:225
+msgid "Regular product"
+msgstr "Normal ürün"
+
+#: includes/class-admin-form-tabs-renderer.php:550
+msgid "Regular shadow color (hex)"
+msgstr "Normal gölge rengi (hex)"
+
+#: includes/class-admin-form-tabs-renderer.php:551
+msgid "Regular shadow: X/Y/blur/spread (px)"
+msgstr "Normal gölge: X/Y/bulanık/yayılım (px)"
+
+#: includes/class-admin-meta-tracking-tab-renderer.php:42
+msgid "Require cookie consent"
+msgstr "Çerez izni gerektir"
+
+#: includes/class-admin-bulk-actions.php:41
+#: includes/class-admin-products-list-table.php:356
+msgid "Revert to the global setting"
+msgstr "Genel ayara döndür"
+
+#: includes/class-admin-assets.php:124
+msgid "Row added."
+msgstr "Satır eklendi."
+
+#: includes/class-admin-assets.php:125
+msgid "Row removed."
+msgstr "Satır silindi."
+
+#: includes/class-admin-form-tabs-renderer.php:336
+#: includes/class-admin-form-tabs-renderer.php:398
+msgid "Sample campaign"
+msgstr "Örnek Kampanya"
+
+#: includes/class-admin-page-renderer.php:142
+msgid "Save advanced settings"
+msgstr "Gelişmiş ayarları kaydet"
+
+#: includes/class-admin-meta-tracking-tab-renderer.php:72
+msgid "Save Meta settings"
+msgstr "Meta ayarlarını kaydet"
+
+#: includes/class-admin-placement-tab-renderer.php:156
+msgid "Save placement settings"
+msgstr "Yerleşim ayarlarını kaydet"
+
+#: includes/class-admin-renderer-helpers.php:39
+msgid "Save settings"
+msgstr "Ayarları Kaydet"
+
+#: includes/class-admin-placement-tab-renderer.php:44
+msgid "Scope"
+msgstr "Kapsam"
+
+#: includes/class-admin-form-tabs-renderer.php:258
+msgid "Search by product name…"
+msgstr "Ürün adı ile ara…"
+
+#: includes/class-admin-page-renderer.php:169
+msgid "Search products"
+msgstr "Ürün ara"
+
+#: includes/class-admin-form-tabs-renderer.php:436
+msgid "Secure payment · Instant confirmation"
+msgstr "Güvenli ödeme · Anında onay"
+
+#: includes/class-admin-settings-normalizer.php:97
+msgid "Secure payment · SSL-protected transaction"
+msgstr "Güvenli ödeme · SSL korumalı işlem"
+
+#: includes/class-admin-page-renderer.php:162
+msgid "See each product’s donation type, shortcode, and the amount raised on goal campaigns at a glance."
+msgstr "Her ürünün bağış tipini, kısa kodunu ve hedefli kampanyalarda toplanan tutarı tek bakışta görürsünüz."
+
+#: includes/class-admin-assets.php:83
+msgid "Select icon"
+msgstr "İkon seç"
+
+#: includes/class-admin-placement-tab-renderer.php:48
+msgid "Selected categories (including children)"
+msgstr "Seçili kategoriler (alt kategoriler dahil)"
+
+#. YENI-SARMA
+#: includes/class-admin-form-tabs-renderer.php:467
+msgid "Semibold (600)"
+msgstr "Yarı Kalın (600)"
+
+#: includes/class-admin-meta-tracking-tab-renderer.php:49
+msgid "Send AddToCart after adding to the cart"
+msgstr "Sepete eklendikten sonra AddToCart gönder"
+
+#: includes/class-admin-meta-tracking-tab-renderer.php:61
+msgid "Send InitiateCheckout from the plugin (off by default; may conflict with WooCommerce)"
+msgstr "Eklentiden InitiateCheckout gönder (varsayılan kapalı; WooCommerce ile çakışabilir)"
+
+#: includes/class-admin-meta-tracking-tab-renderer.php:52
+msgid "Send Purchase from the donation plugin"
+msgstr "Bağış eklentisinden Purchase gönder"
+
+#: includes/class-admin-meta-tracking-tab-renderer.php:48
+msgid "Send ViewContent when the form opens"
+msgstr "Form açıldığında ViewContent gönder"
+
+#: includes/class-admin-meta-tracking-tab-renderer.php:56
+msgid "Sends Purchase from this plugin on the thank-you / order received page. Leave it off if WooCommerce / Meta already sends Purchase."
+msgstr "Teşekkür / sipariş alındı sayfasında bu eklentiden Purchase gönderir. WooCommerce / Meta zaten Purchase gönderiyorsa kapalı bırakın."
+
+#: includes/class-admin-assets.php:77
+msgid "Settings saved successfully."
+msgstr "Ayarlar başarıyla kaydedildi."
+
+#: includes/class-admin-page-renderer.php:50
+msgid "Setup"
+msgstr "Kurulum"
+
+#: includes/class-admin-placement-tab-renderer.php:135
+msgid "Setup guide"
+msgstr "Kurulum rehberi"
+
+#: includes/class-admin-page-renderer.php:58
+msgid "Share-based"
+msgstr "Hisseli"
+
+#: includes/class-admin-form-tabs-renderer.php:183
+msgid "Share-based form preview"
+msgstr "Hisseli form önizlemesi"
+
+#: includes/class-woo-donation-popup-admin.php:268
+msgid "Share-based form settings saved successfully."
+msgstr "Hisseli form ayarları başarıyla kaydedildi."
+
+#: includes/class-admin-form-tabs-renderer.php:170
+msgid "Shareholder card, heading bar, and field background."
+msgstr "Hissedar kartı, başlık şeridi ve alan arka planı."
+
+#. YENI-SARMA
+#: includes/class-admin-form-tabs-renderer.php:118
+#: includes/class-admin-settings-normalizer.php:321
+msgid "Shareholder details"
+msgstr "Hissedar Bilgileri"
+
+#: includes/class-admin-form-tabs-renderer.php:156
+msgid "Shareholder heading text"
+msgstr "Hissedar Başlık Metni"
+
+#: includes/class-admin-products-list-table.php:46
+msgid "Shortcode"
+msgstr "Kısa kod"
+
+#: includes/class-admin-form-tabs-renderer.php:580
+msgid "Shortcode button size"
+msgstr "Shortcode buton boyutu"
+
+#: includes/class-admin-form-tabs-renderer.php:161
+#: includes/class-admin-form-tabs-renderer.php:164
+msgid "Show"
+msgstr "Göster"
+
+#: includes/class-admin-placement-tab-renderer.php:102
+msgid "Show on fixed-amount and share-based products, hide on others"
+msgstr "Sabit ve hisseli üründe göster, diğerlerinde gizle"
+
+#: includes/class-admin-form-tabs-renderer.php:490
+msgid "Show quick amount buttons"
+msgstr "Hızlı tutar düğmelerini göster"
+
+#: includes/class-admin-placement-tab-renderer.php:109
+msgid "Show the form heading"
+msgstr "Form başlığını göster"
+
+#: includes/class-admin-form-tabs-renderer.php:489
+msgid "Shows one-click buttons above the amount box only on “Custom amount (donor enters)” and “Goal campaign” forms. When off, only the amount field is shown."
+msgstr "Yalnız \"Bağışçı belirler\" ve \"Hedefli kampanya\" formlarında, tutar kutusunun üstünde tek tıkla seçilen düğmeleri gösterir. Kapalıyken yalnızca tutar alanı görünür."
+
+#: includes/class-admin-placement-tab-renderer.php:93
+msgid "Side panel"
+msgstr "Sağ panel"
+
+#: includes/class-admin-form-tabs-renderer.php:580
+msgid "Small"
+msgstr "Küçük"
+
+#: includes/class-woo-donation-popup-admin.php:105
+#: includes/class-woo-donation-popup-admin.php:335
+#: includes/class-woo-donation-popup-admin.php:401
+#: includes/class-woo-donation-popup-admin.php:433
+msgid "Something went wrong. Please try again."
+msgstr "Bir hata oluştu. Lütfen tekrar deneyin."
+
+#: includes/class-admin-form-tabs-renderer.php:467
+msgid "Spacing between form elements (px)"
+msgstr "Form Elemanları Arası Boşluk (px)"
+
+#: includes/class-admin-form-tabs-renderer.php:163
+msgid "Spacious"
+msgstr "Geniş"
+
+#: includes/class-admin-form-tabs-renderer.php:555
+#: includes/class-admin-form-tabs-renderer.php:567
+msgid "Spread"
+msgstr "Yayılım"
+
+#: includes/class-admin-form-tabs-renderer.php:90
+msgid "Standard form preview"
+msgstr "Normal form önizlemesi"
+
+#: includes/class-admin-form-tabs-renderer.php:442
+msgid "Standard form sections"
+msgstr "Normal form bölümleri"
+
+#: includes/class-woo-donation-popup-admin.php:184
+msgid "Standard form settings saved successfully."
+msgstr "Normal form ayarları başarıyla kaydedildi."
+
+#: includes/class-admin-placement-tab-renderer.php:118
+msgid "Structured data (schema)"
+msgstr "Yapılandırılmış veri (schema)"
+
+#: includes/class-admin-form-tabs-renderer.php:442
+msgid "Style packs"
+msgstr "Görünüm paketleri"
+
+#: includes/class-woo-donation-popup-admin.php:525
+#: includes/class-woo-donation-popup-admin.php:541
+msgid "Style packs could not be loaded."
+msgstr "Stil paketleri yüklenemedi."
+
+#: includes/class-admin-page-renderer.php:60
+msgid "Success"
+msgstr "Başarı"
+
+#: includes/class-admin-form-tabs-renderer.php:220
+msgid "Success message"
+msgstr "Başarı mesajı"
+
+#: includes/class-admin-form-tabs-renderer.php:217
+msgid "Success message, mini cart, and action buttons after adding to the cart."
+msgstr "Sepete ekleme sonrası başarı mesajı, mini sepet ve aksiyon butonları."
+
+#: includes/class-admin-form-tabs-renderer.php:276
+msgid "Success screen preview"
+msgstr "Başarı ekranı önizlemesi"
+
+#: includes/class-woo-donation-popup-admin.php:286
+msgid "Success screen settings saved successfully."
+msgstr "Başarı ekranı ayarları başarıyla kaydedildi."
+
+#: includes/class-admin-form-tabs-renderer.php:556
+msgid "Suggested light value: Y 8px / blur 20px."
+msgstr "Önerilen hafif değer: Y 8px / bulanık 20px."
+
+#: includes/class-admin-form-tabs-renderer.php:152
+msgid "Texts and layout"
+msgstr "Metinler ve düzen"
+
+#: includes/class-admin-form-tabs-renderer.php:149
+msgid "Texts, card look, and shareholder-area colors on the share-based donation form."
+msgstr "Hisseli bağış formundaki metinler, kart görünümü ve hissedar alanı renkleri."
+
+#: includes/class-admin-assets.php:123
+msgid "The action could not be completed. Please try again."
+msgstr "İşlem tamamlanamadı. Lütfen tekrar deneyin."
+
+#: includes/class-admin-page-renderer.php:164
+msgid "The button shortcode opens a centered popup, the side panel shortcode opens a panel from the right, and the form shortcode shows an inline form."
+msgstr "Buton kısa kodu ortada açılan pencere, Sağ panel kısa kodu sağdan panel, Form kısa kodu sayfa içi form gösterir."
+
+#: includes/class-woo-donation-popup-admin.php:323
+msgid "The Meta tracking module could not be loaded."
+msgstr "Meta izleme modülü yüklenemedi."
+
+#: includes/class-admin-form-tabs-renderer.php:441
+msgid "The order below follows the flow the donor sees in the popup: heading and close first, then the box and fields, and finally the form buttons and the on-page trigger button."
+msgstr "Aşağıdaki sıra, popup’ta kullanıcının gördüğü akışa göredir: önce üst başlık ve kapat, sonra kutu ve alanlar, en sonda form butonları ve sayfadaki açan buton."
+
+#: includes/class-admin-assets.php:82
+msgid "The pack was applied to the form fields. Don’t forget to save."
+msgstr "Paket form alanlarına uygulandı. Kaydetmeyi unutmayın."
+
+#: includes/class-woo-donation-popup-admin.php:554
+msgid "The pack was imported and applied."
+msgstr "Paket içe aktarıldı ve uygulandı."
+
+#: includes/class-admin-form-tabs-renderer.php:217
+msgid "The preview on the right shows colors and texts live."
+msgstr "Sağdaki önizleme renk ve metinleri canlı gösterir."
+
+#: includes/class-admin-form-tabs-renderer.php:149
+msgid "The preview on the right updates as soon as you change settings."
+msgstr "Sağdaki önizleme ayarları değiştirildikçe anında güncellenir."
+
+#: includes/class-woo-donation-popup-admin.php:497
+msgid "The style pack could not be applied."
+msgstr "Stil paketi uygulanamadı."
+
+#: includes/class-woo-donation-popup-admin.php:507
+msgid "The style pack was applied and saved."
+msgstr "Stil paketi uygulandı ve kaydedildi."
+
+#: includes/class-admin-product-settings-ajax.php:61
+msgid "The total could not be calculated. Details are in the error log."
+msgstr "Toplam hesaplanamadı. Ayrıntı hata günlüğünde."
+
+#: includes/class-admin-form-tabs-renderer.php:250
+msgid "The WooCommerce product used when the product card has no custom ID."
+msgstr "Ürün kartında özel ID yoksa kullanılan WC ürünü."
+
+#: includes/class-admin-category-colors-tab-renderer.php:44
+msgid "There are no product categories yet."
+msgstr "Henüz ürün kategorisi yok."
+
+#: includes/class-woo-donation-popup-admin.php:353
+msgid "This cannot be undone. It is not saved without confirmation."
+msgstr "Bu işlem geri alınamaz. Onaylamadan kaydedilmez."
+
+#: includes/class-admin-meta-tracking-tab-renderer.php:32
+msgid "This section uses the site’s existing pixel (for example the WooCommerce / Meta integration); by default it does not add a second pixel or PageView. ViewContent and AddToCart are sent from this plugin; InitiateCheckout and Purchase are left to WooCommerce / Meta by default."
+msgstr "Bu bölüm mevcut site pikselini (ör. WooCommerce / Meta entegrasyonu) kullanır; varsayılan olarak ikinci bir piksel veya PageView eklemez. ViewContent ve AddToCart bu eklentiden gönderilir; InitiateCheckout ve Purchase varsayılan olarak WooCommerce / Meta entegrasyonuna bırakılır."
+
+#: includes/class-admin-form-tabs-renderer.php:162
+msgid "Two columns"
+msgstr "İki Sütun"
+
+#: includes/class-admin-form-tabs-renderer.php:509
+msgid "Two groups: (1) shortcode/trigger buttons on the page — CSS `--wdp-plugin-btn-shadow-sc`; (2) all other plugin buttons inside the popup and inline form — `--wdp-plugin-btn-shadow-modal`. Close (X) and quick amount buttons are excluded."
+msgstr "İki grup: (1) sayfadaki shortcode/tetikleyici düğmeler — CSS `--wdp-plugin-btn-shadow-sc`; (2) popup ve sayfa içi form içindeki Tüm diğer eklenti butonları — `--wdp-plugin-btn-shadow-modal`. Kapama (X) ve hızlı tutar düğmeleri hariç."
+
+#: includes/class-admin-form-tabs-renderer.php:457
+msgid "UI radius (px)"
+msgstr "UI Radius (px)"
+
+#: includes/class-admin-bulk-actions.php:70
+msgid "Updated the donation flag for %d products."
+msgstr "%d ürünün bağış işareti güncellendi."
+
+#: includes/class-admin-assets.php:84
+msgid "Use"
+msgstr "Kullan"
+
+#: includes/class-admin-placement-tab-renderer.php:67
+msgid "Use “Donate” instead of “Add to cart” on WooCommerce pages"
+msgstr "WooCommerce sayfalarında “Sepete Ekle” yerine “Bağış Yap”"
+
+#: includes/class-admin-form-tabs-renderer.php:484
+msgid "Use a step-by-step flow in the popup and inline forms"
+msgstr "Popup ve gömülü formlarda adım adım akış kullan"
+
+#: includes/class-admin-products-list-table.php:239
+msgid "Used as an add-on donation (%d)"
+msgstr "Alt bağış olarak kullanılıyor (%d)"
+
+#: includes/class-admin-meta-tracking-tab-renderer.php:68
+msgid "Used only when “load the base pixel” is on. Leave empty if the site already loads a pixel."
+msgstr "Yalnızca “temel pikseli yükle” açıksa kullanılır. Site zaten piksel yüklüyorsa boş bırakın."
+
+#: includes/class-admin-placement-tab-renderer.php:58
+msgid "Used when scope is “selected categories”. Child categories are included automatically."
+msgstr "Kapsam “seçili kategoriler” iken kullanılır. Alt kategoriler otomatik dahildir."
+
+#: includes/class-admin-page-renderer.php:41
+msgid "v%s"
+msgstr "v%s"
+
+#: includes/class-admin-products-list-table.php:253
+msgid "View"
+msgstr "Görüntüle"
+
+#: includes/class-admin-form-tabs-renderer.php:149
+#: includes/class-admin-form-tabs-renderer.php:217
+#: includes/class-admin-form-tabs-renderer.php:441
+#: includes/class-admin-page-renderer.php:161
+msgid "What can you do on this tab?"
+msgstr "Bu sekmede ne yaparsınız?"
+
+#: includes/class-admin-form-tabs-renderer.php:549
+msgid "When off, no box-shadow output is generated for this group."
+msgstr "Kapalıyken bu grup için box-shadow çıktısı üretilmez."
+
+#: includes/class-admin-form-tabs-renderer.php:485
+msgid "When off, the form stays on a single screen in the classic layout."
+msgstr "Kapalıyken form tek ekranda klasik görünümde kalır."
+
+#: includes/class-admin-form-tabs-renderer.php:548
+msgid "When on, buttons in this group get the regular shadow."
+msgstr "Açıksa bu gruptaki butonlar normal gölge alır."
+
+#: includes/class-admin-form-tabs-renderer.php:559
+msgid "When on, hover/focus uses a separate shadow (%s); when off, only the regular shadow remains."
+msgstr "Açıksa hover/odakta ayrı gölge (%s); kapalıysa yalnızca normal gölge kalır."
+
+#: includes/class-admin-placement-tab-renderer.php:68
+msgid "When on, the add-to-cart area on shop and product pages becomes a donate button or form."
+msgstr "Açıkken mağaza ve ürün sayfalarındaki sepete ekle alanı bağış butonu veya formuna dönüşür."
+
+#: includes/class-admin-form-tabs-renderer.php:481
+msgid "When on, the form moves step by step. Share-based: Shares → Confirm. Standard/Progress: Details → Amount → (Add-on donation) → Confirm. The progress bar always stays at the top."
+msgstr "Açıldığında form adım adım ilerler. Hisseli: Hisseler → Onay. Standart/Progress: Bilgiler → Tutar → (Alt bağış) → Onay. Progress bar her zaman üstte kalır."
+
+#: includes/class-admin-meta-tracking-tab-renderer.php:45
+msgid "When on, the Pixel and events run only after marketing consent is given. WP Consent API was detected; if consent is granted later, the Pixel starts at that moment."
+msgstr "Açıkken Pixel ve olaylar yalnızca pazarlama (marketing) izni verildiğinde çalışır. WP Consent API algılandı; izin sonradan verilirse Pixel o anda başlatılır."
+
+#: includes/class-admin-meta-tracking-tab-renderer.php:46
+msgid "When on, the Pixel and events run only when marketing consent is present. WP Consent API is not loaded: consent must be reported with the “wdp_meta_pixel_has_consent” filter (default: no consent). When off, the previous behavior is kept."
+msgstr "Açıkken Pixel ve olaylar yalnızca pazarlama izni varsa çalışır. WP Consent API yüklü değil: izin durumu “wdp_meta_pixel_has_consent” filtresiyle bildirilmelidir (varsayılan: izin yok). Kapalıysa eski davranış korunur."
+
+#: includes/class-admin-placement-tab-renderer.php:45
+msgid "Which simple products use the donation form."
+msgstr "Hangi basit ürünlerin bağış formu kullandığı."
+
+#: includes/class-admin-form-tabs-renderer.php:497
+msgid "Whole numbers only; separate with commas, spaces, or semicolons, at most 6 values (e.g. 100, 250, 500, 1000, 2500). \"1.000\" or \"1,5\" is invalid. Buttons below the product’s minimum amount are not shown. The “Suggested” label comes only from the Suggested amount field on the product card."
+msgstr "Yalnız tam sayılar; virgül, boşluk veya noktalı virgülle ayırın, en fazla 6 değer (ör. 100, 250, 500, 1000, 2500). \"1.000\" veya \"1,5\" geçersizdir. Ürünün en düşük tutarının altındaki düğmeler gösterilmez. \"Önerilen\" etiketi yalnız ürün kartındaki Önerilen tutar alanından gelir."
+
+#: includes/class-admin-form-tabs-renderer.php:457
+msgid "Window width and inner padding are on the “Popup & form layout” tab; this is the content-box color and the corner radius for the whole UI."
+msgstr "Pencere genişliği ve iç padding “Modal & Form Görünümü” sekmesindedir; burası içerik kutusunun rengi ve tüm UI köşe yuvarlaklığıdır."
+
+#: includes/class-admin-form-tabs-renderer.php:441
+msgid "Window width and padding are on the “Popup & form layout” tab; this tab covers the popup’s inner color, texts, and buttons."
+msgstr "Pencere genişliği ve padding “Modal & Form Görünümü” sekmesindedir; bu sekme modalın iç rengi, yazılar ve butonları kapsar."
+
+#: includes/class-admin-meta-tracking-tab-renderer.php:55
+msgid "WooCommerce / Meta integration detected (for example facebook-for-woocommerce). Keep this off by default; otherwise two Purchase events can fire on the thank-you page. Turn it on only if WooCommerce is not sending Purchase."
+msgstr "WooCommerce / Meta entegrasyonu algılandı (ör. facebook-for-woocommerce). Varsayılan kapalı tutun; aksi halde teşekkür sayfasında iki Purchase oluşabilir. Yalnızca WooCommerce Purchase göndermiyorsa etkinleştirin."
+
+#: includes/class-admin-placement-tab-renderer.php:62
+msgid "WooCommerce pages"
+msgstr "WooCommerce sayfaları"
+
+#: includes/class-admin-category-colors-tab-renderer.php:21
+msgid "WooCommerce product categories were not found."
+msgstr "WooCommerce ürün kategorileri bulunamadı."
+
+#: includes/class-admin-form-tabs-renderer.php:552
+#: includes/class-admin-form-tabs-renderer.php:564
+msgid "X"
+msgstr "X"
+
+#: includes/class-admin-form-tabs-renderer.php:553
+#: includes/class-admin-form-tabs-renderer.php:565
+msgid "Y"
+msgstr "Y"
+
+#: includes/class-admin-placement-tab-renderer.php:112
+msgid "Yes"
+msgstr "Evet"
+
+#: includes/class-admin-request.php:25
+#: includes/class-woo-donation-popup-admin.php:446
+msgid "You do not have permission to do this."
+msgstr "Bu işlem için yetkiniz yok."
+
+#. YENI-SARMA
+#: includes/class-admin-assets.php:85
+#: includes/class-admin-assets.php:148
+msgid "You have unsaved changes. Are you sure you want to leave this tab?"
+msgstr "Kaydedilmemiş değişiklikleriniz var. Bu sekmeden ayrılmak istediğinize emin misiniz?"
+
+#: includes/class-admin-form-tabs-renderer.php:334
+msgid "Your donation was added to the cart."
+msgstr "Bağışınız sepete eklendi."

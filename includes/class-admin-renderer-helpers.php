@@ -36,7 +36,7 @@ class WDP_Admin_Renderer_Helpers {
 	 * @return void
 	 */
 	public static function close_form_container($button_id, $with_inline_message = false) {
-		echo '<p class="submit"><button type="submit" id="' . esc_attr($button_id) . '" class="button button-primary">' . __('Ayarları Kaydet', 'woo-donation-popup') . '</button><span class="spinner"></span>';
+		echo '<p class="submit"><button type="submit" id="' . esc_attr($button_id) . '" class="button button-primary">' . __('Save settings', 'woo-donation-popup') . '</button><span class="spinner"></span>';
 		if ($with_inline_message) {
 			echo '<span class="wdp-inline-save-message" aria-live="polite"></span>';
 		}
@@ -63,7 +63,7 @@ class WDP_Admin_Renderer_Helpers {
 	public static function begin_live_preview_aside($preview_id, $label) {
 		echo '</div>'; // fields
 		echo '<aside class="wdp-admin-live-preview" id="' . esc_attr($preview_id) . '" aria-label="' . esc_attr($label) . '">';
-		echo '<div class="wdp-admin-live-preview__badge">' . esc_html__('Canlı önizleme', 'woo-donation-popup') . '</div>';
+		echo '<div class="wdp-admin-live-preview__badge">' . esc_html__('Live preview', 'woo-donation-popup') . '</div>';
 	}
 
 	/**
