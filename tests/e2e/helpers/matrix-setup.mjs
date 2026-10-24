@@ -422,10 +422,11 @@ export async function startPhpServer(opts) {
     await freeListenPort(port);
     spawnCount += 1;
     const logFd = fs.openSync(logFile, 'a');
+    const phpWorkers = Math.max(1, Number(process.env.WDP_PHP_SERVER_WORKERS || 2) || 2);
     const proc = spawn('php', ['-S', `${host}:${port}`, '-t', wpDir, path.join(wpDir, 'router.php')], {
       cwd: wpDir,
       stdio: ['ignore', logFd, logFd],
-      env: { ...process.env },
+      env: { ...process.env, PHP_CLI_SERVER_WORKERS: String(phpWorkers) },
     });
     fs.closeSync(logFd);
     child = proc;

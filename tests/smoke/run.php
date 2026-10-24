@@ -233,6 +233,14 @@ wdp_smoke_assert(
     'CTA ready queue exports formCtaReady'
 );
 wdp_smoke_assert(
+    wdp_smoke_file_contains(WDP_PLUGIN_DIR . 'assets/js/src/form/cta-ready.js', 'invokePluginSubmit'),
+    'CTA ready invokes plugin submit handler'
+);
+wdp_smoke_assert(
+    !wdp_smoke_file_contains(WDP_PLUGIN_DIR . 'assets/js/src/form/cta-ready.js', 'requestSubmit'),
+    'CTA ready never uses requestSubmit (no native form navigation)'
+);
+wdp_smoke_assert(
     wdp_smoke_file_contains(WDP_PLUGIN_DIR . 'includes/templates/class-modal-shell-renderer.php', 'wdp-cta-gate__hit'),
     'Form CTA has early-tap gate overlay'
 );
@@ -312,8 +320,8 @@ wdp_smoke_assert(
     'Container queries CSS is on the frontend stack'
 );
 wdp_smoke_assert(
-    defined('WDP_VERSION') && WDP_VERSION === '10.34.11',
-    'Plugin version is 10.34.11'
+    defined('WDP_VERSION') && WDP_VERSION === '10.34.12',
+    'Plugin version is 10.34.12'
 );
 wdp_smoke_assert(
     file_exists(WDP_PLUGIN_DIR . 'templates/woocommerce/single-product/add-to-cart/simple.php'),

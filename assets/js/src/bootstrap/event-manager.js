@@ -213,10 +213,22 @@
           return;
         }
 
-        // Yedek: cta-ready yoksa tek kare (eski davranış; sessiz dönüş yok)
+        // Yedek: cta-ready yoksa tek kare — yerel form gönderimi yok, aynı handler
         requestAnimationFrame(function () {
-          if (formElement._wdpSubmitHandler && typeof formElement.requestSubmit === "function") {
-            formElement.requestSubmit(submitter && submitter.form === formElement ? submitter : undefined);
+          if (typeof formElement._wdpSubmitHandler === "function") {
+            formElement._wdpLastClickSubmitter = submitter;
+            formElement._wdpSubmitHandler({
+              type: "submit",
+              target: formElement,
+              currentTarget: formElement,
+              submitter: submitter,
+              defaultPrevented: true,
+              preventDefault: function () {
+                this.defaultPrevented = true;
+              },
+              stopPropagation: function () {},
+              stopImmediatePropagation: function () {},
+            });
             return;
           }
           const errorMsg = formElement.querySelector(".wdp-form-error");

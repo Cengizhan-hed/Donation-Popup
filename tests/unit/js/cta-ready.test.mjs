@@ -1,5 +1,5 @@
 /**
- * CTA hazır kuyruk: erken dokunuş sessiz yutulmaz.
+ * CTA hazır kuyruk: yerel form gönderimi yok; tıklama başına 1 handler.
  */
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
@@ -22,11 +22,14 @@ const assetsSrc = fs.readFileSync(
 
 function loadApi() {
   const listeners = [];
+  const timers = [];
   const form = {
     _wdpSubmitHandler: null,
     _wdpQueuedSubmitter: null,
+    _wdpCtaInFlight: false,
     dataset: {},
     submitted: 0,
+    nativeSubmit: 0,
     querySelector() {
       return null;
     },
@@ -34,7 +37,7 @@ function loadApi() {
       return [];
     },
     requestSubmit() {
-      this.submitted += 1;
+      this.nativeSubmit += 1;
     },
   };
   const ctx = {
@@ -45,20 +48,67 @@ function loadApi() {
       },
     },
     setTimeout(fn) {
-      return fn();
+      timers.push(fn);
+      return timers.length;
     },
     Date,
   };
   ctx.window.WDPApp = {};
   vm.runInNewContext(ctaSrc, ctx);
-  return { api: ctx.window.WDPApp.formCtaReady, form, listeners };
+  function bindHandler() {
+    form._wdpSubmitHandler = function onSubmit(e) {
+      if (e && typeof e.preventDefault === 'function') {
+        e.preventDefault();
+      }
+      form.submitted += 1;
+      form.dataset.wdpProcessing = '1';
+    };
+  }
+  function fireGate(btn) {
+    const hit = {
+      closest(sel) {
+        if (sel === '.wdp-cta-gate__hit') return hit;
+        if (sel === 'form') return form;
+        if (sel === '.wdp-cta-gate') {
+          return {
+            querySelector() {
+              return btn;
+            },
+          };
+        }
+        return null;
+      },
+    };
+    const e = {
+      target: hit,
+      prevented: false,
+      preventDefault() {
+        e.prevented = true;
+      },
+      stopPropagation() {},
+    };
+    for (const l of listeners) {
+      if (l.type === 'click') {
+        l.fn(e);
+      }
+    }
+    return e;
+  }
+  function flushTimers() {
+    const q = timers.splice(0);
+    for (const fn of q) {
+      fn();
+    }
+  }
+  return { api: ctx.window.WDPApp.formCtaReady, form, listeners, bindHandler, fireGate, flushTimers };
 }
 
 describe('cta-ready kaynak', () => {
-  it('PHP kaplama + JS kuyruk; event-manager sessiz dönüş yok', () => {
+  it('PHP kaplama + JS kuyruk; event-manager sessiz dönüş yok; requestSubmit yok', () => {
     assert.match(phpSrc, /wdp-cta-gate__hit/);
     assert.match(phpSrc, /data-wdp-await-js/);
     assert.match(ctaSrc, /queueCta/);
+    assert.match(ctaSrc, /invokePluginSubmit/);
     assert.match(ctaSrc, /showSetupFailed/);
     assert.match(ctaSrc, /wdp-cta-gate__hit/);
     assert.match(emSrc, /waitForFormReady/);
@@ -66,23 +116,62 @@ describe('cta-ready kaynak', () => {
     assert.equal(/return;\s*\n\s*\}\);\s*\n\s*\/\/ Form submit/.test(emSrc), false);
     assert.match(modalSrc, /wdpSkeletonLock = 'await'/);
     assert.match(assetsSrc, /register_cta_ready_script/);
+    assert.equal(ctaSrc.includes('requestSubmit'), false);
+    assert.equal(emSrc.includes('requestSubmit'), false);
   });
 });
 
 describe('cta-ready kuyruk', () => {
-  it('hazır değilken kuyruğa alır; mark+flush requestSubmit', () => {
-    const { api, form, listeners } = loadApi();
+  it('hazır değilken kuyruğa alır; mark+flush handler’ı 1 kez çağırır, requestSubmit yok', () => {
+    const { api, form, listeners, bindHandler } = loadApi();
     assert.ok(api);
     assert.equal(api.isFormReady(form), false);
     const btn = { classList: { add() {}, remove() {} }, form, click() {} };
     api.queueCta(form, btn);
     assert.equal(form._wdpQueuedSubmitter, btn);
-    form._wdpSubmitHandler = function () {};
+    bindHandler();
     api.markFormReady(form);
     assert.equal(form.dataset.wdpFormReady, '1');
     assert.equal(api.flushQueuedCta(form), true);
     assert.equal(form.submitted, 1);
+    assert.equal(form.nativeSubmit, 0);
     assert.ok(listeners.some((l) => l.type === 'click' && l.cap === true));
+  });
+
+  it('çift tıklama (hazır) → 1 istek; yerel gezinme yok', () => {
+    const { api, form, bindHandler, fireGate } = loadApi();
+    bindHandler();
+    const btn = { classList: { add() {}, remove() {} }, form, dataset: {}, name: 'donation_add_to_cart' };
+    fireGate(btn);
+    fireGate(btn);
+    assert.equal(form.submitted, 1);
+    assert.equal(form.nativeSubmit, 0);
+    assert.equal(api.invokePluginSubmit(form, btn), false);
+  });
+
+  it('erken tıklama + geç hazır → 1 istek; ikinci kuyruk yok', () => {
+    const { api, form, bindHandler, fireGate, flushTimers } = loadApi();
+    const btn = { classList: { add() {}, remove() {} }, form, dataset: {}, name: 'donation_add_to_cart' };
+    fireGate(btn);
+    fireGate(btn);
+    assert.equal(form._wdpQueuedSubmitter, btn);
+    bindHandler();
+    flushTimers();
+    assert.equal(form.submitted, 1);
+    assert.equal(form.nativeSubmit, 0);
+    assert.equal(form._wdpQueuedSubmitter, null);
+    assert.equal(api.flushQueuedCta(form), false);
+  });
+
+  it('hazırken tıklama → 1 istek; handler bağlıyken kuyruk devre dışı', () => {
+    const { api, form, bindHandler, fireGate } = loadApi();
+    bindHandler();
+    const btn = { classList: { add() {}, remove() {} }, form, dataset: {}, name: 'donation_go_checkout' };
+    api.queueCta(form, btn);
+    assert.equal(form._wdpQueuedSubmitter, null);
+    fireGate(btn);
+    assert.equal(form.submitted, 1);
+    assert.equal(form.nativeSubmit, 0);
   });
 
   it('ikinci yükleme API’yi ezmez', () => {

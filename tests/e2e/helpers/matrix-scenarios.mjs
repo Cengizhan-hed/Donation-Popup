@@ -9,6 +9,7 @@ import { withCacheBust } from './env.mjs';
 import {
   attachConsoleErrorCollector,
   clickAddToCartAndWait,
+  isDonationAddToCartRequest,
   openShellLocator,
   clickShellTrigger,
   revealListProductTrigger,
@@ -399,35 +400,99 @@ async function fillDonationForm(scope, store) {
   if ((await shPhone.count()) > 0) await shPhone.fill(SHAREHOLDER_PHONE);
 }
 
+/**
+ * Tıklama sırasında sepete-ekle AJAX sayısı + aynı URL’ye belge gezinmesi (yerel form).
+ * @param {import('@playwright/test').Page} page
+ * @param {() => Promise<void>} clickFn
+ */
+function attachSubmitNetworkProbe(page) {
+  const startPath = (() => {
+    try {
+      return new URL(page.url()).pathname;
+    } catch {
+      return '';
+    }
+  })();
+  /** @type {string[]} */
+  const ajax = [];
+  /** @type {string[]} */
+  const nativeDoc = [];
+  /** @param {import('@playwright/test').Request} req */
+  const onReq = (req) => {
+    if (isDonationAddToCartRequest(req)) {
+      ajax.push(`${req.method()} ${req.url()}`);
+    }
+    if (typeof req.resourceType === 'function' && req.resourceType() === 'document') {
+      try {
+        const u = new URL(req.url());
+        if (startPath && u.pathname === startPath) {
+          nativeDoc.push(`${req.method()} ${u.pathname}`);
+        }
+      } catch {
+        /* URL */
+      }
+    }
+  };
+  page.on('request', onReq);
+  return {
+    ajax,
+    nativeDoc,
+    detach() {
+      page.off('request', onReq);
+    },
+  };
+}
+
+function assertSingleAjaxNoNative(probe, label) {
+  if (probe.ajax.length !== 1) {
+    throw new Error(`${label}: sepete ekle istek ${probe.ajax.length} (beklenen 1)`);
+  }
+  if (probe.nativeDoc.length) {
+    throw new Error(`${label}: yerel form gönderimi ${probe.nativeDoc.join(', ')}`);
+  }
+}
+
 async function addToCart(page, scope) {
   const add = scope.locator(SEL.addToCart).first();
   await add.waitFor({ state: 'visible', timeout: CHECK_MS });
-  const ajax = await clickAddToCartAndWait(
-    page,
-    async () => {
-      await add.click({ timeout: CHECK_MS });
-    },
-    { timeout: CART_MS }
-  );
-  if (ajax.timedOut || !ajax.ok) {
-    throw new Error(
-      `sepete ekle AJAX başarısız status=${ajax.status} timedOut=${ajax.timedOut} ${ajax.bodyPreview}`
+  const probe = attachSubmitNetworkProbe(page);
+  try {
+    const ajax = await clickAddToCartAndWait(
+      page,
+      async () => {
+        await add.click({ timeout: CHECK_MS });
+      },
+      { timeout: CART_MS }
     );
+    if (ajax.timedOut || !ajax.ok) {
+      throw new Error(
+        `sepete ekle AJAX başarısız status=${ajax.status} timedOut=${ajax.timedOut} ${ajax.bodyPreview}`
+      );
+    }
+    assertSingleAjaxNoNative(probe, 'product-cart');
+  } finally {
+    probe.detach();
   }
 }
 
 async function goCheckoutFromForm(page, scope) {
   const go = scope.locator(SEL.goCheckout).first();
   await go.waitFor({ state: 'visible', timeout: CHECK_MS });
-  const ajax = await clickAddToCartAndWait(
-    page,
-    async () => {
-      await go.click({ timeout: CHECK_MS, noWaitAfter: true });
-    },
-    { timeout: CART_MS }
-  );
-  if (ajax.timedOut && !/checkout|odeme|ödeme/i.test(page.url())) {
-    throw new Error(`ödemeye git AJAX/yönlendirme yok: ${ajax.bodyPreview} url=${page.url()}`);
+  const probe = attachSubmitNetworkProbe(page);
+  try {
+    const ajax = await clickAddToCartAndWait(
+      page,
+      async () => {
+        await go.click({ timeout: CHECK_MS, noWaitAfter: true });
+      },
+      { timeout: CART_MS }
+    );
+    if (ajax.timedOut && !/checkout|odeme|ödeme/i.test(page.url())) {
+      throw new Error(`ödemeye git AJAX/yönlendirme yok: ${ajax.bodyPreview} url=${page.url()}`);
+    }
+    assertSingleAjaxNoNative(probe, 'list-checkout');
+  } finally {
+    probe.detach();
   }
   await page.waitForURL(
     (u) => /checkout|order-pay|odeme|ödeme/i.test(u.pathname + u.search),

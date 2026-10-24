@@ -2,6 +2,8 @@
  * @file cta-ready.js
  * CTA (Sepete Ekle / Ödemeye Git) form JS hazır olana dek kuyruk + kilit.
  * Erken dokunuş sessiz yutulmaz: ya bekler (kuyruk) ya da görünür yükleniyor.
+ * Kuyruk asla yerel form gönderimi (belge POST/GET) yapmaz;
+ * hazır olunca aynı _wdpSubmitHandler bir kez çağrılır.
  * Dış API: WDPApp.formCtaReady
  */
 
@@ -18,7 +20,60 @@
   const TICK_MS = 100;
 
   function isFormReady(form) {
-    return !!(form && form._wdpSubmitHandler);
+    return !!(form && typeof form._wdpSubmitHandler === 'function');
+  }
+
+  function isFormProcessing(form) {
+    return !!(form && form.dataset && form.dataset.wdpProcessing === '1');
+  }
+
+  function makeSyntheticSubmitEvent(form, submitter) {
+    return {
+      type: 'submit',
+      target: form,
+      currentTarget: form,
+      submitter: submitter || (form && form._wdpLastClickSubmitter) || null,
+      defaultPrevented: true,
+      preventDefault: function preventDefault() {
+        this.defaultPrevented = true;
+      },
+      stopPropagation: function stopPropagation() {},
+      stopImmediatePropagation: function stopImmediatePropagation() {},
+    };
+  }
+
+  /**
+   * Eklentinin kendi gönderim yolu — native belge gönderimi / click yok.
+   * Tıklama başına en fazla bir çağrı (işlem sürerken kilit).
+   */
+  function invokePluginSubmit(form, submitter) {
+    if (!form || typeof form._wdpSubmitHandler !== 'function') {
+      return false;
+    }
+    if (form._wdpCtaInFlight) {
+      if (isFormProcessing(form)) {
+        return false;
+      }
+      form._wdpCtaInFlight = false;
+    }
+    if (form._wdpCtaInFlight) {
+      return false;
+    }
+    form._wdpCtaInFlight = true;
+    if (submitter) {
+      form._wdpLastClickSubmitter = submitter;
+    }
+    const ev = makeSyntheticSubmitEvent(form, submitter);
+    try {
+      form._wdpSubmitHandler.call(form, ev);
+    } catch (err) {
+      form._wdpCtaInFlight = false;
+      throw err;
+    }
+    if (!isFormProcessing(form)) {
+      form._wdpCtaInFlight = false;
+    }
+    return true;
   }
 
   function markFormReady(form) {
@@ -53,6 +108,12 @@
     if (!form) {
       return;
     }
+    if (isFormReady(form)) {
+      return;
+    }
+    if (form._wdpQueuedSubmitter) {
+      return;
+    }
     form._wdpQueuedSubmitter = submitter || form._wdpLastClickSubmitter || null;
     const btn = form._wdpQueuedSubmitter;
     if (btn && btn.classList) {
@@ -64,18 +125,12 @@
     if (!form || !form._wdpQueuedSubmitter) {
       return false;
     }
+    if (!isFormReady(form)) {
+      return false;
+    }
     const queued = form._wdpQueuedSubmitter;
     form._wdpQueuedSubmitter = null;
-    if (typeof form.requestSubmit === 'function') {
-      if (queued && queued.form === form) {
-        form.requestSubmit(queued);
-      } else {
-        form.requestSubmit();
-      }
-    } else if (queued && typeof queued.click === 'function') {
-      queued.click();
-    }
-    return true;
+    return invokePluginSubmit(form, queued);
   }
 
   function showSetupFailed(form) {
@@ -139,12 +194,7 @@
     e.stopPropagation();
     if (isFormReady(form) && (!btn || btn.dataset.wdpSkeletonLock == null)) {
       markFormReady(form);
-      if (typeof form.requestSubmit === 'function') {
-        form.requestSubmit(btn && btn.form === form ? btn : undefined);
-      } else if (btn && typeof btn.click === 'function') {
-        btn.disabled = false;
-        btn.click();
-      }
+      invokePluginSubmit(form, btn);
       return;
     }
     queueCta(form, btn);
@@ -169,6 +219,7 @@
     markFormReady: markFormReady,
     queueCta: queueCta,
     flushQueuedCta: flushQueuedCta,
+    invokePluginSubmit: invokePluginSubmit,
     waitForFormReady: waitForFormReady,
     showSetupFailed: showSetupFailed,
     CTA_SEL: CTA_SEL,

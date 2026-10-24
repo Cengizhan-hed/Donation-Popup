@@ -1,5 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
 import path from 'node:path';
 import {
   loadMatrix,
@@ -80,6 +81,16 @@ describe('e2e matrix covering', () => {
     assert.equal(cfg.storeSpec.currency, 'TRY');
     assert.equal(cfg.hpos, true);
     assert.equal(cfg.checkout, 'blocks');
+  });
+
+  it('PHP -S hücre işçisi PHP_CLI_SERVER_WORKERS ile açılır', () => {
+    const setupSrc = fs.readFileSync(
+      path.join(ROOT, 'tests/e2e/helpers/matrix-setup.mjs'),
+      'utf8'
+    );
+    assert.match(setupSrc, /PHP_CLI_SERVER_WORKERS/);
+    assert.match(setupSrc, /WDP_PHP_SERVER_WORKERS/);
+    assert.equal(setupSrc.includes('waitForTimeout'), false);
   });
 
   it('yalnız eklenti kaynaklı konsol hatalarını ayırır', () => {
