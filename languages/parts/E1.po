@@ -1,0 +1,280 @@
+# Turkish translations — I18N-E1 (Elementor + blocks).
+# Copyright (C) WooCommerce Donation Panel
+msgid ""
+msgstr ""
+"Project-Id-Version: woo-donation-popup 10.34.15\n"
+"Language: tr_TR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Domain: woo-donation-popup\n"
+
+#: includes/elementor/class-widget-donations-list.php:118
+msgid "Alignment"
+msgstr "Hiza"
+
+#: includes/elementor/class-widget-donations-list.php:124
+msgid "All"
+msgstr "Tümü"
+
+#: includes/elementor/class-widget-donations-list.php:124
+msgid "All tab label"
+msgstr "Tümü etiketi"
+
+msgid "At least one published donation product is required for the preview."
+msgstr "Önizleme için en az bir yayımlanmış bağış ürünü gerekir."
+
+#: includes/elementor/class-widget-donations-list.php:119
+msgid "Button"
+msgstr "Buton"
+
+#: includes/elementor/class-widget-donation-form.php:139
+#: includes/elementor/class-widget-donations-list.php:121
+msgctxt "Elementor widget"
+msgid "Button text"
+msgstr "Buton metni"
+
+#: includes/elementor/class-widget-donations-list.php:141
+msgid "CSS class"
+msgstr "CSS sınıfı"
+
+msgid "Categories (slugs)"
+msgstr "Kategoriler (slug)"
+
+#: includes/elementor/class-widget-donations-list.php:71
+msgid "Categories (slugs, comma-separated)"
+msgstr "Kategoriler (slug, virgülle)"
+
+#: includes/elementor/class-widget-donations-list.php:129
+msgid "Category"
+msgstr "Kategori"
+
+#: includes/elementor/class-widget-donations-list.php:118
+msgid "Center"
+msgstr "Orta"
+
+#: includes/elementor/class-widget-donations-list.php:99
+msgid "Columns"
+msgstr "Sütunlar"
+
+#: includes/elementor/class-widget-donation-form.php:72
+msgid "Content"
+msgstr "İçerik"
+
+#: includes/elementor/class-widget-donations-list.php:76
+msgid "Count"
+msgstr "Adet"
+
+#: includes/elementor/class-widget-donation-form.php:82
+msgid "Current product"
+msgstr "Mevcut ürün"
+
+msgid "Current product (automatic)"
+msgstr "Mevcut ürün (otomatik)"
+
+#: includes/elementor/class-widget-donations-list.php:85
+msgid "Date"
+msgstr "Tarih"
+
+#: includes/elementor/class-widget-donations-list.php:92
+msgid "Direction"
+msgstr "Yön"
+
+#: includes/elementor/class-widget-donation-form.php:113
+#: includes/elementor/class-widget-donations-list.php:95
+msgid "Display"
+msgstr "Görünüm"
+
+#: includes/class-elementor.php:110
+msgid "Donation (WooCommerce Donation)"
+msgstr "Bağış (WooCommerce Donation)"
+
+msgid "Donation form"
+msgstr "Bağış formu"
+
+msgid "Donations list"
+msgstr "Bağış listesi"
+
+#: includes/elementor/class-widget-donation-form.php:84
+msgid "Enter ID or slug"
+msgstr "ID veya slug elle"
+
+#: includes/elementor/class-widget-donations-list.php:126
+msgid "Excerpt"
+msgstr "Özet"
+
+#: includes/elementor/class-widget-donations-list.php:130
+msgid "Excerpt words"
+msgstr "Özet kelime"
+
+#: includes/elementor/class-widget-donations-list.php:74
+msgid "Exclude IDs"
+msgstr "Hariç ID’ler"
+
+#: includes/elementor/class-widget-donations-list.php:72
+msgid "Exclude categories"
+msgstr "Hariç kategoriler"
+
+#: includes/elementor/class-widget-donations-list.php:120
+msgid "Full-width button"
+msgstr "Buton tam genişlik"
+
+#: includes/elementor/class-widget-donations-list.php:108
+msgid "Gap (px)"
+msgstr "Boşluk (px)"
+
+#: includes/elementor/class-widget-donations-list.php:140
+msgid "Heading tag"
+msgstr "Başlık etiketi"
+
+#: includes/elementor/class-widget-donations-list.php:73
+msgid "IDs only"
+msgstr "Yalnızca ID’ler"
+
+msgid "If no product is selected, the current product is used automatically. The form appears on the product page or when an ID is provided."
+msgstr "Ürün seçilmediyse mevcut ürün (otomatik) kullanılır. Ürün sayfasında veya kimlik verildiğinde form görünür."
+
+#: includes/elementor/class-widget-donations-list.php:125
+msgid "Image"
+msgstr "Görsel"
+
+#: includes/elementor/class-widget-donations-list.php:112
+msgid "Image ratio"
+msgstr "Görsel oranı"
+
+#: includes/elementor/class-widget-donations-list.php:134
+msgid "Image size"
+msgstr "Görsel boyutu"
+
+#: includes/elementor/class-widget-donation-form.php:117
+msgid "Inline form"
+msgstr "Sayfa içi form"
+
+#: includes/elementor/class-widget-donations-list.php:118
+msgid "Left"
+msgstr "Sol"
+
+#: includes/elementor/class-widget-donations-list.php:119
+msgid "Link"
+msgstr "Bağlantı"
+
+#. YENI-SARMA block.json
+msgid "Lists donation products in a grid."
+msgstr "Bağış ürünlerini ızgara olarak listeler."
+
+#: includes/elementor/class-widget-donations-list.php:84
+msgid "Menu order"
+msgstr "Menü sırası"
+
+msgid "Mobile columns"
+msgstr "Mobil sütun"
+
+#: includes/elementor/class-widget-donation-form.php:130
+msgid "No"
+msgstr "Hayır"
+
+#: includes/elementor/class-widget-donations-list.php:80
+msgid "Order by"
+msgstr "Sıralama"
+
+#: includes/elementor/class-widget-donations-list.php:115
+msgid "Original"
+msgstr "Orijinal"
+
+#: includes/elementor/class-widget-donations-list.php:119
+msgid "Panel"
+msgstr "Panel"
+
+#: includes/elementor/class-widget-donations-list.php:87
+msgid "Popularity"
+msgstr "Popülerlik"
+
+#: includes/elementor/class-widget-donations-list.php:119
+msgid "Popup"
+msgstr "Popup"
+
+#: includes/elementor/class-widget-donations-list.php:128
+msgid "Price"
+msgstr "Fiyat"
+
+#: includes/elementor/class-widget-donation-form.php:92
+msgid "Product"
+msgstr "Ürün"
+
+#: includes/elementor/class-widget-donation-form.php:103
+msgid "Product ID or slug"
+msgstr "Ürün ID veya slug"
+
+#: includes/elementor/class-widget-donation-form.php:78
+msgid "Product source"
+msgstr "Ürün kaynağı"
+
+#: includes/elementor/class-widget-donations-list.php:127
+msgid "Progress"
+msgstr "İlerleme"
+
+#: includes/elementor/class-widget-donations-list.php:70
+msgid "Query"
+msgstr "Sorgu"
+
+#: includes/elementor/class-widget-donations-list.php:88
+msgid "Random"
+msgstr "Rastgele"
+
+#. YENI-SARMA block.json
+msgid "Renders the donation form for the current or selected product."
+msgstr "Mevcut ürünün veya seçilen ürünün bağış formunu basar."
+
+#: includes/elementor/class-widget-donation-form.php:83
+msgid "Select from list"
+msgstr "Listeden seç"
+
+#: includes/elementor/class-widget-donation-form.php:127
+msgid "Show heading"
+msgstr "Başlığı göster"
+
+#: includes/elementor/class-widget-donation-form.php:119
+msgid "Side panel"
+msgstr "Sağ panel"
+
+msgid "Tablet columns"
+msgstr "Tablet sütun"
+
+#: includes/elementor/class-widget-donations-list.php:122
+msgid "Tabs"
+msgstr "Sekmeler"
+
+#: includes/elementor/class-widget-donations-list.php:86
+msgid "Title"
+msgstr "Başlık"
+
+#: includes/elementor/class-widget-donations-list.php:75
+msgid "Type"
+msgstr "Tip"
+
+msgid "Type (fixed,custom,shares,campaign)"
+msgstr "Tip (fixed,custom,shares,campaign)"
+
+#: includes/elementor/class-widget-donation-form.php:129
+msgid "Yes"
+msgstr "Evet"
+
+#: includes/elementor/class-widget-donations-list.php:123
+msgid "“All” tab"
+msgstr "“Tümü” sekmesi"
+
+#: includes/elementor/class-widget-donation-form.php:118
+msgctxt "display mode"
+msgid "Popup"
+msgstr "Ortada pencere"
+
+#: includes/elementor/class-widget-donation-form.php:28
+msgctxt "elementor widget title"
+msgid "Donation form"
+msgstr "Bağış Formu"
+
+#: includes/elementor/class-widget-donations-list.php:28
+msgctxt "elementor widget title"
+msgid "Donations list"
+msgstr "Bağış Listesi"

@@ -1,0 +1,737 @@
+{
+  "area": "J1",
+  "entries": [
+    {
+      "file": "assets/js/src/form/messages.js",
+      "tr": "Geçerli bir alt bağış tutarı giriniz.",
+      "en": "Please enter a valid additional donation amount.",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/form/sadaka.js",
+      "tr": "Geçerli bir alt bağış tutarı giriniz.",
+      "en": "Please enter a valid additional donation amount.",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/form.js",
+      "tr": "Geçerli bir alt bağış tutarı giriniz.",
+      "en": "Please enter a valid additional donation amount.",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/form/messages.js",
+      "tr": "En az %s bağış giriniz.",
+      "en": "Please enter at least %s.",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/form/sadaka.js",
+      "tr": "En az %s bağış giriniz.",
+      "en": "Please enter at least %s.",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/form.js",
+      "tr": "En az %s bağış giriniz.",
+      "en": "Please enter at least %s.",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/form/messages.js",
+      "tr": "Ad Soyad zorunludur.",
+      "en": "Full name is required.",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/form/validate.js",
+      "tr": "Ad Soyad zorunludur.",
+      "en": "Full name is required.",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/form.js",
+      "tr": "Ad Soyad zorunludur.",
+      "en": "Full name is required.",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/form/messages.js",
+      "tr": "Hissedar adı zorunludur.",
+      "en": "Shareholder name is required.",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/form/validate.js",
+      "tr": "Hissedar adı zorunludur.",
+      "en": "Shareholder name is required.",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/form.js",
+      "tr": "Hissedar adı zorunludur.",
+      "en": "Shareholder name is required.",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/form/messages.js",
+      "tr": "Bu alan zorunludur",
+      "en": "This field is required",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/form/validate.js",
+      "tr": "Bu alan zorunludur",
+      "en": "This field is required",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/form/wizard.js",
+      "tr": "Bu alan zorunludur",
+      "en": "This field is required",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/form.js",
+      "tr": "Bu alan zorunludur",
+      "en": "This field is required",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/form/messages.js",
+      "tr": "Telefon numaranızı eksiksiz giriniz.",
+      "en": "Please enter your complete phone number.",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/form/validate.js",
+      "tr": "Telefon numaranızı eksiksiz giriniz.",
+      "en": "Please enter your complete phone number.",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/form.js",
+      "tr": "Telefon numaranızı eksiksiz giriniz.",
+      "en": "Please enter your complete phone number.",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/form/validate.js",
+      "tr": "Lütfen bağış tutarını giriniz.",
+      "en": "Please enter a donation amount.",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/form.js",
+      "tr": "Lütfen bağış tutarını giriniz.",
+      "en": "Please enter a donation amount.",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/form/feedback.js",
+      "tr": "Bu alan zorunludur.",
+      "en": "This field is required.",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/form.js",
+      "tr": "Bu alan zorunludur.",
+      "en": "This field is required.",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/form/feedback.js",
+      "tr": "Lütfen işaretli alanları kontrol edin.",
+      "en": "Please check the highlighted fields.",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/form/validate.js",
+      "tr": "Lütfen işaretli alanları kontrol edin.",
+      "en": "Please check the highlighted fields.",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/form.js",
+      "tr": "Lütfen işaretli alanları kontrol edin.",
+      "en": "Please check the highlighted fields.",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/form/ajax.js",
+      "tr": "İşlem şu anda tamamlanamadı. Lütfen tekrar deneyin.",
+      "en": "The action could not be completed. Please try again.",
+      "ctx": "frontend script"
+    },
+    {
+      "file": "assets/js/src/form.js",
+      "tr": "İşlem şu anda tamamlanamadı. Lütfen tekrar deneyin.",
+      "en": "The action could not be completed. Please try again.",
+      "ctx": "frontend script"
+    },
+    {
+      "file": "assets/js/src/cart/ui.js",
+      "tr": "Sepete Git",
+      "en": "Go to cart",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/cart/ui.js",
+      "tr": "Bağışı Tamamla",
+      "en": "Complete donation",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/cart/ui.js",
+      "tr": "Bağış eklemeye devam edin",
+      "en": "Continue adding donations",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/cart/ui.js",
+      "tr": "Toplam",
+      "en": "Total",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/cart/ui.js",
+      "tr": "Bağış Sepetiniz",
+      "en": "Your donation cart",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/cart/ui.js",
+      "tr": "%d ürün",
+      "en": "%d product",
+      "ctx": "cart badge label"
+    },
+    {
+      "file": "assets/js/src/cart/ui.js",
+      "tr": "Ürün",
+      "en": "Product",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/cart/ui.js",
+      "tr": "%d adet",
+      "en": "%d item",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/cart/ui.js",
+      "tr": "Sepetten Kaldır",
+      "en": "Remove from cart",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/cart/ui.js",
+      "tr": "Sepetiniz boş",
+      "en": "Your cart is empty",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/cart/ui.js",
+      "tr": "Bağış ekleyerek buradan ödeme adımına geçebilirsiniz.",
+      "en": "Add a donation to continue to checkout.",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/core/utils.js",
+      "tr": "Bu sitede kuruşlu tutar girilemez, örn. %s",
+      "en": "Fractional amounts are not allowed on this site, e.g. %s",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/core/utils.js",
+      "tr": "Lütfen tutarı şu biçimde yazın, örn. %s",
+      "en": "Please enter the amount in this format, e.g. %s",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/core/utils.js",
+      "tr": "Geçersiz fiyat değeri.",
+      "en": "Invalid price value.",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/core/utils.js",
+      "tr": "Çevrimdışı",
+      "en": "Offline",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/core/utils.js",
+      "tr": "Bağlantı yok. İşlemler bağlantı gelince tekrar denenebilir.",
+      "en": "No connection. Actions can be retried when you are back online.",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/core/utils.js",
+      "tr": "Çevrimiçi",
+      "en": "Online",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/core/utils.js",
+      "tr": "Bağlantı yeniden kuruldu.",
+      "en": "Connection restored.",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/bootstrap/event-manager.js",
+      "tr": "Form henüz yüklenemedi. Lütfen birkaç saniye bekleyip tekrar deneyin.",
+      "en": "The form is not ready yet. Please wait a few seconds and try again.",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/form/cta-ready.js",
+      "tr": "Form henüz yüklenemedi. Lütfen birkaç saniye bekleyip tekrar deneyin.",
+      "en": "The form is not ready yet. Please wait a few seconds and try again.",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/form/ajax.js",
+      "tr": "Çok fazla istek gönderildi. Lütfen bir süre bekleyip tekrar deneyin.",
+      "en": "Too many requests. Please wait a moment and try again.",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/form/ajax.js",
+      "tr": "Bağışınız sepete eklendi",
+      "en": "Your donation has been added to the cart",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/form/ajax.js",
+      "tr": "Ödeme adımına yönlendiriliyorsunuz.",
+      "en": "Redirecting you to checkout.",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/form/ajax.js",
+      "tr": "Bağışınız sepete eklendi.",
+      "en": "Your donation has been added to the cart.",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/form/ajax.js",
+      "tr": "Sepet içeriği yükleniyor...",
+      "en": "Loading cart contents...",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/form/ajax.js",
+      "tr": "Çevrimdışı görünüyorsunuz. Bağlantı gelince tekrar deneyin.",
+      "en": "You appear to be offline. Please try again when you are back online.",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/form/ajax.js",
+      "tr": "Bağlantı hatası oluştu. Lütfen tekrar deneyin.",
+      "en": "A connection error occurred. Please try again.",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/form/ajax.js",
+      "tr": "Tekrar dene",
+      "en": "Try again",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/form/ajax.js",
+      "tr": "Gönderilemedi",
+      "en": "Could not submit",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/cart/actions.js",
+      "tr": "güvenlik",
+      "en": "security",
+      "ctx": "server error keyword"
+    },
+    {
+      "file": "assets/js/src/form/ajax.js",
+      "tr": "güvenlik",
+      "en": "security",
+      "ctx": "server error keyword"
+    },
+    {
+      "file": "assets/js/src/form/ajax.js",
+      "tr": "geçersiz istek",
+      "en": "invalid request",
+      "ctx": "server error keyword"
+    },
+    {
+      "file": "assets/js/src/form/ajax.js",
+      "tr": "beklenmeyen bir hata",
+      "en": "unexpected error",
+      "ctx": "server error keyword"
+    },
+    {
+      "file": "assets/js/src/form/ajax.js",
+      "tr": "sepet nesnesi",
+      "en": "cart object",
+      "ctx": "server error keyword"
+    },
+    {
+      "file": "assets/js/src/form/messages.js",
+      "tr": "ad soyad alanı eksik",
+      "en": "full name is missing",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/form/messages.js",
+      "tr": "telefon alanı eksik veya hatalı",
+      "en": "phone number is missing or invalid",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/form/messages.js",
+      "tr": "alan eksik",
+      "en": "field is missing",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/form/validate.js",
+      "tr": "alan eksik",
+      "en": "field is missing",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/form/messages.js",
+      "tr": "Lütfen geçerli bir e-posta adresi giriniz.",
+      "en": "Please enter a valid email address.",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/form/validate.js",
+      "tr": "Lütfen geçerli bir e-posta adresi giriniz.",
+      "en": "Please enter a valid email address.",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/form/validate.js",
+      "tr": "%1$d. hisse %2$s",
+      "en": "%1$d. share %2$s",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/form/validate.js",
+      "tr": "%d hissedar formu eksik.",
+      "en": "Incomplete shareholder forms: %d.",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/form/validate.js",
+      "tr": "Bu sitede kuruşlu tutar girilemez, örn. 10",
+      "en": "Fractional amounts are not allowed on this site, e.g. 10",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/form/wizard.js",
+      "tr": "Bu sitede kuruşlu tutar girilemez, örn. 10",
+      "en": "Fractional amounts are not allowed on this site, e.g. 10",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/form/validate.js",
+      "tr": "Lütfen geçerli bir bağış tutarı giriniz.",
+      "en": "Please enter a valid donation amount.",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/form/validate.js",
+      "tr": "Maksimum fiyat: %s",
+      "en": "Maximum amount: %s",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/form/validate.js",
+      "tr": "Lütfen %s ve üstü toplam tutar girin.",
+      "en": "Please enter a total of %s or more.",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/form/validate.js",
+      "tr": "Lütfen %s ve üstü değerler girin.",
+      "en": "Please enter %s or more.",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/form/validate.js",
+      "tr": "Lütfen sadaka tutarını kontrol edin.",
+      "en": "Please check the additional donation amount.",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/form/validate.js",
+      "tr": "%d. hissedar formu eksik.",
+      "en": "Shareholder form %d is incomplete.",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/form/validate.js",
+      "tr": "1 hissedar formu eksik.",
+      "en": "1 shareholder form is incomplete.",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/form/wizard.js",
+      "tr": "Bilgileriniz",
+      "en": "Your details",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/form/wizard.js",
+      "tr": "Tutar",
+      "en": "Amount",
+      "ctx": "wizard step"
+    },
+    {
+      "file": "assets/js/src/form/wizard.js",
+      "tr": "Hisseler",
+      "en": "Shares",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/form/wizard.js",
+      "tr": "Alt bağış",
+      "en": "Additional donation",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/form/wizard.js",
+      "tr": "Onay",
+      "en": "Confirmation",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/form/wizard.js",
+      "tr": "Form adımları",
+      "en": "Form steps",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/form/wizard.js",
+      "tr": "Geri",
+      "en": "Back",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/form/wizard.js",
+      "tr": "İleri",
+      "en": "Next",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/form/wizard.js",
+      "tr": "En az 1 hisse seçin.",
+      "en": "Please select at least 1 share.",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/form/wizard.js",
+      "tr": "Lütfen hisse bilgilerini doldurun.",
+      "en": "Please fill in the share details.",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/form/wizard.js",
+      "tr": "Ad soyad zorunludur.",
+      "en": "Full name is required.",
+      "ctx": "wizard step"
+    },
+    {
+      "file": "assets/js/src/form/wizard.js",
+      "tr": "Telefon numarası zorunludur.",
+      "en": "Phone number is required.",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/form/wizard.js",
+      "tr": "Lütfen hissedar ad ve telefon bilgilerini doldurun.",
+      "en": "Please fill in the shareholder name and phone details.",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/form/wizard.js",
+      "tr": "Geçerli bir telefon girin.",
+      "en": "Please enter a valid phone number.",
+      "ctx": "wizard step"
+    },
+    {
+      "file": "assets/js/src/form/wizard.js",
+      "tr": "Telefon numarasını kontrol edin.",
+      "en": "Please check the phone number.",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/form/wizard.js",
+      "tr": "Minimum tutar: ",
+      "en": "Minimum amount: ",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/form/wizard.js",
+      "tr": "Lütfen eksik veya hatalı alanları doldurun.",
+      "en": "Please fill in the missing or invalid fields.",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/form/wizard.js",
+      "tr": "Adım",
+      "en": "Step",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/modal.js",
+      "tr": "Form tam yüklenemedi, lütfen bilgilerinizi kontrol edin.",
+      "en": "The form did not finish loading. Please check your details.",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/modal.js",
+      "tr": "%s formu açıldı",
+      "en": "%s form opened",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/modal.js",
+      "tr": "Bağış paneli açıldı",
+      "en": "Donation panel opened",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/modal.js",
+      "tr": "Bağış formu açıldı",
+      "en": "Donation form opened",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/modal.js",
+      "tr": "Bağış paneli kapatıldı",
+      "en": "Donation panel closed",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/modal.js",
+      "tr": "Bağış formu kapatıldı",
+      "en": "Donation form closed",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/phone-input.js",
+      "tr": "Telefon Numarası *",
+      "en": "Phone number *",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/shareholder/render.js",
+      "tr": "Telefon Numarası *",
+      "en": "Phone number *",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/phone-input.js",
+      "tr": "Ülke kodu seç",
+      "en": "Select country code",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/product.js",
+      "tr": "Ürün bilgileri alınamadı. Lütfen sayfayı yenileyip tekrar deneyin.",
+      "en": "Product information could not be loaded. Please refresh the page and try again.",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/product.js",
+      "tr": "Bir hata oluştu",
+      "en": "An error occurred",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/progress-bar.js",
+      "tr": "Hedefe ulaşıldı",
+      "en": "Goal reached",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/progress-bar.js",
+      "tr": "Hedefin %%%s’i tamamlandı",
+      "en": "%s%% of the goal completed",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/progress-bar.js",
+      "tr": "%s kaldı",
+      "en": "%s remaining",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/progress-bar.js",
+      "tr": "Onaylı %1$s%%, bekleyen ve yazılan ile %2$s%%",
+      "en": "Confirmed %1$s%%, %2$s%% including pending and typed amounts",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/progress-bar.js",
+      "tr": "Devam ediyor",
+      "en": "In progress",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/progress-bar.js",
+      "tr": "Hedefe çok yakın",
+      "en": "Very close to the goal",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/progress-bar.js",
+      "tr": "Katınız ekleniyor",
+      "en": "Your contribution is being added",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/shareholder/guidance.js",
+      "tr": "Ad Soyad",
+      "en": "Full name",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/shareholder/guidance.js",
+      "tr": "Telefon",
+      "en": "Phone",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/shareholder/render.js",
+      "tr": "Hissedar Bilgileri",
+      "en": "Shareholder details",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/shareholder/render.js",
+      "tr": "Ad Soyad *",
+      "en": "Full name *",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/shareholder/render.js",
+      "tr": "Not (isteğe bağlı)",
+      "en": "Note (optional)",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/shareholder/render.js",
+      "tr": "E-posta (isteğe bağlı)",
+      "en": "Email (optional)",
+      "ctx": ""
+    },
+    {
+      "file": "assets/js/src/shareholder/render.js",
+      "tr": "Kopyasını Oluştur",
+      "en": "Create a copy",
+      "ctx": ""
+    }
+  ]
+}

@@ -62,7 +62,7 @@ class WDP_Admin_Product_Data_Tab {
 		}
 
 		$tabs[ self::TAB_KEY ] = array(
-			'label'    => __('Bağış', 'woo-donation-popup'),
+			'label'    => __('Donation', 'woo-donation-popup'),
 			'target'   => self::PANEL_ID,
 			'class'    => $classes,
 			'priority' => 15,
@@ -195,11 +195,11 @@ class WDP_Admin_Product_Data_Tab {
 		echo ' <span class="wdp-progress-summary__goal">/ ' . esc_html($goal_text) . '</span>';
 		echo '</div>';
 		echo '<div class="wdp-progress-summary__row">';
-		echo '<div class="wdp-progress-summary__track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' . esc_attr((string) $percent) . '" aria-label="' . esc_attr__('Hedefe ulaşma oranı', 'woo-donation-popup') . '" data-wdp-progress-track>';
+		echo '<div class="wdp-progress-summary__track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' . esc_attr((string) $percent) . '" aria-label="' . esc_attr__('Progress toward goal', 'woo-donation-popup') . '" data-wdp-progress-track>';
 		echo '<span class="wdp-progress-summary__bar" style="width:' . esc_attr((string) $percent) . '%" data-wdp-progress-bar></span>';
 		echo '</div>';
 		echo '<span class="wdp-progress-summary__percent" data-wdp-progress-percent>%' . esc_html((string) $percent) . '</span>';
-		echo '<button type="button" class="wdp-icon-button" data-wdp-recalc data-product-id="' . esc_attr((string) $product_id) . '" aria-label="' . esc_attr__('Toplamı yeniden hesapla', 'woo-donation-popup') . '" title="' . esc_attr__('Ödemesi alınmış siparişleri tarayıp toplamı yeniden hesaplar.', 'woo-donation-popup') . '">';
+		echo '<button type="button" class="wdp-icon-button" data-wdp-recalc data-product-id="' . esc_attr((string) $product_id) . '" aria-label="' . esc_attr__('Recalculate total', 'woo-donation-popup') . '" title="' . esc_attr__('Scans paid orders and recalculates the total.', 'woo-donation-popup') . '">';
 		echo '<span class="dashicons dashicons-update" aria-hidden="true"></span>';
 		echo '</button>';
 		echo '</div>';
@@ -208,7 +208,7 @@ class WDP_Admin_Product_Data_Tab {
 			echo esc_html(
 				sprintf(
 					/* translators: %d: number of orders */
-					_n('%d sipariş dönüştürülemedi', '%d sipariş dönüştürülemedi', $unconverted_n, 'woo-donation-popup'),
+					_n('%d order could not be converted', '%d orders could not be converted', $unconverted_n, 'woo-donation-popup'),
 					$unconverted_n
 				)
 			);
@@ -471,9 +471,9 @@ class WDP_Admin_Product_Data_Tab {
 	 */
 	private static function tristate_options() {
 		return array(
-			''    => __('Genel ayarı kullan', 'woo-donation-popup'),
-			'yes' => __('Açık', 'woo-donation-popup'),
-			'no'  => __('Kapalı', 'woo-donation-popup'),
+			''    => __('Use general setting', 'woo-donation-popup'),
+			'yes' => __('On', 'woo-donation-popup'),
+			'no'  => __('Off', 'woo-donation-popup'),
 		);
 	}
 
@@ -525,31 +525,31 @@ class WDP_Admin_Product_Data_Tab {
 	 */
 	private static function render_scope_block($product, array $values) {
 		$global_is_donation = WDP_Donation_Scope::matches_global_scope($product);
-		$global_label       = $global_is_donation ? __('Bağış ürünü', 'woo-donation-popup') : __('Normal ürün', 'woo-donation-popup');
-		$auto_place_global  = WDP_Placement_Settings::value('auto_place') === 'yes' ? __('Açık', 'woo-donation-popup') : __('Kapalı', 'woo-donation-popup');
+		$global_label       = $global_is_donation ? __('Donation product', 'woo-donation-popup') : __('Regular product', 'woo-donation-popup');
+		$auto_place_global  = WDP_Placement_Settings::value('auto_place') === 'yes' ? __('On', 'woo-donation-popup') : __('Off', 'woo-donation-popup');
 
 		echo '<div class="wdp-pp-block wdp-pp-scope options_group">';
 		self::select(
 			'donation_product',
 			$values['donation_product'],
-			__('Bağış ürünü', 'woo-donation-popup'),
-			__('Bağış ürünlerinde WooCommerce sepete ekle alanı yerine bağış formu kullanılır ve ürün bağış listelerinde görünür.', 'woo-donation-popup'),
+			__('Donation product', 'woo-donation-popup'),
+			__('On donation products the donation form is used instead of the WooCommerce add-to-cart field, and the product appears in donation lists.', 'woo-donation-popup'),
 			array(
 				/* translators: %s: what the global setting currently decides */
-				''    => sprintf(__('Genel ayar (şu an: %s)', 'woo-donation-popup'), $global_label),
-				'yes' => __('Bağış ürünü', 'woo-donation-popup'),
-				'no'  => __('Normal ürün', 'woo-donation-popup'),
+				''    => sprintf(__('General setting (currently: %s)', 'woo-donation-popup'), $global_label),
+				'yes' => __('Donation product', 'woo-donation-popup'),
+				'no'  => __('Regular product', 'woo-donation-popup'),
 			)
 		);
 		self::select(
 			'auto_place',
 			$values['auto_place'],
-			__('Otomatik yerleşim', 'woo-donation-popup'),
-			__('Kapalıysa formu ürün sayfasına yalnızca kısa kod, blok veya widget ile siz eklersiniz.', 'woo-donation-popup'),
+			__('Automatic placement', 'woo-donation-popup'),
+			__('If off, you add the form to the product page yourself with a shortcode, block, or widget only.', 'woo-donation-popup'),
 			array(
-				/* translators: %s: Açık / Kapalı */
-				''   => sprintf(__('Genel ayar (şu an: %s)', 'woo-donation-popup'), $auto_place_global),
-				'no' => __('Kapalı', 'woo-donation-popup'),
+				/* translators: %s: On / Off */
+				''   => sprintf(__('General setting (currently: %s)', 'woo-donation-popup'), $auto_place_global),
+				'no' => __('Off', 'woo-donation-popup'),
 			)
 		);
 		echo '</div>';
@@ -561,8 +561,8 @@ class WDP_Admin_Product_Data_Tab {
 	 */
 	private static function render_type_picker($current) {
 		echo '<fieldset class="wdp-pp-block wdp-type-picker">';
-		echo '<legend class="wdp-pp-heading">' . esc_html__('Bağış tipi', 'woo-donation-popup') . '</legend>';
-		echo '<p class="wdp-pp-lead">' . esc_html__('Bu ürünün bağış formunun nasıl çalışacağını seçin; altta yalnızca seçili tipin ayarları görünür.', 'woo-donation-popup') . '</p>';
+		echo '<legend class="wdp-pp-heading">' . esc_html__('Donation type', 'woo-donation-popup') . '</legend>';
+		echo '<p class="wdp-pp-lead">' . esc_html__('Choose how this product’s donation form works; only the selected type’s settings appear below.', 'woo-donation-popup') . '</p>';
 		echo '<div class="wdp-type-picker__grid">';
 		foreach (WDP_Donation_Type::get_definitions() as $type => $def) {
 			$input_id = 'wdp_donation_type_' . $type;
@@ -598,59 +598,59 @@ class WDP_Admin_Product_Data_Tab {
 		if ($price !== '' && (float) $price > 0) {
 			echo '<p class="wdp-pp-note">';
 			/* translators: %s: formatted product price */
-			echo esc_html(sprintf(__('Bağış tutarı ürün fiyatıdır: %s. Fiyatı "Genel" sekmesinden değiştirebilirsiniz.', 'woo-donation-popup'), WDP_Utils::format_price_plain($price)));
+			echo esc_html(sprintf(__('The donation amount is the product price: %s. You can change the price on the "General" tab.', 'woo-donation-popup'), WDP_Utils::format_price_plain($price)));
 			echo '</p>';
 		} else {
-			echo '<p class="wdp-pp-note wdp-pp-note--warning">' . esc_html__('Bu ürünün fiyatı yok; sabit tutar için "Genel" sekmesinden normal fiyat girin.', 'woo-donation-popup') . '</p>';
+			echo '<p class="wdp-pp-note wdp-pp-note--warning">' . esc_html__('This product has no price; enter a regular price on the "General" tab for a fixed amount.', 'woo-donation-popup') . '</p>';
 		}
 		echo '</div>';
 
 		self::open_type_scope(array(WDP_Donation_Type::CAMPAIGN), $type);
 		/* translators: %s: currency symbol */
-		self::number('progress_bar_limit', $values['progress_bar_limit'], sprintf(__('Hedef tutar (%s)', 'woo-donation-popup'), $currency), __('İlerleme çubuğunun %100 sayılacağı kampanya hedefi (mağaza ana para biriminde). Boş veya sıfır kaydedilemez.', 'woo-donation-popup'), array('step' => '1', 'min' => '1'));
+		self::number('progress_bar_limit', $values['progress_bar_limit'], sprintf(__('Goal amount (%s)', 'woo-donation-popup'), $currency), __('Campaign goal at which the progress bar is 100% (in the store’s main currency). Empty or zero cannot be saved.', 'woo-donation-popup'), array('step' => '1', 'min' => '1'));
 		echo '</div>';
 
 		self::open_type_scope(array(WDP_Donation_Type::CUSTOM, WDP_Donation_Type::CAMPAIGN), $type);
-		echo '<p class="wdp-pp-note">' . esc_html__('Bağış tutarını bu sekmeden belirleyin. WooCommerce Genel fiyat alanı bu türlerde zorunlu değildir ve boş bırakılabilir; eklenti Genel fiyatı kendiliğinden değiştirmez.', 'woo-donation-popup') . '</p>';
+		echo '<p class="wdp-pp-note">' . esc_html__('Set the donation amount on this tab. The WooCommerce General price field is not required for these types and may be left empty; the plugin does not change the General price by itself.', 'woo-donation-popup') . '</p>';
 		/* translators: %s: currency symbol */
 		self::number(
 			'min_custom_price',
 			$values['min_custom_price'],
-			sprintf(__('En düşük tutar (%s)', 'woo-donation-popup'), $currency),
-			__('Bağışçının yazabileceği en düşük tutar. Tek kaynak bu alandır (WooCommerce Genel fiyat yedek/uyumluluk içindir, min hesaplanmaz).', 'woo-donation-popup'),
+			sprintf(__('Minimum amount (%s)', 'woo-donation-popup'), $currency),
+			__('The lowest amount the donor can enter. This field is the single source (the WooCommerce General price is for fallback/compatibility; the minimum is not calculated from it).', 'woo-donation-popup'),
 			array('step' => '1')
 		);
 		echo '</div>';
 
 		self::open_type_scope(array(WDP_Donation_Type::SHARES), $type);
-		self::number('max_shares', $values['max_shares'], __('En fazla hisse', 'woo-donation-popup'), __('Bağışçının tek seferde seçebileceği en yüksek hisse adedi (en fazla 50).', 'woo-donation-popup'), array('min' => '1', 'max' => '50', 'step' => '1'));
+		self::number('max_shares', $values['max_shares'], __('Maximum shares', 'woo-donation-popup'), __('The highest number of shares the donor can select at once (maximum 50).', 'woo-donation-popup'), array('min' => '1', 'max' => '50', 'step' => '1'));
 		echo '</div>';
 
 		self::open_type_scope(array(WDP_Donation_Type::CAMPAIGN), $type);
 		echo '<div class="form-field wdp-pp-field">';
-		echo '<span class="wdp-pp-field__label">' . esc_html__('Toplanan', 'woo-donation-popup') . '</span>';
+		echo '<span class="wdp-pp-field__label">' . esc_html__('Raised', 'woo-donation-popup') . '</span>';
 		echo '<div class="wdp-pp-field__control">';
 		self::render_progress_summary($product->get_id());
-		echo '<span class="description">' . esc_html__('Yalnız ödemesi onaylanan siparişler (processing/completed) sayılır; işlem ücreti ve on-hold dahil değildir. Tutarlar mağaza ana para birimine çevrilir. Yenile simgesi toplamı baştan hesaplar.', 'woo-donation-popup') . '</span>';
+		echo '<span class="description">' . esc_html__('Only orders with confirmed payment (processing/completed) are counted; processing fees and on-hold are not included. Amounts are converted to the store’s main currency. The refresh icon recalculates the total from scratch.', 'woo-donation-popup') . '</span>';
 		echo '</div>';
 		echo '</div>';
-		self::checkbox('progress_celebrate', $values['progress_celebrate'], __('Kutlama animasyonu', 'woo-donation-popup'), __('Hedefe ulaşıldığında kısa kutlama gösterir.', 'woo-donation-popup'));
+		self::checkbox('progress_celebrate', $values['progress_celebrate'], __('Celebration animation', 'woo-donation-popup'), __('Shows a short celebration when the goal is reached.', 'woo-donation-popup'));
 		self::select(
 			'goal_reached_action',
 			isset($values['goal_reached_action']) ? $values['goal_reached_action'] : 'message',
-			__('Hedefe ulaşınca', 'woo-donation-popup'),
-			__('Kampanya hedefe ulaştığında bağış almaya devam edilsin mi, yoksa kapatılsın mı.', 'woo-donation-popup'),
+			__('When the goal is reached', 'woo-donation-popup'),
+			__('When the campaign reaches its goal, should donations keep being accepted, or should they be closed?', 'woo-donation-popup'),
 			array(
-				'continue' => __('Bağış almaya devam et (mesaj yok)', 'woo-donation-popup'),
-				'message'  => __('Bağış al + teşekkür mesajı göster', 'woo-donation-popup'),
-				'close'    => __('Yeni bağışı kapat + mesaj göster', 'woo-donation-popup'),
+				'continue' => __('Keep accepting donations (no message)', 'woo-donation-popup'),
+				'message'  => __('Accept donations + show a thank-you message', 'woo-donation-popup'),
+				'close'    => __('Close new donations + show a message', 'woo-donation-popup'),
 			)
 		);
 		self::textarea(
 			'goal_reached_message',
 			isset($values['goal_reached_message']) ? $values['goal_reached_message'] : '',
-			__('Hedefe ulaşınca mesaj', 'woo-donation-popup'),
-			__('Boş bırakılırsa varsayılan teşekkür metni kullanılır (en fazla 300 karakter).', 'woo-donation-popup'),
+			__('Message when the goal is reached', 'woo-donation-popup'),
+			__('If left empty, the default thank-you text is used (maximum 300 characters).', 'woo-donation-popup'),
 			array(
 				'maxlength'   => '300',
 				'placeholder' => class_exists('WDP_Campaign_Goal') ? WDP_Campaign_Goal::default_message() : '',
@@ -667,23 +667,23 @@ class WDP_Admin_Product_Data_Tab {
 	 */
 	private static function render_amount_section(array $values) {
 		$type = isset($values['donation_type']) ? $values['donation_type'] : WDP_Donation_Type::FIXED;
-		self::open_section('amount', __('Tutar seçenekleri', 'woo-donation-popup'), __('Hızlı tutar düğmeleri, adet ve işlem ücreti', 'woo-donation-popup'));
+		self::open_section('amount', __('Amount options', 'woo-donation-popup'), __('Quick amount buttons, quantity, and processing fee', 'woo-donation-popup'));
 
 		// Hızlı tutar düğmeleri yalnız "Bağışçı belirler" ve "Hedefli kampanya" formlarında vardır.
 		self::open_type_scope(array(WDP_Donation_Type::CUSTOM, WDP_Donation_Type::CAMPAIGN), $type);
-		self::checkbox('enable_amount_presets', $values['enable_amount_presets'], __('Hızlı tutar düğmeleri', 'woo-donation-popup'), __('Tutar alanının üstünde tek tıkla seçilen tutar düğmeleri gösterir. Genel ayar (Ayarlar → Normal) kapalıysa bu kutu işaretli olsa da düğmeler görünmez.', 'woo-donation-popup'));
-		self::text('amount_presets', $values['amount_presets'], __('Tutarlar', 'woo-donation-popup'), __('Yalnız tam sayılar; virgül, boşluk veya noktalı virgülle ayırın (en fazla 6). Boş bırakırsanız genel ayardaki tutarlar kullanılır. En düşük tutarın altındaki düğmeler gösterilmez.', 'woo-donation-popup'), array('placeholder' => '100, 250, 500'));
-		self::number('amount_preset_recommended', isset($values['amount_preset_recommended']) ? $values['amount_preset_recommended'] : '', __('Önerilen tutar', 'woo-donation-popup'), __('Boş bırakılırsa hiçbir tutarda Önerilen etiketi gösterilmez. Doluysa yalnızca listedeki o tutarda etiket görünür; tutar kendiliğinden seçili gelmez. Listede olmayan veya tam sayı olmayan değer kaydı durdurur.', 'woo-donation-popup'), array('min' => '1', 'step' => '1'));
+		self::checkbox('enable_amount_presets', $values['enable_amount_presets'], __('Quick amount buttons', 'woo-donation-popup'), __('Shows one-click amount buttons above the amount field. If the general setting (Settings → Regular) is off, the buttons stay hidden even if this box is checked.', 'woo-donation-popup'));
+		self::text('amount_presets', $values['amount_presets'], __('Amounts', 'woo-donation-popup'), __('Whole numbers only; separate with commas, spaces, or semicolons (maximum 6). If left empty, the amounts from the general setting are used. Buttons below the minimum amount are not shown.', 'woo-donation-popup'), array('placeholder' => '100, 250, 500'));
+		self::number('amount_preset_recommended', isset($values['amount_preset_recommended']) ? $values['amount_preset_recommended'] : '', __('Suggested amount', 'woo-donation-popup'), __('If left empty, no amount shows a Suggested label. If filled, the label appears only on that listed amount; the amount is not pre-selected. A value that is not on the list or is not a whole number blocks saving.', 'woo-donation-popup'), array('min' => '1', 'step' => '1'));
 		echo '</div>';
 
 		// Adet seçici yalnız sabit tutarlı formda vardır.
 		self::open_type_scope(array(WDP_Donation_Type::FIXED), $type);
-		self::checkbox('enable_quantity', $values['enable_quantity'], __('Adet seçici', 'woo-donation-popup'), __('Sabit tutarlı formda adet artırma/azaltma düğmelerini gösterir. Kapalıysa adet her zaman 1 olur.', 'woo-donation-popup'));
+		self::checkbox('enable_quantity', $values['enable_quantity'], __('Quantity selector', 'woo-donation-popup'), __('Shows quantity plus/minus buttons on a fixed-amount form. If off, the quantity is always 1.', 'woo-donation-popup'));
 		echo '</div>';
 
 		// İşlem ücreti tüm bağış tiplerinde geçerlidir.
-		self::checkbox('enable_cover_fee', $values['enable_cover_fee'], __('İşlem ücretini karşıla', 'woo-donation-popup'), __('Bağışçıya ödeme işlem maliyetini de üstlenme seçeneği sunar (tüm bağış tiplerinde).', 'woo-donation-popup'));
-		self::number('cover_fee_percent', $values['cover_fee_percent'], __('İşlem ücreti (%)', 'woo-donation-popup'), __('0 = kapalı; aksi halde 0,5 ile 15 arasında bir yüzde. Aralık dışı değer kaydedilmez.', 'woo-donation-popup'), array('min' => '0', 'max' => '15', 'step' => '0.1'));
+		self::checkbox('enable_cover_fee', $values['enable_cover_fee'], __('Cover processing fee', 'woo-donation-popup'), __('Offers the donor the option to also cover the payment processing cost (on all donation types).', 'woo-donation-popup'));
+		self::number('cover_fee_percent', $values['cover_fee_percent'], __('Processing fee (%)', 'woo-donation-popup'), __('0 = off; otherwise a percentage between 0.5 and 15. A value outside the range is not saved.', 'woo-donation-popup'), array('min' => '0', 'max' => '15', 'step' => '0.1'));
 		self::close_section();
 	}
 
@@ -693,23 +693,23 @@ class WDP_Admin_Product_Data_Tab {
 	 */
 	private static function render_form_fields_section(array $values) {
 		$type = isset($values['donation_type']) ? $values['donation_type'] : WDP_Donation_Type::FIXED;
-		self::open_section('fields', __('Form alanları', 'woo-donation-popup'), __('E-posta, ithaf, anonim bağış ve not', 'woo-donation-popup'));
+		self::open_section('fields', __('Form fields', 'woo-donation-popup'), __('Email, dedication, anonymous donation, and note', 'woo-donation-popup'));
 
 		// F1: e-posta / ithaf / anonim hisseli tipte formda yok → ürün sekmesinde de gizle.
 		self::open_type_scope(
 			array(WDP_Donation_Type::FIXED, WDP_Donation_Type::CUSTOM, WDP_Donation_Type::CAMPAIGN),
 			$type
 		);
-		self::select('enable_email', $values['enable_email'], __('E-posta alanı', 'woo-donation-popup'), __('Bağışçıdan e-posta adresi ister; "Genel ayar" Tasarım sekmesindeki seçimi uygular.', 'woo-donation-popup'), self::tristate_options());
-		self::select('enable_dedication', $values['enable_dedication'], __('İthaf alanı', 'woo-donation-popup'), __('Bağışın kimin adına yapıldığını yazmak için alan gösterir.', 'woo-donation-popup'), self::tristate_options());
-		self::text('dedication_placeholder', $values['dedication_placeholder'], __('İthaf örnek metni', 'woo-donation-popup'), __('İthaf alanı boşken içinde görünen örnek metin.', 'woo-donation-popup'), array('custom_attributes' => array('maxlength' => '120')));
-		self::select('enable_anonymous', $values['enable_anonymous'], __('Anonim bağış', 'woo-donation-popup'), __('İşaretlenirse bağışçı adı herkese açık listelerde gizlenir; sipariş kayıtlarında görünür.', 'woo-donation-popup'), self::tristate_options());
+		self::select('enable_email', $values['enable_email'], __('Email field', 'woo-donation-popup'), __('Asks the donor for an email address; "Use general setting" applies the choice on the Design tab.', 'woo-donation-popup'), self::tristate_options());
+		self::select('enable_dedication', $values['enable_dedication'], __('Dedication field', 'woo-donation-popup'), __('Shows a field to write who the donation is on behalf of.', 'woo-donation-popup'), self::tristate_options());
+		self::text('dedication_placeholder', $values['dedication_placeholder'], __('Dedication placeholder', 'woo-donation-popup'), __('Sample text shown inside the dedication field when it is empty.', 'woo-donation-popup'), array('custom_attributes' => array('maxlength' => '120')));
+		self::select('enable_anonymous', $values['enable_anonymous'], __('Anonymous donation', 'woo-donation-popup'), __('If checked, the donor name is hidden on public lists; it remains visible on order records.', 'woo-donation-popup'), self::tristate_options());
 		echo '</div>';
 
-		self::checkbox('enable_product_note', $values['enable_product_note'], __('Ürün notu', 'woo-donation-popup'), __('Bağışçının yazdığı not değildir; formun üstünde gösterilen bilgi metnidir.', 'woo-donation-popup'));
-		self::textarea('product_note_text', $values['product_note_text'], __('Not metni', 'woo-donation-popup'), __('Bağışçıya gösterilecek kısa bilgi (en fazla 400 karakter).', 'woo-donation-popup'), array('maxlength' => '400', 'placeholder' => __('Örn: 24 saat içinde video ulaştırılmaktadır.', 'woo-donation-popup')));
-		self::select('enable_wizard', $values['enable_wizard'], __('Çok adımlı form', 'woo-donation-popup'), __('Formu bağışçı bilgisi ve tutar olarak adım adım gösterir. "Genel ayarı kullan" Normal sekmesindeki seçimi uygular.', 'woo-donation-popup'), self::tristate_options());
-		self::select('enable_field_icons', $values['enable_field_icons'], __('Alan ikonları', 'woo-donation-popup'), __('Ad, not ve e-posta satırlarındaki ikonlar. "Genel ayarı kullan" Tasarım sekmesindeki seçimi uygular.', 'woo-donation-popup'), self::tristate_options());
+		self::checkbox('enable_product_note', $values['enable_product_note'], __('Product note', 'woo-donation-popup'), __('This is not a note written by the donor; it is an info text shown at the top of the form.', 'woo-donation-popup'));
+		self::textarea('product_note_text', $values['product_note_text'], __('Note text', 'woo-donation-popup'), __('Short info shown to the donor (maximum 400 characters).', 'woo-donation-popup'), array('maxlength' => '400', 'placeholder' => __('E.g.: A video is delivered within 24 hours.', 'woo-donation-popup')));
+		self::select('enable_wizard', $values['enable_wizard'], __('Multi-step form', 'woo-donation-popup'), __('Shows the form step by step as donor info and amount. "Use general setting" applies the choice on the Regular tab.', 'woo-donation-popup'), self::tristate_options());
+		self::select('enable_field_icons', $values['enable_field_icons'], __('Field icons', 'woo-donation-popup'), __('Icons on the name, note, and email rows. "Use general setting" applies the choice on the Design tab.', 'woo-donation-popup'), self::tristate_options());
 		self::close_section();
 	}
 
@@ -719,21 +719,21 @@ class WDP_Admin_Product_Data_Tab {
 	 * @return void
 	 */
 	private static function render_campaign_blocks_section($product_id, array $values) {
-		self::open_section('campaign', __('Kampanya blokları', 'woo-donation-popup'), __('Etki satırı, aciliyet, sosyal kanıt, güven rozetleri ve sıralama', 'woo-donation-popup'));
+		self::open_section('campaign', __('Campaign blocks', 'woo-donation-popup'), __('Impact line, urgency, social proof, trust badges, and order', 'woo-donation-popup'));
 
-		self::checkbox('enable_impact_line', $values['enable_impact_line'], __('Etki satırı', 'woo-donation-popup'), __('Başlığın altında bağışın etkisini anlatan kısa bir cümle gösterir.', 'woo-donation-popup'));
-		self::text('impact_line_text', $values['impact_line_text'], __('Etki metni', 'woo-donation-popup'), __('Boş bırakılırsa satır görünmez.', 'woo-donation-popup'), array('placeholder' => __('Örn: Bir bağışınız bir aileyi ısıtır.', 'woo-donation-popup'), 'custom_attributes' => array('maxlength' => '160')));
+		self::checkbox('enable_impact_line', $values['enable_impact_line'], __('Impact line', 'woo-donation-popup'), __('Shows a short sentence under the title that describes the donation’s impact.', 'woo-donation-popup'));
+		self::text('impact_line_text', $values['impact_line_text'], __('Impact text', 'woo-donation-popup'), __('If left empty, the line is hidden.', 'woo-donation-popup'), array('placeholder' => __('E.g.: Your donation warms a family.', 'woo-donation-popup'), 'custom_attributes' => array('maxlength' => '160')));
 		if ($values['enable_impact_line'] === 'yes' && trim((string) $values['impact_line_text']) === '') {
-			echo '<p class="description wdp-pp-note--warning">' . esc_html__('Etki satırı açık ama metin boş; satır formda görünmez.', 'woo-donation-popup') . '</p>';
+			echo '<p class="description wdp-pp-note--warning">' . esc_html__('Impact line is on but the text is empty; the line will not appear on the form.', 'woo-donation-popup') . '</p>';
 		}
 
-		self::checkbox('enable_urgency', $values['enable_urgency'], __('Aciliyet şeridi', 'woo-donation-popup'), __('Kampanyanın süreli olduğunu vurgulayan bir şerit gösterir. Bitiş tarihi yalnız şeridi kaldırır; kampanyayı kapatmaz.', 'woo-donation-popup'));
-		self::text('urgency_text', $values['urgency_text'], __('Aciliyet metni', 'woo-donation-popup'), __('Şeritte görünecek metin.', 'woo-donation-popup'), array('custom_attributes' => array('maxlength' => '140')));
+		self::checkbox('enable_urgency', $values['enable_urgency'], __('Urgency strip', 'woo-donation-popup'), __('Shows a strip that highlights that the campaign is time-limited. The end date only removes the strip; it does not close the campaign.', 'woo-donation-popup'));
+		self::text('urgency_text', $values['urgency_text'], __('Urgency text', 'woo-donation-popup'), __('Text that will appear on the strip.', 'woo-donation-popup'), array('custom_attributes' => array('maxlength' => '140')));
 		self::text(
 			'urgency_ends_at',
 			$values['urgency_ends_at'],
-			__('Bitiş tarihi', 'woo-donation-popup'),
-			__('Site saat diliminde bu günün sonuna (23:59:59) kadar şerit görünür (Y-m-d). Geçersiz tarih kaydedilmez.', 'woo-donation-popup'),
+			__('End date', 'woo-donation-popup'),
+			__('The strip is shown until the end of this day (23:59:59) in the site time zone (Y-m-d). An invalid date is not saved.', 'woo-donation-popup'),
 			array(
 				'type'              => 'date',
 				'placeholder'       => 'YYYY-MM-DD',
@@ -743,40 +743,40 @@ class WDP_Admin_Product_Data_Tab {
 		if ($values['urgency_ends_at'] !== '') {
 			$ends_check = WDP_Product_Settings_Service::validate_urgency_ends_at($values['urgency_ends_at']);
 			if (empty($ends_check['ok'])) {
-				echo '<p class="description wdp-pp-note--warning">' . esc_html__('Kayıtlı bitiş tarihi geçersiz; şerit süresiz görünür. Geçerli bir Y-m-d girin.', 'woo-donation-popup') . '</p>';
+				echo '<p class="description wdp-pp-note--warning">' . esc_html__('The saved end date is invalid; the strip appears with no time limit. Enter a valid Y-m-d.', 'woo-donation-popup') . '</p>';
 			}
 		}
 
-		self::checkbox('enable_social_proof', $values['enable_social_proof'], __('Sosyal kanıt', 'woo-donation-popup'), __('Gerçek bağışçı sayısını gösteren bir satır gösterir. Sayı 0 ise satır gizlenir.', 'woo-donation-popup'));
+		self::checkbox('enable_social_proof', $values['enable_social_proof'], __('Social proof', 'woo-donation-popup'), __('Shows a line with the real donor count. If the number is 0, the line is hidden.', 'woo-donation-popup'));
 		self::text(
 			'social_proof_text',
 			$values['social_proof_text'],
-			__('Sosyal kanıt metni', 'woo-donation-popup'),
-			__('Metinde {donors} yer tutucusu gerçek bağışçı sayısıyla değişir. Boş bırakılırsa varsayılan: “{donors} kişi bağış yaptı”.', 'woo-donation-popup'),
-			array('placeholder' => __('{donors} kişi bağış yaptı', 'woo-donation-popup'))
+			__('Social proof text', 'woo-donation-popup'),
+			__('The {donors} placeholder in the text is replaced with the real donor count. If left empty, the default is: “{donors} people donated”.', 'woo-donation-popup'),
+			array('placeholder' => __('{donors} people donated', 'woo-donation-popup'))
 		);
 		$legacy_social = (string) $values['social_proof_text'];
 		if ($legacy_social !== '' && strpos($legacy_social, '{donors}') === false) {
 			echo '<p class="description wdp-pp-note">' . esc_html(
 				sprintf(
 					/* translators: %s: old free-text */
-					__('Eski metin: %s — artık kullanılmıyor, gerçek sayı kullanılır.', 'woo-donation-popup'),
+					__('Old text: %s — no longer used; the real number is used.', 'woo-donation-popup'),
 					$legacy_social
 				)
 			) . '</p>';
 		}
 
-		self::checkbox('enable_trust_strip', $values['enable_trust_strip'], __('Güven rozetleri', 'woo-donation-popup'), __('Formun altında güven mesajları gösterir. Genel ayar kapalıysa bu ürün için açık olsa da gösterilmez.', 'woo-donation-popup'));
+		self::checkbox('enable_trust_strip', $values['enable_trust_strip'], __('Trust badges', 'woo-donation-popup'), __('Shows trust messages under the form. If the general setting is off, they are not shown even if this product is on.', 'woo-donation-popup'));
 		self::render_repeater(
 			'trust_badges',
-			__('Rozetler', 'woo-donation-popup'),
+			__('Badges', 'woo-donation-popup'),
 			/* translators: %d: max rows */
-			sprintf(__('Ürün listesi doluysa genel listenin yerine geçer (en fazla %d). Boş bırakırsanız genel rozetler kullanılır.', 'woo-donation-popup'), self::MAX_TRUST_ROWS),
+			sprintf(__('If the product list is filled, it replaces the general list (maximum %d). If left empty, the general badges are used.', 'woo-donation-popup'), self::MAX_TRUST_ROWS),
 			$values['trust_rows'],
 			self::MAX_TRUST_ROWS,
 			array(
-				'icon' => array('label' => __('İkon', 'woo-donation-popup'), 'type' => 'icon'),
-				'text' => array('label' => __('Metin', 'woo-donation-popup'), 'type' => 'text'),
+				'icon' => array('label' => __('Icon', 'woo-donation-popup'), 'type' => 'icon'),
+				'text' => array('label' => __('Text', 'woo-donation-popup'), 'type' => 'text'),
 			)
 		);
 
@@ -794,12 +794,12 @@ class WDP_Admin_Product_Data_Tab {
 		$default_label = class_exists('WDP_Templates') ? WDP_Templates::get_default_sadaka_donation_message() : '';
 		$currency      = get_woocommerce_currency_symbol();
 
-		self::open_section('sadaka', __('Alt bağış (sadaka)', 'woo-donation-popup'), __('Forma eklenen ikinci, küçük bağış satırı', 'woo-donation-popup'));
+		self::open_section('sadaka', __('Extra donation (sadaqah)', 'woo-donation-popup'), __('A second, smaller donation row added to the form', 'woo-donation-popup'));
 		self::open_type_scope(array(WDP_Donation_Type::CAMPAIGN), $values['donation_type']);
-		echo '<p class="wdp-pp-note">' . esc_html__('Hedefli kampanyada alt bağış formda gösterilmez; ayarlar diğer tiplere geçerseniz kullanılır.', 'woo-donation-popup') . '</p>';
+		echo '<p class="wdp-pp-note">' . esc_html__('On a goal campaign the extra donation is not shown on the form; the settings are used if you switch to other types.', 'woo-donation-popup') . '</p>';
 		echo '</div>';
-		self::checkbox('enable_sadaka_donation', $values['enable_sadaka_donation'], __('Alt bağış ekle', 'woo-donation-popup'), __('Bağışçının ana bağışa ek olarak küçük bir bağış eklemesine izin verir.', 'woo-donation-popup'));
-		self::text('sadaka_toggle_label', $values['sadaka_toggle_label'], __('Düğme metni', 'woo-donation-popup'), __('Alt bağışı açan düğmenin metni.', 'woo-donation-popup'), array('placeholder' => __('Alt Bağış Ekle', 'woo-donation-popup'), 'custom_attributes' => array('maxlength' => '80')));
+		self::checkbox('enable_sadaka_donation', $values['enable_sadaka_donation'], __('Add an extra donation', 'woo-donation-popup'), __('Lets the donor add a small extra donation on top of the main donation.', 'woo-donation-popup'));
+		self::text('sadaka_toggle_label', $values['sadaka_toggle_label'], _x('Button text', 'product data tab', 'woo-donation-popup'), __('Text of the button that opens the extra donation.', 'woo-donation-popup'), array('placeholder' => __('Add extra donation', 'woo-donation-popup'), 'custom_attributes' => array('maxlength' => '80')));
 		$sadaka_wc_value = ($values['sadaka_wc_product_id'] !== '' && $values['sadaka_wc_product_id'] !== '0')
 			? absint($values['sadaka_wc_product_id'])
 			: 0;
@@ -816,25 +816,25 @@ class WDP_Admin_Product_Data_Tab {
 					'id'          => self::id('sadaka_wc_product_id'),
 					'name'        => self::name('sadaka_wc_product_id'),
 					'value'       => $sadaka_wc_value,
-					'label'       => __('Alt bağış ürünü', 'woo-donation-popup'),
+					'label'       => __('Extra donation product', 'woo-donation-popup'),
 					'description' => $default_wc_id
 						? sprintf(
 							/* translators: %d: default product ID */
-							__('Sepete eklenecek WooCommerce ürünü; boşsa genel varsayılan (#%d) kullanılır.', 'woo-donation-popup'),
+							__('WooCommerce product to add to the cart; if empty, the general default (#%d) is used.', 'woo-donation-popup'),
 							$default_wc_id
 						)
-						: __('Sepete eklenecek WooCommerce ürünü; boşsa genel varsayılan kullanılır, o da yoksa satır eklenmez.', 'woo-donation-popup'),
+						: __('WooCommerce product to add to the cart; if empty, the general default is used, and if that is also missing the row is not added.', 'woo-donation-popup'),
 					'error'       => $sadaka_field_error,
 				)
 			);
 		} else {
-			self::number('sadaka_wc_product_id', $values['sadaka_wc_product_id'], __('Alt bağış ürün ID', 'woo-donation-popup'), __('Sepete eklenecek WooCommerce ürünü; boşsa genel varsayılan kullanılır, o da yoksa satır eklenmez.', 'woo-donation-popup'), array('min' => '1', 'step' => '1', 'placeholder' => $default_wc_id ? (string) $default_wc_id : ''));
+			self::number('sadaka_wc_product_id', $values['sadaka_wc_product_id'], __('Extra donation product ID', 'woo-donation-popup'), __('WooCommerce product to add to the cart; if empty, the general default is used, and if that is also missing the row is not added.', 'woo-donation-popup'), array('min' => '1', 'step' => '1', 'placeholder' => $default_wc_id ? (string) $default_wc_id : ''));
 		}
 		/* translators: %s: currency symbol */
-		self::number('sadaka_min_price', $values['sadaka_min_price'], sprintf(__('En düşük tutar (%s)', 'woo-donation-popup'), $currency), __('Bağışçı tutarı kendisi yazarken uygulanacak alt sınır.', 'woo-donation-popup'), array('step' => '1'));
+		self::number('sadaka_min_price', $values['sadaka_min_price'], sprintf(__('Minimum amount (%s)', 'woo-donation-popup'), $currency), __('Lower limit applied when the donor types the amount themselves.', 'woo-donation-popup'), array('step' => '1'));
 		/* translators: %s: currency symbol */
-		self::number('sadaka_fixed_price', $values['sadaka_fixed_price'], sprintf(__('Sabit tutar (%s)', 'woo-donation-popup'), $currency), __('Doluysa alt bağış bu tutarla eklenir ve en düşük tutar yok sayılır.', 'woo-donation-popup'), array('step' => '1', 'placeholder' => '0'));
-		self::textarea('sadaka_donation_message', $values['sadaka_donation_message'], __('Alt bağış notu', 'woo-donation-popup'), __('Alt bağış satırının yanında görünen açıklama.', 'woo-donation-popup'), array('maxlength' => '300', 'placeholder' => $default_label));
+		self::number('sadaka_fixed_price', $values['sadaka_fixed_price'], sprintf(__('Fixed amount (%s)', 'woo-donation-popup'), $currency), __('If filled, the extra donation is added at this amount and the minimum amount is ignored.', 'woo-donation-popup'), array('step' => '1', 'placeholder' => '0'));
+		self::textarea('sadaka_donation_message', $values['sadaka_donation_message'], __('Extra donation note', 'woo-donation-popup'), __('Description shown next to the extra donation row.', 'woo-donation-popup'), array('maxlength' => '300', 'placeholder' => $default_label));
 		self::close_section();
 	}
 
@@ -843,22 +843,22 @@ class WDP_Admin_Product_Data_Tab {
 	 * @return void
 	 */
 	private static function render_appearance_section(array $values) {
-		self::open_section('appearance', __('Bu ürüne özel görünüm', 'woo-donation-popup'), __('Düzen, renkler, köşe yuvarlaklığı ve medya', 'woo-donation-popup'));
+		self::open_section('appearance', __('Appearance for this product', 'woo-donation-popup'), __('Layout, colors, corner radius, and media', 'woo-donation-popup'));
 		self::select(
 			'layout_mode',
 			$values['layout_mode'],
-			__('Düzen', 'woo-donation-popup'),
-			__('Formun genel yerleşimi; "Hikâye" görseli ve formu yan yana gösterir. Boş bırakılamaz; varsayılan Klasik (genel düzen ayarı yoktur).', 'woo-donation-popup'),
+			__('Layout', 'woo-donation-popup'),
+			__('Overall form layout; "Story" shows the image and form side by side. Cannot be left empty; default is Classic (there is no general layout setting).', 'woo-donation-popup'),
 			array(
-				'classic'  => __('Klasik', 'woo-donation-popup'),
-				'campaign' => __('Kampanya', 'woo-donation-popup'),
-				'story'    => __('Hikâye (yan yana)', 'woo-donation-popup'),
+				'classic'  => __('Classic', 'woo-donation-popup'),
+				'campaign' => __('Campaign', 'woo-donation-popup'),
+				'story'    => __('Story (side by side)', 'woo-donation-popup'),
 			)
 		);
-		self::checkbox('enable_campaign_media', $values['enable_campaign_media'], __('Ürün görselini göster', 'woo-donation-popup'), __('Ürünün öne çıkan görselini formun üst kısmında kampanya görseli olarak kullanır.', 'woo-donation-popup'));
+		self::checkbox('enable_campaign_media', $values['enable_campaign_media'], __('Show product image', 'woo-donation-popup'), __('Uses the product’s featured image as the campaign image at the top of the form.', 'woo-donation-popup'));
 		if ($values['enable_campaign_media'] === 'yes' && empty($values['has_featured_image'])) {
 			echo '<p class="form-field wdp-pp-field wdp-pp-media-warning" style="margin-top:-8px"><span class="description" style="color:#b32d2e">'
-				. esc_html__('Bu ürünün öne çıkan görseli yok; görsel gösterilemez.', 'woo-donation-popup')
+				. esc_html__('This product has no featured image; the image cannot be shown.', 'woo-donation-popup')
 				. '</span></p>';
 		}
 		$color_extra = array(
@@ -868,21 +868,21 @@ class WDP_Admin_Product_Data_Tab {
 		self::text(
 			'theme_primary',
 			$values['theme_primary'],
-			__('Ana renk', 'woo-donation-popup'),
-			__('Düğme ve vurgu rengi. Boş bırakılırsa kategori rengi, o da yoksa genel renk kullanılır.', 'woo-donation-popup'),
+			__('Primary color', 'woo-donation-popup'),
+			__('Button and accent color. If left empty, the category color is used, and if that is also missing the general color is used.', 'woo-donation-popup'),
 			$color_extra + array('placeholder' => '#036a37')
 		);
-		self::text('theme_primary_hover', $values['theme_primary_hover'], __('Ana renk (üzerine gelince)', 'woo-donation-popup'), __('Fare düğmenin üzerindeyken kullanılan renk; boşsa ana renkten türetilir.', 'woo-donation-popup'), $color_extra + array('placeholder' => '#025a2e'));
-		self::text('theme_modal_bg', $values['theme_modal_bg'], __('Arka plan rengi', 'woo-donation-popup'), __('Form penceresinin arka planı; boşsa genel ayar kullanılır.', 'woo-donation-popup'), $color_extra + array('placeholder' => '#ffffff'));
+		self::text('theme_primary_hover', $values['theme_primary_hover'], __('Primary color (hover)', 'woo-donation-popup'), __('Color used when the mouse is over the button; if empty, it is derived from the primary color.', 'woo-donation-popup'), $color_extra + array('placeholder' => '#025a2e'));
+		self::text('theme_modal_bg', $values['theme_modal_bg'], __('Background color', 'woo-donation-popup'), __('Background of the form window; if empty, the general setting is used.', 'woo-donation-popup'), $color_extra + array('placeholder' => '#ffffff'));
 		$r_min = class_exists('WDP_Form_Modules') ? (string) WDP_Form_Modules::PRODUCT_THEME_RADIUS_MIN : '4';
 		$r_max = class_exists('WDP_Form_Modules') ? (string) WDP_Form_Modules::PRODUCT_THEME_RADIUS_MAX : '32';
 		self::number(
 			'theme_radius',
 			$values['theme_radius'],
-			__('Köşe yuvarlaklığı (px)', 'woo-donation-popup'),
+			__('Corner radius (px)', 'woo-donation-popup'),
 			sprintf(
 				/* translators: 1: min px, 2: max px */
-				__('Düğme ve alan köşeleri için %1$s–%2$s px; boşsa genel ayar kullanılır.', 'woo-donation-popup'),
+				__('For button and field corners, %1$s–%2$s px; if empty, the general setting is used.', 'woo-donation-popup'),
 				$r_min,
 				$r_max
 			),
@@ -917,7 +917,7 @@ class WDP_Admin_Product_Data_Tab {
 		self::render_repeater_row($key, '__INDEX__', array(), $columns);
 		echo '</template>';
 		echo '<button type="button" class="button wdp-repeater__add" data-wdp-repeater-add' . (count($rows) >= $max ? ' disabled' : '') . '>';
-		echo '<span class="dashicons dashicons-plus-alt2" aria-hidden="true"></span> ' . esc_html__('Satır ekle', 'woo-donation-popup');
+		echo '<span class="dashicons dashicons-plus-alt2" aria-hidden="true"></span> ' . esc_html__('Add row', 'woo-donation-popup');
 		echo '</button>';
 		echo '<span class="description" id="' . esc_attr($desc_id) . '">' . esc_html($description) . '</span>';
 		echo '</div>';
@@ -951,7 +951,7 @@ class WDP_Admin_Product_Data_Tab {
 			echo '</div>';
 		}
 		echo '</div>';
-		echo '<button type="button" class="wdp-icon-button wdp-repeater__remove" data-wdp-repeater-remove aria-label="' . esc_attr__('Satırı sil', 'woo-donation-popup') . '" title="' . esc_attr__('Satırı sil', 'woo-donation-popup') . '">';
+		echo '<button type="button" class="wdp-icon-button wdp-repeater__remove" data-wdp-repeater-remove aria-label="' . esc_attr__('Delete row', 'woo-donation-popup') . '" title="' . esc_attr__('Delete row', 'woo-donation-popup') . '">';
 		echo '<span class="dashicons dashicons-trash" aria-hidden="true"></span>';
 		echo '</button>';
 		echo '</li>';
@@ -970,7 +970,7 @@ class WDP_Admin_Product_Data_Tab {
 		echo '<select id="' . esc_attr($id) . '" name="' . esc_attr($name) . '">';
 		if (strpos($value, 'attachment:') === 0) {
 			/* translators: %d: attachment ID */
-			echo '<option value="' . esc_attr($value) . '" selected>' . esc_html(sprintf(__('Yüklenen görsel (#%d)', 'woo-donation-popup'), absint(substr($value, 11)))) . '</option>';
+			echo '<option value="' . esc_attr($value) . '" selected>' . esc_html(sprintf(__('Uploaded image (#%d)', 'woo-donation-popup'), absint(substr($value, 11)))) . '</option>';
 		}
 		foreach (WDP_Icon_Library::get_builtins_for_admin() as $icon) {
 			$icon_value = 'builtin:' . $icon['id'];
@@ -992,11 +992,11 @@ class WDP_Admin_Product_Data_Tab {
 		$order    = array_values(array_intersect(WDP_Form_Modules::resolve_order($product_id), self::HEADER_MODULES));
 
 		echo '<div class="form-field wdp-pp-field wdp-pp-field--wide">';
-		echo '<span class="wdp-pp-field__label">' . esc_html__('Blok sırası', 'woo-donation-popup') . '</span>';
+		echo '<span class="wdp-pp-field__label">' . esc_html__('Block order', 'woo-donation-popup') . '</span>';
 		echo '<div class="wdp-pp-field__control">';
-		echo '<label class="wdp-pp-inline-check"><input type="checkbox" name="' . esc_attr(self::name('module_order_custom')) . '" value="yes" data-wdp-order-toggle' . checked($is_custom, true, false) . ' /> ' . esc_html__('Bu ürüne özel sıra kullan', 'woo-donation-popup') . '</label>';
+		echo '<label class="wdp-pp-inline-check"><input type="checkbox" name="' . esc_attr(self::name('module_order_custom')) . '" value="yes" data-wdp-order-toggle' . checked($is_custom, true, false) . ' /> ' . esc_html__('Use a custom order for this product', 'woo-donation-popup') . '</label>';
 		echo '<fieldset class="wdp-order" data-wdp-order' . ($is_custom ? '' : ' disabled') . '>';
-		echo '<legend class="screen-reader-text">' . esc_html__('Kampanya bloklarının sırası', 'woo-donation-popup') . '</legend>';
+		echo '<legend class="screen-reader-text">' . esc_html__('Order of campaign blocks', 'woo-donation-popup') . '</legend>';
 		echo '<ol class="wdp-order__list" data-wdp-order-list>';
 		foreach ($order as $module_id) {
 			$label = isset($labels[ $module_id ]) ? $labels[ $module_id ] : $module_id;
@@ -1004,14 +1004,14 @@ class WDP_Admin_Product_Data_Tab {
 			echo '<span class="wdp-order__label">' . esc_html($label) . '</span>';
 			echo '<input type="hidden" name="' . esc_attr(self::FIELD_NAME . '[module_order][]') . '" value="' . esc_attr($module_id) . '" />';
 			/* translators: %s: block name */
-			echo '<button type="button" class="wdp-icon-button" data-wdp-order-move="up" aria-label="' . esc_attr(sprintf(__('%s bloğunu yukarı taşı', 'woo-donation-popup'), $label)) . '"><span class="dashicons dashicons-arrow-up-alt2" aria-hidden="true"></span></button>';
+			echo '<button type="button" class="wdp-icon-button" data-wdp-order-move="up" aria-label="' . esc_attr(sprintf(__('Move the %s block up', 'woo-donation-popup'), $label)) . '"><span class="dashicons dashicons-arrow-up-alt2" aria-hidden="true"></span></button>';
 			/* translators: %s: block name */
-			echo '<button type="button" class="wdp-icon-button" data-wdp-order-move="down" aria-label="' . esc_attr(sprintf(__('%s bloğunu aşağı taşı', 'woo-donation-popup'), $label)) . '"><span class="dashicons dashicons-arrow-down-alt2" aria-hidden="true"></span></button>';
+			echo '<button type="button" class="wdp-icon-button" data-wdp-order-move="down" aria-label="' . esc_attr(sprintf(__('Move the %s block down', 'woo-donation-popup'), $label)) . '"><span class="dashicons dashicons-arrow-down-alt2" aria-hidden="true"></span></button>';
 			echo '</li>';
 		}
 		echo '</ol>';
 		echo '</fieldset>';
-		echo '<span class="description">' . esc_html__('Başlık altındaki blokların sırası; kapalıysa Tasarım sekmesindeki genel sıra kullanılır. Bağışçı ve tutar alanlarının sırası sabittir.', 'woo-donation-popup') . '</span>';
+		echo '<span class="description">' . esc_html__('Order of the blocks under the heading; if off, the general order on the Design tab is used. The order of donor and amount fields is fixed.', 'woo-donation-popup') . '</span>';
 		echo '</div>';
 		echo '</div>';
 	}
@@ -1026,17 +1026,17 @@ class WDP_Admin_Product_Data_Tab {
 		$shortcodes = self::get_shortcodes($product_id);
 
 		echo '<div class="wdp-pp-block wdp-pp-shortcode">';
-		echo '<p class="wdp-pp-heading">' . esc_html__('Kısa kod', 'woo-donation-popup') . '</p>';
-		echo '<p class="wdp-pp-lead">' . esc_html__('Görünümü seçin, kısa kodu kopyalayıp sayfa veya yazıya yapıştırın.', 'woo-donation-popup') . '</p>';
+		echo '<p class="wdp-pp-heading">' . esc_html__('Shortcode', 'woo-donation-popup') . '</p>';
+		echo '<p class="wdp-pp-lead">' . esc_html__('Choose a view, copy the shortcode, and paste it into a page or post.', 'woo-donation-popup') . '</p>';
 		echo '<div class="wdp-pp-shortcode__row">';
-		echo '<label class="wdp-pp-shortcode__label" for="wdp-shortcode-view">' . esc_html__('Görünüm', 'woo-donation-popup') . '</label>';
+		echo '<label class="wdp-pp-shortcode__label" for="wdp-shortcode-view">' . esc_html_x('View', 'section title', 'woo-donation-popup') . '</label>';
 		echo '<select id="wdp-shortcode-view" data-wdp-shortcode-select aria-controls="wdp-shortcode-output">';
 		foreach ($shortcodes as $shortcode) {
 			echo '<option value="' . esc_attr($shortcode['code']) . '">' . esc_html($shortcode['label']) . '</option>';
 		}
 		echo '</select>';
-		echo '<input type="text" id="wdp-shortcode-output" class="code wdp-pp-shortcode__code" value="' . esc_attr($shortcodes[0]['code']) . '" readonly aria-label="' . esc_attr__('Kısa kod', 'woo-donation-popup') . '" data-wdp-shortcode-output />';
-		echo '<button type="button" class="button" data-wdp-copy-target="#wdp-shortcode-output">' . esc_html__('Kopyala', 'woo-donation-popup') . '</button>';
+		echo '<input type="text" id="wdp-shortcode-output" class="code wdp-pp-shortcode__code" value="' . esc_attr($shortcodes[0]['code']) . '" readonly aria-label="' . esc_attr__('Shortcode', 'woo-donation-popup') . '" data-wdp-shortcode-output />';
+		echo '<button type="button" class="button" data-wdp-copy-target="#wdp-shortcode-output">' . esc_html__('Copy', 'woo-donation-popup') . '</button>';
 		echo '</div>';
 		echo '</div>';
 	}
@@ -1049,9 +1049,9 @@ class WDP_Admin_Product_Data_Tab {
 		$product_id = absint($product_id);
 		$id_attr    = esc_attr((string) $product_id);
 		return array(
-			array('label' => __('Buton (ortada açılır)', 'woo-donation-popup'), 'code' => '[wdp_donation_button id="' . $id_attr . '"]'),
-			array('label' => __('Sağ panel', 'woo-donation-popup'), 'code' => '[wdp_donation_button_panel id="' . $id_attr . '"]'),
-			array('label' => __('Sayfa içi form', 'woo-donation-popup'), 'code' => '[wdp_donation_form id="' . $id_attr . '"]'),
+			array('label' => __('Button (opens in the center)', 'woo-donation-popup'), 'code' => '[wdp_donation_button id="' . $id_attr . '"]'),
+			array('label' => __('Side panel', 'woo-donation-popup'), 'code' => '[wdp_donation_button_panel id="' . $id_attr . '"]'),
+			array('label' => __('Inline form', 'woo-donation-popup'), 'code' => '[wdp_donation_form id="' . $id_attr . '"]'),
 		);
 	}
 }

@@ -1,6 +1,6 @@
 {
   "name": "donation-popup",
-  "version": "10.34.15",
+  "version": "10.35.0",
   "description": "WooCommerce donation popup — WordPress plugin.",
   "private": true,
   "scripts": {
@@ -18,7 +18,7 @@
     "plugin-check": "node scripts/plugin-check.mjs",
     "verify:live-targets": "node scripts/lib/live-target-scan.mjs",
     "verify:lint": "node scripts/lint-verify-gate.mjs",
-    "verify": "npm run build && npm run smoke && npm run verify:live-targets && npm run verify:lint",
+    "verify": "npm run build && npm run smoke && npm run verify:live-targets && npm run verify:i18n && npm run verify:lint",
     "pack": "npm run build && sh scripts/package-wp-plugin.sh",
     "e2e": "node tests/e2e/run-compare.mjs",
     "e2e:baseline": "node tests/e2e/run-baseline.mjs",
@@ -57,7 +57,11 @@
     "i18n:js-strings:check": "node tools/i18n/gen-js-strings.mjs --check",
     "i18n:extract-source": "node tools/i18n/extract-golden.mjs",
     "i18n:golden": "node tests/e2e/run-i18n-text.mjs",
-    "i18n:verify": "node tools/i18n/verify.mjs"
+    "i18n:verify": "node tools/i18n/verify.mjs",
+    "i18n:scan-php": "php tools/i18n/scan-php-turkish.php",
+    "verify:i18n": "node tools/i18n/merge-po.mjs && node tools/i18n/verify.mjs && php tools/i18n/scan-php-turkish.php && node tools/i18n/verify-js.mjs --scan assets/js/src,assets/js/admin-script.js,assets/js/admin --map tools/i18n/golden/js-J1.json --po languages/woo-donation-popup-tr_TR.po && node tools/i18n/gen-js-strings.mjs --check",
+    "i18n:json": "node tools/i18n/make-json.mjs",
+    "e2e:rtl": "node tests/e2e/run-rtl-layout.mjs"
   },
   "repository": {
     "type": "git",

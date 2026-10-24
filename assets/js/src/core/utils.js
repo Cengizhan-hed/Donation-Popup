@@ -9,6 +9,13 @@
 
   // Global namespace initialization
   const WDPApp = window.WDPApp || (window.WDPApp = {});
+  if (!WDPApp.i18n || typeof WDPApp.i18n.__ !== 'function') {
+    WDPApp.i18n = {
+      __: function (msg) { return msg == null ? '' : String(msg); },
+      _x: function (msg) { return msg == null ? '' : String(msg); },
+      sprintf: function (fmt) { return String(fmt == null ? '' : fmt); },
+    };
+  }
   const jQuery = window.jQuery || null;
 
   // WooCommerce parametreleri için güvenli kontrol
@@ -16,7 +23,7 @@
     var wc_add_to_cart_params = window.wc_add_to_cart_params || {
       ajax_url: '',
       wc_ajax_url: '/?wc-ajax=%%endpoint%%',
-      i18n_view_cart: 'Sepeti görüntüle',
+      i18n_view_cart: 'View cart',
       cart_url: '',
       is_cart: false,
       is_single_product: true,
@@ -231,7 +238,7 @@
     const c = resolveCurrencyConfig(cfg)
     const example = formatMoney(10, Object.assign({}, c, { symbol: '' })) || '10'
     const strings = (wdp_ajax && wdp_ajax.strings) ? wdp_ajax.strings : {}
-    const tpl = strings.amount_no_fraction || 'Bu sitede kuruşlu tutar girilemez, örn. %s'
+    const tpl = strings.amount_no_fraction || WDPApp.i18n.__('Fractional amounts are not allowed on this site, e.g. %s', 'woo-donation-popup')
     return tpl.replace('%s', example)
   }
 
@@ -242,7 +249,7 @@
     if (c.decimals <= 0) {
       return getNoFractionAmountMessage(c)
     }
-    const tpl = strings.amount_ambiguous_format || 'Lütfen tutarı şu biçimde yazın, örn. %s'
+    const tpl = strings.amount_ambiguous_format || WDPApp.i18n.__('Please enter the amount in this format, e.g. %s', 'woo-donation-popup')
     return tpl.replace('%s', example)
   }
 
@@ -251,7 +258,7 @@
     if (!ok && !msg) {
       msg = status === 'ambiguous'
         ? getAmbiguousAmountMessage(cfg)
-        : ((wdp_ajax && wdp_ajax.strings && wdp_ajax.strings.invalid_price) || 'Geçersiz fiyat değeri.')
+        : ((wdp_ajax && wdp_ajax.strings && wdp_ajax.strings.invalid_price) || WDPApp.i18n.__('Invalid price value.', 'woo-donation-popup'))
     }
     return { ok: !!ok, amount: ok ? amount : NaN, status: status, error: msg }
   }
@@ -821,8 +828,8 @@
       document.documentElement.classList.add('wdp-is-offline');
       showToast({
         type: 'warning',
-        title: 'Çevrimdışı',
-        message: 'Bağlantı yok. İşlemler bağlantı gelince tekrar denenebilir.',
+        title: WDPApp.i18n.__('Offline', 'woo-donation-popup'),
+        message: WDPApp.i18n.__('No connection. Actions can be retried when you are back online.', 'woo-donation-popup'),
         duration: 5000,
       });
       emitWdpEvent('wdp:network:offline', {});
@@ -831,8 +838,8 @@
       document.documentElement.classList.remove('wdp-is-offline');
       showToast({
         type: 'success',
-        title: 'Çevrimiçi',
-        message: 'Bağlantı yeniden kuruldu.',
+        title: WDPApp.i18n.__('Online', 'woo-donation-popup'),
+        message: WDPApp.i18n.__('Connection restored.', 'woo-donation-popup'),
         duration: 2800,
       });
       emitWdpEvent('wdp:network:online', {});

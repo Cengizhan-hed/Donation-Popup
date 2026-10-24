@@ -37,38 +37,38 @@ trait WDP_Assets_Inline_Styles_Trait {
         
         // Varsayılan değerler (popup_button_text: şablon + JS için tek bağış butonu metni kaynağı)
         $defaults = array(
-            'popup_button_text'       => __('Bağış Yap', 'woo-donation-popup'),
-            'button_text_donate'      => __('Bağış Yap', 'woo-donation-popup'),
-            'button_text_add_to_cart' => __('Sepete Ekle', 'woo-donation-popup'),
-            'button_text_go_checkout' => __('Ödemeye Git', 'woo-donation-popup'),
+            'popup_button_text'       => __('Donate', 'woo-donation-popup'),
+            'button_text_donate'      => __('Donate', 'woo-donation-popup'),
+            'button_text_add_to_cart' => __('Add to cart', 'woo-donation-popup'),
+            'button_text_go_checkout' => __('Go to checkout', 'woo-donation-popup'),
         );
         
         $settings = wp_parse_args($button_settings, $defaults);
         
         $result = array(
-            'donate'      => self::sanitize_plain_text($settings['popup_button_text'], __('Bağış Yap', 'woo-donation-popup')),
-            'add_to_cart' => self::sanitize_plain_text($settings['button_text_add_to_cart'], __('Sepete Ekle', 'woo-donation-popup')),
-            'go_checkout' => self::sanitize_plain_text($settings['button_text_go_checkout'], __('Ödemeye Git', 'woo-donation-popup')),
+            'donate'      => self::sanitize_plain_text($settings['popup_button_text'], __('Donate', 'woo-donation-popup')),
+            'add_to_cart' => self::sanitize_plain_text($settings['button_text_add_to_cart'], __('Add to cart', 'woo-donation-popup')),
+            'go_checkout' => self::sanitize_plain_text($settings['button_text_go_checkout'], __('Go to checkout', 'woo-donation-popup')),
         );
         
         // Başarı ekranı buton metinleri (başarı ekranı ayarlarından al)
         $success_settings = get_option('wdp_success_settings', array());
         if (isset($success_settings['success_text_view_cart'])) {
-            $result['success_view_cart'] = self::sanitize_plain_text($success_settings['success_text_view_cart'], __('Sepete Git', 'woo-donation-popup'));
+            $result['success_view_cart'] = self::sanitize_plain_text($success_settings['success_text_view_cart'], __('View cart', 'woo-donation-popup'));
         } else {
-            $result['success_view_cart'] = __('Sepete Git', 'woo-donation-popup');
+            $result['success_view_cart'] = __('View cart', 'woo-donation-popup');
         }
         
         if (isset($success_settings['success_text_go_checkout'])) {
-            $result['success_go_checkout'] = self::sanitize_plain_text($success_settings['success_text_go_checkout'], __('Bağışı Tamamla', 'woo-donation-popup'));
+            $result['success_go_checkout'] = self::sanitize_plain_text($success_settings['success_text_go_checkout'], __('Complete donation', 'woo-donation-popup'));
         } else {
-            $result['success_go_checkout'] = __('Bağışı Tamamla', 'woo-donation-popup');
+            $result['success_go_checkout'] = __('Complete donation', 'woo-donation-popup');
         }
         
         if (isset($success_settings['success_text_new_donation'])) {
-            $result['success_new_donation'] = self::sanitize_plain_text($success_settings['success_text_new_donation'], __('Bağış eklemeye devam edin', 'woo-donation-popup'));
+            $result['success_new_donation'] = self::sanitize_plain_text($success_settings['success_text_new_donation'], __('Continue adding donations', 'woo-donation-popup'));
         } else {
-            $result['success_new_donation'] = __('Bağış eklemeye devam edin', 'woo-donation-popup');
+            $result['success_new_donation'] = __('Continue adding donations', 'woo-donation-popup');
         }
         
         return $result;
@@ -82,17 +82,17 @@ trait WDP_Assets_Inline_Styles_Trait {
     private static function get_shareholder_texts() {
         $settings = get_option('wdp_shareholder_settings', array());
         $defaults = array(
-            'shareholder_header_text'      => 'Hissedar Bilgileri',
-            'shareholder_name_placeholder' => 'Ad Soyad *',
-            'shareholder_phone_placeholder'=> 'Telefon Numarası *',
-            'shareholder_note_placeholder' => 'Not (isteğe bağlı)',
-            'shareholder_copy_button_text' => 'Kopyasını Oluştur',
+            'shareholder_header_text'      => __('Shareholder details', 'woo-donation-popup'),
+            'shareholder_name_placeholder' => __('Full name *', 'woo-donation-popup'),
+            'shareholder_phone_placeholder'=> __('Phone number *', 'woo-donation-popup'),
+            'shareholder_note_placeholder' => __('Note (optional)', 'woo-donation-popup'),
+            'shareholder_copy_button_text' => __('Create a copy', 'woo-donation-popup'),
             'shareholder_enable_copy_button' => '1',
             'shareholder_layout'           => 'single',
             'shareholder_density'          => 'normal',
             'shareholder_enable_email'     => '0',
-            'shareholder_email_placeholder'=> 'E-posta (isteğe bağlı)',
-            'shareholder_progress_status_label' => 'Hissedar Form Durumu',
+            'shareholder_email_placeholder'=> __('Email (optional)', 'woo-donation-popup'),
+            'shareholder_progress_status_label' => __('Shareholder form status', 'woo-donation-popup'),
         );
 
         $settings = wp_parse_args($settings, $defaults);
@@ -328,7 +328,7 @@ trait WDP_Assets_Inline_Styles_Trait {
             'close_button_color' => '#6b7280',
             'button_checkout_color' => '#16a34a',
             'button_checkout_hover' => '#15803d',
-            'popup_button_text' => 'Bağış Yap',
+            'popup_button_text' => __('Donate', 'woo-donation-popup'),
             'popup_button_color' => '#0f608b',
             'popup_button_hover' => '#0c4f72',
             'popup_button_text_color' => '#ffffff',

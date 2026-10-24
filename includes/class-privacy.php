@@ -34,7 +34,7 @@ class WDP_Privacy {
 	 */
 	public static function register_exporter($exporters) {
 		$exporters['woo-donation-popup'] = array(
-			'exporter_friendly_name' => __('Bağış bilgileri (Donation Popup)', 'woo-donation-popup'),
+			'exporter_friendly_name' => __('Donation details (Donation Popup)', 'woo-donation-popup'),
 			'callback'               => array(__CLASS__, 'export_personal_data'),
 		);
 		return $exporters;
@@ -46,7 +46,7 @@ class WDP_Privacy {
 	 */
 	public static function register_eraser($erasers) {
 		$erasers['woo-donation-popup'] = array(
-			'eraser_friendly_name' => __('Bağış bilgileri (Donation Popup)', 'woo-donation-popup'),
+			'eraser_friendly_name' => __('Donation details (Donation Popup)', 'woo-donation-popup'),
 			'callback'             => array(__CLASS__, 'erase_personal_data'),
 		);
 		return $erasers;
@@ -101,11 +101,11 @@ class WDP_Privacy {
 				$rows = array_merge(
 					array(
 						array(
-							'name'  => __('Sipariş numarası', 'woo-donation-popup'),
+							'name'  => __('Order number', 'woo-donation-popup'),
 							'value' => (string) $order->get_order_number(),
 						),
 						array(
-							'name'  => __('Ürün', 'woo-donation-popup'),
+							'name'  => __('Product', 'woo-donation-popup'),
 							'value' => wp_strip_all_tags((string) $item->get_name()),
 						),
 					),
@@ -114,8 +114,8 @@ class WDP_Privacy {
 
 				$export[] = array(
 					'group_id'          => 'wdp-donations',
-					'group_label'       => __('Bağış bilgileri', 'woo-donation-popup'),
-					'group_description' => __('Bağış formunda girilen bağışçı ve hissedar bilgileri.', 'woo-donation-popup'),
+					'group_label'       => __('Donation details', 'woo-donation-popup'),
+					'group_description' => __('Donor and shareholder details entered on the donation form.', 'woo-donation-popup'),
 					'item_id'           => 'wdp-donation-' . (int) $order_id . '-' . (int) $item_id,
 					'data'              => $rows,
 				);

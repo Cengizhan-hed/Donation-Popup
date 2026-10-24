@@ -129,3 +129,29 @@ export function resolveWorkerCount(requested = 0, fallback = 3) {
 }
 
 export { DEVICE_ORDER };
+
+export const RTL_LOCALES = ['ar', 'he_IL', 'fa_IR', 'ur'];
+
+/**
+ * @param {string} locale
+ */
+export function isRtlLocale(locale) {
+  const loc = String(locale || '');
+  const base = loc.includes('_') ? loc.slice(0, loc.indexOf('_')) : loc;
+  return ['ar', 'he', 'fa', 'ur'].includes(base);
+}
+
+/**
+ * @param {ReturnType<typeof loadMatrix>} matrix
+ */
+export function rtlSpec(matrix) {
+  const rtl = matrix.rtl || {};
+  return {
+    locales: Array.isArray(rtl.locales) && rtl.locales.length ? rtl.locales : ['ar', 'he_IL'],
+    baseConfig: rtl.baseConfig || 'tt5-try-blocks-hpos',
+    devices: Array.isArray(rtl.devices) && rtl.devices.length ? rtl.devices : ['iphone', 'desktop'],
+    screens: Array.isArray(rtl.screens) && rtl.screens.length
+      ? rtl.screens
+      : ['popup', 'panel', 'inline', 'cart', 'checkout', 'related', 'progress', 'error'],
+  };
+}

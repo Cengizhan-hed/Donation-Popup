@@ -222,8 +222,8 @@ class WDP_Style_Presets {
 		return array(
 			'version'     => 1,
 			'exported_at' => gmdate('c'),
-			'label'       => $label !== '' ? $label : __('Özel paket', 'woo-donation-popup'),
-			'description' => __('Mevcut ayarlardan dışa aktarıldı', 'woo-donation-popup'),
+			'label'       => $label !== '' ? $label : __('Custom pack', 'woo-donation-popup'),
+			'description' => __('Exported from current settings', 'woo-donation-popup'),
 			'button'      => $pick($button, $button_keys),
 			'shareholder' => $pick($share, $share_keys),
 			'progress'    => $pick($prog, $prog_keys),
@@ -239,7 +239,7 @@ class WDP_Style_Presets {
 	 * @return string|WP_Error Preset id or error.
 	 */
 	public static function import_pack(array $pack, $apply = true) {
-		$label = isset($pack['label']) ? sanitize_text_field((string) $pack['label']) : __('İçe aktarılan paket', 'woo-donation-popup');
+		$label = isset($pack['label']) ? sanitize_text_field((string) $pack['label']) : __('Imported pack', 'woo-donation-popup');
 		$id    = 'custom_' . substr(md5(wp_json_encode($pack) . microtime()), 0, 10);
 
 		$clean = array(

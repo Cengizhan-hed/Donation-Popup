@@ -42,7 +42,7 @@ class WDP_Product_Not_Found_Exception extends WDP_Exception {
      */
     public function __construct($product_id) {
         parent::__construct(
-            sprintf(__('Ürün bulunamadı. ID: %d', 'woo-donation-popup'), $product_id),
+            sprintf(__('Product not found. ID: %d', 'woo-donation-popup'), $product_id),
             404
         );
     }
@@ -108,7 +108,7 @@ class WDP_Security_Exception extends WDP_Exception {
         $this->kind        = $kind;
         $this->retry_after = max(0, (int) $retry_after);
         if (null === $message) {
-            $message = __('Güvenlik doğrulaması başarısız oldu. Lütfen sayfayı yenileyip tekrar deneyin.', 'woo-donation-popup');
+            $message = __('Security verification failed. Please refresh the page and try again.', 'woo-donation-popup');
         }
         $http = ('rate_limit' === $kind) ? 429 : 403;
         parent::__construct($message, $http);

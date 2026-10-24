@@ -224,12 +224,12 @@ class WDP_Shortcodes {
 
 		if (!$product) {
 			return WDP_Utils::admin_notice_html(
-				__('Bağış formu: ürün bulunamadı (id/slug/sku verilmedi veya bu sayfa bir ürün sayfası değil).', 'woo-donation-popup')
+				__('Donation form: product not found (no id/slug/sku was given, or this is not a product page).', 'woo-donation-popup')
 			);
 		}
 
 		if (!$explicit && class_exists('WDP_Donation_Scope') && !WDP_Donation_Scope::is_donation_product($product)) {
-			return WDP_Utils::admin_notice_html(__('Bu ürün bağış ürünü olarak işaretli değil.', 'woo-donation-popup'));
+			return WDP_Utils::admin_notice_html(__('This product is not marked as a donation product.', 'woo-donation-popup'));
 		}
 
 		return array(
@@ -290,7 +290,7 @@ class WDP_Shortcodes {
 			return WDP_Utils::admin_notice_html(
 				sprintf(
 					/* translators: %d: product ID */
-					__('Bu ürün satın alınamaz (ID: %d).', 'woo-donation-popup'),
+					__('This product cannot be purchased (ID: %d).', 'woo-donation-popup'),
 					$product_id
 				)
 			);
@@ -299,7 +299,7 @@ class WDP_Shortcodes {
 			return WDP_Utils::admin_notice_html(
 				sprintf(
 					/* translators: %d: product ID */
-					__('Bu ürün stokta yok (ID: %d).', 'woo-donation-popup'),
+					__('This product is out of stock (ID: %d).', 'woo-donation-popup'),
 					$product_id
 				)
 			);
@@ -318,7 +318,7 @@ class WDP_Shortcodes {
 		if (!empty($button_settings['popup_button_text'])) {
 			return sanitize_text_field((string) $button_settings['popup_button_text']);
 		}
-		return __('Bağış Yap', 'woo-donation-popup');
+		return __('Donate', 'woo-donation-popup');
 	}
 
 	/**

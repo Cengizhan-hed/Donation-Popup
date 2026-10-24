@@ -96,5 +96,23 @@
       "checkout": "classic",
       "hpos": true
     }
-  ]
+  ],
+  "rtl": {
+    "locales": ["ar", "he_IL"],
+    "baseConfig": "tt5-try-blocks-hpos",
+    "devices": ["iphone", "desktop"],
+    "screens": [
+      "popup",
+      "panel",
+      "inline",
+      "cart",
+      "checkout",
+      "related",
+      "progress",
+      "error",
+      "admin-products",
+      "admin-placement",
+      "admin-design-studio"
+    ]
+  }
 }

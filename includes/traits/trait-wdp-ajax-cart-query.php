@@ -55,7 +55,7 @@ trait WDP_Ajax_Cart_Query_Trait {
 
         $cart = self::get_wc_cart();
         if (!$cart) {
-            WDP_Utils::json_error(__('WooCommerce sepet nesnesi bulunamadı.', 'woo-donation-popup'));
+            WDP_Utils::json_error(__('WooCommerce cart object was not found.', 'woo-donation-popup'));
             return;
         }
 
@@ -82,7 +82,7 @@ trait WDP_Ajax_Cart_Query_Trait {
 
         $cart = self::get_wc_cart();
         if (!$cart) {
-            WDP_Utils::json_error(__('WooCommerce sepet nesnesi bulunamadı.', 'woo-donation-popup'));
+            WDP_Utils::json_error(__('WooCommerce cart object was not found.', 'woo-donation-popup'));
             return;
         }
 
@@ -141,9 +141,9 @@ trait WDP_Ajax_Cart_Query_Trait {
                     $display_product = wc_get_product($display_id);
                     $product_name = ($display_product && $display_product->exists())
                         ? wp_strip_all_tags((string) $display_product->get_name())
-                        : __('Sadaka Bağışı', 'woo-donation-popup');
+                        : __('Charity donation', 'woo-donation-popup');
                 } else {
-                    $product_name = __('Sadaka Bağışı', 'woo-donation-popup');
+                    $product_name = __('Charity donation', 'woo-donation-popup');
                 }
             } else {
                 $product_name = wp_strip_all_tags((string) $product->get_name());
@@ -173,13 +173,13 @@ trait WDP_Ajax_Cart_Query_Trait {
                 $meta = array();
                 if (isset($safe_donation_data['full_name'])) {
                     $meta[] = array(
-                        'key' => __('Ad Soyad', 'woo-donation-popup'),
+                        'key' => __('Full name', 'woo-donation-popup'),
                         'value' => $safe_donation_data['full_name'],
                     );
                 }
                 if (isset($safe_donation_data['share_count'])) {
                     $meta[] = array(
-                        'key' => __('Hisse Adedi', 'woo-donation-popup'),
+                        'key' => __('Number of shares', 'woo-donation-popup'),
                         'value' => $safe_donation_data['share_count'],
                     );
                 }
@@ -187,7 +187,7 @@ trait WDP_Ajax_Cart_Query_Trait {
                     foreach ($safe_donation_data['shareholders'] as $index => $shareholder) {
                         if (isset($shareholder['name']) && $shareholder['name'] !== '') {
                             $meta[] = array(
-                                'key' => sprintf(__('%d. Hissedar', 'woo-donation-popup'), (int) $index + 1),
+                                'key' => sprintf(__('Shareholder %d', 'woo-donation-popup'), (int) $index + 1),
                                 'value' => $shareholder['name'],
                             );
                         }
@@ -220,7 +220,7 @@ trait WDP_Ajax_Cart_Query_Trait {
 
         $cart = self::get_wc_cart();
         if (!$cart) {
-            WDP_Utils::json_error(__('WooCommerce sepet nesnesi bulunamadı.', 'woo-donation-popup'));
+            WDP_Utils::json_error(__('WooCommerce cart object was not found.', 'woo-donation-popup'));
             return;
         }
 
@@ -229,12 +229,12 @@ trait WDP_Ajax_Cart_Query_Trait {
             $cart_item_key = isset($_POST['cart_item_key']) ? sanitize_text_field(wp_unslash($_POST['cart_item_key'])) : '';
 
             if (empty($cart_item_key)) {
-                throw new WDP_Validation_Exception(__('Sepet öğesi anahtarı bulunamadı.', 'woo-donation-popup'));
+                throw new WDP_Validation_Exception(__('Cart item key was not found.', 'woo-donation-popup'));
             }
 
             $target_item = $cart->get_cart_item($cart_item_key);
             if (!$target_item) {
-                throw new WDP_Exception(__('Sepet öğesi kaldırılamadı.', 'woo-donation-popup'));
+                throw new WDP_Exception(__('The cart item could not be removed.', 'woo-donation-popup'));
             }
 
             if (empty($target_item['wdp_sadaka_donation'])) {
@@ -251,7 +251,7 @@ trait WDP_Ajax_Cart_Query_Trait {
             $removed = $cart->remove_cart_item($cart_item_key);
 
             if (!$removed) {
-                throw new WDP_Exception(__('Sepet öğesi kaldırılamadı.', 'woo-donation-popup'));
+                throw new WDP_Exception(__('The cart item could not be removed.', 'woo-donation-popup'));
             }
 
             if (method_exists($cart, 'calculate_totals')) {
@@ -271,7 +271,7 @@ trait WDP_Ajax_Cart_Query_Trait {
                 : 0.0;
 
             WDP_Utils::json_success(array(
-                'message' => __('Sepet öğesi kaldırıldı.', 'woo-donation-popup'),
+                'message' => __('Cart item removed.', 'woo-donation-popup'),
                 'items' => $items,
                 'cart_count' => (int) $cart->get_cart_contents_count(),
                 'product_id' => $removed_product_id,
@@ -285,7 +285,7 @@ trait WDP_Ajax_Cart_Query_Trait {
         } catch (WDP_Exception $e) {
             WDP_Utils::json_error($e, array('code' => 'general_error'));
         } catch (Exception $e) {
-            WDP_Utils::json_error(__('Beklenmeyen bir hata oluştu.', 'woo-donation-popup'), array('code' => 'unknown_error', 'http_status' => 500));
+            WDP_Utils::json_error(__('An unexpected error occurred.', 'woo-donation-popup'), array('code' => 'unknown_error', 'http_status' => 500));
         }
     }
 }

@@ -24,12 +24,12 @@ class WDP_Admin_Product_Settings_Ajax {
 
 		$product_id = isset($_POST['product_id']) ? absint(wp_unslash($_POST['product_id'])) : 0;
 		if (!$product_id) {
-			WDP_Admin_Request::json_error(__('Geçersiz ürün ID.', 'woo-donation-popup'), 'invalid_product');
+			WDP_Admin_Request::json_error(__('Invalid product ID.', 'woo-donation-popup'), 'invalid_product');
 		}
 
 		$product = wc_get_product($product_id);
 		if (!$product) {
-			WDP_Admin_Request::json_error(__('Ürün bulunamadı.', 'woo-donation-popup'), 'not_found', 404);
+			WDP_Admin_Request::json_error(__('Product not found.', 'woo-donation-popup'), 'not_found', 404);
 		}
 
 		if (function_exists('wc_set_time_limit')) {
@@ -42,7 +42,7 @@ class WDP_Admin_Product_Settings_Ajax {
 		WDP_Admin_Request::json_success(
 			sprintf(
 				/* translators: 1: product name, 2: formatted total, 3: order count */
-				__('"%1$s" toplamı yeniden hesaplandı: %2$s (%3$d sipariş).', 'woo-donation-popup'),
+				__('Recalculated the total for "%1$s": %2$s (%3$d orders).', 'woo-donation-popup'),
 				wp_strip_all_tags($product->get_name()),
 				$total_text,
 				(int) $result['orders']
@@ -58,7 +58,7 @@ class WDP_Admin_Product_Settings_Ajax {
 			if (function_exists('wdp_debug_log')) {
 				wdp_debug_log('WDP recalculate: ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine());
 			}
-			WDP_Admin_Request::json_error(__('Toplam hesaplanamadı. Ayrıntı hata günlüğünde.', 'woo-donation-popup'), 'error', 500);
+			WDP_Admin_Request::json_error(__('The total could not be calculated. Details are in the error log.', 'woo-donation-popup'), 'error', 500);
 		}
 	}
 }

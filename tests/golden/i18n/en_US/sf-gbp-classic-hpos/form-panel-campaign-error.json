@@ -1,0 +1,31 @@
+{
+  "id": "form-panel-campaign-error",
+  "text": "×\nWDP E2E Campaign\n£#AMT#\nraised\n#AMT#%\nGoal\n£#AMT#\n·\n£#AMT# remaining\nDonation form for WDP E2E Campaign\nFull name is required.\n+#N#\nPlease enter your complete phone number.\nDonation amount:\n£#AMT#\n£#AMT#\n£#AMT#\n£#AMT#.#N#\n£\nPlease enter a donation amount.\nGo to checkout\nAdd to cart\nSecure payment · SSL-protected transaction",
+  "lines": [
+    "×",
+    "WDP E2E Campaign",
+    "£#AMT#",
+    "raised",
+    "#AMT#%",
+    "Goal",
+    "£#AMT#",
+    "·",
+    "£#AMT# remaining",
+    "Donation form for WDP E2E Campaign",
+    "Full name is required.",
+    "+#N#",
+    "Please enter your complete phone number.",
+    "Donation amount:",
+    "£#AMT#",
+    "£#AMT#",
+    "£#AMT#",
+    "£#AMT#.#N#",
+    "£",
+    "Please enter a donation amount.",
+    "Go to checkout",
+    "Add to cart",
+    "Secure payment · SSL-protected transaction"
+  ],
+  "locale": "en_US",
+  "config": "sf-gbp-classic-hpos"
+}

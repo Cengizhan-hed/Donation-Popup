@@ -119,7 +119,7 @@ function toPayload(id, raw, extra = {}) {
 }
 
 async function captureElementor(locale, configId) {
-  const widgets = extractElementorWidgetStrings(ROOT);
+  const widgets = extractElementorWidgetStrings(ROOT, locale);
   const lines = [];
   for (const w of widgets) {
     if (w.title) lines.push(w.title);

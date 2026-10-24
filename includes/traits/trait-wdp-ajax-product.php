@@ -68,7 +68,7 @@ trait WDP_Ajax_Product_Trait {
 
             if (!$product_id) {
                 wp_send_json_error(
-                    array('message' => __('Geçersiz ürün ID', 'woo-donation-popup')),
+                    array('message' => __('Invalid product ID', 'woo-donation-popup')),
                     400
                 );
             }
@@ -76,7 +76,7 @@ trait WDP_Ajax_Product_Trait {
             $product = null;
             if (!self::resolve_product_for_info($product_id, $product) || !$product) {
                 wp_send_json_error(
-                    array('message' => __('Geçersiz ürün ID', 'woo-donation-popup')),
+                    array('message' => __('Invalid product ID', 'woo-donation-popup')),
                     400
                 );
             }
@@ -202,17 +202,17 @@ trait WDP_Ajax_Product_Trait {
         $product_id = isset($_POST['product_id']) ? absint(wp_unslash($_POST['product_id'])) : 0;
 
         if (!$product_id) {
-            WDP_Utils::json_error(__('Geçersiz ürün ID', 'woo-donation-popup'));
+            WDP_Utils::json_error(__('Invalid product ID', 'woo-donation-popup'));
         }
         
         $product = null;
         // SECURITY: Validate product ID and reuse resolved product instance.
         if (!WDP_Security::validate_product_id($product_id, $product)) {
-            WDP_Utils::json_error(__('Geçersiz ürün ID', 'woo-donation-popup'));
+            WDP_Utils::json_error(__('Invalid product ID', 'woo-donation-popup'));
         }
 
         if (!$product) {
-            WDP_Utils::json_error(__('Ürün bulunamadı', 'woo-donation-popup'));
+            WDP_Utils::json_error(__('Product not found', 'woo-donation-popup'));
         }
 
         WDP_Utils::json_success(array(

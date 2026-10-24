@@ -1,0 +1,11 @@
+{
+  "id": "related-cards",
+  "text": "WDP E2E Campaign Donate\nWDP E2E Custom Donate\nWDP E2E Shares £#AMT# Donate",
+  "lines": [
+    "WDP E2E Campaign Donate",
+    "WDP E2E Custom Donate",
+    "WDP E2E Shares £#AMT# Donate"
+  ],
+  "locale": "en_US",
+  "config": "sf-gbp-classic-hpos"
+}

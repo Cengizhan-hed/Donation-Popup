@@ -1,0 +1,30 @@
+{
+  "id": "admin-tab-advanced",
+  "text": "DONATION POPUP\nDonation Popup settings\nManage product behavior, form look, and the success screen in one place — changes show up instantly in the live preview.\nV10.#AMT#\nSETUP\nProducts\nProduct page and list\nDesign\nFORMS\nPopup\nNormal\nShare-based\nProgress\nSuccess\nMORE\nMeta Pixel\nCategories\nAdvanced\nData and removal\nPersonal data export and erase requests (Tools → Export / erase personal data) include donor and shareholder fields on orders; on erase, values are anonymized as “[deleted]”.\nDelete data when the plugin is removed Enabled\nAll product settings and plugin options are deleted. Orders and order records are not touched. This cannot be undone.",
+  "lines": [
+    "DONATION POPUP",
+    "Donation Popup settings",
+    "Manage product behavior, form look, and the success screen in one place — changes show up instantly in the live preview.",
+    "V10.#AMT#",
+    "SETUP",
+    "Products",
+    "Product page and list",
+    "Design",
+    "FORMS",
+    "Popup",
+    "Normal",
+    "Share-based",
+    "Progress",
+    "Success",
+    "MORE",
+    "Meta Pixel",
+    "Categories",
+    "Advanced",
+    "Data and removal",
+    "Personal data export and erase requests (Tools → Export / erase personal data) include donor and shareholder fields on orders; on erase, values are anonymized as “[deleted]”.",
+    "Delete data when the plugin is removed Enabled",
+    "All product settings and plugin options are deleted. Orders and order records are not touched. This cannot be undone."
+  ],
+  "locale": "en_US",
+  "config": "tt5-try-blocks-hpos"
+}

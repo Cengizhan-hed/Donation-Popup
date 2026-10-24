@@ -311,7 +311,7 @@
         totalPrice = effectiveMin;
       }
 
-      safeLog("Fiyat güncelleniyor:", currentBasePrice, "x", shareCount, "=", totalPrice, "(min:", effectiveMin, ", baseProductPrice:", baseProductPrice, ")");
+      safeLog("Updating price:", currentBasePrice, "x", shareCount, "=", totalPrice, "(min:", effectiveMin, ", baseProductPrice:", baseProductPrice, ")");
 
       if (effectiveMin > 0) {
         priceInput.setAttribute('min', effectiveMin.toFixed(2));

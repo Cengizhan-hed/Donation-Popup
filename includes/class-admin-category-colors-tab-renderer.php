@@ -18,7 +18,7 @@ class WDP_Admin_Category_Colors_Tab_Renderer {
 	 */
 	public static function render_tab() {
 		if (!taxonomy_exists('product_cat')) {
-			echo '<p>' . esc_html__('WooCommerce ürün kategorileri bulunamadı.', 'woo-donation-popup') . '</p>';
+			echo '<p>' . esc_html__('WooCommerce product categories were not found.', 'woo-donation-popup') . '</p>';
 			return;
 		}
 
@@ -36,12 +36,12 @@ class WDP_Admin_Category_Colors_Tab_Renderer {
 		);
 
 		WDP_Admin_Renderer_Helpers::open_form_container('wdp-category-colors-settings-form');
-		echo '<div class="wdp-tab-help" role="note"><p class="wdp-tab-help__title">' . esc_html__('Kategori başlık renkleri', 'woo-donation-popup') . '</p>';
-		echo '<ul class="wdp-tab-help__list"><li>' . esc_html__('Her kategori için renk seçin; ürünün kendi ana rengi boşsa panel başlığı ve vurgu rengi bu kategoriden alınır.', 'woo-donation-popup') . '</li>';
-		echo '<li>' . esc_html__('Ürün birden fazla kategorideyse en alt (en spesifik) kategori rengi kullanılır. Kategori rengi de yoksa genel marka rengi geçerlidir.', 'woo-donation-popup') . '</li></ul></div>';
+		echo '<div class="wdp-tab-help" role="note"><p class="wdp-tab-help__title">' . esc_html__('Category heading colors', 'woo-donation-popup') . '</p>';
+		echo '<ul class="wdp-tab-help__list"><li>' . esc_html__('Pick a color for each category; if the product has no primary color of its own, the panel heading and accent use this category color.', 'woo-donation-popup') . '</li>';
+		echo '<li>' . esc_html__('If a product is in more than one category, the deepest (most specific) category color is used. If that category also has no color, the global brand color applies.', 'woo-donation-popup') . '</li></ul></div>';
 
 		if (is_wp_error($terms) || empty($terms)) {
-			echo '<p>' . esc_html__('Henüz ürün kategorisi yok.', 'woo-donation-popup') . '</p>';
+			echo '<p>' . esc_html__('There are no product categories yet.', 'woo-donation-popup') . '</p>';
 			WDP_Admin_Renderer_Helpers::close_form_container('wdp-save-category-colors-settings');
 			return;
 		}
@@ -107,12 +107,12 @@ class WDP_Admin_Category_Colors_Tab_Renderer {
 		echo '<h3 class="wdp-cat-color-block__title">' . esc_html($term->name) . '</h3>';
 		echo '<span class="wdp-cat-color-block__meta">ID ' . esc_html((string) $term_id);
 		if (!empty($products)) {
-			echo ' · ' . esc_html(sprintf(_n('%d ürün', '%d ürün', count($products), 'woo-donation-popup'), count($products)));
+			echo ' · ' . esc_html(sprintf(_n('%d product', '%d products', count($products), 'woo-donation-popup'), count($products)));
 		}
 		echo '</span>';
 		echo '</div>';
 		echo '<div class="wdp-cat-color-block__controls">';
-		echo '<label class="wdp-cat-color-block__enable"><input type="checkbox" name="category_color_enable[' . esc_attr((string) $term_id) . ']" value="1" ' . checked($enabled, true, false) . ' /> ' . esc_html__('Renk', 'woo-donation-popup') . '</label>';
+		echo '<label class="wdp-cat-color-block__enable"><input type="checkbox" name="category_color_enable[' . esc_attr((string) $term_id) . ']" value="1" ' . checked($enabled, true, false) . ' /> ' . esc_html__('Color', 'woo-donation-popup') . '</label>';
 		echo '<input type="color" class="wdp-cat-color-picker" name="category_color[' . esc_attr((string) $term_id) . ']" value="' . esc_attr($current ? $current : '#036a37') . '" data-preview-target="wdp-cat-preview-' . esc_attr((string) $term_id) . '" />';
 		echo '</div>';
 		echo '</header>';
@@ -129,7 +129,7 @@ class WDP_Admin_Category_Colors_Tab_Renderer {
 			}
 			echo '</ul>';
 		} else {
-			echo '<p class="wdp-cat-color-block__empty">' . esc_html__('Bu kategoriye doğrudan atanmış ürün yok.', 'woo-donation-popup') . '</p>';
+			echo '<p class="wdp-cat-color-block__empty">' . esc_html__('No products are assigned directly to this category.', 'woo-donation-popup') . '</p>';
 		}
 
 		echo '</section>';

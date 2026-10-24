@@ -13,7 +13,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = process.env.WDP_I18N_ROOT
   ? path.resolve(process.env.WDP_I18N_ROOT)
   : path.resolve(__dirname, '../..');
-const PHP_FILE = path.join(ROOT, 'includes/i18n/class-js-strings.php');
+const PHP_FILE = path.join(ROOT, 'includes/i18n/class-wdp-js-i18n.php');
 const BEGIN = '// BEGIN WDP_JS_I18N';
 const END = '// END WDP_JS_I18N';
 const DOMAIN = 'woo-donation-popup';
@@ -93,9 +93,9 @@ export function renderPhpRegion(calls) {
   const lines = [BEGIN];
   for (const c of calls) {
     if (c.ctx) {
-      const key = c.ctx + '\\x04' + c.msg.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+      const key = `${phpSingle(c.ctx)} . "\\x04" . ${phpSingle(c.msg)}`;
       lines.push(
-        `\t\t$out['${key}'] = _x(${phpSingle(c.msg)}, ${phpSingle(c.ctx)}, ${phpSingle(DOMAIN)});`
+        `\t\t$out[ ${key} ] = _x(${phpSingle(c.msg)}, ${phpSingle(c.ctx)}, ${phpSingle(DOMAIN)});`
       );
     } else {
       const key = c.msg.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
@@ -110,7 +110,7 @@ function applyRegion(phpSrc, region) {
   const start = phpSrc.indexOf(BEGIN);
   const end = phpSrc.indexOf(END);
   if (start < 0 || end < 0 || end < start) {
-    throw new Error(`class-js-strings.php içinde ${BEGIN} / ${END} yok`);
+    throw new Error(`class-wdp-js-i18n.php içinde ${BEGIN} / ${END} yok`);
   }
   const endLine = phpSrc.indexOf('\n', end);
   const after = endLine >= 0 ? phpSrc.slice(endLine) : '\n';
@@ -126,7 +126,7 @@ function currentRegion(phpSrc) {
 }
 
 export function generate(root = ROOT) {
-  const phpPath = path.join(root, 'includes/i18n/class-js-strings.php');
+  const phpPath = path.join(root, 'includes/i18n/class-wdp-js-i18n.php');
   const phpSrc = fs.readFileSync(phpPath, 'utf8');
   const region = renderPhpRegion(collectCalls(root));
   return { phpPath, phpSrc, next: applyRegion(phpSrc, region), region };
@@ -141,11 +141,11 @@ function main() {
     return;
   }
   if (check) {
-    console.error('i18n js-strings: class-js-strings.php bölgesi JS kaynağıyla uyuşmuyor. Çalıştır: node tools/i18n/gen-js-strings.mjs');
+    console.error('i18n js-strings: class-wdp-js-i18n.php bölgesi JS kaynağıyla uyuşmuyor. Çalıştır: node tools/i18n/gen-js-strings.mjs');
     process.exit(1);
   }
   fs.writeFileSync(phpPath, next, 'utf8');
-  console.log('i18n js-strings: class-js-strings.php güncellendi');
+  console.log('i18n js-strings: class-wdp-js-i18n.php güncellendi');
 }
 
 const invoked = process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);

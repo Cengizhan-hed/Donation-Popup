@@ -72,12 +72,13 @@ html body :is(.hdf-donation-modal-wrapper, .wdp-modal, .wdp-donation-form) :is(.
   flex: 1 1 auto;
   min-width: 0;
   margin: 0;
-  padding: 0 0 0 calc(4px + var(--wdp-form-stack-gap, 16px));
+  padding: 0;
+  padding-inline-start: calc(4px + var(--wdp-form-stack-gap, 16px));
   font-size: 17px;
   font-weight: 700;
   line-height: 1.35;
   letter-spacing: -0.015em;
-  text-align: left;
+  text-align: start;
   color: var(--wdp-success-message-color, var(--wdp-success, #16a34a));
 }
 
@@ -439,7 +440,7 @@ html body :is(.hdf-donation-modal-wrapper, .wdp-modal, .wdp-donation-form) :is(.
 
 html body :is(.hdf-donation-modal-wrapper, .wdp-modal, .wdp-donation-form) :is(.wdp-mini-cart-items, .wdp-modal-content .wdp-mini-cart-items) :is(.wdp-cart-item-info, table td:first-child) {
   min-width: 0;
-  text-align: left;
+  text-align: start;
 }
 
 html body :is(.hdf-donation-modal-wrapper, .wdp-modal, .wdp-donation-form) :is(.wdp-mini-cart-items, .wdp-modal-content .wdp-mini-cart-items) :is(.wdp-cart-item-details, table td:nth-child(2)) {
@@ -449,7 +450,7 @@ html body :is(.hdf-donation-modal-wrapper, .wdp-modal, .wdp-donation-form) :is(.
   justify-content: flex-start;
   gap: 4px;
   min-width: 5.5rem;
-  text-align: right;
+  text-align: end;
   justify-self: end;
 }
 
@@ -672,11 +673,11 @@ html body.woocommerce-checkout .wdp-cart-sadaka-label {
   html body :is(.hdf-donation-modal-wrapper, .wdp-modal, .wdp-donation-form) :is(.wdp-success-screen, .wdp-modal-content .wdp-success-screen) .wdp-success-top-bar {
     gap: 10px;
     margin-bottom: 6px;
-    padding-right: 46px;
+    padding-inline-end: 46px;
   }
 
   html body :is(.hdf-donation-modal-wrapper, .wdp-modal, .wdp-donation-form) :is(.wdp-success-screen, .wdp-modal-content .wdp-success-screen) .wdp-success-top-bar__message {
-    padding-left: calc(4px + var(--wdp-form-stack-gap, 12px));
+    padding-inline-start: calc(4px + var(--wdp-form-stack-gap, 12px));
     font-size: 15px;
     line-height: 1.3;
   }

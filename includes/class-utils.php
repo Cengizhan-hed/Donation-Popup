@@ -195,7 +195,7 @@ class WDP_Utils {
             }
         }
 
-        return __('Alt Bağış Ekle', 'woo-donation-popup');
+        return __('Add add-on donation', 'woo-donation-popup');
     }
 
     /**
@@ -320,7 +320,7 @@ class WDP_Utils {
                 'ok'      => false,
                 'amount'  => null,
                 'code'    => 'empty',
-                'message' => __('Geçerli bir alt bağış tutarı giriniz.', 'woo-donation-popup'),
+                'message' => __('Please enter a valid add-on donation amount.', 'woo-donation-popup'),
             );
         }
 
@@ -330,7 +330,7 @@ class WDP_Utils {
                 'ok'      => false,
                 'amount'  => null,
                 'code'    => 'invalid',
-                'message' => __('Geçerli bir alt bağış tutarı giriniz.', 'woo-donation-popup'),
+                'message' => __('Please enter a valid add-on donation amount.', 'woo-donation-popup'),
             );
         }
 
@@ -345,7 +345,7 @@ class WDP_Utils {
                 'code'    => 'below_min',
                 'message' => sprintf(
                     /* translators: %s: formatted minimum amount with currency */
-                    __('Alt bağış için lütfen %s ve üstü değerler girin.', 'woo-donation-popup'),
+                    __('Please enter %s or more for the add-on donation.', 'woo-donation-popup'),
                     $formatted
                 ),
             );
@@ -526,7 +526,7 @@ class WDP_Utils {
                 self::json_error($exception);
                 return;
             }
-            $message = __('Bir hata oluştu. Lütfen tekrar deneyin.', 'woo-donation-popup');
+            $message = __('An error occurred. Please try again.', 'woo-donation-popup');
             if (self::$debug_enabled) {
                 $message = $exception->getMessage();
             }

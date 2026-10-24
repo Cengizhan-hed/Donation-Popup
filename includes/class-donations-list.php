@@ -216,7 +216,7 @@ class WDP_Donations_List {
 			'tab_all'            => $yesno(isset($atts['tab_all']) ? $atts['tab_all'] : null, 'yes'),
 			'tab_all_label'      => isset($atts['tab_all_label']) && trim((string) $atts['tab_all_label']) !== ''
 				? sanitize_text_field((string) $atts['tab_all_label'])
-				: __('Tümü', 'woo-donation-popup'),
+				: __('All', 'woo-donation-popup'),
 			'columns'            => $int(isset($atts['columns']) ? $atts['columns'] : 3, 1, 6, 3),
 			'columns_tablet'     => $int(isset($atts['columns_tablet']) ? $atts['columns_tablet'] : 2, 1, 6, 2),
 			'columns_mobile'     => $int(isset($atts['columns_mobile']) ? $atts['columns_mobile'] : 1, 1, 6, 1),
@@ -492,7 +492,7 @@ class WDP_Donations_List {
 	private static function build_html($atts) {
 		$products = self::query_products($atts);
 		if (empty($products)) {
-			$msg = '<p class="wdp-list__empty">' . esc_html__('Şu anda gösterilecek bağış bulunmuyor.', 'woo-donation-popup') . '</p>';
+			$msg = '<p class="wdp-list__empty">' . esc_html__('There are no donations to show right now.', 'woo-donation-popup') . '</p>';
 			$class = 'wdp-list-wrap' . ($atts['class'] !== '' ? ' ' . esc_attr($atts['class']) : '');
 			return array(
 				'html'  => '<div class="' . $class . '" data-wdp-list-id="' . esc_attr(self::UID_PLACEHOLDER) . '">' . $msg . '</div>',
@@ -738,7 +738,7 @@ class WDP_Donations_List {
 		$uid      = $uid !== '' ? $uid : self::UID_PLACEHOLDER;
 		$panel_id = $panel_id !== '' ? $panel_id : self::PANEL_PLACEHOLDER;
 		ob_start();
-		echo '<div class="wdp-list__tabs" role="tablist" aria-label="' . esc_attr__('Bağış kategorileri', 'woo-donation-popup') . '" data-wdp-tabs data-wdp-tabs-id="' . esc_attr($uid) . '">';
+		echo '<div class="wdp-list__tabs" role="tablist" aria-label="' . esc_attr__('Donation categories', 'woo-donation-popup') . '" data-wdp-tabs data-wdp-tabs-id="' . esc_attr($uid) . '">';
 		if ($atts['tab_all'] === 'yes') {
 			echo '<button type="button" class="wdp-list__tab is-active" role="tab" id="' . esc_attr($uid . '-all') . '" aria-selected="true" aria-controls="' . esc_attr($panel_id) . '" tabindex="0" data-wdp-tab="all">' . esc_html($atts['tab_all_label']) . '</button>';
 		}
@@ -799,7 +799,7 @@ class WDP_Donations_List {
 				$share_price = WDP_Utils::format_product_display_price($product);
 				$price_html  = esc_html(sprintf(
 					/* translators: %s: formatted share price */
-					__('Hisse: %s', 'woo-donation-popup'),
+					__('Share: %s', 'woo-donation-popup'),
 					wp_strip_all_tags($share_price)
 				));
 			} elseif ($type === WDP_Donation_Type::CUSTOM) {
@@ -835,7 +835,7 @@ class WDP_Donations_List {
 				$pct   = (int) min(100, floor(($total / $goal) * 100));
 				$label = sprintf(
 					/* translators: 1: collected, 2: goal */
-					__('%1$s / %2$s toplandı', 'woo-donation-popup'),
+					__('%1$s / %2$s raised', 'woo-donation-popup'),
 					wp_strip_all_tags(WDP_Utils::format_price_html($total)),
 					wp_strip_all_tags(WDP_Utils::format_price_html($goal))
 				);
@@ -928,15 +928,15 @@ class WDP_Donations_List {
 	 */
 	private static function empty_reason($atts) {
 		if (!empty($atts['ids'])) {
-			return __('Sorgu sonuç vermedi: verilen ürün ID’leri yayımlanmış bir bağış ürünü değil veya kapsam dışında.', 'woo-donation-popup');
+			return __('Query returned no results: the given product IDs are not a published donation product or are out of scope.', 'woo-donation-popup');
 		}
 		if (!empty($atts['categories'])) {
-			return __('Sorgu sonuç vermedi: seçilen kategorilerde yayımlanmış, stokta ve satın alınabilir bağış ürünü yok.', 'woo-donation-popup');
+			return __('Query returned no results: no published, in-stock, purchasable donation product in the selected categories.', 'woo-donation-popup');
 		}
 		if (WDP_Placement_Settings::value('donation_scope') === 'marked') {
-			return __('Sorgu sonuç vermedi: kapsam “yalnızca işaretli ürünler”; Bağış sekmesinden ürün işaretleyin.', 'woo-donation-popup');
+			return __('Query returned no results: scope is “flagged products only”; flag products on the Donation tab.', 'woo-donation-popup');
 		}
-		return __('Sorgu sonuç vermedi: yayımlanmış, katalogda görünen ve stokta bağış ürünü yok.', 'woo-donation-popup');
+		return __('Query returned no results: no published, catalog-visible, in-stock donation product.', 'woo-donation-popup');
 	}
 
 	/**

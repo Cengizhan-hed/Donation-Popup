@@ -1,0 +1,14 @@
+{
+  "id": "form-inline-fixed-open",
+  "text": "+#N#\nLine amount\n₺#N#\nAdd to cart\nGo to checkout\nSecure payment · SSL-protected transaction",
+  "lines": [
+    "+#N#",
+    "Line amount",
+    "₺#N#",
+    "Add to cart",
+    "Go to checkout",
+    "Secure payment · SSL-protected transaction"
+  ],
+  "locale": "en_US",
+  "config": "tt5-try-blocks-hpos"
+}

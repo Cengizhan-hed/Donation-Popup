@@ -28,7 +28,7 @@ class WDP_Campaign_Goal {
 	 */
 	public static function default_message() {
 		return __(
-			'Hedefimize ulaştık, desteğiniz için teşekkür ederiz. Bu kampanyaya yapılan fazla bağışlar benzer projelerimizde kullanılır.',
+			'We have reached our goal, thank you for your support. Extra donations to this campaign are used in similar projects.',
 			'woo-donation-popup'
 		);
 	}

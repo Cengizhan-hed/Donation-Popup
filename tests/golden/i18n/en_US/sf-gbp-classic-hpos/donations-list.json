@@ -1,0 +1,9 @@
+{
+  "id": "donations-list",
+  "text": "WDP E2E Custom min. £#AMT# Donate",
+  "lines": [
+    "WDP E2E Custom min. £#AMT# Donate"
+  ],
+  "locale": "en_US",
+  "config": "sf-gbp-classic-hpos"
+}

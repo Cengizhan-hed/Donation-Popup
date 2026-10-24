@@ -17,7 +17,7 @@
 html body .wdp-toast-host {
   position: fixed;
   top: max(16px, env(safe-area-inset-top, 0px));
-  right: max(16px, env(safe-area-inset-right, 0px));
+  inset-inline-end: max(16px, env(safe-area-inset-right, 0px));
   z-index: 2147483646;
   display: flex;
   flex-direction: column;
@@ -45,7 +45,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-toast,
 html body .wdp-toast {
   position: fixed;
   top: max(16px, env(safe-area-inset-top, 0px));
-  right: max(16px, env(safe-area-inset-right, 0px));
+  inset-inline-end: max(16px, env(safe-area-inset-right, 0px));
   z-index: 2147483646;
   max-width: min(360px, calc(100vw - 32px));
   min-width: min(260px, calc(100vw - 32px));
@@ -208,8 +208,7 @@ html body .wdp-toast-close:focus-visible {
   html body .wdp-toast-host {
     top: auto;
     bottom: max(16px, env(safe-area-inset-bottom, 0px));
-    right: 12px;
-    left: 12px;
+    inset-inline: 12px;
     max-width: none;
   }
 
@@ -217,8 +216,7 @@ html body .wdp-toast-close:focus-visible {
   html body .wdp-toast {
     top: auto;
     bottom: max(16px, env(safe-area-inset-bottom, 0px));
-    right: 12px;
-    left: 12px;
+    inset-inline: 12px;
     max-width: none;
     min-width: 0;
   }

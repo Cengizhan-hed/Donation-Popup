@@ -1,0 +1,28 @@
+{
+  "id": "form-popup-campaign-open",
+  "text": "×\nWDP E2E Campaign\n£#AMT#\nraised\n#AMT#%\nGoal\n£#AMT#\n·\n£#AMT# remaining\nDonation form for WDP E2E Campaign\n+#N#\nDonation amount:\n£#AMT#\n£#AMT#\n£#AMT#\n£#AMT#.#N#\n£\nAdd to cart\nGo to checkout\nSecure payment · SSL-protected transaction",
+  "lines": [
+    "×",
+    "WDP E2E Campaign",
+    "£#AMT#",
+    "raised",
+    "#AMT#%",
+    "Goal",
+    "£#AMT#",
+    "·",
+    "£#AMT# remaining",
+    "Donation form for WDP E2E Campaign",
+    "+#N#",
+    "Donation amount:",
+    "£#AMT#",
+    "£#AMT#",
+    "£#AMT#",
+    "£#AMT#.#N#",
+    "£",
+    "Add to cart",
+    "Go to checkout",
+    "Secure payment · SSL-protected transaction"
+  ],
+  "locale": "en_US",
+  "config": "sf-gbp-classic-hpos"
+}

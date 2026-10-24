@@ -4,10 +4,11 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { ROOT } from './env-root.mjs';
+import { parsePoEntries } from '../../../tools/i18n/merge-po.mjs';
 
 export const TR_LETTERS_RE = /[çğıöşüÇĞİÖŞÜ]/;
 
-/** Dönüşüm sonrası en_US için bilinen Türkçe sözcükler (yaklaşık 60). */
+/** Dönüşüm sonrası en_US için bilinen Türkçe sözcükler. İngilizce ile çakışanlar (form, panel, normal, progress, not, minimum, modal) YOK. */
 export const TR_WORDS = [
   'Bağış',
   'Bağışçı',
@@ -36,27 +37,20 @@ export const TR_WORDS = [
   'Geri',
   'Ürün',
   'Fiyat',
-  'Minimum',
   'Maksimum',
   'Geçerli',
   'Eksik',
   'Anonim',
   'İthaf',
-  'Not',
   'Ara',
   'Ekle',
   'Sil',
   'Düzenle',
   'Ayarlar',
-  'Form',
-  'Modal',
-  'Panel',
   'Liste',
   'Kategori',
   'Gelişmiş',
   'Tasarım',
-  'Normal',
-  'Progress',
   'Başarı',
   'Kurulum',
   'Görünüm',
@@ -163,18 +157,55 @@ function unescapePhp(quoted) {
   return inner.replace(/\\n/g, '\n').replace(/\\"/g, '"').replace(/\\\\/g, '\\');
 }
 
+function loadTrPoMap(root) {
+  const map = new Map();
+  const files = [];
+  const main = path.join(root, 'languages/woo-donation-popup-tr_TR.po');
+  if (fs.existsSync(main)) files.push(main);
+  const parts = path.join(root, 'languages/parts');
+  if (fs.existsSync(parts)) {
+    for (const n of fs.readdirSync(parts).filter((f) => f.endsWith('.po')).sort()) {
+      files.push(path.join(parts, n));
+    }
+  }
+  for (const f of files) {
+    for (const e of parsePoEntries(fs.readFileSync(f, 'utf8'))) {
+      if (!e.msgid) continue;
+      map.set(`${e.msgctxt || ''}\u0004${e.msgid}`, e.msgstr);
+    }
+  }
+  return map;
+}
+
+function translateMsgid(po, msgid, ctx) {
+  if (!msgid) return '';
+  const hit = po.get(`${ctx || ''}\u0004${msgid}`) || po.get(`\u0004${msgid}`);
+  return hit || msgid;
+}
+
 /**
  * Elementor widget get_title / get_keywords — PHP sınıflarından (tarayıcı yok).
+ * Kaynak İngilizceyse .po çevirisini döner (altın döküm Türkçe kalır).
  * @param {string} [root]
  */
-export function extractElementorWidgetStrings(root = ROOT) {
+export function extractElementorWidgetStrings(root = ROOT, locale = 'tr_TR') {
   const dir = path.join(root, 'includes/elementor');
   if (!fs.existsSync(dir)) return [];
+  const po = loadTrPoMap(root);
   const out = [];
   for (const name of fs.readdirSync(dir).filter((n) => n.endsWith('.php')).sort()) {
     const src = fs.readFileSync(path.join(dir, name), 'utf8');
-    const titleM = src.match(/function\s+get_title\s*\([^)]*\)\s*\{[\s\S]*?return\s+(__|_e|_x|esc_html__)\(\s*(['"])((?:\\.|(?!\2).)*)\2/);
-    const title = titleM ? unescapePhp(titleM[2] + titleM[3] + titleM[2]) : '';
+    const titleM = src.match(
+      /function\s+get_title\s*\([^)]*\)\s*\{[\s\S]*?return\s+(__|_e|_x|esc_html__|esc_html_x)\(\s*(['"])((?:\\.|(?!\2).)*)\2(?:\s*,\s*(['"])((?:\\.|(?!\4).)*)\4)?/
+    );
+    let title = '';
+    if (titleM) {
+      const fn = titleM[1];
+      const msgid = unescapePhp(titleM[2] + titleM[3] + titleM[2]);
+      const second = titleM[5] ? unescapePhp(titleM[4] + titleM[5] + titleM[4]) : '';
+      const ctx = fn === '_x' || fn === 'esc_html_x' ? second : '';
+      title = locale === 'en_US' ? msgid : translateMsgid(po, msgid, ctx);
+    }
     const keywords = [];
     const kwBlock = src.match(/function\s+get_keywords\s*\([^)]*\)\s*\{([\s\S]*?)return\s+array\s*\(([\s\S]*?)\)\s*;/);
     if (kwBlock) {

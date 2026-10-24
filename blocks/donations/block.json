@@ -2,9 +2,9 @@
   "$schema": "https://schemas.wp.org/trunk/block.json",
   "apiVersion": 3,
   "name": "wdp/donations",
-  "title": "Bağış listesi",
+  "title": "Donations list",
   "category": "woocommerce",
-  "description": "Bağış ürünlerini ızgara olarak listeler.",
+  "description": "Lists donation products in a grid.",
   "textdomain": "woo-donation-popup",
   "editorScript": "wdp-block-donations",
   "attributes": {

@@ -78,8 +78,8 @@ class WDP_Autoloader {
             return;
         }
 
-        if ($class_name === 'WDP_Js_I18n') {
-            self::require_if_exists($root . 'i18n/class-js-strings.php');
+        if ('WDP_Js_I18n' === $class_name) {
+            self::require_if_exists($root . 'i18n/class-wdp-js-i18n.php');
             return;
         }
         if (self::require_if_exists($root . 'i18n/' . $file_name)) {

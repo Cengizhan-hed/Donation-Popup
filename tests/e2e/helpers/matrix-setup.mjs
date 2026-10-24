@@ -534,6 +534,19 @@ export async function prepareLocalFullStack(port = 8899) {
  * @param {string} wpDir
  * @param {boolean} hposOn
  */
+function writeLocaleLock(wpDir, locale) {
+  const loc = /^[a-z]{2,3}(?:_[A-Z]{2})?$/.test(String(locale)) ? String(locale) : 'tr_TR';
+  const dir = path.join(wpDir, 'wp-content/mu-plugins');
+  fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(
+    path.join(dir, 'wdp-i18n-locale.php'),
+    `<?php\n/** WDP test locale lock — no language pack. */\n` +
+      `add_filter('locale', static function () { return '${loc}'; }, 99);\n` +
+      `add_filter('determine_locale', static function () { return '${loc}'; }, 99);\n` +
+      `add_filter('plugin_locale', static function ($l, $d) { unset($l, $d); return '${loc}'; }, 99, 2);\n`
+  );
+}
+
 function writeHposLock(wpDir, hposOn) {
   const dir = path.join(wpDir, 'wp-content/mu-plugins');
   fs.mkdirSync(dir, { recursive: true });
@@ -542,6 +555,30 @@ function writeHposLock(wpDir, hposOn) {
     path.join(dir, 'wdp-matrix-hpos-lock.php'),
     `<?php\nadd_filter('pre_option_woocommerce_custom_orders_table_enabled', static function () { return '${val}'; });\n`
   );
+}
+
+/**
+ * Yerel WP locale kilidi (dil paketi yok). RTL için text_direction mu-plugin.
+ * @param {string} wpDir
+ * @param {string} locale
+ */
+export function applyMatrixLocale(wpDir, locale) {
+  const evalFile = path.join(ROOT, 'tests/local-wp/eval-file.php');
+  const loc = String(locale || 'tr_TR');
+  const r = spawnSync(
+    'php',
+    ['-d', 'memory_limit=1024M', evalFile, path.join(ROOT, 'tests/local-wp/i18n-locale.php'), loc],
+    {
+      encoding: 'utf8',
+      cwd: ROOT,
+      env: { ...process.env, WDP_LOCAL_WP_DIR: wpDir },
+      timeout: 60000,
+    }
+  );
+  if (r.status !== 0) {
+    throw new Error(`locale ${loc}: ${(r.stderr || r.stdout || '').slice(0, 400)}`);
+  }
+  return parseJsonLine(r.stdout);
 }
 
 /**
@@ -561,5 +598,7 @@ export function materializeWorker(configId, port, snapshotFile, opts = {}) {
   if (typeof opts.hpos === 'boolean') {
     writeHposLock(destWp, opts.hpos);
   }
+  // Yerel profil dili (varsayılan tr_TR = Hedef eşdeğeri): çeviri paketi yok, yalnız eklenti metinleri; mu-plugin kilidi.
+  writeLocaleLock(destWp, opts.locale || process.env.WDP_LOCAL_WP_LOCALE || 'tr_TR');
   return destWp;
 }

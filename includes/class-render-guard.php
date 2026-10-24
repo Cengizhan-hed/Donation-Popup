@@ -63,8 +63,8 @@ class WDP_Render_Guard {
 		$product_id = absint($product_id);
 		$message    = $product_id > 0
 			/* translators: %d: product ID */
-			? sprintf(__('Bağış formu çizilemedi (ürün #%d). Ayrıntı hata günlüğünde.', 'woo-donation-popup'), $product_id)
-			: __('Bağış formu çizilemedi. Ayrıntı hata günlüğünde.', 'woo-donation-popup');
+			? sprintf(__('The donation form could not be rendered (product #%d). See the error log for details.', 'woo-donation-popup'), $product_id)
+			: __('The donation form could not be rendered. See the error log for details.', 'woo-donation-popup');
 
 		return WDP_Utils::admin_notice_html($message);
 	}

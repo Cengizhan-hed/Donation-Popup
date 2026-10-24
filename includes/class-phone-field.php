@@ -21,129 +21,143 @@ class WDP_Phone_Field {
      */
     public static function get_countries() {
         $countries = array(
-            'tr' => array('name' => __('Türkiye', 'woo-donation-popup'), 'dial' => '90'),
+            'tr' => array('name' => __('Turkey', 'woo-donation-popup'), 'dial' => '90'),
             /* Avrupa */
-            'al' => array('name' => __('Arnavutluk', 'woo-donation-popup'), 'dial' => '355'),
+            'al' => array('name' => __('Albania', 'woo-donation-popup'), 'dial' => '355'),
             'ad' => array('name' => __('Andorra', 'woo-donation-popup'), 'dial' => '376'),
-            'at' => array('name' => __('Avusturya', 'woo-donation-popup'), 'dial' => '43'),
+            'at' => array('name' => __('Austria', 'woo-donation-popup'), 'dial' => '43'),
             'by' => array('name' => __('Belarus', 'woo-donation-popup'), 'dial' => '375'),
-            'be' => array('name' => __('Belçika', 'woo-donation-popup'), 'dial' => '32'),
-            'ba' => array('name' => __('Bosna-Hersek', 'woo-donation-popup'), 'dial' => '387'),
-            'bg' => array('name' => __('Bulgaristan', 'woo-donation-popup'), 'dial' => '359'),
-            'hr' => array('name' => __('Hırvatistan', 'woo-donation-popup'), 'dial' => '385'),
-            'cy' => array('name' => __('Kıbrıs', 'woo-donation-popup'), 'dial' => '357'),
-            'cz' => array('name' => __('Çekya', 'woo-donation-popup'), 'dial' => '420'),
-            'dk' => array('name' => __('Danimarka', 'woo-donation-popup'), 'dial' => '45'),
-            'ee' => array('name' => __('Estonya', 'woo-donation-popup'), 'dial' => '372'),
-            'fi' => array('name' => __('Finlandiya', 'woo-donation-popup'), 'dial' => '358'),
-            'fr' => array('name' => __('Fransa', 'woo-donation-popup'), 'dial' => '33'),
-            'de' => array('name' => __('Almanya', 'woo-donation-popup'), 'dial' => '49'),
-            'gr' => array('name' => __('Yunanistan', 'woo-donation-popup'), 'dial' => '30'),
-            'hu' => array('name' => __('Macaristan', 'woo-donation-popup'), 'dial' => '36'),
-            'is' => array('name' => __('İzlanda', 'woo-donation-popup'), 'dial' => '354'),
-            'ie' => array('name' => __('İrlanda', 'woo-donation-popup'), 'dial' => '353'),
-            'it' => array('name' => __('İtalya', 'woo-donation-popup'), 'dial' => '39'),
-            'xk' => array('name' => __('Kosova', 'woo-donation-popup'), 'dial' => '383'),
-            'lv' => array('name' => __('Letonya', 'woo-donation-popup'), 'dial' => '371'),
+            'be' => array('name' => __('Belgium', 'woo-donation-popup'), 'dial' => '32'),
+            'ba' => array('name' => __('Bosnia and Herzegovina', 'woo-donation-popup'), 'dial' => '387'),
+            'bg' => array('name' => __('Bulgaria', 'woo-donation-popup'), 'dial' => '359'),
+            'hr' => array('name' => __('Croatia', 'woo-donation-popup'), 'dial' => '385'),
+            'cy' => array('name' => __('Cyprus', 'woo-donation-popup'), 'dial' => '357'),
+            'cz' => array('name' => __('Czechia', 'woo-donation-popup'), 'dial' => '420'),
+            'dk' => array('name' => __('Denmark', 'woo-donation-popup'), 'dial' => '45'),
+            'ee' => array('name' => __('Estonia', 'woo-donation-popup'), 'dial' => '372'),
+            'fi' => array('name' => __('Finland', 'woo-donation-popup'), 'dial' => '358'),
+            'fr' => array('name' => __('France', 'woo-donation-popup'), 'dial' => '33'),
+            'de' => array('name' => __('Germany', 'woo-donation-popup'), 'dial' => '49'),
+            'gr' => array('name' => __('Greece', 'woo-donation-popup'), 'dial' => '30'),
+            'hu' => array('name' => __('Hungary', 'woo-donation-popup'), 'dial' => '36'),
+            'is' => array('name' => __('Iceland', 'woo-donation-popup'), 'dial' => '354'),
+            'ie' => array('name' => __('Ireland', 'woo-donation-popup'), 'dial' => '353'),
+            'it' => array('name' => __('Italy', 'woo-donation-popup'), 'dial' => '39'),
+            'xk' => array('name' => __('Kosovo', 'woo-donation-popup'), 'dial' => '383'),
+            'lv' => array('name' => __('Latvia', 'woo-donation-popup'), 'dial' => '371'),
             'li' => array('name' => __('Liechtenstein', 'woo-donation-popup'), 'dial' => '423'),
-            'lt' => array('name' => __('Litvanya', 'woo-donation-popup'), 'dial' => '370'),
-            'lu' => array('name' => __('Lüksemburg', 'woo-donation-popup'), 'dial' => '352'),
+            'lt' => array('name' => __('Lithuania', 'woo-donation-popup'), 'dial' => '370'),
+            'lu' => array('name' => __('Luxembourg', 'woo-donation-popup'), 'dial' => '352'),
             'mt' => array('name' => __('Malta', 'woo-donation-popup'), 'dial' => '356'),
             'md' => array('name' => __('Moldova', 'woo-donation-popup'), 'dial' => '373'),
-            'mc' => array('name' => __('Monako', 'woo-donation-popup'), 'dial' => '377'),
-            'me' => array('name' => __('Karadağ', 'woo-donation-popup'), 'dial' => '382'),
-            'nl' => array('name' => __('Hollanda', 'woo-donation-popup'), 'dial' => '31'),
-            'mk' => array('name' => __('Kuzey Makedonya', 'woo-donation-popup'), 'dial' => '389'),
-            'no' => array('name' => __('Norveç', 'woo-donation-popup'), 'dial' => '47'),
-            'pl' => array('name' => __('Polonya', 'woo-donation-popup'), 'dial' => '48'),
-            'pt' => array('name' => __('Portekiz', 'woo-donation-popup'), 'dial' => '351'),
-            'ro' => array('name' => __('Romanya', 'woo-donation-popup'), 'dial' => '40'),
-            'ru' => array('name' => __('Rusya', 'woo-donation-popup'), 'dial' => '7'),
+            'mc' => array('name' => __('Monaco', 'woo-donation-popup'), 'dial' => '377'),
+            'me' => array('name' => __('Montenegro', 'woo-donation-popup'), 'dial' => '382'),
+            'nl' => array('name' => __('Netherlands', 'woo-donation-popup'), 'dial' => '31'),
+            'mk' => array('name' => __('North Macedonia', 'woo-donation-popup'), 'dial' => '389'),
+            'no' => array('name' => __('Norway', 'woo-donation-popup'), 'dial' => '47'),
+            'pl' => array('name' => __('Poland', 'woo-donation-popup'), 'dial' => '48'),
+            'pt' => array('name' => __('Portugal', 'woo-donation-popup'), 'dial' => '351'),
+            'ro' => array('name' => __('Romania', 'woo-donation-popup'), 'dial' => '40'),
+            'ru' => array('name' => __('Russia', 'woo-donation-popup'), 'dial' => '7'),
             'sm' => array('name' => __('San Marino', 'woo-donation-popup'), 'dial' => '378'),
-            'rs' => array('name' => __('Sırbistan', 'woo-donation-popup'), 'dial' => '381'),
-            'sk' => array('name' => __('Slovakya', 'woo-donation-popup'), 'dial' => '421'),
-            'si' => array('name' => __('Slovenya', 'woo-donation-popup'), 'dial' => '386'),
-            'es' => array('name' => __('İspanya', 'woo-donation-popup'), 'dial' => '34'),
-            'se' => array('name' => __('İsveç', 'woo-donation-popup'), 'dial' => '46'),
-            'ch' => array('name' => __('İsviçre', 'woo-donation-popup'), 'dial' => '41'),
-            'ua' => array('name' => __('Ukrayna', 'woo-donation-popup'), 'dial' => '380'),
-            'gb' => array('name' => __('İngiltere', 'woo-donation-popup'), 'dial' => '44'),
+            'rs' => array('name' => __('Serbia', 'woo-donation-popup'), 'dial' => '381'),
+            'sk' => array('name' => __('Slovakia', 'woo-donation-popup'), 'dial' => '421'),
+            'si' => array('name' => __('Slovenia', 'woo-donation-popup'), 'dial' => '386'),
+            'es' => array('name' => __('Spain', 'woo-donation-popup'), 'dial' => '34'),
+            'se' => array('name' => __('Sweden', 'woo-donation-popup'), 'dial' => '46'),
+            'ch' => array('name' => __('Switzerland', 'woo-donation-popup'), 'dial' => '41'),
+            'ua' => array('name' => __('Ukraine', 'woo-donation-popup'), 'dial' => '380'),
+            'gb' => array('name' => __('United Kingdom', 'woo-donation-popup'), 'dial' => '44'),
             /* Asya */
-            'af' => array('name' => __('Afganistan', 'woo-donation-popup'), 'dial' => '93'),
-            'az' => array('name' => __('Azerbaycan', 'woo-donation-popup'), 'dial' => '994'),
-            'bh' => array('name' => __('Bahreyn', 'woo-donation-popup'), 'dial' => '973'),
-            'bd' => array('name' => __('Bangladeş', 'woo-donation-popup'), 'dial' => '880'),
+            'af' => array('name' => __('Afghanistan', 'woo-donation-popup'), 'dial' => '93'),
+            'az' => array('name' => __('Azerbaijan', 'woo-donation-popup'), 'dial' => '994'),
+            'bh' => array('name' => __('Bahrain', 'woo-donation-popup'), 'dial' => '973'),
+            'bd' => array('name' => __('Bangladesh', 'woo-donation-popup'), 'dial' => '880'),
             'bn' => array('name' => __('Brunei', 'woo-donation-popup'), 'dial' => '673'),
-            'kh' => array('name' => __('Kamboçya', 'woo-donation-popup'), 'dial' => '855'),
-            'cn' => array('name' => __('Çin', 'woo-donation-popup'), 'dial' => '86'),
-            'ge' => array('name' => __('Gürcistan', 'woo-donation-popup'), 'dial' => '995'),
+            'kh' => array('name' => __('Cambodia', 'woo-donation-popup'), 'dial' => '855'),
+            'cn' => array('name' => __('China', 'woo-donation-popup'), 'dial' => '86'),
+            'ge' => array('name' => __('Georgia', 'woo-donation-popup'), 'dial' => '995'),
             'hk' => array('name' => __('Hong Kong', 'woo-donation-popup'), 'dial' => '852'),
-            'in' => array('name' => __('Hindistan', 'woo-donation-popup'), 'dial' => '91'),
-            'id' => array('name' => __('Endonezya', 'woo-donation-popup'), 'dial' => '62'),
-            'ir' => array('name' => __('İran', 'woo-donation-popup'), 'dial' => '98'),
-            'iq' => array('name' => __('Irak', 'woo-donation-popup'), 'dial' => '964'),
-            'jp' => array('name' => __('Japonya', 'woo-donation-popup'), 'dial' => '81'),
-            'jo' => array('name' => __('Ürdün', 'woo-donation-popup'), 'dial' => '962'),
-            'kz' => array('name' => __('Kazakistan', 'woo-donation-popup'), 'dial' => '7'),
-            'kg' => array('name' => __('Kırgızistan', 'woo-donation-popup'), 'dial' => '996'),
-            'kw' => array('name' => __('Kuveyt', 'woo-donation-popup'), 'dial' => '965'),
-            'lb' => array('name' => __('Lübnan', 'woo-donation-popup'), 'dial' => '961'),
-            'my' => array('name' => __('Malezya', 'woo-donation-popup'), 'dial' => '60'),
-            'mv' => array('name' => __('Maldivler', 'woo-donation-popup'), 'dial' => '960'),
-            'mn' => array('name' => __('Moğolistan', 'woo-donation-popup'), 'dial' => '976'),
+            'in' => array('name' => __('India', 'woo-donation-popup'), 'dial' => '91'),
+            'id' => array('name' => __('Indonesia', 'woo-donation-popup'), 'dial' => '62'),
+            'ir' => array('name' => __('Iran', 'woo-donation-popup'), 'dial' => '98'),
+            'iq' => array('name' => __('Iraq', 'woo-donation-popup'), 'dial' => '964'),
+            'jp' => array('name' => __('Japan', 'woo-donation-popup'), 'dial' => '81'),
+            'jo' => array('name' => __('Jordan', 'woo-donation-popup'), 'dial' => '962'),
+            'kz' => array('name' => __('Kazakhstan', 'woo-donation-popup'), 'dial' => '7'),
+            'kg' => array('name' => __('Kyrgyzstan', 'woo-donation-popup'), 'dial' => '996'),
+            'kw' => array('name' => __('Kuwait', 'woo-donation-popup'), 'dial' => '965'),
+            'lb' => array('name' => __('Lebanon', 'woo-donation-popup'), 'dial' => '961'),
+            'my' => array('name' => __('Malaysia', 'woo-donation-popup'), 'dial' => '60'),
+            'mv' => array('name' => __('Maldives', 'woo-donation-popup'), 'dial' => '960'),
+            'mn' => array('name' => __('Mongolia', 'woo-donation-popup'), 'dial' => '976'),
             'mm' => array('name' => __('Myanmar', 'woo-donation-popup'), 'dial' => '95'),
             'np' => array('name' => __('Nepal', 'woo-donation-popup'), 'dial' => '977'),
-            'om' => array('name' => __('Umman', 'woo-donation-popup'), 'dial' => '968'),
+            'om' => array('name' => __('Oman', 'woo-donation-popup'), 'dial' => '968'),
             'pk' => array('name' => __('Pakistan', 'woo-donation-popup'), 'dial' => '92'),
-            'ps' => array('name' => __('Filistin', 'woo-donation-popup'), 'dial' => '970'),
-            'ph' => array('name' => __('Filipinler', 'woo-donation-popup'), 'dial' => '63'),
-            'qa' => array('name' => __('Katar', 'woo-donation-popup'), 'dial' => '974'),
-            'sa' => array('name' => __('Suudi Arabistan', 'woo-donation-popup'), 'dial' => '966'),
-            'sg' => array('name' => __('Singapur', 'woo-donation-popup'), 'dial' => '65'),
-            'kr' => array('name' => __('Güney Kore', 'woo-donation-popup'), 'dial' => '82'),
+            'ps' => array('name' => __('Palestine', 'woo-donation-popup'), 'dial' => '970'),
+            'ph' => array('name' => __('Philippines', 'woo-donation-popup'), 'dial' => '63'),
+            'qa' => array('name' => __('Qatar', 'woo-donation-popup'), 'dial' => '974'),
+            'sa' => array('name' => __('Saudi Arabia', 'woo-donation-popup'), 'dial' => '966'),
+            'sg' => array('name' => __('Singapore', 'woo-donation-popup'), 'dial' => '65'),
+            'kr' => array('name' => __('South Korea', 'woo-donation-popup'), 'dial' => '82'),
             'lk' => array('name' => __('Sri Lanka', 'woo-donation-popup'), 'dial' => '94'),
-            'sy' => array('name' => __('Suriye', 'woo-donation-popup'), 'dial' => '963'),
-            'tw' => array('name' => __('Tayvan', 'woo-donation-popup'), 'dial' => '886'),
-            'tj' => array('name' => __('Tacikistan', 'woo-donation-popup'), 'dial' => '992'),
-            'th' => array('name' => __('Tayland', 'woo-donation-popup'), 'dial' => '66'),
-            'tm' => array('name' => __('Türkmenistan', 'woo-donation-popup'), 'dial' => '993'),
-            'ae' => array('name' => __('Birleşik Arap Emirlikleri', 'woo-donation-popup'), 'dial' => '971'),
-            'uz' => array('name' => __('Özbekistan', 'woo-donation-popup'), 'dial' => '998'),
+            'sy' => array('name' => __('Syria', 'woo-donation-popup'), 'dial' => '963'),
+            'tw' => array('name' => __('Taiwan', 'woo-donation-popup'), 'dial' => '886'),
+            'tj' => array('name' => __('Tajikistan', 'woo-donation-popup'), 'dial' => '992'),
+            'th' => array('name' => __('Thailand', 'woo-donation-popup'), 'dial' => '66'),
+            'tm' => array('name' => __('Turkmenistan', 'woo-donation-popup'), 'dial' => '993'),
+            'ae' => array('name' => __('United Arab Emirates', 'woo-donation-popup'), 'dial' => '971'),
+            'uz' => array('name' => __('Uzbekistan', 'woo-donation-popup'), 'dial' => '998'),
             'vn' => array('name' => __('Vietnam', 'woo-donation-popup'), 'dial' => '84'),
             'ye' => array('name' => __('Yemen', 'woo-donation-popup'), 'dial' => '967'),
-            'am' => array('name' => __('Ermenistan', 'woo-donation-popup'), 'dial' => '374'),
+            'am' => array('name' => __('Armenia', 'woo-donation-popup'), 'dial' => '374'),
             /* Amerika & Okyanusya */
-            'us' => array('name' => __('Amerika Birleşik Devletleri', 'woo-donation-popup'), 'dial' => '1'),
-            'ca' => array('name' => __('Kanada', 'woo-donation-popup'), 'dial' => '1'),
-            'mx' => array('name' => __('Meksika', 'woo-donation-popup'), 'dial' => '52'),
-            'br' => array('name' => __('Brezilya', 'woo-donation-popup'), 'dial' => '55'),
-            'ar' => array('name' => __('Arjantin', 'woo-donation-popup'), 'dial' => '54'),
-            'au' => array('name' => __('Avustralya', 'woo-donation-popup'), 'dial' => '61'),
-            'nz' => array('name' => __('Yeni Zelanda', 'woo-donation-popup'), 'dial' => '64'),
+            'us' => array('name' => __('United States', 'woo-donation-popup'), 'dial' => '1'),
+            'ca' => array('name' => __('Canada', 'woo-donation-popup'), 'dial' => '1'),
+            'mx' => array('name' => __('Mexico', 'woo-donation-popup'), 'dial' => '52'),
+            'br' => array('name' => __('Brazil', 'woo-donation-popup'), 'dial' => '55'),
+            'ar' => array('name' => __('Argentina', 'woo-donation-popup'), 'dial' => '54'),
+            'au' => array('name' => __('Australia', 'woo-donation-popup'), 'dial' => '61'),
+            'nz' => array('name' => __('New Zealand', 'woo-donation-popup'), 'dial' => '64'),
             /* Afrika (seçili) */
-            'dz' => array('name' => __('Cezayir', 'woo-donation-popup'), 'dial' => '213'),
-            'eg' => array('name' => __('Mısır', 'woo-donation-popup'), 'dial' => '20'),
-            'ma' => array('name' => __('Fas', 'woo-donation-popup'), 'dial' => '212'),
-            'tn' => array('name' => __('Tunus', 'woo-donation-popup'), 'dial' => '216'),
+            'dz' => array('name' => __('Algeria', 'woo-donation-popup'), 'dial' => '213'),
+            'eg' => array('name' => __('Egypt', 'woo-donation-popup'), 'dial' => '20'),
+            'ma' => array('name' => __('Morocco', 'woo-donation-popup'), 'dial' => '212'),
+            'tn' => array('name' => __('Tunisia', 'woo-donation-popup'), 'dial' => '216'),
             'ly' => array('name' => __('Libya', 'woo-donation-popup'), 'dial' => '218'),
             'ke' => array('name' => __('Kenya', 'woo-donation-popup'), 'dial' => '254'),
             'ug' => array('name' => __('Uganda', 'woo-donation-popup'), 'dial' => '256'),
-            'tz' => array('name' => __('Tanzanya', 'woo-donation-popup'), 'dial' => '255'),
-            'et' => array('name' => __('Etiyopya', 'woo-donation-popup'), 'dial' => '251'),
-            'so' => array('name' => __('Somali', 'woo-donation-popup'), 'dial' => '252'),
-            'dj' => array('name' => __('Cibuti', 'woo-donation-popup'), 'dial' => '253'),
+            'tz' => array('name' => __('Tanzania', 'woo-donation-popup'), 'dial' => '255'),
+            'et' => array('name' => __('Ethiopia', 'woo-donation-popup'), 'dial' => '251'),
+            'so' => array('name' => __('Somalia', 'woo-donation-popup'), 'dial' => '252'),
+            'dj' => array('name' => __('Djibouti', 'woo-donation-popup'), 'dial' => '253'),
             'sd' => array('name' => __('Sudan', 'woo-donation-popup'), 'dial' => '249'),
-            'td' => array('name' => __('Çad', 'woo-donation-popup'), 'dial' => '235'),
+            'td' => array('name' => __('Chad', 'woo-donation-popup'), 'dial' => '235'),
             'bf' => array('name' => __('Burkina Faso', 'woo-donation-popup'), 'dial' => '226'),
             'ml' => array('name' => __('Mali', 'woo-donation-popup'), 'dial' => '223'),
-            'ne' => array('name' => __('Nijer', 'woo-donation-popup'), 'dial' => '227'),
-            'ng' => array('name' => __('Nijerya', 'woo-donation-popup'), 'dial' => '234'),
+            'ne' => array('name' => __('Niger', 'woo-donation-popup'), 'dial' => '227'),
+            'ng' => array('name' => __('Nigeria', 'woo-donation-popup'), 'dial' => '234'),
             'sn' => array('name' => __('Senegal', 'woo-donation-popup'), 'dial' => '221'),
-            'gh' => array('name' => __('Gana', 'woo-donation-popup'), 'dial' => '233'),
-            'za' => array('name' => __('Güney Afrika', 'woo-donation-popup'), 'dial' => '27'),
+            'gh' => array('name' => __('Ghana', 'woo-donation-popup'), 'dial' => '233'),
+            'za' => array('name' => __('South Africa', 'woo-donation-popup'), 'dial' => '27'),
         );
 
-        $countries = self::sort_countries_for_dropdown($countries);
+        $countries = self::merge_woocommerce_countries($countries);
+
+        /**
+         * Telefon listesinden çıkarılacak ülkeler (ISO2 dizisi). Varsayılan boş: eklenti ülke dışlamaz.
+         *
+         * @param string[] $excluded Çıkarılacak ISO2 kodları.
+         */
+        $excluded = apply_filters('wdp_phone_excluded_countries', array());
+        if (is_array($excluded)) {
+            foreach ($excluded as $code) {
+                unset($countries[ strtolower((string) $code) ]);
+            }
+        }
+
+        $countries = self::sort_countries_for_dropdown($countries, self::get_store_country_iso());
 
         /**
          * Filter country list for phone dropdown.
@@ -154,52 +168,131 @@ class WDP_Phone_Field {
     }
 
     /**
-     * Türkiye en üstte, diğerleri ada göre (Türkçe).
+     * WooCommerce ülke nesnesi (yoksa null).
+     *
+     * @return object|null
+     */
+    private static function wc_countries() {
+        if (!function_exists('WC')) {
+            return null;
+        }
+        $wc = WC();
+        if (!is_object($wc) || !isset($wc->countries) || !is_object($wc->countries)) {
+            return null;
+        }
+        return $wc->countries;
+    }
+
+    /**
+     * Mağaza ülkesi (WooCommerce temel ülke), küçük harf ISO2; yoksa boş.
+     *
+     * @return string
+     */
+    public static function get_store_country_iso() {
+        $wc = self::wc_countries();
+        if (!$wc || !method_exists($wc, 'get_base_country')) {
+            return '';
+        }
+        $iso = strtolower((string) $wc->get_base_country());
+        return strlen($iso) === 2 ? $iso : '';
+    }
+
+    /**
+     * Eklentinin listesinde olmayan WooCommerce ülkelerini (WooCommerce adı + arama kodu) ekler; mevcut
+     * girişlerin adı WooCommerce'in yerelleştirilmiş adıyla değiştirilir (site diline uyar).
      *
      * @param array<string, array{name:string,dial:string}> $countries Countries.
      * @return array<string, array{name:string,dial:string}>
      */
-    private static function sort_countries_for_dropdown(array $countries) {
-        $compare = static function ($a, $b) {
+    private static function merge_woocommerce_countries(array $countries) {
+        $wc = self::wc_countries();
+        if (!$wc || !method_exists($wc, 'get_countries')) {
+            return $countries;
+        }
+        $names = $wc->get_countries();
+        if (!is_array($names)) {
+            return $countries;
+        }
+        foreach ($names as $code => $name) {
+            $iso = strtolower((string) $code);
+            if (strlen($iso) !== 2 || !is_string($name) || $name === '') {
+                continue;
+            }
+            if (isset($countries[ $iso ])) {
+                $countries[ $iso ]['name'] = $name;
+                continue;
+            }
+            $dial = '';
+            if (method_exists($wc, 'get_country_calling_code')) {
+                $calling = $wc->get_country_calling_code((string) $code);
+                if (is_array($calling)) {
+                    $calling = reset($calling);
+                }
+                $dial = preg_replace('/\D+/', '', (string) $calling);
+            }
+            if ($dial === '') {
+                continue;
+            }
+            $countries[ $iso ] = array('name' => $name, 'dial' => $dial);
+        }
+        return $countries;
+    }
+
+    /**
+     * Mağaza ülkesi en üstte, diğerleri site dilinin harf sırasıyla.
+     *
+     * @param array<string, array{name:string,dial:string}> $countries Countries.
+     * @param string                                         $first     En üstte olacak ISO2 (boşsa yok).
+     * @return array<string, array{name:string,dial:string}>
+     */
+    private static function sort_countries_for_dropdown(array $countries, $first = '') {
+        $locale  = function_exists('get_locale') ? (string) get_locale() : 'en_US';
+        $compare = static function ($a, $b) use ($locale) {
             $an = (string) $a['name'];
             $bn = (string) $b['name'];
             if (class_exists('Collator')) {
-                static $collator = null;
-                if ($collator === null) {
-                    $collator = new Collator('tr_TR');
+                static $collators = array();
+                if (!isset($collators[ $locale ])) {
+                    $collators[ $locale ] = new Collator($locale !== '' ? $locale : 'en_US');
                 }
-                if ($collator instanceof Collator) {
-                    return $collator->compare($an, $bn);
+                if ($collators[ $locale ] instanceof Collator) {
+                    return $collators[ $locale ]->compare($an, $bn);
                 }
             }
             return strcasecmp($an, $bn);
         };
 
-        if (!isset($countries['tr'])) {
+        $first = strtolower((string) $first);
+        if ($first === '' || !isset($countries[ $first ])) {
             uasort($countries, $compare);
             return $countries;
         }
 
-        $turkey = array( 'tr' => $countries['tr'] );
-        unset($countries['tr']);
+        $top = array( $first => $countries[ $first ] );
+        unset($countries[ $first ]);
         uasort($countries, $compare);
 
-        return array_merge($turkey, $countries);
+        return array_merge($top, $countries);
     }
 
     /**
-     * Default ISO2 country code.
+     * Default ISO2 country code: WooCommerce mağaza ülkesi (filtreyle değiştirilebilir); desteklenmiyorsa listenin ilki.
      *
      * @return string
      */
     public static function get_default_country_iso() {
-        $raw = apply_filters('wdp_phone_default_country', 'tr');
-        if (!is_string($raw) || strlen($raw) !== 2) {
-            return 'tr';
-        }
-        $iso = strtolower($raw);
         $countries = self::get_countries();
-        return isset($countries[ $iso ]) ? $iso : 'tr';
+        $store     = self::get_store_country_iso();
+        $raw       = apply_filters('wdp_phone_default_country', $store);
+        $iso       = is_string($raw) ? strtolower($raw) : '';
+        if (strlen($iso) === 2 && isset($countries[ $iso ])) {
+            return $iso;
+        }
+        if ($store !== '' && isset($countries[ $store ])) {
+            return $store;
+        }
+        $keys = array_keys($countries);
+        return $keys ? (string) $keys[0] : '';
     }
 
     /**
@@ -397,7 +490,7 @@ class WDP_Phone_Field {
             'name'         => 'donation_phone',
             'id'           => '',
             'required'     => true,
-            'placeholder'  => __('Telefon Numarası *', 'woo-donation-popup'),
+            'placeholder'  => __('Phone number *', 'woo-donation-popup'),
             'class'        => 'wdp-field-stack__input',
             'autocomplete' => 'tel',
             'inputmode'    => 'tel',
@@ -406,7 +499,13 @@ class WDP_Phone_Field {
 
         $default_iso = self::get_default_country_iso();
         $countries   = self::get_countries();
-        $dial        = isset($countries[ $default_iso ]['dial']) ? $countries[ $default_iso ]['dial'] : '90';
+        $dial        = '';
+        if (isset($countries[ $default_iso ]['dial'])) {
+            $dial = $countries[ $default_iso ]['dial'];
+        } elseif ($countries) {
+            $first_row = reset($countries);
+            $dial      = isset($first_row['dial']) ? $first_row['dial'] : '';
+        }
 
         $name = preg_replace('/[^a-z0-9_\-]/i', '', (string) $args['name']);
         $id   = $args['id'] ? sanitize_html_class((string) $args['id']) : '';
@@ -424,7 +523,7 @@ class WDP_Phone_Field {
         <div class="wdp-phone-field" data-wdp-phone-field data-default-country="<?php echo esc_attr($default_iso); ?>" data-dial-code="<?php echo esc_attr($dial); ?>">
             <div class="wdp-phone-field__inner">
                 <div class="wdp-phone-field__code-wrap">
-                    <button type="button" class="wdp-phone-field__code-btn" aria-haspopup="listbox" aria-expanded="false" aria-label="<?php echo esc_attr__('Ülke kodu seç', 'woo-donation-popup'); ?>">
+                    <button type="button" class="wdp-phone-field__code-btn" aria-haspopup="listbox" aria-expanded="false" aria-label="<?php echo esc_attr__('Select country code', 'woo-donation-popup'); ?>">
                         <span class="wdp-phone-field__code-label">+<?php echo esc_html($dial); ?></span>
                         <span class="wdp-phone-field__chevron" aria-hidden="true"></span>
                     </button>

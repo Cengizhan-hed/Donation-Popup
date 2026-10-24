@@ -1,0 +1,18 @@
+{
+  "id": "form-inline-custom-open",
+  "text": "+#N#\nDonation amount:\n₺#N#\n₺#N#\n₺#N#\n₺#AMT#\n₺\nAdd to cart\nGo to checkout\nSecure payment · SSL-protected transaction",
+  "lines": [
+    "+#N#",
+    "Donation amount:",
+    "₺#N#",
+    "₺#N#",
+    "₺#N#",
+    "₺#AMT#",
+    "₺",
+    "Add to cart",
+    "Go to checkout",
+    "Secure payment · SSL-protected transaction"
+  ],
+  "locale": "en_US",
+  "config": "tt5-try-blocks-hpos"
+}

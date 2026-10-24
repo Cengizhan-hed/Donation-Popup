@@ -8,6 +8,7 @@
   "assets/css/src/foundation/polish.css": "Kapat butonu, başlık, bilgi şeridi, tipografi ve erişilebilirlik cilası.",
   "assets/css/src/foundation/base.css": "Temel sıfırlama ve ortak tipografi; modal/form için varsayılan font ve renk.",
   "assets/css/src/foundation/layout.css": "Cam panel kabuğu, masaüstü kart, mobil bottom-sheet ve yapışkan CTA düzeni.",
+  "assets/css/src/foundation/rtl.css": "RTL animasyon, yan panel kayması/gölgesi, ilerleme sheen ve yönsel ikonlar (LTR’de eşleşmez).",
   "assets/css/src/components/side-panel.css": "Sağdan açılan bağış paneli (side panel) kabuğu, overlay ve animasyonlar.",
   "assets/css/src/forms/shared.css": "Normal ve hisseli formların ortak alan, etiket ve grup stilleri.",
   "assets/css/src/forms/field-stack.css": "Dikey alan yığını, input/select/textarea ve hata durumu görünümü.",

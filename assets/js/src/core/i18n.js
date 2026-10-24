@@ -11,11 +11,18 @@
   const CTX_SEP = '\u0004';
 
   function getDict() {
-    const ajax = window.wdp_ajax;
-    if (!ajax || !ajax.i18n_dict || typeof ajax.i18n_dict !== 'object') {
-      return {};
+    const sources = [
+      window.wdp_ajax && window.wdp_ajax.i18n_dict,
+      window.wdp_admin && window.wdp_admin.i18n_dict,
+      window.wdpProductsAdmin && window.wdpProductsAdmin.i18n_dict,
+    ];
+    for (let i = 0; i < sources.length; i += 1) {
+      const dict = sources[i];
+      if (dict && typeof dict === 'object') {
+        return dict;
+      }
     }
-    return ajax.i18n_dict;
+    return {};
   }
 
   function lookup(key, fallback) {

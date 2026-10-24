@@ -46,8 +46,8 @@ class WDP_Admin_Settings_Normalizer {
 					? absint($request['button_border_radius'])
 					: self::pick_int($request, $existing, 'ui_border_radius', self::legacy_ui_radius_default($existing))),
 			'button_border_radius'              => self::pick_int($request, $existing, 'button_border_radius', 10),
-			'button_text_add_to_cart'           => self::pick_text($request, $existing, 'button_text_add_to_cart', 'Sepete Ekle'),
-			'button_text_go_checkout'           => self::pick_text($request, $existing, 'button_text_go_checkout', 'Ödemeye Git'),
+			'button_text_add_to_cart'           => self::pick_text($request, $existing, 'button_text_add_to_cart', __('Add to cart', 'woo-donation-popup')),
+			'button_text_go_checkout'           => self::pick_text($request, $existing, 'button_text_go_checkout', __('Go to checkout', 'woo-donation-popup')),
 			'modal_background_color'            => self::pick_hex($request, $existing, 'modal_background_color', '#ffffff'),
 			'modal_border_radius'               => self::pick_int($request, $existing, 'modal_border_radius', 10),
 			'input_border_color'                => self::pick_hex($request, $existing, 'input_border_color', '#d1d5db'),
@@ -60,7 +60,7 @@ class WDP_Admin_Settings_Normalizer {
 			'close_button_color'                => self::pick_hex($request, $existing, 'close_button_color', '#6b7280'),
 			'button_checkout_color'             => self::pick_hex($request, $existing, 'button_checkout_color', '#16a34a'),
 			'button_checkout_hover'             => self::pick_hex($request, $existing, 'button_checkout_hover', '#15803d'),
-			'popup_button_text'                 => self::pick_text($request, $existing, 'popup_button_text', 'Bağış Yap'),
+			'popup_button_text'                 => self::pick_text($request, $existing, 'popup_button_text', __('Donate', 'woo-donation-popup')),
 			'popup_button_color'                => self::pick_hex($request, $existing, 'popup_button_color', '#0f608b'),
 			'popup_button_hover'                => self::pick_hex($request, $existing, 'popup_button_hover', '#0c4f72'),
 			'popup_button_text_color'           => $popup_btn_text_color,
@@ -94,7 +94,7 @@ class WDP_Admin_Settings_Normalizer {
 					: self::pick_hex($request, $existing, 'button_primary_color', '#0f608b')),
 			'enable_field_icons'                => self::pick_flag($request, $existing, 'enable_field_icons', '1'),
 			'trust_strip_enabled'               => self::pick_flag($request, $existing, 'trust_strip_enabled', '0'),
-			'trust_strip_text'                  => self::pick_text($request, $existing, 'trust_strip_text', __('Güvenli ödeme · SSL korumalı işlem', 'woo-donation-popup')),
+			'trust_strip_text'                  => self::pick_text($request, $existing, 'trust_strip_text', __('Secure payment · SSL-protected transaction', 'woo-donation-popup')),
 			'icon_field_user'                   => class_exists('WDP_Icon_Library')
 				? WDP_Icon_Library::sanitize_icon_value(isset($request['icon_field_user']) ? $request['icon_field_user'] : (isset($existing['icon_field_user']) ? $existing['icon_field_user'] : 'builtin:user'), 'builtin:user')
 				: 'builtin:user',
@@ -146,7 +146,7 @@ class WDP_Admin_Settings_Normalizer {
 			'enable_donor_email'                => self::pick_flag($request, $existing, 'enable_donor_email', '0'),
 			'enable_dedication'                 => self::pick_flag($request, $existing, 'enable_dedication', '0'),
 			'enable_anonymous'                  => self::pick_flag($request, $existing, 'enable_anonymous', '0'),
-			'dedication_placeholder'            => self::pick_text($request, $existing, 'dedication_placeholder', __('Kimin adına? (isteğe bağlı)', 'woo-donation-popup')),
+			'dedication_placeholder'            => self::pick_text($request, $existing, 'dedication_placeholder', __('On behalf of? (optional)', 'woo-donation-popup')),
 			'enable_privacy_notice'             => self::pick_flag($request, $existing, 'enable_privacy_notice', '0'),
 			'privacy_notice_text'               => self::pick_text(
 				$request,
@@ -154,7 +154,7 @@ class WDP_Admin_Settings_Normalizer {
 				'privacy_notice_text',
 				class_exists('WDP_Donation_Optional_Fields')
 					? WDP_Donation_Optional_Fields::default_privacy_link_label()
-					: __('Kişisel verilerin işlenmesine ilişkin aydınlatma metni', 'woo-donation-popup')
+					: __('Privacy notice about the processing of personal data', 'woo-donation-popup')
 			),
 			'privacy_notice_url'                => self::pick_text($request, $existing, 'privacy_notice_url', ''),
 			'module_order'                      => isset($request['module_order'])
@@ -318,11 +318,11 @@ class WDP_Admin_Settings_Normalizer {
 			'share_counter_border'           => $pick_hex('share_counter_border', '#d1d5db'),
 			'share_counter_bg'               => $pick_hex('share_counter_bg', '#ffffff'),
 			'share_counter_button_color'     => $pick_hex('share_counter_button_color', '#888888'),
-			'shareholder_header_text'        => $pick_text('shareholder_header_text', 'Hissedar Bilgileri'),
-			'shareholder_name_placeholder'   => $pick_text('shareholder_name_placeholder', 'Ad Soyad *'),
-			'shareholder_phone_placeholder'  => $pick_text('shareholder_phone_placeholder', 'Telefon Numarası *'),
-			'shareholder_note_placeholder'   => $pick_text('shareholder_note_placeholder', 'Not (isteğe bağlı)'),
-			'shareholder_copy_button_text'   => $pick_text('shareholder_copy_button_text', 'Kopyasını Oluştur'),
+			'shareholder_header_text'        => $pick_text('shareholder_header_text', __('Shareholder details', 'woo-donation-popup')),
+			'shareholder_name_placeholder'   => $pick_text('shareholder_name_placeholder', __('Full name *', 'woo-donation-popup')),
+			'shareholder_phone_placeholder'  => $pick_text('shareholder_phone_placeholder', __('Phone number *', 'woo-donation-popup')),
+			'shareholder_note_placeholder'   => $pick_text('shareholder_note_placeholder', __('Note (optional)', 'woo-donation-popup')),
+			'shareholder_copy_button_text'   => $pick_text('shareholder_copy_button_text', __('Create a copy', 'woo-donation-popup')),
 			'shareholder_enable_copy_button' => isset($request['shareholder_enable_copy_button'])
 				? ('1' === (string) $request['shareholder_enable_copy_button'] ? '1' : '0')
 				: (isset($existing['shareholder_enable_copy_button']) ? (('1' === (string) $existing['shareholder_enable_copy_button']) ? '1' : '0') : '0'),
@@ -335,7 +335,7 @@ class WDP_Admin_Settings_Normalizer {
 			'shareholder_enable_email'       => isset($request['shareholder_enable_email'])
 				? ('1' === (string) $request['shareholder_enable_email'] ? '1' : '0')
 				: (isset($existing['shareholder_enable_email']) ? (('1' === (string) $existing['shareholder_enable_email']) ? '1' : '0') : '0'),
-			'shareholder_email_placeholder'  => $pick_text('shareholder_email_placeholder', 'E-posta (isteğe bağlı)'),
+			'shareholder_email_placeholder'  => $pick_text('shareholder_email_placeholder', __('Email (optional)', 'woo-donation-popup')),
 		);
 
 		$settings['shareholder_card_radius'] = self::clamp_max($settings['shareholder_card_radius'], 50);
@@ -361,9 +361,9 @@ class WDP_Admin_Settings_Normalizer {
 			'success_button_color'      => self::pick_hex($request, $existing, 'success_button_color', '#0f608b'),
 			'success_button_hover'      => self::pick_hex($request, $existing, 'success_button_hover', '#0c4f72'),
 			'success_button_radius'     => self::pick_int($request, $existing, 'success_button_radius', 10),
-			'success_text_view_cart'    => self::pick_text($request, $existing, 'success_text_view_cart', 'Sepete Git'),
-			'success_text_go_checkout'  => self::pick_text($request, $existing, 'success_text_go_checkout', 'Bağışı Tamamla'),
-			'success_text_new_donation' => self::pick_text($request, $existing, 'success_text_new_donation', 'Bağış eklemeye devam edin'),
+			'success_text_view_cart'    => self::pick_text($request, $existing, 'success_text_view_cart', __('Go to cart', 'woo-donation-popup')),
+			'success_text_go_checkout'  => self::pick_text($request, $existing, 'success_text_go_checkout', __('Complete donation', 'woo-donation-popup')),
+			'success_text_new_donation' => self::pick_text($request, $existing, 'success_text_new_donation', __('Continue adding donations', 'woo-donation-popup')),
 			'success_message_bg'        => self::pick_text($request, $existing, 'success_message_bg', 'rgba(22, 163, 74, 0.1)'),
 			'success_message_color'     => self::pick_hex($request, $existing, 'success_message_color', '#16a34a'),
 			'success_message_border'    => self::pick_text($request, $existing, 'success_message_border', 'rgba(22, 163, 74, 0.2)'),
@@ -374,13 +374,13 @@ class WDP_Admin_Settings_Normalizer {
 			'cart_item_name_color'      => self::pick_hex($request, $existing, 'cart_item_name_color', '#1f2937'),
 			'cart_item_price_color'     => self::pick_hex($request, $existing, 'cart_item_price_color', '#0f608b'),
 			'sadaka_wc_product_id'      => isset($request['sadaka_wc_product_id']) ? absint($request['sadaka_wc_product_id']) : (isset($existing['sadaka_wc_product_id']) ? absint($existing['sadaka_wc_product_id']) : 0),
-			'sadaka_toggle_label'       => self::pick_text($request, $existing, 'sadaka_toggle_label', __('Alt Bağış Ekle', 'woo-donation-popup')),
+			'sadaka_toggle_label'       => self::pick_text($request, $existing, 'sadaka_toggle_label', __('Add add-on donation', 'woo-donation-popup')),
 		);
 		if ($settings['sadaka_wc_product_id'] <= 0) {
 			$settings['sadaka_wc_product_id'] = 0;
 		}
 		if ($settings['sadaka_toggle_label'] === '') {
-			$settings['sadaka_toggle_label'] = __('Alt Bağış Ekle', 'woo-donation-popup');
+			$settings['sadaka_toggle_label'] = __('Add add-on donation', 'woo-donation-popup');
 		}
 		$settings['success_button_radius'] = self::clamp_max($settings['success_button_radius'], 50);
 		$settings['success_message_radius'] = self::clamp_max($settings['success_message_radius'], 50);

@@ -25,7 +25,7 @@
   const classifyAjaxFailure = typeof utils.classifyAjaxFailure === 'function'
     ? utils.classifyAjaxFailure
     : function () { return ''; };
-  const RATE_LIMIT_MESSAGE = 'Çok fazla istek gönderildi. Lütfen bir süre bekleyip tekrar deneyin.';
+  const RATE_LIMIT_MESSAGE = WDPApp.i18n.__('Too many requests. Please wait a moment and try again.', 'woo-donation-popup');
   const {
     fetchContents: fetchCartContents,
     updateCountElements: updateCartCountElements,
@@ -145,7 +145,7 @@
   function getSuccessAddedToCartText() {
     const strings = wdp_ajax && wdp_ajax.strings ? wdp_ajax.strings : {};
     const text = strings && typeof strings.added_to_cart === 'string' ? strings.added_to_cart.trim() : '';
-    return text || 'Bağışınız sepete eklendi';
+    return text || WDPApp.i18n.__('Your donation has been added to the cart', 'woo-donation-popup');
   }
 
   function buildSuccessTopRow() {
@@ -236,13 +236,13 @@
       if (isCheckout && checkoutDest) {
         // Ödeme adresi yalnız WooCommerce (wdp_ajax / AJAX yanıtı). Sabit slug yok.
         safeLog("Redirecting to checkout:", checkoutDest);
-        announceStatus('Ödeme adımına yönlendiriliyorsunuz.', 'assertive');
+        announceStatus(WDPApp.i18n.__('Redirecting you to checkout.', 'woo-donation-popup'), 'assertive');
         trackMetaPixelInitiateCheckoutIfEnabled(form, data);
         window.location.href = checkoutDest;
       } else {
         // Sepete Ekle için başarı mesajını göster
         safeLog("Showing success message", data);
-        announceStatus('Bağışınız sepete eklendi.', 'polite');
+        announceStatus(WDPApp.i18n.__('Your donation has been added to the cart.', 'woo-donation-popup'), 'polite');
 
         // "Yeni Bağış Ekle" geri dönüşü için formun ilk halini bu anda da garanti altına al.
         // Bazı WordPress dinamik enjeksiyon senaryolarında saveOriginalForms ilk turu kaçırabiliyor.
@@ -305,7 +305,7 @@
           cartStack.className = 'wdp-success-cart-stack';
           const loadingMessage = document.createElement('div');
           loadingMessage.className = 'wdp-mini-cart-loading';
-          loadingMessage.textContent = 'Sepet içeriği yükleniyor...';
+          loadingMessage.textContent = WDPApp.i18n.__('Loading cart contents...', 'woo-donation-popup');
           cartStack.appendChild(loadingMessage);
           successView.appendChild(cartStack);
 
@@ -368,12 +368,12 @@
       const isTechnicalNoiseError =
         responseCode === "security_error" ||
         responseCode === "unknown_error" ||
-        normalizedMessage.includes("güvenlik") ||
-        normalizedMessage.includes("geçersiz istek") ||
-        normalizedMessage.includes("beklenmeyen bir hata") ||
-        normalizedMessage.includes("sepet nesnesi");
+        normalizedMessage.includes(WDPApp.i18n._x('security', 'server error keyword', 'woo-donation-popup').toLowerCase()) ||
+        normalizedMessage.includes(WDPApp.i18n._x('invalid request', 'server error keyword', 'woo-donation-popup').toLowerCase()) ||
+        normalizedMessage.includes(WDPApp.i18n._x('unexpected error', 'server error keyword', 'woo-donation-popup').toLowerCase()) ||
+        normalizedMessage.includes(WDPApp.i18n._x('cart object', 'server error keyword', 'woo-donation-popup').toLowerCase());
 
-      const fallbackMessage = rawMessage || "İşlem şu anda tamamlanamadı. Lütfen tekrar deneyin.";
+      const fallbackMessage = rawMessage || WDPApp.i18n._x('The action could not be completed. Please try again.', 'frontend script', 'woo-donation-popup');
 
       const shouldTryFieldAnchors = isValidationError && !isTechnicalNoiseError;
       const validationAnchored =
@@ -415,8 +415,8 @@
 
     const offline = typeof navigator !== 'undefined' && navigator.onLine === false;
     const msg = offline
-      ? "Çevrimdışı görünüyorsunuz. Bağlantı gelince tekrar deneyin."
-      : "Bağlantı hatası oluştu. Lütfen tekrar deneyin.";
+      ? WDPApp.i18n.__('You appear to be offline. Please try again when you are back online.', 'woo-donation-popup')
+      : WDPApp.i18n.__('A connection error occurred. Please try again.', 'woo-donation-popup');
 
     const errorMsg = form.querySelector(".wdp-form-error");
     if (errorMsg) {
@@ -430,7 +430,7 @@
       const retry = document.createElement('button');
       retry.type = 'button';
       retry.className = 'wdp-form-error__retry';
-      retry.textContent = 'Tekrar dene';
+      retry.textContent = WDPApp.i18n.__('Try again', 'woo-donation-popup');
       wrap.appendChild(text);
       wrap.appendChild(retry);
       errorMsg.appendChild(wrap);
@@ -448,7 +448,7 @@
     announceStatus(msg, 'assertive');
     if (typeof showToast === 'function' || (WDPApp.utils && WDPApp.utils.showToast)) {
       const toastFn = typeof showToast === 'function' ? showToast : WDPApp.utils.showToast;
-      toastFn({ type: 'error', title: 'Gönderilemedi', message: msg, duration: 5200, announce: false });
+      toastFn({ type: 'error', title: WDPApp.i18n.__('Could not submit', 'woo-donation-popup'), message: msg, duration: 5200, announce: false });
     }
     if (WDPApp.utils && typeof WDPApp.utils.emitWdpEvent === 'function') {
       WDPApp.utils.emitWdpEvent('wdp:ajax:error', { form: form, offline: offline });
@@ -601,7 +601,7 @@
     // ✅ GÜVENLİ: Fonksiyon scope içinde helper (fonksiyon bitince otomatik temizlenir)
     const $form = (sel) => form.querySelector(sel);
     
-    safeLog("Submitting form data...", isCheckout ? "Ödemeye Git" : "Sepete Ekle");
+    safeLog("Submitting form data...", isCheckout ? "Go to checkout" : "Add to cart");
     clearAlerts();
 
     if (WDPApp.phoneInput && typeof WDPApp.phoneInput.ensureNationalDisplayInForm === 'function') {
@@ -616,7 +616,7 @@
       const quantityInput = $form('input[name="quantity"]');
       if (quantityInput && shareCount > 0) {
         quantityInput.value = shareCount;
-        safeLog("Quantity güncellendi - ShareCount:", shareCount, "-> Quantity:", quantityInput.value);
+        safeLog("Quantity updated - ShareCount:", shareCount, "-> Quantity:", quantityInput.value);
       }
     }
 
@@ -690,7 +690,7 @@
             ? WDPApp.utils.formatAmountForSubmit(basePrice)
             : (Number.isInteger(basePrice) ? basePrice.toFixed(0) : basePrice.toFixed(2));
           formData.set('custom_price', roundedBasePrice);
-          safeLog("Fiyat hesaplandı - Base:", basePrice, "x Quantity (ShareCount):", shareCount, "= Total:", totalPrice, "-> Sepete base price gönderiliyor:", roundedBasePrice);
+          safeLog("Price calculated - Base:", basePrice, "x Quantity (ShareCount):", shareCount, "= Total:", totalPrice, "-> sending base price to cart:", roundedBasePrice);
         } else if (shareCount > 1) {
           // Base price bulunamadıysa ve hisse sayısı > 1 ise uyarı ver
           safeLog("WARNING: Base price not found for share count:", shareCount);
@@ -701,7 +701,7 @@
       // Dinamik: Kaç hissedar bilgisi doldurulduysa, o kadar adet ürün sepete eklenecek
       // Örnek: 7 hissedar = 7 adet ürün, fiyat = base_price × 7
       formData.set('quantity', shareCount);
-      safeLog("FormData'ya quantity eklendi (ShareCount):", shareCount, "- Bu, sepette", shareCount, "adet ürün anlamına gelir");
+      safeLog("FormData quantity set (ShareCount):", shareCount, "- this means", shareCount, "items in the cart");
       
       // Hissedar bilgilerini ekle
       for (let i = 1; i <= shareCount; i++) {
@@ -759,7 +759,7 @@
     // Mevcut side cart elementlerini kaydet
     saveSideCartElements();
 
-    safeLog("AJAX isteği gönderiliyor:", wdp_ajax.ajax_url);
+    safeLog("Sending AJAX request:", wdp_ajax.ajax_url);
 
     // Hata mesajı alanını bul ve gizle - Başlangıçta hata mesajını gizle (fonksiyon scope içindeki $form helper kullan)
     const errorMsg = $form(".wdp-form-error");
@@ -822,7 +822,7 @@
           }
 
           const finishWithTransportError = () => {
-            safeLog("AJAX taşıma / yanıt hatası — kurtarma sonrası veya kurtarma atlandı", jqXHR.status, textStatus);
+            safeLog("AJAX transport / response error — after recovery or recovery skipped", jqXHR.status, textStatus);
             // Gerçek hata: sunucu mesajı (success:false) zaten success callback'te gösterilir.
             // Burada yanıt okunamadı veya ağ kopması var — kullanıcıya mutlaka bildir (sessiz kalma).
             handleAjaxError(errorThrown || new Error(textStatus || "error"), form, addToCartBtn, checkoutBtn);

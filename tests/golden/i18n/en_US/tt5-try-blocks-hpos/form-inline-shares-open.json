@@ -1,0 +1,16 @@
+{
+  "id": "form-inline-shares-open",
+  "text": "Number of shares:\n#N#. Shareholder details\n₺#N#\n+#N#\nCreate a copy\nAdd to cart\nGo to checkout\nSecure payment · SSL-protected transaction",
+  "lines": [
+    "Number of shares:",
+    "#N#. Shareholder details",
+    "₺#N#",
+    "+#N#",
+    "Create a copy",
+    "Add to cart",
+    "Go to checkout",
+    "Secure payment · SSL-protected transaction"
+  ],
+  "locale": "en_US",
+  "config": "tt5-try-blocks-hpos"
+}

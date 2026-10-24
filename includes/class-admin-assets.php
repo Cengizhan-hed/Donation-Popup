@@ -74,14 +74,20 @@ class WDP_Admin_Assets {
 			array(
 				'ajax_url'      => admin_url('admin-ajax.php'),
 				'nonce'         => wp_create_nonce('wdp_admin_nonce'),
-				'save_success'  => __('Ayarlar başarıyla kaydedildi.', 'woo-donation-popup'),
-				'save_error'    => __('Ayarlar kaydedilirken bir hata oluştu.', 'woo-donation-popup'),
+				'save_success'  => __('Settings saved successfully.', 'woo-donation-popup'),
+				'save_error'    => __('An error occurred while saving settings.', 'woo-donation-popup'),
 				'style_packs'   => $style_packs,
 				'icon_builtins' => $icon_builtins,
 				'i18n'          => array(
-					'preset_applied' => __('Paket form alanlarına uygulandı. Kaydetmeyi unutmayın.', 'woo-donation-popup'),
-					'media_title'    => __('İkon seç', 'woo-donation-popup'),
-					'media_button'   => __('Kullan', 'woo-donation-popup'),
+					'preset_applied'         => __('The pack was applied to the form fields. Don’t forget to save.', 'woo-donation-popup'),
+					'media_title'            => __('Select icon', 'woo-donation-popup'),
+					'media_button'           => __('Use', 'woo-donation-popup'),
+					'unsaved_tab'            => __('You have unsaved changes. Are you sure you want to leave this tab?', 'woo-donation-popup'),
+					'confirm_leave_tab'      => __('You have unsaved changes. Are you sure you want to leave this tab?', 'woo-donation-popup'),
+					'confirm_uninstall_data' => __('All product settings and plugin options will be deleted. Orders and order records are not affected. This cannot be undone. Have you made a backup?', 'woo-donation-popup'),
+					'unsaved_changes'        => __('You have unsaved changes.', 'woo-donation-popup'),
+					'select_pack_first'      => __('Select a style pack first.', 'woo-donation-popup'),
+					'pack_downloaded'        => __('Pack downloaded as JSON.', 'woo-donation-popup'),
 				),
 			)
 		);
@@ -116,13 +122,13 @@ class WDP_Admin_Assets {
 				'nonce'   => wp_create_nonce('wdp_admin_nonce'),
 				'tabKey'  => WDP_Admin_Product_Data_Tab::TAB_KEY,
 				'i18n'    => array(
-					'copied'        => __('Kopyalandı', 'woo-donation-popup'),
-					'copyFailed'    => __('Kopyalanamadı; metni seçip elle kopyalayın.', 'woo-donation-popup'),
-					'recalculating' => __('Toplam yeniden hesaplanıyor…', 'woo-donation-popup'),
-					'error'         => __('İşlem tamamlanamadı. Lütfen tekrar deneyin.', 'woo-donation-popup'),
-					'rowAdded'      => __('Satır eklendi.', 'woo-donation-popup'),
-					'rowRemoved'    => __('Satır silindi.', 'woo-donation-popup'),
-					'moved'         => __('Sıra güncellendi.', 'woo-donation-popup'),
+					'copied'        => __('Copied', 'woo-donation-popup'),
+					'copyFailed'    => __('Could not copy; select the text and copy it manually.', 'woo-donation-popup'),
+					'recalculating' => __('Recalculating the total…', 'woo-donation-popup'),
+					'error'         => __('The action could not be completed. Please try again.', 'woo-donation-popup'),
+					'rowAdded'      => __('Row added.', 'woo-donation-popup'),
+					'rowRemoved'    => __('Row removed.', 'woo-donation-popup'),
+					'moved'         => __('Order updated.', 'woo-donation-popup'),
 				),
 			)
 		);
@@ -143,7 +149,11 @@ class WDP_Admin_Assets {
 	 * @return string
 	 */
 	private static function get_tabs_inline_script() {
-		return <<<'JS'
+		$confirm = wp_json_encode(
+			__('You have unsaved changes. Are you sure you want to leave this tab?', 'woo-donation-popup'),
+			JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES
+		);
+		$js      = <<<'JS'
 (function () {
   function getTabKeys() {
     var wrap = document.querySelector(".wdp-admin-wrap");
@@ -180,7 +190,8 @@ class WDP_Admin_Assets {
   function confirmLeaveDirty(nextKey) {
     if (!document.querySelector(".wdp-admin-settings-form.is-dirty")) return true;
     if (currentTabKey() === nextKey) return true;
-    return window.confirm("Kaydedilmemiş değişiklikleriniz var. Bu sekmeden ayrılmak istediğinize emin misiniz?");
+    var unsaved = (window.wdp_admin && window.wdp_admin.i18n && window.wdp_admin.i18n.unsaved_tab) ? window.wdp_admin.i18n.unsaved_tab : __WDP_UNSAVED_CONFIRM__;
+    return window.confirm(unsaved);
   }
 
   function activateTab(tabKey, opts) {
@@ -298,5 +309,6 @@ class WDP_Admin_Assets {
   });
 })();
 JS;
+		return str_replace('__WDP_UNSAVED_CONFIRM__', $confirm, $js);
 	}
 }

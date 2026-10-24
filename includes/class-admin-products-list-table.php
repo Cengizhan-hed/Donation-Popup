@@ -40,12 +40,12 @@ class WDP_Admin_Products_List_Table extends WP_List_Table {
 	public function get_columns() {
 		return array(
 			'cb'        => '<input type="checkbox" />',
-			'name'      => __('Ürün', 'woo-donation-popup'),
-			'category'  => __('Kategori', 'woo-donation-popup'),
-			'type'      => __('Bağış tipi', 'woo-donation-popup'),
-			'shortcode' => __('Kısa kod', 'woo-donation-popup'),
-			'progress'  => __('Hedef / Toplanan', 'woo-donation-popup'),
-			'actions'   => '<span class="screen-reader-text">' . esc_html__('İşlemler', 'woo-donation-popup') . '</span>',
+			'name'      => __('Product', 'woo-donation-popup'),
+			'category'  => __('Category', 'woo-donation-popup'),
+			'type'      => __('Donation type', 'woo-donation-popup'),
+			'shortcode' => __('Shortcode', 'woo-donation-popup'),
+			'progress'  => __('Goal / Raised', 'woo-donation-popup'),
+			'actions'   => '<span class="screen-reader-text">' . esc_html__('Actions', 'woo-donation-popup') . '</span>',
 		);
 	}
 
@@ -78,7 +78,7 @@ class WDP_Admin_Products_List_Table extends WP_List_Table {
 	 * @return void
 	 */
 	public function no_items() {
-		esc_html_e('Bu filtrelere uyan ürün bulunamadı.', 'woo-donation-popup');
+		esc_html_e('No products match these filters.', 'woo-donation-popup');
 	}
 
 	/**
@@ -157,14 +157,14 @@ class WDP_Admin_Products_List_Table extends WP_List_Table {
 
 		echo '<div class="alignleft actions wdp-products-table__filters">';
 
-		echo '<label class="screen-reader-text" for="wdp-filter-category">' . esc_html__('Kategoriye göre filtrele', 'woo-donation-popup') . '</label>';
+		echo '<label class="screen-reader-text" for="wdp-filter-category">' . esc_html__('Filter by category', 'woo-donation-popup') . '</label>';
 		wp_dropdown_categories(
 			array(
 				'taxonomy'        => 'product_cat',
 				'name'            => self::CATEGORY_QV,
 				'id'              => 'wdp-filter-category',
 				'selected'        => $this->get_category_filter(),
-				'show_option_all' => __('Tüm kategoriler', 'woo-donation-popup'),
+				'show_option_all' => __('All categories', 'woo-donation-popup'),
 				'hide_empty'      => false,
 				'hierarchical'    => true,
 				'orderby'         => 'name',
@@ -172,18 +172,18 @@ class WDP_Admin_Products_List_Table extends WP_List_Table {
 			)
 		);
 
-		echo '<label class="screen-reader-text" for="wdp-filter-type">' . esc_html__('Bağış tipine göre filtrele', 'woo-donation-popup') . '</label>';
+		echo '<label class="screen-reader-text" for="wdp-filter-type">' . esc_html__('Filter by donation type', 'woo-donation-popup') . '</label>';
 		echo '<select name="' . esc_attr(self::TYPE_QV) . '" id="wdp-filter-type">';
-		echo '<option value="">' . esc_html__('Tüm bağış tipleri', 'woo-donation-popup') . '</option>';
+		echo '<option value="">' . esc_html__('All donation types', 'woo-donation-popup') . '</option>';
 		foreach (WDP_Donation_Type::get_definitions() as $type => $def) {
 			echo '<option value="' . esc_attr($type) . '"' . selected($this->get_type_filter(), $type, false) . '>' . esc_html($def['label']) . '</option>';
 		}
 		echo '</select>';
 
-		submit_button(__('Filtrele', 'woo-donation-popup'), '', 'wdp_filter', false);
+		submit_button(__('Filter', 'woo-donation-popup'), '', 'wdp_filter', false);
 
 		if ($this->get_category_filter() > 0 || $this->get_type_filter() !== '' || $this->get_search() !== '') {
-			echo ' <a class="button-link wdp-products-table__reset" href="' . esc_url(self::get_base_url()) . '">' . esc_html__('Filtreleri temizle', 'woo-donation-popup') . '</a>';
+			echo ' <a class="button-link wdp-products-table__reset" href="' . esc_url(self::get_base_url()) . '">' . esc_html__('Clear filters', 'woo-donation-popup') . '</a>';
 		}
 
 		echo '</div>';
@@ -219,10 +219,10 @@ class WDP_Admin_Products_List_Table extends WP_List_Table {
 		$out .= '<span class="wdp-products-table__thumb" aria-hidden="true">' . $thumb . '</span>';
 		$is_donation = class_exists('WDP_Donation_Scope') && WDP_Donation_Scope::is_donation_product($product);
 		if ($is_donation) {
-			$badge_label = __('Bağış ürünü', 'woo-donation-popup');
+			$badge_label = __('Donation product', 'woo-donation-popup');
 			$badge_class = 'wdp-scope-badge wdp-scope-badge--yes';
 		} else {
-			$badge_label = __('Normal ürün', 'woo-donation-popup');
+			$badge_label = __('Regular product', 'woo-donation-popup');
 			$badge_class = 'wdp-scope-badge wdp-scope-badge--no';
 		}
 
@@ -236,7 +236,7 @@ class WDP_Admin_Products_List_Table extends WP_List_Table {
 				$sadaka_title = implode(', ', $referrers);
 				$sadaka_label = sprintf(
 					/* translators: %d: number of parent products using this as alt donation */
-					__('Alt bağış olarak kullanılıyor (%d)', 'woo-donation-popup'),
+					__('Used as an add-on donation (%d)', 'woo-donation-popup'),
 					$count
 				);
 				$out .= ' <span class="wdp-scope-badge wdp-scope-badge--sadaka" title="' . esc_attr($sadaka_title) . '">' . esc_html($sadaka_label) . '</span>';
@@ -247,10 +247,10 @@ class WDP_Admin_Products_List_Table extends WP_List_Table {
 
 		$permalink = get_permalink($product->get_id());
 		$actions   = array(
-			'edit' => '<a href="' . esc_url($edit_url) . '">' . esc_html__('Bağış ayarları', 'woo-donation-popup') . '</a>',
+			'edit' => '<a href="' . esc_url($edit_url) . '">' . esc_html__('Donation settings', 'woo-donation-popup') . '</a>',
 		);
 		if ($permalink && $status === 'publish') {
-			$actions['view'] = '<a href="' . esc_url($permalink) . '" target="_blank" rel="noopener noreferrer">' . esc_html__('Görüntüle', 'woo-donation-popup') . '<span class="screen-reader-text"> ' . esc_html__('(yeni sekmede açılır)', 'woo-donation-popup') . '</span></a>';
+			$actions['view'] = '<a href="' . esc_url($permalink) . '" target="_blank" rel="noopener noreferrer">' . esc_html_x('View', 'row action', 'woo-donation-popup') . '<span class="screen-reader-text"> ' . esc_html__('(opens in a new tab)', 'woo-donation-popup') . '</span></a>';
 		}
 
 		return $out . $this->row_actions($actions);
@@ -263,7 +263,7 @@ class WDP_Admin_Products_List_Table extends WP_List_Table {
 	protected function column_category($product) {
 		$terms = get_the_terms($product->get_id(), 'product_cat');
 		if (empty($terms) || is_wp_error($terms)) {
-			return '<span aria-hidden="true">—</span><span class="screen-reader-text">' . esc_html__('Kategori yok', 'woo-donation-popup') . '</span>';
+			return '<span aria-hidden="true">—</span><span class="screen-reader-text">' . esc_html__('No category', 'woo-donation-popup') . '</span>';
 		}
 
 		$links = array();
@@ -295,7 +295,7 @@ class WDP_Admin_Products_List_Table extends WP_List_Table {
 			$out .= '<div class="wdp-products-table__shortcode-row">';
 			$out .= '<code>' . esc_html($code) . '</code>';
 			/* translators: %s: shortcode */
-			$out .= '<button type="button" class="wdp-icon-button" data-wdp-copy="' . esc_attr($code) . '" aria-label="' . esc_attr(sprintf(__('Kısa kodu kopyala: %s', 'woo-donation-popup'), $code)) . '" title="' . esc_attr__('Kopyala', 'woo-donation-popup') . '">';
+			$out .= '<button type="button" class="wdp-icon-button" data-wdp-copy="' . esc_attr($code) . '" aria-label="' . esc_attr(sprintf(__('Copy shortcode: %s', 'woo-donation-popup'), $code)) . '" title="' . esc_attr__('Copy', 'woo-donation-popup') . '">';
 			$out .= '<span class="dashicons dashicons-admin-page" aria-hidden="true"></span>';
 			$out .= '</button>';
 			$out .= '</div>';
@@ -311,7 +311,7 @@ class WDP_Admin_Products_List_Table extends WP_List_Table {
 	 */
 	protected function column_progress($product) {
 		if (WDP_Donation_Type::for_product($product->get_id()) !== WDP_Donation_Type::CAMPAIGN) {
-			return '<span aria-hidden="true">—</span><span class="screen-reader-text">' . esc_html__('Hedef yok', 'woo-donation-popup') . '</span>';
+			return '<span aria-hidden="true">—</span><span class="screen-reader-text">' . esc_html__('No goal', 'woo-donation-popup') . '</span>';
 		}
 
 		ob_start();
@@ -325,8 +325,8 @@ class WDP_Admin_Products_List_Table extends WP_List_Table {
 	 */
 	protected function column_actions($product) {
 		/* translators: %s: product name */
-		$label = sprintf(__('%s bağış ayarlarını düzenle', 'woo-donation-popup'), $product->get_name());
-		return '<a class="button" href="' . esc_url(WDP_Admin_Product_Data_Tab::get_edit_url($product->get_id())) . '" aria-label="' . esc_attr($label) . '">' . esc_html__('Düzenle', 'woo-donation-popup') . '</a>';
+		$label = sprintf(__('Edit donation settings for %s', 'woo-donation-popup'), $product->get_name());
+		return '<a class="button" href="' . esc_url(WDP_Admin_Product_Data_Tab::get_edit_url($product->get_id())) . '" aria-label="' . esc_attr($label) . '">' . esc_html__('Edit', 'woo-donation-popup') . '</a>';
 	}
 
 	/**
@@ -351,9 +351,9 @@ class WDP_Admin_Products_List_Table extends WP_List_Table {
 	 */
 	protected function get_bulk_actions() {
 		return array(
-			'wdp_mark_donation' => __('Bağış ürünü yap', 'woo-donation-popup'),
-			'wdp_mark_normal'   => __('Normal ürün yap', 'woo-donation-popup'),
-			'wdp_mark_global'   => __('Genel ayara döndür', 'woo-donation-popup'),
+			'wdp_mark_donation' => __('Make donation product', 'woo-donation-popup'),
+			'wdp_mark_normal'   => __('Make regular product', 'woo-donation-popup'),
+			'wdp_mark_global'   => __('Revert to the global setting', 'woo-donation-popup'),
 		);
 	}
 

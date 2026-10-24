@@ -1,0 +1,26 @@
+{
+  "id": "elementor-widgets",
+  "locale": "en_US",
+  "config": "tt5-try-blocks-hpos",
+  "widgets": [
+    {
+      "file": "includes/elementor/class-widget-donation-form.php",
+      "class": "WDP_Elementor_Widget_Donation_Form",
+      "title": "Donation form",
+      "keywords": [],
+      "hasGetKeywords": true
+    },
+    {
+      "file": "includes/elementor/class-widget-donations-list.php",
+      "class": "WDP_Elementor_Widget_Donations_List",
+      "title": "Donations list",
+      "keywords": [],
+      "hasGetKeywords": true
+    }
+  ],
+  "text": "Donation form\nDonations list",
+  "lines": [
+    "Donation form",
+    "Donations list"
+  ]
+}

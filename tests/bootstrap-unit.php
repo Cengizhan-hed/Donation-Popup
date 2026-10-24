@@ -19,7 +19,7 @@ if (!defined('WDP_PLUGIN_FILE')) {
 	define('WDP_PLUGIN_FILE', $root . '/woo-donation-popup.php');
 }
 if (!defined('WDP_VERSION')) {
-	define('WDP_VERSION', '10.34.15');
+	define('WDP_VERSION', '10.35.0');
 }
 if (!defined('MINUTE_IN_SECONDS')) {
 	define('MINUTE_IN_SECONDS', 60);
@@ -34,7 +34,7 @@ if (!defined('WDP_PLUGIN_URL')) {
 	define('WDP_PLUGIN_URL', 'https://example.test/wp-content/plugins/woo-donation-popup/');
 }
 if (!defined('WDP_ASSET_VERSION')) {
-	define('WDP_ASSET_VERSION', '10.34.15');
+	define('WDP_ASSET_VERSION', '10.35.0');
 }
 if (!defined('WDP_UNIT_TEST')) {
 	define('WDP_UNIT_TEST', true);
@@ -284,15 +284,88 @@ if (!function_exists('wp_send_json_success')) {
 	}
 }
 
+if (!function_exists('wdp_test_translate')) {
+	/**
+	 * Birim testlerinde gettext: languages/woo-donation-popup-<locale>.po okunur (varsayılan tr_TR; en_US = çeviri yok,
+	 * İngilizce kaynak). Test içinde `$GLOBALS['wdp_test_locale'] = 'en_US'` ile geçici değiştirilir.
+	 * Böylece eski Türkçe beklentiler çeviri zinciri üzerinden doğrulanır.
+	 *
+	 * @param string $text    İngilizce kaynak metin.
+	 * @param string $context msgctxt.
+	 * @return string
+	 */
+	function wdp_test_translate($text, $context = '') {
+		static $maps = array();
+		$locale = isset($GLOBALS['wdp_test_locale']) ? (string) $GLOBALS['wdp_test_locale'] : (string) getenv('WDP_TEST_LOCALE');
+		$locale = $locale !== '' ? $locale : 'tr_TR';
+		if (!isset($maps[$locale])) {
+			$map  = array();
+			$file = dirname(__DIR__) . '/languages/woo-donation-popup-' . $locale . '.po';
+			if ($locale !== 'en_US' && is_readable($file)) {
+				$ctx = '';
+				$id  = null;
+				$str = null;
+				$cur = '';
+				$un  = static function ($v) {
+					return strtr($v, array('\\n' => "\n", '\\t' => "\t", '\\"' => '"', '\\\\' => '\\'));
+				};
+				$flush = static function () use (&$map, &$ctx, &$id, &$str) {
+					if ($id !== null && $id !== '' && $str !== null && $str !== '') {
+						$map[$ctx . "\x04" . $id] = $str;
+					}
+					$ctx = '';
+					$id  = null;
+					$str = null;
+				};
+				foreach (file($file, FILE_IGNORE_NEW_LINES) as $line) {
+					if (preg_match('/^msgctxt "(.*)"$/', $line, $m)) {
+						$flush();
+						$ctx = $un($m[1]);
+						$cur = 'ctx';
+					} elseif (preg_match('/^msgid "(.*)"$/', $line, $m)) {
+						if ($cur === 'str' || $cur === 'plural') {
+							$flush();
+						}
+						$id  = $un($m[1]);
+						$cur = 'id';
+					} elseif (preg_match('/^msgid_plural "(.*)"$/', $line)) {
+						$cur = 'plural';
+					} elseif (preg_match('/^msgstr(?:\[0\])? "(.*)"$/', $line, $m)) {
+						$str = $un($m[1]);
+						$cur = 'str';
+					} elseif (preg_match('/^msgstr\[\d+\] "/', $line)) {
+						$cur = 'plural';
+					} elseif (preg_match('/^"(.*)"$/', $line, $m)) {
+						if ($cur === 'id') {
+							$id .= $un($m[1]);
+						} elseif ($cur === 'str') {
+							$str .= $un($m[1]);
+						} elseif ($cur === 'ctx') {
+							$ctx .= $un($m[1]);
+						}
+					} elseif (trim($line) === '') {
+						$flush();
+						$cur = '';
+					}
+				}
+				$flush();
+			}
+			$maps[$locale] = $map;
+		}
+		$key = (string) $context . "\x04" . (string) $text;
+		return isset($maps[$locale][$key]) ? $maps[$locale][$key] : (string) $text;
+	}
+}
 if (!function_exists('__')) {
 	function __($text, $domain = null) {
-		return (string) $text;
+		unset($domain);
+		return wdp_test_translate($text);
 	}
 }
 if (!function_exists('_x')) {
 	function _x($text, $context, $domain = null) {
-		unset($context, $domain);
-		return (string) $text;
+		unset($domain);
+		return wdp_test_translate($text, $context);
 	}
 }
 if (!function_exists('load_plugin_textdomain')) {
@@ -307,12 +380,26 @@ if (!function_exists('load_plugin_textdomain')) {
 }
 if (!function_exists('esc_html__')) {
 	function esc_html__($text, $domain = null) {
-		return htmlspecialchars((string) $text, ENT_QUOTES, 'UTF-8');
+		unset($domain);
+		return htmlspecialchars(wdp_test_translate($text), ENT_QUOTES, 'UTF-8');
 	}
 }
 if (!function_exists('esc_attr__')) {
 	function esc_attr__($text, $domain = null) {
-		return htmlspecialchars((string) $text, ENT_QUOTES, 'UTF-8');
+		unset($domain);
+		return htmlspecialchars(wdp_test_translate($text), ENT_QUOTES, 'UTF-8');
+	}
+}
+if (!function_exists('esc_html_x')) {
+	function esc_html_x($text, $context, $domain = null) {
+		unset($domain);
+		return htmlspecialchars(wdp_test_translate($text, $context), ENT_QUOTES, 'UTF-8');
+	}
+}
+if (!function_exists('esc_attr_x')) {
+	function esc_attr_x($text, $context, $domain = null) {
+		unset($domain);
+		return htmlspecialchars(wdp_test_translate($text, $context), ENT_QUOTES, 'UTF-8');
 	}
 }
 if (!function_exists('esc_html')) {
@@ -895,7 +982,58 @@ if (!function_exists('wp_enqueue_style')) {
 	function wp_enqueue_style(...$args) {}
 }
 if (!function_exists('wp_enqueue_script')) {
-	function wp_enqueue_script(...$args) {}
+	function wp_enqueue_script(...$args) {
+		$handle = isset($args[0]) ? (string) $args[0] : '';
+		if ($handle !== '') {
+			WDP_Test_State::$options['__enqueued_scripts'][] = $handle;
+		}
+	}
+}
+if (!function_exists('wp_register_script')) {
+	function wp_register_script($handle, $src = '', $deps = array(), $ver = false, $args = false) {
+		WDP_Test_State::$options['__scripts'][] = array(
+			'handle' => (string) $handle,
+			'src'    => (string) $src,
+			'deps'   => $deps,
+		);
+		return true;
+	}
+}
+if (!function_exists('wp_set_script_translations')) {
+	function wp_set_script_translations($handle, $domain = 'default', $path = null) {
+		WDP_Test_State::$options['__script_translations'][] = array(
+			'handle' => (string) $handle,
+			'domain' => (string) $domain,
+			'path'   => (string) $path,
+		);
+		return true;
+	}
+}
+if (!function_exists('wp_localize_script')) {
+	function wp_localize_script($handle, $object_name, $l10n) {
+		WDP_Test_State::$options['__localized'][] = array(
+			'handle' => (string) $handle,
+			'object' => (string) $object_name,
+			'l10n'   => $l10n,
+		);
+		return true;
+	}
+}
+if (!function_exists('register_block_type')) {
+	function register_block_type($name, $args = array()) {
+		WDP_Test_State::$options['__blocks'][] = is_string($name) ? $name : (string) $name;
+		return true;
+	}
+}
+if (!function_exists('admin_url')) {
+	function admin_url($path = '') {
+		return 'https://example.test/wp-admin/' . ltrim((string) $path, '/');
+	}
+}
+if (!function_exists('wp_create_nonce')) {
+	function wp_create_nonce($action = -1) {
+		return 'test-nonce-' . (string) $action;
+	}
 }
 if (!function_exists('wp_script_add_data')) {
 	function wp_script_add_data(...$args) {}

@@ -1,0 +1,21 @@
+{
+  "id": "form-panel-custom-open",
+  "text": "×\nWDP E2E Custom\nDonation form for WDP E2E Custom\n+#N#\nDonation amount:\n£#AMT#\n£#AMT#\n£#AMT#\n£#AMT#.#N#\n£\nGo to checkout\nAdd to cart\nSecure payment · SSL-protected transaction",
+  "lines": [
+    "×",
+    "WDP E2E Custom",
+    "Donation form for WDP E2E Custom",
+    "+#N#",
+    "Donation amount:",
+    "£#AMT#",
+    "£#AMT#",
+    "£#AMT#",
+    "£#AMT#.#N#",
+    "£",
+    "Go to checkout",
+    "Add to cart",
+    "Secure payment · SSL-protected transaction"
+  ],
+  "locale": "en_US",
+  "config": "sf-gbp-classic-hpos"
+}

@@ -8,7 +8,14 @@
   'use strict';
 
   const WDPApp = window.WDPApp || (window.WDPApp = {});
-  
+  if (!WDPApp.i18n || typeof WDPApp.i18n.__ !== 'function') {
+    WDPApp.i18n = {
+      __: function (msg) { return msg == null ? '' : String(msg); },
+      _x: function (msg) { return msg == null ? '' : String(msg); },
+      sprintf: function (fmt) { return String(fmt == null ? '' : fmt); },
+    };
+  }
+
   // Use centralized module dependency helper
   const utilsCheck = (WDPApp.utils && WDPApp.utils.ensureModule)
     ? WDPApp.utils.ensureModule('utils', ['formatCurrency', 'safeLog', 'refreshWdpAjaxNonces'])
@@ -36,14 +43,17 @@
     if (typeof formMessages.getSadakaInvalidMessage === 'function') {
       return formMessages.getSadakaInvalidMessage();
     }
-    return 'Geçerli bir alt bağış tutarı giriniz.';
+    return WDPApp.i18n.__('Please enter a valid additional donation amount.', 'woo-donation-popup');
   }
 
   function getSadakaMinErrorMessage(minValue) {
     if (typeof formMessages.getSadakaMinErrorMessage === 'function') {
       return formMessages.getSadakaMinErrorMessage(minValue);
     }
-    return `En az ${formatCurrency(minValue)} bağış giriniz.`;
+    return WDPApp.i18n.sprintf(
+      WDPApp.i18n.__('Please enter at least %s.', 'woo-donation-popup'),
+      formatCurrency(minValue)
+    );
   }
 
   function validateSadakaDonation(form) {
@@ -321,7 +331,7 @@
       ? formValidate.getDonorNameRequiredMessage()
       : (typeof formMessages.getDonorNameRequiredMessage === 'function'
         ? formMessages.getDonorNameRequiredMessage()
-        : 'Ad Soyad zorunludur.');
+        : WDPApp.i18n.__('Full name is required.', 'woo-donation-popup'));
   }
 
   function getShareholderNameRequiredMessage() {
@@ -329,7 +339,7 @@
       ? formValidate.getShareholderNameRequiredMessage()
       : (typeof formMessages.getShareholderNameRequiredMessage === 'function'
         ? formMessages.getShareholderNameRequiredMessage()
-        : 'Hissedar adı zorunludur.');
+        : WDPApp.i18n.__('Shareholder name is required.', 'woo-donation-popup'));
   }
 
   function getRequiredFieldMessage(field) {
@@ -337,7 +347,7 @@
       ? formValidate.getRequiredFieldMessage(field)
       : (typeof formMessages.getRequiredFieldMessage === 'function'
         ? formMessages.getRequiredFieldMessage(field)
-        : 'Bu alan zorunludur');
+        : WDPApp.i18n.__('This field is required', 'woo-donation-popup'));
   }
 
   function getPhoneValidationState(input, options) {
@@ -461,7 +471,7 @@
             ? formMessages.getPhoneIncompleteMessage()
             : null) ||
           (typeof fb === "string" && fb.trim() ? fb.trim() : null) ||
-          "Telefon numaranızı eksiksiz giriniz.";
+          WDPApp.i18n.__('Please enter your complete phone number.', 'woo-donation-popup');
         showInputError(el, msg);
         count += 1;
         return;
@@ -474,7 +484,7 @@
         }
         msg = m ? m[1] + ". " + getShareholderNameRequiredMessage() : getShareholderNameRequiredMessage();
       } else if (key === "custom_price") {
-        msg = "Lütfen bağış tutarını giriniz.";
+        msg = WDPApp.i18n.__('Please enter a donation amount.', 'woo-donation-popup');
       } else if (key === "sadaka_custom_price") {
         // Sunucu mesajını koru; genel "Bu alan zorunludur" ile ezme.
         msg =
@@ -482,9 +492,9 @@
           (typeof formMessages.getSadakaInvalidMessage === "function"
             ? formMessages.getSadakaInvalidMessage()
             : null) ||
-          "Geçerli bir alt bağış tutarı giriniz.";
+          WDPApp.i18n.__('Please enter a valid additional donation amount.', 'woo-donation-popup');
       } else {
-        msg = fb || getRequiredFieldMessage(el) || "Bu alan zorunludur.";
+        msg = fb || getRequiredFieldMessage(el) || WDPApp.i18n.__('This field is required.', 'woo-donation-popup');
       }
 
       showInputError(el, msg);
@@ -548,7 +558,7 @@
       } catch (validationError) {
         safeLog("validateForm threw:", validationError);
         validationPassed = false;
-        let fallback = 'Lütfen işaretli alanları kontrol edin.';
+        let fallback = WDPApp.i18n.__('Please check the highlighted fields.', 'woo-donation-popup');
         if (WDPApp.formFeedback && typeof WDPApp.formFeedback.collectVisibleFieldErrorMessages === 'function') {
           const collected = WDPApp.formFeedback.collectVisibleFieldErrorMessages(form);
           if (collected && collected.length) {
@@ -565,7 +575,7 @@
           /is not defined|is not a function|Cannot read|undefined/i.test(rawMsg) ||
           (validationError &&
             (validationError.name === 'ReferenceError' || validationError.name === 'TypeError'));
-        if (!isTechnical && rawMsg && fallback === 'Lütfen işaretli alanları kontrol edin.') {
+        if (!isTechnical && rawMsg && fallback === WDPApp.i18n.__('Please check the highlighted fields.', 'woo-donation-popup')) {
           fallback = rawMsg;
         }
         showShareholderValidationFeedback(form, [], fallback);
@@ -650,7 +660,7 @@
           checkoutBtn.disabled = false;
           checkoutBtn.classList.remove("wdp-loading");
         }
-        showFormError(form, "İşlem şu anda tamamlanamadı. Lütfen tekrar deneyin.");
+        showFormError(form, WDPApp.i18n._x('The action could not be completed. Please try again.', 'frontend script', 'woo-donation-popup'));
         return false;
       }
     }
@@ -766,7 +776,10 @@
               if (existingError) existingError.remove();
               const inputError = document.createElement("div");
               inputError.className = "wdp-input-error";
-              inputError.textContent = `En az ${formatCurrency(minTotal)} bağış giriniz.`;
+              inputError.textContent = WDPApp.i18n.sprintf(
+                WDPApp.i18n.__('Please enter at least %s.', 'woo-donation-popup'),
+                formatCurrency(minTotal)
+              );
               const parentField = this.closest(".wdp-price-field") || this.parentNode;
               if (parentField) {
                 const computedStyle = window.getComputedStyle(parentField);
@@ -805,7 +818,10 @@
           });
         }
         
-        const blurHandler = createMinPriceBlurHandler((minPrice) => `En az ${formatCurrency(minPrice)} bağış giriniz.`);
+        const blurHandler = createMinPriceBlurHandler((minPrice) => WDPApp.i18n.sprintf(
+          WDPApp.i18n.__('Please enter at least %s.', 'woo-donation-popup'),
+          formatCurrency(minPrice)
+        ));
         const debouncedBlurHandler = debounce ? debounce(blurHandler, 300) : blurHandler;
         
         if (input.dataset.wdpCustomPriceBlurBound !== '1') {

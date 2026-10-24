@@ -1,0 +1,24 @@
+{
+  "id": "form-popup-custom-error",
+  "text": "×\nWDP E2E Custom\nDonation form for WDP E2E Custom\nFull name is required.\n+#N#\nPlease enter your complete phone number.\nDonation amount:\n£#AMT#\n£#AMT#\n£#AMT#\n£#AMT#.#N#\n£\nPlease enter a donation amount.\nAdd to cart\nGo to checkout\nSecure payment · SSL-protected transaction",
+  "lines": [
+    "×",
+    "WDP E2E Custom",
+    "Donation form for WDP E2E Custom",
+    "Full name is required.",
+    "+#N#",
+    "Please enter your complete phone number.",
+    "Donation amount:",
+    "£#AMT#",
+    "£#AMT#",
+    "£#AMT#",
+    "£#AMT#.#N#",
+    "£",
+    "Please enter a donation amount.",
+    "Add to cart",
+    "Go to checkout",
+    "Secure payment · SSL-protected transaction"
+  ],
+  "locale": "en_US",
+  "config": "sf-gbp-classic-hpos"
+}

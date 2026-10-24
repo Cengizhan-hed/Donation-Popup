@@ -47,8 +47,8 @@ class Woo_Donation_Popup_Admin {
     public function add_admin_menu() {
         add_submenu_page(
             'woocommerce', // WooCommerce menüsü altına ekle
-            __('Bağış Popup Ayarları', 'woo-donation-popup'),
-            __('Bağış Popup Ayarları', 'woo-donation-popup'),
+            __('Donation Popup settings', 'woo-donation-popup'),
+            __('Donation Popup settings', 'woo-donation-popup'),
             'manage_woocommerce', // WooCommerce yönetme yetkisi olan kullanıcılar görebilir
             'wdp-popup-settings',
             array($this, 'render_settings_page')
@@ -97,12 +97,12 @@ class Woo_Donation_Popup_Admin {
             $this->guard_admin_settings_ajax();
             WDP_Placement_Settings::save($this->get_admin_request_data());
             $this->bump_wdp_asset_cache_version();
-            $this->send_admin_settings_success(__('Ürün sayfası ve liste ayarları kaydedildi.', 'woo-donation-popup'));
+            $this->send_admin_settings_success(__('Product page and list settings saved.', 'woo-donation-popup'));
         } catch (\Throwable $e) {
             if (function_exists('wdp_debug_log')) {
                 wdp_debug_log('WDP placement save: ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine());
             }
-            $this->send_admin_settings_error(__('Bir hata oluştu. Lütfen tekrar deneyin.', 'woo-donation-popup'));
+            $this->send_admin_settings_error(__('Something went wrong. Please try again.', 'woo-donation-popup'));
         }
     }
     
@@ -181,7 +181,7 @@ class Woo_Donation_Popup_Admin {
         $this->update_non_autoload_option('wdp_button_settings', $settings);
         $this->bump_wdp_asset_cache_version();
 
-        $this->send_admin_settings_success(__('Normal form ayarları başarıyla kaydedildi.', 'woo-donation-popup'));
+        $this->send_admin_settings_success(__('Standard form settings saved successfully.', 'woo-donation-popup'));
     }
 
     /**
@@ -242,7 +242,7 @@ class Woo_Donation_Popup_Admin {
 
 		$this->update_non_autoload_option('wdp_button_settings', $settings);
 		$this->bump_wdp_asset_cache_version();
-		$this->send_admin_settings_success(__('Tasarım Stüdyosu ayarları kaydedildi.', 'woo-donation-popup'));
+		$this->send_admin_settings_success(__('Design Studio settings saved.', 'woo-donation-popup'));
 	}
     
     /**
@@ -265,7 +265,7 @@ class Woo_Donation_Popup_Admin {
         $this->update_non_autoload_option('wdp_shareholder_settings', $settings);
         $this->bump_wdp_asset_cache_version();
 
-        $this->send_admin_settings_success(__('Hisseli form ayarları başarıyla kaydedildi.', 'woo-donation-popup'));
+        $this->send_admin_settings_success(__('Share-based form settings saved successfully.', 'woo-donation-popup'));
     }
     
     /**
@@ -283,7 +283,7 @@ class Woo_Donation_Popup_Admin {
         $this->update_non_autoload_option('wdp_success_settings', $settings);
         $this->bump_wdp_asset_cache_version();
 
-        $this->send_admin_settings_success(__('Başarı ekranı ayarları başarıyla kaydedildi.', 'woo-donation-popup'));
+        $this->send_admin_settings_success(__('Success screen settings saved successfully.', 'woo-donation-popup'));
     }
 
     /**
@@ -304,7 +304,7 @@ class Woo_Donation_Popup_Admin {
         $this->update_non_autoload_option('wdp_progress_bar_settings', $settings);
         $this->bump_wdp_asset_cache_version();
 
-        $this->send_admin_settings_success(__('Progress bar ayarları başarıyla kaydedildi.', 'woo-donation-popup'));
+        $this->send_admin_settings_success(__('Progress bar settings saved successfully.', 'woo-donation-popup'));
     }
 
     /**
@@ -320,19 +320,19 @@ class Woo_Donation_Popup_Admin {
             $settings = WDP_Admin_Settings_Normalizer::normalize_meta_tracking_settings($request_data);
 
             if (! class_exists('WDP_Meta_Tracking')) {
-                $this->send_admin_settings_error(__('Meta izleme modülü yüklenemedi.', 'woo-donation-popup'));
+                $this->send_admin_settings_error(__('The Meta tracking module could not be loaded.', 'woo-donation-popup'));
                 return;
             }
 
             WDP_Meta_Tracking::update_settings($settings);
             $this->bump_wdp_asset_cache_version();
 
-            $this->send_admin_settings_success(__('Meta Pixel ayarları başarıyla kaydedildi.', 'woo-donation-popup'));
+            $this->send_admin_settings_success(__('Meta Pixel settings saved successfully.', 'woo-donation-popup'));
         } catch (Exception $e) {
             if (defined('WP_DEBUG') && WP_DEBUG) {
                 error_log('WDP meta tracking save error: ' . $e->getMessage());
             }
-            $this->send_admin_settings_error(__('Bir hata oluştu. Lütfen tekrar deneyin.', 'woo-donation-popup'));
+            $this->send_admin_settings_error(__('Something went wrong. Please try again.', 'woo-donation-popup'));
         }
     }
     
@@ -350,13 +350,13 @@ class Woo_Donation_Popup_Admin {
         if ($delete_on_uninstall && !$currently_on) {
             $confirmed = isset($request_data['confirm_delete_data']) && '1' === (string) $request_data['confirm_delete_data'];
             if (!$confirmed) {
-                $this->send_admin_settings_error(__('Bu işlem geri alınamaz. Onaylamadan kaydedilmez.', 'woo-donation-popup'));
+                $this->send_admin_settings_error(__('This cannot be undone. It is not saved without confirmation.', 'woo-donation-popup'));
                 return;
             }
         }
         $this->update_non_autoload_option('wdp_delete_data_on_uninstall', $delete_on_uninstall ? '1' : '0');
 
-        $this->send_admin_settings_success(__('Gelişmiş ayarlar kaydedildi.', 'woo-donation-popup'));
+        $this->send_admin_settings_success(__('Advanced settings saved.', 'woo-donation-popup'));
     }
 
     /**
@@ -389,16 +389,16 @@ class Woo_Donation_Popup_Admin {
             $saved = $this->update_non_autoload_option(WDP_Category_Title_Color_Service::OPTION_KEY, $colors);
 
             if ($saved === false) {
-                $this->send_admin_settings_error(__('Ayarlar kaydedilirken bir hata oluştu.', 'woo-donation-popup'));
+                $this->send_admin_settings_error(__('An error occurred while saving settings.', 'woo-donation-popup'));
             }
 
             $this->bump_wdp_asset_cache_version();
-            $this->send_admin_settings_success(__('Kategori renkleri kaydedildi.', 'woo-donation-popup'));
+            $this->send_admin_settings_success(__('Category colors saved.', 'woo-donation-popup'));
         } catch (Exception $e) {
             if (defined('WP_DEBUG') && WP_DEBUG) {
                 error_log('WDP category colors save error: ' . $e->getMessage());
             }
-            $this->send_admin_settings_error(__('Bir hata oluştu. Lütfen tekrar deneyin.', 'woo-donation-popup'));
+            $this->send_admin_settings_error(__('Something went wrong. Please try again.', 'woo-donation-popup'));
         }
     }
     
@@ -419,18 +419,18 @@ class Woo_Donation_Popup_Admin {
             $saved = $this->update_non_autoload_option('wdp_modal_layout_settings', $settings);
 
             if ($saved === false) {
-                $this->send_admin_settings_error(__('Ayarlar kaydedilirken bir hata oluştu.', 'woo-donation-popup'));
+                $this->send_admin_settings_error(__('An error occurred while saving settings.', 'woo-donation-popup'));
             }
 
             $this->bump_wdp_asset_cache_version();
 
-            $this->send_admin_settings_success(__('Modal görünüm ayarları başarıyla kaydedildi.', 'woo-donation-popup'));
+            $this->send_admin_settings_success(__('Popup layout settings saved successfully.', 'woo-donation-popup'));
 
         } catch (Exception $e) {
             if (defined('WP_DEBUG') && WP_DEBUG) {
                 error_log('WDP modal layout save error: ' . $e->getMessage());
             }
-            $this->send_admin_settings_error(__('Bir hata oluştu. Lütfen tekrar deneyin.', 'woo-donation-popup'));
+            $this->send_admin_settings_error(__('Something went wrong. Please try again.', 'woo-donation-popup'));
         }
     }
 
@@ -443,7 +443,7 @@ class Woo_Donation_Popup_Admin {
         check_ajax_referer('wdp_admin_nonce', 'nonce');
 
         if (!current_user_can('manage_woocommerce')) {
-            $this->send_admin_settings_error(__('Bu işlem için yetkiniz yok.', 'woo-donation-popup'));
+            $this->send_admin_settings_error(__('You do not have permission to do this.', 'woo-donation-popup'));
         }
     }
 
@@ -491,10 +491,10 @@ class Woo_Donation_Popup_Admin {
         $this->guard_admin_settings_ajax();
         $id = isset($_POST['preset_id']) ? sanitize_key(wp_unslash($_POST['preset_id'])) : '';
         if ($id === '' || !class_exists('WDP_Style_Presets')) {
-            $this->send_admin_settings_error(__('Geçersiz stil paketi.', 'woo-donation-popup'));
+            $this->send_admin_settings_error(__('Invalid style pack.', 'woo-donation-popup'));
         }
         if (!WDP_Style_Presets::apply_to_options($id)) {
-            $this->send_admin_settings_error(__('Stil paketi uygulanamadı.', 'woo-donation-popup'));
+            $this->send_admin_settings_error(__('The style pack could not be applied.', 'woo-donation-popup'));
         }
         $this->bump_wdp_asset_cache_version();
         $pack = WDP_Style_Presets::get($id);
@@ -504,7 +504,7 @@ class Woo_Donation_Popup_Admin {
             : '';
         wp_send_json_success(
             array(
-                'message'     => __('Stil paketi uygulandı ve kaydedildi.', 'woo-donation-popup'),
+                'message'     => __('The style pack was applied and saved.', 'woo-donation-popup'),
                 'preset_id'   => $id,
                 'reload'      => false,
                 'pack'        => is_array($pack) ? $pack : array(),
@@ -522,7 +522,7 @@ class Woo_Donation_Popup_Admin {
     public function export_style_preset() {
         $this->guard_admin_settings_ajax();
         if (!class_exists('WDP_Style_Presets')) {
-            $this->send_admin_settings_error(__('Stil paketleri yüklenemedi.', 'woo-donation-popup'));
+            $this->send_admin_settings_error(__('Style packs could not be loaded.', 'woo-donation-popup'));
         }
         $label = isset($_POST['label']) ? sanitize_text_field(wp_unslash($_POST['label'])) : '';
         $pack  = WDP_Style_Presets::export_current($label);
@@ -538,12 +538,12 @@ class Woo_Donation_Popup_Admin {
     public function import_style_preset() {
         $this->guard_admin_settings_ajax();
         if (!class_exists('WDP_Style_Presets')) {
-            $this->send_admin_settings_error(__('Stil paketleri yüklenemedi.', 'woo-donation-popup'));
+            $this->send_admin_settings_error(__('Style packs could not be loaded.', 'woo-donation-popup'));
         }
         $raw = isset($_POST['pack_json']) ? wp_unslash($_POST['pack_json']) : '';
         $pack = json_decode(is_string($raw) ? $raw : '', true);
         if (!is_array($pack)) {
-            $this->send_admin_settings_error(__('Geçersiz JSON paketi.', 'woo-donation-popup'));
+            $this->send_admin_settings_error(__('Invalid JSON pack.', 'woo-donation-popup'));
         }
         $id = WDP_Style_Presets::import_pack($pack, true);
         if (is_wp_error($id)) {
@@ -551,7 +551,7 @@ class Woo_Donation_Popup_Admin {
         }
         wp_send_json_success(
             array(
-                'message'   => __('Paket içe aktarıldı ve uygulandı.', 'woo-donation-popup'),
+                'message'   => __('The pack was imported and applied.', 'woo-donation-popup'),
                 'preset_id' => $id,
                 'reload'    => false,
             )

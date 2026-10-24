@@ -1,0 +1,42 @@
+{
+  "translation-revision-date": "2026-10-24T13:31:01.750Z",
+  "generator": "WDP make-json",
+  "source": "blocks/donation-form/index.js",
+  "domain": "messages",
+  "locale_data": {
+    "messages": {
+      "": {
+        "domain": "messages",
+        "lang": "tr_TR",
+        "plural-forms": "nplurals=2; plural=(n > 1);"
+      },
+      "Current product (automatic)": [
+        "Mevcut ürün (otomatik)"
+      ],
+      "Product": [
+        "Ürün"
+      ],
+      "Donation form": [
+        "Bağış formu"
+      ],
+      "Display": [
+        "Görünüm"
+      ],
+      "Inline form": [
+        "Sayfa içi form"
+      ],
+      "display mode\u0004Popup": [
+        "Ortada pencere"
+      ],
+      "Side panel": [
+        "Sağ panel"
+      ],
+      "Show heading": [
+        "Başlığı göster"
+      ],
+      "If no product is selected, the current product is used automatically. The form appears on the product page or when an ID is provided.": [
+        "Ürün seçilmediyse mevcut ürün (otomatik) kullanılır. Ürün sayfasında veya kimlik verildiğinde form görünür."
+      ]
+    }
+  }
+}

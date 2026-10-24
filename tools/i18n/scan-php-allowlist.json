@@ -1,0 +1,49 @@
+{
+  "allow": [
+    {
+      "file": "includes/class-migrations.php",
+      "contains": "Kişisel verileriniz",
+      "reason": "Eski (çeviri öncesi) kayıtlı varsayılan metni tanıma sabiti — veri, görünür metin değil"
+    },
+    {
+      "file": "includes/class-order-meta-keys.php",
+      "contains": "Bağışçı",
+      "reason": "Eski siparişlerde Türkçe etiket olarak saklanmış meta anahtarlarını sabit anahtara eşleme (geçmiş sipariş verisi)"
+    },
+    {
+      "file": "includes/class-order-meta-keys.php",
+      "contains": "İthaf",
+      "reason": "Eski sipariş meta anahtarı (veri)"
+    },
+    {
+      "file": "includes/class-order-meta-keys.php",
+      "contains": "İşlem ücreti",
+      "reason": "Eski sipariş meta anahtarı (veri)"
+    },
+    {
+      "file": "includes/class-order-meta-keys.php",
+      "contains": "Hisse Sayısı",
+      "reason": "Eski sipariş meta anahtarı (veri)"
+    },
+    {
+      "file": "includes/class-order-meta-keys.php",
+      "contains": "Hissedar",
+      "reason": "Eski sipariş meta anahtarı biçimleri (veri)"
+    },
+    {
+      "file": "includes/templates/class-form-fields-renderer.php",
+      "contains": "bağış tutarı",
+      "reason": "Eski kayıtlı yer tutucu metnini tanıma (veri karşılaştırması)"
+    },
+    {
+      "file": "includes/traits/trait-wdp-assets-inline-styles.php",
+      "contains": "Prevent font flash",
+      "reason": "İngilizce CSS yorumu (yanlış pozitif)"
+    },
+    {
+      "file": "includes/class-order-meta-keys.php",
+      "contains": "Bağış Notu",
+      "reason": "Eski sipariş meta anahtarı (veri)"
+    }
+  ]
+}

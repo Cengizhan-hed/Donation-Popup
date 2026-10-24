@@ -1,0 +1,11 @@
+{
+  "id": "related-cards",
+  "text": "WDP E2E Campaign Donate\nWDP E2E Custom Donate\nWDP E2E Shares ₺#N# Donate",
+  "lines": [
+    "WDP E2E Campaign Donate",
+    "WDP E2E Custom Donate",
+    "WDP E2E Shares ₺#N# Donate"
+  ],
+  "locale": "en_US",
+  "config": "tt5-try-blocks-hpos"
+}

@@ -1,0 +1,18 @@
+{
+  "id": "form-inline-shares-error",
+  "text": "Number of shares:\n#N#. Shareholder details\n₺#N#\n#N#. Shareholder name is required.\n+#N#\nPlease enter your complete phone number.\nCreate a copy\nAdd to cart\nGo to checkout\nSecure payment · SSL-protected transaction",
+  "lines": [
+    "Number of shares:",
+    "#N#. Shareholder details",
+    "₺#N#",
+    "#N#. Shareholder name is required.",
+    "+#N#",
+    "Please enter your complete phone number.",
+    "Create a copy",
+    "Add to cart",
+    "Go to checkout",
+    "Secure payment · SSL-protected transaction"
+  ],
+  "locale": "en_US",
+  "config": "tt5-try-blocks-hpos"
+}

@@ -163,7 +163,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-fill {
   border-radius: 0;
   position: absolute;
   top: 0;
-  left: 0;
+  inset-inline-start: 0;
   z-index: 2;
   overflow: hidden;
   transition: width calc(0.55s * var(--wdp-motion-scale, 1)) cubic-bezier(0.22, 1, 0.36, 1);
@@ -174,7 +174,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-fill::before {
   content: "";
   position: absolute;
   top: 0;
-  right: 0;
+  inset-inline-end: 0;
   width: 12px;
   height: 100%;
   background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35));
@@ -208,13 +208,13 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-pending {
   border-radius: 0;
   position: absolute;
   top: 0;
-  left: 0;
+  inset-inline-start: 0;
   z-index: 3;
   display: none;
   opacity: 1;
   transition:
     width calc(0.45s * var(--wdp-motion-scale, 1)) cubic-bezier(0.22, 1, 0.36, 1),
-    left calc(0.45s * var(--wdp-motion-scale, 1)) cubic-bezier(0.22, 1, 0.36, 1);
+    inset-inline-start calc(0.45s * var(--wdp-motion-scale, 1)) cubic-bezier(0.22, 1, 0.36, 1);
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.15);
 }
 
@@ -224,13 +224,13 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-preview {
   border-radius: 0;
   position: absolute;
   top: 0;
-  left: 0;
+  inset-inline-start: 0;
   z-index: 4;
   display: none;
   opacity: 1;
   transition:
     width calc(0.3s * var(--wdp-motion-scale, 1)) cubic-bezier(0.22, 1, 0.36, 1),
-    left calc(0.3s * var(--wdp-motion-scale, 1)) cubic-bezier(0.22, 1, 0.36, 1);
+    inset-inline-start calc(0.3s * var(--wdp-motion-scale, 1)) cubic-bezier(0.22, 1, 0.36, 1);
   background-image: repeating-linear-gradient(
     -45deg,
     transparent 0 3px,

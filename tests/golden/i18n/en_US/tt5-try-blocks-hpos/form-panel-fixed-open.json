@@ -1,0 +1,17 @@
+{
+  "id": "form-panel-fixed-open",
+  "text": "×\nWDP E2E Fixed\nDonation form for WDP E2E Fixed\n+#N#\nLine amount\n₺#N#\nGo to checkout\nAdd to cart\nSecure payment · SSL-protected transaction",
+  "lines": [
+    "×",
+    "WDP E2E Fixed",
+    "Donation form for WDP E2E Fixed",
+    "+#N#",
+    "Line amount",
+    "₺#N#",
+    "Go to checkout",
+    "Add to cart",
+    "Secure payment · SSL-protected transaction"
+  ],
+  "locale": "en_US",
+  "config": "tt5-try-blocks-hpos"
+}

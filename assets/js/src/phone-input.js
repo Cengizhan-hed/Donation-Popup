@@ -8,6 +8,13 @@
   'use strict';
 
   const WDPApp = window.WDPApp || (window.WDPApp = {});
+  if (!WDPApp.i18n || typeof WDPApp.i18n.__ !== 'function') {
+    WDPApp.i18n = {
+      __: function (msg) { return msg == null ? '' : String(msg); },
+      _x: function (msg) { return msg == null ? '' : String(msg); },
+      sprintf: function (fmt) { return String(fmt == null ? '' : fmt); },
+    };
+  }
   const wdp_ajax = window.wdp_ajax || {};
 
   const PANEL_ID = 'wdp-phone-country-panel';
@@ -15,15 +22,19 @@
   function getCountries() {
     const list = wdp_ajax.phone && Array.isArray(wdp_ajax.phone.countries) ? wdp_ajax.phone.countries : [];
     return list.filter(function (c) {
-      return c && typeof c.iso === 'string' && c.iso.length === 2 && c.dial && String(c.iso).toLowerCase() !== 'il';
+      return c && typeof c.iso === 'string' && c.iso.length === 2 && c.dial;
     });
   }
 
   function getPhoneConfig() {
     const phone = wdp_ajax.phone || {};
-    const raw = phone.default_country || 'tr';
-    const defaultCountry = typeof raw === 'string' && raw.length === 2 ? raw.toLowerCase() : 'tr';
-    return { defaultCountry: defaultCountry };
+    // Varsayılan ülke sunucudan gelir (WooCommerce mağaza ülkesi); yoksa listenin ilk ülkesi.
+    const raw = phone.default_country;
+    if (typeof raw === 'string' && raw.length === 2) {
+      return { defaultCountry: raw.toLowerCase() };
+    }
+    const first = getCountries()[0];
+    return { defaultCountry: first ? String(first.iso).toLowerCase() : '' };
   }
 
   const DEFAULT_NATIONAL_RULES = { min: 7, max: 12 };
@@ -45,7 +56,7 @@
         return countries[i];
       }
     }
-    return countries[0] || { iso: 'tr', name: 'Türkiye', dial: '90', nationalMin: 10, nationalMax: 10 };
+    return countries[0] || { iso: '', name: '', dial: '', nationalMin: 7, nationalMax: 12 };
   }
 
   function getNationalRules(country) {
@@ -114,19 +125,6 @@
 
     if (digits.startsWith(dial) && digits.length >= dial.length + 6) {
       return digits;
-    }
-
-    if (iso === 'tr') {
-      if (digits.startsWith('0')) {
-        digits = digits.slice(1);
-      }
-      if (digits.startsWith('90') && digits.length >= 12) {
-        return digits;
-      }
-      if (digits.startsWith(dial)) {
-        return digits;
-      }
-      return dial + digits;
     }
 
     if (digits.startsWith('0')) {
@@ -447,7 +445,8 @@
     top = Math.max(frame.top + pad, Math.min(top, frame.bottom - pad - ih));
 
     const width = Math.min(Math.max(rect.width, 280), frame.right - frame.left - 2 * pad);
-    let left = rect.left;
+    const dir = (document.documentElement.dir || window.getComputedStyle(anchorEl).direction || 'ltr').toLowerCase();
+    let left = dir === 'rtl' ? rect.right - width : rect.left;
     left = Math.max(frame.left + pad, Math.min(left, frame.right - width - pad));
 
     el.style.top = Math.round(top) + 'px';
@@ -662,7 +661,7 @@
     const opts = Object.assign(
       {
         name: 'donation_phone',
-        placeholder: 'Telefon Numarası *',
+        placeholder: WDPApp.i18n.__('Phone number *', 'woo-donation-popup'),
         required: true,
         autocomplete: 'tel',
         inputmode: 'tel',
@@ -691,7 +690,7 @@
     codeBtn.className = 'wdp-phone-field__code-btn';
     codeBtn.setAttribute('aria-haspopup', 'listbox');
     codeBtn.setAttribute('aria-expanded', 'false');
-    codeBtn.setAttribute('aria-label', 'Ülke kodu seç');
+    codeBtn.setAttribute('aria-label', WDPApp.i18n.__('Select country code', 'woo-donation-popup'));
 
     const codeLabel = document.createElement('span');
     codeLabel.className = 'wdp-phone-field__code-label';

@@ -170,7 +170,7 @@ class WDP_Form_Modules {
 		if (empty($badges)) {
 			$text = is_array($button) && !empty($button['trust_strip_text'])
 				? (string) $button['trust_strip_text']
-				: __('Güvenli ödeme · SSL korumalı işlem', 'woo-donation-popup');
+				: __('Secure payment · SSL-protected transaction', 'woo-donation-popup');
 			$icon = is_array($button) && !empty($button['icon_trust']) ? (string) $button['icon_trust'] : 'builtin:shield';
 			$badges = array(
 				array(
@@ -270,7 +270,7 @@ class WDP_Form_Modules {
 				'invalid' => $dot_m[0],
 				'error'   => sprintf(
 					/* translators: %s: invalid token */
-					__('Hızlı tutar düğmeleri yalnız tam sayı olmalı; geçersiz değer: "%s". Tutarları virgül, boşluk veya noktalı virgülle ayırın (ör. 100, 250, 500).', 'woo-donation-popup'),
+					__('Quick amount buttons must be whole numbers only; invalid value: "%s". Separate amounts with commas, spaces, or semicolons (e.g. 100, 250, 500).', 'woo-donation-popup'),
 					$dot_m[0]
 				),
 			);
@@ -284,7 +284,7 @@ class WDP_Form_Modules {
 				'invalid' => $dec_m[1],
 				'error'   => sprintf(
 					/* translators: %s: invalid token */
-					__('Hızlı tutar düğmeleri yalnız tam sayı olmalı; geçersiz değer: "%s". Tutarları virgül, boşluk veya noktalı virgülle ayırın (ör. 100, 250, 500).', 'woo-donation-popup'),
+					__('Quick amount buttons must be whole numbers only; invalid value: "%s". Separate amounts with commas, spaces, or semicolons (e.g. 100, 250, 500).', 'woo-donation-popup'),
 					$dec_m[1]
 				),
 			);
@@ -306,7 +306,7 @@ class WDP_Form_Modules {
 					'invalid' => $part,
 					'error'   => sprintf(
 						/* translators: %s: invalid token */
-						__('Hızlı tutar düğmeleri yalnız tam sayı olmalı; geçersiz değer: "%s". Tutarları virgül, boşluk veya noktalı virgülle ayırın (ör. 100, 250, 500).', 'woo-donation-popup'),
+						__('Quick amount buttons must be whole numbers only; invalid value: "%s". Separate amounts with commas, spaces, or semicolons (e.g. 100, 250, 500).', 'woo-donation-popup'),
 						$part
 					),
 				);
@@ -316,7 +316,7 @@ class WDP_Form_Modules {
 		if (count($amounts) > 6) {
 			return array(
 				'ok'    => false,
-				'error' => __('En fazla 6 hızlı tutar düğmesi tanımlanabilir.', 'woo-donation-popup'),
+				'error' => __('You can define at most 6 quick amount buttons.', 'woo-donation-popup'),
 			);
 		}
 		return array('ok' => true, 'amounts' => $amounts);
@@ -337,7 +337,7 @@ class WDP_Form_Modules {
 			return array(
 				'ok'      => false,
 				'percent' => 0.0,
-				'error'   => __('İşlem ücreti yüzdesi sayı olmalı: 0 (kapalı) veya 0,5–15 arası.', 'woo-donation-popup'),
+				'error'   => __('The processing fee percentage must be a number: 0 (off) or 0.5–15.', 'woo-donation-popup'),
 			);
 		}
 		$value = (float) $raw;
@@ -348,7 +348,7 @@ class WDP_Form_Modules {
 			return array(
 				'ok'      => false,
 				'percent' => 0.0,
-				'error'   => __('İşlem ücreti yüzdesi 0 (kapalı) veya 0,5–15 arasında olmalı.', 'woo-donation-popup'),
+				'error'   => __('The processing fee percentage must be 0 (off) or between 0.5 and 15.', 'woo-donation-popup'),
 			);
 		}
 		return array('ok' => true, 'percent' => round($value, 2), 'error' => '');
@@ -419,7 +419,7 @@ class WDP_Form_Modules {
 				'ok'    => false,
 				'error' => sprintf(
 					/* translators: %s: invalid value */
-					__('Önerilen tutar yalnız pozitif tam sayı olmalı; geçersiz değer: "%s".', 'woo-donation-popup'),
+					__('The suggested amount must be a positive whole number only; invalid value: "%s".', 'woo-donation-popup'),
 					$raw
 				),
 			);
@@ -431,7 +431,7 @@ class WDP_Form_Modules {
 				'ok'    => false,
 				'error' => sprintf(
 					/* translators: %s: invalid value */
-					__('Önerilen tutar hızlı tutar listesinde olmalı; geçersiz değer: "%s".', 'woo-donation-popup'),
+					__('The suggested amount must be in the quick amount list; invalid value: "%s".', 'woo-donation-popup'),
 					$raw
 				),
 			);
@@ -709,7 +709,7 @@ class WDP_Form_Modules {
 
 		$template = trim((string) $text);
 		if ($template === '' || strpos($template, '{donors}') === false) {
-			$template = __('{donors} kişi bağış yaptı', 'woo-donation-popup');
+			$template = __('{donors} people donated', 'woo-donation-popup');
 		}
 		$line = str_replace('{donors}', (string) $donors, $template);
 		return '<p class="wdp-social-proof" role="status">' . esc_html($line) . '</p>';
@@ -730,7 +730,7 @@ class WDP_Form_Modules {
 		if ($label === '') {
 			$label = sprintf(
 				/* translators: %s: percent */
-				__('İşlem maliyetini karşıla (+%%%s)', 'woo-donation-popup'),
+				__('Cover processing costs (+%%%s)', 'woo-donation-popup'),
 				rtrim(rtrim(number_format($percent, 2, ',', ''), '0'), ',')
 			);
 		}
@@ -741,7 +741,7 @@ class WDP_Form_Modules {
 			<span class="wdp-cover-fee__label"><?php echo esc_html($label); ?></span>
 		</label>
 		<div class="wdp-form-total" data-wdp-form-total hidden>
-			<span class="wdp-form-total__label"><?php echo esc_html__('Toplam', 'woo-donation-popup'); ?></span>
+			<span class="wdp-form-total__label"><?php echo esc_html__('Total', 'woo-donation-popup'); ?></span>
 			<span class="wdp-form-total__value">—</span>
 		</div>
 		<?php

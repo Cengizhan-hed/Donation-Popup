@@ -25,7 +25,7 @@ class WDP_Elementor_Widget_Donation_Form extends \Elementor\Widget_Base {
 	 * @return string
 	 */
 	public function get_title() {
-		return __('Bağış Formu', 'woo-donation-popup');
+		return _x('Donation form', 'elementor widget title', 'woo-donation-popup');
 	}
 
 	/**
@@ -40,6 +40,13 @@ class WDP_Elementor_Widget_Donation_Form extends \Elementor\Widget_Base {
 	 */
 	public function get_categories() {
 		return array('wdp-donation');
+	}
+
+	/**
+	 * @return string[]
+	 */
+	public function get_keywords() {
+		return array($this->get_title());
 	}
 
 	/**
@@ -62,19 +69,19 @@ class WDP_Elementor_Widget_Donation_Form extends \Elementor\Widget_Base {
 	protected function register_controls() {
 		$this->start_controls_section(
 			'content',
-			array('label' => __('İçerik', 'woo-donation-popup'))
+			array('label' => __('Content', 'woo-donation-popup'))
 		);
 
 		$this->add_control(
 			'source',
 			array(
-				'label'   => __('Ürün kaynağı', 'woo-donation-popup'),
+				'label'   => __('Product source', 'woo-donation-popup'),
 				'type'    => \Elementor\Controls_Manager::SELECT,
 				'default' => 'current',
 				'options' => array(
-					'current' => __('Mevcut ürün', 'woo-donation-popup'),
-					'list'    => __('Listeden seç', 'woo-donation-popup'),
-					'manual'  => __('ID veya slug elle', 'woo-donation-popup'),
+					'current' => __('Current product', 'woo-donation-popup'),
+					'list'    => __('Select from list', 'woo-donation-popup'),
+					'manual'  => __('Enter ID or slug', 'woo-donation-popup'),
 				),
 			)
 		);
@@ -82,7 +89,7 @@ class WDP_Elementor_Widget_Donation_Form extends \Elementor\Widget_Base {
 		$this->add_control(
 			'product_id',
 			array(
-				'label'       => __('Ürün', 'woo-donation-popup'),
+				'label'       => __('Product', 'woo-donation-popup'),
 				'type'        => \Elementor\Controls_Manager::SELECT2,
 				'options'     => $this->selected_product_options(),
 				'label_block' => true,
@@ -93,7 +100,7 @@ class WDP_Elementor_Widget_Donation_Form extends \Elementor\Widget_Base {
 		$this->add_control(
 			'manual',
 			array(
-				'label'       => __('Ürün ID veya slug', 'woo-donation-popup'),
+				'label'       => __('Product ID or slug', 'woo-donation-popup'),
 				'type'        => \Elementor\Controls_Manager::TEXT,
 				'condition'   => array('source' => 'manual'),
 				'label_block' => true,
@@ -103,13 +110,13 @@ class WDP_Elementor_Widget_Donation_Form extends \Elementor\Widget_Base {
 		$this->add_control(
 			'display',
 			array(
-				'label'   => __('Görünüm', 'woo-donation-popup'),
+				'label'   => __('Display', 'woo-donation-popup'),
 				'type'    => \Elementor\Controls_Manager::SELECT,
 				'default' => 'inline',
 				'options' => array(
-					'inline' => __('Sayfa içi form', 'woo-donation-popup'),
-					'popup'  => __('Ortada pencere', 'woo-donation-popup'),
-					'panel'  => __('Sağ panel', 'woo-donation-popup'),
+					'inline' => __('Inline form', 'woo-donation-popup'),
+					'popup'  => _x('Popup', 'display mode', 'woo-donation-popup'),
+					'panel'  => __('Side panel', 'woo-donation-popup'),
 				),
 			)
 		);
@@ -117,10 +124,10 @@ class WDP_Elementor_Widget_Donation_Form extends \Elementor\Widget_Base {
 		$this->add_control(
 			'show_title',
 			array(
-				'label'        => __('Başlığı göster', 'woo-donation-popup'),
+				'label'        => __('Show heading', 'woo-donation-popup'),
 				'type'         => \Elementor\Controls_Manager::SWITCHER,
-				'label_on'     => __('Evet', 'woo-donation-popup'),
-				'label_off'    => __('Hayır', 'woo-donation-popup'),
+				'label_on'     => __('Yes', 'woo-donation-popup'),
+				'label_off'    => __('No', 'woo-donation-popup'),
 				'return_value' => 'yes',
 				'default'      => 'yes',
 			)
@@ -129,7 +136,7 @@ class WDP_Elementor_Widget_Donation_Form extends \Elementor\Widget_Base {
 		$this->add_control(
 			'button_text',
 			array(
-				'label'     => __('Buton metni', 'woo-donation-popup'),
+				'label'     => _x('Button text', 'Elementor widget', 'woo-donation-popup'),
 				'type'      => \Elementor\Controls_Manager::TEXT,
 				'default'   => '',
 				'condition' => array('display!' => 'inline'),

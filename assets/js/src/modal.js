@@ -8,7 +8,14 @@
   'use strict';
 
   const WDPApp = window.WDPApp || (window.WDPApp = {});
-  
+  if (!WDPApp.i18n || typeof WDPApp.i18n.__ !== 'function') {
+    WDPApp.i18n = {
+      __: function (msg) { return msg == null ? '' : String(msg); },
+      _x: function (msg) { return msg == null ? '' : String(msg); },
+      sprintf: function (fmt) { return String(fmt == null ? '' : fmt); },
+    };
+  }
+
   // Use centralized module dependency helper
   const utilsCheck = (WDPApp.utils && WDPApp.utils.ensureModule) 
     ? WDPApp.utils.ensureModule('utils', ['safeLog', 'focusFirstElement', 'activateFocusTrap', 'announceStatus'])
@@ -25,7 +32,7 @@
   const skeletonWatchdogs = typeof WeakMap !== 'undefined' ? new WeakMap() : null;
   const SKELETON_WATCHDOG_MS = 10000;
   const SKELETON_STALL_MESSAGE =
-    'Form tam yüklenemedi, lütfen bilgilerinizi kontrol edin.';
+    WDPApp.i18n.__('The form did not finish loading. Please check your details.', 'woo-donation-popup');
   let sidePanelScrollLockY = 0;
   let centerModalScrollLockY = 0;
   let pendingOpenRequest = null;
@@ -488,9 +495,9 @@
 
     const modalTitle = modal.querySelector('.wdp-modal-title')
     if (modalTitle && modalTitle.textContent) {
-      announceStatus(`${modalTitle.textContent.trim()} formu açıldı`, 'polite')
+      announceStatus(WDPApp.i18n.sprintf(WDPApp.i18n.__('%s form opened', 'woo-donation-popup'), modalTitle.textContent.trim()), 'polite')
     } else {
-      announceStatus(sidePanelMode ? 'Bağış paneli açıldı' : 'Bağış formu açıldı', 'polite')
+      announceStatus(sidePanelMode ? WDPApp.i18n.__('Donation panel opened', 'woo-donation-popup') : WDPApp.i18n.__('Donation form opened', 'woo-donation-popup'), 'polite')
     }
   }
 
@@ -528,6 +535,12 @@
       const sidePanelMode = isSidePanelModal(modal)
       if (sidePanelMode && !modal.classList.contains('wdp-side-panel')) {
         modal.classList.add('wdp-side-panel')
+      }
+      const pageDir = String(document.documentElement.dir || (typeof window.getComputedStyle === 'function' ? window.getComputedStyle(document.documentElement).direction : '') || 'ltr').toLowerCase()
+      if (pageDir === 'rtl') {
+        modal.setAttribute('dir', 'rtl')
+      } else {
+        modal.removeAttribute('dir')
       }
 
       state.lastFocusedElement = document.activeElement instanceof HTMLElement ? document.activeElement : null
@@ -728,7 +741,7 @@
     state.activeModal = null
     modal.setAttribute('aria-hidden', 'true')
 
-    announceStatus(wasSidePanel ? 'Bağış paneli kapatıldı' : 'Bağış formu kapatıldı', 'polite')
+    announceStatus(wasSidePanel ? WDPApp.i18n.__('Donation panel closed', 'woo-donation-popup') : WDPApp.i18n.__('Donation form closed', 'woo-donation-popup'), 'polite')
 
     if (wasSidePanel && isOpen) {
       modal.classList.add('wdp-side-panel--closing')

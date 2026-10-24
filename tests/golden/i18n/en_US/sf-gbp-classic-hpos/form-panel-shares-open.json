@@ -1,0 +1,15 @@
+{
+  "id": "form-panel-shares-open",
+  "text": "×\nWDP E2E Shares\nDonation form for WDP E2E Shares\nNumber of shares:\nGo to checkout\nAdd to cart\nSecure payment · SSL-protected transaction",
+  "lines": [
+    "×",
+    "WDP E2E Shares",
+    "Donation form for WDP E2E Shares",
+    "Number of shares:",
+    "Go to checkout",
+    "Add to cart",
+    "Secure payment · SSL-protected transaction"
+  ],
+  "locale": "en_US",
+  "config": "sf-gbp-classic-hpos"
+}
