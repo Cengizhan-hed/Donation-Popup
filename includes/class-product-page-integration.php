@@ -21,6 +21,9 @@ class WDP_Product_Page_Integration {
 	/** Relative WooCommerce template we override. */
 	const SIMPLE_ATC_TEMPLATE = 'single-product/add-to-cart/simple.php';
 
+	/** Late priority for the automatic entry-point fallback. */
+	const FALLBACK_PRIORITY = 999;
+
 	/** @var bool */
 	private static $css_printed = false;
 
@@ -65,7 +68,8 @@ class WDP_Product_Page_Integration {
 		add_filter('render_block_woocommerce/product-price', array(__CLASS__, 'filter_block_price'), 10, 3);
 		add_filter('render_block_woocommerce/product-button', array(__CLASS__, 'filter_block_product_button'), 10, 3);
 
-		add_action('woocommerce_after_single_product', array(__CLASS__, 'render_builder_fallback'), 5);
+		// Late on purpose: any shortcode/block/widget/snippet entry drawn earlier on the page wins.
+		add_action('woocommerce_after_single_product', array(__CLASS__, 'render_builder_fallback'), self::FALLBACK_PRIORITY);
 		add_action('wp_footer', array(__CLASS__, 'render_builder_fallback'), 4);
 	}
 
@@ -425,16 +429,19 @@ class WDP_Product_Page_Integration {
 		$atts    = array(
 			'show_title' => WDP_Placement_Settings::value('show_form_title') === 'yes' ? 'yes' : 'no',
 		);
+		$html    = '';
 		if ($display === 'button_popup') {
-			return WDP_Shortcodes::render_button($atts, 'wdp_donation_button', 'popup');
+			$html = WDP_Shortcodes::render_button($atts, 'wdp_donation_button', 'popup');
+		} elseif ($display === 'button_panel') {
+			$html = WDP_Shortcodes::render_button($atts, 'wdp_donation_button_panel', 'side_panel');
+		} elseif ($display === 'inline') {
+			$html = WDP_Shortcodes::render_form($atts);
 		}
-		if ($display === 'button_panel') {
-			return WDP_Shortcodes::render_button($atts, 'wdp_donation_button_panel', 'side_panel');
+		if ($html !== '' && WDP_Render_Registry::has_product_ui((int) $product->get_id())) {
+			// Drawn by auto-placement: a later explicit entry for the same product is skipped (one entry per page).
+			WDP_Render_Registry::mark_auto((int) $product->get_id());
 		}
-		if ($display === 'inline') {
-			return WDP_Shortcodes::render_form($atts);
-		}
-		return '';
+		return $html;
 	}
 
 	/**
@@ -623,6 +630,10 @@ class WDP_Product_Page_Integration {
 					return $content;
 				}
 				if (self::content_already_has_shortcode($product) || WDP_Render_Registry::has_product_ui($product->get_id())) {
+					// The block's own render already printed our entry through the template override: keep it.
+					if (!self::content_already_has_shortcode($product) && self::html_has_entry((string) $content, (int) $product->get_id())) {
+						return $content;
+					}
 					return WDP_Render_Registry::duplicate_ui_notice((int) $product->get_id());
 				}
 				return self::placed_markup();
@@ -704,6 +715,22 @@ class WDP_Product_Page_Integration {
 		$excerpt = (string) $product->get_short_description();
 		$content = (string) $product->get_description();
 		return self::text_has_wdp_shortcode($excerpt) || self::text_has_wdp_shortcode($content);
+	}
+
+	/**
+	 * Whether rendered HTML already holds this plugin's button or inline form for the product.
+	 *
+	 * @param string $html       Rendered HTML.
+	 * @param int    $product_id Product ID.
+	 * @return bool
+	 */
+	public static function html_has_entry($html, $product_id) {
+		$product_id = absint($product_id);
+		if ($html === '' || $product_id <= 0) {
+			return false;
+		}
+		return strpos($html, 'id="wdp-modal-' . $product_id . '-direct"') !== false
+			|| (strpos($html, 'wdp-donate-button') !== false && strpos($html, 'data-product-id="' . $product_id . '"') !== false);
 	}
 
 	/**

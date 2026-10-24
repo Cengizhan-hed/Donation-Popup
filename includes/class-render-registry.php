@@ -20,6 +20,9 @@ class WDP_Render_Registry {
 	/** @var array<int, true> Trigger / Donate buttons printed for a product in this request. */
 	private static $triggers = array();
 
+	/** @var array<int, true> Entry points drawn by auto-placement (template override / fallback). */
+	private static $auto = array();
+
 	/** @var array<string, true> */
 	private static $modals = array();
 
@@ -96,6 +99,27 @@ class WDP_Render_Registry {
 	}
 
 	/**
+	 * Record that auto-placement drew the product's entry point (button or form).
+	 *
+	 * @param int $product_id Product ID.
+	 * @return void
+	 */
+	public static function mark_auto($product_id) {
+		$product_id = absint($product_id);
+		if ($product_id > 0) {
+			self::$auto[ $product_id ] = true;
+		}
+	}
+
+	/**
+	 * @param int $product_id Product ID.
+	 * @return bool
+	 */
+	public static function has_auto($product_id) {
+		return isset(self::$auto[ absint($product_id) ]);
+	}
+
+	/**
 	 * Template override skip notice for editors.
 	 *
 	 * @param int $product_id Product ID.
@@ -155,6 +179,7 @@ class WDP_Render_Registry {
 	public static function reset() {
 		self::$forms    = array();
 		self::$triggers = array();
+		self::$auto     = array();
 		self::$modals   = array();
 	}
 }
