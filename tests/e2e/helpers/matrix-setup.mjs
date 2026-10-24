@@ -545,6 +545,30 @@ function writeHposLock(wpDir, hposOn) {
 }
 
 /**
+ * Yerel WP locale kilidi (dil paketi yok). RTL için text_direction mu-plugin.
+ * @param {string} wpDir
+ * @param {string} locale
+ */
+export function applyMatrixLocale(wpDir, locale) {
+  const evalFile = path.join(ROOT, 'tests/local-wp/eval-file.php');
+  const loc = String(locale || 'tr_TR');
+  const r = spawnSync(
+    'php',
+    ['-d', 'memory_limit=1024M', evalFile, path.join(ROOT, 'tests/local-wp/i18n-locale.php'), loc],
+    {
+      encoding: 'utf8',
+      cwd: ROOT,
+      env: { ...process.env, WDP_LOCAL_WP_DIR: wpDir },
+      timeout: 60000,
+    }
+  );
+  if (r.status !== 0) {
+    throw new Error(`locale ${loc}: ${(r.stderr || r.stdout || '').slice(0, 400)}`);
+  }
+  return parseJsonLine(r.stdout);
+}
+
+/**
  * @param {string} configId
  * @param {number} port
  * @param {string} snapshotFile

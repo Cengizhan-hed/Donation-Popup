@@ -1231,9 +1231,35 @@ function wdp_matrix_apply($spec) {
 	);
 }
 
+/**
+ * Yerel WP dili: profil dili (varsayılan tr_TR; Hedef eşdeğeri) mu-plugin ile kilitlenir, dil paketi indirilmez.
+ * Dosya yoksa VEYA WDP_LOCAL_WP_LOCALE açıkça verildiyse yazılır (i18n altın kayıt aracı kendi kilidini korur).
+ */
+function wdp_matrix_apply_locale() {
+	$explicit = getenv('WDP_LOCAL_WP_LOCALE');
+	$locale   = is_string($explicit) && preg_match('/^[a-z]{2,3}(?:_[A-Z]{2})?$/', $explicit) ? $explicit : 'tr_TR';
+	$dir      = trailingslashit(WP_CONTENT_DIR) . 'mu-plugins';
+	if (!is_dir($dir)) {
+		wp_mkdir_p($dir);
+	}
+	$file = $dir . '/wdp-i18n-locale.php';
+	if (file_exists($file) && !is_string($explicit)) {
+		return;
+	}
+	$php = "<?php\n/** WDP test locale lock — no language pack. */\n"
+		. "add_filter('locale', static function () { return '" . $locale . "'; }, 99);\n"
+		. "add_filter('determine_locale', static function () { return '" . $locale . "'; }, 99);\n"
+		. "add_filter('plugin_locale', static function (\$loc, \$domain) { unset(\$loc, \$domain); return '" . $locale . "'; }, 99, 2);\n";
+	if (!file_exists($file) || file_get_contents($file) !== $php) {
+		file_put_contents($file, $php);
+	}
+	update_option('WPLANG', $locale);
+}
+
 $result = array( 'cmd' => $cmd, 'ok' => false );
 
 try {
+	wdp_matrix_apply_locale();
 	if ($cmd === 'base') {
 		$result = array_merge($result, wdp_matrix_base());
 	} elseif ($cmd === 'apply') {

@@ -29,10 +29,7 @@ html body .wdp-modal:not(.show) {
   display: none;
   position: static;
   z-index: auto;
-  left: auto;
-  top: auto;
-  right: auto;
-  bottom: auto;
+  inset: auto;
   width: 0;
   height: 0;
   min-width: 0;

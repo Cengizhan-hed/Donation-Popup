@@ -1,0 +1,113 @@
+/**
+ * @file rtl.css
+ * RTL (ar, he, fa, ur): animasyon, gölge ve ikon yönü.
+ * LTR’de bu dosya eşleşmez — hesaplanan stil değişmez.
+ */
+
+/* —— Yan panel: inline-end (LTR sağ / RTL sol), kayma + gölge —— */
+html[dir="rtl"] body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel,
+html body.rtl .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel,
+html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel[dir="rtl"] {
+  --wdp-side-panel-shadow: 0 0 0 1px rgba(17, 26, 33, 0.06), 20px 0 64px -24px rgba(17, 26, 33, 0.22), 6px 0 20px -10px rgba(17, 26, 33, 0.1);
+}
+
+html[dir="rtl"] body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show.wdp-side-panel--opening :is(.wdp-modal-content, .wdp-side-panel-content, .wdp-modal-content.wdp-has-shareholders, .wdp-modal-content.wdp-has-success, .wdp-modal-content:has(form.wdp-has-shareholders), .wdp-modal-content:has(.wdp-success-screen)),
+html body.rtl .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show.wdp-side-panel--opening :is(.wdp-modal-content, .wdp-side-panel-content) {
+  transform: translateX(-100%);
+}
+
+html[dir="rtl"] body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show :is(.wdp-modal-content, .wdp-side-panel-content, .wdp-modal-content.wdp-has-shareholders, .wdp-modal-content.wdp-has-success, .wdp-modal-content:has(form.wdp-has-shareholders), .wdp-modal-content:has(.wdp-success-screen)),
+html body.rtl .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show :is(.wdp-modal-content, .wdp-side-panel-content) {
+  animation-name: wdp-side-panel-slide-in-rtl;
+}
+
+html[dir="rtl"] body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show.wdp-side-panel--closing :is(.wdp-modal-content, .wdp-side-panel-content, .wdp-modal-content.wdp-has-shareholders, .wdp-modal-content.wdp-has-success, .wdp-modal-content:has(form.wdp-has-shareholders), .wdp-modal-content:has(.wdp-success-screen)),
+html body.rtl .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show.wdp-side-panel--closing :is(.wdp-modal-content, .wdp-side-panel-content) {
+  animation-name: wdp-side-panel-slide-out-rtl;
+}
+
+@keyframes wdp-side-panel-slide-in-rtl {
+  from { transform: translateX(-100%); will-change: transform; }
+  to { transform: none; will-change: auto; }
+}
+
+@keyframes wdp-side-panel-slide-out-rtl {
+  from { transform: none; }
+  to { transform: translateX(-100%); }
+}
+
+/* —— İlerleme çubuğu: dolgu inline-start’tan; sheen ters yönde —— */
+html[dir="rtl"] body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-fill,
+html body.rtl :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-fill {
+  box-shadow: -1px 0 0 rgba(255, 255, 255, 0.2);
+  background-image:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.22) 0%, transparent 42%),
+    linear-gradient(
+      270deg,
+      color-mix(in srgb, var(--wdp-progress-ink) 82%, #0f172a) 0%,
+      var(--wdp-progress-ink) 48%,
+      color-mix(in srgb, var(--wdp-progress-ink) 88%, #ffffff) 100%
+    );
+}
+
+html[dir="rtl"] body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-fill::after,
+html body.rtl :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-fill::after {
+  animation-name: wdp-progress-sheen-rtl;
+}
+
+@keyframes wdp-progress-sheen-rtl {
+  0% { background-position: -40% 0; }
+  100% { background-position: 140% 0; }
+}
+
+/* —— Hissedar ok: kapalıyken inline-end’e (LTR sol / RTL sağ) —— */
+html[dir="rtl"] body :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-form.collapsed .wdp-shareholder-header .wdp-shareholder-icon::before,
+html body.rtl :is(.wdp-modal, .wdp-donation-form) .wdp-shareholder-form.collapsed .wdp-shareholder-header .wdp-shareholder-icon::before {
+  transform: rotate(-90deg);
+}
+
+/* —— CTA / başarı oku: yönsel SVG’ler —— */
+html[dir="rtl"] body :is(.wdp-modal, .wdp-donation-form) .wdp-btn__icon,
+html body.rtl :is(.wdp-modal, .wdp-donation-form) .wdp-btn__icon,
+html[dir="rtl"] body :is(.wdp-modal, .wdp-donation-form) .wdp-success-button .wdp-btn__icon,
+html body.rtl :is(.wdp-modal, .wdp-donation-form) .wdp-success-button .wdp-btn__icon {
+  transform: scaleX(-1);
+}
+
+/* —— Hata ikonu: fiziksel konum yok; metin start’a yaslanır —— */
+html[dir="rtl"] body :is(.wdp-modal, .wdp-donation-form) .wdp-form-error,
+html body.rtl :is(.wdp-modal, .wdp-donation-form) .wdp-form-error,
+html[dir="rtl"] body :is(.wdp-modal, .wdp-donation-form) .wdp-input-error,
+html body.rtl :is(.wdp-modal, .wdp-donation-form) .wdp-input-error {
+  text-align: start;
+}
+
+/* —— Sayaç: eksi/artı flex sırası direction ile döner; ikon çevirme yok —— */
+
+/* —— Yönetici: ürün sekmesi ok + önizleme paneli —— */
+body.rtl .wdp-pp-section__summary::before,
+html[dir="rtl"] .wdp-pp-section__summary::before {
+  transform: scaleX(-1);
+}
+
+body.rtl .wdp-pp-section[open] > .wdp-pp-section__summary::before,
+html[dir="rtl"] .wdp-pp-section[open] > .wdp-pp-section__summary::before {
+  transform: scaleX(-1) rotate(-90deg);
+}
+
+/* Yönetici yerleşim önizlemesi: kaynakta inset-inline-end + border-inline-start */
+
+/* —— Telefon: tarayıcı tel alanını soldan sağa zorlar; rakamlar LTR kalır, metin/ipucu RTL'de sağa yaslanır —— */
+html[dir="rtl"] body :is(.wdp-modal, .wdp-donation-form) .wdp-phone-field__number,
+html body.rtl :is(.wdp-modal, .wdp-donation-form) .wdp-phone-field__number {
+  direction: ltr;
+  text-align: end;
+}
+
+/* —— Hata satırı vurgu çizgisi: inline-start (RTL'de sağ) —— */
+html[dir="rtl"] body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__row:has(.wdp-error),
+html[dir="rtl"] body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__row--phone:has(.wdp-field-stack__input.wdp-error),
+html[dir="rtl"] body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__row--phone:has(.wdp-phone-field__number.wdp-error),
+html body.rtl :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__row:has(.wdp-error) {
+  box-shadow: inset -2px 0 0 var(--wdp-error, #c62828);
+}

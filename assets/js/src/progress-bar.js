@@ -105,11 +105,11 @@
   function setSegment(el, leftPct, widthPct) {
     if (!el) return;
     if (widthPct > 0.05) {
-      el.style.left = leftPct + '%';
+      el.style.insetInlineStart = leftPct + '%';
       el.style.width = widthPct + '%';
       el.style.display = 'block';
     } else {
-      el.style.left = '0%';
+      el.style.insetInlineStart = '0%';
       el.style.width = '0%';
       el.style.display = 'none';
     }
@@ -220,7 +220,7 @@
     const draftPct = Math.min(room, draftRaw);
 
     fillBar.style.width = fillPct + '%';
-    fillBar.style.left = '0%';
+    fillBar.style.insetInlineStart = '0%';
     setSegment(pendingBar, fillPct, pendingPct);
     setSegment(previewBar, fillPct + pendingPct, draftPct);
 

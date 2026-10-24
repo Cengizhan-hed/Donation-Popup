@@ -8,6 +8,7 @@ import {
   resolveConfig,
   parseMatrixArgs,
   resolveWorkerCount,
+  rtlSpec,
   MATRIX_JSON,
 } from '../../e2e/helpers/matrix-cover.mjs';
 import { formatMoney, formatMinPlaceholder } from '../../e2e/helpers/currency.mjs';
@@ -81,6 +82,13 @@ describe('e2e matrix covering', () => {
     assert.equal(cfg.storeSpec.currency, 'TRY');
     assert.equal(cfg.hpos, true);
     assert.equal(cfg.checkout, 'blocks');
+  });
+
+  it('rtl yapılandırması varsayılan 4 LTR config’i bozmaz', () => {
+    const matrix = loadMatrix();
+    const rtl = rtlSpec(matrix);
+    assert.deepEqual(rtl.locales, ['ar', 'he_IL']);
+    assert.equal(matrix.configs.length, 4);
   });
 
   it('PHP -S hücre işçisi PHP_CLI_SERVER_WORKERS ile açılır', () => {

@@ -21,7 +21,9 @@ html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel {
   --wdp-side-panel-width: clamp(var(--wdp-sp-width-min-mobile, 0px), var(--wdp-sp-width-pct-mobile, 92vw), var(--wdp-sp-width-max-mobile, 100vw));
   --wdp-side-panel-pad-inline: max(16px, env(safe-area-inset-right, 0px), env(safe-area-inset-left, 0px));
   --wdp-side-panel-footer-border: rgba(15, 23, 42, 0.08);
-  --wdp-side-panel-radius-left: var(--wdp-radius-panel);
+  --wdp-side-panel-radius-start: var(--wdp-radius-panel);
+  --wdp-side-panel-radius-left: var(--wdp-side-panel-radius-start);
+  --wdp-side-panel-shadow: 0 0 0 1px rgba(17, 26, 33, 0.06), -20px 0 64px -24px rgba(17, 26, 33, 0.22), -6px 0 20px -10px rgba(17, 26, 33, 0.1);
   --wdp-sp-btn-radius: var(--wdp-radius-ui);
   --wdp-sp-btn-blue: var(--wdp-primary, #0f608b);
   --wdp-sp-btn-blue-hover: var(--wdp-primary-hover, #0c4f72);
@@ -110,12 +112,15 @@ html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show :is(.wdp-mod
   flex-direction: column;
   gap: var(--wdp-form-stack-gap, 16px);
   overflow: hidden;
-  border-radius: var(--wdp-side-panel-radius-left) 0 0 var(--wdp-side-panel-radius-left);
+  border-start-start-radius: var(--wdp-side-panel-radius-start, var(--wdp-radius-panel));
+  border-end-start-radius: var(--wdp-side-panel-radius-start, var(--wdp-radius-panel));
+  border-start-end-radius: 0;
+  border-end-end-radius: 0;
   border: 0;
-  border-left: var(--wdp-glass-border, 1px solid rgba(255, 255, 255, 0.35));
+  border-inline-start: var(--wdp-glass-border, 1px solid rgba(255, 255, 255, 0.35));
   background: var(--wdp-sp-glass-bg, #ffffff);
   background-color: var(--wdp-sp-glass-bg, #ffffff);
-  box-shadow: var(--wdp-side-panel-shadow, 0 0 0 1px rgba(17, 26, 33, 0.06), -20px 0 64px -24px rgba(17, 26, 33, 0.22), -6px 0 20px -10px rgba(17, 26, 33, 0.1));
+  box-shadow: var(--wdp-side-panel-shadow);
   padding-block-start: calc(20px + env(safe-area-inset-top, 0px));
   padding-block-end: calc(12px + env(safe-area-inset-bottom, 0px));
   padding-inline: var(--wdp-side-panel-pad-inline);
@@ -173,26 +178,27 @@ html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-modal-c
 
 html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-modal-content > .wdp-modal-close {
   top: 8px;
-  right: max(8px, env(safe-area-inset-right, 0px));
+  inset-inline-end: max(8px, env(safe-area-inset-right, 0px));
 }
 
 html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-modal-header {
   flex: 0 0 auto;
   margin: 4px 0 0;
-  padding: 4px 52px 0 0;
+  padding: 4px 0 0;
+  padding-inline-end: 52px;
   justify-content: flex-start;
-  text-align: left;
+  text-align: start;
 }
 
 html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-modal-header .wdp-modal-title-wrapper {
   width: 100%;
   padding: 0;
   justify-items: start;
-  text-align: left;
+  text-align: start;
 }
 
 html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-modal-header :is(.wdp-modal-title, .wdp-product-note, .wdp-product-note__content, .wdp-product-note__body, .wdp-product-note__text) {
-  text-align: left;
+  text-align: start;
   justify-content: flex-start;
 }
 
@@ -270,18 +276,17 @@ html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-pa
 html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-panel-main--shares .wdp-shares-header { flex: 0 0 auto; }
 
 html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-shares-header {
-  text-align: left;
+  text-align: start;
   justify-content: space-between;
 }
 
 html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-shares-header label {
   width: auto;
-  text-align: left;
+  text-align: start;
 }
 
 html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-shares-header .wdp-share-counter {
   margin-inline: 0;
-  margin-left: 0;
   justify-self: start;
 }
 
@@ -664,7 +669,10 @@ html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-pa
     max-height: 100dvh;
     min-height: 100dvh;
     margin: 0;
-    border-radius: var(--wdp-side-panel-radius-left) 0 0 var(--wdp-side-panel-radius-left);
+    border-start-start-radius: var(--wdp-side-panel-radius-start, var(--wdp-radius-panel));
+    border-end-start-radius: var(--wdp-side-panel-radius-start, var(--wdp-radius-panel));
+    border-start-end-radius: 0;
+    border-end-end-radius: 0;
   }
 
   html body :is(.wdp-modal, .wdp-donation-form) form.wdp-has-shareholders .wdp-shares-total-bar {

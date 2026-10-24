@@ -445,7 +445,8 @@
     top = Math.max(frame.top + pad, Math.min(top, frame.bottom - pad - ih));
 
     const width = Math.min(Math.max(rect.width, 280), frame.right - frame.left - 2 * pad);
-    let left = rect.left;
+    const dir = (document.documentElement.dir || window.getComputedStyle(anchorEl).direction || 'ltr').toLowerCase();
+    let left = dir === 'rtl' ? rect.right - width : rect.left;
     left = Math.max(frame.left + pad, Math.min(left, frame.right - width - pad));
 
     el.style.top = Math.round(top) + 'px';

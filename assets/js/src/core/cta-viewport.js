@@ -82,6 +82,8 @@
    */
   function applyCtaClearance() {
     roots().forEach((root) => {
+      const pageDir = (document.documentElement.dir || window.getComputedStyle(root).direction || 'ltr').toLowerCase();
+      root.setAttribute('data-wdp-dir', pageDir === 'rtl' ? 'rtl' : 'ltr');
       const cta = root.querySelector('.wdp-form-cta-zone, .wdp-side-panel-footer-zone');
       if (!cta) {
         root.style.removeProperty('--wdp-cta-clearance');

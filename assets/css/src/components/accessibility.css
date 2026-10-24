@@ -132,19 +132,7 @@ html body .wdp-modal-content:focus-within {
   outline: none;
 }
 
-/* RTL */
-html body[dir="rtl"] .wdp-modal-content,
-html[dir="rtl"] body .wdp-modal-content,
-html body .wdp-modal-content[dir="rtl"] {
-  text-align: right;
-}
-
-html body[dir="rtl"] .wdp-toast,
-html[dir="rtl"] body .wdp-toast,
-html body .wdp-toast[dir="rtl"] {
-  right: auto;
-  left: max(16px, env(safe-area-inset-left, 0px));
-}
+/* RTL metin: kaynakta text-align: start — ek override yok (LTR pikseli aynı) */
 
 /* Touch targets */
 html body .wdp-modal-content button:not(.wdp-remove-cart-item),
@@ -164,7 +152,7 @@ html body .wdp-modal .wdp-modal-content > button.wdp-modal-close {
 html body .wdp-skip-link {
   position: absolute;
   top: -40px;
-  left: 0;
+  inset-inline-start: 0;
   z-index: calc(var(--wdp-z-modal-close, 2147483647) + 1);
   padding: var(--wdp-space-2, 8px) var(--wdp-space-4, 16px);
   background: var(--wdp-primary, #0f608b);

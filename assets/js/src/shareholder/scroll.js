@@ -100,6 +100,8 @@
         el.style.removeProperty('touch-action');
         el.style.removeProperty('padding-right');
         el.style.removeProperty('margin-right');
+        el.style.removeProperty('padding-inline-end');
+        el.style.removeProperty('margin-inline-end');
         el.style.removeProperty('--wdp-shareholders-height');
       });
       if (areaElement) {

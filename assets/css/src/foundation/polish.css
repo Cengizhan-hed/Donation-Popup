@@ -137,7 +137,7 @@ html body .hdf-donation-modal-wrapper:is(.wdp-modal, .wdp-donation-form) :is(
   }
 
   html body .hdf-donation-modal-wrapper:is(.wdp-modal, .wdp-donation-form) .wdp-modal-header .wdp-modal-title-wrapper {
-    padding-right: 48px;
+    padding-inline-end: 48px;
   }
 }
 

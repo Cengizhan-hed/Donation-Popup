@@ -536,6 +536,12 @@
       if (sidePanelMode && !modal.classList.contains('wdp-side-panel')) {
         modal.classList.add('wdp-side-panel')
       }
+      const pageDir = String(document.documentElement.dir || (typeof window.getComputedStyle === 'function' ? window.getComputedStyle(document.documentElement).direction : '') || 'ltr').toLowerCase()
+      if (pageDir === 'rtl') {
+        modal.setAttribute('dir', 'rtl')
+      } else {
+        modal.removeAttribute('dir')
+      }
 
       state.lastFocusedElement = document.activeElement instanceof HTMLElement ? document.activeElement : null
 

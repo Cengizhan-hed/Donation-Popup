@@ -122,7 +122,7 @@
 
 .wdp-scope-badge {
   display: inline-block;
-  margin-left: 6px;
+  margin-inline-start: 6px;
   padding: 1px 8px;
   border-radius: 999px;
   font-size: 11px;
@@ -208,6 +208,13 @@
  * Settings → Ürünler table
  * --------------------------------------------------------------------- */
 
+/* Geniş tablo (nowrap kısa kod + min-width sütunlar) sayfayı yatay taşırmasın; yalnız taşarsa kayar. */
+.wdp-products-table-form {
+  position: relative;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
 .wdp-products-table-form .search-box {
   margin-bottom: var(--wdp-pp-space);
 }
@@ -258,7 +265,7 @@
 
 .wdp-products-table .column-actions {
   width: 90px;
-  text-align: right;
+  text-align: end;
 }
 
 .wdp-products-table__product {
@@ -305,7 +312,7 @@
 }
 
 .wdp-products-table .row-actions {
-  padding-left: 48px;
+  padding-inline-start: 48px;
 }
 
 .wdp-products-table__shortcode {
@@ -332,11 +339,11 @@
   }
 
   .wdp-products-table .column-actions {
-    text-align: left;
+    text-align: start;
   }
 
   .wdp-products-table .row-actions {
-    padding-left: 0;
+    padding-inline-start: 0;
   }
 
   .wdp-products-table__shortcode code {
@@ -397,7 +404,7 @@
 #woocommerce-product-data .wdp-pp p.form-field input[type="checkbox"] + .description {
   display: inline;
   clear: none;
-  margin-left: var(--wdp-pp-space);
+  margin-inline-start: var(--wdp-pp-space);
 }
 
 .wdp-pp-block {
@@ -423,12 +430,12 @@
 .wdp-pp .wdp-pp-note {
   margin: var(--wdp-pp-space) calc(var(--wdp-pp-space) * 2);
   padding: var(--wdp-pp-space) 12px;
-  border-left: 4px solid var(--wdp-pp-accent);
+  border-inline-start: 4px solid var(--wdp-pp-accent);
   background: #f0f6fc;
 }
 
 .wdp-pp .wdp-pp-note--warning {
-  border-left-color: #dba617;
+  border-inline-start-color: #dba617;
   background: #fcf9e8;
 }
 
@@ -567,7 +574,8 @@
   flex-wrap: wrap;
   align-items: baseline;
   gap: 4px 12px;
-  padding: 12px calc(var(--wdp-pp-space) * 2) 12px 36px;
+  padding-block: 12px;
+  padding-inline: 36px calc(var(--wdp-pp-space) * 2);
   position: relative;
   cursor: pointer;
   list-style: none;
@@ -580,7 +588,7 @@
 .wdp-pp-section__summary::before {
   position: absolute;
   top: 50%;
-  left: 12px;
+  inset-inline-start: 12px;
   width: 16px;
   height: 16px;
   margin-top: -8px;
@@ -624,11 +632,11 @@
 }
 
 #woocommerce-product-data .wdp-pp .wdp-pp-section__body p.form-field {
-  padding-left: 174px !important;
+  padding-inline-start: 174px !important;
 }
 
 #woocommerce-product-data .wdp-pp .wdp-pp-section__body p.form-field > label {
-  margin-left: -162px;
+  margin-inline-start: -162px;
 }
 
 /* Repeater */
@@ -805,7 +813,7 @@
 @media screen and (max-width: 782px) {
   .wdp-pp .wdp-pp-field {
     grid-template-columns: minmax(0, 1fr);
-    padding-left: 12px;
+    padding-inline-start: 12px;
   }
 
   .wdp-pp .wdp-pp-field__label {
@@ -814,7 +822,7 @@
   }
 
   #woocommerce-product-data .wdp-pp .wdp-pp-section__body p.form-field {
-    padding-left: 12px !important;
+    padding-inline-start: 12px !important;
   }
 
   #woocommerce-product-data .wdp-pp .wdp-pp-section__body p.form-field > label {

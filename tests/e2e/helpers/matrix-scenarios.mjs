@@ -51,6 +51,7 @@ import {
   NATIVE_SUBMIT_RELOAD_CODE,
 } from './native-submit-guard.mjs';
 import { FREEZE_MOTION_CSS } from './selectors.mjs';
+import { assertRtlLayout } from './rtl-layout.mjs';
 import {
   DONOR_NAME,
   DONOR_EMAIL,
@@ -176,6 +177,10 @@ async function waitFormReady(root) {
  */
 async function settleOpenShell(page) {
   await waitAndAssertShellOverlap(page, CHECK_MS);
+  if (process.env.WDP_RTL_LAYOUT === '1') {
+    const panel = (await page.locator(SEL.openSidePanel).count()) > 0;
+    await assertRtlLayout(page, { expectPanel: panel });
+  }
 }
 
 /**
