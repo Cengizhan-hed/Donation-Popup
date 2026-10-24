@@ -126,7 +126,12 @@ import {
   startDomMutationProbe,
   stopDomMutationProbe,
 } from './click-diagnostics.mjs';
-import { waitAndAssertShellOverlap, waitShellAnimationsDone } from './shell-overlap.mjs';
+import {
+  waitAndAssertShellOverlap,
+  waitShellAnimationsDone,
+  assertPanelCtaPinnedWhenShort,
+  PANEL_CTA_BOTTOM_CODE,
+} from './shell-overlap.mjs';
 import {
   attachNativeSubmitReloadGuard,
   NATIVE_SUBMIT_RELOAD_CODE,
@@ -3491,6 +3496,20 @@ export async function captureAll({
             screenshot: `${screenName}.png`,
           })
         );
+      }
+      if (shellMode === 'panel') {
+        try {
+          await assertPanelCtaPinnedWhenShort(page);
+        } catch (eCta) {
+          failures.push(
+            makeFailure({
+              check: PANEL_CTA_BOTTOM_CODE,
+              description: 'Kısa içerikli yan panelde alt eylem çubuğu panelin dibine sabit olmalı',
+              error: eCta,
+              screenshot: `${screenName}.png`,
+            })
+          );
+        }
       }
       try {
         const guard = attachNativeSubmitReloadGuard(page);
