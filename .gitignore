@@ -70,8 +70,8 @@ release/
 !.env.e2e.*.example
 
 # Testing / Composer
-/vendor/
-/vendor-dev/
+/vendor
+/vendor-dev
 /tools/bin/*.phar
 /tools/bin/*.phar.part
 composer.phar
