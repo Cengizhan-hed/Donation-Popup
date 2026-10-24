@@ -515,3 +515,48 @@ Not: `Edit(.claude/**)` yasak; hook/skill dosyalarını kurmak için bu kural ge
 | S4 | Ikram dış POST kaynağı (2026-10-24): `REMOTE-FOREIGN-WRITE: /6` = Stripe.js ölçüm işaretçisi (`r.stripe.com/6`), kaynak **WooCommerce Payments** (Ikram'da aktif; sepet/ödeme sayfalarında stripe.js). Ağ koruması isteği iptal etti, veri gitmedi. Sunucu tarafında Ikram ön yüz kancalarında dışarı çağrı yok (keşif). Düzeltme: `r./q./m.stripe.com` ölçüm listesine eklendi (js/api.stripe.com değil); teşhis günlüğü artık ana makine+yol+tür+sayfa yazar | kapandı (bilgi) |
 | S5 | **staging30 bağış düğmesi kayboldu (2026-10-24, kullanıcı snippet'leri kapattıktan sonra):** Avada şablonunda düğme yerine HAM `[hd_panel_buton]` kısa kodu görünüyor — kısa kodu sitenin Code Snippets parçalarından biri tanımlıyordu (kapatılanlardan biri: #27/#29/#43). Eklenti bu sayfada giriş çizmiyor (Avada şablonu kendi düğmesini bekliyor). Ürün sayfalarında bağış alınamıyor; staging30 `e2e:remote-smoke`/`e2e:quick` ürün sayfası kontrolü haklı olarak kırmızı. Kanarya temiz (sayfalar değişmedi). **Kullanıcı kararı:** kısa kodu tanımlayan snippet'in YALNIZ giden istek/e-posta kısmı kaldırılıp kısa kod kısmı yeniden açılsın (site ayarı → kullanıcı) | staging30 uzak koşuları bu karara bağlı; Ikram + yerel sürer |
 | S6 | `e2e:remote-smoke` Ikram: ödeme sayfası ziyaretçiye coming soon içeriği veriyor (paylaşım çerezi var, gövdede `woocommerce-checkout` yok, `[coming_soon]=yes`). Hızlı koşunun ödeme kontrolü yalnız adrese bakıyordu. Smoke'ta `coming-soon-checkout` kanıtlı atlama (profil comingSoon + sayfada işaret). Ikram yayına çıkınca ödeme içeriği doğrulanacak | Ikram yayın öncesi |
+
+## Faz 6 özellik envanteri (TASLAK, 2026-10-24)
+
+Kaynak: Graphify kod haritası (2015 düğüm, 4229 bağ; `npm run graph:update`, `build/graph/GRAPH_REPORT.md`), dosya boyutları, `docs/AYARLAR.md`. Sınıf: **Ç** Çekirdek (iyi bağış almak için gerekli) · **W** WordPress/WooCommerce/tema/eklenti zaten yapıyor · **G** Gereksiz/süs. Öneri: koru / sadeleştir / kaldır. "Karar" sütunu = kullanıcıya TOPLU karar listesinde sorulacaklar (iş kararı); diğerlerini teknik olarak ben veririm.
+
+| # | Özellik | Yer | Sınıf | Öneri | Karar |
+|---|---------|-----|-------|-------|-------|
+| 1 | Bağış tipleri: sabit / bağışçı belirler / hisseli / hedefli kampanya | WDP_Donation_Type, Product_Settings_Service | Ç | koru | — |
+| 2 | Hızlı tutar düğmeleri + önerilen + en düşük tutar | Form_Fields_Renderer, validate.js | Ç | koru (tek liste, sadeleştir) | — |
+| 3 | Hisse + hissedar formu | shareholder/*, Form_Fields_Renderer | Ç | koru | — |
+| 4 | İlerleme çubuğu, toplanan (otomatik+elle), hedef, hedefe ulaşınca eylem | Campaign_Goal, Progress_*, progress-bar.js | Ç | koru | — |
+| 5 | Kutlama animasyonu | Progress (celebrate) | G | kaldır | **K1** |
+| 6 | Form alanları: ad, telefon (uluslararası), e-posta, ithaf, anonim, not | Phone_Field, Donation_Optional_Fields | Ç | koru | — |
+| 7 | Çok adımlı form (wizard) | wizard.js | Ç/G | sadeleştir | **K2** |
+| 8 | İşlem ücretini karşıla | Price_Trait | Ç | koru | — |
+| 9 | Alt bağış (iç adı "sadaka") + alt bağış ürünü + görünürlük | Sadaka_Product_Visibility, sadaka.js | Ç | koru; "add-on donation" adına çevir (göçle); katalog gizleme Woo'nun kendi katalog görünürlüğüne bırakılır | — |
+| 10 | Etki satırı | Form_Modules | G | kaldır (not metniyle birleşir) | **K3** |
+| 11 | Aciliyet şeridi (bitiş tarihi) | Form_Modules | G | kaldır | **K3** |
+| 12 | Sosyal kanıt ("X bağışçı") | Form_Modules | G | kaldır (dürüstlük riski) | **K3** |
+| 13 | Güven rozetleri | Form_Modules | Ç/G | sadeleştir: tek "güvenli ödeme" satırı | **K3** |
+| 14 | Aydınlatma metni bağlantısı (yalnız bağlantı) | Form_Modules | Ç | koru | — |
+| 15 | Blok sırası (formdaki blokları sıralama) | Form_Matrix, admin | G | kaldır (sabit akıllı sıra) | **K4** |
+| 16 | Stil paketleri + Tasarım stüdyosu + ikon kütüphanesi | Style_Presets, Admin_Design_Studio, Icon_Library | Ç/G | sadeleştir (3 paket + marka rengi + köşe) | **K4** |
+| 17 | Kategori renkleri sekmesi | Category_Title_Color_Service | W | kaldır (tema/Woo kategori görünümü) | **K5** |
+| 18 | Meta Pixel sekmesi / ölçüm olayları | Meta_Tracking (473 satır) | W | kaldır (Meta for WooCommerce/PixelYourSite yapar) | **K6** |
+| 19 | Schema (JSON-LD) | Schema | W | kaldır (Rank Math/Woo yapar) | **K6** |
+| 20 | Bağış listesi (kısa kod/blok/Elementor; sekmeler, fiyat yenileme) | Donations_List (997 satır) | Ç/W | sadeleştir: Woo ürün listesine "Bağış Yap" düğmesi + basit ızgara | **K7** |
+| 21 | Admin "Ürünler" tablosu | Admin_Products_List_Table | W | sadeleştir (WP ürün listesine sütun) | **K7** |
+| 22 | Mini sepet / yan sepet ayarı | "Başarı" sekmesi | W | kaldır (Woo/tema) | **K5** |
+| 23 | Sepete ekleme sonrası teşekkür ekranı | Cart/Success | Ç | koru | — |
+| 24 | Elementor widget'ları + Gutenberg blokları | Elementor, Blocks | Ç | koru | — |
+| 25 | Lazy modal | Lazy_Modal | Ç | koru (para birimi/dil sinyali standartlaşır) | — |
+| 26 | Assets optimizer (kendi birleştirme/yükleme) | Assets_Optimizer_Trait | W | incele; optimizasyon eklentilerinin işini yapıyorsa kaldır | teknik |
+| 27 | Göç (Migrations, 1109 satır) | Migrations | Ç | koru (10.3.1'den güncele güvence) | — |
+| 28 | Gizlilik (WP araçları), Güvenlik (nonce, sınır) | Privacy, Security | Ç | koru (Faz 8) | — |
+| 29 | Veri silme (kaldırınca) | Uninstall | Ç | koru | — |
+| 30 | Yerel sepete ekleyi gizleme, satın alınabilirlik, sipariş meta | Product_Page_Integration, Donation_Purchasable, Order_Meta_Keys | Ç | koru | — |
+
+### Faz 6 iş paketleri (Cursor/Claude, yerel; karar bekleyenler hariç)
+- **6-A Standart yola taşı:** `Progress_Currency` (Curcy/WOOCS sipariş kuru meta okuma) → çekirdek yalnız `apply_filters('wdp_order_exchange_rate')` + Woo verisi; Curcy/WOOCS bağdaştırıcıları `includes/compat/` altında izole (çekirdekte eklenti adı yok); `lazy-modal.js` (wmc/woocs/wpml çerez ve olay dinleme) → sunucunun verdiği `wdp_ajax.context` (para birimi + dil) anahtarı; `cart/woo.js` Avada seçicileri → Woo standart `added_to_cart` / `wc_fragment_refresh`.
+- **6-B Sayfa oluşturucu:** `compat/class-builder-detect.php` (Avada/Divi adıyla tespit) → standart Woo kancalarının tetiklenip tetiklenmediğine göre karar (adı bilinmeyen oluşturucu da çalışsın).
+- **6-C "sadaka" → "addon":** 649 geçiş (kod, JS, CSS, testler); ürün meta/seçenek anahtarları idempotent göçle `*_addon_*`'a; ESKİ SİPARİŞ öğe meta anahtarları DEĞİŞMEZ (geçmiş sipariş kaydı; okuma tarafında eski+yeni takma ad). Göç provası staging30 + Ikram tekrar.
+- **6-D Site adı / eklenti adı / README:** başlık "Donation Panel for WooCommerce", yazar Cengizhan Çoban, README ve betik adlandırmaları; text domain ve klasör aynı.
+- **6-E Yükleme kapsamı:** ön yüz ve yönetici varlıkları yalnız gereken sayfalarda (ölçüm: staging30 ana sayfa 0 varlık — iyi; ürün/liste/sepet/ödeme ve yönetici ekranları denetlenecek).
+- **6-F Ölü/tekrar kod, dosya yapısı:** PHPStan ölü kod + Graphify bağsız düğümler; en büyük sınıfların bölünmesi (Cart 1185, Inline_Styles 1112, Product_Data_Tab 1057, Donations_List 997).
