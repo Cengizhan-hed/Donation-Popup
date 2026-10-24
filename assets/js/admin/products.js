@@ -55,7 +55,7 @@
     const isIconOnly = !!icon && button.textContent.trim() === ""
     const original = isIconOnly ? null : button.textContent
     if (icon) icon.classList.replace("dashicons-admin-page", "dashicons-yes")
-    if (!isIconOnly) button.textContent = i18n.copied || "Kopyalandı"
+    if (!isIconOnly) button.textContent = i18n.copied || "Copied"
 
     window.setTimeout(() => {
       button.classList.remove("is-copied")
@@ -76,7 +76,7 @@
     copyText(text).then((ok) => {
       if (ok) {
         flashCopied(button)
-        announce((i18n.copied || "Kopyalandı") + ": " + text)
+        announce((i18n.copied || "Copied") + ": " + text)
       } else {
         announce(i18n.copyFailed || "")
       }

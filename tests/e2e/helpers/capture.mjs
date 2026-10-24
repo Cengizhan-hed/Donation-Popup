@@ -1326,7 +1326,7 @@ async function runSkeletonUnlockChecks({
   stats,
 }) {
   const UNLOCK_MS = 11000;
-  const STALL_RE = /Form tam yüklenemedi|Ürün bilgileri alınamadı|bilgilerinizi kontrol|sayfayı yenileyip/i;
+  const STALL_RE = /Form tam yüklenemedi|Ürün bilgileri alınamadı|bilgilerinizi kontrol|sayfayı yenileyip|did not finish loading|could not be loaded|check your details|refresh the page/i;
   pausePluginAjaxWatch();
   try {
 

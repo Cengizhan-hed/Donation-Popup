@@ -17,7 +17,7 @@
   const safeLog = typeof utils.safeLog === 'function' ? utils.safeLog.bind(utils) : function() {};
   const clearAlerts = typeof utils.clearAlerts === 'function' ? utils.clearAlerts.bind(utils) : function() {};
 
-  const GENERAL_VALIDATION_MESSAGE = 'Lütfen işaretli alanları kontrol edin.';
+  const GENERAL_VALIDATION_MESSAGE = WDPApp.i18n.__('Please check the highlighted fields.', 'woo-donation-popup');
 
   function showInputError(input, message) {
     // Canlı lookup: modül yükleme sırası / yeniden atama altında stale {} kalmasın
@@ -107,21 +107,21 @@
     if (typeof formMessages.getDonorNameRequiredMessage === 'function') {
       return formMessages.getDonorNameRequiredMessage();
     }
-    return 'Ad Soyad zorunludur.';
+    return WDPApp.i18n.__('Full name is required.', 'woo-donation-popup');
   }
 
   function getShareholderNameRequiredMessage() {
     if (typeof formMessages.getShareholderNameRequiredMessage === 'function') {
       return formMessages.getShareholderNameRequiredMessage();
     }
-    return 'Hissedar adı zorunludur.';
+    return WDPApp.i18n.__('Shareholder name is required.', 'woo-donation-popup');
   }
 
   function getRequiredFieldMessage(field) {
     if (typeof formMessages.getRequiredFieldMessage === 'function') {
       return formMessages.getRequiredFieldMessage(field);
     }
-    return 'Bu alan zorunludur';
+    return WDPApp.i18n.__('This field is required', 'woo-donation-popup');
   }
 
   function getPhoneRequiredMessage() {
@@ -135,7 +135,7 @@
     if (typeof formMessages.getPhoneIncompleteMessage === 'function') {
       return formMessages.getPhoneIncompleteMessage();
     }
-    return 'Telefon numaranızı eksiksiz giriniz.';
+    return WDPApp.i18n.__('Please enter your complete phone number.', 'woo-donation-popup');
   }
 
   function getPhoneValidationState(input, options) {
@@ -195,7 +195,7 @@
     if (typeof formMessages.getShareholderIssueSummaryLabel === 'function') {
       return formMessages.getShareholderIssueSummaryLabel(type);
     }
-    return 'alan eksik';
+    return WDPApp.i18n.__('field is missing', 'woo-donation-popup');
   }
 
   function clearShareholderHeaderStatusMarks(form) {
@@ -551,7 +551,11 @@
           };
         }
         rowResult.issues.forEach((issue) => {
-          const line = `${rowResult.rowIndex}. hisse ${getShareholderIssueSummaryLabel(issue.type)}`;
+          const line = WDPApp.i18n.sprintf(
+            WDPApp.i18n.__('%1$d. share %2$s', 'woo-donation-popup'),
+            rowResult.rowIndex,
+            getShareholderIssueSummaryLabel(issue.type)
+          );
           if (rowResult.isCollapsed) {
             collapsedShareholderSummaryLines.push(line);
           }
@@ -572,7 +576,12 @@
       WDPApp.shareholder.refreshGuidance(form);
     }
     if (incompleteShareholderCount > 1) {
-      errorMessages.push(`${incompleteShareholderCount} hissedar formu eksik.`);
+      errorMessages.push(
+        WDPApp.i18n.sprintf(
+          WDPApp.i18n.__('Incomplete shareholder forms: %d.', 'woo-donation-popup'),
+          incompleteShareholderCount
+        )
+      );
     }
 
     // Telefon: ülkeye göre rakam sayısı (TR: 10, vb.) — hissedar satırları yukarıda doğrulandı
@@ -640,7 +649,7 @@
           const msg =
             (WDPApp.formMessages && typeof WDPApp.formMessages.getInvalidEmailMessage === 'function'
               ? WDPApp.formMessages.getInvalidEmailMessage()
-              : null) || 'Lütfen geçerli bir e-posta adresi giriniz.';
+              : null) || WDPApp.i18n.__('Please enter a valid email address.', 'woo-donation-popup');
           showInputError(emailInput, msg);
           errorMessages.push(msg);
           failures.push({ field: 'donation_email', rule: 'email_invalid', value: emailRaw });
@@ -694,7 +703,7 @@
 
       const maxDonation = 999999;
       if (rawValue === '') {
-        const emptyMessage = 'Lütfen bağış tutarını giriniz.';
+        const emptyMessage = WDPApp.i18n.__('Please enter a donation amount.', 'woo-donation-popup');
         showInputError(customPriceInput, emptyMessage);
         if (!errorMessages.includes(emptyMessage)) {
           errorMessages.push(emptyMessage);
@@ -706,7 +715,7 @@
           ? detailed.error
           : ((utils && typeof utils.getAmbiguousAmountMessage === 'function')
             ? utils.getAmbiguousAmountMessage()
-            : 'Bu sitede kuruşlu tutar girilemez, örn. 10');
+            : WDPApp.i18n.__('Fractional amounts are not allowed on this site, e.g. 10', 'woo-donation-popup'));
         showInputError(customPriceInput, ambMessage);
         if (!errorMessages.includes(ambMessage)) {
           errorMessages.push(ambMessage);
@@ -714,7 +723,7 @@
         failures.push({ field: 'custom_price', rule: 'price_ambiguous', value: rawValue });
         isValid = false;
       } else if (!Number.isFinite(numericValue) || numericValue <= 0) {
-        const invalidMessage = 'Lütfen geçerli bir bağış tutarı giriniz.';
+        const invalidMessage = WDPApp.i18n.__('Please enter a valid donation amount.', 'woo-donation-popup');
         showInputError(customPriceInput, invalidMessage);
         if (!errorMessages.includes(invalidMessage)) {
           errorMessages.push(invalidMessage);
@@ -722,7 +731,10 @@
         failures.push({ field: 'custom_price', rule: 'price_invalid', value: rawValue });
         isValid = false;
       } else if (numericValue > maxDonation) {
-        const maxMessage = `Maksimum fiyat: ${formatCurrency(maxDonation)}`;
+        const maxMessage = WDPApp.i18n.sprintf(
+          WDPApp.i18n.__('Maximum amount: %s', 'woo-donation-popup'),
+          formatCurrency(maxDonation)
+        );
         showInputError(customPriceInput, maxMessage);
         if (!errorMessages.includes(maxMessage)) {
           errorMessages.push(maxMessage);
@@ -731,8 +743,14 @@
         isValid = false;
       } else if (effectiveMin > 0 && numericValue + 0.0001 < effectiveMin) {
         const minMessage = customPriceQtyRow
-          ? `Lütfen ${formatCurrency(effectiveMin)} ve üstü toplam tutar girin.`
-          : `Lütfen ${formatCurrency(effectiveMin)} ve üstü değerler girin.`;
+          ? WDPApp.i18n.sprintf(
+              WDPApp.i18n.__('Please enter a total of %s or more.', 'woo-donation-popup'),
+              formatCurrency(effectiveMin)
+            )
+          : WDPApp.i18n.sprintf(
+              WDPApp.i18n.__('Please enter %s or more.', 'woo-donation-popup'),
+              formatCurrency(effectiveMin)
+            );
         showInputError(customPriceInput, minMessage);
         if (!errorMessages.includes(minMessage)) {
           errorMessages.push(minMessage);
@@ -757,7 +775,7 @@
           ? sadakaErr.textContent.trim()
           : (typeof formMessages.getSadakaInvalidMessage === 'function'
               ? formMessages.getSadakaInvalidMessage()
-              : 'Lütfen sadaka tutarını kontrol edin.');
+              : WDPApp.i18n.__('Please check the additional donation amount.', 'woo-donation-popup'));
       if (sadakaMsg && !errorMessages.includes(sadakaMsg)) {
         errorMessages.push(sadakaMsg);
       }
@@ -803,8 +821,16 @@
         const firstRowIndex =
           Number.parseInt(firstShareholderIssue.row.getAttribute("data-index") || "0", 10) || 0;
         const summaryMsg = incompleteShareholderCount > 1
-          ? `${incompleteShareholderCount} hissedar formu eksik.`
-          : (firstRowIndex > 0 ? `${firstRowIndex}. hissedar formu eksik.` : "1 hissedar formu eksik.");
+          ? WDPApp.i18n.sprintf(
+              WDPApp.i18n.__('Incomplete shareholder forms: %d.', 'woo-donation-popup'),
+              incompleteShareholderCount
+            )
+          : (firstRowIndex > 0
+            ? WDPApp.i18n.sprintf(
+                WDPApp.i18n.__('Shareholder form %d is incomplete.', 'woo-donation-popup'),
+                firstRowIndex
+              )
+            : WDPApp.i18n.__('1 shareholder form is incomplete.', 'woo-donation-popup'));
         if (!errorMessages.includes(summaryMsg)) {
           errorMessages.push(summaryMsg);
         }

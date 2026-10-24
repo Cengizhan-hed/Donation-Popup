@@ -352,7 +352,7 @@
         getProductInfoData(directProductId)
           .then((data) => {
             if (!data || !data.success) {
-              safeLog("Ürün fiyatı alınamadı (cached/fetch):", data);
+              safeLog("Product price unavailable (cached/fetch):", data);
               return;
             }
 

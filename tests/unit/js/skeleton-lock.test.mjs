@@ -559,7 +559,7 @@ test('7) Init sırasında JS hatası: finally unlock + uyarı', () => {
   };
   walk(modal);
   const msg = boxes.join(' ');
-  assert.match(msg, /Form tam yüklenemedi|bilgilerinizi kontrol/i);
+  assert.match(msg, /Form tam yüklenemedi|bilgilerinizi kontrol|did not finish loading|check your details/i);
 });
 
 test('8) Başarı → kapat (yeni bağış yolu) sonrası kilit yok; bekçi force unlock', () => {

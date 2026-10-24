@@ -7,6 +7,13 @@
   'use strict';
 
   const WDPApp = window.WDPApp || (window.WDPApp = {});
+  if (!WDPApp.i18n || typeof WDPApp.i18n.__ !== 'function') {
+    WDPApp.i18n = {
+      __: function (msg) { return msg == null ? '' : String(msg); },
+      _x: function (msg) { return msg == null ? '' : String(msg); },
+      sprintf: function (fmt) { return String(fmt == null ? '' : fmt); },
+    };
+  }
   const wdp_ajax = window.wdp_ajax || {};
 
   /** Bağışçı ad-soyad zorunluluk mesajı (çeviri veya varsayılan). */
@@ -15,7 +22,7 @@
     if (s && typeof s.donor_name_required === 'string' && s.donor_name_required.trim()) {
       return s.donor_name_required.trim();
     }
-    return 'Ad Soyad zorunludur.';
+    return WDPApp.i18n.__('Full name is required.', 'woo-donation-popup');
   }
 
   /** Hissedar adı zorunluluk mesajı. */
@@ -24,7 +31,7 @@
     if (s && typeof s.shareholder_name_required === 'string' && s.shareholder_name_required.trim()) {
       return s.shareholder_name_required.trim();
     }
-    return 'Hissedar adı zorunludur.';
+    return WDPApp.i18n.__('Shareholder name is required.', 'woo-donation-popup');
   }
 
   /** Zorunlu alan mesajı; alan adına göre özelleştirilebilir. */
@@ -33,7 +40,7 @@
     const generic =
       s && typeof s.required_field === 'string' && s.required_field.trim()
         ? s.required_field.trim()
-        : 'Bu alan zorunludur';
+        : WDPApp.i18n.__('This field is required', 'woo-donation-popup');
     if (!field || !field.name) {
       return generic;
     }
@@ -53,7 +60,7 @@
     if (s && typeof s.phone_incomplete === 'string' && s.phone_incomplete.trim()) {
       return s.phone_incomplete.trim();
     }
-    return 'Telefon numaranızı eksiksiz giriniz.';
+    return WDPApp.i18n.__('Please enter your complete phone number.', 'woo-donation-popup');
   }
 
   /**
@@ -94,15 +101,15 @@
       if (s && typeof s.shareholder_issue_name === 'string' && s.shareholder_issue_name.trim()) {
         return s.shareholder_issue_name.trim();
       }
-      return 'ad soyad alanı eksik';
+      return WDPApp.i18n.__('full name is missing', 'woo-donation-popup');
     }
     if (type === 'phone') {
       if (s && typeof s.shareholder_issue_phone === 'string' && s.shareholder_issue_phone.trim()) {
         return s.shareholder_issue_phone.trim();
       }
-      return 'telefon alanı eksik veya hatalı';
+      return WDPApp.i18n.__('phone number is missing or invalid', 'woo-donation-popup');
     }
-    return 'alan eksik';
+    return WDPApp.i18n.__('field is missing', 'woo-donation-popup');
   }
 
   function getSadakaInvalidMessage() {
@@ -110,7 +117,7 @@
     if (s && typeof s.sadaka_invalid === 'string' && s.sadaka_invalid.trim()) {
       return s.sadaka_invalid.trim();
     }
-    return 'Geçerli bir alt bağış tutarı giriniz.';
+    return WDPApp.i18n.__('Please enter a valid additional donation amount.', 'woo-donation-popup');
   }
 
   /** Geçersiz e-posta (dolu ama hatalı). */
@@ -119,7 +126,7 @@
     if (s && typeof s.invalid_email === 'string' && s.invalid_email.trim()) {
       return s.invalid_email.trim();
     }
-    return 'Lütfen geçerli bir e-posta adresi giriniz.';
+    return WDPApp.i18n.__('Please enter a valid email address.', 'woo-donation-popup');
   }
 
   /** Minimum alt bağış tutarı hata metni. */
@@ -131,7 +138,10 @@
     if (s && typeof s.sadaka_min_error === 'string' && s.sadaka_min_error.trim()) {
       return s.sadaka_min_error.trim() + formatCurrency(minValue);
     }
-    return 'En az ' + formatCurrency(minValue) + ' bağış giriniz.';
+    return WDPApp.i18n.sprintf(
+      WDPApp.i18n.__('Please enter at least %s.', 'woo-donation-popup'),
+      formatCurrency(minValue)
+    );
   }
 
   WDPApp.formMessages = {

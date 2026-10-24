@@ -11,16 +11,23 @@
   'use strict';
 
   const WDPApp = window.WDPApp || (window.WDPApp = {});
+  if (!WDPApp.i18n || typeof WDPApp.i18n.__ !== 'function') {
+    WDPApp.i18n = {
+      __: function (msg) { return msg == null ? '' : String(msg); },
+      _x: function (msg) { return msg == null ? '' : String(msg); },
+      sprintf: function (fmt) { return String(fmt == null ? '' : fmt); },
+    };
+  }
   const utils = WDPApp.utils || {};
   const announce = typeof utils.announceStatus === 'function' ? utils.announceStatus : function() {};
   const emit = typeof utils.emitWdpEvent === 'function' ? utils.emitWdpEvent : function() {};
 
   const STEP_LABELS = {
-    donor: 'Bilgileriniz',
-    amount: 'Tutar',
-    shares: 'Hisseler',
-    sadaka: 'Alt bağış',
-    confirm: 'Onay',
+    donor: WDPApp.i18n.__('Your details', 'woo-donation-popup'),
+    amount: WDPApp.i18n._x('Amount', 'wizard step', 'woo-donation-popup'),
+    shares: WDPApp.i18n.__('Shares', 'woo-donation-popup'),
+    sadaka: WDPApp.i18n.__('Additional donation', 'woo-donation-popup'),
+    confirm: WDPApp.i18n.__('Confirmation', 'woo-donation-popup'),
   };
 
   function isEnabled(form) {
@@ -144,14 +151,18 @@
       const nav = document.createElement('div');
       nav.className = 'wdp-wizard__nav';
       nav.setAttribute('role', 'tablist');
-      nav.setAttribute('aria-label', 'Form adımları');
+      nav.setAttribute('aria-label', WDPApp.i18n.__('Form steps', 'woo-donation-popup'));
 
       const controls = document.createElement('div');
       controls.className = 'wdp-wizard__controls';
       controls.hidden = true;
       controls.innerHTML =
-        '<button type="button" class="wdp-wizard__btn wdp-wizard__btn--back" hidden>Geri</button>' +
-        '<button type="button" class="wdp-wizard__btn wdp-wizard__btn--next">İleri</button>';
+        '<button type="button" class="wdp-wizard__btn wdp-wizard__btn--back" hidden>' +
+        WDPApp.i18n.__('Back', 'woo-donation-popup') +
+        '</button>' +
+        '<button type="button" class="wdp-wizard__btn wdp-wizard__btn--next">' +
+        WDPApp.i18n.__('Next', 'woo-donation-popup') +
+        '</button>';
 
       shell.appendChild(nav);
       shell.appendChild(controls);
@@ -172,8 +183,12 @@
       foot = document.createElement('div');
       foot.className = 'wdp-wizard-foot';
       foot.innerHTML =
-        '<button type="button" class="wdp-wizard__btn wdp-wizard__btn--back" hidden>Geri</button>' +
-        '<button type="button" class="wdp-wizard__btn wdp-wizard__btn--next">İleri</button>';
+        '<button type="button" class="wdp-wizard__btn wdp-wizard__btn--back" hidden>' +
+        WDPApp.i18n.__('Back', 'woo-donation-popup') +
+        '</button>' +
+        '<button type="button" class="wdp-wizard__btn wdp-wizard__btn--next">' +
+        WDPApp.i18n.__('Next', 'woo-donation-popup') +
+        '</button>';
       const firstConfirm = form.querySelector(
         '.wdp-shares-total-bar, .wdp-donation-summary, .wdp-side-panel-footer-zone, .wdp-form-cta-zone, .wdp-button-group, .wdp-trust-strip'
       );
@@ -210,7 +225,7 @@
   function requiredMessage() {
     return (
       (window.wdp_ajax && window.wdp_ajax.strings && window.wdp_ajax.strings.required_field) ||
-      'Bu alan zorunludur'
+      WDPApp.i18n.__('This field is required', 'woo-donation-popup')
     );
   }
 
@@ -270,8 +285,8 @@
       const count = countInput ? parseInt(countInput.value, 10) || 0 : 0;
       if (count < 1) {
         ok = false;
-        messages.push('En az 1 hisse seçin.');
-        showStepSummaryError(state.form, 'En az 1 hisse seçin.');
+        messages.push(WDPApp.i18n.__('Please select at least 1 share.', 'woo-donation-popup'));
+        showStepSummaryError(state.form, WDPApp.i18n.__('Please select at least 1 share.', 'woo-donation-popup'));
         return ok;
       }
 
@@ -284,7 +299,7 @@
 
       if (!rows.length) {
         ok = false;
-        showStepSummaryError(state.form, 'Lütfen hisse bilgilerini doldurun.');
+        showStepSummaryError(state.form, WDPApp.i18n.__('Please fill in the share details.', 'woo-donation-popup'));
         return ok;
       }
 
@@ -315,14 +330,14 @@
             ok = false;
             firstInvalid = firstInvalid || nameField;
             if (typeof feedback.showInputError === 'function') {
-              feedback.showInputError(nameField, 'Ad soyad zorunludur.');
+              feedback.showInputError(nameField, WDPApp.i18n._x('Full name is required.', 'wizard step', 'woo-donation-popup'));
             }
           }
           if (phoneField && !String(phoneField.value || '').trim()) {
             ok = false;
             firstInvalid = firstInvalid || phoneField;
             if (typeof feedback.showInputError === 'function') {
-              feedback.showInputError(phoneField, 'Telefon numarası zorunludur.');
+              feedback.showInputError(phoneField, WDPApp.i18n.__('Phone number is required.', 'woo-donation-popup'));
             }
           }
         }
@@ -331,7 +346,7 @@
       if (!ok) {
         const summary =
           (issues[0] && issues[0].message) ||
-          'Lütfen hissedar ad ve telefon bilgilerini doldurun.';
+          WDPApp.i18n.__('Please fill in the shareholder name and phone details.', 'woo-donation-popup');
         showStepSummaryError(state.form, summary);
         if (firstRowIssue && typeof formValidate.focusShareholderIssue === 'function') {
           try {
@@ -384,18 +399,18 @@
           const st = formValidate.getPhoneValidationState(phone, { required: true });
           phoneOk = !!(st && st.ok);
           if (!phoneOk && typeof feedback.showInputError === 'function') {
-            feedback.showInputError(phone, (st && st.message) || 'Geçerli bir telefon girin.');
+            feedback.showInputError(phone, (st && st.message) || WDPApp.i18n.__('Please enter a valid phone number.', 'woo-donation-popup'));
           }
         } else if (!String(phone.value || '').trim()) {
           phoneOk = false;
           if (typeof feedback.showInputError === 'function') {
-            feedback.showInputError(phone, 'Telefon numarası zorunludur.');
+            feedback.showInputError(phone, WDPApp.i18n.__('Phone number is required.', 'woo-donation-popup'));
           }
         }
         if (!phoneOk) {
           ok = false;
           firstInvalid = firstInvalid || phone;
-          messages.push('Telefon numarasını kontrol edin.');
+          messages.push(WDPApp.i18n.__('Please check the phone number.', 'woo-donation-popup'));
         }
       }
 
@@ -407,7 +422,7 @@
         firstInvalid = firstInvalid || nameInput;
         const msg =
           (window.wdp_ajax && window.wdp_ajax.strings && window.wdp_ajax.strings.donor_name_required) ||
-          'Ad soyad zorunludur.';
+          WDPApp.i18n._x('Full name is required.', 'wizard step', 'woo-donation-popup');
         messages.push(msg);
         if (typeof feedback.showInputError === 'function') {
           feedback.showInputError(nameInput, msg);
@@ -435,7 +450,7 @@
             ? detailed.error
             : (typeof utilsW.getAmbiguousAmountMessage === 'function'
               ? utilsW.getAmbiguousAmountMessage()
-              : 'Bu sitede kuruşlu tutar girilemez, örn. 10');
+              : WDPApp.i18n.__('Fractional amounts are not allowed on this site, e.g. 10', 'woo-donation-popup'));
           messages.push(msg);
           if (typeof feedback.showInputError === 'function') {
             feedback.showInputError(price, msg);
@@ -445,7 +460,7 @@
           firstInvalid = firstInvalid || price;
           const msg =
             ((window.wdp_ajax && window.wdp_ajax.strings && window.wdp_ajax.strings.min_price_error) ||
-              'Minimum tutar: ') + (Number.isFinite(min) && min > 0 ? min : '');
+              WDPApp.i18n.__('Minimum amount: ', 'woo-donation-popup')) + (Number.isFinite(min) && min > 0 ? min : '');
           messages.push(msg);
           if (typeof feedback.showInputError === 'function') {
             feedback.showInputError(price, msg);
@@ -457,7 +472,7 @@
     if (!ok) {
       showStepSummaryError(
         state.form,
-        messages[0] || 'Lütfen eksik veya hatalı alanları doldurun.'
+        messages[0] || WDPApp.i18n.__('Please fill in the missing or invalid fields.', 'woo-donation-popup')
       );
       if (firstInvalid && typeof firstInvalid.focus === 'function') {
         try {
@@ -510,7 +525,7 @@
     const run = function() {
       applyStepVisibility(state, next);
       const step = state.steps[next];
-      announce((step && step.label ? step.label : 'Adım') + ' (' + (next + 1) + '/' + state.steps.length + ')');
+      announce((step && step.label ? step.label : WDPApp.i18n.__('Step', 'woo-donation-popup')) + ' (' + (next + 1) + '/' + state.steps.length + ')');
       emit('wdp:wizard:step', {
         form: state.form,
         step: step ? step.id : '',

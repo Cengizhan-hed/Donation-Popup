@@ -192,5 +192,5 @@ test('400 yanıtında kullanıcıya görünür mesaj', async () => {
   const { product, toasts, announced } = loadProduct(fetchImpl);
   await product.fetch(12, {});
   const texts = [...toasts.map((t) => t.message), ...announced].join(' ');
-  assert.match(texts, /Geçersiz ürün ID|alınamadı/);
+  assert.match(texts, /Geçersiz ürün ID|alınamadı|could not be loaded/);
 });

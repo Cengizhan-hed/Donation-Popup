@@ -69,7 +69,7 @@
     if (!celebrateEnabled()) return;
     const announce = utils && typeof utils.announceStatus === 'function' ? utils.announceStatus : null;
     if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      if (announce) announce('Hedefe ulaşıldı', 'polite');
+      if (announce) announce(WDPApp.i18n.__('Goal reached', 'woo-donation-popup'), 'polite');
       return;
     }
     container.classList.add('is-celebrating');
@@ -89,7 +89,7 @@
     window.setTimeout(function() {
       container.classList.remove('is-celebrating');
     }, 1200);
-    if (announce) announce('Hedefe ulaşıldı', 'polite');
+    if (announce) announce(WDPApp.i18n.__('Goal reached', 'woo-donation-popup'), 'polite');
     if (utils && typeof utils.emitWdpEvent === 'function') {
       utils.emitWdpEvent('wdp:progress:complete', { container: container });
     }
@@ -124,7 +124,7 @@
     if (completeEl) {
       if (isComplete) {
         completeEl.hidden = false;
-        completeEl.textContent = 'Hedefe ulaşıldı';
+        completeEl.textContent = WDPApp.i18n.__('Goal reached', 'woo-donation-popup');
       } else {
         completeEl.hidden = true;
       }
@@ -136,7 +136,7 @@
     const impact = container.querySelector('[data-wdp-progress-impact]');
     if (!impact) return;
     const rounded = (Math.round(displayPct * 10) / 10).toFixed(1);
-    impact.textContent = 'Hedefin %' + rounded + '’i tamamlandı';
+    impact.textContent = WDPApp.i18n.sprintf(WDPApp.i18n.__('%s%% of the goal completed', 'woo-donation-popup'), rounded);
   }
 
   function updateRemaining(container, current, limit) {
@@ -154,7 +154,7 @@
     }
     const formatted = typeof formatCurrency === 'function' ? formatCurrency(remaining) : String(Math.round(remaining));
     el.hidden = false;
-    el.textContent = formatted + ' kaldı';
+    el.textContent = WDPApp.i18n.sprintf(WDPApp.i18n.__('%s remaining', 'woo-donation-popup'), formatted);
     if (sep && sep.classList && sep.classList.contains('wdp-progress-bar-sep')) {
       sep.hidden = false;
     }
@@ -292,7 +292,11 @@
       if (pending > 0 || draft > 0) {
         track.setAttribute(
           'aria-valuetext',
-          'Onaylı ' + fillPct.toFixed(1) + '%, bekleyen ve yazılan ile ' + displayPct.toFixed(1) + '%'
+          WDPApp.i18n.sprintf(
+            WDPApp.i18n.__('Confirmed %1$s%%, %2$s%% including pending and typed amounts', 'woo-donation-popup'),
+            fillPct.toFixed(1),
+            displayPct.toFixed(1)
+          )
         );
       } else {
         track.removeAttribute('aria-valuetext');
@@ -314,10 +318,10 @@
 
     const statusEl = container.querySelector('[data-wdp-progress-status]');
     if (statusEl) {
-      let statusText = 'Devam ediyor';
-      if (fillPct >= 100) statusText = 'Hedefe ulaşıldı';
-      else if (displayPct >= 90) statusText = 'Hedefe çok yakın';
-      else if (draftPct > 0.05) statusText = 'Katınız ekleniyor';
+      let statusText = WDPApp.i18n.__('In progress', 'woo-donation-popup');
+      if (fillPct >= 100) statusText = WDPApp.i18n.__('Goal reached', 'woo-donation-popup');
+      else if (displayPct >= 90) statusText = WDPApp.i18n.__('Very close to the goal', 'woo-donation-popup');
+      else if (draftPct > 0.05) statusText = WDPApp.i18n.__('Your contribution is being added', 'woo-donation-popup');
       statusEl.textContent = statusText;
     }
 

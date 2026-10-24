@@ -115,13 +115,13 @@
   }
 
   function createShareholderForm(index) {
-    const headerText = String(shareholderTexts.header || 'Hissedar Bilgileri');
-    const namePlaceholder = String(shareholderTexts.name_placeholder || 'Ad Soyad *');
-    const phonePlaceholder = String(shareholderTexts.phone_placeholder || 'Telefon Numarası *');
-    const notePlaceholder = String(shareholderTexts.note_placeholder || 'Not (isteğe bağlı)');
-    const emailPlaceholder = String(shareholderTexts.email_placeholder || 'E-posta (isteğe bağlı)');
-    const copyButtonText = String(shareholderTexts.copy_button || 'Kopyasını Oluştur');
-    const fieldGroupLabel = String(shareholderTexts.header || 'Hissedar Bilgileri');
+    const headerText = String(shareholderTexts.header || WDPApp.i18n.__('Shareholder details', 'woo-donation-popup'));
+    const namePlaceholder = String(shareholderTexts.name_placeholder || WDPApp.i18n.__('Full name *', 'woo-donation-popup'));
+    const phonePlaceholder = String(shareholderTexts.phone_placeholder || WDPApp.i18n.__('Phone number *', 'woo-donation-popup'));
+    const notePlaceholder = String(shareholderTexts.note_placeholder || WDPApp.i18n.__('Note (optional)', 'woo-donation-popup'));
+    const emailPlaceholder = String(shareholderTexts.email_placeholder || WDPApp.i18n.__('Email (optional)', 'woo-donation-popup'));
+    const copyButtonText = String(shareholderTexts.copy_button || WDPApp.i18n.__('Create a copy', 'woo-donation-popup'));
+    const fieldGroupLabel = String(shareholderTexts.header || WDPApp.i18n.__('Shareholder details', 'woo-donation-popup'));
     const safeIndex = Math.max(1, Number.parseInt(index, 10) || 1);
 
     const form = document.createElement("div");
@@ -478,7 +478,7 @@
     
     // Maksimum 7 hisse kontrolü
     if (currentCount >= 7) {
-      safeLog('Maksimum hisse sayısına ulaşıldı (7)');
+      safeLog('Maximum share count reached (7)');
       return;
     }
 
@@ -619,7 +619,7 @@
     newForm.removeAttribute('hidden');
     
     // CRITICAL: Hisse adedini güncelle
-    safeLog(`Kopyalama sonrası hisse adedi güncelleniyor: ${newIndex}`);
+    safeLog(`Updating share count after copy: ${newIndex}`);
     
     // CRITICAL: Tüm share_count input'larını güncelle ve görünür yap
     const allShareCountInputs = contextRoot ? contextRoot.querySelectorAll('input[name="share_count"]') : document.querySelectorAll('input[name="share_count"]');
@@ -659,7 +659,7 @@
       const basePrice = currentShareCount > 0 ? currentPrice / currentShareCount : currentPrice;
       const totalPrice = basePrice * newIndex;
       priceInput.value = totalPrice.toFixed(0);
-      safeLog(`Fiyat güncellendi: ${totalPrice} TL (${basePrice} TL x ${newIndex} hisse)`);
+      safeLog(`Price updated: ${totalPrice} (${basePrice} x ${newIndex} shares)`);
     }
     
     // Scrollable durumunu güncelle
@@ -696,7 +696,7 @@
           newForm.scrollIntoView(false);
         }
       }
-      safeLog(`Hissedar formu kopyalandı: ${newIndex}. Hissedar (açık olarak), ${currentCount}. Hissedar (kapalı)`);
+      safeLog(`Shareholder form copied: ${newIndex}. shareholder (open), ${currentCount}. shareholder (collapsed)`);
       if (contextRoot) {
         refreshShareholderGuidance(contextRoot);
       }

@@ -119,7 +119,7 @@
 
         const responseCode = data && data.code ? String(data.code) : "";
         const responseMessage = data && data.message ? String(data.message).toLowerCase() : "";
-        const isSecurityError = responseCode === "security_error" || responseMessage.includes("güvenlik");
+        const isSecurityError = responseCode === "security_error" || responseMessage.includes(WDPApp.i18n._x('security', 'server error keyword', 'woo-donation-popup').toLowerCase());
 
         // Nonce timeout / mismatch olursa kullanıcıya hata göstermeden nonce yenileyip bir kez daha dene.
         if (!data.success && isSecurityError && WDPApp.utils && typeof WDPApp.utils.refreshWdpAjaxNonces === "function") {

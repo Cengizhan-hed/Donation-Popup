@@ -5,6 +5,11 @@
 ;((window, document, $) => {
   const cfg = window.wdp_admin || {}
 
+  // PHP'den gelen cfg.i18n anahtarı varsa onu, yoksa İngilizce yedek metni kullanır.
+  function tr(key, fallback) {
+    return (cfg.i18n && cfg.i18n[key]) || fallback
+  }
+
   function getTabKeys() {
     const keys = []
     $(".wdp-nav-tab-wrapper .nav-tab[data-tab]").each(function () {
@@ -104,7 +109,7 @@
   function confirmLeaveDirty(nextKey) {
     if (!$(".wdp-admin-settings-form.is-dirty").length) return true
     if (currentTabKey() === nextKey) return true
-    return window.confirm("Kaydedilmemiş değişiklikleriniz var. Bu sekmeden ayrılmak istediğinize emin misiniz?")
+    return window.confirm(tr("confirm_leave_tab", "You have unsaved changes. Are you sure you want to leave this tab?"))
   }
 
   function activateTab(tabKey, options) {
@@ -191,7 +196,7 @@
         const $cb = $form.find("#wdp-delete-data-on-uninstall")
         if ($cb.length && $cb.is(":checked") && $cb.attr("data-wdp-was-on") !== "1") {
           const ok = window.confirm(
-            "Eklentinin tüm ürün ayarları ve eklenti seçenekleri silinir. Siparişlere ve sipariş kayıtlarına dokunulmaz. Bu işlem geri alınamaz. Yedek aldınız mı?"
+            tr("confirm_uninstall_data", "All product settings and plugin options will be deleted. Orders and order records are not affected. This cannot be undone. Have you made a backup?")
           )
           if (!ok) {
             $cb.prop("checked", false)
@@ -261,7 +266,7 @@
     $cb.off("change.wdpUninstall").on("change.wdpUninstall", function () {
       if (!this.checked || $cb.attr("data-wdp-was-on") === "1") return
       const ok = window.confirm(
-        "Eklentinin tüm ürün ayarları ve eklenti seçenekleri silinir. Siparişlere ve sipariş kayıtlarına dokunulmaz. Bu işlem geri alınamaz. Yedek aldınız mı?"
+        tr("confirm_uninstall_data", "All product settings and plugin options will be deleted. Orders and order records are not affected. This cannot be undone. Have you made a backup?")
       )
       if (!ok) {
         this.checked = false
@@ -405,7 +410,7 @@
         if (!hasDirtyState) {
           return undefined
         }
-        return "Kaydedilmemiş değişiklikleriniz var."
+        return tr("unsaved_changes", "You have unsaved changes.")
       })
   }
 
@@ -722,7 +727,7 @@
         showNotice(
           true,
           (cfg.i18n && cfg.i18n.preset_applied) ||
-            "Paket form alanlarına uygulandı. Kalıcı olması için “Paketi şimdi uygula & kaydet” veya “Ayarları Kaydet” kullanın.",
+            "Pack applied to the form fields. To make it permanent, use “Apply pack now & save” or “Save settings”.",
           true
         )
       })
@@ -735,7 +740,7 @@
         const $btn = $(this)
         const id = String($("#style_preset_id").val() || $(".wdp-style-preset-card.is-active").data("preset-id") || "")
         if (!id) {
-          showNotice(false, "Önce bir görünüm paketi seçin.", false)
+          showNotice(false, tr("select_pack_first", "Select a style pack first."), false)
           return
         }
         $btn.prop("disabled", true)
@@ -792,7 +797,7 @@
           a.click()
           a.remove()
           URL.revokeObjectURL(url)
-          showNotice(true, "Paket JSON olarak indirildi.", true)
+          showNotice(true, tr("pack_downloaded", "Pack downloaded as JSON."), true)
         })
       })
 
