@@ -359,10 +359,10 @@ class WDP_Product_Settings_Service {
 		// Admin + sunucu tek üst sınır: 50 (aşan yeni kayıt hata; mevcut meta silinmez).
 		$max_shares_raw = isset($request['max_shares']) ? absint(wp_unslash($request['max_shares'])) : 0;
 		if ($max_shares_raw > 50) {
-			self::reject_meta('_max_shares', __('En fazla hisse 50 olabilir.', 'woo-donation-popup'));
+			self::reject_meta('_max_shares', __('The maximum number of shares can be 50.', 'woo-donation-popup'));
 			$max_shares = '';
 		} elseif ($max_shares_raw > 0) {
-			$max_shares = (int) self::clamp_number($max_shares_raw, 1, 50, __('En fazla hisse', 'woo-donation-popup'));
+			$max_shares = (int) self::clamp_number($max_shares_raw, 1, 50, __('Maximum shares', 'woo-donation-popup'));
 		} else {
 			$max_shares = '';
 		}
@@ -377,7 +377,7 @@ class WDP_Product_Settings_Service {
 				? WDP_Form_Modules::clamp_product_theme_radius($radius_in)
 				: max(4, min(32, $radius_in));
 			if ($radius_out > 0 && $radius_out !== $radius_in) {
-				self::note_clamp(__('Köşe yuvarlaklığı', 'woo-donation-popup'), (string) $radius_in, (string) $radius_out);
+				self::note_clamp(__('Corner radius', 'woo-donation-popup'), (string) $radius_in, (string) $radius_out);
 			}
 			$theme_radius = $radius_out > 0 ? (string) $radius_out : '';
 		}
@@ -385,17 +385,17 @@ class WDP_Product_Settings_Service {
 		$theme_primary = self::parse_theme_hex_field(
 			isset($request['theme_primary']) ? $request['theme_primary'] : null,
 			'_theme_primary',
-			__('Ana renk', 'woo-donation-popup')
+			__('Primary color', 'woo-donation-popup')
 		);
 		$theme_primary_hover = self::parse_theme_hex_field(
 			isset($request['theme_primary_hover']) ? $request['theme_primary_hover'] : null,
 			'_theme_primary_hover',
-			__('Ana renk (üzerine gelince)', 'woo-donation-popup')
+			__('Primary color (hover)', 'woo-donation-popup')
 		);
 		$theme_modal_bg = self::parse_theme_hex_field(
 			isset($request['theme_modal_bg']) ? $request['theme_modal_bg'] : null,
 			'_theme_modal_bg',
-			__('Arka plan rengi', 'woo-donation-popup')
+			__('Background color', 'woo-donation-popup')
 		);
 
 		if ($theme_primary !== '' && class_exists('WDP_Color_Palette')) {
@@ -404,8 +404,8 @@ class WDP_Product_Settings_Service {
 			if ($ratio < 4.5) {
 				self::$corrections[] = sprintf(
 					/* translators: 1: field label, 2: contrast ratio */
-					__('«%1$s» ile düğme yazısı kontrastı %2$s:1 (önerilen en az 4.5:1). Kayıt yapıldı; daha koyu veya açık bir renk seçin.', 'woo-donation-popup'),
-					__('Ana renk', 'woo-donation-popup'),
+					__('Button text contrast with «%1$s» is %2$s:1 (recommended minimum 4.5:1). Saved; choose a darker or lighter color.', 'woo-donation-popup'),
+					__('Primary color', 'woo-donation-popup'),
 					number_format_i18n($ratio, 2)
 				);
 			}
@@ -416,8 +416,8 @@ class WDP_Product_Settings_Service {
 			if ($ratio < 4.5) {
 				self::$corrections[] = sprintf(
 					/* translators: 1: field label, 2: contrast ratio */
-					__('«%1$s» ile metin kontrastı %2$s:1 (önerilen en az 4.5:1). Kayıt yapıldı; daha açık veya koyu bir arka plan seçin.', 'woo-donation-popup'),
-					__('Arka plan rengi', 'woo-donation-popup'),
+					__('Text contrast with «%1$s» is %2$s:1 (recommended minimum 4.5:1). Saved; choose a lighter or darker background.', 'woo-donation-popup'),
+					__('Background color', 'woo-donation-popup'),
 					number_format_i18n($ratio, 2)
 				);
 			}
@@ -428,7 +428,7 @@ class WDP_Product_Settings_Service {
 			: '0';
 		$min_parsed       = self::parse_money_input($min_raw === '' ? '0' : $min_raw);
 		$min_custom_price = !empty($min_parsed['ok']) ? (float) $min_parsed['amount'] : 0.0;
-		$min_custom_price = self::clamp_number($min_custom_price, 0, 100000000, __('En düşük tutar', 'woo-donation-popup'));
+		$min_custom_price = self::clamp_number($min_custom_price, 0, 100000000, __('Minimum amount', 'woo-donation-popup'));
 
 		$goal_raw    = isset($request['progress_bar_limit']) && is_scalar($request['progress_bar_limit'])
 			? (string) wp_unslash($request['progress_bar_limit'])
@@ -441,7 +441,7 @@ class WDP_Product_Settings_Service {
 					'_progress_bar_limit',
 					isset($goal_parsed['error']) && $goal_parsed['error'] !== ''
 						? (string) $goal_parsed['error']
-						: __('Hedef tutar boş veya sıfır olamaz.', 'woo-donation-popup')
+						: __('The goal amount cannot be empty or zero.', 'woo-donation-popup')
 				);
 				$goal = 0.0;
 			} elseif ($goal > WDP_Campaign_Goal::MAX_GOAL_AMOUNT) {
@@ -449,7 +449,7 @@ class WDP_Product_Settings_Service {
 					'_progress_bar_limit',
 					sprintf(
 						/* translators: %s: max amount */
-						__('Hedef tutar en fazla %s olabilir.', 'woo-donation-popup'),
+						__('The goal amount can be at most %s.', 'woo-donation-popup'),
 						wc_format_decimal(WDP_Campaign_Goal::MAX_GOAL_AMOUNT)
 					)
 				);
@@ -545,7 +545,7 @@ class WDP_Product_Settings_Service {
 	public static function parse_money_input($raw) {
 		$raw = trim((string) $raw);
 		if ($raw === '') {
-			return array('ok' => false, 'amount' => 0.0, 'error' => __('Geçerli bir tutar girin.', 'woo-donation-popup'));
+			return array('ok' => false, 'amount' => 0.0, 'error' => __('Please enter a valid amount.', 'woo-donation-popup'));
 		}
 		// TR: 100.000 veya 100.000,50
 		if (preg_match('/^\d{1,3}(\.\d{3})+(,\d{1,6})?$/', $raw)) {
@@ -562,7 +562,7 @@ class WDP_Product_Settings_Service {
 			return array(
 				'ok'     => false,
 				'amount' => 0.0,
-				'error'  => __('Hedef tutar geçerli bir sayı olmalıdır.', 'woo-donation-popup'),
+				'error'  => __('The goal amount must be a valid number.', 'woo-donation-popup'),
 			);
 		}
 		return array('ok' => true, 'amount' => (float) $normalized, 'error' => '');
@@ -583,7 +583,7 @@ class WDP_Product_Settings_Service {
 			return array(
 				'ok'    => false,
 				'value' => '',
-				'error' => __('Bitiş tarihi Y-m-d biçiminde olmalıdır (örn. 2026-12-31).', 'woo-donation-popup'),
+				'error' => __('The end date must be in Y-m-d format (e.g. 2026-12-31).', 'woo-donation-popup'),
 			);
 		}
 		$dt = \DateTimeImmutable::createFromFormat('Y-m-d', $raw);
@@ -593,7 +593,7 @@ class WDP_Product_Settings_Service {
 			return array(
 				'ok'    => false,
 				'value' => '',
-				'error' => __('Bitiş tarihi geçerli bir takvim günü olmalıdır.', 'woo-donation-popup'),
+				'error' => __('The end date must be a valid calendar day.', 'woo-donation-popup'),
 			);
 		}
 		return array('ok' => true, 'value' => $raw, 'error' => '');
@@ -663,7 +663,7 @@ class WDP_Product_Settings_Service {
 				$meta_key,
 				sprintf(
 					/* translators: %s: field label */
-					__('«%s» geçerli bir renk olmalıdır (#RGB veya #RRGGBB).', 'woo-donation-popup'),
+					__('«%s» must be a valid color (#RGB or #RRGGBB).', 'woo-donation-popup'),
 					$label
 				)
 			);
@@ -707,7 +707,7 @@ class WDP_Product_Settings_Service {
 	private static function note_clamp($label, $from, $to) {
 		self::$corrections[] = sprintf(
 			/* translators: 1: field name, 2: original value, 3: corrected value */
-			__('«%1$s» değeri %2$s\'ten %3$s\'ye düzeltildi.', 'woo-donation-popup'),
+			__('The «%1$s» value was corrected from %2$s to %3$s.', 'woo-donation-popup'),
 			$label,
 			$from,
 			$to

@@ -201,7 +201,7 @@ class WDP_Cart {
         // Sadece bağış formundan gelen istekleri işleme al
         if (self::is_donation_modal_request($request_data)) {
             if (!self::is_valid_donation_form_nonce($request_data)) {
-                wc_add_notice(__('Güvenlik doğrulaması başarısız oldu. Lütfen sayfayı yenileyip tekrar deneyin.', 'woo-donation-popup'), 'error');
+                wc_add_notice(__('Security verification failed. Please refresh the page and try again.', 'woo-donation-popup'), 'error');
                 return false;
             }
 
@@ -213,7 +213,7 @@ class WDP_Cart {
                 if ($share_count > $max_share_count) {
                     wc_add_notice(
                         sprintf(
-                            __('Maksimum hisse sayısı: %d', 'woo-donation-popup'),
+                            __('Maximum number of shares: %d', 'woo-donation-popup'),
                             $max_share_count
                         ),
                         'error'
@@ -232,18 +232,18 @@ class WDP_Cart {
                 );
 
                 if (!empty($parsed['missing_fields'])) {
-                    wc_add_notice(__('Lütfen tüm zorunlu alanları doldurun: ', 'woo-donation-popup') . implode(', ', $parsed['missing_fields']), 'error');
+                    wc_add_notice(__('Please fill in all required fields: ', 'woo-donation-popup') . implode(', ', $parsed['missing_fields']), 'error');
                     return false;
                 }
             } else {
                 // Normal bağış verilerini kontrol et
                 if (!isset($request_data['donation_full_name']) || empty($request_data['donation_full_name'])) {
-                    wc_add_notice(__('Lütfen Ad Soyad bilginizi giriniz.', 'woo-donation-popup'), 'error');
+                    wc_add_notice(__('Please enter your full name.', 'woo-donation-popup'), 'error');
                     return false;
                 }
 
                 if (!isset($request_data['donation_phone']) || empty($request_data['donation_phone'])) {
-                    wc_add_notice(__('Lütfen Telefon bilginizi giriniz.', 'woo-donation-popup'), 'error');
+                    wc_add_notice(__('Please enter your phone number.', 'woo-donation-popup'), 'error');
                     return false;
                 }
 
@@ -270,23 +270,23 @@ class WDP_Cart {
 
             if ($allow_custom_price) {
                 if (!isset($request_data['custom_price']) || '' === $request_data['custom_price']) {
-                    wc_add_notice(__('Lütfen bağış miktarını giriniz.', 'woo-donation-popup'), 'error');
+                    wc_add_notice(__('Please enter the donation amount.', 'woo-donation-popup'), 'error');
                     return false;
                 }
 
                 $parsed_amount = class_exists('WDP_Utils')
                     ? WDP_Utils::parse_donor_amount($request_data['custom_price'])
-                    : array('ok' => false, 'error' => __('Geçersiz bağış miktarı girdiniz.', 'woo-donation-popup'));
+                    : array('ok' => false, 'error' => __('You entered an invalid donation amount.', 'woo-donation-popup'));
                 if (empty($parsed_amount['ok'])) {
                     $parse_error = isset($parsed_amount['error']) && $parsed_amount['error'] !== ''
                         ? (string) $parsed_amount['error']
-                        : __('Geçersiz bağış miktarı girdiniz.', 'woo-donation-popup');
+                        : __('You entered an invalid donation amount.', 'woo-donation-popup');
                     wc_add_notice($parse_error, 'error');
                     return false;
                 }
                 $custom_price = self::sanitize_custom_price($parsed_amount['amount']);
                 if (null === $custom_price) {
-                    wc_add_notice(__('Geçersiz bağış miktarı girdiniz.', 'woo-donation-popup'), 'error');
+                    wc_add_notice(__('You entered an invalid donation amount.', 'woo-donation-popup'), 'error');
                     return false;
                 }
 
@@ -348,7 +348,7 @@ class WDP_Cart {
      * @return string
      */
     public static function native_add_to_cart_notice() {
-        return __('Lütfen bağış formunu kullanarak sepete ekleyin. Bağışçı bilgileri gereklidir.', 'woo-donation-popup');
+        return __('Please add to cart using the donation form. Donor details are required.', 'woo-donation-popup');
     }
 
     /**
@@ -482,7 +482,7 @@ class WDP_Cart {
             // Çoklu hisse kontrolü
             if (isset($donation_data['share_count']) && $donation_data['share_count'] > 0) {
                 $item_data[] = array(
-                    'key' => __('Hisse Sayısı', 'woo-donation-popup'),
+                    'key' => __('Share count', 'woo-donation-popup'),
                     'value' => $donation_data['share_count'],
                 );
 
@@ -491,21 +491,21 @@ class WDP_Cart {
                     foreach ($donation_data['shareholders'] as $key => $shareholder) {
                         if (!empty($shareholder['name'])) {
                             $item_data[] = array(
-                                'key' => sprintf(__('%d. Hissedar', 'woo-donation-popup'), $key),
+                                'key' => sprintf(__('Shareholder %d', 'woo-donation-popup'), $key),
                                 'value' => $shareholder['name'] . (!empty($shareholder['phone']) ? ' (' . $shareholder['phone'] . ')' : ''),
                             );
                         }
 
                         if (!empty($shareholder['email'])) {
                             $item_data[] = array(
-                                'key' => sprintf(__('%d. Hissedar E-postası', 'woo-donation-popup'), $key),
+                                'key' => sprintf(__('Shareholder %d email', 'woo-donation-popup'), $key),
                                 'value' => $shareholder['email'],
                             );
                         }
 
                         if (isset($shareholder['note']) && $shareholder['note'] !== '') {
                             $item_data[] = array(
-                                'key' => sprintf(__('%d. Hissedar Notu', 'woo-donation-popup'), $key),
+                                'key' => sprintf(__('Shareholder %d note', 'woo-donation-popup'), $key),
                                 'value' => $shareholder['note'],
                             );
                         }
@@ -515,35 +515,35 @@ class WDP_Cart {
                 // Normal bağış verilerini göster (bağışçının kendi oturum sepeti — orijinal ad).
                 if (!empty($donation_data['full_name'])) {
                     $item_data[] = array(
-                        'key' => __('Bağışçı', 'woo-donation-popup'),
+                        'key' => __('Donor', 'woo-donation-popup'),
                         'value' => $donation_data['full_name'] . (!empty($donation_data['phone']) ? ' (' . $donation_data['phone'] . ')' : ''),
                     );
                 }
 
                 if (!empty($donation_data['email'])) {
                     $item_data[] = array(
-                        'key'   => __('E-posta', 'woo-donation-popup'),
+                        'key'   => __('Email', 'woo-donation-popup'),
                         'value' => $donation_data['email'],
                     );
                 }
 
                 if (!empty($donation_data['dedication'])) {
                     $item_data[] = array(
-                        'key'   => __('İthaf', 'woo-donation-popup'),
+                        'key'   => __('Dedication', 'woo-donation-popup'),
                         'value' => $donation_data['dedication'],
                     );
                 }
 
                 if (!empty($donation_data['anonymous'])) {
                     $item_data[] = array(
-                        'key'   => __('İsmim gizli kalsın', 'woo-donation-popup'),
-                        'value' => __('Evet', 'woo-donation-popup'),
+                        'key'   => __('Keep my name private', 'woo-donation-popup'),
+                        'value' => __('Yes', 'woo-donation-popup'),
                     );
                 }
 
                 if (isset($donation_data['note']) && $donation_data['note'] !== '') {
                     $item_data[] = array(
-                        'key' => __('Bağış Notu', 'woo-donation-popup'),
+                        'key' => __('Donation note', 'woo-donation-popup'),
                         'value' => $donation_data['note'],
                     );
                 }
@@ -561,7 +561,7 @@ class WDP_Cart {
                 $value     .= ' (' . wp_strip_all_tags(wc_price($fee_amount)) . ')';
             }
             $item_data[] = array(
-                'key'   => __('İşlem ücreti', 'woo-donation-popup'),
+                'key'   => __('Processing fee', 'woo-donation-popup'),
                 'value' => $value,
             );
         }
@@ -608,7 +608,7 @@ class WDP_Cart {
         }
 
         if ($removed_zero_lines && function_exists('wc_add_notice')) {
-            $notice = __('Tutarı 0 olan bağış satırı sepetten kaldırıldı. Lütfen geçerli bir bağış tutarı girin.', 'woo-donation-popup');
+            $notice = __('The donation line with amount 0 was removed from the cart. Please enter a valid donation amount.', 'woo-donation-popup');
             if (!function_exists('wc_has_notice') || !wc_has_notice($notice, 'error')) {
                 wc_add_notice($notice, 'error');
             }
@@ -694,12 +694,12 @@ class WDP_Cart {
         }
 
         if ($min <= 0) {
-            return __('Lütfen 0\'dan büyük bir bağış tutarı girin.', 'woo-donation-popup');
+            return __('Please enter a donation amount greater than 0.', 'woo-donation-popup');
         }
 
         return sprintf(
             /* translators: %s: formatted minimum amount with currency */
-            __('Lütfen %s ve üstü değerler girin.', 'woo-donation-popup'),
+            __('Please enter %s or more.', 'woo-donation-popup'),
             self::format_amount_for_message($min, $plain_text)
         );
     }
@@ -921,7 +921,7 @@ class WDP_Cart {
             }
         }
 
-        return esc_html__('Alt Bağış', 'woo-donation-popup');
+        return esc_html__('Add-on donation', 'woo-donation-popup');
     }
 
     /**
@@ -1054,11 +1054,11 @@ class WDP_Cart {
 
             if ($require_contact) {
                 if ('' === $name) {
-                    $missing_fields[] = sprintf(__('%d. Hissedar Adı', 'woo-donation-popup'), $i);
+                    $missing_fields[] = sprintf(__('Shareholder %d name', 'woo-donation-popup'), $i);
                     $missing_field_keys[] = $name_key;
                 }
                 if ('' === $phone) {
-                    $missing_fields[] = sprintf(__('%d. Hissedar Telefonu', 'woo-donation-popup'), $i);
+                    $missing_fields[] = sprintf(__('Shareholder %d phone', 'woo-donation-popup'), $i);
                     $missing_field_keys[] = $phone_key;
                 }
             }

@@ -66,7 +66,7 @@ final class WDP_Plugin_Bootstrap {
 	public static function woocommerce_missing_notice() {
 		?>
 		<div class="notice notice-error">
-			<p><?php esc_html_e('WooCommerce Donation Modal Popup eklentisi için WooCommerce eklentisinin yüklü ve aktif olması gerekiyor.', 'woo-donation-popup'); ?></p>
+			<p><?php esc_html_e('The WooCommerce Donation Modal Popup plugin requires WooCommerce to be installed and active.', 'woo-donation-popup'); ?></p>
 		</div>
 		<?php
 	}

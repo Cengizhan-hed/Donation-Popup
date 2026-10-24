@@ -75,14 +75,14 @@ class WDP_Order_Meta_Keys {
 	 */
 	public static function labels() {
 		return array(
-			self::DONOR_NAME    => __('Bağışçı Adı', 'woo-donation-popup'),
-			self::DONOR_PHONE   => __('Bağışçı Telefonu', 'woo-donation-popup'),
-			self::DONOR_EMAIL   => __('Bağışçı E-posta', 'woo-donation-popup'),
-			self::DONATION_NOTE => __('Bağış Notu', 'woo-donation-popup'),
-			self::DEDICATION    => __('İthaf', 'woo-donation-popup'),
-			self::ANONYMOUS     => __('Anonim', 'woo-donation-popup'),
-			self::COVER_FEE     => __('İşlem ücreti', 'woo-donation-popup'),
-			self::SHARE_COUNT   => __('Hisse Sayısı', 'woo-donation-popup'),
+			self::DONOR_NAME    => __('Donor name', 'woo-donation-popup'),
+			self::DONOR_PHONE   => __('Donor phone', 'woo-donation-popup'),
+			self::DONOR_EMAIL   => __('Donor email', 'woo-donation-popup'),
+			self::DONATION_NOTE => __('Donation note', 'woo-donation-popup'),
+			self::DEDICATION    => __('Dedication', 'woo-donation-popup'),
+			self::ANONYMOUS     => __('Anonymous', 'woo-donation-popup'),
+			self::COVER_FEE     => __('Processing fee', 'woo-donation-popup'),
+			self::SHARE_COUNT   => __('Share count', 'woo-donation-popup'),
 		);
 	}
 
@@ -93,10 +93,10 @@ class WDP_Order_Meta_Keys {
 	 */
 	public static function shareholder_label_formats() {
 		return array(
-			'name'  => __('%d. Hissedar Adı', 'woo-donation-popup'),
-			'phone' => __('%d. Hissedar Telefonu', 'woo-donation-popup'),
-			'email' => __('%d. Hissedar E-postası', 'woo-donation-popup'),
-			'note'  => __('%d. Hissedar Notu', 'woo-donation-popup'),
+			'name'  => __('Shareholder %d name', 'woo-donation-popup'),
+			'phone' => __('Shareholder %d phone', 'woo-donation-popup'),
+			'email' => __('Shareholder %d email', 'woo-donation-popup'),
+			'note'  => __('Shareholder %d note', 'woo-donation-popup'),
 		);
 	}
 
@@ -291,11 +291,11 @@ class WDP_Order_Meta_Keys {
 	 */
 	public static function format_display_value($fixed_key, $value) {
 		if (self::ANONYMOUS === $fixed_key && 'yes' === $value) {
-			return __('Evet', 'woo-donation-popup');
+			return __('Yes', 'woo-donation-popup');
 		}
 		if (self::COVER_FEE === $fixed_key) {
 			if ('yes' === $value) {
-				return __('Evet', 'woo-donation-popup');
+				return __('Yes', 'woo-donation-popup');
 			}
 			if (is_numeric($value)) {
 				return sprintf('+%%%s', $value);

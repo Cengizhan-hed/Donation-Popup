@@ -29,11 +29,11 @@ class WDP_Form_Matrix {
 			return;
 		}
 		if (!current_user_can('manage_woocommerce')) {
-			wp_die(esc_html__('Bu sayfayı görüntüleme yetkiniz yok.', 'woo-donation-popup'), '', array('response' => 403));
+			wp_die(esc_html__('You are not allowed to view this page.', 'woo-donation-popup'), '', array('response' => 403));
 		}
 		$nonce = isset($_GET['wdp_matrix_nonce']) ? sanitize_text_field(wp_unslash($_GET['wdp_matrix_nonce'])) : '';
 		if ($nonce === '' || !wp_verify_nonce($nonce, 'wdp_form_matrix')) {
-			wp_die(esc_html__('Geçersiz bağlantı.', 'woo-donation-popup'), '', array('response' => 403));
+			wp_die(esc_html__('Invalid link.', 'woo-donation-popup'), '', array('response' => 403));
 		}
 
 		nocache_headers();
@@ -45,7 +45,7 @@ class WDP_Form_Matrix {
 			if (function_exists('wdp_debug_log')) {
 				wdp_debug_log('WDP form matrix: ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine());
 			}
-			wp_die(esc_html__('Form test sayfası çizilemedi. Ayrıntı hata günlüğünde.', 'woo-donation-popup'));
+			wp_die(esc_html__('The form test page could not be rendered. See the error log for details.', 'woo-donation-popup'));
 		}
 		exit;
 	}
@@ -64,7 +64,7 @@ class WDP_Form_Matrix {
 			$product = !empty($list[0]) ? $list[0] : null;
 		}
 		if (!$product) {
-			wp_die(esc_html__('Test için yayımlanmış bir ürün bulunamadı.', 'woo-donation-popup'));
+			wp_die(esc_html__('No published product was found for testing.', 'woo-donation-popup'));
 		}
 
 		$width = isset($_GET['wdp_width']) ? absint($_GET['wdp_width']) : 450;
@@ -79,7 +79,7 @@ class WDP_Form_Matrix {
 		echo '<!DOCTYPE html><html ' . get_language_attributes() . '><head><meta charset="' . esc_attr(get_bloginfo('charset')) . '">';
 		echo '<meta name="viewport" content="width=device-width, initial-scale=1">';
 		echo '<meta name="robots" content="noindex,nofollow">';
-		echo '<title>' . esc_html__('Form test sayfası', 'woo-donation-popup') . '</title>';
+		echo '<title>' . esc_html__('Form test page', 'woo-donation-popup') . '</title>';
 		wp_head();
 		echo '<style>
 			body.wdp-form-matrix{margin:0;padding:24px;background:#f4f4f5;font-family:system-ui,sans-serif}
@@ -92,18 +92,18 @@ class WDP_Form_Matrix {
 
 		$base = wp_nonce_url(home_url('/?wdp_form_matrix=1&product_id=' . (int) $product->get_id()), 'wdp_form_matrix', 'wdp_matrix_nonce');
 		echo '<div class="wdp-matrix__bar">';
-		echo '<strong>' . esc_html__('Kapsayıcı genişliği', 'woo-donation-popup') . '</strong>';
-		foreach (array(300 => '300', 450 => '450', 700 => '700', 0 => __('Tam', 'woo-donation-popup')) as $px => $label) {
+		echo '<strong>' . esc_html__('Container width', 'woo-donation-popup') . '</strong>';
+		foreach (array(300 => '300', 450 => '450', 700 => '700', 0 => __('Full', 'woo-donation-popup')) as $px => $label) {
 			echo ' <a class="button' . ($width === (int) $px ? ' button-primary' : '') . '" href="' . esc_url(add_query_arg('wdp_width', (string) $px, $base)) . '">' . esc_html($label) . '</a>';
 		}
 		echo '<span>' . esc_html($product->get_name()) . '</span>';
 		echo '</div>';
 
 		$types = array(
-			WDP_Donation_Type::FIXED    => __('Sabit tutar', 'woo-donation-popup'),
-			WDP_Donation_Type::CUSTOM   => __('Bağışçı belirler', 'woo-donation-popup'),
-			WDP_Donation_Type::SHARES   => __('Hisseli', 'woo-donation-popup'),
-			WDP_Donation_Type::CAMPAIGN => __('Hedefli kampanya', 'woo-donation-popup'),
+			WDP_Donation_Type::FIXED    => __('Fixed amount', 'woo-donation-popup'),
+			WDP_Donation_Type::CUSTOM   => __('Custom amount', 'woo-donation-popup'),
+			WDP_Donation_Type::SHARES   => __('Share-based', 'woo-donation-popup'),
+			WDP_Donation_Type::CAMPAIGN => __('Goal-based campaign', 'woo-donation-popup'),
 		);
 
 		echo '<div class="wdp-matrix__grid">';
@@ -140,8 +140,8 @@ class WDP_Form_Matrix {
 			);
 			echo '</div>';
 			echo '<div class="wdp-matrix__actions">';
-			echo '<button type="button" class="button wdp-open-modal" data-product-id="' . esc_attr((string) $product->get_id()) . '" data-wdp-mode="popup" data-wdp-lazy="1">' . esc_html__('Popup aç', 'woo-donation-popup') . '</button>';
-			echo '<button type="button" class="button wdp-open-modal wdp-open-side-panel" data-product-id="' . esc_attr((string) $product->get_id()) . '" data-wdp-mode="side_panel" data-wdp-lazy="1">' . esc_html__('Panel aç', 'woo-donation-popup') . '</button>';
+			echo '<button type="button" class="button wdp-open-modal" data-product-id="' . esc_attr((string) $product->get_id()) . '" data-wdp-mode="popup" data-wdp-lazy="1">' . esc_html__('Open popup', 'woo-donation-popup') . '</button>';
+			echo '<button type="button" class="button wdp-open-modal wdp-open-side-panel" data-product-id="' . esc_attr((string) $product->get_id()) . '" data-wdp-mode="side_panel" data-wdp-lazy="1">' . esc_html__('Open panel', 'woo-donation-popup') . '</button>';
 			echo '</div></section>';
 		}
 		echo '</div>';
@@ -150,7 +150,7 @@ class WDP_Form_Matrix {
 		document.addEventListener("submit", function(e) {
 			if (e.target && e.target.closest && e.target.closest(".wdp-form-matrix")) {
 				e.preventDefault();
-				alert(' . wp_json_encode(__('Test sayfası — sepete ekleme kapalı.', 'woo-donation-popup')) . ');
+				alert(' . wp_json_encode(__('Test page — adding to cart is disabled.', 'woo-donation-popup')) . ');
 			}
 		}, true);
 		</script>';

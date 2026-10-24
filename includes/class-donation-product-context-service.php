@@ -85,7 +85,7 @@ class WDP_Donation_Product_Context_Service {
 		$sadaka_wc_product_id = class_exists('WDP_Utils')
 			? (string) WDP_Utils::get_configured_sadaka_wc_product_id($product)
 			: (string) absint($product->get_meta('_sadaka_wc_product_id'));
-		$sadaka_toggle_label = class_exists('WDP_Utils') ? WDP_Utils::get_sadaka_toggle_label($product) : __('Alt Bağış Ekle', 'woo-donation-popup');
+		$sadaka_toggle_label = class_exists('WDP_Utils') ? WDP_Utils::get_sadaka_toggle_label($product) : __('Add add-on donation', 'woo-donation-popup');
 
 		$context = array(
 			'product_id'                    => $product_id,
@@ -117,7 +117,7 @@ class WDP_Donation_Product_Context_Service {
 				? ''
 				: (((float) $sadaka_min_price > 0)
 					? WDP_Utils::format_min_placeholder($sadaka_min_price)
-					: __('Alt bağış tutarı', 'woo-donation-popup')),
+					: __('Add-on amount', 'woo-donation-popup')),
 			'enable_trust_strip'            => self::meta_flag_default_yes($product, '_enable_trust_strip'),
 			'enable_quantity'               => self::meta_flag_default_yes($product, '_enable_quantity'),
 			'enable_amount_presets'         => self::meta_flag_default_yes($product, '_enable_amount_presets'),

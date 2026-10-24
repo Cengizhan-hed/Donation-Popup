@@ -53,12 +53,12 @@ trait WDP_Ajax_Cart_Add_Trait {
             $custom_price_type = isset($_POST['custom_price_type']) ? WDP_Security::sanitize_text(wp_unslash($_POST['custom_price_type']), 50) : '';
 
             if (!$product_id) {
-                throw new WDP_Validation_Exception(__('Geçersiz ürün ID.', 'woo-donation-popup'));
+                throw new WDP_Validation_Exception(__('Invalid product ID.', 'woo-donation-popup'));
             }
 
             $cart = self::get_wc_cart();
             if (!$cart) {
-                throw new WDP_Cart_Exception(__('WooCommerce sepet nesnesi bulunamadı.', 'woo-donation-popup'));
+                throw new WDP_Cart_Exception(__('WooCommerce cart object was not found.', 'woo-donation-popup'));
             }
 
             $product = wc_get_product($product_id);
@@ -84,7 +84,7 @@ trait WDP_Ajax_Cart_Add_Trait {
             }
 
             if ($share_count > $max_share_count) {
-                throw new WDP_Validation_Exception(__('Maksimum hisse sayısı aşıldı', 'woo-donation-popup'));
+                throw new WDP_Validation_Exception(__('Maximum number of shares exceeded', 'woo-donation-popup'));
             }
 
             $parsed = WDP_Cart::parse_shareholders_from_request(
@@ -98,7 +98,7 @@ trait WDP_Ajax_Cart_Add_Trait {
 
             if (!empty($parsed['missing_fields'])) {
                 throw new WDP_Validation_Exception(
-                    __('Lütfen tüm zorunlu alanları doldurun: ', 'woo-donation-popup') . implode(', ', $parsed['missing_fields']),
+                    __('Please fill in all required fields: ', 'woo-donation-popup') . implode(', ', $parsed['missing_fields']),
                     $parsed['missing_field_keys']
                 );
             }
@@ -131,11 +131,11 @@ trait WDP_Ajax_Cart_Add_Trait {
                 : '';
 
             if ('' === $full_name) {
-                throw new WDP_Validation_Exception(__('Lütfen Ad Soyad bilginizi giriniz.', 'woo-donation-popup'), array('donation_full_name'));
+                throw new WDP_Validation_Exception(__('Please enter your full name.', 'woo-donation-popup'), array('donation_full_name'));
             }
 
             if ('' === $phone) {
-                throw new WDP_Validation_Exception(__('Lütfen Telefon bilginizi giriniz.', 'woo-donation-popup'), array('donation_phone'));
+                throw new WDP_Validation_Exception(__('Please enter your phone number.', 'woo-donation-popup'), array('donation_phone'));
             }
 
             $donation_data['full_name'] = $full_name;
@@ -190,22 +190,22 @@ trait WDP_Ajax_Cart_Add_Trait {
 
             if ($allow_custom_price) {
                 if ($custom_price_raw === '') {
-                    throw new WDP_Validation_Exception(__('Lütfen bağış miktarını giriniz.', 'woo-donation-popup'), array('custom_price'));
+                    throw new WDP_Validation_Exception(__('Please enter the donation amount.', 'woo-donation-popup'), array('custom_price'));
                 }
 
                 $parsed_amount = class_exists('WDP_Utils')
                     ? WDP_Utils::parse_donor_amount($custom_price_raw)
-                    : array('ok' => false, 'amount' => 0.0, 'status' => 'invalid', 'error' => __('Geçersiz fiyat değeri.', 'woo-donation-popup'));
+                    : array('ok' => false, 'amount' => 0.0, 'status' => 'invalid', 'error' => __('Invalid price value.', 'woo-donation-popup'));
                 if (empty($parsed_amount['ok'])) {
                     $parse_error = isset($parsed_amount['error']) && $parsed_amount['error'] !== ''
                         ? (string) $parsed_amount['error']
-                        : __('Geçersiz fiyat değeri.', 'woo-donation-popup');
+                        : __('Invalid price value.', 'woo-donation-popup');
                     throw new WDP_Validation_Exception($parse_error, array('custom_price'));
                 }
                 $custom_price_value = WDP_Security::sanitize_numeric($parsed_amount['amount'], 0, 999999);
 
                 if (null === $custom_price_value) {
-                    throw new WDP_Validation_Exception(__('Geçersiz fiyat değeri.', 'woo-donation-popup'), array('custom_price'));
+                    throw new WDP_Validation_Exception(__('Invalid price value.', 'woo-donation-popup'), array('custom_price'));
                 }
 
                 // PERFORMANCE: Use cached meta data if available
@@ -222,7 +222,7 @@ trait WDP_Ajax_Cart_Add_Trait {
                     $effective_min = WDP_Cart::get_min_donation_amount($min_price, $product_id);
                     throw new WDP_Validation_Exception(
                         $amount_error,
-                        array('custom_price' => __('Minimum fiyat: ', 'woo-donation-popup') . WDP_Cart::format_amount_for_message($effective_min, true))
+                        array('custom_price' => __('Minimum price: ', 'woo-donation-popup') . WDP_Cart::format_amount_for_message($effective_min, true))
                     );
                 }
 
@@ -230,7 +230,7 @@ trait WDP_Ajax_Cart_Add_Trait {
                     throw new WDP_Validation_Exception(
                         sprintf(
                             /* translators: %s: formatted maximum amount with currency */
-                            __('Maksimum fiyat: %s', 'woo-donation-popup'),
+                            __('Maximum price: %s', 'woo-donation-popup'),
                             WDP_Cart::format_amount_for_message($max_price, true)
                         ),
                         array('custom_price')
@@ -250,7 +250,7 @@ trait WDP_Ajax_Cart_Add_Trait {
                     if (isset($cart_item['unique_submission_key']) && $cart_item['unique_submission_key'] === $unique_submission_key) {
                         $dup_pid = isset($cart_item['product_id']) ? (int) $cart_item['product_id'] : 0;
                         WDP_Utils::json_success(array(
-                            'message' => __('Ürün zaten sepete eklenmiş', 'woo-donation-popup'),
+                            'message' => __('Product is already in the cart', 'woo-donation-popup'),
                             'cart_count' => (int) $cart->get_cart_contents_count(),
                             'checkout_url' => wc_get_checkout_url(),
                             'items' => self::get_cart_items(),
@@ -309,7 +309,7 @@ trait WDP_Ajax_Cart_Add_Trait {
             $cart_item_key = $cart->add_to_cart($product_id, $quantity, $variation_id, array(), $cart_item_data);
 
             if (!$cart_item_key) {
-                throw new WDP_Cart_Exception(__('Ürün sepete eklenirken bir hata oluştu.', 'woo-donation-popup'));
+                throw new WDP_Cart_Exception(__('An error occurred while adding the product to the cart.', 'woo-donation-popup'));
             }
 
             self::maybe_add_sadaka_donation_to_cart($cart, $product, $donation_data, $unique_submission_key, $cart_item_key);
@@ -332,7 +332,7 @@ trait WDP_Ajax_Cart_Add_Trait {
             
             $added_item = $cart->get_cart_item($cart_item_key);
             WDP_Utils::json_success(array(
-                'message' => __('Ürün sepete eklendi.', 'woo-donation-popup'),
+                'message' => __('Product added to cart.', 'woo-donation-popup'),
                 'cart_item_key' => $cart_item_key,
                 'cart_count' => $cart_count,
                 'checkout_url' => wc_get_checkout_url(),
@@ -455,7 +455,7 @@ trait WDP_Ajax_Cart_Add_Trait {
 
         if ($configured_sadaka_id <= 0 || $sadaka_product_id <= 0) {
             throw new WDP_Validation_Exception(
-                __('Alt bağış WC ürünü bulunamadı. Başarı & Mini Sepet veya ürün ayarında geçerli bir ürün ID girin.', 'woo-donation-popup'),
+                __('Add-on donation WooCommerce product was not found. Enter a valid product ID in Success & Mini Cart or the product settings.', 'woo-donation-popup'),
                 array('sadaka_custom_price')
             );
         }
@@ -489,7 +489,7 @@ trait WDP_Ajax_Cart_Add_Trait {
             throw new WDP_Validation_Exception(
                 !empty($validated['message'])
                     ? (string) $validated['message']
-                    : __('Geçerli bir alt bağış tutarı giriniz.', 'woo-donation-popup'),
+                    : __('Please enter a valid add-on donation amount.', 'woo-donation-popup'),
                 array('sadaka_custom_price')
             );
         }
@@ -528,7 +528,7 @@ trait WDP_Ajax_Cart_Add_Trait {
             throw new WDP_Cart_Exception(
                 sprintf(
                     /* translators: %d: WooCommerce product ID */
-                    __('Alt bağış sepete eklenemedi (ürün #%d). Ürünün yayında olduğundan emin olun.', 'woo-donation-popup'),
+                    __('The add-on donation could not be added to the cart (product #%d). Make sure the product is published.', 'woo-donation-popup'),
                     $sadaka_product_id
                 )
             );

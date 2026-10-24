@@ -46,21 +46,21 @@ class WDP_Icon_Library {
 	 */
 	public static function get_builtins_for_admin() {
 		$labels = array(
-			'user'     => __('Kullanıcı', 'woo-donation-popup'),
-			'note'     => __('Not', 'woo-donation-popup'),
-			'email'    => __('E-posta', 'woo-donation-popup'),
-			'phone'    => __('Telefon', 'woo-donation-popup'),
-			'cart'     => __('Sepet', 'woo-donation-popup'),
-			'checkout' => __('Ödeme / Kalkan', 'woo-donation-popup'),
-			'shield'   => __('Kalkan', 'woo-donation-popup'),
-			'heart'    => __('Kalp', 'woo-donation-popup'),
-			'gift'     => __('Hediye', 'woo-donation-popup'),
-			'star'     => __('Yıldız', 'woo-donation-popup'),
-			'check'    => __('Onay', 'woo-donation-popup'),
-			'continue' => __('Devam', 'woo-donation-popup'),
-			'users'    => __('Topluluk', 'woo-donation-popup'),
-			'clock'    => __('Saat', 'woo-donation-popup'),
-			'lock'     => __('Kilit', 'woo-donation-popup'),
+			'user'     => __('User', 'woo-donation-popup'),
+			'note'     => __('Note', 'woo-donation-popup'),
+			'email'    => __('Email', 'woo-donation-popup'),
+			'phone'    => __('Phone', 'woo-donation-popup'),
+			'cart'     => __('Cart', 'woo-donation-popup'),
+			'checkout' => __('Checkout / Shield', 'woo-donation-popup'),
+			'shield'   => __('Shield', 'woo-donation-popup'),
+			'heart'    => __('Heart', 'woo-donation-popup'),
+			'gift'     => __('Gift', 'woo-donation-popup'),
+			'star'     => __('Star', 'woo-donation-popup'),
+			'check'    => __('Check', 'woo-donation-popup'),
+			'continue' => __('Continue', 'woo-donation-popup'),
+			'users'    => __('Community', 'woo-donation-popup'),
+			'clock'    => __('Clock', 'woo-donation-popup'),
+			'lock'     => __('Lock', 'woo-donation-popup'),
 		);
 		$list = array();
 		foreach (self::get_builtins() as $id => $svg) {

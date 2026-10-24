@@ -163,7 +163,7 @@ class WDP_Sadaka_Product_Visibility {
 		if (class_exists('WDP_Utils')) {
 			$default = (int) WDP_Utils::get_default_sadaka_wc_product_id();
 			if ($default === $sadaka_id) {
-				$labels[] = __('Genel varsayılan (Başarı sekmesi)', 'woo-donation-popup');
+				$labels[] = __('General default (Success tab)', 'woo-donation-popup');
 			}
 		}
 
@@ -356,7 +356,7 @@ class WDP_Sadaka_Product_Visibility {
 		$id          = isset($args['id']) ? (string) $args['id'] : 'sadaka_wc_product_id';
 		$name        = isset($args['name']) ? (string) $args['name'] : $id;
 		$value       = isset($args['value']) ? absint($args['value']) : 0;
-		$label       = isset($args['label']) ? (string) $args['label'] : __('Alt bağış ürünü', 'woo-donation-popup');
+		$label       = isset($args['label']) ? (string) $args['label'] : __('Add-on donation product', 'woo-donation-popup');
 		$description = isset($args['description']) ? (string) $args['description'] : '';
 		$error       = isset($args['error']) ? (string) $args['error'] : '';
 		$options     = self::product_search_options($value);
@@ -373,7 +373,7 @@ class WDP_Sadaka_Product_Visibility {
 					'class'             => 'wc-product-search',
 					'options'           => $options,
 					'custom_attributes' => array(
-						'data-placeholder' => esc_attr__('Ürün adı ile ara…', 'woo-donation-popup'),
+						'data-placeholder' => esc_attr__('Search by product name…', 'woo-donation-popup'),
 						'data-action'      => 'woocommerce_json_search_products_and_variations',
 						'data-allow_clear' => 'true',
 						'style'            => 'width:100%;max-width:400px;',
@@ -389,7 +389,7 @@ class WDP_Sadaka_Product_Visibility {
 		echo '<p class="form-field">';
 		echo '<label for="' . esc_attr($id) . '">' . esc_html($label) . '</label> ';
 		echo '<select class="wc-product-search" id="' . esc_attr($id) . '" name="' . esc_attr($name) . '"';
-		echo ' data-placeholder="' . esc_attr__('Ürün adı ile ara…', 'woo-donation-popup') . '"';
+		echo ' data-placeholder="' . esc_attr__('Search by product name…', 'woo-donation-popup') . '"';
 		echo ' data-action="woocommerce_json_search_products_and_variations" data-allow_clear="true" style="width:100%;max-width:400px;">';
 		foreach ($options as $opt_id => $opt_label) {
 			if ((string) $opt_id === '') {
@@ -424,14 +424,14 @@ class WDP_Sadaka_Product_Visibility {
 			return array(
 				'ok'    => false,
 				'id'    => 0,
-				'error' => __('Alt bağış ürünü ana ürünün kendisi olamaz.', 'woo-donation-popup'),
+				'error' => __('The add-on donation product cannot be the main product itself.', 'woo-donation-popup'),
 			);
 		}
 		if (!class_exists('WDP_Utils') || !WDP_Utils::is_valid_sadaka_wc_product($sadaka_id)) {
 			return array(
 				'ok'    => false,
 				'id'    => 0,
-				'error' => __('Geçerli bir basit WooCommerce ürünü seçin (yayımlanmış veya özel).', 'woo-donation-popup'),
+				'error' => __('Select a valid simple WooCommerce product (published or private).', 'woo-donation-popup'),
 			);
 		}
 		return array('ok' => true, 'id' => $sadaka_id, 'error' => '');

@@ -217,7 +217,7 @@ trait WDP_Utils_Price_Trait {
         }
         return sprintf(
             /* translators: %s: example whole amount in store format */
-            __('Bu sitede kuruşlu tutar girilemez, örn. %s', 'woo-donation-popup'),
+            __('This site does not accept amounts with decimals, e.g. %s', 'woo-donation-popup'),
             $example
         );
     }
@@ -239,7 +239,7 @@ trait WDP_Utils_Price_Trait {
         }
         return sprintf(
             /* translators: %s: example amount in store format */
-            __('Lütfen tutarı şu biçimde yazın, örn. %s', 'woo-donation-popup'),
+            __('Please enter the amount in this format, e.g. %s', 'woo-donation-popup'),
             $example
         );
     }
@@ -425,7 +425,7 @@ trait WDP_Utils_Price_Trait {
         if (! $ok && $msg === '') {
             $msg = $status === 'ambiguous'
                 ? self::get_ambiguous_amount_message()
-                : __('Geçersiz fiyat değeri.', 'woo-donation-popup');
+                : __('Invalid price value.', 'woo-donation-popup');
         }
         return array(
             'ok'     => (bool) $ok,

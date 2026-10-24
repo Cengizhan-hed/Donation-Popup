@@ -268,7 +268,7 @@ class WDP_Migrations {
 			$added[] = 'enable_privacy_notice';
 		}
 		if (!array_key_exists('privacy_notice_text', $button)) {
-			$button['privacy_notice_text'] = __('Kişisel verileriniz Aydınlatma Metni kapsamında işlenir.', 'woo-donation-popup');
+			$button['privacy_notice_text'] = __('Your personal data is processed under the privacy notice.', 'woo-donation-popup');
 			$added[] = 'privacy_notice_text';
 		}
 		if (!array_key_exists('privacy_notice_url', $button)) {
@@ -299,10 +299,15 @@ class WDP_Migrations {
 			return 'already';
 		}
 
-		$old_privacy = __('Kişisel verileriniz Aydınlatma Metni kapsamında işlenir.', 'woo-donation-popup');
+		$old_privacy = __('Your personal data is processed under the privacy notice.', 'woo-donation-popup');
 		$new_privacy = __(
-			'Kişisel verileriniz bağışınızın gerçekleştirilmesi için işlenir ve yurt dışındaki saha ekiplerimizle paylaşılır. Ayrıntı için Aydınlatma Metni\'ne bakın.',
+			'Your personal data is processed to complete your donation and is shared with our field teams abroad. See the privacy notice for details.',
 			'woo-donation-popup'
+		);
+		// Stored pre-i18n defaults are compared as machine-stable literals (not gettext output).
+		$old_privacy_values = array(
+			$old_privacy,
+			'Kişisel verileriniz Aydınlatma Metni kapsamında işlenir.',
 		);
 
 		$privacy_action = 'none';
@@ -314,7 +319,7 @@ class WDP_Migrations {
 			$button['privacy_notice_text'] = $new_privacy;
 			update_option('wdp_button_settings', $button, false);
 			$privacy_action = 'added';
-		} elseif (trim((string) $button['privacy_notice_text']) === $old_privacy) {
+		} elseif (in_array(trim((string) $button['privacy_notice_text']), $old_privacy_values, true)) {
 			$button['privacy_notice_text'] = $new_privacy;
 			update_option('wdp_button_settings', $button, false);
 			$privacy_action = 'updated_default';
@@ -378,9 +383,9 @@ class WDP_Migrations {
 		}
 
 		$legacy_defaults = array(
-			__('Kişisel verileriniz Aydınlatma Metni kapsamında işlenir.', 'woo-donation-popup'),
+			__('Your personal data is processed under the privacy notice.', 'woo-donation-popup'),
 			__(
-				'Kişisel verileriniz bağışınızın gerçekleştirilmesi için işlenir ve yurt dışındaki saha ekiplerimizle paylaşılır. Ayrıntı için Aydınlatma Metni\'ne bakın.',
+				'Your personal data is processed to complete your donation and is shared with our field teams abroad. See the privacy notice for details.',
 				'woo-donation-popup'
 			),
 			// Non-translated copies that may have been stored from prior migrations.
@@ -735,7 +740,7 @@ class WDP_Migrations {
 			$ok = class_exists('WDP_Utils') && WDP_Utils::is_valid_sadaka_wc_product($default);
 			$rows[] = array(
 				'parent_id'    => 0,
-				'parent_label' => __('Genel varsayılan (Başarı sekmesi)', 'woo-donation-popup'),
+				'parent_label' => __('General default (Success tab)', 'woo-donation-popup'),
 				'sadaka_id'    => $default,
 				'sadaka_label' => class_exists('WDP_Sadaka_Product_Visibility')
 					? WDP_Sadaka_Product_Visibility::product_label($default)
@@ -990,9 +995,9 @@ class WDP_Migrations {
 		$settings = admin_url('admin.php?page=wdp-popup-settings#placement');
 		$url      = wp_nonce_url(add_query_arg('wdp_dismiss_placement', '1'), 'wdp_dismiss_placement');
 		echo '<div class="notice notice-info is-dismissible"><p>';
-		echo esc_html__('WooCommerce ürün ve mağaza sayfalarında “Sepete Ekle” yerine “Bağış Yap” kullanılabilir.', 'woo-donation-popup');
-		echo ' <a href="' . esc_url($settings) . '">' . esc_html__('Ayarlar → Ürün sayfası ve liste', 'woo-donation-popup') . '</a>';
-		echo ' · <a href="' . esc_url($url) . '">' . esc_html__('Gizle', 'woo-donation-popup') . '</a>';
+		echo esc_html__('On WooCommerce product and shop pages, “Donate” can be used instead of “Add to cart”.', 'woo-donation-popup');
+		echo ' <a href="' . esc_url($settings) . '">' . esc_html__('Settings → Product page and list', 'woo-donation-popup') . '</a>';
+		echo ' · <a href="' . esc_url($url) . '">' . esc_html__('Hide', 'woo-donation-popup') . '</a>';
 		echo '</p></div>';
 	}
 

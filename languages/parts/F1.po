@@ -1,0 +1,1343 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: woo-donation-popup\n"
+"Language: tr_TR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: includes/class-donations-list.php:820
+msgid "%1$s / %2$s"
+msgstr "%1$s / %2$s"
+
+#: includes/class-donations-list.php:838
+msgid "%1$s / %2$s raised"
+msgstr "%1$s / %2$s toplandı"
+
+#: includes/class-progress-form.php:62
+msgid "%d person"
+msgid_plural "%d people"
+msgstr[0] "%d kişi"
+msgstr[1] "%d kişi"
+
+#: includes/class-progress-form.php:73
+msgid "%s remaining"
+msgstr "%s kaldı"
+
+#: includes/class-donation-product-context-service.php:88 includes/class-utils.php:198 includes/templates/class-form-fields-renderer.php:403 includes/traits/trait-wdp-assets-registry.php:357
+msgid "Add add-on donation"
+msgstr "Alt Bağış Ekle"
+
+#: includes/templates/class-modal-shell-renderer.php:159 includes/traits/trait-wdp-assets-inline-styles.php:42 includes/traits/trait-wdp-assets-inline-styles.php:50
+msgid "Add to cart"
+msgstr "Sepete Ekle"
+
+#: includes/class-donation-product-context-service.php:120
+msgid "Add-on amount"
+msgstr "Alt bağış tutarı"
+
+#: includes/class-cart.php:924
+msgid "Add-on donation"
+msgstr "Alt Bağış"
+
+#: includes/traits/trait-wdp-ajax-cart-add.php:458
+msgid "Add-on donation WooCommerce product was not found. Enter a valid product ID in Success & Mini Cart or the product settings."
+msgstr "Alt bağış WC ürünü bulunamadı. Başarı & Mini Sepet veya ürün ayarında geçerli bir ürün ID girin."
+
+#: includes/templates/class-form-fields-renderer.php:410 includes/templates/class-form-fields-renderer.php:411 includes/templates/class-form-fields-renderer.php:440 includes/traits/trait-wdp-assets-registry.php:358
+msgid "Add-on donation amount"
+msgstr "Alt Bağış Tutarı"
+
+#: includes/class-sadaka-product-visibility.php:359
+msgid "Add-on donation product"
+msgstr "Alt bağış ürünü"
+
+#: includes/class-phone-field.php:72
+msgid "Afghanistan"
+msgstr "Afganistan"
+
+#: includes/class-phone-field.php:26
+msgid "Albania"
+msgstr "Arnavutluk"
+
+#: includes/class-phone-field.php:124
+msgid "Algeria"
+msgstr "Cezayir"
+
+#: includes/class-donations-list.php:219
+msgid "All"
+msgstr "Tümü"
+
+#: includes/traits/trait-wdp-assets-registry.php:346
+msgid "An error occurred"
+msgstr "Bir hata oluştu"
+
+#: includes/traits/trait-wdp-ajax-cart-add.php:312
+msgid "An error occurred while adding the product to the cart."
+msgstr "Ürün sepete eklenirken bir hata oluştu."
+
+#: includes/class-utils.php:529
+msgid "An error occurred. Please try again."
+msgstr "Bir hata oluştu. Lütfen tekrar deneyin."
+
+#: includes/traits/trait-wdp-ajax-cart-query.php:288
+msgid "An unexpected error occurred."
+msgstr "Beklenmeyen bir hata oluştu."
+
+#: includes/class-phone-field.php:27
+msgid "Andorra"
+msgstr "Andorra"
+
+#: includes/class-donation-optional-fields.php:143 includes/class-donation-optional-fields.php:147 includes/class-order-meta-keys.php:83
+msgid "Anonymous"
+msgstr "Anonim"
+
+#: includes/class-phone-field.php:120
+msgid "Argentina"
+msgstr "Arjantin"
+
+#: includes/class-phone-field.php:114
+msgid "Armenia"
+msgstr "Ermenistan"
+
+#: includes/class-phone-field.php:121
+msgid "Australia"
+msgstr "Avustralya"
+
+#: includes/class-phone-field.php:28
+msgid "Austria"
+msgstr "Avusturya"
+
+#: includes/class-phone-field.php:73
+msgid "Azerbaijan"
+msgstr "Azerbaycan"
+
+#: includes/class-product-settings-service.php:398 includes/class-product-settings-service.php:420
+msgid "Background color"
+msgstr "Arka plan rengi"
+
+#: includes/class-phone-field.php:74
+msgid "Bahrain"
+msgstr "Bahreyn"
+
+#: includes/class-phone-field.php:75
+msgid "Bangladesh"
+msgstr "Bangladeş"
+
+#: includes/class-phone-field.php:29
+msgid "Belarus"
+msgstr "Belarus"
+
+#: includes/class-phone-field.php:30
+msgid "Belgium"
+msgstr "Belçika"
+
+#: includes/class-phone-field.php:31
+msgid "Bosnia and Herzegovina"
+msgstr "Bosna-Hersek"
+
+#: includes/class-phone-field.php:119
+msgid "Brazil"
+msgstr "Brezilya"
+
+#: includes/class-phone-field.php:76
+msgid "Brunei"
+msgstr "Brunei"
+
+#: includes/class-phone-field.php:32
+msgid "Bulgaria"
+msgstr "Bulgaristan"
+
+#: includes/class-phone-field.php:137
+msgid "Burkina Faso"
+msgstr "Burkina Faso"
+
+#: includes/class-product-settings-service.php:407
+msgid "Button text contrast with «%1$s» is %2$s:1 (recommended minimum 4.5:1). Saved; choose a darker or lighter color."
+msgstr "«%1$s» ile düğme yazısı kontrastı %2$s:1 (önerilen en az 4.5:1). Kayıt yapıldı; daha koyu veya açık bir renk seçin."
+
+#: includes/class-phone-field.php:77
+msgid "Cambodia"
+msgstr "Kamboçya"
+
+#: includes/class-phone-field.php:117
+msgid "Canada"
+msgstr "Kanada"
+
+#: includes/class-icon-library.php:53
+msgid "Cart"
+msgstr "Sepet"
+
+#: includes/traits/trait-wdp-ajax-cart-query.php:232
+msgid "Cart item key was not found."
+msgstr "Sepet öğesi anahtarı bulunamadı."
+
+#: includes/traits/trait-wdp-ajax-cart-query.php:274
+msgid "Cart item removed."
+msgstr "Sepet öğesi kaldırıldı."
+
+#: includes/class-phone-field.php:136
+msgid "Chad"
+msgstr "Çad"
+
+#: includes/traits/trait-wdp-ajax-cart-query.php:144 includes/traits/trait-wdp-ajax-cart-query.php:146
+msgid "Charity donation"
+msgstr "Sadaka Bağışı"
+
+#: includes/class-icon-library.php:59
+msgid "Check"
+msgstr "Onay"
+
+#: includes/class-icon-library.php:54
+msgid "Checkout / Shield"
+msgstr "Ödeme / Kalkan"
+
+#: includes/class-phone-field.php:78
+msgid "China"
+msgstr "Çin"
+
+#: includes/class-icon-library.php:62
+msgid "Clock"
+msgstr "Saat"
+
+#: includes/templates/class-modal-shell-renderer.php:363
+msgid "Close popup"
+msgstr "Modalı Kapat"
+
+#: includes/class-icon-library.php:61
+msgid "Community"
+msgstr "Topluluk"
+
+#: includes/traits/trait-wdp-assets-inline-styles.php:63 includes/traits/trait-wdp-assets-inline-styles.php:65
+msgid "Complete donation"
+msgstr "Bağışı Tamamla"
+
+#: includes/class-form-matrix.php:95
+msgid "Container width"
+msgstr "Kapsayıcı genişliği"
+
+#: includes/class-icon-library.php:60
+msgid "Continue"
+msgstr "Devam"
+
+#: includes/traits/trait-wdp-assets-inline-styles.php:69 includes/traits/trait-wdp-assets-inline-styles.php:71
+msgid "Continue adding donations"
+msgstr "Bağış eklemeye devam edin"
+
+#: includes/class-product-settings-service.php:380
+msgid "Corner radius"
+msgstr "Köşe yuvarlaklığı"
+
+#: includes/class-form-modules.php:733
+msgid "Cover processing costs (+%%%s)"
+msgstr "İşlem maliyetini karşıla (+%%%s)"
+
+#: includes/class-phone-field.php:33
+msgid "Croatia"
+msgstr "Hırvatistan"
+
+#: includes/class-donation-type.php:67 includes/class-form-matrix.php:104
+msgid "Custom amount"
+msgstr "Bağışçı belirler"
+
+#: includes/class-style-presets.php:225
+msgid "Custom pack"
+msgstr "Özel paket"
+
+#: includes/class-phone-field.php:34
+msgid "Cyprus"
+msgstr "Kıbrıs"
+
+#: includes/class-phone-field.php:35
+msgid "Czechia"
+msgstr "Çekya"
+
+#: includes/templates/class-form-fields-renderer.php:291 includes/templates/class-form-fields-renderer.php:697
+msgid "Decrease"
+msgstr "Azalt"
+
+#: includes/class-cart.php:532 includes/class-order-meta-keys.php:82
+msgid "Dedication"
+msgstr "İthaf"
+
+#: includes/class-phone-field.php:36
+msgid "Denmark"
+msgstr "Danimarka"
+
+#: includes/class-phone-field.php:134
+msgid "Djibouti"
+msgstr "Cibuti"
+
+#: includes/class-shortcodes.php:321 includes/templates/class-modal-shell-renderer.php:267 includes/templates/class-modal-shell-renderer.php:438 includes/traits/trait-wdp-assets-inline-styles.php:40 includes/traits/trait-wdp-assets-inline-styles.php:41 includes/traits/trait-wdp-assets-inline-styles.php:49
+msgid "Donate"
+msgstr "Bağış Yap"
+
+#: includes/templates/class-form-fields-renderer.php:196 includes/traits/trait-wdp-assets-registry.php:356
+msgid "Donation amount"
+msgstr "Bağış Tutarı"
+
+#: includes/traits/trait-wdp-assets-registry.php:355
+msgid "Donation amount *"
+msgstr "Bağış tutarı *"
+
+#: includes/class-donations-list.php:741
+msgid "Donation categories"
+msgstr "Bağış kategorileri"
+
+#: includes/class-privacy.php:117
+msgid "Donation details"
+msgstr "Bağış bilgileri"
+
+#: includes/class-privacy.php:37 includes/class-privacy.php:49
+msgid "Donation details (Donation Popup)"
+msgstr "Bağış bilgileri (Donation Popup)"
+
+#: includes/templates/class-modal-shell-renderer.php:374
+msgid "Donation form for %s"
+msgstr "%s için bağış formu"
+
+#: includes/templates/class-modal-shell-renderer.php:198
+msgid "Donation form: product #%d was not found. Check the product ID in the shortcode."
+msgstr "Bağış formu: #%d numaralı ürün bulunamadı. Kısa koddaki ürün ID'sini kontrol edin."
+
+#: includes/class-shortcodes.php:227
+msgid "Donation form: product not found (no id/slug/sku was given, or this is not a product page)."
+msgstr "Bağış formu: ürün bulunamadı (id/slug/sku verilmedi veya bu sayfa bir ürün sayfası değil)."
+
+#: includes/class-cart.php:546 includes/class-order-meta-keys.php:81
+msgid "Donation note"
+msgstr "Bağış Notu"
+
+#: includes/class-progress-form.php:89
+msgid "Donation progress"
+msgstr "Bağış ilerleme durumu"
+
+#: includes/class-cart.php:518
+msgid "Donor"
+msgstr "Bağışçı"
+
+#: includes/class-privacy.php:118
+msgid "Donor and shareholder details entered on the donation form."
+msgstr "Bağış formunda girilen bağışçı ve hissedar bilgileri."
+
+#: includes/templates/class-form-fields-renderer.php:517
+msgid "Donor contact details"
+msgstr "Bağışçı iletişim bilgileri"
+
+#: includes/class-order-meta-keys.php:80
+msgid "Donor email"
+msgstr "Bağışçı E-posta"
+
+#: includes/class-order-meta-keys.php:78
+msgid "Donor name"
+msgstr "Bağışçı Adı"
+
+#: includes/class-order-meta-keys.php:79
+msgid "Donor phone"
+msgstr "Bağışçı Telefonu"
+
+#: includes/class-phone-field.php:125
+msgid "Egypt"
+msgstr "Mısır"
+
+#: includes/class-cart.php:525 includes/class-icon-library.php:51
+msgid "Email"
+msgstr "E-posta"
+
+#: includes/templates/class-form-fields-renderer.php:537
+msgid "Email (optional)"
+msgstr "E-posta (isteğe bağlı)"
+
+#: includes/class-phone-field.php:37
+msgid "Estonia"
+msgstr "Estonya"
+
+#: includes/class-phone-field.php:132
+msgid "Ethiopia"
+msgstr "Etiyopya"
+
+#: includes/class-style-presets.php:226
+msgid "Exported from current settings"
+msgstr "Mevcut ayarlardan dışa aktarıldı"
+
+#: includes/class-phone-field.php:38
+msgid "Finland"
+msgstr "Finlandiya"
+
+#: includes/class-donation-type.php:62 includes/class-form-matrix.php:103
+msgid "Fixed amount"
+msgstr "Sabit tutar"
+
+#: includes/class-form-matrix.php:82
+msgid "Form test page"
+msgstr "Form test sayfası"
+
+#: includes/class-phone-field.php:39
+msgid "France"
+msgstr "Fransa"
+
+#: includes/class-form-matrix.php:96
+msgid "Full"
+msgstr "Tam"
+
+#: includes/traits/trait-wdp-ajax-cart-query.php:176
+msgid "Full name"
+msgstr "Ad Soyad"
+
+#: includes/templates/class-form-fields-renderer.php:520
+msgid "Full name *"
+msgstr "Ad Soyad *"
+
+#: includes/traits/trait-wdp-assets-registry.php:364
+msgid "Full name is required."
+msgstr "Ad Soyad zorunludur."
+
+#: includes/class-migrations.php:738 includes/class-sadaka-product-visibility.php:166
+msgid "General default (Success tab)"
+msgstr "Genel varsayılan (Başarı sekmesi)"
+
+#: includes/class-phone-field.php:79
+msgid "Georgia"
+msgstr "Gürcistan"
+
+#: includes/class-phone-field.php:40
+msgid "Germany"
+msgstr "Almanya"
+
+#: includes/class-phone-field.php:142
+msgid "Ghana"
+msgstr "Gana"
+
+#: includes/class-icon-library.php:57
+msgid "Gift"
+msgstr "Hediye"
+
+#: includes/templates/class-modal-shell-renderer.php:160 includes/traits/trait-wdp-assets-inline-styles.php:43 includes/traits/trait-wdp-assets-inline-styles.php:51
+msgid "Go to checkout"
+msgstr "Ödemeye Git"
+
+#: includes/class-progress-form.php:124
+msgid "Goal"
+msgstr "Hedef"
+
+#: includes/class-progress-form.php:109
+msgid "Goal completion rate"
+msgstr "Hedef tamamlanma oranı"
+
+#: includes/class-progress-form.php:145
+msgid "Goal reached"
+msgstr "Hedefe ulaşıldı"
+
+#: includes/class-donation-type.php:77 includes/class-form-matrix.php:106
+msgid "Goal-based campaign"
+msgstr "Hedefli kampanya"
+
+#: includes/class-phone-field.php:41
+msgid "Greece"
+msgstr "Yunanistan"
+
+#: includes/class-icon-library.php:56
+msgid "Heart"
+msgstr "Kalp"
+
+#: includes/class-migrations.php:995
+msgid "Hide"
+msgstr "Gizle"
+
+#: includes/class-phone-field.php:80
+msgid "Hong Kong"
+msgstr "Hong Kong"
+
+#: includes/class-phone-field.php:42
+msgid "Hungary"
+msgstr "Macaristan"
+
+#: includes/class-phone-field.php:43
+msgid "Iceland"
+msgstr "İzlanda"
+
+#: includes/class-style-presets.php:242
+msgid "Imported pack"
+msgstr "İçe aktarılan paket"
+
+#: includes/templates/class-form-fields-renderer.php:293 includes/templates/class-form-fields-renderer.php:699
+msgid "Increase"
+msgstr "Arttır"
+
+#: includes/class-phone-field.php:81
+msgid "India"
+msgstr "Hindistan"
+
+#: includes/class-phone-field.php:82
+msgid "Indonesia"
+msgstr "Endonezya"
+
+#: includes/class-form-matrix.php:36
+msgid "Invalid link."
+msgstr "Geçersiz bağlantı."
+
+#: includes/traits/trait-wdp-assets-registry.php:349
+msgid "Invalid price"
+msgstr "Geçersiz fiyat"
+
+#: includes/traits/trait-wdp-ajax-cart-add.php:198 includes/traits/trait-wdp-ajax-cart-add.php:202 includes/traits/trait-wdp-ajax-cart-add.php:208 includes/traits/trait-wdp-utils-price.php:428
+msgid "Invalid price value."
+msgstr "Geçersiz fiyat değeri."
+
+#: includes/traits/trait-wdp-ajax-product.php:71 includes/traits/trait-wdp-ajax-product.php:79 includes/traits/trait-wdp-ajax-product.php:205 includes/traits/trait-wdp-ajax-product.php:211
+msgid "Invalid product ID"
+msgstr "Geçersiz ürün ID"
+
+#: includes/traits/trait-wdp-ajax-cart-add.php:56
+msgid "Invalid product ID."
+msgstr "Geçersiz ürün ID."
+
+#: includes/traits/trait-wdp-ajax-base.php:81
+msgid "Invalid request method"
+msgstr "Geçersiz istek metodu"
+
+#: includes/class-lazy-modal.php:31 includes/traits/trait-wdp-ajax-base.php:69 includes/traits/trait-wdp-ajax-cart-session.php:21
+msgid "Invalid request origin"
+msgstr "Geçersiz istek kaynağı"
+
+#: includes/class-phone-field.php:83
+msgid "Iran"
+msgstr "İran"
+
+#: includes/class-phone-field.php:84
+msgid "Iraq"
+msgstr "Irak"
+
+#: includes/class-phone-field.php:44
+msgid "Ireland"
+msgstr "İrlanda"
+
+#: includes/class-phone-field.php:45
+msgid "Italy"
+msgstr "İtalya"
+
+#: includes/class-phone-field.php:85
+msgid "Japan"
+msgstr "Japonya"
+
+#: includes/class-phone-field.php:86
+msgid "Jordan"
+msgstr "Ürdün"
+
+#: includes/class-phone-field.php:87
+msgid "Kazakhstan"
+msgstr "Kazakistan"
+
+#: includes/class-cart.php:539 includes/templates/class-form-fields-renderer.php:586
+msgid "Keep my name private"
+msgstr "İsmim gizli kalsın"
+
+#: includes/class-phone-field.php:129
+msgid "Kenya"
+msgstr "Kenya"
+
+#: includes/class-phone-field.php:46
+msgid "Kosovo"
+msgstr "Kosova"
+
+#: includes/class-phone-field.php:89
+msgid "Kuwait"
+msgstr "Kuveyt"
+
+#: includes/class-phone-field.php:88
+msgid "Kyrgyzstan"
+msgstr "Kırgızistan"
+
+#: includes/class-phone-field.php:47
+msgid "Latvia"
+msgstr "Letonya"
+
+#: includes/class-phone-field.php:90
+msgid "Lebanon"
+msgstr "Lübnan"
+
+#: includes/class-phone-field.php:128
+msgid "Libya"
+msgstr "Libya"
+
+#: includes/class-phone-field.php:48
+msgid "Liechtenstein"
+msgstr "Liechtenstein"
+
+#: includes/templates/class-form-fields-renderer.php:282
+msgid "Line amount"
+msgstr "Satır tutarı"
+
+#: includes/class-phone-field.php:49
+msgid "Lithuania"
+msgstr "Litvanya"
+
+#: includes/traits/trait-wdp-assets-registry.php:345
+msgid "Loading..."
+msgstr "Yükleniyor..."
+
+#: includes/class-icon-library.php:63
+msgid "Lock"
+msgstr "Kilit"
+
+#: includes/class-phone-field.php:50
+msgid "Luxembourg"
+msgstr "Lüksemburg"
+
+#: includes/class-phone-field.php:91
+msgid "Malaysia"
+msgstr "Malezya"
+
+#: includes/class-phone-field.php:92
+msgid "Maldives"
+msgstr "Maldivler"
+
+#: includes/class-phone-field.php:138
+msgid "Mali"
+msgstr "Mali"
+
+#: includes/class-phone-field.php:51
+msgid "Malta"
+msgstr "Malta"
+
+#: includes/traits/trait-wdp-ajax-cart-add.php:87
+msgid "Maximum number of shares exceeded"
+msgstr "Maksimum hisse sayısı aşıldı"
+
+#: includes/traits/trait-wdp-assets-registry.php:354
+msgid "Maximum number of shares: "
+msgstr "Maksimum hisse sayısı: "
+
+#: includes/class-cart.php:216
+msgid "Maximum number of shares: %d"
+msgstr "Maksimum hisse sayısı: %d"
+
+#: includes/traits/trait-wdp-ajax-cart-add.php:233
+msgid "Maximum price: %s"
+msgstr "Maksimum fiyat: %s"
+
+#: includes/class-product-settings-service.php:365
+msgid "Maximum shares"
+msgstr "En fazla hisse"
+
+#: includes/class-phone-field.php:118
+msgid "Mexico"
+msgstr "Meksika"
+
+#: includes/traits/trait-wdp-assets-registry.php:360
+msgid "Minimum add-on donation amount: "
+msgstr "Alt bağış için minimum tutar: "
+
+#: includes/class-product-settings-service.php:431
+msgid "Minimum amount"
+msgstr "En düşük tutar"
+
+#: includes/traits/trait-wdp-ajax-cart-add.php:225 includes/traits/trait-wdp-assets-registry.php:353
+msgid "Minimum price: "
+msgstr "Minimum fiyat: "
+
+#: includes/class-phone-field.php:52
+msgid "Moldova"
+msgstr "Moldova"
+
+#: includes/class-phone-field.php:53
+msgid "Monaco"
+msgstr "Monako"
+
+#: includes/class-phone-field.php:93
+msgid "Mongolia"
+msgstr "Moğolistan"
+
+#: includes/class-phone-field.php:54
+msgid "Montenegro"
+msgstr "Karadağ"
+
+#: includes/class-phone-field.php:126
+msgid "Morocco"
+msgstr "Fas"
+
+#: includes/class-phone-field.php:94
+msgid "Myanmar"
+msgstr "Myanmar"
+
+#: includes/class-phone-field.php:95
+msgid "Nepal"
+msgstr "Nepal"
+
+#: includes/class-phone-field.php:55
+msgid "Netherlands"
+msgstr "Hollanda"
+
+#: includes/class-phone-field.php:122
+msgid "New Zealand"
+msgstr "Yeni Zelanda"
+
+#: includes/class-phone-field.php:139
+msgid "Niger"
+msgstr "Nijer"
+
+#: includes/class-phone-field.php:140
+msgid "Nigeria"
+msgstr "Nijerya"
+
+#: includes/class-form-matrix.php:67
+msgid "No published product was found for testing."
+msgstr "Test için yayımlanmış bir ürün bulunamadı."
+
+#: includes/templates/class-form-fields-renderer.php:392
+msgid "No valid WooCommerce product is set for the add-on donation. Choose an add-on product in Settings → Success & Mini Cart or on the product Donation tab."
+msgstr "Alt bağış (sadaka) için geçerli bir WooCommerce ürünü tanımlı değil. Ayarlar → Başarı & Mini Sepet veya ürün Bağış sekmesinden alt bağış ürünü seçin."
+
+#: includes/traits/trait-wdp-ajax-cart-session.php:29
+msgid "No valid cart session was found"
+msgstr "Geçerli sepet oturumu bulunamadı"
+
+#: includes/class-phone-field.php:56
+msgid "North Macedonia"
+msgstr "Kuzey Makedonya"
+
+#: includes/class-phone-field.php:57
+msgid "Norway"
+msgstr "Norveç"
+
+#: includes/class-icon-library.php:50
+msgid "Note"
+msgstr "Not"
+
+#: includes/templates/class-form-fields-renderer.php:531
+msgid "Note (optional)"
+msgstr "Not (isteğe bağlı)"
+
+#: includes/traits/trait-wdp-ajax-cart-query.php:182
+msgid "Number of shares"
+msgstr "Hisse Adedi"
+
+#: includes/class-phone-field.php:96
+msgid "Oman"
+msgstr "Umman"
+
+#: includes/class-migrations.php:993
+msgid "On WooCommerce product and shop pages, “Donate” can be used instead of “Add to cart”."
+msgstr "WooCommerce ürün ve mağaza sayfalarında “Sepete Ekle” yerine “Bağış Yap” kullanılabilir."
+
+#: includes/templates/class-form-fields-renderer.php:568
+msgid "On behalf of? (optional)"
+msgstr "Kimin adına? (isteğe bağlı)"
+
+#: includes/class-form-matrix.php:144
+msgid "Open panel"
+msgstr "Panel aç"
+
+#: includes/class-form-matrix.php:143
+msgid "Open popup"
+msgstr "Popup aç"
+
+#: includes/class-privacy.php:104
+msgid "Order number"
+msgstr "Sipariş numarası"
+
+#: includes/class-phone-field.php:97
+msgid "Pakistan"
+msgstr "Pakistan"
+
+#: includes/class-phone-field.php:98
+msgid "Palestine"
+msgstr "Filistin"
+
+#: includes/class-phone-field.php:99
+msgid "Philippines"
+msgstr "Filipinler"
+
+#: includes/class-icon-library.php:52
+msgid "Phone"
+msgstr "Telefon"
+
+#: includes/class-phone-field.php:400
+msgid "Phone number *"
+msgstr "Telefon Numarası *"
+
+#: includes/traits/trait-wdp-assets-registry.php:362
+msgid "Phone number is missing."
+msgstr "Telefon numarası eksik."
+
+#: includes/class-cart.php:351
+msgid "Please add to cart using the donation form. Donor details are required."
+msgstr "Lütfen bağış formunu kullanarak sepete ekleyin. Bağışçı bilgileri gereklidir."
+
+#: includes/class-utils.php:348
+msgid "Please enter %s or more for the add-on donation."
+msgstr "Alt bağış için lütfen %s ve üstü değerler girin."
+
+#: includes/class-cart.php:702
+msgid "Please enter %s or more."
+msgstr "Lütfen %s ve üstü değerler girin."
+
+#: includes/class-cart.php:697
+msgid "Please enter a donation amount greater than 0."
+msgstr "Lütfen 0'dan büyük bir bağış tutarı girin."
+
+#: includes/class-utils.php:323 includes/class-utils.php:333 includes/traits/trait-wdp-ajax-cart-add.php:492 includes/traits/trait-wdp-assets-registry.php:359
+msgid "Please enter a valid add-on donation amount."
+msgstr "Geçerli bir alt bağış tutarı giriniz."
+
+#: includes/class-product-settings-service.php:548
+msgid "Please enter a valid amount."
+msgstr "Geçerli bir tutar girin."
+
+#: includes/class-donation-optional-fields.php:101 includes/traits/trait-wdp-assets-registry.php:365
+msgid "Please enter a valid email address."
+msgstr "Lütfen geçerli bir e-posta adresi giriniz."
+
+#: includes/traits/trait-wdp-assets-registry.php:361
+msgid "Please enter a valid phone number."
+msgstr "Geçerli bir telefon numarası giriniz."
+
+#: includes/traits/trait-wdp-assets-registry.php:352 includes/traits/trait-wdp-utils-price.php:242
+msgid "Please enter the amount in this format, e.g. %s"
+msgstr "Lütfen tutarı şu biçimde yazın, örn. %s"
+
+#: includes/class-cart.php:273 includes/traits/trait-wdp-ajax-cart-add.php:193
+msgid "Please enter the donation amount."
+msgstr "Lütfen bağış miktarını giriniz."
+
+#: includes/traits/trait-wdp-assets-registry.php:363
+msgid "Please enter your complete phone number."
+msgstr "Telefon numaranızı eksiksiz giriniz."
+
+#: includes/class-cart.php:241 includes/traits/trait-wdp-ajax-cart-add.php:134
+msgid "Please enter your full name."
+msgstr "Lütfen Ad Soyad bilginizi giriniz."
+
+#: includes/class-cart.php:246 includes/traits/trait-wdp-ajax-cart-add.php:138
+msgid "Please enter your phone number."
+msgstr "Lütfen Telefon bilginizi giriniz."
+
+#: includes/class-cart.php:235 includes/traits/trait-wdp-ajax-cart-add.php:101
+msgid "Please fill in all required fields: "
+msgstr "Lütfen tüm zorunlu alanları doldurun: "
+
+#: includes/class-phone-field.php:58
+msgid "Poland"
+msgstr "Polonya"
+
+#: includes/class-phone-field.php:59
+msgid "Portugal"
+msgstr "Portekiz"
+
+#: includes/compat/class-builder-detect.php:82
+msgid "Preview: «%s» is shown. That product’s form appears on the product page."
+msgstr "Önizleme: «%s» gösteriliyor. Ürün sayfasında o ürünün formu görünür."
+
+#: includes/class-product-settings-service.php:388 includes/class-product-settings-service.php:408
+msgid "Primary color"
+msgstr "Ana renk"
+
+#: includes/class-product-settings-service.php:393
+msgid "Primary color (hover)"
+msgstr "Ana renk (üzerine gelince)"
+
+#: includes/class-donation-optional-fields.php:204
+msgid "Privacy notice on the processing of personal data"
+msgstr "Kişisel verilerin işlenmesine ilişkin aydınlatma metni"
+
+#: includes/class-cart.php:564 includes/class-order-meta-keys.php:84
+msgid "Processing fee"
+msgstr "İşlem ücreti"
+
+#: includes/class-privacy.php:108
+msgid "Product"
+msgstr "Ürün"
+
+#: includes/traits/trait-wdp-ajax-cart-add.php:335 includes/traits/trait-wdp-ajax-cart-session.php:75
+msgid "Product added to cart."
+msgstr "Ürün sepete eklendi."
+
+#: includes/traits/trait-wdp-ajax-cart-add.php:253
+msgid "Product is already in the cart"
+msgstr "Ürün zaten sepete eklenmiş"
+
+#: includes/traits/trait-wdp-ajax-product.php:215
+msgid "Product not found"
+msgstr "Ürün bulunamadı"
+
+#: includes/class-lazy-modal.php:53
+msgid "Product not found or cannot be displayed."
+msgstr "Ürün bulunamadı veya görüntülenemiyor."
+
+#: includes/class-exceptions.php:45
+msgid "Product not found. ID: %d"
+msgstr "Ürün bulunamadı. ID: %d"
+
+#: includes/class-phone-field.php:100
+msgid "Qatar"
+msgstr "Katar"
+
+#: includes/class-donations-list.php:939
+msgid "Query returned no results: no published, catalog-visible, in-stock donation product."
+msgstr "Sorgu sonuç vermedi: yayımlanmış, katalogda görünen ve stokta bağış ürünü yok."
+
+#: includes/class-donations-list.php:934
+msgid "Query returned no results: no published, in-stock, purchasable donation product in the selected categories."
+msgstr "Sorgu sonuç vermedi: seçilen kategorilerde yayımlanmış, stokta ve satın alınabilir bağış ürünü yok."
+
+#: includes/class-donations-list.php:937
+msgid "Query returned no results: scope is “flagged products only”; flag products on the Donation tab."
+msgstr "Sorgu sonuç vermedi: kapsam “yalnızca işaretli ürünler”; Bağış sekmesinden ürün işaretleyin."
+
+#: includes/class-donations-list.php:931
+msgid "Query returned no results: the given product IDs are not a published donation product or are out of scope."
+msgstr "Sorgu sonuç vermedi: verilen ürün ID’leri yayımlanmış bir bağış ürünü değil veya kapsam dışında."
+
+#: includes/class-form-modules.php:273 includes/class-form-modules.php:287 includes/class-form-modules.php:309
+msgid "Quick amount buttons must be whole numbers only; invalid value: \"%s\". Separate amounts with commas, spaces, or semicolons (e.g. 100, 250, 500)."
+msgstr "Hızlı tutar düğmeleri yalnız tam sayı olmalı; geçersiz değer: \"%s\". Tutarları virgül, boşluk veya noktalı virgülle ayırın (ör. 100, 250, 500)."
+
+#: includes/class-phone-field.php:60
+msgid "Romania"
+msgstr "Romanya"
+
+#: includes/class-phone-field.php:61
+msgid "Russia"
+msgstr "Rusya"
+
+#: includes/class-phone-field.php:62
+msgid "San Marino"
+msgstr "San Marino"
+
+#: includes/class-phone-field.php:101
+msgid "Saudi Arabia"
+msgstr "Suudi Arabistan"
+
+#: includes/traits/trait-wdp-assets-registry.php:369
+msgid "Search"
+msgstr "Ara"
+
+#: includes/class-sadaka-product-visibility.php:376 includes/class-sadaka-product-visibility.php:392
+msgid "Search by product name…"
+msgstr "Ürün adı ile ara…"
+
+#: includes/class-form-modules.php:173
+msgid "Secure payment · SSL-protected transaction"
+msgstr "Güvenli ödeme · SSL korumalı işlem"
+
+#: includes/class-cart.php:204 includes/class-exceptions.php:111
+msgid "Security verification failed. Please refresh the page and try again."
+msgstr "Güvenlik doğrulaması başarısız oldu. Lütfen sayfayı yenileyip tekrar deneyin."
+
+#: includes/templates/class-campaign-header-renderer.php:59
+msgid "See more"
+msgstr "Devamını Gör"
+
+#: includes/templates/class-form-fields-renderer.php:154
+msgid "Select a quick amount"
+msgstr "Hızlı tutar seç"
+
+#: includes/class-sadaka-product-visibility.php:434
+msgid "Select a valid simple WooCommerce product (published or private)."
+msgstr "Geçerli bir basit WooCommerce ürünü seçin (yayımlanmış veya özel)."
+
+#: includes/class-phone-field.php:427
+msgid "Select country code"
+msgstr "Ülke kodu seç"
+
+#: includes/class-phone-field.php:141
+msgid "Senegal"
+msgstr "Senegal"
+
+#: includes/class-phone-field.php:63
+msgid "Serbia"
+msgstr "Sırbistan"
+
+#: includes/class-migrations.php:994
+msgid "Settings → Product page and list"
+msgstr "Ayarlar → Ürün sayfası ve liste"
+
+#: includes/class-cart.php:485 includes/class-order-meta-keys.php:85
+msgid "Share count"
+msgstr "Hisse Sayısı"
+
+#: includes/class-donation-type.php:72 includes/class-form-matrix.php:105
+msgid "Share-based"
+msgstr "Hisseli"
+
+#: includes/class-donations-list.php:802
+msgid "Share: %s"
+msgstr "Hisse: %s"
+
+#: includes/class-cart.php:494 includes/traits/trait-wdp-ajax-cart-query.php:190
+msgid "Shareholder %d"
+msgstr "%d. Hissedar"
+
+#: includes/class-cart.php:501 includes/class-order-meta-keys.php:98
+msgid "Shareholder %d email"
+msgstr "%d. Hissedar E-postası"
+
+#: includes/class-cart.php:1057 includes/class-order-meta-keys.php:96
+msgid "Shareholder %d name"
+msgstr "%d. Hissedar Adı"
+
+#: includes/class-cart.php:508 includes/class-order-meta-keys.php:99
+msgid "Shareholder %d note"
+msgstr "%d. Hissedar Notu"
+
+#: includes/class-cart.php:1061 includes/class-order-meta-keys.php:97
+msgid "Shareholder %d phone"
+msgstr "%d. Hissedar Telefonu"
+
+#: includes/traits/trait-wdp-assets-registry.php:366
+msgid "Shareholder name is required."
+msgstr "Hissedar adı zorunludur."
+
+#: includes/class-icon-library.php:55
+msgid "Shield"
+msgstr "Kalkan"
+
+#: includes/templates/class-campaign-header-renderer.php:60
+msgid "Show less"
+msgstr "Daha Az Göster"
+
+#: includes/class-phone-field.php:102
+msgid "Singapore"
+msgstr "Singapur"
+
+#: includes/class-phone-field.php:64
+msgid "Slovakia"
+msgstr "Slovakya"
+
+#: includes/class-phone-field.php:65
+msgid "Slovenia"
+msgstr "Slovenya"
+
+#: includes/class-phone-field.php:133
+msgid "Somalia"
+msgstr "Somali"
+
+#: includes/class-phone-field.php:143
+msgid "South Africa"
+msgstr "Güney Afrika"
+
+#: includes/class-phone-field.php:103
+msgid "South Korea"
+msgstr "Güney Kore"
+
+#: includes/class-phone-field.php:66
+msgid "Spain"
+msgstr "İspanya"
+
+#: includes/class-phone-field.php:104
+msgid "Sri Lanka"
+msgstr "Sri Lanka"
+
+#: includes/class-icon-library.php:58
+msgid "Star"
+msgstr "Yıldız"
+
+#: includes/traits/trait-wdp-assets-registry.php:347
+msgid "Success"
+msgstr "Başarılı"
+
+#: includes/class-phone-field.php:135
+msgid "Sudan"
+msgstr "Sudan"
+
+#: includes/templates/class-form-fields-renderer.php:155
+msgid "Suggested"
+msgstr "Önerilen"
+
+#: includes/class-phone-field.php:67
+msgid "Sweden"
+msgstr "İsveç"
+
+#: includes/class-phone-field.php:68
+msgid "Switzerland"
+msgstr "İsviçre"
+
+#: includes/class-phone-field.php:105
+msgid "Syria"
+msgstr "Suriye"
+
+#: includes/class-phone-field.php:106
+msgid "Taiwan"
+msgstr "Tayvan"
+
+#: includes/class-phone-field.php:107
+msgid "Tajikistan"
+msgstr "Tacikistan"
+
+#: includes/class-phone-field.php:131
+msgid "Tanzania"
+msgstr "Tanzanya"
+
+#: includes/class-form-matrix.php:153
+msgid "Test page — adding to cart is disabled."
+msgstr "Test sayfası — sepete ekleme kapalı."
+
+#: includes/class-product-settings-service.php:419
+msgid "Text contrast with «%1$s» is %2$s:1 (recommended minimum 4.5:1). Saved; choose a lighter or darker background."
+msgstr "«%1$s» ile metin kontrastı %2$s:1 (önerilen en az 4.5:1). Kayıt yapıldı; daha açık veya koyu bir arka plan seçin."
+
+#: includes/class-phone-field.php:108
+msgid "Thailand"
+msgstr "Tayland"
+
+#: includes/bootstrap/class-plugin-bootstrap.php:69
+msgid "The WooCommerce Donation Modal Popup plugin requires WooCommerce to be installed and active."
+msgstr "WooCommerce Donation Modal Popup eklentisi için WooCommerce eklentisinin yüklü ve aktif olması gerekiyor."
+
+#: includes/traits/trait-wdp-ajax-cart-add.php:531
+msgid "The add-on donation could not be added to the cart (product #%d). Make sure the product is published."
+msgstr "Alt bağış sepete eklenemedi (ürün #%d). Ürünün yayında olduğundan emin olun."
+
+#: includes/class-sadaka-product-visibility.php:427
+msgid "The add-on donation product cannot be the main product itself."
+msgstr "Alt bağış ürünü ana ürünün kendisi olamaz."
+
+#: includes/traits/trait-wdp-ajax-cart-query.php:237 includes/traits/trait-wdp-ajax-cart-query.php:254
+msgid "The cart item could not be removed."
+msgstr "Sepet öğesi kaldırılamadı."
+
+#: includes/class-lazy-modal.php:61 includes/class-lazy-modal.php:69
+msgid "The donation form cannot be shown right now."
+msgstr "Bağış formu şu anda gösterilemiyor."
+
+#: includes/class-render-guard.php:66
+msgid "The donation form could not be rendered (product #%d). See the error log for details."
+msgstr "Bağış formu çizilemedi (ürün #%d). Ayrıntı hata günlüğünde."
+
+#: includes/class-render-guard.php:67
+msgid "The donation form could not be rendered. See the error log for details."
+msgstr "Bağış formu çizilemedi. Ayrıntı hata günlüğünde."
+
+#: includes/class-cart.php:611
+msgid "The donation line with amount 0 was removed from the cart. Please enter a valid donation amount."
+msgstr "Tutarı 0 olan bağış satırı sepetten kaldırıldı. Lütfen geçerli bir bağış tutarı girin."
+
+#: includes/class-donation-type.php:73
+msgid "The donor chooses the number of shares and enters a name for each share."
+msgstr "Bağışçı hisse adedi seçer ve her hisse için ayrı isim girer."
+
+#: includes/class-donation-type.php:68
+msgid "The donor enters the amount; you can set a minimum if you want."
+msgstr "Bağışçı tutarı kendisi yazar; isterseniz en düşük tutarı belirleyin."
+
+#: includes/class-product-settings-service.php:596
+msgid "The end date must be a valid calendar day."
+msgstr "Bitiş tarihi geçerli bir takvim günü olmalıdır."
+
+#: includes/class-product-settings-service.php:586
+msgid "The end date must be in Y-m-d format (e.g. 2026-12-31)."
+msgstr "Bitiş tarihi Y-m-d biçiminde olmalıdır (örn. 2026-12-31)."
+
+#: includes/class-form-matrix.php:48
+msgid "The form test page could not be rendered. See the error log for details."
+msgstr "Form test sayfası çizilemedi. Ayrıntı hata günlüğünde."
+
+#: includes/class-donation-type.php:78
+msgid "The goal amount and progress bar are shown; the donor enters the amount."
+msgstr "Hedef tutar ve ilerleme çubuğu gösterilir; bağışçı tutarı kendisi yazar."
+
+#: includes/class-product-settings-service.php:452
+msgid "The goal amount can be at most %s."
+msgstr "Hedef tutar en fazla %s olabilir."
+
+#: includes/class-product-settings-service.php:444
+msgid "The goal amount cannot be empty or zero."
+msgstr "Hedef tutar boş veya sıfır olamaz."
+
+#: includes/class-product-settings-service.php:565
+msgid "The goal amount must be a valid number."
+msgstr "Hedef tutar geçerli bir sayı olmalıdır."
+
+#: includes/class-product-settings-service.php:362
+msgid "The maximum number of shares can be 50."
+msgstr "En fazla hisse 50 olabilir."
+
+#: includes/class-form-modules.php:351
+msgid "The processing fee percentage must be 0 (off) or between 0.5 and 15."
+msgstr "İşlem ücreti yüzdesi 0 (kapalı) veya 0,5–15 arasında olmalı."
+
+#: includes/class-form-modules.php:340
+msgid "The processing fee percentage must be a number: 0 (off) or 0.5–15."
+msgstr "İşlem ücreti yüzdesi sayı olmalı: 0 (kapalı) veya 0,5–15 arası."
+
+#: includes/class-donation-type.php:63
+msgid "The product’s WooCommerce price is used; the donor only chooses a quantity."
+msgstr "Ürünün WooCommerce fiyatı kullanılır; bağışçı yalnızca adet seçer."
+
+#: includes/class-form-modules.php:422
+msgid "The suggested amount must be a positive whole number only; invalid value: \"%s\"."
+msgstr "Önerilen tutar yalnız pozitif tam sayı olmalı; geçersiz değer: \"%s\"."
+
+#: includes/class-form-modules.php:434
+msgid "The suggested amount must be in the quick amount list; invalid value: \"%s\"."
+msgstr "Önerilen tutar hızlı tutar listesinde olmalı; geçersiz değer: \"%s\"."
+
+#: includes/class-product-settings-service.php:710
+msgid "The «%1$s» value was corrected from %2$s to %3$s."
+msgstr "«%1$s» değeri %2$s'ten %3$s'ye düzeltildi."
+
+#: includes/class-donations-list.php:495
+msgid "There are no donations to show right now."
+msgstr "Şu anda gösterilecek bağış bulunmuyor."
+
+#: includes/traits/trait-wdp-assets-registry.php:348
+msgid "This field is required"
+msgstr "Bu alan zorunludur"
+
+#: includes/class-shortcodes.php:293
+msgid "This product cannot be purchased (ID: %d)."
+msgstr "Bu ürün satın alınamaz (ID: %d)."
+
+#: includes/templates/class-modal-shell-renderer.php:225
+msgid "This product has no price; the donation form is hidden (product #%d). Enter a price on the product’s “General” tab or set the donation type to “Custom amount”."
+msgstr "Bu ürünün fiyatı yok; bağış formu gösterilmiyor (ürün #%d). Fiyatı ürünün \"Genel\" sekmesinden girin veya bağış tipini \"Bağışçı belirler\" yapın."
+
+#: includes/class-lazy-modal.php:56 includes/class-shortcodes.php:232
+msgid "This product is not marked as a donation product."
+msgstr "Bu ürün bağış ürünü olarak işaretli değil."
+
+#: includes/class-shortcodes.php:302
+msgid "This product is out of stock (ID: %d)."
+msgstr "Bu ürün stokta yok (ID: %d)."
+
+#: includes/traits/trait-wdp-assets-registry.php:350 includes/traits/trait-wdp-assets-registry.php:351 includes/traits/trait-wdp-utils-price.php:220
+msgid "This site does not accept amounts with decimals, e.g. %s"
+msgstr "Bu sitede kuruşlu tutar girilemez, örn. %s"
+
+#: includes/class-lazy-modal.php:42
+msgid "Too many requests were sent. Please try again shortly."
+msgstr "Çok fazla istek gönderildi. Lütfen kısa süre sonra tekrar deneyin."
+
+#: includes/traits/trait-wdp-ajax-base.php:36
+msgid "Too many requests were sent. Please wait a while and try again."
+msgstr "Çok fazla istek gönderildi. Lütfen bir süre bekleyip tekrar deneyin."
+
+#: includes/class-form-modules.php:744
+msgid "Total"
+msgstr "Toplam"
+
+#: includes/templates/class-modal-shell-renderer.php:26
+msgid "Total amount"
+msgstr "Toplam Tutar"
+
+#: includes/class-phone-field.php:127
+msgid "Tunisia"
+msgstr "Tunus"
+
+#: includes/class-phone-field.php:24
+msgid "Turkey"
+msgstr "Türkiye"
+
+#: includes/class-phone-field.php:109
+msgid "Turkmenistan"
+msgstr "Türkmenistan"
+
+#: includes/class-phone-field.php:130
+msgid "Uganda"
+msgstr "Uganda"
+
+#: includes/class-phone-field.php:69
+msgid "Ukraine"
+msgstr "Ukrayna"
+
+#: includes/class-phone-field.php:110
+msgid "United Arab Emirates"
+msgstr "Birleşik Arap Emirlikleri"
+
+#: includes/class-phone-field.php:70
+msgid "United Kingdom"
+msgstr "İngiltere"
+
+#: includes/class-phone-field.php:116
+msgid "United States"
+msgstr "Amerika Birleşik Devletleri"
+
+#: includes/class-icon-library.php:49
+msgid "User"
+msgstr "Kullanıcı"
+
+#: includes/class-phone-field.php:111
+msgid "Uzbekistan"
+msgstr "Özbekistan"
+
+#: includes/class-phone-field.php:112
+msgid "Vietnam"
+msgstr "Vietnam"
+
+#: includes/traits/trait-wdp-assets-inline-styles.php:57 includes/traits/trait-wdp-assets-inline-styles.php:59
+msgid "View cart"
+msgstr "Sepete Git"
+
+#: includes/class-campaign-goal.php:30
+msgid "We have reached our goal, thank you for your support. Extra donations to this campaign are used in similar projects."
+msgstr "Hedefimize ulaştık, desteğiniz için teşekkür ederiz. Bu kampanyaya yapılan fazla bağışlar benzer projelerimizde kullanılır."
+
+#: includes/traits/trait-wdp-ajax-cart-add.php:61 includes/traits/trait-wdp-ajax-cart-query.php:58 includes/traits/trait-wdp-ajax-cart-query.php:85 includes/traits/trait-wdp-ajax-cart-query.php:223
+msgid "WooCommerce cart object was not found."
+msgstr "WooCommerce sepet nesnesi bulunamadı."
+
+#: includes/class-phone-field.php:113
+msgid "Yemen"
+msgstr "Yemen"
+
+#: includes/class-cart.php:540 includes/class-order-meta-keys.php:294 includes/class-order-meta-keys.php:298
+msgid "Yes"
+msgstr "Evet"
+
+#: includes/class-form-matrix.php:32
+msgid "You are not allowed to view this page."
+msgstr "Bu sayfayı görüntüleme yetkiniz yok."
+
+#: includes/templates/class-form-fields-renderer.php:336
+msgid "You can also add a charity donation if you wish. Every kindness quietly reaches someone; your intention can bring hope to those in need."
+msgstr "İsterseniz bu vesileyle ayrıca bir sadaka bağışı da ekleyebilirsiniz. Her iyilik sessizce bir yere dokunur; sizin niyetiniz, ihtiyaç sahiplerine umut taşıyabilir."
+
+#: includes/class-form-modules.php:319
+msgid "You can define at most 6 quick amount buttons."
+msgstr "En fazla 6 hızlı tutar düğmesi tanımlanabilir."
+
+#: includes/traits/trait-wdp-ajax-base.php:51
+msgid "You do not have permission"
+msgstr "Yetkiniz bulunmuyor"
+
+#: includes/class-cart.php:279 includes/class-cart.php:283 includes/class-cart.php:289
+msgid "You entered an invalid donation amount."
+msgstr "Geçersiz bağış miktarı girdiniz."
+
+#: includes/traits/trait-wdp-assets-registry.php:370
+msgid "Your donation was added to the cart"
+msgstr "Bağışınız sepete eklendi"
+
+#: includes/class-migrations.php:303 includes/class-migrations.php:382
+msgid "Your personal data is processed to complete your donation and is shared with our field teams abroad. See the privacy notice for details."
+msgstr "Kişisel verileriniz bağışınızın gerçekleştirilmesi için işlenir ve yurt dışındaki saha ekiplerimizle paylaşılır. Ayrıntı için Aydınlatma Metni'ne bakın."
+
+#: includes/class-migrations.php:271 includes/class-migrations.php:302 includes/class-migrations.php:381
+msgid "Your personal data is processed under the privacy notice."
+msgstr "Kişisel verileriniz Aydınlatma Metni kapsamında işlenir."
+
+#: includes/traits/trait-wdp-assets-registry.php:367
+msgid "full name field is missing"
+msgstr "ad soyad alanı eksik"
+
+#: includes/class-donations-list.php:810
+msgid "min. %s"
+msgstr "min. %s"
+
+#: includes/traits/trait-wdp-assets-registry.php:368
+msgid "please enter your complete phone number"
+msgstr "telefon numaranızı eksiksiz giriniz"
+
+#: includes/class-progress-form.php:94
+msgid "raised"
+msgstr "toplandı"
+
+#: includes/class-form-modules.php:712
+msgid "{donors} people donated"
+msgstr "{donors} kişi bağış yaptı"
+
+#: includes/class-product-settings-service.php:666
+msgid "«%s» must be a valid color (#RGB or #RRGGBB)."
+msgstr "«%s» geçerli bir renk olmalıdır (#RGB veya #RRGGBB)."
+
