@@ -132,3 +132,8 @@ Faz 1 güvenli bağlantı ✅ → Faz 2 göç provası ✅ → Faz 3 bekleyen i�
 - **Geriye dönük uyum (6-C zorunlu):** tüm kısa kod adları ve öznitelikleri (özellikle `[wdp_donation_button_panel]` + `id`) HİÇ değişmez; iç adlar değişse de dışarıdan kullanılan kanca, kısa kod, meta/seçenek anahtarları geriye dönük çalışır; staging30'da snippet açıkken testle kanıtlanır.
 - **ID'siz kısa kod:** `id` yoksa kısa kod/blok/widget bulundukları ürünü kendisi bulur (global $product, get_queried_object_id, Woo döngüsü; Avada/Elementor ürün şablonları dahil) — site başına ek snippet gerekmez.
 - **Avada (Fusion Builder) elementi:** Elementor widget'ı ve Gutenberg bloğuyla aynı seçenekler; Avada'nın resmi element kayıt yoluyla, ayrı entegrasyon dosyasında, yalnız Avada aktifse yüklenir; çekirdek Avada'ya bağlı olmaz; "Select Element" listesinde görünür; staging30'da editörde eklenip ön yüzde çalıştığı testle kanıtlanır.
+
+## 11. LİMİT GÜVENCESİ (kalıcı)
+- Kullanım limiti her an dolabilir; hiçbir iş kaybolmamalı. Her alt ajan anlamlı her adımda kendi worktree dalına `WIP:` önekli commit atar (push yok; yalnız ilgili dosyalar, `git add -A` yasak, sembolik bağlar eklenmez). Yarım iş commit'siz diskte kalmaz.
+- `build/handoff/SIRADAKI-IS.md`: her alt ajan başlarken, bitirirken ve en geç 20 dk'da bir günceller (ajan, dal/worktree, son WIP commit, kalan adımlar, sonraki komut).
+- Limit dolup kullanıcı "devam" yazınca (aynı/yeni oturum): önce SIRADAKI-IS.md, ILERLEME.md son satırları ve TÜM worktree'lerin git durumu (`git worktree list`, her birinde `git status`/`git log -3`) okunur; yarım işler son WIP commit'inden sürdürülür, hiçbiri baştan başlatılmaz.
