@@ -12,6 +12,7 @@ import {
   assertProductNavTarget,
   popupPagePath,
   loopProductSlug,
+  classifyStorefrontProductPage,
 } from './catalog-core.mjs';
 import { currencySwitchFromProfile, runCurrencySwitchChecks } from './currency-switch.mjs';
 import { getDevicePreset } from './devices.mjs';
@@ -21,6 +22,7 @@ import {
   collectClickTarget,
   collectPluginRuntime,
   collectShellDomState,
+  collectStorefrontPageState,
   shotDebugPng,
   writePanelOpenDebug,
 } from './flow-diag.mjs';
@@ -3647,6 +3649,50 @@ export async function captureAll({
         await settleForScreenshot(page, { fullPage: false, scrollPage: false });
       }
 
+      if (mode === 'panel') {
+        let pageState = await collectStorefrontPageState(page, productId);
+        let verdict = classifyStorefrontProductPage(pageState);
+        if (!verdict.ok && reuseProduct && pagePath) {
+          await page.goto(url, { waitUntil: 'domcontentloaded' });
+          await settleForScreenshot(page, { fullPage: false, scrollPage: false });
+          pageState = await collectStorefrontPageState(page, productId);
+          verdict = classifyStorefrontProductPage(pageState);
+        }
+        if (!verdict.ok) {
+          try {
+            const plugin = await collectPluginRuntime(page);
+            const png = await shotDebugPng(page, `panel-${key}-open-${device.id}`);
+            writePanelOpenDebug(device.id, key, {
+              class: 'yanlış-sayfa',
+              detail: `yanlış-sayfa reason=${verdict.reason} path=${pageState.pathname}`,
+              page: pageState,
+              plugin,
+              png,
+            });
+          } catch (diagErr) {
+            console.error(
+              `[e2e:catch-fail] panel-wrong-page ${key}: ${diagErr && diagErr.message ? diagErr.message : diagErr}`
+            );
+          }
+          failures.push(
+            makeFailure({
+              check: `${mode}-${key}-open`,
+              description: 'Kabuk açılışı ön yüz ürün sayfasında değil (yanlış-sayfa)',
+              detail: `reason=${verdict.reason} path=${pageState.pathname}`,
+              screenshot: `${openName}.png`,
+            })
+          );
+          failures.push(
+            makeFailure({
+              check: `${mode}-${key}-errors-assert`,
+              description: 'Errors ekranı atlandı — yanlış-sayfa',
+              detail: verdict.reason,
+            })
+          );
+          return;
+        }
+      }
+
       const opened = await openShellForMode(page, mode, productId);
       if (!opened.ok) {
         if (mode === 'panel') {
@@ -3656,9 +3702,11 @@ export async function captureAll({
             const plugin = await collectPluginRuntime(page);
             const shellDom = await collectShellDomState(page);
             const png = await shotDebugPng(page, `panel-${key}-open-${device.id}`);
+            const pageState = await collectStorefrontPageState(page, productId);
             writePanelOpenDebug(device.id, key, {
               class: 'panel-acilamadi',
               detail: opened.detail,
+              page: pageState,
               trigger: {
                 count: await trig.count().catch(() => 0),
                 visible: (await trig.count()) > 0 ? await trig.first().isVisible().catch(() => false) : false,

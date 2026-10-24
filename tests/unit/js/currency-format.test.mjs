@@ -1,6 +1,13 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { formatMoney, formatMinPlaceholder, parseMoney, textHasFormattedAmount } from '../../../tests/e2e/helpers/currency.mjs';
+import {
+  formatMoney,
+  formatMinPlaceholder,
+  parseMoney,
+  textHasFormattedAmount,
+  formatFillAmount,
+  pickDonationFillAmount,
+} from '../../../tests/e2e/helpers/currency.mjs';
 
 describe('currency format from profile', () => {
   it('min placeholder matches WC decimals without trimming', () => {
@@ -96,5 +103,25 @@ describe('currency format from profile', () => {
       formatMoney(1250, { symbol: '¥', decimals: 0, thousandSeparator: ',', decimalSeparator: '.', symbolPosition: 'left' }),
       '¥1,250'
     );
+  });
+
+  it('formatFillAmount mağaza ondalığı; pickDonationFillAmount min/önerilen (sabit 10 yok)', () => {
+    assert.equal(formatFillAmount(50, { decimals: 0, decimalSeparator: ',' }), '50');
+    assert.equal(formatFillAmount(50, { decimals: 2, decimalSeparator: ',' }), '50,00');
+    assert.equal(formatFillAmount(50, { decimals: 2, decimalSeparator: '.' }), '50.00');
+    assert.equal(formatFillAmount(50, {}), '50');
+    assert.equal(formatFillAmount(50), '50');
+    const fromMin = pickDonationFillAmount({ min: '50' }, { decimals: 0, decimalSeparator: ',' });
+    assert.equal(fromMin.amount, 50);
+    assert.equal(fromMin.fill, '50');
+    const fromRec = pickDonationFillAmount({ recommended: '75' }, { decimals: 2, decimalSeparator: ',' });
+    assert.equal(fromRec.amount, 75);
+    assert.equal(fromRec.fill, '75,00');
+    assert.equal(pickDonationFillAmount({ min: '50' }, {}).fill, '50');
+    const both = pickDonationFillAmount({ min: '50', recommended: '100' }, { decimals: 0 });
+    assert.equal(both.amount, 100);
+    const empty = pickDonationFillAmount({}, { decimals: 0 });
+    assert.equal(Number.isFinite(empty.amount), false);
+    assert.equal(empty.fill, '');
   });
 });

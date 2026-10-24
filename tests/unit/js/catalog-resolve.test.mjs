@@ -21,6 +21,7 @@ import {
   assertProductNavTarget,
   pickFixtureNavTarget,
   decideScenarioProduct,
+  classifyStorefrontProductPage,
   SCENARIO_PRODUCT_POLICY,
   productNavPath,
   resolvePopupSource,
@@ -358,6 +359,42 @@ describe('yerel uzak-benzetim katalog', () => {
     assert.equal(picked.custom.id, 101);
     assert.equal(picked.campaign.type, 'campaign');
     assert.equal(Object.prototype.hasOwnProperty.call(picked, 'hidden'), false);
+  });
+
+  it('classifyStorefrontProductPage: wp-admin → yanlış-sayfa; single-product/id → ok', () => {
+    assert.deepEqual(
+      classifyStorefrontProductPage({
+        pathname: '/wp-admin/post.php',
+        body_class: 'wp-admin wp-core-ui',
+        product_id: 915,
+      }),
+      { ok: false, class: 'yanlış-sayfa', reason: 'wp-admin' }
+    );
+    assert.deepEqual(
+      classifyStorefrontProductPage({
+        pathname: '/bagis/vacip-kurbani/',
+        body_class: 'single-product postid-200',
+        product_id: 200,
+      }),
+      { ok: true, class: 'ok', reason: 'single-product' }
+    );
+    assert.deepEqual(
+      classifyStorefrontProductPage({
+        pathname: '/?post_type=product&p=915',
+        body_class: 'product',
+        product_id: 915,
+        dom_product_id: 915,
+      }),
+      { ok: true, class: 'ok', reason: 'product-id' }
+    );
+    assert.equal(
+      classifyStorefrontProductPage({
+        pathname: '/',
+        body_class: 'home blog',
+        product_id: 1,
+      }).class,
+      'yanlış-sayfa'
+    );
   });
 
   it('Ikram: private fixture path "/" → tam URL; liste atlanır, panel yönetici', async () => {

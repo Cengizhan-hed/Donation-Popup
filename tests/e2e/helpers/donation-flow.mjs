@@ -29,7 +29,7 @@ import { getActiveProfile, isRemoteProfile } from './profile.mjs';
 import { popupPagePath } from './catalog-core.mjs';
 import { checkoutPathFromUrl } from './checkout-setup.mjs';
 import { comingSoonQuery } from './coming-soon.mjs';
-import { textHasFormattedAmount } from './currency.mjs';
+import { textHasFormattedAmount, pickDonationFillAmount } from './currency.mjs';
 import { withEnvMutationLock } from './mutation-lock.mjs';
 import {
   DONOR_NAME,
@@ -65,7 +65,7 @@ async function revealShareholderRow(shell, index) {
 
 /**
  * @param {import('@playwright/test').Locator} shell
- * @param {{ kind: 'custom'|'shares'|'campaign', amount: number }} spec
+ * @param {{ kind: 'custom'|'shares'|'campaign', amount: number, fill?: string }} spec
  */
 async function fillDonationShell(shell, spec) {
   if (spec.kind === 'shares') {
@@ -93,7 +93,7 @@ async function fillDonationShell(shell, spec) {
   }
   const amount = shell.locator(SEL.customPrice).first();
   if (await amount.count()) {
-    await amount.fill(String(spec.amount));
+    await amount.fill(spec.fill != null ? String(spec.fill) : String(spec.amount));
   }
   const name = shell.locator(SEL.donorName).first();
   if (await name.count()) await name.fill(DONOR_NAME);
@@ -109,6 +109,49 @@ async function fillDonationShell(shell, spec) {
   if ((await anon.count()) > 0) await anon.check();
 }
 
+/**
+ * Formdaki min / önerilen (eklenti çıktısı). product_info min yazana kadar bekler.
+ * @param {import('@playwright/test').Locator} shell
+ * @param {object} [currency]
+ * @returns {Promise<{ amount: number, fill: string }>}
+ */
+async function resolveDonationFillAmount(shell, currency) {
+  const input = shell.locator(SEL.customPrice).first();
+  if ((await input.count()) === 0) {
+    throw new Error('form-tutar-okunamadi: custom_price yok');
+  }
+  await input.waitFor({ state: 'visible', timeout: CHECK_MS });
+  const t0 = Date.now();
+  let bounds = { min: '', recommended: '', max: '' };
+  while (Date.now() - t0 < 8000) {
+    bounds = await shell.evaluate((root) => {
+      const inp = root.querySelector('input[name="custom_price"]');
+      const rec = root.querySelector(
+        '.wdp-amount-preset.is-popular, .wdp-amount-preset[data-recommended="1"]'
+      );
+      return {
+        min:
+          (inp &&
+            (inp.getAttribute('min') ||
+              inp.getAttribute('data-min') ||
+              inp.dataset.baseMin ||
+              inp.dataset.wdpMin ||
+              '')) ||
+          '',
+        max: (inp && (inp.getAttribute('max') || inp.getAttribute('data-max') || '')) || '',
+        recommended: (rec && (rec.getAttribute('data-amount') || '')) || '',
+        placeholder: (inp && String(inp.placeholder || '').trim()) || '',
+      };
+    });
+    const picked = pickDonationFillAmount(bounds, currency);
+    const infoReady = /^min:\s/i.test(bounds.placeholder || '') || !!bounds.recommended;
+    if (infoReady && Number.isFinite(picked.amount) && picked.amount > 0) return picked;
+    await new Promise((r) => setTimeout(r, 100));
+  }
+  throw new Error(
+    `form-tutar-okunamadi: min/önerilen yok min=${bounds.min || '-'} rec=${bounds.recommended || '-'}`
+  );
+}
 
 /**
  * Yerel kanıt: handler yokken erken CTA — sessiz yutma olmamalı (kuyruk → add_to_cart).
@@ -248,7 +291,8 @@ export async function runDonationFlowChecks({
   const checkoutPath = checkoutPathFromUrl(checkoutUrl || '', env.E2E_BASE_URL);
   const remote = isRemoteProfile(profile);
   const viewOnly = remote;
-  let filledAmount = profile.products?.custom?.min || 10;
+  let filledAmount = 0;
+  let filledText = '';
 
   /**
    * @param {{ kind: 'custom'|'shares'|'campaign', productId: number, productPath: string, productName: string, check: string }} job
@@ -277,12 +321,12 @@ export async function runDonationFlowChecks({
     await shell.waitFor({ state: 'visible', timeout: CHECK_MS });
     await assertNoUnexpectedPluginErrors(page, { scenarioId: `checkout-flow-${deviceId}` });
 
-    if (job.kind === 'custom') {
-      filledAmount = profile.products?.custom?.min || 10;
-    } else if (job.kind === 'campaign') {
-      filledAmount = Number(profile.products?.campaign?.min) || 50;
+    if (job.kind === 'custom' || job.kind === 'campaign') {
+      const picked = await resolveDonationFillAmount(shell, profile.currency);
+      filledAmount = picked.amount;
+      filledText = picked.fill;
     }
-    await fillDonationShell(shell, { kind: job.kind, amount: filledAmount });
+    await fillDonationShell(shell, { kind: job.kind, amount: filledAmount, fill: filledText });
 
     const checkoutHost = (() => {
       try {
@@ -350,6 +394,16 @@ export async function runDonationFlowChecks({
       diag.network_after_click = postNet.hits.slice();
       diag.console_errors = cons.errors.slice();
       diag.png_after = await shotDebugPng(page, `checkout-flow-${deviceId}-after`);
+      const valErrs = await visibleValidationErrors(page);
+      diag.validation_errors = valErrs;
+      diag.validation_message = String(valErrs[0] || '').slice(0, 80);
+      if (!addHit && valErrs.length) {
+        const cls = classifyCheckoutNavFailure(diag);
+        writeCheckoutFlowDebug(deviceId, { ...diag, class: cls });
+        throw new Error(
+          `ödeme sayfasına gidilmedi [${cls}]: ${diag.validation_message}`
+        );
+      }
 
       diag.items_count = await cartItemCount(page, env.E2E_BASE_URL);
 
@@ -610,8 +664,10 @@ export async function runDonationFlowChecks({
       await clickShellTrigger(trigger, CHECK_MS);
       const shell = openShellLocator(page, '');
       await shell.waitFor({ state: 'visible', timeout: CHECK_MS });
-      filledAmount = profile.products?.custom?.min || 10;
-      await fillDonationShell(shell, { kind: 'custom', amount: filledAmount });
+      const pickedEarly = await resolveDonationFillAmount(shell, profile.currency);
+      filledAmount = pickedEarly.amount;
+      filledText = pickedEarly.fill;
+      await fillDonationShell(shell, { kind: 'custom', amount: filledAmount, fill: filledText });
       await proveEarlyCtaTap(page, shell, env);
       stats.passed += 1;
       console.log(`[e2e] ${check}: ${((Date.now() - tJob) / 1000).toFixed(1)}s`);

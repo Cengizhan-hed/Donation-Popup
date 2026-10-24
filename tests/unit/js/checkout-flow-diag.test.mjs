@@ -136,6 +136,34 @@ describe('classifyCheckoutNavFailure', () => {
     );
   });
 
+  it('form-dogrulama-reddi: mesaj var, add_to_cart yok (sepet-boş-yönlendirmeden önce)', () => {
+    assert.equal(
+      classifyCheckoutNavFailure({
+        items_count: 0,
+        navigated: false,
+        click_pathname: '/bagis-listesi/',
+        final_pathname: '/bagis-listesi/',
+        wdp_ajax_checkout_pathname: '/odeme-sayfasi/',
+        add_to_cart: {},
+        validation_message: 'Lütfen ₺50 ve üstü toplam tutar girin',
+        redirects: [],
+      }),
+      'form-dogrulama-reddi'
+    );
+    assert.equal(
+      classifyCheckoutNavFailure({
+        items_count: 0,
+        navigated: true,
+        final_pathname: '/sepet/',
+        wdp_ajax_checkout_pathname: '/odeme-sayfasi/',
+        add_to_cart: { checkout_url_pathname: '/odeme-sayfasi/' },
+        validation_errors: ['Lütfen ₺50 ve üstü toplam tutar girin'],
+        redirects: [{ from: '/odeme-sayfasi/', to: '/sepet/', status: 302 }],
+      }),
+      'form-dogrulama-reddi'
+    );
+  });
+
   it('sepet-boş-yönlendirme: items_count 0', () => {
     assert.equal(
       classifyCheckoutNavFailure({
@@ -190,6 +218,7 @@ describe('buildCheckoutFlowDebugPayload', () => {
       wdp_ajax_checkout_pathname: 'https://shop.test/odeme-sayfasi/?sid=9',
       navigated: true,
       class: 'sepet-boş-yönlendirme',
+      validation_message: 'Lütfen ₺50 ve üstü toplam tutar girin',
       query: '?email=a@b.c',
       body: '<html>kişi</html>',
     });
@@ -203,6 +232,7 @@ describe('buildCheckoutFlowDebugPayload', () => {
     assert.equal(payload.cookies.wp_woocommerce_session, true);
     assert.equal(payload.cookies.woocommerce_items_in_cart, false);
     assert.equal(payload.class, 'sepet-boş-yönlendirme');
+    assert.equal(payload.validation_message, 'Lütfen ₺50 ve üstü toplam tutar girin');
     assert.equal('body' in payload, false);
     assert.equal('query' in payload, false);
     assert.equal('value' in payload.cookies, false);

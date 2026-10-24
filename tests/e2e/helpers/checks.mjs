@@ -292,12 +292,31 @@ function hasCheckoutToCartRedirect(redirects) {
   });
 }
 
+function checkoutHasAddToCart(d) {
+  const a = d && d.add_to_cart && typeof d.add_to_cart === 'object' ? d.add_to_cart : null;
+  if (!a) return false;
+  if (a.success === true) return true;
+  if (Number(a.status) > 0) return true;
+  return !!(a.action || a.endpoint);
+}
+
+function checkoutValidationMessage(d) {
+  const raw = d && typeof d === 'object' ? d : {};
+  if (typeof raw.validation_message === 'string' && raw.validation_message.trim()) {
+    return raw.validation_message.trim().slice(0, 80);
+  }
+  const list = Array.isArray(raw.validation_errors) ? raw.validation_errors : [];
+  const first = list.find((t) => String(t || '').trim());
+  return first ? String(first).trim().slice(0, 80) : '';
+}
+
 /**
  * checkout-flow gezinme hatası sınıfı.
- * Öncelik: tıklama-gezinmedi → eklenti-checkout-url-yanlış → sepet-boş-yönlendirme → tema-yönlendirmesi.
+ * Öncelik: form-dogrulama-reddi → tıklama-gezinmedi → eklenti-checkout-url-yanlış
+ * → sepet-boş-yönlendirme → tema-yönlendirmesi.
  *
  * @param {object} diag
- * @returns {'sepet-boş-yönlendirme'|'eklenti-checkout-url-yanlış'|'tema-yönlendirmesi'|'tıklama-gezinmedi'}
+ * @returns {'form-dogrulama-reddi'|'sepet-boş-yönlendirme'|'eklenti-checkout-url-yanlış'|'tema-yönlendirmesi'|'tıklama-gezinmedi'}
  */
 export function classifyCheckoutNavFailure(diag) {
   const d = diag && typeof diag === 'object' ? diag : {};
@@ -315,6 +334,9 @@ export function classifyCheckoutNavFailure(diag) {
       : redirects.length > 0 ||
         (!!finalPath && !!clickPath && normCheckoutPath(finalPath) !== normCheckoutPath(clickPath));
 
+  if (checkoutValidationMessage(d) && !checkoutHasAddToCart(d)) {
+    return 'form-dogrulama-reddi';
+  }
   if (!navigated && !endedOnCart && !endedOnCheckout) {
     return 'tıklama-gezinmedi';
   }
@@ -368,6 +390,7 @@ export function buildCheckoutFlowDebugPayload(raw) {
     wdp_ajax_checkout_pathname: urlPathnameOnly(r.wdp_ajax_checkout_pathname),
     navigated: r.navigated === true,
     class: String(r.class || ''),
+    validation_message: String(r.validation_message || checkoutValidationMessage(r) || '').slice(0, 80),
     ...buildCheckoutFlowDiagExtras(r),
   };
 }
