@@ -378,6 +378,8 @@ trait WDP_Assets_Registry_Trait {
             'flags' => array(
                 // Disabled by default to avoid theme-wide side cart visibility overrides.
                 'side_cart_recovery' => (bool) apply_filters('wdp_enable_side_cart_recovery', false),
+                // Sepete ekleme sonrası location.reload yok (fragment başarısız olsa da).
+                'reload_after_add_to_cart' => (bool) apply_filters('wdp_reload_after_add_to_cart', false),
                 'multi_step' => (function () {
                     $bs = get_option('wdp_button_settings', array());
                     return !empty($bs['enable_multi_step']) && (string) $bs['enable_multi_step'] === '1';

@@ -169,8 +169,8 @@
         }
       });
 
-      // Form submit: yalnızca henüz bağlanmamış formlar için yedek (form.js zaten dinliyorsa dokunma —
-      // aksi halde her gönderimde setup tekrarlanır, çoklu dinleyici ve sahte "bağlantı hatası" oluşur)
+      // Form submit: bağış formu asla yerel belge gönderimi yapmaz.
+      // Handler bağlıysa yalnız preventDefault (capture handler zaten işledi); yoksa kuyruk.
       document.addEventListener("submit", function(e) {
         const formElement = e.target;
         if (!formElement || formElement.tagName !== "FORM") {
@@ -179,11 +179,13 @@
         if (!formElement.closest(".wdp-modal") && !formElement.closest(".wdp-donation-form")) {
           return;
         }
+        if (e && typeof e.preventDefault === "function") {
+          e.preventDefault();
+        }
         if (formElement._wdpSubmitHandler) {
           return;
         }
 
-        e.preventDefault();
         e.stopPropagation();
         const submitter = e.submitter || formElement._wdpLastClickSubmitter || null;
         const ctaReady = WDPApp.formCtaReady;

@@ -79,8 +79,14 @@
 
   function fallbackCartUpdate() {
     safeLog("Fallback cart update triggered");
-    // Refresh the page as a last resort
-    window.location.reload();
+    const flags = (wdp_ajax && wdp_ajax.flags) ? wdp_ajax.flags : {};
+    // Varsayılan kapalı: sepete ekleme sonrası sayfa yenileme yok.
+    // Açmak için filtre: wdp_reload_after_add_to_cart.
+    if (flags.reload_after_add_to_cart) {
+      window.location.reload();
+      return;
+    }
+    showSideCarts();
   }
 
   function showSideCarts() {
