@@ -371,10 +371,6 @@ msgstr "Bağış paneli kapatıldı"
 msgid "Donation form closed"
 msgstr "Bağış formu kapatıldı"
 
-#: assets/js/src/phone-input.js:55
-msgid "Turkey"
-msgstr "Türkiye"
-
 #: assets/js/src/phone-input.js:672
 #: assets/js/src/shareholder/render.js:120
 msgid "Phone number *"

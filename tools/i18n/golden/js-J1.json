@@ -621,12 +621,6 @@
     },
     {
       "file": "assets/js/src/phone-input.js",
-      "tr": "Türkiye",
-      "en": "Turkey",
-      "ctx": ""
-    },
-    {
-      "file": "assets/js/src/phone-input.js",
       "tr": "Telefon Numarası *",
       "en": "Phone number *",
       "ctx": ""
