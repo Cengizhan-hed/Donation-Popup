@@ -209,4 +209,59 @@ describe('buildCheckoutFlowDebugPayload', () => {
     assert.equal('body' in payload.add_to_cart, false);
     assert.doesNotMatch(json, /SECRET|donor|email=|utm=leak|sid=9|foo=bar|\?x=1/);
   });
+
+  it('cta_ready / script / tıklama / ağ / konsol genişletmesi; sorgu yok', () => {
+    const payload = buildCheckoutFlowDebugPayload({
+      device: 'android',
+      class: 'sepet-boş-yönlendirme',
+      cta_ready: { form_ready: false, await_js: '1', disabled: true, has_gate: true, queued: false },
+      plugin: {
+        scripts: [
+          {
+            id: 'wdp-form-cta-ready-js',
+            src: 'https://shop.test/wp-content/plugins/woo-donation-popup/assets/js/src/form/cta-ready.js?ver=10.34.12&foo=1',
+          },
+        ],
+        cta_ready_script: true,
+        main_bundle: false,
+        possibly_combined: false,
+        has_wdp_app: true,
+        has_submit_handler: false,
+      },
+      click_target: {
+        tag: 'BUTTON',
+        role: 'button',
+        name: 'donation_go_checkout',
+        visible: true,
+        disabled: true,
+        loading: true,
+        is_go_checkout: true,
+        overlay: { tag: 'DIV', className: 'fusion-tb-header', is_self: false },
+      },
+      network_after_click: [
+        {
+          method: 'POST',
+          url: 'https://shop.test/wp-admin/admin-ajax.php?secret=1',
+          action: 'wdp_get_product_info',
+          status: 200,
+        },
+      ],
+      console_errors: ['Failed to load https://shop.test/x.js?token=abc'],
+      png_before: '/tmp/checkout-flow-android-before.png',
+      png_after: '/tmp/checkout-flow-android-after.png',
+    });
+    const json = JSON.stringify(payload);
+    assert.equal(payload.cta_ready.form_ready, false);
+    assert.equal(payload.cta_ready.await_js, '1');
+    assert.equal(payload.plugin.cta_ready_script, true);
+    assert.equal(payload.plugin.scripts[0].pathname.endsWith('/cta-ready.js'), true);
+    assert.equal(payload.plugin.scripts[0].ver, '10.34.12');
+    assert.equal(payload.click_target.is_go_checkout, true);
+    assert.equal(payload.click_target.overlay.is_self, false);
+    assert.equal(payload.network_after_click[0].pathname, '/wp-admin/admin-ajax.php');
+    assert.equal(payload.network_after_click[0].action, 'wdp_get_product_info');
+    assert.equal(payload.png_before, 'checkout-flow-android-before.png');
+    assert.match(payload.console_errors[0], /\/x\.js/);
+    assert.doesNotMatch(json, /secret=1|token=abc|foo=1|\?ver=/);
+  });
 });

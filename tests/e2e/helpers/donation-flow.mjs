@@ -39,6 +39,14 @@ import {
   SHAREHOLDERS,
   completeLocalCheckout,
 } from './place-order.mjs';
+import {
+  attachPostClickNetwork,
+  attachSanitizedConsole,
+  collectClickTarget,
+  collectCtaReadyState,
+  collectPluginRuntime,
+  shotDebugPng,
+} from './flow-diag.mjs';
 
 const CHECK_MS = 25000;
 
@@ -101,31 +109,6 @@ async function fillDonationShell(shell, spec) {
   if ((await anon.count()) > 0) await anon.check();
 }
 
-/**
- * CTA hazırlık teşhisi (kişisel veri yok).
- * @param {import('@playwright/test').Locator} shell
- */
-async function collectCtaReadyState(shell) {
-  return shell.evaluate(() => {
-    const form =
-      document.querySelector('.wdp-modal.show form') ||
-      document.querySelector('.wdp-donation-form form') ||
-      document.querySelector('form.wdp-donation-form');
-    const go = form
-      ? form.querySelector('button[name="donation_go_checkout"]')
-      : document.querySelector('button[name="donation_go_checkout"]');
-    const gate = form
-      ? form.querySelector('.wdp-cta-gate__hit')
-      : document.querySelector('.wdp-cta-gate__hit');
-    return {
-      form_ready: !!(form && (form._wdpSubmitHandler || (form.dataset && form.dataset.wdpFormReady === '1'))),
-      await_js: go ? go.getAttribute('data-wdp-await-js') : null,
-      disabled: go ? !!go.disabled : null,
-      has_gate: !!gate,
-      queued: !!(form && form._wdpQueuedSubmitter),
-    };
-  });
-}
 
 /**
  * Yerel kanıt: handler yokken erken CTA — sessiz yutma olmamalı (kuyruk → add_to_cart).
@@ -323,16 +306,22 @@ export async function runDonationFlowChecks({
     };
 
     const probes = attachCheckoutFlowProbes(page);
+    const postNet = attachPostClickNetwork(page);
+    const cons = attachSanitizedConsole(page);
     try {
       diag.wdp_ajax_checkout_pathname = await collectWdpAjaxCheckoutPathname(page);
       diag.items_count_before_click = await cartItemCount(page, env.E2E_BASE_URL);
       diag.click_pathname = urlPathnameOnly(page.url());
 
       diag.cta_ready = await collectCtaReadyState(shell);
-
+      diag.plugin = await collectPluginRuntime(page);
       const add = shell.locator(SEL.addToCart).first();
       const go = shell.locator(SEL.goCheckout).first();
       const gate = shell.locator('.wdp-cta-gate__hit').first();
+      const clickLoc = (await go.count()) > 0 ? go : (await gate.count()) > 0 ? gate : add;
+      diag.click_target = await collectClickTarget(page, clickLoc);
+      diag.png_before = await shotDebugPng(page, `checkout-flow-${deviceId}-before`);
+      const tClick = Date.now();
       if ((await go.count()) > 0) {
         try {
           await go.click({ timeout: CHECK_MS, noWaitAfter: true });
@@ -354,6 +343,13 @@ export async function runDonationFlowChecks({
 
       const addHit = await probes.waitForAddToCart(8000);
       if (addHit) diag.add_to_cart = addHit;
+      if (!addHit) {
+        const left = Math.max(0, 5000 - (Date.now() - tClick));
+        if (left) await postNet.wait(left);
+      }
+      diag.network_after_click = postNet.hits.slice();
+      diag.console_errors = cons.errors.slice();
+      diag.png_after = await shotDebugPng(page, `checkout-flow-${deviceId}-after`);
 
       diag.items_count = await cartItemCount(page, env.E2E_BASE_URL);
 
@@ -432,6 +428,8 @@ export async function runDonationFlowChecks({
       writeCheckoutFlowDebug(deviceId, { ...diag, class: 'ok' });
     } finally {
       probes.dispose();
+      postNet.dispose();
+      cons.dispose();
     }
     stats.passed += 1;
 

@@ -40,8 +40,7 @@ import { killChildTree } from './helpers/run-signals.mjs';
 import { snapshotCanary } from './helpers/canary.mjs';
 import { cleanupE2EData } from './helpers/test-cleanup.mjs';
 import { runRepairForProfile } from '../../scripts/e2e-bootstrap.mjs';
-
-const CHILD_TIMEOUT_MS = 25 * 60 * 1000;
+import { CHILD_TIMEOUT_MS, fullChildJobs, outputDeviceId, partitionSpawnWaves } from './helpers/full-slices.mjs';
 
 function envList(envId) {
   const v = String(envId || '').trim().toLowerCase();
@@ -59,7 +58,7 @@ function localE2EPort() {
   return Number.isFinite(n) && n > 0 ? n : 8899;
 }
 
-async function runOne({ envId, deviceId, noSideCart }) {
+async function runOne({ envId, deviceId, noSideCart, areas = null, slice = '' }) {
   let env;
   if (isLocalEnvId(envId)) {
     env = loadE2EEnv({
@@ -75,20 +74,22 @@ async function runOne({ envId, deviceId, noSideCart }) {
   }
   env = await fillMissingProductSlugs(env);
   const profileId = env.E2E_PROFILE_ID || env._profile?.id || envId;
-  const outDir = currentDirFor(profileId, deviceId);
+  const outDevice = outputDeviceId(deviceId, slice);
+  const outDir = currentDirFor(profileId, outDevice);
   fs.mkdirSync(outDir, { recursive: true });
   const started = Date.now();
-  console.log(`\n=== full ${profileId} × ${deviceId} ===`);
+  const sliceNote = slice ? `/${slice}` : '';
+  console.log(`\n=== full ${profileId} × ${deviceId}${sliceNote} ===`);
   const result = await captureAll({
     env,
     outDir,
     runFunctional: true,
     mode: deviceId === 'desktop' ? 'full' : 'quick',
     workers: isLocalEnvId(envId) ? 1 : deviceId === 'iphone' ? 2 : 3,
-    runLabel: `full-${profileId}-${deviceId}`,
+    runLabel: `full-${profileId}-${outDevice}`,
     noSideCart,
     device: deviceId,
-    areas: null,
+    areas: areas || null,
   });
   const capturedScreens = result.screens?.length
     ? result.screens
@@ -111,7 +112,8 @@ async function runOne({ envId, deviceId, noSideCart }) {
   );
   const row = {
     env: profileId,
-    device: deviceId,
+    device: outDevice,
+    slice: slice || '',
     secs: Number(((Date.now() - started) / 1000).toFixed(1)),
     passed: compared.passedCount,
     skipped: compared.skippedCount,
@@ -134,10 +136,12 @@ async function runOne({ envId, deviceId, noSideCart }) {
   return row;
 }
 
-function spawnCombo(envId, deviceId, extraArgs, extraEnv = {}, liveChildren = []) {
+function spawnCombo(envId, deviceId, extraArgs, extraEnv = {}, liveChildren = [], slice = '') {
   const script = fileURLToPath(import.meta.url);
+  const outDevice = outputDeviceId(deviceId, slice);
   return new Promise((resolve) => {
     const args = [script, '--env', envId, '--device', deviceId, '--no-clean', '--child', ...extraArgs];
+    if (slice) args.push('--slice', slice);
     const child = spawn(process.execPath, args, {
       cwd: ROOT,
       env: { ...process.env, ...extraEnv },
@@ -151,25 +155,29 @@ function spawnCombo(envId, deviceId, extraArgs, extraEnv = {}, liveChildren = []
       resolve(row);
     };
     const timer = setTimeout(() => {
-      console.error(`[e2e:full] çocuk üst süre ${envId}/${deviceId} (${CHILD_TIMEOUT_MS / 1000}s)`);
+      console.error(`[e2e:full] çocuk üst süre ${envId}/${outDevice} (${CHILD_TIMEOUT_MS / 1000}s)`);
       killChildTree(child, 15000);
       finish({
         envId,
         deviceId,
+        outDevice,
+        slice,
         code: 1,
         timedOut: true,
-        error: `çocuk 25 dk üst süre (${envId}/${deviceId})`,
+        error: `çocuk 20 dk üst süre (${envId}/${outDevice})`,
       });
     }, CHILD_TIMEOUT_MS);
     child.stdout.on('data', (d) => process.stdout.write(d));
     child.stderr.on('data', (d) => process.stderr.write(d));
     child.on('close', (code) => {
-      finish({ envId, deviceId, code: Number(code) || 0 });
+      finish({ envId, deviceId, outDevice, slice, code: Number(code) || 0 });
     });
     child.on('error', (e) => {
       finish({
         envId,
         deviceId,
+        outDevice,
+        slice,
         code: 1,
         error: String(e && e.message ? e.message : e),
       });
@@ -302,10 +310,22 @@ async function main() {
         WDP_E2E_ENV_LOCK_PID: String(process.pid),
       };
       for (const deviceId of devices) {
-        jobs.push(spawnCombo(envId, deviceId, extra, childEnv, liveChildren));
+        for (const job of fullChildJobs(deviceId, flags.areas)) {
+          jobs.push({ envId, deviceId, extra, childEnv, slice: job.slice, areas: job.areas });
+        }
       }
     }
-    const jobRows = await Promise.all(jobs);
+    const jobRows = [];
+    for (const wave of partitionSpawnWaves(jobs, { local: localOnly })) {
+      const started = await Promise.all(
+        wave.map((j) => {
+          const jobExtra = [...j.extra];
+          if (j.areas) jobExtra.push('--areas', j.areas.join(','));
+          return spawnCombo(j.envId, j.deviceId, jobExtra, j.childEnv, liveChildren, j.slice);
+        })
+      );
+      jobRows.push(...started);
+    }
     const dirty = parentAborted || jobRows.some((j) => j.code !== 0 || j.timedOut);
     if (dirty) {
       await runParentPostSafety(envs, parentAborted ? 'SIGTERM/SIGINT' : 'çocuk hata/üst süre');
@@ -314,11 +334,12 @@ async function main() {
     for (const j of jobRows) {
       if (!j.timedOut && !j.error) continue;
       const profileId = isLocalEnvId(j.envId) ? 'local' : loadProfile(j.envId).id;
-      const has = rows.some((r) => r.env === profileId && r.device === j.deviceId);
+      const outDevice = j.outDevice || outputDeviceId(j.deviceId, j.slice);
+      const has = rows.some((r) => r.env === profileId && r.device === outDevice);
       if (has) continue;
       rows.push({
         env: profileId,
-        device: j.deviceId,
+        device: outDevice,
         secs: 0,
         passed: 0,
         skipped: 0,
@@ -346,12 +367,24 @@ async function main() {
       const tEnv = Date.now();
       const deviceRuns = [];
       for (const deviceId of devices) {
+        const sliceJobs = flags.child
+          ? [{ deviceId, slice: flags.slice || '', areas: flags.areas || null }]
+          : fullChildJobs(deviceId, flags.areas);
+        for (const job of sliceJobs) {
         try {
-          deviceRuns.push(await runOne({ envId, deviceId, noSideCart: flags.noSideCart }));
+          deviceRuns.push(
+            await runOne({
+              envId,
+              deviceId: job.deviceId,
+              noSideCart: flags.noSideCart,
+              areas: job.areas,
+              slice: job.slice,
+            })
+          );
         } catch (e) {
           const failRow = {
             env: resolveProfileId(isLocalEnvId(envId) ? 'local' : envId) || envId,
-            device: deviceId,
+            device: outputDeviceId(job.deviceId, job.slice),
             secs: 0,
             passed: 0,
             skipped: 0,
@@ -368,7 +401,7 @@ async function main() {
           try {
             const dest = currentDirFor(
               resolveProfileId(isLocalEnvId(envId) ? 'local' : envId) || envId,
-              deviceId
+              outputDeviceId(job.deviceId, job.slice)
             );
             fs.mkdirSync(dest, { recursive: true });
             fs.writeFileSync(path.join(dest, 'run.json'), JSON.stringify(failRow, null, 2) + '\n');
@@ -376,6 +409,7 @@ async function main() {
             console.error(`[e2e:catch-fail] run.json yazılamadı: ${writeErr && writeErr.message ? writeErr.message : writeErr}`);
           }
           deviceRuns.push(failRow);
+        }
         }
       }
       rows.push(...deviceRuns);

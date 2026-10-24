@@ -12,6 +12,7 @@ export function storeApiNonceFromGlobals(globals) {
       wc.storeApiNonce ||
       wcSettings.storeApiNonce ||
       g.storeApiNonce ||
+      (g.wpApiFetch && g.wpApiFetch.nonce) ||
       (g.wpApiSettings && g.wpApiSettings.nonce) ||
       ''
   ).trim();
@@ -150,6 +151,14 @@ export async function readStoreApiNonceGlobals(page) {
       wcSettings: { storeApiNonce: wcSettings.storeApiNonce || '' },
       wc: { wcSettings: { storeApiNonce: (wc.wcSettings && wc.wcSettings.storeApiNonce) || '' } },
       wpApiSettings: w.wpApiSettings ? { nonce: w.wpApiSettings.nonce || '' } : null,
+      wpApiFetch: {
+        nonce:
+          (w.wp &&
+            w.wp.apiFetch &&
+            w.wp.apiFetch.nonceMiddleware &&
+            w.wp.apiFetch.nonceMiddleware.nonce) ||
+          '',
+      },
     };
   });
 }

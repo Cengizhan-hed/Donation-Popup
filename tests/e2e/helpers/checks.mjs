@@ -18,6 +18,7 @@ import {
 } from './store-api.mjs';
 import { writeDebugJson } from './scenario-debug.mjs';
 import { debugDirFor } from './e2e-paths.mjs';
+import { buildCheckoutFlowDiagExtras } from './flow-diag.mjs';
 
 /** Kontrol başına en fazla bekleme (ms). Bulunamayan öğe hemen hata yazar. */
 export const CHECK_MS = 5000;
@@ -367,6 +368,7 @@ export function buildCheckoutFlowDebugPayload(raw) {
     wdp_ajax_checkout_pathname: urlPathnameOnly(r.wdp_ajax_checkout_pathname),
     navigated: r.navigated === true,
     class: String(r.class || ''),
+    ...buildCheckoutFlowDiagExtras(r),
   };
 }
 
@@ -681,8 +683,14 @@ export async function waitForWooCartReady(page) {
   }
 }
 
-const CART_REMOVE_SEL =
-  '.woocommerce-cart-form .remove, a.remove, .wc-block-cart-item__remove-link';
+/** Yalnız sepet sayfası formu/bloğu — tema başlık mini sepeti (`a.remove`) yok. */
+export const CART_PAGE_REMOVE_SEL = [
+  '.woocommerce-cart-form a.remove',
+  '.woocommerce-cart-form .remove',
+  '.wc-block-cart-items .wc-block-cart-item__remove-link',
+  '.wp-block-woocommerce-filled-cart-block .wc-block-cart-item__remove-link',
+].join(', ');
+const CART_REMOVE_SEL = CART_PAGE_REMOVE_SEL;
 const CART_EMPTY_SEL =
   '.cart-empty, .wc-block-cart__empty-cart, .wc-empty-cart-message, .wp-block-woocommerce-empty-cart-block, .woocommerce-info';
 
@@ -731,23 +739,28 @@ export async function emptyCartViaPageHtml(page, baseUrl) {
   if (!(await pageLooksLikeWooCart(page))) {
     await gotoWooCart(page, baseUrl);
   }
+  const visibleRemove = () => page.locator(CART_PAGE_REMOVE_SEL).filter({ visible: true });
   for (let i = 0; i < 12; i++) {
-    const n = await page.locator(CART_REMOVE_SEL).count();
+    const n = await visibleRemove().count();
     if (n === 0) return;
-    await page.locator(CART_REMOVE_SEL).first().click({ timeout: 5000 });
+    await visibleRemove().first().click({ timeout: 5000 });
     try {
       await page.waitForFunction(
         ({ remove, empty, prev }) => {
-          const left = document.querySelectorAll(remove).length;
-          if (left < prev) return true;
+          const nodes = [...document.querySelectorAll(remove)].filter((el) => {
+            const st = window.getComputedStyle(el);
+            const r = el.getBoundingClientRect();
+            return st.display !== 'none' && st.visibility !== 'hidden' && r.width + r.height > 0;
+          });
+          if (nodes.length < prev) return true;
           return !!document.querySelector(empty);
         },
-        { remove: CART_REMOVE_SEL, empty: CART_EMPTY_SEL, prev: n },
+        { remove: CART_PAGE_REMOVE_SEL, empty: CART_EMPTY_SEL, prev: n },
         { timeout: 8000 }
       );
     } catch (e) {
       if (page.isClosed()) throw e;
-      const left = await page.locator(CART_REMOVE_SEL).count();
+      const left = await visibleRemove().count();
       if (left < n) continue;
       if ((await page.locator(CART_EMPTY_SEL).count()) > 0) return;
       throw e;
@@ -762,7 +775,8 @@ export async function emptyCartViaPageHtml(page, baseUrl) {
  * @param {string} baseUrl
  */
 export async function emptyCart(page, baseUrl) {
-  if (pageHasSiteOrigin(page.url(), baseUrl)) {
+  const tryStore = async () => {
+    if (!pageHasSiteOrigin(page.url(), baseUrl)) return false;
     const globals = await readStoreApiNonceGlobals(page);
     const result = await emptyCartStoreApiWithFetch(playwrightStoreFetch(page), {
       baseUrl,
@@ -770,10 +784,13 @@ export async function emptyCart(page, baseUrl) {
     });
     if (result.emptied) {
       const n = await cartItemCount(page, baseUrl);
-      if (n === 0) return;
+      if (n === 0) return true;
     }
-  }
+    return false;
+  };
+  if (await tryStore()) return;
   await emptyCartViaPageHtml(page, baseUrl);
+  if (await tryStore()) return;
 }
 
 /**
