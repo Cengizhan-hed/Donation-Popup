@@ -1,0 +1,1278 @@
+# Turkish translations for woo-donation-popup (part A1).
+# Copyright (C) WooCommerce Donation Panel
+msgid ""
+msgstr ""
+"Project-Id-Version: woo-donation-popup\n"
+"Language: tr_TR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: includes/class-admin-design-studio-renderer.php:104
+msgid "Brand color"
+msgstr "Marka rengi"
+
+#: includes/class-admin-design-studio-renderer.php:106
+msgid "What it does: This is your site’s main identity color. When you save, Add to cart / Go to checkout / popup trigger / progress fill / success-screen accents update automatically from the light–dark palette generated from this color. If the “Primary” field on the product card is filled, it overrides the brand color for that product."
+msgstr "Ne işe yarar: Sitenizin ana kimlik rengidir. Kaydettiğinizde Sepete Ekle / Ödemeye Git / popup tetikleyici / progress dolumu / başarı ekranı vurguları bu renkten üretilen açık-koyu palete otomatik güncellenir. Ürün kartındaki “Primary” alanı doluysa o ürün için marka rengini ezer."
+
+#: includes/class-admin-design-studio-renderer.php:111
+msgid "Primary"
+msgstr "Ana"
+
+#: includes/class-admin-design-studio-renderer.php:112
+msgid "Hover"
+msgstr "Hover"
+
+#: includes/class-admin-design-studio-renderer.php:113
+msgid "Dark"
+msgstr "Koyu"
+
+#: includes/class-admin-design-studio-renderer.php:114
+msgid "Light"
+msgstr "Açık"
+
+#: includes/class-admin-design-studio-renderer.php:115
+msgid "Checkout"
+msgstr "Ödeme"
+
+#: includes/class-admin-design-studio-renderer.php:116
+msgid "Pending"
+msgstr "Bekleyen"
+
+#: includes/class-admin-design-studio-renderer.php:141
+msgid "Appearance packs"
+msgstr "Görünüm paketleri"
+
+#: includes/class-admin-design-studio-renderer.php:142
+msgid "Click a pack — colors, radius, and density fill the form fields. They apply on the site after you save."
+msgstr "Bir pakete tıklayın — renkler, radius ve yoğunluk form alanlarına dolar. Kaydettikten sonra sitede uygulanır."
+
+#: includes/class-admin-design-studio-renderer.php:164
+msgid "Export current appearance"
+msgstr "Mevcut görünümü dışa aktar"
+
+#: includes/class-admin-design-studio-renderer.php:165
+msgid "Import pack"
+msgstr "Paket içe aktar"
+
+#: includes/class-admin-design-studio-renderer.php:167
+msgid "Apply pack now & save"
+msgstr "Paketi şimdi uygula & kaydet"
+
+#: includes/class-admin-design-studio-renderer.php:168
+msgid "Clicking a card: Only fills the form fields (does not save yet). “Apply pack now & save”: Writes the selected pack to the database; updates Regular / Share-based / Progress / Success colors; the page does not reload. Export: Downloads current settings as JSON. Import: Loads a JSON pack and applies it."
+msgstr "Kart tıklamak: Sadece form alanlarını doldurur (henüz kaydetmez). “Paketi şimdi uygula & kaydet”: Seçili paketi veritabanına yazar; Normal / Hisseli / Progress / Başarı renklerini günceller; sayfa yenilenmez. Dışa aktar: Mevcut ayarları JSON indirir. İçe aktar: JSON paketi yükler ve uygular."
+
+#: includes/class-admin-design-studio-renderer.php:180
+msgid "Surface & typography"
+msgstr "Yüzey & tipografi"
+
+#: includes/class-admin-design-studio-renderer.php:181
+msgid "Glass panel, elevation, and form density — the real glass tokens for the Soft Glass pack live here."
+msgstr "Cam paneli, elevation ve form yoğunluğu — Soft Glass paketinin gerçek glass token’ları burada."
+
+#: includes/class-admin-design-studio-renderer.php:195
+msgid "Form density (global)"
+msgstr "Form yoğunluğu (global)"
+
+#: includes/class-admin-design-studio-renderer.php:197
+msgid "Compact"
+msgstr "Kompakt"
+
+#: includes/class-admin-design-studio-renderer.php:197
+#: includes/class-admin-design-studio-renderer.php:228
+msgid "Normal"
+msgstr "Normal"
+
+#: includes/class-admin-design-studio-renderer.php:197
+msgid "Spacious"
+msgstr "Geniş"
+
+#: includes/class-admin-design-studio-renderer.php:201
+msgid "What it does: Sets inner form spacing (line height, field gaps, padding). Compact = less scrolling; Spacious = more comfortable touch use. If “Density” is set on the product card, that product overrides this setting."
+msgstr "Ne işe yarar: Form içi boşlukları (satır yüksekliği, alan aralığı, padding) ayarlar. Kompakt = daha az scroll; Geniş = daha ferah dokunmatik kullanım. Ürün kartında “Yoğunluk” doluysa o ürün bu ayarı ezer."
+
+#: includes/class-admin-design-studio-renderer.php:203
+msgid "Glass blur (px)"
+msgstr "Cam blur (px)"
+
+#: includes/class-admin-design-studio-renderer.php:205
+msgid "What it does: The “frosted glass” blur strength of the popup background. 0 = no blur (flat panel). Higher values = softer and heavier (performance cost may increase). Visual effect may be limited because the popup background is currently forced to flat white; it is meaningful together with Soft Glass packs."
+msgstr "Ne işe yarar: Modal arka planının “buzlu cam” bulanıklık gücü. 0 = bulanıklık yok (düz panel). Yüksek değer = daha soft, daha ağır (performans etkisi artabilir). Modal arka planı şu an düz beyaz zorlandığı için görsel etki sınırlı olabilir; Soft Glass paketleriyle birlikte anlamlıdır."
+
+#: includes/class-admin-design-studio-renderer.php:207
+msgid "Glass fill opacity (%)"
+msgstr "Cam dolgu opaklığı (%)"
+
+#: includes/class-admin-design-studio-renderer.php:209
+msgid "What it does: How opaque or transparent the popup surface is. 100 = fully opaque white; 60–80 = a glass effect where the page behind shows through slightly. 85+ is recommended for readability."
+msgstr "Ne işe yarar: Modal yüzeyinin ne kadar opak/şeffaf olacağını belirler. 100 = tamamen opak beyaz; 60–80 = arkadaki sayfanın hafif göründüğü cam etkisi. Okunabilirlik için 85+ önerilir."
+
+#: includes/class-admin-design-studio-renderer.php:211
+msgid "Elevation (1–5)"
+msgstr "Elevation (1–5)"
+
+#: includes/class-admin-design-studio-renderer.php:213
+msgid "What it does: Popup and card shadow depth. 1 = flat/minimal; 5 = a clearly raised shadow. Sets the “floating” feel without changing the brand hue."
+msgstr "Ne işe yarar: Modal ve kart gölge derinliği. 1 = düz/minimal; 5 = belirgin yükseltilmiş gölge. Marka tonunu bozmadan “havada durma” hissini ayarlar."
+
+#: includes/class-admin-design-studio-renderer.php:215
+msgid "Overlay color"
+msgstr "Overlay rengi"
+
+#: includes/class-admin-design-studio-renderer.php:217
+msgid "What it does: The dimmer color that darkens the background when the popup opens. Usually a dark navy/black; a dark tone close to the brand also works."
+msgstr "Ne işe yarar: Popup açılınca arka planı karartan perde rengi. Genelde koyu lacivert/siyah seçilir; markaya yakın koyu ton da kullanılabilir."
+
+#: includes/class-admin-design-studio-renderer.php:219
+msgid "Overlay opacity (%)"
+msgstr "Overlay opaklığı (%)"
+
+#: includes/class-admin-design-studio-renderer.php:221
+msgid "What it does: How dark the dimmer is. Low = the background stays readable; high = more focus on the form, darker background. Typical range 40–60."
+msgstr "Ne işe yarar: Perdenin ne kadar koyu olacağı. Düşük = arka plan hâlâ okunur; yüksek = forma odak artar, arka plan daha çok kararır. Tipik aralık 40–60."
+
+#: includes/class-admin-design-studio-renderer.php:223
+msgid "Form font stack"
+msgstr "Form font stack"
+
+#: includes/class-admin-design-studio-renderer.php:225
+msgid "What it does: The typeface family inside the popup/form. “inherit” = use your theme’s font. For a custom font, write a CSS font-family (not a Google Fonts URL). E.g. 'Inter', system-ui, sans-serif — the font must already be loaded in the theme or on the page."
+msgstr "Ne işe yarar: Modal/form içindeki yazı tipi ailesi. “inherit” = temanızın fontunu kullanır. Özel font için CSS font-family yazın (Google Fonts URL’si değil). Örn: 'Inter', system-ui, sans-serif — fontun temada veya sayfada yüklü olması gerekir."
+
+#: includes/class-admin-design-studio-renderer.php:227
+msgid "Motion"
+msgstr "Motion"
+
+#: includes/class-admin-design-studio-renderer.php:228
+msgid "Subtle"
+msgstr "Hafif"
+
+#: includes/class-admin-design-studio-renderer.php:228
+msgid "Expressive"
+msgstr "İfadeli"
+
+#: includes/class-admin-design-studio-renderer.php:229
+msgid "What it does: Sets the strength of animations such as open, success, and progress celebration. Subtle = calmer sites; Expressive = livelier transitions. Animations are already reduced for users with “prefers-reduced-motion” on."
+msgstr "Ne işe yarar: Açılış, başarı, progress kutlama gibi animasyonların gücünü ayarlar. Hafif = sakin siteler; İfadeli = daha canlı geçişler. “prefers-reduced-motion” açık kullanıcılarda animasyonlar zaten kısılır."
+
+#: includes/class-admin-design-studio-renderer.php:231
+msgid "Quick amount button style"
+msgstr "Hızlı tutar düğmesi stili"
+
+#: includes/class-admin-design-studio-renderer.php:232
+msgid "Soft"
+msgstr "Yumuşak"
+
+#: includes/class-admin-design-studio-renderer.php:232
+msgid "Outline"
+msgstr "Outline"
+
+#: includes/class-admin-design-studio-renderer.php:232
+msgid "Solid"
+msgstr "Solid"
+
+#: includes/class-admin-design-studio-renderer.php:233
+msgid "What it does: How quick amount options (100 / 250 / 500…) look. Soft = light fill; Outline = border only; Solid = a button filled with the brand color. If quick amount buttons are off (product/general setting), this setting is hidden."
+msgstr "Ne işe yarar: Hızlı tutar seçeneklerinin (100 / 250 / 500…) görünümü. Yumuşak = açık dolgulu; Outline = sadece kenarlık; Solid = marka rengiyle dolu düğme. Hızlı tutar düğmeleri kapalıysa (ürün/genel ayar) bu ayar görünmez."
+
+#: includes/class-admin-design-studio-renderer.php:246
+msgid "Content modules (global default)"
+msgstr "İçerik modülleri (global varsayılan)"
+
+#: includes/class-admin-design-studio-renderer.php:247
+msgid "These defaults are used when the product card is off."
+msgstr "Ürün kartı kapalıysa bu varsayılanlar kullanılır."
+
+#: includes/class-admin-design-studio-renderer.php:261
+#: includes/class-admin-product-data-tab.php:703
+msgid "Email field"
+msgstr "E-posta alanı"
+
+#: includes/class-admin-design-studio-renderer.php:261
+msgid "Show email on the regular form"
+msgstr "Normal formda e-posta göster"
+
+#: includes/class-admin-design-studio-renderer.php:262
+msgid "What it does: Asks the donor for an email. When on, an extra row appears on the form. If “Email field” is off on the product card, it is hidden for that product. Not shown on share-based forms."
+msgstr "Ne işe yarar: Bağışçıdan e-posta ister. Açıkken formda ek satır çıkar. Ürün kartında “E-posta alanı” kapalıysa o üründe gizlenir. Hisseli formda gösterilmez."
+
+#: includes/class-admin-design-studio-renderer.php:263
+#: includes/class-admin-design-studio-renderer.php:263
+#: includes/class-admin-product-data-tab.php:704
+msgid "Dedication field"
+msgstr "İthaf alanı"
+
+#: includes/class-admin-design-studio-renderer.php:264
+msgid "What it does: Collects a dedication such as “On behalf of?”; it is written to order meta. Useful for memorial / gift donations. Not shown on share-based forms."
+msgstr "Ne işe yarar: “Kimin adına?” gibi ithaf metni toplar; sipariş meta’sına yazılır. Anma / hediye bağışlarında kullanışlıdır. Hisseli formda gösterilmez."
+
+#: includes/class-admin-design-studio-renderer.php:265
+#: includes/class-admin-design-studio-renderer.php:265
+#: includes/class-admin-product-data-tab.php:706
+msgid "Anonymous donation"
+msgstr "Anonim bağış"
+
+#: includes/class-admin-design-studio-renderer.php:266
+#: includes/class-admin-product-data-tab.php:706
+msgid "If checked, the donor name is hidden on public lists; it remains visible on order records."
+msgstr "İşaretlenirse bağışçı adı herkese açık listelerde gizlenir; sipariş kayıtlarında görünür."
+
+#: includes/class-admin-design-studio-renderer.php:267
+#: includes/class-admin-product-data-tab.php:705
+msgid "Dedication placeholder"
+msgstr "İthaf örnek metni"
+
+#: includes/class-admin-design-studio-renderer.php:268
+msgid "What it does: Sample text shown when the dedication field is empty. Tells the user what to write; it is not a required value."
+msgstr "Ne işe yarar: İthaf alanı boşken görünen örnek metin. Kullanıcıya ne yazacağını anlatır; zorunlu değer değildir."
+
+#: includes/class-admin-design-studio-renderer.php:274
+msgid "Privacy notice link"
+msgstr "Aydınlatma metni bağlantısı"
+
+#: includes/class-admin-design-studio-renderer.php:277
+msgid "Privacy notice on the processing of personal data"
+msgstr "Kişisel verilerin işlenmesine ilişkin aydınlatma metni"
+
+#: includes/class-admin-design-studio-renderer.php:278
+msgid "Show privacy notice link"
+msgstr "Aydınlatma metni bağlantısını göster"
+
+#: includes/class-admin-design-studio-renderer.php:279
+msgid "The privacy notice must live on your site’s personal-data/privacy page; only the link is shown here. It appears only when the form has at least one of the email, dedication, or shareholder fields (off by default)."
+msgstr "Aydınlatma metni sitenizdeki KVKK/Gizlilik sayfasında olmalıdır; burada yalnız bağlantı gösterilir. Yalnız formda e-posta, ithaf veya hissedar alanlarından en az biri varken görünür (varsayılan kapalı)."
+
+#: includes/class-admin-design-studio-renderer.php:280
+msgid "Link label"
+msgstr "Bağlantı etiketi"
+
+#: includes/class-admin-design-studio-renderer.php:282
+msgid "Short label shown on the link. If left empty, the default label is used."
+msgstr "Bağlantıda görünen kısa etiket. Boş bırakılırsa varsayılan etiket kullanılır."
+
+#: includes/class-admin-design-studio-renderer.php:283
+msgid "Link URL"
+msgstr "Bağlantı adresi"
+
+#: includes/class-admin-design-studio-renderer.php:286
+msgid "If the URL is empty and there is also no WordPress Privacy Policy page, the link is not shown on the form. Select a page under Settings → Privacy or enter a URL here."
+msgstr "Adres boş ve WordPress Gizlilik Politikası sayfası da yoksa bağlantı formda gösterilmez. Ayarlar → Gizlilik’den bir sayfa seçin veya buraya adres yazın."
+
+#: includes/class-admin-design-studio-renderer.php:288
+msgid "If the URL is empty, the WordPress Privacy Policy page is used."
+msgstr "Adres boşsa WordPress Gizlilik Politikası sayfası kullanılır."
+
+#: includes/class-admin-design-studio-renderer.php:291
+msgid "Default module order"
+msgstr "Varsayılan modül sırası"
+
+#: includes/class-admin-design-studio-renderer.php:293
+msgid "What it does: Order of the 5 heading blocks in the popup header (comma-separated). E.g. media,impact,urgency,social_proof,progress. Unknown IDs are ignored. The form body is fixed: donor → dedication → amount → processing fee. If “Module order” is set on the product card, the product wins. If left empty, the default order is used."
+msgstr "Ne işe yarar: Modal üst bölümündeki 5 başlık bloğunun sırası (virgülle). Örn. media,impact,urgency,social_proof,progress. Bilinmeyen kimlikler yok sayılır. Form gövdesi sabittir: bağışçı → ithaf → tutar → işlem ücreti. Ürün kartındaki “Modül sırası” doluysa ürün önceliklidir. Boş bırakırsanız varsayılan sıra kullanılır."
+
+#: includes/class-admin-design-studio-renderer.php:294
+msgid "Trust badges (JSON, max 3)"
+msgstr "Güven rozetleri (JSON, max 3)"
+
+#: includes/class-admin-design-studio-renderer.php:296
+msgid "What it does: Shows more than one trust badge under the form. JSON array format: [{\"icon\":\"builtin:shield\",\"text\":\"SSL\"},{\"icon\":\"builtin:heart\",\"text\":\"Secure\"}]. Maximum 3 badges. If empty, the single-line “Trust text” below is used as a fallback. Invalid JSON is not saved / treated as empty."
+msgstr "Ne işe yarar: Form altında birden fazla güven rozeti gösterir. JSON dizi formatı: [{\"icon\":\"builtin:shield\",\"text\":\"SSL\"},{\"icon\":\"builtin:heart\",\"text\":\"Güvenli\"}]. En fazla 3 rozet. Boşsa aşağıdaki tek satırlık “Güven metni” yedek olarak kullanılır. Hatalı JSON kaydedilmez/boş sayılır."
+
+#: includes/class-admin-design-studio-renderer.php:308
+msgid "Icons"
+msgstr "İkonlar"
+
+#: includes/class-admin-design-studio-renderer.php:309
+msgid "Pick from the built-in SVG set or upload your own icon from the Media Library."
+msgstr "Hazır SVG setinden seçin veya Medya Kütüphanesi’nden kendi ikonunuzu yükleyin."
+
+#: includes/class-admin-design-studio-renderer.php:315
+#: includes/class-admin-product-data-tab.php:712
+msgid "Field icons"
+msgstr "Alan ikonları"
+
+#: includes/class-admin-design-studio-renderer.php:317
+msgid "Icons on the name, note, and email rows"
+msgstr "Ad, not ve e-posta satırlarındaki ikonlar"
+
+#: includes/class-admin-design-studio-renderer.php:318
+msgid "What it does: Turns the small icons to the left of form rows on or off. When off, the fields look simpler. A Use general / On / Off choice on the product card overrides this per product."
+msgstr "Ne işe yarar: Form satırlarının solundaki küçük ikonları aç/kapatır. Kapalıysa alanlar daha sade görünür. Ürün kartında Genel/Açık/Kapalı seçimi ürün bazında ezer."
+
+#: includes/class-admin-design-studio-renderer.php:323
+msgid "Full name icon"
+msgstr "Ad Soyad ikonu"
+
+#: includes/class-admin-design-studio-renderer.php:323
+msgid "Left icon on the full name row."
+msgstr "Ad Soyad satırının sol ikonu."
+
+#: includes/class-admin-design-studio-renderer.php:324
+msgid "Note icon"
+msgstr "Not ikonu"
+
+#: includes/class-admin-design-studio-renderer.php:324
+msgid "Icon for the note / message field."
+msgstr "Not / mesaj alanının ikonu."
+
+#: includes/class-admin-design-studio-renderer.php:325
+msgid "Email icon"
+msgstr "E-posta ikonu"
+
+#: includes/class-admin-design-studio-renderer.php:325
+msgid "Icon used when the email row is on."
+msgstr "E-posta satırı açıksa kullanılan ikon."
+
+#: includes/class-admin-design-studio-renderer.php:326
+msgid "Phone icon"
+msgstr "Telefon ikonu"
+
+#: includes/class-admin-design-studio-renderer.php:326
+msgid "Fallback/custom icon for the phone row (can be used next to the country picker)."
+msgstr "Telefon satırı için yedek/özel ikon (ülke seçici yanında kullanılabilir)."
+
+#: includes/class-admin-design-studio-renderer.php:327
+msgid "Add to cart icon"
+msgstr "Sepete Ekle ikonu"
+
+#: includes/class-admin-design-studio-renderer.php:327
+msgid "Icon on the “Add to cart” CTA button."
+msgstr "“Sepete Ekle” CTA butonundaki ikon."
+
+#: includes/class-admin-design-studio-renderer.php:328
+msgid "Go to checkout icon"
+msgstr "Ödemeye Git ikonu"
+
+#: includes/class-admin-design-studio-renderer.php:328
+msgid "Icon on the “Go to checkout” CTA button."
+msgstr "“Ödemeye Git” CTA butonundaki ikon."
+
+#: includes/class-admin-design-studio-renderer.php:329
+msgid "Trust strip icon"
+msgstr "Güven şeridi ikonu"
+
+#: includes/class-admin-design-studio-renderer.php:329
+msgid "Left icon of the trust text under the buttons."
+msgstr "Butonların altındaki güven metninin sol ikonu."
+
+#: includes/class-admin-design-studio-renderer.php:330
+msgid "Continue icon"
+msgstr "Devam ikonu"
+
+#: includes/class-admin-design-studio-renderer.php:330
+msgid "Icon for the “Continue” step button on a multi-step (wizard) form."
+msgstr "Çok adımlı (wizard) formda “Devam” adım butonu ikonu."
+
+#: includes/class-admin-design-studio-renderer.php:331
+msgid "Success icon"
+msgstr "Başarı ikonu"
+
+#: includes/class-admin-design-studio-renderer.php:331
+msgid "Confirmation icon on the success / thank-you screen."
+msgstr "Başarı / teşekkür ekranındaki onay ikonu."
+
+#: includes/class-admin-design-studio-renderer.php:332
+msgid "Extra donation icon"
+msgstr "Alt bağış ikonu"
+
+#: includes/class-admin-design-studio-renderer.php:332
+msgid "Title/icon area of the extra donation (sadaqah) block."
+msgstr "Alt bağış (sadaka) bloğu başlık/ikon alanı."
+
+#: includes/class-admin-design-studio-renderer.php:333
+msgid "Progress icon"
+msgstr "Progress ikonu"
+
+#: includes/class-admin-design-studio-renderer.php:333
+msgid "Decorative / badge icon fallback on progress forms."
+msgstr "Progress formlarda dekoratif / rozet ikon yedeği."
+
+#: includes/class-admin-design-studio-renderer.php:344
+msgid "Icon picker: Click a built-in SVG icon or upload your own image with “Select from media” (small PNG/SVG recommended). “Reset” returns to the first built-in icon. Changes become permanent with “Save settings”."
+msgstr "İkon seçimi: Hazır SVG ikona tıklayın veya “Medyadan seç” ile kendi görselinizi yükleyin (küçük PNG/SVG önerilir). “Sıfırla” ilk hazır ikona döner. Değişiklikler “Ayarları Kaydet” ile kalıcı olur."
+
+#: includes/class-admin-design-studio-renderer.php:347
+msgid "Trust strip"
+msgstr "Güven şeridi"
+
+#: includes/class-admin-design-studio-renderer.php:350
+msgid "Show trust text under the CTA"
+msgstr "CTA altında güven metnini göster"
+
+#: includes/class-admin-design-studio-renderer.php:351
+msgid "What it does: Shows the “Secure payment…” line right under the Add to cart / Go to checkout buttons. If JSON badges are filled, they may take priority; if this key is off, the strip is fully hidden."
+msgstr "Ne işe yarar: Sepete Ekle / Ödemeye Git butonlarının hemen altında “Güvenli ödeme…” satırını gösterir. JSON rozetler doluysa onlar öncelikli olabilir; bu anahtar kapalıysa şerit tamamen gizlenir."
+
+#: includes/class-admin-design-studio-renderer.php:353
+msgid "Secure payment · SSL-protected transaction"
+msgstr "Güvenli ödeme · SSL korumalı işlem"
+
+#: includes/class-admin-design-studio-renderer.php:354
+msgid "Trust text (single-badge fallback)"
+msgstr "Güven metni (tek rozet yedek)"
+
+#: includes/class-admin-design-studio-renderer.php:356
+msgid "What it does: Single-line trust message shown when JSON trust badges are empty. Keep it short (max 120 characters) so it stays readable under the mobile CTA."
+msgstr "Ne işe yarar: JSON güven rozetleri boşken gösterilen tek satırlık güven mesajı. Kısa tutun (max 120 karakter); mobil CTA altında okunaklı kalsın."
+
+#: includes/class-admin-design-studio-renderer.php:387
+msgid "Select from media"
+msgstr "Medyadan seç"
+
+#: includes/class-admin-design-studio-renderer.php:388
+msgid "Reset"
+msgstr "Sıfırla"
+
+#: includes/class-admin-design-studio-renderer.php:42
+msgid "On behalf of? (optional)"
+msgstr "Kimin adına? (isteğe bağlı)"
+
+#: includes/class-admin-design-studio-renderer.php:56
+msgid "Design Studio"
+msgstr "Tasarım Stüdyosu"
+
+#: includes/class-admin-design-studio-renderer.php:56
+msgid "The global brand color automatically generates all button, progress, and accent tones (light / dark)."
+msgstr "Global marka rengi tüm buton, progress ve vurgu tonlarını otomatik üretir (açık / koyu)."
+
+#: includes/class-admin-design-studio-renderer.php:56
+msgid "Appearance packs, glass/surface tokens, icons, and trust badges are managed here."
+msgstr "Görünüm paketleri, cam/yüzey token’ları, ikonlar ve güven rozetleri burada yönetilir."
+
+#: includes/class-admin-design-studio-renderer.php:79
+msgid "Studio preview"
+msgstr "Stüdyo önizlemesi"
+
+#: includes/class-admin-design-studio-renderer.php:80
+msgid "Pack and surface settings apply on the front end after you save. Product overrides come from the product card."
+msgstr "Paket ve yüzey ayarları kaydedildikten sonra ön yüzde uygulanır. Ürün override’ları ürün kartından gelir."
+
+#: includes/class-admin-design-studio-renderer.php:92
+msgid "Global brand color"
+msgstr "Global marka rengi"
+
+#: includes/class-admin-design-studio-renderer.php:93
+msgid "Pick one color — buttons, progress, focus rings, and soft background tones are generated automatically."
+msgstr "Tek renk seçin — butonlar, progress, odak kenarlığı ve yumuşak arka plan tonları otomatik üretilir."
+
+#: includes/class-admin-layout-tabs-renderer.php:102
+#: includes/class-admin-layout-tabs-renderer.php:184
+msgid "What can you do on this tab?"
+msgstr "Bu sekmede ne yaparsınız?"
+
+#: includes/class-admin-layout-tabs-renderer.php:102
+msgid "If “Progress Bar” is on in Product Settings, the colors, height, and labels of the bar that fills toward the goal are managed here."
+msgstr "Ürün Ayarları’nda “Progress Bar” açıksa, hedefe doğru dolan çubuğun renkleri, yüksekliği ve etiketleri buradan yönetilir."
+
+#: includes/class-admin-layout-tabs-renderer.php:102
+msgid "Three layers: confirmed (after payment), cart pending, typed-amount preview. The goal amount is in the “Goal amount” field on the product card."
+msgstr "Üç katman: onaylı (ödeme sonrası), sepet bekleyen, yazılan tutar önizlemesi. Hedef tutar ürün kartındaki “Hedef tutar” alanındadır."
+
+#: includes/class-admin-layout-tabs-renderer.php:115
+#: includes/class-admin-product-data-tab.php:631
+msgid "Raised"
+msgstr "Toplanan"
+
+#: includes/class-admin-layout-tabs-renderer.php:115
+msgid "Goal"
+msgstr "Hedef"
+
+#: includes/class-admin-layout-tabs-renderer.php:133
+msgid "Colors and layers"
+msgstr "Renkler ve katmanlar"
+
+#: includes/class-admin-layout-tabs-renderer.php:134
+msgid "Confirmed / cart / typed slice colors and the card surface."
+msgstr "Onaylı / sepet / yazılan dilim renkleri ve kart yüzeyi."
+
+#: includes/class-admin-layout-tabs-renderer.php:137
+msgid "Container background"
+msgstr "Kapsayıcı Arka Plan"
+
+#: includes/class-admin-layout-tabs-renderer.php:137
+msgid "Background color of the progress card."
+msgstr "Progress kartının arka plan rengi."
+
+#: includes/class-admin-layout-tabs-renderer.php:138
+msgid "Container border"
+msgstr "Kapsayıcı Border"
+
+#: includes/class-admin-layout-tabs-renderer.php:138
+msgid "Card border color."
+msgstr "Kart kenarlık rengi."
+
+#: includes/class-admin-layout-tabs-renderer.php:139
+msgid "Empty bar"
+msgstr "Boş Bar"
+
+#: includes/class-admin-layout-tabs-renderer.php:139
+msgid "Track (empty part) color."
+msgstr "Track (boş kısım) rengi."
+
+#: includes/class-admin-layout-tabs-renderer.php:140
+msgid "Confirmed (filled) bar"
+msgstr "Onaylı (Dolu) Bar"
+
+#: includes/class-admin-layout-tabs-renderer.php:140
+msgid "Amount confirmed after payment."
+msgstr "Ödeme sonrası onaylanan tutar."
+
+#: includes/class-admin-layout-tabs-renderer.php:141
+msgid "Cart pending bar"
+msgstr "Sepet Bekleyen Bar"
+
+#: includes/class-admin-layout-tabs-renderer.php:141
+msgid "Slice for the amount sitting in the cart, not yet paid."
+msgstr "Sepette duran, henüz ödenmemiş tutar dilimi."
+
+#: includes/class-admin-layout-tabs-renderer.php:142
+msgid "Typed amount (draft)"
+msgstr "Yazılan Tutar (Draft)"
+
+#: includes/class-admin-layout-tabs-renderer.php:142
+msgid "The front end uses the soft-ink slice fill color; this field is a legacy / fallback color."
+msgstr "Frontend soft-ink dilim fill rengini kullanır; bu alan eski uyumluluk / yedek renktir."
+
+#: includes/class-admin-layout-tabs-renderer.php:143
+msgid "Percent badge background"
+msgstr "Yüzde Rozeti Arka Plan"
+
+#: includes/class-admin-layout-tabs-renderer.php:143
+msgid "On the front end the percent has no background; this is for legacy compatibility."
+msgstr "Frontend’de yüzde arkaplansızdır; eski uyumluluk."
+
+#: includes/class-admin-layout-tabs-renderer.php:144
+msgid "Percent badge text"
+msgstr "Yüzde Rozeti Metin"
+
+#: includes/class-admin-layout-tabs-renderer.php:148
+msgid "Size and animation"
+msgstr "Boyut ve animasyon"
+
+#: includes/class-admin-layout-tabs-renderer.php:149
+msgid "Bar height and goal celebration."
+msgstr "Çubuk yüksekliği ve hedef kutlaması."
+
+#: includes/class-admin-layout-tabs-renderer.php:152
+msgid "Bar height (px)"
+msgstr "Bar Yüksekliği (px)"
+
+#: includes/class-admin-layout-tabs-renderer.php:152
+msgid "12–28 px. 16–20 is recommended for a more readable bar."
+msgstr "12–28 px. Daha okunaklı bir çubuk için 16–20 önerilir."
+
+#: includes/class-admin-layout-tabs-renderer.php:153
+msgid "Animation"
+msgstr "Animasyon"
+
+#: includes/class-admin-layout-tabs-renderer.php:155
+msgid "Celebration animation when the goal is reached"
+msgstr "Hedef dolunca kutlama animasyonu"
+
+#: includes/class-admin-layout-tabs-renderer.php:176
+msgid "Popup"
+msgstr "Popup"
+
+#: includes/class-admin-layout-tabs-renderer.php:177
+msgid "Side panel width"
+msgstr "Sağ panel genişliği"
+
+#: includes/class-admin-layout-tabs-renderer.php:184
+msgid "Pixel width of the popup window and the inline form; separately for desktop and mobile."
+msgstr "Popup penceresinin ve sayfa içi (inline) formun piksel genişliği; masaüstü ve mobil için ayrı ayrı."
+
+#: includes/class-admin-layout-tabs-renderer.php:184
+msgid "Padding is the space from the edges of the popup content; colors or button styles are on the other appearance tabs."
+msgstr "Padding, modal içeriğinin kenarlardan boşluğudur; renk veya buton stilleri diğer görünüm sekmelerindedir."
+
+#: includes/class-admin-layout-tabs-renderer.php:184
+msgid "The inner background color and inner corner radius of the popup box are in the “Inner popup box” section on the “Regular form” tab (this tab is sizes only)."
+msgstr "Modal kutusunun iç arka plan rengi ve iç köşe yuvarlaklığı “Normal Form” sekmesinde “Modal içi kutu” bölümündedir (bu sekme yalnızca ölçüler)."
+
+#: includes/class-admin-layout-tabs-renderer.php:194
+msgid "Side panel width (Donate)"
+msgstr "Sağ Panel Genişliği (Bağış Yap)"
+
+#: includes/class-admin-layout-tabs-renderer.php:195
+msgid "Set as a percentage of the screen width; min/max values prevent overflow."
+msgstr "Ekran genişliğinin yüzdesi olarak ayarlanır; min/max değerler taşmayı önler."
+
+#: includes/class-admin-layout-tabs-renderer.php:197
+msgid "Desktop (1200px and up)"
+msgstr "Masaüstü (1200px ve üzeri)"
+
+#: includes/class-admin-layout-tabs-renderer.php:198
+#: includes/class-admin-layout-tabs-renderer.php:202
+#: includes/class-admin-layout-tabs-renderer.php:206
+msgid "Width (%)"
+msgstr "Genişlik (%)"
+
+#: includes/class-admin-layout-tabs-renderer.php:199
+#: includes/class-admin-layout-tabs-renderer.php:203
+#: includes/class-admin-layout-tabs-renderer.php:207
+msgid "Minimum (px)"
+msgstr "En az (px)"
+
+#: includes/class-admin-layout-tabs-renderer.php:200
+#: includes/class-admin-layout-tabs-renderer.php:204
+#: includes/class-admin-layout-tabs-renderer.php:208
+msgid "Maximum (px)"
+msgstr "En fazla (px)"
+
+#: includes/class-admin-layout-tabs-renderer.php:201
+msgid "Tablet (768px – 1199px)"
+msgstr "Tablet (768px – 1199px)"
+
+#: includes/class-admin-layout-tabs-renderer.php:205
+msgid "Mobile (767px and below)"
+msgstr "Mobil (767px ve altı)"
+
+#: includes/class-admin-layout-tabs-renderer.php:207
+msgid "0 = no limit"
+msgstr "0 = sınır yok"
+
+#: includes/class-admin-layout-tabs-renderer.php:208
+msgid "100 = full width (100vw)"
+msgstr "100 = tam genişlik (100vw)"
+
+#: includes/class-admin-layout-tabs-renderer.php:219
+msgid "Desktop popup width settings"
+msgstr "Masaüstü Modal Genişlik Ayarları"
+
+#: includes/class-admin-layout-tabs-renderer.php:220
+#: includes/class-admin-layout-tabs-renderer.php:248
+msgid "Popup width (px)"
+msgstr "Popup Modal Genişliği (px)"
+
+#: includes/class-admin-layout-tabs-renderer.php:220
+msgid "Width of the popup window on desktop (between 300-800px)"
+msgstr "Masaüstü için popup modal penceresinin genişliği (300-800px arası)"
+
+#: includes/class-admin-layout-tabs-renderer.php:221
+#: includes/class-admin-layout-tabs-renderer.php:249
+msgid "Inline form width (px)"
+msgstr "Sayfa İçi Form Genişliği (px)"
+
+#: includes/class-admin-layout-tabs-renderer.php:221
+msgid "Width of the form shown inline on the page on desktop (between 300-800px)"
+msgstr "Masaüstü için sayfa içinde gösterilen formun genişliği (300-800px arası)"
+
+#: includes/class-admin-layout-tabs-renderer.php:232
+msgid "Desktop popup inner spacing (padding) settings"
+msgstr "Masaüstü Modal İç Boşluk (Padding) Ayarları"
+
+#: includes/class-admin-layout-tabs-renderer.php:233
+#: includes/class-admin-layout-tabs-renderer.php:261
+msgid "Top spacing (px)"
+msgstr "Üst Boşluk (px)"
+
+#: includes/class-admin-layout-tabs-renderer.php:234
+#: includes/class-admin-layout-tabs-renderer.php:262
+msgid "Right spacing (px)"
+msgstr "Sağ Boşluk (px)"
+
+#: includes/class-admin-layout-tabs-renderer.php:235
+#: includes/class-admin-layout-tabs-renderer.php:263
+msgid "Bottom spacing (px)"
+msgstr "Alt Boşluk (px)"
+
+#: includes/class-admin-layout-tabs-renderer.php:236
+#: includes/class-admin-layout-tabs-renderer.php:264
+msgid "Left spacing (px)"
+msgstr "Sol Boşluk (px)"
+
+#: includes/class-admin-layout-tabs-renderer.php:247
+msgid "Mobile popup width settings"
+msgstr "Mobil Modal Genişlik Ayarları"
+
+#: includes/class-admin-layout-tabs-renderer.php:260
+msgid "Mobile popup inner spacing (padding) settings"
+msgstr "Mobil Modal İç Boşluk (Padding) Ayarları"
+
+#: includes/class-admin-layout-tabs-renderer.php:45
+msgid "Progress bar preview"
+msgstr "Progress bar önizlemesi"
+
+#: includes/class-admin-layout-tabs-renderer.php:91
+msgid "Popup size preview"
+msgstr "Modal ölçü önizlemesi"
+
+#: includes/class-admin-product-data-tab.php:1007
+msgid "Move the %s block up"
+msgstr "%s bloğunu yukarı taşı"
+
+#: includes/class-admin-product-data-tab.php:1009
+msgid "Move the %s block down"
+msgstr "%s bloğunu aşağı taşı"
+
+#: includes/class-admin-product-data-tab.php:1014
+msgid "Order of the blocks under the heading; if off, the general order on the Design tab is used. The order of donor and amount fields is fixed."
+msgstr "Başlık altındaki blokların sırası; kapalıysa Tasarım sekmesindeki genel sıra kullanılır. Bağışçı ve tutar alanlarının sırası sabittir."
+
+#: includes/class-admin-product-data-tab.php:1029
+#: includes/class-admin-product-data-tab.php:1038
+msgid "Shortcode"
+msgstr "Kısa kod"
+
+#: includes/class-admin-product-data-tab.php:1030
+msgid "Choose a view, copy the shortcode, and paste it into a page or post."
+msgstr "Görünümü seçin, kısa kodu kopyalayıp sayfa veya yazıya yapıştırın."
+
+#: includes/class-admin-product-data-tab.php:1032
+msgid "View"
+msgstr "Görünüm"
+
+#: includes/class-admin-product-data-tab.php:1039
+msgid "Copy"
+msgstr "Kopyala"
+
+#: includes/class-admin-product-data-tab.php:1052
+msgid "Button (opens in the center)"
+msgstr "Buton (ortada açılır)"
+
+#: includes/class-admin-product-data-tab.php:1053
+msgid "Side panel"
+msgstr "Sağ panel"
+
+#: includes/class-admin-product-data-tab.php:1054
+msgid "Inline form"
+msgstr "Sayfa içi form"
+
+#: includes/class-admin-product-data-tab.php:187
+msgid "0"
+msgstr "0"
+
+#: includes/class-admin-product-data-tab.php:198
+msgid "Progress toward goal"
+msgstr "Hedefe ulaşma oranı"
+
+#: includes/class-admin-product-data-tab.php:202
+msgid "Recalculate total"
+msgstr "Toplamı yeniden hesapla"
+
+#: includes/class-admin-product-data-tab.php:202
+msgid "Scans paid orders and recalculates the total."
+msgstr "Ödemesi alınmış siparişleri tarayıp toplamı yeniden hesaplar."
+
+#: includes/class-admin-product-data-tab.php:211
+msgid "%d order could not be converted"
+msgid_plural "%d orders could not be converted"
+msgstr[0] "%d sipariş dönüştürülemedi"
+msgstr[1] "%d sipariş dönüştürülemedi"
+
+#: includes/class-admin-product-data-tab.php:474
+msgid "Use general setting"
+msgstr "Genel ayarı kullan"
+
+#: includes/class-admin-product-data-tab.php:475
+#: includes/class-admin-product-data-tab.php:529
+msgid "On"
+msgstr "Açık"
+
+#: includes/class-admin-product-data-tab.php:476
+#: includes/class-admin-product-data-tab.php:529
+#: includes/class-admin-product-data-tab.php:552
+msgid "Off"
+msgstr "Kapalı"
+
+#: includes/class-admin-product-data-tab.php:528
+#: includes/class-admin-product-data-tab.php:535
+#: includes/class-admin-product-data-tab.php:540
+msgid "Donation product"
+msgstr "Bağış ürünü"
+
+#: includes/class-admin-product-data-tab.php:528
+#: includes/class-admin-product-data-tab.php:541
+msgid "Regular product"
+msgstr "Normal ürün"
+
+#: includes/class-admin-product-data-tab.php:536
+msgid "On donation products the donation form is used instead of the WooCommerce add-to-cart field, and the product appears in donation lists."
+msgstr "Bağış ürünlerinde WooCommerce sepete ekle alanı yerine bağış formu kullanılır ve ürün bağış listelerinde görünür."
+
+#: includes/class-admin-product-data-tab.php:539
+#: includes/class-admin-product-data-tab.php:551
+msgid "General setting (currently: %s)"
+msgstr "Genel ayar (şu an: %s)"
+
+#: includes/class-admin-product-data-tab.php:547
+msgid "Automatic placement"
+msgstr "Otomatik yerleşim"
+
+#: includes/class-admin-product-data-tab.php:548
+msgid "If off, you add the form to the product page yourself with a shortcode, block, or widget only."
+msgstr "Kapalıysa formu ürün sayfasına yalnızca kısa kod, blok veya widget ile siz eklersiniz."
+
+#: includes/class-admin-product-data-tab.php:564
+msgid "Donation type"
+msgstr "Bağış tipi"
+
+#: includes/class-admin-product-data-tab.php:565
+msgid "Choose how this product’s donation form works; only the selected type’s settings appear below."
+msgstr "Bu ürünün bağış formunun nasıl çalışacağını seçin; altta yalnızca seçili tipin ayarları görünür."
+
+#: includes/class-admin-product-data-tab.php:601
+msgid "The donation amount is the product price: %s. You can change the price on the \"General\" tab."
+msgstr "Bağış tutarı ürün fiyatıdır: %s. Fiyatı \"Genel\" sekmesinden değiştirebilirsiniz."
+
+#: includes/class-admin-product-data-tab.php:604
+msgid "This product has no price; enter a regular price on the \"General\" tab for a fixed amount."
+msgstr "Bu ürünün fiyatı yok; sabit tutar için \"Genel\" sekmesinden normal fiyat girin."
+
+#: includes/class-admin-product-data-tab.php:610
+msgid "Goal amount (%s)"
+msgstr "Hedef tutar (%s)"
+
+#: includes/class-admin-product-data-tab.php:610
+msgid "Campaign goal at which the progress bar is 100% (in the store’s main currency). Empty or zero cannot be saved."
+msgstr "İlerleme çubuğunun %100 sayılacağı kampanya hedefi (mağaza ana para biriminde). Boş veya sıfır kaydedilemez."
+
+#: includes/class-admin-product-data-tab.php:614
+msgid "Set the donation amount on this tab. The WooCommerce General price field is not required for these types and may be left empty; the plugin does not change the General price by itself."
+msgstr "Bağış tutarını bu sekmeden belirleyin. WooCommerce Genel fiyat alanı bu türlerde zorunlu değildir ve boş bırakılabilir; eklenti Genel fiyatı kendiliğinden değiştirmez."
+
+#: includes/class-admin-product-data-tab.php:619
+#: includes/class-admin-product-data-tab.php:834
+msgid "Minimum amount (%s)"
+msgstr "En düşük tutar (%s)"
+
+#: includes/class-admin-product-data-tab.php:620
+msgid "The lowest amount the donor can enter. This field is the single source (the WooCommerce General price is for fallback/compatibility; the minimum is not calculated from it)."
+msgstr "Bağışçının yazabileceği en düşük tutar. Tek kaynak bu alandır (WooCommerce Genel fiyat yedek/uyumluluk içindir, min hesaplanmaz)."
+
+#: includes/class-admin-product-data-tab.php:626
+msgid "Maximum shares"
+msgstr "En fazla hisse"
+
+#: includes/class-admin-product-data-tab.php:626
+msgid "The highest number of shares the donor can select at once (maximum 50)."
+msgstr "Bağışçının tek seferde seçebileceği en yüksek hisse adedi (en fazla 50)."
+
+#: includes/class-admin-product-data-tab.php:634
+msgid "Only orders with confirmed payment (processing/completed) are counted; processing fees and on-hold are not included. Amounts are converted to the store’s main currency. The refresh icon recalculates the total from scratch."
+msgstr "Yalnız ödemesi onaylanan siparişler (processing/completed) sayılır; işlem ücreti ve on-hold dahil değildir. Tutarlar mağaza ana para birimine çevrilir. Yenile simgesi toplamı baştan hesaplar."
+
+#: includes/class-admin-product-data-tab.php:637
+msgid "Celebration animation"
+msgstr "Kutlama animasyonu"
+
+#: includes/class-admin-product-data-tab.php:637
+msgid "Shows a short celebration when the goal is reached."
+msgstr "Hedefe ulaşıldığında kısa kutlama gösterir."
+
+#: includes/class-admin-product-data-tab.php:641
+msgid "When the goal is reached"
+msgstr "Hedefe ulaşınca"
+
+#: includes/class-admin-product-data-tab.php:642
+msgid "When the campaign reaches its goal, should donations keep being accepted, or should they be closed?"
+msgstr "Kampanya hedefe ulaştığında bağış almaya devam edilsin mi, yoksa kapatılsın mı."
+
+#: includes/class-admin-product-data-tab.php:644
+msgid "Keep accepting donations (no message)"
+msgstr "Bağış almaya devam et (mesaj yok)"
+
+#: includes/class-admin-product-data-tab.php:645
+msgid "Accept donations + show a thank-you message"
+msgstr "Bağış al + teşekkür mesajı göster"
+
+#: includes/class-admin-product-data-tab.php:646
+msgid "Close new donations + show a message"
+msgstr "Yeni bağışı kapat + mesaj göster"
+
+#: includes/class-admin-product-data-tab.php:65
+msgid "Donation"
+msgstr "Bağış"
+
+#: includes/class-admin-product-data-tab.php:652
+msgid "Message when the goal is reached"
+msgstr "Hedefe ulaşınca mesaj"
+
+#: includes/class-admin-product-data-tab.php:653
+msgid "If left empty, the default thank-you text is used (maximum 300 characters)."
+msgstr "Boş bırakılırsa varsayılan teşekkür metni kullanılır (en fazla 300 karakter)."
+
+#: includes/class-admin-product-data-tab.php:670
+msgid "Amount options"
+msgstr "Tutar seçenekleri"
+
+#: includes/class-admin-product-data-tab.php:670
+msgid "Quick amount buttons, quantity, and processing fee"
+msgstr "Hızlı tutar düğmeleri, adet ve işlem ücreti"
+
+#: includes/class-admin-product-data-tab.php:674
+msgid "Quick amount buttons"
+msgstr "Hızlı tutar düğmeleri"
+
+#: includes/class-admin-product-data-tab.php:674
+msgid "Shows one-click amount buttons above the amount field. If the general setting (Settings → Regular) is off, the buttons stay hidden even if this box is checked."
+msgstr "Tutar alanının üstünde tek tıkla seçilen tutar düğmeleri gösterir. Genel ayar (Ayarlar → Normal) kapalıysa bu kutu işaretli olsa da düğmeler görünmez."
+
+#: includes/class-admin-product-data-tab.php:675
+msgid "Amounts"
+msgstr "Tutarlar"
+
+#: includes/class-admin-product-data-tab.php:675
+msgid "Whole numbers only; separate with commas, spaces, or semicolons (maximum 6). If left empty, the amounts from the general setting are used. Buttons below the minimum amount are not shown."
+msgstr "Yalnız tam sayılar; virgül, boşluk veya noktalı virgülle ayırın (en fazla 6). Boş bırakırsanız genel ayardaki tutarlar kullanılır. En düşük tutarın altındaki düğmeler gösterilmez."
+
+#: includes/class-admin-product-data-tab.php:676
+msgid "Suggested amount"
+msgstr "Önerilen tutar"
+
+#: includes/class-admin-product-data-tab.php:676
+msgid "If left empty, no amount shows a Suggested label. If filled, the label appears only on that listed amount; the amount is not pre-selected. A value that is not on the list or is not a whole number blocks saving."
+msgstr "Boş bırakılırsa hiçbir tutarda Önerilen etiketi gösterilmez. Doluysa yalnızca listedeki o tutarda etiket görünür; tutar kendiliğinden seçili gelmez. Listede olmayan veya tam sayı olmayan değer kaydı durdurur."
+
+#: includes/class-admin-product-data-tab.php:681
+msgid "Quantity selector"
+msgstr "Adet seçici"
+
+#: includes/class-admin-product-data-tab.php:681
+msgid "Shows quantity plus/minus buttons on a fixed-amount form. If off, the quantity is always 1."
+msgstr "Sabit tutarlı formda adet artırma/azaltma düğmelerini gösterir. Kapalıysa adet her zaman 1 olur."
+
+#: includes/class-admin-product-data-tab.php:685
+msgid "Cover processing fee"
+msgstr "İşlem ücretini karşıla"
+
+#: includes/class-admin-product-data-tab.php:685
+msgid "Offers the donor the option to also cover the payment processing cost (on all donation types)."
+msgstr "Bağışçıya ödeme işlem maliyetini de üstlenme seçeneği sunar (tüm bağış tiplerinde)."
+
+#: includes/class-admin-product-data-tab.php:686
+msgid "Processing fee (%)"
+msgstr "İşlem ücreti (%)"
+
+#: includes/class-admin-product-data-tab.php:686
+msgid "0 = off; otherwise a percentage between 0.5 and 15. A value outside the range is not saved."
+msgstr "0 = kapalı; aksi halde 0,5 ile 15 arasında bir yüzde. Aralık dışı değer kaydedilmez."
+
+#: includes/class-admin-product-data-tab.php:696
+msgid "Form fields"
+msgstr "Form alanları"
+
+#: includes/class-admin-product-data-tab.php:696
+msgid "Email, dedication, anonymous donation, and note"
+msgstr "E-posta, ithaf, anonim bağış ve not"
+
+#: includes/class-admin-product-data-tab.php:703
+msgid "Asks the donor for an email address; \"Use general setting\" applies the choice on the Design tab."
+msgstr "Bağışçıdan e-posta adresi ister; \"Genel ayar\" Tasarım sekmesindeki seçimi uygular."
+
+#: includes/class-admin-product-data-tab.php:704
+msgid "Shows a field to write who the donation is on behalf of."
+msgstr "Bağışın kimin adına yapıldığını yazmak için alan gösterir."
+
+#: includes/class-admin-product-data-tab.php:705
+msgid "Sample text shown inside the dedication field when it is empty."
+msgstr "İthaf alanı boşken içinde görünen örnek metin."
+
+#: includes/class-admin-product-data-tab.php:709
+msgid "Product note"
+msgstr "Ürün notu"
+
+#: includes/class-admin-product-data-tab.php:709
+msgid "This is not a note written by the donor; it is an info text shown at the top of the form."
+msgstr "Bağışçının yazdığı not değildir; formun üstünde gösterilen bilgi metnidir."
+
+#: includes/class-admin-product-data-tab.php:710
+msgid "Note text"
+msgstr "Not metni"
+
+#: includes/class-admin-product-data-tab.php:710
+msgid "Short info shown to the donor (maximum 400 characters)."
+msgstr "Bağışçıya gösterilecek kısa bilgi (en fazla 400 karakter)."
+
+#: includes/class-admin-product-data-tab.php:710
+msgid "E.g.: A video is delivered within 24 hours."
+msgstr "Örn: 24 saat içinde video ulaştırılmaktadır."
+
+#: includes/class-admin-product-data-tab.php:711
+msgid "Multi-step form"
+msgstr "Çok adımlı form"
+
+#: includes/class-admin-product-data-tab.php:711
+msgid "Shows the form step by step as donor info and amount. \"Use general setting\" applies the choice on the Regular tab."
+msgstr "Formu bağışçı bilgisi ve tutar olarak adım adım gösterir. \"Genel ayarı kullan\" Normal sekmesindeki seçimi uygular."
+
+#: includes/class-admin-product-data-tab.php:712
+msgid "Icons on the name, note, and email rows. \"Use general setting\" applies the choice on the Design tab."
+msgstr "Ad, not ve e-posta satırlarındaki ikonlar. \"Genel ayarı kullan\" Tasarım sekmesindeki seçimi uygular."
+
+#: includes/class-admin-product-data-tab.php:722
+msgid "Campaign blocks"
+msgstr "Kampanya blokları"
+
+#: includes/class-admin-product-data-tab.php:722
+msgid "Impact line, urgency, social proof, trust badges, and order"
+msgstr "Etki satırı, aciliyet, sosyal kanıt, güven rozetleri ve sıralama"
+
+#: includes/class-admin-product-data-tab.php:724
+msgid "Impact line"
+msgstr "Etki satırı"
+
+#: includes/class-admin-product-data-tab.php:724
+msgid "Shows a short sentence under the title that describes the donation’s impact."
+msgstr "Başlığın altında bağışın etkisini anlatan kısa bir cümle gösterir."
+
+#: includes/class-admin-product-data-tab.php:725
+msgid "Impact text"
+msgstr "Etki metni"
+
+#: includes/class-admin-product-data-tab.php:725
+msgid "If left empty, the line is hidden."
+msgstr "Boş bırakılırsa satır görünmez."
+
+#: includes/class-admin-product-data-tab.php:725
+msgid "E.g.: Your donation warms a family."
+msgstr "Örn: Bir bağışınız bir aileyi ısıtır."
+
+#: includes/class-admin-product-data-tab.php:727
+msgid "Impact line is on but the text is empty; the line will not appear on the form."
+msgstr "Etki satırı açık ama metin boş; satır formda görünmez."
+
+#: includes/class-admin-product-data-tab.php:730
+msgid "Urgency strip"
+msgstr "Aciliyet şeridi"
+
+#: includes/class-admin-product-data-tab.php:730
+msgid "Shows a strip that highlights that the campaign is time-limited. The end date only removes the strip; it does not close the campaign."
+msgstr "Kampanyanın süreli olduğunu vurgulayan bir şerit gösterir. Bitiş tarihi yalnız şeridi kaldırır; kampanyayı kapatmaz."
+
+#: includes/class-admin-product-data-tab.php:731
+msgid "Urgency text"
+msgstr "Aciliyet metni"
+
+#: includes/class-admin-product-data-tab.php:731
+msgid "Text that will appear on the strip."
+msgstr "Şeritte görünecek metin."
+
+#: includes/class-admin-product-data-tab.php:735
+msgid "End date"
+msgstr "Bitiş tarihi"
+
+#: includes/class-admin-product-data-tab.php:736
+msgid "The strip is shown until the end of this day (23:59:59) in the site time zone (Y-m-d). An invalid date is not saved."
+msgstr "Site saat diliminde bu günün sonuna (23:59:59) kadar şerit görünür (Y-m-d). Geçersiz tarih kaydedilmez."
+
+#: includes/class-admin-product-data-tab.php:746
+msgid "The saved end date is invalid; the strip appears with no time limit. Enter a valid Y-m-d."
+msgstr "Kayıtlı bitiş tarihi geçersiz; şerit süresiz görünür. Geçerli bir Y-m-d girin."
+
+#: includes/class-admin-product-data-tab.php:750
+msgid "Social proof"
+msgstr "Sosyal kanıt"
+
+#: includes/class-admin-product-data-tab.php:750
+msgid "Shows a line with the real donor count. If the number is 0, the line is hidden."
+msgstr "Gerçek bağışçı sayısını gösteren bir satır gösterir. Sayı 0 ise satır gizlenir."
+
+#: includes/class-admin-product-data-tab.php:754
+msgid "Social proof text"
+msgstr "Sosyal kanıt metni"
+
+#: includes/class-admin-product-data-tab.php:755
+msgid "The {donors} placeholder in the text is replaced with the real donor count. If left empty, the default is: “{donors} people donated”."
+msgstr "Metinde {donors} yer tutucusu gerçek bağışçı sayısıyla değişir. Boş bırakılırsa varsayılan: “{donors} kişi bağış yaptı”."
+
+#: includes/class-admin-product-data-tab.php:756
+msgid "{donors} people donated"
+msgstr "{donors} kişi bağış yaptı"
+
+#: includes/class-admin-product-data-tab.php:763
+msgid "Old text: %s — no longer used; the real number is used."
+msgstr "Eski metin: %s — artık kullanılmıyor, gerçek sayı kullanılır."
+
+#: includes/class-admin-product-data-tab.php:769
+msgid "Trust badges"
+msgstr "Güven rozetleri"
+
+#: includes/class-admin-product-data-tab.php:769
+msgid "Shows trust messages under the form. If the general setting is off, they are not shown even if this product is on."
+msgstr "Formun altında güven mesajları gösterir. Genel ayar kapalıysa bu ürün için açık olsa da gösterilmez."
+
+#: includes/class-admin-product-data-tab.php:772
+msgid "Badges"
+msgstr "Rozetler"
+
+#: includes/class-admin-product-data-tab.php:774
+msgid "If the product list is filled, it replaces the general list (maximum %d). If left empty, the general badges are used."
+msgstr "Ürün listesi doluysa genel listenin yerine geçer (en fazla %d). Boş bırakırsanız genel rozetler kullanılır."
+
+#: includes/class-admin-product-data-tab.php:778
+msgid "Icon"
+msgstr "İkon"
+
+#: includes/class-admin-product-data-tab.php:779
+msgid "Text"
+msgstr "Metin"
+
+#: includes/class-admin-product-data-tab.php:797
+msgid "Extra donation (sadaqah)"
+msgstr "Alt bağış (sadaka)"
+
+#: includes/class-admin-product-data-tab.php:797
+msgid "A second, smaller donation row added to the form"
+msgstr "Forma eklenen ikinci, küçük bağış satırı"
+
+#: includes/class-admin-product-data-tab.php:799
+msgid "On a goal campaign the extra donation is not shown on the form; the settings are used if you switch to other types."
+msgstr "Hedefli kampanyada alt bağış formda gösterilmez; ayarlar diğer tiplere geçerseniz kullanılır."
+
+#: includes/class-admin-product-data-tab.php:801
+msgid "Add an extra donation"
+msgstr "Alt bağış ekle"
+
+#: includes/class-admin-product-data-tab.php:801
+msgid "Lets the donor add a small extra donation on top of the main donation."
+msgstr "Bağışçının ana bağışa ek olarak küçük bir bağış eklemesine izin verir."
+
+#: includes/class-admin-product-data-tab.php:802
+msgid "Button text"
+msgstr "Düğme metni"
+
+#: includes/class-admin-product-data-tab.php:802
+msgid "Text of the button that opens the extra donation."
+msgstr "Alt bağışı açan düğmenin metni."
+
+#: includes/class-admin-product-data-tab.php:802
+msgid "Add extra donation"
+msgstr "Alt Bağış Ekle"
+
+#: includes/class-admin-product-data-tab.php:819
+msgid "Extra donation product"
+msgstr "Alt bağış ürünü"
+
+#: includes/class-admin-product-data-tab.php:823
+msgid "WooCommerce product to add to the cart; if empty, the general default (#%d) is used."
+msgstr "Sepete eklenecek WooCommerce ürünü; boşsa genel varsayılan (#%d) kullanılır."
+
+#: includes/class-admin-product-data-tab.php:826
+#: includes/class-admin-product-data-tab.php:831
+msgid "WooCommerce product to add to the cart; if empty, the general default is used, and if that is also missing the row is not added."
+msgstr "Sepete eklenecek WooCommerce ürünü; boşsa genel varsayılan kullanılır, o da yoksa satır eklenmez."
+
+#: includes/class-admin-product-data-tab.php:831
+msgid "Extra donation product ID"
+msgstr "Alt bağış ürün ID"
+
+#: includes/class-admin-product-data-tab.php:834
+msgid "Lower limit applied when the donor types the amount themselves."
+msgstr "Bağışçı tutarı kendisi yazarken uygulanacak alt sınır."
+
+#: includes/class-admin-product-data-tab.php:836
+msgid "Fixed amount (%s)"
+msgstr "Sabit tutar (%s)"
+
+#: includes/class-admin-product-data-tab.php:836
+msgid "If filled, the extra donation is added at this amount and the minimum amount is ignored."
+msgstr "Doluysa alt bağış bu tutarla eklenir ve en düşük tutar yok sayılır."
+
+#: includes/class-admin-product-data-tab.php:837
+msgid "Extra donation note"
+msgstr "Alt bağış notu"
+
+#: includes/class-admin-product-data-tab.php:837
+msgid "Description shown next to the extra donation row."
+msgstr "Alt bağış satırının yanında görünen açıklama."
+
+#: includes/class-admin-product-data-tab.php:846
+msgid "Appearance for this product"
+msgstr "Bu ürüne özel görünüm"
+
+#: includes/class-admin-product-data-tab.php:846
+msgid "Layout, colors, corner radius, and media"
+msgstr "Düzen, renkler, köşe yuvarlaklığı ve medya"
+
+#: includes/class-admin-product-data-tab.php:850
+msgid "Layout"
+msgstr "Düzen"
+
+#: includes/class-admin-product-data-tab.php:851
+msgid "Overall form layout; \"Story\" shows the image and form side by side. Cannot be left empty; default is Classic (there is no general layout setting)."
+msgstr "Formun genel yerleşimi; \"Hikâye\" görseli ve formu yan yana gösterir. Boş bırakılamaz; varsayılan Klasik (genel düzen ayarı yoktur)."
+
+#: includes/class-admin-product-data-tab.php:853
+msgid "Classic"
+msgstr "Klasik"
+
+#: includes/class-admin-product-data-tab.php:854
+msgid "Campaign"
+msgstr "Kampanya"
+
+#: includes/class-admin-product-data-tab.php:855
+msgid "Story (side by side)"
+msgstr "Hikâye (yan yana)"
+
+#: includes/class-admin-product-data-tab.php:858
+msgid "Show product image"
+msgstr "Ürün görselini göster"
+
+#: includes/class-admin-product-data-tab.php:858
+msgid "Uses the product’s featured image as the campaign image at the top of the form."
+msgstr "Ürünün öne çıkan görselini formun üst kısmında kampanya görseli olarak kullanır."
+
+#: includes/class-admin-product-data-tab.php:861
+msgid "This product has no featured image; the image cannot be shown."
+msgstr "Bu ürünün öne çıkan görseli yok; görsel gösterilemez."
+
+#: includes/class-admin-product-data-tab.php:871
+msgid "Primary color"
+msgstr "Ana renk"
+
+#: includes/class-admin-product-data-tab.php:872
+msgid "Button and accent color. If left empty, the category color is used, and if that is also missing the general color is used."
+msgstr "Düğme ve vurgu rengi. Boş bırakılırsa kategori rengi, o da yoksa genel renk kullanılır."
+
+#: includes/class-admin-product-data-tab.php:875
+msgid "Primary color (hover)"
+msgstr "Ana renk (üzerine gelince)"
+
+#: includes/class-admin-product-data-tab.php:875
+msgid "Color used when the mouse is over the button; if empty, it is derived from the primary color."
+msgstr "Fare düğmenin üzerindeyken kullanılan renk; boşsa ana renkten türetilir."
+
+#: includes/class-admin-product-data-tab.php:876
+msgid "Background color"
+msgstr "Arka plan rengi"
+
+#: includes/class-admin-product-data-tab.php:876
+msgid "Background of the form window; if empty, the general setting is used."
+msgstr "Form penceresinin arka planı; boşsa genel ayar kullanılır."
+
+#: includes/class-admin-product-data-tab.php:882
+msgid "Corner radius (px)"
+msgstr "Köşe yuvarlaklığı (px)"
+
+#: includes/class-admin-product-data-tab.php:885
+msgid "For button and field corners, %1$s–%2$s px; if empty, the general setting is used."
+msgstr "Düğme ve alan köşeleri için %1$s–%2$s px; boşsa genel ayar kullanılır."
+
+#: includes/class-admin-product-data-tab.php:920
+msgid "Add row"
+msgstr "Satır ekle"
+
+#: includes/class-admin-product-data-tab.php:954
+#: includes/class-admin-product-data-tab.php:954
+msgid "Delete row"
+msgstr "Satırı sil"
+
+#: includes/class-admin-product-data-tab.php:973
+msgid "Uploaded image (#%d)"
+msgstr "Yüklenen görsel (#%d)"
+
+#: includes/class-admin-product-data-tab.php:995
+msgid "Block order"
+msgstr "Blok sırası"
+
+#: includes/class-admin-product-data-tab.php:997
+msgid "Use a custom order for this product"
+msgstr "Bu ürüne özel sıra kullan"
+
+#: includes/class-admin-product-data-tab.php:999
+msgid "Order of campaign blocks"
+msgstr "Kampanya bloklarının sırası"
