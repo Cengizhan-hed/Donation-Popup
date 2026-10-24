@@ -17,6 +17,9 @@ describe('kabuk ekranı: waitAndAssertShellOverlap ortak', () => {
     assert.match(layout, /waitAndAssertShellOverlap\(page/);
     assert.match(layout, /waitAndAssertShellOverlap\(shell\.page\(\)/);
     assert.match(layout, /CTA-GAP/);
+    // FIX6: yan panelde dibe sabit çubuk boşluğu kabul; popup ve oturmayan çubuk hâlâ CTA-GAP
+    assert.match(layout, /const isPanel = !!root\.querySelector\('\.wdp-side-panel-main'\)/);
+    assert.match(layout, /const tooWide = gap > gapMax && !\(isPanel && ctaAtBottom\)/);
 
     const capture = read('tests/e2e/helpers/capture.mjs');
     assert.match(capture, /waitAndAssertShellOverlap/);
