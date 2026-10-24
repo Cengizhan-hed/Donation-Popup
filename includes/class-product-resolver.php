@@ -92,6 +92,15 @@ class WDP_Product_Resolver {
 			$resolved = self::as_product((int) get_queried_object_id());
 		}
 
+		// Page-builder product templates (Elementor, Avada, block themes) may run without is_product()/global $product.
+		if (!$resolved && function_exists('get_queried_object')) {
+			$resolved = self::from_post_object(get_queried_object());
+		}
+
+		if (!$resolved && isset($GLOBALS['post'])) {
+			$resolved = self::from_post_object($GLOBALS['post']);
+		}
+
 		if (!$resolved && function_exists('get_the_ID')) {
 			$the_id = (int) get_the_ID();
 			if ($the_id > 0) {
@@ -123,6 +132,19 @@ class WDP_Product_Resolver {
 	 */
 	public static function is_wc_product($product) {
 		return is_object($product) && (is_a($product, 'WC_Product') || (method_exists($product, 'get_id') && method_exists($product, 'get_type')));
+	}
+
+	/**
+	 * Product for a WP_Post of type product (queried object / global $post); null otherwise.
+	 *
+	 * @param mixed $post Candidate.
+	 * @return WC_Product|null
+	 */
+	private static function from_post_object($post) {
+		if (!is_object($post) || empty($post->ID) || !isset($post->post_type) || (string) $post->post_type !== 'product') {
+			return null;
+		}
+		return self::as_product((int) $post->ID);
 	}
 
 	/**

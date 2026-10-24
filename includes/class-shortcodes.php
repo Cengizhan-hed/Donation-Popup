@@ -110,6 +110,10 @@ class WDP_Shortcodes {
 			return self::unavailable_product_notice($product);
 		}
 
+		if (self::auto_entry_already_drawn($product_id)) {
+			return '';
+		}
+
 		$custom_class = self::sanitize_class_list($atts['class']);
 		$button_text  = self::resolve_button_text(
 			$atts['text'] !== '' ? $atts['text'] : $atts['button_text']
@@ -196,12 +200,36 @@ class WDP_Shortcodes {
 			return self::unavailable_product_notice($product);
 		}
 
+		if (self::auto_entry_already_drawn($product_id)) {
+			return '';
+		}
+
 		if (!WDP_Render_Registry::claim_form($product_id)) {
 			return WDP_Render_Registry::duplicate_form_notice($product_id);
 		}
 
 		self::enqueue_front();
 		return $notice . WDP_Templates::render_donation_form($product_id, $atts);
+	}
+
+	/**
+	 * One entry point per product page: after auto-placement drew the button/form,
+	 * a later shortcode/block/widget for the same product on a product page prints nothing.
+	 *
+	 * @param int $product_id Product ID.
+	 * @return bool
+	 */
+	private static function auto_entry_already_drawn($product_id) {
+		if (!WDP_Render_Registry::has_auto($product_id) || (class_exists('WDP_Builder_Detect') && WDP_Builder_Detect::is_builder_preview())) {
+			return false;
+		}
+		/**
+		 * Allow several entry points on one page for the same product.
+		 *
+		 * @param bool $allow      Default false.
+		 * @param int  $product_id Product ID.
+		 */
+		return !apply_filters('wdp_allow_multiple_entries', false, $product_id);
 	}
 
 	/**

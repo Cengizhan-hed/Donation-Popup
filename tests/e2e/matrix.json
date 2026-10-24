@@ -114,5 +114,8 @@
       "admin-placement",
       "admin-design-studio"
     ]
+  },
+  "entryPoints": {
+    "themes": ["twentytwentyfive", "storefront", "blocksy"]
   }
 }

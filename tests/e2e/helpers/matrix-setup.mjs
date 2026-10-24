@@ -136,7 +136,7 @@ function ensureWooCommerce(wpDir) {
   return dest;
 }
 
-function ensureTheme(wpDir, slug) {
+export function ensureTheme(wpDir, slug) {
   const dest = path.join(wpDir, 'wp-content/themes', slug);
   if (fs.existsSync(path.join(dest, 'style.css')) || fs.existsSync(path.join(dest, 'theme.json'))) {
     return dest;

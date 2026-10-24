@@ -83,6 +83,9 @@ final class WDP_Test_State {
 	/** @var int */
 	public static $queried_id = 0;
 
+	/** @var object|null Queried object returned by get_queried_object(). */
+	public static $queried_object = null;
+
 	/** @var bool */
 	public static $is_admin = false;
 
@@ -145,6 +148,7 @@ final class WDP_Test_State {
 		self::$terms         = array();
 		self::$is_product    = false;
 		self::$queried_id    = 0;
+		self::$queried_object = null;
 		self::$is_admin      = false;
 		self::$is_cart       = false;
 		self::$is_checkout   = false;
@@ -821,6 +825,11 @@ if (!function_exists('is_product')) {
 if (!function_exists('get_queried_object_id')) {
 	function get_queried_object_id() {
 		return WDP_Test_State::$queried_id;
+	}
+}
+if (!function_exists('get_queried_object')) {
+	function get_queried_object() {
+		return WDP_Test_State::$queried_object;
 	}
 }
 if (!function_exists('get_the_ID')) {
