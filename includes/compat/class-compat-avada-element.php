@@ -153,11 +153,11 @@ class WDP_Compat_Avada_Element {
 			'keywords'        => self::keywords( $title ),
 			'params'          => array(
 				array(
-					'type'        => 'select',
-					'heading'     => __( 'Product source', 'woo-donation-popup' ),
-					'param_name'  => 'source',
-					'default'     => 'current',
-					'value'       => array(
+					'type'       => 'select',
+					'heading'    => __( 'Product source', 'woo-donation-popup' ),
+					'param_name' => 'source',
+					'default'    => 'current',
+					'value'      => array(
 						'current' => __( 'Current product', 'woo-donation-popup' ),
 						'list'    => __( 'Select from list', 'woo-donation-popup' ),
 						'manual'  => __( 'Enter ID or slug', 'woo-donation-popup' ),
@@ -296,7 +296,16 @@ class WDP_Compat_Avada_Element {
 						'random'     => __( 'Random', 'woo-donation-popup' ),
 					)
 				),
-				$sel( 'order', __( 'Direction', 'woo-donation-popup' ), $q, 'ASC', array( 'ASC' => 'ASC', 'DESC' => 'DESC' ) ),
+				$sel(
+					'order',
+					__( 'Direction', 'woo-donation-popup' ),
+					$q,
+					'ASC',
+					array(
+						'ASC'  => 'ASC',
+						'DESC' => 'DESC',
+					)
+				),
 				$range( 'columns', __( 'Columns', 'woo-donation-popup' ), $d, 1, 6, 3 ),
 				$range( 'columns_tablet', __( 'Tablet columns', 'woo-donation-popup' ), $d, 1, 6, 2 ),
 				$range( 'columns_mobile', __( 'Mobile columns', 'woo-donation-popup' ), $d, 1, 6, 1 ),
@@ -314,7 +323,16 @@ class WDP_Compat_Avada_Element {
 						'original' => __( 'Original', 'woo-donation-popup' ),
 					)
 				),
-				$sel( 'align', __( 'Alignment', 'woo-donation-popup' ), $d, 'center', array( 'center' => __( 'Center', 'woo-donation-popup' ), 'left' => __( 'Left', 'woo-donation-popup' ) ) ),
+				$sel(
+					'align',
+					__( 'Alignment', 'woo-donation-popup' ),
+					$d,
+					'center',
+					array(
+						'center' => __( 'Center', 'woo-donation-popup' ),
+						'left'   => __( 'Left', 'woo-donation-popup' ),
+					)
+				),
 				$sel(
 					'button',
 					__( 'Button', 'woo-donation-popup' ),
@@ -338,7 +356,17 @@ class WDP_Compat_Avada_Element {
 				$yn( 'show_category', __( 'Category', 'woo-donation-popup' ), 'no' ),
 				$range( 'excerpt_words', __( 'Excerpt words', 'woo-donation-popup' ), $d, 0, 60, 18 ),
 				$sel( 'image_size', __( 'Image size', 'woo-donation-popup' ), $d, 'woocommerce_thumbnail', $sizes ),
-				$sel( 'heading_tag', __( 'Heading tag', 'woo-donation-popup' ), $d, 'h3', array( 'h2' => 'H2', 'h3' => 'H3', 'h4' => 'H4' ) ),
+				$sel(
+					'heading_tag',
+					__( 'Heading tag', 'woo-donation-popup' ),
+					$d,
+					'h3',
+					array(
+						'h2' => 'H2',
+						'h3' => 'H3',
+						'h4' => 'H4',
+					)
+				),
 				$text( 'class', __( 'CSS class', 'woo-donation-popup' ), $d ),
 			),
 		);
