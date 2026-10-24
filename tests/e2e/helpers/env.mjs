@@ -51,12 +51,15 @@ export function parseE2ECli(argv = process.argv.slice(2)) {
   let noSideCart = false;
   let noClean = false;
   let child = false;
+  let slice = '';
   for (let i = 0; i < a.length; i++) {
     const x = a[i];
     if (x === '--env' || x === '--profile') envId = String(a[++i] || envId);
     else if (x.startsWith('--env=')) envId = x.slice('--env='.length);
     else if (x === '--device') device = String(a[++i] || '');
     else if (x.startsWith('--device=')) device = x.slice('--device='.length);
+    else if (x === '--slice') slice = String(a[++i] || '');
+    else if (x.startsWith('--slice=')) slice = x.slice('--slice='.length);
     else if (x === '--areas') areas = String(a[++i] || '')
       .split(',')
       .map((s) => s.trim())
@@ -73,7 +76,7 @@ export function parseE2ECli(argv = process.argv.slice(2)) {
     else if (x === '--no-clean') noClean = true;
     else if (x === '--child') child = true;
   }
-  return { envId, device, areas, all, openReport, noSideCart, noClean, child };
+  return { envId, device, areas, all, openReport, noSideCart, noClean, child, slice };
 }
 
 /**

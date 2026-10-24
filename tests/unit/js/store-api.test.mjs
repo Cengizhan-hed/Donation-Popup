@@ -15,6 +15,7 @@ describe('Store API nonce', () => {
       'from-wc'
     );
     assert.equal(storeApiNonceFromGlobals({ wpApiSettings: { nonce: 'wp' } }), 'wp');
+    assert.equal(storeApiNonceFromGlobals({ wpApiFetch: { nonce: 'blocks' } }), 'blocks');
     assert.equal(storeApiNonceFromGlobals({}), '');
   });
 

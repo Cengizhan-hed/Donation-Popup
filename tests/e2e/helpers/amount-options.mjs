@@ -20,6 +20,7 @@ import { getProductMeta, setProductMeta } from './staging-wp-meta.mjs';
 import { requireFixtureRole, mutationBrowserContext, AMOUNT_PRESET_FIXTURE_META } from './fixtures.mjs';
 import { popupPagePath } from './catalog-core.mjs';
 import { openMutationProductShell } from './mutation-policy.mjs';
+import { readGlobalAmountPresetsOn, skipAmountOptsIfSettingOff } from './amount-presets-flag.mjs';
 
 const CHECK_MS = 20000;
 const RECOMMENDED_META = '_amount_preset_recommended';
@@ -209,10 +210,28 @@ export async function runAmountOptionsChecks({
   listPagePath,
   failures,
   stats,
+  skips,
   createAdminContext,
   createVisitorContext,
 }) {
   const checks = [];
+  let presetsOn = false;
+  try {
+    presetsOn = await readGlobalAmountPresetsOn();
+  } catch (e) {
+    failures.push(
+      makeFailure({
+        check: 'amount-opts-setting',
+        description: 'Genel hızlı tutar ayarı WP’den okunamadı',
+        error: e,
+      })
+    );
+    stats.failed += 1;
+    return;
+  }
+  if (skipAmountOptsIfSettingOff(presetsOn, skips, stats)) {
+    return;
+  }
   const baseUrl = env.E2E_BASE_URL;
   const listPath = popupPagePath(env, listPagePath);
   let customId = productIds.custom || 0;

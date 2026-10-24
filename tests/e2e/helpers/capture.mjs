@@ -16,6 +16,14 @@ import {
 import { currencySwitchFromProfile, runCurrencySwitchChecks } from './currency-switch.mjs';
 import { getDevicePreset } from './devices.mjs';
 import { areaIncludes } from './area-filter.mjs';
+import { wantAnyMutationArea } from './full-slices.mjs';
+import {
+  collectClickTarget,
+  collectPluginRuntime,
+  collectShellDomState,
+  shotDebugPng,
+  writePanelOpenDebug,
+} from './flow-diag.mjs';
 import { applyComingSoonBypass, comingSoonQuery } from './coming-soon.mjs';
 import { STABILIZE_SHOT_CSS, hideComingSoonNoticeForShot } from './stabilize-shot-css.mjs';
 import { ensureAuth, getAuthFile, getInMemoryAdminCookies, waitForWpAdminPage } from './auth.mjs';
@@ -3225,7 +3233,7 @@ export async function captureAll({
   /** @type {Map<string, Awaited<ReturnType<typeof readProductSadakaAdminConfig>>>} */
   const adminConfigCache = new Map();
   const adminConfigPromise =
-    runFunctional
+    runFunctional && want('sadaka')
       ? (async () => {
           const tSadakaAdmin = Date.now();
           const adminRead = await asAdminDesktop(browser, env);
@@ -3328,7 +3336,7 @@ export async function captureAll({
   const tProducts = Date.now();
   /** @type {Map<string, { page: import('@playwright/test').Page, admin: boolean }>} */
   const productPageCache = new Map();
-  const productEntries = Object.entries(productUrls);
+  const productEntries = want('core') ? Object.entries(productUrls) : [];
   const productsPromise = mapPool(productEntries, maxWorkers, async ([key, rel]) => {
     const name = `${pfx}-product-${key}`;
     const productDecision = decideScenarioProduct(env, key, 'product-page');
@@ -3448,6 +3456,7 @@ export async function captureAll({
       productId: productIds[key] || 0,
     });
   }
+  if (!want('shell')) shellJobs.length = 0;
   const tShells = Date.now();
   /**
    * Kabuk ekranı: shot + images-loaded + kabuk bütünlüğü (viewport / kaydırma sonu).
@@ -3640,6 +3649,34 @@ export async function captureAll({
 
       const opened = await openShellForMode(page, mode, productId);
       if (!opened.ok) {
+        if (mode === 'panel') {
+          try {
+            const trig = shellTriggerLocator(page, mode, { productId });
+            const clickTarget = (await trig.count()) > 0 ? await collectClickTarget(page, trig) : null;
+            const plugin = await collectPluginRuntime(page);
+            const shellDom = await collectShellDomState(page);
+            const png = await shotDebugPng(page, `panel-${key}-open-${device.id}`);
+            writePanelOpenDebug(device.id, key, {
+              class: 'panel-acilamadi',
+              detail: opened.detail,
+              trigger: {
+                count: await trig.count().catch(() => 0),
+                visible: (await trig.count()) > 0 ? await trig.first().isVisible().catch(() => false) : false,
+                className: (await trig.count()) > 0 ? (await trig.first().getAttribute('class')) || '' : '',
+                tag: 'A',
+              },
+              click_target: clickTarget,
+              plugin,
+              shell: shellDom,
+              console_errors: errors.slice(-10),
+              png,
+            });
+          } catch (diagErr) {
+            console.error(
+              `[e2e:catch-fail] panel-open-diag ${key}: ${diagErr && diagErr.message ? diagErr.message : diagErr}`
+            );
+          }
+        }
         failures.push(
           makeFailure({
             check: `${mode}-${key}-open`,
@@ -3845,7 +3882,9 @@ export async function captureAll({
 
   // e) list + shop — kabuklarla örtüşür (ayrı guest page’ler)
   const tList = Date.now();
-  const listShopPromise = (async () => {
+  const listShopPromise = !want('core')
+    ? Promise.resolve()
+    : (async () => {
     if (!env.E2E_LIST_PAGE) {
       skips.push(
         makeSkip({
@@ -3978,7 +4017,7 @@ export async function captureAll({
   });
 
   const tSkelCart = Date.now();
-  const skelCartPromise = runFunctional
+  const skelCartPromise = runFunctional && (want('shell') || want('checkout-flow'))
     ? (async () => {
       await Promise.all([
         (async () => {
@@ -4410,7 +4449,9 @@ export async function captureAll({
     }
     // 4 senaryo paralel (kendi context + emptyCart). 2 worker denemesi wall’ı uzattı.
     const sadakaWorkers = Math.min(4, sadakaJobs.length);
-    const sadakaPromise = mapPool(sadakaJobs, sadakaWorkers, async ({ productKey, mode }) => {
+    const sadakaPromise = !want('sadaka')
+      ? Promise.resolve()
+      : mapPool(sadakaJobs, sadakaWorkers, async ({ productKey, mode }) => {
       const check = `sadaka-${productKey}-${mode}`;
       const paths = tracePaths(runLabel, check);
       const sadakaDecision = decideScenarioProduct(env, productKey, mode);
@@ -4549,7 +4590,7 @@ export async function captureAll({
       void locked;
     };
     try {
-      if (deviceRunsMutations(device.id)) {
+      if (deviceRunsMutations(device.id) && wantAnyMutationArea(want, mutationSuites)) {
         for (const suite of mutationSuites) {
           await withEnvMutationLock(profile.id, () => runOneMeta(suite, true), {
             deviceId: device.id,
