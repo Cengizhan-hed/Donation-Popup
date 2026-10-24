@@ -489,3 +489,4 @@ Kullanıcı yönergesi önceki tüm görev metinlerinin yerini aldı; CLAUDE.md 
 | T16 | Ikram "Benzer Bağışlar" mobil+tablette görünmüyor: Blocksy `.ct-hidden-sm/.ct-hidden-md` (themes/blocksy/static/bundle/main.min.css) — tema ayarı, eklenti değil | Kullanıcıya bilgi (Blocksy Özelleştir) |
 | T17 | BAĞIŞÇI RİSKİ: TRY 0dp "." binlik mağazada "10.00" → 1000 ₺ (100×). staging30'da binlik=ondalık="." | 4I (10.34.13): gruplama kuralı + belirsiz tutar görünür uyarı, sunucu da reddeder |
 | T18 | staging30 checkout-flow android/desktop: test tutarı 10 < ürün min ₺50 (eklenti doğru reddetti, görünür mesaj); desktop panel testi wp-admin'de kalıyordu | 4H (test) |
+| A5 | Yerel e2e:full ebeveyn süreci localServer.stop() sonrası takılı kalabiliyor (4L gözlemi) | izleniyor |
