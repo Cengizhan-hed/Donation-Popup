@@ -583,3 +583,14 @@ Kaynak: Graphify kod haritası (2015 düğüm, 4229 bağ; `npm run graph:update`
 | Y3 | Ön varsayım düzeltmesi: **10.35.0 hiçbir uzak siteye kurulmadı.** staging30 ve Ikram'da eklenti 10.34.15 (staging30 dosya saati 10:28 UTC). Hata günlüğündeki ilk revslider satırı 10:33 UTC (10.34.15 sonrası ilk plugins.php ziyareti ile uyumlu; 10.35.0 ile ilgisi yok). | bilgi |
 | Y4 | Ikram: PHP günlüğünün son satırı 10 Ekim; bugün hata yok. Ikram'da revslider yok. | temiz |
 | Y5 | `wp-admin/php_errorlog` staging30'da 2,3 MB (2024'ten beri), `WP_DEBUG` kapalı — sağlık kontrolü bu dosyada yalnız koşu başlangıcından sonraki satırları sayacak. | tasarım notu (Y6 görevi) |
+
+## claude-code-setup önerileri (2026-10-24; KURULMADI, yalnız rapor)
+Proje profili: WordPress/WooCommerce eklentisi (PHP 8.2 + vanilla JS), Playwright e2e, PHPUnit, PHPCS/PHPStan, çoklu worktree.
+| Tür | Öneri | Neden |
+|---|---|---|
+| Hook | PreToolUse: `.env*`, `tests/e2e/.auth/**`, `*.pem/*.key` ve `build/handoff/REMOTE_FREEZE` yazma/okuma engeli | CLAUDE.md güvenlik kuralını makine seviyesinde zorlar |
+| Hook | PostToolUse (PHP düzenlemesi): `php -l` + değişen dosyaya PHPCS | yeni kodda hata sıfır kuralı anında yakalanır |
+| Subagent | `security-reviewer` (nonce/capability/escape/SQL hazırlama; Faz 8 ön hazırlık) | bağış + kişisel veri akışı |
+| Skill | `wp-release-check` (kullanıcıya özel): verify + test + remote-smoke + Y6 sağlık kontrolü sırası | merge kriterini tek komuta indirir |
+| MCP | context7 (WooCommerce/WordPress API dokümanı) | Woo'nun standart yollarına uyum |
+Not: terminal sürümü kurulumu yapılmadı; skill burada plugin olarak zaten çalıştı (eşdeğer analiz).
