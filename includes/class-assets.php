@@ -199,6 +199,7 @@ class WDP_Assets {
             && class_exists('WDP_Placement_Settings')
             && WDP_Placement_Settings::value('auto_place') === 'yes'
             && WDP_Placement_Settings::value('loop_button') !== 'off'
+            && self::main_query_has_donation_product()
         ) {
             $should_enqueue = true;
         }
@@ -223,6 +224,26 @@ class WDP_Assets {
         }
 
         return $should_enqueue;
+    }
+
+    /**
+     * Whether the main (archive) query lists at least one donation product.
+     * Only then the loop button needs the stylesheet in the head; otherwise nothing loads
+     * (loop_button_html still force-enqueues late if a button is drawn anyway, e.g. by a block).
+     *
+     * @return bool
+     */
+    private static function main_query_has_donation_product() {
+        global $wp_query;
+        if (!class_exists('WDP_Donation_Scope') || !is_object($wp_query) || empty($wp_query->posts) || !is_array($wp_query->posts)) {
+            return false;
+        }
+        foreach ($wp_query->posts as $listed) {
+            if (is_object($listed) && isset($listed->ID) && WDP_Donation_Scope::is_donation_product((int) $listed->ID)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
