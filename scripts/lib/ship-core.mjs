@@ -37,6 +37,9 @@ import {
   classifyLogLines,
   logVerdict,
   attributePages,
+  browseMetricsFromResponse,
+  compareToBaseline,
+  formatOnOffLine,
   pagesTriggerRollback,
   writeRollbackNotice,
 } from './health-attribution.mjs';
@@ -618,6 +621,66 @@ function resolvePluginDir(ctx, resolved, wpPath) {
   return dir;
 }
 
+/**
+ * Salt-okunur gezinti sayfaları (açık/kapalı tabanı). Uzakta eklenti KAPATILMAZ: kurulumdan önce (eski sürüm)
+ * ve sonra (yeni sürüm) aynı sayfalar yalnız GET ile gezilir, sayılar `compareToBaseline` ile kıyaslanır.
+ * Sipariş/alan doldurma yok; "product-edit" yerine ürün LİSTESİ (yeni ürün sayfası taslak kayıt oluşturur).
+ *
+ * @param {object} probe
+ */
+export function collectBrowseTargets(probe) {
+  const p = probe && typeof probe === 'object' ? probe : {};
+  const pub = (name, url) => ({ name, url: String(url || ''), cookie: false });
+  const adm = (name, url) => ({ name, url: String(url || ''), cookie: true });
+  return [
+    pub('home', p.home),
+    pub('shop', p.shop),
+    pub('product', p.product),
+    pub('cart', p.cart),
+    pub('checkout', p.checkout),
+    pub('plugin', p.plugin_page),
+    adm('dashboard', p.admin),
+    adm('wc-settings', p.wc_settings),
+    adm('orders', p.orders),
+    adm('product-list', p.product_list),
+  ];
+}
+
+/**
+ * @param {{ targets: ReturnType<typeof collectBrowseTargets>, fetchImpl?: Function, cookieHeader?: string }} opts
+ * @returns {Promise<Record<string, { consoleErrors: number, phpIssues: number, ours: number, thirdParty: number }>>}
+ */
+export async function runBrowseChecks(opts) {
+  const out = {};
+  for (const t of opts.targets || []) {
+    if (!t.url) continue;
+    let res = null;
+    try {
+      res = await fetchHtml(t.url, { fetchImpl: opts.fetchImpl, cookieHeader: t.cookie ? opts.cookieHeader || '' : '' });
+    } catch {
+      continue;
+    }
+    out[t.name] = browseMetricsFromResponse(res);
+  }
+  return out;
+}
+
+/** Kurulumdan ÖNCE (eski sürüm) hata tabanı. Başarısızlık kurulumu durdurmaz (taban yok = karşılaştırma yok). */
+async function collectBrowseBaseline(ctx, resolved, fetchImpl) {
+  try {
+    const probe = extractJson(remote(ctx, resolved, buildUrlProbeCommand(resolved.wpPath))) || {};
+    const targets = collectBrowseTargets(probe);
+    let cookieHeader = '';
+    if (targets.some((t) => t.cookie && t.url)) {
+      cookieHeader = cookieHeaderFromAuth(extractJson(remote(ctx, resolved, buildAuthCookieCommand(resolved.wpPath))));
+    }
+    const metrics = await runBrowseChecks({ targets, fetchImpl, cookieHeader });
+    return Object.keys(metrics).length ? metrics : null;
+  } catch {
+    return null;
+  }
+}
+
 async function runPhpAndHttpHealth(ctx, resolved, expectedVersion, fetchImpl) {
   const phpRaw = remote(ctx, resolved, buildHealthPhpCommand(resolved.wpPath));
   const phpJson = extractJson(phpRaw) || {};
@@ -633,7 +696,17 @@ async function runPhpAndHttpHealth(ctx, resolved, expectedVersion, fetchImpl) {
   }
   const rawPages = await runHttpHealthChecks({ targets, fetchImpl, cookieHeader });
   const pages = attributePages(rawPages, { cls: php.logClass, baselineRedNames: ctx.baselineRedNames || [] });
-  const health = { php, pages, probe };
+  let onoff = null;
+  if (ctx.browseBaseline) {
+    const current = await runBrowseChecks({ targets: collectBrowseTargets(probe), fetchImpl, cookieHeader });
+    const cls = php.logClass || { ours: [], unknown: [] };
+    current['php-log'] = { consoleErrors: 0, phpIssues: cls.ours.length + cls.unknown.length, ours: cls.ours.length };
+    onoff = compareToBaseline({ ...ctx.browseBaseline, 'php-log': { consoleErrors: 0, phpIssues: 0 } }, current);
+    if (onoff.red) {
+      pages.push({ name: 'onoff', ok: false, skipped: false, reason: formatOnOffLine(onoff).replace(/^Açık\/kapalı: /, 'taban: ') });
+    }
+  }
+  const health = { php, pages, probe, onoff };
   health.line = formatHealthLine(health);
   health.red = healthIsRed(health);
   return health;
@@ -935,6 +1008,13 @@ export async function runShip(opts = {}) {
   }
   lines.push('REMOTE-BLOCKED: yok');
 
+  if (!opts.skipBrowse && (!opts.skipInstall || opts.forceBrowse)) {
+    ctx.browseBaseline = await collectBrowseBaseline(ctx, resolved, fetchImpl);
+    lines.push(ctx.browseBaseline
+      ? `açık/kapalı tabanı (kurulum öncesi, salt-okunur): ${Object.keys(ctx.browseBaseline).length} sayfa`
+      : 'açık/kapalı tabanı: alınamadı (karşılaştırma yok)');
+  }
+
   const snapFn = opts.snapshotFn || ((a) => runSnapshot(a));
   await snapFn({ env: envName, label: `pre-${version}-${stamp}`, out: preSnapPath });
   lines.push(`ön anlık: ${path.relative(ROOT, preSnapPath)}`);
@@ -963,6 +1043,7 @@ export async function runShip(opts = {}) {
   let health = await runPhpAndHttpHealth(ctx, resolved, version, fetchImpl);
   lines.push(health.line);
   let rolledBack = false;
+  ctx.browseBaseline = null;
   if (health.red) {
     rolledBack = true;
     const rb = buildRollbackCommands({ backupZip, optionsJson, pluginDir, wpPath: resolved.wpPath });

@@ -26,6 +26,7 @@ import {
   buildRestoreZipCommand,
   buildRollbackCommands,
   buildUrlProbeCommand,
+  collectBrowseTargets,
   collectHttpTargets,
   evaluateHttpPage,
   evaluatePhpHealth,
@@ -365,6 +366,94 @@ describe('ship-core runShip sahte ssh', () => {
     const md = fs.readFileSync(r.reportFile, 'utf8');
     assert.match(md, /UYARI/);
     assert.match(md, /geri dönüş otomatik değil/);
+  });
+});
+
+describe('ship-core açık/kapalı tabanı (uzakta kapatma yok, salt-okunur gezinti)', () => {
+  const PROBE = (siteUrl) => ({
+    home: `${siteUrl}/`,
+    shop: `${siteUrl}/?post_type=product`,
+    product: `${siteUrl}/?p=10`,
+    plugin_page: `${siteUrl}/?page_id=20`,
+    admin: `${siteUrl}/wp-admin/`,
+    cart: `${siteUrl}/?page_id=30`,
+    checkout: `${siteUrl}/?page_id=31`,
+    wc_settings: `${siteUrl}/wp-admin/admin.php?page=wc-settings`,
+    orders: `${siteUrl}/wp-admin/admin.php?page=wc-orders`,
+    product_list: `${siteUrl}/wp-admin/edit.php?post_type=product`,
+    plugin_skipped: 0,
+  });
+  const NOTICE = (dir) => `<b>Warning</b>: Undefined variable $x in <b>/home/u/public_html/wp-content/plugins/${dir}/inc/a.php</b> on line <b>12</b>`;
+
+  /** phase: 'before' (kurulum öncesi) → health-php çağrısıyla 'after'. */
+  function setup(htmlFor) {
+    const state = { phase: 'before', gets: [] };
+    const inner = makeSpawnImpl({ probe: PROBE(STAGING.siteUrl) });
+    const spawnImpl = (bin, args) => {
+      const cmd = Array.isArray(args) ? String(args[args.length - 1] || '') : '';
+      if (cmd.includes('# wdp-ship:health-php')) state.phase = 'after';
+      return inner(bin, args);
+    };
+    const fetchImpl = async (url, init) => {
+      state.gets.push({ url: String(url), method: init && init.method });
+      const extra = htmlFor(String(url), state.phase);
+      if (!extra) return okHtml(url);
+      return htmlRes(200, `<html><body>${extra}<div class="wdp-modal">x</div></body></html>`);
+    };
+    return { state, spawnImpl, fetchImpl };
+  }
+  const run = (t, over = {}) =>
+    runShip(baseOpts({ forceBrowse: true, spawnImpl: t.spawnImpl, fetchImpl: t.fetchImpl, ...over }));
+
+  it('hedefler: ödeme/sepet/Woo ayarı/sipariş/ürün listesi dahil, ürün düzenleme (taslak yaratan) yok', () => {
+    const names = collectBrowseTargets(PROBE('https://x.test')).map((t) => t.name);
+    for (const n of ['home', 'shop', 'product', 'cart', 'checkout', 'wc-settings', 'orders', 'product-list']) {
+      assert.ok(names.includes(n), n);
+    }
+    assert.equal(names.includes('product-edit'), false);
+  });
+
+  it('temiz: yeşil, taban 1 kez + sonrası 1 kez; tüm istekler GET, kapatma yok', async () => {
+    const t = setup(() => '');
+    const r = await run(t);
+    assert.equal(r.exitCode, EXIT_OK, r.summary);
+    assert.ok(t.state.gets.length >= 2 * 9, `gezinti sayısı ${t.state.gets.length}`);
+    assert.ok(t.state.gets.every((g) => g.method === 'GET'));
+    const tags = shipTags(r.calls);
+    assert.equal(tags.filter((x) => x === 'url-probe').length, 2);
+    assert.equal(tags.filter((x) => x === 'auth-cookie').length, 2);
+    assert.equal(tags.filter((x) => x === 'health-php').length, 1);
+    assert.equal(r.health.onoff.red, false);
+    assert.equal(r.calls.some((c) => /plugin deactivate/.test(String(c.args[c.args.length - 1] || ''))), false);
+  });
+
+  it('kurulum sonrası yeni "bizden" uyarı: kırmızı + geri dönüş', async () => {
+    const t = setup((url, phase) => (phase === 'after' && /page_id=30/.test(url) ? NOTICE('woo-donation-popup') : ''));
+    const r = await run(t);
+    assert.equal(r.exitCode, EXIT_FAIL);
+    assert.equal(r.rolledBack, true);
+    assert.ok(r.healthBeforeRollback.onoff.rows.some((x) => x.name === 'cart' && x.red));
+    assert.ok(shipTags(r.calls).includes('restore-zip'));
+  });
+
+  it('eski sürümde de olan "bizden" uyarı yeni hata sayılmaz', async () => {
+    const t = setup((url) => (/page_id=30/.test(url) ? NOTICE('woo-donation-popup') : ''));
+    const r = await run(t);
+    assert.equal(r.exitCode, EXIT_OK, r.summary);
+  });
+
+  it('yeni üçüncü taraf uyarı: geri dönüş yok (3. taraf ayırt edilir)', async () => {
+    const t = setup((url, phase) => (phase === 'after' && /page_id=31/.test(url) ? NOTICE('other-plugin') : ''));
+    const r = await run(t);
+    assert.equal(r.exitCode, EXIT_OK, r.summary);
+    assert.equal(r.health.onoff.red, false);
+  });
+
+  it('kurulum yokken (skipInstall, forceBrowse yok) gezinti yapılmaz', async () => {
+    const t = setup(() => '');
+    const r = await runShip(baseOpts({ spawnImpl: t.spawnImpl, fetchImpl: t.fetchImpl }));
+    assert.equal(r.health.onoff, null);
+    assert.equal(shipTags(r.calls).filter((x) => x === 'url-probe').length, 1);
   });
 });
 

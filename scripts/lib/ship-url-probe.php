@@ -56,6 +56,13 @@ $plugin_id = (int) $wpdb->get_var(
 );
 $plugin_page = $plugin_id > 0 ? wdp_ship_permalink($plugin_id) : '';
 $admin       = function_exists('admin_url') ? admin_url('/') : '';
+// Salt-okunur gezinti (açık/kapalı tabanı): sepet, ödeme, Woo ayarları, siparişler (HPOS ya da klasik), ürün listesi.
+$cart     = function_exists('wc_get_cart_url') ? (string) wc_get_cart_url() : '';
+$checkout = function_exists('wc_get_checkout_url') ? (string) wc_get_checkout_url() : '';
+$hpos     = class_exists('Automattic\\WooCommerce\\Utilities\\OrderUtil')
+	&& method_exists('Automattic\\WooCommerce\\Utilities\\OrderUtil', 'custom_orders_table_usage_is_enabled')
+	&& Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled();
+$orders   = function_exists('admin_url') ? admin_url($hpos ? 'admin.php?page=wc-orders' : 'edit.php?post_type=shop_order') : '';
 
 echo wp_json_encode(
 	array(
@@ -67,6 +74,11 @@ echo wp_json_encode(
 		'plugin_page'    => $plugin_page,
 		'plugin_page_id' => $plugin_id,
 		'admin'          => $admin,
+		'cart'           => $cart,
+		'checkout'       => $checkout,
+		'wc_settings'    => function_exists('admin_url') ? admin_url('admin.php?page=wc-settings') : '',
+		'orders'         => $orders,
+		'product_list'   => function_exists('admin_url') ? admin_url('edit.php?post_type=product') : '',
 		'plugin_skipped' => $plugin_id > 0 ? 0 : 1,
 	)
 );
