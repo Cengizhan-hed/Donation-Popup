@@ -398,7 +398,7 @@ test('false: donation_full_name boş → görünür hata + odak + lastValidation
   const ok = WDPApp.formValidate.validateForm(form);
   assert.equal(ok, false);
   const texts = visibleErrorTexts(form);
-  assert.ok(texts.some((t) => /Ad Soyad|zorunlu/i.test(t)), texts.join(' | '));
+  assert.ok(texts.some((t) => /Ad Soyad|Full name|zorunlu|required/i.test(t)), texts.join(' | '));
   assert.equal(WDPApp.form.lastValidation.ok, false);
   assert.ok(
     WDPApp.form.lastValidation.failures.some((f) => f.field === 'donation_full_name')
@@ -437,7 +437,7 @@ test('false: telefon eksik → görünür hata + lastValidation phone rule', () 
   const ok = WDPApp.formValidate.validateForm(form);
   assert.equal(ok, false);
   const texts = visibleErrorTexts(form);
-  assert.ok(texts.some((t) => /Telefon/i.test(t)), texts.join(' | '));
+  assert.ok(texts.some((t) => /Telefon|phone/i.test(t)), texts.join(' | '));
   assert.ok(
     WDPApp.form.lastValidation.failures.some(
       (f) => f.field === 'donation_phone' && /phone/.test(f.rule)
@@ -476,7 +476,7 @@ test('false: custom_price boş (pricing yüklü) → görünür hata + odak', ()
   const ok = WDPApp.formValidate.validateForm(form);
   assert.equal(ok, false);
   const texts = visibleErrorTexts(form);
-  assert.ok(texts.some((t) => /bağış tutar/i.test(t)), texts.join(' | '));
+  assert.ok(texts.some((t) => /bağış tutar|donation amount/i.test(t)), texts.join(' | '));
   assert.ok(
     WDPApp.form.lastValidation.failures.some((f) => f.rule === 'price_empty')
   );
@@ -560,7 +560,7 @@ test('false: hissedar adı boş → görünür hata', () => {
   assert.ok(
     WDPApp.form.lastValidation.failures.some((f) => f.rule === 'shareholder_name_required')
   );
-  assert.ok(visibleErrorTexts(form).some((t) => /Hissedar|zorunlu/i.test(t)));
+  assert.ok(visibleErrorTexts(form).some((t) => /Hissedar|Shareholder|zorunlu|required/i.test(t)));
 });
 
 test('false: sadaka invalid (input yok) → genel form mesajı', () => {
@@ -583,7 +583,7 @@ test('false: sadaka invalid (input yok) → genel form mesajı', () => {
   assert.equal(WDPApp.formValidate.validateForm(form), false);
   const texts = visibleErrorTexts(form);
   assert.ok(
-    texts.some((t) => /işaretli alanları kontrol|sadaka|alt bağış|Geçerli/i.test(t)),
+    texts.some((t) => /işaretli alanları kontrol|highlighted fields|sadaka|alt bağış|additional donation|Geçerli|valid/i.test(t)),
     texts.join(' | ')
   );
 });
@@ -661,7 +661,7 @@ test('false: katlanmış hissedar kartı açılır + görünür mesaj + aria', (
   const row = form.querySelector('.wdp-shareholder-form');
   assert.equal(row.classList.contains('collapsed'), false, 'hatalı kart açık olmalı');
   const texts = visibleErrorTexts(form);
-  assert.ok(texts.some((t) => /Hissedar|zorunlu/i.test(t)), texts.join(' | '));
+  assert.ok(texts.some((t) => /Hissedar|Shareholder|zorunlu|required/i.test(t)), texts.join(' | '));
   const sn = form.querySelector('[name="shareholder_name_1"]');
   assert.equal(sn.getAttribute('aria-invalid'), 'true');
   const desc = sn.getAttribute('aria-describedby');

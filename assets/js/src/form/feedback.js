@@ -244,7 +244,7 @@
     }
     const errorId = nextFieldErrorId();
     errorDiv.id = errorId;
-    errorDiv.textContent = typeof message === 'string' && message.trim() ? message.trim() : 'Bu alan zorunludur.';
+    errorDiv.textContent = typeof message === 'string' && message.trim() ? message.trim() : WDPApp.i18n.__('This field is required.', 'woo-donation-popup');
     try {
       anchor.appendChild(errorDiv);
     } catch (eAppend) {
@@ -369,7 +369,7 @@
     if (!msgs.length) {
       msgs = collectVisibleFieldErrorMessages(form);
     }
-    const msg = msgs.length ? msgs[0] : 'Lütfen işaretli alanları kontrol edin.';
+    const msg = msgs.length ? msgs[0] : WDPApp.i18n.__('Please check the highlighted fields.', 'woo-donation-popup');
     showFormError(form, msg);
   }
 
@@ -385,7 +385,7 @@
             : '');
     if (!primary) {
       const collected = collectVisibleFieldErrorMessages(form);
-      primary = collected.length ? collected[0] : 'Lütfen işaretli alanları kontrol edin.';
+      primary = collected.length ? collected[0] : WDPApp.i18n.__('Please check the highlighted fields.', 'woo-donation-popup');
     }
     ensureVisibleValidationFeedback(form, lines.length ? lines : [primary]);
   }

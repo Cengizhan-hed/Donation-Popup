@@ -93,9 +93,9 @@ export function renderPhpRegion(calls) {
   const lines = [BEGIN];
   for (const c of calls) {
     if (c.ctx) {
-      const key = c.ctx + '\\x04' + c.msg.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+      const key = `${phpSingle(c.ctx)} . "\\x04" . ${phpSingle(c.msg)}`;
       lines.push(
-        `\t\t$out['${key}'] = _x(${phpSingle(c.msg)}, ${phpSingle(c.ctx)}, ${phpSingle(DOMAIN)});`
+        `\t\t$out[${key}] = _x(${phpSingle(c.msg)}, ${phpSingle(c.ctx)}, ${phpSingle(DOMAIN)});`
       );
     } else {
       const key = c.msg.replace(/\\/g, '\\\\').replace(/'/g, "\\'");

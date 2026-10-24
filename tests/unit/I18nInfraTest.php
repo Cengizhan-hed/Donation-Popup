@@ -28,11 +28,17 @@ final class I18nInfraTest extends TestCase {
 		$this->assertStringEndsWith('/languages', (string) ($td['plugin_rel_path'] ?? ''));
 	}
 
-	public function test_js_dictionary_empty_until_generator(): void {
+	public function test_js_dictionary_is_generated_string_map(): void {
 		$this->assertTrue(class_exists('WDP_Js_I18n'));
 		$dict = WDP_Js_I18n::dictionary();
 		$this->assertIsArray($dict);
-		$this->assertSame(array(), $dict);
+		$this->assertNotEmpty($dict);
+		foreach ($dict as $key => $value) {
+			$this->assertIsString($key);
+			$this->assertIsString($value);
+		}
+		$this->assertArrayHasKey('Goal reached', $dict);
+		$this->assertArrayHasKey("wizard step\x04Amount", $dict);
 	}
 
 	public function test_textdomain_hooked_on_init(): void {

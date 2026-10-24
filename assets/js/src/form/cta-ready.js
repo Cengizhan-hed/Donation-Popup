@@ -11,6 +11,13 @@
   'use strict';
 
   const WDPApp = window.WDPApp || (window.WDPApp = {});
+  if (!WDPApp.i18n || typeof WDPApp.i18n.__ !== 'function') {
+    WDPApp.i18n = {
+      __: function (msg) { return msg == null ? '' : String(msg); },
+      _x: function (msg) { return msg == null ? '' : String(msg); },
+      sprintf: function (fmt) { return String(fmt == null ? '' : fmt); },
+    };
+  }
   if (WDPApp.formCtaReady && WDPApp.formCtaReady.MAX_WAIT_MS) {
     return;
   }
@@ -134,7 +141,7 @@
   }
 
   function showSetupFailed(form) {
-    const msg = 'Form henüz yüklenemedi. Lütfen birkaç saniye bekleyip tekrar deneyin.';
+    const msg = WDPApp.i18n.__('The form is not ready yet. Please wait a few seconds and try again.', 'woo-donation-popup');
     if (form && WDPApp.formFeedback && typeof WDPApp.formFeedback.showFormError === 'function') {
       WDPApp.formFeedback.showFormError(form, msg);
       return;

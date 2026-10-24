@@ -64,7 +64,7 @@
     return {
       complete: validation.complete,
       missing: validation.issues.map(function(type) {
-        return type === 'name' ? 'Ad Soyad' : 'Telefon';
+        return type === 'name' ? WDPApp.i18n.__('Full name', 'woo-donation-popup') : WDPApp.i18n.__('Phone', 'woo-donation-popup');
       }),
     };
   }

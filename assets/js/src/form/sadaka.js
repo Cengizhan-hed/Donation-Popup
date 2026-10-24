@@ -31,14 +31,17 @@
     if (typeof formMessages.getSadakaInvalidMessage === 'function') {
       return formMessages.getSadakaInvalidMessage();
     }
-    return 'Geçerli bir alt bağış tutarı giriniz.';
+    return WDPApp.i18n.__('Please enter a valid additional donation amount.', 'woo-donation-popup');
   }
 
   function getSadakaMinErrorMessage(minValue) {
     if (typeof formMessages.getSadakaMinErrorMessage === 'function') {
       return formMessages.getSadakaMinErrorMessage(minValue);
     }
-    return `En az ${formatCurrency(minValue)} bağış giriniz.`;
+    return WDPApp.i18n.sprintf(
+      WDPApp.i18n.__('Please enter at least %s.', 'woo-donation-popup'),
+      formatCurrency(minValue)
+    );
   }
 
   function getSadakaFixedAmount(wrap) {

@@ -85,8 +85,8 @@ test('TRY 10.00 is 10; 10,50 warns without 100x; 1.250 is thousand', () => {
   const warn = u.parseMoneyDetailed('10,50', try0);
   assert.equal(warn.status, 'ambiguous');
   assert.equal(Number.isFinite(u.parseMoney('10,50', try0)), false);
-  assert.match(warn.error, /kuruşlu/);
-  assert.match(u.getAmbiguousAmountMessage(try0), /kuruşlu/);
+  assert.match(warn.error, /kuruşlu|Fractional amounts/);
+  assert.match(u.getAmbiguousAmountMessage(try0), /kuruşlu|Fractional amounts/);
   assert.match(u.getNoFractionAmountMessage(try0), /10/);
   assert.equal(u.parseMoney('1.250', try0), 1250);
   assert.equal(u.normalizeAmountInput('₺1.250', try0), '1.250');

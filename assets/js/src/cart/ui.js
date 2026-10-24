@@ -37,9 +37,9 @@
   function getButtonTexts() {
     const buttonTexts = (wdp_ajax && wdp_ajax.button_texts) ? wdp_ajax.button_texts : {};
     return {
-      viewCartText: buttonTexts.success_view_cart || "Sepete Git",
-      goCheckoutText: buttonTexts.success_go_checkout || "Bağışı Tamamla",
-      newDonationText: buttonTexts.success_new_donation || "Bağış eklemeye devam edin",
+      viewCartText: buttonTexts.success_view_cart || WDPApp.i18n.__('Go to cart', 'woo-donation-popup'),
+      goCheckoutText: buttonTexts.success_go_checkout || WDPApp.i18n.__('Complete donation', 'woo-donation-popup'),
+      newDonationText: buttonTexts.success_new_donation || WDPApp.i18n.__('Continue adding donations', 'woo-donation-popup'),
     };
   }
 
@@ -122,7 +122,7 @@
     row.setAttribute('aria-live', 'polite');
     const label = document.createElement('span');
     label.className = base + '__label';
-    label.textContent = 'Toplam';
+    label.textContent = WDPApp.i18n.__('Total', 'woo-donation-popup');
     const value = document.createElement('span');
     value.className = base + '__value';
     value.textContent = formatSidePanelSubtotalAmount(cartItems);
@@ -151,13 +151,13 @@
     const titleWrap = document.createElement('div');
     titleWrap.className = 'wdp-mini-cart-header__title';
     const h4 = document.createElement('h4');
-    h4.textContent = 'Bağış Sepetiniz';
+    h4.textContent = WDPApp.i18n.__('Your donation cart', 'woo-donation-popup');
     titleWrap.appendChild(h4);
     if (itemCount > 0) {
       const badge = document.createElement('span');
       badge.className = 'wdp-mini-cart-count';
       badge.textContent = String(itemCount);
-      badge.setAttribute('aria-label', itemCount + ' ürün');
+      badge.setAttribute('aria-label', WDPApp.i18n.sprintf(WDPApp.i18n.__('%d product', 'woo-donation-popup'), itemCount));
       titleWrap.appendChild(badge);
     }
     header.appendChild(titleWrap);
@@ -187,7 +187,7 @@
         infoCell.className = 'wdp-cart-item-info';
         const nameDiv = document.createElement('div');
         nameDiv.className = isSadakaLine ? 'wdp-cart-item-name wdp-cart-item-name--sadaka' : 'wdp-cart-item-name';
-        nameDiv.textContent = item.product_name || item.name || 'Ürün';
+        nameDiv.textContent = item.product_name || item.name || WDPApp.i18n.__('Product', 'woo-donation-popup');
         infoCell.appendChild(nameDiv);
 
         if (item.meta && item.meta.length > 0) {
@@ -209,7 +209,7 @@
         priceDiv.textContent = priceDisplay;
         const qtyDiv = document.createElement('div');
         qtyDiv.className = 'wdp-cart-item-quantity';
-        qtyDiv.textContent = `${itemQuantity} adet`;
+        qtyDiv.textContent = WDPApp.i18n.sprintf(WDPApp.i18n.__('%d item', 'woo-donation-popup'), itemQuantity);
         detailsCell.appendChild(priceDiv);
         detailsCell.appendChild(qtyDiv);
 
@@ -218,7 +218,7 @@
         const removeBtn = document.createElement('button');
         removeBtn.type = 'button';
         removeBtn.className = 'wdp-remove-cart-item';
-        removeBtn.setAttribute('aria-label', 'Sepetten Kaldır');
+        removeBtn.setAttribute('aria-label', WDPApp.i18n.__('Remove from cart', 'woo-donation-popup'));
         removeBtn.setAttribute('data-cart-item-key', String(item.key || ''));
         const removeIconHost = document.createElement('span');
         removeIconHost.className = 'wdp-remove-cart-item__icon';
@@ -239,10 +239,10 @@
       empty.className = 'wdp-cart-empty';
       const emptyTitle = document.createElement('span');
       emptyTitle.className = 'wdp-cart-empty__title';
-      emptyTitle.textContent = 'Sepetiniz boş';
+      emptyTitle.textContent = WDPApp.i18n.__('Your cart is empty', 'woo-donation-popup');
       const emptyHint = document.createElement('span');
       emptyHint.className = 'wdp-cart-empty__hint';
-      emptyHint.textContent = 'Bağış ekleyerek buradan ödeme adımına geçebilirsiniz.';
+      emptyHint.textContent = WDPApp.i18n.__('Add a donation to continue to checkout.', 'woo-donation-popup');
       empty.appendChild(emptyTitle);
       empty.appendChild(emptyHint);
       itemsWrap.appendChild(empty);

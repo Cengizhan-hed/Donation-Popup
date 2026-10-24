@@ -8,7 +8,14 @@
   'use strict';
 
   const WDPApp = window.WDPApp || (window.WDPApp = {});
-  
+  if (!WDPApp.i18n || typeof WDPApp.i18n.__ !== 'function') {
+    WDPApp.i18n = {
+      __: function (msg) { return msg == null ? '' : String(msg); },
+      _x: function (msg) { return msg == null ? '' : String(msg); },
+      sprintf: function (fmt) { return String(fmt == null ? '' : fmt); },
+    };
+  }
+
   // Module loader helper
   function getModule(name) {
     return WDPApp[name] || {};
@@ -235,7 +242,7 @@
           }
           const errorMsg = formElement.querySelector(".wdp-form-error");
           if (errorMsg) {
-            errorMsg.textContent = "Form henüz yüklenemedi. Lütfen birkaç saniye bekleyip tekrar deneyin.";
+            errorMsg.textContent = WDPApp.i18n.__('The form is not ready yet. Please wait a few seconds and try again.', 'woo-donation-popup');
             errorMsg.style.display = "block";
             errorMsg.setAttribute("role", "alert");
           }

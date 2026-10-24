@@ -38,7 +38,7 @@ export function extractPostActionFromRequest(req) {
 
 /** product.js / modal.js genel hata metinleri — doğrulama mesajı değil. */
 export const UNEXPECTED_PLUGIN_ERROR_RE =
-  /Ürün bilgileri alınamadı|Form tam yüklenemedi|sayfayı yenileyip|ağ hatası|network error|HTTP error/i;
+  /Ürün bilgileri alınamadı|Form tam yüklenemedi|sayfayı yenileyip|ağ hatası|network error|HTTP error|could not be loaded|did not finish loading|refresh the page/i;
 
 /** form/feedback.js .wdp-form-error; utils.js .wdp-toast--error */
 export const PLUGIN_ERROR_BANNER_SEL = `${SEL.formError}, .wdp-toast--error, #wdp-toast-host .wdp-toast--error, [role="alert"].wdp-form-error`;

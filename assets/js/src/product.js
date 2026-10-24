@@ -8,7 +8,14 @@
   'use strict';
 
   const WDPApp = window.WDPApp || (window.WDPApp = {});
-  
+  if (!WDPApp.i18n || typeof WDPApp.i18n.__ !== 'function') {
+    WDPApp.i18n = {
+      __: function (msg) { return msg == null ? '' : String(msg); },
+      _x: function (msg) { return msg == null ? '' : String(msg); },
+      sprintf: function (fmt) { return String(fmt == null ? '' : fmt); },
+    };
+  }
+
   // Use centralized module dependency helper
   const utilsCheck = (WDPApp.utils && WDPApp.utils.ensureModule)
     ? WDPApp.utils.ensureModule('utils', ['safeLog', 'getAjaxNonce', 'formatCurrency', 'formatPrice', 'formatMinPlaceholder', 'applyCurrencyShellPosition', 'announceStatus', 'isValidProductId', 'productInfoErrorMessage', 'showToast', 'refreshWdpAjaxNonces', 'classifyAjaxFailure'])
@@ -144,7 +151,7 @@
     }
 
     const fallbackMessage =
-      message || "Ürün bilgileri alınamadı. Lütfen sayfayı yenileyip tekrar deneyin.";
+      message || WDPApp.i18n.__('Product information could not be loaded. Please refresh the page and try again.', 'woo-donation-popup');
     const roots = getWdpProductRoots(id);
     if (!roots.length) {
       const fallback =
@@ -186,7 +193,7 @@
     if (typeof showToast === "function") {
       showToast({
         type: "error",
-        title: (wdp_ajax.strings && wdp_ajax.strings.error) || "Bir hata oluştu",
+        title: (wdp_ajax.strings && wdp_ajax.strings.error) || WDPApp.i18n.__('An error occurred', 'woo-donation-popup'),
         message: fallbackMessage,
         duration: 6000,
       });
@@ -341,7 +348,7 @@
         null;
       const showCustomPrice = !!(data.is_custom_price || customPriceRow);
       if (priceField) {
-        safeLog("Özel fiyat durumu:", data.is_custom_price);
+        safeLog("Custom price state:", data.is_custom_price);
         if (showCustomPrice) {
           if (customPriceRow) {
             customPriceRow.style.display = "";

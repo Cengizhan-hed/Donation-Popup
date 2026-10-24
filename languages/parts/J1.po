@@ -1,0 +1,450 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: woo-donation-popup\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: tr_TR\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: assets/js/src/form/messages.js:120
+#: assets/js/src/form/sadaka.js:34
+#: assets/js/src/form.js:46
+msgid "Please enter a valid additional donation amount."
+msgstr "Geçerli bir alt bağış tutarı giriniz."
+
+#: assets/js/src/form/messages.js:142
+#: assets/js/src/form/sadaka.js:42
+#: assets/js/src/form.js:54
+#, php-format
+msgid "Please enter at least %s."
+msgstr "En az %s bağış giriniz."
+
+#: assets/js/src/form/messages.js:25
+#: assets/js/src/form/validate.js:110
+#: assets/js/src/form.js:334
+msgid "Full name is required."
+msgstr "Ad Soyad zorunludur."
+
+#: assets/js/src/form/messages.js:34
+#: assets/js/src/form/validate.js:117
+#: assets/js/src/form.js:342
+msgid "Shareholder name is required."
+msgstr "Hissedar adı zorunludur."
+
+#: assets/js/src/form/messages.js:43
+#: assets/js/src/form/validate.js:124
+#: assets/js/src/form/wizard.js:228
+#: assets/js/src/form.js:350
+msgid "This field is required"
+msgstr "Bu alan zorunludur"
+
+#: assets/js/src/form/messages.js:63
+#: assets/js/src/form/validate.js:138
+#: assets/js/src/form.js:474
+msgid "Please enter your complete phone number."
+msgstr "Telefon numaranızı eksiksiz giriniz."
+
+#: assets/js/src/form/validate.js:706
+#: assets/js/src/form.js:487
+msgid "Please enter a donation amount."
+msgstr "Lütfen bağış tutarını giriniz."
+
+#: assets/js/src/form/feedback.js:247
+#: assets/js/src/form.js:497
+msgid "This field is required."
+msgstr "Bu alan zorunludur."
+
+#: assets/js/src/form/feedback.js:372
+#: assets/js/src/form/validate.js:20
+#: assets/js/src/form.js:561
+msgid "Please check the highlighted fields."
+msgstr "Lütfen işaretli alanları kontrol edin."
+
+#: assets/js/src/form/ajax.js:376
+#: assets/js/src/form.js:663
+msgid "The action could not be completed. Please try again."
+msgstr "İşlem şu anda tamamlanamadı. Lütfen tekrar deneyin."
+
+#: assets/js/src/cart/ui.js:40
+msgid "Go to cart"
+msgstr "Sepete Git"
+
+#: assets/js/src/cart/ui.js:41
+msgid "Complete donation"
+msgstr "Bağışı Tamamla"
+
+#: assets/js/src/cart/ui.js:42
+msgid "Continue adding donations"
+msgstr "Bağış eklemeye devam edin"
+
+#: assets/js/src/cart/ui.js:125
+msgid "Total"
+msgstr "Toplam"
+
+#: assets/js/src/cart/ui.js:154
+msgid "Your donation cart"
+msgstr "Bağış Sepetiniz"
+
+#: assets/js/src/cart/ui.js:160
+#, php-format
+msgid "%d product"
+msgstr "%d ürün"
+
+#: assets/js/src/cart/ui.js:190
+msgid "Product"
+msgstr "Ürün"
+
+#: assets/js/src/cart/ui.js:212
+#, php-format
+msgid "%d item"
+msgstr "%d adet"
+
+#: assets/js/src/cart/ui.js:221
+msgid "Remove from cart"
+msgstr "Sepetten Kaldır"
+
+#: assets/js/src/cart/ui.js:242
+msgid "Your cart is empty"
+msgstr "Sepetiniz boş"
+
+#: assets/js/src/cart/ui.js:245
+msgid "Add a donation to continue to checkout."
+msgstr "Bağış ekleyerek buradan ödeme adımına geçebilirsiniz."
+
+#: assets/js/src/core/utils.js:241
+#, php-format
+msgid "Fractional amounts are not allowed on this site, e.g. %s"
+msgstr "Bu sitede kuruşlu tutar girilemez, örn. %s"
+
+#: assets/js/src/core/utils.js:252
+#, php-format
+msgid "Please enter the amount in this format, e.g. %s"
+msgstr "Lütfen tutarı şu biçimde yazın, örn. %s"
+
+#: assets/js/src/core/utils.js:261
+msgid "Invalid price value."
+msgstr "Geçersiz fiyat değeri."
+
+#: assets/js/src/core/utils.js:831
+msgid "Offline"
+msgstr "Çevrimdışı"
+
+#: assets/js/src/core/utils.js:832
+msgid "No connection. Actions can be retried when you are back online."
+msgstr "Bağlantı yok. İşlemler bağlantı gelince tekrar denenebilir."
+
+#: assets/js/src/core/utils.js:841
+msgid "Online"
+msgstr "Çevrimiçi"
+
+#: assets/js/src/core/utils.js:842
+msgid "Connection restored."
+msgstr "Bağlantı yeniden kuruldu."
+
+#: assets/js/src/bootstrap/event-manager.js:245
+#: assets/js/src/form/cta-ready.js:144
+msgid "The form is not ready yet. Please wait a few seconds and try again."
+msgstr "Form henüz yüklenemedi. Lütfen birkaç saniye bekleyip tekrar deneyin."
+
+#: assets/js/src/form/ajax.js:28
+msgid "Too many requests. Please wait a moment and try again."
+msgstr "Çok fazla istek gönderildi. Lütfen bir süre bekleyip tekrar deneyin."
+
+#: assets/js/src/form/ajax.js:148
+msgid "Your donation has been added to the cart"
+msgstr "Bağışınız sepete eklendi"
+
+#: assets/js/src/form/ajax.js:239
+msgid "Redirecting you to checkout."
+msgstr "Ödeme adımına yönlendiriliyorsunuz."
+
+#: assets/js/src/form/ajax.js:245
+msgid "Your donation has been added to the cart."
+msgstr "Bağışınız sepete eklendi."
+
+#: assets/js/src/form/ajax.js:308
+msgid "Loading cart contents..."
+msgstr "Sepet içeriği yükleniyor..."
+
+#: assets/js/src/form/ajax.js:418
+msgid "You appear to be offline. Please try again when you are back online."
+msgstr "Çevrimdışı görünüyorsunuz. Bağlantı gelince tekrar deneyin."
+
+#: assets/js/src/form/ajax.js:419
+msgid "A connection error occurred. Please try again."
+msgstr "Bağlantı hatası oluştu. Lütfen tekrar deneyin."
+
+#: assets/js/src/form/ajax.js:433
+msgid "Try again"
+msgstr "Tekrar dene"
+
+#: assets/js/src/form/ajax.js:451
+msgid "Could not submit"
+msgstr "Gönderilemedi"
+
+#: assets/js/src/cart/actions.js:122
+#: assets/js/src/form/ajax.js:371
+msgctxt "server error keyword"
+msgid "security"
+msgstr "güvenlik"
+
+#: assets/js/src/form/ajax.js:372
+msgctxt "server error keyword"
+msgid "invalid request"
+msgstr "geçersiz istek"
+
+#: assets/js/src/form/ajax.js:373
+msgctxt "server error keyword"
+msgid "unexpected error"
+msgstr "beklenmeyen bir hata"
+
+#: assets/js/src/form/ajax.js:374
+msgctxt "server error keyword"
+msgid "cart object"
+msgstr "sepet nesnesi"
+
+#: assets/js/src/form/messages.js:104
+msgid "full name is missing"
+msgstr "ad soyad alanı eksik"
+
+#: assets/js/src/form/messages.js:110
+msgid "phone number is missing or invalid"
+msgstr "telefon alanı eksik veya hatalı"
+
+#: assets/js/src/form/messages.js:112
+#: assets/js/src/form/validate.js:198
+msgid "field is missing"
+msgstr "alan eksik"
+
+#: assets/js/src/form/messages.js:129
+#: assets/js/src/form/validate.js:652
+msgid "Please enter a valid email address."
+msgstr "Lütfen geçerli bir e-posta adresi giriniz."
+
+#: assets/js/src/form/validate.js:555
+#, php-format
+msgid "%1$d. share %2$s"
+msgstr "%1$d. hisse %2$s"
+
+#: assets/js/src/form/validate.js:581
+#, php-format
+msgid "Incomplete shareholder forms: %d."
+msgstr "%d hissedar formu eksik."
+
+#: assets/js/src/form/validate.js:718
+#: assets/js/src/form/wizard.js:453
+msgid "Fractional amounts are not allowed on this site, e.g. 10"
+msgstr "Bu sitede kuruşlu tutar girilemez, örn. 10"
+
+#: assets/js/src/form/validate.js:726
+msgid "Please enter a valid donation amount."
+msgstr "Lütfen geçerli bir bağış tutarı giriniz."
+
+#: assets/js/src/form/validate.js:735
+#, php-format
+msgid "Maximum amount: %s"
+msgstr "Maksimum fiyat: %s"
+
+#: assets/js/src/form/validate.js:747
+#, php-format
+msgid "Please enter a total of %s or more."
+msgstr "Lütfen %s ve üstü toplam tutar girin."
+
+#: assets/js/src/form/validate.js:751
+#, php-format
+msgid "Please enter %s or more."
+msgstr "Lütfen %s ve üstü değerler girin."
+
+#: assets/js/src/form/validate.js:778
+msgid "Please check the additional donation amount."
+msgstr "Lütfen sadaka tutarını kontrol edin."
+
+#: assets/js/src/form/validate.js:830
+#, php-format
+msgid "Shareholder form %d is incomplete."
+msgstr "%d. hissedar formu eksik."
+
+#: assets/js/src/form/validate.js:833
+msgid "1 shareholder form is incomplete."
+msgstr "1 hissedar formu eksik."
+
+#: assets/js/src/form/wizard.js:26
+msgid "Your details"
+msgstr "Bilgileriniz"
+
+#: assets/js/src/form/wizard.js:27
+msgctxt "wizard step"
+msgid "Amount"
+msgstr "Tutar"
+
+#: assets/js/src/form/wizard.js:28
+msgid "Shares"
+msgstr "Hisseler"
+
+#: assets/js/src/form/wizard.js:29
+msgid "Additional donation"
+msgstr "Alt bağış"
+
+#: assets/js/src/form/wizard.js:30
+msgid "Confirmation"
+msgstr "Onay"
+
+#: assets/js/src/form/wizard.js:154
+msgid "Form steps"
+msgstr "Form adımları"
+
+#: assets/js/src/form/wizard.js:161
+msgid "Back"
+msgstr "Geri"
+
+#: assets/js/src/form/wizard.js:164
+msgid "Next"
+msgstr "İleri"
+
+#: assets/js/src/form/wizard.js:288
+msgid "Please select at least 1 share."
+msgstr "En az 1 hisse seçin."
+
+#: assets/js/src/form/wizard.js:302
+msgid "Please fill in the share details."
+msgstr "Lütfen hisse bilgilerini doldurun."
+
+#: assets/js/src/form/wizard.js:333
+msgctxt "wizard step"
+msgid "Full name is required."
+msgstr "Ad soyad zorunludur."
+
+#: assets/js/src/form/wizard.js:340
+msgid "Phone number is required."
+msgstr "Telefon numarası zorunludur."
+
+#: assets/js/src/form/wizard.js:349
+msgid "Please fill in the shareholder name and phone details."
+msgstr "Lütfen hissedar ad ve telefon bilgilerini doldurun."
+
+#: assets/js/src/form/wizard.js:402
+msgid "Please enter a valid phone number."
+msgstr "Geçerli bir telefon girin."
+
+#: assets/js/src/form/wizard.js:413
+msgid "Please check the phone number."
+msgstr "Telefon numarasını kontrol edin."
+
+#: assets/js/src/form/wizard.js:463
+msgid "Minimum amount: "
+msgstr "Minimum tutar: "
+
+#: assets/js/src/form/wizard.js:475
+msgid "Please fill in the missing or invalid fields."
+msgstr "Lütfen eksik veya hatalı alanları doldurun."
+
+#: assets/js/src/form/wizard.js:528
+msgid "Step"
+msgstr "Adım"
+
+#: assets/js/src/modal.js:35
+msgid "The form did not finish loading. Please check your details."
+msgstr "Form tam yüklenemedi, lütfen bilgilerinizi kontrol edin."
+
+#: assets/js/src/modal.js:498
+#, php-format
+msgid "%s form opened"
+msgstr "%s formu açıldı"
+
+#: assets/js/src/modal.js:500
+msgid "Donation panel opened"
+msgstr "Bağış paneli açıldı"
+
+#: assets/js/src/modal.js:500
+msgid "Donation form opened"
+msgstr "Bağış formu açıldı"
+
+#: assets/js/src/modal.js:738
+msgid "Donation panel closed"
+msgstr "Bağış paneli kapatıldı"
+
+#: assets/js/src/modal.js:738
+msgid "Donation form closed"
+msgstr "Bağış formu kapatıldı"
+
+#: assets/js/src/phone-input.js:55
+msgid "Turkey"
+msgstr "Türkiye"
+
+#: assets/js/src/phone-input.js:672
+#: assets/js/src/shareholder/render.js:120
+msgid "Phone number *"
+msgstr "Telefon Numarası *"
+
+#: assets/js/src/phone-input.js:701
+msgid "Select country code"
+msgstr "Ülke kodu seç"
+
+#: assets/js/src/product.js:154
+msgid "Product information could not be loaded. Please refresh the page and try again."
+msgstr "Ürün bilgileri alınamadı. Lütfen sayfayı yenileyip tekrar deneyin."
+
+#: assets/js/src/product.js:196
+msgid "An error occurred"
+msgstr "Bir hata oluştu"
+
+#: assets/js/src/progress-bar.js:72
+msgid "Goal reached"
+msgstr "Hedefe ulaşıldı"
+
+#: assets/js/src/progress-bar.js:139
+#, php-format
+msgid "%s%% of the goal completed"
+msgstr "Hedefin %%%s’i tamamlandı"
+
+#: assets/js/src/progress-bar.js:157
+#, php-format
+msgid "%s remaining"
+msgstr "%s kaldı"
+
+#: assets/js/src/progress-bar.js:296
+#, php-format
+msgid "Confirmed %1$s%%, %2$s%% including pending and typed amounts"
+msgstr "Onaylı %1$s%%, bekleyen ve yazılan ile %2$s%%"
+
+#: assets/js/src/progress-bar.js:321
+msgid "In progress"
+msgstr "Devam ediyor"
+
+#: assets/js/src/progress-bar.js:323
+msgid "Very close to the goal"
+msgstr "Hedefe çok yakın"
+
+#: assets/js/src/progress-bar.js:324
+msgid "Your contribution is being added"
+msgstr "Katınız ekleniyor"
+
+#: assets/js/src/shareholder/guidance.js:67
+msgid "Full name"
+msgstr "Ad Soyad"
+
+#: assets/js/src/shareholder/guidance.js:67
+msgid "Phone"
+msgstr "Telefon"
+
+#: assets/js/src/shareholder/render.js:118
+msgid "Shareholder details"
+msgstr "Hissedar Bilgileri"
+
+#: assets/js/src/shareholder/render.js:119
+msgid "Full name *"
+msgstr "Ad Soyad *"
+
+#: assets/js/src/shareholder/render.js:121
+msgid "Note (optional)"
+msgstr "Not (isteğe bağlı)"
+
+#: assets/js/src/shareholder/render.js:122
+msgid "Email (optional)"
+msgstr "E-posta (isteğe bağlı)"
+
+#: assets/js/src/shareholder/render.js:123
+msgid "Create a copy"
+msgstr "Kopyasını Oluştur"
+
