@@ -186,6 +186,32 @@ async function readPageCurrency(page) {
 }
 
 /**
+ * Ödeme sayfası beklenmedik bir sayfaysa (ör. Coming soon, giriş, boş sepet yönlendirmesi) açık sınıfla hata.
+ * Yalnız durum kodu, yol, gövde sınıfları ve ÇEREZ ADLARI yazılır (değer yok).
+ * @param {import('@playwright/test').Page} page
+ * @param {import('@playwright/test').Response|null} resp
+ */
+async function checkoutPageGuard(page, resp) {
+  const info = await page.evaluate(() => ({
+    bodyClass: String(document.body.className || '').split(/\s+/).filter(Boolean).slice(0, 8),
+    comingSoon: !!document.querySelector('.woocommerce-coming-soon, [class*="coming-soon"], [id*="coming-soon"]'),
+    isCheckout: !!document.querySelector('body.woocommerce-checkout, .wp-block-woocommerce-checkout, form.woocommerce-checkout, .wc-block-checkout'),
+  }));
+  if (info.isCheckout && !info.comingSoon) return;
+  const cookies = (await page.context().cookies()).map((c) => c.name).filter((n) => /woo|wp_|wdp|session|cart|share/i.test(n));
+  let finalPath = '';
+  try {
+    finalPath = new URL(page.url()).pathname;
+  } catch {
+    finalPath = '';
+  }
+  const kind = info.comingSoon ? 'coming-soon-engeli' : 'odeme-sayfasi-degil';
+  throw new Error(
+    `${kind}: status=${resp ? resp.status() : '?'} yol=${finalPath} bodyClass=${info.bodyClass.join('.')} cerezler=${[...new Set(cookies)].join(',')}`
+  );
+}
+
+/**
  * @param {{
  *   page: import('@playwright/test').Page,
  *   env: object,
@@ -263,10 +289,40 @@ export async function runRemoteSmokeChecks(ctx) {
         `eklenti betiği yok main=${runtime.main_bundle} app=${runtime.has_wdp_app} combined=${runtime.possibly_combined}`
       );
     }
-    const ui = await collectVisiblePluginEntry(page);
-    const classified = classifyVisiblePluginEntry(ui);
+    // Tema/sayfa oluşturucu girişi geç çizebilir: örnekle (sabit bekleme değil), süre sınırı profilden.
+    const deadline = Date.now() + timeouts.expect;
+    let classified = classifyVisiblePluginEntry(await collectVisiblePluginEntry(page));
+    while (!classified.ok && Date.now() < deadline) {
+      // Sayfa oluşturucular (Avada vb.) öğeyi kaydırınca gösterir: adım adım kaydır.
+      await page.evaluate(() => window.scrollBy(0, Math.max(300, Math.round(window.innerHeight * 0.8))));
+      await new Promise((r) => setTimeout(r, 250));
+      classified = classifyVisiblePluginEntry(await collectVisiblePluginEntry(page));
+    }
     if (!classified.ok) {
-      throw new Error(classified.reason || 'bağış tetikleyicisi görünmüyor');
+      const probe = await page.evaluate(
+        ({ inlineSel, panelSel, popupSel }) => {
+          const one = (sel) => {
+            const all = Array.from(document.querySelectorAll(sel));
+            const el = all[0];
+            if (!el) return { n: 0 };
+            const st = getComputedStyle(el);
+            const r = el.getBoundingClientRect();
+            return {
+              n: all.length,
+              display: st.display,
+              visibility: st.visibility,
+              opacity: st.opacity,
+              w: Math.round(r.width),
+              h: Math.round(r.height),
+              inLoop: !!el.closest('.wdp-loop-donate,[class*="related"],[class*="upsells"],ul.products'),
+              parent: (el.parentElement && el.parentElement.className ? String(el.parentElement.className) : '').slice(0, 60),
+            };
+          };
+          return { inline: one(inlineSel), panel: one(panelSel), popup: one(popupSel), url: location.pathname };
+        },
+        { inlineSel: SEL.inlineDonationForm, panelSel: SEL.sidePanelTrigger, popupSel: SEL.centeredPopupTrigger }
+      );
+      throw new Error(`${classified.reason || 'bağış tetikleyicisi görünmüyor'} probe=${JSON.stringify(probe)}`);
     }
     pass();
   } catch (e) {
@@ -381,10 +437,15 @@ export async function runRemoteSmokeChecks(ctx) {
   // (4) ödeme sayfası — alan doldurma yok, sipariş yok
   try {
     const checkoutPath = checkoutPathFromUrl(env.E2E_CHECKOUT_PAGE || '', env.E2E_BASE_URL);
-    await page.goto(withCacheBust(env.E2E_BASE_URL, checkoutPath, extra), {
+    const checkoutResp = await page.goto(withCacheBust(env.E2E_BASE_URL, checkoutPath, extra), {
       waitUntil: 'domcontentloaded',
       timeout: timeouts.navigation,
     });
+    try {
+      await checkoutPageGuard(page, checkoutResp);
+    } catch (guardErr) {
+      throw guardErr;
+    }
     await page
       .locator('body.woocommerce-checkout, .wp-block-woocommerce-checkout, form.woocommerce-checkout, .wc-block-checkout')
       .first()
@@ -427,8 +488,19 @@ export async function runRemoteSmokeChecks(ctx) {
     }
     pass();
   } catch (e) {
-    await fail('checkout-view', 'Ödeme sayfası ürün adı / tutar (view-only)', e);
-    return;
+    const msg = e && e.message ? String(e.message) : '';
+    if (/^coming-soon-engeli/.test(msg) && profile.comingSoon) {
+      // Kanıt: profil/keşif coming_soon=yes (WP verisi) + sayfada coming soon işareti. Yayın öncesi site; ödeme içeriği doğrulanamaz.
+      skipWp(
+        'checkout-view',
+        SKIP_REASONS.COMING_SOON_CHECKOUT,
+        msg.replace(/cerezler=.*$/, '').trim(),
+        SKIP_EVIDENCE.WP_DATA
+      );
+    } else {
+      await fail('checkout-view', 'Ödeme sayfası ürün adı / tutar (view-only)', e);
+      return;
+    }
   }
 
   // (5) belirsiz/kuruşlu tutar — ondalık 0 mağazada 10,50

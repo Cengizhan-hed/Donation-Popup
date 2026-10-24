@@ -3,7 +3,7 @@
  * Ekran gözlemi (DOM) atlama gerekçesi olamaz.
  */
 
-/** @typedef {'no-list-page'|'no-shop-page'|'no-popup-source'|'no-published-product'|'no-published-shares'|'private-fixture'|'setting-off'|'no-wc-product-id'|'no-related-products'|'no-remote-orders'|'local-only'|'no-product-path'|'theme-hides-related'} SkipReasonCode */
+/** @typedef {'no-list-page'|'no-shop-page'|'no-popup-source'|'no-published-product'|'no-published-shares'|'private-fixture'|'setting-off'|'no-wc-product-id'|'no-related-products'|'no-remote-orders'|'local-only'|'no-product-path'|'theme-hides-related'|'coming-soon-checkout'} SkipReasonCode */
 /** @typedef {'wp-data'|'policy'|'css-source'} SkipEvidence */
 
 export const PLUGIN_STYLE_PATH = '/wp-content/plugins/woo-donation-popup/';
@@ -22,6 +22,7 @@ export const SKIP_REASONS = Object.freeze({
   LOCAL_ONLY: 'local-only',
   NO_PRODUCT_PATH: 'no-product-path',
   THEME_HIDES_RELATED: 'theme-hides-related',
+  COMING_SOON_CHECKOUT: 'coming-soon-checkout',
 });
 
 export const ALLOWED_SKIP_REASONS = Object.freeze(Object.values(SKIP_REASONS));
@@ -49,6 +50,8 @@ export const SKIP_LABELS = Object.freeze({
   [SKIP_REASONS.LOCAL_ONLY]: 'yalnız yerel',
   [SKIP_REASONS.NO_PRODUCT_PATH]: 'Katalogda ürün yolu yok',
   [SKIP_REASONS.THEME_HIDES_RELATED]: 'Tema/başka eklenti CSS ilgili ürünler bölümünü gizliyor',
+  [SKIP_REASONS.COMING_SOON_CHECKOUT]:
+    'WooCommerce coming soon açık (profil/keşif: coming_soon=yes); ödeme sayfası ziyaretçiye coming soon içeriği veriyor — yayın öncesi site',
 });
 
 /**
