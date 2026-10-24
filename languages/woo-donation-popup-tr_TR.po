@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: woo-donation-popup\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-24 16:26:56+0000\n"
-"PO-Revision-Date: 2026-10-24 16:26:56+0000\n"
+"POT-Creation-Date: 2026-10-24 18:34:25+0000\n"
+"PO-Revision-Date: 2026-10-24 18:34:25+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: tr_TR\n"
@@ -1135,6 +1135,10 @@ msgstr "Bağış formu: ürün bulunamadı (id/slug/sku verilmedi veya bu sayfa 
 #: includes/class-cart.php:546 includes/class-order-meta-keys.php:81
 msgid "Donation note"
 msgstr "Bağış Notu"
+
+#: includes/compat/class-compat-avada-element.php
+msgid "Donation Panel"
+msgstr "Bağış Paneli"
 
 #: assets/js/src/modal.js:738
 msgid "Donation panel closed"

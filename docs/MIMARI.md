@@ -841,3 +841,18 @@ Eklenti kodu (`includes/`, `uninstall.php`) sayfa oluşturmaz/silmez; `wp_trash_
 - Araç: `tools/rector/rename-map.json` + `WDP_RECTOR_RENAME=1 php vendor-dev/bin/rector process` (yöntem adları), tek seferlik betikle sınıf/dosya/JS/CSS/test adları; "protect" listesi (istek/dizi anahtarları, kanca adları, DOM sınıf/öznitelikleri, betik handle'ları, sepet öğe anahtarları `wdp_sadaka_donation`/`wdp_sadaka_linked_wc_product`, `-sadaka` benzersiz anahtar eki, `wdp_sadaka_visibility_cache_cleared`) DEĞİŞMEDİ.
 - Kalıcı ürün meta anahtarları yeni adlara taşındı: `_enable_addon_donation`, `_addon_toggle_label`, `_addon_wc_product_id`, `_addon_min_price`, `_addon_fixed_price`, `_addon_donation_message`. Göç `WDP_Migrations::step_10_35_2` (sürüm kapılı, idempotent; yalnız yeni anahtarı olmayan ürüne kopyalar; eski anahtar silinmez). Okuma: `WDP_Addon_Product_Visibility::get_meta()` önce yeni, yoksa eski (`LEGACY_META`). Meta sorguları OR ile iki anahtarı da tarar; `delete` iki anahtarı da siler; uninstall eski anahtarları da temizler.
 - Sipariş öğe meta anahtarlarında "sadaka" yoktu (değişiklik yok). Kısa kodlar, öznitelikleri, blok/Elementor adları, kanca adları değişmedi; kanıt: `tests/unit/CompatibilityContractTest.php`, göç: `tests/unit/Migration10352AddonMetaTest.php`.
+
+## Avada (Fusion Builder) elementleri (F7B)
+
+- Dosya: `includes/compat/class-compat-avada-element.php` (`WDP_Compat_Avada_Element`). `WDP_Compat_Loader::init()` yalnız `fusion_builder_before_init` kancasına bağlar; sınıf Fusion Builder kancayı ateşlemedikçe yüklenmez, çekirdek Avada'ya bağlı değildir. Kayıt `fusion_builder_map()` ile (yoksa hiçbir şey yapmaz).
+- İki element, adlar "Donation Panel - Donation form" ve "Donation Panel - Donations list" (Select Element'te "Donation Panel" aranınca ikisi de çıkar; arama anahtar kelimeleri Elementor ile aynı, çevrilebilir). Avada'da ayrı kategori API'si yok; ad öneki kategori işlevi görür.
+- Form: `wdp_avada_donation_form` (yalnız Fusion Builder aktifken kayıtlı sarmalayıcı). `source` (current/list/manual) + `product_id`/`manual`, `display` (inline/popup/panel), `show_title`, `button_text` -> `do_shortcode` ile mevcut `[wdp_donation_form]`, `[wdp_donation_button]`, `[wdp_donation_button_panel]`. Liste: doğrudan mevcut `[wdp_donations]` kısa koduna eşlenir (Elementor widget'ı + blokla aynı 30 öznitelik; `columns_tablet/mobile` dahil).
+- Kısa kod adları/öznitelikleri değişmedi. Çeviri: `languages/parts/F7B.po` ("Donation Panel"), diğer etiketler Elementor ile ortak msgid.
+- Test: `tests/unit/CompatAvadaElementTest.php` (Fusion Builder yokken yüklenmez; saplamayla `fusion_builder_map` 2 kez çağrılır; parametreler Elementor kontrolleri + blok özniteliklerini kapsar; render kısa kod dizesi).
+
+### Avada editöründe elle kontrol (uzakta, Claude yürütür)
+1. Avada Live veya Backend Builder'da bir sayfa aç (eklenti etkin). Container/Column içinde "Add Element" -> arama kutusuna "Donation Panel" yaz.
+2. "Donation Panel - Donation form" ekle: Product source = Current product (ürün sayfası şablonunda) / Select from list / Enter ID or slug; Display = Inline form, Popup, Side panel; Popup/Side panel'de "Button text" görünür, Inline'da "Show heading".
+3. "Donation Panel - Donations list" ekle: Query ve Display sekmeleri; Count, Columns (masaüstü/tablet/mobil), Tabs, Button vb.
+4. Kaydet, ön yüzü aç.
+Ön yüz kontrol listesi: (a) form satır içi görünür, başlık anahtarı çalışır; (b) Popup/Side panel düğmesi modalı açar; (c) liste ızgarası sütun/boşluk ayarına uyar, sekmeler süzer; (d) mobilde (iPhone genişliği) taşma yok; (e) Live Builder önizlemesinde element boş kalmaz; (f) sayfa kaynağında ham `[wdp_avada_donation_form` metni yok; (g) konsol hatası yok; (h) uzakta sipariş verilmez.
