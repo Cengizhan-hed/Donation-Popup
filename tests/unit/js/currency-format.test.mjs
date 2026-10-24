@@ -124,4 +124,29 @@ describe('currency format from profile', () => {
     assert.equal(Number.isFinite(empty.amount), false);
     assert.equal(empty.fill, '');
   });
+
+  it('type=number makine biçimi (nokta, step); type=text yerel ondalık', () => {
+    const try2 = { decimals: 2, decimalSeparator: ',' };
+    assert.equal(formatFillAmount(50, try2, { type: 'number', step: '1' }), '50');
+    assert.equal(formatFillAmount(50, try2, { type: 'number', step: 1 }), '50');
+    assert.equal(formatFillAmount(50, try2, { type: 'number', step: '0.01' }), '50.00');
+    assert.equal(formatFillAmount(50, try2, { type: 'number' }), '50');
+    assert.equal(formatFillAmount(50, try2, { type: 'text' }), '50,00');
+    assert.equal(formatFillAmount(50, try2), '50,00');
+    const numField = pickDonationFillAmount(
+      { min: '50', type: 'number', step: '1' },
+      try2
+    );
+    assert.equal(numField.amount, 50);
+    assert.equal(numField.fill, '50');
+    const textField = pickDonationFillAmount({ min: '50', type: 'text' }, try2);
+    assert.equal(textField.fill, '50,00');
+    const viaArg = pickDonationFillAmount({ min: '50' }, try2, { type: 'number', step: 1 });
+    assert.equal(viaArg.fill, '50');
+    const recNum = pickDonationFillAmount(
+      { recommended: '75', inputType: 'number', step: '1' },
+      try2
+    );
+    assert.equal(recNum.fill, '75');
+  });
 });

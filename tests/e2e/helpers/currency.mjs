@@ -82,16 +82,48 @@ export function textHasFormattedAmount(hay, amount, currency) {
 }
 
 /**
- * Input doldurma: binlik yok, ondalık mağaza ayırıcısı. Sabit "10" yok.
+ * type=number step ondalık sayısı. step=1 / boş / any → 0 (tam sayı).
+ * @param {string|number|null|undefined} step
+ * @returns {number}
+ */
+function decimalsFromNumberStep(step) {
+  if (step == null || step === '' || String(step).toLowerCase() === 'any') return 0;
+  const n = Number(step);
+  if (!Number.isFinite(n) || n <= 0) return 0;
+  if (Number.isInteger(n)) return 0;
+  const s = String(n);
+  const i = s.indexOf('.');
+  return i < 0 ? 0 : s.length - i - 1;
+}
+
+/**
+ * Playwright number input: nokta ondalık, binlik yok, step'e uygun.
+ * @param {number} n
+ * @param {{step?: string|number}} [field]
+ */
+function formatMachineFillAmount(n, field) {
+  const decimals = decimalsFromNumberStep(field && field.step);
+  if (decimals <= 0) return String(Math.round(n));
+  const fixed = Math.abs(n).toFixed(decimals);
+  return `${n < 0 ? '-' : ''}${fixed}`;
+}
+
+/**
+ * Input doldurma. type=number → makine biçimi (nokta, binlik yok, step).
+ * type=text / yok → binlik yok, ondalık mağaza ayırıcısı. Sabit "10" yok.
  * @param {number|string} amount
  * @param {{decimals?:number,decimalSeparator?:string}} [currency]
+ * @param {{type?:string,inputType?:string,step?:string|number}} [field]
  */
-export function formatFillAmount(amount, currency) {
+export function formatFillAmount(amount, currency, field) {
+  const n = Number(amount);
+  if (!Number.isFinite(n)) return '';
+  const f = field && typeof field === 'object' ? field : {};
+  const type = String(f.type || f.inputType || '').toLowerCase();
+  if (type === 'number') return formatMachineFillAmount(n, f);
   const c = currency || {};
   const known = Number.isFinite(Number(c.decimals));
   const decimals = known ? Number(c.decimals) : 0;
-  const n = Number(amount);
-  if (!Number.isFinite(n)) return '';
   if (decimals <= 0) return String(Math.round(n));
   const decimal = c.decimalSeparator != null ? String(c.decimalSeparator) : '.';
   const fixed = Math.abs(n).toFixed(decimals);
@@ -101,12 +133,17 @@ export function formatFillAmount(amount, currency) {
 
 /**
  * Form min / önerilen / max (DOM veya katalog). Sabit 10 yok.
- * @param {{ min?: string|number, recommended?: string|number, max?: string|number }} bounds
+ * Alan type/step bounds veya 3. argümanda (type=number ve type=text).
+ * @param {{ min?: string|number, recommended?: string|number, max?: string|number, type?: string, inputType?: string, step?: string|number }} bounds
  * @param {object} [currency]
+ * @param {{type?:string,inputType?:string,step?:string|number}} [field]
  * @returns {{ amount: number, fill: string }}
  */
-export function pickDonationFillAmount(bounds, currency) {
+export function pickDonationFillAmount(bounds, currency, field) {
   const b = bounds && typeof bounds === 'object' ? bounds : {};
+  const f = field && typeof field === 'object' ? field : {};
+  const type = f.type || f.inputType || b.type || b.inputType || '';
+  const step = f.step != null && f.step !== '' ? f.step : b.step;
   const min = Number.parseFloat(String(b.min ?? '').replace(',', '.'));
   const rec = Number.parseFloat(String(b.recommended ?? '').replace(',', '.'));
   const max = Number.parseFloat(String(b.max ?? '').replace(',', '.'));
@@ -117,5 +154,5 @@ export function pickDonationFillAmount(bounds, currency) {
   }
   if (Number.isFinite(max) && max > 0 && Number.isFinite(n) && n > max) n = max;
   if (!Number.isFinite(n) || n <= 0) return { amount: NaN, fill: '' };
-  return { amount: n, fill: formatFillAmount(n, currency) };
+  return { amount: n, fill: formatFillAmount(n, currency, { type, step }) };
 }

@@ -141,6 +141,8 @@ async function resolveDonationFillAmount(shell, currency) {
         max: (inp && (inp.getAttribute('max') || inp.getAttribute('data-max') || '')) || '',
         recommended: (rec && (rec.getAttribute('data-amount') || '')) || '',
         placeholder: (inp && String(inp.placeholder || '').trim()) || '',
+        type: (inp && String(inp.type || inp.getAttribute('type') || '').toLowerCase()) || '',
+        step: (inp && inp.getAttribute('step')) || '',
       };
     });
     const picked = pickDonationFillAmount(bounds, currency);
