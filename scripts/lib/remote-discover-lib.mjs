@@ -183,6 +183,23 @@ export const CRON_ORPHAN = 'sahipsiz — çalışınca hiçbir şey yapmaz';
 export const STATIC_SCAN_LIMITATION =
   'Geri çağrı başka fonksiyonları çağırıyorsa yalnız bir seviye derinlik taranır; kancalar/cron/snippet tetiklenmez.';
 
+/** Sepete-ekleme zinciri (özet satırı). */
+export const CART_CHAIN_HOOKS = [
+  'woocommerce_add_to_cart',
+  'woocommerce_add_cart_item_data',
+  'hedef_check_abandoned_cart_event',
+];
+
+/** Sayfa görüntüleme zinciri (özet satırı). */
+export const PAGE_VIEW_HOOKS = [
+  'init',
+  'wp',
+  'template_redirect',
+  'wp_head',
+  'wp_footer',
+  'wp_enqueue_scripts',
+];
+
 function wdpWordChar(ch) {
   return /[A-Za-z0-9_]/.test(ch || '');
 }
@@ -466,6 +483,158 @@ function classifyUrlExpr(expr) {
   return { host: 'dinamik:?', kind: 'dinamik' };
 }
 
+function readPhpExpr(src, start) {
+  let i = start;
+  let depth = 0;
+  let quote = '';
+  let esc = false;
+  while (i < src.length) {
+    const c = src[i];
+    if (quote) {
+      if (esc) {
+        esc = false;
+        i += 1;
+        continue;
+      }
+      if (c === '\\') {
+        esc = true;
+        i += 1;
+        continue;
+      }
+      if (c === quote) quote = '';
+      i += 1;
+      continue;
+    }
+    if (c === '"' || c === "'") {
+      quote = c;
+      i += 1;
+      continue;
+    }
+    if (c === '(' || c === '[' || c === '{') {
+      depth += 1;
+      i += 1;
+      continue;
+    }
+    if (c === ')' || c === ']' || c === '}') {
+      if (depth === 0) break;
+      depth -= 1;
+      i += 1;
+      continue;
+    }
+    if ((c === ';' || c === ',') && depth === 0) break;
+    i += 1;
+  }
+  return src.slice(start, i).trim();
+}
+
+function collectAssignments(src) {
+  const out = [];
+  const s = String(src || '');
+  let p = 0;
+  while ((p = s.indexOf('$', p)) !== -1) {
+    let i = p + 1;
+    const start = i;
+    while (i < s.length && wdpWordChar(s[i])) i += 1;
+    const name = s.slice(start, i);
+    if (!name) {
+      p += 1;
+      continue;
+    }
+    i = skipWs(s, i);
+    if (s.slice(i, i + 2) === '->') {
+      p = i + 2;
+      continue;
+    }
+    if (s[i] !== '=') {
+      p = i || p + 1;
+      continue;
+    }
+    if (s[i + 1] === '=' || s[i + 1] === '>') {
+      p = i + 1;
+      continue;
+    }
+    i = skipWs(s, i + 1);
+    const expr = readPhpExpr(s, i);
+    if (expr) out.push({ name: `$${name}`, pos: p, expr });
+    p += 1;
+  }
+  for (const hit of findCallOpens(s, 'define')) {
+    const args = callArgs(s, hit.open);
+    const name = unquotePhpString(args[0] || '');
+    if (name && args[1]) out.push({ name, pos: hit.pos, expr: args[1] });
+  }
+  p = 0;
+  while ((p = s.indexOf('const', p)) !== -1) {
+    const before = p > 0 ? s[p - 1] : '';
+    if (wdpWordChar(before)) {
+      p += 5;
+      continue;
+    }
+    let i = p + 5;
+    if (i < s.length && wdpWordChar(s[i])) {
+      p += 5;
+      continue;
+    }
+    i = skipWs(s, i);
+    const start = i;
+    while (i < s.length && wdpWordChar(s[i])) i += 1;
+    const name = s.slice(start, i);
+    i = skipWs(s, i);
+    if (!name || s[i] !== '=' || s[i + 1] === '=') {
+      p += 5;
+      continue;
+    }
+    i = skipWs(s, i + 1);
+    const expr = readPhpExpr(s, i);
+    if (expr) out.push({ name, pos: p, expr });
+    p += 5;
+  }
+  return out;
+}
+
+function lookupAssignment(assigns, name, pos) {
+  let found = null;
+  for (const a of assigns) {
+    if (a.name === name && a.pos < pos) found = a;
+  }
+  return found;
+}
+
+function resolveUrlExpr(expr, assigns, pos) {
+  let row = classifyUrlExpr(expr);
+  for (let hop = 0; hop < 5 && row && row.kind === 'dinamik'; hop += 1) {
+    const id = String(row.host || '').startsWith('dinamik:')
+      ? String(row.host).slice('dinamik:'.length)
+      : '';
+    if (!id) break;
+    const a =
+      lookupAssignment(assigns, id, pos) ||
+      (id.startsWith('$')
+        ? lookupAssignment(assigns, id.slice(1), pos)
+        : lookupAssignment(assigns, `$${id}`, pos));
+    if (!a || !a.expr) break;
+    row = classifyUrlExpr(a.expr);
+  }
+  return row;
+}
+
+export function splitHookList(hook) {
+  return String(hook || '')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
+function uniqueJoin(list) {
+  const out = [];
+  for (const x of list || []) {
+    const s = String(x || '').trim();
+    if (s && !out.includes(s)) out.push(s);
+  }
+  return out.join(', ');
+}
+
+
 function findCallOpens(src, fn) {
   const hits = [];
   let p = 0;
@@ -551,9 +720,33 @@ function lastHookBefore(src, pos) {
   return last;
 }
 
+function enclosingAnonymousHooks(src, pos) {
+  const matches = [];
+  for (const kind of ['add_action', 'add_filter']) {
+    for (const hit of findCallOpens(src, kind)) {
+      const args = callArgs(src, hit.open);
+      const hook = unquotePhpString(args[0] || '');
+      const cb = String(args[1] || '').trim();
+      if (!hook || !/^function\b/.test(cb)) continue;
+      const fnpos = src.indexOf('function', hit.open);
+      if (fnpos < 0) continue;
+      let i = fnpos + 8;
+      while (i < src.length && src[i] !== '{') i += 1;
+      if (src[i] !== '{') continue;
+      const end = matchBrace(src, i);
+      if (pos > i && pos < end) matches.push({ hook, span: end - i });
+    }
+  }
+  if (!matches.length) return [];
+  matches.sort((a, b) => a.span - b.span);
+  return [matches[0].hook];
+}
+
 function hookForCall(src, pos, map) {
   const fn = enclosingFunction(src, pos);
-  if (fn && map.has(fn) && map.get(fn).length) return map.get(fn)[0];
+  if (fn && map.has(fn) && map.get(fn).length) return uniqueJoin(map.get(fn));
+  const anon = enclosingAnonymousHooks(src, pos);
+  if (anon.length) return uniqueJoin(anon);
   return lastHookBefore(src, pos);
 }
 
@@ -566,6 +759,7 @@ export function extractOutboundHosts(source) {
   const out = [];
   const seen = new Set();
   const map = fnHookMap(src);
+  const assigns = collectAssignments(src);
   for (const fn of HOST_CALL_FNS) {
     for (const hit of findCallOpens(src, fn)) {
       const args = callArgs(src, hit.open);
@@ -576,7 +770,7 @@ export function extractOutboundHosts(source) {
         if (lit && !/^https?:\/\//i.test(lit)) continue;
         if (!lit && !expr) continue;
       }
-      const row = classifyUrlExpr(expr);
+      const row = resolveUrlExpr(expr, assigns, hit.pos);
       if (!row || !row.host) continue;
       const hook = hookForCall(src, hit.pos, map);
       const key = `${row.host}|${row.kind}|${hook}`;
@@ -617,19 +811,95 @@ export function formatSnippetHostRows(snippets) {
   for (const s of Array.isArray(snippets) ? snippets : []) {
     const hosts = Array.isArray(s.hosts) ? s.hosts : [];
     if (!hosts.length) continue;
-    const byHook = new Map();
+    const byHost = new Map();
     for (const h of hosts) {
-      const hook = h.hook || (Array.isArray(s.hooks) ? s.hooks.join(', ') : '') || '—';
-      if (!byHook.has(hook)) byHook.set(hook, []);
-      byHook.get(hook).push(h);
+      const key = `${h.host}|${h.kind}`;
+      if (!byHost.has(key)) byHost.set(key, { host: h.host, kind: h.kind, hooks: [] });
+      const hooks = splitHookList(h.hook);
+      if (!hooks.length && Array.isArray(s.hooks)) hooks.push(...s.hooks);
+      const bucket = byHost.get(key);
+      for (const hk of hooks) {
+        if (hk && !bucket.hooks.includes(hk)) bucket.hooks.push(hk);
+      }
     }
-    for (const [hook, list] of byHook) {
-      const hostStr = [...new Set(list.map((x) => x.host).filter(Boolean))].join(', ');
-      const kindStr = [...new Set(list.map((x) => x.kind).filter(Boolean))].join(', ');
-      rows.push([String(s.id ?? ''), hook, hostStr, kindStr]);
+    for (const { host, kind, hooks } of byHost.values()) {
+      rows.push([String(s.id ?? ''), hooks.join(', ') || '—', host, kind]);
     }
   }
   return rows;
+}
+
+/**
+ * Sepete-ekleme / sayfa görüntüleme zincirinde dışarı çağrı özeti.
+ * Yalnız host/kanca etiketleri; URL/yol/sorgu yok.
+ */
+export function summarizeOutboundChains(snippets = [], hookScan = []) {
+  const cartIds = [];
+  const pageSources = [];
+  const seenCart = new Set();
+  const seenPage = new Set();
+
+  for (const s of snippets || []) {
+    const id = Number(s.id) || 0;
+    const hostHooks = [];
+    for (const h of s.hosts || []) hostHooks.push(...splitHookList(h.hook));
+    const hasOut = (Array.isArray(s.hosts) && s.hosts.length > 0) || hasOutboundCallTypes(s.calls);
+    if (!hasOut) continue;
+    if (hostHooks.some((h) => CART_CHAIN_HOOKS.includes(h))) {
+      const label = String(id || '');
+      if (label && !seenCart.has(label)) {
+        seenCart.add(label);
+        cartIds.push(label);
+      }
+    }
+    if (hostHooks.some((h) => PAGE_VIEW_HOOKS.includes(h))) {
+      const label = `snippet:${id || '?'}`;
+      if (!seenPage.has(label)) {
+        seenPage.add(label);
+        pageSources.push(label);
+      }
+    }
+  }
+
+  for (const row of hookScan || []) {
+    const hook = String(row.hook || '');
+    const hasOut =
+      (Array.isArray(row.hosts) && row.hosts.length > 0) ||
+      hasOutboundCallTypes(row.calls) ||
+      Number(row.count) > 0;
+    if (!hasOut) continue;
+    const src = row.source || sourceLabel(row.kind, row.slug);
+    if (CART_CHAIN_HOOKS.includes(hook) && src && src.startsWith('snippet')) {
+      const id = src.replace(/^snippet:?/, '') || String(row.id || '');
+      if (id && !seenCart.has(id)) {
+        seenCart.add(id);
+        cartIds.push(id);
+      }
+    }
+    if (PAGE_VIEW_HOOKS.includes(hook) && src) {
+      if (!seenPage.has(src)) {
+        seenPage.add(src);
+        pageSources.push(src);
+      }
+    }
+  }
+
+  return {
+    add_to_cart: {
+      outbound: cartIds.length > 0,
+      snippets: cartIds,
+      line: cartIds.length
+        ? `woocommerce_add_to_cart zincirinde dışarı çağrı: evet (${cartIds.join(', ')})`
+        : 'woocommerce_add_to_cart zincirinde dışarı çağrı: hayır',
+    },
+    page_view: {
+      outbound: pageSources.length > 0,
+      sources: pageSources,
+      line: pageSources.length
+        ? `sayfa görüntüleme zincirinde (init, wp, template_redirect, wp_head, wp_footer, wp_enqueue_scripts): evet (${pageSources.join(', ')})`
+        : 'sayfa görüntüleme zincirinde (init, wp, template_redirect, wp_head, wp_footer, wp_enqueue_scripts): hayır',
+    },
+  };
 }
 
 export function scrubSnippetRow(raw) {
@@ -1332,6 +1602,120 @@ function wdp_st_kind_expr($expr) {
   if ($id !== "") return array("host" => "dinamik:" . $id, "kind" => "dinamik");
   return array("host" => "dinamik:?", "kind" => "dinamik");
 }
+function wdp_st_read_expr($src, $start) {
+  $L = strlen($src);
+  $i = (int) $start;
+  $depth = 0;
+  $in = "";
+  $esc = 0;
+  while ($i < $L) {
+    $c = $src[$i];
+    if ($in !== "") {
+      if ($esc) { $esc = 0; $i++; continue; }
+      if ($c === chr(92)) { $esc = 1; $i++; continue; }
+      if ($c === $in) $in = "";
+      $i++;
+      continue;
+    }
+    if ($c === "\\"" || ord($c) === 39) { $in = $c; $i++; continue; }
+    if ($c === "(" || $c === "[" || $c === "{") { $depth++; $i++; continue; }
+    if ($c === ")" || $c === "]" || $c === "}") {
+      if ($depth === 0) break;
+      $depth--;
+      $i++;
+      continue;
+    }
+    if (($c === ";" || $c === ",") && $depth === 0) break;
+    $i++;
+  }
+  return trim(substr($src, $start, $i - $start));
+}
+function wdp_st_collect_assign($src) {
+  $out = array();
+  $src = (string) $src;
+  $L = strlen($src);
+  $p = 0;
+  while (($p = strpos($src, "$", $p)) !== false) {
+    $i = $p + 1;
+    $start = $i;
+    while ($i < $L && wdp_st_word($src[$i])) $i++;
+    $name = substr($src, $start, $i - $start);
+    if ($name === "") { $p++; continue; }
+    while ($i < $L && ($src[$i] === " " || $src[$i] === "\\t" || $src[$i] === "\\n" || $src[$i] === "\\r")) $i++;
+    if ($i + 1 < $L && $src[$i] === "-" && $src[$i + 1] === ">") { $p = $i + 2; continue; }
+    if ($i >= $L || $src[$i] !== "=") { $p = $i > $p ? $i : $p + 1; continue; }
+    if ($i + 1 < $L && ($src[$i + 1] === "=" || $src[$i + 1] === ">")) { $p = $i + 1; continue; }
+    $i++;
+    while ($i < $L && ($src[$i] === " " || $src[$i] === "\\t" || $src[$i] === "\\n" || $src[$i] === "\\r")) $i++;
+    $expr = wdp_st_read_expr($src, $i);
+    if ($expr !== "") $out[] = array("ident" => "$" . $name, "pos" => $p, "expr" => $expr);
+    $p++;
+  }
+  $fn = "define";
+  $p = 0;
+  $len = strlen($fn);
+  while (($p = strpos($src, $fn, $p)) !== false) {
+    $before = $p > 0 ? $src[$p - 1] : "";
+    if ($before !== "" && wdp_st_word($before)) { $p += $len; continue; }
+    $i = $p + $len;
+    if ($i < $L && wdp_st_word($src[$i])) { $p += $len; continue; }
+    while ($i < $L && ($src[$i] === " " || $src[$i] === "\\t" || $src[$i] === "\\n" || $src[$i] === "\\r")) $i++;
+    if ($i >= $L || $src[$i] !== "(") { $p += $len; continue; }
+    $args = wdp_st_args($src, $i);
+    $name = isset($args[0]) ? wdp_st_unquote($args[0]) : "";
+    $expr = isset($args[1]) ? $args[1] : "";
+    if ($name !== "" && $expr !== "") $out[] = array("ident" => $name, "pos" => $p, "expr" => $expr);
+    $p += $len;
+  }
+  $fn = "const";
+  $p = 0;
+  $len = 5;
+  while (($p = strpos($src, $fn, $p)) !== false) {
+    $before = $p > 0 ? $src[$p - 1] : "";
+    if ($before !== "" && wdp_st_word($before)) { $p += $len; continue; }
+    $i = $p + $len;
+    if ($i < $L && wdp_st_word($src[$i])) { $p += $len; continue; }
+    while ($i < $L && ($src[$i] === " " || $src[$i] === "\\t" || $src[$i] === "\\n" || $src[$i] === "\\r")) $i++;
+    $start = $i;
+    while ($i < $L && wdp_st_word($src[$i])) $i++;
+    $name = substr($src, $start, $i - $start);
+    while ($i < $L && ($src[$i] === " " || $src[$i] === "\\t" || $src[$i] === "\\n" || $src[$i] === "\\r")) $i++;
+    if ($name === "" || $i >= $L || $src[$i] !== "=") { $p += $len; continue; }
+    if ($i + 1 < $L && $src[$i + 1] === "=") { $p += $len; continue; }
+    $i++;
+    while ($i < $L && ($src[$i] === " " || $src[$i] === "\\t" || $src[$i] === "\\n" || $src[$i] === "\\r")) $i++;
+    $expr = wdp_st_read_expr($src, $i);
+    if ($expr !== "") $out[] = array("ident" => $name, "pos" => $p, "expr" => $expr);
+    $p += $len;
+  }
+  return $out;
+}
+function wdp_st_lookup_assign($assigns, $name, $pos) {
+  $found = null;
+  foreach ((array) $assigns as $a) {
+    if (!is_array($a) || !isset($a["ident"])) continue;
+    if ($a["ident"] === $name && (int) $a["pos"] < (int) $pos) $found = $a;
+  }
+  return $found;
+}
+function wdp_st_resolve_expr($expr, $assigns, $pos) {
+  $row = wdp_st_kind_expr($expr);
+  $hop = 0;
+  $pref = "dinamik:";
+  $plen = strlen($pref);
+  while ($row && isset($row["kind"]) && $row["kind"] === "dinamik" && $hop < 5) {
+    $id = isset($row["host"]) ? (string) $row["host"] : "";
+    if (strpos($id, $pref) !== 0) break;
+    $id = substr($id, $plen);
+    $a = wdp_st_lookup_assign($assigns, $id, $pos);
+    if (!$a && substr($id, 0, 1) === "$") $a = wdp_st_lookup_assign($assigns, substr($id, 1), $pos);
+    if (!$a && substr($id, 0, 1) !== "$") $a = wdp_st_lookup_assign($assigns, "$" . $id, $pos);
+    if (!$a || empty($a["expr"])) break;
+    $row = wdp_st_kind_expr($a["expr"]);
+    $hop++;
+  }
+  return $row;
+}
 function wdp_st_fn_hook_map($code) {
   $map = array();
   $code = (string) $code;
@@ -1440,9 +1824,56 @@ function wdp_st_last_hook_before($src, $pos) {
   }
   return $last;
 }
+function wdp_st_anon_hooks($src, $pos) {
+  $best_hook = "";
+  $best_span = -1;
+  $src = (string) $src;
+  $pos = (int) $pos;
+  $needles = array("add_" . "action", "add_" . "filter");
+  $L = strlen($src);
+  foreach ($needles as $fn) {
+    $p = 0;
+    $flen = strlen($fn);
+    while (($p = strpos($src, $fn, $p)) !== false) {
+      $i = $p + $flen;
+      while ($i < $L && ($src[$i] === " " || $src[$i] === "\\t" || $src[$i] === "\\n" || $src[$i] === "\\r")) $i++;
+      if ($i >= $L || $src[$i] !== "(") { $p += $flen; continue; }
+      $args = wdp_st_args($src, $i);
+      $hook = isset($args[0]) ? wdp_st_unquote($args[0]) : "";
+      $cb = isset($args[1]) ? trim($args[1]) : "";
+      if ($hook === "" || strpos($cb, "function") !== 0) { $p += $flen; continue; }
+      $fnpos = strpos($src, "function", $i);
+      if ($fnpos === false) { $p += $flen; continue; }
+      $j = $fnpos + 8;
+      while ($j < $L && $src[$j] !== "{") $j++;
+      if ($j >= $L || $src[$j] !== "{") { $p += $flen; continue; }
+      $end = wdp_st_match_brace($src, $j);
+      if ($pos > $j && $pos < $end) {
+        $span = $end - $j;
+        if ($best_span < 0 || $span < $best_span) {
+          $best_span = $span;
+          $best_hook = $hook;
+        }
+      }
+      $p += $flen;
+    }
+  }
+  if ($best_hook === "") return array();
+  return array($best_hook);
+}
+function wdp_st_hook_join($list) {
+  $uniq = array();
+  foreach ((array) $list as $h) {
+    $h = trim((string) $h);
+    if ($h !== "" && !in_array($h, $uniq, true)) $uniq[] = $h;
+  }
+  return implode(", ", $uniq);
+}
 function wdp_st_hook_for($src, $pos, $fnmap) {
   $fn = wdp_st_enclosing_fn($src, $pos);
-  if ($fn !== "" && isset($fnmap[$fn]) && $fnmap[$fn]) return $fnmap[$fn][0];
+  if ($fn !== "" && isset($fnmap[$fn]) && $fnmap[$fn]) return wdp_st_hook_join($fnmap[$fn]);
+  $anon = wdp_st_anon_hooks($src, $pos);
+  if ($anon) return wdp_st_hook_join($anon);
   return wdp_st_last_hook_before($src, $pos);
 }
 function wdp_st_host_fns() {
@@ -1465,6 +1896,7 @@ function wdp_st_hosts($src, $default_hook = "") {
   $out = array();
   $seen = array();
   $fnmap = wdp_st_fn_hook_map($src);
+  $assigns = wdp_st_collect_assign($src);
   $L = strlen($src);
   foreach (wdp_st_host_fns() as $fn) {
     $p = 0;
@@ -1487,7 +1919,7 @@ function wdp_st_hosts($src, $default_hook = "") {
         }
         if ($lit === "" && $expr === "") { $p += $len; continue; }
       }
-      $row = wdp_st_kind_expr($expr);
+      $row = wdp_st_resolve_expr($expr, $assigns, $p);
       if ($row && !empty($row["host"])) {
         $hook = wdp_st_hook_for($src, $p, $fnmap);
         if ($hook === "" && $default_hook !== "") $hook = $default_hook;
@@ -2237,6 +2669,7 @@ export function assembleReport({ envName, profileId, stepData, canaryRel }) {
   const preWpMail = Array.isArray(staticRaw.pre_wp_mail)
     ? staticRaw.pre_wp_mail.map(String).filter(Boolean)
     : [];
+  const chains = summarizeOutboundChains(snippets, hookScan);
   const warnings = [];
   if (
     mail.active &&
@@ -2322,6 +2755,7 @@ export function assembleReport({ envName, profileId, stepData, canaryRel }) {
       },
       sms: smsList.length ? smsList : 'pasif',
       warnings,
+      chains,
     },
     wdp: {
       version: counts.wdp_version || '',
@@ -2513,8 +2947,13 @@ export function renderMarkdown(report) {
     '',
     '### Snippet giden ana makineler',
     snippetHostRows.length
-      ? mdTable(['snippet id', 'kanca', 'host(lar)', 'tür'], snippetHostRows)
+      ? mdTable(['snippet id', 'kanca(lar)', 'host', 'tür'], snippetHostRows)
       : '_giden ana makine yok_',
+    '',
+    (stOut.chains && stOut.chains.add_to_cart && stOut.chains.add_to_cart.line) ||
+      summarizeOutboundChains(stOut.snippets || [], stOut.hooks || []).add_to_cart.line,
+    (stOut.chains && stOut.chains.page_view && stOut.chains.page_view.line) ||
+      summarizeOutboundChains(stOut.snippets || [], stOut.hooks || []).page_view.line,
     '',
     '### Kanca giden ana makineler',
     hookHostRows.length
