@@ -35,6 +35,16 @@
 		</properties>
 	</rule>
 
+	<!-- Proje adlandirmasi: dosyalar class-<ad>.php (sinif adindaki wdp- oneki dosya adinda yok). Yeniden adlandirma yapilmaz. -->
+	<rule ref="WordPress.Files.FileName.InvalidClassFileName">
+		<exclude-pattern>*/includes/*</exclude-pattern>
+	</rule>
+
+	<!-- wdp/hdf onekleri projenin yerlesik, tutarli onekleridir; mevcut sinif/islev/DB adlari korunur. -->
+	<rule ref="WordPress.NamingConventions.PrefixAllGlobals.ShortPrefixPassed">
+		<severity>0</severity>
+	</rule>
+
 	<rule ref="WordPress.NamingConventions.PrefixAllGlobals">
 		<properties>
 			<property name="prefixes" type="array">

@@ -842,6 +842,11 @@ if (!function_exists('get_woocommerce_currency_symbol')) {
 		return '&#8378;';
 	}
 }
+if (!function_exists('get_woocommerce_price_format')) {
+	function get_woocommerce_price_format() {
+		return '%2$s&nbsp;%1$s';
+	}
+}
 if (!function_exists('wc_format_decimal')) {
 	function wc_format_decimal($number) {
 		return (string) $number;

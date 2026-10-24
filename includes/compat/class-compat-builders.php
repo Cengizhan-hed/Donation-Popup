@@ -49,7 +49,7 @@ class WDP_Compat_Builders {
 	 */
 	private static function avada() {
 		$get = WDP_Builder_Detect::query_vars();
-		if ( ! empty( $get['fb-edit'] ) || ( ! empty( $get['builder'] ) && (string) $get['builder'] === 'true' ) ) {
+		if ( ! empty( $get['fb-edit'] ) || ( ! empty( $get['builder'] ) && 'true' === (string) $get['builder'] ) ) {
 			return true;
 		}
 		$post_type = '';
@@ -117,7 +117,7 @@ class WDP_Compat_Builders {
 			return false;
 		}
 		$get = WDP_Builder_Detect::query_vars();
-		return ! empty( $get['elementor-preview'] ) || ( ! empty( $get['action'] ) && (string) $get['action'] === 'elementor' );
+		return ! empty( $get['elementor-preview'] ) || ( ! empty( $get['action'] ) && 'elementor' === (string) $get['action'] );
 	}
 
 	/**
@@ -133,7 +133,7 @@ class WDP_Compat_Builders {
 	 */
 	private static function bricks() {
 		$get = WDP_Builder_Detect::query_vars();
-		return ! empty( $get['bricks'] ) || ( isset( $get['brickspreview'] ) && (string) $get['brickspreview'] !== '' );
+		return ! empty( $get['bricks'] ) || ( isset( $get['brickspreview'] ) && '' !== (string) $get['brickspreview'] );
 	}
 
 	/**

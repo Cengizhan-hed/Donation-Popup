@@ -36,7 +36,7 @@ class WDP_Compat_Currency {
 	 */
 	public static function order_rate( $rate, $order, $currency, $base = '' ) {
 		unset( $base );
-		if ( $rate !== null || ! is_object( $order ) || ! method_exists( $order, 'get_meta' ) ) {
+		if ( null !== $rate || ! is_object( $order ) || ! method_exists( $order, 'get_meta' ) ) {
 			return $rate;
 		}
 		$currency = strtoupper( (string) $currency );
@@ -63,7 +63,7 @@ class WDP_Compat_Currency {
 
 		foreach ( array( 'wmc_order_rate', '_wmc_order_rate', '_woocs_order_rate', 'woocs_order_rate' ) as $key ) {
 			$raw = $order->get_meta( $key, true );
-			if ( $raw !== '' && $raw !== null && is_numeric( $raw ) && (float) $raw > 0 ) {
+			if ( '' !== $raw && null !== $raw && is_numeric( $raw ) && (float) $raw > 0 ) {
 				return (float) $raw;
 			}
 		}
@@ -80,7 +80,7 @@ class WDP_Compat_Currency {
 	 */
 	public static function live_rate( $rate, $currency, $base = '' ) {
 		unset( $base );
-		if ( $rate !== null ) {
+		if ( null !== $rate ) {
 			return $rate;
 		}
 		$currency = strtoupper( (string) $currency );
