@@ -48,6 +48,7 @@
     "migration:compare": "node scripts/migration-compare.mjs",
     "remote:discover": "node scripts/remote-discover.mjs",
     "admin:style-audit": "node scripts/admin-style-audit.mjs",
+    "graph:update": "node scripts/graph-update.mjs",
     "e2e:catalog-explain": "node scripts/e2e-catalog-explain.mjs",
     "i18n:pot": "node tools/i18n/make-pot.mjs",
     "i18n:merge": "node tools/i18n/merge-po.mjs",

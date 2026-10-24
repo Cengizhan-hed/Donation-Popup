@@ -46,3 +46,7 @@ languages/parts/
 
 # Removed: intl-tel-input (replaced by WDP custom phone field)
 assets/vendor/intl-tel-input/
+
+tools/graphify-venv
+graphify-out
+scripts/graph-update.mjs

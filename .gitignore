@@ -95,3 +95,8 @@ build/
 .env.deploy.*
 !.env.deploy.example
 !.env.deploy.*.example
+
+# Graphify (yalnız geliştirme)
+tools/graphify-venv/
+build/graph/
+graphify-out/
