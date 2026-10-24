@@ -33,6 +33,13 @@ import { evaluateCanaryHealth, snapshotCanary } from '../../tests/e2e/helpers/ca
 import { loadRegistry } from '../../tests/e2e/helpers/run-registry.mjs';
 import { acquireEnvLock, releaseEnvLock } from '../../tests/e2e/helpers/env-lock.mjs';
 import { loadFixtures } from '../../tests/e2e/helpers/fixtures.mjs';
+import {
+  classifyLogLines,
+  logVerdict,
+  attributePages,
+  pagesTriggerRollback,
+  writeRollbackNotice,
+} from './health-attribution.mjs';
 import { phpEvalFile, ensureLocalWp, writeWpConfig, LOCAL_WP_ROOT } from '../local-wp.mjs';
 
 export const PLUGIN_SLUG = IKRAM_WP_SLUG;
@@ -182,16 +189,22 @@ export function assertDiscoverNotBlocked(plugins) {
  * @param {{ php_ok?: number, active?: number, version?: string, needs_run?: number }} payload
  * @param {string} expectedVersion
  */
-export function evaluatePhpHealth(payload, expectedVersion) {
+export function evaluatePhpHealth(payload, expectedVersion, opts = {}) {
   const p = payload && typeof payload === 'object' ? payload : {};
   const reasons = [];
+  // Günlük: yalnız koşu başlangıcından sonrası; bizden/bilinmeyen fatal kırmızı, üçüncü taraf yalnız bilgi.
+  const logClass = classifyLogLines(Array.isArray(p.log_lines) ? p.log_lines : [], {
+    sinceEpoch: opts.sinceEpoch || 0,
+  });
+  const verdict = logVerdict(logClass);
+  reasons.push(...verdict.reasons);
   if (Number(p.php_ok) !== 1) reasons.push('php_ok değil');
   if (Number(p.active) !== 1) reasons.push('eklenti pasif');
   const got = String(p.version || '');
   const want = String(expectedVersion || '');
   if (want && got !== want) reasons.push(`sürüm ${got || 'yok'} ≠ ${want}`);
   if (Number(p.needs_run) !== 0) reasons.push('needs_run');
-  return { ok: reasons.length === 0, reasons, payload: p };
+  return { ok: reasons.length === 0, reasons, payload: p, logClass, thirdParty: verdict.thirdParty };
 }
 
 /**
@@ -230,13 +243,17 @@ export function formatHealthLine(health) {
   const phpBit = php?.ok ? 'php=ok' : `php=KIRMIZI(${(php?.reasons || []).join(',')})`;
   const bits = pages.map((p) => {
     if (p.skipped) return `${p.name}=atlandı`;
+    if (p.thirdParty) return `${p.name}=${p.reason || 'üçüncü taraf'}`;
     return `${p.name}=${p.ok ? '200' : p.reason || 'KIRMIZI'}`;
   });
-  const red = (php && !php.ok) || pages.some((p) => !p.ok && !p.skipped);
+  const red = (php && !php.ok) || pagesTriggerRollback(pages);
+  const tp = php?.thirdParty ? ` üçüncü-taraf-php=${php.thirdParty.count}(${php.thirdParty.owners.join('|')})` : '';
   const checked = pages.filter((p) => !p.skipped);
   const pass = checked.filter((p) => p.ok).length;
   const tag = red ? 'KIRMIZI' : 'YEŞİL';
-  return `Sağlık: ${tag} ${phpBit} http=${bits.join(',') || 'yok'} (${pass}/${checked.length})`;
+  const tpPages = pages.filter((p) => p.thirdParty).length;
+  const tpBit = tpPages ? ` üçüncü-taraf-sayfa=${tpPages}` : '';
+  return `Sağlık: ${tag} ${phpBit} http=${bits.join(',') || 'yok'} (${pass}/${checked.length})${tp}${tpBit}`;
 }
 
 /**
@@ -244,7 +261,7 @@ export function formatHealthLine(health) {
  */
 export function healthIsRed(health) {
   if (!health?.php?.ok) return true;
-  return (health.pages || []).some((p) => !p.ok && !p.skipped);
+  return pagesTriggerRollback(health.pages || []);
 }
 
 function fail(msg, code = EXIT_FAIL) {
@@ -516,7 +533,7 @@ function createCtx(opts) {
     }
     return spawnSync(bin, args, spawnOpts);
   };
-  return { calls, spawnImpl, guardEnv: opts.guardEnv || process.env, freezePath: opts.freezePath };
+  return { calls, spawnImpl, guardEnv: opts.guardEnv || process.env, freezePath: opts.freezePath, baselineRedNames: opts.baselineRedNames || [] };
 }
 
 function remote(ctx, resolved, remoteCmd, spawnOpts = {}) {
@@ -604,7 +621,7 @@ function resolvePluginDir(ctx, resolved, wpPath) {
 async function runPhpAndHttpHealth(ctx, resolved, expectedVersion, fetchImpl) {
   const phpRaw = remote(ctx, resolved, buildHealthPhpCommand(resolved.wpPath));
   const phpJson = extractJson(phpRaw) || {};
-  const php = evaluatePhpHealth(phpJson, expectedVersion);
+  const php = evaluatePhpHealth(phpJson, expectedVersion, { sinceEpoch: ctx.startEpoch ? ctx.startEpoch - 60 : 0 });
 
   const probeRaw = remote(ctx, resolved, buildUrlProbeCommand(resolved.wpPath));
   const probe = extractJson(probeRaw) || {};
@@ -614,7 +631,8 @@ async function runPhpAndHttpHealth(ctx, resolved, expectedVersion, fetchImpl) {
     const authRaw = remote(ctx, resolved, buildAuthCookieCommand(resolved.wpPath));
     cookieHeader = cookieHeaderFromAuth(extractJson(authRaw));
   }
-  const pages = await runHttpHealthChecks({ targets, fetchImpl, cookieHeader });
+  const rawPages = await runHttpHealthChecks({ targets, fetchImpl, cookieHeader });
+  const pages = attributePages(rawPages, { cls: php.logClass, baselineRedNames: ctx.baselineRedNames || [] });
   const health = { php, pages, probe };
   health.line = formatHealthLine(health);
   health.red = healthIsRed(health);
@@ -833,6 +851,7 @@ export async function runShip(opts = {}) {
       : acquireEnvLock(profile.id, { command: `ship:${envName}` });
   try {
   const ctx = createCtx(opts);
+  ctx.startEpoch = Math.floor(Date.now() / 1000);
   const fetchImpl = opts.fetchImpl || globalThis.fetch;
 
   const siteCheck = remote(ctx, resolved, `wp option get siteurl ${wpPathFlag(resolved.wpPath)}`);
@@ -952,6 +971,21 @@ export async function runShip(opts = {}) {
     }
     const after = await runPhpAndHttpHealth(ctx, resolved, '', fetchImpl);
     lines.push(`geri dönüş uygulandı`, after.line);
+    if (opts.writeReport !== false) {
+      const notice = writeRollbackNotice(path.join(ROOT, 'build/handoff'), {
+        env: envName,
+        stamp,
+        version,
+        reasons: health.php?.reasons || [],
+        redPages: health.pages.filter((p) => !p.ok && !p.skipped && !p.thirdParty).map((p) => p.name),
+        thirdParty: [
+          ...(health.php?.thirdParty?.owners || []),
+          ...health.pages.filter((p) => p.thirdParty).map((p) => p.name),
+        ],
+        after: after.line,
+      });
+      lines.push(`bildirim: ${path.relative(ROOT, notice)}`);
+    }
     if (opts.writeReport !== false) writeReport(reportFile, lines);
     return {
       exitCode: EXIT_FAIL,
