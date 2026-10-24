@@ -12,6 +12,7 @@
  * WC tested up to: 11.2
  * License: GPLv2 or later
  * Text Domain: woo-donation-popup
+ * Domain Path: /languages
  * 
  * Dosya: WordPress eklenti giriş dosyası; sabitleri tanımlar ve bootstrap sınıfını başlatır.
  *

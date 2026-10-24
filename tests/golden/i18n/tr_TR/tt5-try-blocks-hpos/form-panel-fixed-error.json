@@ -1,0 +1,19 @@
+{
+  "id": "form-panel-fixed-error",
+  "text": "×\nWDP E2E Fixed\nWDP E2E Fixed için bağış formu\nAd Soyad zorunludur.\n+#N#\nTelefon numaranızı eksiksiz giriniz.\nSatır tutarı\n₺#N#\nÖdemeye Git\nSepete Ekle\nGüvenli ödeme · SSL korumalı işlem",
+  "lines": [
+    "×",
+    "WDP E2E Fixed",
+    "WDP E2E Fixed için bağış formu",
+    "Ad Soyad zorunludur.",
+    "+#N#",
+    "Telefon numaranızı eksiksiz giriniz.",
+    "Satır tutarı",
+    "₺#N#",
+    "Ödemeye Git",
+    "Sepete Ekle",
+    "Güvenli ödeme · SSL korumalı işlem"
+  ],
+  "locale": "tr_TR",
+  "config": "tt5-try-blocks-hpos"
+}

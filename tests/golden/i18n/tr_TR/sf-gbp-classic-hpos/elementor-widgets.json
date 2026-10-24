@@ -1,0 +1,26 @@
+{
+  "id": "elementor-widgets",
+  "locale": "tr_TR",
+  "config": "sf-gbp-classic-hpos",
+  "widgets": [
+    {
+      "file": "includes/elementor/class-widget-donation-form.php",
+      "class": "WDP_Elementor_Widget_Donation_Form",
+      "title": "Bağış Formu",
+      "keywords": [],
+      "hasGetKeywords": false
+    },
+    {
+      "file": "includes/elementor/class-widget-donations-list.php",
+      "class": "WDP_Elementor_Widget_Donations_List",
+      "title": "Bağış Listesi",
+      "keywords": [],
+      "hasGetKeywords": false
+    }
+  ],
+  "text": "Bağış Formu\nBağış Listesi",
+  "lines": [
+    "Bağış Formu",
+    "Bağış Listesi"
+  ]
+}

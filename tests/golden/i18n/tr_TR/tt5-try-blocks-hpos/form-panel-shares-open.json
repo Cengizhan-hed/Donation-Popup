@@ -1,0 +1,15 @@
+{
+  "id": "form-panel-shares-open",
+  "text": "×\nWDP E2E Shares\nWDP E2E Shares için bağış formu\nHisse Adedi:\nÖdemeye Git\nSepete Ekle\nGüvenli ödeme · SSL korumalı işlem",
+  "lines": [
+    "×",
+    "WDP E2E Shares",
+    "WDP E2E Shares için bağış formu",
+    "Hisse Adedi:",
+    "Ödemeye Git",
+    "Sepete Ekle",
+    "Güvenli ödeme · SSL korumalı işlem"
+  ],
+  "locale": "tr_TR",
+  "config": "tt5-try-blocks-hpos"
+}

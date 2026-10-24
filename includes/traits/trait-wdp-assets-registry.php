@@ -391,6 +391,7 @@ trait WDP_Assets_Registry_Trait {
                 })(),
             ),
             'meta' => class_exists('WDP_Meta_Tracking') ? WDP_Meta_Tracking::get_frontend_config() : array(),
+            'i18n_dict' => class_exists('WDP_Js_I18n') ? WDP_Js_I18n::dictionary() : array(),
             'validation' => array(
                 'phone_min_digits' => 10,
                 'shareholder_name_min_length' => 2,

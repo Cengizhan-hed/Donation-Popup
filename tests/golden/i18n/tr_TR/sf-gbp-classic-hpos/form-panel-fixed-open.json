@@ -1,0 +1,17 @@
+{
+  "id": "form-panel-fixed-open",
+  "text": "×\nWDP E2E Fixed\nWDP E2E Fixed için bağış formu\n+#N#\nSatır tutarı\n£#AMT#\nÖdemeye Git\nSepete Ekle\nGüvenli ödeme · SSL korumalı işlem",
+  "lines": [
+    "×",
+    "WDP E2E Fixed",
+    "WDP E2E Fixed için bağış formu",
+    "+#N#",
+    "Satır tutarı",
+    "£#AMT#",
+    "Ödemeye Git",
+    "Sepete Ekle",
+    "Güvenli ödeme · SSL korumalı işlem"
+  ],
+  "locale": "tr_TR",
+  "config": "sf-gbp-classic-hpos"
+}

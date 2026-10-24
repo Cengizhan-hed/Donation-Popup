@@ -1,0 +1,16 @@
+{
+  "id": "form-inline-shares-open",
+  "text": "Hisse Adedi:\n#N#. Hissedar Bilgileri\n£#AMT#\n+#N#\nKopyasını Oluştur\nSepete Ekle\nÖdemeye Git\nGüvenli ödeme · SSL korumalı işlem",
+  "lines": [
+    "Hisse Adedi:",
+    "#N#. Hissedar Bilgileri",
+    "£#AMT#",
+    "+#N#",
+    "Kopyasını Oluştur",
+    "Sepete Ekle",
+    "Ödemeye Git",
+    "Güvenli ödeme · SSL korumalı işlem"
+  ],
+  "locale": "tr_TR",
+  "config": "sf-gbp-classic-hpos"
+}

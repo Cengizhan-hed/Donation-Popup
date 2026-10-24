@@ -1,0 +1,24 @@
+{
+  "id": "form-popup-custom-error",
+  "text": "×\nWDP E2E Custom\nWDP E2E Custom için bağış formu\nAd Soyad zorunludur.\n+#N#\nTelefon numaranızı eksiksiz giriniz.\nBağış Tutarı:\n£#AMT#\n£#AMT#\n£#AMT#\n£#AMT#.#N#\n£\nLütfen bağış tutarını giriniz.\nSepete Ekle\nÖdemeye Git\nGüvenli ödeme · SSL korumalı işlem",
+  "lines": [
+    "×",
+    "WDP E2E Custom",
+    "WDP E2E Custom için bağış formu",
+    "Ad Soyad zorunludur.",
+    "+#N#",
+    "Telefon numaranızı eksiksiz giriniz.",
+    "Bağış Tutarı:",
+    "£#AMT#",
+    "£#AMT#",
+    "£#AMT#",
+    "£#AMT#.#N#",
+    "£",
+    "Lütfen bağış tutarını giriniz.",
+    "Sepete Ekle",
+    "Ödemeye Git",
+    "Güvenli ödeme · SSL korumalı işlem"
+  ],
+  "locale": "tr_TR",
+  "config": "sf-gbp-classic-hpos"
+}

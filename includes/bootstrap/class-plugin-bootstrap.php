@@ -23,8 +23,22 @@ final class WDP_Plugin_Bootstrap {
 		self::load_dependencies();
 		WDP_Migrations::init();
 
+		add_action('init', array(__CLASS__, 'load_textdomain'));
 		add_action('plugins_loaded', array(__CLASS__, 'launch_plugin'));
 		add_action('plugins_loaded', array(__CLASS__, 'update_version'));
+	}
+
+	/**
+	 * Load plugin translations on init (WP 6.7+ just-in-time; avoid early-load notice).
+	 *
+	 * @return void
+	 */
+	public static function load_textdomain() {
+		load_plugin_textdomain(
+			'woo-donation-popup',
+			false,
+			dirname(plugin_basename(WDP_PLUGIN_FILE)) . '/languages'
+		);
 	}
 
 	/**

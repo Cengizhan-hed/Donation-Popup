@@ -1,0 +1,9 @@
+{
+  "id": "donations-list",
+  "text": "WDP E2E Custom min. £#AMT# Bağış Yap",
+  "lines": [
+    "WDP E2E Custom min. £#AMT# Bağış Yap"
+  ],
+  "locale": "tr_TR",
+  "config": "sf-gbp-classic-hpos"
+}
