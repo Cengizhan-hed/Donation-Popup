@@ -583,7 +583,7 @@ class WDP_Cart {
 
         foreach ($cart->get_cart() as $cart_item_key => $cart_item) {
             if (!empty($cart_item['wdp_sadaka_donation'])) {
-                $cart_item = self::sync_sadaka_line_wc_product($cart, $cart_item_key, $cart_item);
+                $cart_item = self::sync_addon_line_wc_product($cart, $cart_item_key, $cart_item);
             }
 
             if (empty($cart_item['data']) || !is_a($cart_item['data'], 'WC_Product')) {
@@ -616,7 +616,7 @@ class WDP_Cart {
     }
 
     /**
-     * Whether a cart row is a plugin donation line (main, share or sadaka).
+     * Whether a cart row is a plugin donation line (main, share or addon).
      *
      * @param array $cart_item Cart row.
      * @return bool
@@ -725,12 +725,12 @@ class WDP_Cart {
     }
 
     /**
-     * Sadaka satırı için bağlı WC ürün ID'si (görsel / isim).
+     * Addon satırı için bağlı WC ürün ID'si (görsel / isim).
      *
      * @param array $cart_item Cart row.
      * @return int
      */
-    public static function resolve_sadaka_line_wc_product_id(array $cart_item) {
+    public static function resolve_addon_line_wc_product_id(array $cart_item) {
         if (empty($cart_item['wdp_sadaka_donation'])) {
             return 0;
         }
@@ -745,7 +745,7 @@ class WDP_Cart {
             : 0;
 
         if ($parent_id > 0 && class_exists('WDP_Utils')) {
-            $resolved = (int) WDP_Utils::resolve_sadaka_wc_product_id($parent_id);
+            $resolved = (int) WDP_Utils::resolve_addon_wc_product_id($parent_id);
             if ($resolved > 0) {
                 return $resolved;
             }
@@ -755,33 +755,33 @@ class WDP_Cart {
     }
 
     /**
-     * Sepet satırını bağlı Sadaka WC ürününe hizala (görsel + ürün adı).
+     * Sepet satırını bağlı Addon WC ürününe hizala (görsel + ürün adı).
      *
      * @param WC_Cart $cart          Cart.
      * @param string  $cart_item_key Key.
      * @param array   $cart_item     Row.
      * @return array
      */
-    private static function sync_sadaka_line_wc_product($cart, $cart_item_key, array $cart_item) {
-        $target_id = self::resolve_sadaka_line_wc_product_id($cart_item);
+    private static function sync_addon_line_wc_product($cart, $cart_item_key, array $cart_item) {
+        $target_id = self::resolve_addon_line_wc_product_id($cart_item);
         $current_id = isset($cart_item['product_id']) ? (int) $cart_item['product_id'] : 0;
 
         if ($target_id <= 0 || $target_id === $current_id) {
             return $cart_item;
         }
 
-        $sadaka_product = wc_get_product($target_id);
-        if (!$sadaka_product || !$sadaka_product->exists()) {
+        $addon_product = wc_get_product($target_id);
+        if (!$addon_product || !$addon_product->exists()) {
             return $cart_item;
         }
 
         $cart_item['product_id'] = $target_id;
-        $cart_item['data'] = $sadaka_product;
+        $cart_item['data'] = $addon_product;
         $cart_item['wdp_sadaka_linked_wc_product'] = true;
 
         if (is_array($cart->cart_contents) && isset($cart->cart_contents[ $cart_item_key ])) {
             $cart->cart_contents[ $cart_item_key ]['product_id'] = $target_id;
-            $cart->cart_contents[ $cart_item_key ]['data'] = $sadaka_product;
+            $cart->cart_contents[ $cart_item_key ]['data'] = $addon_product;
             $cart->cart_contents[ $cart_item_key ]['wdp_sadaka_linked_wc_product'] = true;
         }
 
@@ -789,7 +789,7 @@ class WDP_Cart {
     }
 
     /**
-     * Resolve per-line unit price (main donation vs optional sadaka line).
+     * Resolve per-line unit price (main donation vs optional addon line).
      *
      * @param array $cart_item Cart row.
      * @return float|null
@@ -805,7 +805,7 @@ class WDP_Cart {
     }
 
     /**
-     * Sum non-sadaka cart line totals for a progress-bar product (pending until paid).
+     * Sum non-addon cart line totals for a progress-bar product (pending until paid).
      *
      * @param int $product_id Product ID.
      * @return float
@@ -879,7 +879,7 @@ class WDP_Cart {
     }
 
     /**
-     * CSS class for sadaka rows on cart/checkout tables.
+     * CSS class for addon rows on cart/checkout tables.
      *
      * @param string $class        Classes.
      * @param array  $cart_item    Cart item.
@@ -889,13 +889,13 @@ class WDP_Cart {
     public static function filter_cart_item_css_class($class, $cart_item, $cart_item_key) {
         unset($cart_item_key);
         if (!empty($cart_item['wdp_sadaka_donation'])) {
-            $class .= ' wdp-cart-line--sadaka';
+            $class .= ' wdp-cart-line--addon';
         }
         return trim($class);
     }
 
     /**
-     * Display name suffix for sadaka cart lines.
+     * Display name suffix for addon cart lines.
      *
      * @param string $product_name Name HTML.
      * @param array  $cart_item    Cart item.
@@ -908,7 +908,7 @@ class WDP_Cart {
             return $product_name;
         }
 
-        $display_id = self::resolve_sadaka_line_wc_product_id($cart_item);
+        $display_id = self::resolve_addon_line_wc_product_id($cart_item);
         if ($display_id > 0) {
             $display_product = wc_get_product($display_id);
             if ($display_product && $display_product->exists()) {
@@ -925,7 +925,7 @@ class WDP_Cart {
     }
 
     /**
-     * Sadaka satırında WooCommerce ürün görseli (bağlı Sadaka ürünü).
+     * Addon satırında WooCommerce ürün görseli (bağlı Addon ürünü).
      *
      * @param string $thumbnail     Default HTML.
      * @param array  $cart_item     Cart row.
@@ -938,7 +938,7 @@ class WDP_Cart {
             return $thumbnail;
         }
 
-        $display_id = self::resolve_sadaka_line_wc_product_id($cart_item);
+        $display_id = self::resolve_addon_line_wc_product_id($cart_item);
         if ($display_id <= 0) {
             return $thumbnail;
         }

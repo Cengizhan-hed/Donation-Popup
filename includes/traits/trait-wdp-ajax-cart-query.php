@@ -131,9 +131,9 @@ trait WDP_Ajax_Cart_Query_Trait {
                 $unit_price = (float) $product->get_price();
             }
             $line_total = $unit_price * $quantity;
-            $is_sadaka_line = !empty($cart_item['wdp_sadaka_donation']);
-            if ($is_sadaka_line && class_exists('WDP_Cart')) {
-                $display_id = WDP_Cart::resolve_sadaka_line_wc_product_id($cart_item);
+            $is_addon_line = !empty($cart_item['wdp_sadaka_donation']);
+            if ($is_addon_line && class_exists('WDP_Cart')) {
+                $display_id = WDP_Cart::resolve_addon_line_wc_product_id($cart_item);
                 $parent_id = !empty($cart_item['wdp_parent_product_id'])
                     ? (int) $cart_item['wdp_parent_product_id']
                     : (int) $cart_item['product_id'];
@@ -158,8 +158,8 @@ trait WDP_Ajax_Cart_Query_Trait {
                 'line_total' => $line_total,
                 'price_html' => WDP_Utils::format_price_html($line_total),
                 'price_plain' => WDP_Utils::format_price_plain($line_total),
-                'is_sadaka_donation' => $is_sadaka_line,
-                'line_kind' => $is_sadaka_line ? 'sadaka' : 'donation',
+                'is_sadaka_donation' => $is_addon_line,
+                'line_kind' => $is_addon_line ? 'sadaka' : 'donation',
             );
 
             // Meta veriler (donation data vb.)

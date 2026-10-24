@@ -1,7 +1,7 @@
 /**
- * @file sadaka.js
- * Sadaka alt bağış satırı ekleme, seçim ve fiyat senkronu.
- * Dış API: WDPApp.formSadaka
+ * @file addon.js
+ * Addon alt bağış satırı ekleme, seçim ve fiyat senkronu.
+ * Dış API: WDPApp.formAddon
  */
 (function(window) {
   'use strict';
@@ -11,10 +11,10 @@
   const formMessages = WDPApp.formMessages || {};
   const formPricing = WDPApp.formPricing || {};
   const formFeedback = WDPApp.formFeedback || {};
-  const sadakaRules = WDPApp.sadakaRules || {};
+  const addonRules = WDPApp.addonRules || {};
   const formatCurrency = typeof utils.formatCurrency === 'function' ? utils.formatCurrency : function(v) { return String(v); };
-  const parseNormalizedAmount = typeof sadakaRules.parseAmount === 'function'
-    ? sadakaRules.parseAmount
+  const parseNormalizedAmount = typeof addonRules.parseAmount === 'function'
+    ? addonRules.parseAmount
     : (typeof formPricing.parseNormalizedAmount === 'function'
       ? formPricing.parseNormalizedAmount
       : function() { return NaN; });
@@ -25,18 +25,18 @@
     ? formFeedback.getInputErrorAnchor
     : function(input) { return input && input.parentNode; };
 
-  let sadakaDonationDelegationBound = false;
+  let addonDonationDelegationBound = false;
 
-  function getSadakaInvalidMessage() {
-    if (typeof formMessages.getSadakaInvalidMessage === 'function') {
-      return formMessages.getSadakaInvalidMessage();
+  function getAddonInvalidMessage() {
+    if (typeof formMessages.getAddonInvalidMessage === 'function') {
+      return formMessages.getAddonInvalidMessage();
     }
     return WDPApp.i18n.__('Please enter a valid additional donation amount.', 'woo-donation-popup');
   }
 
-  function getSadakaMinErrorMessage(minValue) {
-    if (typeof formMessages.getSadakaMinErrorMessage === 'function') {
-      return formMessages.getSadakaMinErrorMessage(minValue);
+  function getAddonMinErrorMessage(minValue) {
+    if (typeof formMessages.getAddonMinErrorMessage === 'function') {
+      return formMessages.getAddonMinErrorMessage(minValue);
     }
     return WDPApp.i18n.sprintf(
       WDPApp.i18n.__('Please enter at least %s.', 'woo-donation-popup'),
@@ -44,7 +44,7 @@
     );
   }
 
-  function getSadakaFixedAmount(wrap) {
+  function getAddonFixedAmount(wrap) {
     if (!wrap) {
       return NaN;
     }
@@ -56,21 +56,21 @@
     return Number.isFinite(value) && value > 0 ? value : NaN;
   }
 
-  function getSadakaInput(wrap) {
+  function getAddonInput(wrap) {
     return wrap ? wrap.querySelector('input[name="sadaka_custom_price"]') : null;
   }
 
-  function syncSadakaInputRequired(wrap) {
-    const input = getSadakaInput(wrap);
+  function syncAddonInputRequired(wrap) {
+    const input = getAddonInput(wrap);
     if (!input) {
       return;
     }
-    // HTML5 required kullanma — yalnızca sadaka doğrulayıcısı geçerli.
+    // HTML5 required kullanma — yalnızca addon doğrulayıcısı geçerli.
     input.required = false;
     input.removeAttribute('required');
   }
 
-  function clearSadakaInputErrors(input) {
+  function clearAddonInputErrors(input) {
     if (!input) {
       return;
     }
@@ -91,35 +91,35 @@
     }
   }
 
-  function resetSadakaPanel(wrap) {
+  function resetAddonPanel(wrap) {
     if (!wrap) {
       return;
     }
-    const input = getSadakaInput(wrap);
-    syncSadakaInputRequired(wrap);
+    const input = getAddonInput(wrap);
+    syncAddonInputRequired(wrap);
     if (input && !input.readOnly) {
       input.value = '';
     }
     if (input) {
-      clearSadakaInputErrors(input);
+      clearAddonInputErrors(input);
     }
   }
 
-  /** Açık sadaka panelinde tutar geçerliliğini kontrol eder. */
-  function validateSadakaDonation(form) {
+  /** Açık addon panelinde tutar geçerliliğini kontrol eder. */
+  function validateAddonDonation(form) {
     const wrap = form ? form.querySelector('[data-wdp-sadaka-donation]') : null;
     if (!wrap || !wrap.classList.contains('is-open')) {
       return true;
     }
-    syncSadakaInputRequired(wrap);
-    const input = getSadakaInput(wrap);
-    const fixedAmount = getSadakaFixedAmount(wrap);
+    syncAddonInputRequired(wrap);
+    const input = getAddonInput(wrap);
+    const fixedAmount = getAddonFixedAmount(wrap);
     const minAttr = input ? input.getAttribute('min') : '';
     const minValue = minAttr !== null && minAttr !== '' ? parseNormalizedAmount(minAttr) : 0;
     const raw = input ? String(input.value || '').trim() : '';
 
-    const result = typeof sadakaRules.validateAmount === 'function'
-      ? sadakaRules.validateAmount({
+    const result = typeof addonRules.validateAmount === 'function'
+      ? addonRules.validateAmount({
           panelOpen: true,
           fixedAmount: fixedAmount,
           raw: raw,
@@ -130,7 +130,7 @@
     if (result) {
       if (result.ok) {
         if (input) {
-          clearSadakaInputErrors(input);
+          clearAddonInputErrors(input);
         }
         return true;
       }
@@ -138,16 +138,16 @@
         return result.reason !== 'empty';
       }
       if (result.reason === 'below_min' && Number.isFinite(result.min)) {
-        showInputError(input, getSadakaMinErrorMessage(result.min));
+        showInputError(input, getAddonMinErrorMessage(result.min));
       } else {
-        showInputError(input, getSadakaInvalidMessage());
+        showInputError(input, getAddonInvalidMessage());
       }
       return false;
     }
 
     // Fallback (rules henüz yoksa)
     if (Number.isFinite(fixedAmount)) {
-      if (input) clearSadakaInputErrors(input);
+      if (input) clearAddonInputErrors(input);
       return true;
     }
     if (!input) {
@@ -157,44 +157,44 @@
       if (input.readOnly) {
         return true;
       }
-      showInputError(input, getSadakaInvalidMessage());
+      showInputError(input, getAddonInvalidMessage());
       return false;
     }
     const numericValue = parseNormalizedAmount(raw);
     if (!Number.isFinite(numericValue) || numericValue <= 0) {
-      showInputError(input, getSadakaInvalidMessage());
+      showInputError(input, getAddonInvalidMessage());
       return false;
     }
     if (Number.isFinite(minValue) && minValue > 0 && numericValue + 0.0001 < minValue) {
-      showInputError(input, getSadakaMinErrorMessage(minValue));
+      showInputError(input, getAddonMinErrorMessage(minValue));
       return false;
     }
-    clearSadakaInputErrors(input);
+    clearAddonInputErrors(input);
     return true;
   }
 
-  /** Sadaka alanlarını FormData'ya yazar; kapalıysa anahtarları temizler. */
-  function patchSadakaFormData(form, formData) {
+  /** Addon alanlarını FormData'ya yazar; kapalıysa anahtarları temizler. */
+  function patchAddonFormData(form, formData) {
     if (!form || !formData) {
       return;
     }
     const wrap = form.querySelector('[data-wdp-sadaka-donation]');
     const hasMainCustomPrice = !!form.querySelector(
-      '.wdp-custom-price-row:not(.wdp-sadaka-donation__amount) input[name="custom_price"], input[name="custom_price"]:not(.wdp-sadaka-custom-price-input)'
+      '.wdp-custom-price-row:not(.wdp-sadaka-donation__amount) input[name="custom_price"], input[name="custom_price"]:not(.wdp-addon-custom-price-input)'
     );
     if (wrap && wrap.classList.contains('is-open')) {
-      const fixedAmount = getSadakaFixedAmount(wrap);
-      const sadakaInput = getSadakaInput(wrap);
-      const sadakaRaw = sadakaInput ? String(sadakaInput.value || '').trim() : '';
+      const fixedAmount = getAddonFixedAmount(wrap);
+      const addonInput = getAddonInput(wrap);
+      const addonRaw = addonInput ? String(addonInput.value || '').trim() : '';
       if (Number.isFinite(fixedAmount) && fixedAmount > 0) {
         formData.set('sadaka_donation_active', '1');
         formData.set('sadaka_custom_price', String(fixedAmount));
-      } else if (sadakaRaw !== '') {
-        const parsed = parseNormalizedAmount(sadakaRaw);
+      } else if (addonRaw !== '') {
+        const parsed = parseNormalizedAmount(addonRaw);
         formData.set('sadaka_donation_active', '1');
         formData.set(
           'sadaka_custom_price',
-          Number.isFinite(parsed) && parsed > 0 ? String(parsed) : sadakaRaw
+          Number.isFinite(parsed) && parsed > 0 ? String(parsed) : addonRaw
         );
       } else {
         formData.delete('sadaka_custom_price');
@@ -209,40 +209,40 @@
     }
   }
 
-  function toggleSadakaDonationPanel(wrap) {
+  function toggleAddonDonationPanel(wrap) {
     if (!wrap) {
       return;
     }
     const toggle = wrap.querySelector('.wdp-sadaka-donation__toggle');
     const panel = wrap.querySelector('.wdp-sadaka-donation__panel');
-    const input = getSadakaInput(wrap);
+    const input = getAddonInput(wrap);
     if (!toggle || !panel) {
       return;
     }
 
     const open = wrap.classList.toggle('is-open');
     toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
-    syncSadakaInputRequired(wrap);
+    syncAddonInputRequired(wrap);
     if (open) {
       panel.removeAttribute('hidden');
       if (input) {
-        const fixedAmount = getSadakaFixedAmount(wrap);
+        const fixedAmount = getAddonFixedAmount(wrap);
         if (Number.isFinite(fixedAmount) && fixedAmount > 0) {
           input.value = String(fixedAmount);
         }
-        clearSadakaInputErrors(input);
+        clearAddonInputErrors(input);
       }
     } else {
       panel.setAttribute('hidden', '');
-      resetSadakaPanel(wrap);
+      resetAddonPanel(wrap);
     }
   }
 
-  function ensureSadakaDonationDelegation() {
-    if (sadakaDonationDelegationBound) {
+  function ensureAddonDonationDelegation() {
+    if (addonDonationDelegationBound) {
       return;
     }
-    sadakaDonationDelegationBound = true;
+    addonDonationDelegationBound = true;
 
     document.addEventListener('click', function(e) {
       const toggle = e.target.closest('.wdp-sadaka-donation__toggle');
@@ -262,15 +262,15 @@
       if (typeof e.stopPropagation === 'function') {
         e.stopPropagation();
       }
-      toggleSadakaDonationPanel(wrap);
+      toggleAddonDonationPanel(wrap);
     });
 
-    function onSadakaEdit(e) {
+    function onAddonEdit(e) {
       const input = e.target;
       if (!input || !input.matches || !input.matches('input[name="sadaka_custom_price"]')) {
         return;
       }
-      clearSadakaInputErrors(input);
+      clearAddonInputErrors(input);
       const wrap = input.closest('[data-wdp-sadaka-donation]');
       if (!wrap || !wrap.classList.contains('is-open')) {
         return;
@@ -278,25 +278,25 @@
       // Geçerli tutarda hata kalmasın; geçersizken yazarken mesaj basma.
       const minAttr = input.getAttribute('min');
       const minValue = minAttr !== null && minAttr !== '' ? parseNormalizedAmount(minAttr) : 0;
-      const result = typeof sadakaRules.validateAmount === 'function'
-        ? sadakaRules.validateAmount({
+      const result = typeof addonRules.validateAmount === 'function'
+        ? addonRules.validateAmount({
             panelOpen: true,
-            fixedAmount: getSadakaFixedAmount(wrap),
+            fixedAmount: getAddonFixedAmount(wrap),
             raw: String(input.value || '').trim(),
             min: minValue,
           })
         : null;
       if (result && result.ok) {
-        clearSadakaInputErrors(input);
+        clearAddonInputErrors(input);
       }
     }
 
-    document.addEventListener('input', onSadakaEdit);
-    document.addEventListener('change', onSadakaEdit);
+    document.addEventListener('input', onAddonEdit);
+    document.addEventListener('change', onAddonEdit);
   }
 
-  function bindSadakaDonation(form) {
-    ensureSadakaDonationDelegation();
+  function bindAddonDonation(form) {
+    ensureAddonDonationDelegation();
     if (!form) {
       return;
     }
@@ -306,29 +306,29 @@
     }
     const panel = wrap.querySelector('.wdp-sadaka-donation__panel');
     const toggle = wrap.querySelector('.wdp-sadaka-donation__toggle');
-    syncSadakaInputRequired(wrap);
+    syncAddonInputRequired(wrap);
     if (panel && !wrap.classList.contains('is-open')) {
       panel.setAttribute('hidden', '');
-      resetSadakaPanel(wrap);
+      resetAddonPanel(wrap);
     }
     if (toggle) {
       toggle.setAttribute('aria-expanded', wrap.classList.contains('is-open') ? 'true' : 'false');
     }
-    const fixedInput = getSadakaInput(wrap);
-    const fixedAmount = getSadakaFixedAmount(wrap);
+    const fixedInput = getAddonInput(wrap);
+    const fixedAmount = getAddonFixedAmount(wrap);
     if (fixedInput && Number.isFinite(fixedAmount) && fixedAmount > 0) {
       fixedInput.value = String(fixedAmount);
     }
   }
 
-  ensureSadakaDonationDelegation();
+  ensureAddonDonationDelegation();
 
-  WDPApp.formSadaka = {
-    validateSadakaDonation: validateSadakaDonation,
-    patchSadakaFormData: patchSadakaFormData,
-    bindSadakaDonation: bindSadakaDonation,
-    ensureSadakaDonationDelegation: ensureSadakaDonationDelegation,
-    clearSadakaInputErrors: clearSadakaInputErrors,
-    resetSadakaPanel: resetSadakaPanel,
+  WDPApp.formAddon = {
+    validateAddonDonation: validateAddonDonation,
+    patchAddonFormData: patchAddonFormData,
+    bindAddonDonation: bindAddonDonation,
+    ensureAddonDonationDelegation: ensureAddonDonationDelegation,
+    clearAddonInputErrors: clearAddonInputErrors,
+    resetAddonPanel: resetAddonPanel,
   };
 })(window);

@@ -5,7 +5,7 @@ Requires at least: 5.0
 Tested up to: 7.1
 Requires PHP: 7.4
 Requires Plugins: woocommerce
-Stable tag: 10.35.1
+Stable tag: 10.35.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -45,6 +45,9 @@ Use the `[wdp_donation_form id="123"]` shortcode, the Gutenberg block or the Ele
 Write it on your site; the form only shows a link to the page you choose.
 
 == Changelog ==
+
+= 10.35.2 =
+* Internal naming made generic (add-on donation); existing product settings are migrated automatically and stay readable.
 
 = 10.35.1 =
 * Plugin renamed to Donation Panel for WooCommerce; author and description updated; readme.txt added.

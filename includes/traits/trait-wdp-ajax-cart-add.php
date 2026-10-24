@@ -36,21 +36,21 @@ trait WDP_Ajax_Cart_Add_Trait {
             if ($quantity > 1000) {
                 $quantity = 1000;
             }
-            $variation_id = isset($_POST['variation_id']) ? absint(wp_unslash($_POST['variation_id'])) : 0;
+            $variation_id     = isset($_POST['variation_id']) ? absint(wp_unslash($_POST['variation_id'])) : 0;
             $custom_price_raw = isset($_POST['custom_price']) ? wc_clean(wp_unslash($_POST['custom_price'])) : '';
             // SECURITY: Limit custom price length
             if (strlen($custom_price_raw) > 20) {
                 $custom_price_raw = substr($custom_price_raw, 0, 20);
             }
             $unique_submission_key = isset($_POST['unique_submission_key']) ? WDP_Security::sanitize_text(wp_unslash($_POST['unique_submission_key']), 100) : '';
-            $timestamp = isset($_POST['timestamp']) ? absint(wp_unslash($_POST['timestamp'])) : 0;
+            $timestamp             = isset($_POST['timestamp']) ? absint(wp_unslash($_POST['timestamp'])) : 0;
             // SECURITY: Validate timestamp (not too old, not in future)
             $current_time = time();
             if ($timestamp > 0 && ($timestamp < ($current_time - 3600) || $timestamp > ($current_time + 60))) {
                 $timestamp = $current_time;
             }
             $is_direct_share_form = !empty($_POST['is_direct_share_form']) && '1' === wp_unslash($_POST['is_direct_share_form']);
-            $custom_price_type = isset($_POST['custom_price_type']) ? WDP_Security::sanitize_text(wp_unslash($_POST['custom_price_type']), 50) : '';
+            $custom_price_type    = isset($_POST['custom_price_type']) ? WDP_Security::sanitize_text(wp_unslash($_POST['custom_price_type']), 50) : '';
 
             if (!$product_id) {
                 throw new WDP_Validation_Exception(__('Invalid product ID.', 'woo-donation-popup'));
@@ -72,7 +72,7 @@ trait WDP_Ajax_Cart_Add_Trait {
             }
 
         $donation_data = array();
-        $share_count = isset($_POST['share_count']) ? absint(wp_unslash($_POST['share_count'])) : 0;
+        $share_count   = isset($_POST['share_count']) ? absint(wp_unslash($_POST['share_count'])) : 0;
 
         if ($share_count > 0) {
             $max_share_count = 50;
@@ -103,7 +103,7 @@ trait WDP_Ajax_Cart_Add_Trait {
                 );
             }
 
-            $share_count = $parsed['share_count'];
+            $share_count                  = $parsed['share_count'];
             $donation_data['share_count'] = $share_count;
             if (!empty($parsed['shareholders'])) {
                 $donation_data['shareholders'] = $parsed['shareholders'];
@@ -115,18 +115,18 @@ trait WDP_Ajax_Cart_Add_Trait {
             $quantity = max(1, $share_count);
             
             WDP_Utils::log(array(
-                'event' => 'ajax_add_to_cart_request_hisseli',
-                'product_id' => $product_id,
-                'quantity' => $quantity,
-                'share_count' => $share_count,
-                'custom_price' => $custom_price_raw,
+                'event'                 => 'ajax_add_to_cart_request_hisseli',
+                'product_id'            => $product_id,
+                'quantity'              => $quantity,
+                'share_count'           => $share_count,
+                'custom_price'          => $custom_price_raw,
                 'unique_submission_key' => $unique_submission_key,
             ));
         } else {
             // Ad Soyad alanını al
             $full_name = isset($_POST['donation_full_name']) ? WDP_Security::sanitize_text(wp_unslash($_POST['donation_full_name']), WDP_Donation_Optional_Fields::NAME_MAX) : '';
-            $phone = isset($_POST['donation_phone']) ? WDP_Security::sanitize_phone(wp_unslash($_POST['donation_phone'])) : '';
-            $note = isset($_POST['donation_note'])
+            $phone     = isset($_POST['donation_phone']) ? WDP_Security::sanitize_phone(wp_unslash($_POST['donation_phone'])) : '';
+            $note      = isset($_POST['donation_note'])
                 ? WDP_Security::sanitize_textarea(wp_unslash($_POST['donation_note']), WDP_Donation_Optional_Fields::NOTE_MAX)
                 : '';
 
@@ -139,7 +139,7 @@ trait WDP_Ajax_Cart_Add_Trait {
             }
 
             $donation_data['full_name'] = $full_name;
-            $donation_data['phone'] = $phone;
+            $donation_data['phone']     = $phone;
 
             if ('' !== $note) {
                 $donation_data['note'] = $note;
@@ -168,7 +168,7 @@ trait WDP_Ajax_Cart_Add_Trait {
 
         // PERFORMANCE: Use cached meta data ($product already loaded above).
         $cache_key_meta = 'wdp_product_info_' . $product_id;
-        $cached_meta = wp_cache_get($cache_key_meta, 'wdp_product_info');
+        $cached_meta    = wp_cache_get($cache_key_meta, 'wdp_product_info');
         
         if (false === $cached_meta) {
             $cached_meta = get_transient($cache_key_meta);
@@ -250,12 +250,12 @@ trait WDP_Ajax_Cart_Add_Trait {
                     if (isset($cart_item['unique_submission_key']) && $cart_item['unique_submission_key'] === $unique_submission_key) {
                         $dup_pid = isset($cart_item['product_id']) ? (int) $cart_item['product_id'] : 0;
                         WDP_Utils::json_success(array(
-                            'message' => __('Product is already in the cart', 'woo-donation-popup'),
-                            'cart_count' => (int) $cart->get_cart_contents_count(),
-                            'checkout_url' => wc_get_checkout_url(),
-                            'items' => self::get_cart_items(),
-                            'cart_item_key' => $dup_key,
-                            'product_id' => $dup_pid,
+                            'message'        => __('Product is already in the cart', 'woo-donation-popup'),
+                            'cart_count'     => (int) $cart->get_cart_contents_count(),
+                            'checkout_url'   => wc_get_checkout_url(),
+                            'items'          => self::get_cart_items(),
+                            'cart_item_key'  => $dup_key,
+                            'product_id'     => $dup_pid,
                             'meta_cart_line' => self::build_meta_cart_line_from_cart_item($cart_item, $dup_pid),
                         ));
                     }
@@ -263,7 +263,7 @@ trait WDP_Ajax_Cart_Add_Trait {
             }
         }
 
-        // Aynı ana bağış satırını kaldır (sadaka satırlarına dokunma).
+        // Aynı ana bağış satırını kaldır (addon satırlarına dokunma).
         foreach ($cart->get_cart() as $cart_item_key => $cart_item) {
             if (!empty($cart_item['wdp_sadaka_donation'])) {
                 continue;
@@ -276,7 +276,7 @@ trait WDP_Ajax_Cart_Add_Trait {
 
         $cart_item_data = array(
             'donation_data' => $donation_data,
-            'unique_key' => md5(serialize(array($product_id, 'main', microtime(true), wp_rand()))),
+            'unique_key'    => md5(serialize(array($product_id, 'main', microtime(true), wp_rand()))),
         );
 
         if ($unique_submission_key) {
@@ -312,19 +312,19 @@ trait WDP_Ajax_Cart_Add_Trait {
                 throw new WDP_Cart_Exception(__('An error occurred while adding the product to the cart.', 'woo-donation-popup'));
             }
 
-            self::maybe_add_sadaka_donation_to_cart($cart, $product, $donation_data, $unique_submission_key, $cart_item_key);
+            self::maybe_add_addon_donation_to_cart($cart, $product, $donation_data, $unique_submission_key, $cart_item_key);
 
             // PERFORMANCE: Get cart count once
             $cart_count = (int) $cart->get_cart_contents_count();
             
             // Progress bar için toplam bağış miktarını hesapla
-            $total_donation = 0.0;
-            $pending_in_cart = 0.0;
+            $total_donation      = 0.0;
+            $pending_in_cart     = 0.0;
             $enable_progress_bar = $product->get_meta('_enable_progress_bar') === 'yes';
             if ($enable_progress_bar) {
                 // Cache'i temizle (yeni bağış eklendi)
                 wp_cache_delete('wdp_total_donation_' . $product_id, 'wdp_donations');
-                $total_donation = WDP_Utils::get_total_donation_amount($product_id);
+                $total_donation  = WDP_Utils::get_total_donation_amount($product_id);
                 $pending_in_cart = class_exists('WDP_Cart')
                     ? (float) WDP_Cart::sum_cart_pending_for_product($product_id)
                     : 0.0;
@@ -332,15 +332,15 @@ trait WDP_Ajax_Cart_Add_Trait {
             
             $added_item = $cart->get_cart_item($cart_item_key);
             WDP_Utils::json_success(array(
-                'message' => __('Product added to cart.', 'woo-donation-popup'),
-                'cart_item_key' => $cart_item_key,
-                'cart_count' => $cart_count,
-                'checkout_url' => wc_get_checkout_url(),
-                'items' => self::get_cart_items(),
-                'total_donation' => $total_donation,
+                'message'         => __('Product added to cart.', 'woo-donation-popup'),
+                'cart_item_key'   => $cart_item_key,
+                'cart_count'      => $cart_count,
+                'checkout_url'    => wc_get_checkout_url(),
+                'items'           => self::get_cart_items(),
+                'total_donation'  => $total_donation,
                 'pending_in_cart' => $pending_in_cart,
-                'product_id' => $product_id,
-                'meta_cart_line' => $added_item ? self::build_meta_cart_line_from_cart_item($added_item, $product_id) : null,
+                'product_id'      => $product_id,
+                'meta_cart_line'  => $added_item ? self::build_meta_cart_line_from_cart_item($added_item, $product_id) : null,
             ));
         } catch (WDP_Validation_Exception $e) {
             WDP_Utils::json_error($e);
@@ -394,13 +394,13 @@ trait WDP_Ajax_Cart_Add_Trait {
     }
 
     /**
-     * Build donation meta for optional sadaka line item.
+     * Build donation meta for optional addon line item.
      *
      * @param array $donation_data Primary donation payload.
      * @return array
      */
-    private static function build_sadaka_donation_data(array $donation_data) {
-        $sadaka_data = array(
+    private static function build_addon_donation_data(array $donation_data) {
+        $addon_data = array(
             'is_sadaka' => true,
         );
 
@@ -408,30 +408,30 @@ trait WDP_Ajax_Cart_Add_Trait {
             $first = reset($donation_data['shareholders']);
             if (is_array($first)) {
                 if (!empty($first['name'])) {
-                    $sadaka_data['full_name'] = $first['name'];
+                    $addon_data['full_name'] = $first['name'];
                 }
                 if (!empty($first['phone'])) {
-                    $sadaka_data['phone'] = $first['phone'];
+                    $addon_data['phone'] = $first['phone'];
                 }
             }
-            return $sadaka_data;
+            return $addon_data;
         }
 
         if (!empty($donation_data['full_name'])) {
-            $sadaka_data['full_name'] = $donation_data['full_name'];
+            $addon_data['full_name'] = $donation_data['full_name'];
         }
         if (!empty($donation_data['phone'])) {
-            $sadaka_data['phone'] = $donation_data['phone'];
+            $addon_data['phone'] = $donation_data['phone'];
         }
         if (!empty($donation_data['note'])) {
-            $sadaka_data['note'] = $donation_data['note'];
+            $addon_data['note'] = $donation_data['note'];
         }
 
-        return $sadaka_data;
+        return $addon_data;
     }
 
     /**
-     * Add separate sadaka cart line when donor opted in.
+     * Add separate addon cart line when donor opted in.
      *
      * @param WC_Cart     $cart                  Cart.
      * @param WC_Product  $product               Product.
@@ -439,8 +439,8 @@ trait WDP_Ajax_Cart_Add_Trait {
      * @param string      $unique_submission_key Submission key.
      * @return void
      */
-    private static function maybe_add_sadaka_donation_to_cart($cart, $product, array $donation_data, $unique_submission_key, $parent_cart_item_key = '') {
-        if (!$cart || !$product || $product->get_meta('_enable_sadaka_donation') !== 'yes') {
+    private static function maybe_add_addon_donation_to_cart($cart, $product, array $donation_data, $unique_submission_key, $parent_cart_item_key = '') {
+        if (!$cart || !$product || WDP_Addon_Product_Visibility::get_meta($product, '_enable_addon_donation') !== 'yes') {
             return;
         }
 
@@ -449,11 +449,11 @@ trait WDP_Ajax_Cart_Add_Trait {
             return;
         }
 
-        $parent_product_id = (int) $product->get_id();
-        $configured_sadaka_id = WDP_Utils::get_configured_sadaka_wc_product_id($product);
-        $sadaka_product_id = WDP_Utils::resolve_sadaka_wc_product_id($product);
+        $parent_product_id   = (int) $product->get_id();
+        $configured_addon_id = WDP_Utils::get_configured_addon_wc_product_id($product);
+        $addon_product_id    = WDP_Utils::resolve_addon_wc_product_id($product);
 
-        if ($configured_sadaka_id <= 0 || $sadaka_product_id <= 0) {
+        if ($configured_addon_id <= 0 || $addon_product_id <= 0) {
             throw new WDP_Validation_Exception(
                 __('Add-on donation WooCommerce product was not found. Enter a valid product ID in Success & Mini Cart or the product settings.', 'woo-donation-popup'),
                 array('sadaka_custom_price')
@@ -470,21 +470,21 @@ trait WDP_Ajax_Cart_Add_Trait {
                 }
             } elseif (!empty($existing_item['wdp_parent_product_id']) && (int) $existing_item['wdp_parent_product_id'] !== $parent_product_id) {
                 continue;
-            } elseif (empty($existing_item['wdp_parent_product_id']) && (int) $existing_item['product_id'] !== $parent_product_id && (int) $existing_item['product_id'] !== $sadaka_product_id) {
+            } elseif (empty($existing_item['wdp_parent_product_id']) && (int) $existing_item['product_id'] !== $parent_product_id && (int) $existing_item['product_id'] !== $addon_product_id) {
                 continue;
             }
             $cart->remove_cart_item($existing_key);
         }
 
-        $fixed_price = WDP_Utils::get_sadaka_fixed_price($product);
-        $sadaka_raw  = isset($_POST['sadaka_custom_price']) ? wc_clean(wp_unslash($_POST['sadaka_custom_price'])) : '';
-        if (strlen($sadaka_raw) > 20) {
-            $sadaka_raw = substr($sadaka_raw, 0, 20);
+        $fixed_price = WDP_Utils::get_addon_fixed_price($product);
+        $addon_raw   = isset($_POST['sadaka_custom_price']) ? wc_clean(wp_unslash($_POST['sadaka_custom_price'])) : '';
+        if (strlen($addon_raw) > 20) {
+            $addon_raw = substr($addon_raw, 0, 20);
         }
-        $min_sadaka = $product->get_meta('_sadaka_min_price');
-        $min_float  = ($min_sadaka !== '' && (float) $min_sadaka > 0) ? (float) $min_sadaka : 0.0;
+        $min_addon = WDP_Addon_Product_Visibility::get_meta($product, '_addon_min_price');
+        $min_float = ($min_addon !== '' && (float) $min_addon > 0) ? (float) $min_addon : 0.0;
 
-        $validated = WDP_Utils::validate_sadaka_amount($sadaka_raw, $min_float, $fixed_price);
+        $validated = WDP_Utils::validate_addon_amount($addon_raw, $min_float, $fixed_price);
         if (empty($validated['ok'])) {
             throw new WDP_Validation_Exception(
                 !empty($validated['message'])
@@ -493,43 +493,43 @@ trait WDP_Ajax_Cart_Add_Trait {
                 array('sadaka_custom_price')
             );
         }
-        $sadaka_value = (float) $validated['amount'];
+        $addon_value = (float) $validated['amount'];
 
-        $sadaka_cart_data = array(
-            'donation_data'         => self::build_sadaka_donation_data($donation_data),
-            'custom_price'          => $sadaka_value,
-            'wdp_sadaka_donation'   => true,
-            'wdp_parent_product_id' => $parent_product_id,
+        $addon_cart_data = array(
+            'donation_data'                => self::build_addon_donation_data($donation_data),
+            'custom_price'                 => $addon_value,
+            'wdp_sadaka_donation'          => true,
+            'wdp_parent_product_id'        => $parent_product_id,
             'wdp_sadaka_linked_wc_product' => true,
-            'unique_key'            => md5(serialize(array($parent_product_id, $sadaka_product_id, 'sadaka', microtime(true), wp_rand()))),
+            'unique_key'                   => md5(serialize(array($parent_product_id, $addon_product_id, 'sadaka', microtime(true), wp_rand()))),
         );
 
         if ($parent_cart_item_key !== '') {
-            $sadaka_cart_data['wdp_parent_cart_item_key'] = $parent_cart_item_key;
+            $addon_cart_data['wdp_parent_cart_item_key'] = $parent_cart_item_key;
         }
 
         if ($unique_submission_key) {
-            $sadaka_cart_data['unique_submission_key'] = $unique_submission_key . '-sadaka';
+            $addon_cart_data['unique_submission_key'] = $unique_submission_key . '-sadaka';
         }
 
-        $allow_purchasable = static function ($purchasable, $check_product) use ($sadaka_product_id) {
+        $allow_purchasable = static function ($purchasable, $check_product) use ($addon_product_id) {
             if ($purchasable || !$check_product instanceof WC_Product) {
                 return $purchasable;
             }
-            return (int) $check_product->get_id() === (int) $sadaka_product_id ? true : $purchasable;
+            return (int) $check_product->get_id() === (int) $addon_product_id ? true : $purchasable;
         };
         add_filter('woocommerce_is_purchasable', $allow_purchasable, 99, 2);
 
-        $sadaka_key = $cart->add_to_cart($sadaka_product_id, 1, 0, array(), $sadaka_cart_data);
+        $addon_key = $cart->add_to_cart($addon_product_id, 1, 0, array(), $addon_cart_data);
 
         remove_filter('woocommerce_is_purchasable', $allow_purchasable, 99);
 
-        if (!$sadaka_key) {
+        if (!$addon_key) {
             throw new WDP_Cart_Exception(
                 sprintf(
                     /* translators: %d: WooCommerce product ID */
                     __('The add-on donation could not be added to the cart (product #%d). Make sure the product is published.', 'woo-donation-popup'),
-                    $sadaka_product_id
+                    $addon_product_id
                 )
             );
         }

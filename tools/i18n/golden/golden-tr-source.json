@@ -10561,7 +10561,7 @@
       "plural": null,
       "context": null,
       "domain": "woo-donation-popup",
-      "file": "includes/class-sadaka-product-visibility.php",
+      "file": "includes/class-addon-product-visibility.php",
       "line": 166,
       "arg_count": 2,
       "placeholders": []
@@ -10572,7 +10572,7 @@
       "plural": null,
       "context": null,
       "domain": "woo-donation-popup",
-      "file": "includes/class-sadaka-product-visibility.php",
+      "file": "includes/class-addon-product-visibility.php",
       "line": 359,
       "arg_count": 2,
       "placeholders": []
@@ -10583,7 +10583,7 @@
       "plural": null,
       "context": null,
       "domain": "woo-donation-popup",
-      "file": "includes/class-sadaka-product-visibility.php",
+      "file": "includes/class-addon-product-visibility.php",
       "line": 376,
       "arg_count": 2,
       "placeholders": []
@@ -10594,7 +10594,7 @@
       "plural": null,
       "context": null,
       "domain": "woo-donation-popup",
-      "file": "includes/class-sadaka-product-visibility.php",
+      "file": "includes/class-addon-product-visibility.php",
       "line": 392,
       "arg_count": 2,
       "placeholders": []
@@ -10605,7 +10605,7 @@
       "plural": null,
       "context": null,
       "domain": "woo-donation-popup",
-      "file": "includes/class-sadaka-product-visibility.php",
+      "file": "includes/class-addon-product-visibility.php",
       "line": 427,
       "arg_count": 2,
       "placeholders": []
@@ -10616,7 +10616,7 @@
       "plural": null,
       "context": null,
       "domain": "woo-donation-popup",
-      "file": "includes/class-sadaka-product-visibility.php",
+      "file": "includes/class-addon-product-visibility.php",
       "line": 434,
       "arg_count": 2,
       "placeholders": []

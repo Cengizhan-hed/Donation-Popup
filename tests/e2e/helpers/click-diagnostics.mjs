@@ -49,10 +49,10 @@ export async function collectAddToCartDiagnostics(page, button, opts = {}) {
     for (const k of [
       'form',
       'formAjax',
-      'formSadaka',
+      'formAddon',
       'formValidate',
       'formFeedback',
-      'sadakaRules',
+      'addonRules',
       'lazyModal',
       'init',
       'eventManager',
@@ -163,7 +163,7 @@ export async function collectAddToCartDiagnostics(page, button, opts = {}) {
             actionClickBound: btn ? btn.dataset.wdpActionClickBound || '' : '',
           }
         : null,
-      sadakaFlags: wrap
+      addonFlags: wrap
         ? {
             className: String(wrap.className || ''),
             isOpen: wrap.classList.contains('is-open'),

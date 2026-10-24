@@ -24,7 +24,7 @@
     if (
       input.classList &&
       (input.classList.contains('wdp-custom-price-input') ||
-        input.classList.contains('wdp-sadaka-custom-price-input'))
+        input.classList.contains('wdp-addon-custom-price-input'))
     ) {
       const priceField = input.closest('.wdp-price-field');
       if (priceField) {

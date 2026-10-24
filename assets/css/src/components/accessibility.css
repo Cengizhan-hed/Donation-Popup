@@ -33,7 +33,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content :is(
   .wdp-phone-field__number,
   .wdp-phone-field__code-btn,
   .wdp-custom-price-input,
-  .wdp-sadaka-custom-price-input,
+  .wdp-addon-custom-price-input,
   .wdp-progress-bar-price-input
 ):is(:focus, :focus-visible) {
   outline: none !important;
@@ -49,7 +49,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content a:focus-visible
   border-radius: var(--wdp-radius-ui, 12px);
 }
 
-html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content input:focus-visible:not(.wdp-field-stack__input):not(.wdp-custom-price-input):not(.wdp-phone-field__number):not(.wdp-sadaka-custom-price-input):not(.wdp-progress-bar-price-input),
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content input:focus-visible:not(.wdp-field-stack__input):not(.wdp-custom-price-input):not(.wdp-phone-field__number):not(.wdp-addon-custom-price-input):not(.wdp-progress-bar-price-input),
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content textarea:focus-visible:not(.wdp-field-stack__textarea),
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content select:focus-visible {
   outline: none;

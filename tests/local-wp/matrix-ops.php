@@ -880,7 +880,7 @@ function wdp_matrix_prepare_full() {
 		'fixed'        => 'WDP E2E Fixed',
 		'shares'       => 'WDP E2E Shares',
 		'campaign'     => 'WDP E2E Campaign',
-		'sadaka'       => 'WDP E2E Sadaka',
+		'sadaka'       => 'WDP E2E Addon',
 		'goal-reached' => 'WDP E2E Goal Reached',
 		'empty-price'  => 'WDP E2E Empty Price',
 	);
@@ -928,21 +928,21 @@ function wdp_matrix_prepare_full() {
 		}
 	}
 
-	$sadaka_id = isset($roles['sadaka']['id']) ? (int) $roles['sadaka']['id'] : 0;
-	if ($sadaka_id > 0) {
+	$addon_id = isset($roles['sadaka']['id']) ? (int) $roles['sadaka']['id'] : 0;
+	if ($addon_id > 0) {
 		foreach (array( 'fixed', 'custom' ) as $host_role) {
 			if (empty($roles[ $host_role ]['id'])) {
 				continue;
 			}
 			$hid = (int) $roles[ $host_role ]['id'];
-			update_post_meta($hid, '_enable_sadaka_donation', 'yes');
-			update_post_meta($hid, '_sadaka_wc_product_id', $sadaka_id);
+			update_post_meta($hid, '_enable_addon_donation', 'yes');
+			update_post_meta($hid, '_addon_wc_product_id', $addon_id);
 		}
 		$success = get_option('wdp_success_settings', array());
 		if (!is_array($success)) {
 			$success = array();
 		}
-		$success['sadaka_wc_product_id'] = $sadaka_id;
+		$success['sadaka_wc_product_id'] = $addon_id;
 		update_option('wdp_success_settings', $success, false);
 	}
 

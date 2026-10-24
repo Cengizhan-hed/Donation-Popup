@@ -1,6 +1,6 @@
 <?php
 /**
- * Bağış formu alanları: bağışçı, ithaf, tutar, sadaka ve modül sırası.
+ * Bağış formu alanları: bağışçı, ithaf, tutar, addon ve modül sırası.
  *
  * @package WooCommerce\Donation_Popup
  */
@@ -326,11 +326,11 @@ class WDP_Form_Fields_Renderer {
 	}
 
 	/**
-	 * Varsayılan sadaka açıklama metni (ürün özel metni boşken).
+	 * Varsayılan addon açıklama metni (ürün özel metni boşken).
 	 *
 	 * @return string
 	 */
-	public static function get_default_sadaka_donation_message() {
+	public static function get_default_addon_donation_message() {
 		return (string) apply_filters(
 			'wdp_sadaka_inspirational_message',
 			__('You can also add a charity donation if you wish. Every kindness quietly reaches someone; your intention can bring hope to those in need.', 'woo-donation-popup')
@@ -338,18 +338,18 @@ class WDP_Form_Fields_Renderer {
 	}
 
 	/**
-	 * Ürün sadaka metnini çözümler; boşsa varsayılan metin.
+	 * Ürün addon metnini çözümler; boşsa varsayılan metin.
 	 *
 	 * @param string $message Per-product message from meta.
 	 * @return string
 	 */
-	public static function resolve_sadaka_donation_message($message) {
+	public static function resolve_addon_donation_message($message) {
 		$message = is_string($message) ? trim($message) : '';
 		if ($message !== '') {
 			return $message;
 		}
 
-		return trim(self::get_default_sadaka_donation_message());
+		return trim(self::get_default_addon_donation_message());
 	}
 
 	/**
@@ -358,11 +358,11 @@ class WDP_Form_Fields_Renderer {
 	 * @param array $context sadaka_min_price, sadaka_fixed_price, sadaka_wc_product_id, sadaka_price_placeholder, currency_symbol, sadaka_donation_message.
 	 * @return string Safe HTML.
 	 */
-	public static function render_sadaka_donation_block($context) {
+	public static function render_addon_donation_block($context) {
 		if (!is_array($context)) {
 			$context = array();
 		}
-		$sadaka_min_price = isset($context['sadaka_min_price']) ? (string) $context['sadaka_min_price'] : '0';
+		$addon_min_price = isset($context['sadaka_min_price']) ? (string) $context['sadaka_min_price'] : '0';
 		$placeholder      = isset($context['sadaka_price_placeholder']) ? (string) $context['sadaka_price_placeholder'] : '';
 		$currency_symbol  = isset($context['currency_symbol']) ? (string) $context['currency_symbol'] : '';
 		$message          = isset($context['sadaka_donation_message']) ? (string) $context['sadaka_donation_message'] : '';
@@ -373,11 +373,11 @@ class WDP_Form_Fields_Renderer {
 		$wc_product_id    = 0;
 		if (class_exists('WDP_Utils')) {
 			$wc_product_id = $parent_id > 0
-				? (int) WDP_Utils::resolve_sadaka_wc_product_id($parent_id)
+				? (int) WDP_Utils::resolve_addon_wc_product_id($parent_id)
 				: 0;
 			if ($wc_product_id <= 0) {
 				$configured = isset($context['sadaka_wc_product_id']) ? absint($context['sadaka_wc_product_id']) : 0;
-				if ($configured > 0 && WDP_Utils::is_valid_sadaka_wc_product($configured)) {
+				if ($configured > 0 && WDP_Utils::is_valid_addon_wc_product($configured)) {
 					$wc_product_id = $configured;
 				}
 			}
@@ -394,10 +394,10 @@ class WDP_Form_Fields_Renderer {
 				: '';
 		}
 
-		$note_text    = self::resolve_sadaka_donation_message($message);
+		$note_text    = self::resolve_addon_donation_message($message);
 		$toggle_label = isset($context['sadaka_toggle_label']) ? (string) $context['sadaka_toggle_label'] : '';
 		if ($toggle_label === '' && class_exists('WDP_Utils')) {
-			$toggle_label = WDP_Utils::get_sadaka_toggle_label();
+			$toggle_label = WDP_Utils::get_addon_toggle_label();
 		}
 		if ($toggle_label === '') {
 			$toggle_label = __('Add add-on donation', 'woo-donation-popup');
@@ -424,7 +424,7 @@ class WDP_Form_Fields_Renderer {
 				<div class="wdp-price-field wdp-custom-price-field">
 					<div class="<?php echo esc_attr($shell_class); ?>">
 						<span class="wdp-custom-price-currency" aria-hidden="true"><?php echo esc_html($currency_symbol); ?></span>
-						<input type="number" name="sadaka_custom_price" value="<?php echo esc_attr($fixed_display); ?>" readonly class="wdp-custom-price-input wdp-sadaka-custom-price-input" inputmode="decimal" autocomplete="off" aria-labelledby="<?php echo esc_attr($label_id); ?>">
+						<input type="number" name="sadaka_custom_price" value="<?php echo esc_attr($fixed_display); ?>" readonly class="wdp-custom-price-input wdp-addon-custom-price-input" inputmode="decimal" autocomplete="off" aria-labelledby="<?php echo esc_attr($label_id); ?>">
 					</div>
 				</div>
 			</div>
@@ -432,7 +432,7 @@ class WDP_Form_Fields_Renderer {
 			$amount_row = trim(ob_get_clean());
 		} else {
 			$amount_row = self::render_custom_price_amount_row(
-				$sadaka_min_price,
+				$addon_min_price,
 				$placeholder,
 				$currency_symbol,
 				array(
@@ -440,7 +440,7 @@ class WDP_Form_Fields_Renderer {
 					'label'        => __('Add-on donation amount', 'woo-donation-popup'),
 					'required'     => false,
 					'row_class'    => 'wdp-custom-price-row wdp-sadaka-donation__amount',
-					'input_class'  => 'wdp-custom-price-input wdp-sadaka-custom-price-input',
+					'input_class'  => 'wdp-custom-price-input wdp-addon-custom-price-input',
 					'include_qty'  => false,
 					'filter_label' => 'wdp_sadaka_price_label',
 				)
@@ -473,12 +473,12 @@ class WDP_Form_Fields_Renderer {
 	}
 
 	/**
-	 * Build sadaka render context from product form context.
+	 * Build addon render context from product form context.
 	 *
 	 * @param array $context Product form context.
 	 * @return array
 	 */
-	public static function build_sadaka_context(array $context) {
+	public static function build_addon_context(array $context) {
 		return array(
 			'product_id'               => isset($context['product_id']) ? absint($context['product_id']) : 0,
 			'sadaka_min_price'         => isset($context['sadaka_min_price']) ? $context['sadaka_min_price'] : '0',

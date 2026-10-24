@@ -1,7 +1,7 @@
 /**
- * @file sadaka-rules.js
+ * @file addon-rules.js
  * Alt bağış tutarı için saf doğrulama kuralları (DOM yok).
- * Dış API: WDPApp.sadakaRules
+ * Dış API: WDPApp.addonRules
  */
 (function (window) {
   'use strict';
@@ -94,7 +94,7 @@
     return { ok: true, empty: false, value: value, reason: 'valid' };
   }
 
-  WDPApp.sadakaRules = {
+  WDPApp.addonRules = {
     parseAmount: parseAmount,
     validateAmount: validateAmount,
   };

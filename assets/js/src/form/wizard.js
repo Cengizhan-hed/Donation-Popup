@@ -26,7 +26,7 @@
     donor: WDPApp.i18n.__('Your details', 'woo-donation-popup'),
     amount: WDPApp.i18n._x('Amount', 'wizard step', 'woo-donation-popup'),
     shares: WDPApp.i18n.__('Shares', 'woo-donation-popup'),
-    sadaka: WDPApp.i18n.__('Additional donation', 'woo-donation-popup'),
+    addon: WDPApp.i18n.__('Additional donation', 'woo-donation-popup'),
     confirm: WDPApp.i18n.__('Confirmation', 'woo-donation-popup'),
   };
 
@@ -126,9 +126,9 @@
       if (amountNodes.length) {
         defs.push({ id: 'amount', label: STEP_LABELS.amount, nodes: amountNodes });
       }
-      const sadaka = form.querySelector('.wdp-sadaka-donation');
-      if (sadaka) {
-        defs.push({ id: 'sadaka', label: STEP_LABELS.sadaka, nodes: [sadaka] });
+      const addon = form.querySelector('.wdp-sadaka-donation');
+      if (addon) {
+        defs.push({ id: 'sadaka', label: STEP_LABELS.addon, nodes: [addon] });
       }
     }
 

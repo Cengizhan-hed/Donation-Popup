@@ -1,6 +1,6 @@
 <?php
 /**
- * Merkezi yardımcı sınıf; log, JSON yanıt, sadaka çözümü, progress bar ve önbellek.
+ * Merkezi yardımcı sınıf; log, JSON yanıt, addon çözümü, progress bar ve önbellek.
  *
  * @package WooCommerce\Donation_Popup
  */
@@ -105,8 +105,8 @@ class WDP_Utils {
      * @param int|WC_Product $parent_product Ana bağış ürünü.
      * @return int Geçerli WC ürün ID veya 0.
      */
-    public static function resolve_sadaka_wc_product_id($parent_product) {
-        $configured = self::get_configured_sadaka_wc_product_id($parent_product);
+    public static function resolve_addon_wc_product_id($parent_product) {
+        $configured = self::get_configured_addon_wc_product_id($parent_product);
         if ($configured <= 0) {
             return 0;
         }
@@ -114,7 +114,7 @@ class WDP_Utils {
         /**
          * Alt bağış sepet satırında kullanılacak WooCommerce ürün ID.
          *
-         * @param int $configured Ürün meta _sadaka_wc_product_id.
+         * @param int $configured Ürün meta _addon_wc_product_id.
          * @param int $parent_id  Ana bağış ürün ID.
          */
         $parent_id = $parent_product instanceof WC_Product
@@ -123,16 +123,16 @@ class WDP_Utils {
         $filtered = apply_filters('wdp_sadaka_wc_product_id', $configured, $parent_id);
         $product_id = absint($filtered);
 
-        return self::is_valid_sadaka_wc_product($product_id) ? $product_id : 0;
+        return self::is_valid_addon_wc_product($product_id) ? $product_id : 0;
     }
 
     /**
-     * Sadaka sepet satırı için kullanılabilir WC ürünü (gizli/katalog ürünleri dahil).
+     * Addon sepet satırı için kullanılabilir WC ürünü (gizli/katalog ürünleri dahil).
      *
      * @param int $product_id Product ID.
      * @return bool
      */
-    public static function is_valid_sadaka_wc_product($product_id) {
+    public static function is_valid_addon_wc_product($product_id) {
         $product_id = absint($product_id);
         if ($product_id <= 0) {
             return false;
@@ -161,7 +161,7 @@ class WDP_Utils {
      *
      * @return int
      */
-    public static function get_default_sadaka_wc_product_id() {
+    public static function get_default_addon_wc_product_id() {
         $settings = get_option('wdp_success_settings', array());
         $id = 0;
         if (is_array($settings) && !empty($settings['sadaka_wc_product_id'])) {
@@ -176,11 +176,11 @@ class WDP_Utils {
      * @param WC_Product|int|null $parent_product Ana bağış ürünü.
      * @return string
      */
-    public static function get_sadaka_toggle_label($parent_product = null) {
+    public static function get_addon_toggle_label($parent_product = null) {
         if ($parent_product !== null) {
             $parent = $parent_product instanceof WC_Product ? $parent_product : wc_get_product((int) $parent_product);
             if ($parent) {
-                $per_product = trim((string) $parent->get_meta('_sadaka_toggle_label'));
+                $per_product = trim((string) WDP_Addon_Product_Visibility::get_meta($parent, '_addon_toggle_label'));
                 if ($per_product !== '') {
                     return sanitize_text_field($per_product);
                 }
@@ -204,18 +204,18 @@ class WDP_Utils {
      * @param WC_Product|int $parent_product Ana bağış ürünü.
      * @return int
      */
-    public static function get_configured_sadaka_wc_product_id($parent_product) {
+    public static function get_configured_addon_wc_product_id($parent_product) {
         $parent = $parent_product instanceof WC_Product ? $parent_product : wc_get_product((int) $parent_product);
         if (!$parent) {
-            return self::get_default_sadaka_wc_product_id();
+            return self::get_default_addon_wc_product_id();
         }
 
-        $per_product = absint($parent->get_meta('_sadaka_wc_product_id'));
+        $per_product = absint(WDP_Addon_Product_Visibility::get_meta($parent, '_addon_wc_product_id'));
         if ($per_product > 0) {
             return $per_product;
         }
 
-        return self::get_default_sadaka_wc_product_id();
+        return self::get_default_addon_wc_product_id();
     }
 
     /**
@@ -224,13 +224,13 @@ class WDP_Utils {
      * @param WC_Product|int $parent_product Ana bağış ürünü.
      * @return float
      */
-    public static function get_sadaka_fixed_price($parent_product) {
+    public static function get_addon_fixed_price($parent_product) {
         $parent = $parent_product instanceof WC_Product ? $parent_product : wc_get_product((int) $parent_product);
         if (!$parent) {
             return 0.0;
         }
 
-        $raw = $parent->get_meta('_sadaka_fixed_price');
+        $raw = WDP_Addon_Product_Visibility::get_meta($parent, '_addon_fixed_price');
         if ($raw === '' || $raw === null) {
             return 0.0;
         }
@@ -245,7 +245,7 @@ class WDP_Utils {
      * @param mixed $raw Ham tutar.
      * @return float|null Geçerli sayı veya null.
      */
-    public static function parse_sadaka_amount($raw) {
+    public static function parse_addon_amount($raw) {
         if ($raw === null || $raw === '') {
             return null;
         }
@@ -303,7 +303,7 @@ class WDP_Utils {
      * @param float $fixed_price Sabit tutar (>0 ise raw yok sayılır).
      * @return array{ok:bool,amount:float|null,code:string,message:string}
      */
-    public static function validate_sadaka_amount($raw, $min_price = 0.0, $fixed_price = 0.0) {
+    public static function validate_addon_amount($raw, $min_price = 0.0, $fixed_price = 0.0) {
         $fixed = (float) $fixed_price;
         if ($fixed > 0) {
             return array(
@@ -324,7 +324,7 @@ class WDP_Utils {
             );
         }
 
-        $amount = self::parse_sadaka_amount($raw_str);
+        $amount = self::parse_addon_amount($raw_str);
         if (null === $amount || $amount <= 0) {
             return array(
                 'ok'      => false,
@@ -501,7 +501,7 @@ class WDP_Utils {
         wp_send_json($response, $http_status);
         wp_die();
     }
-    
+
     /**
      * Handle exception gracefully.
      * 
@@ -564,14 +564,14 @@ class WDP_Utils {
      */
     public static function get_total_donation_amount($product_id) {
         $product_id = absint($product_id);
-        
+
         if (!$product_id) {
             return 0.0;
         }
 
         // Cache key - her ürün için ayrı cache
         $cache_key = 'wdp_total_donation_' . $product_id;
-        
+
         // Try to get from cache first
         $cached = wp_cache_get($cache_key, 'wdp_donations');
         if (false !== $cached) {

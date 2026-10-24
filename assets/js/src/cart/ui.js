@@ -179,14 +179,14 @@
           ? decodeHtmlEntities(item.price_plain)
           : (formatPrice(totalPrice) + ' ' + getCurrencySymbolDecoded());
 
-        const isSadakaLine = !!(item.is_sadaka_donation || item.line_kind === 'sadaka');
+        const isAddonLine = !!(item.is_sadaka_donation || item.line_kind === 'sadaka');
         const card = document.createElement('article');
-        card.className = isSadakaLine ? 'wdp-cart-item wdp-cart-item--sadaka' : 'wdp-cart-item';
+        card.className = isAddonLine ? 'wdp-cart-item wdp-cart-item--addon' : 'wdp-cart-item';
 
         const infoCell = document.createElement('div');
         infoCell.className = 'wdp-cart-item-info';
         const nameDiv = document.createElement('div');
-        nameDiv.className = isSadakaLine ? 'wdp-cart-item-name wdp-cart-item-name--sadaka' : 'wdp-cart-item-name';
+        nameDiv.className = isAddonLine ? 'wdp-cart-item-name wdp-cart-item-name--addon' : 'wdp-cart-item-name';
         nameDiv.textContent = item.product_name || item.name || WDPApp.i18n.__('Product', 'woo-donation-popup');
         infoCell.appendChild(nameDiv);
 
@@ -205,7 +205,7 @@
         const detailsCell = document.createElement('div');
         detailsCell.className = 'wdp-cart-item-details';
         const priceDiv = document.createElement('div');
-        priceDiv.className = isSadakaLine ? 'wdp-cart-item-price wdp-cart-item-price--sadaka' : 'wdp-cart-item-price';
+        priceDiv.className = isAddonLine ? 'wdp-cart-item-price wdp-cart-item-price--addon' : 'wdp-cart-item-price';
         priceDiv.textContent = priceDisplay;
         const qtyDiv = document.createElement('div');
         qtyDiv.className = 'wdp-cart-item-quantity';

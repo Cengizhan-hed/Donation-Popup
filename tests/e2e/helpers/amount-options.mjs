@@ -477,7 +477,7 @@ export async function runAmountOptionsChecks({
       fail('amount-opts-d-same-product-persist', 'Aynı ürün seçim koruması', e);
     }
 
-    // a) Nafile tutar seç → kapat → Sadaka fixture ürün sayfası → boş
+    // a) Nafile tutar seç → kapat → Addon fixture ürün sayfası → boş
     try {
       await emptyCart(page, baseUrl);
       let shell = await openProductShell(page, 'popup', {
@@ -491,12 +491,12 @@ export async function runAmountOptionsChecks({
       await page.locator(SEL.modalClose).first().click({ timeout: 5000 }).catch(async () => {
         await page.keyboard.press('Escape');
       });
-      const sadaka = requireFixtureRole(env, 'sadaka');
+      const addon = requireFixtureRole(env, 'sadaka');
       shell = await openProductShell(page, 'panel', {
         baseUrl,
         listPath,
-        productPath: sadaka.path || sadaka.url,
-        productId: sadaka.id,
+        productPath: addon.path || addon.url,
+        productId: addon.id,
       });
       await assertNoPresetSelected(shell);
       await page.locator(SEL.modalClose).first().click({ timeout: 5000 }).catch(async () => {

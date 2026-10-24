@@ -229,17 +229,17 @@ class WDP_Admin_Products_List_Table extends WP_List_Table {
 		$out .= '<span class="wdp-products-table__title"><a class="row-title" href="' . esc_url($edit_url) . '">' . esc_html($product->get_name()) . '</a>' . $state;
 		$out .= ' <span class="' . esc_attr($badge_class) . '">' . esc_html($badge_label) . '</span>';
 
-		if (class_exists('WDP_Sadaka_Product_Visibility') && WDP_Sadaka_Product_Visibility::is_sadaka_line_product($product->get_id())) {
-			$referrers = WDP_Sadaka_Product_Visibility::get_referrer_labels($product->get_id());
+		if (class_exists('WDP_Addon_Product_Visibility') && \WDP_Addon_Product_Visibility::is_addon_line_product($product->get_id())) {
+			$referrers = \WDP_Addon_Product_Visibility::get_referrer_labels($product->get_id());
 			$count     = count($referrers);
 			if ($count > 0) {
-				$sadaka_title = implode(', ', $referrers);
-				$sadaka_label = sprintf(
+				$addon_title = implode(', ', $referrers);
+				$addon_label = sprintf(
 					/* translators: %d: number of parent products using this as alt donation */
 					__('Used as an add-on donation (%d)', 'woo-donation-popup'),
 					$count
 				);
-				$out .= ' <span class="wdp-scope-badge wdp-scope-badge--sadaka" title="' . esc_attr($sadaka_title) . '">' . esc_html($sadaka_label) . '</span>';
+				$out .= ' <span class="wdp-scope-badge wdp-scope-badge--addon" title="' . esc_attr($addon_title) . '">' . esc_html($addon_label) . '</span>';
 			}
 		}
 		$out .= '<span class="wdp-products-table__id">#' . esc_html((string) $product->get_id()) . '</span></span>';

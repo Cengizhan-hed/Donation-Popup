@@ -585,8 +585,8 @@ html body :is(.hdf-donation-modal-wrapper, .wdp-modal, .wdp-donation-form) .wdp-
   max-width: 28ch;
 }
 
-/* —— Sadaka cart variants —— */
-html body :is(.hdf-donation-modal-wrapper, .wdp-modal, .wdp-donation-form) :is(.wdp-mini-cart-items, .wdp-modal-content .wdp-mini-cart-items) .wdp-cart-item-table--sadaka {
+/* —— Addon cart variants —— */
+html body :is(.hdf-donation-modal-wrapper, .wdp-modal, .wdp-donation-form) :is(.wdp-mini-cart-items, .wdp-modal-content .wdp-mini-cart-items) .wdp-cart-item-table--addon {
   margin-top: 8px;
   background: #ffffff;
   border: 1px solid color-mix(in srgb, var(--wdp-success, #1b7a45) 22%, #e5e9ec);
@@ -594,38 +594,38 @@ html body :is(.hdf-donation-modal-wrapper, .wdp-modal, .wdp-donation-form) :is(.
   box-shadow: var(--wdp-card-elev, 0 1px 2px rgba(15, 23, 42, 0.04));
 }
 
-html body :is(.hdf-donation-modal-wrapper, .wdp-modal, .wdp-donation-form) :is(.wdp-mini-cart-items, .wdp-modal-content .wdp-mini-cart-items) .wdp-cart-item-name--sadaka {
+html body :is(.hdf-donation-modal-wrapper, .wdp-modal, .wdp-donation-form) :is(.wdp-mini-cart-items, .wdp-modal-content .wdp-mini-cart-items) .wdp-cart-item-name--addon {
   color: var(--wdp-primary, #0f608b);
 }
 
-html body :is(.hdf-donation-modal-wrapper, .wdp-modal, .wdp-donation-form) :is(.wdp-mini-cart-items, .wdp-modal-content .wdp-mini-cart-items) .wdp-cart-item-price--sadaka {
+html body :is(.hdf-donation-modal-wrapper, .wdp-modal, .wdp-donation-form) :is(.wdp-mini-cart-items, .wdp-modal-content .wdp-mini-cart-items) .wdp-cart-item-price--addon {
   color: var(--wdp-success, #1b7a45);
   background: var(--wdp-success-alpha-10, rgba(27, 122, 69, 0.1));
 }
 
-html body.woocommerce-cart .cart tr.wdp-cart-line--sadaka,
-html body.woocommerce-checkout .shop_table tr.wdp-cart-line--sadaka {
+html body.woocommerce-cart .cart tr.wdp-cart-line--addon,
+html body.woocommerce-checkout .shop_table tr.wdp-cart-line--addon {
   background: color-mix(in srgb, var(--wdp-success, #1b7a45) 6%, #ffffff);
 }
 
-html body.woocommerce-cart .cart tr.wdp-cart-line--sadaka td,
-html body.woocommerce-checkout .shop_table tr.wdp-cart-line--sadaka td {
+html body.woocommerce-cart .cart tr.wdp-cart-line--addon td,
+html body.woocommerce-checkout .shop_table tr.wdp-cart-line--addon td {
   border-color: color-mix(in srgb, var(--wdp-success, #1b7a45) 22%, #e5e9ec);
 }
 
-html body.woocommerce-cart .cart tr.wdp-cart-line--sadaka .product-name,
-html body.woocommerce-checkout .shop_table tr.wdp-cart-line--sadaka .product-name {
+html body.woocommerce-cart .cart tr.wdp-cart-line--addon .product-name,
+html body.woocommerce-checkout .shop_table tr.wdp-cart-line--addon .product-name {
   color: var(--wdp-primary, #0f608b);
 }
 
-html body.woocommerce-cart .cart tr.wdp-cart-line--sadaka :is(.product-total, .amount),
-html body.woocommerce-checkout .shop_table tr.wdp-cart-line--sadaka :is(.product-total, .amount) {
+html body.woocommerce-cart .cart tr.wdp-cart-line--addon :is(.product-total, .amount),
+html body.woocommerce-checkout .shop_table tr.wdp-cart-line--addon :is(.product-total, .amount) {
   color: var(--wdp-success, #1b7a45);
   font-weight: 700;
 }
 
-html body.woocommerce-cart .wdp-cart-sadaka-label,
-html body.woocommerce-checkout .wdp-cart-sadaka-label {
+html body.woocommerce-cart .wdp-cart-addon-label,
+html body.woocommerce-checkout .wdp-cart-addon-label {
   display: inline-block;
   margin-inline-start: 6px;
   padding: 2px 8px;

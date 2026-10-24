@@ -17,15 +17,15 @@ if (!defined('ABSPATH')) {
  */
 class WDP_Migrations {
 
-	const OPTION          = 'wdp_db_version';
-	const PREVIOUS_OPTION = 'wdp_previous_version';
-	const LOG_OPTION      = 'wdp_migration_log';
-	const NOTICE_OPTION            = 'wdp_notice_placement_intro';
-	const BACKUP_OPTION            = 'wdp_settings_backup_10_27';
-	const BACKUP_RESTORED_OPTION   = 'wdp_settings_backup_10_27_restored';
-	const LOCK                     = 'wdp_migration_lock';
-	const LOCK_TTL                 = 300;
-	const BATCH                    = 500;
+	const OPTION                 = 'wdp_db_version';
+	const PREVIOUS_OPTION        = 'wdp_previous_version';
+	const LOG_OPTION             = 'wdp_migration_log';
+	const NOTICE_OPTION          = 'wdp_notice_placement_intro';
+	const BACKUP_OPTION          = 'wdp_settings_backup_10_27';
+	const BACKUP_RESTORED_OPTION = 'wdp_settings_backup_10_27_restored';
+	const LOCK                   = 'wdp_migration_lock';
+	const LOCK_TTL               = 300;
+	const BATCH                  = 500;
 
 	/** Option names that may appear in the 10.27 settings backup (plus nested product_meta). */
 	const BACKUP_OPTION_KEYS = array(
@@ -93,6 +93,7 @@ class WDP_Migrations {
 			'10.32.0' => array(__CLASS__, 'step_10_32_0'),
 			'10.33.0' => array(__CLASS__, 'step_10_33_0'),
 			'10.34.0' => array(__CLASS__, 'step_10_34_0'),
+			'10.35.2' => array(__CLASS__, 'step_10_35_2'),
 		);
 	}
 
@@ -265,15 +266,15 @@ class WDP_Migrations {
 		}
 		if (!array_key_exists('enable_privacy_notice', $button)) {
 			$button['enable_privacy_notice'] = '0';
-			$added[] = 'enable_privacy_notice';
+			$added[]                         = 'enable_privacy_notice';
 		}
 		if (!array_key_exists('privacy_notice_text', $button)) {
 			$button['privacy_notice_text'] = __('Your personal data is processed under the privacy notice.', 'woo-donation-popup');
-			$added[] = 'privacy_notice_text';
+			$added[]                       = 'privacy_notice_text';
 		}
 		if (!array_key_exists('privacy_notice_url', $button)) {
 			$button['privacy_notice_url'] = '';
-			$added[] = 'privacy_notice_url';
+			$added[]                      = 'privacy_notice_url';
 		}
 		if ($added) {
 			update_option('wdp_button_settings', $button, false);
@@ -454,6 +455,53 @@ class WDP_Migrations {
 	}
 
 	/**
+	 * 10.35.2: ek bağış iç adlandırması ("sadaka" -> "addon"). Ürün meta + denetim seçeneği yeni adlara KOPYALANIR.
+	 *
+	 * Idempotent: yalnız yeni anahtarı OLMAYAN ürünlere yazar; eski anahtar silinmez (okuma yedeği).
+	 * Sipariş öğe metası değişmez (geçmiş kayıt).
+	 *
+	 * @param bool $is_fresh Fresh install.
+	 * @return string Summary for the log.
+	 */
+	public static function step_10_35_2($is_fresh) {
+		$map    = class_exists('WDP_Addon_Product_Visibility') ? \WDP_Addon_Product_Visibility::LEGACY_META : array();
+		$copied = 0;
+		if (!$is_fresh && $map) {
+			$ids = array();
+			if (class_exists('WDP_Test_State')) {
+				$ids = array_keys((array) WDP_Test_State::$post_meta);
+			} else {
+				global $wpdb;
+				$keys = array_values($map);
+				$in   = implode(',', array_fill(0, count($keys), '%s'));
+				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare,WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+				$ids = $wpdb->get_col($wpdb->prepare("SELECT DISTINCT post_id FROM {$wpdb->postmeta} WHERE meta_key IN ($in)", $keys));
+			}
+			foreach ((array) $ids as $pid) {
+				foreach ($map as $new => $old) {
+					if (!empty(get_post_meta((int) $pid, $new, false)) || empty(get_post_meta((int) $pid, $old, false))) {
+						continue;
+					}
+					update_post_meta((int) $pid, $new, get_post_meta((int) $pid, $old, true));
+					++$copied;
+				}
+			}
+		}
+		// Denetim seçeneği: yeni ad yoksa eskiden kopyala (eski silinmez).
+		if (get_option('wdp_addon_links_audit', false) === false) {
+			$old_audit = get_option('wdp_sadaka_links_audit', false);
+			if ($old_audit !== false) {
+				update_option('wdp_addon_links_audit', $old_audit, false);
+			}
+		}
+		delete_transient('wdp_sadaka_line_ids');
+		if (class_exists('WDP_Addon_Product_Visibility')) {
+			\WDP_Addon_Product_Visibility::flush();
+		}
+		return 'addon meta copied:' . $copied;
+	}
+
+	/**
 	 * 10.29.1 (K2): genel `amount_preset_recommended` kaldırılır (ürün meta korunur).
 	 *
 	 * Idempotent. Yeni kurulumda anahtar zaten yoktur.
@@ -590,10 +638,10 @@ class WDP_Migrations {
 		$before = (int) get_option('wdp_list_cache_version', 1);
 
 		// Transient her zaman temizlenir; liste önbelleği yalnızca bir kez artırılır (idempotent).
-		if (class_exists('WDP_Sadaka_Product_Visibility')) {
-			WDP_Sadaka_Product_Visibility::flush();
+		if (class_exists('WDP_Addon_Product_Visibility')) {
+			\WDP_Addon_Product_Visibility::flush();
 		} else {
-			delete_transient('wdp_sadaka_line_ids');
+			delete_transient('wdp_addon_line_ids');
 		}
 
 		$bumped = false;
@@ -610,7 +658,7 @@ class WDP_Migrations {
 		$after = (int) get_option('wdp_list_cache_version', 1);
 
 		return sprintf(
-			'sadaka_visibility_caches cleared list_cache:%d→%d bumped:%s fresh:%s',
+			'addon_visibility_caches cleared list_cache:%d→%d bumped:%s fresh:%s',
 			$before,
 			$after,
 			$bumped ? 'yes' : 'no',
@@ -619,21 +667,21 @@ class WDP_Migrations {
 	}
 
 	/**
-	 * 10.28.4: temizle geçersiz / kapalı alt bağış (_sadaka_wc_product_id) bağlantılarını.
+	 * 10.28.4: temizle geçersiz / kapalı alt bağış (_addon_wc_product_id) bağlantılarını.
 	 *
 	 * @param bool $is_fresh Fresh install.
 	 * @return string Summary for the log.
 	 */
 	public static function step_10_28_4($is_fresh) {
-		$audit   = self::audit_and_clean_sadaka_links();
+		$audit   = self::audit_and_clean_addon_links();
 		$cleaned = isset($audit['cleaned']) ? (int) $audit['cleaned'] : 0;
 		$valid   = isset($audit['valid']) ? (int) $audit['valid'] : 0;
 		$rows    = isset($audit['rows']) && is_array($audit['rows']) ? $audit['rows'] : array();
 
 		update_option(
-			class_exists('WDP_Sadaka_Product_Visibility')
-				? WDP_Sadaka_Product_Visibility::AUDIT_OPTION
-				: 'wdp_sadaka_links_audit',
+			class_exists('WDP_Addon_Product_Visibility')
+				? \WDP_Addon_Product_Visibility::AUDIT_OPTION
+				: 'wdp_addon_links_audit',
 			array(
 				'time'    => time(),
 				'fresh'   => $is_fresh ? 1 : 0,
@@ -644,8 +692,8 @@ class WDP_Migrations {
 			false
 		);
 
-		if (class_exists('WDP_Sadaka_Product_Visibility')) {
-			WDP_Sadaka_Product_Visibility::flush();
+		if (class_exists('WDP_Addon_Product_Visibility')) {
+			\WDP_Addon_Product_Visibility::flush();
 		}
 
 		$reasons = array();
@@ -653,7 +701,7 @@ class WDP_Migrations {
 			if (!is_array($row) || (isset($row['status']) ? $row['status'] : '') !== 'cleaned') {
 				continue;
 			}
-			$r = isset($row['reason']) ? (string) $row['reason'] : 'other';
+			$r             = isset($row['reason']) ? (string) $row['reason'] : 'other';
 			$reasons[ $r ] = isset($reasons[ $r ]) ? $reasons[ $r ] + 1 : 1;
 		}
 		$reason_bits = array();
@@ -662,7 +710,7 @@ class WDP_Migrations {
 		}
 
 		return sprintf(
-			'sadaka_links cleaned:%d valid:%d %s fresh:%s',
+			'addon_links cleaned:%d valid:%d %s fresh:%s',
 			$cleaned,
 			$valid,
 			$reason_bits ? implode(',', $reason_bits) : 'reasons:none',
@@ -671,52 +719,53 @@ class WDP_Migrations {
 	}
 
 	/**
-	 * Scan _sadaka_wc_product_id; clear self-ref, missing, non-simple, or enable-off leftovers.
+	 * Scan _addon_wc_product_id; clear self-ref, missing, non-simple, or enable-off leftovers.
 	 *
 	 * @return array{cleaned:int,valid:int,rows:array<int,array<string,mixed>>}
 	 */
-	public static function audit_and_clean_sadaka_links() {
+	public static function audit_and_clean_addon_links() {
 		$rows    = array();
 		$cleaned = 0;
 		$valid   = 0;
 
-		$parent_ids = self::find_products_with_sadaka_meta();
+		$parent_ids = self::find_products_with_addon_meta();
 		foreach ($parent_ids as $parent_id) {
 			$parent_id = absint($parent_id);
-			$raw_id    = absint(get_post_meta($parent_id, '_sadaka_wc_product_id', true));
+			$raw_id    = absint(WDP_Addon_Product_Visibility::get_meta($parent_id, '_addon_wc_product_id'));
 			if ($raw_id <= 0) {
 				continue;
 			}
 
-			$enabled = class_exists('WDP_Sadaka_Product_Visibility')
-				? WDP_Sadaka_Product_Visibility::parent_has_sadaka_enabled($parent_id)
-				: (strtolower((string) get_post_meta($parent_id, '_enable_sadaka_donation', true)) === 'yes');
+			$enabled = class_exists('WDP_Addon_Product_Visibility')
+				? \WDP_Addon_Product_Visibility::parent_has_addon_enabled($parent_id)
+				: (strtolower((string) WDP_Addon_Product_Visibility::get_meta($parent_id, '_enable_addon_donation')) === 'yes');
 
 			$reason = '';
 			if ($raw_id === $parent_id) {
 				$reason = 'self_ref';
 			} elseif (!$enabled) {
 				$reason = 'enable_off';
-			} elseif (!class_exists('WDP_Utils') || !WDP_Utils::is_valid_sadaka_wc_product($raw_id)) {
+			} elseif (!class_exists('WDP_Utils') || !WDP_Utils::is_valid_addon_wc_product($raw_id)) {
 				$product = function_exists('wc_get_product') ? wc_get_product($raw_id) : null;
 				$reason  = $product ? 'not_simple_or_status' : 'missing';
 			}
 
-			$parent_label = class_exists('WDP_Sadaka_Product_Visibility')
-				? WDP_Sadaka_Product_Visibility::product_label($parent_id)
+			$parent_label = class_exists('WDP_Addon_Product_Visibility')
+				? \WDP_Addon_Product_Visibility::product_label($parent_id)
 				: '#' . $parent_id;
-			$sadaka_label = class_exists('WDP_Sadaka_Product_Visibility')
-				? WDP_Sadaka_Product_Visibility::product_label($raw_id)
+			$addon_label  = class_exists('WDP_Addon_Product_Visibility')
+				? \WDP_Addon_Product_Visibility::product_label($raw_id)
 				: '#' . $raw_id;
 
 			if ($reason !== '') {
+				delete_post_meta($parent_id, '_addon_wc_product_id');
 				delete_post_meta($parent_id, '_sadaka_wc_product_id');
 				$cleaned++;
 				$rows[] = array(
 					'parent_id'    => $parent_id,
 					'parent_label' => $parent_label,
 					'sadaka_id'    => $raw_id,
-					'sadaka_label' => $sadaka_label,
+					'sadaka_label' => $addon_label,
 					'status'       => 'cleaned',
 					'reason'       => $reason,
 				);
@@ -728,22 +777,22 @@ class WDP_Migrations {
 				'parent_id'    => $parent_id,
 				'parent_label' => $parent_label,
 				'sadaka_id'    => $raw_id,
-				'sadaka_label' => $sadaka_label,
+				'sadaka_label' => $addon_label,
 				'status'       => 'valid',
 				'reason'       => '',
 			);
 		}
 
 		// Genel varsayılanı da tabloya ekle (silinmez; yalnızca görünürlük).
-		$default = class_exists('WDP_Utils') ? (int) WDP_Utils::get_default_sadaka_wc_product_id() : 0;
+		$default = class_exists('WDP_Utils') ? (int) WDP_Utils::get_default_addon_wc_product_id() : 0;
 		if ($default > 0) {
-			$ok = class_exists('WDP_Utils') && WDP_Utils::is_valid_sadaka_wc_product($default);
+			$ok     = class_exists('WDP_Utils') && WDP_Utils::is_valid_addon_wc_product($default);
 			$rows[] = array(
 				'parent_id'    => 0,
 				'parent_label' => __('General default (Success tab)', 'woo-donation-popup'),
 				'sadaka_id'    => $default,
-				'sadaka_label' => class_exists('WDP_Sadaka_Product_Visibility')
-					? WDP_Sadaka_Product_Visibility::product_label($default)
+				'sadaka_label' => class_exists('WDP_Addon_Product_Visibility')
+					? \WDP_Addon_Product_Visibility::product_label($default)
 					: '#' . $default,
 				'status'       => $ok ? 'valid' : 'invalid_default',
 				'reason'       => $ok ? '' : 'missing_or_invalid',
@@ -760,7 +809,7 @@ class WDP_Migrations {
 	/**
 	 * @return int[]
 	 */
-	private static function find_products_with_sadaka_meta() {
+	private static function find_products_with_addon_meta() {
 		if (function_exists('get_posts')) {
 			$found = get_posts(
 				array(
@@ -774,7 +823,7 @@ class WDP_Migrations {
 					'update_post_term_cache' => false,
 					'meta_query'             => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
 						array(
-							'key'     => '_sadaka_wc_product_id',
+							'key'     => '_addon_wc_product_id',
 							'value'   => 0,
 							'compare' => '>',
 							'type'    => 'NUMERIC',
@@ -790,7 +839,8 @@ class WDP_Migrations {
 		if (class_exists('WDP_Test_State') && !empty(WDP_Test_State::$post_meta)) {
 			$out = array();
 			foreach (WDP_Test_State::$post_meta as $pid => $meta) {
-				if (!empty($meta['_sadaka_wc_product_id']) && absint($meta['_sadaka_wc_product_id']) > 0) {
+				$linked = $meta['_addon_wc_product_id'] ?? ( $meta['_sadaka_wc_product_id'] ?? 0 );
+				if (absint($linked) > 0) {
 					$out[] = (int) $pid;
 				}
 			}

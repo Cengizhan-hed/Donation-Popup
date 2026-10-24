@@ -10,15 +10,58 @@ if (!defined('ABSPATH')) {
 }
 
 /**
- * Class WDP_Sadaka_Product_Visibility
+ * Class WDP_Addon_Product_Visibility
  *
  * Bir ürün hem bağış ürünü hem de başka bir ürünün alt bağışı olabilir.
  * Alt bağış bağlantısı katalog görünürlüğünü veya bağış ürünü olmayı değiştirmez.
  */
-class WDP_Sadaka_Product_Visibility {
+class WDP_Addon_Product_Visibility {
 
-	const TRANSIENT = 'wdp_sadaka_line_ids';
-	const AUDIT_OPTION = 'wdp_sadaka_links_audit';
+	const TRANSIENT = 'wdp_addon_line_ids';
+	const AUDIT_OPTION = 'wdp_addon_links_audit';
+
+	/** Eski (10.35 öncesi) seçenek/geçici veri adları: göçte yeni adlara taşınır. */
+	const LEGACY_TRANSIENT    = 'wdp_sadaka_line_ids';
+	const LEGACY_AUDIT_OPTION = 'wdp_sadaka_links_audit';
+
+	/**
+	 * Ürün meta anahtarları: yeni ad => eski ad. Göçten sonra eski anahtar silinmez (okuma yedeği):
+	 * okumada önce yeni, yoksa eski.
+	 */
+	const LEGACY_META = array(
+		'_enable_addon_donation'  => '_enable_sadaka_donation',
+		'_addon_toggle_label'     => '_sadaka_toggle_label',
+		'_addon_wc_product_id'    => '_sadaka_wc_product_id',
+		'_addon_min_price'        => '_sadaka_min_price',
+		'_addon_fixed_price'      => '_sadaka_fixed_price',
+		'_addon_donation_message' => '_sadaka_donation_message',
+	);
+
+	/**
+	 * Ürün metasını okur: yeni anahtar varsa o, yoksa eski anahtar (geriye uyum).
+	 *
+	 * @param object|int $product WC_Product benzeri nesne ya da ürün ID.
+	 * @param string     $key     Yeni ad.
+	 * @return mixed
+	 */
+	public static function get_meta($product, $key) {
+		$legacy = self::LEGACY_META[ $key ] ?? '';
+		if (is_object($product) && method_exists($product, 'get_meta')) {
+			$value = $product->get_meta($key);
+			if ($legacy === '') {
+				return $value;
+			}
+			$has_new = method_exists( $product, 'meta_exists' ) ? $product->meta_exists( $key ) : ( '' !== $value && null !== $value );
+			return $has_new ? $value : $product->get_meta($legacy);
+		}
+		$id    = absint($product);
+		$value = get_post_meta($id, $key, true);
+		if ($legacy === '') {
+			return $value;
+		}
+		$has_new = !empty(get_post_meta($id, $key, false));
+		return $has_new ? $value : get_post_meta($id, $legacy, true);
+	}
 
 	/** @var int[]|null */
 	private static $ids = null;
@@ -39,7 +82,7 @@ class WDP_Sadaka_Product_Visibility {
 	/**
 	 * Alt bağış olarak kullanılan WC ürün ID'leri (genel varsayılan + etkin ürün meta).
 	 *
-	 * Yalnızca genel varsayılan veya "Alt bağış ekle" açık ürünlerin `_sadaka_wc_product_id`
+	 * Yalnızca genel varsayılan veya "Alt bağış ekle" açık ürünlerin `_addon_wc_product_id`
 	 * değeri sayılır. Kendini gösteren ID hariç. Bağış ürünü bayrağı bu listeyi etkilemez.
 	 *
 	 * @return int[]
@@ -74,7 +117,7 @@ class WDP_Sadaka_Product_Visibility {
 		$ids = array();
 
 		if (class_exists('WDP_Utils')) {
-			$default = (int) WDP_Utils::get_default_sadaka_wc_product_id();
+			$default = (int) WDP_Utils::get_default_addon_wc_product_id();
 			if ($default > 0) {
 				$ids[] = $default;
 			}
@@ -99,15 +142,15 @@ class WDP_Sadaka_Product_Visibility {
 	 */
 	public static function collect_enabled_parent_links() {
 		$out = array();
-		foreach (self::collect_parent_ids_with_sadaka_meta() as $parent_id) {
+		foreach (self::collect_parent_ids_with_addon_meta() as $parent_id) {
 			$parent_id = (int) $parent_id;
 			if ($parent_id <= 0) {
 				continue;
 			}
-			if (!self::parent_has_sadaka_enabled($parent_id)) {
+			if (!self::parent_has_addon_enabled($parent_id)) {
 				continue;
 			}
-			$sid = absint(get_post_meta($parent_id, '_sadaka_wc_product_id', true));
+			$sid = absint(self::get_meta($parent_id, '_addon_wc_product_id'));
 			if ($sid <= 0 || $sid === $parent_id) {
 				continue;
 			}
@@ -123,12 +166,12 @@ class WDP_Sadaka_Product_Visibility {
 	 * @param int $parent_id Parent product ID.
 	 * @return bool
 	 */
-	public static function parent_has_sadaka_enabled($parent_id) {
+	public static function parent_has_addon_enabled($parent_id) {
 		$parent_id = absint($parent_id);
 		if ($parent_id <= 0) {
 			return false;
 		}
-		$flag = get_post_meta($parent_id, '_enable_sadaka_donation', true);
+		$flag = self::get_meta($parent_id, '_enable_addon_donation');
 		return is_scalar($flag) && strtolower(trim((string) $flag)) === 'yes';
 	}
 
@@ -150,25 +193,25 @@ class WDP_Sadaka_Product_Visibility {
 	/**
 	 * Bu ürünü alt bağış olarak kullanan ana ürün etiketleri (tooltip).
 	 *
-	 * @param int $sadaka_id Sadaka line product ID.
+	 * @param int $addon_id Addon line product ID.
 	 * @return string[] Parent titles (or #id).
 	 */
-	public static function get_referrer_labels($sadaka_id) {
-		$sadaka_id = absint($sadaka_id);
-		if ($sadaka_id <= 0) {
+	public static function get_referrer_labels($addon_id) {
+		$addon_id = absint($addon_id);
+		if ($addon_id <= 0) {
 			return array();
 		}
 
 		$labels = array();
 		if (class_exists('WDP_Utils')) {
-			$default = (int) WDP_Utils::get_default_sadaka_wc_product_id();
-			if ($default === $sadaka_id) {
+			$default = (int) WDP_Utils::get_default_addon_wc_product_id();
+			if ($default === $addon_id) {
 				$labels[] = __('General default (Success tab)', 'woo-donation-popup');
 			}
 		}
 
 		foreach (self::collect_enabled_parent_links() as $link) {
-			if ((int) $link['sadaka_id'] !== $sadaka_id) {
+			if ((int) $link['sadaka_id'] !== $addon_id) {
 				continue;
 			}
 			$labels[] = self::product_label((int) $link['parent_id']);
@@ -194,9 +237,39 @@ class WDP_Sadaka_Product_Visibility {
 	}
 
 	/**
-	 * @return int[] Parent product IDs that have _sadaka_wc_product_id > 0.
+	 * Verilen bağlantı meta anahtarı > 0 olan ürün ID'leri.
+	 *
+	 * @param string $link_key Meta anahtarı.
+	 * @return int[]
 	 */
-	private static function collect_parent_ids_with_sadaka_meta() {
+	private static function query_parent_ids_by_link_key($link_key) {
+		$ids = get_posts(
+			array(
+				'post_type'              => 'product',
+				'post_status'            => 'any',
+				'numberposts'            => 500,
+				'fields'                 => 'ids',
+				'suppress_filters'       => true,
+				'no_found_rows'          => true,
+				'update_post_meta_cache' => true,
+				'update_post_term_cache' => false,
+				'meta_query'             => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+					array(
+						'key'     => $link_key,
+						'value'   => 0,
+						'compare' => '>',
+						'type'    => 'NUMERIC',
+					),
+				),
+			)
+		);
+		return array_map('absint', (array) $ids);
+	}
+
+	/**
+	 * @return int[] Parent product IDs that have _addon_wc_product_id > 0.
+	 */
+	private static function collect_parent_ids_with_addon_meta() {
 		if (self::$collecting) {
 			return array();
 		}
@@ -204,26 +277,11 @@ class WDP_Sadaka_Product_Visibility {
 		if (function_exists('get_posts')) {
 			self::$collecting = true;
 			try {
-				$found = get_posts(
-					array(
-						'post_type'              => 'product',
-						'post_status'            => 'any',
-						'numberposts'            => 500,
-						'fields'                 => 'ids',
-						'suppress_filters'       => true,
-						'no_found_rows'          => true,
-						'update_post_meta_cache' => true,
-						'update_post_term_cache' => false,
-						'meta_query'             => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
-							array(
-								'key'     => '_sadaka_wc_product_id',
-								'value'   => 0,
-								'compare' => '>',
-								'type'    => 'NUMERIC',
-							),
-						),
-					)
-				);
+				$found = array();
+				foreach (array( '_addon_wc_product_id', '_sadaka_wc_product_id' ) as $link_key) {
+					$found = array_merge($found, self::query_parent_ids_by_link_key($link_key));
+				}
+				$found = array_values(array_unique($found));
 			} finally {
 				self::$collecting = false;
 			}
@@ -236,7 +294,8 @@ class WDP_Sadaka_Product_Visibility {
 		if (class_exists('WDP_Test_State') && !empty(WDP_Test_State::$post_meta)) {
 			$out = array();
 			foreach (WDP_Test_State::$post_meta as $pid => $meta) {
-				if (!empty($meta['_sadaka_wc_product_id']) && absint($meta['_sadaka_wc_product_id']) > 0) {
+				$linked = $meta['_addon_wc_product_id'] ?? ( $meta['_sadaka_wc_product_id'] ?? 0 );
+				if (absint($linked) > 0) {
 					$out[] = (int) $pid;
 				}
 			}
@@ -252,7 +311,7 @@ class WDP_Sadaka_Product_Visibility {
 	 * @param int $product_id Product ID.
 	 * @return bool
 	 */
-	public static function is_sadaka_line_product($product_id) {
+	public static function is_addon_line_product($product_id) {
 		$product_id = absint($product_id);
 		if ($product_id <= 0) {
 			return false;
@@ -306,7 +365,9 @@ class WDP_Sadaka_Product_Visibility {
 	public static function maybe_flush_on_meta($_meta_id, $object_id, $meta_key) {
 		unset($_meta_id, $object_id);
 		if (
-			$meta_key === '_sadaka_wc_product_id'
+			$meta_key === '_addon_wc_product_id'
+			|| $meta_key === '_enable_addon_donation'
+			|| $meta_key === '_sadaka_wc_product_id'
 			|| $meta_key === '_enable_sadaka_donation'
 		) {
 			self::flush();
@@ -410,30 +471,30 @@ class WDP_Sadaka_Product_Visibility {
 	/**
 	 * Seçilen alt bağış WC ürün ID'sini doğrula (0 = boş/temiz).
 	 *
-	 * @param int $sadaka_id  Candidate ID.
+	 * @param int $addon_id  Candidate ID.
 	 * @param int $parent_id  Parent product ID (self-ref check).
 	 * @return array{ok:bool,id:int,error:string}
 	 */
-	public static function validate_sadaka_product_id($sadaka_id, $parent_id = 0) {
-		$sadaka_id = absint($sadaka_id);
+	public static function validate_addon_product_id($addon_id, $parent_id = 0) {
+		$addon_id  = absint($addon_id);
 		$parent_id = absint($parent_id);
-		if ($sadaka_id <= 0) {
+		if ($addon_id <= 0) {
 			return array('ok' => true, 'id' => 0, 'error' => '');
 		}
-		if ($parent_id > 0 && $sadaka_id === $parent_id) {
+		if ($parent_id > 0 && $addon_id === $parent_id) {
 			return array(
 				'ok'    => false,
 				'id'    => 0,
 				'error' => __('The add-on donation product cannot be the main product itself.', 'woo-donation-popup'),
 			);
 		}
-		if (!class_exists('WDP_Utils') || !WDP_Utils::is_valid_sadaka_wc_product($sadaka_id)) {
+		if (!class_exists('WDP_Utils') || !WDP_Utils::is_valid_addon_wc_product($addon_id)) {
 			return array(
 				'ok'    => false,
 				'id'    => 0,
 				'error' => __('Select a valid simple WooCommerce product (published or private).', 'woo-donation-popup'),
 			);
 		}
-		return array('ok' => true, 'id' => $sadaka_id, 'error' => '');
+		return array('ok' => true, 'id' => $addon_id, 'error' => '');
 	}
 }

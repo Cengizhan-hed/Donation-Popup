@@ -99,7 +99,7 @@
   html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__textarea,
   html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-phone-field__code-btn,
   html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-phone-field__number,
-  html body :is(.wdp-modal, .wdp-donation-form) .wdp-custom-price-shell :is(.wdp-custom-price-input, .wdp-sadaka-custom-price-input) {
+  html body :is(.wdp-modal, .wdp-donation-form) .wdp-custom-price-shell :is(.wdp-custom-price-input, .wdp-addon-custom-price-input) {
     font-size: 16px !important;
   }
 

@@ -82,13 +82,13 @@ export const SEL = {
   goCheckout: 'button[name="donation_go_checkout"]',
 
   // includes/templates/class-form-fields-renderer.php — alt bağış
-  sadakaWrap: '[data-wdp-sadaka-donation]',
-  sadakaToggle: '.wdp-sadaka-donation__toggle',
-  sadakaPanel: '.wdp-sadaka-donation__panel',
-  sadakaPrice: 'input[name="sadaka_custom_price"]',
-  sadakaOpen: '[data-wdp-sadaka-donation].is-open',
+  addonWrap: '[data-wdp-sadaka-donation]',
+  addonToggle: '.wdp-sadaka-donation__toggle',
+  addonPanel: '.wdp-sadaka-donation__panel',
+  addonPrice: 'input[name="sadaka_custom_price"]',
+  addonOpen: '[data-wdp-sadaka-donation].is-open',
   // includes/templates/class-form-fields-renderer.php — data-wdp-alt-wc-product-id
-  sadakaAltWcProductId: '[data-wdp-alt-wc-product-id]',
+  addonAltWcProductId: '[data-wdp-alt-wc-product-id]',
 
   // includes/templates/class-modal-shell-renderer.php — gömülü form
   inlineDonationForm: '.hdf-donation-modal-wrapper.wdp-donation-form',

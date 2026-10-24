@@ -134,7 +134,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-custom-price-shell.wdp-curren
 
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-custom-price-shell :is(
   .wdp-custom-price-input,
-  .wdp-sadaka-custom-price-input
+  .wdp-addon-custom-price-input
 )[type="number"] {
   flex: 1 1 0;
   min-width: 0;
@@ -170,11 +170,11 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-custom-price-shell :is(
 
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-custom-price-shell.wdp-currency-pos-right :is(
   .wdp-custom-price-input,
-  .wdp-sadaka-custom-price-input
+  .wdp-addon-custom-price-input
 )[type="number"],
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-custom-price-shell.wdp-currency-pos-right_space :is(
   .wdp-custom-price-input,
-  .wdp-sadaka-custom-price-input
+  .wdp-addon-custom-price-input
 )[type="number"] {
   padding-inline-start: var(--wdp-input-padding-x, 14px);
   padding-inline-end: 0;
@@ -182,7 +182,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-custom-price-shell.wdp-curren
 
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-custom-price-shell :is(
   .wdp-custom-price-input,
-  .wdp-sadaka-custom-price-input
+  .wdp-addon-custom-price-input
 )[type="number"]:is(:focus, :focus-visible) {
   outline: none;
   box-shadow: none;
@@ -192,11 +192,11 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-custom-price-shell :is(
 
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-custom-price-shell :is(
   .wdp-custom-price-input,
-  .wdp-sadaka-custom-price-input
+  .wdp-addon-custom-price-input
 )[type="number"]::-webkit-outer-spin-button,
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-custom-price-shell :is(
   .wdp-custom-price-input,
-  .wdp-sadaka-custom-price-input
+  .wdp-addon-custom-price-input
 )[type="number"]::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
@@ -204,14 +204,14 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-custom-price-shell :is(
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-custom-price-shell:has(
-  :is(.wdp-custom-price-input, .wdp-sadaka-custom-price-input).wdp-error
+  :is(.wdp-custom-price-input, .wdp-addon-custom-price-input).wdp-error
 ) .wdp-custom-price-currency {
   color: var(--wdp-price-error-text, #c62828);
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-custom-price-shell :is(
   .wdp-custom-price-input,
-  .wdp-sadaka-custom-price-input
+  .wdp-addon-custom-price-input
 ).wdp-error {
   color: var(--wdp-price-error-text, #c62828);
   -webkit-text-fill-color: var(--wdp-price-error-text, #c62828);
@@ -692,7 +692,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-custom-price-with-qty-row .wd
 
   html body :is(.wdp-modal, .wdp-donation-form) .wdp-custom-price-shell :is(
     .wdp-custom-price-input,
-    .wdp-sadaka-custom-price-input
+    .wdp-addon-custom-price-input
   )[type="number"] {
     font-size: var(--wdp-amount-font-size-mobile, 18px);
   }
@@ -708,7 +708,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-custom-price-with-qty-row .wd
 
   html body :is(.wdp-modal, .wdp-donation-form) .wdp-custom-price-shell :is(
     .wdp-custom-price-input,
-    .wdp-sadaka-custom-price-input
+    .wdp-addon-custom-price-input
   )[type="number"] {
     padding-inline-end: var(--wdp-space-3, 0.75rem);
   }

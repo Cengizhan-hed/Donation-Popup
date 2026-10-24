@@ -29,7 +29,7 @@ final class RenderMatrixTest extends TestCase {
 			array('_enable_email' => $on, '_enable_dedication' => $on, '_enable_anonymous' => $on),
 			array('_enable_urgency' => $on, '_enable_social_proof' => $on, '_enable_impact_line' => $on),
 			array('_enable_campaign_media' => $on, '_layout_mode' => 'story', '_wdp_module_order' => 'media,impact,urgency'),
-			array('_enable_sadaka_donation' => $on, '_sadaka_fixed_price' => '10', '_sadaka_wc_product_id' => '999'),
+			array('_enable_addon_donation' => $on, '_addon_fixed_price' => '10', '_addon_wc_product_id' => '999'),
 			array('_layout_mode' => 'campaign'),
 			array('_layout_mode' => 'not-a-mode'),
 		);

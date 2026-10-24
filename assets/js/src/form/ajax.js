@@ -40,7 +40,7 @@
   } = cart;
 
   const formPricing = WDPApp.formPricing || {};
-  const formSadaka = WDPApp.formSadaka || {};
+  const formAddon = WDPApp.formAddon || {};
   const formFeedback = WDPApp.formFeedback || {};
 
   const parseNormalizedAmount = formPricing.parseNormalizedAmount || function() { return NaN; };
@@ -49,7 +49,7 @@
   const getCustomPriceRow = formPricing.getCustomPriceRow || function() { return null; };
   const customPriceRowHasQtyCounter = formPricing.customPriceRowHasQtyCounter || function() { return false; };
   const patchSimpleCustomPriceQtyRowFormData = formPricing.patchSimpleCustomPriceQtyRowFormData || function() {};
-  const patchSadakaFormData = formSadaka.patchSadakaFormData || function() {};
+  const patchAddonFormData = formAddon.patchAddonFormData || function() {};
   const setFormProcessing = formFeedback.setFormProcessing || function() {};
   const isFormProcessing = formFeedback.isFormProcessing || function() { return false; };
 
@@ -625,7 +625,7 @@
       WDPApp.phoneInput.applyNormalizedPhonesToFormData(form, formData);
     }
     patchSimpleCustomPriceQtyRowFormData(form, formData);
-    patchSadakaFormData(form, formData);
+    patchAddonFormData(form, formData);
 
     const coverFee = form.querySelector('input[name="donation_cover_fee"]');
     if (coverFee && coverFee.checked) {

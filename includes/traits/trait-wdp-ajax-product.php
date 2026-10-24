@@ -1,6 +1,6 @@
 <?php
 /**
- * get_product_info AJAX; önbellekli ürün meta ve sadaka blok verisi.
+ * get_product_info AJAX; önbellekli ürün meta ve addon blok verisi.
  *
  * @package WooCommerce\Donation_Popup
  */
@@ -97,7 +97,7 @@ trait WDP_Ajax_Product_Trait {
             $allow_multiple_shares = $cached_data['allow_multiple_shares'];
             $max_shares = $cached_data['max_shares'];
             $enable_progress_bar = !empty($cached_data['enable_progress_bar']);
-            $enable_sadaka_donation = !empty($cached_data['enable_sadaka_donation']);
+            $enable_addon_donation = !empty($cached_data['enable_sadaka_donation']);
         } else {
             // PERFORMANCE: Read only required keys (avoids hydrating full meta collection).
             $allow_custom_price = $product->get_meta('_allow_custom_price') === 'yes';
@@ -105,7 +105,7 @@ trait WDP_Ajax_Product_Trait {
             $allow_multiple_shares = $product->get_meta('_allow_multiple_shares') === 'yes';
             $max_shares = $product->get_meta('_max_shares');
             $enable_progress_bar = $product->get_meta('_enable_progress_bar') === 'yes';
-            $enable_sadaka_donation = $product->get_meta('_enable_sadaka_donation') === 'yes';
+            $enable_addon_donation = WDP_Addon_Product_Visibility::get_meta($product, '_enable_addon_donation') === 'yes';
             
             $cache_data = array(
                 'allow_custom_price' => $allow_custom_price,
@@ -113,7 +113,7 @@ trait WDP_Ajax_Product_Trait {
                 'allow_multiple_shares' => $allow_multiple_shares,
                 'max_shares' => $max_shares,
                 'enable_progress_bar' => $enable_progress_bar,
-                'enable_sadaka_donation' => $enable_sadaka_donation,
+                'enable_sadaka_donation' => $enable_addon_donation,
             );
             
             // PERFORMANCE: Cache in both object cache and transient (fallback)
@@ -141,14 +141,14 @@ trait WDP_Ajax_Product_Trait {
 			$max_shares = '7';
 		}
 
-		$show_sadaka_donation = $enable_sadaka_donation && !$enable_progress_bar;
-		$sadaka_block_html = '';
-		if ($show_sadaka_donation && class_exists('WDP_Donation_Product_Context_Service') && class_exists('WDP_Templates')) {
-			$sadaka_context = WDP_Donation_Product_Context_Service::build_form_context($product);
-			$sadaka_block_html = WDP_Templates::render_sadaka_donation_block($sadaka_context);
+		$show_addon_donation = $enable_addon_donation && !$enable_progress_bar;
+		$addon_block_html = '';
+		if ($show_addon_donation && class_exists('WDP_Donation_Product_Context_Service') && class_exists('WDP_Templates')) {
+			$addon_context = WDP_Donation_Product_Context_Service::build_form_context($product);
+			$addon_block_html = WDP_Templates::render_addon_donation_block($addon_context);
 		}
 		// Yalnızca gerçek UI (toggle) varsa etkin say; yalnızca admin uyarısı ise kapalı.
-		$sadaka_ui_ready = $sadaka_block_html !== '' && strpos($sadaka_block_html, 'data-wdp-sadaka-donation') !== false;
+		$addon_ui_ready = $addon_block_html !== '' && strpos($addon_block_html, 'data-wdp-sadaka-donation') !== false;
 
 		$raw_price = $product->get_price();
 		$min_for_placeholder = $enable_progress_bar ? $progress_min_price : $min_price;
@@ -166,8 +166,8 @@ trait WDP_Ajax_Product_Trait {
 			'price_html' => ($raw_price !== '' && $raw_price !== null) ? WDP_Utils::format_price_html($raw_price) : '',
 			'is_multiple_shares' => $allow_multiple_shares,
 			'max_shares' => $max_shares,
-			'enable_sadaka_donation' => $sadaka_ui_ready,
-			'sadaka_block_html' => $sadaka_ui_ready ? $sadaka_block_html : '',
+			'enable_sadaka_donation' => $addon_ui_ready,
+			'sadaka_block_html' => $addon_ui_ready ? $addon_block_html : '',
 		);
 
             WDP_Utils::log(array('event' => 'get_product_info', 'response' => $response));

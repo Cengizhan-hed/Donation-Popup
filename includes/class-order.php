@@ -38,7 +38,7 @@ class WDP_Order {
         if (isset($values['custom_price']) && $values['custom_price'] > 0) {
             $item->add_meta_data('_custom_price', floatval($values['custom_price']));
         }
-        
+
         if (isset($values['donation_data']) && is_array($values['donation_data'])) {
             // Dilden bağımsız sabit anahtarlar; etiketler WDP_Order_Meta_Keys display filtresiyle gösterilir.
             foreach (WDP_Order_Meta_Keys::build_item_meta($values['donation_data']) as $meta_key => $meta_value) {

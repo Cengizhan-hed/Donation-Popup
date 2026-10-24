@@ -64,7 +64,7 @@ $catalog = array(
 		),
 	),
 	'sadaka'       => array(
-		'WDP E2E Sadaka',
+		'WDP E2E Addon',
 		array(
 			'_allow_custom_price'   => 'yes',
 			'_min_custom_price'     => '10',

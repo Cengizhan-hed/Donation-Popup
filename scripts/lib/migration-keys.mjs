@@ -40,7 +40,7 @@ const CORE_OPTION_DROP =
   /^(siteurl|home|blogname|blogdescription|admin_email|cron|users_can_register|gmt_offset|timezone_string|date_format|time_format|permalink_structure|rewrite_rules|active_plugins|uninstall_plugins|template|stylesheet|current_theme|html_type|page_on_front|page_for_posts|show_on_front|blog_public|upload_path|upload_url_path|start_of_week|use_balanceTags|use_smilies|require_name_email|comments_notify|posts_per_rss|rss_use_excerpt)$|^(widget_|default_|WDP_|mailserver_)/;
 
 const QUOTED_META_RE =
-  /['"](_(?:allow|min|max|enable|amount|progress|sadaka|theme|layout|goal|impact|trust|urgency|social|dedication|product_note|cover|wdp|faq|regular|price)_[a-z0-9_]*)['"]/gi;
+  /['"](_(?:allow|min|max|enable|amount|progress|sadaka|addon|theme|layout|goal|impact|trust|urgency|social|dedication|product_note|cover|wdp|faq|regular|price)_[a-z0-9_]*)['"]/gi;
 
 const GET_OPTION_DEFAULT_RE =
   /get_option\s*\(\s*['"]([^'"]+)['"]\s*,\s*(false|true|null|-?\d+|['"][^'"]*['"]|array\(\s*\))/g;

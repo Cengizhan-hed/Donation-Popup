@@ -216,7 +216,7 @@
       "|" +
       (form && form.querySelector('input[name="share_count"]') ? "share" : "plain") +
       "|" +
-      (form && form.querySelector("[data-wdp-sadaka-donation]") ? "sadaka" : "nosadaka");
+      (form && form.querySelector("[data-wdp-sadaka-donation]") ? "sadaka" : "noaddon");
     return pid;
   }
 

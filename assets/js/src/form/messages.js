@@ -112,7 +112,7 @@
     return WDPApp.i18n.__('field is missing', 'woo-donation-popup');
   }
 
-  function getSadakaInvalidMessage() {
+  function getAddonInvalidMessage() {
     const s = wdp_ajax && wdp_ajax.strings;
     if (s && typeof s.sadaka_invalid === 'string' && s.sadaka_invalid.trim()) {
       return s.sadaka_invalid.trim();
@@ -130,7 +130,7 @@
   }
 
   /** Minimum alt bağış tutarı hata metni. */
-  function getSadakaMinErrorMessage(minValue) {
+  function getAddonMinErrorMessage(minValue) {
     const formatCurrency = WDPApp.utils && typeof WDPApp.utils.formatCurrency === 'function'
       ? WDPApp.utils.formatCurrency
       : function(value) { return String(value); };
@@ -152,8 +152,8 @@
     getPhoneIncompleteMessage: getPhoneIncompleteMessage,
     getPhoneValidationState: getPhoneValidationState,
     getShareholderIssueSummaryLabel: getShareholderIssueSummaryLabel,
-    getSadakaInvalidMessage: getSadakaInvalidMessage,
-    getSadakaMinErrorMessage: getSadakaMinErrorMessage,
+    getAddonInvalidMessage: getAddonInvalidMessage,
+    getAddonMinErrorMessage: getAddonMinErrorMessage,
     getInvalidEmailMessage: getInvalidEmailMessage,
   };
 })(window);

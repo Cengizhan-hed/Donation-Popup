@@ -65,7 +65,7 @@ export const FIXTURE_CATALOG = [
   },
   {
     role: 'sadaka',
-    name: 'WDP E2E Sadaka',
+    name: 'WDP E2E Addon',
     settings: {
       _wdp_donation_product: 'yes',
       _allow_custom_price: 'yes',

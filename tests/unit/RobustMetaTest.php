@@ -63,12 +63,12 @@ final class RobustMetaTest extends TestCase {
 		$this->assertEquals(15, $context['cover_fee_percent']);
 	}
 
-	public function test_broken_sadaka_product_id_is_numeric(): void {
+	public function test_broken_addon_product_id_is_numeric(): void {
 		$meta = WDP_Product_Settings_Service::from_request(
 			array(
 				'sadaka_wc_product_id' => 'abc',
 			)
 		);
-		$this->assertTrue($meta['_sadaka_wc_product_id'] === '' || $meta['_sadaka_wc_product_id'] === 0);
+		$this->assertTrue($meta['_addon_wc_product_id'] === '' || $meta['_addon_wc_product_id'] === 0);
 	}
 }

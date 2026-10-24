@@ -43,7 +43,7 @@ Kural: her iddia `dosya:satır`; emin olunmayan yerler **DOĞRULANMADI**.
 2. HPOS uyumluluk + autoload + Migrations::init (`includes/bootstrap/class-plugin-bootstrap.php:22-27`)
 3. `init` → `load_plugin_textdomain` (`includes/bootstrap/class-plugin-bootstrap.php` `load_textdomain`)
 4. `plugins_loaded` → WC yoksa notice; varsa `Woo_Donation_Popup` (+ admin’de `Woo_Donation_Popup_Admin`) (`includes/bootstrap/class-plugin-bootstrap.php:35-44`)
-5. Modül `init()` sırası (`includes/class-woo-donation-popup.php:47-64`): Utils → Assets → Meta_Tracking → Ajax → Cart → Order → Sadaka_Product_Visibility → **Donation_Purchasable** → Donations_List → Product_Page_Integration → Lazy_Modal → Schema → Blocks → Elementor → Form_Matrix → Shortcodes
+5. Modül `init()` sırası (`includes/class-woo-donation-popup.php:47-64`): Utils → Assets → Meta_Tracking → Ajax → Cart → Order → Addon_Product_Visibility → **Donation_Purchasable** → Donations_List → Product_Page_Integration → Lazy_Modal → Schema → Blocks → Elementor → Form_Matrix → Shortcodes
 
 ---
 
@@ -119,7 +119,7 @@ Kural: her iddia `dosya:satır`; emin olunmayan yerler **DOĞRULANMADI**.
 | `template_redirect` | 0 | form matrix | `includes/class-form-matrix.php:21` |
 | `set_object_terms` + stok/kategori | 10 | liste cache bump | `includes/class-donations-list.php:38-43` |
 | `wp_footer` | 20 | liste schema | `includes/class-donations-list.php:177` |
-| `updated_option` / post_meta | 10 | sadaka line cache flush | `includes/class-sadaka-product-visibility.php:33-36` |
+| `updated_option` / post_meta | 10 | sadaka line cache flush | `includes/class-addon-product-visibility.php:33-36` |
 | `admin_menu` / `admin_enqueue_scripts` | default | ayarlar | `includes/class-admin-hooks.php:23-24` |
 | `woocommerce_product_data_tabs` | default | Bağış sekmesi | `includes/class-admin-product-data-tab.php:35` |
 | `woocommerce_product_data_panels` | default | panel HTML | `includes/class-admin-product-data-tab.php:36` |
@@ -153,7 +153,7 @@ Kaynak: `includes/config/frontend-js-stack.php`. Özet sıra:
 1. **i18n** (core’dan önce, bağımsız) → constants → meta-tracking → utils → cta-viewport → state → dom  
 2. phone-input → product  
 3. cart/ui → cart/woo → cart/actions → cart  
-4. form/messages → pricing → feedback → sadaka-rules → sadaka → ajax → validate → wizard → **cta-ready** → form  
+4. form/messages → pricing → feedback → addon-rules → addon → ajax → validate → wizard → **cta-ready** → form  
 5. shareholder/* → shareholder  
 6. progress-bar → modal → form-initializer → lazy-modal → event-manager → module-loader → **init**  
    Bundle modunda `cta-ready.js` ayrıca `wdp-form-cta-ready-js` olarak bundle’dan **önce** basılır (`includes/traits/trait-wdp-assets-registry.php` `register_cta_ready_script`).
@@ -200,7 +200,7 @@ Admin: `wdp_admin` localize (`includes/class-admin-assets.php` — ayrı yığı
 | `wdp_list_cache_version` | liste HTML geçersiz kılma | `WDP_Donations_List::bump_cache` |
 | `wdp_css_signature` | assets registry | `includes/traits/trait-wdp-assets-registry.php:153-156` |
 | `wdp_legacy_render_count` | eski (kullanılmayan) sayaç; AJAX yolu 10.33.0’da kaldırıldı | `includes/bootstrap/class-legacy-frontend.php` |
-| `wdp_sadaka_links_audit` | migration 10.28.4 anlık görüntü; UI 10.33.0’da kaldırıldı, option silinmez | `includes/class-sadaka-product-visibility.php` |
+| `wdp_addon_links_audit` (eski `wdp_sadaka_links_audit` göçle kopyalanır, silinmez) | migration 10.28.4 anlık görüntü; UI 10.33.0’da kaldırıldı, option silinmez | `includes/class-addon-product-visibility.php` |
 | `wdp_meta_purchase_wc_migration_v1` | Meta migrate | `includes/class-meta-tracking.php:193-208` |
 | `wdp_sadaka_visibility_cache_cleared` | migration 10.28.5 | `includes/class-migrations.php:244` |
 | `wdp_migrated_10_29_0` | migration 10.29.0 (cover fee 0,5–15 onarımı, genel liste ≤6) | `includes/class-migrations.php` `step_10_29_0` |
@@ -215,7 +215,7 @@ Admin: `wdp_admin` localize (`includes/class-admin-assets.php` — ayrı yığı
 
 `WDP_Product_Settings_Service::from_request` anahtarları (10.32.0: `_theme_preset_id`, `_theme_density`, `_theme_inherit_category_color` yazılmaz; kayıtlı meta silinmez):
 
-`_allow_custom_price`, `_min_custom_price`, `_allow_multiple_shares`, `_max_shares`, `_enable_progress_bar`, `_progress_bar_limit`, `_goal_reached_action`, `_goal_reached_message`, `_enable_product_note`, `_product_note_text`, `_enable_sadaka_donation`, `_sadaka_*`, `_enable_trust_strip`, `_enable_quantity`, `_enable_amount_presets`, `_enable_wizard`, `_enable_field_icons`, `_enable_impact_line`, `_progress_celebrate`, `_impact_line_text`, `_amount_presets`, `_enable_email|dedication|anonymous` (tristate `yes`/`no`/''), `_dedication_placeholder`, `_trust_badges`, `_theme_primary|primary_hover|modal_bg|radius`, `_layout_mode`, `_enable_campaign_media`, `_enable_urgency`, `_urgency_*`, `_enable_social_proof`, `_social_proof_text`, `_enable_cover_fee`, `_cover_fee_percent`, `_wdp_module_order`, `_wdp_donation_product`, `_wdp_auto_place`.
+`_allow_custom_price`, `_min_custom_price`, `_allow_multiple_shares`, `_max_shares`, `_enable_progress_bar`, `_progress_bar_limit`, `_goal_reached_action`, `_goal_reached_message`, `_enable_product_note`, `_product_note_text`, `_enable_addon_donation`, `_addon_*` (eski `_enable_sadaka_donation`, `_sadaka_*`), `_enable_trust_strip`, `_enable_quantity`, `_enable_amount_presets`, `_enable_wizard`, `_enable_field_icons`, `_enable_impact_line`, `_progress_celebrate`, `_impact_line_text`, `_amount_presets`, `_enable_email|dedication|anonymous` (tristate `yes`/`no`/''), `_dedication_placeholder`, `_trust_badges`, `_theme_primary|primary_hover|modal_bg|radius`, `_layout_mode`, `_enable_campaign_media`, `_enable_urgency`, `_urgency_*`, `_enable_social_proof`, `_social_proof_text`, `_enable_cover_fee`, `_cover_fee_percent`, `_wdp_module_order`, `_wdp_donation_product`, `_wdp_auto_place`.
 
 Ek progress meta: `_wdp_total_donation_amount`, `_wdp_donor_count`, `_wdp_progress_unconverted_orders` (`includes/class-utils.php`, `trait-wdp-utils-order-meta.php`).
 
@@ -253,7 +253,7 @@ Eski çevrilmiş etiket anahtarları `normalize_key` ile okunur (`includes/class
 | `wdp_cart_count_*` / `wdp_cart_contents_*` | object cache `wdp_cart` | cart query (kısa TTL) |
 | `wdp_rate_limit_*` | transient | Security rate limit (`includes/class-security.php:201-219`) |
 | `wdp_migration_lock` | transient | Migrations |
-| `wdp_sadaka_line_ids` | transient | Sadaka visibility (`TRANSIENT` const) |
+| `wdp_addon_line_ids` | transient | Addon visibility (`TRANSIENT` const) |
 | Liste HTML | 1 gün transient; `wdp_list_cache_version`; `orderby=random` atlar; UID/panel yer tutucu + admin notu cache dışı | `includes/class-donations-list.php` `render` / `bump_cache` |
 | `wdp_css_version_*` / `wdp_js_version_*` | transient+cache | assets |
 | WC session `get_customer_id()` | session | rate-limit / cart cache suffix (`includes/traits/trait-wdp-ajax-base.php:113-114`) |
@@ -375,7 +375,7 @@ Kaynak rehber: `docs/AYARLAR.md`. Teknik varsayılanlar normalizer / placement /
 | Güven rozetleri | global → ürün `_trust_badges` doluysa ürün | `resolve_trust_badges` (`includes/class-form-modules.php:145-175`) |
 | Otomatik yerleşim | global `auto_place` + ürün `_wdp_auto_place!=='no'` | `should_auto_place` / meta (`includes/class-product-page-integration.php`) |
 | Native sepet gizleme | bağış ürünü tekil sayfada tüm `form.cart` + `.single_add_to_cart_button` + sticky-add-to-cart (tema sınıfı yok); döngü/ilgili/upsell/koleksiyon `:not()` ile hariç | `hide_native_cart_css` yedek; asıl yol `unhook_native_single_add_to_cart` (`woocommerce_template_single_add_to_cart` + sticky callback adı) |
-| Alt bağış WC ürünü | ürün `_sadaka_wc_product_id` → yoksa success `sadaka_wc_product_id` | `WDP_Utils::resolve_sadaka_wc_product_id` (`includes/class-utils.php:104+`) |
+| Alt bağış WC ürünü | ürün `_addon_wc_product_id` (yoksa eski `_sadaka_wc_product_id`) → yoksa success `sadaka_wc_product_id` | `WDP_Utils::resolve_addon_wc_product_id` (`includes/class-utils.php:104+`) |
 
 ### Ürün sayfası ve liste (`wdp_placement_settings`)
 
@@ -412,7 +412,7 @@ Kaynak rehber: `docs/AYARLAR.md`. Teknik varsayılanlar normalizer / placement /
 | Ürün notu | `_enable_product_note`, `_product_note_text` | off; kayıt sınırı 400 (okumada kırpma yok) | context / PSS |
 | Wizard / ikon | `_enable_wizard`, `_enable_field_icons` tristate | `''`→global (`enable_multi_step` / `enable_field_icons`) | CTX + MSR |
 | Etki / aciliyet / sosyal / medya / layout / tema… | ilgili `_` meta | bkz. `from_request` | context + header renderer |
-| Alt bağış | `_enable_sadaka_donation`, `_sadaka_*` | off | context; kampanyada UI gizlenir (product_info `includes/traits/trait-wdp-ajax-product.php:102`) |
+| Alt bağış | `_enable_addon_donation`, `_addon_*` (eski `_enable_sadaka_donation`, `_sadaka_*`) | off | context; kampanyada UI gizlenir (product_info `includes/traits/trait-wdp-ajax-product.php:102`) |
 | Blok sırası | `_wdp_module_order` | boş→global | resolve_order |
 
 ### Global sekmeler → option anahtarları (varsayılan örnekleri)
@@ -834,3 +834,10 @@ Docker / wp-env yok. `scripts/local-wp.mjs`: PHP + WordPress + SQLite (`build/lo
 `e2e:full --env local`: `prepareLocalFullStack` (8899) matris TT5 işçisi + `bootstrap-fixtures.php` (upsert, fiyat/preset, `_enable_amount_presets`, yayımlı) + `matrix-ops.php prepare-full` (panel, `wdp_button_settings.enable_amount_presets=1`, `[wdp_donations]` liste `tabs=yes`, alt bağış, TT5 panel kısa kodu MU, klasik `[woocommerce_cart]` **yalnız içerik** — Woo sayfa ID/durum korunur, çöp/yeni sayfa yok; `wdp_matrix_update_woo_page_content` + `wdp_matrix_ensure_woo_core_pages`). Ürün meta yerelde `tests/local-wp/product-meta.php` (SSH yok; `staging-wp-meta.mjs` `usesLocalWpMeta`). Döngü eşlemesi `loopProductSlug` (tam URL değil path slug + fixture id). PHP `-S` log her açılışta sıfırlanır; çıkış/sağlık yoksa otomatik yeniden başlar; Action Scheduler async loopback kapalı (tek iş parçacıklı `-S` kilitlenmesi). `startPhpServer` `PHP_CLI_SERVER_WORKERS` ile hücre içi eşzamanlı HTTP (matris + full aynı makinede ayrı port: `WDP_MATRIX_BASE_PORT` / `WDP_LOCAL_E2E_PORT`). `freeListenPort` SIGTERM→SIGKILL, kalıntı PID yok. Sepet hazır: `wc_get_cart_url()` yolu + `body.woocommerce-cart` + DOMContentLoaded; klasik/blok işaret varsa görünür beklenir (yoksa Avada/oluşturucu). Sepet içeriği (adet/ürün/tutar) Store API `GET /wp-json/wc/store/v1/cart`; dil metni yok.
 
 Eklenti kodu (`includes/`, `uninstall.php`) sayfa oluşturmaz/silmez; `wp_trash_post` kancaları yalnız dinler (`includes/class-utils.php:55,72`). `update_option` eklentide `wdp_*` (migrasyon yedeği `BACKUP_OPTION_KEYS` de `wdp_*`; döngü süzgeci yok — yedek eklenti kendi dosyası).
+
+
+## 6-C: "sadaka" -> "addon" iç adlandırma (10.35.2)
+
+- Araç: `tools/rector/rename-map.json` + `WDP_RECTOR_RENAME=1 php vendor-dev/bin/rector process` (yöntem adları), tek seferlik betikle sınıf/dosya/JS/CSS/test adları; "protect" listesi (istek/dizi anahtarları, kanca adları, DOM sınıf/öznitelikleri, betik handle'ları, sepet öğe anahtarları `wdp_sadaka_donation`/`wdp_sadaka_linked_wc_product`, `-sadaka` benzersiz anahtar eki, `wdp_sadaka_visibility_cache_cleared`) DEĞİŞMEDİ.
+- Kalıcı ürün meta anahtarları yeni adlara taşındı: `_enable_addon_donation`, `_addon_toggle_label`, `_addon_wc_product_id`, `_addon_min_price`, `_addon_fixed_price`, `_addon_donation_message`. Göç `WDP_Migrations::step_10_35_2` (sürüm kapılı, idempotent; yalnız yeni anahtarı olmayan ürüne kopyalar; eski anahtar silinmez). Okuma: `WDP_Addon_Product_Visibility::get_meta()` önce yeni, yoksa eski (`LEGACY_META`). Meta sorguları OR ile iki anahtarı da tarar; `delete` iki anahtarı da siler; uninstall eski anahtarları da temizler.
+- Sipariş öğe meta anahtarlarında "sadaka" yoktu (değişiklik yok). Kısa kodlar, öznitelikleri, blok/Elementor adları, kanca adları değişmedi; kanıt: `tests/unit/CompatibilityContractTest.php`, göç: `tests/unit/Migration10352AddonMetaTest.php`.

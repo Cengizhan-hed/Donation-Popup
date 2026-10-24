@@ -563,10 +563,10 @@ test('false: hissedar adı boş → görünür hata', () => {
   assert.ok(visibleErrorTexts(form).some((t) => /Hissedar|Shareholder|zorunlu|required/i.test(t)));
 });
 
-test('false: sadaka invalid (input yok) → genel form mesajı', () => {
+test('false: addon invalid (input yok) → genel form mesajı', () => {
   const dom = createDom();
   dom.window.WDPApp = {
-    formSadaka: { validateSadakaDonation: () => false },
+    formAddon: { validateAddonDonation: () => false },
   };
   const WDPApp = loadValidateStack(dom);
   const form = dom.attachForm((form, el) => {
@@ -583,15 +583,15 @@ test('false: sadaka invalid (input yok) → genel form mesajı', () => {
   assert.equal(WDPApp.formValidate.validateForm(form), false);
   const texts = visibleErrorTexts(form);
   assert.ok(
-    texts.some((t) => /işaretli alanları kontrol|highlighted fields|sadaka|alt bağış|additional donation|Geçerli|valid/i.test(t)),
+    texts.some((t) => /işaretli alanları kontrol|highlighted fields|addon|alt bağış|additional donation|Geçerli|valid/i.test(t)),
     texts.join(' | ')
   );
 });
 
-test('false: sadaka invalid → görünür geri bildirim + lastValidation', () => {
+test('false: addon invalid → görünür geri bildirim + lastValidation', () => {
   const dom = createDom();
   dom.window.WDPApp = {
-    formSadaka: { validateSadakaDonation: () => false },
+    formAddon: { validateAddonDonation: () => false },
   };
   const WDPApp = loadValidateStack(dom);
   const form = dom.attachForm((form, el) => {

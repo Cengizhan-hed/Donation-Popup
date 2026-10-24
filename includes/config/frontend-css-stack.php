@@ -32,7 +32,7 @@ return array(
 	'src/components/feedback.css',
 	'src/components/accessibility.css',
 	'src/components/product-note.css',
-	'src/components/sadaka-donation.css',
+	'src/components/addon-donation.css',
 	'src/components/ux-enhancements.css',
 	'src/components/campaign-modules.css',
 	'src/components/mobile-polish.css',

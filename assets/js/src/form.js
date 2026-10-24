@@ -28,7 +28,7 @@
 
   const formPricing = WDPApp.formPricing || {};
   const formFeedback = WDPApp.formFeedback || {};
-  const formSadaka = WDPApp.formSadaka || {};
+  const formAddon = WDPApp.formAddon || {};
   const formAjax = WDPApp.formAjax || {};
 
   const WDP_FORM_SUBMIT_CAPTURE = true;
@@ -39,16 +39,16 @@
     }
   }
 
-  function getSadakaInvalidMessage() {
-    if (typeof formMessages.getSadakaInvalidMessage === 'function') {
-      return formMessages.getSadakaInvalidMessage();
+  function getAddonInvalidMessage() {
+    if (typeof formMessages.getAddonInvalidMessage === 'function') {
+      return formMessages.getAddonInvalidMessage();
     }
     return WDPApp.i18n.__('Please enter a valid additional donation amount.', 'woo-donation-popup');
   }
 
-  function getSadakaMinErrorMessage(minValue) {
-    if (typeof formMessages.getSadakaMinErrorMessage === 'function') {
-      return formMessages.getSadakaMinErrorMessage(minValue);
+  function getAddonMinErrorMessage(minValue) {
+    if (typeof formMessages.getAddonMinErrorMessage === 'function') {
+      return formMessages.getAddonMinErrorMessage(minValue);
     }
     return WDPApp.i18n.sprintf(
       WDPApp.i18n.__('Please enter at least %s.', 'woo-donation-popup'),
@@ -56,21 +56,21 @@
     );
   }
 
-  function validateSadakaDonation(form) {
-    return typeof formSadaka.validateSadakaDonation === 'function'
-      ? formSadaka.validateSadakaDonation(form)
+  function validateAddonDonation(form) {
+    return typeof formAddon.validateAddonDonation === 'function'
+      ? formAddon.validateAddonDonation(form)
       : true;
   }
 
-  function patchSadakaFormData(form, formData) {
-    if (typeof formSadaka.patchSadakaFormData === 'function') {
-      formSadaka.patchSadakaFormData(form, formData);
+  function patchAddonFormData(form, formData) {
+    if (typeof formAddon.patchAddonFormData === 'function') {
+      formAddon.patchAddonFormData(form, formData);
     }
   }
 
-  function bindSadakaDonation(form) {
-    if (typeof formSadaka.bindSadakaDonation === 'function') {
-      formSadaka.bindSadakaDonation(form);
+  function bindAddonDonation(form) {
+    if (typeof formAddon.bindAddonDonation === 'function') {
+      formAddon.bindAddonDonation(form);
     }
   }
 
@@ -489,8 +489,8 @@
         // Sunucu mesajını koru; genel "Bu alan zorunludur" ile ezme.
         msg =
           fb ||
-          (typeof formMessages.getSadakaInvalidMessage === "function"
-            ? formMessages.getSadakaInvalidMessage()
+          (typeof formMessages.getAddonInvalidMessage === "function"
+            ? formMessages.getAddonInvalidMessage()
             : null) ||
           WDPApp.i18n.__('Please enter a valid additional donation amount.', 'woo-donation-popup');
       } else {
@@ -521,7 +521,7 @@
     bindAmountPresets(form);
     bindCoverFeeTotal(form);
     bindDonationSummary(form);
-    bindSadakaDonation(form);
+    bindAddonDonation(form);
     bindSmartKeyboard(form);
     if (WDPApp.formWizard && typeof WDPApp.formWizard.setup === 'function') {
       WDPApp.formWizard.setup(form);

@@ -39,33 +39,33 @@ const INIT_SCRIPT = `(() => {
   }
   function extractActionFromBody(body) {
     try {
-      if (!body) return { action: '', sadaka: {} };
+      if (!body) return { action: '', addon: {} };
       if (typeof FormData !== 'undefined' && body instanceof FormData) {
-        const sadaka = {};
+        const addon = {};
         let action = '';
         for (const [k, v] of body.entries()) {
           if (k === 'action') action = String(v);
-          if (String(k).indexOf('sadaka_') === 0) sadaka[k] = String(v);
+          if (String(k).indexOf('sadaka_') === 0) addon[k] = String(v);
         }
-        return { action, sadaka };
+        return { action, addon };
       }
       if (typeof URLSearchParams !== 'undefined' && body instanceof URLSearchParams) {
-        const sadaka = {};
+        const addon = {};
         for (const [k, v] of body.entries()) {
-          if (String(k).indexOf('sadaka_') === 0) sadaka[k] = String(v);
+          if (String(k).indexOf('sadaka_') === 0) addon[k] = String(v);
         }
-        return { action: body.get('action') || '', sadaka };
+        return { action: body.get('action') || '', addon };
       }
       const s = typeof body === 'string' ? body : '';
-      if (!s) return { action: '', sadaka: {} };
+      if (!s) return { action: '', addon: {} };
       const params = new URLSearchParams(s);
-      const sadaka = {};
+      const addon = {};
       for (const [k, v] of params.entries()) {
-        if (String(k).indexOf('sadaka_') === 0) sadaka[k] = String(v);
+        if (String(k).indexOf('sadaka_') === 0) addon[k] = String(v);
       }
-      return { action: params.get('action') || '', sadaka };
+      return { action: params.get('action') || '', addon };
     } catch (e) {
-      return { action: '', sadaka: {} };
+      return { action: '', addon: {} };
     }
   }
 
@@ -183,7 +183,7 @@ const INIT_SCRIPT = `(() => {
           method: String(method).toUpperCase(),
           url: String(url).slice(0, 200),
           action: parsed.action,
-          sadaka: parsed.sadaka,
+          addon: parsed.addon,
           stack: shortStack(new Error('fetch'), 3),
         });
         if (window.__wdpE2EXhr.length > 200) window.__wdpE2EXhr.shift();
@@ -215,7 +215,7 @@ const INIT_SCRIPT = `(() => {
         method: meta.method || 'GET',
         url: String(meta.url || '').slice(0, 200),
         action: parsed.action,
-        sadaka: parsed.sadaka,
+        addon: parsed.addon,
         stack: shortStack(new Error('xhr'), 3),
       });
       if (window.__wdpE2EXhr.length > 200) window.__wdpE2EXhr.shift();
@@ -239,7 +239,7 @@ export async function installPageProbe(target) {
 }
 
 /**
- * WDPApp form validate / sadaka / submit sarmala (davranış değişmez).
+ * WDPApp form validate / addon / submit sarmala (davranış değişmez).
  * @param {import('@playwright/test').Page} page
  */
 export async function wrapWdpValidationHooks(page) {
@@ -312,12 +312,12 @@ export async function wrapWdpValidationHooks(page) {
         if (WDPApp.form && typeof WDPApp.form.validateForm === 'function') {
           wrapFn(WDPApp.form, 'validateForm', 'form.validateForm');
         }
-        if (WDPApp.formSadaka) {
-          wrapFn(WDPApp.formSadaka, 'validateSadakaDonation', 'formSadaka.validateSadakaDonation');
+        if (WDPApp.formAddon) {
+          wrapFn(WDPApp.formAddon, 'validateAddonDonation', 'formAddon.validateAddonDonation');
         }
-        if (WDPApp.sadakaRules) {
-          wrapFn(WDPApp.sadakaRules, 'validateAmount', 'sadakaRules.validateAmount');
-          wrapFn(WDPApp.sadakaRules, 'parseAmount', 'sadakaRules.parseAmount');
+        if (WDPApp.addonRules) {
+          wrapFn(WDPApp.addonRules, 'validateAmount', 'addonRules.validateAmount');
+          wrapFn(WDPApp.addonRules, 'parseAmount', 'addonRules.parseAmount');
         }
         // submit handler formu bağlandıktan sonra _wdpSubmitHandler üzerinde
         // (form açıldıktan sonra yeniden çağrılabilir — bayrak yok)
@@ -394,7 +394,7 @@ export async function collectPageProbeLogs(page) {
  * Alt bağış paneli + buton anlık görüntüsü.
  * @param {import('@playwright/test').Page} page
  */
-export async function snapshotSadakaAndButton(page) {
+export async function snapshotAddonAndButton(page) {
   return page
     .evaluate(() => {
       const wrap = document.querySelector(
