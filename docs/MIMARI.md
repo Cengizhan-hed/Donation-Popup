@@ -28,8 +28,10 @@ Kural: her iddia `dosya:satır`; emin olunmayan yerler **DOĞRULANMADI**.
 | `assets/css/admin-style.css`, `assets/css/admin/products.css` | Admin UI | `includes/class-admin-assets.php` |
 | `assets/js/admin-script.js`, `assets/js/admin/products.js` | Admin JS | aynı |
 | `assets/css/list.css`, `assets/js/list.js` | `[wdp_donations]` liste | `includes/class-donations-list.php` |
-| `tools/` | Bundle / minify / docblock | `package.json:7-9` |
-| `scripts/` | pack, deploy, ship, handoff | `package.json:14-27` |
+| `tools/` | Bundle / minify / docblock + lint baseline (`tools/lint-baseline/`) | `package.json:7-9`, `docs/MIMARI.md` Kod kalitesi |
+| `tools/bin/` | composer.phar / wp-cli.phar (git dışı, SHA `tools/lint-tools.json`) | `scripts/install-lint-tools.mjs` |
+| `vendor-dev/` | PHPCS / PHPStan / PHPUnit (composer `vendor-dir`; `vendor/` sembolik bağa yazılmaz) | `composer.json` `config.vendor-dir` |
+| `scripts/` | pack, deploy, ship, handoff, lint | `package.json` |
 | `tests/` | PHPUnit, JS unit, smoke, E2E | `package.json:10-23` |
 | `docs/` | AYARLAR + bu mimari | — |
 
@@ -476,6 +478,21 @@ Kaynak rehber: `docs/AYARLAR.md`. Teknik varsayılanlar normalizer / placement /
 | Uzak doğrulama | `validateRemoteSiteUrl` birebir eşleşme | `scripts/lib/deploy-guards.mjs` |
 | `npm run ship:staging` | güvenli zincir + `e2e:quick --open-report` | `scripts/ship-staging.mjs` |
 | Rsync dışlama | `.distignore` tek kaynak (`pack-excludes.mjs`) | `scripts/lib/pack-excludes.mjs` |
+
+### Kod kalitesi araçları
+
+Yalnız geliştirme bağımlılığı. Dağıtım ZIP’ine ve hiçbir siteye girmez (`.distignore` + `package-wp-plugin.sh` prune; birim test `tests/unit/js/lint-pack.test.mjs`).
+
+| Araç | Komut | Yapılandırma | Kanıt |
+|------|-------|--------------|-------|
+| PHPCS + WPCS + PHPCompatibilityWP | `npm run lint:php` | `phpcs.xml.dist` (WordPress-Extra, Docs hariç; text domain `woo-donation-popup`; önek `wdp`/`WDP`/`hdf`; WP 5.0 / PHP 7.4) | `scripts/lint-php.mjs` → `build/lint/phpcs.json\|md` |
+| PHPStan 5 + WP/Woo stubs | `npm run analyse:php` | `phpstan.neon` (`includes/`, `templates/`, `blocks/`, `woo-donation-popup.php`; `tests/` `build/` hariç) | `scripts/analyse-php.mjs` → `build/lint/phpstan.json\|md` |
+| WordPress Plugin Check | `npm run plugin-check` | Yerel WP `build/local-wp` + WP-CLI phar; eklenti **dağıtım ZIP**’inden; ağ yoksa atla | `scripts/plugin-check.mjs` → `build/lint/plugin-check.json\|md` |
+| Baseline | `tools/lint-baseline/` (git) + kopya `build/lint/` | PHPCS JSON parmak izi; PHPStan `phpstan-baseline.neon` | `scripts/lib/lint-baseline.mjs` |
+| verify kapısı | `npm run verify:lint` (`verify` zinciri) | `git diff -U0` değişen satırda baseline dışı yeni hata → kırmızı; mevcut hata uyarı. Tam tarama yok. | `scripts/lint-verify-gate.mjs` |
+| Kurulum | `node scripts/install-lint-tools.mjs` | composer 2.10.3 + WP-CLI 2.12.0 SHA256; `vendor-dev/` | `tools/lint-tools.json` |
+
+Mevcut hatalar listelenir, **düzeltilmez** (ilgili faz). Yeni/değişen satır baseline’a sığınamaz.
 
 **Güvenli kurulum zinciri (`ship-core.mjs`, staging + ikram):** 1) `verify` + `test` + `pack`; kanarya TEMİZ değilse dur. 2) `remote:discover` REMOTE-BLOCKED kuralı (ölçüm/SMS aktif → çıkış 3, kurulum yok). 3) Ön anlık görüntü `build/migration/<env>-pre-<sürüm>-<zaman>.json` (git dışı; değer konsola yok). 4) Yedek: izinli kök `wdp-backups/` altında eklenti zip + yalnız `wdp_*` seçenek JSON. 5) rsync (`--delete` yalnız eklenti dizini) → etkinleştir + `WDP_Migrations::maybe_run` + önbellek. 6) Sağlık (otomatik, siteye özel URL yok): `wp eval-file` ile PHP fatal yok / eklenti aktif / sürüm = paket / `needs_run()=false`; HTTP (Node fetch, tarayıcısız) ana sayfa, Woo mağaza, ilk yayımlanmış gerçek ürün, kısa kod/blok sayfası (`[wdp_` / `wp:wdp` / `woo-donation` / Elementor `wdp-donation-form`/`wdp-donations`; yoksa atlanır), wp-admin. HTTP istekleri `wpCliAuth` çerezi ile (Coming soon duvarı yönetici gibi). Her biri 200, critical/fatal yok; ürün ve eklenti sayfasında `wdp-` işaret. Tek satır özet. 7) Sağlık KIRMIZI → otomatik geri dönüş (zip + `wdp_*` JSON + önbellek + sağlık tekrar) ve çıkış ≠ 0. 8) Son anlık + `migration-compare`: KAYBOLDU/VARSAYILANA/DEĞİŞTİ > 0 → UYARI, çıkış **2**, geri dönüş yok (Claude karar verir); sonra kanarya (yalnız eklenti seçenekleri değişebilir). `--dry-run`: uzak yazma 0, plan `build/ship/<env>-<zaman>.md`.
 

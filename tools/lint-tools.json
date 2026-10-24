@@ -1,0 +1,15 @@
+{
+  "comment": "Geliştirme araçları — dağıtım paketine ve hiçbir siteye girmez. SHA resmi kaynaklardan.",
+  "composer": {
+    "version": "2.10.3",
+    "url": "https://getcomposer.org/download/2.10.3/composer.phar",
+    "sha256": "7a2d379d5b8ffdaa028580ef26494c36d2feef4b178d3dd1473a4dbc5e17c8d6",
+    "dest": "tools/bin/composer.phar"
+  },
+  "wpCli": {
+    "version": "2.12.0",
+    "url": "https://github.com/wp-cli/wp-cli/releases/download/v2.12.0/wp-cli-2.12.0.phar",
+    "sha256": "ce34ddd838f7351d6759068d09793f26755463b4a4610a5a5c0a97b68220d85c",
+    "dest": "tools/bin/wp-cli.phar"
+  }
+}

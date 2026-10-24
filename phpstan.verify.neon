@@ -1,0 +1,3 @@
+includes:
+    - phpstan.neon
+    - tools/lint-baseline/phpstan-baseline.neon

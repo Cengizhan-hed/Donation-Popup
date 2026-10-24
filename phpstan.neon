@@ -1,0 +1,24 @@
+includes:
+    - vendor-dev/szepeviktor/phpstan-wordpress/extension.neon
+
+parameters:
+    level: 5
+    paths:
+        - includes
+        - templates
+        - blocks
+        - woo-donation-popup.php
+    excludePaths:
+        - tests
+        - build
+        - vendor
+        - vendor-dev
+        - node_modules
+        - tools/bin
+    bootstrapFiles:
+        - tools/phpstan-bootstrap.php
+    scanFiles:
+        - vendor-dev/php-stubs/woocommerce-stubs/woocommerce-stubs.php
+        - vendor-dev/php-stubs/wp-cli-stubs/wp-cli-stubs.php
+    reportUnmatchedIgnoredErrors: false
+    tmpDir: build/lint/phpstan-tmp

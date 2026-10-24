@@ -21,6 +21,7 @@ const DEFAULT_EXCLUDES = [
   'tests/',
   'scripts/',
   'vendor/',
+  'vendor-dev/',
 ];
 
 /**
