@@ -495,3 +495,20 @@ Kullanıcı yönergesi önceki tüm görev metinlerinin yerini aldı; CLAUDE.md 
 | S3b | 4O keşfi: woocommerce_add_to_cart zincirinde dışarı çağrı YOK (1 seviye statik); #27 dış çağrısı order_status_on-hold (host dinamik), #29 order_status_completed (dinamik), #43 hdf_gonullu_api_gonder → bagis.hedefdernegi.org (canlı alt alan; fusion form). hedef_check_abandoned_cart_event cron'da kayıtlı değil. Uzakta sipariş yok → tetiklenmez. staging30 sepete-ekleme koşuları yeniden açıldı | kullanıcıya rapor |
 | A6 | e2e:matrix bir koşuda ~20 dk asılı kaldı (page.request.fetch zaman aşımsız; PHP -S) | sonraki test parçası: tüm request.fetch'e timeout |
 | Y1 | POS Entegratör anketi (2026-10-24, `npm run admin:style-audit -- --env staging`, salt okunur): eklentimiz `plugins.php` sayfasında HİÇBİR CSS/JS/satır içi stil/DOM düğümü yüklemiyor (yönetici dosyalarımız yalnız ürün düzenleme + kendi ayar ekranında, `WDP_Admin_Assets::enqueue`). Anket kutuları (`gurmepos-deactivate-reason-modal-area`, `gurmepos-pro-…`, Wordfence `wf-deactivate-modal`, `sb-deactivation-host`) `display:block; position:static` (gizleme/modal stili sayfada yok); `pos-entegrator` yalnız 1 varlık yüklüyor, GurmePOS/GurmePOS Pro stil dosyası yok → sorun o eklentilerde; BİZDEN DEĞİL | Yalnız rapor (kullanıcıya) |
+
+## claude-code-setup önerileri (2026-10-24; KURULMADI — birlikte karar)
+
+Kurulum: Claude Code terminal sürümü 2.1.310 `~/.npm-global/bin/claude` (global npm), eklenti `claude-code-setup@anthropic-plugin-directory` (kullanıcı kapsamı; proje dosyası yok). Analiz salt okunur plan kipinde alındı.
+
+| Tür | Öneri | Öncelik |
+|---|---|---|
+| Hook | PreToolUse/Bash: staging30 dışı uzak yol + `REMOTE_FREEZE` + `.env*/.auth/*.pem/*.key` erişimi engeli (mevcut `deny` listesindeki `awk/python/xxd` açıkları kapanır) | 1 |
+| Hook | PostToolUse `*.php`: `php -l` + değişen dosyaya phpcs ("yeni kodda hata sıfır") | 1 |
+| Hook | PreToolUse `git commit`: `npm run verify` yeşil değilse engel (merge kriteri) | 1 |
+| Hook | Stop: ILERLEME.md son satırı >10 dk ya da son satırda ✅/⏳/❓ yoksa uyarı; SessionStart: dal/durum/REMOTE_FREEZE özeti | 2 |
+| Skill | `parca-bitir`, `cursor-gorev`, `asama-ozeti`, `kanarya-inceleme`, `i18n-turu`, `genel-dusunme-kontrolu` | 2 |
+| Alt ajan | `woo-uyum-denetcisi`, `veri-butunlugu-denetcisi`, `e2e-rapor-ozetleyici` (şimdi); `guvenlik-denetcisi` (Faz 8); `refaktor-haritacisi` (Faz 6) | 3 |
+| Slash | `/dogrula`, `/parca-baslat <kod>`, `/cursor-durum`, `/uzak-kontrol <env>`, `/faz-ozeti`, `/ilerleme <metin>` | 3 |
+| MCP | Context7 (Woo/WP/Playwright belge), Playwright MCP (yalnız yerel). Uzak ortamlar için MCP YOK (güvenlik kapılarını atlatabilir) | 4 |
+
+Not: `Edit(.claude/**)` yasak; hook/skill dosyalarını kurmak için bu kural gevşetilmeli ya da dosyaları kullanıcı eklemeli. Hook betikleri `scripts/hooks/` altında `remote-guard.mjs` mantığını yeniden kullanabilir.
