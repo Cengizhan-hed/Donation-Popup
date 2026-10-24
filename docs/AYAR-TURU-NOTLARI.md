@@ -575,3 +575,11 @@ Kaynak: Graphify kod haritası (2015 düğüm, 4229 bağ; `npm run graph:update`
 | K8 | **KARAR:** Telefon ülke listesinde İsrail kodda sabit olarak gizliydi. Genel eklentide ülke dışlama varsayımı kaldırıldı. Hedef'te hâlâ gizlenmesini isterseniz site koduna tek satır: `add_filter('wdp_phone_excluded_countries', fn() => array('IL'));` | kullanıcı kararı |
 | A7 | Yerel `sadaka-fixed-popup` (iPhone, tam paket) aralıklı: iki koşuda kırmızı, bir koşuda yeşil — alt bağış anahtarına erken dokunuşta işleyici bağlı olmayabilir (CTA kuyruğuna benzer) | Faz 7 |
 | A8 | Yerel WP dili artık profil dilinden (varsayılan tr_TR) mu-plugin ile kilitli; yerel testler Hedef eşdeğeri | bilgi |
+
+## 2026-10-24 akşam — staging30 "Sitede ciddi bir sorun çıktı" incelemesi (salt okunur)
+| # | Bulgu | Durum |
+|---|-------|-------|
+| Y2 | **Sebep eklentimiz değil: Slider Revolution 7.2.2.** `wp-admin/plugins.php` altbilgisinde (`admin_footer`) `RevSliderAdmin::add_ajax_footer_functionality` kancası kaydediliyor ama bu yöntem eklentide hiçbir yerde tanımlı değil → PHP 8.2 `TypeError` (Uncaught, class-wp-hook.php:353). Kayıt yeri: `revslider/wordpress/admin/revslider-admin.class.php:513` (`add_plugins_page_notices`, lisans doğrulanmamış + sürüm uyuşmazlığı dalı). Yalnız plugins.php'de tetiklenir; sayfa altbilgide kesilir (menü/stil/anket bozukluğu bu yüzden). PHP günlüğü `wp-admin/php_errorlog`: bugünkü 12 satırın tamamı revslider; `woo-donation-popup` geçen satır 0. | Site sahibi: Slider Revolution'ı güncelle/lisansla ya da bu eklenti için sorun bildir |
+| Y3 | Ön varsayım düzeltmesi: **10.35.0 hiçbir uzak siteye kurulmadı.** staging30 ve Ikram'da eklenti 10.34.15 (staging30 dosya saati 10:28 UTC). Hata günlüğündeki ilk revslider satırı 10:33 UTC (10.34.15 sonrası ilk plugins.php ziyareti ile uyumlu; 10.35.0 ile ilgisi yok). | bilgi |
+| Y4 | Ikram: PHP günlüğünün son satırı 10 Ekim; bugün hata yok. Ikram'da revslider yok. | temiz |
+| Y5 | `wp-admin/php_errorlog` staging30'da 2,3 MB (2024'ten beri), `WP_DEBUG` kapalı — sağlık kontrolü bu dosyada yalnız koşu başlangıcından sonraki satırları sayacak. | tasarım notu (Y6 görevi) |

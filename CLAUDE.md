@@ -33,11 +33,11 @@ Her oturumun başında oku. Kullanıcıyla **Türkçe** konuş. Bu dosya tek kay
 
 | Kim | Ne yapar |
 |---|---|
-| Claude Code | **Varsayılan (CLAUDE MODU): kodu kendisi yazar**; büyük ve bölünebilir işleri paralel olarak Cursor'a ayrı worktree'lerde verir. Planlar, inceler, testleri ve **tüm uzak işlemleri** yürütür, accept/commit/merge. `.claude/**` ve gizli dosyalar yasak |
+| Claude Code | **Kod YAZMAZ** (PHP/JS/CSS/test/betik/yapılandırma dosyası düzenlemez). Planlar, işleri 15–30 dk'lık bağımsız parçalara böler, Cursor'a ayrı worktree'lerde AYNI ANDA verir, inceler, testleri ve **tüm uzak işlemleri** yürütür, commit/merge/accept yapar, belge (.md) yazar. `.claude/**` ve gizli dosyalar yasak |
 | Cursor CLI (`agent`) | Verilen büyük işleri yazar, yerel verify/test/E2E koşar, RAPOR yazar. Uzak komut, commit, push, merge, accept yok |
 | Kullanıcı | Yalnız iş kararları ve kritik kapılar |
 
-- **Kod yazma modları:** CLAUDE MODU (varsayılan). Kullanıcı **"CURSOR MODU"** yazınca ya da kullanım limiti uyarısı görününce: Claude yalnız yönetir ve inceler, kodu Cursor yazar. Her parça sonunda `build/handoff/SIRADAKI-IS.md` güncellenir (sıradaki işler, kabul şartları, güvenlik kuralları, son durum); Claude limiti dolarsa Cursor bu dosyayla yalnız yerelde devam edebilmeli.
+- **Kod yazma düzeni (2026-10-24, eski "kod modları" kuralının yerine):** kodun TAMAMINI Cursor yazar. Küçük düzeltmeler tek görevde toplanır; görev tarifi kısa ve kesin (amaç, dosyalar, kabul şartları, testler, uzak komut yasak). Cursor çalışırken boşta beklenmez (sonraki tarifler hazırlanır, biten parçalar incelenir); incelemede yalnız değişen satırlar, uzun çıktılar özet betikle, büyük dosyalar yerine Graphify. Her parça sonunda `build/handoff/SIRADAKI-IS.md` güncellenir. **Cursor limiti dolduğunda (şu an 12 Kasım 2026'ya kadar) kod yazılmaz; kullanıcıya bildirilir ve kararı beklenir (alt ajanla kod yazma yalnız kullanıcı izniyle).** → **Güncelleme:** kullanıcı izin verdi — Cursor kullanılamıyorsa kodu Claude alt ajanları ayrı worktree'lerde yazar; Claude kendisi kod dosyası düzenlemez. **Cursor modeli kalıcı kural:** her `agent` çağrısı `--model auto` ile (Cursor editöründeki Auto); görev şablonuna da yazılır. (2026-10-24: CLI'da auto/composer-2.5/gemini dâhil tüm modeller 'usage limit' veriyor; sıfırlanma 12 Kas 2026 → alt ajan yedeği devrede. Her oturum başında `agent -p --model auto "tamam"` ile limit yeniden denenir.)
 - **Onay beklerken:** yalnız o karara bağlı iş durur; bağımsız işler sürer. "Her şey durdu" durumu olmaz.
 
 - **Görev verme:** `build/handoff/GOREV-<kod>.md` (+ ortak kurallar `GOREV-ORTAK.md`). Parça ≤ ~30 dk. Bağımsız parçalar ayrı git worktree'lerinde paralel (`../wt-<kod>`, dal `<kod>`; node_modules/vendor sembolik bağ). Başlatma:
@@ -93,3 +93,27 @@ Faz 1 güvenli bağlantı ✅ → Faz 2 göç provası ✅ → Faz 3 bekleyen i�
 - Güvenlik altyapısı: merkezi koruma + klasör kilidi, ağ koruması (canlı/emekli/yabancı yazma, sipariş yok), ortam+koşu defteri, ortam kilidi, kanarya öncesi/sonrası + `e2e:bootstrap --repair`, keşif snippet/kanca host raporu.
 - Bulgu listesi ve kararlar: docs/AYAR-TURU-NOTLARI.md (T1–T19, S1–S3b, A1–A6, G28–G33, P1, M1–M5).
 - Açık (eski): Curcy sipariş kur meta (Faz 9), KVKK dışa aktarma/silme + `wdp_vid` çerez kaydı (Faz 8), `wdp_render_modal` nonce'suz (Faz 8), Ikram İngilizce sitede Türkçe etiketler (Faz 5).
+
+## 8. ANA YÖNERGE GÜNCELLEMESİ (2026-10-24; A ve B bölümleri aynen geçerli)
+
+**Kararlar**
+- Ikram'da ödeme yöntemlerini (çek, havale, kapıda) kullanıcı açtı; kanarya tabanında. Uzakta sipariş verilmez.
+- staging30'da snippet #27, #29, #43, Cart Abandonment Recovery ve Slider Revolution'ı kullanıcı kapattı (dış değişiklik; kanarya tabanı güncellenir, koşular durmaz; keşifte doğrulanır). Curcy→geoplugin, Rank Math→GTM staging30'da kalır (bilgi).
+- Eklenti adı "Donation Panel for WooCommerce", yazar Cengizhan Çoban; klasör/text domain `woo-donation-popup` değişmez. WordPress.org'da ad çakışması varsa bildir. Uygulama Faz 6.
+
+**Çalışma kuralları**
+- Onay beklerken yalnız o karara bağlı iş durur; bağımsızlar sürer.
+- Kanarya değişikliği test penceresi dışında ve test kodunun yazmadığı bir ayardaysa yalnız o ortamın uzak koşuları durur, kullanıcıya bildirilir, gerisi sürer.
+- Merge kriteri: `verify` + yerel tam paket + uzak kısa kontrol (`e2e:remote-smoke`) iki ortamda + Y6 hata karşılaştırma testi yeşil. Uzak tam paket yalnız faz sonu, bilgi amaçlı. Uzak zaman aşımları ortam profilinden.
+- Üçüncü taraf eklenti/tema hataları (ör. Slider Revolution) eklentimize yüklenmez: kurulum sonrası kontrol ayırt eder, raporlar, geri dönüşü tetiklemez.
+- Ikram'da dışarıya POST atan kaynak bulunur ve raporlanır.
+
+**Kod yazma düzeni:** bkz. bölüm 3 (Cursor `--model auto`; kullanılamazsa alt ajanlar). 15–30 dk'lık bağımsız parçalar, aynı anda ayrı worktree'ler, küçük işler tek görevde, kısa kesin tarifler (amaç, dosyalar, kabul, testler, uzak komut yasağı), beklerken sonraki tarifler, incelemede yalnız değişen satırlar + özet betik + Graphify. Her parça sonunda SIRADAKI-IS.md; limit dolarsa kullanıcı "devam" yazınca oradan sürer.
+
+**Araçlar** (yalnız proje klasörü, dev bağımlılığı, pakete girmez, siteye kurulmaz): Plugin Check (yerel WP + WP-CLI), PHPCS + WPCS, PHPStan + WP/Woo tanımları — hepsi `verify`'a bağlı; mevcut hatalar listelenir/kategorize edilir, ilgili fazda düzeltilir, yeni kodda sıfır. Graphify yalnız kod modunda (GRAPHIFY_BACKEND=none). claude-code-setup: terminal sürümü kurulup denenir (`npm i -g @anthropic-ai/claude-code`; `claude plugin install claude-code-setup@claude-plugins-official`), olmazsa eşdeğer analiz; önerilerde KURMADAN raporla; en fazla 15 dk.
+
+**Yapılacaklar (sırayla, kesintisiz):** A) Y6 (kurulum sonrası sağlık kontrolü; açık/kapalı hata karşılaştırma testi; yönetici CSS/JS yalnız kendi ekranlarında) → B) Faz 1–4 kapanışı (kanarya tabanı, remote-smoke, güncel sürüm iki siteye, kriter sağlanınca main'e merge) → C) Araçlar → D) Faz 5 kalan doğrulamalar + uzak kurulum (Hedef Türkçe birebir; Ikram tamamen İngilizce; telefon ön eki mağaza ülkesinden; tutar/yüzde Woo sayı ayarları; tarih WP ayarları; Elementor widget adları/arama anahtar kelimeleri çevrilebilir; RTL yerel matriste) → E) Faz 6 refaktör (Graphify haritası; özellik envanteri Çekirdek/WP-Woo yapıyor/Gereksiz; Curcy/WOOCS/WPML ve Avada/Divi özel kodları standart yollara; "sadaka" iç adı genelleme + idempotent göç + iki ortamda prova; site adı temizliği, eklenti adı/yazar, README; ölü/tekrar kod; varlıklar yalnız gereken sayfada; kaldırma/birleştirme önerileri TOPLU karar listesi) → **Faz 7'ye başlamadan dur.**
+
+**Faz 7 (yol haritası):** tasarım taslaklarını Claude hazırlar, ayrıntılı prompt o zaman verilir. "Bağışçı Hesabı" modülü: isteğe bağlı, varsayılan kapalı; header kişi simgesi (kısa kod/blok/Elementor widget'ı); giriş/kayıt/şifre sıfırlama popup'ı (mobilde alttan panel); Bağışlarım (Hesabım içinde: tür, proje, durum, makbuz, tekrar bağış); misafir bağışlarını e-posta doğrulamasıyla hesaba bağlama; ödeme sayfasında hesap oluşturma; kimlik/güvenlik tamamen WP/Woo altyapısıyla; tasarım onaylanana kadar kod yok.
+
+**Rapor (Faz 7'den önce AŞAMA ÖZETİ):** Y6 sonucu, kapanış ve main sürümü, araç hataları (kategori+sayı), claude-code-setup önerileri, Faz 5–6 sonuçları, özellik envanteri + toplu karar listesi, Ikram dış POST kaynağı, Cursor model sorunu ve çözümü, süre dağılımı ve darboğaz.
