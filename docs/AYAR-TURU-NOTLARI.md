@@ -594,3 +594,10 @@ Proje profili: WordPress/WooCommerce eklentisi (PHP 8.2 + vanilla JS), Playwrigh
 | Skill | `wp-release-check` (kullanıcıya özel): verify + test + remote-smoke + Y6 sağlık kontrolü sırası | merge kriterini tek komuta indirir |
 | MCP | context7 (WooCommerce/WordPress API dokümanı) | Woo'nun standart yollarına uyum |
 Not: terminal sürümü kurulumu yapılmadı; skill burada plugin olarak zaten çalıştı (eşdeğer analiz).
+
+## 10.35.1 uzak kurulum sonuçları (2026-10-24 akşam)
+| # | Bulgu | Durum |
+|---|-------|-------|
+| U1 | 10.35.1 iki siteye kuruldu (staging30, Ikram); kanarya iki ortamda TEMİZ. Ikram quick: işlevsel 29/0/0 + remote-smoke yeşil (5/3/0); görsel 15 değişiklik = Faz 5 beklenen (Türkçe→İngilizce etiket, +90→mağaza ülkesi ön eki), baseline kabul edildi. | tamam |
+| U2 | staging30: quick işlevsel 17/13/8 + remote-smoke kırmızı: ürün sayfalarında "görünür eklenti giriş noktası yok" — S5 ile aynı sebep (snippet'ler kapatılınca Avada şablonunda ham `[hd_panel_buton]`; 10.34.15'te de aynıydı). Eklenti kaynaklı değil; staging30 merge kapısı S5 kararına bağlı. | KULLANICI KARARI (S5) |
+| U3 | Avada sepet menüsü zorla gösterme kodu (6-A/B'de kalktı) staging30'da doğrulanamadı (ürün sayfası akışı S5 yüzünden kırmızı); Ikram (Blocksy) etkilenmedi. | S5 sonrası doğrula |
