@@ -118,6 +118,40 @@ export function logVerdict(cls) {
   };
 }
 
+const HTML_ISSUE_RE = /\b(Warning|Notice|Deprecated|Fatal error|Parse error): [^\n]*? in (\/[^\s<]+?\.php) on line (\d+)/g;
+
+/**
+ * Uzak salt-okunur sayfa gezintisi: HTML'e basılan PHP uyarı/bildirimlerini kaynağa göre sayar
+ * (`display_errors` açık sitelerde görünür; kapalıysa 0). Üçüncü taraf ayrı sayılır, karşılaştırmaya girmez.
+ *
+ * @param {string} html
+ * @returns {{ ours: number, thirdParty: number, unknown: number }}
+ */
+export function scanHtmlIssues(html) {
+  const text = String(html || '').replace(/<\/?(b|strong|br\s*\/?)>/gi, '');
+  const out = { ours: 0, thirdParty: 0, unknown: 0 };
+  for (const m of text.matchAll(HTML_ISSUE_RE)) {
+    const k = classifyPath(m[2]).kind;
+    if (k === 'ours') out.ours++;
+    else if (k === 'third_party') out.thirdParty++;
+    else out.unknown++;
+  }
+  return out;
+}
+
+/**
+ * Sayfa gezintisi ölçümü (karşılaştırma biçimi): sunucu hatası (HTTP >= 500) bilinmeyen sayılır.
+ * Uzakta tarayıcı yok → konsol hatası 0 (yalnız yerel açık/kapalı koşusu konsolu ölçer).
+ *
+ * @param {{ status?: number, text?: string }|null} res
+ */
+export function browseMetricsFromResponse(res) {
+  if (!res) return { consoleErrors: 0, phpIssues: 0, ours: 0, thirdParty: 0 };
+  const scan = scanHtmlIssues(res.text);
+  const server = Number(res.status || 0) >= 500 ? 1 : 0;
+  return { consoleErrors: 0, phpIssues: scan.ours + scan.unknown + server, ours: scan.ours, thirdParty: scan.thirdParty };
+}
+
 /**
  * Kırmızı sayfaları kaynağa göre etiketler. Üçüncü taraf: (a) kurulumdan ÖNCE de kırmızıydı ya da
  * (b) günlük yeni kaydı yalnız üçüncü taraf fatal içeriyor (bizden/bilinmeyen fatal yok).
@@ -172,7 +206,18 @@ export function compareOnOff(off, on, opts = {}) {
  * @param {Record<string, { consoleErrors?: number, phpIssues?: number }>} current
  */
 export function compareToBaseline(baseline, current) {
-  return compareOnOff(baseline, current);
+  const rows = [];
+  for (const name of Object.keys(current || {})) {
+    const a = baseline?.[name];
+    if (!a) continue; // tabanda olmayan sayfa karşılaştırılamaz
+    const b = current[name] || {};
+    const dConsole = Number(b.consoleErrors || 0) - Number(a.consoleErrors || 0);
+    const dPhp = Number(b.phpIssues || 0) - Number(a.phpIssues || 0);
+    // Eski sürümde de olan "bizden" kayıt yeni hata sayılmaz: yalnız artış.
+    const dOurs = Number(b.ours || 0) - Number(a.ours || 0);
+    rows.push({ name, dConsole, dPhp, ours: Math.max(0, dOurs), red: dConsole > 0 || dPhp > 0 || dOurs > 0 });
+  }
+  return { red: rows.some((r) => r.red), rows };
 }
 
 export function formatOnOffLine(res) {

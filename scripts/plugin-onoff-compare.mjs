@@ -15,11 +15,11 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import net from 'node:net';
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { ensureLocalWp, writeWpConfig, phpEvalFile } from './local-wp.mjs';
 import { ROOT } from '../tests/e2e/helpers/env-root.mjs';
-import { classifyLogLines, compareOnOff, formatOnOffLine, OUR_SLUG } from './lib/health-attribution.mjs';
+import { classifyLogLines, sanitizeLogLine, compareOnOff, formatOnOffLine, OUR_SLUG } from './lib/health-attribution.mjs';
 
 const COPY_SKIP = new Set(['node_modules', '.git', 'build', 'docs', 'tests', 'scripts', 'vendor', 'vendor-dev', '.claude', '.cursor', 'tools']);
 
@@ -31,8 +31,12 @@ export const PAGES = Object.freeze([
   { name: 'wc-settings', path: '/wp-admin/admin.php?page=wc-settings', admin: true },
   { name: 'orders', path: '/wp-admin/admin.php?page=wc-orders', admin: true },
   { name: 'product-edit', path: '/wp-admin/post-new.php?post_type=product', admin: true },
-  { name: 'wdp-settings', path: '/wp-admin/admin.php?page=wdp-popup-settings', admin: true },
+  // Eklenti kapalıyken bu sayfa yok: kapalı taban olarak aynı türden mevcut yönetici sayfası (wc-settings) kullanılır.
+  { name: 'wdp-settings', path: '/wp-admin/admin.php?page=wdp-popup-settings', admin: true, offAs: 'wc-settings' },
 ]);
+
+/** Tohum betiğinin (seed) döndürdüğü Woo ön yüz sayfaları: ürün, sepet, ödeme, bağış sayfası/listesi. */
+export const SEEDED_PAGES = Object.freeze(['product', 'cart', 'checkout', 'donations']);
 
 function copyPlugin(dest) {
   fs.rmSync(dest, { recursive: true, force: true });
@@ -56,11 +60,28 @@ add_action('admin_footer', function () { echo '<script>console.error("third-part
   );
 }
 
+function wooZipCandidates() {
+  const main = path.resolve(ROOT, '../Donation Popup/build');
+  return [
+    path.join(ROOT, 'build/e2e/matrix/_cache/woocommerce.latest-stable.zip'),
+    path.join(ROOT, 'build/migration/cache/woocommerce.latest-stable.zip'),
+    path.join(ROOT, 'build/local-wp/woocommerce.latest-stable.zip'),
+    path.join(main, 'e2e/matrix/_cache/woocommerce.latest-stable.zip'),
+    path.join(main, 'migration/cache/woocommerce.latest-stable.zip'),
+  ];
+}
+
 /**
- * Gerçek WooCommerce yerelde yok; eklentinin "WooCommerce gerekli" bağımlılığı için boş bir yer tutucu
- * (yalnız geçici kopya; iki durumda da aynı).
+ * Gerçek WooCommerce (e2e matrisinin önbellekteki zip'i; HPOS, sepet, ödeme sayfaları). Zip yoksa boş
+ * yer tutucuya düşer (yalnız "WooCommerce gerekli" bağımlılığı; iki durumda aynı) ve sonuçta `wooReal: false` olur.
+ * @returns {boolean} gerçek WooCommerce kuruldu mu
  */
-function writeWooStub(pluginsDir) {
+function installWoo(pluginsDir) {
+  const zip = wooZipCandidates().find((z) => fs.existsSync(z) && fs.statSync(z).size > 10000);
+  if (zip) {
+    const r = spawnSync('unzip', ['-q', '-o', zip, '-d', pluginsDir], { encoding: 'utf8' });
+    if (r.status === 0 && fs.existsSync(path.join(pluginsDir, 'woocommerce/woocommerce.php'))) return true;
+  }
   const dir = path.join(pluginsDir, 'woocommerce');
   fs.mkdirSync(dir, { recursive: true });
   fs.writeFileSync(
@@ -70,6 +91,7 @@ function writeWooStub(pluginsDir) {
 if (!class_exists('WooCommerce')) { class WooCommerce { public $version = '9.0.0'; } }
 `
   );
+  return false;
 }
 
 /** Sahte "bizden" hata: kopyalanan eklentiye kod ekler (yalnız geçici kopya). */
@@ -120,6 +142,11 @@ async function startServer(wpDir, logFile) {
   return { child, base, port };
 }
 
+function parseJson(raw) {
+  const t = String(raw || '');
+  return JSON.parse(t.slice(t.indexOf('{'), t.lastIndexOf('}') + 1));
+}
+
 function logSize(file) {
   try { return fs.statSync(file).size; } catch { return 0; }
 }
@@ -143,17 +170,25 @@ async function openBrowser(base, cookies) {
   } catch { return null; }
 }
 
-async function measure(base, logFile, cookieHeader, br) {
+async function measure(base, logFile, cookieHeader, br, pages = PAGES) {
   const out = {};
-  for (const p of PAGES) {
+  for (const p of pages) {
     const off0 = logSize(logFile);
     const url = `${base}${p.path}`;
     let consoleErrors = null;
     if (br) {
       const page = await br.ctx.newPage();
       let n = 0;
-      page.on('console', (m) => { if (m.type() === 'error' && !/Failed to load resource/i.test(m.text())) n++; });
-      page.on('pageerror', () => { n++; });
+      page.on('console', (m) => {
+        if (m.type() === 'error' && !/Failed to load resource/i.test(m.text())) {
+          n++;
+          if (process.env.WDP_ONOFF_DEBUG) console.error(`[onoff ${p.name}] console: ${m.text().slice(0, 200)}`);
+        }
+      });
+      page.on('pageerror', (e) => {
+        n++;
+        if (process.env.WDP_ONOFF_DEBUG) console.error(`[onoff ${p.name}] pageerror: ${String(e && e.message).slice(0, 200)}`);
+      });
       try {
         await page.goto(url, { waitUntil: 'load', timeout: 20000 });
       } finally {
@@ -164,10 +199,17 @@ async function measure(base, logFile, cookieHeader, br) {
       const r = await fetch(url, { headers: p.admin ? { Cookie: cookieHeader } : {}, redirect: 'follow' });
       await r.text();
     }
-    const cls = classifyLogLines(logSince(logFile, off0));
+    const lines = logSince(logFile, off0);
+    if (process.env.WDP_ONOFF_DEBUG) {
+      for (const l of lines) console.error(`[onoff ${p.name}] ${sanitizeLogLine(l)}`);
+    }
+    const cls = classifyLogLines(lines);
     out[p.name] = {
       consoleErrors: consoleErrors == null ? 0 : consoleErrors,
-      phpIssues: cls.ours.length + cls.thirdParty.length + cls.unknown.length,
+      // Üçüncü taraf kayıtları karşılaştırmaya girmez: eş zamanlı arka plan istekleri (cron, ajax) sayıyı
+      // dalgalandırır; kaynağı bizden ya da bilinmeyen olanlar sayılır.
+      phpIssues: cls.ours.length + cls.unknown.length,
+      thirdParty: cls.thirdParty.length,
       ours: cls.ours.length,
     };
   }
@@ -184,7 +226,7 @@ export async function runOnOffCompare(opts = {}) {
   const pluginDir = path.join(pluginsDir, OUR_SLUG);
   copyPlugin(pluginDir);
   writeFakeThird(pluginsDir);
-  writeWooStub(pluginsDir);
+  const wooReal = installWoo(pluginsDir);
   if (opts.injectOurs) injectOurs(pluginDir);
   const env = { WDP_LOCAL_WP_DIR: wpDir };
   const logFile = path.join(root, 'php-errors.log');
@@ -192,18 +234,24 @@ export async function runOnOffCompare(opts = {}) {
 
   /** Çerez adı site adresine (port) bağlı: sunucu açıldıktan sonra üretilir. */
   const authCookies = () => {
-    const authRaw = phpEvalFile('scripts/lib/ship-auth-cookie.php', env);
-    const auth = JSON.parse(authRaw.slice(authRaw.indexOf('{'), authRaw.lastIndexOf('}') + 1));
+    const auth = parseJson(phpEvalFile('scripts/lib/ship-auth-cookie.php', env));
     return [
       { name: auth.logged_in_name, value: auth.logged_in },
       { name: auth.auth_name, value: auth.auth },
     ];
   };
 
-  const result = { states: {} };
+  const result = { states: {}, wooReal };
   let server;
   let br = null;
   try {
+    const seeded = parseJson(phpEvalFile('tests/local-wp/plugin-toggle.php', env, ['seed']));
+    const pages = [
+      ...PAGES,
+      ...SEEDED_PAGES.filter((n) => seeded.paths?.[n]).map((n) => ({ name: n, path: seeded.paths[n], admin: false })),
+    ];
+    result.pageNames = pages.map((p) => p.name);
+    result.pageDefs = pages;
     for (const mode of ['off', 'on']) {
       phpEvalFile('tests/local-wp/plugin-toggle.php', env, [mode]);
       server = await startServer(wpDir, logFile);
@@ -211,7 +259,7 @@ export async function runOnOffCompare(opts = {}) {
       const cookieHeader = cookies.map((c) => `${c.name}=${c.value}`).join('; ');
       if (opts.browser !== false) br = await openBrowser(server.base, cookies);
       result.browser = !!br;
-      result.states[mode] = await measure(server.base, logFile, cookieHeader, br);
+      result.states[mode] = await measure(server.base, logFile, cookieHeader, br, pages);
       if (br) { await br.browser.close(); br = null; }
       server.child.kill('SIGTERM');
       server = null;
@@ -221,6 +269,9 @@ export async function runOnOffCompare(opts = {}) {
     if (server) server.child.kill('SIGTERM');
     fs.rmSync(root, { recursive: true, force: true });
   }
+  for (const p of result.pageDefs || []) {
+    if (p.offAs && result.states.off?.[p.offAs]) result.states.off[p.name] = { ...result.states.off[p.offAs] };
+  }
   result.compare = compareOnOff(result.states.off, result.states.on);
   result.line = formatOnOffLine(result.compare);
   return result;
@@ -229,6 +280,6 @@ export async function runOnOffCompare(opts = {}) {
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const args = process.argv.slice(2);
   const res = await runOnOffCompare({ injectOurs: args.includes('--inject-ours'), browser: !args.includes('--no-console') });
-  console.log(`${res.line}${res.browser ? '' : ' (konsol atlandı: tarayıcı yok)'}`);
+  console.log(`${res.line} [${res.wooReal ? 'gerçek WooCommerce' : 'WooCommerce yer tutucu'}; sayfalar: ${(res.pageNames || []).join(',')}]${res.browser ? '' : ' (konsol atlandı: tarayıcı yok)'}`);
   process.exit(res.compare.red ? 1 : 0);
 }
