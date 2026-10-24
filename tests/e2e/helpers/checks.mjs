@@ -19,6 +19,7 @@ import {
 import { writeDebugJson } from './scenario-debug.mjs';
 import { debugDirFor } from './e2e-paths.mjs';
 import { buildCheckoutFlowDiagExtras } from './flow-diag.mjs';
+import { getActiveTimeouts } from './profile.mjs';
 
 /** Kontrol başına en fazla bekleme (ms). Bulunamayan öğe hemen hata yazar. */
 export const CHECK_MS = 5000;
@@ -614,7 +615,7 @@ export async function gotoWooCart(page, baseUrl) {
     if (await pageLooksLikeWooCart(page)) break;
     const cartUrl = withCacheBust(baseUrl, pathName, { hdf_no_side_cart: '1' });
     try {
-      await page.goto(cartUrl, { waitUntil: 'domcontentloaded', timeout: 20000 });
+      await page.goto(cartUrl, { waitUntil: 'domcontentloaded', timeout: getActiveTimeouts().navigation });
     } catch (navErr) {
       if (!/interrupted/i.test(String(navErr && navErr.message))) throw navErr;
       await page.waitForLoadState('domcontentloaded');
@@ -692,7 +693,7 @@ function cartReadyMarkerPresent(html) {
 export async function waitForWooCartReady(page) {
   await page.waitForLoadState('domcontentloaded');
   try {
-    await page.locator('body.woocommerce-cart').waitFor({ state: 'attached', timeout: 10000 });
+    await page.locator('body.woocommerce-cart').waitFor({ state: 'attached', timeout: getActiveTimeouts().expect });
   } catch {
     throw new Error('sepet sayfası hazır değil: body.woocommerce-cart yok');
   }
@@ -702,7 +703,7 @@ export async function waitForWooCartReady(page) {
       .locator(CART_READY_SEL)
       .filter({ visible: true })
       .first()
-      .waitFor({ state: 'visible', timeout: 10000 });
+      .waitFor({ state: 'visible', timeout: getActiveTimeouts().expect });
   }
 }
 

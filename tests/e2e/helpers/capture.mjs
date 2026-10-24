@@ -5,7 +5,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { chromium } from '@playwright/test';
 import { withCacheBust, productPaths, ROOT, beginNavCache, endNavCache } from './env.mjs';
-import { getActiveProfile, isRemoteProfile, matchesProfilePattern } from './profile.mjs';
+import { getActiveProfile, isRemoteProfile, matchesProfilePattern, getActiveTimeouts } from './profile.mjs';
 import {
   productNavPath,
   decideScenarioProduct,
@@ -1740,7 +1740,7 @@ export async function readProductSadakaAdminConfig(authed, env, productSlug, opt
     async function gotoAdminEdit() {
       await page.goto(
         withCacheBust(env.E2E_BASE_URL, `/wp-admin/post.php?post=${productId}&action=edit`),
-        { waitUntil: 'domcontentloaded', timeout: 45000 }
+        { waitUntil: 'domcontentloaded', timeout: getActiveTimeouts().navigation }
       );
     }
     try {
@@ -1751,7 +1751,7 @@ export async function readProductSadakaAdminConfig(authed, env, productSlug, opt
       );
       await gotoAdminEdit();
     }
-    const opened = await waitForWpAdminPage(page, 45000);
+    const opened = await waitForWpAdminPage(page, getActiveTimeouts().navigation);
     if (!opened.ok) {
       console.error(
         `[e2e:catch-fail] sadaka admin: kind=${opened.kind} path=${opened.path} id=${productId}`
@@ -1765,7 +1765,7 @@ export async function readProductSadakaAdminConfig(authed, env, productSlug, opt
     await page
       .locator('#wdp_enable_sadaka_donation, #wdp_sadaka_wc_product_id')
       .first()
-      .waitFor({ state: 'attached', timeout: 20000 })
+      .waitFor({ state: 'attached', timeout: getActiveTimeouts().expect })
       .catch(() => {});
 
     const enabled = await page
@@ -4722,14 +4722,15 @@ export async function captureAll({
         ? (async () => {
             const tA11y = Date.now();
             const flowPage = await (profile.comingSoon ? catalogCtx : guest).newPage();
-            flowPage.setDefaultTimeout(20000);
-            flowPage.setDefaultNavigationTimeout(25000);
+            const flowT = getActiveTimeouts();
+            flowPage.setDefaultTimeout(flowT.action);
+            flowPage.setDefaultNavigationTimeout(flowT.navigation);
             try {
               const openFlowShell = async () => {
                 const listOrProduct = popupPagePath(env) || productUrls.custom || productUrls.fixed || '/';
                 await flowPage.goto(withCacheBust(env.E2E_BASE_URL, listOrProduct, guestExtra), {
                   waitUntil: 'domcontentloaded',
-                  timeout: 25000,
+                  timeout: flowT.navigation,
                 });
                 await revealListProductTrigger(flowPage);
                 const trigger = flowPage.locator(

@@ -71,5 +71,8 @@
   "currencySwitch": {
     "param": "wmc-currency",
     "codes": ["EUR", "USD"]
+  },
+  "timeouts": {
+    "navigation": 60000
   }
 }

@@ -6,6 +6,7 @@
  * (gömülü form veya eklenti düğmesi — eklenti sınıf/data öznitelikleri;
  * tema düğmesi sayılmaz). Çözümleyici farklıysa UYARI, HATA değil.
  */
+import { SEL } from './selectors.mjs';
 
 export const DISPLAY_MODES = Object.freeze(['inline', 'button_popup', 'button_panel']);
 
@@ -203,4 +204,47 @@ export function matchPrimaryUi(ui) {
     };
   }
   return { ok: true, reason: '' };
+}
+
+/**
+ * Döngü kartları hariç görünür eklenti girişi (form / panel / popup).
+ * @param {import('@playwright/test').Page} page
+ * @returns {Promise<{ inlineVisible: number, panelVisible: number, popupVisible: number, displayAttr: string }>}
+ */
+export async function collectVisiblePluginEntry(page) {
+  return page.evaluate(
+    ({ excludeSel, inlineSel, panelSel, popupSel }) => {
+      const excluded = (el) => !!(el && el.closest(excludeSel));
+      const vis = (el) => {
+        if (!el) return false;
+        const st = getComputedStyle(el);
+        const r = el.getBoundingClientRect();
+        return (
+          st.display !== 'none' &&
+          st.visibility !== 'hidden' &&
+          Number.parseFloat(st.opacity || '1') > 0.05 &&
+          r.width > 4 &&
+          r.height > 4
+        );
+      };
+      const pick = (sel) => Array.from(document.querySelectorAll(sel)).filter((el) => !excluded(el));
+      const inline = pick(inlineSel);
+      const panel = pick(panelSel);
+      const popup = pick(popupSel);
+      const displayAttr =
+        [...panel, ...popup, ...inline].map((el) => el.getAttribute('data-wdp-display')).find(Boolean) || '';
+      return {
+        inlineVisible: inline.filter(vis).length,
+        panelVisible: panel.filter(vis).length,
+        popupVisible: popup.filter(vis).length,
+        displayAttr,
+      };
+    },
+    {
+      excludeSel: LOOP_EXCLUDE_SEL,
+      inlineSel: SEL.inlineDonationForm,
+      panelSel: SEL.sidePanelTrigger,
+      popupSel: SEL.centeredPopupTrigger,
+    }
+  );
 }

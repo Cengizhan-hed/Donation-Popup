@@ -503,8 +503,8 @@ Anahtar çıkarıcı: `get_option`/`update_option`/`add_option`/`get_post_meta`/
 
 | Öğe | Değer |
 |-----|--------|
-| Komutlar | `e2e:quick`, `e2e:full`, `e2e:matrix`, `e2e:conflicts`, `e2e`, `e2e:baseline`, `e2e:accept`, `e2e:stability`, `e2e:perf`, `e2e:catalog-explain` (`package.json`) |
-| Ortam | Profil JSON `tests/e2e/profiles/*.json` (uzak URL/SSH/yol tek kaynak) + sır dosyası `.env.e2e` / `.env.e2e.ikram` (parola vb.); yükleyici `tests/e2e/helpers/env.mjs` |
+| Komutlar | `e2e:quick`, `e2e:full`, `e2e:matrix`, `e2e:conflicts`, `e2e:remote-smoke`, `e2e`, `e2e:baseline`, `e2e:accept`, `e2e:stability`, `e2e:perf`, `e2e:catalog-explain` (`package.json`) |
+| Ortam | Profil JSON `tests/e2e/profiles/*.json` (uzak URL/SSH/yol tek kaynak) + sır dosyası `.env.e2e` / `.env.e2e.ikram` (parola vb.); yükleyici `tests/e2e/helpers/env.mjs`. Opsiyonel `timeouts` `{ navigation, action, expect, settle }` ms — yoksa `resolveTimeouts`: yerel hızlı (nav 20s / action 8s), uzak nav 45s / action 15s. staging-hedef + ikram-aid `navigation: 60000` (sunucu yavaş). |
 | Çıktı | `build/e2e/current/<ortam>/<cihaz>/`; baseline `tests/e2e/__baseline__/<ortam>/<cihaz>/` |
 | Manifest | `run.json` (`tests/e2e/helpers/run-io.mjs`) |
 | Eşik | sayfa varsayılan **%0.5**; kabuk popup/panel **%0.1** |
@@ -608,7 +608,24 @@ Güvenli alan (10.34.0 + 10.34.4): alt CTA `env(safe-area-inset-bottom)` + JS `-
 | `e2e:full` | Ortam × cihaz **paralel** (ayrı süreç; `current/<ortam>/<cihaz>/run.json` ezilmez; ebeveyn `current/run.json` birleştirir). **iPhone üç çocuk** (`full-slices.mjs`): `iphone` çekirdek (core/shell/sadaka/a11y/checkout-flow/layout) + `iphone-mut` (amount-options/form-fields/product-theme; staging30 ~598 s) + `iphone-mut2` (campaign-blocks/shortcodes/empty-price; staging30 campaign-blocks 512 s — 10.34.13 tek dilim 1223 s / 20 dk kesildi). Mutasyon kilidi yalnız mut dilimlerinde (`wantAnyMutationArea`); android/desktop kilit almaz. Her çocuk üst süre **20 dk**. Mut dilimleri birbirini kilitlemesin diye ayrı dalga (`partitionSpawnWaves`): yerelde çekirdekten sonra sırayla; uzakta ilk mut çekirdek/android/desktop ile paralel, `mut2` sonra. Özet satırları profil id ile tekilleşir (`dedupeFullSummaryRows`). Katalog `fixture_related` private fixture related/upsell. amount-opts: genel `enable_amount_presets` WP’den yalnız açık/kapalı (`read-amount-presets-flag.php`); kapalı → `setting-off`+`wp-data` atlama; açıksa düğme yoksa HATA. empty-price list-visible: `E2E_LIST_PAGE` yok → `no-list-page`; private fixture → `private-fixture`. Yerel `checkout-flow-early-cta-iphone`: handler yokken kuyruk kanıtı. Çocuk üst süre → SIGTERM/SIGKILL, kırmızı; ebeveyn koşu sonu kanarya + temizlik + `--repair`. SIGTERM/SIGINT: tarayıcı kapanır, kilit bırakılır, meta geri yüklenir. Hedef: 2 ortam × 3 cihaz &lt; 15 dk. `--env local`: ebeveyn `prepareLocalFullStack` (TT5 matris WP, port 8899 veya `WDP_LOCAL_E2E_PORT`, fixture yayımlı + liste + panel MU); çocuk süreçler aynı PHP’yi paylaşır. Yerel üç cihaz hedef ≤ 10 dk. Yerel `checkout-flow`: blok/klasik ödeme + cheque/cod/bacs ile sipariş tamamlanır (atlanmaz); doğrulama `read-order`. Hisseli+kampanya siparişi yalnız iphone. `loop-cards-shop`: görünür kart yoksa **kırmızı** (Playwright `visible=true`; `.first()` gizli şablon kartına denk gelince timeout yutulmaz). |
 | `e2e:matrix` | Yerel WP+SQLite tema/Woo matrisi; `--only` / `--device`; sipariş yalnız yerel. `place-order` `tests/e2e/helpers/place-order.mjs` (HPOS açık+kapalı × blok+klasik). |
 | `e2e:conflicts` | Uzak çakışma denetimi (konsol / betik kopyası / alan / CSS sızıntısı / önbellek nonce). `npm run e2e:conflicts -- --env staging\|ikram [--device iphone\|android\|desktop\|all]`. Sipariş yok; ödeme formu doldurulmaz. Form taşması: görünür öğe + seçici/genişlik/kural; telefon: açık form; mağaza: WP shop + döngü düğmesi, yoksa atla. Çıktı `build/e2e/conflicts/<env>/summary.md`; ekran yalnız bulguda (taşmada öğe vurgulu, kabuk açık). Yerel kanıt: `--env local` (TT5+Storefront matris WP) + uzak benzetim (`--sim-remote`, varsayılan yerel). Uzak koşu yalnız Claude (REMOTE_FREEZE + operatör kapısı). Koşucu `tests/e2e/run-conflicts.mjs`; sınıflama `tests/e2e/helpers/conflicts.mjs`. |
+| `e2e:remote-smoke` | Uzak kısa kritik-akış (aşağıda). |
 | `e2e:stability` | Aynı cihazda iki koşu; varsayılan iPhone |
+
+### Uzak kısa kontrol (e2e:remote-smoke)
+
+Merge kriteri: `verify` + yerel tam paket + `e2e:remote-smoke` iki uzak ortamda yeşil. Uzak **tam paket yalnız faz sonunda / bilgi amaçlı**. Claude çalıştırır (`--env staging|ikram`); Cursor yalnız `--env local` (TT5 yığın, `prepareLocalFullStack`).
+
+| Öğe | Değer |
+|-----|--------|
+| Komut | `npm run e2e:remote-smoke -- --env staging\|ikram\|local` |
+| Koşucu | `tests/e2e/run-remote-smoke.mjs` + `tests/e2e/helpers/remote-smoke.mjs` |
+| Cihaz | iPhone WebKit |
+| Hedef süre | uzak ≤ 4 dk; yerel ≤ 1.5 dk (yığın hazırlığı hariç tutulabilir) |
+| Güvenlik | Ortam kilidi + kanarya önce/sonra + defter + ağ koruması (gevşetme yok) + işaretli fixture. Uzak: `REMOTE_FREEZE` + operatör kapısı. Sipariş yok; ödeme formu doldurulmaz. |
+| Kontroller (WP/Woo kanıtı; ekran gözlemli atlama yok) | (1) ürün sayfası + eklenti betikleri + tetikleyici; (2) kabuk (popup veya ürünün ayarlı kabuğu) + POPUP-OVERLAP + boş gönderimde görünür doğrulama; (3) ziyaretçi, form min tutarı → Store API doğru ürün/tutar + sepet sayfası hazır; (4) ödeme sayfası ürün adı + tutar (alan yok, sipariş yok); (5) ondalık 0 mağazada `10,50` sepete eklemez; (6) staging `currencySwitch` EUR görüntü (profil yoksa `setting-off`+`wp-data`); (7) NATIVE-SUBMIT-RELOAD yok + `remote_post_blocked` / `blocked_live` özet; (8) test sepeti temiz. |
+| Zaman aşımı | `resolveTimeouts` / `getActiveTimeouts` (`profile.mjs`). Gezinme + sepet/ödeme bekleme (`gotoWooCart`, checkout `page.goto`, currency-switch, donation-flow) profil değerine bağlı. |
+| Teşhis | Kırmızıda `build/e2e/debug/<profil>/remote-smoke-<kontrol>.json` + PNG. |
+| Çıkış | Hata varsa 1; konsol özet satırı + `run.json`. |
 
 ### ship:ikram ve güvenlik kilidi
 

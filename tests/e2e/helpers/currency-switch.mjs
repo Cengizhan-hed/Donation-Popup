@@ -20,7 +20,11 @@ import { comingSoonQuery } from './coming-soon.mjs';
 import { popupPagePath } from './catalog-core.mjs';
 import { SKIP_EVIDENCE, SKIP_REASONS, classifySkip, makeSkip } from './skip-policy.mjs';
 
-const CHECK_MS = 25000;
+import { getActiveTimeouts } from './profile.mjs';
+
+function checkMs() {
+  return getActiveTimeouts().navigation;
+}
 
 /**
  * @param {object|null|undefined} profile
@@ -230,8 +234,8 @@ export async function runCurrencySwitchChecks({
   const ctx = await browser.newContext(contextOpts);
   const page = await ctx.newPage();
   const errors = attachConsoleErrorCollector(page);
-  page.setDefaultTimeout(CHECK_MS);
-  page.setDefaultNavigationTimeout(CHECK_MS);
+  page.setDefaultTimeout(checkMs());
+  page.setDefaultNavigationTimeout(checkMs());
   try {
     for (const code of spec.codes) {
       const check = `currency-switch-${code.toLowerCase()}`;
@@ -240,35 +244,35 @@ export async function runCurrencySwitchChecks({
         const extra = { ...extraBase, [spec.param]: code };
         await page.goto(withCacheBust(env.E2E_BASE_URL, cartPath, extra), {
           waitUntil: 'domcontentloaded',
-          timeout: CHECK_MS,
+          timeout: checkMs(),
         });
         await gotoWooCart(page, env.E2E_BASE_URL);
         await emptyCart(page, env.E2E_BASE_URL);
 
         await page.goto(withCacheBust(env.E2E_BASE_URL, listPath, extra), {
           waitUntil: 'domcontentloaded',
-          timeout: CHECK_MS,
+          timeout: checkMs(),
         });
         const listHtml = await page.content();
         const listSnap = extractPriceSnapshot(listHtml, profile.currency);
 
         await page.goto(withCacheBust(env.E2E_BASE_URL, productPath, extra), {
           waitUntil: 'domcontentloaded',
-          timeout: CHECK_MS,
+          timeout: checkMs(),
         });
         const trigger = page.locator(
           `${SEL.centeredPopupTrigger}, ${SEL.sidePanelTrigger}, .wdp-card__cta, .wdp-loop-donate, .single_add_to_cart_button`
         );
         if ((await trigger.count()) > 0) {
-          await clickShellTrigger(trigger, CHECK_MS);
-          await openShellLocator(page, '').waitFor({ state: 'visible', timeout: CHECK_MS });
+          await clickShellTrigger(trigger, checkMs());
+          await openShellLocator(page, '').waitFor({ state: 'visible', timeout: checkMs() });
         }
         const formHtml = await page.content();
         const formSnap = extractPriceSnapshot(formHtml, profile.currency);
 
         const add = page.locator(SEL.addToCart).first();
         if ((await add.count()) > 0) {
-          await clickAddToCartWithRetry(page, add, { timeout: CHECK_MS });
+          await clickAddToCartWithRetry(page, add, { timeout: checkMs() });
         }
         await gotoWooCart(page, env.E2E_BASE_URL);
         const store = await cartStoreSnapshot(page, env.E2E_BASE_URL);
