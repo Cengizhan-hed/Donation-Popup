@@ -110,7 +110,6 @@ final class WDP_Js_I18n {
 		$out['Too many requests. Please wait a moment and try again.'] = __('Too many requests. Please wait a moment and try again.', 'woo-donation-popup');
 		$out['Total'] = __('Total', 'woo-donation-popup');
 		$out['Try again'] = __('Try again', 'woo-donation-popup');
-		$out['Turkey'] = __('Turkey', 'woo-donation-popup');
 		$out['Very close to the goal'] = __('Very close to the goal', 'woo-donation-popup');
 		$out[ 'wizard step' . "\x04" . 'Amount' ] = _x('Amount', 'wizard step', 'woo-donation-popup');
 		$out[ 'wizard step' . "\x04" . 'Full name is required.' ] = _x('Full name is required.', 'wizard step', 'woo-donation-popup');

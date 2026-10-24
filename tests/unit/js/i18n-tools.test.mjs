@@ -39,7 +39,7 @@ describe('gen-js-strings', () => {
     assert.match(region, /_x\('Open', 'button'/);
   });
 
-  it('--check boş sözlükle yeşil', () => {
+  it('--check: depodaki sözlük JS kaynağıyla güncel (yeşil)', () => {
     const r = spawnSync(process.execPath, ['tools/i18n/gen-js-strings.mjs', '--check'], {
       encoding: 'utf8',
       cwd: ROOT,

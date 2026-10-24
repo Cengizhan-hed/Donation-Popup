@@ -113,4 +113,14 @@ final class PhoneFieldLocaleTest extends TestCase {
 		$this->assertStringContainsString('+44', $html);
 		$this->assertStringNotContainsString('+90', $html);
 	}
+
+	public function test_no_country_is_excluded_by_default_but_filter_can_exclude(): void {
+		WDP_Test_WC_Countries::$base = 'GB';
+		$this->assertArrayHasKey('il', WDP_Phone_Field::get_countries());
+		WDP_Test_State::$filters['wdp_phone_excluded_countries'] = static function () {
+			return array('IL');
+		};
+		$this->assertArrayNotHasKey('il', WDP_Phone_Field::get_countries());
+		$this->assertArrayHasKey('gb', WDP_Phone_Field::get_countries());
+	}
 }

@@ -144,6 +144,19 @@ class WDP_Phone_Field {
         );
 
         $countries = self::merge_woocommerce_countries($countries);
+
+        /**
+         * Telefon listesinden çıkarılacak ülkeler (ISO2 dizisi). Varsayılan boş: eklenti ülke dışlamaz.
+         *
+         * @param string[] $excluded Çıkarılacak ISO2 kodları.
+         */
+        $excluded = apply_filters('wdp_phone_excluded_countries', array());
+        if (is_array($excluded)) {
+            foreach ($excluded as $code) {
+                unset($countries[ strtolower((string) $code) ]);
+            }
+        }
+
         $countries = self::sort_countries_for_dropdown($countries, self::get_store_country_iso());
 
         /**

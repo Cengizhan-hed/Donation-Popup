@@ -22,15 +22,19 @@
   function getCountries() {
     const list = wdp_ajax.phone && Array.isArray(wdp_ajax.phone.countries) ? wdp_ajax.phone.countries : [];
     return list.filter(function (c) {
-      return c && typeof c.iso === 'string' && c.iso.length === 2 && c.dial && String(c.iso).toLowerCase() !== 'il';
+      return c && typeof c.iso === 'string' && c.iso.length === 2 && c.dial;
     });
   }
 
   function getPhoneConfig() {
     const phone = wdp_ajax.phone || {};
-    const raw = phone.default_country || 'tr';
-    const defaultCountry = typeof raw === 'string' && raw.length === 2 ? raw.toLowerCase() : 'tr';
-    return { defaultCountry: defaultCountry };
+    // Varsayılan ülke sunucudan gelir (WooCommerce mağaza ülkesi); yoksa listenin ilk ülkesi.
+    const raw = phone.default_country;
+    if (typeof raw === 'string' && raw.length === 2) {
+      return { defaultCountry: raw.toLowerCase() };
+    }
+    const first = getCountries()[0];
+    return { defaultCountry: first ? String(first.iso).toLowerCase() : '' };
   }
 
   const DEFAULT_NATIONAL_RULES = { min: 7, max: 12 };
@@ -52,7 +56,7 @@
         return countries[i];
       }
     }
-    return countries[0] || { iso: 'tr', name: WDPApp.i18n.__('Turkey', 'woo-donation-popup'), dial: '90', nationalMin: 10, nationalMax: 10 };
+    return countries[0] || { iso: '', name: '', dial: '', nationalMin: 7, nationalMax: 12 };
   }
 
   function getNationalRules(country) {
@@ -121,19 +125,6 @@
 
     if (digits.startsWith(dial) && digits.length >= dial.length + 6) {
       return digits;
-    }
-
-    if (iso === 'tr') {
-      if (digits.startsWith('0')) {
-        digits = digits.slice(1);
-      }
-      if (digits.startsWith('90') && digits.length >= 12) {
-        return digits;
-      }
-      if (digits.startsWith(dial)) {
-        return digits;
-      }
-      return dial + digits;
     }
 
     if (digits.startsWith('0')) {

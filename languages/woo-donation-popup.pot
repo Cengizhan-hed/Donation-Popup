@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: woo-donation-popup 10.34.15\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-24 16:40+0300\n"
+"POT-Creation-Date: 2026-10-24 16:45+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -791,9 +791,9 @@ msgstr ""
 
 #: includes/class-admin-form-tabs-renderer.php:120
 #: includes/class-admin-settings-normalizer.php:323
-#: includes/class-phone-field.php:480 includes/i18n/class-wdp-js-i18n.php:73
+#: includes/class-phone-field.php:493 includes/i18n/class-wdp-js-i18n.php:73
 #: includes/traits/trait-wdp-assets-inline-styles.php:87
-#: assets/js/src/phone-input.js:672 assets/js/src/shareholder/render.js:120
+#: assets/js/src/phone-input.js:663 assets/js/src/shareholder/render.js:120
 msgid "Phone number *"
 msgstr ""
 
@@ -3448,8 +3448,7 @@ msgstr ""
 msgid "Donor email"
 msgstr ""
 
-#: includes/class-phone-field.php:24 includes/i18n/class-wdp-js-i18n.php:113
-#: assets/js/src/phone-input.js:55
+#: includes/class-phone-field.php:24
 msgid "Turkey"
 msgstr ""
 
@@ -3913,8 +3912,8 @@ msgstr ""
 msgid "South Africa"
 msgstr ""
 
-#: includes/class-phone-field.php:513 includes/i18n/class-wdp-js-i18n.php:96
-#: assets/js/src/phone-input.js:701
+#: includes/class-phone-field.php:526 includes/i18n/class-wdp-js-i18n.php:96
+#: assets/js/src/phone-input.js:692
 msgid "Select country code"
 msgstr ""
 
@@ -4801,51 +4800,51 @@ msgstr ""
 msgid "Try again"
 msgstr ""
 
-#: includes/i18n/class-wdp-js-i18n.php:114 assets/js/src/progress-bar.js:323
+#: includes/i18n/class-wdp-js-i18n.php:113 assets/js/src/progress-bar.js:323
 msgid "Very close to the goal"
 msgstr ""
 
-#: includes/i18n/class-wdp-js-i18n.php:115 assets/js/src/form/wizard.js:27
+#: includes/i18n/class-wdp-js-i18n.php:114 assets/js/src/form/wizard.js:27
 msgctxt "wizard step"
 msgid "Amount"
 msgstr ""
 
-#: includes/i18n/class-wdp-js-i18n.php:116 assets/js/src/form/wizard.js:333
+#: includes/i18n/class-wdp-js-i18n.php:115 assets/js/src/form/wizard.js:333
 #: assets/js/src/form/wizard.js:425
 msgctxt "wizard step"
 msgid "Full name is required."
 msgstr ""
 
-#: includes/i18n/class-wdp-js-i18n.php:117 assets/js/src/form/wizard.js:402
+#: includes/i18n/class-wdp-js-i18n.php:116 assets/js/src/form/wizard.js:402
 msgctxt "wizard step"
 msgid "Please enter a valid phone number."
 msgstr ""
 
-#: includes/i18n/class-wdp-js-i18n.php:118 assets/js/src/form/ajax.js:418
+#: includes/i18n/class-wdp-js-i18n.php:117 assets/js/src/form/ajax.js:418
 msgid "You appear to be offline. Please try again when you are back online."
 msgstr ""
 
-#: includes/i18n/class-wdp-js-i18n.php:119 assets/js/src/cart/ui.js:242
+#: includes/i18n/class-wdp-js-i18n.php:118 assets/js/src/cart/ui.js:242
 msgid "Your cart is empty"
 msgstr ""
 
-#: includes/i18n/class-wdp-js-i18n.php:120 assets/js/src/progress-bar.js:324
+#: includes/i18n/class-wdp-js-i18n.php:119 assets/js/src/progress-bar.js:324
 msgid "Your contribution is being added"
 msgstr ""
 
-#: includes/i18n/class-wdp-js-i18n.php:121 assets/js/src/form/wizard.js:26
+#: includes/i18n/class-wdp-js-i18n.php:120 assets/js/src/form/wizard.js:26
 msgid "Your details"
 msgstr ""
 
-#: includes/i18n/class-wdp-js-i18n.php:122 assets/js/src/cart/ui.js:154
+#: includes/i18n/class-wdp-js-i18n.php:121 assets/js/src/cart/ui.js:154
 msgid "Your donation cart"
 msgstr ""
 
-#: includes/i18n/class-wdp-js-i18n.php:123 assets/js/src/form/ajax.js:148
+#: includes/i18n/class-wdp-js-i18n.php:122 assets/js/src/form/ajax.js:148
 msgid "Your donation has been added to the cart"
 msgstr ""
 
-#: includes/i18n/class-wdp-js-i18n.php:124 assets/js/src/form/ajax.js:245
+#: includes/i18n/class-wdp-js-i18n.php:123 assets/js/src/form/ajax.js:245
 msgid "Your donation has been added to the cart."
 msgstr ""
 
