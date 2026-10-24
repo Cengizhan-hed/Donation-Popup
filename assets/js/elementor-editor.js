@@ -1,8 +1,10 @@
 /**
- * Elementor editor: Bağış Formu ürün seçimini WooCommerce ajax aramaya bağlar.
+ * Elementor editor: bind the donation form product select to WooCommerce ajax search.
  */
-(function ($) {
+(function ($, wp) {
   "use strict";
+
+  const { __ } = wp.i18n;
 
   function enhanceProductSelect($select) {
     if (!$select || !$select.length || $select.data("wdpAjaxBound")) {
@@ -53,4 +55,4 @@
     }
     window.elementor.hooks.addAction("panel/open_editor/widget/wdp-donation-form", onPanelOpen);
   });
-})(window.jQuery);
+})(window.jQuery, window.wp);

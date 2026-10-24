@@ -48,6 +48,8 @@ class WDP_Blocks {
 			WDP_VERSION,
 			true
 		);
+		wp_set_script_translations('wdp-block-donation-form', 'woo-donation-popup', WDP_PLUGIN_DIR . 'languages');
+		wp_set_script_translations('wdp-block-donations', 'woo-donation-popup', WDP_PLUGIN_DIR . 'languages');
 
 		register_block_type(
 			WDP_PLUGIN_DIR . 'blocks/donation-form',
