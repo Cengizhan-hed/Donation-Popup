@@ -5,7 +5,7 @@ Her oturumun başında oku. Kullanıcıyla **Türkçe** konuş. Bu dosya tek kay
 ## 1. Ürün vizyonu (her kararın ölçütü)
 
 - **Genel eklenti.** WooCommerce kurulu her sitede, her temada ve sayfa oluşturucuda, kurulum dışında ek iş gerektirmeden harika çalışır. Site, ülke, dil, para birimi, tema ya da ödeme yöntemi varsayımı koda gömülmez; değerler WooCommerce/WordPress'ten okunur ya da ayar olur.
-- **Test siteleri yalnız test ortamıdır.** Site adları yalnız test ortam profillerinde geçer; kodda, ekran metinlerinde, eklenti başlığı/açıklamasında, belgelerde ve adlandırmada geçmez (temizlik Faz 6; eklenti adı/yazar iş kararıdır, kullanıcıya sorulur).
+- **Test siteleri yalnız test ortamıdır.** Site adları yalnız test ortam profillerinde geçer; kodda, ekran metinlerinde, eklenti başlığı/açıklamasında, belgelerde ve adlandırmada geçmez (temizlik Faz 6). **Karar (2026-10-24):** eklenti adı "Donation Panel for WooCommerce", yazar Cengizhan Çoban; klasör adı ve text domain değişmez (`woo-donation-popup`). WordPress.org dizininde ad çakışması varsa kullanıcıya bildirilir. Uygulama Faz 6.
 - **Bağışçı:** çok kolay, hızlı, güven verici; sade ama çok güzel. %90+ mobil → **mobil birinci öncelik**, mobilde masaüstünden de iyi; masaüstü de kusursuz.
 - **Yönetici:** kolay kurulum, akıllı varsayılanlar, az ve anlaşılır ayar, her ayarın altında kısa açıklama, modern yönetim ekranı, iyi kullanım rehberi.
 - **WooCommerce ile %100 uyum:** para birimi, ondalık, ayırıcılar, mağaza ülkesi, vergi, sepet, ödeme (blok + klasik), sipariş, HPOS, çoklu para birimi yalnız WooCommerce'in standart yollarıyla. Belirli ödeme yöntemine ya da çoklu para birimi eklentisine özel kod yok.
@@ -23,7 +23,7 @@ Her oturumun başında oku. Kullanıcıyla **Türkçe** konuş. Bu dosya tek kay
 | ikram-aid | `ikramaid` | `~/www/ikramaid.uk/public_html` | Blocksy + Elementor, GBP, coming soon açık |
 
 - Kilit **klasör yoluna** göre: `hedef-staging` kullanıcısı canlıya da erişebilir; `~/www/staging30.hedefdernegi.org` dışı her yol yasak. Canlı (`hedefdernegi.org`, `~/www/hedefdernegi.org`) hiçbir koşulda hedef olamaz. Tüm uzak komutlar `scripts/lib/remote-guard.mjs` merkezi korumasından geçer; `build/handoff/REMOTE_FREEZE` varken uzak komut yok.
-- **Testler siteye zarar veremez:** yalnız kendi oluşturup benzersiz işaretlediği kayıtları siler. Sayfa, menü, kullanıcı, WooCommerce sayfası, ortam dosyası, site ayarı oluşturulmaz/silinmez/değiştirilmez. Mutasyon yalnız `e2e:bootstrap` ile oluşturulan işaretli, gizli test ürünlerinde. Her uzak koşu öncesi/sonrası kanarya; beklenmeyen fark → dur + `CANARY-ALERT`. Gerçek kaydı test onarmaz, kullanıcıya bildirilir.
+- **Testler siteye zarar veremez:** yalnız kendi oluşturup benzersiz işaretlediği kayıtları siler. Sayfa, menü, kullanıcı, WooCommerce sayfası, ortam dosyası, site ayarı oluşturulmaz/silinmez/değiştirilmez. Mutasyon yalnız `e2e:bootstrap` ile oluşturulan işaretli, gizli test ürünlerinde. Her uzak koşu öncesi/sonrası kanarya; beklenmeyen fark → `CANARY-ALERT`. Fark test penceresi dışında ve test kodunun yazmadığı bir ayardaysa **yalnız o ortamın uzak koşuları durur**, kullanıcıya bildirilir, diğer her şey (yerel işler, öteki ortam, sonraki fazların yerel kısmı) devam eder. Fark test kodundan geliyorsa tüm uzak koşular durur. Gerçek kaydı test onarmaz. Site sahibi ayarı kendisi değiştirdiyse: `npm run e2e:canary -- --env X --accept-user-option anahtar1,anahtar2` (yalnız adı verilen anahtarlar tabana işlenir; başka fark varsa red).
 - **Uzaktan veri gönderilmez:** uzakta sipariş yok (ödeme sayfası açılır, ürün/tutar doğrulanır, alan doldurulmaz). Sipariş/HPOS denemeleri yalnız yerelde. E-posta, SMS, ödeme, terk edilmiş sepet, webhook eklentilerine dokunulmaz. Uzak koşularda ölçüm/reklam servisleri (Meta, Google Analytics/Tag Manager/Ads vb.) tarayıcıda varsayılan engelli. Wordfence: oturum bir kez açılır, yeniden kullanılır; tekrarlı giriş yok.
 - **Gizli/kişisel veri:** `~/.ssh`, `.env*`, `tests/e2e/.auth/**`, `*.pem`, `*.key` okunmaz. Gerçek sipariş/müşteri/kullanıcı/eklenti ayarı değeri ekrana, günlüğe, rapora, ILERLEME.md'ye yazılmaz; yalnız sayı ve hash.
 - **Kritik kapılar (kullanıcı onayı):** site görünürlüğü, canlıya dokunan her şey, ödeme/e-posta/SMS ayarları. Accept, commit, push, main'e merge: toplu onay verildi (2026-10-22) — her parça testleri geçince yapılır.
@@ -33,9 +33,12 @@ Her oturumun başında oku. Kullanıcıyla **Türkçe** konuş. Bu dosya tek kay
 
 | Kim | Ne yapar |
 |---|---|
-| Claude Code | Planlar, Cursor'a görev yazar, inceler, testleri ve **tüm uzak işlemleri** yürütür, accept/commit/merge. Kod dosyalarını düzenlemez (izin kapalı); `.md` belgelerini kendisi yazar |
-| Cursor CLI (`agent`) | Kodu yazar, yerel verify/test/E2E koşar, RAPOR yazar. Uzak komut, commit, push, merge, accept yok |
+| Claude Code | **Varsayılan (CLAUDE MODU): kodu kendisi yazar**; büyük ve bölünebilir işleri paralel olarak Cursor'a ayrı worktree'lerde verir. Planlar, inceler, testleri ve **tüm uzak işlemleri** yürütür, accept/commit/merge. `.claude/**` ve gizli dosyalar yasak |
+| Cursor CLI (`agent`) | Verilen büyük işleri yazar, yerel verify/test/E2E koşar, RAPOR yazar. Uzak komut, commit, push, merge, accept yok |
 | Kullanıcı | Yalnız iş kararları ve kritik kapılar |
+
+- **Kod yazma modları:** CLAUDE MODU (varsayılan). Kullanıcı **"CURSOR MODU"** yazınca ya da kullanım limiti uyarısı görününce: Claude yalnız yönetir ve inceler, kodu Cursor yazar. Her parça sonunda `build/handoff/SIRADAKI-IS.md` güncellenir (sıradaki işler, kabul şartları, güvenlik kuralları, son durum); Claude limiti dolarsa Cursor bu dosyayla yalnız yerelde devam edebilmeli.
+- **Onay beklerken:** yalnız o karara bağlı iş durur; bağımsız işler sürer. "Her şey durdu" durumu olmaz.
 
 - **Görev verme:** `build/handoff/GOREV-<kod>.md` (+ ortak kurallar `GOREV-ORTAK.md`). Parça ≤ ~30 dk. Bağımsız parçalar ayrı git worktree'lerinde paralel (`../wt-<kod>`, dal `<kod>`; node_modules/vendor sembolik bağ). Başlatma:
   `cd ../wt-X && env -u CLAUDECODE -u CLAUDE_CODE_SESSION_ID agent -p --trust --force --model auto "$(cat <ANA>/build/handoff/GOREV-X.md)" > <ANA>/build/handoff/cursor-log-X.txt 2>&1` (arka planda).
@@ -46,6 +49,7 @@ Her oturumun başında oku. Kullanıcıyla **Türkçe** konuş. Bu dosya tek kay
 - **ILERLEME.md** (`build/handoff/`): Claude, Cursor ve alt ajanlar en geç 10 dk'da bir satır, en alta, gerçek saatle: `SAAT – KİM – NE BİTTİ – ŞU AN – SIRADA`. Parça başında tahmini süre; aşılırsa neden. Test sonucu tek satır: ortam, tema, cihaz, geçen/kalan/hata, süre. Parça sonunda ayırıcı + kısa özet.
 - **Dosya disiplini:** belgeler yalnız CLAUDE.md, docs/MIMARI.md, docs/AYARLAR.md, docs/AYAR-TURU-NOTLARI.md, build/handoff/. Karar ve notlar anında AYAR-TURU-NOTLARI.md'ye.
 - **E2E kuralları:** `e2e:accept` yalnız ekranlar incelendi + beklenen değişiklik + işlevsel hata 0. Sıra: inceleme → (zamanlama değiştiyse) `e2e:stability` → taze `e2e:quick` → accept → commit. Testte `.catch(() => {})` yasak. Eşik: sayfa ≤ %0.5 (≤16 px yükseklik farkı sayılmaz), kabuk ≤ %0.1.
+- **Merge kriteri (2026-10-24):** `verify` + yerel tam paket yeşil + uzak kısa kontrol (`e2e:remote-smoke`) iki ortamda yeşil. Uzak **tam paket yalnız faz sonunda ve bilgi amaçlı**; hataları önce yerelde benzetimle üret. Uzak zaman aşımları ortam profilinden ayarlanır (sunucu yavaşlığı).
 - **Test hızı:** işlevsel testlerin çoğu yerelde; uzak yalnız ortama özgü kontrol ve parça sonu doğrulaması. Sabit bekleme yok (olay/öğe bazlı). `e2e:quick` hedefi < 5 dk. Cihaz önceliği: iPhone (WebKit) → Android (Chromium) → masaüstü (Chrome); her bağış akışı üç cihazda.
 
 ## 4. Kullanıcıyla iletişim
@@ -70,12 +74,16 @@ Her oturumun başında oku. Kullanıcıyla **Türkçe** konuş. Bu dosya tek kay
 | `npm run remote:discover -- --env X` | Uzak salt okunur keşif (yalnız Claude) |
 | `npm run ship:staging` / `ship:ikram` | Paketle + izinli uzak ortama kur + e2e:quick (yalnız Claude) |
 | `npm run e2e:quick` / `e2e:full` / `e2e:matrix` | iPhone + değişen alan / 3 cihaz × ortam / tema matrisi |
+| `npm run e2e:remote-smoke -- --env X` | Uzak kısa kontrol: kritik bağış akışları (yalnız Claude) |
 | `npm run e2e:accept` / `e2e:stability` / `e2e:perf` / `e2e:canary` | Baseline kabul / kararlılık / hız / kanarya |
+| `npm run lint:php` / `analyse:php` / `plugin-check` | PHPCS (WordPress standartları) / PHPStan / WordPress Plugin Check — yalnız geliştirme, pakete girmez, siteye kurulmaz |
 | `npm run handoff [-- --screens a,b]` | Teslim klasörü `~/Desktop/e2e-inceleme` |
 
 ## 6. Yol haritası
 
-Faz 1 güvenli bağlantı → Faz 2 göç provası (staging30: 10.3.1 → güncel) → Faz 3 bekleyen işler (2/3–2c, Ikram kabul a–g) → Faz 4 tema/Woo uyum matrisi → **dur, AŞAMA ÖZETİ** → Faz 5 dil desteği → Faz 6 refaktör (site adı temizliği, Curcy/sayfa oluşturucu tespitinin genelleştirilmesi, "sadaka" iç adı) → Faz 7 bağışçı deneyimi + tasarım (G listesi, yönetici ekranı, rehber) → Faz 8 güvenlik denetimi + WP gizlilik araçları uyumu → Faz 9 canlıya alma (Curcy/e-posta/SMS/POS testlerini kullanıcı yapar).
+Faz 1 güvenli bağlantı ✅ → Faz 2 göç provası ✅ → Faz 3 bekleyen işler ✅ → Faz 4 tema/Woo uyum matrisi ✅ → **Faz 5 dil desteği** (kaynak dil İngilizce + tr_TR çeviri; `.pot`; JS `wp.i18n`; Elementor widget adları; telefon ön eki mağaza ülkesinden; tutar/yüzde/tarih WooCommerce/WordPress ayarlarıyla; RTL; Ikram İngilizce, Hedef Türkçe — Hedef'te görünen metinler birebir korunur) → **Faz 6 refaktör** (Graphify kod haritası [GRAPHIFY_BACKEND=none]; özellik envanteri Çekirdek / WP-Woo zaten yapıyor / Gereksiz; Curcy/WOOCS/WPML ve Avada/Divi özel kodları standart yollara; "sadaka" iç adı → genel ad, eski DB anahtarları idempotent göçle korunur, göç provası tekrarlanır; site adı + eklenti adı/yazar + README; ölü/tekrar kod; yönetici ve ön yüz dosyaları yalnız gereken sayfada yüklenir; kaldırma/birleştirme önerileri TOPLU karar listesi) → **dur, AŞAMA ÖZETİ, Faz 7'ye başlama** → Faz 7 bağışçı deneyimi + tasarım (tasarım claude.ai'da hazırlanıp onaylanır; G listesi, yönetici ekranı, rehber; **"Bağışçı Hesabı" modülü**: isteğe bağlı, varsayılan kapalı; header kişi simgesi (kısa kod/blok/Elementor widget'ı); giriş/kayıt/şifre sıfırlama popup'ı (mobilde alttan panel); Bağışlarım paneli (WooCommerce Hesabım içinde: bağış türü, proje, durum, makbuz, tekrar bağış); önceki misafir bağışlarının e-posta doğrulamasıyla hesaba bağlanması; ödeme sayfasında hesap oluşturma seçeneği; kimlik doğrulama ve güvenlik tamamen WooCommerce/WordPress altyapısıyla; **tasarım onaylanana kadar kod yazma**) → Faz 8 güvenlik denetimi + WP gizlilik araçları uyumu → Faz 9 canlıya alma (Curcy/e-posta/SMS/POS testlerini kullanıcı yapar).
+
+**Araçlar (yalnız proje klasöründe, dev bağımlılığı):** WordPress Plugin Check (yerel WP + WP-CLI), PHPCS + WordPress Coding Standards, PHPStan + WordPress/WooCommerce tanımları; hepsi `verify`'a bağlı. Mevcut hatalar yalnız listelenir/kategorize edilir, ilgili fazda düzeltilir; **yeni kodda hata sıfır**. Graphify Faz 6 başında yalnız kod modunda.
 
 ## 7. Durum (2026-10-24, Faz 1–4 sonu — Faz 5 öncesi DUR)
 
