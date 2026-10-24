@@ -118,7 +118,7 @@ function formatEntry(e) {
 function headerPo() {
   const now = new Date().toISOString().replace('T', ' ').replace(/\.\d+Z$/, '+0000');
   return `# Turkish translation for woo-donation-popup.
-# Copyright (C) WooCommerce Donation Panel
+# Copyright (C) Donation Panel for WooCommerce
 msgid ""
 msgstr ""
 "Project-Id-Version: woo-donation-popup\\n"

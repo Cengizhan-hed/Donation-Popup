@@ -1,5 +1,5 @@
 # Turkish translations for woo-donation-popup (part A1).
-# Copyright (C) WooCommerce Donation Panel
+# Copyright (C) Donation Panel for WooCommerce
 msgid ""
 msgstr ""
 "Project-Id-Version: woo-donation-popup\n"

@@ -1,11 +1,11 @@
 # Turkish translation for woo-donation-popup.
-# Copyright (C) WooCommerce Donation Panel
+# Copyright (C) Donation Panel for WooCommerce
 msgid ""
 msgstr ""
 "Project-Id-Version: woo-donation-popup\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-24 15:11:12+0000\n"
-"PO-Revision-Date: 2026-10-24 15:11:12+0000\n"
+"POT-Creation-Date: 2026-10-24 16:13:07+0000\n"
+"PO-Revision-Date: 2026-10-24 16:13:07+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: tr_TR\n"
@@ -225,6 +225,10 @@ msgstr "Alt bağış WC ürünü bulunamadı. Başarı & Mini Sepet veya ürün 
 #: assets/js/src/form/wizard.js:29
 msgid "Additional donation"
 msgstr "Alt bağış"
+
+#. Description of the plugin
+msgid "Adds a donation form to WooCommerce products as a popup, side panel or inline form, with fixed, custom, shared and campaign donation types."
+msgstr "WooCommerce ürünlerine açılır pencere, yan panel veya sayfa içi form olarak bağış formu ekler; sabit, serbest, hisseli ve kampanya bağış türlerini destekler."
 
 #: includes/class-admin-form-tabs-renderer.php:408
 msgctxt "admin form tab"
@@ -1135,6 +1139,10 @@ msgstr "Bağış Notu"
 #: assets/js/src/modal.js:738
 msgid "Donation panel closed"
 msgstr "Bağış paneli kapatıldı"
+
+#. Plugin Name of the plugin
+msgid "Donation Panel for WooCommerce"
+msgstr "WooCommerce Bağış Paneli"
 
 #: assets/js/src/modal.js:500
 msgid "Donation panel opened"

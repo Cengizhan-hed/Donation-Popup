@@ -1,7 +1,7 @@
 {
   "name": "donation-popup",
-  "version": "10.35.0",
-  "description": "WooCommerce donation popup — WordPress plugin.",
+  "version": "10.35.1",
+  "description": "Donation Panel for WooCommerce — WordPress plugin.",
   "private": true,
   "scripts": {
     "build:css": "php tools/build-css-bundle.php",
