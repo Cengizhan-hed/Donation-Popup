@@ -242,7 +242,7 @@
     }
   }
 
-  function mountSadakaDonationBlock(form, html) {
+  function mountAddonDonationBlock(form, html) {
     if (!form || !html || typeof html !== "string") {
       return null;
     }
@@ -276,7 +276,7 @@
     return block;
   }
 
-  function applySadakaDonation(root, form, data) {
+  function applyAddonDonation(root, form, data) {
     const enabled = !!(data && data.enable_sadaka_donation);
     const existing = form.querySelector("[data-wdp-sadaka-donation]");
 
@@ -285,19 +285,19 @@
         existing.remove();
       }
       if (root) {
-        root.setAttribute("data-wdp-enable-sadaka", "0");
+        root.setAttribute("data-wdp-enable-addon", "0");
       }
       refreshFormSnapshot(root);
       return;
     }
 
     if (root) {
-      root.setAttribute("data-wdp-enable-sadaka", "1");
+      root.setAttribute("data-wdp-enable-addon", "1");
     }
 
     let block = existing;
     if (!block && data.sadaka_block_html) {
-      block = mountSadakaDonationBlock(form, data.sadaka_block_html);
+      block = mountAddonDonationBlock(form, data.sadaka_block_html);
     }
 
     if (block) {
@@ -452,7 +452,7 @@
         }
       }
 
-      applySadakaDonation(root, form, data);
+      applyAddonDonation(root, form, data);
 
       if (WDPApp.form && typeof WDPApp.form.updateLineTotals === "function") {
         WDPApp.form.updateLineTotals(form);

@@ -11,7 +11,7 @@
   const formMessages = WDPApp.formMessages || {};
   const formPricing = WDPApp.formPricing || {};
   const formFeedback = WDPApp.formFeedback || {};
-  const formSadaka = WDPApp.formSadaka || {};
+  const formAddon = WDPApp.formAddon || {};
 
   const formatCurrency = typeof utils.formatCurrency === 'function' ? utils.formatCurrency.bind(utils) : function(n) { return String(n); };
   const safeLog = typeof utils.safeLog === 'function' ? utils.safeLog.bind(utils) : function() {};
@@ -97,9 +97,9 @@
       : false;
   }
 
-  function validateSadakaDonation(form) {
-    return typeof formSadaka.validateSadakaDonation === 'function'
-      ? formSadaka.validateSadakaDonation(form)
+  function validateAddonDonation(form) {
+    return typeof formAddon.validateAddonDonation === 'function'
+      ? formAddon.validateAddonDonation(form)
       : true;
   }
 
@@ -613,7 +613,7 @@
       }
     }
 
-    // Diğer zorunlu alanlar (fiyat, vb.) — alt bağış (sadaka) bu döngüde yok; validateSadakaDonation ayrı.
+    // Diğer zorunlu alanlar (fiyat, vb.) — alt bağış (addon) bu döngüde yok; validateAddonDonation ayrı.
     form.querySelectorAll('input[required], textarea[required]').forEach((field) => {
       if (field.name && field.name.includes('shareholder_')) {
         return;
@@ -764,31 +764,31 @@
       }
     }
 
-    if (!validateSadakaDonation(form)) {
+    if (!validateAddonDonation(form)) {
       isValid = false;
-      const sadakaErr = form.querySelector('[data-wdp-sadaka-donation] .wdp-input-error');
-      const sadakaInput = form.querySelector(
+      const addonErr = form.querySelector('[data-wdp-sadaka-donation] .wdp-input-error');
+      const addonInput = form.querySelector(
         '[data-wdp-sadaka-donation] input[name="sadaka_custom_price"], [data-wdp-sadaka-donation] input'
       );
-      const sadakaMsg =
-        sadakaErr && sadakaErr.textContent
-          ? sadakaErr.textContent.trim()
-          : (typeof formMessages.getSadakaInvalidMessage === 'function'
-              ? formMessages.getSadakaInvalidMessage()
+      const addonMsg =
+        addonErr && addonErr.textContent
+          ? addonErr.textContent.trim()
+          : (typeof formMessages.getAddonInvalidMessage === 'function'
+              ? formMessages.getAddonInvalidMessage()
               : WDPApp.i18n.__('Please check the additional donation amount.', 'woo-donation-popup'));
-      if (sadakaMsg && !errorMessages.includes(sadakaMsg)) {
-        errorMessages.push(sadakaMsg);
+      if (addonMsg && !errorMessages.includes(addonMsg)) {
+        errorMessages.push(addonMsg);
       }
       failures.push({
-        field: (sadakaInput && sadakaInput.name) || 'sadaka_custom_price',
+        field: (addonInput && addonInput.name) || 'sadaka_custom_price',
         rule: 'sadaka_invalid',
-        value: fieldValueSnapshot(sadakaInput),
+        value: fieldValueSnapshot(addonInput),
       });
-      // Sadaka modülü mesaj basmadıysa yine görünür hata
-      if (!sadakaErr && sadakaInput) {
-        showInputError(sadakaInput, sadakaMsg);
-      } else if (!sadakaErr) {
-        showFormErrorBanner(form, sadakaMsg);
+      // Addon modülü mesaj basmadıysa yine görünür hata
+      if (!addonErr && addonInput) {
+        showInputError(addonInput, addonMsg);
+      } else if (!addonErr) {
+        showFormErrorBanner(form, addonMsg);
       }
     }
 

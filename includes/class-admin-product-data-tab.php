@@ -158,7 +158,7 @@ class WDP_Admin_Product_Data_Tab {
 		self::render_amount_section($values);
 		self::render_form_fields_section($values);
 		self::render_campaign_blocks_section($product->get_id(), $values);
-		self::render_sadaka_section($values, $product->get_id());
+		self::render_addon_section($values, $product->get_id());
 		self::render_appearance_section($values);
 		echo '</div>';
 
@@ -225,7 +225,7 @@ class WDP_Admin_Product_Data_Tab {
 	 */
 	private static function get_panel_values($product) {
 		$meta = static function ($key) use ($product) {
-			$value = $product->get_meta($key, true);
+			$value = WDP_Addon_Product_Visibility::get_meta($product, $key);
 			return is_scalar($value) ? (string) $value : '';
 		};
 		$flag = static function ($key, $default_yes = false) use ($meta) {
@@ -305,12 +305,12 @@ class WDP_Admin_Product_Data_Tab {
 			'enable_trust_strip'           => $flag('_enable_trust_strip', true),
 			'trust_rows'                   => $trust_rows,
 			'module_order_custom'          => $meta('_wdp_module_order') !== '',
-			'enable_sadaka_donation'       => $flag('_enable_sadaka_donation'),
-			'sadaka_toggle_label'          => $meta('_sadaka_toggle_label'),
-			'sadaka_wc_product_id'         => ($meta('_sadaka_wc_product_id') !== '' && $meta('_sadaka_wc_product_id') !== '0') ? $meta('_sadaka_wc_product_id') : '',
-			'sadaka_min_price'             => $meta('_sadaka_min_price') !== '' ? $meta('_sadaka_min_price') : '0',
-			'sadaka_fixed_price'           => ((float) $meta('_sadaka_fixed_price') > 0) ? $meta('_sadaka_fixed_price') : '',
-			'sadaka_donation_message'      => $meta('_sadaka_donation_message'),
+			'enable_sadaka_donation'       => $flag('_enable_addon_donation'),
+			'sadaka_toggle_label'          => $meta('_addon_toggle_label'),
+			'sadaka_wc_product_id'         => ($meta('_addon_wc_product_id') !== '' && $meta('_addon_wc_product_id') !== '0') ? $meta('_addon_wc_product_id') : '',
+			'sadaka_min_price'             => $meta('_addon_min_price') !== '' ? $meta('_addon_min_price') : '0',
+			'sadaka_fixed_price'           => ((float) $meta('_addon_fixed_price') > 0) ? $meta('_addon_fixed_price') : '',
+			'sadaka_donation_message'      => $meta('_addon_donation_message'),
 			'layout_mode'                  => in_array($layout, array('classic', 'campaign', 'story'), true) ? $layout : 'classic',
 			'enable_campaign_media'        => $flag('_enable_campaign_media'),
 			'has_featured_image'           => $has_image ? 'yes' : 'no',
@@ -789,9 +789,9 @@ class WDP_Admin_Product_Data_Tab {
 	 * @param array $values Values.
 	 * @return void
 	 */
-	private static function render_sadaka_section(array $values, $parent_product_id = 0) {
-		$default_wc_id = WDP_Utils::get_default_sadaka_wc_product_id();
-		$default_label = class_exists('WDP_Templates') ? WDP_Templates::get_default_sadaka_donation_message() : '';
+	private static function render_addon_section(array $values, $parent_product_id = 0) {
+		$default_wc_id = WDP_Utils::get_default_addon_wc_product_id();
+		$default_label = class_exists('WDP_Templates') ? WDP_Templates::get_default_addon_donation_message() : '';
 		$currency      = get_woocommerce_currency_symbol();
 
 		self::open_section('sadaka', __('Extra donation (sadaqah)', 'woo-donation-popup'), __('A second, smaller donation row added to the form', 'woo-donation-popup'));
@@ -800,22 +800,22 @@ class WDP_Admin_Product_Data_Tab {
 		echo '</div>';
 		self::checkbox('enable_sadaka_donation', $values['enable_sadaka_donation'], __('Add an extra donation', 'woo-donation-popup'), __('Lets the donor add a small extra donation on top of the main donation.', 'woo-donation-popup'));
 		self::text('sadaka_toggle_label', $values['sadaka_toggle_label'], _x('Button text', 'product data tab', 'woo-donation-popup'), __('Text of the button that opens the extra donation.', 'woo-donation-popup'), array('placeholder' => __('Add extra donation', 'woo-donation-popup'), 'custom_attributes' => array('maxlength' => '80')));
-		$sadaka_wc_value = ($values['sadaka_wc_product_id'] !== '' && $values['sadaka_wc_product_id'] !== '0')
+		$addon_wc_value = ($values['sadaka_wc_product_id'] !== '' && $values['sadaka_wc_product_id'] !== '0')
 			? absint($values['sadaka_wc_product_id'])
 			: 0;
-		$sadaka_field_error = '';
-		if ($sadaka_wc_value > 0 && class_exists('WDP_Sadaka_Product_Visibility')) {
-			$check = WDP_Sadaka_Product_Visibility::validate_sadaka_product_id($sadaka_wc_value, (int) $parent_product_id);
+		$addon_field_error = '';
+		if ($addon_wc_value > 0 && class_exists('WDP_Addon_Product_Visibility')) {
+			$check = \WDP_Addon_Product_Visibility::validate_addon_product_id($addon_wc_value, (int) $parent_product_id);
 			if (empty($check['ok'])) {
-				$sadaka_field_error = (string) $check['error'];
+				$addon_field_error = (string) $check['error'];
 			}
 		}
-		if (class_exists('WDP_Sadaka_Product_Visibility')) {
-			WDP_Sadaka_Product_Visibility::render_product_search_field(
+		if (class_exists('WDP_Addon_Product_Visibility')) {
+			\WDP_Addon_Product_Visibility::render_product_search_field(
 				array(
 					'id'          => self::id('sadaka_wc_product_id'),
 					'name'        => self::name('sadaka_wc_product_id'),
-					'value'       => $sadaka_wc_value,
+					'value'       => $addon_wc_value,
 					'label'       => __('Extra donation product', 'woo-donation-popup'),
 					'description' => $default_wc_id
 						? sprintf(
@@ -824,7 +824,7 @@ class WDP_Admin_Product_Data_Tab {
 							$default_wc_id
 						)
 						: __('WooCommerce product to add to the cart; if empty, the general default is used, and if that is also missing the row is not added.', 'woo-donation-popup'),
-					'error'       => $sadaka_field_error,
+					'error'       => $addon_field_error,
 				)
 			);
 		} else {

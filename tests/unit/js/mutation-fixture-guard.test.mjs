@@ -11,7 +11,7 @@ import {
 } from '../../e2e/helpers/fixtures.mjs';
 
 describe('mutasyon fixture iddiası', () => {
-  it('MUTATION_FIXTURE_ROLES hisseli/kampanya/sadaka/hedef/boş fiyat içerir', () => {
+  it('MUTATION_FIXTURE_ROLES hisseli/kampanya/addon/hedef/boş fiyat içerir', () => {
     for (const role of ['shares', 'campaign', 'sadaka', 'goal-reached', 'empty-price']) {
       assert.equal(MUTATION_FIXTURE_ROLES.includes(role), true, role);
     }

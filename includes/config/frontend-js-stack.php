@@ -92,12 +92,12 @@ return array(
 	),
 	array(
 		'handle' => 'wdp-form-sadaka-rules-js',
-		'file'   => 'src/form/sadaka-rules.js',
+		'file'   => 'src/form/addon-rules.js',
 		'deps'   => array('wdp-utils-js'),
 	),
 	array(
 		'handle' => 'wdp-form-sadaka-js',
-		'file'   => 'src/form/sadaka.js',
+		'file'   => 'src/form/addon.js',
 		'deps'   => array('wdp-utils-js', 'wdp-form-messages-js', 'wdp-form-pricing-js', 'wdp-form-feedback-js', 'wdp-form-sadaka-rules-js'),
 	),
 	array(

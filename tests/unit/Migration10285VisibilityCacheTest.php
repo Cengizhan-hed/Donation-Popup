@@ -16,9 +16,9 @@ final class Migration10285VisibilityCacheTest extends TestCase {
 
 	public function test_step_clears_transient_and_bumps_list_cache(): void {
 		WDP_Test_State::$options['wdp_list_cache_version'] = 7;
-		WDP_Test_State::$transients[ WDP_Sadaka_Product_Visibility::TRANSIENT ] = array(10691);
+		WDP_Test_State::$transients[ WDP_Addon_Product_Visibility::TRANSIENT ] = array(10691);
 		// Geçerli denetim satırı korunmalı (yeniden silinmez).
-		WDP_Test_State::$options[ WDP_Sadaka_Product_Visibility::AUDIT_OPTION ] = array(
+		WDP_Test_State::$options[ WDP_Addon_Product_Visibility::AUDIT_OPTION ] = array(
 			'rows' => array(
 				array('status' => 'valid', 'parent_id' => 10, 'sadaka_id' => 20),
 			),
@@ -28,8 +28,8 @@ final class Migration10285VisibilityCacheTest extends TestCase {
 
 		$this->assertStringContainsString('list_cache:7→8', $summary);
 		$this->assertStringContainsString('bumped:yes', $summary);
-		$this->assertArrayNotHasKey(WDP_Sadaka_Product_Visibility::TRANSIENT, WDP_Test_State::$transients);
-		$audit = WDP_Test_State::$options[ WDP_Sadaka_Product_Visibility::AUDIT_OPTION ];
+		$this->assertArrayNotHasKey(WDP_Addon_Product_Visibility::TRANSIENT, WDP_Test_State::$transients);
+		$audit = WDP_Test_State::$options[ WDP_Addon_Product_Visibility::AUDIT_OPTION ];
 		$this->assertSame('valid', $audit['rows'][0]['status']);
 		$this->assertSame(20, (int) $audit['rows'][0]['sadaka_id']);
 

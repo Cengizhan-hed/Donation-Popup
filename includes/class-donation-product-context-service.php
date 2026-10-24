@@ -1,6 +1,6 @@
 <?php
 /**
- * WC ürününden normalize edilmiş form bağlamı (fiyat, hisse, sadaka) üretir.
+ * WC ürününden normalize edilmiş form bağlamı (fiyat, hisse, addon) üretir.
  *
  * @package WooCommerce\Donation_Popup
  */
@@ -74,18 +74,18 @@ class WDP_Donation_Product_Context_Service {
 			$total_donation = WDP_Utils::get_total_donation_amount($product_id);
 		}
 
-		$sadaka_min_price = (string) $product->get_meta('_sadaka_min_price');
-		if ($sadaka_min_price === '') {
-			$sadaka_min_price = '0';
+		$addon_min_price = (string) WDP_Addon_Product_Visibility::get_meta($product, '_addon_min_price');
+		if ($addon_min_price === '') {
+			$addon_min_price = '0';
 		}
 
-		$sadaka_fixed_price = (string) $product->get_meta('_sadaka_fixed_price');
-		$sadaka_fixed_float = ($sadaka_fixed_price !== '') ? (float) wc_format_decimal($sadaka_fixed_price) : 0.0;
-		$sadaka_is_fixed_price = $sadaka_fixed_float > 0;
-		$sadaka_wc_product_id = class_exists('WDP_Utils')
-			? (string) WDP_Utils::get_configured_sadaka_wc_product_id($product)
-			: (string) absint($product->get_meta('_sadaka_wc_product_id'));
-		$sadaka_toggle_label = class_exists('WDP_Utils') ? WDP_Utils::get_sadaka_toggle_label($product) : __('Add add-on donation', 'woo-donation-popup');
+		$addon_fixed_price = (string) WDP_Addon_Product_Visibility::get_meta($product, '_addon_fixed_price');
+		$addon_fixed_float = ($addon_fixed_price !== '') ? (float) wc_format_decimal($addon_fixed_price) : 0.0;
+		$addon_is_fixed_price = $addon_fixed_float > 0;
+		$addon_wc_product_id = class_exists('WDP_Utils')
+			? (string) WDP_Utils::get_configured_addon_wc_product_id($product)
+			: (string) absint(WDP_Addon_Product_Visibility::get_meta($product, '_addon_wc_product_id'));
+		$addon_toggle_label = class_exists('WDP_Utils') ? WDP_Utils::get_addon_toggle_label($product) : __('Add add-on donation', 'woo-donation-popup');
 
 		$context = array(
 			'product_id'                    => $product_id,
@@ -102,21 +102,21 @@ class WDP_Donation_Product_Context_Service {
 			'total_donation'                => $total_donation,
 			'enable_product_note'           => $product->get_meta('_enable_product_note') === 'yes',
 			'product_note_text'             => trim((string) $product->get_meta('_product_note_text')),
-			'enable_sadaka_donation'        => $product->get_meta('_enable_sadaka_donation') === 'yes',
-			'sadaka_donation_message'       => trim((string) $product->get_meta('_sadaka_donation_message')),
-			'sadaka_min_price'              => $sadaka_min_price,
-			'sadaka_fixed_price'            => $sadaka_is_fixed_price ? wc_format_decimal($sadaka_fixed_float) : '',
-			'sadaka_is_fixed_price'         => $sadaka_is_fixed_price,
-			'sadaka_wc_product_id'          => $sadaka_wc_product_id,
-			'sadaka_toggle_label'           => $sadaka_toggle_label,
+			'enable_sadaka_donation'        => WDP_Addon_Product_Visibility::get_meta($product, '_enable_addon_donation') === 'yes',
+			'sadaka_donation_message'       => trim((string) WDP_Addon_Product_Visibility::get_meta($product, '_addon_donation_message')),
+			'sadaka_min_price'              => $addon_min_price,
+			'sadaka_fixed_price'            => $addon_is_fixed_price ? wc_format_decimal($addon_fixed_float) : '',
+			'sadaka_is_fixed_price'         => $addon_is_fixed_price,
+			'sadaka_wc_product_id'          => $addon_wc_product_id,
+			'sadaka_toggle_label'           => $addon_toggle_label,
 			'currency_symbol'               => WDP_Utils::get_display_currency_symbol(),
 			'custom_price_placeholder'      => ((float) ($enable_progress_bar ? $progress_min_price : $min_price) > 0)
 				? WDP_Utils::format_min_placeholder($enable_progress_bar ? $progress_min_price : $min_price)
 				: '',
-			'sadaka_price_placeholder'      => $sadaka_is_fixed_price
+			'sadaka_price_placeholder'      => $addon_is_fixed_price
 				? ''
-				: (((float) $sadaka_min_price > 0)
-					? WDP_Utils::format_min_placeholder($sadaka_min_price)
+				: (((float) $addon_min_price > 0)
+					? WDP_Utils::format_min_placeholder($addon_min_price)
 					: __('Add-on amount', 'woo-donation-popup')),
 			'enable_trust_strip'            => self::meta_flag_default_yes($product, '_enable_trust_strip'),
 			'enable_quantity'               => self::meta_flag_default_yes($product, '_enable_quantity'),

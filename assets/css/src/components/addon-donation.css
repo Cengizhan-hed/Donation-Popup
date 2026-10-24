@@ -1,6 +1,6 @@
 /**
- * @file sadaka-donation.css
- * Sadaka bağışı alt satırı, ek ürün seçimi ve fiyat gösterimi.
+ * @file addon-donation.css
+ * Addon bağışı alt satırı, ek ürün seçimi ve fiyat gösterimi.
  */
 
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-sadaka-donation {
@@ -79,7 +79,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-sadaka-donation__amount--fixe
 }
 
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-sadaka-donation__amount--fixed .wdp-custom-price-currency,
-html body :is(.wdp-modal, .wdp-donation-form) .wdp-sadaka-donation__amount--fixed .wdp-sadaka-custom-price-input[readonly] {
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-sadaka-donation__amount--fixed .wdp-addon-custom-price-input[readonly] {
   color: var(--wdp-price-surface-color, #ffffff);
   -webkit-text-fill-color: var(--wdp-price-surface-color, #ffffff);
   font-weight: var(--wdp-font-bold, 700);
@@ -96,7 +96,7 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-sadaka-donation__amount--fixe
 
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-sadaka-donation__amount--fixed .wdp-custom-price-shell :is(
   .wdp-custom-price-input,
-  .wdp-sadaka-custom-price-input
+  .wdp-addon-custom-price-input
 ):is(:focus, :focus-visible) {
   color: var(--wdp-price-surface-color, #ffffff);
   -webkit-text-fill-color: var(--wdp-price-surface-color, #ffffff);

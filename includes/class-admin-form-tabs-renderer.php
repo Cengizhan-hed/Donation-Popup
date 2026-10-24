@@ -251,9 +251,9 @@ class WDP_Admin_Form_Tabs_Renderer {
 		);
 		echo '<table class="form-table wdp-admin-field-cards">';
 		echo '<tr><th scope="row"><label for="sadaka_wc_product_id">' . esc_html__('Default add-on donation product', 'woo-donation-popup') . '</label></th><td>';
-		$sadaka_default_id = absint($settings['sadaka_wc_product_id']);
-		if (class_exists('WDP_Sadaka_Product_Visibility')) {
-			$opts = WDP_Sadaka_Product_Visibility::product_search_options($sadaka_default_id);
+		$addon_default_id = absint($settings['sadaka_wc_product_id']);
+		if (class_exists('WDP_Addon_Product_Visibility')) {
+			$opts = \WDP_Addon_Product_Visibility::product_search_options($addon_default_id);
 			echo '<select class="wc-product-search" style="width:100%;max-width:400px;" id="sadaka_wc_product_id" name="sadaka_wc_product_id"';
 			echo ' data-placeholder="' . esc_attr__('Search by product name…', 'woo-donation-popup') . '"';
 			echo ' data-action="woocommerce_json_search_products_and_variations" data-allow_clear="true">';

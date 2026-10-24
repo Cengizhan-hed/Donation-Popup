@@ -73,7 +73,7 @@ html body .hdf-donation-modal-wrapper:is(.wdp-modal, .wdp-donation-form) :is(.wd
   text-wrap: pretty;
 }
 
-/* Ghost / sadaka toggle */
+/* Ghost / addon toggle */
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-button-group .wdp-btn-ghost,
 html body :is(.hdf-donation-modal-wrapper, .wdp-modal, .wdp-donation-form) .wdp-sadaka-donation__toggle {
   background: var(--wdp-ghost-btn-bg, #ffffff);

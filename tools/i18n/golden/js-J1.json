@@ -8,7 +8,7 @@
       "ctx": ""
     },
     {
-      "file": "assets/js/src/form/sadaka.js",
+      "file": "assets/js/src/form/addon.js",
       "tr": "Geçerli bir alt bağış tutarı giriniz.",
       "en": "Please enter a valid additional donation amount.",
       "ctx": ""
@@ -26,7 +26,7 @@
       "ctx": ""
     },
     {
-      "file": "assets/js/src/form/sadaka.js",
+      "file": "assets/js/src/form/addon.js",
       "tr": "En az %s bağış giriniz.",
       "en": "Please enter at least %s.",
       "ctx": ""

@@ -30,11 +30,11 @@ html body .hdf-donation-modal-wrapper :is(.wdp-modal, .wdp-donation-form) .wdp-w
   pointer-events: none;
 }
 
-/* Woo cart/checkout sadaka line amount */
-html body.woocommerce-cart .cart tr.wdp-cart-line--sadaka .product-total,
-html body.woocommerce-cart .cart tr.wdp-cart-line--sadaka .amount,
-html body.woocommerce-checkout .shop_table tr.wdp-cart-line--sadaka .product-total,
-html body.woocommerce-checkout .shop_table tr.wdp-cart-line--sadaka .amount {
+/* Woo cart/checkout addon line amount */
+html body.woocommerce-cart .cart tr.wdp-cart-line--addon .product-total,
+html body.woocommerce-cart .cart tr.wdp-cart-line--addon .amount,
+html body.woocommerce-checkout .shop_table tr.wdp-cart-line--addon .product-total,
+html body.woocommerce-checkout .shop_table tr.wdp-cart-line--addon .amount {
   color: #156538;
   font-weight: 700;
 }

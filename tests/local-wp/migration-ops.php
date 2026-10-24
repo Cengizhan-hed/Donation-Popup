@@ -115,10 +115,10 @@ function wdp_mig_seed($variant = '') {
 		update_post_meta($id, '_wdp_donation_product', 'yes');
 		update_post_meta($id, '_enable_progress_bar', 'yes');
 		update_post_meta($id, '_enable_product_note', 'yes');
-		update_post_meta($id, '_enable_sadaka_donation', 'no');
-		update_post_meta($id, '_sadaka_min_price', '5');
-		update_post_meta($id, '_sadaka_fixed_price', '10');
-		update_post_meta($id, '_sadaka_donation_message', 'MIG-SADAKA');
+		update_post_meta($id, '_enable_addon_donation', 'no');
+		update_post_meta($id, '_addon_min_price', '5');
+		update_post_meta($id, '_addon_fixed_price', '10');
+		update_post_meta($id, '_addon_donation_message', 'MIG-ADDON');
 	}
 
 	return array(

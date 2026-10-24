@@ -94,7 +94,7 @@ html body .hdf-donation-modal-wrapper:is(.wdp-modal, .wdp-donation-form) .wdp-pr
   box-shadow: none;
 }
 
-/* Sadaka mesajı — aynı kompakt dil */
+/* Addon mesajı — aynı kompakt dil */
 html body .hdf-donation-modal-wrapper:is(.wdp-modal, .wdp-donation-form) .wdp-sadaka-donation__message {
   display: inline-block;
   width: auto;

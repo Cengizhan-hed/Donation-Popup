@@ -1,5 +1,5 @@
 /**
- * Sadaka doğrulama kuralları (assets/js/src/form/sadaka-rules.js).
+ * Addon doğrulama kuralları (assets/js/src/form/addon-rules.js).
  */
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -9,14 +9,14 @@ import vm from 'node:vm';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const rulesPath = path.resolve(__dirname, '../../../assets/js/src/form/sadaka-rules.js');
+const rulesPath = path.resolve(__dirname, '../../../assets/js/src/form/addon-rules.js');
 
 function loadRules() {
   const code = fs.readFileSync(rulesPath, 'utf8');
   const sandbox = { window: {}, console };
   sandbox.window.WDPApp = {};
   vm.runInNewContext(code, sandbox);
-  return sandbox.window.WDPApp.sadakaRules;
+  return sandbox.window.WDPApp.addonRules;
 }
 
 const rules = loadRules();

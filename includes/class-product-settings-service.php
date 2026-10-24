@@ -159,7 +159,7 @@ class WDP_Product_Settings_Service {
 
 		$request['trust_badges'] = self::rows_from_panel(isset($request['trust_badges']) ? $request['trust_badges'] : array(), array('icon', 'text'));
 
-		$custom_order = isset($request['module_order_custom']) && self::parse_bool_flag($request['module_order_custom']);
+		$custom_order            = isset($request['module_order_custom']) && self::parse_bool_flag($request['module_order_custom']);
 		$request['module_order'] = ($custom_order && isset($request['module_order']) && is_array($request['module_order']))
 			? array_values(array_map('strval', array_filter(wp_unslash($request['module_order']), 'is_scalar')))
 			: '';
@@ -170,7 +170,7 @@ class WDP_Product_Settings_Service {
 		$request['__existing_amount_presets'] = isset($existing_meta['_amount_presets'])
 			? (is_scalar($existing_meta['_amount_presets']) ? (string) $existing_meta['_amount_presets'] : '')
 			: '';
-		$normalized = self::from_request($request);
+		$normalized                           = self::from_request($request);
 		foreach (self::$rejected_meta as $meta_key) {
 			// Rejected input never overwrites stored data (Y3/Y4/Y2).
 			if (array_key_exists($meta_key, $existing_meta)) {
@@ -178,36 +178,36 @@ class WDP_Product_Settings_Service {
 			}
 		}
 		self::$rejected_meta = array();
-		return self::validate_sadaka_wc_product_meta($normalized, (int) $parent_product_id);
+		return self::validate_addon_wc_product_meta($normalized, (int) $parent_product_id);
 	}
 
 	/**
-	 * Clear invalid _sadaka_wc_product_id and record an admin correction notice.
+	 * Clear invalid _addon_wc_product_id and record an admin correction notice.
 	 *
 	 * @param array $normalized Meta map.
 	 * @param int   $parent_id  Parent product ID.
 	 * @return array
 	 */
-	public static function validate_sadaka_wc_product_meta(array $normalized, $parent_id = 0) {
-		$raw = isset($normalized['_sadaka_wc_product_id']) ? absint($normalized['_sadaka_wc_product_id']) : 0;
+	public static function validate_addon_wc_product_meta(array $normalized, $parent_id = 0) {
+		$raw = isset($normalized['_addon_wc_product_id']) ? absint($normalized['_addon_wc_product_id']) : 0;
 		if ($raw <= 0) {
-			$normalized['_sadaka_wc_product_id'] = '';
+			$normalized['_addon_wc_product_id'] = '';
 			return $normalized;
 		}
 
-		$result = class_exists('WDP_Sadaka_Product_Visibility')
-			? WDP_Sadaka_Product_Visibility::validate_sadaka_product_id($raw, (int) $parent_id)
+		$result = class_exists('WDP_Addon_Product_Visibility')
+			? \WDP_Addon_Product_Visibility::validate_addon_product_id($raw, (int) $parent_id)
 			: array('ok' => true, 'id' => $raw, 'error' => '');
 
 		if (empty($result['ok'])) {
-			$normalized['_sadaka_wc_product_id'] = '';
+			$normalized['_addon_wc_product_id'] = '';
 			if (!empty($result['error'])) {
 				self::$corrections[] = $result['error'];
 			}
 			return $normalized;
 		}
 
-		$normalized['_sadaka_wc_product_id'] = (int) $result['id'];
+		$normalized['_addon_wc_product_id'] = (int) $result['id'];
 		return $normalized;
 	}
 
@@ -250,31 +250,31 @@ class WDP_Product_Settings_Service {
 		self::$rejected_meta = array();
 		self::$corrections   = array();
 
-		$allow_custom_price     = self::parse_bool_flag(isset($request['allow_custom_price']) ? $request['allow_custom_price'] : false);
-		$allow_multiple_shares  = self::parse_bool_flag(isset($request['allow_multiple_shares']) ? $request['allow_multiple_shares'] : false);
-		$enable_progress_bar    = self::parse_bool_flag(isset($request['enable_progress_bar']) ? $request['enable_progress_bar'] : false);
-		$donation_type          = isset($request['donation_type']) ? WDP_Donation_Type::sanitize(wp_unslash($request['donation_type']), '') : '';
+		$allow_custom_price    = self::parse_bool_flag(isset($request['allow_custom_price']) ? $request['allow_custom_price'] : false);
+		$allow_multiple_shares = self::parse_bool_flag(isset($request['allow_multiple_shares']) ? $request['allow_multiple_shares'] : false);
+		$enable_progress_bar   = self::parse_bool_flag(isset($request['enable_progress_bar']) ? $request['enable_progress_bar'] : false);
+		$donation_type         = isset($request['donation_type']) ? WDP_Donation_Type::sanitize(wp_unslash($request['donation_type']), '') : '';
 		if ($donation_type !== '') {
 			$type_flags            = WDP_Donation_Type::to_flags($donation_type);
 			$allow_custom_price    = $type_flags['allow_custom_price'];
 			$allow_multiple_shares = $type_flags['allow_multiple_shares'];
 			$enable_progress_bar   = $type_flags['enable_progress_bar'];
 		}
-		$enable_product_note    = self::parse_bool_flag(isset($request['enable_product_note']) ? $request['enable_product_note'] : false);
-		$enable_sadaka_donation = self::parse_bool_flag(isset($request['enable_sadaka_donation']) ? $request['enable_sadaka_donation'] : false);
-		$enable_trust_strip     = self::parse_bool_flag(isset($request['enable_trust_strip']) ? $request['enable_trust_strip'] : true);
-		$enable_quantity        = self::parse_bool_flag(isset($request['enable_quantity']) ? $request['enable_quantity'] : true);
-		$enable_amount_presets  = self::parse_bool_flag(isset($request['enable_amount_presets']) ? $request['enable_amount_presets'] : true);
-		$enable_wizard          = self::parse_tristate_flag(isset($request['enable_wizard']) ? $request['enable_wizard'] : null);
-		$enable_field_icons     = self::parse_tristate_flag(isset($request['enable_field_icons']) ? $request['enable_field_icons'] : null);
-		$enable_impact_line     = self::parse_bool_flag(isset($request['enable_impact_line']) ? $request['enable_impact_line'] : true);
-		$progress_celebrate     = self::parse_bool_flag(isset($request['progress_celebrate']) ? $request['progress_celebrate'] : true);
-		$enable_email           = self::parse_tristate_flag(isset($request['enable_email']) ? $request['enable_email'] : null);
-		$enable_dedication      = self::parse_tristate_flag(isset($request['enable_dedication']) ? $request['enable_dedication'] : null);
-		$enable_anonymous       = self::parse_tristate_flag(isset($request['enable_anonymous']) ? $request['enable_anonymous'] : null);
-		$enable_urgency         = self::parse_bool_flag(isset($request['enable_urgency']) ? $request['enable_urgency'] : false);
-		$enable_social_proof    = self::parse_bool_flag(isset($request['enable_social_proof']) ? $request['enable_social_proof'] : false);
-		$enable_cover_fee       = self::parse_bool_flag(isset($request['enable_cover_fee']) ? $request['enable_cover_fee'] : false);
+		$enable_product_note   = self::parse_bool_flag(isset($request['enable_product_note']) ? $request['enable_product_note'] : false);
+		$enable_addon_donation = self::parse_bool_flag(isset($request['enable_sadaka_donation']) ? $request['enable_sadaka_donation'] : false);
+		$enable_trust_strip    = self::parse_bool_flag(isset($request['enable_trust_strip']) ? $request['enable_trust_strip'] : true);
+		$enable_quantity       = self::parse_bool_flag(isset($request['enable_quantity']) ? $request['enable_quantity'] : true);
+		$enable_amount_presets = self::parse_bool_flag(isset($request['enable_amount_presets']) ? $request['enable_amount_presets'] : true);
+		$enable_wizard         = self::parse_tristate_flag(isset($request['enable_wizard']) ? $request['enable_wizard'] : null);
+		$enable_field_icons    = self::parse_tristate_flag(isset($request['enable_field_icons']) ? $request['enable_field_icons'] : null);
+		$enable_impact_line    = self::parse_bool_flag(isset($request['enable_impact_line']) ? $request['enable_impact_line'] : true);
+		$progress_celebrate    = self::parse_bool_flag(isset($request['progress_celebrate']) ? $request['progress_celebrate'] : true);
+		$enable_email          = self::parse_tristate_flag(isset($request['enable_email']) ? $request['enable_email'] : null);
+		$enable_dedication     = self::parse_tristate_flag(isset($request['enable_dedication']) ? $request['enable_dedication'] : null);
+		$enable_anonymous      = self::parse_tristate_flag(isset($request['enable_anonymous']) ? $request['enable_anonymous'] : null);
+		$enable_urgency        = self::parse_bool_flag(isset($request['enable_urgency']) ? $request['enable_urgency'] : false);
+		$enable_social_proof   = self::parse_bool_flag(isset($request['enable_social_proof']) ? $request['enable_social_proof'] : false);
+		$enable_cover_fee      = self::parse_bool_flag(isset($request['enable_cover_fee']) ? $request['enable_cover_fee'] : false);
 		$enable_campaign_media = self::parse_bool_flag(isset($request['enable_campaign_media']) ? $request['enable_campaign_media'] : false);
 
 		// Mutual exclusivity (server-side): progress ⇔ custom amount, shares exclusive.
@@ -326,14 +326,14 @@ class WDP_Product_Settings_Service {
 			if (!empty($from_product)) {
 				$allowed_for_recommended = array_map('intval', $from_product);
 			} else {
-				$button     = get_option('wdp_button_settings', array());
-				$global_raw = (is_array($button) && isset($button['amount_presets'])) ? (string) $button['amount_presets'] : '';
+				$button                  = get_option('wdp_button_settings', array());
+				$global_raw              = (is_array($button) && isset($button['amount_presets'])) ? (string) $button['amount_presets'] : '';
 				$allowed_for_recommended = array_map('intval', WDP_Form_Modules::parse_amount_presets_csv($global_raw));
 			}
 		}
 
-		$recommended     = '';
-		$recommended_raw = isset($request['amount_preset_recommended']) && is_scalar($request['amount_preset_recommended'])
+		$recommended       = '';
+		$recommended_raw   = isset($request['amount_preset_recommended']) && is_scalar($request['amount_preset_recommended'])
 			? trim((string) wp_unslash($request['amount_preset_recommended']))
 			: '';
 		$recommended_check = WDP_Form_Modules::validate_recommended_amount_for_save($recommended_raw, $allowed_for_recommended);
@@ -346,8 +346,8 @@ class WDP_Product_Settings_Service {
 			);
 		}
 
-		$cover_fee_raw   = isset($request['cover_fee_percent']) && is_scalar($request['cover_fee_percent']) ? (string) wp_unslash((string) $request['cover_fee_percent']) : '';
-		$cover_fee_check = WDP_Form_Modules::normalize_cover_fee_percent_for_save($cover_fee_raw);
+		$cover_fee_raw     = isset($request['cover_fee_percent']) && is_scalar($request['cover_fee_percent']) ? (string) wp_unslash((string) $request['cover_fee_percent']) : '';
+		$cover_fee_check   = WDP_Form_Modules::normalize_cover_fee_percent_for_save($cover_fee_raw);
 		$cover_fee_percent = 0.0;
 		if (!empty($cover_fee_check['ok'])) {
 			$cover_fee_percent = (float) $cover_fee_check['percent'];
@@ -382,7 +382,7 @@ class WDP_Product_Settings_Service {
 			$theme_radius = $radius_out > 0 ? (string) $radius_out : '';
 		}
 
-		$theme_primary = self::parse_theme_hex_field(
+		$theme_primary       = self::parse_theme_hex_field(
 			isset($request['theme_primary']) ? $request['theme_primary'] : null,
 			'_theme_primary',
 			__('Primary color', 'woo-donation-popup')
@@ -392,7 +392,7 @@ class WDP_Product_Settings_Service {
 			'_theme_primary_hover',
 			__('Primary color (hover)', 'woo-donation-popup')
 		);
-		$theme_modal_bg = self::parse_theme_hex_field(
+		$theme_modal_bg      = self::parse_theme_hex_field(
 			isset($request['theme_modal_bg']) ? $request['theme_modal_bg'] : null,
 			'_theme_modal_bg',
 			__('Background color', 'woo-donation-popup')
@@ -423,7 +423,7 @@ class WDP_Product_Settings_Service {
 			}
 		}
 
-		$min_raw = isset($request['min_custom_price']) && is_scalar($request['min_custom_price'])
+		$min_raw          = isset($request['min_custom_price']) && is_scalar($request['min_custom_price'])
 			? (string) wp_unslash($request['min_custom_price'])
 			: '0';
 		$min_parsed       = self::parse_money_input($min_raw === '' ? '0' : $min_raw);
@@ -457,13 +457,13 @@ class WDP_Product_Settings_Service {
 			}
 		}
 
-		$goal_action = class_exists('WDP_Campaign_Goal')
+		$goal_action      = class_exists('WDP_Campaign_Goal')
 			? WDP_Campaign_Goal::sanitize_action(isset($request['goal_reached_action']) ? $request['goal_reached_action'] : '')
 			: 'message';
 		$goal_message_raw = isset($request['goal_reached_message']) && is_scalar($request['goal_reached_message'])
 			? (string) wp_unslash($request['goal_reached_message'])
 			: '';
-		$goal_message = class_exists('WDP_Campaign_Goal')
+		$goal_message     = class_exists('WDP_Campaign_Goal')
 			? WDP_Campaign_Goal::sanitize_message($goal_message_raw)
 			: sanitize_text_field($goal_message_raw);
 
@@ -483,53 +483,53 @@ class WDP_Product_Settings_Service {
 			: '';
 
 		return array(
-			'_allow_custom_price'             => $allow_custom_price ? 'yes' : 'no',
-			'_min_custom_price'               => $min_custom_price > 0 ? wc_format_decimal($min_custom_price) : '0',
-			'_allow_multiple_shares'          => $allow_multiple_shares ? 'yes' : 'no',
-			'_max_shares'                     => $max_shares,
-			'_enable_progress_bar'            => $enable_progress_bar ? 'yes' : 'no',
-			'_progress_bar_limit'             => $goal > 0 ? wc_format_decimal($goal) : '',
-			'_enable_product_note'            => $enable_product_note ? 'yes' : 'no',
-			'_product_note_text'              => isset($request['product_note_text']) ? self::limit_text(sanitize_textarea_field(wp_unslash($request['product_note_text'])), 400) : '',
-			'_enable_sadaka_donation'         => $enable_sadaka_donation ? 'yes' : 'no',
-			'_sadaka_min_price'               => isset($request['sadaka_min_price']) ? wc_format_decimal(wp_unslash($request['sadaka_min_price'])) : '',
-			'_sadaka_fixed_price'             => isset($request['sadaka_fixed_price']) ? wc_format_decimal(wp_unslash($request['sadaka_fixed_price'])) : '',
-			'_sadaka_donation_message'        => isset($request['sadaka_donation_message']) ? self::limit_text(sanitize_textarea_field(wp_unslash($request['sadaka_donation_message'])), 500) : '',
-			'_sadaka_toggle_label'            => isset($request['sadaka_toggle_label']) ? self::limit_text(sanitize_text_field(wp_unslash($request['sadaka_toggle_label'])), 80) : '',
-			'_sadaka_wc_product_id'           => isset($request['sadaka_wc_product_id']) ? absint(wp_unslash($request['sadaka_wc_product_id'])) : '',
-			'_enable_trust_strip'             => $enable_trust_strip ? 'yes' : 'no',
-			'_enable_quantity'                => $enable_quantity ? 'yes' : 'no',
-			'_enable_amount_presets'          => $enable_amount_presets ? 'yes' : 'no',
-			'_enable_wizard'                  => $enable_wizard,
-			'_enable_field_icons'             => $enable_field_icons,
-			'_enable_impact_line'             => $enable_impact_line ? 'yes' : 'no',
-			'_progress_celebrate'             => $progress_celebrate ? 'yes' : 'no',
-			'_impact_line_text'               => isset($request['impact_line_text']) ? self::limit_text(sanitize_text_field(wp_unslash($request['impact_line_text'])), 200) : '',
-			'_amount_presets'                 => $amount_presets,
-			'_amount_preset_recommended'      => $recommended,
-			'_enable_email'                   => $enable_email,
-			'_enable_dedication'              => $enable_dedication,
-			'_enable_anonymous'               => $enable_anonymous,
-			'_dedication_placeholder'         => isset($request['dedication_placeholder']) ? self::limit_text(sanitize_text_field(wp_unslash($request['dedication_placeholder'])), 120) : '',
-			'_trust_badges'                   => !empty($trust_badges) ? wp_json_encode($trust_badges, self::JSON_FLAGS) : '',
-			'_theme_primary'                  => $theme_primary,
-			'_theme_primary_hover'            => $theme_primary_hover,
-			'_theme_radius'                   => $theme_radius,
-			'_theme_modal_bg'                 => $theme_modal_bg,
-			'_layout_mode'                    => $layout_mode,
-			'_enable_campaign_media'          => $enable_campaign_media ? 'yes' : 'no',
-			'_enable_urgency'                 => $enable_urgency ? 'yes' : 'no',
-			'_urgency_text'                   => isset($request['urgency_text']) ? self::limit_text(sanitize_text_field(wp_unslash($request['urgency_text'])), 200) : '',
-			'_urgency_ends_at'                => $urgency_ends_at,
-			'_enable_social_proof'            => $enable_social_proof ? 'yes' : 'no',
-			'_social_proof_text'              => $social_proof_text,
-			'_enable_cover_fee'               => $enable_cover_fee ? 'yes' : 'no',
-			'_cover_fee_percent'              => $cover_fee_percent > 0 ? (string) $cover_fee_percent : '',
-			'_goal_reached_action'            => $goal_action,
-			'_goal_reached_message'           => $goal_message,
-			'_wdp_module_order'               => !empty($order_list) ? implode(',', $order_list) : '',
-			'_wdp_donation_product'           => self::parse_tristate_flag(isset($request['donation_product']) ? $request['donation_product'] : null),
-			'_wdp_auto_place'                 => (isset($request['auto_place']) && is_scalar($request['auto_place']) && strtolower(trim((string) $request['auto_place'])) === 'no') ? 'no' : '',
+			'_allow_custom_price'        => $allow_custom_price ? 'yes' : 'no',
+			'_min_custom_price'          => $min_custom_price > 0 ? wc_format_decimal($min_custom_price) : '0',
+			'_allow_multiple_shares'     => $allow_multiple_shares ? 'yes' : 'no',
+			'_max_shares'                => $max_shares,
+			'_enable_progress_bar'       => $enable_progress_bar ? 'yes' : 'no',
+			'_progress_bar_limit'        => $goal > 0 ? wc_format_decimal($goal) : '',
+			'_enable_product_note'       => $enable_product_note ? 'yes' : 'no',
+			'_product_note_text'         => isset($request['product_note_text']) ? self::limit_text(sanitize_textarea_field(wp_unslash($request['product_note_text'])), 400) : '',
+			'_enable_addon_donation'     => $enable_addon_donation ? 'yes' : 'no',
+			'_addon_min_price'           => isset($request['sadaka_min_price']) ? wc_format_decimal(wp_unslash($request['sadaka_min_price'])) : '',
+			'_addon_fixed_price'         => isset($request['sadaka_fixed_price']) ? wc_format_decimal(wp_unslash($request['sadaka_fixed_price'])) : '',
+			'_addon_donation_message'    => isset($request['sadaka_donation_message']) ? self::limit_text(sanitize_textarea_field(wp_unslash($request['sadaka_donation_message'])), 500) : '',
+			'_addon_toggle_label'        => isset($request['sadaka_toggle_label']) ? self::limit_text(sanitize_text_field(wp_unslash($request['sadaka_toggle_label'])), 80) : '',
+			'_addon_wc_product_id'       => isset($request['sadaka_wc_product_id']) ? absint(wp_unslash($request['sadaka_wc_product_id'])) : '',
+			'_enable_trust_strip'        => $enable_trust_strip ? 'yes' : 'no',
+			'_enable_quantity'           => $enable_quantity ? 'yes' : 'no',
+			'_enable_amount_presets'     => $enable_amount_presets ? 'yes' : 'no',
+			'_enable_wizard'             => $enable_wizard,
+			'_enable_field_icons'        => $enable_field_icons,
+			'_enable_impact_line'        => $enable_impact_line ? 'yes' : 'no',
+			'_progress_celebrate'        => $progress_celebrate ? 'yes' : 'no',
+			'_impact_line_text'          => isset($request['impact_line_text']) ? self::limit_text(sanitize_text_field(wp_unslash($request['impact_line_text'])), 200) : '',
+			'_amount_presets'            => $amount_presets,
+			'_amount_preset_recommended' => $recommended,
+			'_enable_email'              => $enable_email,
+			'_enable_dedication'         => $enable_dedication,
+			'_enable_anonymous'          => $enable_anonymous,
+			'_dedication_placeholder'    => isset($request['dedication_placeholder']) ? self::limit_text(sanitize_text_field(wp_unslash($request['dedication_placeholder'])), 120) : '',
+			'_trust_badges'              => !empty($trust_badges) ? wp_json_encode($trust_badges, self::JSON_FLAGS) : '',
+			'_theme_primary'             => $theme_primary,
+			'_theme_primary_hover'       => $theme_primary_hover,
+			'_theme_radius'              => $theme_radius,
+			'_theme_modal_bg'            => $theme_modal_bg,
+			'_layout_mode'               => $layout_mode,
+			'_enable_campaign_media'     => $enable_campaign_media ? 'yes' : 'no',
+			'_enable_urgency'            => $enable_urgency ? 'yes' : 'no',
+			'_urgency_text'              => isset($request['urgency_text']) ? self::limit_text(sanitize_text_field(wp_unslash($request['urgency_text'])), 200) : '',
+			'_urgency_ends_at'           => $urgency_ends_at,
+			'_enable_social_proof'       => $enable_social_proof ? 'yes' : 'no',
+			'_social_proof_text'         => $social_proof_text,
+			'_enable_cover_fee'          => $enable_cover_fee ? 'yes' : 'no',
+			'_cover_fee_percent'         => $cover_fee_percent > 0 ? (string) $cover_fee_percent : '',
+			'_goal_reached_action'       => $goal_action,
+			'_goal_reached_message'      => $goal_message,
+			'_wdp_module_order'          => !empty($order_list) ? implode(',', $order_list) : '',
+			'_wdp_donation_product'      => self::parse_tristate_flag(isset($request['donation_product']) ? $request['donation_product'] : null),
+			'_wdp_auto_place'            => (isset($request['auto_place']) && is_scalar($request['auto_place']) && strtolower(trim((string) $request['auto_place'])) === 'no') ? 'no' : '',
 		);
 	}
 
@@ -586,9 +586,9 @@ class WDP_Product_Settings_Service {
 				'error' => __('The end date must be in Y-m-d format (e.g. 2026-12-31).', 'woo-donation-popup'),
 			);
 		}
-		$dt = \DateTimeImmutable::createFromFormat('Y-m-d', $raw);
+		$dt     = \DateTimeImmutable::createFromFormat('Y-m-d', $raw);
 		$errors = \DateTimeImmutable::getLastErrors();
-		$bad = !$dt || (is_array($errors) && (!empty($errors['warning_count']) || !empty($errors['error_count'])));
+		$bad    = !$dt || (is_array($errors) && (!empty($errors['warning_count']) || !empty($errors['error_count'])));
 		if ($bad || $dt->format('Y-m-d') !== $raw) {
 			return array(
 				'ok'    => false,
@@ -765,7 +765,7 @@ class WDP_Product_Settings_Service {
 			'allow_multiple_shares'  => (isset($normalized['_allow_multiple_shares']) && $normalized['_allow_multiple_shares'] === 'yes'),
 			'enable_progress_bar'    => (isset($normalized['_enable_progress_bar']) && $normalized['_enable_progress_bar'] === 'yes'),
 			'enable_product_note'    => (isset($normalized['_enable_product_note']) && $normalized['_enable_product_note'] === 'yes'),
-			'enable_sadaka_donation' => (isset($normalized['_enable_sadaka_donation']) && $normalized['_enable_sadaka_donation'] === 'yes'),
+			'enable_sadaka_donation' => (isset($normalized['_enable_addon_donation']) && $normalized['_enable_addon_donation'] === 'yes'),
 			'min_custom_price'       => isset($normalized['_min_custom_price']) ? $normalized['_min_custom_price'] : '',
 			'max_shares'             => isset($normalized['_max_shares']) ? $normalized['_max_shares'] : '',
 			'progress_bar_limit'     => isset($normalized['_progress_bar_limit']) ? $normalized['_progress_bar_limit'] : '',

@@ -382,7 +382,7 @@ trait WDP_Assets_Registry_Trait {
                 'max_shares_error' => __('Maximum number of shares: ', 'woo-donation-popup'),
                 'custom_price_placeholder_empty' => __('Donation amount *', 'woo-donation-popup'),
                 'custom_price_label' => __('Donation amount', 'woo-donation-popup'),
-                'sadaka_toggle_label' => class_exists('WDP_Utils') ? WDP_Utils::get_sadaka_toggle_label() : __('Add add-on donation', 'woo-donation-popup'),
+                'sadaka_toggle_label' => class_exists('WDP_Utils') ? WDP_Utils::get_addon_toggle_label() : __('Add add-on donation', 'woo-donation-popup'),
                 'sadaka_price_label' => __('Add-on donation amount', 'woo-donation-popup'),
                 'sadaka_invalid' => __('Please enter a valid add-on donation amount.', 'woo-donation-popup'),
                 'sadaka_min_error' => __('Minimum add-on donation amount: ', 'woo-donation-popup'),

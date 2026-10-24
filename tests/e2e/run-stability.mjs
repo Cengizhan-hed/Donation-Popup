@@ -6,7 +6,7 @@
  *   npm run e2e:stability
  *   npm run e2e:stability -- --max-runs 4
  *     → hata yakalanana kadar en fazla N tam çift koşu (her biri run1+run2);
- *       ilk alt bağış (sadaka-*) hatasında durur ve teşhis yollarını yazar.
+ *       ilk alt bağış (addon-*) hatasında durur ve teşhis yollarını yazar.
  *   npm run e2e:stability -- --no-side-cart
  *     → guest URL’lere hdf_no_side_cart=1 (yan sepet snippet kapalı)
  */
@@ -47,8 +47,8 @@ function parseFlags(argv) {
 /**
  * @param {Array<{check?:string}>} failures
  */
-function sadakaFailures(failures) {
-  return (failures || []).filter((f) => /^sadaka-/i.test(String(f.check || '')));
+function addonFailures(failures) {
+  return (failures || []).filter((f) => /^addon-/i.test(String(f.check || '')));
 }
 
 async function main() {
@@ -145,22 +145,22 @@ async function main() {
         }
       }
 
-      const sadakaFails = sadakaFailures(failures);
-      if (sadakaFails.length) {
+      const addonFails = addonFailures(failures);
+      if (addonFails.length) {
         stopReason = {
           round,
           label,
-          checks: sadakaFails.map((f) => f.check),
+          checks: addonFails.map((f) => f.check),
           debugFiles: [
             ...debugFiles,
-            ...sadakaFails.map((f) => f.debugFile).filter(Boolean),
+            ...addonFails.map((f) => f.debugFile).filter(Boolean),
           ],
         };
         console.error('');
         console.error(
           `Stability DURDU — alt bağış hatası yakalandı (tur ${round}, ${label})`
         );
-        for (const f of sadakaFails) {
+        for (const f of addonFails) {
           console.error(`  • [${f.check}] ${f.description || ''}`);
           if (f.debugFile) console.error(`    debug: ${f.debugFile}`);
         }

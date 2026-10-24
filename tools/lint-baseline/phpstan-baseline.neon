@@ -736,37 +736,37 @@ parameters:
 			message: '#^Call to function is_string\(\) with string will always evaluate to true\.$#'
 			identifier: function.alreadyNarrowedType
 			count: 1
-			path: ../../includes/class-sadaka-product-visibility.php
+			path: ../../includes/class-addon-product-visibility.php
 
 		-
 			message: '#^Call to function method_exists\(\) with ''WDP_Donations_List'' and ''bump_cache'' will always evaluate to true\.$#'
 			identifier: function.alreadyNarrowedType
 			count: 1
-			path: ../../includes/class-sadaka-product-visibility.php
+			path: ../../includes/class-addon-product-visibility.php
 
 		-
 			message: '#^Call to function method_exists\(\) with WC_Product and ''get_formatted_name'' will always evaluate to true\.$#'
 			identifier: function.alreadyNarrowedType
 			count: 1
-			path: ../../includes/class-sadaka-product-visibility.php
+			path: ../../includes/class-addon-product-visibility.php
 
 		-
 			message: '#^Call to function method_exists\(\) with WC_Product and ''get_name'' will always evaluate to true\.$#'
 			identifier: function.alreadyNarrowedType
 			count: 1
-			path: ../../includes/class-sadaka-product-visibility.php
+			path: ../../includes/class-addon-product-visibility.php
 
 		-
-			message: '#^Method WDP_Sadaka_Product_Visibility\:\:product_search_options\(\) should return array\<string, string\> but returns array\<int, string\>\.$#'
+			message: '#^Method WDP_Addon_Product_Visibility\:\:product_search_options\(\) should return array\<string, string\> but returns array\<int, string\>\.$#'
 			identifier: return.type
 			count: 1
-			path: ../../includes/class-sadaka-product-visibility.php
+			path: ../../includes/class-addon-product-visibility.php
 
 		-
 			message: '#^Parameter \#1 \$array \(list\<int\<1, max\>\>\) to function array_filter does not contain falsy values, the array will always stay the same\.$#'
 			identifier: arrayFilter.same
 			count: 1
-			path: ../../includes/class-sadaka-product-visibility.php
+			path: ../../includes/class-addon-product-visibility.php
 
 		-
 			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'

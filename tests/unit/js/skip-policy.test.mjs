@@ -150,7 +150,7 @@ describe('classifySkip', () => {
 describe('promoteIllegalSkips', () => {
   it('yapılandırılmamış / altyapı atlamasını failures listesine taşır', () => {
     const skips = [
-      { check: 'sadaka-fixed-popup', description: 'Atlandı — ürün düzenleme sayfası açılamadı (#13)' },
+      { check: 'addon-fixed-popup', description: 'Atlandı — ürün düzenleme sayfası açılamadı (#13)' },
       makeSkip({
         check: 'ok',
         reason: SKIP_REASONS.LOCAL_ONLY,

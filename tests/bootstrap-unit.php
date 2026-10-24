@@ -19,7 +19,7 @@ if (!defined('WDP_PLUGIN_FILE')) {
 	define('WDP_PLUGIN_FILE', $root . '/woo-donation-popup.php');
 }
 if (!defined('WDP_VERSION')) {
-	define('WDP_VERSION', '10.35.1');
+	define('WDP_VERSION', '10.35.2');
 }
 if (!defined('MINUTE_IN_SECONDS')) {
 	define('MINUTE_IN_SECONDS', 60);
@@ -34,7 +34,7 @@ if (!defined('WDP_PLUGIN_URL')) {
 	define('WDP_PLUGIN_URL', 'https://example.test/wp-content/plugins/woo-donation-popup/');
 }
 if (!defined('WDP_ASSET_VERSION')) {
-	define('WDP_ASSET_VERSION', '10.35.1');
+	define('WDP_ASSET_VERSION', '10.35.2');
 }
 if (!defined('WDP_UNIT_TEST')) {
 	define('WDP_UNIT_TEST', true);
@@ -174,8 +174,8 @@ final class WDP_Test_State {
 		if (class_exists('WDP_Donation_Scope')) {
 			WDP_Donation_Scope::flush();
 		}
-		if (class_exists('WDP_Sadaka_Product_Visibility')) {
-			WDP_Sadaka_Product_Visibility::flush();
+		if (class_exists('WDP_Addon_Product_Visibility')) {
+			WDP_Addon_Product_Visibility::flush();
 		}
 		if (class_exists('WDP_Placement_Settings')) {
 			WDP_Placement_Settings::flush();

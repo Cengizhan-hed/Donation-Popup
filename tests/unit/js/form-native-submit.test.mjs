@@ -120,7 +120,7 @@ function loadHarness(opts = {}) {
           registerHooks() {},
         },
         formPricing: {},
-        formSadaka: {},
+        formAddon: {},
         formMessages: {},
       },
     },

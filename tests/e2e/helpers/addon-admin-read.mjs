@@ -7,7 +7,7 @@ import { runEvalFile } from './wp-remote.mjs';
 import { peekActiveProfile, isRemoteProfile } from './profile.mjs';
 import { SKIP_EVIDENCE, SKIP_REASONS } from './skip-policy.mjs';
 
-const EVAL_FILE = 'tests/e2e/helpers/sadaka-admin-config.php';
+const EVAL_FILE = 'tests/e2e/helpers/addon-admin-config.php';
 
 function normalizeConfig(data, productId) {
   if (!data || data.ok !== true) return null;
@@ -52,7 +52,7 @@ function readOnce(productId) {
   const i = String(raw || '').indexOf('{');
   const j = String(raw || '').lastIndexOf('}');
   if (i < 0 || j < i) {
-    throw new Error('sadaka eval JSON yok');
+    throw new Error('addon eval JSON yok');
   }
   return normalizeConfig(JSON.parse(raw.slice(i, j + 1)), id);
 }
@@ -61,18 +61,18 @@ function readOnce(productId) {
  * @param {number} productId
  * @returns {object|null}
  */
-export function readSadakaConfigViaEval(productId) {
+export function readAddonConfigViaEval(productId) {
   const id = Number(productId) || 0;
   if (id <= 0) return null;
   try {
     return readOnce(id);
   } catch (e) {
-    console.error(`[e2e:catch-fail] sadaka eval deneme 1: ${e && e.message ? e.message : e}`);
+    console.error(`[e2e:catch-fail] addon eval deneme 1: ${e && e.message ? e.message : e}`);
   }
   try {
     return readOnce(id);
   } catch (e) {
-    console.error(`[e2e:catch-fail] sadaka eval deneme 2: ${e && e.message ? e.message : e}`);
+    console.error(`[e2e:catch-fail] addon eval deneme 2: ${e && e.message ? e.message : e}`);
     throw e;
   }
 }

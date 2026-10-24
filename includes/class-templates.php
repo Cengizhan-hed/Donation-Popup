@@ -102,32 +102,32 @@ class WDP_Templates {
 	}
 
 	/**
-	 * Varsayılan sadaka açıklama metni (ürün özel metni boşken).
+	 * Varsayılan addon açıklama metni (ürün özel metni boşken).
 	 *
 	 * @return string
 	 */
-	public static function get_default_sadaka_donation_message() {
-		return WDP_Form_Fields_Renderer::get_default_sadaka_donation_message();
+	public static function get_default_addon_donation_message() {
+		return WDP_Form_Fields_Renderer::get_default_addon_donation_message();
 	}
 
 	/**
-	 * Ürün sadaka metnini çözümler; boşsa varsayılan metin.
+	 * Ürün addon metnini çözümler; boşsa varsayılan metin.
 	 *
 	 * @param string $message Per-product message from meta.
 	 * @return string
 	 */
-	public static function resolve_sadaka_donation_message($message) {
-		return WDP_Form_Fields_Renderer::resolve_sadaka_donation_message($message);
+	public static function resolve_addon_donation_message($message) {
+		return WDP_Form_Fields_Renderer::resolve_addon_donation_message($message);
 	}
 
 	/**
 	 * İsteğe bağlı alt bağış bloğu.
 	 *
-	 * @param array $context Sadaka context.
+	 * @param array $context Addon context.
 	 * @return string Safe HTML.
 	 */
-	public static function render_sadaka_donation_block($context) {
-		return WDP_Form_Fields_Renderer::render_sadaka_donation_block(is_array($context) ? $context : array());
+	public static function render_addon_donation_block($context) {
+		return WDP_Form_Fields_Renderer::render_addon_donation_block(is_array($context) ? $context : array());
 	}
 
 	/**

@@ -52,7 +52,7 @@ class Woo_Donation_Popup {
             'WDP_Cart',
             'WDP_Order',
             // WDP_Templates - init() metodu yok, statik metodlar kullanılıyor
-            'WDP_Sadaka_Product_Visibility',
+            'WDP_Addon_Product_Visibility',
             'WDP_Donation_Purchasable',
             'WDP_Donations_List',
             'WDP_Product_Page_Integration',

@@ -2,8 +2,8 @@
 /**
  * Tek işlevsel senaryoyu N kez tekrarla (yeni context).
  * Kullanım:
- *   npm run e2e:repeat -- sadaka-fixed-popup 20
- *   npm run e2e:repeat -- sadaka-fixed-popup 30 --parallel 3 --cpu 4 --slow-js
+ *   npm run e2e:repeat -- addon-fixed-popup 20
+ *   npm run e2e:repeat -- addon-fixed-popup 30 --parallel 3 --cpu 4 --slow-js
  * Başarısız denemede Playwright trace → build/e2e/traces/<senaryo>-<n>.zip
  */
 import fs from 'node:fs';
@@ -14,8 +14,8 @@ import { ensureAuth, AUTH_FILE } from './helpers/auth.mjs';
 import { installBrowserGuard } from './helpers/network-guard.mjs';
 import { resolveAllProductPaths, resolveProductIdBySlug } from './helpers/checks.mjs';
 import {
-  readProductSadakaAdminConfig,
-  runSadakaScenario,
+  readProductAddonAdminConfig,
+  runAddonScenario,
 } from './helpers/capture.mjs';
 
 const TRACES_DIR = path.join(ROOT, 'build/e2e/traces');
@@ -25,10 +25,10 @@ const TRACES_DIR = path.join(ROOT, 'build/e2e/traces');
  * @returns {{ productKey: 'fixed'|'custom', mode: 'popup'|'panel' }}
  */
 function parseScenario(name) {
-  const m = String(name || '').trim().match(/^sadaka-(fixed|custom)-(popup|panel)$/i);
+  const m = String(name || '').trim().match(/^addon-(fixed|custom)-(popup|panel)$/i);
   if (!m) {
     throw new Error(
-      `Desteklenen senaryo: sadaka-fixed-popup|sadaka-fixed-panel|sadaka-custom-popup|sadaka-custom-panel (verilen: ${name})`
+      `Desteklenen senaryo: addon-fixed-popup|addon-fixed-panel|addon-custom-popup|addon-custom-panel (verilen: ${name})`
     );
   }
   return {
@@ -166,7 +166,7 @@ async function runOneAttempt(opts) {
 
   let result;
   try {
-    result = await runSadakaScenario({
+    result = await runAddonScenario({
       context: ctx,
       authed,
       env,
@@ -180,8 +180,8 @@ async function runOneAttempt(opts) {
       skips,
       stats,
       flaky,
-      sadakaAmount: '5566',
-      sadakaProductIds: [],
+      addonAmount: '5566',
+      addonProductIds: [],
       adminConfigCache,
       failDiagnostics: {
         enabled: true,
@@ -261,7 +261,7 @@ function printFailDetail(i, count, scenarioName, failInfo) {
     console.error('  modules:', JSON.stringify(cd.modules || {}));
     console.error('  buttonHTML:', String(cd.buttonOuterHTML || '').slice(0, 200));
     console.error('  mutations:', JSON.stringify(collected.mutationSummary || {}));
-    console.error('  POST sadaka_*:', JSON.stringify(collected.postedSadaka || {}));
+    console.error('  POST addon_*:', JSON.stringify(collected.postedAddon || {}));
     console.error('  errsAfter:', (collected.errsAfter || []).join(' | ') || '(yok)');
   } else if (failInfo && failInfo.failures && failInfo.failures[0]) {
     console.error('  ', failInfo.failures[0].description);
@@ -278,7 +278,7 @@ async function main() {
   const count = Math.max(1, Math.min(100, Number.parseInt(String(positional[1] || '1'), 10) || 1));
   if (!scenarioName) {
     console.error('Kullanım: npm run e2e:repeat -- <senaryo> <adet> [--parallel N] [--cpu N] [--slow-js]');
-    console.error('Örnek: npm run e2e:repeat -- sadaka-fixed-popup 30 --parallel 3 --cpu 4 --slow-js');
+    console.error('Örnek: npm run e2e:repeat -- addon-fixed-popup 30 --parallel 3 --cpu 4 --slow-js');
     process.exit(1);
   }
 
@@ -315,7 +315,7 @@ async function main() {
   });
   const adminConfigCache = new Map();
   const slug = products[productKey];
-  const cfg = await readProductSadakaAdminConfig(authed, env, slug, { productId });
+  const cfg = await readProductAddonAdminConfig(authed, env, slug, { productId });
   adminConfigCache.set(slug, cfg);
   if (!cfg.expected) {
     console.error(`Senaryo atlanır — yapılandırma yok: ${cfg.reason} (${cfg.detail})`);

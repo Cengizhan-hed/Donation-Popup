@@ -146,7 +146,7 @@ class WDP_Campaign_Header_Renderer {
 
 	/**
 	 * Header persuasion modules (media, impact, urgency, social proof) in module order.
-	 * Skips body module ids (amount, donor, dedication, cover_fee, sadaka, trust).
+	 * Skips body module ids (amount, donor, dedication, cover_fee, addon, trust).
 	 *
 	 * @param int   $product_id Product ID.
 	 * @param array $context    Context.

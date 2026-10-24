@@ -88,7 +88,7 @@ import { resetRegistry } from './run-registry.mjs';
 import { fixtureProductRecords, loadFixtures, assertRunMutationTargetsAreFixtures } from './fixtures.mjs';
 import { installRunSignalHandlers } from './run-signals.mjs';
 import { abortMutationLockWait, resetMutationLockAbort } from './mutation-lock.mjs';
-import { readSadakaConfigViaEval } from './sadaka-admin-read.mjs';
+import { readAddonConfigViaEval } from './addon-admin-read.mjs';
 import {
   snapshotCanary,
   preflightCanary,
@@ -149,7 +149,7 @@ import {
 import {
   collectPageProbeLogs,
   installPageProbe,
-  snapshotSadakaAndButton,
+  snapshotAddonAndButton,
   wrapWdpValidationHooks,
 } from './page-probe.mjs';
 import { runSharesLateProductInfoChecks } from '../run-shares-late-product-info.mjs';
@@ -1561,7 +1561,7 @@ async function fillDonorFields(root) {
 /**
  * Doldurulan bağışçı alanları tıklamadan hemen önce hâlâ duruyor mu?
  * @param {import('@playwright/test').Locator} shell
- * @param {{ name?: string, phone?: string, customPrice?: string, sadakaPrice?: string }} expected
+ * @param {{ name?: string, phone?: string, customPrice?: string, addonPrice?: string }} expected
  * @param {ReturnType<typeof makeFailure>[]} failures
  * @param {string} check
  */
@@ -1577,12 +1577,12 @@ async function assertDonorFieldsPersist(shell, expected, failures, check) {
         'input[name="donation_phone"], input.wdp-phone-field__number[name="donation_phone"]'
       );
       const custom = root.querySelector('input[name="custom_price"]');
-      const sadaka = root.querySelector('input[name="sadaka_custom_price"]');
+      const addon = root.querySelector('input[name="sadaka_custom_price"]');
       return {
         name: name ? String(name.value || '') : null,
         phone: phone ? String(phone.value || '') : null,
         custom: custom ? String(custom.value || '') : null,
-        sadaka: sadaka ? String(sadaka.value || '') : null,
+        addon: addon ? String(addon.value || '') : null,
       };
     })
     .catch(() => null);
@@ -1615,9 +1615,9 @@ async function assertDonorFieldsPersist(shell, expected, failures, check) {
       `custom_price beklenen="${expected.customPrice}" gerçek="${actual.custom}"`
     );
   }
-  if (expected.sadakaPrice != null && actual.sadaka != null && actual.sadaka !== expected.sadakaPrice) {
+  if (expected.addonPrice != null && actual.addon != null && actual.addon !== expected.addonPrice) {
     mismatches.push(
-      `sadaka_custom_price beklenen="${expected.sadakaPrice}" gerçek="${actual.sadaka}"`
+      `sadaka_custom_price beklenen="${expected.addonPrice}" gerçek="${actual.addon}"`
     );
   }
   if (mismatches.length) {
@@ -1655,7 +1655,7 @@ async function assertDonorFieldsPersist(shell, expected, failures, check) {
  * @param {Record<string,string>} env
  * @returns {Promise<number>}
  */
-export async function readGlobalSadakaWcId(authed, env) {
+export async function readGlobalAddonWcId(authed, env) {
   const page = await authed.newPage();
   try {
     await page.goto(
@@ -1691,7 +1691,7 @@ export async function readGlobalSadakaWcId(authed, env) {
  * @param {string} productSlug
  * @param {{ globalWcId?: number, productId?: number }} [opts]
  */
-export async function readProductSadakaAdminConfig(authed, env, productSlug, opts = {}) {
+export async function readProductAddonAdminConfig(authed, env, productSlug, opts = {}) {
   const empty = (reason, status = /** @type {'atlandı'|'hata'} */ ('atlandı')) => ({
     enabled: false,
     productWcId: 0,
@@ -1705,13 +1705,13 @@ export async function readProductSadakaAdminConfig(authed, env, productSlug, opt
   let productId = Number(opts.productId) > 0 ? Number(opts.productId) : 0;
   if (productId > 0) {
     try {
-      const viaEval = readSadakaConfigViaEval(productId);
+      const viaEval = readAddonConfigViaEval(productId);
       if (viaEval && viaEval.status) {
         return viaEval;
       }
     } catch (evalErr) {
       console.error(
-        `[e2e:catch-fail] sadaka eval: ${evalErr && evalErr.message ? evalErr.message : evalErr}`
+        `[e2e:catch-fail] addon eval: ${evalErr && evalErr.message ? evalErr.message : evalErr}`
       );
     }
   }
@@ -1720,7 +1720,7 @@ export async function readProductSadakaAdminConfig(authed, env, productSlug, opt
     // Mağaza yöneticisi: ürün listesi araması yerine doğrudan post.php (Store API ID).
     if (!productId) {
       await page.goto(withCacheBust(env.E2E_BASE_URL, '/'), { waitUntil: 'domcontentloaded' }).catch((e) => {
-        console.error(`[e2e:catch-fail] sadaka home: ${e && e.message ? e.message : e}`);
+        console.error(`[e2e:catch-fail] addon home: ${e && e.message ? e.message : e}`);
       });
       productId = await resolveProductIdBySlug(page, env.E2E_BASE_URL, productSlug);
     }
@@ -1728,13 +1728,13 @@ export async function readProductSadakaAdminConfig(authed, env, productSlug, opt
       return empty('Store API’den ürün ID bulunamadı', 'hata');
     }
     try {
-      const viaEval = readSadakaConfigViaEval(productId);
+      const viaEval = readAddonConfigViaEval(productId);
       if (viaEval && viaEval.status) {
         return viaEval;
       }
     } catch (evalErr) {
       console.error(
-        `[e2e:catch-fail] sadaka eval: ${evalErr && evalErr.message ? evalErr.message : evalErr}`
+        `[e2e:catch-fail] addon eval: ${evalErr && evalErr.message ? evalErr.message : evalErr}`
       );
     }
     async function gotoAdminEdit() {
@@ -1747,14 +1747,14 @@ export async function readProductSadakaAdminConfig(authed, env, productSlug, opt
       await gotoAdminEdit();
     } catch (navErr) {
       console.error(
-        `[e2e:catch-fail] sadaka admin goto deneme 1: ${navErr && navErr.message ? navErr.message : navErr}`
+        `[e2e:catch-fail] addon admin goto deneme 1: ${navErr && navErr.message ? navErr.message : navErr}`
       );
       await gotoAdminEdit();
     }
     const opened = await waitForWpAdminPage(page, getActiveTimeouts().navigation);
     if (!opened.ok) {
       console.error(
-        `[e2e:catch-fail] sadaka admin: kind=${opened.kind} path=${opened.path} id=${productId}`
+        `[e2e:catch-fail] addon admin: kind=${opened.kind} path=${opened.path} id=${productId}`
       );
       return empty(
         `ürün düzenleme sayfası açılamadı (#${productId}) kind=${opened.kind} path=${opened.path}`,
@@ -2548,7 +2548,7 @@ async function assertDonationLoopButtons({
 }
 
 /**
- * Alt bağış (sadaka) senaryosu — popup veya panel.
+ * Alt bağış (addon) senaryosu — popup veya panel.
  * popup → liste kısa kodu (ortadaki modal); panel → ürün sayfası (sağ panel).
  * Yapılandırma yoksa atlanır (hata sayılmaz); ayar var ama buton yoksa hata.
  * @param {object} opts
@@ -2564,9 +2564,9 @@ async function assertDonationLoopButtons({
  * @param {ReturnType<typeof makeFailure>[]} opts.failures
  * @param {Array<{check:string,description:string,detail?:string}>} opts.skips
  * @param {{ passed: number, skipped: number, failed: number }} opts.stats
- * @param {string} opts.sadakaAmount
+ * @param {string} opts.addonAmount
  */
-export async function runSadakaScenario({
+export async function runAddonScenario({
   context,
   authed,
   env,
@@ -2580,14 +2580,14 @@ export async function runSadakaScenario({
   skips,
   stats,
   flaky,
-  sadakaAmount,
-  sadakaProductIds,
+  addonAmount,
+  addonProductIds,
   adminConfigCache,
   /** @type {{ enabled?: boolean, onCollected?: (d: object) => void, runLabel?: string }|undefined} */
   failDiagnostics,
   noSideCart = false,
 }) {
-  const check = `sadaka-${productKey}-${mode}`;
+  const check = `addon-${productKey}-${mode}`;
   const runLabel = (failDiagnostics && failDiagnostics.runLabel) || 'run';
   const wantDiag = !!(failDiagnostics && failDiagnostics.enabled !== false);
   const paths = tracePaths(runLabel, check);
@@ -2597,11 +2597,11 @@ export async function runSadakaScenario({
     ...comingSoonQuery(env, getActiveProfile()),
   };
   if (wantDiag) {
-    await installPageProbe(context).catch((e) => catchFail('installPageProbe:sadaka', e));
+    await installPageProbe(context).catch((e) => catchFail('installPageProbe:addon', e));
   }
   const page = await context.newPage();
   const cacheProbe = wantDiag ? attachDocumentCacheProbe(page) : { get: () => ({}), dispose: () => {} };
-  const postedSadaka = { fields: {} };
+  const postedAddon = { fields: {} };
   /** @type {object|null} */
   let firstAttemptBundle = null;
 
@@ -2615,7 +2615,7 @@ export async function runSadakaScenario({
       const params = new URLSearchParams(post);
       for (const [k, v] of params.entries()) {
         if (k.startsWith('sadaka_')) {
-          postedSadaka.fields[k] = v;
+          postedAddon.fields[k] = v;
         }
       }
     } catch (e) {
@@ -2628,13 +2628,13 @@ export async function runSadakaScenario({
     timeline.mark('admin-config');
     let cfg = adminConfigCache.get(productSlug);
     if (!cfg || cfg.status === 'hata') {
-      cfg = await readProductSadakaAdminConfig(authed, env, productSlug, {
+      cfg = await readProductAddonAdminConfig(authed, env, productSlug, {
         productId: Number(productId) || 0,
       });
       if (cfg.status !== 'hata') adminConfigCache.set(productSlug, cfg);
     }
-    if (cfg.resolvedWcId > 0 && Array.isArray(sadakaProductIds)) {
-      sadakaProductIds.push(cfg.resolvedWcId);
+    if (cfg.resolvedWcId > 0 && Array.isArray(addonProductIds)) {
+      addonProductIds.push(cfg.resolvedWcId);
     }
 
     if (!cfg.expected) {
@@ -2690,13 +2690,13 @@ export async function runSadakaScenario({
       .evaluate((el) => el.classList.contains('wdp-side-panel'))
       .catch(() => null);
     if (mode === 'popup' && isSidePanel) {
-      // Liste CTA panel ise (button=panel) C-a: ürüne tanımlı form; sadaka senaryosu panelde sürer.
+      // Liste CTA panel ise (button=panel) C-a: ürüne tanımlı form; addon senaryosu panelde sürer.
     }
     if (mode === 'panel' && isSidePanel === false) {
       failures.push(
         makeFailure({
           check,
-          description: 'Sadaka panel senaryosu ortadaki popup açtı — sağ panel bekleniyordu',
+          description: 'Addon panel senaryosu ortadaki popup açtı — sağ panel bekleniyordu',
           detail: `sayfa=${openPath} productId=${productId}`,
           screenshot: `desktop-${mode}-${productKey}-open.png`,
         })
@@ -2713,15 +2713,15 @@ export async function runSadakaScenario({
       await shell.locator(SEL.customPrice).first().fill('250');
     }
 
-    const toggle = shell.locator(SEL.sadakaToggle).first();
-    const wrap = shell.locator(SEL.sadakaWrap).first();
+    const toggle = shell.locator(SEL.addonToggle).first();
+    const wrap = shell.locator(SEL.addonWrap).first();
     const hasToggle = (await toggle.count()) > 0 || (await wrap.count()) > 0;
 
     if (!hasToggle) {
       failures.push(
         makeFailure({
           check,
-          description: 'Alt bağış ayarı var (beklenir) ama Sadaka Bağışı Ekle butonu yok',
+          description: 'Alt bağış ayarı var (beklenir) ama Addon Bağışı Ekle butonu yok',
           detail: `data-wdp-sadaka-donation / toggle yok — ${cfg.detail}`,
           screenshot: `desktop-${mode}-${productKey}-open.png`,
         })
@@ -2736,24 +2736,24 @@ export async function runSadakaScenario({
       .catch(() => '');
     const expectedWcId =
       Number.parseInt(String(altWcFromDom || ''), 10) || cfg.resolvedWcId || 0;
-    if (expectedWcId > 0 && Array.isArray(sadakaProductIds)) {
-      sadakaProductIds.push(expectedWcId);
+    if (expectedWcId > 0 && Array.isArray(addonProductIds)) {
+      addonProductIds.push(expectedWcId);
     }
 
-    timeline.mark('open-sadaka');
+    timeline.mark('open-addon');
     await toggle.click();
-    await shell.locator(SEL.sadakaOpen).waitFor({ state: 'visible', timeout: CHECK_MS });
-    const price = shell.locator(SEL.sadakaPrice).first();
-    const isFixedSadaka = await price.isEditable().then((v) => !v).catch(() => false);
-    if (!isFixedSadaka) {
-      await price.fill(String(sadakaAmount));
+    await shell.locator(SEL.addonOpen).waitFor({ state: 'visible', timeout: CHECK_MS });
+    const price = shell.locator(SEL.addonPrice).first();
+    const isFixedAddon = await price.isEditable().then((v) => !v).catch(() => false);
+    if (!isFixedAddon) {
+      await price.fill(String(addonAmount));
       await price
         .waitFor({ state: 'visible', timeout: CHECK_MS })
         .catch(() => {});
     }
 
     const errsBefore = await visibleValidationErrors(page);
-    const sadakaAttrs = await price.evaluate((el) => ({
+    const addonAttrs = await price.evaluate((el) => ({
       name: el.getAttribute('name'),
       required: el.required || el.hasAttribute('required'),
       min: el.getAttribute('min'),
@@ -2762,18 +2762,18 @@ export async function runSadakaScenario({
       type: el.getAttribute('type'),
     }));
     const sameNameCount = await page
-      .locator(`input[name="${sadakaAttrs.name || 'sadaka_custom_price'}"]`)
+      .locator(`input[name="${addonAttrs.name || 'sadaka_custom_price'}"]`)
       .count();
 
-    const expectedSadakaVal = isFixedSadaka
-      ? String(sadakaAttrs.value || '')
-      : String(sadakaAmount);
+    const expectedAddonVal = isFixedAddon
+      ? String(addonAttrs.value || '')
+      : String(addonAmount);
     await assertDonorFieldsPersist(
       shell,
       {
         name: donorFilled.name,
         phone: donorFilled.phone,
-        sadakaPrice: expectedSadakaVal || undefined,
+        addonPrice: expectedAddonVal || undefined,
       },
       failures,
       check
@@ -2786,14 +2786,14 @@ export async function runSadakaScenario({
     }
     // Akış aralığını bozma: yalnızca anlık okuma (ek bekleme yok)
     const snapBeforeClick = wantDiag
-      ? await snapshotSadakaAndButton(page).catch(() => null)
+      ? await snapshotAddonAndButton(page).catch(() => null)
       : null;
     /** @type {Promise<object|null>|null} */
     let snapAfter50Promise = null;
     if (wantDiag) {
       snapAfter50Promise = (async () => {
         await new Promise((r) => setTimeout(r, 50));
-        return snapshotSadakaAndButton(page).catch(() => null);
+        return snapshotAddonAndButton(page).catch(() => null);
       })();
     }
     timeline.mark('click-add-to-cart');
@@ -2822,7 +2822,7 @@ export async function runSadakaScenario({
           cacheHeaders: cacheProbe.get(),
           activeScenarios: listActiveScenarios(),
           timeline: timeline.toJSON(),
-          postedSadaka: postedSadaka.fields,
+          postedAddon: postedAddon.fields,
           snapBeforeClick,
           snapAfter50ms: snapAfter50,
           pageEvents: probe.pageEvents,
@@ -2850,26 +2850,26 @@ export async function runSadakaScenario({
       .catch(() => {});
     const errsAfter = await visibleValidationErrors(page);
     const items = await cartItemsDetail(page, env.E2E_BASE_URL);
-    const expectedSadaka = isFixedSadaka
-      ? Number.parseFloat(sadakaAttrs.value || '0')
-      : Number.parseFloat(String(sadakaAmount));
+    const expectedAddon = isFixedAddon
+      ? Number.parseFloat(addonAttrs.value || '0')
+      : Number.parseFloat(String(addonAmount));
 
     const hasMain = items.length >= 1;
     // Birincil: alt bağış WC ürün ID eşlemesi
-    const sadakaByProduct =
+    const addonByProduct =
       expectedWcId > 0 ? items.find((it) => Number(it.id) === expectedWcId) : null;
     // İkincil: tutar (±0,01)
     const amountOk =
-      sadakaByProduct &&
-      Number.isFinite(Number.parseFloat(sadakaByProduct.totals)) &&
-      Math.abs(Number.parseFloat(sadakaByProduct.totals) - expectedSadaka) < 0.01;
+      addonByProduct &&
+      Number.isFinite(Number.parseFloat(addonByProduct.totals)) &&
+      Math.abs(Number.parseFloat(addonByProduct.totals) - expectedAddon) < 0.01;
 
     const ok =
       ajax.ok &&
       !ajax.timedOut &&
       items.length >= 2 &&
       hasMain &&
-      !!sadakaByProduct &&
+      !!addonByProduct &&
       !!amountOk &&
       !errsAfter.some((t) => /zorunlu|geçerli bir alt bağış/i.test(t));
 
@@ -2891,13 +2891,13 @@ export async function runSadakaScenario({
           check,
           runLabel,
           ajax,
-          postedSadaka: postedSadaka.fields,
+          postedAddon: postedAddon.fields,
           errsBefore,
           errsAfter,
           items,
           clickDiag,
           mutationSummary,
-          sadakaAttrs,
+          addonAttrs,
           cacheHeaders: cacheProbe.get(),
           activeScenarios: listActiveScenarios(),
           timeline: timeline.toJSON(),
@@ -2916,7 +2916,7 @@ export async function runSadakaScenario({
       failures.push(
         makeFailure({
           check,
-          description: 'Alt bağış (sadaka) sepete ana bağışla birlikte eklenmeli',
+          description: 'Alt bağış (addon) sepete ana bağışla birlikte eklenmeli',
           detail: [
             `HTTP ${ajax.status} ok=${ajax.ok} timedOut=${ajax.timedOut}`,
             `yanıt (ilk 300): ${ajax.bodyPreview}`,
@@ -2929,7 +2929,7 @@ export async function runSadakaScenario({
             clickDiag
               ? `teşhis: ${JSON.stringify({
                   formFlags: clickDiag.formFlags,
-                  sadakaFlags: clickDiag.sadakaFlags,
+                  addonFlags: clickDiag.addonFlags,
                   modules: clickDiag.modules,
                   topAtPoint: clickDiag.topAtPoint,
                   jqEvents: clickDiag.jqEvents,
@@ -2942,14 +2942,14 @@ export async function runSadakaScenario({
                 })}`
               : '',
             `beklenen WC ürün id: ${expectedWcId} (dom=${altWcFromDom || '-'} admin=${cfg.resolvedWcId})`,
-            `beklenen tutar: ${expectedSadaka}`,
-            `ürün eşleşmesi: ${sadakaByProduct ? 'evet' : 'hayır'}`,
+            `beklenen tutar: ${expectedAddon}`,
+            `ürün eşleşmesi: ${addonByProduct ? 'evet' : 'hayır'}`,
             `tutar eşleşmesi (±0,01): ${amountOk ? 'evet' : 'hayır'}`,
             `görünen hatalar (önce): ${errsBefore.join(' | ') || '(yok)'}`,
             `görünen hatalar (sonra): ${errsAfter.join(' | ') || '(yok)'}`,
-            `sadaka input: ${JSON.stringify(sadakaAttrs)}`,
+            `addon input: ${JSON.stringify(addonAttrs)}`,
             `aynı name input sayısı: ${sameNameCount}`,
-            `POST sadaka_* : ${JSON.stringify(postedSadaka.fields)}`,
+            `POST addon_* : ${JSON.stringify(postedAddon.fields)}`,
             `sepet: ${JSON.stringify(items)}`,
             `yapılandırma: ${cfg.detail}`,
           ]
@@ -2987,7 +2987,7 @@ export async function runSadakaScenario({
     failures.push(
       makeFailure({
         check,
-        description: 'Sadaka senaryosu hata verdi',
+        description: 'Addon senaryosu hata verdi',
         detail: [String(e.message || e), errs.length ? `form hataları: ${errs.join(' | ')}` : '']
           .filter(Boolean)
           .join('\n'),
@@ -3132,7 +3132,7 @@ export async function captureAll({
   const products = productPaths(env);
   const maskList = maskSelectors(env.E2E_MASK_SELECTORS || '');
   const quick = mode === 'quick';
-  // Quick: 4 worker (shell + sadaka dalgaları daha kısa)
+  // Quick: 4 worker (shell + addon dalgaları daha kısa)
   const maxWorkers = Math.max(1, Math.min(quick ? 4 : 3, Number(workers) || (quick ? 4 : 3)));
   const guestExtra = {
     ...(noSideCart ? { hdf_no_side_cart: '1' } : {}),
@@ -3243,21 +3243,21 @@ export async function captureAll({
   logSection('ürün URL/ID çözümü', tProbe);
 
   // Alt bağış admin — ürün/shell’den önce (yerel PHP tek iş parçacığı; örtüşünce post.php zaman aşımı)
-  /** @type {Map<string, Awaited<ReturnType<typeof readProductSadakaAdminConfig>>>} */
+  /** @type {Map<string, Awaited<ReturnType<typeof readProductAddonAdminConfig>>>} */
   const adminConfigCache = new Map();
   const adminConfigPromise =
     runFunctional && want('sadaka')
       ? (async () => {
-          const tSadakaAdmin = Date.now();
+          const tAddonAdmin = Date.now();
           const adminRead = await asAdminDesktop(browser, env);
           try {
-            const globalWcId = await readGlobalSadakaWcId(adminRead, env);
+            const globalWcId = await readGlobalAddonWcId(adminRead, env);
             await mapPool(
               /** @type {const} */ (['fixed', 'custom']),
               1,
               async (productKey) => {
                 const slug = products[productKey];
-                const cfg = await readProductSadakaAdminConfig(adminRead, env, slug, {
+                const cfg = await readProductAddonAdminConfig(adminRead, env, slug, {
                   globalWcId,
                   productId: productIds[productKey] || 0,
                 });
@@ -3267,7 +3267,7 @@ export async function captureAll({
           } finally {
             await adminRead.close().catch(() => {});
           }
-          logSection('alt bağış admin config', tSadakaAdmin);
+          logSection('alt bağış admin config', tAddonAdmin);
         })()
       : Promise.resolve();
 
@@ -4181,10 +4181,10 @@ export async function captureAll({
           const addBtn = shell.locator(SEL.addToCart).first();
           await startDomMutationProbe(page).catch((e) => catchFail('startDomMutationProbe', e));
           const tClick = Date.now();
-          const snapBeforeClick = await snapshotSadakaAndButton(page).catch(() => null);
+          const snapBeforeClick = await snapshotAddonAndButton(page).catch(() => null);
           const snapAfter50Promise = (async () => {
             await new Promise((r) => setTimeout(r, 50));
-            return snapshotSadakaAndButton(page).catch(() => null);
+            return snapshotAddonAndButton(page).catch(() => null);
           })();
           cartTimeline.mark('click-add-to-cart');
           const ajax = await clickAddToCartWithRetry(page, addBtn, {
@@ -4533,31 +4533,31 @@ export async function captureAll({
 
     // Alt bağış: admin config (üstte başlatıldı) bitince 4 senaryo paralel
     await adminConfigPromise;
-    const tSadaka = Date.now();
+    const tAddon = Date.now();
     /** @type {number[]} */
-    const sadakaProductIds = [];
-    const sadakaJobs = [];
+    const addonProductIds = [];
+    const addonJobs = [];
     for (const productKey of /** @type {const} */ (['fixed', 'custom'])) {
       for (const mode of /** @type {const} */ (['popup', 'panel'])) {
-        sadakaJobs.push({ productKey, mode });
+        addonJobs.push({ productKey, mode });
       }
     }
     // 4 senaryo paralel (kendi context + emptyCart). 2 worker denemesi wall’ı uzattı.
-    const sadakaWorkers = Math.min(4, sadakaJobs.length);
-    const sadakaPromise = !want('sadaka')
+    const addonWorkers = Math.min(4, addonJobs.length);
+    const addonPromise = !want('sadaka')
       ? Promise.resolve()
-      : mapPool(sadakaJobs, sadakaWorkers, async ({ productKey, mode }) => {
-      const check = `sadaka-${productKey}-${mode}`;
+      : mapPool(addonJobs, addonWorkers, async ({ productKey, mode }) => {
+      const check = `addon-${productKey}-${mode}`;
       const paths = tracePaths(runLabel, check);
-      const sadakaDecision = decideScenarioProduct(env, productKey, mode);
-      if (sadakaDecision.action === 'skip') {
+      const addonDecision = decideScenarioProduct(env, productKey, mode);
+      if (addonDecision.action === 'skip') {
         if (!skips.some((s) => s.check === check)) {
           skips.push(
             makeSkip({
               check,
-              reason: sadakaDecision.reason,
-              evidence: sadakaDecision.evidence || SKIP_EVIDENCE.WP_DATA,
-              detail: sadakaDecision.detail,
+              reason: addonDecision.reason,
+              evidence: addonDecision.evidence || SKIP_EVIDENCE.WP_DATA,
+              detail: addonDecision.detail,
             })
           );
           functionalStats.skipped += 1;
@@ -4565,7 +4565,7 @@ export async function captureAll({
         return;
       }
       const ctx =
-        getActiveProfile()?.comingSoon || sadakaDecision.admin
+        getActiveProfile()?.comingSoon || addonDecision.admin
           ? await asAdmin(browser, env, contextOpts)
           : await contextWithBypass(browser, contextOpts, env);
       // Quick’te tracing pahalı (200s’nin büyük kısmı); full’da koru. Hata → debug JSON.
@@ -4576,7 +4576,7 @@ export async function captureAll({
       /** @type {{ ok?: boolean, skipped?: boolean, debugFile?: string }|null} */
       let result = null;
       try {
-        result = await runSadakaScenario({
+        result = await runAddonScenario({
           context: ctx,
           authed,
           env,
@@ -4590,8 +4590,8 @@ export async function captureAll({
           skips,
           stats: functionalStats,
           flaky,
-          sadakaAmount: '5566',
-          sadakaProductIds,
+          addonAmount: '5566',
+          addonProductIds,
           adminConfigCache,
           failDiagnostics: {
             // Quick: teşhis sondajı kapalı (süre); hata yine makeFailure + AJAX özeti
@@ -4634,11 +4634,11 @@ export async function captureAll({
         await ctx.close().catch(() => {});
       }
     }).finally(() => {
-      logSection('alt bağış senaryoları', tSadaka);
+      logSection('alt bağış senaryoları', tAddon);
     });
 
-    await Promise.all([lateSharesPromise, sadakaPromise]);
-    void sadakaProductIds;
+    await Promise.all([lateSharesPromise, addonPromise]);
+    void addonProductIds;
 
     const mutationSuites = [
       ['amount-options', './amount-options.mjs', 'runAmountOptionsChecks', 'Tutar seçenekleri E2E koşucusu çöktü'],
@@ -4923,9 +4923,9 @@ export async function captureAll({
 
   if (runFunctional) {
     functionalStats.failed = failures.length;
-    const otherFails = failures.filter((f) => !String(f.check || '').startsWith('sadaka-')).length;
+    const otherFails = failures.filter((f) => !String(f.check || '').startsWith('addon-')).length;
     if (otherFails === 0) {
-      functionalStats.passed += 1; // sadaka dışı işlevsel kontroller
+      functionalStats.passed += 1; // addon dışı işlevsel kontroller
     }
   }
 
