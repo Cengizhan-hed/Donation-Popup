@@ -150,6 +150,12 @@ import {
 } from './page-probe.mjs';
 import { runSharesLateProductInfoChecks } from '../run-shares-late-product-info.mjs';
 import { attachAjaxErrorKindLoggerOnContext } from './ajax-error-kind.mjs';
+import {
+  markBrowserContextKind,
+  pageContextKind,
+  collectAndWriteCartState,
+  e2eDeviceLabel,
+} from './cart-state-diag.mjs';
 
 const DESKTOP = { width: 1440, height: 900 };
 const MOBILE = { width: 390, height: 844 };
@@ -159,8 +165,9 @@ const MOBILE = { width: 390, height: 844 };
  * @param {object} opts
  * @param {Record<string,string>} [env]
  */
-async function contextWithBypass(browser, opts, env) {
+async function contextWithBypass(browser, opts, env, kind = 'visitor') {
   const ctx = await browser.newContext(opts);
+  markBrowserContextKind(ctx, kind);
   attachAjaxErrorKindLoggerOnContext(ctx);
   await applyNetworkGuard(ctx, guardOptionsFromEnv(env));
   try {
@@ -181,7 +188,7 @@ async function contextWithBypass(browser, opts, env) {
  * @param {object} [extra]
  */
 async function asVisitor(browser, env, extra = {}) {
-  return contextWithBypass(browser, extra, env);
+  return contextWithBypass(browser, extra, env, 'visitor');
 }
 
 /**
@@ -197,7 +204,7 @@ async function asAdmin(browser, env, extra = {}) {
   if (!mem && getAuthFile()) {
     opts.storageState = getAuthFile();
   }
-  const ctx = await contextWithBypass(browser, opts, env);
+  const ctx = await contextWithBypass(browser, opts, env, 'admin');
   if (mem && mem.length) {
     await ctx.addCookies(mem);
   }
@@ -4093,10 +4100,11 @@ export async function captureAll({
       const tCart = Date.now();
       const cartPaths = tracePaths(runLabel, 'fixed-cart');
       const cartTimeline = createTimeline('fixed-cart');
-      const cartCtx =
-        getActiveProfile()?.comingSoon || decideScenarioProduct(env, 'fixed', 'cart').admin
-          ? await asAdmin(browser, env, contextOpts)
-          : await contextWithBypass(browser, contextOpts, env);
+      const cartDecision = decideScenarioProduct(env, 'fixed', 'cart');
+      const cartCtx = cartDecision.admin
+        ? await asAdmin(browser, env, contextOpts)
+        : await asVisitor(browser, env, contextOpts);
+      const cartAddContext = cartDecision.admin ? 'admin' : 'visitor';
       await installPageProbe(cartCtx).catch((e) => catchFail('installPageProbe:cart', e));
       const cartTrace = !quick;
       if (cartTrace) {
@@ -4227,6 +4235,14 @@ export async function captureAll({
             const clickDiag = await collectAddToCartDiagnostics(page, addBtn, {
               networkTail: ajax.networkRaw || [],
             }).catch((e) => ({ error: String(e.message || e) }));
+            const cartState = await collectAndWriteCartState(page, {
+              baseUrl: env.E2E_BASE_URL,
+              scenario: 'fixed-cart',
+              device: e2eDeviceLabel(device.id),
+              ajax,
+              addContext: cartAddContext || pageContextKind(page),
+              cartPath: env.E2E_CART_PAGE || '/cart/',
+            });
             const debugBundle = {
               phase: 'final-fail',
               check: 'fixed-cart',
@@ -4239,19 +4255,24 @@ export async function captureAll({
               timeline: cartTimeline.toJSON(),
               firstAttempt: cartFirstAttempt || ajax.firstAttemptDiag || null,
               valErrors,
+              cartStateClass: cartState.class,
+              cartStateFile: cartState.debugFile,
               debugFiles: {
                 json: path.relative(ROOT, cartPaths.json),
                 firstAttempt: path.relative(ROOT, cartPaths.firstAttemptJson),
                 trace: path.relative(ROOT, cartPaths.zip),
+                cartState: cartState.debugFile,
               },
             };
             writeDebugJson(cartPaths.json, debugBundle);
             debugFiles.push(path.relative(ROOT, cartPaths.json));
+            if (cartState.debugFile) debugFiles.push(cartState.debugFile);
             failures.push(
               makeFailure({
                 check: 'fixed-cart',
                 description: 'Sepete Ekle sonrası sepet boş kalmamalı',
                 detail: [
+                  `sınıf=${cartState.class}`,
                   `HTTP ${ajax.status} ok=${ajax.ok} timedOut=${ajax.timedOut}`,
                   `yanıt (ilk 300): ${ajax.bodyPreview}`,
                   `buton: visible=${ajax.buttonState?.visible} disabled=${ajax.buttonState?.disabled}`,
@@ -4260,6 +4281,7 @@ export async function captureAll({
                   `konsol hataları: ${(ajax.consoleErrors || []).join(' | ') || '(yok)'}`,
                   `debug: ${path.relative(ROOT, cartPaths.json)}`,
                   `trace: ${path.relative(ROOT, cartPaths.zip)}`,
+                  `cart-state: ${cartState.debugFile}`,
                   `teşhis: ${JSON.stringify({
                     formFlags: clickDiag.formFlags,
                     modules: clickDiag.modules,
@@ -4267,13 +4289,15 @@ export async function captureAll({
                     nonce: clickDiag.nonce,
                     cacheHeaders: cartCacheProbe.get(),
                     activeScenarios: listActiveScenarios(),
+                    cartStateClass: cartState.class,
+                    cartContext: cartState.context,
                   })}`,
                   valErrors.length
                     ? `form hataları: ${valErrors.join(' | ')}`
                     : 'formda görünür doğrulama hatası yok',
                 ].join('\n'),
                 screenshot: 'desktop-popup-fixed-open.png',
-                debugFile: path.relative(ROOT, cartPaths.json),
+                debugFile: cartState.debugFile || path.relative(ROOT, cartPaths.json),
               })
             );
           } else {
@@ -4624,6 +4648,7 @@ export async function captureAll({
             failures,
             stats: functionalStats,
             skips,
+            deviceId: e2eDeviceLabel(device.id),
             createAdminContext: () => asAdmin(browser, env, contextOpts),
             createVisitorContext: () => asVisitor(browser, env, contextOpts),
           });
