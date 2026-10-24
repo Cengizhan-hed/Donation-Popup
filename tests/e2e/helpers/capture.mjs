@@ -63,9 +63,16 @@ import {
   classifyLoopCardsResult,
   formatLoopCardFail,
   readRelatedProductIds,
+  RELATED_ROOT_SEL,
   SHOP_CARD_SEL,
   shopCardsHiddenFailure,
 } from './loop-cards.mjs';
+import {
+  PLUGIN_STYLE_PATH,
+  diagnoseRelatedHideBrowser,
+  decideRelatedHideOutcome,
+  writeRelatedHideDebug,
+} from './css-hide-source.mjs';
 import { snapshotGuardOrder, cleanupE2EData } from './test-cleanup.mjs';
 import { resetRegistry } from './run-registry.mjs';
 import { fixtureProductRecords, loadFixtures, assertRunMutationTargetsAreFixtures } from './fixtures.mjs';
@@ -2123,6 +2130,56 @@ async function assertLoopCardsTitleAndDonate(page, surface, screenName, failures
   const classified = classifyLoopCardsResult(result.rows, {
     requireVisible: surface === 'shop' || !noRelatedFromWp,
   });
+  const hiddenProductSection =
+    surface === 'product' &&
+    result.cardCount >= 1 &&
+    classified.reason === 'hidden-section';
+  if (hiddenProductSection) {
+    const hide = await page.evaluate(diagnoseRelatedHideBrowser, {
+      rootSel: RELATED_ROOT_SEL,
+      similarPat,
+      cardSel,
+      pluginPath: PLUGIN_STYLE_PATH,
+    });
+    const outcome = decideRelatedHideOutcome(hide);
+    writeRelatedHideDebug({ ...hide, verdict: outcome.action === 'fail' ? 'plugin' : outcome.action === 'skip' ? 'theme' : hide.verdict });
+    if (outcome.action === 'fail') {
+      failures.push(
+        makeFailure({
+          check: 'plugin-hides-related',
+          description: outcome.description,
+          detail: outcome.detail,
+          screenshot: `${screenName}.png`,
+        })
+      );
+      if (stats) stats.failed = (stats.failed || 0) + 1;
+      return;
+    }
+    if (outcome.action === 'skip') {
+      const row = makeSkip({
+        check: 'theme-hides-related',
+        reason: outcome.reason,
+        evidence: outcome.evidence,
+        source: outcome.source,
+        detail: outcome.detail,
+      });
+      if (skips && classifySkip(row) === 'skip') {
+        skips.push(row);
+        if (stats) stats.skipped = (stats.skipped || 0) + 1;
+        return;
+      }
+      failures.push(
+        makeFailure({
+          check: 'plugin-hides-related',
+          description: 'İlgili ürün gizleme kaynağı eklenti yolu (css-source reddedildi)',
+          detail: outcome.detail,
+          screenshot: `${screenName}.png`,
+        })
+      );
+      if (stats) stats.failed = (stats.failed || 0) + 1;
+      return;
+    }
+  }
   if (classified.status === 'skip') {
     if (noRelatedFromWp) {
       const row = makeSkip({

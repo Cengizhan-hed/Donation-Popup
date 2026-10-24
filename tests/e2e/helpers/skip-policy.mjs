@@ -3,8 +3,10 @@
  * Ekran gözlemi (DOM) atlama gerekçesi olamaz.
  */
 
-/** @typedef {'no-list-page'|'no-shop-page'|'no-popup-source'|'no-published-product'|'no-published-shares'|'private-fixture'|'setting-off'|'no-wc-product-id'|'no-related-products'|'no-remote-orders'|'local-only'|'no-product-path'} SkipReasonCode */
-/** @typedef {'wp-data'|'policy'} SkipEvidence */
+/** @typedef {'no-list-page'|'no-shop-page'|'no-popup-source'|'no-published-product'|'no-published-shares'|'private-fixture'|'setting-off'|'no-wc-product-id'|'no-related-products'|'no-remote-orders'|'local-only'|'no-product-path'|'theme-hides-related'} SkipReasonCode */
+/** @typedef {'wp-data'|'policy'|'css-source'} SkipEvidence */
+
+export const PLUGIN_STYLE_PATH = '/wp-content/plugins/woo-donation-popup/';
 
 export const SKIP_REASONS = Object.freeze({
   NO_LIST_PAGE: 'no-list-page',
@@ -19,6 +21,7 @@ export const SKIP_REASONS = Object.freeze({
   NO_REMOTE_ORDERS: 'no-remote-orders',
   LOCAL_ONLY: 'local-only',
   NO_PRODUCT_PATH: 'no-product-path',
+  THEME_HIDES_RELATED: 'theme-hides-related',
 });
 
 export const ALLOWED_SKIP_REASONS = Object.freeze(Object.values(SKIP_REASONS));
@@ -26,6 +29,7 @@ export const ALLOWED_SKIP_REASONS = Object.freeze(Object.values(SKIP_REASONS));
 export const SKIP_EVIDENCE = Object.freeze({
   WP_DATA: 'wp-data',
   POLICY: 'policy',
+  CSS_SOURCE: 'css-source',
 });
 
 export const ALLOWED_SKIP_EVIDENCE = Object.freeze(Object.values(SKIP_EVIDENCE));
@@ -44,6 +48,7 @@ export const SKIP_LABELS = Object.freeze({
   [SKIP_REASONS.NO_REMOTE_ORDERS]: 'Uzaktan sipariş yok (checkout-view-only)',
   [SKIP_REASONS.LOCAL_ONLY]: 'yalnız yerel',
   [SKIP_REASONS.NO_PRODUCT_PATH]: 'Katalogda ürün yolu yok',
+  [SKIP_REASONS.THEME_HIDES_RELATED]: 'Tema/başka eklenti CSS ilgili ürünler bölümünü gizliyor',
 });
 
 /**
@@ -82,8 +87,20 @@ export function makeSkip(opts = {}) {
     evidence: String(opts.evidence || ''),
   };
   if (opts.detail) rec.detail = String(opts.detail);
+  if (opts.source) rec.source = String(opts.source);
   rec.description = formatSkipDescription(rec);
   return rec;
+}
+
+/**
+ * css-source yalnız eklenti dışı stil dosya yolu ile geçerli.
+ * @param {string} source
+ */
+export function isAllowedCssSource(source) {
+  const s = String(source || '').trim();
+  if (!s || s === 'inline') return false;
+  if (s.includes(PLUGIN_STYLE_PATH)) return false;
+  return s.includes('/') || /\.css(\b|$)/i.test(s);
 }
 
 /**
@@ -100,6 +117,12 @@ export function classifySkip(record) {
   if (!isAllowedSkipReason(reason)) return 'fail';
   if (evidence === 'dom') return 'fail';
   if (!isAllowedSkipEvidence(evidence)) return 'fail';
+  if (evidence === SKIP_EVIDENCE.CSS_SOURCE) {
+    if (reason !== SKIP_REASONS.THEME_HIDES_RELATED) return 'fail';
+    if (!isAllowedCssSource(record.source)) return 'fail';
+    return 'skip';
+  }
+  if (reason === SKIP_REASONS.THEME_HIDES_RELATED) return 'fail';
   return 'skip';
 }
 
