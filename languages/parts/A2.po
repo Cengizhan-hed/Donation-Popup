@@ -205,6 +205,7 @@ msgid "Button shadow (plugin buttons only)"
 msgstr "Buton gölgesi (yalnızca eklenti butonları)"
 
 #: includes/class-admin-form-tabs-renderer.php:580
+msgctxt "design tab"
 msgid "Button text"
 msgstr "Buton Metni"
 
@@ -370,6 +371,7 @@ msgid "Donate"
 msgstr "Bağış Yap"
 
 #: includes/class-admin-form-tabs-renderer.php:408
+msgctxt "admin form tab"
 msgid "Donation amount"
 msgstr "Bağış tutarı"
 
@@ -422,6 +424,7 @@ msgid "Email (optional)"
 msgstr "E-posta (isteğe bağlı)"
 
 #: includes/class-admin-form-tabs-renderer.php:164
+msgctxt "form tab title"
 msgid "Email field"
 msgstr "E-posta Alanı"
 
@@ -873,6 +876,7 @@ msgid "Plugin version"
 msgstr "Eklenti sürümü"
 
 #: includes/class-admin-page-renderer.php:56
+msgctxt "settings tab"
 msgid "Popup"
 msgstr "Modal"
 
@@ -934,6 +938,7 @@ msgid "Products"
 msgstr "Ürünler"
 
 #: includes/class-admin-page-renderer.php:59
+msgctxt "settings tab"
 msgid "Progress"
 msgstr "Progress"
 
@@ -1194,6 +1199,7 @@ msgid "Style packs could not be loaded."
 msgstr "Stil paketleri yüklenemedi."
 
 #: includes/class-admin-page-renderer.php:60
+msgctxt "settings tab"
 msgid "Success"
 msgstr "Başarı"
 
@@ -1330,6 +1336,7 @@ msgid "v%s"
 msgstr "v%s"
 
 #: includes/class-admin-products-list-table.php:253
+msgctxt "row action"
 msgid "View"
 msgstr "Görüntüle"
 

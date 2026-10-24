@@ -136,7 +136,7 @@ class WDP_Elementor_Widget_Donation_Form extends \Elementor\Widget_Base {
 		$this->add_control(
 			'button_text',
 			array(
-				'label'     => __('Button text', 'woo-donation-popup'),
+				'label'     => _x('Button text', 'Elementor widget', 'woo-donation-popup'),
 				'type'      => \Elementor\Controls_Manager::TEXT,
 				'default'   => '',
 				'condition' => array('display!' => 'inline'),

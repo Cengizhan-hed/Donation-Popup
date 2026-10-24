@@ -1,0 +1,147 @@
+{
+  "translation-revision-date": "2026-10-24T13:11:16.202Z",
+  "generator": "WDP make-json",
+  "source": "blocks/donations/index.js",
+  "domain": "messages",
+  "locale_data": {
+    "messages": {
+      "": {
+        "domain": "messages",
+        "lang": "tr_TR",
+        "plural-forms": "nplurals=2; plural=(n > 1);"
+      },
+      "Yes": [
+        "Evet"
+      ],
+      "No": [
+        "Hayır"
+      ],
+      "Query": [
+        "Sorgu"
+      ],
+      "Categories (slugs)": [
+        "Kategoriler (slug)"
+      ],
+      "Exclude categories": [
+        "Hariç kategoriler"
+      ],
+      "IDs only": [
+        "Yalnızca ID’ler"
+      ],
+      "Exclude IDs": [
+        "Hariç ID’ler"
+      ],
+      "Type (fixed,custom,shares,campaign)": [
+        "Tip (fixed,custom,shares,campaign)"
+      ],
+      "Count": [
+        "Adet"
+      ],
+      "Order by": [
+        "Sıralama"
+      ],
+      "Menu order": [
+        "Menü sırası"
+      ],
+      "Date": [
+        "Tarih"
+      ],
+      "Title": [
+        "Başlık"
+      ],
+      "Popularity": [
+        "Popülerlik"
+      ],
+      "Random": [
+        "Rastgele"
+      ],
+      "Direction": [
+        "Yön"
+      ],
+      "Display": [
+        "Görünüm"
+      ],
+      "Columns": [
+        "Sütunlar"
+      ],
+      "Tablet columns": [
+        "Tablet sütun"
+      ],
+      "Mobile columns": [
+        "Mobil sütun"
+      ],
+      "Gap (px)": [
+        "Boşluk (px)"
+      ],
+      "Image ratio": [
+        "Görsel oranı"
+      ],
+      "Original": [
+        "Orijinal"
+      ],
+      "Alignment": [
+        "Hiza"
+      ],
+      "Center": [
+        "Orta"
+      ],
+      "Left": [
+        "Sol"
+      ],
+      "Button": [
+        "Buton"
+      ],
+      "Panel": [
+        "Panel"
+      ],
+      "Popup": [
+        "Popup"
+      ],
+      "Link": [
+        "Bağlantı"
+      ],
+      "Full-width button": [
+        "Buton tam genişlik"
+      ],
+      "Tabs": [
+        "Sekmeler"
+      ],
+      "“All” tab": [
+        "“Tümü” sekmesi"
+      ],
+      "All tab label": [
+        "Tümü etiketi"
+      ],
+      "Image": [
+        "Görsel"
+      ],
+      "Excerpt": [
+        "Özet"
+      ],
+      "Progress": [
+        "İlerleme"
+      ],
+      "Price": [
+        "Fiyat"
+      ],
+      "Category": [
+        "Kategori"
+      ],
+      "Excerpt words": [
+        "Özet kelime"
+      ],
+      "Heading tag": [
+        "Başlık etiketi"
+      ],
+      "CSS class": [
+        "CSS sınıfı"
+      ],
+      "Donations list": [
+        "Bağış listesi"
+      ],
+      "At least one published donation product is required for the preview.": [
+        "Önizleme için en az bir yayımlanmış bağış ürünü gerekir."
+      ]
+    }
+  }
+}

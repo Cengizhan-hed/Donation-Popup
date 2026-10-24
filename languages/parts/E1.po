@@ -31,6 +31,7 @@ msgstr "Buton"
 
 #: includes/elementor/class-widget-donation-form.php:139
 #: includes/elementor/class-widget-donations-list.php:121
+msgctxt "Elementor widget"
 msgid "Button text"
 msgstr "Buton metni"
 

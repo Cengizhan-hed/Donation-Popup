@@ -250,7 +250,7 @@ class WDP_Admin_Products_List_Table extends WP_List_Table {
 			'edit' => '<a href="' . esc_url($edit_url) . '">' . esc_html__('Donation settings', 'woo-donation-popup') . '</a>',
 		);
 		if ($permalink && $status === 'publish') {
-			$actions['view'] = '<a href="' . esc_url($permalink) . '" target="_blank" rel="noopener noreferrer">' . esc_html__('View', 'woo-donation-popup') . '<span class="screen-reader-text"> ' . esc_html__('(opens in a new tab)', 'woo-donation-popup') . '</span></a>';
+			$actions['view'] = '<a href="' . esc_url($permalink) . '" target="_blank" rel="noopener noreferrer">' . esc_html_x('View', 'row action', 'woo-donation-popup') . '<span class="screen-reader-text"> ' . esc_html__('(opens in a new tab)', 'woo-donation-popup') . '</span></a>';
 		}
 
 		return $out . $this->row_actions($actions);

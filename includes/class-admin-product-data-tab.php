@@ -799,7 +799,7 @@ class WDP_Admin_Product_Data_Tab {
 		echo '<p class="wdp-pp-note">' . esc_html__('On a goal campaign the extra donation is not shown on the form; the settings are used if you switch to other types.', 'woo-donation-popup') . '</p>';
 		echo '</div>';
 		self::checkbox('enable_sadaka_donation', $values['enable_sadaka_donation'], __('Add an extra donation', 'woo-donation-popup'), __('Lets the donor add a small extra donation on top of the main donation.', 'woo-donation-popup'));
-		self::text('sadaka_toggle_label', $values['sadaka_toggle_label'], __('Button text', 'woo-donation-popup'), __('Text of the button that opens the extra donation.', 'woo-donation-popup'), array('placeholder' => __('Add extra donation', 'woo-donation-popup'), 'custom_attributes' => array('maxlength' => '80')));
+		self::text('sadaka_toggle_label', $values['sadaka_toggle_label'], _x('Button text', 'product data tab', 'woo-donation-popup'), __('Text of the button that opens the extra donation.', 'woo-donation-popup'), array('placeholder' => __('Add extra donation', 'woo-donation-popup'), 'custom_attributes' => array('maxlength' => '80')));
 		$sadaka_wc_value = ($values['sadaka_wc_product_id'] !== '' && $values['sadaka_wc_product_id'] !== '0')
 			? absint($values['sadaka_wc_product_id'])
 			: 0;
@@ -1029,7 +1029,7 @@ class WDP_Admin_Product_Data_Tab {
 		echo '<p class="wdp-pp-heading">' . esc_html__('Shortcode', 'woo-donation-popup') . '</p>';
 		echo '<p class="wdp-pp-lead">' . esc_html__('Choose a view, copy the shortcode, and paste it into a page or post.', 'woo-donation-popup') . '</p>';
 		echo '<div class="wdp-pp-shortcode__row">';
-		echo '<label class="wdp-pp-shortcode__label" for="wdp-shortcode-view">' . esc_html__('View', 'woo-donation-popup') . '</label>';
+		echo '<label class="wdp-pp-shortcode__label" for="wdp-shortcode-view">' . esc_html_x('View', 'section title', 'woo-donation-popup') . '</label>';
 		echo '<select id="wdp-shortcode-view" data-wdp-shortcode-select aria-controls="wdp-shortcode-output">';
 		foreach ($shortcodes as $shortcode) {
 			echo '<option value="' . esc_attr($shortcode['code']) . '">' . esc_html($shortcode['label']) . '</option>';

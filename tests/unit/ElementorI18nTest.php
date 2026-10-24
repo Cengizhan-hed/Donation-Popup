@@ -56,6 +56,12 @@ PHP
 final class ElementorI18nTest extends TestCase {
 	protected function setUp(): void {
 		WDP_Test_State::reset();
+		// Bu sınıf İNGİLİZCE kaynak metni doğrular (çeviri yok).
+		$GLOBALS['wdp_test_locale'] = 'en_US';
+	}
+
+	protected function tearDown(): void {
+		unset($GLOBALS['wdp_test_locale']);
 	}
 
 	private function turkishHits(string $text): array {

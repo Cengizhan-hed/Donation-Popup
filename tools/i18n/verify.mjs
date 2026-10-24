@@ -131,18 +131,17 @@ export function verifyI18n(opts = {}) {
     const b = tokensOf(tr[0]);
     if (!eqArr(a.ph, b.ph)) errors.push(`yer-tutucu: ${loc} «${String(c.msgid).slice(0, 50)}» ≠ «${String(tr[0]).slice(0, 50)}»`);
     if (!eqArr(a.tags, b.tags)) errors.push(`html-etiket: ${loc} «${String(c.msgid).slice(0, 50)}»`);
-    // `#. YENI-SARMA`: dönüşümden önce gettext'e sarılmamış Türkçe metin (altın kayıt dışı); parite sayımına girmez.
+    // `#. YENI-SARMA` (bilgi amaçlı sayaç): dönüşümden önce gettext'e sarılmamış Türkçe metin (altın kayıt dışı).
     const newWrap = /YENI-SARMA/.test(String(e.comments || ''));
     if (c.plural) {
       const ap = tokensOf(c.plural);
       const bp = tokensOf(tr[1] ?? tr[0]);
       if (!eqArr(ap.ph, bp.ph)) errors.push(`yer-tutucu-çoğul: ${loc}`);
-      if (!newWrap) currentTr.push(`${tr[0]}\u0001${tr[1] ?? tr[0]}`);
-    } else if (!newWrap) {
-      currentTr.push(String(tr[0]));
+      currentTr.push(`${tr[0]}\u0001${tr[1] ?? tr[0]}`);
     } else {
-      newWraps += 1;
+      currentTr.push(String(tr[0]));
     }
+    if (newWrap) newWraps += 1;
   }
 
   const goldenTr = golden

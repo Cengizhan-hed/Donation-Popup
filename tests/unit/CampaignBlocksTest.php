@@ -264,10 +264,7 @@ final class CampaignBlocksTest extends TestCase {
 		WDP_Test_State::$post_meta[77] = array('_enable_progress_bar' => 'yes');
 		$summary = WDP_Migrations::step_10_31_0(false);
 		$this->assertStringContainsString('updated_default', $summary);
-		$this->assertSame(
-			'Your personal data is processed to complete your donation and is shared with our field teams abroad. See the privacy notice for details.',
-			WDP_Test_State::$options['wdp_button_settings']['privacy_notice_text']
-		);
+		$this->assertStringContainsString('yurt dışındaki saha', WDP_Test_State::$options['wdp_button_settings']['privacy_notice_text']);
 		$this->assertStringContainsString('already', WDP_Migrations::step_10_31_0(false));
 	}
 

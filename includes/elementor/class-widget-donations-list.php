@@ -118,7 +118,7 @@ class WDP_Elementor_Widget_Donations_List extends \Elementor\Widget_Base {
 		$this->add_control('align', array('label' => __('Alignment', 'woo-donation-popup'), 'type' => \Elementor\Controls_Manager::SELECT, 'default' => 'center', 'options' => array('center' => __('Center', 'woo-donation-popup'), 'left' => __('Left', 'woo-donation-popup'))));
 		$this->add_control('button', array('label' => __('Button', 'woo-donation-popup'), 'type' => \Elementor\Controls_Manager::SELECT, 'default' => 'panel', 'options' => array('panel' => __('Panel', 'woo-donation-popup'), 'popup' => __('Popup', 'woo-donation-popup'), 'link' => __('Link', 'woo-donation-popup'))));
 		$this->add_control('button_full', array('label' => __('Full-width button', 'woo-donation-popup'), 'type' => \Elementor\Controls_Manager::SWITCHER, 'return_value' => 'yes', 'default' => 'yes'));
-		$this->add_control('button_text', array('label' => __('Button text', 'woo-donation-popup'), 'type' => \Elementor\Controls_Manager::TEXT));
+		$this->add_control('button_text', array('label' => _x('Button text', 'Elementor widget', 'woo-donation-popup'), 'type' => \Elementor\Controls_Manager::TEXT));
 		$this->add_control('tabs', array('label' => __('Tabs', 'woo-donation-popup'), 'type' => \Elementor\Controls_Manager::SWITCHER, 'return_value' => 'yes', 'default' => 'yes'));
 		$this->add_control('tab_all', array('label' => __('“All” tab', 'woo-donation-popup'), 'type' => \Elementor\Controls_Manager::SWITCHER, 'return_value' => 'yes', 'default' => 'yes'));
 		$this->add_control('tab_all_label', array('label' => __('All tab label', 'woo-donation-popup'), 'type' => \Elementor\Controls_Manager::TEXT, 'default' => __('All', 'woo-donation-popup')));

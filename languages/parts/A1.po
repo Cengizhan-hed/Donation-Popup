@@ -722,6 +722,7 @@ msgid "Choose a view, copy the shortcode, and paste it into a page or post."
 msgstr "Görünümü seçin, kısa kodu kopyalayıp sayfa veya yazıya yapıştırın."
 
 #: includes/class-admin-product-data-tab.php:1032
+msgctxt "section title"
 msgid "View"
 msgstr "Görünüm"
 
@@ -1132,6 +1133,7 @@ msgid "Lets the donor add a small extra donation on top of the main donation."
 msgstr "Bağışçının ana bağışa ek olarak küçük bir bağış eklemesine izin verir."
 
 #: includes/class-admin-product-data-tab.php:802
+msgctxt "product data tab"
 msgid "Button text"
 msgstr "Düğme metni"
 
