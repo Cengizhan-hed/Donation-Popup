@@ -129,6 +129,9 @@ describe('yerel sipariş (3M)', () => {
     assert.match(matrix, /from '\.\/place-order\.mjs'/);
     assert.doesNotMatch(matrix, /async function placeOrder/);
     assert.doesNotMatch(matrix, /async function fillBlocksCheckout/);
+    const place = fs.readFileSync(path.join(ROOT, 'tests/e2e/helpers/place-order.mjs'), 'utf8');
+    assert.match(place, /visibleCheckoutField/);
+    assert.match(place, /fillBlocksCheckout/);
   });
 
   it('iki hissedar adı/telefon meta’da zorunlu', () => {

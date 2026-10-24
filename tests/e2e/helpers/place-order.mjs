@@ -73,6 +73,22 @@ export async function findPlaceOrderButton(page) {
 /**
  * @param {import('@playwright/test').Page} page
  */
+/**
+ * Blok ödeme: önceki siparişten kayıtlı adres fatura alanını DOM’da bırakır ama gizler.
+ * .first() gizli input’a denk gelirse fill 25 sn bekler.
+ * @param {import('@playwright/test').Page} page
+ * @param {string} selector
+ */
+async function visibleCheckoutField(page, selector) {
+  const loc = page.locator(selector);
+  const n = await loc.count();
+  for (let i = 0; i < n; i += 1) {
+    const el = loc.nth(i);
+    if (await el.isVisible()) return el;
+  }
+  return null;
+}
+
 async function clickContinueIfNeeded(page) {
   const place = await findPlaceOrderButton(page);
   if (place) return;
@@ -168,22 +184,37 @@ export async function fillClassicCheckout(page, store, donor = {}) {
  * @param {{ name?: string, email?: string, phone?: string }} donor
  */
 export async function fillBlocksCheckout(page, store, donor = {}) {
-  const email = page.locator('#email, input[type="email"]').first();
-  await email.waitFor({ state: 'visible', timeout: CHECKOUT_MS });
-  await email.fill(donor.email || DONOR_EMAIL);
+  await page
+    .locator('.wc-block-checkout, .wp-block-woocommerce-checkout, #email, form.wc-block-checkout__form')
+    .first()
+    .waitFor({ state: 'visible', timeout: CHECKOUT_MS });
+  await page.waitForFunction(() => {
+    const email = document.querySelector('#email, input[type="email"]');
+    if (email) {
+      const st = window.getComputedStyle(email);
+      if (st.display !== 'none' && st.visibility !== 'hidden' && email.getClientRects().length) {
+        return true;
+      }
+    }
+    return !!document.querySelector(
+      '.wc-block-components-address-card, .wc-block-components-address-form, .wc-block-components-checkout-place-order-button'
+    );
+  }, { timeout: CHECKOUT_MS });
+  const email = await visibleCheckoutField(page, '#email, input[type="email"]');
+  if (email) await email.fill(donor.email || DONOR_EMAIL);
   const parts = nameParts(donor.name || DONOR_NAME);
-  const first = page.locator('#billing-first_name, #shipping-first_name').first();
-  if ((await first.count()) > 0) await first.fill(parts.first);
-  const last = page.locator('#billing-last_name, #shipping-last_name').first();
-  if ((await last.count()) > 0) await last.fill(parts.last);
-  const addr = page.locator('#billing-address_1, #shipping-address_1').first();
-  if ((await addr.count()) > 0) await addr.fill(store.address || 'Test Cad. 1');
-  const city = page.locator('#billing-city, #shipping-city').first();
-  if ((await city.count()) > 0) await city.fill(store.city || 'Istanbul');
-  const post = page.locator('#billing-postcode, #shipping-postcode').first();
-  if ((await post.count()) > 0) await post.fill(store.postcode || '34000');
-  const phone = page.locator('#billing-phone, #shipping-phone').first();
-  if ((await phone.count()) > 0) await phone.fill(donor.phone || DONOR_PHONE);
+  const first = await visibleCheckoutField(page, '#billing-first_name, #shipping-first_name');
+  if (first) await first.fill(parts.first);
+  const last = await visibleCheckoutField(page, '#billing-last_name, #shipping-last_name');
+  if (last) await last.fill(parts.last);
+  const addr = await visibleCheckoutField(page, '#billing-address_1, #shipping-address_1');
+  if (addr) await addr.fill(store.address || 'Test Cad. 1');
+  const city = await visibleCheckoutField(page, '#billing-city, #shipping-city');
+  if (city) await city.fill(store.city || 'Istanbul');
+  const post = await visibleCheckoutField(page, '#billing-postcode, #shipping-postcode');
+  if (post) await post.fill(store.postcode || '34000');
+  const phone = await visibleCheckoutField(page, '#billing-phone, #shipping-phone');
+  if (phone) await phone.fill(donor.phone || DONOR_PHONE);
   await fillStateField(
     page,
     '#billing-state, #shipping-state, .wc-block-components-state-input input',
