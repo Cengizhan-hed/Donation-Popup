@@ -70,25 +70,44 @@
   }
 
   /**
-   * Curcy (wmc_*), WOOCS ve wdp_ajax.currency — önbellek anahtarı için.
+   * Sunucunun verdiği standart sinyal (wdp_ajax.context): çerez adları, seçiciler, olaylar.
+   * Eklenti adları yalnız sunucu bağdaştırıcılarında (includes/compat) bilinir.
    */
+  function context() {
+    const c = ajax().context;
+    return c && typeof c === "object" ? c : {};
+  }
+
+  function list(key) {
+    const v = context()[key];
+    return Array.isArray(v) ? v : [];
+  }
+
+  function firstCookie(names) {
+    for (let i = 0; i < names.length; i++) {
+      const v = cookieValue(names[i]);
+      if (v) return v;
+    }
+    return "";
+  }
+
   function currentCurrency() {
-    const fromCookie =
-      cookieValue("wmc_current_currency") ||
-      cookieValue("woocommerce_currency") ||
-      cookieValue("wmc_currency") ||
-      cookieValue("woocs_current_currency");
+    const fromCookie = firstCookie(list("currency_cookies"));
     if (fromCookie) return String(fromCookie).toUpperCase();
     const cfg = ajax();
-    const code = cfg.currency && cfg.currency.code ? String(cfg.currency.code) : "TRY";
-    return code.toUpperCase() || "TRY";
+    const ctx = context();
+    const code =
+      (cfg.currency && cfg.currency.code && String(cfg.currency.code)) ||
+      (ctx.currency && String(ctx.currency)) ||
+      "";
+    return code.toUpperCase();
   }
 
   function currentLang() {
     const htmlLang =
       (document.documentElement && document.documentElement.getAttribute("lang")) || "";
-    const wpml = cookieValue("wp-wpml_current_language") || cookieValue("wpml_language");
-    const raw = (wpml || htmlLang || "tr").split(/[-_]/)[0] || "tr";
+    const fromCookie = firstCookie(list("lang_cookies"));
+    const raw = (fromCookie || htmlLang || context().lang || "").split(/[-_]/)[0];
     return String(raw).toLowerCase();
   }
 
@@ -123,20 +142,21 @@
   function bindCurrencyListeners() {
     if (currencyListenersBound) return;
     currencyListenersBound = true;
+    const selectors = list("switcher_selectors");
     document.addEventListener(
       "click",
       function (e) {
         const t = e.target;
-        if (!t || !t.closest) return;
-        if (
-          t.closest(".wmc-currency") ||
-          t.closest(".wmc-currency-wrapper") ||
-          t.closest(".woocommerce-currency-switcher") ||
-          t.closest("[data-currency]") ||
-          t.closest(".woocs_currency") ||
-          t.closest("a[href*='currency=']")
-        ) {
-          // Curcy "Override by AJAX" — kısa gecikme sonrası cookie/DOM güncellenir
+        if (!t || !t.closest || !selectors.length) return;
+        const hit = selectors.some(function (sel) {
+          try {
+            return !!t.closest(sel);
+          } catch (err) {
+            return false;
+          }
+        });
+        if (hit) {
+          // "AJAX ile değiştir" türü değiştiriciler — kısa gecikme sonrası çerez/DOM güncellenir
           setTimeout(function () {
             syncLocaleState();
             invalidateLocaleCaches("currency-switcher");
@@ -146,22 +166,18 @@
       },
       true
     );
-    document.addEventListener("wmc_currency_changed", function () {
-      invalidateLocaleCaches("wmc_currency_changed");
-      lastCurrency = currentCurrency();
+    const events = list("change_events");
+    events.forEach(function (name) {
+      document.addEventListener(name, function () {
+        invalidateLocaleCaches(name);
+        lastCurrency = currentCurrency();
+      });
     });
-    document.addEventListener("woocs_currency_changed", function () {
-      invalidateLocaleCaches("woocs_currency_changed");
-      lastCurrency = currentCurrency();
-    });
-    if (typeof window.jQuery !== "undefined" && window.jQuery.fn) {
-      window.jQuery(document).on(
-        "wmc_currency_changed woocs_currency_changed curcy_currency_changed",
-        function () {
-          invalidateLocaleCaches("jq-currency");
-          lastCurrency = currentCurrency();
-        }
-      );
+    if (events.length && typeof window.jQuery !== "undefined" && window.jQuery.fn) {
+      window.jQuery(document).on(events.join(" "), function () {
+        invalidateLocaleCaches("jq-currency");
+        lastCurrency = currentCurrency();
+      });
     }
   }
 

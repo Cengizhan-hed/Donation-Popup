@@ -22,6 +22,7 @@ final class WDP_Plugin_Bootstrap {
 		self::register_hpos_compatibility();
 		self::load_dependencies();
 		WDP_Migrations::init();
+		WDP_Compat_Loader::init();
 
 		add_action('init', array(__CLASS__, 'load_textdomain'));
 		add_action('plugins_loaded', array(__CLASS__, 'launch_plugin'));

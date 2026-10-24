@@ -297,6 +297,31 @@ trait WDP_Assets_Registry_Trait {
     }
 
     /**
+     * İstemci para birimi/dil bağlamı.
+     *
+     * @param string $currency_code Mağaza para birimi.
+     * @return array<string, mixed>
+     */
+    private static function client_context($currency_code) {
+        $locale  = function_exists('determine_locale') ? (string) determine_locale() : (string) get_locale();
+        $context = array(
+            'currency'           => strtoupper($currency_code),
+            'lang'               => strtolower((string) preg_split('/[-_]/', $locale)[0]),
+            'currency_cookies'   => array('woocommerce_currency'),
+            'lang_cookies'       => array(),
+            'switcher_selectors' => array('[data-currency]', "a[href*='currency=']"),
+            'change_events'      => array(),
+        );
+        /**
+         * Ön yüz para birimi/dil sinyali (çerez adları, değiştirici seçicileri, olay adları).
+         *
+         * @param array<string, mixed> $context Bağlam.
+         */
+        $filtered = apply_filters('wdp_client_context', $context);
+        return is_array($filtered) ? $filtered : $context;
+    }
+
+    /**
      * Localize frontend runtime data once per request.
      *
      * @param string $plugin_url Plugin URL.
@@ -319,6 +344,8 @@ trait WDP_Assets_Registry_Trait {
             $localize_handle = self::FRONTEND_JS_HANDLE;
         }
 
+        $client_context = self::client_context((string) ($currency_settings['code'] ?? ''));
+
         wp_localize_script($localize_handle, 'wdp_ajax', array(
             'ajax_url' => admin_url('admin-ajax.php'),
             'nonces' => array(
@@ -337,6 +364,7 @@ trait WDP_Assets_Registry_Trait {
             'version' => WDP_VERSION,
             'debug' => defined('WP_DEBUG') && WP_DEBUG,
             'currency' => $currency_settings,
+            'context'           => $client_context,
             // Lazy modal: boşta ön yükleme üst sınırı (görünür ilk N; eşzamanlı 1). 0 = kapalı.
             'lazy' => array(
                 'idle_prefetch' => max(0, min(12, (int) apply_filters('wdp_lazy_idle_prefetch', 3))),
