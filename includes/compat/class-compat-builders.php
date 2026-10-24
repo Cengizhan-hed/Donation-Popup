@@ -91,7 +91,7 @@ class WDP_Compat_Builders {
 			if ( $product && class_exists( 'WDP_Donation_Scope' ) && WDP_Donation_Scope::is_donation_product( $product ) ) {
 				return $product;
 			}
-			if ( $product && method_exists( $product, 'get_type' ) && $product->get_type() === 'simple' ) {
+			if ( $product && method_exists( $product, 'get_type' ) && $product->get_type() === 'simple' ) { // @phpstan-ignore function.alreadyNarrowedType
 				return $product;
 			}
 		}
@@ -144,6 +144,6 @@ class WDP_Compat_Builders {
 		if ( ! empty( $get['fl_builder'] ) || ! empty( $get['fl_builder_preview'] ) ) {
 			return true;
 		}
-		return class_exists( 'FLBuilderModel' ) && method_exists( 'FLBuilderModel', 'is_builder_active' ) && FLBuilderModel::is_builder_active();
+		return class_exists( 'FLBuilderModel' ) && method_exists( 'FLBuilderModel', 'is_builder_active' ) && FLBuilderModel::is_builder_active(); // @phpstan-ignore function.impossibleType
 	}
 }

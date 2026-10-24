@@ -151,7 +151,7 @@ class WDP_Phone_Field {
          * @param string[] $excluded Çıkarılacak ISO2 kodları.
          */
         $excluded = apply_filters('wdp_phone_excluded_countries', array());
-        if (is_array($excluded)) {
+        if (is_array($excluded)) { // @phpstan-ignore function.alreadyNarrowedType
             foreach ($excluded as $code) {
                 unset($countries[ strtolower((string) $code) ]);
             }
@@ -177,6 +177,7 @@ class WDP_Phone_Field {
             return null;
         }
         $wc = WC();
+        // @phpstan-ignore-next-line
         if (!is_object($wc) || !isset($wc->countries) || !is_object($wc->countries)) {
             return null;
         }
@@ -504,7 +505,7 @@ class WDP_Phone_Field {
             $dial = $countries[ $default_iso ]['dial'];
         } elseif ($countries) {
             $first_row = reset($countries);
-            $dial      = isset($first_row['dial']) ? $first_row['dial'] : '';
+            $dial      = isset($first_row['dial']) ? $first_row['dial'] : ''; // @phpstan-ignore isset.offset
         }
 
         $name = preg_replace('/[^a-z0-9_\-]/i', '', (string) $args['name']);
