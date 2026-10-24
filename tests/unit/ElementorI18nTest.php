@@ -114,7 +114,7 @@ final class ElementorI18nTest extends TestCase {
 	public function test_form_widget_title_and_keywords_are_english(): void {
 		$w = $this->formWidget();
 		$this->assertSame('Donation form', $w->get_title());
-		$this->assertSame(array('Donation form'), $w->get_keywords());
+		$this->assertSame(array('Donation form', 'donation', 'donate', 'charity', 'form', 'popup'), $w->get_keywords());
 		$this->assertSame(array('wdp-donation'), $w->get_categories());
 		$this->assertSame('wdp-donation-form', $w->get_name());
 	}
@@ -122,7 +122,7 @@ final class ElementorI18nTest extends TestCase {
 	public function test_list_widget_title_and_keywords_are_english(): void {
 		$w = $this->listWidget();
 		$this->assertSame('Donations list', $w->get_title());
-		$this->assertSame(array('Donations list'), $w->get_keywords());
+		$this->assertSame(array('Donations list', 'donation', 'campaign', 'list', 'progress'), $w->get_keywords());
 		$this->assertSame(array('wdp-donation'), $w->get_categories());
 		$this->assertSame('wdp-donations', $w->get_name());
 	}

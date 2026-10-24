@@ -46,7 +46,13 @@ class WDP_Elementor_Widget_Donations_List extends \Elementor\Widget_Base {
 	 * @return string[]
 	 */
 	public function get_keywords() {
-		return array($this->get_title());
+		return array(
+			$this->get_title(),
+			_x('donation', 'elementor widget search keyword', 'woo-donation-popup'),
+			_x('campaign', 'elementor widget search keyword', 'woo-donation-popup'),
+			_x('list', 'elementor widget search keyword', 'woo-donation-popup'),
+			_x('progress', 'elementor widget search keyword', 'woo-donation-popup'),
+		);
 	}
 
 	/**

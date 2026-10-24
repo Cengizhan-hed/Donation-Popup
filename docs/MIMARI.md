@@ -753,6 +753,8 @@ Kaynak dil (dönüşüm sonrası) İngilizce `__('…', 'woo-donation-popup')`; 
 
 Blok düzenleyici ve Elementor düzenleyici betikleri WordPress `wp.i18n` kullanır (tasarım kararı). Ön yüz bundle `wp.i18n` bağırlığı taşımaz.
 
+Yerel biçimler (D5): yönetici önizleme tutarları mağaza ayarından (`wc_price` metne çevrilmiş; JS çipleri `wdp_admin.currency_symbol` + `price_format`); işlem ücreti yüzdesi ondalık ayırıcısı `wc_get_price_decimal_separator()`; `lazy-modal.js` para/dil önbellek anahtarında sabit `TRY`/`tr` yok (boş); `WDP_Progress_Currency::get_base_currency()` ve sepet verisi para birimi yedeği boş. Elementor arama anahtar sözcükleri `_x('…', 'elementor widget search keyword', …)` ile çevrilebilir (`languages/parts/D5.po`); altın 2 çıkarıcısı bu çağrıları çevirir. Tarih biçimi: sabit biçim yok (taramada 0). RTL: `npm run e2e:rtl` yerelde 34/34.
+
 ---
 
 ## Doğrulama notu

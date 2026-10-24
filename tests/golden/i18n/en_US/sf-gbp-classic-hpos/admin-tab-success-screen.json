@@ -1,6 +1,6 @@
 {
   "id": "admin-tab-success-screen",
-  "text": "DONATION POPUP\nDonation Popup settings\nManage product behavior, form look, and the success screen in one place — changes show up instantly in the live preview.\nV10.#AMT#\nSETUP\nProducts\nProduct page and list\nDesign\nFORMS\nPopup\nNormal\nShare-based\nProgress\nSuccess\nMORE\nMeta Pixel\nCategories\nAdvanced\nWhat can you do on this tab?\nSuccess message, mini cart, and action buttons after adding to the cart.\nThe preview on the right shows colors and texts live.\nSuccess message\nColor and corner settings for the thank-you row.\nMessage background\nHex or rgba is accepted.\nMessage text\nMessage border\nMessage radius (px)\nButtons and mini cart\nAction button, mini-cart card, and product row colors.\nButton color\nButton hover\nButton radius (px)\nGo to cart\nComplete donation\nNew donation\nMini cart background\nMini cart border\nMini cart radius\nProduct name color\nPrice color\nAdd-on donation (default)\nThe WooCommerce product used when the product card has no custom ID.\nDefault add-on donation product\nSearch by product name…\nIf empty/#N#, the add-on donation row is not added. The selected product is hidden from the shop/list/search; the direct URL and cart still work.\nAdd-on donation toggle text\nSave settings\nLIVE PREVIEW\nYour donation was added to the cart.\nSample campaign\n₺#N#\nGo to cart\nComplete donation\nContinue adding donations",
+  "text": "DONATION POPUP\nDonation Popup settings\nManage product behavior, form look, and the success screen in one place — changes show up instantly in the live preview.\nV10.#AMT#\nSETUP\nProducts\nProduct page and list\nDesign\nFORMS\nPopup\nNormal\nShare-based\nProgress\nSuccess\nMORE\nMeta Pixel\nCategories\nAdvanced\nWhat can you do on this tab?\nSuccess message, mini cart, and action buttons after adding to the cart.\nThe preview on the right shows colors and texts live.\nSuccess message\nColor and corner settings for the thank-you row.\nMessage background\nHex or rgba is accepted.\nMessage text\nMessage border\nMessage radius (px)\nButtons and mini cart\nAction button, mini-cart card, and product row colors.\nButton color\nButton hover\nButton radius (px)\nGo to cart\nComplete donation\nNew donation\nMini cart background\nMini cart border\nMini cart radius\nProduct name color\nPrice color\nAdd-on donation (default)\nThe WooCommerce product used when the product card has no custom ID.\nDefault add-on donation product\nSearch by product name…\nIf empty/#N#, the add-on donation row is not added. The selected product is hidden from the shop/list/search; the direct URL and cart still work.\nAdd-on donation toggle text\nSave settings\nLIVE PREVIEW\nYour donation was added to the cart.\nSample campaign\n£#N#\nGo to cart\nComplete donation\nContinue adding donations",
   "lines": [
     "DONATION POPUP",
     "Donation Popup settings",
@@ -53,7 +53,7 @@
     "LIVE PREVIEW",
     "Your donation was added to the cart.",
     "Sample campaign",
-    "₺#N#",
+    "£#N#",
     "Go to cart",
     "Complete donation",
     "Continue adding donations"

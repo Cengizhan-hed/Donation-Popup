@@ -1,6 +1,6 @@
 {
   "id": "admin-tab-success-screen",
-  "text": "DONATİON POPUP\nBağış Popup Ayarları\nÜrün davranışını, form görünümünü ve başarı ekranını tek yerden yönetin — değişiklikler canlı önizlemede anında görünür.\nV10.#AMT#\nKURULUM\nÜrünler\nÜrün sayfası ve liste\nTasarım\nFORMLAR\nModal\nNormal\nHisseli\nProgress\nBaşarı\nEK\nMeta Pixel\nKategoriler\nGelişmiş\nBu sekmede ne yaparsınız?\nSepete ekleme sonrası başarı mesajı, mini sepet ve aksiyon butonları.\nSağdaki önizleme renk ve metinleri canlı gösterir.\nBaşarı mesajı\nTeşekkür satırının renk ve köşe ayarları.\nMesaj Arka Plan\nHex veya rgba kabul edilir.\nMesaj Metin\nMesaj Border\nMesaj Radius (px)\nButonlar ve mini sepet\nAksiyon butonları, mini sepet kartı ve ürün satırı renkleri.\nButon Rengi\nButon Hover\nButon Radius (px)\nSepete Git\nBağışı Tamamla\nYeni Bağış\nMini Sepet Arka Plan\nMini Sepet Border\nMini Sepet Radius\nÜrün Adı Rengi\nFiyat Rengi\nAlt bağış (varsayılan)\nÜrün kartında özel ID yoksa kullanılan WC ürünü.\nVarsayılan alt bağış ürünü\nÜrün adı ile ara…\nBoş/#N# ise alt bağış satırı eklenmez. Seçilen ürün mağaza/liste/aramadan gizlenir; doğrudan URL ve sepet çalışmaya devam eder.\nAlt Bağış Toggle Metni\nAyarları Kaydet\nCANLI ÖNİZLEME\nBağışınız sepete eklendi.\nÖrnek Kampanya\n₺#N#\nSepete Git\nBağışı Tamamla\nBağış eklemeye devam edin",
+  "text": "DONATİON POPUP\nBağış Popup Ayarları\nÜrün davranışını, form görünümünü ve başarı ekranını tek yerden yönetin — değişiklikler canlı önizlemede anında görünür.\nV10.#AMT#\nKURULUM\nÜrünler\nÜrün sayfası ve liste\nTasarım\nFORMLAR\nModal\nNormal\nHisseli\nProgress\nBaşarı\nEK\nMeta Pixel\nKategoriler\nGelişmiş\nBu sekmede ne yaparsınız?\nSepete ekleme sonrası başarı mesajı, mini sepet ve aksiyon butonları.\nSağdaki önizleme renk ve metinleri canlı gösterir.\nBaşarı mesajı\nTeşekkür satırının renk ve köşe ayarları.\nMesaj Arka Plan\nHex veya rgba kabul edilir.\nMesaj Metin\nMesaj Border\nMesaj Radius (px)\nButonlar ve mini sepet\nAksiyon butonları, mini sepet kartı ve ürün satırı renkleri.\nButon Rengi\nButon Hover\nButon Radius (px)\nSepete Git\nBağışı Tamamla\nYeni Bağış\nMini Sepet Arka Plan\nMini Sepet Border\nMini Sepet Radius\nÜrün Adı Rengi\nFiyat Rengi\nAlt bağış (varsayılan)\nÜrün kartında özel ID yoksa kullanılan WC ürünü.\nVarsayılan alt bağış ürünü\nÜrün adı ile ara…\nBoş/#N# ise alt bağış satırı eklenmez. Seçilen ürün mağaza/liste/aramadan gizlenir; doğrudan URL ve sepet çalışmaya devam eder.\nAlt Bağış Toggle Metni\nAyarları Kaydet\nCANLI ÖNİZLEME\nBağışınız sepete eklendi.\nÖrnek Kampanya\n£#N#\nSepete Git\nBağışı Tamamla\nBağış eklemeye devam edin",
   "lines": [
     "DONATİON POPUP",
     "Bağış Popup Ayarları",
@@ -53,7 +53,7 @@
     "CANLI ÖNİZLEME",
     "Bağışınız sepete eklendi.",
     "Örnek Kampanya",
-    "₺#N#",
+    "£#N#",
     "Sepete Git",
     "Bağışı Tamamla",
     "Bağış eklemeye devam edin"

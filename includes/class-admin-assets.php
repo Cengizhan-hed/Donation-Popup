@@ -72,13 +72,15 @@ class WDP_Admin_Assets {
 			'wdp-admin-js',
 			'wdp_admin',
 			array(
-				'ajax_url'      => admin_url('admin-ajax.php'),
-				'nonce'         => wp_create_nonce('wdp_admin_nonce'),
-				'save_success'  => __('Settings saved successfully.', 'woo-donation-popup'),
-				'save_error'    => __('An error occurred while saving settings.', 'woo-donation-popup'),
-				'style_packs'   => $style_packs,
-				'icon_builtins' => $icon_builtins,
-				'i18n'          => array(
+				'ajax_url'        => admin_url('admin-ajax.php'),
+				'nonce'           => wp_create_nonce('wdp_admin_nonce'),
+				'save_success'    => __('Settings saved successfully.', 'woo-donation-popup'),
+				'save_error'      => __('An error occurred while saving settings.', 'woo-donation-popup'),
+				'currency_symbol' => html_entity_decode(get_woocommerce_currency_symbol(), ENT_QUOTES, 'UTF-8'),
+				'price_format'    => html_entity_decode(get_woocommerce_price_format(), ENT_QUOTES, 'UTF-8'),
+				'style_packs'     => $style_packs,
+				'icon_builtins'   => $icon_builtins,
+				'i18n'            => array(
 					'preset_applied'         => __('The pack was applied to the form fields. Don’t forget to save.', 'woo-donation-popup'),
 					'media_title'            => __('Select icon', 'woo-donation-popup'),
 					'media_button'           => __('Use', 'woo-donation-popup'),

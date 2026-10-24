@@ -112,7 +112,7 @@ class WDP_Admin_Layout_Tabs_Renderer {
 		$h = max(12, min(28, absint($settings['bar_height'])));
 		echo '<div class="wdp-admin-progress-preview" id="wdp-admin-progress-preview">';
 		echo '<div class="wdp-admin-progress-preview__card" style="--wdp-ap-container-bg:' . esc_attr($settings['container_bg']) . ';--wdp-ap-container-border:' . esc_attr($settings['container_border']) . ';--wdp-ap-track:' . esc_attr($settings['track_bg']) . ';--wdp-ap-fill:' . esc_attr($settings['fill_color']) . ';--wdp-ap-pending:' . esc_attr($settings['pending_bg']) . ';--wdp-ap-preview:' . esc_attr($settings['preview_bg']) . ';--wdp-ap-pct-bg:' . esc_attr($settings['percentage_bg']) . ';--wdp-ap-pct-text:' . esc_attr($settings['percentage_text']) . ';--wdp-ap-h:' . esc_attr($h) . 'px;">';
-		echo '<div class="wdp-admin-progress-preview__hdr"><span>' . esc_html__('Raised', 'woo-donation-popup') . '<strong>₺42.000</strong></span><span>' . esc_html__('Goal', 'woo-donation-popup') . '<strong>₺100.000</strong></span></div>';
+		echo '<div class="wdp-admin-progress-preview__hdr"><span>' . esc_html__('Raised', 'woo-donation-popup') . '<strong>' . esc_html(html_entity_decode(wp_strip_all_tags(wc_price(42000, array( 'decimals' => 0 ))), ENT_QUOTES, 'UTF-8')) . '</strong></span><span>' . esc_html__('Goal', 'woo-donation-popup') . '<strong>' . esc_html(html_entity_decode(wp_strip_all_tags(wc_price(100000, array( 'decimals' => 0 ))), ENT_QUOTES, 'UTF-8')) . '</strong></span></div>';
 		echo '<div class="wdp-admin-progress-preview__track">';
 		echo '<span class="wdp-admin-progress-preview__fill" style="width:42%"></span>';
 		echo '<span class="wdp-admin-progress-preview__pending" style="left:42%;width:18%"></span>';

@@ -80,15 +80,15 @@
       cookieValue("woocs_current_currency");
     if (fromCookie) return String(fromCookie).toUpperCase();
     const cfg = ajax();
-    const code = cfg.currency && cfg.currency.code ? String(cfg.currency.code) : "TRY";
-    return code.toUpperCase() || "TRY";
+    const code = cfg.currency && cfg.currency.code ? String(cfg.currency.code) : "";
+    return code.toUpperCase();
   }
 
   function currentLang() {
     const htmlLang =
       (document.documentElement && document.documentElement.getAttribute("lang")) || "";
     const wpml = cookieValue("wp-wpml_current_language") || cookieValue("wpml_language");
-    const raw = (wpml || htmlLang || "tr").split(/[-_]/)[0] || "tr";
+    const raw = (wpml || htmlLang || "").split(/[-_]/)[0] || "";
     return String(raw).toLowerCase();
   }
 

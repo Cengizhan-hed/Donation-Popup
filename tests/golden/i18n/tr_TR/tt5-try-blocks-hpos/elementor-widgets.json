@@ -7,20 +7,44 @@
       "file": "includes/elementor/class-widget-donation-form.php",
       "class": "WDP_Elementor_Widget_Donation_Form",
       "title": "Bağış Formu",
-      "keywords": [],
+      "keywords": [
+        "Bağış Formu",
+        "bağış",
+        "bağış yap",
+        "hayır",
+        "form",
+        "popup"
+      ],
       "hasGetKeywords": true
     },
     {
       "file": "includes/elementor/class-widget-donations-list.php",
       "class": "WDP_Elementor_Widget_Donations_List",
       "title": "Bağış Listesi",
-      "keywords": [],
+      "keywords": [
+        "Bağış Listesi",
+        "bağış",
+        "kampanya",
+        "liste",
+        "ilerleme"
+      ],
       "hasGetKeywords": true
     }
   ],
-  "text": "Bağış Formu\nBağış Listesi",
+  "text": "Bağış Formu\nBağış Formu\nbağış\nbağış yap\nhayır\nform\npopup\nBağış Listesi\nBağış Listesi\nbağış\nkampanya\nliste\nilerleme",
   "lines": [
     "Bağış Formu",
-    "Bağış Listesi"
+    "Bağış Formu",
+    "bağış",
+    "bağış yap",
+    "hayır",
+    "form",
+    "popup",
+    "Bağış Listesi",
+    "Bağış Listesi",
+    "bağış",
+    "kampanya",
+    "liste",
+    "ilerleme"
   ]
 }

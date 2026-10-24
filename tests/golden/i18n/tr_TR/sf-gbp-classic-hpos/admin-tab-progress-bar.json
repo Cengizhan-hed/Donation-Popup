@@ -1,6 +1,6 @@
 {
   "id": "admin-tab-progress-bar",
-  "text": "DONATİON POPUP\nBağış Popup Ayarları\nÜrün davranışını, form görünümünü ve başarı ekranını tek yerden yönetin — değişiklikler canlı önizlemede anında görünür.\nV10.#AMT#\nKURULUM\nÜrünler\nÜrün sayfası ve liste\nTasarım\nFORMLAR\nModal\nNormal\nHisseli\nProgress\nBaşarı\nEK\nMeta Pixel\nKategoriler\nGelişmiş\nBu sekmede ne yaparsınız?\nÜrün Ayarları’nda “Progress Bar” açıksa, hedefe doğru dolan çubuğun renkleri, yüksekliği ve etiketleri buradan yönetilir.\nÜç katman: onaylı (ödeme sonrası), sepet bekleyen, yazılan tutar önizlemesi. Hedef tutar ürün kartındaki “Hedef tutar” alanındadır.\nRenkler ve katmanlar\nOnaylı / sepet / yazılan dilim renkleri ve kart yüzeyi.\nKapsayıcı Arka Plan\nProgress kartının arka plan rengi.\nKapsayıcı Border\nKart kenarlık rengi.\nBoş Bar\nTrack (boş kısım) rengi.\nOnaylı (Dolu) Bar\nÖdeme sonrası onaylanan tutar.\nSepet Bekleyen Bar\nSepette duran, henüz ödenmemiş tutar dilimi.\nYazılan Tutar (Draft)\nFrontend soft-ink dilim fill rengini kullanır; bu alan eski uyumluluk / yedek renktir.\nYüzde Rozeti Arka Plan\nFrontend’de yüzde arkaplansızdır; eski uyumluluk.\nYüzde Rozeti Metin\nBoyut ve animasyon\nÇubuk yüksekliği ve hedef kutlaması.\nBar Yüksekliği (px)\n#N#–#N# px. Daha okunaklı bir çubuk için #N#–#N# önerilir.\nAnimasyon\nHedef dolunca kutlama animasyonu\nAyarları Kaydet\nCANLI ÖNİZLEME\nTOPLANAN\n₺#AMT#\nHEDEF\n₺#AMT#\n#N#%",
+  "text": "DONATİON POPUP\nBağış Popup Ayarları\nÜrün davranışını, form görünümünü ve başarı ekranını tek yerden yönetin — değişiklikler canlı önizlemede anında görünür.\nV10.#AMT#\nKURULUM\nÜrünler\nÜrün sayfası ve liste\nTasarım\nFORMLAR\nModal\nNormal\nHisseli\nProgress\nBaşarı\nEK\nMeta Pixel\nKategoriler\nGelişmiş\nBu sekmede ne yaparsınız?\nÜrün Ayarları’nda “Progress Bar” açıksa, hedefe doğru dolan çubuğun renkleri, yüksekliği ve etiketleri buradan yönetilir.\nÜç katman: onaylı (ödeme sonrası), sepet bekleyen, yazılan tutar önizlemesi. Hedef tutar ürün kartındaki “Hedef tutar” alanındadır.\nRenkler ve katmanlar\nOnaylı / sepet / yazılan dilim renkleri ve kart yüzeyi.\nKapsayıcı Arka Plan\nProgress kartının arka plan rengi.\nKapsayıcı Border\nKart kenarlık rengi.\nBoş Bar\nTrack (boş kısım) rengi.\nOnaylı (Dolu) Bar\nÖdeme sonrası onaylanan tutar.\nSepet Bekleyen Bar\nSepette duran, henüz ödenmemiş tutar dilimi.\nYazılan Tutar (Draft)\nFrontend soft-ink dilim fill rengini kullanır; bu alan eski uyumluluk / yedek renktir.\nYüzde Rozeti Arka Plan\nFrontend’de yüzde arkaplansızdır; eski uyumluluk.\nYüzde Rozeti Metin\nBoyut ve animasyon\nÇubuk yüksekliği ve hedef kutlaması.\nBar Yüksekliği (px)\n#N#–#N# px. Daha okunaklı bir çubuk için #N#–#N# önerilir.\nAnimasyon\nHedef dolunca kutlama animasyonu\nAyarları Kaydet\nCANLI ÖNİZLEME\nTOPLANAN\n£#AMT#\nHEDEF\n£#AMT#\n#N#%",
   "lines": [
     "DONATİON POPUP",
     "Bağış Popup Ayarları",
@@ -49,9 +49,9 @@
     "Ayarları Kaydet",
     "CANLI ÖNİZLEME",
     "TOPLANAN",
-    "₺#AMT#",
+    "£#AMT#",
     "HEDEF",
-    "₺#AMT#",
+    "£#AMT#",
     "#N#%"
   ],
   "locale": "tr_TR",

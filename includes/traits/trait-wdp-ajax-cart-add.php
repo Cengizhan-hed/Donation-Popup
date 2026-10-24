@@ -389,7 +389,7 @@ trait WDP_Ajax_Cart_Add_Trait {
             'quantity'     => $qty,
             'line_total'   => round((float) $line_total, $dec),
             'item_price'   => $qty > 0 ? round((float) $line_total / $qty, $dec) : round((float) $line_total, $dec),
-            'currency'     => function_exists('get_woocommerce_currency') ? get_woocommerce_currency() : 'TRY',
+            'currency'     => function_exists('get_woocommerce_currency') ? get_woocommerce_currency() : '',
         );
     }
 
