@@ -70,7 +70,7 @@ class WDP_Progress_Currency {
 		 * @param string            $base     Store base currency.
 		 */
 		$stored = apply_filters('wdp_order_exchange_rate', null, $order, $currency, $base);
-		if ($stored !== null && is_numeric($stored) && (float) $stored > 0) {
+		if ($stored !== null && is_numeric($stored) && (float) $stored > 0) { // @phpstan-ignore function.alreadyNarrowedType
 			return (float) $stored;
 		}
 
@@ -98,7 +98,7 @@ class WDP_Progress_Currency {
 		 * @param string     $base     Base currency.
 		 */
 		$filtered = apply_filters('wdp_progress_live_rate', null, $currency, $base);
-		if ($filtered !== null && is_numeric($filtered) && (float) $filtered > 0) {
+		if ($filtered !== null && is_numeric($filtered) && (float) $filtered > 0) { // @phpstan-ignore function.alreadyNarrowedType
 			return (float) $filtered;
 		}
 

@@ -84,7 +84,7 @@ class WDP_Compat_Currency {
 			return $rate;
 		}
 		$currency = strtoupper( (string) $currency );
-		if ( class_exists( 'WOOMULTI_CURRENCY_Data' ) && method_exists( 'WOOMULTI_CURRENCY_Data', 'get_ins' ) ) {
+		if ( class_exists( 'WOOMULTI_CURRENCY_Data' ) && method_exists( 'WOOMULTI_CURRENCY_Data', 'get_ins' ) ) { // @phpstan-ignore function.impossibleType
 			$settings = WOOMULTI_CURRENCY_Data::get_ins();
 			if ( is_object( $settings ) && method_exists( $settings, 'get_list_currencies' ) ) {
 				$list = $settings->get_list_currencies();
@@ -103,7 +103,7 @@ class WDP_Compat_Currency {
 	 * @return array<string, mixed>
 	 */
 	public static function client_context( $context ) {
-		$context = is_array( $context ) ? $context : array();
+		$context = is_array( $context ) ? $context : array(); // @phpstan-ignore function.alreadyNarrowedType
 		$merge   = static function ( $key, $add, $prepend = false ) use ( &$context ) {
 			$cur             = isset( $context[ $key ] ) && is_array( $context[ $key ] ) ? $context[ $key ] : array();
 			$context[ $key ] = array_values( array_unique( $prepend ? array_merge( $add, $cur ) : array_merge( $cur, $add ) ) );

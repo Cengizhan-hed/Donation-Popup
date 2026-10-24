@@ -691,12 +691,6 @@ parameters:
 			path: ../../includes/class-product-settings-service.php
 
 		-
-			message: '#^Call to function is_numeric\(\) with float will always evaluate to true\.$#'
-			identifier: function.alreadyNarrowedType
-			count: 1
-			path: ../../includes/class-progress-currency.php
-
-		-
 			message: '#^Call to function method_exists\(\) with ''WOOMULTI_CURRENCY…'' and ''get_ins'' will always evaluate to false\.$#'
 			identifier: function.impossibleType
 			count: 1
