@@ -6,8 +6,9 @@
  *  1. Güncel gettext çağrılarının msgid/plural/bağlamında Türkçe harf ya da bilinen Türkçe sözcük YOK.
  *  2. Her çağrının (msgctxt, msgid) karşılığı .po'da var ve msgstr boş değil.
  *  3. msgid ile msgstr'de yer tutucu ve HTML etiket çoklu kümeleri eşit.
- *  4. Altın parite: altın kayıttaki (dönüşümden önceki) Türkçe metin çoklu kümesi, güncel çağrıların
- *     .po çevirileri çoklu kümesine BİREBİR eşit (kaybolan, değişen, fazladan Türkçe metin yok).
+ *  4. Altın parite: altın kayıttaki (dönüşümden önceki) Türkçe metinlerin HEPSİ güncel çağrıların .po
+ *     çevirileri arasında birebir ve aynı sayıda bulunur (kaybolan/değişen = HATA). Fazladan metin (yeni
+ *     sarılan düz Türkçe) HATA değil, bilgi olarak listelenir.
  *
  *   node tools/i18n/verify.mjs [--files a.php,b.php] [--po p1.po,p2.po] [--parts] [--golden dosya.json] [--json]
  *   (--po verilmezse languages/woo-donation-popup-tr_TR.po; --parts: languages/parts/*.po de okunur)
@@ -103,10 +104,13 @@ export function verifyI18n(opts = {}) {
 
   /** @type {string[]} */
   const errors = [];
+  /** @type {string[]} */
+  const infos = [];
   for (const c of conflicts) errors.push(`po-çakışma: aynı msgid farklı çeviri: ${c.slice(0, 80)}`);
 
   /** @type {string[]} */
   const currentTr = [];
+  let newWraps = 0;
   for (const c of calls) {
     const loc = `${c.file}:${c.line}`;
     for (const [label, val] of [['msgid', c.msgid], ['plural', c.plural], ['context', c.context]]) {
@@ -127,13 +131,17 @@ export function verifyI18n(opts = {}) {
     const b = tokensOf(tr[0]);
     if (!eqArr(a.ph, b.ph)) errors.push(`yer-tutucu: ${loc} «${String(c.msgid).slice(0, 50)}» ≠ «${String(tr[0]).slice(0, 50)}»`);
     if (!eqArr(a.tags, b.tags)) errors.push(`html-etiket: ${loc} «${String(c.msgid).slice(0, 50)}»`);
+    // `#. YENI-SARMA`: dönüşümden önce gettext'e sarılmamış Türkçe metin (altın kayıt dışı); parite sayımına girmez.
+    const newWrap = /YENI-SARMA/.test(String(e.comments || ''));
     if (c.plural) {
       const ap = tokensOf(c.plural);
       const bp = tokensOf(tr[1] ?? tr[0]);
       if (!eqArr(ap.ph, bp.ph)) errors.push(`yer-tutucu-çoğul: ${loc}`);
-      currentTr.push(`${tr[0]}\u0001${tr[1] ?? tr[0]}`);
-    } else {
+      if (!newWrap) currentTr.push(`${tr[0]}\u0001${tr[1] ?? tr[0]}`);
+    } else if (!newWrap) {
       currentTr.push(String(tr[0]));
+    } else {
+      newWraps += 1;
     }
   }
 
@@ -160,15 +168,18 @@ export function verifyI18n(opts = {}) {
   for (const [k, n] of cc) {
     const d = n - (gc.get(k) || 0);
     if (d > 0) {
+      // Fazla = daha önce gettext'e sarılmamış (ya da ayar varsayılanı olarak düz duran) Türkçe metnin çevrilebilir hâle gelmesi.
+      // Hata DEĞİL (kayıp yok); görünür metin altın kaydı (i18n:golden --compare) davranışı ayrıca korur. Bilgi olarak listelenir.
       extra += d;
-      if (extra <= 25) errors.push(`parite-fazla(${d}): «${k.replace(/\u0001/g, ' | ').slice(0, 90)}»`);
+      if (extra <= 25) infos.push(`parite-fazla(${d}): «${k.replace(/\u0001/g, ' | ').slice(0, 90)}»`);
     }
   }
 
   return {
     ok: errors.length === 0,
     errors,
-    stats: { files: scope.length || 'hepsi', calls: calls.length, golden: goldenTr.length, missing, extra, po: po.size },
+    infos,
+    stats: { files: scope.length || 'hepsi', calls: calls.length, golden: goldenTr.length, missing, extra, po: po.size, newWraps },
   };
 }
 
@@ -192,8 +203,9 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   if (args.json) {
     console.log(JSON.stringify(r, null, 2));
   } else {
-    console.log(`i18n:verify — çağrı=${r.stats.calls} altın=${r.stats.golden} eksik=${r.stats.missing} fazla=${r.stats.extra} po=${r.stats.po}`);
+    console.log(`i18n:verify — çağrı=${r.stats.calls} altın=${r.stats.golden} eksik=${r.stats.missing} fazla=${r.stats.extra} yeni-sarma=${r.stats.newWraps} po=${r.stats.po}`);
     for (const e of r.errors.slice(0, 80)) console.log(`  ✗ ${e}`);
+    for (const i of (r.infos || []).slice(0, 25)) console.log(`  ℹ ${i}`);
     if (r.errors.length > 80) console.log(`  … +${r.errors.length - 80} hata daha`);
     console.log(r.ok ? 'i18n:verify TEMİZ' : `i18n:verify KIRMIZI (${r.errors.length})`);
   }

@@ -70,8 +70,7 @@ describe('i18n verify', () => {
     assert.match(text, /po-yok/);
     assert.match(text, /yer-tutucu/);
     assert.match(text, /parite-eksik/);
-    assert.match(text, /parite-fazla/);
-  });
+      });
 
   it('--files kapsamı yalnız o dosyaları denetler', () => {
     const root = makeRoot(
