@@ -62,8 +62,9 @@ describe('writePanelOpenDebug', () => {
     const prev = process.env.WDP_E2E_PROFILE_ID;
     process.env.WDP_E2E_PROFILE_ID = 'local';
     const rel = writePanelOpenDebug('desktop', 'shares', {
-      class: 'panel-acilamadi',
-      detail: 'selector=sidePanel',
+      class: 'yanlış-sayfa',
+      detail: 'yanlış-sayfa reason=wp-admin path=/wp-admin/post.php',
+      page: { pathname: '/wp-admin/post.php?post=1&action=edit', body_class: 'wp-admin', product_id: 1 },
       plugin: {
         has_wdp_app: false,
         scripts: [{ id: 'wdp-donation-modal-js', src: 'https://x.test/app.js?ver=1&tok=z' }],
@@ -74,8 +75,9 @@ describe('writePanelOpenDebug', () => {
     });
     const abs = path.join(ROOT, rel);
     const json = fs.readFileSync(abs, 'utf8');
-    assert.match(json, /panel-acilamadi/);
-    assert.doesNotMatch(json, /tok=z|\?q=1/);
+    assert.match(json, /yanlış-sayfa/);
+    assert.match(json, /"pathname": "\/wp-admin\/post\.php"/);
+    assert.doesNotMatch(json, /tok=z|\?q=1|action=edit/);
     fs.unlinkSync(abs);
     if (prev === undefined) delete process.env.WDP_E2E_PROFILE_ID;
     else process.env.WDP_E2E_PROFILE_ID = prev;

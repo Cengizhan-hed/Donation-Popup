@@ -427,16 +427,54 @@ export function buildCheckoutFlowDiagExtras(raw) {
 }
 
 /**
+ * Ön yüz / wp-admin sayfa özeti (kişisel veri yok).
+ * @param {import('@playwright/test').Page} page
+ * @param {number} [productId]
+ */
+export async function collectStorefrontPageState(page, productId = 0) {
+  return page.evaluate((wantId) => {
+    const body = document.body;
+    const cls = body ? String(body.className || '') : '';
+    const idEl =
+      document.querySelector('[data-product-id]') ||
+      document.querySelector('input[name="product_id"]') ||
+      document.querySelector('button[data-product-id]');
+    const idAttr = idEl
+      ? idEl.getAttribute('data-product-id') || idEl.value || ''
+      : '';
+    let pathname = '';
+    try {
+      pathname = new URL(location.href).pathname || '';
+    } catch {
+      pathname = '';
+    }
+    return {
+      pathname,
+      body_class: cls.slice(0, 240),
+      product_id: Number(wantId) || 0,
+      dom_product_id: Number.parseInt(String(idAttr || ''), 10) || 0,
+    };
+  }, Number(productId) || 0);
+}
+
+/**
  * @param {string} deviceId
  * @param {string} key shares|campaign|fixed|custom
  * @param {object} raw
  */
 export function writePanelOpenDebug(deviceId, key, raw) {
   const r = raw && typeof raw === 'object' ? raw : {};
+  const page = r.page && typeof r.page === 'object' ? r.page : {};
   const payload = {
     device: String(deviceId || ''),
     key: String(key || ''),
     class: String(r.class || 'panel-acilamadi'),
+    page: {
+      pathname: pathnameOnly(page.pathname || ''),
+      body_class: String(page.body_class || '').slice(0, 240),
+      product_id: Number(page.product_id) || 0,
+      dom_product_id: Number(page.dom_product_id) || 0,
+    },
     trigger: r.trigger && typeof r.trigger === 'object'
       ? {
           tag: String(r.trigger.tag || '').slice(0, 20),

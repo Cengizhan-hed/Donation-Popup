@@ -15,6 +15,29 @@ export const PAGE_PRODUCT_ENV_KEYS = [
 export const DONATION_ROLES = ['fixed', 'custom', 'shares', 'campaign'];
 
 /**
+ * Ön yüz ürün sayfası mı (wp-admin değil). Sessiz devam yok — değilse yanlış-sayfa.
+ * @param {{ pathname?: string, body_class?: string, product_id?: number, dom_product_id?: number }} state
+ * @returns {{ ok: boolean, class: 'ok'|'yanlış-sayfa', reason: string }}
+ */
+export function classifyStorefrontProductPage(state) {
+  const s = state && typeof state === 'object' ? state : {};
+  const path = String(s.pathname || '');
+  const body = String(s.body_class || '');
+  const wantId = Number(s.product_id) || 0;
+  const domId = Number(s.dom_product_id) || 0;
+  if (/^\/wp-admin(\/|$)/i.test(path) || /\bwp-admin\b/.test(body)) {
+    return { ok: false, class: 'yanlış-sayfa', reason: 'wp-admin' };
+  }
+  const single = /\bsingle-product\b/.test(body);
+  const postIdMatch = wantId > 0 && new RegExp(`\\bpostid-${wantId}\\b`).test(body);
+  const attrMatch = wantId > 0 && domId === wantId;
+  if (single || postIdMatch || attrMatch) {
+    return { ok: true, class: 'ok', reason: single ? 'single-product' : 'product-id' };
+  }
+  return { ok: false, class: 'yanlış-sayfa', reason: 'not-product' };
+}
+
+/**
  * E2E senaryo türü × ürün kaynağı (görev 3C).
  *
  * | Grup | Senaryo | Gerçek yayımlanmış ürün | Rol için gerçek yoksa |

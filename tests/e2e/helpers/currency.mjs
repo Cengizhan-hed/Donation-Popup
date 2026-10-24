@@ -80,3 +80,42 @@ export function textHasFormattedAmount(hay, amount, currency) {
   const compact = t.replace(/[^\d]/g, '');
   return digits.length >= 2 && compact.includes(digits);
 }
+
+/**
+ * Input doldurma: binlik yok, ondalık mağaza ayırıcısı. Sabit "10" yok.
+ * @param {number|string} amount
+ * @param {{decimals?:number,decimalSeparator?:string}} [currency]
+ */
+export function formatFillAmount(amount, currency) {
+  const c = currency || {};
+  const known = Number.isFinite(Number(c.decimals));
+  const decimals = known ? Number(c.decimals) : 0;
+  const n = Number(amount);
+  if (!Number.isFinite(n)) return '';
+  if (decimals <= 0) return String(Math.round(n));
+  const decimal = c.decimalSeparator != null ? String(c.decimalSeparator) : '.';
+  const fixed = Math.abs(n).toFixed(decimals);
+  const [intPart, frac = ''] = fixed.split('.');
+  return `${n < 0 ? '-' : ''}${intPart}${decimal}${frac}`;
+}
+
+/**
+ * Form min / önerilen / max (DOM veya katalog). Sabit 10 yok.
+ * @param {{ min?: string|number, recommended?: string|number, max?: string|number }} bounds
+ * @param {object} [currency]
+ * @returns {{ amount: number, fill: string }}
+ */
+export function pickDonationFillAmount(bounds, currency) {
+  const b = bounds && typeof bounds === 'object' ? bounds : {};
+  const min = Number.parseFloat(String(b.min ?? '').replace(',', '.'));
+  const rec = Number.parseFloat(String(b.recommended ?? '').replace(',', '.'));
+  const max = Number.parseFloat(String(b.max ?? '').replace(',', '.'));
+  let n = NaN;
+  if (Number.isFinite(min) && min > 0) n = min;
+  if (Number.isFinite(rec) && rec > 0) {
+    n = Number.isFinite(n) ? Math.max(n, rec) : rec;
+  }
+  if (Number.isFinite(max) && max > 0 && Number.isFinite(n) && n > max) n = max;
+  if (!Number.isFinite(n) || n <= 0) return { amount: NaN, fill: '' };
+  return { amount: n, fill: formatFillAmount(n, currency) };
+}
