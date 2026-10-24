@@ -18,6 +18,7 @@ import {
   makeFailure,
 } from './checks.mjs';
 import { waitAndAssertShellOverlap } from './shell-overlap.mjs';
+import { attachNativeSubmitReloadGuard } from './native-submit-guard.mjs';
 import { SKIP_EVIDENCE, SKIP_REASONS, classifySkip, makeSkip } from './skip-policy.mjs';
 
 const CTA_GAP_MAX_PX = 48;
@@ -72,6 +73,10 @@ async function openProductShell(page, mode, opts) {
   await clickShellTrigger(trigger, CHECK_MS);
   const shell = mode === 'popup' ? openShellLocator(page, '') : openShellLocator(page, mode);
   await waitShellReady(shell, page);
+  const guard = attachNativeSubmitReloadGuard(page);
+  guard.clearHits();
+  guard.arm();
+  guard.assertClear(`layout-${mode}`);
   return shell;
 }
 
@@ -576,6 +581,13 @@ export async function runLayoutChecks({
               : 'Son form öğesi eylem çubuğunun arkasında',
             e
           );
+        }
+
+        try {
+          attachNativeSubmitReloadGuard(page).assertClear(prefix);
+          pass(`${prefix}-native-submit-reload`);
+        } catch (e) {
+          fail(`${prefix}-native-submit-reload`, 'Kabuk açıkken ürün sayfası yeniden yüklendi', e);
         }
 
         await closeShell(page);

@@ -47,6 +47,7 @@ import {
   collectPluginRuntime,
   shotDebugPng,
 } from './flow-diag.mjs';
+import { attachNativeSubmitReloadGuard } from './native-submit-guard.mjs';
 
 const CHECK_MS = 25000;
 
@@ -329,6 +330,9 @@ export async function runDonationFlowChecks({
     await clickShellTrigger(trigger, CHECK_MS);
     const shell = openShellLocator(page, '');
     await shell.waitFor({ state: 'visible', timeout: CHECK_MS });
+    const reloadGuard = attachNativeSubmitReloadGuard(page);
+    reloadGuard.clearHits();
+    reloadGuard.arm();
     await assertNoUnexpectedPluginErrors(page, { scenarioId: `checkout-flow-${deviceId}` });
 
     if (job.kind === 'custom' || job.kind === 'campaign') {
@@ -394,6 +398,7 @@ export async function runDonationFlowChecks({
       } else {
         await clickAddToCartWithRetry(page, add, { timeout: CHECK_MS });
       }
+      reloadGuard.assertClear(job.check);
 
       const addHit = await probes.waitForAddToCart(8000);
       if (addHit) diag.add_to_cart = addHit;
@@ -431,6 +436,9 @@ export async function runDonationFlowChecks({
           waitUntil: 'domcontentloaded',
           timeout: 20000,
         }).catch(async (navErr) => {
+          if (reloadGuard.hits.length) {
+            throw reloadGuard.wrapError(job.check, navErr);
+          }
           const msg = String(navErr && navErr.message);
           if (/interrupted/i.test(msg)) return;
           if (/ERR_ABORTED/i.test(msg)) {
@@ -491,6 +499,11 @@ export async function runDonationFlowChecks({
       }
       writeCheckoutFlowDebug(deviceId, { ...diag, class: 'ok' });
     } finally {
+      try {
+        reloadGuard.assertClear(job.check);
+      } finally {
+        reloadGuard.disarm();
+      }
       probes.dispose();
       postNet.dispose();
       cons.dispose();

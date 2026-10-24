@@ -241,6 +241,18 @@ wdp_smoke_assert(
     'CTA ready never uses requestSubmit (no native form navigation)'
 );
 wdp_smoke_assert(
+    wdp_smoke_file_contains(WDP_PLUGIN_DIR . 'assets/js/src/form.js', 'invokeEnterSubmit'),
+    'Enter on donation form uses plugin submit, not native'
+);
+wdp_smoke_assert(
+    wdp_smoke_file_contains(WDP_PLUGIN_DIR . 'assets/js/src/cart/woo.js', 'reload_after_add_to_cart'),
+    'Cart fallback reload is gated by flag'
+);
+wdp_smoke_assert(
+    wdp_smoke_file_contains(WDP_PLUGIN_DIR . 'includes/traits/trait-wdp-assets-registry.php', 'wdp_reload_after_add_to_cart'),
+    'reload_after_add_to_cart filter is localized'
+);
+wdp_smoke_assert(
     wdp_smoke_file_contains(WDP_PLUGIN_DIR . 'includes/templates/class-modal-shell-renderer.php', 'wdp-cta-gate__hit'),
     'Form CTA has early-tap gate overlay'
 );
@@ -320,8 +332,8 @@ wdp_smoke_assert(
     'Container queries CSS is on the frontend stack'
 );
 wdp_smoke_assert(
-    defined('WDP_VERSION') && WDP_VERSION === '10.34.13',
-    'Plugin version is 10.34.13'
+    defined('WDP_VERSION') && WDP_VERSION === '10.34.15',
+    'Plugin version is 10.34.15'
 );
 wdp_smoke_assert(
     file_exists(WDP_PLUGIN_DIR . 'templates/woocommerce/single-product/add-to-cart/simple.php'),

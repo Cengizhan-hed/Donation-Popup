@@ -138,7 +138,35 @@
     }
   }
 
-  /** Enter → sonraki alan; son alanda native submit bırakılır. */
+  /**
+   * Enter / iOS «Git»: sonraki alan, sihirbaz adımı veya eklenti gönderimi.
+   * Yerel form gönderimi yok — preventDefault her zaman (textarea hariç).
+   */
+  function invokeEnterSubmit(form, submitter) {
+    const cta = WDPApp.formCtaReady;
+    if (cta && typeof cta.invokePluginSubmit === 'function') {
+      cta.invokePluginSubmit(form, submitter || null);
+      return;
+    }
+    if (typeof form._wdpSubmitHandler === 'function') {
+      if (submitter) {
+        form._wdpLastClickSubmitter = submitter;
+      }
+      form._wdpSubmitHandler({
+        type: 'submit',
+        target: form,
+        currentTarget: form,
+        submitter: submitter || form._wdpLastClickSubmitter || null,
+        defaultPrevented: true,
+        preventDefault: function preventDefault() {
+          this.defaultPrevented = true;
+        },
+        stopPropagation: function stopPropagation() {},
+        stopImmediatePropagation: function stopImmediatePropagation() {},
+      });
+    }
+  }
+
   function bindSmartKeyboard(form) {
     if (!form || form.dataset.wdpSmartKeyboard === '1') {
       return;
@@ -149,15 +177,18 @@
       const el = e.target;
       if (!el || !form.contains(el)) return;
       if (el.tagName === 'TEXTAREA') return;
+      if (el.closest && el.closest('.wdp-phone-country-panel')) return;
+      e.preventDefault();
       if (el.tagName === 'BUTTON' || (el.tagName === 'INPUT' && (el.type === 'submit' || el.type === 'button'))) {
+        if (el.name === 'donation_add_to_cart' || el.name === 'donation_go_checkout') {
+          invokeEnterSubmit(form, el);
+        }
         return;
       }
-      if (el.closest('.wdp-phone-country-panel')) return;
-      e.preventDefault();
       const fields = Array.prototype.slice.call(
         form.querySelectorAll('input:not([type="hidden"]):not([disabled]), textarea:not([disabled]), select:not([disabled])')
       ).filter(function(node) {
-        if (node.closest('[hidden]')) return false;
+        if (node.closest && node.closest('[hidden]')) return false;
         const style = window.getComputedStyle(node);
         return style.display !== 'none' && style.visibility !== 'hidden';
       });
@@ -172,9 +203,7 @@
         return;
       }
       const primary = form.querySelector('button[name="donation_go_checkout"], button[name="donation_add_to_cart"]');
-      if (primary && !primary.disabled) {
-        primary.focus();
-      }
+      invokeEnterSubmit(form, primary);
     });
   }
 
@@ -495,10 +524,13 @@
     }
 
     function onWdpFormSubmit(e) {
-      e.preventDefault();
-      if (typeof e.stopImmediatePropagation === "function") {
+      if (e && typeof e.preventDefault === "function") {
+        e.preventDefault();
+      }
+      if (e && typeof e.stopImmediatePropagation === "function") {
         e.stopImmediatePropagation();
       }
+      try {
       safeLog("Form submitted");
 
       prepareDonationFormValidation(form);
@@ -604,6 +636,22 @@
           .catch(() => proceedAjax());
       } else {
         proceedAjax();
+      }
+      } catch (submitError) {
+        safeLog("Form submit handler threw:", submitError);
+        setFormProcessing(form, false);
+        const addToCartBtn = form.querySelector('button[name="donation_add_to_cart"]');
+        const checkoutBtn = form.querySelector('button[name="donation_go_checkout"]');
+        if (addToCartBtn) {
+          addToCartBtn.disabled = false;
+          addToCartBtn.classList.remove("wdp-loading");
+        }
+        if (checkoutBtn) {
+          checkoutBtn.disabled = false;
+          checkoutBtn.classList.remove("wdp-loading");
+        }
+        showFormError(form, "İşlem şu anda tamamlanamadı. Lütfen tekrar deneyin.");
+        return false;
       }
     }
 

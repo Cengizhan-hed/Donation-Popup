@@ -46,6 +46,10 @@ import {
   probeShellOverlapBeforeAfter,
   waitAndAssertShellOverlap,
 } from './shell-overlap.mjs';
+import {
+  attachNativeSubmitReloadGuard,
+  NATIVE_SUBMIT_RELOAD_CODE,
+} from './native-submit-guard.mjs';
 import { FREEZE_MOTION_CSS } from './selectors.mjs';
 import {
   DONOR_NAME,
@@ -61,6 +65,14 @@ const CHECK_MS = 25000;
 const CART_MS = 20000;
 const PLUGIN_URL_RE = /\/wp-content\/plugins\/woo-donation-popup\//i;
 const MIN_TOUCH = 24;
+const DONATION_RELOAD_GUARD_IDS = new Set([
+  'product-cart',
+  'amount-ambiguous',
+  'amount-tr-comma',
+  'list-checkout',
+  'place-order',
+  'validation-errors',
+]);
 
 function extraQuery() {
   return { hdf_no_side_cart: '1' };
@@ -666,6 +678,11 @@ function appendOverlapKanit(dir, row) {
   fs.appendFileSync(path.join(dir, '_overlap.jsonl'), `${JSON.stringify(row)}\n`, 'utf8');
 }
 
+function appendNativeSubmitKanit(dir, row) {
+  fs.mkdirSync(dir, { recursive: true });
+  fs.appendFileSync(path.join(dir, '_native-submit.jsonl'), `${JSON.stringify(row)}\n`, 'utf8');
+}
+
 /**
  * Popup/panel açıkken olay bazlı bekle + POPUP-OVERLAP; kabuk ekranı viewport.
  * @param {import('@playwright/test').Page} page
@@ -744,6 +761,7 @@ export async function runDeviceScenarios({
   page.setDefaultTimeout(CHECK_MS);
   page.setDefaultNavigationTimeout(CHECK_MS);
   const errors = attachConsoleErrorCollector(page);
+  const reloadGuard = attachNativeSubmitReloadGuard(page);
   const product = probe.products?.custom || {};
   const productPath = product.path || '/';
   const productId = Number(product.id || 0);
@@ -757,11 +775,22 @@ export async function runDeviceScenarios({
     const started = Date.now();
     /** @type {{ id: string, ok: boolean, ms: number, error: string, loc: string, shot: string }} */
     const row = { id, ok: false, ms: 0, error: '', loc: '', shot: '' };
+    const guardOn = DONATION_RELOAD_GUARD_IDS.has(id);
+    if (guardOn) {
+      reloadGuard.clearHits();
+      reloadGuard.arm();
+    } else {
+      reloadGuard.disarm();
+    }
     try {
       await fn();
+      if (guardOn) {
+        reloadGuard.assertClear(id);
+      }
       row.ok = true;
     } catch (e) {
-      row.error = String(e && e.message ? e.message : e).slice(0, 400);
+      const wrapped = guardOn ? reloadGuard.wrapError(id, e) : e;
+      row.error = String(wrapped && wrapped.message ? wrapped.message : wrapped).slice(0, 400);
       row.loc = locFromError(e);
       try {
         row.shot = await shot(page, shotDir, `fail-${id}`);
@@ -769,6 +798,16 @@ export async function runDeviceScenarios({
         row.shot = `screenshot-fail: ${String(shotErr && shotErr.message ? shotErr.message : shotErr).slice(0, 80)}`;
       }
     }
+    if (guardOn) {
+      appendNativeSubmitKanit(shotDir, {
+        id,
+        code: NATIVE_SUBMIT_RELOAD_CODE,
+        hits: reloadGuard.hits.length,
+        journal: reloadGuard.journal.slice(-12),
+        ok: row.ok,
+      });
+    }
+    reloadGuard.disarm();
     row.ms = Date.now() - started;
     results.push(row);
   };
