@@ -55,7 +55,8 @@
     "i18n:js-strings": "node tools/i18n/gen-js-strings.mjs",
     "i18n:js-strings:check": "node tools/i18n/gen-js-strings.mjs --check",
     "i18n:extract-source": "node tools/i18n/extract-golden.mjs",
-    "i18n:golden": "node tests/e2e/run-i18n-text.mjs"
+    "i18n:golden": "node tests/e2e/run-i18n-text.mjs",
+    "i18n:verify": "node tools/i18n/verify.mjs"
   },
   "repository": {
     "type": "git",
