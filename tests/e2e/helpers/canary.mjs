@@ -242,6 +242,37 @@ export function updateCanaryBaselineIfClean(envId, current, cmp, opts = {}) {
   return { updated: true, file };
 }
 
+/**
+ * Kullanıcı kararıyla (site sahibi değiştirdi) yalnız adı verilmiş seçenek anahtarlarının
+ * baseline değerini günceller. Her fark bu anahtarlardan biri değilse hiçbir şey yazılmaz.
+ * @param {object} baseline
+ * @param {object} current
+ * @param {Array<{ change?: string, option?: string }>} diffs
+ * @param {string[]} acceptKeys
+ * @returns {{ ok: boolean, baseline: object, accepted: string[], reason?: string }}
+ */
+export function acceptUserOptionChanges(baseline, current, diffs, acceptKeys) {
+  const allow = new Set((acceptKeys || []).map((k) => String(k).trim()).filter(Boolean));
+  if (!allow.size) return { ok: false, baseline, accepted: [], reason: 'anahtar yok' };
+  if (!baseline || !baseline.options || !current || !current.options) {
+    return { ok: false, baseline, accepted: [], reason: 'baseline/anlık görüntü eksik' };
+  }
+  const list = Array.isArray(diffs) ? diffs : [];
+  const foreign = list.filter((d) => !(d && d.option && allow.has(String(d.option))));
+  if (foreign.length) {
+    return { ok: false, baseline, accepted: [], reason: `izinli anahtar dışı fark: ${foreign.length}` };
+  }
+  const options = { ...baseline.options };
+  const accepted = [];
+  for (const k of allow) {
+    if (Object.prototype.hasOwnProperty.call(current.options, k)) {
+      options[k] = current.options[k];
+      accepted.push(k);
+    }
+  }
+  return { ok: true, baseline: { ...baseline, options }, accepted };
+}
+
 export function formatCanaryStatusLine(beforeOk, afterOk, expectedNew = 0) {
   const b = beforeOk ? 'TEMİZ' : 'KIRMIZI';
   const a = afterOk ? 'TEMİZ' : 'KIRMIZI';

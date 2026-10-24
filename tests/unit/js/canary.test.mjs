@@ -609,3 +609,31 @@ describe('repair kanarya + baseline (3W)', () => {
     assert.equal(fs.readFileSync(file, 'utf8'), beforeRaw);
   });
 });
+
+it('acceptUserOptionChanges: yalnız adı verilen seçenekler; yabancı fark reddedilir', async () => {
+  const { acceptUserOptionChanges } = await import('../../e2e/helpers/canary.mjs');
+  const baseline = { options: { a: 'no', b: 'no', c: 'x' }, posts: [] };
+  const current = { options: { a: 'yes', b: 'yes', c: 'x' }, posts: [] };
+  const ok = acceptUserOptionChanges(
+    baseline,
+    current,
+    [{ change: 'option', option: 'a' }, { change: 'option', option: 'b' }],
+    ['a', 'b']
+  );
+  assert.equal(ok.ok, true);
+  assert.deepEqual(ok.accepted.sort(), ['a', 'b']);
+  assert.equal(ok.baseline.options.a, 'yes');
+  assert.equal(ok.baseline.options.c, 'x');
+  assert.equal(baseline.options.a, 'no', 'girdi değişmez');
+
+  const bad = acceptUserOptionChanges(
+    baseline,
+    current,
+    [{ change: 'option', option: 'a' }, { change: 'modified', id: 5 }],
+    ['a']
+  );
+  assert.equal(bad.ok, false);
+  assert.equal(bad.baseline.options.a, 'no');
+
+  assert.equal(acceptUserOptionChanges(baseline, current, [], []).ok, false);
+});
