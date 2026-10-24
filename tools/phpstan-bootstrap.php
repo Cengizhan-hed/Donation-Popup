@@ -12,7 +12,7 @@ if (!defined('WDP_PLUGIN_FILE')) {
 	define('WDP_PLUGIN_FILE', dirname(__DIR__) . '/woo-donation-popup.php');
 }
 if (!defined('WDP_VERSION')) {
-	define('WDP_VERSION', '10.34.16');
+	define('WDP_VERSION', '10.35.0');
 }
 if (!defined('WDP_PLUGIN_DIR')) {
 	define('WDP_PLUGIN_DIR', dirname(__DIR__) . '/');
@@ -21,5 +21,5 @@ if (!defined('WDP_PLUGIN_URL')) {
 	define('WDP_PLUGIN_URL', 'https://example.test/wp-content/plugins/woo-donation-popup/');
 }
 if (!defined('WDP_ASSET_VERSION')) {
-	define('WDP_ASSET_VERSION', '10.34.16');
+	define('WDP_ASSET_VERSION', '10.35.0');
 }

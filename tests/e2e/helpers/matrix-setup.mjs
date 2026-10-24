@@ -534,6 +534,19 @@ export async function prepareLocalFullStack(port = 8899) {
  * @param {string} wpDir
  * @param {boolean} hposOn
  */
+function writeLocaleLock(wpDir, locale) {
+  const loc = /^[a-z]{2,3}(?:_[A-Z]{2})?$/.test(String(locale)) ? String(locale) : 'tr_TR';
+  const dir = path.join(wpDir, 'wp-content/mu-plugins');
+  fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(
+    path.join(dir, 'wdp-i18n-locale.php'),
+    `<?php\n/** WDP test locale lock — no language pack. */\n` +
+      `add_filter('locale', static function () { return '${loc}'; }, 99);\n` +
+      `add_filter('determine_locale', static function () { return '${loc}'; }, 99);\n` +
+      `add_filter('plugin_locale', static function ($l, $d) { unset($l, $d); return '${loc}'; }, 99, 2);\n`
+  );
+}
+
 function writeHposLock(wpDir, hposOn) {
   const dir = path.join(wpDir, 'wp-content/mu-plugins');
   fs.mkdirSync(dir, { recursive: true });
@@ -585,5 +598,7 @@ export function materializeWorker(configId, port, snapshotFile, opts = {}) {
   if (typeof opts.hpos === 'boolean') {
     writeHposLock(destWp, opts.hpos);
   }
+  // Yerel profil dili (varsayılan tr_TR = Hedef eşdeğeri): çeviri paketi yok, yalnız eklenti metinleri; mu-plugin kilidi.
+  writeLocaleLock(destWp, opts.locale || process.env.WDP_LOCAL_WP_LOCALE || 'tr_TR');
   return destWp;
 }
