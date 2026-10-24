@@ -858,3 +858,27 @@ Eklenti kodu (`includes/`, `uninstall.php`) sayfa oluşturmaz/silmez; `wp_trash_
 3. "Donation Panel - Donations list" ekle: Query ve Display sekmeleri; Count, Columns (masaüstü/tablet/mobil), Tabs, Button vb.
 4. Kaydet, ön yüzü aç.
 Ön yüz kontrol listesi: (a) form satır içi görünür, başlık anahtarı çalışır; (b) Popup/Side panel düğmesi modalı açar; (c) liste ızgarası sütun/boşluk ayarına uyar, sekmeler süzer; (d) mobilde (iPhone genişliği) taşma yok; (e) Live Builder önizlemesinde element boş kalmaz; (f) sayfa kaynağında ham `[wdp_avada_donation_form` metni yok; (g) konsol hatası yok; (h) uzakta sipariş verilmez.
+
+## Yükleme kapsamı (F6E, 10.35.2+)
+
+İlke: eklenti CSS/JS/satır içi çıktısı yalnız gereken sayfada yüklenir; tema/sayfa oluşturucuya özel kod yok.
+
+| Kural | Yer |
+|---|---|
+| Erken karar (`wp_enqueue_scripts`): kısa kod/blok içeren yazı, metin widget'ı kısa kodu, bağış ürünü sayfası (`product_requires_front_assets`), mağaza/ürün arşivi **yalnız ana sorguda en az bir bağış ürünü varsa** (`main_query_has_donation_product`, ayar `auto_place=yes` ve `loop_button!=off`) | `includes/class-assets.php` `should_enqueue_assets` |
+| Geç karar: çizim anında `WDP_Assets::force_enqueue()` (kısa kod, blok, Elementor/Avada, giriş noktası, yan sepet, döngü düğmesi, bağış listesi); varlıklar footer'da (`maybe_enqueue_in_footer`) | `class-shortcodes.php`, `class-donations-list.php`, `class-product-page-integration.php`, `class-form-matrix.php`, `templates/class-modal-shell-renderer.php` |
+| Sepet/ödeme: kısa kod yoksa yüklenmez | `should_enqueue_assets` |
+| Yönetici: yalnız eklentinin kendi ekranları (Y6) | `class-admin-assets.php` |
+| Sayfa-türü yok: ana sayfa, blog, düz sayfa, bağış kapsamı dışı ürün, Hesabım | hiçbir kanca |
+
+Ölçüm: `npm run e2e:asset-scope [-- --table --files]` (yerel WP, 3 tema: twentytwentyfive, storefront, blocksy; `tests/e2e/run-asset-scope.mjs` + `helpers/wdp-scope-sim.php`). Sayfa türü başına eklenti dosyası, satır içi stil/betik ve `wdp-` DOM düğümü sayılır; "yok" beklenen yerde 0 değilse kırmızı.
+
+| Sayfa türü | Önce (dosya / satır içi) | Sonra (dosya / satır içi / wdp düğüm) |
+|---|---|---|
+| Ana sayfa, blog, düz sayfa, bağış kapsamı dışı ürün, sepet (boş), ödeme (boş), Hesabım | 0 / 0 | 0 / 0 / 0 |
+| Mağaza arşivi, listede bağış ürünü YOK | 3 / 4 | 0 / 0 / 0 |
+| Mağaza arşivi, bağış ürünleriyle (döngü düğmesi) | 3 / 4 | 3 / 4 / 8 |
+| Bağış ürünü sayfası | 3 / 5-6 | 3 / 5 / 71 |
+| Bağış listesi sayfası (`[wdp_donations]`) | 5 / 5-6 | 5 / 5 / 35 |
+
+Not: sepet/ödemede bağış öğesi olan koşul ayrı ölçülmedi (boş sepet). Meta takip eklentisi ayar açıkken kendi betiğini ekler (özellik gereği; ayrı ayar).
