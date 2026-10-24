@@ -22,7 +22,7 @@ import {
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export const REPO_ROOT = path.resolve(__dirname, '../..');
 
-const SKIP_DIR_NAMES = new Set(['node_modules', 'vendor', 'build', 'docs']);
+const SKIP_DIR_NAMES = new Set(['node_modules', 'vendor', 'vendor-dev', 'build', 'docs']);
 const SKIP_EXT = new Set(['.md']);
 
 function isSkippedRel(rel) {
@@ -144,7 +144,7 @@ export function scanDirectRemoteSpawns(root = REPO_ROOT) {
   function walk(dir) {
     if (!fs.existsSync(dir)) return;
     for (const ent of fs.readdirSync(dir, { withFileTypes: true })) {
-      if (ent.name === 'node_modules' || ent.name === 'vendor') continue;
+      if (ent.name === 'node_modules' || ent.name === 'vendor' || ent.name === 'vendor-dev') continue;
       const full = path.join(dir, ent.name);
       if (ent.isDirectory()) {
         walk(full);

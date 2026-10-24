@@ -71,6 +71,9 @@ release/
 
 # Testing / Composer
 /vendor/
+/vendor-dev/
+/tools/bin/*.phar
+/tools/bin/*.phar.part
 composer.phar
 composer-setup.php
 phpunit.xml

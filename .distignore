@@ -26,6 +26,7 @@ yarn.lock
 pnpm-lock.yaml
 docs/
 vendor/
+vendor-dev/
 composer.json
 composer.lock
 composer.phar
@@ -33,6 +34,9 @@ composer-setup.php
 phpunit.xml
 phpunit.xml.dist
 .phpunit.result.cache
+phpcs.xml.dist
+phpstan.neon
+phpstan.verify.neon
 tests/
 tools/
 scripts/

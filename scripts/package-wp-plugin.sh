@@ -93,6 +93,7 @@ rm -rf \
   "$DEST/.cursor" \
   "$DEST/.vscode"
 rm -rf "$DEST/vendor"
+rm -rf "$DEST/vendor-dev"
 rm -f \
   "$DEST/package.json" \
   "$DEST/package-lock.json" \
@@ -106,7 +107,10 @@ rm -f \
   "$DEST/composer-setup.php" \
   "$DEST/phpunit.xml" \
   "$DEST/phpunit.xml.dist" \
-  "$DEST/.phpunit.result.cache"
+  "$DEST/.phpunit.result.cache" \
+  "$DEST/phpcs.xml.dist" \
+  "$DEST/phpstan.neon" \
+  "$DEST/phpstan.verify.neon"
 
 # Keep only README.md as markdown in distribution root.
 find "$DEST" -type f -name "*.md" ! -name "README.md" -delete
