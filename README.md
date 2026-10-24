@@ -1,6 +1,6 @@
-# WooCommerce Donation Modal Popup
+# Donation Panel for WooCommerce
 
-WooCommerce bağış popup / sağ panel eklentisi. Ürün bazlı bağış formları, hisseli bağış, sadaka satırı, progress bar ve Meta Pixel entegrasyonu sunar.
+WooCommerce ürünleri için bağış formu: açılır pencere, yan panel veya sayfa içi form. Sabit, serbest tutarlı, hisseli ve hedefli kampanya bağışları; ilerleme çubuğu; WooCommerce sepet ve ödeme akışıyla tam uyum. Yazar: Cengizhan Çoban. Klasör ve text domain: `woo-donation-popup`. Dağıtım için WordPress.org biçimli `readme.txt` bulunur.
 
 ## Gereksinimler
 
@@ -26,7 +26,7 @@ npm run build      # CSS + JS bundle üretir
 npm run verify     # build + smoke test
 npm run pack       # dağıtım ZIP'i (build/woo-donation-popup.zip)
 npm run test       # PHPUnit + Node birim testleri
-npm run e2e:quick   # hızlı staging E2E (ürün + form + liste; ≤ ~150 sn)
+npm run e2e:quick   # hızlı E2E (yerel profil varsayılan) (ürün + form + liste; ≤ ~150 sn)
 npm run ship:staging # staging deploy + e2e:quick + raporu aç
 npm run e2e:accept  # son çalıştırmanın ekranlarını baseline’a birleştir (güvenli)
 ```

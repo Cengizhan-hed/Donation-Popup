@@ -1,5 +1,5 @@
 # Turkish translations — I18N-E1 (Elementor + blocks).
-# Copyright (C) WooCommerce Donation Panel
+# Copyright (C) Donation Panel for WooCommerce
 msgid ""
 msgstr ""
 "Project-Id-Version: woo-donation-popup 10.34.15\n"

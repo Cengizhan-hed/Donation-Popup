@@ -6,7 +6,7 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: woo-donation-popup 10.34.15\n"
+"Project-Id-Version: woo-donation-popup 10.35.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-10-24 16:45+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
@@ -5131,4 +5131,12 @@ msgstr ""
 
 #: blocks/donations/index.js:210
 msgid "At least one published donation product is required for the preview."
+msgstr ""
+
+#. Plugin Name of the plugin
+msgid "Donation Panel for WooCommerce"
+msgstr ""
+
+#. Description of the plugin
+msgid "Adds a donation form to WooCommerce products as a popup, side panel or inline form, with fixed, custom, shared and campaign donation types."
 msgstr ""

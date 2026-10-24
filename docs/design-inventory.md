@@ -1,6 +1,6 @@
 # Stage 2C FAZ 0 — Form tasarım sistemi envanteri
 
-**Plugin:** WooCommerce Donation Panel · **Kaynak sürüm:** 10.27.1 · **Hedef:** 10.28.0  
+**Plugin:** Donation Panel for WooCommerce · **Kaynak sürüm:** 10.27.1 · **Hedef:** 10.28.0  
 **Dal:** `stage-2c-form-design`  
 **Amaç:** Sonraki fazların ve `WDP_Migrations` 10.28.0 adımının tek kaynağı. Dağıtıma girmez.
 
