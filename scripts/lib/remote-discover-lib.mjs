@@ -133,6 +133,7 @@ export const PLUGIN_CATALOG = {
 
 export const STATIC_SCAN_HOOKS = [
   'woocommerce_add_to_cart',
+  'woocommerce_add_cart_item_data',
   'woocommerce_cart_item_set_quantity',
   'woocommerce_cart_updated',
   'woocommerce_before_calculate_totals',
@@ -148,6 +149,20 @@ export const STATIC_SCAN_HOOKS = [
   'woocommerce_new_order',
   'woocommerce_order_status_changed',
   'shutdown',
+];
+
+export const HOST_CALL_FNS = [
+  'wp_remote_get',
+  'wp_remote_post',
+  'wp_remote_request',
+  'wp_remote_head',
+  'wp_safe_remote_get',
+  'wp_safe_remote_post',
+  'wp_safe_remote_request',
+  'wp_safe_remote_head',
+  'curl_init',
+  'file_get_contents',
+  'fsockopen',
 ];
 
 export const OUTBOUND_CALL_TYPES = [
@@ -241,16 +256,403 @@ export function detectSnippetHooks(code) {
   return [...new Set(hooks)];
 }
 
+/** URL/host dizgisinden yalnız ana makine adı (yol/sorgu/kullanıcı/port yok). */
+export function hostFromUrlLiteral(raw) {
+  const s = String(raw || '').trim();
+  if (!s) return '';
+  if (/^https?:\/\//i.test(s)) {
+    try {
+      return String(new URL(s).hostname || '').toLowerCase();
+    } catch {
+      const rest = s.replace(/^https?:\/\//i, '').replace(/^[^/@]*@/, '');
+      return rest.split(/[/?#:]/)[0].toLowerCase();
+    }
+  }
+  if (/[/?#\s]/.test(s)) return '';
+  const h = s.split(':')[0].toLowerCase();
+  if (!h) return '';
+  if (!h.includes('.') && h !== 'localhost') return '';
+  return h;
+}
+
+function skipWs(src, i) {
+  while (i < src.length && /\s/.test(src[i])) i += 1;
+  return i;
+}
+
+function matchBrace(src, open) {
+  const openCh = src[open];
+  const closeCh = openCh === '(' ? ')' : openCh === '[' ? ']' : openCh === '{' ? '}' : '';
+  if (!closeCh) return src.length;
+  let depth = 0;
+  let quote = '';
+  let esc = false;
+  for (let i = open; i < src.length; i++) {
+    const c = src[i];
+    if (quote) {
+      if (esc) {
+        esc = false;
+        continue;
+      }
+      if (c === '\\') {
+        esc = true;
+        continue;
+      }
+      if (c === quote) quote = '';
+      continue;
+    }
+    if (c === '"' || c === "'") {
+      quote = c;
+      continue;
+    }
+    if (c === openCh) depth += 1;
+    else if (c === closeCh) {
+      depth -= 1;
+      if (depth === 0) return i;
+    }
+  }
+  return src.length;
+}
+
+function callArgs(src, open) {
+  const out = [];
+  let i = open + 1;
+  let depth = 1;
+  let quote = '';
+  let esc = false;
+  let start = i;
+  while (i < src.length && depth > 0) {
+    const c = src[i];
+    if (quote) {
+      if (esc) {
+        esc = false;
+        i += 1;
+        continue;
+      }
+      if (c === '\\') {
+        esc = true;
+        i += 1;
+        continue;
+      }
+      if (c === quote) quote = '';
+      i += 1;
+      continue;
+    }
+    if (c === '"' || c === "'") {
+      quote = c;
+      i += 1;
+      continue;
+    }
+    if (c === '(' || c === '[' || c === '{') {
+      depth += 1;
+      i += 1;
+      continue;
+    }
+    if (c === ')' || c === ']' || c === '}') {
+      if (c === ')' && depth === 1) {
+        const bit = src.slice(start, i).trim();
+        if (bit) out.push(bit);
+        return out;
+      }
+      depth -= 1;
+      i += 1;
+      continue;
+    }
+    if (c === ',' && depth === 1) {
+      out.push(src.slice(start, i).trim());
+      start = i + 1;
+      i += 1;
+      continue;
+    }
+    i += 1;
+  }
+  return out;
+}
+
+function unquotePhpString(s) {
+  const t = String(s || '').trim();
+  if (!t) return '';
+  const q = t[0];
+  if (q !== '"' && q !== "'") return '';
+  let out = '';
+  let esc = false;
+  for (let i = 1; i < t.length; i++) {
+    const c = t[i];
+    if (esc) {
+      out += c;
+      esc = false;
+      continue;
+    }
+    if (c === '\\') {
+      esc = true;
+      continue;
+    }
+    if (c === q) break;
+    out += c;
+  }
+  return out;
+}
+
+function afterPhpString(expr) {
+  const t = String(expr || '').trim();
+  if (!t) return '';
+  const q = t[0];
+  if (q !== '"' && q !== "'") return '';
+  let esc = false;
+  for (let i = 1; i < t.length; i++) {
+    const c = t[i];
+    if (esc) {
+      esc = false;
+      continue;
+    }
+    if (c === '\\') {
+      esc = true;
+      continue;
+    }
+    if (c === q) return t.slice(i + 1).trim();
+  }
+  return '';
+}
+
+function phpIdentName(expr) {
+  const s = String(expr || '').trim();
+  if (!s) return '';
+  if (s[0] === '$') {
+    let i = 1;
+    const start = i;
+    while (i < s.length && wdpWordChar(s[i])) i += 1;
+    const name = s.slice(start, i);
+    i = skipWs(s, i);
+    if (s.slice(i, i + 2) === '->') {
+      i = skipWs(s, i + 2);
+      const ps = i;
+      while (i < s.length && wdpWordChar(s[i])) i += 1;
+      const prop = s.slice(ps, i);
+      if (prop) return prop;
+    }
+    return name ? `$${name}` : '';
+  }
+  let i = 0;
+  const dbl = s.indexOf('::');
+  if (dbl >= 0) i = dbl + 2;
+  const start = i;
+  while (i < s.length && wdpWordChar(s[i])) i += 1;
+  return s.slice(start, i);
+}
+
+function classifyUrlExpr(expr) {
+  const raw = String(expr || '').trim();
+  if (!raw) return null;
+  if (/^get_option\s*\(/.test(raw)) {
+    const open = raw.indexOf('(');
+    const args = callArgs(raw, open);
+    const key = unquotePhpString(args[0] || '');
+    if (key) return { host: `option:${key}`, kind: 'option-adı' };
+    return { host: 'dinamik:get_option', kind: 'dinamik' };
+  }
+  const q0 = raw[0];
+  if (q0 === '"' || q0 === "'") {
+    const lit = unquotePhpString(raw);
+    const host = hostFromUrlLiteral(lit);
+    if (host) return { host, kind: 'sabit' };
+    if (lit === 'http://' || lit === 'https://') {
+      const rest = afterPhpString(raw).replace(/^\.\s*/, '');
+      const id = phpIdentName(rest);
+      if (id) return { host: `dinamik:${id}`, kind: 'dinamik' };
+    }
+  }
+  const id = phpIdentName(raw);
+  if (id) return { host: `dinamik:${id}`, kind: 'dinamik' };
+  return { host: 'dinamik:?', kind: 'dinamik' };
+}
+
+function findCallOpens(src, fn) {
+  const hits = [];
+  let p = 0;
+  while ((p = src.indexOf(fn, p)) !== -1) {
+    const before = p > 0 ? src[p - 1] : '';
+    if (wdpWordChar(before)) {
+      p += fn.length;
+      continue;
+    }
+    let i = p + fn.length;
+    if (i < src.length && wdpWordChar(src[i])) {
+      p += fn.length;
+      continue;
+    }
+    i = skipWs(src, i);
+    if (src[i] === '(') hits.push({ pos: p, open: i });
+    p += fn.length;
+  }
+  return hits;
+}
+
+function fnHookMap(src) {
+  const map = new Map();
+  for (const fn of ['add_action', 'add_filter']) {
+    for (const hit of findCallOpens(src, fn)) {
+      const args = callArgs(src, hit.open);
+      const hook = unquotePhpString(args[0] || '');
+      if (!hook) continue;
+      let cb = unquotePhpString(args[1] || '');
+      if (!cb && /^\s*array\s*\(/.test(args[1] || '')) {
+        const inner = callArgs(args[1], (args[1] || '').indexOf('('));
+        cb = unquotePhpString(inner[1] || '');
+      }
+      if (!cb) continue;
+      if (!map.has(cb)) map.set(cb, []);
+      map.get(cb).push(hook);
+    }
+  }
+  return map;
+}
+
+function enclosingFunction(src, pos) {
+  let best = '';
+  let p = 0;
+  while ((p = src.indexOf('function', p)) !== -1 && p < pos) {
+    const before = p > 0 ? src[p - 1] : '';
+    if (wdpWordChar(before)) {
+      p += 8;
+      continue;
+    }
+    let i = skipWs(src, p + 8);
+    if (src[i] === '(') {
+      p += 8;
+      continue;
+    }
+    const start = i;
+    while (i < src.length && wdpWordChar(src[i])) i += 1;
+    const name = src.slice(start, i);
+    while (i < src.length && src[i] !== '{' && src[i] !== ';') i += 1;
+    if (src[i] !== '{') {
+      p += 8;
+      continue;
+    }
+    const end = matchBrace(src, i);
+    if (name && pos > i && pos < end) best = name;
+    p += 8;
+  }
+  return best;
+}
+
+function lastHookBefore(src, pos) {
+  const before = src.slice(0, Math.max(0, pos));
+  let last = '';
+  const hits = [
+    ...findCallOpens(before, 'add_action'),
+    ...findCallOpens(before, 'add_filter'),
+  ].sort((a, b) => a.pos - b.pos);
+  for (const hit of hits) {
+    const args = callArgs(before, hit.open);
+    const hook = unquotePhpString(args[0] || '');
+    if (hook) last = hook;
+  }
+  return last;
+}
+
+function hookForCall(src, pos, map) {
+  const fn = enclosingFunction(src, pos);
+  if (fn && map.has(fn) && map.get(fn).length) return map.get(fn)[0];
+  return lastHookBefore(src, pos);
+}
+
+/**
+ * wp_remote_* / wp_safe_remote_* / curl_init / file_get_contents(http) / fsockopen
+ * URL argümanından yalnız host (veya dinamik:/option: etiketi).
+ */
+export function extractOutboundHosts(source) {
+  const src = String(source || '');
+  const out = [];
+  const seen = new Set();
+  const map = fnHookMap(src);
+  for (const fn of HOST_CALL_FNS) {
+    for (const hit of findCallOpens(src, fn)) {
+      const args = callArgs(src, hit.open);
+      const expr = args[0] || '';
+      if (fn === 'curl_init' && !expr) continue;
+      if (fn === 'file_get_contents') {
+        const lit = unquotePhpString(expr);
+        if (lit && !/^https?:\/\//i.test(lit)) continue;
+        if (!lit && !expr) continue;
+      }
+      const row = classifyUrlExpr(expr);
+      if (!row || !row.host) continue;
+      const hook = hookForCall(src, hit.pos, map);
+      const key = `${row.host}|${row.kind}|${hook}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push({ host: row.host, kind: row.kind, hook });
+    }
+  }
+  return out;
+}
+
+export function scrubHostEntry(raw) {
+  const h = raw && typeof raw === 'object' ? raw : {};
+  let host = String(h.host || '').trim();
+  let kind = String(h.kind || '').trim();
+  if (kind === 'option-adi') kind = 'option-adı';
+  if (!['sabit', 'dinamik', 'option-adı'].includes(kind)) {
+    if (host.startsWith('option:')) kind = 'option-adı';
+    else if (host.startsWith('dinamik:')) kind = 'dinamik';
+    else kind = host ? 'sabit' : '';
+  }
+  if (/^https?:\/\//i.test(host)) {
+    host = hostFromUrlLiteral(host);
+    kind = 'sabit';
+  }
+  if (kind === 'sabit') {
+    host = hostFromUrlLiteral(host) || host.replace(/[/?#].*$/, '').replace(/:\d+$/, '').toLowerCase();
+  }
+  if (/[/?#]/.test(host) && !host.startsWith('dinamik:') && !host.startsWith('option:')) {
+    host = host.split(/[/?#]/)[0];
+  }
+  if (!host || /:\/\//.test(host)) return null;
+  return { host, kind, hook: String(h.hook || '') };
+}
+
+export function formatSnippetHostRows(snippets) {
+  const rows = [];
+  for (const s of Array.isArray(snippets) ? snippets : []) {
+    const hosts = Array.isArray(s.hosts) ? s.hosts : [];
+    if (!hosts.length) continue;
+    const byHook = new Map();
+    for (const h of hosts) {
+      const hook = h.hook || (Array.isArray(s.hooks) ? s.hooks.join(', ') : '') || '—';
+      if (!byHook.has(hook)) byHook.set(hook, []);
+      byHook.get(hook).push(h);
+    }
+    for (const [hook, list] of byHook) {
+      const hostStr = [...new Set(list.map((x) => x.host).filter(Boolean))].join(', ');
+      const kindStr = [...new Set(list.map((x) => x.kind).filter(Boolean))].join(', ');
+      rows.push([String(s.id ?? ''), hook, hostStr, kindStr]);
+    }
+  }
+  return rows;
+}
+
 export function scrubSnippetRow(raw) {
   const s = raw && typeof raw === 'object' ? raw : {};
   let calls = s.calls && typeof s.calls === 'object' && !Array.isArray(s.calls) ? { ...s.calls } : {};
   let hooks = Array.isArray(s.hooks) ? s.hooks.map(String) : [];
+  let hosts = (Array.isArray(s.hosts) ? s.hosts : []).map(scrubHostEntry).filter(Boolean);
   if (typeof s.code === 'string' && s.code) {
     const fromCode = detectOutboundCalls(s.code);
     for (const [k, v] of Object.entries(fromCode)) {
       calls[k] = Math.max(Number(calls[k] || 0), Number(v) || 0);
     }
     hooks = [...new Set([...hooks, ...detectSnippetHooks(s.code)])];
+    const fromHosts = extractOutboundHosts(s.code);
+    const seen = new Set(hosts.map((h) => `${h.host}|${h.kind}|${h.hook}`));
+    for (const h of fromHosts) {
+      const row = scrubHostEntry(h);
+      if (!row) continue;
+      const k = `${row.host}|${row.kind}|${row.hook}`;
+      if (seen.has(k)) continue;
+      seen.add(k);
+      hosts.push(row);
+    }
   }
   const callCount = Object.values(calls).reduce((a, b) => a + Number(b || 0), 0);
   return {
@@ -260,6 +662,7 @@ export function scrubSnippetRow(raw) {
     active: s.active === true || s.active === 1 || s.active === '1' ? 1 : 0,
     hooks,
     calls,
+    hosts,
     count: callCount,
   };
 }
@@ -697,15 +1100,19 @@ function wdp_st_child_src($name, $fn) {
   }
   return "";
 }
-function wdp_st_scan_fn($fn) {
+function wdp_st_scan_fn($fn, $hook = "") {
   $meta = wdp_st_meta($fn);
   $src = wdp_st_read($meta["file"], $meta["start"], $meta["end"]);
   $calls = wdp_st_calls($src);
+  $hosts = wdp_st_hosts($src, $hook);
   foreach (wdp_st_called($src) as $name) {
     $child = wdp_st_child_src($name, $fn);
-    if ($child !== "") $calls = wdp_st_merge($calls, wdp_st_calls($child));
+    if ($child !== "") {
+      $calls = wdp_st_merge($calls, wdp_st_calls($child));
+      $hosts = wdp_st_merge_hosts($hosts, wdp_st_hosts($child, $hook));
+    }
   }
-  return array("origin" => wdp_st_origin($meta["file"]), "calls" => $calls);
+  return array("origin" => wdp_st_origin($meta["file"]), "calls" => $calls, "hosts" => $hosts);
 }
 function wdp_st_cbs($hook) {
   global $wp_filter;
@@ -723,22 +1130,23 @@ function wdp_st_cbs($hook) {
   }
   return $list;
 }
-function wdp_st_agg($fns) {
+function wdp_st_agg($fns, $hook = "") {
   $map = array();
   foreach ($fns as $fn) {
-    $row = wdp_st_scan_fn($fn);
+    $row = wdp_st_scan_fn($fn, $hook);
     $o = $row["origin"];
     $key = $o["kind"] . ":" . $o["slug"];
     if (!isset($map[$key])) {
-      $map[$key] = array("kind" => $o["kind"], "slug" => $o["slug"], "calls" => array());
+      $map[$key] = array("kind" => $o["kind"], "slug" => $o["slug"], "calls" => array(), "hosts" => array());
     }
     $map[$key]["calls"] = wdp_st_merge($map[$key]["calls"], $row["calls"]);
+    $map[$key]["hosts"] = wdp_st_merge_hosts($map[$key]["hosts"], isset($row["hosts"]) ? $row["hosts"] : array());
   }
   $rows = array();
   foreach ($map as $v) {
     $n = 0;
     foreach ($v["calls"] as $c) $n += (int) $c;
-    $rows[] = array("kind" => $v["kind"], "slug" => $v["slug"], "calls" => $v["calls"], "count" => $n);
+    $rows[] = array("kind" => $v["kind"], "slug" => $v["slug"], "calls" => $v["calls"], "count" => $n, "hosts" => $v["hosts"]);
   }
   return $rows;
 }
@@ -768,8 +1176,354 @@ function wdp_st_snip_hooks($code) {
   }
   return array_values(array_unique($hooks));
 }
+function wdp_st_args($src, $open) {
+  $out = array();
+  $L = strlen($src);
+  $i = $open + 1;
+  $depth = 1;
+  $in = "";
+  $esc = 0;
+  $start = $i;
+  while ($i < $L && $depth > 0) {
+    $c = $src[$i];
+    if ($in !== "") {
+      if ($esc) { $esc = 0; $i++; continue; }
+      if ($c === chr(92)) { $esc = 1; $i++; continue; }
+      if ($c === $in) $in = "";
+      $i++;
+      continue;
+    }
+    if ($c === "\\"" || ord($c) === 39) { $in = $c; $i++; continue; }
+    if ($c === "(" || $c === "[" || $c === "{") { $depth++; $i++; continue; }
+    if ($c === ")" || $c === "]" || $c === "}") {
+      if ($c === ")" && $depth === 1) {
+        $bit = trim(substr($src, $start, $i - $start));
+        if ($bit !== "") $out[] = $bit;
+        return $out;
+      }
+      $depth--;
+      $i++;
+      continue;
+    }
+    if ($c === "," && $depth === 1) {
+      $out[] = trim(substr($src, $start, $i - $start));
+      $start = $i + 1;
+      $i++;
+      continue;
+    }
+    $i++;
+  }
+  return $out;
+}
+function wdp_st_unquote($s) {
+  $s = trim((string) $s);
+  if ($s === "") return "";
+  $q = $s[0];
+  if ($q !== "\\"" && ord($q) !== 39) return "";
+  $L = strlen($s);
+  $out = "";
+  $esc = 0;
+  for ($i = 1; $i < $L; $i++) {
+    $c = $s[$i];
+    if ($esc) { $out .= $c; $esc = 0; continue; }
+    if ($c === chr(92)) { $esc = 1; continue; }
+    if ($c === $q) break;
+    $out .= $c;
+  }
+  return $out;
+}
+function wdp_st_after_str($expr) {
+  $s = trim((string) $expr);
+  if ($s === "") return "";
+  $q = $s[0];
+  if ($q !== "\\"" && ord($q) !== 39) return "";
+  $L = strlen($s);
+  $esc = 0;
+  for ($i = 1; $i < $L; $i++) {
+    $c = $s[$i];
+    if ($esc) { $esc = 0; continue; }
+    if ($c === chr(92)) { $esc = 1; continue; }
+    if ($c === $q) return trim(substr($s, $i + 1));
+  }
+  return "";
+}
+function wdp_st_host_of($s) {
+  $s = trim((string) $s);
+  if ($s === "") return "";
+  $p = stripos($s, "://");
+  if ($p !== false) {
+    $rest = substr($s, $p + 3);
+    $end = strlen($rest);
+    foreach (array("/", "?", "#") as $ch) {
+      $i = strpos($rest, $ch);
+      if ($i !== false && $i < $end) $end = $i;
+    }
+    $rest = substr($rest, 0, $end);
+    $at = strrpos($rest, "@");
+    if ($at !== false) $rest = substr($rest, $at + 1);
+    $colon = strpos($rest, ":");
+    if ($colon !== false) $rest = substr($rest, 0, $colon);
+    return strtolower($rest);
+  }
+  if (strpos($s, "/") !== false || strpos($s, "?") !== false || strpos($s, " ") !== false) return "";
+  $colon = strpos($s, ":");
+  $h = $colon !== false ? substr($s, 0, $colon) : $s;
+  $h = strtolower($h);
+  if ($h === "") return "";
+  if (strpos($h, ".") === false && $h !== "localhost") return "";
+  return $h;
+}
+function wdp_st_ident($expr) {
+  $s = trim((string) $expr);
+  if ($s === "") return "";
+  if (substr($s, 0, 1) === "$") {
+    $i = 1;
+    $L = strlen($s);
+    $start = $i;
+    while ($i < $L && wdp_st_word($s[$i])) $i++;
+    $name = substr($s, $start, $i - $start);
+    while ($i < $L && ($s[$i] === " " || $s[$i] === "\\t")) $i++;
+    if ($i + 1 < $L && $s[$i] === "-" && $s[$i + 1] === ">") {
+      $i += 2;
+      while ($i < $L && ($s[$i] === " " || $s[$i] === "\\t")) $i++;
+      $ps = $i;
+      while ($i < $L && wdp_st_word($s[$i])) $i++;
+      $prop = substr($s, $ps, $i - $ps);
+      if ($prop !== "") return $prop;
+    }
+    if ($name !== "") return "$" . $name;
+    return "";
+  }
+  $i = 0;
+  $c = strpos($s, "::");
+  if ($c !== false) $i = $c + 2;
+  $L = strlen($s);
+  $start = $i;
+  while ($i < $L && wdp_st_word($s[$i])) $i++;
+  return substr($s, $start, $i - $start);
+}
+function wdp_st_kind_expr($expr) {
+  $expr = trim((string) $expr);
+  if ($expr === "") return null;
+  $go = "get_option";
+  if (strpos($expr, $go) === 0) {
+    $i = strlen($go);
+    $L = strlen($expr);
+    while ($i < $L && ($expr[$i] === " " || $expr[$i] === "\\t")) $i++;
+    if ($i < $L && $expr[$i] === "(") {
+      $args = wdp_st_args($expr, $i);
+      $key = isset($args[0]) ? wdp_st_unquote($args[0]) : "";
+      if ($key !== "") return array("host" => "option:" . $key, "kind" => "option-adi");
+      return array("host" => "dinamik:get_option", "kind" => "dinamik");
+    }
+  }
+  $q0 = $expr[0];
+  if ($q0 === "\\"" || ord($q0) === 39) {
+    $lit = wdp_st_unquote($expr);
+    $h = wdp_st_host_of($lit);
+    if ($h !== "") return array("host" => $h, "kind" => "sabit");
+    if ($lit === "http://" || $lit === "https://") {
+      $rest = ltrim(wdp_st_after_str($expr), " .");
+      $id = wdp_st_ident($rest);
+      if ($id !== "") return array("host" => "dinamik:" . $id, "kind" => "dinamik");
+    }
+  }
+  $id = wdp_st_ident($expr);
+  if ($id !== "") return array("host" => "dinamik:" . $id, "kind" => "dinamik");
+  return array("host" => "dinamik:?", "kind" => "dinamik");
+}
+function wdp_st_fn_hook_map($code) {
+  $map = array();
+  $code = (string) $code;
+  foreach (array("add_" . "action", "add_" . "filter") as $fn) {
+    $p = 0;
+    $flen = strlen($fn);
+    $L = strlen($code);
+    while (($p = strpos($code, $fn, $p)) !== false) {
+      $i = $p + $flen;
+      while ($i < $L && ($code[$i] === " " || $code[$i] === "\\t" || $code[$i] === "\\n" || $code[$i] === "\\r")) $i++;
+      if ($i < $L && $code[$i] === "(") {
+        $args = wdp_st_args($code, $i);
+        $hook = isset($args[0]) ? wdp_st_unquote($args[0]) : "";
+        $cb = isset($args[1]) ? $args[1] : "";
+        $name = wdp_st_unquote($cb);
+        if ($name === "" && strpos(ltrim($cb), "array") === 0) {
+          $op = strpos($cb, "(");
+          if ($op !== false) {
+            $inner = wdp_st_args($cb, $op);
+            if (isset($inner[1])) $name = wdp_st_unquote($inner[1]);
+          }
+        }
+        if ($hook !== "" && $name !== "") {
+          if (!isset($map[$name])) $map[$name] = array();
+          $map[$name][] = $hook;
+        }
+      }
+      $p += $flen;
+    }
+  }
+  return $map;
+}
+function wdp_st_match_brace($src, $open) {
+  $L = strlen($src);
+  $depth = 0;
+  $in = "";
+  $esc = 0;
+  for ($i = $open; $i < $L; $i++) {
+    $c = $src[$i];
+    if ($in !== "") {
+      if ($esc) { $esc = 0; continue; }
+      if ($c === chr(92)) { $esc = 1; continue; }
+      if ($c === $in) $in = "";
+      continue;
+    }
+    if ($c === "\\"" || ord($c) === 39) { $in = $c; continue; }
+    if ($c === "{") $depth++;
+    if ($c === "}") {
+      $depth--;
+      if ($depth === 0) return $i;
+    }
+  }
+  return $L;
+}
+function wdp_st_enclosing_fn($src, $pos) {
+  $best = "";
+  $p = 0;
+  $fn = "function";
+  $len = 8;
+  $L = strlen($src);
+  $pos = (int) $pos;
+  while (($p = strpos($src, $fn, $p)) !== false && $p < $pos) {
+    $before = $p > 0 ? $src[$p - 1] : "";
+    if ($before !== "" && wdp_st_word($before)) { $p += $len; continue; }
+    $i = $p + $len;
+    while ($i < $L && ($src[$i] === " " || $src[$i] === "\\t" || $src[$i] === "\\n" || $src[$i] === "\\r")) $i++;
+    if ($i < $L && $src[$i] === "(") { $p += $len; continue; }
+    $start = $i;
+    while ($i < $L && wdp_st_word($src[$i])) $i++;
+    $name = substr($src, $start, $i - $start);
+    while ($i < $L && $src[$i] !== "{" && $src[$i] !== ";") $i++;
+    if ($i >= $L || $src[$i] !== "{") { $p += $len; continue; }
+    $end = wdp_st_match_brace($src, $i);
+    if ($name !== "" && $pos > $i && $pos < $end) $best = $name;
+    $p += $len;
+  }
+  return $best;
+}
+function wdp_st_last_hook_before($src, $pos) {
+  $last = "";
+  $srcb = substr((string) $src, 0, max(0, (int) $pos));
+  $needles = array("add_" . "action", "add_" . "filter");
+  $L = strlen($srcb);
+  $p = 0;
+  while ($p < $L) {
+    $hit = -1;
+    $flen = 0;
+    foreach ($needles as $fn) {
+      $i = strpos($srcb, $fn, $p);
+      if ($i !== false && ($hit < 0 || $i < $hit)) {
+        $hit = $i;
+        $flen = strlen($fn);
+      }
+    }
+    if ($hit < 0) break;
+    $i = $hit + $flen;
+    while ($i < $L && ($srcb[$i] === " " || $srcb[$i] === "\\t" || $srcb[$i] === "\\n" || $srcb[$i] === "\\r")) $i++;
+    if ($i < $L && $srcb[$i] === "(") {
+      $args = wdp_st_args($srcb, $i);
+      if (isset($args[0])) {
+        $h = wdp_st_unquote($args[0]);
+        if ($h !== "") $last = $h;
+      }
+    }
+    $p = $hit + $flen;
+  }
+  return $last;
+}
+function wdp_st_hook_for($src, $pos, $fnmap) {
+  $fn = wdp_st_enclosing_fn($src, $pos);
+  if ($fn !== "" && isset($fnmap[$fn]) && $fnmap[$fn]) return $fnmap[$fn][0];
+  return wdp_st_last_hook_before($src, $pos);
+}
+function wdp_st_host_fns() {
+  return array(
+    "wp_remote_get",
+    "wp_remote_post",
+    "wp_remote_request",
+    "wp_remote_head",
+    "wp_safe_remote_get",
+    "wp_safe_remote_post",
+    "wp_safe_remote_request",
+    "wp_safe_remote_head",
+    "curl_init",
+    "file_get_contents",
+    "fsockopen"
+  );
+}
+function wdp_st_hosts($src, $default_hook = "") {
+  $src = (string) $src;
+  $out = array();
+  $seen = array();
+  $fnmap = wdp_st_fn_hook_map($src);
+  $L = strlen($src);
+  foreach (wdp_st_host_fns() as $fn) {
+    $p = 0;
+    $len = strlen($fn);
+    while (($p = strpos($src, $fn, $p)) !== false) {
+      $before = $p > 0 ? $src[$p - 1] : "";
+      if ($before !== "" && wdp_st_word($before)) { $p += $len; continue; }
+      $i = $p + $len;
+      if ($i < $L && wdp_st_word($src[$i])) { $p += $len; continue; }
+      while ($i < $L && ($src[$i] === " " || $src[$i] === "\\t" || $src[$i] === "\\n" || $src[$i] === "\\r")) $i++;
+      if ($i >= $L || $src[$i] !== "(") { $p += $len; continue; }
+      $args = wdp_st_args($src, $i);
+      $expr = isset($args[0]) ? $args[0] : "";
+      if ($fn === "curl_init" && $expr === "") { $p += $len; continue; }
+      if ($fn === "file_get_contents") {
+        $lit = wdp_st_unquote($expr);
+        if ($lit !== "" && stripos($lit, "http://") !== 0 && stripos($lit, "https://") !== 0) {
+          $p += $len;
+          continue;
+        }
+        if ($lit === "" && $expr === "") { $p += $len; continue; }
+      }
+      $row = wdp_st_kind_expr($expr);
+      if ($row && !empty($row["host"])) {
+        $hook = wdp_st_hook_for($src, $p, $fnmap);
+        if ($hook === "" && $default_hook !== "") $hook = $default_hook;
+        $row["hook"] = $hook;
+        $k = $row["host"] . "|" . $row["kind"] . "|" . $row["hook"];
+        if (!isset($seen[$k])) {
+          $seen[$k] = 1;
+          $out[] = $row;
+        }
+      }
+      $p += $len;
+    }
+  }
+  return $out;
+}
+function wdp_st_merge_hosts($a, $b) {
+  $seen = array();
+  $out = array();
+  foreach (array($a, $b) as $list) {
+    foreach ((array) $list as $h) {
+      if (!is_array($h) || empty($h["host"])) continue;
+      $k = $h["host"] . "|" . (isset($h["kind"]) ? $h["kind"] : "") . "|" . (isset($h["hook"]) ? $h["hook"] : "");
+      if (isset($seen[$k])) continue;
+      $seen[$k] = 1;
+      $out[] = array(
+        "host" => (string) $h["host"],
+        "kind" => (string) $h["kind"],
+        "hook" => isset($h["hook"]) ? (string) $h["hook"] : ""
+      );
+    }
+  }
+  return $out;
+}
 $scan_hooks = array(
   "woocommerce_add_to_cart",
+  "woocommerce_add_cart_item_data",
   "woocommerce_cart_item_set_quantity",
   "woocommerce_cart_updated",
   "woocommerce_before_calculate_totals",
@@ -788,8 +1542,8 @@ $scan_hooks = array(
 );
 $hook_scan = array();
 foreach ($scan_hooks as $h) {
-  foreach (wdp_st_agg(wdp_st_cbs($h)) as $row) {
-    $hook_scan[] = array("hook" => $h, "kind" => $row["kind"], "slug" => $row["slug"], "calls" => $row["calls"], "count" => $row["count"]);
+  foreach (wdp_st_agg(wdp_st_cbs($h), $h) as $row) {
+    $hook_scan[] = array("hook" => $h, "kind" => $row["kind"], "slug" => $row["slug"], "calls" => $row["calls"], "count" => $row["count"], "hosts" => $row["hosts"]);
   }
 }
 $snippets = array();
@@ -810,7 +1564,8 @@ if (isset($wpdb) && isset($wpdb->prefix)) {
         "priority" => isset($row["priority"]) ? (int) $row["priority"] : 10,
         "active" => !empty($row["active"]) ? 1 : 0,
         "hooks" => wdp_st_snip_hooks($code),
-        "calls" => wdp_st_calls($code)
+        "calls" => wdp_st_calls($code),
+        "hosts" => wdp_st_hosts($code)
       );
     }
   }
@@ -1457,11 +2212,13 @@ export function assembleReport({ envName, profileId, stepData, canaryRel }) {
   const hookScan = (Array.isArray(staticRaw.hook_scan) ? staticRaw.hook_scan : []).map((row) => {
     const calls = row.calls && typeof row.calls === 'object' && !Array.isArray(row.calls) ? row.calls : {};
     const count = Number(row.count) || Object.values(calls).reduce((a, b) => a + Number(b || 0), 0);
+    const hosts = (Array.isArray(row.hosts) ? row.hosts : []).map(scrubHostEntry).filter(Boolean);
     return {
       hook: String(row.hook || ''),
       source: sourceLabel(row.kind, row.slug),
       calls,
       count,
+      hosts,
     };
   });
   const snippets = (Array.isArray(staticRaw.snippets) ? staticRaw.snippets : []).map(scrubSnippetRow);
@@ -1633,6 +2390,15 @@ export function renderMarkdown(report) {
     (x.hooks || []).join(', ') || '—',
     formatCallTypes(x.calls),
   ]);
+  const snippetHostRows = formatSnippetHostRows(stOut.snippets || []);
+  const hookHostRows = (stOut.hooks || [])
+    .filter((x) => Array.isArray(x.hosts) && x.hosts.length)
+    .map((x) => [
+      x.hook,
+      x.source,
+      [...new Set(x.hosts.map((h) => h.host).filter(Boolean))].join(', ') || '—',
+      [...new Set(x.hosts.map((h) => h.kind).filter(Boolean))].join(', ') || '—',
+    ]);
   const cronStaticRows = (stOut.cron || []).map((x) => [
     x.hook,
     x.owner || CRON_ORPHAN,
@@ -1744,6 +2510,16 @@ export function renderMarkdown(report) {
     snippetRows.length
       ? mdTable(['id', 'scope', 'priority', 'etkin', 'kancalar', 'çağrı türleri'], snippetRows)
       : '_aktif snippet yok_',
+    '',
+    '### Snippet giden ana makineler',
+    snippetHostRows.length
+      ? mdTable(['snippet id', 'kanca', 'host(lar)', 'tür'], snippetHostRows)
+      : '_giden ana makine yok_',
+    '',
+    '### Kanca giden ana makineler',
+    hookHostRows.length
+      ? mdTable(['kanca', 'kaynak', 'host(lar)', 'tür'], hookHostRows)
+      : '_giden ana makine yok_',
     '',
     '### wp-cron',
     cronStaticRows.length

@@ -5,7 +5,9 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
+import { spawnSync } from 'node:child_process';
 import {
   BLOCKED_ACTIVE_SLUGS,
   CRON_ORPHAN,
@@ -24,6 +26,7 @@ import {
   classifyWooPageKind,
   compactPhp,
   detectOutboundCalls,
+  extractOutboundHosts,
   getDiscoverWpTails,
   getEvalSnippets,
   parseJsonBlob,
@@ -34,6 +37,32 @@ import {
 } from '../../../scripts/lib/remote-discover-lib.mjs';
 import { ROOT } from '../../../tests/e2e/helpers/env-root.mjs';
 import { createRemoteRunner, runDiscover } from '../../../scripts/remote-discover.mjs';
+
+const FAKE_SNIPPET_27 = `
+add_action("woocommerce_add_to_cart", "hedef_check_abandoned_cart_event");
+add_action("woocommerce_add_cart_item_data", "hedef_check_abandoned_cart_event");
+function hedef_check_abandoned_cart_event() {
+  wp_remote_post("https://api.ornek.com/v1/secret-path?token=1", array(
+    "headers" => array("Authorization" => "Bearer abc"),
+    "body" => array("key" => "XYZ"),
+  ));
+  wp_remote_get($endpoint);
+  wp_safe_remote_request(API_BASE);
+  file_get_contents(get_option("cart_webhook_url"));
+  fsockopen("events.ornek.net", 443);
+  curl_init("https://hooks.ornek.io/abc/secret");
+}
+`;
+
+function assertHostLeakFree(blob) {
+  const t = String(blob);
+  assert.equal(t.includes('secret-path'), false, 'yol sızdı');
+  assert.equal(t.includes('token=1'), false, 'sorgu sızdı');
+  assert.equal(/Bearer\s+abc/i.test(t), false, 'Authorization değeri sızdı');
+  assert.equal(t.includes('?key=XYZ'), false, 'sorgu anahtarı sızdı');
+  assert.equal(t.includes('/v1/'), false, 'yol sızdı');
+  assert.equal(t.includes('https://api.ornek.com'), false, 'tam URL sızdı');
+}
 
 describe('remote-discover komut listesi', () => {
   it('komut listesinde yazma yok', () => {
@@ -379,12 +408,218 @@ describe('remote-discover giden veri statik denetimi', () => {
     assert.doesNotMatch(php, /do_action|apply_filters|wp_schedule|spawn_cron/);
     assert.match(php, /ReflectionMethod|ReflectionFunction/);
     assert.match(php, /SELECT id, scope, priority, active, code/);
+    assert.match(php, /wdp_st_hosts/);
+    assert.match(php, /woocommerce_add_cart_item_data/);
     assert.doesNotMatch(php, /echo \$src\b/);
     assert.doesNotMatch(php, /"code"\s*=>/);
     assert.doesNotMatch(php, /"name"\s*=>/);
     for (const h of STATIC_SCAN_HOOKS) {
       assert.equal(php.includes(`"${h}"`), true, h);
     }
+  });
+
+  it('sahte kodda yalnız host; yol/sorgu/Authorization yok', () => {
+    const hosts = extractOutboundHosts(FAKE_SNIPPET_27);
+    const byHost = Object.fromEntries(hosts.map((h) => [h.host, h]));
+    assert.equal(byHost['api.ornek.com']?.kind, 'sabit');
+    assert.equal(byHost['api.ornek.com']?.hook, 'woocommerce_add_to_cart');
+    assert.equal(byHost['dinamik:$endpoint']?.kind, 'dinamik');
+    assert.equal(byHost['dinamik:API_BASE']?.kind, 'dinamik');
+    assert.equal(byHost['option:cart_webhook_url']?.kind, 'option-adı');
+    assert.equal(byHost['events.ornek.net']?.kind, 'sabit');
+    assert.equal(byHost['hooks.ornek.io']?.kind, 'sabit');
+    const blob = JSON.stringify(hosts);
+    assertHostLeakFree(blob);
+    assert.equal(blob.includes('abc/secret'), false);
+  });
+
+  it('snippet host tablosu rapora yol/anahtar sızdırmaz', () => {
+    const report = assembleReport({
+      envName: 'staging',
+      profileId: 't',
+      stepData: {
+        plugins: { plugins: [{ slug: 'code-snippets', status: 'active', version: '3' }] },
+        static_outbound: {
+          snippets: [
+            {
+              id: 27,
+              name: 'LEAK_NAME_XYZ',
+              code: FAKE_SNIPPET_27,
+              scope: 'global',
+              priority: 10,
+              active: 1,
+            },
+          ],
+          hook_scan: [
+            {
+              hook: 'woocommerce_add_to_cart',
+              kind: 'plugin',
+              slug: 'ornek-eklenti',
+              calls: { 'wp_remote_*': 1 },
+              count: 1,
+              hosts: [
+                {
+                  host: 'https://api.ornek.com/v1/secret-path?token=1',
+                  kind: 'sabit',
+                  hook: 'woocommerce_add_to_cart',
+                },
+              ],
+            },
+          ],
+        },
+      },
+      canaryRel: '',
+    });
+    const md = renderMarkdown(report);
+    const blob = `${JSON.stringify(report)}\n${md}`;
+    assertHostLeakFree(blob);
+    assert.equal(blob.includes('LEAK_NAME_XYZ'), false);
+    assert.match(md, /Snippet giden ana makineler/);
+    assert.match(md, /api\.ornek\.com/);
+    assert.match(md, /dinamik:\$endpoint/);
+    assert.match(md, /option:cart_webhook_url/);
+    const sn = report.outbound_static.snippets.find((s) => s.id === 27);
+    assert.ok(sn);
+    assert.equal('code' in sn, false);
+    assert.ok(sn.hosts.some((h) => h.host === 'api.ornek.com' && h.kind === 'sabit'));
+    const hookHosts = report.outbound_static.hooks.find((h) => h.hook === 'woocommerce_add_to_cart');
+    assert.ok(hookHosts.hosts.every((h) => h.host === 'api.ornek.com' && !h.host.includes('/')));
+  });
+
+  it('yerel sahte snippet tablosu: EVAL host çıkarır (uzak yok)', () => {
+    const tmp = path.join(os.tmpdir(), `wdp-4n-snip-${process.pid}.php`);
+    const rows = [
+      {
+        id: 27,
+        scope: 'global',
+        priority: 10,
+        active: 1,
+        code: FAKE_SNIPPET_27,
+      },
+      {
+        id: 29,
+        scope: 'global',
+        priority: 10,
+        active: 1,
+        code: 'add_action("woocommerce_payment_complete", "x"); function x() { wp_remote_post("https://pay.ornek.com/v2/secret?key=XYZ"); }',
+      },
+    ];
+    const rowsJson = JSON.stringify(rows).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+    const stub = `<?php
+if (!defined("ARRAY_A")) define("ARRAY_A", "ARRAY_A");
+class WdpFakeDb {
+  public $prefix = "wp_";
+  public $rows;
+  function __construct($rows) { $this->rows = $rows; }
+  function suppress_errors($x = null) { return false; }
+  function esc_like($t) { return $t; }
+  function prepare($q, $a = null) { return $q; }
+  function get_var($q = null) { return "wp_snippets"; }
+  function get_results($q = null, $t = null) { return $this->rows; }
+}
+$wpdb = new WdpFakeDb(json_decode('${rowsJson}', true));
+$wp_filter = array();
+if (!function_exists("_get_cron_array")) { function _get_cron_array() { return array(); } }
+${EVAL_STATIC_OUTBOUND}
+`;
+    fs.writeFileSync(tmp, stub, 'utf8');
+    try {
+      const r = spawnSync('php', [tmp], { encoding: 'utf8', timeout: 30000 });
+      assert.equal(r.status, 0, r.stderr || r.stdout || 'php çıkış');
+      const data = parseJsonBlob(r.stdout || '');
+      const sn27 = (data.snippets || []).find((s) => Number(s.id) === 27);
+      const sn29 = (data.snippets || []).find((s) => Number(s.id) === 29);
+      assert.ok(sn27, 'snippet 27 yok');
+      assert.ok(sn29, 'snippet 29 yok');
+      const hosts27 = (sn27.hosts || []).map((h) => h.host);
+      assert.ok(hosts27.includes('api.ornek.com'));
+      assert.ok(hosts27.includes('dinamik:$endpoint') || hosts27.includes('dinamik:endpoint'));
+      assert.ok(hosts27.some((h) => String(h).startsWith('option:cart_webhook_url')));
+      assert.ok((sn29.hosts || []).some((h) => h.host === 'pay.ornek.com'));
+      const blob = JSON.stringify(data);
+      assertHostLeakFree(blob);
+      assert.equal(blob.includes('FAKE_SNIPPET'), false);
+      assert.equal('code' in sn27, false);
+    } finally {
+      try {
+        fs.unlinkSync(tmp);
+      } catch (e) {
+        if (e && e.code !== 'ENOENT') throw e;
+      }
+    }
+  });
+
+  it('remote:discover staging çıktısı yerelde sahte snippet ile host tablosu üretir', () => {
+    const outRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'wdp-4n-disc-'));
+    const payload = {
+      php: '8.2',
+      wp: '6.7',
+      wc: '8.0',
+      theme: 'avada',
+      parent_theme: 'avada',
+      locale: 'tr_TR',
+      wplang: 'tr_TR',
+      multisite: 0,
+      plugins: [{ slug: 'code-snippets', status: 'active', version: '3' }],
+      hooks: {},
+      gateways: [],
+      mail: { active: 0, plugin: '', mailer: '' },
+      webhooks: { total: 0, by_status: {}, by_topic: {} },
+      cron: {},
+      hook_scan: [],
+      snippets: [
+        {
+          id: 27,
+          scope: 'global',
+          priority: 10,
+          active: 1,
+          hooks: ['woocommerce_add_to_cart', 'woocommerce_add_cart_item_data'],
+          calls: { 'wp_remote_*': 8 },
+          hosts: [
+            { host: 'api.ornek.com', kind: 'sabit', hook: 'woocommerce_add_to_cart' },
+            { host: 'dinamik:$endpoint', kind: 'dinamik', hook: 'woocommerce_add_to_cart' },
+            { host: 'option:cart_webhook_url', kind: 'option-adi', hook: 'woocommerce_add_to_cart' },
+          ],
+        },
+      ],
+      orders: 0,
+      products: 0,
+      users: 1,
+      pages: 1,
+      wdp_version: '',
+      wdp_option_count: 0,
+      posts: [],
+      options: {},
+      user_count: 1,
+      attachment_count: 0,
+      page_count: 1,
+      product_count: 0,
+    };
+    const fake = () => ({ status: 0, stdout: JSON.stringify(payload), stderr: '' });
+    const runner = createRemoteRunner({
+      spawn: fake,
+      alias: 'hedef-staging',
+      wpPath: '~/www/staging30.hedefdernegi.org/public_html',
+      siteUrl: 'https://staging30.hedefdernegi.org',
+    });
+    const { report, md, exitCode } = runDiscover({
+      envName: 'staging',
+      runner,
+      outRoot,
+      writeFiles: true,
+    });
+    assert.equal(exitCode, 0);
+    assert.equal(report.env, 'staging');
+    const mdFile = fs.readFileSync(path.join(outRoot, 'build/discovery/staging.md'), 'utf8');
+    assert.match(mdFile, /Snippet giden ana makineler/);
+    assert.match(mdFile, /api\.ornek\.com/);
+    assert.match(mdFile, /dinamik:\$endpoint/);
+    assert.match(mdFile, /option:cart_webhook_url/);
+    assert.match(md, /snippet id/);
+    assertHostLeakFree(`${JSON.stringify(report)}\n${mdFile}`);
+    const sn = report.outbound_static.snippets.find((s) => s.id === 27);
+    assert.ok(sn.hosts.some((h) => h.host === 'api.ornek.com'));
+    assert.equal(sn.hosts.every((h) => !String(h.host).includes('/')), true);
   });
 });
 
