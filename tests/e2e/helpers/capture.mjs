@@ -128,6 +128,10 @@ import {
 } from './click-diagnostics.mjs';
 import { waitAndAssertShellOverlap, waitShellAnimationsDone } from './shell-overlap.mjs';
 import {
+  attachNativeSubmitReloadGuard,
+  NATIVE_SUBMIT_RELOAD_CODE,
+} from './native-submit-guard.mjs';
+import {
   classifyPageHeight,
   classifyShellCompleteness,
   collectPageCompletenessMetrics,
@@ -3488,6 +3492,19 @@ export async function captureAll({
           })
         );
       }
+      try {
+        const guard = attachNativeSubmitReloadGuard(page);
+        guard.assertClear(screenName);
+      } catch (eReload) {
+        failures.push(
+          makeFailure({
+            check: NATIVE_SUBMIT_RELOAD_CODE,
+            description: 'Kabuk açıkken ürün sayfası belge yeniden yüklendi (yerel form / reload)',
+            error: eReload,
+            screenshot: `${screenName}.png`,
+          })
+        );
+      }
     }
     shots.push(
       await shot(page, outDir, screenName, maskList, {
@@ -3516,6 +3533,9 @@ export async function captureAll({
         .filter({ has: page.locator(SEL.donationForm) })
         .first();
       const shell = (await wrap.count()) > 0 ? wrap : visibleForm;
+      const guard = attachNativeSubmitReloadGuard(page);
+      guard.clearHits();
+      guard.arm();
       return { ok: true, shell, openedAs: mode };
     }
     await revealListProductTrigger(page, productId);
@@ -3581,6 +3601,9 @@ export async function captureAll({
     }
     const shell = mode === 'popup' ? openShellLocator(page, '') : openShellLocator(page, mode);
     await shell.waitFor({ state: 'visible', timeout: CHECK_MS });
+    const guard = attachNativeSubmitReloadGuard(page);
+    guard.clearHits();
+    guard.arm();
     try {
       await waitShellAnimationsDone(page, 8000);
     } catch (eWait) {

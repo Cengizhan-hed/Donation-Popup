@@ -1042,9 +1042,9 @@
     timestampInput.value = Date.now();
     form.appendChild(timestampInput);
 
-    // Formu gönder
-    safeLog("Submitting form directly");
-    form.submit();
+    // Yerel belge gönderimi yok — aynı AJAX yolu.
+    safeLog("Submitting form via AJAX (no native document POST)");
+    submitFormData(form, isCheckout);
 
     return true;
   }
