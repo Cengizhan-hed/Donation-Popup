@@ -662,3 +662,17 @@ describe('network-guard uzak host sınıflaması', () => {
     );
   });
 });
+
+it('describeForeignWrite: ana makine, yol, tür ve sayfa; sorgu/gövde yok', async () => {
+  const { describeForeignWrite } = await import('../../e2e/helpers/network-guard.mjs');
+  const req = {
+    method: () => 'POST',
+    resourceType: () => 'fetch',
+    frame: () => ({ url: () => 'https://site.example/product/x/?token=SECRET' }),
+  };
+  const out = describeForeignWrite(req, 'https://api.ornek.com/v1/collect?key=SECRET');
+  assert.match(out, /POST api\.ornek\.com\/v1\/collect/);
+  assert.match(out, /tür=fetch/);
+  assert.match(out, /sayfa=\/product\/x\//);
+  assert.ok(!/SECRET/.test(out));
+});

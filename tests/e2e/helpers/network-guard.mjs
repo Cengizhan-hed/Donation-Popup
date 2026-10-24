@@ -847,6 +847,36 @@ export function safeRequestPath(url) {
   }
 }
 
+/**
+ * Yabancı alan adına yazma girişimi için kaynak teşhisi (kişisel veri yok): ana makine, yol (sorgusuz),
+ * kaynak türü, isteği başlatan sayfa yolu, yöntem. Hangi eklenti/tema olduğunu bulmaya yarar.
+ * @param {import('@playwright/test').Request} request
+ * @param {string} url
+ */
+export function describeForeignWrite(request, url) {
+  let host = '';
+  let pathName = '/';
+  try {
+    const u = new URL(String(url));
+    host = u.hostname;
+    pathName = u.pathname || '/';
+  } catch {
+    /* geçersiz URL */
+  }
+  let type = '';
+  let framePath = '';
+  let method = '';
+  try {
+    type = typeof request.resourceType === 'function' ? request.resourceType() : '';
+    method = typeof request.method === 'function' ? request.method() : '';
+    const fr = typeof request.frame === 'function' ? request.frame() : null;
+    framePath = fr && typeof fr.url === 'function' ? safeRequestPath(fr.url()).replace(/\?…$/, '') : '';
+  } catch {
+    /* sayfa kapanmış olabilir */
+  }
+  return `${method} ${host}${pathName} [tür=${type || '?'} sayfa=${framePath || '?'}]`;
+}
+
 function recordTracker(hostname) {
   const host = String(hostname || 'unknown').toLowerCase();
   blockedByHost.set(host, (blockedByHost.get(host) || 0) + 1);
@@ -1230,7 +1260,7 @@ export async function applyNetworkGuard(context, opts = {}) {
       const onAllowed =
         kind === 'allowed' || kind === 'first-party' || isAllowedProfileHost(reqHost, allowedHosts);
       if (write && !onAllowed) {
-        foreignWriteBlocks.push(safeRequestPath(url));
+        foreignWriteBlocks.push(describeForeignWrite(request, url));
         await route.abort('blockedbyclient');
         return;
       }
