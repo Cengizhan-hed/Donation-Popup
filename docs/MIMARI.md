@@ -649,6 +649,13 @@ Merge kriteri: `verify` + yerel tam paket + `e2e:remote-smoke` iki uzak ortamda 
 | Teşhis | Kırmızıda `build/e2e/debug/<profil>/remote-smoke-<kontrol>.json` + PNG. |
 | Çıkış | Hata varsa 1; konsol özet satırı + `run.json`. |
 
+### Sağlık: kaynak ayırt etme + eklenti açık/kapalı (Y6)
+
+- **Kaynak ayırt etme** (`scripts/lib/health-attribution.mjs`, saf işlevler): `ship-health.php` PHP günlüğünün son satırlarını (≤200, e-posta maskeli, yalnız okur) döndürür; `evaluatePhpHealth` yalnız koşu başlangıcından sonraki kayıtları (zaman damgası, -60 sn pay) sınıflar. Kaynak = kaydın ilk dosya yolu (yoksa yığın izinin ilk dosyası): `plugins/woo-donation-popup/` → **bizden**; başka eklenti/tema/mu-plugin/WP çekirdeği → **üçüncü taraf** (ör. Y2 Slider Revolution); yol yok → **bilinmiyor** (temkinli, fatal ise kırmızı). Geri dönüşü yalnız bizden/bilinmeyen fatal ya da bizden gelen kırmızı sayfa tetikler; üçüncü taraf satırda `üçüncü-taraf-php=…` / `üçüncü-taraf-sayfa=…` olarak raporlanır. Kırmızı sayfa üçüncü taraf sayılır: (a) bizden fatal yokken kurulum öncesi de kırmızıydı (`opts.baselineRedNames`) ya da (b) yeni günlük fatalleri yalnız üçüncü taraf.
+- **Geri dönüş bildirimi:** `build/handoff/SHIP-GERI-DONUS-<env>-<damga>.md` (sebep, kırmızı sayfalar, üçüncü taraf, sonrası). Sağlık sayfaları: ana sayfa, mağaza, ürün, bağış sayfası, wp-admin.
+- **Açık/kapalı** (`npm run health:onoff` = `scripts/plugin-onoff-compare.mjs`; yerel WP, uzak yok): eklenti KAPALI → AÇIK, aynı 8 sayfa (ön yüz 2 + yönetici: başlangıç, eklentiler, WC ayar, siparişler, ürün düzenleme, eklenti ayarı); sayfa başına PHP uyarı sayısı (günlük) + Playwright konsol hatası; eklenti sayıyı artırıyorsa ya da "bizden" kayıt varsa KIRMIZI. Sahte üçüncü taraf eklenti (`wdp-fake-third`) iki durumda eşit, fark vermez; WooCommerce yer tutucusu yalnız geçici kopyada. `tests/unit/js/plugin-onoff.test.mjs` (`npm run test` içinde → merge kriteri): gerçek eklenti yeşil, bilerek hata ekleyen kopya kırmızı. Uzakta eklenti kapatılmaz: "açık" sayıları `compareToBaseline` ile tabana kıyaslanır.
+- **Yönetici varlıkları:** `WDP_Admin_Assets::enqueue` yalnız `woocommerce_page_wdp-popup-settings` ve ürün düzenleme (`post.php`/`post-new.php`, `product`, `manage_woocommerce`) ekranında kuyruğa girer; `tests/unit/AdminAssetsScreenTest.php` plugins.php, başlangıç, WC ayar/durum/siparişler, ürün listesi, ayarlar vb. ekranlarda `wdp-` handle olmadığını kanıtlar.
+
 ### ship:ikram ve güvenlik kilidi
 
 `scripts/lib/ship-core.mjs` (ikram profili): yukarıdaki güvenli zincir; rsync kaynak/hedef sonda slash + `--delete` yalnız eklenti dizini + `.distignore`. Eklenti dizini `wp plugin path SLUG --dir` (`normalizeRemotePluginDir`). `--dry-run` uzak yazmaz. Özet `build/ship/ikram-<zaman>.md`.

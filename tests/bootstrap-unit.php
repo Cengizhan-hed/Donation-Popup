@@ -979,7 +979,12 @@ if (!function_exists('wp_reset_postdata')) {
 	function wp_reset_postdata() {}
 }
 if (!function_exists('wp_enqueue_style')) {
-	function wp_enqueue_style(...$args) {}
+	function wp_enqueue_style(...$args) {
+		$handle = isset($args[0]) ? (string) $args[0] : '';
+		if ($handle !== '') {
+			WDP_Test_State::$options['__enqueued_styles'][] = $handle;
+		}
+	}
 }
 if (!function_exists('wp_enqueue_script')) {
 	function wp_enqueue_script(...$args) {
