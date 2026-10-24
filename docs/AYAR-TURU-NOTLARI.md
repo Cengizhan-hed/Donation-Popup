@@ -490,3 +490,4 @@ Kullanıcı yönergesi önceki tüm görev metinlerinin yerini aldı; CLAUDE.md 
 | T17 | BAĞIŞÇI RİSKİ: TRY 0dp "." binlik mağazada "10.00" → 1000 ₺ (100×). staging30'da binlik=ondalık="." | 4I (10.34.13): gruplama kuralı + belirsiz tutar görünür uyarı, sunucu da reddeder |
 | T18 | staging30 checkout-flow android/desktop: test tutarı 10 < ürün min ₺50 (eklenti doğru reddetti, görünür mesaj); desktop panel testi wp-admin'de kalıyordu | 4H (test) |
 | A5 | Yerel e2e:full ebeveyn süreci localServer.stop() sonrası takılı kalabiliyor (4L gözlemi) | izleniyor |
+| T19 | GERÇEK BAĞIŞÇI HATASI: sepete ekleme sonrası tema fragment güncellemesi başarısızsa eklenti `location.reload()` ile sayfayı yeniliyordu; ayrıca işleyici bağlıyken submit preventDefault'suz dönebiliyordu (Enter/iOS "Git" yerel gönderim riski) | 10.34.14: reload yalnız `wdp_reload_after_add_to_cart` filtresiyle (varsayılan kapalı), submit her zaman önce preventDefault, NATIVE-SUBMIT-RELOAD E2E |
