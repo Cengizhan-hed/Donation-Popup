@@ -73,14 +73,22 @@ test('e2e helper parseMoneyDetailed matches shared vectors', () => {
   }
 });
 
-test('TRY 10.00 never becomes 1000; message is integer example', () => {
+test('TRY 10.00 is 10; 10,50 warns without 100x; 1.250 is thousand', () => {
   const try0 = fixture.stores.try;
   const u = loadUtils(try0);
-  const got = u.parseMoneyDetailed('10.00', try0);
-  assert.equal(got.status, 'ambiguous');
-  assert.equal(Number.isFinite(u.parseMoney('10.00', try0)), false);
-  assert.match(u.getAmbiguousAmountMessage(try0), /tam sayı/);
-  assert.match(u.getAmbiguousAmountMessage(try0), /10/);
+  const zeroFrac = u.parseMoneyDetailed('10.00', try0);
+  assert.equal(zeroFrac.status, 'ok');
+  assert.equal(zeroFrac.amount, 10);
+  const comma = u.parseMoneyDetailed('50,00', try0);
+  assert.equal(comma.status, 'ok');
+  assert.equal(comma.amount, 50);
+  const warn = u.parseMoneyDetailed('10,50', try0);
+  assert.equal(warn.status, 'ambiguous');
+  assert.equal(Number.isFinite(u.parseMoney('10,50', try0)), false);
+  assert.match(warn.error, /kuruşlu/);
+  assert.match(u.getAmbiguousAmountMessage(try0), /kuruşlu/);
+  assert.match(u.getNoFractionAmountMessage(try0), /10/);
+  assert.equal(u.parseMoney('1.250', try0), 1250);
   assert.equal(u.normalizeAmountInput('₺1.250', try0), '1.250');
   assert.equal(u.normalizeAmountInput('1 250', try0), '1250');
 });

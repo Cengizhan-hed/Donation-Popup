@@ -227,13 +227,20 @@
     return true
   }
 
+  function getNoFractionAmountMessage(cfg) {
+    const c = resolveCurrencyConfig(cfg)
+    const example = formatMoney(10, Object.assign({}, c, { symbol: '' })) || '10'
+    const strings = (wdp_ajax && wdp_ajax.strings) ? wdp_ajax.strings : {}
+    const tpl = strings.amount_no_fraction || 'Bu sitede kuruşlu tutar girilemez, örn. %s'
+    return tpl.replace('%s', example)
+  }
+
   function getAmbiguousAmountMessage(cfg) {
     const c = resolveCurrencyConfig(cfg)
     const example = formatMoney(10, Object.assign({}, c, { symbol: '' })) || '10'
     const strings = (wdp_ajax && wdp_ajax.strings) ? wdp_ajax.strings : {}
     if (c.decimals <= 0) {
-      const tpl = strings.amount_ambiguous_integer || 'Lütfen tutarı tam sayı olarak yazın, örn. %s'
-      return tpl.replace('%s', example)
+      return getNoFractionAmountMessage(c)
     }
     const tpl = strings.amount_ambiguous_format || 'Lütfen tutarı şu biçimde yazın, örn. %s'
     return tpl.replace('%s', example)
@@ -249,37 +256,85 @@
     return { ok: !!ok, amount: ok ? amount : NaN, status: status, error: msg }
   }
 
-  function parseSameSeparator(s, sep, decimals, cfg) {
-    if (isValidThousandGrouping(s, sep)) {
-      const n = Number.parseFloat(s.split(sep).join(''))
-      return Number.isFinite(n) ? donorAmountResult(true, n, 'ok', '', cfg) : donorAmountResult(false, NaN, 'invalid', '', cfg)
-    }
-    const first = s.indexOf(sep)
-    const last = s.lastIndexOf(sep)
-    if (first < 0 || first !== last || first <= 0) {
-      return decimals <= 0
-        ? donorAmountResult(false, NaN, 'ambiguous', '', cfg)
-        : donorAmountResult(false, NaN, 'invalid', '', cfg)
-    }
-    const intPart = s.slice(0, last)
-    const frac = s.slice(last + sep.length)
+  function applyDecimalPart(intPart, frac, decimals, cfg) {
     if (!intPart || !frac || !/^\d+$/.test(intPart) || !/^\d+$/.test(frac)) {
       return donorAmountResult(false, NaN, 'invalid', '', cfg)
     }
     if (decimals <= 0) {
-      return donorAmountResult(false, NaN, 'ambiguous', '', cfg)
+      if (/^0+$/.test(frac)) {
+        const n = Number.parseFloat(intPart)
+        return Number.isFinite(n) ? donorAmountResult(true, n, 'ok', '', cfg) : donorAmountResult(false, NaN, 'invalid', '', cfg)
+      }
+      return donorAmountResult(false, NaN, 'ambiguous', getNoFractionAmountMessage(cfg), cfg)
     }
     if (frac.length > decimals) {
-      return donorAmountResult(false, NaN, 'invalid', '', cfg)
+      return donorAmountResult(false, NaN, 'ambiguous', '', cfg)
     }
     const n = Number.parseFloat(intPart + '.' + frac)
     return Number.isFinite(n) ? donorAmountResult(true, n, 'ok', '', cfg) : donorAmountResult(false, NaN, 'invalid', '', cfg)
   }
 
+  function parseGroupedAmount(s, decimals, cfg) {
+    const seps = []
+    for (let i = 0; i < s.length; i += 1) {
+      if (s.charAt(i) === '.' || s.charAt(i) === ',') {
+        seps.push({ i: i, ch: s.charAt(i) })
+      }
+    }
+    if (!seps.length) {
+      if (/^\d+$/.test(s)) {
+        const n = Number.parseFloat(s)
+        return Number.isFinite(n) ? donorAmountResult(true, n, 'ok', '', cfg) : donorAmountResult(false, NaN, 'invalid', '', cfg)
+      }
+      return donorAmountResult(false, NaN, 'invalid', '', cfg)
+    }
+    const last = seps[seps.length - 1]
+    const beforeLast = s.slice(0, last.i)
+    const afterLast = s.slice(last.i + 1)
+    const chars = []
+    for (let k = 0; k < seps.length; k += 1) {
+      if (chars.indexOf(seps[k].ch) === -1) {
+        chars.push(seps[k].ch)
+      }
+    }
+    if (chars.length === 1) {
+      const ch = chars[0]
+      if (isValidThousandGrouping(s, ch)) {
+        const n = Number.parseFloat(s.split(ch).join(''))
+        return Number.isFinite(n) ? donorAmountResult(true, n, 'ok', '', cfg) : donorAmountResult(false, NaN, 'invalid', '', cfg)
+      }
+      if (seps.length === 1) {
+        return applyDecimalPart(beforeLast, afterLast, decimals, cfg)
+      }
+      if (isValidThousandGrouping(beforeLast, ch)) {
+        return applyDecimalPart(beforeLast.split(ch).join(''), afterLast, decimals, cfg)
+      }
+      return donorAmountResult(false, NaN, 'ambiguous', '', cfg)
+    }
+    let lastCount = 0
+    for (let k = 0; k < seps.length; k += 1) {
+      if (seps[k].ch === last.ch) {
+        lastCount += 1
+      }
+    }
+    if (lastCount !== 1) {
+      return donorAmountResult(false, NaN, 'invalid', '', cfg)
+    }
+    const other = chars[0] === last.ch ? chars[1] : chars[0]
+    if (beforeLast.indexOf(other) !== -1) {
+      if (!isValidThousandGrouping(beforeLast, other)) {
+        return donorAmountResult(false, NaN, 'ambiguous', '', cfg)
+      }
+      return applyDecimalPart(beforeLast.split(other).join(''), afterLast, decimals, cfg)
+    }
+    return applyDecimalPart(beforeLast, afterLast, decimals, cfg)
+  }
+
   /**
    * Bağışçı tutarı (PHP WDP_Utils::parse_donor_amount ile aynı kural).
-   * Binlik yalnız 1–3 + her grup 3. Uymayan ayırıcı ondalık okunabiliyorsa ve
-   * mağaza ondalığı ≥ kesir ise ondalık; 0 dp + ondalık görünümlü → belirsiz (red, 100× yok).
+   * Geçerli binlik gruplama (1–3 + her grup 3) → binlik; gruplamayan son
+   * ayırıcı → ondalık adayı. 0 dp: kesir tümü sıfırsa tam sayı, değilse uyarı
+   * (yuvarlama/100× yok). N>0: kesir ≤ N kabul, > N uyarı.
    *
    * @param {string|number} raw
    * @param {object} [cfg]
@@ -296,89 +351,14 @@
       return donorAmountResult(true, raw, 'ok', '', cfg)
     }
     const c = resolveCurrencyConfig(cfg)
-    const thousand = c.thousandSeparator
-    const decimal = c.decimalSeparator
-    const decimals = c.decimals
     let s = normalizeAmountInput(raw, c)
-    if (s === '' || s === '-' || s === thousand || s === decimal || s === '.' || s === ',') {
+    if (s === '' || s === '-' || s === '.' || s === ',' || s === c.thousandSeparator || s === c.decimalSeparator) {
       return donorAmountResult(false, NaN, 'invalid', '', c)
     }
-    if (s.charAt(0) === '-') {
+    if (s.charAt(0) === '-' || s.indexOf('-') !== -1) {
       return donorAmountResult(false, NaN, 'invalid', '', c)
     }
-    if (s.indexOf('-') !== -1) {
-      return donorAmountResult(false, NaN, 'invalid', '', c)
-    }
-    if (/^\d+$/.test(s)) {
-      const n = Number.parseFloat(s)
-      return Number.isFinite(n) ? donorAmountResult(true, n, 'ok', '', c) : donorAmountResult(false, NaN, 'invalid', '', c)
-    }
-    if (thousand !== '' && thousand === decimal) {
-      return parseSameSeparator(s, thousand, decimals, c)
-    }
-    const hasT = thousand !== '' && s.indexOf(thousand) !== -1
-    const hasD = decimal !== '' && s.indexOf(decimal) !== -1
-    if (hasT && hasD) {
-      const dFirst = s.indexOf(decimal)
-      const dLast = s.lastIndexOf(decimal)
-      if (dFirst !== dLast) {
-        return donorAmountResult(false, NaN, 'invalid', '', c)
-      }
-      if (s.indexOf(thousand) > dLast) {
-        return donorAmountResult(false, NaN, 'invalid', '', c)
-      }
-      const intPart = s.slice(0, dLast)
-      const frac = s.slice(dLast + decimal.length)
-      if (!intPart || !frac || !/^\d+$/.test(frac)) {
-        return donorAmountResult(false, NaN, 'invalid', '', c)
-      }
-      if (decimals <= 0) {
-        return donorAmountResult(false, NaN, 'ambiguous', '', c)
-      }
-      if (frac.length > decimals) {
-        return donorAmountResult(false, NaN, 'invalid', '', c)
-      }
-      if (intPart.indexOf(thousand) !== -1 && !isValidThousandGrouping(intPart, thousand)) {
-        return donorAmountResult(false, NaN, 'ambiguous', '', c)
-      }
-      if (intPart.indexOf(decimal) !== -1) {
-        return donorAmountResult(false, NaN, 'invalid', '', c)
-      }
-      const intNorm = intPart.split(thousand).join('')
-      if (!/^\d+$/.test(intNorm)) {
-        return donorAmountResult(false, NaN, 'invalid', '', c)
-      }
-      const n = Number.parseFloat(intNorm + '.' + frac)
-      return Number.isFinite(n) ? donorAmountResult(true, n, 'ok', '', c) : donorAmountResult(false, NaN, 'invalid', '', c)
-    }
-    if (hasD && !hasT) {
-      const dFirst = s.indexOf(decimal)
-      const dLast = s.lastIndexOf(decimal)
-      if (dFirst !== dLast) {
-        return donorAmountResult(false, NaN, 'invalid', '', c)
-      }
-      const intPart = s.slice(0, dLast)
-      const frac = s.slice(dLast + decimal.length)
-      if (!intPart || !frac || !/^\d+$/.test(intPart) || !/^\d+$/.test(frac)) {
-        return donorAmountResult(false, NaN, 'invalid', '', c)
-      }
-      if (decimals <= 0) {
-        return donorAmountResult(false, NaN, 'ambiguous', '', c)
-      }
-      if (frac.length > decimals) {
-        return donorAmountResult(false, NaN, 'invalid', '', c)
-      }
-      const n = Number.parseFloat(intPart + '.' + frac)
-      return Number.isFinite(n) ? donorAmountResult(true, n, 'ok', '', c) : donorAmountResult(false, NaN, 'invalid', '', c)
-    }
-    if (hasT && !hasD) {
-      if (isValidThousandGrouping(s, thousand)) {
-        const n = Number.parseFloat(s.split(thousand).join(''))
-        return Number.isFinite(n) ? donorAmountResult(true, n, 'ok', '', c) : donorAmountResult(false, NaN, 'invalid', '', c)
-      }
-      return donorAmountResult(false, NaN, 'ambiguous', '', c)
-    }
-    return donorAmountResult(false, NaN, 'invalid', '', c)
+    return parseGroupedAmount(s, c.decimals, c)
   }
 
   /**
@@ -1017,6 +997,7 @@
     parseMoneyDetailed,
     normalizeAmountInput,
     getAmbiguousAmountMessage,
+    getNoFractionAmountMessage,
     getCurrencyConfig,
     decodeHtmlEntities,
     getCurrencySymbol,

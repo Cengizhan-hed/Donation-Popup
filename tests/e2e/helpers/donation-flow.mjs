@@ -29,7 +29,7 @@ import { getActiveProfile, isRemoteProfile } from './profile.mjs';
 import { popupPagePath } from './catalog-core.mjs';
 import { checkoutPathFromUrl } from './checkout-setup.mjs';
 import { comingSoonQuery } from './coming-soon.mjs';
-import { textHasFormattedAmount, pickDonationFillAmount } from './currency.mjs';
+import { textHasFormattedAmount, pickDonationFillAmount, mergeFillCurrency } from './currency.mjs';
 import { withEnvMutationLock } from './mutation-lock.mjs';
 import {
   DONOR_NAME,
@@ -125,11 +125,12 @@ async function resolveDonationFillAmount(shell, currency) {
   const t0 = Date.now();
   let bounds = { min: '', recommended: '', max: '' };
   while (Date.now() - t0 < 8000) {
-    bounds = await shell.evaluate((root) => {
+    const pageState = await shell.evaluate((root) => {
       const inp = root.querySelector('input[name="custom_price"]');
       const rec = root.querySelector(
         '.wdp-amount-preset.is-popular, .wdp-amount-preset[data-recommended="1"]'
       );
+      const cur = (window.wdp_ajax && window.wdp_ajax.currency) || {};
       return {
         min:
           (inp &&
@@ -144,9 +145,16 @@ async function resolveDonationFillAmount(shell, currency) {
         placeholder: (inp && String(inp.placeholder || '').trim()) || '',
         type: (inp && String(inp.type || inp.getAttribute('type') || '').toLowerCase()) || '',
         step: (inp && inp.getAttribute('step')) || '',
+        pageCurrency: {
+          decimals: cur.decimals,
+          thousandSeparator: cur.thousandSeparator,
+          decimalSeparator: cur.decimalSeparator,
+        },
       };
     });
-    const picked = pickDonationFillAmount(bounds, currency);
+    bounds = pageState;
+    const fillCurrency = mergeFillCurrency(currency, pageState.pageCurrency);
+    const picked = pickDonationFillAmount(bounds, fillCurrency);
     const infoReady = /^min:\s/i.test(bounds.placeholder || '') || !!bounds.recommended;
     if (infoReady && Number.isFinite(picked.amount) && picked.amount > 0) return picked;
     await new Promise((r) => setTimeout(r, 100));

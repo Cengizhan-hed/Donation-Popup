@@ -69,8 +69,10 @@ test('TRY 0dp dot thousand', () => {
     symbolPosition: 'left',
   });
   assert.equal(u.parseMoney('1.000'), 1000);
-  assert.equal(Number.isFinite(u.parseMoney('1,000')), false);
-  assert.equal(u.parseMoneyDetailed('10.00').status, 'ambiguous');
+  assert.equal(u.parseMoney('1,000'), 1000);
+  assert.equal(u.parseMoney('10.00'), 10);
+  assert.equal(u.parseMoney('50,00'), 50);
+  assert.equal(u.parseMoneyDetailed('10,50').status, 'ambiguous');
   assert.equal(u.formatMoney(1000), '₺1.000');
 });
 

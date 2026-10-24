@@ -702,9 +702,11 @@
         failures.push({ field: 'custom_price', rule: 'price_empty', value: '' });
         isValid = false;
       } else if (detailed && detailed.status === 'ambiguous') {
-        const ambMessage = (utils && typeof utils.getAmbiguousAmountMessage === 'function')
-          ? utils.getAmbiguousAmountMessage()
-          : (detailed.error || 'Lütfen tutarı tam sayı olarak yazın, örn. 10');
+        const ambMessage = (detailed.error && String(detailed.error).trim())
+          ? detailed.error
+          : ((utils && typeof utils.getAmbiguousAmountMessage === 'function')
+            ? utils.getAmbiguousAmountMessage()
+            : 'Bu sitede kuruşlu tutar girilemez, örn. 10');
         showInputError(customPriceInput, ambMessage);
         if (!errorMessages.includes(ambMessage)) {
           errorMessages.push(ambMessage);

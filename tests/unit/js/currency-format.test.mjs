@@ -7,6 +7,7 @@ import {
   textHasFormattedAmount,
   formatFillAmount,
   pickDonationFillAmount,
+  mergeFillCurrency,
 } from '../../../tests/e2e/helpers/currency.mjs';
 
 describe('currency format from profile', () => {
@@ -75,9 +76,11 @@ describe('currency format from profile', () => {
   it('parseMoney TRY 0dp dot thousand', () => {
     const try0 = { decimals: 0, thousandSeparator: '.', decimalSeparator: ',' };
     assert.equal(parseMoney('1.000', try0), 1000);
-    assert.equal(Number.isFinite(parseMoney('1,000', try0)), false);
+    assert.equal(parseMoney('1,000', try0), 1000);
     assert.equal(parseMoney('250', try0), 250);
-    assert.equal(Number.isFinite(parseMoney('10.00', try0)), false);
+    assert.equal(parseMoney('10.00', try0), 10);
+    assert.equal(parseMoney('50,00', try0), 50);
+    assert.equal(Number.isFinite(parseMoney('10,50', try0)), false);
   });
 
   it('parseMoney EUR 2dp dot thousand comma decimal', () => {
@@ -149,5 +152,15 @@ describe('currency format from profile', () => {
       try2
     );
     assert.equal(recNum.fill, '75');
+  });
+
+  it('mergeFillCurrency sayfa 0dp profil 2dp üzerine yazar; fill 50', () => {
+    const merged = mergeFillCurrency(
+      { decimals: 2, decimalSeparator: ',', thousandSeparator: '.' },
+      { decimals: 0, decimalSeparator: ',', thousandSeparator: '.' }
+    );
+    assert.equal(merged.decimals, 0);
+    const picked = pickDonationFillAmount({ min: '50' }, merged);
+    assert.equal(picked.fill, '50');
   });
 });

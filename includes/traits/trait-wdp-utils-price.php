@@ -166,11 +166,10 @@ trait WDP_Utils_Price_Trait {
     }
 
     /**
-     * Bağışçı tutarı: binlik yalnız doğru gruplamada (1–3 + her grup 3).
-     * Gruplama uymayan ayırıcı ondalık olarak okunabiliyorsa ve mağaza ondalığı
-     * ≥ kesir basamağı ise ondalık; 0 ondalıkta ondalık görünümlü girdi belirsiz
-     * (red, 100× yok). Binlik=ondalık (aynı karakter): gruplama → binlik, değilse ondalık
-     * (0 dp belirsiz). Woo ayarları; sabit locale yok.
+     * Bağışçı tutarı (JS parseMoneyDetailed ile aynı kural).
+     * Geçerli binlik gruplama (1–3 + her grup 3) → binlik; gruplamayan son
+     * ayırıcı → ondalık adayı. 0 dp: kesir tümü sıfırsa tam sayı, değilse uyarı
+     * (yuvarlama/100× yok). N>0: kesir ≤ N kabul, > N uyarı.
      *
      * @param mixed $raw      Ham girdi (yapıştırma: sembol/boşluk temizlenir).
      * @param array $settings İsteğe bağlı {decimals,thousandSeparator,decimalSeparator}.
@@ -187,100 +186,40 @@ trait WDP_Utils_Price_Trait {
             return self::donor_amount_result(false, 0.0, 'invalid', '');
         }
 
-        $cfg       = self::normalize_parse_currency_settings($settings);
-        $thousand  = $cfg['thousandSeparator'];
-        $decimal   = $cfg['decimalSeparator'];
-        $decimals  = $cfg['decimals'];
-        $s         = self::normalize_amount_input((string) $raw, $thousand, $decimal);
+        $cfg      = self::normalize_parse_currency_settings($settings);
+        $thousand = $cfg['thousandSeparator'];
+        $decimal  = $cfg['decimalSeparator'];
+        $s        = self::normalize_amount_input((string) $raw, $thousand, $decimal);
         if ($s === '' || $s === '-' || $s === $thousand || $s === $decimal || $s === '.' || $s === ',') {
             return self::donor_amount_result(false, 0.0, 'invalid', '');
         }
-
-        $sign = 1.0;
         if (isset($s[0]) && $s[0] === '-') {
-            $sign = -1.0;
-            $s    = substr($s, 1);
-        }
-        if ($s === '' || strpos($s, '-') !== false) {
             return self::donor_amount_result(false, 0.0, 'invalid', '');
         }
-        if ($sign < 0) {
+        if (strpos($s, '-') !== false) {
             return self::donor_amount_result(false, 0.0, 'invalid', '');
         }
 
-        if (preg_match('/^\d+$/', $s)) {
-            return self::donor_amount_result(true, (float) $s, 'ok', '');
+        return self::parse_grouped_amount($s, $cfg);
+    }
+
+    /**
+     * 0 dp mağazada kuruş girilemez (yerelleştirilebilir).
+     *
+     * @param array|null $settings Currency settings.
+     * @return string
+     */
+    public static function get_no_fraction_amount_message($settings = null) {
+        $cfg     = self::normalize_parse_currency_settings($settings);
+        $example = self::format_localized_amount_with_settings(10, $cfg);
+        if ($example === '') {
+            $example = '10';
         }
-
-        if ($thousand !== '' && $thousand === $decimal) {
-            return self::parse_donor_amount_same_separator($s, $thousand, $decimals);
-        }
-
-        $has_t = $thousand !== '' && strpos($s, $thousand) !== false;
-        $has_d = $decimal !== '' && strpos($s, $decimal) !== false;
-
-        if ($has_t && $has_d) {
-            $d_first = strpos($s, $decimal);
-            $d_last  = strrpos($s, $decimal);
-            if ($d_first !== $d_last) {
-                return self::donor_amount_result(false, 0.0, 'invalid', '');
-            }
-            if (strpos($s, $thousand) > $d_last) {
-                return self::donor_amount_result(false, 0.0, 'invalid', '');
-            }
-            $int_part = substr($s, 0, $d_last);
-            $frac     = substr($s, $d_last + strlen($decimal));
-            if ($int_part === '' || $frac === '' || !preg_match('/^\d+$/', $frac)) {
-                return self::donor_amount_result(false, 0.0, 'invalid', '');
-            }
-            if ($decimals <= 0) {
-                return self::donor_amount_ambiguous($cfg);
-            }
-            if (strlen($frac) > $decimals) {
-                return self::donor_amount_result(false, 0.0, 'invalid', '');
-            }
-            if (strpos($int_part, $thousand) !== false && !self::is_valid_thousand_grouping($int_part, $thousand)) {
-                return self::donor_amount_ambiguous($cfg);
-            }
-            if (strpos($int_part, $decimal) !== false) {
-                return self::donor_amount_result(false, 0.0, 'invalid', '');
-            }
-            $int_norm = str_replace($thousand, '', $int_part);
-            if (!preg_match('/^\d+$/', $int_norm)) {
-                return self::donor_amount_result(false, 0.0, 'invalid', '');
-            }
-            return self::donor_amount_result(true, (float) ($int_norm . '.' . $frac), 'ok', '');
-        }
-
-        if ($has_d && ! $has_t) {
-            $d_first = strpos($s, $decimal);
-            $d_last  = strrpos($s, $decimal);
-            if ($d_first !== $d_last) {
-                return self::donor_amount_result(false, 0.0, 'invalid', '');
-            }
-            $int_part = substr($s, 0, $d_last);
-            $frac     = substr($s, $d_last + strlen($decimal));
-            if ($int_part === '' || $frac === '' || !preg_match('/^\d+$/', $int_part) || !preg_match('/^\d+$/', $frac)) {
-                return self::donor_amount_result(false, 0.0, 'invalid', '');
-            }
-            if ($decimals <= 0) {
-                return self::donor_amount_ambiguous($cfg);
-            }
-            if (strlen($frac) > $decimals) {
-                return self::donor_amount_result(false, 0.0, 'invalid', '');
-            }
-            return self::donor_amount_result(true, (float) ($int_part . '.' . $frac), 'ok', '');
-        }
-
-        if ($has_t && ! $has_d) {
-            if (self::is_valid_thousand_grouping($s, $thousand)) {
-                $n = (float) str_replace($thousand, '', $s);
-                return self::donor_amount_result(true, $n, 'ok', '');
-            }
-            return self::donor_amount_ambiguous($cfg);
-        }
-
-        return self::donor_amount_result(false, 0.0, 'invalid', '');
+        return sprintf(
+            /* translators: %s: example whole amount in store format */
+            __('Bu sitede kuruşlu tutar girilemez, örn. %s', 'woo-donation-popup'),
+            $example
+        );
     }
 
     /**
@@ -290,17 +229,13 @@ trait WDP_Utils_Price_Trait {
      * @return string
      */
     public static function get_ambiguous_amount_message($settings = null) {
-        $cfg     = self::normalize_parse_currency_settings($settings);
+        $cfg = self::normalize_parse_currency_settings($settings);
+        if ($cfg['decimals'] <= 0) {
+            return self::get_no_fraction_amount_message($cfg);
+        }
         $example = self::format_localized_amount_with_settings(10, $cfg);
         if ($example === '') {
             $example = '10';
-        }
-        if ($cfg['decimals'] <= 0) {
-            return sprintf(
-                /* translators: %s: example whole amount in store format */
-                __('Lütfen tutarı tam sayı olarak yazın, örn. %s', 'woo-donation-popup'),
-                $example
-            );
         }
         return sprintf(
             /* translators: %s: example amount in store format */
@@ -381,39 +316,91 @@ trait WDP_Utils_Price_Trait {
     }
 
     /**
-     * Binlik ve ondalık aynı karakter (staging30: ikisi de ".").
+     * "." / "," gruplama + son ayırıcı ondalık adayı (mağaza ondalık sayısı).
      *
-     * @param string $s        Normalized digits+sep.
-     * @param string $sep      Shared separator.
-     * @param int    $decimals Store decimals.
+     * @param string $s   Normalized digits+sep.
+     * @param array  $cfg Normalized settings.
      * @return array{ok:bool,amount:float,status:string,error:string}
      */
-    private static function parse_donor_amount_same_separator($s, $sep, $decimals) {
-        $cfg = array(
-            'decimals'          => $decimals,
-            'thousandSeparator' => $sep,
-            'decimalSeparator'  => $sep,
-        );
-        if (self::is_valid_thousand_grouping($s, $sep)) {
-            return self::donor_amount_result(true, (float) str_replace($sep, '', $s), 'ok', '');
+    private static function parse_grouped_amount($s, array $cfg) {
+        $decimals = (int) $cfg['decimals'];
+        $seps     = array();
+        $len      = strlen($s);
+        for ($i = 0; $i < $len; $i++) {
+            $ch = $s[ $i ];
+            if ($ch === '.' || $ch === ',') {
+                $seps[] = array(
+                    'i'  => $i,
+                    'ch' => $ch,
+                );
+            }
         }
-        $first = strpos($s, $sep);
-        $last  = strrpos($s, $sep);
-        if ($first === false || $first !== $last || $first <= 0) {
-            return $decimals <= 0
-                ? self::donor_amount_ambiguous($cfg)
-                : self::donor_amount_result(false, 0.0, 'invalid', '');
+        if (! $seps) {
+            if (preg_match('/^\d+$/', $s)) {
+                return self::donor_amount_result(true, (float) $s, 'ok', '');
+            }
+            return self::donor_amount_result(false, 0.0, 'invalid', '');
         }
-        $int_part = substr($s, 0, $last);
-        $frac     = substr($s, $last + strlen($sep));
-        if ($int_part === '' || $frac === '' || !preg_match('/^\d+$/', $int_part) || !preg_match('/^\d+$/', $frac)) {
+        $last        = $seps[ count($seps) - 1 ];
+        $before_last = substr($s, 0, $last['i']);
+        $after_last  = substr($s, $last['i'] + 1);
+        $chars       = array();
+        foreach ($seps as $row) {
+            if (! in_array($row['ch'], $chars, true)) {
+                $chars[] = $row['ch'];
+            }
+        }
+        if (count($chars) === 1) {
+            $ch = $chars[0];
+            if (self::is_valid_thousand_grouping($s, $ch)) {
+                return self::donor_amount_result(true, (float) str_replace($ch, '', $s), 'ok', '');
+            }
+            if (count($seps) === 1) {
+                return self::apply_decimal_part($before_last, $after_last, $decimals, $cfg);
+            }
+            if (self::is_valid_thousand_grouping($before_last, $ch)) {
+                return self::apply_decimal_part(str_replace($ch, '', $before_last), $after_last, $decimals, $cfg);
+            }
+            return self::donor_amount_ambiguous($cfg);
+        }
+        $last_count = 0;
+        foreach ($seps as $row) {
+            if ($row['ch'] === $last['ch']) {
+                $last_count++;
+            }
+        }
+        if ($last_count !== 1) {
+            return self::donor_amount_result(false, 0.0, 'invalid', '');
+        }
+        $other = $chars[0] === $last['ch'] ? $chars[1] : $chars[0];
+        if (strpos($before_last, $other) !== false) {
+            if (! self::is_valid_thousand_grouping($before_last, $other)) {
+                return self::donor_amount_ambiguous($cfg);
+            }
+            return self::apply_decimal_part(str_replace($other, '', $before_last), $after_last, $decimals, $cfg);
+        }
+        return self::apply_decimal_part($before_last, $after_last, $decimals, $cfg);
+    }
+
+    /**
+     * @param string $int_part Integer digits.
+     * @param string $frac     Fraction digits.
+     * @param int    $decimals Store decimals.
+     * @param array  $cfg      Normalized settings.
+     * @return array{ok:bool,amount:float,status:string,error:string}
+     */
+    private static function apply_decimal_part($int_part, $frac, $decimals, array $cfg) {
+        if ($int_part === '' || $frac === '' || ! preg_match('/^\d+$/', $int_part) || ! preg_match('/^\d+$/', $frac)) {
             return self::donor_amount_result(false, 0.0, 'invalid', '');
         }
         if ($decimals <= 0) {
-            return self::donor_amount_ambiguous($cfg);
+            if (preg_match('/^0+$/', $frac)) {
+                return self::donor_amount_result(true, (float) $int_part, 'ok', '');
+            }
+            return self::donor_amount_result(false, 0.0, 'ambiguous', self::get_no_fraction_amount_message($cfg));
         }
         if (strlen($frac) > $decimals) {
-            return self::donor_amount_result(false, 0.0, 'invalid', '');
+            return self::donor_amount_ambiguous($cfg);
         }
         return self::donor_amount_result(true, (float) ($int_part . '.' . $frac), 'ok', '');
     }

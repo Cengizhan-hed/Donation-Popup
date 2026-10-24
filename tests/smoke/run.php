@@ -332,8 +332,8 @@ wdp_smoke_assert(
     'Container queries CSS is on the frontend stack'
 );
 wdp_smoke_assert(
-    defined('WDP_VERSION') && WDP_VERSION === '10.34.14',
-    'Plugin version is 10.34.14'
+    defined('WDP_VERSION') && WDP_VERSION === '10.34.15',
+    'Plugin version is 10.34.15'
 );
 wdp_smoke_assert(
     file_exists(WDP_PLUGIN_DIR . 'templates/woocommerce/single-product/add-to-cart/simple.php'),
