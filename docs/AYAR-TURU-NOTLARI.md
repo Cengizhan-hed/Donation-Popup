@@ -512,3 +512,4 @@ Kurulum: Claude Code terminal sürümü 2.1.310 `~/.npm-global/bin/claude` (glob
 | MCP | Context7 (Woo/WP/Playwright belge), Playwright MCP (yalnız yerel). Uzak ortamlar için MCP YOK (güvenlik kapılarını atlatabilir) | 4 |
 
 Not: `Edit(.claude/**)` yasak; hook/skill dosyalarını kurmak için bu kural gevşetilmeli ya da dosyaları kullanıcı eklemeli. Hook betikleri `scripts/hooks/` altında `remote-guard.mjs` mantığını yeniden kullanabilir.
+| S4 | Ikram dış POST kaynağı (2026-10-24): `REMOTE-FOREIGN-WRITE: /6` = Stripe.js ölçüm işaretçisi (`r.stripe.com/6`), kaynak **WooCommerce Payments** (Ikram'da aktif; sepet/ödeme sayfalarında stripe.js). Ağ koruması isteği iptal etti, veri gitmedi. Sunucu tarafında Ikram ön yüz kancalarında dışarı çağrı yok (keşif). Düzeltme: `r./q./m.stripe.com` ölçüm listesine eklendi (js/api.stripe.com değil); teşhis günlüğü artık ana makine+yol+tür+sayfa yazar | kapandı (bilgi) |

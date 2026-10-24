@@ -43,6 +43,10 @@ export const TRACKER_HOST_SUFFIXES = [
   'stats.wp.com',
   'cdn.matomo.cloud',
   'matomo.cloud',
+  // Stripe.js ölçüm işaretçileri (WooCommerce Payments sepet/ödeme sayfalarında): ödeme API'si DEĞİL.
+  'r.stripe.com',
+  'q.stripe.com',
+  'm.stripe.com',
 ];
 
 /** Yola bağlı host kuralları (google.com'un tamamı değil). */

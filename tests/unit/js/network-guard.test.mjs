@@ -676,3 +676,11 @@ it('describeForeignWrite: ana makine, yol, tür ve sayfa; sorgu/gövde yok', asy
   assert.match(out, /sayfa=\/product\/x\//);
   assert.ok(!/SECRET/.test(out));
 });
+
+it('Stripe.js ölçüm işaretçileri (r./q./m.stripe.com) engellenir; js/api.stripe.com engellenmez', async () => {
+  const { isTrackerUrl } = await import('../../e2e/helpers/network-guard.mjs');
+  assert.equal(isTrackerUrl('https://r.stripe.com/6', { siteHost: 'site.example' }), true);
+  assert.equal(isTrackerUrl('https://q.stripe.com/?event=x', { siteHost: 'site.example' }), true);
+  assert.equal(isTrackerUrl('https://js.stripe.com/v3/', { siteHost: 'site.example' }), false);
+  assert.equal(isTrackerUrl('https://api.stripe.com/v1/payment_methods', { siteHost: 'site.example' }), false);
+});
