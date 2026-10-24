@@ -1,0 +1,281 @@
+{
+  "area": "E1",
+  "entries": [
+    {
+      "file": "blocks/donation-form/index.js",
+      "tr": "Mevcut ürün (otomatik)",
+      "en": "Current product (automatic)"
+    },
+    {
+      "file": "blocks/donation-form/index.js",
+      "tr": "Ürün",
+      "en": "Product"
+    },
+    {
+      "file": "blocks/donation-form/index.js",
+      "tr": "Bağış formu",
+      "en": "Donation form"
+    },
+    {
+      "file": "blocks/donation-form/index.js",
+      "tr": "Görünüm",
+      "en": "Display"
+    },
+    {
+      "file": "blocks/donation-form/index.js",
+      "tr": "Sayfa içi form",
+      "en": "Inline form"
+    },
+    {
+      "file": "blocks/donation-form/index.js",
+      "tr": "Ortada pencere",
+      "en": "Popup",
+      "ctx": "display mode"
+    },
+    {
+      "file": "blocks/donation-form/index.js",
+      "tr": "Sağ panel",
+      "en": "Side panel"
+    },
+    {
+      "file": "blocks/donation-form/index.js",
+      "tr": "Başlığı göster",
+      "en": "Show heading"
+    },
+    {
+      "file": "blocks/donation-form/index.js",
+      "tr": "Buton metni",
+      "en": "Button text"
+    },
+    {
+      "file": "blocks/donation-form/index.js",
+      "tr": "Ürün seçilmediyse mevcut ürün (otomatik) kullanılır. Ürün sayfasında veya kimlik verildiğinde form görünür.",
+      "en": "If no product is selected, the current product is used automatically. The form appears on the product page or when an ID is provided."
+    },
+    {
+      "file": "blocks/donations/index.js",
+      "tr": "Evet",
+      "en": "Yes"
+    },
+    {
+      "file": "blocks/donations/index.js",
+      "tr": "Hayır",
+      "en": "No"
+    },
+    {
+      "file": "blocks/donations/index.js",
+      "tr": "Sorgu",
+      "en": "Query"
+    },
+    {
+      "file": "blocks/donations/index.js",
+      "tr": "Kategoriler (slug)",
+      "en": "Categories (slugs)"
+    },
+    {
+      "file": "blocks/donations/index.js",
+      "tr": "Hariç kategoriler",
+      "en": "Exclude categories"
+    },
+    {
+      "file": "blocks/donations/index.js",
+      "tr": "Yalnızca ID’ler",
+      "en": "IDs only"
+    },
+    {
+      "file": "blocks/donations/index.js",
+      "tr": "Hariç ID’ler",
+      "en": "Exclude IDs"
+    },
+    {
+      "file": "blocks/donations/index.js",
+      "tr": "Tip (fixed,custom,shares,campaign)",
+      "en": "Type (fixed,custom,shares,campaign)"
+    },
+    {
+      "file": "blocks/donations/index.js",
+      "tr": "Adet",
+      "en": "Count"
+    },
+    {
+      "file": "blocks/donations/index.js",
+      "tr": "Sıralama",
+      "en": "Order by"
+    },
+    {
+      "file": "blocks/donations/index.js",
+      "tr": "Menü sırası",
+      "en": "Menu order"
+    },
+    {
+      "file": "blocks/donations/index.js",
+      "tr": "Tarih",
+      "en": "Date"
+    },
+    {
+      "file": "blocks/donations/index.js",
+      "tr": "Başlık",
+      "en": "Title"
+    },
+    {
+      "file": "blocks/donations/index.js",
+      "tr": "Popülerlik",
+      "en": "Popularity"
+    },
+    {
+      "file": "blocks/donations/index.js",
+      "tr": "Rastgele",
+      "en": "Random"
+    },
+    {
+      "file": "blocks/donations/index.js",
+      "tr": "Yön",
+      "en": "Direction"
+    },
+    {
+      "file": "blocks/donations/index.js",
+      "tr": "Görünüm",
+      "en": "Display"
+    },
+    {
+      "file": "blocks/donations/index.js",
+      "tr": "Sütunlar",
+      "en": "Columns"
+    },
+    {
+      "file": "blocks/donations/index.js",
+      "tr": "Tablet sütun",
+      "en": "Tablet columns"
+    },
+    {
+      "file": "blocks/donations/index.js",
+      "tr": "Mobil sütun",
+      "en": "Mobile columns"
+    },
+    {
+      "file": "blocks/donations/index.js",
+      "tr": "Boşluk (px)",
+      "en": "Gap (px)"
+    },
+    {
+      "file": "blocks/donations/index.js",
+      "tr": "Görsel oranı",
+      "en": "Image ratio"
+    },
+    {
+      "file": "blocks/donations/index.js",
+      "tr": "Orijinal",
+      "en": "Original"
+    },
+    {
+      "file": "blocks/donations/index.js",
+      "tr": "Hiza",
+      "en": "Alignment"
+    },
+    {
+      "file": "blocks/donations/index.js",
+      "tr": "Orta",
+      "en": "Center"
+    },
+    {
+      "file": "blocks/donations/index.js",
+      "tr": "Sol",
+      "en": "Left"
+    },
+    {
+      "file": "blocks/donations/index.js",
+      "tr": "Buton",
+      "en": "Button"
+    },
+    {
+      "file": "blocks/donations/index.js",
+      "tr": "Panel",
+      "en": "Panel"
+    },
+    {
+      "file": "blocks/donations/index.js",
+      "tr": "Popup",
+      "en": "Popup"
+    },
+    {
+      "file": "blocks/donations/index.js",
+      "tr": "Bağlantı",
+      "en": "Link"
+    },
+    {
+      "file": "blocks/donations/index.js",
+      "tr": "Buton tam genişlik",
+      "en": "Full-width button"
+    },
+    {
+      "file": "blocks/donations/index.js",
+      "tr": "Buton metni",
+      "en": "Button text"
+    },
+    {
+      "file": "blocks/donations/index.js",
+      "tr": "Sekmeler",
+      "en": "Tabs"
+    },
+    {
+      "file": "blocks/donations/index.js",
+      "tr": "“Tümü” sekmesi",
+      "en": "“All” tab"
+    },
+    {
+      "file": "blocks/donations/index.js",
+      "tr": "Tümü etiketi",
+      "en": "All tab label"
+    },
+    {
+      "file": "blocks/donations/index.js",
+      "tr": "Görsel",
+      "en": "Image"
+    },
+    {
+      "file": "blocks/donations/index.js",
+      "tr": "Özet",
+      "en": "Excerpt"
+    },
+    {
+      "file": "blocks/donations/index.js",
+      "tr": "İlerleme",
+      "en": "Progress"
+    },
+    {
+      "file": "blocks/donations/index.js",
+      "tr": "Fiyat",
+      "en": "Price"
+    },
+    {
+      "file": "blocks/donations/index.js",
+      "tr": "Kategori",
+      "en": "Category"
+    },
+    {
+      "file": "blocks/donations/index.js",
+      "tr": "Özet kelime",
+      "en": "Excerpt words"
+    },
+    {
+      "file": "blocks/donations/index.js",
+      "tr": "Başlık etiketi",
+      "en": "Heading tag"
+    },
+    {
+      "file": "blocks/donations/index.js",
+      "tr": "CSS sınıfı",
+      "en": "CSS class"
+    },
+    {
+      "file": "blocks/donations/index.js",
+      "tr": "Bağış listesi",
+      "en": "Donations list"
+    },
+    {
+      "file": "blocks/donations/index.js",
+      "tr": "Önizleme için en az bir yayımlanmış bağış ürünü gerekir.",
+      "en": "At least one published donation product is required for the preview."
+    }
+  ]
+}

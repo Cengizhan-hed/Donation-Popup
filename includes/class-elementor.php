@@ -40,10 +40,11 @@ class WDP_Elementor {
 		wp_enqueue_script(
 			'wdp-elementor-editor',
 			WDP_PLUGIN_URL . 'assets/js/elementor-editor.js',
-			array('jquery', 'jquery-ui-autocomplete'),
+			array('jquery', 'jquery-ui-autocomplete', 'wp-i18n'),
 			WDP_VERSION,
 			true
 		);
+		wp_set_script_translations('wdp-elementor-editor', 'woo-donation-popup', WDP_PLUGIN_DIR . 'languages');
 		wp_localize_script(
 			'wdp-elementor-editor',
 			'wdpElementor',
@@ -106,7 +107,7 @@ class WDP_Elementor {
 		$elements->add_category(
 			'wdp-donation',
 			array(
-				'title' => __('Bağış (WooCommerce Donation)', 'woo-donation-popup'),
+				'title' => __('Donation (WooCommerce Donation)', 'woo-donation-popup'),
 				'icon'  => 'fa fa-heart',
 			)
 		);

@@ -9,6 +9,7 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { extractJsI18nCalls, renderPhpRegion } from '../../../tools/i18n/gen-js-strings.mjs';
+import { extractWpI18nCalls, makeJson, HANDLE_SOURCES } from '../../../tools/i18n/make-json.mjs';
 import { parsePoEntries, mergeParts } from '../../../tools/i18n/merge-po.mjs';
 import {
   normalizeVisibleText,
@@ -102,6 +103,35 @@ describe('i18n-text', () => {
     const widgets = extractElementorWidgetStrings(ROOT);
     assert.ok(widgets.length >= 2);
     assert.ok(widgets.some((w) => w.title.includes('Bağış')));
+  });
+});
+
+describe('make-json', () => {
+  it('wp.i18n __ / _x çağrılarını tarar', () => {
+    const src = `
+      const { __, _x } = wp.i18n;
+      __('Save', 'woo-donation-popup');
+      _x('Open', 'button', 'woo-donation-popup');
+    `;
+    const calls = extractWpI18nCalls(src);
+    assert.equal(calls.length, 2);
+    assert.equal(calls[0].msg, 'Save');
+    assert.equal(calls[1].ctx, 'button');
+  });
+
+  it('handle JSON üretir (locale_data.messages)', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'wdp-json-'));
+    const po = path.join(dir, 't.po');
+    fs.writeFileSync(po, 'msgid "Donation form"\nmsgstr "Bağış formu"\n');
+    const r = makeJson({ root: ROOT, po: [po], locale: 'tr_TR', outDir: dir });
+    assert.ok(r.written.length >= 1);
+    const form = r.written.find((w) => w.handle === 'wdp-block-donation-form');
+    assert.ok(form);
+    const j = JSON.parse(fs.readFileSync(path.join(dir, path.basename(form.file)), 'utf8'));
+    assert.ok(j.locale_data && j.locale_data.messages);
+    assert.equal(j.locale_data.messages['Donation form'][0], 'Bağış formu');
+    assert.ok(HANDLE_SOURCES['wdp-block-donations']);
+    fs.rmSync(dir, { recursive: true, force: true });
   });
 });
 

@@ -1,5 +1,5 @@
 /**
- * @file Gutenberg bağış formu bloğu (JSX yok).
+ * @file Gutenberg donation form block (no JSX).
  */
 (function (wp) {
   "use strict";
@@ -18,6 +18,7 @@
   var Placeholder = wp.components.Placeholder;
   var ServerSideRender = wp.serverSideRender;
   var __ = wp.i18n.__;
+  var _x = wp.i18n._x;
   var apiFetch = wp.apiFetch;
 
   function ProductPicker(props) {
@@ -36,7 +37,7 @@
         if (search) path += "&search=" + encodeURIComponent(search);
         apiFetch({ path: path }).then(
           function (list) {
-            var next = [{ value: "0", label: __("Mevcut ürün (otomatik)", "woo-donation-popup") }];
+            var next = [{ value: "0", label: __("Current product (automatic)", "woo-donation-popup") }];
             (list || []).forEach(function (item) {
               next.push({
                 value: String(item.id),
@@ -46,7 +47,7 @@
             setOptions(next);
           },
           function () {
-            setOptions([{ value: "0", label: __("Mevcut ürün (otomatik)", "woo-donation-popup") }]);
+            setOptions([{ value: "0", label: __("Current product (automatic)", "woo-donation-popup") }]);
           }
         );
       },
@@ -55,7 +56,7 @@
 
     if (ComboboxControl) {
       return el(ComboboxControl, {
-        label: __("Ürün", "woo-donation-popup"),
+        label: __("Product", "woo-donation-popup"),
         value: String(value || 0),
         options: options,
         onFilterValueChange: setSearch,
@@ -65,7 +66,7 @@
       });
     }
     return el(SelectControl, {
-      label: __("Ürün", "woo-donation-popup"),
+      label: __("Product", "woo-donation-popup"),
       value: String(value || 0),
       options: options,
       onChange: function (v) {
@@ -90,7 +91,7 @@
           null,
           el(
             PanelBody,
-            { title: __("Bağış formu", "woo-donation-popup"), initialOpen: true },
+            { title: __("Donation form", "woo-donation-popup"), initialOpen: true },
             el(ProductPicker, {
               value: atts.productId,
               onChange: function (id) {
@@ -98,19 +99,19 @@
               },
             }),
             el(SelectControl, {
-              label: __("Görünüm", "woo-donation-popup"),
+              label: __("Display", "woo-donation-popup"),
               value: atts.display || "inline",
               options: [
-                { label: __("Sayfa içi form", "woo-donation-popup"), value: "inline" },
-                { label: __("Ortada pencere", "woo-donation-popup"), value: "popup" },
-                { label: __("Sağ panel", "woo-donation-popup"), value: "panel" },
+                { label: __("Inline form", "woo-donation-popup"), value: "inline" },
+                { label: _x("Popup", "display mode", "woo-donation-popup"), value: "popup" },
+                { label: __("Side panel", "woo-donation-popup"), value: "panel" },
               ],
               onChange: function (v) {
                 set({ display: v });
               },
             }),
             el(ToggleControl, {
-              label: __("Başlığı göster", "woo-donation-popup"),
+              label: __("Show heading", "woo-donation-popup"),
               checked: !!atts.showTitle,
               onChange: function (v) {
                 set({ showTitle: v });
@@ -118,7 +119,7 @@
             }),
             atts.display !== "inline"
               ? el(TextControl, {
-                  label: __("Buton metni", "woo-donation-popup"),
+                  label: __("Button text", "woo-donation-popup"),
                   value: atts.buttonText || "",
                   onChange: function (v) {
                     set({ buttonText: v });
@@ -129,8 +130,8 @@
         ),
         preview ||
           el(Placeholder, {
-            label: __("Bağış formu", "woo-donation-popup"),
-            instructions: __("Ürün seçilmediyse mevcut ürün (otomatik) kullanılır. Ürün sayfasında veya kimlik verildiğinde form görünür.", "woo-donation-popup"),
+            label: __("Donation form", "woo-donation-popup"),
+            instructions: __("If no product is selected, the current product is used automatically. The form appears on the product page or when an ID is provided.", "woo-donation-popup"),
           })
       );
     },
