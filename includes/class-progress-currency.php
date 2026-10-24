@@ -23,7 +23,7 @@ class WDP_Progress_Currency {
 		if (function_exists('get_woocommerce_currency')) {
 			return strtoupper((string) get_woocommerce_currency());
 		}
-		return 'TRY';
+		return '';
 	}
 
 	/**

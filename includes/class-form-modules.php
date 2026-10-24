@@ -731,7 +731,7 @@ class WDP_Form_Modules {
 			$label = sprintf(
 				/* translators: %s: percent */
 				__('Cover processing costs (+%%%s)', 'woo-donation-popup'),
-				rtrim(rtrim(number_format($percent, 2, ',', ''), '0'), ',')
+				rtrim(rtrim(number_format($percent, 2, function_exists('wc_get_price_decimal_separator') ? wc_get_price_decimal_separator() : '.', ''), '0'), function_exists('wc_get_price_decimal_separator') ? wc_get_price_decimal_separator() : '.')
 			);
 		}
 		ob_start();

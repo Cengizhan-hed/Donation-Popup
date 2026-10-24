@@ -553,7 +553,7 @@ class WDP_Cart {
         // 10.29.0 (Y1): işlem ücreti ayrı satır olarak gösterilir (tüm bağış tiplerinde).
         if (!empty($cart_item['donation_data']['cover_fee']) && !empty($cart_item['donation_data']['cover_fee_percent'])) {
             $pct   = (float) $cart_item['donation_data']['cover_fee_percent'];
-            $value = sprintf('+%%%s', rtrim(rtrim(number_format($pct, 2, ',', ''), '0'), ','));
+            $value = sprintf('+%%%s', rtrim(rtrim(number_format($pct, 2, function_exists('wc_get_price_decimal_separator') ? wc_get_price_decimal_separator() : '.', ''), '0'), function_exists('wc_get_price_decimal_separator') ? wc_get_price_decimal_separator() : '.'));
             $unit  = self::resolve_cart_line_unit_price($cart_item);
             $qty   = max(1, (int) (isset($cart_item['quantity']) ? $cart_item['quantity'] : 1));
             if (null !== $unit && $unit > 0 && $pct > 0 && function_exists('wc_price')) {

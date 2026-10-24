@@ -333,7 +333,7 @@ class WDP_Admin_Form_Tabs_Renderer {
 		echo '">';
 		echo '<div class="wdp-admin-success-preview__msg">' . esc_html__('Your donation was added to the cart.', 'woo-donation-popup') . '</div>';
 		echo '<div class="wdp-admin-success-preview__cart">';
-		echo '<div class="wdp-admin-success-preview__row"><span data-lp-su-name class="name">' . esc_html__('Sample campaign', 'woo-donation-popup') . '</span><span data-lp-su-price class="price">₺500</span></div>';
+		echo '<div class="wdp-admin-success-preview__row"><span data-lp-su-name class="name">' . esc_html__('Sample campaign', 'woo-donation-popup') . '</span><span data-lp-su-price class="price">' . esc_html(html_entity_decode(wp_strip_all_tags(wc_price(500, array( 'decimals' => 0 ))), ENT_QUOTES, 'UTF-8')) . '</span></div>';
 		echo '</div>';
 		echo '<div class="wdp-admin-success-preview__actions">';
 		echo '<span class="btn" data-lp-su-cart>' . esc_html($settings['success_text_view_cart']) . '</span>';

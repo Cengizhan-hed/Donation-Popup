@@ -211,7 +211,21 @@ export function extractElementorWidgetStrings(root = ROOT, locale = 'tr_TR') {
     if (kwBlock) {
       const re = /(['"])((?:\\.|(?!\1).)*)\1/g;
       let m;
-      while ((m = re.exec(kwBlock[2]))) keywords.push(unescapePhp(m[0]));
+      const kwRaw = [];
+      while ((m = re.exec(kwBlock[2]))) kwRaw.push(unescapePhp(m[0]));
+      // _x('word', 'elementor widget search keyword', domain) çağrıları: word çevrilir; ctx/domain atlanır.
+      const callRe = /_x\(\s*(['"])((?:\\.|(?!\1).)*)\1\s*,\s*(['"])((?:\\.|(?!\3).)*)\3/g;
+      const body = kwBlock[2];
+      let c;
+      let any = false;
+      while ((c = callRe.exec(body))) {
+        any = true;
+        const id = unescapePhp(c[1] + c[2] + c[1]);
+        const ctx = unescapePhp(c[3] + c[4] + c[3]);
+        keywords.push(locale === 'en_US' ? id : translateMsgid(po, id, ctx));
+      }
+      if (any) keywords.unshift(title);
+      else keywords.push(...kwRaw);
     }
     const classM = src.match(/class\s+(\S+)\s+extends/);
     out.push({

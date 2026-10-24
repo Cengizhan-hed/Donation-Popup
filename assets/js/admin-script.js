@@ -508,7 +508,7 @@
         if (presetsOn) {
           $presets.removeAttr("hidden")
           amounts.forEach(function (n) {
-            $presets.append($('<span class="wdp-admin-normal-preview__chip"/>').text("₺" + Math.round(n)))
+            $presets.append($('<span class="wdp-admin-normal-preview__chip"/>').text(String(cfg.price_format || "%1$s%2$s").replace("%1$s", cfg.currency_symbol || "").replace("%2$s", String(Math.round(n)))))
           })
         } else {
           $presets.attr("hidden", "hidden")

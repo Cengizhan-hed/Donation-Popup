@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: woo-donation-popup 10.35.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-24 16:45+0300\n"
+"POT-Creation-Date: 2026-10-24 19:25+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -53,7 +53,7 @@ msgstr ""
 msgid "Product not found (ID: %d). Please check the product ID."
 msgstr ""
 
-#: includes/bootstrap/class-plugin-bootstrap.php:69
+#: includes/bootstrap/class-plugin-bootstrap.php:70
 msgid ""
 "The WooCommerce Donation Modal Popup plugin requires WooCommerce to be "
 "installed and active."
@@ -69,66 +69,66 @@ msgstr ""
 msgid "An error occurred while saving settings."
 msgstr ""
 
-#: includes/class-admin-assets.php:82
+#: includes/class-admin-assets.php:84
 msgid "The pack was applied to the form fields. Don’t forget to save."
 msgstr ""
 
-#: includes/class-admin-assets.php:83
+#: includes/class-admin-assets.php:85
 msgid "Select icon"
 msgstr ""
 
-#: includes/class-admin-assets.php:84
+#: includes/class-admin-assets.php:86
 msgid "Use"
 msgstr ""
 
-#: includes/class-admin-assets.php:85 includes/class-admin-assets.php:86
-#: includes/class-admin-assets.php:153
+#: includes/class-admin-assets.php:87 includes/class-admin-assets.php:88
+#: includes/class-admin-assets.php:155
 msgid "You have unsaved changes. Are you sure you want to leave this tab?"
 msgstr ""
 
-#: includes/class-admin-assets.php:87
+#: includes/class-admin-assets.php:89
 msgid ""
 "All product settings and plugin options will be deleted. Orders and order "
 "records are not affected. This cannot be undone. Have you made a backup?"
 msgstr ""
 
-#: includes/class-admin-assets.php:88
+#: includes/class-admin-assets.php:90
 msgid "You have unsaved changes."
 msgstr ""
 
-#: includes/class-admin-assets.php:89
+#: includes/class-admin-assets.php:91
 msgid "Select a style pack first."
 msgstr ""
 
-#: includes/class-admin-assets.php:90
+#: includes/class-admin-assets.php:92
 msgid "Pack downloaded as JSON."
 msgstr ""
 
-#: includes/class-admin-assets.php:125
+#: includes/class-admin-assets.php:127
 msgid "Copied"
 msgstr ""
 
-#: includes/class-admin-assets.php:126
+#: includes/class-admin-assets.php:128
 msgid "Could not copy; select the text and copy it manually."
 msgstr ""
 
-#: includes/class-admin-assets.php:127
+#: includes/class-admin-assets.php:129
 msgid "Recalculating the total…"
 msgstr ""
 
-#: includes/class-admin-assets.php:128
+#: includes/class-admin-assets.php:130
 msgid "The action could not be completed. Please try again."
 msgstr ""
 
-#: includes/class-admin-assets.php:129
+#: includes/class-admin-assets.php:131
 msgid "Row added."
 msgstr ""
 
-#: includes/class-admin-assets.php:130
+#: includes/class-admin-assets.php:132
 msgid "Row removed."
 msgstr ""
 
-#: includes/class-admin-assets.php:131
+#: includes/class-admin-assets.php:133
 msgid "Order updated."
 msgstr ""
 
@@ -793,7 +793,7 @@ msgstr ""
 #: includes/class-admin-settings-normalizer.php:323
 #: includes/class-phone-field.php:493 includes/i18n/class-wdp-js-i18n.php:73
 #: includes/traits/trait-wdp-assets-inline-styles.php:87
-#: assets/js/src/phone-input.js:663 assets/js/src/shareholder/render.js:120
+#: assets/js/src/phone-input.js:664 assets/js/src/shareholder/render.js:120
 msgid "Phone number *"
 msgstr ""
 
@@ -976,7 +976,7 @@ msgstr ""
 #: includes/class-donation-product-context-service.php:88
 #: includes/class-utils.php:198
 #: includes/templates/class-form-fields-renderer.php:403
-#: includes/traits/trait-wdp-assets-registry.php:357
+#: includes/traits/trait-wdp-assets-registry.php:385
 msgid "Add add-on donation"
 msgstr ""
 
@@ -1121,7 +1121,7 @@ msgstr ""
 
 #: includes/class-admin-form-tabs-renderer.php:408
 #: includes/templates/class-form-fields-renderer.php:196
-#: includes/traits/trait-wdp-assets-registry.php:356
+#: includes/traits/trait-wdp-assets-registry.php:384
 msgid "Donation amount"
 msgstr ""
 
@@ -1620,7 +1620,7 @@ msgstr ""
 
 #: includes/class-admin-layout-tabs-renderer.php:176
 #: includes/class-admin-page-renderer.php:56
-#: includes/elementor/class-widget-donations-list.php:119
+#: includes/elementor/class-widget-donations-list.php:125
 #: blocks/donations/index.js:166
 msgid "Popup"
 msgstr ""
@@ -1908,13 +1908,13 @@ msgid "Share-based"
 msgstr ""
 
 #: includes/class-admin-page-renderer.php:59
-#: includes/elementor/class-widget-donations-list.php:127
+#: includes/elementor/class-widget-donations-list.php:133
 #: blocks/donations/index.js:180
 msgid "Progress"
 msgstr ""
 
 #: includes/class-admin-page-renderer.php:60
-#: includes/traits/trait-wdp-assets-registry.php:347
+#: includes/traits/trait-wdp-assets-registry.php:375
 msgid "Success"
 msgstr ""
 
@@ -2058,7 +2058,7 @@ msgstr ""
 
 #: includes/class-admin-placement-tab-renderer.php:80
 #: includes/class-admin-product-data-tab.php:1054
-#: includes/elementor/class-widget-donation-form.php:117
+#: includes/elementor/class-widget-donation-form.php:124
 #: blocks/donation-form/index.js:105
 msgid "Inline form"
 msgstr ""
@@ -2085,7 +2085,7 @@ msgstr ""
 
 #: includes/class-admin-placement-tab-renderer.php:93
 #: includes/class-admin-product-data-tab.php:1053
-#: includes/elementor/class-widget-donation-form.php:119
+#: includes/elementor/class-widget-donation-form.php:126
 #: blocks/donation-form/index.js:107
 msgid "Side panel"
 msgstr ""
@@ -2117,13 +2117,13 @@ msgstr ""
 #: includes/class-admin-placement-tab-renderer.php:112
 #: includes/class-cart.php:540 includes/class-order-meta-keys.php:294
 #: includes/class-order-meta-keys.php:298
-#: includes/elementor/class-widget-donation-form.php:129
+#: includes/elementor/class-widget-donation-form.php:136
 #: blocks/donations/index.js:25
 msgid "Yes"
 msgstr ""
 
 #: includes/class-admin-placement-tab-renderer.php:113
-#: includes/elementor/class-widget-donation-form.php:130
+#: includes/elementor/class-widget-donation-form.php:137
 #: blocks/donations/index.js:26
 msgid "No"
 msgstr ""
@@ -2902,14 +2902,14 @@ msgstr ""
 
 #: includes/class-admin-products-list-table.php:43
 #: includes/class-privacy.php:108
-#: includes/elementor/class-widget-donation-form.php:92
+#: includes/elementor/class-widget-donation-form.php:99
 #: includes/i18n/class-wdp-js-i18n.php:92 assets/js/src/cart/ui.js:190
 #: blocks/donation-form/index.js:59 blocks/donation-form/index.js:69
 msgid "Product"
 msgstr ""
 
 #: includes/class-admin-products-list-table.php:44
-#: includes/elementor/class-widget-donations-list.php:129
+#: includes/elementor/class-widget-donations-list.php:135
 #: blocks/donations/index.js:182
 msgid "Category"
 msgstr ""
@@ -3124,7 +3124,7 @@ msgstr ""
 
 #: includes/class-donation-optional-fields.php:101
 #: includes/i18n/class-wdp-js-i18n.php:84
-#: includes/traits/trait-wdp-assets-registry.php:365
+#: includes/traits/trait-wdp-assets-registry.php:393
 #: assets/js/src/form/messages.js:129 assets/js/src/form/validate.js:652
 msgid "Please enter a valid email address."
 msgstr ""
@@ -3171,7 +3171,7 @@ msgid ""
 msgstr ""
 
 #: includes/class-donations-list.php:219
-#: includes/elementor/class-widget-donations-list.php:124
+#: includes/elementor/class-widget-donations-list.php:130
 msgid "All"
 msgstr ""
 
@@ -3913,7 +3913,7 @@ msgid "South Africa"
 msgstr ""
 
 #: includes/class-phone-field.php:526 includes/i18n/class-wdp-js-i18n.php:96
-#: assets/js/src/phone-input.js:692
+#: assets/js/src/phone-input.js:693
 msgid "Select country code"
 msgstr ""
 
@@ -4088,7 +4088,7 @@ msgstr ""
 
 #: includes/class-utils.php:323 includes/class-utils.php:333
 #: includes/traits/trait-wdp-ajax-cart-add.php:492
-#: includes/traits/trait-wdp-assets-registry.php:359
+#: includes/traits/trait-wdp-assets-registry.php:387
 msgid "Please enter a valid add-on donation amount."
 msgstr ""
 
@@ -4183,7 +4183,7 @@ msgid "The pack was imported and applied."
 msgstr ""
 
 #. translators: %s: sample product name
-#: includes/compat/class-builder-detect.php:82
+#: includes/compat/class-builder-detect.php:94
 #, php-format
 msgid ""
 "Preview: «%s» is shown. That product’s form appears on the product page."
@@ -4235,49 +4235,75 @@ msgctxt "elementor widget title"
 msgid "Donation form"
 msgstr ""
 
-#: includes/elementor/class-widget-donation-form.php:72
+#: includes/elementor/class-widget-donation-form.php:51
+#: includes/elementor/class-widget-donations-list.php:51
+msgctxt "elementor widget search keyword"
+msgid "donation"
+msgstr ""
+
+#: includes/elementor/class-widget-donation-form.php:52
+msgctxt "elementor widget search keyword"
+msgid "donate"
+msgstr ""
+
+#: includes/elementor/class-widget-donation-form.php:53
+msgctxt "elementor widget search keyword"
+msgid "charity"
+msgstr ""
+
+#: includes/elementor/class-widget-donation-form.php:54
+msgctxt "elementor widget search keyword"
+msgid "form"
+msgstr ""
+
+#: includes/elementor/class-widget-donation-form.php:55
+msgctxt "elementor widget search keyword"
+msgid "popup"
+msgstr ""
+
+#: includes/elementor/class-widget-donation-form.php:79
 msgid "Content"
 msgstr ""
 
-#: includes/elementor/class-widget-donation-form.php:78
+#: includes/elementor/class-widget-donation-form.php:85
 msgid "Product source"
 msgstr ""
 
-#: includes/elementor/class-widget-donation-form.php:82
+#: includes/elementor/class-widget-donation-form.php:89
 msgid "Current product"
 msgstr ""
 
-#: includes/elementor/class-widget-donation-form.php:83
+#: includes/elementor/class-widget-donation-form.php:90
 msgid "Select from list"
 msgstr ""
 
-#: includes/elementor/class-widget-donation-form.php:84
+#: includes/elementor/class-widget-donation-form.php:91
 msgid "Enter ID or slug"
 msgstr ""
 
-#: includes/elementor/class-widget-donation-form.php:103
+#: includes/elementor/class-widget-donation-form.php:110
 msgid "Product ID or slug"
 msgstr ""
 
-#: includes/elementor/class-widget-donation-form.php:113
-#: includes/elementor/class-widget-donations-list.php:95
+#: includes/elementor/class-widget-donation-form.php:120
+#: includes/elementor/class-widget-donations-list.php:101
 #: blocks/donation-form/index.js:102 blocks/donations/index.js:99
 msgid "Display"
 msgstr ""
 
-#: includes/elementor/class-widget-donation-form.php:118
+#: includes/elementor/class-widget-donation-form.php:125
 #: blocks/donation-form/index.js:106
 msgctxt "display mode"
 msgid "Popup"
 msgstr ""
 
-#: includes/elementor/class-widget-donation-form.php:127
+#: includes/elementor/class-widget-donation-form.php:134
 #: blocks/donation-form/index.js:114
 msgid "Show heading"
 msgstr ""
 
-#: includes/elementor/class-widget-donation-form.php:139
-#: includes/elementor/class-widget-donations-list.php:121
+#: includes/elementor/class-widget-donation-form.php:146
+#: includes/elementor/class-widget-donations-list.php:127
 msgctxt "Elementor widget"
 msgid "Button text"
 msgstr ""
@@ -4287,174 +4313,189 @@ msgctxt "elementor widget title"
 msgid "Donations list"
 msgstr ""
 
-#: includes/elementor/class-widget-donations-list.php:70
+#: includes/elementor/class-widget-donations-list.php:52
+msgctxt "elementor widget search keyword"
+msgid "campaign"
+msgstr ""
+
+#: includes/elementor/class-widget-donations-list.php:53
+msgctxt "elementor widget search keyword"
+msgid "list"
+msgstr ""
+
+#: includes/elementor/class-widget-donations-list.php:54
+msgctxt "elementor widget search keyword"
+msgid "progress"
+msgstr ""
+
+#: includes/elementor/class-widget-donations-list.php:76
 #: blocks/donations/index.js:56
 msgid "Query"
 msgstr ""
 
-#: includes/elementor/class-widget-donations-list.php:71
+#: includes/elementor/class-widget-donations-list.php:77
 msgid "Categories (slugs, comma-separated)"
 msgstr ""
 
-#: includes/elementor/class-widget-donations-list.php:72
+#: includes/elementor/class-widget-donations-list.php:78
 #: blocks/donations/index.js:58
 msgid "Exclude categories"
 msgstr ""
 
-#: includes/elementor/class-widget-donations-list.php:73
+#: includes/elementor/class-widget-donations-list.php:79
 #: blocks/donations/index.js:59
 msgid "IDs only"
 msgstr ""
 
-#: includes/elementor/class-widget-donations-list.php:74
+#: includes/elementor/class-widget-donations-list.php:80
 #: blocks/donations/index.js:60
 msgid "Exclude IDs"
 msgstr ""
 
-#: includes/elementor/class-widget-donations-list.php:75
+#: includes/elementor/class-widget-donations-list.php:81
 msgid "Type"
 msgstr ""
 
-#: includes/elementor/class-widget-donations-list.php:76
+#: includes/elementor/class-widget-donations-list.php:82
 #: blocks/donations/index.js:63
 msgid "Count"
 msgstr ""
 
-#: includes/elementor/class-widget-donations-list.php:80
+#: includes/elementor/class-widget-donations-list.php:86
 #: blocks/donations/index.js:72
 msgid "Order by"
 msgstr ""
 
-#: includes/elementor/class-widget-donations-list.php:84
+#: includes/elementor/class-widget-donations-list.php:90
 #: blocks/donations/index.js:75
 msgid "Menu order"
 msgstr ""
 
-#: includes/elementor/class-widget-donations-list.php:85
+#: includes/elementor/class-widget-donations-list.php:91
 #: blocks/donations/index.js:76
 msgid "Date"
 msgstr ""
 
-#: includes/elementor/class-widget-donations-list.php:86
+#: includes/elementor/class-widget-donations-list.php:92
 #: blocks/donations/index.js:77
 msgid "Title"
 msgstr ""
 
-#: includes/elementor/class-widget-donations-list.php:87
+#: includes/elementor/class-widget-donations-list.php:93
 #: blocks/donations/index.js:78
 msgid "Popularity"
 msgstr ""
 
-#: includes/elementor/class-widget-donations-list.php:88
+#: includes/elementor/class-widget-donations-list.php:94
 #: blocks/donations/index.js:79
 msgid "Random"
 msgstr ""
 
-#: includes/elementor/class-widget-donations-list.php:92
+#: includes/elementor/class-widget-donations-list.php:98
 #: blocks/donations/index.js:86
 msgid "Direction"
 msgstr ""
 
-#: includes/elementor/class-widget-donations-list.php:99
+#: includes/elementor/class-widget-donations-list.php:105
 #: blocks/donations/index.js:101
 msgid "Columns"
 msgstr ""
 
-#: includes/elementor/class-widget-donations-list.php:108
+#: includes/elementor/class-widget-donations-list.php:114
 #: blocks/donations/index.js:128
 msgid "Gap (px)"
 msgstr ""
 
-#: includes/elementor/class-widget-donations-list.php:112
+#: includes/elementor/class-widget-donations-list.php:118
 #: blocks/donations/index.js:137
 msgid "Image ratio"
 msgstr ""
 
-#: includes/elementor/class-widget-donations-list.php:115
+#: includes/elementor/class-widget-donations-list.php:121
 #: blocks/donations/index.js:144
 msgid "Original"
 msgstr ""
 
-#: includes/elementor/class-widget-donations-list.php:118
+#: includes/elementor/class-widget-donations-list.php:124
 #: blocks/donations/index.js:151
 msgid "Alignment"
 msgstr ""
 
-#: includes/elementor/class-widget-donations-list.php:118
+#: includes/elementor/class-widget-donations-list.php:124
 #: blocks/donations/index.js:154
 msgid "Center"
 msgstr ""
 
-#: includes/elementor/class-widget-donations-list.php:118
+#: includes/elementor/class-widget-donations-list.php:124
 #: blocks/donations/index.js:155
 msgid "Left"
 msgstr ""
 
-#: includes/elementor/class-widget-donations-list.php:119
+#: includes/elementor/class-widget-donations-list.php:125
 #: blocks/donations/index.js:162
 msgid "Button"
 msgstr ""
 
-#: includes/elementor/class-widget-donations-list.php:119
+#: includes/elementor/class-widget-donations-list.php:125
 #: blocks/donations/index.js:165
 msgid "Panel"
 msgstr ""
 
-#: includes/elementor/class-widget-donations-list.php:119
+#: includes/elementor/class-widget-donations-list.php:125
 #: blocks/donations/index.js:167
 msgid "Link"
 msgstr ""
 
-#: includes/elementor/class-widget-donations-list.php:120
+#: includes/elementor/class-widget-donations-list.php:126
 #: blocks/donations/index.js:173
 msgid "Full-width button"
 msgstr ""
 
-#: includes/elementor/class-widget-donations-list.php:122
+#: includes/elementor/class-widget-donations-list.php:128
 #: blocks/donations/index.js:175
 msgid "Tabs"
 msgstr ""
 
-#: includes/elementor/class-widget-donations-list.php:123
+#: includes/elementor/class-widget-donations-list.php:129
 #: blocks/donations/index.js:176
 msgid "“All” tab"
 msgstr ""
 
-#: includes/elementor/class-widget-donations-list.php:124
+#: includes/elementor/class-widget-donations-list.php:130
 #: blocks/donations/index.js:177
 msgid "All tab label"
 msgstr ""
 
-#: includes/elementor/class-widget-donations-list.php:125
+#: includes/elementor/class-widget-donations-list.php:131
 #: blocks/donations/index.js:178
 msgid "Image"
 msgstr ""
 
-#: includes/elementor/class-widget-donations-list.php:126
+#: includes/elementor/class-widget-donations-list.php:132
 #: blocks/donations/index.js:179
 msgid "Excerpt"
 msgstr ""
 
-#: includes/elementor/class-widget-donations-list.php:128
+#: includes/elementor/class-widget-donations-list.php:134
 #: blocks/donations/index.js:181
 msgid "Price"
 msgstr ""
 
-#: includes/elementor/class-widget-donations-list.php:130
+#: includes/elementor/class-widget-donations-list.php:136
 #: blocks/donations/index.js:184
 msgid "Excerpt words"
 msgstr ""
 
-#: includes/elementor/class-widget-donations-list.php:134
+#: includes/elementor/class-widget-donations-list.php:140
 msgid "Image size"
 msgstr ""
 
-#: includes/elementor/class-widget-donations-list.php:140
+#: includes/elementor/class-widget-donations-list.php:146
 #: blocks/donations/index.js:193
 msgid "Heading tag"
 msgstr ""
 
-#: includes/elementor/class-widget-donations-list.php:141
+#: includes/elementor/class-widget-donations-list.php:147
 #: blocks/donations/index.js:204
 msgid "CSS class"
 msgstr ""
@@ -4492,7 +4533,7 @@ msgid "Add a donation to continue to checkout."
 msgstr ""
 
 #: includes/i18n/class-wdp-js-i18n.php:35
-#: includes/traits/trait-wdp-assets-registry.php:346
+#: includes/traits/trait-wdp-assets-registry.php:374
 #: assets/js/src/product.js:196
 msgid "An error occurred"
 msgstr ""
@@ -4525,7 +4566,7 @@ msgstr ""
 msgid "Could not submit"
 msgstr ""
 
-#: includes/i18n/class-wdp-js-i18n.php:45 assets/js/src/modal.js:738
+#: includes/i18n/class-wdp-js-i18n.php:45 assets/js/src/modal.js:744
 msgid "Donation form closed"
 msgstr ""
 
@@ -4533,7 +4574,7 @@ msgstr ""
 msgid "Donation form opened"
 msgstr ""
 
-#: includes/i18n/class-wdp-js-i18n.php:47 assets/js/src/modal.js:738
+#: includes/i18n/class-wdp-js-i18n.php:47 assets/js/src/modal.js:744
 msgid "Donation panel closed"
 msgstr ""
 
@@ -4577,7 +4618,7 @@ msgid "full name is missing"
 msgstr ""
 
 #: includes/i18n/class-wdp-js-i18n.php:58
-#: includes/traits/trait-wdp-assets-registry.php:364
+#: includes/traits/trait-wdp-assets-registry.php:392
 #: assets/js/src/form/messages.js:25 assets/js/src/form/validate.js:110
 #: assets/js/src/form.js:334
 msgid "Full name is required."
@@ -4684,7 +4725,7 @@ msgstr ""
 
 #. translators: %s: example amount in store format
 #: includes/i18n/class-wdp-js-i18n.php:86
-#: includes/traits/trait-wdp-assets-registry.php:352
+#: includes/traits/trait-wdp-assets-registry.php:380
 #: includes/traits/trait-wdp-utils-price.php:242
 #: assets/js/src/core/utils.js:252
 #, javascript-format, php-format
@@ -4692,7 +4733,7 @@ msgid "Please enter the amount in this format, e.g. %s"
 msgstr ""
 
 #: includes/i18n/class-wdp-js-i18n.php:87
-#: includes/traits/trait-wdp-assets-registry.php:363
+#: includes/traits/trait-wdp-assets-registry.php:391
 #: assets/js/src/form/messages.js:63 assets/js/src/form/validate.js:138
 #: assets/js/src/form.js:474
 msgid "Please enter your complete phone number."
@@ -4756,7 +4797,7 @@ msgid "Shareholder form %d is incomplete."
 msgstr ""
 
 #: includes/i18n/class-wdp-js-i18n.php:103
-#: includes/traits/trait-wdp-assets-registry.php:366
+#: includes/traits/trait-wdp-assets-registry.php:394
 #: assets/js/src/form/messages.js:34 assets/js/src/form/validate.js:117
 #: assets/js/src/form.js:342
 msgid "Shareholder name is required."
@@ -4781,7 +4822,7 @@ msgid "The form is not ready yet. Please wait a few seconds and try again."
 msgstr ""
 
 #: includes/i18n/class-wdp-js-i18n.php:108
-#: includes/traits/trait-wdp-assets-registry.php:348
+#: includes/traits/trait-wdp-assets-registry.php:376
 #: assets/js/src/form/messages.js:43 assets/js/src/form/validate.js:124
 #: assets/js/src/form/wizard.js:228 assets/js/src/form.js:350
 msgid "This field is required"
@@ -4893,7 +4934,7 @@ msgstr ""
 #: includes/templates/class-form-fields-renderer.php:410
 #: includes/templates/class-form-fields-renderer.php:411
 #: includes/templates/class-form-fields-renderer.php:440
-#: includes/traits/trait-wdp-assets-registry.php:358
+#: includes/traits/trait-wdp-assets-registry.php:386
 msgid "Add-on donation amount"
 msgstr ""
 
@@ -4960,7 +5001,7 @@ msgid "Maximum number of shares exceeded"
 msgstr ""
 
 #: includes/traits/trait-wdp-ajax-cart-add.php:225
-#: includes/traits/trait-wdp-assets-registry.php:353
+#: includes/traits/trait-wdp-assets-registry.php:381
 msgid "Minimum price: "
 msgstr ""
 
@@ -5043,55 +5084,55 @@ msgstr ""
 msgid "Shareholder form status"
 msgstr ""
 
-#: includes/traits/trait-wdp-assets-registry.php:345
+#: includes/traits/trait-wdp-assets-registry.php:373
 msgid "Loading..."
 msgstr ""
 
-#: includes/traits/trait-wdp-assets-registry.php:349
+#: includes/traits/trait-wdp-assets-registry.php:377
 msgid "Invalid price"
 msgstr ""
 
 #. translators: %s: example whole amount in store format
-#: includes/traits/trait-wdp-assets-registry.php:350
-#: includes/traits/trait-wdp-assets-registry.php:351
+#: includes/traits/trait-wdp-assets-registry.php:378
+#: includes/traits/trait-wdp-assets-registry.php:379
 #: includes/traits/trait-wdp-utils-price.php:220
 #, php-format
 msgid "This site does not accept amounts with decimals, e.g. %s"
 msgstr ""
 
-#: includes/traits/trait-wdp-assets-registry.php:354
+#: includes/traits/trait-wdp-assets-registry.php:382
 msgid "Maximum number of shares: "
 msgstr ""
 
-#: includes/traits/trait-wdp-assets-registry.php:355
+#: includes/traits/trait-wdp-assets-registry.php:383
 msgid "Donation amount *"
 msgstr ""
 
-#: includes/traits/trait-wdp-assets-registry.php:360
+#: includes/traits/trait-wdp-assets-registry.php:388
 msgid "Minimum add-on donation amount: "
 msgstr ""
 
-#: includes/traits/trait-wdp-assets-registry.php:361
+#: includes/traits/trait-wdp-assets-registry.php:389
 msgid "Please enter a valid phone number."
 msgstr ""
 
-#: includes/traits/trait-wdp-assets-registry.php:362
+#: includes/traits/trait-wdp-assets-registry.php:390
 msgid "Phone number is missing."
 msgstr ""
 
-#: includes/traits/trait-wdp-assets-registry.php:367
+#: includes/traits/trait-wdp-assets-registry.php:395
 msgid "full name field is missing"
 msgstr ""
 
-#: includes/traits/trait-wdp-assets-registry.php:368
+#: includes/traits/trait-wdp-assets-registry.php:396
 msgid "please enter your complete phone number"
 msgstr ""
 
-#: includes/traits/trait-wdp-assets-registry.php:369
+#: includes/traits/trait-wdp-assets-registry.php:397
 msgid "Search"
 msgstr ""
 
-#: includes/traits/trait-wdp-assets-registry.php:370
+#: includes/traits/trait-wdp-assets-registry.php:398
 msgid "Your donation was added to the cart"
 msgstr ""
 
@@ -5131,12 +5172,4 @@ msgstr ""
 
 #: blocks/donations/index.js:210
 msgid "At least one published donation product is required for the preview."
-msgstr ""
-
-#. Plugin Name of the plugin
-msgid "Donation Panel for WooCommerce"
-msgstr ""
-
-#. Description of the plugin
-msgid "Adds a donation form to WooCommerce products as a popup, side panel or inline form, with fixed, custom, shared and campaign donation types."
 msgstr ""

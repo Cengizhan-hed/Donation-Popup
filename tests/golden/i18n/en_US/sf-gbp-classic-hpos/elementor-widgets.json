@@ -7,20 +7,44 @@
       "file": "includes/elementor/class-widget-donation-form.php",
       "class": "WDP_Elementor_Widget_Donation_Form",
       "title": "Donation form",
-      "keywords": [],
+      "keywords": [
+        "Donation form",
+        "donation",
+        "donate",
+        "charity",
+        "form",
+        "popup"
+      ],
       "hasGetKeywords": true
     },
     {
       "file": "includes/elementor/class-widget-donations-list.php",
       "class": "WDP_Elementor_Widget_Donations_List",
       "title": "Donations list",
-      "keywords": [],
+      "keywords": [
+        "Donations list",
+        "donation",
+        "campaign",
+        "list",
+        "progress"
+      ],
       "hasGetKeywords": true
     }
   ],
-  "text": "Donation form\nDonations list",
+  "text": "Donation form\nDonation form\ndonation\ndonate\ncharity\nform\npopup\nDonations list\nDonations list\ndonation\ncampaign\nlist\nprogress",
   "lines": [
     "Donation form",
-    "Donations list"
+    "Donation form",
+    "donation",
+    "donate",
+    "charity",
+    "form",
+    "popup",
+    "Donations list",
+    "Donations list",
+    "donation",
+    "campaign",
+    "list",
+    "progress"
   ]
 }

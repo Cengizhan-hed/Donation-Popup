@@ -1,0 +1,43 @@
+# Turkish translations — D5 (Elementor keywords).
+# Copyright (C) WooCommerce Donation Panel
+msgid ""
+msgstr ""
+"Project-Id-Version: woo-donation-popup 10.34.15\n"
+"Language: tr_TR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Domain: woo-donation-popup\n"
+
+msgctxt "elementor widget search keyword"
+msgid "donation"
+msgstr "bağış"
+
+msgctxt "elementor widget search keyword"
+msgid "donate"
+msgstr "bağış yap"
+
+msgctxt "elementor widget search keyword"
+msgid "charity"
+msgstr "hayır"
+
+msgctxt "elementor widget search keyword"
+msgid "form"
+msgstr "form"
+
+msgctxt "elementor widget search keyword"
+msgid "popup"
+msgstr "popup"
+
+msgctxt "elementor widget search keyword"
+msgid "campaign"
+msgstr "kampanya"
+
+msgctxt "elementor widget search keyword"
+msgid "list"
+msgstr "liste"
+
+msgctxt "elementor widget search keyword"
+msgid "progress"
+msgstr "ilerleme"

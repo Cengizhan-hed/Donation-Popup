@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: woo-donation-popup\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-24 16:15:20+0000\n"
-"PO-Revision-Date: 2026-10-24 16:15:20+0000\n"
+"POT-Creation-Date: 2026-10-24 16:25:21+0000\n"
+"PO-Revision-Date: 2026-10-24 16:25:21+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: tr_TR\n"
@@ -1239,6 +1239,38 @@ msgstr "%s bağış ayarlarını düzenle"
 #: includes/class-phone-field.php:125
 msgid "Egypt"
 msgstr "Mısır"
+
+msgctxt "elementor widget search keyword"
+msgid "campaign"
+msgstr "kampanya"
+
+msgctxt "elementor widget search keyword"
+msgid "charity"
+msgstr "hayır"
+
+msgctxt "elementor widget search keyword"
+msgid "donate"
+msgstr "bağış yap"
+
+msgctxt "elementor widget search keyword"
+msgid "donation"
+msgstr "bağış"
+
+msgctxt "elementor widget search keyword"
+msgid "form"
+msgstr "form"
+
+msgctxt "elementor widget search keyword"
+msgid "list"
+msgstr "liste"
+
+msgctxt "elementor widget search keyword"
+msgid "popup"
+msgstr "popup"
+
+msgctxt "elementor widget search keyword"
+msgid "progress"
+msgstr "ilerleme"
 
 #: includes/elementor/class-widget-donation-form.php:28
 msgctxt "elementor widget title"
