@@ -1,6 +1,7 @@
 <?php
 /**
- * Avada, Elementor, Gutenberg, Divi, Bricks ve Beaver Builder düzenleyici/önizleme tespiti (yalnızca bu dosya).
+ * Sayfa oluşturucu düzenleyici/önizleme tespiti: genel (oluşturucu adından bağımsız) kurallar.
+ * Bilinen oluşturucuların ek işaretleri WDP_Compat_Builders içindedir (filtre: wdp_is_builder_preview).
  *
  * @package WooCommerce\Donation_Popup
  */
@@ -10,7 +11,7 @@ if (!defined('ABSPATH')) {
 }
 
 /**
- * Detects page-builder editors and previews. Theme/builder-specific code lives only here.
+ * Detects page-builder editors and previews with generic WordPress signals; unknown builders work too.
  */
 class WDP_Builder_Detect {
 
@@ -35,12 +36,18 @@ class WDP_Builder_Detect {
 		if (!function_exists('current_user_can') || !current_user_can('edit_products')) {
 			return false;
 		}
-		self::$is_preview = self::avada() || self::elementor() || self::gutenberg() || self::divi() || self::bricks() || self::beaver();
+		$generic = self::gutenberg() || self::wp_preview() || self::editor_query_var();
+		/**
+		 * Sayfa oluşturucu düzenleyici/önizleme isteği mi? Bağdaştırıcılar ek işaret ekler.
+		 *
+		 * @param bool $generic Genel tespit sonucu.
+		 */
+		self::$is_preview = (bool) apply_filters('wdp_is_builder_preview', $generic);
 		return self::$is_preview;
 	}
 
 	/**
-	 * Sample (or Avada-selected) donation product for builder canvases.
+	 * Sample (or builder-selected) donation product for builder canvases.
 	 *
 	 * @return WC_Product|null
 	 */
@@ -52,7 +59,12 @@ class WDP_Builder_Detect {
 			return self::$preview_product ? self::$preview_product : null;
 		}
 
-		$product = self::avada_dynamic_product();
+		/**
+		 * Oluşturucunun önizleme için seçtiği ürün (bağdaştırıcılar sağlar).
+		 *
+		 * @param WC_Product|null $product Product or null.
+		 */
+		$product = apply_filters('wdp_builder_preview_context_product', null);
 		if (!$product) {
 			$product = self::latest_donation_product();
 		}
@@ -91,82 +103,6 @@ class WDP_Builder_Detect {
 	}
 
 	/**
-	 * @return bool
-	 */
-	private static function avada() {
-		$get = self::query_vars();
-		if (!empty($get['fb-edit']) || (!empty($get['builder']) && (string) $get['builder'] === 'true')) {
-			return true;
-		}
-		$post_type = '';
-		if (!empty($get['post_type'])) {
-			$post_type = sanitize_key((string) $get['post_type']);
-		} elseif (function_exists('get_post_type')) {
-			$post_type = (string) get_post_type();
-		}
-		return in_array($post_type, array('fusion_tb_section', 'fusion_tb_layout'), true);
-	}
-
-	/**
-	 * Avada Live "dynamic content preview" product, when a documented API exposes it.
-	 *
-	 * @return WC_Product|null
-	 */
-	private static function avada_dynamic_product() {
-		if (!class_exists('FusionBuilder') && !class_exists('Fusion_App') && !function_exists('fusion_is_preview_frame')) {
-			return null;
-		}
-		$ids = array();
-		if (function_exists('fusion_library') && is_object(fusion_library()) && method_exists(fusion_library(), 'get_page_id')) {
-			$ids[] = (int) fusion_library()->get_page_id();
-		}
-		if (isset($GLOBALS['fusion_dynamic_data_preview_id'])) {
-			$ids[] = absint($GLOBALS['fusion_dynamic_data_preview_id']);
-		}
-		$get = self::query_vars();
-		foreach (array('preview_id', 'fusion_preview', 'awb_preview_id') as $key) {
-			if (!empty($get[ $key ])) {
-				$ids[] = absint($get[ $key ]);
-			}
-		}
-		foreach (array_unique(array_filter($ids)) as $id) {
-			if (!function_exists('wc_get_product')) {
-				break;
-			}
-			$product = wc_get_product($id);
-			if ($product && class_exists('WDP_Donation_Scope') && WDP_Donation_Scope::is_donation_product($product)) {
-				return $product;
-			}
-			if ($product && method_exists($product, 'get_type') && $product->get_type() === 'simple') {
-				return $product;
-			}
-		}
-		return null;
-	}
-
-	/**
-	 * @return bool
-	 */
-	private static function elementor() {
-		if (!class_exists('\Elementor\Plugin')) {
-			return false;
-		}
-		try {
-			$plugin = \Elementor\Plugin::$instance;
-			if (isset($plugin->preview) && is_object($plugin->preview) && method_exists($plugin->preview, 'is_preview_mode') && $plugin->preview->is_preview_mode()) {
-				return true;
-			}
-			if (isset($plugin->editor) && is_object($plugin->editor) && method_exists($plugin->editor, 'is_edit_mode') && $plugin->editor->is_edit_mode()) {
-				return true;
-			}
-		} catch (\Throwable $e) {
-			return false;
-		}
-		$get = self::query_vars();
-		return !empty($get['elementor-preview']) || (!empty($get['action']) && (string) $get['action'] === 'elementor');
-	}
-
-	/**
 	 * Gutenberg block editor REST render requests.
 	 *
 	 * @return bool
@@ -188,30 +124,33 @@ class WDP_Builder_Detect {
 	}
 
 	/**
+	 * WordPress'in kendi önizleme sinyalleri (yazı önizleme, Özelleştirici).
+	 *
 	 * @return bool
 	 */
-	private static function divi() {
-		$get = self::query_vars();
-		return !empty($get['et_fb']) || !empty($get['et_fb_preview']);
+	private static function wp_preview() {
+		return (function_exists('is_preview') && is_preview()) || (function_exists('is_customize_preview') && is_customize_preview());
 	}
 
 	/**
+	 * Oluşturucuların düzenleyici/önizleme çerçevesi için kullandığı sorgu anahtarları:
+	 * anahtar "edit", "preview", "builder" veya "fb" parçası içerir ve değeri doludur
+	 * (fb-edit, et_fb, elementor-preview, fl_builder, builder=true ...).
+	 *
 	 * @return bool
 	 */
-	private static function bricks() {
-		$get = self::query_vars();
-		return !empty($get['bricks']) || (isset($get['brickspreview']) && (string) $get['brickspreview'] !== '');
-	}
-
-	/**
-	 * @return bool
-	 */
-	private static function beaver() {
-		$get = self::query_vars();
-		if (!empty($get['fl_builder']) || !empty($get['fl_builder_preview'])) {
-			return true;
+	private static function editor_query_var() {
+		foreach (self::query_vars() as $key => $value) {
+			if ($value === '' || $value === '0' || $value === 'false') {
+				continue;
+			}
+			foreach (preg_split('/[-_]+/', (string) $key) as $part) {
+				if (in_array($part, array('edit', 'preview', 'builder', 'fb'), true)) {
+					return true;
+				}
+			}
 		}
-		return class_exists('FLBuilderModel') && method_exists('FLBuilderModel', 'is_builder_active') && FLBuilderModel::is_builder_active();
+		return false;
 	}
 
 	/**
@@ -247,7 +186,7 @@ class WDP_Builder_Detect {
 	/**
 	 * @return array<string, mixed>
 	 */
-	private static function query_vars() {
+	public static function query_vars() {
 		$out = array();
 		if (isset($_GET) && is_array($_GET)) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			foreach ($_GET as $key => $value) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended

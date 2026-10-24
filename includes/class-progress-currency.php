@@ -1,6 +1,6 @@
 <?php
 /**
- * Progress toplanan tutar: para birimi dönüşümü (Curcy uyumlu, sert bağımlılık yok).
+ * Progress toplanan tutar: para birimi dönüşümü (kur kaynağı filtreyle; eklentiye özel okuyucular includes/compat/ altında).
  *
  * @package WooCommerce\Donation_Popup
  */
@@ -44,7 +44,7 @@ class WDP_Progress_Currency {
 
 	/**
 	 * Siparişe kaydedilmiş kur (1 birim ana para → X sipariş para birimi).
-	 * Curcy: wmc_order_info[currency]['rate'] veya wmc_order_rate; WOOCS: _woocs_order_rate.
+	 * Kaynak: `wdp_order_exchange_rate` filtresi (standart Woo verisinde kur yoktur).
 	 *
 	 * @param WC_Abstract_Order|null $order    Order.
 	 * @param string                 $currency Order currency.
@@ -60,39 +60,25 @@ class WDP_Progress_Currency {
 			return self::get_live_rate($currency);
 		}
 
-		// Curcy: order info array keyed by currency.
-		$info = $order->get_meta('wmc_order_info', true);
-		if (!is_array($info)) {
-			$info = $order->get_meta('_wmc_order_info', true);
-		}
-		if (is_array($info)) {
-			if (isset($info[ $currency ]) && is_array($info[ $currency ]) && isset($info[ $currency ]['rate'])) {
-				$rate = (float) $info[ $currency ]['rate'];
-				if ($rate > 0) {
-					return $rate;
-				}
-			}
-			// Bazı sürümler tek düzey 'rate' + 'currency' tutar.
-			if (isset($info['rate'], $info['currency']) && strtoupper((string) $info['currency']) === $currency) {
-				$rate = (float) $info['rate'];
-				if ($rate > 0) {
-					return $rate;
-				}
-			}
-		}
-
-		foreach (array('wmc_order_rate', '_wmc_order_rate', '_woocs_order_rate', 'woocs_order_rate') as $key) {
-			$raw = $order->get_meta($key, true);
-			if ($raw !== '' && $raw !== null && is_numeric($raw) && (float) $raw > 0) {
-				return (float) $raw;
-			}
+		/**
+		 * Siparişe kaydedilmiş kur (1 ana birim = X sipariş para birimi).
+		 * Çoklu para birimi eklentilerinin okuyucuları includes/compat/ altındadır.
+		 *
+		 * @param float|null        $rate     Rate or null when unknown.
+		 * @param WC_Abstract_Order $order    Order.
+		 * @param string            $currency Order currency.
+		 * @param string            $base     Store base currency.
+		 */
+		$stored = apply_filters('wdp_order_exchange_rate', null, $order, $currency, $base);
+		if ($stored !== null && is_numeric($stored) && (float) $stored > 0) {
+			return (float) $stored;
 		}
 
 		return self::get_live_rate($currency);
 	}
 
 	/**
-	 * Curcy / WOOCS canlı kur listesi; yoksa null.
+	 * Canlı kur (`wdp_progress_live_rate` filtresi); yoksa null.
 	 *
 	 * @param string $currency Currency code.
 	 * @return float|null
@@ -104,18 +90,8 @@ class WDP_Progress_Currency {
 			return 1.0;
 		}
 
-		if (class_exists('WOOMULTI_CURRENCY_Data') && method_exists('WOOMULTI_CURRENCY_Data', 'get_ins')) {
-			$settings = WOOMULTI_CURRENCY_Data::get_ins();
-			if (is_object($settings) && method_exists($settings, 'get_list_currencies')) {
-				$list = $settings->get_list_currencies();
-				if (is_array($list) && isset($list[ $currency ]['rate']) && (float) $list[ $currency ]['rate'] > 0) {
-					return (float) $list[ $currency ]['rate'];
-				}
-			}
-		}
-
 		/**
-		 * Canlı kur yedeği (Curcy dışı eklentiler).
+		 * Canlı kur (çoklu para birimi bağdaştırıcıları bu filtreye bağlanır).
 		 *
 		 * @param float|null $rate     Rate (order_currency per 1 base) or null.
 		 * @param string     $currency Order currency.
@@ -131,7 +107,7 @@ class WDP_Progress_Currency {
 
 	/**
 	 * Sipariş para birimindeki tutarı mağaza ana para birimine çevir.
-	 * Curcy kuralı: fiyat_sipariş = fiyat_ana * rate → ana = sipariş / rate.
+	 * Kural: fiyat_sipariş = fiyat_ana * rate → ana = sipariş / rate.
 	 *
 	 * @param float                  $amount   Amount in order currency.
 	 * @param string                 $currency Order currency.

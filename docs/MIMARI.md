@@ -18,7 +18,7 @@ Kural: her iddia `dosya:satır`; emin olunmayan yerler **DOĞRULANMADI**.
 | `includes/traits/` | AJAX / assets / utils parçaları | `includes/class-ajax.php:12-27` |
 | `includes/templates/` | Modal kabuk, alan, kampanya header, SVG | `tools/file-descriptions.json` (satır 76–79) |
 | `includes/elementor/` | Elementor widget sınıfları | `includes/class-elementor.php` |
-| `includes/compat/` | Builder tespit (Avada/Elementor/…) | `includes/compat/class-builder-detect.php` |
+| `includes/compat/` | Üçüncü taraf bağdaştırıcıları (eklenti/oluşturucu adları YALNIZ burada): `class-compat-loader.php` (kayıt), `class-compat-currency.php` (Curcy/WOOCS kuru + WPML/Curcy ön yüz sinyali), `class-compat-builders.php` (Avada/Elementor/Divi/Bricks/Beaver ek işaretleri), `class-builder-detect.php` (genel tespit) | `includes/compat/` |
 | `includes/i18n/` | JS sözlük sınıfı (`WDP_Js_I18n`) | `includes/i18n/class-wdp-js-i18n.php` |
 | `languages/` | `.pot` / `tr_TR.po|.mo` (parts/ dağıtıma girmez) | `.distignore` `languages/parts/` |
 | `templates/woocommerce/` | Simple add-to-cart şablon override | `templates/woocommerce/single-product/add-to-cart/simple.php` |
@@ -221,6 +221,8 @@ Ek progress meta: `_wdp_total_donation_amount`, `_wdp_donor_count`, `_wdp_progre
 
 **10.31.0 hedef / toplanan:** `WDP_Campaign_Goal` (hedefe ulaşma kararı, message/close/continue); `WDP_Progress_Currency` (`wdp_progress_convert_amount` — Curcy `wmc_order_info` / rate, sert bağımlılık yok). Toplanan = paid statuses − cover fee; boş meta → cron `wdp_recalculate_product_donation_total` (ziyaretçi taraması yok). Çubuk yüzdesi = onaylı toplam / hedef (`WDP_Campaign_Goal::compute_percent`).
 
+**Faz 6-A/6-B (bağdaştırıcı ayrımı):** Çekirdek yalnız filtre + Woo verisi kullanır. `WDP_Progress_Currency::get_order_rate` -> `wdp_order_exchange_rate` (null, order, currency, base); canlı kur -> `wdp_progress_live_rate`; Curcy/WOOCS okuyucuları `WDP_Compat_Currency`. Ön yüz: `wdp_ajax.context` = `{currency, lang, currency_cookies[], lang_cookies[], switcher_selectors[], change_events[]}` (`wdp_client_context` filtresi); `lazy-modal.js` eklenti adı bilmez. `cart/woo.js` Avada seçicileri kaldırıldı (genel `menu-cart`/`widget-cart`/`shopping-cart` seçicileri + zaten tetiklenen standart `wc_fragment_refresh`). Oluşturucu tespiti: `WDP_Builder_Detect` genel kurallarla (`edit_products` + Gutenberg block-renderer, `is_preview()`/`is_customize_preview()`, anahtarı edit/preview/builder/fb parçası içeren dolu sorgu değişkeni) karar verir; adı bilinmeyen oluşturucu da çalışır; bilinen oluşturucu ek işaretleri `wdp_is_builder_preview`, Avada seçili ürünü `wdp_builder_preview_context_product` filtresiyle `WDP_Compat_Builders`'tan gelir. Ürün sayfası yedeği (`render_builder_fallback`) zaten kanca tabanlıdır (şablon geçersiz kılma çalıştı mı).
+
 **10.32.0 ürün teması:** `WDP_Form_Modules::resolve_product_primary_color` / `resolve_product_shell_primary` (ürün → kategori → genel; `_theme_inherit_category_color` okunmaz). `build_product_theme_style` → `WDP_Color_Palette::from_hex` türevleri + `--wdp-on-primary`; hover boşsa türetilmiş; koyu `--wdp-modal-bg` için metin token’ları. Köşe `PRODUCT_THEME_RADIUS_MIN/MAX` (4–32) + `product_radius_ladder` (panel/sheet oranı). Kampanya görseli URL: filtre `wdp_campaign_media_url` (`class-campaign-header-renderer.php`).
 
 Kapsam bayrağı: `_wdp_donation_product` (`includes/class-donation-scope.php:20`).
@@ -255,7 +257,7 @@ Eski çevrilmiş etiket anahtarları `normalize_key` ile okunur (`includes/class
 | Liste HTML | 1 gün transient; `wdp_list_cache_version`; `orderby=random` atlar; UID/panel yer tutucu + admin notu cache dışı | `includes/class-donations-list.php` `render` / `bump_cache` |
 | `wdp_css_version_*` / `wdp_js_version_*` | transient+cache | assets |
 | WC session `get_customer_id()` | session | rate-limit / cart cache suffix (`includes/traits/trait-wdp-ajax-base.php:113-114`) |
-| Curcy/WPML cookie (istemci) | cookie okuma JS | lazy-modal para/dil anahtarı (`assets/js/src/lazy-modal.js:61-93`) — eklenti set etmez |
+| Para birimi/dil sinyali (istemci) | `wdp_ajax.context` (sunucu; `wdp_client_context` filtresi) | lazy-modal çerez adı/seçici/olayları buradan okur; eklenti adları yalnız `includes/compat/class-compat-currency.php` (`assets/js/src/lazy-modal.js`) |
 | `wdp_vid` | HttpOnly, SameSite=Lax, 12 saat, HMAC | Misafir salt-okunur kova ayırıcı (`includes/class-security.php:18-24,300-378`). Sayfa HTML’sinde Set-Cookie yok (önbellek); AJAX `get_product_info` / `render_modal` sırasında yoksa basılır. |
 
 Eklenti `setcookie` yalnız `wdp_vid` (10.34.10). JS çerez yazmaz.

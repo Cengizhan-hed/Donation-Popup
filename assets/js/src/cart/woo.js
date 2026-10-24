@@ -117,12 +117,10 @@
       "#cart-icon", // ID ile sepet ikonu
       '[class*="cart-icon"]', // "cart-icon" içeren sınıflar
       '[class*="cart-button"]', // "cart-button" içeren sınıflar
-      ".fusion-icon-shopping-cart", // Avada teması için
-      ".fusion-widget-cart", // Avada teması için
-      ".fusion-main-menu-cart", // Avada teması için
-      ".fusion-custom-menu-item-contents", // Avada teması için
-      ".fusion-menu-cart", // Avada teması için
-      ".fusion-menu-cart-items", // Avada teması için
+      '[class*="menu-cart"]', // "menu-cart" içeren sınıflar (menü sepeti)
+      '[class*="widget-cart"]', // "widget-cart" içeren sınıflar
+      '[class*="cart-widget"]', // "cart-widget" içeren sınıflar
+      '[class*="shopping-cart"]', // "shopping-cart" içeren sınıflar (sepet ikonu)
     ];
 
     // Tüm olası side cart elementlerini bul ve görünür yap
@@ -166,33 +164,7 @@
       }
     });
 
-    // Tema özel sepet ikonlarını kontrol et
-    try {
-      // Avada teması için
-      if (typeof jQuery !== "undefined") {
-        // Avada teması için
-        if (jQuery(".fusion-icon-shopping-cart").length > 0) {
-          jQuery(".fusion-icon-shopping-cart").parent().show();
-        }
-
-        // Avada teması için sepet menüsü
-        if (jQuery(".fusion-main-menu-cart").length > 0) {
-          jQuery(".fusion-main-menu-cart").show();
-        }
-
-        // Avada teması için sepet widget'ı
-        if (jQuery(".fusion-widget-cart").length > 0) {
-          jQuery(".fusion-widget-cart").show();
-        }
-
-        // Avada teması için özel menü öğesi
-        if (jQuery(".fusion-custom-menu-item-contents").length > 0) {
-          jQuery(".fusion-custom-menu-item-contents").show();
-        }
-      }
-    } catch (e) {
-      safeLog("Error checking theme-specific cart icons:", e);
-    }
+    // Tema sepet ikonları/menüleri: updateWooCommerceCart() standart `wc_fragment_refresh` olayını zaten tetikler.
 
     // Tema/eklenti stil çatışmalarını azaltmak için global !important CSS enjekte etmiyoruz.
   }
