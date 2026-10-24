@@ -318,6 +318,7 @@ trait WDP_Assets_Registry_Trait {
          * @param array<string, mixed> $context Bağlam.
          */
         $filtered = apply_filters('wdp_client_context', $context);
+        // @phpstan-ignore function.alreadyNarrowedType (filter callbacks may return anything)
         return is_array($filtered) ? $filtered : $context;
     }
 
@@ -344,6 +345,7 @@ trait WDP_Assets_Registry_Trait {
             $localize_handle = self::FRONTEND_JS_HANDLE;
         }
 
+        // @phpstan-ignore nullCoalesce.offset (settings array may be filtered)
         $client_context = self::client_context((string) ($currency_settings['code'] ?? ''));
 
         wp_localize_script($localize_handle, 'wdp_ajax', array(

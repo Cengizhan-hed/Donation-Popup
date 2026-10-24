@@ -239,7 +239,8 @@ class WDP_Assets {
             return false;
         }
         foreach ($wp_query->posts as $listed) {
-            if (is_object($listed) && isset($listed->ID) && WDP_Donation_Scope::is_donation_product((int) $listed->ID)) {
+            $listed_id = is_object($listed) && isset($listed->ID) ? (int) $listed->ID : 0;
+            if ($listed_id > 0 && WDP_Donation_Scope::is_donation_product($listed_id)) {
                 return true;
             }
         }
