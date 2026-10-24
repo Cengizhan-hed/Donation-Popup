@@ -8,7 +8,7 @@ import { parsePoEntries } from '../../../tools/i18n/merge-po.mjs';
 
 export const TR_LETTERS_RE = /[çğıöşüÇĞİÖŞÜ]/;
 
-/** Dönüşüm sonrası en_US için bilinen Türkçe sözcükler (yaklaşık 60). */
+/** Dönüşüm sonrası en_US için bilinen Türkçe sözcükler. İngilizce ile çakışanlar (form, panel, normal, progress, not, minimum, modal) YOK. */
 export const TR_WORDS = [
   'Bağış',
   'Bağışçı',
@@ -37,27 +37,20 @@ export const TR_WORDS = [
   'Geri',
   'Ürün',
   'Fiyat',
-  'Minimum',
   'Maksimum',
   'Geçerli',
   'Eksik',
   'Anonim',
   'İthaf',
-  'Not',
   'Ara',
   'Ekle',
   'Sil',
   'Düzenle',
   'Ayarlar',
-  'Form',
-  'Modal',
-  'Panel',
   'Liste',
   'Kategori',
   'Gelişmiş',
   'Tasarım',
-  'Normal',
-  'Progress',
   'Başarı',
   'Kurulum',
   'Görünüm',

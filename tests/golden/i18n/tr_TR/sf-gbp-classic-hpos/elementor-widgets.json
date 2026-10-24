@@ -8,14 +8,14 @@
       "class": "WDP_Elementor_Widget_Donation_Form",
       "title": "Bağış Formu",
       "keywords": [],
-      "hasGetKeywords": false
+      "hasGetKeywords": true
     },
     {
       "file": "includes/elementor/class-widget-donations-list.php",
       "class": "WDP_Elementor_Widget_Donations_List",
       "title": "Bağış Listesi",
       "keywords": [],
-      "hasGetKeywords": false
+      "hasGetKeywords": true
     }
   ],
   "text": "Bağış Formu\nBağış Listesi",
