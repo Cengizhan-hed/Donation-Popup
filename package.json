@@ -42,6 +42,7 @@
     "migration:rehearsal": "node scripts/migration-rehearsal.mjs",
     "migration:compare": "node scripts/migration-compare.mjs",
     "remote:discover": "node scripts/remote-discover.mjs",
+    "admin:style-audit": "node scripts/admin-style-audit.mjs",
     "e2e:catalog-explain": "node scripts/e2e-catalog-explain.mjs"
   },
   "repository": {
