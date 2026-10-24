@@ -793,7 +793,7 @@ export async function runDeviceScenarios({
       await price.waitFor({ state: 'visible', timeout: CHECK_MS });
       const code = String(store.currency || '').toUpperCase();
       if (code === 'TRY') {
-        await price.fill('10.00');
+        await price.fill('10,50');
         const name = scope.locator(SEL.donorName).first();
         if ((await name.count()) > 0) await name.fill(DONOR_NAME);
         const phone = scope.locator(SEL.donorPhone).first();
@@ -805,10 +805,10 @@ export async function runDeviceScenarios({
           await add.click({ timeout: CHECK_MS });
           await page.waitForFunction(() => {
             const nodes = Array.from(document.querySelectorAll('.wdp-input-error, .wdp-form-error'));
-            return nodes.some((el) => /tam sayı|biçiminde|Lütfen tutarı/i.test(String(el.textContent || '')));
+            return nodes.some((el) => /kuruşlu|tam sayı|biçiminde|Lütfen tutarı/i.test(String(el.textContent || '')));
           }, { timeout: CHECK_MS });
           if (probe.ajax.length) {
-            throw new Error(`TRY 10.00 sepete eklendi (${probe.ajax.length} istek)`);
+            throw new Error(`TRY 10,50 sepete eklendi (${probe.ajax.length} istek)`);
           }
         } finally {
           probe.detach();
@@ -821,6 +821,51 @@ export async function runDeviceScenarios({
       await addToCart(page, scope);
       await cartHasAmount(page, baseUrl, fillAmount, store);
       await shot(page, shotDir, `amount-ambiguous-${code.toLowerCase()}`);
+    });
+
+    await runOne('amount-tr-comma', async () => {
+      if (String(store.currency || '').toUpperCase() !== 'TRY') {
+        return;
+      }
+      await gotoPath(page, baseUrl, '/');
+      await emptyCartStoreApi(page, baseUrl);
+      const acceptScope = await openProductForm(page, baseUrl, productPath);
+      const acceptPrice = acceptScope.locator(SEL.customPrice).first();
+      await acceptPrice.waitFor({ state: 'visible', timeout: CHECK_MS });
+      await acceptPrice.fill('50,00');
+      const acceptName = acceptScope.locator(SEL.donorName).first();
+      if ((await acceptName.count()) > 0) await acceptName.fill(DONOR_NAME);
+      const acceptPhone = acceptScope.locator(SEL.donorPhone).first();
+      if ((await acceptPhone.count()) > 0) await acceptPhone.fill(DONOR_PHONE);
+      await addToCart(page, acceptScope);
+      await cartHasAmount(page, baseUrl, 50, store);
+      await shot(page, shotDir, 'amount-tr-comma-ok');
+
+      await emptyCartStoreApi(page, baseUrl);
+      const warnScope = await openProductForm(page, baseUrl, productPath);
+      const warnPrice = warnScope.locator(SEL.customPrice).first();
+      await warnPrice.waitFor({ state: 'visible', timeout: CHECK_MS });
+      await warnPrice.fill('10,50');
+      const warnName = warnScope.locator(SEL.donorName).first();
+      if ((await warnName.count()) > 0) await warnName.fill(DONOR_NAME);
+      const warnPhone = warnScope.locator(SEL.donorPhone).first();
+      if ((await warnPhone.count()) > 0) await warnPhone.fill(DONOR_PHONE);
+      const warnAdd = warnScope.locator(SEL.addToCart).first();
+      await warnAdd.waitFor({ state: 'visible', timeout: CHECK_MS });
+      const warnProbe = attachSubmitNetworkProbe(page);
+      try {
+        await warnAdd.click({ timeout: CHECK_MS });
+        await page.waitForFunction(() => {
+          const nodes = Array.from(document.querySelectorAll('.wdp-input-error, .wdp-form-error'));
+          return nodes.some((el) => /kuruşlu|tam sayı|biçiminde|Lütfen tutarı/i.test(String(el.textContent || '')));
+        }, { timeout: CHECK_MS });
+        if (warnProbe.ajax.length) {
+          throw new Error(`TRY 10,50 sepete eklendi (${warnProbe.ajax.length} istek)`);
+        }
+      } finally {
+        warnProbe.detach();
+      }
+      await shot(page, shotDir, 'amount-tr-comma-warn');
     });
 
     await runOne('list-checkout', async () => {

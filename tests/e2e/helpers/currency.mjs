@@ -46,57 +46,61 @@ export function parseMoneyDetailed(raw, currency) {
     return { ok: false, amount: NaN, status: 'invalid' };
   }
   if (s.charAt(0) === '-' || s.includes('-')) return { ok: false, amount: NaN, status: 'invalid' };
-  if (/^\d+$/.test(s)) {
-    const n = Number.parseFloat(s);
-    return Number.isFinite(n) ? { ok: true, amount: n, status: 'ok' } : { ok: false, amount: NaN, status: 'invalid' };
-  }
   const fail = (status) => ({ ok: false, amount: NaN, status });
   const ok = (n) => (Number.isFinite(n) ? { ok: true, amount: n, status: 'ok' } : fail('invalid'));
-  if (thousand !== '' && thousand === decimal) {
-    if (isValidThousandGrouping(s, thousand)) return ok(Number.parseFloat(s.split(thousand).join('')));
-    const first = s.indexOf(thousand);
-    const last = s.lastIndexOf(thousand);
-    if (first < 0 || first !== last || first <= 0) return fail(decimals <= 0 ? 'ambiguous' : 'invalid');
-    const intPart = s.slice(0, last);
-    const frac = s.slice(last + thousand.length);
+  const applyDec = (intPart, frac) => {
     if (!intPart || !frac || !/^\d+$/.test(intPart) || !/^\d+$/.test(frac)) return fail('invalid');
-    if (decimals <= 0) return fail('ambiguous');
-    if (frac.length > decimals) return fail('invalid');
+    if (decimals <= 0) {
+      if (/^0+$/.test(frac)) return ok(Number.parseFloat(intPart));
+      return fail('ambiguous');
+    }
+    if (frac.length > decimals) return fail('ambiguous');
     return ok(Number.parseFloat(`${intPart}.${frac}`));
+  };
+  const seps = [];
+  for (let i = 0; i < s.length; i += 1) {
+    if (s.charAt(i) === '.' || s.charAt(i) === ',') seps.push({ i, ch: s.charAt(i) });
   }
-  const hasT = thousand !== '' && s.includes(thousand);
-  const hasD = decimal !== '' && s.includes(decimal);
-  if (hasT && hasD) {
-    const dFirst = s.indexOf(decimal);
-    const dLast = s.lastIndexOf(decimal);
-    if (dFirst !== dLast || s.indexOf(thousand) > dLast) return fail('invalid');
-    const intPart = s.slice(0, dLast);
-    const frac = s.slice(dLast + decimal.length);
-    if (!intPart || !frac || !/^\d+$/.test(frac)) return fail('invalid');
-    if (decimals <= 0) return fail('ambiguous');
-    if (frac.length > decimals) return fail('invalid');
-    if (intPart.includes(thousand) && !isValidThousandGrouping(intPart, thousand)) return fail('ambiguous');
-    if (intPart.includes(decimal)) return fail('invalid');
-    const intNorm = intPart.split(thousand).join('');
-    if (!/^\d+$/.test(intNorm)) return fail('invalid');
-    return ok(Number.parseFloat(`${intNorm}.${frac}`));
+  if (!seps.length) {
+    if (/^\d+$/.test(s)) return ok(Number.parseFloat(s));
+    return fail('invalid');
   }
-  if (hasD && !hasT) {
-    const dFirst = s.indexOf(decimal);
-    const dLast = s.lastIndexOf(decimal);
-    if (dFirst !== dLast) return fail('invalid');
-    const intPart = s.slice(0, dLast);
-    const frac = s.slice(dLast + decimal.length);
-    if (!intPart || !frac || !/^\d+$/.test(intPart) || !/^\d+$/.test(frac)) return fail('invalid');
-    if (decimals <= 0) return fail('ambiguous');
-    if (frac.length > decimals) return fail('invalid');
-    return ok(Number.parseFloat(`${intPart}.${frac}`));
-  }
-  if (hasT && !hasD) {
-    if (isValidThousandGrouping(s, thousand)) return ok(Number.parseFloat(s.split(thousand).join('')));
+  const last = seps[seps.length - 1];
+  const beforeLast = s.slice(0, last.i);
+  const afterLast = s.slice(last.i + 1);
+  const chars = [...new Set(seps.map((row) => row.ch))];
+  if (chars.length === 1) {
+    const ch = chars[0];
+    if (isValidThousandGrouping(s, ch)) return ok(Number.parseFloat(s.split(ch).join('')));
+    if (seps.length === 1) return applyDec(beforeLast, afterLast);
+    if (isValidThousandGrouping(beforeLast, ch)) return applyDec(beforeLast.split(ch).join(''), afterLast);
     return fail('ambiguous');
   }
-  return fail('invalid');
+  if (seps.filter((row) => row.ch === last.ch).length !== 1) return fail('invalid');
+  const other = chars[0] === last.ch ? chars[1] : chars[0];
+  if (beforeLast.includes(other)) {
+    if (!isValidThousandGrouping(beforeLast, other)) return fail('ambiguous');
+    return applyDec(beforeLast.split(other).join(''), afterLast);
+  }
+  return applyDec(beforeLast, afterLast);
+}
+
+/**
+ * Doldurma para birimi: sayfa (Woo) ondalığı profili ezer.
+ * @param {object} [profileCurrency]
+ * @param {object} [pageCurrency]
+ */
+export function mergeFillCurrency(profileCurrency, pageCurrency) {
+  const out = { ...(profileCurrency && typeof profileCurrency === 'object' ? profileCurrency : {}) };
+  const p = pageCurrency && typeof pageCurrency === 'object' ? pageCurrency : {};
+  if (Number.isFinite(Number(p.decimals))) out.decimals = Math.max(0, Number(p.decimals));
+  if (p.decimalSeparator != null && String(p.decimalSeparator) !== '') {
+    out.decimalSeparator = String(p.decimalSeparator);
+  }
+  if (p.thousandSeparator != null && String(p.thousandSeparator) !== '') {
+    out.thousandSeparator = String(p.thousandSeparator);
+  }
+  return out;
 }
 
 /** PHP WDP_Utils::format_min_placeholder / JS formatMinPlaceholder ile aynı. */
@@ -173,7 +177,7 @@ function formatMachineFillAmount(n, field) {
 
 /**
  * Input doldurma. type=number → makine biçimi (nokta, binlik yok, step).
- * type=text / yok → binlik yok, ondalık mağaza ayırıcısı. Sabit "10" yok.
+ * type=text / yok → 0 dp düz tam sayı ("50"); N>0 mağaza ondalık ayırıcısı. Sabit "10" yok.
  * @param {number|string} amount
  * @param {{decimals?:number,decimalSeparator?:string}} [currency]
  * @param {{type?:string,inputType?:string,step?:string|number}} [field]
@@ -196,6 +200,7 @@ export function formatFillAmount(amount, currency, field) {
 
 /**
  * Form min / önerilen / max (DOM veya katalog). Sabit 10 yok.
+ * 0 dp mağaza → bağışçı gibi düz tam sayı; ondalıklı → mağaza biçimi.
  * Alan type/step bounds veya 3. argümanda (type=number ve type=text).
  * @param {{ min?: string|number, recommended?: string|number, max?: string|number, type?: string, inputType?: string, step?: string|number }} bounds
  * @param {object} [currency]

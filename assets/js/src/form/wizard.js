@@ -431,9 +431,11 @@
         if (detailed && detailed.status === 'ambiguous') {
           ok = false;
           firstInvalid = firstInvalid || price;
-          const msg = typeof utilsW.getAmbiguousAmountMessage === 'function'
-            ? utilsW.getAmbiguousAmountMessage()
-            : (detailed.error || 'Lütfen tutarı tam sayı olarak yazın, örn. 10');
+          const msg = (detailed.error && String(detailed.error).trim())
+            ? detailed.error
+            : (typeof utilsW.getAmbiguousAmountMessage === 'function'
+              ? utilsW.getAmbiguousAmountMessage()
+              : 'Bu sitede kuruşlu tutar girilemez, örn. 10');
           messages.push(msg);
           if (typeof feedback.showInputError === 'function') {
             feedback.showInputError(price, msg);

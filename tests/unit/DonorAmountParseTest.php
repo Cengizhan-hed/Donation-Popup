@@ -53,18 +53,28 @@ final class DonorAmountParseTest extends TestCase {
 		}
 	}
 
-	public function test_try_ambiguous_message_is_integer_example(): void {
+	public function test_try_zero_fraction_accepted_nonzero_warns(): void {
 		WDP_Test_State::$price_decimals = 0;
 		WDP_Test_State::$price_thousand = '.';
 		WDP_Test_State::$price_decimal  = ',';
-		$got = WDP_Utils::parse_donor_amount('10.00', array(
+		$cfg = array(
 			'decimals'          => 0,
 			'thousandSeparator' => '.',
 			'decimalSeparator'  => ',',
-		));
+		);
+		$ok = WDP_Utils::parse_donor_amount('50,00', $cfg);
+		$this->assertSame('ok', $ok['status']);
+		$this->assertEqualsWithDelta(50.0, $ok['amount'], 0.0001);
+		$dot = WDP_Utils::parse_donor_amount('10.00', $cfg);
+		$this->assertSame('ok', $dot['status']);
+		$this->assertEqualsWithDelta(10.0, $dot['amount'], 0.0001);
+		$got = WDP_Utils::parse_donor_amount('10,50', $cfg);
 		$this->assertSame('ambiguous', $got['status']);
-		$this->assertStringContainsString('tam sayı', $got['error']);
+		$this->assertStringContainsString('kuruşlu', $got['error']);
 		$this->assertStringContainsString('10', $got['error']);
+		$thou = WDP_Utils::parse_donor_amount('1.250', $cfg);
+		$this->assertSame('ok', $thou['status']);
+		$this->assertEqualsWithDelta(1250.0, $thou['amount'], 0.0001);
 	}
 
 	public function test_normalize_paste_strips_symbol_and_space(): void {

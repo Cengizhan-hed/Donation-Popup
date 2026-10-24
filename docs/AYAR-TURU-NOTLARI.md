@@ -487,5 +487,5 @@ Kullanıcı yönergesi önceki tüm görev metinlerinin yerini aldı; CLAUDE.md 
 | T15 | GERİLEME (10.34.11): bekletilen erken tıklama `requestSubmit` ile yerel form gönderimi → ürün sayfası yeniden yükleniyor, bağışçının doldurduğu form kayboluyordu (matris yakaladı) | 10.34.12: kuyruk yalnız eklenti gönderim yolu, ≤1 istek |
 | P1 | staging30 mağaza sayfası (/bagislar/) ilk HTML'de 15 bağış formunu birden çiziyor (30 CTA kapısı) — sayfa ağırlığı/ilk boyama | Faz 7 performans (tembel çizim ayarı/varsayılanı) |
 | T16 | Ikram "Benzer Bağışlar" mobil+tablette görünmüyor: Blocksy `.ct-hidden-sm/.ct-hidden-md` (themes/blocksy/static/bundle/main.min.css) — tema ayarı, eklenti değil | Kullanıcıya bilgi (Blocksy Özelleştir) |
-| T17 | BAĞIŞÇI RİSKİ: TRY 0dp "." binlik mağazada "10.00" → 1000 ₺ (100×). staging30'da binlik=ondalık="." | 4I (10.34.13): gruplama kuralı + belirsiz tutar görünür uyarı, sunucu da reddeder |
+| T17 | BAĞIŞÇI RİSKİ: TRY 0dp "." binlik mağazada "10.00" → 1000 ₺ (100×). staging30'da binlik=ondalık="." | 4I (10.34.13): gruplama + belirsiz uyarı. 4M (10.34.14): `50,00`/`10.00` sıfır kesir → tam sayı; `10,50` kuruş uyarısı (100× yok) |
 | T18 | staging30 checkout-flow android/desktop: test tutarı 10 < ürün min ₺50 (eklenti doğru reddetti, görünür mesaj); desktop panel testi wp-admin'de kalıyordu | 4H (test) |
