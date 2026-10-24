@@ -370,7 +370,7 @@ trait WDP_Assets_Registry_Trait {
                 'added_to_cart' => __('Your donation was added to the cart', 'woo-donation-popup'),
             ),
             'phone' => array(
-                'default_country' => class_exists('WDP_Phone_Field') ? WDP_Phone_Field::get_default_country_iso() : 'tr',
+                'default_country' => class_exists('WDP_Phone_Field') ? WDP_Phone_Field::get_default_country_iso() : '',
                 'countries' => class_exists('WDP_Phone_Field') ? WDP_Phone_Field::get_countries_for_js() : array(),
             ),
             'button_texts' => self::get_button_texts(),

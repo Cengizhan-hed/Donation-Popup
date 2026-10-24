@@ -143,7 +143,8 @@ class WDP_Phone_Field {
             'za' => array('name' => __('South Africa', 'woo-donation-popup'), 'dial' => '27'),
         );
 
-        $countries = self::sort_countries_for_dropdown($countries);
+        $countries = self::merge_woocommerce_countries($countries);
+        $countries = self::sort_countries_for_dropdown($countries, self::get_store_country_iso());
 
         /**
          * Filter country list for phone dropdown.
@@ -154,52 +155,131 @@ class WDP_Phone_Field {
     }
 
     /**
-     * Türkiye en üstte, diğerleri ada göre (Türkçe).
+     * WooCommerce ülke nesnesi (yoksa null).
+     *
+     * @return object|null
+     */
+    private static function wc_countries() {
+        if (!function_exists('WC')) {
+            return null;
+        }
+        $wc = WC();
+        if (!is_object($wc) || !isset($wc->countries) || !is_object($wc->countries)) {
+            return null;
+        }
+        return $wc->countries;
+    }
+
+    /**
+     * Mağaza ülkesi (WooCommerce temel ülke), küçük harf ISO2; yoksa boş.
+     *
+     * @return string
+     */
+    public static function get_store_country_iso() {
+        $wc = self::wc_countries();
+        if (!$wc || !method_exists($wc, 'get_base_country')) {
+            return '';
+        }
+        $iso = strtolower((string) $wc->get_base_country());
+        return strlen($iso) === 2 ? $iso : '';
+    }
+
+    /**
+     * Eklentinin listesinde olmayan WooCommerce ülkelerini (WooCommerce adı + arama kodu) ekler; mevcut
+     * girişlerin adı WooCommerce'in yerelleştirilmiş adıyla değiştirilir (site diline uyar).
      *
      * @param array<string, array{name:string,dial:string}> $countries Countries.
      * @return array<string, array{name:string,dial:string}>
      */
-    private static function sort_countries_for_dropdown(array $countries) {
-        $compare = static function ($a, $b) {
+    private static function merge_woocommerce_countries(array $countries) {
+        $wc = self::wc_countries();
+        if (!$wc || !method_exists($wc, 'get_countries')) {
+            return $countries;
+        }
+        $names = $wc->get_countries();
+        if (!is_array($names)) {
+            return $countries;
+        }
+        foreach ($names as $code => $name) {
+            $iso = strtolower((string) $code);
+            if (strlen($iso) !== 2 || !is_string($name) || $name === '') {
+                continue;
+            }
+            if (isset($countries[ $iso ])) {
+                $countries[ $iso ]['name'] = $name;
+                continue;
+            }
+            $dial = '';
+            if (method_exists($wc, 'get_country_calling_code')) {
+                $calling = $wc->get_country_calling_code((string) $code);
+                if (is_array($calling)) {
+                    $calling = reset($calling);
+                }
+                $dial = preg_replace('/\D+/', '', (string) $calling);
+            }
+            if ($dial === '') {
+                continue;
+            }
+            $countries[ $iso ] = array('name' => $name, 'dial' => $dial);
+        }
+        return $countries;
+    }
+
+    /**
+     * Mağaza ülkesi en üstte, diğerleri site dilinin harf sırasıyla.
+     *
+     * @param array<string, array{name:string,dial:string}> $countries Countries.
+     * @param string                                         $first     En üstte olacak ISO2 (boşsa yok).
+     * @return array<string, array{name:string,dial:string}>
+     */
+    private static function sort_countries_for_dropdown(array $countries, $first = '') {
+        $locale  = function_exists('get_locale') ? (string) get_locale() : 'en_US';
+        $compare = static function ($a, $b) use ($locale) {
             $an = (string) $a['name'];
             $bn = (string) $b['name'];
             if (class_exists('Collator')) {
-                static $collator = null;
-                if ($collator === null) {
-                    $collator = new Collator('tr_TR');
+                static $collators = array();
+                if (!isset($collators[ $locale ])) {
+                    $collators[ $locale ] = new Collator($locale !== '' ? $locale : 'en_US');
                 }
-                if ($collator instanceof Collator) {
-                    return $collator->compare($an, $bn);
+                if ($collators[ $locale ] instanceof Collator) {
+                    return $collators[ $locale ]->compare($an, $bn);
                 }
             }
             return strcasecmp($an, $bn);
         };
 
-        if (!isset($countries['tr'])) {
+        $first = strtolower((string) $first);
+        if ($first === '' || !isset($countries[ $first ])) {
             uasort($countries, $compare);
             return $countries;
         }
 
-        $turkey = array( 'tr' => $countries['tr'] );
-        unset($countries['tr']);
+        $top = array( $first => $countries[ $first ] );
+        unset($countries[ $first ]);
         uasort($countries, $compare);
 
-        return array_merge($turkey, $countries);
+        return array_merge($top, $countries);
     }
 
     /**
-     * Default ISO2 country code.
+     * Default ISO2 country code: WooCommerce mağaza ülkesi (filtreyle değiştirilebilir); desteklenmiyorsa listenin ilki.
      *
      * @return string
      */
     public static function get_default_country_iso() {
-        $raw = apply_filters('wdp_phone_default_country', 'tr');
-        if (!is_string($raw) || strlen($raw) !== 2) {
-            return 'tr';
-        }
-        $iso = strtolower($raw);
         $countries = self::get_countries();
-        return isset($countries[ $iso ]) ? $iso : 'tr';
+        $store     = self::get_store_country_iso();
+        $raw       = apply_filters('wdp_phone_default_country', $store);
+        $iso       = is_string($raw) ? strtolower($raw) : '';
+        if (strlen($iso) === 2 && isset($countries[ $iso ])) {
+            return $iso;
+        }
+        if ($store !== '' && isset($countries[ $store ])) {
+            return $store;
+        }
+        $keys = array_keys($countries);
+        return $keys ? (string) $keys[0] : '';
     }
 
     /**
@@ -406,7 +486,8 @@ class WDP_Phone_Field {
 
         $default_iso = self::get_default_country_iso();
         $countries   = self::get_countries();
-        $dial        = isset($countries[ $default_iso ]['dial']) ? $countries[ $default_iso ]['dial'] : '90';
+        $first_row   = $countries ? reset($countries) : array();
+        $dial        = isset($countries[ $default_iso ]['dial']) ? $countries[ $default_iso ]['dial'] : (isset($first_row['dial']) ? $first_row['dial'] : '');
 
         $name = preg_replace('/[^a-z0-9_\-]/i', '', (string) $args['name']);
         $id   = $args['id'] ? sanitize_html_class((string) $args['id']) : '';
