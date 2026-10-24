@@ -215,44 +215,44 @@ class WDP_Compat_Avada_Element {
 		$title = __( 'Donation Panel', 'woo-donation-popup' ) . ' - ' . _x( 'Donations list', 'elementor widget title', 'woo-donation-popup' );
 		$q     = __( 'Query', 'woo-donation-popup' );
 		$d     = __( 'Display', 'woo-donation-popup' );
-		$text  = static function ( $name, $label, $group, $default = '' ) {
+		$text  = static function ( $name, $label, $group, $default_value = '' ) {
 			return array(
 				'type'       => 'textfield',
 				'heading'    => $label,
 				'param_name' => $name,
-				'value'      => $default,
+				'value'      => $default_value,
 				'group'      => $group,
 			);
 		};
-		$range = static function ( $name, $label, $group, $min, $max, $default ) {
+		$range = static function ( $name, $label, $group, $min, $max, $default_value ) {
 			return array(
 				'type'       => 'range',
 				'heading'    => $label,
 				'param_name' => $name,
-				'value'      => (string) $default,
-				'default'    => (string) $default,
+				'value'      => (string) $default_value,
+				'default'    => (string) $default_value,
 				'min'        => (string) $min,
 				'max'        => (string) $max,
 				'step'       => '1',
 				'group'      => $group,
 			);
 		};
-		$sel   = static function ( $name, $label, $group, $default, $options ) {
+		$sel   = static function ( $name, $label, $group, $default_value, $options ) {
 			return array(
 				'type'       => 'select',
 				'heading'    => $label,
 				'param_name' => $name,
-				'default'    => $default,
+				'default'    => $default_value,
 				'value'      => $options,
 				'group'      => $group,
 			);
 		};
-		$yn    = static function ( $name, $label, $default ) {
+		$yn    = static function ( $name, $label, $default_value ) {
 			return array(
 				'type'       => 'radio_button_set',
 				'heading'    => $label,
 				'param_name' => $name,
-				'default'    => $default,
+				'default'    => $default_value,
 				'value'      => self::yes_no(),
 				'group'      => __( 'Display', 'woo-donation-popup' ),
 			);
