@@ -77,10 +77,11 @@ Her oturumun başında oku. Kullanıcıyla **Türkçe** konuş. Bu dosya tek kay
 
 Faz 1 güvenli bağlantı → Faz 2 göç provası (staging30: 10.3.1 → güncel) → Faz 3 bekleyen işler (2/3–2c, Ikram kabul a–g) → Faz 4 tema/Woo uyum matrisi → **dur, AŞAMA ÖZETİ** → Faz 5 dil desteği → Faz 6 refaktör (site adı temizliği, Curcy/sayfa oluşturucu tespitinin genelleştirilmesi, "sadaka" iç adı) → Faz 7 bağışçı deneyimi + tasarım (G listesi, yönetici ekranı, rehber) → Faz 8 güvenlik denetimi + WP gizlilik araçları uyumu → Faz 9 canlıya alma (Curcy/e-posta/SMS/POS testlerini kullanıcı yapar).
 
-## 7. Durum (2026-10-22)
+## 7. Durum (2026-10-24, Faz 1–4 sonu — Faz 5 öncesi DUR)
 
-- `main` = 10.33.0. `ikram-ortam` dalı: 10.34.2 + test güvenliği (2d/2e) + Ikram ortamı (WIP, merge edilmedi).
-- 2026-10-22 olayı (staging28'de test temizliği gerçek sayfaları çöpe attı; kök neden reassign'sız `wp_delete_user`) kapatıldı: merkezi koruma, kayıt defterli temizlik, kanarya, bootstrap. staging28 emekli; yeni Hedef staging = staging30.
-- Faz 1 sürüyor (1A klasör kilidi/profiller/cli.json, 1B uzak koşu güvenliği, 1C salt okunur keşif). REMOTE_FREEZE keşif öncesine kadar aktif.
-- Açık: Curcy sipariş kur meta anahtarı gerçek EUR/USD siparişle doğrulanmadı (Faz 9, kullanıcı). KVKK dışa aktarma/silme eşleşmesi (Faz 8). `wdp_render_modal` ~750 ms, nonce'suz (Faz 8). Mobil "Benzer Bağışlar" boş baseline (Faz 3/7).
-- Görsel aşama listesi: docs/AYAR-TURU-NOTLARI.md (G1–G27). Genel uyum denetimi bulguları: aynı dosya "GENEL UYUM DENETİMİ".
+- `main` = 10.33.0. `ikram-ortam` = **10.34.15** (127 commit önde; tüm parçalar test geçince birleşti, push'lu). main'e merge: uzak tam paket yeşil olunca (açık kırmızılar aşağıda).
+- Uzak sürümler: staging30 **10.34.15**, Ikram **10.34.13** (10.34.15 kurulumu kanarya ile durdu — Ikram'da 3 ödeme yöntemi (çek/havale/kapıda) "açık"a geçmiş; test kodunda uzak yol yok; kullanıcıya soruldu). **Tüm uzak koşular kullanıcı yanıtına kadar DURDU.**
+- Son doğrulama: yerel full 302/0/0, matris 12×11/0; staging30 full 202/81/5; Ikram full 225/66/7 (10.34.13).
+- Güvenlik altyapısı: merkezi koruma + klasör kilidi, ağ koruması (canlı/emekli/yabancı yazma, sipariş yok), ortam+koşu defteri, ortam kilidi, kanarya öncesi/sonrası + `e2e:bootstrap --repair`, keşif snippet/kanca host raporu.
+- Bulgu listesi ve kararlar: docs/AYAR-TURU-NOTLARI.md (T1–T19, S1–S3b, A1–A6, G28–G33, P1, M1–M5).
+- Açık (eski): Curcy sipariş kur meta (Faz 9), KVKK dışa aktarma/silme + `wdp_vid` çerez kaydı (Faz 8), `wdp_render_modal` nonce'suz (Faz 8), Ikram İngilizce sitede Türkçe etiketler (Faz 5).
