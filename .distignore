@@ -37,6 +37,12 @@ phpunit.xml.dist
 phpcs.xml.dist
 phpstan.neon
 phpstan.verify.neon
+phpstan.dead.neon
+rector.php
+eslint.config.mjs
+.stylelintrc.json
+.jscpd.json
+.lintstagedrc.json
 tests/
 tools/
 scripts/

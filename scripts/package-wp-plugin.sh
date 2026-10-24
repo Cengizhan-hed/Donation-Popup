@@ -110,7 +110,13 @@ rm -f \
   "$DEST/.phpunit.result.cache" \
   "$DEST/phpcs.xml.dist" \
   "$DEST/phpstan.neon" \
-  "$DEST/phpstan.verify.neon"
+  "$DEST/phpstan.verify.neon" \
+  "$DEST/phpstan.dead.neon" \
+  "$DEST/rector.php" \
+  "$DEST/eslint.config.mjs" \
+  "$DEST/.stylelintrc.json" \
+  "$DEST/.jscpd.json" \
+  "$DEST/.lintstagedrc.json"
 
 # Keep only README.md as markdown in distribution root.
 find "$DEST" -type f -name "*.md" ! -name "README.md" -delete

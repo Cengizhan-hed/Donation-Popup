@@ -1,0 +1,205 @@
+{
+  "classes": {
+    "WDP_Sadaka_Product_Visibility": "WDP_Addon_Product_Visibility"
+  },
+  "methods": [
+    {
+      "class": "WDP_Admin_Product_Data_Tab",
+      "old": "render_sadaka_section",
+      "new": "render_addon_section"
+    },
+    {
+      "class": "WDP_Cart",
+      "old": "resolve_sadaka_line_wc_product_id",
+      "new": "resolve_addon_line_wc_product_id"
+    },
+    {
+      "class": "WDP_Cart",
+      "old": "sync_sadaka_line_wc_product",
+      "new": "sync_addon_line_wc_product"
+    },
+    {
+      "class": "WDP_Migrations",
+      "old": "audit_and_clean_sadaka_links",
+      "new": "audit_and_clean_addon_links"
+    },
+    {
+      "class": "WDP_Migrations",
+      "old": "find_products_with_sadaka_meta",
+      "new": "find_products_with_addon_meta"
+    },
+    {
+      "class": "WDP_Product_Settings_Service",
+      "old": "validate_sadaka_wc_product_meta",
+      "new": "validate_addon_wc_product_meta"
+    },
+    {
+      "class": "WDP_Sadaka_Product_Visibility",
+      "old": "parent_has_sadaka_enabled",
+      "new": "parent_has_addon_enabled"
+    },
+    {
+      "class": "WDP_Sadaka_Product_Visibility",
+      "old": "collect_parent_ids_with_sadaka_meta",
+      "new": "collect_parent_ids_with_addon_meta"
+    },
+    {
+      "class": "WDP_Sadaka_Product_Visibility",
+      "old": "is_sadaka_line_product",
+      "new": "is_addon_line_product"
+    },
+    {
+      "class": "WDP_Sadaka_Product_Visibility",
+      "old": "validate_sadaka_product_id",
+      "new": "validate_addon_product_id"
+    },
+    {
+      "class": "WDP_Templates",
+      "old": "get_default_sadaka_donation_message",
+      "new": "get_default_addon_donation_message"
+    },
+    {
+      "class": "WDP_Templates",
+      "old": "resolve_sadaka_donation_message",
+      "new": "resolve_addon_donation_message"
+    },
+    {
+      "class": "WDP_Templates",
+      "old": "render_sadaka_donation_block",
+      "new": "render_addon_donation_block"
+    },
+    {
+      "class": "WDP_Utils",
+      "old": "resolve_sadaka_wc_product_id",
+      "new": "resolve_addon_wc_product_id"
+    },
+    {
+      "class": "WDP_Utils",
+      "old": "is_valid_sadaka_wc_product",
+      "new": "is_valid_addon_wc_product"
+    },
+    {
+      "class": "WDP_Utils",
+      "old": "get_default_sadaka_wc_product_id",
+      "new": "get_default_addon_wc_product_id"
+    },
+    {
+      "class": "WDP_Utils",
+      "old": "get_sadaka_toggle_label",
+      "new": "get_addon_toggle_label"
+    },
+    {
+      "class": "WDP_Utils",
+      "old": "get_configured_sadaka_wc_product_id",
+      "new": "get_configured_addon_wc_product_id"
+    },
+    {
+      "class": "WDP_Utils",
+      "old": "get_sadaka_fixed_price",
+      "new": "get_addon_fixed_price"
+    },
+    {
+      "class": "WDP_Utils",
+      "old": "parse_sadaka_amount",
+      "new": "parse_addon_amount"
+    },
+    {
+      "class": "WDP_Utils",
+      "old": "validate_sadaka_amount",
+      "new": "validate_addon_amount"
+    },
+    {
+      "class": "WDP_Form_Fields_Renderer",
+      "old": "get_default_sadaka_donation_message",
+      "new": "get_default_addon_donation_message"
+    },
+    {
+      "class": "WDP_Form_Fields_Renderer",
+      "old": "resolve_sadaka_donation_message",
+      "new": "resolve_addon_donation_message"
+    },
+    {
+      "class": "WDP_Form_Fields_Renderer",
+      "old": "render_sadaka_donation_block",
+      "new": "render_addon_donation_block"
+    },
+    {
+      "class": "WDP_Form_Fields_Renderer",
+      "old": "build_sadaka_context",
+      "new": "build_addon_context"
+    },
+    {
+      "class": "WDP_Ajax_Cart_Add_Trait",
+      "old": "build_sadaka_donation_data",
+      "new": "build_addon_donation_data"
+    },
+    {
+      "class": "WDP_Ajax_Cart_Add_Trait",
+      "old": "maybe_add_sadaka_donation_to_cart",
+      "new": "maybe_add_addon_donation_to_cart"
+    }
+  ],
+  "functions": {},
+  "constants": {},
+  "files": {
+    "includes/class-sadaka-product-visibility.php": "includes/class-addon-product-visibility.php"
+  },
+  "protect": {
+    "dbKeys": {
+      "sadaka_wc_product_id": 40,
+      "sadaka_toggle_label": 23,
+      "WDP_Sadaka_Product_Visibility": 13,
+      "enable_sadaka_donation": 13,
+      "_enable_sadaka_donation": 11,
+      "_sadaka_toggle_label": 4,
+      "_sadaka_wc_product_id": 22,
+      "sadaka_min_price": 11,
+      "_sadaka_min_price": 6,
+      "sadaka_fixed_price": 11,
+      "_sadaka_fixed_price": 6,
+      "sadaka_donation_message": 11,
+      "_sadaka_donation_message": 4,
+      "wdp_sadaka_donation": 14,
+      "wdp_sadaka_linked_wc_product": 7,
+      "sadaka_is_fixed_price": 1,
+      "sadaka_price_placeholder": 6,
+      "wdp_sadaka_visibility_cache_cleared": 1,
+      "wdp_sadaka_line_ids": 2,
+      "wdp_sadaka_links_audit": 2,
+      "sadaka_id": 6,
+      "sadaka_label": 3,
+      "_sadaka_": 1,
+      "sadaka_custom_price": 6,
+      "sadaka_donation_active": 2,
+      "sadaka_block_html": 1,
+      "sadaka_price_label": 1,
+      "sadaka_invalid": 1,
+      "sadaka_min_error": 1
+    },
+    "hooks": {
+      "wdp_sadaka_cart_thumbnail_size": 1,
+      "wdp_sadaka_line_product_ids": 1,
+      "wdp_sadaka_wc_product_id": 1,
+      "wdp_sadaka_inspirational_message": 1,
+      "wdp_sadaka_toggle_label": 1,
+      "wdp_sadaka_price_label": 1
+    },
+    "other": {
+      "icon_sadaka": 6,
+      "sadaka": 7,
+      "wdp-sadaka-cart-thumb": 1,
+      "wdp-form-sadaka-rules-js": 2,
+      "wdp-form-sadaka-js": 4,
+      "wdp-sadaka-panel-": 1,
+      "wdp-sadaka-fixed-label-": 1,
+      "wdp-sadaka-donation": 1,
+      "wdp-sadaka-donation__toggle": 1,
+      "wdp-sadaka-donation__panel": 1,
+      "wdp-sadaka-donation__message": 1,
+      "is_sadaka": 3,
+      "-sadaka": 1,
+      "is_sadaka_donation": 1,
+      "data-wdp-sadaka-donation": 1
+    }
+  }
+}

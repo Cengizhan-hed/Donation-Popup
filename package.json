@@ -14,11 +14,21 @@
     "e2e:bootstrap": "node scripts/e2e-bootstrap.mjs",
     "test:install": "node scripts/install-lint-tools.mjs --composer-only",
     "lint:php": "node scripts/lint-php.mjs",
+    "lint:php:fix": "node scripts/lint-php-fix.mjs",
+    "lint:js": "node scripts/lint-front.mjs js",
+    "lint:css": "node scripts/lint-front.mjs css",
+    "lint:js:baseline": "node scripts/lint-front.mjs js --write-baseline",
+    "lint:css:baseline": "node scripts/lint-front.mjs css --write-baseline",
+    "rector:dry": "node scripts/rector-dry.mjs",
+    "dup:js": "node scripts/dev-audit.mjs dup",
+    "dead:php": "node scripts/dev-audit.mjs dead",
+    "sadaka:inventory": "node scripts/sadaka-inventory.mjs",
+    "lint:staged": "lint-staged",
     "analyse:php": "node scripts/analyse-php.mjs",
     "plugin-check": "node scripts/plugin-check.mjs",
     "verify:live-targets": "node scripts/lib/live-target-scan.mjs",
     "verify:lint": "node scripts/lint-verify-gate.mjs",
-    "verify": "npm run build && npm run smoke && npm run verify:live-targets && npm run verify:i18n && npm run verify:lint",
+    "verify": "npm run build && npm run smoke && npm run verify:live-targets && npm run verify:i18n && npm run verify:lint && npm run verify:lint-front",
     "pack": "npm run build && sh scripts/package-wp-plugin.sh",
     "e2e": "node tests/e2e/run-compare.mjs",
     "e2e:baseline": "node tests/e2e/run-baseline.mjs",
@@ -62,7 +72,8 @@
     "verify:i18n": "node tools/i18n/merge-po.mjs && node tools/i18n/verify.mjs && php tools/i18n/scan-php-turkish.php && node tools/i18n/verify-js.mjs --scan assets/js/src,assets/js/admin-script.js,assets/js/admin --map tools/i18n/golden/js-J1.json --po languages/woo-donation-popup-tr_TR.po && node tools/i18n/gen-js-strings.mjs --check",
     "i18n:json": "node tools/i18n/make-json.mjs",
     "health:onoff": "node scripts/plugin-onoff-compare.mjs",
-    "e2e:rtl": "node tests/e2e/run-rtl-layout.mjs"
+    "e2e:rtl": "node tests/e2e/run-rtl-layout.mjs",
+    "verify:lint-front": "node scripts/lint-front.mjs js --gate && node scripts/lint-front.mjs css --gate"
   },
   "repository": {
     "type": "git",
@@ -71,10 +82,17 @@
   "license": "ISC",
   "type": "commonjs",
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.55.0",
     "dotenv": "^16.6.1",
     "esbuild": "^0.25.5",
+    "eslint": "^10.13.0",
+    "globals": "^17.13.0",
+    "jscpd": "^5.4.2",
+    "lint-staged": "^16.4.0",
     "pixelmatch": "^7.1.0",
-    "pngjs": "^7.0.0"
+    "pngjs": "^7.0.0",
+    "stylelint": "^17.16.0",
+    "stylelint-config-recommended": "^18.0.0"
   }
 }

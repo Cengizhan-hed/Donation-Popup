@@ -1,0 +1,11 @@
+{
+  "path": ["assets/js", "assets/css"],
+  "format": ["javascript", "css"],
+  "ignore": ["**/build/**", "**/vendor/**", "**/*.min.*"],
+  "minLines": 6,
+  "minTokens": 70,
+  "reporters": ["json"],
+  "output": "build/lint/jscpd",
+  "silent": true,
+  "gitignore": true
+}
