@@ -560,3 +560,18 @@ Kaynak: Graphify kod haritası (2015 düğüm, 4229 bağ; `npm run graph:update`
 - **6-D Site adı / eklenti adı / README:** başlık "Donation Panel for WooCommerce", yazar Cengizhan Çoban, README ve betik adlandırmaları; text domain ve klasör aynı.
 - **6-E Yükleme kapsamı:** ön yüz ve yönetici varlıkları yalnız gereken sayfalarda (ölçüm: staging30 ana sayfa 0 varlık — iyi; ürün/liste/sepet/ödeme ve yönetici ekranları denetlenecek).
 - **6-F Ölü/tekrar kod, dosya yapısı:** PHPStan ölü kod + Graphify bağsız düğümler; en büyük sınıfların bölünmesi (Cart 1185, Inline_Styles 1112, Product_Data_Tab 1057, Donations_List 997).
+
+## Faz 5 — Dil desteği (10.35.0) sonuçları (2026-10-24)
+
+- Kaynak dil İngilizce; Türkçe `languages/woo-donation-popup-tr_TR.po|.mo` (+ blok düzenleyici JSON). `i18n:verify`: 1170 altın Türkçe metnin hepsi birebir korunuyor (kayıp 0); `verify:i18n` (`verify`'a bağlı): gettext dışı Türkçe dizgi tarayıcı (izin listesi: eski sipariş meta anahtarları, migrasyon tespit sabitleri, eski yer tutucu eşleşmesi), JS tarayıcı + eşleme (122), sözlük güncel kontrolü.
+- Hedef (tr_TR): 82 ekran görünür metin dökümü eski haliyle birebir aynı. Ikram (en): 82 ekranda Türkçe kalıntı 0 (`i18n:golden --compare --locale en_US --assert-english`; `tests/golden/i18n/en_US`).
+- JS i18n: `WDPApp.i18n.__/_x/sprintf` + sunucu sözlüğü `wdp_ajax.i18n_dict` (wp.i18n yerine; SG Optimizer/Avada birleştirme-erteleme dayanıklılığı); blok/Elementor düzenleyici betikleri WP'nin kendi `wp.i18n`'i.
+- Telefon: varsayılan ülke ve sıra `WC()->countries->get_base_country()`; WooCommerce ülkeleri (yerelleştirilmiş ad + arama kodu) listeye eklenir; sabit Türkiye/İsrail varsayımı kaldırıldı; dışlama `wdp_phone_excluded_countries` filtresi (varsayılan boş).
+- RTL: mantıksal CSS (~90 dönüşüm) + `rtl.css` + yön okuyan JS; `e2e:rtl` (ar + he_IL, iPhone + masaüstü) 34/34.
+- Araç bulguları: çeviri aracı `gen-js-strings` bağlamlı (`_x`) anahtarları yanlış yazıyordu (düzeltildi); aynı İngilizce metne farklı Türkçe düşen 12 durumda bağlam (`_x`) eklendi.
+
+| # | Bulgu | Durum |
+|---|-------|-------|
+| K8 | **KARAR:** Telefon ülke listesinde İsrail kodda sabit olarak gizliydi. Genel eklentide ülke dışlama varsayımı kaldırıldı. Hedef'te hâlâ gizlenmesini isterseniz site koduna tek satır: `add_filter('wdp_phone_excluded_countries', fn() => array('IL'));` | kullanıcı kararı |
+| A7 | Yerel `sadaka-fixed-popup` (iPhone, tam paket) aralıklı: iki koşuda kırmızı, bir koşuda yeşil — alt bağış anahtarına erken dokunuşta işleyici bağlı olmayabilir (CTA kuyruğuna benzer) | Faz 7 |
+| A8 | Yerel WP dili artık profil dilinden (varsayılan tr_TR) mu-plugin ile kilitli; yerel testler Hedef eşdeğeri | bilgi |
