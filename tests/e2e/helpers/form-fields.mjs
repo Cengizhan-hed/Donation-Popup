@@ -21,6 +21,7 @@ import { requireFixtureRole, mutationBrowserContext } from './fixtures.mjs';
 import { popupPagePath } from './catalog-core.mjs';
 import { openMutationProductShell } from './mutation-policy.mjs';
 import { writeDebugJson } from './scenario-debug.mjs';
+import { collectAndWriteCartState, e2eDeviceLabel, pageContextKind } from './cart-state-diag.mjs';
 
 const CHECK_MS = 20000;
 
@@ -135,6 +136,7 @@ export async function runFormFieldsChecks({
   stats,
   createAdminContext,
   createVisitorContext,
+  deviceId,
 }) {
   const checks = [];
   const baseUrl = env.E2E_BASE_URL;
@@ -424,18 +426,27 @@ export async function runFormFieldsChecks({
       const hasEmail = /sepet@example\.com/i.test(haystack);
       const hasDed = /Sepet Ithaf/i.test(haystack);
       if (!hasEmail || !hasDed) {
+        const cartState = await collectAndWriteCartState(page, {
+          baseUrl,
+          scenario: 'form-fields-cart-shows-email-dedication',
+          device: e2eDeviceLabel(deviceId),
+          ajax: cartRes,
+          addContext: pageContextKind(page),
+          cartPath: dest,
+        });
         const diag = {
           url: cartPageUrl,
           isCart: isWooCartUrl(cartPageUrl),
-          postedEmail,
-          postedDedication,
+          postedEmail: postedEmail ? 'var' : '',
+          postedDedication: postedDedication ? 'var' : '',
           storeItemCount: Array.isArray(storeItems) ? storeItems.length : -1,
           storeNames: Array.isArray(storeItems) ? storeItems.map((i) => i.name).slice(0, 5) : [],
           storeRaw,
           cartInfo,
           innerHasEmail: /sepet@example\.com/i.test(inner),
           htmlHasEmail: /sepet@example\.com/i.test(html),
-          innerSnippet: inner.replace(/\s+/g, ' ').slice(0, 400),
+          cartStateClass: cartState.class,
+          cartStateFile: cartState.debugFile,
         };
         writeDebugJson(
           path.join(ROOT, 'build/e2e/debug/form-fields-cart-shows-email-dedication.json'),
@@ -446,7 +457,9 @@ export async function runFormFieldsChecks({
         if (!hasDed) bits.push('ithaf yok');
         if (!postedEmail) bits.push('POST donation_email boş');
         if (!Array.isArray(storeItems) || storeItems.length === 0) bits.push('Store API sepet boş');
-        throw new Error(`Sepet satırında ${bits.join('; ')} url=${cartPageUrl}`);
+        throw new Error(
+          `sınıf=${cartState.class}; Sepet satırında ${bits.join('; ')} url=${cartPageUrl} cart-state=${cartState.debugFile}`
+        );
       }
       pass('form-fields-cart-shows-email-dedication');
     } catch (e) {
