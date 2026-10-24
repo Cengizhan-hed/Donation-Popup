@@ -125,3 +125,10 @@ Faz 1 güvenli bağlantı ✅ → Faz 2 göç provası ✅ → Faz 3 bekleyen i�
 - **Merge kriterine ek:** uzak açık/kapalı hata karşılaştırması (Y6) ship akışında, iki uzak ortamda; yerel `health:onoff` WooCommerce kurulu yerel WP'de Woo sayfalarını (ayarlar, siparişler, ürün düzenleme, sepet, ödeme) tam kapsar.
 - **Ölçüm:** her AŞAMA ÖZETİ'nde görev başına yaklaşık token/zaman, en pahalı 3 görev, araçların ajan işini ne kadar azalttığı, sonraki faz için tasarruf önerisi.
 
+
+## 10. KARARLAR (2026-10-24 gece)
+- **Soru sorma kuralı:** vizyona göre karar verilebilen konular kullanıcıya sorulmaz; Claude karar verir, gerekçesini raporda "Alınan teknik kararlar"a yazar. Yalnız kritik kapılar ve gerçek iş kararları sorulur.
+- **S5 kararı (Seçenek 2):** ürün sayfasında eklentinin görünür giriş noktası yoksa eklenti kendi düğmesini çizer (aynı sayfada asla iki giriş; ürün/genel ayarda otomatik yerleşim kapalıysa çizilmez; tema/oluşturucuya özel tespit yok; Avada, Blocksy, Twenty Twenty-Five, Storefront × snippet açık/kapalı testle). staging30'da `[hd_panel_buton]` snippet'i kullanıcı tarafından yeniden açıldı (kodu yalnız `do_shortcode('[wdp_donation_button_panel id="ID"]')`).
+- **Geriye dönük uyum (6-C zorunlu):** tüm kısa kod adları ve öznitelikleri (özellikle `[wdp_donation_button_panel]` + `id`) HİÇ değişmez; iç adlar değişse de dışarıdan kullanılan kanca, kısa kod, meta/seçenek anahtarları geriye dönük çalışır; staging30'da snippet açıkken testle kanıtlanır.
+- **ID'siz kısa kod:** `id` yoksa kısa kod/blok/widget bulundukları ürünü kendisi bulur (global $product, get_queried_object_id, Woo döngüsü; Avada/Elementor ürün şablonları dahil) — site başına ek snippet gerekmez.
+- **Avada (Fusion Builder) elementi:** Elementor widget'ı ve Gutenberg bloğuyla aynı seçenekler; Avada'nın resmi element kayıt yoluyla, ayrı entegrasyon dosyasında, yalnız Avada aktifse yüklenir; çekirdek Avada'ya bağlı olmaz; "Select Element" listesinde görünür; staging30'da editörde eklenip ön yüzde çalıştığı testle kanıtlanır.
