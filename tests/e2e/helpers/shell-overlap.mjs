@@ -4,6 +4,9 @@
  */
 export const POPUP_OVERLAP_CODE = 'POPUP-OVERLAP';
 export const MIN_SHELL_OPACITY = 0.99;
+export const PANEL_CTA_BOTTOM_CODE = 'PANEL-CTA-BOTTOM';
+/** Yan panelde alt eylem çubuğu ile panel içeriği alt kenarı arasında izin verilen en çok boşluk (px). */
+export const MAX_PANEL_CTA_BOTTOM_GAP = 48;
 
 const OPEN_SHELL_SEL = '.hdf-donation-modal-wrapper.wdp-modal.show';
 
@@ -98,8 +101,24 @@ export function collectShellOverlapSample() {
     });
   }
 
+  /* Yan panel: alt eylem çubuğu (kısa içerikte de) panelin dibine sabit. */
+  let panelCta = null;
+  if (shell.classList.contains('wdp-side-panel')) {
+    const footer = shell.querySelector('.wdp-side-panel-footer-zone');
+    if (footer) {
+      const fr = footer.getBoundingClientRect();
+      if (fr.height > 0) {
+        panelCta = {
+          gapToPanelBottom: Math.round(cr.bottom - fr.bottom),
+          gapToViewportBottom: Math.round(vh - fr.bottom),
+        };
+      }
+    }
+  }
+
   return {
     found: true,
+    panelCta,
     opacities,
     contentOpacity,
     hits,
@@ -186,9 +205,16 @@ export function classifyShellOverlap(sample, minOpacity = MIN_SHELL_OPACITY) {
         .join(' | ')
     );
   }
+  let ctaCode = '';
+  if (sample.panelCta && sample.panelCta.gapToPanelBottom > MAX_PANEL_CTA_BOTTOM_GAP) {
+    ctaCode = PANEL_CTA_BOTTOM_CODE;
+    reasons.push(
+      `${PANEL_CTA_BOTTOM_CODE}: yan panel alt eylem çubuğu dibe sabit değil (boşluk ${sample.panelCta.gapToPanelBottom}px > ${MAX_PANEL_CTA_BOTTOM_GAP}px)`
+    );
+  }
   return {
     ok: reasons.length === 0,
-    code: reasons.length ? POPUP_OVERLAP_CODE : '',
+    code: reasons.length ? ctaCode || POPUP_OVERLAP_CODE : '',
     reasons,
     minOpacity: minOp,
     hits: hits.length,
@@ -286,4 +312,54 @@ export async function probeShellOverlapBeforeAfter(page, timeout = 8000) {
     immediateClass,
     afterClass,
   };
+}
+
+/**
+ * Tarayıcıda: yan panel gövdesini geçici kısaltır (ilk çocuk dışındakileri gizler),
+ * alt eylem çubuğunun panel dibine olan uzaklığını ölçer, sonra geri alır.
+ * Kısa içerikli sitelerde (az alan) de çubuk dibe sabit kalmalı.
+ */
+export function measurePanelCtaWhenShort() {
+  const shell = document.querySelector('.hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show');
+  if (!shell) return { skipped: 'panel yok' };
+  const main = shell.querySelector('.wdp-side-panel-main:not(.wdp-side-panel-main--shares)');
+  const footer = shell.querySelector('.wdp-side-panel-footer-zone');
+  const content = shell.querySelector('.wdp-modal-content') || shell;
+  if (!main || !footer) return { skipped: 'gövde/alt çubuk yok' };
+  const kids = Array.from(main.children);
+  const saved = kids.map((k) => k.style.display);
+  try {
+    kids.forEach((k, i) => {
+      if (i > 0) k.style.setProperty('display', 'none', 'important');
+    });
+    void footer.offsetHeight;
+    const cr = content.getBoundingClientRect();
+    const fr = footer.getBoundingClientRect();
+    const mr = main.getBoundingClientRect();
+    return {
+      skipped: '',
+      gapToPanelBottom: Math.round(cr.bottom - fr.bottom),
+      mainHeight: Math.round(mr.height),
+      footerHeight: Math.round(fr.height),
+    };
+  } finally {
+    kids.forEach((k, i) => {
+      if (saved[i]) k.style.display = saved[i];
+      else k.style.removeProperty('display');
+    });
+  }
+}
+
+/**
+ * @param {import('@playwright/test').Page} page
+ */
+export async function assertPanelCtaPinnedWhenShort(page) {
+  const r = await page.evaluate(measurePanelCtaWhenShort);
+  if (r.skipped) return { skipped: true, reason: r.skipped };
+  if (r.gapToPanelBottom > MAX_PANEL_CTA_BOTTOM_GAP) {
+    throw new Error(
+      `${PANEL_CTA_BOTTOM_CODE}: kısa içerikli yan panelde alt eylem çubuğu dibe sabit değil (boşluk ${r.gapToPanelBottom}px > ${MAX_PANEL_CTA_BOTTOM_GAP}px; gövde ${r.mainHeight}px)`
+    );
+  }
+  return { skipped: false, ...r };
 }

@@ -336,7 +336,7 @@ html body .hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show .wdp-side-pa
   gap: var(--wdp-modal-stack-gap, 16px);
   width: 100%;
   margin: 0;
-  margin-block-start: 0;
+  margin-block-start: auto;
   padding: 12px 0 max(10px, env(safe-area-inset-bottom, 0px), var(--wdp-safe-bottom, 0px));
   background: transparent;
   border-top: var(--wdp-footer-border, 1px solid rgba(15, 23, 42, 0.06));
