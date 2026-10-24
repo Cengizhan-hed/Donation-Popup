@@ -601,3 +601,10 @@ Not: terminal sürümü kurulumu yapılmadı; skill burada plugin olarak zaten �
 | U1 | 10.35.1 iki siteye kuruldu (staging30, Ikram); kanarya iki ortamda TEMİZ. Ikram quick: işlevsel 29/0/0 + remote-smoke yeşil (5/3/0); görsel 15 değişiklik = Faz 5 beklenen (Türkçe→İngilizce etiket, +90→mağaza ülkesi ön eki), baseline kabul edildi. | tamam |
 | U2 | staging30: quick işlevsel 17/13/8 + remote-smoke kırmızı: ürün sayfalarında "görünür eklenti giriş noktası yok" — S5 ile aynı sebep (snippet'ler kapatılınca Avada şablonunda ham `[hd_panel_buton]`; 10.34.15'te de aynıydı). Eklenti kaynaklı değil; staging30 merge kapısı S5 kararına bağlı. | KULLANICI KARARI (S5) |
 | U3 | Avada sepet menüsü zorla gösterme kodu (6-A/B'de kalktı) staging30'da doğrulanamadı (ürün sayfası akışı S5 yüzünden kırmızı); Ikram (Blocksy) etkilenmedi. | S5 sonrası doğrula |
+
+## 10.35.2 staging30 ship (2026-10-24 gece)
+| # | Bulgu | Durum |
+|---|-------|-------|
+| U4 | staging30 10.35.2: quick işlevsel 25/13/0 (S5 çözüldü: snippet açık + yedek giriş), kanarya TEMİZ. Görsel 16 değişiklik İNCELENDİ, kabul EDİLMEDİ. | |
+| U5 | Ürün sayfası farkı (4 ekran, +3474 px yükseklik): açıklama bölümü eskiden kart biçimliydi, şimdi düz metin → sitenin kendi stili (kapatılan snippet #27/#29/#43'ten biri); eklenti kaynaklı değil. Snippet'ler geri açılırsa ya da yeni baseline alınırsa kapanır. | site |
+| U6 | **GERÇEK REGRESYON:** yan panel/popup alt eylem çubuğu (Ödemeye Git/Sepete Ekle) eskiden panelin dibine sabit (üstünde ayırıcı), şimdi içeriğin hemen altında (≈270 px yukarı). Ikram'da da var. Ikram baseline'ı bu durumda yanlışlıkla kabul edildi (fark görselinde metin farkı kaymayı maskeledi) → düzeltme sonrası YENİDEN kabul edilecek. Alt ajan FIX5 kök nedeni arıyor. | FIX5 |
