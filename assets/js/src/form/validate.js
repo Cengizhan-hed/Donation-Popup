@@ -653,8 +653,15 @@
     const customPriceInput = form.querySelector('input[name="custom_price"]');
     if (customPriceInput) {
       const rawValue = customPriceInput.value ? customPriceInput.value.toString().trim() : '';
-      const numericValue = rawValue === '' ? NaN : parseNormalizedAmount(rawValue);
-      const minAttr = customPriceInput.getAttribute('min');
+      const detailed = rawValue !== '' && utils && typeof utils.parseMoneyDetailed === 'function'
+        ? utils.parseMoneyDetailed(rawValue)
+        : null;
+      const numericValue = rawValue === ''
+        ? NaN
+        : (detailed && detailed.status === 'ok'
+          ? detailed.amount
+          : parseNormalizedAmount(rawValue));
+      const minAttr = customPriceInput.getAttribute('min') || customPriceInput.getAttribute('data-wdp-min-price');
       const minValueFromAttr = minAttr !== null && minAttr !== '' ? parseNormalizedAmount(minAttr) : NaN;
       const baseMinData = customPriceInput.dataset.baseMin;
       const shareCountValue = shareCountInput ? getEffectiveShareCount(form) : 1;
@@ -685,6 +692,7 @@
         effectiveMin = effectiveMinCandidates.length > 0 ? Math.max.apply(null, effectiveMinCandidates) : 0;
       }
 
+      const maxDonation = 999999;
       if (rawValue === '') {
         const emptyMessage = 'Lütfen bağış tutarını giriniz.';
         showInputError(customPriceInput, emptyMessage);
@@ -693,6 +701,16 @@
         }
         failures.push({ field: 'custom_price', rule: 'price_empty', value: '' });
         isValid = false;
+      } else if (detailed && detailed.status === 'ambiguous') {
+        const ambMessage = (utils && typeof utils.getAmbiguousAmountMessage === 'function')
+          ? utils.getAmbiguousAmountMessage()
+          : (detailed.error || 'Lütfen tutarı tam sayı olarak yazın, örn. 10');
+        showInputError(customPriceInput, ambMessage);
+        if (!errorMessages.includes(ambMessage)) {
+          errorMessages.push(ambMessage);
+        }
+        failures.push({ field: 'custom_price', rule: 'price_ambiguous', value: rawValue });
+        isValid = false;
       } else if (!Number.isFinite(numericValue) || numericValue <= 0) {
         const invalidMessage = 'Lütfen geçerli bir bağış tutarı giriniz.';
         showInputError(customPriceInput, invalidMessage);
@@ -700,6 +718,14 @@
           errorMessages.push(invalidMessage);
         }
         failures.push({ field: 'custom_price', rule: 'price_invalid', value: rawValue });
+        isValid = false;
+      } else if (numericValue > maxDonation) {
+        const maxMessage = `Maksimum fiyat: ${formatCurrency(maxDonation)}`;
+        showInputError(customPriceInput, maxMessage);
+        if (!errorMessages.includes(maxMessage)) {
+          errorMessages.push(maxMessage);
+        }
+        failures.push({ field: 'custom_price', rule: 'price_above_max', value: rawValue });
         isValid = false;
       } else if (effectiveMin > 0 && numericValue + 0.0001 < effectiveMin) {
         const minMessage = customPriceQtyRow

@@ -167,64 +167,244 @@
     return getCurrencyConfig().symbol
   }
 
+  function resolveCurrencyConfig(override) {
+    const base = getCurrencyConfig()
+    if (!override || typeof override !== 'object') {
+      return base
+    }
+    const decimals = Number.isFinite(Number(override.decimals)) ? Number(override.decimals) : base.decimals
+    return {
+      code: override.code != null ? String(override.code) : base.code,
+      symbol: override.symbol != null ? decodeHtmlEntities(String(override.symbol)) : base.symbol,
+      decimals: decimals < 0 ? 0 : decimals,
+      thousandSeparator: override.thousandSeparator != null ? String(override.thousandSeparator) : base.thousandSeparator,
+      decimalSeparator: override.decimalSeparator != null ? String(override.decimalSeparator) : base.decimalSeparator,
+      symbolPosition: override.symbolPosition != null ? String(override.symbolPosition) : base.symbolPosition,
+    }
+  }
+
+  function escapeRegExp(value) {
+    return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  }
+
   /**
-   * Kullanıcı girişini Woo ondalık/binlik ayırıcısına göre ham sayıya çevirir.
+   * Yapıştırma / serbest giriş: sembol, harf ve boşlukları at (₺1.250, 1 250).
    *
-   * Kural:
-   * - 0 ondalıklı para biriminde her ayırıcı binliktir ("1.000" ve "1,000" → 1000).
-   * - Ondalıklı birimde bilinen ondalık ayırıcı ondalık, binlik ayırıcı binliktir.
-   * - Belirsiz tek ayırıcı: karakter ondalık ayırıcıysa ondalık, binlikse binlik.
-   * DOM/sunucuya giden değer her zaman nokta-ondalıklı ham sayıdır.
+   * @param {string} raw
+   * @param {object} [cfg]
+   * @returns {string}
    */
-  function parseMoney(raw) {
+  function normalizeAmountInput(raw, cfg) {
+    const c = resolveCurrencyConfig(cfg)
+    let s = String(raw == null ? '' : raw).trim()
+    if (s === '') {
+      return ''
+    }
+    s = s.replace(/[\s\u00A0\u202F\u2009\u2007\u2060]+/g, '')
+    const keep = [c.thousandSeparator, c.decimalSeparator, '.', ',']
+      .filter((ch) => ch)
+      .map(escapeRegExp)
+      .join('')
+    return s.replace(new RegExp(`[^\\d${keep}\\-]`, 'g'), '')
+  }
+
+  function isValidThousandGrouping(intPart, sep) {
+    if (!sep || String(intPart).indexOf(sep) === -1) {
+      return false
+    }
+    const parts = String(intPart).split(sep)
+    if (parts.length < 2) {
+      return false
+    }
+    if (!/^\d{1,3}$/.test(parts[0])) {
+      return false
+    }
+    for (let i = 1; i < parts.length; i += 1) {
+      if (!/^\d{3}$/.test(parts[i])) {
+        return false
+      }
+    }
+    return true
+  }
+
+  function getAmbiguousAmountMessage(cfg) {
+    const c = resolveCurrencyConfig(cfg)
+    const example = formatMoney(10, Object.assign({}, c, { symbol: '' })) || '10'
+    const strings = (wdp_ajax && wdp_ajax.strings) ? wdp_ajax.strings : {}
+    if (c.decimals <= 0) {
+      const tpl = strings.amount_ambiguous_integer || 'Lütfen tutarı tam sayı olarak yazın, örn. %s'
+      return tpl.replace('%s', example)
+    }
+    const tpl = strings.amount_ambiguous_format || 'Lütfen tutarı şu biçimde yazın, örn. %s'
+    return tpl.replace('%s', example)
+  }
+
+  function donorAmountResult(ok, amount, status, error, cfg) {
+    let msg = error || ''
+    if (!ok && !msg) {
+      msg = status === 'ambiguous'
+        ? getAmbiguousAmountMessage(cfg)
+        : ((wdp_ajax && wdp_ajax.strings && wdp_ajax.strings.invalid_price) || 'Geçersiz fiyat değeri.')
+    }
+    return { ok: !!ok, amount: ok ? amount : NaN, status: status, error: msg }
+  }
+
+  function parseSameSeparator(s, sep, decimals, cfg) {
+    if (isValidThousandGrouping(s, sep)) {
+      const n = Number.parseFloat(s.split(sep).join(''))
+      return Number.isFinite(n) ? donorAmountResult(true, n, 'ok', '', cfg) : donorAmountResult(false, NaN, 'invalid', '', cfg)
+    }
+    const first = s.indexOf(sep)
+    const last = s.lastIndexOf(sep)
+    if (first < 0 || first !== last || first <= 0) {
+      return decimals <= 0
+        ? donorAmountResult(false, NaN, 'ambiguous', '', cfg)
+        : donorAmountResult(false, NaN, 'invalid', '', cfg)
+    }
+    const intPart = s.slice(0, last)
+    const frac = s.slice(last + sep.length)
+    if (!intPart || !frac || !/^\d+$/.test(intPart) || !/^\d+$/.test(frac)) {
+      return donorAmountResult(false, NaN, 'invalid', '', cfg)
+    }
+    if (decimals <= 0) {
+      return donorAmountResult(false, NaN, 'ambiguous', '', cfg)
+    }
+    if (frac.length > decimals) {
+      return donorAmountResult(false, NaN, 'invalid', '', cfg)
+    }
+    const n = Number.parseFloat(intPart + '.' + frac)
+    return Number.isFinite(n) ? donorAmountResult(true, n, 'ok', '', cfg) : donorAmountResult(false, NaN, 'invalid', '', cfg)
+  }
+
+  /**
+   * Bağışçı tutarı (PHP WDP_Utils::parse_donor_amount ile aynı kural).
+   * Binlik yalnız 1–3 + her grup 3. Uymayan ayırıcı ondalık okunabiliyorsa ve
+   * mağaza ondalığı ≥ kesir ise ondalık; 0 dp + ondalık görünümlü → belirsiz (red, 100× yok).
+   *
+   * @param {string|number} raw
+   * @param {object} [cfg]
+   * @returns {{ok:boolean,amount:number,status:string,error:string}}
+   */
+  function parseMoneyDetailed(raw, cfg) {
     if (raw === null || raw === undefined || raw === '') {
-      return NaN
+      return donorAmountResult(false, NaN, 'invalid', '', cfg)
     }
     if (typeof raw === 'number') {
-      return Number.isFinite(raw) ? raw : NaN
+      if (!Number.isFinite(raw) || raw < 0) {
+        return donorAmountResult(false, NaN, 'invalid', '', cfg)
+      }
+      return donorAmountResult(true, raw, 'ok', '', cfg)
     }
-    let s = String(raw).trim().replace(/\s+/g, '')
-    if (s === '') {
-      return NaN
+    const c = resolveCurrencyConfig(cfg)
+    const thousand = c.thousandSeparator
+    const decimal = c.decimalSeparator
+    const decimals = c.decimals
+    let s = normalizeAmountInput(raw, c)
+    if (s === '' || s === '-' || s === thousand || s === decimal || s === '.' || s === ',') {
+      return donorAmountResult(false, NaN, 'invalid', '', c)
     }
-    s = s.replace(/[^\d.,\-]/g, '')
-    if (s === '' || s === '-' || s === '.' || s === ',') {
-      return NaN
+    if (s.charAt(0) === '-') {
+      return donorAmountResult(false, NaN, 'invalid', '', c)
     }
-    const cfg = getCurrencyConfig()
-    const thousand = cfg.thousandSeparator
-    const decimal = cfg.decimalSeparator
-    const decimals = cfg.decimals
+    if (s.indexOf('-') !== -1) {
+      return donorAmountResult(false, NaN, 'invalid', '', c)
+    }
+    if (/^\d+$/.test(s)) {
+      const n = Number.parseFloat(s)
+      return Number.isFinite(n) ? donorAmountResult(true, n, 'ok', '', c) : donorAmountResult(false, NaN, 'invalid', '', c)
+    }
+    if (thousand !== '' && thousand === decimal) {
+      return parseSameSeparator(s, thousand, decimals, c)
+    }
+    const hasT = thousand !== '' && s.indexOf(thousand) !== -1
+    const hasD = decimal !== '' && s.indexOf(decimal) !== -1
+    if (hasT && hasD) {
+      const dFirst = s.indexOf(decimal)
+      const dLast = s.lastIndexOf(decimal)
+      if (dFirst !== dLast) {
+        return donorAmountResult(false, NaN, 'invalid', '', c)
+      }
+      if (s.indexOf(thousand) > dLast) {
+        return donorAmountResult(false, NaN, 'invalid', '', c)
+      }
+      const intPart = s.slice(0, dLast)
+      const frac = s.slice(dLast + decimal.length)
+      if (!intPart || !frac || !/^\d+$/.test(frac)) {
+        return donorAmountResult(false, NaN, 'invalid', '', c)
+      }
+      if (decimals <= 0) {
+        return donorAmountResult(false, NaN, 'ambiguous', '', c)
+      }
+      if (frac.length > decimals) {
+        return donorAmountResult(false, NaN, 'invalid', '', c)
+      }
+      if (intPart.indexOf(thousand) !== -1 && !isValidThousandGrouping(intPart, thousand)) {
+        return donorAmountResult(false, NaN, 'ambiguous', '', c)
+      }
+      if (intPart.indexOf(decimal) !== -1) {
+        return donorAmountResult(false, NaN, 'invalid', '', c)
+      }
+      const intNorm = intPart.split(thousand).join('')
+      if (!/^\d+$/.test(intNorm)) {
+        return donorAmountResult(false, NaN, 'invalid', '', c)
+      }
+      const n = Number.parseFloat(intNorm + '.' + frac)
+      return Number.isFinite(n) ? donorAmountResult(true, n, 'ok', '', c) : donorAmountResult(false, NaN, 'invalid', '', c)
+    }
+    if (hasD && !hasT) {
+      const dFirst = s.indexOf(decimal)
+      const dLast = s.lastIndexOf(decimal)
+      if (dFirst !== dLast) {
+        return donorAmountResult(false, NaN, 'invalid', '', c)
+      }
+      const intPart = s.slice(0, dLast)
+      const frac = s.slice(dLast + decimal.length)
+      if (!intPart || !frac || !/^\d+$/.test(intPart) || !/^\d+$/.test(frac)) {
+        return donorAmountResult(false, NaN, 'invalid', '', c)
+      }
+      if (decimals <= 0) {
+        return donorAmountResult(false, NaN, 'ambiguous', '', c)
+      }
+      if (frac.length > decimals) {
+        return donorAmountResult(false, NaN, 'invalid', '', c)
+      }
+      const n = Number.parseFloat(intPart + '.' + frac)
+      return Number.isFinite(n) ? donorAmountResult(true, n, 'ok', '', c) : donorAmountResult(false, NaN, 'invalid', '', c)
+    }
+    if (hasT && !hasD) {
+      if (isValidThousandGrouping(s, thousand)) {
+        const n = Number.parseFloat(s.split(thousand).join(''))
+        return Number.isFinite(n) ? donorAmountResult(true, n, 'ok', '', c) : donorAmountResult(false, NaN, 'invalid', '', c)
+      }
+      return donorAmountResult(false, NaN, 'ambiguous', '', c)
+    }
+    return donorAmountResult(false, NaN, 'invalid', '', c)
+  }
 
+  /**
+   * Kullanıcı girişini Woo ondalık/binlik ayırıcısına göre ham sayıya çevirir.
+   * Belirsiz/uyumsuz → NaN (sessiz 100× yok). İkinci argüman test için mağaza ayarı.
+   */
+  function parseMoney(raw, cfg) {
+    const r = parseMoneyDetailed(raw, cfg)
+    return r.status === 'ok' && Number.isFinite(r.amount) ? r.amount : NaN
+  }
+
+  /** Sunucuya giden tutar: binlik yok, mağaza ondalık ayırıcısı (aynı kural). */
+  function formatAmountForSubmit(amount, cfg) {
+    const c = resolveCurrencyConfig(cfg)
+    const n = typeof amount === 'number' ? amount : parseMoney(amount, c)
+    if (!Number.isFinite(n) || n <= 0) {
+      return ''
+    }
+    const decimals = Math.max(0, Number(c.decimals) || 0)
     if (decimals <= 0) {
-      const stripped = s.replace(/[.,]/g, '')
-      const n = Number.parseFloat(stripped)
-      return Number.isFinite(n) ? n : NaN
+      return String(Math.round(n))
     }
-
-    const hasThousand = thousand !== '' && s.indexOf(thousand) !== -1
-    const hasDecimal = decimal !== '' && decimal !== thousand && s.indexOf(decimal) !== -1
-
-    if (hasThousand && hasDecimal) {
-      s = s.split(thousand).join('').split(decimal).join('.')
-      const n = Number.parseFloat(s)
-      return Number.isFinite(n) ? n : NaN
-    }
-
-    if (hasDecimal && !hasThousand) {
-      s = s.split(decimal).join('.')
-      const n = Number.parseFloat(s)
-      return Number.isFinite(n) ? n : NaN
-    }
-
-    if (hasThousand && !hasDecimal) {
-      s = s.split(thousand).join('')
-      const n = Number.parseFloat(s)
-      return Number.isFinite(n) ? n : NaN
-    }
-
-    const n = Number.parseFloat(s.replace(',', '.'))
-    return Number.isFinite(n) ? n : NaN
+    const fixed = Math.abs(n).toFixed(decimals)
+    const parts = fixed.split('.')
+    const dec = c.decimalSeparator == null ? '.' : String(c.decimalSeparator)
+    return (n < 0 ? '-' : '') + parts[0] + dec + (parts[1] || '')
   }
 
   /**
@@ -832,7 +1012,11 @@
     applyCurrencyShellPosition,
     formatCurrency,
     formatMoney,
+    formatAmountForSubmit,
     parseMoney,
+    parseMoneyDetailed,
+    normalizeAmountInput,
+    getAmbiguousAmountMessage,
     getCurrencyConfig,
     decodeHtmlEntities,
     getCurrencySymbol,

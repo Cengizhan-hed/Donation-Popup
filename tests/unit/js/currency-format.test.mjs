@@ -75,8 +75,9 @@ describe('currency format from profile', () => {
   it('parseMoney TRY 0dp dot thousand', () => {
     const try0 = { decimals: 0, thousandSeparator: '.', decimalSeparator: ',' };
     assert.equal(parseMoney('1.000', try0), 1000);
-    assert.equal(parseMoney('1,000', try0), 1000);
+    assert.equal(Number.isFinite(parseMoney('1,000', try0)), false);
     assert.equal(parseMoney('250', try0), 250);
+    assert.equal(Number.isFinite(parseMoney('10.00', try0)), false);
   });
 
   it('parseMoney EUR 2dp dot thousand comma decimal', () => {
