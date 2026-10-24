@@ -27,12 +27,14 @@ import {
   compactPhp,
   detectOutboundCalls,
   extractOutboundHosts,
+  formatSnippetHostRows,
   getDiscoverWpTails,
   getEvalSnippets,
   parseJsonBlob,
   renderMarkdown,
   runGuardedSsh,
   sanitizeDiscoveryOutput,
+  summarizeOutboundChains,
   tailsForWriteScan,
 } from '../../../scripts/lib/remote-discover-lib.mjs';
 import { ROOT } from '../../../tests/e2e/helpers/env-root.mjs';
@@ -51,6 +53,65 @@ function hedef_check_abandoned_cart_event() {
   file_get_contents(get_option("cart_webhook_url"));
   fsockopen("events.ornek.net", 443);
   curl_init("https://hooks.ornek.io/abc/secret");
+}
+`;
+
+const FAKE_ASSIGN = `
+add_action("woocommerce_order_status_on-hold", "send_hold");
+add_action("woocommerce_add_to_cart", "other_fn");
+add_action("woocommerce_add_cart_item_data", "other_fn");
+add_action("hedef_check_abandoned_cart_event", "other_fn");
+function send_hold() {
+  $url = "https://hooks.ornek.com/v1/secret-path?token=1";
+  wp_remote_post($url, array("headers" => array("Authorization" => "Bearer abc")));
+}
+function other_fn() {
+  $x = 1;
+}
+`;
+
+const FAKE_CONCAT = `
+add_action("woocommerce_order_status_completed", "send_done");
+function send_done() {
+  $url = "https://pay.ornek.com/v2/" . $order_id;
+  wp_remote_post($url);
+}
+`;
+
+const FAKE_DEFINE = `
+define("HDF_GONULLU_API_URL", "https://api.ornek.net/gonullu?key=XYZ");
+add_action("hdf_gonullu_api_gonder", "hdf_send");
+function hdf_send() {
+  wp_remote_post(HDF_GONULLU_API_URL);
+}
+`;
+
+const FAKE_CONST = `
+const API_HOST = "https://const.ornek.io/secret-path";
+add_action("init", "boot");
+function boot() {
+  wp_remote_get(API_HOST);
+}
+`;
+
+const FAKE_OPTION_ASSIGN = `
+add_action("woocommerce_thankyou", "ping");
+function ping() {
+  $url = get_option("webhook_endpoint");
+  wp_remote_post($url);
+}
+`;
+
+const FAKE_ANON = `
+add_action("woocommerce_add_to_cart", function() {
+  wp_remote_post("https://anon.ornek.com/v1/secret-path?token=1");
+});
+`;
+
+const FAKE_UNRESOLVED = `
+add_action("shutdown", "late");
+function late() {
+  wp_remote_get($url);
 }
 `;
 
@@ -409,6 +470,9 @@ describe('remote-discover giden veri statik denetimi', () => {
     assert.match(php, /ReflectionMethod|ReflectionFunction/);
     assert.match(php, /SELECT id, scope, priority, active, code/);
     assert.match(php, /wdp_st_hosts/);
+    assert.match(php, /wdp_st_resolve_expr/);
+    assert.match(php, /wdp_st_collect_assign/);
+    assert.match(php, /wdp_st_anon_hooks/);
     assert.match(php, /woocommerce_add_cart_item_data/);
     assert.doesNotMatch(php, /echo \$src\b/);
     assert.doesNotMatch(php, /"code"\s*=>/);
@@ -422,7 +486,10 @@ describe('remote-discover giden veri statik denetimi', () => {
     const hosts = extractOutboundHosts(FAKE_SNIPPET_27);
     const byHost = Object.fromEntries(hosts.map((h) => [h.host, h]));
     assert.equal(byHost['api.ornek.com']?.kind, 'sabit');
-    assert.equal(byHost['api.ornek.com']?.hook, 'woocommerce_add_to_cart');
+    assert.equal(
+      byHost['api.ornek.com']?.hook,
+      'woocommerce_add_to_cart, woocommerce_add_cart_item_data'
+    );
     assert.equal(byHost['dinamik:$endpoint']?.kind, 'dinamik');
     assert.equal(byHost['dinamik:API_BASE']?.kind, 'dinamik');
     assert.equal(byHost['option:cart_webhook_url']?.kind, 'option-adı');
@@ -616,10 +683,143 @@ ${EVAL_STATIC_OUTBOUND}
     assert.match(mdFile, /dinamik:\$endpoint/);
     assert.match(mdFile, /option:cart_webhook_url/);
     assert.match(md, /snippet id/);
+    assert.match(mdFile, /kanca\(lar\)/);
+    assert.match(mdFile, /woocommerce_add_to_cart zincirinde dışarı çağrı: evet \(27\)/);
     assertHostLeakFree(`${JSON.stringify(report)}\n${mdFile}`);
     const sn = report.outbound_static.snippets.find((s) => s.id === 27);
     assert.ok(sn.hosts.some((h) => h.host === 'api.ornek.com'));
     assert.equal(sn.hosts.every((h) => !String(h.host).includes('/')), true);
+    assert.equal(report.outbound_static.chains.add_to_cart.outbound, true);
+    assert.deepEqual(report.outbound_static.chains.add_to_cart.snippets, ['27']);
+  });
+
+  it('atama/concat/define/const/get_option/anonim: host + tüm kancalar; sızıntı yok', () => {
+    const assign = extractOutboundHosts(FAKE_ASSIGN);
+    assert.equal(assign.length, 1);
+    assert.equal(assign[0].host, 'hooks.ornek.com');
+    assert.equal(assign[0].kind, 'sabit');
+    assert.equal(assign[0].hook, 'woocommerce_order_status_on-hold');
+    assert.equal(assign[0].hook.includes('woocommerce_add_to_cart'), false);
+
+    const concat = extractOutboundHosts(FAKE_CONCAT);
+    assert.equal(concat[0].host, 'pay.ornek.com');
+    assert.equal(concat[0].kind, 'sabit');
+    assert.equal(concat[0].hook, 'woocommerce_order_status_completed');
+
+    const def = extractOutboundHosts(FAKE_DEFINE);
+    assert.equal(def[0].host, 'api.ornek.net');
+    assert.equal(def[0].kind, 'sabit');
+    assert.equal(def[0].hook, 'hdf_gonullu_api_gonder');
+
+    const cst = extractOutboundHosts(FAKE_CONST);
+    assert.equal(cst[0].host, 'const.ornek.io');
+    assert.equal(cst[0].kind, 'sabit');
+    assert.equal(cst[0].hook, 'init');
+
+    const opt = extractOutboundHosts(FAKE_OPTION_ASSIGN);
+    assert.equal(opt[0].host, 'option:webhook_endpoint');
+    assert.equal(opt[0].kind, 'option-adı');
+
+    const anon = extractOutboundHosts(FAKE_ANON);
+    assert.equal(anon[0].host, 'anon.ornek.com');
+    assert.equal(anon[0].hook, 'woocommerce_add_to_cart');
+
+    const unresolved = extractOutboundHosts(FAKE_UNRESOLVED);
+    assert.equal(unresolved[0].host, 'dinamik:$url');
+    assert.equal(unresolved[0].kind, 'dinamik');
+
+    const multi = extractOutboundHosts(FAKE_SNIPPET_27);
+    const multiHooks = String(multi[0].hook).split(',').map((s) => s.trim());
+    assert.ok(multiHooks.includes('woocommerce_add_to_cart'));
+    assert.ok(multiHooks.includes('woocommerce_add_cart_item_data'));
+
+    const blob = JSON.stringify({ assign, concat, def, cst, opt, anon, unresolved, multi });
+    assertHostLeakFree(blob);
+    assert.equal(blob.includes('secret-path'), false);
+    assert.equal(blob.includes('gonullu?key'), false);
+    assert.equal(blob.includes('/v2/'), false);
+    assert.equal(blob.includes('Bearer'), false);
+
+    const rows = formatSnippetHostRows([
+      { id: 27, hosts: assign },
+      { id: 29, hosts: concat },
+      { id: 43, hosts: def },
+    ]);
+    assert.deepEqual(rows[0], ['27', 'woocommerce_order_status_on-hold', 'hooks.ornek.com', 'sabit']);
+    assert.deepEqual(rows[1], ['29', 'woocommerce_order_status_completed', 'pay.ornek.com', 'sabit']);
+    assert.deepEqual(rows[2], ['43', 'hdf_gonullu_api_gonder', 'api.ornek.net', 'sabit']);
+
+    const chainsNo = summarizeOutboundChains([{ id: 27, hosts: assign }]);
+    assert.equal(chainsNo.add_to_cart.outbound, false);
+    assert.match(chainsNo.add_to_cart.line, /hayır/);
+
+    const chainsYes = summarizeOutboundChains([{ id: 27, hosts: anon }]);
+    assert.equal(chainsYes.add_to_cart.outbound, true);
+    assert.match(chainsYes.add_to_cart.line, /evet \(27\)/);
+
+    const chainsPage = summarizeOutboundChains([{ id: 8, hosts: cst }]);
+    assert.equal(chainsPage.page_view.outbound, true);
+    assert.match(chainsPage.page_view.line, /evet \(snippet:8\)/);
+  });
+
+  it('EVAL_STATIC_OUTBOUND sahte snippet: atama/define/anonim host + çok kanca (uzak yok)', () => {
+    const tmp = path.join(os.tmpdir(), `wdp-4o-snip-${process.pid}.php`);
+    const rows = [
+      { id: 27, scope: 'global', priority: 10, active: 1, code: FAKE_ASSIGN },
+      { id: 29, scope: 'global', priority: 10, active: 1, code: FAKE_CONCAT },
+      { id: 43, scope: 'global', priority: 10, active: 1, code: FAKE_DEFINE },
+      { id: 8, scope: 'global', priority: 10, active: 1, code: FAKE_CONST },
+      { id: 9, scope: 'global', priority: 10, active: 1, code: FAKE_OPTION_ASSIGN },
+      { id: 10, scope: 'global', priority: 10, active: 1, code: FAKE_ANON },
+      { id: 11, scope: 'global', priority: 10, active: 1, code: FAKE_SNIPPET_27 },
+    ];
+    const rowsJson = JSON.stringify(rows).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+    const stub = `<?php
+if (!defined("ARRAY_A")) define("ARRAY_A", "ARRAY_A");
+class WdpFakeDb {
+  public $prefix = "wp_";
+  public $rows;
+  function __construct($rows) { $this->rows = $rows; }
+  function suppress_errors($x = null) { return false; }
+  function esc_like($t) { return $t; }
+  function prepare($q, $a = null) { return $q; }
+  function get_var($q = null) { return "wp_snippets"; }
+  function get_results($q = null, $t = null) { return $this->rows; }
+}
+$wpdb = new WdpFakeDb(json_decode('${rowsJson}', true));
+$wp_filter = array();
+if (!function_exists("_get_cron_array")) { function _get_cron_array() { return array(); } }
+${EVAL_STATIC_OUTBOUND}
+`;
+    fs.writeFileSync(tmp, stub, 'utf8');
+    try {
+      const r = spawnSync('php', [tmp], { encoding: 'utf8', timeout: 30000 });
+      assert.equal(r.status, 0, r.stderr || r.stdout || 'php çıkış');
+      const data = parseJsonBlob(r.stdout || '');
+      const byId = Object.fromEntries((data.snippets || []).map((s) => [Number(s.id), s]));
+      assert.ok((byId[27].hosts || []).some((h) => h.host === 'hooks.ornek.com' && h.hook === 'woocommerce_order_status_on-hold'));
+      assert.equal((byId[27].hosts || []).some((h) => String(h.hook).includes('woocommerce_add_to_cart')), false);
+      assert.ok((byId[29].hosts || []).some((h) => h.host === 'pay.ornek.com'));
+      assert.ok((byId[43].hosts || []).some((h) => h.host === 'api.ornek.net'));
+      assert.ok((byId[8].hosts || []).some((h) => h.host === 'const.ornek.io' && h.hook === 'init'));
+      assert.ok((byId[9].hosts || []).some((h) => h.host === 'option:webhook_endpoint'));
+      assert.ok((byId[10].hosts || []).some((h) => h.host === 'anon.ornek.com' && h.hook === 'woocommerce_add_to_cart'));
+      const h11 = (byId[11].hosts || []).find((h) => h.host === 'api.ornek.com');
+      assert.ok(h11);
+      assert.match(String(h11.hook), /woocommerce_add_to_cart/);
+      assert.match(String(h11.hook), /woocommerce_add_cart_item_data/);
+      const blob = JSON.stringify(data);
+      assertHostLeakFree(blob);
+      assert.equal(blob.includes('secret-path'), false);
+      assert.equal(blob.includes('token=1'), false);
+      assert.equal('code' in byId[27], false);
+    } finally {
+      try {
+        fs.unlinkSync(tmp);
+      } catch (e) {
+        if (e && e.code !== 'ENOENT') throw e;
+      }
+    }
   });
 });
 
