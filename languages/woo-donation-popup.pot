@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: woo-donation-popup 10.34.15\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-24 16:11+0300\n"
+"POT-Creation-Date: 2026-10-24 16:31+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -48,35 +48,54 @@ msgstr ""
 msgid "Use"
 msgstr ""
 
-#: includes/class-admin-assets.php:85 includes/class-admin-assets.php:148
+#: includes/class-admin-assets.php:85 includes/class-admin-assets.php:86
+#: includes/class-admin-assets.php:153
 msgid "You have unsaved changes. Are you sure you want to leave this tab?"
 msgstr ""
 
-#: includes/class-admin-assets.php:120
-msgid "Copied"
+#: includes/class-admin-assets.php:87
+msgid ""
+"All product settings and plugin options will be deleted. Orders and order "
+"records are not affected. This cannot be undone. Have you made a backup?"
 msgstr ""
 
-#: includes/class-admin-assets.php:121
-msgid "Could not copy; select the text and copy it manually."
+#: includes/class-admin-assets.php:88
+msgid "You have unsaved changes."
 msgstr ""
 
-#: includes/class-admin-assets.php:122
-msgid "Recalculating the total…"
+#: includes/class-admin-assets.php:89
+msgid "Select a style pack first."
 msgstr ""
 
-#: includes/class-admin-assets.php:123
-msgid "The action could not be completed. Please try again."
-msgstr ""
-
-#: includes/class-admin-assets.php:124
-msgid "Row added."
+#: includes/class-admin-assets.php:90
+msgid "Pack downloaded as JSON."
 msgstr ""
 
 #: includes/class-admin-assets.php:125
-msgid "Row removed."
+msgid "Copied"
 msgstr ""
 
 #: includes/class-admin-assets.php:126
+msgid "Could not copy; select the text and copy it manually."
+msgstr ""
+
+#: includes/class-admin-assets.php:127
+msgid "Recalculating the total…"
+msgstr ""
+
+#: includes/class-admin-assets.php:128
+msgid "The action could not be completed. Please try again."
+msgstr ""
+
+#: includes/class-admin-assets.php:129
+msgid "Row added."
+msgstr ""
+
+#: includes/class-admin-assets.php:130
+msgid "Row removed."
+msgstr ""
+
+#: includes/class-admin-assets.php:131
 msgid "Order updated."
 msgstr ""
 
@@ -730,37 +749,49 @@ msgstr ""
 
 #: includes/class-admin-form-tabs-renderer.php:118
 #: includes/class-admin-settings-normalizer.php:321
+#: includes/i18n/class-wdp-js-i18n.php:101
+#: assets/js/src/shareholder/render.js:118
+#: assets/js/src/shareholder/render.js:124
 msgid "Shareholder details"
 msgstr ""
 
 #: includes/class-admin-form-tabs-renderer.php:119
 #: includes/class-admin-form-tabs-renderer.php:427
 #: includes/class-admin-settings-normalizer.php:322
+#: includes/i18n/class-wdp-js-i18n.php:56
 #: includes/templates/class-form-fields-renderer.php:520
+#: assets/js/src/shareholder/render.js:119
 msgid "Full name *"
 msgstr ""
 
 #: includes/class-admin-form-tabs-renderer.php:120
 #: includes/class-admin-settings-normalizer.php:323
-#: includes/class-phone-field.php:400
+#: includes/class-phone-field.php:480 includes/i18n/class-wdp-js-i18n.php:73
+#: assets/js/src/phone-input.js:672 assets/js/src/shareholder/render.js:120
 msgid "Phone number *"
 msgstr ""
 
 #: includes/class-admin-form-tabs-renderer.php:121
 #: includes/class-admin-form-tabs-renderer.php:429
 #: includes/class-admin-settings-normalizer.php:324
+#: includes/i18n/class-wdp-js-i18n.php:69
 #: includes/templates/class-form-fields-renderer.php:531
+#: assets/js/src/shareholder/render.js:121
 msgid "Note (optional)"
 msgstr ""
 
 #: includes/class-admin-form-tabs-renderer.php:122
 #: includes/class-admin-settings-normalizer.php:325
+#: includes/i18n/class-wdp-js-i18n.php:44
+#: assets/js/src/shareholder/render.js:123
 msgid "Create a copy"
 msgstr ""
 
 #: includes/class-admin-form-tabs-renderer.php:127
 #: includes/class-admin-settings-normalizer.php:338
+#: includes/i18n/class-wdp-js-i18n.php:49
 #: includes/templates/class-form-fields-renderer.php:537
+#: assets/js/src/shareholder/render.js:122
 msgid "Email (optional)"
 msgstr ""
 
@@ -887,21 +918,26 @@ msgstr ""
 #: includes/class-admin-form-tabs-renderer.php:194
 #: includes/class-admin-form-tabs-renderer.php:238
 #: includes/class-admin-settings-normalizer.php:364
+#: includes/i18n/class-wdp-js-i18n.php:59 assets/js/src/cart/ui.js:40
 msgid "Go to cart"
 msgstr ""
 
 #: includes/class-admin-form-tabs-renderer.php:195
 #: includes/class-admin-form-tabs-renderer.php:239
 #: includes/class-admin-settings-normalizer.php:365
+#: includes/i18n/class-wdp-js-i18n.php:38
 #: includes/traits/trait-wdp-assets-inline-styles.php:63
 #: includes/traits/trait-wdp-assets-inline-styles.php:65
+#: assets/js/src/cart/ui.js:41
 msgid "Complete donation"
 msgstr ""
 
 #: includes/class-admin-form-tabs-renderer.php:196
 #: includes/class-admin-settings-normalizer.php:366
+#: includes/i18n/class-wdp-js-i18n.php:42
 #: includes/traits/trait-wdp-assets-inline-styles.php:69
 #: includes/traits/trait-wdp-assets-inline-styles.php:71
+#: assets/js/src/cart/ui.js:42
 msgid "Continue adding donations"
 msgstr ""
 
@@ -2834,6 +2870,7 @@ msgstr ""
 #: includes/class-admin-products-list-table.php:43
 #: includes/class-privacy.php:108
 #: includes/elementor/class-widget-donation-form.php:92
+#: includes/i18n/class-wdp-js-i18n.php:92 assets/js/src/cart/ui.js:190
 #: blocks/donation-form/index.js:59 blocks/donation-form/index.js:69
 msgid "Product"
 msgstr ""
@@ -3031,8 +3068,9 @@ msgid "Please enter a donation amount greater than 0."
 msgstr ""
 
 #. translators: %s: formatted minimum amount with currency
-#: includes/class-cart.php:702
-#, php-format
+#: includes/class-cart.php:702 includes/i18n/class-wdp-js-i18n.php:79
+#: assets/js/src/form/validate.js:751
+#, javascript-format, php-format
 msgid "Please enter %s or more."
 msgstr ""
 
@@ -3051,7 +3089,9 @@ msgid "Shareholder %d phone"
 msgstr ""
 
 #: includes/class-donation-optional-fields.php:101
+#: includes/i18n/class-wdp-js-i18n.php:84
 #: includes/traits/trait-wdp-assets-registry.php:365
+#: assets/js/src/form/messages.js:129 assets/js/src/form/validate.js:652
 msgid "Please enter a valid email address."
 msgstr ""
 
@@ -3249,7 +3289,8 @@ msgstr ""
 msgid "Cover processing costs (+%%%s)"
 msgstr ""
 
-#: includes/class-form-modules.php:744
+#: includes/class-form-modules.php:744 includes/i18n/class-wdp-js-i18n.php:111
+#: assets/js/src/cart/ui.js:125
 msgid "Total"
 msgstr ""
 
@@ -3261,7 +3302,8 @@ msgstr ""
 msgid "Note"
 msgstr ""
 
-#: includes/class-icon-library.php:52
+#: includes/class-icon-library.php:52 includes/i18n/class-wdp-js-i18n.php:72
+#: assets/js/src/shareholder/guidance.js:67
 msgid "Phone"
 msgstr ""
 
@@ -3372,7 +3414,8 @@ msgstr ""
 msgid "Donor email"
 msgstr ""
 
-#: includes/class-phone-field.php:24
+#: includes/class-phone-field.php:24 includes/i18n/class-wdp-js-i18n.php:113
+#: assets/js/src/phone-input.js:55
 msgid "Turkey"
 msgstr ""
 
@@ -3836,7 +3879,8 @@ msgstr ""
 msgid "South Africa"
 msgstr ""
 
-#: includes/class-phone-field.php:427
+#: includes/class-phone-field.php:513 includes/i18n/class-wdp-js-i18n.php:96
+#: assets/js/src/phone-input.js:701
 msgid "Select country code"
 msgstr ""
 
@@ -3931,8 +3975,9 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %s: remaining amount
-#: includes/class-progress-form.php:73
-#, php-format
+#: includes/class-progress-form.php:73 includes/i18n/class-wdp-js-i18n.php:29
+#: assets/js/src/progress-bar.js:157
+#, javascript-format, php-format
 msgid "%s remaining"
 msgstr ""
 
@@ -3948,7 +3993,9 @@ msgstr ""
 msgid "Goal completion rate"
 msgstr ""
 
-#: includes/class-progress-form.php:145
+#: includes/class-progress-form.php:145 includes/i18n/class-wdp-js-i18n.php:60
+#: assets/js/src/progress-bar.js:72 assets/js/src/progress-bar.js:92
+#: assets/js/src/progress-bar.js:127 assets/js/src/progress-bar.js:322
 msgid "Goal reached"
 msgstr ""
 
@@ -4338,6 +4385,399 @@ msgstr ""
 msgid "CSS class"
 msgstr ""
 
+#: includes/i18n/class-wdp-js-i18n.php:26 assets/js/src/form/validate.js:555
+#, javascript-format, php-format
+msgid "%1$d. share %2$s"
+msgstr ""
+
+#: includes/i18n/class-wdp-js-i18n.php:27 assets/js/src/cart/ui.js:212
+#, javascript-format, php-format
+msgid "%d item"
+msgstr ""
+
+#: includes/i18n/class-wdp-js-i18n.php:28 assets/js/src/modal.js:498
+#, javascript-format, php-format
+msgid "%s form opened"
+msgstr ""
+
+#: includes/i18n/class-wdp-js-i18n.php:30 assets/js/src/progress-bar.js:139
+#, javascript-format, php-format
+msgid "%s%% of the goal completed"
+msgstr ""
+
+#: includes/i18n/class-wdp-js-i18n.php:31 assets/js/src/form/validate.js:833
+msgid "1 shareholder form is incomplete."
+msgstr ""
+
+#: includes/i18n/class-wdp-js-i18n.php:32 assets/js/src/form/ajax.js:419
+msgid "A connection error occurred. Please try again."
+msgstr ""
+
+#: includes/i18n/class-wdp-js-i18n.php:33 assets/js/src/cart/ui.js:245
+msgid "Add a donation to continue to checkout."
+msgstr ""
+
+#: includes/i18n/class-wdp-js-i18n.php:34 assets/js/src/form/wizard.js:29
+msgid "Additional donation"
+msgstr ""
+
+#: includes/i18n/class-wdp-js-i18n.php:35
+#: includes/traits/trait-wdp-assets-registry.php:346
+#: assets/js/src/product.js:196
+msgid "An error occurred"
+msgstr ""
+
+#: includes/i18n/class-wdp-js-i18n.php:36 assets/js/src/form/wizard.js:161
+#: assets/js/src/form/wizard.js:187
+msgid "Back"
+msgstr ""
+
+#: includes/i18n/class-wdp-js-i18n.php:37 assets/js/src/cart/ui.js:160
+#, javascript-format, php-format
+msgctxt "cart badge label"
+msgid "%d product"
+msgstr ""
+
+#: includes/i18n/class-wdp-js-i18n.php:39 assets/js/src/form/wizard.js:30
+msgid "Confirmation"
+msgstr ""
+
+#: includes/i18n/class-wdp-js-i18n.php:40 assets/js/src/progress-bar.js:296
+#, javascript-format, php-format
+msgid "Confirmed %1$s%%, %2$s%% including pending and typed amounts"
+msgstr ""
+
+#: includes/i18n/class-wdp-js-i18n.php:41 assets/js/src/core/utils.js:842
+msgid "Connection restored."
+msgstr ""
+
+#: includes/i18n/class-wdp-js-i18n.php:43 assets/js/src/form/ajax.js:451
+msgid "Could not submit"
+msgstr ""
+
+#: includes/i18n/class-wdp-js-i18n.php:45 assets/js/src/modal.js:738
+msgid "Donation form closed"
+msgstr ""
+
+#: includes/i18n/class-wdp-js-i18n.php:46 assets/js/src/modal.js:500
+msgid "Donation form opened"
+msgstr ""
+
+#: includes/i18n/class-wdp-js-i18n.php:47 assets/js/src/modal.js:738
+msgid "Donation panel closed"
+msgstr ""
+
+#: includes/i18n/class-wdp-js-i18n.php:48 assets/js/src/modal.js:500
+msgid "Donation panel opened"
+msgstr ""
+
+#: includes/i18n/class-wdp-js-i18n.php:50 assets/js/src/form/messages.js:112
+#: assets/js/src/form/validate.js:198
+msgid "field is missing"
+msgstr ""
+
+#: includes/i18n/class-wdp-js-i18n.php:51 assets/js/src/form/wizard.js:154
+msgid "Form steps"
+msgstr ""
+
+#: includes/i18n/class-wdp-js-i18n.php:52 assets/js/src/core/utils.js:241
+#, javascript-format, php-format
+msgid "Fractional amounts are not allowed on this site, e.g. %s"
+msgstr ""
+
+#: includes/i18n/class-wdp-js-i18n.php:53 assets/js/src/form/validate.js:718
+#: assets/js/src/form/wizard.js:453
+msgid "Fractional amounts are not allowed on this site, e.g. 10"
+msgstr ""
+
+#: includes/i18n/class-wdp-js-i18n.php:54 assets/js/src/form/ajax.js:376
+#: assets/js/src/form.js:663
+msgctxt "frontend script"
+msgid "The action could not be completed. Please try again."
+msgstr ""
+
+#: includes/i18n/class-wdp-js-i18n.php:55
+#: includes/traits/trait-wdp-ajax-cart-query.php:176
+#: assets/js/src/shareholder/guidance.js:67
+msgid "Full name"
+msgstr ""
+
+#: includes/i18n/class-wdp-js-i18n.php:57 assets/js/src/form/messages.js:104
+msgid "full name is missing"
+msgstr ""
+
+#: includes/i18n/class-wdp-js-i18n.php:58
+#: includes/traits/trait-wdp-assets-registry.php:364
+#: assets/js/src/form/messages.js:25 assets/js/src/form/validate.js:110
+#: assets/js/src/form.js:334
+msgid "Full name is required."
+msgstr ""
+
+#: includes/i18n/class-wdp-js-i18n.php:61 assets/js/src/progress-bar.js:321
+msgid "In progress"
+msgstr ""
+
+#: includes/i18n/class-wdp-js-i18n.php:62 assets/js/src/form/validate.js:581
+#: assets/js/src/form/validate.js:825
+#, javascript-format, php-format
+msgid "Incomplete shareholder forms: %d."
+msgstr ""
+
+#: includes/i18n/class-wdp-js-i18n.php:63
+#: includes/traits/trait-wdp-ajax-cart-add.php:198
+#: includes/traits/trait-wdp-ajax-cart-add.php:202
+#: includes/traits/trait-wdp-ajax-cart-add.php:208
+#: includes/traits/trait-wdp-utils-price.php:428
+#: assets/js/src/core/utils.js:261
+msgid "Invalid price value."
+msgstr ""
+
+#: includes/i18n/class-wdp-js-i18n.php:64 assets/js/src/form/ajax.js:308
+msgid "Loading cart contents..."
+msgstr ""
+
+#: includes/i18n/class-wdp-js-i18n.php:65 assets/js/src/form/validate.js:735
+#, javascript-format, php-format
+msgid "Maximum amount: %s"
+msgstr ""
+
+#: includes/i18n/class-wdp-js-i18n.php:66 assets/js/src/form/wizard.js:463
+msgid "Minimum amount: "
+msgstr ""
+
+#: includes/i18n/class-wdp-js-i18n.php:67 assets/js/src/form/wizard.js:164
+#: assets/js/src/form/wizard.js:190
+msgid "Next"
+msgstr ""
+
+#: includes/i18n/class-wdp-js-i18n.php:68 assets/js/src/core/utils.js:832
+msgid "No connection. Actions can be retried when you are back online."
+msgstr ""
+
+#: includes/i18n/class-wdp-js-i18n.php:70 assets/js/src/core/utils.js:831
+msgid "Offline"
+msgstr ""
+
+#: includes/i18n/class-wdp-js-i18n.php:71 assets/js/src/core/utils.js:841
+msgid "Online"
+msgstr ""
+
+#: includes/i18n/class-wdp-js-i18n.php:74 assets/js/src/form/messages.js:110
+msgid "phone number is missing or invalid"
+msgstr ""
+
+#: includes/i18n/class-wdp-js-i18n.php:75 assets/js/src/form/wizard.js:340
+#: assets/js/src/form/wizard.js:407
+msgid "Phone number is required."
+msgstr ""
+
+#: includes/i18n/class-wdp-js-i18n.php:76 assets/js/src/form/validate.js:778
+msgid "Please check the additional donation amount."
+msgstr ""
+
+#: includes/i18n/class-wdp-js-i18n.php:77 assets/js/src/form/feedback.js:372
+#: assets/js/src/form/feedback.js:388 assets/js/src/form/validate.js:20
+#: assets/js/src/form.js:561 assets/js/src/form.js:578
+msgid "Please check the highlighted fields."
+msgstr ""
+
+#: includes/i18n/class-wdp-js-i18n.php:78 assets/js/src/form/wizard.js:413
+msgid "Please check the phone number."
+msgstr ""
+
+#: includes/i18n/class-wdp-js-i18n.php:80 assets/js/src/form/validate.js:706
+#: assets/js/src/form.js:487
+msgid "Please enter a donation amount."
+msgstr ""
+
+#: includes/i18n/class-wdp-js-i18n.php:81 assets/js/src/form/validate.js:747
+#, javascript-format, php-format
+msgid "Please enter a total of %s or more."
+msgstr ""
+
+#: includes/i18n/class-wdp-js-i18n.php:82 assets/js/src/form/messages.js:120
+#: assets/js/src/form/sadaka.js:34 assets/js/src/form.js:46
+#: assets/js/src/form.js:495
+msgid "Please enter a valid additional donation amount."
+msgstr ""
+
+#: includes/i18n/class-wdp-js-i18n.php:83 assets/js/src/form/validate.js:726
+msgid "Please enter a valid donation amount."
+msgstr ""
+
+#: includes/i18n/class-wdp-js-i18n.php:85 assets/js/src/form/messages.js:142
+#: assets/js/src/form/sadaka.js:42 assets/js/src/form.js:54
+#: assets/js/src/form.js:780 assets/js/src/form.js:822
+#, javascript-format, php-format
+msgid "Please enter at least %s."
+msgstr ""
+
+#. translators: %s: example amount in store format
+#: includes/i18n/class-wdp-js-i18n.php:86
+#: includes/traits/trait-wdp-assets-registry.php:352
+#: includes/traits/trait-wdp-utils-price.php:242
+#: assets/js/src/core/utils.js:252
+#, javascript-format, php-format
+msgid "Please enter the amount in this format, e.g. %s"
+msgstr ""
+
+#: includes/i18n/class-wdp-js-i18n.php:87
+#: includes/traits/trait-wdp-assets-registry.php:363
+#: assets/js/src/form/messages.js:63 assets/js/src/form/validate.js:138
+#: assets/js/src/form.js:474
+msgid "Please enter your complete phone number."
+msgstr ""
+
+#: includes/i18n/class-wdp-js-i18n.php:88 assets/js/src/form/wizard.js:475
+msgid "Please fill in the missing or invalid fields."
+msgstr ""
+
+#: includes/i18n/class-wdp-js-i18n.php:89 assets/js/src/form/wizard.js:302
+msgid "Please fill in the share details."
+msgstr ""
+
+#: includes/i18n/class-wdp-js-i18n.php:90 assets/js/src/form/wizard.js:349
+msgid "Please fill in the shareholder name and phone details."
+msgstr ""
+
+#: includes/i18n/class-wdp-js-i18n.php:91 assets/js/src/form/wizard.js:288
+#: assets/js/src/form/wizard.js:289
+msgid "Please select at least 1 share."
+msgstr ""
+
+#: includes/i18n/class-wdp-js-i18n.php:93 assets/js/src/product.js:154
+msgid ""
+"Product information could not be loaded. Please refresh the page and try "
+"again."
+msgstr ""
+
+#: includes/i18n/class-wdp-js-i18n.php:94 assets/js/src/form/ajax.js:239
+msgid "Redirecting you to checkout."
+msgstr ""
+
+#: includes/i18n/class-wdp-js-i18n.php:95 assets/js/src/cart/ui.js:221
+msgid "Remove from cart"
+msgstr ""
+
+#: includes/i18n/class-wdp-js-i18n.php:97 assets/js/src/form/ajax.js:374
+msgctxt "server error keyword"
+msgid "cart object"
+msgstr ""
+
+#: includes/i18n/class-wdp-js-i18n.php:98 assets/js/src/form/ajax.js:372
+msgctxt "server error keyword"
+msgid "invalid request"
+msgstr ""
+
+#: includes/i18n/class-wdp-js-i18n.php:99 assets/js/src/cart/actions.js:122
+#: assets/js/src/form/ajax.js:371
+msgctxt "server error keyword"
+msgid "security"
+msgstr ""
+
+#: includes/i18n/class-wdp-js-i18n.php:100 assets/js/src/form/ajax.js:373
+msgctxt "server error keyword"
+msgid "unexpected error"
+msgstr ""
+
+#: includes/i18n/class-wdp-js-i18n.php:102 assets/js/src/form/validate.js:830
+#, javascript-format, php-format
+msgid "Shareholder form %d is incomplete."
+msgstr ""
+
+#: includes/i18n/class-wdp-js-i18n.php:103
+#: includes/traits/trait-wdp-assets-registry.php:366
+#: assets/js/src/form/messages.js:34 assets/js/src/form/validate.js:117
+#: assets/js/src/form.js:342
+msgid "Shareholder name is required."
+msgstr ""
+
+#: includes/i18n/class-wdp-js-i18n.php:104 assets/js/src/form/wizard.js:28
+msgid "Shares"
+msgstr ""
+
+#: includes/i18n/class-wdp-js-i18n.php:105 assets/js/src/form/wizard.js:528
+msgid "Step"
+msgstr ""
+
+#: includes/i18n/class-wdp-js-i18n.php:106 assets/js/src/modal.js:35
+msgid "The form did not finish loading. Please check your details."
+msgstr ""
+
+#: includes/i18n/class-wdp-js-i18n.php:107
+#: assets/js/src/bootstrap/event-manager.js:245
+#: assets/js/src/form/cta-ready.js:144
+msgid "The form is not ready yet. Please wait a few seconds and try again."
+msgstr ""
+
+#: includes/i18n/class-wdp-js-i18n.php:108
+#: includes/traits/trait-wdp-assets-registry.php:348
+#: assets/js/src/form/messages.js:43 assets/js/src/form/validate.js:124
+#: assets/js/src/form/wizard.js:228 assets/js/src/form.js:350
+msgid "This field is required"
+msgstr ""
+
+#: includes/i18n/class-wdp-js-i18n.php:109 assets/js/src/form/feedback.js:247
+#: assets/js/src/form.js:497
+msgid "This field is required."
+msgstr ""
+
+#: includes/i18n/class-wdp-js-i18n.php:110 assets/js/src/form/ajax.js:28
+msgid "Too many requests. Please wait a moment and try again."
+msgstr ""
+
+#: includes/i18n/class-wdp-js-i18n.php:112 assets/js/src/form/ajax.js:433
+msgid "Try again"
+msgstr ""
+
+#: includes/i18n/class-wdp-js-i18n.php:114 assets/js/src/progress-bar.js:323
+msgid "Very close to the goal"
+msgstr ""
+
+#: includes/i18n/class-wdp-js-i18n.php:115 assets/js/src/form/wizard.js:27
+msgctxt "wizard step"
+msgid "Amount"
+msgstr ""
+
+#: includes/i18n/class-wdp-js-i18n.php:116 assets/js/src/form/wizard.js:333
+#: assets/js/src/form/wizard.js:425
+msgctxt "wizard step"
+msgid "Full name is required."
+msgstr ""
+
+#: includes/i18n/class-wdp-js-i18n.php:117 assets/js/src/form/wizard.js:402
+msgctxt "wizard step"
+msgid "Please enter a valid phone number."
+msgstr ""
+
+#: includes/i18n/class-wdp-js-i18n.php:118 assets/js/src/form/ajax.js:418
+msgid "You appear to be offline. Please try again when you are back online."
+msgstr ""
+
+#: includes/i18n/class-wdp-js-i18n.php:119 assets/js/src/cart/ui.js:242
+msgid "Your cart is empty"
+msgstr ""
+
+#: includes/i18n/class-wdp-js-i18n.php:120 assets/js/src/progress-bar.js:324
+msgid "Your contribution is being added"
+msgstr ""
+
+#: includes/i18n/class-wdp-js-i18n.php:121 assets/js/src/form/wizard.js:26
+msgid "Your details"
+msgstr ""
+
+#: includes/i18n/class-wdp-js-i18n.php:122 assets/js/src/cart/ui.js:154
+msgid "Your donation cart"
+msgstr ""
+
+#: includes/i18n/class-wdp-js-i18n.php:123 assets/js/src/form/ajax.js:148
+msgid "Your donation has been added to the cart"
+msgstr ""
+
+#: includes/i18n/class-wdp-js-i18n.php:124 assets/js/src/form/ajax.js:245
+msgid "Your donation has been added to the cart."
+msgstr ""
+
 #: includes/templates/class-campaign-header-renderer.php:59
 msgid "See more"
 msgstr ""
@@ -4444,13 +4884,6 @@ msgstr ""
 msgid "Maximum number of shares exceeded"
 msgstr ""
 
-#: includes/traits/trait-wdp-ajax-cart-add.php:198
-#: includes/traits/trait-wdp-ajax-cart-add.php:202
-#: includes/traits/trait-wdp-ajax-cart-add.php:208
-#: includes/traits/trait-wdp-utils-price.php:428
-msgid "Invalid price value."
-msgstr ""
-
 #: includes/traits/trait-wdp-ajax-cart-add.php:225
 #: includes/traits/trait-wdp-assets-registry.php:353
 msgid "Minimum price: "
@@ -4492,10 +4925,6 @@ msgstr ""
 #: includes/traits/trait-wdp-ajax-cart-query.php:144
 #: includes/traits/trait-wdp-ajax-cart-query.php:146
 msgid "Charity donation"
-msgstr ""
-
-#: includes/traits/trait-wdp-ajax-cart-query.php:176
-msgid "Full name"
 msgstr ""
 
 #: includes/traits/trait-wdp-ajax-cart-query.php:182
@@ -4543,14 +4972,6 @@ msgstr ""
 msgid "Loading..."
 msgstr ""
 
-#: includes/traits/trait-wdp-assets-registry.php:346
-msgid "An error occurred"
-msgstr ""
-
-#: includes/traits/trait-wdp-assets-registry.php:348
-msgid "This field is required"
-msgstr ""
-
 #: includes/traits/trait-wdp-assets-registry.php:349
 msgid "Invalid price"
 msgstr ""
@@ -4561,13 +4982,6 @@ msgstr ""
 #: includes/traits/trait-wdp-utils-price.php:220
 #, php-format
 msgid "This site does not accept amounts with decimals, e.g. %s"
-msgstr ""
-
-#. translators: %s: example amount in store format
-#: includes/traits/trait-wdp-assets-registry.php:352
-#: includes/traits/trait-wdp-utils-price.php:242
-#, php-format
-msgid "Please enter the amount in this format, e.g. %s"
 msgstr ""
 
 #: includes/traits/trait-wdp-assets-registry.php:354
@@ -4588,18 +5002,6 @@ msgstr ""
 
 #: includes/traits/trait-wdp-assets-registry.php:362
 msgid "Phone number is missing."
-msgstr ""
-
-#: includes/traits/trait-wdp-assets-registry.php:363
-msgid "Please enter your complete phone number."
-msgstr ""
-
-#: includes/traits/trait-wdp-assets-registry.php:364
-msgid "Full name is required."
-msgstr ""
-
-#: includes/traits/trait-wdp-assets-registry.php:366
-msgid "Shareholder name is required."
 msgstr ""
 
 #: includes/traits/trait-wdp-assets-registry.php:367

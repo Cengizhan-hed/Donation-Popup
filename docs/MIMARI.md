@@ -19,7 +19,7 @@ Kural: her iddia `dosya:satır`; emin olunmayan yerler **DOĞRULANMADI**.
 | `includes/templates/` | Modal kabuk, alan, kampanya header, SVG | `tools/file-descriptions.json` (satır 76–79) |
 | `includes/elementor/` | Elementor widget sınıfları | `includes/class-elementor.php` |
 | `includes/compat/` | Builder tespit (Avada/Elementor/…) | `includes/compat/class-builder-detect.php` |
-| `includes/i18n/` | JS sözlük sınıfı (`WDP_Js_I18n`) | `includes/i18n/class-js-strings.php` |
+| `includes/i18n/` | JS sözlük sınıfı (`WDP_Js_I18n`) | `includes/i18n/class-wdp-js-i18n.php` |
 | `languages/` | `.pot` / `tr_TR.po|.mo` (parts/ dağıtıma girmez) | `.distignore` `languages/parts/` |
 | `templates/woocommerce/` | Simple add-to-cart şablon override | `templates/woocommerce/single-product/add-to-cart/simple.php` |
 | `blocks/` | Gutenberg `donation-form` + `donations` | `includes/class-blocks.php:34-63` |
@@ -741,7 +741,7 @@ Kaynak dil (dönüşüm sonrası) İngilizce `__('…', 'woo-donation-popup')`; 
 |-------|-------|-----|
 | Domain Path | `woo-donation-popup.php` başlık `Domain Path: /languages` | WP 6.7+ `init`’te yükle |
 | Yükleme | `WDP_Plugin_Bootstrap::load_textdomain` | `load_plugin_textdomain('woo-donation-popup', false, dirname(plugin_basename(WDP_PLUGIN_FILE)) . '/languages')` |
-| JS sözlük | `includes/i18n/class-js-strings.php` → `wdp_ajax.i18n_dict` | Üretici: `tools/i18n/gen-js-strings.mjs` (`--check`) |
+| JS sözlük | `includes/i18n/class-wdp-js-i18n.php` → `wdp_ajax.i18n_dict` | Üretici: `tools/i18n/gen-js-strings.mjs` (`--check`) |
 | JS API | `WDPApp.i18n.__(msg, domain)`, `_x(msg, ctx, domain)`, `sprintf` | Bağlam anahtarı `ctx\u0004msg`; yoksa kaynak |
 | POT | `npm run i18n:pot` → `tools/i18n/make-pot.mjs` | xgettext PHP + `WDPApp.i18n.__` / `_x` |
 | Birleşim | `npm run i18n:merge` | `languages/parts/*.po` → `tr_TR.po`; aynı msgid farklı msgstr = ÇAKIŞMA |

@@ -157,7 +157,7 @@
       const badge = document.createElement('span');
       badge.className = 'wdp-mini-cart-count';
       badge.textContent = String(itemCount);
-      badge.setAttribute('aria-label', WDPApp.i18n.sprintf(WDPApp.i18n.__('%d product', 'woo-donation-popup'), itemCount));
+      badge.setAttribute('aria-label', WDPApp.i18n.sprintf(WDPApp.i18n._x('%d product', 'cart badge label', 'woo-donation-popup'), itemCount));
       titleWrap.appendChild(badge);
     }
     header.appendChild(titleWrap);

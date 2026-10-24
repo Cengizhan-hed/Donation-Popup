@@ -486,8 +486,13 @@ class WDP_Phone_Field {
 
         $default_iso = self::get_default_country_iso();
         $countries   = self::get_countries();
-        $first_row   = $countries ? reset($countries) : array();
-        $dial        = isset($countries[ $default_iso ]['dial']) ? $countries[ $default_iso ]['dial'] : (isset($first_row['dial']) ? $first_row['dial'] : '');
+        $dial        = '';
+        if (isset($countries[ $default_iso ]['dial'])) {
+            $dial = $countries[ $default_iso ]['dial'];
+        } elseif ($countries) {
+            $first_row = reset($countries);
+            $dial      = isset($first_row['dial']) ? $first_row['dial'] : '';
+        }
 
         $name = preg_replace('/[^a-z0-9_\-]/i', '', (string) $args['name']);
         $id   = $args['id'] ? sanitize_html_class((string) $args['id']) : '';

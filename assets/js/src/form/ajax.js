@@ -373,7 +373,7 @@
         normalizedMessage.includes(WDPApp.i18n._x('unexpected error', 'server error keyword', 'woo-donation-popup').toLowerCase()) ||
         normalizedMessage.includes(WDPApp.i18n._x('cart object', 'server error keyword', 'woo-donation-popup').toLowerCase());
 
-      const fallbackMessage = rawMessage || WDPApp.i18n.__('The action could not be completed. Please try again.', 'woo-donation-popup');
+      const fallbackMessage = rawMessage || WDPApp.i18n._x('The action could not be completed. Please try again.', 'frontend script', 'woo-donation-popup');
 
       const shouldTryFieldAnchors = isValidationError && !isTechnicalNoiseError;
       const validationAnchored =

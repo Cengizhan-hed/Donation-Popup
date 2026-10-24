@@ -660,7 +660,7 @@
           checkoutBtn.disabled = false;
           checkoutBtn.classList.remove("wdp-loading");
         }
-        showFormError(form, WDPApp.i18n.__('The action could not be completed. Please try again.', 'woo-donation-popup'));
+        showFormError(form, WDPApp.i18n._x('The action could not be completed. Please try again.', 'frontend script', 'woo-donation-popup'));
         return false;
       }
     }

@@ -63,6 +63,7 @@ msgstr "Lütfen işaretli alanları kontrol edin."
 
 #: assets/js/src/form/ajax.js:376
 #: assets/js/src/form.js:663
+msgctxt "frontend script"
 msgid "The action could not be completed. Please try again."
 msgstr "İşlem şu anda tamamlanamadı. Lütfen tekrar deneyin."
 
@@ -88,6 +89,7 @@ msgstr "Bağış Sepetiniz"
 
 #: assets/js/src/cart/ui.js:160
 #, php-format
+msgctxt "cart badge label"
 msgid "%d product"
 msgstr "%d ürün"
 
@@ -324,6 +326,7 @@ msgid "Please fill in the shareholder name and phone details."
 msgstr "Lütfen hissedar ad ve telefon bilgilerini doldurun."
 
 #: assets/js/src/form/wizard.js:402
+msgctxt "wizard step"
 msgid "Please enter a valid phone number."
 msgstr "Geçerli bir telefon girin."
 

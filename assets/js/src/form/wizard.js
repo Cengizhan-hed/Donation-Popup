@@ -399,7 +399,7 @@
           const st = formValidate.getPhoneValidationState(phone, { required: true });
           phoneOk = !!(st && st.ok);
           if (!phoneOk && typeof feedback.showInputError === 'function') {
-            feedback.showInputError(phone, (st && st.message) || WDPApp.i18n.__('Please enter a valid phone number.', 'woo-donation-popup'));
+            feedback.showInputError(phone, (st && st.message) || WDPApp.i18n._x('Please enter a valid phone number.', 'wizard step', 'woo-donation-popup'));
           }
         } else if (!String(phone.value || '').trim()) {
           phoneOk = false;

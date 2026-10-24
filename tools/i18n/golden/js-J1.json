@@ -161,13 +161,13 @@
       "file": "assets/js/src/form/ajax.js",
       "tr": "İşlem şu anda tamamlanamadı. Lütfen tekrar deneyin.",
       "en": "The action could not be completed. Please try again.",
-      "ctx": ""
+      "ctx": "frontend script"
     },
     {
       "file": "assets/js/src/form.js",
       "tr": "İşlem şu anda tamamlanamadı. Lütfen tekrar deneyin.",
       "en": "The action could not be completed. Please try again.",
-      "ctx": ""
+      "ctx": "frontend script"
     },
     {
       "file": "assets/js/src/cart/ui.js",
@@ -203,7 +203,7 @@
       "file": "assets/js/src/cart/ui.js",
       "tr": "%d ürün",
       "en": "%d product",
-      "ctx": ""
+      "ctx": "cart badge label"
     },
     {
       "file": "assets/js/src/cart/ui.js",
@@ -557,7 +557,7 @@
       "file": "assets/js/src/form/wizard.js",
       "tr": "Geçerli bir telefon girin.",
       "en": "Please enter a valid phone number.",
-      "ctx": ""
+      "ctx": "wizard step"
     },
     {
       "file": "assets/js/src/form/wizard.js",

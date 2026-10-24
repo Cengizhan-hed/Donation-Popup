@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: woo-donation-popup\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-24 13:21:40+0000\n"
-"PO-Revision-Date: 2026-10-24 13:21:40+0000\n"
+"POT-Creation-Date: 2026-10-24 13:30:51+0000\n"
+"PO-Revision-Date: 2026-10-24 13:30:51+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: tr_TR\n"
@@ -35,6 +35,11 @@ msgstr "(Elementor’da “Bağış Listesi” widget’ı, Gutenberg’de “Ba
 msgid "{donors} people donated"
 msgstr "{donors} kişi bağış yaptı"
 
+#: assets/js/src/form/validate.js:555
+#, php-format
+msgid "%1$d. share %2$s"
+msgstr "%1$d. hisse %2$s"
+
 #: includes/class-donations-list.php:820
 msgid "%1$s / %2$s"
 msgstr "%1$s / %2$s"
@@ -42,6 +47,11 @@ msgstr "%1$s / %2$s"
 #: includes/class-donations-list.php:838
 msgid "%1$s / %2$s raised"
 msgstr "%1$s / %2$s toplandı"
+
+#: assets/js/src/cart/ui.js:212
+#, php-format
+msgid "%d item"
+msgstr "%d adet"
 
 #: includes/class-admin-product-data-tab.php:211
 msgid "%d order could not be converted"
@@ -65,9 +75,19 @@ msgstr[1] "%d ürün"
 msgid "%d products are currently donation products."
 msgstr "Şu an %d ürün bağış ürünü."
 
+#: assets/js/src/modal.js:498
+#, php-format
+msgid "%s form opened"
+msgstr "%s formu açıldı"
+
 #: includes/class-progress-form.php:73
 msgid "%s remaining"
 msgstr "%s kaldı"
+
+#: assets/js/src/progress-bar.js:139
+#, php-format
+msgid "%s%% of the goal completed"
+msgstr "Hedefin %%%s’i tamamlandı"
 
 #: includes/class-admin-form-tabs-renderer.php:428
 msgid "+1 555 000 0000"
@@ -88,6 +108,10 @@ msgstr "0 = kapalı; aksi halde 0,5 ile 15 arasında bir yüzde. Aralık dışı
 #: includes/class-admin-form-tabs-renderer.php:401
 msgid "1 Details"
 msgstr "1 Bilgi"
+
+#: assets/js/src/form/validate.js:833
+msgid "1 shareholder form is incomplete."
+msgstr "1 hissedar formu eksik."
 
 #: includes/class-admin-form-tabs-renderer.php:511
 msgid "1) Shortcode / trigger buttons"
@@ -113,6 +137,10 @@ msgstr "2) Popup ve gömülü form içindeki butonlar"
 msgid "3 Confirm"
 msgstr "3 Onay"
 
+#: assets/js/src/form/ajax.js:419
+msgid "A connection error occurred. Please try again."
+msgstr "Bağlantı hatası oluştu. Lütfen tekrar deneyin."
+
 #: includes/class-admin-product-data-tab.php:797
 msgid "A second, smaller donation row added to the form"
 msgstr "Forma eklenen ikinci, küçük bağış satırı"
@@ -128,6 +156,10 @@ msgstr "Aksiyon butonları, mini sepet kartı ve ürün satırı renkleri."
 #: includes/class-admin-products-list-table.php:48
 msgid "Actions"
 msgstr "İşlemler"
+
+#: assets/js/src/cart/ui.js:245
+msgid "Add a donation to continue to checkout."
+msgstr "Bağış ekleyerek buradan ödeme adımına geçebilirsiniz."
 
 #: includes/class-admin-form-tabs-renderer.php:207
 #: includes/class-admin-settings-normalizer.php:377
@@ -189,6 +221,10 @@ msgstr "Alt Bağış Toggle Metni"
 #: includes/traits/trait-wdp-ajax-cart-add.php:458
 msgid "Add-on donation WooCommerce product was not found. Enter a valid product ID in Success & Mini Cart or the product settings."
 msgstr "Alt bağış WC ürünü bulunamadı. Başarı & Mini Sepet veya ürün ayarında geçerli bir ürün ID girin."
+
+#: assets/js/src/form/wizard.js:29
+msgid "Additional donation"
+msgstr "Alt bağış"
 
 #: includes/class-admin-form-tabs-renderer.php:408
 msgctxt "admin form tab"
@@ -370,6 +406,10 @@ msgstr "Avada: Layouts → ürün layout’u → Code Block → yapıştır → 
 #: includes/class-phone-field.php:73
 msgid "Azerbaijan"
 msgstr "Azerbaycan"
+
+#: assets/js/src/form/wizard.js:161
+msgid "Back"
+msgstr "Geri"
 
 #: includes/class-admin-product-data-tab.php:876
 msgid "Background color"
@@ -576,6 +616,12 @@ msgstr "Kart Radius (px)"
 msgid "Cart"
 msgstr "Sepet"
 
+#: assets/js/src/cart/ui.js:160
+#, php-format
+msgctxt "cart badge label"
+msgid "%d product"
+msgstr "%d ürün"
+
 #: includes/traits/trait-wdp-ajax-cart-query.php:232
 msgid "Cart item key was not found."
 msgstr "Sepet öğesi anahtarı bulunamadı."
@@ -734,6 +780,10 @@ msgstr "Kompakt"
 msgid "Complete donation"
 msgstr "Bağışı Tamamla"
 
+#: assets/js/src/form/wizard.js:30
+msgid "Confirmation"
+msgstr "Onay"
+
 #: includes/class-admin-design-studio-renderer.php:331
 msgid "Confirmation icon on the success / thank-you screen."
 msgstr "Başarı / teşekkür ekranındaki onay ikonu."
@@ -745,6 +795,15 @@ msgstr "Onaylı (Dolu) Bar"
 #: includes/class-admin-layout-tabs-renderer.php:134
 msgid "Confirmed / cart / typed slice colors and the card surface."
 msgstr "Onaylı / sepet / yazılan dilim renkleri ve kart yüzeyi."
+
+#: assets/js/src/progress-bar.js:296
+#, php-format
+msgid "Confirmed %1$s%%, %2$s%% including pending and typed amounts"
+msgstr "Onaylı %1$s%%, bekleyen ve yazılan ile %2$s%%"
+
+#: assets/js/src/core/utils.js:842
+msgid "Connection restored."
+msgstr "Bağlantı yeniden kuruldu."
 
 #: includes/class-admin-meta-tracking-tab-renderer.php:59
 msgid "Console debug log (no personal data)"
@@ -811,6 +870,10 @@ msgstr "Köşe yuvarlaklığı (px)"
 #: includes/class-admin-assets.php:121
 msgid "Could not copy; select the text and copy it manually."
 msgstr "Kopyalanamadı; metni seçip elle kopyalayın."
+
+#: assets/js/src/form/ajax.js:451
+msgid "Could not submit"
+msgstr "Gönderilemedi"
 
 #: includes/elementor/class-widget-donations-list.php:76
 msgid "Count"
@@ -1020,9 +1083,17 @@ msgstr "Bağış bilgileri (Donation Popup)"
 msgid "Donation form"
 msgstr "Bağış formu"
 
+#: assets/js/src/modal.js:738
+msgid "Donation form closed"
+msgstr "Bağış formu kapatıldı"
+
 #: includes/templates/class-modal-shell-renderer.php:374
 msgid "Donation form for %s"
 msgstr "%s için bağış formu"
+
+#: assets/js/src/modal.js:500
+msgid "Donation form opened"
+msgstr "Bağış formu açıldı"
 
 #: includes/templates/class-modal-shell-renderer.php:198
 msgid "Donation form: product #%d was not found. Check the product ID in the shortcode."
@@ -1035,6 +1106,14 @@ msgstr "Bağış formu: ürün bulunamadı (id/slug/sku verilmedi veya bu sayfa 
 #: includes/class-cart.php:546 includes/class-order-meta-keys.php:81
 msgid "Donation note"
 msgstr "Bağış Notu"
+
+#: assets/js/src/modal.js:738
+msgid "Donation panel closed"
+msgstr "Bağış paneli kapatıldı"
+
+#: assets/js/src/modal.js:500
+msgid "Donation panel opened"
+msgstr "Bağış paneli açıldı"
 
 #: includes/class-admin-page-renderer.php:35
 msgid "Donation Popup"
@@ -1280,6 +1359,11 @@ msgstr "Alan Border"
 msgid "Field icons"
 msgstr "Alan ikonları"
 
+#: assets/js/src/form/messages.js:112
+#: assets/js/src/form/validate.js:198
+msgid "field is missing"
+msgstr "alan eksik"
+
 #: includes/class-admin-form-tabs-renderer.php:162
 msgid "Field layout"
 msgstr "Alan Düzeni"
@@ -1336,6 +1420,10 @@ msgstr "Form alanları"
 msgid "Form font stack"
 msgstr "Form font stack"
 
+#: assets/js/src/form/wizard.js:154
+msgid "Form steps"
+msgstr "Form adımları"
+
 #: includes/class-admin-form-tabs-renderer.php:164
 msgctxt "form tab title"
 msgid "Email field"
@@ -1349,6 +1437,16 @@ msgstr "Form test sayfası"
 msgid "Forms"
 msgstr "Formlar"
 
+#: assets/js/src/core/utils.js:241
+#, php-format
+msgid "Fractional amounts are not allowed on this site, e.g. %s"
+msgstr "Bu sitede kuruşlu tutar girilemez, örn. %s"
+
+#: assets/js/src/form/validate.js:718
+#: assets/js/src/form/wizard.js:453
+msgid "Fractional amounts are not allowed on this site, e.g. 10"
+msgstr "Bu sitede kuruşlu tutar girilemez, örn. 10"
+
 #: includes/class-phone-field.php:39
 msgid "France"
 msgstr "Fransa"
@@ -1356,6 +1454,12 @@ msgstr "Fransa"
 #: includes/class-admin-placement-tab-renderer.php:29
 msgid "From here you manage which products count as donation products and the “Donate” behavior on WooCommerce shop / product pages."
 msgstr "Hangi ürünlerin bağış ürünü sayılacağını ve WooCommerce mağaza / ürün sayfalarında “Bağış Yap” davranışını buradan yönetirsiniz."
+
+#: assets/js/src/form/ajax.js:376
+#: assets/js/src/form.js:663
+msgctxt "frontend script"
+msgid "The action could not be completed. Please try again."
+msgstr "İşlem şu anda tamamlanamadı. Lütfen tekrar deneyin."
 
 #: includes/class-form-matrix.php:96
 msgid "Full"
@@ -1378,6 +1482,10 @@ msgstr "ad soyad alanı eksik"
 #: includes/class-admin-design-studio-renderer.php:323
 msgid "Full name icon"
 msgstr "Ad Soyad ikonu"
+
+#: assets/js/src/form/messages.js:104
+msgid "full name is missing"
+msgstr "ad soyad alanı eksik"
 
 #: includes/traits/trait-wdp-assets-registry.php:364
 msgid "Full name is required."
@@ -1709,6 +1817,15 @@ msgstr "Paket içe aktar"
 msgid "Imported pack"
 msgstr "İçe aktarılan paket"
 
+#: assets/js/src/progress-bar.js:321
+msgid "In progress"
+msgstr "Devam ediyor"
+
+#: assets/js/src/form/validate.js:581
+#, php-format
+msgid "Incomplete shareholder forms: %d."
+msgstr "%d hissedar formu eksik."
+
 #: includes/templates/class-form-fields-renderer.php:293 includes/templates/class-form-fields-renderer.php:699
 msgid "Increase"
 msgstr "Arttır"
@@ -1927,6 +2044,10 @@ msgstr "Canlı önizleme"
 msgid "Load the base Meta pixel from this plugin (off by default)"
 msgstr "Temel Meta pikselini bu eklentiden yükle (varsayılan kapalı)"
 
+#: assets/js/src/form/ajax.js:308
+msgid "Loading cart contents..."
+msgstr "Sepet içeriği yükleniyor..."
+
 #: includes/traits/trait-wdp-assets-registry.php:345
 msgid "Loading..."
 msgstr "Yükleniyor..."
@@ -1982,6 +2103,11 @@ msgstr "Yalnızca işaretli ürünler"
 #: includes/class-admin-layout-tabs-renderer.php:208
 msgid "Maximum (px)"
 msgstr "En fazla (px)"
+
+#: assets/js/src/form/validate.js:735
+#, php-format
+msgid "Maximum amount: %s"
+msgstr "Maksimum fiyat: %s"
 
 #: includes/traits/trait-wdp-ajax-cart-add.php:87
 msgid "Maximum number of shares exceeded"
@@ -2087,6 +2213,10 @@ msgstr "En düşük tutar"
 msgid "Minimum amount (%s)"
 msgstr "En düşük tutar (%s)"
 
+#: assets/js/src/form/wizard.js:463
+msgid "Minimum amount: "
+msgstr "Minimum tutar: "
+
 #: includes/traits/trait-wdp-ajax-cart-add.php:225 includes/traits/trait-wdp-assets-registry.php:353
 msgid "Minimum price: "
 msgstr "Minimum fiyat: "
@@ -2170,6 +2300,10 @@ msgstr "Yeni Bağış"
 msgid "New Zealand"
 msgstr "Yeni Zelanda"
 
+#: assets/js/src/form/wizard.js:164
+msgid "Next"
+msgstr "İleri"
+
 #: includes/class-phone-field.php:139
 msgid "Niger"
 msgstr "Nijer"
@@ -2185,6 +2319,10 @@ msgstr "Hayır"
 #: includes/class-admin-products-list-table.php:266
 msgid "No category"
 msgstr "Kategori yok"
+
+#: assets/js/src/core/utils.js:832
+msgid "No connection. Actions can be retried when you are back online."
+msgstr "Bağlantı yok. İşlemler bağlantı gelince tekrar denenebilir."
 
 #: includes/class-admin-products-list-table.php:314
 msgid "No goal"
@@ -2268,6 +2406,10 @@ msgstr "Ürün sayfasında zaten başlık olduğu için varsayılan kapalıdır.
 msgid "Offers the donor the option to also cover the payment processing cost (on all donation types)."
 msgstr "Bağışçıya ödeme işlem maliyetini de üstlenme seçeneği sunar (tüm bağış tiplerinde)."
 
+#: assets/js/src/core/utils.js:831
+msgid "Offline"
+msgstr "Çevrimdışı"
+
 #: includes/class-admin-product-data-tab.php:763
 msgid "Old text: %s — no longer used; the real number is used."
 msgstr "Eski metin: %s — artık kullanılmıyor, gerçek sayı kullanılır."
@@ -2324,6 +2466,10 @@ msgstr "Modal, input, buton ve kartlar için tek radius (varsayılan 10)."
 #: includes/class-admin-form-tabs-renderer.php:492
 msgid "One-click buttons such as $100 / $250 above the amount box."
 msgstr "Tutar kutusunun üstünde 100 ₺ / 250 ₺ gibi tek tıkla seçilen düğmeler."
+
+#: assets/js/src/core/utils.js:841
+msgid "Online"
+msgstr "Çevrimiçi"
 
 #: includes/class-admin-form-tabs-renderer.php:580
 msgid "Only on the shortcode trigger; use it for readability on a light background."
@@ -2456,9 +2602,17 @@ msgstr "Telefon ikonu"
 msgid "Phone number *"
 msgstr "Telefon Numarası *"
 
+#: assets/js/src/form/messages.js:110
+msgid "phone number is missing or invalid"
+msgstr "telefon alanı eksik veya hatalı"
+
 #: includes/traits/trait-wdp-assets-registry.php:362
 msgid "Phone number is missing."
 msgstr "Telefon numarası eksik."
+
+#: assets/js/src/form/wizard.js:340
+msgid "Phone number is required."
+msgstr "Telefon numarası zorunludur."
 
 #: includes/class-admin-form-tabs-renderer.php:158
 msgid "Phone placeholder"
@@ -2488,6 +2642,20 @@ msgstr "Placeholder Rengi"
 msgid "Please add to cart using the donation form. Donor details are required."
 msgstr "Lütfen bağış formunu kullanarak sepete ekleyin. Bağışçı bilgileri gereklidir."
 
+#: assets/js/src/form/validate.js:778
+msgid "Please check the additional donation amount."
+msgstr "Lütfen sadaka tutarını kontrol edin."
+
+#: assets/js/src/form/feedback.js:372
+#: assets/js/src/form/validate.js:20
+#: assets/js/src/form.js:561
+msgid "Please check the highlighted fields."
+msgstr "Lütfen işaretli alanları kontrol edin."
+
+#: assets/js/src/form/wizard.js:413
+msgid "Please check the phone number."
+msgstr "Telefon numarasını kontrol edin."
+
 #: includes/class-utils.php:348
 msgid "Please enter %s or more for the add-on donation."
 msgstr "Alt bağış için lütfen %s ve üstü değerler girin."
@@ -2500,13 +2668,33 @@ msgstr "Lütfen %s ve üstü değerler girin."
 msgid "Please enter a donation amount greater than 0."
 msgstr "Lütfen 0'dan büyük bir bağış tutarı girin."
 
+#: assets/js/src/form/validate.js:706
+#: assets/js/src/form.js:487
+msgid "Please enter a donation amount."
+msgstr "Lütfen bağış tutarını giriniz."
+
+#: assets/js/src/form/validate.js:747
+#, php-format
+msgid "Please enter a total of %s or more."
+msgstr "Lütfen %s ve üstü toplam tutar girin."
+
 #: includes/class-utils.php:323 includes/class-utils.php:333 includes/traits/trait-wdp-ajax-cart-add.php:492 includes/traits/trait-wdp-assets-registry.php:359
 msgid "Please enter a valid add-on donation amount."
+msgstr "Geçerli bir alt bağış tutarı giriniz."
+
+#: assets/js/src/form/messages.js:120
+#: assets/js/src/form/sadaka.js:34
+#: assets/js/src/form.js:46
+msgid "Please enter a valid additional donation amount."
 msgstr "Geçerli bir alt bağış tutarı giriniz."
 
 #: includes/class-product-settings-service.php:548
 msgid "Please enter a valid amount."
 msgstr "Geçerli bir tutar girin."
+
+#: assets/js/src/form/validate.js:726
+msgid "Please enter a valid donation amount."
+msgstr "Lütfen geçerli bir bağış tutarı giriniz."
 
 #: includes/class-donation-optional-fields.php:101 includes/traits/trait-wdp-assets-registry.php:365
 msgid "Please enter a valid email address."
@@ -2515,6 +2703,13 @@ msgstr "Lütfen geçerli bir e-posta adresi giriniz."
 #: includes/traits/trait-wdp-assets-registry.php:361
 msgid "Please enter a valid phone number."
 msgstr "Geçerli bir telefon numarası giriniz."
+
+#: assets/js/src/form/messages.js:142
+#: assets/js/src/form/sadaka.js:42
+#: assets/js/src/form.js:54
+#, php-format
+msgid "Please enter at least %s."
+msgstr "En az %s bağış giriniz."
 
 #: includes/traits/trait-wdp-assets-registry.php:352 includes/traits/trait-wdp-utils-price.php:242
 msgid "Please enter the amount in this format, e.g. %s"
@@ -2543,6 +2738,22 @@ msgstr "Lütfen Telefon bilginizi giriniz."
 #: includes/class-cart.php:235 includes/traits/trait-wdp-ajax-cart-add.php:101
 msgid "Please fill in all required fields: "
 msgstr "Lütfen tüm zorunlu alanları doldurun: "
+
+#: assets/js/src/form/wizard.js:475
+msgid "Please fill in the missing or invalid fields."
+msgstr "Lütfen eksik veya hatalı alanları doldurun."
+
+#: assets/js/src/form/wizard.js:302
+msgid "Please fill in the share details."
+msgstr "Lütfen hisse bilgilerini doldurun."
+
+#: assets/js/src/form/wizard.js:349
+msgid "Please fill in the shareholder name and phone details."
+msgstr "Lütfen hissedar ad ve telefon bilgilerini doldurun."
+
+#: assets/js/src/form/wizard.js:288
+msgid "Please select at least 1 share."
+msgstr "En az 1 hisse seçin."
 
 #: includes/class-admin-page-renderer.php:40
 msgid "Plugin version"
@@ -2653,6 +2864,10 @@ msgstr "Düğme metni"
 #: includes/elementor/class-widget-donation-form.php:103
 msgid "Product ID or slug"
 msgstr "Ürün ID veya slug"
+
+#: assets/js/src/product.js:154
+msgid "Product information could not be loaded. Please refresh the page and try again."
+msgstr "Ürün bilgileri alınamadı. Lütfen sayfayı yenileyip tekrar deneyin."
 
 #: includes/traits/trait-wdp-ajax-cart-add.php:253
 msgid "Product is already in the cart"
@@ -2804,6 +3019,10 @@ msgstr "\"%1$s\" toplamı yeniden hesaplandı: %2$s (%3$d sipariş)."
 msgid "Recalculating the total…"
 msgstr "Toplam yeniden hesaplanıyor…"
 
+#: assets/js/src/form/ajax.js:239
+msgid "Redirecting you to checkout."
+msgstr "Ödeme adımına yönlendiriliyorsunuz."
+
 #: includes/class-admin-product-data-tab.php:528
 #: includes/class-admin-product-data-tab.php:541
 msgid "Regular product"
@@ -2816,6 +3035,10 @@ msgstr "Normal gölge rengi (hex)"
 #: includes/class-admin-form-tabs-renderer.php:551
 msgid "Regular shadow: X/Y/blur/spread (px)"
 msgstr "Normal gölge: X/Y/bulanık/yayılım (px)"
+
+#: assets/js/src/cart/ui.js:221
+msgid "Remove from cart"
+msgstr "Sepetten Kaldır"
 
 #. YENI-SARMA block.json
 msgid "Renders the donation form for the current or selected product."
@@ -3004,6 +3227,27 @@ msgstr "Senegal"
 msgid "Serbia"
 msgstr "Sırbistan"
 
+#: assets/js/src/form/ajax.js:374
+msgctxt "server error keyword"
+msgid "cart object"
+msgstr "sepet nesnesi"
+
+#: assets/js/src/form/ajax.js:372
+msgctxt "server error keyword"
+msgid "invalid request"
+msgstr "geçersiz istek"
+
+#: assets/js/src/cart/actions.js:122
+#: assets/js/src/form/ajax.js:371
+msgctxt "server error keyword"
+msgid "security"
+msgstr "güvenlik"
+
+#: assets/js/src/form/ajax.js:373
+msgctxt "server error keyword"
+msgid "unexpected error"
+msgstr "beklenmeyen bir hata"
+
 #: includes/class-admin-layout-tabs-renderer.php:195
 msgid "Set as a percentage of the screen width; min/max values prevent overflow."
 msgstr "Ekran genişliğinin yüzdesi olarak ayarlanır; min/max değerler taşmayı önler."
@@ -3093,6 +3337,11 @@ msgstr "Hissedar kartı, başlık şeridi ve alan arka planı."
 msgid "Shareholder details"
 msgstr "Hissedar Bilgileri"
 
+#: assets/js/src/form/validate.js:830
+#, php-format
+msgid "Shareholder form %d is incomplete."
+msgstr "%d. hissedar formu eksik."
+
 #: includes/class-admin-form-tabs-renderer.php:156
 msgid "Shareholder heading text"
 msgstr "Hissedar Başlık Metni"
@@ -3100,6 +3349,10 @@ msgstr "Hissedar Başlık Metni"
 #: includes/traits/trait-wdp-assets-registry.php:366
 msgid "Shareholder name is required."
 msgstr "Hissedar adı zorunludur."
+
+#: assets/js/src/form/wizard.js:28
+msgid "Shares"
+msgstr "Hisseler"
 
 #: includes/class-icon-library.php:55
 msgid "Shield"
@@ -3311,6 +3564,10 @@ msgstr "Normal form ayarları başarıyla kaydedildi."
 msgid "Star"
 msgstr "Yıldız"
 
+#: assets/js/src/form/wizard.js:528
+msgid "Step"
+msgstr "Adım"
+
 #: includes/class-admin-product-data-tab.php:855
 msgid "Story (side by side)"
 msgstr "Hikâye (yan yana)"
@@ -3511,6 +3768,15 @@ msgstr "Bitiş tarihi geçerli bir takvim günü olmalıdır."
 msgid "The end date must be in Y-m-d format (e.g. 2026-12-31)."
 msgstr "Bitiş tarihi Y-m-d biçiminde olmalıdır (örn. 2026-12-31)."
 
+#: assets/js/src/modal.js:35
+msgid "The form did not finish loading. Please check your details."
+msgstr "Form tam yüklenemedi, lütfen bilgilerinizi kontrol edin."
+
+#: assets/js/src/bootstrap/event-manager.js:245
+#: assets/js/src/form/cta-ready.js:144
+msgid "The form is not ready yet. Please wait a few seconds and try again."
+msgstr "Form henüz yüklenemedi. Lütfen birkaç saniye bekleyip tekrar deneyin."
+
 #: includes/class-form-matrix.php:48
 msgid "The form test page could not be rendered. See the error log for details."
 msgstr "Form test sayfası çizilemedi. Ayrıntı hata günlüğünde."
@@ -3651,6 +3917,11 @@ msgstr "Bu işlem geri alınamaz. Onaylamadan kaydedilmez."
 msgid "This field is required"
 msgstr "Bu alan zorunludur"
 
+#: assets/js/src/form/feedback.js:247
+#: assets/js/src/form.js:497
+msgid "This field is required."
+msgstr "Bu alan zorunludur."
+
 #: includes/class-admin-product-data-tab.php:709
 msgid "This is not a note written by the donor; it is an info text shown at the top of the form."
 msgstr "Bağışçının yazdığı not değildir; formun üstünde gösterilen bilgi metnidir."
@@ -3707,6 +3978,10 @@ msgstr "Çok fazla istek gönderildi. Lütfen kısa süre sonra tekrar deneyin."
 msgid "Too many requests were sent. Please wait a while and try again."
 msgstr "Çok fazla istek gönderildi. Lütfen bir süre bekleyip tekrar deneyin."
 
+#: assets/js/src/form/ajax.js:28
+msgid "Too many requests. Please wait a moment and try again."
+msgstr "Çok fazla istek gönderildi. Lütfen bir süre bekleyip tekrar deneyin."
+
 #: includes/class-admin-layout-tabs-renderer.php:233
 #: includes/class-admin-layout-tabs-renderer.php:261
 msgid "Top spacing (px)"
@@ -3743,6 +4018,10 @@ msgstr "Güven şeridi ikonu"
 #: includes/class-admin-design-studio-renderer.php:354
 msgid "Trust text (single-badge fallback)"
 msgstr "Güven metni (tek rozet yedek)"
+
+#: assets/js/src/form/ajax.js:433
+msgid "Try again"
+msgstr "Tekrar dene"
 
 #: includes/class-phone-field.php:127
 msgid "Tunisia"
@@ -3862,6 +4141,10 @@ msgstr "Özbekistan"
 #: includes/class-admin-page-renderer.php:41
 msgid "v%s"
 msgstr "v%s"
+
+#: assets/js/src/progress-bar.js:323
+msgid "Very close to the goal"
+msgstr "Hedefe çok yakın"
 
 #: includes/class-phone-field.php:112
 msgid "Vietnam"
@@ -4026,6 +4309,21 @@ msgstr "Pencere genişliği ve iç padding “Modal & Form Görünümü” sekme
 msgid "Window width and padding are on the “Popup & form layout” tab; this tab covers the popup’s inner color, texts, and buttons."
 msgstr "Pencere genişliği ve padding “Modal & Form Görünümü” sekmesindedir; bu sekme modalın iç rengi, yazılar ve butonları kapsar."
 
+#: assets/js/src/form/wizard.js:27
+msgctxt "wizard step"
+msgid "Amount"
+msgstr "Tutar"
+
+#: assets/js/src/form/wizard.js:333
+msgctxt "wizard step"
+msgid "Full name is required."
+msgstr "Ad soyad zorunludur."
+
+#: assets/js/src/form/wizard.js:402
+msgctxt "wizard step"
+msgid "Please enter a valid phone number."
+msgstr "Geçerli bir telefon girin."
+
 #: includes/class-admin-meta-tracking-tab-renderer.php:55
 msgid "WooCommerce / Meta integration detected (for example facebook-for-woocommerce). Keep this off by default; otherwise two Purchase events can fire on the thank-you page. Turn it on only if WooCommerce is not sending Purchase."
 msgstr "WooCommerce / Meta entegrasyonu algılandı (ör. facebook-for-woocommerce). Varsayılan kapalı tutun; aksi halde teşekkür sayfasında iki Purchase oluşabilir. Yalnızca WooCommerce Purchase göndermiyorsa etkinleştirin."
@@ -4069,6 +4367,10 @@ msgstr "Yemen"
 msgid "Yes"
 msgstr "Evet"
 
+#: assets/js/src/form/ajax.js:418
+msgid "You appear to be offline. Please try again when you are back online."
+msgstr "Çevrimdışı görünüyorsunuz. Bağlantı gelince tekrar deneyin."
+
 #: includes/class-form-matrix.php:32
 msgid "You are not allowed to view this page."
 msgstr "Bu sayfayı görüntüleme yetkiniz yok."
@@ -4104,6 +4406,30 @@ msgstr "Kaydedilmemiş değişiklikleriniz var."
 #: includes/class-admin-assets.php:148
 msgid "You have unsaved changes. Are you sure you want to leave this tab?"
 msgstr "Kaydedilmemiş değişiklikleriniz var. Bu sekmeden ayrılmak istediğinize emin misiniz?"
+
+#: assets/js/src/cart/ui.js:242
+msgid "Your cart is empty"
+msgstr "Sepetiniz boş"
+
+#: assets/js/src/progress-bar.js:324
+msgid "Your contribution is being added"
+msgstr "Katınız ekleniyor"
+
+#: assets/js/src/form/wizard.js:26
+msgid "Your details"
+msgstr "Bilgileriniz"
+
+#: assets/js/src/cart/ui.js:154
+msgid "Your donation cart"
+msgstr "Bağış Sepetiniz"
+
+#: assets/js/src/form/ajax.js:148
+msgid "Your donation has been added to the cart"
+msgstr "Bağışınız sepete eklendi"
+
+#: assets/js/src/form/ajax.js:245
+msgid "Your donation has been added to the cart."
+msgstr "Bağışınız sepete eklendi."
 
 #: includes/traits/trait-wdp-assets-registry.php:370
 msgid "Your donation was added to the cart"
