@@ -72,6 +72,10 @@ final class ProductPageDisplayTest extends TestCase {
 		$this->assertStringNotContainsString('.storefront', $css);
 		$this->assertStringNotContainsString('.fusion-', $css);
 		$this->assertStringNotContainsString('.ct-', $css);
+		$this->assertStringNotContainsString('.related{', $css);
+		$this->assertStringNotContainsString('.related {', $css);
+		$this->assertStringNotContainsString('ul.products{', $css);
+		$this->assertStringNotContainsString('.upsells{', $css);
 	}
 
 	public function test_unhook_removes_woo_single_add_to_cart(): void {
