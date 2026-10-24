@@ -484,3 +484,4 @@ Kullanıcı yönergesi önceki tüm görev metinlerinin yerini aldı; CLAUDE.md 
 | A3 | e2e:quick uzak süre 384–390 s (hedef < 300 s) | 3Z: paylaşılan context + ürün sayfası önbelleği + kabuk çift goto kaldırıldı; uzak doğrulama Claude |
 | T14 | GERÇEK BAĞIŞÇI HATASI: "Ödemeye Git"/"Sepete Ekle" form JS bağlanmadan tıklanınca sessiz yutuluyordu (sepete ekleme yok → boş sepet → /sepet/ yönlendirmesi). Yavaş mobil ağda erken dokunuş. staging30 aralıklı T5'in kök nedeni | 10.34.11: yükleniyor + tıklama kuyruğu + 5 sn sonra görünür hata |
 | A4 | Yerel checkout-flow-shares/campaign arada bir `#billing-first_name` fill 'element is not visible' (blok ödeme yeniden çizimi) — kararsız | izleniyor |
+| T15 | GERİLEME (10.34.11): bekletilen erken tıklama `requestSubmit` ile yerel form gönderimi → ürün sayfası yeniden yükleniyor, bağışçının doldurduğu form kayboluyordu (matris yakaladı) | 10.34.12: kuyruk yalnız eklenti gönderim yolu, ≤1 istek |
