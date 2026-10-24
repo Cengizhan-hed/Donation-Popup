@@ -63,5 +63,8 @@
     }
   },
   "protectedProductIds": [],
-  "altDonationProductId": 0
+  "altDonationProductId": 0,
+  "timeouts": {
+    "navigation": 60000
+  }
 }

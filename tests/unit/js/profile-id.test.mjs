@@ -8,7 +8,12 @@ import {
   sameProfileId,
   isolateUnitProfile,
   loadProfile,
+  resolveTimeouts,
+  getActiveTimeouts,
+  DEFAULT_TIMEOUTS_LOCAL,
+  DEFAULT_TIMEOUTS_REMOTE,
 } from '../../../tests/e2e/helpers/profile.mjs';
+import { parseRemoteSmokeArgs, isLocalSmokeEnv, SMOKE_CHECKS } from '../../../tests/e2e/helpers/remote-smoke.mjs';
 import { outputProfileId, requireProfileId, safeProfileId } from '../../../tests/e2e/helpers/e2e-paths.mjs';
 import {
   decideDonationViewContext,
@@ -118,5 +123,49 @@ describe('mutasyon cihazı', () => {
     assert.equal(deviceRunsMutations('iphone'), true);
     assert.equal(deviceRunsMutations('android'), false);
     assert.equal(deviceRunsMutations('desktop'), false);
+  });
+});
+
+describe('resolveTimeouts', () => {
+  it('profil değeri okunur; yoksa uzak/yerel varsayılan', () => {
+    const local = resolveTimeouts({ id: 'local', remote: false });
+    assert.deepEqual(local, { ...DEFAULT_TIMEOUTS_LOCAL });
+    const remoteDefault = resolveTimeouts({
+      id: 'staging-hedef',
+      ssh: { alias: 'hedef-staging' },
+    });
+    assert.equal(remoteDefault.navigation, DEFAULT_TIMEOUTS_REMOTE.navigation);
+    assert.equal(remoteDefault.action, DEFAULT_TIMEOUTS_REMOTE.action);
+    const fromJson = resolveTimeouts(loadProfile('staging'));
+    assert.equal(fromJson.navigation, 60000);
+    assert.equal(fromJson.action, DEFAULT_TIMEOUTS_REMOTE.action);
+    const ikram = resolveTimeouts(loadProfile('ikram'));
+    assert.equal(ikram.navigation, 60000);
+    const override = resolveTimeouts({
+      id: 'x',
+      remote: true,
+      timeouts: { navigation: 60000, action: 12000 },
+    });
+    assert.equal(override.navigation, 60000);
+    assert.equal(override.action, 12000);
+    assert.equal(override.expect, DEFAULT_TIMEOUTS_REMOTE.expect);
+  });
+
+  it('etkin profil getActiveTimeouts', () => {
+    const t = getActiveTimeouts();
+    assert.equal(t.navigation, DEFAULT_TIMEOUTS_LOCAL.navigation);
+  });
+});
+
+describe('e2e:remote-smoke args', () => {
+  it('varsayılan local; staging/ikram takma ad; kontrol listesi 8', () => {
+    assert.equal(parseRemoteSmokeArgs([]).envId, 'local');
+    assert.equal(parseRemoteSmokeArgs(['--env', 'staging']).envId, 'staging-hedef');
+    assert.equal(parseRemoteSmokeArgs(['--env=ikram']).envId, 'ikram-aid');
+    assert.equal(isLocalSmokeEnv('local'), true);
+    assert.equal(isLocalSmokeEnv('staging-hedef'), false);
+    assert.equal(SMOKE_CHECKS.length, 8);
+    assert.ok(SMOKE_CHECKS.includes('checkout-view'));
+    assert.ok(SMOKE_CHECKS.includes('amount-ambiguous'));
   });
 });

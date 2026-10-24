@@ -188,6 +188,64 @@ export function peekActiveProfile() {
   return activeProfile;
 }
 
+/** Yerel varsayılan (hızlı). */
+export const DEFAULT_TIMEOUTS_LOCAL = Object.freeze({
+  navigation: 20000,
+  action: 8000,
+  expect: 8000,
+  settle: 4000,
+});
+
+/** Uzak varsayılan. Profil `timeouts` yoksa bunlar. */
+export const DEFAULT_TIMEOUTS_REMOTE = Object.freeze({
+  navigation: 45000,
+  action: 15000,
+  expect: 15000,
+  settle: 8000,
+});
+
+/**
+ * Profil `timeouts` ({ navigation, action, expect, settle } ms).
+ * Alan yoksa veya geçersizse uzak/yerel varsayılan.
+ * @param {object|null|undefined} profile
+ * @returns {{ navigation: number, action: number, expect: number, settle: number }}
+ */
+export function resolveTimeouts(profile) {
+  const remote = isRemoteProfile(profile);
+  const defaults = remote ? DEFAULT_TIMEOUTS_REMOTE : DEFAULT_TIMEOUTS_LOCAL;
+  const raw = profile && typeof profile.timeouts === 'object' && profile.timeouts ? profile.timeouts : {};
+  const pick = (key, fallback) => {
+    const n = Number(raw[key]);
+    return Number.isFinite(n) && n > 0 ? Math.round(n) : fallback;
+  };
+  return {
+    navigation: pick('navigation', defaults.navigation),
+    action: pick('action', defaults.action),
+    expect: pick('expect', defaults.expect),
+    settle: pick('settle', defaults.settle),
+  };
+}
+
+/**
+ * Etkin profil zaman aşımları. Profil yoksa yerel varsayılan.
+ * @returns {{ navigation: number, action: number, expect: number, settle: number }}
+ */
+export function getActiveTimeouts() {
+  return resolveTimeouts(peekActiveProfile());
+}
+
+/**
+ * @param {import('@playwright/test').Page} page
+ * @param {{ navigation?: number, action?: number }} [timeouts]
+ */
+export function applyTimeoutsToPage(page, timeouts) {
+  const t = timeouts && typeof timeouts === 'object' ? timeouts : getActiveTimeouts();
+  const action = Number(t.action) > 0 ? Number(t.action) : getActiveTimeouts().action;
+  const navigation = Number(t.navigation) > 0 ? Number(t.navigation) : getActiveTimeouts().navigation;
+  page.setDefaultTimeout(action);
+  page.setDefaultNavigationTimeout(navigation);
+}
+
 /**
  * Uzak/yerel ayrımı profil JSON'una `remote` yazılmadan türetilir.
  * `profile.remote` boolean ise o kullanılır; yoksa `ssh.alias` doluysa uzak.

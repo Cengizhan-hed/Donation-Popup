@@ -25,7 +25,7 @@ import {
 } from './checks.mjs';
 import { markOrderAsE2E } from './test-cleanup.mjs';
 import { SKIP_EVIDENCE, SKIP_REASONS, classifySkip, makeSkip } from './skip-policy.mjs';
-import { getActiveProfile, isRemoteProfile } from './profile.mjs';
+import { getActiveProfile, isRemoteProfile, getActiveTimeouts } from './profile.mjs';
 import { popupPagePath } from './catalog-core.mjs';
 import { checkoutPathFromUrl } from './checkout-setup.mjs';
 import { comingSoonQuery } from './coming-soon.mjs';
@@ -49,7 +49,9 @@ import {
 } from './flow-diag.mjs';
 import { attachNativeSubmitReloadGuard } from './native-submit-guard.mjs';
 
-const CHECK_MS = 25000;
+function checkMs() {
+  return getActiveTimeouts().navigation;
+}
 
 /**
  * @param {import('@playwright/test').Locator} shell
@@ -60,7 +62,7 @@ async function revealShareholderRow(shell, index) {
   if ((await shName.count()) === 0) return shName;
   if (await shName.isVisible()) return shName;
   const header = shell.locator('.wdp-shareholder-header').nth(index - 1);
-  if ((await header.count()) > 0) await header.click({ timeout: CHECK_MS });
+  if ((await header.count()) > 0) await header.click({ timeout: checkMs() });
   return shName;
 }
 
@@ -68,24 +70,24 @@ async function revealShareholderRow(shell, index) {
  * @param {import('@playwright/test').Locator} shell
  * @param {{ kind: 'custom'|'shares'|'campaign', amount: number, fill?: string }} spec
  */
-async function fillDonationShell(shell, spec) {
+export async function fillDonationShell(shell, spec) {
   if (spec.kind === 'shares') {
     const people = SHAREHOLDERS.slice(0, 2);
     const increase = shell.locator('.wdp-share-btn-increase').first();
-    await increase.waitFor({ state: 'visible', timeout: CHECK_MS });
+    await increase.waitFor({ state: 'visible', timeout: checkMs() });
     const name1 = await revealShareholderRow(shell, 1);
-    await name1.waitFor({ state: 'visible', timeout: CHECK_MS });
+    await name1.waitFor({ state: 'visible', timeout: checkMs() });
     if (people.length >= 2) {
-      await increase.click({ timeout: CHECK_MS });
+      await increase.click({ timeout: checkMs() });
       await shell.locator('input[name="shareholder_name_2"]').first().waitFor({
         state: 'attached',
-        timeout: CHECK_MS,
+        timeout: checkMs(),
       });
     }
     for (let i = 0; i < people.length; i += 1) {
       const idx = i + 1;
       const shName = await revealShareholderRow(shell, idx);
-      await shName.waitFor({ state: 'visible', timeout: CHECK_MS });
+      await shName.waitFor({ state: 'visible', timeout: checkMs() });
       await shName.fill(people[i].name);
       const shPhone = shell.locator(`input[name="shareholder_phone_${idx}"]`).first();
       if ((await shPhone.count()) > 0) await shPhone.fill(people[i].phone);
@@ -116,12 +118,12 @@ async function fillDonationShell(shell, spec) {
  * @param {object} [currency]
  * @returns {Promise<{ amount: number, fill: string }>}
  */
-async function resolveDonationFillAmount(shell, currency) {
+export async function resolveDonationFillAmount(shell, currency) {
   const input = shell.locator(SEL.customPrice).first();
   if ((await input.count()) === 0) {
     throw new Error('form-tutar-okunamadi: custom_price yok');
   }
-  await input.waitFor({ state: 'visible', timeout: CHECK_MS });
+  await input.waitFor({ state: 'visible', timeout: checkMs() });
   const t0 = Date.now();
   let bounds = { min: '', recommended: '', max: '' };
   while (Date.now() - t0 < 8000) {
@@ -223,7 +225,7 @@ async function proveEarlyCtaTap(page, shell, env) {
     });
     if (!dispatched) {
       const go = shell.locator(SEL.goCheckout).first();
-      await go.click({ timeout: CHECK_MS, force: true, noWaitAfter: true });
+      await go.click({ timeout: checkMs(), force: true, noWaitAfter: true });
     }
     const addHit = await probes.waitForAddToCart(12000);
     if (!addHit) {
@@ -318,7 +320,7 @@ export async function runDonationFlowChecks({
     const extra = { hdf_no_side_cart: '1', ...comingSoonQuery(env, profile) };
     await page.goto(withCacheBust(env.E2E_BASE_URL, listPath, extra), {
       waitUntil: 'domcontentloaded',
-      timeout: CHECK_MS,
+      timeout: checkMs(),
     });
     await revealListProductTrigger(page, job.productId);
     let trigger = shellTriggerLocator(page, 'popup', { productId: job.productId });
@@ -327,9 +329,9 @@ export async function runDonationFlowChecks({
         `${SEL.centeredPopupTrigger}, ${SEL.sidePanelTrigger}, .wdp-card__cta, .wdp-loop-donate`
       );
     }
-    await clickShellTrigger(trigger, CHECK_MS);
+    await clickShellTrigger(trigger, checkMs());
     const shell = openShellLocator(page, '');
-    await shell.waitFor({ state: 'visible', timeout: CHECK_MS });
+    await shell.waitFor({ state: 'visible', timeout: checkMs() });
     const reloadGuard = attachNativeSubmitReloadGuard(page);
     reloadGuard.clearHits();
     reloadGuard.arm();
@@ -382,21 +384,21 @@ export async function runDonationFlowChecks({
       const tClick = Date.now();
       if ((await go.count()) > 0) {
         try {
-          await go.click({ timeout: CHECK_MS, noWaitAfter: true });
+          await go.click({ timeout: checkMs(), noWaitAfter: true });
         } catch (clickErr) {
           const msg = String(clickErr && clickErr.message ? clickErr.message : clickErr);
           if (/intercepts pointer events|not stable/i.test(msg) && (await gate.count()) > 0) {
-            await gate.click({ timeout: CHECK_MS, force: true, noWaitAfter: true });
+            await gate.click({ timeout: checkMs(), force: true, noWaitAfter: true });
           } else if (/intercepts pointer events|not stable/i.test(msg)) {
-            await go.click({ timeout: CHECK_MS, force: true, noWaitAfter: true });
+            await go.click({ timeout: checkMs(), force: true, noWaitAfter: true });
           } else {
             throw clickErr;
           }
         }
       } else if ((await gate.count()) > 0) {
-        await gate.click({ timeout: CHECK_MS, force: true, noWaitAfter: true });
+        await gate.click({ timeout: checkMs(), force: true, noWaitAfter: true });
       } else {
-        await clickAddToCartWithRetry(page, add, { timeout: CHECK_MS });
+        await clickAddToCartWithRetry(page, add, { timeout: checkMs() });
       }
       reloadGuard.assertClear(job.check);
 
@@ -434,7 +436,7 @@ export async function runDonationFlowChecks({
       if (!/checkout|odeme|ödeme/i.test(page.url())) {
         await page.goto(withCacheBust(env.E2E_BASE_URL, checkoutPath, extra), {
           waitUntil: 'domcontentloaded',
-          timeout: 20000,
+          timeout: checkMs(),
         }).catch(async (navErr) => {
           if (reloadGuard.hits.length) {
             throw reloadGuard.wrapError(job.check, navErr);
@@ -444,7 +446,7 @@ export async function runDonationFlowChecks({
           if (/ERR_ABORTED/i.test(msg)) {
             await page.goto(withCacheBust(env.E2E_BASE_URL, checkoutPath, extra), {
               waitUntil: 'domcontentloaded',
-              timeout: 20000,
+              timeout: checkMs(),
             });
             return;
           }
@@ -461,7 +463,7 @@ export async function runDonationFlowChecks({
               /checkout|order-pay|order-received|odeme|ödeme/i.test(u.pathname + u.search)
             );
           },
-          { timeout: CHECK_MS }
+          { timeout: checkMs() }
         );
       } catch (settleErr) {
         console.error(
@@ -629,8 +631,8 @@ export async function runDonationFlowChecks({
     }
   }
 
-  page.setDefaultTimeout(CHECK_MS);
-  page.setDefaultNavigationTimeout(CHECK_MS);
+  page.setDefaultTimeout(checkMs());
+  page.setDefaultNavigationTimeout(checkMs());
   for (const job of jobs) {
     const tJob = Date.now();
     try {
@@ -675,7 +677,7 @@ export async function runDonationFlowChecks({
       const extra = { hdf_no_side_cart: '1', ...comingSoonQuery(env, profile) };
       await page.goto(withCacheBust(env.E2E_BASE_URL, listPath, extra), {
         waitUntil: 'domcontentloaded',
-        timeout: CHECK_MS,
+        timeout: checkMs(),
       });
       await revealListProductTrigger(page, customId);
       let trigger = shellTriggerLocator(page, 'popup', { productId: customId });
@@ -684,9 +686,9 @@ export async function runDonationFlowChecks({
           `${SEL.centeredPopupTrigger}, ${SEL.sidePanelTrigger}, .wdp-card__cta, .wdp-loop-donate`
         );
       }
-      await clickShellTrigger(trigger, CHECK_MS);
+      await clickShellTrigger(trigger, checkMs());
       const shell = openShellLocator(page, '');
-      await shell.waitFor({ state: 'visible', timeout: CHECK_MS });
+      await shell.waitFor({ state: 'visible', timeout: checkMs() });
       const pickedEarly = await resolveDonationFillAmount(shell, profile.currency);
       filledAmount = pickedEarly.amount;
       filledText = pickedEarly.fill;
