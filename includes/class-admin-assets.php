@@ -83,6 +83,11 @@ class WDP_Admin_Assets {
 					'media_title'    => __('Select icon', 'woo-donation-popup'),
 					'media_button'   => __('Use', 'woo-donation-popup'),
 					'unsaved_tab'    => __('You have unsaved changes. Are you sure you want to leave this tab?', 'woo-donation-popup'),
+					'confirm_leave_tab'      => __('You have unsaved changes. Are you sure you want to leave this tab?', 'woo-donation-popup'),
+					'confirm_uninstall_data' => __('All product settings and plugin options will be deleted. Orders and order records are not affected. This cannot be undone. Have you made a backup?', 'woo-donation-popup'),
+					'unsaved_changes'        => __('You have unsaved changes.', 'woo-donation-popup'),
+					'select_pack_first'      => __('Select a style pack first.', 'woo-donation-popup'),
+					'pack_downloaded'        => __('Pack downloaded as JSON.', 'woo-donation-popup'),
 				),
 			)
 		);

@@ -1435,3 +1435,23 @@ msgstr "Kaydedilmemiş değişiklikleriniz var. Bu sekmeden ayrılmak istediğin
 #: includes/class-admin-form-tabs-renderer.php:334
 msgid "Your donation was added to the cart."
 msgstr "Bağışınız sepete eklendi."
+
+#: includes/class-admin-assets.php
+#. YENI-SARMA
+msgid "All product settings and plugin options will be deleted. Orders and order records are not affected. This cannot be undone. Have you made a backup?"
+msgstr "Eklentinin tüm ürün ayarları ve eklenti seçenekleri silinir. Siparişlere ve sipariş kayıtlarına dokunulmaz. Bu işlem geri alınamaz. Yedek aldınız mı?"
+
+#: includes/class-admin-assets.php
+#. YENI-SARMA
+msgid "You have unsaved changes."
+msgstr "Kaydedilmemiş değişiklikleriniz var."
+
+#: includes/class-admin-assets.php
+#. YENI-SARMA
+msgid "Select a style pack first."
+msgstr "Önce bir görünüm paketi seçin."
+
+#: includes/class-admin-assets.php
+#. YENI-SARMA
+msgid "Pack downloaded as JSON."
+msgstr "Paket JSON olarak indirildi."

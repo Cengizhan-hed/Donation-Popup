@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: woo-donation-popup\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-24 13:10:48+0000\n"
-"PO-Revision-Date: 2026-10-24 13:10:48+0000\n"
+"POT-Creation-Date: 2026-10-24 13:21:40+0000\n"
+"PO-Revision-Date: 2026-10-24 13:21:40+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: tr_TR\n"
@@ -242,6 +242,11 @@ msgstr "Tüm bağış tipleri"
 #: includes/class-admin-page-renderer.php:138
 msgid "All product settings and plugin options are deleted. Orders and order records are not touched. This cannot be undone."
 msgstr "Eklentinin tüm ürün ayarları ve eklenti seçenekleri silinir. Siparişlere ve sipariş kayıtlarına dokunulmaz. Bu işlem geri alınamaz."
+
+#: includes/class-admin-assets.php
+#. YENI-SARMA
+msgid "All product settings and plugin options will be deleted. Orders and order records are not affected. This cannot be undone. Have you made a backup?"
+msgstr "Eklentinin tüm ürün ayarları ve eklenti seçenekleri silinir. Siparişlere ve sipariş kayıtlarına dokunulmaz. Bu işlem geri alınamaz. Yedek aldınız mı?"
 
 #: includes/class-admin-placement-tab-renderer.php:47
 msgid "All simple products"
@@ -2388,6 +2393,11 @@ msgstr "Overlay opaklığı (%)"
 msgid "Pack and surface settings apply on the front end after you save. Product overrides come from the product card."
 msgstr "Paket ve yüzey ayarları kaydedildikten sonra ön yüzde uygulanır. Ürün override’ları ürün kartından gelir."
 
+#: includes/class-admin-assets.php
+#. YENI-SARMA
+msgid "Pack downloaded as JSON."
+msgstr "Paket JSON olarak indirildi."
+
 #: includes/class-admin-layout-tabs-renderer.php:184
 msgid "Padding is the space from the edges of the popup content; colors or button styles are on the other appearance tabs."
 msgstr "Padding, modal içeriğinin kenarlardan boşluğudur; renk veya buton stilleri diğer görünüm sekmelerindedir."
@@ -2931,6 +2941,11 @@ msgstr "Devamını Gör"
 #: includes/templates/class-form-fields-renderer.php:154
 msgid "Select a quick amount"
 msgstr "Hızlı tutar seç"
+
+#: includes/class-admin-assets.php
+#. YENI-SARMA
+msgid "Select a style pack first."
+msgstr "Önce bir görünüm paketi seçin."
 
 #: includes/class-sadaka-product-visibility.php:434
 msgid "Select a valid simple WooCommerce product (published or private)."
@@ -4078,6 +4093,11 @@ msgstr "Bu işlem için yetkiniz yok."
 #: includes/class-cart.php:279 includes/class-cart.php:283 includes/class-cart.php:289
 msgid "You entered an invalid donation amount."
 msgstr "Geçersiz bağış miktarı girdiniz."
+
+#: includes/class-admin-assets.php
+#. YENI-SARMA
+msgid "You have unsaved changes."
+msgstr "Kaydedilmemiş değişiklikleriniz var."
 
 #. YENI-SARMA
 #: includes/class-admin-assets.php:85
