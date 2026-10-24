@@ -1,0 +1,28 @@
+{
+  "id": "form-inline-campaign-error",
+  "text": "₺#N#\nraised\n#AMT#%\nGoal\n₺#N#\n·\n₺#N# remaining\nFull name is required.\n+#N#\nPlease enter your complete phone number.\nDonation amount:\n₺#N#\n₺#N#\n₺#N#\n₺#AMT#\n₺\nPlease enter a donation amount.\nAdd to cart\nGo to checkout\nSecure payment · SSL-protected transaction",
+  "lines": [
+    "₺#N#",
+    "raised",
+    "#AMT#%",
+    "Goal",
+    "₺#N#",
+    "·",
+    "₺#N# remaining",
+    "Full name is required.",
+    "+#N#",
+    "Please enter your complete phone number.",
+    "Donation amount:",
+    "₺#N#",
+    "₺#N#",
+    "₺#N#",
+    "₺#AMT#",
+    "₺",
+    "Please enter a donation amount.",
+    "Add to cart",
+    "Go to checkout",
+    "Secure payment · SSL-protected transaction"
+  ],
+  "locale": "en_US",
+  "config": "tt5-try-blocks-hpos"
+}

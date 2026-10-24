@@ -60,7 +60,7 @@ class WDP_Render_Registry {
 		if (!function_exists('current_user_can') || !current_user_can('edit_products')) {
 			return '';
 		}
-		return '<!-- wdp: form zaten basıldı #' . $product_id . ' -->';
+		return '<!-- wdp: form already rendered #' . $product_id . ' -->';
 	}
 
 	/**
@@ -106,7 +106,7 @@ class WDP_Render_Registry {
 		if (!function_exists('current_user_can') || !current_user_can('edit_products')) {
 			return '';
 		}
-		return '<!-- wdp: form veya buton zaten basıldı #' . $product_id . ' -->';
+		return '<!-- wdp: form or button already rendered #' . $product_id . ' -->';
 	}
 
 	/**

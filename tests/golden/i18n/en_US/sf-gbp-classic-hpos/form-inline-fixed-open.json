@@ -1,0 +1,14 @@
+{
+  "id": "form-inline-fixed-open",
+  "text": "+#N#\nLine amount\n£#AMT#\nAdd to cart\nGo to checkout\nSecure payment · SSL-protected transaction",
+  "lines": [
+    "+#N#",
+    "Line amount",
+    "£#AMT#",
+    "Add to cart",
+    "Go to checkout",
+    "Secure payment · SSL-protected transaction"
+  ],
+  "locale": "en_US",
+  "config": "sf-gbp-classic-hpos"
+}

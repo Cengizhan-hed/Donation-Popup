@@ -1,0 +1,9 @@
+{
+  "id": "admin-product-data-tab",
+  "text": "Donation",
+  "lines": [
+    "Donation"
+  ],
+  "locale": "en_US",
+  "config": "sf-gbp-classic-hpos"
+}

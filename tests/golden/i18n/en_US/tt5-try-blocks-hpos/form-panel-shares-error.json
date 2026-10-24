@@ -1,0 +1,21 @@
+{
+  "id": "form-panel-shares-error",
+  "text": "×\nWDP E2E Shares\nDonation form for WDP E2E Shares\nNumber of shares:\n#N#. Shareholder details\n₺#N#\n#N#. Shareholder name is required.\n+#N#\nPlease enter your complete phone number.\nCreate a copy\nGo to checkout\nAdd to cart\nSecure payment · SSL-protected transaction",
+  "lines": [
+    "×",
+    "WDP E2E Shares",
+    "Donation form for WDP E2E Shares",
+    "Number of shares:",
+    "#N#. Shareholder details",
+    "₺#N#",
+    "#N#. Shareholder name is required.",
+    "+#N#",
+    "Please enter your complete phone number.",
+    "Create a copy",
+    "Go to checkout",
+    "Add to cart",
+    "Secure payment · SSL-protected transaction"
+  ],
+  "locale": "en_US",
+  "config": "tt5-try-blocks-hpos"
+}

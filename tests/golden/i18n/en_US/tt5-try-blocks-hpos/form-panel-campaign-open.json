@@ -1,0 +1,28 @@
+{
+  "id": "form-panel-campaign-open",
+  "text": "×\nWDP E2E Campaign\n₺#N#\nraised\n#AMT#%\nGoal\n₺#N#\n·\n₺#N# remaining\nDonation form for WDP E2E Campaign\n+#N#\nDonation amount:\n₺#N#\n₺#N#\n₺#N#\n₺#AMT#\n₺\nGo to checkout\nAdd to cart\nSecure payment · SSL-protected transaction",
+  "lines": [
+    "×",
+    "WDP E2E Campaign",
+    "₺#N#",
+    "raised",
+    "#AMT#%",
+    "Goal",
+    "₺#N#",
+    "·",
+    "₺#N# remaining",
+    "Donation form for WDP E2E Campaign",
+    "+#N#",
+    "Donation amount:",
+    "₺#N#",
+    "₺#N#",
+    "₺#N#",
+    "₺#AMT#",
+    "₺",
+    "Go to checkout",
+    "Add to cart",
+    "Secure payment · SSL-protected transaction"
+  ],
+  "locale": "en_US",
+  "config": "tt5-try-blocks-hpos"
+}

@@ -18,19 +18,23 @@ if (!function_exists('wdp_render_donation_button')) {
 	 * @param string $button_text Button label.
 	 * @return string
 	 */
-	function wdp_render_donation_button($product_id, $button_text = 'Bağış Yap') {
+	function wdp_render_donation_button($product_id, $button_text = '') {
+		if ('' === $button_text) {
+			$button_text = __('Donate', 'woo-donation-popup');
+		}
 		if (!class_exists('WDP_Templates')) {
-			return '<p style="color:red;">WooCommerce Donation Popup eklentisi aktif değil.</p>';
+			return '<p style="color:red;">' . esc_html__('The WooCommerce Donation Popup plugin is not active.', 'woo-donation-popup') . '</p>';
 		}
 		if (!function_exists('wc_get_product')) {
-			return '<p style="color:red;">WooCommerce etkin değil.</p>';
+			return '<p style="color:red;">' . esc_html__('WooCommerce is not active.', 'woo-donation-popup') . '</p>';
 		}
 
 		$product_id = intval($product_id);
 		$product    = wc_get_product($product_id);
 		if (!$product) {
-			wdp_debug_log('WDP: Ürün bulunamadı - ID: ' . $product_id);
-			return '<p style="color:red;">Ürün bulunamadı (ID: ' . esc_html($product_id) . '). Lütfen ürün ID\'sini kontrol edin.</p>';
+			wdp_debug_log('WDP: Product not found - ID: ' . $product_id);
+			/* translators: %d: product ID. */
+			return '<p style="color:red;">' . esc_html(sprintf(__('Product not found (ID: %d). Please check the product ID.', 'woo-donation-popup'), $product_id)) . '</p>';
 		}
 
 		return WDP_Templates::render_donation_modal($product_id, $button_text);
@@ -47,17 +51,18 @@ if (!function_exists('wdp_render_donation_form')) {
 	 */
 	function wdp_render_donation_form($product_id, $args = array()) {
 		if (!class_exists('WDP_Templates')) {
-			return '<p style="color:red;">WooCommerce Donation Popup eklentisi aktif değil.</p>';
+			return '<p style="color:red;">' . esc_html__('The WooCommerce Donation Popup plugin is not active.', 'woo-donation-popup') . '</p>';
 		}
 		if (!function_exists('wc_get_product')) {
-			return '<p style="color:red;">WooCommerce etkin değil.</p>';
+			return '<p style="color:red;">' . esc_html__('WooCommerce is not active.', 'woo-donation-popup') . '</p>';
 		}
 
 		$product_id = intval($product_id);
 		$product    = wc_get_product($product_id);
 		if (!$product) {
-			wdp_debug_log('WDP: Ürün bulunamadı - ID: ' . $product_id);
-			return '<p style="color:red;">Ürün bulunamadı (ID: ' . esc_html($product_id) . '). Lütfen ürün ID\'sini kontrol edin.</p>';
+			wdp_debug_log('WDP: Product not found - ID: ' . $product_id);
+			/* translators: %d: product ID. */
+			return '<p style="color:red;">' . esc_html(sprintf(__('Product not found (ID: %d). Please check the product ID.', 'woo-donation-popup'), $product_id)) . '</p>';
 		}
 
 		return WDP_Templates::render_donation_form($product_id, is_array($args) ? $args : array());

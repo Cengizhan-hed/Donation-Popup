@@ -1,0 +1,78 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: woo-donation-popup\n"
+"Language: tr_TR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: includes/bootstrap/class-legacy-frontend.php
+#. YENI-SARMA
+msgid "The WooCommerce Donation Popup plugin is not active."
+msgstr "WooCommerce Donation Popup eklentisi aktif değil."
+
+#: includes/bootstrap/class-legacy-frontend.php
+#. YENI-SARMA
+msgid "WooCommerce is not active."
+msgstr "WooCommerce etkin değil."
+
+#: includes/bootstrap/class-legacy-frontend.php
+#. YENI-SARMA
+msgid "Product not found (ID: %d). Please check the product ID."
+msgstr "Ürün bulunamadı (ID: %d). Lütfen ürün ID'sini kontrol edin."
+
+#: includes/config/form-modules.php
+#. YENI-SARMA
+msgid "Campaign media"
+msgstr "Kampanya medyası"
+
+#: includes/config/form-modules.php
+#. YENI-SARMA
+msgid "Amount / quantity"
+msgstr "Tutar / adet"
+
+#: includes/config/form-modules.php
+#. YENI-SARMA
+msgid "Donor fields"
+msgstr "Bağışçı alanları"
+
+#: includes/config/form-modules.php
+#. YENI-SARMA
+msgid "Dedication / anonymous"
+msgstr "İthaf / anonim"
+
+#: includes/config/form-modules.php
+#. YENI-SARMA
+msgid "Progress bar"
+msgstr "Progress bar"
+
+#: includes/config/style-presets.php
+#. YENI-SARMA
+msgid "Default ocean blue (#0f608b), 12px radius, balanced surface."
+msgstr "Varsayılan okyanus mavisi (#0f608b), 12px radius, dengeli yüzey."
+
+#: includes/config/style-presets.php
+#. YENI-SARMA
+msgid "Glass panel, strong blur, airy sky blue, 16px radius."
+msgstr "Cam panel, yüksek blur, ferah sky mavi, 16px radius."
+
+#: includes/config/style-presets.php
+#. YENI-SARMA
+msgid "Corporate navy, tight typography, 8px radius."
+msgstr "Kurumsal lacivert, sıkı tipografi, 8px radius."
+
+#: includes/config/style-presets.php
+#. YENI-SARMA
+msgid "Vivid sky blue, soft accent, emotional headline."
+msgstr "Canlı sky mavi, yumuşak vurgu, duygusal başlık."
+
+#: includes/traits/trait-wdp-assets-inline-styles.php
+#. YENI-SARMA
+msgid "Shareholder form status"
+msgstr "Hissedar Form Durumu"
+
+#: includes/class-admin-design-studio-renderer.php
+#. YENI-SARMA
+msgid "inherit or 'DM Sans', system-ui, sans-serif"
+msgstr "inherit veya 'DM Sans', system-ui, sans-serif"

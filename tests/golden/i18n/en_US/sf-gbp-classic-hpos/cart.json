@@ -1,0 +1,9 @@
+{
+  "id": "cart",
+  "text": "Your cart is currently empty.",
+  "lines": [
+    "Your cart is currently empty."
+  ],
+  "locale": "en_US",
+  "config": "sf-gbp-classic-hpos"
+}

@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: woo-donation-popup\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-24 13:30:51+0000\n"
-"PO-Revision-Date: 2026-10-24 13:30:51+0000\n"
+"POT-Creation-Date: 2026-10-24 13:39:56+0000\n"
+"PO-Revision-Date: 2026-10-24 13:39:56+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: tr_TR\n"
@@ -295,6 +295,11 @@ msgstr "Tümü etiketi"
 #: includes/class-admin-placement-tab-renderer.php:103
 msgid "Always show"
 msgstr "Her zaman göster"
+
+#: includes/config/form-modules.php
+#. YENI-SARMA
+msgid "Amount / quantity"
+msgstr "Tutar / adet"
 
 #: includes/class-admin-layout-tabs-renderer.php:140
 msgid "Amount confirmed after payment."
@@ -588,6 +593,11 @@ msgstr "Kampanya blokları"
 msgid "Campaign goal at which the progress bar is 100% (in the store’s main currency). Empty or zero cannot be saved."
 msgstr "İlerleme çubuğunun %100 sayılacağı kampanya hedefi (mağaza ana para biriminde). Boş veya sıfır kaydedilemez."
 
+#: includes/config/form-modules.php
+#. YENI-SARMA
+msgid "Campaign media"
+msgstr "Kampanya medyası"
+
 #: includes/class-phone-field.php:117
 msgid "Canada"
 msgstr "Kanada"
@@ -867,6 +877,11 @@ msgstr "Köşe yuvarlaklığı"
 msgid "Corner radius (px)"
 msgstr "Köşe yuvarlaklığı (px)"
 
+#: includes/config/style-presets.php
+#. YENI-SARMA
+msgid "Corporate navy, tight typography, 8px radius."
+msgstr "Kurumsal lacivert, sıkı tipografi, 8px radius."
+
 #: includes/class-admin-assets.php:121
 msgid "Could not copy; select the text and copy it manually."
 msgstr "Kopyalanamadı; metni seçip elle kopyalayın."
@@ -956,6 +971,11 @@ msgstr "Azalt"
 msgid "Dedication"
 msgstr "İthaf"
 
+#: includes/config/form-modules.php
+#. YENI-SARMA
+msgid "Dedication / anonymous"
+msgstr "İthaf / anonim"
+
 #: includes/class-admin-design-studio-renderer.php:263
 #: includes/class-admin-design-studio-renderer.php:263
 #: includes/class-admin-product-data-tab.php:704
@@ -974,6 +994,11 @@ msgstr "Varsayılan alt bağış ürünü"
 #: includes/class-admin-design-studio-renderer.php:291
 msgid "Default module order"
 msgstr "Varsayılan modül sırası"
+
+#: includes/config/style-presets.php
+#. YENI-SARMA
+msgid "Default ocean blue (#0f608b), 12px radius, balanced surface."
+msgstr "Varsayılan okyanus mavisi (#0f608b), 12px radius, dengeli yüzey."
 
 #: includes/class-admin-page-renderer.php:135
 msgid "Delete data when the plugin is removed"
@@ -1169,6 +1194,11 @@ msgstr "Bağışçı iletişim bilgileri"
 #: includes/class-order-meta-keys.php:80
 msgid "Donor email"
 msgstr "Bağışçı E-posta"
+
+#: includes/config/form-modules.php
+#. YENI-SARMA
+msgid "Donor fields"
+msgstr "Bağışçı alanları"
 
 #: includes/class-order-meta-keys.php:78
 msgid "Donor name"
@@ -1540,6 +1570,11 @@ msgstr "Cam dolgu opaklığı (%)"
 msgid "Glass panel, elevation, and form density — the real glass tokens for the Soft Glass pack live here."
 msgstr "Cam paneli, elevation ve form yoğunluğu — Soft Glass paketinin gerçek glass token’ları burada."
 
+#: includes/config/style-presets.php
+#. YENI-SARMA
+msgid "Glass panel, strong blur, airy sky blue, 16px radius."
+msgstr "Cam panel, yüksek blur, ferah sky mavi, 16px radius."
+
 #: includes/class-admin-design-studio-renderer.php:92
 msgid "Global brand color"
 msgstr "Global marka rengi"
@@ -1837,6 +1872,11 @@ msgstr "Hindistan"
 #: includes/class-phone-field.php:82
 msgid "Indonesia"
 msgstr "Endonezya"
+
+#: includes/class-admin-design-studio-renderer.php
+#. YENI-SARMA
+msgid "inherit or 'DM Sans', system-ui, sans-serif"
+msgstr "inherit veya 'DM Sans', system-ui, sans-serif"
 
 #: includes/class-admin-product-data-tab.php:1054
 msgid "Inline form"
@@ -2885,6 +2925,11 @@ msgstr "Ürün Adı Rengi"
 msgid "Product not found"
 msgstr "Ürün bulunamadı"
 
+#: includes/bootstrap/class-legacy-frontend.php
+#. YENI-SARMA
+msgid "Product not found (ID: %d). Please check the product ID."
+msgstr "Ürün bulunamadı (ID: %d). Lütfen ürün ID'sini kontrol edin."
+
 #: includes/class-lazy-modal.php:53
 msgid "Product not found or cannot be displayed."
 msgstr "Ürün bulunamadı veya görüntülenemiyor."
@@ -2921,6 +2966,11 @@ msgstr "Ürünler"
 #: includes/elementor/class-widget-donations-list.php:127
 msgid "Progress"
 msgstr "İlerleme"
+
+#: includes/config/form-modules.php
+#. YENI-SARMA
+msgid "Progress bar"
+msgstr "Progress bar"
 
 #: includes/class-admin-layout-tabs-renderer.php:45
 msgid "Progress bar preview"
@@ -3341,6 +3391,11 @@ msgstr "Hissedar Bilgileri"
 #, php-format
 msgid "Shareholder form %d is incomplete."
 msgstr "%d. hissedar formu eksik."
+
+#: includes/traits/trait-wdp-assets-inline-styles.php
+#. YENI-SARMA
+msgid "Shareholder form status"
+msgstr "Hissedar Form Durumu"
 
 #: includes/class-admin-form-tabs-renderer.php:156
 msgid "Shareholder heading text"
@@ -3893,6 +3948,11 @@ msgstr "Toplam hesaplanamadı. Ayrıntı hata günlüğünde."
 msgid "The WooCommerce Donation Modal Popup plugin requires WooCommerce to be installed and active."
 msgstr "WooCommerce Donation Modal Popup eklentisi için WooCommerce eklentisinin yüklü ve aktif olması gerekiyor."
 
+#: includes/bootstrap/class-legacy-frontend.php
+#. YENI-SARMA
+msgid "The WooCommerce Donation Popup plugin is not active."
+msgstr "WooCommerce Donation Popup eklentisi aktif değil."
+
 #: includes/class-admin-form-tabs-renderer.php:250
 msgid "The WooCommerce product used when the product card has no custom ID."
 msgstr "Ürün kartında özel ID yoksa kullanılan WC ürünü."
@@ -4154,6 +4214,11 @@ msgstr "Vietnam"
 msgid "View cart"
 msgstr "Sepete Git"
 
+#: includes/config/style-presets.php
+#. YENI-SARMA
+msgid "Vivid sky blue, soft accent, emotional headline."
+msgstr "Canlı sky mavi, yumuşak vurgu, duygusal başlık."
+
 #: includes/class-campaign-goal.php:30
 msgid "We have reached our goal, thank you for your support. Extra donations to this campaign are used in similar projects."
 msgstr "Hedefimize ulaştık, desteğiniz için teşekkür ederiz. Bu kampanyaya yapılan fazla bağışlar benzer projelerimizde kullanılır."
@@ -4331,6 +4396,11 @@ msgstr "WooCommerce / Meta entegrasyonu algılandı (ör. facebook-for-woocommer
 #: includes/traits/trait-wdp-ajax-cart-add.php:61 includes/traits/trait-wdp-ajax-cart-query.php:58 includes/traits/trait-wdp-ajax-cart-query.php:85 includes/traits/trait-wdp-ajax-cart-query.php:223
 msgid "WooCommerce cart object was not found."
 msgstr "WooCommerce sepet nesnesi bulunamadı."
+
+#: includes/bootstrap/class-legacy-frontend.php
+#. YENI-SARMA
+msgid "WooCommerce is not active."
+msgstr "WooCommerce etkin değil."
 
 #: includes/class-admin-placement-tab-renderer.php:62
 msgid "WooCommerce pages"

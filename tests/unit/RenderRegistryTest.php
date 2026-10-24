@@ -25,7 +25,7 @@ final class RenderRegistryTest extends TestCase {
 		WDP_Render_Registry::claim_form(12);
 		$this->assertSame('', WDP_Render_Registry::duplicate_form_notice(12));
 		WDP_Test_State::$caps[] = 'edit_products';
-		$this->assertSame('<!-- wdp: form zaten basıldı #12 -->', WDP_Render_Registry::duplicate_form_notice(12));
+		$this->assertSame('<!-- wdp: form already rendered #12 -->', WDP_Render_Registry::duplicate_form_notice(12));
 	}
 
 	public function test_modal_ids_are_unique_per_mode(): void {

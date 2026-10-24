@@ -188,7 +188,7 @@ function translateMsgid(po, msgid, ctx) {
  * Kaynak İngilizceyse .po çevirisini döner (altın döküm Türkçe kalır).
  * @param {string} [root]
  */
-export function extractElementorWidgetStrings(root = ROOT) {
+export function extractElementorWidgetStrings(root = ROOT, locale = 'tr_TR') {
   const dir = path.join(root, 'includes/elementor');
   if (!fs.existsSync(dir)) return [];
   const po = loadTrPoMap(root);
@@ -204,7 +204,7 @@ export function extractElementorWidgetStrings(root = ROOT) {
       const msgid = unescapePhp(titleM[2] + titleM[3] + titleM[2]);
       const second = titleM[5] ? unescapePhp(titleM[4] + titleM[5] + titleM[4]) : '';
       const ctx = fn === '_x' || fn === 'esc_html_x' ? second : '';
-      title = translateMsgid(po, msgid, ctx);
+      title = locale === 'en_US' ? msgid : translateMsgid(po, msgid, ctx);
     }
     const keywords = [];
     const kwBlock = src.match(/function\s+get_keywords\s*\([^)]*\)\s*\{([\s\S]*?)return\s+array\s*\(([\s\S]*?)\)\s*;/);

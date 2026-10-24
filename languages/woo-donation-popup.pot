@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: woo-donation-popup 10.34.15\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-24 16:31+0300\n"
+"POT-Creation-Date: 2026-10-24 16:40+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -19,6 +19,39 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+
+#: includes/bootstrap/class-legacy-frontend.php:23
+#: includes/class-admin-form-tabs-renderer.php:35
+#: includes/class-admin-form-tabs-renderer.php:36
+#: includes/class-admin-form-tabs-renderer.php:363
+#: includes/class-admin-form-tabs-renderer.php:572
+#: includes/class-admin-settings-normalizer.php:63
+#: includes/class-shortcodes.php:321
+#: includes/templates/class-modal-shell-renderer.php:267
+#: includes/templates/class-modal-shell-renderer.php:438
+#: includes/traits/trait-wdp-assets-inline-styles.php:40
+#: includes/traits/trait-wdp-assets-inline-styles.php:41
+#: includes/traits/trait-wdp-assets-inline-styles.php:49
+#: includes/traits/trait-wdp-assets-inline-styles.php:331
+msgid "Donate"
+msgstr ""
+
+#: includes/bootstrap/class-legacy-frontend.php:26
+#: includes/bootstrap/class-legacy-frontend.php:54
+msgid "The WooCommerce Donation Popup plugin is not active."
+msgstr ""
+
+#: includes/bootstrap/class-legacy-frontend.php:29
+#: includes/bootstrap/class-legacy-frontend.php:57
+msgid "WooCommerce is not active."
+msgstr ""
+
+#. translators: %d: product ID.
+#: includes/bootstrap/class-legacy-frontend.php:37
+#: includes/bootstrap/class-legacy-frontend.php:65
+#, php-format
+msgid "Product not found (ID: %d). Please check the product ID."
+msgstr ""
 
 #: includes/bootstrap/class-plugin-bootstrap.php:69
 msgid ""
@@ -363,6 +396,10 @@ msgstr ""
 
 #: includes/class-admin-design-studio-renderer.php:223
 msgid "Form font stack"
+msgstr ""
+
+#: includes/class-admin-design-studio-renderer.php:224
+msgid "inherit or 'DM Sans', system-ui, sans-serif"
 msgstr ""
 
 #: includes/class-admin-design-studio-renderer.php:225
@@ -729,20 +766,6 @@ msgstr ""
 msgid "Go to checkout"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:35
-#: includes/class-admin-form-tabs-renderer.php:36
-#: includes/class-admin-form-tabs-renderer.php:363
-#: includes/class-admin-form-tabs-renderer.php:572
-#: includes/class-admin-settings-normalizer.php:63
-#: includes/class-shortcodes.php:321
-#: includes/templates/class-modal-shell-renderer.php:267
-#: includes/templates/class-modal-shell-renderer.php:438
-#: includes/traits/trait-wdp-assets-inline-styles.php:40
-#: includes/traits/trait-wdp-assets-inline-styles.php:41
-#: includes/traits/trait-wdp-assets-inline-styles.php:49
-msgid "Donate"
-msgstr ""
-
 #: includes/class-admin-form-tabs-renderer.php:90
 msgid "Standard form preview"
 msgstr ""
@@ -750,6 +773,7 @@ msgstr ""
 #: includes/class-admin-form-tabs-renderer.php:118
 #: includes/class-admin-settings-normalizer.php:321
 #: includes/i18n/class-wdp-js-i18n.php:101
+#: includes/traits/trait-wdp-assets-inline-styles.php:85
 #: assets/js/src/shareholder/render.js:118
 #: assets/js/src/shareholder/render.js:124
 msgid "Shareholder details"
@@ -760,6 +784,7 @@ msgstr ""
 #: includes/class-admin-settings-normalizer.php:322
 #: includes/i18n/class-wdp-js-i18n.php:56
 #: includes/templates/class-form-fields-renderer.php:520
+#: includes/traits/trait-wdp-assets-inline-styles.php:86
 #: assets/js/src/shareholder/render.js:119
 msgid "Full name *"
 msgstr ""
@@ -767,6 +792,7 @@ msgstr ""
 #: includes/class-admin-form-tabs-renderer.php:120
 #: includes/class-admin-settings-normalizer.php:323
 #: includes/class-phone-field.php:480 includes/i18n/class-wdp-js-i18n.php:73
+#: includes/traits/trait-wdp-assets-inline-styles.php:87
 #: assets/js/src/phone-input.js:672 assets/js/src/shareholder/render.js:120
 msgid "Phone number *"
 msgstr ""
@@ -776,6 +802,7 @@ msgstr ""
 #: includes/class-admin-settings-normalizer.php:324
 #: includes/i18n/class-wdp-js-i18n.php:69
 #: includes/templates/class-form-fields-renderer.php:531
+#: includes/traits/trait-wdp-assets-inline-styles.php:88
 #: assets/js/src/shareholder/render.js:121
 msgid "Note (optional)"
 msgstr ""
@@ -783,6 +810,7 @@ msgstr ""
 #: includes/class-admin-form-tabs-renderer.php:122
 #: includes/class-admin-settings-normalizer.php:325
 #: includes/i18n/class-wdp-js-i18n.php:44
+#: includes/traits/trait-wdp-assets-inline-styles.php:89
 #: assets/js/src/shareholder/render.js:123
 msgid "Create a copy"
 msgstr ""
@@ -791,6 +819,7 @@ msgstr ""
 #: includes/class-admin-settings-normalizer.php:338
 #: includes/i18n/class-wdp-js-i18n.php:49
 #: includes/templates/class-form-fields-renderer.php:537
+#: includes/traits/trait-wdp-assets-inline-styles.php:94
 #: assets/js/src/shareholder/render.js:122
 msgid "Email (optional)"
 msgstr ""
@@ -1424,7 +1453,7 @@ msgid "On-page trigger button (shortcode)"
 msgstr ""
 
 #: includes/class-admin-form-tabs-renderer.php:580
-msgctxt "design tab"
+#: blocks/donation-form/index.js:122 blocks/donations/index.js:174
 msgid "Button text"
 msgstr ""
 
@@ -2493,6 +2522,7 @@ msgid "Impact line, urgency, social proof, trust badges, and order"
 msgstr ""
 
 #: includes/class-admin-product-data-tab.php:724
+#: includes/config/form-modules.php:28
 msgid "Impact line"
 msgstr ""
 
@@ -2520,6 +2550,7 @@ msgid ""
 msgstr ""
 
 #: includes/class-admin-product-data-tab.php:730
+#: includes/config/form-modules.php:29
 msgid "Urgency strip"
 msgstr ""
 
@@ -2554,6 +2585,7 @@ msgid ""
 msgstr ""
 
 #: includes/class-admin-product-data-tab.php:750
+#: includes/config/form-modules.php:30
 msgid "Social proof"
 msgstr ""
 
@@ -2585,6 +2617,7 @@ msgid "Old text: %s — no longer used; the real number is used."
 msgstr ""
 
 #: includes/class-admin-product-data-tab.php:769
+#: includes/config/form-modules.php:37
 msgid "Trust badges"
 msgstr ""
 
@@ -3054,6 +3087,7 @@ msgid "Donation note"
 msgstr ""
 
 #: includes/class-cart.php:564 includes/class-order-meta-keys.php:84
+#: includes/config/form-modules.php:35
 msgid "Processing fee"
 msgstr ""
 
@@ -4156,6 +4190,47 @@ msgid ""
 "Preview: «%s» is shown. That product’s form appears on the product page."
 msgstr ""
 
+#: includes/config/form-modules.php:27
+msgid "Campaign media"
+msgstr ""
+
+#: includes/config/form-modules.php:31
+msgid "Progress bar"
+msgstr ""
+
+#: includes/config/form-modules.php:32
+msgid "Amount / quantity"
+msgstr ""
+
+#: includes/config/form-modules.php:33
+msgid "Donor fields"
+msgstr ""
+
+#: includes/config/form-modules.php:34
+msgid "Dedication / anonymous"
+msgstr ""
+
+#: includes/config/form-modules.php:36 includes/i18n/class-wdp-js-i18n.php:34
+#: assets/js/src/form/wizard.js:29
+msgid "Additional donation"
+msgstr ""
+
+#: includes/config/style-presets.php:18
+msgid "Default ocean blue (#0f608b), 12px radius, balanced surface."
+msgstr ""
+
+#: includes/config/style-presets.php:84
+msgid "Glass panel, strong blur, airy sky blue, 16px radius."
+msgstr ""
+
+#: includes/config/style-presets.php:150
+msgid "Corporate navy, tight typography, 8px radius."
+msgstr ""
+
+#: includes/config/style-presets.php:216
+msgid "Vivid sky blue, soft accent, emotional headline."
+msgstr ""
+
 #: includes/elementor/class-widget-donation-form.php:28
 msgctxt "elementor widget title"
 msgid "Donation form"
@@ -4415,10 +4490,6 @@ msgstr ""
 
 #: includes/i18n/class-wdp-js-i18n.php:33 assets/js/src/cart/ui.js:245
 msgid "Add a donation to continue to checkout."
-msgstr ""
-
-#: includes/i18n/class-wdp-js-i18n.php:34 assets/js/src/form/wizard.js:29
-msgid "Additional donation"
 msgstr ""
 
 #: includes/i18n/class-wdp-js-i18n.php:35
@@ -4831,6 +4902,11 @@ msgstr ""
 msgid "Donor contact details"
 msgstr ""
 
+#: includes/templates/class-form-fields-renderer.php:695
+#: includes/traits/trait-wdp-ajax-cart-query.php:182
+msgid "Number of shares"
+msgstr ""
+
 #: includes/templates/class-modal-shell-renderer.php:26
 msgid "Total amount"
 msgstr ""
@@ -4927,10 +5003,6 @@ msgstr ""
 msgid "Charity donation"
 msgstr ""
 
-#: includes/traits/trait-wdp-ajax-cart-query.php:182
-msgid "Number of shares"
-msgstr ""
-
 #: includes/traits/trait-wdp-ajax-cart-query.php:232
 msgid "Cart item key was not found."
 msgstr ""
@@ -4966,6 +5038,10 @@ msgstr ""
 #: includes/traits/trait-wdp-assets-inline-styles.php:57
 #: includes/traits/trait-wdp-assets-inline-styles.php:59
 msgid "View cart"
+msgstr ""
+
+#: includes/traits/trait-wdp-assets-inline-styles.php:95
+msgid "Shareholder form status"
 msgstr ""
 
 #: includes/traits/trait-wdp-assets-registry.php:345
@@ -5026,10 +5102,6 @@ msgstr ""
 
 #: blocks/donation-form/index.js:94 blocks/donation-form/index.js:133
 msgid "Donation form"
-msgstr ""
-
-#: blocks/donation-form/index.js:122 blocks/donations/index.js:174
-msgid "Button text"
 msgstr ""
 
 #: blocks/donation-form/index.js:134

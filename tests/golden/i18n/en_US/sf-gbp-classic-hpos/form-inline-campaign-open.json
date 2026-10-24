@@ -1,0 +1,25 @@
+{
+  "id": "form-inline-campaign-open",
+  "text": "£#AMT#\nraised\n#AMT#%\nGoal\n£#AMT#\n·\n£#AMT# remaining\n+#N#\nDonation amount:\n£#AMT#\n£#AMT#\n£#AMT#\n£#AMT#.#N#\n£\nAdd to cart\nGo to checkout\nSecure payment · SSL-protected transaction",
+  "lines": [
+    "£#AMT#",
+    "raised",
+    "#AMT#%",
+    "Goal",
+    "£#AMT#",
+    "·",
+    "£#AMT# remaining",
+    "+#N#",
+    "Donation amount:",
+    "£#AMT#",
+    "£#AMT#",
+    "£#AMT#",
+    "£#AMT#.#N#",
+    "£",
+    "Add to cart",
+    "Go to checkout",
+    "Secure payment · SSL-protected transaction"
+  ],
+  "locale": "en_US",
+  "config": "sf-gbp-classic-hpos"
+}

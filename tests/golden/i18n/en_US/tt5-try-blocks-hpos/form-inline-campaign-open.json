@@ -1,0 +1,25 @@
+{
+  "id": "form-inline-campaign-open",
+  "text": "₺#N#\nraised\n#AMT#%\nGoal\n₺#N#\n·\n₺#N# remaining\n+#N#\nDonation amount:\n₺#N#\n₺#N#\n₺#N#\n₺#AMT#\n₺\nAdd to cart\nGo to checkout\nSecure payment · SSL-protected transaction",
+  "lines": [
+    "₺#N#",
+    "raised",
+    "#AMT#%",
+    "Goal",
+    "₺#N#",
+    "·",
+    "₺#N# remaining",
+    "+#N#",
+    "Donation amount:",
+    "₺#N#",
+    "₺#N#",
+    "₺#N#",
+    "₺#AMT#",
+    "₺",
+    "Add to cart",
+    "Go to checkout",
+    "Secure payment · SSL-protected transaction"
+  ],
+  "locale": "en_US",
+  "config": "tt5-try-blocks-hpos"
+}

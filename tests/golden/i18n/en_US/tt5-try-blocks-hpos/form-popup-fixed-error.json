@@ -1,0 +1,19 @@
+{
+  "id": "form-popup-fixed-error",
+  "text": "×\nWDP E2E Fixed\nDonation form for WDP E2E Fixed\nFull name is required.\n+#N#\nPlease enter your complete phone number.\nLine amount\n₺#N#\nAdd to cart\nGo to checkout\nSecure payment · SSL-protected transaction",
+  "lines": [
+    "×",
+    "WDP E2E Fixed",
+    "Donation form for WDP E2E Fixed",
+    "Full name is required.",
+    "+#N#",
+    "Please enter your complete phone number.",
+    "Line amount",
+    "₺#N#",
+    "Add to cart",
+    "Go to checkout",
+    "Secure payment · SSL-protected transaction"
+  ],
+  "locale": "en_US",
+  "config": "tt5-try-blocks-hpos"
+}

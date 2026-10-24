@@ -1,0 +1,16 @@
+{
+  "id": "form-inline-fixed-error",
+  "text": "Full name is required.\n+#N#\nPlease enter your complete phone number.\nLine amount\n£#AMT#\nAdd to cart\nGo to checkout\nSecure payment · SSL-protected transaction",
+  "lines": [
+    "Full name is required.",
+    "+#N#",
+    "Please enter your complete phone number.",
+    "Line amount",
+    "£#AMT#",
+    "Add to cart",
+    "Go to checkout",
+    "Secure payment · SSL-protected transaction"
+  ],
+  "locale": "en_US",
+  "config": "sf-gbp-classic-hpos"
+}

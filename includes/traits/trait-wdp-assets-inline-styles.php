@@ -82,17 +82,17 @@ trait WDP_Assets_Inline_Styles_Trait {
     private static function get_shareholder_texts() {
         $settings = get_option('wdp_shareholder_settings', array());
         $defaults = array(
-            'shareholder_header_text'      => 'Hissedar Bilgileri',
-            'shareholder_name_placeholder' => 'Ad Soyad *',
-            'shareholder_phone_placeholder'=> 'Telefon Numarası *',
-            'shareholder_note_placeholder' => 'Not (isteğe bağlı)',
-            'shareholder_copy_button_text' => 'Kopyasını Oluştur',
+            'shareholder_header_text'      => __('Shareholder details', 'woo-donation-popup'),
+            'shareholder_name_placeholder' => __('Full name *', 'woo-donation-popup'),
+            'shareholder_phone_placeholder'=> __('Phone number *', 'woo-donation-popup'),
+            'shareholder_note_placeholder' => __('Note (optional)', 'woo-donation-popup'),
+            'shareholder_copy_button_text' => __('Create a copy', 'woo-donation-popup'),
             'shareholder_enable_copy_button' => '1',
             'shareholder_layout'           => 'single',
             'shareholder_density'          => 'normal',
             'shareholder_enable_email'     => '0',
-            'shareholder_email_placeholder'=> 'E-posta (isteğe bağlı)',
-            'shareholder_progress_status_label' => 'Hissedar Form Durumu',
+            'shareholder_email_placeholder'=> __('Email (optional)', 'woo-donation-popup'),
+            'shareholder_progress_status_label' => __('Shareholder form status', 'woo-donation-popup'),
         );
 
         $settings = wp_parse_args($settings, $defaults);
@@ -328,7 +328,7 @@ trait WDP_Assets_Inline_Styles_Trait {
             'close_button_color' => '#6b7280',
             'button_checkout_color' => '#16a34a',
             'button_checkout_hover' => '#15803d',
-            'popup_button_text' => 'Bağış Yap',
+            'popup_button_text' => __('Donate', 'woo-donation-popup'),
             'popup_button_color' => '#0f608b',
             'popup_button_hover' => '#0c4f72',
             'popup_button_text_color' => '#ffffff',

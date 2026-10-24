@@ -689,10 +689,10 @@ class WDP_Form_Fields_Renderer {
 		ob_start();
 		if ($allow_multiple_shares) {
 			?>
-			<!-- Çoklu Hisse Alanı -->
+			<!-- Multiple shares section -->
 			<div class="wdp-shares-section">
 				<div class="wdp-shares-header">
-					<label>Hisse Adedi:</label>
+					<label><?php echo esc_html__('Number of shares', 'woo-donation-popup'); ?>:</label>
 					<div class="wdp-share-counter">
 						<button type="button" class="wdp-share-btn wdp-share-btn-decrease" aria-label="<?php echo esc_attr__('Decrease', 'woo-donation-popup'); ?>"><?php echo WDP_Svg_Icons::get_counter_icon_minus_svg(); ?></button>
 						<input type="number" name="share_count" value="1" min="1" max="<?php echo esc_attr($max_shares); ?>" readonly>
@@ -702,7 +702,7 @@ class WDP_Form_Fields_Renderer {
 				<div class="wdp-shareholders-area">
 					<div class="wdp-shareholders-container">
 						<div class="wdp-shareholders-scroll">
-						<!-- Hissedar formları JavaScript ile eklenecek -->
+						<!-- Shareholder forms are added by JavaScript -->
 						</div>
 					</div>
 				</div>

@@ -221,7 +221,7 @@ class WDP_Admin_Design_Studio_Renderer {
 		echo '<p class="description">' . esc_html__('What it does: How dark the dimmer is. Low = the background stays readable; high = more focus on the form, darker background. Typical range 40–60.', 'woo-donation-popup') . '</p>';
 		echo '</td></tr>';
 		echo '<tr><th scope="row"><label for="body_font_family">' . esc_html__('Form font stack', 'woo-donation-popup') . '</label></th><td>';
-		echo '<input type="text" id="body_font_family" name="body_font_family" value="' . esc_attr($font) . '" class="large-text" placeholder="inherit veya &#39;DM Sans&#39;, system-ui, sans-serif" />';
+		echo '<input type="text" id="body_font_family" name="body_font_family" value="' . esc_attr($font) . '" class="large-text" placeholder="' . esc_attr__("inherit or 'DM Sans', system-ui, sans-serif", 'woo-donation-popup') . '" />';
 		echo '<p class="description">' . esc_html__('What it does: The typeface family inside the popup/form. “inherit” = use your theme’s font. For a custom font, write a CSS font-family (not a Google Fonts URL). E.g. \'Inter\', system-ui, sans-serif — the font must already be loaded in the theme or on the page.', 'woo-donation-popup') . '</p>';
 		echo '</td></tr>';
 		echo '<tr><th scope="row"><label for="motion_intensity">' . esc_html__('Motion', 'woo-donation-popup') . '</label></th><td>';

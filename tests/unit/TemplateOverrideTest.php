@@ -69,7 +69,7 @@ final class TemplateOverrideTest extends TestCase {
 		WDP_Test_State::$caps[] = 'edit_products';
 		WDP_Render_Registry::mark_trigger(12);
 		$html = WDP_Product_Page_Integration::template_override_markup();
-		$this->assertStringContainsString('form veya buton zaten basıldı #12', $html);
+		$this->assertStringContainsString('form or button already rendered #12', $html);
 	}
 
 	public function test_other_templates_not_rewritten(): void {

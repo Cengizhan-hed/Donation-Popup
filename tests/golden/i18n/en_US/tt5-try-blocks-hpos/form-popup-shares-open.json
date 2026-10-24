@@ -1,0 +1,19 @@
+{
+  "id": "form-popup-shares-open",
+  "text": "×\nWDP E2E Shares\nDonation form for WDP E2E Shares\nNumber of shares:\n#N#. Shareholder details\n₺#N#\n+#N#\nCreate a copy\nAdd to cart\nGo to checkout\nSecure payment · SSL-protected transaction",
+  "lines": [
+    "×",
+    "WDP E2E Shares",
+    "Donation form for WDP E2E Shares",
+    "Number of shares:",
+    "#N#. Shareholder details",
+    "₺#N#",
+    "+#N#",
+    "Create a copy",
+    "Add to cart",
+    "Go to checkout",
+    "Secure payment · SSL-protected transaction"
+  ],
+  "locale": "en_US",
+  "config": "tt5-try-blocks-hpos"
+}
