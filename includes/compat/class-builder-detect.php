@@ -79,7 +79,7 @@ class WDP_Builder_Detect {
 		}
 		$name = $product->get_name();
 		/* translators: %s: sample product name */
-		return WDP_Utils::admin_notice_html(sprintf(__('Önizleme: «%s» gösteriliyor. Ürün sayfasında o ürünün formu görünür.', 'woo-donation-popup'), $name));
+		return WDP_Utils::admin_notice_html(sprintf(__('Preview: «%s» is shown. That product’s form appears on the product page.', 'woo-donation-popup'), $name));
 	}
 
 	/**

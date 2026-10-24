@@ -151,8 +151,8 @@ class WDP_Form_Fields_Renderer {
 		$recommended = WDP_Form_Modules::resolve_recommended_amount($presets, $configured_recommended);
 
 		$symbol        = $currency_symbol !== '' ? $currency_symbol : WDP_Utils::get_display_currency_symbol();
-		$group_label   = __('Hızlı tutar seç', 'woo-donation-popup');
-		$popular_label = __('Önerilen', 'woo-donation-popup');
+		$group_label   = __('Select a quick amount', 'woo-donation-popup');
+		$popular_label = __('Suggested', 'woo-donation-popup');
 
 		ob_start();
 		?>
@@ -193,7 +193,7 @@ class WDP_Form_Fields_Renderer {
 	public static function render_custom_price_amount_row($min_price, $placeholder, $currency_symbol, array $options = array()) {
 		$defaults    = array(
 			'name'         => 'custom_price',
-			'label'        => __('Bağış Tutarı', 'woo-donation-popup'),
+			'label'        => __('Donation amount', 'woo-donation-popup'),
 			'required'     => true,
 			'row_class'    => 'wdp-custom-price-row',
 			'input_class'  => 'wdp-custom-price-input',
@@ -215,7 +215,7 @@ class WDP_Form_Fields_Renderer {
 		}
 		$placeholder = is_string($placeholder) ? trim($placeholder) : '';
 		$ph_lower    = function_exists('mb_strtolower') ? mb_strtolower($placeholder, 'UTF-8') : strtolower($placeholder);
-		if ($placeholder === '' || strpos($ph_lower, 'bağış tutarı') !== false || strpos($ph_lower, 'bagis tutari') !== false) {
+		if ($placeholder === '' || strpos($ph_lower, 'bağış tutarı') !== false || strpos($ph_lower, 'bagis tutari') !== false || strpos($ph_lower, 'donation amount') !== false) {
 			$min_numeric = (float) $min_price;
 			$placeholder = ($min_numeric > 0 && class_exists('WDP_Utils'))
 				? WDP_Utils::format_min_placeholder($min_price)
@@ -279,7 +279,7 @@ class WDP_Form_Fields_Renderer {
 	 * @return string
 	 */
 	public static function render_fixed_price_quantity_row($product_price) {
-		$sr_label = __('Satır tutarı', 'woo-donation-popup');
+		$sr_label = __('Line amount', 'woo-donation-popup');
 		ob_start();
 		?>
 		<div class="wdp-price-quantity-row wdp-fixed-price-counter-row" role="group" aria-label="<?php echo esc_attr($sr_label); ?>">
@@ -288,9 +288,9 @@ class WDP_Form_Fields_Renderer {
 				<span class="wdp-line-total-value"><?php echo $product_price !== '' ? esc_html(WDP_Utils::format_price_plain($product_price)) : '—'; ?></span>
 			</div>
 			<div class="wdp-quantity-counter">
-				<button type="button" class="wdp-product-quantity-btn wdp-product-quantity-decrease" aria-label="<?php echo esc_attr__('Azalt', 'woo-donation-popup'); ?>"><?php echo WDP_Svg_Icons::get_counter_icon_minus_svg(); ?></button>
+				<button type="button" class="wdp-product-quantity-btn wdp-product-quantity-decrease" aria-label="<?php echo esc_attr__('Decrease', 'woo-donation-popup'); ?>"><?php echo WDP_Svg_Icons::get_counter_icon_minus_svg(); ?></button>
 				<input type="number" name="quantity" value="1" min="1" max="99" readonly>
-				<button type="button" class="wdp-product-quantity-btn wdp-product-quantity-increase" aria-label="<?php echo esc_attr__('Arttır', 'woo-donation-popup'); ?>"><?php echo WDP_Svg_Icons::get_counter_icon_plus_svg(); ?></button>
+				<button type="button" class="wdp-product-quantity-btn wdp-product-quantity-increase" aria-label="<?php echo esc_attr__('Increase', 'woo-donation-popup'); ?>"><?php echo WDP_Svg_Icons::get_counter_icon_plus_svg(); ?></button>
 			</div>
 		</div>
 		<?php
@@ -333,7 +333,7 @@ class WDP_Form_Fields_Renderer {
 	public static function get_default_sadaka_donation_message() {
 		return (string) apply_filters(
 			'wdp_sadaka_inspirational_message',
-			__('İsterseniz bu vesileyle ayrıca bir sadaka bağışı da ekleyebilirsiniz. Her iyilik sessizce bir yere dokunur; sizin niyetiniz, ihtiyaç sahiplerine umut taşıyabilir.', 'woo-donation-popup')
+			__('You can also add a charity donation if you wish. Every kindness quietly reaches someone; your intention can bring hope to those in need.', 'woo-donation-popup')
 		);
 	}
 
@@ -389,7 +389,7 @@ class WDP_Form_Fields_Renderer {
 		if ($wc_product_id <= 0) {
 			return class_exists('WDP_Utils')
 				? WDP_Utils::admin_notice_html(
-					__('Alt bağış (sadaka) için geçerli bir WooCommerce ürünü tanımlı değil. Ayarlar → Başarı & Mini Sepet veya ürün Bağış sekmesinden alt bağış ürünü seçin.', 'woo-donation-popup')
+					__('No valid WooCommerce product is set for the add-on donation. Choose an add-on product in Settings → Success & Mini Cart or on the product Donation tab.', 'woo-donation-popup')
 				)
 				: '';
 		}
@@ -400,15 +400,15 @@ class WDP_Form_Fields_Renderer {
 			$toggle_label = WDP_Utils::get_sadaka_toggle_label();
 		}
 		if ($toggle_label === '') {
-			$toggle_label = __('Alt Bağış Ekle', 'woo-donation-popup');
+			$toggle_label = __('Add add-on donation', 'woo-donation-popup');
 		}
 		$toggle_label = apply_filters('wdp_sadaka_toggle_label', $toggle_label);
 		$panel_id     = 'wdp-sadaka-panel-' . wp_unique_id();
 
 		if ($is_fixed) {
 			$fixed_display = wc_format_decimal($fixed_float, wc_get_price_decimals());
-			$label         = apply_filters('wdp_sadaka_price_label', __('Alt Bağış Tutarı', 'woo-donation-popup'));
-			$label         = is_string($label) ? trim($label) : __('Alt Bağış Tutarı', 'woo-donation-popup');
+			$label         = apply_filters('wdp_sadaka_price_label', __('Add-on donation amount', 'woo-donation-popup'));
+			$label         = is_string($label) ? trim($label) : __('Add-on donation amount', 'woo-donation-popup');
 			if ($label !== '' && substr($label, -1) !== ':') {
 				$label .= ':';
 			}
@@ -437,7 +437,7 @@ class WDP_Form_Fields_Renderer {
 				$currency_symbol,
 				array(
 					'name'         => 'sadaka_custom_price',
-					'label'        => __('Alt Bağış Tutarı', 'woo-donation-popup'),
+					'label'        => __('Add-on donation amount', 'woo-donation-popup'),
 					'required'     => false,
 					'row_class'    => 'wdp-custom-price-row wdp-sadaka-donation__amount',
 					'input_class'  => 'wdp-custom-price-input wdp-sadaka-custom-price-input',
@@ -514,10 +514,10 @@ class WDP_Form_Fields_Renderer {
 		ob_start();
 		?>
 		<div class="wdp-form-block wdp-form-block--info">
-		<div class="wdp-field-stack" role="group" aria-label="<?php echo esc_attr__('Bağışçı iletişim bilgileri', 'woo-donation-popup'); ?>">
+		<div class="wdp-field-stack" role="group" aria-label="<?php echo esc_attr__('Donor contact details', 'woo-donation-popup'); ?>">
 			<div class="wdp-field-stack__row wdp-field-stack__row--name">
 				<span class="wdp-field-stack__icon"><?php echo WDP_Svg_Icons::field_stack_icon_user_svg(); ?></span>
-				<input type="text" class="wdp-field-stack__input" name="donation_full_name" placeholder="<?php echo esc_attr__( 'Ad Soyad *', 'woo-donation-popup' ); ?>" required autocomplete="name" />
+				<input type="text" class="wdp-field-stack__input" name="donation_full_name" placeholder="<?php echo esc_attr__( 'Full name *', 'woo-donation-popup' ); ?>" required autocomplete="name" />
 				<span class="wdp-field-stack__hint"><?php echo esc_html($name_hint); ?></span>
 			</div>
 			<div class="wdp-field-stack__row wdp-field-stack__row--phone">
@@ -528,13 +528,13 @@ class WDP_Form_Fields_Renderer {
 			</div>
 			<div class="wdp-field-stack__row wdp-field-stack__row--textarea">
 				<span class="wdp-field-stack__icon"><?php echo WDP_Svg_Icons::field_stack_icon_note_svg(); ?></span>
-				<textarea class="wdp-field-stack__textarea" name="donation_note" rows="1" maxlength="500" placeholder="<?php echo esc_attr__( 'Not (isteğe bağlı)', 'woo-donation-popup' ); ?>"></textarea>
+				<textarea class="wdp-field-stack__textarea" name="donation_note" rows="1" maxlength="500" placeholder="<?php echo esc_attr__( 'Note (optional)', 'woo-donation-popup' ); ?>"></textarea>
 				<span class="wdp-field-stack__hint"><?php echo esc_html($note_hint); ?></span>
 			</div>
 			<?php if ($enable_email) : ?>
 			<div class="wdp-field-stack__row wdp-field-stack__row--email">
 				<span class="wdp-field-stack__icon"><?php echo WDP_Svg_Icons::field_stack_icon_email_svg(); ?></span>
-				<input type="email" class="wdp-field-stack__input" name="donation_email" placeholder="<?php echo esc_attr__( 'E-posta (isteğe bağlı)', 'woo-donation-popup' ); ?>" autocomplete="email" inputmode="email" maxlength="100" />
+				<input type="email" class="wdp-field-stack__input" name="donation_email" placeholder="<?php echo esc_attr__( 'Email (optional)', 'woo-donation-popup' ); ?>" autocomplete="email" inputmode="email" maxlength="100" />
 				<span class="wdp-field-stack__hint"><?php echo esc_html($email_hint); ?></span>
 			</div>
 			<?php endif; ?>
@@ -565,7 +565,7 @@ class WDP_Form_Fields_Renderer {
 			? (string) $options['dedication_placeholder']
 			: (is_array($button) && !empty($button['dedication_placeholder'])
 				? (string) $button['dedication_placeholder']
-				: __('Kimin adına? (isteğe bağlı)', 'woo-donation-popup'));
+				: __('On behalf of? (optional)', 'woo-donation-popup'));
 
 		if (!$enable_dedication && !$enable_anonymous) {
 			return '';
@@ -583,7 +583,7 @@ class WDP_Form_Fields_Renderer {
 			<?php if ($enable_anonymous) : ?>
 			<label class="wdp-anonymous-row">
 				<input type="checkbox" name="donation_anonymous" value="1" />
-				<span><?php echo esc_html__('İsmim gizli kalsın', 'woo-donation-popup'); ?></span>
+				<span><?php echo esc_html__('Keep my name private', 'woo-donation-popup'); ?></span>
 			</label>
 			<?php endif; ?>
 		</div>
@@ -694,9 +694,9 @@ class WDP_Form_Fields_Renderer {
 				<div class="wdp-shares-header">
 					<label>Hisse Adedi:</label>
 					<div class="wdp-share-counter">
-						<button type="button" class="wdp-share-btn wdp-share-btn-decrease" aria-label="<?php echo esc_attr__('Azalt', 'woo-donation-popup'); ?>"><?php echo WDP_Svg_Icons::get_counter_icon_minus_svg(); ?></button>
+						<button type="button" class="wdp-share-btn wdp-share-btn-decrease" aria-label="<?php echo esc_attr__('Decrease', 'woo-donation-popup'); ?>"><?php echo WDP_Svg_Icons::get_counter_icon_minus_svg(); ?></button>
 						<input type="number" name="share_count" value="1" min="1" max="<?php echo esc_attr($max_shares); ?>" readonly>
-						<button type="button" class="wdp-share-btn wdp-share-btn-increase" aria-label="<?php echo esc_attr__('Arttır', 'woo-donation-popup'); ?>"><?php echo WDP_Svg_Icons::get_counter_icon_plus_svg(); ?></button>
+						<button type="button" class="wdp-share-btn wdp-share-btn-increase" aria-label="<?php echo esc_attr__('Increase', 'woo-donation-popup'); ?>"><?php echo WDP_Svg_Icons::get_counter_icon_plus_svg(); ?></button>
 					</div>
 				</div>
 				<div class="wdp-shareholders-area">

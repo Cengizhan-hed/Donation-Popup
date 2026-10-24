@@ -18,7 +18,7 @@ trait WDP_Ajax_Cart_Session_Trait {
         try {
             self::require_post_method();
             if (!WDP_Security::validate_request_origin(true)) {
-                throw new WDP_Security_Exception(__('Geçersiz istek kaynağı', 'woo-donation-popup'), 'origin');
+                throw new WDP_Security_Exception(__('Invalid request origin', 'woo-donation-popup'), 'origin');
             }
 
             self::enforce_rate_limit('fresh_nonces', 60, 60);
@@ -26,7 +26,7 @@ trait WDP_Ajax_Cart_Session_Trait {
 
             $cart = self::get_wc_cart();
             if (!$cart) {
-                throw new WDP_Security_Exception(__('Geçerli sepet oturumu bulunamadı', 'woo-donation-popup'));
+                throw new WDP_Security_Exception(__('No valid cart session was found', 'woo-donation-popup'));
             }
 
             WDP_Utils::json_success(array(
@@ -72,7 +72,7 @@ trait WDP_Ajax_Cart_Session_Trait {
 
                     WDP_Utils::json_success(array(
                         'in_cart' => true,
-                        'message' => __('Ürün sepete eklendi.', 'woo-donation-popup'),
+                        'message' => __('Product added to cart.', 'woo-donation-popup'),
                         'cart_count' => (int) $cart->get_cart_contents_count(),
                         'checkout_url' => wc_get_checkout_url(),
                         'items' => self::get_cart_items(),

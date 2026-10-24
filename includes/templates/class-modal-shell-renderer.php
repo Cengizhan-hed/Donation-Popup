@@ -23,7 +23,7 @@ class WDP_Modal_Shell_Renderer {
 		ob_start();
 		?>
 		<div class="wdp-shares-total-bar" aria-live="polite" hidden>
-			<span class="wdp-shares-total-bar__label"><?php echo esc_html__('Toplam Tutar', 'woo-donation-popup'); ?></span>
+			<span class="wdp-shares-total-bar__label"><?php echo esc_html__('Total amount', 'woo-donation-popup'); ?></span>
 			<span class="wdp-shares-total-bar__value">—</span>
 		</div>
 		<?php
@@ -156,8 +156,8 @@ class WDP_Modal_Shell_Renderer {
 		$button_settings         = WDP_Utils::normalize_legacy_popup_button_text(
 			get_option('wdp_button_settings', array())
 		);
-		$button_text_add_to_cart = !empty($button_settings['button_text_add_to_cart']) ? $button_settings['button_text_add_to_cart'] : __('Sepete Ekle', 'woo-donation-popup');
-		$button_text_go_checkout = !empty($button_settings['button_text_go_checkout']) ? $button_settings['button_text_go_checkout'] : __('Ödemeye Git', 'woo-donation-popup');
+		$button_text_add_to_cart = !empty($button_settings['button_text_add_to_cart']) ? $button_settings['button_text_add_to_cart'] : __('Add to cart', 'woo-donation-popup');
+		$button_text_go_checkout = !empty($button_settings['button_text_go_checkout']) ? $button_settings['button_text_go_checkout'] : __('Go to checkout', 'woo-donation-popup');
 		$form_button_alignment   = !empty($button_settings['form_button_alignment']) ? $button_settings['form_button_alignment'] : 'left';
 		$button_group_classes    = 'wdp-button-group wdp-button-align-' . esc_attr($form_button_alignment);
 		if ($use_side_panel) {
@@ -195,7 +195,7 @@ class WDP_Modal_Shell_Renderer {
 	 */
 	public static function product_missing_notice($product_id) {
 		/* translators: %d: product ID */
-		return WDP_Utils::admin_notice_html(sprintf(__('Bağış formu: #%d numaralı ürün bulunamadı. Kısa koddaki ürün ID\'sini kontrol edin.', 'woo-donation-popup'), absint($product_id)));
+		return WDP_Utils::admin_notice_html(sprintf(__('Donation form: product #%d was not found. Check the product ID in the shortcode.', 'woo-donation-popup'), absint($product_id)));
 	}
 
 	/**
@@ -222,7 +222,7 @@ class WDP_Modal_Shell_Renderer {
 			return null;
 		}
 		/* translators: %d: product ID */
-		return WDP_Utils::admin_notice_html(sprintf(__('Bu ürünün fiyatı yok; bağış formu gösterilmiyor (ürün #%d). Fiyatı ürünün "Genel" sekmesinden girin veya bağış tipini "Bağışçı belirler" yapın.', 'woo-donation-popup'), (int) $product->get_id()));
+		return WDP_Utils::admin_notice_html(sprintf(__('This product has no price; the donation form is hidden (product #%d). Enter a price on the product’s “General” tab or set the donation type to “Custom amount”.', 'woo-donation-popup'), (int) $product->get_id()));
 	}
 
 	/**
@@ -264,7 +264,7 @@ class WDP_Modal_Shell_Renderer {
 			$button_settings = WDP_Utils::normalize_legacy_popup_button_text(
 				get_option('wdp_button_settings', array())
 			);
-			$button_text = isset($button_settings['popup_button_text']) ? $button_settings['popup_button_text'] : __('Bağış Yap', 'woo-donation-popup');
+			$button_text = isset($button_settings['popup_button_text']) ? $button_settings['popup_button_text'] : __('Donate', 'woo-donation-popup');
 		}
 
 		$context            = WDP_Donation_Product_Context_Service::build_form_context($product);
@@ -360,7 +360,7 @@ class WDP_Modal_Shell_Renderer {
 		<!-- Modal -->
 		<div id="<?php echo esc_attr($modal_id); ?>" class="hdf-donation-modal-wrapper wdp-modal<?php echo esc_attr($modal_mode_class); ?><?php echo esc_attr($layout_class); ?><?php echo $custom_class !== '' ? ' ' . esc_attr($custom_class) : ''; ?>" role="dialog" aria-modal="true" aria-labelledby="<?php echo esc_attr($modal_id); ?>-title" aria-describedby="<?php echo esc_attr($modal_id); ?>-description" data-product-id="<?php echo esc_attr($product_id); ?>" data-wdp-unit-price="<?php echo esc_attr($product_price !== '' ? $product_price : ''); ?>" data-wdp-enable-sadaka="<?php echo $show_sadaka_ui ? '1' : '0'; ?>" data-wdp-progress-celebrate="<?php echo (!isset($context['progress_celebrate']) || !empty($context['progress_celebrate'])) ? '1' : '0'; ?>" data-wdp-layout="<?php echo esc_attr($shell['layout']); ?>"<?php echo $use_side_panel ? ' data-wdp-open-mode="side-panel"' : ''; ?><?php echo $theme_style_attr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped above ?> aria-hidden="true">
 			<div class="wdp-modal-content<?php echo $use_side_panel ? ' wdp-side-panel-content' : ''; ?>">
-				<button type="button" class="wdp-modal-close" aria-label="<?php echo esc_attr__('Modalı Kapat', 'woo-donation-popup'); ?>">&times;</button>
+				<button type="button" class="wdp-modal-close" aria-label="<?php echo esc_attr__('Close popup', 'woo-donation-popup'); ?>">&times;</button>
 				<?php if ($is_story) : ?><div class="wdp-story-rail"><?php endif; ?>
 				<div class="wdp-modal-header">
 					<div class="wdp-modal-title-wrapper">
@@ -371,7 +371,7 @@ class WDP_Modal_Shell_Renderer {
 				<?php echo $progress_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 				<?php endif; ?>
 				<?php if ($is_story) : ?></div><div class="wdp-story-form"><?php endif; ?>
-				<div id="<?php echo esc_attr($modal_id); ?>-description" class="screen-reader-text"><?php echo esc_html(sprintf(__('%s için bağış formu', 'woo-donation-popup'), $product_name)); ?></div>
+				<div id="<?php echo esc_attr($modal_id); ?>-description" class="screen-reader-text"><?php echo esc_html(sprintf(__('Donation form for %s', 'woo-donation-popup'), $product_name)); ?></div>
 
 				<form method="post" action="" class="<?php echo esc_attr($form_field_classes); ?>" novalidate>
 					<div class="wdp-form-error" style="display: none;"></div>
@@ -435,7 +435,7 @@ class WDP_Modal_Shell_Renderer {
 		$product_id = absint($product_id);
 
 		$defaults = array(
-			'button_text' => __('Bağış Yap', 'woo-donation-popup'),
+			'button_text' => __('Donate', 'woo-donation-popup'),
 			'title'       => '',
 			'show_title'  => 'yes',
 			'class'       => '',

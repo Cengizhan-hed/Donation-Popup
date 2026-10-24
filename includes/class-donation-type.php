@@ -59,23 +59,23 @@ class WDP_Donation_Type {
 	public static function get_definitions() {
 		return array(
 			self::FIXED    => array(
-				'label'       => __('Sabit tutar', 'woo-donation-popup'),
-				'description' => __('Ürünün WooCommerce fiyatı kullanılır; bağışçı yalnızca adet seçer.', 'woo-donation-popup'),
+				'label'       => __('Fixed amount', 'woo-donation-popup'),
+				'description' => __('The product’s WooCommerce price is used; the donor only chooses a quantity.', 'woo-donation-popup'),
 				'icon'        => 'dashicons-tag',
 			),
 			self::CUSTOM   => array(
-				'label'       => __('Bağışçı belirler', 'woo-donation-popup'),
-				'description' => __('Bağışçı tutarı kendisi yazar; isterseniz en düşük tutarı belirleyin.', 'woo-donation-popup'),
+				'label'       => __('Custom amount', 'woo-donation-popup'),
+				'description' => __('The donor enters the amount; you can set a minimum if you want.', 'woo-donation-popup'),
 				'icon'        => 'dashicons-edit',
 			),
 			self::SHARES   => array(
-				'label'       => __('Hisseli', 'woo-donation-popup'),
-				'description' => __('Bağışçı hisse adedi seçer ve her hisse için ayrı isim girer.', 'woo-donation-popup'),
+				'label'       => __('Share-based', 'woo-donation-popup'),
+				'description' => __('The donor chooses the number of shares and enters a name for each share.', 'woo-donation-popup'),
 				'icon'        => 'dashicons-groups',
 			),
 			self::CAMPAIGN => array(
-				'label'       => __('Hedefli kampanya', 'woo-donation-popup'),
-				'description' => __('Hedef tutar ve ilerleme çubuğu gösterilir; bağışçı tutarı kendisi yazar.', 'woo-donation-popup'),
+				'label'       => __('Goal-based campaign', 'woo-donation-popup'),
+				'description' => __('The goal amount and progress bar are shown; the donor enters the amount.', 'woo-donation-popup'),
 				'icon'        => 'dashicons-chart-bar',
 			),
 		);

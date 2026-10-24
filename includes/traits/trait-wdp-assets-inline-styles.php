@@ -37,38 +37,38 @@ trait WDP_Assets_Inline_Styles_Trait {
         
         // Varsayılan değerler (popup_button_text: şablon + JS için tek bağış butonu metni kaynağı)
         $defaults = array(
-            'popup_button_text'       => __('Bağış Yap', 'woo-donation-popup'),
-            'button_text_donate'      => __('Bağış Yap', 'woo-donation-popup'),
-            'button_text_add_to_cart' => __('Sepete Ekle', 'woo-donation-popup'),
-            'button_text_go_checkout' => __('Ödemeye Git', 'woo-donation-popup'),
+            'popup_button_text'       => __('Donate', 'woo-donation-popup'),
+            'button_text_donate'      => __('Donate', 'woo-donation-popup'),
+            'button_text_add_to_cart' => __('Add to cart', 'woo-donation-popup'),
+            'button_text_go_checkout' => __('Go to checkout', 'woo-donation-popup'),
         );
         
         $settings = wp_parse_args($button_settings, $defaults);
         
         $result = array(
-            'donate'      => self::sanitize_plain_text($settings['popup_button_text'], __('Bağış Yap', 'woo-donation-popup')),
-            'add_to_cart' => self::sanitize_plain_text($settings['button_text_add_to_cart'], __('Sepete Ekle', 'woo-donation-popup')),
-            'go_checkout' => self::sanitize_plain_text($settings['button_text_go_checkout'], __('Ödemeye Git', 'woo-donation-popup')),
+            'donate'      => self::sanitize_plain_text($settings['popup_button_text'], __('Donate', 'woo-donation-popup')),
+            'add_to_cart' => self::sanitize_plain_text($settings['button_text_add_to_cart'], __('Add to cart', 'woo-donation-popup')),
+            'go_checkout' => self::sanitize_plain_text($settings['button_text_go_checkout'], __('Go to checkout', 'woo-donation-popup')),
         );
         
         // Başarı ekranı buton metinleri (başarı ekranı ayarlarından al)
         $success_settings = get_option('wdp_success_settings', array());
         if (isset($success_settings['success_text_view_cart'])) {
-            $result['success_view_cart'] = self::sanitize_plain_text($success_settings['success_text_view_cart'], __('Sepete Git', 'woo-donation-popup'));
+            $result['success_view_cart'] = self::sanitize_plain_text($success_settings['success_text_view_cart'], __('View cart', 'woo-donation-popup'));
         } else {
-            $result['success_view_cart'] = __('Sepete Git', 'woo-donation-popup');
+            $result['success_view_cart'] = __('View cart', 'woo-donation-popup');
         }
         
         if (isset($success_settings['success_text_go_checkout'])) {
-            $result['success_go_checkout'] = self::sanitize_plain_text($success_settings['success_text_go_checkout'], __('Bağışı Tamamla', 'woo-donation-popup'));
+            $result['success_go_checkout'] = self::sanitize_plain_text($success_settings['success_text_go_checkout'], __('Complete donation', 'woo-donation-popup'));
         } else {
-            $result['success_go_checkout'] = __('Bağışı Tamamla', 'woo-donation-popup');
+            $result['success_go_checkout'] = __('Complete donation', 'woo-donation-popup');
         }
         
         if (isset($success_settings['success_text_new_donation'])) {
-            $result['success_new_donation'] = self::sanitize_plain_text($success_settings['success_text_new_donation'], __('Bağış eklemeye devam edin', 'woo-donation-popup'));
+            $result['success_new_donation'] = self::sanitize_plain_text($success_settings['success_text_new_donation'], __('Continue adding donations', 'woo-donation-popup'));
         } else {
-            $result['success_new_donation'] = __('Bağış eklemeye devam edin', 'woo-donation-popup');
+            $result['success_new_donation'] = __('Continue adding donations', 'woo-donation-popup');
         }
         
         return $result;

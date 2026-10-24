@@ -59,7 +59,7 @@ class WDP_Progress_Form {
         if ($donor_count > 0) {
             $donors_label = sprintf(
                 /* translators: %d: number of donors */
-                _n('%d kişi', '%d kişi', $donor_count, 'woo-donation-popup'),
+                _n('%d person', '%d people', $donor_count, 'woo-donation-popup'),
                 $donor_count
             );
         }
@@ -70,7 +70,7 @@ class WDP_Progress_Form {
                 : wp_strip_all_tags(WDP_Utils::format_price_html($remaining));
             $remaining_label = sprintf(
                 /* translators: %s: remaining amount */
-                __('%s kaldı', 'woo-donation-popup'),
+                __('%s remaining', 'woo-donation-popup'),
                 $remaining_plain
             );
         }
@@ -86,12 +86,12 @@ class WDP_Progress_Form {
             data-donor-count="<?php echo esc_attr((string) $donor_count); ?>"
             data-wdp-was-complete="<?php echo $is_complete ? '1' : '0'; ?>"
             role="group"
-            aria-label="<?php echo esc_attr__('Bağış ilerleme durumu', 'woo-donation-popup'); ?>"
+            aria-label="<?php echo esc_attr__('Donation progress', 'woo-donation-popup'); ?>"
         >
             <div class="wdp-progress-bar-header">
                 <div class="wdp-progress-bar-info">
                     <span class="wdp-progress-bar-amount"><?php echo WDP_Utils::format_price_html($total_donation); ?></span>
-                    <span class="wdp-progress-bar-label"><?php echo esc_html__('toplandı', 'woo-donation-popup'); ?></span>
+                    <span class="wdp-progress-bar-label"><?php echo esc_html__('raised', 'woo-donation-popup'); ?></span>
                     <span class="wdp-progress-bar-delta" data-wdp-progress-delta hidden></span>
                 </div>
                 <div class="wdp-progress-bar-pct-block">
@@ -106,7 +106,7 @@ class WDP_Progress_Form {
                     aria-valuemin="0"
                     aria-valuemax="100"
                     aria-valuenow="<?php echo esc_attr((string) round($percent, 1)); ?>"
-                    aria-label="<?php echo esc_attr__('Hedef tamamlanma oranı', 'woo-donation-popup'); ?>"
+                    aria-label="<?php echo esc_attr__('Goal completion rate', 'woo-donation-popup'); ?>"
                 >
                     <div class="wdp-progress-bar-fill" style="width: <?php echo esc_attr((string) $percent); ?>%;"></div>
                     <div
@@ -121,7 +121,7 @@ class WDP_Progress_Form {
 
             <div class="wdp-progress-bar-status-row">
                 <span class="wdp-progress-bar-goal">
-                    <span class="wdp-progress-bar-limit-label"><?php echo esc_html__('Hedef', 'woo-donation-popup'); ?></span>
+                    <span class="wdp-progress-bar-limit-label"><?php echo esc_html__('Goal', 'woo-donation-popup'); ?></span>
                     <span class="wdp-progress-bar-limit-amount"><?php echo WDP_Utils::format_price_html($progress_bar_limit); ?></span>
                 </span>
                 <?php if ($remaining_label !== '') : ?>
@@ -142,7 +142,7 @@ class WDP_Progress_Form {
 
             <div class="wdp-progress-bar-meta"<?php echo !$is_complete ? ' hidden' : ''; ?>>
                 <span class="wdp-progress-bar-complete-label"<?php echo !$is_complete ? ' hidden' : ''; ?>>
-                    <?php echo esc_html__('Hedefe ulaşıldı', 'woo-donation-popup'); ?>
+                    <?php echo esc_html__('Goal reached', 'woo-donation-popup'); ?>
                 </span>
             </div>
         </div>

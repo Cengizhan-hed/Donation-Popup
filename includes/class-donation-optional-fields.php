@@ -98,7 +98,7 @@ class WDP_Donation_Optional_Fields {
 				$email = sanitize_email($raw);
 				if (!$email || !is_email($email)) {
 					throw new WDP_Validation_Exception(
-						__('Lütfen geçerli bir e-posta adresi giriniz.', 'woo-donation-popup'),
+						__('Please enter a valid email address.', 'woo-donation-popup'),
 						array('donation_email')
 					);
 				}
@@ -140,11 +140,11 @@ class WDP_Donation_Optional_Fields {
 		}
 		$name = trim(preg_replace('/\s+/u', ' ', (string) $name));
 		if ($name === '') {
-			return __('Anonim', 'woo-donation-popup');
+			return __('Anonymous', 'woo-donation-popup');
 		}
 		$parts = preg_split('/\s+/u', $name, -1, PREG_SPLIT_NO_EMPTY);
 		if (!is_array($parts) || !$parts) {
-			return __('Anonim', 'woo-donation-popup');
+			return __('Anonymous', 'woo-donation-popup');
 		}
 		$masked = array();
 		foreach ($parts as $part) {
@@ -201,7 +201,7 @@ class WDP_Donation_Optional_Fields {
 	 * @return string
 	 */
 	public static function default_privacy_link_label() {
-		return __('Kişisel verilerin işlenmesine ilişkin aydınlatma metni', 'woo-donation-popup');
+		return __('Privacy notice on the processing of personal data', 'woo-donation-popup');
 	}
 
 	/**

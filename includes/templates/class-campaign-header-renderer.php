@@ -56,8 +56,8 @@ class WDP_Campaign_Header_Renderer {
 					<p class="wdp-product-note__text"><?php echo esc_html($display['text']); ?></p>
 					<?php if ($is_long && $toggle_id !== '') : ?>
 					<label for="<?php echo esc_attr($toggle_id); ?>" class="wdp-product-note__more">
-						<span class="wdp-product-note__more-open"><?php echo esc_html__('Devamını Gör', 'woo-donation-popup'); ?></span>
-						<span class="wdp-product-note__more-close"><?php echo esc_html__('Daha Az Göster', 'woo-donation-popup'); ?></span>
+						<span class="wdp-product-note__more-open"><?php echo esc_html__('See more', 'woo-donation-popup'); ?></span>
+						<span class="wdp-product-note__more-close"><?php echo esc_html__('Show less', 'woo-donation-popup'); ?></span>
 					</label>
 					<?php endif; ?>
 				</div>

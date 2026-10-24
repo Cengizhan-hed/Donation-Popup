@@ -33,7 +33,7 @@ trait WDP_Ajax_Base_Trait {
         $layered = ('get_product_info' === $action || 'render_modal' === $action);
         if (!WDP_Security::check_action_rate_limit($action, $max_requests, $window_seconds, $layered)) {
             throw new WDP_Security_Exception(
-                __('Çok fazla istek gönderildi. Lütfen bir süre bekleyip tekrar deneyin.', 'woo-donation-popup'),
+                __('Too many requests were sent. Please wait a while and try again.', 'woo-donation-popup'),
                 'rate_limit',
                 (int) $window_seconds
             );
@@ -48,7 +48,7 @@ trait WDP_Ajax_Base_Trait {
      */
     private static function enforce_capability($capability = 'read') {
         if (!WDP_Security::check_capability($capability)) {
-            throw new WDP_Security_Exception(__('Yetkiniz bulunmuyor', 'woo-donation-popup'), 'capability');
+            throw new WDP_Security_Exception(__('You do not have permission', 'woo-donation-popup'), 'capability');
         }
     }
 
@@ -66,7 +66,7 @@ trait WDP_Ajax_Base_Trait {
         }
 
         if (!WDP_Security::validate_request_origin()) {
-            throw new WDP_Security_Exception(__('Geçersiz istek kaynağı', 'woo-donation-popup'), 'origin');
+            throw new WDP_Security_Exception(__('Invalid request origin', 'woo-donation-popup'), 'origin');
         }
     }
 
@@ -78,7 +78,7 @@ trait WDP_Ajax_Base_Trait {
     private static function require_post_method() {
         $method = isset($_SERVER['REQUEST_METHOD']) ? strtoupper((string) wp_unslash($_SERVER['REQUEST_METHOD'])) : '';
         if ('POST' !== $method) {
-            throw new WDP_Security_Exception(__('Geçersiz istek metodu', 'woo-donation-popup'), 'method');
+            throw new WDP_Security_Exception(__('Invalid request method', 'woo-donation-popup'), 'method');
         }
     }
 
