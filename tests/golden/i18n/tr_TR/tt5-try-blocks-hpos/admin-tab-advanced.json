@@ -1,0 +1,30 @@
+{
+  "id": "admin-tab-advanced",
+  "text": "DONATİON POPUP\nBağış Popup Ayarları\nÜrün davranışını, form görünümünü ve başarı ekranını tek yerden yönetin — değişiklikler canlı önizlemede anında görünür.\nV10.#AMT#\nKURULUM\nÜrünler\nÜrün sayfası ve liste\nTasarım\nFORMLAR\nModal\nNormal\nHisseli\nProgress\nBaşarı\nEK\nMeta Pixel\nKategoriler\nGelişmiş\nVeri ve kaldırma\nKişisel veri dışa aktarma ve silme talepleri (Araçlar → Kişisel verileri dışa aktar / sil) siparişlerdeki bağışçı ve hissedar alanlarını kapsar; silmede değerler “[deleted]” ile anonimleştirilir.\nEklenti kaldırılınca verileri sil Etkin\nEklentinin tüm ürün ayarları ve eklenti seçenekleri silinir. Siparişlere ve sipariş kayıtlarına dokunulmaz. Bu işlem geri alınamaz.",
+  "lines": [
+    "DONATİON POPUP",
+    "Bağış Popup Ayarları",
+    "Ürün davranışını, form görünümünü ve başarı ekranını tek yerden yönetin — değişiklikler canlı önizlemede anında görünür.",
+    "V10.#AMT#",
+    "KURULUM",
+    "Ürünler",
+    "Ürün sayfası ve liste",
+    "Tasarım",
+    "FORMLAR",
+    "Modal",
+    "Normal",
+    "Hisseli",
+    "Progress",
+    "Başarı",
+    "EK",
+    "Meta Pixel",
+    "Kategoriler",
+    "Gelişmiş",
+    "Veri ve kaldırma",
+    "Kişisel veri dışa aktarma ve silme talepleri (Araçlar → Kişisel verileri dışa aktar / sil) siparişlerdeki bağışçı ve hissedar alanlarını kapsar; silmede değerler “[deleted]” ile anonimleştirilir.",
+    "Eklenti kaldırılınca verileri sil Etkin",
+    "Eklentinin tüm ürün ayarları ve eklenti seçenekleri silinir. Siparişlere ve sipariş kayıtlarına dokunulmaz. Bu işlem geri alınamaz."
+  ],
+  "locale": "tr_TR",
+  "config": "tt5-try-blocks-hpos"
+}

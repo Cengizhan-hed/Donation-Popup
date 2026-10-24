@@ -1,0 +1,9 @@
+{
+  "id": "donations-list",
+  "text": "WDP E2E Custom min. ₺#N# Bağış Yap",
+  "lines": [
+    "WDP E2E Custom min. ₺#N# Bağış Yap"
+  ],
+  "locale": "tr_TR",
+  "config": "tt5-try-blocks-hpos"
+}

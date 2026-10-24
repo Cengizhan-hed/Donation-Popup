@@ -1,0 +1,28 @@
+{
+  "id": "form-inline-campaign-error",
+  "text": "₺#N#\ntoplandı\n#AMT#%\nHedef\n₺#N#\n·\n₺#N# kaldı\nAd Soyad zorunludur.\n+#N#\nTelefon numaranızı eksiksiz giriniz.\nBağış Tutarı:\n₺#N#\n₺#N#\n₺#N#\n₺#AMT#\n₺\nLütfen bağış tutarını giriniz.\nSepete Ekle\nÖdemeye Git\nGüvenli ödeme · SSL korumalı işlem",
+  "lines": [
+    "₺#N#",
+    "toplandı",
+    "#AMT#%",
+    "Hedef",
+    "₺#N#",
+    "·",
+    "₺#N# kaldı",
+    "Ad Soyad zorunludur.",
+    "+#N#",
+    "Telefon numaranızı eksiksiz giriniz.",
+    "Bağış Tutarı:",
+    "₺#N#",
+    "₺#N#",
+    "₺#N#",
+    "₺#AMT#",
+    "₺",
+    "Lütfen bağış tutarını giriniz.",
+    "Sepete Ekle",
+    "Ödemeye Git",
+    "Güvenli ödeme · SSL korumalı işlem"
+  ],
+  "locale": "tr_TR",
+  "config": "tt5-try-blocks-hpos"
+}

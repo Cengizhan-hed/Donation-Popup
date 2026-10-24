@@ -1,0 +1,25 @@
+{
+  "id": "form-inline-campaign-open",
+  "text": "£#AMT#\ntoplandı\n#AMT#%\nHedef\n£#AMT#\n·\n£#AMT# kaldı\n+#N#\nBağış Tutarı:\n£#AMT#\n£#AMT#\n£#AMT#\n£#AMT#.#N#\n£\nSepete Ekle\nÖdemeye Git\nGüvenli ödeme · SSL korumalı işlem",
+  "lines": [
+    "£#AMT#",
+    "toplandı",
+    "#AMT#%",
+    "Hedef",
+    "£#AMT#",
+    "·",
+    "£#AMT# kaldı",
+    "+#N#",
+    "Bağış Tutarı:",
+    "£#AMT#",
+    "£#AMT#",
+    "£#AMT#",
+    "£#AMT#.#N#",
+    "£",
+    "Sepete Ekle",
+    "Ödemeye Git",
+    "Güvenli ödeme · SSL korumalı işlem"
+  ],
+  "locale": "tr_TR",
+  "config": "sf-gbp-classic-hpos"
+}

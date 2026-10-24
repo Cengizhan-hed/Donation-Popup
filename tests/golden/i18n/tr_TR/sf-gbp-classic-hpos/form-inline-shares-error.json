@@ -1,0 +1,18 @@
+{
+  "id": "form-inline-shares-error",
+  "text": "Hisse Adedi:\n#N#. Hissedar Bilgileri\n£#AMT#\n#N#. Hissedar adı zorunludur.\n+#N#\nTelefon numaranızı eksiksiz giriniz.\nKopyasını Oluştur\nSepete Ekle\nÖdemeye Git\nGüvenli ödeme · SSL korumalı işlem",
+  "lines": [
+    "Hisse Adedi:",
+    "#N#. Hissedar Bilgileri",
+    "£#AMT#",
+    "#N#. Hissedar adı zorunludur.",
+    "+#N#",
+    "Telefon numaranızı eksiksiz giriniz.",
+    "Kopyasını Oluştur",
+    "Sepete Ekle",
+    "Ödemeye Git",
+    "Güvenli ödeme · SSL korumalı işlem"
+  ],
+  "locale": "tr_TR",
+  "config": "sf-gbp-classic-hpos"
+}

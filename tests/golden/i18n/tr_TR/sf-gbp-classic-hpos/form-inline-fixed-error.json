@@ -1,0 +1,16 @@
+{
+  "id": "form-inline-fixed-error",
+  "text": "Ad Soyad zorunludur.\n+#N#\nTelefon numaranızı eksiksiz giriniz.\nSatır tutarı\n£#AMT#\nSepete Ekle\nÖdemeye Git\nGüvenli ödeme · SSL korumalı işlem",
+  "lines": [
+    "Ad Soyad zorunludur.",
+    "+#N#",
+    "Telefon numaranızı eksiksiz giriniz.",
+    "Satır tutarı",
+    "£#AMT#",
+    "Sepete Ekle",
+    "Ödemeye Git",
+    "Güvenli ödeme · SSL korumalı işlem"
+  ],
+  "locale": "tr_TR",
+  "config": "sf-gbp-classic-hpos"
+}

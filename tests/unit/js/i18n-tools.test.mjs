@@ -1,0 +1,121 @@
+/**
+ * gen-js-strings, merge-po, i18n-text normalize/compare.
+ */
+import { describe, it } from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import { spawnSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
+import { extractJsI18nCalls, renderPhpRegion } from '../../../tools/i18n/gen-js-strings.mjs';
+import { parsePoEntries, mergeParts } from '../../../tools/i18n/merge-po.mjs';
+import {
+  normalizeVisibleText,
+  diffScreenLines,
+  findTurkishInText,
+  extractElementorWidgetStrings,
+} from '../../../tests/e2e/helpers/i18n-text.mjs';
+import { ROOT } from '../../../tests/e2e/helpers/env-root.mjs';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+describe('gen-js-strings', () => {
+  it('WDPApp.i18n.__ / _x çağrılarını tarar', () => {
+    const src = `
+      WDPApp.i18n.__('Save', 'woo-donation-popup');
+      WDPApp.i18n._x('Open', 'button', 'woo-donation-popup');
+    `;
+    const calls = extractJsI18nCalls(src);
+    assert.equal(calls.length, 2);
+    assert.equal(calls[0].msg, 'Save');
+    assert.equal(calls[1].ctx, 'button');
+    const region = renderPhpRegion([
+      { fn: '__', msg: 'Save', ctx: '' },
+      { fn: '_x', msg: 'Open', ctx: 'button' },
+    ]);
+    assert.match(region, /__\('Save'/);
+    assert.match(region, /_x\('Open', 'button'/);
+  });
+
+  it('--check boş sözlükle yeşil', () => {
+    const r = spawnSync(process.execPath, ['tools/i18n/gen-js-strings.mjs', '--check'], {
+      encoding: 'utf8',
+      cwd: ROOT,
+    });
+    assert.equal(r.status, 0, r.stderr || r.stdout);
+  });
+});
+
+describe('merge-po', () => {
+  it('aynı msgid farklı msgstr = çakışma', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'wdp-po-'));
+    const a = path.join(dir, 'A.po');
+    const b = path.join(dir, 'B.po');
+    fs.writeFileSync(a, 'msgid "Save"\nmsgstr "Kaydet"\n');
+    fs.writeFileSync(b, 'msgid "Save"\nmsgstr "Sakla"\n');
+    const { conflicts } = mergeParts([a, b]);
+    assert.ok(conflicts.some((c) => c.includes('ÇAKIŞMA')));
+    fs.rmSync(dir, { recursive: true, force: true });
+  });
+
+  it('aynı çeviri çakışma değildir', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'wdp-po-'));
+    const a = path.join(dir, 'A.po');
+    const b = path.join(dir, 'B.po');
+    fs.writeFileSync(a, 'msgid "Save"\nmsgstr "Kaydet"\n');
+    fs.writeFileSync(b, 'msgid "Save"\nmsgstr "Kaydet"\n');
+    const { conflicts, map } = mergeParts([a, b]);
+    assert.equal(conflicts.length, 0);
+    assert.equal(map.size, 1);
+    fs.rmSync(dir, { recursive: true, force: true });
+  });
+
+  it('parsePoEntries msgid okur', () => {
+    const entries = parsePoEntries('msgid "Hi"\nmsgstr "Merhaba"\n');
+    assert.equal(entries[0].msgid, 'Hi');
+    assert.equal(entries[0].msgstr, 'Merhaba');
+  });
+});
+
+describe('i18n-text', () => {
+  it('normalize sayı/tarih/kimlik maskeler', () => {
+    const t = normalizeVisibleText('Tutar 1.234,50  2026-10-24  #99 sipariş');
+    assert.match(t, /#AMT#|#N#/);
+    assert.match(t, /#DATE#/);
+  });
+
+  it('satır farklarını listeler', () => {
+    const d = diffScreenLines({ lines: ['A', 'B'] }, { lines: ['A', 'C'] });
+    assert.equal(d.length, 1);
+    assert.match(d[0], /L2/);
+  });
+
+  it('Türkçe harf ve sözcük bulur', () => {
+    const hit = findTurkishInText('Bağış tutarı Kaydet');
+    assert.ok(hit.letters.length > 0);
+    assert.ok(hit.words.includes('Bağış'));
+    assert.ok(hit.words.includes('Kaydet'));
+  });
+
+  it('Elementor get_title kaynaklarını okur', () => {
+    const widgets = extractElementorWidgetStrings(ROOT);
+    assert.ok(widgets.length >= 2);
+    assert.ok(widgets.some((w) => w.title.includes('Bağış')));
+  });
+});
+
+describe('token-scan', () => {
+  it('PHP tokenizer gettext çağrılarını JSON olarak verir', () => {
+    const r = spawnSync('php', ['tools/i18n/token-scan.php', ROOT], {
+      encoding: 'utf8',
+      cwd: ROOT,
+      maxBuffer: 32 * 1024 * 1024,
+    });
+    assert.equal(r.status, 0, r.stderr);
+    const data = JSON.parse(r.stdout);
+    assert.ok(data.call_count > 0);
+    assert.ok(Array.isArray(data.calls));
+    assert.ok(data.calls.some((c) => c.function === '__' && c.file.includes('class-admin-page-renderer.php')));
+  });
+});

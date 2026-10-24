@@ -1,0 +1,21 @@
+{
+  "id": "form-panel-shares-error",
+  "text": "×\nWDP E2E Shares\nWDP E2E Shares için bağış formu\nHisse Adedi:\n#N#. Hissedar Bilgileri\n₺#N#\n#N#. Hissedar adı zorunludur.\n+#N#\nTelefon numaranızı eksiksiz giriniz.\nKopyasını Oluştur\nÖdemeye Git\nSepete Ekle\nGüvenli ödeme · SSL korumalı işlem",
+  "lines": [
+    "×",
+    "WDP E2E Shares",
+    "WDP E2E Shares için bağış formu",
+    "Hisse Adedi:",
+    "#N#. Hissedar Bilgileri",
+    "₺#N#",
+    "#N#. Hissedar adı zorunludur.",
+    "+#N#",
+    "Telefon numaranızı eksiksiz giriniz.",
+    "Kopyasını Oluştur",
+    "Ödemeye Git",
+    "Sepete Ekle",
+    "Güvenli ödeme · SSL korumalı işlem"
+  ],
+  "locale": "tr_TR",
+  "config": "tt5-try-blocks-hpos"
+}

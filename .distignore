@@ -37,5 +37,8 @@ tests/
 tools/
 scripts/
 
+# Translation part files are merged locally; only compiled catalog ships.
+languages/parts/
+
 # Removed: intl-tel-input (replaced by WDP custom phone field)
 assets/vendor/intl-tel-input/

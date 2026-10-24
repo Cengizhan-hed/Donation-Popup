@@ -78,6 +78,14 @@ class WDP_Autoloader {
             return;
         }
 
+        if ($class_name === 'WDP_Js_I18n') {
+            self::require_if_exists($root . 'i18n/class-js-strings.php');
+            return;
+        }
+        if (self::require_if_exists($root . 'i18n/' . $file_name)) {
+            return;
+        }
+
         // Phase 2: template renderers live under includes/templates/.
         if (self::require_if_exists($root . 'templates/' . $file_name)) {
             return;

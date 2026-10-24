@@ -1,0 +1,14 @@
+{
+  "id": "form-inline-fixed-open",
+  "text": "+#N#\nSatır tutarı\n₺#N#\nSepete Ekle\nÖdemeye Git\nGüvenli ödeme · SSL korumalı işlem",
+  "lines": [
+    "+#N#",
+    "Satır tutarı",
+    "₺#N#",
+    "Sepete Ekle",
+    "Ödemeye Git",
+    "Güvenli ödeme · SSL korumalı işlem"
+  ],
+  "locale": "tr_TR",
+  "config": "tt5-try-blocks-hpos"
+}

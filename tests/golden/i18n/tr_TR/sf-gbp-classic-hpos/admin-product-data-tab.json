@@ -1,0 +1,9 @@
+{
+  "id": "admin-product-data-tab",
+  "text": "Bağış",
+  "lines": [
+    "Bağış"
+  ],
+  "locale": "tr_TR",
+  "config": "sf-gbp-classic-hpos"
+}

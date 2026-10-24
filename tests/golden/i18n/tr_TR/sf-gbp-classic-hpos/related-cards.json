@@ -1,0 +1,11 @@
+{
+  "id": "related-cards",
+  "text": "WDP E2E Campaign Bağış Yap\nWDP E2E Custom Bağış Yap\nWDP E2E Shares £#AMT# Bağış Yap",
+  "lines": [
+    "WDP E2E Campaign Bağış Yap",
+    "WDP E2E Custom Bağış Yap",
+    "WDP E2E Shares £#AMT# Bağış Yap"
+  ],
+  "locale": "tr_TR",
+  "config": "sf-gbp-classic-hpos"
+}

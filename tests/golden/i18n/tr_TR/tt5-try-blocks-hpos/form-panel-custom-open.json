@@ -1,0 +1,21 @@
+{
+  "id": "form-panel-custom-open",
+  "text": "×\nWDP E2E Custom\nWDP E2E Custom için bağış formu\n+#N#\nBağış Tutarı:\n₺#N#\n₺#N#\n₺#N#\n₺#AMT#\n₺\nÖdemeye Git\nSepete Ekle\nGüvenli ödeme · SSL korumalı işlem",
+  "lines": [
+    "×",
+    "WDP E2E Custom",
+    "WDP E2E Custom için bağış formu",
+    "+#N#",
+    "Bağış Tutarı:",
+    "₺#N#",
+    "₺#N#",
+    "₺#N#",
+    "₺#AMT#",
+    "₺",
+    "Ödemeye Git",
+    "Sepete Ekle",
+    "Güvenli ödeme · SSL korumalı işlem"
+  ],
+  "locale": "tr_TR",
+  "config": "tt5-try-blocks-hpos"
+}

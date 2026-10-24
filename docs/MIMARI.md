@@ -19,6 +19,8 @@ Kural: her iddia `dosya:satır`; emin olunmayan yerler **DOĞRULANMADI**.
 | `includes/templates/` | Modal kabuk, alan, kampanya header, SVG | `tools/file-descriptions.json` (satır 76–79) |
 | `includes/elementor/` | Elementor widget sınıfları | `includes/class-elementor.php` |
 | `includes/compat/` | Builder tespit (Avada/Elementor/…) | `includes/compat/class-builder-detect.php` |
+| `includes/i18n/` | JS sözlük sınıfı (`WDP_Js_I18n`) | `includes/i18n/class-js-strings.php` |
+| `languages/` | `.pot` / `tr_TR.po|.mo` (parts/ dağıtıma girmez) | `.distignore` `languages/parts/` |
 | `templates/woocommerce/` | Simple add-to-cart şablon override | `templates/woocommerce/single-product/add-to-cart/simple.php` |
 | `blocks/` | Gutenberg `donation-form` + `donations` | `includes/class-blocks.php:34-63` |
 | `assets/js/src/` | Ön yüz JS kaynakları | `includes/config/frontend-js-stack.php` |
@@ -37,8 +39,9 @@ Kural: her iddia `dosya:satır`; emin olunmayan yerler **DOĞRULANMADI**.
 
 1. `woo-donation-popup.php` → `WDP_Plugin_Bootstrap::run()` (`woo-donation-popup.php:53-56`)
 2. HPOS uyumluluk + autoload + Migrations::init (`includes/bootstrap/class-plugin-bootstrap.php:22-27`)
-3. `plugins_loaded` → WC yoksa notice; varsa `Woo_Donation_Popup` (+ admin’de `Woo_Donation_Popup_Admin`) (`includes/bootstrap/class-plugin-bootstrap.php:35-44`)
-4. Modül `init()` sırası (`includes/class-woo-donation-popup.php:47-64`): Utils → Assets → Meta_Tracking → Ajax → Cart → Order → Sadaka_Product_Visibility → **Donation_Purchasable** → Donations_List → Product_Page_Integration → Lazy_Modal → Schema → Blocks → Elementor → Form_Matrix → Shortcodes
+3. `init` → `load_plugin_textdomain` (`includes/bootstrap/class-plugin-bootstrap.php` `load_textdomain`)
+4. `plugins_loaded` → WC yoksa notice; varsa `Woo_Donation_Popup` (+ admin’de `Woo_Donation_Popup_Admin`) (`includes/bootstrap/class-plugin-bootstrap.php:35-44`)
+5. Modül `init()` sırası (`includes/class-woo-donation-popup.php:47-64`): Utils → Assets → Meta_Tracking → Ajax → Cart → Order → Sadaka_Product_Visibility → **Donation_Purchasable** → Donations_List → Product_Page_Integration → Lazy_Modal → Schema → Blocks → Elementor → Form_Matrix → Shortcodes
 
 ---
 
@@ -62,7 +65,8 @@ Kural: her iddia `dosya:satır`; emin olunmayan yerler **DOĞRULANMADI**.
 | Hook | Öncelik | Callback | Dosya:satır |
 |------|---------|----------|-------------|
 | `before_woocommerce_init` | default | HPOS `custom_order_tables` uyum | `includes/bootstrap/class-plugin-bootstrap.php:99-106` |
-| `plugins_loaded` | default | `launch_plugin`, `update_version` | `includes/bootstrap/class-plugin-bootstrap.php:26-27` |
+| `init` | default | `load_textdomain` (`woo-donation-popup` → `languages/`) | `includes/bootstrap/class-plugin-bootstrap.php` |
+| `plugins_loaded` | default | `launch_plugin`, `update_version` | `includes/bootstrap/class-plugin-bootstrap.php` |
 | `admin_notices` | default | WC eksik notice | `includes/bootstrap/class-plugin-bootstrap.php:37` |
 | `admin_init` | 5 / 20 | Migrations `maybe_run` / `maybe_dismiss_notice` | `includes/class-migrations.php:72-73` |
 | `admin_notices` | default | placement notice | `includes/class-migrations.php:74` |
@@ -142,9 +146,9 @@ AJAX hook’ları → bölüm **e**.
 
 ### JS yükleme sırası (stack — bağımlılıklar)
 
-Kaynak: `includes/config/frontend-js-stack.php:12-258`. Özet sıra:
+Kaynak: `includes/config/frontend-js-stack.php`. Özet sıra:
 
-1. constants → meta-tracking → utils → cta-viewport → state → dom  
+1. **i18n** (core’dan önce, bağımsız) → constants → meta-tracking → utils → cta-viewport → state → dom  
 2. phone-input → product  
 3. cart/ui → cart/woo → cart/actions → cart  
 4. form/messages → pricing → feedback → sadaka-rules → sadaka → ajax → validate → wizard → **cta-ready** → form  
@@ -156,8 +160,9 @@ Kaynak: `includes/config/frontend-js-stack.php:12-258`. Özet sıra:
 
 | Global | Kaynak | Not |
 |--------|--------|-----|
-| `window.WDPApp` | tüm `assets/js/src/**` | alt: `utils`, `state`, `modal`, `form`, `formCtaReady`, `cart`, `product`, `lazyModal`, `init`, … |
-| `window.wdp_ajax` | PHP localize | nonce, ajax_url, `currency` (code/symbol/decimals/thousandSeparator/decimalSeparator/symbolPosition), meta… (`includes/traits/trait-wdp-assets-registry.php`, `WDP_Utils::get_js_currency_settings`) |
+| `window.WDPApp` | tüm `assets/js/src/**` | alt: `i18n`, `utils`, `state`, `modal`, `form`, `formCtaReady`, `cart`, `product`, `lazyModal`, `init`, … |
+| `window.WDPApp.i18n` | `assets/js/src/core/i18n.js` | `__`, `_x`, `sprintf`; sözlük `wdp_ajax.i18n_dict` (`WDP_Js_I18n::dictionary`) |
+| `window.wdp_ajax` | PHP localize | nonce, ajax_url, `currency`, `i18n_dict`, meta… (`includes/traits/trait-wdp-assets-registry.php`, `WDP_Utils::get_js_currency_settings`) |
 | `WDPApp.utils.formatMoney` / `parseMoney` / `parseMoneyDetailed` / `formatPrice` / `formatMinPlaceholder` | `assets/js/src/core/utils.js` | TEK biçimleyici; Intl yok; `wdp_ajax.currency` (Woo). `parseMoneyDetailed` = PHP `WDP_Utils::parse_donor_amount` (aynı kural, `tests/fixtures/amount-parse-vectors.json`). Geçerli binlik gruplama (ilk 1–3, sonrakiler tam 3) → binlik (mağaza ayırıcısı farklı olsa da; `1.250` / `1,250` her zaman 1250). Gruplamayan son `.`/`,` → ondalık adayı. 0 dp: kesir tümü sıfırsa tam sayı (`50,00`→50, `10.00`→10); sıfır değilse görünür uyarı (`Bu sitede kuruşlu tutar girilemez, örn. 10`) — yuvarlama/100× yok. N>0: kesir ≤ N kabul, > N uyarı. İki ayırıcı: son ondalık, öncekiler gruplamaysa binlik. Sepete ekle aynı doğrulama. Tutar `inputmode=decimal`; yapıştırma normalize. |
 | `window.WDP.refresh` | `assets/js/src/lazy-modal.js:188-189` | DOM yenileme |
 | `window.WDPMetaTracking` | `assets/js/src/meta-tracking.js` | Pixel olayları |
@@ -694,6 +699,28 @@ Tarama: `includes/`, `templates/`, `blocks/`, `assets/js/src/` — boş gövde, 
 
 ---
 
+## Çeviri (i18n)
+
+Kaynak dil (dönüşüm sonrası) İngilizce `__('…', 'woo-donation-popup')`; görünür Türkçe `languages/woo-donation-popup-tr_TR.po|.mo`. Bu aşamada kaynak metinler hâlâ Türkçe; altyapı davranış değiştirmez.
+
+| Parça | Dosya | Not |
+|-------|-------|-----|
+| Domain Path | `woo-donation-popup.php` başlık `Domain Path: /languages` | WP 6.7+ `init`’te yükle |
+| Yükleme | `WDP_Plugin_Bootstrap::load_textdomain` | `load_plugin_textdomain('woo-donation-popup', false, dirname(plugin_basename(WDP_PLUGIN_FILE)) . '/languages')` |
+| JS sözlük | `includes/i18n/class-js-strings.php` → `wdp_ajax.i18n_dict` | Üretici: `tools/i18n/gen-js-strings.mjs` (`--check`) |
+| JS API | `WDPApp.i18n.__(msg, domain)`, `_x(msg, ctx, domain)`, `sprintf` | Bağlam anahtarı `ctx\u0004msg`; yoksa kaynak |
+| POT | `npm run i18n:pot` → `tools/i18n/make-pot.mjs` | xgettext PHP + `WDPApp.i18n.__` / `_x` |
+| Birleşim | `npm run i18n:merge` | `languages/parts/*.po` → `tr_TR.po`; aynı msgid farklı msgstr = ÇAKIŞMA |
+| MO | `npm run i18n:mo` | `msgfmt --check` |
+| Altın 1 | `tools/i18n/golden/golden-tr-source.json` | PHP tokenizer (`tools/i18n/token-scan.php`); regex değil |
+| Tuzak | `tools/i18n/golden/text-as-key-report.md` | `===` / `in_array` / `switch` / dizi anahtarı |
+| Altın 2 | `npm run i18n:golden -- --capture\|--compare` | `tests/golden/i18n/<locale>/<config>/<ekran>.json` |
+| Paket | `.distignore` `languages/parts/` | `*.po` / `*.pot` / `*.mo` ZIP’e girer |
+
+Blok düzenleyici ve Elementor düzenleyici betikleri WordPress `wp.i18n` kullanır (tasarım kararı). Ön yüz bundle `wp.i18n` bağırlığı taşımaz.
+
+---
+
 ## Doğrulama notu
 
 | Bölüm | Kapsam |
@@ -707,6 +734,7 @@ Tarama: `includes/`, `templates/`, `blocks/`, `assets/js/src/` — boş gövde, 
 | g Ayar eşlemesi | Placement + ürün meta listesi + normalizer varsayılanları + AYARLAR çapraz; Normal/Tasarım’daki **her** renk alanının ekran etiketi tek tek **kısmi** (çok sayıda UI alanı aynı option’da) |
 | h Form akışı | modal/product/formAjax/PHP add_to_cart ana yol tam; wizard/sadaka yan dalları kısmi |
 | i Pack/deploy | script + guards + distignore tam; `.env` okunmadı |
+| Çeviri (i18n) | Domain Path + init yükleme + JS sözlük + araçlar + altın kayıt; msgid dönüşümü yok |
 | j E2E | komut/eşik/klasör tam; tüm senaryo listesi kısmi |
 | k Riskler | Yalnız gözlenen maddeler; boş catch + misafir `read` uçları grep ile eklendi |
 

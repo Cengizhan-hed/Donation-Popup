@@ -43,7 +43,14 @@
     "migration:compare": "node scripts/migration-compare.mjs",
     "remote:discover": "node scripts/remote-discover.mjs",
     "admin:style-audit": "node scripts/admin-style-audit.mjs",
-    "e2e:catalog-explain": "node scripts/e2e-catalog-explain.mjs"
+    "e2e:catalog-explain": "node scripts/e2e-catalog-explain.mjs",
+    "i18n:pot": "node tools/i18n/make-pot.mjs",
+    "i18n:merge": "node tools/i18n/merge-po.mjs",
+    "i18n:mo": "node tools/i18n/compile-mo.mjs",
+    "i18n:js-strings": "node tools/i18n/gen-js-strings.mjs",
+    "i18n:js-strings:check": "node tools/i18n/gen-js-strings.mjs --check",
+    "i18n:extract-source": "node tools/i18n/extract-golden.mjs",
+    "i18n:golden": "node tests/e2e/run-i18n-text.mjs"
   },
   "repository": {
     "type": "git",

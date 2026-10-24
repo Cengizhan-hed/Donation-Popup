@@ -1,0 +1,9 @@
+{
+  "id": "admin-product-data-tab",
+  "text": "Bağış",
+  "lines": [
+    "Bağış"
+  ],
+  "locale": "tr_TR",
+  "config": "tt5-try-blocks-hpos"
+}

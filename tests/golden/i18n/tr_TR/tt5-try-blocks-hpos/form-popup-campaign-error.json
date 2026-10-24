@@ -1,0 +1,31 @@
+{
+  "id": "form-popup-campaign-error",
+  "text": "×\nWDP E2E Campaign\n₺#N#\ntoplandı\n#AMT#%\nHedef\n₺#N#\n·\n₺#N# kaldı\nWDP E2E Campaign için bağış formu\nAd Soyad zorunludur.\n+#N#\nTelefon numaranızı eksiksiz giriniz.\nBağış Tutarı:\n₺#N#\n₺#N#\n₺#N#\n₺#AMT#\n₺\nLütfen bağış tutarını giriniz.\nSepete Ekle\nÖdemeye Git\nGüvenli ödeme · SSL korumalı işlem",
+  "lines": [
+    "×",
+    "WDP E2E Campaign",
+    "₺#N#",
+    "toplandı",
+    "#AMT#%",
+    "Hedef",
+    "₺#N#",
+    "·",
+    "₺#N# kaldı",
+    "WDP E2E Campaign için bağış formu",
+    "Ad Soyad zorunludur.",
+    "+#N#",
+    "Telefon numaranızı eksiksiz giriniz.",
+    "Bağış Tutarı:",
+    "₺#N#",
+    "₺#N#",
+    "₺#N#",
+    "₺#AMT#",
+    "₺",
+    "Lütfen bağış tutarını giriniz.",
+    "Sepete Ekle",
+    "Ödemeye Git",
+    "Güvenli ödeme · SSL korumalı işlem"
+  ],
+  "locale": "tr_TR",
+  "config": "tt5-try-blocks-hpos"
+}

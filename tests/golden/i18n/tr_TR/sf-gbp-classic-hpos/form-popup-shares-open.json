@@ -1,0 +1,19 @@
+{
+  "id": "form-popup-shares-open",
+  "text": "×\nWDP E2E Shares\nWDP E2E Shares için bağış formu\nHisse Adedi:\n#N#. Hissedar Bilgileri\n£#AMT#\n+#N#\nKopyasını Oluştur\nSepete Ekle\nÖdemeye Git\nGüvenli ödeme · SSL korumalı işlem",
+  "lines": [
+    "×",
+    "WDP E2E Shares",
+    "WDP E2E Shares için bağış formu",
+    "Hisse Adedi:",
+    "#N#. Hissedar Bilgileri",
+    "£#AMT#",
+    "+#N#",
+    "Kopyasını Oluştur",
+    "Sepete Ekle",
+    "Ödemeye Git",
+    "Güvenli ödeme · SSL korumalı işlem"
+  ],
+  "locale": "tr_TR",
+  "config": "sf-gbp-classic-hpos"
+}

@@ -1,0 +1,28 @@
+{
+  "id": "form-popup-campaign-open",
+  "text": "×\nWDP E2E Campaign\n£#AMT#\ntoplandı\n#AMT#%\nHedef\n£#AMT#\n·\n£#AMT# kaldı\nWDP E2E Campaign için bağış formu\n+#N#\nBağış Tutarı:\n£#AMT#\n£#AMT#\n£#AMT#\n£#AMT#.#N#\n£\nSepete Ekle\nÖdemeye Git\nGüvenli ödeme · SSL korumalı işlem",
+  "lines": [
+    "×",
+    "WDP E2E Campaign",
+    "£#AMT#",
+    "toplandı",
+    "#AMT#%",
+    "Hedef",
+    "£#AMT#",
+    "·",
+    "£#AMT# kaldı",
+    "WDP E2E Campaign için bağış formu",
+    "+#N#",
+    "Bağış Tutarı:",
+    "£#AMT#",
+    "£#AMT#",
+    "£#AMT#",
+    "£#AMT#.#N#",
+    "£",
+    "Sepete Ekle",
+    "Ödemeye Git",
+    "Güvenli ödeme · SSL korumalı işlem"
+  ],
+  "locale": "tr_TR",
+  "config": "sf-gbp-classic-hpos"
+}

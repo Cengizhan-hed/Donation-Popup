@@ -289,6 +289,22 @@ if (!function_exists('__')) {
 		return (string) $text;
 	}
 }
+if (!function_exists('_x')) {
+	function _x($text, $context, $domain = null) {
+		unset($context, $domain);
+		return (string) $text;
+	}
+}
+if (!function_exists('load_plugin_textdomain')) {
+	function load_plugin_textdomain($domain, $deprecated = false, $plugin_rel_path = false) {
+		WDP_Test_State::$options['__textdomain'] = array(
+			'domain'           => (string) $domain,
+			'plugin_rel_path'  => (string) $plugin_rel_path,
+			'deprecated'       => $deprecated,
+		);
+		return true;
+	}
+}
 if (!function_exists('esc_html__')) {
 	function esc_html__($text, $domain = null) {
 		return htmlspecialchars((string) $text, ENT_QUOTES, 'UTF-8');

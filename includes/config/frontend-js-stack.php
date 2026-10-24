@@ -11,6 +11,11 @@ if (!defined('ABSPATH')) {
 
 return array(
 	array(
+		'handle' => 'wdp-i18n-js',
+		'file'   => 'src/core/i18n.js',
+		'deps'   => array(),
+	),
+	array(
 		'handle' => 'wdp-constants-js',
 		'file'   => 'src/core/constants.js',
 		'deps'   => array(),
