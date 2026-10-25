@@ -611,7 +611,7 @@ class WDP_Cart {
 			}
 
 			$line_product = clone $cart_item['data'];
-			$line_product->set_price( $line_price );
+			$line_product->set_price( (string) $line_price );
 			$cart->cart_contents[ $cart_item_key ]['data'] = $line_product;
 		}
 
@@ -893,7 +893,7 @@ class WDP_Cart {
 	 * @return array
 	 */
 	public static function stamp_input_currency( $cart_item_data ) {
-		if ( is_array( $cart_item_data ) && isset( $cart_item_data['custom_price'] ) && empty( $cart_item_data['wdp_input_currency'] ) && class_exists( 'WDP_Progress_Currency' ) ) {
+		if ( isset( $cart_item_data['custom_price'] ) && empty( $cart_item_data['wdp_input_currency'] ) && class_exists( 'WDP_Progress_Currency' ) ) {
 			$active = WDP_Progress_Currency::get_active_currency();
 			if ( '' !== $active ) {
 				$cart_item_data['wdp_input_currency'] = $active;
