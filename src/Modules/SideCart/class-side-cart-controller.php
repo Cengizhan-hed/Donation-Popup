@@ -10,7 +10,6 @@
 
 namespace DonationPanel\Modules\SideCart;
 
-use DonationPanel\Http\Rate_Limiter;
 use DonationPanel\Http\Rest_Controller;
 
 defined( 'ABSPATH' ) || exit;
@@ -19,15 +18,6 @@ defined( 'ABSPATH' ) || exit;
  * Side_Cart_Controller.
  */
 class Side_Cart_Controller extends Rest_Controller {
-
-	/**
-	 * Kurucu.
-	 *
-	 * @param Rate_Limiter $limiter Hız sınırlayıcı.
-	 */
-	public function __construct( Rate_Limiter $limiter ) {
-		parent::__construct( $limiter );
-	}
 
 	/**
 	 * Rotaları kaydeder.
@@ -59,10 +49,11 @@ class Side_Cart_Controller extends Rest_Controller {
 		if ( ! function_exists( 'WC' ) || ! WC() ) {
 			return $this->error( 'donation_panel_no_woocommerce', 'WooCommerce is not available.', 503 );
 		}
-		if ( function_exists( 'wc_load_cart' ) && ( ! isset( WC()->cart ) || null === WC()->cart ) ) {
-			wc_load_cart();
-		}
 		$cart = WC()->cart;
+		if ( ! $cart && function_exists( 'wc_load_cart' ) ) {
+			wc_load_cart();
+			$cart = WC()->cart;
+		}
 		if ( ! $cart ) {
 			return $this->error( 'donation_panel_no_cart', 'Cart is not available.', 503 );
 		}

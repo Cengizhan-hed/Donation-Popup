@@ -151,8 +151,8 @@ final class Side_Cart_Renderer {
 	/**
 	 * Çekmece kabuğu (sayfada bir kez, `wp_footer`).
 	 *
-	 * @param string $body_html   `body()` çıktısı.
-	 * @param array  $attributes  Veri öznitelikleri (rest, store, checkout, nonce, mesajlar).
+	 * @param string                $body_html  `body()` çıktısı.
+	 * @param array<string, string> $attributes Veri öznitelikleri (rest, store, checkout, nonce, mesajlar).
 	 * @return string
 	 */
 	public static function drawer( $body_html, array $attributes ) {

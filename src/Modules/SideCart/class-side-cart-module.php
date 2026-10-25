@@ -101,7 +101,7 @@ final class Side_Cart_Module implements Module_Interface {
 	 * @return array<string, string>
 	 */
 	public function add_fragments( $fragments ) {
-		$fragments                 = (array) $fragments;
+		$fragments                      = (array) $fragments;
 		$fragments['span.dp-sc__count'] = Side_Cart_Renderer::count_badge( $this->cart_count() );
 		return $fragments;
 	}
@@ -157,8 +157,7 @@ final class Side_Cart_Module implements Module_Interface {
 		$checkout = function_exists( 'wc_get_checkout_url' ) ? wc_get_checkout_url() : '';
 		$body     = Side_Cart_Renderer::body( $lines, $subtotal, $checkout );
 
-		// Çıktı Side_Cart_Renderer içinde kaçışlanır.
-		echo Side_Cart_Renderer::drawer( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		$html = Side_Cart_Renderer::drawer(
 			$body,
 			array(
 				'rest'     => esc_url_raw( rest_url( 'donation-panel/v1/side-cart' ) ),
@@ -168,6 +167,7 @@ final class Side_Cart_Module implements Module_Interface {
 				'removed'  => __( 'Removed from your basket.', 'woo-donation-popup' ),
 			)
 		);
+		echo $html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Side_Cart_Renderer tüm değerleri kaçışlar.
 	}
 
 	/**

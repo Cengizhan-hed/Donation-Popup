@@ -19,17 +19,12 @@
 @supports (color: oklch(from red l c h)) {
   .dp-sc, .dp-sc__trigger { --sc-on-primary: oklch(from var(--sc-primary) clamp(0, (0.66 - l) * 1000, 1) 0 0); }
 }
-@media (prefers-color-scheme: dark) {
-  :root:not([data-dp-scheme="light"]) .dp-sc, :root:not([data-dp-scheme="light"]) .dp-sc__trigger { --sc-surface: #14181f; --sc-text: #eef1f5; --sc-primary: color-mix(in oklab, var(--dp-bridge-primary, #0f766e) 78%, #fff); --sc-danger: #ff8f86; }
-}
-:root[data-dp-scheme="dark"] .dp-sc, :root[data-dp-scheme="dark"] .dp-sc__trigger { --sc-surface: #14181f; --sc-text: #eef1f5; --sc-primary: color-mix(in oklab, var(--dp-bridge-primary, #0f766e) 78%, #fff); --sc-danger: #ff8f86; }
 @media (prefers-reduced-motion: reduce) { .dp-sc { --sc-dur: 1ms; } }
 
 .dp-sc, .dp-sc *, .dp-sc *::before, .dp-sc *::after, .dp-sc__trigger, .dp-sc__trigger * { box-sizing: border-box; }
 .dp-sc { font-family: var(--dp-font-body, var(--wp--preset--font-family--body, inherit)); font-size: 1rem; line-height: 1.5; color: var(--sc-text); -webkit-text-size-adjust: 100%; -webkit-tap-highlight-color: transparent; }
 .dp-sc [hidden], .dp-sc__trigger [hidden] { display: none !important; }
 .dp-sc :focus { outline: none; }
-.dp-sc :focus-visible, .dp-sc__trigger:focus-visible { box-shadow: var(--sc-ring); outline: 2px solid transparent; }
 .dp-sc__ico { inline-size: 1.25em; block-size: 1.25em; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .dp-sc__num { font-variant-numeric: tabular-nums; }
 
@@ -37,6 +32,7 @@
 .dp-sc__trigger { position: relative; display: inline-grid; place-items: center; inline-size: 44px; block-size: 44px; padding: 0; border: 0; border-radius: 50%; background: transparent; color: inherit; font: inherit; cursor: pointer; transition: background 160ms, transform 160ms var(--sc-spring); }
 .dp-sc__trigger:hover { background: color-mix(in oklab, currentColor 10%, transparent); }
 .dp-sc__trigger:active { transform: scale(.92); }
+.dp-sc :focus-visible, .dp-sc__trigger:focus-visible { box-shadow: var(--sc-ring); outline: 2px solid transparent; }
 .dp-sc__count { position: absolute; inset-block-start: 2px; inset-inline-end: 0; min-inline-size: 20px; block-size: 20px; padding: 0 5px; display: grid; place-items: center; border-radius: 99px; background: var(--sc-primary); color: var(--sc-on-primary); font-size: 12px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
 
 /* Katman */
@@ -105,3 +101,9 @@
   .dp-sc__handle { display: block; }
 }
 html.dp-sc-lock { overflow: hidden; }
+
+/* Koyu mod (en sonda: özgüllük sırası) */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-dp-scheme="light"]) .dp-sc, :root:not([data-dp-scheme="light"]) .dp-sc__trigger { --sc-surface: #14181f; --sc-text: #eef1f5; --sc-primary: color-mix(in oklab, var(--dp-bridge-primary, #0f766e) 78%, #fff); --sc-danger: #ff8f86; }
+}
+:root[data-dp-scheme="dark"] .dp-sc, :root[data-dp-scheme="dark"] .dp-sc__trigger { --sc-surface: #14181f; --sc-text: #eef1f5; --sc-primary: color-mix(in oklab, var(--dp-bridge-primary, #0f766e) 78%, #fff); --sc-danger: #ff8f86; }

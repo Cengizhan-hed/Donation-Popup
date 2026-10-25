@@ -84,7 +84,7 @@ function mount(root) {
         document.dispatchEvent(new CustomEvent('donation-panel:cart-updated', { detail: { count: toCount(data.count) } }));
         return true;
       }
-    } catch (error) {
+    } catch {
       return false;
     }
     return false;
@@ -151,12 +151,7 @@ function mount(root) {
       });
     }
     body.setAttribute('aria-busy', 'true');
-    let ok = false;
-    try {
-      ok = await storePost(path, payload);
-    } catch (error) {
-      ok = false;
-    }
+    const ok = await storePost(path, payload).catch(() => false);
     const redrawn = ok ? await refresh() : false;
     busy = false;
     body.removeAttribute('aria-busy');
