@@ -9,6 +9,7 @@
 | `donation_panel_module_enabled` | filtre | `bool $enabled, string $slug` | Modülün açık/kapalı kararı; kapalı modülün dosyası yüklenmez. |
 | `donation_panel_modules_booted` | eylem | `string[] $active_slugs` | Etkin modüller başlatıldıktan sonra. |
 | `donation_panel_rest_controllers` | filtre | `array $controllers` | REST denetleyici listesi (ad alanı `donation-panel/v1`). |
+| `donation_panel_admin_ui` | filtre | `string $ui` (`legacy`\|`new`) | Yönetici ekranı seçimi (ayar `admin.ui` ya da `DONATION_PANEL_ADMIN_UI` sabiti üstüne); `new` iken `src/Admin` yüklenir (E7). |
 | `donation_panel_template_theme_folder` | filtre | `string $folder` | Tema geçersiz kılma klasörü (varsayılan `donation-panel`). |
 | `donation_panel_located_template` | filtre | `string $path, string $name` | Bulunan şablon yolu. |
 | `donation_panel_before_template` / `donation_panel_after_template` | eylem | `string $name, string $file, array $args` | Şablon çıktısının öncesi/sonrası. |

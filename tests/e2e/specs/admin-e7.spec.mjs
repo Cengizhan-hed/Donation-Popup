@@ -103,7 +103,7 @@ test('ayar ekranı açılır, sekmeler klavyeyle gezilir, önizleme modüle uyar
   const sw = page.locator('#dpa-mod-tax_relief');
   await expect(sw).not.toBeChecked();
   await expect(block).toBeHidden();
-  await sw.check({ force: true });
+  await sw.check();
   await expect(block).toBeVisible();
   await expect(page.locator('[data-dpa-msg]')).not.toHaveText('');
   await noOverflow(page);
@@ -114,8 +114,8 @@ test('ayarlar kaydedilir ve kalıcıdır; Türkçe karakter bozulmaz; eski ayarl
   const before = await state(page);
   await page.goto(`${SETTINGS}#modules`);
   await page.locator('#dpa-tab-modules').click();
-  await page.locator('#dpa-mod-social_proof').check({ force: true });
-  await page.locator('#dpa-mod-impact').check({ force: true });
+  await page.locator('#dpa-mod-social_proof').check();
+  await page.locator('#dpa-mod-impact').check();
   await page.locator('#dpa-tab-general').click();
   await page.selectOption('#dpa-engine', 'new');
   await page.locator('#dpa-tab-details').click();
@@ -188,7 +188,7 @@ test('sihirbaz: amaç → varsayılan → ürün (oluşturmaz) → bitir; ayarla
   await page.goto(WIZARD);
   await expect(page.locator('[data-dpa-step="0"]')).toBeVisible();
   await expect(page.locator('[data-dpa-step="1"]')).toBeHidden();
-  await page.locator('input[name="goal"][value="campaign"]').check({ force: true });
+  await page.locator('input[name="goal"][value="campaign"]').check();
   await page.locator('[data-dpa-next]').click();
   await expect(page.locator('[data-dpa-step="1"]')).toBeVisible();
   await expect(page.locator('[data-dpa-back]')).toBeVisible();

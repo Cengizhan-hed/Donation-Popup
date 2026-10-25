@@ -21,6 +21,9 @@
 .dpa .dpa-prompt__actions { display: flex; gap: 8px; align-items: center; }
 .dpa .dpa-inline { display: inline; margin: 0; }
 
+/* Odaklanan alan yapışkan kaydet çubuğunun altında kalmasın (WCAG 2.4.11) */
+.dpa input, .dpa select, .dpa textarea, .dpa button, .dpa a { scroll-margin-block-end: 96px; }
+
 /* Düzen: ayarlar + önizleme */
 .dpa .dpa-split { display: grid; gap: 20px; }
 @media (min-width: 1100px) {
@@ -77,6 +80,7 @@
 .dpa .dpa-pv-btn { text-align: center; padding: 12px; border-radius: 12px; background: var(--dpa-accent-dark); color: #fff; font-weight: 600; }
 
 /* Kaydet çubuğu */
+
 .dpa .dpa-savebar { position: sticky; inset-block-end: 0; z-index: 5; display: flex; align-items: center; justify-content: flex-end; gap: 12px; padding: 12px 16px max(12px, env(safe-area-inset-bottom)); background: var(--dpa-surface); border-block-start: 1px solid var(--dpa-border); margin-inline: -20px; }
 .dpa .dpa-savebar__msg { margin-inline-end: auto; color: var(--dpa-muted); font-size: 13px; }
 
