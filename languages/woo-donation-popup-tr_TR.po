@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: woo-donation-popup\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-25 15:34:30+0000\n"
-"PO-Revision-Date: 2026-10-25 15:34:30+0000\n"
+"POT-Creation-Date: 2026-10-25 17:32:43+0000\n"
+"PO-Revision-Date: 2026-10-25 17:32:43+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: tr_TR\n"
@@ -2199,6 +2199,11 @@ msgstr "En düşük tutar"
 msgid "Minimum amount (%s)"
 msgstr "En düşük tutar (%s)"
 
+#: src/Modules/Experiences/class-field-validator.php
+#. translators: %s: minimum amount.
+msgid "Minimum amount is %s."
+msgstr "En düşük tutar %s."
+
 #: assets/js/src/form/wizard.js:463
 msgid "Minimum amount: "
 msgstr "Minimum tutar: "
@@ -2614,6 +2619,10 @@ msgstr "Lütfen işaretli alanları kontrol edin."
 msgid "Please check the phone number."
 msgstr "Telefon numarasını kontrol edin."
 
+#: src/Modules/Experiences/class-field-validator.php
+msgid "Please choose a donation type."
+msgstr "Lütfen bir bağış türü seçin."
+
 #: includes/class-utils.php:348
 msgid "Please enter %s or more for the add-on donation."
 msgstr "Alt bağış için lütfen %s ve üstü değerler girin."
@@ -2712,6 +2721,11 @@ msgstr "Lütfen hissedar ad ve telefon bilgilerini doldurun."
 #: assets/js/src/form/wizard.js:288
 msgid "Please select at least 1 share."
 msgstr "En az 1 hisse seçin."
+
+#: src/Modules/Experiences/class-field-validator.php
+#. translators: %d: maximum characters.
+msgid "Please use at most %d characters."
+msgstr "Lütfen en fazla %d karakter kullanın."
 
 #: includes/class-admin-page-renderer.php:40
 msgid "Plugin version"

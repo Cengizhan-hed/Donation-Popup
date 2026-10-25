@@ -1,0 +1,25 @@
+# Turkish translations — I18N-E2A (Experiences).
+# Copyright (C) Donation Panel for WooCommerce
+msgid ""
+msgstr ""
+"Project-Id-Version: woo-donation-popup 10.34.15\n"
+"Language: tr_TR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Domain: woo-donation-popup\n"
+
+#: src/Modules/Experiences/class-field-validator.php
+#. translators: %s: minimum amount.
+msgid "Minimum amount is %s."
+msgstr "En düşük tutar %s."
+
+#: src/Modules/Experiences/class-field-validator.php
+#. translators: %d: maximum characters.
+msgid "Please use at most %d characters."
+msgstr "Lütfen en fazla %d karakter kullanın."
+
+#: src/Modules/Experiences/class-field-validator.php
+msgid "Please choose a donation type."
+msgstr "Lütfen bir bağış türü seçin."
