@@ -8,6 +8,9 @@ import { findTargetByAlias, findTargetById } from '../../../scripts/lib/deploy-g
 
 const PROFILES_DIR = path.join(ROOT, 'tests/e2e/profiles');
 
+/** Bayraksız çağrılarda tek geçerli ortam (uzak ortam yalnız açık --env ile). */
+export const DEFAULT_ENV_ID = 'local';
+
 /** @type {object|null} */
 let activeProfile = null;
 
