@@ -573,7 +573,7 @@ Kaynak: Graphify kod haritası (2015 düğüm, 4229 bağ; `npm run graph:update`
 | # | Bulgu | Durum |
 |---|-------|-------|
 | K8 | **KARAR:** Telefon ülke listesinde İsrail kodda sabit olarak gizliydi. Genel eklentide ülke dışlama varsayımı kaldırıldı. Hedef'te hâlâ gizlenmesini isterseniz site koduna tek satır: `add_filter('wdp_phone_excluded_countries', fn() => array('IL'));` | kullanıcı kararı |
-| A7 | Yerel `sadaka-fixed-popup` (iPhone, tam paket) aralıklı: iki koşuda kırmızı, bir koşuda yeşil — alt bağış anahtarına erken dokunuşta işleyici bağlı olmayabilir (CTA kuyruğuna benzer) | Faz 7 |
+| A7 | Yerel `sadaka-fixed-popup` (iPhone, tam paket) aralıklı: iki koşuda kırmızı, bir koşuda yeşil — alt bağış anahtarına erken dokunuşta işleyici bağlı olmayabilir (CTA kuyruğuna benzer) | 7A (2026-10-25): izole iPhone/WebKit 20/20 yeşil, tekrar üretilemedi → KARANTİNA (tests/e2e/helpers/quarantine.mjs; tam pakette "karantina: bilgi amaçlı" satırı, kırmızı sayılmaz). Çıkış: 7C/7D yeni alt bağış modülü + 10 ardışık tam paket yeşil |
 | A8 | Yerel WP dili artık profil dilinden (varsayılan tr_TR) mu-plugin ile kilitli; yerel testler Hedef eşdeğeri | bilgi |
 
 ## 2026-10-24 akşam — staging30 "Sitede ciddi bir sorun çıktı" incelemesi (salt okunur)

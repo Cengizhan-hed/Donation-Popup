@@ -111,7 +111,7 @@ async function runOne({ envId, deviceId, noSideCart, areas = null, slice = '' })
     }
   );
   for (const q of result.quarantined || []) {
-    console.log(`karantina: bilgi amaçlı — ${q.env}/${q.device}/${q.check} BAŞARISIZ (kırmızı sayılmaz): ${q.detail} [${q.ref}]`);
+    console.log(`karantina: bilgi amaçlı — ${q.env}/${q.device}/${q.check} ${q.status} (kırmızı sayılmaz)${q.detail ? ': ' + q.detail : ''} [${q.ref}]`);
   }
   const row = {
     quarantined: result.quarantined || [],

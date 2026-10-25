@@ -4664,14 +4664,16 @@ export async function captureAll({
         debugFiles.push(path.relative(ROOT, paths.json));
       } finally {
         const failed = !result || (!result.skipped && result.ok === false);
-        if (quarantine && (failed || jobFailures.length)) {
+        if (quarantine) {
+          const qFailed = failed || jobFailures.length > 0;
           quarantined.push({
+            status: qFailed ? 'BAŞARISIZ' : 'geçti',
             check,
             device: device.id,
             env: profile.id,
             reason: quarantine.reason,
             ref: quarantine.ref,
-            detail: String((jobFailures[0] && (jobFailures[0].description || jobFailures[0].detail)) || 'başarısız').slice(0, 300),
+            detail: qFailed ? String((jobFailures[0] && (jobFailures[0].description || jobFailures[0].detail)) || 'başarısız').slice(0, 300) : '',
           });
         }
         if (useTrace) {
