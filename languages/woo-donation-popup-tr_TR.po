@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: woo-donation-popup\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-25 19:37:46+0000\n"
-"PO-Revision-Date: 2026-10-25 19:37:46+0000\n"
+"POT-Creation-Date: 2026-10-25 19:56:48+0000\n"
+"PO-Revision-Date: 2026-10-25 19:56:48+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: tr_TR\n"
@@ -891,6 +891,10 @@ msgstr "Köşe yuvarlaklığı (px)"
 msgid "Corporate navy, tight typography, 8px radius."
 msgstr "Kurumsal lacivert, sıkı tipografi, 8px radius."
 
+#: templates/donation-panel/thanks/summary.php
+msgid "Could not copy the link"
+msgstr "Bağlantı kopyalanamadı"
+
 #: includes/class-admin-assets.php:121
 msgid "Could not copy; select the text and copy it manually."
 msgstr "Kopyalanamadı; metni seçip elle kopyalayın."
@@ -1607,6 +1611,10 @@ msgstr "Gana"
 msgid "Gift"
 msgstr "Hediye"
 
+#: templates/donation-panel/thanks/summary.php
+msgid "Give again"
+msgstr "Tekrar bağış yap"
+
 #: includes/class-admin-design-studio-renderer.php:203
 msgid "Glass blur (px)"
 msgstr "Cam blur (px)"
@@ -1756,6 +1764,16 @@ msgstr "Kendi bağış sayfamı yapıyorum"
 #: includes/class-admin-placement-tab-renderer.php:137
 msgid "I am using WooCommerce pages"
 msgstr "WooCommerce sayfalarını kullanıyorum"
+
+#: src/Modules/TaxRelief/class-tax-relief-declaration.php
+msgid "I confirm that I am eligible, and ask that this donation be treated as eligible for tax relief where my tax authority allows it."
+msgstr "Uygun olduğumu onaylıyorum ve vergi idaresinin izin verdiği ölçüde bu bağışın vergi indirimine uygun sayılmasını talep ediyorum."
+
+#. translators: %s: project (campaign) name.
+#: src/Modules/Thanks/class-thanks-summary.php
+#, php-format
+msgid "I just donated to %s."
+msgstr "%s için bağış yaptım."
 
 #: includes/class-phone-field.php:43
 msgid "Iceland"
@@ -2113,6 +2131,10 @@ msgstr "Satır tutarı"
 #: includes/elementor/class-widget-donations-list.php:119
 msgid "Link"
 msgstr "Bağlantı"
+
+#: templates/donation-panel/thanks/summary.php
+msgid "Link copied"
+msgstr "Bağlantı kopyalandı"
 
 #: includes/class-admin-design-studio-renderer.php:280
 msgid "Link label"
@@ -2560,6 +2582,12 @@ msgstr "Popup aç"
 #: includes/class-admin-placement-tab-renderer.php:153
 msgid "Open the form test page"
 msgstr "Form test sayfasını aç"
+
+#. translators: %s: order number.
+#: templates/donation-panel/thanks/summary.php
+#, php-format
+msgid "Order %s"
+msgstr "Sipariş %s"
 
 #: includes/elementor/class-widget-donations-list.php:80
 msgid "Order by"
@@ -3341,6 +3369,10 @@ msgstr "Kurulum"
 msgid "Setup guide"
 msgstr "Kurulum rehberi"
 
+#: templates/donation-panel/thanks/summary.php
+msgid "Share"
+msgstr "Paylaş"
+
 #: includes/class-cart.php:485 includes/class-order-meta-keys.php:85
 msgid "Share count"
 msgstr "Hisse Sayısı"
@@ -3731,6 +3763,15 @@ msgstr "Tacikistan"
 msgid "Tanzania"
 msgstr "Tanzanya"
 
+#: src/Modules/TaxRelief/class-tax-relief-declaration.php
+msgid "Tax relief"
+msgstr "Vergi indirimi"
+
+#: src/Modules/TaxRelief/class-tax-relief-declaration.php
+#: src/Modules/TaxRelief/class-tax-relief-module.php
+msgid "Tax relief declaration"
+msgstr "Vergi indirimi beyanı"
+
 #: includes/class-form-matrix.php:153
 msgid "Test page — adding to cart is disabled."
 msgstr "Test sayfası — sepete ekleme kapalı."
@@ -3762,6 +3803,10 @@ msgstr "Hisseli bağış formundaki metinler, kart görünümü ve hissedar alan
 #: includes/class-phone-field.php:108
 msgid "Thailand"
 msgstr "Tayland"
+
+#: templates/donation-panel/thanks/summary.php
+msgid "Thank you!"
+msgstr "Teşekkür ederiz!"
 
 #: includes/class-product-settings-service.php:710
 msgid "The «%1$s» value was corrected from %2$s to %3$s."
@@ -4013,6 +4058,10 @@ msgstr "Bu ürün stokta yok (ID: %d)."
 #: includes/traits/trait-wdp-assets-registry.php:350 includes/traits/trait-wdp-assets-registry.php:351 includes/traits/trait-wdp-utils-price.php:220
 msgid "This site does not accept amounts with decimals, e.g. %s"
 msgstr "Bu sitede kuruşlu tutar girilemez, örn. %s"
+
+#: templates/donation-panel/tax-relief/step.php
+msgid "This step is optional. You can continue without ticking the box."
+msgstr "Bu adım isteğe bağlıdır. Kutuyu işaretlemeden devam edebilirsiniz."
 
 #: includes/class-admin-layout-tabs-renderer.php:102
 msgid "Three layers: confirmed (after payment), cart pending, typed-amount preview. The goal amount is in the “Goal amount” field on the product card."
@@ -4409,6 +4458,10 @@ msgstr "Yemen"
 msgid "Yes"
 msgstr "Evet"
 
+#: src/Modules/TaxRelief/class-tax-relief-declaration.php
+msgid "Yes, I make this declaration"
+msgstr "Evet, bu beyanı veriyorum"
+
 #: assets/js/src/form/ajax.js:418
 msgid "You appear to be offline. Please try again when you are back online."
 msgstr "Çevrimdışı görünüyorsunuz. Bağlantı gelince tekrar deneyin."
@@ -4476,6 +4529,10 @@ msgstr "Bağışınız sepete eklendi"
 #: assets/js/src/form/ajax.js:245
 msgid "Your donation has been added to the cart."
 msgstr "Bağışınız sepete eklendi."
+
+#: templates/donation-panel/thanks/summary.php
+msgid "Your donation has been received. May it be a source of goodness."
+msgstr "Bağışınız alındı. Hayra vesile olsun."
 
 #: includes/traits/trait-wdp-assets-registry.php:370
 msgid "Your donation was added to the cart"

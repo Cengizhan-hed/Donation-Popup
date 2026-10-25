@@ -59,7 +59,7 @@ export async function shareOrCopy(nav, data) {
     try {
       await nav.clipboard.writeText(data.url);
       return 'copied';
-    } catch (error) {
+    } catch {
       return 'failed';
     }
   }

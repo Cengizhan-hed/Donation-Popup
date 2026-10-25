@@ -104,3 +104,15 @@ Filtreler:
 Veri anahtarları: ürün meta `_donation_panel_milestones` (satır `yüzde=etiket`), `_donation_panel_impact` (satır `birim=tekil|çoğul`); site ayarı `impact.map`; ad izni meta `wdp_public_name` = `yes` (sipariş ya da satır).
 
 Kısa kodlar (yeni): `[donation_panel_progress]`, `[donation_panel_social_proof]`. REST (`donation-panel/v1`): `GET /progress/{id}`, `GET /impact/{id}`, `GET /donations`, `GET /donations/stats` (hepsi salt okunur, kişi verisiz).
+
+## Teşekkür ve vergi indirimi beyanı (E6)
+
+Modüller: `thanks` ve `tax_relief` (ikisi de varsayılan kapalı; `donation_panel_module_enabled` ya da `donation_panel_settings.modules.*`).
+
+| Ad | Tür | Parametreler | Ne zaman |
+|---|---|---|---|
+| `donation_panel_tax_relief_texts` | filtre | `array $texts {step_label,title,text,checkbox_label}` | Beyan metinleri (ayar boşsa genel varsayılan üzerinde). Metin değişirse yeni siparişlerin `_wdp_tax_relief_text_hash` değeri değişir. |
+
+Kullanılan: `donation_panel_form_steps` (adım ekler), `donation_panel_form_step_tax_relief` (adım içeriği), `donation_panel_form_model` değişmez. WooCommerce kancaları: `woocommerce_before_thankyou`, `woocommerce_add_cart_item_data`, `woocommerce_get_item_data`, `woocommerce_checkout_create_order_line_item`, `woocommerce_admin_order_data_after_billing_address`; WordPress: `rest_request_before_callbacks`.
+
+Yeni sipariş meta (sipariş ve sipariş kalemi): `_wdp_tax_relief_declared` (`yes`; yalnız onay işaretliyse), `_wdp_tax_relief_text_hash` (SHA-256). Sepet öğesi anahtarı: `donation_panel_tax_relief`. Şablonlar (tema geçersiz kılar): `donation-panel/thanks/summary.php`, `donation-panel/tax-relief/step.php`.

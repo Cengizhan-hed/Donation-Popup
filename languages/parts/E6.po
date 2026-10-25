@@ -1,0 +1,68 @@
+# Turkish translations — I18N-E6 (teşekkür/kutlama, vergi indirimi beyanı).
+# Copyright (C) Donation Panel for WooCommerce
+msgid ""
+msgstr ""
+"Project-Id-Version: woo-donation-popup\n"
+"Language: tr_TR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Domain: woo-donation-popup\n"
+
+#: src/Modules/TaxRelief/class-tax-relief-declaration.php
+msgid "Tax relief"
+msgstr "Vergi indirimi"
+
+#: src/Modules/TaxRelief/class-tax-relief-declaration.php
+#: src/Modules/TaxRelief/class-tax-relief-module.php
+msgid "Tax relief declaration"
+msgstr "Vergi indirimi beyanı"
+
+#: src/Modules/TaxRelief/class-tax-relief-declaration.php
+msgid "I confirm that I am eligible, and ask that this donation be treated as eligible for tax relief where my tax authority allows it."
+msgstr "Uygun olduğumu onaylıyorum ve vergi idaresinin izin verdiği ölçüde bu bağışın vergi indirimine uygun sayılmasını talep ediyorum."
+
+#: src/Modules/TaxRelief/class-tax-relief-declaration.php
+msgid "Yes, I make this declaration"
+msgstr "Evet, bu beyanı veriyorum"
+
+#: templates/donation-panel/tax-relief/step.php
+msgid "This step is optional. You can continue without ticking the box."
+msgstr "Bu adım isteğe bağlıdır. Kutuyu işaretlemeden devam edebilirsiniz."
+
+#. translators: %s: project (campaign) name.
+#: src/Modules/Thanks/class-thanks-summary.php
+#, php-format
+msgid "I just donated to %s."
+msgstr "%s için bağış yaptım."
+
+#: templates/donation-panel/thanks/summary.php
+msgid "Your donation has been received. May it be a source of goodness."
+msgstr "Bağışınız alındı. Hayra vesile olsun."
+
+#: templates/donation-panel/thanks/summary.php
+msgid "Thank you!"
+msgstr "Teşekkür ederiz!"
+
+#. translators: %s: order number.
+#: templates/donation-panel/thanks/summary.php
+#, php-format
+msgid "Order %s"
+msgstr "Sipariş %s"
+
+#: templates/donation-panel/thanks/summary.php
+msgid "Link copied"
+msgstr "Bağlantı kopyalandı"
+
+#: templates/donation-panel/thanks/summary.php
+msgid "Could not copy the link"
+msgstr "Bağlantı kopyalanamadı"
+
+#: templates/donation-panel/thanks/summary.php
+msgid "Share"
+msgstr "Paylaş"
+
+#: templates/donation-panel/thanks/summary.php
+msgid "Give again"
+msgstr "Tekrar bağış yap"

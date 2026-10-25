@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: woo-donation-popup 10.35.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-25 22:37+0300\n"
+"POT-Creation-Date: 2026-10-25 22:56+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1958,9 +1958,11 @@ msgid "Off by default because the product page already has a title."
 msgstr ""
 
 #: includes/class-admin-placement-tab-renderer.php:113
-#: includes/class-cart.php:547 includes/class-order-meta-keys.php:285
+#: includes/class-cart.php:573 includes/class-order-meta-keys.php:285
 #: includes/class-order-meta-keys.php:289
 #: src/Modules/EntryPoints/Elementor/class-donation-form-widget.php:137
+#: src/Modules/TaxRelief/class-tax-relief-module.php:162
+#: src/Modules/TaxRelief/class-tax-relief-module.php:203
 #: blocks/donations/index.js:25
 msgid "Yes"
 msgstr ""
@@ -2825,84 +2827,84 @@ msgstr ""
 msgid "You entered an invalid donation amount."
 msgstr ""
 
-#: includes/class-cart.php:358
+#: includes/class-cart.php:384
 msgid "Please add to cart using the donation form. Donor details are required."
 msgstr ""
 
-#: includes/class-cart.php:492 includes/class-order-meta-keys.php:76
+#: includes/class-cart.php:518 includes/class-order-meta-keys.php:76
 msgid "Share count"
 msgstr ""
 
-#: includes/class-cart.php:501
+#: includes/class-cart.php:527
 #: includes/traits/trait-wdp-ajax-cart-query.php:194
 #, php-format
 msgid "Shareholder %d"
 msgstr ""
 
-#: includes/class-cart.php:508 includes/class-order-meta-keys.php:89
+#: includes/class-cart.php:534 includes/class-order-meta-keys.php:89
 #, php-format
 msgid "Shareholder %d email"
 msgstr ""
 
-#: includes/class-cart.php:515 includes/class-order-meta-keys.php:90
+#: includes/class-cart.php:541 includes/class-order-meta-keys.php:90
 #, php-format
 msgid "Shareholder %d note"
 msgstr ""
 
-#: includes/class-cart.php:525
+#: includes/class-cart.php:551
 msgid "Donor"
 msgstr ""
 
-#: includes/class-cart.php:532 includes/class-icon-library.php:51
+#: includes/class-cart.php:558 includes/class-icon-library.php:51
 msgid "Email"
 msgstr ""
 
-#: includes/class-cart.php:539 includes/class-order-meta-keys.php:73
+#: includes/class-cart.php:565 includes/class-order-meta-keys.php:73
 #: src/Modules/Experiences/class-form-context.php:212
 msgid "Dedication"
 msgstr ""
 
-#: includes/class-cart.php:546
+#: includes/class-cart.php:572
 #: includes/templates/class-form-fields-renderer.php:586
 msgid "Keep my name private"
 msgstr ""
 
-#: includes/class-cart.php:553 includes/class-order-meta-keys.php:72
+#: includes/class-cart.php:579 includes/class-order-meta-keys.php:72
 msgid "Donation note"
 msgstr ""
 
-#: includes/class-cart.php:571 includes/class-order-meta-keys.php:75
+#: includes/class-cart.php:597 includes/class-order-meta-keys.php:75
 #: includes/config/form-modules.php:35
 msgid "Processing fee"
 msgstr ""
 
-#: includes/class-cart.php:619
+#: includes/class-cart.php:645
 msgid ""
 "The donation line with amount 0 was removed from the cart. Please enter a "
 "valid donation amount."
 msgstr ""
 
-#: includes/class-cart.php:705
+#: includes/class-cart.php:734
 msgid "Please enter a donation amount greater than 0."
 msgstr ""
 
 #. translators: %s: formatted minimum amount with currency
-#: includes/class-cart.php:710 includes/i18n/class-wdp-js-i18n.php:79
+#: includes/class-cart.php:739 includes/i18n/class-wdp-js-i18n.php:79
 #: assets/js/src/form/validate.js:751
 #, javascript-format, php-format
 msgid "Please enter %s or more."
 msgstr ""
 
-#: includes/class-cart.php:991
+#: includes/class-cart.php:1050
 msgid "Add-on donation"
 msgstr ""
 
-#: includes/class-cart.php:1124 includes/class-order-meta-keys.php:87
+#: includes/class-cart.php:1183 includes/class-order-meta-keys.php:87
 #, php-format
 msgid "Shareholder %d name"
 msgstr ""
 
-#: includes/class-cart.php:1128 includes/class-order-meta-keys.php:88
+#: includes/class-cart.php:1187 includes/class-order-meta-keys.php:88
 #, php-format
 msgid "Shareholder %d phone"
 msgstr ""
@@ -2910,7 +2912,7 @@ msgstr ""
 #: includes/class-donation-optional-fields.php:101
 #: includes/i18n/class-wdp-js-i18n.php:84
 #: includes/traits/trait-wdp-assets-registry.php:390
-#: src/Modules/Experiences/class-field-validator.php:99
+#: src/Modules/Experiences/class-field-validator.php:120
 #: assets/js/src/form/messages.js:122 assets/js/src/form/validate.js:652
 msgid "Please enter a valid email address."
 msgstr ""
@@ -3108,7 +3110,7 @@ msgstr ""
 
 #: includes/class-form-modules.php:749 includes/i18n/class-wdp-js-i18n.php:111
 #: templates/donation-panel/experiences/form.php:99
-#: assets/js/src/cart/ui.js:125
+#: templates/donation-panel/thanks/summary.php:39 assets/js/src/cart/ui.js:125
 msgid "Total"
 msgstr ""
 
@@ -4062,7 +4064,7 @@ msgstr ""
 
 #. translators: %s: example whole amount.
 #: includes/i18n/class-wdp-js-i18n.php:52
-#: src/Modules/Experiences/class-field-validator.php:70
+#: src/Modules/Experiences/class-field-validator.php:91
 #: assets/js/src/core/utils.js:239
 #, javascript-format, php-format
 msgid "Fractional amounts are not allowed on this site, e.g. %s"
@@ -4170,14 +4172,14 @@ msgid "Please check the highlighted fields."
 msgstr ""
 
 #: includes/i18n/class-wdp-js-i18n.php:78
-#: src/Modules/Experiences/class-field-validator.php:102
+#: src/Modules/Experiences/class-field-validator.php:123
 #: assets/js/src/form/wizard.js:406
 msgid "Please check the phone number."
 msgstr ""
 
 #: includes/i18n/class-wdp-js-i18n.php:80
-#: src/Modules/Experiences/class-field-validator.php:59
-#: src/Modules/Experiences/class-field-validator.php:65
+#: src/Modules/Experiences/class-field-validator.php:79
+#: src/Modules/Experiences/class-field-validator.php:86
 #: assets/js/src/form/validate.js:706 assets/js/src/form.js:480
 msgid "Please enter a donation amount."
 msgstr ""
@@ -4310,7 +4312,7 @@ msgid "This field is required"
 msgstr ""
 
 #: includes/i18n/class-wdp-js-i18n.php:109
-#: src/Modules/Experiences/class-field-validator.php:89
+#: src/Modules/Experiences/class-field-validator.php:110
 #: assets/js/src/form/feedback.js:247 assets/js/src/form.js:490
 msgid "This field is required."
 msgstr ""
@@ -4501,7 +4503,7 @@ msgid "Product is already in the cart"
 msgstr ""
 
 #: includes/traits/trait-wdp-ajax-cart-add.php:320
-#: src/WooCommerce/class-cart.php:188
+#: src/WooCommerce/class-cart.php:195
 msgid "An error occurred while adding the product to the cart."
 msgstr ""
 
@@ -4940,18 +4942,18 @@ msgid "This product is out of stock (ID: %d)."
 msgstr ""
 
 #. translators: %s: minimum amount.
-#: src/Modules/Experiences/class-field-validator.php:63
+#: src/Modules/Experiences/class-field-validator.php:84
 #, php-format
 msgid "Minimum amount is %s."
 msgstr ""
 
 #. translators: %d: maximum characters.
-#: src/Modules/Experiences/class-field-validator.php:95
+#: src/Modules/Experiences/class-field-validator.php:116
 #, php-format
 msgid "Please use at most %d characters."
 msgstr ""
 
-#: src/Modules/Experiences/class-field-validator.php:111
+#: src/Modules/Experiences/class-field-validator.php:132
 msgid "Please choose a donation type."
 msgstr ""
 
@@ -5071,8 +5073,68 @@ msgstr ""
 msgid "Show more"
 msgstr ""
 
+#: src/Modules/TaxRelief/class-tax-relief-declaration.php:59
+msgid "Tax relief"
+msgstr ""
+
+#: src/Modules/TaxRelief/class-tax-relief-declaration.php:60
+#: src/Modules/TaxRelief/class-tax-relief-module.php:161
+#: src/Modules/TaxRelief/class-tax-relief-module.php:203
+msgid "Tax relief declaration"
+msgstr ""
+
+#: src/Modules/TaxRelief/class-tax-relief-declaration.php:61
+msgid ""
+"I confirm that I am eligible, and ask that this donation be treated as "
+"eligible for tax relief where my tax authority allows it."
+msgstr ""
+
+#: src/Modules/TaxRelief/class-tax-relief-declaration.php:62
+msgid "Yes, I make this declaration"
+msgstr ""
+
+#. translators: %s: project (campaign) name.
+#: src/Modules/Thanks/class-thanks-summary.php:93
+#, php-format
+msgid "I just donated to %s."
+msgstr ""
+
 #: src/WooCommerce/class-cart.php:141
 msgid "This campaign is no longer accepting donations."
+msgstr ""
+
+#: templates/donation-panel/tax-relief/step.php:22
+msgid "This step is optional. You can continue without ticking the box."
+msgstr ""
+
+#: templates/donation-panel/thanks/summary.php:16
+msgid "Your donation has been received. May it be a source of goodness."
+msgstr ""
+
+#: templates/donation-panel/thanks/summary.php:27
+msgid "Thank you!"
+msgstr ""
+
+#. translators: %s: order number.
+#: templates/donation-panel/thanks/summary.php:50
+#, php-format
+msgid "Order %s"
+msgstr ""
+
+#: templates/donation-panel/thanks/summary.php:62
+msgid "Link copied"
+msgstr ""
+
+#: templates/donation-panel/thanks/summary.php:63
+msgid "Could not copy the link"
+msgstr ""
+
+#: templates/donation-panel/thanks/summary.php:63
+msgid "Share"
+msgstr ""
+
+#: templates/donation-panel/thanks/summary.php:66
+msgid "Give again"
 msgstr ""
 
 #: blocks/donation-form/index.js:40 blocks/donation-form/index.js:50
