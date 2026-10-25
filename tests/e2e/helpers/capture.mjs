@@ -2747,7 +2747,28 @@ export async function runAddonScenario({
 
     timeline.mark('open-addon');
     await toggle.click();
-    await shell.locator(SEL.addonOpen).waitFor({ state: 'visible', timeout: CHECK_MS });
+    try {
+      await shell.locator(SEL.addonOpen).waitFor({ state: 'visible', timeout: CHECK_MS });
+    } catch (eOpen) {
+      // A7 aralıklı hata teşhisi: işleyici/DOM durumu hata iletisine eklenir (yutulmaz).
+      const diag = await page
+        .evaluate(() => {
+          const w = document.querySelector('[data-wdp-sadaka-donation]');
+          const form = w && w.closest('form');
+          return JSON.stringify({
+            addonModule: !!(window.WDPApp && window.WDPApp.formAddon),
+            wrapPresent: !!w,
+            wrapClass: w ? w.className : null,
+            ariaExpanded: w && w.querySelector('.wdp-sadaka-donation__toggle')
+              ? w.querySelector('.wdp-sadaka-donation__toggle').getAttribute('aria-expanded')
+              : null,
+            formReady: !!(form && typeof form._wdpSubmitHandler === 'function'),
+            readyState: document.readyState,
+          });
+        })
+        .catch((e2) => `teşhis alınamadı: ${e2 && e2.message ? e2.message : e2}`);
+      throw new Error(`${eOpen && eOpen.message ? eOpen.message : eOpen}\nA7-teşhis: ${diag}`);
+    }
     const price = shell.locator(SEL.addonPrice).first();
     const isFixedAddon = await price.isEditable().then((v) => !v).catch(() => false);
     if (!isFixedAddon) {

@@ -163,7 +163,13 @@ async function assertLastItemAboveCta(shell) {
     const ctaBox = cta.getBoundingClientRect();
     const gap = Math.round(ctaBox.top - lastBox.bottom);
     const behind = lastBox.bottom > ctaBox.top + 2;
-    const tooWide = gap > gapMax;
+    // Yan panelde eylem çubuğu dibe sabittir (PANEL-CTA-BOTTOM kuralı, FIX5): kısa içerikte büyük
+    // boşluk beklenir. Boşluk yalnız çubuk panel dibine oturuyorsa kabul; oturmuyorsa (ya da popup'ta,
+    // içerik yüksekliğinde gereksiz spacer) hata sınıfı olarak kalır.
+    const isPanel = !!root.querySelector('.wdp-side-panel-main');
+    const shellBox = (root.querySelector('.wdp-modal-content') || root).getBoundingClientRect();
+    const ctaAtBottom = Math.abs(shellBox.bottom - ctaBox.bottom) <= 24;
+    const tooWide = gap > gapMax && !(isPanel && ctaAtBottom);
     let error = '';
     if (behind) {
       error = `son öğe alt kenarı (${Math.round(lastBox.bottom)}) eylem çubuğu üst kenarının (${Math.round(ctaBox.top)}) altında`;
