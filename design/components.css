@@ -72,7 +72,7 @@
 .dp-actionbar__total { display: grid; line-height: 1.1; min-inline-size: 76px; }
 .dp-actionbar__total small { font-size: var(--dp-fs-xs); color: var(--dp-color-text-muted); }
 .dp-actionbar__total strong { font-size: var(--dp-fs-lg); font-weight: var(--dp-fw-bold); }
-.dp-actionbar .dp-btn { flex: 1; }
+.dp-actionbar .dp-btn { flex: 1; padding-inline: var(--dp-space-3); white-space: nowrap; }
 .dp-actionbar .dp-btn--back { flex: none; inline-size: 52px; padding: 0; }
 
 /* ---------- Adım göstergesi ---------- */

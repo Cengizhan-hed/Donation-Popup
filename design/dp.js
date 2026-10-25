@@ -46,7 +46,7 @@
     skip: 'İçeriğe geç'
   });
   add('en', {
-    close: 'Close', back: 'Back', next: 'Continue', pay: 'Continue to payment', donate: 'Donate', donateNow: 'Donate now', total: 'Total', step: 'Step {a} of {b}', stAmount: 'Amount', stDetails: 'Your details', stTax: 'Tax relief',
+    close: 'Close', back: 'Back', next: 'Continue', pay: 'Go to payment', donate: 'Donate', donateNow: 'Donate now', total: 'Total', step: 'Step {a} of {b}', stAmount: 'Amount', stDetails: 'Your details', stTax: 'Tax relief',
     projName: 'Water Well Share', projMeta: 'Delivered on the ground, you receive a video update', formTitle: 'Choose your gift', formSub: 'Finish in a few taps.',
     once: 'One-off', monthly: 'Monthly', chooseAmount: 'Donation amount', other: 'Other amount', otherLabel: 'Your amount', popular: 'Most chosen',
     impact1: 'Feeds a family for a week', impact2: '1 food parcel', impact3: 'A winter warmth pack', impact4: 'A share in a water well', impact0: 'Choose any amount',

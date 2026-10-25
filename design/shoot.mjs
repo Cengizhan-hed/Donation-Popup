@@ -16,7 +16,7 @@ for (const th of themes) for (const [vn, vp] of Object.entries(vps)) {
     const lang = sc === 'rtl' ? 'ar' : langOf[th];
     const full = ['campaign', 'list', 'social', 'mydonations', 'wizard', 'settings', 'inline'].includes(sc) && vn === 'masaustu' ? false : false;
     await page.goto(`${BASE}/${sc}.html?lang=${lang}&theme=${th}${dark ? '&scheme=dark' : ''}&confetti=0`, { waitUntil: 'load' });
-    await page.waitForTimeout(sc === 'campaign' ? 2100 : sc === 'sheetkb' ? 1500 : sc === 'thanks' ? 1700 : 1000);
+    await page.waitForTimeout(['campaign','inline'].includes(sc) ? 2100 : sc === 'sheetkb' ? 1500 : sc === 'thanks' ? 1700 : 1000);
     const name = `${sc}-${th}-${vn}${dark ? '-koyu' : ''}`;
     const fp = ['campaign', 'list', 'social', 'mydonations', 'settings', 'wizard'].includes(sc);
     await page.screenshot({ path: `design/showcase/${name}.png`, fullPage: fp && vn === 'mobil' ? false : false });
