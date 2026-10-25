@@ -64,7 +64,8 @@ final class E0LoggerAndPluginTest extends TestCase {
 		$container = $first->container();
 		$this->assertInstanceOf(Container::class, $container);
 		$this->assertSame($container->get(Module_Registry::class), $container->get(Module_Registry::class));
-		$this->assertSame(array('entry_points'), $container->get(Module_Registry::class)->slugs());
+		$this->assertSame(array('entry_points', 'experiences'), $container->get(Module_Registry::class)->slugs());
+		$this->assertFalse($container->get(Module_Registry::class)->is_enabled('experiences'), 'Varsayilan motor legacy: experiences kapali.');
 	}
 
 	public function test_plugins_loaded_runs_migrations_and_import_once(): void {

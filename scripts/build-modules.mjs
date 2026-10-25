@@ -10,20 +10,27 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SRC = path.join(ROOT, 'assets/src');
-const hasEntry =
-  fs.existsSync(SRC) &&
-  fs.readdirSync(SRC, { withFileTypes: true }).some(
-    (e) =>
-      (e.isFile() && /^index\.(js|jsx|ts|tsx)$/.test(e.name)) ||
-      (e.isDirectory() && fs.readdirSync(path.join(SRC, e.name)).some((f) => /^index\.(js|jsx|ts|tsx)$/.test(f)))
-  );
-if (!hasEntry) {
+/** Giriş noktaları: assets/src/index.js ve assets/src/<modül>/index.js (çıktı: assets/build/<modül>/index.js). */
+const entries = [];
+if (fs.existsSync(SRC)) {
+  for (const e of fs.readdirSync(SRC, { withFileTypes: true })) {
+    if (e.isFile() && /^index\.(m?js|jsx|ts|tsx)$/.test(e.name)) {
+      entries.push(`index=./assets/src/${e.name}`);
+    } else if (e.isDirectory()) {
+      const file = fs.readdirSync(path.join(SRC, e.name)).find((f) => /^index\.(m?js|jsx|ts|tsx)$/.test(f));
+      if (file) {
+        entries.push(`${e.name}/index=./assets/src/${e.name}/${file}`);
+      }
+    }
+  }
+}
+if (!entries.length) {
   console.log('build:modules: assets/src altinda giris yok, atlandi.');
   process.exit(0);
 }
 const r = spawnSync(
   path.join(ROOT, 'node_modules/.bin/wp-scripts'),
-  ['build', '--webpack-src-dir=assets/src', '--output-path=assets/build'],
+  ['build', ...entries, '--output-path=assets/build'],
   { cwd: ROOT, stdio: 'inherit' }
 );
 process.exit(r.status ?? 1);

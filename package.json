@@ -6,7 +6,7 @@
   "scripts": {
     "build:css": "php tools/build-css-bundle.php",
     "build:js": "php tools/build-js-bundle.php",
-    "build": "npm run build:css && npm run build:js",
+    "build": "npm run build:css && npm run build:js && npm run build:modules",
     "smoke": "php tests/smoke/run.php",
     "test": "php vendor/bin/phpunit -c phpunit.xml.dist && WDP_UNIT_TEST=1 node --test tests/unit/js/*.test.mjs",
     "test:local-wp": "node scripts/test-local-wp.mjs",
@@ -40,6 +40,7 @@
     "e2e:full": "node scripts/e2e-prep.mjs && node tests/e2e/run-full.mjs",
     "e2e:matrix": "node scripts/e2e-prep.mjs && node tests/e2e/run-matrix.mjs",
     "e2e:entry-points": "node tests/e2e/run-entry-points.mjs",
+    "e2e:experiences": "node tests/e2e/run-experiences.mjs",
     "e2e:asset-scope": "node tests/e2e/run-asset-scope.mjs",
     "e2e:accept": "node tests/e2e/run-accept.mjs",
     "e2e:stability": "node tests/e2e/run-stability.mjs",

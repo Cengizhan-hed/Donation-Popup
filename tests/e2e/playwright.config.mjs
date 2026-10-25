@@ -16,6 +16,7 @@ export default defineConfig({
   // Yönetici oturumu: ensureAuth kilit dosyası; işçiler storageState paylaşır, kendileri giriş yapmaz.
   reporter: 'list',
   use: {
+    baseURL: process.env.E2E_BASE_URL || undefined,
     trace: 'off',
     screenshot: 'off',
     video: 'off',

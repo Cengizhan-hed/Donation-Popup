@@ -207,6 +207,8 @@ final class Plugin {
 	 */
 	public static function register_modules( Module_Registry $registry ) {
 		$registry->add( Entry_Points_Module::SLUG, Entry_Points_Module::class, true );
+		// Sınıf adı metin olarak verilir: `engine` = `legacy` iken dosya hiç yüklenmez.
+		$registry->add( 'experiences', 'DonationPanel\\Modules\\Experiences\\Experiences_Module', Settings::engine_is_new() );
 	}
 
 	/**
