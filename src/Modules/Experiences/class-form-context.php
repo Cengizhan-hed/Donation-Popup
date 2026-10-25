@@ -112,7 +112,7 @@ final class Form_Context {
 			'cover_fee'      => self::cover_fee_percent( $legacy ),
 			'addon'          => self::addon( $legacy ),
 			'steps'          => self::steps( $product_id ),
-			'fields'         => self::fields( $legacy, $shares ),
+			'fields'         => $shares ? array() : self::fields( $legacy ),
 			'shareholder'    => $shares ? self::shareholder_fields( $legacy ) : array(),
 		);
 
@@ -342,17 +342,12 @@ final class Form_Context {
 	}
 
 	/**
-	 * Alan tanımları (sipariş sözleşmesiyle aynı alan adları).
+	 * Bağışçı alan tanımları (sipariş sözleşmesiyle aynı alan adları; hisseli bağışta kullanılmaz).
 	 *
 	 * @param array<string, mixed> $legacy Eski bağlam.
-	 * @param bool                 $shares Hisseli ürün mü (ithaf/e-posta yok).
 	 * @return array<int, array<string, mixed>>
 	 */
-	private static function fields( array $legacy, $shares ) {
-		if ( $shares ) {
-			// Hisseli bağışta kişi alanları hissedar satırlarıdır (`shareholder`).
-			return array();
-		}
+	private static function fields( array $legacy ) {
 		$fields = array(
 			array(
 				'name'         => 'donation_full_name',
@@ -374,7 +369,7 @@ final class Form_Context {
 				'maxlength'    => 28,
 			),
 		);
-		if ( ! $shares && ! empty( $legacy['enable_email'] ) ) {
+		if ( ! empty( $legacy['enable_email'] ) ) {
 			$fields[] = array(
 				'name'         => 'donation_email',
 				'type'         => 'email',
@@ -385,7 +380,7 @@ final class Form_Context {
 				'maxlength'    => 100,
 			);
 		}
-		if ( ! $shares && ! empty( $legacy['enable_dedication'] ) ) {
+		if ( ! empty( $legacy['enable_dedication'] ) ) {
 			$placeholder = isset( $legacy['dedication_placeholder'] ) ? (string) $legacy['dedication_placeholder'] : '';
 			$fields[]    = array(
 				'name'         => 'donation_dedication',
@@ -405,7 +400,7 @@ final class Form_Context {
 			'autocomplete' => 'off',
 			'maxlength'    => 500,
 		);
-		if ( ! $shares && ! empty( $legacy['enable_anonymous'] ) ) {
+		if ( ! empty( $legacy['enable_anonymous'] ) ) {
 			$fields[] = array(
 				'name'     => 'donation_anonymous',
 				'type'     => 'checkbox',

@@ -238,7 +238,7 @@ final class Field_Validator {
 			'amount' => null,
 		);
 		$config = isset( $model['addon'] ) && is_array( $model['addon'] ) ? $model['addon'] : array();
-		if ( empty( $config ) || empty( $input['addon_active'] ) || 'false' === $input['addon_active'] || '0' === (string) $input['addon_active'] ) {
+		if ( empty( $config ) || empty( $input['addon_active'] ) || 'false' === $input['addon_active'] ) {
 			return $off;
 		}
 		$fixed = isset( $config['fixed'] ) ? (float) $config['fixed'] : 0.0;

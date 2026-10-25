@@ -19,6 +19,21 @@ add_filter(
 	}
 );
 
+// Yerel e2e tüm cihazları tek IP'den (127.0.0.1) koşar: hız sınırı sayaçları her REST isteğinden önce sıfırlanır.
+// Sınırlayıcının kendisi birim testlerle kanıtlıdır (tests/unit/Http).
+add_filter(
+	'rest_pre_dispatch',
+	static function ($result, $server, $request) {
+		if (0 === strpos((string) $request->get_route(), '/donation-panel/v1')) {
+			global $wpdb;
+			$wpdb->query("DELETE FROM {$wpdb->options} WHERE option_name LIKE '%donation\\_panel\\_rl\\_%'"); // phpcs:ignore
+		}
+		return $result;
+	},
+	1,
+	3
+);
+
 // Düzenli bağış anahtarı yalnız seçenek filtresi doluysa çizilir (`?dp_freq=1`).
 if (isset($_GET['dp_freq'])) { // phpcs:ignore
 	add_filter(

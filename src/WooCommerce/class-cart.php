@@ -183,7 +183,7 @@ final class Cart {
 		if ( '' !== $type && ! in_array( $type, array_column( isset( $model['types'] ) && is_array( $model['types'] ) ? $model['types'] : array(), 'value' ), true ) ) {
 			$type = '';
 		}
-		$extra  = array();
+		$extra = array();
 		if ( '' !== $kind ) {
 			$extra['donation_panel_kind'] = sanitize_key( $kind );
 		}

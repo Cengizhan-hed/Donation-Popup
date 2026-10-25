@@ -196,7 +196,7 @@ export function reducer(state, action) {
     case 'setFee':
       return { ...state, fee: Boolean(action.value) };
     case 'setAddon':
-      return { ...state, addon: Boolean(action.value), errors: Boolean(action.value) ? state.errors : omit(state.errors, 'addon_amount') };
+      return { ...state, addon: Boolean(action.value), errors: action.value ? state.errors : omit(state.errors, 'addon_amount') };
     case 'setAddonAmount':
       return { ...state, addonAmount: String(action.value), errors: omit(state.errors, 'addon_amount') };
     case 'setErrors':
