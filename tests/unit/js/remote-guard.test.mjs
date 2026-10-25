@@ -269,6 +269,8 @@ describe('ham ssh/scp/sftp/rsync spawn yok', () => {
       'scripts/e2e-bootstrap.mjs',
       'scripts/ikram-wp.mjs',
       'scripts/staging-wp.mjs',
+      'scripts/staging-snippet.mjs',
+      'scripts/staging-progress-report.mjs',
       'scripts/lib/ship-core.mjs',
       'tests/e2e/helpers/wp-remote.mjs',
       'tests/e2e/helpers/canary.mjs',
