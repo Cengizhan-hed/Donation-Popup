@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: woo-donation-popup\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-25 07:03:52+0000\n"
-"PO-Revision-Date: 2026-10-25 07:03:52+0000\n"
+"POT-Creation-Date: 2026-10-25 11:37:51+0000\n"
+"PO-Revision-Date: 2026-10-25 11:37:51+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: tr_TR\n"
@@ -64,12 +64,6 @@ msgid "%d person"
 msgid_plural "%d people"
 msgstr[0] "%d kişi"
 msgstr[1] "%d kişi"
-
-#: includes/class-admin-category-colors-tab-renderer.php:110
-msgid "%d product"
-msgid_plural "%d products"
-msgstr[0] "%d ürün"
-msgstr[1] "%d ürün"
 
 #: includes/class-admin-placement-tab-renderer.php:37
 msgid "%d products are currently donation products."
@@ -149,9 +143,9 @@ msgstr "Forma eklenen ikinci, küçük bağış satırı"
 msgid "Accept donations + show a thank-you message"
 msgstr "Bağış al + teşekkür mesajı göster"
 
-#: includes/class-admin-form-tabs-renderer.php:232
-msgid "Action button, mini-cart card, and product row colors."
-msgstr "Aksiyon butonları, mini sepet kartı ve ürün satırı renkleri."
+#: includes/class-admin-form-tabs-renderer.php:229
+msgid "Action button and product row colors."
+msgstr "Aksiyon butonu ve ürün satırı renkleri."
 
 #: includes/class-admin-products-list-table.php:48
 msgid "Actions"
@@ -343,10 +337,6 @@ msgstr "Beklenmeyen bir hata oluştu."
 msgid "Andorra"
 msgstr "Andorra"
 
-#: includes/class-admin-layout-tabs-renderer.php:153
-msgid "Animation"
-msgstr "Animasyon"
-
 #: includes/class-donation-optional-fields.php:143 includes/class-donation-optional-fields.php:147 includes/class-order-meta-keys.php:83
 msgid "Anonymous"
 msgstr "Anonim"
@@ -455,10 +445,6 @@ msgstr "Belarus"
 #: includes/class-phone-field.php:30
 msgid "Belgium"
 msgstr "Belçika"
-
-#: includes/class-admin-product-data-tab.php:995
-msgid "Block order"
-msgstr "Blok sırası"
 
 #: includes/class-admin-form-tabs-renderer.php:554
 #: includes/class-admin-form-tabs-renderer.php:566
@@ -569,9 +555,9 @@ msgstr "Buton metin rengi"
 msgid "Button text contrast with «%1$s» is %2$s:1 (recommended minimum 4.5:1). Saved; choose a darker or lighter color."
 msgstr "«%1$s» ile düğme yazısı kontrastı %2$s:1 (önerilen en az 4.5:1). Kayıt yapıldı; daha koyu veya açık bir renk seçin."
 
-#: includes/class-admin-form-tabs-renderer.php:231
-msgid "Buttons and mini cart"
-msgstr "Butonlar ve mini sepet"
+#: includes/class-admin-form-tabs-renderer.php:228
+msgid "Buttons and product row"
+msgstr "Butonlar ve ürün satırı"
 
 #: includes/class-admin-form-tabs-renderer.php:442
 msgid "Buttons below the form"
@@ -660,22 +646,6 @@ msgstr "Kategoriler (slug)"
 msgid "Category"
 msgstr "Kategori"
 
-#: includes/class-woo-donation-popup-admin.php:396
-msgid "Category colors saved."
-msgstr "Kategori renkleri kaydedildi."
-
-#: includes/class-admin-category-colors-tab-renderer.php:39
-msgid "Category heading colors"
-msgstr "Kategori başlık renkleri"
-
-#: includes/class-admin-product-data-tab.php:637
-msgid "Celebration animation"
-msgstr "Kutlama animasyonu"
-
-#: includes/class-admin-layout-tabs-renderer.php:155
-msgid "Celebration animation when the goal is reached"
-msgstr "Hedef dolunca kutlama animasyonu"
-
 #: includes/elementor/class-widget-donations-list.php:118
 msgid "Center"
 msgstr "Orta"
@@ -756,10 +726,6 @@ msgstr "Yeni bağışı kapat + mesaj göster"
 msgid "Close popup"
 msgstr "Modalı Kapat"
 
-#: includes/class-admin-category-colors-tab-renderer.php:115
-msgid "Color"
-msgstr "Renk"
-
 #: includes/class-admin-form-tabs-renderer.php:221
 msgid "Color and corner settings for the thank-you row."
 msgstr "Teşekkür satırının renk ve köşe ayarları."
@@ -814,10 +780,6 @@ msgstr "Onaylı %1$s%%, bekleyen ve yazılan ile %2$s%%"
 #: assets/js/src/core/utils.js:842
 msgid "Connection restored."
 msgstr "Bağlantı yeniden kuruldu."
-
-#: includes/class-admin-meta-tracking-tab-renderer.php:59
-msgid "Console debug log (no personal data)"
-msgstr "Konsol hata ayıklama günlüğü (kişisel veri yok)"
 
 #: includes/class-admin-layout-tabs-renderer.php:137
 msgid "Container background"
@@ -931,10 +893,6 @@ msgstr "Mevcut ürün (otomatik)"
 msgid "Custom amount"
 msgstr "Bağışçı belirler"
 
-#: includes/class-admin-meta-tracking-tab-renderer.php:58
-msgid "Custom debug events (DonationFormOpen, etc.)"
-msgstr "Özel hata ayıklama olayları (DonationFormOpen vb.)"
-
 #: includes/class-style-presets.php:225
 msgid "Custom pack"
 msgstr "Özel paket"
@@ -990,10 +948,6 @@ msgstr "İthaf örnek metni"
 #: includes/class-admin-form-tabs-renderer.php:253
 msgid "Default add-on donation product"
 msgstr "Varsayılan alt bağış ürünü"
-
-#: includes/class-admin-design-studio-renderer.php:291
-msgid "Default module order"
-msgstr "Varsayılan modül sırası"
 
 #: includes/config/style-presets.php
 #. YENI-SARMA
@@ -1326,10 +1280,6 @@ msgstr "Buton gölgesini etkinleştir"
 #: includes/class-admin-form-tabs-renderer.php:557
 msgid "Enable hover shadow"
 msgstr "Hover gölgesini etkinleştir"
-
-#: includes/class-admin-meta-tracking-tab-renderer.php:38
-msgid "Enable Meta tracking"
-msgstr "Meta izlemeyi etkinleştir"
 
 #: includes/class-admin-form-tabs-renderer.php:482
 msgid "Enable the multi-step form"
@@ -1800,10 +1750,6 @@ msgstr "Ürün kartında “Çoklu Hisse” veya “Progress Bar” açıksa bir
 msgid "If “Progress Bar” is on in Product Settings, the colors, height, and labels of the bar that fills toward the goal are managed here."
 msgstr "Ürün Ayarları’nda “Progress Bar” açıksa, hedefe doğru dolan çubuğun renkleri, yüksekliği ve etiketleri buradan yönetilir."
 
-#: includes/class-admin-category-colors-tab-renderer.php:41
-msgid "If a product is in more than one category, the deepest (most specific) category color is used. If that category also has no color, the global brand color applies."
-msgstr "Ürün birden fazla kategorideyse en alt (en spesifik) kategori rengi kullanılır. Kategori rengi de yoksa genel marka rengi geçerlidir."
-
 #: includes/class-admin-design-studio-renderer.php:266
 #: includes/class-admin-product-data-tab.php:706
 msgid "If checked, the donor name is hidden on public lists; it remains visible on order records."
@@ -2116,10 +2062,6 @@ msgstr "Litvanya"
 msgid "Live preview"
 msgstr "Canlı önizleme"
 
-#: includes/class-admin-meta-tracking-tab-renderer.php:60
-msgid "Load the base Meta pixel from this plugin (off by default)"
-msgstr "Temel Meta pikselini bu eklentiden yükle (varsayılan kapalı)"
-
 #: assets/js/src/form/ajax.js:308
 msgid "Loading cart contents..."
 msgstr "Sepet içeriği yükleniyor..."
@@ -2238,18 +2180,6 @@ msgstr "Mesaj Metin"
 msgid "Message when the goal is reached"
 msgstr "Hedefe ulaşınca mesaj"
 
-#: includes/class-admin-page-renderer.php:63
-msgid "Meta Pixel"
-msgstr "Meta Pixel"
-
-#: includes/class-admin-meta-tracking-tab-renderer.php:31
-msgid "Meta Pixel (WDP)"
-msgstr "Meta Pixel (WDP)"
-
-#: includes/class-woo-donation-popup-admin.php:330
-msgid "Meta Pixel settings saved successfully."
-msgstr "Meta Pixel ayarları başarıyla kaydedildi."
-
 #: includes/class-phone-field.php:118
 msgid "Mexico"
 msgstr "Meksika"
@@ -2257,18 +2187,6 @@ msgstr "Meksika"
 #: includes/class-donations-list.php:810
 msgid "min. %s"
 msgstr "min. %s"
-
-#: includes/class-admin-form-tabs-renderer.php:241
-msgid "Mini cart background"
-msgstr "Mini Sepet Arka Plan"
-
-#: includes/class-admin-form-tabs-renderer.php:242
-msgid "Mini cart border"
-msgstr "Mini Sepet Border"
-
-#: includes/class-admin-form-tabs-renderer.php:243
-msgid "Mini cart radius"
-msgstr "Mini Sepet Radius"
 
 #: includes/class-admin-layout-tabs-renderer.php:199
 #: includes/class-admin-layout-tabs-renderer.php:203
@@ -2340,14 +2258,6 @@ msgstr "Fas"
 msgid "Motion"
 msgstr "Motion"
 
-#: includes/class-admin-product-data-tab.php:1009
-msgid "Move the %s block down"
-msgstr "%s bloğunu aşağı taşı"
-
-#: includes/class-admin-product-data-tab.php:1007
-msgid "Move the %s block up"
-msgstr "%s bloğunu yukarı taşı"
-
 #: includes/class-admin-product-data-tab.php:711
 msgid "Multi-step form"
 msgstr "Çok adımlı form"
@@ -2403,10 +2313,6 @@ msgstr "Bağlantı yok. İşlemler bağlantı gelince tekrar denenebilir."
 #: includes/class-admin-products-list-table.php:314
 msgid "No goal"
 msgstr "Hedef yok"
-
-#: includes/class-admin-category-colors-tab-renderer.php:132
-msgid "No products are assigned directly to this category."
-msgstr "Bu kategoriye doğrudan atanmış ürün yok."
 
 #: includes/class-admin-products-list-table.php:81
 msgid "No products match these filters."
@@ -2567,10 +2473,6 @@ msgstr "Popup aç"
 msgid "Open the form test page"
 msgstr "Form test sayfasını aç"
 
-#: includes/class-admin-meta-tracking-tab-renderer.php:66
-msgid "Optional Pixel ID"
-msgstr "İsteğe bağlı Pixel ID"
-
 #: includes/elementor/class-widget-donations-list.php:80
 msgid "Order by"
 msgstr "Sıralama"
@@ -2578,18 +2480,6 @@ msgstr "Sıralama"
 #: includes/class-privacy.php:104
 msgid "Order number"
 msgstr "Sipariş numarası"
-
-#: includes/class-admin-product-data-tab.php:999
-msgid "Order of campaign blocks"
-msgstr "Kampanya bloklarının sırası"
-
-#: includes/class-admin-product-data-tab.php:1014
-msgid "Order of the blocks under the heading; if off, the general order on the Design tab is used. The order of donor and amount fields is fixed."
-msgstr "Başlık altındaki blokların sırası; kapalıysa Tasarım sekmesindeki genel sıra kullanılır. Bağışçı ve tutar alanlarının sırası sabittir."
-
-#: includes/class-admin-assets.php:126
-msgid "Order updated."
-msgstr "Sıra güncellendi."
 
 #: includes/elementor/class-widget-donations-list.php:115
 msgid "Original"
@@ -2697,10 +2587,6 @@ msgstr "Telefon numarası zorunludur."
 #: includes/class-admin-form-tabs-renderer.php:158
 msgid "Phone placeholder"
 msgstr "Telefon Placeholder"
-
-#: includes/class-admin-category-colors-tab-renderer.php:40
-msgid "Pick a color for each category; if the product has no primary color of its own, the panel heading and accent use this category color."
-msgstr "Her kategori için renk seçin; ürünün kendi ana rengi boşsa panel başlığı ve vurgu rengi bu kategoriden alınır."
 
 #: includes/class-admin-design-studio-renderer.php:309
 msgid "Pick from the built-in SVG set or upload your own icon from the Media Library."
@@ -3028,10 +2914,6 @@ msgstr "Progress ikonu"
 msgid "Progress toward goal"
 msgstr "Hedefe ulaşma oranı"
 
-#: includes/class-admin-meta-tracking-tab-renderer.php:62
-msgid "Purchase: also allow on-hold orders (bank transfer, etc.)"
-msgstr "Purchase: on-hold siparişlere de izin ver (havale vb.)"
-
 #: includes/class-phone-field.php:100
 msgid "Qatar"
 msgstr "Katar"
@@ -3134,10 +3016,6 @@ msgstr "Sepetten Kaldır"
 msgid "Renders the donation form for the current or selected product."
 msgstr "Mevcut ürünün veya seçilen ürünün bağış formunu basar."
 
-#: includes/class-admin-meta-tracking-tab-renderer.php:42
-msgid "Require cookie consent"
-msgstr "Çerez izni gerektir"
-
 #: includes/class-admin-design-studio-renderer.php:388
 msgid "Reset"
 msgstr "Sıfırla"
@@ -3193,10 +3071,6 @@ msgstr "Suudi Arabistan"
 #: includes/class-admin-page-renderer.php:142
 msgid "Save advanced settings"
 msgstr "Gelişmiş ayarları kaydet"
-
-#: includes/class-admin-meta-tracking-tab-renderer.php:72
-msgid "Save Meta settings"
-msgstr "Meta ayarlarını kaydet"
 
 #: includes/class-admin-placement-tab-renderer.php:156
 msgid "Save placement settings"
@@ -3288,26 +3162,6 @@ msgstr "Seçili kategoriler (alt kategoriler dahil)"
 #: includes/class-admin-form-tabs-renderer.php:467
 msgid "Semibold (600)"
 msgstr "Yarı Kalın (600)"
-
-#: includes/class-admin-meta-tracking-tab-renderer.php:49
-msgid "Send AddToCart after adding to the cart"
-msgstr "Sepete eklendikten sonra AddToCart gönder"
-
-#: includes/class-admin-meta-tracking-tab-renderer.php:61
-msgid "Send InitiateCheckout from the plugin (off by default; may conflict with WooCommerce)"
-msgstr "Eklentiden InitiateCheckout gönder (varsayılan kapalı; WooCommerce ile çakışabilir)"
-
-#: includes/class-admin-meta-tracking-tab-renderer.php:52
-msgid "Send Purchase from the donation plugin"
-msgstr "Bağış eklentisinden Purchase gönder"
-
-#: includes/class-admin-meta-tracking-tab-renderer.php:48
-msgid "Send ViewContent when the form opens"
-msgstr "Form açıldığında ViewContent gönder"
-
-#: includes/class-admin-meta-tracking-tab-renderer.php:56
-msgid "Sends Purchase from this plugin on the thank-you / order received page. Leave it off if WooCommerce / Meta already sends Purchase."
-msgstr "Teşekkür / sipariş alındı sayfasında bu eklentiden Purchase gönderir. WooCommerce / Meta zaten Purchase gönderiyorsa kapalı bırakın."
 
 #: includes/class-phone-field.php:141
 msgid "Senegal"
@@ -3518,10 +3372,6 @@ msgstr "Bağışın kimin adına yapıldığını yazmak için alan gösterir."
 #: includes/class-admin-product-data-tab.php:750
 msgid "Shows a line with the real donor count. If the number is 0, the line is hidden."
 msgstr "Gerçek bağışçı sayısını gösteren bir satır gösterir. Sayı 0 ise satır gizlenir."
-
-#: includes/class-admin-product-data-tab.php:637
-msgid "Shows a short celebration when the goal is reached."
-msgstr "Hedefe ulaşıldığında kısa kutlama gösterir."
 
 #: includes/class-admin-product-data-tab.php:724
 msgid "Shows a short sentence under the title that describes the donation’s impact."
@@ -3916,10 +3766,6 @@ msgstr "Bağışçının yazabileceği en düşük tutar. Tek kaynak bu alandır
 msgid "The maximum number of shares can be 50."
 msgstr "En fazla hisse 50 olabilir."
 
-#: includes/class-woo-donation-popup-admin.php:323
-msgid "The Meta tracking module could not be loaded."
-msgstr "Meta izleme modülü yüklenemedi."
-
 #: includes/class-admin-form-tabs-renderer.php:441
 msgid "The order below follows the flow the donor sees in the popup: heading and close first, then the box and fields, and finally the form buttons and the on-page trigger button."
 msgstr "Aşağıdaki sıra, popup’ta kullanıcının gördüğü akışa göredir: önce üst başlık ve kapat, sonra kutu ve alanlar, en sonda form butonları ve sayfadaki açan buton."
@@ -4001,10 +3847,6 @@ msgstr "Ürün kartında özel ID yoksa kullanılan WC ürünü."
 msgid "There are no donations to show right now."
 msgstr "Şu anda gösterilecek bağış bulunmuyor."
 
-#: includes/class-admin-category-colors-tab-renderer.php:44
-msgid "There are no product categories yet."
-msgstr "Henüz ürün kategorisi yok."
-
 #: includes/class-admin-design-studio-renderer.php:247
 msgid "These defaults are used when the product card is off."
 msgstr "Ürün kartı kapalıysa bu varsayılanlar kullanılır."
@@ -4049,10 +3891,6 @@ msgstr "Bu ürün bağış ürünü olarak işaretli değil."
 #: includes/class-shortcodes.php:302
 msgid "This product is out of stock (ID: %d)."
 msgstr "Bu ürün stokta yok (ID: %d)."
-
-#: includes/class-admin-meta-tracking-tab-renderer.php:32
-msgid "This section uses the site’s existing pixel (for example the WooCommerce / Meta integration); by default it does not add a second pixel or PageView. ViewContent and AddToCart are sent from this plugin; InitiateCheckout and Purchase are left to WooCommerce / Meta by default."
-msgstr "Bu bölüm mevcut site pikselini (ör. WooCommerce / Meta entegrasyonu) kullanır; varsayılan olarak ikinci bir piksel veya PageView eklemez. ViewContent ve AddToCart bu eklentiden gönderilir; InitiateCheckout ve Purchase varsayılan olarak WooCommerce / Meta entegrasyonuna bırakılır."
 
 #: includes/traits/trait-wdp-assets-registry.php:350 includes/traits/trait-wdp-assets-registry.php:351 includes/traits/trait-wdp-utils-price.php:220
 msgid "This site does not accept amounts with decimals, e.g. %s"
@@ -4202,10 +4040,6 @@ msgstr "Kullan"
 msgid "Use “Donate” instead of “Add to cart” on WooCommerce pages"
 msgstr "WooCommerce sayfalarında “Sepete Ekle” yerine “Bağış Yap”"
 
-#: includes/class-admin-product-data-tab.php:997
-msgid "Use a custom order for this product"
-msgstr "Bu ürüne özel sıra kullan"
-
 #: includes/class-admin-form-tabs-renderer.php:484
 msgid "Use a step-by-step flow in the popup and inline forms"
 msgstr "Popup ve gömülü formlarda adım adım akış kullan"
@@ -4217,10 +4051,6 @@ msgstr "Genel ayarı kullan"
 #: includes/class-admin-products-list-table.php:239
 msgid "Used as an add-on donation (%d)"
 msgstr "Alt bağış olarak kullanılıyor (%d)"
-
-#: includes/class-admin-meta-tracking-tab-renderer.php:68
-msgid "Used only when “load the base pixel” is on. Leave empty if the site already loads a pixel."
-msgstr "Yalnızca “temel pikseli yükle” açıksa kullanılır. Site zaten piksel yüklüyorsa boş bırakın."
 
 #: includes/class-admin-placement-tab-renderer.php:58
 msgid "Used when scope is “selected categories”. Child categories are included automatically."
@@ -4288,10 +4118,6 @@ msgstr "Ne işe yarar: Modal yüzeyinin ne kadar opak/şeffaf olacağını belir
 msgid "What it does: How quick amount options (100 / 250 / 500…) look. Soft = light fill; Outline = border only; Solid = a button filled with the brand color. If quick amount buttons are off (product/general setting), this setting is hidden."
 msgstr "Ne işe yarar: Hızlı tutar seçeneklerinin (100 / 250 / 500…) görünümü. Yumuşak = açık dolgulu; Outline = sadece kenarlık; Solid = marka rengiyle dolu düğme. Hızlı tutar düğmeleri kapalıysa (ürün/genel ayar) bu ayar görünmez."
 
-#: includes/class-admin-design-studio-renderer.php:293
-msgid "What it does: Order of the 5 heading blocks in the popup header (comma-separated). E.g. media,impact,urgency,social_proof,progress. Unknown IDs are ignored. The form body is fixed: donor → dedication → amount → processing fee. If “Module order” is set on the product card, the product wins. If left empty, the default order is used."
-msgstr "Ne işe yarar: Modal üst bölümündeki 5 başlık bloğunun sırası (virgülle). Örn. media,impact,urgency,social_proof,progress. Bilinmeyen kimlikler yok sayılır. Form gövdesi sabittir: bağışçı → ithaf → tutar → işlem ücreti. Ürün kartındaki “Modül sırası” doluysa ürün önceliklidir. Boş bırakırsanız varsayılan sıra kullanılır."
-
 #: includes/class-admin-design-studio-renderer.php:213
 msgid "What it does: Popup and card shadow depth. 1 = flat/minimal; 5 = a clearly raised shadow. Sets the “floating” feel without changing the brand hue."
 msgstr "Ne işe yarar: Modal ve kart gölge derinliği. 1 = düz/minimal; 5 = belirgin yükseltilmiş gölge. Marka tonunu bozmadan “havada durma” hissini ayarlar."
@@ -4304,9 +4130,9 @@ msgstr "Ne işe yarar: İthaf alanı boşken görünen örnek metin. Kullanıcı
 msgid "What it does: Sets inner form spacing (line height, field gaps, padding). Compact = less scrolling; Spacious = more comfortable touch use. If “Density” is set on the product card, that product overrides this setting."
 msgstr "Ne işe yarar: Form içi boşlukları (satır yüksekliği, alan aralığı, padding) ayarlar. Kompakt = daha az scroll; Geniş = daha ferah dokunmatik kullanım. Ürün kartında “Yoğunluk” doluysa o ürün bu ayarı ezer."
 
-#: includes/class-admin-design-studio-renderer.php:229
-msgid "What it does: Sets the strength of animations such as open, success, and progress celebration. Subtle = calmer sites; Expressive = livelier transitions. Animations are already reduced for users with “prefers-reduced-motion” on."
-msgstr "Ne işe yarar: Açılış, başarı, progress kutlama gibi animasyonların gücünü ayarlar. Hafif = sakin siteler; İfadeli = daha canlı geçişler. “prefers-reduced-motion” açık kullanıcılarda animasyonlar zaten kısılır."
+#: includes/class-admin-design-studio-renderer.php:232
+msgid "What it does: Sets the strength of animations such as open and success. Subtle = calmer sites; Expressive = livelier transitions. Animations are already reduced for users with “prefers-reduced-motion” on."
+msgstr "Ne işe yarar: Açılış ve başarı gibi animasyonların gücünü ayarlar. Hafif = sakin siteler; İfadeli = daha canlı geçişler. “prefers-reduced-motion” açık kullanıcılarda animasyonlar zaten kısılır."
 
 #: includes/class-admin-design-studio-renderer.php:296
 msgid "What it does: Shows more than one trust badge under the form. JSON array format: [{\"icon\":\"builtin:shield\",\"text\":\"SSL\"},{\"icon\":\"builtin:heart\",\"text\":\"Secure\"}]. Maximum 3 badges. If empty, the single-line “Trust text” below is used as a fallback. Invalid JSON is not saved / treated as empty."
@@ -4363,14 +4189,6 @@ msgstr "Açıkken mağaza ve ürün sayfalarındaki sepete ekle alanı bağış 
 #: includes/class-admin-form-tabs-renderer.php:481
 msgid "When on, the form moves step by step. Share-based: Shares → Confirm. Standard/Progress: Details → Amount → (Add-on donation) → Confirm. The progress bar always stays at the top."
 msgstr "Açıldığında form adım adım ilerler. Hisseli: Hisseler → Onay. Standart/Progress: Bilgiler → Tutar → (Alt bağış) → Onay. Progress bar her zaman üstte kalır."
-
-#: includes/class-admin-meta-tracking-tab-renderer.php:45
-msgid "When on, the Pixel and events run only after marketing consent is given. WP Consent API was detected; if consent is granted later, the Pixel starts at that moment."
-msgstr "Açıkken Pixel ve olaylar yalnızca pazarlama (marketing) izni verildiğinde çalışır. WP Consent API algılandı; izin sonradan verilirse Pixel o anda başlatılır."
-
-#: includes/class-admin-meta-tracking-tab-renderer.php:46
-msgid "When on, the Pixel and events run only when marketing consent is present. WP Consent API is not loaded: consent must be reported with the “wdp_meta_pixel_has_consent” filter (default: no consent). When off, the previous behavior is kept."
-msgstr "Açıkken Pixel ve olaylar yalnızca pazarlama izni varsa çalışır. WP Consent API yüklü değil: izin durumu “wdp_meta_pixel_has_consent” filtresiyle bildirilmelidir (varsayılan: izin yok). Kapalıysa eski davranış korunur."
 
 #: includes/class-admin-product-data-tab.php:642
 msgid "When the campaign reaches its goal, should donations keep being accepted, or should they be closed?"
@@ -4429,10 +4247,6 @@ msgctxt "wizard step"
 msgid "Please enter a valid phone number."
 msgstr "Geçerli bir telefon girin."
 
-#: includes/class-admin-meta-tracking-tab-renderer.php:55
-msgid "WooCommerce / Meta integration detected (for example facebook-for-woocommerce). Keep this off by default; otherwise two Purchase events can fire on the thank-you page. Turn it on only if WooCommerce is not sending Purchase."
-msgstr "WooCommerce / Meta entegrasyonu algılandı (ör. facebook-for-woocommerce). Varsayılan kapalı tutun; aksi halde teşekkür sayfasında iki Purchase oluşabilir. Yalnızca WooCommerce Purchase göndermiyorsa etkinleştirin."
-
 #: includes/traits/trait-wdp-ajax-cart-add.php:61 includes/traits/trait-wdp-ajax-cart-query.php:58 includes/traits/trait-wdp-ajax-cart-query.php:85 includes/traits/trait-wdp-ajax-cart-query.php:223
 msgid "WooCommerce cart object was not found."
 msgstr "WooCommerce sepet nesnesi bulunamadı."
@@ -4445,10 +4259,6 @@ msgstr "WooCommerce etkin değil."
 #: includes/class-admin-placement-tab-renderer.php:62
 msgid "WooCommerce pages"
 msgstr "WooCommerce sayfaları"
-
-#: includes/class-admin-category-colors-tab-renderer.php:21
-msgid "WooCommerce product categories were not found."
-msgstr "WooCommerce ürün kategorileri bulunamadı."
 
 #: includes/class-admin-product-data-tab.php:823
 msgid "WooCommerce product to add to the cart; if empty, the general default (#%d) is used."

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: woo-donation-popup 10.35.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-25 10:03+0300\n"
+"POT-Creation-Date: 2026-10-25 14:37+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -23,12 +23,12 @@ msgstr ""
 #: includes/bootstrap/class-legacy-frontend.php:23
 #: includes/class-admin-form-tabs-renderer.php:35
 #: includes/class-admin-form-tabs-renderer.php:36
-#: includes/class-admin-form-tabs-renderer.php:363
-#: includes/class-admin-form-tabs-renderer.php:572
+#: includes/class-admin-form-tabs-renderer.php:354
+#: includes/class-admin-form-tabs-renderer.php:563
 #: includes/class-admin-settings-normalizer.php:63
-#: includes/class-shortcodes.php:349
+#: includes/class-shortcodes.php:358
 #: includes/templates/class-modal-shell-renderer.php:267
-#: includes/templates/class-modal-shell-renderer.php:438
+#: includes/templates/class-modal-shell-renderer.php:445
 #: includes/traits/trait-wdp-assets-inline-styles.php:40
 #: includes/traits/trait-wdp-assets-inline-styles.php:41
 #: includes/traits/trait-wdp-assets-inline-styles.php:49
@@ -59,26 +59,26 @@ msgid ""
 "installed and active."
 msgstr ""
 
-#: includes/class-addon-product-visibility.php:209
+#: includes/class-addon-product-visibility.php:194
 #: includes/class-migrations.php:792
 msgid "General default (Success tab)"
 msgstr ""
 
-#: includes/class-addon-product-visibility.php:420
+#: includes/class-addon-product-visibility.php:405
 msgid "Add-on donation product"
 msgstr ""
 
-#: includes/class-addon-product-visibility.php:437
-#: includes/class-addon-product-visibility.php:453
-#: includes/class-admin-form-tabs-renderer.php:258
+#: includes/class-addon-product-visibility.php:422
+#: includes/class-addon-product-visibility.php:438
+#: includes/class-admin-form-tabs-renderer.php:252
 msgid "Search by product name…"
 msgstr ""
 
-#: includes/class-addon-product-visibility.php:488
+#: includes/class-addon-product-visibility.php:477
 msgid "The add-on donation product cannot be the main product itself."
 msgstr ""
 
-#: includes/class-addon-product-visibility.php:495
+#: includes/class-addon-product-visibility.php:484
 msgid "Select a valid simple WooCommerce product (published or private)."
 msgstr ""
 
@@ -87,8 +87,7 @@ msgid "Settings saved successfully."
 msgstr ""
 
 #: includes/class-admin-assets.php:78
-#: includes/class-woo-donation-popup-admin.php:392
-#: includes/class-woo-donation-popup-admin.php:422
+#: includes/class-woo-donation-popup-admin.php:349
 msgid "An error occurred while saving settings."
 msgstr ""
 
@@ -105,7 +104,7 @@ msgid "Use"
 msgstr ""
 
 #: includes/class-admin-assets.php:87 includes/class-admin-assets.php:88
-#: includes/class-admin-assets.php:155
+#: includes/class-admin-assets.php:154
 msgid "You have unsaved changes. Are you sure you want to leave this tab?"
 msgstr ""
 
@@ -151,69 +150,25 @@ msgstr ""
 msgid "Row removed."
 msgstr ""
 
-#: includes/class-admin-assets.php:133
-msgid "Order updated."
-msgstr ""
-
 #: includes/class-admin-bulk-actions.php:39
-#: includes/class-admin-products-list-table.php:354
+#: includes/class-admin-products-list-table.php:361
 msgid "Make donation product"
 msgstr ""
 
 #: includes/class-admin-bulk-actions.php:40
-#: includes/class-admin-products-list-table.php:355
+#: includes/class-admin-products-list-table.php:362
 msgid "Make regular product"
 msgstr ""
 
 #: includes/class-admin-bulk-actions.php:41
-#: includes/class-admin-products-list-table.php:356
+#: includes/class-admin-products-list-table.php:363
 msgid "Revert to the global setting"
 msgstr ""
 
 #. translators: %d: product count
-#: includes/class-admin-bulk-actions.php:70
+#: includes/class-admin-bulk-actions.php:71
 #, php-format
 msgid "Updated the donation flag for %d products."
-msgstr ""
-
-#: includes/class-admin-category-colors-tab-renderer.php:21
-msgid "WooCommerce product categories were not found."
-msgstr ""
-
-#: includes/class-admin-category-colors-tab-renderer.php:39
-msgid "Category heading colors"
-msgstr ""
-
-#: includes/class-admin-category-colors-tab-renderer.php:40
-msgid ""
-"Pick a color for each category; if the product has no primary color of its "
-"own, the panel heading and accent use this category color."
-msgstr ""
-
-#: includes/class-admin-category-colors-tab-renderer.php:41
-msgid ""
-"If a product is in more than one category, the deepest (most specific) "
-"category color is used. If that category also has no color, the global brand "
-"color applies."
-msgstr ""
-
-#: includes/class-admin-category-colors-tab-renderer.php:44
-msgid "There are no product categories yet."
-msgstr ""
-
-#: includes/class-admin-category-colors-tab-renderer.php:110
-#, php-format
-msgid "%d product"
-msgid_plural "%d products"
-msgstr[0] ""
-msgstr[1] ""
-
-#: includes/class-admin-category-colors-tab-renderer.php:115
-msgid "Color"
-msgstr ""
-
-#: includes/class-admin-category-colors-tab-renderer.php:132
-msgid "No products are assigned directly to this category."
 msgstr ""
 
 #: includes/class-admin-design-studio-renderer.php:42
@@ -222,47 +177,47 @@ msgstr ""
 msgid "On behalf of? (optional)"
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:56
+#: includes/class-admin-design-studio-renderer.php:55
 msgid "Design Studio"
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:56
+#: includes/class-admin-design-studio-renderer.php:55
 msgid ""
 "The global brand color automatically generates all button, progress, and "
 "accent tones (light / dark)."
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:56
+#: includes/class-admin-design-studio-renderer.php:55
 msgid ""
 "Appearance packs, glass/surface tokens, icons, and trust badges are managed "
 "here."
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:79
+#: includes/class-admin-design-studio-renderer.php:78
 msgid "Studio preview"
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:80
+#: includes/class-admin-design-studio-renderer.php:79
 msgid ""
 "Pack and surface settings apply on the front end after you save. Product "
 "overrides come from the product card."
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:92
+#: includes/class-admin-design-studio-renderer.php:91
 msgid "Global brand color"
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:93
+#: includes/class-admin-design-studio-renderer.php:92
 msgid ""
 "Pick one color — buttons, progress, focus rings, and soft background tones "
 "are generated automatically."
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:104
+#: includes/class-admin-design-studio-renderer.php:103
 msgid "Brand color"
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:106
+#: includes/class-admin-design-studio-renderer.php:105
 msgid ""
 "What it does: This is your site’s main identity color. When you save, Add to "
 "cart / Go to checkout / popup trigger / progress fill / success-screen "
@@ -271,53 +226,53 @@ msgid ""
 "the brand color for that product."
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:111
+#: includes/class-admin-design-studio-renderer.php:110
 msgid "Primary"
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:112
+#: includes/class-admin-design-studio-renderer.php:111
 msgid "Hover"
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:113
+#: includes/class-admin-design-studio-renderer.php:112
 msgid "Dark"
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:114
+#: includes/class-admin-design-studio-renderer.php:113
 msgid "Light"
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:115
+#: includes/class-admin-design-studio-renderer.php:114
 msgid "Checkout"
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:116
+#: includes/class-admin-design-studio-renderer.php:115
 msgid "Pending"
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:141
+#: includes/class-admin-design-studio-renderer.php:140
 msgid "Appearance packs"
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:142
+#: includes/class-admin-design-studio-renderer.php:141
 msgid ""
 "Click a pack — colors, radius, and density fill the form fields. They apply "
 "on the site after you save."
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:164
+#: includes/class-admin-design-studio-renderer.php:163
 msgid "Export current appearance"
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:165
+#: includes/class-admin-design-studio-renderer.php:164
 msgid "Import pack"
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:167
+#: includes/class-admin-design-studio-renderer.php:166
 msgid "Apply pack now & save"
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:168
+#: includes/class-admin-design-studio-renderer.php:167
 msgid ""
 "Clicking a card: Only fills the form fields (does not save yet). “Apply pack "
 "now & save”: Writes the selected pack to the database; updates Regular / "
@@ -325,17 +280,17 @@ msgid ""
 "Downloads current settings as JSON. Import: Loads a JSON pack and applies it."
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:180
+#: includes/class-admin-design-studio-renderer.php:179
 msgid "Surface & typography"
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:181
+#: includes/class-admin-design-studio-renderer.php:180
 msgid ""
 "Glass panel, elevation, and form density — the real glass tokens for the "
 "Soft Glass pack live here."
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:195
+#: includes/class-admin-design-studio-renderer.php:194
 msgid "Form density (global)"
 msgstr ""
 
@@ -344,30 +299,30 @@ msgstr ""
 msgid "Compact"
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:197
-#: includes/class-admin-design-studio-renderer.php:228
+#: includes/class-admin-design-studio-renderer.php:198
+#: includes/class-admin-design-studio-renderer.php:231
 #: includes/class-admin-form-tabs-renderer.php:163
-#: includes/class-admin-page-renderer.php:57
+#: includes/class-admin-page-renderer.php:55
 msgid "Normal"
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:197
+#: includes/class-admin-design-studio-renderer.php:199
 #: includes/class-admin-form-tabs-renderer.php:163
 msgid "Spacious"
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:201
+#: includes/class-admin-design-studio-renderer.php:204
 msgid ""
 "What it does: Sets inner form spacing (line height, field gaps, padding). "
 "Compact = less scrolling; Spacious = more comfortable touch use. If "
 "“Density” is set on the product card, that product overrides this setting."
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:203
+#: includes/class-admin-design-studio-renderer.php:206
 msgid "Glass blur (px)"
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:205
+#: includes/class-admin-design-studio-renderer.php:208
 msgid ""
 "What it does: The “frosted glass” blur strength of the popup background. 0 = "
 "no blur (flat panel). Higher values = softer and heavier (performance cost "
@@ -376,56 +331,56 @@ msgid ""
 "packs."
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:207
+#: includes/class-admin-design-studio-renderer.php:210
 msgid "Glass fill opacity (%)"
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:209
+#: includes/class-admin-design-studio-renderer.php:212
 msgid ""
 "What it does: How opaque or transparent the popup surface is. 100 = fully "
 "opaque white; 60–80 = a glass effect where the page behind shows through "
 "slightly. 85+ is recommended for readability."
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:211
+#: includes/class-admin-design-studio-renderer.php:214
 msgid "Elevation (1–5)"
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:213
+#: includes/class-admin-design-studio-renderer.php:216
 msgid ""
 "What it does: Popup and card shadow depth. 1 = flat/minimal; 5 = a clearly "
 "raised shadow. Sets the “floating” feel without changing the brand hue."
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:215
+#: includes/class-admin-design-studio-renderer.php:218
 msgid "Overlay color"
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:217
+#: includes/class-admin-design-studio-renderer.php:220
 msgid ""
 "What it does: The dimmer color that darkens the background when the popup "
 "opens. Usually a dark navy/black; a dark tone close to the brand also works."
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:219
+#: includes/class-admin-design-studio-renderer.php:222
 msgid "Overlay opacity (%)"
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:221
+#: includes/class-admin-design-studio-renderer.php:224
 msgid ""
 "What it does: How dark the dimmer is. Low = the background stays readable; "
 "high = more focus on the form, darker background. Typical range 40–60."
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:223
+#: includes/class-admin-design-studio-renderer.php:226
 msgid "Form font stack"
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:224
+#: includes/class-admin-design-studio-renderer.php:227
 msgid "inherit or 'DM Sans', system-ui, sans-serif"
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:225
+#: includes/class-admin-design-studio-renderer.php:228
 msgid ""
 "What it does: The typeface family inside the popup/form. “inherit” = use "
 "your theme’s font. For a custom font, write a CSS font-family (not a Google "
@@ -433,43 +388,42 @@ msgid ""
 "loaded in the theme or on the page."
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:227
+#: includes/class-admin-design-studio-renderer.php:230
 msgid "Motion"
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:228
+#: includes/class-admin-design-studio-renderer.php:231
 msgid "Subtle"
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:228
+#: includes/class-admin-design-studio-renderer.php:231
 msgid "Expressive"
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:229
+#: includes/class-admin-design-studio-renderer.php:232
 msgid ""
-"What it does: Sets the strength of animations such as open, success, and "
-"progress celebration. Subtle = calmer sites; Expressive = livelier "
-"transitions. Animations are already reduced for users with “prefers-reduced-"
-"motion” on."
+"What it does: Sets the strength of animations such as open and success. "
+"Subtle = calmer sites; Expressive = livelier transitions. Animations are "
+"already reduced for users with “prefers-reduced-motion” on."
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:231
+#: includes/class-admin-design-studio-renderer.php:234
 msgid "Quick amount button style"
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:232
+#: includes/class-admin-design-studio-renderer.php:235
 msgid "Soft"
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:232
+#: includes/class-admin-design-studio-renderer.php:235
 msgid "Outline"
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:232
+#: includes/class-admin-design-studio-renderer.php:235
 msgid "Solid"
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:233
+#: includes/class-admin-design-studio-renderer.php:236
 msgid ""
 "What it does: How quick amount options (100 / 250 / 500…) look. Soft = light "
 "fill; Outline = border only; Solid = a button filled with the brand color. "
@@ -477,128 +431,115 @@ msgid ""
 "hidden."
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:246
+#: includes/class-admin-design-studio-renderer.php:249
 msgid "Content modules (global default)"
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:247
+#: includes/class-admin-design-studio-renderer.php:250
 msgid "These defaults are used when the product card is off."
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:261
+#: includes/class-admin-design-studio-renderer.php:263
 #: includes/class-admin-form-tabs-renderer.php:164
-#: includes/class-admin-product-data-tab.php:703
+#: includes/class-admin-product-data-tab.php:746
 msgid "Email field"
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:261
+#: includes/class-admin-design-studio-renderer.php:263
 msgid "Show email on the regular form"
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:262
+#: includes/class-admin-design-studio-renderer.php:264
 msgid ""
 "What it does: Asks the donor for an email. When on, an extra row appears on "
 "the form. If “Email field” is off on the product card, it is hidden for that "
 "product. Not shown on share-based forms."
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:263
-#: includes/class-admin-product-data-tab.php:704
+#: includes/class-admin-design-studio-renderer.php:265
+#: includes/class-admin-product-data-tab.php:747
 msgid "Dedication field"
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:264
+#: includes/class-admin-design-studio-renderer.php:266
 msgid ""
 "What it does: Collects a dedication such as “On behalf of?”; it is written "
 "to order meta. Useful for memorial / gift donations. Not shown on share-"
 "based forms."
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:265
-#: includes/class-admin-product-data-tab.php:706
+#: includes/class-admin-design-studio-renderer.php:267
+#: includes/class-admin-product-data-tab.php:749
 msgid "Anonymous donation"
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:266
-#: includes/class-admin-product-data-tab.php:706
+#: includes/class-admin-design-studio-renderer.php:268
+#: includes/class-admin-product-data-tab.php:749
 msgid ""
 "If checked, the donor name is hidden on public lists; it remains visible on "
 "order records."
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:267
-#: includes/class-admin-product-data-tab.php:705
+#: includes/class-admin-design-studio-renderer.php:269
+#: includes/class-admin-product-data-tab.php:748
 msgid "Dedication placeholder"
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:268
+#: includes/class-admin-design-studio-renderer.php:270
 msgid ""
 "What it does: Sample text shown when the dedication field is empty. Tells "
 "the user what to write; it is not a required value."
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:274
+#: includes/class-admin-design-studio-renderer.php:276
 msgid "Privacy notice link"
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:277
+#: includes/class-admin-design-studio-renderer.php:279
 #: includes/class-donation-optional-fields.php:204
 msgid "Privacy notice on the processing of personal data"
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:278
+#: includes/class-admin-design-studio-renderer.php:280
 msgid "Show privacy notice link"
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:279
+#: includes/class-admin-design-studio-renderer.php:281
 msgid ""
 "The privacy notice must live on your site’s personal-data/privacy page; only "
 "the link is shown here. It appears only when the form has at least one of "
 "the email, dedication, or shareholder fields (off by default)."
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:280
+#: includes/class-admin-design-studio-renderer.php:282
 msgid "Link label"
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:282
+#: includes/class-admin-design-studio-renderer.php:284
 msgid ""
 "Short label shown on the link. If left empty, the default label is used."
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:283
+#: includes/class-admin-design-studio-renderer.php:285
 msgid "Link URL"
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:286
+#: includes/class-admin-design-studio-renderer.php:288
 msgid ""
 "If the URL is empty and there is also no WordPress Privacy Policy page, the "
 "link is not shown on the form. Select a page under Settings → Privacy or "
 "enter a URL here."
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:288
+#: includes/class-admin-design-studio-renderer.php:290
 msgid "If the URL is empty, the WordPress Privacy Policy page is used."
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:291
-msgid "Default module order"
-msgstr ""
-
 #: includes/class-admin-design-studio-renderer.php:293
-msgid ""
-"What it does: Order of the 5 heading blocks in the popup header (comma-"
-"separated). E.g. media,impact,urgency,social_proof,progress. Unknown IDs are "
-"ignored. The form body is fixed: donor → dedication → amount → processing "
-"fee. If “Module order” is set on the product card, the product wins. If left "
-"empty, the default order is used."
-msgstr ""
-
-#: includes/class-admin-design-studio-renderer.php:294
 msgid "Trust badges (JSON, max 3)"
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:296
+#: includes/class-admin-design-studio-renderer.php:295
 msgid ""
 "What it does: Shows more than one trust badge under the form. JSON array "
 "format: [{\"icon\":\"builtin:shield\",\"text\":\"SSL\"},{\"icon\":"
@@ -607,27 +548,27 @@ msgid ""
 "saved / treated as empty."
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:308
-#: includes/class-admin-form-tabs-renderer.php:442
+#: includes/class-admin-design-studio-renderer.php:307
+#: includes/class-admin-form-tabs-renderer.php:433
 msgid "Icons"
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:309
+#: includes/class-admin-design-studio-renderer.php:308
 msgid ""
 "Pick from the built-in SVG set or upload your own icon from the Media "
 "Library."
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:315
-#: includes/class-admin-product-data-tab.php:712
+#: includes/class-admin-design-studio-renderer.php:314
+#: includes/class-admin-product-data-tab.php:764
 msgid "Field icons"
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:317
+#: includes/class-admin-design-studio-renderer.php:316
 msgid "Icons on the name, note, and email rows"
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:318
+#: includes/class-admin-design-studio-renderer.php:317
 msgid ""
 "What it does: Turns the small icons to the left of form rows on or off. When "
 "off, the fields look simpler. A Use general / On / Off choice on the product "
@@ -638,141 +579,141 @@ msgstr ""
 msgid "Full name icon"
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:323
+#: includes/class-admin-design-studio-renderer.php:325
 msgid "Left icon on the full name row."
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:324
+#: includes/class-admin-design-studio-renderer.php:328
 msgid "Note icon"
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:324
+#: includes/class-admin-design-studio-renderer.php:330
 msgid "Icon for the note / message field."
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:325
+#: includes/class-admin-design-studio-renderer.php:333
 msgid "Email icon"
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:325
+#: includes/class-admin-design-studio-renderer.php:335
 msgid "Icon used when the email row is on."
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:326
+#: includes/class-admin-design-studio-renderer.php:338
 msgid "Phone icon"
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:326
+#: includes/class-admin-design-studio-renderer.php:340
 msgid ""
 "Fallback/custom icon for the phone row (can be used next to the country "
 "picker)."
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:327
+#: includes/class-admin-design-studio-renderer.php:343
 msgid "Add to cart icon"
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:327
+#: includes/class-admin-design-studio-renderer.php:345
 msgid "Icon on the “Add to cart” CTA button."
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:328
+#: includes/class-admin-design-studio-renderer.php:348
 msgid "Go to checkout icon"
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:328
+#: includes/class-admin-design-studio-renderer.php:350
 msgid "Icon on the “Go to checkout” CTA button."
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:329
+#: includes/class-admin-design-studio-renderer.php:353
 msgid "Trust strip icon"
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:329
+#: includes/class-admin-design-studio-renderer.php:355
 msgid "Left icon of the trust text under the buttons."
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:330
+#: includes/class-admin-design-studio-renderer.php:358
 msgid "Continue icon"
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:330
+#: includes/class-admin-design-studio-renderer.php:360
 msgid "Icon for the “Continue” step button on a multi-step (wizard) form."
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:331
+#: includes/class-admin-design-studio-renderer.php:363
 msgid "Success icon"
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:331
+#: includes/class-admin-design-studio-renderer.php:365
 msgid "Confirmation icon on the success / thank-you screen."
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:332
+#: includes/class-admin-design-studio-renderer.php:368
 msgid "Extra donation icon"
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:332
+#: includes/class-admin-design-studio-renderer.php:370
 msgid "Title/icon area of the extra donation (sadaqah) block."
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:333
+#: includes/class-admin-design-studio-renderer.php:373
 msgid "Progress icon"
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:333
+#: includes/class-admin-design-studio-renderer.php:375
 msgid "Decorative / badge icon fallback on progress forms."
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:344
+#: includes/class-admin-design-studio-renderer.php:387
 msgid ""
 "Icon picker: Click a built-in SVG icon or upload your own image with “Select "
 "from media” (small PNG/SVG recommended). “Reset” returns to the first built-"
 "in icon. Changes become permanent with “Save settings”."
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:347
+#: includes/class-admin-design-studio-renderer.php:390
 msgid "Trust strip"
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:350
+#: includes/class-admin-design-studio-renderer.php:393
 msgid "Show trust text under the CTA"
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:351
+#: includes/class-admin-design-studio-renderer.php:394
 msgid ""
 "What it does: Shows the “Secure payment…” line right under the Add to cart / "
 "Go to checkout buttons. If JSON badges are filled, they may take priority; "
 "if this key is off, the strip is fully hidden."
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:353
+#: includes/class-admin-design-studio-renderer.php:396
 #: includes/class-admin-settings-normalizer.php:97
-#: includes/class-form-modules.php:173
+#: includes/class-form-modules.php:155
 msgid "Secure payment · SSL-protected transaction"
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:354
+#: includes/class-admin-design-studio-renderer.php:397
 msgid "Trust text (single-badge fallback)"
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:356
+#: includes/class-admin-design-studio-renderer.php:399
 msgid ""
 "What it does: Single-line trust message shown when JSON trust badges are "
 "empty. Keep it short (max 120 characters) so it stays readable under the "
 "mobile CTA."
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:387
+#: includes/class-admin-design-studio-renderer.php:430
 msgid "Select from media"
 msgstr ""
 
-#: includes/class-admin-design-studio-renderer.php:388
+#: includes/class-admin-design-studio-renderer.php:431
 msgid "Reset"
 msgstr ""
 
 #: includes/class-admin-form-tabs-renderer.php:33
-#: includes/class-admin-form-tabs-renderer.php:361
+#: includes/class-admin-form-tabs-renderer.php:352
 #: includes/class-admin-settings-normalizer.php:49
 #: includes/templates/class-modal-shell-renderer.php:159
 #: includes/traits/trait-wdp-assets-inline-styles.php:42
@@ -781,7 +722,7 @@ msgid "Add to cart"
 msgstr ""
 
 #: includes/class-admin-form-tabs-renderer.php:34
-#: includes/class-admin-form-tabs-renderer.php:362
+#: includes/class-admin-form-tabs-renderer.php:353
 #: includes/class-admin-settings-normalizer.php:50
 #: includes/templates/class-modal-shell-renderer.php:160
 #: includes/traits/trait-wdp-assets-inline-styles.php:43
@@ -794,65 +735,65 @@ msgid "Standard form preview"
 msgstr ""
 
 #: includes/class-admin-form-tabs-renderer.php:118
-#: includes/class-admin-settings-normalizer.php:321
+#: includes/class-admin-settings-normalizer.php:318
 #: includes/i18n/class-wdp-js-i18n.php:101
 #: includes/traits/trait-wdp-assets-inline-styles.php:85
-#: assets/js/src/shareholder/render.js:118
-#: assets/js/src/shareholder/render.js:124
+#: assets/js/src/shareholder/render.js:111
+#: assets/js/src/shareholder/render.js:117
 msgid "Shareholder details"
 msgstr ""
 
 #: includes/class-admin-form-tabs-renderer.php:119
-#: includes/class-admin-form-tabs-renderer.php:427
-#: includes/class-admin-settings-normalizer.php:322
+#: includes/class-admin-form-tabs-renderer.php:418
+#: includes/class-admin-settings-normalizer.php:319
 #: includes/i18n/class-wdp-js-i18n.php:56
 #: includes/templates/class-form-fields-renderer.php:520
 #: includes/traits/trait-wdp-assets-inline-styles.php:86
-#: assets/js/src/shareholder/render.js:119
+#: assets/js/src/shareholder/render.js:112
 msgid "Full name *"
 msgstr ""
 
 #: includes/class-admin-form-tabs-renderer.php:120
-#: includes/class-admin-settings-normalizer.php:323
-#: includes/class-phone-field.php:494 includes/i18n/class-wdp-js-i18n.php:73
+#: includes/class-admin-settings-normalizer.php:320
+#: includes/class-phone-field.php:1193 includes/i18n/class-wdp-js-i18n.php:73
 #: includes/traits/trait-wdp-assets-inline-styles.php:87
-#: assets/js/src/phone-input.js:664 assets/js/src/shareholder/render.js:120
+#: assets/js/src/phone-input.js:657 assets/js/src/shareholder/render.js:113
 msgid "Phone number *"
 msgstr ""
 
 #: includes/class-admin-form-tabs-renderer.php:121
-#: includes/class-admin-form-tabs-renderer.php:429
-#: includes/class-admin-settings-normalizer.php:324
+#: includes/class-admin-form-tabs-renderer.php:420
+#: includes/class-admin-settings-normalizer.php:321
 #: includes/i18n/class-wdp-js-i18n.php:69
 #: includes/templates/class-form-fields-renderer.php:531
 #: includes/traits/trait-wdp-assets-inline-styles.php:88
-#: assets/js/src/shareholder/render.js:121
+#: assets/js/src/shareholder/render.js:114
 msgid "Note (optional)"
 msgstr ""
 
 #: includes/class-admin-form-tabs-renderer.php:122
-#: includes/class-admin-settings-normalizer.php:325
+#: includes/class-admin-settings-normalizer.php:322
 #: includes/i18n/class-wdp-js-i18n.php:44
 #: includes/traits/trait-wdp-assets-inline-styles.php:89
-#: assets/js/src/shareholder/render.js:123
+#: assets/js/src/shareholder/render.js:116
 msgid "Create a copy"
 msgstr ""
 
 #: includes/class-admin-form-tabs-renderer.php:127
-#: includes/class-admin-settings-normalizer.php:338
+#: includes/class-admin-settings-normalizer.php:335
 #: includes/i18n/class-wdp-js-i18n.php:49
 #: includes/templates/class-form-fields-renderer.php:537
 #: includes/traits/trait-wdp-assets-inline-styles.php:94
-#: assets/js/src/shareholder/render.js:122
+#: assets/js/src/shareholder/render.js:115
 msgid "Email (optional)"
 msgstr ""
 
 #: includes/class-admin-form-tabs-renderer.php:149
-#: includes/class-admin-form-tabs-renderer.php:217
-#: includes/class-admin-form-tabs-renderer.php:441
-#: includes/class-admin-layout-tabs-renderer.php:102
-#: includes/class-admin-layout-tabs-renderer.php:184
-#: includes/class-admin-page-renderer.php:161
+#: includes/class-admin-form-tabs-renderer.php:214
+#: includes/class-admin-form-tabs-renderer.php:432
+#: includes/class-admin-layout-tabs-renderer.php:101
+#: includes/class-admin-layout-tabs-renderer.php:179
+#: includes/class-admin-page-renderer.php:149
 msgid "What can you do on this tab?"
 msgstr ""
 
@@ -968,15 +909,15 @@ msgid "Share-based form preview"
 msgstr ""
 
 #: includes/class-admin-form-tabs-renderer.php:194
-#: includes/class-admin-form-tabs-renderer.php:238
-#: includes/class-admin-settings-normalizer.php:364
+#: includes/class-admin-form-tabs-renderer.php:235
+#: includes/class-admin-settings-normalizer.php:361
 #: includes/i18n/class-wdp-js-i18n.php:59 assets/js/src/cart/ui.js:40
 msgid "Go to cart"
 msgstr ""
 
 #: includes/class-admin-form-tabs-renderer.php:195
-#: includes/class-admin-form-tabs-renderer.php:239
-#: includes/class-admin-settings-normalizer.php:365
+#: includes/class-admin-form-tabs-renderer.php:236
+#: includes/class-admin-settings-normalizer.php:362
 #: includes/i18n/class-wdp-js-i18n.php:38
 #: includes/traits/trait-wdp-assets-inline-styles.php:63
 #: includes/traits/trait-wdp-assets-inline-styles.php:65
@@ -985,7 +926,7 @@ msgid "Complete donation"
 msgstr ""
 
 #: includes/class-admin-form-tabs-renderer.php:196
-#: includes/class-admin-settings-normalizer.php:366
+#: includes/class-admin-settings-normalizer.php:363
 #: includes/i18n/class-wdp-js-i18n.php:42
 #: includes/traits/trait-wdp-assets-inline-styles.php:69
 #: includes/traits/trait-wdp-assets-inline-styles.php:71
@@ -993,354 +934,342 @@ msgstr ""
 msgid "Continue adding donations"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:207
+#: includes/class-admin-form-tabs-renderer.php:204
+#: includes/class-admin-settings-normalizer.php:371
 #: includes/class-admin-settings-normalizer.php:377
-#: includes/class-admin-settings-normalizer.php:383
 #: includes/class-donation-product-context-service.php:88
 #: includes/class-utils.php:198
 #: includes/templates/class-form-fields-renderer.php:403
-#: includes/traits/trait-wdp-assets-registry.php:387
+#: includes/traits/trait-wdp-assets-registry.php:381
 msgid "Add add-on donation"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:217
+#: includes/class-admin-form-tabs-renderer.php:214
 msgid ""
 "Success message, mini cart, and action buttons after adding to the cart."
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:217
+#: includes/class-admin-form-tabs-renderer.php:214
 msgid "The preview on the right shows colors and texts live."
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:220
+#: includes/class-admin-form-tabs-renderer.php:217
 msgid "Success message"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:221
+#: includes/class-admin-form-tabs-renderer.php:218
 msgid "Color and corner settings for the thank-you row."
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:224
+#: includes/class-admin-form-tabs-renderer.php:221
 msgid "Message background"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:224
+#: includes/class-admin-form-tabs-renderer.php:221
 msgid "Hex or rgba is accepted."
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:225
+#: includes/class-admin-form-tabs-renderer.php:222
 msgid "Message text"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:226
+#: includes/class-admin-form-tabs-renderer.php:223
 msgid "Message border"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:227
+#: includes/class-admin-form-tabs-renderer.php:224
 msgid "Message radius (px)"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:231
-msgid "Buttons and mini cart"
+#: includes/class-admin-form-tabs-renderer.php:228
+msgid "Buttons and product row"
+msgstr ""
+
+#: includes/class-admin-form-tabs-renderer.php:229
+msgid "Action button and product row colors."
 msgstr ""
 
 #: includes/class-admin-form-tabs-renderer.php:232
-msgid "Action button, mini-cart card, and product row colors."
-msgstr ""
-
-#: includes/class-admin-form-tabs-renderer.php:235
-#: includes/class-admin-form-tabs-renderer.php:580
+#: includes/class-admin-form-tabs-renderer.php:571
 msgid "Button color"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:236
+#: includes/class-admin-form-tabs-renderer.php:233
 msgid "Button hover"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:237
+#: includes/class-admin-form-tabs-renderer.php:234
 msgid "Button radius (px)"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:240
+#: includes/class-admin-form-tabs-renderer.php:237
 msgid "New donation"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:241
-msgid "Mini cart background"
-msgstr ""
-
-#: includes/class-admin-form-tabs-renderer.php:242
-msgid "Mini cart border"
-msgstr ""
-
-#: includes/class-admin-form-tabs-renderer.php:243
-msgid "Mini cart radius"
-msgstr ""
-
-#: includes/class-admin-form-tabs-renderer.php:244
+#: includes/class-admin-form-tabs-renderer.php:238
 msgid "Product name color"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:245
+#: includes/class-admin-form-tabs-renderer.php:239
 msgid "Price color"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:249
+#: includes/class-admin-form-tabs-renderer.php:243
 msgid "Add-on donation (default)"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:250
+#: includes/class-admin-form-tabs-renderer.php:244
 msgid "The WooCommerce product used when the product card has no custom ID."
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:253
+#: includes/class-admin-form-tabs-renderer.php:247
 msgid "Default add-on donation product"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:268
+#: includes/class-admin-form-tabs-renderer.php:262
 msgid "e.g. 123"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:270
+#: includes/class-admin-form-tabs-renderer.php:264
 msgid ""
 "If empty/0, the add-on donation row is not added. The selected product is "
 "hidden from the shop/list/search; the direct URL and cart still work."
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:272
+#: includes/class-admin-form-tabs-renderer.php:266
 msgid "Add-on donation toggle text"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:276
+#: includes/class-admin-form-tabs-renderer.php:270
 msgid "Success screen preview"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:334
+#: includes/class-admin-form-tabs-renderer.php:325
 msgid "Your donation was added to the cart."
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:336
-#: includes/class-admin-form-tabs-renderer.php:398
+#: includes/class-admin-form-tabs-renderer.php:327
+#: includes/class-admin-form-tabs-renderer.php:389
 msgid "Sample campaign"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:401
+#: includes/class-admin-form-tabs-renderer.php:392
 msgid "1 Details"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:402
+#: includes/class-admin-form-tabs-renderer.php:393
 msgid "2 Amount"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:403
+#: includes/class-admin-form-tabs-renderer.php:394
 msgid "3 Confirm"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:408
+#: includes/class-admin-form-tabs-renderer.php:399
 #: includes/templates/class-form-fields-renderer.php:196
-#: includes/traits/trait-wdp-assets-registry.php:386
+#: includes/traits/trait-wdp-assets-registry.php:380
 msgid "Donation amount"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:428
+#: includes/class-admin-form-tabs-renderer.php:419
 msgid "+1 555 000 0000"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:436
+#: includes/class-admin-form-tabs-renderer.php:427
 msgid "Secure payment · Instant confirmation"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:441
+#: includes/class-admin-form-tabs-renderer.php:432
 msgid ""
 "The order below follows the flow the donor sees in the popup: heading and "
 "close first, then the box and fields, and finally the form buttons and the "
 "on-page trigger button."
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:441
+#: includes/class-admin-form-tabs-renderer.php:432
 msgid ""
 "Window width and padding are on the “Popup & form layout” tab; this tab "
 "covers the popup’s inner color, texts, and buttons."
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:441
+#: includes/class-admin-form-tabs-renderer.php:432
 msgid ""
 "If “Multiple shares” or “Progress bar” is on in the product card, some "
 "settings live on the share/progress tabs."
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:442
+#: includes/class-admin-form-tabs-renderer.php:433
 msgid "Standard form sections"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:442
+#: includes/class-admin-form-tabs-renderer.php:433
 msgid "On this page:"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:442
+#: includes/class-admin-form-tabs-renderer.php:433
 msgid "Style packs"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:442
+#: includes/class-admin-form-tabs-renderer.php:433
 msgid "Heading and close"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:442
+#: includes/class-admin-form-tabs-renderer.php:433
 msgid "Box inside the popup"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:442
+#: includes/class-admin-form-tabs-renderer.php:433
 msgid "Fields and labels"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:442
-#: includes/class-admin-form-tabs-renderer.php:480
-#: includes/class-admin-product-data-tab.php:711
+#: includes/class-admin-form-tabs-renderer.php:433
+#: includes/class-admin-form-tabs-renderer.php:471
+#: includes/class-admin-product-data-tab.php:763
 msgid "Multi-step form"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:442
+#: includes/class-admin-form-tabs-renderer.php:433
 msgid "Quick amount"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:442
+#: includes/class-admin-form-tabs-renderer.php:433
 msgid "Buttons below the form"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:442
+#: includes/class-admin-form-tabs-renderer.php:433
 msgid "On-page trigger button"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:450
+#: includes/class-admin-form-tabs-renderer.php:441
 msgid "Heading settings"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:450
+#: includes/class-admin-form-tabs-renderer.php:441
 msgid "Heading color"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:450
+#: includes/class-admin-form-tabs-renderer.php:441
 msgid "Heading font size (desktop, px)"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:450
+#: includes/class-admin-form-tabs-renderer.php:441
 msgid "Heading font size (mobile, px)"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:451
+#: includes/class-admin-form-tabs-renderer.php:442
 msgid "Close button settings"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:451
+#: includes/class-admin-form-tabs-renderer.php:442
 msgid "Close button color"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:457
+#: includes/class-admin-form-tabs-renderer.php:448
 msgid "Box inside the popup (background and corners)"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:457
+#: includes/class-admin-form-tabs-renderer.php:448
 msgid ""
 "Window width and inner padding are on the “Popup & form layout” tab; this is "
 "the content-box color and the corner radius for the whole UI."
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:457
+#: includes/class-admin-form-tabs-renderer.php:448
 msgid "Popup background color"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:457
+#: includes/class-admin-form-tabs-renderer.php:448
 msgid "UI radius (px)"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:457
+#: includes/class-admin-form-tabs-renderer.php:448
 msgid "One radius for the popup, inputs, buttons, and cards (default 10)."
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:467
+#: includes/class-admin-form-tabs-renderer.php:458
 msgid "Input field settings"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:467
+#: includes/class-admin-form-tabs-renderer.php:458
 msgid "Input border color"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:467
+#: includes/class-admin-form-tabs-renderer.php:458
 msgid "Label color"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:467
+#: includes/class-admin-form-tabs-renderer.php:458
 msgid "Label font size (px)"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:467
+#: includes/class-admin-form-tabs-renderer.php:458
 msgid "Label font weight"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:467
+#: includes/class-admin-form-tabs-renderer.php:458
 msgid "Normal (400)"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:467
+#: includes/class-admin-form-tabs-renderer.php:458
 msgid "Medium (500)"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:467
+#: includes/class-admin-form-tabs-renderer.php:458
 msgid "Semibold (600)"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:467
+#: includes/class-admin-form-tabs-renderer.php:458
 msgid "Bold (700)"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:467
+#: includes/class-admin-form-tabs-renderer.php:458
 msgid "Placeholder color"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:467
+#: includes/class-admin-form-tabs-renderer.php:458
 msgid "Spacing between form elements (px)"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:481
+#: includes/class-admin-form-tabs-renderer.php:472
 msgid ""
 "When on, the form moves step by step. Share-based: Shares → Confirm. "
 "Standard/Progress: Details → Amount → (Add-on donation) → Confirm. The "
 "progress bar always stays at the top."
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:482
+#: includes/class-admin-form-tabs-renderer.php:473
 msgid "Enable the multi-step form"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:484
+#: includes/class-admin-form-tabs-renderer.php:475
 msgid "Use a step-by-step flow in the popup and inline forms"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:485
+#: includes/class-admin-form-tabs-renderer.php:476
 msgid "When off, the form stays on a single screen in the classic layout."
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:488
-#: includes/class-admin-form-tabs-renderer.php:495
-#: includes/class-admin-product-data-tab.php:674
+#: includes/class-admin-form-tabs-renderer.php:479
+#: includes/class-admin-form-tabs-renderer.php:486
+#: includes/class-admin-product-data-tab.php:698
 msgid "Quick amount buttons"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:489
+#: includes/class-admin-form-tabs-renderer.php:480
 msgid ""
 "Shows one-click buttons above the amount box only on “Custom amount (donor "
 "enters)” and “Goal campaign” forms. When off, only the amount field is shown."
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:490
+#: includes/class-admin-form-tabs-renderer.php:481
 msgid "Show quick amount buttons"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:492
+#: includes/class-admin-form-tabs-renderer.php:483
 msgid "One-click buttons such as $100 / $250 above the amount box."
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:497
+#: includes/class-admin-form-tabs-renderer.php:488
 msgid ""
 "Whole numbers only; separate with commas, spaces, or semicolons, at most 6 "
 "values (e.g. 100, 250, 500, 1000, 2500). \"1.000\" or \"1,5\" is invalid. "
@@ -1348,32 +1277,32 @@ msgid ""
 "label comes only from the Suggested amount field on the product card."
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:506
+#: includes/class-admin-form-tabs-renderer.php:497
 msgid "Button colors"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:506
+#: includes/class-admin-form-tabs-renderer.php:497
 msgid "Primary button color"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:506
-#: includes/class-admin-form-tabs-renderer.php:580
+#: includes/class-admin-form-tabs-renderer.php:497
+#: includes/class-admin-form-tabs-renderer.php:571
 msgid "Button hover color"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:506
+#: includes/class-admin-form-tabs-renderer.php:497
 msgid "Pay button color"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:506
+#: includes/class-admin-form-tabs-renderer.php:497
 msgid "Pay button hover color"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:508
+#: includes/class-admin-form-tabs-renderer.php:499
 msgid "Button shadow (plugin buttons only)"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:509
+#: includes/class-admin-form-tabs-renderer.php:500
 msgid ""
 "Two groups: (1) shortcode/trigger buttons on the page — CSS `--wdp-plugin-"
 "btn-shadow-sc`; (2) all other plugin buttons inside the popup and inline "
@@ -1381,621 +1310,506 @@ msgid ""
 "are excluded."
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:511
+#: includes/class-admin-form-tabs-renderer.php:502
 msgid "1) Shortcode / trigger buttons"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:512
+#: includes/class-admin-form-tabs-renderer.php:503
 msgid "2) Buttons inside the popup and inline form"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:514
+#: includes/class-admin-form-tabs-renderer.php:505
 msgid "Button labels"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:514
+#: includes/class-admin-form-tabs-renderer.php:505
 msgid "Add to cart button"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:514
+#: includes/class-admin-form-tabs-renderer.php:505
 msgid "Go to checkout button"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:548
+#: includes/class-admin-form-tabs-renderer.php:539
 msgid "Enable button shadow"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:548
+#: includes/class-admin-form-tabs-renderer.php:539
 msgid "When on, buttons in this group get the regular shadow."
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:549
+#: includes/class-admin-form-tabs-renderer.php:540
 msgid "When off, no box-shadow output is generated for this group."
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:550
+#: includes/class-admin-form-tabs-renderer.php:541
 msgid "Regular shadow color (hex)"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:551
+#: includes/class-admin-form-tabs-renderer.php:542
 msgid "Regular shadow: X/Y/blur/spread (px)"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:552
-#: includes/class-admin-form-tabs-renderer.php:564
+#: includes/class-admin-form-tabs-renderer.php:543
+#: includes/class-admin-form-tabs-renderer.php:555
 msgid "X"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:553
-#: includes/class-admin-form-tabs-renderer.php:565
+#: includes/class-admin-form-tabs-renderer.php:544
+#: includes/class-admin-form-tabs-renderer.php:556
 msgid "Y"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:554
-#: includes/class-admin-form-tabs-renderer.php:566
+#: includes/class-admin-form-tabs-renderer.php:545
+#: includes/class-admin-form-tabs-renderer.php:557
 msgid "Blur"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:555
-#: includes/class-admin-form-tabs-renderer.php:567
+#: includes/class-admin-form-tabs-renderer.php:546
+#: includes/class-admin-form-tabs-renderer.php:558
 msgid "Spread"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:556
+#: includes/class-admin-form-tabs-renderer.php:547
 msgid "Suggested light value: Y 8px / blur 20px."
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:557
+#: includes/class-admin-form-tabs-renderer.php:548
 msgid "Enable hover shadow"
 msgstr ""
 
 #. translators: %s: CSS custom property names
-#: includes/class-admin-form-tabs-renderer.php:559
+#: includes/class-admin-form-tabs-renderer.php:550
 #, php-format
 msgid ""
 "When on, hover/focus uses a separate shadow (%s); when off, only the regular "
 "shadow remains."
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:562
+#: includes/class-admin-form-tabs-renderer.php:553
 msgid "Hover shadow color (hex)"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:563
+#: includes/class-admin-form-tabs-renderer.php:554
 msgid "Hover shadow: X/Y/blur/spread (px)"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:580
+#: includes/class-admin-form-tabs-renderer.php:571
 msgid "On-page trigger button (shortcode)"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:580
+#: includes/class-admin-form-tabs-renderer.php:571
 #: blocks/donation-form/index.js:122 blocks/donations/index.js:174
 msgid "Button text"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:580
+#: includes/class-admin-form-tabs-renderer.php:571
 msgid "Button text color"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:580
+#: includes/class-admin-form-tabs-renderer.php:571
 msgid ""
 "Only on the shortcode trigger; use it for readability on a light background."
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:580
+#: includes/class-admin-form-tabs-renderer.php:571
 msgid "Shortcode button size"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:580
+#: includes/class-admin-form-tabs-renderer.php:571
 msgid "Small"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:580
+#: includes/class-admin-form-tabs-renderer.php:571
 msgid "Medium"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:580
+#: includes/class-admin-form-tabs-renderer.php:571
 msgid "Large"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:580
+#: includes/class-admin-form-tabs-renderer.php:571
 msgid "Extra large"
 msgstr ""
 
-#: includes/class-admin-form-tabs-renderer.php:580
+#: includes/class-admin-form-tabs-renderer.php:571
 msgid ""
 "Affects only the trigger button added with the shortcode; it does not affect "
 "buttons inside the popup or form."
 msgstr ""
 
-#: includes/class-admin-layout-tabs-renderer.php:45
+#: includes/class-admin-layout-tabs-renderer.php:44
 msgid "Progress bar preview"
 msgstr ""
 
-#: includes/class-admin-layout-tabs-renderer.php:91
+#: includes/class-admin-layout-tabs-renderer.php:90
 msgid "Popup size preview"
 msgstr ""
 
-#: includes/class-admin-layout-tabs-renderer.php:102
+#: includes/class-admin-layout-tabs-renderer.php:101
 msgid ""
 "If “Progress Bar” is on in Product Settings, the colors, height, and labels "
 "of the bar that fills toward the goal are managed here."
 msgstr ""
 
-#: includes/class-admin-layout-tabs-renderer.php:102
+#: includes/class-admin-layout-tabs-renderer.php:101
 msgid ""
 "Three layers: confirmed (after payment), cart pending, typed-amount preview. "
 "The goal amount is in the “Goal amount” field on the product card."
 msgstr ""
 
-#: includes/class-admin-layout-tabs-renderer.php:115
-#: includes/class-admin-product-data-tab.php:631
+#: includes/class-admin-layout-tabs-renderer.php:114
+#: includes/class-admin-product-data-tab.php:656
 msgid "Raised"
 msgstr ""
 
-#: includes/class-admin-layout-tabs-renderer.php:115
+#: includes/class-admin-layout-tabs-renderer.php:114
 #: includes/class-progress-form.php:124
 msgid "Goal"
 msgstr ""
 
-#: includes/class-admin-layout-tabs-renderer.php:133
+#: includes/class-admin-layout-tabs-renderer.php:132
 msgid "Colors and layers"
 msgstr ""
 
-#: includes/class-admin-layout-tabs-renderer.php:134
+#: includes/class-admin-layout-tabs-renderer.php:133
 msgid "Confirmed / cart / typed slice colors and the card surface."
 msgstr ""
 
-#: includes/class-admin-layout-tabs-renderer.php:137
+#: includes/class-admin-layout-tabs-renderer.php:136
 msgid "Container background"
 msgstr ""
 
-#: includes/class-admin-layout-tabs-renderer.php:137
+#: includes/class-admin-layout-tabs-renderer.php:136
 msgid "Background color of the progress card."
 msgstr ""
 
-#: includes/class-admin-layout-tabs-renderer.php:138
+#: includes/class-admin-layout-tabs-renderer.php:137
 msgid "Container border"
 msgstr ""
 
-#: includes/class-admin-layout-tabs-renderer.php:138
+#: includes/class-admin-layout-tabs-renderer.php:137
 msgid "Card border color."
 msgstr ""
 
-#: includes/class-admin-layout-tabs-renderer.php:139
+#: includes/class-admin-layout-tabs-renderer.php:138
 msgid "Empty bar"
 msgstr ""
 
-#: includes/class-admin-layout-tabs-renderer.php:139
+#: includes/class-admin-layout-tabs-renderer.php:138
 msgid "Track (empty part) color."
 msgstr ""
 
-#: includes/class-admin-layout-tabs-renderer.php:140
+#: includes/class-admin-layout-tabs-renderer.php:139
 msgid "Confirmed (filled) bar"
 msgstr ""
 
-#: includes/class-admin-layout-tabs-renderer.php:140
+#: includes/class-admin-layout-tabs-renderer.php:139
 msgid "Amount confirmed after payment."
 msgstr ""
 
-#: includes/class-admin-layout-tabs-renderer.php:141
+#: includes/class-admin-layout-tabs-renderer.php:140
 msgid "Cart pending bar"
 msgstr ""
 
-#: includes/class-admin-layout-tabs-renderer.php:141
+#: includes/class-admin-layout-tabs-renderer.php:140
 msgid "Slice for the amount sitting in the cart, not yet paid."
 msgstr ""
 
-#: includes/class-admin-layout-tabs-renderer.php:142
+#: includes/class-admin-layout-tabs-renderer.php:141
 msgid "Typed amount (draft)"
 msgstr ""
 
-#: includes/class-admin-layout-tabs-renderer.php:142
+#: includes/class-admin-layout-tabs-renderer.php:141
 msgid ""
 "The front end uses the soft-ink slice fill color; this field is a legacy / "
 "fallback color."
 msgstr ""
 
-#: includes/class-admin-layout-tabs-renderer.php:143
+#: includes/class-admin-layout-tabs-renderer.php:142
 msgid "Percent badge background"
 msgstr ""
 
-#: includes/class-admin-layout-tabs-renderer.php:143
+#: includes/class-admin-layout-tabs-renderer.php:142
 msgid ""
 "On the front end the percent has no background; this is for legacy "
 "compatibility."
 msgstr ""
 
-#: includes/class-admin-layout-tabs-renderer.php:144
+#: includes/class-admin-layout-tabs-renderer.php:143
 msgid "Percent badge text"
 msgstr ""
 
-#: includes/class-admin-layout-tabs-renderer.php:148
+#: includes/class-admin-layout-tabs-renderer.php:147
 msgid "Size and animation"
 msgstr ""
 
-#: includes/class-admin-layout-tabs-renderer.php:149
+#: includes/class-admin-layout-tabs-renderer.php:148
 msgid "Bar height and goal celebration."
 msgstr ""
 
-#: includes/class-admin-layout-tabs-renderer.php:152
+#: includes/class-admin-layout-tabs-renderer.php:151
 msgid "Bar height (px)"
 msgstr ""
 
-#: includes/class-admin-layout-tabs-renderer.php:152
+#: includes/class-admin-layout-tabs-renderer.php:151
 msgid "12–28 px. 16–20 is recommended for a more readable bar."
 msgstr ""
 
-#: includes/class-admin-layout-tabs-renderer.php:153
-msgid "Animation"
-msgstr ""
-
-#: includes/class-admin-layout-tabs-renderer.php:155
-msgid "Celebration animation when the goal is reached"
-msgstr ""
-
-#: includes/class-admin-layout-tabs-renderer.php:176
-#: includes/class-admin-page-renderer.php:56
-#: includes/elementor/class-widget-donations-list.php:125
+#: includes/class-admin-layout-tabs-renderer.php:171
+#: includes/class-admin-page-renderer.php:54
+#: includes/elementor/class-widget-donations-list.php:210
 #: blocks/donations/index.js:166
 msgid "Popup"
 msgstr ""
 
-#: includes/class-admin-layout-tabs-renderer.php:177
+#: includes/class-admin-layout-tabs-renderer.php:172
 msgid "Side panel width"
 msgstr ""
 
-#: includes/class-admin-layout-tabs-renderer.php:184
+#: includes/class-admin-layout-tabs-renderer.php:179
 msgid ""
 "Pixel width of the popup window and the inline form; separately for desktop "
 "and mobile."
 msgstr ""
 
-#: includes/class-admin-layout-tabs-renderer.php:184
+#: includes/class-admin-layout-tabs-renderer.php:179
 msgid ""
 "Padding is the space from the edges of the popup content; colors or button "
 "styles are on the other appearance tabs."
 msgstr ""
 
-#: includes/class-admin-layout-tabs-renderer.php:184
+#: includes/class-admin-layout-tabs-renderer.php:179
 msgid ""
 "The inner background color and inner corner radius of the popup box are in "
 "the “Inner popup box” section on the “Regular form” tab (this tab is sizes "
 "only)."
 msgstr ""
 
-#: includes/class-admin-layout-tabs-renderer.php:194
+#: includes/class-admin-layout-tabs-renderer.php:189
 msgid "Side panel width (Donate)"
 msgstr ""
 
-#: includes/class-admin-layout-tabs-renderer.php:195
+#: includes/class-admin-layout-tabs-renderer.php:190
 msgid ""
 "Set as a percentage of the screen width; min/max values prevent overflow."
 msgstr ""
 
-#: includes/class-admin-layout-tabs-renderer.php:197
+#: includes/class-admin-layout-tabs-renderer.php:192
 msgid "Desktop (1200px and up)"
 msgstr ""
 
-#: includes/class-admin-layout-tabs-renderer.php:198
-#: includes/class-admin-layout-tabs-renderer.php:202
-#: includes/class-admin-layout-tabs-renderer.php:206
+#: includes/class-admin-layout-tabs-renderer.php:193
+#: includes/class-admin-layout-tabs-renderer.php:197
+#: includes/class-admin-layout-tabs-renderer.php:201
 msgid "Width (%)"
 msgstr ""
 
-#: includes/class-admin-layout-tabs-renderer.php:199
-#: includes/class-admin-layout-tabs-renderer.php:203
-#: includes/class-admin-layout-tabs-renderer.php:207
+#: includes/class-admin-layout-tabs-renderer.php:194
+#: includes/class-admin-layout-tabs-renderer.php:198
+#: includes/class-admin-layout-tabs-renderer.php:202
 msgid "Minimum (px)"
 msgstr ""
 
-#: includes/class-admin-layout-tabs-renderer.php:200
-#: includes/class-admin-layout-tabs-renderer.php:204
-#: includes/class-admin-layout-tabs-renderer.php:208
+#: includes/class-admin-layout-tabs-renderer.php:195
+#: includes/class-admin-layout-tabs-renderer.php:199
+#: includes/class-admin-layout-tabs-renderer.php:203
 msgid "Maximum (px)"
 msgstr ""
 
-#: includes/class-admin-layout-tabs-renderer.php:201
+#: includes/class-admin-layout-tabs-renderer.php:196
 msgid "Tablet (768px – 1199px)"
 msgstr ""
 
-#: includes/class-admin-layout-tabs-renderer.php:205
+#: includes/class-admin-layout-tabs-renderer.php:200
 msgid "Mobile (767px and below)"
 msgstr ""
 
-#: includes/class-admin-layout-tabs-renderer.php:207
+#: includes/class-admin-layout-tabs-renderer.php:202
 msgid "0 = no limit"
 msgstr ""
 
-#: includes/class-admin-layout-tabs-renderer.php:208
+#: includes/class-admin-layout-tabs-renderer.php:203
 msgid "100 = full width (100vw)"
 msgstr ""
 
-#: includes/class-admin-layout-tabs-renderer.php:219
+#: includes/class-admin-layout-tabs-renderer.php:214
 msgid "Desktop popup width settings"
 msgstr ""
 
-#: includes/class-admin-layout-tabs-renderer.php:220
-#: includes/class-admin-layout-tabs-renderer.php:248
+#: includes/class-admin-layout-tabs-renderer.php:215
+#: includes/class-admin-layout-tabs-renderer.php:243
 msgid "Popup width (px)"
 msgstr ""
 
-#: includes/class-admin-layout-tabs-renderer.php:220
+#: includes/class-admin-layout-tabs-renderer.php:215
 msgid "Width of the popup window on desktop (between 300-800px)"
 msgstr ""
 
-#: includes/class-admin-layout-tabs-renderer.php:221
-#: includes/class-admin-layout-tabs-renderer.php:249
+#: includes/class-admin-layout-tabs-renderer.php:216
+#: includes/class-admin-layout-tabs-renderer.php:244
 msgid "Inline form width (px)"
 msgstr ""
 
-#: includes/class-admin-layout-tabs-renderer.php:221
+#: includes/class-admin-layout-tabs-renderer.php:216
 msgid ""
 "Width of the form shown inline on the page on desktop (between 300-800px)"
 msgstr ""
 
-#: includes/class-admin-layout-tabs-renderer.php:232
+#: includes/class-admin-layout-tabs-renderer.php:227
 msgid "Desktop popup inner spacing (padding) settings"
 msgstr ""
 
-#: includes/class-admin-layout-tabs-renderer.php:233
-#: includes/class-admin-layout-tabs-renderer.php:261
+#: includes/class-admin-layout-tabs-renderer.php:228
+#: includes/class-admin-layout-tabs-renderer.php:256
 msgid "Top spacing (px)"
 msgstr ""
 
-#: includes/class-admin-layout-tabs-renderer.php:234
-#: includes/class-admin-layout-tabs-renderer.php:262
+#: includes/class-admin-layout-tabs-renderer.php:229
+#: includes/class-admin-layout-tabs-renderer.php:257
 msgid "Right spacing (px)"
 msgstr ""
 
-#: includes/class-admin-layout-tabs-renderer.php:235
-#: includes/class-admin-layout-tabs-renderer.php:263
+#: includes/class-admin-layout-tabs-renderer.php:230
+#: includes/class-admin-layout-tabs-renderer.php:258
 msgid "Bottom spacing (px)"
 msgstr ""
 
-#: includes/class-admin-layout-tabs-renderer.php:236
-#: includes/class-admin-layout-tabs-renderer.php:264
+#: includes/class-admin-layout-tabs-renderer.php:231
+#: includes/class-admin-layout-tabs-renderer.php:259
 msgid "Left spacing (px)"
 msgstr ""
 
-#: includes/class-admin-layout-tabs-renderer.php:247
+#: includes/class-admin-layout-tabs-renderer.php:242
 msgid "Mobile popup width settings"
 msgstr ""
 
-#: includes/class-admin-layout-tabs-renderer.php:260
+#: includes/class-admin-layout-tabs-renderer.php:255
 msgid "Mobile popup inner spacing (padding) settings"
 msgstr ""
 
-#: includes/class-admin-meta-tracking-tab-renderer.php:31
-msgid "Meta Pixel (WDP)"
-msgstr ""
-
-#: includes/class-admin-meta-tracking-tab-renderer.php:32
-msgid ""
-"This section uses the site’s existing pixel (for example the WooCommerce / "
-"Meta integration); by default it does not add a second pixel or PageView. "
-"ViewContent and AddToCart are sent from this plugin; InitiateCheckout and "
-"Purchase are left to WooCommerce / Meta by default."
-msgstr ""
-
-#: includes/class-admin-meta-tracking-tab-renderer.php:38
-msgid "Enable Meta tracking"
-msgstr ""
-
-#: includes/class-admin-meta-tracking-tab-renderer.php:42
-msgid "Require cookie consent"
-msgstr ""
-
-#: includes/class-admin-meta-tracking-tab-renderer.php:45
-msgid ""
-"When on, the Pixel and events run only after marketing consent is given. WP "
-"Consent API was detected; if consent is granted later, the Pixel starts at "
-"that moment."
-msgstr ""
-
-#: includes/class-admin-meta-tracking-tab-renderer.php:46
-msgid ""
-"When on, the Pixel and events run only when marketing consent is present. WP "
-"Consent API is not loaded: consent must be reported with the "
-"“wdp_meta_pixel_has_consent” filter (default: no consent). When off, the "
-"previous behavior is kept."
-msgstr ""
-
-#: includes/class-admin-meta-tracking-tab-renderer.php:48
-msgid "Send ViewContent when the form opens"
-msgstr ""
-
-#: includes/class-admin-meta-tracking-tab-renderer.php:49
-msgid "Send AddToCart after adding to the cart"
-msgstr ""
-
-#: includes/class-admin-meta-tracking-tab-renderer.php:52
-msgid "Send Purchase from the donation plugin"
-msgstr ""
-
-#: includes/class-admin-meta-tracking-tab-renderer.php:55
-msgid ""
-"WooCommerce / Meta integration detected (for example facebook-for-"
-"woocommerce). Keep this off by default; otherwise two Purchase events can "
-"fire on the thank-you page. Turn it on only if WooCommerce is not sending "
-"Purchase."
-msgstr ""
-
-#: includes/class-admin-meta-tracking-tab-renderer.php:56
-msgid ""
-"Sends Purchase from this plugin on the thank-you / order received page. "
-"Leave it off if WooCommerce / Meta already sends Purchase."
-msgstr ""
-
-#: includes/class-admin-meta-tracking-tab-renderer.php:58
-msgid "Custom debug events (DonationFormOpen, etc.)"
-msgstr ""
-
-#: includes/class-admin-meta-tracking-tab-renderer.php:59
-msgid "Console debug log (no personal data)"
-msgstr ""
-
-#: includes/class-admin-meta-tracking-tab-renderer.php:60
-msgid "Load the base Meta pixel from this plugin (off by default)"
-msgstr ""
-
-#: includes/class-admin-meta-tracking-tab-renderer.php:61
-msgid ""
-"Send InitiateCheckout from the plugin (off by default; may conflict with "
-"WooCommerce)"
-msgstr ""
-
-#: includes/class-admin-meta-tracking-tab-renderer.php:62
-msgid "Purchase: also allow on-hold orders (bank transfer, etc.)"
-msgstr ""
-
-#: includes/class-admin-meta-tracking-tab-renderer.php:66
-msgid "Optional Pixel ID"
-msgstr ""
-
-#: includes/class-admin-meta-tracking-tab-renderer.php:68
-msgid ""
-"Used only when “load the base pixel” is on. Leave empty if the site already "
-"loads a pixel."
-msgstr ""
-
-#: includes/class-admin-meta-tracking-tab-renderer.php:72
-msgid "Save Meta settings"
-msgstr ""
-
-#: includes/class-admin-meta-tracking-tab-renderer.php:92
-#: includes/class-admin-page-renderer.php:137
-msgid "Enabled"
-msgstr ""
-
-#: includes/class-admin-page-renderer.php:35
+#: includes/class-admin-page-renderer.php:33
 msgid "Donation Popup"
 msgstr ""
 
-#: includes/class-admin-page-renderer.php:36
+#: includes/class-admin-page-renderer.php:34
 #: includes/class-woo-donation-popup-admin.php:50
 #: includes/class-woo-donation-popup-admin.php:51
 msgid "Donation Popup settings"
 msgstr ""
 
-#: includes/class-admin-page-renderer.php:37
+#: includes/class-admin-page-renderer.php:35
 msgid ""
 "Manage product behavior, form look, and the success screen in one place — "
 "changes show up instantly in the live preview."
 msgstr ""
 
-#: includes/class-admin-page-renderer.php:40
+#: includes/class-admin-page-renderer.php:38
 msgid "Plugin version"
 msgstr ""
 
-#: includes/class-admin-page-renderer.php:41
+#: includes/class-admin-page-renderer.php:39
 #, php-format
 msgid "v%s"
 msgstr ""
 
-#: includes/class-admin-page-renderer.php:49
+#: includes/class-admin-page-renderer.php:47
 msgid "Donation popup settings tabs"
 msgstr ""
 
-#: includes/class-admin-page-renderer.php:50
+#: includes/class-admin-page-renderer.php:48
 msgid "Setup"
 msgstr ""
 
-#: includes/class-admin-page-renderer.php:51
+#: includes/class-admin-page-renderer.php:49
 msgid "Products"
 msgstr ""
 
-#: includes/class-admin-page-renderer.php:52
+#: includes/class-admin-page-renderer.php:50
 #: includes/class-admin-placement-tab-renderer.php:28
 msgid "Product page and list"
 msgstr ""
 
-#: includes/class-admin-page-renderer.php:53
+#: includes/class-admin-page-renderer.php:51
 msgid "Design"
 msgstr ""
 
-#: includes/class-admin-page-renderer.php:55
+#: includes/class-admin-page-renderer.php:53
 msgid "Forms"
 msgstr ""
 
-#: includes/class-admin-page-renderer.php:58
-#: includes/class-donation-type.php:72 includes/class-form-matrix.php:105
+#: includes/class-admin-page-renderer.php:56
+#: includes/class-donation-type.php:72 includes/class-form-matrix.php:118
 msgid "Share-based"
 msgstr ""
 
-#: includes/class-admin-page-renderer.php:59
-#: includes/elementor/class-widget-donations-list.php:133
+#: includes/class-admin-page-renderer.php:57
+#: includes/elementor/class-widget-donations-list.php:278
 #: blocks/donations/index.js:180
 msgid "Progress"
 msgstr ""
 
-#: includes/class-admin-page-renderer.php:60
-#: includes/traits/trait-wdp-assets-registry.php:377
+#: includes/class-admin-page-renderer.php:58
+#: includes/traits/trait-wdp-assets-registry.php:371
 msgid "Success"
 msgstr ""
 
-#: includes/class-admin-page-renderer.php:62
+#: includes/class-admin-page-renderer.php:60
 msgid "More"
 msgstr ""
 
-#: includes/class-admin-page-renderer.php:63
-msgid "Meta Pixel"
-msgstr ""
-
-#: includes/class-admin-page-renderer.php:64
-#: includes/class-admin-placement-tab-renderer.php:52
-msgid "Categories"
-msgstr ""
-
-#: includes/class-admin-page-renderer.php:65
+#: includes/class-admin-page-renderer.php:61
 msgid "Advanced"
 msgstr ""
 
-#: includes/class-admin-page-renderer.php:129
+#: includes/class-admin-page-renderer.php:117
 msgid "Data and removal"
 msgstr ""
 
-#: includes/class-admin-page-renderer.php:130
+#: includes/class-admin-page-renderer.php:118
 msgid ""
 "Personal data export and erase requests (Tools → Export / erase personal "
 "data) include donor and shareholder fields on orders; on erase, values are "
 "anonymized as “[deleted]”."
 msgstr ""
 
-#: includes/class-admin-page-renderer.php:135
+#: includes/class-admin-page-renderer.php:123
 msgid "Delete data when the plugin is removed"
 msgstr ""
 
-#: includes/class-admin-page-renderer.php:138
+#: includes/class-admin-page-renderer.php:125
+msgid "Enabled"
+msgstr ""
+
+#: includes/class-admin-page-renderer.php:126
 msgid ""
 "All product settings and plugin options are deleted. Orders and order "
 "records are not touched. This cannot be undone."
 msgstr ""
 
-#: includes/class-admin-page-renderer.php:142
+#: includes/class-admin-page-renderer.php:130
 msgid "Save advanced settings"
 msgstr ""
 
-#: includes/class-admin-page-renderer.php:162
+#: includes/class-admin-page-renderer.php:150
 msgid ""
 "See each product’s donation type, shortcode, and the amount raised on goal "
 "campaigns at a glance."
 msgstr ""
 
-#: includes/class-admin-page-renderer.php:163
+#: includes/class-admin-page-renderer.php:151
 msgid ""
 "Click “Edit” to change settings; the “Donation” tab on the product edit "
 "screen opens and is saved with the product."
 msgstr ""
 
-#: includes/class-admin-page-renderer.php:164
+#: includes/class-admin-page-renderer.php:152
 msgid ""
 "The button shortcode opens a centered popup, the side panel shortcode opens "
 "a panel from the right, and the form shortcode shows an inline form."
 msgstr ""
 
-#: includes/class-admin-page-renderer.php:169
+#: includes/class-admin-page-renderer.php:157
 msgid "Search products"
 msgstr ""
 
@@ -2010,267 +1824,271 @@ msgid "Donation products"
 msgstr ""
 
 #. translators: %d: live count
-#: includes/class-admin-placement-tab-renderer.php:37
+#: includes/class-admin-placement-tab-renderer.php:38
 #, php-format
 msgid "%d products are currently donation products."
 msgstr ""
 
-#: includes/class-admin-placement-tab-renderer.php:44
+#: includes/class-admin-placement-tab-renderer.php:46
 msgid "Scope"
 msgstr ""
 
-#: includes/class-admin-placement-tab-renderer.php:45
+#: includes/class-admin-placement-tab-renderer.php:47
 msgid "Which simple products use the donation form."
 msgstr ""
 
-#: includes/class-admin-placement-tab-renderer.php:47
+#: includes/class-admin-placement-tab-renderer.php:49
 msgid "All simple products"
 msgstr ""
 
-#: includes/class-admin-placement-tab-renderer.php:48
+#: includes/class-admin-placement-tab-renderer.php:50
 msgid "Selected categories (including children)"
 msgstr ""
 
-#: includes/class-admin-placement-tab-renderer.php:49
+#: includes/class-admin-placement-tab-renderer.php:51
 msgid "Marked products only"
 msgstr ""
 
-#: includes/class-admin-placement-tab-renderer.php:58
+#: includes/class-admin-placement-tab-renderer.php:54
+msgid "Categories"
+msgstr ""
+
+#: includes/class-admin-placement-tab-renderer.php:60
 msgid ""
 "Used when scope is “selected categories”. Child categories are included "
 "automatically."
 msgstr ""
 
-#: includes/class-admin-placement-tab-renderer.php:62
+#: includes/class-admin-placement-tab-renderer.php:64
 msgid "WooCommerce pages"
 msgstr ""
 
-#: includes/class-admin-placement-tab-renderer.php:67
+#: includes/class-admin-placement-tab-renderer.php:69
 msgid "Use “Donate” instead of “Add to cart” on WooCommerce pages"
 msgstr ""
 
-#: includes/class-admin-placement-tab-renderer.php:68
+#: includes/class-admin-placement-tab-renderer.php:70
 msgid ""
 "When on, the add-to-cart area on shop and product pages becomes a donate "
 "button or form."
 msgstr ""
 
-#: includes/class-admin-placement-tab-renderer.php:70
-#: includes/class-admin-product-data-tab.php:475
-#: includes/class-admin-product-data-tab.php:529
+#: includes/class-admin-placement-tab-renderer.php:72
+#: includes/class-admin-product-data-tab.php:481
+#: includes/class-admin-product-data-tab.php:535
 msgid "On"
 msgstr ""
 
-#: includes/class-admin-placement-tab-renderer.php:71
-#: includes/class-admin-placement-tab-renderer.php:130
-#: includes/class-admin-product-data-tab.php:476
-#: includes/class-admin-product-data-tab.php:529
-#: includes/class-admin-product-data-tab.php:552
+#: includes/class-admin-placement-tab-renderer.php:73
+#: includes/class-admin-placement-tab-renderer.php:132
+#: includes/class-admin-product-data-tab.php:482
+#: includes/class-admin-product-data-tab.php:535
+#: includes/class-admin-product-data-tab.php:558
 msgid "Off"
 msgstr ""
 
-#: includes/class-admin-placement-tab-renderer.php:77
+#: includes/class-admin-placement-tab-renderer.php:79
 msgid "Display on the product page"
 msgstr ""
 
-#: includes/class-admin-placement-tab-renderer.php:80
-#: includes/class-admin-product-data-tab.php:1054
+#: includes/class-admin-placement-tab-renderer.php:82
+#: includes/class-admin-product-data-tab.php:1133
 #: includes/elementor/class-widget-donation-form.php:123
 #: blocks/donation-form/index.js:105
 msgid "Inline form"
 msgstr ""
 
-#: includes/class-admin-placement-tab-renderer.php:81
+#: includes/class-admin-placement-tab-renderer.php:83
 msgid "Button + popup"
 msgstr ""
 
-#: includes/class-admin-placement-tab-renderer.php:82
+#: includes/class-admin-placement-tab-renderer.php:84
 msgid "Button + side panel"
 msgstr ""
 
-#: includes/class-admin-placement-tab-renderer.php:88
+#: includes/class-admin-placement-tab-renderer.php:90
 msgid "Button on shop and category pages"
 msgstr ""
 
-#: includes/class-admin-placement-tab-renderer.php:91
+#: includes/class-admin-placement-tab-renderer.php:93
 msgid "Go to the product page"
 msgstr ""
 
-#: includes/class-admin-placement-tab-renderer.php:92
+#: includes/class-admin-placement-tab-renderer.php:94
 msgid "Centered popup"
 msgstr ""
 
-#: includes/class-admin-placement-tab-renderer.php:93
-#: includes/class-admin-product-data-tab.php:1053
+#: includes/class-admin-placement-tab-renderer.php:95
+#: includes/class-admin-product-data-tab.php:1129
 #: includes/elementor/class-widget-donation-form.php:125
 #: blocks/donation-form/index.js:107
 msgid "Side panel"
 msgstr ""
 
-#: includes/class-admin-placement-tab-renderer.php:99
+#: includes/class-admin-placement-tab-renderer.php:101
 msgid "Price display"
 msgstr ""
 
-#: includes/class-admin-placement-tab-renderer.php:100
+#: includes/class-admin-placement-tab-renderer.php:102
 msgid "Prices in the cart, checkout, and emails do not change."
 msgstr ""
 
-#: includes/class-admin-placement-tab-renderer.php:102
+#: includes/class-admin-placement-tab-renderer.php:104
 msgid "Show on fixed-amount and share-based products, hide on others"
 msgstr ""
 
-#: includes/class-admin-placement-tab-renderer.php:103
+#: includes/class-admin-placement-tab-renderer.php:105
 msgid "Always show"
 msgstr ""
 
-#: includes/class-admin-placement-tab-renderer.php:109
+#: includes/class-admin-placement-tab-renderer.php:111
 msgid "Show the form heading"
 msgstr ""
 
-#: includes/class-admin-placement-tab-renderer.php:110
+#: includes/class-admin-placement-tab-renderer.php:112
 msgid "Off by default because the product page already has a title."
 msgstr ""
 
-#: includes/class-admin-placement-tab-renderer.php:112
-#: includes/class-cart.php:540 includes/class-order-meta-keys.php:294
-#: includes/class-order-meta-keys.php:298
+#: includes/class-admin-placement-tab-renderer.php:114
+#: includes/class-cart.php:546 includes/class-order-meta-keys.php:285
+#: includes/class-order-meta-keys.php:289
 #: includes/elementor/class-widget-donation-form.php:135
 #: blocks/donations/index.js:25
 msgid "Yes"
 msgstr ""
 
-#: includes/class-admin-placement-tab-renderer.php:113
+#: includes/class-admin-placement-tab-renderer.php:115
 #: includes/elementor/class-widget-donation-form.php:136
 #: blocks/donations/index.js:26
 msgid "No"
 msgstr ""
 
-#: includes/class-admin-placement-tab-renderer.php:118
+#: includes/class-admin-placement-tab-renderer.php:120
 msgid "Structured data (schema)"
 msgstr ""
 
-#: includes/class-admin-placement-tab-renderer.php:120
+#: includes/class-admin-placement-tab-renderer.php:122
 msgid "Rank Math detected, compatibility is on."
 msgstr ""
 
-#: includes/class-admin-placement-tab-renderer.php:126
+#: includes/class-admin-placement-tab-renderer.php:128
 msgid "Product markup"
 msgstr ""
 
-#: includes/class-admin-placement-tab-renderer.php:127
+#: includes/class-admin-placement-tab-renderer.php:129
 msgid ""
 "Automatic: Product markup is not printed on donor-entered and campaign "
 "products that have no price. A wdp_product_schema filter is provided for "
 "Yoast / SEOPress / AIOSEO."
 msgstr ""
 
-#: includes/class-admin-placement-tab-renderer.php:129
+#: includes/class-admin-placement-tab-renderer.php:131
 msgid "Automatic"
 msgstr ""
 
-#: includes/class-admin-placement-tab-renderer.php:135
+#: includes/class-admin-placement-tab-renderer.php:137
 msgid "Setup guide"
 msgstr ""
 
-#: includes/class-admin-placement-tab-renderer.php:137
+#: includes/class-admin-placement-tab-renderer.php:139
 msgid "I am using WooCommerce pages"
 msgstr ""
 
-#: includes/class-admin-placement-tab-renderer.php:138
+#: includes/class-admin-placement-tab-renderer.php:140
 msgid ""
 "Leave the setting above On. You do not need to do anything else; the Shop "
 "page and product pages become donation pages automatically."
 msgstr ""
 
-#: includes/class-admin-placement-tab-renderer.php:140
+#: includes/class-admin-placement-tab-renderer.php:142
 msgid "My product page uses a custom page builder template"
 msgstr ""
 
-#: includes/class-admin-placement-tab-renderer.php:141
+#: includes/class-admin-placement-tab-renderer.php:143
 msgid ""
 "If the template has WooCommerce’s Add to cart element, it is converted to "
 "Donate automatically. Otherwise add this shortcode to the template once:"
 msgstr ""
 
-#: includes/class-admin-placement-tab-renderer.php:144
+#: includes/class-admin-placement-tab-renderer.php:146
 msgid ""
 "Page builder: open the product template, add a Shortcode (or Code) element, "
 "paste it, and save."
 msgstr ""
 
-#: includes/class-admin-placement-tab-renderer.php:146
+#: includes/class-admin-placement-tab-renderer.php:148
 msgid "I am building my own donation page"
 msgstr ""
 
-#: includes/class-admin-placement-tab-renderer.php:147
+#: includes/class-admin-placement-tab-renderer.php:149
 msgid "For a list:"
 msgstr ""
 
-#: includes/class-admin-placement-tab-renderer.php:149
+#: includes/class-admin-placement-tab-renderer.php:151
 msgid ""
 "(or the “Donation list” block in the block editor). For a single product:"
 msgstr ""
 
-#: includes/class-admin-placement-tab-renderer.php:153
+#: includes/class-admin-placement-tab-renderer.php:155
 msgid "Open the form test page"
 msgstr ""
 
-#: includes/class-admin-placement-tab-renderer.php:156
+#: includes/class-admin-placement-tab-renderer.php:158
 msgid "Save placement settings"
 msgstr ""
 
-#: includes/class-admin-placement-tab-renderer.php:190
-#: includes/class-admin-product-data-tab.php:1039
-#: includes/class-admin-products-list-table.php:298
+#: includes/class-admin-placement-tab-renderer.php:192
+#: includes/class-admin-product-data-tab.php:1111
+#: includes/class-admin-products-list-table.php:305
 msgid "Copy"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:65
+#: includes/class-admin-product-data-tab.php:64
 msgid "Donation"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:187
+#: includes/class-admin-product-data-tab.php:186
 msgid "0"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:198
+#: includes/class-admin-product-data-tab.php:197
 msgid "Progress toward goal"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:202
+#: includes/class-admin-product-data-tab.php:201
 msgid "Recalculate total"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:202
+#: includes/class-admin-product-data-tab.php:201
 msgid "Scans paid orders and recalculates the total."
 msgstr ""
 
 #. translators: %d: number of orders
-#: includes/class-admin-product-data-tab.php:211
+#: includes/class-admin-product-data-tab.php:210
 #, php-format
 msgid "%d order could not be converted"
 msgid_plural "%d orders could not be converted"
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/class-admin-product-data-tab.php:474
+#: includes/class-admin-product-data-tab.php:480
 msgid "Use general setting"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:528
-#: includes/class-admin-product-data-tab.php:535
-#: includes/class-admin-product-data-tab.php:540
-#: includes/class-admin-products-list-table.php:222
+#: includes/class-admin-product-data-tab.php:534
+#: includes/class-admin-product-data-tab.php:541
+#: includes/class-admin-product-data-tab.php:546
+#: includes/class-admin-products-list-table.php:229
 msgid "Donation product"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:528
-#: includes/class-admin-product-data-tab.php:541
-#: includes/class-admin-products-list-table.php:225
+#: includes/class-admin-product-data-tab.php:534
+#: includes/class-admin-product-data-tab.php:547
+#: includes/class-admin-products-list-table.php:232
 msgid "Regular product"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:536
+#: includes/class-admin-product-data-tab.php:542
 msgid ""
 "On donation products the donation form is used instead of the WooCommerce "
 "add-to-cart field, and the product appears in donation lists."
@@ -2278,60 +2096,59 @@ msgstr ""
 
 #. translators: %s: what the global setting currently decides
 #. translators: %s: On / Off
-#: includes/class-admin-product-data-tab.php:539
-#: includes/class-admin-product-data-tab.php:551
+#: includes/class-admin-product-data-tab.php:545
+#: includes/class-admin-product-data-tab.php:557
 #, php-format
 msgid "General setting (currently: %s)"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:547
+#: includes/class-admin-product-data-tab.php:553
 msgid "Automatic placement"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:548
+#: includes/class-admin-product-data-tab.php:554
 msgid ""
 "If off, you add the form to the product page yourself with a shortcode, "
 "block, or widget only."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:564
+#: includes/class-admin-product-data-tab.php:570
 #: includes/class-admin-products-list-table.php:45
 msgid "Donation type"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:565
+#: includes/class-admin-product-data-tab.php:571
 msgid ""
 "Choose how this product’s donation form works; only the selected type’s "
 "settings appear below."
 msgstr ""
 
 #. translators: %s: formatted product price
-#: includes/class-admin-product-data-tab.php:601
+#: includes/class-admin-product-data-tab.php:607
 #, php-format
 msgid ""
 "The donation amount is the product price: %s. You can change the price on "
 "the \"General\" tab."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:604
+#: includes/class-admin-product-data-tab.php:610
 msgid ""
 "This product has no price; enter a regular price on the \"General\" tab for "
 "a fixed amount."
 msgstr ""
 
-#. translators: %s: currency symbol
-#: includes/class-admin-product-data-tab.php:610
+#: includes/class-admin-product-data-tab.php:619
 #, php-format
 msgid "Goal amount (%s)"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:610
+#: includes/class-admin-product-data-tab.php:620
 msgid ""
 "Campaign goal at which the progress bar is 100% (in the store’s main "
 "currency). Empty or zero cannot be saved."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:614
+#: includes/class-admin-product-data-tab.php:629
 msgid ""
 "Set the donation amount on this tab. The WooCommerce General price field is "
 "not required for these types and may be left empty; the plugin does not "
@@ -2339,562 +2156,523 @@ msgid ""
 msgstr ""
 
 #. translators: %s: currency symbol
-#: includes/class-admin-product-data-tab.php:619
-#: includes/class-admin-product-data-tab.php:834
+#: includes/class-admin-product-data-tab.php:634
+#: includes/class-admin-product-data-tab.php:918
 #, php-format
 msgid "Minimum amount (%s)"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:620
+#: includes/class-admin-product-data-tab.php:635
 msgid ""
 "The lowest amount the donor can enter. This field is the single source (the "
 "WooCommerce General price is for fallback/compatibility; the minimum is not "
 "calculated from it)."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:626
-#: includes/class-product-settings-service.php:365
+#: includes/class-admin-product-data-tab.php:644
+#: includes/class-product-settings-service.php:356
 msgid "Maximum shares"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:626
+#: includes/class-admin-product-data-tab.php:645
 msgid "The highest number of shares the donor can select at once (maximum 50)."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:634
+#: includes/class-admin-product-data-tab.php:659
 msgid ""
 "Only orders with confirmed payment (processing/completed) are counted; "
 "processing fees and on-hold are not included. Amounts are converted to the "
 "store’s main currency. The refresh icon recalculates the total from scratch."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:637
-msgid "Celebration animation"
-msgstr ""
-
-#: includes/class-admin-product-data-tab.php:637
-msgid "Shows a short celebration when the goal is reached."
-msgstr ""
-
-#: includes/class-admin-product-data-tab.php:641
+#: includes/class-admin-product-data-tab.php:665
 msgid "When the goal is reached"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:642
+#: includes/class-admin-product-data-tab.php:666
 msgid ""
 "When the campaign reaches its goal, should donations keep being accepted, or "
 "should they be closed?"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:644
+#: includes/class-admin-product-data-tab.php:668
 msgid "Keep accepting donations (no message)"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:645
+#: includes/class-admin-product-data-tab.php:669
 msgid "Accept donations + show a thank-you message"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:646
+#: includes/class-admin-product-data-tab.php:670
 msgid "Close new donations + show a message"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:652
+#: includes/class-admin-product-data-tab.php:676
 msgid "Message when the goal is reached"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:653
+#: includes/class-admin-product-data-tab.php:677
 msgid ""
 "If left empty, the default thank-you text is used (maximum 300 characters)."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:670
+#: includes/class-admin-product-data-tab.php:694
 msgid "Amount options"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:670
+#: includes/class-admin-product-data-tab.php:694
 msgid "Quick amount buttons, quantity, and processing fee"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:674
+#: includes/class-admin-product-data-tab.php:698
 msgid ""
 "Shows one-click amount buttons above the amount field. If the general "
 "setting (Settings → Regular) is off, the buttons stay hidden even if this "
 "box is checked."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:675
+#: includes/class-admin-product-data-tab.php:699
 msgid "Amounts"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:675
+#: includes/class-admin-product-data-tab.php:699
 msgid ""
 "Whole numbers only; separate with commas, spaces, or semicolons (maximum 6). "
 "If left empty, the amounts from the general setting are used. Buttons below "
 "the minimum amount are not shown."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:676
+#: includes/class-admin-product-data-tab.php:703
 msgid "Suggested amount"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:676
+#: includes/class-admin-product-data-tab.php:704
 msgid ""
 "If left empty, no amount shows a Suggested label. If filled, the label "
 "appears only on that listed amount; the amount is not pre-selected. A value "
 "that is not on the list or is not a whole number blocks saving."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:681
+#: includes/class-admin-product-data-tab.php:714
 msgid "Quantity selector"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:681
+#: includes/class-admin-product-data-tab.php:714
 msgid ""
 "Shows quantity plus/minus buttons on a fixed-amount form. If off, the "
 "quantity is always 1."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:685
+#: includes/class-admin-product-data-tab.php:718
 msgid "Cover processing fee"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:685
+#: includes/class-admin-product-data-tab.php:718
 msgid ""
 "Offers the donor the option to also cover the payment processing cost (on "
 "all donation types)."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:686
+#: includes/class-admin-product-data-tab.php:722
 msgid "Processing fee (%)"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:686
+#: includes/class-admin-product-data-tab.php:723
 msgid ""
 "0 = off; otherwise a percentage between 0.5 and 15. A value outside the "
 "range is not saved."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:696
+#: includes/class-admin-product-data-tab.php:739
 msgid "Form fields"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:696
+#: includes/class-admin-product-data-tab.php:739
 msgid "Email, dedication, anonymous donation, and note"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:703
+#: includes/class-admin-product-data-tab.php:746
 msgid ""
 "Asks the donor for an email address; \"Use general setting\" applies the "
 "choice on the Design tab."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:704
+#: includes/class-admin-product-data-tab.php:747
 msgid "Shows a field to write who the donation is on behalf of."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:705
+#: includes/class-admin-product-data-tab.php:748
 msgid "Sample text shown inside the dedication field when it is empty."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:709
+#: includes/class-admin-product-data-tab.php:752
 msgid "Product note"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:709
+#: includes/class-admin-product-data-tab.php:752
 msgid ""
 "This is not a note written by the donor; it is an info text shown at the top "
 "of the form."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:710
+#: includes/class-admin-product-data-tab.php:756
 msgid "Note text"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:710
+#: includes/class-admin-product-data-tab.php:757
 msgid "Short info shown to the donor (maximum 400 characters)."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:710
+#: includes/class-admin-product-data-tab.php:760
 msgid "E.g.: A video is delivered within 24 hours."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:711
+#: includes/class-admin-product-data-tab.php:763
 msgid ""
 "Shows the form step by step as donor info and amount. \"Use general "
 "setting\" applies the choice on the Regular tab."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:712
+#: includes/class-admin-product-data-tab.php:764
 msgid ""
 "Icons on the name, note, and email rows. \"Use general setting\" applies the "
 "choice on the Design tab."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:722
+#: includes/class-admin-product-data-tab.php:774
 msgid "Campaign blocks"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:722
+#: includes/class-admin-product-data-tab.php:774
 msgid "Impact line, urgency, social proof, trust badges, and order"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:724
+#: includes/class-admin-product-data-tab.php:776
 #: includes/config/form-modules.php:28
 msgid "Impact line"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:724
+#: includes/class-admin-product-data-tab.php:776
 msgid ""
 "Shows a short sentence under the title that describes the donation’s impact."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:725
+#: includes/class-admin-product-data-tab.php:780
 msgid "Impact text"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:725
+#: includes/class-admin-product-data-tab.php:781
 msgid "If left empty, the line is hidden."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:725
+#: includes/class-admin-product-data-tab.php:783
 msgid "E.g.: Your donation warms a family."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:727
+#: includes/class-admin-product-data-tab.php:788
 msgid ""
 "Impact line is on but the text is empty; the line will not appear on the "
 "form."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:730
+#: includes/class-admin-product-data-tab.php:791
 #: includes/config/form-modules.php:29
 msgid "Urgency strip"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:730
+#: includes/class-admin-product-data-tab.php:791
 msgid ""
 "Shows a strip that highlights that the campaign is time-limited. The end "
 "date only removes the strip; it does not close the campaign."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:731
+#: includes/class-admin-product-data-tab.php:792
 msgid "Urgency text"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:731
+#: includes/class-admin-product-data-tab.php:792
 msgid "Text that will appear on the strip."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:735
+#: includes/class-admin-product-data-tab.php:796
 msgid "End date"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:736
+#: includes/class-admin-product-data-tab.php:797
 msgid ""
 "The strip is shown until the end of this day (23:59:59) in the site time "
 "zone (Y-m-d). An invalid date is not saved."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:746
+#: includes/class-admin-product-data-tab.php:807
 msgid ""
 "The saved end date is invalid; the strip appears with no time limit. Enter a "
 "valid Y-m-d."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:750
+#: includes/class-admin-product-data-tab.php:811
 #: includes/config/form-modules.php:30
 msgid "Social proof"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:750
+#: includes/class-admin-product-data-tab.php:811
 msgid ""
 "Shows a line with the real donor count. If the number is 0, the line is "
 "hidden."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:754
+#: includes/class-admin-product-data-tab.php:815
 msgid "Social proof text"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:755
+#: includes/class-admin-product-data-tab.php:816
 msgid ""
 "The {donors} placeholder in the text is replaced with the real donor count. "
 "If left empty, the default is: “{donors} people donated”."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:756
-#: includes/class-form-modules.php:712
+#: includes/class-admin-product-data-tab.php:817
+#: includes/class-form-modules.php:717
 msgid "{donors} people donated"
 msgstr ""
 
 #. translators: %s: old free-text
-#: includes/class-admin-product-data-tab.php:763
+#: includes/class-admin-product-data-tab.php:824
 #, php-format
 msgid "Old text: %s — no longer used; the real number is used."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:769
+#: includes/class-admin-product-data-tab.php:830
 #: includes/config/form-modules.php:37
 msgid "Trust badges"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:769
+#: includes/class-admin-product-data-tab.php:830
 msgid ""
 "Shows trust messages under the form. If the general setting is off, they are "
 "not shown even if this product is on."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:772
+#: includes/class-admin-product-data-tab.php:833
 msgid "Badges"
 msgstr ""
 
 #. translators: %d: max rows
-#: includes/class-admin-product-data-tab.php:774
+#: includes/class-admin-product-data-tab.php:835
 #, php-format
 msgid ""
 "If the product list is filled, it replaces the general list (maximum %d). If "
 "left empty, the general badges are used."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:778
+#: includes/class-admin-product-data-tab.php:840
 msgid "Icon"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:779
+#: includes/class-admin-product-data-tab.php:844
 msgid "Text"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:797
+#: includes/class-admin-product-data-tab.php:862
 msgid "Extra donation (sadaqah)"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:797
+#: includes/class-admin-product-data-tab.php:862
 msgid "A second, smaller donation row added to the form"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:799
+#: includes/class-admin-product-data-tab.php:864
 msgid ""
 "On a goal campaign the extra donation is not shown on the form; the settings "
 "are used if you switch to other types."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:801
+#: includes/class-admin-product-data-tab.php:866
 msgid "Add an extra donation"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:801
+#: includes/class-admin-product-data-tab.php:866
 msgid "Lets the donor add a small extra donation on top of the main donation."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:802
+#: includes/class-admin-product-data-tab.php:870
 msgctxt "product data tab"
 msgid "Button text"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:802
+#: includes/class-admin-product-data-tab.php:871
 msgid "Text of the button that opens the extra donation."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:802
+#: includes/class-admin-product-data-tab.php:873
 msgid "Add extra donation"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:819
+#: includes/class-admin-product-data-tab.php:893
 msgid "Extra donation product"
 msgstr ""
 
 #. translators: %d: default product ID
-#: includes/class-admin-product-data-tab.php:823
+#: includes/class-admin-product-data-tab.php:897
 #, php-format
 msgid ""
 "WooCommerce product to add to the cart; if empty, the general default (#%d) "
 "is used."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:826
-#: includes/class-admin-product-data-tab.php:831
+#: includes/class-admin-product-data-tab.php:900
+#: includes/class-admin-product-data-tab.php:909
 msgid ""
 "WooCommerce product to add to the cart; if empty, the general default is "
 "used, and if that is also missing the row is not added."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:831
+#: includes/class-admin-product-data-tab.php:908
 msgid "Extra donation product ID"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:834
+#: includes/class-admin-product-data-tab.php:918
 msgid "Lower limit applied when the donor types the amount themselves."
 msgstr ""
 
-#. translators: %s: currency symbol
-#: includes/class-admin-product-data-tab.php:836
+#: includes/class-admin-product-data-tab.php:923
 #, php-format
 msgid "Fixed amount (%s)"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:836
+#: includes/class-admin-product-data-tab.php:924
 msgid ""
 "If filled, the extra donation is added at this amount and the minimum amount "
 "is ignored."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:837
+#: includes/class-admin-product-data-tab.php:933
 msgid "Extra donation note"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:837
+#: includes/class-admin-product-data-tab.php:934
 msgid "Description shown next to the extra donation row."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:846
+#: includes/class-admin-product-data-tab.php:948
 msgid "Appearance for this product"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:846
+#: includes/class-admin-product-data-tab.php:948
 msgid "Layout, colors, corner radius, and media"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:850
+#: includes/class-admin-product-data-tab.php:952
 msgid "Layout"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:851
+#: includes/class-admin-product-data-tab.php:953
 msgid ""
 "Overall form layout; \"Story\" shows the image and form side by side. Cannot "
 "be left empty; default is Classic (there is no general layout setting)."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:853
+#: includes/class-admin-product-data-tab.php:955
 msgid "Classic"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:854
+#: includes/class-admin-product-data-tab.php:956
 msgid "Campaign"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:855
+#: includes/class-admin-product-data-tab.php:957
 msgid "Story (side by side)"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:858
+#: includes/class-admin-product-data-tab.php:960
 msgid "Show product image"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:858
+#: includes/class-admin-product-data-tab.php:960
 msgid ""
 "Uses the product’s featured image as the campaign image at the top of the "
 "form."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:861
+#: includes/class-admin-product-data-tab.php:963
 msgid "This product has no featured image; the image cannot be shown."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:871
-#: includes/class-product-settings-service.php:388
-#: includes/class-product-settings-service.php:408
+#: includes/class-admin-product-data-tab.php:976
+#: includes/class-product-settings-service.php:379
+#: includes/class-product-settings-service.php:399
 msgid "Primary color"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:872
+#: includes/class-admin-product-data-tab.php:977
 msgid ""
 "Button and accent color. If left empty, the category color is used, and if "
 "that is also missing the general color is used."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:875
-#: includes/class-product-settings-service.php:393
+#: includes/class-admin-product-data-tab.php:980
+#: includes/class-product-settings-service.php:384
 msgid "Primary color (hover)"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:875
+#: includes/class-admin-product-data-tab.php:980
 msgid ""
 "Color used when the mouse is over the button; if empty, it is derived from "
 "the primary color."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:876
-#: includes/class-product-settings-service.php:398
-#: includes/class-product-settings-service.php:420
+#: includes/class-admin-product-data-tab.php:981
+#: includes/class-product-settings-service.php:389
+#: includes/class-product-settings-service.php:411
 msgid "Background color"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:876
+#: includes/class-admin-product-data-tab.php:981
 msgid "Background of the form window; if empty, the general setting is used."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:882
+#: includes/class-admin-product-data-tab.php:987
 msgid "Corner radius (px)"
 msgstr ""
 
 #. translators: 1: min px, 2: max px
-#: includes/class-admin-product-data-tab.php:885
+#: includes/class-admin-product-data-tab.php:990
 #, php-format
 msgid ""
 "For button and field corners, %1$s–%2$s px; if empty, the general setting is "
 "used."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:920
+#: includes/class-admin-product-data-tab.php:1029
 msgid "Add row"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:954
+#: includes/class-admin-product-data-tab.php:1063
 msgid "Delete row"
 msgstr ""
 
 #. translators: %d: attachment ID
-#: includes/class-admin-product-data-tab.php:973
+#: includes/class-admin-product-data-tab.php:1082
 #, php-format
 msgid "Uploaded image (#%d)"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:995
-msgid "Block order"
-msgstr ""
-
-#: includes/class-admin-product-data-tab.php:997
-msgid "Use a custom order for this product"
-msgstr ""
-
-#: includes/class-admin-product-data-tab.php:999
-msgid "Order of campaign blocks"
-msgstr ""
-
-#. translators: %s: block name
-#: includes/class-admin-product-data-tab.php:1007
-#, php-format
-msgid "Move the %s block up"
-msgstr ""
-
-#. translators: %s: block name
-#: includes/class-admin-product-data-tab.php:1009
-#, php-format
-msgid "Move the %s block down"
-msgstr ""
-
-#: includes/class-admin-product-data-tab.php:1014
-msgid ""
-"Order of the blocks under the heading; if off, the general order on the "
-"Design tab is used. The order of donor and amount fields is fixed."
-msgstr ""
-
-#: includes/class-admin-product-data-tab.php:1029
-#: includes/class-admin-product-data-tab.php:1038
+#: includes/class-admin-product-data-tab.php:1101
+#: includes/class-admin-product-data-tab.php:1110
 #: includes/class-admin-products-list-table.php:46
 msgid "Shortcode"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:1030
+#: includes/class-admin-product-data-tab.php:1102
 msgid "Choose a view, copy the shortcode, and paste it into a page or post."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:1032
-#: includes/class-admin-products-list-table.php:253
+#: includes/class-admin-product-data-tab.php:1104
+#: includes/class-admin-products-list-table.php:260
 msgid "View"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:1052
+#: includes/class-admin-product-data-tab.php:1125
 msgid "Button (opens in the center)"
 msgstr ""
 
@@ -2918,7 +2696,7 @@ msgid "The total could not be calculated. Details are in the error log."
 msgstr ""
 
 #: includes/class-admin-products-list-table.php:43
-#: includes/class-privacy.php:108
+#: includes/class-privacy.php:111
 #: includes/elementor/class-widget-donation-form.php:99
 #: includes/i18n/class-wdp-js-i18n.php:92 assets/js/src/cart/ui.js:190
 #: blocks/donation-form/index.js:59 blocks/donation-form/index.js:69
@@ -2926,7 +2704,7 @@ msgid "Product"
 msgstr ""
 
 #: includes/class-admin-products-list-table.php:44
-#: includes/elementor/class-widget-donations-list.php:135
+#: includes/elementor/class-widget-donations-list.php:296
 #: blocks/donations/index.js:182
 msgid "Category"
 msgstr ""
@@ -2968,40 +2746,40 @@ msgid "Clear filters"
 msgstr ""
 
 #. translators: %d: number of parent products using this as alt donation
-#: includes/class-admin-products-list-table.php:239
+#: includes/class-admin-products-list-table.php:246
 #, php-format
 msgid "Used as an add-on donation (%d)"
 msgstr ""
 
-#: includes/class-admin-products-list-table.php:250
+#: includes/class-admin-products-list-table.php:257
 msgid "Donation settings"
 msgstr ""
 
-#: includes/class-admin-products-list-table.php:253
+#: includes/class-admin-products-list-table.php:260
 msgid "(opens in a new tab)"
 msgstr ""
 
-#: includes/class-admin-products-list-table.php:266
+#: includes/class-admin-products-list-table.php:273
 msgid "No category"
 msgstr ""
 
 #. translators: %s: shortcode
-#: includes/class-admin-products-list-table.php:298
+#: includes/class-admin-products-list-table.php:305
 #, php-format
 msgid "Copy shortcode: %s"
 msgstr ""
 
-#: includes/class-admin-products-list-table.php:314
+#: includes/class-admin-products-list-table.php:321
 msgid "No goal"
 msgstr ""
 
 #. translators: %s: product name
-#: includes/class-admin-products-list-table.php:328
+#: includes/class-admin-products-list-table.php:335
 #, php-format
 msgid "Edit donation settings for %s"
 msgstr ""
 
-#: includes/class-admin-products-list-table.php:329
+#: includes/class-admin-products-list-table.php:336
 msgid "Edit"
 msgstr ""
 
@@ -3014,7 +2792,7 @@ msgid "Live preview"
 msgstr ""
 
 #: includes/class-admin-request.php:25
-#: includes/class-woo-donation-popup-admin.php:446
+#: includes/class-woo-donation-popup-admin.php:373
 msgid "You do not have permission to do this."
 msgstr ""
 
@@ -3028,127 +2806,127 @@ msgid ""
 "this campaign are used in similar projects."
 msgstr ""
 
-#: includes/class-cart.php:204 includes/class-exceptions.php:111
+#: includes/class-cart.php:207 includes/class-exceptions.php:113
 msgid "Security verification failed. Please refresh the page and try again."
 msgstr ""
 
-#: includes/class-cart.php:216
+#: includes/class-cart.php:219
 #, php-format
 msgid "Maximum number of shares: %d"
 msgstr ""
 
-#: includes/class-cart.php:235 includes/traits/trait-wdp-ajax-cart-add.php:101
+#: includes/class-cart.php:238 includes/traits/trait-wdp-ajax-cart-add.php:101
 msgid "Please fill in all required fields: "
 msgstr ""
 
-#: includes/class-cart.php:241 includes/traits/trait-wdp-ajax-cart-add.php:134
+#: includes/class-cart.php:244 includes/traits/trait-wdp-ajax-cart-add.php:136
 msgid "Please enter your full name."
 msgstr ""
 
-#: includes/class-cart.php:246 includes/traits/trait-wdp-ajax-cart-add.php:138
+#: includes/class-cart.php:249 includes/traits/trait-wdp-ajax-cart-add.php:140
 msgid "Please enter your phone number."
 msgstr ""
 
-#: includes/class-cart.php:273 includes/traits/trait-wdp-ajax-cart-add.php:193
+#: includes/class-cart.php:276 includes/traits/trait-wdp-ajax-cart-add.php:195
 msgid "Please enter the donation amount."
 msgstr ""
 
-#: includes/class-cart.php:279 includes/class-cart.php:283
-#: includes/class-cart.php:289
+#: includes/class-cart.php:284 includes/class-cart.php:289
+#: includes/class-cart.php:295
 msgid "You entered an invalid donation amount."
 msgstr ""
 
-#: includes/class-cart.php:351
+#: includes/class-cart.php:357
 msgid "Please add to cart using the donation form. Donor details are required."
 msgstr ""
 
-#: includes/class-cart.php:485 includes/class-order-meta-keys.php:85
+#: includes/class-cart.php:491 includes/class-order-meta-keys.php:76
 msgid "Share count"
 msgstr ""
 
-#: includes/class-cart.php:494
-#: includes/traits/trait-wdp-ajax-cart-query.php:190
+#: includes/class-cart.php:500
+#: includes/traits/trait-wdp-ajax-cart-query.php:194
 #, php-format
 msgid "Shareholder %d"
 msgstr ""
 
-#: includes/class-cart.php:501 includes/class-order-meta-keys.php:98
+#: includes/class-cart.php:507 includes/class-order-meta-keys.php:89
 #, php-format
 msgid "Shareholder %d email"
 msgstr ""
 
-#: includes/class-cart.php:508 includes/class-order-meta-keys.php:99
+#: includes/class-cart.php:514 includes/class-order-meta-keys.php:90
 #, php-format
 msgid "Shareholder %d note"
 msgstr ""
 
-#: includes/class-cart.php:518
+#: includes/class-cart.php:524
 msgid "Donor"
 msgstr ""
 
-#: includes/class-cart.php:525 includes/class-icon-library.php:51
+#: includes/class-cart.php:531 includes/class-icon-library.php:51
 msgid "Email"
 msgstr ""
 
-#: includes/class-cart.php:532 includes/class-order-meta-keys.php:82
+#: includes/class-cart.php:538 includes/class-order-meta-keys.php:73
 msgid "Dedication"
 msgstr ""
 
-#: includes/class-cart.php:539
+#: includes/class-cart.php:545
 #: includes/templates/class-form-fields-renderer.php:586
 msgid "Keep my name private"
 msgstr ""
 
-#: includes/class-cart.php:546 includes/class-order-meta-keys.php:81
+#: includes/class-cart.php:552 includes/class-order-meta-keys.php:72
 msgid "Donation note"
 msgstr ""
 
-#: includes/class-cart.php:564 includes/class-order-meta-keys.php:84
+#: includes/class-cart.php:570 includes/class-order-meta-keys.php:75
 #: includes/config/form-modules.php:35
 msgid "Processing fee"
 msgstr ""
 
-#: includes/class-cart.php:611
+#: includes/class-cart.php:617
 msgid ""
 "The donation line with amount 0 was removed from the cart. Please enter a "
 "valid donation amount."
 msgstr ""
 
-#: includes/class-cart.php:697
+#: includes/class-cart.php:703
 msgid "Please enter a donation amount greater than 0."
 msgstr ""
 
 #. translators: %s: formatted minimum amount with currency
-#: includes/class-cart.php:702 includes/i18n/class-wdp-js-i18n.php:79
+#: includes/class-cart.php:708 includes/i18n/class-wdp-js-i18n.php:79
 #: assets/js/src/form/validate.js:751
 #, javascript-format, php-format
 msgid "Please enter %s or more."
 msgstr ""
 
-#: includes/class-cart.php:924
+#: includes/class-cart.php:930
 msgid "Add-on donation"
 msgstr ""
 
-#: includes/class-cart.php:1057 includes/class-order-meta-keys.php:96
+#: includes/class-cart.php:1063 includes/class-order-meta-keys.php:87
 #, php-format
 msgid "Shareholder %d name"
 msgstr ""
 
-#: includes/class-cart.php:1061 includes/class-order-meta-keys.php:97
+#: includes/class-cart.php:1067 includes/class-order-meta-keys.php:88
 #, php-format
 msgid "Shareholder %d phone"
 msgstr ""
 
 #: includes/class-donation-optional-fields.php:101
 #: includes/i18n/class-wdp-js-i18n.php:84
-#: includes/traits/trait-wdp-assets-registry.php:395
-#: assets/js/src/form/messages.js:129 assets/js/src/form/validate.js:652
+#: includes/traits/trait-wdp-assets-registry.php:389
+#: assets/js/src/form/messages.js:122 assets/js/src/form/validate.js:652
 msgid "Please enter a valid email address."
 msgstr ""
 
 #: includes/class-donation-optional-fields.php:143
 #: includes/class-donation-optional-fields.php:147
-#: includes/class-order-meta-keys.php:83
+#: includes/class-order-meta-keys.php:74
 msgid "Anonymous"
 msgstr ""
 
@@ -3156,7 +2934,7 @@ msgstr ""
 msgid "Add-on amount"
 msgstr ""
 
-#: includes/class-donation-type.php:62 includes/class-form-matrix.php:103
+#: includes/class-donation-type.php:62 includes/class-form-matrix.php:116
 msgid "Fixed amount"
 msgstr ""
 
@@ -3165,7 +2943,7 @@ msgid ""
 "The product’s WooCommerce price is used; the donor only chooses a quantity."
 msgstr ""
 
-#: includes/class-donation-type.php:67 includes/class-form-matrix.php:104
+#: includes/class-donation-type.php:67 includes/class-form-matrix.php:117
 msgid "Custom amount"
 msgstr ""
 
@@ -3178,7 +2956,7 @@ msgid ""
 "The donor chooses the number of shares and enters a name for each share."
 msgstr ""
 
-#: includes/class-donation-type.php:77 includes/class-form-matrix.php:106
+#: includes/class-donation-type.php:77 includes/class-form-matrix.php:119
 msgid "Goal-based campaign"
 msgstr ""
 
@@ -3188,7 +2966,7 @@ msgid ""
 msgstr ""
 
 #: includes/class-donations-list.php:178
-#: includes/elementor/class-widget-donations-list.php:130
+#: includes/elementor/class-widget-donations-list.php:254
 msgid "All"
 msgstr ""
 
@@ -3201,48 +2979,48 @@ msgid "Donation categories"
 msgstr ""
 
 #. translators: %s: formatted share price
-#: includes/class-donations-list.php:761
+#: includes/class-donations-list.php:762
 #, php-format
 msgid "Share: %s"
 msgstr ""
 
 #. translators: %s: formatted minimum amount
-#: includes/class-donations-list.php:769
+#: includes/class-donations-list.php:772
 #, php-format
 msgid "min. %s"
 msgstr ""
 
 #. translators: 1: collected, 2: goal
-#: includes/class-donations-list.php:779
+#: includes/class-donations-list.php:784
 #, php-format
 msgid "%1$s / %2$s"
 msgstr ""
 
 #. translators: 1: collected, 2: goal
-#: includes/class-donations-list.php:797
+#: includes/class-donations-list.php:803
 #, php-format
 msgid "%1$s / %2$s raised"
 msgstr ""
 
-#: includes/class-donations-list.php:890
+#: includes/class-donations-list.php:896
 msgid ""
 "Query returned no results: the given product IDs are not a published "
 "donation product or are out of scope."
 msgstr ""
 
-#: includes/class-donations-list.php:893
+#: includes/class-donations-list.php:899
 msgid ""
 "Query returned no results: no published, in-stock, purchasable donation "
 "product in the selected categories."
 msgstr ""
 
-#: includes/class-donations-list.php:896
+#: includes/class-donations-list.php:902
 msgid ""
 "Query returned no results: scope is “flagged products only”; flag products "
 "on the Donation tab."
 msgstr ""
 
-#: includes/class-donations-list.php:898
+#: includes/class-donations-list.php:904
 msgid ""
 "Query returned no results: no published, catalog-visible, in-stock donation "
 "product."
@@ -3252,7 +3030,7 @@ msgstr ""
 msgid "Donation (WooCommerce Donation)"
 msgstr ""
 
-#: includes/class-exceptions.php:45
+#: includes/class-exceptions.php:47
 #, php-format
 msgid "Product not found. ID: %d"
 msgstr ""
@@ -3270,57 +3048,57 @@ msgid ""
 "The form test page could not be rendered. See the error log for details."
 msgstr ""
 
-#: includes/class-form-matrix.php:67
+#: includes/class-form-matrix.php:75
 msgid "No published product was found for testing."
 msgstr ""
 
-#: includes/class-form-matrix.php:82
+#: includes/class-form-matrix.php:90
 msgid "Form test page"
 msgstr ""
 
-#: includes/class-form-matrix.php:95
+#: includes/class-form-matrix.php:103
 msgid "Container width"
 msgstr ""
 
-#: includes/class-form-matrix.php:96
+#: includes/class-form-matrix.php:108
 msgid "Full"
 msgstr ""
 
-#: includes/class-form-matrix.php:143
+#: includes/class-form-matrix.php:156
 msgid "Open popup"
 msgstr ""
 
-#: includes/class-form-matrix.php:144
+#: includes/class-form-matrix.php:157
 msgid "Open panel"
 msgstr ""
 
-#: includes/class-form-matrix.php:153
+#: includes/class-form-matrix.php:166
 msgid "Test page — adding to cart is disabled."
 msgstr ""
 
 #. translators: %s: invalid token
-#: includes/class-form-modules.php:273 includes/class-form-modules.php:287
-#: includes/class-form-modules.php:309
+#: includes/class-form-modules.php:258 includes/class-form-modules.php:272
+#: includes/class-form-modules.php:294
 #, php-format
 msgid ""
 "Quick amount buttons must be whole numbers only; invalid value: \"%s\". "
 "Separate amounts with commas, spaces, or semicolons (e.g. 100, 250, 500)."
 msgstr ""
 
-#: includes/class-form-modules.php:319
+#: includes/class-form-modules.php:304
 msgid "You can define at most 6 quick amount buttons."
 msgstr ""
 
-#: includes/class-form-modules.php:340
+#: includes/class-form-modules.php:332
 msgid "The processing fee percentage must be a number: 0 (off) or 0.5–15."
 msgstr ""
 
-#: includes/class-form-modules.php:351
+#: includes/class-form-modules.php:347
 msgid "The processing fee percentage must be 0 (off) or between 0.5 and 15."
 msgstr ""
 
 #. translators: %s: invalid value
-#: includes/class-form-modules.php:422
+#: includes/class-form-modules.php:425
 #, php-format
 msgid ""
 "The suggested amount must be a positive whole number only; invalid value: "
@@ -3328,19 +3106,19 @@ msgid ""
 msgstr ""
 
 #. translators: %s: invalid value
-#: includes/class-form-modules.php:434
+#: includes/class-form-modules.php:437
 #, php-format
 msgid ""
 "The suggested amount must be in the quick amount list; invalid value: \"%s\"."
 msgstr ""
 
 #. translators: %s: percent
-#: includes/class-form-modules.php:733
+#: includes/class-form-modules.php:738
 #, php-format
 msgid "Cover processing costs (+%%%s)"
 msgstr ""
 
-#: includes/class-form-modules.php:744 includes/i18n/class-wdp-js-i18n.php:111
+#: includes/class-form-modules.php:749 includes/i18n/class-wdp-js-i18n.php:111
 #: assets/js/src/cart/ui.js:125
 msgid "Total"
 msgstr ""
@@ -3402,24 +3180,24 @@ msgstr ""
 msgid "Lock"
 msgstr ""
 
-#: includes/class-lazy-modal.php:31 includes/traits/trait-wdp-ajax-base.php:69
+#: includes/class-lazy-modal.php:31 includes/traits/trait-wdp-ajax-base.php:70
 #: includes/traits/trait-wdp-ajax-cart-session.php:21
 msgid "Invalid request origin"
 msgstr ""
 
-#: includes/class-lazy-modal.php:42
+#: includes/class-lazy-modal.php:44
 msgid "Too many requests were sent. Please try again shortly."
 msgstr ""
 
-#: includes/class-lazy-modal.php:53
+#: includes/class-lazy-modal.php:60
 msgid "Product not found or cannot be displayed."
 msgstr ""
 
-#: includes/class-lazy-modal.php:56 includes/class-shortcodes.php:260
+#: includes/class-lazy-modal.php:63 includes/class-shortcodes.php:269
 msgid "This product is not marked as a donation product."
 msgstr ""
 
-#: includes/class-lazy-modal.php:61 includes/class-lazy-modal.php:69
+#: includes/class-lazy-modal.php:68 includes/class-lazy-modal.php:82
 msgid "The donation form cannot be shown right now."
 msgstr ""
 
@@ -3448,484 +3226,484 @@ msgstr ""
 msgid "Hide"
 msgstr ""
 
-#: includes/class-order-meta-keys.php:78
+#: includes/class-order-meta-keys.php:69
 msgid "Donor name"
 msgstr ""
 
-#: includes/class-order-meta-keys.php:79
+#: includes/class-order-meta-keys.php:70
 msgid "Donor phone"
 msgstr ""
 
-#: includes/class-order-meta-keys.php:80
+#: includes/class-order-meta-keys.php:71
 msgid "Donor email"
 msgstr ""
 
-#: includes/class-phone-field.php:24
+#: includes/class-phone-field.php:25
 msgid "Turkey"
 msgstr ""
 
-#: includes/class-phone-field.php:26
+#: includes/class-phone-field.php:30
 msgid "Albania"
 msgstr ""
 
-#: includes/class-phone-field.php:27
+#: includes/class-phone-field.php:34
 msgid "Andorra"
 msgstr ""
 
-#: includes/class-phone-field.php:28
+#: includes/class-phone-field.php:38
 msgid "Austria"
 msgstr ""
 
-#: includes/class-phone-field.php:29
+#: includes/class-phone-field.php:42
 msgid "Belarus"
 msgstr ""
 
-#: includes/class-phone-field.php:30
+#: includes/class-phone-field.php:46
 msgid "Belgium"
 msgstr ""
 
-#: includes/class-phone-field.php:31
+#: includes/class-phone-field.php:50
 msgid "Bosnia and Herzegovina"
 msgstr ""
 
-#: includes/class-phone-field.php:32
+#: includes/class-phone-field.php:54
 msgid "Bulgaria"
 msgstr ""
 
-#: includes/class-phone-field.php:33
+#: includes/class-phone-field.php:58
 msgid "Croatia"
 msgstr ""
 
-#: includes/class-phone-field.php:34
+#: includes/class-phone-field.php:62
 msgid "Cyprus"
 msgstr ""
 
-#: includes/class-phone-field.php:35
+#: includes/class-phone-field.php:66
 msgid "Czechia"
 msgstr ""
 
-#: includes/class-phone-field.php:36
+#: includes/class-phone-field.php:70
 msgid "Denmark"
 msgstr ""
 
-#: includes/class-phone-field.php:37
+#: includes/class-phone-field.php:74
 msgid "Estonia"
 msgstr ""
 
-#: includes/class-phone-field.php:38
+#: includes/class-phone-field.php:78
 msgid "Finland"
 msgstr ""
 
-#: includes/class-phone-field.php:39
+#: includes/class-phone-field.php:82
 msgid "France"
 msgstr ""
 
-#: includes/class-phone-field.php:40
+#: includes/class-phone-field.php:86
 msgid "Germany"
 msgstr ""
 
-#: includes/class-phone-field.php:41
+#: includes/class-phone-field.php:90
 msgid "Greece"
 msgstr ""
 
-#: includes/class-phone-field.php:42
+#: includes/class-phone-field.php:94
 msgid "Hungary"
 msgstr ""
 
-#: includes/class-phone-field.php:43
+#: includes/class-phone-field.php:98
 msgid "Iceland"
 msgstr ""
 
-#: includes/class-phone-field.php:44
+#: includes/class-phone-field.php:102
 msgid "Ireland"
 msgstr ""
 
-#: includes/class-phone-field.php:45
+#: includes/class-phone-field.php:106
 msgid "Italy"
 msgstr ""
 
-#: includes/class-phone-field.php:46
+#: includes/class-phone-field.php:110
 msgid "Kosovo"
 msgstr ""
 
-#: includes/class-phone-field.php:47
+#: includes/class-phone-field.php:114
 msgid "Latvia"
 msgstr ""
 
-#: includes/class-phone-field.php:48
+#: includes/class-phone-field.php:118
 msgid "Liechtenstein"
 msgstr ""
 
-#: includes/class-phone-field.php:49
+#: includes/class-phone-field.php:122
 msgid "Lithuania"
 msgstr ""
 
-#: includes/class-phone-field.php:50
+#: includes/class-phone-field.php:126
 msgid "Luxembourg"
 msgstr ""
 
-#: includes/class-phone-field.php:51
+#: includes/class-phone-field.php:130
 msgid "Malta"
 msgstr ""
 
-#: includes/class-phone-field.php:52
+#: includes/class-phone-field.php:134
 msgid "Moldova"
 msgstr ""
 
-#: includes/class-phone-field.php:53
+#: includes/class-phone-field.php:138
 msgid "Monaco"
 msgstr ""
 
-#: includes/class-phone-field.php:54
+#: includes/class-phone-field.php:142
 msgid "Montenegro"
 msgstr ""
 
-#: includes/class-phone-field.php:55
+#: includes/class-phone-field.php:146
 msgid "Netherlands"
 msgstr ""
 
-#: includes/class-phone-field.php:56
+#: includes/class-phone-field.php:150
 msgid "North Macedonia"
 msgstr ""
 
-#: includes/class-phone-field.php:57
+#: includes/class-phone-field.php:154
 msgid "Norway"
 msgstr ""
 
-#: includes/class-phone-field.php:58
+#: includes/class-phone-field.php:158
 msgid "Poland"
 msgstr ""
 
-#: includes/class-phone-field.php:59
+#: includes/class-phone-field.php:162
 msgid "Portugal"
 msgstr ""
 
-#: includes/class-phone-field.php:60
+#: includes/class-phone-field.php:166
 msgid "Romania"
 msgstr ""
 
-#: includes/class-phone-field.php:61
+#: includes/class-phone-field.php:170
 msgid "Russia"
 msgstr ""
 
-#: includes/class-phone-field.php:62
+#: includes/class-phone-field.php:174
 msgid "San Marino"
 msgstr ""
 
-#: includes/class-phone-field.php:63
+#: includes/class-phone-field.php:178
 msgid "Serbia"
 msgstr ""
 
-#: includes/class-phone-field.php:64
+#: includes/class-phone-field.php:182
 msgid "Slovakia"
 msgstr ""
 
-#: includes/class-phone-field.php:65
+#: includes/class-phone-field.php:186
 msgid "Slovenia"
 msgstr ""
 
-#: includes/class-phone-field.php:66
+#: includes/class-phone-field.php:190
 msgid "Spain"
 msgstr ""
 
-#: includes/class-phone-field.php:67
+#: includes/class-phone-field.php:194
 msgid "Sweden"
 msgstr ""
 
-#: includes/class-phone-field.php:68
+#: includes/class-phone-field.php:198
 msgid "Switzerland"
 msgstr ""
 
-#: includes/class-phone-field.php:69
+#: includes/class-phone-field.php:202
 msgid "Ukraine"
 msgstr ""
 
-#: includes/class-phone-field.php:70
+#: includes/class-phone-field.php:206
 msgid "United Kingdom"
 msgstr ""
 
-#: includes/class-phone-field.php:72
+#: includes/class-phone-field.php:211
 msgid "Afghanistan"
 msgstr ""
 
-#: includes/class-phone-field.php:73
+#: includes/class-phone-field.php:215
 msgid "Azerbaijan"
 msgstr ""
 
-#: includes/class-phone-field.php:74
+#: includes/class-phone-field.php:219
 msgid "Bahrain"
 msgstr ""
 
-#: includes/class-phone-field.php:75
+#: includes/class-phone-field.php:223
 msgid "Bangladesh"
 msgstr ""
 
-#: includes/class-phone-field.php:76
+#: includes/class-phone-field.php:227
 msgid "Brunei"
 msgstr ""
 
-#: includes/class-phone-field.php:77
+#: includes/class-phone-field.php:231
 msgid "Cambodia"
 msgstr ""
 
-#: includes/class-phone-field.php:78
+#: includes/class-phone-field.php:235
 msgid "China"
 msgstr ""
 
-#: includes/class-phone-field.php:79
+#: includes/class-phone-field.php:239
 msgid "Georgia"
 msgstr ""
 
-#: includes/class-phone-field.php:80
+#: includes/class-phone-field.php:243
 msgid "Hong Kong"
 msgstr ""
 
-#: includes/class-phone-field.php:81
+#: includes/class-phone-field.php:247
 msgid "India"
 msgstr ""
 
-#: includes/class-phone-field.php:82
+#: includes/class-phone-field.php:251
 msgid "Indonesia"
 msgstr ""
 
-#: includes/class-phone-field.php:83
+#: includes/class-phone-field.php:255
 msgid "Iran"
 msgstr ""
 
-#: includes/class-phone-field.php:84
+#: includes/class-phone-field.php:259
 msgid "Iraq"
 msgstr ""
 
-#: includes/class-phone-field.php:85
+#: includes/class-phone-field.php:263
 msgid "Japan"
 msgstr ""
 
-#: includes/class-phone-field.php:86
+#: includes/class-phone-field.php:267
 msgid "Jordan"
 msgstr ""
 
-#: includes/class-phone-field.php:87
+#: includes/class-phone-field.php:271
 msgid "Kazakhstan"
 msgstr ""
 
-#: includes/class-phone-field.php:88
+#: includes/class-phone-field.php:275
 msgid "Kyrgyzstan"
 msgstr ""
 
-#: includes/class-phone-field.php:89
+#: includes/class-phone-field.php:279
 msgid "Kuwait"
 msgstr ""
 
-#: includes/class-phone-field.php:90
+#: includes/class-phone-field.php:283
 msgid "Lebanon"
 msgstr ""
 
-#: includes/class-phone-field.php:91
+#: includes/class-phone-field.php:287
 msgid "Malaysia"
 msgstr ""
 
-#: includes/class-phone-field.php:92
+#: includes/class-phone-field.php:291
 msgid "Maldives"
 msgstr ""
 
-#: includes/class-phone-field.php:93
+#: includes/class-phone-field.php:295
 msgid "Mongolia"
 msgstr ""
 
-#: includes/class-phone-field.php:94
+#: includes/class-phone-field.php:299
 msgid "Myanmar"
 msgstr ""
 
-#: includes/class-phone-field.php:95
+#: includes/class-phone-field.php:303
 msgid "Nepal"
 msgstr ""
 
-#: includes/class-phone-field.php:96
+#: includes/class-phone-field.php:307
 msgid "Oman"
 msgstr ""
 
-#: includes/class-phone-field.php:97
+#: includes/class-phone-field.php:311
 msgid "Pakistan"
 msgstr ""
 
-#: includes/class-phone-field.php:98
+#: includes/class-phone-field.php:315
 msgid "Palestine"
 msgstr ""
 
-#: includes/class-phone-field.php:99
+#: includes/class-phone-field.php:319
 msgid "Philippines"
 msgstr ""
 
-#: includes/class-phone-field.php:100
+#: includes/class-phone-field.php:323
 msgid "Qatar"
 msgstr ""
 
-#: includes/class-phone-field.php:101
+#: includes/class-phone-field.php:327
 msgid "Saudi Arabia"
 msgstr ""
 
-#: includes/class-phone-field.php:102
+#: includes/class-phone-field.php:331
 msgid "Singapore"
 msgstr ""
 
-#: includes/class-phone-field.php:103
+#: includes/class-phone-field.php:335
 msgid "South Korea"
 msgstr ""
 
-#: includes/class-phone-field.php:104
+#: includes/class-phone-field.php:339
 msgid "Sri Lanka"
 msgstr ""
 
-#: includes/class-phone-field.php:105
+#: includes/class-phone-field.php:343
 msgid "Syria"
 msgstr ""
 
-#: includes/class-phone-field.php:106
+#: includes/class-phone-field.php:347
 msgid "Taiwan"
 msgstr ""
 
-#: includes/class-phone-field.php:107
+#: includes/class-phone-field.php:351
 msgid "Tajikistan"
 msgstr ""
 
-#: includes/class-phone-field.php:108
+#: includes/class-phone-field.php:355
 msgid "Thailand"
 msgstr ""
 
-#: includes/class-phone-field.php:109
+#: includes/class-phone-field.php:359
 msgid "Turkmenistan"
 msgstr ""
 
-#: includes/class-phone-field.php:110
+#: includes/class-phone-field.php:363
 msgid "United Arab Emirates"
 msgstr ""
 
-#: includes/class-phone-field.php:111
+#: includes/class-phone-field.php:367
 msgid "Uzbekistan"
 msgstr ""
 
-#: includes/class-phone-field.php:112
+#: includes/class-phone-field.php:371
 msgid "Vietnam"
 msgstr ""
 
-#: includes/class-phone-field.php:113
+#: includes/class-phone-field.php:375
 msgid "Yemen"
 msgstr ""
 
-#: includes/class-phone-field.php:114
+#: includes/class-phone-field.php:379
 msgid "Armenia"
 msgstr ""
 
-#: includes/class-phone-field.php:116
+#: includes/class-phone-field.php:384
 msgid "United States"
 msgstr ""
 
-#: includes/class-phone-field.php:117
+#: includes/class-phone-field.php:388
 msgid "Canada"
 msgstr ""
 
-#: includes/class-phone-field.php:118
+#: includes/class-phone-field.php:392
 msgid "Mexico"
 msgstr ""
 
-#: includes/class-phone-field.php:119
+#: includes/class-phone-field.php:396
 msgid "Brazil"
 msgstr ""
 
-#: includes/class-phone-field.php:120
+#: includes/class-phone-field.php:400
 msgid "Argentina"
 msgstr ""
 
-#: includes/class-phone-field.php:121
+#: includes/class-phone-field.php:404
 msgid "Australia"
 msgstr ""
 
-#: includes/class-phone-field.php:122
+#: includes/class-phone-field.php:408
 msgid "New Zealand"
 msgstr ""
 
-#: includes/class-phone-field.php:124
+#: includes/class-phone-field.php:413
 msgid "Algeria"
 msgstr ""
 
-#: includes/class-phone-field.php:125
+#: includes/class-phone-field.php:417
 msgid "Egypt"
 msgstr ""
 
-#: includes/class-phone-field.php:126
+#: includes/class-phone-field.php:421
 msgid "Morocco"
 msgstr ""
 
-#: includes/class-phone-field.php:127
+#: includes/class-phone-field.php:425
 msgid "Tunisia"
 msgstr ""
 
-#: includes/class-phone-field.php:128
+#: includes/class-phone-field.php:429
 msgid "Libya"
 msgstr ""
 
-#: includes/class-phone-field.php:129
+#: includes/class-phone-field.php:433
 msgid "Kenya"
 msgstr ""
 
-#: includes/class-phone-field.php:130
+#: includes/class-phone-field.php:437
 msgid "Uganda"
 msgstr ""
 
-#: includes/class-phone-field.php:131
+#: includes/class-phone-field.php:441
 msgid "Tanzania"
 msgstr ""
 
-#: includes/class-phone-field.php:132
+#: includes/class-phone-field.php:445
 msgid "Ethiopia"
 msgstr ""
 
-#: includes/class-phone-field.php:133
+#: includes/class-phone-field.php:449
 msgid "Somalia"
 msgstr ""
 
-#: includes/class-phone-field.php:134
+#: includes/class-phone-field.php:453
 msgid "Djibouti"
 msgstr ""
 
-#: includes/class-phone-field.php:135
+#: includes/class-phone-field.php:457
 msgid "Sudan"
 msgstr ""
 
-#: includes/class-phone-field.php:136
+#: includes/class-phone-field.php:461
 msgid "Chad"
 msgstr ""
 
-#: includes/class-phone-field.php:137
+#: includes/class-phone-field.php:465
 msgid "Burkina Faso"
 msgstr ""
 
-#: includes/class-phone-field.php:138
+#: includes/class-phone-field.php:469
 msgid "Mali"
 msgstr ""
 
-#: includes/class-phone-field.php:139
+#: includes/class-phone-field.php:473
 msgid "Niger"
 msgstr ""
 
-#: includes/class-phone-field.php:140
+#: includes/class-phone-field.php:477
 msgid "Nigeria"
 msgstr ""
 
-#: includes/class-phone-field.php:141
+#: includes/class-phone-field.php:481
 msgid "Senegal"
 msgstr ""
 
-#: includes/class-phone-field.php:142
+#: includes/class-phone-field.php:485
 msgid "Ghana"
 msgstr ""
 
-#: includes/class-phone-field.php:143
+#: includes/class-phone-field.php:489
 msgid "South Africa"
 msgstr ""
 
-#: includes/class-phone-field.php:527 includes/i18n/class-wdp-js-i18n.php:96
-#: assets/js/src/phone-input.js:693
+#: includes/class-phone-field.php:1226 includes/i18n/class-wdp-js-i18n.php:96
+#: assets/js/src/phone-input.js:686
 msgid "Select country code"
 msgstr ""
 
@@ -3933,28 +3711,28 @@ msgstr ""
 msgid "Donation details (Donation Popup)"
 msgstr ""
 
-#: includes/class-privacy.php:104
+#: includes/class-privacy.php:107
 msgid "Order number"
 msgstr ""
 
-#: includes/class-privacy.php:117
+#: includes/class-privacy.php:120
 msgid "Donation details"
 msgstr ""
 
-#: includes/class-privacy.php:118
+#: includes/class-privacy.php:121
 msgid "Donor and shareholder details entered on the donation form."
 msgstr ""
 
-#: includes/class-product-settings-service.php:362
+#: includes/class-product-settings-service.php:353
 msgid "The maximum number of shares can be 50."
 msgstr ""
 
-#: includes/class-product-settings-service.php:380
+#: includes/class-product-settings-service.php:371
 msgid "Corner radius"
 msgstr ""
 
 #. translators: 1: field label, 2: contrast ratio
-#: includes/class-product-settings-service.php:407
+#: includes/class-product-settings-service.php:398
 #, php-format
 msgid ""
 "Button text contrast with «%1$s» is %2$s:1 (recommended minimum 4.5:1). "
@@ -3962,51 +3740,51 @@ msgid ""
 msgstr ""
 
 #. translators: 1: field label, 2: contrast ratio
-#: includes/class-product-settings-service.php:419
+#: includes/class-product-settings-service.php:410
 #, php-format
 msgid ""
 "Text contrast with «%1$s» is %2$s:1 (recommended minimum 4.5:1). Saved; "
 "choose a lighter or darker background."
 msgstr ""
 
-#: includes/class-product-settings-service.php:431
+#: includes/class-product-settings-service.php:422
 msgid "Minimum amount"
 msgstr ""
 
-#: includes/class-product-settings-service.php:444
+#: includes/class-product-settings-service.php:435
 msgid "The goal amount cannot be empty or zero."
 msgstr ""
 
 #. translators: %s: max amount
-#: includes/class-product-settings-service.php:452
+#: includes/class-product-settings-service.php:443
 #, php-format
 msgid "The goal amount can be at most %s."
 msgstr ""
 
-#: includes/class-product-settings-service.php:548
+#: includes/class-product-settings-service.php:540
 msgid "Please enter a valid amount."
 msgstr ""
 
-#: includes/class-product-settings-service.php:565
+#: includes/class-product-settings-service.php:558
 msgid "The goal amount must be a valid number."
 msgstr ""
 
-#: includes/class-product-settings-service.php:586
+#: includes/class-product-settings-service.php:587
 msgid "The end date must be in Y-m-d format (e.g. 2026-12-31)."
 msgstr ""
 
-#: includes/class-product-settings-service.php:596
+#: includes/class-product-settings-service.php:597
 msgid "The end date must be a valid calendar day."
 msgstr ""
 
 #. translators: %s: field label
-#: includes/class-product-settings-service.php:666
+#: includes/class-product-settings-service.php:671
 #, php-format
 msgid "«%s» must be a valid color (#RGB or #RRGGBB)."
 msgstr ""
 
 #. translators: 1: field name, 2: original value, 3: corrected value
-#: includes/class-product-settings-service.php:710
+#: includes/class-product-settings-service.php:715
 #, php-format
 msgid "The «%1$s» value was corrected from %2$s to %3$s."
 msgstr ""
@@ -4021,7 +3799,7 @@ msgstr[1] ""
 
 #. translators: %s: remaining amount
 #: includes/class-progress-form.php:73 includes/i18n/class-wdp-js-i18n.php:29
-#: assets/js/src/progress-bar.js:157
+#: assets/js/src/progress-bar.js:115
 #, javascript-format, php-format
 msgid "%s remaining"
 msgstr ""
@@ -4039,8 +3817,8 @@ msgid "Goal completion rate"
 msgstr ""
 
 #: includes/class-progress-form.php:145 includes/i18n/class-wdp-js-i18n.php:60
-#: assets/js/src/progress-bar.js:72 assets/js/src/progress-bar.js:92
-#: assets/js/src/progress-bar.js:127 assets/js/src/progress-bar.js:322
+#: assets/js/src/progress-bar.js:57 assets/js/src/progress-bar.js:85
+#: assets/js/src/progress-bar.js:280
 msgid "Goal reached"
 msgstr ""
 
@@ -4056,39 +3834,39 @@ msgstr ""
 msgid "The donation form could not be rendered. See the error log for details."
 msgstr ""
 
-#: includes/class-shortcodes.php:255
+#: includes/class-shortcodes.php:264
 msgid ""
 "Donation form: product not found (no id/slug/sku was given, or this is not a "
 "product page)."
 msgstr ""
 
 #. translators: %d: product ID
-#: includes/class-shortcodes.php:321
+#: includes/class-shortcodes.php:330
 #, php-format
 msgid "This product cannot be purchased (ID: %d)."
 msgstr ""
 
 #. translators: %d: product ID
-#: includes/class-shortcodes.php:330
+#: includes/class-shortcodes.php:339
 #, php-format
 msgid "This product is out of stock (ID: %d)."
 msgstr ""
 
-#: includes/class-style-presets.php:225
+#: includes/class-style-presets.php:272
 msgid "Custom pack"
 msgstr ""
 
-#: includes/class-style-presets.php:226
+#: includes/class-style-presets.php:273
 msgid "Exported from current settings"
 msgstr ""
 
-#: includes/class-style-presets.php:242
+#: includes/class-style-presets.php:289
 msgid "Imported pack"
 msgstr ""
 
 #: includes/class-utils.php:323 includes/class-utils.php:333
-#: includes/traits/trait-wdp-ajax-cart-add.php:492
-#: includes/traits/trait-wdp-assets-registry.php:389
+#: includes/traits/trait-wdp-ajax-cart-add.php:461
+#: includes/traits/trait-wdp-assets-registry.php:383
 msgid "Please enter a valid add-on donation amount."
 msgstr ""
 
@@ -4098,87 +3876,73 @@ msgstr ""
 msgid "Please enter %s or more for the add-on donation."
 msgstr ""
 
-#: includes/class-utils.php:529
+#: includes/class-utils.php:531
 msgid "An error occurred. Please try again."
 msgstr ""
 
-#: includes/class-woo-donation-popup-admin.php:100
+#: includes/class-woo-donation-popup-admin.php:104
 msgid "Product page and list settings saved."
 msgstr ""
 
-#: includes/class-woo-donation-popup-admin.php:105
-#: includes/class-woo-donation-popup-admin.php:335
-#: includes/class-woo-donation-popup-admin.php:401
-#: includes/class-woo-donation-popup-admin.php:433
+#: includes/class-woo-donation-popup-admin.php:109
+#: includes/class-woo-donation-popup-admin.php:360
 msgid "Something went wrong. Please try again."
 msgstr ""
 
-#: includes/class-woo-donation-popup-admin.php:184
+#: includes/class-woo-donation-popup-admin.php:179
 msgid "Standard form settings saved successfully."
 msgstr ""
 
-#: includes/class-woo-donation-popup-admin.php:245
+#: includes/class-woo-donation-popup-admin.php:240
 msgid "Design Studio settings saved."
 msgstr ""
 
-#: includes/class-woo-donation-popup-admin.php:268
+#: includes/class-woo-donation-popup-admin.php:263
 msgid "Share-based form settings saved successfully."
 msgstr ""
 
-#: includes/class-woo-donation-popup-admin.php:286
+#: includes/class-woo-donation-popup-admin.php:281
 msgid "Success screen settings saved successfully."
 msgstr ""
 
-#: includes/class-woo-donation-popup-admin.php:307
+#: includes/class-woo-donation-popup-admin.php:299
 msgid "Progress bar settings saved successfully."
 msgstr ""
 
-#: includes/class-woo-donation-popup-admin.php:323
-msgid "The Meta tracking module could not be loaded."
-msgstr ""
-
-#: includes/class-woo-donation-popup-admin.php:330
-msgid "Meta Pixel settings saved successfully."
-msgstr ""
-
-#: includes/class-woo-donation-popup-admin.php:353
+#: includes/class-woo-donation-popup-admin.php:316
 msgid "This cannot be undone. It is not saved without confirmation."
 msgstr ""
 
-#: includes/class-woo-donation-popup-admin.php:359
+#: includes/class-woo-donation-popup-admin.php:322
 msgid "Advanced settings saved."
 msgstr ""
 
-#: includes/class-woo-donation-popup-admin.php:396
-msgid "Category colors saved."
-msgstr ""
-
-#: includes/class-woo-donation-popup-admin.php:427
+#: includes/class-woo-donation-popup-admin.php:354
 msgid "Popup layout settings saved successfully."
 msgstr ""
 
-#: includes/class-woo-donation-popup-admin.php:494
+#: includes/class-woo-donation-popup-admin.php:421
 msgid "Invalid style pack."
 msgstr ""
 
-#: includes/class-woo-donation-popup-admin.php:497
+#: includes/class-woo-donation-popup-admin.php:424
 msgid "The style pack could not be applied."
 msgstr ""
 
-#: includes/class-woo-donation-popup-admin.php:507
+#: includes/class-woo-donation-popup-admin.php:434
 msgid "The style pack was applied and saved."
 msgstr ""
 
-#: includes/class-woo-donation-popup-admin.php:525
-#: includes/class-woo-donation-popup-admin.php:541
+#: includes/class-woo-donation-popup-admin.php:452
+#: includes/class-woo-donation-popup-admin.php:468
 msgid "Style packs could not be loaded."
 msgstr ""
 
-#: includes/class-woo-donation-popup-admin.php:546
+#: includes/class-woo-donation-popup-admin.php:473
 msgid "Invalid JSON pack."
 msgstr ""
 
-#: includes/class-woo-donation-popup-admin.php:554
+#: includes/class-woo-donation-popup-admin.php:481
 msgid "The pack was imported and applied."
 msgstr ""
 
@@ -4210,7 +3974,7 @@ msgid "Dedication / anonymous"
 msgstr ""
 
 #: includes/config/form-modules.php:36 includes/i18n/class-wdp-js-i18n.php:34
-#: assets/js/src/form/wizard.js:29
+#: assets/js/src/form/wizard.js:22
 msgid "Additional donation"
 msgstr ""
 
@@ -4218,15 +3982,15 @@ msgstr ""
 msgid "Default ocean blue (#0f608b), 12px radius, balanced surface."
 msgstr ""
 
-#: includes/config/style-presets.php:84
+#: includes/config/style-presets.php:80
 msgid "Glass panel, strong blur, airy sky blue, 16px radius."
 msgstr ""
 
-#: includes/config/style-presets.php:150
+#: includes/config/style-presets.php:142
 msgid "Corporate navy, tight typography, 8px radius."
 msgstr ""
 
-#: includes/config/style-presets.php:216
+#: includes/config/style-presets.php:204
 msgid "Vivid sky blue, soft accent, emotional headline."
 msgstr ""
 
@@ -4286,7 +4050,7 @@ msgid "Product ID or slug"
 msgstr ""
 
 #: includes/elementor/class-widget-donation-form.php:119
-#: includes/elementor/class-widget-donations-list.php:101
+#: includes/elementor/class-widget-donations-list.php:152
 #: blocks/donation-form/index.js:102 blocks/donations/index.js:99
 msgid "Display"
 msgstr ""
@@ -4303,7 +4067,7 @@ msgid "Show heading"
 msgstr ""
 
 #: includes/elementor/class-widget-donation-form.php:145
-#: includes/elementor/class-widget-donations-list.php:127
+#: includes/elementor/class-widget-donations-list.php:227
 msgctxt "Elementor widget"
 msgid "Button text"
 msgstr ""
@@ -4333,169 +4097,169 @@ msgstr ""
 msgid "Query"
 msgstr ""
 
-#: includes/elementor/class-widget-donations-list.php:77
+#: includes/elementor/class-widget-donations-list.php:80
 msgid "Categories (slugs, comma-separated)"
 msgstr ""
 
-#: includes/elementor/class-widget-donations-list.php:78
+#: includes/elementor/class-widget-donations-list.php:87
 #: blocks/donations/index.js:58
 msgid "Exclude categories"
 msgstr ""
 
-#: includes/elementor/class-widget-donations-list.php:79
+#: includes/elementor/class-widget-donations-list.php:94
 #: blocks/donations/index.js:59
 msgid "IDs only"
 msgstr ""
 
-#: includes/elementor/class-widget-donations-list.php:80
+#: includes/elementor/class-widget-donations-list.php:101
 #: blocks/donations/index.js:60
 msgid "Exclude IDs"
 msgstr ""
 
-#: includes/elementor/class-widget-donations-list.php:81
+#: includes/elementor/class-widget-donations-list.php:108
 msgid "Type"
 msgstr ""
 
-#: includes/elementor/class-widget-donations-list.php:82
+#: includes/elementor/class-widget-donations-list.php:116
 #: blocks/donations/index.js:63
 msgid "Count"
 msgstr ""
 
-#: includes/elementor/class-widget-donations-list.php:86
+#: includes/elementor/class-widget-donations-list.php:126
 #: blocks/donations/index.js:72
 msgid "Order by"
 msgstr ""
 
-#: includes/elementor/class-widget-donations-list.php:90
+#: includes/elementor/class-widget-donations-list.php:130
 #: blocks/donations/index.js:75
 msgid "Menu order"
 msgstr ""
 
-#: includes/elementor/class-widget-donations-list.php:91
+#: includes/elementor/class-widget-donations-list.php:131
 #: blocks/donations/index.js:76
 msgid "Date"
 msgstr ""
 
-#: includes/elementor/class-widget-donations-list.php:92
+#: includes/elementor/class-widget-donations-list.php:132
 #: blocks/donations/index.js:77
 msgid "Title"
 msgstr ""
 
-#: includes/elementor/class-widget-donations-list.php:93
+#: includes/elementor/class-widget-donations-list.php:133
 #: blocks/donations/index.js:78
 msgid "Popularity"
 msgstr ""
 
-#: includes/elementor/class-widget-donations-list.php:94
+#: includes/elementor/class-widget-donations-list.php:134
 #: blocks/donations/index.js:79
 msgid "Random"
 msgstr ""
 
-#: includes/elementor/class-widget-donations-list.php:98
+#: includes/elementor/class-widget-donations-list.php:141
 #: blocks/donations/index.js:86
 msgid "Direction"
 msgstr ""
 
-#: includes/elementor/class-widget-donations-list.php:105
+#: includes/elementor/class-widget-donations-list.php:156
 #: blocks/donations/index.js:101
 msgid "Columns"
 msgstr ""
 
-#: includes/elementor/class-widget-donations-list.php:114
+#: includes/elementor/class-widget-donations-list.php:168
 #: blocks/donations/index.js:128
 msgid "Gap (px)"
 msgstr ""
 
-#: includes/elementor/class-widget-donations-list.php:118
+#: includes/elementor/class-widget-donations-list.php:178
 #: blocks/donations/index.js:137
 msgid "Image ratio"
 msgstr ""
 
-#: includes/elementor/class-widget-donations-list.php:121
+#: includes/elementor/class-widget-donations-list.php:186
 #: blocks/donations/index.js:144
 msgid "Original"
 msgstr ""
 
-#: includes/elementor/class-widget-donations-list.php:124
+#: includes/elementor/class-widget-donations-list.php:193
 #: blocks/donations/index.js:151
 msgid "Alignment"
 msgstr ""
 
-#: includes/elementor/class-widget-donations-list.php:124
+#: includes/elementor/class-widget-donations-list.php:197
 #: blocks/donations/index.js:154
 msgid "Center"
 msgstr ""
 
-#: includes/elementor/class-widget-donations-list.php:124
+#: includes/elementor/class-widget-donations-list.php:198
 #: blocks/donations/index.js:155
 msgid "Left"
 msgstr ""
 
-#: includes/elementor/class-widget-donations-list.php:125
+#: includes/elementor/class-widget-donations-list.php:205
 #: blocks/donations/index.js:162
 msgid "Button"
 msgstr ""
 
-#: includes/elementor/class-widget-donations-list.php:125
+#: includes/elementor/class-widget-donations-list.php:209
 #: blocks/donations/index.js:165
 msgid "Panel"
 msgstr ""
 
-#: includes/elementor/class-widget-donations-list.php:125
+#: includes/elementor/class-widget-donations-list.php:211
 #: blocks/donations/index.js:167
 msgid "Link"
 msgstr ""
 
-#: includes/elementor/class-widget-donations-list.php:126
+#: includes/elementor/class-widget-donations-list.php:218
 #: blocks/donations/index.js:173
 msgid "Full-width button"
 msgstr ""
 
-#: includes/elementor/class-widget-donations-list.php:128
+#: includes/elementor/class-widget-donations-list.php:234
 #: blocks/donations/index.js:175
 msgid "Tabs"
 msgstr ""
 
-#: includes/elementor/class-widget-donations-list.php:129
+#: includes/elementor/class-widget-donations-list.php:243
 #: blocks/donations/index.js:176
 msgid "“All” tab"
 msgstr ""
 
-#: includes/elementor/class-widget-donations-list.php:130
+#: includes/elementor/class-widget-donations-list.php:252
 #: blocks/donations/index.js:177
 msgid "All tab label"
 msgstr ""
 
-#: includes/elementor/class-widget-donations-list.php:131
+#: includes/elementor/class-widget-donations-list.php:260
 #: blocks/donations/index.js:178
 msgid "Image"
 msgstr ""
 
-#: includes/elementor/class-widget-donations-list.php:132
+#: includes/elementor/class-widget-donations-list.php:269
 #: blocks/donations/index.js:179
 msgid "Excerpt"
 msgstr ""
 
-#: includes/elementor/class-widget-donations-list.php:134
+#: includes/elementor/class-widget-donations-list.php:287
 #: blocks/donations/index.js:181
 msgid "Price"
 msgstr ""
 
-#: includes/elementor/class-widget-donations-list.php:136
+#: includes/elementor/class-widget-donations-list.php:305
 #: blocks/donations/index.js:184
 msgid "Excerpt words"
 msgstr ""
 
-#: includes/elementor/class-widget-donations-list.php:140
+#: includes/elementor/class-widget-donations-list.php:315
 msgid "Image size"
 msgstr ""
 
-#: includes/elementor/class-widget-donations-list.php:146
+#: includes/elementor/class-widget-donations-list.php:324
 #: blocks/donations/index.js:193
 msgid "Heading tag"
 msgstr ""
 
-#: includes/elementor/class-widget-donations-list.php:147
+#: includes/elementor/class-widget-donations-list.php:337
 #: blocks/donations/index.js:204
 msgid "CSS class"
 msgstr ""
@@ -4510,12 +4274,12 @@ msgstr ""
 msgid "%d item"
 msgstr ""
 
-#: includes/i18n/class-wdp-js-i18n.php:28 assets/js/src/modal.js:498
+#: includes/i18n/class-wdp-js-i18n.php:28 assets/js/src/modal.js:461
 #, javascript-format, php-format
 msgid "%s form opened"
 msgstr ""
 
-#: includes/i18n/class-wdp-js-i18n.php:30 assets/js/src/progress-bar.js:139
+#: includes/i18n/class-wdp-js-i18n.php:30 assets/js/src/progress-bar.js:97
 #, javascript-format, php-format
 msgid "%s%% of the goal completed"
 msgstr ""
@@ -4524,7 +4288,7 @@ msgstr ""
 msgid "1 shareholder form is incomplete."
 msgstr ""
 
-#: includes/i18n/class-wdp-js-i18n.php:32 assets/js/src/form/ajax.js:419
+#: includes/i18n/class-wdp-js-i18n.php:32 assets/js/src/form/ajax.js:338
 msgid "A connection error occurred. Please try again."
 msgstr ""
 
@@ -4533,13 +4297,13 @@ msgid "Add a donation to continue to checkout."
 msgstr ""
 
 #: includes/i18n/class-wdp-js-i18n.php:35
-#: includes/traits/trait-wdp-assets-registry.php:376
-#: assets/js/src/product.js:196
+#: includes/traits/trait-wdp-assets-registry.php:370
+#: assets/js/src/product.js:189
 msgid "An error occurred"
 msgstr ""
 
-#: includes/i18n/class-wdp-js-i18n.php:36 assets/js/src/form/wizard.js:161
-#: assets/js/src/form/wizard.js:187
+#: includes/i18n/class-wdp-js-i18n.php:36 assets/js/src/form/wizard.js:154
+#: assets/js/src/form/wizard.js:180
 msgid "Back"
 msgstr ""
 
@@ -4549,11 +4313,11 @@ msgctxt "cart badge label"
 msgid "%d product"
 msgstr ""
 
-#: includes/i18n/class-wdp-js-i18n.php:39 assets/js/src/form/wizard.js:30
+#: includes/i18n/class-wdp-js-i18n.php:39 assets/js/src/form/wizard.js:23
 msgid "Confirmation"
 msgstr ""
 
-#: includes/i18n/class-wdp-js-i18n.php:40 assets/js/src/progress-bar.js:296
+#: includes/i18n/class-wdp-js-i18n.php:40 assets/js/src/progress-bar.js:254
 #, javascript-format, php-format
 msgid "Confirmed %1$s%%, %2$s%% including pending and typed amounts"
 msgstr ""
@@ -4562,32 +4326,32 @@ msgstr ""
 msgid "Connection restored."
 msgstr ""
 
-#: includes/i18n/class-wdp-js-i18n.php:43 assets/js/src/form/ajax.js:451
+#: includes/i18n/class-wdp-js-i18n.php:43 assets/js/src/form/ajax.js:370
 msgid "Could not submit"
 msgstr ""
 
-#: includes/i18n/class-wdp-js-i18n.php:45 assets/js/src/modal.js:744
+#: includes/i18n/class-wdp-js-i18n.php:45 assets/js/src/modal.js:707
 msgid "Donation form closed"
 msgstr ""
 
-#: includes/i18n/class-wdp-js-i18n.php:46 assets/js/src/modal.js:500
+#: includes/i18n/class-wdp-js-i18n.php:46 assets/js/src/modal.js:463
 msgid "Donation form opened"
 msgstr ""
 
-#: includes/i18n/class-wdp-js-i18n.php:47 assets/js/src/modal.js:744
+#: includes/i18n/class-wdp-js-i18n.php:47 assets/js/src/modal.js:707
 msgid "Donation panel closed"
 msgstr ""
 
-#: includes/i18n/class-wdp-js-i18n.php:48 assets/js/src/modal.js:500
+#: includes/i18n/class-wdp-js-i18n.php:48 assets/js/src/modal.js:463
 msgid "Donation panel opened"
 msgstr ""
 
-#: includes/i18n/class-wdp-js-i18n.php:50 assets/js/src/form/messages.js:112
+#: includes/i18n/class-wdp-js-i18n.php:50 assets/js/src/form/messages.js:105
 #: assets/js/src/form/validate.js:198
 msgid "field is missing"
 msgstr ""
 
-#: includes/i18n/class-wdp-js-i18n.php:51 assets/js/src/form/wizard.js:154
+#: includes/i18n/class-wdp-js-i18n.php:51 assets/js/src/form/wizard.js:147
 msgid "Form steps"
 msgstr ""
 
@@ -4597,34 +4361,34 @@ msgid "Fractional amounts are not allowed on this site, e.g. %s"
 msgstr ""
 
 #: includes/i18n/class-wdp-js-i18n.php:53 assets/js/src/form/validate.js:718
-#: assets/js/src/form/wizard.js:453
+#: assets/js/src/form/wizard.js:446
 msgid "Fractional amounts are not allowed on this site, e.g. 10"
 msgstr ""
 
-#: includes/i18n/class-wdp-js-i18n.php:54 assets/js/src/form/ajax.js:376
-#: assets/js/src/form.js:663
+#: includes/i18n/class-wdp-js-i18n.php:54 assets/js/src/form/ajax.js:295
+#: assets/js/src/form.js:656
 msgctxt "frontend script"
 msgid "The action could not be completed. Please try again."
 msgstr ""
 
 #: includes/i18n/class-wdp-js-i18n.php:55
-#: includes/traits/trait-wdp-ajax-cart-query.php:176
+#: includes/traits/trait-wdp-ajax-cart-query.php:180
 #: assets/js/src/shareholder/guidance.js:67
 msgid "Full name"
 msgstr ""
 
-#: includes/i18n/class-wdp-js-i18n.php:57 assets/js/src/form/messages.js:104
+#: includes/i18n/class-wdp-js-i18n.php:57 assets/js/src/form/messages.js:97
 msgid "full name is missing"
 msgstr ""
 
 #: includes/i18n/class-wdp-js-i18n.php:58
-#: includes/traits/trait-wdp-assets-registry.php:394
-#: assets/js/src/form/messages.js:25 assets/js/src/form/validate.js:110
-#: assets/js/src/form.js:334
+#: includes/traits/trait-wdp-assets-registry.php:388
+#: assets/js/src/form/messages.js:18 assets/js/src/form/validate.js:110
+#: assets/js/src/form.js:327
 msgid "Full name is required."
 msgstr ""
 
-#: includes/i18n/class-wdp-js-i18n.php:61 assets/js/src/progress-bar.js:321
+#: includes/i18n/class-wdp-js-i18n.php:61 assets/js/src/progress-bar.js:279
 msgid "In progress"
 msgstr ""
 
@@ -4635,15 +4399,15 @@ msgid "Incomplete shareholder forms: %d."
 msgstr ""
 
 #: includes/i18n/class-wdp-js-i18n.php:63
-#: includes/traits/trait-wdp-ajax-cart-add.php:198
-#: includes/traits/trait-wdp-ajax-cart-add.php:202
-#: includes/traits/trait-wdp-ajax-cart-add.php:208
+#: includes/traits/trait-wdp-ajax-cart-add.php:204
+#: includes/traits/trait-wdp-ajax-cart-add.php:209
+#: includes/traits/trait-wdp-ajax-cart-add.php:215
 #: includes/traits/trait-wdp-utils-price.php:428
 #: assets/js/src/core/utils.js:259
 msgid "Invalid price value."
 msgstr ""
 
-#: includes/i18n/class-wdp-js-i18n.php:64 assets/js/src/form/ajax.js:308
+#: includes/i18n/class-wdp-js-i18n.php:64 assets/js/src/form/ajax.js:227
 msgid "Loading cart contents..."
 msgstr ""
 
@@ -4652,12 +4416,12 @@ msgstr ""
 msgid "Maximum amount: %s"
 msgstr ""
 
-#: includes/i18n/class-wdp-js-i18n.php:66 assets/js/src/form/wizard.js:463
+#: includes/i18n/class-wdp-js-i18n.php:66 assets/js/src/form/wizard.js:456
 msgid "Minimum amount: "
 msgstr ""
 
-#: includes/i18n/class-wdp-js-i18n.php:67 assets/js/src/form/wizard.js:164
-#: assets/js/src/form/wizard.js:190
+#: includes/i18n/class-wdp-js-i18n.php:67 assets/js/src/form/wizard.js:157
+#: assets/js/src/form/wizard.js:183
 msgid "Next"
 msgstr ""
 
@@ -4673,12 +4437,12 @@ msgstr ""
 msgid "Online"
 msgstr ""
 
-#: includes/i18n/class-wdp-js-i18n.php:74 assets/js/src/form/messages.js:110
+#: includes/i18n/class-wdp-js-i18n.php:74 assets/js/src/form/messages.js:103
 msgid "phone number is missing or invalid"
 msgstr ""
 
-#: includes/i18n/class-wdp-js-i18n.php:75 assets/js/src/form/wizard.js:340
-#: assets/js/src/form/wizard.js:407
+#: includes/i18n/class-wdp-js-i18n.php:75 assets/js/src/form/wizard.js:333
+#: assets/js/src/form/wizard.js:400
 msgid "Phone number is required."
 msgstr ""
 
@@ -4688,16 +4452,16 @@ msgstr ""
 
 #: includes/i18n/class-wdp-js-i18n.php:77 assets/js/src/form/feedback.js:372
 #: assets/js/src/form/feedback.js:388 assets/js/src/form/validate.js:20
-#: assets/js/src/form.js:561 assets/js/src/form.js:578
+#: assets/js/src/form.js:554 assets/js/src/form.js:571
 msgid "Please check the highlighted fields."
 msgstr ""
 
-#: includes/i18n/class-wdp-js-i18n.php:78 assets/js/src/form/wizard.js:413
+#: includes/i18n/class-wdp-js-i18n.php:78 assets/js/src/form/wizard.js:406
 msgid "Please check the phone number."
 msgstr ""
 
 #: includes/i18n/class-wdp-js-i18n.php:80 assets/js/src/form/validate.js:706
-#: assets/js/src/form.js:487
+#: assets/js/src/form.js:480
 msgid "Please enter a donation amount."
 msgstr ""
 
@@ -4707,8 +4471,8 @@ msgid "Please enter a total of %s or more."
 msgstr ""
 
 #: includes/i18n/class-wdp-js-i18n.php:82 assets/js/src/form/addon.js:34
-#: assets/js/src/form/messages.js:120 assets/js/src/form.js:46
-#: assets/js/src/form.js:495
+#: assets/js/src/form/messages.js:113 assets/js/src/form.js:39
+#: assets/js/src/form.js:488
 msgid "Please enter a valid additional donation amount."
 msgstr ""
 
@@ -4717,15 +4481,15 @@ msgid "Please enter a valid donation amount."
 msgstr ""
 
 #: includes/i18n/class-wdp-js-i18n.php:85 assets/js/src/form/addon.js:42
-#: assets/js/src/form/messages.js:142 assets/js/src/form.js:54
-#: assets/js/src/form.js:780 assets/js/src/form.js:822
+#: assets/js/src/form/messages.js:135 assets/js/src/form.js:47
+#: assets/js/src/form.js:773 assets/js/src/form.js:815
 #, javascript-format, php-format
 msgid "Please enter at least %s."
 msgstr ""
 
 #. translators: %s: example amount in store format
 #: includes/i18n/class-wdp-js-i18n.php:86
-#: includes/traits/trait-wdp-assets-registry.php:382
+#: includes/traits/trait-wdp-assets-registry.php:376
 #: includes/traits/trait-wdp-utils-price.php:242
 #: assets/js/src/core/utils.js:250
 #, javascript-format, php-format
@@ -4733,36 +4497,36 @@ msgid "Please enter the amount in this format, e.g. %s"
 msgstr ""
 
 #: includes/i18n/class-wdp-js-i18n.php:87
-#: includes/traits/trait-wdp-assets-registry.php:393
-#: assets/js/src/form/messages.js:63 assets/js/src/form/validate.js:138
-#: assets/js/src/form.js:474
+#: includes/traits/trait-wdp-assets-registry.php:387
+#: assets/js/src/form/messages.js:56 assets/js/src/form/validate.js:138
+#: assets/js/src/form.js:467
 msgid "Please enter your complete phone number."
 msgstr ""
 
-#: includes/i18n/class-wdp-js-i18n.php:88 assets/js/src/form/wizard.js:475
+#: includes/i18n/class-wdp-js-i18n.php:88 assets/js/src/form/wizard.js:468
 msgid "Please fill in the missing or invalid fields."
 msgstr ""
 
-#: includes/i18n/class-wdp-js-i18n.php:89 assets/js/src/form/wizard.js:302
+#: includes/i18n/class-wdp-js-i18n.php:89 assets/js/src/form/wizard.js:295
 msgid "Please fill in the share details."
 msgstr ""
 
-#: includes/i18n/class-wdp-js-i18n.php:90 assets/js/src/form/wizard.js:349
+#: includes/i18n/class-wdp-js-i18n.php:90 assets/js/src/form/wizard.js:342
 msgid "Please fill in the shareholder name and phone details."
 msgstr ""
 
-#: includes/i18n/class-wdp-js-i18n.php:91 assets/js/src/form/wizard.js:288
-#: assets/js/src/form/wizard.js:289
+#: includes/i18n/class-wdp-js-i18n.php:91 assets/js/src/form/wizard.js:281
+#: assets/js/src/form/wizard.js:282
 msgid "Please select at least 1 share."
 msgstr ""
 
-#: includes/i18n/class-wdp-js-i18n.php:93 assets/js/src/product.js:154
+#: includes/i18n/class-wdp-js-i18n.php:93 assets/js/src/product.js:147
 msgid ""
 "Product information could not be loaded. Please refresh the page and try "
 "again."
 msgstr ""
 
-#: includes/i18n/class-wdp-js-i18n.php:94 assets/js/src/form/ajax.js:239
+#: includes/i18n/class-wdp-js-i18n.php:94 assets/js/src/form/ajax.js:159
 msgid "Redirecting you to checkout."
 msgstr ""
 
@@ -4770,23 +4534,23 @@ msgstr ""
 msgid "Remove from cart"
 msgstr ""
 
-#: includes/i18n/class-wdp-js-i18n.php:97 assets/js/src/form/ajax.js:374
+#: includes/i18n/class-wdp-js-i18n.php:97 assets/js/src/form/ajax.js:293
 msgctxt "server error keyword"
 msgid "cart object"
 msgstr ""
 
-#: includes/i18n/class-wdp-js-i18n.php:98 assets/js/src/form/ajax.js:372
+#: includes/i18n/class-wdp-js-i18n.php:98 assets/js/src/form/ajax.js:291
 msgctxt "server error keyword"
 msgid "invalid request"
 msgstr ""
 
 #: includes/i18n/class-wdp-js-i18n.php:99 assets/js/src/cart/actions.js:122
-#: assets/js/src/form/ajax.js:371
+#: assets/js/src/form/ajax.js:290
 msgctxt "server error keyword"
 msgid "security"
 msgstr ""
 
-#: includes/i18n/class-wdp-js-i18n.php:100 assets/js/src/form/ajax.js:373
+#: includes/i18n/class-wdp-js-i18n.php:100 assets/js/src/form/ajax.js:292
 msgctxt "server error keyword"
 msgid "unexpected error"
 msgstr ""
@@ -4797,39 +4561,39 @@ msgid "Shareholder form %d is incomplete."
 msgstr ""
 
 #: includes/i18n/class-wdp-js-i18n.php:103
-#: includes/traits/trait-wdp-assets-registry.php:396
-#: assets/js/src/form/messages.js:34 assets/js/src/form/validate.js:117
-#: assets/js/src/form.js:342
+#: includes/traits/trait-wdp-assets-registry.php:390
+#: assets/js/src/form/messages.js:27 assets/js/src/form/validate.js:117
+#: assets/js/src/form.js:335
 msgid "Shareholder name is required."
 msgstr ""
 
-#: includes/i18n/class-wdp-js-i18n.php:104 assets/js/src/form/wizard.js:28
+#: includes/i18n/class-wdp-js-i18n.php:104 assets/js/src/form/wizard.js:21
 msgid "Shares"
 msgstr ""
 
-#: includes/i18n/class-wdp-js-i18n.php:105 assets/js/src/form/wizard.js:528
+#: includes/i18n/class-wdp-js-i18n.php:105 assets/js/src/form/wizard.js:521
 msgid "Step"
 msgstr ""
 
-#: includes/i18n/class-wdp-js-i18n.php:106 assets/js/src/modal.js:35
+#: includes/i18n/class-wdp-js-i18n.php:106 assets/js/src/modal.js:28
 msgid "The form did not finish loading. Please check your details."
 msgstr ""
 
 #: includes/i18n/class-wdp-js-i18n.php:107
-#: assets/js/src/bootstrap/event-manager.js:245
-#: assets/js/src/form/cta-ready.js:144
+#: assets/js/src/bootstrap/event-manager.js:226
+#: assets/js/src/form/cta-ready.js:137
 msgid "The form is not ready yet. Please wait a few seconds and try again."
 msgstr ""
 
 #: includes/i18n/class-wdp-js-i18n.php:108
-#: includes/traits/trait-wdp-assets-registry.php:378
-#: assets/js/src/form/messages.js:43 assets/js/src/form/validate.js:124
-#: assets/js/src/form/wizard.js:228 assets/js/src/form.js:350
+#: includes/traits/trait-wdp-assets-registry.php:372
+#: assets/js/src/form/messages.js:36 assets/js/src/form/validate.js:124
+#: assets/js/src/form/wizard.js:221 assets/js/src/form.js:343
 msgid "This field is required"
 msgstr ""
 
 #: includes/i18n/class-wdp-js-i18n.php:109 assets/js/src/form/feedback.js:247
-#: assets/js/src/form.js:497
+#: assets/js/src/form.js:490
 msgid "This field is required."
 msgstr ""
 
@@ -4837,31 +4601,31 @@ msgstr ""
 msgid "Too many requests. Please wait a moment and try again."
 msgstr ""
 
-#: includes/i18n/class-wdp-js-i18n.php:112 assets/js/src/form/ajax.js:433
+#: includes/i18n/class-wdp-js-i18n.php:112 assets/js/src/form/ajax.js:352
 msgid "Try again"
 msgstr ""
 
-#: includes/i18n/class-wdp-js-i18n.php:113 assets/js/src/progress-bar.js:323
+#: includes/i18n/class-wdp-js-i18n.php:113 assets/js/src/progress-bar.js:281
 msgid "Very close to the goal"
 msgstr ""
 
-#: includes/i18n/class-wdp-js-i18n.php:114 assets/js/src/form/wizard.js:27
+#: includes/i18n/class-wdp-js-i18n.php:114 assets/js/src/form/wizard.js:20
 msgctxt "wizard step"
 msgid "Amount"
 msgstr ""
 
-#: includes/i18n/class-wdp-js-i18n.php:115 assets/js/src/form/wizard.js:333
-#: assets/js/src/form/wizard.js:425
+#: includes/i18n/class-wdp-js-i18n.php:115 assets/js/src/form/wizard.js:326
+#: assets/js/src/form/wizard.js:418
 msgctxt "wizard step"
 msgid "Full name is required."
 msgstr ""
 
-#: includes/i18n/class-wdp-js-i18n.php:116 assets/js/src/form/wizard.js:402
+#: includes/i18n/class-wdp-js-i18n.php:116 assets/js/src/form/wizard.js:395
 msgctxt "wizard step"
 msgid "Please enter a valid phone number."
 msgstr ""
 
-#: includes/i18n/class-wdp-js-i18n.php:117 assets/js/src/form/ajax.js:418
+#: includes/i18n/class-wdp-js-i18n.php:117 assets/js/src/form/ajax.js:337
 msgid "You appear to be offline. Please try again when you are back online."
 msgstr ""
 
@@ -4869,11 +4633,11 @@ msgstr ""
 msgid "Your cart is empty"
 msgstr ""
 
-#: includes/i18n/class-wdp-js-i18n.php:119 assets/js/src/progress-bar.js:324
+#: includes/i18n/class-wdp-js-i18n.php:119 assets/js/src/progress-bar.js:282
 msgid "Your contribution is being added"
 msgstr ""
 
-#: includes/i18n/class-wdp-js-i18n.php:120 assets/js/src/form/wizard.js:26
+#: includes/i18n/class-wdp-js-i18n.php:120 assets/js/src/form/wizard.js:19
 msgid "Your details"
 msgstr ""
 
@@ -4881,11 +4645,11 @@ msgstr ""
 msgid "Your donation cart"
 msgstr ""
 
-#: includes/i18n/class-wdp-js-i18n.php:122 assets/js/src/form/ajax.js:148
+#: includes/i18n/class-wdp-js-i18n.php:122 assets/js/src/form/ajax.js:69
 msgid "Your donation has been added to the cart"
 msgstr ""
 
-#: includes/i18n/class-wdp-js-i18n.php:123 assets/js/src/form/ajax.js:245
+#: includes/i18n/class-wdp-js-i18n.php:123 assets/js/src/form/ajax.js:164
 msgid "Your donation has been added to the cart."
 msgstr ""
 
@@ -4934,7 +4698,7 @@ msgstr ""
 #: includes/templates/class-form-fields-renderer.php:410
 #: includes/templates/class-form-fields-renderer.php:411
 #: includes/templates/class-form-fields-renderer.php:440
-#: includes/traits/trait-wdp-assets-registry.php:388
+#: includes/traits/trait-wdp-assets-registry.php:382
 msgid "Add-on donation amount"
 msgstr ""
 
@@ -4943,7 +4707,7 @@ msgid "Donor contact details"
 msgstr ""
 
 #: includes/templates/class-form-fields-renderer.php:695
-#: includes/traits/trait-wdp-ajax-cart-query.php:182
+#: includes/traits/trait-wdp-ajax-cart-query.php:186
 msgid "Number of shares"
 msgstr ""
 
@@ -4968,31 +4732,31 @@ msgid ""
 "amount”."
 msgstr ""
 
-#: includes/templates/class-modal-shell-renderer.php:363
+#: includes/templates/class-modal-shell-renderer.php:361
 msgid "Close popup"
 msgstr ""
 
-#: includes/templates/class-modal-shell-renderer.php:374
+#: includes/templates/class-modal-shell-renderer.php:378
 #, php-format
 msgid "Donation form for %s"
 msgstr ""
 
-#: includes/traits/trait-wdp-ajax-base.php:36
+#: includes/traits/trait-wdp-ajax-base.php:37
 msgid "Too many requests were sent. Please wait a while and try again."
 msgstr ""
 
-#: includes/traits/trait-wdp-ajax-base.php:51
+#: includes/traits/trait-wdp-ajax-base.php:52
 msgid "You do not have permission"
 msgstr ""
 
-#: includes/traits/trait-wdp-ajax-base.php:81
+#: includes/traits/trait-wdp-ajax-base.php:82
 msgid "Invalid request method"
 msgstr ""
 
 #: includes/traits/trait-wdp-ajax-cart-add.php:61
 #: includes/traits/trait-wdp-ajax-cart-query.php:58
-#: includes/traits/trait-wdp-ajax-cart-query.php:85
-#: includes/traits/trait-wdp-ajax-cart-query.php:223
+#: includes/traits/trait-wdp-ajax-cart-query.php:87
+#: includes/traits/trait-wdp-ajax-cart-query.php:227
 msgid "WooCommerce cart object was not found."
 msgstr ""
 
@@ -5000,63 +4764,63 @@ msgstr ""
 msgid "Maximum number of shares exceeded"
 msgstr ""
 
-#: includes/traits/trait-wdp-ajax-cart-add.php:225
-#: includes/traits/trait-wdp-assets-registry.php:383
+#: includes/traits/trait-wdp-ajax-cart-add.php:232
+#: includes/traits/trait-wdp-assets-registry.php:377
 msgid "Minimum price: "
 msgstr ""
 
 #. translators: %s: formatted maximum amount with currency
-#: includes/traits/trait-wdp-ajax-cart-add.php:233
+#: includes/traits/trait-wdp-ajax-cart-add.php:240
 #, php-format
 msgid "Maximum price: %s"
 msgstr ""
 
-#: includes/traits/trait-wdp-ajax-cart-add.php:253
+#: includes/traits/trait-wdp-ajax-cart-add.php:261
 msgid "Product is already in the cart"
 msgstr ""
 
-#: includes/traits/trait-wdp-ajax-cart-add.php:312
+#: includes/traits/trait-wdp-ajax-cart-add.php:320
 msgid "An error occurred while adding the product to the cart."
 msgstr ""
 
-#: includes/traits/trait-wdp-ajax-cart-add.php:335
-#: includes/traits/trait-wdp-ajax-cart-session.php:75
+#: includes/traits/trait-wdp-ajax-cart-add.php:343
+#: includes/traits/trait-wdp-ajax-cart-session.php:80
 msgid "Product added to cart."
 msgstr ""
 
-#: includes/traits/trait-wdp-ajax-cart-add.php:458
+#: includes/traits/trait-wdp-ajax-cart-add.php:427
 msgid ""
 "Add-on donation WooCommerce product was not found. Enter a valid product ID "
 "in Success & Mini Cart or the product settings."
 msgstr ""
 
 #. translators: %d: WooCommerce product ID
-#: includes/traits/trait-wdp-ajax-cart-add.php:531
+#: includes/traits/trait-wdp-ajax-cart-add.php:500
 #, php-format
 msgid ""
 "The add-on donation could not be added to the cart (product #%d). Make sure "
 "the product is published."
 msgstr ""
 
-#: includes/traits/trait-wdp-ajax-cart-query.php:144
-#: includes/traits/trait-wdp-ajax-cart-query.php:146
+#: includes/traits/trait-wdp-ajax-cart-query.php:148
+#: includes/traits/trait-wdp-ajax-cart-query.php:150
 msgid "Charity donation"
 msgstr ""
 
-#: includes/traits/trait-wdp-ajax-cart-query.php:232
+#: includes/traits/trait-wdp-ajax-cart-query.php:236
 msgid "Cart item key was not found."
 msgstr ""
 
-#: includes/traits/trait-wdp-ajax-cart-query.php:237
-#: includes/traits/trait-wdp-ajax-cart-query.php:254
+#: includes/traits/trait-wdp-ajax-cart-query.php:241
+#: includes/traits/trait-wdp-ajax-cart-query.php:258
 msgid "The cart item could not be removed."
 msgstr ""
 
-#: includes/traits/trait-wdp-ajax-cart-query.php:274
+#: includes/traits/trait-wdp-ajax-cart-query.php:279
 msgid "Cart item removed."
 msgstr ""
 
-#: includes/traits/trait-wdp-ajax-cart-query.php:288
+#: includes/traits/trait-wdp-ajax-cart-query.php:295
 msgid "An unexpected error occurred."
 msgstr ""
 
@@ -5064,14 +4828,14 @@ msgstr ""
 msgid "No valid cart session was found"
 msgstr ""
 
-#: includes/traits/trait-wdp-ajax-product.php:71
-#: includes/traits/trait-wdp-ajax-product.php:79
-#: includes/traits/trait-wdp-ajax-product.php:205
+#: includes/traits/trait-wdp-ajax-product.php:72
+#: includes/traits/trait-wdp-ajax-product.php:80
 #: includes/traits/trait-wdp-ajax-product.php:211
+#: includes/traits/trait-wdp-ajax-product.php:217
 msgid "Invalid product ID"
 msgstr ""
 
-#: includes/traits/trait-wdp-ajax-product.php:215
+#: includes/traits/trait-wdp-ajax-product.php:221
 msgid "Product not found"
 msgstr ""
 
@@ -5084,55 +4848,55 @@ msgstr ""
 msgid "Shareholder form status"
 msgstr ""
 
-#: includes/traits/trait-wdp-assets-registry.php:375
+#: includes/traits/trait-wdp-assets-registry.php:369
 msgid "Loading..."
 msgstr ""
 
-#: includes/traits/trait-wdp-assets-registry.php:379
+#: includes/traits/trait-wdp-assets-registry.php:373
 msgid "Invalid price"
 msgstr ""
 
 #. translators: %s: example whole amount in store format
-#: includes/traits/trait-wdp-assets-registry.php:380
-#: includes/traits/trait-wdp-assets-registry.php:381
+#: includes/traits/trait-wdp-assets-registry.php:374
+#: includes/traits/trait-wdp-assets-registry.php:375
 #: includes/traits/trait-wdp-utils-price.php:220
 #, php-format
 msgid "This site does not accept amounts with decimals, e.g. %s"
 msgstr ""
 
-#: includes/traits/trait-wdp-assets-registry.php:384
+#: includes/traits/trait-wdp-assets-registry.php:378
 msgid "Maximum number of shares: "
 msgstr ""
 
-#: includes/traits/trait-wdp-assets-registry.php:385
+#: includes/traits/trait-wdp-assets-registry.php:379
 msgid "Donation amount *"
 msgstr ""
 
-#: includes/traits/trait-wdp-assets-registry.php:390
+#: includes/traits/trait-wdp-assets-registry.php:384
 msgid "Minimum add-on donation amount: "
 msgstr ""
 
-#: includes/traits/trait-wdp-assets-registry.php:391
+#: includes/traits/trait-wdp-assets-registry.php:385
 msgid "Please enter a valid phone number."
 msgstr ""
 
-#: includes/traits/trait-wdp-assets-registry.php:392
+#: includes/traits/trait-wdp-assets-registry.php:386
 msgid "Phone number is missing."
 msgstr ""
 
-#: includes/traits/trait-wdp-assets-registry.php:397
+#: includes/traits/trait-wdp-assets-registry.php:391
 msgid "full name field is missing"
 msgstr ""
 
-#: includes/traits/trait-wdp-assets-registry.php:398
+#: includes/traits/trait-wdp-assets-registry.php:392
 msgid "please enter your complete phone number"
 msgstr ""
 
-#: includes/traits/trait-wdp-assets-registry.php:399
+#: includes/traits/trait-wdp-assets-registry.php:393
 msgid "Search"
 msgstr ""
 
-#: includes/traits/trait-wdp-assets-registry.php:400
+#: includes/traits/trait-wdp-assets-registry.php:394
 msgid "Your donation was added to the cart"
 msgstr ""
 

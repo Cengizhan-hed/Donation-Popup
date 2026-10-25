@@ -52,8 +52,6 @@ const ADMIN_TABS = [
   'shareholder-form',
   'progress-bar',
   'success-screen',
-  'meta',
-  'category-colors',
   'advanced',
 ];
 const CHECK_MS = 25000;
