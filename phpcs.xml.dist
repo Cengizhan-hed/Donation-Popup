@@ -5,8 +5,7 @@
 	<file>includes</file>
 	<file>templates</file>
 	<file>blocks</file>
-	<!-- Yeni mimari (Faz 7C): src/ icin SIFIR gevsetme. Klasor yoksa phpcs bu girdiyi sessizce atlar. -->
-	<file>src</file>
+	<!-- src/ (Faz 7C, yeni mimari) BURADA DEGIL: sifir-gevsetme ayri kural dosyasinda (phpcs-src.xml.dist). -->
 	<file>woo-donation-popup.php</file>
 
 	<exclude-pattern>*/vendor/*</exclude-pattern>
@@ -44,9 +43,10 @@
 		<exclude-pattern>*/includes/*</exclude-pattern>
 	</rule>
 
-	<!-- wdp/hdf onekleri eski kodun yerlesik onekleridir; mevcut sinif/islev/DB adlari korunur. -->
+	<!-- wdp/hdf onekleri eski kodun yerlesik onekleridir; mevcut sinif/islev/DB adlari korunur.
+	     NOT: bu kural yalniz includes/ ile sinirlanamaz (exclude-pattern eklenince PrefixAllGlobals tum onekleri tanimaz, denendi).
+	     src/ kodunda yeni kisa onek acilmaz: code review + docs/MIMARI.md kurali (namespace DonationPanel\, global ad yok). -->
 	<rule ref="WordPress.NamingConventions.PrefixAllGlobals.ShortPrefixPassed">
-		<exclude-pattern>*/src/*</exclude-pattern>
 		<severity>0</severity>
 	</rule>
 
@@ -58,8 +58,6 @@
 				<element value="hdf"/>
 				<element value="HDF"/>
 				<!-- Yeni kod: namespace DonationPanel\ ve donation_panel_ onekli global adlar (>=4 karakter, ShortPrefix hatasi yok). -->
-				<element value="DonationPanel"/>
-				<element value="donation_panel"/>
 			</property>
 		</properties>
 	</rule>

@@ -6,7 +6,7 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { issueFingerprint } from './lint-report.mjs';
 
-export const SCOPE_PATHS = ['includes', 'templates', 'blocks', 'woo-donation-popup.php'];
+export const SCOPE_PATHS = ['includes', 'templates', 'blocks', 'woo-donation-popup.php', 'src'];
 
 /**
  * @param {string} root

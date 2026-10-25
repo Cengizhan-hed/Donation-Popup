@@ -889,9 +889,9 @@ Not: sepet/ödemede bağış öğesi olan koşul ayrı ölçülmedi (boş sepet)
 | Gevşetme | Kapsam | Neden gerekti | Yeni mimaride |
 |---|---|---|---|
 | `WordPress.Files.FileName.InvalidClassFileName` hariç | yalnız `*/includes/*` | eski sınıf `WDP_Foo` dosyası `class-foo.php` (önek dosya adında yok) | Gerekmez: `DonationPanel\Core\Foo_Bar` → `src/Core/class-foo-bar.php` (WPCS aynen karşılanır) |
-| `PrefixAllGlobals.ShortPrefixPassed` severity 0 | `*/src/*` hariç (yalnız eski kod) | `wdp`/`hdf` önekleri 4 karakterden kısa | Gerekmez: `src/` kodu namespace `DonationPanel\` altında (global ad yok); zorunlu global ad `donation_panel_` öneki (≥4 karakter) |
+| `PrefixAllGlobals.ShortPrefixPassed` severity 0 | `phpcs.xml.dist` (eski kod) | `wdp`/`hdf` önekleri 4 karakterden kısa | Gerekmez: `src/` kodu namespace `DonationPanel\` altında (global ad yok); zorunlu global ad `donation_panel_` (≥4 karakter). `phpcs-src.xml.dist` kısa öneki zaten reddeder |
 
-**`src/` kuralı:** `phpcs.xml.dist` `src` yolunu zaten kapsar; `src/` için hiçbir exclude/severity yok (yeni kodda hata 0). Deneyle doğrulandı: namespace + `Probe_Thing` + `class-probe-thing.php` temiz.
+**`src/` kuralı:** `phpcs-src.xml.dist` (ayrı kural dosyası): WordPress-Extra + PHPCompatibilityWP, hiçbir exclude/severity yok, yalnız uzun önekler (`DonationPanel`, `donation_panel`; kısa `wdp`/`hdf` src'de hook/global için hata verir, deneyle doğrulandı). Neden ayrı dosya: `PrefixAllGlobals` önek listesine yeni uzun önek eklenince kısa öneklerin tanınması bozuluyor ve kural yola göre sınırlanamıyor; tek dosya olursa ya eski kod kırılır ya src gevşer. `scripts/lint-php.mjs` ve `verify:lint` kapısı `src/` varsa bu dosyayı otomatik kullanır; `src/` hatalarında baseline YOK (her hata kırmızı). Tablodaki iki gevşetme yalnız `phpcs.xml.dist` (eski kod) içindedir.
 
 **Mimari kararı (7C'ye girdi): PSR-4 dosya adı WPCS ile çelişir.** Deneyle `src/Core/Pascal.php` → `FileName.NotHyphenatedLowercase` + `InvalidClassFileName` hatası; PSR-4 ancak bu iki kuralı gevşeterek olur. "Gevşetme yok" için:
 - Namespace `DonationPanel\…`, sınıf adları WPCS biçiminde (`Foo_Bar`), dosyalar `class-foo-bar.php` / `trait-…` / `interface-…`; klasörler `src/{Core,Domain,Modules/<Modül>,WooCommerce,Http,Admin,Frontend,Support}` (klasör adı denetlenmez).
@@ -900,4 +900,4 @@ Not: sepet/ödemede bağış öğesi olan koşul ayrı ölçülmedi (boş sepet)
 
 **Eski kod:** `includes/` 7C'de `src/`'ye taşındıkça silinir; bitince `includes/` istisnaları ve `<file>includes</file>` kaldırılır. O zamana dek `verify:lint` kapısı eski dosyada da yeni/değişen satırda hata → kırmızı.
 
-**Plugin Check kapısı:** bkz. aşağıdaki `verify:plugin-check` açıklaması (7A-3).
+**Plugin Check kapısı (7A-3).** `npm run verify:plugin-check` (`scripts/plugin-check-gate.mjs`) `verify` zincirinin sonundadır (yerel WP + WP-CLI; ~45 sn, süre eşiği 3 dk altında olduğu için koşulsuz). `tools/lint-baseline/baseline-plugin-check.json` (dosya|kaynak|ileti başına sayı; satır numarası yok) içinde olmayan YENİ bulgu → kırmızı. Yerel WP/ağ/WP-CLI yoksa atlanır (uyarı, yeşil). Baseline yenileme: `node scripts/plugin-check-gate.mjs --write-baseline`. Hedef: Faz 7 sonunda baseline boş.
