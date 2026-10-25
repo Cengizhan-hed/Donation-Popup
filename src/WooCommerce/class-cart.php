@@ -167,6 +167,13 @@ final class Cart {
 		$custom = ! empty( $model['allow_custom'] ) ? $amount : null;
 		$type   = isset( $input['donation_type'] ) && is_scalar( $input['donation_type'] ) ? (string) $input['donation_type'] : '';
 		$item   = Cart_Data::cart_item_data( $donation_data, $custom, $product_id, $submission, $type );
+		if ( isset( $item['custom_price'] ) && class_exists( 'WDP_Progress_Currency' ) ) {
+			// Yazılan tutarın birimi: sepet fiyatı ana birime çevrilir, gösterim bu birimde kalır (WDP_Cart::apply_custom_price_to_cart).
+			$active = \WDP_Progress_Currency::get_active_currency();
+			if ( '' !== $active ) {
+				$item['wdp_input_currency'] = $active;
+			}
+		}
 
 		foreach ( $cart->get_cart() as $existing_key => $existing ) {
 			if ( (int) $existing['product_id'] === $product_id
@@ -228,21 +235,17 @@ final class Cart {
 	}
 
 	/**
-	 * Eski sepet doğrulamaları "eklentinin kendi akışı" bayrağını `$_POST` üzerinden okur
-	 * (`WDP_Cart::is_ajax_add_to_cart_flow`); yalnız `add_to_cart` süresince ayarlanır, sonra eski haline döner.
+	 * Eski sepet doğrulamaları "eklentinin kendi akışı" bayrağını okur (`WDP_Cart::is_ajax_add_to_cart_flow`);
+	 * bayrak `WDP_Cart::run_in_plugin_flow` ile yalnız `add_to_cart` süresince açılır (`$_POST` değiştirilmez).
 	 *
 	 * @param callable $callback Sepete ekleme çağrısı.
 	 * @return mixed
 	 */
 	private function with_plugin_flow( $callback ) {
-		$backup                 = $_POST; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- yalnız yedek; okuma yok.
-		$_POST['action']        = 'wdp_ajax_add_to_cart';
-		$_POST['wdp_ajax_flow'] = '1';
-		try {
-			return call_user_func( $callback );
-		} finally {
-			$_POST = $backup;
+		if ( class_exists( 'WDP_Cart' ) && method_exists( 'WDP_Cart', 'run_in_plugin_flow' ) ) {
+			return \WDP_Cart::run_in_plugin_flow( $callback );
 		}
+		return call_user_func( $callback );
 	}
 
 	/**

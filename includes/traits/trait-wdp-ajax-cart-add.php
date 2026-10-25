@@ -229,7 +229,7 @@ trait WDP_Ajax_Cart_Add_Trait {
 					$effective_min = WDP_Cart::get_min_donation_amount( $min_price, $product_id );
 					throw new WDP_Validation_Exception(
 						$amount_error,
-						array( 'custom_price' => __( 'Minimum price: ', 'woo-donation-popup' ) . WDP_Cart::format_amount_for_message( $effective_min, true ) )
+						array( 'custom_price' => __( 'Minimum price: ', 'woo-donation-popup' ) . WDP_Cart::format_amount_for_message( WDP_Cart::amount_from_store_currency( $effective_min ), true ) )
 					);
 				}
 

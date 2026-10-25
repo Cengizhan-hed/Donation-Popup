@@ -338,12 +338,38 @@ class WDP_Cart {
 	}
 
 	/**
+	 * Eklentinin kendi sepete ekleme akışı derinliği (`run_in_plugin_flow`); > 0 iken eski `$_POST` tabanlı
+	 * kancalar (bağış formu doğrulaması/veri ekleme) atlanır. `$_POST` değiştirilmez.
+	 *
+	 * @var int
+	 */
+	private static $plugin_flow_depth = 0;
+
+	/**
+	 * Verilen geri çağrıyı "eklentinin kendi sepete ekleme akışı" içinde çalıştırır (yalnız süresince geçerli).
+	 *
+	 * @param callable $callback Sepete ekleme çağrısı.
+	 * @return mixed
+	 */
+	public static function run_in_plugin_flow( $callback ) {
+		++self::$plugin_flow_depth;
+		try {
+			return call_user_func( $callback );
+		} finally {
+			--self::$plugin_flow_depth;
+		}
+	}
+
+	/**
 	 * Detect internal AJAX add-to-cart flow to avoid duplicate processing.
 	 *
 	 * @param array $request_data Request payload.
 	 * @return bool
 	 */
 	private static function is_ajax_add_to_cart_flow( array $request_data ) {
+		if ( self::$plugin_flow_depth > 0 ) {
+			return true;
+		}
 		return isset( $request_data['action'], $request_data['wdp_ajax_flow'] )
 			&& $request_data['action'] === 'wdp_ajax_add_to_cart'
 			&& $request_data['wdp_ajax_flow'] === '1';
@@ -691,13 +717,16 @@ class WDP_Cart {
 	 * @param mixed $product_min_meta Product `_min_custom_price` meta.
 	 * @param int   $product_id       Product ID.
 	 * @param bool  $plain_text       True for JSON/textContent consumers, false for HTML notices.
+	 * @param string $input_currency  Currency the amount was typed in ('' = active currency).
 	 * @return string
 	 */
-	public static function get_donation_amount_error( $amount, $product_min_meta = '', $product_id = 0, $plain_text = true ) {
+	public static function get_donation_amount_error( $amount, $product_min_meta = '', $product_id = 0, $plain_text = true, $input_currency = '' ) {
 		$amount = (float) $amount;
 		$min    = self::get_min_donation_amount( $product_min_meta, $product_id );
 
-		if ( $amount > 0 && $amount >= $min ) {
+		// Minimum ürün ana biriminde tutulur; bağışçının yazdığı tutar ($input_currency, boşsa etkin birim) ana birime çevrilerek kıyaslanır.
+		$amount_store = self::amount_to_store_currency( $amount, $input_currency );
+		if ( $amount > 0 && $amount_store >= $min ) {
 			return '';
 		}
 
@@ -708,8 +737,38 @@ class WDP_Cart {
 		return sprintf(
 			/* translators: %s: formatted minimum amount with currency */
 			__( 'Please enter %s or more.', 'woo-donation-popup' ),
-			self::format_amount_for_message( $min, $plain_text )
+			self::format_amount_for_message( self::amount_from_store_currency( $min, $input_currency ), $plain_text )
 		);
+	}
+
+	/**
+	 * Bağışçının yazdığı tutarı ($input_currency; boşsa etkin birim) mağaza ana birimine çevirir.
+	 * Dönüşüm yoksa (varsayılan) tutar aynen döner.
+	 *
+	 * @param float  $amount         Tutar.
+	 * @param string $input_currency Para birimi kodu ('' = etkin birim).
+	 * @return float
+	 */
+	public static function amount_to_store_currency( $amount, $input_currency = '' ) {
+		if ( ! class_exists( 'WDP_Progress_Currency' ) ) {
+			return (float) $amount;
+		}
+		$from = '' !== (string) $input_currency ? (string) $input_currency : WDP_Progress_Currency::get_active_currency();
+		return WDP_Progress_Currency::to_store_amount( (float) $amount, $from );
+	}
+
+	/**
+	 * Ana birimdeki tutarı bağışçının birimine ($input_currency; boşsa etkin birim) çevirir (ileti gösterimi).
+	 *
+	 * @param float  $amount         Ana birimde tutar.
+	 * @param string $input_currency Para birimi kodu ('' = etkin birim).
+	 * @return float
+	 */
+	public static function amount_from_store_currency( $amount, $input_currency = '' ) {
+		if ( ! class_exists( 'WDP_Progress_Currency' ) ) {
+			return (float) $amount;
+		}
+		return WDP_Progress_Currency::from_store_amount( (float) $amount, (string) $input_currency );
 	}
 
 	/**

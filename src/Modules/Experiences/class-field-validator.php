@@ -43,6 +43,26 @@ final class Field_Validator {
 	}
 
 	/**
+	 * Yazılan tutarı (etkin birim) mağaza ana birimine çevirir; dönüşüm yoksa aynen döner.
+	 *
+	 * @param float $amount Tutar.
+	 * @return float
+	 */
+	private static function to_store_currency( $amount ) {
+		return class_exists( 'WDP_Cart' ) ? (float) \WDP_Cart::amount_to_store_currency( $amount ) : (float) $amount;
+	}
+
+	/**
+	 * Ana birimdeki tutarı etkin birime çevirir (ileti gösterimi); dönüşüm yoksa aynen döner.
+	 *
+	 * @param float $amount Tutar.
+	 * @return float
+	 */
+	private static function from_store_currency( $amount ) {
+		return class_exists( 'WDP_Cart' ) ? (float) \WDP_Cart::amount_from_store_currency( $amount ) : (float) $amount;
+	}
+
+	/**
 	 * Girdiyi doğrular.
 	 *
 	 * @param array<string, mixed> $model Form modeli.
@@ -58,9 +78,10 @@ final class Field_Validator {
 		if ( null === $amount || $amount <= 0 ) {
 			$errors['amount'] = __( 'Please enter a donation amount.', 'woo-donation-popup' );
 			$amount           = null;
-		} elseif ( $amount < $limit ) {
+		} elseif ( self::to_store_currency( $amount ) < $limit ) {
+			// Minimum ürün ana biriminde tutulur; yazılan tutar ana birime çevrilerek kıyaslanır, ileti yazılan birimde gösterilir.
 			/* translators: %s: minimum amount. */
-			$errors['amount'] = sprintf( __( 'Minimum amount is %s.', 'woo-donation-popup' ), self::format_number( $limit ) );
+			$errors['amount'] = sprintf( __( 'Minimum amount is %s.', 'woo-donation-popup' ), self::format_number( self::from_store_currency( $limit ) ) );
 		} elseif ( $amount > 99999999 ) {
 			$errors['amount'] = __( 'Please enter a donation amount.', 'woo-donation-popup' );
 		} else {

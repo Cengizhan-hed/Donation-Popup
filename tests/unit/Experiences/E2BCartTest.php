@@ -20,7 +20,9 @@ final class E2B_Fake_Cart {
 	public $items = array();
 	/** @var array<int, array<string, mixed>> */
 	public $added = array();
-	/** @var array<string, string> */
+	/** @var bool|null */
+	public $flow_during_add = null;
+	/** @var array<string, mixed> */
 	public $post_during_add = array();
 	/** @var bool */
 	public $fail = false;
@@ -39,10 +41,10 @@ final class E2B_Fake_Cart {
 	}
 
 	public function add_to_cart( $product_id, $quantity, $variation_id, $variation, $data ) {
-		$this->post_during_add = array(
-			'action' => isset( $_POST['action'] ) ? (string) $_POST['action'] : '',
-			'flow'   => isset( $_POST['wdp_ajax_flow'] ) ? (string) $_POST['wdp_ajax_flow'] : '',
-		);
+		$this->post_during_add = $_POST;
+		$method                = new ReflectionMethod( 'WDP_Cart', 'is_ajax_add_to_cart_flow' );
+		$method->setAccessible( true );
+		$this->flow_during_add = (bool) $method->invoke( null, array() );
 		if ( $this->fail ) {
 			return false;
 		}
@@ -116,18 +118,103 @@ final class E2BCartTest extends TestCase {
 		$this->assertSame( 1, $cart->added[0]['quantity'] );
 	}
 
-	public function test_plugin_flow_flag_is_set_only_during_add_and_restored(): void {
+	public function test_plugin_flow_flag_is_set_only_during_add_and_post_is_untouched(): void {
 		$cart = new E2B_Fake_Cart();
 		( new Cart() )->add_item( $cart, $this->product(), $this->model(), $this->input() );
-		$this->assertSame( 'wdp_ajax_add_to_cart', $cart->post_during_add['action'] );
-		$this->assertSame( '1', $cart->post_during_add['flow'] );
-		$this->assertArrayNotHasKey( 'action', $_POST );
-		$this->assertArrayNotHasKey( 'wdp_ajax_flow', $_POST );
+		$this->assertTrue( $cart->flow_during_add );
+		$this->assertArrayNotHasKey( 'action', $cart->post_during_add );
+		$this->assertArrayNotHasKey( 'wdp_ajax_flow', $cart->post_during_add );
+
+		$method = new ReflectionMethod( 'WDP_Cart', 'is_ajax_add_to_cart_flow' );
+		$method->setAccessible( true );
+		$this->assertFalse( (bool) $method->invoke( null, array() ), 'Bayrak add_to_cart sonrası kapanmalı.' );
 
 		$_POST['action'] = 'keep-me';
 		( new Cart() )->add_item( new E2B_Fake_Cart(), $this->product(), $this->model(), $this->input() );
 		$this->assertSame( 'keep-me', $_POST['action'] );
 		unset( $_POST['action'] );
+	}
+
+	public function test_plugin_flow_flag_resets_even_when_add_throws(): void {
+		try {
+			WDP_Cart::run_in_plugin_flow(
+				static function () {
+					throw new RuntimeException( 'x' );
+				}
+			);
+		} catch ( RuntimeException $e ) {
+			unset( $e );
+		}
+		$method = new ReflectionMethod( 'WDP_Cart', 'is_ajax_add_to_cart_flow' );
+		$method->setAccessible( true );
+		$this->assertFalse( (bool) $method->invoke( null, array() ) );
+	}
+
+	private function fake_rates( array $rates ): void {
+		$rates['TRY'] = 1.0;
+		add_filter(
+			'donation_panel_convert_amount',
+			static function ( $amount, $from, $to ) use ( $rates ) {
+				if ( ! isset( $rates[ $from ], $rates[ $to ] ) ) {
+					return $amount;
+				}
+				return (float) $amount / $rates[ $from ] * $rates[ $to ];
+			},
+			10,
+			4
+		);
+	}
+
+	private function store_price( array $item ): float {
+		$m = new ReflectionMethod( 'WDP_Cart', 'resolve_cart_line_store_price' );
+		$m->setAccessible( true );
+		return (float) $m->invoke( null, $item );
+	}
+
+	/** @return array<int, array{0: string, 1: float, 2: float}> */
+	public static function rate_provider(): array {
+		return array(
+			'EUR 0,02' => array( 'EUR', 0.02, 100.0 ),
+			'USD 0,023' => array( 'USD', 0.023, 100.0 ),
+			'GBP 1'    => array( 'GBP', 1.0, 100.0 ),
+			'yuvarlama' => array( 'EUR', 0.023, 10.55 ),
+		);
+	}
+
+	/**
+	 * @dataProvider rate_provider
+	 */
+	public function test_new_cart_line_stamps_input_currency_and_matches_legacy_engine( string $code, float $rate, float $typed ): void {
+		WDP_Test_State::$options['woocommerce_currency'] = 'TRY';
+		WDP_Test_State::$currency                         = $code;
+		$this->fake_rates( array( $code => $rate ) );
+
+		$cart = new E2B_Fake_Cart();
+		$res  = ( new Cart() )->add_item( $cart, $this->product(), $this->model(), $this->input( array( 'amount' => (string) $typed ) ) );
+		$this->assertTrue( $res['ok'], $res['message'] );
+		$new = $cart->added[0]['data'];
+		$this->assertSame( $code, $new['wdp_input_currency'] );
+
+		// Eski motor: aynı yazılan tutar `custom_price` + woocommerce_add_cart_item_data damgası.
+		$legacy = WDP_Cart::stamp_input_currency( array( 'custom_price' => $typed ) );
+		$this->assertSame( $legacy['wdp_input_currency'], $new['wdp_input_currency'] );
+		$this->assertEqualsWithDelta( $this->store_price( $legacy ), $this->store_price( $new ), 0.00000001 );
+		$this->assertEqualsWithDelta( $typed / $rate, $this->store_price( $new ), 0.0001 );
+		// Gösterim: yazıldığı birimde aynen.
+		$this->assertEqualsWithDelta( $typed, (float) WDP_Cart::get_cart_line_unit_price( $new ), 0.0000001 );
+	}
+
+	public function test_new_cart_minimum_is_compared_in_store_currency(): void {
+		WDP_Test_State::$options['woocommerce_currency'] = 'TRY';
+		WDP_Test_State::$currency                         = 'EUR';
+		$this->fake_rates( array( 'EUR' => 0.02 ) );
+		// Ürün minimumu 10 TRY (model min=10; global min 1 TRY) -> 0,2 EUR.
+		$cart = new E2B_Fake_Cart();
+		$ok   = ( new Cart() )->add_item( $cart, $this->product(), $this->model(), $this->input( array( 'amount' => '1' ) ) );
+		$this->assertTrue( $ok['ok'], $ok['message'] . json_encode( $ok['errors'] ) );
+		$low = ( new Cart() )->add_item( new E2B_Fake_Cart(), $this->product(), $this->model(), $this->input( array( 'amount' => '0.1', 'submission_key' => 'dp-7-9' ) ) );
+		$this->assertFalse( $low['ok'] );
+		$this->assertArrayHasKey( 'amount', $low['errors'] );
 	}
 
 	public function test_invalid_input_returns_field_errors_and_adds_nothing(): void {

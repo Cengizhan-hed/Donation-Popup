@@ -133,4 +133,20 @@ final class CurcyCartAmountTest extends TestCase {
 		$this->assertSame(10.55, $display);
 		$this->assertEqualsWithDelta(10.55, round($this->store_price($item) * 0.023, 2), 0.0001);
 	}
+
+	public function test_order_line_uses_input_currency_when_cart_currency_changed_before_checkout(): void {
+		$this->fake_rates(array('EUR' => 0.02, 'USD' => 0.023));
+		add_filter('wdp_order_exchange_rate', static function ($rate, $order, $currency) {
+			return array('EUR' => 0.02, 'USD' => 0.023)[ $currency ] ?? $rate;
+		}, 10, 4);
+		// 100 EUR yazıldı, ödeme USD'de verildi (satır toplamı 115 USD).
+		$order           = new WDP_Fake_Order(78, array(1 => new WDP_Fake_Order_Item(101, 115.0, 1, array('_custom_price' => 100.0, '_wdp_input_currency' => 'EUR'))));
+		$order->currency = 'USD';
+		$amounts         = WDP_Utils::compute_order_progress_amounts($order);
+		$this->assertEqualsWithDelta(5000.0, $amounts[101], 0.01);
+		// Damgasız eski satır: sipariş birimi (davranış değişmez).
+		$old           = new WDP_Fake_Order(79, array(1 => new WDP_Fake_Order_Item(101, 115.0, 1, array('_custom_price' => 100.0))));
+		$old->currency = 'USD';
+		$this->assertEqualsWithDelta(100.0 / 0.023, WDP_Utils::compute_order_progress_amounts($old)[101], 0.01);
+	}
 }

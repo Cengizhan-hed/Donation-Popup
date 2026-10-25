@@ -105,4 +105,17 @@ final class E2BOrderMetaTest extends TestCase {
 		$this->assertCount( 0, $legacy );
 		$this->assertCount( 1, $callbacks );
 	}
+
+	public function test_input_currency_stamp_is_written_identically_by_both_engines(): void {
+		$values = array(
+			'custom_price'       => 100.0,
+			'wdp_input_currency' => 'eur',
+		);
+		$new    = new E2B_Fake_Order_Item();
+		( new Donation_Order_Meta() )->write_item( $new, 'k1', $values, null );
+		$old = new E2B_Fake_Order_Item();
+		WDP_Order::add_donation_meta_to_order( $old, 'k1', $values, null );
+		$this->assertSame( $old->meta, $new->meta );
+		$this->assertSame( 'EUR', $new->meta['_wdp_input_currency'] );
+	}
 }

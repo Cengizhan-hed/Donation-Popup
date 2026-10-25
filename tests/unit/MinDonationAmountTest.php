@@ -87,4 +87,36 @@ final class MinDonationAmountTest extends TestCase {
 	public function test_non_donation_lines_are_untouched(): void {
 		$this->assertFalse(WDP_Cart::is_zero_priced_donation_line(array('product_id' => 5), 0.0));
 	}
+
+	public function test_minimum_is_compared_in_store_currency_for_selected_currency(): void {
+		WDP_Test_State::$options['woocommerce_currency'] = 'TRY';
+		WDP_Test_State::$currency                         = 'EUR';
+		add_filter(
+			'donation_panel_convert_amount',
+			static function ($amount, $from, $to) {
+				if ('EUR' === $from && 'TRY' === $to) {
+					return (float) $amount / 0.02;
+				}
+				if ('TRY' === $from && 'EUR' === $to) {
+					return (float) $amount * 0.02;
+				}
+				return $amount;
+			},
+			10,
+			4
+		);
+		// Ürün minimumu 100 TRY = 2 EUR.
+		$this->assertSame('', WDP_Cart::get_donation_amount_error(2.0, '100', 5, true));
+		$this->assertNotSame('', WDP_Cart::get_donation_amount_error(1.9, '100', 5, true));
+		$this->assertSame('', WDP_Cart::get_donation_amount_error(100.0, '100', 5, true, 'EUR'));
+		// Yazılan birim açıkça TRY ise doğrudan kıyaslanır.
+		$this->assertNotSame('', WDP_Cart::get_donation_amount_error(2.0, '100', 5, true, 'TRY'));
+	}
+
+	public function test_minimum_unchanged_without_conversion_filter_on_any_currency(): void {
+		WDP_Test_State::$options['woocommerce_currency'] = 'TRY';
+		WDP_Test_State::$currency                         = 'EUR';
+		$this->assertNotSame('', WDP_Cart::get_donation_amount_error(50.0, '100', 5, true));
+		$this->assertSame('', WDP_Cart::get_donation_amount_error(100.0, '100', 5, true));
+	}
 }
