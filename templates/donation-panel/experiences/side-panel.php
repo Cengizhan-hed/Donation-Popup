@@ -1,0 +1,28 @@
+<?php
+/**
+ * Yan panel kabı (≤639 px: alttan panel). Tema `donation-panel/experiences/side-panel.php` ile geçersiz kılabilir.
+ *
+ * @var array<string, mixed> $args Şablon verisi: model, container, dom_key, args, form_html.
+ *
+ * @package DonationPanel
+ */
+
+defined( 'ABSPATH' ) || exit;
+
+$dp_model = $args['model'];
+$dp_key   = (string) $args['dom_key'];
+$dp_opts  = (array) $args['args'];
+?>
+<div class="dp dp-exp" data-dp-exp data-dp-kind="side_panel" data-dp-product="<?php echo esc_attr( (string) (int) $dp_model['product_id'] ); ?>" data-dp-rest="<?php echo esc_url( (string) $dp_opts['rest_url'] ); ?>" data-dp-nonce="<?php echo esc_attr( (string) $dp_opts['nonce'] ); ?>" data-dp-ajax="<?php echo esc_url( (string) $dp_opts['ajax_url'] ); ?>" data-dp-cart-nonce="<?php echo esc_attr( (string) $dp_opts['cart_nonce'] ); ?>" data-dp-checkout="<?php echo esc_url( (string) $dp_opts['checkout_url'] ); ?>">
+	<button type="button" class="dp-btn dp-trigger" data-dp-open aria-haspopup="dialog" aria-expanded="false" aria-controls="<?php echo esc_attr( $dp_key ); ?>"><?php echo esc_html( (string) $dp_opts['button_text'] ); ?></button>
+	<div class="dp-overlay dp-overlay--panel" data-dp-overlay>
+		<div class="dp-surface dp-surface--panel" id="<?php echo esc_attr( $dp_key ); ?>" role="dialog" aria-modal="true" aria-labelledby="<?php echo esc_attr( $dp_key ); ?>-title" tabindex="-1" data-dp-surface>
+			<div class="dp-surface__handle" data-dp-handle aria-hidden="true"></div>
+			<div class="dp-surface__head">
+				<h2 class="dp-surface__title" id="<?php echo esc_attr( $dp_key ); ?>-title"><?php echo esc_html( (string) $dp_model['title'] ); ?></h2>
+				<button type="button" class="dp-iconbtn dp-surface__close" data-dp-close aria-label="<?php esc_attr_e( 'Close popup', 'woo-donation-popup' ); ?>"><svg class="dp-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+			</div>
+			<?php echo $args['form_html']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Form şablonunda kaçışlanmış çıktı. ?>
+		</div>
+	</div>
+</div>
