@@ -209,6 +209,7 @@ final class Plugin {
 		$registry->add( Entry_Points_Module::SLUG, Entry_Points_Module::class, true );
 		// Sınıf adı metin olarak verilir: `engine` = `legacy` iken dosya hiç yüklenmez.
 		$registry->add( 'experiences', 'DonationPanel\\Modules\\Experiences\\Experiences_Module', Settings::engine_is_new() );
+		$registry->add( 'side_cart', 'DonationPanel\\Modules\\SideCart\\Side_Cart_Module', false );
 	}
 
 	/**

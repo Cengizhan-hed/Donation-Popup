@@ -1,0 +1,107 @@
+/* Donation Panel — Yan sepet. Kaynak: design/cart.html + design/README.md. Tema özel seçici yok; mantıksal özellikler (RTL). */
+.dp-sc, .dp-sc__trigger {
+  --sc-primary: var(--dp-color-primary, var(--wp--preset--color--primary, var(--wp--preset--color--accent-1, #0f766e)));
+  --sc-text: var(--dp-bridge-text, var(--wp--preset--color--contrast, var(--wp--preset--color--foreground, #1c2330)));
+  --sc-surface: var(--dp-color-surface, var(--wp--preset--color--base, var(--wp--preset--color--background, #fff)));
+  --sc-radius: var(--dp-radius, var(--wp--custom--radius, 14px));
+  --sc-on-primary: #fff;
+  --sc-strong: color-mix(in oklab, var(--sc-primary) 78%, #000);
+  --sc-soft: color-mix(in oklab, var(--sc-primary) 11%, var(--sc-surface));
+  --sc-muted: color-mix(in oklab, var(--sc-text) 68%, var(--sc-surface));
+  --sc-border: color-mix(in oklab, var(--sc-text) 14%, var(--sc-surface));
+  --sc-border-strong: color-mix(in oklab, var(--sc-text) 32%, var(--sc-surface));
+  --sc-surface-2: color-mix(in oklab, var(--sc-text) 5%, var(--sc-surface));
+  --sc-danger: #b42318;
+  --sc-ring: 0 0 0 3px var(--sc-surface), 0 0 0 5px var(--sc-strong);
+  --sc-dur: 260ms; --sc-ease: cubic-bezier(.22, 1, .36, 1); --sc-spring: cubic-bezier(.3, 1.2, .5, 1);
+  --sc-gutter: 20px;
+}
+@supports (color: oklch(from red l c h)) {
+  .dp-sc, .dp-sc__trigger { --sc-on-primary: oklch(from var(--sc-primary) clamp(0, (0.66 - l) * 1000, 1) 0 0); }
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-dp-scheme="light"]) .dp-sc, :root:not([data-dp-scheme="light"]) .dp-sc__trigger { --sc-surface: #14181f; --sc-text: #eef1f5; --sc-primary: color-mix(in oklab, var(--dp-bridge-primary, #0f766e) 78%, #fff); --sc-danger: #ff8f86; }
+}
+:root[data-dp-scheme="dark"] .dp-sc, :root[data-dp-scheme="dark"] .dp-sc__trigger { --sc-surface: #14181f; --sc-text: #eef1f5; --sc-primary: color-mix(in oklab, var(--dp-bridge-primary, #0f766e) 78%, #fff); --sc-danger: #ff8f86; }
+@media (prefers-reduced-motion: reduce) { .dp-sc { --sc-dur: 1ms; } }
+
+.dp-sc, .dp-sc *, .dp-sc *::before, .dp-sc *::after, .dp-sc__trigger, .dp-sc__trigger * { box-sizing: border-box; }
+.dp-sc { font-family: var(--dp-font-body, var(--wp--preset--font-family--body, inherit)); font-size: 1rem; line-height: 1.5; color: var(--sc-text); -webkit-text-size-adjust: 100%; -webkit-tap-highlight-color: transparent; }
+.dp-sc [hidden], .dp-sc__trigger [hidden] { display: none !important; }
+.dp-sc :focus { outline: none; }
+.dp-sc :focus-visible, .dp-sc__trigger:focus-visible { box-shadow: var(--sc-ring); outline: 2px solid transparent; }
+.dp-sc__ico { inline-size: 1.25em; block-size: 1.25em; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.dp-sc__num { font-variant-numeric: tabular-nums; }
+
+/* Tetikleyici (kısa kod): 44 px dokunma hedefi + sayaç rozeti */
+.dp-sc__trigger { position: relative; display: inline-grid; place-items: center; inline-size: 44px; block-size: 44px; padding: 0; border: 0; border-radius: 50%; background: transparent; color: inherit; font: inherit; cursor: pointer; transition: background 160ms, transform 160ms var(--sc-spring); }
+.dp-sc__trigger:hover { background: color-mix(in oklab, currentColor 10%, transparent); }
+.dp-sc__trigger:active { transform: scale(.92); }
+.dp-sc__count { position: absolute; inset-block-start: 2px; inset-inline-end: 0; min-inline-size: 20px; block-size: 20px; padding: 0 5px; display: grid; place-items: center; border-radius: 99px; background: var(--sc-primary); color: var(--sc-on-primary); font-size: 12px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
+
+/* Katman */
+.dp-sc__overlay { position: fixed; inset: 0; z-index: 99990; display: grid; justify-items: end; background: color-mix(in oklab, #0b1220 52%, transparent); opacity: 0; visibility: hidden; transition: opacity var(--sc-dur) var(--sc-ease), visibility 0s linear var(--sc-dur); }
+.dp-sc__overlay.is-open { opacity: 1; visibility: visible; transition-delay: 0s; }
+.dp-sc__surface { position: relative; display: flex; flex-direction: column; inline-size: min(100%, 440px); block-size: 100%; max-block-size: 100%; overflow: hidden; background: var(--sc-surface); color: var(--sc-text); border-start-start-radius: calc(var(--sc-radius) * 1.9); border-end-start-radius: calc(var(--sc-radius) * 1.9); box-shadow: 0 4px 10px rgb(16 24 40 / .06), 0 24px 56px -12px rgb(16 24 40 / .28); transform: translateX(calc(100% * var(--sc-dir, 1))); transition: transform calc(var(--sc-dur) * 1.8) var(--sc-spring); outline: none; }
+[dir="rtl"] .dp-sc__surface { --sc-dir: -1; }
+.dp-sc__overlay.is-open .dp-sc__surface { transform: none; }
+.dp-sc__surface.is-dragging { transition: none; }
+.dp-sc__handle { display: none; padding-block: 10px 4px; cursor: grab; touch-action: none; flex: none; }
+.dp-sc__handle::before { content: ""; display: block; inline-size: 44px; block-size: 5px; margin-inline: auto; border-radius: 99px; background: var(--sc-border-strong); }
+.dp-sc__head { display: flex; align-items: center; gap: 12px; padding: 20px var(--sc-gutter) 4px; flex: none; touch-action: none; }
+.dp-sc__title { margin: 0; font-family: var(--dp-font-heading, inherit); font-size: 1.375rem; font-weight: 750; line-height: 1.3; letter-spacing: -.01em; color: var(--sc-text); }
+.dp-sc__close { margin-inline-start: auto; margin-inline-end: -10px; inline-size: 44px; block-size: 44px; display: inline-grid; place-items: center; border: 0; border-radius: 50%; background: transparent; color: inherit; cursor: pointer; }
+.dp-sc__close:hover { background: var(--sc-surface-2); }
+.dp-sc__body { flex: 1 1 auto; min-block-size: 0; display: flex; flex-direction: column; }
+.dp-sc__body[aria-busy="true"] { opacity: .7; }
+.dp-sc__sub { margin: 0; padding: 0 var(--sc-gutter); color: var(--sc-muted); font-size: .875rem; }
+.dp-sc__error { margin: 8px var(--sc-gutter) 0; padding: 12px 16px; border-radius: calc(var(--sc-radius) * .65); background: color-mix(in oklab, var(--sc-danger) 12%, var(--sc-surface)); color: var(--sc-danger); font-size: .875rem; font-weight: 500; }
+
+/* Satırlar */
+.dp-sc__scroll { flex: 1 1 auto; min-block-size: 0; overflow-y: auto; overscroll-behavior: contain; padding: 8px var(--sc-gutter) 16px; }
+.dp-sc__list { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.dp-sc__row { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: start; padding: 12px 0; border-block-end: 1px solid var(--sc-border); }
+.dp-sc__row[aria-busy="true"] { opacity: .55; }
+.dp-sc__thumb { inline-size: 52px; block-size: 52px; border-radius: calc(var(--sc-radius) * .65); object-fit: cover; background: var(--sc-soft); }
+.dp-sc__thumb--ph { display: grid; place-items: center; color: var(--sc-strong); }
+.dp-sc__info { min-inline-size: 0; display: grid; gap: 2px; }
+.dp-sc__name { font-weight: 650; white-space: normal; overflow-wrap: anywhere; }
+.dp-sc__meta { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; color: var(--sc-muted); font-size: .875rem; }
+.dp-sc__tag { padding: 1px 8px; border-radius: 99px; background: var(--sc-soft); color: var(--sc-strong); font-size: .75rem; font-weight: 650; }
+.dp-sc__detail { color: var(--sc-muted); font-size: .8125rem; overflow-wrap: anywhere; }
+.dp-sc__amt { font-weight: 650; white-space: nowrap; text-align: end; }
+.dp-sc__actions { display: flex; flex-wrap: wrap; gap: 8px 10px; align-items: center; margin-block-start: 6px; }
+.dp-sc__stepper { display: inline-flex; align-items: center; gap: 2px; padding: 2px; border-radius: 99px; background: var(--sc-surface-2); }
+.dp-sc__stepper output { min-inline-size: 28px; text-align: center; font-weight: 650; }
+.dp-sc__step { inline-size: 44px; block-size: 44px; display: inline-grid; place-items: center; border: 0; border-radius: 50%; background: transparent; color: inherit; cursor: pointer; }
+.dp-sc__step:hover:not([disabled]) { background: var(--sc-soft); }
+.dp-sc__step[disabled] { opacity: .4; cursor: not-allowed; }
+.dp-sc__remove { min-block-size: 44px; padding: 0 12px; border: 0; background: transparent; color: var(--sc-strong); font: inherit; font-weight: 650; cursor: pointer; border-radius: calc(var(--sc-radius) * .65); }
+.dp-sc__remove:hover:not([disabled]) { background: var(--sc-soft); }
+.dp-sc__remove[disabled] { opacity: .5; cursor: not-allowed; }
+
+/* Sabit alt çubuk: başparmak bölgesi + güvenli alan */
+.dp-sc__bar { flex: none; display: grid; gap: 10px; padding: 12px var(--sc-gutter) max(16px, env(safe-area-inset-bottom)); background: color-mix(in oklab, var(--sc-surface) 94%, transparent); border-block-start: 1px solid var(--sc-border); }
+.dp-sc__subtotal { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; font-weight: 650; }
+.dp-sc__subtotal strong { font-size: 1.375rem; font-weight: 750; }
+.dp-sc__hint { margin: 0; color: var(--sc-muted); font-size: .75rem; }
+.dp-sc__btn { display: inline-flex; align-items: center; justify-content: center; min-block-size: 56px; padding: 0 24px; border: 0; border-radius: calc(var(--sc-radius) * 1.6); font: inherit; font-size: 1.125rem; font-weight: 650; text-decoration: none; cursor: pointer; transition: transform 160ms var(--sc-spring), filter 160ms; }
+.dp-sc__btn:active { transform: scale(.97); }
+.dp-sc__btn--primary { background: var(--sc-primary); color: var(--sc-on-primary); }
+.dp-sc__btn--primary:hover { filter: brightness(1.06); color: var(--sc-on-primary); }
+.dp-sc__btn--secondary { min-block-size: 48px; background: var(--sc-soft); color: var(--sc-strong); font-size: 1rem; }
+
+/* Boş durum */
+.dp-sc__empty { margin: auto; display: grid; justify-items: center; gap: 12px; text-align: center; padding: 40px 24px; }
+.dp-sc__empty h3 { margin: 0; font-size: 1.125rem; color: var(--sc-text); }
+.dp-sc__empty p { margin: 0; color: var(--sc-muted); font-size: .875rem; max-inline-size: 34ch; }
+.dp-sc__empty-art { inline-size: 72px; block-size: 72px; display: grid; place-items: center; border-radius: 50%; background: var(--sc-soft); color: var(--sc-strong); font-size: 1.75rem; }
+
+/* Mobil (≤ 639px): alttan panel */
+@media (max-width: 639.98px) {
+  .dp-sc__overlay { justify-items: stretch; align-items: end; }
+  .dp-sc__surface { inline-size: 100%; block-size: auto; max-block-size: 94dvh; border-radius: calc(var(--sc-radius) * 1.9) calc(var(--sc-radius) * 1.9) 0 0; box-shadow: 0 -6px 30px rgb(16 24 40 / .18); transform: translateY(100%); }
+  .dp-sc__overlay.is-open .dp-sc__surface { transform: translateY(var(--dp-sc-drag, 0px)); }
+  .dp-sc__handle { display: block; }
+}
+html.dp-sc-lock { overflow: hidden; }

@@ -1,0 +1,322 @@
+/**
+ * Donation Panel — Yan sepet (çekmece). Alt panel: dar ekran; yan panel: geniş ekran.
+ * Veri: WooCommerce Store API (kaldır/miktar) + sunucuda çizilen gövde (GET donation-panel/v1/side-cart). jQuery yok.
+ * Tetikleyiciler: [data-dp-sc-open] düğmeleri; olaylar: wc-blocks_added_to_cart, added_to_cart (jQuery varsa),
+ * donation-panel:cart-added. Tema/oluşturucuya özel kod yok.
+ */
+import './side-cart.css';
+import { nextFocusIndex, nextQuantity, readNonce, shouldDismissOnDrag, toCount } from './logic.mjs';
+
+const FOCUSABLE =
+  'a[href],button:not([disabled]),input:not([disabled]):not([type="hidden"]),textarea:not([disabled]),select:not([disabled]),[tabindex]:not([tabindex="-1"])';
+
+/**
+ * @param {HTMLElement} root Çekmece kökü.
+ */
+function mount(root) {
+  if (root.dataset.dpScMounted === '1') {
+    return;
+  }
+  root.dataset.dpScMounted = '1';
+
+  const overlay = root.querySelector('[data-dp-sc-overlay]');
+  const surface = root.querySelector('[data-dp-sc-surface]');
+  const body = root.querySelector('[data-dp-sc-body]');
+  if (!overlay || !surface || !body) {
+    return;
+  }
+  const restUrl = root.dataset.dpScRest || '';
+  const storeUrl = root.dataset.dpScStore || '';
+  const failedMessage = root.dataset.dpScFailed || '';
+  let nonce = '';
+  let opened = false;
+  let lastFocus = null;
+  let busy = false;
+
+  const triggers = () => Array.from(document.querySelectorAll('[data-dp-sc-open]'));
+
+  const visibleFocusables = () =>
+    Array.from(surface.querySelectorAll(FOCUSABLE)).filter((el) => el.getClientRects().length > 0);
+
+  const setCount = (count) => {
+    const n = toCount(count);
+    document.querySelectorAll('[data-dp-sc-count]').forEach((badge) => {
+      badge.textContent = String(n);
+      badge.hidden = n === 0;
+    });
+  };
+
+  const showError = () => {
+    if (!failedMessage) {
+      return;
+    }
+    let alert = body.querySelector('[data-dp-sc-error]');
+    if (!alert) {
+      alert = document.createElement('p');
+      alert.className = 'dp-sc__error';
+      alert.setAttribute('role', 'alert');
+      alert.setAttribute('data-dp-sc-error', '');
+      body.prepend(alert);
+    }
+    alert.textContent = failedMessage;
+  };
+
+  /**
+   * Gövdeyi sunucudan yeniden çizer.
+   *
+   * @return {Promise<boolean>} Başarılı mı.
+   */
+  async function refresh() {
+    if (!restUrl) {
+      return false;
+    }
+    try {
+      const url = new URL(restUrl, window.location.href);
+      url.searchParams.set('_', String(Date.now()));
+      const response = await window.fetch(url.toString(), { credentials: 'same-origin', cache: 'no-store' });
+      if (!response.ok) {
+        return false;
+      }
+      const data = await response.json();
+      if (data && typeof data.html === 'string') {
+        body.innerHTML = data.html;
+        setCount(data.count);
+        document.dispatchEvent(new CustomEvent('donation-panel:cart-updated', { detail: { count: toCount(data.count) } }));
+        return true;
+      }
+    } catch (error) {
+      return false;
+    }
+    return false;
+  }
+
+  /**
+   * Store API nonce'ı (ilk istekte ya da 403 sonrası taze).
+   *
+   * @param {boolean} force Yeniden al.
+   * @return {Promise<string>} Nonce.
+   */
+  async function getNonce(force) {
+    if (nonce && !force) {
+      return nonce;
+    }
+    const response = await window.fetch(`${storeUrl}cart`, { credentials: 'same-origin', cache: 'no-store' });
+    nonce = readNonce(response.headers);
+    return nonce;
+  }
+
+  /**
+   * Store API yazma isteği (403'te bir kez nonce tazeler).
+   *
+   * @param {string} path Uç (ör. cart/remove-item).
+   * @param {Object} payload Gövde.
+   * @return {Promise<boolean>} Başarılı mı.
+   */
+  async function storePost(path, payload) {
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      const token = await getNonce(attempt > 0);
+      const response = await window.fetch(`${storeUrl}${path}`, {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json', Nonce: token },
+        body: JSON.stringify(payload),
+      });
+      if (response.ok) {
+        return true;
+      }
+      if (response.status !== 403) {
+        return false;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Bir satırda işlem yapar (kaldır / miktar), sonra yeniden çizer.
+   *
+   * @param {HTMLElement} control Tıklanan düğme.
+   * @param {string} path Store API ucu.
+   * @param {Object} payload Gövde.
+   */
+  async function mutate(control, path, payload) {
+    if (busy) {
+      return;
+    }
+    busy = true;
+    const row = control.closest('[data-dp-sc-line]');
+    if (row) {
+      row.setAttribute('aria-busy', 'true');
+      row.querySelectorAll('button').forEach((b) => {
+        b.disabled = true;
+      });
+    }
+    body.setAttribute('aria-busy', 'true');
+    let ok = false;
+    try {
+      ok = await storePost(path, payload);
+    } catch (error) {
+      ok = false;
+    }
+    const redrawn = ok ? await refresh() : false;
+    busy = false;
+    body.removeAttribute('aria-busy');
+    if (!ok || !redrawn) {
+      if (row && row.isConnected) {
+        row.removeAttribute('aria-busy');
+        row.querySelectorAll('button').forEach((b) => {
+          b.disabled = false;
+        });
+      }
+      showError();
+      return;
+    }
+    const target = body.querySelector('[data-dp-sc-remove],[data-dp-sc-close]') || surface;
+    target.focus();
+  }
+
+  function open() {
+    if (opened) {
+      return;
+    }
+    opened = true;
+    lastFocus = document.activeElement;
+    overlay.classList.add('is-open');
+    document.documentElement.classList.add('dp-sc-lock');
+    triggers().forEach((t) => t.setAttribute('aria-expanded', 'true'));
+    const first = visibleFocusables()[0];
+    (first || surface).focus();
+    refresh();
+  }
+
+  function close() {
+    if (!opened) {
+      return;
+    }
+    opened = false;
+    overlay.classList.remove('is-open');
+    document.documentElement.classList.remove('dp-sc-lock');
+    triggers().forEach((t) => t.setAttribute('aria-expanded', 'false'));
+    surface.style.removeProperty('--dp-sc-drag');
+    if (lastFocus && typeof lastFocus.focus === 'function' && lastFocus.isConnected) {
+      lastFocus.focus();
+    }
+    lastFocus = null;
+  }
+
+  document.addEventListener('keydown', (event) => {
+    if (!opened) {
+      return;
+    }
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      close();
+      return;
+    }
+    if (event.key !== 'Tab') {
+      return;
+    }
+    const items = visibleFocusables();
+    event.preventDefault();
+    const index = nextFocusIndex(items.length, items.indexOf(document.activeElement), event.shiftKey);
+    (index < 0 ? surface : items[index]).focus();
+  });
+
+  document.addEventListener('click', (event) => {
+    const el = event.target instanceof Element ? event.target : null;
+    if (!el) {
+      return;
+    }
+    if (el.closest('[data-dp-sc-open]')) {
+      event.preventDefault();
+      open();
+      return;
+    }
+    if (!root.contains(el)) {
+      return;
+    }
+    if (el === overlay || el.closest('[data-dp-sc-close]')) {
+      close();
+      return;
+    }
+    const remove = el.closest('[data-dp-sc-remove]');
+    if (remove) {
+      mutate(remove, 'cart/remove-item', { key: remove.dataset.dpScKey });
+      return;
+    }
+    const qty = el.closest('[data-dp-sc-qty]');
+    if (qty) {
+      const row = qty.closest('[data-dp-sc-line]');
+      const next = nextQuantity(row ? row.dataset.qty : 1, qty.dataset.dpScQty);
+      mutate(qty, 'cart/update-item', { key: qty.dataset.dpScKey, quantity: next });
+    }
+  });
+
+  // Alttan panel: tutamaç/başlıktan aşağı sürükleyerek kapatma.
+  const grip = root.querySelector('.dp-sc__handle');
+  const head = root.querySelector('.dp-sc__head');
+  [grip, head].forEach((zone) => {
+    if (!zone) {
+      return;
+    }
+    let startY = null;
+    zone.addEventListener('pointerdown', (event) => {
+      if (event.target instanceof Element && event.target.closest('button')) {
+        return;
+      }
+      if (!window.matchMedia('(max-width: 639.98px)').matches) {
+        return;
+      }
+      startY = event.clientY;
+      surface.classList.add('is-dragging');
+      zone.setPointerCapture(event.pointerId);
+    });
+    zone.addEventListener('pointermove', (event) => {
+      if (startY === null) {
+        return;
+      }
+      surface.style.setProperty('--dp-sc-drag', `${Math.max(0, event.clientY - startY)}px`);
+    });
+    const end = (event) => {
+      if (startY === null) {
+        return;
+      }
+      const distance = event.clientY - startY;
+      startY = null;
+      surface.classList.remove('is-dragging');
+      if (shouldDismissOnDrag(distance)) {
+        close();
+      } else {
+        surface.style.removeProperty('--dp-sc-drag');
+      }
+    };
+    zone.addEventListener('pointerup', end);
+    zone.addEventListener('pointercancel', end);
+  });
+
+  // WooCommerce standart olayları: sepete eklenince güncelle ve aç.
+  const onAdded = async () => {
+    await refresh();
+    open();
+  };
+  document.addEventListener('wc-blocks_added_to_cart', onAdded);
+  document.addEventListener('donation-panel:cart-added', onAdded);
+  const jq = window.jQuery;
+  if (jq && jq.fn && typeof jq.fn.on === 'function') {
+    jq(document.body).on('added_to_cart', onAdded);
+  }
+
+  // Sayfa önbelleğe alınmış olabilir: sayaç gösterge varsa taze değeri al.
+  if (triggers().length) {
+    refresh();
+  }
+}
+
+function init() {
+  document.querySelectorAll('[data-dp-sc]').forEach(mount);
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}
