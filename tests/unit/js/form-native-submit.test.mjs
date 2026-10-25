@@ -98,6 +98,7 @@ function loadHarness(opts = {}) {
   const ctx = {
     window: {
       WDPApp: {
+        i18n: { __: (m) => m, _x: (m) => m, sprintf: (f) => f },
         utils: {
           safeLog() {},
           formatCurrency(n) { return String(n); },

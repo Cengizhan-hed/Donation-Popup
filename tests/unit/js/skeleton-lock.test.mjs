@@ -225,6 +225,7 @@ function loadModalModule({ throwOnSetup = false, productFetch = null } = {}) {
     clearTimeout: clearTimeoutFn,
     window: {
       WDPApp: {
+        i18n: { __: (m) => m, _x: (m) => m, sprintf: (f) => f },
         utils: {
           ensureModule: (name, methods) => {
             const mod =

@@ -288,7 +288,7 @@ function createDom() {
     clearTimeout() {},
     getComputedStyle: () => ({ position: 'static' }),
     wdp_ajax: { strings: {} },
-    WDPApp: {},
+    WDPApp: { i18n: { __: (m) => m, _x: (m) => m, sprintf: (f) => f }, },
   };
   windowObj.window = windowObj;
 
@@ -319,6 +319,8 @@ function loadValidateStack(dom) {
     console,
   };
   sandbox.window.console = console;
+  const app = sandbox.window.WDPApp || (sandbox.window.WDPApp = {});
+  app.i18n = app.i18n || { __: (m) => m, _x: (m) => m, sprintf: (f) => f };
   for (const rel of files) {
     const code = fs.readFileSync(path.join(root, rel), 'utf8');
     vm.runInNewContext(code, sandbox);
