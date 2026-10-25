@@ -15,15 +15,69 @@ if ( ! defined( 'ABSPATH' ) ) {
 class WDP_Progress_Currency {
 
 	/**
-	 * Mağaza ana para birimi.
+	 * Mağaza ana para birimi (WooCommerce ayarı `woocommerce_currency`).
+	 * Çoklu para birimi kullanılan sitelerde `get_woocommerce_currency()` ziyaretçinin seçtiği birimi döndürebilir;
+	 * ana birim her zaman WooCommerce ayarıdır (fiyatlar ve ilerleme toplamı bu birimde tutulur).
 	 *
 	 * @return string
 	 */
 	public static function get_base_currency() {
+		$option = function_exists( 'get_option' ) ? strtoupper( trim( (string) get_option( 'woocommerce_currency', '' ) ) ) : '';
+		if ( '' !== $option ) {
+			return $option;
+		}
+		return self::get_active_currency();
+	}
+
+	/**
+	 * Ziyaretçinin gördüğü (etkin) para birimi: `get_woocommerce_currency()`.
+	 *
+	 * @return string
+	 */
+	public static function get_active_currency() {
 		if ( function_exists( 'get_woocommerce_currency' ) ) {
 			return strtoupper( (string) get_woocommerce_currency() );
 		}
 		return '';
+	}
+
+	/**
+	 * Bağışçının yazdığı tutarı ($from biriminde) mağaza ana para birimine çevir.
+	 * Sepete konan ürün fiyatı ana birimdedir; çoklu para birimi eklentisi gösterirken geri çevirir.
+	 *
+	 * @param float  $amount Tutar ($from biriminde).
+	 * @param string $from   Tutarın para birimi (boşsa dönüşüm yok).
+	 * @return float
+	 */
+	public static function to_store_amount( $amount, $from = '' ) {
+		$amount = (float) $amount;
+		$from   = strtoupper( (string) $from );
+		$base   = self::get_base_currency();
+		if ( '' === $from || '' === $base || $from === $base ) {
+			return $amount;
+		}
+		return round( self::convert_amount( $amount, $from, $base, array( 'context' => 'cart_line' ) ), 8 );
+	}
+
+	/**
+	 * Ana para birimindeki tutarı $to birimine çevir (gösterim için; boşsa etkin para birimi).
+	 *
+	 * @param float  $amount Tutar (ana birimde).
+	 * @param string $to     Hedef para birimi.
+	 * @return float
+	 */
+	public static function from_store_amount( $amount, $to = '' ) {
+		$amount = (float) $amount;
+		$to     = strtoupper( (string) $to );
+		$base   = self::get_base_currency();
+		if ( '' === $to ) {
+			$to = self::get_active_currency();
+		}
+		if ( '' === $to || '' === $base || $to === $base ) {
+			return $amount;
+		}
+		$dp = function_exists( 'wc_get_price_decimals' ) ? (int) wc_get_price_decimals() : 2;
+		return round( self::convert_amount( $amount, $base, $to, array( 'context' => 'cart_display' ) ), max( 0, $dp ) );
 	}
 
 	/**
@@ -106,7 +160,7 @@ class WDP_Progress_Currency {
 	}
 
 	/**
-	 * Genel tutar dönüşümü (`wdp_convert_amount` filtresi). Varsayılan: dönüşüm YOK, tutar olduğu gibi döner.
+	 * Genel tutar dönüşümü (`donation_panel_convert_amount` filtresi; eski ad `wdp_convert_amount` de çalışır). Varsayılan: dönüşüm YOK, tutar olduğu gibi döner.
 	 * Çoklu para birimi kullanan siteler filtreye site koduyla bağlanır (docs/site-snippets/).
 	 *
 	 * @param float                $amount Amount in $from.
@@ -132,8 +186,12 @@ class WDP_Progress_Currency {
 		 * @param string               $to      Hedef para birimi.
 		 * @param array<string, mixed> $context Bağlam.
 		 */
-		$filtered = apply_filters( 'wdp_convert_amount', $amount, $from, $to, $context );
-		return is_numeric( $filtered ) ? (float) $filtered : $amount; // @phpstan-ignore function.alreadyNarrowedType
+		$filtered = apply_filters( 'donation_panel_convert_amount', $amount, $from, $to, $context );
+		$filtered = is_numeric( $filtered ) ? (float) $filtered : $amount; // @phpstan-ignore function.alreadyNarrowedType
+
+		// Eski ad (geriye dönük uyum; mevcut site snippet'leri).
+		$legacy = apply_filters( 'wdp_convert_amount', $filtered, $from, $to, $context );
+		return is_numeric( $legacy ) ? (float) $legacy : $filtered; // @phpstan-ignore function.alreadyNarrowedType
 	}
 
 	/**

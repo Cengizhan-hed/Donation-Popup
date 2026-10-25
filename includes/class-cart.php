@@ -20,6 +20,7 @@ class WDP_Cart {
 	public static function init() {
 		// Sepete ürün eklenirken özel bağış verilerini alma
 		add_filter( 'woocommerce_add_cart_item_data', array( __CLASS__, 'add_donation_item_data' ), 10, 3 );
+		add_filter( 'woocommerce_add_cart_item_data', array( __CLASS__, 'stamp_input_currency' ), 99, 1 );
 
 		// Sepete ekleme öncesi doğrulama (zorunlu alanlar kontrolü)
 		add_filter( 'woocommerce_add_to_cart_validation', array( __CLASS__, 'validate_donation_fields' ), 10, 5 );
@@ -596,7 +597,8 @@ class WDP_Cart {
 				continue;
 			}
 
-			$line_price = self::resolve_cart_line_unit_price( $cart_item );
+			// Ürün fiyatı mağaza ana para biriminde tutulur; çoklu para birimi eklentisi gösterirken çevirir.
+			$line_price = self::resolve_cart_line_store_price( $cart_item );
 
 			if ( self::is_zero_priced_donation_line( $cart_item, $line_price ) ) {
 				$cart->remove_cart_item( $cart_item_key );
@@ -836,7 +838,7 @@ class WDP_Cart {
 				continue;
 			}
 			$quantity = max( 1, (int) ( isset( $cart_item['quantity'] ) ? $cart_item['quantity'] : 1 ) );
-			$unit     = self::resolve_cart_line_unit_price( $cart_item );
+			$unit     = self::resolve_cart_line_store_price( $cart_item );
 			if ( null === $unit ) {
 				$product = isset( $cart_item['data'] ) ? $cart_item['data'] : null;
 				$unit    = $product ? (float) $product->get_price() : 0.0;
@@ -847,7 +849,66 @@ class WDP_Cart {
 		return max( 0.0, $pending );
 	}
 
+	/**
+	 * Satırın gösterim birim fiyatı: ziyaretçinin gördüğü (etkin) para biriminde.
+	 * Bağışçının yazdığı tutar yazıldığı birimle aynıysa aynen döner; varsayılan (dönüşüm yok) davranış değişmez.
+	 *
+	 * @param array $cart_item Cart row.
+	 * @return float|null
+	 */
 	private static function resolve_cart_line_unit_price( array $cart_item ) {
+		$raw = self::resolve_cart_line_raw_price( $cart_item );
+		if ( null === $raw || ! class_exists( 'WDP_Progress_Currency' ) ) {
+			return $raw;
+		}
+		if ( isset( $cart_item['custom_price'] ) ) {
+			$input = isset( $cart_item['wdp_input_currency'] ) ? strtoupper( (string) $cart_item['wdp_input_currency'] ) : '';
+			if ( '' === $input || WDP_Progress_Currency::get_active_currency() === $input ) {
+				return $raw;
+			}
+			return WDP_Progress_Currency::from_store_amount( WDP_Progress_Currency::to_store_amount( $raw, $input ) );
+		}
+		return WDP_Progress_Currency::from_store_amount( $raw );
+	}
+
+	/**
+	 * Satırın mağaza ana para birimindeki birim fiyatı (sepete konan ürün fiyatı).
+	 *
+	 * @param array $cart_item Cart row.
+	 * @return float|null
+	 */
+	private static function resolve_cart_line_store_price( array $cart_item ) {
+		$raw = self::resolve_cart_line_raw_price( $cart_item );
+		if ( null === $raw || ! class_exists( 'WDP_Progress_Currency' ) || ! isset( $cart_item['custom_price'] ) ) {
+			return $raw;
+		}
+		$input = isset( $cart_item['wdp_input_currency'] ) ? (string) $cart_item['wdp_input_currency'] : '';
+		return WDP_Progress_Currency::to_store_amount( $raw, $input );
+	}
+
+	/**
+	 * Sepet satırına, bağışçı tutarının yazıldığı para birimini işler (yalnız `custom_price` satırları).
+	 *
+	 * @param array $cart_item_data Cart item data.
+	 * @return array
+	 */
+	public static function stamp_input_currency( $cart_item_data ) {
+		if ( is_array( $cart_item_data ) && isset( $cart_item_data['custom_price'] ) && empty( $cart_item_data['wdp_input_currency'] ) && class_exists( 'WDP_Progress_Currency' ) ) {
+			$active = WDP_Progress_Currency::get_active_currency();
+			if ( '' !== $active ) {
+				$cart_item_data['wdp_input_currency'] = $active;
+			}
+		}
+		return $cart_item_data;
+	}
+
+	/**
+	 * Satırın ham birim fiyatı: `custom_price` yazıldığı birimde, diğerleri mağaza ana biriminde.
+	 *
+	 * @param array $cart_item Cart row.
+	 * @return float|null
+	 */
+	private static function resolve_cart_line_raw_price( array $cart_item ) {
 		if ( ! empty( $cart_item['wdp_sadaka_donation'] ) ) {
 			if ( ! isset( $cart_item['custom_price'] ) ) {
 				return null;

@@ -919,6 +919,7 @@ Meta Pixel / dönüşüm izleme için kullanıcıya not (README): Meta için "Me
 | `wdp_order_exchange_rate` | `( ?float $rate, $order, string $currency, string $base )` | `null` |
 | `wdp_progress_live_rate` | `( ?float $rate, string $currency, string $base )` | `null` |
 | `wdp_convert_amount` (yeni) | `( float $amount, string $from, string $to, array $context )`; `WDP_Progress_Currency::convert_amount()` | tutar aynen; kur yokken `convert_to_base` tutar değiştiyse bunu kullanır, değişmediyse `missing_rate` |
+| `donation_panel_convert_amount` (CURCY3) | `( float $amount, string $from, string $to, array $context )`; sepet satırı: bağışçı tutarı (`wdp_input_currency`) -> ana birim (`WDP_Cart::resolve_cart_line_store_price`), gösterim: ana -> etkin birim; ayrıntı docs/HOOKS.md | tutar aynen; eski `wdp_convert_amount` sonra uygulanır |
 | `wdp_progress_convert_amount` | `( array $result, float $amount, string $from, string $to, $order )` | sonuç aynen |
 | `wdp_client_context` | `( array $context )` (`currency_cookies`, `lang_cookies`, `switcher_selectors`, `change_events`) | çerez/olay listeleri boş; genel seçiciler `[data-currency]`, `a[href*='currency=']` |
 
