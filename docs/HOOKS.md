@@ -116,3 +116,18 @@ Modüller: `thanks` ve `tax_relief` (ikisi de varsayılan kapalı; `donation_pan
 Kullanılan: `donation_panel_form_steps` (adım ekler), `donation_panel_form_step_tax_relief` (adım içeriği), `donation_panel_form_model` değişmez. WooCommerce kancaları: `woocommerce_before_thankyou`, `woocommerce_add_cart_item_data`, `woocommerce_get_item_data`, `woocommerce_checkout_create_order_line_item`, `woocommerce_admin_order_data_after_billing_address`; WordPress: `rest_request_before_callbacks`.
 
 Yeni sipariş meta (sipariş ve sipariş kalemi): `_wdp_tax_relief_declared` (`yes`; yalnız onay işaretliyse), `_wdp_tax_relief_text_hash` (SHA-256). Sepet öğesi anahtarı: `donation_panel_tax_relief`. Şablonlar (tema geçersiz kılar): `donation-panel/thanks/summary.php`, `donation-panel/tax-relief/step.php`.
+
+## Bağış türleri ve adımlar (E2C)
+
+Yeni kancalar (varsayılan: davranış değişmez):
+
+| Ad | Tür | Parametreler | Ne zaman |
+|---|---|---|---|
+| `donation_panel_form_steps` | filtre | `array $steps [{id,label}], int $product_id` | Form adımları (varsayılan `amount`, `details`). Ek adım (ör. vergi indirimi) eklenir; `amount` ve `details` kaldırılamaz (kaldırılırsa varsayılana dönülür). |
+| `donation_panel_form_step_{id}` | eylem | `array $model` | Ek adımın içeriğini basar (kişi verisi basmayın; alan adları sipariş sözleşmesine uymalı). |
+
+Form modeline eklenen anahtarlar (`donation_panel_form_model` filtresiyle değiştirilebilir): `kind` (`fixed|custom|shares|campaign`), `unit_price`, `quantity`, `cover_fee`, `addon`, `steps`, `shareholder`.
+
+`POST /donation-panel/v1/cart/add` gövdesine eklenen alanlar: `quantity` (sabit tutar), `share_count` + `shareholders` (`[{name,phone,email?,note?}]`, hisseli), `donation_cover_fee` (`1`; yüzde sunucudan), `addon_active` + `addon_amount` (ek bağış). Hata anahtarları: `quantity`, `share_count`, `shareholder_{n}_{name|phone|email|note}`, `addon_amount`.
+
+Sipariş kalemi meta (yeni): `wdp_donation_type` (`fixed|custom|shares|campaign`), `wdp_donation_frequency` (düzenli bağış seçeneği). Store API uzantısına `kind` eklendi (kişi verisiz).

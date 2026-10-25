@@ -47,6 +47,95 @@ export function presentedAs(kind, narrow) {
 }
 
 /**
+ * Yuvarlama (PHP `round` gibi: yarım değer sıfırdan uzağa).
+ *
+ * @param {number} value    Değer.
+ * @param {number} decimals Ondalık hane.
+ * @return {number} Yuvarlanmış değer.
+ */
+export function roundTo(value, decimals) {
+  const factor = 10 ** Math.max(0, decimals);
+  const scaled = Number((Math.abs(value) * factor).toPrecision(15));
+  return (Math.sign(value) * Math.round(scaled)) / factor;
+}
+
+/**
+ * İşlem ücretli birim tutar (sunucudaki `Cart_Data::with_fee` ile aynı kural).
+ *
+ * @param {number} amount   Birim tutar.
+ * @param {number} percent  Ücret yüzdesi.
+ * @param {number} decimals Woo ondalık hane sayısı.
+ * @return {number} Ücret dahil tutar.
+ */
+export function withFee(amount, percent, decimals) {
+  if (!(percent > 0) || !(amount > 0)) {
+    return amount;
+  }
+  return roundTo(amount * (1 + percent / 100), decimals);
+}
+
+/**
+ * Satır dökümü ve toplam. Sabit tutar/hisseli: birim x adet; diğerlerinde yazılan/seçilen tutar.
+ * İşlem ücreti birim tutar üzerinden hesaplanır (sunucuyla aynı).
+ *
+ * @param {{kind: string, amount: number|null, unit: number, qty: number, feePercent: number, fee: boolean, addon: boolean, addonAmount: number|null, decimals: number}} input Girdi.
+ * @return {{donation: number, fee: number, addon: number, total: number}} Döküm.
+ */
+export function computeTotals(input) {
+  const derived = input.kind === 'fixed' || input.kind === 'shares';
+  const qty = derived ? Math.max(1, input.qty || 1) : 1;
+  const unit = derived ? input.unit || 0 : Number.isFinite(input.amount) ? input.amount : 0;
+  const donation = roundTo(unit * qty, input.decimals);
+  const feeUnit = input.fee ? withFee(unit, input.feePercent, input.decimals) - unit : 0;
+  const fee = roundTo(feeUnit * qty, input.decimals);
+  const addon = input.addon && Number.isFinite(input.addonAmount) && input.addonAmount > 0 ? input.addonAmount : 0;
+  return { donation, fee, addon, total: roundTo(donation + fee + addon, input.decimals) };
+}
+
+/**
+ * Adedi sınırlar içinde tutar.
+ *
+ * @param {number} value Değer.
+ * @param {number} max   En çok.
+ * @return {number} 1..max.
+ */
+export function clampQty(value, max) {
+  const n = Math.trunc(Number(value));
+  if (!Number.isFinite(n)) {
+    return 1;
+  }
+  return Math.min(Math.max(1, max), Math.max(1, n));
+}
+
+/**
+ * Adım işareti: "Adım 1/2 · Tutar".
+ *
+ * @param {string} format Biçim (`Step %1$d of %2$d`).
+ * @param {number} index  Geçerli (0 tabanlı).
+ * @param {number} count  Adım sayısı.
+ * @param {string} label  Adım adı.
+ * @return {string} Metin.
+ */
+export function stepLabel(format, index, count, label) {
+  const text = String(format || '%1$d/%2$d')
+    .replace('%1$d', String(index + 1))
+    .replace('%2$d', String(count));
+  return label ? `${text} · ${label}` : text;
+}
+
+/**
+ * Hata anahtarlarından ilk hatalı adımın sırası (adım alanı eşlemesiyle).
+ *
+ * @param {string[]} names      Hatalı alan adları.
+ * @param {Record<string, number>} stepOf Alan adı -> adım sırası.
+ * @return {number} En küçük adım sırası; hiçbiri tanınmazsa -1.
+ */
+export function firstErrorStep(names, stepOf) {
+  const indexes = names.map((name) => (name in stepOf ? stepOf[name] : -1)).filter((i) => i >= 0);
+  return indexes.length ? Math.min(...indexes) : -1;
+}
+
+/**
  * @param {{presets?: number[], recommended?: number|null}} [seed] Başlangıç verisi.
  * @return {object} İlk durum.
  */
@@ -60,6 +149,11 @@ export function initialState(seed = {}) {
     preset: recommended,
     custom: '',
     focusPreset: first,
+    step: 0,
+    qty: 1,
+    fee: false,
+    addon: false,
+    addonAmount: '',
     errors: {},
     status: 'idle',
   };
@@ -95,6 +189,16 @@ export function reducer(state, action) {
         errors: omit(state.errors, 'amount'),
       };
     }
+    case 'goStep':
+      return { ...state, step: Math.max(0, action.value), status: state.status === 'submitting' ? state.status : 'idle' };
+    case 'setQty':
+      return { ...state, qty: action.value, errors: omit(omit(state.errors, 'quantity'), 'share_count') };
+    case 'setFee':
+      return { ...state, fee: Boolean(action.value) };
+    case 'setAddon':
+      return { ...state, addon: Boolean(action.value), errors: action.value ? state.errors : omit(state.errors, 'addon_amount') };
+    case 'setAddonAmount':
+      return { ...state, addonAmount: String(action.value), errors: omit(state.errors, 'addon_amount') };
     case 'setErrors':
       return { ...state, errors: { ...action.errors }, status: 'invalid' };
     case 'clearError':

@@ -12,6 +12,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { runLocalEvalFile } from './helpers/local-wp-eval.mjs';
 import { loadMatrix } from './helpers/matrix-cover.mjs';
 import {
   ensureMatrixTemplate,
@@ -38,6 +39,24 @@ function flag(argv, name) {
   return i >= 0 ? String(argv[i + 1] || '') : '';
 }
 
+/**
+ * E2C: "WDP E2E Addon" test ürününe işlem ücreti + ek bağış tanımlar (yalnız yerel WP; paralel cihaz koşuları için bir kez).
+ * Ek bağış satırı ürünü olarak sabit tutarlı test ürünü kullanılır. Ürün kimliğini döndürür (yoksa 0).
+ *
+ * @param {string} wpDir Yerel WP klasörü.
+ * @param {Record<string, {id: number}>} products Test ürünleri.
+ * @return {number} Ana ürün kimliği.
+ */
+function seedAddonProduct(wpDir, products) {
+  if (!products.fixed) {
+    return 0;
+  }
+  const out = runLocalEvalFile('tests/e2e/helpers/wdp-exp-seed.php', [String(products.fixed.id)], { env: { WDP_LOCAL_WP_DIR: wpDir } });
+  const match = String(out).match(/\{.*\}/s);
+  const parsed = match ? JSON.parse(match[0]) : { ok: false };
+  return parsed.ok ? Number(parsed.id) : 0;
+}
+
 async function main() {
   const argv = process.argv.slice(2);
   if (argv.includes('--env') && !/^(local|local-wp)$/.test(flag(argv, '--env'))) {
@@ -62,6 +81,7 @@ async function main() {
     throw new Error(`çevrimdışı ödeme yöntemleri açılamadı: ${gateways.error || ''}`);
   }
   const server = await startPhpServer({ wpDir, port: PORT });
+  const addonHostId = seedAddonProduct(wpDir, probe.products);
   let status = 1;
   try {
     fs.rmSync(path.join(ROOT, 'test-results'), { recursive: true, force: true });
@@ -78,6 +98,12 @@ async function main() {
         ...process.env,
         E2E_BASE_URL: `http://127.0.0.1:${PORT}`,
         WDP_EXP_PRODUCT_ID: String(probe.products.custom.id),
+        WDP_EXP_PRODUCTS: JSON.stringify(
+          {
+            ...Object.fromEntries(['fixed', 'custom', 'shares', 'campaign'].filter((k) => probe.products[k]).map((k) => [k, probe.products[k].id])),
+            ...(addonHostId ? { addon: addonHostId } : {}),
+          }
+        ),
         WDP_EXP_TRY: '1',
         WDP_EXP_CHECKOUT: checkout,
         WDP_EXP_STORE: JSON.stringify(store),

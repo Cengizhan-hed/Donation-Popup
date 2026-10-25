@@ -1,9 +1,11 @@
 /**
- * Form çekirdeği: durum -> DOM, sepete ekleme ve doğrulama (REST `cart/add`).
+ * Form çekirdeği: bağış türleri (sabit/serbest/hisseli/kampanya), çok adımlı akış, durum -> DOM,
+ * sepete ekleme ve doğrulama (REST `cart/add`).
  */
-import { formatTotal, initialState, nextPresetIndex, reducer } from './store.mjs';
+import { clampQty, computeTotals, firstErrorStep, formatTotal, initialState, nextPresetIndex, parseAmount, reducer, stepLabel } from './store.mjs';
 
 const RTL = () => document.documentElement.dir === 'rtl' || document.dir === 'rtl';
+const HOLDER = /^shareholder_(\d+)_/;
 
 /**
  * @param {HTMLElement} root Kök (.dp-exp).
@@ -16,6 +18,21 @@ export function createForm(root, hooks = {}) {
     return { getState: () => ({}) };
   }
 
+  const kind = form.dataset.kind || '';
+  const derived = kind === 'fixed' || kind === 'shares';
+  const unit = Number(form.dataset.unit || 0);
+  const feePercent = Number(form.dataset.fee || 0);
+  const qtyMax = Number(form.dataset.qtyMax || 1);
+  const addonFixed = Number(form.dataset.addonFixed || 0);
+  const addonMin = Number(form.dataset.addonMin || 0);
+  const minAmount = Number(form.dataset.min || 0);
+  const decimals = Number(form.dataset.decimals || 2);
+  const locale = document.documentElement.lang || undefined;
+
+  const sections = Array.from(form.querySelectorAll('[data-dp-step]'));
+  const stepsBar = Array.from(form.querySelectorAll('.dp-steps__i'));
+  const stepText = form.querySelector('[data-dp-steplabel]');
+  const backButton = form.querySelector('[data-dp-back]');
   const chips = Array.from(form.querySelectorAll('[data-dp-preset]'));
   const presets = chips.map((chip) => Number(chip.dataset.dpPreset));
   const recommended = chips.findIndex((chip) => chip.getAttribute('aria-checked') === 'true');
@@ -28,45 +45,82 @@ export function createForm(root, hooks = {}) {
   const total = form.querySelector('[data-dp-total]');
   const submit = form.querySelector('[data-dp-submit]');
   const summary = form.querySelector('[data-dp-summary]');
-  const decimals = Number(form.dataset.decimals || 2);
-  const locale = document.documentElement.lang || undefined;
+  const symbol = total ? total.dataset.symbol || '' : '';
+  const qtyInput = form.querySelector('[data-dp-qty-input]');
+  const qtyOut = form.querySelector('[data-dp-qty-out]');
+  const qtyButtons = Array.from(form.querySelectorAll('[data-dp-qty]'));
+  const feeBox = form.querySelector('[data-dp-fee]');
+  const feeHint = form.querySelector('[data-dp-fee-hint]');
+  const addonToggle = form.querySelector('[data-dp-addon-toggle]');
+  const addonBox = form.querySelector('[data-dp-addon-box]');
+  const addonInput = form.querySelector('input[name="addon_amount"]');
+  const holders = Array.from(form.querySelectorAll('[data-dp-holder]'));
+  const stepId = (index) => (sections[index] ? sections[index].dataset.dpStep : '');
+  const lastStep = Math.max(0, sections.length - 1);
+
+  const money = (value) => formatTotal(value, symbol, decimals, locale);
+  const addonValue = () => (addonFixed > 0 ? addonFixed : parseAmount(state.addonAmount));
+  const totals = (fee) =>
+    computeTotals({
+      kind,
+      amount: state.amount,
+      unit,
+      qty: state.qty,
+      feePercent,
+      fee,
+      addon: state.addon,
+      addonAmount: addonValue(),
+      decimals,
+    });
 
   const dispatch = (action) => {
     state = reducer(state, action);
     paint();
   };
 
-  const paint = () => {
-    chips.forEach((chip, index) => {
-      const checked = state.preset !== null && Number(chip.dataset.dpPreset) === state.preset;
-      chip.setAttribute('aria-checked', checked ? 'true' : 'false');
-      const focusable = state.focusPreset === presets[index] || (state.focusPreset === null && index === 0);
-      chip.tabIndex = focusable ? 0 : -1;
-    });
-    if (total) {
-      total.textContent = formatTotal(state.amount, total.dataset.symbol || '', decimals, locale);
+  const setLine = (name, value, visible) => {
+    const line = form.querySelector(`[data-dp-line="${name}"]`);
+    if (!line) {
+      return;
     }
-    form.querySelectorAll('[data-dp-field], [data-dp-amounts]').forEach((field) => {
-      const name = field.dataset.dpField;
-      const message = name ? state.errors[name] : state.errors.amount;
-      const error = field.querySelector('[data-dp-error]');
-      const input = field.querySelector('input, textarea');
-      if (name === undefined && field.dataset.dpAmounts !== undefined) {
-        return;
-      }
-      field.classList.toggle('has-error', Boolean(message));
-      if (error) {
-        error.textContent = message || '';
-      }
-      if (input) {
-        input.setAttribute('aria-invalid', message ? 'true' : 'false');
-      }
-    });
-    const amountError = state.errors.amount;
-    const hiddenError = form.querySelector('[data-dp-amounts] > [data-dp-error]');
-    if (hiddenError) {
-      hiddenError.textContent = amountError || '';
+    line.hidden = !visible;
+    const out = line.querySelector('[data-dp-line-value]');
+    if (out) {
+      out.textContent = money(value);
     }
+  };
+
+  const paintSteps = () => {
+    sections.forEach((section, index) => {
+      section.hidden = index !== state.step;
+    });
+    stepsBar.forEach((bar, index) => {
+      bar.classList.toggle('is-done', index < state.step);
+      bar.classList.toggle('is-current', index === state.step);
+    });
+    if (stepText) {
+      const section = sections[state.step];
+      stepText.textContent = stepLabel(form.dataset.msgStep, state.step, sections.length, section ? section.dataset.stepLabel || '' : '');
+    }
+    if (backButton) {
+      backButton.hidden = state.step === 0;
+    }
+    if (submit) {
+      submit.textContent = (state.step >= lastStep ? form.dataset.labelSubmit : form.dataset.labelNext) || submit.textContent;
+    }
+  };
+
+  const paintErrors = () => {
+    form.querySelectorAll('[data-dp-error]').forEach((error) => {
+      const name = error.dataset.dpError;
+      const message = state.errors[name] || '';
+      error.textContent = message;
+      const wrap = error.closest('[data-dp-field], .dp-fieldset');
+      if (wrap) {
+        wrap.classList.toggle('has-error', Boolean(message));
+      }
+      form.querySelectorAll(`[name="${name}"]`).forEach((input) => input.setAttribute('aria-invalid', message ? 'true' : 'false'));
+    });
     if (summary) {
       const has = Object.keys(state.errors).length > 0;
       summary.classList.toggle('is-visible', has);
@@ -76,6 +130,48 @@ export function createForm(root, hooks = {}) {
         summary.textContent = root.dataset.dpMsgFailed || '';
       }
     }
+  };
+
+  const paint = () => {
+    paintSteps();
+    chips.forEach((chip, index) => {
+      const checked = state.preset !== null && Number(chip.dataset.dpPreset) === state.preset;
+      chip.setAttribute('aria-checked', checked ? 'true' : 'false');
+      const focusable = state.focusPreset === presets[index] || (state.focusPreset === null && index === 0);
+      chip.tabIndex = focusable ? 0 : -1;
+    });
+    if (qtyInput) {
+      qtyInput.value = String(state.qty);
+    }
+    if (qtyOut) {
+      qtyOut.textContent = String(state.qty);
+    }
+    qtyButtons.forEach((button) => {
+      button.disabled = Number(button.dataset.dpQty) < 0 ? state.qty <= 1 : state.qty >= qtyMax;
+    });
+    holders.forEach((holder) => {
+      const visible = Number(holder.dataset.dpHolder) <= state.qty;
+      holder.hidden = !visible;
+      holder.querySelectorAll('input').forEach((input) => {
+        input.disabled = !visible;
+      });
+    });
+    if (addonBox) {
+      addonBox.hidden = !state.addon;
+    }
+    const current = totals(state.fee);
+    if (total) {
+      total.textContent = money(current.total);
+    }
+    if (feeHint) {
+      const preview = totals(true);
+      feeHint.textContent = preview.fee > 0 ? `+${money(preview.fee)}` : '';
+    }
+    setLine('donation', current.donation, true);
+    setLine('fee', current.fee, current.fee > 0);
+    setLine('addon', current.addon, current.addon > 0);
+    setLine('total', current.total, true);
+    paintErrors();
     if (submit) {
       const busy = state.status === 'submitting';
       submit.classList.toggle('is-loading', busy);
@@ -103,8 +199,31 @@ export function createForm(root, hooks = {}) {
   if (amountInput && !hiddenAmount) {
     amountInput.addEventListener('input', () => dispatch({ type: 'setCustom', value: amountInput.value }));
   }
+  qtyButtons.forEach((button) => {
+    button.addEventListener('click', () => dispatch({ type: 'setQty', value: clampQty(state.qty + Number(button.dataset.dpQty), qtyMax) }));
+  });
+  if (feeBox) {
+    feeBox.addEventListener('change', () => dispatch({ type: 'setFee', value: feeBox.checked }));
+  }
+  if (addonToggle) {
+    addonToggle.addEventListener('change', () => {
+      dispatch({ type: 'setAddon', value: addonToggle.checked });
+      if (addonToggle.checked && addonInput) {
+        addonInput.focus();
+      }
+    });
+  }
+  if (addonInput) {
+    addonInput.addEventListener('input', () => dispatch({ type: 'setAddonAmount', value: addonInput.value }));
+  }
+  if (backButton) {
+    backButton.addEventListener('click', () => {
+      dispatch({ type: 'goStep', value: state.step - 1 });
+      focusStep();
+    });
+  }
   form.querySelectorAll('input, textarea').forEach((input) => {
-    if (input.name && input.name !== 'amount') {
+    if (input.name && !['amount', 'addon_amount'].includes(input.name)) {
       input.addEventListener('input', () => {
         if (state.errors[input.name]) {
           dispatch({ type: 'clearError', name: input.name });
@@ -114,12 +233,14 @@ export function createForm(root, hooks = {}) {
   });
 
   /**
-   * @return {Record<string, string>} Alan adı -> değer.
+   * Gönderilecek değerler (kapalı hissedar satırları ve kapalı ek bağış dahil edilmez).
+   *
+   * @return {Record<string, unknown>} Alan adı -> değer.
    */
   const collect = () => {
     const values = { amount: state.amount === null ? form.querySelector('input[name="amount"]')?.value || '' : String(state.amount) };
     form.querySelectorAll('input[name], textarea[name]').forEach((el) => {
-      if (el.name === 'amount') {
+      if (el.name === 'amount' || el.disabled || HOLDER.test(el.name)) {
         return;
       }
       if (el.type === 'checkbox') {
@@ -137,17 +258,91 @@ export function createForm(root, hooks = {}) {
     if (amountInput && !hiddenAmount && state.preset === null) {
       values.amount = amountInput.value;
     }
+    if (!state.addon) {
+      delete values.addon_active;
+      delete values.addon_amount;
+    }
+    if (kind === 'shares') {
+      values.shareholders = holders
+        .filter((holder) => Number(holder.dataset.dpHolder) <= state.qty)
+        .map((holder) => {
+          const row = {};
+          holder.querySelectorAll('[data-dp-holder-field]').forEach((input) => {
+            row[input.dataset.dpHolderField] = input.value;
+          });
+          return row;
+        });
+    }
     return values;
+  };
+
+  /**
+   * Geçerli adımın hızlı denetimi (sunucu yine her şeyi doğrular).
+   *
+   * @return {Record<string, string>} Alan adı -> ileti.
+   */
+  const validateStep = () => {
+    const errors = {};
+    const section = sections[state.step];
+    const id = stepId(state.step);
+    if (id === 'amount') {
+      if (!derived) {
+        if (state.amount === null || !(state.amount > 0)) {
+          errors.amount = form.dataset.msgAmount || '';
+        } else if (state.amount < Math.max(minAmount, 0.01)) {
+          errors.amount = form.dataset.msgMin || '';
+        }
+      }
+      if (state.addon && addonFixed <= 0) {
+        const value = addonValue();
+        if (value === null || !(value > 0) || (addonMin > 0 && value < addonMin)) {
+          errors.addon_amount = form.dataset.msgAddon || '';
+        }
+      }
+    } else if (section) {
+      section.querySelectorAll('input[required]:not(:disabled), textarea[required]:not(:disabled)').forEach((input) => {
+        if (input.value.trim() === '') {
+          errors[input.name] = input.dataset.requiredMsg || '';
+        }
+      });
+    }
+    return errors;
+  };
+
+  /**
+   * Alan adının bulunduğu adımın sırası; bulunamazsa -1.
+   *
+   * @param {string} name Alan adı.
+   * @return {number} Adım sırası.
+   */
+  const stepIndexOf = (name) => {
+    const el = form.querySelector(`[name="${name}"], [data-dp-error="${name}"]`);
+    const section = el ? el.closest('[data-dp-step]') : null;
+    return section ? sections.indexOf(section) : -1;
   };
 
   const focusFirstError = () => {
     const name = Object.keys(state.errors)[0];
-    const target =
-      name === 'amount'
-        ? form.querySelector('input[name="amount"]:not([type="hidden"])') || form.querySelector('[role="radio"][tabindex="0"]')
-        : form.querySelector(`[name="${name}"]`);
+    let target = null;
+    if (name === 'amount') {
+      target = form.querySelector('input[name="amount"]:not([type="hidden"])') || form.querySelector('[role="radio"][tabindex="0"]');
+    } else if (name) {
+      target = form.querySelector(`[name="${name}"]:not([type="hidden"]):not(:disabled)`) || form.querySelector('[data-dp-qty]:not(:disabled)');
+    }
     if (target) {
       target.focus();
+    }
+  };
+
+  const focusStep = () => {
+    const section = sections[state.step];
+    const target = section && section.querySelector('[role="radio"][tabindex="0"], input:not([type="hidden"]):not(:disabled), textarea:not(:disabled), [data-dp-qty]:not(:disabled)');
+    const body = form.querySelector('.dp-surface__body');
+    if (body) {
+      body.scrollTop = 0;
+    }
+    if (target) {
+      target.focus({ preventScroll: true });
     }
   };
 
@@ -156,12 +351,30 @@ export function createForm(root, hooks = {}) {
     if (state.status === 'submitting') {
       return;
     }
+    const stepErrors = validateStep();
+    if (Object.keys(stepErrors).length) {
+      dispatch({ type: 'setErrors', errors: stepErrors });
+      focusFirstError();
+      return;
+    }
+    if (state.step < lastStep) {
+      dispatch({ type: 'goStep', value: state.step + 1 });
+      focusStep();
+      return;
+    }
     const values = collect();
     const productId = form.dataset.productId;
     dispatch({ type: 'submitStart' });
     try {
       const outcome = await addToCart(root, productId, values);
       if (outcome.errors) {
+        const earlier = firstErrorStep(
+          Object.keys(outcome.errors),
+          Object.fromEntries(Object.keys(outcome.errors).map((name) => [name, stepIndexOf(name)]))
+        );
+        if (earlier >= 0 && earlier !== state.step) {
+          dispatch({ type: 'goStep', value: earlier });
+        }
         dispatch({ type: 'setErrors', errors: outcome.errors });
         focusFirstError();
         return;

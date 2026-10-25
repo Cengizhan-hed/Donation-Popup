@@ -32,6 +32,9 @@ final class Cart_Data {
 	 * @return array<string, string>
 	 */
 	public static function donation_data( array $model, array $input ) {
+		if ( isset( $model['kind'] ) && 'shares' === $model['kind'] ) {
+			return self::share_data( $model, $input );
+		}
 		$allowed = array();
 		$fields  = isset( $model['fields'] ) && is_array( $model['fields'] ) ? $model['fields'] : array();
 		foreach ( $fields as $field ) {
@@ -80,16 +83,82 @@ final class Cart_Data {
 	}
 
 	/**
+	 * Hisseli bağış verisi: eski sözleşmeyle aynı (`share_count`, 1 tabanlı `shareholders[n]` = ad/telefon/e-posta/not).
+	 * Bağışçının kendi alanları (ad, telefon...) bu türde yoktur; her hissedar satırı eksiksiz taşınır.
+	 *
+	 * @param array<string, mixed> $model Form modeli.
+	 * @param array<string, mixed> $input İstek girdisi (`share_count`, `shareholders`: liste).
+	 * @return array<string, mixed>
+	 */
+	public static function share_data( array $model, array $input ) {
+		$rule  = isset( $model['quantity'] ) && is_array( $model['quantity'] ) ? $model['quantity'] : array();
+		$max   = isset( $rule['max'] ) ? max( 1, (int) $rule['max'] ) : 1;
+		$count = isset( $input['share_count'] ) && is_scalar( $input['share_count'] ) ? (int) $input['share_count'] : 1;
+		$count = min( $max, max( 1, $count ) );
+		$rows  = isset( $input['shareholders'] ) && is_array( $input['shareholders'] ) ? array_values( $input['shareholders'] ) : array();
+
+		$holders = array();
+		for ( $n = 1; $n <= $count; $n++ ) {
+			$row    = isset( $rows[ $n - 1 ] ) && is_array( $rows[ $n - 1 ] ) ? $rows[ $n - 1 ] : array();
+			$holder = array();
+			$name   = self::text( self::raw( $row, 'name' ), self::NAME_MAX );
+			$phone  = self::phone( self::raw( $row, 'phone' ) );
+			$email  = self::limit( trim( self::raw( $row, 'email' ) ), self::EMAIL_MAX );
+			$email  = '' !== $email ? sanitize_email( $email ) : '';
+			$note   = self::textarea( self::raw( $row, 'note' ), self::NOTE_MAX );
+			if ( '' !== $name ) {
+				$holder['name'] = $name;
+			}
+			if ( '' !== $phone ) {
+				$holder['phone'] = $phone;
+			}
+			if ( '' !== $email && is_email( $email ) ) {
+				$holder['email'] = $email;
+			}
+			if ( '' !== $note ) {
+				$holder['note'] = $note;
+			}
+			if ( $holder ) {
+				$holders[ $n ] = $holder;
+			}
+		}
+
+		$data = array( 'share_count' => $count );
+		if ( $holders ) {
+			$data['shareholders'] = $holders;
+		}
+		return $data;
+	}
+
+	/**
+	 * İşlem ücreti uygulanmış birim tutar (WooCommerce ondalık hane sayısıyla yuvarlanır).
+	 *
+	 * @param float $amount   Birim tutar.
+	 * @param float $percent  Ücret yüzdesi (0 = yok).
+	 * @param int   $decimals Ondalık hane.
+	 * @return float
+	 */
+	public static function with_fee( $amount, $percent, $decimals ) {
+		$amount  = (float) $amount;
+		$percent = (float) $percent;
+		if ( $percent <= 0 || $amount <= 0 ) {
+			return $amount;
+		}
+		return round( $amount * ( 1 + ( $percent / 100 ) ), max( 0, (int) $decimals ) );
+	}
+
+	/**
 	 * Sepet öğesi verisi (eski sözleşmeyle aynı anahtarlar).
 	 *
 	 * @param array<string, string> $donation_data Bağış verisi.
 	 * @param float|null            $custom_price  Yazılan tutar (yalnız serbest tutarlı üründe).
 	 * @param int                   $product_id    Ürün.
 	 * @param string                $submission    İstemci gönderim anahtarı (çift gönderim koruması).
-	 * @param string                $type          Bağış türü (boş olabilir).
+	 * @param string                $type          Düzenli bağış seçeneği (boş olabilir).
+	 * @param array<string, mixed>  $extra         Ek sepet öğesi anahtarları (ör. `donation_panel_kind`, `wdp_base_unit_price`).
 	 * @return array<string, mixed>
 	 */
-	public static function cart_item_data( array $donation_data, $custom_price, $product_id, $submission = '', $type = '' ) {
+	public static function cart_item_data( array $donation_data, $custom_price, $product_id, $submission = '', $type = '', array $extra = array() ) {
 		$item = array(
 			'donation_data' => $donation_data,
 			'unique_key'    => md5( implode( '|', array( (int) $product_id, 'main', microtime( true ), self::nonce_part() ) ) ),
@@ -105,7 +174,7 @@ final class Cart_Data {
 		if ( '' !== $type ) {
 			$item['donation_panel_type'] = $type;
 		}
-		return $item;
+		return array_merge( $item, $extra );
 	}
 
 	/**
@@ -141,6 +210,7 @@ final class Cart_Data {
 			'has_dedication' => ! empty( $data['dedication'] ),
 			'has_note'       => isset( $data['note'] ) && '' !== $data['note'],
 			'type'           => isset( $cart_item['donation_panel_type'] ) ? (string) $cart_item['donation_panel_type'] : '',
+			'kind'           => isset( $cart_item['donation_panel_kind'] ) ? (string) $cart_item['donation_panel_kind'] : '',
 		);
 	}
 
