@@ -216,6 +216,8 @@ final class Plugin {
 		$registry->add( 'social_proof', 'DonationPanel\\Modules\\SocialProof\\Social_Proof_Module', false );
 		$registry->add( 'thanks', 'DonationPanel\\Modules\\Thanks\\Thanks_Module', false );
 		$registry->add( 'tax_relief', 'DonationPanel\\Modules\\TaxRelief\\Tax_Relief_Module', false );
+
+		$registry->add( 'donor_account', 'DonationPanel\\Modules\\DonorAccount\\Donor_Account_Module', false );
 	}
 
 	/**

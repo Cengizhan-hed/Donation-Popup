@@ -45,6 +45,8 @@
 
     "e2e:campaign": "node tests/e2e/run-campaign.mjs",
     "e2e:e6": "node tests/e2e/run-e6.mjs",
+
+    "e2e:donor-account": "node tests/e2e/run-donor-account.mjs",
     "e2e:asset-scope": "node tests/e2e/run-asset-scope.mjs",
     "e2e:accept": "node tests/e2e/run-accept.mjs",
     "e2e:stability": "node tests/e2e/run-stability.mjs",
