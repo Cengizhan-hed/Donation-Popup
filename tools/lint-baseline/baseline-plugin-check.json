@@ -1,13 +1,17 @@
 {
  "tool": "plugin-check",
- "total": 293,
+ "total": 395,
  "entries": [
   {
    "key": ".cursorignore|hidden_files|Hidden files are not permitted.",
    "count": 1
   },
   {
-   "key": ".git|hidden_files|Hidden files are not permitted.",
+   "key": "includes/bootstrap/class-legacy-frontend.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound|Functions declared in the global namespace by a theme/plugin should start with the theme/plugin prefix. Found: &quot;wdp_render_donation_form&quot;.",
+   "count": 1
+  },
+  {
+   "key": "includes/bootstrap/class-legacy-frontend.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound|Functions declared in the global namespace by a theme/plugin should start with the theme/plugin prefix. Found: &quot;wdp_track_deprecated_ajax_usage&quot;.",
    "count": 1
   },
   {
@@ -15,7 +19,27 @@
    "count": 1
   },
   {
+   "key": "includes/bootstrap/class-plugin-bootstrap.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound|Global variables defined by a theme/plugin should start with the theme/plugin prefix. Found: &quot;$woo_donation_popup_admin&quot;.",
+   "count": 1
+  },
+  {
+   "key": "includes/bootstrap/class-plugin-bootstrap.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound|Global variables defined by a theme/plugin should start with the theme/plugin prefix. Found: &quot;$woo_donation_popup&quot;.",
+   "count": 1
+  },
+  {
+   "key": "includes/class-addon-product-visibility.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound|Hook names invoked by a theme/plugin should start with the theme/plugin prefix. Found: &quot;wdp_sadaka_line_product_ids&quot;.",
+   "count": 1
+  },
+  {
    "key": "includes/class-addon-product-visibility.php|WordPressVIPMinimum.Performance.WPQueryParams.SuppressFilters_suppress_filters|Setting `suppress_filters` to `true` is prohibited.",
+   "count": 1
+  },
+  {
+   "key": "includes/class-admin-assets.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound|Classes declared by a theme/plugin should start with the theme/plugin prefix. Found: &quot;WDP_Admin_Assets&quot;.",
+   "count": 1
+  },
+  {
+   "key": "includes/class-admin-bulk-actions.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound|Classes declared by a theme/plugin should start with the theme/plugin prefix. Found: &quot;WDP_Admin_Bulk_Actions&quot;.",
    "count": 1
   },
   {
@@ -23,15 +47,43 @@
    "count": 1
   },
   {
+   "key": "includes/class-admin-design-studio-renderer.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound|Classes declared by a theme/plugin should start with the theme/plugin prefix. Found: &quot;WDP_Admin_Design_Studio_Renderer&quot;.",
+   "count": 1
+  },
+  {
+   "key": "includes/class-admin-form-tabs-renderer.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound|Classes declared by a theme/plugin should start with the theme/plugin prefix. Found: &quot;WDP_Admin_Form_Tabs_Renderer&quot;.",
+   "count": 1
+  },
+  {
    "key": "includes/class-admin-form-tabs-renderer.php|WordPress.Security.EscapeOutput.OutputNotEscaped|All output should be run through an escaping function (see the Security sections in the WordPress Developer Handbooks), found '__'.",
    "count": 31
+  },
+  {
+   "key": "includes/class-admin-hooks.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound|Classes declared by a theme/plugin should start with the theme/plugin prefix. Found: &quot;WDP_Admin_Hooks&quot;.",
+   "count": 1
+  },
+  {
+   "key": "includes/class-admin-layout-tabs-renderer.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound|Classes declared by a theme/plugin should start with the theme/plugin prefix. Found: &quot;WDP_Admin_Layout_Tabs_Renderer&quot;.",
+   "count": 1
   },
   {
    "key": "includes/class-admin-layout-tabs-renderer.php|WordPress.Security.EscapeOutput.OutputNotEscaped|All output should be run through an escaping function (see the Security sections in the WordPress Developer Handbooks), found '__'.",
    "count": 18
   },
   {
+   "key": "includes/class-admin-page-renderer.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound|Classes declared by a theme/plugin should start with the theme/plugin prefix. Found: &quot;WDP_Admin_Page_Renderer&quot;.",
+   "count": 1
+  },
+  {
    "key": "includes/class-admin-page-renderer.php|WordPress.WP.I18n.MissingTranslatorsComment|A function call to __() with texts containing placeholders was found, but was not accompanied by a \"translators:\" comment on the line above to clarify the meaning of the placeholders.",
+   "count": 1
+  },
+  {
+   "key": "includes/class-admin-placement-tab-renderer.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound|Classes declared by a theme/plugin should start with the theme/plugin prefix. Found: &quot;WDP_Admin_Placement_Tab_Renderer&quot;.",
+   "count": 1
+  },
+  {
+   "key": "includes/class-admin-product-data-tab.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound|Classes declared by a theme/plugin should start with the theme/plugin prefix. Found: &quot;WDP_Admin_Product_Data_Tab&quot;.",
    "count": 1
   },
   {
@@ -47,11 +99,23 @@
    "count": 3
   },
   {
+   "key": "includes/class-admin-product-settings-ajax.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound|Classes declared by a theme/plugin should start with the theme/plugin prefix. Found: &quot;WDP_Admin_Product_Settings_Ajax&quot;.",
+   "count": 1
+  },
+  {
    "key": "includes/class-admin-product-settings-ajax.php|WordPress.Security.NonceVerification.Missing|Processing form data without nonce verification.",
    "count": 2
   },
   {
+   "key": "includes/class-admin-products-list-table.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound|Classes declared by a theme/plugin should start with the theme/plugin prefix. Found: &quot;WDP_Admin_Products_List_Table&quot;.",
+   "count": 1
+  },
+  {
    "key": "includes/class-admin-products-list-table.php|WordPress.Security.ValidatedSanitizedInput.InputNotSanitized|Detected usage of a non-sanitized input variable: $_REQUEST[self::TYPE_QV]",
+   "count": 1
+  },
+  {
+   "key": "includes/class-admin-renderer-helpers.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound|Classes declared by a theme/plugin should start with the theme/plugin prefix. Found: &quot;WDP_Admin_Renderer_Helpers&quot;.",
    "count": 1
   },
   {
@@ -63,7 +127,47 @@
    "count": 1
   },
   {
+   "key": "includes/class-admin-request.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound|Classes declared by a theme/plugin should start with the theme/plugin prefix. Found: &quot;WDP_Admin_Request&quot;.",
+   "count": 1
+  },
+  {
+   "key": "includes/class-admin-settings-normalizer.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound|Classes declared by a theme/plugin should start with the theme/plugin prefix. Found: &quot;WDP_Admin_Settings_Normalizer&quot;.",
+   "count": 1
+  },
+  {
+   "key": "includes/class-ajax.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound|Global variables defined by a theme/plugin should start with the theme/plugin prefix. Found: &quot;$wdp_ajax_traits_dir&quot;.",
+   "count": 1
+  },
+  {
+   "key": "includes/class-assets.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound|Hook names invoked by a theme/plugin should start with the theme/plugin prefix. Found: &quot;autoptimize_action_cachepurged&quot;.",
+   "count": 1
+  },
+  {
+   "key": "includes/class-assets.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound|Hook names invoked by a theme/plugin should start with the theme/plugin prefix. Found: &quot;litespeed_purge_all&quot;.",
+   "count": 1
+  },
+  {
+   "key": "includes/class-assets.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound|Hook names invoked by a theme/plugin should start with the theme/plugin prefix. Found: &quot;rocket_clean_domain&quot;.",
+   "count": 1
+  },
+  {
+   "key": "includes/class-assets.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound|Hook names invoked by a theme/plugin should start with the theme/plugin prefix. Found: &quot;wdp_should_enqueue_assets&quot;.",
+   "count": 1
+  },
+  {
+   "key": "includes/class-campaign-goal.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound|Classes declared by a theme/plugin should start with the theme/plugin prefix. Found: &quot;WDP_Campaign_Goal&quot;.",
+   "count": 1
+  },
+  {
    "key": "includes/class-campaign-goal.php|WordPress.Security.EscapeOutput.ExceptionNotEscaped|All output should be run through an escaping function (see the Security sections in the WordPress Developer Handbooks), found '$message'.",
+   "count": 1
+  },
+  {
+   "key": "includes/class-cart.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound|Hook names invoked by a theme/plugin should start with the theme/plugin prefix. Found: &quot;wdp_min_donation_amount&quot;.",
+   "count": 1
+  },
+  {
+   "key": "includes/class-cart.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound|Hook names invoked by a theme/plugin should start with the theme/plugin prefix. Found: &quot;wdp_sadaka_cart_thumbnail_size&quot;.",
    "count": 1
   },
   {
@@ -91,11 +195,51 @@
    "count": 6
   },
   {
+   "key": "includes/class-color-palette.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound|Classes declared by a theme/plugin should start with the theme/plugin prefix. Found: &quot;WDP_Color_Palette&quot;.",
+   "count": 1
+  },
+  {
+   "key": "includes/class-donation-optional-fields.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound|Classes declared by a theme/plugin should start with the theme/plugin prefix. Found: &quot;WDP_Donation_Optional_Fields&quot;.",
+   "count": 1
+  },
+  {
    "key": "includes/class-donation-optional-fields.php|WordPress.Security.EscapeOutput.ExceptionNotEscaped|All output should be run through an escaping function (see the Security sections in the WordPress Developer Handbooks), found '__'.",
    "count": 1
   },
   {
+   "key": "includes/class-donation-product-context-service.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound|Classes declared by a theme/plugin should start with the theme/plugin prefix. Found: &quot;WDP_Donation_Product_Context_Service&quot;.",
+   "count": 1
+  },
+  {
+   "key": "includes/class-donation-product-context-service.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound|Hook names invoked by a theme/plugin should start with the theme/plugin prefix. Found: &quot;wdp_form_context&quot;.",
+   "count": 1
+  },
+  {
+   "key": "includes/class-donation-scope.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound|Classes declared by a theme/plugin should start with the theme/plugin prefix. Found: &quot;WDP_Donation_Scope&quot;.",
+   "count": 1
+  },
+  {
+   "key": "includes/class-donation-scope.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound|Hook names invoked by a theme/plugin should start with the theme/plugin prefix. Found: &quot;wdp_is_donation_product&quot;.",
+   "count": 1
+  },
+  {
+   "key": "includes/class-donation-scope.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound|Hook names invoked by a theme/plugin should start with the theme/plugin prefix. Found: &quot;wdp_supported_product_types&quot;.",
+   "count": 1
+  },
+  {
    "key": "includes/class-donation-scope.php|WordPressVIPMinimum.Performance.WPQueryParams.SuppressFilters_suppress_filters|Setting `suppress_filters` to `true` is prohibited.",
+   "count": 1
+  },
+  {
+   "key": "includes/class-donation-type.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound|Classes declared by a theme/plugin should start with the theme/plugin prefix. Found: &quot;WDP_Donation_Type&quot;.",
+   "count": 1
+  },
+  {
+   "key": "includes/class-donations-list.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound|Hook names invoked by a theme/plugin should start with the theme/plugin prefix. Found: &quot;wdp_donations_card_html&quot;.",
+   "count": 1
+  },
+  {
+   "key": "includes/class-donations-list.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound|Hook names invoked by a theme/plugin should start with the theme/plugin prefix. Found: &quot;wdp_donations_query_args&quot;.",
    "count": 1
   },
   {
@@ -135,6 +279,14 @@
    "count": 2
   },
   {
+   "key": "includes/class-form-modules.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound|Classes declared by a theme/plugin should start with the theme/plugin prefix. Found: &quot;WDP_Form_Modules&quot;.",
+   "count": 1
+  },
+  {
+   "key": "includes/class-icon-library.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound|Classes declared by a theme/plugin should start with the theme/plugin prefix. Found: &quot;WDP_Icon_Library&quot;.",
+   "count": 1
+  },
+  {
    "key": "includes/class-lazy-modal.php|WordPress.Security.NonceVerification.Recommended|Processing form data without nonce verification.",
    "count": 4
   },
@@ -163,6 +315,26 @@
    "count": 4
   },
   {
+   "key": "includes/class-phone-field.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound|Classes declared by a theme/plugin should start with the theme/plugin prefix. Found: &quot;WDP_Phone_Field&quot;.",
+   "count": 1
+  },
+  {
+   "key": "includes/class-phone-field.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound|Hook names invoked by a theme/plugin should start with the theme/plugin prefix. Found: &quot;wdp_phone_countries&quot;.",
+   "count": 1
+  },
+  {
+   "key": "includes/class-phone-field.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound|Hook names invoked by a theme/plugin should start with the theme/plugin prefix. Found: &quot;wdp_phone_default_country&quot;.",
+   "count": 1
+  },
+  {
+   "key": "includes/class-phone-field.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound|Hook names invoked by a theme/plugin should start with the theme/plugin prefix. Found: &quot;wdp_phone_excluded_countries&quot;.",
+   "count": 1
+  },
+  {
+   "key": "includes/class-phone-field.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound|Hook names invoked by a theme/plugin should start with the theme/plugin prefix. Found: &quot;wdp_phone_national_length_rules&quot;.",
+   "count": 1
+  },
+  {
    "key": "includes/class-phone-field.php|WordPress.Security.EscapeOutput.OutputNotEscaped|All output should be run through an escaping function (see the Security sections in the WordPress Developer Handbooks), found '$id_attr'.",
    "count": 1
   },
@@ -179,7 +351,63 @@
    "count": 1
   },
   {
+   "key": "includes/class-product-resolver.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound|Classes declared by a theme/plugin should start with the theme/plugin prefix. Found: &quot;WDP_Product_Resolver&quot;.",
+   "count": 1
+  },
+  {
+   "key": "includes/class-product-resolver.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound|Hook names invoked by a theme/plugin should start with the theme/plugin prefix. Found: &quot;wdp_resolve_product&quot;.",
+   "count": 1
+  },
+  {
+   "key": "includes/class-product-settings-service.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound|Classes declared by a theme/plugin should start with the theme/plugin prefix. Found: &quot;WDP_Product_Settings_Service&quot;.",
+   "count": 1
+  },
+  {
+   "key": "includes/class-progress-currency.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound|Classes declared by a theme/plugin should start with the theme/plugin prefix. Found: &quot;WDP_Progress_Currency&quot;.",
+   "count": 1
+  },
+  {
+   "key": "includes/class-progress-currency.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound|Hook names invoked by a theme/plugin should start with the theme/plugin prefix. Found: &quot;wdp_convert_amount&quot;.",
+   "count": 1
+  },
+  {
+   "key": "includes/class-progress-currency.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound|Hook names invoked by a theme/plugin should start with the theme/plugin prefix. Found: &quot;wdp_order_exchange_rate&quot;.",
+   "count": 1
+  },
+  {
+   "key": "includes/class-progress-currency.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound|Hook names invoked by a theme/plugin should start with the theme/plugin prefix. Found: &quot;wdp_progress_convert_amount&quot;.",
+   "count": 4
+  },
+  {
+   "key": "includes/class-progress-currency.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound|Hook names invoked by a theme/plugin should start with the theme/plugin prefix. Found: &quot;wdp_progress_live_rate&quot;.",
+   "count": 1
+  },
+  {
+   "key": "includes/class-progress-form.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound|Classes declared by a theme/plugin should start with the theme/plugin prefix. Found: &quot;WDP_Progress_Form&quot;.",
+   "count": 1
+  },
+  {
    "key": "includes/class-progress-form.php|WordPress.Security.EscapeOutput.OutputNotEscaped|All output should be run through an escaping function (see the Security sections in the WordPress Developer Handbooks), found 'WDP_Utils'.",
+   "count": 2
+  },
+  {
+   "key": "includes/class-render-guard.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound|Classes declared by a theme/plugin should start with the theme/plugin prefix. Found: &quot;WDP_Render_Guard&quot;.",
+   "count": 1
+  },
+  {
+   "key": "includes/class-render-registry.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound|Classes declared by a theme/plugin should start with the theme/plugin prefix. Found: &quot;WDP_Render_Registry&quot;.",
+   "count": 1
+  },
+  {
+   "key": "includes/class-security.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound|Classes declared by a theme/plugin should start with the theme/plugin prefix. Found: &quot;WDP_Security&quot;.",
+   "count": 1
+  },
+  {
+   "key": "includes/class-security.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound|Hook names invoked by a theme/plugin should start with the theme/plugin prefix. Found: &quot;wdp_rate_limit_ip_max&quot;.",
+   "count": 1
+  },
+  {
+   "key": "includes/class-security.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound|Hook names invoked by a theme/plugin should start with the theme/plugin prefix. Found: &quot;wdp_trust_proxy_headers&quot;.",
    "count": 2
   },
   {
@@ -207,6 +435,18 @@
    "count": 1
   },
   {
+   "key": "includes/class-shortcodes.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound|Hook names invoked by a theme/plugin should start with the theme/plugin prefix. Found: &quot;wdp_allow_multiple_entries&quot;.",
+   "count": 1
+  },
+  {
+   "key": "includes/class-style-presets.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound|Classes declared by a theme/plugin should start with the theme/plugin prefix. Found: &quot;WDP_Style_Presets&quot;.",
+   "count": 1
+  },
+  {
+   "key": "includes/class-templates.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound|Classes declared by a theme/plugin should start with the theme/plugin prefix. Found: &quot;WDP_Templates&quot;.",
+   "count": 1
+  },
+  {
    "key": "includes/class-uninstall.php|WordPress.DB.DirectDatabaseQuery.DirectQuery|Use of a direct database call is discouraged.",
    "count": 3
   },
@@ -216,6 +456,14 @@
   },
   {
    "key": "includes/class-uninstall.php|WordPress.DB.PreparedSQL.NotPrepared|Use placeholders and $wpdb->prepare(); found $sql",
+   "count": 1
+  },
+  {
+   "key": "includes/class-uninstall.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound|Classes declared by a theme/plugin should start with the theme/plugin prefix. Found: &quot;WDP_Uninstall&quot;.",
+   "count": 1
+  },
+  {
+   "key": "includes/class-utils.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound|Hook names invoked by a theme/plugin should start with the theme/plugin prefix. Found: &quot;wdp_sadaka_wc_product_id&quot;.",
    "count": 1
   },
   {
@@ -243,11 +491,103 @@
    "count": 3
   },
   {
+   "key": "includes/compat/class-builder-detect.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound|Classes declared by a theme/plugin should start with the theme/plugin prefix. Found: &quot;WDP_Builder_Detect&quot;.",
+   "count": 1
+  },
+  {
+   "key": "includes/compat/class-builder-detect.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound|Hook names invoked by a theme/plugin should start with the theme/plugin prefix. Found: &quot;wdp_builder_preview_context_product&quot;.",
+   "count": 1
+  },
+  {
+   "key": "includes/compat/class-builder-detect.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound|Hook names invoked by a theme/plugin should start with the theme/plugin prefix. Found: &quot;wdp_builder_preview_product&quot;.",
+   "count": 1
+  },
+  {
+   "key": "includes/compat/class-builder-detect.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound|Hook names invoked by a theme/plugin should start with the theme/plugin prefix. Found: &quot;wdp_is_builder_preview&quot;.",
+   "count": 1
+  },
+  {
    "key": "includes/compat/class-builder-detect.php|WordPress.Security.ValidatedSanitizedInput.InputNotSanitized|Detected usage of a non-sanitized input variable: $_SERVER[&#039;REQUEST_URI&#039;]",
    "count": 1
   },
   {
+   "key": "includes/elementor/class-widget-donation-form.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound|Classes declared by a theme/plugin should start with the theme/plugin prefix. Found: &quot;WDP_Elementor_Widget_Donation_Form&quot;.",
+   "count": 1
+  },
+  {
+   "key": "includes/elementor/class-widget-donations-list.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound|Classes declared by a theme/plugin should start with the theme/plugin prefix. Found: &quot;WDP_Elementor_Widget_Donations_List&quot;.",
+   "count": 1
+  },
+  {
    "key": "includes/elementor/class-widget-donations-list.php|WordPressVIPMinimum.Performance.WPQueryParams.PostNotIn_exclude|Using exclusionary parameters, like exclude, in calls to get_posts() should be done with caution, see https://docs.wpvip.com/databases/optimize-queries/using-post__not_in/ for more information.",
+   "count": 1
+  },
+  {
+   "key": "includes/i18n/class-wdp-js-i18n.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound|Classes declared by a theme/plugin should start with the theme/plugin prefix. Found: &quot;WDP_Js_I18n&quot;.",
+   "count": 1
+  },
+  {
+   "key": "includes/templates/class-campaign-header-renderer.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound|Classes declared by a theme/plugin should start with the theme/plugin prefix. Found: &quot;WDP_Campaign_Header_Renderer&quot;.",
+   "count": 1
+  },
+  {
+   "key": "includes/templates/class-campaign-header-renderer.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound|Hook names invoked by a theme/plugin should start with the theme/plugin prefix. Found: &quot;wdp_campaign_media_url&quot;.",
+   "count": 1
+  },
+  {
+   "key": "includes/templates/class-campaign-header-renderer.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound|Hook names invoked by a theme/plugin should start with the theme/plugin prefix. Found: &quot;wdp_impact_line&quot;.",
+   "count": 1
+  },
+  {
+   "key": "includes/templates/class-campaign-header-renderer.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound|Hook names invoked by a theme/plugin should start with the theme/plugin prefix. Found: &quot;wdp_modal_product_thumb_alt&quot;.",
+   "count": 1
+  },
+  {
+   "key": "includes/templates/class-campaign-header-renderer.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound|Hook names invoked by a theme/plugin should start with the theme/plugin prefix. Found: &quot;wdp_modal_product_thumb_url&quot;.",
+   "count": 1
+  },
+  {
+   "key": "includes/templates/class-form-fields-renderer.php|WordPress.NamingConventions.PrefixAllGlobals.DynamicHooknameFound|Hook names invoked by a theme/plugin should start with the theme/plugin prefix. Found: &quot;$opts[&#039;filter_label&#039;]&quot;.",
+   "count": 1
+  },
+  {
+   "key": "includes/templates/class-form-fields-renderer.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound|Classes declared by a theme/plugin should start with the theme/plugin prefix. Found: &quot;WDP_Form_Fields_Renderer&quot;.",
+   "count": 1
+  },
+  {
+   "key": "includes/templates/class-form-fields-renderer.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound|Hook names invoked by a theme/plugin should start with the theme/plugin prefix. Found: &quot;wdp_amount_presets&quot;.",
+   "count": 1
+  },
+  {
+   "key": "includes/templates/class-form-fields-renderer.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound|Hook names invoked by a theme/plugin should start with the theme/plugin prefix. Found: &quot;wdp_field_hint_email&quot;.",
+   "count": 1
+  },
+  {
+   "key": "includes/templates/class-form-fields-renderer.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound|Hook names invoked by a theme/plugin should start with the theme/plugin prefix. Found: &quot;wdp_field_hint_name&quot;.",
+   "count": 1
+  },
+  {
+   "key": "includes/templates/class-form-fields-renderer.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound|Hook names invoked by a theme/plugin should start with the theme/plugin prefix. Found: &quot;wdp_field_hint_note&quot;.",
+   "count": 1
+  },
+  {
+   "key": "includes/templates/class-form-fields-renderer.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound|Hook names invoked by a theme/plugin should start with the theme/plugin prefix. Found: &quot;wdp_field_hint_phone&quot;.",
+   "count": 1
+  },
+  {
+   "key": "includes/templates/class-form-fields-renderer.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound|Hook names invoked by a theme/plugin should start with the theme/plugin prefix. Found: &quot;wdp_sadaka_inspirational_message&quot;.",
+   "count": 1
+  },
+  {
+   "key": "includes/templates/class-form-fields-renderer.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound|Hook names invoked by a theme/plugin should start with the theme/plugin prefix. Found: &quot;wdp_sadaka_price_label&quot;.",
+   "count": 1
+  },
+  {
+   "key": "includes/templates/class-form-fields-renderer.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound|Hook names invoked by a theme/plugin should start with the theme/plugin prefix. Found: &quot;wdp_sadaka_toggle_label&quot;.",
+   "count": 1
+  },
+  {
+   "key": "includes/templates/class-form-fields-renderer.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound|Hook names invoked by a theme/plugin should start with the theme/plugin prefix. Found: &quot;wdp_show_amount_presets&quot;.",
    "count": 1
   },
   {
@@ -293,6 +633,14 @@
   {
    "key": "includes/templates/class-form-fields-renderer.php|wp_function_not_compatible_with_requires_wp|Function \"wp_unique_id()\" requires WordPress 5.0.3, but your plugin minimum supported version is WordPress 5.0.0.",
    "count": 3
+  },
+  {
+   "key": "includes/templates/class-modal-shell-renderer.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound|Classes declared by a theme/plugin should start with the theme/plugin prefix. Found: &quot;WDP_Modal_Shell_Renderer&quot;.",
+   "count": 1
+  },
+  {
+   "key": "includes/templates/class-modal-shell-renderer.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound|Global variables defined by a theme/plugin should start with the theme/plugin prefix. Found: &quot;$wdp_current_donation_product_id&quot;.",
+   "count": 2
   },
   {
    "key": "includes/templates/class-modal-shell-renderer.php|WordPress.Security.EscapeOutput.OutputNotEscaped|All output should be run through an escaping function (see the Security sections in the WordPress Developer Handbooks), found '$allow_custom_price'.",
@@ -372,6 +720,10 @@
   },
   {
    "key": "includes/templates/class-modal-shell-renderer.php|WordPress.WP.I18n.MissingTranslatorsComment|A function call to __() with texts containing placeholders was found, but was not accompanied by a \"translators:\" comment on the line above to clarify the meaning of the placeholders.",
+   "count": 1
+  },
+  {
+   "key": "includes/templates/class-svg-icons.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound|Classes declared by a theme/plugin should start with the theme/plugin prefix. Found: &quot;WDP_Svg_Icons&quot;.",
    "count": 1
   },
   {
@@ -479,15 +831,51 @@
    "count": 1
   },
   {
+   "key": "includes/traits/trait-wdp-assets-registry.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound|Hook names invoked by a theme/plugin should start with the theme/plugin prefix. Found: &quot;wdp_client_context&quot;.",
+   "count": 1
+  },
+  {
+   "key": "includes/traits/trait-wdp-assets-registry.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound|Hook names invoked by a theme/plugin should start with the theme/plugin prefix. Found: &quot;wdp_enable_side_cart_recovery&quot;.",
+   "count": 1
+  },
+  {
+   "key": "includes/traits/trait-wdp-assets-registry.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound|Hook names invoked by a theme/plugin should start with the theme/plugin prefix. Found: &quot;wdp_lazy_idle_prefetch&quot;.",
+   "count": 1
+  },
+  {
+   "key": "includes/traits/trait-wdp-assets-registry.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound|Hook names invoked by a theme/plugin should start with the theme/plugin prefix. Found: &quot;wdp_reload_after_add_to_cart&quot;.",
+   "count": 1
+  },
+  {
+   "key": "includes/traits/trait-wdp-assets-registry.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound|Hook names invoked by a theme/plugin should start with the theme/plugin prefix. Found: &quot;wdp_use_js_bundle&quot;.",
+   "count": 1
+  },
+  {
    "key": "includes/traits/trait-wdp-assets-registry.php|WordPress.WP.I18n.MissingTranslatorsComment|A function call to __() with texts containing placeholders was found, but was not accompanied by a \"translators:\" comment on the line above to clarify the meaning of the placeholders.",
    "count": 3
+  },
+  {
+   "key": "includes/traits/trait-wdp-utils-order-meta.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound|Hook names invoked by a theme/plugin should start with the theme/plugin prefix. Found: &quot;wdp_progress_paid_statuses&quot;.",
+   "count": 1
   },
   {
    "key": "languages/.gitkeep|hidden_files|Hidden files are not permitted.",
    "count": 1
   },
   {
+   "key": "uninstall.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound|Global variables defined by a theme/plugin should start with the theme/plugin prefix. Found: &quot;$wdp_site_id&quot;.",
+   "count": 1
+  },
+  {
+   "key": "uninstall.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound|Global variables defined by a theme/plugin should start with the theme/plugin prefix. Found: &quot;$wdp_site_ids&quot;.",
+   "count": 1
+  },
+  {
    "key": "woo-donation-popup.php|trademarked_term|The plugin slug includes a restricted term. Your plugin slug - \"woo-donation-popup\" - contains the restricted term \"woo\" and cannot be used to begin your plugin slug. We disallow the use of certain terms in ways that are abused, or potentially infringe on and/or are misleading with regards to trademarks. You may use the term \"woo\" elsewhere in your plugin slug, such as \"... for woo\".",
+   "count": 1
+  },
+  {
+   "key": "woo-donation-popup.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound|Functions declared in the global namespace by a theme/plugin should start with the theme/plugin prefix. Found: &quot;wdp_debug_log&quot;.",
    "count": 1
   },
   {
