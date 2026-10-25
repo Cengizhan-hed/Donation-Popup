@@ -253,30 +253,6 @@ parameters:
 			path: ../../includes/class-assets.php
 
 		-
-			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
-			identifier: function.alreadyNarrowedType
-			count: 2
-			path: ../../includes/class-blocks.php
-
-		-
-			message: '#^Property WP_Block\:\:\$context \(array\) in isset\(\) is not nullable\.$#'
-			identifier: isset.property
-			count: 1
-			path: ../../includes/class-blocks.php
-
-		-
-			message: '#^Right side of && is always true\.$#'
-			identifier: booleanAnd.rightAlwaysTrue
-			count: 1
-			path: ../../includes/class-blocks.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and false will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: ../../includes/class-blocks.php
-
-		-
 			message: '#^Call to function method_exists\(\) with ''WDP_Cart'' and ''sum_cart_pending…'' will always evaluate to true\.$#'
 			identifier: function.alreadyNarrowedType
 			count: 2
@@ -445,42 +421,6 @@ parameters:
 			path: ../../includes/class-donations-list.php
 
 		-
-			message: '#^Call to function is_object\(\) with Elementor\\Elements_Manager will always evaluate to true\.$#'
-			identifier: function.alreadyNarrowedType
-			count: 1
-			path: ../../includes/class-elementor.php
-
-		-
-			message: '#^Call to function is_object\(\) with Elementor\\Widgets_Manager will always evaluate to true\.$#'
-			identifier: function.alreadyNarrowedType
-			count: 1
-			path: ../../includes/class-elementor.php
-
-		-
-			message: '#^Call to method add_category\(\) on an unknown class Elementor\\Elements_Manager\.$#'
-			identifier: class.notFound
-			count: 1
-			path: ../../includes/class-elementor.php
-
-		-
-			message: '#^Call to method register\(\) on an unknown class Elementor\\Widgets_Manager\.$#'
-			identifier: class.notFound
-			count: 2
-			path: ../../includes/class-elementor.php
-
-		-
-			message: '#^Parameter \$elements of method WDP_Elementor\:\:category\(\) has invalid type Elementor\\Elements_Manager\.$#'
-			identifier: class.notFound
-			count: 1
-			path: ../../includes/class-elementor.php
-
-		-
-			message: '#^Parameter \$widgets of method WDP_Elementor\:\:register\(\) has invalid type Elementor\\Widgets_Manager\.$#'
-			identifier: class.notFound
-			count: 1
-			path: ../../includes/class-elementor.php
-
-		-
 			message: '#^Offset ''order'' on array\{order\: array\<string\>, labels\: array\<string, string\>\} in isset\(\) always exists and is not nullable\.$#'
 			identifier: isset.offset
 			count: 1
@@ -607,30 +547,6 @@ parameters:
 			path: ../../includes/class-privacy.php
 
 		-
-			message: '#^Call to function is_array\(\) with array\<string\> will always evaluate to true\.$#'
-			identifier: function.alreadyNarrowedType
-			count: 2
-			path: ../../includes/class-product-page-integration.php
-
-		-
-			message: '#^Call to function is_string\(\) with string will always evaluate to true\.$#'
-			identifier: function.alreadyNarrowedType
-			count: 4
-			path: ../../includes/class-product-page-integration.php
-
-		-
-			message: '#^Call to function method_exists\(\) with WC_Product and ''get_permalink'' will always evaluate to true\.$#'
-			identifier: function.alreadyNarrowedType
-			count: 1
-			path: ../../includes/class-product-page-integration.php
-
-		-
-			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
-			identifier: function.alreadyNarrowedType
-			count: 3
-			path: ../../includes/class-product-resolver.php
-
-		-
 			message: '#^Call to function method_exists\(\) with ''WC_Admin_Meta_Boxes'' and ''add_error'' will always evaluate to true\.$#'
 			identifier: function.alreadyNarrowedType
 			count: 1
@@ -707,18 +623,6 @@ parameters:
 			identifier: isset.property
 			count: 1
 			path: ../../includes/class-security.php
-
-		-
-			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
-			identifier: function.alreadyNarrowedType
-			count: 4
-			path: ../../includes/class-shortcodes.php
-
-		-
-			message: '#^Call to function is_object\(\) with object will always evaluate to true\.$#'
-			identifier: function.alreadyNarrowedType
-			count: 1
-			path: ../../includes/class-shortcodes.php
 
 		-
 			message: '#^Right side of && is always true\.$#'
@@ -821,126 +725,6 @@ parameters:
 			identifier: isset.variable
 			count: 1
 			path: ../../includes/class-woo-donation-popup-admin.php
-
-		-
-			message: '#^Call to function is_array\(\) with array\<mixed\> will always evaluate to true\.$#'
-			identifier: function.alreadyNarrowedType
-			count: 1
-			path: ../../includes/compat/class-builder-detect.php
-
-		-
-			message: '#^Call to function is_object\(\) with object will always evaluate to true\.$#'
-			identifier: function.alreadyNarrowedType
-			count: 1
-			path: ../../includes/compat/class-builder-detect.php
-
-		-
-			message: '#^Call to function method_exists\(\) with WC_Product and ''get_id'' will always evaluate to true\.$#'
-			identifier: function.alreadyNarrowedType
-			count: 1
-			path: ../../includes/compat/class-builder-detect.php
-
-		-
-			message: '#^Variable \$_GET in isset\(\) always exists and is not nullable\.$#'
-			identifier: isset.variable
-			count: 1
-			path: ../../includes/compat/class-builder-detect.php
-
-		-
-			message: '#^Access to constant SELECT on an unknown class Elementor\\Controls_Manager\.$#'
-			identifier: class.notFound
-			count: 2
-			path: ../../includes/elementor/class-widget-donation-form.php
-
-		-
-			message: '#^Access to constant SWITCHER on an unknown class Elementor\\Controls_Manager\.$#'
-			identifier: class.notFound
-			count: 1
-			path: ../../includes/elementor/class-widget-donation-form.php
-
-		-
-			message: '#^Access to constant TEXT on an unknown class Elementor\\Controls_Manager\.$#'
-			identifier: class.notFound
-			count: 3
-			path: ../../includes/elementor/class-widget-donation-form.php
-
-		-
-			message: '#^Call to an undefined method WDP_Elementor_Widget_Donation_Form\:\:add_control\(\)\.$#'
-			identifier: method.notFound
-			count: 6
-			path: ../../includes/elementor/class-widget-donation-form.php
-
-		-
-			message: '#^Call to an undefined method WDP_Elementor_Widget_Donation_Form\:\:end_controls_section\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: ../../includes/elementor/class-widget-donation-form.php
-
-		-
-			message: '#^Call to an undefined method WDP_Elementor_Widget_Donation_Form\:\:get_settings_for_display\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: ../../includes/elementor/class-widget-donation-form.php
-
-		-
-			message: '#^Call to an undefined method WDP_Elementor_Widget_Donation_Form\:\:start_controls_section\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: ../../includes/elementor/class-widget-donation-form.php
-
-		-
-			message: '#^Access to constant NUMBER on an unknown class Elementor\\Controls_Manager\.$#'
-			identifier: class.notFound
-			count: 4
-			path: ../../includes/elementor/class-widget-donations-list.php
-
-		-
-			message: '#^Access to constant SELECT on an unknown class Elementor\\Controls_Manager\.$#'
-			identifier: class.notFound
-			count: 7
-			path: ../../includes/elementor/class-widget-donations-list.php
-
-		-
-			message: '#^Access to constant SWITCHER on an unknown class Elementor\\Controls_Manager\.$#'
-			identifier: class.notFound
-			count: 8
-			path: ../../includes/elementor/class-widget-donations-list.php
-
-		-
-			message: '#^Access to constant TEXT on an unknown class Elementor\\Controls_Manager\.$#'
-			identifier: class.notFound
-			count: 8
-			path: ../../includes/elementor/class-widget-donations-list.php
-
-		-
-			message: '#^Call to an undefined method WDP_Elementor_Widget_Donations_List\:\:add_control\(\)\.$#'
-			identifier: method.notFound
-			count: 26
-			path: ../../includes/elementor/class-widget-donations-list.php
-
-		-
-			message: '#^Call to an undefined method WDP_Elementor_Widget_Donations_List\:\:add_responsive_control\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: ../../includes/elementor/class-widget-donations-list.php
-
-		-
-			message: '#^Call to an undefined method WDP_Elementor_Widget_Donations_List\:\:end_controls_section\(\)\.$#'
-			identifier: method.notFound
-			count: 2
-			path: ../../includes/elementor/class-widget-donations-list.php
-
-		-
-			message: '#^Call to an undefined method WDP_Elementor_Widget_Donations_List\:\:get_settings_for_display\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: ../../includes/elementor/class-widget-donations-list.php
-
-		-
-			message: '#^Call to an undefined method WDP_Elementor_Widget_Donations_List\:\:start_controls_section\(\)\.$#'
-			identifier: method.notFound
-			count: 2
-			path: ../../includes/elementor/class-widget-donations-list.php
 
 		-
 			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'

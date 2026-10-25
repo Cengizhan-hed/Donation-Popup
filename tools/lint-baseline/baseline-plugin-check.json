@@ -1,6 +1,6 @@
 {
  "tool": "plugin-check",
- "total": 395,
+ "total": 384,
  "entries": [
   {
    "key": ".cursorignore|hidden_files|Hidden files are not permitted.",
@@ -351,14 +351,6 @@
    "count": 1
   },
   {
-   "key": "includes/class-product-resolver.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound|Classes declared by a theme/plugin should start with the theme/plugin prefix. Found: &quot;WDP_Product_Resolver&quot;.",
-   "count": 1
-  },
-  {
-   "key": "includes/class-product-resolver.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound|Hook names invoked by a theme/plugin should start with the theme/plugin prefix. Found: &quot;wdp_resolve_product&quot;.",
-   "count": 1
-  },
-  {
    "key": "includes/class-product-settings-service.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound|Classes declared by a theme/plugin should start with the theme/plugin prefix. Found: &quot;WDP_Product_Settings_Service&quot;.",
    "count": 1
   },
@@ -435,10 +427,6 @@
    "count": 1
   },
   {
-   "key": "includes/class-shortcodes.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound|Hook names invoked by a theme/plugin should start with the theme/plugin prefix. Found: &quot;wdp_allow_multiple_entries&quot;.",
-   "count": 1
-  },
-  {
    "key": "includes/class-style-presets.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound|Classes declared by a theme/plugin should start with the theme/plugin prefix. Found: &quot;WDP_Style_Presets&quot;.",
    "count": 1
   },
@@ -489,38 +477,6 @@
   {
    "key": "includes/class-woo-donation-popup.php|WordPress.PHP.DevelopmentFunctions.error_log_error_log|error_log() found. Debug code should not normally be used in production.",
    "count": 3
-  },
-  {
-   "key": "includes/compat/class-builder-detect.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound|Classes declared by a theme/plugin should start with the theme/plugin prefix. Found: &quot;WDP_Builder_Detect&quot;.",
-   "count": 1
-  },
-  {
-   "key": "includes/compat/class-builder-detect.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound|Hook names invoked by a theme/plugin should start with the theme/plugin prefix. Found: &quot;wdp_builder_preview_context_product&quot;.",
-   "count": 1
-  },
-  {
-   "key": "includes/compat/class-builder-detect.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound|Hook names invoked by a theme/plugin should start with the theme/plugin prefix. Found: &quot;wdp_builder_preview_product&quot;.",
-   "count": 1
-  },
-  {
-   "key": "includes/compat/class-builder-detect.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound|Hook names invoked by a theme/plugin should start with the theme/plugin prefix. Found: &quot;wdp_is_builder_preview&quot;.",
-   "count": 1
-  },
-  {
-   "key": "includes/compat/class-builder-detect.php|WordPress.Security.ValidatedSanitizedInput.InputNotSanitized|Detected usage of a non-sanitized input variable: $_SERVER[&#039;REQUEST_URI&#039;]",
-   "count": 1
-  },
-  {
-   "key": "includes/elementor/class-widget-donation-form.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound|Classes declared by a theme/plugin should start with the theme/plugin prefix. Found: &quot;WDP_Elementor_Widget_Donation_Form&quot;.",
-   "count": 1
-  },
-  {
-   "key": "includes/elementor/class-widget-donations-list.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound|Classes declared by a theme/plugin should start with the theme/plugin prefix. Found: &quot;WDP_Elementor_Widget_Donations_List&quot;.",
-   "count": 1
-  },
-  {
-   "key": "includes/elementor/class-widget-donations-list.php|WordPressVIPMinimum.Performance.WPQueryParams.PostNotIn_exclude|Using exclusionary parameters, like exclude, in calls to get_posts() should be done with caution, see https://docs.wpvip.com/databases/optimize-queries/using-post__not_in/ for more information.",
-   "count": 1
   },
   {
    "key": "includes/i18n/class-wdp-js-i18n.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound|Classes declared by a theme/plugin should start with the theme/plugin prefix. Found: &quot;WDP_Js_I18n&quot;.",
