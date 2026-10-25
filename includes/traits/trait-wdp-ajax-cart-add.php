@@ -258,12 +258,12 @@ trait WDP_Ajax_Cart_Add_Trait {
 							$dup_pid = isset( $cart_item['product_id'] ) ? (int) $cart_item['product_id'] : 0;
 							WDP_Utils::json_success(
 								array(
-									'message'        => __( 'Product is already in the cart', 'woo-donation-popup' ),
-									'cart_count'     => (int) $cart->get_cart_contents_count(),
-									'checkout_url'   => wc_get_checkout_url(),
-									'items'          => self::get_cart_items(),
-									'cart_item_key'  => $dup_key,
-									'product_id'     => $dup_pid,
+									'message'       => __( 'Product is already in the cart', 'woo-donation-popup' ),
+									'cart_count'    => (int) $cart->get_cart_contents_count(),
+									'checkout_url'  => wc_get_checkout_url(),
+									'items'         => self::get_cart_items(),
+									'cart_item_key' => $dup_key,
+									'product_id'    => $dup_pid,
 								)
 							);
 						}

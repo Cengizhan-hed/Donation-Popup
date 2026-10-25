@@ -7,10 +7,40 @@ parameters:
 			path: ../../includes/bootstrap/class-legacy-frontend.php
 
 		-
-			message: '#^Parameter \#1 \$text of function esc_html expects string, int given\.$#'
-			identifier: argument.type
-			count: 2
-			path: ../../includes/bootstrap/class-legacy-frontend.php
+			message: '#^Call to function is_string\(\) with string will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: ../../includes/class-addon-product-visibility.php
+
+		-
+			message: '#^Call to function method_exists\(\) with ''WDP_Donations_List'' and ''bump_cache'' will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: ../../includes/class-addon-product-visibility.php
+
+		-
+			message: '#^Call to function method_exists\(\) with WC_Product and ''get_formatted_name'' will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: ../../includes/class-addon-product-visibility.php
+
+		-
+			message: '#^Call to function method_exists\(\) with WC_Product and ''get_name'' will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: ../../includes/class-addon-product-visibility.php
+
+		-
+			message: '#^Method WDP_Addon_Product_Visibility\:\:product_search_options\(\) should return array\<string, string\> but returns array\<int, string\>\.$#'
+			identifier: return.type
+			count: 1
+			path: ../../includes/class-addon-product-visibility.php
+
+		-
+			message: '#^Parameter \#1 \$array \(list\<int\<1, max\>\>\) to function array_filter does not contain falsy values, the array will always stay the same\.$#'
+			identifier: arrayFilter.same
+			count: 1
+			path: ../../includes/class-addon-product-visibility.php
 
 		-
 			message: '#^Call to function is_a\(\) with WC_Product and ''WC_Product'' will always evaluate to true\.$#'
@@ -23,18 +53,6 @@ parameters:
 			identifier: function.alreadyNarrowedType
 			count: 1
 			path: ../../includes/class-admin-bulk-actions.php
-
-		-
-			message: '#^Instanceof between WC_Product and WC_Product will always evaluate to true\.$#'
-			identifier: instanceof.alwaysTrue
-			count: 1
-			path: ../../includes/class-admin-category-colors-tab-renderer.php
-
-		-
-			message: '#^Instanceof between WP_Term and WP_Term will always evaluate to true\.$#'
-			identifier: instanceof.alwaysTrue
-			count: 1
-			path: ../../includes/class-admin-category-colors-tab-renderer.php
 
 		-
 			message: '#^If condition is always false\.$#'
@@ -115,18 +133,6 @@ parameters:
 			path: ../../includes/class-admin-product-data-tab.php
 
 		-
-			message: '#^Offset ''labels'' on array\{order\: array\<string\>, labels\: array\<string, string\>\} in isset\(\) always exists and is not nullable\.$#'
-			identifier: isset.offset
-			count: 1
-			path: ../../includes/class-admin-product-data-tab.php
-
-		-
-			message: '#^Right side of && is always true\.$#'
-			identifier: booleanAnd.rightAlwaysTrue
-			count: 1
-			path: ../../includes/class-admin-product-data-tab.php
-
-		-
 			message: '#^Parameter \#1 \$size of method WC_Product\:\:get_image\(\) expects string, array\<int, int\> given\.$#'
 			identifier: argument.type
 			count: 1
@@ -183,7 +189,7 @@ parameters:
 		-
 			message: '#^Strict comparison using \!\=\= between ''0'' and non\-falsy\-string will always evaluate to true\.$#'
 			identifier: notIdentical.alwaysTrue
-			count: 2
+			count: 1
 			path: ../../includes/class-admin-settings-normalizer.php
 
 		-
@@ -337,18 +343,6 @@ parameters:
 			path: ../../includes/class-cart.php
 
 		-
-			message: '#^Call to function is_array\(\) with non\-empty\-array will always evaluate to true\.$#'
-			identifier: function.alreadyNarrowedType
-			count: 1
-			path: ../../includes/class-category-title-color-service.php
-
-		-
-			message: '#^Call to function method_exists\(\) with ''WDP_Form_Modules'' and ''resolve_product…'' will always evaluate to true\.$#'
-			identifier: function.alreadyNarrowedType
-			count: 1
-			path: ../../includes/class-category-title-color-service.php
-
-		-
 			message: '#^Call to function is_string\(\) with string will always evaluate to true\.$#'
 			identifier: function.alreadyNarrowedType
 			count: 1
@@ -407,12 +401,6 @@ parameters:
 			identifier: function.alreadyNarrowedType
 			count: 1
 			path: ../../includes/class-donation-purchasable.php
-
-		-
-			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
-			identifier: function.alreadyNarrowedType
-			count: 1
-			path: ../../includes/class-donations-list.php
 
 		-
 			message: '#^Call to function is_object\(\) with WP_Post will always evaluate to true\.$#'
@@ -505,12 +493,6 @@ parameters:
 			path: ../../includes/class-elementor.php
 
 		-
-			message: '#^Call to function is_string\(\) with string will always evaluate to true\.$#'
-			identifier: function.alreadyNarrowedType
-			count: 2
-			path: ../../includes/class-form-modules.php
-
-		-
 			message: '#^Offset ''order'' on array\{order\: array\<string\>, labels\: array\<string, string\>\} in isset\(\) always exists and is not nullable\.$#'
 			identifier: isset.offset
 			count: 1
@@ -527,18 +509,6 @@ parameters:
 			identifier: function.alreadyNarrowedType
 			count: 1
 			path: ../../includes/class-lazy-modal.php
-
-		-
-			message: '#^Comparison operation "\>" between int\<1, max\> and 0 is always true\.$#'
-			identifier: greater.alwaysTrue
-			count: 1
-			path: ../../includes/class-meta-tracking.php
-
-		-
-			message: '#^Function wp_has_consent not found\.$#'
-			identifier: function.notFound
-			count: 1
-			path: ../../includes/class-meta-tracking.php
 
 		-
 			message: '#^Call to function is_array\(\) with array\<int, int\> will always evaluate to true\.$#'
@@ -691,12 +661,6 @@ parameters:
 			path: ../../includes/class-product-settings-service.php
 
 		-
-			message: '#^Call to function method_exists\(\) with ''WOOMULTI_CURRENCY…'' and ''get_ins'' will always evaluate to false\.$#'
-			identifier: function.impossibleType
-			count: 1
-			path: ../../includes/class-progress-currency.php
-
-		-
 			message: '#^Call to function method_exists\(\) with WC_Abstract_Order and ''get_currency'' will always evaluate to true\.$#'
 			identifier: function.alreadyNarrowedType
 			count: 1
@@ -707,12 +671,6 @@ parameters:
 			identifier: function.alreadyNarrowedType
 			count: 1
 			path: ../../includes/class-progress-currency.php
-
-		-
-			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
-			identifier: function.alreadyNarrowedType
-			count: 2
-			path: ../../includes/class-progress-form.php
 
 		-
 			message: '#^Call to function method_exists\(\) with ''WDP_Utils'' and ''format_price_plain'' will always evaluate to true\.$#'
@@ -731,54 +689,6 @@ parameters:
 			identifier: argument.type
 			count: 1
 			path: ../../includes/class-progress-form.php
-
-		-
-			message: '#^Call to function is_string\(\) with string will always evaluate to true\.$#'
-			identifier: function.alreadyNarrowedType
-			count: 1
-			path: ../../includes/class-addon-product-visibility.php
-
-		-
-			message: '#^Call to function method_exists\(\) with ''WDP_Donations_List'' and ''bump_cache'' will always evaluate to true\.$#'
-			identifier: function.alreadyNarrowedType
-			count: 1
-			path: ../../includes/class-addon-product-visibility.php
-
-		-
-			message: '#^Call to function method_exists\(\) with WC_Product and ''get_formatted_name'' will always evaluate to true\.$#'
-			identifier: function.alreadyNarrowedType
-			count: 1
-			path: ../../includes/class-addon-product-visibility.php
-
-		-
-			message: '#^Call to function method_exists\(\) with WC_Product and ''get_name'' will always evaluate to true\.$#'
-			identifier: function.alreadyNarrowedType
-			count: 1
-			path: ../../includes/class-addon-product-visibility.php
-
-		-
-			message: '#^Method WDP_Addon_Product_Visibility\:\:product_search_options\(\) should return array\<string, string\> but returns array\<int, string\>\.$#'
-			identifier: return.type
-			count: 1
-			path: ../../includes/class-addon-product-visibility.php
-
-		-
-			message: '#^Parameter \#1 \$array \(list\<int\<1, max\>\>\) to function array_filter does not contain falsy values, the array will always stay the same\.$#'
-			identifier: arrayFilter.same
-			count: 1
-			path: ../../includes/class-addon-product-visibility.php
-
-		-
-			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
-			identifier: function.alreadyNarrowedType
-			count: 3
-			path: ../../includes/class-schema.php
-
-		-
-			message: '#^Call to function is_array\(\) with array\<mixed, mixed\> will always evaluate to true\.$#'
-			identifier: function.alreadyNarrowedType
-			count: 4
-			path: ../../includes/class-schema.php
 
 		-
 			message: '#^Call to function is_string\(\) with string will always evaluate to true\.$#'
@@ -937,19 +847,7 @@ parameters:
 			path: ../../includes/compat/class-builder-detect.php
 
 		-
-			message: '#^Call to function method_exists\(\) with ''FLBuilderModel'' and ''is_builder_active'' will always evaluate to false\.$#'
-			identifier: function.impossibleType
-			count: 1
-			path: ../../includes/compat/class-builder-detect.php
-
-		-
 			message: '#^Call to function method_exists\(\) with WC_Product and ''get_id'' will always evaluate to true\.$#'
-			identifier: function.alreadyNarrowedType
-			count: 1
-			path: ../../includes/compat/class-builder-detect.php
-
-		-
-			message: '#^Call to function method_exists\(\) with WC_Product and ''get_type'' will always evaluate to true\.$#'
 			identifier: function.alreadyNarrowedType
 			count: 1
 			path: ../../includes/compat/class-builder-detect.php
@@ -999,12 +897,6 @@ parameters:
 		-
 			message: '#^Call to an undefined method WDP_Elementor_Widget_Donation_Form\:\:start_controls_section\(\)\.$#'
 			identifier: method.notFound
-			count: 1
-			path: ../../includes/elementor/class-widget-donation-form.php
-
-		-
-			message: '#^Call to function method_exists\(\) with WC_Product and ''get_id'' will always evaluate to true\.$#'
-			identifier: function.alreadyNarrowedType
 			count: 1
 			path: ../../includes/elementor/class-widget-donation-form.php
 
@@ -1153,12 +1045,6 @@ parameters:
 			path: ../../includes/traits/trait-wdp-ajax-cart-add.php
 
 		-
-			message: '#^Comparison operation "\>" between int\<1, max\> and 0 is always true\.$#'
-			identifier: greater.alwaysTrue
-			count: 1
-			path: ../../includes/traits/trait-wdp-ajax-cart-add.php
-
-		-
 			message: '#^Left side of && is always true\.$#'
 			identifier: booleanAnd.leftAlwaysTrue
 			count: 1
@@ -1225,7 +1111,7 @@ parameters:
 			path: ../../includes/traits/trait-wdp-assets-inline-styles.php
 
 		-
-			message: '#^Call to function ctype_digit\(\) with ''10\.34\.15'' will always evaluate to false\.$#'
+			message: '#^Call to function ctype_digit\(\) with ''10\.35\.2'' will always evaluate to false\.$#'
 			identifier: function.impossibleType
 			count: 2
 			path: ../../includes/traits/trait-wdp-assets-registry.php

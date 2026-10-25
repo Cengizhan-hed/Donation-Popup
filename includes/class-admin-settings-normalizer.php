@@ -598,11 +598,11 @@ class WDP_Admin_Settings_Normalizer {
 	public static function rewrite_stored_options() {
 		$written = 0;
 		$map     = array(
-			'wdp_button_settings'        => 'normalize_normal_form_settings',
-			'wdp_shareholder_settings'   => 'normalize_shareholder_settings',
-			'wdp_success_settings'       => 'normalize_success_screen_settings',
-			'wdp_progress_bar_settings'  => 'normalize_progress_bar_settings',
-			'wdp_modal_layout_settings'  => 'normalize_modal_layout_settings',
+			'wdp_button_settings'       => 'normalize_normal_form_settings',
+			'wdp_shareholder_settings'  => 'normalize_shareholder_settings',
+			'wdp_success_settings'      => 'normalize_success_screen_settings',
+			'wdp_progress_bar_settings' => 'normalize_progress_bar_settings',
+			'wdp_modal_layout_settings' => 'normalize_modal_layout_settings',
 		);
 		foreach ( $map as $option => $method ) {
 			if ( get_option( $option, false ) === false ) {
