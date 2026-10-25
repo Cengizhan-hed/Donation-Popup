@@ -126,7 +126,7 @@ final class Social_Proof_Renderer {
 	private static function feed( $product_id, array $feed ) {
 		ob_start();
 		?>
-<div class="dp dp-social dp-social--feed" data-dp-social="feed" data-product-id="<?php echo esc_attr( (string) (int) $product_id ); ?>" data-page="<?php echo esc_attr( (string) (int) $feed['page'] ); ?>" data-per-page="<?php echo esc_attr( (string) (int) $feed['per_page'] ); ?>">
+<div class="dp dp-social dp-social--feed" data-dp-social="feed" data-product-id="<?php echo esc_attr( (string) (int) $product_id ); ?>" data-page="<?php echo esc_attr( (string) (int) $feed['page'] ); ?>" data-per-page="<?php echo esc_attr( (string) (int) $feed['per_page'] ); ?>" data-anon="<?php echo esc_attr__( 'A kind donor', 'woo-donation-popup' ); ?>">
 	<ul class="dp-list" data-dp-feed-list>
 		<?php foreach ( (array) $feed['items'] as $item ) : ?>
 			<?php self::row( (array) $item ); ?>
