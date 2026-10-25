@@ -26,8 +26,9 @@ final class WDP_Plugin_Bootstrap {
 		\DonationPanel\Core\Plugin::boot();
 
 		add_action( 'init', array( __CLASS__, 'load_textdomain' ) );
-		add_action( 'plugins_loaded', array( __CLASS__, 'launch_plugin' ) );
-		add_action( 'plugins_loaded', array( __CLASS__, 'update_version' ) );
+		// Kanca sırası 20 (docs/MIMARI.md "Kanca sırası"): çekirdek göç/modüller (src/Core, 20) ile aynı öncelik; kayıt sırasıyla önce çekirdek çalışır.
+		add_action( 'plugins_loaded', array( __CLASS__, 'launch_plugin' ), 20 );
+		add_action( 'plugins_loaded', array( __CLASS__, 'update_version' ), 20 );
 	}
 
 	/**

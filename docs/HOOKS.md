@@ -40,3 +40,7 @@ Modül slug'ı `entry_points` (varsayılan açık; `donation_panel_module_enable
 Kullanılan WooCommerce kancaları: `wc_get_template`, `woocommerce_locate_template`, `woocommerce_get_price_html`, `woocommerce_loop_add_to_cart_link`, `woocommerce_product_add_to_cart_text/url`, `woocommerce_product_supports`, `render_block_woocommerce/{add-to-cart-form,add-to-cart-with-options,product-price,product-button}`, `woocommerce_single_product_summary`, `woocommerce_after_single_product_summary`, `woocommerce_after_single_product` (yedek, öncelik 999), `wp_footer` (yedek, 4).
 
 Yeni modüller eklendikçe bu dosyaya modül başına bölüm eklenir (ad, tür, parametre, zaman, örnek).
+
+## Kanca sırası notu (E2X)
+
+Eklenti `plugins_loaded` öncelik 20'de başlar (ayrıntı: docs/MIMARI.md "Kanca sırası"). Kısa kodlar, `wdp_*`/`donation_panel_*` filtreleri ve eklenti sınıfları üzerinde çalışan snippet'ler `init` ya da sonrasında çalıştırılmalıdır; `plugins_loaded` 10'da yapılan çağrı fatal vermez, ancak kısa kod işlenmemiş etiket olarak kalır ve filtreler varsayılanını döndürür. Sözleşme kanıtı: `tests/unit/js/hook-order-contract.test.mjs`.
