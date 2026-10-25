@@ -61,7 +61,13 @@ final class Thanks_Module implements Module_Interface {
 		if ( '' === $html ) {
 			return;
 		}
-		$this->container->get( Assets::class )->enqueue( 'thanks' );
+		$assets = $this->container->get( Assets::class );
+		// Blok temalarda sayfa içeriği `wp_head`'den ÖNCE çizilir: varlıklar henüz kayıtlı değilse burada kaydedilir
+		// (tekrar kayıt zararsızdır; `wp_enqueue_scripts` sonradan aynı tutamaçları atlar).
+		if ( ! wp_script_is( Assets::handle( 'thanks' ), 'registered' ) ) {
+			$assets->register_all();
+		}
+		$assets->enqueue( 'thanks' );
 		echo $html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Şablon kendi çıktısını kaçışlar.
 	}
 

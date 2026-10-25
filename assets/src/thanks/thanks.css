@@ -4,8 +4,8 @@
 .dp-thanks__disc { fill: var(--dp-color-primary-soft); transform-origin: center; animation: dp-thanks-pop .6s var(--dp-ease-spring) both; }
 .dp-thanks__circle { fill: none; stroke: var(--dp-color-primary); stroke-width: 4; stroke-linecap: round; stroke-dasharray: 327; stroke-dashoffset: 327; transform: rotate(-90deg); transform-origin: center; animation: dp-thanks-draw .9s var(--dp-ease-out) .1s forwards; }
 .dp-thanks__tick { fill: none; stroke: var(--dp-color-primary-strong); stroke-width: 7; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 80; stroke-dashoffset: 80; animation: dp-thanks-draw .6s var(--dp-ease-out) .7s forwards; }
-.dp-thanks__title { margin: 0 auto; font-size: clamp(30px, 7vw, 44px); font-weight: var(--dp-fw-bold); }
-.dp-thanks__sub { margin: var(--dp-space-3) auto var(--dp-space-6); max-inline-size: 36ch; font-size: var(--dp-fs-md); }
+.dp-thanks .dp-thanks__title { margin: 0 auto; font-size: clamp(30px, 7vw, 44px); font-weight: var(--dp-fw-bold); }
+.dp-thanks .dp-thanks__sub { margin: var(--dp-space-3) auto var(--dp-space-6); max-inline-size: 36ch; font-size: var(--dp-fs-md); }
 .dp-thanks__card { text-align: start; padding: var(--dp-space-5); margin-block-end: var(--dp-space-5); background: var(--dp-color-surface); border: 1px solid var(--dp-color-border); border-radius: var(--dp-radius-lg); box-shadow: var(--dp-shadow-1); }
 .dp-thanks__row { display: flex; align-items: baseline; justify-content: space-between; gap: var(--dp-space-4); }
 .dp-thanks__row + .dp-thanks__row { margin-block-start: var(--dp-space-3); }
@@ -13,7 +13,7 @@
 .dp-thanks__project { min-inline-size: 0; overflow-wrap: anywhere; }
 .dp-thanks__amount { font-size: var(--dp-fs-lg); white-space: nowrap; }
 .dp-thanks .dp-impact { margin-block-start: var(--dp-space-4); }
-.dp-thanks__order { margin-block-start: var(--dp-space-3); font-size: var(--dp-fs-sm); }
+.dp-thanks .dp-thanks__order { margin-block-start: var(--dp-space-3); font-size: var(--dp-fs-sm); }
 .dp-thanks__actions { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--dp-space-3); }
 .dp-thanks__actions .dp-btn { min-block-size: 48px; }
 .dp-thanks__toast:not(.dp-sr) { margin-block-start: var(--dp-space-3); font-size: var(--dp-fs-sm); color: var(--dp-color-text-muted); }
