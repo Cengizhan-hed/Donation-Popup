@@ -132,22 +132,6 @@ class WDP_Assets {
     }
 
     /**
-     * Whether the current request should load donation popup frontend assets.
-     *
-     * @param WP_Post|null $post Current post.
-     * @return bool
-     */
-    public static function request_should_enqueue_frontend_assets($post = null) {
-        if (self::$force_enqueue_assets) {
-            return true;
-        }
-        if (null === $post) {
-            $post = get_post();
-        }
-        return self::should_enqueue_assets($post);
-    }
-
-    /**
      * Decide if frontend assets should be loaded for current request.
      *
      * @param WP_Post|null $post Current post.

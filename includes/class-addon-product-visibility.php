@@ -176,21 +176,6 @@ class WDP_Addon_Product_Visibility {
 	}
 
 	/**
-	 * Bağış sekmesinde açıkça "Bağış ürünü" seçilmiş mi?
-	 *
-	 * @param int $product_id Product ID.
-	 * @return bool
-	 */
-	public static function has_explicit_donation_flag($product_id) {
-		$product_id = absint($product_id);
-		if ($product_id <= 0) {
-			return false;
-		}
-		$flag = get_post_meta($product_id, '_wdp_donation_product', true);
-		return is_scalar($flag) && strtolower(trim((string) $flag)) === 'yes';
-	}
-
-	/**
 	 * Bu ürünü alt bağış olarak kullanan ana ürün etiketleri (tooltip).
 	 *
 	 * @param int $addon_id Addon line product ID.

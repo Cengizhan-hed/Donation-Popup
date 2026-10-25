@@ -154,14 +154,6 @@ class WDP_Render_Registry {
 	}
 
 	/**
-	 * @param string $modal_id Modal element id.
-	 * @return bool
-	 */
-	public static function has_modal($modal_id) {
-		return isset(self::$modals[ sanitize_html_class((string) $modal_id) ]);
-	}
-
-	/**
 	 * Modal DOM id for a product and display mode.
 	 *
 	 * @param int    $product_id Product ID.

@@ -82,15 +82,6 @@ trait WDP_Utils_Order_Meta_Trait {
     }
 
     /**
-     * Sayılmış siparişin toplamdan düşüleceği durumlar.
-     *
-     * @return string[]
-     */
-    public static function get_progress_reversal_statuses() {
-        return array('refunded', 'cancelled', 'failed');
-    }
-
-    /**
      * "wc-completed" → "completed".
      *
      * @param mixed $status Raw status.
@@ -99,6 +90,20 @@ trait WDP_Utils_Order_Meta_Trait {
     private static function normalize_order_status_slug($status) {
         $status = sanitize_key((string) $status);
         return strpos($status, 'wc-') === 0 ? substr($status, 3) : $status;
+    }
+
+    /**
+     * Geriye dönük uyumluluk: eski "completed" kancası (dış kod çağırabilir).
+     *
+     * @param int $order_id WooCommerce order id.
+     * @return void
+     */
+    public static function sync_order_donation_totals_on_complete($order_id) {
+        $order_id = absint($order_id);
+        $order = $order_id ? wc_get_order($order_id) : null;
+        if ($order) {
+            self::count_order_in_progress_totals($order);
+        }
     }
 
     /**
@@ -217,20 +222,6 @@ trait WDP_Utils_Order_Meta_Trait {
             return;
         }
         wp_schedule_single_event(time() + 15, $hook, $args);
-    }
-
-    /**
-     * Geriye dönük uyumluluk: eski "completed" kancası.
-     *
-     * @param int $order_id WooCommerce order id.
-     * @return void
-     */
-    public static function sync_order_donation_totals_on_complete($order_id) {
-        $order_id = absint($order_id);
-        $order = $order_id ? wc_get_order($order_id) : null;
-        if ($order) {
-            self::count_order_in_progress_totals($order);
-        }
     }
 
     /**

@@ -150,38 +150,4 @@ class WDP_Progress_Form {
         return ob_get_clean();
     }
 
-    /**
-     * Render progress bar form fields (ordered via module_order).
-     *
-     * @param bool   $allow_custom_price Allow custom price (always true for progress bar forms).
-     * @param string $min_price          Minimum price.
-     * @param array  $donor_opts         Donor stack options.
-     * @param array  $context            Optional form context (cover_fee flags, etc.).
-     * @param int    $product_id         Optional product ID for module_order.
-     * @return string Form fields HTML.
-     */
-    public static function render_form_fields($allow_custom_price = false, $min_price = '0', $donor_opts = array(), $context = array(), $product_id = 0) {
-        unset($allow_custom_price);
-
-        if (!is_array($donor_opts)) {
-            $donor_opts = array();
-        }
-        if (!is_array($context)) {
-            $context = array();
-        }
-
-        $product_id = absint($product_id);
-        if ($product_id <= 0 && !empty($GLOBALS['wdp_current_donation_product_id'])) {
-            $product_id = absint($GLOBALS['wdp_current_donation_product_id']);
-        }
-
-        return WDP_Templates::render_ordered_body_modules(
-            array(
-                'product_id'  => $product_id,
-                'context'     => $context,
-                'donor_opts'  => $donor_opts,
-                'amount_html' => WDP_Form_Fields_Renderer::render_progress_amount_block($min_price),
-            )
-        );
-    }
 }

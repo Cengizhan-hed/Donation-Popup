@@ -176,21 +176,6 @@ class WDP_Security {
     }
 
     /**
-     * Validate nonce
-     *
-     * @param string $action Action name.
-     * @param string $nonce  Nonce value.
-     * @return bool
-     */
-    public static function validate_nonce($action, $nonce) {
-        if (empty($nonce)) {
-            return false;
-        }
-
-        return wp_verify_nonce($nonce, $action);
-    }
-
-    /**
      * Rate limiting check (simple implementation)
      *
      * @param string $key     Unique key (e.g., IP address).
@@ -533,28 +518,5 @@ class WDP_Security {
         return false;
     }
 
-    /**
-     * Escape output for display
-     *
-     * @param string $value Value to escape.
-     * @param string $context Context (html, attr, url, js).
-     * @return string
-     */
-    public static function escape_output($value, $context = 'html') {
-        switch ($context) {
-            case 'html':
-                return esc_html($value);
-            case 'attr':
-                return esc_attr($value);
-            case 'url':
-                return esc_url($value);
-            case 'js':
-                return esc_js($value);
-            case 'textarea':
-                return esc_textarea($value);
-            default:
-                return esc_html($value);
-        }
-    }
 }
 

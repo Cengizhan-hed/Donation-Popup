@@ -33,15 +33,6 @@ class WDP_Order_Meta_Keys {
 	const ERASED_VALUE = '[deleted]';
 
 	/**
-	 * Shareholder field slugs.
-	 *
-	 * @return string[]
-	 */
-	public static function shareholder_fields() {
-		return array('name', 'phone', 'email', 'note');
-	}
-
-	/**
 	 * Build a shareholder meta key.
 	 *
 	 * @param int    $index Shareholder index (1-based).
