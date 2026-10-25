@@ -23,6 +23,7 @@ final class WDP_Plugin_Bootstrap {
 		self::load_dependencies();
 		WDP_Migrations::init();
 		WDP_Compat_Loader::init();
+		\DonationPanel\Core\Plugin::boot();
 
 		add_action( 'init', array( __CLASS__, 'load_textdomain' ) );
 		add_action( 'plugins_loaded', array( __CLASS__, 'launch_plugin' ) );
@@ -131,6 +132,9 @@ final class WDP_Plugin_Bootstrap {
 	private static function load_dependencies() {
 		require_once WDP_PLUGIN_DIR . 'includes/class-exceptions.php';
 		require_once WDP_PLUGIN_DIR . 'includes/class-autoloader.php';
+		// Faz 7 çekirdeği (DonationPanel\): eski autoloader ile birlikte yüklenir.
+		require_once WDP_PLUGIN_DIR . 'src/Core/class-autoloader.php';
+		\DonationPanel\Core\Autoloader::register( WDP_PLUGIN_DIR . 'src' );
 		require_once WDP_PLUGIN_DIR . 'includes/class-woo-donation-popup.php';
 		require_once WDP_PLUGIN_DIR . 'includes/class-woo-donation-popup-admin.php';
 		require_once WDP_PLUGIN_DIR . 'includes/bootstrap/class-legacy-frontend.php';

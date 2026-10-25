@@ -1,0 +1,13 @@
+includes:
+    - vendor-dev/szepeviktor/phpstan-wordpress/extension.neon
+
+parameters:
+    level: 6
+    paths:
+        - src
+    bootstrapFiles:
+        - tools/phpstan-bootstrap.php
+    scanFiles:
+        - vendor-dev/php-stubs/woocommerce-stubs/woocommerce-stubs.php
+    reportUnmatchedIgnoredErrors: false
+    tmpDir: build/lint/phpstan-src-tmp
