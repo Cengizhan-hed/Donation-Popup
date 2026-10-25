@@ -8,6 +8,17 @@
  *   /?dp_ad_reset=1&ui=new|legacy                   -> Core ayar kaydını sıfırlar (admin.ui verilen değer)
  *   çerez dp_ad_rtl=1                               -> yönetim arayüzü RTL
  */
+/**
+ * Core ayar kaydını sıfırlar (yalnız yerel test işçisi; sil + ekle).
+ *
+ * @param string $ui admin.ui değeri.
+ * @return void
+ */
+function wdp_ad_write_settings( $ui ) {
+	delete_option( 'donation_panel_settings' );
+	add_option( 'donation_panel_settings', array( 'version' => 1, 'admin' => array( 'ui' => $ui ) ), '', false );
+}
+
 add_action(
 	'init',
 	static function () {
@@ -18,8 +29,8 @@ add_action(
 			}
 		}
 		if ( false === get_option( 'dp_e7_seeded', false ) ) {
-			update_option( 'donation_panel_settings', array( 'version' => 1, 'admin' => array( 'ui' => 'new' ) ) );
-			update_option( 'dp_e7_seeded', '1' );
+			wdp_ad_write_settings( 'new' );
+			add_option( 'dp_e7_seeded', '1' );
 		}
 	},
 	1
@@ -60,7 +71,7 @@ add_action(
 		if ( isset( $_GET['dp_ad_reset'] ) ) {
 			nocache_headers();
 			$ui = isset( $_GET['ui'] ) && 'legacy' === $_GET['ui'] ? 'legacy' : 'new';
-			update_option( 'donation_panel_settings', array( 'version' => 1, 'admin' => array( 'ui' => $ui ) ) );
+			wdp_ad_write_settings( $ui );
 			wp_send_json( array( 'ok' => true, 'ui' => $ui ) );
 		}
 		if ( isset( $_GET['dp_ad_state'] ) ) {
