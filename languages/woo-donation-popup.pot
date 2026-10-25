@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: woo-donation-popup 10.35.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-25 23:34+0300\n"
+"POT-Creation-Date: 2026-10-25 23:51+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -2865,6 +2865,9 @@ msgid "Donor"
 msgstr ""
 
 #: includes/class-cart.php:558 includes/class-icon-library.php:51
+#: src/Modules/DonorAccount/class-account-renderer.php:83
+#: src/Modules/DonorAccount/class-account-renderer.php:93
+#: src/Modules/DonorAccount/class-account-renderer.php:102
 msgid "Email"
 msgstr ""
 
@@ -3884,6 +3887,8 @@ msgstr ""
 
 #: includes/class-woo-donation-popup-admin.php:109
 #: includes/class-woo-donation-popup-admin.php:360
+#: src/Modules/DonorAccount/class-donor-account-module.php:238
+#: src/Modules/DonorAccount/class-donor-account-module.php:268
 #: src/Modules/SideCart/class-side-cart-module.php:166
 #: templates/donation-panel/experiences/bottom-sheet.php:16
 #: templates/donation-panel/experiences/inline.php:16
@@ -4675,6 +4680,223 @@ msgid_plural "%s supporters"
 msgstr[0] ""
 msgstr[1] ""
 
+#. translators: %s: site name.
+#: src/Modules/DonorAccount/class-account-controller.php:311
+#, php-format
+msgid "[%s] Confirm to link your earlier gifts"
+msgstr ""
+
+#. translators: 1: verification link, 2: validity in minutes.
+#: src/Modules/DonorAccount/class-account-controller.php:313
+#, php-format
+msgid ""
+"Open this link while logged in to add the gifts you made as a guest with "
+"this email address to your account:\n"
+"\n"
+"%1$s\n"
+"\n"
+"The link works once and expires in %2$d minutes. If you did not ask for "
+"this, ignore this email."
+msgstr ""
+
+#: src/Modules/DonorAccount/class-account-renderer.php:39
+msgid "My account"
+msgstr ""
+
+#: src/Modules/DonorAccount/class-account-renderer.php:41
+msgid "Log in or sign up"
+msgstr ""
+
+#: src/Modules/DonorAccount/class-account-renderer.php:73
+#: src/Modules/DonorAccount/class-donor-account-module.php:240
+msgid "Enter a valid email address."
+msgstr ""
+
+#: src/Modules/DonorAccount/class-account-renderer.php:74
+#: src/Modules/DonorAccount/class-donor-account-module.php:241
+msgid "Password must be at least 8 characters."
+msgstr ""
+
+#: src/Modules/DonorAccount/class-account-renderer.php:77
+msgid "Account"
+msgstr ""
+
+#: src/Modules/DonorAccount/class-account-renderer.php:77
+#: src/Modules/DonorAccount/class-account-renderer.php:86
+msgid "Log in"
+msgstr ""
+
+#: src/Modules/DonorAccount/class-account-renderer.php:77
+msgid "Sign up"
+msgstr ""
+
+#: src/Modules/DonorAccount/class-account-renderer.php:81
+msgid "See your gifts and receipts."
+msgstr ""
+
+#: src/Modules/DonorAccount/class-account-renderer.php:84
+#: src/Modules/DonorAccount/class-account-renderer.php:94
+msgid "Password"
+msgstr ""
+
+#: src/Modules/DonorAccount/class-account-renderer.php:84
+msgid "Enter your password."
+msgstr ""
+
+#: src/Modules/DonorAccount/class-account-renderer.php:85
+msgid "Forgot password?"
+msgstr ""
+
+#: src/Modules/DonorAccount/class-account-renderer.php:91
+msgid "Make your next gift even quicker."
+msgstr ""
+
+#: src/Modules/DonorAccount/class-account-renderer.php:95
+msgid ""
+"Your earlier guest gifts can be linked to your account by email, after we "
+"send a verification link."
+msgstr ""
+
+#: src/Modules/DonorAccount/class-account-renderer.php:96
+msgid "Create account"
+msgstr ""
+
+#: src/Modules/DonorAccount/class-account-renderer.php:100
+msgid "Enter your email and we will send a link."
+msgstr ""
+
+#: src/Modules/DonorAccount/class-account-renderer.php:103
+msgid "Send link"
+msgstr ""
+
+#: src/Modules/DonorAccount/class-account-renderer.php:104
+#: src/Modules/DonorAccount/class-account-renderer.php:108
+msgid "Back to log in"
+msgstr ""
+
+#: src/Modules/DonorAccount/class-account-renderer.php:106
+#: src/Modules/DonorAccount/class-donor-account-module.php:245
+msgid "Check your email"
+msgstr ""
+
+#: src/Modules/DonorAccount/class-account-renderer.php:107
+msgid ""
+"If this email matches an account, a link is on its way. It arrives within a "
+"few minutes; if not, check your spam folder."
+msgstr ""
+
+#: src/Modules/DonorAccount/class-account-renderer.php:114
+#: src/Modules/DonorAccount/class-donor-account-module.php:242
+msgid "Log in to your account"
+msgstr ""
+
+#: src/Modules/DonorAccount/class-account-renderer.php:115
+msgid "Close"
+msgstr ""
+
+#: src/Modules/DonorAccount/class-account-renderer.php:128
+msgid "No gifts yet"
+msgstr ""
+
+#: src/Modules/DonorAccount/class-account-renderer.php:128
+msgid "Your gifts will appear here after your first donation."
+msgstr ""
+
+#. translators: %s: dedication text typed by the donor.
+#: src/Modules/DonorAccount/class-account-renderer.php:153
+#: src/Modules/SideCart/class-side-cart-renderer.php:114
+#, php-format
+msgid "In honour of: %s"
+msgstr ""
+
+#: src/Modules/DonorAccount/class-account-renderer.php:157
+msgid "Receipt"
+msgstr ""
+
+#: src/Modules/DonorAccount/class-account-renderer.php:160
+#: templates/donation-panel/thanks/summary.php:66
+msgid "Give again"
+msgstr ""
+
+#: src/Modules/DonorAccount/class-account-renderer.php:185
+#: src/Modules/SocialProof/class-social-proof-renderer.php:135
+msgid "Show more"
+msgstr ""
+
+#: src/Modules/DonorAccount/class-account-renderer.php:199
+msgid "Link your earlier gifts"
+msgstr ""
+
+#: src/Modules/DonorAccount/class-account-renderer.php:200
+msgid ""
+"Confirm to add the gifts you made as a guest with this email address to your "
+"account."
+msgstr ""
+
+#: src/Modules/DonorAccount/class-account-renderer.php:201
+msgid "Confirm and link"
+msgstr ""
+
+#: src/Modules/DonorAccount/class-account-renderer.php:204
+msgid "Gifts made as a guest?"
+msgstr ""
+
+#: src/Modules/DonorAccount/class-account-renderer.php:205
+msgid ""
+"We will email a verification link to your account address. Only after you "
+"confirm are earlier guest gifts added here."
+msgstr ""
+
+#: src/Modules/DonorAccount/class-account-renderer.php:206
+msgid "Send verification link"
+msgstr ""
+
+#: src/Modules/DonorAccount/class-account-renderer.php:216
+msgid ""
+"Create an account with the box below to track your gifts, download receipts "
+"and give again in one tap. Earlier guest gifts are linked only after email "
+"verification."
+msgstr ""
+
+#: src/Modules/DonorAccount/class-donor-account-module.php:158
+#: src/Modules/DonorAccount/class-donor-account-module.php:164
+#: src/Modules/DonorAccount/class-donor-account-module.php:175
+msgid "My donations"
+msgstr ""
+
+#: src/Modules/DonorAccount/class-donor-account-module.php:237
+msgid "Email or password is incorrect. Try again or reset your password."
+msgstr ""
+
+#: src/Modules/DonorAccount/class-donor-account-module.php:239
+#: src/Modules/DonorAccount/class-donor-account-module.php:270
+msgid "Too many attempts. Please wait a moment and try again."
+msgstr ""
+
+#: src/Modules/DonorAccount/class-donor-account-module.php:243
+msgid "Create an account"
+msgstr ""
+
+#: src/Modules/DonorAccount/class-donor-account-module.php:244
+msgid "Reset password"
+msgstr ""
+
+#: src/Modules/DonorAccount/class-donor-account-module.php:269
+msgid "We sent a verification link to your account email."
+msgstr ""
+
+#: src/Modules/DonorAccount/class-donor-account-module.php:271
+msgid "This link is invalid or has expired. Request a new one."
+msgstr ""
+
+#: src/Modules/DonorAccount/class-donor-account-module.php:272
+msgid "Your earlier gifts were added to your account."
+msgstr ""
+
+#: src/Modules/DonorAccount/class-donor-account-module.php:273
+msgid "No earlier guest gifts were found for this email."
+msgstr ""
+
 #: src/Modules/EntryPoints/Elementor/class-donation-form-widget.php:30
 msgctxt "elementor widget title"
 msgid "Donation form"
@@ -5051,12 +5273,6 @@ msgstr ""
 msgid "Continue to checkout"
 msgstr ""
 
-#. translators: %s: dedication text typed by the donor.
-#: src/Modules/SideCart/class-side-cart-renderer.php:114
-#, php-format
-msgid "In honour of: %s"
-msgstr ""
-
 #. translators: %s: comma separated names of the people the shares are donated on behalf of.
 #: src/Modules/SideCart/class-side-cart-renderer.php:118
 #, php-format
@@ -5121,10 +5337,6 @@ msgstr ""
 #: src/Modules/SocialProof/class-social-proof-renderer.php:129
 #: src/Modules/SocialProof/class-social-proof-renderer.php:152
 msgid "A kind donor"
-msgstr ""
-
-#: src/Modules/SocialProof/class-social-proof-renderer.php:135
-msgid "Show more"
 msgstr ""
 
 #: src/Modules/TaxRelief/class-tax-relief-declaration.php:59
@@ -5205,10 +5417,6 @@ msgstr ""
 
 #: templates/donation-panel/thanks/summary.php:63
 msgid "Share"
-msgstr ""
-
-#: templates/donation-panel/thanks/summary.php:66
-msgid "Give again"
 msgstr ""
 
 #: blocks/donation-form/index.js:40 blocks/donation-form/index.js:50
