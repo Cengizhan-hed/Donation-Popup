@@ -608,3 +608,20 @@ Not: terminal sürümü kurulumu yapılmadı; skill burada plugin olarak zaten �
 | U4 | staging30 10.35.2: quick işlevsel 25/13/0 (S5 çözüldü: snippet açık + yedek giriş), kanarya TEMİZ. Görsel 16 değişiklik İNCELENDİ, kabul EDİLMEDİ. | |
 | U5 | Ürün sayfası farkı (4 ekran, +3474 px yükseklik): açıklama bölümü eskiden kart biçimliydi, şimdi düz metin → sitenin kendi stili (kapatılan snippet #27/#29/#43'ten biri); eklenti kaynaklı değil. Snippet'ler geri açılırsa ya da yeni baseline alınırsa kapanır. | site |
 | U6 | **GERÇEK REGRESYON:** yan panel/popup alt eylem çubuğu (Ödemeye Git/Sepete Ekle) eskiden panelin dibine sabit (üstünde ayırıcı), şimdi içeriğin hemen altında (≈270 px yukarı). Ikram'da da var. Ikram baseline'ı bu durumda yanlışlıkla kabul edildi (fark görselinde metin farkı kaymayı maskeledi) → düzeltme sonrası YENİDEN kabul edilecek. Alt ajan FIX5 kök nedeni arıyor. | FIX5 |
+
+## FAZ 6 — TOPLU KARAR LİSTESİ (2026-10-25; sen yanıtlayana kadar bağımsız işler sürer)
+Öneri sütunu "Claude'un önerisi"dir; "varsayılan" = yanıt gelmezse uygulanacak (geri alınabilir değişiklikler için).
+| # | Karar | Öneri | Etki |
+|---|-------|-------|------|
+| K1 | Kutlama animasyonu (hedefe ulaşınca) | kaldır | görsel süs |
+| K2 | Çok adımlı form (wizard) | sadeleştir: yalnız uzun formlarda | mobil akış |
+| K3 | Etki satırı, aciliyet şeridi, sosyal kanıt ("X kişi bağış yaptı"), güven rozetleri | etki/aciliyet/sosyal kanıt kaldır; rozetler tek "güvenli ödeme" satırı. NOT: 10.31 kampanya paneli şu an sosyal kanıt satırı gösteriyor | Hedef görünümü değişir |
+| K4 | Blok sırası ayarı + Tasarım stüdyosu/stil paketleri | blok sırası kaldır; stil paketleri 3'e + marka rengi + köşe | yönetici ekranı |
+| K5 | Kategori renkleri sekmesi, mini sepet/yan sepet ayarı | kaldır (tema/Woo yapar) | |
+| K6 | Meta Pixel sekmesi, JSON-LD şema | kaldır (Meta for WooCommerce/Rank Math yapar) | |
+| K7 | Bağış listesi (997 satır) + yönetici "Ürünler" tablosu | sadeleştir | |
+| K8 | Para birimi bağdaştırıcıları (Curcy/WOOCS/WPML; `includes/compat/class-compat-currency.php`) — Global İlke "eklentiyi tanımaz" ile çelişir ama Hedef'in çok para birimli ilerleme çubuğu bunlara dayanıyor | önerim: Faz 9'dan önce kaldır, Hedef için hazır 5 satırlık site snippet'i ver (`wdp_order_exchange_rate` filtresi) | Hedef davranışı: snippet şart |
+| K9 | Plugin Check `verify`'a bağlansın mı (309 eski bulgu) | evet, yalnız YENİ bulguda kırmızı | |
+| K10 | Lint ayarı: `phpcs.xml.dist`'te `class-*` dosya adı kuralı `includes/` altında hariç, kısa önek (`wdp`) uyarısı kapalı | koru (adlandırma kuralı projeye ait) | |
+| K11 | Yönetici/ön yüz ekran metinlerinde "Donation Popup" ifadeleri ("Donation Popup settings" vb.) → "Donation Panel for WooCommerce" | evet; Hedef'te yönetici metni değişir (bağışçı metni değil) | altın liste güncellenir |
+| K12 | Kampanya panelinde tutar alanı "min: 50" ipucu iç içe çerçeve görünümü | Faz 7 tasarım turunda ele al | görsel |
