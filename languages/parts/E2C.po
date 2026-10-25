@@ -1,0 +1,50 @@
+# Turkish translations — I18N-E2C (bağış türleri, çok adımlı form).
+# Copyright (C) Donation Panel for WooCommerce
+msgid ""
+msgstr ""
+"Project-Id-Version: woo-donation-popup 10.34.15\n"
+"Language: tr_TR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Domain: woo-donation-popup\n"
+
+#: src/Modules/Experiences/class-form-context.php
+msgid "Please enter the shareholder’s name."
+msgstr "Lütfen hissedarın adını girin."
+
+#: src/Modules/Experiences/class-form-context.php
+msgid "Please enter the shareholder’s phone number."
+msgstr "Lütfen hissedarın telefon numarasını girin."
+
+#: src/Modules/Experiences/class-field-validator.php
+#, php-format
+msgid "Please choose a number between 1 and %d."
+msgstr "Lütfen 1 ile %d arasında bir sayı seçin."
+
+#: src/WooCommerce/class-addon-line.php
+msgid "The add-on donation could not be added to the cart."
+msgstr "Ek bağış sepete eklenemedi."
+
+#: src/WooCommerce/class-donation-order-meta.php
+msgid "Donation frequency"
+msgstr "Bağış sıklığı"
+
+#: templates/donation-panel/experiences/form.php
+#, php-format
+msgid "Step %1$d of %2$d"
+msgstr "Adım %1$d/%2$d"
+
+#: templates/donation-panel/experiences/form.php
+#, php-format
+msgid "%s per share"
+msgstr "Hisse başına %s"
+
+#: templates/donation-panel/experiences/form.php
+msgid "Quantity"
+msgstr "Adet"
+
+#: src/Modules/Experiences/class-form-context.php
+msgid "Amount"
+msgstr "Tutar"

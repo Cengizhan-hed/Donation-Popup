@@ -297,4 +297,30 @@ final class E2CDonationTypesTest extends TestCase {
 		$this->assertSame( 'shares', $summary['kind'] );
 		$this->assertStringNotContainsString( 'Gizli', (string) wp_json_encode( $summary ) );
 	}
+
+	public function test_frequency_option_is_stored_only_when_the_model_defines_it(): void {
+		$base = array( 'amount' => '100', 'donation_full_name' => 'A B', 'donation_phone' => '5551234567', 'donation_type' => 'monthly' );
+
+		$plain = new E2C_Fake_Cart();
+		( new Cart() )->add_item( $plain, $this->product(), Form_Context::from_legacy( $this->legacy() ), $base );
+		$this->assertArrayNotHasKey( 'donation_panel_type', $plain->added[0]['data'] );
+
+		add_filter(
+			'donation_panel_frequency_options',
+			static function () {
+				return array(
+					array( 'value' => 'once', 'label' => 'Tek seferlik' ),
+					array( 'value' => 'monthly', 'label' => 'Aylık' ),
+				);
+			}
+		);
+		$model = Form_Context::from_legacy( $this->legacy() );
+		$with  = new E2C_Fake_Cart();
+		( new Cart() )->add_item( $with, $this->product(), $model, $base );
+		$this->assertSame( 'monthly', $with->added[0]['data']['donation_panel_type'] );
+
+		$item = new E2C_Fake_Order_Item();
+		( new Donation_Order_Meta() )->write_item( $item, 'k1', $with->items['k1'], null );
+		$this->assertSame( 'monthly', $item->meta[ Donation_Order_Meta::KEY_FREQUENCY ] );
+	}
 }

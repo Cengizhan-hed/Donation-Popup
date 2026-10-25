@@ -9,12 +9,12 @@
 
 defined( 'ABSPATH' ) || exit;
 
-$donation_panel_model   = $args['model'];
-$donation_panel_key     = $args['dom_key'];
-$donation_panel_symbol  = (string) $donation_panel_model['symbol'];
-$donation_panel_presets = (array) $donation_panel_model['presets'];
-$donation_panel_closed  = ! empty( $donation_panel_model['closed'] );
-$donation_panel_format  = static function ( $amount ) use ( $donation_panel_model ) {
+$donation_panel_model    = $args['model'];
+$donation_panel_key      = $args['dom_key'];
+$donation_panel_symbol   = (string) $donation_panel_model['symbol'];
+$donation_panel_presets  = (array) $donation_panel_model['presets'];
+$donation_panel_closed   = ! empty( $donation_panel_model['closed'] );
+$donation_panel_format   = static function ( $amount ) use ( $donation_panel_model ) {
 	$decimals = floor( (float) $amount ) === (float) $amount ? 0 : (int) $donation_panel_model['decimals'];
 	return number_format_i18n( (float) $amount, $decimals );
 };
@@ -118,7 +118,15 @@ $donation_panel_fee_text = rtrim( rtrim( number_format( $donation_panel_fee, 2, 
 					<div class="dp-addon" data-dp-addon>
 						<label class="dp-check">
 							<input type="checkbox" name="addon_active" value="1" data-dp-addon-toggle aria-controls="<?php echo esc_attr( $donation_panel_key ); ?>-addon-box" />
-							<span class="dp-check__t"><b><?php echo esc_html( '' !== (string) $donation_panel_addon['label'] ? (string) $donation_panel_addon['label'] : __( 'Add add-on donation', 'woo-donation-popup' ) ); ?></b><?php if ( '' !== (string) $donation_panel_addon['message'] ) : ?><span class="dp-muted"><?php echo esc_html( (string) $donation_panel_addon['message'] ); ?></span><?php endif; ?><?php if ( (float) $donation_panel_addon['fixed'] > 0 ) : ?><span class="dp-muted dp-num"><?php echo esc_html( '+' . $donation_panel_symbol . $donation_panel_format( (float) $donation_panel_addon['fixed'] ) ); ?></span><?php endif; ?></span>
+							<span class="dp-check__t"><b><?php echo esc_html( '' !== (string) $donation_panel_addon['label'] ? (string) $donation_panel_addon['label'] : __( 'Add add-on donation', 'woo-donation-popup' ) ); ?></b>
+							<?php
+							if ( '' !== (string) $donation_panel_addon['message'] ) :
+								?>
+								<span class="dp-muted"><?php echo esc_html( (string) $donation_panel_addon['message'] ); ?></span><?php endif; ?>
+								<?php
+								if ( (float) $donation_panel_addon['fixed'] > 0 ) :
+									?>
+								<span class="dp-muted dp-num"><?php echo esc_html( '+' . $donation_panel_symbol . $donation_panel_format( (float) $donation_panel_addon['fixed'] ) ); ?></span><?php endif; ?></span>
 						</label>
 						<?php if ( (float) $donation_panel_addon['fixed'] <= 0 ) : ?>
 							<div class="dp-field" id="<?php echo esc_attr( $donation_panel_key ); ?>-addon-box" data-dp-field="addon_amount" data-dp-addon-box hidden>
