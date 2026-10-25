@@ -95,6 +95,7 @@ function installCurrentPlugin(wpDir) {
   }
   const parts = [
     'includes',
+    'src',
     'assets',
     'templates',
     'blocks',
