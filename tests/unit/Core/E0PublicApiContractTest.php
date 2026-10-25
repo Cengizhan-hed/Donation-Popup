@@ -37,13 +37,13 @@ final class E0PublicApiContractTest extends TestCase {
 	public function test_all_public_filters_and_actions_are_still_fired(): void {
 		$hooks = array(
 			'wdp_allow_multiple_entries', 'wdp_amount_presets', 'wdp_builder_preview_context_product', 'wdp_builder_preview_product',
-			'wdp_campaign_media_url', 'wdp_client_context', 'wdp_donations_card_html', 'wdp_donations_query_args',
+			'wdp_campaign_media_url', 'wdp_client_context', 'wdp_convert_amount', 'wdp_donations_card_html', 'wdp_donations_query_args',
 			'wdp_enable_side_cart_recovery', 'wdp_field_hint_email', 'wdp_field_hint_name', 'wdp_field_hint_note',
 			'wdp_field_hint_phone', 'wdp_form_context', 'wdp_impact_line', 'wdp_is_builder_preview', 'wdp_is_donation_product',
-			'wdp_lazy_idle_prefetch', 'wdp_meta_pixel_has_consent', 'wdp_meta_woocommerce_purchase_integration_active',
+			'wdp_lazy_idle_prefetch',
 			'wdp_min_donation_amount', 'wdp_modal_product_thumb_alt', 'wdp_modal_product_thumb_url', 'wdp_order_exchange_rate',
 			'wdp_phone_countries', 'wdp_phone_default_country', 'wdp_phone_excluded_countries', 'wdp_phone_national_length_rules',
-			'wdp_product_schema', 'wdp_progress_convert_amount', 'wdp_progress_live_rate', 'wdp_progress_paid_statuses',
+			'wdp_progress_convert_amount', 'wdp_progress_live_rate', 'wdp_progress_paid_statuses',
 			'wdp_rate_limit_ip_max', 'wdp_reload_after_add_to_cart', 'wdp_resolve_product', 'wdp_sadaka_cart_thumbnail_size',
 			'wdp_sadaka_line_product_ids', 'wdp_sadaka_price_label', 'wdp_sadaka_toggle_label', 'wdp_sadaka_wc_product_id',
 			'wdp_should_enqueue_assets', 'wdp_show_amount_presets', 'wdp_supported_product_types', 'wdp_trust_proxy_headers',
