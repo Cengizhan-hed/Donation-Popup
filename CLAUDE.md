@@ -2,6 +2,13 @@
 
 Her oturumun başında oku. Kullanıcıyla **Türkçe** konuş. Bu dosya tek kaynaktır; ayrıntı docs/MIMARI.md (kod/altyapı) ve docs/AYAR-TURU-NOTLARI.md (kararlar/notlar).
 
+## 0. GLOBAL İLKE (en üst kural; 2026-10-25) — tüm kuralların üstündedir
+- **Eklenti hiçbir temayı, sayfa oluşturucuyu ya da eklentiyi tanımaz.** Elementor'a, Avada'ya, Divi'ye ya da başka bir tema/eklentiye özel kod, element, widget, CSS ya da tespit yazılmaz. Her şey WordPress ve WooCommerce standartlarıyla yapılır.
+- **Giriş yolları yalnız:** kısa kod (her sayfa oluşturucu çalıştırır), blok (WP standardı), WooCommerce standart kancalarıyla otomatik yerleşim, kancalar çalışmazsa eklentinin kendi yedek düğmesi. Kısa kod ve blok `id` verilmezse bulunduğu ürünü kendisi bulur.
+- **Avada (Fusion Builder) elementi YAPILMAZ** (yapıldıysa kaldırılır). Mevcut Elementor widget'ı yeni özellik almaz; yalnız kısa kodun çıktısını döndüren ince uyumluluk katmanıdır (Ikram Appeals sayfası kullanıyor). Elementor'a bağlı diğer tüm kod bu ilkeye göre kaldırılır.
+- **Tema uyumu:** renk, yazı, boşluk CSS değişkenleri ve WordPress global stilleriyle (varsa theme.json ön ayarlarıyla) gelir; temaya özel seçici/düzeltme yazılmaz.
+- İlke tasarım, refaktör, test ve belgelerin hepsi için geçerlidir. Bir tema/oluşturucuda sorun çıkarsa çözüm o temaya özel kod değil, eklentinin genel davranışını düzeltmektir. (Test ortam profilleri ve kara listeler site/tema adı tutabilir; üretim koduna girmez.)
+
 ## 1. Ürün vizyonu (her kararın ölçütü)
 
 - **Genel eklenti.** WooCommerce kurulu her sitede, her temada ve sayfa oluşturucuda, kurulum dışında ek iş gerektirmeden harika çalışır. Site, ülke, dil, para birimi, tema ya da ödeme yöntemi varsayımı koda gömülmez; değerler WooCommerce/WordPress'ten okunur ya da ayar olur.
@@ -137,3 +144,8 @@ Faz 1 güvenli bağlantı ✅ → Faz 2 göç provası ✅ → Faz 3 bekleyen i�
 - Kullanım limiti her an dolabilir; hiçbir iş kaybolmamalı. Her alt ajan anlamlı her adımda kendi worktree dalına `WIP:` önekli commit atar (push yok; yalnız ilgili dosyalar, `git add -A` yasak, sembolik bağlar eklenmez). Yarım iş commit'siz diskte kalmaz.
 - `build/handoff/SIRADAKI-IS.md`: her alt ajan başlarken, bitirirken ve en geç 20 dk'da bir günceller (ajan, dal/worktree, son WIP commit, kalan adımlar, sonraki komut).
 - Limit dolup kullanıcı "devam" yazınca (aynı/yeni oturum): önce SIRADAKI-IS.md, ILERLEME.md son satırları ve TÜM worktree'lerin git durumu (`git worktree list`, her birinde `git status`/`git log -3`) okunur; yarım işler son WIP commit'inden sürdürülür, hiçbiri baştan başlatılmaz.
+
+## 12. BEKLEME KURALI (kalıcı; 2026-10-25)
+- Bir test ya da alt ajan beklerken turu "bitince kendim devam edeceğim" diyerek BİTİRME (gece boyu 10 saat boşa beklendi; iki kez oldu). Uzun işler arka planda başlatılır ve en geç 5 dakikada bir durumunu kontrol eden döngüyle (Monitor/until-loop + gerekirse ScheduleWakeup ≤ 300 sn) beklenir; iş bitince AYNI turda devam edilir. Tur yalnız AŞAMA ÖZETİ verirken ya da limit dolunca biter. Bildirim (task-notification) gelmese de 5 dk'lık yoklama sürer.
+- Eşzamanlı yerel e2e koşuları port paylaşır: her ajan ve koşu ayrı port kullanır (`WDP_MATRIX_BASE_PORT`, `WDP_LOCAL_E2E_PORT`/`E2E_BASE_URL`), ya da yerel e2e'ler sırayla koşar.
+
