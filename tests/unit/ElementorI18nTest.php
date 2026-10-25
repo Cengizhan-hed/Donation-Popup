@@ -164,20 +164,62 @@ final class ElementorI18nTest extends TestCase {
 		$this->assertSame('Donation (WooCommerce Donation)', $captured->title);
 	}
 
-	public function test_editor_script_uses_wp_i18n_translations(): void {
-		WDP_Elementor::editor_assets();
-		$scripts = WDP_Test_State::$options['__enqueued_scripts'] ?? array();
-		$this->assertContains('wdp-elementor-editor', $scripts);
-		$tr = WDP_Test_State::$options['__script_translations'] ?? array();
-		$hit = null;
-		foreach ($tr as $row) {
-			if (($row['handle'] ?? '') === 'wdp-elementor-editor') {
-				$hit = $row;
+	public function test_register_hooks_only_widgets_and_category(): void {
+		WDP_Elementor::init();
+		$this->assertArrayHasKey('elementor/widgets/register', WDP_Test_State::$actions);
+		$this->assertArrayHasKey('elementor/elements/categories_registered', WDP_Test_State::$actions);
+		$this->assertArrayNotHasKey('elementor/editor/after_enqueue_scripts', WDP_Test_State::$actions);
+		$this->assertArrayNotHasKey('wp_ajax_wdp_elementor_search_products', WDP_Test_State::$actions);
+	}
+
+	public function test_setting_keys_unchanged_for_saved_pages(): void {
+		$form = array_keys($this->formWidget()->controls);
+		foreach (array('source', 'product_id', 'manual', 'display', 'show_title', 'button_text') as $key) {
+			$this->assertContains($key, $form);
+		}
+		$list = array_keys($this->listWidget()->controls);
+		foreach (array('categories', 'exclude_categories', 'ids', 'exclude', 'type', 'limit', 'orderby', 'order', 'columns', 'gap', 'image_ratio', 'align', 'button', 'button_full', 'button_text', 'tabs', 'tab_all', 'tab_all_label', 'show_image', 'show_excerpt', 'show_progress', 'show_price', 'show_category', 'excerpt_words', 'image_size', 'heading_tag', 'class') as $key) {
+			$this->assertContains($key, $list);
+		}
+	}
+
+	public function test_form_widget_maps_to_equivalent_shortcode(): void {
+		$cases = array(
+			array(array('source' => 'manual', 'manual' => '42', 'display' => 'inline', 'show_title' => 'no'), 'wdp_donation_form', array('id' => 42, 'show_title' => 'no')),
+			array(array('source' => 'manual', 'manual' => 'Bagis Slug', 'display' => 'popup', 'button_text' => 'Give "now" [x]'), 'wdp_donation_button', array('slug' => 'bagis-slug', 'button_text' => 'Give "now" [x]')),
+			array(array('source' => 'list', 'product_id' => '7', 'display' => 'panel'), 'wdp_donation_button_panel', array('id' => 7)),
+			array(array(), 'wdp_donation_form', array('id' => 0, 'slug' => '')),
+		);
+		foreach ($cases as $case) {
+			list($tag, $atts) = \WDP_Elementor_Widget_Donation_Form::shortcode_from_settings($case[0]);
+			$this->assertSame($case[1], $tag);
+			foreach ($case[2] as $k => $v) {
+				$this->assertSame($v, $atts[ $k ], $k);
 			}
 		}
-		$this->assertNotNull($hit);
-		$this->assertSame('woo-donation-popup', $hit['domain']);
-		$this->assertStringEndsWith('/languages', (string) $hit['path']);
+		$src = (string) file_get_contents(WDP_PLUGIN_DIR . 'includes/elementor/class-widget-donation-form.php');
+		$this->assertStringContainsString('WDP_Shortcodes::donation_form_shortcode', $src);
+		$this->assertStringContainsString('WDP_Shortcodes::donation_button_panel_shortcode', $src);
+	}
+
+	public function test_list_widget_maps_to_shortcode_attributes(): void {
+		$atts = \WDP_Elementor_Widget_Donations_List::atts_from_settings(array('columns' => 4, 'columns_tablet' => 3, 'columns_mobile' => 1, 'image_size' => 'medium'));
+		$this->assertSame(4, (int) $atts['columns']);
+		$this->assertSame(3, (int) $atts['columns_tablet']);
+		$this->assertSame(1, (int) $atts['columns_mobile']);
+		$this->assertSame('medium', $atts['image_size']);
+		$san = WDP_Donations_List::sanitize_atts($atts);
+		$this->assertSame(4, $san['columns']);
+		$this->assertSame('medium', $san['image_size']);
+	}
+
+	public function test_widget_files_hold_no_editor_special_cases(): void {
+		foreach (array('includes/class-elementor.php', 'includes/elementor/class-widget-donation-form.php', 'includes/elementor/class-widget-donations-list.php') as $f) {
+			$src = (string) file_get_contents(WDP_PLUGIN_DIR . $f);
+			$this->assertStringNotContainsString('is_edit_mode', $src, $f);
+			$this->assertStringNotContainsString('wp_enqueue_', $src, $f);
+			$this->assertStringNotContainsString('wp_ajax', $src, $f);
+		}
 	}
 
 	public function test_block_scripts_set_translations(): void {

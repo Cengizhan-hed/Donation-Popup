@@ -12,7 +12,6 @@ use PHPUnit\Framework\TestCase;
 final class BuilderDetectTest extends TestCase {
 	protected function setUp(): void {
 		WDP_Test_State::reset();
-		WDP_Compat_Builders::init();
 	}
 
 	public function test_visitor_never_sees_preview(): void {
@@ -20,13 +19,13 @@ final class BuilderDetectTest extends TestCase {
 		$this->assertFalse(WDP_Builder_Detect::is_builder_preview());
 	}
 
-	public function test_editor_with_avada_param(): void {
+	public function test_editor_with_edit_query_param(): void {
 		WDP_Test_State::$caps[] = 'edit_products';
-		$_GET['fb-edit']        = '1';
+		$_GET['x-edit']         = '1';
 		$this->assertTrue(WDP_Builder_Detect::is_builder_preview());
 	}
 
-	public function test_divi_param(): void {
+	public function test_fb_query_param(): void {
 		WDP_Test_State::$caps[] = 'edit_products';
 		$_GET['et_fb']          = '1';
 		WDP_Builder_Detect::reset();

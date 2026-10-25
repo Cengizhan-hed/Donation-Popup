@@ -10,7 +10,7 @@ if (!defined('ABSPATH')) {
 }
 
 /**
- * Donation product grid used by the shortcode, Gutenberg block and Elementor widget.
+ * Donation product grid used by the shortcode, Gutenberg block.
  */
 class WDP_Donations_List {
 
@@ -101,47 +101,6 @@ class WDP_Donations_List {
 			},
 			0,
 			'wdp_donations'
-		);
-	}
-
-	/**
-	 * Map Elementor list widget settings to shortcode attributes (responsive columns included).
-	 *
-	 * @param array $s Elementor settings.
-	 * @return array<string, mixed>
-	 */
-	public static function atts_from_elementor_settings($s) {
-		$s = is_array($s) ? $s : array();
-		return array(
-			'categories'         => isset($s['categories']) ? $s['categories'] : '',
-			'exclude_categories' => isset($s['exclude_categories']) ? $s['exclude_categories'] : '',
-			'ids'                => isset($s['ids']) ? $s['ids'] : '',
-			'exclude'            => isset($s['exclude']) ? $s['exclude'] : '',
-			'type'               => isset($s['type']) ? $s['type'] : '',
-			'limit'              => isset($s['limit']) ? $s['limit'] : 48,
-			'orderby'            => isset($s['orderby']) ? $s['orderby'] : 'menu_order',
-			'order'              => isset($s['order']) ? $s['order'] : 'ASC',
-			'tabs'               => !empty($s['tabs']) ? $s['tabs'] : 'no',
-			'tab_all'            => !empty($s['tab_all']) ? $s['tab_all'] : 'no',
-			'tab_all_label'      => isset($s['tab_all_label']) ? $s['tab_all_label'] : '',
-			'columns'            => isset($s['columns']) ? $s['columns'] : 3,
-			'columns_tablet'     => isset($s['columns_tablet']) ? $s['columns_tablet'] : 2,
-			'columns_mobile'     => isset($s['columns_mobile']) ? $s['columns_mobile'] : 1,
-			'gap'                => isset($s['gap']) ? $s['gap'] : 24,
-			'image_ratio'        => isset($s['image_ratio']) ? $s['image_ratio'] : '4:3',
-			'image_size'         => isset($s['image_size']) ? $s['image_size'] : 'woocommerce_thumbnail',
-			'align'              => isset($s['align']) ? $s['align'] : 'center',
-			'button'             => isset($s['button']) ? $s['button'] : 'panel',
-			'button_full'        => !empty($s['button_full']) ? $s['button_full'] : 'no',
-			'button_text'        => isset($s['button_text']) ? $s['button_text'] : '',
-			'show_image'         => !empty($s['show_image']) ? $s['show_image'] : 'no',
-			'show_excerpt'       => !empty($s['show_excerpt']) ? $s['show_excerpt'] : 'no',
-			'show_progress'      => !empty($s['show_progress']) ? $s['show_progress'] : 'no',
-			'show_price'         => !empty($s['show_price']) ? $s['show_price'] : 'no',
-			'show_category'      => !empty($s['show_category']) ? $s['show_category'] : 'no',
-			'excerpt_words'      => isset($s['excerpt_words']) ? $s['excerpt_words'] : 18,
-			'heading_tag'        => isset($s['heading_tag']) ? $s['heading_tag'] : 'h3',
-			'class'              => isset($s['class']) ? $s['class'] : '',
 		);
 	}
 

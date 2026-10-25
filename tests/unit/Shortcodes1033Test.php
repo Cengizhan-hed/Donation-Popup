@@ -282,8 +282,8 @@ final class Shortcodes1033Test extends TestCase {
 		$this->assertStringNotContainsString("add_action('wp_ajax_nopriv_wdp_render_donation_button'", $src);
 	}
 
-	public function test_elementor_responsive_columns_pass_through(): void {
-		$atts = WDP_Donations_List::atts_from_elementor_settings(
+	public function test_responsive_columns_pass_through(): void {
+		$san = WDP_Donations_List::sanitize_atts(
 			array(
 				'columns'        => 4,
 				'columns_tablet' => 3,
@@ -291,11 +291,6 @@ final class Shortcodes1033Test extends TestCase {
 				'image_size'     => 'medium',
 			)
 		);
-		$this->assertSame(4, (int) $atts['columns']);
-		$this->assertSame(3, (int) $atts['columns_tablet']);
-		$this->assertSame(1, (int) $atts['columns_mobile']);
-		$this->assertSame('medium', $atts['image_size']);
-		$san = WDP_Donations_List::sanitize_atts($atts);
 		$this->assertSame(4, $san['columns']);
 		$this->assertSame(3, $san['columns_tablet']);
 		$this->assertSame(1, $san['columns_mobile']);

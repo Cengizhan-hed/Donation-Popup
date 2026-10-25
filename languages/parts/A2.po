@@ -20,8 +20,8 @@ msgid "(opens in a new tab)"
 msgstr "(yeni sekmede açılır)"
 
 #: includes/class-admin-placement-tab-renderer.php:149
-msgid "(the “Donation List” widget in Elementor, the “Donation list” block in Gutenberg). For a single product:"
-msgstr "(Elementor’da “Bağış Listesi” widget’ı, Gutenberg’de “Bağış listesi” bloğu). Tek ürün için:"
+msgid "(or the “Donation list” block in the block editor). For a single product:"
+msgstr "(ya da blok düzenleyicide “Bağış listesi” bloğu). Tek ürün için:"
 
 #: includes/class-admin-category-colors-tab-renderer.php:110
 msgid "%d product"
@@ -141,8 +141,8 @@ msgid "Automatic: Product markup is not printed on donor-entered and campaign pr
 msgstr "Otomatik: fiyatı olmayan bağışçı-belirler ve kampanya ürünlerinde Product markup basılmaz. Yoast / SEOPress / AIOSEO için wdp_product_schema filtresi sunulur."
 
 #: includes/class-admin-placement-tab-renderer.php:144
-msgid "Avada: Layouts → product layout → Code Block → paste → Save."
-msgstr "Avada: Layouts → ürün layout’u → Code Block → yapıştır → Save."
+msgid "Page builder: open the product template, add a Shortcode (or Code) element, paste it, and save."
+msgstr "Sayfa oluşturucu: ürün şablonunu açın, bir Kısa Kod (Shortcode) ya da Kod öğesi ekleyin, yapıştırın ve kaydedin."
 
 #: includes/class-admin-form-tabs-renderer.php:554
 #: includes/class-admin-form-tabs-renderer.php:566
@@ -737,8 +737,8 @@ msgid "Multi-step form"
 msgstr "Çok adımlı form"
 
 #: includes/class-admin-placement-tab-renderer.php:140
-msgid "My product page uses a custom design (Avada Layout, Elementor Pro template)"
-msgstr "Ürün sayfam özel tasarım (Avada Layout, Elementor Pro şablonu)"
+msgid "My product page uses a custom page builder template"
+msgstr "Ürün sayfam özel bir sayfa oluşturucu şablonu kullanıyor"
 
 #: includes/class-admin-form-tabs-renderer.php:240
 msgid "New donation"

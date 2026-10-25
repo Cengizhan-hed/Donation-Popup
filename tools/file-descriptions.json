@@ -150,7 +150,7 @@
   "includes/class-render-guard.php": "Render giriş noktalarını Throwable ile sarar; ziyaretçiye boş, yöneticiye uyarı.",
   "includes/class-admin-placement-tab-renderer.php": "Ayarlar → Ürün sayfası ve liste sekmesi: kapsam, yerleşim, döngü, schema ve kurulum örnekleri.",
   "includes/class-admin-bulk-actions.php": "Ayarlar tablosu ve WooCommerce ürün listesi için bağış ürünü toplu işlemleri.",
-  "includes/compat/class-builder-detect.php": "Avada, Elementor, Gutenberg, Divi, Bricks ve Beaver Builder düzenleyici/önizleme tespiti (yalnızca bu dosya).",
+  "includes/compat/class-builder-detect.php": "Düzenleyici/önizleme tespiti: yalnız genel WordPress sinyalleri (hiçbir sayfa oluşturucu adı bilinmez).",
   "includes/elementor/class-widget-donation-form.php": "Elementor Bağış Formu widget'ı.",
   "includes/elementor/class-widget-donations-list.php": "Elementor Bağış Listesi widget'ı.",
   "assets/css/list.css": "[wdp_donations] ızgara, kart ve sekme stilleri (yalnızca liste kullanıldığında yüklenir).",

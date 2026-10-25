@@ -1,6 +1,6 @@
 <?php
 /**
- * Elementor "Bağış Listesi" widget'ı.
+ * Elementor uyumluluk katmanı: "Donations list" widget'ı (yalnız kısa kodu çalıştırır).
  *
  * @package WooCommerce\Donation_Popup
  */
@@ -168,15 +168,53 @@ class WDP_Elementor_Widget_Donations_List extends \Elementor\Widget_Base {
 		return $out;
 	}
 
-	protected function render() {
-		$s    = $this->get_settings_for_display();
-		$html = WDP_Render_Guard::html(
-			static function () use ($s) {
-				return WDP_Donations_List::shortcode(WDP_Donations_List::atts_from_elementor_settings($s));
-			},
-			0,
-			'elementor_donations'
+	/**
+	 * Widget settings → `[wdp_donations]` attributes (responsive columns included).
+	 *
+	 * @param mixed $s Widget settings.
+	 * @return array<string, mixed>
+	 */
+	public static function atts_from_settings($s) {
+		$s = is_array($s) ? $s : array();
+		return array(
+			'categories'         => isset($s['categories']) ? $s['categories'] : '',
+			'exclude_categories' => isset($s['exclude_categories']) ? $s['exclude_categories'] : '',
+			'ids'                => isset($s['ids']) ? $s['ids'] : '',
+			'exclude'            => isset($s['exclude']) ? $s['exclude'] : '',
+			'type'               => isset($s['type']) ? $s['type'] : '',
+			'limit'              => isset($s['limit']) ? $s['limit'] : 48,
+			'orderby'            => isset($s['orderby']) ? $s['orderby'] : 'menu_order',
+			'order'              => isset($s['order']) ? $s['order'] : 'ASC',
+			'tabs'               => !empty($s['tabs']) ? $s['tabs'] : 'no',
+			'tab_all'            => !empty($s['tab_all']) ? $s['tab_all'] : 'no',
+			'tab_all_label'      => isset($s['tab_all_label']) ? $s['tab_all_label'] : '',
+			'columns'            => isset($s['columns']) ? $s['columns'] : 3,
+			'columns_tablet'     => isset($s['columns_tablet']) ? $s['columns_tablet'] : 2,
+			'columns_mobile'     => isset($s['columns_mobile']) ? $s['columns_mobile'] : 1,
+			'gap'                => isset($s['gap']) ? $s['gap'] : 24,
+			'image_ratio'        => isset($s['image_ratio']) ? $s['image_ratio'] : '4:3',
+			'image_size'         => isset($s['image_size']) ? $s['image_size'] : 'woocommerce_thumbnail',
+			'align'              => isset($s['align']) ? $s['align'] : 'center',
+			'button'             => isset($s['button']) ? $s['button'] : 'panel',
+			'button_full'        => !empty($s['button_full']) ? $s['button_full'] : 'no',
+			'button_text'        => isset($s['button_text']) ? $s['button_text'] : '',
+			'show_image'         => !empty($s['show_image']) ? $s['show_image'] : 'no',
+			'show_excerpt'       => !empty($s['show_excerpt']) ? $s['show_excerpt'] : 'no',
+			'show_progress'      => !empty($s['show_progress']) ? $s['show_progress'] : 'no',
+			'show_price'         => !empty($s['show_price']) ? $s['show_price'] : 'no',
+			'show_category'      => !empty($s['show_category']) ? $s['show_category'] : 'no',
+			'excerpt_words'      => isset($s['excerpt_words']) ? $s['excerpt_words'] : 18,
+			'heading_tag'        => isset($s['heading_tag']) ? $s['heading_tag'] : 'h3',
+			'class'              => isset($s['class']) ? $s['class'] : '',
 		);
-		echo $html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+	}
+
+	/**
+	 * Thin compatibility layer: runs the equivalent shortcode handler.
+	 *
+	 * @return void
+	 */
+	protected function render() {
+		echo WDP_Donations_List::shortcode(self::atts_from_settings($this->get_settings_for_display())); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	}
 }

@@ -1,6 +1,6 @@
 <?php
 /**
- * Elementor "Bağış Formu" widget'ı.
+ * Elementor uyumluluk katmanı: "Donation form" widget'ı (yalnız kısa kodu çalıştırır).
  *
  * @package WooCommerce\Donation_Popup
  */
@@ -97,8 +97,7 @@ class WDP_Elementor_Widget_Donation_Form extends \Elementor\Widget_Base {
 			'product_id',
 			array(
 				'label'       => __('Product', 'woo-donation-popup'),
-				'type'        => \Elementor\Controls_Manager::SELECT2,
-				'options'     => $this->selected_product_options(),
+				'type'        => \Elementor\Controls_Manager::TEXT,
 				'label_block' => true,
 				'condition'   => array('source' => 'list'),
 			)
@@ -154,67 +153,56 @@ class WDP_Elementor_Widget_Donation_Form extends \Elementor\Widget_Base {
 	}
 
 	/**
-	 * Only the currently selected product (ajax search fills the rest).
+	 * Widget settings → shortcode name + attributes (same names/attributes as the shortcodes).
 	 *
-	 * @return array<int, string>
+	 * @param array<string, mixed> $settings Widget settings.
+	 * @return array{0: string, 1: array<string, mixed>} Shortcode tag and attributes.
 	 */
-	private function selected_product_options() {
-		$settings = method_exists($this, 'get_settings') ? $this->get_settings('product_id') : array();
-		$id       = 0;
-		if (is_array($settings) && isset($settings['product_id'])) {
-			$id = absint($settings['product_id']);
-		} elseif (is_scalar($settings)) {
-			$id = absint($settings);
+	public static function shortcode_from_settings($settings) {
+		$label = isset($settings['button_text']) ? (string) $settings['button_text'] : '';
+		$atts  = array(
+			'id'          => 0,
+			'slug'        => '',
+			'sku'         => '',
+			'text'        => $label,
+			'button_text' => $label,
+			'show_title'  => (!empty($settings['show_title']) && $settings['show_title'] === 'yes') ? 'yes' : 'no',
+		);
+		$source = isset($settings['source']) ? $settings['source'] : 'current';
+		if ($source === 'list') {
+			$atts['id'] = isset($settings['product_id']) ? absint($settings['product_id']) : 0;
+		} elseif ($source === 'manual') {
+			$manual = isset($settings['manual']) ? trim((string) $settings['manual']) : '';
+			if (ctype_digit($manual)) {
+				$atts['id'] = absint($manual);
+			} else {
+				$atts['slug'] = sanitize_title($manual);
+			}
 		}
-		if ($id <= 0 || !function_exists('wc_get_product')) {
-			return array();
+		$display = isset($settings['display']) ? $settings['display'] : 'inline';
+		if ($display === 'popup') {
+			return array('wdp_donation_button', $atts);
 		}
-		$product = wc_get_product($id);
-		if (!$product || !method_exists($product, 'get_id')) {
-			return array();
+		if ($display === 'panel') {
+			return array('wdp_donation_button_panel', $atts);
 		}
-		return array($id => $product->get_name() . ' (#' . $id . ')');
+		return array('wdp_donation_form', $atts);
 	}
 
 	/**
+	 * Thin compatibility layer: runs the equivalent shortcode handler.
+	 *
 	 * @return void
 	 */
 	protected function render() {
-		$settings = $this->get_settings_for_display();
-		$html     = WDP_Render_Guard::html(
-			static function () use ($settings) {
-				$label = isset($settings['button_text']) ? $settings['button_text'] : '';
-				$atts  = array(
-					'id'          => 0,
-					'slug'        => '',
-					'sku'         => '',
-					'text'        => $label,
-					'button_text' => $label,
-					'show_title'  => (!empty($settings['show_title']) && $settings['show_title'] === 'yes') ? 'yes' : 'no',
-				);
-				$source = isset($settings['source']) ? $settings['source'] : 'current';
-				if ($source === 'list') {
-					$atts['id'] = isset($settings['product_id']) ? absint($settings['product_id']) : 0;
-				} elseif ($source === 'manual') {
-					$manual = isset($settings['manual']) ? trim((string) $settings['manual']) : '';
-					if (ctype_digit($manual)) {
-						$atts['id'] = absint($manual);
-					} else {
-						$atts['slug'] = sanitize_title($manual);
-					}
-				}
-				$display = isset($settings['display']) ? $settings['display'] : 'inline';
-				if ($display === 'popup') {
-					return WDP_Shortcodes::render_button($atts, 'wdp_donation_button', 'popup');
-				}
-				if ($display === 'panel') {
-					return WDP_Shortcodes::render_button($atts, 'wdp_donation_button_panel', 'side_panel');
-				}
-				return WDP_Shortcodes::render_form($atts);
-			},
-			0,
-			'elementor_donation_form'
-		);
+		list($tag, $atts) = self::shortcode_from_settings($this->get_settings_for_display());
+		if ($tag === 'wdp_donation_button') {
+			$html = WDP_Shortcodes::donation_button_shortcode($atts);
+		} elseif ($tag === 'wdp_donation_button_panel') {
+			$html = WDP_Shortcodes::donation_button_panel_shortcode($atts);
+		} else {
+			$html = WDP_Shortcodes::donation_form_shortcode($atts);
+		}
 		echo $html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	}
 }

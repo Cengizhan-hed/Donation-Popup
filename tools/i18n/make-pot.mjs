@@ -89,7 +89,6 @@ function main() {
   const jsFiles = [
     ...walk(path.join(ROOT, 'assets/js/src'), (f) => f.endsWith('.js')),
     ...walk(path.join(ROOT, 'blocks'), (f) => f.endsWith('.js') && !f.includes(`${path.sep}build${path.sep}`)),
-    path.join(ROOT, 'assets/js/elementor-editor.js'),
   ].filter((f) => fs.existsSync(f));
 
   const tmp = path.join(ROOT, 'languages/.wdp-pot-tmp.pot');

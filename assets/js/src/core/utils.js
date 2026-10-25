@@ -42,8 +42,6 @@
       version: '10.0',
       cart_url: '',
       checkout_url: '',
-      theme: '',
-      theme_slug: '',
       debug: false,
       nonces: {},
       strings: {},

@@ -24,7 +24,6 @@ const DOMAIN = 'woo-donation-popup';
 export const HANDLE_SOURCES = {
   'wdp-block-donation-form': 'blocks/donation-form/index.js',
   'wdp-block-donations': 'blocks/donations/index.js',
-  'wdp-elementor-editor': 'assets/js/elementor-editor.js',
 };
 
 const CALL_RE =
