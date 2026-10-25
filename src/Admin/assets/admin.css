@@ -62,6 +62,7 @@
 .dpa .dpa-badge--success { background: #e6f5ed; color: var(--dpa-ok); }
 .dpa .dpa-badge--info { background: #e7f0fc; color: #174a8f; }
 .dpa .dpa-code { display: flex; gap: 10px; align-items: center; justify-content: space-between; background: #1d2327; color: #e6edf3; padding: 10px 12px; border-radius: 10px; overflow-x: auto; max-inline-size: 520px; }
+.dpa .dpa-code .dpa-copy { background: #fff; color: #1d2327; border-color: #fff; flex: none; }
 .dpa .dpa-code code { background: none; color: inherit; padding: 0; font-size: 13px; }
 
 /* Önizleme */

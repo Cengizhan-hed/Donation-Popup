@@ -194,7 +194,7 @@ test('sihirbaz: amaç → varsayılan → ürün (oluşturmaz) → bitir; ayarla
   await expect(page.locator('[data-dpa-back]')).toBeVisible();
   await page.locator('[data-dpa-next]').click();
   await expect(page.locator('[data-dpa-step="2"]')).toBeVisible();
-  await expect(page.locator('a[href*="post_type=product"]')).toBeVisible();
+  await expect(page.locator('[data-dpa-step="2"] a[href*="post_type=product"]')).toBeVisible();
   await page.locator('[data-dpa-next]').click();
   await expect(page.locator('[data-dpa-step="3"]')).toBeVisible();
   await expect(page.locator('[data-dpa-finish]')).toBeVisible();
@@ -218,7 +218,7 @@ test('sihirbaz atlanır: modüller değişmez', async ({ page }) => {
   await expect(page).toHaveURL(/page=donation-panel/);
   const s = await state(page);
   expect(s.settings.admin.wizard).toBe('skipped');
-  expect(s.settings.modules ?? {}).toEqual({});
+  expect(Object.keys(s.settings.modules ?? {})).toEqual([]);
   await expect(page.locator('.dpa-prompt')).toHaveCount(0);
 });
 
