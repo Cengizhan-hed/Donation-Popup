@@ -49,7 +49,7 @@ final class Progress_Renderer {
 
 		ob_start();
 		?>
-<div class="dp dp-progress<?php echo $reached ? ' is-complete' : ''; ?>" data-dp-progress data-product-id="<?php echo esc_attr( (string) (int) $data['product_id'] ); ?>" data-percent="<?php echo esc_attr( (string) $percent ); ?>" data-raised="<?php echo esc_attr( (string) $data['raised'] ); ?>" data-symbol="<?php echo esc_attr( (string) $currency['symbol'] ); ?>" data-decimals="<?php echo esc_attr( (string) (int) $currency['decimals'] ); ?>">
+<div class="dp dp-progress<?php echo $reached ? ' is-complete' : ''; ?><?php echo $milestones ? ' dp-progress--ms' : ''; ?>" data-dp-progress data-product-id="<?php echo esc_attr( (string) (int) $data['product_id'] ); ?>" data-percent="<?php echo esc_attr( (string) $percent ); ?>" data-raised="<?php echo esc_attr( (string) $data['raised'] ); ?>" data-symbol="<?php echo esc_attr( (string) $currency['symbol'] ); ?>" data-decimals="<?php echo esc_attr( (string) (int) $currency['decimals'] ); ?>">
 	<div class="dp-progress__nums">
 		<span class="dp-progress__raised dp-num" data-dp-raised><?php echo esc_html( self::money( (float) $data['raised'] ) ); ?></span>
 		<span class="dp-progress__goal">
@@ -62,7 +62,7 @@ final class Progress_Renderer {
 	<div class="dp-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="<?php echo esc_attr( (string) $percent ); ?>" aria-label="<?php esc_attr_e( 'Goal completion rate', 'woo-donation-popup' ); ?>">
 		<div class="dp-bar__fill" style="--p:<?php echo esc_attr( (string) $percent ); ?>"></div>
 		<?php foreach ( $milestones as $milestone ) : ?>
-			<span class="dp-bar__ms<?php echo ! empty( $milestone['hit'] ) ? ' is-hit' : ''; ?>" style="--at:<?php echo esc_attr( (string) $milestone['at'] ); ?>" data-dp-ms="<?php echo esc_attr( (string) $milestone['at'] ); ?>">
+			<span class="dp-bar__ms<?php echo ! empty( $milestone['hit'] ) ? ' is-hit' : ''; ?>" style="--at:<?php echo esc_attr( (string) $milestone['at'] ); ?>" data-dp-ms="<?php echo esc_attr( (string) $milestone['at'] ); ?>"<?php echo $milestone['at'] >= 88 ? ' data-dp-edge="end"' : ( $milestone['at'] <= 12 ? ' data-dp-edge="start"' : '' ); ?>>
 				<svg class="dp-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l5 5 9-10"/></svg>
 				<span class="dp-bar__ms-label"><?php echo esc_html( (string) $milestone['label'] ); ?></span>
 			</span>

@@ -7,8 +7,14 @@
 .dp-progress.is-complete .dp-bar__fill::after { display: none; }
 .dp-progress .dp-badge { margin-inline-start: auto; }
 
+/* Ara hedef etiketleri kart dışına taşmaz (kenara yakın olanlar kenara hizalanır; RTL'de merkez yönü ters). */
+.dp-progress--ms { padding-inline: 10px; }
+.dp-bar__ms[data-dp-edge="end"] .dp-bar__ms-label { inset-inline-start: auto; inset-inline-end: -9px; transform: none; }
+.dp-bar__ms[data-dp-edge="start"] .dp-bar__ms-label { inset-inline-start: -9px; transform: none; }
+[dir="rtl"] .dp-bar__ms:not([data-dp-edge]) .dp-bar__ms-label { transform: translateX(50%); }
+
 /* ---------- Etki ifadesi (formda tutar çiplerinin altında) ---------- */
-.dp-impact { display: flex; align-items: center; gap: var(--dp-space-2); margin-block-start: var(--dp-space-3); padding: var(--dp-space-3) var(--dp-space-4); border-radius: var(--dp-radius-md); background: var(--dp-color-primary-softer); color: var(--dp-color-primary-strong); font-size: var(--dp-fs-sm); font-weight: var(--dp-fw-medium); line-height: 1.35; animation: dp-fadeup var(--dp-dur-base) var(--dp-ease-out); }
+.dp-impact { display: flex; align-items: center; gap: var(--dp-space-2); margin-block-start: var(--dp-space-3); padding: var(--dp-space-3) var(--dp-space-4); border-radius: var(--dp-radius-md); background: var(--dp-color-primary-softer); border-inline-start: 3px solid var(--dp-color-primary); color: var(--dp-color-text); font-size: var(--dp-fs-sm); font-weight: var(--dp-fw-medium); line-height: 1.35; animation: dp-fadeup var(--dp-dur-base) var(--dp-ease-out); }
 .dp-impact[hidden] { display: none; }
 
 /* ---------- Sosyal kanıt ---------- */
