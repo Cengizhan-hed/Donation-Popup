@@ -83,6 +83,7 @@ function main() {
   const phpFiles = [
     path.join(ROOT, 'woo-donation-popup.php'),
     ...walk(path.join(ROOT, 'includes'), (f) => f.endsWith('.php')),
+    ...walk(path.join(ROOT, 'src'), (f) => f.endsWith('.php')),
     ...walk(path.join(ROOT, 'templates'), (f) => f.endsWith('.php')),
     ...walk(path.join(ROOT, 'blocks'), (f) => f.endsWith('.php')),
   ].filter((f) => fs.existsSync(f));

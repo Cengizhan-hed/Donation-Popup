@@ -127,11 +127,11 @@ final class Shortcodes1033Test extends TestCase {
 	}
 
 	public function test_class_list_and_style_ignored(): void {
-		$this->assertSame('foo bar', WDP_Shortcodes::sanitize_class_list('foo bar !!!'));
+		$this->assertSame('foo bar', \DonationPanel\Modules\EntryPoints\Shortcodes::sanitize_class_list('foo bar !!!'));
 		$p       = new WC_Product(3);
 		$p->name = 'X';
 		WDP_Test_State::$products[3] = $p;
-		$html = WDP_Shortcodes::render_button(
+		$html = \DonationPanel\Modules\EntryPoints\Shortcodes::render_button(
 			array('id' => 3, 'class' => 'foo bar', 'style' => 'color:red;background:url(x)', 'text' => 'Ver'),
 			'wdp_donation_button',
 			'popup',
@@ -148,14 +148,14 @@ final class Shortcodes1033Test extends TestCase {
 	public function test_button_text_key_matches_on_popup(): void {
 		$p = new WC_Product(4);
 		WDP_Test_State::$products[4] = $p;
-		$html_text = WDP_Shortcodes::render_button(
+		$html_text = \DonationPanel\Modules\EntryPoints\Shortcodes::render_button(
 			array('id' => 4, 'text' => 'Özel Metin'),
 			'wdp_donation_button',
 			'popup',
 			array(),
 			true
 		);
-		$html_alias = WDP_Shortcodes::render_button(
+		$html_alias = \DonationPanel\Modules\EntryPoints\Shortcodes::render_button(
 			array('id' => 4, 'button_text' => 'Özel Metin'),
 			'wdp_donation_button',
 			'popup',
@@ -172,17 +172,17 @@ final class Shortcodes1033Test extends TestCase {
 		$p->purchasable = true;
 		WDP_Test_State::$products[5] = $p;
 		WDP_Test_State::$caps        = array('edit_products');
-		$this->assertSame('', WDP_Shortcodes::unavailable_product_notice($p));
-		$this->assertSame('', WDP_Shortcodes::render_form(array('id' => 5)));
+		$this->assertSame('', \DonationPanel\Modules\EntryPoints\Shortcodes::unavailable_product_notice($p));
+		$this->assertSame('', \DonationPanel\Modules\EntryPoints\Shortcodes::render_form(array('id' => 5)));
 
 		WDP_Test_State::$is_admin = true;
-		$notice = WDP_Shortcodes::unavailable_product_notice($p);
+		$notice = \DonationPanel\Modules\EntryPoints\Shortcodes::unavailable_product_notice($p);
 		$this->assertStringContainsString('stokta yok', $notice);
-		$html = WDP_Shortcodes::render_form(array('id' => 5));
+		$html = \DonationPanel\Modules\EntryPoints\Shortcodes::render_form(array('id' => 5));
 		$this->assertStringContainsString('stokta yok', $html);
 		WDP_Test_State::$caps     = array();
 		WDP_Test_State::$is_admin = false;
-		$guest = WDP_Shortcodes::render_form(array('id' => 5));
+		$guest = \DonationPanel\Modules\EntryPoints\Shortcodes::render_form(array('id' => 5));
 		$this->assertSame('', $guest);
 	}
 

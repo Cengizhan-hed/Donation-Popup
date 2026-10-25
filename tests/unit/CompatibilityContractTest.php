@@ -20,14 +20,14 @@ final class CompatibilityContractTest extends TestCase {
 	}
 
 	public function test_shortcode_tags_unchanged(): void {
-		$src = self::src('includes/class-shortcodes.php');
+		$src = self::src('src/Modules/EntryPoints/class-shortcodes.php');
 		foreach (array( 'wdp_donation_button', 'wdp_donation_button_panel', 'wdp_donation_form', 'wdp_donations' ) as $tag) {
 			$this->assertMatchesRegularExpression("/add_shortcode\\(\\s*'" . $tag . "'/", $src, $tag);
 		}
 	}
 
 	public function test_shortcode_attributes_unchanged(): void {
-		$src = self::src('includes/class-shortcodes.php');
+		$src = self::src('src/Modules/EntryPoints/class-shortcodes.php');
 		foreach (array( 'id', 'slug', 'sku', 'text', 'button_text', 'class', 'title', 'show_title' ) as $att) {
 			$this->assertMatchesRegularExpression("/'" . $att . "'\\s+=>/", $src, 'öznitelik ' . $att);
 		}

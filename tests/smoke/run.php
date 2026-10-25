@@ -144,7 +144,7 @@ foreach ($required_traits as $trait_file) {
 }
 
 wdp_smoke_assert(class_exists('WDP_Ajax'), 'WDP_Ajax loads');
-wdp_smoke_assert(class_exists('WDP_Shortcodes'), 'WDP_Shortcodes loads');
+wdp_smoke_assert(class_exists('\DonationPanel\Modules\EntryPoints\Shortcodes'), '\DonationPanel\Modules\EntryPoints\Shortcodes loads');
 wdp_smoke_assert(class_exists('WDP_Progress_Form'), 'WDP_Progress_Form loads');
 wdp_smoke_assert(class_exists('WDP_Order_Meta_Keys'), 'WDP_Order_Meta_Keys loads');
 wdp_smoke_assert(class_exists('WDP_Privacy'), 'WDP_Privacy loads');
@@ -291,7 +291,7 @@ wdp_smoke_assert(class_exists('WDP_Render_Guard'), 'WDP_Render_Guard loads');
 wdp_smoke_assert(class_exists('WDP_Migrations'), 'WDP_Migrations loads');
 wdp_smoke_assert(
     wdp_smoke_file_contains(WDP_PLUGIN_DIR . 'includes/class-templates.php', 'WDP_Render_Guard::html')
-        && wdp_smoke_file_contains(WDP_PLUGIN_DIR . 'includes/class-shortcodes.php', 'WDP_Render_Guard::html'),
+        && wdp_smoke_file_contains(WDP_PLUGIN_DIR . 'src/Modules/EntryPoints/class-shortcodes.php', 'WDP_Render_Guard::html'),
     'Templates and shortcodes render through WDP_Render_Guard'
 );
 $wdp_removed_module_css = 'wdp-' . WDP_Migrations::REMOVED_MODULE_IDS[0];
@@ -305,14 +305,14 @@ wdp_smoke_assert(
 foreach (array(
     'WDP_Donation_Scope',
     'WDP_Addon_Product_Visibility',
-    'WDP_Product_Resolver',
+    '\DonationPanel\Modules\EntryPoints\Product_Resolver',
     'WDP_Render_Registry',
-    'WDP_Product_Page_Integration',
+    '\DonationPanel\Modules\EntryPoints\Auto_Placement',
     'WDP_Donations_List',
     'WDP_Lazy_Modal',
     'WDP_Placement_Settings',
-    'WDP_Blocks',
-    'WDP_Elementor',
+    '\DonationPanel\Modules\EntryPoints\Blocks',
+    '\DonationPanel\Modules\EntryPoints\Elementor\Elementor_Compat',
     'WDP_Form_Matrix',
     'WDP_Admin_Placement_Tab_Renderer',
     'WDP_Admin_Bulk_Actions',
@@ -321,7 +321,7 @@ foreach (array(
 }
 wdp_smoke_assert(file_exists(WDP_PLUGIN_DIR . 'assets/css/list.css') && file_exists(WDP_PLUGIN_DIR . 'assets/js/list.js'), 'List CSS/JS exist');
 wdp_smoke_assert(file_exists(WDP_PLUGIN_DIR . 'blocks/donation-form/block.json') && file_exists(WDP_PLUGIN_DIR . 'blocks/donations/block.json'), 'Gutenberg block.json files exist');
-wdp_smoke_assert(file_exists(WDP_PLUGIN_DIR . 'includes/compat/class-builder-detect.php'), 'Builder detect lives in compat/');
+wdp_smoke_assert(file_exists(WDP_PLUGIN_DIR . 'src/Modules/EntryPoints/class-builder-detect.php'), 'Builder detect lives in the entry-points module');
 wdp_smoke_assert(
     wdp_smoke_file_contains(WDP_PLUGIN_DIR . 'includes/config/frontend-js-stack.php', 'lazy-modal.js'),
     'Lazy modal is on the frontend JS stack'
@@ -343,17 +343,17 @@ wdp_smoke_assert(
     'WooCommerce simple add-to-cart override template exists'
 );
 wdp_smoke_assert(
-    wdp_smoke_file_contains(WDP_PLUGIN_DIR . 'includes/class-product-page-integration.php', 'function render_builder_fallback')
-        && preg_match("/add_action\\(\\s*'wp_footer'/", (string) file_get_contents(WDP_PLUGIN_DIR . 'includes/class-product-page-integration.php')) === 1,
+    wdp_smoke_file_contains(WDP_PLUGIN_DIR . 'src/Modules/EntryPoints/class-fallback-button.php', 'function render_builder_fallback')
+        && preg_match("/add_action\\(\\s*'wp_footer'/", (string) file_get_contents(WDP_PLUGIN_DIR . 'src/Modules/EntryPoints/class-auto-placement.php')) === 1,
     'Product page builder fallback is registered'
 );
 wdp_smoke_assert(
-    wdp_smoke_file_contains(WDP_PLUGIN_DIR . 'includes/class-product-page-integration.php', 'function unhook_native_single_add_to_cart')
+    wdp_smoke_file_contains(WDP_PLUGIN_DIR . 'src/Modules/EntryPoints/class-auto-placement.php', 'function unhook_native_single_add_to_cart')
         && wdp_smoke_file_contains(WDP_PLUGIN_DIR . 'includes/class-cart.php', 'function should_reject_native_add_to_cart'),
     'Native add-to-cart unhook + server reject exist'
 );
 wdp_smoke_assert(
-    wdp_smoke_file_contains(WDP_PLUGIN_DIR . 'includes/class-product-page-integration.php', 'filter_wc_get_template')
+    wdp_smoke_file_contains(WDP_PLUGIN_DIR . 'src/Modules/EntryPoints/class-auto-placement.php', 'filter_wc_get_template')
         && wdp_smoke_file_contains(WDP_PLUGIN_DIR . 'includes/class-migrations.php', 'step_10_28_1'),
     '10.28.1 template override and restore migration are present'
 );

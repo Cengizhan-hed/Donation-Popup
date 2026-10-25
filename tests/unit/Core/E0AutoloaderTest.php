@@ -17,7 +17,7 @@ final class E0AutoloaderTest extends TestCase {
 		$this->assertSame('/x/src/Core/class-module-registry.php', Autoloader::file_for_class('DonationPanel\\Core\\Module_Registry', $base));
 		$this->assertSame('/x/src/Core/interface-module-interface.php', Autoloader::file_for_class('DonationPanel\\Core\\Module_Interface', $base));
 		$this->assertSame('/x/src/Support/trait-sanitizes-trait.php', Autoloader::file_for_class('DonationPanel\\Support\\Sanitizes_Trait', $base));
-		$this->assertSame('/x/src/Modules/EntryPoints/class-foo.php', Autoloader::file_for_class('\\DonationPanel\\Modules\\EntryPoints\\Foo', $base));
+		$this->assertSame('/x/src/Modules/EntryPoints/class-foo.php', Autoloader::file_for_class('\DonationPanel\\Modules\\EntryPoints\\Foo', $base));
 		$this->assertSame('/x/src/class-plugin.php', Autoloader::file_for_class('DonationPanel\\Plugin', $base));
 	}
 

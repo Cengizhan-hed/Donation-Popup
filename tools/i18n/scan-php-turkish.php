@@ -32,7 +32,7 @@ if (is_readable($allow_file)) {
 	$allow = isset($j['allow']) && is_array($j['allow']) ? $j['allow'] : array();
 }
 
-$dirs = array('includes', 'templates', 'blocks');
+$dirs = array('includes', 'src', 'templates', 'blocks');
 $files = array($root . '/woo-donation-popup.php', $root . '/uninstall.php');
 foreach ($dirs as $d) {
 	$base = $root . '/' . $d;

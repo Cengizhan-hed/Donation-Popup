@@ -32,15 +32,15 @@ final class TemplateOverrideTest extends TestCase {
 
 	public function test_returns_plugin_template_for_donation_product(): void {
 		$this->product(10);
-		$path = WDP_Product_Page_Integration::filter_wc_get_template(
+		$path = \DonationPanel\Modules\EntryPoints\Auto_Placement::filter_wc_get_template(
 			'/theme/simple.php',
-			WDP_Product_Page_Integration::SIMPLE_ATC_TEMPLATE,
+			\DonationPanel\Modules\EntryPoints\Auto_Placement::SIMPLE_ATC_TEMPLATE,
 			array(),
 			'',
 			''
 		);
-		$this->assertSame(WDP_Product_Page_Integration::plugin_simple_template_path(), $path);
-		$this->assertTrue(WDP_Product_Page_Integration::template_override_used());
+		$this->assertSame(\DonationPanel\Modules\EntryPoints\Auto_Placement::plugin_simple_template_path(), $path);
+		$this->assertTrue(\DonationPanel\Modules\EntryPoints\Auto_Placement::template_override_used());
 		$this->assertFileExists($path);
 	}
 
@@ -48,19 +48,19 @@ final class TemplateOverrideTest extends TestCase {
 		$p       = $this->product(11);
 		$p->type = 'variable';
 		WDP_Donation_Scope::flush(11);
-		$path = WDP_Product_Page_Integration::filter_wc_get_template(
+		$path = \DonationPanel\Modules\EntryPoints\Auto_Placement::filter_wc_get_template(
 			'/theme/simple.php',
-			WDP_Product_Page_Integration::SIMPLE_ATC_TEMPLATE
+			\DonationPanel\Modules\EntryPoints\Auto_Placement::SIMPLE_ATC_TEMPLATE
 		);
 		$this->assertSame('/theme/simple.php', $path);
-		$this->assertFalse(WDP_Product_Page_Integration::template_override_used());
+		$this->assertFalse(\DonationPanel\Modules\EntryPoints\Auto_Placement::template_override_used());
 	}
 
 	public function test_setting_off_does_not_register_hooks(): void {
 		WDP_Test_State::$options[ WDP_Placement_Settings::OPTION ] = array('auto_place' => 'no');
 		WDP_Placement_Settings::flush();
-		WDP_Product_Page_Integration::init();
-		$this->assertFalse(WDP_Product_Page_Integration::hooks_added());
+		\DonationPanel\Modules\EntryPoints\Auto_Placement::init();
+		$this->assertFalse(\DonationPanel\Modules\EntryPoints\Auto_Placement::hooks_added());
 		$this->assertArrayNotHasKey('wc_get_template', WDP_Test_State::$filters);
 	}
 
@@ -68,13 +68,13 @@ final class TemplateOverrideTest extends TestCase {
 		$this->product(12);
 		WDP_Test_State::$caps[] = 'edit_products';
 		WDP_Render_Registry::mark_trigger(12);
-		$html = WDP_Product_Page_Integration::template_override_markup();
+		$html = \DonationPanel\Modules\EntryPoints\Auto_Placement::template_override_markup();
 		$this->assertStringContainsString('form or button already rendered #12', $html);
 	}
 
 	public function test_other_templates_not_rewritten(): void {
 		$this->product(13);
-		$path = WDP_Product_Page_Integration::filter_wc_get_template('/theme/x.php', 'cart/cart.php');
+		$path = \DonationPanel\Modules\EntryPoints\Auto_Placement::filter_wc_get_template('/theme/x.php', 'cart/cart.php');
 		$this->assertSame('/theme/x.php', $path);
 	}
 }

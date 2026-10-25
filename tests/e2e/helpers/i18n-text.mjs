@@ -189,11 +189,11 @@ function translateMsgid(po, msgid, ctx) {
  * @param {string} [root]
  */
 export function extractElementorWidgetStrings(root = ROOT, locale = 'tr_TR') {
-  const dir = path.join(root, 'includes/elementor');
+  const dir = path.join(root, 'src/Modules/EntryPoints/Elementor');
   if (!fs.existsSync(dir)) return [];
   const po = loadTrPoMap(root);
   const out = [];
-  for (const name of fs.readdirSync(dir).filter((n) => n.endsWith('.php')).sort()) {
+  for (const name of fs.readdirSync(dir).filter((n) => n.endsWith('-widget.php')).sort()) {
     const src = fs.readFileSync(path.join(dir, name), 'utf8');
     const titleM = src.match(
       /function\s+get_title\s*\([^)]*\)\s*\{[\s\S]*?return\s+(__|_e|_x|esc_html__|esc_html_x)\(\s*(['"])((?:\\.|(?!\2).)*)\2(?:\s*,\s*(['"])((?:\\.|(?!\4).)*)\4)?/
@@ -229,7 +229,7 @@ export function extractElementorWidgetStrings(root = ROOT, locale = 'tr_TR') {
     }
     const classM = src.match(/class\s+(\S+)\s+extends/);
     out.push({
-      file: `includes/elementor/${name}`,
+      file: `src/Modules/EntryPoints/Elementor/${name}`,
       class: classM ? classM[1] : '',
       title,
       keywords,

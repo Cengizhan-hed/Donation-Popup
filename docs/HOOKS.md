@@ -26,4 +26,17 @@ Filtre/eylemler (43): `wdp_allow_multiple_entries, wdp_amount_presets, wdp_build
 
 Kaldırılanlar (K56; sözleşmeden çıktı): `wdp_meta_pixel_has_consent`, `wdp_meta_woocommerce_purchase_integration_active` (Meta Pixel), `wdp_product_schema` (JSON-LD şeması). Yeni (K8): `wdp_convert_amount` (tutar dönüşümü; varsayılan dönüşüm yok, Woo'nun etkin para birimi). Para birimi bağdaştırıcıları (Curcy/WOOCS/WPML) çekirdekte yoktur; Curcy için `docs/site-snippets/`.
 
+## Giriş noktaları modülü (`entry_points`, E1)
+
+Modül slug'ı `entry_points` (varsayılan açık; `donation_panel_module_enabled` filtresi ya da `donation_panel_settings.modules.entry_points` ile kapanır). Kapalıyken yalnız otomatik yerleşim + yedek düğme + döngü/fiyat filtreleri durur; kısa kodlar, bloklar ve Elementor ince katmanı her zaman kayıtlıdır (sözleşme). Yeni (`donation_panel_`) kanca eklenmedi; modülün kullandığı eski sözleşme kancaları:
+
+| Ad | Tür | Parametreler | Sınıf |
+|---|---|---|---|
+| `wdp_resolve_product` | filtre | `WC_Product|null $product, array $atts, array $context` | `Product_Resolver::resolve` |
+| `wdp_allow_multiple_entries` | filtre | `bool $allow, int $product_id` | `Shortcodes` (aynı üründe birden çok giriş) |
+| `wdp_is_builder_preview` | filtre | `bool $is_preview` | `Builder_Detect` |
+| `wdp_builder_preview_product` / `wdp_builder_preview_context_product` | filtre | `WC_Product|null` | `Builder_Detect` |
+
+Kullanılan WooCommerce kancaları: `wc_get_template`, `woocommerce_locate_template`, `woocommerce_get_price_html`, `woocommerce_loop_add_to_cart_link`, `woocommerce_product_add_to_cart_text/url`, `woocommerce_product_supports`, `render_block_woocommerce/{add-to-cart-form,add-to-cart-with-options,product-price,product-button}`, `woocommerce_single_product_summary`, `woocommerce_after_single_product_summary`, `woocommerce_after_single_product` (yedek, öncelik 999), `wp_footer` (yedek, 4).
+
 Yeni modüller eklendikçe bu dosyaya modül başına bölüm eklenir (ad, tür, parametre, zaman, örnek).

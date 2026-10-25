@@ -54,12 +54,8 @@ class Woo_Donation_Popup {
 			'WDP_Addon_Product_Visibility',
 			'WDP_Donation_Purchasable',
 			'WDP_Donations_List',
-			'WDP_Product_Page_Integration',
 			'WDP_Lazy_Modal',
-			'WDP_Blocks',
-			'WDP_Elementor',
 			'WDP_Form_Matrix',
-			'WDP_Shortcodes', // Shortcodes en son (diğer modüllere bağımlı)
 		);
 
 		foreach ( $modules as $module_class ) {

@@ -245,8 +245,8 @@ if (!function_exists('wdp_e2e_catalog_type_meta')) {
 	 * @return string inline|button_popup|button_panel|''
 	 */
 	function wdp_e2e_catalog_product_display($product) {
-		if (class_exists('WDP_Product_Page_Integration') && method_exists('WDP_Product_Page_Integration', 'resolve_product_page_display')) {
-			return (string) WDP_Product_Page_Integration::resolve_product_page_display($product);
+		if (class_exists('\DonationPanel\Modules\EntryPoints\Auto_Placement') && method_exists('\DonationPanel\Modules\EntryPoints\Auto_Placement', 'resolve_product_page_display')) {
+			return (string) \DonationPanel\Modules\EntryPoints\Auto_Placement::resolve_product_page_display($product);
 		}
 		if (class_exists('WDP_Placement_Settings')) {
 			return (string) WDP_Placement_Settings::value('display', 'button_panel');

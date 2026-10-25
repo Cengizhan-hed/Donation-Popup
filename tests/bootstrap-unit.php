@@ -187,11 +187,11 @@ final class WDP_Test_State {
 		if (class_exists('WDP_Render_Registry')) {
 			WDP_Render_Registry::reset();
 		}
-		if (class_exists('WDP_Builder_Detect')) {
-			WDP_Builder_Detect::reset();
+		if (class_exists('\DonationPanel\Modules\EntryPoints\Builder_Detect')) {
+			\DonationPanel\Modules\EntryPoints\Builder_Detect::reset();
 		}
-		if (class_exists('WDP_Product_Page_Integration')) {
-			WDP_Product_Page_Integration::reset_request_flags();
+		if (class_exists('\DonationPanel\Modules\EntryPoints\Auto_Placement')) {
+			\DonationPanel\Modules\EntryPoints\Auto_Placement::reset_request_flags();
 		}
 	}
 }

@@ -7,7 +7,14 @@ parameters:
         - src
     bootstrapFiles:
         - tools/phpstan-bootstrap.php
+    scanDirectories:
+        - includes
     scanFiles:
         - vendor-dev/php-stubs/woocommerce-stubs/woocommerce-stubs.php
     reportUnmatchedIgnoredErrors: false
+    # Kancadan/kullanıcıdan gelen değerler çalışma anında savunmacı denetlenir (docblock türü kesin sayılmaz).
+    treatPhpDocTypesAsCertain: false
+    excludePaths:
+        # Elementor yalnız etkinse yüklenir; temel sınıfı kurulu olmayan ince uyumluluk katmanı (PHPCS bunu yine tarar).
+        - src/Modules/EntryPoints/Elementor/*
     tmpDir: build/lint/phpstan-src-tmp

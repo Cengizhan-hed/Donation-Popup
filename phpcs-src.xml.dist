@@ -19,6 +19,15 @@
 	<rule ref="WordPress-Extra"/>
 	<rule ref="PHPCompatibilityWP"/>
 
+	<!-- WooCommerce yetkisi (yeni kural gevsetme degil, bilinen yetki bildirimi). -->
+	<rule ref="WordPress.WP.Capabilities">
+		<properties>
+			<property name="custom_capabilities" type="array">
+				<element value="edit_products"/>
+			</property>
+		</properties>
+	</rule>
+
 	<rule ref="WordPress.WP.I18n">
 		<properties>
 			<property name="text_domain" type="array">
