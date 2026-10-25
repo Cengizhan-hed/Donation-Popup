@@ -92,3 +92,15 @@ if (!function_exists('rest_ensure_response')) {
 		return $response instanceof WP_REST_Response ? $response : new WP_REST_Response($response);
 	}
 }
+
+if (!function_exists('esc_html_e')) {
+	function esc_html_e($text, $domain = 'default') {
+		echo esc_html(__($text, $domain));
+	}
+}
+
+if (!function_exists('esc_attr_e')) {
+	function esc_attr_e($text, $domain = 'default') {
+		echo esc_attr(__($text, $domain));
+	}
+}
