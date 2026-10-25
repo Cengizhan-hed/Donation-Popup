@@ -136,7 +136,7 @@ Aşağıda projedeki her kaynak dosyanın kısa Türkçe açıklaması yer alır
 | `class-lazy-modal.php` | Liste/döngü için gecikmeli modal AJAX (`wdp_render_modal`). |
 | `class-schema.php` | WooCommerce / Rank Math Product JSON-LD kuralları. |
 | `class-blocks.php` | Gutenberg bağış formu ve liste blokları. |
-| `class-elementor.php` | Elementor Free widget kaydı. |
+| `class-elementor.php` | Elementor widget uyumluluk katmanı (yalnız eşdeğer kısa kodun çıktısını döndürür; yeni özellik almaz). |
 | `class-form-matrix.php` | Form test sayfası (`?wdp_form_matrix=1`). |
 | `class-placement-settings.php` | `wdp_placement_settings` varsayılanları ve normalizer. |
 | `class-migrations.php` | `wdp_db_version` geçişleri; idempotent adımlar. |
@@ -374,12 +374,14 @@ Bloklar: Gutenberg **Bağış formu** (`wdp/donation-form`) ve **Bağış listes
 
 Ayar varsayılanı, anlamı veya yapısı değişirse ya da bir özellik kaldırılırsa aynı aşamada `WDP_Migrations` adımı ve testi eklenir; ayar ekranı her zaman uygulanan değeri gösterir.
 
-## Avada’dan geçiş
+## Sayfa oluşturucu / özel şablonlarda kullanım
 
-1. Single product layout’taki Code Block’a bir kez `[wdp_donation_button_panel]` veya `[wdp_donation_form]` ekleyin (id yok; layout ürün sayfasında o ürünü çözer). Avada Layout WooCommerce kancalarını çalıştırmadığı için otomatik yerleşim burada devreye girmez.
+Eklenti hiçbir tema ya da sayfa oluşturucuyu tanımaz; yalnız WordPress ve WooCommerce standartlarını kullanır. Giriş yolları: kısa kod, blok, WooCommerce standart kancalarıyla otomatik yerleşim ve kancalar çalışmazsa eklentinin yedek düğmesi.
+
+1. Ürün şablonu WooCommerce kancalarını çalıştırmıyorsa şablona bir kez `[wdp_donation_button_panel]` veya `[wdp_donation_form]` ekleyin (`id` gerekmez; kısa kod, blok ve widget bulundukları ürünü kendileri çözer). Şablonda giriş yoksa ve otomatik yerleşim açıksa eklenti yedek düğmesini kendisi basar; aynı sayfada asla iki giriş olmaz.
 2. Ürün kısa açıklamalarındaki eski `[wdp_donation_form id="…"]` kodlarını ürün içeriğinden temizleyin (çift form olmasın).
-3. Bağışlar sayfasındaki görsel+başlık+buton Code Block yığınını tek `[wdp_donations]` ile değiştirin.
-4. Ürün ID arayan özel snippet’leri (`[hd_panel_buton]` vb.) kaldırın; eklenti ürünü sayfa bağlamından çözer.
+3. Bağışlar sayfasındaki görsel+başlık+buton yığınını tek `[wdp_donations]` ile değiştirin.
+4. Ürün ID arayan özel snippet’lere artık gerek yoktur; eklenti ürünü sayfa bağlamından çözer.
 
 ## Kaldırılan özellik: form içi SSS
 
@@ -395,7 +397,7 @@ Formun içindeki SSS modülü 10.27.0’da tamamen kaldırıldı. SSS’ler ür�
 
 ### 10.34.1 — Ürün sayfası auto_place yedek (builder)
 
-- WooCommerce sepete-ekle öğesi olmayan Elementor/Avada ürün şablonlarında `auto_place=yes` iken Bağış Yap bir kez basılır (`wp_footer` / `woocommerce_after_single_product`; zaten basılmışsa yok).
+- WooCommerce sepete-ekle öğesi olmayan ürün şablonlarında `auto_place=yes` iken Bağış Yap bir kez basılır (`wp_footer` / `woocommerce_after_single_product`; zaten basılmışsa yok).
 
 ### 10.34.0 — Ikram Aid uyumu (kart, GBP biçim, güvenli alan)
 
