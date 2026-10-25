@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: woo-donation-popup 10.35.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-25 23:53+0300\n"
+"POT-Creation-Date: 2026-10-26 01:44+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -32,6 +32,7 @@ msgstr ""
 #: includes/traits/trait-wdp-assets-inline-styles.php:41
 #: includes/traits/trait-wdp-assets-inline-styles.php:49
 #: includes/traits/trait-wdp-assets-inline-styles.php:331
+#: src/Admin/class-settings-page.php:450
 #: src/Modules/EntryPoints/class-shortcodes.php:366
 #: src/Modules/Experiences/class-form-renderer.php:69
 #: templates/donation-panel/experiences/form.php:31
@@ -1478,7 +1479,7 @@ msgid "Raised"
 msgstr ""
 
 #: includes/class-admin-layout-tabs-renderer.php:114
-#: includes/class-progress-form.php:124
+#: includes/class-progress-form.php:124 src/Admin/class-setup-wizard.php:154
 msgid "Goal"
 msgstr ""
 
@@ -1758,6 +1759,7 @@ msgid "Share-based"
 msgstr ""
 
 #: includes/class-admin-page-renderer.php:57
+#: src/Admin/class-setup-wizard.php:164
 #: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:278
 #: blocks/donations/index.js:180
 msgid "Progress"
@@ -1773,6 +1775,7 @@ msgid "More"
 msgstr ""
 
 #: includes/class-admin-page-renderer.php:61
+#: src/Admin/class-settings-page.php:196
 msgid "Advanced"
 msgstr ""
 
@@ -2032,6 +2035,7 @@ msgstr ""
 #: includes/class-admin-placement-tab-renderer.php:174
 #: includes/class-admin-product-data-tab.php:1111
 #: includes/class-admin-products-list-table.php:305
+#: src/Admin/class-admin-view.php:112
 msgid "Copy"
 msgstr ""
 
@@ -2407,7 +2411,7 @@ msgid ""
 msgstr ""
 
 #: includes/class-admin-product-data-tab.php:811
-#: includes/config/form-modules.php:30
+#: includes/config/form-modules.php:30 src/Admin/class-settings-page.php:85
 msgid "Social proof"
 msgstr ""
 
@@ -2789,6 +2793,7 @@ msgstr ""
 
 #: includes/class-admin-request.php:25
 #: includes/class-woo-donation-popup-admin.php:373
+#: src/Admin/class-setup-wizard.php:74
 msgid "You do not have permission to do this."
 msgstr ""
 
@@ -3174,7 +3179,7 @@ msgstr ""
 msgid "Check"
 msgstr ""
 
-#: includes/class-icon-library.php:60
+#: includes/class-icon-library.php:60 src/Admin/class-setup-wizard.php:216
 #: templates/donation-panel/experiences/form.php:31
 #: templates/donation-panel/experiences/form.php:221
 msgid "Continue"
@@ -4033,7 +4038,7 @@ msgstr ""
 msgid "An error occurred"
 msgstr ""
 
-#: includes/i18n/class-wdp-js-i18n.php:36
+#: includes/i18n/class-wdp-js-i18n.php:36 src/Admin/class-setup-wizard.php:215
 #: templates/donation-panel/experiences/form.php:216
 #: assets/js/src/form/wizard.js:154 assets/js/src/form/wizard.js:180
 msgid "Back"
@@ -4660,6 +4665,598 @@ msgstr ""
 
 #: includes/traits/trait-wdp-assets-registry.php:395
 msgid "Your donation was added to the cart"
+msgstr ""
+
+#: src/Admin/class-admin-bootstrap.php:147
+#: src/Admin/class-admin-bootstrap.php:148
+#: src/Admin/class-settings-page.php:212
+msgid "Donation Panel"
+msgstr ""
+
+#: src/Admin/class-admin-bootstrap.php:155
+#: src/Admin/class-admin-bootstrap.php:156 src/Admin/class-guide.php:79
+msgid "Donation Panel guide"
+msgstr ""
+
+#: src/Admin/class-admin-bootstrap.php:164
+#: src/Admin/class-admin-bootstrap.php:165
+#: src/Admin/class-settings-page.php:417 src/Admin/class-setup-wizard.php:161
+msgid "Quick setup"
+msgstr ""
+
+#: src/Admin/class-guide.php:25
+msgid "Placing the donate button"
+msgstr ""
+
+#: src/Admin/class-guide.php:27
+msgid ""
+"Automatic: on product pages the button appears in the standard WooCommerce "
+"spots. You do not need to do anything."
+msgstr ""
+
+#: src/Admin/class-guide.php:28
+msgid ""
+"Shortcode: works in every page editor. Without an ID it finds the product it "
+"is placed in. Add id to point at a specific product."
+msgstr ""
+
+#: src/Admin/class-guide.php:29
+msgid ""
+"Block: in the block editor, add the \"Donation Panel\" block. Like the "
+"shortcode, it finds its own product when you give no ID."
+msgstr ""
+
+#: src/Admin/class-guide.php:34
+msgid "What each module does"
+msgstr ""
+
+#: src/Admin/class-guide.php:36
+msgid ""
+"Campaign: goal, amount raised and donor count. Impact: short equivalents "
+"next to amounts. Social proof: totals only, never personal details."
+msgstr ""
+
+#: src/Admin/class-guide.php:37
+msgid ""
+"Thank-you screen: a warm confirmation after the order. Tax relief: one "
+"question; a yes saves name and address on the order. Donor account: sign-in, "
+"My donations and give again. Side cart: a slide-in cart."
+msgstr ""
+
+#: src/Admin/class-guide.php:38
+msgid "A module that is switched off loads no code and no styles."
+msgstr ""
+
+#: src/Admin/class-guide.php:43
+msgid "Troubleshooting: the button does not show"
+msgstr ""
+
+#: src/Admin/class-guide.php:45
+msgid ""
+"Check that the product is set up as a donation product (the Donation tab in "
+"the product data box) and that it is published."
+msgstr ""
+
+#: src/Admin/class-guide.php:46
+msgid ""
+"If your theme does not use the standard WooCommerce hooks, a fallback button "
+"is drawn for you. If you place the shortcode or block yourself, only that "
+"one appears: never two on the same page."
+msgstr ""
+
+#: src/Admin/class-guide.php:47
+msgid ""
+"Still stuck? Place the shortcode in the product description or in a text "
+"block. It works in any page editor."
+msgstr ""
+
+#: src/Admin/class-guide.php:52
+msgid "Multi-currency stores"
+msgstr ""
+
+#: src/Admin/class-guide.php:54
+msgid ""
+"By default amounts are shown and charged in the active WooCommerce currency; "
+"nothing is converted."
+msgstr ""
+
+#: src/Admin/class-guide.php:55
+msgid ""
+"If you use a multi-currency plugin that needs conversion, a small adapter "
+"snippet connects it through the documented donation_panel_convert_amount "
+"filter. Ready-made snippets are in the plugin folder docs/site-snippets."
+msgstr ""
+
+#: src/Admin/class-guide.php:60
+msgid "Privacy and data protection"
+msgstr ""
+
+#: src/Admin/class-guide.php:62
+msgid ""
+"Donor details (dedication, on-behalf-of name, phone, email) are saved on the "
+"order exactly as typed. Orders, exports and erasure are handled by "
+"WooCommerce and the WordPress privacy tools."
+msgstr ""
+
+#: src/Admin/class-guide.php:63
+msgid ""
+"Write your privacy text on your own site. The plugin only shows a link under "
+"the form."
+msgstr ""
+
+#: src/Admin/class-guide.php:77 src/Admin/class-settings-page.php:207
+#: src/Admin/class-setup-wizard.php:150
+msgid "You do not have permission to open this page."
+msgstr ""
+
+#: src/Admin/class-guide.php:80
+msgid "Short answers to the questions people ask most."
+msgstr ""
+
+#: src/Admin/class-guide.php:81
+msgid "Guide sections"
+msgstr ""
+
+#: src/Admin/class-guide.php:96
+msgid "Back to settings"
+msgstr ""
+
+#: src/Admin/class-guide.php:122
+msgid "Open the full guide"
+msgstr ""
+
+#: src/Admin/class-settings-page.php:77
+msgid "Campaign card and progress"
+msgstr ""
+
+#: src/Admin/class-settings-page.php:78
+msgid ""
+"Shows the goal, the amount raised and the number of donors for a campaign."
+msgstr ""
+
+#: src/Admin/class-settings-page.php:81 src/Admin/class-settings-page.php:364
+msgid "Impact phrases"
+msgstr ""
+
+#: src/Admin/class-settings-page.php:82
+msgid "Short equivalents next to amounts, such as \"1 food parcel\"."
+msgstr ""
+
+#: src/Admin/class-settings-page.php:86
+msgid ""
+"Totals only, built from real donations. No personal information is ever "
+"shown."
+msgstr ""
+
+#: src/Admin/class-settings-page.php:89
+msgid "Thank-you screen"
+msgstr ""
+
+#: src/Admin/class-settings-page.php:90
+msgid "A warm confirmation after the order, with an optional share button."
+msgstr ""
+
+#: src/Admin/class-settings-page.php:93
+#: src/Modules/TaxRelief/class-tax-relief-declaration.php:60
+#: src/Modules/TaxRelief/class-tax-relief-module.php:161
+#: src/Modules/TaxRelief/class-tax-relief-module.php:203
+msgid "Tax relief declaration"
+msgstr ""
+
+#: src/Admin/class-settings-page.php:94
+msgid ""
+"Asks the donor one question. If they say yes, their name and address are "
+"saved on the order."
+msgstr ""
+
+#: src/Admin/class-settings-page.php:97
+msgid "Donor account"
+msgstr ""
+
+#: src/Admin/class-settings-page.php:98
+msgid ""
+"Optional sign-in, a \"My donations\" panel and a quick way to give again."
+msgstr ""
+
+#: src/Admin/class-settings-page.php:101
+msgid "Side cart"
+msgstr ""
+
+#: src/Admin/class-settings-page.php:102
+msgid ""
+"A slide-in cart so donors can review their gift without leaving the page."
+msgstr ""
+
+#: src/Admin/class-settings-page.php:193
+msgid "General"
+msgstr ""
+
+#: src/Admin/class-settings-page.php:194
+msgid "Modules"
+msgstr ""
+
+#: src/Admin/class-settings-page.php:195
+msgid "Texts"
+msgstr ""
+
+#: src/Admin/class-settings-page.php:213
+msgid "A few clear settings. Every setting says what it does underneath."
+msgstr ""
+
+#: src/Admin/class-settings-page.php:222
+msgid "Settings sections"
+msgstr ""
+
+#: src/Admin/class-settings-page.php:238 src/Admin/class-settings-page.php:443
+msgid "Preview"
+msgstr ""
+
+#: src/Admin/class-settings-page.php:242
+msgid "You have unsaved changes"
+msgstr ""
+
+#: src/Admin/class-settings-page.php:243
+msgid "Save changes"
+msgstr ""
+
+#: src/Admin/class-settings-page.php:256
+msgid "New here? Quick setup takes about two minutes."
+msgstr ""
+
+#: src/Admin/class-settings-page.php:256
+msgid ""
+"It picks sensible defaults for what you want to achieve. Nothing is created "
+"and you can change everything later."
+msgstr ""
+
+#: src/Admin/class-settings-page.php:257
+msgid "Start quick setup"
+msgstr ""
+
+#: src/Admin/class-settings-page.php:260
+msgid "Skip"
+msgstr ""
+
+#: src/Admin/class-settings-page.php:284
+msgid "Donation form experience"
+msgstr ""
+
+#: src/Admin/class-settings-page.php:285
+msgid ""
+"The classic form is the safe default. The new form adds donation types and a "
+"calmer, mobile-first layout. On phones the form always opens as a bottom "
+"sheet."
+msgstr ""
+
+#: src/Admin/class-settings-page.php:290
+msgid "Classic form (default)"
+msgstr ""
+
+#: src/Admin/class-settings-page.php:291
+msgid "New form"
+msgstr ""
+
+#: src/Admin/class-settings-page.php:298
+msgid "Where the donate button appears"
+msgstr ""
+
+#: src/Admin/class-settings-page.php:299
+msgid ""
+"Automatic placement uses the standard WooCommerce spots on product pages. A "
+"shortcode and a block always work anywhere. Nothing to set up here."
+msgstr ""
+
+#: src/Admin/class-settings-page.php:300
+msgid "Automatic, shortcode and block"
+msgstr ""
+
+#: src/Admin/class-settings-page.php:300
+msgid "Read the guide"
+msgstr ""
+
+#: src/Admin/class-settings-page.php:305 src/Admin/class-setup-wizard.php:123
+msgid "Currency"
+msgstr ""
+
+#: src/Admin/class-settings-page.php:306
+msgid ""
+"Amounts, decimals and separators come from WooCommerce. If you use a multi-"
+"currency plugin, an adapter snippet converts amounts; the guide explains how."
+msgstr ""
+
+#: src/Admin/class-settings-page.php:307
+msgid "Currency adapter active"
+msgstr ""
+
+#: src/Admin/class-settings-page.php:307
+msgid "WooCommerce active currency only"
+msgstr ""
+
+#: src/Admin/class-settings-page.php:311
+msgid "Design and form fields"
+msgstr ""
+
+#: src/Admin/class-settings-page.php:312
+msgid ""
+"Colors, form fields, product placement and the product list stay in the "
+"classic settings screen. Nothing was removed."
+msgstr ""
+
+#: src/Admin/class-settings-page.php:313
+msgid "Open classic settings"
+msgstr ""
+
+#: src/Admin/class-settings-page.php:324
+msgid "Modules that are off load nothing, so they never slow your site down."
+msgstr ""
+
+#: src/Admin/class-settings-page.php:344
+msgid ""
+"Leave a field empty to use the built-in wording. The built-in wording is "
+"translated for you."
+msgstr ""
+
+#: src/Admin/class-settings-page.php:346
+msgid "Thank-you message"
+msgstr ""
+
+#: src/Admin/class-settings-page.php:347
+msgid "Shown on the thank-you screen after a donation."
+msgstr ""
+
+#: src/Admin/class-settings-page.php:352
+msgid "Celebration animation"
+msgstr ""
+
+#: src/Admin/class-settings-page.php:353
+msgid ""
+"A short, gentle animation. It switches off by itself for visitors who prefer "
+"reduced motion."
+msgstr ""
+
+#: src/Admin/class-settings-page.php:358
+msgid "Share button"
+msgstr ""
+
+#: src/Admin/class-settings-page.php:359
+msgid "Lets donors share the campaign after giving."
+msgstr ""
+
+#: src/Admin/class-settings-page.php:365
+msgid ""
+"One per line: amount = phrase. Add \"singular|plural\" for two forms. "
+"Example: 25 = 1 food parcel|food parcels"
+msgstr ""
+
+#: src/Admin/class-settings-page.php:370
+msgid "Tax relief: step title"
+msgstr ""
+
+#: src/Admin/class-settings-page.php:371
+msgid "Short label for the step."
+msgstr ""
+
+#: src/Admin/class-settings-page.php:376
+msgid "Tax relief: heading"
+msgstr ""
+
+#: src/Admin/class-settings-page.php:377
+msgid "The question heading the donor sees."
+msgstr ""
+
+#: src/Admin/class-settings-page.php:382
+msgid "Tax relief: explanation"
+msgstr ""
+
+#: src/Admin/class-settings-page.php:383
+msgid ""
+"A sentence or two explaining the declaration. Link to your privacy page from "
+"your site, not here."
+msgstr ""
+
+#: src/Admin/class-settings-page.php:388
+msgid "Tax relief: checkbox wording"
+msgstr ""
+
+#: src/Admin/class-settings-page.php:389
+msgid "The sentence next to the tick box. It is never ticked in advance."
+msgstr ""
+
+#: src/Admin/class-settings-page.php:403
+msgid "Settings screen"
+msgstr ""
+
+#: src/Admin/class-settings-page.php:404
+msgid ""
+"Switch back to the classic settings screen at any time. Your settings are "
+"kept either way."
+msgstr ""
+
+#: src/Admin/class-settings-page.php:409
+msgid "This simple screen"
+msgstr ""
+
+#: src/Admin/class-settings-page.php:410
+msgid "Classic screen"
+msgstr ""
+
+#: src/Admin/class-settings-page.php:418
+msgid "Run the short setup again. It only changes the options you confirm."
+msgstr ""
+
+#: src/Admin/class-settings-page.php:419
+msgid "Open quick setup"
+msgstr ""
+
+#: src/Admin/class-settings-page.php:422
+msgid "Delete data when the plugin is deleted"
+msgstr ""
+
+#: src/Admin/class-settings-page.php:423
+msgid "When off, your orders and donation records are always kept."
+msgstr ""
+
+#: src/Admin/class-settings-page.php:445
+msgid "Goal, amount raised and donors"
+msgstr ""
+
+#: src/Admin/class-settings-page.php:447
+msgid "Your gift provides 2 food parcels"
+msgstr ""
+
+#: src/Admin/class-settings-page.php:448
+msgid "I would like to make a tax relief declaration"
+msgstr ""
+
+#: src/Admin/class-settings-page.php:449
+msgid "Sign in to see My donations"
+msgstr ""
+
+#: src/Admin/class-settings-page.php:451
+msgid "Totals from real donations"
+msgstr ""
+
+#: src/Admin/class-settings-page.php:452
+msgid ""
+"A simplified sketch. Colors and fonts come from your theme. Mobile always "
+"uses a bottom sheet."
+msgstr ""
+
+#: src/Admin/class-setup-wizard.php:127
+msgid "Store country"
+msgstr ""
+
+#: src/Admin/class-setup-wizard.php:129
+msgid "Decimals and separators"
+msgstr ""
+
+#: src/Admin/class-setup-wizard.php:129
+msgid "Follow your WooCommerce settings"
+msgstr ""
+
+#: src/Admin/class-setup-wizard.php:130
+msgid "Colors and fonts"
+msgstr ""
+
+#: src/Admin/class-setup-wizard.php:130
+msgid "Inherited from your theme"
+msgstr ""
+
+#: src/Admin/class-setup-wizard.php:155
+msgid "Defaults"
+msgstr ""
+
+#: src/Admin/class-setup-wizard.php:156
+msgid "First product"
+msgstr ""
+
+#: src/Admin/class-setup-wizard.php:157
+msgid "Done"
+msgstr ""
+
+#: src/Admin/class-setup-wizard.php:162
+msgid "Four short steps. You can change everything later in Settings."
+msgstr ""
+
+#: src/Admin/class-setup-wizard.php:175
+msgid "What do you want to achieve?"
+msgstr ""
+
+#: src/Admin/class-setup-wizard.php:176
+msgid ""
+"Pick the closest one. It only sets which optional features start switched on."
+msgstr ""
+
+#: src/Admin/class-setup-wizard.php:178
+msgid "Simple donations"
+msgstr ""
+
+#: src/Admin/class-setup-wizard.php:178
+msgid "A clean donate button and a thank-you screen. Nothing else."
+msgstr ""
+
+#: src/Admin/class-setup-wizard.php:179
+msgid "A fundraising campaign"
+msgstr ""
+
+#: src/Admin/class-setup-wizard.php:179
+msgid "Adds a goal and progress bar, and short impact phrases next to amounts."
+msgstr ""
+
+#: src/Admin/class-setup-wizard.php:180
+msgid "Regular supporters"
+msgstr ""
+
+#: src/Admin/class-setup-wizard.php:180
+msgid "Adds donor accounts so supporters can see their gifts and give again."
+msgstr ""
+
+#: src/Admin/class-setup-wizard.php:190
+msgid "Smart defaults"
+msgstr ""
+
+#: src/Admin/class-setup-wizard.php:191
+msgid ""
+"Donation Panel reads your WooCommerce settings as they are. There is nothing "
+"for you to do."
+msgstr ""
+
+#: src/Admin/class-setup-wizard.php:196
+msgid "Try the new donation form"
+msgstr ""
+
+#: src/Admin/class-setup-wizard.php:196
+msgid "Optional. Off keeps the classic form, which is the safe default."
+msgstr ""
+
+#: src/Admin/class-setup-wizard.php:201
+msgid "Your first donation product"
+msgstr ""
+
+#: src/Admin/class-setup-wizard.php:202
+msgid ""
+"Donation Panel works on your existing WooCommerce products. This wizard does "
+"not create products."
+msgstr ""
+
+#. translators: %d: number of products that currently act as donation products.
+#: src/Admin/class-setup-wizard.php:204
+#, php-format
+msgid "%d product currently works as a donation product."
+msgid_plural "%d products currently work as donation products."
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/Admin/class-setup-wizard.php:205
+msgid "Open your products"
+msgstr ""
+
+#: src/Admin/class-setup-wizard.php:206
+msgid ""
+"Open a product, then use the Donation tab in the product data box to turn it "
+"into a donation product."
+msgstr ""
+
+#: src/Admin/class-setup-wizard.php:209
+msgid "You are ready"
+msgstr ""
+
+#: src/Admin/class-setup-wizard.php:210
+msgid ""
+"We will save these choices. Place the button with the shortcode below, with "
+"the block, or let automatic placement do it."
+msgstr ""
+
+#: src/Admin/class-setup-wizard.php:212
+msgid "On a product page the shortcode finds its own product. No ID needed."
+msgstr ""
+
+#: src/Admin/class-setup-wizard.php:217
+msgid "Save and finish"
+msgstr ""
+
+#: src/Admin/class-setup-wizard.php:218
+msgid "Skip for now"
 msgstr ""
 
 #. translators: %s: formatted goal amount
@@ -5341,12 +5938,6 @@ msgstr ""
 
 #: src/Modules/TaxRelief/class-tax-relief-declaration.php:59
 msgid "Tax relief"
-msgstr ""
-
-#: src/Modules/TaxRelief/class-tax-relief-declaration.php:60
-#: src/Modules/TaxRelief/class-tax-relief-module.php:161
-#: src/Modules/TaxRelief/class-tax-relief-module.php:203
-msgid "Tax relief declaration"
 msgstr ""
 
 #: src/Modules/TaxRelief/class-tax-relief-declaration.php:61

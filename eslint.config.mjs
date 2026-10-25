@@ -21,4 +21,12 @@ export default [
       globals: { ...globals.browser, jQuery: 'readonly', wp: 'readonly', elementor: 'readonly', elementorFrontend: 'readonly', wdpData: 'readonly' },
     },
   },
+  {
+    files: ['src/**/assets/**/*.js'],
+    languageOptions: {
+      ecmaVersion: 2022,
+      sourceType: 'script',
+      globals: { ...globals.browser },
+    },
+  },
 ];
