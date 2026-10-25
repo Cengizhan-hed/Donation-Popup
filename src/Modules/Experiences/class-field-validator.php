@@ -86,7 +86,7 @@ final class Field_Validator {
 			}
 			if ( '' === $value ) {
 				if ( ! empty( $field['required'] ) ) {
-					$errors[ $name ] = __( 'Full name is required.', 'woo-donation-popup' );
+					$errors[ $name ] = isset( $field['required_msg'] ) ? (string) $field['required_msg'] : __( 'This field is required.', 'woo-donation-popup' );
 				}
 				continue;
 			}
@@ -99,7 +99,7 @@ final class Field_Validator {
 				$errors[ $name ] = __( 'Please enter a valid email address.', 'woo-donation-popup' );
 			}
 			if ( 'tel' === $type && ( preg_match( '/[^0-9+\s\-()]/', $value ) || strlen( preg_replace( '/\D/', '', $value ) ) < 6 ) ) {
-				$errors[ $name ] = __( 'Please enter a valid phone number.', 'woo-donation-popup' );
+				$errors[ $name ] = __( 'Please check the phone number.', 'woo-donation-popup' );
 			}
 		}
 

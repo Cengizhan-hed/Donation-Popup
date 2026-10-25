@@ -161,7 +161,16 @@ test.describe('form çekirdeği (yeni motor)', () => {
   test('Türkçe karakterli alanlar doğrulamadan geçer ve sepete gider', async ({ page }) => {
     await load(page, 'inline');
     await page.locator('[data-dp-preset]').first().click();
+    let body = '';
+    page.on('response', (r) => {
+      if (r.url().includes('admin-ajax.php')) {
+        r.text().then((t) => {
+          body = t;
+        }, () => {});
+      }
+    });
     await page.locator('input[name="donation_full_name"]').fill('Çağlar Şükrü Öztürk İğdır');
+    await page.locator('input[name="donation_phone"]').fill('+44 7700 900123');
     await page.locator('textarea[name="donation_note"]').fill('Ğüşiöç ĞÜŞİÖÇ notu');
     const validate = page.waitForResponse((r) => r.url().includes('/donation-panel/v1/validate'));
     const add = page.waitForResponse((r) => r.url().includes('admin-ajax.php') && (r.request().postData() || '').includes('wdp_ajax_add_to_cart'));

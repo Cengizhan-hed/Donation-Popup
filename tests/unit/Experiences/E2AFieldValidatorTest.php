@@ -94,6 +94,7 @@ final class E2AFieldValidatorTest extends TestCase {
 		);
 		$this->assertFalse( $result['valid'] );
 		$this->assertSame( array( 'amount', 'donation_full_name', 'donation_phone', 'donation_email' ), array_keys( $result['errors'] ) );
+		$this->assertNotSame( '', $result['errors']['donation_full_name'] );
 	}
 
 	public function test_fractional_amount_rejected_when_currency_has_no_decimals(): void {

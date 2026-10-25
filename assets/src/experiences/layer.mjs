@@ -67,20 +67,28 @@ export function createLayer(root) {
     if (event.key !== 'Tab') {
       return;
     }
+    // Tab sırası tarayıcıdan bağımsız, açıkça yönetilir (WebKit düğmeleri atlayabilir).
     const items = focusables(surface);
+    event.preventDefault();
     if (!items.length) {
-      event.preventDefault();
       surface.focus();
       return;
     }
-    const first = items[0];
-    const last = items[items.length - 1];
-    if (event.shiftKey && (document.activeElement === first || document.activeElement === surface)) {
-      event.preventDefault();
-      last.focus();
-    } else if (!event.shiftKey && document.activeElement === last) {
-      event.preventDefault();
-      first.focus();
+    const index = items.indexOf(document.activeElement);
+    let next;
+    if (index === -1) {
+      next = event.shiftKey ? items.length - 1 : 0;
+    } else {
+      next = (index + (event.shiftKey ? -1 : 1) + items.length) % items.length;
+    }
+    items[next].focus();
+  };
+
+  // Odak yüzeyin dışına kaçarsa (ör. Tab sırasını farklı yöneten tarayıcılar) geri alınır.
+  const onFocusIn = (event) => {
+    if (opened && !surface.contains(event.target)) {
+      const items = focusables(surface);
+      (items[0] || surface).focus({ preventScroll: true });
     }
   };
 
@@ -94,6 +102,7 @@ export function createLayer(root) {
     trigger.setAttribute('aria-expanded', 'true');
     document.documentElement.classList.add('dp-lock');
     document.addEventListener('keydown', onKeydown, true);
+    document.addEventListener('focusin', onFocusIn);
     if (viewport) {
       viewport.addEventListener('resize', fitViewport);
       viewport.addEventListener('scroll', fitViewport);
@@ -114,6 +123,7 @@ export function createLayer(root) {
     trigger.setAttribute('aria-expanded', 'false');
     document.documentElement.classList.remove('dp-lock');
     document.removeEventListener('keydown', onKeydown, true);
+    document.removeEventListener('focusin', onFocusIn);
     if (viewport) {
       viewport.removeEventListener('resize', fitViewport);
       viewport.removeEventListener('scroll', fitViewport);

@@ -142,7 +142,10 @@ export function createForm(root, hooks = {}) {
 
   const focusFirstError = () => {
     const name = Object.keys(state.errors)[0];
-    const target = name === 'amount' ? form.querySelector('[role="radio"][tabindex="0"], input[name="amount"]') : form.querySelector(`[name="${name}"]`);
+    const target =
+      name === 'amount'
+        ? form.querySelector('input[name="amount"]:not([type="hidden"])') || form.querySelector('[role="radio"][tabindex="0"]')
+        : form.querySelector(`[name="${name}"]`);
     if (target) {
       target.focus();
     }

@@ -142,6 +142,7 @@ final class E2AFormControllerTest extends TestCase {
 					'product_id'         => '7',
 					'amount'             => '100',
 					'donation_full_name' => 'Çağlar Öztürk',
+					'donation_phone'     => '+44 7700 900123',
 				),
 				array( 'X-WP-Nonce' => 'abc' )
 			)
