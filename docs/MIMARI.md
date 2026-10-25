@@ -17,12 +17,12 @@ Kural: her iddia `dosya:satır`; emin olunmayan yerler **DOĞRULANMADI**.
 | `includes/config/` | JS/CSS stack, stil paketleri, form modül sırası | `includes/config/frontend-js-stack.php`, `includes/config/frontend-css-stack.php` |
 | `includes/traits/` | AJAX / assets / utils parçaları | `includes/class-ajax.php:12-27` |
 | `includes/templates/` | Modal kabuk, alan, kampanya header, SVG | `tools/file-descriptions.json` (satır 76–79) |
-| `includes/elementor/` | Elementor widget sınıfları | `includes/class-elementor.php` |
+| `src/Modules/EntryPoints/` | Giriş noktaları modülü (E1): kısa kod, blok, otomatik yerleşim, yedek düğme, ürün çözücü, Elementor ince katmanı (`Elementor/`) | bkz. "Giriş noktaları modülü (E1)" |
 | `includes/compat/` | Uyumluluk: `class-compat-loader.php` (boş kayıt; K8: para birimi bağdaştırıcıları çekirdekten kaldırıldı, Curcy köprüsü `docs/site-snippets/curcy-bridge.php`), `class-builder-detect.php` (yalnız genel WordPress sinyalleriyle düzenleyici/önizleme tespiti) | `includes/compat/` |
 | `includes/i18n/` | JS sözlük sınıfı (`WDP_Js_I18n`) | `includes/i18n/class-wdp-js-i18n.php` |
 | `languages/` | `.pot` / `tr_TR.po|.mo` (parts/ dağıtıma girmez) | `.distignore` `languages/parts/` |
 | `templates/woocommerce/` | Simple add-to-cart şablon override | `templates/woocommerce/single-product/add-to-cart/simple.php` |
-| `blocks/` | Gutenberg `donation-form` + `donations` | `includes/class-blocks.php:34-63` |
+| `blocks/` | Gutenberg `donation-form` + `donations` | `src/Modules/EntryPoints/class-blocks.php:34-63` |
 | `assets/js/src/` | Ön yüz JS kaynakları | `includes/config/frontend-js-stack.php` |
 | `assets/js/build/` | Hash’li JS bundle + `manifest.json` | `tools/build-js-bundle.php:11-12` |
 | `assets/css/src/` | Ön yüz CSS kaynakları | `includes/config/frontend-css-stack.php` |
@@ -96,21 +96,21 @@ Kural: her iddia `dosya:satır`; emin olunmayan yerler **DOĞRULANMADI**.
 | `woocommerce_order_item_display_meta_key/value` | 10 | etiket çevirisi | `includes/class-order-meta-keys.php:345-346` |
 | `wp_privacy_personal_data_exporters` | 10 | exporter | `includes/class-privacy.php:26` |
 | `wp_privacy_personal_data_erasers` | 5 | eraser | `includes/class-privacy.php:28` |
-| `wp` | 20 | native ATC unhook + fallback | `includes/class-product-page-integration.php:49` |
-| `body_class` / `post_class` | 10 | CSS sınıfları | `includes/class-product-page-integration.php:50-51` |
-| `wp_head` | 30 | hide cart CSS | `includes/class-product-page-integration.php:52` |
-| `wc_get_template` / `woocommerce_locate_template` | 20 | şablon override | `includes/class-product-page-integration.php:54-55` |
-| `woocommerce_get_price_html` | 20 | fiyat gizle | `includes/class-product-page-integration.php:57` |
+| `wp` | 20 | native ATC unhook + fallback | `src/Modules/EntryPoints/class-auto-placement.php:49` |
+| `body_class` / `post_class` | 10 | CSS sınıfları | `src/Modules/EntryPoints/class-auto-placement.php:50-51` |
+| `wp_head` | 30 | hide cart CSS | `src/Modules/EntryPoints/class-auto-placement.php:52` |
+| `wc_get_template` / `woocommerce_locate_template` | 20 | şablon override | `src/Modules/EntryPoints/class-auto-placement.php:54-55` |
+| `woocommerce_get_price_html` | 20 | fiyat gizle | `src/Modules/EntryPoints/class-auto-placement.php:57` |
 | `woocommerce_is_purchasable` | 20 | custom/campaign boş fiyat | `includes/class-donation-purchasable.php:24` |
-| `woocommerce_loop_add_to_cart_link` | 10 | döngü Bağış Yap | `includes/class-product-page-integration.php:58` |
-| `woocommerce_product_add_to_cart_text/url` | 20 | metin/URL | `includes/class-product-page-integration.php:59-60` |
-| `woocommerce_product_supports` | 20 | ajax_add_to_cart vs. | `includes/class-product-page-integration.php:61` |
-| `render_block_woocommerce/*` | 10 | blok sepete ekle/fiyat/buton | `includes/class-product-page-integration.php:63-66` |
-| `woocommerce_single_product_summary` | 21/30 | fallback form | `includes/class-product-page-integration.php:107` |
-| `woocommerce_after_single_product_summary` | 5 | below_summary | `includes/class-product-page-integration.php:103` |
-| `init` | default | Gutenberg blok kaydı | `includes/class-blocks.php:28` |
-| `elementor/widgets/register` | default | widget | `includes/class-elementor.php:22-26` |
-| `elementor/elements/categories_registered` | default | kategori | `includes/class-elementor.php:23-27` |
+| `woocommerce_loop_add_to_cart_link` | 10 | döngü Bağış Yap | `src/Modules/EntryPoints/class-auto-placement.php:58` |
+| `woocommerce_product_add_to_cart_text/url` | 20 | metin/URL | `src/Modules/EntryPoints/class-auto-placement.php:59-60` |
+| `woocommerce_product_supports` | 20 | ajax_add_to_cart vs. | `src/Modules/EntryPoints/class-auto-placement.php:61` |
+| `render_block_woocommerce/*` | 10 | blok sepete ekle/fiyat/buton | `src/Modules/EntryPoints/class-auto-placement.php:63-66` |
+| `woocommerce_single_product_summary` | 21/30 | fallback form | `src/Modules/EntryPoints/class-auto-placement.php:107` |
+| `woocommerce_after_single_product_summary` | 5 | below_summary | `src/Modules/EntryPoints/class-auto-placement.php:103` |
+| `init` | default | Gutenberg blok kaydı | `src/Modules/EntryPoints/class-blocks.php:28` |
+| `elementor/widgets/register` | default | widget | `src/Modules/EntryPoints/Elementor/class-elementor-compat.php:22-26` |
+| `elementor/elements/categories_registered` | default | kategori | `src/Modules/EntryPoints/Elementor/class-elementor-compat.php:23-27` |
 | `template_redirect` | 0 | form matrix | `includes/class-form-matrix.php:21` |
 | `set_object_terms` + stok/kategori | 10 | liste cache bump | `includes/class-donations-list.php:38-43` |
 | `wp_footer` | 20 | liste schema | `includes/class-donations-list.php:177` |
@@ -212,7 +212,7 @@ Ek progress meta: `_wdp_total_donation_amount`, `_wdp_donor_count`, `_wdp_progre
 
 **10.31.0 hedef / toplanan:** `WDP_Campaign_Goal` (hedefe ulaşma kararı, message/close/continue); `WDP_Progress_Currency` (`wdp_progress_convert_amount` — Curcy `wmc_order_info` / rate, sert bağımlılık yok). Toplanan = paid statuses − cover fee; boş meta → cron `wdp_recalculate_product_donation_total` (ziyaretçi taraması yok). Çubuk yüzdesi = onaylı toplam / hedef (`WDP_Campaign_Goal::compute_percent`).
 
-**Faz 6-A/6-B (bağdaştırıcı ayrımı):** Çekirdek yalnız filtre + Woo verisi kullanır. `WDP_Progress_Currency::get_order_rate` -> `wdp_order_exchange_rate` (null, order, currency, base); canlı kur -> `wdp_progress_live_rate`; (K8: `WDP_Compat_Currency` kaldırıldı; Curcy/WOOCS okuyucuları site snippet'inde, `docs/site-snippets/`.) Ön yüz: `wdp_ajax.context` = `{currency, lang, currency_cookies[], lang_cookies[], switcher_selectors[], change_events[]}` (`wdp_client_context` filtresi); `lazy-modal.js` eklenti adı bilmez. `cart/woo.js` Avada seçicileri kaldırıldı (genel `menu-cart`/`widget-cart`/`shopping-cart` seçicileri + zaten tetiklenen standart `wc_fragment_refresh`). Oluşturucu tespiti: `WDP_Builder_Detect` genel kurallarla (`edit_products` + Gutenberg block-renderer, `is_preview()`/`is_customize_preview()`, anahtarı edit/preview/builder/fb parçası içeren dolu sorgu değişkeni) karar verir; adı bilinmeyen oluşturucu da çalışır; site sahibi ek işareti `wdp_is_builder_preview` / `wdp_builder_preview_context_product` filtreleriyle ekleyebilir (F6G: marka bazlı `WDP_Compat_Builders` kaldırıldı). Ürün sayfası yedeği (`render_builder_fallback`) zaten kanca tabanlıdır (şablon geçersiz kılma çalıştı mı).
+**Faz 6-A/6-B (bağdaştırıcı ayrımı):** Çekirdek yalnız filtre + Woo verisi kullanır. `WDP_Progress_Currency::get_order_rate` -> `wdp_order_exchange_rate` (null, order, currency, base); canlı kur -> `wdp_progress_live_rate`; (K8: `WDP_Compat_Currency` kaldırıldı; Curcy/WOOCS okuyucuları site snippet'inde, `docs/site-snippets/`.) Ön yüz: `wdp_ajax.context` = `{currency, lang, currency_cookies[], lang_cookies[], switcher_selectors[], change_events[]}` (`wdp_client_context` filtresi); `lazy-modal.js` eklenti adı bilmez. `cart/woo.js` Avada seçicileri kaldırıldı (genel `menu-cart`/`widget-cart`/`shopping-cart` seçicileri + zaten tetiklenen standart `wc_fragment_refresh`). Oluşturucu tespiti: `Builder_Detect` genel kurallarla (`edit_products` + Gutenberg block-renderer, `is_preview()`/`is_customize_preview()`, anahtarı edit/preview/builder/fb parçası içeren dolu sorgu değişkeni) karar verir; adı bilinmeyen oluşturucu da çalışır; site sahibi ek işareti `wdp_is_builder_preview` / `wdp_builder_preview_context_product` filtreleriyle ekleyebilir (F6G: marka bazlı `WDP_Compat_Builders` kaldırıldı). Ürün sayfası yedeği (`render_builder_fallback`) zaten kanca tabanlıdır (şablon geçersiz kılma çalıştı mı).
 
 **10.32.0 ürün teması:** `WDP_Form_Modules::resolve_product_primary_color` / `resolve_product_shell_primary` (ürün → genel; kategori rengi K5 ile kaldırıldı; `_theme_inherit_category_color` okunmaz). `build_product_theme_style` → `WDP_Color_Palette::from_hex` türevleri + `--wdp-on-primary`; hover boşsa türetilmiş; koyu `--wdp-modal-bg` için metin token’ları. Köşe `PRODUCT_THEME_RADIUS_MIN/MAX` (4–32) + `product_radius_ladder` (panel/sheet oranı). Kampanya görseli URL: filtre `wdp_campaign_media_url` (`class-campaign-header-renderer.php`).
 
@@ -299,12 +299,12 @@ E2E bağışçı akışı ziyaretçi (`asVisitor`, storageState yok): ürün say
 
 | Tag | Render | Dosya:satır |
 |-----|--------|-------------|
-| `[wdp_donation_button]` | popup buton+modal | `includes/class-shortcodes.php:21,33-40` |
-| `[wdp_donation_button_panel]` | side panel | `includes/class-shortcodes.php:22,49-56` |
-| `[wdp_donation_form]` | gömülü form | `includes/class-shortcodes.php:23,65-72` |
-| `[wdp_donations]` | liste ızgara | `includes/class-shortcodes.php:24` → `WDP_Donations_List::shortcode` |
+| `[wdp_donation_button]` | popup buton+modal | `src/Modules/EntryPoints/class-shortcodes.php:21,33-40` |
+| `[wdp_donation_button_panel]` | side panel | `src/Modules/EntryPoints/class-shortcodes.php:22,49-56` |
+| `[wdp_donation_form]` | gömülü form | `src/Modules/EntryPoints/class-shortcodes.php:23,65-72` |
+| `[wdp_donations]` | liste ızgara | `src/Modules/EntryPoints/class-shortcodes.php:24` → `WDP_Donations_List::shortcode` |
 
-Ürün çözümleme: `WDP_Product_Resolver` + `resolve_for_output`. `id`/`slug`/`sku` açıkça verilirse bağış kapsamı atlanır.
+Ürün çözümleme: `Product_Resolver` + `resolve_for_output`. `id`/`slug`/`sku` açıkça verilirse bağış kapsamı atlanır.
 
 Liste önbelleği bump (10.33.0 + 10.34.0; aynı istekte bir kez): stok/kategori (önceki) + `woocommerce_update_product`, `woocommerce_new_product`, `save_post_product`, `trashed_post` / `untrashed_post` / `before_delete_post`, `transition_post_status`, fiyat/ilerleme meta (`_price` `_regular_price` `_sale_price` `_wdp_total_donation_amount` `_wdp_donor_count`), bağış sekmesi kaydı (`on_product_settings_save`), sipariş durum / iade. 10.34.0 `step_10_34_0` bir kez sürüm artırır (kart HTML değişti).
 
@@ -314,9 +314,9 @@ Liste önbelleği bump (10.33.0 + 10.34.0; aynı istekte bir kez): stok/kategori
 
 **Şart b E2E (10.34.1, görev 2b):** Hedef (`allowMetaMutation`): custom + campaign ürününde `_regular_price`/`_price` geçici boşaltılır (`saveProductPrices`), liste önbelleği bump, (1) listede `data-product-id` görünür (2) ürün sayfası Bağış Yap (3) sepete eklenir tutar doğru (4) custom kartta sabit fiyat yok / HTML bozuk değil; `finally` eski fiyata döner — geri yükleme hatası testi fail eder. Ikram: gerçek fiyata dokunulmaz; `private` + `catalog hidden` + `_wdp_e2e_test=1` geçici custom ürün; `asAdmin` tam permalink (`pathname` `?p=` düşürmez) + sepet; `deleteMarkedProduct` (işaretsiz silinmez). Liste görünürlüğü Ikram’da atlanır. Coming soon değişmez.
 
-**Ürün sayfası auto_place yedek (10.34.1):** Özel ürün şablonu Woo sepete-ekle öğesi içermezse şablon override ve summary kancası çalışmaz. `auto_place=yes` iken `render_builder_fallback` bir kez basar (`woocommerce_after_single_product` + `wp_footer`); `has_product_ui` / `template_override_used` varsa boş. `includes/class-product-page-integration.php`.
+**Ürün sayfası auto_place yedek (10.34.1):** Özel ürün şablonu Woo sepete-ekle öğesi içermezse şablon override ve summary kancası çalışmaz. `auto_place=yes` iken `render_builder_fallback` bir kez basar (`woocommerce_after_single_product` + `wp_footer`); `has_product_ui` / `template_override_used` varsa boş. `src/Modules/EntryPoints/class-auto-placement.php`.
 
-**Giriş noktası yedeği ve ID'siz çözüm (Faz 7-A):** Tespit tema/oluşturucu adını bilmez; yalnız standart Woo kancaları + istek içi kayıt defteri (`WDP_Render_Registry`): kısa kod/blok/widget/şablon override/başka bir snippet'ten `do_shortcode` ile çağrılan çıktı `mark_trigger` / `claim_form` ile kayıtlanır, `has_product_ui` bunu okur. `render_builder_fallback` `woocommerce_after_single_product` **öncelik 999** (`FALLBACK_PRIORITY`) + `wp_footer` 4'te çalışır; ürün sayfası, bağış ürünü, genel `auto_place=yes`, ürün `_wdp_auto_place!=no`, kısa kod yok ve `has_product_ui` yok ise düğmeyi/formu `wdp-auto-place-fallback` içinde bir kez basar. Otomatik çizilen giriş `mark_auto` ile işaretlenir; **sonradan** aynı ürün için gelen açık kısa kod/blok/widget çıktısı boş döner (`WDP_Shortcodes::auto_entry_already_drawn`; tek giriş kuralı; builder önizlemede ve `wdp_allow_multiple_entries` filtresi `true` iken uygulanmaz). Blok tema `woocommerce/add-to-cart-form`: blok kendi çağrısında şablon override ile girişi zaten bastıysa `filter_block_add_to_cart` içeriği korur (`html_has_entry`), yalnız başka giriş varsa yerli içeriği atar. ID'siz kısa kod/blok/widget (`WDP_Product_Resolver::resolve`): `id/slug/sku` → blok `postId` → global `$product` → `is_product()` + sorgulanan ID → `get_queried_object()` ürün yazısı → global `$post` ürün yazısı → `get_the_ID()` → oluşturucu önizleme; çözülemezse çıktı ziyaretçi için sessizce boş (uyarı yalnız yönetici/önizleme). Kısa kod adları/öznitelikleri değişmez (`CompatibilityContractTest`). Testler: `tests/unit/EntryPointFallbackTest.php`; yerel HTTP e2e `npm run e2e:entry-points` (`tests/e2e/run-entry-points.mjs`; temalar `matrix.json` `entryPoints.themes`: twentytwentyfive, storefront, blocksy; test mu-plugin'i `tests/e2e/helpers/wdp-entry-sim.php` `[hd_panel_buton]` benzeri snippet'i ve Avada/Elementor benzeri "özet kancasında add-to-cart yok" düzenini (`builder_no_atc`) taklit eder; gerçek Avada yerelde kurulamaz).
+**Giriş noktası yedeği ve ID'siz çözüm (Faz 7-A):** Tespit tema/oluşturucu adını bilmez; yalnız standart Woo kancaları + istek içi kayıt defteri (`WDP_Render_Registry`): kısa kod/blok/widget/şablon override/başka bir snippet'ten `do_shortcode` ile çağrılan çıktı `mark_trigger` / `claim_form` ile kayıtlanır, `has_product_ui` bunu okur. `render_builder_fallback` `woocommerce_after_single_product` **öncelik 999** (`FALLBACK_PRIORITY`) + `wp_footer` 4'te çalışır; ürün sayfası, bağış ürünü, genel `auto_place=yes`, ürün `_wdp_auto_place!=no`, kısa kod yok ve `has_product_ui` yok ise düğmeyi/formu `wdp-auto-place-fallback` içinde bir kez basar. Otomatik çizilen giriş `mark_auto` ile işaretlenir; **sonradan** aynı ürün için gelen açık kısa kod/blok/widget çıktısı boş döner (`Shortcodes::auto_entry_already_drawn`; tek giriş kuralı; builder önizlemede ve `wdp_allow_multiple_entries` filtresi `true` iken uygulanmaz). Blok tema `woocommerce/add-to-cart-form`: blok kendi çağrısında şablon override ile girişi zaten bastıysa `filter_block_add_to_cart` içeriği korur (`html_has_entry`), yalnız başka giriş varsa yerli içeriği atar. ID'siz kısa kod/blok/widget (`Product_Resolver::resolve`): `id/slug/sku` → blok `postId` → global `$product` → `is_product()` + sorgulanan ID → `get_queried_object()` ürün yazısı → global `$post` ürün yazısı → `get_the_ID()` → oluşturucu önizleme; çözülemezse çıktı ziyaretçi için sessizce boş (uyarı yalnız yönetici/önizleme). Kısa kod adları/öznitelikleri değişmez (`CompatibilityContractTest`). Testler: `tests/unit/EntryPointFallbackTest.php`; yerel HTTP e2e `npm run e2e:entry-points` (`tests/e2e/run-entry-points.mjs`; temalar `matrix.json` `entryPoints.themes`: twentytwentyfive, storefront, blocksy; test mu-plugin'i `tests/e2e/helpers/wdp-entry-sim.php` `[hd_panel_buton]` benzeri snippet'i ve Avada/Elementor benzeri "özet kancasında add-to-cart yok" düzenini (`builder_no_atc`) taklit eder; gerçek Avada yerelde kurulamaz).
 
 **Tutar etiketi koşulu (10.34.2):** Görünür “Bağış Tutarı” yalnız gerçek tutar *girişi* olan türlerde (bağışçı belirler `render_custom_price_amount_row`, hedefli/kampanya `render_progress_amount_block`). Sabit tutar `render_fixed_price_quantity_row` fiyat kutusu + adet (eşit ızgara); etiket yok (yalnız `screen-reader-text` / `aria-label`). Hisselide tutar girişi yok → etiket yok. CSS ile gizleme yok. `includes/templates/class-form-fields-renderer.php`.
 
@@ -326,24 +326,45 @@ Liste önbelleği bump (10.33.0 + 10.34.0; aynı istekte bir kez): stok/kategori
 
 | Blok | Kayıt | Render |
 |------|-------|--------|
-| `blocks/donation-form` | `WDP_Blocks::register` `includes/class-blocks.php:52-57` | shortcode benzeri (`includes/class-blocks.php:72+`) |
-| `blocks/donations` | `includes/class-blocks.php:58-62` | liste |
+| `blocks/donation-form` | `Blocks::register` `src/Modules/EntryPoints/class-blocks.php:52-57` | shortcode benzeri (`src/Modules/EntryPoints/class-blocks.php:72+`) |
+| `blocks/donations` | `src/Modules/EntryPoints/class-blocks.php:58-62` | liste |
 
 ### Elementor
 
-`WDP_Elementor` widget kaydı (`includes/class-elementor.php`); widget’lar shortcode fonksiyonlarını çağırır (`includes/elementor/class-widget-*.php`). Liste `image_size` + `columns_tablet`/`columns_mobile` → `WDP_Elementor_Widget_Donations_List::atts_from_settings`. Ayrıntı: "Genel ilke (F6G)".
+`DonationPanel\Modules\EntryPoints\Elementor\Elementor_Compat` widget kaydı (`src/Modules/EntryPoints/Elementor/class-elementor-compat.php`); widget’lar shortcode fonksiyonlarını çağırır (`src/Modules/EntryPoints/Elementor/class-*-widget.php`). Liste `image_size` + `columns_tablet`/`columns_mobile` → `Donations_List_Widget::atts_from_settings`. Ayrıntı: "Genel ilke (F6G)".
 
 ### Ürün sayfası / mağaza
 
-- Kapı: `WDP_Placement_Settings::value('auto_place')==='yes'` (`includes/class-product-page-integration.php:43-45`)
-- Şablon: `templates/woocommerce/single-product/add-to-cart/simple.php` via `wc_get_template` / `locate_template` filtreleri (`includes/class-product-page-integration.php:54-55`)
-- Döngü: `woocommerce_loop_add_to_cart_link` (`includes/class-product-page-integration.php:58`) — popup/panel/lazy
+- Kapı: `WDP_Placement_Settings::value('auto_place')==='yes'` (`src/Modules/EntryPoints/class-auto-placement.php:43-45`)
+- Şablon: `templates/woocommerce/single-product/add-to-cart/simple.php` via `wc_get_template` / `locate_template` filtreleri (`src/Modules/EntryPoints/class-auto-placement.php:54-55`)
+- Döngü: `woocommerce_loop_add_to_cart_link` (`src/Modules/EntryPoints/class-auto-placement.php:58`) — popup/panel/lazy
 - Lazy modal: `data-wdp-lazy` + AJAX `wdp_render_modal` (`includes/class-lazy-modal.php`, `assets/js/src/lazy-modal.js`)
-- Native ATC unhook: `unhook_native_single_add_to_cart` (`includes/class-product-page-integration.php` `on_wp`)
-- Fallback: summary hook’ları (`includes/class-product-page-integration.php`)
+- Native ATC unhook: `unhook_native_single_add_to_cart` (`src/Modules/EntryPoints/class-auto-placement.php` `on_wp`)
+- Fallback: summary hook’ları (`src/Modules/EntryPoints/class-auto-placement.php`)
 - Ürün override: `_wdp_auto_place`
 
 ---
+
+### Giriş noktaları modülü (E1; `src/Modules/EntryPoints/`, ad alanı `DonationPanel\Modules\EntryPoints`)
+
+Eski `includes/class-{shortcodes,product-page-integration,product-resolver,blocks,elementor}.php`, `includes/elementor/*` ve `includes/compat/class-builder-detect.php` buraya taşındı; eski dosyalar silindi. Davranış birebir.
+
+| Sınıf (dosya `class-*.php`) | Sorumluluk |
+|---|---|
+| `Entry_Points_Module` (`entry-points-module`) | Modül (slug `entry_points`, varsayılan AÇIK). Açıkken `Auto_Placement::init()` çağırır. WooCommerce yoksa hiçbir şey yapmaz. |
+| `Shortcodes` | 4 kısa kod (`wdp_donation_button`, `wdp_donation_button_panel`, `wdp_donation_form`, `wdp_donations`; öznitelikler değişmez); ortak `render_button` / `render_form` (kısa kod, blok, widget, otomatik yerleşim hepsi bunu kullanır). |
+| `Blocks` | `wdp/donation-form`, `wdp/donations` (block.json `blocks/` altında kalır; PHP render). |
+| `Product_Resolver` | ID'siz çözüm sırası: id, slug, sku, blok bağlamı, global `$product`, `is_product()`, queried object, global `$post`, `get_the_ID()`, düzenleyici önizleme; `wdp_resolve_product` filtresi. Ayrıca `current_product()`, `current_product_id()`, `product_from_block()`. |
+| `Builder_Detect` | Yalnız genel WP sinyalleriyle düzenleyici/önizleme tespiti (hiçbir oluşturucu adı yok). |
+| `Auto_Placement` | Woo standart kancalarıyla otomatik yerleşim: `simple.php` şablon override (`wc_get_template`, `woocommerce_locate_template`), `wp` özet kancaları, blok `render_block_woocommerce/add-to-cart-*`, native add-to-cart söküm, gizleme CSS. Kapı: genel `auto_place=yes` + ürün `_wdp_auto_place!=='no'`. |
+| `Fallback_Button` | Yedek düğme: şablon override çalışmadıysa ve sayfada hiç giriş çizilmediyse (`woocommerce_after_single_product` öncelik 999 + `wp_footer` 4) kendi düğmesini çizer. Çift giriş asla. |
+| `Loop_Price_Filters` | Mağaza döngüsü düğmesi (popup/panel/bağlantı), sepete ekle metni/URL, ajax_add_to_cart kapatma, fiyat gizleme (`hide_price`). |
+| `Elementor\Elementor_Compat` + `Donation_Form_Widget` + `Donations_List_Widget` | Yalnız kısa kodun çıktısını döndüren ince uyumluluk katmanı (yeni özellik yok). |
+
+**Kayıt kuralı (sözleşme):** kısa kodlar, bloklar ve Elementor katmanı HER ZAMAN kayıtlıdır (`Plugin::register_entry_contract()`, yalnız WooCommerce etkinse); modül ayarı kapatılırsa yalnız otomatik yerleşim + yedek düğme + döngü/fiyat filtreleri kapanır, `Entry_Points_Module` ve bağlı sınıf dosyaları yüklenmez.
+**Tek kayıt defteri:** giriş noktası durumu (`has_product_ui`, `mark_auto`, `claim_form/modal`, `duplicate_*_notice`) `WDP_Render_Registry`'de tutulur (testli: `EntryPointFallbackTest`, `Shortcodes1033Test`); tüm giriş yolları aynı defteri kullanır, bu yüzden bir ürün sayfasında ikinci giriş çizilmez (`wdp_allow_multiple_entries` ile açılır).
+**Şablon:** `templates/woocommerce/single-product/add-to-cart/simple.php` `Auto_Placement::render_template_override()` çağırır.
+**Analiz:** `phpcs-src.xml.dist` (sıfır gevşetme; `edit_products` WooCommerce yetkisi bildirildi) ve `phpstan-src.neon` (seviye 6; `treatPhpDocTypesAsCertain: false`, legacy `includes/` yalnız taranır; Elementor klasörü temel sınıf kurulu olmadığından PHPStan'dan hariç, PHPCS'te kalır).
 
 ## g) Ayar → kod eşlemesi
 
@@ -363,7 +384,7 @@ Kaynak rehber: `docs/AYARLAR.md`. Teknik varsayılanlar normalizer / placement /
 | Hızlı tutar düğmeleri | global `enable_amount_presets==='1'` → ürün `_enable_amount_presets==='no'` gizler; yalnız custom/campaign; min altı elenir; "Önerilen" yalnız ürün `_amount_preset_recommended` dolu ve görünen listedeyse (ortadaki/genel varsayılan yok; seçili gelmez) | `render_amount_presets` (`includes/templates/class-form-fields-renderer.php`) |
 | Modül sırası | sabit varsayılan sıra (`includes/config/form-modules.php`); ürün/genel sıra ayarı K4 ile kaldırıldı, eski `_wdp_module_order` / `module_order` değerleri okunmaz | `WDP_Form_Modules::resolve_order` |
 | Güven rozetleri | global → ürün `_trust_badges` doluysa ürün | `resolve_trust_badges` (`includes/class-form-modules.php:145-175`) |
-| Otomatik yerleşim | global `auto_place` + ürün `_wdp_auto_place!=='no'` | `should_auto_place` / meta (`includes/class-product-page-integration.php`) |
+| Otomatik yerleşim | global `auto_place` + ürün `_wdp_auto_place!=='no'` | `should_auto_place` / meta (`src/Modules/EntryPoints/class-auto-placement.php`) |
 | Native sepet gizleme | bağış ürünü tekil sayfada tüm `form.cart` + `.single_add_to_cart_button` + sticky-add-to-cart (tema sınıfı yok); döngü/ilgili/upsell/koleksiyon `:not()` ile hariç | `hide_native_cart_css` yedek; asıl yol `unhook_native_single_add_to_cart` (`woocommerce_template_single_add_to_cart` + sticky callback adı) |
 | Alt bağış WC ürünü | ürün `_addon_wc_product_id` (yoksa eski `_sadaka_wc_product_id`) → yoksa success `sadaka_wc_product_id` | `WDP_Utils::resolve_addon_wc_product_id` (`includes/class-utils.php:104+`) |
 
@@ -373,7 +394,7 @@ Kaynak rehber: `docs/AYARLAR.md`. Teknik varsayılanlar normalizer / placement /
 |-----------------|--------------|------------|-------|
 | Sepete Ekle yerine Bağış | `auto_place` | `yes` (yeni kurulum defaults; option yoksa get() `auto_place=>no`) | `includes/class-placement-settings.php:33-45,84-91` |
 | Konum | `position` | `replace_cart` | aynı |
-| Görünüm | `display` | `button_panel` | `WDP_Product_Page_Integration::resolve_product_page_display` (içerikte `[wdp_donation_form]` → `inline`, `[wdp_donation_button_panel]` → `button_panel`, `[wdp_donation_button]` → `button_popup`; yoksa auto_place + bu alan). E2E katalog `display`. `data-wdp-display` düğme/form. |
+| Görünüm | `display` | `button_panel` | `DonationPanel\Modules\EntryPoints\Auto_Placement::resolve_product_page_display` (içerikte `[wdp_donation_form]` → `inline`, `[wdp_donation_button_panel]` → `button_panel`, `[wdp_donation_button]` → `button_popup`; yoksa auto_place + bu alan). E2E katalog `display`. `data-wdp-display` düğme/form. |
 | Fiyat gizle | `hide_price` | `yes` | aynı |
 | Form başlığı | `show_form_title` | `no` | aynı |
 | Döngü butonu | `loop_button` | `panel` | aynı |
@@ -605,7 +626,7 @@ Güvenli alan (10.34.0 + 10.34.4): alt CTA `env(safe-area-inset-bottom)` + JS `-
 
 **Ürün sayfası görünümü + ilgili ürünler (10.34.5 / 4E):** Ürün sayfası birincil UI `resolve_product_page_display` (kısa kod > auto_place `display`). Native `form.cart` gizleme 10.34.5’te yalnız `.summary` / `.entry-summary` idi; 10.34.6 tüm `form.cart` + `:not()` döngü/ilgili/upsell. Konu `.related` / `ul.products` bölümü değil (PHPUnit `test_hide_cart_css_spares_loop_forms`; sahte sayfa `css-hide-source-playwright`). Gizli ilgili bölüm: CSSOM ilk gizleyen ata + kural seçicisi + stil yolu (`tests/e2e/helpers/css-hide-source.mjs`). Kaynak `/wp-content/plugins/woo-donation-popup/` veya `style#wdp-*` → `plugin-hides-related` kırmızı. Tema/başka eklenti yolu (`ct-hidden-sm` vb.) → `theme-hides-related` atlama (`evidence: css-source`, yalnız eklenti dışı dosya yolu). Debug `loop-cards-product-css-source.txt`: etiket/sınıf/id, computed, seçici, yol — ürün adı yok. Matris `related-cards`: TT5+Storefront × 3 cihaz, bölüm + kartlar görünür.
 
-**Yerel sepete ekle yok (10.34.6, veri bütünlüğü):** Bağış ürünü tekil sayfada Woo `woocommerce_template_single_add_to_cart` kancadan çıkarılır (`unhook_native_single_add_to_cart`); `sticky.*add.?to.?cart` adlı kopya callback’ler `$wp_filter` taramasıyla düşer (tema CSS seçicisi yok). CSS yedek: tüm `form.cart` / `.single_add_to_cart_button` / `[class*="sticky-add-to-cart"]` gizlenir, döngü/ilgili/upsell/koleksiyon `:not()` ile görünür kalır. `woocommerce_is_purchasable` değişmez. Sunucu: bağış formu/`wdp_ajax_add_to_cart` değilse `woocommerce_add_to_cart_validation` + Store API `woocommerce_store_api_validate_add_to_cart` bağış ürününü reddeder (`should_reject_native_add_to_cart`: ürün bayrağı `yes` veya `auto_place=yes`) + `wc_add_notice` hata. Matris `native-cart-hidden`: 3 görünüm × 3 cihaz × 2 tema. PHPUnit `CartNativeAddToCartTest`. `includes/class-product-page-integration.php`, `includes/class-cart.php`.
+**Yerel sepete ekle yok (10.34.6, veri bütünlüğü):** Bağış ürünü tekil sayfada Woo `woocommerce_template_single_add_to_cart` kancadan çıkarılır (`unhook_native_single_add_to_cart`); `sticky.*add.?to.?cart` adlı kopya callback’ler `$wp_filter` taramasıyla düşer (tema CSS seçicisi yok). CSS yedek: tüm `form.cart` / `.single_add_to_cart_button` / `[class*="sticky-add-to-cart"]` gizlenir, döngü/ilgili/upsell/koleksiyon `:not()` ile görünür kalır. `woocommerce_is_purchasable` değişmez. Sunucu: bağış formu/`wdp_ajax_add_to_cart` değilse `woocommerce_add_to_cart_validation` + Store API `woocommerce_store_api_validate_add_to_cart` bağış ürününü reddeder (`should_reject_native_add_to_cart`: ürün bayrağı `yes` veya `auto_place=yes`) + `wc_add_notice` hata. Matris `native-cart-hidden`: 3 görünüm × 3 cihaz × 2 tema. PHPUnit `CartNativeAddToCartTest`. `src/Modules/EntryPoints/class-auto-placement.php`, `includes/class-cart.php`.
 
 **Ürün sayfası giriş noktası (E2E, 3G):** Sayfada görünür tam olarak **bir** eklenti girişi (gömülü form veya eklenti düğmesi — `data-wdp-display` / `.wdp-open-side-panel` / `.wdp-open-modal` / `.hdf-donation-modal-wrapper.wdp-donation-form`; tema düğmesi sayılmaz). 0 veya >1 → HATA. Düğmeyse tıklanır, kabuk (panel/popup) gerçek tipe göre açılır; form ise doğrudan. `resolve_product_page_display` farklıysa **UYARI** (`ayar inline, sayfa düğme gösteriyor — tema/oluşturucu şablonu`) — HATA değil (Avada oluşturucu şablonu). Döngü/ilgili kartlar `LOOP_EXCLUDE_SEL` (klasik + Woo blok + `.wdp-loop-donate`). Matris `product-entry-button`: TT5 kısa kod `[wdp_donation_button_panel]`. `tests/e2e/helpers/{product-page-ui,capture,matrix-scenarios}.mjs`.
 
@@ -823,7 +844,7 @@ Eklenti hiçbir tema, sayfa oluşturucu ya da eklentiyi tanımaz (CLAUDE.md böl
 
 **Kaldırılanlar (F6G):** Avada (Fusion Builder) elementi (`class-compat-avada-element.php`, `fusion_builder_before_init` kaydı, `CompatAvadaElementTest`, `languages/parts/F7B.po`); `class-compat-builders.php` (Avada/Elementor/Divi/Bricks/Beaver işaretleri; `wdp_is_builder_preview` ve `wdp_builder_preview_context_product` filtreleri site sahibi için kalır); Elementor düzenleyici betiği `assets/js/elementor-editor.js` + `wdp_elementor_search_products` ajax uç noktası + `elementor/editor/after_enqueue_scripts` kancası; `WDP_Donations_List::atts_from_elementor_settings` (widget sınıfına `atts_from_settings` olarak taşındı); ölü `wdp_ajax.theme/theme_slug` varsayılanları. Yönetici yardım metni genel "sayfa oluşturucu/kısa kod" diline çevrildi (altın liste bilinçli güncellendi: 3 msgid).
 
-**Elementor ince uyumluluk katmanı:** `WDP_Elementor` yalnız `elementor/widgets/register` + `elementor/elements/categories_registered`. Widget adları (`wdp-donation-form`, `wdp-donations`) ve ayar anahtarları sabit (kayıtlı sayfalar). `render()` ayarları kısa kod özniteliklerine çevirir ve eşdeğer kısa kod işleyicisini çağırır (`WDP_Shortcodes::donation_*_shortcode`, `WDP_Donations_List::shortcode`). `product_id` artık TEXT (kayıtlı kimlik aynen okunur). Test: `ElementorI18nTest`.
+**Elementor ince uyumluluk katmanı:** `Elementor_Compat` yalnız `elementor/widgets/register` + `elementor/elements/categories_registered`. Widget adları (`wdp-donation-form`, `wdp-donations`) ve ayar anahtarları sabit (kayıtlı sayfalar). `render()` ayarları kısa kod özniteliklerine çevirir ve eşdeğer kısa kod işleyicisini çağırır (`Shortcodes::donation_*_shortcode`, `WDP_Donations_List::shortcode`). `product_id` artık TEXT (kayıtlı kimlik aynen okunur). Test: `ElementorI18nTest`.
 
 ## Yükleme kapsamı (F6E, 10.35.2+)
 

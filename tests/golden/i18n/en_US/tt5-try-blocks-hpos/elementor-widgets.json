@@ -4,8 +4,8 @@
   "config": "tt5-try-blocks-hpos",
   "widgets": [
     {
-      "file": "includes/elementor/class-widget-donation-form.php",
-      "class": "WDP_Elementor_Widget_Donation_Form",
+      "file": "src/Modules/EntryPoints/Elementor/class-donation-form-widget.php",
+      "class": "Donation_Form_Widget",
       "title": "Donation form",
       "keywords": [
         "Donation form",
@@ -18,8 +18,8 @@
       "hasGetKeywords": true
     },
     {
-      "file": "includes/elementor/class-widget-donations-list.php",
-      "class": "WDP_Elementor_Widget_Donations_List",
+      "file": "src/Modules/EntryPoints/Elementor/class-donations-list-widget.php",
+      "class": "Donations_List_Widget",
       "title": "Donations list",
       "keywords": [
         "Donations list",

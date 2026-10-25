@@ -126,16 +126,12 @@ Aşağıda projedeki her kaynak dosyanın kısa Türkçe açıklaması yer alır
 | `class-order-meta-keys.php` | Sipariş satırı meta anahtarlarının tek kaynağı: sabit `wdp_*` anahtarlar, görünen etiketler, eski (çevrilmiş) anahtar uyumluluğu. |
 | `class-privacy.php` | WordPress kişisel veri dışa aktarma/silme kayıtçıları (bağışçı ve hissedar alanları, `[deleted]` ile anonimleştirme). |
 | `class-templates.php` | Modal, form, buton ve alan HTML çıktısı. |
-| `class-shortcodes.php` | Bağış butonu, panel, form ve `[wdp_donations]` kısa kodları. |
 | `class-donation-scope.php` | Bir ürünün bağış ürünü sayılıp sayılmadığı (kapsam + işaret + tip). |
-| `class-product-resolver.php` | Kısa kod/blok/widget için ürün çözümleyici (id, slug, sku, bağlam). |
 | `class-render-registry.php` | İstek içinde yinelenen form/modal HTML’ini önler. |
-| `class-product-page-integration.php` | WooCommerce şablon override, döngü Bağış Yap, fiyat gizleme, blok uyumu. |
 | `templates/woocommerce/.../simple.php` | Simple ürün sepete ekle şablonunun bağış UI ile değiştirilmesi. |
 | `class-donations-list.php` | `[wdp_donations]` sorgu, kart, sekme ve önbellek. |
 | `class-lazy-modal.php` | Liste/döngü için gecikmeli modal AJAX (`wdp_render_modal`). |
-| `class-blocks.php` | Gutenberg bağış formu ve liste blokları. |
-| `class-elementor.php` | Elementor widget uyumluluk katmanı (yalnız eşdeğer kısa kodun çıktısını döndürür; yeni özellik almaz). |
+| `src/Modules/EntryPoints/` | Giriş noktaları modülü: kısa kodlar, bloklar, otomatik yerleşim, yedek düğme, ürün çözücü, döngü/fiyat filtreleri ve Elementor ince katmanı. |
 | `class-form-matrix.php` | Form test sayfası (`?wdp_form_matrix=1`). |
 | `class-placement-settings.php` | `wdp_placement_settings` varsayılanları ve normalizer. |
 | `class-migrations.php` | `wdp_db_version` geçişleri; idempotent adımlar. |

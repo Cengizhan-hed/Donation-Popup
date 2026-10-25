@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: woo-donation-popup 10.35.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-25 15:58+0300\n"
+"POT-Creation-Date: 2026-10-25 18:34+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -26,13 +26,13 @@ msgstr ""
 #: includes/class-admin-form-tabs-renderer.php:354
 #: includes/class-admin-form-tabs-renderer.php:563
 #: includes/class-admin-settings-normalizer.php:63
-#: includes/class-shortcodes.php:358
 #: includes/templates/class-modal-shell-renderer.php:267
 #: includes/templates/class-modal-shell-renderer.php:445
 #: includes/traits/trait-wdp-assets-inline-styles.php:40
 #: includes/traits/trait-wdp-assets-inline-styles.php:41
 #: includes/traits/trait-wdp-assets-inline-styles.php:49
 #: includes/traits/trait-wdp-assets-inline-styles.php:331
+#: src/Modules/EntryPoints/class-shortcodes.php:366
 msgid "Donate"
 msgstr ""
 
@@ -53,7 +53,7 @@ msgstr ""
 msgid "Product not found (ID: %d). Please check the product ID."
 msgstr ""
 
-#: includes/bootstrap/class-plugin-bootstrap.php:70
+#: includes/bootstrap/class-plugin-bootstrap.php:71
 msgid ""
 "The WooCommerce Donation Modal Popup plugin requires WooCommerce to be "
 "installed and active."
@@ -1558,7 +1558,7 @@ msgstr ""
 
 #: includes/class-admin-layout-tabs-renderer.php:171
 #: includes/class-admin-page-renderer.php:54
-#: includes/elementor/class-widget-donations-list.php:210
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:210
 #: blocks/donations/index.js:166
 msgid "Popup"
 msgstr ""
@@ -1744,7 +1744,7 @@ msgid "Share-based"
 msgstr ""
 
 #: includes/class-admin-page-renderer.php:57
-#: includes/elementor/class-widget-donations-list.php:278
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:278
 #: blocks/donations/index.js:180
 msgid "Progress"
 msgstr ""
@@ -1892,7 +1892,7 @@ msgstr ""
 
 #: includes/class-admin-placement-tab-renderer.php:81
 #: includes/class-admin-product-data-tab.php:1133
-#: includes/elementor/class-widget-donation-form.php:123
+#: src/Modules/EntryPoints/Elementor/class-donation-form-widget.php:125
 #: blocks/donation-form/index.js:105
 msgid "Inline form"
 msgstr ""
@@ -1919,7 +1919,7 @@ msgstr ""
 
 #: includes/class-admin-placement-tab-renderer.php:94
 #: includes/class-admin-product-data-tab.php:1129
-#: includes/elementor/class-widget-donation-form.php:125
+#: src/Modules/EntryPoints/Elementor/class-donation-form-widget.php:127
 #: blocks/donation-form/index.js:107
 msgid "Side panel"
 msgstr ""
@@ -1951,13 +1951,13 @@ msgstr ""
 #: includes/class-admin-placement-tab-renderer.php:113
 #: includes/class-cart.php:546 includes/class-order-meta-keys.php:285
 #: includes/class-order-meta-keys.php:289
-#: includes/elementor/class-widget-donation-form.php:135
+#: src/Modules/EntryPoints/Elementor/class-donation-form-widget.php:137
 #: blocks/donations/index.js:25
 msgid "Yes"
 msgstr ""
 
 #: includes/class-admin-placement-tab-renderer.php:114
-#: includes/elementor/class-widget-donation-form.php:136
+#: src/Modules/EntryPoints/Elementor/class-donation-form-widget.php:138
 #: blocks/donations/index.js:26
 msgid "No"
 msgstr ""
@@ -2672,15 +2672,15 @@ msgid "The total could not be calculated. Details are in the error log."
 msgstr ""
 
 #: includes/class-admin-products-list-table.php:43
-#: includes/class-privacy.php:111
-#: includes/elementor/class-widget-donation-form.php:99
-#: includes/i18n/class-wdp-js-i18n.php:92 assets/js/src/cart/ui.js:190
-#: blocks/donation-form/index.js:59 blocks/donation-form/index.js:69
+#: includes/class-privacy.php:111 includes/i18n/class-wdp-js-i18n.php:92
+#: src/Modules/EntryPoints/Elementor/class-donation-form-widget.php:101
+#: assets/js/src/cart/ui.js:190 blocks/donation-form/index.js:59
+#: blocks/donation-form/index.js:69
 msgid "Product"
 msgstr ""
 
 #: includes/class-admin-products-list-table.php:44
-#: includes/elementor/class-widget-donations-list.php:296
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:296
 #: blocks/donations/index.js:182
 msgid "Category"
 msgstr ""
@@ -2942,7 +2942,7 @@ msgid ""
 msgstr ""
 
 #: includes/class-donations-list.php:172
-#: includes/elementor/class-widget-donations-list.php:254
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:254
 msgid "All"
 msgstr ""
 
@@ -3000,10 +3000,6 @@ msgstr ""
 msgid ""
 "Query returned no results: no published, catalog-visible, in-stock donation "
 "product."
-msgstr ""
-
-#: includes/class-elementor.php:38
-msgid "Donation (WooCommerce Donation)"
 msgstr ""
 
 #: includes/class-exceptions.php:47
@@ -3169,7 +3165,8 @@ msgstr ""
 msgid "Product not found or cannot be displayed."
 msgstr ""
 
-#: includes/class-lazy-modal.php:63 includes/class-shortcodes.php:269
+#: includes/class-lazy-modal.php:63
+#: src/Modules/EntryPoints/class-shortcodes.php:271
 msgid "This product is not marked as a donation product."
 msgstr ""
 
@@ -3810,24 +3807,6 @@ msgstr ""
 msgid "The donation form could not be rendered. See the error log for details."
 msgstr ""
 
-#: includes/class-shortcodes.php:264
-msgid ""
-"Donation form: product not found (no id/slug/sku was given, or this is not a "
-"product page)."
-msgstr ""
-
-#. translators: %d: product ID
-#: includes/class-shortcodes.php:330
-#, php-format
-msgid "This product cannot be purchased (ID: %d)."
-msgstr ""
-
-#. translators: %d: product ID
-#: includes/class-shortcodes.php:339
-#, php-format
-msgid "This product is out of stock (ID: %d)."
-msgstr ""
-
 #: includes/class-style-presets.php:272
 msgid "Custom pack"
 msgstr ""
@@ -3922,13 +3901,6 @@ msgstr ""
 msgid "The pack was imported and applied."
 msgstr ""
 
-#. translators: %s: sample product name
-#: includes/compat/class-builder-detect.php:94
-#, php-format
-msgid ""
-"Preview: «%s» is shown. That product’s form appears on the product page."
-msgstr ""
-
 #: includes/config/form-modules.php:27
 msgid "Campaign media"
 msgstr ""
@@ -3968,276 +3940,6 @@ msgstr ""
 
 #: includes/config/style-presets.php:204
 msgid "Vivid sky blue, soft accent, emotional headline."
-msgstr ""
-
-#: includes/elementor/class-widget-donation-form.php:28
-msgctxt "elementor widget title"
-msgid "Donation form"
-msgstr ""
-
-#: includes/elementor/class-widget-donation-form.php:51
-#: includes/elementor/class-widget-donations-list.php:51
-msgctxt "elementor widget search keyword"
-msgid "donation"
-msgstr ""
-
-#: includes/elementor/class-widget-donation-form.php:52
-msgctxt "elementor widget search keyword"
-msgid "donate"
-msgstr ""
-
-#: includes/elementor/class-widget-donation-form.php:53
-msgctxt "elementor widget search keyword"
-msgid "charity"
-msgstr ""
-
-#: includes/elementor/class-widget-donation-form.php:54
-msgctxt "elementor widget search keyword"
-msgid "form"
-msgstr ""
-
-#: includes/elementor/class-widget-donation-form.php:55
-msgctxt "elementor widget search keyword"
-msgid "popup"
-msgstr ""
-
-#: includes/elementor/class-widget-donation-form.php:79
-msgid "Content"
-msgstr ""
-
-#: includes/elementor/class-widget-donation-form.php:85
-msgid "Product source"
-msgstr ""
-
-#: includes/elementor/class-widget-donation-form.php:89
-msgid "Current product"
-msgstr ""
-
-#: includes/elementor/class-widget-donation-form.php:90
-msgid "Select from list"
-msgstr ""
-
-#: includes/elementor/class-widget-donation-form.php:91
-msgid "Enter ID or slug"
-msgstr ""
-
-#: includes/elementor/class-widget-donation-form.php:109
-msgid "Product ID or slug"
-msgstr ""
-
-#: includes/elementor/class-widget-donation-form.php:119
-#: includes/elementor/class-widget-donations-list.php:152
-#: blocks/donation-form/index.js:102 blocks/donations/index.js:99
-msgid "Display"
-msgstr ""
-
-#: includes/elementor/class-widget-donation-form.php:124
-#: blocks/donation-form/index.js:106
-msgctxt "display mode"
-msgid "Popup"
-msgstr ""
-
-#: includes/elementor/class-widget-donation-form.php:133
-#: blocks/donation-form/index.js:114
-msgid "Show heading"
-msgstr ""
-
-#: includes/elementor/class-widget-donation-form.php:145
-#: includes/elementor/class-widget-donations-list.php:227
-msgctxt "Elementor widget"
-msgid "Button text"
-msgstr ""
-
-#: includes/elementor/class-widget-donations-list.php:28
-msgctxt "elementor widget title"
-msgid "Donations list"
-msgstr ""
-
-#: includes/elementor/class-widget-donations-list.php:52
-msgctxt "elementor widget search keyword"
-msgid "campaign"
-msgstr ""
-
-#: includes/elementor/class-widget-donations-list.php:53
-msgctxt "elementor widget search keyword"
-msgid "list"
-msgstr ""
-
-#: includes/elementor/class-widget-donations-list.php:54
-msgctxt "elementor widget search keyword"
-msgid "progress"
-msgstr ""
-
-#: includes/elementor/class-widget-donations-list.php:76
-#: blocks/donations/index.js:56
-msgid "Query"
-msgstr ""
-
-#: includes/elementor/class-widget-donations-list.php:80
-msgid "Categories (slugs, comma-separated)"
-msgstr ""
-
-#: includes/elementor/class-widget-donations-list.php:87
-#: blocks/donations/index.js:58
-msgid "Exclude categories"
-msgstr ""
-
-#: includes/elementor/class-widget-donations-list.php:94
-#: blocks/donations/index.js:59
-msgid "IDs only"
-msgstr ""
-
-#: includes/elementor/class-widget-donations-list.php:101
-#: blocks/donations/index.js:60
-msgid "Exclude IDs"
-msgstr ""
-
-#: includes/elementor/class-widget-donations-list.php:108
-msgid "Type"
-msgstr ""
-
-#: includes/elementor/class-widget-donations-list.php:116
-#: blocks/donations/index.js:63
-msgid "Count"
-msgstr ""
-
-#: includes/elementor/class-widget-donations-list.php:126
-#: blocks/donations/index.js:72
-msgid "Order by"
-msgstr ""
-
-#: includes/elementor/class-widget-donations-list.php:130
-#: blocks/donations/index.js:75
-msgid "Menu order"
-msgstr ""
-
-#: includes/elementor/class-widget-donations-list.php:131
-#: blocks/donations/index.js:76
-msgid "Date"
-msgstr ""
-
-#: includes/elementor/class-widget-donations-list.php:132
-#: blocks/donations/index.js:77
-msgid "Title"
-msgstr ""
-
-#: includes/elementor/class-widget-donations-list.php:133
-#: blocks/donations/index.js:78
-msgid "Popularity"
-msgstr ""
-
-#: includes/elementor/class-widget-donations-list.php:134
-#: blocks/donations/index.js:79
-msgid "Random"
-msgstr ""
-
-#: includes/elementor/class-widget-donations-list.php:141
-#: blocks/donations/index.js:86
-msgid "Direction"
-msgstr ""
-
-#: includes/elementor/class-widget-donations-list.php:156
-#: blocks/donations/index.js:101
-msgid "Columns"
-msgstr ""
-
-#: includes/elementor/class-widget-donations-list.php:168
-#: blocks/donations/index.js:128
-msgid "Gap (px)"
-msgstr ""
-
-#: includes/elementor/class-widget-donations-list.php:178
-#: blocks/donations/index.js:137
-msgid "Image ratio"
-msgstr ""
-
-#: includes/elementor/class-widget-donations-list.php:186
-#: blocks/donations/index.js:144
-msgid "Original"
-msgstr ""
-
-#: includes/elementor/class-widget-donations-list.php:193
-#: blocks/donations/index.js:151
-msgid "Alignment"
-msgstr ""
-
-#: includes/elementor/class-widget-donations-list.php:197
-#: blocks/donations/index.js:154
-msgid "Center"
-msgstr ""
-
-#: includes/elementor/class-widget-donations-list.php:198
-#: blocks/donations/index.js:155
-msgid "Left"
-msgstr ""
-
-#: includes/elementor/class-widget-donations-list.php:205
-#: blocks/donations/index.js:162
-msgid "Button"
-msgstr ""
-
-#: includes/elementor/class-widget-donations-list.php:209
-#: blocks/donations/index.js:165
-msgid "Panel"
-msgstr ""
-
-#: includes/elementor/class-widget-donations-list.php:211
-#: blocks/donations/index.js:167
-msgid "Link"
-msgstr ""
-
-#: includes/elementor/class-widget-donations-list.php:218
-#: blocks/donations/index.js:173
-msgid "Full-width button"
-msgstr ""
-
-#: includes/elementor/class-widget-donations-list.php:234
-#: blocks/donations/index.js:175
-msgid "Tabs"
-msgstr ""
-
-#: includes/elementor/class-widget-donations-list.php:243
-#: blocks/donations/index.js:176
-msgid "“All” tab"
-msgstr ""
-
-#: includes/elementor/class-widget-donations-list.php:252
-#: blocks/donations/index.js:177
-msgid "All tab label"
-msgstr ""
-
-#: includes/elementor/class-widget-donations-list.php:260
-#: blocks/donations/index.js:178
-msgid "Image"
-msgstr ""
-
-#: includes/elementor/class-widget-donations-list.php:269
-#: blocks/donations/index.js:179
-msgid "Excerpt"
-msgstr ""
-
-#: includes/elementor/class-widget-donations-list.php:287
-#: blocks/donations/index.js:181
-msgid "Price"
-msgstr ""
-
-#: includes/elementor/class-widget-donations-list.php:305
-#: blocks/donations/index.js:184
-msgid "Excerpt words"
-msgstr ""
-
-#: includes/elementor/class-widget-donations-list.php:315
-msgid "Image size"
-msgstr ""
-
-#: includes/elementor/class-widget-donations-list.php:324
-#: blocks/donations/index.js:193
-msgid "Heading tag"
-msgstr ""
-
-#: includes/elementor/class-widget-donations-list.php:337
-#: blocks/donations/index.js:204
-msgid "CSS class"
 msgstr ""
 
 #: includes/i18n/class-wdp-js-i18n.php:26 assets/js/src/form/validate.js:555
@@ -4874,6 +4576,305 @@ msgstr ""
 
 #: includes/traits/trait-wdp-assets-registry.php:395
 msgid "Your donation was added to the cart"
+msgstr ""
+
+#: src/Modules/EntryPoints/Elementor/class-donation-form-widget.php:30
+msgctxt "elementor widget title"
+msgid "Donation form"
+msgstr ""
+
+#: src/Modules/EntryPoints/Elementor/class-donation-form-widget.php:53
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:51
+msgctxt "elementor widget search keyword"
+msgid "donation"
+msgstr ""
+
+#: src/Modules/EntryPoints/Elementor/class-donation-form-widget.php:54
+msgctxt "elementor widget search keyword"
+msgid "donate"
+msgstr ""
+
+#: src/Modules/EntryPoints/Elementor/class-donation-form-widget.php:55
+msgctxt "elementor widget search keyword"
+msgid "charity"
+msgstr ""
+
+#: src/Modules/EntryPoints/Elementor/class-donation-form-widget.php:56
+msgctxt "elementor widget search keyword"
+msgid "form"
+msgstr ""
+
+#: src/Modules/EntryPoints/Elementor/class-donation-form-widget.php:57
+msgctxt "elementor widget search keyword"
+msgid "popup"
+msgstr ""
+
+#: src/Modules/EntryPoints/Elementor/class-donation-form-widget.php:81
+msgid "Content"
+msgstr ""
+
+#: src/Modules/EntryPoints/Elementor/class-donation-form-widget.php:87
+msgid "Product source"
+msgstr ""
+
+#: src/Modules/EntryPoints/Elementor/class-donation-form-widget.php:91
+msgid "Current product"
+msgstr ""
+
+#: src/Modules/EntryPoints/Elementor/class-donation-form-widget.php:92
+msgid "Select from list"
+msgstr ""
+
+#: src/Modules/EntryPoints/Elementor/class-donation-form-widget.php:93
+msgid "Enter ID or slug"
+msgstr ""
+
+#: src/Modules/EntryPoints/Elementor/class-donation-form-widget.php:111
+msgid "Product ID or slug"
+msgstr ""
+
+#: src/Modules/EntryPoints/Elementor/class-donation-form-widget.php:121
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:152
+#: blocks/donation-form/index.js:102 blocks/donations/index.js:99
+msgid "Display"
+msgstr ""
+
+#: src/Modules/EntryPoints/Elementor/class-donation-form-widget.php:126
+#: blocks/donation-form/index.js:106
+msgctxt "display mode"
+msgid "Popup"
+msgstr ""
+
+#: src/Modules/EntryPoints/Elementor/class-donation-form-widget.php:135
+#: blocks/donation-form/index.js:114
+msgid "Show heading"
+msgstr ""
+
+#: src/Modules/EntryPoints/Elementor/class-donation-form-widget.php:147
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:227
+msgctxt "Elementor widget"
+msgid "Button text"
+msgstr ""
+
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:28
+msgctxt "elementor widget title"
+msgid "Donations list"
+msgstr ""
+
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:52
+msgctxt "elementor widget search keyword"
+msgid "campaign"
+msgstr ""
+
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:53
+msgctxt "elementor widget search keyword"
+msgid "list"
+msgstr ""
+
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:54
+msgctxt "elementor widget search keyword"
+msgid "progress"
+msgstr ""
+
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:76
+#: blocks/donations/index.js:56
+msgid "Query"
+msgstr ""
+
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:80
+msgid "Categories (slugs, comma-separated)"
+msgstr ""
+
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:87
+#: blocks/donations/index.js:58
+msgid "Exclude categories"
+msgstr ""
+
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:94
+#: blocks/donations/index.js:59
+msgid "IDs only"
+msgstr ""
+
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:101
+#: blocks/donations/index.js:60
+msgid "Exclude IDs"
+msgstr ""
+
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:108
+msgid "Type"
+msgstr ""
+
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:116
+#: blocks/donations/index.js:63
+msgid "Count"
+msgstr ""
+
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:126
+#: blocks/donations/index.js:72
+msgid "Order by"
+msgstr ""
+
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:130
+#: blocks/donations/index.js:75
+msgid "Menu order"
+msgstr ""
+
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:131
+#: blocks/donations/index.js:76
+msgid "Date"
+msgstr ""
+
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:132
+#: blocks/donations/index.js:77
+msgid "Title"
+msgstr ""
+
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:133
+#: blocks/donations/index.js:78
+msgid "Popularity"
+msgstr ""
+
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:134
+#: blocks/donations/index.js:79
+msgid "Random"
+msgstr ""
+
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:141
+#: blocks/donations/index.js:86
+msgid "Direction"
+msgstr ""
+
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:156
+#: blocks/donations/index.js:101
+msgid "Columns"
+msgstr ""
+
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:168
+#: blocks/donations/index.js:128
+msgid "Gap (px)"
+msgstr ""
+
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:178
+#: blocks/donations/index.js:137
+msgid "Image ratio"
+msgstr ""
+
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:186
+#: blocks/donations/index.js:144
+msgid "Original"
+msgstr ""
+
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:193
+#: blocks/donations/index.js:151
+msgid "Alignment"
+msgstr ""
+
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:197
+#: blocks/donations/index.js:154
+msgid "Center"
+msgstr ""
+
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:198
+#: blocks/donations/index.js:155
+msgid "Left"
+msgstr ""
+
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:205
+#: blocks/donations/index.js:162
+msgid "Button"
+msgstr ""
+
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:209
+#: blocks/donations/index.js:165
+msgid "Panel"
+msgstr ""
+
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:211
+#: blocks/donations/index.js:167
+msgid "Link"
+msgstr ""
+
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:218
+#: blocks/donations/index.js:173
+msgid "Full-width button"
+msgstr ""
+
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:234
+#: blocks/donations/index.js:175
+msgid "Tabs"
+msgstr ""
+
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:243
+#: blocks/donations/index.js:176
+msgid "“All” tab"
+msgstr ""
+
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:252
+#: blocks/donations/index.js:177
+msgid "All tab label"
+msgstr ""
+
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:260
+#: blocks/donations/index.js:178
+msgid "Image"
+msgstr ""
+
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:269
+#: blocks/donations/index.js:179
+msgid "Excerpt"
+msgstr ""
+
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:287
+#: blocks/donations/index.js:181
+msgid "Price"
+msgstr ""
+
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:305
+#: blocks/donations/index.js:184
+msgid "Excerpt words"
+msgstr ""
+
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:315
+msgid "Image size"
+msgstr ""
+
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:324
+#: blocks/donations/index.js:193
+msgid "Heading tag"
+msgstr ""
+
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:337
+#: blocks/donations/index.js:204
+msgid "CSS class"
+msgstr ""
+
+#: src/Modules/EntryPoints/Elementor/class-elementor-compat.php:38
+msgid "Donation (WooCommerce Donation)"
+msgstr ""
+
+#. translators: %s: sample product name
+#: src/Modules/EntryPoints/class-builder-detect.php:93
+#, php-format
+msgid ""
+"Preview: «%s» is shown. That product’s form appears on the product page."
+msgstr ""
+
+#: src/Modules/EntryPoints/class-shortcodes.php:266
+msgid ""
+"Donation form: product not found (no id/slug/sku was given, or this is not a "
+"product page)."
+msgstr ""
+
+#. translators: %d: product ID
+#: src/Modules/EntryPoints/class-shortcodes.php:332
+#, php-format
+msgid "This product cannot be purchased (ID: %d)."
+msgstr ""
+
+#. translators: %d: product ID
+#: src/Modules/EntryPoints/class-shortcodes.php:341
+#, php-format
+msgid "This product is out of stock (ID: %d)."
 msgstr ""
 
 #: blocks/donation-form/index.js:40 blocks/donation-form/index.js:50

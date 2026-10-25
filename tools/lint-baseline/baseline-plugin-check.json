@@ -837,6 +837,10 @@
   {
    "key": "woo-donation-popup.php|WordPress.PHP.DevelopmentFunctions.error_log_error_log|error_log() found. Debug code should not normally be used in production.",
    "count": 1
+  },
+  {
+   "key": "src/Modules/EntryPoints/Elementor/class-donations-list-widget.php|WordPressVIPMinimum.Performance.WPQueryParams.PostNotIn_exclude|Using exclusionary parameters, like exclude, in calls to get_posts() should be done with caution, see https://docs.wpvip.com/databases/optimize-queries/using-post__not_in/ for more information.",
+   "count": 1
   }
  ]
 }

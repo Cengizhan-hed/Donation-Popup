@@ -114,7 +114,7 @@ class Builder_Detect {
 			}
 		}
 		if ( function_exists( 'wp_is_json_request' ) && wp_is_json_request() && isset( $_SERVER['REQUEST_URI'] ) ) {
-			$uri = (string) wp_unslash( $_SERVER['REQUEST_URI'] );
+			$uri = sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) );
 			if ( false !== strpos( $uri, '/wp/v2/block-renderer' ) ) {
 				return true;
 			}
