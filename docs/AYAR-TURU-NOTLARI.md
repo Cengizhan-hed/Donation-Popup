@@ -648,3 +648,10 @@ Not: terminal sürümü kurulumu yapılmadı; skill burada plugin olarak zaten �
 
 ## K8 Curcy testi sonucu (2026-10-25)
 (a) Curcy sepet/ödeme tutarını snippetsiz doğru çözüyor; (b) kampanya toplamı için köprü şart (EUR/USD sipariş snippetsiz toplamdan düşer). Snippet #44 staging30'da açık. staging30 Curcy kurları 1 (staging verisi); canlıda kur ve `wmc_order_info` Faz 9'da doğrulanır. Ayrıntı: build/handoff/RAPOR-K8-CURCY.md.
+
+## E1 sonrası notlar (2026-10-25)
+- **iphone-product-fixed farkı çözüldü:** neden eklenti değil; yerel test veritabanında ilgili ürün sayısı 1→3 (fixture ürünleri eklendi), sayfa 6681→9930 px. Görsel incelendi; 4 ürün sayfası yerel iPhone baseline'ı güncellendi. (Android/desktop yerel baseline'ları ayrıca kontrol edilmeli.)
+- **Açık:** yerel iPhone `iphone-shop` (%2,35: kart başlık/düğme dikey kayması) ve `iphone-panel-custom-errors` (%1,0: alt piksel kayması) farkları nedeni ayrıştırılmadı, kabul EDİLMEDİ.
+- **Kararsız test:** `checkout-flow-shares-iphone` tam pakette bir kez "telefon numaranızı eksiksiz giriniz" ile düştü, hemen sonraki quick'te geçti (42/0/0) — zamanlama (A7 benzeri); tekrarlarsa incelenir.
+- **Süreç ihlali:** E1 ajanı bir kez `e2e:quick`'i `--env local` olmadan koşup staging30'a (yalnız okuma/gezinme, sipariş yok) çıktı; kanarya TEMİZ. Ajan görev metinlerine "`--env local` zorunlu" eklenecek.
+- Kancalar E1'de `plugins_loaded` 10→20'ye taşındı (üçüncü taraf aynı öncelikli geri çağrılarla sıra değişebilir) — Faz 8/E-sonu değerlendirilecek.
