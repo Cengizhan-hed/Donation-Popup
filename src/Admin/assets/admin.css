@@ -1,0 +1,110 @@
+/* Donation Panel yönetici ekranları (E7). Yalnız kendi ekranlarında yüklenir; her kural .dpa altında.
+ * Renk: WordPress yönetici renk şemasından (--wp-admin-theme-color). Mantıksal özellikler -> RTL kendiliğinden. */
+.dpa {
+	--dpa-accent: var(--wp-admin-theme-color, #2271b1);
+	--dpa-accent-dark: var(--wp-admin-theme-color-darker-10, #135e96);
+	--dpa-text: #1d2327;
+	--dpa-muted: #50575e;
+	--dpa-border: #c3c4c7;
+	--dpa-surface: #fff;
+	--dpa-ok: #0a6b3a;
+	max-inline-size: 1180px;
+	color: var(--dpa-text);
+}
+.dpa .dpa-title { font-size: 23px; font-weight: 600; margin-block-end: 4px; }
+.dpa .dpa-sub { color: var(--dpa-muted); margin-block: 0 20px; max-inline-size: 70ch; font-size: 14px; }
+.dpa .dpa-eyebrow { margin: 0 0 10px; font-size: 12px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--dpa-muted); }
+.dpa .dpa-card { background: var(--dpa-surface); border: 1px solid var(--dpa-border); border-radius: 12px; padding: 20px; margin-block-end: 16px; }
+.dpa .dpa-card h2 { margin-block-start: 0; font-size: 18px; }
+.dpa .dpa-note { margin-block: 0 8px; color: var(--dpa-muted); max-inline-size: 70ch; }
+.dpa .dpa-prompt { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: center; justify-content: space-between; }
+.dpa .dpa-prompt__actions { display: flex; gap: 8px; align-items: center; }
+.dpa .dpa-inline { display: inline; margin: 0; }
+
+/* Düzen: ayarlar + önizleme */
+.dpa .dpa-split { display: grid; gap: 20px; }
+@media (min-width: 1100px) {
+	.dpa .dpa-split { grid-template-columns: minmax(0, 1fr) 340px; align-items: start; }
+	.dpa .dpa-aside { position: sticky; inset-block-start: 48px; }
+}
+
+/* Sekmeler */
+.dpa .dpa-tabs { display: flex; gap: 4px; border-block-end: 1px solid var(--dpa-border); margin-block-end: 16px; overflow-x: auto; }
+.dpa .dpa-tab { appearance: none; background: none; border: 0; padding: 12px 16px; min-block-size: 44px; font: inherit; font-weight: 600; color: var(--dpa-muted); cursor: pointer; position: relative; white-space: nowrap; }
+.dpa .dpa-tab[aria-selected="true"] { color: var(--dpa-text); }
+.dpa .dpa-tab[aria-selected="true"]::after { content: ""; position: absolute; inset-inline: 10px; inset-block-end: -1px; block-size: 3px; background: var(--dpa-accent); border-radius: 3px 3px 0 0; }
+.dpa .dpa-tab:focus-visible { outline: 2px solid var(--dpa-accent); outline-offset: -2px; }
+.dpa.dpa-js [data-dpa-panel][hidden] { display: none; }
+
+/* Satırlar */
+.dpa .dpa-row { display: grid; gap: 8px 24px; padding-block: 16px; border-block-start: 1px solid #f0f0f1; }
+.dpa .dpa-panel > .dpa-row:first-of-type, .dpa .dpa-panel > .dpa-note + .dpa-row { border-block-start: 0; }
+.dpa .dpa-row__text label, .dpa .dpa-row__label { display: block; font-size: 14px; font-weight: 600; }
+.dpa .dpa-row__help { margin: 2px 0 0; color: var(--dpa-muted); font-size: 13px; max-inline-size: 62ch; }
+@media (min-width: 800px) { .dpa .dpa-row { grid-template-columns: 280px minmax(0, 1fr); } }
+.dpa .dpa-input { inline-size: 100%; max-inline-size: 420px; min-block-size: 44px; font-size: 16px; padding-inline: 12px; }
+.dpa textarea.dpa-input { max-inline-size: 560px; padding-block: 8px; }
+
+.dpa .dpa-pill input { flex: none; }
+
+/* Anahtar */
+.dpa .dpa-switch { position: relative; display: inline-block; inline-size: 52px; block-size: 30px; }
+.dpa .dpa-switch input { appearance: none; -webkit-appearance: none; position: absolute; inset: 0; margin: 0; inline-size: 100%; block-size: 100%; border: 0; border-radius: 99px; background: #6c7076; cursor: pointer; transition: background .2s; box-shadow: none; }
+.dpa .dpa-switch input:checked { background: var(--dpa-accent-dark); }
+.dpa .dpa-switch input:checked::before { content: none; }
+.dpa .dpa-switch input:focus-visible { outline: 2px solid var(--dpa-accent); outline-offset: 3px; }
+.dpa .dpa-switch__track { position: absolute; inset-block-start: 3px; inset-inline-start: 3px; inline-size: 24px; block-size: 24px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgb(0 0 0 / .3); transition: transform .25s ease; pointer-events: none; }
+.dpa .dpa-switch input:checked + .dpa-switch__track { transform: translateX(22px); }
+[dir="rtl"] .dpa .dpa-switch input:checked + .dpa-switch__track { transform: translateX(-22px); }
+
+/* Rozet, kod, ipuçları */
+.dpa .dpa-badge { display: inline-block; padding: 4px 10px; border-radius: 99px; font-size: 12px; font-weight: 600; background: #f0f0f1; color: var(--dpa-text); }
+.dpa .dpa-badge--success { background: #e6f5ed; color: var(--dpa-ok); }
+.dpa .dpa-badge--info { background: #e7f0fc; color: #174a8f; }
+.dpa .dpa-code { display: flex; gap: 10px; align-items: center; justify-content: space-between; background: #1d2327; color: #e6edf3; padding: 10px 12px; border-radius: 10px; overflow-x: auto; max-inline-size: 520px; }
+.dpa .dpa-code code { background: none; color: inherit; padding: 0; font-size: 13px; }
+
+/* Önizleme */
+.dpa .dpa-preview { display: grid; gap: 10px; padding: 16px; background: var(--dpa-surface); border: 1px solid var(--dpa-border); border-radius: 14px; }
+.dpa .dpa-pv-block { padding: 10px 12px; border-radius: 10px; background: #f6f7f7; color: var(--dpa-muted); font-size: 12.5px; }
+.dpa .dpa-pv-block[hidden] { display: none; }
+.dpa .dpa-pv-bar { block-size: 8px; border-radius: 8px; background: #dcdcde; overflow: hidden; margin-block-end: 6px; }
+.dpa .dpa-pv-bar i { display: block; block-size: 100%; inline-size: 62%; background: var(--dpa-accent); }
+.dpa .dpa-pv-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.dpa .dpa-chip { padding: 8px 14px; border: 1.5px solid var(--dpa-border); border-radius: 99px; font-weight: 600; font-size: 13px; }
+.dpa .dpa-chip.is-on { border-color: var(--dpa-accent); background: #f0f6fc; }
+.dpa .dpa-pv-btn { text-align: center; padding: 12px; border-radius: 12px; background: var(--dpa-accent-dark); color: #fff; font-weight: 600; }
+
+/* Kaydet çubuğu */
+.dpa .dpa-savebar { position: sticky; inset-block-end: 0; z-index: 5; display: flex; align-items: center; justify-content: flex-end; gap: 12px; padding: 12px 16px max(12px, env(safe-area-inset-bottom)); background: var(--dpa-surface); border-block-start: 1px solid var(--dpa-border); margin-inline: -20px; }
+.dpa .dpa-savebar__msg { margin-inline-end: auto; color: var(--dpa-muted); font-size: 13px; }
+
+/* Sihirbaz */
+.dpa .dpa-stepper { display: flex; gap: 8px; margin: 0 0 20px; padding: 0; }
+.dpa .dpa-stepper li { list-style: none; flex: 1; display: grid; gap: 6px; font-size: 12px; font-weight: 600; color: var(--dpa-muted); margin: 0; }
+.dpa .dpa-stepper li i { display: block; block-size: 5px; border-radius: 5px; background: #dcdcde; }
+.dpa .dpa-stepper li.cur i, .dpa .dpa-stepper li.done i { background: var(--dpa-accent); }
+.dpa .dpa-stepper li.cur { color: var(--dpa-text); }
+.dpa .dpa-step[hidden] { display: none; }
+.dpa .dpa-opts { display: grid; gap: 10px; }
+.dpa .dpa-pill { display: flex; gap: 12px; align-items: center; padding: 14px; border: 1.5px solid var(--dpa-border); border-radius: 12px; cursor: pointer; min-block-size: 64px; background: var(--dpa-surface); margin-block-end: 8px; }
+.dpa .dpa-pill:has(input:checked) { border-color: var(--dpa-accent); background: #f0f6fc; }
+.dpa .dpa-pill small { display: block; color: var(--dpa-muted); font-size: 13px; }
+.dpa .dpa-facts { list-style: none; margin: 0 0 16px; padding: 0; display: grid; gap: 8px; }
+.dpa .dpa-facts li { display: flex; gap: 10px; align-items: center; margin: 0; }
+.dpa .dpa-tick { display: inline-grid; place-items: center; inline-size: 22px; block-size: 22px; border-radius: 50%; background: #e6f5ed; color: var(--dpa-ok); font-size: 13px; flex: none; }
+.dpa .dpa-wizard-nav { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.dpa .dpa-wizard-nav [hidden] { display: none; }
+.dpa .dpa-skip { margin-inline-start: auto; }
+
+/* Rehber */
+.dpa .dpa-toc ul { display: flex; flex-wrap: wrap; gap: 8px 16px; padding: 0; margin: 0 0 16px; list-style: none; }
+.dpa .dpa-toc a { font-weight: 600; }
+
+@media (max-width: 782px) {
+	.dpa .dpa-savebar { margin-inline: -10px; }
+	.dpa .dpa-card { padding: 16px; }
+}
+@media (prefers-reduced-motion: reduce) {
+	.dpa * { transition: none !important; animation: none !important; }
+}

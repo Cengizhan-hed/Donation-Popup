@@ -26,6 +26,16 @@ class Settings {
 	const ENGINES = array( 'legacy', 'new' );
 
 	/**
+	 * Yönetici ekranı değerleri: eski ekran (varsayılan) ya da yeni sade ekran (E7).
+	 */
+	const ADMIN_UIS = array( 'legacy', 'new' );
+
+	/**
+	 * Kurulum sihirbazı durumları: boş = henüz yapılmadı.
+	 */
+	const WIZARD_STATES = array( '', 'done', 'skipped' );
+
+	/**
 	 * Bellekteki önbellek.
 	 *
 	 * @var array<string, mixed>|null
@@ -87,6 +97,16 @@ class Settings {
 				'engine' => array(
 					'type'    => 'string',
 					'default' => 'legacy',
+				),
+			),
+			'admin'       => array(
+				'ui'     => array(
+					'type'    => 'string',
+					'default' => 'legacy',
+				),
+				'wizard' => array(
+					'type'    => 'string',
+					'default' => '',
 				),
 			),
 		);
@@ -203,6 +223,12 @@ class Settings {
 		if ( ! in_array( $out['experiences']['engine'], self::ENGINES, true ) ) {
 			$out['experiences']['engine'] = 'legacy';
 		}
+		if ( ! in_array( $out['admin']['ui'], self::ADMIN_UIS, true ) ) {
+			$out['admin']['ui'] = 'legacy';
+		}
+		if ( ! in_array( $out['admin']['wizard'], self::WIZARD_STATES, true ) ) {
+			$out['admin']['wizard'] = '';
+		}
 		return $out;
 	}
 
@@ -215,6 +241,30 @@ class Settings {
 		$stored = get_option( self::OPTION_NAME, array() );
 		$all    = self::normalize( is_array( $stored ) ? $stored : array() );
 		return 'new' === $all['experiences']['engine'];
+	}
+
+	/**
+	 * Yeni sade yönetici ekranı seçili mi (ayar `admin.ui`; `donation_panel_admin_ui` filtresi ya da
+	 * `DONATION_PANEL_ADMIN_UI` sabiti `new`/`legacy` ile geçersiz kılabilir). Varsayılan: eski ekran.
+	 * Yalnız yönetim alanında anlamlıdır; yeni ekranın dosyaları `legacy` iken hiç yüklenmez.
+	 *
+	 * @return bool
+	 */
+	public static function admin_ui_is_new() {
+		$stored = get_option( self::OPTION_NAME, array() );
+		$all    = self::normalize( is_array( $stored ) ? $stored : array() );
+		$ui     = $all['admin']['ui'];
+		if ( defined( 'DONATION_PANEL_ADMIN_UI' ) && in_array( DONATION_PANEL_ADMIN_UI, self::ADMIN_UIS, true ) ) {
+			$ui = (string) DONATION_PANEL_ADMIN_UI;
+		}
+
+		/**
+		 * Yönetici ekranı seçimini değiştirir.
+		 *
+		 * @param string $ui `legacy` ya da `new`.
+		 */
+		$ui = (string) apply_filters( 'donation_panel_admin_ui', $ui );
+		return 'new' === $ui;
 	}
 
 	/**

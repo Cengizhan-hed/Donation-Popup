@@ -233,6 +233,11 @@ final class Plugin {
 		$registry = $this->container->get( Module_Registry::class );
 		$registry->boot( $this->container );
 
+		// Yeni yönetici ekranı (E7): yalnız yönetim alanında ve `admin.ui = new` iken sınıf yüklenir.
+		if ( is_admin() && Settings::admin_ui_is_new() ) {
+			\DonationPanel\Admin\Admin_Bootstrap::init( $this->container, $this->plugin_dir, $this->plugin_url );
+		}
+
 		/**
 		 * Modüller başlatıldıktan sonra çalışır.
 		 *
