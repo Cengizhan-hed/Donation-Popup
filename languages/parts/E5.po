@@ -1,0 +1,198 @@
+# Turkish translations — E5 (bağışçı hesabı modülü).
+# Copyright (C) Donation Panel for WooCommerce
+msgid ""
+msgstr ""
+"Project-Id-Version: woo-donation-popup\n"
+"Language: tr_TR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Domain: woo-donation-popup\n"
+
+#: src/Modules/DonorAccount/
+#, php-format
+msgid "[%s] Confirm to link your earlier gifts"
+msgstr "[%s] Önceki bağışlarınızı bağlamak için onaylayın"
+
+#: src/Modules/DonorAccount/
+#, php-format
+msgid "Open this link while logged in to add the gifts you made as a guest with this email address to your account:\n\n%1$s\n\nThe link works once and expires in %2$d minutes. If you did not ask for this, ignore this email."
+msgstr "Bu e-posta adresiyle misafir olarak yaptığınız bağışları hesabınıza eklemek için oturum açıkken bu bağlantıyı açın:\n\n%1$s\n\nBağlantı yalnız bir kez çalışır ve %2$d dakika sonra geçerliliğini yitirir. Bunu siz istemediyseniz bu e-postayı yok sayın."
+
+#: src/Modules/DonorAccount/
+msgid "My account"
+msgstr "Hesabım"
+
+#: src/Modules/DonorAccount/
+msgid "Log in or sign up"
+msgstr "Giriş yap veya kayıt ol"
+
+#: src/Modules/DonorAccount/
+msgid "Enter a valid email address."
+msgstr "Geçerli bir e-posta adresi yazın."
+
+#: src/Modules/DonorAccount/
+msgid "Password must be at least 8 characters."
+msgstr "Şifre en az 8 karakter olmalı."
+
+#: src/Modules/DonorAccount/
+msgid "Account"
+msgstr "Hesap"
+
+#: src/Modules/DonorAccount/
+msgid "Log in"
+msgstr "Giriş yap"
+
+#: src/Modules/DonorAccount/
+msgid "Sign up"
+msgstr "Kayıt ol"
+
+#: src/Modules/DonorAccount/
+msgid "See your gifts and receipts."
+msgstr "Bağışlarınızı ve makbuzlarınızı görün."
+
+#: src/Modules/DonorAccount/
+msgid "Email"
+msgstr "E-posta"
+
+#: src/Modules/DonorAccount/
+msgid "Password"
+msgstr "Şifre"
+
+#: src/Modules/DonorAccount/
+msgid "Enter your password."
+msgstr "Şifrenizi yazın."
+
+#: src/Modules/DonorAccount/
+msgid "Forgot password?"
+msgstr "Şifremi unuttum"
+
+#: src/Modules/DonorAccount/
+msgid "Make your next gift even quicker."
+msgstr "Bir sonraki bağış daha da hızlı olsun."
+
+#: src/Modules/DonorAccount/
+msgid "Your earlier guest gifts can be linked to your account by email, after we send a verification link."
+msgstr "Önceki misafir bağışlarınız, önce bir doğrulama bağlantısı gönderdikten sonra e-postanızla hesabınıza bağlanabilir."
+
+#: src/Modules/DonorAccount/
+msgid "Create account"
+msgstr "Hesap oluştur"
+
+#: src/Modules/DonorAccount/
+msgid "Enter your email and we will send a link."
+msgstr "E-postanızı yazın, bağlantı gönderelim."
+
+#: src/Modules/DonorAccount/
+msgid "Send link"
+msgstr "Bağlantı gönder"
+
+#: src/Modules/DonorAccount/
+msgid "Back to log in"
+msgstr "Girişe dön"
+
+#: src/Modules/DonorAccount/
+msgid "Check your email"
+msgstr "E-postanızı kontrol edin"
+
+#: src/Modules/DonorAccount/
+msgid "If this email matches an account, a link is on its way. It arrives within a few minutes; if not, check your spam folder."
+msgstr "Bu e-posta bir hesapla eşleşiyorsa bağlantı yolda. Birkaç dakika içinde gelir; gelmezse gereksiz klasörüne bakın."
+
+#: src/Modules/DonorAccount/
+msgid "Log in to your account"
+msgstr "Hesabınıza girin"
+
+#: src/Modules/DonorAccount/
+msgid "Close"
+msgstr "Kapat"
+
+#: src/Modules/DonorAccount/
+msgid "No gifts yet"
+msgstr "Henüz bağış yok"
+
+#: src/Modules/DonorAccount/
+msgid "Your gifts will appear here after your first donation."
+msgstr "İlk bağışınızdan sonra bağışlarınız burada görünür."
+
+#: src/Modules/DonorAccount/
+msgid "Receipt"
+msgstr "Makbuz"
+
+#: src/Modules/DonorAccount/
+msgid "Give again"
+msgstr "Tekrar bağışla"
+
+#: src/Modules/DonorAccount/
+msgid "Show more"
+msgstr "Daha fazla göster"
+
+#: src/Modules/DonorAccount/
+msgid "Link your earlier gifts"
+msgstr "Önceki bağışlarınızı bağlayın"
+
+#: src/Modules/DonorAccount/
+msgid "Confirm to add the gifts you made as a guest with this email address to your account."
+msgstr "Bu e-posta adresiyle misafir olarak yaptığınız bağışları hesabınıza eklemek için onaylayın."
+
+#: src/Modules/DonorAccount/
+msgid "Confirm and link"
+msgstr "Onayla ve bağla"
+
+#: src/Modules/DonorAccount/
+msgid "Gifts made as a guest?"
+msgstr "Misafir olarak bağış mı yaptınız?"
+
+#: src/Modules/DonorAccount/
+msgid "We will email a verification link to your account address. Only after you confirm are earlier guest gifts added here."
+msgstr "Hesap adresinize bir doğrulama bağlantısı e-postalayacağız. Misafir bağışlarınız yalnız siz onayladıktan sonra buraya eklenir."
+
+#: src/Modules/DonorAccount/
+msgid "Send verification link"
+msgstr "Doğrulama bağlantısı gönder"
+
+#: src/Modules/DonorAccount/
+msgid "Create an account with the box below to track your gifts, download receipts and give again in one tap. Earlier guest gifts are linked only after email verification."
+msgstr "Aşağıdaki kutuyla hesap oluşturup bağışlarınızı takip edebilir, makbuz alabilir ve tek dokunuşla tekrar bağış yapabilirsiniz. Önceki misafir bağışları yalnız e-posta doğrulamasından sonra bağlanır."
+
+#: src/Modules/DonorAccount/
+msgid "My donations"
+msgstr "Bağışlarım"
+
+#: src/Modules/DonorAccount/
+msgid "Email or password is incorrect. Try again or reset your password."
+msgstr "E-posta veya şifre hatalı. Tekrar deneyin ya da şifrenizi sıfırlayın."
+
+#: src/Modules/DonorAccount/
+msgid "Something went wrong. Please try again."
+msgstr "Bir hata oluştu. Lütfen tekrar deneyin."
+
+#: src/Modules/DonorAccount/
+msgid "Too many attempts. Please wait a moment and try again."
+msgstr "Çok fazla deneme yapıldı. Lütfen biraz bekleyip tekrar deneyin."
+
+#: src/Modules/DonorAccount/
+msgid "Create an account"
+msgstr "Hesap oluşturun"
+
+#: src/Modules/DonorAccount/
+msgid "Reset password"
+msgstr "Şifreyi sıfırla"
+
+#: src/Modules/DonorAccount/
+msgid "We sent a verification link to your account email."
+msgstr "Hesap e-postanıza bir doğrulama bağlantısı gönderdik."
+
+#: src/Modules/DonorAccount/
+msgid "This link is invalid or has expired. Request a new one."
+msgstr "Bu bağlantı geçersiz ya da süresi dolmuş. Yenisini isteyin."
+
+#: src/Modules/DonorAccount/
+msgid "Your earlier gifts were added to your account."
+msgstr "Önceki bağışlarınız hesabınıza eklendi."
+
+#: src/Modules/DonorAccount/
+msgid "No earlier guest gifts were found for this email."
+msgstr "Bu e-posta için önceki misafir bağışı bulunamadı."
+

@@ -18,6 +18,10 @@ add_filter(
 	},
 	20
 );
+// Test koşusu aynı IP'den çok giriş yapar: hız sınırı yükseltilir (sınırın kendisi PHPUnit'te sınanır).
+add_filter( 'donation_panel_account_rate_limit', static function () {
+	return 5000;
+} );
 add_filter( 'pre_option_woocommerce_enable_myaccount_registration', static function () {
 	return 'yes';
 } );

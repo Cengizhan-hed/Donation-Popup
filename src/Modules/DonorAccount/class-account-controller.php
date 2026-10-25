@@ -64,6 +64,25 @@ class Account_Controller extends Rest_Controller {
 	}
 
 	/**
+	 * Hız sınırı: uç başına varsayılan sınır `donation_panel_account_rate_limit` süzgeciyle değiştirilebilir.
+	 *
+	 * @param string $bucket Uç adı.
+	 * @param int    $limit  Pencere başına üst sınır.
+	 * @param int    $period Pencere (sn).
+	 * @return true|\WP_Error
+	 */
+	protected function throttle( $bucket, $limit, $period = 60 ) {
+		/**
+		 * Hesap uçlarının hız sınırı.
+		 *
+		 * @param int    $limit  Pencere başına istek sayısı.
+		 * @param string $bucket Uç adı (`account_login`, `account_register`, `account_reset`, `account_link_guest` ...).
+		 */
+		$limit = (int) apply_filters( 'donation_panel_account_rate_limit', (int) $limit, (string) $bucket );
+		return parent::throttle( $bucket, $limit, $period );
+	}
+
+	/**
 	 * Yanıta önbelleksiz başlık ekler.
 	 *
 	 * @param mixed $data Yanıt verisi.

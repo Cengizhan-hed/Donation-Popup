@@ -5,7 +5,7 @@
   --ac-surface: var(--dp-color-surface, var(--wp--preset--color--base, var(--wp--preset--color--background, #fff)));
   --ac-radius: var(--dp-radius, var(--wp--custom--radius, 14px));
   --ac-on-primary: #fff;
-  --ac-strong: color-mix(in oklab, var(--ac-primary) 78%, #000);
+  --ac-strong: color-mix(in oklab, var(--ac-primary) 50%, #000);
   --ac-soft: color-mix(in oklab, var(--ac-primary) 11%, var(--ac-surface));
   --ac-muted: color-mix(in oklab, var(--ac-text) 68%, var(--ac-surface));
   --ac-border: color-mix(in oklab, var(--ac-text) 14%, var(--ac-surface));
