@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: woo-donation-popup 10.35.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-25 18:34+0300\n"
+"POT-Creation-Date: 2026-10-25 21:30+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -33,6 +33,8 @@ msgstr ""
 #: includes/traits/trait-wdp-assets-inline-styles.php:49
 #: includes/traits/trait-wdp-assets-inline-styles.php:331
 #: src/Modules/EntryPoints/class-shortcodes.php:366
+#: src/Modules/Experiences/class-form-renderer.php:69
+#: templates/donation-panel/experiences/form.php:102
 msgid "Donate"
 msgstr ""
 
@@ -53,7 +55,7 @@ msgstr ""
 msgid "Product not found (ID: %d). Please check the product ID."
 msgstr ""
 
-#: includes/bootstrap/class-plugin-bootstrap.php:71
+#: includes/bootstrap/class-plugin-bootstrap.php:72
 msgid ""
 "The WooCommerce Donation Modal Popup plugin requires WooCommerce to be "
 "installed and active."
@@ -470,6 +472,7 @@ msgstr ""
 
 #: includes/class-admin-design-studio-renderer.php:267
 #: includes/class-admin-product-data-tab.php:749
+#: src/Modules/Experiences/class-form-context.php:231
 msgid "Anonymous donation"
 msgstr ""
 
@@ -749,6 +752,7 @@ msgstr ""
 #: includes/i18n/class-wdp-js-i18n.php:56
 #: includes/templates/class-form-fields-renderer.php:520
 #: includes/traits/trait-wdp-assets-inline-styles.php:86
+#: src/Modules/Experiences/class-form-context.php:179
 #: assets/js/src/shareholder/render.js:112
 msgid "Full name *"
 msgstr ""
@@ -757,6 +761,7 @@ msgstr ""
 #: includes/class-admin-settings-normalizer.php:320
 #: includes/class-phone-field.php:1193 includes/i18n/class-wdp-js-i18n.php:73
 #: includes/traits/trait-wdp-assets-inline-styles.php:87
+#: src/Modules/Experiences/class-form-context.php:188
 #: assets/js/src/phone-input.js:657 assets/js/src/shareholder/render.js:113
 msgid "Phone number *"
 msgstr ""
@@ -767,6 +772,7 @@ msgstr ""
 #: includes/i18n/class-wdp-js-i18n.php:69
 #: includes/templates/class-form-fields-renderer.php:531
 #: includes/traits/trait-wdp-assets-inline-styles.php:88
+#: src/Modules/Experiences/class-form-context.php:222
 #: assets/js/src/shareholder/render.js:114
 msgid "Note (optional)"
 msgstr ""
@@ -784,6 +790,7 @@ msgstr ""
 #: includes/i18n/class-wdp-js-i18n.php:49
 #: includes/templates/class-form-fields-renderer.php:537
 #: includes/traits/trait-wdp-assets-inline-styles.php:94
+#: src/Modules/Experiences/class-form-context.php:200
 #: assets/js/src/shareholder/render.js:115
 msgid "Email (optional)"
 msgstr ""
@@ -1068,6 +1075,8 @@ msgstr ""
 #: includes/class-admin-form-tabs-renderer.php:399
 #: includes/templates/class-form-fields-renderer.php:196
 #: includes/traits/trait-wdp-assets-registry.php:381
+#: templates/donation-panel/experiences/form.php:44
+#: templates/donation-panel/experiences/form.php:58
 msgid "Donation amount"
 msgstr ""
 
@@ -2090,6 +2099,8 @@ msgstr ""
 
 #: includes/class-admin-product-data-tab.php:570
 #: includes/class-admin-products-list-table.php:45
+#: templates/donation-panel/experiences/form.php:31
+#: templates/donation-panel/experiences/form.php:32
 msgid "Donation type"
 msgstr ""
 
@@ -2796,10 +2807,12 @@ msgid "Please fill in all required fields: "
 msgstr ""
 
 #: includes/class-cart.php:244 includes/traits/trait-wdp-ajax-cart-add.php:136
+#: src/Modules/Experiences/class-form-context.php:181
 msgid "Please enter your full name."
 msgstr ""
 
 #: includes/class-cart.php:249 includes/traits/trait-wdp-ajax-cart-add.php:140
+#: src/Modules/Experiences/class-form-context.php:190
 msgid "Please enter your phone number."
 msgstr ""
 
@@ -2845,6 +2858,7 @@ msgid "Email"
 msgstr ""
 
 #: includes/class-cart.php:538 includes/class-order-meta-keys.php:73
+#: src/Modules/Experiences/class-form-context.php:212
 msgid "Dedication"
 msgstr ""
 
@@ -2896,6 +2910,7 @@ msgstr ""
 #: includes/class-donation-optional-fields.php:101
 #: includes/i18n/class-wdp-js-i18n.php:84
 #: includes/traits/trait-wdp-assets-registry.php:390
+#: src/Modules/Experiences/class-field-validator.php:99
 #: assets/js/src/form/messages.js:122 assets/js/src/form/validate.js:652
 msgid "Please enter a valid email address."
 msgstr ""
@@ -2920,6 +2935,7 @@ msgid ""
 msgstr ""
 
 #: includes/class-donation-type.php:67 includes/class-form-matrix.php:117
+#: templates/donation-panel/experiences/form.php:58
 msgid "Custom amount"
 msgstr ""
 
@@ -3091,6 +3107,7 @@ msgid "Cover processing costs (+%%%s)"
 msgstr ""
 
 #: includes/class-form-modules.php:749 includes/i18n/class-wdp-js-i18n.php:111
+#: templates/donation-panel/experiences/form.php:99
 #: assets/js/src/cart/ui.js:125
 msgid "Total"
 msgstr ""
@@ -3841,6 +3858,10 @@ msgstr ""
 
 #: includes/class-woo-donation-popup-admin.php:109
 #: includes/class-woo-donation-popup-admin.php:360
+#: templates/donation-panel/experiences/bottom-sheet.php:16
+#: templates/donation-panel/experiences/inline.php:16
+#: templates/donation-panel/experiences/popup.php:16
+#: templates/donation-panel/experiences/side-panel.php:16
 msgid "Something went wrong. Please try again."
 msgstr ""
 
@@ -4008,7 +4029,8 @@ msgstr ""
 msgid "Could not submit"
 msgstr ""
 
-#: includes/i18n/class-wdp-js-i18n.php:45 assets/js/src/modal.js:707
+#: includes/i18n/class-wdp-js-i18n.php:45
+#: templates/donation-panel/experiences/form.php:25 assets/js/src/modal.js:707
 msgid "Donation form closed"
 msgstr ""
 
@@ -4033,7 +4055,10 @@ msgstr ""
 msgid "Form steps"
 msgstr ""
 
-#: includes/i18n/class-wdp-js-i18n.php:52 assets/js/src/core/utils.js:239
+#. translators: %s: example whole amount.
+#: includes/i18n/class-wdp-js-i18n.php:52
+#: src/Modules/Experiences/class-field-validator.php:70
+#: assets/js/src/core/utils.js:239
 #, javascript-format, php-format
 msgid "Fractional amounts are not allowed on this site, e.g. %s"
 msgstr ""
@@ -4128,18 +4153,27 @@ msgstr ""
 msgid "Please check the additional donation amount."
 msgstr ""
 
-#: includes/i18n/class-wdp-js-i18n.php:77 assets/js/src/form/feedback.js:372
-#: assets/js/src/form/feedback.js:388 assets/js/src/form/validate.js:20
-#: assets/js/src/form.js:554 assets/js/src/form.js:571
+#: includes/i18n/class-wdp-js-i18n.php:77 src/WooCommerce/class-cart.php:147
+#: templates/donation-panel/experiences/bottom-sheet.php:16
+#: templates/donation-panel/experiences/inline.php:16
+#: templates/donation-panel/experiences/popup.php:16
+#: templates/donation-panel/experiences/side-panel.php:16
+#: assets/js/src/form/feedback.js:372 assets/js/src/form/feedback.js:388
+#: assets/js/src/form/validate.js:20 assets/js/src/form.js:554
+#: assets/js/src/form.js:571
 msgid "Please check the highlighted fields."
 msgstr ""
 
-#: includes/i18n/class-wdp-js-i18n.php:78 assets/js/src/form/wizard.js:406
+#: includes/i18n/class-wdp-js-i18n.php:78
+#: src/Modules/Experiences/class-field-validator.php:102
+#: assets/js/src/form/wizard.js:406
 msgid "Please check the phone number."
 msgstr ""
 
-#: includes/i18n/class-wdp-js-i18n.php:80 assets/js/src/form/validate.js:706
-#: assets/js/src/form.js:480
+#: includes/i18n/class-wdp-js-i18n.php:80
+#: src/Modules/Experiences/class-field-validator.php:59
+#: src/Modules/Experiences/class-field-validator.php:65
+#: assets/js/src/form/validate.js:706 assets/js/src/form.js:480
 msgid "Please enter a donation amount."
 msgstr ""
 
@@ -4270,8 +4304,9 @@ msgstr ""
 msgid "This field is required"
 msgstr ""
 
-#: includes/i18n/class-wdp-js-i18n.php:109 assets/js/src/form/feedback.js:247
-#: assets/js/src/form.js:490
+#: includes/i18n/class-wdp-js-i18n.php:109
+#: src/Modules/Experiences/class-field-validator.php:89
+#: assets/js/src/form/feedback.js:247 assets/js/src/form.js:490
 msgid "This field is required."
 msgstr ""
 
@@ -4411,6 +4446,9 @@ msgid ""
 msgstr ""
 
 #: includes/templates/class-modal-shell-renderer.php:361
+#: templates/donation-panel/experiences/bottom-sheet.php:23
+#: templates/donation-panel/experiences/popup.php:23
+#: templates/donation-panel/experiences/side-panel.php:23
 msgid "Close popup"
 msgstr ""
 
@@ -4458,6 +4496,7 @@ msgid "Product is already in the cart"
 msgstr ""
 
 #: includes/traits/trait-wdp-ajax-cart-add.php:320
+#: src/WooCommerce/class-cart.php:188
 msgid "An error occurred while adding the product to the cart."
 msgstr ""
 
@@ -4875,6 +4914,26 @@ msgstr ""
 #: src/Modules/EntryPoints/class-shortcodes.php:341
 #, php-format
 msgid "This product is out of stock (ID: %d)."
+msgstr ""
+
+#. translators: %s: minimum amount.
+#: src/Modules/Experiences/class-field-validator.php:63
+#, php-format
+msgid "Minimum amount is %s."
+msgstr ""
+
+#. translators: %d: maximum characters.
+#: src/Modules/Experiences/class-field-validator.php:95
+#, php-format
+msgid "Please use at most %d characters."
+msgstr ""
+
+#: src/Modules/Experiences/class-field-validator.php:111
+msgid "Please choose a donation type."
+msgstr ""
+
+#: src/WooCommerce/class-cart.php:141
+msgid "This campaign is no longer accepting donations."
 msgstr ""
 
 #: blocks/donation-form/index.js:40 blocks/donation-form/index.js:50

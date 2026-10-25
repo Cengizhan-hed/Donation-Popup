@@ -72,7 +72,7 @@ final class Cart_Data {
 				$data['dedication'] = $value;
 			}
 		}
-		if ( isset( $allowed['donation_anonymous'] ) && ! empty( $input['donation_anonymous'] ) && '0' !== (string) $input['donation_anonymous'] ) {
+		if ( isset( $allowed['donation_anonymous'] ) && ! empty( $input['donation_anonymous'] ) ) {
 			$data['anonymous'] = '1';
 		}
 
@@ -92,7 +92,7 @@ final class Cart_Data {
 	public static function cart_item_data( array $donation_data, $custom_price, $product_id, $submission = '', $type = '' ) {
 		$item = array(
 			'donation_data' => $donation_data,
-			'unique_key'    => md5( serialize( array( (int) $product_id, 'main', microtime( true ), self::nonce_part() ) ) ),
+			'unique_key'    => md5( implode( '|', array( (int) $product_id, 'main', microtime( true ), self::nonce_part() ) ) ),
 		);
 		if ( null !== $custom_price && $custom_price > 0 ) {
 			$item['custom_price'] = (float) $custom_price;
@@ -159,7 +159,7 @@ final class Cart_Data {
 			self::set_or_unset( $current, 'note', self::textarea( self::scalar( $update['note'] ), self::NOTE_MAX ) );
 		}
 		if ( array_key_exists( 'anonymous', $update ) ) {
-			self::set_or_unset( $current, 'anonymous', ! empty( $update['anonymous'] ) && 'false' !== $update['anonymous'] && '0' !== (string) $update['anonymous'] ? '1' : '' );
+			self::set_or_unset( $current, 'anonymous', ! empty( $update['anonymous'] ) && 'false' !== $update['anonymous'] ? '1' : '' );
 		}
 		return $current;
 	}

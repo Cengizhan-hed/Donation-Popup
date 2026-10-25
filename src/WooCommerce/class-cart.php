@@ -204,7 +204,7 @@ final class Cart {
 			'message' => '',
 			'errors'  => array(),
 		);
-		if ( class_exists( 'WDP_Campaign_Goal' ) && method_exists( 'WDP_Campaign_Goal', 'assert_accepts_donation' ) ) {
+		if ( class_exists( 'WDP_Campaign_Goal' ) ) {
 			try {
 				\WDP_Campaign_Goal::assert_accepts_donation( $product );
 			} catch ( \Exception $e ) {
@@ -214,7 +214,7 @@ final class Cart {
 				);
 			}
 		}
-		if ( ! empty( $model['allow_custom'] ) && class_exists( 'WDP_Cart' ) && method_exists( 'WDP_Cart', 'get_donation_amount_error' ) ) {
+		if ( ! empty( $model['allow_custom'] ) && class_exists( 'WDP_Cart' ) ) {
 			$min   = method_exists( $product, 'get_meta' ) ? $product->get_meta( '_min_custom_price' ) : '';
 			$error = (string) \WDP_Cart::get_donation_amount_error( $amount, $min, (int) $product->get_id(), true );
 			if ( '' !== $error ) {
@@ -235,29 +235,14 @@ final class Cart {
 	 * @return mixed
 	 */
 	private function with_plugin_flow( $callback ) {
-		// phpcs:disable WordPress.Security.NonceVerification.Missing
-		$had_action = array_key_exists( 'action', $_POST );
-		$had_flow   = array_key_exists( 'wdp_ajax_flow', $_POST );
-		$old_action = $had_action ? $_POST['action'] : null;
-		$old_flow   = $had_flow ? $_POST['wdp_ajax_flow'] : null;
-
+		$backup                 = $_POST; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- yalnız yedek; okuma yok.
 		$_POST['action']        = 'wdp_ajax_add_to_cart';
 		$_POST['wdp_ajax_flow'] = '1';
 		try {
 			return call_user_func( $callback );
 		} finally {
-			if ( $had_action ) {
-				$_POST['action'] = $old_action;
-			} else {
-				unset( $_POST['action'] );
-			}
-			if ( $had_flow ) {
-				$_POST['wdp_ajax_flow'] = $old_flow;
-			} else {
-				unset( $_POST['wdp_ajax_flow'] );
-			}
+			$_POST = $backup;
 		}
-		// phpcs:enable WordPress.Security.NonceVerification.Missing
 	}
 
 	/**
@@ -272,7 +257,8 @@ final class Cart {
 			$notices = wc_get_notices( 'error' );
 			if ( is_array( $notices ) && ! empty( $notices ) ) {
 				$first   = reset( $notices );
-				$message = wp_strip_all_tags( is_array( $first ) && isset( $first['notice'] ) ? (string) $first['notice'] : (string) $first );
+				$text    = is_array( $first ) && isset( $first['notice'] ) ? $first['notice'] : $first;
+				$message = is_scalar( $text ) ? wp_strip_all_tags( (string) $text ) : '';
 			}
 			if ( function_exists( 'wc_clear_notices' ) ) {
 				wc_clear_notices();
