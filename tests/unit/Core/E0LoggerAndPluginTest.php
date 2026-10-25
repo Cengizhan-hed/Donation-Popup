@@ -64,7 +64,8 @@ final class E0LoggerAndPluginTest extends TestCase {
 		$container = $first->container();
 		$this->assertInstanceOf(Container::class, $container);
 		$this->assertSame($container->get(Module_Registry::class), $container->get(Module_Registry::class));
-		$this->assertSame(array('entry_points', 'experiences'), $container->get(Module_Registry::class)->slugs());
+		// Yeni modüller (side_cart, ...) listeye eklenebilir: çekirdek ikisi her zaman kayıtlı.
+		$this->assertSame(array('entry_points', 'experiences'), array_slice($container->get(Module_Registry::class)->slugs(), 0, 2));
 		$this->assertFalse($container->get(Module_Registry::class)->is_enabled('experiences'), 'Varsayilan motor legacy: experiences kapali.');
 	}
 

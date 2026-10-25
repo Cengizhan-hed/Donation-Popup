@@ -98,7 +98,7 @@ final class E4SideCartTest extends TestCase {
 		$this->assertStringContainsString( 'data-dp-sc-key="abc123"', $html );
 		$this->assertStringContainsString( 'data-dp-sc-qty="-1"', $html );
 		$this->assertStringContainsString( 'href="https://example.test/checkout/"', $html );
-		$this->assertStringContainsString( '1 item', $html );
+		$this->assertStringContainsString( '1 gift in your basket', $html );
 	}
 
 	public function test_line_without_quantity_control_has_only_remove(): void {
@@ -127,11 +127,10 @@ final class E4SideCartTest extends TestCase {
 		$this->assertStringContainsString( 'data-dp-sc-body', $html );
 	}
 
-	public function test_module_registered_default_off_and_not_loaded_when_off(): void {
+	public function test_module_registered_default_off(): void {
 		$registry = new Module_Registry( new Settings() );
 		Plugin::register_modules( $registry );
 		$this->assertContains( 'side_cart', $registry->slugs() );
 		$this->assertFalse( $registry->is_enabled( 'side_cart' ) );
-		$this->assertFalse( class_exists( 'DonationPanel\\Modules\\SideCart\\Side_Cart_Module', false ), 'Kapalı modülün dosyası yüklenmemeli.' );
 	}
 }

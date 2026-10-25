@@ -42,7 +42,7 @@ class Side_Cart_Controller extends Rest_Controller {
 	 * @return \WP_REST_Response|\WP_Error
 	 */
 	public function show() {
-		$limited = $this->throttle( 'side_cart', 120 );
+		$limited = $this->throttle( 'side_cart', 600 );
 		if ( is_wp_error( $limited ) ) {
 			return $limited;
 		}

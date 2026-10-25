@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: woo-donation-popup\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-25 18:32:10+0000\n"
-"PO-Revision-Date: 2026-10-25 18:32:10+0000\n"
+"POT-Creation-Date: 2026-10-25 19:13:52+0000\n"
+"PO-Revision-Date: 2026-10-25 19:13:52+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: tr_TR\n"
@@ -47,6 +47,13 @@ msgstr "%1$s / %2$s"
 #: includes/class-donations-list.php:838
 msgid "%1$s / %2$s raised"
 msgstr "%1$s / %2$s toplandı"
+
+#: src/Modules/SideCart/class-side-cart-renderer.php
+#, php-format
+msgid "%d gift in your basket"
+msgid_plural "%d gifts in your basket"
+msgstr[0] "Sepetinizde %d bağış var"
+msgstr[1] "Sepetinizde %d bağış var"
 
 #: assets/js/src/cart/ui.js:212
 #, php-format
@@ -154,6 +161,10 @@ msgstr "İşlemler"
 #: assets/js/src/cart/ui.js:245
 msgid "Add a donation to continue to checkout."
 msgstr "Bağış ekleyerek buradan ödeme adımına geçebilirsiniz."
+
+#: src/Modules/SideCart/class-side-cart-renderer.php
+msgid "Add a gift and it will be summarised here."
+msgstr "Bir bağış ekleyin; sepet burada özetlenir."
 
 #: includes/class-admin-form-tabs-renderer.php:207
 #: includes/class-admin-settings-normalizer.php:377
@@ -702,6 +713,10 @@ msgstr "Kart tıklamak: Sadece form alanlarını doldurur (henüz kaydetmez). �
 msgid "Clock"
 msgstr "Saat"
 
+#: src/Modules/SideCart/class-side-cart-renderer.php
+msgid "Close basket"
+msgstr "Sepeti kapat"
+
 #: includes/class-admin-form-tabs-renderer.php:451
 msgid "Close button color"
 msgstr "Kapat Butonu Rengi"
@@ -803,9 +818,17 @@ msgstr "Devam"
 msgid "Continue adding donations"
 msgstr "Bağış eklemeye devam edin"
 
+#: src/Modules/SideCart/class-side-cart-renderer.php
+msgid "Continue giving"
+msgstr "Bağışa devam et"
+
 #: includes/class-admin-design-studio-renderer.php:330
 msgid "Continue icon"
 msgstr "Devam ikonu"
+
+#: src/Modules/SideCart/class-side-cart-renderer.php
+msgid "Continue to checkout"
+msgstr "Ödemeye geç"
 
 #: includes/class-admin-assets.php:120
 msgid "Copied"
@@ -916,6 +939,10 @@ msgstr "Progress formlarda dekoratif / rozet ikon yedeği."
 #: includes/templates/class-form-fields-renderer.php:291 includes/templates/class-form-fields-renderer.php:697
 msgid "Decrease"
 msgstr "Azalt"
+
+#: src/Modules/SideCart/class-side-cart-renderer.php
+msgid "Decrease quantity"
+msgstr "Adedi azalt"
 
 #: includes/class-cart.php:532 includes/class-order-meta-keys.php:82
 msgid "Dedication"
@@ -1038,6 +1065,10 @@ msgstr "Bağış Tutarı"
 #: includes/traits/trait-wdp-assets-registry.php:355
 msgid "Donation amount *"
 msgstr "Bağış tutarı *"
+
+#: src/Modules/SideCart/class-side-cart-renderer.php
+msgid "Donation basket"
+msgstr "Bağış sepeti"
 
 #: includes/class-donations-list.php:741
 msgid "Donation categories"
@@ -1826,6 +1857,11 @@ msgstr "Paket içe aktar"
 msgid "Imported pack"
 msgstr "İçe aktarılan paket"
 
+#: src/Modules/SideCart/class-side-cart-renderer.php
+#, php-format
+msgid "In honour of: %s"
+msgstr "Ithaf: %s"
+
 #: assets/js/src/progress-bar.js:321
 msgid "In progress"
 msgstr "Devam ediyor"
@@ -1838,6 +1874,10 @@ msgstr "%d hissedar formu eksik."
 #: includes/templates/class-form-fields-renderer.php:293 includes/templates/class-form-fields-renderer.php:699
 msgid "Increase"
 msgstr "Arttır"
+
+#: src/Modules/SideCart/class-side-cart-renderer.php
+msgid "Increase quantity"
+msgstr "Adedi artır"
 
 #: includes/class-phone-field.php:81
 msgid "India"
@@ -2406,6 +2446,11 @@ msgstr "Açık"
 msgid "On a goal campaign the extra donation is not shown on the form; the settings are used if you switch to other types."
 msgstr "Hedefli kampanyada alt bağış formda gösterilmez; ayarlar diğer tiplere geçerseniz kullanılır."
 
+#: src/Modules/SideCart/class-side-cart-renderer.php
+#, php-format
+msgid "On behalf of: %s"
+msgstr "Adına: %s"
+
 #: includes/class-admin-design-studio-renderer.php:42
 msgid "On behalf of? (optional)"
 msgstr "Kimin adına? (isteğe bağlı)"
@@ -2534,6 +2579,10 @@ msgstr "Ödeme Yap Butonu Rengi"
 #: includes/class-admin-form-tabs-renderer.php:506
 msgid "Pay button hover color"
 msgstr "Ödeme Yap Butonu Hover Rengi"
+
+#: src/Modules/SideCart/class-side-cart-renderer.php
+msgid "Payment method and any taxes are shown at checkout."
+msgstr "Ödeme yöntemi ve varsa vergiler ödeme sayfasında görünür."
 
 #: includes/class-admin-design-studio-renderer.php:116
 msgid "Pending"
@@ -2920,6 +2969,10 @@ msgstr "Hedefe ulaşma oranı"
 msgid "Qatar"
 msgstr "Katar"
 
+#: src/Modules/SideCart/class-side-cart-renderer.php
+msgid "Quantity"
+msgstr "Adet"
+
 #: includes/class-admin-product-data-tab.php:681
 msgid "Quantity selector"
 msgstr "Adet seçici"
@@ -3006,9 +3059,22 @@ msgstr "Normal gölge rengi (hex)"
 msgid "Regular shadow: X/Y/blur/spread (px)"
 msgstr "Normal gölge: X/Y/bulanık/yayılım (px)"
 
+#: src/Modules/SideCart/class-side-cart-renderer.php
+msgid "Remove"
+msgstr "Kaldır"
+
+#: src/Modules/SideCart/class-side-cart-renderer.php
+#, php-format
+msgid "Remove %s"
+msgstr "%s bağışını kaldır"
+
 #: assets/js/src/cart/ui.js:221
 msgid "Remove from cart"
 msgstr "Sepetten Kaldır"
+
+#: src/Modules/SideCart/class-side-cart-module.php
+msgid "Removed from your basket."
+msgstr "Sepetinizden kaldırıldı."
 
 #. YENI-SARMA block.json
 msgid "Renders the donation form for the current or selected product."
@@ -3531,6 +3597,10 @@ msgstr "Stil paketleri yüklenemedi."
 #: includes/class-admin-design-studio-renderer.php:228
 msgid "Subtle"
 msgstr "Hafif"
+
+#: src/Modules/SideCart/class-side-cart-renderer.php
+msgid "Subtotal"
+msgstr "Ara toplam"
 
 #: includes/traits/trait-wdp-assets-registry.php:347
 msgid "Success"
@@ -4324,6 +4394,10 @@ msgstr "Kaydedilmemiş değişiklikleriniz var."
 #: includes/class-admin-assets.php:148
 msgid "You have unsaved changes. Are you sure you want to leave this tab?"
 msgstr "Kaydedilmemiş değişiklikleriniz var. Bu sekmeden ayrılmak istediğinize emin misiniz?"
+
+#: src/Modules/SideCart/class-side-cart-renderer.php
+msgid "Your basket is empty"
+msgstr "Sepetiniz boş"
 
 #: assets/js/src/cart/ui.js:242
 msgid "Your cart is empty"

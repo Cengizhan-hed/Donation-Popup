@@ -55,14 +55,14 @@ final class Side_Cart_Renderer {
 	}
 
 	/**
-	 * Kalem sayısı metni ("3 items").
+	 * Kalem sayısı metni ("3 gifts in your basket").
 	 *
 	 * @param int $count Kalem sayısı.
 	 * @return string
 	 */
 	public static function count_text( $count ) {
-		/* translators: %d: number of items in the donation basket. */
-		return sprintf( _n( '%d item', '%d items', (int) $count, 'woo-donation-popup' ), (int) $count );
+		/* translators: %d: number of gifts in the donation basket. */
+		return sprintf( _n( '%d gift in your basket', '%d gifts in your basket', (int) $count, 'woo-donation-popup' ), (int) $count );
 	}
 
 	/**

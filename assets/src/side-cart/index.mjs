@@ -32,6 +32,7 @@ function mount(root) {
   let opened = false;
   let lastFocus = null;
   let busy = false;
+  let refreshSeq = 0;
 
   const triggers = () => Array.from(document.querySelectorAll('[data-dp-sc-open]'));
 
@@ -70,6 +71,8 @@ function mount(root) {
     if (!restUrl) {
       return false;
     }
+    refreshSeq += 1;
+    const mine = refreshSeq;
     try {
       const url = new URL(restUrl, window.location.href);
       url.searchParams.set('_', String(Date.now()));
@@ -78,6 +81,10 @@ function mount(root) {
         return false;
       }
       const data = await response.json();
+      if (mine !== refreshSeq) {
+        // Daha yeni bir yenileme başladı: eski yanıt gövdeyi ezmesin (yarış).
+        return true;
+      }
       if (data && typeof data.html === 'string') {
         body.innerHTML = data.html;
         setCount(data.count);
@@ -169,12 +176,13 @@ function mount(root) {
     target.focus();
   }
 
-  function open() {
+  function open(opener) {
     if (opened) {
       return;
     }
     opened = true;
-    lastFocus = document.activeElement;
+    // WebKit düğmeye tıklayınca odak vermez: odak dönüşü için tıklanan öğe açıkça saklanır.
+    lastFocus = opener || document.activeElement;
     overlay.classList.add('is-open');
     document.documentElement.classList.add('dp-sc-lock');
     triggers().forEach((t) => t.setAttribute('aria-expanded', 'true'));
@@ -221,9 +229,10 @@ function mount(root) {
     if (!el) {
       return;
     }
-    if (el.closest('[data-dp-sc-open]')) {
+    const opener = el.closest('[data-dp-sc-open]');
+    if (opener) {
       event.preventDefault();
-      open();
+      open(opener);
       return;
     }
     if (!root.contains(el)) {
