@@ -35,6 +35,7 @@ phpunit.xml
 phpunit.xml.dist
 .phpunit.result.cache
 phpcs.xml.dist
+phpcs-src.xml.dist
 phpstan.neon
 phpstan.verify.neon
 phpstan.dead.neon
