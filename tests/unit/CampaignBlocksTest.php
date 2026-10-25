@@ -21,7 +21,8 @@ final class CampaignBlocksTest extends TestCase {
 
 	protected function setUp(): void {
 		WDP_Test_State::reset();
-		WDP_Compat_Loader::init();
+		require_once dirname(__DIR__, 2) . '/docs/site-snippets/curcy-bridge.php';
+		WDP_Site_Curcy_Bridge::init();
 		WDP_Test_State::$post_meta[ self::PRODUCT ] = array(
 			'_enable_progress_bar' => 'yes',
 			'_progress_bar_limit'  => '1000',

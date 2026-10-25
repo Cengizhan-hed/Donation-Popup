@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: woo-donation-popup 10.35.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-25 14:46+0300\n"
+"POT-Creation-Date: 2026-10-25 15:58+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -940,7 +940,7 @@ msgstr ""
 #: includes/class-donation-product-context-service.php:88
 #: includes/class-utils.php:198
 #: includes/templates/class-form-fields-renderer.php:403
-#: includes/traits/trait-wdp-assets-registry.php:381
+#: includes/traits/trait-wdp-assets-registry.php:382
 msgid "Add add-on donation"
 msgstr ""
 
@@ -1067,7 +1067,7 @@ msgstr ""
 
 #: includes/class-admin-form-tabs-renderer.php:399
 #: includes/templates/class-form-fields-renderer.php:196
-#: includes/traits/trait-wdp-assets-registry.php:380
+#: includes/traits/trait-wdp-assets-registry.php:381
 msgid "Donation amount"
 msgstr ""
 
@@ -1750,7 +1750,7 @@ msgid "Progress"
 msgstr ""
 
 #: includes/class-admin-page-renderer.php:58
-#: includes/traits/trait-wdp-assets-registry.php:371
+#: includes/traits/trait-wdp-assets-registry.php:372
 msgid "Success"
 msgstr ""
 
@@ -2895,7 +2895,7 @@ msgstr ""
 
 #: includes/class-donation-optional-fields.php:101
 #: includes/i18n/class-wdp-js-i18n.php:84
-#: includes/traits/trait-wdp-assets-registry.php:389
+#: includes/traits/trait-wdp-assets-registry.php:390
 #: assets/js/src/form/messages.js:122 assets/js/src/form/validate.js:652
 msgid "Please enter a valid email address."
 msgstr ""
@@ -3842,7 +3842,7 @@ msgstr ""
 
 #: includes/class-utils.php:323 includes/class-utils.php:333
 #: includes/traits/trait-wdp-ajax-cart-add.php:461
-#: includes/traits/trait-wdp-assets-registry.php:383
+#: includes/traits/trait-wdp-assets-registry.php:384
 msgid "Please enter a valid add-on donation amount."
 msgstr ""
 
@@ -4273,7 +4273,7 @@ msgid "Add a donation to continue to checkout."
 msgstr ""
 
 #: includes/i18n/class-wdp-js-i18n.php:35
-#: includes/traits/trait-wdp-assets-registry.php:370
+#: includes/traits/trait-wdp-assets-registry.php:371
 #: assets/js/src/product.js:189
 msgid "An error occurred"
 msgstr ""
@@ -4358,7 +4358,7 @@ msgid "full name is missing"
 msgstr ""
 
 #: includes/i18n/class-wdp-js-i18n.php:58
-#: includes/traits/trait-wdp-assets-registry.php:388
+#: includes/traits/trait-wdp-assets-registry.php:389
 #: assets/js/src/form/messages.js:18 assets/js/src/form/validate.js:110
 #: assets/js/src/form.js:327
 msgid "Full name is required."
@@ -4465,7 +4465,7 @@ msgstr ""
 
 #. translators: %s: example amount in store format
 #: includes/i18n/class-wdp-js-i18n.php:86
-#: includes/traits/trait-wdp-assets-registry.php:376
+#: includes/traits/trait-wdp-assets-registry.php:377
 #: includes/traits/trait-wdp-utils-price.php:242
 #: assets/js/src/core/utils.js:250
 #, javascript-format, php-format
@@ -4473,7 +4473,7 @@ msgid "Please enter the amount in this format, e.g. %s"
 msgstr ""
 
 #: includes/i18n/class-wdp-js-i18n.php:87
-#: includes/traits/trait-wdp-assets-registry.php:387
+#: includes/traits/trait-wdp-assets-registry.php:388
 #: assets/js/src/form/messages.js:56 assets/js/src/form/validate.js:138
 #: assets/js/src/form.js:467
 msgid "Please enter your complete phone number."
@@ -4537,7 +4537,7 @@ msgid "Shareholder form %d is incomplete."
 msgstr ""
 
 #: includes/i18n/class-wdp-js-i18n.php:103
-#: includes/traits/trait-wdp-assets-registry.php:390
+#: includes/traits/trait-wdp-assets-registry.php:391
 #: assets/js/src/form/messages.js:27 assets/js/src/form/validate.js:117
 #: assets/js/src/form.js:335
 msgid "Shareholder name is required."
@@ -4562,7 +4562,7 @@ msgid "The form is not ready yet. Please wait a few seconds and try again."
 msgstr ""
 
 #: includes/i18n/class-wdp-js-i18n.php:108
-#: includes/traits/trait-wdp-assets-registry.php:372
+#: includes/traits/trait-wdp-assets-registry.php:373
 #: assets/js/src/form/messages.js:36 assets/js/src/form/validate.js:124
 #: assets/js/src/form/wizard.js:221 assets/js/src/form.js:343
 msgid "This field is required"
@@ -4674,7 +4674,7 @@ msgstr ""
 #: includes/templates/class-form-fields-renderer.php:410
 #: includes/templates/class-form-fields-renderer.php:411
 #: includes/templates/class-form-fields-renderer.php:440
-#: includes/traits/trait-wdp-assets-registry.php:382
+#: includes/traits/trait-wdp-assets-registry.php:383
 msgid "Add-on donation amount"
 msgstr ""
 
@@ -4741,7 +4741,7 @@ msgid "Maximum number of shares exceeded"
 msgstr ""
 
 #: includes/traits/trait-wdp-ajax-cart-add.php:232
-#: includes/traits/trait-wdp-assets-registry.php:377
+#: includes/traits/trait-wdp-assets-registry.php:378
 msgid "Minimum price: "
 msgstr ""
 
@@ -4824,55 +4824,55 @@ msgstr ""
 msgid "Shareholder form status"
 msgstr ""
 
-#: includes/traits/trait-wdp-assets-registry.php:369
+#: includes/traits/trait-wdp-assets-registry.php:370
 msgid "Loading..."
 msgstr ""
 
-#: includes/traits/trait-wdp-assets-registry.php:373
+#: includes/traits/trait-wdp-assets-registry.php:374
 msgid "Invalid price"
 msgstr ""
 
 #. translators: %s: example whole amount in store format
-#: includes/traits/trait-wdp-assets-registry.php:374
 #: includes/traits/trait-wdp-assets-registry.php:375
+#: includes/traits/trait-wdp-assets-registry.php:376
 #: includes/traits/trait-wdp-utils-price.php:220
 #, php-format
 msgid "This site does not accept amounts with decimals, e.g. %s"
 msgstr ""
 
-#: includes/traits/trait-wdp-assets-registry.php:378
+#: includes/traits/trait-wdp-assets-registry.php:379
 msgid "Maximum number of shares: "
 msgstr ""
 
-#: includes/traits/trait-wdp-assets-registry.php:379
+#: includes/traits/trait-wdp-assets-registry.php:380
 msgid "Donation amount *"
 msgstr ""
 
-#: includes/traits/trait-wdp-assets-registry.php:384
+#: includes/traits/trait-wdp-assets-registry.php:385
 msgid "Minimum add-on donation amount: "
 msgstr ""
 
-#: includes/traits/trait-wdp-assets-registry.php:385
+#: includes/traits/trait-wdp-assets-registry.php:386
 msgid "Please enter a valid phone number."
 msgstr ""
 
-#: includes/traits/trait-wdp-assets-registry.php:386
+#: includes/traits/trait-wdp-assets-registry.php:387
 msgid "Phone number is missing."
 msgstr ""
 
-#: includes/traits/trait-wdp-assets-registry.php:391
+#: includes/traits/trait-wdp-assets-registry.php:392
 msgid "full name field is missing"
 msgstr ""
 
-#: includes/traits/trait-wdp-assets-registry.php:392
+#: includes/traits/trait-wdp-assets-registry.php:393
 msgid "please enter your complete phone number"
 msgstr ""
 
-#: includes/traits/trait-wdp-assets-registry.php:393
+#: includes/traits/trait-wdp-assets-registry.php:394
 msgid "Search"
 msgstr ""
 
-#: includes/traits/trait-wdp-assets-registry.php:394
+#: includes/traits/trait-wdp-assets-registry.php:395
 msgid "Your donation was added to the cart"
 msgstr ""
 

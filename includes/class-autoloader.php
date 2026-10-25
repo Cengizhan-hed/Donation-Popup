@@ -91,7 +91,7 @@ class WDP_Autoloader {
 			return;
 		}
 
-		// Third-party compatibility code (currency adapters) lives only under includes/compat/.
+		// Third-party compatibility code (builder detection) lives only under includes/compat/.
 		self::require_if_exists( $root . 'compat/' . $file_name );
 	}
 }

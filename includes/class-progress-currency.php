@@ -1,6 +1,6 @@
 <?php
 /**
- * Progress toplanan tutar: para birimi dönüşümü (kur kaynağı filtreyle; eklentiye özel okuyucular includes/compat/ altında).
+ * Progress toplanan tutar: para birimi dönüşümü (kur kaynağı yalnız belgelenmiş filtreler; çekirdek hiçbir çoklu para birimi eklentisini tanımaz).
  *
  * @package WooCommerce\Donation_Popup
  */
@@ -62,7 +62,7 @@ class WDP_Progress_Currency {
 
 		/**
 		 * Siparişe kaydedilmiş kur (1 ana birim = X sipariş para birimi).
-		 * Çoklu para birimi eklentilerinin okuyucuları includes/compat/ altındadır.
+		 * Çoklu para birimi eklentisi kullanan siteler bu filtreye site koduyla bağlanır (docs/site-snippets/).
 		 *
 		 * @param float|null        $rate     Rate or null when unknown.
 		 * @param WC_Abstract_Order $order    Order.
@@ -91,7 +91,7 @@ class WDP_Progress_Currency {
 		}
 
 		/**
-		 * Canlı kur (çoklu para birimi bağdaştırıcıları bu filtreye bağlanır).
+		 * Canlı kur (çoklu para birimi kullanan siteler bu filtreye site koduyla bağlanır).
 		 *
 		 * @param float|null $rate     Rate (order_currency per 1 base) or null.
 		 * @param string     $currency Order currency.
@@ -103,6 +103,37 @@ class WDP_Progress_Currency {
 		}
 
 		return null;
+	}
+
+	/**
+	 * Genel tutar dönüşümü (`wdp_convert_amount` filtresi). Varsayılan: dönüşüm YOK, tutar olduğu gibi döner.
+	 * Çoklu para birimi kullanan siteler filtreye site koduyla bağlanır (docs/site-snippets/).
+	 *
+	 * @param float                $amount Amount in $from.
+	 * @param string               $from   Kaynak para birimi (ISO).
+	 * @param string               $to     Hedef para birimi (ISO).
+	 * @param array<string, mixed> $context Bağlam (ör. 'order').
+	 * @return float
+	 */
+	public static function convert_amount( $amount, $from, $to, $context = array() ) {
+		$amount = (float) $amount;
+		$from   = strtoupper( (string) $from );
+		$to     = strtoupper( (string) $to );
+		if ( $from === $to || $from === '' || $to === '' ) {
+			return $amount;
+		}
+
+		/**
+		 * Genel tutar dönüşümü: $amount tutarını $from para biriminden $to para birimine çevir.
+		 * Varsayılan olarak çekirdek dönüşüm yapmaz (tutar aynen döner).
+		 *
+		 * @param float                $amount  Tutar ($from biriminde).
+		 * @param string               $from    Kaynak para birimi.
+		 * @param string               $to      Hedef para birimi.
+		 * @param array<string, mixed> $context Bağlam.
+		 */
+		$filtered = apply_filters( 'wdp_convert_amount', $amount, $from, $to, $context );
+		return is_numeric( $filtered ) ? (float) $filtered : $amount; // @phpstan-ignore function.alreadyNarrowedType
 	}
 
 	/**
@@ -140,6 +171,12 @@ class WDP_Progress_Currency {
 
 		$rate = self::get_order_rate( $order, $currency );
 		if ( $rate === null || $rate <= 0 ) {
+			// Kur yok: genel dönüşüm filtresi (varsayılan: tutar aynen döner = dönüşüm yok → eksik kur sayılır).
+			$converted = self::convert_amount( $amount, $currency, $base, array( 'order' => $order ) );
+			if ( abs( $converted - $amount ) > 0.0000001 ) {
+				$result['amount'] = $converted;
+				return apply_filters( 'wdp_progress_convert_amount', $result, $amount, $currency, $base, $order );
+			}
 			$result['ok']     = false;
 			$result['amount'] = 0.0;
 			$result['reason'] = 'missing_rate';
