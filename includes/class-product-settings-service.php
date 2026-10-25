@@ -23,7 +23,6 @@ class WDP_Product_Settings_Service {
 		'enable_quantity',
 		'enable_amount_presets',
 		'enable_impact_line',
-		'progress_celebrate',
 		'enable_urgency',
 		'enable_social_proof',
 		'enable_cover_fee',
@@ -272,7 +271,6 @@ class WDP_Product_Settings_Service {
 		$enable_wizard         = self::parse_tristate_flag( isset( $request['enable_wizard'] ) ? $request['enable_wizard'] : null );
 		$enable_field_icons    = self::parse_tristate_flag( isset( $request['enable_field_icons'] ) ? $request['enable_field_icons'] : null );
 		$enable_impact_line    = self::parse_bool_flag( isset( $request['enable_impact_line'] ) ? $request['enable_impact_line'] : true );
-		$progress_celebrate    = self::parse_bool_flag( isset( $request['progress_celebrate'] ) ? $request['progress_celebrate'] : true );
 		$enable_email          = self::parse_tristate_flag( isset( $request['enable_email'] ) ? $request['enable_email'] : null );
 		$enable_dedication     = self::parse_tristate_flag( isset( $request['enable_dedication'] ) ? $request['enable_dedication'] : null );
 		$enable_anonymous      = self::parse_tristate_flag( isset( $request['enable_anonymous'] ) ? $request['enable_anonymous'] : null );
@@ -507,7 +505,6 @@ class WDP_Product_Settings_Service {
 			'_enable_wizard'             => $enable_wizard,
 			'_enable_field_icons'        => $enable_field_icons,
 			'_enable_impact_line'        => $enable_impact_line ? 'yes' : 'no',
-			'_progress_celebrate'        => $progress_celebrate ? 'yes' : 'no',
 			'_impact_line_text'          => isset( $request['impact_line_text'] ) ? self::limit_text( sanitize_text_field( wp_unslash( $request['impact_line_text'] ) ), 200 ) : '',
 			'_amount_presets'            => $amount_presets,
 			'_amount_preset_recommended' => $recommended,

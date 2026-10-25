@@ -21,11 +21,6 @@ return array(
 		'deps'   => array(),
 	),
 	array(
-		'handle' => 'wdp-meta-tracking-js',
-		'file'   => 'src/meta-tracking.js',
-		'deps'   => array(),
-	),
-	array(
 		'handle' => 'wdp-utils-js',
 		'file'   => 'src/core/utils.js',
 		'deps'   => array(),

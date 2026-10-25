@@ -145,8 +145,6 @@ WDP_Test_State::$options['wdp_success_settings']         = array();
 WDP_Test_State::$options['wdp_shareholder_settings']     = array();
 WDP_Test_State::$options['wdp_progress_bar_settings']    = array();
 WDP_Test_State::$options['wdp_modal_layout_settings']    = array();
-WDP_Test_State::$options['wdp_meta_tracking_settings']   = array();
-WDP_Test_State::$options['wdp_category_title_colors']    = array();
 WDP_Test_State::$options[ WDP_Placement_Settings::OPTION ] = WDP_Placement_Settings::defaults();
 
 $renderers = array(
@@ -157,8 +155,6 @@ $renderers = array(
 	'shareholder-form' => array('WDP_Admin_Form_Tabs_Renderer', 'render_shareholder_form_tab'),
 	'progress-bar'     => array('WDP_Admin_Layout_Tabs_Renderer', 'render_progress_bar_tab'),
 	'success-screen'   => array('WDP_Admin_Form_Tabs_Renderer', 'render_success_screen_tab'),
-	'meta'             => array('WDP_Admin_Meta_Tracking_Tab_Renderer', 'render'),
-	'category-colors'  => array('WDP_Admin_Category_Colors_Tab_Renderer', 'render_tab'),
 );
 
 $fail = 0;
@@ -190,8 +186,6 @@ try {
 		array('WDP_Admin_Form_Tabs_Renderer', 'render_shareholder_form_tab'),
 		array('WDP_Admin_Layout_Tabs_Renderer', 'render_progress_bar_tab'),
 		array('WDP_Admin_Form_Tabs_Renderer', 'render_success_screen_tab'),
-		array('WDP_Admin_Meta_Tracking_Tab_Renderer', 'render'),
-		array('WDP_Admin_Category_Colors_Tab_Renderer', 'render_tab'),
 		array('WDP_Admin_Design_Studio_Renderer', 'render_tab')
 	);
 	$page = (string) ob_get_clean();

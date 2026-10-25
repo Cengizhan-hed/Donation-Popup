@@ -279,7 +279,6 @@ class WDP_Admin_Product_Data_Tab {
 			'min_custom_price'          => $min_price !== '' ? $min_price : '0',
 			'max_shares'                => ( $max_shares !== '' && absint( $max_shares ) > 0 ) ? $max_shares : WDP_Donation_Type::DEFAULT_MAX_SHARES,
 			'progress_bar_limit'        => $goal !== '' ? $goal : WDP_Donation_Type::DEFAULT_GOAL,
-			'progress_celebrate'        => $flag( '_progress_celebrate', true ),
 			'goal_reached_action'       => class_exists( 'WDP_Campaign_Goal' )
 				? WDP_Campaign_Goal::sanitize_action( $meta( '_goal_reached_action' ) )
 				: 'message',
@@ -662,7 +661,6 @@ class WDP_Admin_Product_Data_Tab {
 		echo '<span class="description">' . esc_html__( 'Only orders with confirmed payment (processing/completed) are counted; processing fees and on-hold are not included. Amounts are converted to the store’s main currency. The refresh icon recalculates the total from scratch.', 'woo-donation-popup' ) . '</span>';
 		echo '</div>';
 		echo '</div>';
-		self::checkbox( 'progress_celebrate', $values['progress_celebrate'], __( 'Celebration animation', 'woo-donation-popup' ), __( 'Shows a short celebration when the goal is reached.', 'woo-donation-popup' ) );
 		self::select(
 			'goal_reached_action',
 			isset( $values['goal_reached_action'] ) ? $values['goal_reached_action'] : 'message',

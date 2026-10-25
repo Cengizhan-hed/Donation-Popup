@@ -244,7 +244,6 @@ class WDP_Style_Presets {
 			'pending_bg',
 			'preview_bg',
 			'bar_height',
-			'enable_celebrate',
 		);
 		$succ_keys   = array(
 			'success_button_color',
@@ -253,9 +252,6 @@ class WDP_Style_Presets {
 			'success_message_bg',
 			'success_message_color',
 			'success_message_border',
-			'mini_cart_bg',
-			'mini_cart_border',
-			'mini_cart_radius',
 		);
 
 		$pick = static function ( $src, $keys ) {

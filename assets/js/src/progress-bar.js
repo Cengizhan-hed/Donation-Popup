@@ -52,53 +52,11 @@
     percentageElement.classList.toggle('on-track', !overFill);
   }
 
-  function celebrateEnabled() {
-    const ajax = window.wdp_ajax || {};
-    const flags = ajax.flags || {};
-    if (flags.progress_celebrate === 0 || flags.progress_celebrate === '0' || flags.progress_celebrate === false) {
-      return false;
-    }
-    const host = document.querySelector('.hdf-donation-modal-wrapper.show[data-wdp-progress-celebrate], .wdp-donation-form[data-wdp-progress-celebrate]');
-    if (host && host.getAttribute('data-wdp-progress-celebrate') === '0') {
-      return false;
-    }
-    return true;
-  }
-
-  function celebrateProgressComplete(container) {
-    if (!celebrateEnabled()) return;
+  function announceProgressComplete(container) {
     const announce = utils && typeof utils.announceStatus === 'function' ? utils.announceStatus : null;
-    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      if (announce) announce(WDPApp.i18n.__('Goal reached', 'woo-donation-popup'), 'polite');
-      return;
-    }
-    container.classList.add('is-celebrating');
-    let burst = container.querySelector('.wdp-progress-celebrate');
-    if (!burst) {
-      burst = document.createElement('div');
-      burst.className = 'wdp-progress-celebrate';
-      burst.setAttribute('aria-hidden', 'true');
-      for (let i = 0; i < 12; i++) {
-        const p = document.createElement('span');
-        p.className = 'wdp-progress-celebrate__dot';
-        p.style.setProperty('--i', String(i));
-        burst.appendChild(p);
-      }
-      container.appendChild(burst);
-    }
-    window.setTimeout(function() {
-      container.classList.remove('is-celebrating');
-    }, 1200);
     if (announce) announce(WDPApp.i18n.__('Goal reached', 'woo-donation-popup'), 'polite');
     if (utils && typeof utils.emitWdpEvent === 'function') {
       utils.emitWdpEvent('wdp:progress:complete', { container: container });
-    }
-    if (window.WDPMetaTracking && typeof window.WDPMetaTracking.trackCustom === 'function') {
-      try {
-        window.WDPMetaTracking.trackCustom('DonationProgressComplete', {});
-      } catch (err) {
-        if (safeLog) safeLog('progress celebrate meta track', err);
-      }
     }
   }
 
@@ -328,7 +286,7 @@
     const wasComplete = container.dataset.wdpWasComplete === '1';
     const nowComplete = fillPct >= 100;
     if (nowComplete && !wasComplete) {
-      celebrateProgressComplete(container);
+      announceProgressComplete(container);
     }
     container.dataset.wdpWasComplete = nowComplete ? '1' : '0';
 

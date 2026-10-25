@@ -121,8 +121,6 @@ class WDP_Color_Palette {
 		$success['cart_item_price_color']  = $p['primary'];
 		$success['success_message_bg']     = $p['primary_soft_2'];
 		$success['success_message_border'] = $p['primary_border'];
-		$success['mini_cart_bg']           = $p['primary_soft_2'];
-		$success['mini_cart_border']       = $p['primary_border'];
 		return $success;
 	}
 

@@ -198,9 +198,6 @@ class WDP_Admin_Form_Tabs_Renderer {
 			'success_message_color'     => '#16a34a',
 			'success_message_border'    => 'rgba(22, 163, 74, 0.2)',
 			'success_message_radius'    => '10',
-			'mini_cart_bg'              => '#f9fafb',
-			'mini_cart_border'          => '#e5e7eb',
-			'mini_cart_radius'          => '10',
 			'cart_item_name_color'      => '#1f2937',
 			'cart_item_price_color'     => '#0f608b',
 			'sadaka_wc_product_id'      => 0,
@@ -228,8 +225,8 @@ class WDP_Admin_Form_Tabs_Renderer {
 		echo '</table>';
 
 		WDP_Admin_Renderer_Helpers::render_section_heading(
-			__( 'Buttons and mini cart', 'woo-donation-popup' ),
-			__( 'Action button, mini-cart card, and product row colors.', 'woo-donation-popup' )
+			__( 'Buttons and product row', 'woo-donation-popup' ),
+			__( 'Action button and product row colors.', 'woo-donation-popup' )
 		);
 		echo '<table class="form-table wdp-admin-field-cards">';
 		echo '<tr><th scope="row"><label for="success_button_color">' . esc_html__( 'Button color', 'woo-donation-popup' ) . '</label></th><td><input type="color" id="success_button_color" name="success_button_color" value="' . esc_attr( $settings['success_button_color'] ) . '" /></td></tr>';
@@ -238,9 +235,6 @@ class WDP_Admin_Form_Tabs_Renderer {
 		echo '<tr><th scope="row"><label for="success_text_view_cart">' . esc_html__( 'Go to cart', 'woo-donation-popup' ) . '</label></th><td><input type="text" id="success_text_view_cart" name="success_text_view_cart" value="' . esc_attr( $settings['success_text_view_cart'] ) . '" class="regular-text" /></td></tr>';
 		echo '<tr><th scope="row"><label for="success_text_go_checkout">' . esc_html__( 'Complete donation', 'woo-donation-popup' ) . '</label></th><td><input type="text" id="success_text_go_checkout" name="success_text_go_checkout" value="' . esc_attr( $settings['success_text_go_checkout'] ) . '" class="regular-text" /></td></tr>';
 		echo '<tr><th scope="row"><label for="success_text_new_donation">' . esc_html__( 'New donation', 'woo-donation-popup' ) . '</label></th><td><input type="text" id="success_text_new_donation" name="success_text_new_donation" value="' . esc_attr( $settings['success_text_new_donation'] ) . '" class="regular-text" /></td></tr>';
-		echo '<tr><th scope="row"><label for="mini_cart_bg">' . esc_html__( 'Mini cart background', 'woo-donation-popup' ) . '</label></th><td><input type="color" id="mini_cart_bg" name="mini_cart_bg" value="' . esc_attr( $settings['mini_cart_bg'] ) . '" /></td></tr>';
-		echo '<tr><th scope="row"><label for="mini_cart_border">' . esc_html__( 'Mini cart border', 'woo-donation-popup' ) . '</label></th><td><input type="color" id="mini_cart_border" name="mini_cart_border" value="' . esc_attr( $settings['mini_cart_border'] ) . '" /></td></tr>';
-		echo '<tr><th scope="row"><label for="mini_cart_radius">' . esc_html__( 'Mini cart radius', 'woo-donation-popup' ) . '</label></th><td><input type="number" id="mini_cart_radius" name="mini_cart_radius" value="' . esc_attr( $settings['mini_cart_radius'] ) . '" min="0" max="50" step="1" class="small-text" /></td></tr>';
 		echo '<tr><th scope="row"><label for="cart_item_name_color">' . esc_html__( 'Product name color', 'woo-donation-popup' ) . '</label></th><td><input type="color" id="cart_item_name_color" name="cart_item_name_color" value="' . esc_attr( $settings['cart_item_name_color'] ) . '" /></td></tr>';
 		echo '<tr><th scope="row"><label for="cart_item_price_color">' . esc_html__( 'Price color', 'woo-donation-popup' ) . '</label></th><td><input type="color" id="cart_item_price_color" name="cart_item_price_color" value="' . esc_attr( $settings['cart_item_price_color'] ) . '" /></td></tr>';
 		echo '</table>';
@@ -325,9 +319,6 @@ class WDP_Admin_Form_Tabs_Renderer {
 		echo '--wdp-lp-su-msg-r:' . esc_attr( $settings['success_message_radius'] ) . 'px;';
 		echo '--wdp-lp-su-btn:' . esc_attr( $settings['success_button_color'] ) . ';';
 		echo '--wdp-lp-su-btn-r:' . esc_attr( $settings['success_button_radius'] ) . 'px;';
-		echo '--wdp-lp-su-cart-bg:' . esc_attr( $settings['mini_cart_bg'] ) . ';';
-		echo '--wdp-lp-su-cart-bd:' . esc_attr( $settings['mini_cart_border'] ) . ';';
-		echo '--wdp-lp-su-cart-r:' . esc_attr( $settings['mini_cart_radius'] ) . 'px;';
 		echo '--wdp-lp-su-name:' . esc_attr( $settings['cart_item_name_color'] ) . ';';
 		echo '--wdp-lp-su-price:' . esc_attr( $settings['cart_item_price_color'] ) . ';';
 		echo '">';

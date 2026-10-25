@@ -527,7 +527,7 @@ class WDP_Form_Modules {
 	}
 
 	/**
-	 * Effective accent color: product primary → category → general brand.
+	 * Effective accent color: product primary → general brand.
 	 * Does not read `_theme_inherit_category_color`.
 	 *
 	 * @param int   $product_id Product ID.
@@ -545,14 +545,6 @@ class WDP_Form_Modules {
 		if ( $primary !== '' ) {
 			return $primary;
 		}
-		if ( $product_id > 0 && class_exists( 'WDP_Category_Title_Color_Service' ) ) {
-			$cat = WDP_Category_Title_Color_Service::get_color_for_product( $product_id );
-			if ( is_string( $cat ) && $cat !== '' ) {
-				return class_exists( 'WDP_Color_Palette' )
-					? WDP_Color_Palette::normalize_hex( $cat )
-					: (string) ( sanitize_hex_color( $cat ) ?: '' );
-			}
-		}
 		$button = get_option( 'wdp_button_settings', array() );
 		if ( ! is_array( $button ) ) {
 			return '';
@@ -567,7 +559,7 @@ class WDP_Form_Modules {
 	}
 
 	/**
-	 * Product / category override only (empty → leave global CSS vars).
+	 * Product override only (empty → leave global CSS vars).
 	 *
 	 * @param int   $product_id Product ID.
 	 * @param array $context    Optional context.
@@ -584,15 +576,22 @@ class WDP_Form_Modules {
 		if ( $primary !== '' ) {
 			return $primary;
 		}
-		if ( $product_id > 0 && class_exists( 'WDP_Category_Title_Color_Service' ) ) {
-			$cat = WDP_Category_Title_Color_Service::get_color_for_product( $product_id );
-			if ( is_string( $cat ) && $cat !== '' ) {
-				return class_exists( 'WDP_Color_Palette' )
-					? WDP_Color_Palette::normalize_hex( $cat )
-					: (string) ( sanitize_hex_color( $cat ) ?: '' );
-			}
-		}
 		return '';
+	}
+
+	/**
+	 * Inline style attribute for the product title (product primary colour only).
+	 *
+	 * @param int $product_id Product ID.
+	 * @return string Safe HTML attribute fragment (empty or ` style="color:..."`).
+	 */
+	public static function get_title_style_attr( $product_id ) {
+		$color = self::resolve_product_shell_primary( absint( $product_id ) );
+		if ( '' === $color ) {
+			return '';
+		}
+
+		return ' style="color:' . esc_attr( $color ) . '"';
 	}
 
 	/**

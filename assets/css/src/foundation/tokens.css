@@ -343,7 +343,7 @@
   --wdp-footer-bg: transparent;
   --wdp-footer-border: 1px solid rgba(15, 23, 42, 0.06);
 
-  --wdp-mini-cart-radius: var(--wdp-radius-ui);
+  --wdp-mini-cart-radius: 10px;
   --wdp-mini-cart-row-min-height: 52px;
   --wdp-mini-cart-surface-bg: #ffffff;
   --wdp-mini-cart-surface-border: 1px solid rgba(15, 23, 42, 0.08);

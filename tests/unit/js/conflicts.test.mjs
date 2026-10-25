@@ -162,7 +162,7 @@ describe('betik kopyaları ve globaller', () => {
       wdpAjaxHasUrl: true,
     });
     assert.deepEqual(extra.extra, ['wdpForeign']);
-    const ours = evaluateWdpGlobals(['wdp_ajax', 'WDPApp', 'WDP', 'WDPMetaTracking'], {
+    const ours = evaluateWdpGlobals(['wdp_ajax', 'WDPApp', 'WDP'], {
       wdpAjaxType: 'object',
       wdpAjaxHasUrl: true,
     });

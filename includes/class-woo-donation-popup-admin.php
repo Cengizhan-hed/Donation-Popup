@@ -78,10 +78,6 @@ class Woo_Donation_Popup_Admin {
 			function () {
 				$this->render_success_screen_customization_tab(); },
 			function () {
-				$this->render_meta_tracking_tab(); },
-			function () {
-				$this->render_category_colors_tab(); },
-			function () {
 				$this->render_design_studio_tab(); }
 		);
 	}
@@ -140,15 +136,6 @@ class Woo_Donation_Popup_Admin {
 	 */
 	private function render_progress_bar_customization_tab() {
 		WDP_Admin_Layout_Tabs_Renderer::render_progress_bar_tab();
-	}
-
-	/**
-	 * Meta Pixel companion tab.
-	 *
-	 * @return void
-	 */
-	private function render_meta_tracking_tab() {
-		WDP_Admin_Meta_Tracking_Tab_Renderer::render();
 	}
 
 	/**
@@ -304,44 +291,12 @@ class Woo_Donation_Popup_Admin {
 		if ( ! is_array( $existing ) ) {
 			$existing = array();
 		}
-		if ( ! isset( $request_data['progress_enable_celebrate'] ) ) {
-			$request_data['progress_enable_celebrate'] = '0';
-		}
 		$settings = WDP_Admin_Settings_Normalizer::normalize_progress_bar_settings( array_merge( $existing, $request_data ) );
 
 		$this->update_non_autoload_option( 'wdp_progress_bar_settings', $settings );
 		$this->bump_wdp_asset_cache_version();
 
 		$this->send_admin_settings_success( __( 'Progress bar settings saved successfully.', 'woo-donation-popup' ) );
-	}
-
-	/**
-	 * Meta Pixel companion ayarlarını kaydet (AJAX).
-	 *
-	 * @return void
-	 */
-	public function save_meta_tracking_settings() {
-		try {
-			$this->guard_admin_settings_ajax();
-			$request_data = $this->get_admin_request_data();
-
-			$settings = WDP_Admin_Settings_Normalizer::normalize_meta_tracking_settings( $request_data );
-
-			if ( ! class_exists( 'WDP_Meta_Tracking' ) ) {
-				$this->send_admin_settings_error( __( 'The Meta tracking module could not be loaded.', 'woo-donation-popup' ) );
-				return;
-			}
-
-			WDP_Meta_Tracking::update_settings( $settings );
-			$this->bump_wdp_asset_cache_version();
-
-			$this->send_admin_settings_success( __( 'Meta Pixel settings saved successfully.', 'woo-donation-popup' ) );
-		} catch ( Exception $e ) {
-			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-				error_log( 'WDP meta tracking save error: ' . $e->getMessage() );
-			}
-			$this->send_admin_settings_error( __( 'Something went wrong. Please try again.', 'woo-donation-popup' ) );
-		}
 	}
 
 	/**
@@ -372,42 +327,6 @@ class Woo_Donation_Popup_Admin {
 	 */
 	private function render_modal_layout_customization_tab() {
 		WDP_Admin_Layout_Tabs_Renderer::render_modal_layout_tab();
-	}
-
-	/**
-	 * Kategori başlık renkleri sekmesi.
-	 *
-	 * @return void
-	 */
-	private function render_category_colors_tab() {
-		WDP_Admin_Category_Colors_Tab_Renderer::render_tab();
-	}
-
-	/**
-	 * Kategori başlık renklerini kaydet (AJAX).
-	 *
-	 * @return void
-	 */
-	public function save_category_colors_settings() {
-		try {
-			$this->guard_admin_settings_ajax();
-			$request_data = $this->get_admin_request_data();
-
-			$colors = WDP_Category_Title_Color_Service::normalize_from_request( $request_data );
-			$saved  = $this->update_non_autoload_option( WDP_Category_Title_Color_Service::OPTION_KEY, $colors );
-
-			if ( $saved === false ) {
-				$this->send_admin_settings_error( __( 'An error occurred while saving settings.', 'woo-donation-popup' ) );
-			}
-
-			$this->bump_wdp_asset_cache_version();
-			$this->send_admin_settings_success( __( 'Category colors saved.', 'woo-donation-popup' ) );
-		} catch ( Exception $e ) {
-			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-				error_log( 'WDP category colors save error: ' . $e->getMessage() );
-			}
-			$this->send_admin_settings_error( __( 'Something went wrong. Please try again.', 'woo-donation-popup' ) );
-		}
 	}
 
 	/**

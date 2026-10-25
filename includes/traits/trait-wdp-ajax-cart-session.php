@@ -83,7 +83,6 @@ trait WDP_Ajax_Cart_Session_Trait {
 							'items'          => self::get_cart_items(),
 							'cart_item_key'  => $cart_item_key,
 							'product_id'     => $v_pid,
-							'meta_cart_line' => self::build_meta_cart_line_from_cart_item( $cart_item, $v_pid ),
 						)
 					);
 				}

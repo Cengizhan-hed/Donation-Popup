@@ -368,9 +368,6 @@ class WDP_Admin_Settings_Normalizer {
 			'success_message_color'     => self::pick_hex( $request, $existing, 'success_message_color', '#16a34a' ),
 			'success_message_border'    => self::pick_text( $request, $existing, 'success_message_border', 'rgba(22, 163, 74, 0.2)' ),
 			'success_message_radius'    => self::pick_int( $request, $existing, 'success_message_radius', 10 ),
-			'mini_cart_bg'              => self::pick_hex( $request, $existing, 'mini_cart_bg', '#f9fafb' ),
-			'mini_cart_border'          => self::pick_hex( $request, $existing, 'mini_cart_border', '#e5e7eb' ),
-			'mini_cart_radius'          => self::pick_int( $request, $existing, 'mini_cart_radius', 10 ),
 			'cart_item_name_color'      => self::pick_hex( $request, $existing, 'cart_item_name_color', '#1f2937' ),
 			'cart_item_price_color'     => self::pick_hex( $request, $existing, 'cart_item_price_color', '#0f608b' ),
 			'sadaka_wc_product_id'      => isset( $request['sadaka_wc_product_id'] ) ? absint( $request['sadaka_wc_product_id'] ) : ( isset( $existing['sadaka_wc_product_id'] ) ? absint( $existing['sadaka_wc_product_id'] ) : 0 ),
@@ -384,7 +381,6 @@ class WDP_Admin_Settings_Normalizer {
 		}
 		$settings['success_button_radius']  = self::clamp_max( $settings['success_button_radius'], 50 );
 		$settings['success_message_radius'] = self::clamp_max( $settings['success_message_radius'], 50 );
-		$settings['mini_cart_radius']       = self::clamp_max( $settings['mini_cart_radius'], 50 );
 		return $settings;
 	}
 
@@ -443,9 +439,6 @@ class WDP_Admin_Settings_Normalizer {
 			'percentage_bg'    => $pick_prog_hex( 'progress_percentage_bg', 'percentage_bg', '#ffffff' ),
 			'percentage_text'  => $pick_prog_hex( 'progress_percentage_text', 'percentage_text', '#0f172a' ),
 			'bar_height'       => (string) $height,
-			'enable_celebrate' => array_key_exists( 'progress_enable_celebrate', $request )
-				? ( ( ! empty( $request['progress_enable_celebrate'] ) && '0' !== (string) $request['progress_enable_celebrate'] ) ? '1' : '0' )
-				: ( isset( $existing['enable_celebrate'] ) ? ( ( '1' === (string) $existing['enable_celebrate'] ) ? '1' : '0' ) : '1' ),
 		);
 	}
 
@@ -504,41 +497,6 @@ class WDP_Admin_Settings_Normalizer {
 		$settings['modal_padding_left_mobile']    = self::clamp_max( $settings['modal_padding_left_mobile'], 100 );
 
 		return $settings;
-	}
-
-	/**
-	 * Normalize Meta Pixel companion settings.
-	 *
-	 * @param array $request Raw POST fields.
-	 * @return array
-	 */
-	public static function normalize_meta_tracking_settings( array $request ) {
-		$defaults = class_exists( 'WDP_Meta_Tracking' ) ? WDP_Meta_Tracking::default_settings() : array();
-		$chk      = static function ( $key ) use ( $request ) {
-			return isset( $request[ $key ] ) && '1' === (string) $request[ $key ];
-		};
-
-		$pixel_raw = isset( $request['optional_pixel_id'] ) ? sanitize_text_field( wp_unslash( $request['optional_pixel_id'] ) ) : '';
-		$pixel     = preg_replace( '/\D/', '', $pixel_raw );
-
-		$out = array_merge(
-			$defaults,
-			array(
-				'enabled'                  => $chk( 'meta_enabled' ) ? '1' : '0',
-				'view_content'             => $chk( 'meta_view_content' ) ? '1' : '0',
-				'add_to_cart'              => $chk( 'meta_add_to_cart' ) ? '1' : '0',
-				'purchase'                 => $chk( 'meta_purchase' ) ? '1' : '0',
-				'custom_debug'             => $chk( 'meta_custom_debug' ) ? '1' : '0',
-				'debug'                    => $chk( 'meta_debug' ) ? '1' : '0',
-				'load_base_pixel'          => $chk( 'meta_load_base_pixel' ) ? '1' : '0',
-				'initiate_checkout'        => $chk( 'meta_initiate_checkout' ) ? '1' : '0',
-				'purchase_include_on_hold' => $chk( 'meta_purchase_include_on_hold' ) ? '1' : '0',
-				'require_consent'          => $chk( 'meta_require_consent' ) ? '1' : '0',
-				'optional_pixel_id'        => strlen( $pixel ) >= 8 ? $pixel : '',
-			)
-		);
-
-		return $out;
 	}
 
 	/**
@@ -648,7 +606,6 @@ class WDP_Admin_Settings_Normalizer {
 			'wdp_success_settings'       => 'normalize_success_screen_settings',
 			'wdp_progress_bar_settings'  => 'normalize_progress_bar_settings',
 			'wdp_modal_layout_settings'  => 'normalize_modal_layout_settings',
-			'wdp_meta_tracking_settings' => 'normalize_meta_tracking_settings',
 		);
 		foreach ( $map as $option => $method ) {
 			if ( get_option( $option, false ) === false ) {

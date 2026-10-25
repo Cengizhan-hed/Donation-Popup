@@ -21,12 +21,10 @@ class WDP_Admin_Page_Renderer {
 	 * @param callable $render_shareholder_tab   Shareholder tab renderer.
 	 * @param callable $render_progress_bar_tab  Progress bar tab renderer.
 	 * @param callable $render_success_screen_tab Success tab renderer.
-	 * @param callable $render_meta_tab           Meta Pixel tab renderer.
-	 * @param callable $render_category_colors_tab Category title colors tab renderer.
 	 * @param callable $render_design_studio_tab   Design studio tab renderer.
 	 * @return void
 	 */
-	public static function render_settings_page( $render_modal_layout_tab, $render_normal_form_tab, $render_shareholder_tab, $render_progress_bar_tab, $render_success_screen_tab, $render_meta_tab, $render_category_colors_tab, $render_design_studio_tab = null ) {
+	public static function render_settings_page( $render_modal_layout_tab, $render_normal_form_tab, $render_shareholder_tab, $render_progress_bar_tab, $render_success_screen_tab, $render_design_studio_tab = null ) {
 		echo '<div class="wrap wdp-admin-wrap">';
 		echo '<header class="wdp-admin-hero">';
 		echo '<div class="wdp-admin-hero__accent" aria-hidden="true"></div>';
@@ -60,8 +58,6 @@ class WDP_Admin_Page_Renderer {
 		echo '<a id="wdp-tab-success-screen" href="#success-screen" class="nav-tab" data-tab="success-screen" role="tab" aria-controls="wdp-success-screen-tab" aria-selected="false" tabindex="-1">' . esc_html_x( 'Success', 'settings tab', 'woo-donation-popup' ) . '</a>';
 		echo '</div>';
 		echo '<div class="wdp-nav-group" data-group="integrations"><span class="wdp-nav-group__label">' . esc_html__( 'More', 'woo-donation-popup' ) . '</span>';
-		echo '<a id="wdp-tab-meta" href="#meta" class="nav-tab" data-tab="meta" role="tab" aria-controls="wdp-meta-tab" aria-selected="false" tabindex="-1">' . esc_html__( 'Meta Pixel', 'woo-donation-popup' ) . '</a>';
-		echo '<a id="wdp-tab-category-colors" href="#category-colors" class="nav-tab" data-tab="category-colors" role="tab" aria-controls="wdp-category-colors-tab" aria-selected="false" tabindex="-1">' . esc_html__( 'Categories', 'woo-donation-popup' ) . '</a>';
 		echo '<a id="wdp-tab-advanced" href="#advanced" class="nav-tab" data-tab="advanced" role="tab" aria-controls="wdp-advanced-tab" aria-selected="false" tabindex="-1">' . esc_html__( 'Advanced', 'woo-donation-popup' ) . '</a>';
 		echo '</div>';
 		echo '</nav>';
@@ -98,14 +94,6 @@ class WDP_Admin_Page_Renderer {
 
 		echo '<div id="wdp-success-screen-tab" class="wdp-tab-content" role="tabpanel" aria-hidden="true" hidden aria-labelledby="wdp-tab-success-screen">';
 		call_user_func( $render_success_screen_tab );
-		echo '</div>';
-
-		echo '<div id="wdp-meta-tab" class="wdp-tab-content" role="tabpanel" aria-hidden="true" hidden aria-labelledby="wdp-tab-meta">';
-		call_user_func( $render_meta_tab );
-		echo '</div>';
-
-		echo '<div id="wdp-category-colors-tab" class="wdp-tab-content" role="tabpanel" aria-hidden="true" hidden aria-labelledby="wdp-tab-category-colors">';
-		call_user_func( $render_category_colors_tab );
 		echo '</div>';
 
 		echo '<div id="wdp-advanced-tab" class="wdp-tab-content" role="tabpanel" aria-hidden="true" hidden aria-labelledby="wdp-tab-advanced">';

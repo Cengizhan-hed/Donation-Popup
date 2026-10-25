@@ -31,7 +31,6 @@ class WDP_Admin_Layout_Tabs_Renderer {
 			'percentage_bg'    => '#ffffff',
 			'percentage_text'  => '#0f172a',
 			'bar_height'       => '18',
-			'enable_celebrate' => '1',
 		);
 
 		$settings               = wp_parse_args( $settings, $defaults );
@@ -150,10 +149,6 @@ class WDP_Admin_Layout_Tabs_Renderer {
 		);
 		echo '<table class="form-table wdp-admin-field-cards">';
 		echo '<tr><th scope="row"><label for="progress_bar_height">' . esc_html__( 'Bar height (px)', 'woo-donation-popup' ) . '</label></th><td><input type="number" id="progress_bar_height" name="progress_bar_height" min="12" max="28" step="1" value="' . esc_attr( min( 28, max( 12, (int) $settings['bar_height'] ) ) ) . '" class="small-text wdp-progress-live-height" /><p class="description">' . esc_html__( '12–28 px. 16–20 is recommended for a more readable bar.', 'woo-donation-popup' ) . '</p></td></tr>';
-		echo '<tr><th scope="row">' . esc_html__( 'Animation', 'woo-donation-popup' ) . '</th><td>';
-		$celebrate = ! isset( $settings['enable_celebrate'] ) || (string) $settings['enable_celebrate'] !== '0';
-		echo '<label style="display:block;"><input type="checkbox" name="progress_enable_celebrate" value="1" ' . checked( $celebrate, true, false ) . '> ' . esc_html__( 'Celebration animation when the goal is reached', 'woo-donation-popup' ) . '</label>';
-		echo '</td></tr>';
 		echo '</table>';
 	}
 

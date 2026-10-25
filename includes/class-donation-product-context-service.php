@@ -124,7 +124,6 @@ class WDP_Donation_Product_Context_Service {
 			'enable_wizard'             => self::meta_flag_or_global( $product, '_enable_wizard', 'enable_multi_step' ),
 			'enable_field_icons'        => self::meta_flag_or_global( $product, '_enable_field_icons', 'enable_field_icons' ),
 			'enable_impact_line'        => self::meta_flag_default_yes( $product, '_enable_impact_line' ),
-			'progress_celebrate'        => self::meta_flag_default_yes( $product, '_progress_celebrate' ),
 			'impact_line_text'          => trim( (string) $product->get_meta( '_impact_line_text' ) ),
 			'amount_presets'            => trim( (string) $product->get_meta( '_amount_presets' ) ),
 			'amount_preset_recommended' => trim( (string) $product->get_meta( '_amount_preset_recommended' ) ),

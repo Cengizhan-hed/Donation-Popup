@@ -891,16 +891,13 @@ trait WDP_Assets_Inline_Styles_Trait {
 			'success_message_color'  => '#48bb78',
 			'success_message_border' => 'rgba(72, 187, 120, 0.2)',
 			'success_message_radius' => '10',
-			'mini_cart_bg'           => '#f9fafb',
-			'mini_cart_border'       => '#e5e7eb',
-			'mini_cart_radius'       => '10',
 			'cart_item_name_color'   => '#1f2937',
 			'cart_item_price_color'  => '#0f608b',
 		);
 		$success_settings = self::sanitize_css_settings(
 			wp_parse_args( $success_settings, $success_defaults ),
 			$success_defaults,
-			array( 'success_button_radius', 'success_message_radius', 'mini_cart_radius' )
+			array( 'success_button_radius', 'success_message_radius' )
 		);
 
 		// Başarı ekranı değişkenleri
@@ -911,9 +908,6 @@ trait WDP_Assets_Inline_Styles_Trait {
 		$css .= '  --wdp-success-message-color: ' . esc_attr( $success_settings['success_message_color'] ) . ";\n";
 		$css .= '  --wdp-success-message-border: ' . esc_attr( $success_settings['success_message_border'] ) . ";\n";
 		$css .= '  --wdp-success-message-radius: ' . esc_attr( $success_settings['success_message_radius'] ) . "px;\n";
-		$css .= '  --wdp-mini-cart-bg: ' . esc_attr( $success_settings['mini_cart_bg'] ) . ";\n";
-		$css .= '  --wdp-mini-cart-border: ' . esc_attr( $success_settings['mini_cart_border'] ) . ";\n";
-		$css .= '  --wdp-mini-cart-radius: ' . esc_attr( $success_settings['mini_cart_radius'] ) . "px;\n";
 		$css .= '  --wdp-cart-item-name-color: ' . esc_attr( $success_settings['cart_item_name_color'] ) . ";\n";
 		$css .= '  --wdp-cart-item-price-color: ' . esc_attr( $success_settings['cart_item_price_color'] ) . ";\n";
 
