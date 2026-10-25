@@ -56,21 +56,7 @@
   const wdp_ajax = window.wdp_ajax || {};
   const jQuery = window.jQuery || null;
 
-  const hooks = {};
-
-  function registerHooks(next) {
-    if (next && typeof next === 'object') {
-      Object.assign(hooks, next);
-    }
-  }
-
-  function callHook(name) {
-    const fn = hooks[name];
-    if (typeof fn === 'function') {
-      return fn.apply(null, Array.prototype.slice.call(arguments, 1));
-    }
-    return undefined;
-  }
+  const { registerHooks, callHook } = WDPApp.utils.createHookRegistry();
 
   function getWdpFormRoot(form) {
     if (!form) return null;
@@ -836,25 +822,7 @@
         },
         complete: () => {
           safeLog("jQuery AJAX request completed");
-          // İşlem her durumda tamamlandıktan sonra bayrağı sıfırla
-          setFormProcessing(form, false);
-
-          // Butonları tekrar aktif et (her ihtimale karşı)
-          setTimeout(() => {
-            if (addToCartBtn) {
-              addToCartBtn.disabled = false;
-              addToCartBtn.classList.remove("wdp-loading");
-            }
-            if (checkoutBtn) {
-              checkoutBtn.disabled = false;
-              checkoutBtn.classList.remove("wdp-loading");
-            }
-          }, 2000);
-
-          // Side cart: gecikme yok — bir sonraki frame'de görünürlük (AJAX tamamı anında)
-          requestAnimationFrame(() => {
-            showSideCarts();
-          });
+          finishAjaxRequest(form, addToCartBtn, checkoutBtn);
         },
       });
     } else {
@@ -937,27 +905,32 @@
           }
         })
         .finally(() => {
-          // İşlem her durumda tamamlandıktan sonra bayrağı sıfırla
-          setFormProcessing(form, false);
-
-          // Butonları tekrar aktif et (her ihtimale karşı)
-          setTimeout(() => {
-            if (addToCartBtn) {
-              addToCartBtn.disabled = false;
-              addToCartBtn.classList.remove("wdp-loading");
-            }
-            if (checkoutBtn) {
-              checkoutBtn.disabled = false;
-              checkoutBtn.classList.remove("wdp-loading");
-            }
-          }, 2000);
-
-          // Side cart: gecikme yok — bir sonraki frame'de görünürlük (AJAX tamamı anında)
-          requestAnimationFrame(() => {
-            showSideCarts();
-          });
+          finishAjaxRequest(form, addToCartBtn, checkoutBtn);
         });
     }
+  }
+
+  /** AJAX bitiminde ortak temizlik: işlem bayrağı, düğmeler, yan sepet görünürlüğü. */
+  function finishAjaxRequest(form, addToCartBtn, checkoutBtn) {
+    // İşlem her durumda tamamlandıktan sonra bayrağı sıfırla
+    setFormProcessing(form, false);
+
+    // Butonları tekrar aktif et (her ihtimale karşı)
+    setTimeout(() => {
+      if (addToCartBtn) {
+        addToCartBtn.disabled = false;
+        addToCartBtn.classList.remove("wdp-loading");
+      }
+      if (checkoutBtn) {
+        checkoutBtn.disabled = false;
+        checkoutBtn.classList.remove("wdp-loading");
+      }
+    }, 2000);
+
+    // Side cart: gecikme yok — bir sonraki frame'de görünürlük (AJAX tamamı anında)
+    requestAnimationFrame(() => {
+      showSideCarts();
+    });
   }
 
   function directFormSubmit(form, isCheckout) {

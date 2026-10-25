@@ -10,14 +10,7 @@
   const utils = WDPApp.utils || {};
   const { safeLog } = utils;
 
-  const hooks = {};
-  function registerHooks(next) {
-    if (next && typeof next === 'object') Object.assign(hooks, next);
-  }
-  function callHook(name) {
-    const fn = hooks[name];
-    if (typeof fn === 'function') return fn.apply(null, Array.prototype.slice.call(arguments, 1));
-  }
+  const { registerHooks, callHook } = WDPApp.utils.createHookRegistry();
 
   function isSidePanelModal(modal) { return callHook('isSidePanelModal', modal); }
   function applyShareholdersAreaVisibility(area) { callHook('applyShareholdersAreaVisibility', area); }

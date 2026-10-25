@@ -14,14 +14,7 @@
   const shareholderRender = WDPApp.shareholderRender || {};
   const wdpAjax = window.wdp_ajax || {};
 
-  const hooks = {};
-  function registerHooks(next) {
-    if (next && typeof next === 'object') Object.assign(hooks, next);
-  }
-  function callHook(name) {
-    const fn = hooks[name];
-    if (typeof fn === 'function') return fn.apply(null, Array.prototype.slice.call(arguments, 1));
-  }
+  const { registerHooks, callHook } = WDPApp.utils.createHookRegistry();
 
   function setupCopyFormButton(form) {
     if (typeof shareholderRender.setupCopyFormButton === 'function') {

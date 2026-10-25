@@ -16,14 +16,7 @@
   const shareholderGuidance = WDPApp.shareholderGuidance || {};
   // Do not freeze shareholderQuantity at load — stack loads quantity after render.
 
-  const hooks = {};
-  function registerHooks(next) {
-    if (next && typeof next === 'object') Object.assign(hooks, next);
-  }
-  function callHook(name) {
-    const fn = hooks[name];
-    if (typeof fn === 'function') return fn.apply(null, Array.prototype.slice.call(arguments, 1));
-  }
+  const { registerHooks, callHook, hasHook } = WDPApp.utils.createHookRegistry();
 
   function ensureShareholderList(container) {
     return typeof shareholderList.ensureShareholderList === 'function'
@@ -60,8 +53,8 @@
       shareholderQuantity.syncShareholderUnitPricesFromModal(modal);
       return;
     }
-    if (typeof hooks.syncShareholderUnitPricesFromModal === 'function') {
-      hooks.syncShareholderUnitPricesFromModal(modal);
+    if (hasHook('syncShareholderUnitPricesFromModal')) {
+      callHook('syncShareholderUnitPricesFromModal', modal);
     }
   }
   function attachGuidanceListeners(form) {
@@ -80,8 +73,8 @@
     }
   }
   function setupWdpPhoneFields(root) {
-    if (typeof hooks.setupWdpPhoneFields === 'function') {
-      hooks.setupWdpPhoneFields(root);
+    if (hasHook('setupWdpPhoneFields')) {
+      callHook('setupWdpPhoneFields', root);
       return;
     }
     const phone = WDPApp.phoneInput;

@@ -14,14 +14,7 @@
   const { productPrices } = state;
   const getProductInfoData = typeof product.getData === 'function' ? product.getData : null;
 
-  const hooks = {};
-  function registerHooks(next) {
-    if (next && typeof next === 'object') Object.assign(hooks, next);
-  }
-  function callHook(name) {
-    const fn = hooks[name];
-    if (typeof fn === 'function') return fn.apply(null, Array.prototype.slice.call(arguments, 1));
-  }
+  const { registerHooks, callHook } = WDPApp.utils.createHookRegistry();
 
   function ensureVisible(el, display) { callHook('ensureVisible', el, display); }
   function applyShareholdersAreaVisibility(area) { callHook('applyShareholdersAreaVisibility', area); }
@@ -41,6 +34,25 @@
   function cacheShareholdersBaseHeight(c) { callHook('cacheShareholdersBaseHeight', c); }
   function setupShareQuantityButtons(m, input, price, el) {
     callHook('setupShareQuantityButtons', m, input, price, el);
+  }
+
+  /** Çözülen birim fiyatı alan taban değerine ve hisse arayüzüne uygular. */
+  function applyResolvedBasePrice(modal, priceInput, baseProductPrice) {
+    if (priceInput && baseProductPrice > 0) {
+      if (!priceInput.dataset.baseMin || Number.parseFloat(priceInput.dataset.baseMin) <= 0) {
+        priceInput.dataset.baseMin = baseProductPrice.toString();
+      }
+
+      if (!priceInput.value) {
+        priceInput.value = baseProductPrice.toFixed(0);
+      }
+    }
+
+    setupShareQuantityButtons(modal, modal.querySelector('input[name="share_count"]'), baseProductPrice, priceInput);
+    syncShareholderUnitPricesFromModal(modal);
+    updateSharesTotalBar(modal);
+    setupWdpPhoneFields(modal);
+    refreshShareholderGuidance(modal);
   }
 
   /**
@@ -316,21 +328,7 @@
             baseProductPrice = Number.parseFloat(productData.price) || 0;
             safeLog("Product price from data attribute:", baseProductPrice);
 
-            if (priceInput && baseProductPrice > 0) {
-              if (!priceInput.dataset.baseMin || Number.parseFloat(priceInput.dataset.baseMin) <= 0) {
-                priceInput.dataset.baseMin = baseProductPrice.toString();
-              }
-
-              if (!priceInput.value) {
-                priceInput.value = baseProductPrice.toFixed(0);
-              }
-            }
-
-            setupShareQuantityButtons(modal, modal.querySelector('input[name="share_count"]'), baseProductPrice, priceInput);
-            syncShareholderUnitPricesFromModal(modal);
-            updateSharesTotalBar(modal);
-            setupWdpPhoneFields(modal);
-            refreshShareholderGuidance(modal);
+            applyResolvedBasePrice(modal, priceInput, baseProductPrice);
             return;
           }
         } catch (e) {
@@ -362,21 +360,7 @@
             }
             safeLog("Product price from data cache/fetch:", baseProductPrice);
 
-            if (priceInput && baseProductPrice > 0) {
-              if (!priceInput.dataset.baseMin || Number.parseFloat(priceInput.dataset.baseMin) <= 0) {
-                priceInput.dataset.baseMin = baseProductPrice.toString();
-              }
-
-              if (!priceInput.value) {
-                priceInput.value = baseProductPrice.toFixed(0);
-              }
-            }
-
-            setupShareQuantityButtons(modal, modal.querySelector('input[name="share_count"]'), baseProductPrice, priceInput);
-            syncShareholderUnitPricesFromModal(modal);
-            updateSharesTotalBar(modal);
-            setupWdpPhoneFields(modal);
-            refreshShareholderGuidance(modal);
+            applyResolvedBasePrice(modal, priceInput, baseProductPrice);
           })
           .catch((error) => {
             safeLog("Error fetching product price:", error);

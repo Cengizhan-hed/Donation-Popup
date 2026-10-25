@@ -8,13 +8,6 @@
   'use strict';
 
   const WDPApp = window.WDPApp || (window.WDPApp = {});
-  if (!WDPApp.i18n || typeof WDPApp.i18n.__ !== 'function') {
-    WDPApp.i18n = {
-      __: function (msg) { return msg == null ? '' : String(msg); },
-      _x: function (msg) { return msg == null ? '' : String(msg); },
-      sprintf: function (fmt) { return String(fmt == null ? '' : fmt); },
-    };
-  }
 
   // Use centralized module dependency helper
   const utilsCheck = (WDPApp.utils && WDPApp.utils.ensureModule) 

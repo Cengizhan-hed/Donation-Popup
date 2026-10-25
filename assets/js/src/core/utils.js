@@ -886,6 +886,31 @@
     };
   }
 
+  /**
+   * Modüller arası gevşek bağ için kanca kaydı: registerHooks ile işlev eklenir,
+   * callHook adıyla çağrılır (kayıtlı değilse undefined).
+   */
+  function createHookRegistry() {
+    const hooks = {};
+    return {
+      registerHooks(next) {
+        if (next && typeof next === 'object') {
+          Object.assign(hooks, next);
+        }
+      },
+      hasHook(name) {
+        return typeof hooks[name] === 'function';
+      },
+      callHook(name) {
+        const fn = hooks[name];
+        if (typeof fn === 'function') {
+          return fn.apply(null, Array.prototype.slice.call(arguments, 1));
+        }
+        return undefined;
+      },
+    };
+  }
+
   // Module dependency helper - centralized module loading
   function ensureModule(moduleName, requiredMethods = [], fallbacks = {}) {
     const module = WDPApp[moduleName] || {};
@@ -1022,6 +1047,7 @@
     throttle, // Performance optimization
     rafThrottle, // Performance optimization for scroll/resize
     ensureModule, // Export module helper
+    createHookRegistry,
     clearAlerts,
     prefersReducedMotion,
     scrollIntoViewSafe,
