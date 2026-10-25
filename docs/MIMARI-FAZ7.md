@@ -5,9 +5,9 @@ Bu belge hedefi ve geçiş yöntemini tanımlar; her modül birleşince `docs/MI
 ## 1. İlkeler
 - Tema/oluşturucu/eklenti tanımayan, WordPress + WooCommerce standartları. Giriş yolları: kısa kod, blok, Woo kancalarıyla otomatik yerleşim, yedek düğme.
 - Tek sorumluluklu sınıflar, açık bağımlılık (kurucu enjeksiyonu), global durum yok; her modül ayarla açılır/kapanır, **kapalıyken dosyası yüklenmez**.
-- Dışa açık sözleşme DEĞİŞMEZ: kısa kodlar + öznitelikler (`[wdp_donation_form]`, `[wdp_donation_button]`, `[wdp_donation_button_panel]`, `[wdp_donations]`), mevcut kanca/filtre adları, ürün/sipariş meta anahtarları (okuma yedeğiyle), blok adları (`wdp/donation-form`, `wdp/donations`). Yeni genel API `donation_panel_*` önekli (docs/HOOKS.md).
+- Dışa açık sözleşme DEĞİŞMEZ: kısa kodlar + öznitelikler (`[wdp_donation_form]`, `[wdp_donation_button]`, `[wdp_donation_button_panel]`, `[wdp_donations]`), mevcut kanca/filtre adları, ürün/sipariş meta anahtarları (okuma yedeğiyle), blok adları (`wdp/donation-form`, `wdp/donations`). Yeni genel API öneki Plugin Check'le doğrulanarak seçilir (7A: `donation_panel_` reddedildi; E0 doğru öneki bulur ve docs/HOOKS.md'ye yazar).
 
-## 2. Dizin yapısı (PSR-4, `DonationPanel\` → `src/`)
+## 2. Dizin yapısı (`DonationPanel\` → `src/`; dosya adları WPCS: `class-foo-bar.php`, `interface-*.php`, `trait-*.php`; pakete gömülü basit autoloader, composer classmap-authoritative; kural dosyası `phpcs-src.xml.dist`, gevşetme yok — 7A bulgusu)
 ```
 src/
   Core/        Plugin, Container, ModuleRegistry, ModuleInterface, Activator, Settings (tek ayar deposu), Migrations (idempotent adımlar), Autoloader (pakete gömülü, composer classmap-authoritative)
