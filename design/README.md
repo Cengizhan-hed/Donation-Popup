@@ -1,6 +1,6 @@
 # Donation Panel — tasarım sistemi ve prototipler (Faz 7D)
 
-Bu klasör **eklenti kodu değildir**; Faz 7E'nin uygulayacağı görsel dili, etkileşimleri ve ekranları kanıtlayan çalışır prototipdir. Açmak için: `python3 -m http.server 9910 --directory design` → `http://localhost:9910/showcase/index.html`.
+Bu klasör **eklenti kodu değildir**; Faz 7E'nin uygulayacağı görsel dili, etkileşimleri ve ekranları kanıtlayan çalışır prototipdir. Açmak için: `python3 -m http.server 9910 --directory design` → `http://localhost:9910/showcase/index.html` (vitrin; iframe'ler `../<ekran>.html` yükler, bu yüzden klasörü `design/` kökünden sunun).
 
 | Dosya | Ne |
 |---|---|
@@ -9,7 +9,7 @@ Bu klasör **eklenti kodu değildir**; Faz 7E'nin uygulayacağı görsel dili, e
 | `dp.js`, `screens.js`, `admin.js` | Prototip davranışı (form çekirdeği, katman yöneticisi, ekranlar). Üretim kodu Interactivity API ile yeniden yazılır; davranış sözleşmesi buradadır |
 | `mock.css`, `admin.css` | Yalnız vitrin: tema **simülasyonu** ve yönetim çerçevesi (eklentiye girmez) |
 | `*.html` | 16 etkileşimli ekran. URL: `?lang=tr\|en\|ar&theme=avada\|blocksy\|tt25\|storefront\|neutral&scheme=dark&open=0` |
-| `showcase/` | `shoot.mjs` ile üretilen ekran görüntüleri + `index.html` kontak sayfası |
+| `showcase/` | `shoot.mjs` ile üretilen ekran görüntüleri; `index.html` = canlı vitrin (16 ekran, her biri mobil 390 px + masaüstü 1280 px ölçekli iframe, tema/dil/koyu mod seçici, sabit içindekiler, tembel yükleme, görüntü yedeği; `index-preview.png` önizleme); `contact-sheet.html` = eski görüntü kontak sayfası (`make-index.mjs` üretir) |
 | `KARARLAR.md` | Neden bu düzen; rakip kalıplarından alınanlar ve bilinçli alınmayanlar |
 
 ## 1. İlkeler

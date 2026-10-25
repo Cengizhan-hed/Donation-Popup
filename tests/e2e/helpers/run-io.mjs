@@ -31,7 +31,7 @@ export { reportDirFor, runJsonFor, debugDirFor, tracesDirFor };
  * @param {string} deviceId
  */
 export function baselineDirFor(envId, deviceId) {
-  const env = String(envId || 'staging-hedef');
+  const env = String(envId || 'local');
   const device = String(deviceId || 'desktop');
   return path.join(BASELINE_ROOT, env, device);
 }

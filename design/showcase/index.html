@@ -1,25 +1,231 @@
-<!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Donation Panel · Tasarım vitrini</title>
-<style>:root{color-scheme:light dark;--bg:#f4f5f7;--fg:#161b22;--card:#fff;--mut:#5b6573;--ac:#0f766e}@media(prefers-color-scheme:dark){:root{--bg:#0e1116;--fg:#eef1f5;--card:#171c23;--mut:#98a1ad;--ac:#5eead4}}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
-header{padding:28px 20px 8px;max-width:1400px;margin:auto}h1{margin:0 0 6px;font-size:clamp(24px,5vw,34px);letter-spacing:-.02em}p{margin:0;color:var(--mut);max-width:80ch}
-.note{margin-top:12px;padding:12px 14px;border-radius:12px;background:var(--card);border:1px solid #8883;font-size:13.5px}
-.bar{position:sticky;top:0;z-index:5;background:color-mix(in oklab,var(--bg) 88%,transparent);backdrop-filter:blur(10px);padding:12px 20px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;max-width:1400px;margin:auto}
-.bar b{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--mut);margin-inline:6px 2px}
-button.f{min-height:40px;padding:0 14px;border-radius:99px;border:1.5px solid #8885;background:var(--card);color:var(--fg);font:inherit;font-weight:600;font-size:13.5px;cursor:pointer}button.f[aria-pressed=true]{background:var(--ac);border-color:var(--ac);color:#fff}
-@media(prefers-color-scheme:dark){button.f[aria-pressed=true]{color:#06201c}}
-main{max-width:1400px;margin:auto;padding:8px 20px 60px;display:grid;gap:18px;grid-template-columns:repeat(auto-fill,minmax(var(--w,230px),1fr))}
-figure{margin:0;background:var(--card);border:1px solid #8883;border-radius:16px;overflow:hidden;display:grid}figure a{display:block;background:#8881}img{display:block;width:100%;height:auto}
-figcaption{padding:10px 12px;font-size:13px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}figcaption span{color:var(--mut)}
-.empty{grid-column:1/-1;color:var(--mut);padding:30px;text-align:center}</style></head><body>
-<header><h1>Donation Panel — tasarım vitrini</h1><p>148 ekran görüntüsü: 16 ekran × 4 tema × mobil (390×844) + masaüstü (1440×900), artı koyu mod örnekleri. Görsele tıklayınca tam boy açılır; etkileşimli sürüm için ilgili .html dosyasını açın (örn. <code>popup.html?lang=en&amp;theme=blocksy</code>).</p>
-<p class="note"><b>*</b> Avada, Blocksy, Twenty Twenty-Five ve Storefront gerçek olarak kurulu değildir: her temanın tipik global stili (yazı ailesi, birincil renk, köşe) WordPress önayar değişkenleriyle (<code>--wp--preset--*</code>) <b>SİMÜLE</b> edilmiştir. Eklentide temaya özel kod yoktur; yalnız bu değişkenler okunur (bkz. mock.css).</p></header>
-<div class="bar" id="bar"></div><main id="grid"></main>
-<script>const items=[{"f":"account-avada-masaustu.png","s":"account","t":"avada","v":"masaustu","d":false},{"f":"account-avada-mobil.png","s":"account","t":"avada","v":"mobil","d":false},{"f":"account-blocksy-masaustu.png","s":"account","t":"blocksy","v":"masaustu","d":false},{"f":"account-blocksy-mobil.png","s":"account","t":"blocksy","v":"mobil","d":false},{"f":"account-storefront-masaustu.png","s":"account","t":"storefront","v":"masaustu","d":false},{"f":"account-storefront-mobil.png","s":"account","t":"storefront","v":"mobil","d":false},{"f":"account-tt25-masaustu.png","s":"account","t":"tt25","v":"masaustu","d":false},{"f":"account-tt25-mobil.png","s":"account","t":"tt25","v":"mobil","d":false},{"f":"campaign-avada-masaustu.png","s":"campaign","t":"avada","v":"masaustu","d":false},{"f":"campaign-avada-mobil.png","s":"campaign","t":"avada","v":"mobil","d":false},{"f":"campaign-blocksy-masaustu.png","s":"campaign","t":"blocksy","v":"masaustu","d":false},{"f":"campaign-blocksy-mobil.png","s":"campaign","t":"blocksy","v":"mobil","d":false},{"f":"campaign-neutral-masaustu-koyu.png","s":"campaign","t":"neutral","v":"masaustu","d":true},{"f":"campaign-neutral-mobil-koyu.png","s":"campaign","t":"neutral","v":"mobil","d":true},{"f":"campaign-storefront-masaustu.png","s":"campaign","t":"storefront","v":"masaustu","d":false},{"f":"campaign-storefront-mobil.png","s":"campaign","t":"storefront","v":"mobil","d":false},{"f":"campaign-tt25-masaustu.png","s":"campaign","t":"tt25","v":"masaustu","d":false},{"f":"campaign-tt25-mobil.png","s":"campaign","t":"tt25","v":"mobil","d":false},{"f":"cart-avada-masaustu.png","s":"cart","t":"avada","v":"masaustu","d":false},{"f":"cart-avada-mobil.png","s":"cart","t":"avada","v":"mobil","d":false},{"f":"cart-blocksy-masaustu.png","s":"cart","t":"blocksy","v":"masaustu","d":false},{"f":"cart-blocksy-mobil.png","s":"cart","t":"blocksy","v":"mobil","d":false},{"f":"cart-neutral-masaustu-koyu.png","s":"cart","t":"neutral","v":"masaustu","d":true},{"f":"cart-neutral-mobil-koyu.png","s":"cart","t":"neutral","v":"mobil","d":true},{"f":"cart-storefront-masaustu.png","s":"cart","t":"storefront","v":"masaustu","d":false},{"f":"cart-storefront-mobil.png","s":"cart","t":"storefront","v":"mobil","d":false},{"f":"cart-tt25-masaustu.png","s":"cart","t":"tt25","v":"masaustu","d":false},{"f":"cart-tt25-mobil.png","s":"cart","t":"tt25","v":"mobil","d":false},{"f":"inline-avada-masaustu.png","s":"inline","t":"avada","v":"masaustu","d":false},{"f":"inline-avada-mobil.png","s":"inline","t":"avada","v":"mobil","d":false},{"f":"inline-blocksy-masaustu.png","s":"inline","t":"blocksy","v":"masaustu","d":false},{"f":"inline-blocksy-mobil.png","s":"inline","t":"blocksy","v":"mobil","d":false},{"f":"inline-storefront-masaustu.png","s":"inline","t":"storefront","v":"masaustu","d":false},{"f":"inline-storefront-mobil.png","s":"inline","t":"storefront","v":"mobil","d":false},{"f":"inline-tt25-masaustu.png","s":"inline","t":"tt25","v":"masaustu","d":false},{"f":"inline-tt25-mobil.png","s":"inline","t":"tt25","v":"mobil","d":false},{"f":"list-avada-masaustu.png","s":"list","t":"avada","v":"masaustu","d":false},{"f":"list-avada-mobil.png","s":"list","t":"avada","v":"mobil","d":false},{"f":"list-blocksy-masaustu.png","s":"list","t":"blocksy","v":"masaustu","d":false},{"f":"list-blocksy-mobil.png","s":"list","t":"blocksy","v":"mobil","d":false},{"f":"list-storefront-masaustu.png","s":"list","t":"storefront","v":"masaustu","d":false},{"f":"list-storefront-mobil.png","s":"list","t":"storefront","v":"mobil","d":false},{"f":"list-tt25-masaustu.png","s":"list","t":"tt25","v":"masaustu","d":false},{"f":"list-tt25-mobil.png","s":"list","t":"tt25","v":"mobil","d":false},{"f":"mydonations-avada-masaustu.png","s":"mydonations","t":"avada","v":"masaustu","d":false},{"f":"mydonations-avada-mobil.png","s":"mydonations","t":"avada","v":"mobil","d":false},{"f":"mydonations-blocksy-masaustu.png","s":"mydonations","t":"blocksy","v":"masaustu","d":false},{"f":"mydonations-blocksy-mobil.png","s":"mydonations","t":"blocksy","v":"mobil","d":false},{"f":"mydonations-neutral-masaustu-koyu.png","s":"mydonations","t":"neutral","v":"masaustu","d":true},{"f":"mydonations-neutral-mobil-koyu.png","s":"mydonations","t":"neutral","v":"mobil","d":true},{"f":"mydonations-storefront-masaustu.png","s":"mydonations","t":"storefront","v":"masaustu","d":false},{"f":"mydonations-storefront-mobil.png","s":"mydonations","t":"storefront","v":"mobil","d":false},{"f":"mydonations-tt25-masaustu.png","s":"mydonations","t":"tt25","v":"masaustu","d":false},{"f":"mydonations-tt25-mobil.png","s":"mydonations","t":"tt25","v":"mobil","d":false},{"f":"panel-avada-masaustu.png","s":"panel","t":"avada","v":"masaustu","d":false},{"f":"panel-avada-mobil.png","s":"panel","t":"avada","v":"mobil","d":false},{"f":"panel-blocksy-masaustu.png","s":"panel","t":"blocksy","v":"masaustu","d":false},{"f":"panel-blocksy-mobil.png","s":"panel","t":"blocksy","v":"mobil","d":false},{"f":"panel-storefront-masaustu.png","s":"panel","t":"storefront","v":"masaustu","d":false},{"f":"panel-storefront-mobil.png","s":"panel","t":"storefront","v":"mobil","d":false},{"f":"panel-tt25-masaustu.png","s":"panel","t":"tt25","v":"masaustu","d":false},{"f":"panel-tt25-mobil.png","s":"panel","t":"tt25","v":"mobil","d":false},{"f":"popup-avada-masaustu.png","s":"popup","t":"avada","v":"masaustu","d":false},{"f":"popup-avada-mobil.png","s":"popup","t":"avada","v":"mobil","d":false},{"f":"popup-blocksy-masaustu.png","s":"popup","t":"blocksy","v":"masaustu","d":false},{"f":"popup-blocksy-mobil.png","s":"popup","t":"blocksy","v":"mobil","d":false},{"f":"popup-neutral-masaustu-koyu.png","s":"popup","t":"neutral","v":"masaustu","d":true},{"f":"popup-neutral-masaustu.png","s":"popup","t":"neutral","v":"masaustu","d":false},{"f":"popup-neutral-mobil-koyu.png","s":"popup","t":"neutral","v":"mobil","d":true},{"f":"popup-neutral-mobil.png","s":"popup","t":"neutral","v":"mobil","d":false},{"f":"popup-storefront-masaustu.png","s":"popup","t":"storefront","v":"masaustu","d":false},{"f":"popup-storefront-mobil.png","s":"popup","t":"storefront","v":"mobil","d":false},{"f":"popup-tt25-masaustu.png","s":"popup","t":"tt25","v":"masaustu","d":false},{"f":"popup-tt25-mobil.png","s":"popup","t":"tt25","v":"mobil","d":false},{"f":"rtl-avada-masaustu.png","s":"rtl","t":"avada","v":"masaustu","d":false},{"f":"rtl-avada-mobil.png","s":"rtl","t":"avada","v":"mobil","d":false},{"f":"rtl-blocksy-masaustu.png","s":"rtl","t":"blocksy","v":"masaustu","d":false},{"f":"rtl-blocksy-mobil.png","s":"rtl","t":"blocksy","v":"mobil","d":false},{"f":"rtl-storefront-masaustu.png","s":"rtl","t":"storefront","v":"masaustu","d":false},{"f":"rtl-storefront-mobil.png","s":"rtl","t":"storefront","v":"mobil","d":false},{"f":"rtl-tt25-masaustu.png","s":"rtl","t":"tt25","v":"masaustu","d":false},{"f":"rtl-tt25-mobil.png","s":"rtl","t":"tt25","v":"mobil","d":false},{"f":"settings-avada-masaustu.png","s":"settings","t":"avada","v":"masaustu","d":false},{"f":"settings-avada-mobil.png","s":"settings","t":"avada","v":"mobil","d":false},{"f":"settings-blocksy-masaustu.png","s":"settings","t":"blocksy","v":"masaustu","d":false},{"f":"settings-blocksy-mobil.png","s":"settings","t":"blocksy","v":"mobil","d":false},{"f":"settings-neutral-masaustu-koyu.png","s":"settings","t":"neutral","v":"masaustu","d":true},{"f":"settings-neutral-mobil-koyu.png","s":"settings","t":"neutral","v":"mobil","d":true},{"f":"settings-storefront-masaustu.png","s":"settings","t":"storefront","v":"masaustu","d":false},{"f":"settings-storefront-mobil.png","s":"settings","t":"storefront","v":"mobil","d":false},{"f":"settings-tt25-masaustu.png","s":"settings","t":"tt25","v":"masaustu","d":false},{"f":"settings-tt25-mobil.png","s":"settings","t":"tt25","v":"mobil","d":false},{"f":"sheet-avada-masaustu.png","s":"sheet","t":"avada","v":"masaustu","d":false},{"f":"sheet-avada-mobil.png","s":"sheet","t":"avada","v":"mobil","d":false},{"f":"sheet-blocksy-masaustu.png","s":"sheet","t":"blocksy","v":"masaustu","d":false},{"f":"sheet-blocksy-mobil.png","s":"sheet","t":"blocksy","v":"mobil","d":false},{"f":"sheet-neutral-masaustu-koyu.png","s":"sheet","t":"neutral","v":"masaustu","d":true},{"f":"sheet-neutral-masaustu.png","s":"sheet","t":"neutral","v":"masaustu","d":false},{"f":"sheet-neutral-mobil-koyu.png","s":"sheet","t":"neutral","v":"mobil","d":true},{"f":"sheet-neutral-mobil.png","s":"sheet","t":"neutral","v":"mobil","d":false},{"f":"sheet-storefront-masaustu.png","s":"sheet","t":"storefront","v":"masaustu","d":false},{"f":"sheet-storefront-mobil.png","s":"sheet","t":"storefront","v":"mobil","d":false},{"f":"sheet-tt25-masaustu.png","s":"sheet","t":"tt25","v":"masaustu","d":false},{"f":"sheet-tt25-mobil.png","s":"sheet","t":"tt25","v":"mobil","d":false},{"f":"sheetkb-avada-masaustu.png","s":"sheetkb","t":"avada","v":"masaustu","d":false},{"f":"sheetkb-avada-mobil.png","s":"sheetkb","t":"avada","v":"mobil","d":false},{"f":"sheetkb-blocksy-masaustu.png","s":"sheetkb","t":"blocksy","v":"masaustu","d":false},{"f":"sheetkb-blocksy-mobil.png","s":"sheetkb","t":"blocksy","v":"mobil","d":false},{"f":"sheetkb-storefront-masaustu.png","s":"sheetkb","t":"storefront","v":"masaustu","d":false},{"f":"sheetkb-storefront-mobil.png","s":"sheetkb","t":"storefront","v":"mobil","d":false},{"f":"sheetkb-tt25-masaustu.png","s":"sheetkb","t":"tt25","v":"masaustu","d":false},{"f":"sheetkb-tt25-mobil.png","s":"sheetkb","t":"tt25","v":"mobil","d":false},{"f":"social-avada-masaustu.png","s":"social","t":"avada","v":"masaustu","d":false},{"f":"social-avada-mobil.png","s":"social","t":"avada","v":"mobil","d":false},{"f":"social-blocksy-masaustu.png","s":"social","t":"blocksy","v":"masaustu","d":false},{"f":"social-blocksy-mobil.png","s":"social","t":"blocksy","v":"mobil","d":false},{"f":"social-storefront-masaustu.png","s":"social","t":"storefront","v":"masaustu","d":false},{"f":"social-storefront-mobil.png","s":"social","t":"storefront","v":"mobil","d":false},{"f":"social-tt25-masaustu.png","s":"social","t":"tt25","v":"masaustu","d":false},{"f":"social-tt25-mobil.png","s":"social","t":"tt25","v":"mobil","d":false},{"f":"tax-avada-masaustu.png","s":"tax","t":"avada","v":"masaustu","d":false},{"f":"tax-avada-mobil.png","s":"tax","t":"avada","v":"mobil","d":false},{"f":"tax-blocksy-masaustu.png","s":"tax","t":"blocksy","v":"masaustu","d":false},{"f":"tax-blocksy-mobil.png","s":"tax","t":"blocksy","v":"mobil","d":false},{"f":"tax-storefront-masaustu.png","s":"tax","t":"storefront","v":"masaustu","d":false},{"f":"tax-storefront-mobil.png","s":"tax","t":"storefront","v":"mobil","d":false},{"f":"tax-tt25-masaustu.png","s":"tax","t":"tt25","v":"masaustu","d":false},{"f":"tax-tt25-mobil.png","s":"tax","t":"tt25","v":"mobil","d":false},{"f":"thanks-avada-masaustu.png","s":"thanks","t":"avada","v":"masaustu","d":false},{"f":"thanks-avada-mobil.png","s":"thanks","t":"avada","v":"mobil","d":false},{"f":"thanks-blocksy-masaustu.png","s":"thanks","t":"blocksy","v":"masaustu","d":false},{"f":"thanks-blocksy-mobil.png","s":"thanks","t":"blocksy","v":"mobil","d":false},{"f":"thanks-neutral-masaustu-koyu.png","s":"thanks","t":"neutral","v":"masaustu","d":true},{"f":"thanks-neutral-mobil-koyu.png","s":"thanks","t":"neutral","v":"mobil","d":true},{"f":"thanks-storefront-masaustu.png","s":"thanks","t":"storefront","v":"masaustu","d":false},{"f":"thanks-storefront-mobil.png","s":"thanks","t":"storefront","v":"mobil","d":false},{"f":"thanks-tt25-masaustu.png","s":"thanks","t":"tt25","v":"masaustu","d":false},{"f":"thanks-tt25-mobil.png","s":"thanks","t":"tt25","v":"mobil","d":false},{"f":"wizard-avada-masaustu.png","s":"wizard","t":"avada","v":"masaustu","d":false},{"f":"wizard-avada-mobil.png","s":"wizard","t":"avada","v":"mobil","d":false},{"f":"wizard-blocksy-masaustu.png","s":"wizard","t":"blocksy","v":"masaustu","d":false},{"f":"wizard-blocksy-mobil.png","s":"wizard","t":"blocksy","v":"mobil","d":false},{"f":"wizard-neutral-masaustu-koyu.png","s":"wizard","t":"neutral","v":"masaustu","d":true},{"f":"wizard-neutral-mobil-koyu.png","s":"wizard","t":"neutral","v":"mobil","d":true},{"f":"wizard-storefront-masaustu.png","s":"wizard","t":"storefront","v":"masaustu","d":false},{"f":"wizard-storefront-mobil.png","s":"wizard","t":"storefront","v":"mobil","d":false},{"f":"wizard-tt25-masaustu.png","s":"wizard","t":"tt25","v":"masaustu","d":false},{"f":"wizard-tt25-mobil.png","s":"wizard","t":"tt25","v":"mobil","d":false}],names={"popup":"Popup","rtl":"RTL (Arapça)","panel":"Yan panel","inline":"Sayfa içi form","sheet":"Alt panel (mobil)","sheetkb":"Alt panel, klavye açık","cart":"Yan sepet","campaign":"Kampanya + ilerleme","list":"Bağış listesi + durumlar","thanks":"Teşekkür","social":"Sosyal kanıt","tax":"Vergi indirimi beyanı","account":"Bağışçı hesabı (giriş)","mydonations":"Bağışlarım","wizard":"Kurulum sihirbazı","settings":"Ayarlar"},tn={"avada":"Avada*","blocksy":"Blocksy*","tt25":"Twenty Twenty-Five*","storefront":"Storefront*","neutral":"Nötr"};
-const st={s:'all',t:'all',v:'all',d:'0'};const bar=document.getElementById('bar'),grid=document.getElementById('grid');
-const groups=[['Ekran','s',[['all','Hepsi'],...Object.entries(names)]],['Tema','t',[['all','Hepsi'],...Object.entries(tn)]],['Cihaz','v',[['all','Hepsi'],['mobil','Mobil'],['masaustu','Masaüstü']]],['Mod','d',[['0','Açık'],['1','Koyu']]]];
-bar.innerHTML=groups.map(([l,k,o])=>'<b>'+l+'</b>'+o.map(([v,t])=>'<button class="f" data-k="'+k+'" data-v="'+v+'" aria-pressed="'+(st[k]===v)+'">'+t+'</button>').join('')).join('');
-function draw(){document.querySelectorAll('button.f').forEach(b=>b.setAttribute('aria-pressed',st[b.dataset.k]===b.dataset.v));
-const l=items.filter(i=>(st.s==='all'||i.s===st.s)&&(st.t==='all'||i.t===st.t)&&(st.v==='all'||i.v===st.v)&&(i.d?'1':'0')===st.d);
-grid.style.setProperty('--w',st.v==='masaustu'?'440px':'230px');
-grid.innerHTML=l.length?l.map(i=>'<figure><a href="showcase/'+i.f+'" target="_blank" rel="noopener"><img loading="lazy" src="'+i.f+'" alt="'+names[i.s]+' · '+tn[i.t]+' · '+i.v+'"></a><figcaption><b>'+names[i.s]+'</b><span>'+tn[i.t]+' · '+(i.v==='mobil'?'mobil':'masaüstü')+'</span></figcaption></figure>').join(''):'<p class="empty">Bu süzgeçte görüntü yok.</p>';}
-bar.onclick=e=>{const b=e.target.closest('button.f');if(!b)return;st[b.dataset.k]=b.dataset.v;draw()};draw();</script></body></html>
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Donation Panel · Tasarım vitrini</title>
+<style>
+:root{--bg:#f4f5f7;--fg:#161b22;--card:#fff;--mut:#59626f;--ac:#0f766e;--on-ac:#fff;--line:#d6dae0;--shadow:0 1px 2px rgb(16 24 40/.06),0 8px 24px rgb(16 24 40/.08)}
+@media(prefers-color-scheme:dark){:root:not([data-ui="light"]){--bg:#0e1116;--fg:#eef1f5;--card:#171c23;--mut:#a3acb8;--ac:#5eead4;--on-ac:#06201c;--line:#2a313b;--shadow:0 1px 2px rgb(0 0 0/.4),0 8px 24px rgb(0 0 0/.35)}}
+:root[data-ui="dark"]{--bg:#0e1116;--fg:#eef1f5;--card:#171c23;--mut:#a3acb8;--ac:#5eead4;--on-ac:#06201c;--line:#2a313b;--shadow:0 1px 2px rgb(0 0 0/.4),0 8px 24px rgb(0 0 0/.35)}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:var(--bar-h,150px)}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.55 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-text-size-adjust:100%}
+a{color:inherit}
+.wrap{max-width:1500px;margin:0 auto;padding-inline:max(16px,env(safe-area-inset-left)) max(16px,env(safe-area-inset-right))}
+header.top{padding-block:24px 8px}
+h1{margin:0 0 6px;font-size:clamp(24px,5vw,34px);letter-spacing:-.02em;line-height:1.15}
+header.top p{margin:0;color:var(--mut);max-width:78ch}
+.note{margin:12px 0 0;padding:12px 14px;border-radius:12px;background:var(--card);border:1px solid var(--line);font-size:13.5px;color:var(--mut)}
+.bar{position:sticky;top:0;z-index:20;background:color-mix(in oklab,var(--bg) 92%,transparent);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.bar .wrap{padding-block:10px;display:grid;gap:8px}
+.toc{display:flex;gap:6px;overflow-x:auto;scrollbar-width:thin;padding-bottom:2px;-webkit-overflow-scrolling:touch}
+.toc a{flex:none;min-height:36px;display:inline-flex;align-items:center;padding:0 12px;border-radius:99px;border:1px solid var(--line);background:var(--card);text-decoration:none;font-size:13px;font-weight:600;white-space:nowrap}
+.toc a:hover,.toc a:focus-visible{border-color:var(--ac);outline:2px solid var(--ac);outline-offset:1px}
+.opts{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center}
+.grp{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+.grp b{font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--mut);margin-inline-end:4px}
+button.f{min-height:36px;padding:0 12px;border-radius:99px;border:1.5px solid var(--line);background:var(--card);color:var(--fg);font:inherit;font-weight:600;font-size:13px;cursor:pointer}
+button.f[aria-pressed=true]{background:var(--ac);border-color:var(--ac);color:var(--on-ac)}
+button.f:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+main{padding-block:12px 64px;display:grid;gap:28px}
+section.sc{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:var(--shadow)}
+section.sc h2{margin:0;font-size:clamp(18px,3.2vw,22px);letter-spacing:-.01em;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+section.sc h2 small{font-size:12px;font-weight:600;color:var(--mut);font-family:ui-monospace,Menlo,monospace}
+section.sc p.d{margin:4px 0 14px;color:var(--mut);max-width:80ch}
+.pair{display:grid;gap:18px;grid-template-columns:minmax(0,1fr);align-items:start}
+@media(min-width:1000px){.pair{grid-template-columns:minmax(0,300px) minmax(0,1fr)}}
+.col{min-width:0}
+.col>h3{margin:0 0 8px;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--mut)}
+.mobcol{max-width:390px;width:100%;margin-inline:auto}
+@media(min-width:1000px){.mobcol{margin-inline:0}}
+.frame{position:relative;width:100%;border-radius:14px;overflow:hidden;border:1px solid var(--line);background:#8881}
+.frame.m{border-radius:26px;border-width:6px;border-color:#2b3037}
+.frame img,.frame iframe{position:absolute;left:0;top:0;border:0;display:block}
+.frame img{width:100%;height:100%;object-fit:cover;object-position:top}
+.frame iframe{transform-origin:0 0;background:transparent}
+.frame.fallback iframe{display:none}
+.links{margin:10px 0 0;font-size:12.5px;color:var(--mut)}
+.links a{color:var(--ac)}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap">
+<h1>Donation Panel — tasarım vitrini</h1>
+<p>Faz 7D ekranlarının tamamı tek sayfada: her ekran mobil (390 px çerçeve) ve masaüstü (1280 px, ölçekli) yan yana, canlı prototip olarak. Tema, dil ve koyu mod seçimi tüm çerçevelere uygulanır.</p>
+<p class="note"><b>Not:</b> Avada, Blocksy, Twenty Twenty-Five ve Storefront burada gerçekten kurulu değildir; her birinin tipik global stili (renk, yazı, köşe) WordPress önayar değişkenleriyle simüle edilir. Eklenti hiçbir temaya özel kod içermez. Çerçeve yüklenemezse kayıtlı ekran görüntüsü yedek olarak gösterilir.</p>
+</div></header>
+
+<div class="bar" id="bar"><div class="wrap">
+<nav class="toc" id="toc" aria-label="Ekranlar"></nav>
+<div class="opts" id="opts"></div>
+</div></div>
+
+<div class="wrap"><main id="main"></main></div>
+
+<script>
+(function () {
+  'use strict';
+  var SCREENS = [
+    ['popup', 'Popup', 'Masaüstünde ortada açılan bağış penceresi: tutar, bilgiler ve ödeme adımı tek çekirdekte.'],
+    ['panel', 'Yan panel', 'Aynı form sağdan kayan panel olarak; mobilde otomatik alttan panele dönüşür.'],
+    ['inline', 'Sayfa içi form', 'Sayfanın içine gömülen bağış formu; kısa kod ya da blok ile yerleşir.'],
+    ['sheet', 'Alttan panel', 'Mobil birinci kap: ana eylem başparmak altında, sabit eylem çubuğunda.'],
+    ['sheetkb', 'Alttan panel, klavye açık', 'Klavye açıldığında panelin görünür alana oturması ve odaklı alanın görünür kalması.'],
+    ['cart', 'Yan sepet', 'Bağış sepeti paneli: kalemler, toplam ve ödemeye geçiş; boş durum dahil.'],
+    ['campaign', 'Kampanya ve ilerleme çubukları', 'Hedefe doğru ilerleme çubuğu, ara hedefler ve canlı artış.'],
+    ['thanks', 'Teşekkür', 'Bağıştan sonra sakin bir onay ekranı; kişi bilgisi göstermez.'],
+    ['account', 'Bağışçı hesabı', 'İsteğe bağlı giriş, kayıt ve şifre sıfırlama (mobilde alttan panel).'],
+    ['mydonations', 'Bağışlarım', 'Hesabım içinde bağış geçmişi: tür, proje, durum, makbuz, tekrar bağış.'],
+    ['wizard', 'Yönetici kurulum sihirbazı', 'Birkaç adımda akıllı varsayılanlarla kurulum; canlı önizleme.'],
+    ['settings', 'Yönetici ayarları', 'Az ve anlaşılır ayar; her ayarın altında kısa açıklama.'],
+    ['list', 'Bağış listesi ve durumlar', 'Bağış kartları ve listesi; boş, yükleniyor ve hata durumları.'],
+    ['social', 'Sosyal kanıt', 'İsteğe bağlı modül: yalnız gerçek veri, kişi bilgisi yok.'],
+    ['tax', 'Vergi indirimi beyanı', 'Yalnız modül açıksa görünen isteğe bağlı vergi indirimi adımı.'],
+    ['rtl', 'Sağdan sola (Arapça)', 'Mantıksal özelliklerle tam RTL yerleşim.']
+  ];
+  var THEMES = [['neutral', 'Nötr'], ['avada', 'Avada*'], ['blocksy', 'Blocksy*'], ['tt25', 'Twenty Twenty-Five*'], ['storefront', 'Storefront*']];
+  var LANGS = [['tr', 'Türkçe'], ['en', 'English'], ['ar', 'العربية']];
+  var SCHEMES = [['', 'Açık'], ['dark', 'Koyu']];
+  var OPEN = { popup: 1, panel: 1, sheet: 1, sheetkb: 1, cart: 1, account: 1, tax: 1 };
+  var DEV = { m: { w: 390, h: 844, key: 'mobil', label: 'Mobil 390 px' }, d: { w: 1280, h: 800, key: 'masaustu', label: 'Masaüstü 1280 px' } };
+  var st = { theme: 'neutral', lang: 'tr', scheme: '' };
+
+  try {
+    var qp = new URLSearchParams(location.search);
+    ['theme', 'lang', 'scheme'].forEach(function (k) { if (qp.has(k)) st[k] = qp.get(k); });
+  } catch (e) {
+    console.warn('Adres parametreleri okunamadı, varsayılanlar kullanılıyor', e);
+  }
+
+  var main = document.getElementById('main'), toc = document.getElementById('toc'), opts = document.getElementById('opts');
+  var frames = [];
+
+  function url(sc) {
+    var q = 'lang=' + (sc === 'rtl' ? 'ar' : st.lang) + '&theme=' + st.theme + (st.scheme ? '&scheme=' + st.scheme : '') + '&confetti=0&open=' + (OPEN[sc] ? '1' : '0');
+    return '../' + sc + '.html?' + q;
+  }
+  /** Yedek görüntü adayları: seçili tema önce, sonra kayıtlı öteki temalar. */
+  function pngCandidates(sc, dev) {
+    var order = [st.theme].concat(['avada', 'blocksy', 'tt25', 'storefront', 'neutral'].filter(function (t) { return t !== st.theme; }));
+    return order.map(function (t) { return sc + '-' + t + '-' + DEV[dev].key + (st.scheme ? '-koyu' : '') + '.png'; });
+  }
+
+  function build() {
+    toc.innerHTML = SCREENS.map(function (s) { return '<a href="#s-' + s[0] + '">' + s[1] + '</a>'; }).join('');
+    main.innerHTML = SCREENS.map(function (s) {
+      return '<section class="sc" id="s-' + s[0] + '" aria-labelledby="h-' + s[0] + '"><h2 id="h-' + s[0] + '">' + s[1] + ' <small>' + s[0] + '.html</small></h2><p class="d">' + s[2] + '</p>' +
+        '<div class="pair">' +
+        '<div class="col mobcol"><h3>' + DEV.m.label + '</h3><div class="frame m" data-sc="' + s[0] + '" data-dev="m"></div></div>' +
+        '<div class="col"><h3>' + DEV.d.label + '</h3><div class="frame d" data-sc="' + s[0] + '" data-dev="d"></div></div>' +
+        '</div><p class="links"><a href="../' + s[0] + '.html" target="_blank" rel="noopener">Tam ekranda aç</a></p></section>';
+    }).join('');
+    frames = Array.prototype.slice.call(main.querySelectorAll('.frame')).map(function (el) {
+      var sc = el.dataset.sc, dev = el.dataset.dev;
+      var f = { el: el, sc: sc, dev: dev, tries: [], timer: 0 };
+      var img = document.createElement('img');
+      img.alt = '';
+      img.decoding = 'async';
+      img.loading = 'lazy';
+      img.addEventListener('error', function () { nextImg(f); });
+      var ifr = document.createElement('iframe');
+      ifr.loading = 'lazy';
+      ifr.title = SCREENS.filter(function (x) { return x[0] === sc; })[0][1] + ' · ' + DEV[dev].label;
+      ifr.width = DEV[dev].w;
+      ifr.height = DEV[dev].h;
+      ifr.setAttribute('referrerpolicy', 'no-referrer');
+      ifr.addEventListener('load', function () { check(f); });
+      f.img = img;
+      f.ifr = ifr;
+      el.appendChild(img);
+      el.appendChild(ifr);
+      return f;
+    });
+    frames.forEach(setSrc);
+    layout();
+  }
+
+  function setSrc(f) {
+    clearTimeout(f.timer);
+    f.el.classList.remove('fallback');
+    f.img.removeAttribute('src');
+    f.img.style.display = 'none';
+    f.tries = pngCandidates(f.sc, f.dev);
+    f.ifr.src = url(f.sc);
+    // Çerçeve 12 sn içinde yüklenmezse yedek görüntü.
+    f.timer = setTimeout(function () { showFallback(f); }, 12000);
+  }
+
+  function showFallback(f) {
+    f.el.classList.add('fallback');
+    nextImg(f);
+  }
+
+  function nextImg(f) {
+    var n = f.tries.shift();
+    if (!n) { f.img.style.display = 'none'; return; }
+    f.img.style.display = '';
+    f.img.src = n;
+  }
+
+  /** Çerçeve gerçek ekranı yüklemediyse (404 ya da boş) yedek görüntüyü göster. */
+  function check(f) {
+    var ifr = f.ifr, ok = false, readable = true;
+    clearTimeout(f.timer);
+    try {
+      var d = ifr.contentDocument;
+      ok = !!(d && d.body && d.body.dataset && d.body.dataset.screen);
+    } catch (e) {
+      readable = false; // dosya:// gibi kaynaklar arası durumda içerik okunamaz; çerçeve kalır
+    }
+    if (readable && !ok) showFallback(f);
+  }
+
+  function layout() {
+    frames.forEach(function (f) {
+      var w = f.el.clientWidth, d = DEV[f.dev];
+      if (!w) return;
+      var s = Math.min(1, w / d.w);
+      f.el.style.height = Math.round(d.h * s) + 'px';
+      f.ifr.style.transform = 'scale(' + s + ')';
+    });
+  }
+
+  function controls() {
+    var groups = [['Tema', 'theme', THEMES], ['Dil', 'lang', LANGS], ['Mod', 'scheme', SCHEMES]];
+    opts.innerHTML = groups.map(function (g) {
+      return '<div class="grp" role="group" aria-label="' + g[0] + '"><b>' + g[0] + '</b>' + g[2].map(function (o) {
+        return '<button type="button" class="f" data-k="' + g[1] + '" data-v="' + o[0] + '" aria-pressed="' + (st[g[1]] === o[0]) + '">' + o[1] + '</button>';
+      }).join('') + '</div>';
+    }).join('');
+    opts.addEventListener('click', function (e) {
+      var b = e.target.closest('button.f');
+      if (!b) return;
+      st[b.dataset.k] = b.dataset.v;
+      Array.prototype.forEach.call(opts.querySelectorAll('button.f'), function (x) { x.setAttribute('aria-pressed', String(st[x.dataset.k] === x.dataset.v)); });
+      document.documentElement.dataset.ui = st.scheme === 'dark' ? 'dark' : '';
+      frames.forEach(setSrc);
+    });
+  }
+
+  function barHeight() {
+    var h = document.getElementById('bar').offsetHeight;
+    document.documentElement.style.setProperty('--bar-h', (h + 12) + 'px');
+  }
+
+  build();
+  controls();
+  barHeight();
+  if (window.ResizeObserver) {
+    var ro = new ResizeObserver(function () { layout(); barHeight(); });
+    ro.observe(main);
+    ro.observe(document.getElementById('bar'));
+  }
+  window.addEventListener('resize', function () { layout(); barHeight(); });
+  window.addEventListener('load', function () { layout(); barHeight(); });
+})();
+</script>
+</body>
+</html>

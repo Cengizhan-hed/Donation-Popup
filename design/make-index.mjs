@@ -28,5 +28,5 @@ const l=items.filter(i=>(st.s==='all'||i.s===st.s)&&(st.t==='all'||i.t===st.t)&&
 grid.style.setProperty('--w',st.v==='masaustu'?'440px':'230px');
 grid.innerHTML=l.length?l.map(i=>'<figure><a href="showcase/'+i.f+'" target="_blank" rel="noopener"><img loading="lazy" src="'+i.f+'" alt="'+names[i.s]+' · '+tn[i.t]+' · '+i.v+'"></a><figcaption><b>'+names[i.s]+'</b><span>'+tn[i.t]+' · '+(i.v==='mobil'?'mobil':'masaüstü')+'</span></figcaption></figure>').join(''):'<p class="empty">Bu süzgeçte görüntü yok.</p>';}
 bar.onclick=e=>{const b=e.target.closest('button.f');if(!b)return;st[b.dataset.k]=b.dataset.v;draw()};draw();</script></body></html>`;
-fs.writeFileSync('design/showcase/index.html', html);
+fs.writeFileSync('design/showcase/contact-sheet.html', html);
 console.log(items.length);
