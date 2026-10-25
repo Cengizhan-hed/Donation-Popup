@@ -76,24 +76,39 @@ final class Setup_Wizard {
 		check_admin_referer( self::NONCE_ACTION );
 
 		$result = isset( $_POST['wizard_result'] ) ? sanitize_key( wp_unslash( $_POST['wizard_result'] ) ) : 'skipped'; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- check_admin_referer yukarıda.
-		$patch  = array( 'admin' => array( 'wizard' => 'skipped' ) );
+		$goal   = isset( $_POST['goal'] ) ? sanitize_key( wp_unslash( $_POST['goal'] ) ) : 'simple'; // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$try    = ! empty( $_POST['try_new_form'] ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+
+		$result = $this->apply( $result, $goal, $try );
+
+		wp_safe_redirect( add_query_arg( 'wizard', $result, Admin_View::url( Admin_Bootstrap::SLUG_SETTINGS ) ) );
+		exit;
+	}
+
+	/**
+	 * Seçimleri ayara yazar (yetki/nonce çağıranda denetlenir).
+	 *
+	 * @param string $result `done` ya da başka (= atlandı).
+	 * @param string $goal   Amaç kimliği.
+	 * @param bool   $try_new_form Yeni formu dene.
+	 * @return string `done` ya da `skipped`.
+	 */
+	public function apply( $result, $goal, $try_new_form ) {
+		$patch = array( 'admin' => array( 'wizard' => 'skipped' ) );
 
 		if ( 'done' === $result ) {
 			$goals = self::goal_defaults();
-			$goal  = isset( $_POST['goal'] ) ? sanitize_key( wp_unslash( $_POST['goal'] ) ) : 'simple'; // phpcs:ignore WordPress.Security.NonceVerification.Missing
 			$goal  = isset( $goals[ $goal ] ) ? $goal : 'simple';
 
 			$patch['admin']['wizard'] = 'done';
 			$patch['modules']         = $goals[ $goal ];
-			if ( ! empty( $_POST['try_new_form'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			if ( $try_new_form ) {
 				$patch['experiences'] = array( 'engine' => 'new' );
 			}
 		}
 
 		$this->settings->update( $patch );
-
-		wp_safe_redirect( add_query_arg( 'wizard', $result, Admin_View::url( Admin_Bootstrap::SLUG_SETTINGS ) ) );
-		exit;
+		return 'done' === $result ? 'done' : 'skipped';
 	}
 
 	/**
