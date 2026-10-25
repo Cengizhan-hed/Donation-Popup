@@ -56,3 +56,5 @@ assets/vendor/intl-tel-input/
 tools/graphify-venv
 graphify-out
 scripts/graph-update.mjs
+research/
+design/
