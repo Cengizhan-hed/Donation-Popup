@@ -5,6 +5,8 @@
 	<file>includes</file>
 	<file>templates</file>
 	<file>blocks</file>
+	<!-- Yeni mimari (Faz 7C): src/ icin SIFIR gevsetme. Klasor yoksa phpcs bu girdiyi sessizce atlar. -->
+	<file>src</file>
 	<file>woo-donation-popup.php</file>
 
 	<exclude-pattern>*/vendor/*</exclude-pattern>
@@ -35,13 +37,16 @@
 		</properties>
 	</rule>
 
-	<!-- Proje adlandirmasi: dosyalar class-<ad>.php (sinif adindaki wdp- oneki dosya adinda yok). Yeniden adlandirma yapilmaz. -->
+	<!-- ESKI KOD ISTISNALARI (yalniz includes/; src/ icin YOK — bkz. docs/MIMARI.md "7A: kural gevsetme plani").
+	     Faz 7C'de includes/ src/'ye tasininca bu iki blok ve includes/ girdisi silinir. -->
+	<!-- Eski dosyalar class-<ad>.php (sinif adindaki wdp- oneki dosya adinda yok). Yeniden adlandirma yapilmaz. -->
 	<rule ref="WordPress.Files.FileName.InvalidClassFileName">
 		<exclude-pattern>*/includes/*</exclude-pattern>
 	</rule>
 
-	<!-- wdp/hdf onekleri projenin yerlesik, tutarli onekleridir; mevcut sinif/islev/DB adlari korunur. -->
+	<!-- wdp/hdf onekleri eski kodun yerlesik onekleridir; mevcut sinif/islev/DB adlari korunur. -->
 	<rule ref="WordPress.NamingConventions.PrefixAllGlobals.ShortPrefixPassed">
+		<exclude-pattern>*/src/*</exclude-pattern>
 		<severity>0</severity>
 	</rule>
 
@@ -52,6 +57,9 @@
 				<element value="WDP"/>
 				<element value="hdf"/>
 				<element value="HDF"/>
+				<!-- Yeni kod: namespace DonationPanel\ ve donation_panel_ onekli global adlar (>=4 karakter, ShortPrefix hatasi yok). -->
+				<element value="DonationPanel"/>
+				<element value="donation_panel"/>
 			</property>
 		</properties>
 	</rule>
