@@ -293,9 +293,7 @@ class WDP_Modal_Shell_Renderer {
 			? WDP_Utils::resolve_addon_wc_product_id( $product_id ) > 0
 			: ! empty( $context['sadaka_wc_product_id'] );
 		$show_addon_ui         = $enable_addon_donation && ! $enable_progress_bar && $addon_wc_ready;
-		$title_style_attr      = class_exists( 'WDP_Category_Title_Color_Service' )
-			? WDP_Category_Title_Color_Service::get_title_style_attr( $product_id )
-			: '';
+		$title_style_attr      = WDP_Form_Modules::get_title_style_attr( $product_id );
 
 		WDP_Assets::force_enqueue();
 
@@ -358,7 +356,7 @@ class WDP_Modal_Shell_Renderer {
 		ob_start();
 		?>
 		<!-- Modal -->
-		<div id="<?php echo esc_attr( $modal_id ); ?>" class="hdf-donation-modal-wrapper wdp-modal<?php echo esc_attr( $modal_mode_class ); ?><?php echo esc_attr( $layout_class ); ?><?php echo $custom_class !== '' ? ' ' . esc_attr( $custom_class ) : ''; ?>" role="dialog" aria-modal="true" aria-labelledby="<?php echo esc_attr( $modal_id ); ?>-title" aria-describedby="<?php echo esc_attr( $modal_id ); ?>-description" data-product-id="<?php echo esc_attr( $product_id ); ?>" data-wdp-unit-price="<?php echo esc_attr( $product_price !== '' ? $product_price : '' ); ?>" data-wdp-enable-addon="<?php echo $show_addon_ui ? '1' : '0'; ?>" data-wdp-progress-celebrate="<?php echo ( ! isset( $context['progress_celebrate'] ) || ! empty( $context['progress_celebrate'] ) ) ? '1' : '0'; ?>" data-wdp-layout="<?php echo esc_attr( $shell['layout'] ); ?>"<?php echo $use_side_panel ? ' data-wdp-open-mode="side-panel"' : ''; ?><?php echo $theme_style_attr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped above ?> aria-hidden="true">
+		<div id="<?php echo esc_attr( $modal_id ); ?>" class="hdf-donation-modal-wrapper wdp-modal<?php echo esc_attr( $modal_mode_class ); ?><?php echo esc_attr( $layout_class ); ?><?php echo $custom_class !== '' ? ' ' . esc_attr( $custom_class ) : ''; ?>" role="dialog" aria-modal="true" aria-labelledby="<?php echo esc_attr( $modal_id ); ?>-title" aria-describedby="<?php echo esc_attr( $modal_id ); ?>-description" data-product-id="<?php echo esc_attr( $product_id ); ?>" data-wdp-unit-price="<?php echo esc_attr( $product_price !== '' ? $product_price : '' ); ?>" data-wdp-enable-addon="<?php echo $show_addon_ui ? '1' : '0'; ?>" data-wdp-layout="<?php echo esc_attr( $shell['layout'] ); ?>"<?php echo $use_side_panel ? ' data-wdp-open-mode="side-panel"' : ''; ?><?php echo $theme_style_attr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped above ?> aria-hidden="true">
 			<div class="wdp-modal-content<?php echo $use_side_panel ? ' wdp-side-panel-content' : ''; ?>">
 				<button type="button" class="wdp-modal-close" aria-label="<?php echo esc_attr__( 'Close popup', 'woo-donation-popup' ); ?>">&times;</button>
 				<?php
@@ -492,9 +490,7 @@ class WDP_Modal_Shell_Renderer {
 			? WDP_Utils::resolve_addon_wc_product_id( $product_id ) > 0
 			: ! empty( $context['sadaka_wc_product_id'] );
 		$show_addon_ui         = $enable_addon_donation && ! $enable_progress_bar && $addon_wc_ready;
-		$title_style_attr      = class_exists( 'WDP_Category_Title_Color_Service' )
-			? WDP_Category_Title_Color_Service::get_title_style_attr( $product_id )
-			: '';
+		$title_style_attr      = WDP_Form_Modules::get_title_style_attr( $product_id );
 
 		$button_settings     = WDP_Utils::normalize_legacy_popup_button_text(
 			get_option( 'wdp_button_settings', array() )
@@ -549,7 +545,7 @@ class WDP_Modal_Shell_Renderer {
 
 		ob_start();
 		?>
-		<div id="<?php echo esc_attr( $form_id ); ?>" class="hdf-donation-modal-wrapper wdp-donation-form<?php echo esc_attr( $layout_class ); ?> <?php echo esc_attr( $custom_class ); ?>" data-product-id="<?php echo esc_attr( $product_id ); ?>" data-wdp-display="inline" data-wdp-unit-price="<?php echo esc_attr( $product_price !== '' ? $product_price : '' ); ?>" data-wdp-enable-addon="<?php echo $show_addon_ui ? '1' : '0'; ?>" data-wdp-progress-celebrate="<?php echo ( ! isset( $context['progress_celebrate'] ) || ! empty( $context['progress_celebrate'] ) ) ? '1' : '0'; ?>" data-wdp-layout="<?php echo esc_attr( $shell['layout'] ); ?>"<?php echo $theme_style_attr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
+		<div id="<?php echo esc_attr( $form_id ); ?>" class="hdf-donation-modal-wrapper wdp-donation-form<?php echo esc_attr( $layout_class ); ?> <?php echo esc_attr( $custom_class ); ?>" data-product-id="<?php echo esc_attr( $product_id ); ?>" data-wdp-display="inline" data-wdp-unit-price="<?php echo esc_attr( $product_price !== '' ? $product_price : '' ); ?>" data-wdp-enable-addon="<?php echo $show_addon_ui ? '1' : '0'; ?>" data-wdp-layout="<?php echo esc_attr( $shell['layout'] ); ?>"<?php echo $theme_style_attr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
 			<div class="wdp-modal-content">
 				<?php
 				if ( $is_story ) :

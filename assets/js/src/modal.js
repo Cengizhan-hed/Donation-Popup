@@ -192,35 +192,6 @@
     modal.classList.toggle('wdp-has-success', hasSuccess);
   }
 
-  function trackModalViewContent(modal, productId, sidePanelMode) {
-    if (!window.WDPMetaTracking || typeof window.WDPMetaTracking.trackViewContentDonation !== "function") {
-      return
-    }
-    try {
-      const qtyEl = modal.querySelector('input[name="quantity"]')
-      const qty = qtyEl ? parseInt(qtyEl.value, 10) || 1 : 1
-      let unitPrice = 0
-      if (modal.dataset && modal.dataset.wdpUnitPrice !== undefined && modal.dataset.wdpUnitPrice !== "") {
-        unitPrice = parseFloat(modal.dataset.wdpUnitPrice)
-      }
-      if (!Number.isFinite(unitPrice)) {
-        unitPrice = 0
-      }
-      const titleEl = modal.querySelector(".wdp-modal-title")
-      const cname = titleEl ? titleEl.textContent.trim() : ""
-      window.WDPMetaTracking.trackViewContentDonation({
-        productId: productId,
-        contentName: cname,
-        quantity: qty,
-        itemPrice: unitPrice,
-        value: unitPrice > 0 ? unitPrice * qty : undefined,
-        formType: sidePanelMode ? "side_panel" : "popup",
-      })
-    } catch (metaErr) {
-      safeLog("Meta ViewContent:", metaErr)
-    }
-  }
-
   /**
    * İskelet sırasında form kontrollerini disabled yap (Playwright/otomasyon inert'i yok sayabiliyor).
    * data-wdp-skeleton-lock: önceden disabled ise "1", değilse "0".
@@ -466,7 +437,6 @@
         WDPApp.ctaViewport.refresh()
       }
 
-      trackModalViewContent(modal, productId, sidePanelMode)
       bindModalGlobalListeners()
       initOk = true
 

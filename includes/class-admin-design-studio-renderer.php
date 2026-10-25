@@ -40,7 +40,6 @@ class WDP_Admin_Design_Studio_Renderer {
 				'enable_dedication'      => '0',
 				'enable_anonymous'       => '0',
 				'dedication_placeholder' => __( 'On behalf of? (optional)', 'woo-donation-popup' ),
-				'module_order'           => '',
 				'trust_badges'           => '',
 				'motion_intensity'       => 'normal',
 				'chip_style'             => 'soft',
@@ -230,7 +229,7 @@ class WDP_Admin_Design_Studio_Renderer {
 		echo '</td></tr>';
 		echo '<tr><th scope="row"><label for="motion_intensity">' . esc_html__( 'Motion', 'woo-donation-popup' ) . '</label></th><td>';
 		echo '<select id="motion_intensity" name="motion_intensity"><option value="subtle" ' . selected( $motion, 'subtle', false ) . '>' . esc_html__( 'Subtle', 'woo-donation-popup' ) . '</option><option value="normal" ' . selected( $motion, 'normal', false ) . '>' . esc_html__( 'Normal', 'woo-donation-popup' ) . '</option><option value="expressive" ' . selected( $motion, 'expressive', false ) . '>' . esc_html__( 'Expressive', 'woo-donation-popup' ) . '</option></select>';
-		echo '<p class="description">' . esc_html__( 'What it does: Sets the strength of animations such as open, success, and progress celebration. Subtle = calmer sites; Expressive = livelier transitions. Animations are already reduced for users with “prefers-reduced-motion” on.', 'woo-donation-popup' ) . '</p>';
+		echo '<p class="description">' . esc_html__( 'What it does: Sets the strength of animations such as open and success. Subtle = calmer sites; Expressive = livelier transitions. Animations are already reduced for users with “prefers-reduced-motion” on.', 'woo-donation-popup' ) . '</p>';
 		echo '</td></tr>';
 		echo '<tr><th scope="row"><label for="chip_style">' . esc_html__( 'Quick amount button style', 'woo-donation-popup' ) . '</label></th><td>';
 		echo '<select id="chip_style" name="chip_style"><option value="soft" ' . selected( $chip, 'soft', false ) . '>' . esc_html__( 'Soft', 'woo-donation-popup' ) . '</option><option value="outline" ' . selected( $chip, 'outline', false ) . '>' . esc_html__( 'Outline', 'woo-donation-popup' ) . '</option><option value="solid" ' . selected( $chip, 'solid', false ) . '>' . esc_html__( 'Solid', 'woo-donation-popup' ) . '</option></select>';
@@ -255,7 +254,6 @@ class WDP_Admin_Design_Studio_Renderer {
 		$ded_on   = ! empty( $settings['enable_dedication'] ) && (string) $settings['enable_dedication'] === '1';
 		$anon_on  = ! empty( $settings['enable_anonymous'] ) && (string) $settings['enable_anonymous'] === '1';
 		$ded_ph   = isset( $settings['dedication_placeholder'] ) ? (string) $settings['dedication_placeholder'] : '';
-		$order    = isset( $settings['module_order'] ) ? (string) $settings['module_order'] : '';
 		$badges   = isset( $settings['trust_badges'] ) ? $settings['trust_badges'] : '';
 		if ( is_array( $badges ) ) {
 			$badges = wp_json_encode( $badges );
@@ -292,9 +290,6 @@ class WDP_Admin_Design_Studio_Renderer {
 			echo '<p class="description">' . esc_html__( 'If the URL is empty, the WordPress Privacy Policy page is used.', 'woo-donation-popup' ) . '</p>';
 		}
 		echo '</td></tr>';
-		echo '<tr><th scope="row"><label for="module_order">' . esc_html__( 'Default module order', 'woo-donation-popup' ) . '</label></th><td>';
-		echo '<input type="text" id="module_order" name="module_order" value="' . esc_attr( $order ) . '" class="large-text" />';
-		echo '<p class="description">' . esc_html__( 'What it does: Order of the 5 heading blocks in the popup header (comma-separated). E.g. media,impact,urgency,social_proof,progress. Unknown IDs are ignored. The form body is fixed: donor → dedication → amount → processing fee. If “Module order” is set on the product card, the product wins. If left empty, the default order is used.', 'woo-donation-popup' ) . '</p></td></tr>';
 		echo '<tr><th scope="row"><label for="trust_badges">' . esc_html__( 'Trust badges (JSON, max 3)', 'woo-donation-popup' ) . '</label></th><td>';
 		echo '<textarea id="trust_badges" name="trust_badges" rows="4" class="large-text code">' . esc_textarea( (string) $badges ) . '</textarea>';
 		echo '<p class="description">' . esc_html__( 'What it does: Shows more than one trust badge under the form. JSON array format: [{"icon":"builtin:shield","text":"SSL"},{"icon":"builtin:heart","text":"Secure"}]. Maximum 3 badges. If empty, the single-line “Trust text” below is used as a fallback. Invalid JSON is not saved / treated as empty.', 'woo-donation-popup' ) . '</p></td></tr>';

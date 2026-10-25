@@ -130,7 +130,6 @@ class WDP_Admin_Assets {
 					'error'         => __( 'The action could not be completed. Please try again.', 'woo-donation-popup' ),
 					'rowAdded'      => __( 'Row added.', 'woo-donation-popup' ),
 					'rowRemoved'    => __( 'Row removed.', 'woo-donation-popup' ),
-					'moved'         => __( 'Order updated.', 'woo-donation-popup' ),
 				),
 			)
 		);

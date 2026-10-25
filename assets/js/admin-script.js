@@ -366,36 +366,6 @@
     toggleButtonShadowRows()
   }
 
-  function bindCategoryColorPreview() {
-    const $form = $("#wdp-category-colors-settings-form")
-    if (!$form.length) return
-
-    function syncBlock($block) {
-      const $enable = $block.find('input[type="checkbox"][name^="category_color_enable"]')
-      const $picker = $block.find(".wdp-cat-color-picker")
-      const $preview = $block.find(".wdp-cat-color-block__product-name")
-      if (!$picker.length) return
-
-      const color = $picker.val() || "#1f2937"
-      if ($enable.is(":checked")) {
-        $preview.css("color", color)
-      } else {
-        $preview.css("color", "")
-      }
-    }
-
-    $form
-      .off("input.wdpCatColor change.wdpCatColor")
-      .on("input.wdpCatColor change.wdpCatColor", ".wdp-cat-color-picker, input[name^='category_color_enable']", function () {
-        syncBlock($(this).closest(".wdp-cat-color-block"))
-        markDirty($form.closest(".wdp-admin-settings-form"))
-      })
-
-    $form.find(".wdp-cat-color-block").each(function () {
-      syncBlock($(this))
-    })
-  }
-
   function bindDirtyStateTracking() {
     $(document)
       .off("input.wdpAdminDirty change.wdpAdminDirty")
@@ -616,8 +586,6 @@
       success_message_color: "--wdp-lp-su-msg-fg",
       success_message_border: "--wdp-lp-su-msg-bd",
       success_button_color: "--wdp-lp-su-btn",
-      mini_cart_bg: "--wdp-lp-su-cart-bg",
-      mini_cart_border: "--wdp-lp-su-cart-bd",
       cart_item_name_color: "--wdp-lp-su-name",
       cart_item_price_color: "--wdp-lp-su-price",
     }
@@ -631,8 +599,6 @@
       if (Number.isFinite(msgR)) $root.css("--wdp-lp-su-msg-r", Math.max(0, Math.min(50, msgR)) + "px")
       const btnR = parseInt($form.find('[name="success_button_radius"]').val(), 10)
       if (Number.isFinite(btnR)) $root.css("--wdp-lp-su-btn-r", Math.max(0, Math.min(50, btnR)) + "px")
-      const cartR = parseInt($form.find('[name="mini_cart_radius"]').val(), 10)
-      if (Number.isFinite(cartR)) $root.css("--wdp-lp-su-cart-r", Math.max(0, Math.min(50, cartR)) + "px")
 
       const cart = $form.find('[name="success_text_view_cart"]').val()
       if (cart) $root.find("[data-lp-su-cart]").text(cart)
@@ -664,7 +630,6 @@
     bindConditionalRows()
     bindDirtyStateTracking()
     bindAllSettingsForms()
-    bindCategoryColorPreview()
     bindProgressLivePreview()
     bindNormalFormLivePreview()
     bindModalLayoutLivePreview()
@@ -967,8 +932,6 @@
       setNamedColor("container_border", shadeHex(primary, 0.55), colorOpts)
       setNamedColor("success_button_color", primary, colorOpts)
       setNamedColor("success_message_color", primary, colorOpts)
-      setNamedColor("mini_cart_bg", soft, colorOpts)
-      setNamedColor("mini_cart_border", shadeHex(primary, 0.55), colorOpts)
       setNamedColor("cart_item_price_color", primary, colorOpts)
 
       // Normal form preview

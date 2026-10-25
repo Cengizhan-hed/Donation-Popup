@@ -23,7 +23,6 @@ class WDP_Product_Settings_Service {
 		'enable_quantity',
 		'enable_amount_presets',
 		'enable_impact_line',
-		'progress_celebrate',
 		'enable_urgency',
 		'enable_social_proof',
 		'enable_cover_fee',
@@ -159,12 +158,6 @@ class WDP_Product_Settings_Service {
 
 		$request['trust_badges'] = self::rows_from_panel( isset( $request['trust_badges'] ) ? $request['trust_badges'] : array(), array( 'icon', 'text' ) );
 
-		$custom_order            = isset( $request['module_order_custom'] ) && self::parse_bool_flag( $request['module_order_custom'] );
-		$request['module_order'] = ( $custom_order && isset( $request['module_order'] ) && is_array( $request['module_order'] ) )
-			? array_values( array_map( 'strval', array_filter( wp_unslash( $request['module_order'] ), 'is_scalar' ) ) )
-			: '';
-		unset( $request['module_order_custom'] );
-
 		$request = self::with_preserved_fields( $request, $existing_meta );
 		// For Önerilen list check when product presets are empty/rejected (10.29.1).
 		$request['__existing_amount_presets'] = isset( $existing_meta['_amount_presets'] )
@@ -272,7 +265,6 @@ class WDP_Product_Settings_Service {
 		$enable_wizard         = self::parse_tristate_flag( isset( $request['enable_wizard'] ) ? $request['enable_wizard'] : null );
 		$enable_field_icons    = self::parse_tristate_flag( isset( $request['enable_field_icons'] ) ? $request['enable_field_icons'] : null );
 		$enable_impact_line    = self::parse_bool_flag( isset( $request['enable_impact_line'] ) ? $request['enable_impact_line'] : true );
-		$progress_celebrate    = self::parse_bool_flag( isset( $request['progress_celebrate'] ) ? $request['progress_celebrate'] : true );
 		$enable_email          = self::parse_tristate_flag( isset( $request['enable_email'] ) ? $request['enable_email'] : null );
 		$enable_dedication     = self::parse_tristate_flag( isset( $request['enable_dedication'] ) ? $request['enable_dedication'] : null );
 		$enable_anonymous      = self::parse_tristate_flag( isset( $request['enable_anonymous'] ) ? $request['enable_anonymous'] : null );
@@ -300,11 +292,6 @@ class WDP_Product_Settings_Service {
 
 		$trust_raw    = isset( $request['trust_badges'] ) ? $request['trust_badges'] : '';
 		$trust_badges = class_exists( 'WDP_Form_Modules' ) ? WDP_Form_Modules::sanitize_trust_badges( $trust_raw ) : array();
-
-		// Empty order → '' so the product follows the global order (sanitize_order() would pin the defaults).
-		$module_order = isset( $request['module_order'] ) ? $request['module_order'] : '';
-		$has_order    = is_array( $module_order ) ? ! empty( $module_order ) : ( is_scalar( $module_order ) && trim( (string) $module_order ) !== '' );
-		$order_list   = ( $has_order && class_exists( 'WDP_Form_Modules' ) ) ? WDP_Form_Modules::sanitize_order( $module_order ) : array();
 
 		// 10.29.0 (Y3/Y4/Y2): strict validation on save. A rejected field keeps its previous
 		// value (restored in from_product_panel from the existing meta) and raises an admin error.
@@ -507,7 +494,6 @@ class WDP_Product_Settings_Service {
 			'_enable_wizard'             => $enable_wizard,
 			'_enable_field_icons'        => $enable_field_icons,
 			'_enable_impact_line'        => $enable_impact_line ? 'yes' : 'no',
-			'_progress_celebrate'        => $progress_celebrate ? 'yes' : 'no',
 			'_impact_line_text'          => isset( $request['impact_line_text'] ) ? self::limit_text( sanitize_text_field( wp_unslash( $request['impact_line_text'] ) ), 200 ) : '',
 			'_amount_presets'            => $amount_presets,
 			'_amount_preset_recommended' => $recommended,
@@ -531,7 +517,6 @@ class WDP_Product_Settings_Service {
 			'_cover_fee_percent'         => $cover_fee_percent > 0 ? (string) $cover_fee_percent : '',
 			'_goal_reached_action'       => $goal_action,
 			'_goal_reached_message'      => $goal_message,
-			'_wdp_module_order'          => ! empty( $order_list ) ? implode( ',', $order_list ) : '',
 			'_wdp_donation_product'      => self::parse_tristate_flag( isset( $request['donation_product'] ) ? $request['donation_product'] : null ),
 			'_wdp_auto_place'            => ( isset( $request['auto_place'] ) && is_scalar( $request['auto_place'] ) && strtolower( trim( (string) $request['auto_place'] ) ) === 'no' ) ? 'no' : '',
 		);

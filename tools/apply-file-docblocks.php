@@ -27,7 +27,6 @@ $jsApi = array(
 	'assets/js/src/core/utils.js' => 'WDPApp.utils',
 	'assets/js/src/core/state.js' => 'WDPApp.state',
 	'assets/js/src/core/dom.js' => 'WDPApp.dom',
-	'assets/js/src/meta-tracking.js' => 'WDPApp.metaTracking',
 	'assets/js/src/phone-input.js' => 'WDPApp.phoneInput',
 	'assets/js/src/product.js' => 'WDPApp.product',
 	'assets/js/src/cart/ui.js' => 'WDPApp.cartUi',

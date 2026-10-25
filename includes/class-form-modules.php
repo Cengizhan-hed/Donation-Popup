@@ -48,17 +48,6 @@ class WDP_Form_Modules {
 	}
 
 	/**
-	 * Genel ayar: yalnız 5 başlık bloğu (bilinmeyen kimlikler sessizce yok sayılır).
-	 *
-	 * @param mixed $raw Raw order.
-	 * @return string[]
-	 */
-	public static function sanitize_header_order( $raw ) {
-		$header = array( 'media', 'impact', 'urgency', 'social_proof', 'progress' );
-		return self::sanitize_order_against( $raw, $header );
-	}
-
-	/**
 	 * @param mixed    $raw     Raw.
 	 * @param string[] $allowed Allowed ids (order of append for missing).
 	 * @return string[]
@@ -88,22 +77,12 @@ class WDP_Form_Modules {
 	}
 
 	/**
-	 * Resolve module order for a product (meta override or global/default).
+	 * Module order: fixed default order (no per-product or global override).
 	 *
-	 * @param int $product_id Product ID.
 	 * @return string[]
 	 */
-	public static function resolve_order( $product_id ) {
-		$product_id = absint( $product_id );
-		$raw        = '';
-		if ( $product_id > 0 ) {
-			$raw = get_post_meta( $product_id, '_wdp_module_order', true );
-		}
-		if ( $raw === '' || $raw === null ) {
-			$button = get_option( 'wdp_button_settings', array() );
-			$raw    = is_array( $button ) && ! empty( $button['module_order'] ) ? $button['module_order'] : '';
-		}
-		return self::sanitize_order( $raw );
+	public static function resolve_order() {
+		return self::allowed_ids();
 	}
 
 	/**
@@ -527,7 +506,7 @@ class WDP_Form_Modules {
 	}
 
 	/**
-	 * Effective accent color: product primary → category → general brand.
+	 * Effective accent color: product primary → general brand.
 	 * Does not read `_theme_inherit_category_color`.
 	 *
 	 * @param int   $product_id Product ID.
@@ -545,14 +524,6 @@ class WDP_Form_Modules {
 		if ( $primary !== '' ) {
 			return $primary;
 		}
-		if ( $product_id > 0 && class_exists( 'WDP_Category_Title_Color_Service' ) ) {
-			$cat = WDP_Category_Title_Color_Service::get_color_for_product( $product_id );
-			if ( is_string( $cat ) && $cat !== '' ) {
-				return class_exists( 'WDP_Color_Palette' )
-					? WDP_Color_Palette::normalize_hex( $cat )
-					: (string) ( sanitize_hex_color( $cat ) ?: '' );
-			}
-		}
 		$button = get_option( 'wdp_button_settings', array() );
 		if ( ! is_array( $button ) ) {
 			return '';
@@ -567,7 +538,7 @@ class WDP_Form_Modules {
 	}
 
 	/**
-	 * Product / category override only (empty → leave global CSS vars).
+	 * Product override only (empty → leave global CSS vars).
 	 *
 	 * @param int   $product_id Product ID.
 	 * @param array $context    Optional context.
@@ -584,15 +555,22 @@ class WDP_Form_Modules {
 		if ( $primary !== '' ) {
 			return $primary;
 		}
-		if ( $product_id > 0 && class_exists( 'WDP_Category_Title_Color_Service' ) ) {
-			$cat = WDP_Category_Title_Color_Service::get_color_for_product( $product_id );
-			if ( is_string( $cat ) && $cat !== '' ) {
-				return class_exists( 'WDP_Color_Palette' )
-					? WDP_Color_Palette::normalize_hex( $cat )
-					: (string) ( sanitize_hex_color( $cat ) ?: '' );
-			}
-		}
 		return '';
+	}
+
+	/**
+	 * Inline style attribute for the product title (product primary colour only).
+	 *
+	 * @param int $product_id Product ID.
+	 * @return string Safe HTML attribute fragment (empty or ` style="color:..."`).
+	 */
+	public static function get_title_style_attr( $product_id ) {
+		$color = self::resolve_product_shell_primary( absint( $product_id ) );
+		if ( '' === $color ) {
+			return '';
+		}
+
+		return ' style="color:' . esc_attr( $color ) . '"';
 	}
 
 	/**

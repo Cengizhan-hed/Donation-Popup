@@ -215,17 +215,8 @@ trait WDP_Assets_Registry_Trait {
 			$file   = (string) $module['file'];
 			$deps   = isset( $module['deps'] ) && is_array( $module['deps'] ) ? $module['deps'] : array();
 
-			if ( 'wdp-meta-tracking-js' === $handle ) {
-				if ( ! class_exists( 'WDP_Meta_Tracking' ) || ! WDP_Meta_Tracking::frontend_events_script_needed() ) {
-					continue;
-				}
-			}
-
 			if ( 'wdp-utils-js' === $handle ) {
 				$deps = array_merge( $deps, $base_deps );
-				if ( class_exists( 'WDP_Meta_Tracking' ) && WDP_Meta_Tracking::frontend_events_script_needed() ) {
-					$deps = array_merge( array( 'wdp-meta-tracking-js' ), $deps );
-				}
 			}
 
 			wp_register_script(
@@ -418,12 +409,7 @@ trait WDP_Assets_Registry_Trait {
 						$bs = get_option( 'wdp_button_settings', array() );
 						return ! empty( $bs['enable_multi_step'] ) && (string) $bs['enable_multi_step'] === '1';
 					} )(),
-					'progress_celebrate'       => ( function () {
-						$ps = get_option( 'wdp_progress_bar_settings', array() );
-						return ! isset( $ps['enable_celebrate'] ) || (string) $ps['enable_celebrate'] !== '0';
-					} )(),
 				),
-				'meta'              => class_exists( 'WDP_Meta_Tracking' ) ? WDP_Meta_Tracking::get_frontend_config() : array(),
 				'i18n_dict'         => class_exists( 'WDP_Js_I18n' ) ? WDP_Js_I18n::dictionary() : array(),
 				'validation'        => array(
 					'phone_min_digits'            => 10,

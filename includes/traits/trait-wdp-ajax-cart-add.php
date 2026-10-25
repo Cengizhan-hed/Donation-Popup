@@ -258,13 +258,12 @@ trait WDP_Ajax_Cart_Add_Trait {
 							$dup_pid = isset( $cart_item['product_id'] ) ? (int) $cart_item['product_id'] : 0;
 							WDP_Utils::json_success(
 								array(
-									'message'        => __( 'Product is already in the cart', 'woo-donation-popup' ),
-									'cart_count'     => (int) $cart->get_cart_contents_count(),
-									'checkout_url'   => wc_get_checkout_url(),
-									'items'          => self::get_cart_items(),
-									'cart_item_key'  => $dup_key,
-									'product_id'     => $dup_pid,
-									'meta_cart_line' => self::build_meta_cart_line_from_cart_item( $cart_item, $dup_pid ),
+									'message'       => __( 'Product is already in the cart', 'woo-donation-popup' ),
+									'cart_count'    => (int) $cart->get_cart_contents_count(),
+									'checkout_url'  => wc_get_checkout_url(),
+									'items'         => self::get_cart_items(),
+									'cart_item_key' => $dup_key,
+									'product_id'    => $dup_pid,
 								)
 							);
 						}
@@ -339,7 +338,6 @@ trait WDP_Ajax_Cart_Add_Trait {
 					: 0.0;
 			}
 
-			$added_item = $cart->get_cart_item( $cart_item_key );
 			WDP_Utils::json_success(
 				array(
 					'message'         => __( 'Product added to cart.', 'woo-donation-popup' ),
@@ -350,7 +348,6 @@ trait WDP_Ajax_Cart_Add_Trait {
 					'total_donation'  => $total_donation,
 					'pending_in_cart' => $pending_in_cart,
 					'product_id'      => $product_id,
-					'meta_cart_line'  => $added_item ? self::build_meta_cart_line_from_cart_item( $added_item, $product_id ) : null,
 				)
 			);
 		} catch ( WDP_Validation_Exception $e ) {
@@ -365,45 +362,6 @@ trait WDP_Ajax_Cart_Add_Trait {
 			WDP_Utils::handle_exception( $e, true );
 		}
 	}
-	/**
-	 * Safe line summary for Meta AddToCart (no donor PII).
-	 *
-	 * @param array $cart_item WooCommerce cart row.
-	 * @param int   $product_id Product ID fallback.
-	 * @return array|null
-	 */
-	private static function build_meta_cart_line_from_cart_item( $cart_item, $product_id ) {
-		if ( empty( $cart_item ) || ! isset( $cart_item['data'] ) ) {
-			return null;
-		}
-		$product = $cart_item['data'];
-		if ( ! $product || ! is_object( $product ) || ! method_exists( $product, 'get_name' ) ) {
-			return null;
-		}
-		$qty = isset( $cart_item['quantity'] ) ? (int) $cart_item['quantity'] : 1;
-		if ( $qty < 1 ) {
-			$qty = 1;
-		}
-		$product_price = floatval( $product->get_price() );
-		$line_total    = $product_price * $qty;
-		if ( isset( $cart_item['custom_price'] ) ) {
-			$cp            = floatval( $cart_item['custom_price'] );
-			$line_total    = $cp * $qty;
-			$product_price = $cp;
-		}
-		$dec = function_exists( 'wc_get_price_decimals' ) ? wc_get_price_decimals() : 2;
-		$pid = isset( $cart_item['product_id'] ) ? (int) $cart_item['product_id'] : (int) $product_id;
-
-		return array(
-			'product_id'   => $pid,
-			'product_name' => wp_strip_all_tags( (string) $product->get_name() ),
-			'quantity'     => $qty,
-			'line_total'   => round( (float) $line_total, $dec ),
-			'item_price'   => $qty > 0 ? round( (float) $line_total / $qty, $dec ) : round( (float) $line_total, $dec ),
-			'currency'     => function_exists( 'get_woocommerce_currency' ) ? get_woocommerce_currency() : '',
-		);
-	}
-
 	/**
 	 * Build donation meta for optional addon line item.
 	 *

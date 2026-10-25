@@ -117,18 +117,6 @@
               ? WDPApp.utils.isValidProductId(parsedId)
               : Number.isFinite(parsedId) && parsedId > 0;
           if (idOk) {
-            try {
-              const ajax = window.wdp_ajax || {};
-              const meta = ajax.meta || {};
-              if (meta.enabled && meta.customDebug && window.WDPMetaTracking && typeof window.WDPMetaTracking.trackCustom === "function") {
-                window.WDPMetaTracking.trackCustom(
-                  "DonationButtonClick",
-                  { source: "wdp_donation_plugin", product_id: String(productId) },
-                  { eventID: "wdp_dbg_btn_" + String(productId) + "_" + String(Date.now()) }
-                );
-              }
-            } catch (dbc) {}
-
             let modalId = button.getAttribute("data-wdp-modal-id");
             if (!modalId && button.classList.contains("wdp-open-side-panel")) {
               modalId = "wdp-side-panel-" + productId;

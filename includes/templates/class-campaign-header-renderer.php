@@ -155,7 +155,7 @@ class WDP_Campaign_Header_Renderer {
 	 */
 	public static function render_header_modules( $product_id, array $context, array $extra = array() ) {
 		$order = class_exists( 'WDP_Form_Modules' )
-			? WDP_Form_Modules::resolve_order( $product_id )
+			? WDP_Form_Modules::resolve_order()
 			: array( 'media', 'impact', 'urgency', 'social_proof', 'progress' );
 
 		$chunks = array(

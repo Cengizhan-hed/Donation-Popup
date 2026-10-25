@@ -81,7 +81,6 @@ final class ProductSettingsSaveTest extends TestCase {
 		$this->assertSame('no', $meta['_enable_trust_strip']);
 		$this->assertSame('no', $meta['_enable_quantity']);
 		$this->assertSame('no', $meta['_enable_amount_presets']);
-		$this->assertSame('no', $meta['_progress_celebrate']);
 		// 10.30.0: wizard / alan ikonları üçlü select; POST'ta yoksa genel ayar ('').
 		$this->assertSame('', $meta['_enable_field_icons']);
 		$this->assertSame('', $meta['_enable_wizard']);
@@ -136,17 +135,12 @@ final class ProductSettingsSaveTest extends TestCase {
 		$this->assertSame('', $meta['_trust_badges']);
 	}
 
-	public function test_module_order_only_saved_when_custom_order_is_enabled(): void {
-		$posted = array('module_order' => array('urgency', 'media', array('x'), 'bogus'));
-
-		$off = WDP_Product_Settings_Service::from_product_panel($posted);
-		$this->assertSame('', $off['_wdp_module_order']);
-
-		$on = WDP_Product_Settings_Service::from_product_panel($posted + array('module_order_custom' => 'yes'));
-		$order = explode(',', $on['_wdp_module_order']);
-		$this->assertSame(array('urgency', 'media'), array_slice($order, 0, 2));
-		$this->assertNotContains('bogus', $order);
-		$this->assertCount(count(WDP_Form_Modules::allowed_ids()), $order);
+	public function test_block_order_and_celebration_are_no_longer_written(): void {
+		$meta = WDP_Product_Settings_Service::from_product_panel(
+			array('module_order' => array('urgency', 'media'), 'module_order_custom' => 'yes', 'progress_celebrate' => 'yes')
+		);
+		$this->assertArrayNotHasKey('_wdp_module_order', $meta);
+		$this->assertArrayNotHasKey('_progress_celebrate', $meta);
 	}
 
 	public function test_theme_preset_id_not_written(): void {

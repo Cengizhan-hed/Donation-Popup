@@ -1,6 +1,6 @@
 /**
  * @file ux-enhancements.css
- * Skeleton open, CTA press, celebrate, retry, container queries, toast host, perf.
+ * Skeleton open, CTA press, retry, container queries, toast host, perf.
  */
 
 /* Modal skeleton: görsel iskelet; form etkileşimsiz (veri kaybı yarışını önler) */
@@ -74,42 +74,6 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-button-group button.is-cta-pr
   100% { transform: scale(1); filter: brightness(1); }
 }
 
-/* Progress celebrate burst */
-html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-celebrate {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 12;
-  overflow: hidden;
-}
-
-html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-celebrate__dot {
-  position: absolute;
-  left: 50%;
-  top: 42%;
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: color-mix(in srgb, var(--wdp-primary, #0f608b) 70%, #ffffff);
-  opacity: 0;
-}
-
-html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-container.is-celebrating .wdp-progress-celebrate__dot {
-  animation: wdp-celebrate-dot 900ms ease-out forwards;
-  animation-delay: calc(var(--i, 0) * 28ms);
-}
-
-@keyframes wdp-celebrate-dot {
-  0% {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(0.6) rotate(calc(var(--i, 0) * 30deg)) translateY(0);
-  }
-  100% {
-    opacity: 0;
-    transform: translate(-50%, -50%) scale(1) rotate(calc(var(--i, 0) * 30deg)) translateY(-46px);
-  }
-}
-
 /* Form error retry */
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-form-error__retry-wrap {
   display: flex;
@@ -172,8 +136,7 @@ html body.wdp-is-offline :is(.wdp-modal, .wdp-donation-form) .wdp-trust-strip::a
 
 @media (prefers-reduced-motion: reduce) {
   html body .wdp-modal.wdp-is-skeleton .wdp-modal-content::after,
-  html body :is(.wdp-modal, .wdp-donation-form) .wdp-button-group button.is-cta-press,
-  html body :is(.wdp-modal, .wdp-donation-form) .wdp-progress-bar-container.is-celebrating .wdp-progress-celebrate__dot {
+  html body :is(.wdp-modal, .wdp-donation-form) .wdp-button-group button.is-cta-press {
     animation: none;
   }
 }

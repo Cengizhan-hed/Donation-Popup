@@ -10,7 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Placement / scope / loop / schema settings with a single normalizer.
+ * Placement / scope / loop settings with a single normalizer.
  */
 class WDP_Placement_Settings {
 
@@ -20,7 +20,6 @@ class WDP_Placement_Settings {
 	const DISPLAYS     = array( 'inline', 'button_popup', 'button_panel' );
 	const LOOP_BUTTONS = array( 'link', 'popup', 'panel', 'off' );
 	const SCOPES       = array( 'all', 'categories', 'marked' );
-	const SCHEMA_MODES = array( 'auto', 'off' );
 
 	/** @var array|null */
 	private static $cache = null;
@@ -40,7 +39,6 @@ class WDP_Placement_Settings {
 			'loop_button'         => 'panel',
 			'donation_scope'      => 'all',
 			'donation_categories' => array(),
-			'schema'              => 'auto',
 		);
 	}
 
@@ -62,7 +60,6 @@ class WDP_Placement_Settings {
 		$out['show_form_title'] = self::yes_no( $raw, 'show_form_title', $defaults['show_form_title'] );
 		$out['loop_button']     = self::choice( $raw, 'loop_button', self::LOOP_BUTTONS, $defaults['loop_button'] );
 		$out['donation_scope']  = self::choice( $raw, 'donation_scope', self::SCOPES, $defaults['donation_scope'] );
-		$out['schema']          = self::choice( $raw, 'schema', self::SCHEMA_MODES, $defaults['schema'] );
 
 		$categories = isset( $raw['donation_categories'] ) ? $raw['donation_categories'] : array();
 		if ( is_string( $categories ) ) {

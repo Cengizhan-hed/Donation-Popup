@@ -47,7 +47,6 @@ class Woo_Donation_Popup {
 		$modules = array(
 			'WDP_Utils',
 			'WDP_Assets',
-			'WDP_Meta_Tracking',
 			'WDP_Ajax',
 			'WDP_Cart',
 			'WDP_Order',
@@ -57,7 +56,6 @@ class Woo_Donation_Popup {
 			'WDP_Donations_List',
 			'WDP_Product_Page_Integration',
 			'WDP_Lazy_Modal',
-			'WDP_Schema',
 			'WDP_Blocks',
 			'WDP_Elementor',
 			'WDP_Form_Matrix',

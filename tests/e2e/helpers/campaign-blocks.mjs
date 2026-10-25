@@ -26,7 +26,6 @@ const META_KEYS = [
   '_wdp_total_donation_amount',
   '_goal_reached_action',
   '_goal_reached_message',
-  '_progress_celebrate',
   '_enable_social_proof',
   '_social_proof_text',
   '_wdp_donor_count',
@@ -371,9 +370,8 @@ export async function runCampaignBlocksChecks({
       fail('campaign-blocks-social-donors', 'sosyal kanıt {donors}', e);
     }
 
-    // --- kutlama yalnız geçişte (başta %100 → kutlama yok) ---
+    // --- hedef olayı yalnız geçişte (başta %100 → olay/animasyon DOM'u yok) ---
     try {
-      await setProductMeta(campaignId, '_progress_celebrate', 'yes');
       await setProductMeta(campaignId, '_wdp_total_donation_amount', '500');
       await setProductMeta(campaignId, '_progress_bar_limit', '500');
       metaTouched = true;
@@ -385,11 +383,11 @@ export async function runCampaignBlocksChecks({
       }
       await page.waitForTimeout(400);
       if (await bar.locator('.wdp-progress-celebrate').count()) {
-        throw new Error('Başlangıçta %100 iken kutlama DOM’a eklendi');
+        throw new Error('Başlangıçta %100 iken eski kutlama DOM’u eklendi');
       }
-      pass('campaign-blocks-celebrate-only-transition');
+      pass('campaign-blocks-goal-reached-only-on-transition');
     } catch (e) {
-      fail('campaign-blocks-celebrate-only-transition', 'kutlama yalnız geçişte', e);
+      fail('campaign-blocks-goal-reached-only-on-transition', 'hedef olayı yalnız geçişte', e);
     }
   } catch (e) {
     fail('campaign-blocks-runner', 'Kampanya blokları E2E koşucusu', e);

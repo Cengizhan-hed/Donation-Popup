@@ -22,7 +22,6 @@ class WDP_Admin_Product_Data_Tab {
 	/**
 	 * Header blocks whose order a product may override (body blocks have a fixed order).
 	 */
-	const HEADER_MODULES = array( 'media', 'impact', 'urgency', 'social_proof', 'progress' );
 
 	const MAX_TRUST_ROWS = 3;
 
@@ -279,7 +278,6 @@ class WDP_Admin_Product_Data_Tab {
 			'min_custom_price'          => $min_price !== '' ? $min_price : '0',
 			'max_shares'                => ( $max_shares !== '' && absint( $max_shares ) > 0 ) ? $max_shares : WDP_Donation_Type::DEFAULT_MAX_SHARES,
 			'progress_bar_limit'        => $goal !== '' ? $goal : WDP_Donation_Type::DEFAULT_GOAL,
-			'progress_celebrate'        => $flag( '_progress_celebrate', true ),
 			'goal_reached_action'       => class_exists( 'WDP_Campaign_Goal' )
 				? WDP_Campaign_Goal::sanitize_action( $meta( '_goal_reached_action' ) )
 				: 'message',
@@ -307,7 +305,6 @@ class WDP_Admin_Product_Data_Tab {
 			'social_proof_text'         => $meta( '_social_proof_text' ),
 			'enable_trust_strip'        => $flag( '_enable_trust_strip', true ),
 			'trust_rows'                => $trust_rows,
-			'module_order_custom'       => $meta( '_wdp_module_order' ) !== '',
 			'enable_sadaka_donation'    => $flag( '_enable_addon_donation' ),
 			'sadaka_toggle_label'       => $meta( '_addon_toggle_label' ),
 			'sadaka_wc_product_id'      => ( $meta( '_addon_wc_product_id' ) !== '' && $meta( '_addon_wc_product_id' ) !== '0' ) ? $meta( '_addon_wc_product_id' ) : '',
@@ -662,7 +659,6 @@ class WDP_Admin_Product_Data_Tab {
 		echo '<span class="description">' . esc_html__( 'Only orders with confirmed payment (processing/completed) are counted; processing fees and on-hold are not included. Amounts are converted to the store’s main currency. The refresh icon recalculates the total from scratch.', 'woo-donation-popup' ) . '</span>';
 		echo '</div>';
 		echo '</div>';
-		self::checkbox( 'progress_celebrate', $values['progress_celebrate'], __( 'Celebration animation', 'woo-donation-popup' ), __( 'Shows a short celebration when the goal is reached.', 'woo-donation-popup' ) );
 		self::select(
 			'goal_reached_action',
 			isset( $values['goal_reached_action'] ) ? $values['goal_reached_action'] : 'message',
@@ -850,8 +846,6 @@ class WDP_Admin_Product_Data_Tab {
 				),
 			)
 		);
-
-		self::render_module_order( $product_id, $values['module_order_custom'] );
 
 		self::close_section();
 	}
@@ -1092,43 +1086,6 @@ class WDP_Admin_Product_Data_Tab {
 			echo '<option value="' . esc_attr( $icon_value ) . '"' . selected( $value, $icon_value, false ) . '>' . esc_html( $icon['label'] ) . '</option>';
 		}
 		echo '</select>';
-	}
-
-	/**
-	 * Keyboard-friendly (up/down buttons) header block order.
-	 *
-	 * @param int  $product_id Product ID.
-	 * @param bool $is_custom  Product has its own order.
-	 * @return void
-	 */
-	private static function render_module_order( $product_id, $is_custom ) {
-		$defaults = WDP_Form_Modules::defaults();
-		$labels   = isset( $defaults['labels'] ) && is_array( $defaults['labels'] ) ? $defaults['labels'] : array();
-		$order    = array_values( array_intersect( WDP_Form_Modules::resolve_order( $product_id ), self::HEADER_MODULES ) );
-
-		echo '<div class="form-field wdp-pp-field wdp-pp-field--wide">';
-		echo '<span class="wdp-pp-field__label">' . esc_html__( 'Block order', 'woo-donation-popup' ) . '</span>';
-		echo '<div class="wdp-pp-field__control">';
-		echo '<label class="wdp-pp-inline-check"><input type="checkbox" name="' . esc_attr( self::name( 'module_order_custom' ) ) . '" value="yes" data-wdp-order-toggle' . checked( $is_custom, true, false ) . ' /> ' . esc_html__( 'Use a custom order for this product', 'woo-donation-popup' ) . '</label>';
-		echo '<fieldset class="wdp-order" data-wdp-order' . ( $is_custom ? '' : ' disabled' ) . '>';
-		echo '<legend class="screen-reader-text">' . esc_html__( 'Order of campaign blocks', 'woo-donation-popup' ) . '</legend>';
-		echo '<ol class="wdp-order__list" data-wdp-order-list>';
-		foreach ( $order as $module_id ) {
-			$label = isset( $labels[ $module_id ] ) ? $labels[ $module_id ] : $module_id;
-			echo '<li class="wdp-order__item" data-wdp-order-item>';
-			echo '<span class="wdp-order__label">' . esc_html( $label ) . '</span>';
-			echo '<input type="hidden" name="' . esc_attr( self::FIELD_NAME . '[module_order][]' ) . '" value="' . esc_attr( $module_id ) . '" />';
-			/* translators: %s: block name */
-			echo '<button type="button" class="wdp-icon-button" data-wdp-order-move="up" aria-label="' . esc_attr( sprintf( __( 'Move the %s block up', 'woo-donation-popup' ), $label ) ) . '"><span class="dashicons dashicons-arrow-up-alt2" aria-hidden="true"></span></button>';
-			/* translators: %s: block name */
-			echo '<button type="button" class="wdp-icon-button" data-wdp-order-move="down" aria-label="' . esc_attr( sprintf( __( 'Move the %s block down', 'woo-donation-popup' ), $label ) ) . '"><span class="dashicons dashicons-arrow-down-alt2" aria-hidden="true"></span></button>';
-			echo '</li>';
-		}
-		echo '</ol>';
-		echo '</fieldset>';
-		echo '<span class="description">' . esc_html__( 'Order of the blocks under the heading; if off, the general order on the Design tab is used. The order of donor and amount fields is fixed.', 'woo-donation-popup' ) . '</span>';
-		echo '</div>';
-		echo '</div>';
 	}
 
 	/**

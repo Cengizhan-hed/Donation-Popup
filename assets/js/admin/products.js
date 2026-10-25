@@ -212,27 +212,6 @@
   }
 
   /* ---------------------------------------------------------------------
-   * Product panel: module order
-   * ------------------------------------------------------------------- */
-
-  function moveOrderItem(button) {
-    const item = button.closest("[data-wdp-order-item]")
-    if (!item) return
-    const direction = button.getAttribute("data-wdp-order-move")
-    const target = direction === "up" ? item.previousElementSibling : item.nextElementSibling
-    if (!target) return
-
-    if (direction === "up") {
-      target.before(item)
-    } else {
-      target.after(item)
-    }
-    button.focus()
-    const label = item.querySelector(".wdp-order__label")
-    announce((i18n.moved || "") + (label ? " " + label.textContent : ""))
-  }
-
-  /* ---------------------------------------------------------------------
    * Product panel: open the tab from #wdp_donation and on invalid fields
    * ------------------------------------------------------------------- */
 
@@ -309,9 +288,6 @@
       const target = event.target
       if (target.matches("[data-wdp-type-input]")) {
         applyType(panel, target.value)
-      } else if (target.matches("[data-wdp-order-toggle]")) {
-        const fieldset = panel.querySelector("[data-wdp-order]")
-        if (fieldset) fieldset.disabled = !target.checked
       } else if (target.matches("[data-wdp-shortcode-select]")) {
         const output = panel.querySelector("[data-wdp-shortcode-output]")
         if (output) output.value = target.value
@@ -329,12 +305,6 @@
       if (remove) {
         event.preventDefault()
         removeRepeaterRow(remove)
-        return
-      }
-      const move = event.target.closest("[data-wdp-order-move]")
-      if (move) {
-        event.preventDefault()
-        moveOrderItem(move)
       }
     })
 

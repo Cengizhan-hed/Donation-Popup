@@ -525,14 +525,6 @@
         index: next,
         total: state.steps.length,
       });
-      if (window.WDPMetaTracking && typeof window.WDPMetaTracking.trackCustom === 'function') {
-        try {
-          window.WDPMetaTracking.trackCustom('DonationWizardStep', {
-            step: step ? step.id : '',
-            index: next,
-          });
-        } catch (e) {}
-      }
       if (!instant && step && step.nodes[0]) {
         const focusable = step.nodes[0].querySelector(
           'input:not([type="hidden"]), textarea, select, button:not([disabled])'

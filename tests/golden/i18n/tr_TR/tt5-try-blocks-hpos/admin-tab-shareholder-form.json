@@ -1,6 +1,6 @@
 {
   "id": "admin-tab-shareholder-form",
-  "text": "DONATİON POPUP\nBağış Popup Ayarları\nÜrün davranışını, form görünümünü ve başarı ekranını tek yerden yönetin — değişiklikler canlı önizlemede anında görünür.\nV10.#AMT#\nKURULUM\nÜrünler\nÜrün sayfası ve liste\nTasarım\nFORMLAR\nModal\nNormal\nHisseli\nProgress\nBaşarı\nEK\nMeta Pixel\nKategoriler\nGelişmiş\nBu sekmede ne yaparsınız?\nHisseli bağış formundaki metinler, kart görünümü ve hissedar alanı renkleri.\nSağdaki önizleme ayarları değiştirildikçe anında güncellenir.\nMetinler ve düzen\nBaşlık, placeholder’lar, kopya butonu ve alan düzeni.\nHissedar Başlık Metni\nAd Soyad Placeholder\nTelefon Placeholder\nNot Placeholder\nKopya Oluştur Butonu\nKopya Butonu Göster\nAlan Düzeni\nTek Sütun\nİki Sütun\nForm Yoğunluğu\nKompakt\nNormal\nGeniş\nTüm form yüzeylerinde boşluk, input ve CTA yüksekliğini etkiler.\nE-posta Alanı Göster\nE-posta Placeholder\nKart ve alan görünümü\nHissedar kartı, başlık şeridi ve alan arka planı.\nBaşlık Arka Plan\nBaşlık Metin\nKart Arka Plan\nKart Border\nKart Radius (px)\nAlan Arka Plan\nAlan Border\nAyarları Kaydet\nCANLI ÖNİZLEME\nHissedar Bilgileri\nAd Soyad *\nTelefon Numarası *\nNot (isteğe bağlı)\nE-posta (isteğe bağlı)\nKopyasını Oluştur",
+  "text": "DONATİON POPUP\nBağış Popup Ayarları\nÜrün davranışını, form görünümünü ve başarı ekranını tek yerden yönetin — değişiklikler canlı önizlemede anında görünür.\nV10.#AMT#\nKURULUM\nÜrünler\nÜrün sayfası ve liste\nTasarım\nFORMLAR\nModal\nNormal\nHisseli\nProgress\nBaşarı\nEK\nGelişmiş\nBu sekmede ne yaparsınız?\nHisseli bağış formundaki metinler, kart görünümü ve hissedar alanı renkleri.\nSağdaki önizleme ayarları değiştirildikçe anında güncellenir.\nMetinler ve düzen\nBaşlık, placeholder’lar, kopya butonu ve alan düzeni.\nHissedar Başlık Metni\nAd Soyad Placeholder\nTelefon Placeholder\nNot Placeholder\nKopya Oluştur Butonu\nKopya Butonu Göster\nAlan Düzeni\nTek Sütun\nİki Sütun\nForm Yoğunluğu\nKompakt\nNormal\nGeniş\nTüm form yüzeylerinde boşluk, input ve CTA yüksekliğini etkiler.\nE-posta Alanı Göster\nE-posta Placeholder\nKart ve alan görünümü\nHissedar kartı, başlık şeridi ve alan arka planı.\nBaşlık Arka Plan\nBaşlık Metin\nKart Arka Plan\nKart Border\nKart Radius (px)\nAlan Arka Plan\nAlan Border\nAyarları Kaydet\nCANLI ÖNİZLEME\nHissedar Bilgileri\nAd Soyad *\nTelefon Numarası *\nNot (isteğe bağlı)\nE-posta (isteğe bağlı)\nKopyasını Oluştur",
   "lines": [
     "DONATİON POPUP",
     "Bağış Popup Ayarları",
@@ -17,8 +17,6 @@
     "Progress",
     "Başarı",
     "EK",
-    "Meta Pixel",
-    "Kategoriler",
     "Gelişmiş",
     "Bu sekmede ne yaparsınız?",
     "Hisseli bağış formundaki metinler, kart görünümü ve hissedar alanı renkleri.",

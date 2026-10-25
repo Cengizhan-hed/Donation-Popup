@@ -76,14 +76,13 @@ trait WDP_Ajax_Cart_Session_Trait {
 
 					WDP_Utils::json_success(
 						array(
-							'in_cart'        => true,
-							'message'        => __( 'Product added to cart.', 'woo-donation-popup' ),
-							'cart_count'     => (int) $cart->get_cart_contents_count(),
-							'checkout_url'   => wc_get_checkout_url(),
-							'items'          => self::get_cart_items(),
-							'cart_item_key'  => $cart_item_key,
-							'product_id'     => $v_pid,
-							'meta_cart_line' => self::build_meta_cart_line_from_cart_item( $cart_item, $v_pid ),
+							'in_cart'       => true,
+							'message'       => __( 'Product added to cart.', 'woo-donation-popup' ),
+							'cart_count'    => (int) $cart->get_cart_contents_count(),
+							'checkout_url'  => wc_get_checkout_url(),
+							'items'         => self::get_cart_items(),
+							'cart_item_key' => $cart_item_key,
+							'product_id'    => $v_pid,
 						)
 					);
 				}

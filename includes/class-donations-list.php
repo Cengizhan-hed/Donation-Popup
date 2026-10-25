@@ -18,12 +18,6 @@ class WDP_Donations_List {
 	const STYLE_HANDLE  = 'wdp-donations-list';
 	const SCRIPT_HANDLE = 'wdp-donations-list';
 
-	/** @var array<int, array{url:string,name:string}> */
-	private static $schema_items = array();
-
-	/** @var bool */
-	private static $footer_hooked = false;
-
 	/** @var bool */
 	private static $invalidation_hooked = false;
 
@@ -234,12 +228,6 @@ class WDP_Donations_List {
 			$html   = preg_replace( '/(<div\b[^>]*\bclass="[^"]*wdp-list-wrap[^"]*"[^>]*>)/', '$1' . $notice, $html, 1 );
 		}
 
-		self::collect_schema_from_html( $html );
-		if ( ! self::$footer_hooked ) {
-			self::$footer_hooked = true;
-			add_action( 'wp_footer', array( __CLASS__, 'print_schema' ), 20 );
-		}
-
 		return $html;
 	}
 
@@ -270,8 +258,6 @@ class WDP_Donations_List {
 	public static function reset_for_tests() {
 		self::$invalidation_hooked = false;
 		self::$bumped_this_request = false;
-		self::$footer_hooked       = false;
-		self::$schema_items        = array();
 	}
 
 	/**
@@ -392,43 +378,6 @@ class WDP_Donations_List {
 		if ( did_action( 'wp_enqueue_scripts' ) ) {
 			WDP_Assets::enqueue_assets_now();
 		}
-	}
-
-	/**
-	 * JSON-LD ItemList in wp_footer (one script even with several lists).
-	 *
-	 * @return void
-	 */
-	public static function print_schema() {
-		if ( WDP_Placement_Settings::value( 'schema', 'auto' ) !== 'auto' || empty( self::$schema_items ) ) {
-			return;
-		}
-		$seen  = array();
-		$items = array();
-		$pos   = 1;
-		foreach ( self::$schema_items as $row ) {
-			$url = isset( $row['url'] ) ? $row['url'] : '';
-			if ( $url === '' || isset( $seen[ $url ] ) ) {
-				continue;
-			}
-			$seen[ $url ] = true;
-			$items[]      = array(
-				'@type'    => 'ListItem',
-				'position' => $pos,
-				'url'      => $url,
-				'name'     => isset( $row['name'] ) ? $row['name'] : '',
-			);
-			++$pos;
-		}
-		if ( empty( $items ) ) {
-			return;
-		}
-		$payload = array(
-			'@context'        => 'https://schema.org',
-			'@type'           => 'ItemList',
-			'itemListElement' => $items,
-		);
-		echo '<script type="application/ld+json">' . wp_json_encode( $payload ) . '</script>' . "\n"; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	}
 
 	/**
@@ -867,24 +816,6 @@ class WDP_Donations_List {
 		 * @param array      $atts    Sanitized atts.
 		 */
 		return (string) apply_filters( 'wdp_donations_card_html', $html, $product, $atts );
-	}
-
-	/**
-	 * @param string $html List HTML.
-	 * @return void
-	 */
-	private static function collect_schema_from_html( $html ) {
-		if ( ! preg_match_all( '#<article class="wdp-card">.*?<a href="([^"]+)"[^>]*>\s*([^<]+)\s*</a>#s', $html, $m, PREG_SET_ORDER ) ) {
-			if ( ! preg_match_all( '#wdp-card__title"><a href="([^"]+)">([^<]+)</a>#', $html, $m, PREG_SET_ORDER ) ) {
-				return;
-			}
-		}
-		foreach ( $m as $row ) {
-			self::$schema_items[] = array(
-				'url'  => html_entity_decode( $row[1], ENT_QUOTES, 'UTF-8' ),
-				'name' => html_entity_decode( $row[2], ENT_QUOTES, 'UTF-8' ),
-			);
-		}
 	}
 
 	/**

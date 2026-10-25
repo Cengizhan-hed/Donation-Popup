@@ -19,20 +19,9 @@ final class ProductThemeTest extends TestCase {
 		);
 	}
 
-	private function seedCategory(int $product_id, int $term_id, string $color): void {
-		WDP_Test_State::$product_terms[ $product_id ] = array( $term_id );
-		$t              = new stdClass();
-		$t->term_id     = $term_id;
-		$t->parent      = 0;
-		WDP_Test_State::$terms[ $term_id ] = $t;
-		WDP_Test_State::$options['wdp_category_title_colors'] = array( $term_id => $color );
-	}
-
-	public function test_primary_priority_product_over_category_over_brand(): void {
-		$this->seedCategory(10, 5, '#112233');
+	public function test_primary_priority_product_over_brand(): void {
 		WDP_Test_State::$post_meta[10] = array(
-			'_theme_primary'                => '#aabbcc',
-			'_theme_inherit_category_color' => 'yes', // okunmaz
+			'_theme_primary' => '#aabbcc',
 		);
 		$this->assertSame(
 			'#aabbcc',
@@ -44,23 +33,17 @@ final class ProductThemeTest extends TestCase {
 		);
 
 		WDP_Test_State::$post_meta[10]['_theme_primary'] = '';
-		$this->assertSame('#112233', WDP_Form_Modules::resolve_product_shell_primary(10));
-		$this->assertSame('#112233', WDP_Form_Modules::resolve_product_primary_color(10));
-
-		WDP_Test_State::$options['wdp_category_title_colors'] = array();
 		$this->assertSame('', WDP_Form_Modules::resolve_product_shell_primary(10));
 		$this->assertSame('#0f608b', WDP_Form_Modules::resolve_product_primary_color(10));
 	}
 
 	public function test_inherit_flag_ignored_in_theme_style(): void {
-		$this->seedCategory(11, 6, '#334455');
 		WDP_Test_State::$post_meta[11] = array(
 			'_theme_primary'                => '#abcdef',
 			'_theme_inherit_category_color' => 'yes',
 		);
 		$style = WDP_Form_Modules::build_product_theme_style(11);
 		$this->assertStringContainsString('--wdp-primary:#abcdef', $style);
-		$this->assertStringNotContainsString('#334455', $style);
 	}
 
 	public function test_hex_without_hash_accepted(): void {
@@ -196,15 +179,13 @@ final class ProductThemeTest extends TestCase {
 		$this->assertArrayNotHasKey('theme_preset_id', $ctx);
 	}
 
-	public function test_title_style_uses_unified_priority(): void {
-		$this->seedCategory(18, 7, '#445566');
+	public function test_title_style_uses_product_primary(): void {
 		WDP_Test_State::$post_meta[18] = array( '_theme_primary' => '#998877' );
-		$attr = WDP_Category_Title_Color_Service::get_title_style_attr(18);
+		$attr = WDP_Form_Modules::get_title_style_attr(18);
 		$this->assertStringContainsString('#998877', $attr);
 
 		WDP_Test_State::$post_meta[18]['_theme_primary'] = '';
-		$attr2 = WDP_Category_Title_Color_Service::get_title_style_attr(18);
-		$this->assertStringContainsString('#445566', $attr2);
+		$this->assertSame('', WDP_Form_Modules::get_title_style_attr(18));
 	}
 
 	public function test_privacy_default_label_and_migration(): void {

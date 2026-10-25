@@ -310,7 +310,6 @@ foreach (array(
     'WDP_Product_Page_Integration',
     'WDP_Donations_List',
     'WDP_Lazy_Modal',
-    'WDP_Schema',
     'WDP_Placement_Settings',
     'WDP_Blocks',
     'WDP_Elementor',
