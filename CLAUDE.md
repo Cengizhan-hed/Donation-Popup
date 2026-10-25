@@ -170,3 +170,10 @@ Faz 1 güvenli bağlantı ✅ → Faz 2 göç provası ✅ → Faz 3 bekleyen i�
 - Her parçanın başında boş disk kontrol edilir: <20 GB → önce `clean:disk`; <10 GB → yeni ajan/tam paket başlatılmaz.
 - `.cursorignore`: node_modules, vendor, vendor-dev, worktree klasörleri, test-results, playwright-report, blob-report, build, research, graphify çıktıları, design/showcase.
 - Durdurulursan sebebini sorma; `SIRADAKI-IS.md`'den devam et.
+
+## 15. TASARRUF MODU (kalıcı; 2026-10-25 — haftalık limit hızla bitiyor; §9'daki "yalnız Sonnet" kuralını bu bölüm günceller)
+- Aynı anda en fazla 2 alt ajan.
+- Model: mekanik işler (test koşturma, çıktı özetleme, biçim/adlandırma düzeltmesi, belge güncelleme, göç betiği çalıştırma) Haiku (`model: haiku`); kod tasarımı ve karmaşık uygulama Sonnet. Opus yok.
+- Tam paket ve uzak kontrol yalnız bir parça merge edilmeden önce bir kez; ara adımlarda yalnız ilgili birim testleri.
+- Uzun dosyalar baştan okunmaz; Graphify + satır aralığı. Rapor ve ILERLEME satırları kısa.
+- Her alt faz (E0, E1, …) bitince SIRADAKI-IS.md eksiksiz güncellenir ve kullanıcıya "YENİ OTURUM ÖNERİLİR" yazılır.
