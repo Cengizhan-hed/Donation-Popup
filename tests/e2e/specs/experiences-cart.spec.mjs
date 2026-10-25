@@ -35,6 +35,8 @@ async function loadForm(page, extra = '') {
  */
 async function fillForm(page) {
   await page.locator('input[name="amount"]').fill(AMOUNT);
+  await page.locator('[data-dp-submit]').click();
+  await expect(page.locator('[data-dp-step="details"]')).toBeVisible();
   await page.locator('input[name="donation_full_name"]').fill(DONOR.name);
   await page.locator('input[name="donation_phone"]').fill(DONOR.phone);
   await page.locator('textarea[name="donation_note"]').fill(DONOR.note);

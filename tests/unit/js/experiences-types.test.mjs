@@ -11,7 +11,7 @@ test('withFee/roundTo: PHP round ile aynı (yarım değer yukarı)', () => {
   assert.equal(withFee(100, 5, 2), 105);
   assert.equal(withFee(40, 5, 2), 42);
   assert.equal(withFee(33.33, 2.5, 2), 34.16);
-  assert.equal(withFee(10, 2.5, 0), 11);
+  assert.equal(withFee(10, 5, 0), 11);
   assert.equal(withFee(0, 5, 2), 0);
   assert.equal(withFee(100, 0, 2), 100);
   assert.equal(roundTo(1.005, 2), 1.01);

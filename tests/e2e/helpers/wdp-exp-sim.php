@@ -19,6 +19,19 @@ add_filter(
 	}
 );
 
+// Düzenli bağış anahtarı yalnız seçenek filtresi doluysa çizilir (`?dp_freq=1`).
+if (isset($_GET['dp_freq'])) { // phpcs:ignore
+	add_filter(
+		'donation_panel_frequency_options',
+		static function () {
+			return array(
+				array( 'value' => 'once', 'label' => 'Tek seferlik' ),
+				array( 'value' => 'monthly', 'label' => 'Aylık' ),
+			);
+		}
+	);
+}
+
 add_action(
 	'template_redirect',
 	static function () {

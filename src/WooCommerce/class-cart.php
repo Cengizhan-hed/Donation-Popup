@@ -178,7 +178,11 @@ final class Cart {
 		$decimals = isset( $model['decimals'] ) ? (int) $model['decimals'] : 2;
 
 		$custom = ! empty( $model['allow_custom'] ) ? Cart_Data::with_fee( $amount, $fee_percent, $decimals ) : null;
-		$type   = isset( $input['donation_type'] ) && is_scalar( $input['donation_type'] ) ? (string) $input['donation_type'] : '';
+		$type   = isset( $input['donation_type'] ) && is_scalar( $input['donation_type'] ) ? sanitize_key( (string) $input['donation_type'] ) : '';
+		// Düzenli bağış seçeneği yalnız sunucudaki modelde tanımlıysa kaydedilir.
+		if ( '' !== $type && ! in_array( $type, array_column( isset( $model['types'] ) && is_array( $model['types'] ) ? $model['types'] : array(), 'value' ), true ) ) {
+			$type = '';
+		}
 		$extra  = array();
 		if ( '' !== $kind ) {
 			$extra['donation_panel_kind'] = sanitize_key( $kind );
