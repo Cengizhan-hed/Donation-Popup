@@ -83,3 +83,14 @@ Eklenti `plugins_loaded` öncelik 20'de başlar (ayrıntı: docs/MIMARI.md "Kanc
 - Ana birim her zaman WooCommerce ayarıdır (`get_option('woocommerce_currency')`); `get_woocommerce_currency()` ziyaretçinin gördüğü (etkin) birimdir.
 - Yeni sepet satırı alanı: `wdp_input_currency` (tutarın yazıldığı birim; damgasız eski satırlar dönüşümsüz).
 - Kur eklentisi köprüsü: `docs/site-snippets/curcy-bridge.php`.
+
+## Kampanya, etki ifadeleri, sosyal kanıt (E3)
+
+Filtreler:
+- `donation_panel_milestones( array $milestones, int $product_id )` — `[ [ 'at' => float(1-100), 'label' => string ], ... ]`.
+- `donation_panel_impact_map( array $tiers, int $product_id )` — `[ [ 'unit' => float, 'one' => string, 'other' => string ], ... ]` (`{count}` adet yer tutucusu).
+- `donation_panel_social_proof_entry( array $entry, object $order )` — `[ 'name', 'amount', 'timestamp' ]`; kişi verisi (e-posta, telefon, not) EKLENMEZ.
+
+Veri anahtarları: ürün meta `_donation_panel_milestones` (satır `yüzde=etiket`), `_donation_panel_impact` (satır `birim=tekil|çoğul`); site ayarı `impact.map`; ad izni meta `wdp_public_name` = `yes` (sipariş ya da satır).
+
+Kısa kodlar (yeni): `[donation_panel_progress]`, `[donation_panel_social_proof]`. REST (`donation-panel/v1`): `GET /progress/{id}`, `GET /impact/{id}`, `GET /donations`, `GET /donations/stats` (hepsi salt okunur, kişi verisiz).

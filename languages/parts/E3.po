@@ -1,0 +1,65 @@
+# Turkish translations — I18N-E3 (kampanya, etki ifadesi, sosyal kanıt).
+# Copyright (C) Donation Panel for WooCommerce
+msgid ""
+msgstr ""
+"Project-Id-Version: woo-donation-popup\n"
+"Language: tr_TR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Domain: woo-donation-popup\n"
+
+#. translators: %s: formatted goal amount
+#: src/Modules/Campaign/class-progress-renderer.php
+#, php-format
+msgid "of %s goal"
+msgstr "%s hedefin"
+
+#: src/Modules/Campaign/class-progress-renderer.php
+msgid "funded"
+msgstr "tamamlandı"
+
+#. translators: %s: number of donors, already formatted
+#: src/Modules/Campaign/class-progress-renderer.php
+#, php-format
+msgid "%s supporter"
+msgid_plural "%s supporters"
+msgstr[0] "%s destekçi"
+msgstr[1] "%s destekçi"
+
+#. translators: %s: number of donors, already formatted
+#: src/Modules/SocialProof/class-social-proof-renderer.php
+#, php-format
+msgid "%s person has donated"
+msgid_plural "%s people have donated"
+msgstr[0] "%s kişi bağış yaptı"
+msgstr[1] "%s kişi bağış yaptı"
+
+#. translators: %s: number of donations today, already formatted
+#: src/Modules/SocialProof/class-social-proof-renderer.php
+#, php-format
+msgid "%s today"
+msgstr "bugün %s"
+
+#: src/Modules/SocialProof/class-social-proof-renderer.php
+msgid "donors"
+msgstr "bağışçı"
+
+#: src/Modules/SocialProof/class-social-proof-renderer.php
+msgid "today"
+msgstr "bugün"
+
+#: src/Modules/SocialProof/class-social-proof-renderer.php
+msgid "Show more"
+msgstr "Daha fazla göster"
+
+#: src/Modules/SocialProof/class-social-proof-renderer.php
+msgid "A kind donor"
+msgstr "Gönlü güzel bir bağışçı"
+
+#. translators: %s: time span, e.g. "3 hours"
+#: src/Modules/SocialProof/class-donation-feed.php
+#, php-format
+msgid "%s ago"
+msgstr "%s önce"
