@@ -34,14 +34,14 @@ add_filter( 'pre_option_woocommerce_enable_signup_and_login_from_checkout', stat
 add_filter(
 	'pre_wp_mail',
 	static function ( $short, $atts ) {
-		$list   = get_option( 'dp_da_mails', array() );
+		$list   = get_transient( 'dp_da_mails' );
 		$list   = is_array( $list ) ? $list : array();
 		$list[] = array(
 			'to'      => is_array( $atts['to'] ) ? implode( ',', $atts['to'] ) : (string) $atts['to'],
 			'subject' => (string) $atts['subject'],
 			'body'    => (string) $atts['message'],
 		);
-		update_option( 'dp_da_mails', $list, false );
+		set_transient( 'dp_da_mails', $list, HOUR_IN_SECONDS );
 		return true;
 	},
 	10,
@@ -80,7 +80,7 @@ add_action(
 		if ( isset( $_GET['dp_da_mails'] ) ) {
 			nocache_headers();
 			$to   = isset( $_GET['to'] ) ? (string) wp_unslash( $_GET['to'] ) : '';
-			$all  = (array) get_option( 'dp_da_mails', array() );
+			$all  = (array) get_transient( 'dp_da_mails' );
 			$list = array_values( array_filter( $all, static function ( $m ) use ( $to ) {
 				return '' === $to || false !== stripos( (string) $m['to'], $to );
 			} ) );

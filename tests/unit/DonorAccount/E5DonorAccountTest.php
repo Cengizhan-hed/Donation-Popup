@@ -429,8 +429,8 @@ final class E5DonorAccountTest extends TestCase {
 		$this->assertStringNotContainsString( '<script>', $html );
 		$this->assertStringContainsString( 'Su Kuyusu Çağlar', $html );
 		$this->assertStringContainsString( 'İğdır', $html );
-		$this->assertStringContainsString( 'Receipt', $html );
-		$this->assertStringNotContainsString( 'Give again', $html, 'ürün yoksa tekrar bağış düğmesi yok' );
+		$this->assertStringContainsString( 'data-dp-acc-receipt', $html );
+		$this->assertStringNotContainsString( 'data-dp-acc-repeat', $html, 'ürün yoksa tekrar bağış düğmesi yok' );
 		$this->assertStringContainsString( 'dp-ac__empty', Account_Renderer::donations( array() ) );
 	}
 
