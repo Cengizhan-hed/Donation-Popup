@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: woo-donation-popup\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-25 20:34:22+0000\n"
-"PO-Revision-Date: 2026-10-25 20:34:22+0000\n"
+"POT-Creation-Date: 2026-10-25 20:53:18+0000\n"
+"PO-Revision-Date: 2026-10-25 20:53:18+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: tr_TR\n"
@@ -30,6 +30,11 @@ msgstr "(yeni sekmede açılır)"
 #: includes/class-admin-placement-tab-renderer.php:149
 msgid "(or the “Donation list” block in the block editor). For a single product:"
 msgstr "(ya da blok düzenleyicide “Bağış listesi” bloğu). Tek ürün için:"
+
+#: src/Modules/DonorAccount/
+#, php-format
+msgid "[%s] Confirm to link your earlier gifts"
+msgstr "[%s] Önceki bağışlarınızı bağlamak için onaylayın"
 
 #: includes/class-admin-product-data-tab.php:756
 msgid "{donors} people donated"
@@ -186,6 +191,10 @@ msgstr "Forma eklenen ikinci, küçük bağış satırı"
 #: includes/class-admin-product-data-tab.php:645
 msgid "Accept donations + show a thank-you message"
 msgstr "Bağış al + teşekkür mesajı göster"
+
+#: src/Modules/DonorAccount/
+msgid "Account"
+msgstr "Hesap"
 
 #: includes/class-admin-form-tabs-renderer.php:229
 msgid "Action button and product row colors."
@@ -450,6 +459,10 @@ msgstr "Azerbaycan"
 msgid "Back"
 msgstr "Geri"
 
+#: src/Modules/DonorAccount/
+msgid "Back to log in"
+msgstr "Girişe dön"
+
 #: includes/class-admin-product-data-tab.php:876
 msgid "Background color"
 msgstr "Arka plan rengi"
@@ -710,6 +723,10 @@ msgstr "Sadaka Bağışı"
 msgid "Check"
 msgstr "Onay"
 
+#: src/Modules/DonorAccount/
+msgid "Check your email"
+msgstr "E-postanızı kontrol edin"
+
 #: includes/class-admin-design-studio-renderer.php:115
 msgid "Checkout"
 msgstr "Ödeme"
@@ -753,6 +770,10 @@ msgstr "Kart tıklamak: Sadece form alanlarını doldurur (henüz kaydetmez). �
 #: includes/class-icon-library.php:62
 msgid "Clock"
 msgstr "Saat"
+
+#: src/Modules/DonorAccount/
+msgid "Close"
+msgstr "Kapat"
 
 #: src/Modules/SideCart/class-side-cart-renderer.php
 msgid "Close basket"
@@ -803,6 +824,14 @@ msgstr "Kompakt"
 #: includes/class-admin-settings-normalizer.php:365
 msgid "Complete donation"
 msgstr "Bağışı Tamamla"
+
+#: src/Modules/DonorAccount/
+msgid "Confirm and link"
+msgstr "Onayla ve bağla"
+
+#: src/Modules/DonorAccount/
+msgid "Confirm to add the gifts you made as a guest with this email address to your account."
+msgstr "Bu e-posta adresiyle misafir olarak yaptığınız bağışları hesabınıza eklemek için onaylayın."
 
 #: assets/js/src/form/wizard.js:30
 msgid "Confirmation"
@@ -929,6 +958,18 @@ msgstr "İşlem ücretini karşıla"
 #: includes/class-admin-settings-normalizer.php:325
 msgid "Create a copy"
 msgstr "Kopyasını Oluştur"
+
+#: src/Modules/DonorAccount/
+msgid "Create account"
+msgstr "Hesap oluştur"
+
+#: src/Modules/DonorAccount/
+msgid "Create an account"
+msgstr "Hesap oluşturun"
+
+#: src/Modules/DonorAccount/
+msgid "Create an account with the box below to track your gifts, download receipts and give again in one tap. Earlier guest gifts are linked only after email verification."
+msgstr "Aşağıdaki kutuyla hesap oluşturup bağışlarınızı takip edebilir, makbuz alabilir ve tek dokunuşla tekrar bağış yapabilirsiniz. Önceki misafir bağışları yalnız e-posta doğrulamasından sonra bağlanır."
 
 #: includes/class-admin-form-tabs-renderer.php:160
 msgid "Create-copy button"
@@ -1318,7 +1359,7 @@ msgstr "Buton metni"
 msgid "Elevation (1–5)"
 msgstr "Elevation (1–5)"
 
-#: includes/class-cart.php:525 includes/class-icon-library.php:51
+#: src/Modules/DonorAccount/
 msgid "Email"
 msgstr "E-posta"
 
@@ -1336,6 +1377,10 @@ msgstr "E-posta alanı"
 #: includes/class-admin-design-studio-renderer.php:325
 msgid "Email icon"
 msgstr "E-posta ikonu"
+
+#: src/Modules/DonorAccount/
+msgid "Email or password is incorrect. Try again or reset your password."
+msgstr "E-posta veya şifre hatalı. Tekrar deneyin ya da şifrenizi sıfırlayın."
 
 #: includes/class-admin-form-tabs-renderer.php:165
 msgid "Email placeholder"
@@ -1370,9 +1415,21 @@ msgstr "Etkin"
 msgid "End date"
 msgstr "Bitiş tarihi"
 
+#: src/Modules/DonorAccount/
+msgid "Enter a valid email address."
+msgstr "Geçerli bir e-posta adresi yazın."
+
 #: includes/elementor/class-widget-donation-form.php:84
 msgid "Enter ID or slug"
 msgstr "ID veya slug elle"
+
+#: src/Modules/DonorAccount/
+msgid "Enter your email and we will send a link."
+msgstr "E-postanızı yazın, bağlantı gönderelim."
+
+#: src/Modules/DonorAccount/
+msgid "Enter your password."
+msgstr "Şifrenizi yazın."
 
 #: includes/class-phone-field.php:37
 msgid "Estonia"
@@ -1495,6 +1552,10 @@ msgstr "Liste için:"
 #: includes/class-admin-product-data-tab.php:885
 msgid "For button and field corners, %1$s–%2$s px; if empty, the general setting is used."
 msgstr "Düğme ve alan köşeleri için %1$s–%2$s px; boşsa genel ayar kullanılır."
+
+#: src/Modules/DonorAccount/
+msgid "Forgot password?"
+msgstr "Şifremi unuttum"
 
 #: includes/class-admin-form-tabs-renderer.php:163
 msgid "Form density"
@@ -1623,6 +1684,10 @@ msgstr "Gana"
 #: includes/class-icon-library.php:57
 msgid "Gift"
 msgstr "Hediye"
+
+#: src/Modules/DonorAccount/
+msgid "Gifts made as a guest?"
+msgstr "Misafir olarak bağış mı yaptınız?"
 
 #: templates/donation-panel/thanks/summary.php
 msgid "Give again"
@@ -1892,6 +1957,10 @@ msgstr "Adres boş ve WordPress Gizlilik Politikası sayfası da yoksa bağlant�
 msgid "If the URL is empty, the WordPress Privacy Policy page is used."
 msgstr "Adres boşsa WordPress Gizlilik Politikası sayfası kullanılır."
 
+#: src/Modules/DonorAccount/
+msgid "If this email matches an account, a link is on its way. It arrives within a few minutes; if not, check your spam folder."
+msgstr "Bu e-posta bir hesapla eşleşiyorsa bağlantı yolda. Birkaç dakika içinde gelir; gelmezse gereksiz klasörüne bakın."
+
 #: includes/elementor/class-widget-donations-list.php:125
 msgid "Image"
 msgstr "Görsel"
@@ -2157,6 +2226,10 @@ msgstr "Bağlantı etiketi"
 msgid "Link URL"
 msgstr "Bağlantı adresi"
 
+#: src/Modules/DonorAccount/
+msgid "Link your earlier gifts"
+msgstr "Önceki bağışlarınızı bağlayın"
+
 #. YENI-SARMA block.json
 msgid "Lists donation products in a grid."
 msgstr "Bağış ürünlerini ızgara olarak listeler."
@@ -2181,6 +2254,18 @@ msgstr "Yükleniyor..."
 msgid "Lock"
 msgstr "Kilit"
 
+#: src/Modules/DonorAccount/
+msgid "Log in"
+msgstr "Giriş yap"
+
+#: src/Modules/DonorAccount/
+msgid "Log in or sign up"
+msgstr "Giriş yap veya kayıt ol"
+
+#: src/Modules/DonorAccount/
+msgid "Log in to your account"
+msgstr "Hesabınıza girin"
+
 #: includes/class-admin-product-data-tab.php:834
 msgid "Lower limit applied when the donor types the amount themselves."
 msgstr "Bağışçı tutarı kendisi yazarken uygulanacak alt sınır."
@@ -2198,6 +2283,10 @@ msgstr "Bağış ürünü yap"
 #: includes/class-admin-products-list-table.php:355
 msgid "Make regular product"
 msgstr "Normal ürün yap"
+
+#: src/Modules/DonorAccount/
+msgid "Make your next gift even quicker."
+msgstr "Bir sonraki bağış daha da hızlı olsun."
 
 #: includes/class-phone-field.php:91
 msgid "Malaysia"
@@ -2374,6 +2463,14 @@ msgstr "Motion"
 msgid "Multi-step form"
 msgstr "Çok adımlı form"
 
+#: src/Modules/DonorAccount/
+msgid "My account"
+msgstr "Hesabım"
+
+#: src/Modules/DonorAccount/
+msgid "My donations"
+msgstr "Bağışlarım"
+
 #: includes/class-admin-placement-tab-renderer.php:140
 msgid "My product page uses a custom page builder template"
 msgstr "Ürün sayfam özel bir sayfa oluşturucu şablonu kullanıyor"
@@ -2421,6 +2518,14 @@ msgstr "Kategori yok"
 #: assets/js/src/core/utils.js:832
 msgid "No connection. Actions can be retried when you are back online."
 msgstr "Bağlantı yok. İşlemler bağlantı gelince tekrar denenebilir."
+
+#: src/Modules/DonorAccount/
+msgid "No earlier guest gifts were found for this email."
+msgstr "Bu e-posta için önceki misafir bağışı bulunamadı."
+
+#: src/Modules/DonorAccount/
+msgid "No gifts yet"
+msgstr "Henüz bağış yok"
 
 #: includes/class-admin-products-list-table.php:314
 msgid "No goal"
@@ -2596,6 +2701,11 @@ msgstr "Popup aç"
 msgid "Open the form test page"
 msgstr "Form test sayfasını aç"
 
+#: src/Modules/DonorAccount/
+#, php-format
+msgid "Open this link while logged in to add the gifts you made as a guest with this email address to your account:\n\n%1$s\n\nThe link works once and expires in %2$d minutes. If you did not ask for this, ignore this email."
+msgstr "Bu e-posta adresiyle misafir olarak yaptığınız bağışları hesabınıza eklemek için oturum açıkken bu bağlantıyı açın:\n\n%1$s\n\nBağlantı yalnız bir kez çalışır ve %2$d dakika sonra geçerliliğini yitirir. Bunu siz istemediyseniz bu e-postayı yok sayın."
+
 #. translators: %s: order number.
 #: templates/donation-panel/thanks/summary.php
 #, php-format
@@ -2658,6 +2768,14 @@ msgstr "Filistin"
 #: includes/elementor/class-widget-donations-list.php:119
 msgid "Panel"
 msgstr "Panel"
+
+#: src/Modules/DonorAccount/
+msgid "Password"
+msgstr "Şifre"
+
+#: src/Modules/DonorAccount/
+msgid "Password must be at least 8 characters."
+msgstr "Şifre en az 8 karakter olmalı."
 
 #: includes/class-admin-form-tabs-renderer.php:506
 msgid "Pay button color"
@@ -3142,6 +3260,10 @@ msgstr "\"%1$s\" toplamı yeniden hesaplandı: %2$s (%3$d sipariş)."
 msgid "Recalculating the total…"
 msgstr "Toplam yeniden hesaplanıyor…"
 
+#: src/Modules/DonorAccount/
+msgid "Receipt"
+msgstr "Makbuz"
+
 #: assets/js/src/form/ajax.js:239
 msgid "Redirecting you to checkout."
 msgstr "Ödeme adımına yönlendiriliyorsunuz."
@@ -3183,6 +3305,10 @@ msgstr "Mevcut ürünün veya seçilen ürünün bağış formunu basar."
 #: includes/class-admin-design-studio-renderer.php:388
 msgid "Reset"
 msgstr "Sıfırla"
+
+#: src/Modules/DonorAccount/
+msgid "Reset password"
+msgstr "Şifreyi sıfırla"
 
 #: includes/class-admin-bulk-actions.php:41
 #: includes/class-admin-products-list-table.php:356
@@ -3289,6 +3415,10 @@ msgstr "Her ürünün bağış tipini, kısa kodunu ve hedefli kampanyalarda top
 msgid "See more"
 msgstr "Devamını Gör"
 
+#: src/Modules/DonorAccount/
+msgid "See your gifts and receipts."
+msgstr "Bağışlarınızı ve makbuzlarınızı görün."
+
 #: includes/templates/class-form-fields-renderer.php:154
 msgid "Select a quick amount"
 msgstr "Hızlı tutar seç"
@@ -3326,6 +3456,14 @@ msgstr "Seçili kategoriler (alt kategoriler dahil)"
 #: includes/class-admin-form-tabs-renderer.php:467
 msgid "Semibold (600)"
 msgstr "Yarı Kalın (600)"
+
+#: src/Modules/DonorAccount/
+msgid "Send link"
+msgstr "Bağlantı gönder"
+
+#: src/Modules/DonorAccount/
+msgid "Send verification link"
+msgstr "Doğrulama bağlantısı gönder"
 
 #: includes/class-phone-field.php:141
 msgid "Senegal"
@@ -3584,6 +3722,10 @@ msgstr "Sağ panel genişliği"
 #: includes/class-admin-layout-tabs-renderer.php:194
 msgid "Side panel width (Donate)"
 msgstr "Sağ Panel Genişliği (Bağış Yap)"
+
+#: src/Modules/DonorAccount/
+msgid "Sign up"
+msgstr "Kayıt ol"
 
 #: includes/class-phone-field.php:102
 msgid "Singapore"
@@ -4066,6 +4208,10 @@ msgstr "Bu alan zorunludur."
 msgid "This is not a note written by the donor; it is an info text shown at the top of the form."
 msgstr "Bağışçının yazdığı not değildir; formun üstünde gösterilen bilgi metnidir."
 
+#: src/Modules/DonorAccount/
+msgid "This link is invalid or has expired. Request a new one."
+msgstr "Bu bağlantı geçersiz ya da süresi dolmuş. Yenisini isteyin."
+
 #: includes/class-shortcodes.php:293
 msgid "This product cannot be purchased (ID: %d)."
 msgstr "Bu ürün satın alınamaz (ID: %d)."
@@ -4113,6 +4259,10 @@ msgstr "Alt bağış (sadaka) bloğu başlık/ikon alanı."
 #: src/Modules/SocialProof/class-social-proof-renderer.php
 msgid "today"
 msgstr "bugün"
+
+#: src/Modules/DonorAccount/
+msgid "Too many attempts. Please wait a moment and try again."
+msgstr "Çok fazla deneme yapıldı. Lütfen biraz bekleyip tekrar deneyin."
 
 #: includes/class-lazy-modal.php:42
 msgid "Too many requests were sent. Please try again shortly."
@@ -4298,6 +4448,14 @@ msgstr "Canlı sky mavi, yumuşak vurgu, duygusal başlık."
 #: includes/class-campaign-goal.php:30
 msgid "We have reached our goal, thank you for your support. Extra donations to this campaign are used in similar projects."
 msgstr "Hedefimize ulaştık, desteğiniz için teşekkür ederiz. Bu kampanyaya yapılan fazla bağışlar benzer projelerimizde kullanılır."
+
+#: src/Modules/DonorAccount/
+msgid "We sent a verification link to your account email."
+msgstr "Hesap e-postanıza bir doğrulama bağlantısı gönderdik."
+
+#: src/Modules/DonorAccount/
+msgid "We will email a verification link to your account address. Only after you confirm are earlier guest gifts added here."
+msgstr "Hesap adresinize bir doğrulama bağlantısı e-postalayacağız. Misafir bağışlarınız yalnız siz onayladıktan sonra buraya eklenir."
 
 #: includes/class-admin-layout-tabs-renderer.php:102
 #: includes/class-admin-layout-tabs-renderer.php:184
@@ -4576,6 +4734,18 @@ msgstr "Bağışınız sepete eklendi"
 #: includes/class-admin-form-tabs-renderer.php:334
 msgid "Your donation was added to the cart."
 msgstr "Bağışınız sepete eklendi."
+
+#: src/Modules/DonorAccount/
+msgid "Your earlier gifts were added to your account."
+msgstr "Önceki bağışlarınız hesabınıza eklendi."
+
+#: src/Modules/DonorAccount/
+msgid "Your earlier guest gifts can be linked to your account by email, after we send a verification link."
+msgstr "Önceki misafir bağışlarınız, önce bir doğrulama bağlantısı gönderdikten sonra e-postanızla hesabınıza bağlanabilir."
+
+#: src/Modules/DonorAccount/
+msgid "Your gifts will appear here after your first donation."
+msgstr "İlk bağışınızdan sonra bağışlarınız burada görünür."
 
 #: includes/class-migrations.php:303 includes/class-migrations.php:382
 msgid "Your personal data is processed to complete your donation and is shared with our field teams abroad. See the privacy notice for details."
