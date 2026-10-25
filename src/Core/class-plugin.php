@@ -214,6 +214,8 @@ final class Plugin {
 		$registry->add( 'campaign', 'DonationPanel\\Modules\\Campaign\\Campaign_Module', true );
 		$registry->add( 'impact', 'DonationPanel\\Modules\\Impact\\Impact_Module', Settings::engine_is_new() );
 		$registry->add( 'social_proof', 'DonationPanel\\Modules\\SocialProof\\Social_Proof_Module', false );
+		$registry->add( 'thanks', 'DonationPanel\\Modules\\Thanks\\Thanks_Module', false );
+		$registry->add( 'tax_relief', 'DonationPanel\\Modules\\TaxRelief\\Tax_Relief_Module', false );
 	}
 
 	/**

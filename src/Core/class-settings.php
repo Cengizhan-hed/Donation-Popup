@@ -51,6 +51,38 @@ class Settings {
 					'default' => '',
 				),
 			),
+			'thanks'      => array(
+				'celebrate' => array(
+					'type'    => 'bool',
+					'default' => true,
+				),
+				'share'     => array(
+					'type'    => 'bool',
+					'default' => true,
+				),
+				'message'   => array(
+					'type'    => 'text',
+					'default' => '',
+				),
+			),
+			'tax_relief'  => array(
+				'step_label'     => array(
+					'type'    => 'string',
+					'default' => '',
+				),
+				'title'          => array(
+					'type'    => 'string',
+					'default' => '',
+				),
+				'text'           => array(
+					'type'    => 'text',
+					'default' => '',
+				),
+				'checkbox_label' => array(
+					'type'    => 'string',
+					'default' => '',
+				),
+			),
 			'experiences' => array(
 				'engine' => array(
 					'type'    => 'string',

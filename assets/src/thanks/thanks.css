@@ -1,0 +1,36 @@
+/* Donation Panel — teşekkür ekranı (davranış sözleşmesi: design/thanks.html). Mantıksal özellikler: RTL güvenli. */
+.dp-thanks { max-inline-size: 560px; margin-inline: auto; padding: var(--dp-space-6) var(--dp-space-5); text-align: center; }
+.dp-thanks__ring { display: block; margin: var(--dp-space-2) auto var(--dp-space-5); }
+.dp-thanks__disc { fill: var(--dp-color-primary-soft); transform-origin: center; animation: dp-thanks-pop .6s var(--dp-ease-spring) both; }
+.dp-thanks__circle { fill: none; stroke: var(--dp-color-primary); stroke-width: 4; stroke-linecap: round; stroke-dasharray: 327; stroke-dashoffset: 327; transform: rotate(-90deg); transform-origin: center; animation: dp-thanks-draw .9s var(--dp-ease-out) .1s forwards; }
+.dp-thanks__tick { fill: none; stroke: var(--dp-color-primary-strong); stroke-width: 7; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 80; stroke-dashoffset: 80; animation: dp-thanks-draw .6s var(--dp-ease-out) .7s forwards; }
+.dp-thanks__title { margin: 0 auto; font-size: clamp(30px, 7vw, 44px); font-weight: var(--dp-fw-bold); }
+.dp-thanks__sub { margin: var(--dp-space-3) auto var(--dp-space-6); max-inline-size: 36ch; font-size: var(--dp-fs-md); }
+.dp-thanks__card { text-align: start; padding: var(--dp-space-5); margin-block-end: var(--dp-space-5); background: var(--dp-color-surface); border: 1px solid var(--dp-color-border); border-radius: var(--dp-radius-lg); box-shadow: var(--dp-shadow-1); }
+.dp-thanks__row { display: flex; align-items: baseline; justify-content: space-between; gap: var(--dp-space-4); }
+.dp-thanks__row + .dp-thanks__row { margin-block-start: var(--dp-space-3); }
+.dp-thanks__row--total { padding-block-start: var(--dp-space-3); border-block-start: 1px solid var(--dp-color-border); }
+.dp-thanks__project { min-inline-size: 0; overflow-wrap: anywhere; }
+.dp-thanks__amount { font-size: var(--dp-fs-lg); white-space: nowrap; }
+.dp-thanks .dp-impact { margin-block-start: var(--dp-space-4); }
+.dp-thanks__order { margin-block-start: var(--dp-space-3); font-size: var(--dp-fs-sm); }
+.dp-thanks__actions { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--dp-space-3); }
+.dp-thanks__actions .dp-btn { min-block-size: 48px; }
+.dp-thanks__toast:not(.dp-sr) { margin-block-start: var(--dp-space-3); font-size: var(--dp-fs-sm); color: var(--dp-color-text-muted); }
+
+.dp-thanks-confetti { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 99999; }
+.dp-thanks-confetti i { position: absolute; inset-block-start: 0; inset-inline-start: var(--left); inline-size: var(--w); block-size: var(--h); border-radius: 2px; background: var(--dp-color-primary); box-shadow: 0 0 0 1px rgb(0 0 0 / .06); animation: dp-thanks-confetti var(--dur) var(--dp-ease-out) var(--delay) both; }
+.dp-thanks-confetti i[data-dp-round="1"] { border-radius: 50%; }
+.dp-thanks-confetti i[data-dp-tone="1"] { background: var(--dp-color-gold); }
+.dp-thanks-confetti i[data-dp-tone="2"] { background: var(--dp-color-primary-soft); }
+.dp-thanks-confetti i[data-dp-tone="3"] { background: #fff; }
+
+@keyframes dp-thanks-pop { 0% { transform: scale(0); } 70% { transform: scale(1.12); } 100% { transform: scale(1); } }
+@keyframes dp-thanks-draw { to { stroke-dashoffset: 0; } }
+@keyframes dp-thanks-confetti { 0% { transform: translate3d(0, -10vh, 0) rotate(0); opacity: 1; } 100% { transform: translate3d(var(--x), 70vh, 0) rotate(var(--r)); opacity: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .dp-thanks__disc { animation: none; }
+  .dp-thanks__circle, .dp-thanks__tick { animation: none; stroke-dashoffset: 0; }
+  .dp-thanks-confetti { display: none !important; }
+}
