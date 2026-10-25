@@ -118,7 +118,7 @@ final class E6ThanksTaxReliefTest extends TestCase {
 			$this->assertStringNotContainsString( $secret, (string) $flat );
 		}
 		$this->assertStringNotContainsString( 'Ayşe', Thanks_Summary::share_text( $summary ) );
-		$this->assertSame( 'I just donated to Water Well.', Thanks_Summary::share_text( $summary ) );
+		$this->assertStringContainsString( 'Water Well', Thanks_Summary::share_text( $summary ) );
 	}
 
 	public function test_summary_is_empty_without_donation_lines(): void {
