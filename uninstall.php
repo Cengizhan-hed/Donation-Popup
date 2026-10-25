@@ -8,16 +8,21 @@
  * @package WooCommerce\Donation_Popup
  */
 
-if (!defined('WP_UNINSTALL_PLUGIN')) {
+if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 	exit;
 }
 
-require_once dirname(__FILE__) . '/includes/class-uninstall.php';
+require_once __DIR__ . '/includes/class-uninstall.php';
 
-if (is_multisite() && function_exists('get_sites')) {
-	$wdp_site_ids = get_sites(array('fields' => 'ids', 'number' => 0));
-	foreach ($wdp_site_ids as $wdp_site_id) {
-		switch_to_blog((int) $wdp_site_id);
+if ( is_multisite() && function_exists( 'get_sites' ) ) {
+	$wdp_site_ids = get_sites(
+		array(
+			'fields' => 'ids',
+			'number' => 0,
+		)
+	);
+	foreach ( $wdp_site_ids as $wdp_site_id ) {
+		switch_to_blog( (int) $wdp_site_id );
 		WDP_Uninstall::cleanup_site();
 		restore_current_blog();
 	}

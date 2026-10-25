@@ -109,6 +109,7 @@ rm -f \
   "$DEST/phpunit.xml.dist" \
   "$DEST/.phpunit.result.cache" \
   "$DEST/phpcs.xml.dist" \
+  "$DEST/phpcs-src.xml.dist" \
   "$DEST/phpstan.neon" \
   "$DEST/phpstan.verify.neon" \
   "$DEST/phpstan.dead.neon" \

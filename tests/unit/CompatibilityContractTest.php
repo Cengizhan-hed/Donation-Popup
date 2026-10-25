@@ -22,7 +22,7 @@ final class CompatibilityContractTest extends TestCase {
 	public function test_shortcode_tags_unchanged(): void {
 		$src = self::src('includes/class-shortcodes.php');
 		foreach (array( 'wdp_donation_button', 'wdp_donation_button_panel', 'wdp_donation_form', 'wdp_donations' ) as $tag) {
-			$this->assertStringContainsString("add_shortcode('" . $tag . "'", $src, $tag);
+			$this->assertMatchesRegularExpression("/add_shortcode\\(\\s*'" . $tag . "'/", $src, $tag);
 		}
 	}
 

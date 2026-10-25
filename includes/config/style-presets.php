@@ -5,7 +5,7 @@
  * @package WooCommerce\Donation_Popup
  */
 
-if (!defined('ABSPATH')) {
+if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
@@ -15,7 +15,7 @@ if (!defined('ABSPATH')) {
 return array(
 	'classic'     => array(
 		'label'       => 'Ocean Classic',
-		'description' => __('Default ocean blue (#0f608b), 12px radius, balanced surface.', 'woo-donation-popup'),
+		'description' => __( 'Default ocean blue (#0f608b), 12px radius, balanced surface.', 'woo-donation-popup' ),
 		'swatch'      => '#0f608b',
 		'button'      => array(
 			'brand_color'            => '#0f608b',
@@ -81,7 +81,7 @@ return array(
 	),
 	'soft_glass'  => array(
 		'label'       => 'Soft Glass',
-		'description' => __('Glass panel, strong blur, airy sky blue, 16px radius.', 'woo-donation-popup'),
+		'description' => __( 'Glass panel, strong blur, airy sky blue, 16px radius.', 'woo-donation-popup' ),
 		'swatch'      => '#1a7aad',
 		'button'      => array(
 			'brand_color'            => '#1a7aad',
@@ -147,7 +147,7 @@ return array(
 	),
 	'sharp_trust' => array(
 		'label'       => 'Sharp Trust',
-		'description' => __('Corporate navy, tight typography, 8px radius.', 'woo-donation-popup'),
+		'description' => __( 'Corporate navy, tight typography, 8px radius.', 'woo-donation-popup' ),
 		'swatch'      => '#0a4a6e',
 		'button'      => array(
 			'brand_color'            => '#0a4a6e',
@@ -213,7 +213,7 @@ return array(
 	),
 	'warm_impact' => array(
 		'label'       => 'Horizon',
-		'description' => __('Vivid sky blue, soft accent, emotional headline.', 'woo-donation-popup'),
+		'description' => __( 'Vivid sky blue, soft accent, emotional headline.', 'woo-donation-popup' ),
 		'swatch'      => '#1280b8',
 		'button'      => array(
 			'brand_color'            => '#1280b8',

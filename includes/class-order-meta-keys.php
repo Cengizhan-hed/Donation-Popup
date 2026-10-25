@@ -5,7 +5,7 @@
  * @package WooCommerce\Donation_Popup
  */
 
-if (!defined('ABSPATH')) {
+if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
@@ -39,8 +39,8 @@ class WDP_Order_Meta_Keys {
 	 * @param string $field name|phone|email|note.
 	 * @return string
 	 */
-	public static function shareholder_key($index, $field) {
-		return sprintf(self::SHAREHOLDER_PATTERN, absint($index), sanitize_key($field));
+	public static function shareholder_key( $index, $field ) {
+		return sprintf( self::SHAREHOLDER_PATTERN, absint( $index ), sanitize_key( $field ) );
 	}
 
 	/**
@@ -49,8 +49,8 @@ class WDP_Order_Meta_Keys {
 	 * @param string $key Meta key.
 	 * @return array{index:int,field:string}|null
 	 */
-	public static function parse_shareholder_key($key) {
-		if (!is_string($key) || !preg_match('/^wdp_shareholder_(\d+)_(name|phone|email|note)$/', $key, $m)) {
+	public static function parse_shareholder_key( $key ) {
+		if ( ! is_string( $key ) || ! preg_match( '/^wdp_shareholder_(\d+)_(name|phone|email|note)$/', $key, $m ) ) {
 			return null;
 		}
 		return array(
@@ -66,14 +66,14 @@ class WDP_Order_Meta_Keys {
 	 */
 	public static function labels() {
 		return array(
-			self::DONOR_NAME    => __('Donor name', 'woo-donation-popup'),
-			self::DONOR_PHONE   => __('Donor phone', 'woo-donation-popup'),
-			self::DONOR_EMAIL   => __('Donor email', 'woo-donation-popup'),
-			self::DONATION_NOTE => __('Donation note', 'woo-donation-popup'),
-			self::DEDICATION    => __('Dedication', 'woo-donation-popup'),
-			self::ANONYMOUS     => __('Anonymous', 'woo-donation-popup'),
-			self::COVER_FEE     => __('Processing fee', 'woo-donation-popup'),
-			self::SHARE_COUNT   => __('Share count', 'woo-donation-popup'),
+			self::DONOR_NAME    => __( 'Donor name', 'woo-donation-popup' ),
+			self::DONOR_PHONE   => __( 'Donor phone', 'woo-donation-popup' ),
+			self::DONOR_EMAIL   => __( 'Donor email', 'woo-donation-popup' ),
+			self::DONATION_NOTE => __( 'Donation note', 'woo-donation-popup' ),
+			self::DEDICATION    => __( 'Dedication', 'woo-donation-popup' ),
+			self::ANONYMOUS     => __( 'Anonymous', 'woo-donation-popup' ),
+			self::COVER_FEE     => __( 'Processing fee', 'woo-donation-popup' ),
+			self::SHARE_COUNT   => __( 'Share count', 'woo-donation-popup' ),
 		);
 	}
 
@@ -84,10 +84,10 @@ class WDP_Order_Meta_Keys {
 	 */
 	public static function shareholder_label_formats() {
 		return array(
-			'name'  => __('Shareholder %d name', 'woo-donation-popup'),
-			'phone' => __('Shareholder %d phone', 'woo-donation-popup'),
-			'email' => __('Shareholder %d email', 'woo-donation-popup'),
-			'note'  => __('Shareholder %d note', 'woo-donation-popup'),
+			'name'  => __( 'Shareholder %d name', 'woo-donation-popup' ),
+			'phone' => __( 'Shareholder %d phone', 'woo-donation-popup' ),
+			'email' => __( 'Shareholder %d email', 'woo-donation-popup' ),
+			'note'  => __( 'Shareholder %d note', 'woo-donation-popup' ),
 		);
 	}
 
@@ -97,12 +97,12 @@ class WDP_Order_Meta_Keys {
 	 * @param string $key Meta key.
 	 * @return bool
 	 */
-	public static function is_fixed_key($key) {
-		if (!is_string($key) || $key === '') {
+	public static function is_fixed_key( $key ) {
+		if ( ! is_string( $key ) || $key === '' ) {
 			return false;
 		}
 		$labels = self::labels();
-		return isset($labels[ $key ]) || null !== self::parse_shareholder_key($key);
+		return isset( $labels[ $key ] ) || null !== self::parse_shareholder_key( $key );
 	}
 
 	/**
@@ -111,15 +111,15 @@ class WDP_Order_Meta_Keys {
 	 * @param string $key Meta key.
 	 * @return string|null
 	 */
-	public static function get_label($key) {
+	public static function get_label( $key ) {
 		$labels = self::labels();
-		if (isset($labels[ $key ])) {
+		if ( isset( $labels[ $key ] ) ) {
 			return $labels[ $key ];
 		}
-		$parsed = self::parse_shareholder_key($key);
-		if (null !== $parsed) {
+		$parsed = self::parse_shareholder_key( $key );
+		if ( null !== $parsed ) {
 			$formats = self::shareholder_label_formats();
-			return sprintf($formats[ $parsed['field'] ], $parsed['index']);
+			return sprintf( $formats[ $parsed['field'] ], $parsed['index'] );
 		}
 		return null;
 	}
@@ -132,11 +132,11 @@ class WDP_Order_Meta_Keys {
 	 * @param string $legacy_key Stored meta key.
 	 * @return string|null Fixed key or null when unknown.
 	 */
-	public static function legacy_to_fixed_key($legacy_key) {
-		if (!is_string($legacy_key) || $legacy_key === '') {
+	public static function legacy_to_fixed_key( $legacy_key ) {
+		if ( ! is_string( $legacy_key ) || $legacy_key === '' ) {
 			return null;
 		}
-		$legacy_key = trim($legacy_key);
+		$legacy_key = trim( $legacy_key );
 
 		$source_labels = array(
 			self::DONOR_NAME    => 'Bağışçı Adı',
@@ -148,26 +148,26 @@ class WDP_Order_Meta_Keys {
 			self::COVER_FEE     => 'İşlem ücreti',
 			self::SHARE_COUNT   => 'Hisse Sayısı',
 		);
-		$translated = self::labels();
-		foreach ($source_labels as $fixed => $source) {
-			if ($legacy_key === $source || (isset($translated[ $fixed ]) && $legacy_key === $translated[ $fixed ])) {
+		$translated    = self::labels();
+		foreach ( $source_labels as $fixed => $source ) {
+			if ( $legacy_key === $source || ( isset( $translated[ $fixed ] ) && $legacy_key === $translated[ $fixed ] ) ) {
 				return $fixed;
 			}
 		}
 
-		$source_formats = array(
+		$source_formats     = array(
 			'name'  => '%d. Hissedar Adı',
 			'phone' => '%d. Hissedar Telefonu',
 			'email' => '%d. Hissedar E-postası',
 			'note'  => '%d. Hissedar Notu',
 		);
 		$translated_formats = self::shareholder_label_formats();
-		foreach ($source_formats as $field => $source_format) {
-			$candidates = array_unique(array($source_format, $translated_formats[ $field ]));
-			foreach ($candidates as $format) {
-				$regex = '/^' . str_replace('%d', '(\d+)', preg_quote($format, '/')) . '$/u';
-				if (preg_match($regex, $legacy_key, $m)) {
-					return self::shareholder_key((int) $m[1], $field);
+		foreach ( $source_formats as $field => $source_format ) {
+			$candidates = array_unique( array( $source_format, $translated_formats[ $field ] ) );
+			foreach ( $candidates as $format ) {
+				$regex = '/^' . str_replace( '%d', '(\d+)', preg_quote( $format, '/' ) ) . '$/u';
+				if ( preg_match( $regex, $legacy_key, $m ) ) {
+					return self::shareholder_key( (int) $m[1], $field );
 				}
 			}
 		}
@@ -181,11 +181,11 @@ class WDP_Order_Meta_Keys {
 	 * @param string $key Stored meta key.
 	 * @return string|null
 	 */
-	public static function normalize_key($key) {
-		if (self::is_fixed_key($key)) {
+	public static function normalize_key( $key ) {
+		if ( self::is_fixed_key( $key ) ) {
 			return $key;
 		}
-		return self::legacy_to_fixed_key($key);
+		return self::legacy_to_fixed_key( $key );
 	}
 
 	/**
@@ -194,11 +194,11 @@ class WDP_Order_Meta_Keys {
 	 * @param string $fixed_key Fixed key.
 	 * @return bool
 	 */
-	public static function is_personal_data_key($fixed_key) {
-		if (in_array($fixed_key, array(self::DONOR_NAME, self::DONOR_PHONE, self::DONOR_EMAIL, self::DONATION_NOTE, self::DEDICATION), true)) {
+	public static function is_personal_data_key( $fixed_key ) {
+		if ( in_array( $fixed_key, array( self::DONOR_NAME, self::DONOR_PHONE, self::DONOR_EMAIL, self::DONATION_NOTE, self::DEDICATION ), true ) ) {
 			return true;
 		}
-		return null !== self::parse_shareholder_key($fixed_key);
+		return null !== self::parse_shareholder_key( $fixed_key );
 	}
 
 	/**
@@ -207,11 +207,11 @@ class WDP_Order_Meta_Keys {
 	 * @param string $fixed_key Fixed key.
 	 * @return bool
 	 */
-	public static function is_email_key($fixed_key) {
-		if (self::DONOR_EMAIL === $fixed_key) {
+	public static function is_email_key( $fixed_key ) {
+		if ( self::DONOR_EMAIL === $fixed_key ) {
 			return true;
 		}
-		$parsed = self::parse_shareholder_key($fixed_key);
+		$parsed = self::parse_shareholder_key( $fixed_key );
 		return null !== $parsed && 'email' === $parsed['field'];
 	}
 
@@ -221,24 +221,24 @@ class WDP_Order_Meta_Keys {
 	 * @param array $donation_data Cart item donation_data.
 	 * @return array<string,mixed>
 	 */
-	public static function build_item_meta(array $donation_data) {
+	public static function build_item_meta( array $donation_data ) {
 		$meta = array();
 
-		if (isset($donation_data['share_count']) && $donation_data['share_count'] > 0) {
+		if ( isset( $donation_data['share_count'] ) && $donation_data['share_count'] > 0 ) {
 			$meta[ self::SHARE_COUNT ] = $donation_data['share_count'];
 
-			if (!empty($donation_data['shareholders']) && is_array($donation_data['shareholders'])) {
-				foreach ($donation_data['shareholders'] as $index => $shareholder) {
-					if (!is_array($shareholder)) {
+			if ( ! empty( $donation_data['shareholders'] ) && is_array( $donation_data['shareholders'] ) ) {
+				foreach ( $donation_data['shareholders'] as $index => $shareholder ) {
+					if ( ! is_array( $shareholder ) ) {
 						continue;
 					}
-					foreach (array('name', 'phone', 'email') as $field) {
-						if (!empty($shareholder[ $field ])) {
-							$meta[ self::shareholder_key($index, $field) ] = $shareholder[ $field ];
+					foreach ( array( 'name', 'phone', 'email' ) as $field ) {
+						if ( ! empty( $shareholder[ $field ] ) ) {
+							$meta[ self::shareholder_key( $index, $field ) ] = $shareholder[ $field ];
 						}
 					}
-					if (isset($shareholder['note']) && $shareholder['note'] !== '') {
-						$meta[ self::shareholder_key($index, 'note') ] = $shareholder['note'];
+					if ( isset( $shareholder['note'] ) && $shareholder['note'] !== '' ) {
+						$meta[ self::shareholder_key( $index, 'note' ) ] = $shareholder['note'];
 					}
 				}
 			}
@@ -246,26 +246,26 @@ class WDP_Order_Meta_Keys {
 			return $meta;
 		}
 
-		if (!empty($donation_data['full_name'])) {
+		if ( ! empty( $donation_data['full_name'] ) ) {
 			$meta[ self::DONOR_NAME ] = $donation_data['full_name'];
 		}
-		if (!empty($donation_data['phone'])) {
+		if ( ! empty( $donation_data['phone'] ) ) {
 			$meta[ self::DONOR_PHONE ] = $donation_data['phone'];
 		}
-		if (isset($donation_data['note']) && $donation_data['note'] !== '') {
+		if ( isset( $donation_data['note'] ) && $donation_data['note'] !== '' ) {
 			$meta[ self::DONATION_NOTE ] = $donation_data['note'];
 		}
-		if (!empty($donation_data['email'])) {
+		if ( ! empty( $donation_data['email'] ) ) {
 			$meta[ self::DONOR_EMAIL ] = $donation_data['email'];
 		}
-		if (!empty($donation_data['dedication'])) {
+		if ( ! empty( $donation_data['dedication'] ) ) {
 			$meta[ self::DEDICATION ] = $donation_data['dedication'];
 		}
-		if (!empty($donation_data['anonymous'])) {
+		if ( ! empty( $donation_data['anonymous'] ) ) {
 			$meta[ self::ANONYMOUS ] = 'yes';
 		}
-		if (!empty($donation_data['cover_fee'])) {
-			$meta[ self::COVER_FEE ] = !empty($donation_data['cover_fee_percent'])
+		if ( ! empty( $donation_data['cover_fee'] ) ) {
+			$meta[ self::COVER_FEE ] = ! empty( $donation_data['cover_fee_percent'] )
 				? (string) $donation_data['cover_fee_percent']
 				: 'yes';
 		}
@@ -280,16 +280,16 @@ class WDP_Order_Meta_Keys {
 	 * @param mixed  $value     Stored value.
 	 * @return mixed
 	 */
-	public static function format_display_value($fixed_key, $value) {
-		if (self::ANONYMOUS === $fixed_key && 'yes' === $value) {
-			return __('Yes', 'woo-donation-popup');
+	public static function format_display_value( $fixed_key, $value ) {
+		if ( self::ANONYMOUS === $fixed_key && 'yes' === $value ) {
+			return __( 'Yes', 'woo-donation-popup' );
 		}
-		if (self::COVER_FEE === $fixed_key) {
-			if ('yes' === $value) {
-				return __('Yes', 'woo-donation-popup');
+		if ( self::COVER_FEE === $fixed_key ) {
+			if ( 'yes' === $value ) {
+				return __( 'Yes', 'woo-donation-popup' );
 			}
-			if (is_numeric($value)) {
-				return sprintf('+%%%s', $value);
+			if ( is_numeric( $value ) ) {
+				return sprintf( '+%%%s', $value );
 			}
 		}
 		return $value;
@@ -301,26 +301,26 @@ class WDP_Order_Meta_Keys {
 	 * @param WC_Order_Item $item Order item.
 	 * @return array<string,array{key:string,value:mixed}> fixed key => stored key + value.
 	 */
-	public static function get_item_donation_data($item) {
+	public static function get_item_donation_data( $item ) {
 		$out = array();
-		if (!is_object($item) || !method_exists($item, 'get_meta_data')) {
+		if ( ! is_object( $item ) || ! method_exists( $item, 'get_meta_data' ) ) {
 			return $out;
 		}
 
-		foreach ($item->get_meta_data() as $meta) {
-			$data = method_exists($meta, 'get_data') ? $meta->get_data() : (array) $meta;
-			$key  = isset($data['key']) ? (string) $data['key'] : '';
-			$fixed = self::normalize_key($key);
-			if (null === $fixed) {
+		foreach ( $item->get_meta_data() as $meta ) {
+			$data  = method_exists( $meta, 'get_data' ) ? $meta->get_data() : (array) $meta;
+			$key   = isset( $data['key'] ) ? (string) $data['key'] : '';
+			$fixed = self::normalize_key( $key );
+			if ( null === $fixed ) {
 				continue;
 			}
 			// Fixed keys win over legacy duplicates.
-			if (isset($out[ $fixed ]) && $out[ $fixed ]['key'] === $fixed) {
+			if ( isset( $out[ $fixed ] ) && $out[ $fixed ]['key'] === $fixed ) {
 				continue;
 			}
 			$out[ $fixed ] = array(
 				'key'   => $key,
-				'value' => isset($data['value']) ? $data['value'] : '',
+				'value' => isset( $data['value'] ) ? $data['value'] : '',
 			);
 		}
 
@@ -333,8 +333,8 @@ class WDP_Order_Meta_Keys {
 	 * @return void
 	 */
 	public static function init() {
-		add_filter('woocommerce_order_item_display_meta_key', array(__CLASS__, 'filter_display_meta_key'), 10, 3);
-		add_filter('woocommerce_order_item_display_meta_value', array(__CLASS__, 'filter_display_meta_value'), 10, 3);
+		add_filter( 'woocommerce_order_item_display_meta_key', array( __CLASS__, 'filter_display_meta_key' ), 10, 3 );
+		add_filter( 'woocommerce_order_item_display_meta_value', array( __CLASS__, 'filter_display_meta_value' ), 10, 3 );
 	}
 
 	/**
@@ -345,10 +345,10 @@ class WDP_Order_Meta_Keys {
 	 * @param mixed  $item        Order item.
 	 * @return string
 	 */
-	public static function filter_display_meta_key($display_key, $meta = null, $item = null) {
-		unset($item);
-		$raw_key = is_object($meta) && isset($meta->key) ? (string) $meta->key : (string) $display_key;
-		$label   = self::get_label($raw_key);
+	public static function filter_display_meta_key( $display_key, $meta = null, $item = null ) {
+		unset( $item );
+		$raw_key = is_object( $meta ) && isset( $meta->key ) ? (string) $meta->key : (string) $display_key;
+		$label   = self::get_label( $raw_key );
 		return null !== $label ? $label : $display_key;
 	}
 
@@ -360,13 +360,13 @@ class WDP_Order_Meta_Keys {
 	 * @param mixed  $item          Order item.
 	 * @return string
 	 */
-	public static function filter_display_meta_value($display_value, $meta = null, $item = null) {
-		unset($item);
-		if (!is_object($meta) || !isset($meta->key) || !self::is_fixed_key((string) $meta->key)) {
+	public static function filter_display_meta_value( $display_value, $meta = null, $item = null ) {
+		unset( $item );
+		if ( ! is_object( $meta ) || ! isset( $meta->key ) || ! self::is_fixed_key( (string) $meta->key ) ) {
 			return $display_value;
 		}
-		$raw   = isset($meta->value) ? $meta->value : $display_value;
-		$value = self::format_display_value((string) $meta->key, $raw);
-		return $value === $raw ? $display_value : esc_html((string) $value);
+		$raw   = isset( $meta->value ) ? $meta->value : $display_value;
+		$value = self::format_display_value( (string) $meta->key, $raw );
+		return $value === $raw ? $display_value : esc_html( (string) $value );
 	}
 }

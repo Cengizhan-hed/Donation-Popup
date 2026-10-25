@@ -345,7 +345,7 @@ wdp_smoke_assert(
 );
 wdp_smoke_assert(
     wdp_smoke_file_contains(WDP_PLUGIN_DIR . 'includes/class-product-page-integration.php', 'function render_builder_fallback')
-        && wdp_smoke_file_contains(WDP_PLUGIN_DIR . 'includes/class-product-page-integration.php', "add_action('wp_footer'"),
+        && preg_match("/add_action\\(\\s*'wp_footer'/", (string) file_get_contents(WDP_PLUGIN_DIR . 'includes/class-product-page-integration.php')) === 1,
     'Product page builder fallback is registered'
 );
 wdp_smoke_assert(
@@ -428,7 +428,7 @@ foreach ($wdp_form_ids as $wdp_form_id) {
     $wdp_ajax_action = 'wdp_save_' . str_replace('-', '_', $wdp_form_parts[1]) . '_settings';
     wdp_smoke_assert(
         strpos($wdp_includes_php, 'data-wdp-ajax-action="' . $wdp_ajax_action . '"') !== false
-            || strpos($wdp_includes_php, "open_form_container('" . $wdp_form_id . "'") !== false,
+            || preg_match('/open_form_container\\(\\s*\'' . preg_quote($wdp_form_id, '/') . '\'/', $wdp_includes_php) === 1,
         'Settings form has AJAX action markup: ' . $wdp_form_id
     );
     wdp_smoke_assert(

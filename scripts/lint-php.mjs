@@ -42,10 +42,23 @@ try {
 }
 
 const issues = issuesFromPhpcs(parsed, ROOT);
+// src/ varsa ayrı sıfır-gevşetme kural dosyasıyla (phpcs-src.xml.dist) ve baseline'sız eklenir.
+if (fs.existsSync(path.join(ROOT, 'src')) && !extra.length) {
+  const rs = spawnSync('php', [PHPCS, '-q', '--report=json', '--standard=phpcs-src.xml.dist'], {
+    cwd: ROOT,
+    encoding: 'utf8',
+    maxBuffer: 64 * 1024 * 1024,
+  });
+  try {
+    issues.push(...issuesFromPhpcs(JSON.parse(String(rs.stdout || '{}') || '{}'), ROOT));
+  } catch {
+    console.error('src/ PHPCS çalışmadı');
+  }
+}
 const summary = summarizeIssues(issues);
 writeLintPair(OUT, 'phpcs', { summary, issues }, summaryMarkdown('PHPCS', summary));
 if (writeBaseline) {
-  writePhpcsBaseline(ROOT, issues);
+  writePhpcsBaseline(ROOT, issues.filter((i) => !String(i.file).startsWith('src/')));
   console.log('baseline yazıldı: tools/lint-baseline/baseline-phpcs.json');
 }
 

@@ -5,7 +5,7 @@
  * @package WooCommerce\Donation_Popup
  */
 
-if (!defined('ABSPATH')) {
+if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 

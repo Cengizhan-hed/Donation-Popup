@@ -32,20 +32,26 @@ if (!diff.files.length) {
   process.exit(0);
 }
 
-const phpcs = spawnSync('php', [PHPCS, '-q', '--report=json', ...diff.files], {
-  cwd: ROOT,
-  encoding: 'utf8',
-  maxBuffer: 16 * 1024 * 1024,
-});
-let phpcsIssues = [];
-try {
-  phpcsIssues = issuesFromPhpcs(JSON.parse(String(phpcs.stdout || '{}') || '{}'), ROOT);
-} catch {
-  if (phpcs.status && phpcs.status !== 1 && phpcs.status !== 2) {
-    console.error('verify:lint PHPCS çalışmadı');
-    process.exit(1);
+// src/ (yeni mimari): ayrı sıfır-gevşetme kural dosyası, baseline YOK (her hata kırmızı).
+const srcFiles = diff.files.filter((f) => f.startsWith('src/'));
+const legacyFiles = diff.files.filter((f) => !f.startsWith('src/'));
+function runPhpcs(files, standard) {
+  if (!files.length) return [];
+  const args = [PHPCS, '-q', '--report=json'];
+  if (standard) args.push(`--standard=${standard}`);
+  const res = spawnSync('php', [...args, ...files], { cwd: ROOT, encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 });
+  try {
+    return issuesFromPhpcs(JSON.parse(String(res.stdout || '{}') || '{}'), ROOT);
+  } catch {
+    if (res.status && res.status !== 1 && res.status !== 2) {
+      console.error('verify:lint PHPCS çalışmadı');
+      process.exit(1);
+    }
+    return [];
   }
 }
+const phpcsIssues = runPhpcs(legacyFiles, '');
+const srcIssues = runPhpcs(srcFiles, 'phpcs-src.xml.dist');
 
 const baseline = baselineFingerprints(loadPhpcsBaseline(ROOT));
 const phpcsGate = newErrorsOnChangedLines(phpcsIssues, diff.lines, baseline);
@@ -58,7 +64,7 @@ const stanArgs = [
   '--memory-limit=1G',
   '--error-format=json',
   '--no-progress',
-  ...diff.files,
+  // Tüm proje analiz edilir (yalnız değişen dosyalar: trait/sınıf çaprazlarında yanlış 'onlyWritten' üretir); sonuç değişen satırlara süzülür.
 ];
 const stan = spawnSync('php', stanArgs, {
   cwd: ROOT,
@@ -83,7 +89,7 @@ for (const issue of stanIssues) {
   else if (set) stanWarn.push(issue);
 }
 
-const red = [...phpcsGate.neu, ...stanNew];
+const red = [...phpcsGate.neu, ...srcIssues, ...stanNew];
 const warn = [...phpcsGate.existingOnChanged, ...stanWarn];
 const ms = Date.now() - started;
 

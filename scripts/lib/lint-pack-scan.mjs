@@ -14,6 +14,7 @@ export const DIST_FORBIDDEN_PATTERNS = [
 export const DISTIGNORE_REQUIRED = [
   'vendor-dev/',
   'phpcs.xml.dist',
+  'phpcs-src.xml.dist',
   'phpstan.neon',
   'phpstan.verify.neon',
   'composer.json',

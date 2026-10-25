@@ -5,7 +5,7 @@
  * @package WooCommerce\Donation_Popup
  */
 
-if (!defined('ABSPATH')) {
+if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
@@ -39,38 +39,38 @@ class WDP_Product_Page_Integration {
 	 * @return void
 	 */
 	public static function init() {
-		if (is_admin() && !(function_exists('wp_doing_ajax') && wp_doing_ajax())) {
+		if ( is_admin() && ! ( function_exists( 'wp_doing_ajax' ) && wp_doing_ajax() ) ) {
 			return;
 		}
 
-		if (WDP_Placement_Settings::value('auto_place') !== 'yes') {
+		if ( WDP_Placement_Settings::value( 'auto_place' ) !== 'yes' ) {
 			return;
 		}
 
 		self::$hooks_added = true;
 
-		add_action('wp', array(__CLASS__, 'on_wp'), 20);
-		add_filter('body_class', array(__CLASS__, 'body_class'));
-		add_filter('post_class', array(__CLASS__, 'post_class'), 10, 3);
-		add_action('wp_head', array(__CLASS__, 'print_hide_cart_css'), 30);
+		add_action( 'wp', array( __CLASS__, 'on_wp' ), 20 );
+		add_filter( 'body_class', array( __CLASS__, 'body_class' ) );
+		add_filter( 'post_class', array( __CLASS__, 'post_class' ), 10, 3 );
+		add_action( 'wp_head', array( __CLASS__, 'print_hide_cart_css' ), 30 );
 
-		add_filter('wc_get_template', array(__CLASS__, 'filter_wc_get_template'), 20, 5);
-		add_filter('woocommerce_locate_template', array(__CLASS__, 'filter_locate_template'), 20, 3);
+		add_filter( 'wc_get_template', array( __CLASS__, 'filter_wc_get_template' ), 20, 5 );
+		add_filter( 'woocommerce_locate_template', array( __CLASS__, 'filter_locate_template' ), 20, 3 );
 
-		add_filter('woocommerce_get_price_html', array(__CLASS__, 'filter_price_html'), 20, 2);
-		add_filter('woocommerce_loop_add_to_cart_link', array(__CLASS__, 'filter_loop_add_to_cart'), 10, 3);
-		add_filter('woocommerce_product_add_to_cart_text', array(__CLASS__, 'filter_add_to_cart_text'), 20, 2);
-		add_filter('woocommerce_product_add_to_cart_url', array(__CLASS__, 'filter_add_to_cart_url'), 20, 2);
-		add_filter('woocommerce_product_supports', array(__CLASS__, 'filter_product_supports'), 20, 3);
+		add_filter( 'woocommerce_get_price_html', array( __CLASS__, 'filter_price_html' ), 20, 2 );
+		add_filter( 'woocommerce_loop_add_to_cart_link', array( __CLASS__, 'filter_loop_add_to_cart' ), 10, 3 );
+		add_filter( 'woocommerce_product_add_to_cart_text', array( __CLASS__, 'filter_add_to_cart_text' ), 20, 2 );
+		add_filter( 'woocommerce_product_add_to_cart_url', array( __CLASS__, 'filter_add_to_cart_url' ), 20, 2 );
+		add_filter( 'woocommerce_product_supports', array( __CLASS__, 'filter_product_supports' ), 20, 3 );
 
-		add_filter('render_block_woocommerce/add-to-cart-form', array(__CLASS__, 'filter_block_add_to_cart'), 10, 3);
-		add_filter('render_block_woocommerce/add-to-cart-with-options', array(__CLASS__, 'filter_block_add_to_cart'), 10, 3);
-		add_filter('render_block_woocommerce/product-price', array(__CLASS__, 'filter_block_price'), 10, 3);
-		add_filter('render_block_woocommerce/product-button', array(__CLASS__, 'filter_block_product_button'), 10, 3);
+		add_filter( 'render_block_woocommerce/add-to-cart-form', array( __CLASS__, 'filter_block_add_to_cart' ), 10, 3 );
+		add_filter( 'render_block_woocommerce/add-to-cart-with-options', array( __CLASS__, 'filter_block_add_to_cart' ), 10, 3 );
+		add_filter( 'render_block_woocommerce/product-price', array( __CLASS__, 'filter_block_price' ), 10, 3 );
+		add_filter( 'render_block_woocommerce/product-button', array( __CLASS__, 'filter_block_product_button' ), 10, 3 );
 
 		// Late on purpose: any shortcode/block/widget/snippet entry drawn earlier on the page wins.
-		add_action('woocommerce_after_single_product', array(__CLASS__, 'render_builder_fallback'), self::FALLBACK_PRIORITY);
-		add_action('wp_footer', array(__CLASS__, 'render_builder_fallback'), 4);
+		add_action( 'woocommerce_after_single_product', array( __CLASS__, 'render_builder_fallback' ), self::FALLBACK_PRIORITY );
+		add_action( 'wp_footer', array( __CLASS__, 'render_builder_fallback' ), 4 );
 	}
 
 	/**
@@ -93,28 +93,28 @@ class WDP_Product_Page_Integration {
 	 * @return void
 	 */
 	public static function on_wp() {
-		if (!function_exists('is_product') || !is_product()) {
+		if ( ! function_exists( 'is_product' ) || ! is_product() ) {
 			return;
 		}
 		$product = self::current_product();
-		if (!$product || !WDP_Donation_Scope::is_donation_product($product)) {
+		if ( ! $product || ! WDP_Donation_Scope::is_donation_product( $product ) ) {
 			return;
 		}
 
 		self::unhook_native_single_add_to_cart();
 
-		if (!self::should_auto_place($product)) {
+		if ( ! self::should_auto_place( $product ) ) {
 			return;
 		}
 
 		// Backup only: if the template filter never runs, still try summary hooks.
-		$position = (string) WDP_Placement_Settings::value('position', 'replace_cart');
-		if ($position === 'below_summary') {
-			add_action('woocommerce_after_single_product_summary', array(__CLASS__, 'render_fallback_placed_form'), 5);
+		$position = (string) WDP_Placement_Settings::value( 'position', 'replace_cart' );
+		if ( $position === 'below_summary' ) {
+			add_action( 'woocommerce_after_single_product_summary', array( __CLASS__, 'render_fallback_placed_form' ), 5 );
 			return;
 		}
-		$priority = ($position === 'after_excerpt') ? 21 : 30;
-		add_action('woocommerce_single_product_summary', array(__CLASS__, 'render_fallback_placed_form'), $priority);
+		$priority = ( $position === 'after_excerpt' ) ? 21 : 30;
+		add_action( 'woocommerce_single_product_summary', array( __CLASS__, 'render_fallback_placed_form' ), $priority );
 	}
 
 	/**
@@ -127,15 +127,15 @@ class WDP_Product_Page_Integration {
 	 * @param string $default_path  Default path.
 	 * @return string
 	 */
-	public static function filter_wc_get_template($template, $template_name, $args = array(), $template_path = '', $default_path = '') {
-		if ((string) $template_name !== self::SIMPLE_ATC_TEMPLATE) {
+	public static function filter_wc_get_template( $template, $template_name, $args = array(), $template_path = '', $default_path = '' ) {
+		if ( (string) $template_name !== self::SIMPLE_ATC_TEMPLATE ) {
 			return $template;
 		}
-		if (!self::should_override_current_product()) {
+		if ( ! self::should_override_current_product() ) {
 			return $template;
 		}
 		$path = self::plugin_simple_template_path();
-		if ($path === '' || !is_readable($path)) {
+		if ( $path === '' || ! is_readable( $path ) ) {
 			return $template;
 		}
 		self::$template_override_used = true;
@@ -150,15 +150,15 @@ class WDP_Product_Page_Integration {
 	 * @param string $template_path Path prefix.
 	 * @return string
 	 */
-	public static function filter_locate_template($template, $template_name, $template_path = '') {
-		if ((string) $template_name !== self::SIMPLE_ATC_TEMPLATE) {
+	public static function filter_locate_template( $template, $template_name, $template_path = '' ) {
+		if ( (string) $template_name !== self::SIMPLE_ATC_TEMPLATE ) {
 			return $template;
 		}
-		if (!self::should_override_current_product()) {
+		if ( ! self::should_override_current_product() ) {
 			return $template;
 		}
 		$path = self::plugin_simple_template_path();
-		if ($path === '' || !is_readable($path)) {
+		if ( $path === '' || ! is_readable( $path ) ) {
 			return $template;
 		}
 		self::$template_override_used = true;
@@ -171,7 +171,7 @@ class WDP_Product_Page_Integration {
 	 * @return string
 	 */
 	public static function plugin_simple_template_path() {
-		if (!defined('WDP_PLUGIN_DIR')) {
+		if ( ! defined( 'WDP_PLUGIN_DIR' ) ) {
 			return '';
 		}
 		return WDP_PLUGIN_DIR . 'templates/woocommerce/' . self::SIMPLE_ATC_TEMPLATE;
@@ -197,14 +197,14 @@ class WDP_Product_Page_Integration {
 	 */
 	public static function template_override_markup() {
 		$product = self::current_product();
-		if (!$product || !WDP_Donation_Scope::is_donation_product($product)) {
+		if ( ! $product || ! WDP_Donation_Scope::is_donation_product( $product ) ) {
 			return '';
 		}
 		$id = (int) $product->get_id();
-		if (WDP_Render_Registry::has_product_ui($id)) {
-			return WDP_Render_Registry::duplicate_ui_notice($id);
+		if ( WDP_Render_Registry::has_product_ui( $id ) ) {
+			return WDP_Render_Registry::duplicate_ui_notice( $id );
 		}
-		if (!self::should_auto_place($product)) {
+		if ( ! self::should_auto_place( $product ) ) {
 			return '';
 		}
 		return self::placed_markup();
@@ -218,20 +218,20 @@ class WDP_Product_Page_Integration {
 	 * @return void
 	 */
 	public static function render_builder_fallback() {
-		if (!function_exists('is_product') || !is_product()) {
+		if ( ! function_exists( 'is_product' ) || ! is_product() ) {
 			return;
 		}
-		if (self::$template_override_used) {
+		if ( self::$template_override_used ) {
 			return;
 		}
 		$product = self::current_product();
-		if (!$product || !WDP_Donation_Scope::is_donation_product($product)) {
+		if ( ! $product || ! WDP_Donation_Scope::is_donation_product( $product ) ) {
 			return;
 		}
-		if (WDP_Render_Registry::has_product_ui((int) $product->get_id())) {
+		if ( WDP_Render_Registry::has_product_ui( (int) $product->get_id() ) ) {
 			return;
 		}
-		if (!self::should_auto_place($product)) {
+		if ( ! self::should_auto_place( $product ) ) {
 			return;
 		}
 		echo '<div class="wdp-auto-place-fallback">'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
@@ -245,16 +245,16 @@ class WDP_Product_Page_Integration {
 	 * @return void
 	 */
 	public static function render_fallback_placed_form() {
-		if (self::$template_override_used) {
+		if ( self::$template_override_used ) {
 			return;
 		}
 		$product = self::current_product();
-		if (!$product) {
+		if ( ! $product ) {
 			return;
 		}
-		if (WDP_Render_Registry::has_product_ui((int) $product->get_id())) {
-			if (function_exists('current_user_can') && current_user_can('edit_products')) {
-				echo WDP_Render_Registry::duplicate_ui_notice((int) $product->get_id()); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		if ( WDP_Render_Registry::has_product_ui( (int) $product->get_id() ) ) {
+			if ( function_exists( 'current_user_can' ) && current_user_can( 'edit_products' ) ) {
+				echo WDP_Render_Registry::duplicate_ui_notice( (int) $product->get_id() ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			}
 			return;
 		}
@@ -265,11 +265,11 @@ class WDP_Product_Page_Integration {
 	 * @param string[] $classes Body classes.
 	 * @return string[]
 	 */
-	public static function body_class($classes) {
-		$classes = is_array($classes) ? $classes : array();
-		if (function_exists('is_product') && is_product()) {
+	public static function body_class( $classes ) {
+		$classes = is_array( $classes ) ? $classes : array();
+		if ( function_exists( 'is_product' ) && is_product() ) {
 			$product = self::current_product();
-			if ($product && WDP_Donation_Scope::is_donation_product($product)) {
+			if ( $product && WDP_Donation_Scope::is_donation_product( $product ) ) {
 				$classes[] = 'wdp-donation-product';
 			}
 		}
@@ -282,13 +282,13 @@ class WDP_Product_Page_Integration {
 	 * @param int      $post_id Post ID.
 	 * @return string[]
 	 */
-	public static function post_class($classes, $extra = array(), $post_id = 0) {
-		$classes = is_array($classes) ? $classes : array();
-		$post_id = absint($post_id);
-		if ($post_id <= 0) {
+	public static function post_class( $classes, $extra = array(), $post_id = 0 ) {
+		$classes = is_array( $classes ) ? $classes : array();
+		$post_id = absint( $post_id );
+		if ( $post_id <= 0 ) {
 			return $classes;
 		}
-		if (WDP_Donation_Scope::is_donation_product($post_id)) {
+		if ( WDP_Donation_Scope::is_donation_product( $post_id ) ) {
 			$classes[] = 'wdp-donation-product';
 		}
 		return $classes;
@@ -302,14 +302,14 @@ class WDP_Product_Page_Integration {
 	 * @return int Number of matching sticky callbacks removed from $wp_filter.
 	 */
 	public static function unhook_native_single_add_to_cart() {
-		if (!function_exists('remove_action')) {
+		if ( ! function_exists( 'remove_action' ) ) {
 			return 0;
 		}
-		remove_action('woocommerce_single_product_summary', 'woocommerce_template_single_add_to_cart', 30);
-		remove_action('woocommerce_after_single_product_summary', 'woocommerce_template_single_add_to_cart', 30);
-		remove_action('woocommerce_before_single_product_summary', 'woocommerce_template_single_add_to_cart', 30);
-		remove_action('woocommerce_after_single_product', 'woocommerce_template_single_add_to_cart', 30);
-		return self::unhook_callbacks_matching('/sticky.*add.?to.?cart|add.?to.?cart.*sticky/i');
+		remove_action( 'woocommerce_single_product_summary', 'woocommerce_template_single_add_to_cart', 30 );
+		remove_action( 'woocommerce_after_single_product_summary', 'woocommerce_template_single_add_to_cart', 30 );
+		remove_action( 'woocommerce_before_single_product_summary', 'woocommerce_template_single_add_to_cart', 30 );
+		remove_action( 'woocommerce_after_single_product', 'woocommerce_template_single_add_to_cart', 30 );
+		return self::unhook_callbacks_matching( '/sticky.*add.?to.?cart|add.?to.?cart.*sticky/i' );
 	}
 
 	/**
@@ -318,39 +318,39 @@ class WDP_Product_Page_Integration {
 	 * @param string $pattern PCRE against the callable name.
 	 * @return int
 	 */
-	public static function unhook_callbacks_matching($pattern) {
-		if (!function_exists('remove_action') || !is_string($pattern) || $pattern === '') {
+	public static function unhook_callbacks_matching( $pattern ) {
+		if ( ! function_exists( 'remove_action' ) || ! is_string( $pattern ) || $pattern === '' ) {
 			return 0;
 		}
 		global $wp_filter;
-		if (!isset($wp_filter) || (!is_array($wp_filter) && !is_object($wp_filter))) {
+		if ( ! isset( $wp_filter ) || ( ! is_array( $wp_filter ) && ! is_object( $wp_filter ) ) ) {
 			return 0;
 		}
 		$removed = 0;
-		foreach ($wp_filter as $hook => $hook_obj) {
+		foreach ( $wp_filter as $hook => $hook_obj ) {
 			$by_priority = array();
-			if (is_object($hook_obj) && isset($hook_obj->callbacks) && is_array($hook_obj->callbacks)) {
+			if ( is_object( $hook_obj ) && isset( $hook_obj->callbacks ) && is_array( $hook_obj->callbacks ) ) {
 				$by_priority = $hook_obj->callbacks;
-			} elseif (is_array($hook_obj)) {
+			} elseif ( is_array( $hook_obj ) ) {
 				$by_priority = $hook_obj;
 			}
-			foreach ($by_priority as $priority => $callbacks) {
-				if (!is_array($callbacks)) {
+			foreach ( $by_priority as $priority => $callbacks ) {
+				if ( ! is_array( $callbacks ) ) {
 					continue;
 				}
-				foreach ($callbacks as $entry) {
-					$fn = (is_array($entry) && array_key_exists('function', $entry)) ? $entry['function'] : $entry;
+				foreach ( $callbacks as $entry ) {
+					$fn   = ( is_array( $entry ) && array_key_exists( 'function', $entry ) ) ? $entry['function'] : $entry;
 					$name = '';
-					if (is_string($fn)) {
+					if ( is_string( $fn ) ) {
 						$name = $fn;
-					} elseif (is_array($fn) && isset($fn[1]) && is_string($fn[1])) {
+					} elseif ( is_array( $fn ) && isset( $fn[1] ) && is_string( $fn[1] ) ) {
 						$name = $fn[1];
 					}
-					if ($name === '' || !preg_match($pattern, $name)) {
+					if ( $name === '' || ! preg_match( $pattern, $name ) ) {
 						continue;
 					}
-					if (remove_action((string) $hook, $fn, (int) $priority)) {
-						$removed++;
+					if ( remove_action( (string) $hook, $fn, (int) $priority ) ) {
+						++$removed;
 					}
 				}
 			}
@@ -364,14 +364,14 @@ class WDP_Product_Page_Integration {
 	 * @return void
 	 */
 	public static function print_hide_cart_css() {
-		if (self::$css_printed) {
+		if ( self::$css_printed ) {
 			return;
 		}
-		if (!function_exists('is_product') || !is_product()) {
+		if ( ! function_exists( 'is_product' ) || ! is_product() ) {
 			return;
 		}
 		$product = self::current_product();
-		if (!$product || !WDP_Donation_Scope::is_donation_product($product)) {
+		if ( ! $product || ! WDP_Donation_Scope::is_donation_product( $product ) ) {
 			return;
 		}
 		self::$css_printed = true;
@@ -419,27 +419,27 @@ class WDP_Product_Page_Integration {
 	 */
 	public static function placed_markup() {
 		$product = self::current_product();
-		if (!$product || !WDP_Donation_Scope::is_donation_product($product)) {
+		if ( ! $product || ! WDP_Donation_Scope::is_donation_product( $product ) ) {
 			return '';
 		}
-		if (self::content_already_has_shortcode($product)) {
+		if ( self::content_already_has_shortcode( $product ) ) {
 			return '';
 		}
-		$display = self::resolve_product_page_display($product);
+		$display = self::resolve_product_page_display( $product );
 		$atts    = array(
-			'show_title' => WDP_Placement_Settings::value('show_form_title') === 'yes' ? 'yes' : 'no',
+			'show_title' => WDP_Placement_Settings::value( 'show_form_title' ) === 'yes' ? 'yes' : 'no',
 		);
 		$html    = '';
-		if ($display === 'button_popup') {
-			$html = WDP_Shortcodes::render_button($atts, 'wdp_donation_button', 'popup');
-		} elseif ($display === 'button_panel') {
-			$html = WDP_Shortcodes::render_button($atts, 'wdp_donation_button_panel', 'side_panel');
-		} elseif ($display === 'inline') {
-			$html = WDP_Shortcodes::render_form($atts);
+		if ( $display === 'button_popup' ) {
+			$html = WDP_Shortcodes::render_button( $atts, 'wdp_donation_button', 'popup' );
+		} elseif ( $display === 'button_panel' ) {
+			$html = WDP_Shortcodes::render_button( $atts, 'wdp_donation_button_panel', 'side_panel' );
+		} elseif ( $display === 'inline' ) {
+			$html = WDP_Shortcodes::render_form( $atts );
 		}
-		if ($html !== '' && WDP_Render_Registry::has_product_ui((int) $product->get_id())) {
+		if ( $html !== '' && WDP_Render_Registry::has_product_ui( (int) $product->get_id() ) ) {
 			// Drawn by auto-placement: a later explicit entry for the same product is skipped (one entry per page).
-			WDP_Render_Registry::mark_auto((int) $product->get_id());
+			WDP_Render_Registry::mark_auto( (int) $product->get_id() );
 		}
 		return $html;
 	}
@@ -450,25 +450,25 @@ class WDP_Product_Page_Integration {
 	 * @param WC_Product $product Product.
 	 * @return string inline|button_popup|button_panel|''
 	 */
-	public static function resolve_product_page_display($product) {
-		if (!WDP_Product_Resolver::is_wc_product($product) || !WDP_Donation_Scope::is_donation_product($product)) {
+	public static function resolve_product_page_display( $product ) {
+		if ( ! WDP_Product_Resolver::is_wc_product( $product ) || ! WDP_Donation_Scope::is_donation_product( $product ) ) {
 			return '';
 		}
 		$text = (string) $product->get_short_description() . "\n" . (string) $product->get_description();
-		if (self::text_has_named_shortcode($text, 'wdp_donation_form')) {
+		if ( self::text_has_named_shortcode( $text, 'wdp_donation_form' ) ) {
 			return 'inline';
 		}
-		if (self::text_has_named_shortcode($text, 'wdp_donation_button_panel')) {
+		if ( self::text_has_named_shortcode( $text, 'wdp_donation_button_panel' ) ) {
 			return 'button_panel';
 		}
-		if (self::text_has_named_shortcode($text, 'wdp_donation_button')) {
+		if ( self::text_has_named_shortcode( $text, 'wdp_donation_button' ) ) {
 			return 'button_popup';
 		}
-		if (!self::should_auto_place($product)) {
+		if ( ! self::should_auto_place( $product ) ) {
 			return '';
 		}
-		$display = (string) WDP_Placement_Settings::value('display', 'button_panel');
-		return in_array($display, WDP_Placement_Settings::DISPLAYS, true) ? $display : 'button_panel';
+		$display = (string) WDP_Placement_Settings::value( 'display', 'button_panel' );
+		return in_array( $display, WDP_Placement_Settings::DISPLAYS, true ) ? $display : 'button_panel';
 	}
 
 	/**
@@ -476,11 +476,11 @@ class WDP_Product_Page_Integration {
 	 * @param string $tag  Shortcode tag.
 	 * @return bool
 	 */
-	public static function text_has_named_shortcode($text, $tag) {
-		if (!is_string($text) || $text === '' || !is_string($tag) || $tag === '' || !function_exists('has_shortcode')) {
+	public static function text_has_named_shortcode( $text, $tag ) {
+		if ( ! is_string( $text ) || $text === '' || ! is_string( $tag ) || $tag === '' || ! function_exists( 'has_shortcode' ) ) {
 			return false;
 		}
-		return has_shortcode($text, $tag);
+		return has_shortcode( $text, $tag );
 	}
 
 	/**
@@ -491,18 +491,18 @@ class WDP_Product_Page_Integration {
 	 * @param WC_Product $product Product.
 	 * @return string
 	 */
-	public static function filter_price_html($html, $product) {
-		if (WDP_Placement_Settings::value('hide_price') !== 'yes') {
+	public static function filter_price_html( $html, $product ) {
+		if ( WDP_Placement_Settings::value( 'hide_price' ) !== 'yes' ) {
 			return $html;
 		}
-		if (self::should_preserve_price_html_context()) {
+		if ( self::should_preserve_price_html_context() ) {
 			return $html;
 		}
-		if (!WDP_Product_Resolver::is_wc_product($product) || !WDP_Donation_Scope::is_donation_product($product)) {
+		if ( ! WDP_Product_Resolver::is_wc_product( $product ) || ! WDP_Donation_Scope::is_donation_product( $product ) ) {
 			return $html;
 		}
-		$type = WDP_Donation_Type::for_product($product->get_id());
-		if (in_array($type, array(WDP_Donation_Type::CUSTOM, WDP_Donation_Type::CAMPAIGN), true)) {
+		$type = WDP_Donation_Type::for_product( $product->get_id() );
+		if ( in_array( $type, array( WDP_Donation_Type::CUSTOM, WDP_Donation_Type::CAMPAIGN ), true ) ) {
 			return '';
 		}
 		return $html;
@@ -514,10 +514,10 @@ class WDP_Product_Page_Integration {
 	 * @param array      $args    Args.
 	 * @return string
 	 */
-	public static function filter_loop_add_to_cart($html, $product, $args = array()) {
+	public static function filter_loop_add_to_cart( $html, $product, $args = array() ) {
 		return WDP_Render_Guard::value(
-			static function () use ($html, $product) {
-				return self::loop_button_html($html, $product);
+			static function () use ( $html, $product ) {
+				return self::loop_button_html( $html, $product );
 			},
 			$html,
 			'loop_button'
@@ -529,36 +529,36 @@ class WDP_Product_Page_Integration {
 	 * @param WC_Product $product Product.
 	 * @return string
 	 */
-	public static function loop_button_html($html, $product) {
-		if (!WDP_Product_Resolver::is_wc_product($product) || !WDP_Donation_Scope::is_donation_product($product)) {
+	public static function loop_button_html( $html, $product ) {
+		if ( ! WDP_Product_Resolver::is_wc_product( $product ) || ! WDP_Donation_Scope::is_donation_product( $product ) ) {
 			return $html;
 		}
-		$mode = (string) WDP_Placement_Settings::value('loop_button', 'panel');
-		if ($mode === 'off') {
+		$mode = (string) WDP_Placement_Settings::value( 'loop_button', 'panel' );
+		if ( $mode === 'off' ) {
 			return $html;
 		}
 		WDP_Assets::force_enqueue();
-		$url  = method_exists($product, 'get_permalink') ? $product->get_permalink() : get_permalink($product->get_id());
-		$text = WDP_Shortcodes::resolve_button_text('');
-		$id   = (int) $product->get_id();
-		$cls  = 'button wdp-loop-donate';
-		$goal_closed = class_exists('WDP_Campaign_Goal') && WDP_Campaign_Goal::should_block_new_donations($product);
-		if ($goal_closed) {
+		$url         = method_exists( $product, 'get_permalink' ) ? $product->get_permalink() : get_permalink( $product->get_id() );
+		$text        = WDP_Shortcodes::resolve_button_text( '' );
+		$id          = (int) $product->get_id();
+		$cls         = 'button wdp-loop-donate';
+		$goal_closed = class_exists( 'WDP_Campaign_Goal' ) && WDP_Campaign_Goal::should_block_new_donations( $product );
+		if ( $goal_closed ) {
 			$cls .= ' is-disabled wdp-goal-closed-trigger';
 		}
-		if ($mode === 'popup' || $mode === 'panel') {
+		if ( $mode === 'popup' || $mode === 'panel' ) {
 			$cls_extra = $mode === 'panel' ? ' wdp-open-modal wdp-open-side-panel' : ' wdp-open-modal';
-			$attrs     = ' type="button" class="' . esc_attr($cls . $cls_extra) . '" data-product-id="' . esc_attr((string) $id) . '" data-wdp-lazy="1" data-wdp-mode="' . esc_attr($mode === 'panel' ? 'side_panel' : 'popup') . '"';
-			if ($goal_closed) {
-				$attrs .= ' aria-disabled="true" data-wdp-goal-closed="1" data-wdp-goal-message="' . esc_attr(WDP_Campaign_Goal::resolve_message($product)) . '"';
+			$attrs     = ' type="button" class="' . esc_attr( $cls . $cls_extra ) . '" data-product-id="' . esc_attr( (string) $id ) . '" data-wdp-lazy="1" data-wdp-mode="' . esc_attr( $mode === 'panel' ? 'side_panel' : 'popup' ) . '"';
+			if ( $goal_closed ) {
+				$attrs .= ' aria-disabled="true" data-wdp-goal-closed="1" data-wdp-goal-message="' . esc_attr( WDP_Campaign_Goal::resolve_message( $product ) ) . '"';
 			}
-			return '<button' . $attrs . '>' . esc_html($text) . '</button>';
+			return '<button' . $attrs . '>' . esc_html( $text ) . '</button>';
 		}
-		$attrs = ' href="' . esc_url($url) . '" class="' . esc_attr($cls) . '"';
-		if ($goal_closed) {
-			$attrs .= ' aria-disabled="true" data-wdp-goal-closed="1" data-wdp-goal-message="' . esc_attr(WDP_Campaign_Goal::resolve_message($product)) . '"';
+		$attrs = ' href="' . esc_url( $url ) . '" class="' . esc_attr( $cls ) . '"';
+		if ( $goal_closed ) {
+			$attrs .= ' aria-disabled="true" data-wdp-goal-closed="1" data-wdp-goal-message="' . esc_attr( WDP_Campaign_Goal::resolve_message( $product ) ) . '"';
 		}
-		return '<a' . $attrs . '>' . esc_html($text) . '</a>';
+		return '<a' . $attrs . '>' . esc_html( $text ) . '</a>';
 	}
 
 	/**
@@ -568,14 +568,14 @@ class WDP_Product_Page_Integration {
 	 * @param WC_Product $product Product.
 	 * @return string
 	 */
-	public static function filter_add_to_cart_text($text, $product = null) {
-		if (!WDP_Product_Resolver::is_wc_product($product) || !WDP_Donation_Scope::is_donation_product($product)) {
+	public static function filter_add_to_cart_text( $text, $product = null ) {
+		if ( ! WDP_Product_Resolver::is_wc_product( $product ) || ! WDP_Donation_Scope::is_donation_product( $product ) ) {
 			return $text;
 		}
-		if ((string) WDP_Placement_Settings::value('loop_button', 'panel') === 'off') {
+		if ( (string) WDP_Placement_Settings::value( 'loop_button', 'panel' ) === 'off' ) {
 			return $text;
 		}
-		return WDP_Shortcodes::resolve_button_text('');
+		return WDP_Shortcodes::resolve_button_text( '' );
 	}
 
 	/**
@@ -585,14 +585,14 @@ class WDP_Product_Page_Integration {
 	 * @param WC_Product $product Product.
 	 * @return string
 	 */
-	public static function filter_add_to_cart_url($url, $product = null) {
-		if (!WDP_Product_Resolver::is_wc_product($product) || !WDP_Donation_Scope::is_donation_product($product)) {
+	public static function filter_add_to_cart_url( $url, $product = null ) {
+		if ( ! WDP_Product_Resolver::is_wc_product( $product ) || ! WDP_Donation_Scope::is_donation_product( $product ) ) {
 			return $url;
 		}
-		if ((string) WDP_Placement_Settings::value('loop_button', 'panel') === 'off') {
+		if ( (string) WDP_Placement_Settings::value( 'loop_button', 'panel' ) === 'off' ) {
 			return $url;
 		}
-		$permalink = method_exists($product, 'get_permalink') ? $product->get_permalink() : get_permalink($product->get_id());
+		$permalink = method_exists( $product, 'get_permalink' ) ? $product->get_permalink() : get_permalink( $product->get_id() );
 		return $permalink ? $permalink : $url;
 	}
 
@@ -604,11 +604,11 @@ class WDP_Product_Page_Integration {
 	 * @param WC_Product $product  Product.
 	 * @return bool
 	 */
-	public static function filter_product_supports($supports, $feature, $product = null) {
-		if ((string) $feature !== 'ajax_add_to_cart') {
+	public static function filter_product_supports( $supports, $feature, $product = null ) {
+		if ( (string) $feature !== 'ajax_add_to_cart' ) {
 			return $supports;
 		}
-		if (!WDP_Product_Resolver::is_wc_product($product) || !WDP_Donation_Scope::is_donation_product($product)) {
+		if ( ! WDP_Product_Resolver::is_wc_product( $product ) || ! WDP_Donation_Scope::is_donation_product( $product ) ) {
 			return $supports;
 		}
 		return false;
@@ -622,19 +622,19 @@ class WDP_Product_Page_Integration {
 	 * @param WP_Block $instance Block instance.
 	 * @return string
 	 */
-	public static function filter_block_add_to_cart($content, $block, $instance = null) {
+	public static function filter_block_add_to_cart( $content, $block, $instance = null ) {
 		return WDP_Render_Guard::value(
-			static function () use ($content, $instance) {
-				$product = self::product_from_block($instance);
-				if (!$product || !WDP_Donation_Scope::is_donation_product($product) || !self::should_auto_place($product)) {
+			static function () use ( $content, $instance ) {
+				$product = self::product_from_block( $instance );
+				if ( ! $product || ! WDP_Donation_Scope::is_donation_product( $product ) || ! self::should_auto_place( $product ) ) {
 					return $content;
 				}
-				if (self::content_already_has_shortcode($product) || WDP_Render_Registry::has_product_ui($product->get_id())) {
+				if ( self::content_already_has_shortcode( $product ) || WDP_Render_Registry::has_product_ui( $product->get_id() ) ) {
 					// The block's own render already printed our entry through the template override: keep it.
-					if (!self::content_already_has_shortcode($product) && self::html_has_entry((string) $content, (int) $product->get_id())) {
+					if ( ! self::content_already_has_shortcode( $product ) && self::html_has_entry( (string) $content, (int) $product->get_id() ) ) {
 						return $content;
 					}
-					return WDP_Render_Registry::duplicate_ui_notice((int) $product->get_id());
+					return WDP_Render_Registry::duplicate_ui_notice( (int) $product->get_id() );
 				}
 				return self::placed_markup();
 			},
@@ -649,19 +649,19 @@ class WDP_Product_Page_Integration {
 	 * @param WP_Block $instance Instance.
 	 * @return string
 	 */
-	public static function filter_block_price($content, $block, $instance = null) {
-		if (WDP_Placement_Settings::value('hide_price') !== 'yes') {
+	public static function filter_block_price( $content, $block, $instance = null ) {
+		if ( WDP_Placement_Settings::value( 'hide_price' ) !== 'yes' ) {
 			return $content;
 		}
-		if (self::should_preserve_price_html_context()) {
+		if ( self::should_preserve_price_html_context() ) {
 			return $content;
 		}
-		$product = self::product_from_block($instance);
-		if (!$product || !WDP_Donation_Scope::is_donation_product($product)) {
+		$product = self::product_from_block( $instance );
+		if ( ! $product || ! WDP_Donation_Scope::is_donation_product( $product ) ) {
 			return $content;
 		}
-		$type = WDP_Donation_Type::for_product($product->get_id());
-		if (!in_array($type, array(WDP_Donation_Type::CUSTOM, WDP_Donation_Type::CAMPAIGN), true)) {
+		$type = WDP_Donation_Type::for_product( $product->get_id() );
+		if ( ! in_array( $type, array( WDP_Donation_Type::CUSTOM, WDP_Donation_Type::CAMPAIGN ), true ) ) {
 			return $content;
 		}
 		return '';
@@ -673,14 +673,14 @@ class WDP_Product_Page_Integration {
 	 * @param WP_Block $instance Instance.
 	 * @return string
 	 */
-	public static function filter_block_product_button($content, $block, $instance = null) {
+	public static function filter_block_product_button( $content, $block, $instance = null ) {
 		return WDP_Render_Guard::value(
-			static function () use ($content, $instance) {
-				$product = self::product_from_block($instance);
-				if (!$product) {
+			static function () use ( $content, $instance ) {
+				$product = self::product_from_block( $instance );
+				if ( ! $product ) {
 					return $content;
 				}
-				return self::loop_button_html($content, $product);
+				return self::loop_button_html( $content, $product );
 			},
 			$content,
 			'block_product_button'
@@ -693,28 +693,28 @@ class WDP_Product_Page_Integration {
 	 * @param WC_Product $product Product.
 	 * @return bool
 	 */
-	public static function should_auto_place($product) {
-		if (!WDP_Product_Resolver::is_wc_product($product) || !WDP_Donation_Scope::is_donation_product($product)) {
+	public static function should_auto_place( $product ) {
+		if ( ! WDP_Product_Resolver::is_wc_product( $product ) || ! WDP_Donation_Scope::is_donation_product( $product ) ) {
 			return false;
 		}
-		$override = $product->get_meta('_wdp_auto_place', true);
-		if ($override === 'no') {
+		$override = $product->get_meta( '_wdp_auto_place', true );
+		if ( $override === 'no' ) {
 			return false;
 		}
-		if (WDP_Placement_Settings::value('auto_place') !== 'yes') {
+		if ( WDP_Placement_Settings::value( 'auto_place' ) !== 'yes' ) {
 			return false;
 		}
-		return !self::content_already_has_shortcode($product);
+		return ! self::content_already_has_shortcode( $product );
 	}
 
 	/**
 	 * @param WC_Product $product Product.
 	 * @return bool
 	 */
-	public static function content_already_has_shortcode($product) {
+	public static function content_already_has_shortcode( $product ) {
 		$excerpt = (string) $product->get_short_description();
 		$content = (string) $product->get_description();
-		return self::text_has_wdp_shortcode($excerpt) || self::text_has_wdp_shortcode($content);
+		return self::text_has_wdp_shortcode( $excerpt ) || self::text_has_wdp_shortcode( $content );
 	}
 
 	/**
@@ -724,26 +724,26 @@ class WDP_Product_Page_Integration {
 	 * @param int    $product_id Product ID.
 	 * @return bool
 	 */
-	public static function html_has_entry($html, $product_id) {
-		$product_id = absint($product_id);
-		if ($html === '' || $product_id <= 0) {
+	public static function html_has_entry( $html, $product_id ) {
+		$product_id = absint( $product_id );
+		if ( $html === '' || $product_id <= 0 ) {
 			return false;
 		}
-		return strpos($html, 'id="wdp-modal-' . $product_id . '-direct"') !== false
-			|| (strpos($html, 'wdp-donate-button') !== false && strpos($html, 'data-product-id="' . $product_id . '"') !== false);
+		return strpos( $html, 'id="wdp-modal-' . $product_id . '-direct"' ) !== false
+			|| ( strpos( $html, 'wdp-donate-button' ) !== false && strpos( $html, 'data-product-id="' . $product_id . '"' ) !== false );
 	}
 
 	/**
 	 * @param string $text HTML/content.
 	 * @return bool
 	 */
-	public static function text_has_wdp_shortcode($text) {
-		if (!is_string($text) || $text === '' || !function_exists('has_shortcode')) {
+	public static function text_has_wdp_shortcode( $text ) {
+		if ( ! is_string( $text ) || $text === '' || ! function_exists( 'has_shortcode' ) ) {
 			return false;
 		}
-		return has_shortcode($text, 'wdp_donation_form')
-			|| has_shortcode($text, 'wdp_donation_button')
-			|| has_shortcode($text, 'wdp_donation_button_panel');
+		return has_shortcode( $text, 'wdp_donation_form' )
+			|| has_shortcode( $text, 'wdp_donation_button' )
+			|| has_shortcode( $text, 'wdp_donation_button_panel' );
 	}
 
 	/**
@@ -751,14 +751,14 @@ class WDP_Product_Page_Integration {
 	 */
 	private static function should_override_current_product() {
 		$product = self::current_product();
-		if (!$product || !WDP_Donation_Scope::is_donation_product($product)) {
+		if ( ! $product || ! WDP_Donation_Scope::is_donation_product( $product ) ) {
 			return false;
 		}
-		$override = $product->get_meta('_wdp_auto_place', true);
-		if ($override === 'no') {
+		$override = $product->get_meta( '_wdp_auto_place', true );
+		if ( $override === 'no' ) {
 			return false;
 		}
-		return WDP_Placement_Settings::value('auto_place') === 'yes';
+		return WDP_Placement_Settings::value( 'auto_place' ) === 'yes';
 	}
 
 	/**
@@ -767,24 +767,24 @@ class WDP_Product_Page_Integration {
 	 * @return bool
 	 */
 	public static function should_preserve_price_html_context() {
-		if (function_exists('is_admin') && is_admin() && !(function_exists('wp_doing_ajax') && wp_doing_ajax())) {
+		if ( function_exists( 'is_admin' ) && is_admin() && ! ( function_exists( 'wp_doing_ajax' ) && wp_doing_ajax() ) ) {
 			return true;
 		}
-		if (function_exists('is_cart') && is_cart()) {
+		if ( function_exists( 'is_cart' ) && is_cart() ) {
 			return true;
 		}
-		if (function_exists('is_checkout') && is_checkout()) {
+		if ( function_exists( 'is_checkout' ) && is_checkout() ) {
 			return true;
 		}
-		if (defined('REST_REQUEST') && REST_REQUEST) {
+		if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
 			return true;
 		}
-		if (function_exists('did_action') && did_action('woocommerce_email_header')) {
+		if ( function_exists( 'did_action' ) && did_action( 'woocommerce_email_header' ) ) {
 			return true;
 		}
-		if (function_exists('wp_doing_ajax') && wp_doing_ajax()) {
-			$wc_ajax = isset($_REQUEST['wc-ajax']) ? sanitize_key(wp_unslash((string) $_REQUEST['wc-ajax'])) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			if ($wc_ajax !== '' && (strpos($wc_ajax, 'fragment') !== false || strpos($wc_ajax, 'cart') !== false || $wc_ajax === 'get_refreshed_fragments')) {
+		if ( function_exists( 'wp_doing_ajax' ) && wp_doing_ajax() ) {
+			$wc_ajax = isset( $_REQUEST['wc-ajax'] ) ? sanitize_key( wp_unslash( (string) $_REQUEST['wc-ajax'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			if ( $wc_ajax !== '' && ( strpos( $wc_ajax, 'fragment' ) !== false || strpos( $wc_ajax, 'cart' ) !== false || $wc_ajax === 'get_refreshed_fragments' ) ) {
 				return true;
 			}
 		}
@@ -795,46 +795,46 @@ class WDP_Product_Page_Integration {
 	 * @return WC_Product|null
 	 */
 	private static function current_product() {
-		if (function_exists('wc_get_product')) {
+		if ( function_exists( 'wc_get_product' ) ) {
 			$id = self::current_product_id();
-			if ($id > 0) {
-				$product = wc_get_product($id);
-				if (WDP_Product_Resolver::is_wc_product($product)) {
+			if ( $id > 0 ) {
+				$product = wc_get_product( $id );
+				if ( WDP_Product_Resolver::is_wc_product( $product ) ) {
 					return $product;
 				}
 			}
 		}
-		$loop = isset($GLOBALS['product']) ? $GLOBALS['product'] : null;
-		return WDP_Product_Resolver::is_wc_product($loop) ? $loop : null;
+		$loop = isset( $GLOBALS['product'] ) ? $GLOBALS['product'] : null;
+		return WDP_Product_Resolver::is_wc_product( $loop ) ? $loop : null;
 	}
 
 	/**
 	 * @return int
 	 */
 	private static function current_product_id() {
-		if (function_exists('get_queried_object_id')) {
-			return absint(get_queried_object_id());
+		if ( function_exists( 'get_queried_object_id' ) ) {
+			return absint( get_queried_object_id() );
 		}
-		return function_exists('get_the_ID') ? absint(get_the_ID()) : 0;
+		return function_exists( 'get_the_ID' ) ? absint( get_the_ID() ) : 0;
 	}
 
 	/**
 	 * @param WP_Block|null $instance Block instance.
 	 * @return WC_Product|null
 	 */
-	private static function product_from_block($instance) {
+	private static function product_from_block( $instance ) {
 		$post_id = 0;
-		if (is_object($instance) && isset($instance->context['postId'])) {
-			$post_id = absint($instance->context['postId']);
+		if ( is_object( $instance ) && isset( $instance->context['postId'] ) ) {
+			$post_id = absint( $instance->context['postId'] );
 		}
-		if ($post_id <= 0) {
+		if ( $post_id <= 0 ) {
 			$post_id = self::current_product_id();
 		}
-		if ($post_id <= 0 || !function_exists('wc_get_product')) {
+		if ( $post_id <= 0 || ! function_exists( 'wc_get_product' ) ) {
 			return null;
 		}
-		$product = wc_get_product($post_id);
-		return WDP_Product_Resolver::is_wc_product($product) ? $product : null;
+		$product = wc_get_product( $post_id );
+		return WDP_Product_Resolver::is_wc_product( $product ) ? $product : null;
 	}
 
 	/**

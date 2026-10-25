@@ -5,7 +5,7 @@
  * @package WooCommerce\Donation_Popup
  */
 
-if (!defined('ABSPATH')) {
+if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
@@ -19,10 +19,10 @@ class WDP_Admin_Request {
 	 * @return true
 	 */
 	public static function guard() {
-		check_ajax_referer('wdp_admin_nonce', 'nonce');
+		check_ajax_referer( 'wdp_admin_nonce', 'nonce' );
 
-		if (!current_user_can('manage_woocommerce')) {
-			self::json_error(__('You do not have permission to do this.', 'woo-donation-popup'), 'forbidden', 403);
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			self::json_error( __( 'You do not have permission to do this.', 'woo-donation-popup' ), 'forbidden', 403 );
 		}
 
 		return true;
@@ -35,7 +35,7 @@ class WDP_Admin_Request {
 	 * @param array  $data    Additional data payload.
 	 * @return void
 	 */
-	public static function json_success($message, array $data = array()) {
+	public static function json_success( $message, array $data = array() ) {
 		wp_send_json_success(
 			array_merge(
 				array(
@@ -55,10 +55,10 @@ class WDP_Admin_Request {
 	 * @param int    $status  HTTP status.
 	 * @return void
 	 */
-	public static function json_error($message, $code = 'error', $status = 400) {
+	public static function json_error( $message, $code = 'error', $status = 400 ) {
 		wp_send_json_error(
 			array(
-				'code'    => sanitize_key($code),
+				'code'    => sanitize_key( $code ),
 				'message' => $message,
 			),
 			$status

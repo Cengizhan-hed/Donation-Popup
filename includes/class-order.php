@@ -5,8 +5,8 @@
  * @package WooCommerce\Donation_Popup
  */
 
-if (!defined('ABSPATH')) {
-    exit;
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
 }
 
 /**
@@ -14,39 +14,38 @@ if (!defined('ABSPATH')) {
  */
 class WDP_Order {
 
-    /**
-     * Initialize order hooks
-     */
-    public static function init() {
-        // Sipariş oluşturulurken, bağış verilerini sipariş öğe metalarına ekle
-        add_action('woocommerce_checkout_create_order_line_item', array(__CLASS__, 'add_donation_meta_to_order'), 10, 4);
+	/**
+	 * Initialize order hooks
+	 */
+	public static function init() {
+		// Sipariş oluşturulurken, bağış verilerini sipariş öğe metalarına ekle
+		add_action( 'woocommerce_checkout_create_order_line_item', array( __CLASS__, 'add_donation_meta_to_order' ), 10, 4 );
 
-        WDP_Order_Meta_Keys::init();
-        WDP_Privacy::init();
-    }
+		WDP_Order_Meta_Keys::init();
+		WDP_Privacy::init();
+	}
 
-    /**
-     * Add donation meta to order item
-     *
-     * @param WC_Order_Item_Product $item         Order item.
-     * @param string                $cart_item_key Cart item key.
-     * @param array                 $values       Cart item values.
-     * @param WC_Order              $order        Order.
-     */
-    public static function add_donation_meta_to_order($item, $cart_item_key, $values, $order) {
-        // Özel fiyat varsa order item meta'ya ekle (progress bar için gerekli)
-        if (isset($values['custom_price']) && $values['custom_price'] > 0) {
-            $item->add_meta_data('_custom_price', floatval($values['custom_price']));
-        }
+	/**
+	 * Add donation meta to order item
+	 *
+	 * @param WC_Order_Item_Product $item         Order item.
+	 * @param string                $cart_item_key Cart item key.
+	 * @param array                 $values       Cart item values.
+	 * @param WC_Order              $order        Order.
+	 */
+	public static function add_donation_meta_to_order( $item, $cart_item_key, $values, $order ) {
+		// Özel fiyat varsa order item meta'ya ekle (progress bar için gerekli)
+		if ( isset( $values['custom_price'] ) && $values['custom_price'] > 0 ) {
+			$item->add_meta_data( '_custom_price', floatval( $values['custom_price'] ) );
+		}
 
-        if (isset($values['donation_data']) && is_array($values['donation_data'])) {
-            // Dilden bağımsız sabit anahtarlar; etiketler WDP_Order_Meta_Keys display filtresiyle gösterilir.
-            foreach (WDP_Order_Meta_Keys::build_item_meta($values['donation_data']) as $meta_key => $meta_value) {
-                $item->add_meta_data($meta_key, $meta_value);
-            }
-        }
-    }
+		if ( isset( $values['donation_data'] ) && is_array( $values['donation_data'] ) ) {
+			// Dilden bağımsız sabit anahtarlar; etiketler WDP_Order_Meta_Keys display filtresiyle gösterilir.
+			foreach ( WDP_Order_Meta_Keys::build_item_meta( $values['donation_data'] ) as $meta_key => $meta_value ) {
+				$item->add_meta_data( $meta_key, $meta_value );
+			}
+		}
+	}
 }
 
 // Note: init() is called by Woo_Donation_Popup::__construct()
-

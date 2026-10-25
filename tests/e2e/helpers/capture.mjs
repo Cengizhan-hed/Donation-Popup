@@ -1,6 +1,7 @@
 /**
  * Capture staging screens for baseline / compare runs.
  */
+import { quarantineFor } from './quarantine.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
 import { chromium } from '@playwright/test';
@@ -3172,6 +3173,8 @@ export async function captureAll({
   const warnings = [];
   /** @type {Array<{check:string,firstError:string,attemptMs:number[]}>} */
   const flaky = [];
+  /** @type {Array<{check:string,device:string,env:string,reason:string,ref:string,detail:string}>} */
+  const quarantined = [];
   /** @type {string[]} */
   const debugFiles = [];
   const functionalStats = { passed: 0, skipped: 0, failed: 0, warned: 0 };
@@ -4604,6 +4607,10 @@ export async function captureAll({
         }
         return;
       }
+      // Karantina: hata kırmızı sayılmaz, 'quarantined' listesine bilgi olarak yazılır.
+      const quarantine = quarantineFor(check, device.id, profile.id);
+      const jobFailures = quarantine ? [] : failures;
+      const jobStats = quarantine ? { passed: 0, skipped: 0, failed: 0 } : functionalStats;
       const ctx =
         getActiveProfile()?.comingSoon || addonDecision.admin
           ? await asAdmin(browser, env, contextOpts)
@@ -4626,9 +4633,9 @@ export async function captureAll({
           mode,
           listPagePath: mode === 'popup' ? popupPagePath(env) : env.E2E_LIST_PAGE,
           productId: productIds[productKey] || 0,
-          failures,
+          failures: jobFailures,
           skips,
-          stats: functionalStats,
+          stats: jobStats,
           flaky,
           addonAmount: '5566',
           addonProductIds,
@@ -4647,6 +4654,7 @@ export async function captureAll({
         });
       } catch (e) {
         result = { ok: false, skipped: false };
+        if (quarantine) jobFailures.push({ description: 'Senaryo exception', detail: String(e && e.message ? e.message : e) });
         writeDebugJson(paths.json, {
           phase: 'mapPool-exception',
           check,
@@ -4656,6 +4664,18 @@ export async function captureAll({
         debugFiles.push(path.relative(ROOT, paths.json));
       } finally {
         const failed = !result || (!result.skipped && result.ok === false);
+        if (quarantine) {
+          const qFailed = failed || jobFailures.length > 0;
+          quarantined.push({
+            status: qFailed ? 'BAŞARISIZ' : 'geçti',
+            check,
+            device: device.id,
+            env: profile.id,
+            reason: quarantine.reason,
+            ref: quarantine.ref,
+            detail: qFailed ? String((jobFailures[0] && (jobFailures[0].description || jobFailures[0].detail)) || 'başarısız').slice(0, 300) : '',
+          });
+        }
         if (useTrace) {
           await ctx.tracing.stop({ path: paths.zip }).catch(() => {});
           if (failed) {
@@ -5053,6 +5073,7 @@ export async function captureAll({
     skips,
     warnings,
     flaky,
+    quarantined,
     debugFiles: [...new Set(debugFiles)],
     stats: functionalStats,
     outDir,

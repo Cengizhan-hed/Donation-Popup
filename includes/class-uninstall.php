@@ -5,7 +5,7 @@
  * @package WooCommerce\Donation_Popup
  */
 
-if (!defined('ABSPATH')) {
+if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
@@ -155,16 +155,16 @@ class WDP_Uninstall {
 	 * @param string $key Meta key.
 	 * @return bool
 	 */
-	public static function should_delete_product_meta_key($key) {
-		$key = is_scalar($key) ? (string) $key : '';
-		if ($key === '' || in_array($key, self::protected_core_meta_keys(), true)) {
+	public static function should_delete_product_meta_key( $key ) {
+		$key = is_scalar( $key ) ? (string) $key : '';
+		if ( $key === '' || in_array( $key, self::protected_core_meta_keys(), true ) ) {
 			return false;
 		}
-		if (in_array($key, self::product_meta_keys(), true)) {
+		if ( in_array( $key, self::product_meta_keys(), true ) ) {
 			return true;
 		}
-		foreach (self::product_meta_prefixes() as $prefix) {
-			if (strpos($key, $prefix) === 0) {
+		foreach ( self::product_meta_prefixes() as $prefix ) {
+			if ( strpos( $key, $prefix ) === 0 ) {
 				return true;
 			}
 		}
@@ -179,30 +179,30 @@ class WDP_Uninstall {
 	public static function cleanup_site() {
 		global $wpdb;
 
-		if ('1' !== (string) get_option('wdp_delete_data_on_uninstall', '0')) {
+		if ( '1' !== (string) get_option( 'wdp_delete_data_on_uninstall', '0' ) ) {
 			return;
 		}
 
-		if (!isset($wpdb) || !is_object($wpdb)) {
+		if ( ! isset( $wpdb ) || ! is_object( $wpdb ) ) {
 			return;
 		}
 
-		self::delete_options_like($wpdb, 'wdp_');
-		self::delete_options_like($wpdb, '_transient_wdp_');
-		self::delete_options_like($wpdb, '_transient_timeout_wdp_');
-		self::delete_options_like($wpdb, '_site_transient_wdp_');
-		self::delete_options_like($wpdb, '_site_transient_timeout_wdp_');
+		self::delete_options_like( $wpdb, 'wdp_' );
+		self::delete_options_like( $wpdb, '_transient_wdp_' );
+		self::delete_options_like( $wpdb, '_transient_timeout_wdp_' );
+		self::delete_options_like( $wpdb, '_site_transient_wdp_' );
+		self::delete_options_like( $wpdb, '_site_transient_timeout_wdp_' );
 
-		self::delete_product_meta($wpdb);
+		self::delete_product_meta( $wpdb );
 
-		if (function_exists('wp_cache_delete')) {
-			wp_cache_delete('alloptions', 'options');
-			wp_cache_delete('notoptions', 'options');
+		if ( function_exists( 'wp_cache_delete' ) ) {
+			wp_cache_delete( 'alloptions', 'options' );
+			wp_cache_delete( 'notoptions', 'options' );
 		}
-		if (function_exists('wp_cache_flush_group')) {
-			wp_cache_flush_group('wdp_donations');
-			wp_cache_flush_group('wdp_product_info');
-			wp_cache_flush_group('wdp_products');
+		if ( function_exists( 'wp_cache_flush_group' ) ) {
+			wp_cache_flush_group( 'wdp_donations' );
+			wp_cache_flush_group( 'wdp_product_info' );
+			wp_cache_flush_group( 'wdp_products' );
 		}
 	}
 
@@ -211,8 +211,8 @@ class WDP_Uninstall {
 	 * @param string $prefix Option name prefix (no wildcard).
 	 * @return void
 	 */
-	private static function delete_options_like($wpdb, $prefix) {
-		$like = $wpdb->esc_like($prefix) . '%';
+	private static function delete_options_like( $wpdb, $prefix ) {
+		$like = $wpdb->esc_like( $prefix ) . '%';
 		$wpdb->query(
 			$wpdb->prepare(
 				"DELETE FROM {$wpdb->options} WHERE option_name LIKE %s",
@@ -227,19 +227,19 @@ class WDP_Uninstall {
 	 * @param wpdb $wpdb Database.
 	 * @return void
 	 */
-	private static function delete_product_meta($wpdb) {
+	private static function delete_product_meta( $wpdb ) {
 		$keys = self::product_meta_keys();
-		if (!empty($keys)) {
-			$placeholders = implode(',', array_fill(0, count($keys), '%s'));
+		if ( ! empty( $keys ) ) {
+			$placeholders = implode( ',', array_fill( 0, count( $keys ), '%s' ) );
 			$sql          = "DELETE pm FROM {$wpdb->postmeta} pm
 				INNER JOIN {$wpdb->posts} p ON p.ID = pm.post_id
 				WHERE p.post_type IN ('product', 'product_variation')
 				AND pm.meta_key IN ({$placeholders})";
-			$wpdb->query($wpdb->prepare($sql, $keys));
+			$wpdb->query( $wpdb->prepare( $sql, $keys ) );
 		}
 
-		foreach (self::product_meta_prefixes() as $prefix) {
-			$like = $wpdb->esc_like($prefix) . '%';
+		foreach ( self::product_meta_prefixes() as $prefix ) {
+			$like = $wpdb->esc_like( $prefix ) . '%';
 			$wpdb->query(
 				$wpdb->prepare(
 					"DELETE pm FROM {$wpdb->postmeta} pm

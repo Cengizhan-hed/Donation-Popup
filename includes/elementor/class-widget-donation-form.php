@@ -5,7 +5,7 @@
  * @package WooCommerce\Donation_Popup
  */
 
-if (!defined('ABSPATH')) {
+if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
@@ -25,7 +25,7 @@ class WDP_Elementor_Widget_Donation_Form extends \Elementor\Widget_Base {
 	 * @return string
 	 */
 	public function get_title() {
-		return _x('Donation form', 'elementor widget title', 'woo-donation-popup');
+		return _x( 'Donation form', 'elementor widget title', 'woo-donation-popup' );
 	}
 
 	/**
@@ -39,7 +39,7 @@ class WDP_Elementor_Widget_Donation_Form extends \Elementor\Widget_Base {
 	 * @return string[]
 	 */
 	public function get_categories() {
-		return array('wdp-donation');
+		return array( 'wdp-donation' );
 	}
 
 	/**
@@ -48,11 +48,11 @@ class WDP_Elementor_Widget_Donation_Form extends \Elementor\Widget_Base {
 	public function get_keywords() {
 		return array(
 			$this->get_title(),
-			_x('donation', 'elementor widget search keyword', 'woo-donation-popup'),
-			_x('donate', 'elementor widget search keyword', 'woo-donation-popup'),
-			_x('charity', 'elementor widget search keyword', 'woo-donation-popup'),
-			_x('form', 'elementor widget search keyword', 'woo-donation-popup'),
-			_x('popup', 'elementor widget search keyword', 'woo-donation-popup'),
+			_x( 'donation', 'elementor widget search keyword', 'woo-donation-popup' ),
+			_x( 'donate', 'elementor widget search keyword', 'woo-donation-popup' ),
+			_x( 'charity', 'elementor widget search keyword', 'woo-donation-popup' ),
+			_x( 'form', 'elementor widget search keyword', 'woo-donation-popup' ),
+			_x( 'popup', 'elementor widget search keyword', 'woo-donation-popup' ),
 		);
 	}
 
@@ -60,14 +60,14 @@ class WDP_Elementor_Widget_Donation_Form extends \Elementor\Widget_Base {
 	 * @return string[]
 	 */
 	public function get_style_depends() {
-		return array('wdp-donation-modal-css');
+		return array( 'wdp-donation-modal-css' );
 	}
 
 	/**
 	 * @return string[]
 	 */
 	public function get_script_depends() {
-		return array('wdp-donation-modal-js');
+		return array( 'wdp-donation-modal-js' );
 	}
 
 	/**
@@ -76,19 +76,19 @@ class WDP_Elementor_Widget_Donation_Form extends \Elementor\Widget_Base {
 	protected function register_controls() {
 		$this->start_controls_section(
 			'content',
-			array('label' => __('Content', 'woo-donation-popup'))
+			array( 'label' => __( 'Content', 'woo-donation-popup' ) )
 		);
 
 		$this->add_control(
 			'source',
 			array(
-				'label'   => __('Product source', 'woo-donation-popup'),
+				'label'   => __( 'Product source', 'woo-donation-popup' ),
 				'type'    => \Elementor\Controls_Manager::SELECT,
 				'default' => 'current',
 				'options' => array(
-					'current' => __('Current product', 'woo-donation-popup'),
-					'list'    => __('Select from list', 'woo-donation-popup'),
-					'manual'  => __('Enter ID or slug', 'woo-donation-popup'),
+					'current' => __( 'Current product', 'woo-donation-popup' ),
+					'list'    => __( 'Select from list', 'woo-donation-popup' ),
+					'manual'  => __( 'Enter ID or slug', 'woo-donation-popup' ),
 				),
 			)
 		);
@@ -96,19 +96,19 @@ class WDP_Elementor_Widget_Donation_Form extends \Elementor\Widget_Base {
 		$this->add_control(
 			'product_id',
 			array(
-				'label'       => __('Product', 'woo-donation-popup'),
+				'label'       => __( 'Product', 'woo-donation-popup' ),
 				'type'        => \Elementor\Controls_Manager::TEXT,
 				'label_block' => true,
-				'condition'   => array('source' => 'list'),
+				'condition'   => array( 'source' => 'list' ),
 			)
 		);
 
 		$this->add_control(
 			'manual',
 			array(
-				'label'       => __('Product ID or slug', 'woo-donation-popup'),
+				'label'       => __( 'Product ID or slug', 'woo-donation-popup' ),
 				'type'        => \Elementor\Controls_Manager::TEXT,
-				'condition'   => array('source' => 'manual'),
+				'condition'   => array( 'source' => 'manual' ),
 				'label_block' => true,
 			)
 		);
@@ -116,13 +116,13 @@ class WDP_Elementor_Widget_Donation_Form extends \Elementor\Widget_Base {
 		$this->add_control(
 			'display',
 			array(
-				'label'   => __('Display', 'woo-donation-popup'),
+				'label'   => __( 'Display', 'woo-donation-popup' ),
 				'type'    => \Elementor\Controls_Manager::SELECT,
 				'default' => 'inline',
 				'options' => array(
-					'inline' => __('Inline form', 'woo-donation-popup'),
-					'popup'  => _x('Popup', 'display mode', 'woo-donation-popup'),
-					'panel'  => __('Side panel', 'woo-donation-popup'),
+					'inline' => __( 'Inline form', 'woo-donation-popup' ),
+					'popup'  => _x( 'Popup', 'display mode', 'woo-donation-popup' ),
+					'panel'  => __( 'Side panel', 'woo-donation-popup' ),
 				),
 			)
 		);
@@ -130,10 +130,10 @@ class WDP_Elementor_Widget_Donation_Form extends \Elementor\Widget_Base {
 		$this->add_control(
 			'show_title',
 			array(
-				'label'        => __('Show heading', 'woo-donation-popup'),
+				'label'        => __( 'Show heading', 'woo-donation-popup' ),
 				'type'         => \Elementor\Controls_Manager::SWITCHER,
-				'label_on'     => __('Yes', 'woo-donation-popup'),
-				'label_off'    => __('No', 'woo-donation-popup'),
+				'label_on'     => __( 'Yes', 'woo-donation-popup' ),
+				'label_off'    => __( 'No', 'woo-donation-popup' ),
 				'return_value' => 'yes',
 				'default'      => 'yes',
 			)
@@ -142,10 +142,10 @@ class WDP_Elementor_Widget_Donation_Form extends \Elementor\Widget_Base {
 		$this->add_control(
 			'button_text',
 			array(
-				'label'     => _x('Button text', 'Elementor widget', 'woo-donation-popup'),
+				'label'     => _x( 'Button text', 'Elementor widget', 'woo-donation-popup' ),
 				'type'      => \Elementor\Controls_Manager::TEXT,
 				'default'   => '',
-				'condition' => array('display!' => 'inline'),
+				'condition' => array( 'display!' => 'inline' ),
 			)
 		);
 
@@ -158,35 +158,35 @@ class WDP_Elementor_Widget_Donation_Form extends \Elementor\Widget_Base {
 	 * @param array<string, mixed> $settings Widget settings.
 	 * @return array{0: string, 1: array<string, mixed>} Shortcode tag and attributes.
 	 */
-	public static function shortcode_from_settings($settings) {
-		$label = isset($settings['button_text']) ? (string) $settings['button_text'] : '';
-		$atts  = array(
+	public static function shortcode_from_settings( $settings ) {
+		$label  = isset( $settings['button_text'] ) ? (string) $settings['button_text'] : '';
+		$atts   = array(
 			'id'          => 0,
 			'slug'        => '',
 			'sku'         => '',
 			'text'        => $label,
 			'button_text' => $label,
-			'show_title'  => (!empty($settings['show_title']) && $settings['show_title'] === 'yes') ? 'yes' : 'no',
+			'show_title'  => ( ! empty( $settings['show_title'] ) && $settings['show_title'] === 'yes' ) ? 'yes' : 'no',
 		);
-		$source = isset($settings['source']) ? $settings['source'] : 'current';
-		if ($source === 'list') {
-			$atts['id'] = isset($settings['product_id']) ? absint($settings['product_id']) : 0;
-		} elseif ($source === 'manual') {
-			$manual = isset($settings['manual']) ? trim((string) $settings['manual']) : '';
-			if (ctype_digit($manual)) {
-				$atts['id'] = absint($manual);
+		$source = isset( $settings['source'] ) ? $settings['source'] : 'current';
+		if ( $source === 'list' ) {
+			$atts['id'] = isset( $settings['product_id'] ) ? absint( $settings['product_id'] ) : 0;
+		} elseif ( $source === 'manual' ) {
+			$manual = isset( $settings['manual'] ) ? trim( (string) $settings['manual'] ) : '';
+			if ( ctype_digit( $manual ) ) {
+				$atts['id'] = absint( $manual );
 			} else {
-				$atts['slug'] = sanitize_title($manual);
+				$atts['slug'] = sanitize_title( $manual );
 			}
 		}
-		$display = isset($settings['display']) ? $settings['display'] : 'inline';
-		if ($display === 'popup') {
-			return array('wdp_donation_button', $atts);
+		$display = isset( $settings['display'] ) ? $settings['display'] : 'inline';
+		if ( $display === 'popup' ) {
+			return array( 'wdp_donation_button', $atts );
 		}
-		if ($display === 'panel') {
-			return array('wdp_donation_button_panel', $atts);
+		if ( $display === 'panel' ) {
+			return array( 'wdp_donation_button_panel', $atts );
 		}
-		return array('wdp_donation_form', $atts);
+		return array( 'wdp_donation_form', $atts );
 	}
 
 	/**
@@ -195,13 +195,13 @@ class WDP_Elementor_Widget_Donation_Form extends \Elementor\Widget_Base {
 	 * @return void
 	 */
 	protected function render() {
-		list($tag, $atts) = self::shortcode_from_settings($this->get_settings_for_display());
-		if ($tag === 'wdp_donation_button') {
-			$html = WDP_Shortcodes::donation_button_shortcode($atts);
-		} elseif ($tag === 'wdp_donation_button_panel') {
-			$html = WDP_Shortcodes::donation_button_panel_shortcode($atts);
+		list($tag, $atts) = self::shortcode_from_settings( $this->get_settings_for_display() );
+		if ( $tag === 'wdp_donation_button' ) {
+			$html = WDP_Shortcodes::donation_button_shortcode( $atts );
+		} elseif ( $tag === 'wdp_donation_button_panel' ) {
+			$html = WDP_Shortcodes::donation_button_panel_shortcode( $atts );
 		} else {
-			$html = WDP_Shortcodes::donation_form_shortcode($atts);
+			$html = WDP_Shortcodes::donation_form_shortcode( $atts );
 		}
 		echo $html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	}
