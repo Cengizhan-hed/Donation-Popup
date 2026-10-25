@@ -117,6 +117,14 @@ class Account_Controller extends Rest_Controller {
 		if ( is_wp_error( $limited ) ) {
 			return $limited;
 		}
+		// REST, X-WP-Nonce olmadan gelen çerezli isteği oturumsuz sayar; nonce'ın çerezdeki kullanıcıya ait olması için
+		// kullanıcı çerezden çözülür (WordPress'in `rest-nonce` admin-ajax eylemiyle aynı yaklaşım; yanıt yalnız aynı kökene okunur).
+		if ( 0 === get_current_user_id() && function_exists( 'wp_validate_auth_cookie' ) ) {
+			$cookie_user = (int) wp_validate_auth_cookie( '', 'logged_in' );
+			if ( $cookie_user > 0 ) {
+				wp_set_current_user( $cookie_user );
+			}
+		}
 		return $this->respond(
 			array(
 				'logged_in'    => is_user_logged_in(),

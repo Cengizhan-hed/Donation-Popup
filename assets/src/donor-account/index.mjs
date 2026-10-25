@@ -61,7 +61,6 @@ function mountDialog(root) {
   const msg = (k) => root.dataset[`dpAccMsg${k[0].toUpperCase()}${k.slice(1)}`] || '';
   const titleFor = (v) => root.dataset[`dpAccTitle${v[0].toUpperCase()}${v.slice(1)}`] || title.textContent;
   let lastFocus = null;
-  let view = 'login';
 
   const views = () => Array.from(root.querySelectorAll('[data-dp-acc-view]'));
   const triggers = () => Array.from(document.querySelectorAll('[data-dp-acc-open]'));
@@ -71,7 +70,6 @@ function mountDialog(root) {
     if (!views().some((el) => el.dataset.dpAccView === name)) {
       return;
     }
-    view = name;
     views().forEach((el) => {
       el.hidden = el.dataset.dpAccView !== name;
     });
@@ -91,8 +89,9 @@ function mountDialog(root) {
     }
   }
 
-  function open() {
-    lastFocus = document.activeElement;
+  function open(opener) {
+    // Safari düğmeye tıklayınca odak vermez: odak dönüşü için tıklanan düğme açıkça saklanır.
+    lastFocus = opener || document.activeElement;
     overlay.classList.add('is-open');
     document.documentElement.classList.add('dp-ac-lock');
     triggers().forEach((t) => t.setAttribute('aria-expanded', 'true'));
@@ -240,7 +239,7 @@ function mountDialog(root) {
     const trigger = e.target.closest('[data-dp-acc-open]');
     if (trigger) {
       e.preventDefault();
-      open();
+      open(trigger);
     }
   });
   root.addEventListener('click', (e) => {
@@ -268,18 +267,23 @@ function mountDialog(root) {
       e.preventDefault();
       close();
     } else if (e.key === 'Tab') {
+      // Tüm tarayıcılarda aynı davranış için odak döngüsü elle yönetilir (Safari düğmeleri Tab'de atlayabilir).
       const list = focusables();
-      const idx = list.indexOf(document.activeElement);
-      const next = nextFocusIndex(idx, list.length, e.shiftKey);
-      if (next >= 0 && (idx === -1 || (e.shiftKey && idx === 0) || (!e.shiftKey && idx === list.length - 1))) {
-        e.preventDefault();
-        list[next].focus();
+      e.preventDefault();
+      const next = nextFocusIndex(list.indexOf(document.activeElement), list.length, e.shiftKey);
+      (next < 0 ? surface : list[next]).focus();
+    }
+  });
+
+  // Odak pencerenin dışına kaçarsa (tarayıcı Tab ile düğmeleri atlasa bile) geri alınır.
+  document.addEventListener('focusin', (e) => {
+    if (overlay.classList.contains('is-open') && !surface.contains(e.target)) {
+      const list = focusables();
+      if (list.length) {
+        list[0].focus();
       }
     }
   });
-  if (view !== 'login') {
-    setView('login', false);
-  }
 }
 
 /**

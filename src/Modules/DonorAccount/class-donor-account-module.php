@@ -181,7 +181,19 @@ final class Donor_Account_Module implements Module_Interface {
 	 * @return void
 	 */
 	private function enqueue() {
-		$this->container->get( Assets::class )->enqueue( self::SLUG );
+		$assets = $this->container->get( Assets::class );
+		if ( did_action( 'wp_enqueue_scripts' ) ) {
+			$assets->enqueue( self::SLUG );
+			return;
+		}
+		// Blok temalarında içerik, `wp_enqueue_scripts` çalışmadan ÖNCE çizilir: varlıklar kayıttan sonra kuyruğa alınır.
+		add_action(
+			'wp_enqueue_scripts',
+			static function () use ( $assets ) {
+				$assets->enqueue( self::SLUG );
+			},
+			20
+		);
 	}
 
 	/**
