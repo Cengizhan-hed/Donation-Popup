@@ -39,4 +39,26 @@ Modül slug'ı `entry_points` (varsayılan açık; `donation_panel_module_enable
 
 Kullanılan WooCommerce kancaları: `wc_get_template`, `woocommerce_locate_template`, `woocommerce_get_price_html`, `woocommerce_loop_add_to_cart_link`, `woocommerce_product_add_to_cart_text/url`, `woocommerce_product_supports`, `render_block_woocommerce/{add-to-cart-form,add-to-cart-with-options,product-price,product-button}`, `woocommerce_single_product_summary`, `woocommerce_after_single_product_summary`, `woocommerce_after_single_product` (yedek, öncelik 999), `wp_footer` (yedek, 4).
 
+## Form deneyimleri modülü (`experiences`, E2A)
+
+Ayar `donation_panel_settings.experiences.engine` = `legacy` (varsayılan; davranış birebir eski, modülün hiçbir dosyası yüklenmez) | `new`. `new` iken `experiences` modülü açılır (modül ayarı `modules.experiences` açıkça verilmişse o kazanır).
+
+Yeni kısa kod (eski kısa kodlar DEĞİŞMEZ): `[donation_panel_experience id="" kind="popup|side_panel|inline|bottom_sheet" button_text=""]`. `id` yoksa bulunduğu ürünü kendisi bulur (`Product_Resolver`).
+
+REST (`donation-panel/v1`, kişi verisi döndürmez):
+
+| Uç | Yöntem | Yetki | Not |
+|---|---|---|---|
+| `/product/{id}/form` | GET | herkese açık, salt okunur, hız sınırı 60/dk | `{ product_id, model, html }`. Kimliksiz `/product/form` çağrısı 404 değil açık hata verir: `400 donation_panel_product_id_required`; bilinmeyen ürün `404 donation_panel_product_not_found`. |
+| `/validate` | POST | WP REST nonce (`X-WP-Nonce`) + hız sınırı 30/dk | Gövde: `product_id, amount, donation_*`. Yanıt `{ valid, errors{alan:ileti}, amount }`; girilen değerler geri yazılmaz. |
+
+| Ad | Tür | Parametreler | Ne zaman |
+|---|---|---|---|
+| `donation_panel_amount_presets` | filtre | `float[] $presets, int $product_id` | Hızlı tutar seçenekleri (en çok 6). |
+| `donation_panel_frequency_options` | filtre | `array $options [{value,label}], int $product_id` | Bağış türü (ör. tek seferlik/aylık); varsayılan boş = tür seçici çizilmez. |
+| `donation_panel_form_fields` | filtre | `array $fields, array $legacy_context` | Alan tanımları; alan adları sipariş sözleşmesiyle aynı kalmalı (`donation_full_name, donation_phone, donation_email, donation_dedication, donation_note, donation_anonymous`). |
+| `donation_panel_form_model` | filtre | `array $model, array $legacy_context` | Tüm form modeli (kişi verisi eklemeyin). |
+
+Şablonlar (tema `donation-panel/experiences/<ad>.php` ile geçersiz kılar): `form.php` (çekirdek), `popup.php`, `side-panel.php`, `inline.php`, `bottom-sheet.php`. Şablona `$args` = `model, container, dom_key, args, form_html` geçer.
+
 Yeni modüller eklendikçe bu dosyaya modül başına bölüm eklenir (ad, tür, parametre, zaman, örnek).
