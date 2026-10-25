@@ -177,3 +177,10 @@ Faz 1 güvenli bağlantı ✅ → Faz 2 göç provası ✅ → Faz 3 bekleyen i�
 - Tam paket ve uzak kontrol yalnız bir parça merge edilmeden önce bir kez; ara adımlarda yalnız ilgili birim testleri.
 - Uzun dosyalar baştan okunmaz; Graphify + satır aralığı. Rapor ve ILERLEME satırları kısa.
 - Her alt faz (E0, E1, …) bitince SIRADAKI-IS.md eksiksiz güncellenir ve kullanıcıya "YENİ OTURUM ÖNERİLİR" yazılır.
+
+## 16. KARARLAR (2026-10-25 akşam; kalıcı)
+- **K8 Curcy testi (yalnız staging30; sipariş yok, yalnız sepet/ödeme sayfasında görünen tutarlar):** (1) Snippet OLMADAN Curcy ile EUR ve USD'ye geç; (a) bağışçının yazdığı tutar (ör. 100) sepete eklenir, sepette/ödemede görünen tutar doğru mu; (b) farklı para birimlerinde eklenen tutarların kampanya toplamına yansıması kod + sepet verisiyle analiz edilir. (2) Curcy ikisini de doğru çözüyorsa filtre ve snippet gereksiz sayılıp kaldırılır, rapora yazılır. Çözmüyorsa snippet staging30'a kurulur (işaretli, kanarya tabanına ekli), test tekrarlanır, sonuç ve canlıya alma gerekliliği rapora yazılır.
+- **staging30 snippet yetkisi:** test için gereken snippet'leri Claude kurup kaldırabilir (yalnız staging30; Ikram ve canlıda asla). Kurulan snippet işaretlenir, kanarya tabanına eklenir, rapora yazılır.
+- **`.claude/` hook'ları kurulmayacak** (plandan çıktı). `.claude/**` yazma yasağı kalıcı.
+- **Kod düzenleme kuralı (kesin, soru yok):** Claude kodu elle düzenlemez; araçlar (phpcbf, Rector, betikler) ve alt ajanlar kod ve yapılandırma dosyalarını (.gitignore, .distignore dahil) değiştirebilir.
+- **iphone-product-fixed 9 px farkı:** E1 sırasında incelenir; eklentiden geliyorsa düzeltilir, gelmiyorsa baseline gerekçesiyle güncellenir.
