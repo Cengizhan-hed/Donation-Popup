@@ -75,6 +75,10 @@ async function main() {
       },
     });
     status = r.status ?? 1;
+    if (status === 0) {
+      // Disk kuralı: yalnız başarısız koşunun çıktısı saklanır.
+      fs.rmSync(path.join(ROOT, 'test-results'), { recursive: true, force: true });
+    }
   } finally {
     await server.stop();
   }
