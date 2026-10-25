@@ -57,6 +57,29 @@ foreach ( array_keys( $campaign ) as $pid ) {
 $report['stored_total_sum']       = round( $stored_total, 2 );
 $report['stored_unconverted_ids'] = $unconverted_marks;
 
+// Curcy canli kur listesi (yalniz kod -> oran; kisisel veri yok).
+$live_list = array(
+	'curcy_class'      => class_exists( 'WOOMULTI_CURRENCY_Data' ),
+	'woocommerce_currency_option' => (string) get_option( 'woocommerce_currency' ),
+	'curcy_default'    => '',
+	'rates'            => array(),
+);
+if ( $live_list['curcy_class'] && method_exists( 'WOOMULTI_CURRENCY_Data', 'get_ins' ) ) {
+	$cs = WOOMULTI_CURRENCY_Data::get_ins();
+	if ( is_object( $cs ) && method_exists( $cs, 'get_default_currency' ) ) {
+		$live_list['curcy_default'] = (string) $cs->get_default_currency();
+	}
+	if ( is_object( $cs ) && method_exists( $cs, 'get_list_currencies' ) ) {
+		$list = $cs->get_list_currencies();
+		if ( is_array( $list ) ) {
+			foreach ( $list as $code => $row ) {
+				$live_list['rates'][ (string) $code ] = is_array( $row ) && isset( $row['rate'] ) ? (string) $row['rate'] : null;
+			}
+		}
+	}
+}
+$report['curcy_live_list'] = $live_list;
+
 $by_currency = array();
 $page        = 1;
 $orders_seen = 0;
@@ -75,7 +98,8 @@ do {
 	foreach ( $orders as $order ) {
 		++$orders_seen;
 		$currency     = WDP_Progress_Currency::get_order_currency( $order );
-		$order_counts = false;
+		$order_counts       = false;
+		$order_counted_meta = false;
 		foreach ( $order->get_items() as $item ) {
 			$pid = absint( $item->get_product_id() );
 			if ( ! isset( $campaign[ $pid ] ) ) {
@@ -89,6 +113,20 @@ do {
 					'ok'             => 0,
 					'missing_rate'   => 0,
 					'converted_sum'  => 0.0,
+					'rate_source'    => array(
+						'order_stored' => 0,
+						'live'         => 0,
+						'convert_filter' => 0,
+						'none'         => 0,
+					),
+					'rate_min'       => null,
+					'rate_max'       => null,
+					'order_meta'     => array(
+						'wmc_order_info_present'   => 0,
+						'wmc_info_has_currency'    => 0,
+						'wmc_info_currency_rate_1' => 0,
+						'wmc_info_main_flag_1'     => 0,
+					),
 				);
 			}
 			$line = max( 0.0, (float) $item->get_total() );
@@ -97,6 +135,44 @@ do {
 			if ( ! $order_counts ) {
 				++$by_currency[ $currency ]['orders'];
 				$order_counts = true;
+			}
+			if ( ! $order_counted_meta ) {
+				$order_counted_meta = true;
+				$info               = $order->get_meta( 'wmc_order_info', true );
+				if ( is_array( $info ) ) {
+					++$by_currency[ $currency ]['order_meta']['wmc_order_info_present'];
+					if ( isset( $info[ $currency ] ) && is_array( $info[ $currency ] ) ) {
+						++$by_currency[ $currency ]['order_meta']['wmc_info_has_currency'];
+						if ( isset( $info[ $currency ]['rate'] ) && abs( (float) $info[ $currency ]['rate'] - 1.0 ) < 0.0000001 ) {
+							++$by_currency[ $currency ]['order_meta']['wmc_info_currency_rate_1'];
+						}
+						if ( ! empty( $info[ $currency ]['is_main'] ) ) {
+							++$by_currency[ $currency ]['order_meta']['wmc_info_main_flag_1'];
+						}
+					}
+				}
+				// Kur kaynagi (siparis basina bir kez).
+				$base_cur = $report['base_currency'];
+				$stored   = apply_filters( 'wdp_order_exchange_rate', null, $order, $currency, $base_cur );
+				$live     = apply_filters( 'wdp_progress_live_rate', null, $currency, $base_cur );
+				$rate     = null;
+				if ( is_numeric( $stored ) && (float) $stored > 0 ) {
+					$rate = (float) $stored;
+					++$by_currency[ $currency ]['rate_source']['order_stored'];
+				} elseif ( is_numeric( $live ) && (float) $live > 0 ) {
+					$rate = (float) $live;
+					++$by_currency[ $currency ]['rate_source']['live'];
+				} elseif ( abs( (float) apply_filters( 'wdp_convert_amount', 1.0, $currency, $base_cur, array( 'order' => $order ) ) - 1.0 ) > 0.0000001 ) {
+					++$by_currency[ $currency ]['rate_source']['convert_filter'];
+				} else {
+					++$by_currency[ $currency ]['rate_source']['none'];
+				}
+				if ( null !== $rate ) {
+					$cur_min = $by_currency[ $currency ]['rate_min'];
+					$cur_max = $by_currency[ $currency ]['rate_max'];
+					$by_currency[ $currency ]['rate_min'] = ( null === $cur_min || $rate < $cur_min ) ? $rate : $cur_min;
+					$by_currency[ $currency ]['rate_max'] = ( null === $cur_max || $rate > $cur_max ) ? $rate : $cur_max;
+				}
 			}
 			$conv = WDP_Progress_Currency::convert_to_base( $line, $currency, $order );
 			if ( ! empty( $conv['ok'] ) ) {

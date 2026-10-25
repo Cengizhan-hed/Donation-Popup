@@ -25,3 +25,9 @@ Test (yalnız görüntüleme, sipariş verilmez)
 3. İlerleme çubuğunda toplanan tutar ana birimde görünmeli (farklı para birimli eski siparişler siparişin kuruyla çevrilir).
 
 Geri alma: snippet'i devre dışı bırakın. Eklenti çalışmaya devam eder; yalnız farklı para birimli siparişler ilerleme toplamına eklenmez ve panel para birimi değişimini çerezden izlemez (sayfa yenilenince doğru görünür).
+
+## Curcy `wmc_order_info` uyum notu (2026-10-25)
+
+- Köprü `wmc_order_info[<KOD>]['rate']` okur. Curcy'nin siparişe yazdığı yapı: kod anahtarlı dizi (`rate`, `decimals`, `pos`, `custom_symbol`, `is_main` ...); `rate` = 1 ana birim kaç sipariş birimi eder (ana birim 1). Yön, çekirdeğin beklediğiyle (ana = sipariş / rate) uyumlu.
+- Kaynak koda/belgeye erişilemedi (context7'de Curcy yok, yerelde eklenti yok); yukarıdaki bilgi bilinen yapıdan, kesin değil. Doğrulama: `scripts/staging-progress-report.mjs` çıktısındaki `order_meta` (wmc_order_info var mı, para birimi anahtarı var mı, rate==1 sayısı) ve `curcy_live_list`.
+- Şüphe: EUR için `converted_sum == line_total_sum` ise (a) `wmc_order_info[EUR].rate` siparişte 1 yazılmış olabilir, (b) sipariş para birimi/`get_woocommerce_currency()` Curcy ile aynı kodu döndürüyor olabilir, (c) satır tutarları zaten ana birimde saklanmış olabilir. `rate_source` ve `rate_min/max` hangisi olduğunu ayırır.
