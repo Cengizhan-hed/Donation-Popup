@@ -152,15 +152,25 @@ test.describe('form çekirdeği (yeni motor)', () => {
 
     await custom.fill('');
     await page.locator('[data-dp-submit]').click();
-    await expect(page.locator('[data-dp-field="donation_full_name"]')).toHaveClass(/has-error/);
     await expect(page.locator('[data-dp-field="amount"]')).toHaveClass(/has-error/);
     await expect(page.locator('[data-dp-summary]')).toHaveClass(/is-visible/);
     await expect(page.locator('input[name="amount"]')).toBeFocused();
+    await expect(page.locator('[data-dp-step="amount"]')).toBeVisible();
+
+    await chips.nth(1).click();
+    await page.locator('[data-dp-submit]').click();
+    await expect(page.locator('[data-dp-step="details"]')).toBeVisible();
+    await page.locator('[data-dp-submit]').click();
+    await expect(page.locator('[data-dp-field="donation_full_name"]')).toHaveClass(/has-error/);
+    await expect(page.locator('[data-dp-field="donation_phone"]')).toHaveClass(/has-error/);
+    await expect(page.locator('input[name="donation_full_name"]')).toBeFocused();
   });
 
   test('Türkçe karakterli alanlar sunucu doğrulamasından geçer ve sepete gider', async ({ page }) => {
     await load(page, 'inline');
     await page.locator('[data-dp-preset]').first().click();
+    await page.locator('[data-dp-submit]').click();
+    await expect(page.locator('[data-dp-step="details"]')).toBeVisible();
     await page.locator('input[name="donation_full_name"]').fill('Çağlar Şükrü Öztürk İğdır');
     await page.locator('input[name="donation_phone"]').fill('+44 7700 900123');
     await page.locator('textarea[name="donation_note"]').fill('Ğüşiöç ĞÜŞİÖÇ notu');

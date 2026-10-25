@@ -59,10 +59,10 @@ final class E2AFormContextTest extends TestCase {
 		);
 	}
 
-	public function test_shares_product_has_no_email_dedication_anonymous(): void {
+	public function test_shares_product_has_no_donor_fields_only_shareholder_rows(): void {
 		$model = Form_Context::from_legacy( $this->legacy( array( 'allow_multiple_shares' => true ) ) );
-		$names = array_column( $model['fields'], 'name' );
-		$this->assertSame( array( 'donation_full_name', 'donation_phone', 'donation_note' ), $names );
+		$this->assertSame( array(), array_column( $model['fields'], 'name' ) );
+		$this->assertSame( array( 'name', 'phone', 'email', 'note' ), array_column( $model['shareholder'], 'key' ) );
 	}
 
 	public function test_fixed_price_product_has_single_preset_and_no_custom(): void {

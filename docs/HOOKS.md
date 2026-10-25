@@ -104,3 +104,18 @@ Filtreler:
 Veri anahtarları: ürün meta `_donation_panel_milestones` (satır `yüzde=etiket`), `_donation_panel_impact` (satır `birim=tekil|çoğul`); site ayarı `impact.map`; ad izni meta `wdp_public_name` = `yes` (sipariş ya da satır).
 
 Kısa kodlar (yeni): `[donation_panel_progress]`, `[donation_panel_social_proof]`. REST (`donation-panel/v1`): `GET /progress/{id}`, `GET /impact/{id}`, `GET /donations`, `GET /donations/stats` (hepsi salt okunur, kişi verisiz).
+
+## Bağış türleri ve adımlar (E2C)
+
+Yeni kancalar (varsayılan: davranış değişmez):
+
+| Ad | Tür | Parametreler | Ne zaman |
+|---|---|---|---|
+| `donation_panel_form_steps` | filtre | `array $steps [{id,label}], int $product_id` | Form adımları (varsayılan `amount`, `details`). Ek adım (ör. vergi indirimi) eklenir; `amount` ve `details` kaldırılamaz (kaldırılırsa varsayılana dönülür). |
+| `donation_panel_form_step_{id}` | eylem | `array $model` | Ek adımın içeriğini basar (kişi verisi basmayın; alan adları sipariş sözleşmesine uymalı). |
+
+Form modeline eklenen anahtarlar (`donation_panel_form_model` filtresiyle değiştirilebilir): `kind` (`fixed|custom|shares|campaign`), `unit_price`, `quantity`, `cover_fee`, `addon`, `steps`, `shareholder`.
+
+`POST /donation-panel/v1/cart/add` gövdesine eklenen alanlar: `quantity` (sabit tutar), `share_count` + `shareholders` (`[{name,phone,email?,note?}]`, hisseli), `donation_cover_fee` (`1`; yüzde sunucudan), `addon_active` + `addon_amount` (ek bağış). Hata anahtarları: `quantity`, `share_count`, `shareholder_{n}_{name|phone|email|note}`, `addon_amount`.
+
+Sipariş kalemi meta (yeni): `wdp_donation_type` (`fixed|custom|shares|campaign`), `wdp_donation_frequency` (düzenli bağış seçeneği). Store API uzantısına `kind` eklendi (kişi verisiz).
