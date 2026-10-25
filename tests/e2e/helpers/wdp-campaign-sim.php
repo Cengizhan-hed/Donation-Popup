@@ -28,8 +28,8 @@ add_action(
 		if ($id < 1 || !isset($_GET['dp_cmp_test'])) { // phpcs:ignore
 			return;
 		}
-		if (isset($_GET['dp_seed']) && function_exists('wc_create_order') && !get_option('wdp_cmp_seeded_' . $id)) { // phpcs:ignore
-			update_option('wdp_cmp_seeded_' . $id, 1);
+		if (isset($_GET['dp_seed']) && function_exists('wc_create_order') && !get_post_meta($id, '_wdp_cmp_seeded', true)) { // phpcs:ignore
+			update_post_meta($id, '_wdp_cmp_seeded', '1');
 			$rows = array(
 				array('Ayşe Yılmaz', 'yes', 'ayse@example.test'),
 				array('Gizli Kişi', '', 'gizli@example.test'),
