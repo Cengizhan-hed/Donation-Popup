@@ -220,10 +220,10 @@ test.describe('Bağışlarım ve misafir bağışı bağlama', () => {
     const cards = page.locator('[data-dp-acc-card]');
     await expect(cards).toHaveCount(1);
     await expect(cards.first()).toContainText('Anneannem Şükriye İğdır için');
-    await expect(cards.first().locator('a', { hasText: /receipt/i })).toHaveAttribute('href', new RegExp(`view-order/${info.own}`));
-    await expect(cards.first().locator('a', { hasText: /give again/i })).toHaveAttribute('href', /./);
+    await expect(cards.first().locator('[data-dp-acc-receipt]')).toHaveAttribute('href', new RegExp(`view-order/${info.own}`));
+    await expect(cards.first().locator('[data-dp-acc-repeat]')).toHaveAttribute('href', /./);
     await expect(page.locator('body')).not.toContainText('Misafir bağışı Çağlar için');
-    await expect(page.locator('.woocommerce-MyAccount-navigation')).toContainText(/donations/i);
+    await expect(page.locator('.woocommerce-MyAccount-navigation a[href*="my-donations"]')).toHaveCount(1);
     expect(errors).toEqual([]);
   });
 

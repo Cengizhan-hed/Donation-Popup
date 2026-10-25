@@ -154,10 +154,10 @@ final class Account_Renderer {
 		}
 		$actions = '';
 		if ( ! empty( $row['receipt_url'] ) ) {
-			$actions .= '<a class="dp-ac__btn dp-ac__btn--secondary" href="' . esc_url( (string) $row['receipt_url'] ) . '">' . esc_html__( 'Receipt', 'woo-donation-popup' ) . '</a>';
+			$actions .= '<a class="dp-ac__btn dp-ac__btn--secondary" data-dp-acc-receipt href="' . esc_url( (string) $row['receipt_url'] ) . '">' . esc_html__( 'Receipt', 'woo-donation-popup' ) . '</a>';
 		}
 		if ( ! empty( $row['repeat_url'] ) ) {
-			$actions .= '<a class="dp-ac__btn dp-ac__btn--primary" href="' . esc_url( (string) $row['repeat_url'] ) . '">' . esc_html__( 'Give again', 'woo-donation-popup' ) . '</a>';
+			$actions .= '<a class="dp-ac__btn dp-ac__btn--primary" data-dp-acc-repeat href="' . esc_url( (string) $row['repeat_url'] ) . '">' . esc_html__( 'Give again', 'woo-donation-popup' ) . '</a>';
 		}
 		return '<article class="dp-ac__card" data-dp-acc-card data-order="' . esc_attr( (string) ( isset( $row['order_id'] ) ? (int) $row['order_id'] : 0 ) ) . '">'
 			. '<div class="dp-ac__card-main"><h3 class="dp-ac__card-title">' . esc_html( (string) ( isset( $row['project'] ) ? $row['project'] : '' ) ) . '</h3>'
