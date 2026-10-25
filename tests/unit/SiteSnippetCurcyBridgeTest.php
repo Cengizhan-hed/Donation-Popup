@@ -53,7 +53,7 @@ final class SiteSnippetCurcyBridgeTest extends TestCase {
 
 	public function test_snippet_registers_all_core_filters(): void {
 		WDP_Site_Curcy_Bridge::init();
-		foreach (array('wdp_order_exchange_rate', 'wdp_progress_live_rate', 'wdp_client_context', 'wdp_convert_amount') as $hook) {
+		foreach (array('wdp_order_exchange_rate', 'wdp_progress_live_rate', 'wdp_client_context', 'donation_panel_convert_amount') as $hook) {
 			$this->assertArrayHasKey($hook, WDP_Test_State::$filters, $hook);
 		}
 	}

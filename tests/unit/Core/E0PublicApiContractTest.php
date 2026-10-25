@@ -49,7 +49,7 @@ final class E0PublicApiContractTest extends TestCase {
 			'wdp_rate_limit_ip_max', 'wdp_reload_after_add_to_cart', 'wdp_resolve_product', 'wdp_sadaka_cart_thumbnail_size',
 			'wdp_sadaka_line_product_ids', 'wdp_sadaka_price_label', 'wdp_sadaka_toggle_label', 'wdp_sadaka_wc_product_id',
 			'wdp_should_enqueue_assets', 'wdp_show_amount_presets', 'wdp_supported_product_types', 'wdp_trust_proxy_headers',
-			'wdp_use_js_bundle',
+			'wdp_use_js_bundle', 'donation_panel_convert_amount',
 		);
 		$src   = self::legacy_source();
 		foreach ( $hooks as $hook ) {

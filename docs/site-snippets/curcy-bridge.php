@@ -9,7 +9,11 @@
  * - wdp_order_exchange_rate : siparişe yazılmış kur (Curcy wmc_order_info / wmc_order_rate, WOOCS _woocs_order_rate)
  * - wdp_progress_live_rate  : Curcy canlı kur listesi
  * - wdp_client_context      : çerez adları, değiştirici seçicileri, olay adları (para birimi/dil)
- * - wdp_convert_amount      : genel tutar dönüşümü (Curcy canlı kurlarıyla çapraz dönüşüm)
+ * - donation_panel_convert_amount : genel tutar dönüşümü ($from -> $to; Curcy canlı kurlarıyla çapraz dönüşüm).
+ *     Çekirdek bunu, bağışçının seçili para biriminde yazdığı tutarı mağaza ana para birimine çevirmek (sepete konan
+ *     ürün fiyatı ana birimdedir; Curcy gösterirken geri çevirir) ve kampanya toplamı için kullanır.
+ *     ESKİ sürüm bu snippet'i `wdp_convert_amount` adıyla bağlıyordu; eski snippet'i GÜNCELLEYİN (ikisini birden
+ *     etkinleştirmeyin: çift dönüşüm olur).
  *
  * @package Site_Snippets
  */
@@ -34,7 +38,7 @@ if ( ! class_exists( 'WDP_Site_Curcy_Bridge' ) ) {
 			add_filter( 'wdp_order_exchange_rate', array( __CLASS__, 'order_rate' ), 10, 4 );
 			add_filter( 'wdp_progress_live_rate', array( __CLASS__, 'live_rate' ), 10, 3 );
 			add_filter( 'wdp_client_context', array( __CLASS__, 'client_context' ), 10, 1 );
-			add_filter( 'wdp_convert_amount', array( __CLASS__, 'convert_amount' ), 10, 4 );
+			add_filter( 'donation_panel_convert_amount', array( __CLASS__, 'convert_amount' ), 10, 4 );
 		}
 
 		/**
@@ -110,6 +114,8 @@ if ( ! class_exists( 'WDP_Site_Curcy_Bridge' ) ) {
 
 		/**
 		 * Genel tutar dönüşümü: Curcy canlı kurlarıyla ($from → ana birim → $to).
+		 * Curcy oranı "1 ana birim = X birim": ana = tutar / oran($from); sonuç = ana * oran($to).
+		 * Örnek (1 TRY = 0,02 EUR): 100 EUR -> TRY = 100 / 0,02 * 1 = 5000.
 		 * Kur bilinmiyorsa tutar olduğu gibi döner (dönüşüm yok).
 		 *
 		 * @param float                $amount  Tutar ($from biriminde).

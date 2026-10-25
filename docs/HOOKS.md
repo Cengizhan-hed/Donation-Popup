@@ -66,3 +66,16 @@ Yeni modüller eklendikçe bu dosyaya modül başına bölüm eklenir (ad, tür,
 ## Kanca sırası notu (E2X)
 
 Eklenti `plugins_loaded` öncelik 20'de başlar (ayrıntı: docs/MIMARI.md "Kanca sırası"). Kısa kodlar, `wdp_*`/`donation_panel_*` filtreleri ve eklenti sınıfları üzerinde çalışan snippet'ler `init` ya da sonrasında çalıştırılmalıdır; `plugins_loaded` 10'da yapılan çağrı fatal vermez, ancak kısa kod işlenmemiş etiket olarak kalır ve filtreler varsayılanını döndürür. Sözleşme kanıtı: `tests/unit/js/hook-order-contract.test.mjs`.
+
+## Para birimi dönüşümü: `donation_panel_convert_amount` (CURCY3)
+
+`apply_filters( 'donation_panel_convert_amount', float $amount, string $from, string $to, array $context ): float`
+
+- Anlam: `$amount` tutarını `$from` para biriminden `$to` para birimine çevir (ISO kodları). Varsayılan: dönüşüm YOK, tutar aynen döner (Woo'nun etkin para birimi tek birimmiş gibi çalışır).
+- Eski ad `wdp_convert_amount` aynı imza ve anlamla, yeni filtreden SONRA uygulanır (geriye dönük uyum). Bir snippet yalnız birine bağlanmalı, ikisine birden bağlanırsa çift dönüşüm olur.
+- Çekirdek iki yönde çağırır: (1) kullanıcı para birimi -> mağaza ana birimi (`woocommerce_currency` ayarı): bağışçının seçili birimde yazdığı tutar (örn. 100 EUR) sepete ana birimde konur, çoklu para birimi eklentisi gösterirken geri çevirir ve sepet/ödeme/siparişte 100 EUR görünür; kampanya toplamı da (sipariş kuru yoksa) bu yönle çevrilir. (2) ana birim -> etkin birim: yalnız sepet satırı gösterimi için, dönüşümün tersi.
+- `$context['context']`: `cart_line` | `cart_display`; ilerleme toplamında `$context['order']`.
+- Kur yönü örneği (1 TRY = 0,02 EUR): `100 EUR -> TRY = 100 / 0,02 = 5000`; `5000 TRY -> EUR = 5000 * 0,02 = 100`. Genel formül: `ana = tutar / oran($from)`, `sonuç = ana * oran($to)` (oran: "1 ana birim = kaç birim").
+- Ana birim her zaman WooCommerce ayarıdır (`get_option('woocommerce_currency')`); `get_woocommerce_currency()` ziyaretçinin gördüğü (etkin) birimdir.
+- Yeni sepet satırı alanı: `wdp_input_currency` (tutarın yazıldığı birim; damgasız eski satırlar dönüşümsüz).
+- Kur eklentisi köprüsü: `docs/site-snippets/curcy-bridge.php`.
