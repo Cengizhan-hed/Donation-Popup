@@ -128,7 +128,10 @@ class Form_Controller extends Rest_Controller {
 			return $this->error( 'donation_panel_product_not_found', 'Donation form not found for this product.', 404 );
 		}
 
-		$input = array( 'amount' => $request->get_param( 'amount' ) );
+		$input = array();
+		foreach ( array( 'amount', 'quantity', 'share_count', 'shareholders', 'addon_active', 'addon_amount' ) as $param ) {
+			$input[ $param ] = $request->get_param( $param );
+		}
 		foreach ( (array) $model['fields'] as $field ) {
 			if ( is_array( $field ) && ! empty( $field['name'] ) ) {
 				$input[ $field['name'] ] = $request->get_param( (string) $field['name'] );

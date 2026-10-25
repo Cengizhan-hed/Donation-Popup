@@ -193,9 +193,15 @@ class Cart_Controller extends Rest_Controller {
 	 */
 	private function input( $request, array $model ) {
 		$input = array(
-			'amount'         => $request->get_param( 'amount' ),
-			'donation_type'  => $request->get_param( 'donation_type' ),
-			'submission_key' => $request->get_param( 'submission_key' ),
+			'amount'             => $request->get_param( 'amount' ),
+			'quantity'           => $request->get_param( 'quantity' ),
+			'share_count'        => $request->get_param( 'share_count' ),
+			'shareholders'       => $request->get_param( 'shareholders' ),
+			'donation_cover_fee' => $request->get_param( 'donation_cover_fee' ),
+			'addon_active'       => $request->get_param( 'addon_active' ),
+			'addon_amount'       => $request->get_param( 'addon_amount' ),
+			'donation_type'      => $request->get_param( 'donation_type' ),
+			'submission_key'     => $request->get_param( 'submission_key' ),
 		);
 		foreach ( (array) $model['fields'] as $field ) {
 			if ( is_array( $field ) && ! empty( $field['name'] ) ) {

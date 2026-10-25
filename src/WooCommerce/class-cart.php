@@ -131,7 +131,7 @@ final class Cart {
 	 * @param object               $cart    WC_Cart benzeri (add_to_cart, get_cart, remove_cart_item, get_cart_contents_count).
 	 * @param object               $product WC_Product benzeri (get_id).
 	 * @param array<string, mixed> $model   Form modeli (Form_Context).
-	 * @param array<string, mixed> $input   İstek girdisi (`amount`, `donation_*`, `donation_type`, `submission_key`).
+	 * @param array<string, mixed> $input   İstek girdisi (`amount`, `quantity`, `share_count`, `shareholders`, `donation_*`, `addon_*`, `donation_type`, `submission_key`).
 	 * @return array{ok: bool, status: int, message: string, errors: array<string, string>, cart_item_key: string, cart_count: int}
 	 */
 	public function add_item( $cart, $product, array $model, array $input ) {
@@ -146,7 +146,9 @@ final class Cart {
 		if ( empty( $validated['valid'] ) ) {
 			return $this->result( false, 400, __( 'Please check the highlighted fields.', 'woo-donation-popup' ), (array) $validated['errors'] );
 		}
-		$amount = (float) $validated['amount'];
+		$amount   = (float) $validated['amount'];
+		$quantity = max( 1, (int) $validated['quantity'] );
+		$kind     = isset( $model['kind'] ) ? (string) $model['kind'] : '';
 
 		$rule = $this->legacy_rule_error( $product, $model, $amount );
 		if ( '' !== $rule['message'] ) {
@@ -164,28 +166,61 @@ final class Cart {
 			}
 		}
 
-		$custom = ! empty( $model['allow_custom'] ) ? $amount : null;
-		$type   = isset( $input['donation_type'] ) && is_scalar( $input['donation_type'] ) ? (string) $input['donation_type'] : '';
-		$item   = Cart_Data::cart_item_data( $donation_data, $custom, $product_id, $submission, $type );
+		// İşlem ücreti: yüzde sunucudaki modelden (ürün ayarı) gelir; istemcinin yüzdesi yok sayılır.
+		$fee_percent = 0.0;
+		if ( ! empty( $input['donation_cover_fee'] ) && 'false' !== $input['donation_cover_fee'] && ! empty( $model['cover_fee'] ) ) {
+			$fee_percent = (float) $model['cover_fee'];
+			if ( $fee_percent > 0 ) {
+				$donation_data['cover_fee']         = '1';
+				$donation_data['cover_fee_percent'] = $fee_percent;
+			}
+		}
+		$decimals = isset( $model['decimals'] ) ? (int) $model['decimals'] : 2;
 
-		foreach ( $cart->get_cart() as $existing_key => $existing ) {
-			if ( (int) $existing['product_id'] === $product_id
-				&& isset( $existing['donation_data'] )
-				&& empty( $existing['wdp_sadaka_donation'] )
-				&& Cart_Data::same_donor( (array) $existing['donation_data'], $donation_data )
-			) {
-				$cart->remove_cart_item( $existing_key );
-				break;
+		$custom = ! empty( $model['allow_custom'] ) ? Cart_Data::with_fee( $amount, $fee_percent, $decimals ) : null;
+		$type   = isset( $input['donation_type'] ) && is_scalar( $input['donation_type'] ) ? (string) $input['donation_type'] : '';
+		$extra  = array();
+		if ( '' !== $kind ) {
+			$extra['donation_panel_kind'] = sanitize_key( $kind );
+		}
+		if ( null === $custom && $fee_percent > 0 && ! empty( $model['unit_price'] ) ) {
+			$extra['wdp_base_unit_price'] = Cart_Data::with_fee( (float) $model['unit_price'], $fee_percent, $decimals );
+		}
+		$item = Cart_Data::cart_item_data( $donation_data, $custom, $product_id, $submission, $type, $extra );
+
+		if ( 'shares' !== $kind ) {
+			foreach ( $cart->get_cart() as $existing_key => $existing ) {
+				if ( (int) $existing['product_id'] === $product_id
+					&& isset( $existing['donation_data'] )
+					&& empty( $existing['wdp_sadaka_donation'] )
+					&& Cart_Data::same_donor( (array) $existing['donation_data'], $donation_data )
+				) {
+					$cart->remove_cart_item( $existing_key );
+					break;
+				}
 			}
 		}
 
 		$key = $this->with_plugin_flow(
-			static function () use ( $cart, $product_id, $item ) {
-				return $cart->add_to_cart( $product_id, 1, 0, array(), $item );
+			static function () use ( $cart, $product_id, $quantity, $item ) {
+				return $cart->add_to_cart( $product_id, $quantity, 0, array(), $item );
 			}
 		);
 		if ( ! $key ) {
 			return $this->result( false, 400, $this->collect_notice( __( 'An error occurred while adding the product to the cart.', 'woo-donation-popup' ) ) );
+		}
+
+		$addon = isset( $validated['addon'] ) && is_array( $validated['addon'] ) ? $validated['addon'] : array();
+		if ( ! empty( $addon['active'] ) ) {
+			$failure = (string) $this->with_plugin_flow(
+				static function () use ( $cart, $product, $donation_data, $addon, $submission, $key ) {
+					return Addon_Line::add( $cart, $product, $donation_data, (float) $addon['amount'], $submission, (string) $key );
+				}
+			);
+			if ( '' !== $failure ) {
+				$cart->remove_cart_item( $key );
+				return $this->result( false, 400, $failure, array( 'addon_amount' => $failure ) );
+			}
 		}
 
 		return $this->result( true, 200, '', array(), (string) $key, (int) $cart->get_cart_contents_count() );

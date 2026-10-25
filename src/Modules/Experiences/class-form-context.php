@@ -55,7 +55,12 @@ final class Form_Context {
 
 		$fixed_price  = isset( $legacy['product_price'] ) && is_numeric( $legacy['product_price'] ) ? (float) $legacy['product_price'] : 0.0;
 		$allow_custom = ! empty( $legacy['allow_custom_price'] ) || $fixed_price <= 0;
-		$min          = isset( $legacy['min_price'] ) && is_numeric( $legacy['min_price'] ) ? max( 0.0, (float) $legacy['min_price'] ) : 0.0;
+		$min_raw      = ! empty( $legacy['enable_progress_bar'] ) && isset( $legacy['progress_min_price'] ) ? $legacy['progress_min_price'] : ( isset( $legacy['min_price'] ) ? $legacy['min_price'] : '' );
+		$min          = is_numeric( $min_raw ) ? max( 0.0, (float) $min_raw ) : 0.0;
+		$kind         = self::kind( $legacy, $allow_custom );
+		if ( 'shares' === $kind ) {
+			$allow_custom = false;
+		}
 
 		$presets = array();
 		if ( ! empty( $legacy['enable_amount_presets'] ) ) {
@@ -88,7 +93,7 @@ final class Form_Context {
 			$symbol = html_entity_decode( (string) get_woocommerce_currency_symbol(), ENT_QUOTES, 'UTF-8' );
 		}
 
-		$shares = ! empty( $legacy['allow_multiple_shares'] );
+		$shares = 'shares' === $kind;
 		$model  = array(
 			'product_id'     => $product_id,
 			'title'          => $title,
@@ -101,7 +106,14 @@ final class Form_Context {
 			'closed'         => ! empty( $legacy['goal_closed'] ),
 			'closed_message' => isset( $legacy['goal_reached_message'] ) ? (string) $legacy['goal_reached_message'] : '',
 			'types'          => self::types( $product_id ),
+			'kind'           => $kind,
+			'unit_price'     => in_array( $kind, array( 'fixed', 'shares' ), true ) ? max( 0.0, $fixed_price ) : 0.0,
+			'quantity'       => self::quantity( $legacy, $kind ),
+			'cover_fee'      => self::cover_fee_percent( $legacy ),
+			'addon'          => self::addon( $legacy ),
+			'steps'          => self::steps( $product_id ),
 			'fields'         => self::fields( $legacy, $shares ),
+			'shareholder'    => $shares ? self::shareholder_fields( $legacy ) : array(),
 		);
 
 		/**
@@ -111,6 +123,171 @@ final class Form_Context {
 		 * @param array<string, mixed> $legacy Eski bağlam.
 		 */
 		return (array) apply_filters( 'donation_panel_form_model', $model, $legacy );
+	}
+
+	/**
+	 * Bağış türü: hisseli > hedefli kampanya > bağışçı belirler (serbest tutar) > sabit tutar.
+	 * Eski ürün bayraklarından türetilir (`WDP_Donation_Type::infer_from_flags` ile aynı öncelik).
+	 *
+	 * @param array<string, mixed> $legacy       Eski bağlam.
+	 * @param bool                 $allow_custom Serbest tutar mı.
+	 * @return string fixed|custom|shares|campaign
+	 */
+	public static function kind( array $legacy, $allow_custom ) {
+		if ( ! empty( $legacy['allow_multiple_shares'] ) ) {
+			return 'shares';
+		}
+		if ( ! empty( $legacy['enable_progress_bar'] ) ) {
+			return 'campaign';
+		}
+		return $allow_custom ? 'custom' : 'fixed';
+	}
+
+	/**
+	 * Adet/hisse sayısı seçici.
+	 *
+	 * @param array<string, mixed> $legacy Eski bağlam.
+	 * @param string               $kind   Bağış türü.
+	 * @return array{enabled: bool, min: int, max: int}
+	 */
+	private static function quantity( array $legacy, $kind ) {
+		if ( 'shares' === $kind ) {
+			$max = isset( $legacy['max_shares'] ) && is_numeric( $legacy['max_shares'] ) ? (int) $legacy['max_shares'] : 7;
+			return array(
+				'enabled' => true,
+				'min'     => 1,
+				'max'     => min( 50, max( 1, $max ) ),
+			);
+		}
+		$enabled = 'fixed' === $kind && ( ! array_key_exists( 'enable_quantity', $legacy ) || ! empty( $legacy['enable_quantity'] ) );
+		return array(
+			'enabled' => $enabled,
+			'min'     => 1,
+			'max'     => 99,
+		);
+	}
+
+	/**
+	 * İşlem ücreti yüzdesi (kapalıysa 0). Sunucu yüzdeyi her zaman ürün ayarından okur; istemci değeri yok sayılır.
+	 *
+	 * @param array<string, mixed> $legacy Eski bağlam.
+	 * @return float
+	 */
+	private static function cover_fee_percent( array $legacy ) {
+		if ( empty( $legacy['enable_cover_fee'] ) || ! isset( $legacy['cover_fee_percent'] ) || ! is_numeric( $legacy['cover_fee_percent'] ) ) {
+			return 0.0;
+		}
+		return max( 0.0, (float) $legacy['cover_fee_percent'] );
+	}
+
+	/**
+	 * Ek bağış (AddOn) satırı tanımı; kapalı ya da ürünü yoksa null.
+	 *
+	 * @param array<string, mixed> $legacy Eski bağlam.
+	 * @return array{label: string, message: string, fixed: float, min: float}|null
+	 */
+	private static function addon( array $legacy ) {
+		$product_id = isset( $legacy['sadaka_wc_product_id'] ) ? (int) $legacy['sadaka_wc_product_id'] : 0;
+		if ( empty( $legacy['enable_sadaka_donation'] ) || $product_id < 1 ) {
+			return null;
+		}
+		$fixed = ! empty( $legacy['sadaka_is_fixed_price'] ) && isset( $legacy['sadaka_fixed_price'] ) && is_numeric( $legacy['sadaka_fixed_price'] ) ? (float) $legacy['sadaka_fixed_price'] : 0.0;
+		$min   = isset( $legacy['sadaka_min_price'] ) && is_numeric( $legacy['sadaka_min_price'] ) ? max( 0.0, (float) $legacy['sadaka_min_price'] ) : 0.0;
+		return array(
+			'label'   => isset( $legacy['sadaka_toggle_label'] ) ? (string) $legacy['sadaka_toggle_label'] : '',
+			'message' => isset( $legacy['sadaka_donation_message'] ) ? (string) $legacy['sadaka_donation_message'] : '',
+			'fixed'   => $fixed,
+			'min'     => $min,
+		);
+	}
+
+	/**
+	 * Form adımları: tutar -> bilgiler. Ek adım (ör. vergi indirimi) `donation_panel_form_steps` ile eklenir;
+	 * ek adımın içeriği `donation_panel_form_step_{id}` kancasına yazılır.
+	 *
+	 * @param int $product_id Ürün.
+	 * @return array<int, array{id: string, label: string}>
+	 */
+	private static function steps( $product_id ) {
+		$steps = array(
+			array(
+				'id'    => 'amount',
+				'label' => __( 'Amount', 'woo-donation-popup' ),
+			),
+			array(
+				'id'    => 'details',
+				'label' => __( 'Your details', 'woo-donation-popup' ),
+			),
+		);
+
+		/**
+		 * Form adımlarını değiştirir (ek adım eklemek için). `amount` ve `details` adımları kaldırılamaz.
+		 *
+		 * @param array<int, array{id: string, label: string}> $steps      Adımlar.
+		 * @param int                                          $product_id Ürün.
+		 */
+		$filtered = (array) apply_filters( 'donation_panel_form_steps', $steps, $product_id );
+		$out      = array();
+		foreach ( $filtered as $step ) {
+			if ( is_array( $step ) && ! empty( $step['id'] ) && isset( $step['label'] ) ) {
+				$out[] = array(
+					'id'    => sanitize_key( (string) $step['id'] ),
+					'label' => (string) $step['label'],
+				);
+			}
+		}
+		$ids = array_column( $out, 'id' );
+		return ( in_array( 'amount', $ids, true ) && in_array( 'details', $ids, true ) ) ? $out : $steps;
+	}
+
+	/**
+	 * Hissedar başına alanlar (ad ve telefon zorunlu; e-posta ve not isteğe bağlı).
+	 *
+	 * @param array<string, mixed> $legacy Eski bağlam.
+	 * @return array<int, array<string, mixed>>
+	 */
+	private static function shareholder_fields( array $legacy ) {
+		$fields = array(
+			array(
+				'key'          => 'name',
+				'type'         => 'text',
+				'label'        => __( 'Full name *', 'woo-donation-popup' ),
+				'required'     => true,
+				'required_msg' => __( 'Please enter the shareholder’s name.', 'woo-donation-popup' ),
+				'autocomplete' => 'off',
+				'maxlength'    => 100,
+			),
+			array(
+				'key'          => 'phone',
+				'type'         => 'tel',
+				'label'        => __( 'Phone number *', 'woo-donation-popup' ),
+				'required'     => true,
+				'required_msg' => __( 'Please enter the shareholder’s phone number.', 'woo-donation-popup' ),
+				'autocomplete' => 'off',
+				'inputmode'    => 'tel',
+				'maxlength'    => 28,
+			),
+		);
+		if ( ! empty( $legacy['enable_email'] ) ) {
+			$fields[] = array(
+				'key'          => 'email',
+				'type'         => 'email',
+				'label'        => __( 'Email (optional)', 'woo-donation-popup' ),
+				'required'     => false,
+				'autocomplete' => 'off',
+				'inputmode'    => 'email',
+				'maxlength'    => 100,
+			);
+		}
+		$fields[] = array(
+			'key'          => 'note',
+			'type'         => 'text',
+			'label'        => __( 'Note (optional)', 'woo-donation-popup' ),
+			'required'     => false,
+			'autocomplete' => 'off',
+			'maxlength'    => 500,
+		);
+		return $fields;
 	}
 
 	/**
@@ -172,6 +349,10 @@ final class Form_Context {
 	 * @return array<int, array<string, mixed>>
 	 */
 	private static function fields( array $legacy, $shares ) {
+		if ( $shares ) {
+			// Hisseli bağışta kişi alanları hissedar satırlarıdır (`shareholder`).
+			return array();
+		}
 		$fields = array(
 			array(
 				'name'         => 'donation_full_name',
