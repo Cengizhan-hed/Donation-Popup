@@ -874,3 +874,10 @@ Eklenti hiçbir tema, sayfa oluşturucu ya da eklentiyi tanımaz (CLAUDE.md böl
 | Bağış listesi sayfası (`[wdp_donations]`) | 5 / 5-6 | 5 / 5 / 35 |
 
 Not: sepet/ödemede bağış öğesi olan koşul ayrı ölçülmedi (boş sepet). Meta takip eklentisi ayar açıkken kendi betiğini ekler (özellik gereği; ayrı ayar).
+
+### 6-F: ölü ve tekrar eden kod (davranış değişmez)
+
+- **JS ortak yardımcı:** `WDPApp.utils.createHookRegistry()` (`assets/js/src/core/utils.js`) → `{ registerHooks, callHook, hasHook }`; `form/ajax.js` ve `shareholder/{setup,quantity,forms-sync,render}.js` kendi kopyası yerine bunu kullanır. `form/ajax.js` `finishAjaxRequest` (jQuery `complete` + fetch `finally` ortak temizliği), `shareholder/setup.js` `applyResolvedBasePrice` (birim fiyat uygulama) ortaklaştırıldı.
+- **i18n yedek bloğu:** `WDPApp.i18n` yedeği artık yalnız `core/utils.js`'te (yığında `core/i18n.js` ilk, `utils.js` ikinci; öteki 8 modül utils'ten sonra yüklenir). Tek dosyayı vm ile yükleyen birim testler sandbox'a `WDPApp.i18n` ekler.
+- **Silinen kamu yöntemleri (referanssız, sözleşme dışı):** `WDP_Addon_Product_Visibility::has_explicit_donation_flag`, `WDP_Security::validate_nonce`/`escape_output`, `WDP_Render_Registry::has_modal`, `WDP_Utils_Order_Meta_Trait::get_progress_reversal_statuses`, `WDP_Assets::request_should_enqueue_frontend_assets`, `WDP_Order_Meta_Keys::shareholder_fields`, `WDP_Progress_Form::render_form_fields`.
+- **Bırakılanlar:** WooCommerce/WP/Elementor geri çağrıları ve `WP_List_Table` `column_*` (yanlış pozitif); `WDP_Templates` cephe yöntemleri (şablon geçersiz kılma/dış kod sözleşmesi riski); test destek yöntemleri; `sync_order_donation_totals_on_complete` (geriye uyum kancası). `buttons.css` tekrarları: `:is()` seçici listesinin özgüllüğü kaskadı belirlediği için kısaltılmadı. Ayrıntı: `build/handoff/FAZ6-HEDEF-LISTESI.md` "6-F durumu".
