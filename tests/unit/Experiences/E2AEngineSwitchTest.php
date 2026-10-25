@@ -50,7 +50,9 @@ final class E2AEngineSwitchTest extends TestCase {
 		$this->assertContains( 'experiences', $registry->slugs() );
 		$this->assertFalse( $registry->is_enabled( 'experiences' ) );
 
-		$registry->boot( new Container() );
+		$container = new Container();
+		$container->instance( \DonationPanel\Frontend\Assets::class, new \DonationPanel\Frontend\Assets( WDP_PLUGIN_DIR, WDP_PLUGIN_URL ) );
+		$registry->boot( $container );
 		$this->assertNotContains( 'experiences', $registry->active_slugs() );
 		$this->assertSame( array(), self::experiences_files_loaded() );
 	}

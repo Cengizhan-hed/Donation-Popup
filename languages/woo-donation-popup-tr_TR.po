@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: woo-donation-popup\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-25 19:13:52+0000\n"
-"PO-Revision-Date: 2026-10-25 19:13:52+0000\n"
+"POT-Creation-Date: 2026-10-25 19:37:46+0000\n"
+"PO-Revision-Date: 2026-10-25 19:37:46+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: tr_TR\n"
@@ -76,14 +76,42 @@ msgstr[1] "%d kişi"
 msgid "%d products are currently donation products."
 msgstr "Şu an %d ürün bağış ürünü."
 
+#. translators: %s: time span, e.g. "3 hours"
+#: src/Modules/SocialProof/class-donation-feed.php
+#, php-format
+msgid "%s ago"
+msgstr "%s önce"
+
 #: assets/js/src/modal.js:498
 #, php-format
 msgid "%s form opened"
 msgstr "%s formu açıldı"
 
+#. translators: %s: number of donors, already formatted
+#: src/Modules/SocialProof/class-social-proof-renderer.php
+#, php-format
+msgid "%s person has donated"
+msgid_plural "%s people have donated"
+msgstr[0] "%s kişi bağış yaptı"
+msgstr[1] "%s kişi bağış yaptı"
+
 #: includes/class-progress-form.php:73
 msgid "%s remaining"
 msgstr "%s kaldı"
+
+#. translators: %s: number of donors, already formatted
+#: src/Modules/Campaign/class-progress-renderer.php
+#, php-format
+msgid "%s supporter"
+msgid_plural "%s supporters"
+msgstr[0] "%s destekçi"
+msgstr[1] "%s destekçi"
+
+#. translators: %s: number of donations today, already formatted
+#: src/Modules/SocialProof/class-social-proof-renderer.php
+#, php-format
+msgid "%s today"
+msgstr "bugün %s"
 
 #: assets/js/src/progress-bar.js:139
 #, php-format
@@ -141,6 +169,10 @@ msgstr "3 Onay"
 #: assets/js/src/form/ajax.js:419
 msgid "A connection error occurred. Please try again."
 msgstr "Bağlantı hatası oluştu. Lütfen tekrar deneyin."
+
+#: src/Modules/SocialProof/class-social-proof-renderer.php
+msgid "A kind donor"
+msgstr "Gönlü güzel bir bağışçı"
 
 #: includes/class-admin-product-data-tab.php:797
 msgid "A second, smaller donation row added to the form"
@@ -1189,6 +1221,10 @@ msgstr "Bağışçı Adı"
 msgid "Donor phone"
 msgstr "Bağışçı Telefonu"
 
+#: src/Modules/SocialProof/class-social-proof-renderer.php
+msgid "donors"
+msgstr "bağışçı"
+
 #: includes/class-admin-form-tabs-renderer.php:268
 msgid "e.g. 123"
 msgstr "Örn: 123"
@@ -1537,6 +1573,10 @@ msgstr "Ad Soyad Placeholder"
 #: includes/elementor/class-widget-donations-list.php:120
 msgid "Full-width button"
 msgstr "Buton tam genişlik"
+
+#: src/Modules/Campaign/class-progress-renderer.php
+msgid "funded"
+msgstr "tamamlandı"
 
 #: includes/elementor/class-widget-donations-list.php:108
 msgid "Gap (px)"
@@ -2410,6 +2450,12 @@ msgstr "Not metni"
 #: includes/traits/trait-wdp-ajax-cart-query.php:182
 msgid "Number of shares"
 msgstr "Hisse Adedi"
+
+#. translators: %s: formatted goal amount
+#: src/Modules/Campaign/class-progress-renderer.php
+#, php-format
+msgid "of %s goal"
+msgstr "%s hedefin"
 
 #: includes/class-admin-product-data-tab.php:476
 #: includes/class-admin-product-data-tab.php:529
@@ -3405,6 +3451,10 @@ msgstr "Başlığı göster"
 msgid "Show less"
 msgstr "Daha Az Göster"
 
+#: src/Modules/SocialProof/class-social-proof-renderer.php
+msgid "Show more"
+msgstr "Daha fazla göster"
+
 #: includes/class-admin-placement-tab-renderer.php:102
 msgid "Show on fixed-amount and share-based products, hide on others"
 msgstr "Sabit ve hisseli üründe göster, diğerlerinde gizle"
@@ -3975,6 +4025,10 @@ msgstr "Başlık"
 #: includes/class-admin-design-studio-renderer.php:332
 msgid "Title/icon area of the extra donation (sadaqah) block."
 msgstr "Alt bağış (sadaka) bloğu başlık/ikon alanı."
+
+#: src/Modules/SocialProof/class-social-proof-renderer.php
+msgid "today"
+msgstr "bugün"
 
 #: includes/class-lazy-modal.php:42
 msgid "Too many requests were sent. Please try again shortly."

@@ -33,7 +33,7 @@ class Settings {
 	private $data = null;
 
 	/**
-	 * Şema: grup => [ anahtar => [ type, default ] ]. Tip: bool|int|string.
+	 * Şema: grup => [ anahtar => [ type, default ] ]. Tip: bool|int|string|text (çok satırlı).
 	 *
 	 * @return array<string, array<string, array{type: string, default: mixed}>>
 	 */
@@ -43,6 +43,12 @@ class Settings {
 				'delete_data_on_uninstall' => array(
 					'type'    => 'bool',
 					'default' => false,
+				),
+			),
+			'impact'      => array(
+				'map' => array(
+					'type'    => 'text',
+					'default' => '',
 				),
 			),
 			'experiences' => array(
@@ -183,7 +189,7 @@ class Settings {
 	 * Değeri tipe çevirir.
 	 *
 	 * @param mixed  $value         Ham değer.
-	 * @param string $type          bool|int|string.
+	 * @param string $type          bool|int|string|text.
 	 * @param mixed  $default_value Varsayılan.
 	 * @return mixed
 	 */
@@ -193,6 +199,8 @@ class Settings {
 				return in_array( $value, array( true, 1, '1', 'yes', 'true', 'on' ), true );
 			case 'int':
 				return is_numeric( $value ) ? (int) $value : $default_value;
+			case 'text':
+				return is_scalar( $value ) ? sanitize_textarea_field( (string) $value ) : $default_value;
 			case 'string':
 				return is_scalar( $value ) ? sanitize_text_field( (string) $value ) : $default_value;
 		}

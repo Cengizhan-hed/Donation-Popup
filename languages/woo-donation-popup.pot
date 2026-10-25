@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: woo-donation-popup 10.35.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-25 21:30+0300\n"
+"POT-Creation-Date: 2026-10-25 22:37+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1958,7 +1958,7 @@ msgid "Off by default because the product page already has a title."
 msgstr ""
 
 #: includes/class-admin-placement-tab-renderer.php:113
-#: includes/class-cart.php:546 includes/class-order-meta-keys.php:285
+#: includes/class-cart.php:547 includes/class-order-meta-keys.php:285
 #: includes/class-order-meta-keys.php:289
 #: src/Modules/EntryPoints/Elementor/class-donation-form-widget.php:137
 #: blocks/donations/index.js:25
@@ -2793,116 +2793,116 @@ msgid ""
 "this campaign are used in similar projects."
 msgstr ""
 
-#: includes/class-cart.php:207 includes/class-exceptions.php:113
+#: includes/class-cart.php:208 includes/class-exceptions.php:113
 msgid "Security verification failed. Please refresh the page and try again."
 msgstr ""
 
-#: includes/class-cart.php:219
+#: includes/class-cart.php:220
 #, php-format
 msgid "Maximum number of shares: %d"
 msgstr ""
 
-#: includes/class-cart.php:238 includes/traits/trait-wdp-ajax-cart-add.php:101
+#: includes/class-cart.php:239 includes/traits/trait-wdp-ajax-cart-add.php:101
 msgid "Please fill in all required fields: "
 msgstr ""
 
-#: includes/class-cart.php:244 includes/traits/trait-wdp-ajax-cart-add.php:136
+#: includes/class-cart.php:245 includes/traits/trait-wdp-ajax-cart-add.php:136
 #: src/Modules/Experiences/class-form-context.php:181
 msgid "Please enter your full name."
 msgstr ""
 
-#: includes/class-cart.php:249 includes/traits/trait-wdp-ajax-cart-add.php:140
+#: includes/class-cart.php:250 includes/traits/trait-wdp-ajax-cart-add.php:140
 #: src/Modules/Experiences/class-form-context.php:190
 msgid "Please enter your phone number."
 msgstr ""
 
-#: includes/class-cart.php:276 includes/traits/trait-wdp-ajax-cart-add.php:195
+#: includes/class-cart.php:277 includes/traits/trait-wdp-ajax-cart-add.php:195
 msgid "Please enter the donation amount."
 msgstr ""
 
-#: includes/class-cart.php:284 includes/class-cart.php:289
-#: includes/class-cart.php:295
+#: includes/class-cart.php:285 includes/class-cart.php:290
+#: includes/class-cart.php:296
 msgid "You entered an invalid donation amount."
 msgstr ""
 
-#: includes/class-cart.php:357
+#: includes/class-cart.php:358
 msgid "Please add to cart using the donation form. Donor details are required."
 msgstr ""
 
-#: includes/class-cart.php:491 includes/class-order-meta-keys.php:76
+#: includes/class-cart.php:492 includes/class-order-meta-keys.php:76
 msgid "Share count"
 msgstr ""
 
-#: includes/class-cart.php:500
+#: includes/class-cart.php:501
 #: includes/traits/trait-wdp-ajax-cart-query.php:194
 #, php-format
 msgid "Shareholder %d"
 msgstr ""
 
-#: includes/class-cart.php:507 includes/class-order-meta-keys.php:89
+#: includes/class-cart.php:508 includes/class-order-meta-keys.php:89
 #, php-format
 msgid "Shareholder %d email"
 msgstr ""
 
-#: includes/class-cart.php:514 includes/class-order-meta-keys.php:90
+#: includes/class-cart.php:515 includes/class-order-meta-keys.php:90
 #, php-format
 msgid "Shareholder %d note"
 msgstr ""
 
-#: includes/class-cart.php:524
+#: includes/class-cart.php:525
 msgid "Donor"
 msgstr ""
 
-#: includes/class-cart.php:531 includes/class-icon-library.php:51
+#: includes/class-cart.php:532 includes/class-icon-library.php:51
 msgid "Email"
 msgstr ""
 
-#: includes/class-cart.php:538 includes/class-order-meta-keys.php:73
+#: includes/class-cart.php:539 includes/class-order-meta-keys.php:73
 #: src/Modules/Experiences/class-form-context.php:212
 msgid "Dedication"
 msgstr ""
 
-#: includes/class-cart.php:545
+#: includes/class-cart.php:546
 #: includes/templates/class-form-fields-renderer.php:586
 msgid "Keep my name private"
 msgstr ""
 
-#: includes/class-cart.php:552 includes/class-order-meta-keys.php:72
+#: includes/class-cart.php:553 includes/class-order-meta-keys.php:72
 msgid "Donation note"
 msgstr ""
 
-#: includes/class-cart.php:570 includes/class-order-meta-keys.php:75
+#: includes/class-cart.php:571 includes/class-order-meta-keys.php:75
 #: includes/config/form-modules.php:35
 msgid "Processing fee"
 msgstr ""
 
-#: includes/class-cart.php:617
+#: includes/class-cart.php:619
 msgid ""
 "The donation line with amount 0 was removed from the cart. Please enter a "
 "valid donation amount."
 msgstr ""
 
-#: includes/class-cart.php:703
+#: includes/class-cart.php:705
 msgid "Please enter a donation amount greater than 0."
 msgstr ""
 
 #. translators: %s: formatted minimum amount with currency
-#: includes/class-cart.php:708 includes/i18n/class-wdp-js-i18n.php:79
+#: includes/class-cart.php:710 includes/i18n/class-wdp-js-i18n.php:79
 #: assets/js/src/form/validate.js:751
 #, javascript-format, php-format
 msgid "Please enter %s or more."
 msgstr ""
 
-#: includes/class-cart.php:930
+#: includes/class-cart.php:991
 msgid "Add-on donation"
 msgstr ""
 
-#: includes/class-cart.php:1063 includes/class-order-meta-keys.php:87
+#: includes/class-cart.php:1124 includes/class-order-meta-keys.php:87
 #, php-format
 msgid "Shareholder %d name"
 msgstr ""
 
-#: includes/class-cart.php:1067 includes/class-order-meta-keys.php:88
+#: includes/class-cart.php:1128 includes/class-order-meta-keys.php:88
 #, php-format
 msgid "Shareholder %d phone"
 msgstr ""
@@ -3799,14 +3799,18 @@ msgid "Donation progress"
 msgstr ""
 
 #: includes/class-progress-form.php:94
+#: src/Modules/SocialProof/class-social-proof-renderer.php:106
 msgid "raised"
 msgstr ""
 
 #: includes/class-progress-form.php:109
+#: src/Modules/Campaign/class-progress-renderer.php:62
 msgid "Goal completion rate"
 msgstr ""
 
 #: includes/class-progress-form.php:145 includes/i18n/class-wdp-js-i18n.php:60
+#: src/Modules/Campaign/class-progress-renderer.php:87
+#: src/Modules/Campaign/class-progress-renderer.php:89
 #: assets/js/src/progress-bar.js:57 assets/js/src/progress-bar.js:85
 #: assets/js/src/progress-bar.js:280
 msgid "Goal reached"
@@ -3858,6 +3862,7 @@ msgstr ""
 
 #: includes/class-woo-donation-popup-admin.php:109
 #: includes/class-woo-donation-popup-admin.php:360
+#: src/Modules/SideCart/class-side-cart-module.php:166
 #: templates/donation-panel/experiences/bottom-sheet.php:16
 #: templates/donation-panel/experiences/inline.php:16
 #: templates/donation-panel/experiences/popup.php:16
@@ -4617,6 +4622,24 @@ msgstr ""
 msgid "Your donation was added to the cart"
 msgstr ""
 
+#. translators: %s: formatted goal amount
+#: src/Modules/Campaign/class-progress-renderer.php:58
+#, php-format
+msgid "of %s goal"
+msgstr ""
+
+#: src/Modules/Campaign/class-progress-renderer.php:72
+msgid "funded"
+msgstr ""
+
+#. translators: %s: number of donors, already formatted
+#: src/Modules/Campaign/class-progress-renderer.php:79
+#, php-format
+msgid "%s supporter"
+msgid_plural "%s supporters"
+msgstr[0] ""
+msgstr[1] ""
+
 #: src/Modules/EntryPoints/Elementor/class-donation-form-widget.php:30
 msgctxt "elementor widget title"
 msgid "Donation form"
@@ -4930,6 +4953,122 @@ msgstr ""
 
 #: src/Modules/Experiences/class-field-validator.php:111
 msgid "Please choose a donation type."
+msgstr ""
+
+#: src/Modules/SideCart/class-side-cart-module.php:167
+msgid "Removed from your basket."
+msgstr ""
+
+#: src/Modules/SideCart/class-side-cart-renderer.php:51
+#: src/Modules/SideCart/class-side-cart-renderer.php:167
+msgid "Donation basket"
+msgstr ""
+
+#. translators: %d: number of gifts in the donation basket.
+#: src/Modules/SideCart/class-side-cart-renderer.php:65
+#, php-format
+msgid "%d gift in your basket"
+msgid_plural "%d gifts in your basket"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/Modules/SideCart/class-side-cart-renderer.php:78
+msgid "Your basket is empty"
+msgstr ""
+
+#: src/Modules/SideCart/class-side-cart-renderer.php:78
+msgid "Add a gift and it will be summarised here."
+msgstr ""
+
+#: src/Modules/SideCart/class-side-cart-renderer.php:78
+msgid "Continue giving"
+msgstr ""
+
+#: src/Modules/SideCart/class-side-cart-renderer.php:87
+msgid "Subtotal"
+msgstr ""
+
+#: src/Modules/SideCart/class-side-cart-renderer.php:88
+msgid "Payment method and any taxes are shown at checkout."
+msgstr ""
+
+#: src/Modules/SideCart/class-side-cart-renderer.php:89
+msgid "Continue to checkout"
+msgstr ""
+
+#. translators: %s: dedication text typed by the donor.
+#: src/Modules/SideCart/class-side-cart-renderer.php:114
+#, php-format
+msgid "In honour of: %s"
+msgstr ""
+
+#. translators: %s: comma separated names of the people the shares are donated on behalf of.
+#: src/Modules/SideCart/class-side-cart-renderer.php:118
+#, php-format
+msgid "On behalf of: %s"
+msgstr ""
+
+#: src/Modules/SideCart/class-side-cart-renderer.php:123
+msgid "Quantity"
+msgstr ""
+
+#: src/Modules/SideCart/class-side-cart-renderer.php:124
+msgid "Decrease quantity"
+msgstr ""
+
+#: src/Modules/SideCart/class-side-cart-renderer.php:126
+msgid "Increase quantity"
+msgstr ""
+
+#. translators: %s: donation name.
+#: src/Modules/SideCart/class-side-cart-renderer.php:137
+#, php-format
+msgid "Remove %s"
+msgstr ""
+
+#: src/Modules/SideCart/class-side-cart-renderer.php:137
+msgid "Remove"
+msgstr ""
+
+#: src/Modules/SideCart/class-side-cart-renderer.php:168
+msgid "Close basket"
+msgstr ""
+
+#. translators: %s: time span, e.g. "3 hours"
+#: src/Modules/SocialProof/class-donation-feed.php:190
+#, php-format
+msgid "%s ago"
+msgstr ""
+
+#. translators: %s: number of donors, already formatted
+#: src/Modules/SocialProof/class-social-proof-renderer.php:74
+#, php-format
+msgid "%s person has donated"
+msgid_plural "%s people have donated"
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %s: number of donations today, already formatted
+#: src/Modules/SocialProof/class-social-proof-renderer.php:83
+#, php-format
+msgid "%s today"
+msgstr ""
+
+#: src/Modules/SocialProof/class-social-proof-renderer.php:104
+msgid "donors"
+msgstr ""
+
+#: src/Modules/SocialProof/class-social-proof-renderer.php:105
+msgid "today"
+msgstr ""
+
+#: src/Modules/SocialProof/class-social-proof-renderer.php:129
+#: src/Modules/SocialProof/class-social-proof-renderer.php:152
+msgid "A kind donor"
+msgstr ""
+
+#: src/Modules/SocialProof/class-social-proof-renderer.php:135
+msgid "Show more"
 msgstr ""
 
 #: src/WooCommerce/class-cart.php:141

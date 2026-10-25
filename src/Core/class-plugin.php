@@ -210,6 +210,10 @@ final class Plugin {
 		// Sınıf adı metin olarak verilir: `engine` = `legacy` iken dosya hiç yüklenmez.
 		$registry->add( 'experiences', 'DonationPanel\\Modules\\Experiences\\Experiences_Module', Settings::engine_is_new() );
 		$registry->add( 'side_cart', 'DonationPanel\\Modules\\SideCart\\Side_Cart_Module', false );
+
+		$registry->add( 'campaign', 'DonationPanel\\Modules\\Campaign\\Campaign_Module', true );
+		$registry->add( 'impact', 'DonationPanel\\Modules\\Impact\\Impact_Module', Settings::engine_is_new() );
+		$registry->add( 'social_proof', 'DonationPanel\\Modules\\SocialProof\\Social_Proof_Module', false );
 	}
 
 	/**
