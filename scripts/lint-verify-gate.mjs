@@ -58,7 +58,7 @@ const stanArgs = [
   '--memory-limit=1G',
   '--error-format=json',
   '--no-progress',
-  ...diff.files,
+  // Tüm proje analiz edilir (yalnız değişen dosyalar: trait/sınıf çaprazlarında yanlış 'onlyWritten' üretir); sonuç değişen satırlara süzülür.
 ];
 const stan = spawnSync('php', stanArgs, {
   cwd: ROOT,
