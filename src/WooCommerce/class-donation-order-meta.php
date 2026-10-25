@@ -57,6 +57,9 @@ final class Donation_Order_Meta {
 
 		if ( isset( $values['custom_price'] ) && $values['custom_price'] > 0 ) {
 			$this->add_once( $item, '_custom_price', (float) $values['custom_price'] );
+			if ( ! empty( $values['wdp_input_currency'] ) && is_scalar( $values['wdp_input_currency'] ) ) {
+				$this->add_once( $item, '_wdp_input_currency', strtoupper( sanitize_text_field( (string) $values['wdp_input_currency'] ) ) );
+			}
 		}
 
 		if ( isset( $values['donation_data'] ) && is_array( $values['donation_data'] ) ) {

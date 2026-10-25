@@ -424,7 +424,7 @@ trait WDP_Utils_Order_Meta_Trait {
 			}
 
 			if ( class_exists( 'WDP_Progress_Currency' ) ) {
-				$converted = WDP_Progress_Currency::convert_to_base( $line_total, $currency, $order );
+				$converted = WDP_Progress_Currency::convert_to_base( $line_total, self::resolve_donation_line_currency( $item, $currency ), $order );
 				if ( empty( $converted['ok'] ) ) {
 					self::log_progress_conversion_skip( $order, $product_id, isset( $converted['reason'] ) ? (string) $converted['reason'] : 'unknown' );
 					continue;
@@ -600,6 +600,23 @@ trait WDP_Utils_Order_Meta_Trait {
 		self::set_product_donor_count( $product_id, $result['donors'] );
 
 		return $result;
+	}
+
+	/**
+	 * Satır tutarının para birimi: `_custom_price` bağışçının yazdığı birimdedir (`_wdp_input_currency`; sepette
+	 * ödemeden önce para birimi değiştirilmiş olabilir). Damga yoksa ya da tutar satır toplamından geliyorsa sipariş birimi.
+	 *
+	 * @param WC_Order_Item_Product $item           Order line item.
+	 * @param string                $order_currency Sipariş para birimi.
+	 * @return string
+	 */
+	private static function resolve_donation_line_currency( $item, $order_currency ) {
+		$custom_price = $item->get_meta( '_custom_price' );
+		if ( $custom_price === '' || ! is_numeric( $custom_price ) || floatval( $custom_price ) <= 0 ) {
+			return $order_currency;
+		}
+		$input = strtoupper( trim( (string) $item->get_meta( '_wdp_input_currency' ) ) );
+		return '' !== $input ? $input : $order_currency;
 	}
 
 	/**

@@ -37,6 +37,9 @@ class WDP_Order {
 		// Özel fiyat varsa order item meta'ya ekle (progress bar için gerekli)
 		if ( isset( $values['custom_price'] ) && $values['custom_price'] > 0 ) {
 			$item->add_meta_data( '_custom_price', floatval( $values['custom_price'] ) );
+			if ( ! empty( $values['wdp_input_currency'] ) ) {
+				$item->add_meta_data( '_wdp_input_currency', strtoupper( sanitize_text_field( (string) $values['wdp_input_currency'] ) ) );
+			}
 		}
 
 		if ( isset( $values['donation_data'] ) && is_array( $values['donation_data'] ) ) {
