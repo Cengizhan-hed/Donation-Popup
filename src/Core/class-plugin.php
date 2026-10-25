@@ -209,6 +209,9 @@ final class Plugin {
 		$registry->add( Entry_Points_Module::SLUG, Entry_Points_Module::class, true );
 		// Sınıf adı metin olarak verilir: `engine` = `legacy` iken dosya hiç yüklenmez.
 		$registry->add( 'experiences', 'DonationPanel\\Modules\\Experiences\\Experiences_Module', Settings::engine_is_new() );
+		$registry->add( 'campaign', 'DonationPanel\\Modules\\Campaign\\Campaign_Module', true );
+		$registry->add( 'impact', 'DonationPanel\\Modules\\Impact\\Impact_Module', Settings::engine_is_new() );
+		$registry->add( 'social_proof', 'DonationPanel\\Modules\\SocialProof\\Social_Proof_Module', false );
 	}
 
 	/**
