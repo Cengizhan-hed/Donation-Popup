@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: woo-donation-popup\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-25 17:32:43+0000\n"
-"PO-Revision-Date: 2026-10-25 17:32:43+0000\n"
+"POT-Creation-Date: 2026-10-25 18:32:10+0000\n"
+"PO-Revision-Date: 2026-10-25 18:32:10+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: tr_TR\n"
@@ -3844,6 +3844,10 @@ msgstr "Şu anda gösterilecek bağış bulunmuyor."
 #: includes/class-admin-design-studio-renderer.php:247
 msgid "These defaults are used when the product card is off."
 msgstr "Ürün kartı kapalıysa bu varsayılanlar kullanılır."
+
+#: src/WooCommerce/class-cart.php
+msgid "This campaign is no longer accepting donations."
+msgstr "Bu kampanya artık bağış kabul etmiyor."
 
 #: includes/class-woo-donation-popup-admin.php:353
 msgid "This cannot be undone. It is not saved without confirmation."

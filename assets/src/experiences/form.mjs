@@ -1,5 +1,5 @@
 /**
- * Form çekirdeği: durum -> DOM, doğrulama (REST), sepete ekleme (mevcut yol).
+ * Form çekirdeği: durum -> DOM, sepete ekleme ve doğrulama (REST `cart/add`).
  */
 import { formatTotal, initialState, nextPresetIndex, reducer } from './store.mjs';
 
@@ -160,31 +160,22 @@ export function createForm(root, hooks = {}) {
     const productId = form.dataset.productId;
     dispatch({ type: 'submitStart' });
     try {
-      const response = await window.fetch(`${root.dataset.dpRest}validate`, {
-        method: 'POST',
-        credentials: 'same-origin',
-        headers: { 'Content-Type': 'application/json', 'X-WP-Nonce': root.dataset.dpNonce || '' },
-        body: JSON.stringify({ product_id: Number(productId), ...values }),
-      });
-      const result = await response.json();
-      if (!response.ok || typeof result.valid !== 'boolean') {
-        throw new Error('validate');
-      }
-      if (!result.valid) {
-        dispatch({ type: 'setErrors', errors: result.errors });
+      const outcome = await addToCart(root, productId, values);
+      if (outcome.errors) {
+        dispatch({ type: 'setErrors', errors: outcome.errors });
         focusFirstError();
         return;
       }
-      const added = await addToCart(root, productId, values, result.amount);
-      if (!added) {
+      if (!outcome.ok) {
         throw new Error('cart');
       }
       dispatch({ type: 'submitDone' });
       if (hooks.onDone) {
         hooks.onDone(root);
       }
-      if (root.dataset.dpCheckout) {
-        window.location.assign(root.dataset.dpCheckout);
+      const target = outcome.checkoutUrl || root.dataset.dpCheckout;
+      if (target) {
+        window.location.assign(target);
       }
     } catch {
       dispatch({ type: 'submitFail' });
@@ -196,38 +187,75 @@ export function createForm(root, hooks = {}) {
 }
 
 /**
- * Sepete ekleme: mevcut `wdp_ajax_add_to_cart` yolu (Store API köprüsü E2B'de).
+ * Taze REST nonce alır (sayfa önbelleğindeki nonce bayatlayabilir); başarısızsa boş döner.
+ *
+ * @param {HTMLElement} root Kök.
+ * @return {Promise<string>} Nonce ya da boş.
+ */
+async function refreshNonce(root) {
+  try {
+    const response = await window.fetch(`${root.dataset.dpRest}nonce`, { credentials: 'same-origin', cache: 'no-store' });
+    if (!response.ok) {
+      return '';
+    }
+    const body = await response.json();
+    root.dataset.dpNonce = body && body.nonce ? String(body.nonce) : '';
+    return root.dataset.dpNonce;
+  } catch {
+    return '';
+  }
+}
+
+/**
+ * JSON gövdeyi okur; okunamazsa null.
+ *
+ * @param {Response} response Yanıt.
+ * @return {Promise<object|null>} Gövde.
+ */
+async function readJson(response) {
+  try {
+    return await response.json();
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Sepete ekleme: `POST /donation-panel/v1/cart/add` (sunucuda doğrulanır). Bayat nonce (403) bir kez tazelenip yeniden denenir;
+ * aynı `submission_key` çift eklemeyi önler.
  *
  * @param {HTMLElement} root      Kök.
  * @param {string}      productId Ürün.
  * @param {object}      values    Alan değerleri.
- * @param {number}      amount    Doğrulanmış tutar.
- * @return {Promise<boolean>} Başarılı mı.
+ * @return {Promise<{ok: boolean, errors?: Record<string, string>, checkoutUrl?: string}>} Sonuç.
  */
-async function addToCart(root, productId, values, amount) {
-  const body = new URLSearchParams();
-  body.set('action', 'wdp_ajax_add_to_cart');
-  body.set('security', root.dataset.dpCartNonce || '');
-  body.set('wdp_product_id', productId);
-  body.set('quantity', '1');
-  body.set('custom_price', String(amount));
-  body.set('wdp_ajax_flow', '1');
-  body.set('timestamp', String(Math.floor(Date.now() / 1000)));
-  body.set('unique_submission_key', `dp-${productId}-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`);
-  Object.entries(values).forEach(([name, value]) => {
-    if (name.startsWith('donation_')) {
-      body.set(name, value);
+async function addToCart(root, productId, values) {
+  const payload = JSON.stringify({
+    ...values,
+    product_id: Number(productId),
+    submission_key: `dp-${productId}-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,
+  });
+  const send = (nonce) =>
+    window.fetch(`${root.dataset.dpRest}cart/add`, {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json', ...(nonce ? { 'X-WP-Nonce': nonce } : {}) },
+      body: payload,
+    });
+  let response = await send(root.dataset.dpNonce || '');
+  if (response.status === 403) {
+    const fresh = await refreshNonce(root);
+    if (fresh) {
+      response = await send(fresh);
     }
-  });
-  const response = await window.fetch(root.dataset.dpAjax, {
-    method: 'POST',
-    credentials: 'same-origin',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: body.toString(),
-  });
-  if (!response.ok) {
-    return false;
   }
-  const result = await response.json();
-  return Boolean(result && result.success);
+  const body = await readJson(response);
+  if (response.ok && body && body.success) {
+    return { ok: true, checkoutUrl: body.checkout_url || '' };
+  }
+  const errors = body && body.data && body.data.errors;
+  if (errors && Object.keys(errors).length) {
+    return { ok: false, errors };
+  }
+  return { ok: false };
 }

@@ -51,6 +51,10 @@ REST (`donation-panel/v1`, kişi verisi döndürmez):
 |---|---|---|---|
 | `/product/{id}/form` | GET | herkese açık, salt okunur, hız sınırı 60/dk | `{ product_id, model, html }`. Kimliksiz `/product/form` çağrısı 404 değil açık hata verir: `400 donation_panel_product_id_required`; bilinmeyen ürün `404 donation_panel_product_not_found`. |
 | `/validate` | POST | WP REST nonce (`X-WP-Nonce`) + hız sınırı 30/dk | Gövde: `product_id, amount, donation_*`. Yanıt `{ valid, errors{alan:ileti}, amount }`; girilen değerler geri yazılmaz. |
+| `/cart/add` | POST | herkese açık; JSON zorunlu (aksi 415); girişli kullanıcıda `X-WP-Nonce`; hız sınırı 20/dk | Gövde: `product_id, amount, donation_*, donation_type, submission_key`. Başarı `{ success, cart_item_key, cart_count, checkout_url, cart_url }` (`no-store`). Hata `400/409` `donation_panel_cart_rejected` + `data.errors{alan:ileti}`. Aynı `submission_key` ikinci kez sepete eklemez. |
+| `/nonce` | GET | herkese açık, hız sınırı 30/dk | `{ nonce }`, `Cache-Control: no-store`; girişli kullanıcı kimliği oturum çerezinden okunur. Bayat nonce (403) alan istemci bunu çağırıp bir kez yeniden dener. |
+
+Store API uzantısı (`extensions['donation-panel']`, yalnız `new` motor): sepet öğesinde kişi verisiz özet `{ is_donation, anonymous, has_dedication, has_note, type }`; `POST /wc/store/v1/cart/extensions` ile `namespace=donation-panel`, `data={ key, dedication?, note?, anonymous? }` yalnız bu üç alanı günceller. Sipariş kalemi meta anahtarları değişmez (`wdp_donor_name`, `wdp_donor_phone`, `wdp_donor_email`, `wdp_donation_note`, `wdp_dedication`, `wdp_anonymous`, `_custom_price`).
 
 | Ad | Tür | Parametreler | Ne zaman |
 |---|---|---|---|
