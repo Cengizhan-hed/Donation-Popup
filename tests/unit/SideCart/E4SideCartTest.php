@@ -70,7 +70,7 @@ final class E4SideCartTest extends TestCase {
 		$html = Side_Cart_Renderer::body( array(), '', 'https://example.test/checkout/' );
 		$this->assertStringContainsString( 'dp-sc__empty', $html );
 		$this->assertStringContainsString( 'data-dp-sc-close', $html );
-		$this->assertStringNotContainsString( 'data-dp-sc-checkout', $html );
+		$this->assertStringNotContainsString( 'data-dp-sc-go', $html );
 	}
 
 	public function test_body_renders_lines_escapes_and_keeps_turkish(): void {

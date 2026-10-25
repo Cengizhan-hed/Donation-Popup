@@ -96,8 +96,13 @@ final class Side_Cart_Lines {
 			if ( method_exists( $product, 'get_image_id' ) && $product->get_image_id() && function_exists( 'wp_get_attachment_image_url' ) ) {
 				$image = (string) wp_get_attachment_image_url( (int) $product->get_image_id(), 'thumbnail' );
 			}
-			$unit_price = function_exists( 'wc_price' ) && method_exists( $cart, 'get_product_price' ) ? (string) $cart->get_product_price( $product ) : '';
-			$line_total = function_exists( 'wc_price' ) && method_exists( $cart, 'get_product_subtotal' ) ? (string) $cart->get_product_subtotal( $product, $qty ) : '';
+			// WooCommerce'in standart sepet satırı filtreleri (mini sepetle aynı): çoklu para birimi eklentileri ve bağış fiyatı bunlara bağlanır.
+			$unit_price = '';
+			$line_total = '';
+			if ( function_exists( 'wc_price' ) && method_exists( $cart, 'get_product_price' ) && method_exists( $cart, 'get_product_subtotal' ) ) {
+				$unit_price = (string) apply_filters( 'woocommerce_cart_item_price', $cart->get_product_price( $product ), $item, $key ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- WooCommerce standart filtresi.
+				$line_total = (string) apply_filters( 'woocommerce_cart_item_subtotal', $cart->get_product_subtotal( $product, $qty ), $item, $key ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- WooCommerce standart filtresi.
+			}
 
 			$lines[] = array_merge(
 				$described,

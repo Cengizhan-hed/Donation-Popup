@@ -86,7 +86,7 @@ final class Side_Cart_Renderer {
 		$html .= '</ul></div>';
 		$html .= '<div class="dp-sc__bar"><div class="dp-sc__subtotal"><span>' . esc_html__( 'Subtotal', 'woo-donation-popup' ) . '</span><strong class="dp-sc__num">' . wp_kses_post( $subtotal_html ) . '</strong></div>'
 			. '<p class="dp-sc__hint">' . esc_html__( 'Payment method and any taxes are shown at checkout.', 'woo-donation-popup' ) . '</p>'
-			. '<a class="dp-sc__btn dp-sc__btn--primary" data-dp-sc-checkout href="' . esc_url( $checkout_url ) . '">' . esc_html__( 'Continue to checkout', 'woo-donation-popup' ) . '</a></div>';
+			. '<a class="dp-sc__btn dp-sc__btn--primary" data-dp-sc-go href="' . esc_url( $checkout_url ) . '">' . esc_html__( 'Continue to checkout', 'woo-donation-popup' ) . '</a></div>';
 		return '<p class="dp-sc__sub" data-dp-sc-sub>' . esc_html( self::count_text( $count ) ) . '</p>' . $html;
 	}
 
