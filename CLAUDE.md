@@ -184,3 +184,10 @@ Faz 1 güvenli bağlantı ✅ → Faz 2 göç provası ✅ → Faz 3 bekleyen i�
 - **`.claude/` hook'ları kurulmayacak** (plandan çıktı). `.claude/**` yazma yasağı kalıcı.
 - **Kod düzenleme kuralı (kesin, soru yok):** Claude kodu elle düzenlemez; araçlar (phpcbf, Rector, betikler) ve alt ajanlar kod ve yapılandırma dosyalarını (.gitignore, .distignore dahil) değiştirebilir.
 - **iphone-product-fixed 9 px farkı:** E1 sırasında incelenir; eklentiden geliyorsa düzeltilir, gelmiyorsa baseline gerekçesiyle güncellenir.
+
+## 17. KARARLAR (2026-10-25 gece; E1 sonrası; kalıcı)
+- **Curcy testi tekrarı (yalnız staging30; sipariş yok):** kurlar 1:1 olduğundan toplam hesabı doğrulanmış sayılmaz. Curcy kur ayarları yedeklenir, gerçekçi test kurları girilir (TRY tabanında EUR/USD yaklaşık güncel), (b) testi snippet açıkken tekrarlanır, beklenen toplamla karşılaştırılır, kurlar yedekten geri yüklenir. İşlem ve geri yükleme rapora. Kanarya tabanı kur değişikliği için geçici olarak bu pencereyi bilir.
+- **Test ortamı güvencesi:** e2e komutlarının varsayılan ortamı kodda `local`. Uzak ortam yalnız açık `--env staging-hedef|ikram-aid` bayrağıyla ve merkezi koruma üzerinden; bayraksız komutun uzak siteye gitmesi teknik olarak imkânsız; birim testle kanıtlanır. Ajan görevlerine "e2e her zaman --env local" yazılır.
+- **Kanca sırası (plugins_loaded 10 → 20):** gerekçe docs/MIMARI.md'ye; dışarıdan erken çağrılar (plugins_loaded 10'da kısa kod/filtre/fonksiyon) sözleşme testiyle kanıtlanır, gerekirse güvenli erken yükleme eklenir.
+- **Baseline:** Android + masaüstü yerel baseline kontrolü; iphone-shop (%2,35) ve iphone-panel-custom-errors (%1,0) farklarının nedeni E2 sırasında ayrılır.
+- **Tasarım vitrini:** `design/showcase/index.html` — 7D tasarımları (popup, sağ panel, sayfa içi form, alttan panel, yan sepet, kampanya/ilerleme çubukları, teşekkür, bağışçı hesabı, yönetici sihirbazı) mobil + masaüstü tek sayfada. Onay beklenmez; E2 sürer.
