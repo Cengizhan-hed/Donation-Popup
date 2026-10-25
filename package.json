@@ -76,7 +76,8 @@
     "i18n:json": "node tools/i18n/make-json.mjs",
     "health:onoff": "node scripts/plugin-onoff-compare.mjs",
     "e2e:rtl": "node tests/e2e/run-rtl-layout.mjs",
-    "verify:lint-front": "node scripts/lint-front.mjs js --gate && node scripts/lint-front.mjs css --gate"
+    "verify:lint-front": "node scripts/lint-front.mjs js --gate && node scripts/lint-front.mjs css --gate",
+    "build:modules": "node scripts/build-modules.mjs"
   },
   "repository": {
     "type": "git",
@@ -87,6 +88,7 @@
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.55.0",
+    "@wordpress/scripts": "^35.0.0",
     "dotenv": "^16.6.1",
     "esbuild": "^0.25.5",
     "eslint": "^10.13.0",
