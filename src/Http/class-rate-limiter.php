@@ -1,0 +1,62 @@
+<?php
+/**
+ * Basit hız sınırlayıcı (transient tabanlı; sabit pencere). İstemci kimliği yalnız karma olarak saklanır.
+ *
+ * @package DonationPanel
+ */
+
+namespace DonationPanel\Http;
+
+defined( 'ABSPATH' ) || exit;
+
+/**
+ * Rate_Limiter.
+ */
+class Rate_Limiter {
+
+	/**
+	 * İstemci kimliği çözücü (test için değiştirilebilir).
+	 *
+	 * @var callable|null
+	 */
+	private $client_id;
+
+	/**
+	 * Kurucu.
+	 *
+	 * @param callable|null $client_id function (): string; yoksa REMOTE_ADDR.
+	 */
+	public function __construct( $client_id = null ) {
+		$this->client_id = is_callable( $client_id ) ? $client_id : null;
+	}
+
+	/**
+	 * Bir istek sayar; sınır aşıldıysa false döner.
+	 *
+	 * @param string $bucket Uç/eylem adı.
+	 * @param int    $limit  Pencere başına üst sınır.
+	 * @param int    $period Pencere süresi (sn).
+	 * @return bool true: izinli.
+	 */
+	public function hit( $bucket, $limit, $period = 60 ) {
+		$key   = 'donation_panel_rl_' . md5( $bucket . '|' . $this->identify() );
+		$count = (int) get_transient( $key );
+		if ( $count >= (int) $limit ) {
+			return false;
+		}
+		set_transient( $key, $count + 1, (int) $period );
+		return true;
+	}
+
+	/**
+	 * İstemci kimliği (kişisel veri saklanmaz; yalnız karma anahtarın parçası olur).
+	 *
+	 * @return string
+	 */
+	private function identify() {
+		if ( null !== $this->client_id ) {
+			return (string) call_user_func( $this->client_id );
+		}
+		return isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( (string) $_SERVER['REMOTE_ADDR'] ) ) : 'unknown';
+	}
+}

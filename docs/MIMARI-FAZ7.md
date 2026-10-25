@@ -62,3 +62,9 @@ PHPCS WP tam (`src/` için gevşetme yok), PHPStan 6+ (yeni kod), Plugin Check t
 - **E6 Teşekkür/kutlama + vergi indirimi beyanı.**
 - **E7 Yönetici deneyimi** (sihirbaz, sade ayar, rehber).
 Kaldırılan eski dosyalar her adımda MIMARI.md'ye yazılır; `includes/` sıfırlanınca `phpcs.xml.dist` istisnaları silinir.
+
+## 8. Kanca ön eki kararı (E0, kanıtlı)
+- **Karar:** yeni genel API öneki `donation_panel_` KALIR; kodun PHP namespace'i `DonationPanel\` ile uyumlu olduğu için Plugin Check kabul eder.
+- **Kanıt:** Plugin Check `Prefixing_Check` önekleri eklenti slug'ından türetmez; `Prefix_Scanner` kodun kendi adlarından (kanca/fonksiyon/sınıf/namespace) çıkarır: en az 4 karakter, kullanım eşiğini geçen ya da namespace olan önekler geçerlidir ve `woo`, `wp`, `plugin`, `custom` gibi genel sözcükler elenir. 7A'da `src/` yokken `donation_panel_` kanca öneki eşiği geçemediği için reddedilmişti. E0 sonrası (namespace `DonationPanel\` + 7 yeni kanca) tarayıcının çıkardığı önekler `donation_panel,donationpanel`; `src/` için sıfır PrefixAllGlobals bulgusu (`npm run verify:plugin-check`, 406 bulgu hepsi eski `includes/` baseline'ında).
+- **Eski kancalar:** `wdp_*` 3 karakter olduğu için (≥4 kuralı) taramada yok sayılır; bunlar eski sözleşmedir, adları değişmez (sözleşme testi `E0PublicApiContractTest`), Plugin Check'te baseline'dadır.
+- **Kural:** yeni her kanca/fonksiyon/global `donation_panel_` (ya da `DonationPanel\` namespace'i) ile başlar; `phpcs-src.xml.dist` aynı önekleri zorlar. REST: `donation-panel/v1`. Ayar: `donation_panel_settings`.

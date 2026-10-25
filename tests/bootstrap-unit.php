@@ -1170,3 +1170,5 @@ $GLOBALS['wpdb'] = new WDP_Fake_Wpdb();
 require_once WDP_PLUGIN_DIR . 'includes/class-exceptions.php';
 require_once WDP_PLUGIN_DIR . 'includes/class-autoloader.php';
 WDP_Autoloader::register();
+require_once WDP_PLUGIN_DIR . 'src/Core/class-autoloader.php';
+\DonationPanel\Core\Autoloader::register( WDP_PLUGIN_DIR . 'src' );

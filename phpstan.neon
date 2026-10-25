@@ -17,6 +17,8 @@ parameters:
         - tools/bin (?)
     bootstrapFiles:
         - tools/phpstan-bootstrap.php
+    scanDirectories:
+        - src
     scanFiles:
         - vendor-dev/php-stubs/woocommerce-stubs/woocommerce-stubs.php
         - vendor-dev/php-stubs/wp-cli-stubs/wp-cli-stubs.php

@@ -59,3 +59,6 @@ graphify-out
 scripts/graph-update.mjs
 research/
 design/
+
+# Faz 7: modern JS kaynagi pakete girmez; derleme ciktisi assets/build/ girer.
+/assets/src/
