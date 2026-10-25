@@ -144,8 +144,8 @@ class WDP_Admin_Layout_Tabs_Renderer {
 		echo '</table>';
 
 		WDP_Admin_Renderer_Helpers::render_section_heading(
-			__( 'Size and animation', 'woo-donation-popup' ),
-			__( 'Bar height and goal celebration.', 'woo-donation-popup' )
+			__( 'Size', 'woo-donation-popup' ),
+			__( 'Bar height.', 'woo-donation-popup' )
 		);
 		echo '<table class="form-table wdp-admin-field-cards">';
 		echo '<tr><th scope="row"><label for="progress_bar_height">' . esc_html__( 'Bar height (px)', 'woo-donation-popup' ) . '</label></th><td><input type="number" id="progress_bar_height" name="progress_bar_height" min="12" max="28" step="1" value="' . esc_attr( min( 28, max( 12, (int) $settings['bar_height'] ) ) ) . '" class="small-text wdp-progress-live-height" /><p class="description">' . esc_html__( '12–28 px. 16–20 is recommended for a more readable bar.', 'woo-donation-popup' ) . '</p></td></tr>';

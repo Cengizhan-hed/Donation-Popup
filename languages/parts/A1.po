@@ -536,14 +536,6 @@ msgstr "Frontend’de yüzde arkaplansızdır; eski uyumluluk."
 msgid "Percent badge text"
 msgstr "Yüzde Rozeti Metin"
 
-#: includes/class-admin-layout-tabs-renderer.php:148
-msgid "Size and animation"
-msgstr "Boyut ve animasyon"
-
-#: includes/class-admin-layout-tabs-renderer.php:149
-msgid "Bar height and goal celebration."
-msgstr "Çubuk yüksekliği ve hedef kutlaması."
-
 #: includes/class-admin-layout-tabs-renderer.php:152
 msgid "Bar height (px)"
 msgstr "Bar Yüksekliği (px)"
@@ -1230,3 +1222,11 @@ msgstr "Yüklenen görsel (#%d)"
 #: includes/class-admin-design-studio-renderer.php:232
 msgid "What it does: Sets the strength of animations such as open and success. Subtle = calmer sites; Expressive = livelier transitions. Animations are already reduced for users with “prefers-reduced-motion” on."
 msgstr "Ne işe yarar: Açılış ve başarı gibi animasyonların gücünü ayarlar. Hafif = sakin siteler; İfadeli = daha canlı geçişler. “prefers-reduced-motion” açık kullanıcılarda animasyonlar zaten kısılır."
+
+#: includes/class-admin-layout-tabs-renderer.php:147
+msgid "Size"
+msgstr "Boyut"
+
+#: includes/class-admin-layout-tabs-renderer.php:148
+msgid "Bar height."
+msgstr "Çubuk yüksekliği."

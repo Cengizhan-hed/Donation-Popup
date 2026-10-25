@@ -122,14 +122,6 @@ msgstr "Her zaman göster"
 msgid "An error occurred while saving settings."
 msgstr "Ayarlar kaydedilirken bir hata oluştu."
 
-#: includes/class-admin-placement-tab-renderer.php:129
-msgid "Automatic"
-msgstr "Otomatik"
-
-#: includes/class-admin-placement-tab-renderer.php:127
-msgid "Automatic: Product markup is not printed on donor-entered and campaign products that have no price. A wdp_product_schema filter is provided for Yoast / SEOPress / AIOSEO."
-msgstr "Otomatik: fiyatı olmayan bağışçı-belirler ve kampanya ürünlerinde Product markup basılmaz. Yoast / SEOPress / AIOSEO için wdp_product_schema filtresi sunulur."
-
 #: includes/class-admin-placement-tab-renderer.php:144
 msgid "Page builder: open the product template, add a Shortcode (or Code) element, paste it, and save."
 msgstr "Sayfa oluşturucu: ürün şablonunu açın, bir Kısa Kod (Shortcode) ya da Kod öğesi ekleyin, yapıştırın ve kaydedin."
@@ -826,10 +818,6 @@ msgstr "Kişisel verilerin işlenmesine ilişkin aydınlatma metni"
 msgid "Product"
 msgstr "Ürün"
 
-#: includes/class-admin-placement-tab-renderer.php:126
-msgid "Product markup"
-msgstr "Product işaretlemesi"
-
 #: includes/class-admin-form-tabs-renderer.php:244
 msgid "Product name color"
 msgstr "Ürün Adı Rengi"
@@ -868,10 +856,6 @@ msgstr "Hızlı tutar"
 #: includes/class-admin-form-tabs-renderer.php:495
 msgid "Quick amount buttons"
 msgstr "Hızlı tutar düğmeleri"
-
-#: includes/class-admin-placement-tab-renderer.php:120
-msgid "Rank Math detected, compatibility is on."
-msgstr "Rank Math algılandı, uyum açık."
 
 #: includes/class-admin-product-settings-ajax.php:45
 msgid "Recalculated the total for \"%1$s\": %2$s (%3$d orders)."
@@ -1066,10 +1050,6 @@ msgstr "Normal form bölümleri"
 #: includes/class-woo-donation-popup-admin.php:184
 msgid "Standard form settings saved successfully."
 msgstr "Normal form ayarları başarıyla kaydedildi."
-
-#: includes/class-admin-placement-tab-renderer.php:118
-msgid "Structured data (schema)"
-msgstr "Yapılandırılmış veri (schema)"
 
 #: includes/class-admin-form-tabs-renderer.php:442
 msgid "Style packs"

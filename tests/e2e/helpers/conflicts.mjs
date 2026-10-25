@@ -37,7 +37,6 @@ export const OWN_WDP_GLOBALS = Object.freeze([
   'wdp_admin',
   'wdpProductsAdmin',
   'wdpElementor',
-  'wdpMetaPurchase',
 ]);
 
 export const WATCHED_LIBRARIES = Object.freeze([

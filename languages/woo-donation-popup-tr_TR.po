@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: woo-donation-popup\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-25 11:38:06+0000\n"
-"PO-Revision-Date: 2026-10-25 11:38:06+0000\n"
+"POT-Creation-Date: 2026-10-25 11:46:42+0000\n"
+"PO-Revision-Date: 2026-10-25 11:46:42+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: tr_TR\n"
@@ -386,17 +386,9 @@ msgstr "Avustralya"
 msgid "Austria"
 msgstr "Avusturya"
 
-#: includes/class-admin-placement-tab-renderer.php:129
-msgid "Automatic"
-msgstr "Otomatik"
-
 #: includes/class-admin-product-data-tab.php:547
 msgid "Automatic placement"
 msgstr "Otomatik yerleşim"
-
-#: includes/class-admin-placement-tab-renderer.php:127
-msgid "Automatic: Product markup is not printed on donor-entered and campaign products that have no price. A wdp_product_schema filter is provided for Yoast / SEOPress / AIOSEO."
-msgstr "Otomatik: fiyatı olmayan bağışçı-belirler ve kampanya ürünlerinde Product markup basılmaz. Yoast / SEOPress / AIOSEO için wdp_product_schema filtresi sunulur."
 
 #: includes/class-phone-field.php:73
 msgid "Azerbaijan"
@@ -434,9 +426,9 @@ msgstr "Bangladeş"
 msgid "Bar height (px)"
 msgstr "Bar Yüksekliği (px)"
 
-#: includes/class-admin-layout-tabs-renderer.php:149
-msgid "Bar height and goal celebration."
-msgstr "Çubuk yüksekliği ve hedef kutlaması."
+#: includes/class-admin-layout-tabs-renderer.php:148
+msgid "Bar height."
+msgstr "Çubuk yüksekliği."
 
 #: includes/class-phone-field.php:29
 msgid "Belarus"
@@ -2839,10 +2831,6 @@ msgstr "Ürün bilgileri alınamadı. Lütfen sayfayı yenileyip tekrar deneyin.
 msgid "Product is already in the cart"
 msgstr "Ürün zaten sepete eklenmiş"
 
-#: includes/class-admin-placement-tab-renderer.php:126
-msgid "Product markup"
-msgstr "Product işaretlemesi"
-
 #: includes/class-admin-form-tabs-renderer.php:244
 msgid "Product name color"
 msgstr "Ürün Adı Rengi"
@@ -2974,10 +2962,6 @@ msgstr "Toplanan"
 #: includes/elementor/class-widget-donations-list.php:88
 msgid "Random"
 msgstr "Rastgele"
-
-#: includes/class-admin-placement-tab-renderer.php:120
-msgid "Rank Math detected, compatibility is on."
-msgstr "Rank Math algılandı, uyum açık."
 
 #: includes/class-admin-product-data-tab.php:202
 msgid "Recalculate total"
@@ -3417,9 +3401,9 @@ msgstr "Sağ Panel Genişliği (Bağış Yap)"
 msgid "Singapore"
 msgstr "Singapur"
 
-#: includes/class-admin-layout-tabs-renderer.php:148
-msgid "Size and animation"
-msgstr "Boyut ve animasyon"
+#: includes/class-admin-layout-tabs-renderer.php:147
+msgid "Size"
+msgstr "Boyut"
 
 #: includes/class-admin-layout-tabs-renderer.php:141
 msgid "Slice for the amount sitting in the cart, not yet paid."
@@ -3516,10 +3500,6 @@ msgstr "Adım"
 #: includes/class-admin-product-data-tab.php:855
 msgid "Story (side by side)"
 msgstr "Hikâye (yan yana)"
-
-#: includes/class-admin-placement-tab-renderer.php:118
-msgid "Structured data (schema)"
-msgstr "Yapılandırılmış veri (schema)"
 
 #: includes/class-admin-design-studio-renderer.php:79
 msgid "Studio preview"

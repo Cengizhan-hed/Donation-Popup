@@ -1,11 +1,11 @@
 {
   "generated_at": "2026-10-24T12:28:59+00:00",
-  "call_count": 1115,
+  "call_count": 1107,
   "file_count": 87,
   "functions": {
     "esc_html_e": 2,
-    "__": 780,
-    "esc_html__": 303,
+    "__": 774,
+    "esc_html__": 301,
     "_n": 2,
     "esc_attr__": 28
   },
@@ -3392,28 +3392,6 @@
       "placeholders": []
     },
     {
-      "function": "__",
-      "msgid": "Boyut ve animasyon",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-layout-tabs-renderer.php",
-      "line": 148,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Çubuk yüksekliği ve hedef kutlaması.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-layout-tabs-renderer.php",
-      "line": 149,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
       "function": "esc_html__",
       "msgid": "Bar Yüksekliği (px)",
       "plural": null,
@@ -4547,72 +4525,6 @@
       "domain": "woo-donation-popup",
       "file": "includes/class-admin-placement-tab-renderer.php",
       "line": 113,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "esc_html__",
-      "msgid": "Yapılandırılmış veri (schema)",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-placement-tab-renderer.php",
-      "line": 118,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "esc_html__",
-      "msgid": "Rank Math algılandı, uyum açık.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-placement-tab-renderer.php",
-      "line": 120,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Product işaretlemesi",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-placement-tab-renderer.php",
-      "line": 126,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Otomatik: fiyatı olmayan bağışçı-belirler ve kampanya ürünlerinde Product markup basılmaz. Yoast / SEOPress / AIOSEO için wdp_product_schema filtresi sunulur.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-placement-tab-renderer.php",
-      "line": 127,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Otomatik",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-placement-tab-renderer.php",
-      "line": 129,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Kapalı",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-placement-tab-renderer.php",
-      "line": 130,
       "arg_count": 2,
       "placeholders": []
     },

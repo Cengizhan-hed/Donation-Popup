@@ -1,6 +1,6 @@
 <?php
 /**
- * Form, başarı ekranı, progress bar, modal ve Meta Pixel ayar isteklerini normalize eder.
+ * Form, başarı ekranı, progress bar ve modal ayar isteklerini normalize eder.
  *
  * @package WooCommerce\Donation_Popup
  */

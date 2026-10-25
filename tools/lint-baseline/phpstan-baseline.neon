@@ -427,18 +427,6 @@ parameters:
 			path: ../../includes/class-donations-list.php
 
 		-
-			message: '#^Offset ''name'' on array\{url\: string, name\: string\} in isset\(\) always exists and is not nullable\.$#'
-			identifier: isset.offset
-			count: 1
-			path: ../../includes/class-donations-list.php
-
-		-
-			message: '#^Offset ''url'' on array\{url\: string, name\: string\} in isset\(\) always exists and is not nullable\.$#'
-			identifier: isset.offset
-			count: 1
-			path: ../../includes/class-donations-list.php
-
-		-
 			message: '#^Parameter \#1 \$attachment_id of function wp_get_attachment_image expects int, string given\.$#'
 			identifier: argument.type
 			count: 1

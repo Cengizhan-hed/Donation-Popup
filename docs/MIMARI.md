@@ -43,7 +43,7 @@ Kural: her iddia `dosya:satır`; emin olunmayan yerler **DOĞRULANMADI**.
 2. HPOS uyumluluk + autoload + Migrations::init (`includes/bootstrap/class-plugin-bootstrap.php:22-27`)
 3. `init` → `load_plugin_textdomain` (`includes/bootstrap/class-plugin-bootstrap.php` `load_textdomain`)
 4. `plugins_loaded` → WC yoksa notice; varsa `Woo_Donation_Popup` (+ admin’de `Woo_Donation_Popup_Admin`) (`includes/bootstrap/class-plugin-bootstrap.php:35-44`)
-5. Modül `init()` sırası (`includes/class-woo-donation-popup.php:47-64`): Utils → Assets → Meta_Tracking → Ajax → Cart → Order → Addon_Product_Visibility → **Donation_Purchasable** → Donations_List → Product_Page_Integration → Lazy_Modal → Schema → Blocks → Elementor → Form_Matrix → Shortcodes
+5. Modül `init()` sırası (`includes/class-woo-donation-popup.php:47-64`): Utils → Assets → Ajax → Cart → Order → Addon_Product_Visibility → **Donation_Purchasable** → Donations_List → Product_Page_Integration → Lazy_Modal → Blocks → Elementor → Form_Matrix → Shortcodes
 
 ---
 
@@ -83,9 +83,6 @@ Kural: her iddia `dosya:satır`; emin olunmayan yerler **DOĞRULANMADI**.
 | `wp_enqueue_scripts` | default | Assets enqueue | `includes/class-assets.php:61` |
 | `wp_footer` | 1 | maybe enqueue / footer enqueue | `includes/class-assets.php:62`, `includes/class-assets.php:90` |
 | `style_loader_tag` | 10 | no-optimize | `includes/class-assets.php:64` |
-| `wp_enqueue_scripts` | 25 | Meta thankyou Purchase | `includes/class-meta-tracking.php:263` |
-| `wp_footer` | 1 | optional base pixel | `includes/class-meta-tracking.php:264` |
-| `wp_consent_api_registered_*` | — | `__return_true` | `includes/class-meta-tracking.php:268` |
 | `woocommerce_add_cart_item_data` | 10 | bağış cart data | `includes/class-cart.php:22` |
 | `woocommerce_add_to_cart_validation` | 10 | alan doğrulama + yerel add-to-cart reddi | `includes/class-cart.php:25` |
 | `woocommerce_store_api_validate_add_to_cart` | 10 | blok/Store API yerel ekleme reddi | `includes/class-cart.php:26` |
@@ -111,8 +108,6 @@ Kural: her iddia `dosya:satır`; emin olunmayan yerler **DOĞRULANMADI**.
 | `render_block_woocommerce/*` | 10 | blok sepete ekle/fiyat/buton | `includes/class-product-page-integration.php:63-66` |
 | `woocommerce_single_product_summary` | 21/30 | fallback form | `includes/class-product-page-integration.php:107` |
 | `woocommerce_after_single_product_summary` | 5 | below_summary | `includes/class-product-page-integration.php:103` |
-| `woocommerce_structured_data_product` | 20 | schema | `includes/class-schema.php:21` |
-| `rank_math/snippet/...` / `rank_math/json_ld` | 20 / 99 | Rank Math | `includes/class-schema.php:23-24` |
 | `init` | default | Gutenberg blok kaydı | `includes/class-blocks.php:28` |
 | `elementor/widgets/register` | default | widget | `includes/class-elementor.php:22-26` |
 | `elementor/elements/categories_registered` | default | kategori | `includes/class-elementor.php:23-27` |
@@ -150,7 +145,7 @@ AJAX hook’ları → bölüm **e**.
 
 Kaynak: `includes/config/frontend-js-stack.php`. Özet sıra:
 
-1. **i18n** (core’dan önce, bağımsız) → constants → meta-tracking → utils → cta-viewport → state → dom  
+1. **i18n** (core’dan önce, bağımsız) → constants → utils → cta-viewport → state → dom  
 2. phone-input → product  
 3. cart/ui → cart/woo → cart/actions → cart  
 4. form/messages → pricing → feedback → addon-rules → addon → ajax → validate → wizard → **cta-ready** → form  
@@ -164,10 +159,9 @@ Kaynak: `includes/config/frontend-js-stack.php`. Özet sıra:
 |--------|--------|-----|
 | `window.WDPApp` | tüm `assets/js/src/**` | alt: `i18n`, `utils`, `state`, `modal`, `form`, `formCtaReady`, `cart`, `product`, `lazyModal`, `init`, … |
 | `window.WDPApp.i18n` | `assets/js/src/core/i18n.js` | `__`, `_x`, `sprintf`; sözlük `wdp_ajax.i18n_dict` (`WDP_Js_I18n::dictionary`) |
-| `window.wdp_ajax` | PHP localize | nonce, ajax_url, `currency`, `i18n_dict`, meta… (`includes/traits/trait-wdp-assets-registry.php`, `WDP_Utils::get_js_currency_settings`) |
+| `window.wdp_ajax` | PHP localize | nonce, ajax_url, `currency`, `i18n_dict`… (`includes/traits/trait-wdp-assets-registry.php`, `WDP_Utils::get_js_currency_settings`) |
 | `WDPApp.utils.formatMoney` / `parseMoney` / `parseMoneyDetailed` / `formatPrice` / `formatMinPlaceholder` | `assets/js/src/core/utils.js` | TEK biçimleyici; Intl yok; `wdp_ajax.currency` (Woo). `parseMoneyDetailed` = PHP `WDP_Utils::parse_donor_amount` (aynı kural, `tests/fixtures/amount-parse-vectors.json`). Geçerli binlik gruplama (ilk 1–3, sonrakiler tam 3) → binlik (mağaza ayırıcısı farklı olsa da; `1.250` / `1,250` her zaman 1250). Gruplamayan son `.`/`,` → ondalık adayı. 0 dp: kesir tümü sıfırsa tam sayı (`50,00`→50, `10.00`→10); sıfır değilse görünür uyarı (`Bu sitede kuruşlu tutar girilemez, örn. 10`) — yuvarlama/100× yok. N>0: kesir ≤ N kabul, > N uyarı. İki ayırıcı: son ondalık, öncekiler gruplamaysa binlik. Sepete ekle aynı doğrulama. Tutar `inputmode=decimal`; yapıştırma normalize. |
 | `window.WDP.refresh` | `assets/js/src/lazy-modal.js:188-189` | DOM yenileme |
-| `window.WDPMetaTracking` | `assets/js/src/meta-tracking.js` | Pixel olayları |
 
 Admin: `wdp_admin` localize (`includes/class-admin-assets.php` — ayrı yığın).
 
@@ -193,15 +187,12 @@ Admin: `wdp_admin` localize (`includes/class-admin-assets.php` — ayrı yığı
 | `wdp_success_settings` | Başarı sekme | başarı UI, sadaka varsayılan |
 | `wdp_progress_bar_settings` | Progress sekme | progress CSS/JS |
 | `wdp_modal_layout_settings` | Modal sekme | inline layout CSS |
-| `wdp_meta_tracking_settings` | Meta sekme | `WDP_Meta_Tracking` |
-| `wdp_category_title_colors` | Kategoriler | `WDP_Category_Title_Color_Service` |
 | `wdp_custom_style_presets` | stil import | `WDP_Style_Presets` |
 | `wdp_delete_data_on_uninstall` | Gelişmiş | `includes/class-uninstall.php` |
 | `wdp_list_cache_version` | liste HTML geçersiz kılma | `WDP_Donations_List::bump_cache` |
 | `wdp_css_signature` | assets registry | `includes/traits/trait-wdp-assets-registry.php:153-156` |
 | `wdp_legacy_render_count` | eski (kullanılmayan) sayaç; AJAX yolu 10.33.0’da kaldırıldı | `includes/bootstrap/class-legacy-frontend.php` |
 | `wdp_addon_links_audit` (eski `wdp_sadaka_links_audit` göçle kopyalanır, silinmez) | migration 10.28.4 anlık görüntü; UI 10.33.0’da kaldırıldı, option silinmez | `includes/class-addon-product-visibility.php` |
-| `wdp_meta_purchase_wc_migration_v1` | Meta migrate | `includes/class-meta-tracking.php:193-208` |
 | `wdp_sadaka_visibility_cache_cleared` | migration 10.28.5 | `includes/class-migrations.php:244` |
 | `wdp_migrated_10_29_0` | migration 10.29.0 (cover fee 0,5–15 onarımı, genel liste ≤6) | `includes/class-migrations.php` `step_10_29_0` |
 | `wdp_migrated_10_29_1` | migration 10.29.1 (genel `amount_preset_recommended` silinir) | `includes/class-migrations.php` `step_10_29_1` |
@@ -223,7 +214,7 @@ Ek progress meta: `_wdp_total_donation_amount`, `_wdp_donor_count`, `_wdp_progre
 
 **Faz 6-A/6-B (bağdaştırıcı ayrımı):** Çekirdek yalnız filtre + Woo verisi kullanır. `WDP_Progress_Currency::get_order_rate` -> `wdp_order_exchange_rate` (null, order, currency, base); canlı kur -> `wdp_progress_live_rate`; Curcy/WOOCS okuyucuları `WDP_Compat_Currency`. Ön yüz: `wdp_ajax.context` = `{currency, lang, currency_cookies[], lang_cookies[], switcher_selectors[], change_events[]}` (`wdp_client_context` filtresi); `lazy-modal.js` eklenti adı bilmez. `cart/woo.js` Avada seçicileri kaldırıldı (genel `menu-cart`/`widget-cart`/`shopping-cart` seçicileri + zaten tetiklenen standart `wc_fragment_refresh`). Oluşturucu tespiti: `WDP_Builder_Detect` genel kurallarla (`edit_products` + Gutenberg block-renderer, `is_preview()`/`is_customize_preview()`, anahtarı edit/preview/builder/fb parçası içeren dolu sorgu değişkeni) karar verir; adı bilinmeyen oluşturucu da çalışır; site sahibi ek işareti `wdp_is_builder_preview` / `wdp_builder_preview_context_product` filtreleriyle ekleyebilir (F6G: marka bazlı `WDP_Compat_Builders` kaldırıldı). Ürün sayfası yedeği (`render_builder_fallback`) zaten kanca tabanlıdır (şablon geçersiz kılma çalıştı mı).
 
-**10.32.0 ürün teması:** `WDP_Form_Modules::resolve_product_primary_color` / `resolve_product_shell_primary` (ürün → kategori → genel; `_theme_inherit_category_color` okunmaz). `build_product_theme_style` → `WDP_Color_Palette::from_hex` türevleri + `--wdp-on-primary`; hover boşsa türetilmiş; koyu `--wdp-modal-bg` için metin token’ları. Köşe `PRODUCT_THEME_RADIUS_MIN/MAX` (4–32) + `product_radius_ladder` (panel/sheet oranı). Kampanya görseli URL: filtre `wdp_campaign_media_url` (`class-campaign-header-renderer.php`).
+**10.32.0 ürün teması:** `WDP_Form_Modules::resolve_product_primary_color` / `resolve_product_shell_primary` (ürün → genel; kategori rengi K5 ile kaldırıldı; `_theme_inherit_category_color` okunmaz). `build_product_theme_style` → `WDP_Color_Palette::from_hex` türevleri + `--wdp-on-primary`; hover boşsa türetilmiş; koyu `--wdp-modal-bg` için metin token’ları. Köşe `PRODUCT_THEME_RADIUS_MIN/MAX` (4–32) + `product_radius_ladder` (panel/sheet oranı). Kampanya görseli URL: filtre `wdp_campaign_media_url` (`class-campaign-header-renderer.php`).
 
 Kapsam bayrağı: `_wdp_donation_product` (`includes/class-donation-scope.php:20`).
 
@@ -293,9 +284,7 @@ E2E bağışçı akışı ziyaretçi (`asVisitor`, storageState yok): ürün say
 | `wdp_save_shareholder_form_settings` | hayır | aynı | aynı | shareholder_settings | success | `includes/class-admin-hooks.php:34` |
 | `wdp_save_success_screen_settings` | hayır | aynı | aynı | success_settings | success | `includes/class-admin-hooks.php:35` |
 | `wdp_save_modal_layout_settings` | hayır | aynı | aynı | modal_layout | success | `includes/class-admin-hooks.php:36` |
-| `wdp_save_category_colors_settings` | hayır | aynı | aynı | category colors | success | `includes/class-admin-hooks.php:37` |
 | `wdp_save_progress_bar_settings` | hayır | aynı | aynı | progress | success | `includes/class-admin-hooks.php:38` |
-| `wdp_save_meta_tracking_settings` | hayır | aynı | aynı | meta | success | `includes/class-admin-hooks.php:39` |
 | `wdp_apply_style_preset` | hayır | aynı | aynı | preset id | success | `includes/class-admin-hooks.php:40` |
 | `wdp_export_style_preset` | hayır | aynı | aynı | — | export JSON | `includes/class-admin-hooks.php:41` |
 | `wdp_import_style_preset` | hayır | aynı | aynı | import payload | success | `includes/class-admin-hooks.php:42` |
@@ -369,10 +358,10 @@ Kaynak rehber: `docs/AYARLAR.md`. Teknik varsayılanlar normalizer / placement /
 | Çok adımlı form | ürün `_enable_wizard` tristate → global `enable_multi_step`; form sınıfı `wdp-multi-step` (JS genel bayrağa bakmaz) | CTX + `class-modal-shell-renderer.php` + `wizard.js` |
 | Alan ikonları | ürün `_enable_field_icons` tristate → global `enable_field_icons`; kapalıysa `wdp-no-field-icons` | CTX + MSR |
 | Aydınlatma bağlantısı | global `enable_privacy_notice` (varsayılan kapalı) + kısa etiket (`privacy_notice_text`) / URL; URL boşsa WP gizlilik sayfası; yoksa gösterilmez. Yalnız bağlantı (uzun gövde yok). Yalnız e-posta/ithaf/hissedar varken | `WDP_Donation_Optional_Fields::render_privacy_notice_html` |
-| Ürün vurgu rengi | ürün `_theme_primary` → kategori `wdp_category_title_colors` → genel marka; başlık aynı kural (`get_title_style_attr`) | `WDP_Form_Modules::resolve_product_*` / `WDP_Category_Title_Color_Service` |
+| Ürün vurgu rengi | ürün `_theme_primary` → genel marka; başlık aynı kural (`WDP_Form_Modules::get_title_style_attr`) | `WDP_Form_Modules::resolve_product_*` |
 | Anonim maske | yalnız herkese açık yüzeyler (`sanitize_public_donation_data`); sipariş/admin/e-posta orijinal ad | `mask_public_donor_name` |
 | Hızlı tutar düğmeleri | global `enable_amount_presets==='1'` → ürün `_enable_amount_presets==='no'` gizler; yalnız custom/campaign; min altı elenir; "Önerilen" yalnız ürün `_amount_preset_recommended` dolu ve görünen listedeyse (ortadaki/genel varsayılan yok; seçili gelmez) | `render_amount_presets` (`includes/templates/class-form-fields-renderer.php`) |
-| Modül sırası | ürün `_wdp_module_order` dolu → yoksa button `module_order` → defaults | `WDP_Form_Modules::resolve_order` (`includes/class-form-modules.php:74-84`) |
+| Modül sırası | sabit varsayılan sıra (`includes/config/form-modules.php`); ürün/genel sıra ayarı K4 ile kaldırıldı, eski `_wdp_module_order` / `module_order` değerleri okunmaz | `WDP_Form_Modules::resolve_order` |
 | Güven rozetleri | global → ürün `_trust_badges` doluysa ürün | `resolve_trust_badges` (`includes/class-form-modules.php:145-175`) |
 | Otomatik yerleşim | global `auto_place` + ürün `_wdp_auto_place!=='no'` | `should_auto_place` / meta (`includes/class-product-page-integration.php`) |
 | Native sepet gizleme | bağış ürünü tekil sayfada tüm `form.cart` + `.single_add_to_cart_button` + sticky-add-to-cart (tema sınıfı yok); döngü/ilgili/upsell/koleksiyon `:not()` ile hariç | `hide_native_cart_css` yedek; asıl yol `unhook_native_single_add_to_cart` (`woocommerce_template_single_add_to_cart` + sticky callback adı) |
@@ -390,7 +379,6 @@ Kaynak rehber: `docs/AYARLAR.md`. Teknik varsayılanlar normalizer / placement /
 | Döngü butonu | `loop_button` | `panel` | aynı |
 | Kapsam | `donation_scope` | `all` | Scope |
 | Kategoriler | `donation_categories` | `[]` | Scope |
-| Schema | `schema` | `auto` | `WDP_Schema` |
 
 **Çelişki notu (AYARLAR ↔ kod):** `defaults()` `auto_place=yes` (`includes/class-placement-settings.php:35`); `get()` option yokken `auto_place=>no` zorlar (`includes/class-placement-settings.php:89-91`) — yükseltmede ikinci form önleme. AYARLAR “genel açık bırakın” der; ham `defaults()` ile `get()` davranışı farklıdır.
 
@@ -405,7 +393,6 @@ Kaynak rehber: `docs/AYARLAR.md`. Teknik varsayılanlar normalizer / placement /
 | Hedefe ulaşınca | `_goal_reached_action`, `_goal_reached_message` | boş action→message; mesaj boş→varsayılan metin | Campaign_Goal, ajax-cart-add, cart validation |
 | En düşük tutar | `_min_custom_price` | `0`; **tek kaynak** (Genel fiyat min hesaplanmaz) | context / cart |
 | En fazla hisse | `_max_shares` | boş → runtime `7`; kayıt/sunucu üst 50 | context, ajax-cart-add |
-| Kutlama | `_progress_celebrate` | boş→yes; yalnız onaylı %100 geçişinde | progress-bar.js `data-wdp-was-complete` |
 | Hızlı tutar / Tutarlar / Önerilen | `_enable_amount_presets`, `_amount_presets`, `_amount_preset_recommended` | presets varsayılan yes; kayıtta katı doğrulama; Önerilen yalnız ürün (boş=etiket yok; listede yoksa kayıt hata); okumada yumuşak parse | form-fields, product-settings-service |
 | Adet seçici | `_enable_quantity` | boş→yes; yalnız sabit tipte; sunucu adedi kapalıyken/sabit olmayan tipte 1'e sabitler (`WDP_Cart::product_allows_quantity`, hisseli hariç) | context, ajax-cart-add |
 | Cover fee | `_enable_cover_fee`, `_cover_fee_percent` | off / 0; tüm tipler; kayıt 0 veya 0,5–15 (`normalize_cover_fee_percent_for_save`, aralık dışı = hata), çalışma anı `clamp_cover_fee_percent_for_runtime`; yüzde sunucuda HER ZAMAN ürün meta'sından (`WDP_Cart::get_product_cover_fee_percent`), istemci yüzdesi yok sayılır; fiyat: custom → `custom_price`, sabit/hisseli → `wdp_base_unit_price` × (1+yüzde); sepette "İşlem ücreti" satırı; formda `data-wdp-form-total` Toplam satırı | context, cart, ajax-cart-add, form-modules |
@@ -414,7 +401,6 @@ Kaynak rehber: `docs/AYARLAR.md`. Teknik varsayılanlar normalizer / placement /
 | Wizard / ikon | `_enable_wizard`, `_enable_field_icons` tristate | `''`→global (`enable_multi_step` / `enable_field_icons`) | CTX + MSR |
 | Etki / aciliyet / sosyal / medya / layout / tema… | ilgili `_` meta | bkz. `from_request` | context + header renderer |
 | Alt bağış | `_enable_addon_donation`, `_addon_*` (eski `_enable_sadaka_donation`, `_sadaka_*`) | off | context; kampanyada UI gizlenir (product_info `includes/traits/trait-wdp-ajax-product.php:102`) |
-| Blok sırası | `_wdp_module_order` | boş→global | resolve_order |
 
 ### Global sekmeler → option anahtarları (varsayılan örnekleri)
 
@@ -425,8 +411,6 @@ Kaynak rehber: `docs/AYARLAR.md`. Teknik varsayılanlar normalizer / placement /
 | Başarı | `wdp_success_settings` | buton renkleri, sadaka toggle label | `includes/class-admin-settings-normalizer.php:335-353` |
 | Progress | `wdp_progress_bar_settings` | fill/pending/height | `includes/class-admin-settings-normalizer.php:372+` |
 | Modal | `wdp_modal_layout_settings` | panel %50, popup 540px, … | `includes/class-admin-settings-normalizer.php:433-456` |
-| Meta Pixel | `wdp_meta_tracking_settings` | enabled/view/add_to_cart on; purchase off; require_consent on | `includes/class-meta-tracking.php:24-39` |
-| Kategoriler | `wdp_category_title_colors` | — | service OPTION_KEY |
 | Gelişmiş | `wdp_delete_data_on_uninstall` | `'0'` | `includes/class-admin-page-renderer.php:125` |
 | Stil paketleri | `wdp_button_settings` (+ share/progress/success merge) + `wdp_custom_style_presets` | `WDP_Style_Presets` | `includes/class-style-presets.php` |
 
@@ -466,7 +450,7 @@ Kaynak rehber: `docs/AYARLAR.md`. Teknik varsayılanlar normalizer / placement /
 4. `submitFormData(form, isCheckout)` → `formAjax.submitFormData` (`assets/js/src/form.js:205-207`, `assets/js/src/form/ajax.js:576+`). `directFormSubmit` de `form.submit()` değil aynı AJAX.  
 5. POST `action=wdp_ajax_add_to_cart` + `security` + alanlar + `wdp_ajax_flow`  
 6. PHP: `ajax_add_to_cart` → rate/nonce → doğrulama → `WC()->cart->add_to_cart` (+ sadaka satırı) (`includes/traits/trait-wdp-ajax-cart-add.php`)  
-7. Başarı: mini-cart UI, Meta AddToCart; checkout ise yalnız `checkout_url` (Woo) ile yönlendirme — URL yoksa sepete eklendi bildirimi (`assets/js/src/form/ajax.js` `handleAjaxResponse`). Sepete ekleme sonrası **sayfa yenileme yok**; `fallbackCartUpdate` yalnız `wdp_ajax.flags.reload_after_add_to_cart` (filtre `wdp_reload_after_add_to_cart`, varsayılan kapalı) iken `location.reload` (`assets/js/src/cart/woo.js`).  
+7. Başarı: mini-cart UI; checkout ise yalnız `checkout_url` (Woo) ile yönlendirme — URL yoksa sepete eklendi bildirimi (`assets/js/src/form/ajax.js` `handleAjaxResponse`). Sepete ekleme sonrası **sayfa yenileme yok**; `fallbackCartUpdate` yalnız `wdp_ajax.flags.reload_after_add_to_cart` (filtre `wdp_reload_after_add_to_cart`, varsayılan kapalı) iken `location.reload` (`assets/js/src/cart/woo.js`).  
 8. Ağ hatası: `verify_submission_in_cart` kurtarma (`tryRecoverCartAfterAjaxFailure` `assets/js/src/form/ajax.js:517+`)  
 9. E2E: kabuk açıkken ürün sayfası belge yeniden yüklemesi **NATIVE-SUBMIT-RELOAD** (`tests/e2e/helpers/native-submit-guard.mjs`; matris + capture + uzak quick, salt okur).
 
@@ -734,17 +718,7 @@ Tarama: `includes/`, `templates/`, `blocks/`, `assets/js/src/` — boş gövde, 
 | `assets/js/src/lazy-modal.js:500` | `.catch(function () {})` | Bilinçli: idle prefetch hatasını yutma (pump devam) |
 | `assets/js/src/core/utils.js:302` | `.catch(function() {})` | Görünür olunca nonce yenileme; başarısızlık sessiz (bilinçli tolerans / hata gizleme) |
 | `assets/js/src/product.js:365` | `catch (_) { /* noop */ }` | `input` event dispatch (eski tarayıcı); bilinçli noop |
-| `assets/js/src/progress-bar.js:99` | `catch (e) {}` | İsteğe bağlı Meta `trackCustom`; analitik hatası bilinçli yutulur |
-| `assets/js/src/bootstrap/event-manager.js:125` | `catch (dbc) {}` | İsteğe bağlı Meta debug click; analitik hatası bilinçli yutulur |
-| `assets/js/src/meta-tracking.js:38` | `catch (e) {}` | `console.log` debug; bilinçli |
-| `assets/js/src/meta-tracking.js:109` | `catch (err) {}` | `fbq` kuyruk flush; üçüncü taraf / bilinçli |
-| `assets/js/src/meta-tracking.js:148` | `catch (e) {}` | `fbq` çağrı; üçüncü taraf / bilinçli |
-| `assets/js/src/meta-tracking.js:196` | `catch (e) {}` | once callback; gerçek callback hatasını gizleyebilir |
-| `assets/js/src/meta-tracking.js:213` | `catch (e) {}` | `sessionStorage.setItem`; bilinçli (gizlilik / kota) |
-| `assets/js/src/meta-tracking.js:229` | `catch (e) {}` | `localStorage.setItem`; bilinçli (gizlilik / kota) |
-| `assets/js/src/meta-tracking.js:438` | `catch (eLog) {}` | Purchase debug `console.log`; bilinçli |
 | `assets/js/src/form/wizard.js:485` | `catch (e) {}` | `shareholder.relayout`; gerçek layout hatasını gizler |
-| `assets/js/src/form/wizard.js:508` | `catch (e) {}` | Meta wizard step; isteğe bağlı analitik / bilinçli |
 | `assets/js/src/form/wizard.js:518` | `catch (e3) {}` | `focus({ preventScroll })`; bilinçli (tarayıcı farkı) |
 | `assets/js/src/form/wizard.js:528` | `catch (e4) {}` | `startViewTransition` yoksa fallback; bilinçli |
 | `includes/class-admin-assets.php:228` | inline JS `catch (e) {}` | `history.replaceState` sekme hash; bilinçli |
@@ -873,7 +847,7 @@ Eklenti hiçbir tema, sayfa oluşturucu ya da eklentiyi tanımaz (CLAUDE.md böl
 | Bağış ürünü sayfası | 3 / 5-6 | 3 / 5 / 71 |
 | Bağış listesi sayfası (`[wdp_donations]`) | 5 / 5-6 | 5 / 5 / 35 |
 
-Not: sepet/ödemede bağış öğesi olan koşul ayrı ölçülmedi (boş sepet). Meta takip eklentisi ayar açıkken kendi betiğini ekler (özellik gereği; ayrı ayar).
+Not: sepet/ödemede bağış öğesi olan koşul ayrı ölçülmedi (boş sepet).
 
 ### 6-F: ölü ve tekrar eden kod (davranış değişmez)
 
@@ -901,3 +875,17 @@ Not: sepet/ödemede bağış öğesi olan koşul ayrı ölçülmedi (boş sepet)
 **Eski kod:** `includes/` 7C'de `src/`'ye taşındıkça silinir; bitince `includes/` istisnaları ve `<file>includes</file>` kaldırılır. O zamana dek `verify:lint` kapısı eski dosyada da yeni/değişen satırda hata → kırmızı.
 
 **Plugin Check kapısı (7A-3).** `npm run verify:plugin-check` (`scripts/plugin-check-gate.mjs`) `verify` zincirinin sonundadır (yerel WP + WP-CLI; ~45 sn, süre eşiği 3 dk altında olduğu için koşulsuz). `tools/lint-baseline/baseline-plugin-check.json` (dosya|kaynak|ileti başına sayı; satır numarası yok) içinde olmayan YENİ bulgu → kırmızı. Yerel WP/ağ/WP-CLI yoksa atlanır (uyarı, yeşil). Baseline yenileme: `node scripts/plugin-check-gate.mjs --write-baseline`. Hedef: Faz 7 sonunda baseline boş.
+
+## K5 / K6 / K1 / K4: kaldırılanlar (Faz 7, `f7-k56`)
+
+Davranış dışı her şey aynı; veritabanı ayarları silinmez (eski seçenek/meta olduğu gibi kalır, `uninstall` önek temizliği zaten `wdp_*` seçeneklerini ve ürün meta listesini kapsar). Dışa açık kanca/kısa kod/blok adları ve sipariş/ürün meta okuması değişmedi (`CompatibilityContractTest` yeşil).
+
+| Karar | Kaldırılan | Kalan davranış / not |
+|-------|------------|----------------------|
+| K5 | Kategori renkleri sekmesi + `WDP_Category_Title_Color_Service` + `wp_ajax_wdp_save_category_colors_settings` + `admin-script.js` önizleme + CSS; "Başarı" sekmesindeki mini sepet arka plan/kenarlık/yarıçap alanları (`mini_cart_*`) ve satır içi CSS değişkenleri | Başlık/vurgu rengi artık yalnız ürün `_theme_primary` → genel marka (`WDP_Form_Modules::get_title_style_attr`). Mini sepet yarıçapı `--wdp-mini-cart-radius: 10px` (eski varsayılan) tokens.css'te. `wdp_enable_side_cart_recovery` filtresi (dış kanca) korunur. Eski `wdp_category_title_colors` seçeneği DB'de durur |
+| K6 | Meta Pixel sekmesi, `WDP_Meta_Tracking`, `meta-tracking.js`, `window.WDPMetaTracking` çağrıları, `wdp_save_meta_tracking_settings`, AJAX yanıtındaki `meta_cart_line`, `wdp_ajax.meta`; JSON-LD: `WDP_Schema` (WooCommerce/Rank Math Product), Ürün sayfası ve liste sekmesindeki "Yapılandırılmış veri" ayarı (`schema`), bağış listesi `ItemList` JSON-LD | Meta için **Meta for WooCommerce**, şema için **Rank Math / Yoast** gibi eklentiler kullanılmalı. Eski `wdp_meta_tracking_settings` ve placement `schema` değeri DB'de durur |
+| K1 | İlerleme çubuğu konfeti/`celebrate` animasyonu (JS, CSS), ürün "Kutlama animasyonu" kutusu, İlerleme sekmesi "Animasyon" kutusu, `enable_celebrate` stil ön ayar alanı, `wdp_ajax.flags.progress_celebrate`, `data-wdp-progress-celebrate` | Hedefe ulaşınca eylem (mesaj / kapat / devam) ve `wdp:progress:complete` olayı + "Goal reached" ekran okuyucu duyurusu **korunur** (artık her kullanıcıya; eskiden animasyon kapalı/azaltılmış harekette olay atlanıyordu). Yeni sade kutlama E6'da. `_progress_celebrate` meta DB'de durur |
+| K4 | Ürün "Blok sırası" arayüzü (+ `products.js`/CSS), Tasarım sekmesi "Varsayılan modül sırası", `_wdp_module_order` yazımı, `WDP_Form_Modules::sanitize_header_order`, `module_order` form bağlamı anahtarı | `WDP_Form_Modules::resolve_order()` sabit varsayılan sırayı (`config/form-modules.php`) döndürür; eski özel sıralar yok sayılır (kasıtlı) |
+
+Meta Pixel / dönüşüm izleme için kullanıcıya not (README): Meta için "Meta for WooCommerce", yapılandırılmış veri için "Rank Math" (ya da benzeri) kullanın.
+

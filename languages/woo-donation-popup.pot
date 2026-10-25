@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: woo-donation-popup 10.35.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-25 14:37+0300\n"
+"POT-Creation-Date: 2026-10-25 14:46+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1541,11 +1541,11 @@ msgid "Percent badge text"
 msgstr ""
 
 #: includes/class-admin-layout-tabs-renderer.php:147
-msgid "Size and animation"
+msgid "Size"
 msgstr ""
 
 #: includes/class-admin-layout-tabs-renderer.php:148
-msgid "Bar height and goal celebration."
+msgid "Bar height."
 msgstr ""
 
 #: includes/class-admin-layout-tabs-renderer.php:151
@@ -1726,7 +1726,7 @@ msgid "Products"
 msgstr ""
 
 #: includes/class-admin-page-renderer.php:50
-#: includes/class-admin-placement-tab-renderer.php:28
+#: includes/class-admin-placement-tab-renderer.php:27
 msgid "Product page and list"
 msgstr ""
 
@@ -1813,143 +1813,142 @@ msgstr ""
 msgid "Search products"
 msgstr ""
 
-#: includes/class-admin-placement-tab-renderer.php:29
+#: includes/class-admin-placement-tab-renderer.php:28
 msgid ""
 "From here you manage which products count as donation products and the "
 "“Donate” behavior on WooCommerce shop / product pages."
 msgstr ""
 
-#: includes/class-admin-placement-tab-renderer.php:34
+#: includes/class-admin-placement-tab-renderer.php:33
 msgid "Donation products"
 msgstr ""
 
 #. translators: %d: live count
-#: includes/class-admin-placement-tab-renderer.php:38
+#: includes/class-admin-placement-tab-renderer.php:37
 #, php-format
 msgid "%d products are currently donation products."
 msgstr ""
 
-#: includes/class-admin-placement-tab-renderer.php:46
+#: includes/class-admin-placement-tab-renderer.php:45
 msgid "Scope"
 msgstr ""
 
-#: includes/class-admin-placement-tab-renderer.php:47
+#: includes/class-admin-placement-tab-renderer.php:46
 msgid "Which simple products use the donation form."
 msgstr ""
 
-#: includes/class-admin-placement-tab-renderer.php:49
+#: includes/class-admin-placement-tab-renderer.php:48
 msgid "All simple products"
 msgstr ""
 
-#: includes/class-admin-placement-tab-renderer.php:50
+#: includes/class-admin-placement-tab-renderer.php:49
 msgid "Selected categories (including children)"
 msgstr ""
 
-#: includes/class-admin-placement-tab-renderer.php:51
+#: includes/class-admin-placement-tab-renderer.php:50
 msgid "Marked products only"
 msgstr ""
 
-#: includes/class-admin-placement-tab-renderer.php:54
+#: includes/class-admin-placement-tab-renderer.php:53
 msgid "Categories"
 msgstr ""
 
-#: includes/class-admin-placement-tab-renderer.php:60
+#: includes/class-admin-placement-tab-renderer.php:59
 msgid ""
 "Used when scope is “selected categories”. Child categories are included "
 "automatically."
 msgstr ""
 
-#: includes/class-admin-placement-tab-renderer.php:64
+#: includes/class-admin-placement-tab-renderer.php:63
 msgid "WooCommerce pages"
 msgstr ""
 
-#: includes/class-admin-placement-tab-renderer.php:69
+#: includes/class-admin-placement-tab-renderer.php:68
 msgid "Use “Donate” instead of “Add to cart” on WooCommerce pages"
 msgstr ""
 
-#: includes/class-admin-placement-tab-renderer.php:70
+#: includes/class-admin-placement-tab-renderer.php:69
 msgid ""
 "When on, the add-to-cart area on shop and product pages becomes a donate "
 "button or form."
 msgstr ""
 
-#: includes/class-admin-placement-tab-renderer.php:72
+#: includes/class-admin-placement-tab-renderer.php:71
 #: includes/class-admin-product-data-tab.php:481
 #: includes/class-admin-product-data-tab.php:535
 msgid "On"
 msgstr ""
 
-#: includes/class-admin-placement-tab-renderer.php:73
-#: includes/class-admin-placement-tab-renderer.php:132
+#: includes/class-admin-placement-tab-renderer.php:72
 #: includes/class-admin-product-data-tab.php:482
 #: includes/class-admin-product-data-tab.php:535
 #: includes/class-admin-product-data-tab.php:558
 msgid "Off"
 msgstr ""
 
-#: includes/class-admin-placement-tab-renderer.php:79
+#: includes/class-admin-placement-tab-renderer.php:78
 msgid "Display on the product page"
 msgstr ""
 
-#: includes/class-admin-placement-tab-renderer.php:82
+#: includes/class-admin-placement-tab-renderer.php:81
 #: includes/class-admin-product-data-tab.php:1133
 #: includes/elementor/class-widget-donation-form.php:123
 #: blocks/donation-form/index.js:105
 msgid "Inline form"
 msgstr ""
 
-#: includes/class-admin-placement-tab-renderer.php:83
+#: includes/class-admin-placement-tab-renderer.php:82
 msgid "Button + popup"
 msgstr ""
 
-#: includes/class-admin-placement-tab-renderer.php:84
+#: includes/class-admin-placement-tab-renderer.php:83
 msgid "Button + side panel"
 msgstr ""
 
-#: includes/class-admin-placement-tab-renderer.php:90
+#: includes/class-admin-placement-tab-renderer.php:89
 msgid "Button on shop and category pages"
 msgstr ""
 
-#: includes/class-admin-placement-tab-renderer.php:93
+#: includes/class-admin-placement-tab-renderer.php:92
 msgid "Go to the product page"
 msgstr ""
 
-#: includes/class-admin-placement-tab-renderer.php:94
+#: includes/class-admin-placement-tab-renderer.php:93
 msgid "Centered popup"
 msgstr ""
 
-#: includes/class-admin-placement-tab-renderer.php:95
+#: includes/class-admin-placement-tab-renderer.php:94
 #: includes/class-admin-product-data-tab.php:1129
 #: includes/elementor/class-widget-donation-form.php:125
 #: blocks/donation-form/index.js:107
 msgid "Side panel"
 msgstr ""
 
-#: includes/class-admin-placement-tab-renderer.php:101
+#: includes/class-admin-placement-tab-renderer.php:100
 msgid "Price display"
 msgstr ""
 
-#: includes/class-admin-placement-tab-renderer.php:102
+#: includes/class-admin-placement-tab-renderer.php:101
 msgid "Prices in the cart, checkout, and emails do not change."
 msgstr ""
 
-#: includes/class-admin-placement-tab-renderer.php:104
+#: includes/class-admin-placement-tab-renderer.php:103
 msgid "Show on fixed-amount and share-based products, hide on others"
 msgstr ""
 
-#: includes/class-admin-placement-tab-renderer.php:105
+#: includes/class-admin-placement-tab-renderer.php:104
 msgid "Always show"
 msgstr ""
 
-#: includes/class-admin-placement-tab-renderer.php:111
+#: includes/class-admin-placement-tab-renderer.php:110
 msgid "Show the form heading"
 msgstr ""
 
-#: includes/class-admin-placement-tab-renderer.php:112
+#: includes/class-admin-placement-tab-renderer.php:111
 msgid "Off by default because the product page already has a title."
 msgstr ""
 
-#: includes/class-admin-placement-tab-renderer.php:114
+#: includes/class-admin-placement-tab-renderer.php:113
 #: includes/class-cart.php:546 includes/class-order-meta-keys.php:285
 #: includes/class-order-meta-keys.php:289
 #: includes/elementor/class-widget-donation-form.php:135
@@ -1957,87 +1956,64 @@ msgstr ""
 msgid "Yes"
 msgstr ""
 
-#: includes/class-admin-placement-tab-renderer.php:115
+#: includes/class-admin-placement-tab-renderer.php:114
 #: includes/elementor/class-widget-donation-form.php:136
 #: blocks/donations/index.js:26
 msgid "No"
 msgstr ""
 
-#: includes/class-admin-placement-tab-renderer.php:120
-msgid "Structured data (schema)"
-msgstr ""
-
-#: includes/class-admin-placement-tab-renderer.php:122
-msgid "Rank Math detected, compatibility is on."
-msgstr ""
-
-#: includes/class-admin-placement-tab-renderer.php:128
-msgid "Product markup"
-msgstr ""
-
-#: includes/class-admin-placement-tab-renderer.php:129
-msgid ""
-"Automatic: Product markup is not printed on donor-entered and campaign "
-"products that have no price. A wdp_product_schema filter is provided for "
-"Yoast / SEOPress / AIOSEO."
-msgstr ""
-
-#: includes/class-admin-placement-tab-renderer.php:131
-msgid "Automatic"
-msgstr ""
-
-#: includes/class-admin-placement-tab-renderer.php:137
+#: includes/class-admin-placement-tab-renderer.php:119
 msgid "Setup guide"
 msgstr ""
 
-#: includes/class-admin-placement-tab-renderer.php:139
+#: includes/class-admin-placement-tab-renderer.php:121
 msgid "I am using WooCommerce pages"
 msgstr ""
 
-#: includes/class-admin-placement-tab-renderer.php:140
+#: includes/class-admin-placement-tab-renderer.php:122
 msgid ""
 "Leave the setting above On. You do not need to do anything else; the Shop "
 "page and product pages become donation pages automatically."
 msgstr ""
 
-#: includes/class-admin-placement-tab-renderer.php:142
+#: includes/class-admin-placement-tab-renderer.php:124
 msgid "My product page uses a custom page builder template"
 msgstr ""
 
-#: includes/class-admin-placement-tab-renderer.php:143
+#: includes/class-admin-placement-tab-renderer.php:125
 msgid ""
 "If the template has WooCommerce’s Add to cart element, it is converted to "
 "Donate automatically. Otherwise add this shortcode to the template once:"
 msgstr ""
 
-#: includes/class-admin-placement-tab-renderer.php:146
+#: includes/class-admin-placement-tab-renderer.php:128
 msgid ""
 "Page builder: open the product template, add a Shortcode (or Code) element, "
 "paste it, and save."
 msgstr ""
 
-#: includes/class-admin-placement-tab-renderer.php:148
+#: includes/class-admin-placement-tab-renderer.php:130
 msgid "I am building my own donation page"
 msgstr ""
 
-#: includes/class-admin-placement-tab-renderer.php:149
+#: includes/class-admin-placement-tab-renderer.php:131
 msgid "For a list:"
 msgstr ""
 
-#: includes/class-admin-placement-tab-renderer.php:151
+#: includes/class-admin-placement-tab-renderer.php:133
 msgid ""
 "(or the “Donation list” block in the block editor). For a single product:"
 msgstr ""
 
-#: includes/class-admin-placement-tab-renderer.php:155
+#: includes/class-admin-placement-tab-renderer.php:137
 msgid "Open the form test page"
 msgstr ""
 
-#: includes/class-admin-placement-tab-renderer.php:158
+#: includes/class-admin-placement-tab-renderer.php:140
 msgid "Save placement settings"
 msgstr ""
 
-#: includes/class-admin-placement-tab-renderer.php:192
+#: includes/class-admin-placement-tab-renderer.php:174
 #: includes/class-admin-product-data-tab.php:1111
 #: includes/class-admin-products-list-table.php:305
 msgid "Copy"
@@ -2965,62 +2941,62 @@ msgid ""
 "The goal amount and progress bar are shown; the donor enters the amount."
 msgstr ""
 
-#: includes/class-donations-list.php:178
+#: includes/class-donations-list.php:172
 #: includes/elementor/class-widget-donations-list.php:254
 msgid "All"
 msgstr ""
 
-#: includes/class-donations-list.php:454
+#: includes/class-donations-list.php:403
 msgid "There are no donations to show right now."
 msgstr ""
 
-#: includes/class-donations-list.php:700
+#: includes/class-donations-list.php:649
 msgid "Donation categories"
 msgstr ""
 
 #. translators: %s: formatted share price
-#: includes/class-donations-list.php:762
+#: includes/class-donations-list.php:711
 #, php-format
 msgid "Share: %s"
 msgstr ""
 
 #. translators: %s: formatted minimum amount
-#: includes/class-donations-list.php:772
+#: includes/class-donations-list.php:721
 #, php-format
 msgid "min. %s"
 msgstr ""
 
 #. translators: 1: collected, 2: goal
-#: includes/class-donations-list.php:784
+#: includes/class-donations-list.php:733
 #, php-format
 msgid "%1$s / %2$s"
 msgstr ""
 
 #. translators: 1: collected, 2: goal
-#: includes/class-donations-list.php:803
+#: includes/class-donations-list.php:752
 #, php-format
 msgid "%1$s / %2$s raised"
 msgstr ""
 
-#: includes/class-donations-list.php:896
+#: includes/class-donations-list.php:827
 msgid ""
 "Query returned no results: the given product IDs are not a published "
 "donation product or are out of scope."
 msgstr ""
 
-#: includes/class-donations-list.php:899
+#: includes/class-donations-list.php:830
 msgid ""
 "Query returned no results: no published, in-stock, purchasable donation "
 "product in the selected categories."
 msgstr ""
 
-#: includes/class-donations-list.php:902
+#: includes/class-donations-list.php:833
 msgid ""
 "Query returned no results: scope is “flagged products only”; flag products "
 "on the Donation tab."
 msgstr ""
 
-#: includes/class-donations-list.php:904
+#: includes/class-donations-list.php:835
 msgid ""
 "Query returned no results: no published, catalog-visible, in-stock donation "
 "product."

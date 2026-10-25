@@ -1,6 +1,6 @@
 <?php
 /**
- * Ayarlar → Ürün sayfası ve liste sekmesi: kapsam, WooCommerce sayfaları, schema ve kurulum rehberi.
+ * Ayarlar → Ürün sayfası ve liste sekmesi: kapsam, WooCommerce sayfaları ve kurulum rehberi.
  *
  * @package WooCommerce\Donation_Popup
  */
@@ -21,7 +21,6 @@ class WDP_Admin_Placement_Tab_Renderer {
 		$s      = WDP_Placement_Settings::get();
 		$count  = class_exists( 'WDP_Donation_Scope' ) ? WDP_Donation_Scope::count() : 0;
 		$cats   = self::product_categories();
-		$rank   = defined( 'RANK_MATH_VERSION' ) || class_exists( 'RankMath' );
 		$matrix = wp_nonce_url( home_url( '/?wdp_form_matrix=1' ), 'wdp_form_matrix', 'wdp_matrix_nonce' );
 
 		echo '<div class="wdp-settings-container">';
@@ -113,23 +112,6 @@ class WDP_Admin_Placement_Tab_Renderer {
 			array(
 				'yes' => __( 'Yes', 'woo-donation-popup' ),
 				'no'  => __( 'No', 'woo-donation-popup' ),
-			)
-		);
-		echo '</tbody></table>';
-
-		echo '<h2 class="wdp-section-title">' . esc_html__( 'Structured data (schema)', 'woo-donation-popup' ) . '</h2>';
-		if ( $rank ) {
-			echo '<p class="description">' . esc_html__( 'Rank Math detected, compatibility is on.', 'woo-donation-popup' ) . '</p>';
-		}
-		echo '<table class="form-table" role="presentation"><tbody>';
-		self::select_row(
-			'schema',
-			$s['schema'],
-			__( 'Product markup', 'woo-donation-popup' ),
-			__( 'Automatic: Product markup is not printed on donor-entered and campaign products that have no price. A wdp_product_schema filter is provided for Yoast / SEOPress / AIOSEO.', 'woo-donation-popup' ),
-			array(
-				'auto' => __( 'Automatic', 'woo-donation-popup' ),
-				'off'  => __( 'Off', 'woo-donation-popup' ),
 			)
 		);
 		echo '</tbody></table>';
