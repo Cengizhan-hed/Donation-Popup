@@ -191,3 +191,10 @@ Faz 1 güvenli bağlantı ✅ → Faz 2 göç provası ✅ → Faz 3 bekleyen i�
 - **Kanca sırası (plugins_loaded 10 → 20):** gerekçe docs/MIMARI.md'ye; dışarıdan erken çağrılar (plugins_loaded 10'da kısa kod/filtre/fonksiyon) sözleşme testiyle kanıtlanır, gerekirse güvenli erken yükleme eklenir.
 - **Baseline:** Android + masaüstü yerel baseline kontrolü; iphone-shop (%2,35) ve iphone-panel-custom-errors (%1,0) farklarının nedeni E2 sırasında ayrılır.
 - **Tasarım vitrini:** `design/showcase/index.html` — 7D tasarımları (popup, sağ panel, sayfa içi form, alttan panel, yan sepet, kampanya/ilerleme çubukları, teşekkür, bağışçı hesabı, yönetici sihirbazı) mobil + masaüstü tek sayfada. Onay beklenmez; E2 sürer.
+
+## 18. PLAN DEĞİŞİKLİĞİ (2026-10-25 gece; nonprofit premium plan; §15 TASARRUF MODU'nu günceller, kalıcı)
+- **Eşzamanlı alt ajan:** en fazla **4** (disk kuralı gereği en fazla 4 worktree; her ajana ayrı port).
+- **Model:** alt ajanlar **yalnız Sonnet**; yalnız mekanik işler (test koşturma, çıktı özetleme, biçim düzeltme) **Haiku**. **Fable ve Opus kullanılmaz** (Agent çağrılarında `model: sonnet` ya da `haiku`).
+- **Kod yazma:** Cursor 12 Kasım'da dönse de kodu alt ajanlar yazmaya DEVAM eder; Cursor'a geçiş gerekmez.
+- **Token verimliliği (aynen geçerli):** Graphify, satır aralığıyla okuma, özetlenmiş test çıktısı, tam paket + uzak kontrol yalnız merge öncesi bir kez, alt faz sonunda "YENİ OTURUM ÖNERİLİR".
+- **Hız:** E2 ve sonraki alt fazlarda bağımsız parçalar 4 ajana paralel bölünür (aynı dosyalara dokunan görevler paralel koşmaz).
