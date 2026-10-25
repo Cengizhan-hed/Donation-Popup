@@ -33,7 +33,7 @@ async function main() {
     process.exit(1);
   }
 
-  const profileId = env.E2E_PROFILE_ID || 'staging-hedef';
+  const profileId = env.E2E_PROFILE_ID || 'local';
   const baselineDir = baselineDirFor(profileId, deviceId);
   const outDir = currentDirFor(profileId, deviceId);
   const code = await withEnvRunLock(profileId, async () => {

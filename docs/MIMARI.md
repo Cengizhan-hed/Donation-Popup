@@ -68,7 +68,7 @@ Kural: her iddia `dosya:satır`; emin olunmayan yerler **DOĞRULANMADI**.
 |------|---------|----------|-------------|
 | `before_woocommerce_init` | default | HPOS `custom_order_tables` uyum | `includes/bootstrap/class-plugin-bootstrap.php:99-106` |
 | `init` | default | `load_textdomain` (`woo-donation-popup` → `languages/`) | `includes/bootstrap/class-plugin-bootstrap.php` |
-| `plugins_loaded` | default | `launch_plugin`, `update_version` | `includes/bootstrap/class-plugin-bootstrap.php` |
+| `plugins_loaded` | 20 | `launch_plugin`, `update_version` (+ çekirdek `Plugin::on_plugins_loaded`, 20) | `includes/bootstrap/class-plugin-bootstrap.php` |
 | `admin_notices` | default | WC eksik notice | `includes/bootstrap/class-plugin-bootstrap.php:37` |
 | `admin_init` | 5 / 20 | Migrations `maybe_run` / `maybe_dismiss_notice` | `includes/class-migrations.php:72-73` |
 | `admin_notices` | default | placement notice | `includes/class-migrations.php:74` |
@@ -924,3 +924,11 @@ Meta Pixel / dönüşüm izleme için kullanıcıya not (README): Meta için "Me
 
 ## E0: Faz 7 çekirdek altyapısı (yeni `src/`)
 `src/` (namespace `DonationPanel\`, WPCS dosya adları) eski `includes/` ile yan yana çalışır; `includes/bootstrap/class-plugin-bootstrap.php` gömülü autoloader'ı kaydeder, davranış değişmez. Çekirdek: Plugin, Container, ModuleRegistry (kapalı modül dosyası yüklenmez), Settings (`donation_panel_settings`), Migrations + Legacy_Settings_Importer (eski `wdp_*` okunur, idempotent, silinmez), Http\Rest_Controller (`donation-panel/v1`), Frontend\Template_Loader (tema `donation-panel/`), Support\Logger. Kanca ön eki `donation_panel_` (Plugin Check kanıtı: MIMARI-FAZ7 §8; liste: docs/HOOKS.md). Modern JS: `assets/src/<modül>/index.js` -> `npm run build:modules` (`@wordpress/scripts`) -> `assets/build/` (pakete girer; `assets/src` girmez; kaynak yoksa adım atlanır).
+
+## Kanca sırası (E2X)
+
+Eklentinin tüm `plugins_loaded` kancaları **öncelik 20**'dedir (`src/Core/class-plugin.php:133` çekirdek; `includes/bootstrap/class-plugin-bootstrap.php:29-30` eski çekirdek `launch_plugin` + `update_version`). Çekirdek `boot()` bootstrap'tan önce kanca eklediği için aynı öncelikte önce çekirdek (göç + modüller + kısa kod/blok/Elementor kaydı), sonra eski çekirdek çalışır.
+
+Neden 20: (1) eklenti klasörü `woo-donation-popup` alfabetik olarak `woocommerce`'ten önce yüklenir; WooCommerce sınıfı ancak kendi `plugins_loaded` kancasından sonra güvenle denetlenir, bu yüzden bizim çalışma noktamız 10'dan sonra olmalı; (2) `donation_panel_settings` ve eski `wdp_*` seçenek göçü (`Migrations::run`) eski çekirdek kurulmadan hazır olur; (3) modül kayıt defteri (`donation_panel_module_enabled` filtresi dahil) diğer eklentilerin 10'daki filtre kayıtlarından sonra okur.
+
+Etkiler: plugins_loaded 10-19 arasında çalışan bir snippet/eklenti kısa kodları, `WDP_*` sınıflarının davranışını ya da eski çekirdek nesnesini (`$GLOBALS['woo_donation_popup']`) hazır BULAMAZ. Bu durumda `do_shortcode()` işlenmemiş etiketi döndürür (WordPress davranışı), filtreler varsayılan değerini döndürür, PHP hatası/uyarısı olmaz. Bu çağrılar `init` ya da sonrasında (render zamanı) yapılmalıdır. Kanıt: `tests/unit/js/hook-order-contract.test.mjs` (+ `tests/local-wp/hook-order-probe.php`, `hook-order-mu.php`): 10, 15 ve `init` 99'da ölçer.

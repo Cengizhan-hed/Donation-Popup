@@ -44,7 +44,8 @@ import { CHILD_TIMEOUT_MS, fullChildJobs, outputDeviceId, partitionSpawnWaves } 
 
 function envList(envId) {
   const v = String(envId || '').trim().toLowerCase();
-  if (!v || v === 'all') return ['hedef', 'ikram'];
+  if (!v) return ['local'];
+  if (v === 'all') return ['hedef', 'ikram'];
   return [v];
 }
 

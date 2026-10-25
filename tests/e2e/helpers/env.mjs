@@ -6,7 +6,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import dotenv from 'dotenv';
 import { ROOT } from './env-root.mjs';
-import { loadProfile, setActiveProfile, productRole, isRemoteProfile, resolveAllowedRemoteTarget, peekActiveProfile } from './profile.mjs';
+import { DEFAULT_ENV_ID, loadProfile, setActiveProfile, productRole, isRemoteProfile, resolveAllowedRemoteTarget, peekActiveProfile } from './profile.mjs';
 import { classifyRemoteHost } from './network-guard.mjs';
 import { setActiveDeployEnvFile } from './wp-remote.mjs';
 import { inspectEnvTargetKeys, validateE2EBaseUrl } from '../../../scripts/lib/deploy-guards.mjs';
@@ -43,7 +43,10 @@ const PRODUCT_KEYS = [
  */
 export function parseE2ECli(argv = process.argv.slice(2)) {
   const a = argv.filter((x) => x !== '--');
-  let envId = String(process.env.E2E_ENV || '').trim();
+  // Teknik güvence (E2X): ortam YALNIZ açık --env/--profile bayrağından gelir.
+  // Ortam değişkeni, .env ya da önceki koşunun profili uzak ortamı SEÇEMEZ; varsayılan: local.
+  let envId = '';
+  let envExplicit = false;
   let device = '';
   let areas = null;
   let all = false;
@@ -54,8 +57,13 @@ export function parseE2ECli(argv = process.argv.slice(2)) {
   let slice = '';
   for (let i = 0; i < a.length; i++) {
     const x = a[i];
-    if (x === '--env' || x === '--profile') envId = String(a[++i] || envId);
-    else if (x.startsWith('--env=')) envId = x.slice('--env='.length);
+    if (x === '--env' || x === '--profile') {
+      envId = String(a[++i] || envId);
+      envExplicit = true;
+    } else if (x.startsWith('--env=')) {
+      envId = x.slice('--env='.length);
+      envExplicit = true;
+    }
     else if (x === '--device') device = String(a[++i] || '');
     else if (x.startsWith('--device=')) device = x.slice('--device='.length);
     else if (x === '--slice') slice = String(a[++i] || '');
@@ -76,7 +84,8 @@ export function parseE2ECli(argv = process.argv.slice(2)) {
     else if (x === '--no-clean') noClean = true;
     else if (x === '--child') child = true;
   }
-  return { envId, device, areas, all, openReport, noSideCart, noClean, child, slice };
+  envId = String(envId || '').trim() || DEFAULT_ENV_ID;
+  return { envId, envExplicit, device, areas, all, openReport, noSideCart, noClean, child, slice };
 }
 
 /**
@@ -84,7 +93,7 @@ export function parseE2ECli(argv = process.argv.slice(2)) {
  * @returns {Record<string, string> & { _profile: object }}
  */
 export function loadE2EEnv(opts = {}) {
-  const envId = opts.envId || parseE2ECli().envId || process.env.E2E_ENV || 'hedef';
+  const envId = opts.envId || parseE2ECli().envId || DEFAULT_ENV_ID;
   const profile = loadProfile(envId);
   setActiveProfile(profile);
   if (profile.deployEnvFile) setActiveDeployEnvFile(profile.deployEnvFile);
