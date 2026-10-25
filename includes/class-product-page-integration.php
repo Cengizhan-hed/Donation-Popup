@@ -14,7 +14,7 @@ if (!defined('ABSPATH')) {
  *
  * Primary path: replace WooCommerce simple add-to-cart template (theme/builder agnostic).
  * Fallback: summary hooks when the template filter did not run in this request.
- * Avada Layouts without a WooCommerce Add to cart element need a shortcode in the layout.
+ * Templates without a WooCommerce Add to cart element get the fallback button (or a shortcode).
  */
 class WDP_Product_Page_Integration {
 
@@ -211,7 +211,7 @@ class WDP_Product_Page_Integration {
 	}
 
 	/**
-	 * Builder layouts (Elementor / Avada) that omit the Woo add-to-cart element never
+	 * Custom page templates that omit the Woo add-to-cart element never
 	 * hit the template override or summary hooks. auto_place=yes still means the
 	 * Donate control belongs on the product page; print it once if nothing else did.
 	 *
@@ -380,7 +380,7 @@ class WDP_Product_Page_Integration {
 
 	/**
 	 * Hide the main product native cart form and sticky clones; spare loop/related/upsell/collection.
-	 * Theme class names (storefront, fusion, ct-) are not used.
+	 * No theme-specific class names are used.
 	 *
 	 * @return string
 	 */

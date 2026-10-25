@@ -5104,7 +5104,7 @@
     },
     {
       "function": "esc_html__",
-      "msgid": "Ürün sayfam özel tasarım (Avada Layout, Elementor Pro şablonu)",
+      "msgid": "Ürün sayfam özel bir sayfa oluşturucu şablonu kullanıyor",
       "plural": null,
       "context": null,
       "domain": "woo-donation-popup",
@@ -5126,7 +5126,7 @@
     },
     {
       "function": "esc_html__",
-      "msgid": "Avada: Layouts → ürün layout’u → Code Block → yapıştır → Save.",
+      "msgid": "Sayfa oluşturucu: ürün şablonunu açın, bir Kısa Kod (Shortcode) ya da Kod öğesi ekleyin, yapıştırın ve kaydedin.",
       "plural": null,
       "context": null,
       "domain": "woo-donation-popup",
@@ -5159,7 +5159,7 @@
     },
     {
       "function": "esc_html__",
-      "msgid": "(Elementor’da “Bağış Listesi” widget’ı, Gutenberg’de “Bağış listesi” bloğu). Tek ürün için:",
+      "msgid": "(ya da blok düzenleyicide “Bağış listesi” bloğu). Tek ürün için:",
       "plural": null,
       "context": null,
       "domain": "woo-donation-popup",

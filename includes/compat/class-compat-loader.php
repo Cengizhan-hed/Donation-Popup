@@ -21,8 +21,5 @@ class WDP_Compat_Loader {
 	 */
 	public static function init() {
 		WDP_Compat_Currency::init();
-		WDP_Compat_Builders::init();
-		// Avada (Fusion Builder) elementleri: sınıf yalnız Fusion Builder bu kancayı ateşlerse yüklenir.
-		add_action( 'fusion_builder_before_init', array( 'WDP_Compat_Avada_Element', 'register' ) );
 	}
 }

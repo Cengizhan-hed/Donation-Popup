@@ -967,12 +967,6 @@ parameters:
 			path: ../../includes/elementor/class-widget-donation-form.php
 
 		-
-			message: '#^Access to constant SELECT2 on an unknown class Elementor\\Controls_Manager\.$#'
-			identifier: class.notFound
-			count: 1
-			path: ../../includes/elementor/class-widget-donation-form.php
-
-		-
 			message: '#^Access to constant SWITCHER on an unknown class Elementor\\Controls_Manager\.$#'
 			identifier: class.notFound
 			count: 1
@@ -981,7 +975,7 @@ parameters:
 		-
 			message: '#^Access to constant TEXT on an unknown class Elementor\\Controls_Manager\.$#'
 			identifier: class.notFound
-			count: 2
+			count: 3
 			path: ../../includes/elementor/class-widget-donation-form.php
 
 		-

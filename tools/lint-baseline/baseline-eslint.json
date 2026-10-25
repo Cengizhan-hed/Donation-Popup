@@ -1,10 +1,9 @@
 {
  "tool": "eslint",
- "total": 132,
+ "total": 131,
  "counts": {
   "assets/js/admin/products.js|no-unused-vars|'e' is defined but never used.": 1,
   "assets/js/admin/products.js|no-useless-assignment|The value assigned to 'ok' is not used in subsequent statements.": 1,
-  "assets/js/elementor-editor.js|no-unused-vars|'__' is assigned a value but never used.": 1,
   "assets/js/list.js|no-unused-vars|'err' is defined but never used.": 1,
   "assets/js/list.js|no-useless-assignment|The value assigned to 'next' is not used in subsequent statements.": 1,
   "assets/js/src/bootstrap/event-manager.js|no-empty|Empty block statement.": 1,

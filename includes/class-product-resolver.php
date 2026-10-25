@@ -92,7 +92,7 @@ class WDP_Product_Resolver {
 			$resolved = self::as_product((int) get_queried_object_id());
 		}
 
-		// Page-builder product templates (Elementor, Avada, block themes) may run without is_product()/global $product.
+		// Custom product templates (page builders, block themes) may run without is_product()/global $product.
 		if (!$resolved && function_exists('get_queried_object')) {
 			$resolved = self::from_post_object(get_queried_object());
 		}

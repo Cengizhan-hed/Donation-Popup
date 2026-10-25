@@ -406,7 +406,6 @@ describe('uzak POST varsayılan-red', () => {
       'wdp_import_style_preset',
       'wdp_export_style_preset',
       'wdp_recalculate_product_total',
-      'wdp_elementor_search_products',
     ];
     for (const n of mustBlock) {
       assert.ok(adminOnly.includes(n), n);

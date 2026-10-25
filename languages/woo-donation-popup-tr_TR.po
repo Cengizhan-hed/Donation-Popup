@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: woo-donation-popup\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-24 19:22:59+0000\n"
-"PO-Revision-Date: 2026-10-24 19:22:59+0000\n"
+"POT-Creation-Date: 2026-10-25 07:03:52+0000\n"
+"PO-Revision-Date: 2026-10-25 07:03:52+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: tr_TR\n"
@@ -28,8 +28,8 @@ msgid "(opens in a new tab)"
 msgstr "(yeni sekmede açılır)"
 
 #: includes/class-admin-placement-tab-renderer.php:149
-msgid "(the “Donation List” widget in Elementor, the “Donation list” block in Gutenberg). For a single product:"
-msgstr "(Elementor’da “Bağış Listesi” widget’ı, Gutenberg’de “Bağış listesi” bloğu). Tek ürün için:"
+msgid "(or the “Donation list” block in the block editor). For a single product:"
+msgstr "(ya da blok düzenleyicide “Bağış listesi” bloğu). Tek ürün için:"
 
 #: includes/class-admin-product-data-tab.php:756
 msgid "{donors} people donated"
@@ -407,10 +407,6 @@ msgstr "Otomatik yerleşim"
 #: includes/class-admin-placement-tab-renderer.php:127
 msgid "Automatic: Product markup is not printed on donor-entered and campaign products that have no price. A wdp_product_schema filter is provided for Yoast / SEOPress / AIOSEO."
 msgstr "Otomatik: fiyatı olmayan bağışçı-belirler ve kampanya ürünlerinde Product markup basılmaz. Yoast / SEOPress / AIOSEO için wdp_product_schema filtresi sunulur."
-
-#: includes/class-admin-placement-tab-renderer.php:144
-msgid "Avada: Layouts → product layout → Code Block → paste → Save."
-msgstr "Avada: Layouts → ürün layout’u → Code Block → yapıştır → Save."
 
 #: includes/class-phone-field.php:73
 msgid "Azerbaijan"
@@ -1135,10 +1131,6 @@ msgstr "Bağış formu: ürün bulunamadı (id/slug/sku verilmedi veya bu sayfa 
 #: includes/class-cart.php:546 includes/class-order-meta-keys.php:81
 msgid "Donation note"
 msgstr "Bağış Notu"
-
-#: includes/compat/class-compat-avada-element.php
-msgid "Donation Panel"
-msgstr "Bağış Paneli"
 
 #: assets/js/src/modal.js:738
 msgid "Donation panel closed"
@@ -2361,8 +2353,8 @@ msgid "Multi-step form"
 msgstr "Çok adımlı form"
 
 #: includes/class-admin-placement-tab-renderer.php:140
-msgid "My product page uses a custom design (Avada Layout, Elementor Pro template)"
-msgstr "Ürün sayfam özel tasarım (Avada Layout, Elementor Pro şablonu)"
+msgid "My product page uses a custom page builder template"
+msgstr "Ürün sayfam özel bir sayfa oluşturucu şablonu kullanıyor"
 
 #: includes/class-phone-field.php:94
 msgid "Myanmar"
@@ -2631,6 +2623,10 @@ msgstr "Paket JSON olarak indirildi."
 #: includes/class-admin-layout-tabs-renderer.php:184
 msgid "Padding is the space from the edges of the popup content; colors or button styles are on the other appearance tabs."
 msgstr "Padding, modal içeriğinin kenarlardan boşluğudur; renk veya buton stilleri diğer görünüm sekmelerindedir."
+
+#: includes/class-admin-placement-tab-renderer.php:144
+msgid "Page builder: open the product template, add a Shortcode (or Code) element, paste it, and save."
+msgstr "Sayfa oluşturucu: ürün şablonunu açın, bir Kısa Kod (Shortcode) ya da Kod öğesi ekleyin, yapıştırın ve kaydedin."
 
 #: includes/class-phone-field.php:97
 msgid "Pakistan"

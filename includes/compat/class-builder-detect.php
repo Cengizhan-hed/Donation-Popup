@@ -1,7 +1,7 @@
 <?php
 /**
- * Sayfa oluşturucu düzenleyici/önizleme tespiti: genel (oluşturucu adından bağımsız) kurallar.
- * Bilinen oluşturucuların ek işaretleri WDP_Compat_Builders içindedir (filtre: wdp_is_builder_preview).
+ * Düzenleyici/önizleme tespiti: yalnız genel WordPress sinyalleri (hiçbir oluşturucu adı bilinmez).
+ * Site sahibi ek işaret için `wdp_is_builder_preview` filtresini kullanabilir.
  *
  * @package WooCommerce\Donation_Popup
  */
@@ -38,7 +38,7 @@ class WDP_Builder_Detect {
 		}
 		$generic = self::gutenberg() || self::wp_preview() || self::editor_query_var();
 		/**
-		 * Sayfa oluşturucu düzenleyici/önizleme isteği mi? Bağdaştırıcılar ek işaret ekler.
+		 * Düzenleyici/önizleme isteği mi? Site sahibi ek işaret ekleyebilir.
 		 *
 		 * @param bool $generic Genel tespit sonucu.
 		 */
@@ -60,7 +60,7 @@ class WDP_Builder_Detect {
 		}
 
 		/**
-		 * Oluşturucunun önizleme için seçtiği ürün (bağdaştırıcılar sağlar).
+		 * Oluşturucunun önizleme için seçtiği ürün (site sahibi sağlayabilir).
 		 *
 		 * @param WC_Product|null $product Product or null.
 		 */
@@ -133,9 +133,9 @@ class WDP_Builder_Detect {
 	}
 
 	/**
-	 * Oluşturucuların düzenleyici/önizleme çerçevesi için kullandığı sorgu anahtarları:
+	 * Düzenleyici/önizleme çerçevelerinin kullandığı genel sorgu anahtarları:
 	 * anahtar "edit", "preview", "builder" veya "fb" parçası içerir ve değeri doludur
-	 * (fb-edit, et_fb, elementor-preview, fl_builder, builder=true ...).
+	 * (örn. `x-edit`, `x_fb`, `x-preview`, `builder=true`).
 	 *
 	 * @return bool
 	 */
