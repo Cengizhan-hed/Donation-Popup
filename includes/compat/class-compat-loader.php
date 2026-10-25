@@ -1,6 +1,6 @@
 <?php
 /**
- * Üçüncü taraf eklenti bağdaştırıcılarını (yalnız includes/compat/) çekirdeğin filtrelerine bağlar.
+ * Uyumluluk kaydı. Çoklu para birimi bağdaştırıcıları çekirdekte YOKTUR (K8); yalnız oluşturucu tespiti includes/compat/ altındadır.
  *
  * @package WooCommerce\Donation_Popup
  */
@@ -20,6 +20,6 @@ class WDP_Compat_Loader {
 	 * @return void
 	 */
 	public static function init() {
-		WDP_Compat_Currency::init();
+		// Para birimi bağdaştırıcıları (K8) çekirdekten kaldırıldı: site koduyla docs/site-snippets/ üzerinden bağlanır.
 	}
 }

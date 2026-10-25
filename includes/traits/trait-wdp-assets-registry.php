@@ -307,13 +307,14 @@ trait WDP_Assets_Registry_Trait {
 		$context = array(
 			'currency'           => strtoupper( $currency_code ),
 			'lang'               => strtolower( (string) preg_split( '/[-_]/', $locale )[0] ),
-			'currency_cookies'   => array( 'woocommerce_currency' ),
+			'currency_cookies'   => array(),
 			'lang_cookies'       => array(),
 			'switcher_selectors' => array( '[data-currency]', "a[href*='currency=']" ),
 			'change_events'      => array(),
 		);
 		/**
 		 * Ön yüz para birimi/dil sinyali (çerez adları, değiştirici seçicileri, olay adları).
+		 * Çekirdek hiçbir eklenti/çerez adı bilmez; çoklu para birimi/dil kullanan siteler site koduyla ekler (docs/site-snippets/).
 		 *
 		 * @param array<string, mixed> $context Bağlam.
 		 */
