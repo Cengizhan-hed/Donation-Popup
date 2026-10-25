@@ -13,6 +13,10 @@ use DonationPanel\Frontend\Assets;
 use DonationPanel\Frontend\Template_Loader;
 use DonationPanel\Http\Rate_Limiter;
 use DonationPanel\Http\Rest\Ping_Controller;
+use DonationPanel\Modules\EntryPoints\Blocks;
+use DonationPanel\Modules\EntryPoints\Elementor\Elementor_Compat;
+use DonationPanel\Modules\EntryPoints\Entry_Points_Module;
+use DonationPanel\Modules\EntryPoints\Shortcodes;
 use DonationPanel\Support\Logger;
 
 defined( 'ABSPATH' ) || exit;
@@ -196,13 +200,13 @@ final class Plugin {
 	}
 
 	/**
-	 * Modül tanımları. Her modül burada slug + sınıf adıyla (yüklenmeden) kaydolur; E0'da modül yok.
+	 * Modül tanımları. Her modül burada slug + sınıf adıyla (yüklenmeden) kaydolur.
 	 *
 	 * @param Module_Registry $registry Kayıt defteri.
 	 * @return void
 	 */
 	public static function register_modules( Module_Registry $registry ) {
-		unset( $registry );
+		$registry->add( Entry_Points_Module::SLUG, Entry_Points_Module::class, true );
 	}
 
 	/**
@@ -213,6 +217,8 @@ final class Plugin {
 	public function on_plugins_loaded() {
 		$this->container->get( Migrations::class )->run();
 
+		$this->register_entry_contract();
+
 		$registry = $this->container->get( Module_Registry::class );
 		$registry->boot( $this->container );
 
@@ -222,6 +228,21 @@ final class Plugin {
 		 * @param string[] $active Başlatılan modül slug'ları.
 		 */
 		do_action( 'donation_panel_modules_booted', $registry->active_slugs() );
+	}
+
+	/**
+	 * Dışa açık giriş sözleşmesi: kısa kodlar, bloklar ve Elementor ince katmanı her zaman kayıtlıdır
+	 * (modül ayarından bağımsız; WooCommerce yoksa kaydolmaz).
+	 *
+	 * @return void
+	 */
+	private function register_entry_contract() {
+		if ( ! class_exists( 'WooCommerce' ) ) {
+			return;
+		}
+		Shortcodes::init();
+		Blocks::init();
+		Elementor_Compat::init();
 	}
 
 	/**

@@ -1,6 +1,6 @@
 /**
  * Ürün sayfası birincil WDP UI (döngü/ilgili kartlar hariç) + görünüm modu.
- * Eklenti: WDP_Product_Page_Integration::resolve_product_page_display.
+ * Eklenti: \DonationPanel\Modules\EntryPoints\Auto_Placement::resolve_product_page_display.
  *
  * Genel kural: sayfada görünür tam olarak BİR eklenti giriş noktası
  * (gömülü form veya eklenti düğmesi — eklenti sınıf/data öznitelikleri;

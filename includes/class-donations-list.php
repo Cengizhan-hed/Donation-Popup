@@ -189,9 +189,9 @@ class WDP_Donations_List {
 				? sanitize_key( (string) $atts['image_size'] )
 				: 'woocommerce_thumbnail',
 			'heading_tag'        => $heading,
-			'class'              => isset( $atts['class'] ) && class_exists( 'WDP_Shortcodes' )
-				? WDP_Shortcodes::sanitize_class_list( $atts['class'] )
-				: ( isset( $atts['class'] ) ? sanitize_html_class( (string) $atts['class'] ) : '' ),
+			'class'              => isset( $atts['class'] )
+				? \DonationPanel\Modules\EntryPoints\Shortcodes::sanitize_class_list( $atts['class'] )
+				: '',
 		);
 	}
 
@@ -686,7 +686,7 @@ class WDP_Donations_List {
 		}
 		$slugs = array_values( array_unique( $slugs ) );
 
-		$button_text = $atts['button_text'] !== '' ? $atts['button_text'] : WDP_Shortcodes::resolve_button_text( '' );
+		$button_text = $atts['button_text'] !== '' ? $atts['button_text'] : \DonationPanel\Modules\EntryPoints\Shortcodes::resolve_button_text( '' );
 		$cta_class   = 'wdp-card__cta';
 		if ( $atts['button_full'] === 'yes' ) {
 			$cta_class .= ' wdp-card__cta--full';

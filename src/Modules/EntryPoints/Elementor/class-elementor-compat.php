@@ -4,17 +4,17 @@
  *
  * Yeni özellik eklenmez; widget adları ve ayar anahtarları kayıtlı sayfalar için sabittir.
  *
- * @package WooCommerce\Donation_Popup
+ * @package DonationPanel
  */
 
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
-}
+namespace DonationPanel\Modules\EntryPoints\Elementor;
+
+defined( 'ABSPATH' ) || exit;
 
 /**
  * Registers the donation form + list widgets when Elementor fires its registration hooks.
  */
-class WDP_Elementor {
+class Elementor_Compat {
 
 	/**
 	 * @return void
@@ -49,9 +49,7 @@ class WDP_Elementor {
 		if ( ! class_exists( '\Elementor\Widget_Base' ) || ! is_object( $widgets ) || ! method_exists( $widgets, 'register' ) ) {
 			return;
 		}
-		require_once WDP_PLUGIN_DIR . 'includes/elementor/class-widget-donation-form.php';
-		require_once WDP_PLUGIN_DIR . 'includes/elementor/class-widget-donations-list.php';
-		$widgets->register( new WDP_Elementor_Widget_Donation_Form() );
-		$widgets->register( new WDP_Elementor_Widget_Donations_List() );
+		$widgets->register( new Donation_Form_Widget() );
+		$widgets->register( new Donations_List_Widget() );
 	}
 }

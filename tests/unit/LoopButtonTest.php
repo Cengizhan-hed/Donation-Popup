@@ -33,7 +33,7 @@ final class LoopButtonTest extends TestCase {
 
 	public function test_loop_link_becomes_donate_with_lazy_panel(): void {
 		$p    = $this->product(20);
-		$html = WDP_Product_Page_Integration::loop_button_html('<a class="button">Sepete ekle</a>', $p);
+		$html = \DonationPanel\Modules\EntryPoints\Loop_Price_Filters::loop_button_html('<a class="button">Sepete ekle</a>', $p);
 		$this->assertStringContainsString('Bağış Yap', $html);
 		$this->assertStringContainsString('wdp-open-modal', $html);
 		$this->assertStringContainsString('data-wdp-lazy="1"', $html);
@@ -47,14 +47,14 @@ final class LoopButtonTest extends TestCase {
 		$p->type = 'variable';
 		WDP_Donation_Scope::flush(21);
 		$orig = '<a class="button">Sepete ekle</a>';
-		$this->assertSame($orig, WDP_Product_Page_Integration::loop_button_html($orig, $p));
+		$this->assertSame($orig, \DonationPanel\Modules\EntryPoints\Loop_Price_Filters::loop_button_html($orig, $p));
 	}
 
 	public function test_add_to_cart_text_and_ajax_support(): void {
 		$p = $this->product(22);
-		$this->assertSame('Bağış Yap', WDP_Product_Page_Integration::filter_add_to_cart_text('Sepete ekle', $p));
-		$this->assertFalse(WDP_Product_Page_Integration::filter_product_supports(true, 'ajax_add_to_cart', $p));
-		$url = WDP_Product_Page_Integration::filter_add_to_cart_url('https://example.test/?add-to-cart=22', $p);
+		$this->assertSame('Bağış Yap', \DonationPanel\Modules\EntryPoints\Loop_Price_Filters::filter_add_to_cart_text('Sepete ekle', $p));
+		$this->assertFalse(\DonationPanel\Modules\EntryPoints\Loop_Price_Filters::filter_product_supports(true, 'ajax_add_to_cart', $p));
+		$url = \DonationPanel\Modules\EntryPoints\Loop_Price_Filters::filter_add_to_cart_url('https://example.test/?add-to-cart=22', $p);
 		$this->assertStringContainsString('/product/', $url);
 	}
 }

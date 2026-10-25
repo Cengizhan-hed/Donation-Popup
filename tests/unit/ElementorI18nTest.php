@@ -89,22 +89,16 @@ final class ElementorI18nTest extends TestCase {
 		return $out;
 	}
 
-	private function formWidget(): \WDP_Elementor_Widget_Donation_Form {
-		if (!class_exists('WDP_Elementor_Widget_Donation_Form', false)) {
-			require_once WDP_PLUGIN_DIR . 'includes/elementor/class-widget-donation-form.php';
-		}
-		$w = new \WDP_Elementor_Widget_Donation_Form();
+	private function formWidget(): \DonationPanel\Modules\EntryPoints\Elementor\Donation_Form_Widget {
+		$w = new \DonationPanel\Modules\EntryPoints\Elementor\Donation_Form_Widget();
 		$ref = new \ReflectionMethod($w, 'register_controls');
 		$ref->setAccessible(true);
 		$ref->invoke($w);
 		return $w;
 	}
 
-	private function listWidget(): \WDP_Elementor_Widget_Donations_List {
-		if (!class_exists('WDP_Elementor_Widget_Donations_List', false)) {
-			require_once WDP_PLUGIN_DIR . 'includes/elementor/class-widget-donations-list.php';
-		}
-		$w = new \WDP_Elementor_Widget_Donations_List();
+	private function listWidget(): \DonationPanel\Modules\EntryPoints\Elementor\Donations_List_Widget {
+		$w = new \DonationPanel\Modules\EntryPoints\Elementor\Donations_List_Widget();
 		$ref = new \ReflectionMethod($w, 'register_controls');
 		$ref->setAccessible(true);
 		$ref->invoke($w);
@@ -160,12 +154,12 @@ final class ElementorI18nTest extends TestCase {
 				}
 			}
 		};
-		WDP_Elementor::category($elements);
+		\DonationPanel\Modules\EntryPoints\Elementor\Elementor_Compat::category($elements);
 		$this->assertSame('Donation (WooCommerce Donation)', $captured->title);
 	}
 
 	public function test_register_hooks_only_widgets_and_category(): void {
-		WDP_Elementor::init();
+		\DonationPanel\Modules\EntryPoints\Elementor\Elementor_Compat::init();
 		$this->assertArrayHasKey('elementor/widgets/register', WDP_Test_State::$actions);
 		$this->assertArrayHasKey('elementor/elements/categories_registered', WDP_Test_State::$actions);
 		$this->assertArrayNotHasKey('elementor/editor/after_enqueue_scripts', WDP_Test_State::$actions);
@@ -191,19 +185,19 @@ final class ElementorI18nTest extends TestCase {
 			array(array(), 'wdp_donation_form', array('id' => 0, 'slug' => '')),
 		);
 		foreach ($cases as $case) {
-			list($tag, $atts) = \WDP_Elementor_Widget_Donation_Form::shortcode_from_settings($case[0]);
+			list($tag, $atts) = \DonationPanel\Modules\EntryPoints\Elementor\Donation_Form_Widget::shortcode_from_settings($case[0]);
 			$this->assertSame($case[1], $tag);
 			foreach ($case[2] as $k => $v) {
 				$this->assertSame($v, $atts[ $k ], $k);
 			}
 		}
-		$src = (string) file_get_contents(WDP_PLUGIN_DIR . 'includes/elementor/class-widget-donation-form.php');
-		$this->assertStringContainsString('WDP_Shortcodes::donation_form_shortcode', $src);
-		$this->assertStringContainsString('WDP_Shortcodes::donation_button_panel_shortcode', $src);
+		$src = (string) file_get_contents(WDP_PLUGIN_DIR . 'src/Modules/EntryPoints/Elementor/class-donation-form-widget.php');
+		$this->assertStringContainsString('Shortcodes::donation_form_shortcode', $src);
+		$this->assertStringContainsString('Shortcodes::donation_button_panel_shortcode', $src);
 	}
 
 	public function test_list_widget_maps_to_shortcode_attributes(): void {
-		$atts = \WDP_Elementor_Widget_Donations_List::atts_from_settings(array('columns' => 4, 'columns_tablet' => 3, 'columns_mobile' => 1, 'image_size' => 'medium'));
+		$atts = \DonationPanel\Modules\EntryPoints\Elementor\Donations_List_Widget::atts_from_settings(array('columns' => 4, 'columns_tablet' => 3, 'columns_mobile' => 1, 'image_size' => 'medium'));
 		$this->assertSame(4, (int) $atts['columns']);
 		$this->assertSame(3, (int) $atts['columns_tablet']);
 		$this->assertSame(1, (int) $atts['columns_mobile']);
@@ -214,7 +208,7 @@ final class ElementorI18nTest extends TestCase {
 	}
 
 	public function test_widget_files_hold_no_editor_special_cases(): void {
-		foreach (array('includes/class-elementor.php', 'includes/elementor/class-widget-donation-form.php', 'includes/elementor/class-widget-donations-list.php') as $f) {
+		foreach (array('src/Modules/EntryPoints/Elementor/class-elementor-compat.php', 'src/Modules/EntryPoints/Elementor/class-donation-form-widget.php', 'src/Modules/EntryPoints/Elementor/class-donations-list-widget.php') as $f) {
 			$src = (string) file_get_contents(WDP_PLUGIN_DIR . $f);
 			$this->assertStringNotContainsString('is_edit_mode', $src, $f);
 			$this->assertStringNotContainsString('wp_enqueue_', $src, $f);
@@ -223,7 +217,7 @@ final class ElementorI18nTest extends TestCase {
 	}
 
 	public function test_block_scripts_set_translations(): void {
-		WDP_Blocks::register();
+		\DonationPanel\Modules\EntryPoints\Blocks::register();
 		$tr = WDP_Test_State::$options['__script_translations'] ?? array();
 		$handles = array();
 		foreach ($tr as $row) {

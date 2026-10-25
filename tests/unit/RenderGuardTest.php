@@ -80,7 +80,7 @@ final class RenderGuardTest extends TestCase {
 		WDP_Test_State::$is_admin = false;
 		WDP_Test_State::$caps     = array('edit_products');
 		$_GET['fb-edit']         = '1';
-		WDP_Builder_Detect::reset();
+		\DonationPanel\Modules\EntryPoints\Builder_Detect::reset();
 		$preview = WDP_Utils::admin_notice_html('Önizleme notu');
 		$this->assertStringContainsString('wdp-admin-notice', $preview);
 	}

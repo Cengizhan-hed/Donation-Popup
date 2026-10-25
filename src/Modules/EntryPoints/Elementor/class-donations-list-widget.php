@@ -2,17 +2,17 @@
 /**
  * Elementor uyumluluk katmanı: "Donations list" widget'ı (yalnız kısa kodu çalıştırır).
  *
- * @package WooCommerce\Donation_Popup
+ * @package DonationPanel
  */
 
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
-}
+namespace DonationPanel\Modules\EntryPoints\Elementor;
+
+defined( 'ABSPATH' ) || exit;
 
 /**
  * Donations grid widget.
  */
-class WDP_Elementor_Widget_Donations_List extends \Elementor\Widget_Base {
+class Donations_List_Widget extends \Elementor\Widget_Base {
 
 	/**
 	 * @return string
@@ -408,6 +408,6 @@ class WDP_Elementor_Widget_Donations_List extends \Elementor\Widget_Base {
 	 * @return void
 	 */
 	protected function render() {
-		echo WDP_Donations_List::shortcode( self::atts_from_settings( $this->get_settings_for_display() ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		echo \WDP_Donations_List::shortcode( self::atts_from_settings( $this->get_settings_for_display() ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	}
 }

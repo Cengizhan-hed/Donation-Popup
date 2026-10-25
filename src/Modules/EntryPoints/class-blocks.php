@@ -1,18 +1,18 @@
 <?php
 /**
- * Gutenberg blokları: bağış formu ve bağış listesi (PHP render_callback, JSX yok).
+ * Gutenberg blokları: bağış formu ve bağış listesi (PHP render_callback).
  *
- * @package WooCommerce\Donation_Popup
+ * @package DonationPanel
  */
 
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
-}
+namespace DonationPanel\Modules\EntryPoints;
+
+defined( 'ABSPATH' ) || exit;
 
 /**
- * Registers wdp/donation-form and wdp/donations (WP 5.8+).
+ * Bloklar.
  */
-class WDP_Blocks {
+class Blocks {
 
 	/**
 	 * @return void
@@ -22,7 +22,7 @@ class WDP_Blocks {
 			return;
 		}
 		$version = isset( $GLOBALS['wp_version'] ) ? (string) $GLOBALS['wp_version'] : '0';
-		if ( $version !== '0' && version_compare( $version, '5.8', '<' ) ) {
+		if ( '0' !== $version && version_compare( $version, '5.8', '<' ) ) {
 			return;
 		}
 		add_action( 'init', array( __CLASS__, 'register' ) );
@@ -54,7 +54,7 @@ class WDP_Blocks {
 		register_block_type(
 			WDP_PLUGIN_DIR . 'blocks/donation-form',
 			array(
-				'render_callback' => array( __CLASS__, 'render_form' ),
+				'render_callback' => array( Shortcodes::class, 'render_form' ),
 			)
 		);
 		register_block_type(
@@ -66,16 +66,16 @@ class WDP_Blocks {
 	}
 
 	/**
-	 * @param array    $atts    Attributes.
+	 * @param array<string, mixed>    $atts    Attributes.
 	 * @param string   $content Inner.
-	 * @param WP_Block $block   Block.
+	 * @param \WP_Block $block   Block.
 	 * @return string
 	 */
 	public static function render_form( $atts, $content = '', $block = null ) {
-		return WDP_Render_Guard::html(
+		return \WDP_Render_Guard::html(
 			static function () use ( $atts, $block ) {
 				$atts    = is_array( $atts ) ? $atts : array();
-				$context = ( is_object( $block ) && isset( $block->context ) && is_array( $block->context ) ) ? $block->context : array();
+				$context = ( is_object( $block ) && ! empty( $block->context ) ) ? (array) $block->context : array();
 				$display = isset( $atts['display'] ) ? sanitize_key( (string) $atts['display'] ) : 'inline';
 				$label   = isset( $atts['buttonText'] ) ? sanitize_text_field( (string) $atts['buttonText'] ) : '';
 				$short   = array(
@@ -84,15 +84,15 @@ class WDP_Blocks {
 					'sku'         => isset( $atts['sku'] ) ? sanitize_text_field( (string) $atts['sku'] ) : '',
 					'text'        => $label,
 					'button_text' => $label,
-					'show_title'  => ( ! empty( $atts['showTitle'] ) && $atts['showTitle'] !== 'no' && $atts['showTitle'] !== false ) ? 'yes' : 'no',
+					'show_title'  => ( ! empty( $atts['showTitle'] ) && 'no' !== $atts['showTitle'] ) ? 'yes' : 'no',
 				);
-				if ( $display === 'popup' ) {
-					return WDP_Shortcodes::render_button( $short, 'wdp_donation_button', 'popup', $context );
+				if ( 'popup' === $display ) {
+					return Shortcodes::render_button( $short, 'wdp_donation_button', 'popup', $context );
 				}
-				if ( $display === 'panel' ) {
-					return WDP_Shortcodes::render_button( $short, 'wdp_donation_button_panel', 'side_panel', $context );
+				if ( 'panel' === $display ) {
+					return Shortcodes::render_button( $short, 'wdp_donation_button_panel', 'side_panel', $context );
 				}
-				return WDP_Shortcodes::render_form( $short, $context );
+				return Shortcodes::render_form( $short, $context );
 			},
 			isset( $atts['productId'] ) ? absint( $atts['productId'] ) : 0,
 			'block_donation_form'
@@ -100,10 +100,10 @@ class WDP_Blocks {
 	}
 
 	/**
-	 * @param array $atts Attributes.
+	 * @param array<string, mixed> $atts Attributes.
 	 * @return string
 	 */
 	public static function render_list( $atts ) {
-		return WDP_Donations_List::shortcode( is_array( $atts ) ? $atts : array() );
+		return \WDP_Donations_List::shortcode( is_array( $atts ) ? $atts : array() );
 	}
 }

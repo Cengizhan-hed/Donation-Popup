@@ -23,10 +23,12 @@ final class E0PublicApiContractTest extends TestCase {
 		if ( null === $all ) {
 			$all  = '';
 			$root = dirname( __DIR__, 3 );
-			$it   = new RecursiveIteratorIterator( new RecursiveDirectoryIterator( $root . '/includes', FilesystemIterator::SKIP_DOTS ) );
-			foreach ( $it as $f ) {
-				if ( 'php' === $f->getExtension() ) {
-					$all .= (string) file_get_contents( (string) $f );
+			foreach ( array( '/includes', '/src' ) as $dir ) {
+				$it = new RecursiveIteratorIterator( new RecursiveDirectoryIterator( $root . $dir, FilesystemIterator::SKIP_DOTS ) );
+				foreach ( $it as $f ) {
+					if ( 'php' === $f->getExtension() ) {
+						$all .= (string) file_get_contents( (string) $f );
+					}
 				}
 			}
 			$all .= (string) file_get_contents( $root . '/woo-donation-popup.php' );

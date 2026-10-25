@@ -1,19 +1,18 @@
 <?php
 /**
  * Düzenleyici/önizleme tespiti: yalnız genel WordPress sinyalleri (hiçbir oluşturucu adı bilinmez).
- * Site sahibi ek işaret için `wdp_is_builder_preview` filtresini kullanabilir.
  *
- * @package WooCommerce\Donation_Popup
+ * @package DonationPanel
  */
 
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
-}
+namespace DonationPanel\Modules\EntryPoints;
+
+defined( 'ABSPATH' ) || exit;
 
 /**
- * Detects page-builder editors and previews with generic WordPress signals; unknown builders work too.
+ * Builder_Detect.
  */
-class WDP_Builder_Detect {
+class Builder_Detect {
 
 	/** @var bool|null */
 	private static $is_preview = null;
@@ -29,7 +28,7 @@ class WDP_Builder_Detect {
 	 * @return bool
 	 */
 	public static function is_builder_preview() {
-		if ( self::$is_preview !== null ) {
+		if ( null !== self::$is_preview ) {
 			return self::$is_preview;
 		}
 		self::$is_preview = false;
@@ -42,29 +41,29 @@ class WDP_Builder_Detect {
 		 *
 		 * @param bool $generic Genel tespit sonucu.
 		 */
-		self::$is_preview = (bool) apply_filters( 'wdp_is_builder_preview', $generic );
+		self::$is_preview = (bool) apply_filters( 'wdp_is_builder_preview', $generic ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- geriye donuk uyumluluk sozlesmesi: eski wdp_ kanca adi degismez.
 		return self::$is_preview;
 	}
 
 	/**
 	 * Sample (or builder-selected) donation product for builder canvases.
 	 *
-	 * @return WC_Product|null
+	 * @return \WC_Product|null
 	 */
 	public static function preview_product() {
 		if ( ! self::is_builder_preview() ) {
 			return null;
 		}
-		if ( self::$preview_product !== false ) {
+		if ( false !== self::$preview_product ) {
 			return self::$preview_product ? self::$preview_product : null;
 		}
 
 		/**
 		 * Oluşturucunun önizleme için seçtiği ürün (site sahibi sağlayabilir).
 		 *
-		 * @param WC_Product|null $product Product or null.
+		 * @param \WC_Product|null $product Product or null.
 		 */
-		$product = apply_filters( 'wdp_builder_preview_context_product', null );
+		$product = apply_filters( 'wdp_builder_preview_context_product', null ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- geriye donuk uyumluluk sozlesmesi: eski wdp_ kanca adi degismez.
 		if ( ! $product ) {
 			$product = self::latest_donation_product();
 		}
@@ -72,9 +71,9 @@ class WDP_Builder_Detect {
 		/**
 		 * Override the product shown on builder canvases.
 		 *
-		 * @param WC_Product|null $product Preview product.
+		 * @param \WC_Product|null $product Preview product.
 		 */
-		$filtered              = apply_filters( 'wdp_builder_preview_product', $product );
+		$filtered              = apply_filters( 'wdp_builder_preview_product', $product ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- geriye donuk uyumluluk sozlesmesi: eski wdp_ kanca adi degismez.
 		self::$preview_product = ( is_object( $filtered ) && method_exists( $filtered, 'get_id' ) ) ? $filtered : null;
 		return self::$preview_product;
 	}
@@ -82,7 +81,7 @@ class WDP_Builder_Detect {
 	/**
 	 * Admin-only note shown above a preview form/button.
 	 *
-	 * @param object $product WC_Product.
+	 * @param object $product \WC_Product.
 	 * @return string
 	 */
 	public static function preview_notice( $product ) {
@@ -91,7 +90,7 @@ class WDP_Builder_Detect {
 		}
 		$name = $product->get_name();
 		/* translators: %s: sample product name */
-		return WDP_Utils::admin_notice_html( sprintf( __( 'Preview: «%s» is shown. That product’s form appears on the product page.', 'woo-donation-popup' ), $name ) );
+		return \WDP_Utils::admin_notice_html( sprintf( __( 'Preview: «%s» is shown. That product’s form appears on the product page.', 'woo-donation-popup' ), $name ) );
 	}
 
 	/**
@@ -110,13 +109,13 @@ class WDP_Builder_Detect {
 	private static function gutenberg() {
 		if ( defined( 'REST_REQUEST' ) && REST_REQUEST && ! empty( $GLOBALS['wp']->query_vars['rest_route'] ) ) {
 			$route = (string) $GLOBALS['wp']->query_vars['rest_route'];
-			if ( strpos( $route, '/block-renderer/' ) !== false ) {
+			if ( false !== strpos( $route, '/block-renderer/' ) ) {
 				return true;
 			}
 		}
 		if ( function_exists( 'wp_is_json_request' ) && wp_is_json_request() && isset( $_SERVER['REQUEST_URI'] ) ) {
 			$uri = (string) wp_unslash( $_SERVER['REQUEST_URI'] );
-			if ( strpos( $uri, '/wp/v2/block-renderer' ) !== false ) {
+			if ( false !== strpos( $uri, '/wp/v2/block-renderer' ) ) {
 				return true;
 			}
 		}
@@ -141,7 +140,7 @@ class WDP_Builder_Detect {
 	 */
 	private static function editor_query_var() {
 		foreach ( self::query_vars() as $key => $value ) {
-			if ( $value === '' || $value === '0' || $value === 'false' ) {
+			if ( '' === $value || '0' === $value || 'false' === $value ) {
 				continue;
 			}
 			foreach ( preg_split( '/[-_]+/', (string) $key ) as $part ) {
@@ -156,7 +155,7 @@ class WDP_Builder_Detect {
 	/**
 	 * Latest published donation product (by modified date).
 	 *
-	 * @return WC_Product|null
+	 * @return \WC_Product|null
 	 */
 	private static function latest_donation_product() {
 		if ( ! function_exists( 'wc_get_products' ) ) {
@@ -168,7 +167,7 @@ class WDP_Builder_Detect {
 				'limit'   => 12,
 				'orderby' => 'modified',
 				'order'   => 'DESC',
-				'type'    => class_exists( 'WDP_Donation_Scope' ) ? WDP_Donation_Scope::supported_types() : array( 'simple' ),
+				'type'    => class_exists( 'WDP_Donation_Scope' ) ? \WDP_Donation_Scope::supported_types() : array( 'simple' ),
 				'return'  => 'objects',
 			)
 		);
@@ -176,7 +175,7 @@ class WDP_Builder_Detect {
 			return null;
 		}
 		foreach ( $products as $product ) {
-			if ( class_exists( 'WDP_Donation_Scope' ) && WDP_Donation_Scope::is_donation_product( $product ) ) {
+			if ( class_exists( 'WDP_Donation_Scope' ) && \WDP_Donation_Scope::is_donation_product( $product ) ) {
 				return $product;
 			}
 		}
@@ -188,7 +187,7 @@ class WDP_Builder_Detect {
 	 */
 	public static function query_vars() {
 		$out = array();
-		if ( isset( $_GET ) && is_array( $_GET ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( ! empty( $_GET ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			foreach ( $_GET as $key => $value ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 				if ( is_scalar( $value ) ) {
 					$out[ sanitize_key( (string) $key ) ] = sanitize_text_field( wp_unslash( (string) $value ) );

@@ -57,7 +57,7 @@ class WDP_Form_Matrix {
 		$product_id = isset( $_GET['product_id'] ) ? absint( $_GET['product_id'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$product    = $product_id ? wc_get_product( $product_id ) : null;
 		if ( ! $product ) {
-			$product = class_exists( 'WDP_Builder_Detect' ) ? WDP_Builder_Detect::preview_product() : null;
+			$product = \DonationPanel\Modules\EntryPoints\Builder_Detect::preview_product();
 		}
 		if ( ! $product && function_exists( 'wc_get_products' ) ) {
 			$list    = wc_get_products(

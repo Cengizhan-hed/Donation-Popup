@@ -395,7 +395,7 @@ class WDP_Utils {
 	 * @return string Safe HTML (or '').
 	 */
 	public static function admin_notice_html( $message ) {
-		$in_editor = class_exists( 'WDP_Builder_Detect' ) && WDP_Builder_Detect::is_builder_preview();
+		$in_editor = \DonationPanel\Modules\EntryPoints\Builder_Detect::is_builder_preview();
 		$in_admin  = function_exists( 'is_admin' ) && is_admin()
 			&& ! ( function_exists( 'wp_doing_ajax' ) && wp_doing_ajax() );
 		if ( ! $in_editor && ! $in_admin ) {
