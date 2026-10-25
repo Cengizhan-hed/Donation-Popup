@@ -1,0 +1,61 @@
+/* Yönetici ekranı prototip çerçevesi (WordPress yönetim alanına benzeyen sade kabuk). */
+.wpa { --wpa-bg: #f0f0f1; --wpa-menu: #1d2327; --wpa-menu-fg: #c3c4c7; margin: 0; background: var(--wpa-bg); min-height: 100dvh; font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: #1d2327; }
+.wpa-bar { background: #1d2327; color: #fff; height: 46px; display: flex; align-items: center; gap: 12px; padding: 0 12px; font-size: 13px; position: sticky; top: 0; z-index: 4; }
+.wpa-bar b { font-weight: 600; }
+.wpa-layout { display: grid; grid-template-columns: 1fr; }
+.wpa-menu { display: none; background: var(--wpa-menu); color: var(--wpa-menu-fg); padding: 12px 0; min-height: calc(100dvh - 46px); font-size: 14px; }
+.wpa-menu a { display: flex; align-items: center; gap: 10px; padding: 9px 14px; color: inherit; text-decoration: none; }
+.wpa-menu a.cur { background: #2271b1; color: #fff; font-weight: 600; }
+.wpa-main { padding: 16px 14px 90px; min-width: 0; }
+@media (min-width: 900px) { .wpa-layout { grid-template-columns: 180px 1fr; } .wpa-menu { display: block; } .wpa-main { padding: 28px 36px 90px; } }
+.wpa-h1 { font-size: 23px; font-weight: 600; margin: 0 0 4px; display: flex; align-items: center; gap: 10px; }
+.wpa-sub { color: #50575e; margin: 0 0 22px; max-width: 70ch; }
+.wpa-card { background: #fff; border: 1px solid #dcdcde; border-radius: 12px; padding: 20px; margin-bottom: 16px; box-shadow: 0 1px 1px rgb(0 0 0 / .03); }
+:root[data-dp-scheme="dark"] .wpa { --wpa-bg: #101317; color: #eef1f5; }
+:root[data-dp-scheme="dark"] .wpa-card { background: #181c22; border-color: #2a3038; }
+:root[data-dp-scheme="dark"] .wpa-sub { color: #aab2bd; }
+.wpa-tabs { display: flex; gap: 4px; border-bottom: 1px solid #dcdcde; margin-bottom: 18px; overflow-x: auto; }
+.wpa-tabs button { padding: 12px 14px; border: 0; background: none; font: inherit; font-weight: 600; color: #50575e; cursor: pointer; min-height: 44px; position: relative; white-space: nowrap; }
+.wpa-tabs button[aria-selected="true"] { color: #1d2327; }
+.wpa-tabs button[aria-selected="true"]::after { content: ""; position: absolute; inset: auto 10px -1px; height: 3px; background: var(--dp-color-primary); border-radius: 3px 3px 0 0; }
+.wpa-row { display: grid; gap: 6px 24px; padding: 16px 0; border-top: 1px solid #f0f0f1; }
+.wpa-row:first-child { border-top: 0; padding-top: 0; }
+.wpa-row > div:first-child b { display: block; font-size: 14px; }
+.wpa-row p { margin: 2px 0 0; color: #646970; font-size: 13px; max-width: 60ch; }
+:root[data-dp-scheme="dark"] .wpa-row { border-color: #2a3038; } :root[data-dp-scheme="dark"] .wpa-row p { color: #98a1ad; }
+@media (min-width: 800px) { .wpa-row { grid-template-columns: 260px 1fr; } }
+.wpa-switch { position: relative; display: inline-block; inline-size: 52px; block-size: 30px; flex: none; }
+.wpa-switch input { appearance: none; -webkit-appearance: none; position: absolute; inset: 0; margin: 0; border-radius: 99px; background: #a7aaad; cursor: pointer; transition: background .2s; }
+.wpa-switch input:checked { background: var(--dp-color-primary-strong); }
+.wpa-switch input:focus-visible { box-shadow: 0 0 0 3px #fff, 0 0 0 5px var(--dp-color-primary-strong); }
+.wpa-switch::after { content: ""; position: absolute; inset-block-start: 3px; inset-inline-start: 3px; inline-size: 24px; block-size: 24px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgb(0 0 0 / .3); transition: transform .28s var(--dp-ease-spring); pointer-events: none; }
+.wpa-switch:has(input:checked)::after { transform: translateX(22px); }
+[dir="rtl"] .wpa-switch:has(input:checked)::after { transform: translateX(-22px); }
+.wpa-savebar { position: fixed; inset-inline: 0; inset-block-end: 0; background: #fff; border-top: 1px solid #dcdcde; padding: 12px 16px max(12px, env(safe-area-inset-bottom)); display: flex; align-items: center; gap: 12px; z-index: 5; justify-content: flex-end; }
+:root[data-dp-scheme="dark"] .wpa-savebar { background: #181c22; border-color: #2a3038; }
+@media (min-width: 900px) { .wpa-savebar { inset-inline-start: 180px; padding-inline: 36px; } }
+.wpa-split { display: grid; gap: 20px; }
+@media (min-width: 1100px) { .wpa-split { grid-template-columns: 1fr 380px; align-items: start; } .wpa-split > aside { position: sticky; top: 64px; } }
+.wpa-opt { display: grid; gap: 8px; }
+.wpa-pill { display: flex; gap: 12px; align-items: center; padding: 14px; border: 1.5px solid #dcdcde; border-radius: 12px; cursor: pointer; background: #fff; min-height: 64px; transition: border-color .15s, background .15s, transform .15s var(--dp-ease-spring); }
+:root[data-dp-scheme="dark"] .wpa-pill { background: #181c22; border-color: #2a3038; }
+.wpa-pill:has(input:checked) { border-color: var(--dp-color-primary); background: var(--dp-color-primary-softer); }
+.wpa-pill:active { transform: scale(.985); }
+.wpa-pill input { accent-color: var(--dp-color-primary-strong); inline-size: 20px; block-size: 20px; flex: none; }
+.wpa-pill small { display: block; color: #646970; }
+.wpa-pill .ico { flex: none; inline-size: 40px; block-size: 40px; border-radius: 10px; background: var(--dp-color-primary-soft); color: var(--dp-color-primary-strong); display: grid; place-items: center; }
+.wpa-code { font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; background: #1d2327; color: #e6edf3; padding: 12px 14px; border-radius: 10px; display: flex; gap: 10px; align-items: center; justify-content: space-between; overflow-x: auto; }
+.wpa-stepper { display: flex; gap: 8px; margin-bottom: 22px; }
+.wpa-stepper li { list-style: none; flex: 1; display: grid; gap: 6px; font-size: 12px; font-weight: 600; color: #646970; }
+.wpa-stepper li i { display: block; height: 5px; border-radius: 5px; background: #dcdcde; position: relative; overflow: hidden; }
+.wpa-stepper li i::after { content: ""; position: absolute; inset: 0; background: var(--dp-color-primary); transform: scaleX(0); transform-origin: left; transition: transform .5s var(--dp-ease-out); }
+[dir="rtl"] .wpa-stepper li i::after { transform-origin: right; }
+.wpa-stepper li.done i::after, .wpa-stepper li.cur i::after { transform: scaleX(1); }
+.wpa-stepper li.cur { color: #1d2327; } :root[data-dp-scheme="dark"] .wpa-stepper li.cur { color: #fff; }
+.wpa-check { display: inline-grid; place-items: center; inline-size: 22px; block-size: 22px; border-radius: 50%; background: var(--dp-color-success-soft); color: var(--dp-color-success); flex: none; }
+.wpa-tiles { display: grid; gap: 12px; grid-template-columns: repeat(2, 1fr); }
+@media (min-width: 700px) { .wpa-tiles { grid-template-columns: repeat(4, 1fr); } }
+.wpa-tile { padding: 14px; border: 1px solid #dcdcde; border-radius: 12px; background: #fff; }
+:root[data-dp-scheme="dark"] .wpa-tile { background: #181c22; border-color: #2a3038; }
+.wpa-tile b { display: block; font-size: 22px; letter-spacing: -.02em; } .wpa-tile span { color: #646970; font-size: 12.5px; }
+.wpa input[type=text].dp-input, .wpa .dp-input { font-size: 15px; }
