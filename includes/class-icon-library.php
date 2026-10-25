@@ -5,7 +5,7 @@
  * @package WooCommerce\Donation_Popup
  */
 
-if (!defined('ABSPATH')) {
+if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
@@ -46,27 +46,27 @@ class WDP_Icon_Library {
 	 */
 	public static function get_builtins_for_admin() {
 		$labels = array(
-			'user'     => __('User', 'woo-donation-popup'),
-			'note'     => __('Note', 'woo-donation-popup'),
-			'email'    => __('Email', 'woo-donation-popup'),
-			'phone'    => __('Phone', 'woo-donation-popup'),
-			'cart'     => __('Cart', 'woo-donation-popup'),
-			'checkout' => __('Checkout / Shield', 'woo-donation-popup'),
-			'shield'   => __('Shield', 'woo-donation-popup'),
-			'heart'    => __('Heart', 'woo-donation-popup'),
-			'gift'     => __('Gift', 'woo-donation-popup'),
-			'star'     => __('Star', 'woo-donation-popup'),
-			'check'    => __('Check', 'woo-donation-popup'),
-			'continue' => __('Continue', 'woo-donation-popup'),
-			'users'    => __('Community', 'woo-donation-popup'),
-			'clock'    => __('Clock', 'woo-donation-popup'),
-			'lock'     => __('Lock', 'woo-donation-popup'),
+			'user'     => __( 'User', 'woo-donation-popup' ),
+			'note'     => __( 'Note', 'woo-donation-popup' ),
+			'email'    => __( 'Email', 'woo-donation-popup' ),
+			'phone'    => __( 'Phone', 'woo-donation-popup' ),
+			'cart'     => __( 'Cart', 'woo-donation-popup' ),
+			'checkout' => __( 'Checkout / Shield', 'woo-donation-popup' ),
+			'shield'   => __( 'Shield', 'woo-donation-popup' ),
+			'heart'    => __( 'Heart', 'woo-donation-popup' ),
+			'gift'     => __( 'Gift', 'woo-donation-popup' ),
+			'star'     => __( 'Star', 'woo-donation-popup' ),
+			'check'    => __( 'Check', 'woo-donation-popup' ),
+			'continue' => __( 'Continue', 'woo-donation-popup' ),
+			'users'    => __( 'Community', 'woo-donation-popup' ),
+			'clock'    => __( 'Clock', 'woo-donation-popup' ),
+			'lock'     => __( 'Lock', 'woo-donation-popup' ),
 		);
-		$list = array();
-		foreach (self::get_builtins() as $id => $svg) {
+		$list   = array();
+		foreach ( self::get_builtins() as $id => $svg ) {
 			$list[] = array(
 				'id'    => $id,
-				'label' => isset($labels[ $id ]) ? $labels[ $id ] : $id,
+				'label' => isset( $labels[ $id ] ) ? $labels[ $id ] : $id,
 				'svg'   => $svg,
 			);
 		}
@@ -86,44 +86,44 @@ class WDP_Icon_Library {
 	 * @param string $class        Optional CSS class on svg/img wrapper content.
 	 * @return string Safe HTML.
 	 */
-	public static function resolve($value, $fallback_key = 'user', $class = '') {
-		$value = trim((string) $value);
-		$builtins = self::get_builtins();
-		$fallback_key = isset($builtins[ $fallback_key ]) ? $fallback_key : 'user';
+	public static function resolve( $value, $fallback_key = 'user', $class = '' ) {
+		$value        = trim( (string) $value );
+		$builtins     = self::get_builtins();
+		$fallback_key = isset( $builtins[ $fallback_key ] ) ? $fallback_key : 'user';
 
-		if ($value === '') {
-			return self::wrap_svg($builtins[ $fallback_key ], $class);
+		if ( $value === '' ) {
+			return self::wrap_svg( $builtins[ $fallback_key ], $class );
 		}
 
-		if (strpos($value, 'builtin:') === 0) {
-			$key = substr($value, 8);
-			$key = sanitize_key($key);
-			if (isset($builtins[ $key ])) {
-				return self::wrap_svg($builtins[ $key ], $class);
+		if ( strpos( $value, 'builtin:' ) === 0 ) {
+			$key = substr( $value, 8 );
+			$key = sanitize_key( $key );
+			if ( isset( $builtins[ $key ] ) ) {
+				return self::wrap_svg( $builtins[ $key ], $class );
 			}
-			return self::wrap_svg($builtins[ $fallback_key ], $class);
+			return self::wrap_svg( $builtins[ $fallback_key ], $class );
 		}
 
-		if (strpos($value, 'attachment:') === 0) {
-			$id = absint(substr($value, 11));
-			if ($id > 0) {
-				$url = wp_get_attachment_url($id);
-				$mime = get_post_mime_type($id);
-				if ($url && is_string($mime) && strpos($mime, 'image/') === 0) {
-					$cls = $class !== '' ? ' class="' . esc_attr($class) . '"' : '';
-					return '<img src="' . esc_url($url) . '" alt="" width="22" height="22"' . $cls . ' loading="lazy" decoding="async" />';
+		if ( strpos( $value, 'attachment:' ) === 0 ) {
+			$id = absint( substr( $value, 11 ) );
+			if ( $id > 0 ) {
+				$url  = wp_get_attachment_url( $id );
+				$mime = get_post_mime_type( $id );
+				if ( $url && is_string( $mime ) && strpos( $mime, 'image/' ) === 0 ) {
+					$cls = $class !== '' ? ' class="' . esc_attr( $class ) . '"' : '';
+					return '<img src="' . esc_url( $url ) . '" alt="" width="22" height="22"' . $cls . ' loading="lazy" decoding="async" />';
 				}
 			}
-			return self::wrap_svg($builtins[ $fallback_key ], $class);
+			return self::wrap_svg( $builtins[ $fallback_key ], $class );
 		}
 
 		// Bare builtin id.
-		$key = sanitize_key($value);
-		if (isset($builtins[ $key ])) {
-			return self::wrap_svg($builtins[ $key ], $class);
+		$key = sanitize_key( $value );
+		if ( isset( $builtins[ $key ] ) ) {
+			return self::wrap_svg( $builtins[ $key ], $class );
 		}
 
-		return self::wrap_svg($builtins[ $fallback_key ], $class);
+		return self::wrap_svg( $builtins[ $fallback_key ], $class );
 	}
 
 	/**
@@ -131,14 +131,14 @@ class WDP_Icon_Library {
 	 * @param string $class Class name.
 	 * @return string
 	 */
-	private static function wrap_svg($svg, $class = '') {
-		if ($class === '') {
+	private static function wrap_svg( $svg, $class = '' ) {
+		if ( $class === '' ) {
 			return $svg;
 		}
-		if (strpos($svg, 'class=') !== false) {
-			return preg_replace('/class="/', 'class="' . esc_attr($class) . ' ', $svg, 1);
+		if ( strpos( $svg, 'class=' ) !== false ) {
+			return preg_replace( '/class="/', 'class="' . esc_attr( $class ) . ' ', $svg, 1 );
 		}
-		return preg_replace('/<svg\b/', '<svg class="' . esc_attr($class) . '"', $svg, 1);
+		return preg_replace( '/<svg\b/', '<svg class="' . esc_attr( $class ) . '"', $svg, 1 );
 	}
 
 	/**
@@ -147,24 +147,24 @@ class WDP_Icon_Library {
 	 * @return array<string, string>
 	 */
 	public static function get_settings_map() {
-		$settings = get_option('wdp_button_settings', array());
-		if (!is_array($settings)) {
+		$settings = get_option( 'wdp_button_settings', array() );
+		if ( ! is_array( $settings ) ) {
 			$settings = array();
 		}
 		$defaults = array(
-			'icon_field_user'  => 'builtin:user',
-			'icon_field_note'  => 'builtin:note',
-			'icon_field_email' => 'builtin:email',
-			'icon_cart'        => 'builtin:cart',
-			'icon_checkout'    => 'builtin:checkout',
-			'icon_trust'       => 'builtin:shield',
-			'icon_continue'    => 'builtin:continue',
+			'icon_field_user'    => 'builtin:user',
+			'icon_field_note'    => 'builtin:note',
+			'icon_field_email'   => 'builtin:email',
+			'icon_cart'          => 'builtin:cart',
+			'icon_checkout'      => 'builtin:checkout',
+			'icon_trust'         => 'builtin:shield',
+			'icon_continue'      => 'builtin:continue',
 			'enable_field_icons' => '1',
 		);
-		$map = array();
-		foreach ($defaults as $key => $def) {
-			$map[ $key ] = isset($settings[ $key ]) && $settings[ $key ] !== ''
-				? sanitize_text_field((string) $settings[ $key ])
+		$map      = array();
+		foreach ( $defaults as $key => $def ) {
+			$map[ $key ] = isset( $settings[ $key ] ) && $settings[ $key ] !== ''
+				? sanitize_text_field( (string) $settings[ $key ] )
 				: $def;
 		}
 		return $map;
@@ -178,13 +178,13 @@ class WDP_Icon_Library {
 	public static function get_button_icons_for_js() {
 		$map = self::get_settings_map();
 		return array(
-			'cart'     => self::resolve($map['icon_cart'], 'cart', 'wdp-btn__icon'),
-			'checkout' => self::resolve($map['icon_checkout'], 'checkout', 'wdp-btn__icon'),
-			'continue' => self::resolve($map['icon_continue'], 'continue', 'wdp-btn__icon'),
-			'user'     => self::resolve($map['icon_field_user'], 'user', 'wdp-field-stack__svg'),
-			'note'     => self::resolve($map['icon_field_note'], 'note', 'wdp-field-stack__svg'),
-			'email'    => self::resolve($map['icon_field_email'], 'email', 'wdp-field-stack__svg'),
-			'trust'    => self::resolve($map['icon_trust'], 'shield'),
+			'cart'     => self::resolve( $map['icon_cart'], 'cart', 'wdp-btn__icon' ),
+			'checkout' => self::resolve( $map['icon_checkout'], 'checkout', 'wdp-btn__icon' ),
+			'continue' => self::resolve( $map['icon_continue'], 'continue', 'wdp-btn__icon' ),
+			'user'     => self::resolve( $map['icon_field_user'], 'user', 'wdp-field-stack__svg' ),
+			'note'     => self::resolve( $map['icon_field_note'], 'note', 'wdp-field-stack__svg' ),
+			'email'    => self::resolve( $map['icon_field_email'], 'email', 'wdp-field-stack__svg' ),
+			'trust'    => self::resolve( $map['icon_trust'], 'shield' ),
 		);
 	}
 
@@ -195,23 +195,23 @@ class WDP_Icon_Library {
 	 * @param string $default Default.
 	 * @return string
 	 */
-	public static function sanitize_icon_value($value, $default = 'builtin:user') {
-		$value = sanitize_text_field((string) wp_unslash($value));
-		if ($value === '') {
+	public static function sanitize_icon_value( $value, $default = 'builtin:user' ) {
+		$value = sanitize_text_field( (string) wp_unslash( $value ) );
+		if ( $value === '' ) {
 			return $default;
 		}
-		if (preg_match('/^builtin:[a-z0-9_-]+$/', $value)) {
-			$key = substr($value, 8);
+		if ( preg_match( '/^builtin:[a-z0-9_-]+$/', $value ) ) {
+			$key      = substr( $value, 8 );
 			$builtins = self::get_builtins();
-			return isset($builtins[ $key ]) ? $value : $default;
+			return isset( $builtins[ $key ] ) ? $value : $default;
 		}
-		if (preg_match('/^attachment:(\d+)$/', $value, $m)) {
-			$id = absint($m[1]);
+		if ( preg_match( '/^attachment:(\d+)$/', $value, $m ) ) {
+			$id = absint( $m[1] );
 			return $id > 0 ? 'attachment:' . $id : $default;
 		}
-		$key = sanitize_key($value);
+		$key      = sanitize_key( $value );
 		$builtins = self::get_builtins();
-		if (isset($builtins[ $key ])) {
+		if ( isset( $builtins[ $key ] ) ) {
 			return 'builtin:' . $key;
 		}
 		return $default;

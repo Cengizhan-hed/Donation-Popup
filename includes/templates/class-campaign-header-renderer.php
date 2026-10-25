@@ -5,7 +5,7 @@
  * @package WooCommerce\Donation_Popup
  */
 
-if (!defined('ABSPATH')) {
+if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
@@ -20,9 +20,9 @@ class WDP_Campaign_Header_Renderer {
 	 * @param array $context Product form context.
 	 * @return array{text:string}
 	 */
-	public static function resolve_product_note_display(array $context) {
+	public static function resolve_product_note_display( array $context ) {
 		return array(
-			'text' => isset($context['product_note_text']) ? trim((string) $context['product_note_text']) : '',
+			'text' => isset( $context['product_note_text'] ) ? trim( (string) $context['product_note_text'] ) : '',
 		);
 	}
 
@@ -34,8 +34,8 @@ class WDP_Campaign_Header_Renderer {
 	 * @param bool   $is_long   Long text flag.
 	 * @return string Safe HTML.
 	 */
-	public static function render_product_note_block($display, $toggle_id = '', $is_long = false) {
-		if (!is_array($display) || empty($display['text'])) {
+	public static function render_product_note_block( $display, $toggle_id = '', $is_long = false ) {
+		if ( ! is_array( $display ) || empty( $display['text'] ) ) {
 			return '';
 		}
 
@@ -50,21 +50,21 @@ class WDP_Campaign_Header_Renderer {
 					</svg>
 				</span>
 				<div class="wdp-product-note__body">
-					<?php if ($is_long && $toggle_id !== '') : ?>
-					<input type="checkbox" id="<?php echo esc_attr($toggle_id); ?>" class="wdp-product-note__toggle">
+					<?php if ( $is_long && $toggle_id !== '' ) : ?>
+					<input type="checkbox" id="<?php echo esc_attr( $toggle_id ); ?>" class="wdp-product-note__toggle">
 					<?php endif; ?>
-					<p class="wdp-product-note__text"><?php echo esc_html($display['text']); ?></p>
-					<?php if ($is_long && $toggle_id !== '') : ?>
-					<label for="<?php echo esc_attr($toggle_id); ?>" class="wdp-product-note__more">
-						<span class="wdp-product-note__more-open"><?php echo esc_html__('See more', 'woo-donation-popup'); ?></span>
-						<span class="wdp-product-note__more-close"><?php echo esc_html__('Show less', 'woo-donation-popup'); ?></span>
+					<p class="wdp-product-note__text"><?php echo esc_html( $display['text'] ); ?></p>
+					<?php if ( $is_long && $toggle_id !== '' ) : ?>
+					<label for="<?php echo esc_attr( $toggle_id ); ?>" class="wdp-product-note__more">
+						<span class="wdp-product-note__more-open"><?php echo esc_html__( 'See more', 'woo-donation-popup' ); ?></span>
+						<span class="wdp-product-note__more-close"><?php echo esc_html__( 'Show less', 'woo-donation-popup' ); ?></span>
 					</label>
 					<?php endif; ?>
 				</div>
 			</div>
 		</div>
 		<?php
-		return trim(ob_get_clean());
+		return trim( ob_get_clean() );
 	}
 
 	/**
@@ -73,12 +73,12 @@ class WDP_Campaign_Header_Renderer {
 	 * @param string $text Impact copy.
 	 * @return string Safe HTML.
 	 */
-	public static function render_impact_line($text) {
-		$text = trim((string) $text);
-		if ($text === '') {
+	public static function render_impact_line( $text ) {
+		$text = trim( (string) $text );
+		if ( $text === '' ) {
 			return '';
 		}
-		return '<p class="wdp-impact-line">' . esc_html($text) . '</p>';
+		return '<p class="wdp-impact-line">' . esc_html( $text ) . '</p>';
 	}
 
 	/**
@@ -88,20 +88,20 @@ class WDP_Campaign_Header_Renderer {
 	 * @param array $context    Form context.
 	 * @return string
 	 */
-	public static function resolve_impact_line_text($product_id, array $context) {
-		if (isset($context['enable_impact_line']) && empty($context['enable_impact_line'])) {
+	public static function resolve_impact_line_text( $product_id, array $context ) {
+		if ( isset( $context['enable_impact_line'] ) && empty( $context['enable_impact_line'] ) ) {
 			return '';
 		}
 		$default = '';
-		if (!empty($context['impact_line_text'])) {
-			$default = trim((string) $context['impact_line_text']);
-		} elseif ($product_id > 0) {
-			$default = trim((string) get_post_meta($product_id, '_impact_line_text', true));
+		if ( ! empty( $context['impact_line_text'] ) ) {
+			$default = trim( (string) $context['impact_line_text'] );
+		} elseif ( $product_id > 0 ) {
+			$default = trim( (string) get_post_meta( $product_id, '_impact_line_text', true ) );
 		}
-		if ($default === '' && !empty($context['enable_progress_bar'])) {
+		if ( $default === '' && ! empty( $context['enable_progress_bar'] ) ) {
 			$default = '';
 		}
-		return (string) apply_filters('wdp_impact_line', $default, $product_id, $context);
+		return (string) apply_filters( 'wdp_impact_line', $default, $product_id, $context );
 	}
 
 	/**
@@ -110,14 +110,14 @@ class WDP_Campaign_Header_Renderer {
 	 * @param int $product_id Product ID.
 	 * @return string Safe HTML.
 	 */
-	public static function render_modal_product_thumb($product_id) {
-		$url = (string) apply_filters('wdp_modal_product_thumb_url', '', $product_id);
-		$url = esc_url(trim($url));
-		if ($url === '') {
+	public static function render_modal_product_thumb( $product_id ) {
+		$url = (string) apply_filters( 'wdp_modal_product_thumb_url', '', $product_id );
+		$url = esc_url( trim( $url ) );
+		if ( $url === '' ) {
 			return '';
 		}
-		$alt = (string) apply_filters('wdp_modal_product_thumb_alt', '', $product_id);
-		return '<span class="wdp-modal-thumb"><img src="' . esc_url($url) . '" alt="' . esc_attr($alt) . '" loading="lazy" decoding="async" width="48" height="48" /></span>';
+		$alt = (string) apply_filters( 'wdp_modal_product_thumb_alt', '', $product_id );
+		return '<span class="wdp-modal-thumb"><img src="' . esc_url( $url ) . '" alt="' . esc_attr( $alt ) . '" loading="lazy" decoding="async" width="48" height="48" /></span>';
 	}
 
 	/**
@@ -127,21 +127,21 @@ class WDP_Campaign_Header_Renderer {
 	 * @param array $context    Context.
 	 * @return string
 	 */
-	public static function render_campaign_media($product_id, array $context) {
-		if (empty($context['enable_campaign_media'])) {
+	public static function render_campaign_media( $product_id, array $context ) {
+		if ( empty( $context['enable_campaign_media'] ) ) {
 			return '';
 		}
 		$url = '';
-		if (function_exists('get_the_post_thumbnail_url')) {
-			$url = (string) get_the_post_thumbnail_url($product_id, 'large');
+		if ( function_exists( 'get_the_post_thumbnail_url' ) ) {
+			$url = (string) get_the_post_thumbnail_url( $product_id, 'large' );
 		}
-		$url = (string) apply_filters('wdp_campaign_media_url', $url, $product_id, $context);
-		$url = esc_url(trim($url));
-		if ($url === '') {
+		$url = (string) apply_filters( 'wdp_campaign_media_url', $url, $product_id, $context );
+		$url = esc_url( trim( $url ) );
+		if ( $url === '' ) {
 			return '';
 		}
-		$alt = isset($context['product_name']) ? (string) $context['product_name'] : '';
-		return '<div class="wdp-campaign-media"><img src="' . esc_url($url) . '" alt="' . esc_attr($alt) . '" loading="lazy" decoding="async" /></div>';
+		$alt = isset( $context['product_name'] ) ? (string) $context['product_name'] : '';
+		return '<div class="wdp-campaign-media"><img src="' . esc_url( $url ) . '" alt="' . esc_attr( $alt ) . '" loading="lazy" decoding="async" /></div>';
 	}
 
 	/**
@@ -153,44 +153,44 @@ class WDP_Campaign_Header_Renderer {
 	 * @param array $extra      title_html, note_html, progress_html.
 	 * @return string
 	 */
-	public static function render_header_modules($product_id, array $context, array $extra = array()) {
-		$order = class_exists('WDP_Form_Modules')
-			? WDP_Form_Modules::resolve_order($product_id)
-			: array('media', 'impact', 'urgency', 'social_proof', 'progress');
+	public static function render_header_modules( $product_id, array $context, array $extra = array() ) {
+		$order = class_exists( 'WDP_Form_Modules' )
+			? WDP_Form_Modules::resolve_order( $product_id )
+			: array( 'media', 'impact', 'urgency', 'social_proof', 'progress' );
 
 		$chunks = array(
-			'media'        => self::render_campaign_media($product_id, $context),
-			'impact'       => self::render_impact_line(self::resolve_impact_line_text($product_id, $context)),
-			'urgency'      => (!empty($context['enable_urgency']) && class_exists('WDP_Form_Modules'))
+			'media'        => self::render_campaign_media( $product_id, $context ),
+			'impact'       => self::render_impact_line( self::resolve_impact_line_text( $product_id, $context ) ),
+			'urgency'      => ( ! empty( $context['enable_urgency'] ) && class_exists( 'WDP_Form_Modules' ) )
 				? WDP_Form_Modules::render_urgency(
-					isset($context['urgency_text']) ? $context['urgency_text'] : '',
-					isset($context['urgency_ends_at']) ? $context['urgency_ends_at'] : ''
+					isset( $context['urgency_text'] ) ? $context['urgency_text'] : '',
+					isset( $context['urgency_ends_at'] ) ? $context['urgency_ends_at'] : ''
 				)
 				: '',
-			'social_proof' => (!empty($context['enable_social_proof']) && class_exists('WDP_Form_Modules'))
+			'social_proof' => ( ! empty( $context['enable_social_proof'] ) && class_exists( 'WDP_Form_Modules' ) )
 				? WDP_Form_Modules::render_social_proof(
-					isset($context['social_proof_text']) ? $context['social_proof_text'] : '',
+					isset( $context['social_proof_text'] ) ? $context['social_proof_text'] : '',
 					$product_id
 				)
 				: '',
-			'progress'     => isset($extra['progress_html']) ? (string) $extra['progress_html'] : '',
-			'title'        => isset($extra['title_html']) ? (string) $extra['title_html'] : '',
-			'note'         => isset($extra['note_html']) ? (string) $extra['note_html'] : '',
+			'progress'     => isset( $extra['progress_html'] ) ? (string) $extra['progress_html'] : '',
+			'title'        => isset( $extra['title_html'] ) ? (string) $extra['title_html'] : '',
+			'note'         => isset( $extra['note_html'] ) ? (string) $extra['note_html'] : '',
 		);
 
 		$html = '';
-		if (!empty($chunks['title'])) {
+		if ( ! empty( $chunks['title'] ) ) {
 			$html .= $chunks['title'];
 		}
-		foreach ($order as $id) {
-			if ($id === 'amount' || $id === 'donor' || $id === 'dedication' || $id === 'cover_fee' || $id === 'sadaka' || $id === 'trust') {
+		foreach ( $order as $id ) {
+			if ( $id === 'amount' || $id === 'donor' || $id === 'dedication' || $id === 'cover_fee' || $id === 'sadaka' || $id === 'trust' ) {
 				continue;
 			}
-			if (!empty($chunks[ $id ])) {
+			if ( ! empty( $chunks[ $id ] ) ) {
 				$html .= $chunks[ $id ];
 			}
 		}
-		if (!empty($chunks['note'])) {
+		if ( ! empty( $chunks['note'] ) ) {
 			$html .= $chunks['note'];
 		}
 		return $html;
@@ -203,14 +203,14 @@ class WDP_Campaign_Header_Renderer {
 	 * @param array $context    Context.
 	 * @return array{class:string,style:string,layout:string}
 	 */
-	public static function resolve_shell_attrs($product_id, array $context) {
-		$layout = isset($context['layout_mode']) ? sanitize_key((string) $context['layout_mode']) : 'classic';
-		if (!in_array($layout, array('classic', 'campaign', 'story'), true)) {
+	public static function resolve_shell_attrs( $product_id, array $context ) {
+		$layout = isset( $context['layout_mode'] ) ? sanitize_key( (string) $context['layout_mode'] ) : 'classic';
+		if ( ! in_array( $layout, array( 'classic', 'campaign', 'story' ), true ) ) {
 			$layout = 'classic';
 		}
 		$class = ' wdp-layout-' . $layout;
-		$style = class_exists('WDP_Form_Modules')
-			? WDP_Form_Modules::build_product_theme_style($product_id, $context)
+		$style = class_exists( 'WDP_Form_Modules' )
+			? WDP_Form_Modules::build_product_theme_style( $product_id, $context )
 			: '';
 		return array(
 			'class'  => $class,

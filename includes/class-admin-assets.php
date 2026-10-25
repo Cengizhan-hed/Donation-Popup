@@ -5,7 +5,7 @@
  * @package WooCommerce\Donation_Popup
  */
 
-if (!defined('ABSPATH')) {
+if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
@@ -24,26 +24,26 @@ class WDP_Admin_Assets {
 	 * @param string $hook Current admin page hook.
 	 * @return void
 	 */
-	public static function enqueue($hook) {
-		if ($hook === 'post.php' || $hook === 'post-new.php') {
-			$screen = function_exists('get_current_screen') ? get_current_screen() : null;
-			if ($screen && $screen->post_type === 'product' && current_user_can('manage_woocommerce')) {
-				wp_enqueue_style('wp-color-picker');
-				self::enqueue_products_assets(array('wp-color-picker'), array('wp-color-picker'));
+	public static function enqueue( $hook ) {
+		if ( $hook === 'post.php' || $hook === 'post-new.php' ) {
+			$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+			if ( $screen && $screen->post_type === 'product' && current_user_can( 'manage_woocommerce' ) ) {
+				wp_enqueue_style( 'wp-color-picker' );
+				self::enqueue_products_assets( array( 'wp-color-picker' ), array( 'wp-color-picker' ) );
 			}
 			return;
 		}
 
-		if ($hook !== self::PAGE_HOOK) {
+		if ( $hook !== self::PAGE_HOOK ) {
 			return;
 		}
 
 		$css_path = WDP_PLUGIN_DIR . 'assets/css/admin-style.css';
 		$js_path  = WDP_PLUGIN_DIR . 'assets/js/admin-script.js';
-		$css_ver  = WDP_VERSION . '.' . (string) (file_exists($css_path) ? filemtime($css_path) : 0);
-		$js_ver   = WDP_VERSION . '.' . (string) (file_exists($js_path) ? filemtime($js_path) : 0);
+		$css_ver  = WDP_VERSION . '.' . (string) ( file_exists( $css_path ) ? filemtime( $css_path ) : 0 );
+		$js_ver   = WDP_VERSION . '.' . (string) ( file_exists( $js_path ) ? filemtime( $js_path ) : 0 );
 
-		wp_enqueue_style('dashicons');
+		wp_enqueue_style( 'dashicons' );
 		wp_enqueue_style(
 			'wdp-admin-css',
 			WDP_PLUGIN_URL . 'assets/css/admin-style.css',
@@ -52,49 +52,49 @@ class WDP_Admin_Assets {
 		);
 
 		// jQuery'den bağımsız sekme kontrolü — ana admin script kırılsa bile sekmeler çalışır.
-		wp_register_script('wdp-admin-tabs', false, array(), $js_ver, true);
-		wp_enqueue_script('wdp-admin-tabs');
-		wp_add_inline_script('wdp-admin-tabs', self::get_tabs_inline_script());
+		wp_register_script( 'wdp-admin-tabs', false, array(), $js_ver, true );
+		wp_enqueue_script( 'wdp-admin-tabs' );
+		wp_add_inline_script( 'wdp-admin-tabs', self::get_tabs_inline_script() );
 
 		wp_enqueue_media();
 		wp_enqueue_script(
 			'wdp-admin-js',
 			WDP_PLUGIN_URL . 'assets/js/admin-script.js',
-			array('jquery', 'wdp-admin-tabs'),
+			array( 'jquery', 'wdp-admin-tabs' ),
 			$js_ver,
 			true
 		);
 
-		$style_packs = class_exists('WDP_Style_Presets') ? WDP_Style_Presets::get_packs_for_js() : array();
-		$icon_builtins = class_exists('WDP_Icon_Library') ? WDP_Icon_Library::get_builtins_for_admin() : array();
+		$style_packs   = class_exists( 'WDP_Style_Presets' ) ? WDP_Style_Presets::get_packs_for_js() : array();
+		$icon_builtins = class_exists( 'WDP_Icon_Library' ) ? WDP_Icon_Library::get_builtins_for_admin() : array();
 
 		wp_localize_script(
 			'wdp-admin-js',
 			'wdp_admin',
 			array(
-				'ajax_url'        => admin_url('admin-ajax.php'),
-				'nonce'           => wp_create_nonce('wdp_admin_nonce'),
-				'save_success'    => __('Settings saved successfully.', 'woo-donation-popup'),
-				'save_error'      => __('An error occurred while saving settings.', 'woo-donation-popup'),
-				'currency_symbol' => html_entity_decode(get_woocommerce_currency_symbol(), ENT_QUOTES, 'UTF-8'),
-				'price_format'    => html_entity_decode(get_woocommerce_price_format(), ENT_QUOTES, 'UTF-8'),
+				'ajax_url'        => admin_url( 'admin-ajax.php' ),
+				'nonce'           => wp_create_nonce( 'wdp_admin_nonce' ),
+				'save_success'    => __( 'Settings saved successfully.', 'woo-donation-popup' ),
+				'save_error'      => __( 'An error occurred while saving settings.', 'woo-donation-popup' ),
+				'currency_symbol' => html_entity_decode( get_woocommerce_currency_symbol(), ENT_QUOTES, 'UTF-8' ),
+				'price_format'    => html_entity_decode( get_woocommerce_price_format(), ENT_QUOTES, 'UTF-8' ),
 				'style_packs'     => $style_packs,
 				'icon_builtins'   => $icon_builtins,
 				'i18n'            => array(
-					'preset_applied'         => __('The pack was applied to the form fields. Don’t forget to save.', 'woo-donation-popup'),
-					'media_title'            => __('Select icon', 'woo-donation-popup'),
-					'media_button'           => __('Use', 'woo-donation-popup'),
-					'unsaved_tab'            => __('You have unsaved changes. Are you sure you want to leave this tab?', 'woo-donation-popup'),
-					'confirm_leave_tab'      => __('You have unsaved changes. Are you sure you want to leave this tab?', 'woo-donation-popup'),
-					'confirm_uninstall_data' => __('All product settings and plugin options will be deleted. Orders and order records are not affected. This cannot be undone. Have you made a backup?', 'woo-donation-popup'),
-					'unsaved_changes'        => __('You have unsaved changes.', 'woo-donation-popup'),
-					'select_pack_first'      => __('Select a style pack first.', 'woo-donation-popup'),
-					'pack_downloaded'        => __('Pack downloaded as JSON.', 'woo-donation-popup'),
+					'preset_applied'         => __( 'The pack was applied to the form fields. Don’t forget to save.', 'woo-donation-popup' ),
+					'media_title'            => __( 'Select icon', 'woo-donation-popup' ),
+					'media_button'           => __( 'Use', 'woo-donation-popup' ),
+					'unsaved_tab'            => __( 'You have unsaved changes. Are you sure you want to leave this tab?', 'woo-donation-popup' ),
+					'confirm_leave_tab'      => __( 'You have unsaved changes. Are you sure you want to leave this tab?', 'woo-donation-popup' ),
+					'confirm_uninstall_data' => __( 'All product settings and plugin options will be deleted. Orders and order records are not affected. This cannot be undone. Have you made a backup?', 'woo-donation-popup' ),
+					'unsaved_changes'        => __( 'You have unsaved changes.', 'woo-donation-popup' ),
+					'select_pack_first'      => __( 'Select a style pack first.', 'woo-donation-popup' ),
+					'pack_downloaded'        => __( 'Pack downloaded as JSON.', 'woo-donation-popup' ),
 				),
 			)
 		);
 
-		self::enqueue_products_assets(array('wdp-admin-css'));
+		self::enqueue_products_assets( array( 'wdp-admin-css' ) );
 	}
 
 	/**
@@ -104,33 +104,33 @@ class WDP_Admin_Assets {
 	 * @param string[] $script_deps Script dependencies.
 	 * @return void
 	 */
-	private static function enqueue_products_assets(array $style_deps = array(), array $script_deps = array()) {
+	private static function enqueue_products_assets( array $style_deps = array(), array $script_deps = array() ) {
 		$css_rel = 'assets/css/admin/products.css';
 		$js_rel  = 'assets/js/admin/products.js';
 
 		// Alt bağış ürün seçici (wc-product-search / selectWoo).
-		wp_enqueue_script('wc-enhanced-select');
-		wp_enqueue_style('woocommerce_admin_styles');
+		wp_enqueue_script( 'wc-enhanced-select' );
+		wp_enqueue_style( 'woocommerce_admin_styles' );
 		$script_deps[] = 'wc-enhanced-select';
 
-		wp_enqueue_style('wdp-admin-products', WDP_PLUGIN_URL . $css_rel, $style_deps, self::asset_version($css_rel));
-		wp_enqueue_script('wdp-admin-products', WDP_PLUGIN_URL . $js_rel, $script_deps, self::asset_version($js_rel), true);
+		wp_enqueue_style( 'wdp-admin-products', WDP_PLUGIN_URL . $css_rel, $style_deps, self::asset_version( $css_rel ) );
+		wp_enqueue_script( 'wdp-admin-products', WDP_PLUGIN_URL . $js_rel, $script_deps, self::asset_version( $js_rel ), true );
 
 		wp_localize_script(
 			'wdp-admin-products',
 			'wdpProductsAdmin',
 			array(
-				'ajaxUrl' => admin_url('admin-ajax.php'),
-				'nonce'   => wp_create_nonce('wdp_admin_nonce'),
+				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
+				'nonce'   => wp_create_nonce( 'wdp_admin_nonce' ),
 				'tabKey'  => WDP_Admin_Product_Data_Tab::TAB_KEY,
 				'i18n'    => array(
-					'copied'        => __('Copied', 'woo-donation-popup'),
-					'copyFailed'    => __('Could not copy; select the text and copy it manually.', 'woo-donation-popup'),
-					'recalculating' => __('Recalculating the total…', 'woo-donation-popup'),
-					'error'         => __('The action could not be completed. Please try again.', 'woo-donation-popup'),
-					'rowAdded'      => __('Row added.', 'woo-donation-popup'),
-					'rowRemoved'    => __('Row removed.', 'woo-donation-popup'),
-					'moved'         => __('Order updated.', 'woo-donation-popup'),
+					'copied'        => __( 'Copied', 'woo-donation-popup' ),
+					'copyFailed'    => __( 'Could not copy; select the text and copy it manually.', 'woo-donation-popup' ),
+					'recalculating' => __( 'Recalculating the total…', 'woo-donation-popup' ),
+					'error'         => __( 'The action could not be completed. Please try again.', 'woo-donation-popup' ),
+					'rowAdded'      => __( 'Row added.', 'woo-donation-popup' ),
+					'rowRemoved'    => __( 'Row removed.', 'woo-donation-popup' ),
+					'moved'         => __( 'Order updated.', 'woo-donation-popup' ),
 				),
 			)
 		);
@@ -140,9 +140,9 @@ class WDP_Admin_Assets {
 	 * @param string $relative_path Path from plugin root.
 	 * @return string
 	 */
-	private static function asset_version($relative_path) {
+	private static function asset_version( $relative_path ) {
 		$path = WDP_PLUGIN_DIR . $relative_path;
-		return WDP_VERSION . '.' . (string) (file_exists($path) ? filemtime($path) : 0);
+		return WDP_VERSION . '.' . (string) ( file_exists( $path ) ? filemtime( $path ) : 0 );
 	}
 
 	/**
@@ -152,7 +152,7 @@ class WDP_Admin_Assets {
 	 */
 	private static function get_tabs_inline_script() {
 		$confirm = wp_json_encode(
-			__('You have unsaved changes. Are you sure you want to leave this tab?', 'woo-donation-popup'),
+			__( 'You have unsaved changes. Are you sure you want to leave this tab?', 'woo-donation-popup' ),
 			JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES
 		);
 		$js      = <<<'JS'
@@ -311,6 +311,6 @@ class WDP_Admin_Assets {
   });
 })();
 JS;
-		return str_replace('__WDP_UNSAVED_CONFIRM__', $confirm, $js);
+		return str_replace( '__WDP_UNSAVED_CONFIRM__', $confirm, $js );
 	}
 }

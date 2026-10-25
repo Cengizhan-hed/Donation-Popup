@@ -6,7 +6,7 @@
  * @package WooCommerce\Donation_Popup
  */
 
-if (!defined('ABSPATH')) {
+if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
@@ -29,11 +29,11 @@ class WDP_Builder_Detect {
 	 * @return bool
 	 */
 	public static function is_builder_preview() {
-		if (self::$is_preview !== null) {
+		if ( self::$is_preview !== null ) {
 			return self::$is_preview;
 		}
 		self::$is_preview = false;
-		if (!function_exists('current_user_can') || !current_user_can('edit_products')) {
+		if ( ! function_exists( 'current_user_can' ) || ! current_user_can( 'edit_products' ) ) {
 			return false;
 		}
 		$generic = self::gutenberg() || self::wp_preview() || self::editor_query_var();
@@ -42,7 +42,7 @@ class WDP_Builder_Detect {
 		 *
 		 * @param bool $generic Genel tespit sonucu.
 		 */
-		self::$is_preview = (bool) apply_filters('wdp_is_builder_preview', $generic);
+		self::$is_preview = (bool) apply_filters( 'wdp_is_builder_preview', $generic );
 		return self::$is_preview;
 	}
 
@@ -52,10 +52,10 @@ class WDP_Builder_Detect {
 	 * @return WC_Product|null
 	 */
 	public static function preview_product() {
-		if (!self::is_builder_preview()) {
+		if ( ! self::is_builder_preview() ) {
 			return null;
 		}
-		if (self::$preview_product !== false) {
+		if ( self::$preview_product !== false ) {
 			return self::$preview_product ? self::$preview_product : null;
 		}
 
@@ -64,8 +64,8 @@ class WDP_Builder_Detect {
 		 *
 		 * @param WC_Product|null $product Product or null.
 		 */
-		$product = apply_filters('wdp_builder_preview_context_product', null);
-		if (!$product) {
+		$product = apply_filters( 'wdp_builder_preview_context_product', null );
+		if ( ! $product ) {
 			$product = self::latest_donation_product();
 		}
 
@@ -74,8 +74,8 @@ class WDP_Builder_Detect {
 		 *
 		 * @param WC_Product|null $product Preview product.
 		 */
-		$filtered = apply_filters('wdp_builder_preview_product', $product);
-		self::$preview_product = (is_object($filtered) && method_exists($filtered, 'get_id')) ? $filtered : null;
+		$filtered              = apply_filters( 'wdp_builder_preview_product', $product );
+		self::$preview_product = ( is_object( $filtered ) && method_exists( $filtered, 'get_id' ) ) ? $filtered : null;
 		return self::$preview_product;
 	}
 
@@ -85,13 +85,13 @@ class WDP_Builder_Detect {
 	 * @param object $product WC_Product.
 	 * @return string
 	 */
-	public static function preview_notice($product) {
-		if (!self::is_builder_preview() || !is_object($product) || !method_exists($product, 'get_name')) {
+	public static function preview_notice( $product ) {
+		if ( ! self::is_builder_preview() || ! is_object( $product ) || ! method_exists( $product, 'get_name' ) ) {
 			return '';
 		}
 		$name = $product->get_name();
 		/* translators: %s: sample product name */
-		return WDP_Utils::admin_notice_html(sprintf(__('Preview: «%s» is shown. That product’s form appears on the product page.', 'woo-donation-popup'), $name));
+		return WDP_Utils::admin_notice_html( sprintf( __( 'Preview: «%s» is shown. That product’s form appears on the product page.', 'woo-donation-popup' ), $name ) );
 	}
 
 	/**
@@ -108,15 +108,15 @@ class WDP_Builder_Detect {
 	 * @return bool
 	 */
 	private static function gutenberg() {
-		if (defined('REST_REQUEST') && REST_REQUEST && !empty($GLOBALS['wp']->query_vars['rest_route'])) {
+		if ( defined( 'REST_REQUEST' ) && REST_REQUEST && ! empty( $GLOBALS['wp']->query_vars['rest_route'] ) ) {
 			$route = (string) $GLOBALS['wp']->query_vars['rest_route'];
-			if (strpos($route, '/block-renderer/') !== false) {
+			if ( strpos( $route, '/block-renderer/' ) !== false ) {
 				return true;
 			}
 		}
-		if (function_exists('wp_is_json_request') && wp_is_json_request() && isset($_SERVER['REQUEST_URI'])) {
-			$uri = (string) wp_unslash($_SERVER['REQUEST_URI']);
-			if (strpos($uri, '/wp/v2/block-renderer') !== false) {
+		if ( function_exists( 'wp_is_json_request' ) && wp_is_json_request() && isset( $_SERVER['REQUEST_URI'] ) ) {
+			$uri = (string) wp_unslash( $_SERVER['REQUEST_URI'] );
+			if ( strpos( $uri, '/wp/v2/block-renderer' ) !== false ) {
 				return true;
 			}
 		}
@@ -129,7 +129,7 @@ class WDP_Builder_Detect {
 	 * @return bool
 	 */
 	private static function wp_preview() {
-		return (function_exists('is_preview') && is_preview()) || (function_exists('is_customize_preview') && is_customize_preview());
+		return ( function_exists( 'is_preview' ) && is_preview() ) || ( function_exists( 'is_customize_preview' ) && is_customize_preview() );
 	}
 
 	/**
@@ -140,12 +140,12 @@ class WDP_Builder_Detect {
 	 * @return bool
 	 */
 	private static function editor_query_var() {
-		foreach (self::query_vars() as $key => $value) {
-			if ($value === '' || $value === '0' || $value === 'false') {
+		foreach ( self::query_vars() as $key => $value ) {
+			if ( $value === '' || $value === '0' || $value === 'false' ) {
 				continue;
 			}
-			foreach (preg_split('/[-_]+/', (string) $key) as $part) {
-				if (in_array($part, array('edit', 'preview', 'builder', 'fb'), true)) {
+			foreach ( preg_split( '/[-_]+/', (string) $key ) as $part ) {
+				if ( in_array( $part, array( 'edit', 'preview', 'builder', 'fb' ), true ) ) {
 					return true;
 				}
 			}
@@ -159,7 +159,7 @@ class WDP_Builder_Detect {
 	 * @return WC_Product|null
 	 */
 	private static function latest_donation_product() {
-		if (!function_exists('wc_get_products')) {
+		if ( ! function_exists( 'wc_get_products' ) ) {
 			return null;
 		}
 		$products = wc_get_products(
@@ -168,19 +168,19 @@ class WDP_Builder_Detect {
 				'limit'   => 12,
 				'orderby' => 'modified',
 				'order'   => 'DESC',
-				'type'    => class_exists('WDP_Donation_Scope') ? WDP_Donation_Scope::supported_types() : array('simple'),
+				'type'    => class_exists( 'WDP_Donation_Scope' ) ? WDP_Donation_Scope::supported_types() : array( 'simple' ),
 				'return'  => 'objects',
 			)
 		);
-		if (!is_array($products)) {
+		if ( ! is_array( $products ) ) {
 			return null;
 		}
-		foreach ($products as $product) {
-			if (class_exists('WDP_Donation_Scope') && WDP_Donation_Scope::is_donation_product($product)) {
+		foreach ( $products as $product ) {
+			if ( class_exists( 'WDP_Donation_Scope' ) && WDP_Donation_Scope::is_donation_product( $product ) ) {
 				return $product;
 			}
 		}
-		return isset($products[0]) ? $products[0] : null;
+		return isset( $products[0] ) ? $products[0] : null;
 	}
 
 	/**
@@ -188,10 +188,10 @@ class WDP_Builder_Detect {
 	 */
 	public static function query_vars() {
 		$out = array();
-		if (isset($_GET) && is_array($_GET)) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			foreach ($_GET as $key => $value) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-				if (is_scalar($value)) {
-					$out[ sanitize_key((string) $key) ] = sanitize_text_field(wp_unslash((string) $value));
+		if ( isset( $_GET ) && is_array( $_GET ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			foreach ( $_GET as $key => $value ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+				if ( is_scalar( $value ) ) {
+					$out[ sanitize_key( (string) $key ) ] = sanitize_text_field( wp_unslash( (string) $value ) );
 				}
 			}
 		}

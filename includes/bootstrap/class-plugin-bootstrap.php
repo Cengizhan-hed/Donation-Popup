@@ -5,7 +5,7 @@
  * @package WooCommerce\Donation_Popup
  */
 
-if (!defined('ABSPATH')) {
+if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
@@ -24,9 +24,9 @@ final class WDP_Plugin_Bootstrap {
 		WDP_Migrations::init();
 		WDP_Compat_Loader::init();
 
-		add_action('init', array(__CLASS__, 'load_textdomain'));
-		add_action('plugins_loaded', array(__CLASS__, 'launch_plugin'));
-		add_action('plugins_loaded', array(__CLASS__, 'update_version'));
+		add_action( 'init', array( __CLASS__, 'load_textdomain' ) );
+		add_action( 'plugins_loaded', array( __CLASS__, 'launch_plugin' ) );
+		add_action( 'plugins_loaded', array( __CLASS__, 'update_version' ) );
 	}
 
 	/**
@@ -38,7 +38,7 @@ final class WDP_Plugin_Bootstrap {
 		load_plugin_textdomain(
 			'woo-donation-popup',
 			false,
-			dirname(plugin_basename(WDP_PLUGIN_FILE)) . '/languages'
+			dirname( plugin_basename( WDP_PLUGIN_FILE ) ) . '/languages'
 		);
 	}
 
@@ -48,13 +48,13 @@ final class WDP_Plugin_Bootstrap {
 	 * @return void
 	 */
 	public static function launch_plugin() {
-		if (!class_exists('WooCommerce')) {
-			add_action('admin_notices', array(__CLASS__, 'woocommerce_missing_notice'));
+		if ( ! class_exists( 'WooCommerce' ) ) {
+			add_action( 'admin_notices', array( __CLASS__, 'woocommerce_missing_notice' ) );
 			return;
 		}
 
 		$GLOBALS['woo_donation_popup'] = new Woo_Donation_Popup();
-		if (is_admin()) {
+		if ( is_admin() ) {
 			$GLOBALS['woo_donation_popup_admin'] = new Woo_Donation_Popup_Admin();
 		}
 	}
@@ -67,7 +67,7 @@ final class WDP_Plugin_Bootstrap {
 	public static function woocommerce_missing_notice() {
 		?>
 		<div class="notice notice-error">
-			<p><?php esc_html_e('The WooCommerce Donation Modal Popup plugin requires WooCommerce to be installed and active.', 'woo-donation-popup'); ?></p>
+			<p><?php esc_html_e( 'The WooCommerce Donation Modal Popup plugin requires WooCommerce to be installed and active.', 'woo-donation-popup' ); ?></p>
 		</div>
 		<?php
 	}
@@ -78,19 +78,19 @@ final class WDP_Plugin_Bootstrap {
 	 * @return void
 	 */
 	public static function update_version() {
-		$stored_version  = get_option('wdp_version', false);
+		$stored_version  = get_option( 'wdp_version', false );
 		$current_version = $stored_version === false ? '1.0' : $stored_version;
 
-		if ($current_version === WDP_VERSION) {
+		if ( $current_version === WDP_VERSION ) {
 			return;
 		}
 
-		if (class_exists('WDP_Migrations')) {
-			WDP_Migrations::remember_previous_version($stored_version);
+		if ( class_exists( 'WDP_Migrations' ) ) {
+			WDP_Migrations::remember_previous_version( $stored_version );
 		}
 
-		update_option('wdp_version', WDP_VERSION);
-		update_option('wdp_cache_version', time());
+		update_option( 'wdp_version', WDP_VERSION );
+		update_option( 'wdp_cache_version', time() );
 		self::clear_all_caches();
 	}
 
@@ -100,7 +100,7 @@ final class WDP_Plugin_Bootstrap {
 	 * @return void
 	 */
 	public static function clear_all_caches() {
-		if (function_exists('wc_delete_product_transients')) {
+		if ( function_exists( 'wc_delete_product_transients' ) ) {
 			wc_delete_product_transients();
 		}
 	}
@@ -113,9 +113,9 @@ final class WDP_Plugin_Bootstrap {
 	private static function register_hpos_compatibility() {
 		add_action(
 			'before_woocommerce_init',
-			static function() {
-				if (class_exists(\Automattic\WooCommerce\Utilities\FeaturesUtil::class)) {
-					\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility('custom_order_tables', WDP_PLUGIN_FILE, true);
+			static function () {
+				if ( class_exists( \Automattic\WooCommerce\Utilities\FeaturesUtil::class ) ) {
+					\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', WDP_PLUGIN_FILE, true );
 				}
 			}
 		);

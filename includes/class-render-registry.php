@@ -5,7 +5,7 @@
  * @package WooCommerce\Donation_Popup
  */
 
-if (!defined('ABSPATH')) {
+if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
@@ -32,12 +32,12 @@ class WDP_Render_Registry {
 	 * @param int $product_id Product ID.
 	 * @return bool
 	 */
-	public static function claim_form($product_id) {
-		$product_id = absint($product_id);
-		if ($product_id <= 0) {
+	public static function claim_form( $product_id ) {
+		$product_id = absint( $product_id );
+		if ( $product_id <= 0 ) {
 			return false;
 		}
-		if (isset(self::$forms[ $product_id ])) {
+		if ( isset( self::$forms[ $product_id ] ) ) {
 			return false;
 		}
 		self::$forms[ $product_id ] = true;
@@ -48,8 +48,8 @@ class WDP_Render_Registry {
 	 * @param int $product_id Product ID.
 	 * @return bool
 	 */
-	public static function has_form($product_id) {
-		return isset(self::$forms[ absint($product_id) ]);
+	public static function has_form( $product_id ) {
+		return isset( self::$forms[ absint( $product_id ) ] );
 	}
 
 	/**
@@ -58,9 +58,9 @@ class WDP_Render_Registry {
 	 * @param int $product_id Product ID.
 	 * @return string
 	 */
-	public static function duplicate_form_notice($product_id) {
-		$product_id = absint($product_id);
-		if (!function_exists('current_user_can') || !current_user_can('edit_products')) {
+	public static function duplicate_form_notice( $product_id ) {
+		$product_id = absint( $product_id );
+		if ( ! function_exists( 'current_user_can' ) || ! current_user_can( 'edit_products' ) ) {
 			return '';
 		}
 		return '<!-- wdp: form already rendered #' . $product_id . ' -->';
@@ -72,9 +72,9 @@ class WDP_Render_Registry {
 	 * @param int $product_id Product ID.
 	 * @return void
 	 */
-	public static function mark_trigger($product_id) {
-		$product_id = absint($product_id);
-		if ($product_id > 0) {
+	public static function mark_trigger( $product_id ) {
+		$product_id = absint( $product_id );
+		if ( $product_id > 0 ) {
 			self::$triggers[ $product_id ] = true;
 		}
 	}
@@ -83,8 +83,8 @@ class WDP_Render_Registry {
 	 * @param int $product_id Product ID.
 	 * @return bool
 	 */
-	public static function has_trigger($product_id) {
-		return isset(self::$triggers[ absint($product_id) ]);
+	public static function has_trigger( $product_id ) {
+		return isset( self::$triggers[ absint( $product_id ) ] );
 	}
 
 	/**
@@ -93,9 +93,9 @@ class WDP_Render_Registry {
 	 * @param int $product_id Product ID.
 	 * @return bool
 	 */
-	public static function has_product_ui($product_id) {
-		$product_id = absint($product_id);
-		return self::has_form($product_id) || self::has_trigger($product_id);
+	public static function has_product_ui( $product_id ) {
+		$product_id = absint( $product_id );
+		return self::has_form( $product_id ) || self::has_trigger( $product_id );
 	}
 
 	/**
@@ -104,9 +104,9 @@ class WDP_Render_Registry {
 	 * @param int $product_id Product ID.
 	 * @return void
 	 */
-	public static function mark_auto($product_id) {
-		$product_id = absint($product_id);
-		if ($product_id > 0) {
+	public static function mark_auto( $product_id ) {
+		$product_id = absint( $product_id );
+		if ( $product_id > 0 ) {
 			self::$auto[ $product_id ] = true;
 		}
 	}
@@ -115,8 +115,8 @@ class WDP_Render_Registry {
 	 * @param int $product_id Product ID.
 	 * @return bool
 	 */
-	public static function has_auto($product_id) {
-		return isset(self::$auto[ absint($product_id) ]);
+	public static function has_auto( $product_id ) {
+		return isset( self::$auto[ absint( $product_id ) ] );
 	}
 
 	/**
@@ -125,9 +125,9 @@ class WDP_Render_Registry {
 	 * @param int $product_id Product ID.
 	 * @return string
 	 */
-	public static function duplicate_ui_notice($product_id) {
-		$product_id = absint($product_id);
-		if (!function_exists('current_user_can') || !current_user_can('edit_products')) {
+	public static function duplicate_ui_notice( $product_id ) {
+		$product_id = absint( $product_id );
+		if ( ! function_exists( 'current_user_can' ) || ! current_user_can( 'edit_products' ) ) {
 			return '';
 		}
 		return '<!-- wdp: form or button already rendered #' . $product_id . ' -->';
@@ -141,12 +141,12 @@ class WDP_Render_Registry {
 	 * @param string $modal_id wdp-modal-ID or wdp-side-panel-ID.
 	 * @return bool
 	 */
-	public static function claim_modal($modal_id) {
-		$modal_id = sanitize_html_class((string) $modal_id);
-		if ($modal_id === '') {
+	public static function claim_modal( $modal_id ) {
+		$modal_id = sanitize_html_class( (string) $modal_id );
+		if ( $modal_id === '' ) {
 			return false;
 		}
-		if (isset(self::$modals[ $modal_id ])) {
+		if ( isset( self::$modals[ $modal_id ] ) ) {
 			return false;
 		}
 		self::$modals[ $modal_id ] = true;
@@ -160,9 +160,9 @@ class WDP_Render_Registry {
 	 * @param string $mode       popup|side_panel.
 	 * @return string
 	 */
-	public static function modal_id($product_id, $mode = 'popup') {
-		$product_id = absint($product_id);
-		return $mode === 'side_panel' ? ('wdp-side-panel-' . $product_id) : ('wdp-modal-' . $product_id);
+	public static function modal_id( $product_id, $mode = 'popup' ) {
+		$product_id = absint( $product_id );
+		return $mode === 'side_panel' ? ( 'wdp-side-panel-' . $product_id ) : ( 'wdp-modal-' . $product_id );
 	}
 
 	/**

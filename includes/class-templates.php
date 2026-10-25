@@ -5,7 +5,7 @@
  * @package WooCommerce\Donation_Popup
  */
 
-if (!defined('ABSPATH')) {
+if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
@@ -72,8 +72,8 @@ class WDP_Templates {
 	 * @param int          $product_id Product ID.
 	 * @return array<int, float>
 	 */
-	public static function get_amount_presets($min_price = 0, $product_id = 0) {
-		return WDP_Form_Fields_Renderer::get_amount_presets($min_price, $product_id);
+	public static function get_amount_presets( $min_price = 0, $product_id = 0 ) {
+		return WDP_Form_Fields_Renderer::get_amount_presets( $min_price, $product_id );
 	}
 
 	/**
@@ -84,8 +84,8 @@ class WDP_Templates {
 	 * @param array        $options         show (bool), input_selector.
 	 * @return string Safe HTML.
 	 */
-	public static function render_amount_presets($min_price = 0, $currency_symbol = '', array $options = array()) {
-		return WDP_Form_Fields_Renderer::render_amount_presets($min_price, $currency_symbol, $options);
+	public static function render_amount_presets( $min_price = 0, $currency_symbol = '', array $options = array() ) {
+		return WDP_Form_Fields_Renderer::render_amount_presets( $min_price, $currency_symbol, $options );
 	}
 
 	/**
@@ -97,8 +97,8 @@ class WDP_Templates {
 	 * @param array  $options         Row options.
 	 * @return string Safe HTML.
 	 */
-	public static function render_custom_price_amount_row($min_price, $placeholder, $currency_symbol, array $options = array()) {
-		return WDP_Form_Fields_Renderer::render_custom_price_amount_row($min_price, $placeholder, $currency_symbol, $options);
+	public static function render_custom_price_amount_row( $min_price, $placeholder, $currency_symbol, array $options = array() ) {
+		return WDP_Form_Fields_Renderer::render_custom_price_amount_row( $min_price, $placeholder, $currency_symbol, $options );
 	}
 
 	/**
@@ -116,8 +116,8 @@ class WDP_Templates {
 	 * @param string $message Per-product message from meta.
 	 * @return string
 	 */
-	public static function resolve_addon_donation_message($message) {
-		return WDP_Form_Fields_Renderer::resolve_addon_donation_message($message);
+	public static function resolve_addon_donation_message( $message ) {
+		return WDP_Form_Fields_Renderer::resolve_addon_donation_message( $message );
 	}
 
 	/**
@@ -126,8 +126,8 @@ class WDP_Templates {
 	 * @param array $context Addon context.
 	 * @return string Safe HTML.
 	 */
-	public static function render_addon_donation_block($context) {
-		return WDP_Form_Fields_Renderer::render_addon_donation_block(is_array($context) ? $context : array());
+	public static function render_addon_donation_block( $context ) {
+		return WDP_Form_Fields_Renderer::render_addon_donation_block( is_array( $context ) ? $context : array() );
 	}
 
 	/**
@@ -136,8 +136,8 @@ class WDP_Templates {
 	 * @param array $options Context flags.
 	 * @return string Safe HTML.
 	 */
-	public static function render_donor_contact_stack($options = array()) {
-		return WDP_Form_Fields_Renderer::render_donor_contact_stack($options);
+	public static function render_donor_contact_stack( $options = array() ) {
+		return WDP_Form_Fields_Renderer::render_donor_contact_stack( $options );
 	}
 
 	/**
@@ -146,8 +146,8 @@ class WDP_Templates {
 	 * @param array $options Context flags.
 	 * @return string Safe HTML.
 	 */
-	public static function render_dedication_block($options = array()) {
-		return WDP_Form_Fields_Renderer::render_dedication_block($options);
+	public static function render_dedication_block( $options = array() ) {
+		return WDP_Form_Fields_Renderer::render_dedication_block( $options );
 	}
 
 	/**
@@ -156,8 +156,8 @@ class WDP_Templates {
 	 * @param array $args product_id, context, donor_opts, amount_html.
 	 * @return string Safe HTML.
 	 */
-	public static function render_ordered_body_modules(array $args) {
-		return WDP_Form_Fields_Renderer::render_ordered_body_modules($args);
+	public static function render_ordered_body_modules( array $args ) {
+		return WDP_Form_Fields_Renderer::render_ordered_body_modules( $args );
 	}
 
 	/**
@@ -166,8 +166,8 @@ class WDP_Templates {
 	 * @param array $args Branch inputs.
 	 * @return string
 	 */
-	public static function render_donation_form_fields_body(array $args) {
-		return WDP_Form_Fields_Renderer::render_donation_form_fields_body($args);
+	public static function render_donation_form_fields_body( array $args ) {
+		return WDP_Form_Fields_Renderer::render_donation_form_fields_body( $args );
 	}
 
 	/**
@@ -180,12 +180,12 @@ class WDP_Templates {
 	 * @param string $display_mode popup|side_panel.
 	 * @return string
 	 */
-	public static function render_donation_modal($product_id, $button_text = '', $custom_class = '', $custom_style = '', $display_mode = 'popup') {
+	public static function render_donation_modal( $product_id, $button_text = '', $custom_class = '', $custom_style = '', $display_mode = 'popup' ) {
 		return WDP_Render_Guard::html(
-			static function () use ($product_id, $button_text, $custom_class, $custom_style, $display_mode) {
-				return WDP_Modal_Shell_Renderer::render_donation_modal($product_id, $button_text, $custom_class, $custom_style, $display_mode);
+			static function () use ( $product_id, $button_text, $custom_class, $custom_style, $display_mode ) {
+				return WDP_Modal_Shell_Renderer::render_donation_modal( $product_id, $button_text, $custom_class, $custom_style, $display_mode );
 			},
-			absint($product_id),
+			absint( $product_id ),
 			'render_donation_modal'
 		);
 	}
@@ -197,12 +197,12 @@ class WDP_Templates {
 	 * @param array $atts       Shortcode attributes.
 	 * @return string
 	 */
-	public static function render_donation_form($product_id, $atts = array()) {
+	public static function render_donation_form( $product_id, $atts = array() ) {
 		return WDP_Render_Guard::html(
-			static function () use ($product_id, $atts) {
-				return WDP_Modal_Shell_Renderer::render_donation_form($product_id, is_array($atts) ? $atts : array());
+			static function () use ( $product_id, $atts ) {
+				return WDP_Modal_Shell_Renderer::render_donation_form( $product_id, is_array( $atts ) ? $atts : array() );
 			},
-			absint($product_id),
+			absint( $product_id ),
 			'render_donation_form'
 		);
 	}

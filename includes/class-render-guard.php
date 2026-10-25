@@ -5,7 +5,7 @@
  * @package WooCommerce\Donation_Popup
  */
 
-if (!defined('ABSPATH')) {
+if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
@@ -22,15 +22,15 @@ class WDP_Render_Guard {
 	 * @param string   $context    Entry point name for the log.
 	 * @return string
 	 */
-	public static function html(callable $callback, $product_id = 0, $context = 'render') {
+	public static function html( callable $callback, $product_id = 0, $context = 'render' ) {
 		$level = ob_get_level();
 		try {
-			$html = call_user_func($callback);
-			return is_scalar($html) ? (string) $html : '';
-		} catch (\Throwable $e) {
-			self::close_buffers($level);
-			self::log($e, $context, $product_id);
-			return self::failure_notice($product_id);
+			$html = call_user_func( $callback );
+			return is_scalar( $html ) ? (string) $html : '';
+		} catch ( \Throwable $e ) {
+			self::close_buffers( $level );
+			self::log( $e, $context, $product_id );
+			return self::failure_notice( $product_id );
 		}
 	}
 
@@ -42,13 +42,13 @@ class WDP_Render_Guard {
 	 * @param string   $context  Entry point name for the log.
 	 * @return mixed
 	 */
-	public static function value(callable $callback, $fallback, $context = 'filter') {
+	public static function value( callable $callback, $fallback, $context = 'filter' ) {
 		$level = ob_get_level();
 		try {
-			return call_user_func($callback);
-		} catch (\Throwable $e) {
-			self::close_buffers($level);
-			self::log($e, $context, 0);
+			return call_user_func( $callback );
+		} catch ( \Throwable $e ) {
+			self::close_buffers( $level );
+			self::log( $e, $context, 0 );
 			return $fallback;
 		}
 	}
@@ -59,14 +59,14 @@ class WDP_Render_Guard {
 	 * @param int $product_id Product ID.
 	 * @return string
 	 */
-	public static function failure_notice($product_id = 0) {
-		$product_id = absint($product_id);
+	public static function failure_notice( $product_id = 0 ) {
+		$product_id = absint( $product_id );
 		$message    = $product_id > 0
 			/* translators: %d: product ID */
-			? sprintf(__('The donation form could not be rendered (product #%d). See the error log for details.', 'woo-donation-popup'), $product_id)
-			: __('The donation form could not be rendered. See the error log for details.', 'woo-donation-popup');
+			? sprintf( __( 'The donation form could not be rendered (product #%d). See the error log for details.', 'woo-donation-popup' ), $product_id )
+			: __( 'The donation form could not be rendered. See the error log for details.', 'woo-donation-popup' );
 
-		return WDP_Utils::admin_notice_html($message);
+		return WDP_Utils::admin_notice_html( $message );
 	}
 
 	/**
@@ -75,8 +75,8 @@ class WDP_Render_Guard {
 	 * @param int $level Buffer level before the callback ran.
 	 * @return void
 	 */
-	private static function close_buffers($level) {
-		while (ob_get_level() > $level) {
+	private static function close_buffers( $level ) {
+		while ( ob_get_level() > $level ) {
 			ob_end_clean();
 		}
 	}
@@ -87,17 +87,17 @@ class WDP_Render_Guard {
 	 * @param int        $product_id Product ID.
 	 * @return void
 	 */
-	private static function log(\Throwable $e, $context, $product_id) {
-		if (!function_exists('wdp_debug_log')) {
+	private static function log( \Throwable $e, $context, $product_id ) {
+		if ( ! function_exists( 'wdp_debug_log' ) ) {
 			return;
 		}
 		wdp_debug_log(
 			sprintf(
 				'WDP render error [%s] product #%d: %s (%s) in %s:%d',
 				(string) $context,
-				absint($product_id),
+				absint( $product_id ),
 				$e->getMessage(),
-				get_class($e),
+				get_class( $e ),
 				$e->getFile(),
 				$e->getLine()
 			)

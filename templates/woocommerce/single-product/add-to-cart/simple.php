@@ -8,11 +8,11 @@
  * @package WooCommerce\Donation_Popup
  */
 
-if (!defined('ABSPATH')) {
+if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-if (!class_exists('WDP_Product_Page_Integration')) {
+if ( ! class_exists( 'WDP_Product_Page_Integration' ) ) {
 	return;
 }
 

@@ -5,7 +5,7 @@
  * @package WooCommerce\Donation_Popup
  */
 
-if (!defined('ABSPATH')) {
+if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
@@ -30,15 +30,15 @@ class WDP_Donation_Type {
 	 * @return string[]
 	 */
 	public static function ids() {
-		return array(self::FIXED, self::CUSTOM, self::SHARES, self::CAMPAIGN);
+		return array( self::FIXED, self::CUSTOM, self::SHARES, self::CAMPAIGN );
 	}
 
 	/**
 	 * @param mixed $type Raw type.
 	 * @return bool
 	 */
-	public static function is_valid($type) {
-		return is_string($type) && in_array($type, self::ids(), true);
+	public static function is_valid( $type ) {
+		return is_string( $type ) && in_array( $type, self::ids(), true );
 	}
 
 	/**
@@ -46,9 +46,9 @@ class WDP_Donation_Type {
 	 * @param string $fallback Returned when the value is not a known type.
 	 * @return string
 	 */
-	public static function sanitize($type, $fallback = self::FIXED) {
-		$type = is_scalar($type) ? sanitize_key((string) $type) : '';
-		return self::is_valid($type) ? $type : $fallback;
+	public static function sanitize( $type, $fallback = self::FIXED ) {
+		$type = is_scalar( $type ) ? sanitize_key( (string) $type ) : '';
+		return self::is_valid( $type ) ? $type : $fallback;
 	}
 
 	/**
@@ -59,23 +59,23 @@ class WDP_Donation_Type {
 	public static function get_definitions() {
 		return array(
 			self::FIXED    => array(
-				'label'       => __('Fixed amount', 'woo-donation-popup'),
-				'description' => __('The product’s WooCommerce price is used; the donor only chooses a quantity.', 'woo-donation-popup'),
+				'label'       => __( 'Fixed amount', 'woo-donation-popup' ),
+				'description' => __( 'The product’s WooCommerce price is used; the donor only chooses a quantity.', 'woo-donation-popup' ),
 				'icon'        => 'dashicons-tag',
 			),
 			self::CUSTOM   => array(
-				'label'       => __('Custom amount', 'woo-donation-popup'),
-				'description' => __('The donor enters the amount; you can set a minimum if you want.', 'woo-donation-popup'),
+				'label'       => __( 'Custom amount', 'woo-donation-popup' ),
+				'description' => __( 'The donor enters the amount; you can set a minimum if you want.', 'woo-donation-popup' ),
 				'icon'        => 'dashicons-edit',
 			),
 			self::SHARES   => array(
-				'label'       => __('Share-based', 'woo-donation-popup'),
-				'description' => __('The donor chooses the number of shares and enters a name for each share.', 'woo-donation-popup'),
+				'label'       => __( 'Share-based', 'woo-donation-popup' ),
+				'description' => __( 'The donor chooses the number of shares and enters a name for each share.', 'woo-donation-popup' ),
 				'icon'        => 'dashicons-groups',
 			),
 			self::CAMPAIGN => array(
-				'label'       => __('Goal-based campaign', 'woo-donation-popup'),
-				'description' => __('The goal amount and progress bar are shown; the donor enters the amount.', 'woo-donation-popup'),
+				'label'       => __( 'Goal-based campaign', 'woo-donation-popup' ),
+				'description' => __( 'The goal amount and progress bar are shown; the donor enters the amount.', 'woo-donation-popup' ),
 				'icon'        => 'dashicons-chart-bar',
 			),
 		);
@@ -85,9 +85,9 @@ class WDP_Donation_Type {
 	 * @param string $type Type id.
 	 * @return string
 	 */
-	public static function get_label($type) {
+	public static function get_label( $type ) {
 		$defs = self::get_definitions();
-		$type = self::sanitize($type);
+		$type = self::sanitize( $type );
 		return $defs[ $type ]['label'];
 	}
 
@@ -100,14 +100,14 @@ class WDP_Donation_Type {
 	 * @param bool $enable_progress_bar   `_enable_progress_bar`.
 	 * @return string
 	 */
-	public static function infer_from_flags($allow_custom_price, $allow_multiple_shares, $enable_progress_bar) {
-		if ($allow_multiple_shares) {
+	public static function infer_from_flags( $allow_custom_price, $allow_multiple_shares, $enable_progress_bar ) {
+		if ( $allow_multiple_shares ) {
 			return self::SHARES;
 		}
-		if ($enable_progress_bar) {
+		if ( $enable_progress_bar ) {
 			return self::CAMPAIGN;
 		}
-		if ($allow_custom_price) {
+		if ( $allow_custom_price ) {
 			return self::CUSTOM;
 		}
 		return self::FIXED;
@@ -119,15 +119,15 @@ class WDP_Donation_Type {
 	 * @param array $meta Meta key => value.
 	 * @return string
 	 */
-	public static function infer_from_meta(array $meta) {
-		$is_yes = static function ($key) use ($meta) {
-			return isset($meta[ $key ]) && $meta[ $key ] === 'yes';
+	public static function infer_from_meta( array $meta ) {
+		$is_yes = static function ( $key ) use ( $meta ) {
+			return isset( $meta[ $key ] ) && $meta[ $key ] === 'yes';
 		};
 
 		return self::infer_from_flags(
-			$is_yes('_allow_custom_price'),
-			$is_yes('_allow_multiple_shares'),
-			$is_yes('_enable_progress_bar')
+			$is_yes( '_allow_custom_price' ),
+			$is_yes( '_allow_multiple_shares' ),
+			$is_yes( '_enable_progress_bar' )
 		);
 	}
 
@@ -137,18 +137,18 @@ class WDP_Donation_Type {
 	 * @param int $product_id Product ID.
 	 * @return string
 	 */
-	public static function for_product($product_id) {
-		$product_id = absint($product_id);
-		if (!$product_id) {
+	public static function for_product( $product_id ) {
+		$product_id = absint( $product_id );
+		if ( ! $product_id ) {
 			return self::FIXED;
 		}
 
 		$meta = array();
-		foreach (array_keys(self::to_meta(self::FIXED)) as $key) {
-			$meta[ $key ] = get_post_meta($product_id, $key, true);
+		foreach ( array_keys( self::to_meta( self::FIXED ) ) as $key ) {
+			$meta[ $key ] = get_post_meta( $product_id, $key, true );
 		}
 
-		return self::infer_from_meta($meta);
+		return self::infer_from_meta( $meta );
 	}
 
 	/**
@@ -157,11 +157,11 @@ class WDP_Donation_Type {
 	 * @param string $type Type id.
 	 * @return array{allow_custom_price:bool, allow_multiple_shares:bool, enable_progress_bar:bool}
 	 */
-	public static function to_flags($type) {
-		$type = self::sanitize($type);
+	public static function to_flags( $type ) {
+		$type = self::sanitize( $type );
 
 		return array(
-			'allow_custom_price'    => in_array($type, array(self::CUSTOM, self::CAMPAIGN), true),
+			'allow_custom_price'    => in_array( $type, array( self::CUSTOM, self::CAMPAIGN ), true ),
 			'allow_multiple_shares' => $type === self::SHARES,
 			'enable_progress_bar'   => $type === self::CAMPAIGN,
 		);
@@ -173,8 +173,8 @@ class WDP_Donation_Type {
 	 * @param string $type Type id.
 	 * @return array<string, string>
 	 */
-	public static function to_meta($type) {
-		$flags = self::to_flags($type);
+	public static function to_meta( $type ) {
+		$flags = self::to_flags( $type );
 
 		return array(
 			'_allow_custom_price'    => $flags['allow_custom_price'] ? 'yes' : 'no',
@@ -189,20 +189,20 @@ class WDP_Donation_Type {
 	 * @param string $type Type id.
 	 * @return array
 	 */
-	public static function get_meta_query($type) {
-		$type = self::sanitize($type, '');
-		if ($type === '') {
+	public static function get_meta_query( $type ) {
+		$type = self::sanitize( $type, '' );
+		if ( $type === '' ) {
 			return array();
 		}
 
-		$is_yes = static function ($key) {
+		$is_yes     = static function ( $key ) {
 			return array(
 				'key'     => $key,
 				'value'   => 'yes',
 				'compare' => '=',
 			);
 		};
-		$is_not_yes = static function ($key) {
+		$is_not_yes = static function ( $key ) {
 			return array(
 				'relation' => 'OR',
 				array(
@@ -217,28 +217,28 @@ class WDP_Donation_Type {
 			);
 		};
 
-		switch ($type) {
+		switch ( $type ) {
 			case self::SHARES:
-				return array($is_yes('_allow_multiple_shares'));
+				return array( $is_yes( '_allow_multiple_shares' ) );
 			case self::CAMPAIGN:
 				return array(
 					'relation' => 'AND',
-					$is_yes('_enable_progress_bar'),
-					$is_not_yes('_allow_multiple_shares'),
+					$is_yes( '_enable_progress_bar' ),
+					$is_not_yes( '_allow_multiple_shares' ),
 				);
 			case self::CUSTOM:
 				return array(
 					'relation' => 'AND',
-					$is_yes('_allow_custom_price'),
-					$is_not_yes('_allow_multiple_shares'),
-					$is_not_yes('_enable_progress_bar'),
+					$is_yes( '_allow_custom_price' ),
+					$is_not_yes( '_allow_multiple_shares' ),
+					$is_not_yes( '_enable_progress_bar' ),
 				);
 			default:
 				return array(
 					'relation' => 'AND',
-					$is_not_yes('_allow_custom_price'),
-					$is_not_yes('_allow_multiple_shares'),
-					$is_not_yes('_enable_progress_bar'),
+					$is_not_yes( '_allow_custom_price' ),
+					$is_not_yes( '_allow_multiple_shares' ),
+					$is_not_yes( '_enable_progress_bar' ),
 				);
 		}
 	}

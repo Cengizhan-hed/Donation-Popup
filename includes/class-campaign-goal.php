@@ -5,7 +5,7 @@
  * @package WooCommerce\Donation_Popup
  */
 
-if (!defined('ABSPATH')) {
+if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
@@ -37,9 +37,9 @@ class WDP_Campaign_Goal {
 	 * @param mixed $raw Meta veya istek değeri.
 	 * @return string continue|message|close
 	 */
-	public static function sanitize_action($raw) {
-		$raw = sanitize_key((string) $raw);
-		if (in_array($raw, array(self::ACTION_CONTINUE, self::ACTION_MESSAGE, self::ACTION_CLOSE), true)) {
+	public static function sanitize_action( $raw ) {
+		$raw = sanitize_key( (string) $raw );
+		if ( in_array( $raw, array( self::ACTION_CONTINUE, self::ACTION_MESSAGE, self::ACTION_CLOSE ), true ) ) {
 			return $raw;
 		}
 		// Boş / bilinmeyen → message (mevcut ürünler migration olmadan message gibi davranır).
@@ -50,27 +50,27 @@ class WDP_Campaign_Goal {
 	 * @param int|WC_Product $product Product.
 	 * @return string
 	 */
-	public static function resolve_action($product) {
+	public static function resolve_action( $product ) {
 		$meta = '';
-		if ($product instanceof WC_Product) {
-			$meta = (string) $product->get_meta('_goal_reached_action');
+		if ( $product instanceof WC_Product ) {
+			$meta = (string) $product->get_meta( '_goal_reached_action' );
 		} else {
-			$meta = (string) get_post_meta(absint($product), '_goal_reached_action', true);
+			$meta = (string) get_post_meta( absint( $product ), '_goal_reached_action', true );
 		}
-		return self::sanitize_action($meta);
+		return self::sanitize_action( $meta );
 	}
 
 	/**
 	 * @param string $raw Raw message.
 	 * @return string
 	 */
-	public static function sanitize_message($raw) {
-		$text = sanitize_text_field((string) $raw);
-		if (function_exists('mb_substr') && function_exists('mb_strlen') && mb_strlen($text) > self::MESSAGE_MAX_LEN) {
-			return mb_substr($text, 0, self::MESSAGE_MAX_LEN);
+	public static function sanitize_message( $raw ) {
+		$text = sanitize_text_field( (string) $raw );
+		if ( function_exists( 'mb_substr' ) && function_exists( 'mb_strlen' ) && mb_strlen( $text ) > self::MESSAGE_MAX_LEN ) {
+			return mb_substr( $text, 0, self::MESSAGE_MAX_LEN );
 		}
-		if (strlen($text) > self::MESSAGE_MAX_LEN) {
-			return substr($text, 0, self::MESSAGE_MAX_LEN);
+		if ( strlen( $text ) > self::MESSAGE_MAX_LEN ) {
+			return substr( $text, 0, self::MESSAGE_MAX_LEN );
 		}
 		return $text;
 	}
@@ -79,14 +79,14 @@ class WDP_Campaign_Goal {
 	 * @param int|WC_Product $product Product.
 	 * @return string
 	 */
-	public static function resolve_message($product) {
+	public static function resolve_message( $product ) {
 		$meta = '';
-		if ($product instanceof WC_Product) {
-			$meta = (string) $product->get_meta('_goal_reached_message');
+		if ( $product instanceof WC_Product ) {
+			$meta = (string) $product->get_meta( '_goal_reached_message' );
 		} else {
-			$meta = (string) get_post_meta(absint($product), '_goal_reached_message', true);
+			$meta = (string) get_post_meta( absint( $product ), '_goal_reached_message', true );
 		}
-		$meta = self::sanitize_message($meta);
+		$meta = self::sanitize_message( $meta );
 		return $meta !== '' ? $meta : self::default_message();
 	}
 
@@ -94,14 +94,14 @@ class WDP_Campaign_Goal {
 	 * @param int|WC_Product $product Product.
 	 * @return float
 	 */
-	public static function resolve_goal_amount($product) {
+	public static function resolve_goal_amount( $product ) {
 		$raw = '';
-		if ($product instanceof WC_Product) {
-			$raw = (string) $product->get_meta('_progress_bar_limit');
+		if ( $product instanceof WC_Product ) {
+			$raw = (string) $product->get_meta( '_progress_bar_limit' );
 		} else {
-			$raw = (string) get_post_meta(absint($product), '_progress_bar_limit', true);
+			$raw = (string) get_post_meta( absint( $product ), '_progress_bar_limit', true );
 		}
-		if ($raw === '' || !is_numeric($raw)) {
+		if ( $raw === '' || ! is_numeric( $raw ) ) {
 			return 0.0;
 		}
 		$goal = (float) $raw;
@@ -114,9 +114,9 @@ class WDP_Campaign_Goal {
 	 * @param int $product_id Product ID.
 	 * @return float
 	 */
-	public static function get_confirmed_total($product_id) {
-		return class_exists('WDP_Utils')
-			? (float) WDP_Utils::get_total_donation_amount(absint($product_id))
+	public static function get_confirmed_total( $product_id ) {
+		return class_exists( 'WDP_Utils' )
+			? (float) WDP_Utils::get_total_donation_amount( absint( $product_id ) )
 			: 0.0;
 	}
 
@@ -127,13 +127,13 @@ class WDP_Campaign_Goal {
 	 * @param bool $include_pending Sepet bekleyenini ekle.
 	 * @return float
 	 */
-	public static function get_effective_total($product_id, $include_pending = false) {
-		$product_id = absint($product_id);
-		$total      = self::get_confirmed_total($product_id);
-		if ($include_pending && class_exists('WDP_Cart') && method_exists('WDP_Cart', 'sum_cart_pending_for_product')) {
-			$total += (float) WDP_Cart::sum_cart_pending_for_product($product_id);
+	public static function get_effective_total( $product_id, $include_pending = false ) {
+		$product_id = absint( $product_id );
+		$total      = self::get_confirmed_total( $product_id );
+		if ( $include_pending && class_exists( 'WDP_Cart' ) && method_exists( 'WDP_Cart', 'sum_cart_pending_for_product' ) ) {
+			$total += (float) WDP_Cart::sum_cart_pending_for_product( $product_id );
 		}
-		return max(0.0, $total);
+		return max( 0.0, $total );
 	}
 
 	/**
@@ -143,10 +143,10 @@ class WDP_Campaign_Goal {
 	 * @param float $limit   Goal.
 	 * @return float
 	 */
-	public static function compute_percent($current, $limit) {
-		$limit = max(1.0, (float) $limit);
-		$current = max(0.0, (float) $current);
-		return min(100.0, ($current / $limit) * 100.0);
+	public static function compute_percent( $current, $limit ) {
+		$limit   = max( 1.0, (float) $limit );
+		$current = max( 0.0, (float) $current );
+		return min( 100.0, ( $current / $limit ) * 100.0 );
 	}
 
 	/**
@@ -160,23 +160,23 @@ class WDP_Campaign_Goal {
 	 * }
 	 * @return bool
 	 */
-	public static function is_goal_reached($product_id, array $args = array()) {
-		$product_id = absint($product_id);
-		if (!$product_id) {
+	public static function is_goal_reached( $product_id, array $args = array() ) {
+		$product_id = absint( $product_id );
+		if ( ! $product_id ) {
 			return false;
 		}
-		$goal = isset($args['goal']) ? (float) $args['goal'] : self::resolve_goal_amount($product_id);
-		if ($goal <= 0) {
+		$goal = isset( $args['goal'] ) ? (float) $args['goal'] : self::resolve_goal_amount( $product_id );
+		if ( $goal <= 0 ) {
 			return false;
 		}
-		$include_pending = !empty($args['include_pending']);
-		if (isset($args['confirmed'])) {
+		$include_pending = ! empty( $args['include_pending'] );
+		if ( isset( $args['confirmed'] ) ) {
 			$total = (float) $args['confirmed'];
-			if ($include_pending && class_exists('WDP_Cart') && method_exists('WDP_Cart', 'sum_cart_pending_for_product')) {
-				$total += (float) WDP_Cart::sum_cart_pending_for_product($product_id);
+			if ( $include_pending && class_exists( 'WDP_Cart' ) && method_exists( 'WDP_Cart', 'sum_cart_pending_for_product' ) ) {
+				$total += (float) WDP_Cart::sum_cart_pending_for_product( $product_id );
 			}
 		} else {
-			$total = self::get_effective_total($product_id, $include_pending);
+			$total = self::get_effective_total( $product_id, $include_pending );
 		}
 		return $total >= $goal;
 	}
@@ -187,11 +187,11 @@ class WDP_Campaign_Goal {
 	 * @param int|WC_Product $product Product.
 	 * @return bool
 	 */
-	public static function is_campaign_product($product) {
-		if ($product instanceof WC_Product) {
-			return $product->get_meta('_enable_progress_bar') === 'yes';
+	public static function is_campaign_product( $product ) {
+		if ( $product instanceof WC_Product ) {
+			return $product->get_meta( '_enable_progress_bar' ) === 'yes';
 		}
-		return get_post_meta(absint($product), '_enable_progress_bar', true) === 'yes';
+		return get_post_meta( absint( $product ), '_enable_progress_bar', true ) === 'yes';
 	}
 
 	/**
@@ -200,15 +200,15 @@ class WDP_Campaign_Goal {
 	 * @param int|WC_Product $product Product.
 	 * @return bool
 	 */
-	public static function should_block_new_donations($product) {
-		if (!self::is_campaign_product($product)) {
+	public static function should_block_new_donations( $product ) {
+		if ( ! self::is_campaign_product( $product ) ) {
 			return false;
 		}
-		if (self::resolve_action($product) !== self::ACTION_CLOSE) {
+		if ( self::resolve_action( $product ) !== self::ACTION_CLOSE ) {
 			return false;
 		}
-		$product_id = $product instanceof WC_Product ? (int) $product->get_id() : absint($product);
-		return self::is_goal_reached($product_id, array('include_pending' => true));
+		$product_id = $product instanceof WC_Product ? (int) $product->get_id() : absint( $product );
+		return self::is_goal_reached( $product_id, array( 'include_pending' => true ) );
 	}
 
 	/**
@@ -217,17 +217,17 @@ class WDP_Campaign_Goal {
 	 * @param int|WC_Product $product Product.
 	 * @return bool
 	 */
-	public static function should_show_reached_message($product) {
-		if (!self::is_campaign_product($product)) {
+	public static function should_show_reached_message( $product ) {
+		if ( ! self::is_campaign_product( $product ) ) {
 			return false;
 		}
-		$action = self::resolve_action($product);
-		if ($action === self::ACTION_CONTINUE) {
+		$action = self::resolve_action( $product );
+		if ( $action === self::ACTION_CONTINUE ) {
 			return false;
 		}
-		$product_id = $product instanceof WC_Product ? (int) $product->get_id() : absint($product);
+		$product_id = $product instanceof WC_Product ? (int) $product->get_id() : absint( $product );
 		// Mesaj: yalnız onaylı toplam (sepet bekleyen dahil değil).
-		return self::is_goal_reached($product_id, array('include_pending' => false));
+		return self::is_goal_reached( $product_id, array( 'include_pending' => false ) );
 	}
 
 	/**
@@ -237,17 +237,17 @@ class WDP_Campaign_Goal {
 	 * @param bool           $closed  Close modunda alanlar pasif.
 	 * @return string
 	 */
-	public static function render_reached_notice_html($product, $closed = false) {
-		if (!self::should_show_reached_message($product)) {
+	public static function render_reached_notice_html( $product, $closed = false ) {
+		if ( ! self::should_show_reached_message( $product ) ) {
 			return '';
 		}
-		$message = self::resolve_message($product);
+		$message = self::resolve_message( $product );
 		$class   = 'wdp-goal-reached-notice';
-		if ($closed || self::should_block_new_donations($product)) {
+		if ( $closed || self::should_block_new_donations( $product ) ) {
 			$class .= ' wdp-goal-reached-notice--closed';
 		}
-		return '<div class="' . esc_attr($class) . '" role="status" data-wdp-goal-notice="1"><p class="wdp-goal-reached-notice__text">'
-			. esc_html($message)
+		return '<div class="' . esc_attr( $class ) . '" role="status" data-wdp-goal-notice="1"><p class="wdp-goal-reached-notice__text">'
+			. esc_html( $message )
 			. '</p></div>';
 	}
 
@@ -258,15 +258,15 @@ class WDP_Campaign_Goal {
 	 * @return void
 	 * @throws WDP_Validation_Exception When closed.
 	 */
-	public static function assert_accepts_donation($product) {
-		if (!self::should_block_new_donations($product)) {
+	public static function assert_accepts_donation( $product ) {
+		if ( ! self::should_block_new_donations( $product ) ) {
 			return;
 		}
-		$message = self::resolve_message($product);
-		if (class_exists('WDP_Validation_Exception')) {
-			throw new WDP_Validation_Exception($message);
+		$message = self::resolve_message( $product );
+		if ( class_exists( 'WDP_Validation_Exception' ) ) {
+			throw new WDP_Validation_Exception( $message );
 		}
-		throw new Exception($message); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- message is sanitized text.
+		throw new Exception( $message ); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- message is sanitized text.
 	}
 
 	/**
@@ -276,16 +276,16 @@ class WDP_Campaign_Goal {
 	 * @param int|WC_Product $product_id Product.
 	 * @return bool
 	 */
-	public static function filter_add_to_cart_validation($passed, $product_id) {
-		if (!$passed) {
+	public static function filter_add_to_cart_validation( $passed, $product_id ) {
+		if ( ! $passed ) {
 			return false;
 		}
-		$product = $product_id instanceof WC_Product ? $product_id : wc_get_product(absint($product_id));
-		if (!$product || !self::should_block_new_donations($product)) {
+		$product = $product_id instanceof WC_Product ? $product_id : wc_get_product( absint( $product_id ) );
+		if ( ! $product || ! self::should_block_new_donations( $product ) ) {
 			return $passed;
 		}
-		if (function_exists('wc_add_notice')) {
-			wc_add_notice(self::resolve_message($product), 'error');
+		if ( function_exists( 'wc_add_notice' ) ) {
+			wc_add_notice( self::resolve_message( $product ), 'error' );
 		}
 		return false;
 	}

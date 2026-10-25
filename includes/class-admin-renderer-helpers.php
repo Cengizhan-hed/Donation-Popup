@@ -5,7 +5,7 @@
  * @package WooCommerce\Donation_Popup
  */
 
-if (!defined('ABSPATH')) {
+if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
@@ -20,12 +20,12 @@ class WDP_Admin_Renderer_Helpers {
 	 * @param string $ajax_action Optional AJAX action; derived from form id when empty.
 	 * @return void
 	 */
-	public static function open_form_container($form_id, $ajax_action = '') {
-		if ($ajax_action === '' && preg_match('/^wdp-(.+)-settings-form$/', $form_id, $matches)) {
-			$ajax_action = 'wdp_save_' . str_replace('-', '_', $matches[1]) . '_settings';
+	public static function open_form_container( $form_id, $ajax_action = '' ) {
+		if ( $ajax_action === '' && preg_match( '/^wdp-(.+)-settings-form$/', $form_id, $matches ) ) {
+			$ajax_action = 'wdp_save_' . str_replace( '-', '_', $matches[1] ) . '_settings';
 		}
-		$action_attr = $ajax_action !== '' ? ' data-wdp-ajax-action="' . esc_attr($ajax_action) . '"' : '';
-		echo '<div class="wdp-button-settings-container"><form id="' . esc_attr($form_id) . '" class="wdp-admin-settings-form" novalidate' . $action_attr . '>';
+		$action_attr = $ajax_action !== '' ? ' data-wdp-ajax-action="' . esc_attr( $ajax_action ) . '"' : '';
+		echo '<div class="wdp-button-settings-container"><form id="' . esc_attr( $form_id ) . '" class="wdp-admin-settings-form" novalidate' . $action_attr . '>';
 	}
 
 	/**
@@ -35,9 +35,9 @@ class WDP_Admin_Renderer_Helpers {
 	 * @param bool   $with_inline_message Show inline message span.
 	 * @return void
 	 */
-	public static function close_form_container($button_id, $with_inline_message = false) {
-		echo '<p class="submit"><button type="submit" id="' . esc_attr($button_id) . '" class="button button-primary">' . __('Save settings', 'woo-donation-popup') . '</button><span class="spinner"></span>';
-		if ($with_inline_message) {
+	public static function close_form_container( $button_id, $with_inline_message = false ) {
+		echo '<p class="submit"><button type="submit" id="' . esc_attr( $button_id ) . '" class="button button-primary">' . __( 'Save settings', 'woo-donation-popup' ) . '</button><span class="spinner"></span>';
+		if ( $with_inline_message ) {
 			echo '<span class="wdp-inline-save-message" aria-live="polite"></span>';
 		}
 		echo '</p></form></div>';
@@ -60,10 +60,10 @@ class WDP_Admin_Renderer_Helpers {
 	 * @param string $label      Accessible label.
 	 * @return void
 	 */
-	public static function begin_live_preview_aside($preview_id, $label) {
+	public static function begin_live_preview_aside( $preview_id, $label ) {
 		echo '</div>'; // fields
-		echo '<aside class="wdp-admin-live-preview" id="' . esc_attr($preview_id) . '" aria-label="' . esc_attr($label) . '">';
-		echo '<div class="wdp-admin-live-preview__badge">' . esc_html__('Live preview', 'woo-donation-popup') . '</div>';
+		echo '<aside class="wdp-admin-live-preview" id="' . esc_attr( $preview_id ) . '" aria-label="' . esc_attr( $label ) . '">';
+		echo '<div class="wdp-admin-live-preview__badge">' . esc_html__( 'Live preview', 'woo-donation-popup' ) . '</div>';
 	}
 
 	/**
@@ -82,11 +82,11 @@ class WDP_Admin_Renderer_Helpers {
 	 * @param string $desc  Short description.
 	 * @return void
 	 */
-	public static function render_section_heading($title, $desc = '') {
+	public static function render_section_heading( $title, $desc = '' ) {
 		echo '<div class="wdp-admin-section-head">';
-		echo '<h2 class="wdp-admin-section-head__title">' . esc_html($title) . '</h2>';
-		if ($desc !== '') {
-			echo '<p class="wdp-admin-section-head__desc">' . esc_html($desc) . '</p>';
+		echo '<h2 class="wdp-admin-section-head__title">' . esc_html( $title ) . '</h2>';
+		if ( $desc !== '' ) {
+			echo '<p class="wdp-admin-section-head__desc">' . esc_html( $desc ) . '</p>';
 		}
 		echo '</div>';
 	}

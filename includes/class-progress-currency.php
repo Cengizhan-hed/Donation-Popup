@@ -5,7 +5,7 @@
  * @package WooCommerce\Donation_Popup
  */
 
-if (!defined('ABSPATH')) {
+if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
@@ -20,8 +20,8 @@ class WDP_Progress_Currency {
 	 * @return string
 	 */
 	public static function get_base_currency() {
-		if (function_exists('get_woocommerce_currency')) {
-			return strtoupper((string) get_woocommerce_currency());
+		if ( function_exists( 'get_woocommerce_currency' ) ) {
+			return strtoupper( (string) get_woocommerce_currency() );
 		}
 		return '';
 	}
@@ -32,10 +32,10 @@ class WDP_Progress_Currency {
 	 * @param WC_Abstract_Order|null $order Order.
 	 * @return string
 	 */
-	public static function get_order_currency($order) {
-		if (is_object($order) && method_exists($order, 'get_currency')) {
-			$c = strtoupper((string) $order->get_currency());
-			if ($c !== '') {
+	public static function get_order_currency( $order ) {
+		if ( is_object( $order ) && method_exists( $order, 'get_currency' ) ) {
+			$c = strtoupper( (string) $order->get_currency() );
+			if ( $c !== '' ) {
 				return $c;
 			}
 		}
@@ -50,14 +50,14 @@ class WDP_Progress_Currency {
 	 * @param string                 $currency Order currency.
 	 * @return float|null Rate or null if unknown.
 	 */
-	public static function get_order_rate($order, $currency = '') {
-		$currency = strtoupper($currency !== '' ? $currency : self::get_order_currency($order));
+	public static function get_order_rate( $order, $currency = '' ) {
+		$currency = strtoupper( $currency !== '' ? $currency : self::get_order_currency( $order ) );
 		$base     = self::get_base_currency();
-		if ($currency === '' || $currency === $base) {
+		if ( $currency === '' || $currency === $base ) {
 			return 1.0;
 		}
-		if (!is_object($order) || !method_exists($order, 'get_meta')) {
-			return self::get_live_rate($currency);
+		if ( ! is_object( $order ) || ! method_exists( $order, 'get_meta' ) ) {
+			return self::get_live_rate( $currency );
 		}
 
 		/**
@@ -69,12 +69,12 @@ class WDP_Progress_Currency {
 		 * @param string            $currency Order currency.
 		 * @param string            $base     Store base currency.
 		 */
-		$stored = apply_filters('wdp_order_exchange_rate', null, $order, $currency, $base);
-		if ($stored !== null && is_numeric($stored) && (float) $stored > 0) { // @phpstan-ignore function.alreadyNarrowedType
+		$stored = apply_filters( 'wdp_order_exchange_rate', null, $order, $currency, $base );
+		if ( $stored !== null && is_numeric( $stored ) && (float) $stored > 0 ) { // @phpstan-ignore function.alreadyNarrowedType
 			return (float) $stored;
 		}
 
-		return self::get_live_rate($currency);
+		return self::get_live_rate( $currency );
 	}
 
 	/**
@@ -83,10 +83,10 @@ class WDP_Progress_Currency {
 	 * @param string $currency Currency code.
 	 * @return float|null
 	 */
-	public static function get_live_rate($currency) {
-		$currency = strtoupper((string) $currency);
+	public static function get_live_rate( $currency ) {
+		$currency = strtoupper( (string) $currency );
 		$base     = self::get_base_currency();
-		if ($currency === '' || $currency === $base) {
+		if ( $currency === '' || $currency === $base ) {
 			return 1.0;
 		}
 
@@ -97,8 +97,8 @@ class WDP_Progress_Currency {
 		 * @param string     $currency Order currency.
 		 * @param string     $base     Base currency.
 		 */
-		$filtered = apply_filters('wdp_progress_live_rate', null, $currency, $base);
-		if ($filtered !== null && is_numeric($filtered) && (float) $filtered > 0) { // @phpstan-ignore function.alreadyNarrowedType
+		$filtered = apply_filters( 'wdp_progress_live_rate', null, $currency, $base );
+		if ( $filtered !== null && is_numeric( $filtered ) && (float) $filtered > 0 ) { // @phpstan-ignore function.alreadyNarrowedType
 			return (float) $filtered;
 		}
 
@@ -114,9 +114,9 @@ class WDP_Progress_Currency {
 	 * @param WC_Abstract_Order|null $order    Optional order (for stored rate).
 	 * @return array{ok:bool,amount:float,reason:string}
 	 */
-	public static function convert_to_base($amount, $currency, $order = null) {
+	public static function convert_to_base( $amount, $currency, $order = null ) {
 		$amount   = (float) $amount;
-		$currency = strtoupper((string) $currency);
+		$currency = strtoupper( (string) $currency );
 		$base     = self::get_base_currency();
 
 		$result = array(
@@ -125,7 +125,7 @@ class WDP_Progress_Currency {
 			'reason' => '',
 		);
 
-		if ($amount == 0.0 || $currency === '' || $currency === $base) {
+		if ( $amount == 0.0 || $currency === '' || $currency === $base ) {
 			/**
 			 * Progress tutar dönüşümü (filtrelenebilir).
 			 *
@@ -135,18 +135,18 @@ class WDP_Progress_Currency {
 			 * @param string                 $base     To.
 			 * @param WC_Abstract_Order|null $order    Order.
 			 */
-			return apply_filters('wdp_progress_convert_amount', $result, $amount, $currency, $base, $order);
+			return apply_filters( 'wdp_progress_convert_amount', $result, $amount, $currency, $base, $order );
 		}
 
-		$rate = self::get_order_rate($order, $currency);
-		if ($rate === null || $rate <= 0) {
+		$rate = self::get_order_rate( $order, $currency );
+		if ( $rate === null || $rate <= 0 ) {
 			$result['ok']     = false;
 			$result['amount'] = 0.0;
 			$result['reason'] = 'missing_rate';
-			return apply_filters('wdp_progress_convert_amount', $result, $amount, $currency, $base, $order);
+			return apply_filters( 'wdp_progress_convert_amount', $result, $amount, $currency, $base, $order );
 		}
 
 		$result['amount'] = $amount / $rate;
-		return apply_filters('wdp_progress_convert_amount', $result, $amount, $currency, $base, $order);
+		return apply_filters( 'wdp_progress_convert_amount', $result, $amount, $currency, $base, $order );
 	}
 }
