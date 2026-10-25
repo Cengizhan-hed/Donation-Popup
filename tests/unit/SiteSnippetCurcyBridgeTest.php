@@ -12,7 +12,8 @@ use PHPUnit\Framework\TestCase;
 final class SiteSnippetCurcyBridgeTest extends TestCase {
 	protected function setUp(): void {
 		WDP_Test_State::reset();
-		WDP_Test_State::$currency = 'TRY';
+		WDP_Test_State::$currency                        = 'TRY';
+		WDP_Test_State::$options['woocommerce_currency'] = 'TRY';
 		require_once dirname(__DIR__, 2) . '/docs/site-snippets/curcy-bridge.php';
 	}
 
@@ -102,6 +103,18 @@ final class SiteSnippetCurcyBridgeTest extends TestCase {
 		$r = WDP_Progress_Currency::convert_to_base(25.0, 'EUR', self::order(array()));
 		$this->assertTrue($r['ok']);
 		$this->assertEqualsWithDelta(1000.0, $r['amount'], 0.01);
+		WDP_Test_Curcy_Data::$list = array();
+	}
+
+	public function test_base_currency_is_store_option_not_selected_currency(): void {
+		WDP_Test_State::$options['woocommerce_currency'] = 'TRY';
+		WDP_Test_State::$currency                        = 'EUR'; // Ziyaretçi EUR seçti.
+		WDP_Test_Curcy_Data::$list                       = array('EUR' => array('rate' => 0.02));
+		$this->assertEqualsWithDelta(5000.0, WDP_Site_Curcy_Bridge::convert_amount(100.0, 'EUR', 'TRY'), 0.001);
+		$this->assertEqualsWithDelta(100.0, WDP_Site_Curcy_Bridge::convert_amount(5000.0, 'TRY', 'EUR'), 0.001);
+		// Kur 1: değişmez.
+		WDP_Test_Curcy_Data::$list = array('EUR' => array('rate' => 1.0));
+		$this->assertEqualsWithDelta(100.0, WDP_Site_Curcy_Bridge::convert_amount(100.0, 'EUR', 'TRY'), 0.001);
 		WDP_Test_Curcy_Data::$list = array();
 	}
 }

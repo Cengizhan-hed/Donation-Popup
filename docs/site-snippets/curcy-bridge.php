@@ -142,7 +142,9 @@ if ( ! class_exists( 'WDP_Site_Curcy_Bridge' ) ) {
 		 */
 		private static function list_rate( $currency ) {
 			$currency = strtoupper( (string) $currency );
-			if ( function_exists( 'get_woocommerce_currency' ) && strtoupper( (string) get_woocommerce_currency() ) === $currency ) {
+			// Curcy ile get_woocommerce_currency() ziyaretçinin SEÇİLİ birimidir; ana birim mağaza seçeneğidir.
+			$base = strtoupper( (string) get_option( 'woocommerce_currency', '' ) );
+			if ( '' !== $base && $base === $currency ) {
 				return 1.0;
 			}
 			return self::live_rate( null, $currency );
