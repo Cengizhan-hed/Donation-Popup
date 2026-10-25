@@ -1,0 +1,13 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "donation-panel/account",
+  "title": "Donor account",
+  "category": "woocommerce",
+  "description": "Account icon that opens log in, sign up and password reset. Shows a link to My account when logged in.",
+  "textdomain": "woo-donation-popup",
+  "supports": {
+    "html": false,
+    "autoRegister": true
+  }
+}
