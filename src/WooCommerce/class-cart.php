@@ -30,6 +30,10 @@ final class Cart {
 	 * @return void
 	 */
 	public function register() {
+		if ( did_action( 'woocommerce_blocks_loaded' ) ) {
+			$this->register_store_api();
+			return;
+		}
 		add_action( 'woocommerce_blocks_loaded', array( $this, 'register_store_api' ) );
 	}
 
@@ -42,7 +46,7 @@ final class Cart {
 		if ( function_exists( 'woocommerce_store_api_register_endpoint_data' ) ) {
 			$endpoint = class_exists( '\Automattic\WooCommerce\StoreApi\Schemas\V1\CartItemSchema' )
 				? \Automattic\WooCommerce\StoreApi\Schemas\V1\CartItemSchema::IDENTIFIER
-				: 'cart_item';
+				: 'cart-item';
 			woocommerce_store_api_register_endpoint_data(
 				array(
 					'endpoint'        => $endpoint,
