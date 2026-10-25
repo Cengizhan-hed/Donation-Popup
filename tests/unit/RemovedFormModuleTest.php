@@ -66,14 +66,16 @@ final class RemovedFormModuleTest extends TestCase {
 		}
 	}
 
-	public function test_stored_order_with_removed_module_still_resolves(): void {
+	public function test_stored_order_is_ignored_and_default_order_is_fixed(): void {
 		$removed = WDP_Migrations::REMOVED_MODULE_IDS[0];
 		WDP_Test_State::$post_meta[42]['_wdp_module_order'] = $removed . ',urgency,media';
+		WDP_Test_State::$options['wdp_button_settings']     = array('module_order' => 'progress,media');
 
-		$order = WDP_Form_Modules::resolve_order(42);
+		$order = WDP_Form_Modules::resolve_order();
 
 		$this->assertNotContains($removed, $order);
-		$this->assertSame(array('urgency', 'media'), array_slice($order, 0, 2));
+		$this->assertSame(WDP_Form_Modules::allowed_ids(), $order);
+		$this->assertSame(array('media', 'impact'), array_slice($order, 0, 2));
 	}
 
 	/**

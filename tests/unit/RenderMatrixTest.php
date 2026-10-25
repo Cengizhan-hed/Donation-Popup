@@ -49,7 +49,7 @@ final class RenderMatrixTest extends TestCase {
 				$context = WDP_Donation_Product_Context_Service::build_form_context($p);
 				$this->assertSame($id, $context['product_id']);
 				$this->assertArrayHasKey('allow_custom_price', $context);
-				$this->assertArrayHasKey('module_order', $context);
+				$this->assertArrayNotHasKey('module_order', $context);
 				$this->assertContains($context['layout_mode'], array('classic', 'campaign', 'story'));
 			}
 		}

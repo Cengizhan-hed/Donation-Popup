@@ -48,17 +48,6 @@ class WDP_Form_Modules {
 	}
 
 	/**
-	 * Genel ayar: yalnız 5 başlık bloğu (bilinmeyen kimlikler sessizce yok sayılır).
-	 *
-	 * @param mixed $raw Raw order.
-	 * @return string[]
-	 */
-	public static function sanitize_header_order( $raw ) {
-		$header = array( 'media', 'impact', 'urgency', 'social_proof', 'progress' );
-		return self::sanitize_order_against( $raw, $header );
-	}
-
-	/**
 	 * @param mixed    $raw     Raw.
 	 * @param string[] $allowed Allowed ids (order of append for missing).
 	 * @return string[]
@@ -88,22 +77,12 @@ class WDP_Form_Modules {
 	}
 
 	/**
-	 * Resolve module order for a product (meta override or global/default).
+	 * Module order: fixed default order (no per-product or global override).
 	 *
-	 * @param int $product_id Product ID.
 	 * @return string[]
 	 */
-	public static function resolve_order( $product_id ) {
-		$product_id = absint( $product_id );
-		$raw        = '';
-		if ( $product_id > 0 ) {
-			$raw = get_post_meta( $product_id, '_wdp_module_order', true );
-		}
-		if ( $raw === '' || $raw === null ) {
-			$button = get_option( 'wdp_button_settings', array() );
-			$raw    = is_array( $button ) && ! empty( $button['module_order'] ) ? $button['module_order'] : '';
-		}
-		return self::sanitize_order( $raw );
+	public static function resolve_order() {
+		return self::allowed_ids();
 	}
 
 	/**

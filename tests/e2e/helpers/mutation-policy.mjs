@@ -53,7 +53,7 @@ export const MUTATION_SCENARIOS = [
   { id: 'campaign-blocks-overflow-bar', kind: KIND_PRODUCT_META, suite: 'campaign-blocks' },
   { id: 'campaign-blocks-urgency-expired', kind: KIND_PRODUCT_META, suite: 'campaign-blocks' },
   { id: 'campaign-blocks-social-donors', kind: KIND_PRODUCT_META, suite: 'campaign-blocks' },
-  { id: 'campaign-blocks-celebrate-only-transition', kind: KIND_PRODUCT_META, suite: 'campaign-blocks' },
+  { id: 'campaign-blocks-goal-reached-only-on-transition', kind: KIND_PRODUCT_META, suite: 'campaign-blocks' },
   { id: 'product-theme-primary-and-contrast', kind: KIND_PRODUCT_META, suite: 'product-theme' },
   { id: 'product-theme-fallback-no-product-primary', kind: KIND_PRODUCT_META, suite: 'product-theme' },
   { id: 'product-theme-radius-clamp', kind: KIND_PRODUCT_META, suite: 'product-theme' },

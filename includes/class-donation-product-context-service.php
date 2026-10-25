@@ -159,7 +159,6 @@ class WDP_Donation_Product_Context_Service {
 			'goal_closed'               => class_exists( 'WDP_Campaign_Goal' )
 				? WDP_Campaign_Goal::should_block_new_donations( $product )
 				: false,
-			'module_order'              => (string) $product->get_meta( '_wdp_module_order' ),
 		);
 
 		return apply_filters( 'wdp_form_context', $context, $product );

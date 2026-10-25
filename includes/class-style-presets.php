@@ -214,7 +214,6 @@ class WDP_Style_Presets {
 			'body_font_family',
 			'motion_intensity',
 			'chip_style',
-			'module_order',
 			'trust_badges',
 			'enable_donor_email',
 			'enable_dedication',
