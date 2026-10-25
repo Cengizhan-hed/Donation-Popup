@@ -15,6 +15,8 @@ use DonationPanel\Frontend\Assets;
 use DonationPanel\Frontend\Template_Loader;
 use DonationPanel\Http\Rate_Limiter;
 use DonationPanel\Modules\EntryPoints\Product_Resolver;
+use DonationPanel\WooCommerce\Cart;
+use DonationPanel\WooCommerce\Donation_Order_Meta;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -48,6 +50,13 @@ final class Experiences_Module implements Module_Interface {
 	private $rendered = false;
 
 	/**
+	 * Sepet köprüsü (Store API uzantısı + REST ekleme).
+	 *
+	 * @var Cart|null
+	 */
+	private $cart;
+
+	/**
 	 * Kancaları kaydeder.
 	 *
 	 * @param Container $container Bağımlılık kabı.
@@ -57,6 +66,10 @@ final class Experiences_Module implements Module_Interface {
 		$this->container = $container;
 
 		$container->get( Assets::class )->define( self::SLUG, 'assets/build/experiences/index.js', 'assets/build/experiences/index.css' );
+
+		$this->cart = new Cart();
+		$this->cart->register();
+		( new Donation_Order_Meta() )->register();
 
 		add_filter( 'donation_panel_rest_controllers', array( $this, 'add_rest_controller' ) );
 		add_action( 'init', array( $this, 'register_shortcode' ) );
@@ -79,7 +92,9 @@ final class Experiences_Module implements Module_Interface {
 	 */
 	public function add_rest_controller( $controllers ) {
 		$controllers   = (array) $controllers;
-		$controllers[] = new Form_Controller( $this->container->get( Rate_Limiter::class ), $this->renderer() );
+		$limiter       = $this->container->get( Rate_Limiter::class );
+		$controllers[] = new Form_Controller( $limiter, $this->renderer() );
+		$controllers[] = new Cart_Controller( $limiter, $this->cart ? $this->cart : new Cart() );
 		return $controllers;
 	}
 

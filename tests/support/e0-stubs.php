@@ -65,6 +65,13 @@ if (!class_exists('WP_REST_Response')) {
 		public function get_data() {
 			return $this->data;
 		}
+
+		/** @var array<string, string> */
+		public $headers = array();
+
+		public function header($key, $value) {
+			$this->headers[ $key ] = $value;
+		}
 	}
 }
 
