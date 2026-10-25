@@ -43,5 +43,5 @@ if (result.exitCode !== 0 || result.dryRun || args.rollback) {
   process.exit(result.exitCode);
 }
 
-const e2eCode = run('node', ['tests/e2e/run-quick.mjs', '--open-report']);
+const e2eCode = run('node', ['tests/e2e/run-quick.mjs', '--env', 'staging-hedef', '--open-report']);
 process.exit(e2eCode);
