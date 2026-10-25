@@ -83,3 +83,13 @@ Eklenti `plugins_loaded` öncelik 20'de başlar (ayrıntı: docs/MIMARI.md "Kanc
 - Ana birim her zaman WooCommerce ayarıdır (`get_option('woocommerce_currency')`); `get_woocommerce_currency()` ziyaretçinin gördüğü (etkin) birimdir.
 - Yeni sepet satırı alanı: `wdp_input_currency` (tutarın yazıldığı birim; damgasız eski satırlar dönüşümsüz).
 - Kur eklentisi köprüsü: `docs/site-snippets/curcy-bridge.php`.
+
+## Yan sepet (`side_cart`, E4)
+
+- **Kısa kod:** `[donation_panel_side_cart]` — sepet simgesi + kalem sayacı düğmesi (çekmeceyi açar). Öznitelik yok.
+- **Ayar:** `modules.side_cart` (varsayılan kapalı) ya da `donation_panel_module_enabled` filtresi (`$slug === 'side_cart'`).
+- **Filtre `donation_panel_side_cart_load`:** `apply_filters( 'donation_panel_side_cart_load', bool $load )` — çekmece ve varlıkları bu sayfada yüklensin mi (varsayılan: ön yüz, sepet/ödeme sayfaları hariç).
+- **REST:** `GET /wp-json/donation-panel/v1/side-cart` -> `{ count: int, subtotal: string(html), html: string(html) }`; `Cache-Control: no-store, private`; oturumdaki sepete özel.
+- **Tarayıcı olayları (dinlenir, `document` üzerinde):** `wc-blocks_added_to_cart`, `donation-panel:cart-added` (sepet yenilenir + çekmece açılır); klasik `added_to_cart` (jQuery varsa). **Gönderilir:** `donation-panel:cart-updated` (`detail.count`) her yeniden çizimden sonra.
+- **WooCommerce parçası:** `woocommerce_add_to_cart_fragments` ile `span.dp-sc__count` sayaç rozeti.
+- **DOM işaretleri (kararlı):** `[data-dp-sc-open]` (tetikleyici), `[data-dp-sc-count]`, `[data-dp-sc-go]` (ödemeye git bağlantısı), `.dp-sc__*` sınıfları.
