@@ -74,39 +74,15 @@
     });
   }
 
-  // K3: tam stil paketi `media="print"` ile ilk boyamayı engellemeden iner (PHP: WDP_Assets_Defer::filter_style_tag).
-  // Açılır pencere/panel/teşekkür stilleri bu pakette; paket işlevi başlamadan hazır olmalı (stilsiz yanıp sönme olmasın).
+  // K3: tam stil paketi ilk boyamayı engellemeden, sayfa yüklendikten sonra gelir (assets/js/style-defer-loader.js;
+  // PHP: WDP_Assets_Defer::filter_style_tag). Açılır pencere/panel/teşekkür stilleri bu pakette; paket işlevi başlamadan
+  // hazır olmalı (stilsiz yanıp sönme olmasın): yoksa şimdi yüklenir, 4 sn içinde gelmezse işlev yine de başlar.
   function whenStyles(done) {
-    var links = d.querySelectorAll('link[data-wdp-defer-css]');
-    var left = 0;
-    var finished = false;
-    function finish() {
-      if (!finished) {
-        finished = true;
-        done();
-      }
-    }
-    function one() {
-      left -= 1;
-      if (left <= 0) {
-        finish();
-      }
-    }
-    Array.prototype.forEach.call(links, function (link) {
-      if (link.media !== 'all') {
-        link.media = 'all'; // onload işleyicisi (CSP/önbellek eklentisi yüzünden) çalışmadıysa devreye al.
-      }
-      if (!link.sheet) {
-        left += 1;
-        link.addEventListener('load', one);
-        link.addEventListener('error', one);
-      }
-    });
-    if (left <= 0) {
-      finish();
+    if (!w.WDPStyles || typeof w.WDPStyles.load !== 'function') {
+      done();
       return;
     }
-    w.setTimeout(finish, 4000); // Ağ takılırsa işlev yine de başlar.
+    w.WDPStyles.load(done);
   }
 
   function load() {

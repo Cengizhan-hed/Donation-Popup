@@ -154,7 +154,8 @@ test.describe('yükleme', () => {
     const res = await page.request.get(IDS.fixedPath);
     const html = await res.text();
     expect(html, 'satır içi kritik stil').toContain('id="wdp-critical-bundle"');
-    expect(html, 'tam paket engelleyici değil').toMatch(/<link[^>]+donation-modal\.[0-9a-f]+\.css[^>]*media='print'[^>]*data-wdp-defer-css/);
+    expect(html, 'tam paket yerine yer tutucu (ilk yükte istek yok)').toMatch(/<meta name="wdp-deferred-style" data-id="wdp-donation-modal-css-css" data-href="[^"]+donation-modal\.[0-9a-f]+\.css/);
+    expect(html.replace(/<noscript>[\s\S]*?<\/noscript>/g, ''), 'tam paket <link> yalnız noscript içinde').not.toMatch(/<link[^>]+donation-modal\.[0-9a-f]+\.css/);
     expect(html, 'betiksiz yedek').toMatch(/<noscript><link[^>]+donation-modal\.[0-9a-f]+\.css/);
     const critical = (html.match(/<style id="wdp-critical-bundle">([\s\S]*?)<\/style>/) || [, ''])[1];
     expect(critical.length, 'kritik stil boyutu (ham bayt)').toBeLessThan(120000);
@@ -166,7 +167,8 @@ test.describe('yükleme', () => {
       await p.route(/donation-modal\.[0-9a-f]+\.js|wdp_client_data|wdp-form-cta-ready|cta-ready\.js/, (r) => r.abort());
       if (!withFull) await p.route(/donation-modal\.[0-9a-f]+\.css/, (r) => r.abort());
       await p.goto(url, { waitUntil: 'load' });
-      if (withFull) await p.waitForFunction(() => [...document.querySelectorAll('link[data-wdp-defer-css]')].every((l) => l.media === 'all' && l.sheet));
+      if (withFull) await p.waitForFunction(() => window.WDPStyles && window.WDPStyles.isReady());
+      else await p.waitForFunction(() => window.WDPStyles && window.WDPStyles.isReady()); // paket isteği düşer; yükleyici bitirir
       await p.waitForTimeout(400);
       const png = await p.screenshot({ fullPage: true });
       await p.close();

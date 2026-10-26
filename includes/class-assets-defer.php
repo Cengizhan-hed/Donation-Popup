@@ -32,11 +32,16 @@ class WDP_Assets_Defer {
 	}
 
 	/**
-	 * K3: tam ön yüz paketi (34 KB gzip) ilk boyamayı ENGELLEMEZ. İlk görünümdeki kuralların alt kümesi (derleme
-	 * çıktısı `critical.*.css`) bağlantının hemen önünde satır içi basılır; tam paket `media="print"` + `onload` ile
-	 * sonradan yüklenir ve aynı yerde, aynı sırada devreye girer (basamaklı sıra özgün düzenle aynı kalır; satır içi
-	 * ayar CSS'i bağlantıdan sonra gelmeye devam eder). Betiksiz tarayıcı için `<noscript>` yedeği. Kapatma:
-	 * `add_filter( 'wdp_defer_frontend_styles', '__return_false' )` ya da `wdp_defer_frontend_assets`.
+	 * K3: stil bağlantıları ilk boyamayı engellemez.
+	 *
+	 * 1) Tam ön yüz paketi (34 KB gzip): ilk görünümdeki kuralların alt kümesi (derleme çıktısı `critical.*.css`) satır içi
+	 *    basılır; tam paketin yerine <meta name="wdp-deferred-style"> yer tutucusu konur, sayfa yüklendikten sonra
+	 *    (boşta / ilk etkileşimde, `assets/js/style-defer-loader.js`) AYNI yere <link> eklenir → basamaklı sıra özgün
+	 *    düzenle aynı kalır (satır içi ayar CSS'i bağlantıdan sonra gelmeye devam eder), ilk yük bant genişliği
+	 *    yarışılmaz. Betiksiz tarayıcı için `<noscript>` yedeği özgün bağlantıdır.
+	 * 2) Küçük modül stilleri (`donation-panel-*`, ≤ 12 KB; yan sepet, bağışçı hesabı): ayrı engelleyici istek yerine satır içi.
+	 *
+	 * Kapatma: `add_filter( 'wdp_defer_frontend_styles', '__return_false' )` ya da `wdp_defer_frontend_assets`.
 	 *
 	 * @param string $html   Bağlantı etiketi.
 	 * @param string $handle Tutamaç.
@@ -45,26 +50,84 @@ class WDP_Assets_Defer {
 	 * @return string
 	 */
 	public static function filter_style_tag( $html, $handle, $href = '', $media = 'all' ) {
-		if ( WDP_Assets::FRONTEND_CSS_HANDLE !== $handle || 'all' !== $media || false === strpos( $html, "media='all'" ) ) {
+		$is_bundle = WDP_Assets::FRONTEND_CSS_HANDLE === $handle;
+		$is_module = 0 === strpos( (string) $handle, 'donation-panel-' );
+		if ( ( ! $is_bundle && ! $is_module ) || 'all' !== $media || false === strpos( $html, "media='all'" ) ) {
 			return $html;
 		}
 		if ( ! self::is_active() ) {
 			return $html;
 		}
 		/**
-		 * Tam ön yüz stil paketinin ilk boyamayı engellemeden yüklenmesi (varsayılan açık).
+		 * Stil bağlantılarının ilk boyamayı engellemeden yüklenmesi (varsayılan açık).
 		 *
 		 * @param bool $defer Ertele.
 		 */
 		if ( ! apply_filters( 'wdp_defer_frontend_styles', true ) ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- wdp_ öneki eklentiye ait.
 			return $html;
 		}
+		if ( $is_module ) {
+			$css = self::small_local_css( (string) $href );
+			return '' === $css ? $html : '<style id="' . esc_attr( $handle ) . '-css">' . $css . "</style>\n";
+		}
 		$critical = WDP_Assets::get_critical_bundle_css();
 		if ( '' === $critical ) {
 			return $html; // Kritik alt küme yok: bölme yok, özgün engelleyici bağlantı.
 		}
-		$deferred = str_replace( "media='all'", "media='print' onload=\"this.onload=null;this.media='all'\" data-wdp-defer-css", $html );
-		return '<style id="wdp-critical-bundle">' . $critical . "</style>\n" . $deferred . '<noscript>' . $html . "</noscript>\n";
+		$loader = self::style_loader_markup();
+		if ( '' === $loader ) {
+			return $html; // Yükleyici yok: erteleme yok.
+		}
+		$placeholder = '<meta name="wdp-deferred-style" data-id="' . esc_attr( $handle . '-css' ) . '" data-href="' . esc_url( $href ) . '">';
+		return '<style id="wdp-critical-bundle">' . $critical . "</style>\n" . $placeholder . "\n" . $loader . '<noscript>' . $html . "</noscript>\n";
+	}
+
+	/**
+	 * Eklenti dizinindeki küçük (≤ 12 KB) bir stil dosyasının içeriği; değilse ''.
+	 *
+	 * @param string $href Stil adresi (sorgu dizesi olabilir).
+	 * @return string
+	 */
+	private static function small_local_css( $href ) {
+		$base = defined( 'WDP_PLUGIN_URL' ) ? (string) WDP_PLUGIN_URL : '';
+		$dir  = defined( 'WDP_PLUGIN_DIR' ) ? (string) WDP_PLUGIN_DIR : '';
+		$path = (string) wp_parse_url( $href, PHP_URL_PATH );
+		$root = (string) wp_parse_url( $base, PHP_URL_PATH );
+		if ( '' === $base || '' === $dir || '' === $root || 0 !== strpos( $path, $root ) || false !== strpos( $path, '..' ) || '.css' !== substr( $path, -4 ) ) {
+			return '';
+		}
+		$file = $dir . substr( $path, strlen( $root ) );
+		if ( ! is_readable( $file ) || filesize( $file ) > 12288 ) {
+			return '';
+		}
+		$css = file_get_contents( $file ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- yerel eklenti dosyası.
+		if ( ! is_string( $css ) || '' === $css ) {
+			return '';
+		}
+		return trim( str_ireplace( '</style', '<\/style', $css ) );
+	}
+
+	/**
+	 * Stil yükleyicisi (istek başına bir kez; satır içi).
+	 *
+	 * @return string
+	 */
+	private static function style_loader_markup() {
+		static $printed = false;
+		static $code    = null;
+		if ( $printed ) {
+			return ' ';
+		}
+		if ( null === $code ) {
+			$file = WDP_PLUGIN_DIR . 'assets/js/style-defer-loader.js';
+			$raw  = is_readable( $file ) ? file_get_contents( $file ) : ''; // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- yerel eklenti dosyası.
+			$code = is_string( $raw ) ? (string) preg_replace( array( '~/\*.*?\*/~s', '~^\s*//.*$~m', '~\n\s*\n+~' ), array( '', '', "\n" ), $raw ) : '';
+		}
+		if ( '' === $code ) {
+			return '';
+		}
+		$printed = true;
+		return "<script id=\"wdp-style-loader\">\n" . $code . "\n</script>\n";
 	}
 
 	/**
