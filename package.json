@@ -67,6 +67,7 @@
     "e2e:canary": "node tests/e2e/run-canary.mjs",
     "e2e:remote-smoke": "node tests/e2e/run-remote-smoke.mjs",
     "e2e:conflicts": "node tests/e2e/run-conflicts.mjs",
+    "e2e:elementor-compat": "node tests/e2e/run-elementor-compat.mjs",
     "ship:staging": "node scripts/ship-staging.mjs",
     "ship:ikram": "node scripts/ship-ikram.mjs",
     "handoff": "node scripts/handoff.mjs",
