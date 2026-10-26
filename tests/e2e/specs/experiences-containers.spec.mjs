@@ -173,6 +173,7 @@ test.describe('form çekirdeği (yeni motor)', () => {
     await expect(page.locator('[data-dp-step="details"]')).toBeVisible();
     await page.locator('input[name="donation_full_name"]').fill('Çağlar Şükrü Öztürk İğdır');
     await page.locator('input[name="donation_phone"]').fill('+44 7700 900123');
+    await page.locator('[data-dp-note-toggle]').click();
     await page.locator('textarea[name="donation_note"]').fill('Ğüşiöç ĞÜŞİÖÇ notu');
     const add = page.waitForResponse((r) => r.url().includes('/donation-panel/v1/cart/add'));
     await page.locator('[data-dp-submit]').click();

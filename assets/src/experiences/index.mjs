@@ -15,7 +15,9 @@ function mount(root) {
   root.dataset.dpMounted = '1';
   createForm(root);
   if (root.dataset.dpKind !== 'inline') {
-    createLayer(root);
+    const layer = createLayer(root);
+    // "Sepete ekle, başka bağış seç": katman kapanır, bağışçı sayfada kalır.
+    root.addEventListener('dp:added', () => layer && layer.close());
   } else {
     root.dataset.dpPresented = 'inline';
   }

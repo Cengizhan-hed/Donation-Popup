@@ -1,0 +1,99 @@
+# Turkish translations — 12-ui1 (onaylı tasarım: popup / yan panel / sayfa içi form).
+# Copyright (C) Donation Panel for WooCommerce
+msgid ""
+msgstr ""
+"Project-Id-Version: woo-donation-popup 12.0.0\n"
+"Language: tr_TR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Domain: woo-donation-popup\n"
+
+#: templates/donation-panel/experiences/form.php
+msgctxt "Donation form: next step button"
+msgid "Continue"
+msgstr "Devam et"
+
+#: templates/donation-panel/experiences/form.php
+msgid "Other amount"
+msgstr "Başka bir tutar"
+
+#: templates/donation-panel/experiences/form.php
+msgid "Enter another amount"
+msgstr "Başka bir tutar yazın"
+
+#: templates/donation-panel/experiences/form.php
+msgid "Enter an amount"
+msgstr "Bir tutar yazın"
+
+#: templates/donation-panel/experiences/form.php
+msgid "Most popular"
+msgstr "En çok seçilen"
+
+#: templates/donation-panel/experiences/form.php
+#, php-format
+msgid "Goal %s"
+msgstr "Hedef %s"
+
+#: templates/donation-panel/experiences/form.php
+#, php-format
+msgid "%d%%"
+msgstr "%%%d"
+
+#: templates/donation-panel/experiences/form.php
+#, php-format
+msgid "%s day left"
+msgid_plural "%s days left"
+msgstr[0] "%s gün kaldı"
+msgstr[1] "%s gün kaldı"
+
+#: templates/donation-panel/experiences/form.php
+msgid "Donate on behalf of someone"
+msgstr "Birinin adına bağışla"
+
+#: templates/donation-panel/experiences/form.php
+msgid "Add a dedication note"
+msgstr "İthaf notu ekleyin"
+
+#: templates/donation-panel/experiences/form.php
+msgid "Add a note (optional)"
+msgstr "Not ekle (isteğe bağlı)"
+
+#: templates/donation-panel/experiences/form.php
+msgid "We use this number to keep you updated about your donation."
+msgstr "Bu numarayı bağışınızla ilgili sizi bilgilendirmek için kullanırız."
+
+#: templates/donation-panel/experiences/form.php
+msgid "Country code"
+msgstr "Ülke kodu"
+
+#: templates/donation-panel/experiences/form.php
+#, php-format
+msgid "Donate %s"
+msgstr "%s bağışla"
+
+#: templates/donation-panel/experiences/form.php
+msgid "Add to cart, choose another"
+msgstr "Sepete ekle, başka bağış seç"
+
+#: templates/donation-panel/experiences/form.php
+msgid "Added to your cart."
+msgstr "Sepetinize eklendi."
+
+#: templates/donation-panel/experiences/form.php
+msgid "Secure payment · Your details are encrypted"
+msgstr "Güvenli ödeme · Bilgileriniz şifrelenir"
+
+#: templates/donation-panel/experiences/form.php
+#, php-format
+msgid "By continuing you confirm you have read the %s."
+msgstr "Devam ederek %s okuduğunuzu kabul edersiniz."
+
+#: templates/donation-panel/experiences/form.php
+msgid "privacy notice"
+msgstr "aydınlatma metnini"
+
+#: src/Modules/Experiences/class-form-context.php
+msgid "One-time donation"
+msgstr "Tek seferlik bağış"

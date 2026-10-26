@@ -8,6 +8,26 @@ const RTL = () => document.documentElement.dir === 'rtl' || document.dir === 'rt
 const HOLDER = /^shareholder_(\d+)_/;
 
 /**
+ * Telefon değeri: ulusal numara girildiyse seçili ülke ön eki eklenir (ülke kodu seçicisi `.dp-phone` içinde).
+ *
+ * @param {HTMLInputElement} input Numara girdisi.
+ * @return {string} Sunucuya gidecek değer.
+ */
+export function phoneValue(input) {
+  const raw = input.value.trim();
+  if (raw === '' || /^(\+|00)/.test(raw)) {
+    return raw;
+  }
+  const select = input.closest('.dp-phone') ? input.closest('.dp-phone').querySelector('[data-dp-dial]') : null;
+  const dial = select ? select.value : '';
+  if (!dial) {
+    return raw;
+  }
+  const national = dial === '39' ? raw : raw.replace(/^0+/, '');
+  return `+${dial} ${national}`;
+}
+
+/**
  * @param {HTMLElement} root Kök (.dp-exp).
  * @param {{ onDone?: Function }} [hooks] Olaylar.
  * @return {{getState: Function}} Denetleyici.
@@ -31,12 +51,25 @@ export function createForm(root, hooks = {}) {
 
   const sections = Array.from(form.querySelectorAll('[data-dp-step]'));
   const stepsBar = Array.from(form.querySelectorAll('.dp-steps__i'));
+  const stepsWrap = form.querySelector('[data-dp-steps]');
   const stepText = form.querySelector('[data-dp-steplabel]');
+  const titleNode = form.querySelector('[data-dp-title]');
+  const totalRow = form.querySelector('[data-dp-total-row]');
+  const submitLabel = form.querySelector('[data-dp-submit-label]');
+  const submitLock = form.querySelector('[data-dp-submit-lock]');
+  const submitArrow = form.querySelector('[data-dp-submit-arrow]');
+  const addCart = form.querySelector('[data-dp-addcart]');
+  const trust = form.querySelector('[data-dp-trust]');
+  const legal = form.querySelector('[data-dp-legal]');
+  const recapAmount = form.querySelector('[data-dp-recap-amount]');
+  const qtyTotal = form.querySelector('[data-dp-qty-total]');
+  const qtySum = form.querySelector('[data-dp-qty-sum]');
   const backButton = form.querySelector('[data-dp-back]');
   const chips = Array.from(form.querySelectorAll('[data-dp-preset]'));
   const presets = chips.map((chip) => Number(chip.dataset.dpPreset));
   const recommended = chips.findIndex((chip) => chip.getAttribute('aria-checked') === 'true');
-  let state = initialState({ presets, recommended: recommended >= 0 ? presets[recommended] : null });
+  const seed = { presets, recommended: recommended >= 0 ? presets[recommended] : null };
+  let state = initialState(seed);
   const amountInput = form.querySelector('input[name="amount"]');
   const hiddenAmount = amountInput && amountInput.type === 'hidden';
   if (hiddenAmount && presets.length) {
@@ -73,6 +106,27 @@ export function createForm(root, hooks = {}) {
       decimals,
     });
 
+  /**
+   * Ekran okuyucu ve görünür kısa durum iletisi (sepete eklendi).
+   *
+   * @param {string} message İleti.
+   */
+  const announce = (message) => {
+    let node = form.querySelector('[data-dp-added]');
+    if (!node) {
+      node = document.createElement('p');
+      node.className = 'dp-added';
+      node.setAttribute('role', 'status');
+      node.dataset.dpAdded = '';
+      const bar = form.querySelector('.dp-actionbar');
+      form.insertBefore(node, bar);
+    }
+    node.textContent = message;
+    window.setTimeout(() => {
+      node.textContent = '';
+    }, 4000);
+  };
+
   const dispatch = (action) => {
     state = reducer(state, action);
     paint();
@@ -91,6 +145,8 @@ export function createForm(root, hooks = {}) {
   };
 
   const paintSteps = () => {
+    const last = state.step >= lastStep;
+    const multi = sections.length > 1;
     sections.forEach((section, index) => {
       section.hidden = index !== state.step;
     });
@@ -98,15 +154,41 @@ export function createForm(root, hooks = {}) {
       bar.classList.toggle('is-done', index < state.step);
       bar.classList.toggle('is-current', index === state.step);
     });
+    if (stepsWrap) {
+      stepsWrap.hidden = !multi || state.step === 0;
+    }
     if (stepText) {
+      stepText.hidden = !multi;
+      stepText.textContent = multi ? stepLabel(form.dataset.msgStep, state.step, sections.length, '') : '';
+    }
+    if (titleNode) {
       const section = sections[state.step];
-      stepText.textContent = stepLabel(form.dataset.msgStep, state.step, sections.length, section ? section.dataset.stepLabel || '' : '');
+      titleNode.textContent = state.step === 0 ? form.dataset.title || titleNode.textContent : (section && section.dataset.stepLabel) || titleNode.textContent;
     }
     if (backButton) {
       backButton.hidden = state.step === 0;
     }
-    if (submit) {
-      submit.textContent = (state.step >= lastStep ? form.dataset.labelSubmit : form.dataset.labelNext) || submit.textContent;
+    if (totalRow) {
+      totalRow.hidden = last;
+    }
+    if (submitLabel) {
+      const label = last ? (form.dataset.labelSubmit || '').replace('%s', money(totals(state.fee).total)) : form.dataset.labelNext;
+      submitLabel.textContent = label || submitLabel.textContent;
+    }
+    if (submitLock) {
+      submitLock.hidden = !last;
+    }
+    if (submitArrow) {
+      submitArrow.hidden = last;
+    }
+    if (addCart) {
+      addCart.hidden = !last;
+    }
+    if (legal) {
+      legal.hidden = !last;
+    }
+    if (trust) {
+      trust.hidden = last && Boolean(legal);
     }
   };
 
@@ -167,6 +249,17 @@ export function createForm(root, hooks = {}) {
       const preview = totals(true);
       feeHint.textContent = preview.fee > 0 ? `+${money(preview.fee)}` : '';
     }
+    if (recapAmount) {
+      recapAmount.textContent = money(current.total);
+    }
+    if (qtyTotal) {
+      qtyTotal.textContent = money(current.donation);
+    }
+    if (qtySum && qtySum.dataset.unitText && state.qty > 1) {
+      qtySum.textContent = `${qtySum.dataset.unitText} × ${state.qty}`;
+    } else if (qtySum && qtySum.dataset.unitText) {
+      qtySum.textContent = qtySum.dataset.unitText;
+    }
     setLine('donation', current.donation, true);
     setLine('fee', current.fee, current.fee > 0);
     setLine('addon', current.addon, current.addon > 0);
@@ -222,6 +315,51 @@ export function createForm(root, hooks = {}) {
       focusStep();
     });
   }
+  form.querySelectorAll('[data-dp-dial]').forEach((select) => {
+    const label = select.closest('.dp-phone__code') ? select.closest('.dp-phone__code').querySelector('[data-dp-dial-label]') : null;
+    select.addEventListener('change', () => {
+      if (label) {
+        label.textContent = `+${select.value}`;
+      }
+    });
+  });
+  const dediToggle = form.querySelector('[data-dp-dedi-toggle]');
+  if (dediToggle) {
+    const box = form.querySelector(`#${dediToggle.getAttribute('aria-controls')}`);
+    dediToggle.addEventListener('change', () => {
+      if (!box) {
+        return;
+      }
+      box.hidden = !dediToggle.checked;
+      box.querySelectorAll('input').forEach((input) => {
+        input.disabled = !dediToggle.checked;
+      });
+      if (dediToggle.checked) {
+        const field = box.querySelector('input');
+        if (field) {
+          field.focus();
+        }
+      }
+    });
+  }
+  const noteToggle = form.querySelector('[data-dp-note-toggle]');
+  if (noteToggle) {
+    const noteBox = form.querySelector(`#${noteToggle.getAttribute('aria-controls')}`);
+    noteToggle.addEventListener('click', () => {
+      const open = noteToggle.getAttribute('aria-expanded') !== 'true';
+      noteToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+      if (noteBox) {
+        noteBox.hidden = !open;
+        const field = noteBox.querySelector('textarea');
+        if (field) {
+          field.disabled = !open;
+          if (open) {
+            field.focus();
+          }
+        }
+      }
+    });
+  }
   form.querySelectorAll('input, textarea').forEach((input) => {
     if (input.name && !['amount', 'addon_amount'].includes(input.name)) {
       input.addEventListener('input', () => {
@@ -252,7 +390,7 @@ export function createForm(root, hooks = {}) {
           values[el.name] = el.value;
         }
       } else {
-        values[el.name] = el.value;
+        values[el.name] = el.type === 'tel' ? phoneValue(el) : el.value;
       }
     });
     if (amountInput && !hiddenAmount && state.preset === null) {
@@ -268,7 +406,7 @@ export function createForm(root, hooks = {}) {
         .map((holder) => {
           const row = {};
           holder.querySelectorAll('[data-dp-holder-field]').forEach((input) => {
-            row[input.dataset.dpHolderField] = input.value;
+            row[input.dataset.dpHolderField] = input.type === 'tel' ? phoneValue(input) : input.value;
           });
           return row;
         });
@@ -284,28 +422,30 @@ export function createForm(root, hooks = {}) {
   const validateStep = () => {
     const errors = {};
     const section = sections[state.step];
-    const id = stepId(state.step);
-    if (id === 'amount') {
-      if (!derived) {
+    if (!section) {
+      return errors;
+    }
+    // Tutar kontrolleri: tutarı bağışçının seçtiği adımda ya da tutarla bilgilerin tek adım olduğu formlarda.
+    if (section.querySelector('[data-dp-amounts], [data-dp-qtyset], [data-dp-addon]')) {
+      if (!derived && section.querySelector('[data-dp-amounts]')) {
         if (state.amount === null || !(state.amount > 0)) {
           errors.amount = form.dataset.msgAmount || '';
         } else if (state.amount < Math.max(minAmount, 0.01)) {
           errors.amount = form.dataset.msgMin || '';
         }
       }
-      if (state.addon && addonFixed <= 0) {
+      if (state.addon && addonFixed <= 0 && section.querySelector('[data-dp-addon]')) {
         const value = addonValue();
         if (value === null || !(value > 0) || (addonMin > 0 && value < addonMin)) {
           errors.addon_amount = form.dataset.msgAddon || '';
         }
       }
-    } else if (section) {
-      section.querySelectorAll('input[required]:not(:disabled), textarea[required]:not(:disabled)').forEach((input) => {
-        if (input.value.trim() === '') {
-          errors[input.name] = input.dataset.requiredMsg || '';
-        }
-      });
     }
+    section.querySelectorAll('input[required]:not(:disabled), textarea[required]:not(:disabled)').forEach((input) => {
+      if (input.value.trim() === '') {
+        errors[input.name] = input.dataset.requiredMsg || '';
+      }
+    });
     return errors;
   };
 
@@ -346,8 +486,18 @@ export function createForm(root, hooks = {}) {
     }
   };
 
+  let addOnly = false;
+  if (addCart) {
+    addCart.addEventListener('click', () => {
+      addOnly = true;
+      form.requestSubmit();
+    });
+  }
+
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
+    const onlyAdd = addOnly;
+    addOnly = false;
     if (state.status === 'submitting') {
       return;
     }
@@ -383,6 +533,22 @@ export function createForm(root, hooks = {}) {
         throw new Error('cart');
       }
       dispatch({ type: 'submitDone' });
+      if (onlyAdd) {
+        form.reset();
+        form.querySelectorAll('[data-dp-dedi-toggle], [data-dp-note-toggle]').forEach((el) => {
+          if (el.matches('[data-dp-dedi-toggle]')) {
+            el.dispatchEvent(new Event('change'));
+          } else if (el.getAttribute('aria-expanded') === 'true') {
+            el.click();
+          }
+        });
+        state = initialState(seed);
+        paint();
+        announce(form.dataset.msgAdded || '');
+        document.dispatchEvent(new CustomEvent('donation-panel:cart-added', { detail: { productId: Number(productId) } }));
+        root.dispatchEvent(new CustomEvent('dp:added', { bubbles: true }));
+        return;
+      }
       if (hooks.onDone) {
         hooks.onDone(root);
       }

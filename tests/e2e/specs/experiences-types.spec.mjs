@@ -65,7 +65,7 @@ const unitOf = async (page) => Number(await page.locator('[data-dp-form]').getAt
  * @param {string} text Beklenen toplam (yalnız rakamlar karşılaştırılır).
  */
 async function expectTotal(page, text) {
-  await expect.poll(async () => digits(await page.locator('[data-dp-total]').innerText())).toBe(digits(text));
+  await expect.poll(async () => digits(await page.locator('[data-dp-total]').textContent())).toBe(digits(text));
 }
 
 /**
@@ -94,7 +94,8 @@ test.describe('bağış türleri (yeni motor)', () => {
   test('sabit tutar: adet seçici toplamı günceller, sepette adet ve tutar doğru', async ({ page }) => {
     await load(page, 'fixed');
     await expect(page.locator('[data-dp-qty-box]')).toBeVisible();
-    await expect(page.locator('[data-dp-steplabel]')).toContainText('1');
+    await expect(page.locator('[data-dp-steplabel]')).toBeHidden();
+    await expect(page.locator('[data-dp-submit-label]')).toContainText('100');
     await expectTotal(page, '100');
     await page.locator('[data-dp-qty="1"]').click();
     await page.locator('[data-dp-qty="1"]').click();
@@ -308,6 +309,7 @@ test.describe('sipariş (HPOS, yalnız yerel)', () => {
     await page.locator('input[name="addon_amount"]').fill('25');
     await next(page);
     await fillDonor(page);
+    await page.locator('[data-dp-note-toggle]').click();
     await page.locator('textarea[name="donation_note"]').fill('Ğüşiöç ĞÜŞİÖÇ notu');
     await next(page);
     await page.waitForURL(CHECKOUT_URL, { timeout: 30000 });
