@@ -159,7 +159,7 @@ test.describe('yükleme', () => {
     expect(html, 'betiksiz yedek').toMatch(/<noscript><link[^>]+donation-modal\.[0-9a-f]+\.css/);
     const critical = (html.match(/<style id="wdp-critical-bundle">([\s\S]*?)<\/style>/) || [, ''])[1];
     expect(critical.length, 'kritik stil boyutu (ham bayt)').toBeLessThan(120000);
-    const targets = [IDS.fixedPath, IDS.customPath, IDS.sharesPath, IDS.campaignPath].filter(Boolean);
+    const targets = [IDS.fixedPath, IDS.customPath, IDS.sharesPath, IDS.campaignPath, '/shop/'].filter(Boolean);
     const shoot = async (url, withFull) => {
       const p = await page.context().newPage();
       await p.emulateMedia({ reducedMotion: 'reduce' });
@@ -169,6 +169,8 @@ test.describe('yükleme', () => {
       await p.goto(url, { waitUntil: 'load' });
       if (withFull) await p.waitForFunction(() => window.WDPStyles && window.WDPStyles.isReady());
       else await p.waitForFunction(() => window.WDPStyles && window.WDPStyles.isReady()); // paket isteği düşer; yükleyici bitirir
+      // WooCommerce "ilgili/yukarı satış" ürünleri her yüklemede rastgele seçilir: ilk boyama karşılaştırmasında yok sayılır.
+      await p.addStyleTag({ content: 'section.related,.related.products,.up-sells,.upsells,.wp-block-woocommerce-related-products{display:none!important}' });
       await p.waitForTimeout(400);
       const png = await p.screenshot({ fullPage: true });
       await p.close();
