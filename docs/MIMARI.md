@@ -1115,3 +1115,11 @@ Etkiler: plugins_loaded 10-19 arasında çalışan bir snippet/eklenti kısa kod
 - Eski ekranın (`wdp-popup-settings`) üstünde "Yeni Bağış Paneli deneyimi hazır" kutusu (WP `notice`); kullanıcı başına kapatma: user meta `donation_panel_ui_notice_dismissed` (POST + nonce).
 - Yeni ekranın üstünde "Klasik ekrana dön" (POST) + "12.0'da kaldırılacak"; motor seçici etiketleri "Classic form engine (will be removed in 12.0)" / "New form engine".
 - Eklentiler listesi "Settings" bağlantısı `admin.ui` durumuna göre `donation-panel` ya da `wdp-popup-settings` sayfasına gider. Testler: `tests/unit/E8/E8QUiSwitchTest.php`, `admin-e7` (E8Q senaryoları).
+
+## Minimum sürüm gerçek testi (K4, tek seferlik, yerel)
+
+`node scripts/min-versions.mjs --wp 6.3.5 --wc 8.0.3 [--theme storefront|twentytwentythree] [--store gbp|eur|...] [--checkout classic|blocks] [--hpos 0|1] [--port 8974] [--clean] [--no-reinstall]`
+
+- Yalnız yerel: `build/min-versions/<kimlik>/` altında belirli WP + WooCommerce sürümüyle SQLite WP kurar (zip'ler yalnız wordpress.org / downloads.wordpress.org; indirilenler çalıştırılmaz), mevcut matris senaryolarını (`matrix-scenarios.mjs`, iPhone) koşar, `php-errors.log` içinde `plugins/woo-donation-popup` satırlarını sayar, `sonuc.json` yazar.
+- Makinede yalnız PHP 8.4 var; PHP 7.4 için gerçek koşu yapılmadı. Statik kanıt: `phpcs --standard=PHPCompatibilityWP --runtime-set testVersion 7.4-` eklenti kodunda 0 sorun.
+- Bulgu: WooCommerce 8.0–8.4 `AddToCartForm.php` (`add_is_descendent_of_single_product_block_hidden_input_to_product_form`) `preg_replace` ile `<button type="submit"…>` kalıbının TÜM eşleşmelerini ilk düğmeyle değiştirir; blok tema ürün şablonunda formda iki submit düğmesi varsa "ödemeye git" düğmesi kaybolur. Ayrıntı ve çözüm önerisi: build/handoff/RAPOR-K4.md.
