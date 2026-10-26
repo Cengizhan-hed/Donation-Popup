@@ -335,8 +335,8 @@ wdp_smoke_assert(
     'RTL CSS is on the frontend stack'
 );
 wdp_smoke_assert(
-    defined('WDP_VERSION') && WDP_VERSION === '10.35.2',
-    'Plugin version is 10.35.2'
+    defined('WDP_VERSION') && WDP_VERSION === '11.0.0',
+    'Plugin version is 11.0.0'
 );
 wdp_smoke_assert(
     file_exists(WDP_PLUGIN_DIR . 'templates/woocommerce/single-product/add-to-cart/simple.php'),
