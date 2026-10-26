@@ -7,7 +7,7 @@
  *   node scripts/admin-screens.mjs --env local
  *   CLAUDECODE=1 npm run admin:screens -- --env staging-hedef --check-doc docs/CANLIYA-ALMA.md   (yalnız Claude)
  *
- * Bayraklar: --env local|staging-hedef|ikram-aid, --check-doc <md>, --out-dir <klasör>, --strict
+ * Bayraklar: --env local|staging-hedef|ikram-aid, --ui new|legacy (yalnız yerel), --check-doc <md>, --out-dir <klasör>, --strict
  * (belgede bulunamayan yol varsa çıkış kodu 3), --no-shots (yerelde ekran görüntüsünü kapatır).
  * Çıktı: build/handoff/admin-screens-<env>.json + .md. Ekran görüntüsü YALNIZ yerelde.
  */
@@ -17,7 +17,7 @@ import { fileURLToPath } from 'node:url';
 import { chromium } from '@playwright/test';
 import { loadE2EEnv, ROOT, beginNavCache, endNavCache } from '../tests/e2e/helpers/env.mjs';
 import { loadProfile, isRemoteProfile, setActiveProfile } from '../tests/e2e/helpers/profile.mjs';
-import { ensureAuth, getAuthFile, getInMemoryAdminCookies } from '../tests/e2e/helpers/auth.mjs';
+import { ensureAuth, getAuthFile, getInMemoryAdminCookies, resetAuthStateForTests } from '../tests/e2e/helpers/auth.mjs';
 import { applyNetworkGuard, guardOptionsFromEnv } from '../tests/e2e/helpers/network-guard.mjs';
 import { withEnvRunLock } from '../tests/e2e/helpers/env-lock.mjs';
 import { loadFixtures, fixtureProductRecords } from '../tests/e2e/helpers/fixtures.mjs';
@@ -97,10 +97,12 @@ function pickProductId(profileId) {
 async function crawl(ctx, o) {
   const page = await ctx.newPage();
   const blocked = [];
+  const blockedSample = [];
   await ctx.route('**/*', (route) => {
     const req = route.request();
     if (!isReadMethod(req.method())) {
-      blocked.push(`${req.method()} ${new URL(req.url()).pathname}`);
+      blocked.push(req.method());
+      if (blockedSample.length < 5) blockedSample.push(`${req.method()} ${new URL(req.url()).pathname}`);
       return route.abort('blockedbyclient');
     }
     return route.fallback();
@@ -147,16 +149,17 @@ async function crawl(ctx, o) {
       buttons: data ? data.buttons : [],
       productTabs: data ? data.productTabs : [],
       pluginRow: data ? data.pluginRow : null,
+      pluginRowCount: data ? data.pluginRowCount : undefined,
     };
     if (sc.sectionProbe && data && status === 'tamam') {
       const pool = [...row.headings, ...row.buttons, ...row.tabs].map(norm);
-      row.sectionFound = pool.some((t) => t.includes('donation panel') || t.includes('donation popup'));
+      row.sectionFound = pool.some((t) => /donation|bağış|bagis/.test(t));
     }
     screens.push(row);
     await sleep(NAV_DELAY_MS);
   }
   await page.close();
-  return { screens, menu, blocked };
+  return { screens, menu, blocked, blockedSample };
 }
 
 async function main() {
@@ -172,6 +175,7 @@ async function main() {
   const remote = isRemoteProfile(profile);
   const docArg = arg(argv, '--check-doc');
   const outDir = path.resolve(ROOT, arg(argv, '--out-dir', 'build/handoff'));
+  const tag = envId + (!remote && arg(argv, '--ui') ? `-ui-${arg(argv, '--ui')}` : '');
   const wantShots = !remote && !argv.includes('--no-shots');
 
   if (remote) {
@@ -193,6 +197,16 @@ async function main() {
       const { prepareLocalFullStack } = await import('../tests/e2e/helpers/matrix-setup.mjs');
       const stack = await prepareLocalFullStack(port);
       localServer = stack.server;
+      const ui = arg(argv, '--ui');
+      if (ui) {
+        if (!/^(new|legacy)$/.test(ui)) fail('--ui yalnız new|legacy olabilir.', 2);
+        // Yalnız yerel işçi: yönetici ekranı kipini yerel seçenekte ayarlar (uzakta bu yol yok).
+        const mu = path.join(stack.wpDir, 'wp-content/mu-plugins');
+        fs.mkdirSync(mu, { recursive: true });
+        fs.copyFileSync(path.join(ROOT, 'tests/e2e/helpers/wdp-admin-sim.php'), path.join(mu, 'wdp-admin-sim.php'));
+        const r = await fetch(`http://127.0.0.1:${port}/?dp_ad_reset=1&ui=${ui}`);
+        if (!r.ok) fail(`--ui ${ui}: sıfırlama yanıtı ${r.status}`);
+      }
       env = loadE2EEnv({
         envId: 'local',
         parsed: { E2E_USER: 'admin', E2E_PASS: 'admin', E2E_BASE_URL: `http://127.0.0.1:${port}` },
@@ -221,6 +235,8 @@ async function main() {
           }
         }
         beginNavCache(`screens-${Date.now()}`);
+        // Yerel işçi her koşuda yeniden kurulur: eski oturum işareti geçersizdir (uzakta dokunulmaz).
+        if (!remote) resetAuthStateForTests();
         await ensureAuth(env);
         const mem = getInMemoryAdminCookies();
         const browser = await chromium.launch();
@@ -233,7 +249,7 @@ async function main() {
           if (mem && mem.length) await ctx.addCookies(mem);
           let shotDir = null;
           if (wantShots) {
-            shotDir = path.join(outDir, `admin-screens-${envId}-shots`);
+            shotDir = path.join(outDir, `admin-screens-${tag}-shots`);
             fs.rmSync(shotDir, { recursive: true, force: true });
             fs.mkdirSync(shotDir, { recursive: true });
           }
@@ -250,6 +266,7 @@ async function main() {
           menu: result.menu,
           screens: result.screens,
           blockedNonGet: result.blocked.length,
+          blockedSample: result.blockedSample,
         };
         if (docArg) {
           const docFile = path.resolve(ROOT, docArg);
@@ -258,8 +275,8 @@ async function main() {
           report.docCheck = { doc: path.relative(ROOT, docFile), ...cmp };
         }
         fs.mkdirSync(outDir, { recursive: true });
-        fs.writeFileSync(path.join(outDir, `admin-screens-${envId}.json`), JSON.stringify(report, null, 2) + '\n');
-        fs.writeFileSync(path.join(outDir, `admin-screens-${envId}.md`), renderMarkdown(report));
+        fs.writeFileSync(path.join(outDir, `admin-screens-${tag}.json`), JSON.stringify(report, null, 2) + '\n');
+        fs.writeFileSync(path.join(outDir, `admin-screens-${tag}.md`), renderMarkdown(report));
 
         let rc = 0;
         if (canaryBefore) {
@@ -281,7 +298,7 @@ async function main() {
         if (report.docCheck) {
           for (const m of report.docCheck.missing) console.log(`  bulunamadı (satır ${m.line}): ${m.raw}  -> "${m.missingSegment}"`);
         }
-        console.log(`Çıktı: ${path.relative(ROOT, path.join(outDir, `admin-screens-${envId}.md`))}`);
+        console.log(`Çıktı: ${path.relative(ROOT, path.join(outDir, `admin-screens-${tag}.md`))}`);
         if (!rc && bad.length) rc = 1;
         if (!rc && argv.includes('--strict') && report.docCheck && report.docCheck.missing.length) rc = 3;
         return rc;

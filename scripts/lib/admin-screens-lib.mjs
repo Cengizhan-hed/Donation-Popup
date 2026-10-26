@@ -283,7 +283,11 @@ export function collectScreenDom(opts) {
   }
   const wrap = document.querySelector('#wpbody-content') || document.body;
   if (opts.pluginRowOnly) {
-    const row = document.querySelector(`tr[data-slug="${opts.pluginSlug}"]`);
+    const row =
+      document.querySelector(`tr[data-slug="${opts.pluginSlug}"]`) ||
+      document.querySelector(`tr[data-plugin^="${opts.pluginSlug}/"]`) ||
+      document.querySelector(`#the-list tr.${opts.pluginSlug}`);
+    out.pluginRowCount = document.querySelectorAll('#the-list tr').length;
     if (row) {
       const ver = clean(row.querySelector('.plugin-version-author-uri'));
       out.pluginRow = {
@@ -295,7 +299,11 @@ export function collectScreenDom(opts) {
     out.title = clean(document.querySelector('.wrap h1'));
     return out;
   }
-  out.title = clean(wrap.querySelector('h1, .wp-heading-inline, h2'));
+  const visible = (el) => !!(el && (el.offsetWidth || el.offsetHeight || el.getClientRects().length));
+  const titleEl =
+    [...wrap.querySelectorAll('.wrap > h1, h1.wp-heading-inline, .wrap h1, h1')].find(visible) ||
+    [...wrap.querySelectorAll('.wrap > h2, h2')].find(visible);
+  out.title = clean(titleEl);
   out.tabs = uniq([...wrap.querySelectorAll('.nav-tab, .nav-tab-wrapper a, [role="tab"], .subsubsub a, .wc-tabs a')].map(clean));
   out.headings = uniq([...wrap.querySelectorAll('h1, h2, h3, h4, legend, summary, .postbox .hndle')].map(clean));
   out.labels = uniq([...wrap.querySelectorAll('label, .form-table th, .form-table legend, th.titledesc')].map(clean));
@@ -330,6 +338,7 @@ export function renderMarkdown(report) {
     L.push(`### ${s.note || s.id}`);
     L.push(`- Yol: \`${s.path}\` — durum: ${s.status}`);
     if (s.title) L.push(`- Sayfa başlığı: ${s.title}`);
+    if (s.pluginRowCount !== undefined && !s.pluginRow) L.push(`- Eklenti satırı bulunamadı (listedeki satır sayısı: ${s.pluginRowCount})`);
     if (s.pluginRow) L.push(`- Eklenti satırı: ${s.pluginRow.name} ${s.pluginRow.version} (${s.pluginRow.active ? 'etkin' : 'etkin değil'})`);
     if (s.tabs && s.tabs.length) L.push(`- Sekmeler: ${s.tabs.join(' | ')}`);
     if (s.productTabs && s.productTabs.length) L.push(`- Ürün veri sekmeleri: ${s.productTabs.join(' | ')}`);
