@@ -293,6 +293,7 @@ final class Donor_Account_Module implements Module_Interface {
 			return array();
 		}
 		$name = trim( (string) $user->display_name );
+		$name = '' !== $name ? $name : trim( (string) $user->user_login );
 		if ( '' === $name ) {
 			return array();
 		}
