@@ -108,6 +108,6 @@ html.dp-sc-lock { overflow: hidden; }
 
 /* Koyu mod (en sonda: özgüllük sırası) */
 @media (prefers-color-scheme: dark) {
-  :root:not([data-dp-scheme="light"]) .dp-sc, :root:not([data-dp-scheme="light"]) .dp-sc__trigger { --sc-surface: #14181f; --sc-text: #eef1f5; --sc-primary: color-mix(in oklab, var(--dp-bridge-primary, #0f766e) 78%, #fff); --sc-danger: #ff8f86; }
+  :root:not([data-dp-scheme="light"]) .dp-sc, :root:not([data-dp-scheme="light"]) .dp-sc__trigger { --sc-surface: #14181f; --sc-text: #eef1f5; --sc-primary: color-mix(in oklab, var(--dp-bridge-primary, var(--wp--preset--color--primary, var(--wp--preset--color--accent-1, #0f766e))) 78%, #fff); --sc-danger: #ff8f86; }
 }
-:root[data-dp-scheme="dark"] .dp-sc, :root[data-dp-scheme="dark"] .dp-sc__trigger { --sc-surface: #14181f; --sc-text: #eef1f5; --sc-primary: color-mix(in oklab, var(--dp-bridge-primary, #0f766e) 78%, #fff); --sc-danger: #ff8f86; }
+:root[data-dp-scheme="dark"] .dp-sc, :root[data-dp-scheme="dark"] .dp-sc__trigger { --sc-surface: #14181f; --sc-text: #eef1f5; --sc-primary: color-mix(in oklab, var(--dp-bridge-primary, var(--wp--preset--color--primary, var(--wp--preset--color--accent-1, #0f766e))) 78%, #fff); --sc-danger: #ff8f86; }
