@@ -39,7 +39,7 @@ export function qualityConfigs() {
  * @param {{engine?:string, modules?:string, override?:boolean}} state Durum.
  */
 export function setQualityState(wpDir, state) {
-  const merged = { ...state, ...(process.env.WDP_Q_NODEFER === '1' ? { nodefer: true } : {}), ...(process.env.WDP_Q_NOSPLIT === '1' ? { nosplit: true } : {}) };
+  const merged = { ...state, ...(process.env.WDP_Q_NODEFER === '1' ? { nodefer: true } : {}), ...(process.env.WDP_Q_NOSPLIT === '1' ? { nosplit: true } : {}), ...(process.env.WDP_Q_NOSTYLEDEFER === '1' ? { nostyledefer: true } : {}) };
   fs.writeFileSync(path.join(wpDir, 'wp-content/wdp-quality-state.json'), JSON.stringify(merged));
 }
 

@@ -28,6 +28,43 @@ class WDP_Assets_Defer {
 	 */
 	public static function init() {
 		add_filter( 'script_loader_tag', array( __CLASS__, 'filter_script_tag' ), 20, 3 );
+		add_filter( 'style_loader_tag', array( __CLASS__, 'filter_style_tag' ), 20, 4 );
+	}
+
+	/**
+	 * K3: tam ön yüz paketi (34 KB gzip) ilk boyamayı ENGELLEMEZ. İlk görünümdeki kuralların alt kümesi (derleme
+	 * çıktısı `critical.*.css`) bağlantının hemen önünde satır içi basılır; tam paket `media="print"` + `onload` ile
+	 * sonradan yüklenir ve aynı yerde, aynı sırada devreye girer (basamaklı sıra özgün düzenle aynı kalır; satır içi
+	 * ayar CSS'i bağlantıdan sonra gelmeye devam eder). Betiksiz tarayıcı için `<noscript>` yedeği. Kapatma:
+	 * `add_filter( 'wdp_defer_frontend_styles', '__return_false' )` ya da `wdp_defer_frontend_assets`.
+	 *
+	 * @param string $html   Bağlantı etiketi.
+	 * @param string $handle Tutamaç.
+	 * @param string $href   Adres.
+	 * @param string $media  Ortam.
+	 * @return string
+	 */
+	public static function filter_style_tag( $html, $handle, $href = '', $media = 'all' ) {
+		if ( WDP_Assets::FRONTEND_CSS_HANDLE !== $handle || 'all' !== $media || false === strpos( $html, "media='all'" ) ) {
+			return $html;
+		}
+		if ( ! self::is_active() ) {
+			return $html;
+		}
+		/**
+		 * Tam ön yüz stil paketinin ilk boyamayı engellemeden yüklenmesi (varsayılan açık).
+		 *
+		 * @param bool $defer Ertele.
+		 */
+		if ( ! apply_filters( 'wdp_defer_frontend_styles', true ) ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- wdp_ öneki eklentiye ait.
+			return $html;
+		}
+		$critical = WDP_Assets::get_critical_bundle_css();
+		if ( '' === $critical ) {
+			return $html; // Kritik alt küme yok: bölme yok, özgün engelleyici bağlantı.
+		}
+		$deferred = str_replace( "media='all'", "media='print' onload=\"this.onload=null;this.media='all'\" data-wdp-defer-css", $html );
+		return '<style id="wdp-critical-bundle">' . $critical . "</style>\n" . $deferred . '<noscript>' . $html . "</noscript>\n";
 	}
 
 	/**

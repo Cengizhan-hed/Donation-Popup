@@ -43,6 +43,9 @@ async function main() {
         custom: w.probe.products.custom.id,
         fixed: w.probe.products.fixed.id,
         fixedPath: w.probe.products.fixed.path,
+        customPath: w.probe.products.custom.path,
+        sharesPath: w.probe.products.shares && w.probe.products.shares.path,
+        campaignPath: w.probe.products.campaign.path,
         campaign: w.probe.products.campaign.id,
       };
       const checkoutPath = new URL(w.probe.checkoutUrl).pathname;

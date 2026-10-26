@@ -130,11 +130,35 @@ foreach (glob($outDir . '/donation-modal.*.css') ?: array() as $oldFile) {
     }
 }
 
+// K3: ilk görünüm kritik alt kümesi (satır içi basılır; tam paket engelleyici olmadan sonradan yüklenir).
+// Ayıklayıcı (Node + Playwright Chromium) yoksa/başarısızsa bölme yapılmaz: tek paketle devam (geriye dönük güvenli).
+$criticalName = null;
+foreach (glob($outDir . '/critical.*.css') ?: array() as $oldCritical) {
+    @unlink($oldCritical);
+}
+$criticalTmp  = $outDir . '/critical.tmp.css';
+$criticalCmd  = 'node ' . escapeshellarg($root . '/tools/css-critical/build-critical.mjs') . ' ' . escapeshellarg($outPath) . ' ' . escapeshellarg($criticalTmp) . ' 2>&1';
+$criticalOut  = array();
+$criticalExit = 1;
+@exec($criticalCmd, $criticalOut, $criticalExit);
+if ($criticalExit === 0 && is_file($criticalTmp) && filesize($criticalTmp) > 0) {
+    $criticalCss  = (string) file_get_contents($criticalTmp);
+    $criticalName = 'critical.' . substr(sha1($criticalCss), 0, 12) . '.css';
+    rename($criticalTmp, $outDir . '/' . $criticalName);
+    fwrite(STDOUT, implode("\n", $criticalOut) . "\n");
+} else {
+    @unlink($criticalTmp);
+    fwrite(STDERR, 'Kritik CSS üretilmedi (bölme yok, tek paket): ' . implode(' ', $criticalOut) . "\n");
+}
+
 $manifest = array(
     'file' => 'build/' . $fileName,
     'hash' => $hash,
     'generated_at' => gmdate('c'),
 );
+if ($criticalName !== null) {
+    $manifest['critical'] = 'build/' . $criticalName;
+}
 $manifestJson = json_encode($manifest, JSON_UNESCAPED_SLASHES) . "\n";
 
 if (file_put_contents($outDir . '/manifest.json', $manifestJson) === false) {

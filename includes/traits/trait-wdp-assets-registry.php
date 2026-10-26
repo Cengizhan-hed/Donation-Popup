@@ -140,10 +140,42 @@ trait WDP_Assets_Registry_Trait {
 			return null;
 		}
 
+		$critical = '';
+		if ( ! empty( $manifest['critical'] ) && is_string( $manifest['critical'] ) ) {
+			$critical_rel = ltrim( $manifest['critical'], '/' );
+			if ( 0 === strpos( $critical_rel, 'build/critical.' ) && '.css' === substr( $critical_rel, -4 ) && false === strpos( $critical_rel, '..' ) && file_exists( $plugin_dir . 'assets/css/' . $critical_rel ) ) {
+				$critical = $critical_rel;
+			}
+		}
+
 		return array(
-			'file' => $rel_file,
-			'hash' => isset( $manifest['hash'] ) && is_string( $manifest['hash'] ) ? $manifest['hash'] : '',
+			'file'     => $rel_file,
+			'hash'     => isset( $manifest['hash'] ) && is_string( $manifest['hash'] ) ? $manifest['hash'] : '',
+			'critical' => $critical,
 		);
+	}
+
+	/**
+	 * K3: ilk görünüm kritik CSS'i (derleme çıktısı; tam paketin alt kümesi). Yoksa boş (bölme yapılmaz).
+	 *
+	 * @return string
+	 */
+	public static function get_critical_bundle_css() {
+		static $css = null;
+		if ( null !== $css ) {
+			return $css;
+		}
+		$css        = '';
+		$plugin_dir = defined( 'WDP_PLUGIN_DIR' ) ? WDP_PLUGIN_DIR : plugin_dir_path( dirname( __DIR__ ) );
+		$manifest   = self::get_built_css_manifest( $plugin_dir );
+		if ( is_array( $manifest ) && ! empty( $manifest['critical'] ) ) {
+			$raw = file_get_contents( $plugin_dir . 'assets/css/' . $manifest['critical'] ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- yerel eklenti dosyası.
+			if ( is_string( $raw ) ) {
+				// Bir <style> bloğunu erken kapatamasın.
+				$css = trim( str_ireplace( '</style', '<\/style', $raw ) );
+			}
+		}
+		return $css;
 	}
 	private static function maybe_refresh_asset_revision_from_files( $plugin_dir ) {
 		static $checked = false;

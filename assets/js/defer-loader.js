@@ -74,6 +74,41 @@
     });
   }
 
+  // K3: tam stil paketi `media="print"` ile ilk boyamayı engellemeden iner (PHP: WDP_Assets_Defer::filter_style_tag).
+  // Açılır pencere/panel/teşekkür stilleri bu pakette; paket işlevi başlamadan hazır olmalı (stilsiz yanıp sönme olmasın).
+  function whenStyles(done) {
+    var links = d.querySelectorAll('link[data-wdp-defer-css]');
+    var left = 0;
+    var finished = false;
+    function finish() {
+      if (!finished) {
+        finished = true;
+        done();
+      }
+    }
+    function one() {
+      left -= 1;
+      if (left <= 0) {
+        finish();
+      }
+    }
+    Array.prototype.forEach.call(links, function (link) {
+      if (link.media !== 'all') {
+        link.media = 'all'; // onload işleyicisi (CSP/önbellek eklentisi yüzünden) çalışmadıysa devreye al.
+      }
+      if (!link.sheet) {
+        left += 1;
+        link.addEventListener('load', one);
+        link.addEventListener('error', one);
+      }
+    });
+    if (left <= 0) {
+      finish();
+      return;
+    }
+    w.setTimeout(finish, 4000); // Ağ takılırsa işlev yine de başlar.
+  }
+
   function load() {
     if (state !== 'idle') {
       return;
@@ -82,12 +117,12 @@
     w.clearTimeout(timer);
     var nodes = Array.prototype.slice.call(pending());
     if (!nodes.length) {
-      afterReady();
+      whenStyles(afterReady);
       return;
     }
     (function next(i) {
       if (i >= nodes.length) {
-        afterReady();
+        whenStyles(afterReady);
         return;
       }
       var node = nodes[i];
