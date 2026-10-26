@@ -331,29 +331,24 @@ function mountPage(root) {
   const list = root.querySelector('[data-dp-acc-list]');
   const more = root.querySelector('[data-dp-acc-more]');
 
-  // "Tekrarla": aynı tutarla bağışı sepete ekler (formun kullandığı cart/add ucu; sunucuda doğrulanır) ve ödemeye gider.
-  // Eklenemezse (zorunlu alan vb.) bağlantı olduğu gibi ürün sayfasına götürür.
+  // "Tekrarla": bağışı aynı tutarla sepete ekler (sunucu kendi siparişinden okur) ve ödemeye gider.
+  // Eklenemezse (para birimi, hisse vb.) bağlantı olduğu gibi ürün sayfasına götürür.
   root.addEventListener('click', async (e) => {
-    const repeat = e.target.closest('[data-dp-acc-repeat][data-product][data-amount]');
-    const addUrl = root.dataset.dpAccCartAdd || '';
-    if (!repeat || !addUrl || e.metaKey || e.ctrlKey || e.shiftKey) {
+    const repeat = e.target.closest('[data-dp-acc-repeat][data-product]');
+    if (!repeat || e.metaKey || e.ctrlKey || e.shiftKey) {
       return;
     }
     e.preventDefault();
+    const card = repeat.closest('[data-dp-acc-card]');
     repeat.setAttribute('aria-busy', 'true');
     try {
       const nonce = await freshNonce(base);
-      const response = await window.fetch(addUrl, {
+      const r = await call(base, 'repeat', {
         method: 'POST',
-        credentials: 'same-origin',
-        headers: { 'Content-Type': 'application/json', ...(nonce ? { 'X-WP-Nonce': nonce } : {}) },
-        body: JSON.stringify({
-          product_id: Number.parseInt(repeat.dataset.product, 10),
-          amount: repeat.dataset.amount,
-          submission_key: `again-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-        }),
+        nonce,
+        body: { order_id: Number(card ? card.dataset.order : 0), product_id: Number(repeat.dataset.product) },
       });
-      if (response.ok && root.dataset.dpAccCheckout) {
+      if (r.ok && root.dataset.dpAccCheckout) {
         window.location.assign(root.dataset.dpAccCheckout);
         return;
       }

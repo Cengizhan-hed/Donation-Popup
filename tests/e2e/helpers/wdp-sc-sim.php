@@ -25,6 +25,10 @@ add_action(
 			$id     = (int) $_GET['dp_sc_add']; // phpcs:ignore
 			$amount = isset( $_GET['amount'] ) ? (float) $_GET['amount'] : 50.0; // phpcs:ignore
 			$data   = array();
+			if ( ! empty( $_GET['name'] ) ) { // phpcs:ignore
+				$data['full_name'] = sanitize_text_field( wp_unslash( (string) $_GET['name'] ) ); // phpcs:ignore
+				$data['phone']     = '+447700900123';
+			}
 			if ( ! empty( $_GET['dedication'] ) ) { // phpcs:ignore
 				$data['dedication'] = sanitize_text_field( wp_unslash( (string) $_GET['dedication'] ) ); // phpcs:ignore
 			}

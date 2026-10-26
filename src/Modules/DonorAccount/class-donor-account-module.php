@@ -268,7 +268,6 @@ final class Donor_Account_Module implements Module_Interface {
 			$page['pages'],
 			array(
 				'rest'     => $this->rest_base(),
-				'cart-add' => esc_url_raw( rest_url( 'donation-panel/v1/cart/add' ) ),
 				'checkout' => function_exists( 'wc_get_checkout_url' ) ? esc_url_raw( wc_get_checkout_url() ) : '',
 				'msg-fail' => __( 'Something went wrong. Please try again.', 'woo-donation-popup' ),
 				'msg-sent' => __( 'We sent a verification link to your account email.', 'woo-donation-popup' ),

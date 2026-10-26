@@ -14,6 +14,8 @@
 namespace DonationPanel\Modules\DonorAccount;
 
 use DonationPanel\Http\Rest_Controller;
+use DonationPanel\Modules\Experiences\Form_Controller;
+use DonationPanel\WooCommerce\Cart;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -38,6 +40,7 @@ class Account_Controller extends Rest_Controller {
 			'/account/register'           => array( 'POST', 'register', $public ),
 			'/account/reset'              => array( 'POST', 'reset', $public ),
 			'/account/donations'          => array( 'GET', 'donations', $member ),
+			'/account/repeat'             => array( 'POST', 'repeat', $member ),
 			'/account/link-guest'         => array( 'POST', 'link_guest', $member ),
 			'/account/link-guest/confirm' => array( 'POST', 'link_guest_confirm', $member ),
 		);
@@ -291,6 +294,74 @@ class Account_Controller extends Rest_Controller {
 				'page'  => $page['page'],
 			)
 		);
+	}
+
+	/**
+	 * Geçmiş bir bağışı aynı tutarla sepete ekler (yalnız kendi siparişi; bağışçı bilgisi o siparişten devralınır).
+	 *
+	 * @param \WP_REST_Request $request Istek (`order_id`, `product_id`).
+	 * @return \WP_REST_Response|\WP_Error
+	 */
+	public function repeat( $request ) {
+		$nonce = $this->verify_nonce( $request );
+		if ( is_wp_error( $nonce ) ) {
+			return $nonce;
+		}
+		$limited = $this->throttle( 'account_repeat', 20 );
+		if ( is_wp_error( $limited ) ) {
+			return $limited;
+		}
+		$order      = function_exists( 'wc_get_order' ) ? wc_get_order( absint( $request->get_param( 'order_id' ) ) ) : null;
+		$product_id = absint( $request->get_param( 'product_id' ) );
+		if ( ! $order || (int) $order->get_customer_id() !== get_current_user_id() || $product_id < 1 ) {
+			return $this->error( 'donation_panel_repeat_not_found', 'Donation not found.', 404 );
+		}
+		$store = function_exists( 'get_woocommerce_currency' ) ? (string) get_woocommerce_currency() : '';
+		if ( '' === $store || $store !== (string) $order->get_currency() ) {
+			return $this->error( 'donation_panel_repeat_currency', 'Please give again from the donation page.', 422 );
+		}
+		$input = null;
+		foreach ( (array) $order->get_items() as $item ) {
+			if ( ! $item instanceof \WC_Order_Item_Product || (int) $item->get_product_id() !== $product_id ) {
+				continue;
+			}
+			$data  = \WDP_Order_Meta_Keys::get_item_donation_data( $item );
+			$pick  = static function ( $key ) use ( $data ) {
+				return isset( $data[ $key ]['value'] ) && is_scalar( $data[ $key ]['value'] ) ? (string) $data[ $key ]['value'] : '';
+			};
+			$input = array(
+				'amount'              => (float) $item->get_total(),
+				'donation_full_name'  => $pick( \WDP_Order_Meta_Keys::DONOR_NAME ),
+				'donation_phone'      => $pick( \WDP_Order_Meta_Keys::DONOR_PHONE ),
+				'donation_email'      => $pick( \WDP_Order_Meta_Keys::DONOR_EMAIL ),
+				'donation_dedication' => $pick( \WDP_Order_Meta_Keys::DEDICATION ),
+				'submission_key'      => 'again-' . wp_generate_password( 12, false ),
+			);
+			break;
+		}
+		$model   = Form_Controller::model_for_id( $product_id );
+		$product = function_exists( 'wc_get_product' ) ? wc_get_product( $product_id ) : null;
+		if ( null === $input || empty( $model ) || ! is_object( $product ) || 'publish' !== get_post_status( $product_id ) ) {
+			return $this->error( 'donation_panel_repeat_unavailable', 'This donation cannot be repeated here.', 422 );
+		}
+		if ( null === WC()->cart && function_exists( 'wc_load_cart' ) ) {
+			wc_load_cart();
+		}
+		$result = ( new Cart() )->add_item(
+			WC()->cart,
+			$product,
+			$model,
+			array_filter(
+				$input,
+				static function ( $v ) {
+					return '' !== (string) $v;
+				}
+			)
+		);
+		if ( empty( $result['ok'] ) ) {
+			return $this->error( 'donation_panel_cart_rejected', (string) $result['message'], (int) $result['status'] );
+		}
+		return $this->respond( array( 'ok' => true ) );
 	}
 
 	/**

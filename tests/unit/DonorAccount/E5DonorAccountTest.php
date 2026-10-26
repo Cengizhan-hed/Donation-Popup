@@ -464,7 +464,7 @@ final class E5DonorAccountTest extends TestCase {
 		$this->assertStringContainsString( 'dp-ac__pill--ok', $html );
 		$this->assertStringContainsString( 'dp-ac__progress', $html );
 		$this->assertStringContainsString( 'data-dp-acc-video', $html );
-		$this->assertStringContainsString( 'data-product="12" data-amount="1000"', $html );
+		$this->assertStringContainsString( 'data-product="12"', $html );
 		$row['can_repeat'] = false;
 		$row['video_url']  = '';
 		$row['campaign']   = null;

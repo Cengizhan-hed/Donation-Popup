@@ -163,7 +163,7 @@ final class Side_Cart_Module implements Module_Interface {
 				'rest'     => esc_url_raw( rest_url( 'donation-panel/v1/side-cart' ) ),
 				'store'    => esc_url_raw( rest_url( 'wc/store/v1/' ) ),
 				'checkout' => $checkout,
-				'add'      => esc_url_raw( rest_url( 'donation-panel/v1/cart/add' ) ),
+				'add'      => esc_url_raw( rest_url( 'donation-panel/v1/side-cart/suggestion' ) ),
 				'nonce'    => esc_url_raw( rest_url( 'donation-panel/v1/nonce' ) ),
 				'failed'   => __( 'Something went wrong. Please try again.', 'woo-donation-popup' ),
 				'removed'  => __( 'Removed from your basket.', 'woo-donation-popup' ),

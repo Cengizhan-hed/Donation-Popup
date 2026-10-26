@@ -207,11 +207,7 @@ function mount(root) {
         method: 'POST',
         credentials: 'same-origin',
         headers: { 'Content-Type': 'application/json', ...(wpNonce ? { 'X-WP-Nonce': wpNonce } : {}) },
-        body: JSON.stringify({
-          product_id: Number.parseInt(control.dataset.product || '0', 10),
-          amount: control.dataset.amount || '',
-          submission_key: `sc-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-        }),
+        body: JSON.stringify({ amount: control.dataset.amount || '' }),
       });
       ok = response.ok;
     } catch {

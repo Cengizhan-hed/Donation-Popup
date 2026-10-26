@@ -210,7 +210,7 @@ test.describe('yan sepet: ek bağış önerisi ve tasarım görüntüsü (yeni t
     page.on('pageerror', (e) => errors.push(String(e)));
     await page.goto('/?dp_sc_test=1');
     await expect(page.locator('[data-dp-sc-open]')).toBeVisible({ timeout: 20000 });
-    const add = await page.request.get(`/?dp_sc_add=${PRODUCT}&amount=40`);
+    const add = await page.request.get(`/?dp_sc_add=${PRODUCT}&amount=40&name=Ayse`);
     expect((await add.json()).ok).toBe(true);
     await page.evaluate(() => document.dispatchEvent(new CustomEvent('wc-blocks_added_to_cart', { bubbles: true })));
     await expect(page.locator('[data-dp-sc-overlay].is-open')).toBeVisible();

@@ -84,4 +84,40 @@ final class Side_Cart_Suggestion {
 		}
 		return $suggestion;
 	}
+
+	/**
+	 * Sepetteki ilk bağış satırından bağışçı bilgisini (ad, telefon, e-posta) devralır; hisseli satırda ilk hissedar kullanılır.
+	 *
+	 * @param array<int|string, mixed> $cart_items WooCommerce sepet öğeleri.
+	 * @return array<string, string> `donation_full_name`, `donation_phone`, `donation_email` (bulunanlar).
+	 */
+	public static function donor_from_cart( array $cart_items ) {
+		foreach ( $cart_items as $item ) {
+			$data = is_array( $item ) && isset( $item['donation_data'] ) && is_array( $item['donation_data'] ) ? $item['donation_data'] : array();
+			$name = isset( $data['full_name'] ) && is_scalar( $data['full_name'] ) ? (string) $data['full_name'] : '';
+			$tel  = isset( $data['phone'] ) && is_scalar( $data['phone'] ) ? (string) $data['phone'] : '';
+			$mail = isset( $data['email'] ) && is_scalar( $data['email'] ) ? (string) $data['email'] : '';
+			if ( ( '' === $name || '' === $tel ) && isset( $data['shareholders'] ) && is_array( $data['shareholders'] ) ) {
+				$first = reset( $data['shareholders'] );
+				if ( is_array( $first ) ) {
+					$name = '' !== $name ? $name : ( isset( $first['name'] ) && is_scalar( $first['name'] ) ? (string) $first['name'] : '' );
+					$tel  = '' !== $tel ? $tel : ( isset( $first['phone'] ) && is_scalar( $first['phone'] ) ? (string) $first['phone'] : '' );
+					$mail = '' !== $mail ? $mail : ( isset( $first['email'] ) && is_scalar( $first['email'] ) ? (string) $first['email'] : '' );
+				}
+			}
+			if ( '' !== $name && '' !== $tel ) {
+				return array_filter(
+					array(
+						'donation_full_name' => $name,
+						'donation_phone'     => $tel,
+						'donation_email'     => $mail,
+					),
+					static function ( $value ) {
+						return '' !== (string) $value;
+					}
+				);
+			}
+		}
+		return array();
+	}
 }

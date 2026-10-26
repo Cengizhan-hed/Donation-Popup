@@ -180,7 +180,7 @@ final class Account_Renderer {
 		if ( ! empty( $row['repeat_url'] ) ) {
 			$instant  = ! empty( $row['can_repeat'] ) && ! empty( $row['product_id'] ) && ! empty( $row['amount'] );
 			$actions .= '<a class="dpx-btn dpx-btn--primary dpx-btn--sm" data-dp-acc-repeat href="' . esc_url( (string) $row['repeat_url'] ) . '"'
-				. ( $instant ? ' data-product="' . esc_attr( (string) (int) $row['product_id'] ) . '" data-amount="' . esc_attr( (string) $row['amount'] ) . '"' : '' ) . '>' . esc_html__( 'Give again', 'woo-donation-popup' ) . '</a>';
+				. ( $instant ? ' data-product="' . esc_attr( (string) (int) $row['product_id'] ) . '"' : '' ) . '>' . esc_html__( 'Give again', 'woo-donation-popup' ) . '</a>';
 		}
 		return '<article class="dp-ac__card" data-dp-acc-card data-order="' . esc_attr( (string) ( isset( $row['order_id'] ) ? (int) $row['order_id'] : 0 ) ) . '">'
 			. '<div class="dp-ac__card-main">' . $thumb
