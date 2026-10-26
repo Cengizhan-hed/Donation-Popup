@@ -72,6 +72,8 @@ add_action(
 			nocache_headers();
 			$ui = isset( $_GET['ui'] ) && 'legacy' === $_GET['ui'] ? 'legacy' : 'new';
 			wdp_ad_write_settings( $ui );
+			// E8Q: "yeni ekranı dene" kutusunun kapatma işaretini de sıfırlar (yalnız yerel test işçisi).
+			delete_metadata( 'user', 0, 'donation_panel_ui_notice_dismissed', '', true );
 			wp_send_json( array( 'ok' => true, 'ui' => $ui ) );
 		}
 		if ( isset( $_GET['dp_ad_state'] ) ) {
