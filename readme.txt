@@ -5,7 +5,7 @@ Requires at least: 5.0
 Tested up to: 7.1
 Requires PHP: 7.4
 Requires Plugins: woocommerce
-Stable tag: 10.35.2
+Stable tag: 11.0.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -44,7 +44,27 @@ Use the `[wdp_donation_form id="123"]` shortcode, the Gutenberg block or the Ele
 = Where is my privacy text? =
 Write it on your site; the form only shows a link to the page you choose.
 
+== Upgrade Notice ==
+
+= 11.0.0 =
+Major release. Settings, orders and shortcodes are kept. Upgraded sites keep the previous form and admin screens until you switch to the new experience in settings. Back up before updating.
+
 == Changelog ==
+
+= 11.0.0 =
+* New architecture: namespaced code (`DonationPanel\`), REST endpoints and a WooCommerce Store API bridge for the cart; the `wdp_render_modal` request is now protected by a nonce.
+* New donation form engine: three steps, all donation types (fixed, donor-chosen, shared, campaign, add-on).
+* Campaign goals and progress bars; impact statements; optional social proof module (real data only, no personal details).
+* Side cart, thank-you screen and tax relief declaration.
+* Donor account module (optional, off by default): sign in, register, My donations in WooCommerce My Account.
+* New admin screens with a setup wizard and a built-in guide.
+* WordPress privacy tools: personal data export and erase, plus a suggested privacy policy text. The `wdp_vid` cookie was removed.
+* Security fixes: hidden add-on products are kept out of the catalog, per-email limit on donations.
+* Performance: deferred script bundle and a fix for CSS minification.
+* WP-CLI: `wp donation-panel recalc-totals`. Preview any form with `?dp_preview=1`.
+* "Return to the old experience" option, available for one release and removed in 12.0.
+* Hooks and filters are documented in docs/HOOKS.md.
+* Compatibility: shortcodes and post meta keys are unchanged.
 
 = 10.35.2 =
 * Internal naming made generic (add-on donation); existing product settings are migrated automatically and stay readable.

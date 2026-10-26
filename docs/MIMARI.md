@@ -1,4 +1,4 @@
-# MIMARI — woo-donation-popup (10.35.1)
+# MIMARI — woo-donation-popup (11.0.0)
 
 Kalıcı mimari harita. Sonraki görevler için ilk okuma noktası.  
 Dal referansı: `docs-mimari` / commit `220f4ec`.  
