@@ -16,12 +16,12 @@ Bu belge plandır; hiçbir adım bu oturumda canlıda çalıştırılmadı. Canl
 4. Yedek tarihini ve dosya adlarını bu belgenin sonundaki kayıt tablosuna yaz.
 
 ### A2. Curcy snippet'i (güncellemeden ÖNCE)
-- [ ] Code Snippets › Yeni ekle: `docs/site-snippets/curcy-bridge.php` içeriği (ilk satırdaki `<?php` HARİÇ). "Her yerde çalıştır", etkinleştir. Eski eklentiyle de zararsızdır.
+- [ ] Snippets › Add New (Code Snippets menüsü İngilizce görünür): `docs/site-snippets/curcy-bridge.php` içeriği (ilk satırdaki `<?php` HARİÇ). "Her yerde çalıştır", etkinleştir. Eski eklentiyle de zararsızdır.
 - [ ] Sitede eski köprü (`wdp_convert_amount`) varsa içeriğini güncel dosyayla DEĞİŞTİR; iki köprüyü birlikte açma.
 - [ ] Ayrıntı: `docs/site-snippets/README.md`, `docs/site-snippets/CANLIYA-ALMA.md`.
 
 ### A3. Eklentiyi kur
-1. `npm run pack` ile üretilen zip (`build/`) Eklentiler › Yeni ekle › Eklenti yükle ile yüklenir; WordPress "mevcut sürümü değiştir" önerir, onayla.
+1. `npm run pack` ile üretilen zip (`build/`) Eklentiler › Eklenti ekle › Eklenti yükle düğmesi ile yüklenir; WordPress "mevcut sürümü değiştir" önerir, onayla.
 2. Eklentiyi devre dışı bırakmadan değiştir (ayarlar bellekte kalır; etkinleştirme göçü idempotent çalışır).
 3. Hemen sonra: Bağış Paneli ayar ekranı açılıyor mu, ürün veri sekmesi geliyor mu, ön yüzde bir bağış ürünü açılıyor mu bak. Hata varsa **G (geri dönüş)** bölümüne geç.
 4. Mevcut kurulum olduğu için yeni motor/yeni yönetici ekranı kendiliğinden AÇILMAZ (varsayılan eski deneyim). Önce A5–A7 doğrulanır; sonra Ayarlar'dan "yeni deneyim" seçilir. Sorun çıkarsa aynı ekrandan "eski deneyime dön".
@@ -61,8 +61,8 @@ Eski EUR/USD siparişleri kur meta'sı olmadan kaydedilmiş olabilir; toplam bu 
 - [ ] Ölçüm/reklam etiketleri (GA/GTM/Meta) bağış olayını yazıyor mu
 
 ### A9. Gizlilik/KVKK
-- [ ] Ayarlar › Gizlilik › Gizlilik Politikası Kılavuzu'nda "Donation Panel" bölümü görünüyor (öneri metin; sayfa metnini site sahibi yazar/günceller).
-- [ ] Araçlar › Kişisel veriyi dışa aktar / sil: bir deneme e-postası ile (kendi adresin) bağış kayıtları bulunuyor ve siliniyor (sipariş tutarı muhasebe için kalır).
+- [ ] Ayarlar › Gizlilik › "Gizlilik ilkesi rehberi" ekranında "WooCommerce Bağış Paneli" bölümü görünüyor (Türkçe yönetici dilinde eklenti adı böyle görünür) (öneri metin; sayfa metnini site sahibi yazar/günceller).
+- [ ] Araçlar › Kişisel verileri dışa aktar / Kişisel verileri sil: bir deneme e-postası ile (kendi adresin) bağış kayıtları bulunuyor ve siliniyor (sipariş tutarı muhasebe için kalır).
 - [ ] Eski `wdp_vid` çerezi artık yazılmıyor (tarayıcıda yeni çerez oluşmuyor).
 
 ### A10. Yeni deneyimi açma (isteğe bağlı, A5–A9 geçince)
@@ -87,10 +87,10 @@ Ikram (ikramaid.uk): Blocksy + Elementor, GBP, şu an "coming soon" açık. Test
 ### B1. Yayından önce (site sahibi)
 - [ ] `?dp_preview=1` ile (yönetici girişliyken) formlar, kampanya kartları, yan sepet, bağışçı hesabı gerçek ürünlerde incelendi; metinler İngilizce, GBP biçimleri doğru.
 - [ ] WooCommerce ayarları (kullanıcı yapar; eklenti değiştirmez):
-  - WooCommerce › Ayarlar › Hesaplar ve Gizlilik: "Ödeme sırasında hesap oluşturmaya izin ver", "Hesap sayfasında kayıt" gerektiği gibi ayarla (bağışçı hesabı modülü için).
+  - WooCommerce › Ayarlar › Hesaplar ve gizlilik: "Ödeme sırasında hesap oluşturmaya izin ver", "Hesap sayfasında kayıt" gerektiği gibi ayarla (bağışçı hesabı modülü için).
   - WooCommerce › Ayarlar › Genel: para birimi GBP, ondalık/ayırıcı, mağaza ülkesi (UK).
   - WooCommerce › Ayarlar › Ödemeler: gerçek ödeme yöntemleri (şu an çek/havale/kapıda ödeme; kart sağlayıcısı eklenecekse eklentisini kur).
-  - WooCommerce › Durum/Ayarlar › Site görünürlüğü: "Coming soon" kapat (yayın anı).
+  - WooCommerce › Ayarlar › Site görünürlüğü: "Çok yakında" yerine "Yayında" seç (yayın anı).
 - [ ] Gift Aid beyanı: metin yasal incelemeden geçti; bağış formunda "tax relief" ifadesi onaylandı (HMRC koşulları site sahibi sorumluluğunda; eklenti yalnız onay kutusu ve sipariş kaydı tutar).
 - [ ] Yayın öncesi uzak güvenlik ayarı: eklentinin test amaçlı `ikramaid.uk` ship izni KALDIRILIR (CLAUDE.md §2 tablosu / `remote-guard`); bundan sonra Claude bu siteye bağlanmaz.
 
@@ -113,3 +113,11 @@ Ikram (ikramaid.uk): Blocksy + Elementor, GBP, şu an "coming soon" açık. Test
 | recalc uygula | | | |
 | İlk EUR siparişi | | | |
 | İlk USD siparişi | | | |
+
+## Ekran adı doğrulaması (staging30, 2026-10-26; `npm run admin:screens`, yalnız GET)
+- Eklenti satırı: "WooCommerce Bağış Paneli 11.0.0" (Türkçe yönetici dilinde; İngilizce yönetici dilinde "Donation Panel for WooCommerce").
+- **Eski ayar ekranı (yükseltilen kurulumda ilk haliyle kalır):** WooCommerce › "Bağış Popup Ayarları" (sekmeler: Ürünler, Ürün sayfası ve liste, Tasarım, Modal, Normal, Hisseli, Progress, Başarı, Gelişmiş).
+- **Ürün düzenleme:** Ürün verisi kutusunda "Bağış" sekmesi (bağış ürünü ayarları).
+- **Gizlilik:** Ayarlar › Gizlilik › "Gizlilik ilkesi rehberi" sayfasında eklenti bölümü var. Araçlar › "Kişisel verileri dışa aktar" ve "Kişisel verileri sil".
+- **WooCommerce:** Ayarlar › sekmeler: Genel, Ürünler, Gönderim, Ödemeler, Hesaplar ve gizlilik, E-postalar, Entegrasyon, Site görünürlüğü ("Çok yakında" / "Yayında"), Satış Noktası, Gelişmiş. Hesaplar ve gizlilik: "Misafir ödemesini etkinleştir", "Ödeme sırasında oturum açmayı etkinleştir", "Müşterilerin bir hesap oluşturmasına izin verin" bölümü.
+- Yeni "Donation Panel" ekranları (`page=donation-panel`, rehber, sihirbaz) staging30'da HTTP 403: yükseltilen kurulumda `admin.ui=legacy` olduğu için kayıtlı değil (beklenen). Yeni deneyime geçiş yolu: E8Q ile eklenen düğme (eski ekranın üstündeki kutu).
