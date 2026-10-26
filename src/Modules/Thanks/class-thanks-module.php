@@ -16,7 +16,10 @@ use DonationPanel\Core\Module_Interface;
 use DonationPanel\Core\Settings;
 use DonationPanel\Frontend\Assets;
 use DonationPanel\Frontend\Template_Loader;
+use DonationPanel\Modules\Campaign\Progress_Data;
+use DonationPanel\Modules\DonorAccount\Donor_Account_Module;
 use DonationPanel\Modules\Impact\Impact_Map;
+use DonationPanel\Modules\TaxRelief\Tax_Relief_Declaration;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -105,6 +108,9 @@ final class Thanks_Module implements Module_Interface {
 			'share_text'   => Thanks_Summary::share_text( $summary ),
 			'share_url'    => $url,
 			'again_url'    => $first > 0 ? $url : '',
+			'campaign'     => $this->campaign_share( $summary, $order ),
+			'tax_relief'   => $settings->module_enabled( 'tax_relief', Settings::engine_is_new() ) && 'yes' === (string) $order->get_meta( Tax_Relief_Declaration::META_DECLARED, true ),
+			'account'      => $this->account_card( $settings ),
 		);
 
 		return $this->container->get( Template_Loader::class )->render_to_string( 'thanks/summary.php', $args );
@@ -132,5 +138,47 @@ final class Thanks_Module implements Module_Interface {
 		}
 		$described = Impact_Map::describe( (float) $line['amount'], $tiers );
 		return null === $described ? '' : (string) $described['text'];
+	}
+
+	/**
+	 * Bu bağışın kampanyadaki payı (tek bağış satırı, kampanya hedefi varsa ve para birimi mağaza birimiyse; yalnız okuma).
+	 *
+	 * @param array<string, mixed> $summary Özet.
+	 * @param object               $order   Sipariş.
+	 * @return array{before: float, after: float, share: float}|array{}
+	 */
+	private function campaign_share( array $summary, $order ) {
+		if ( 1 !== count( $summary['lines'] ) || ! $this->container->get( Settings::class )->module_enabled( 'campaign', Settings::engine_is_new() ) ) {
+			return array();
+		}
+		$store_currency = function_exists( 'get_woocommerce_currency' ) ? (string) get_woocommerce_currency() : '';
+		if ( '' === $store_currency || $store_currency !== $summary['currency'] ) {
+			return array();
+		}
+		$line = $summary['lines'][0];
+		$data = Progress_Data::for_product( (int) $line['product_id'] );
+		if ( ! is_array( $data ) || empty( $data['goal'] ) ) {
+			return array();
+		}
+		$counted = method_exists( $order, 'has_status' ) && $order->has_status( array( 'processing', 'completed', 'on-hold' ) );
+		return Thanks_Summary::contribution( (float) $data['percent'], (float) $data['goal'], (float) $line['amount'], $counted );
+	}
+
+	/**
+	 * "Bağışlarınızı takip edin" kartı: Bağışçı hesabı modülü açıksa (giriş yoksa hesap sayfası, varsa Bağışlarım).
+	 *
+	 * @param Settings $settings Ayarlar.
+	 * @return array{url: string, logged_in: bool}|array{}
+	 */
+	private function account_card( Settings $settings ) {
+		if ( ! $settings->module_enabled( 'donor_account', false ) || ! function_exists( 'wc_get_page_permalink' ) ) {
+			return array();
+		}
+		$logged_in = is_user_logged_in();
+		$url       = $logged_in ? Donor_Account_Module::donations_url() : (string) wc_get_page_permalink( 'myaccount' );
+		return '' === $url ? array() : array(
+			'url'       => $url,
+			'logged_in' => $logged_in,
+		);
 	}
 }
