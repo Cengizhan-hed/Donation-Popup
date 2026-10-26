@@ -63,7 +63,7 @@ final class Cli_Command {
 		$product = isset( $assoc_args['product'] ) ? absint( $assoc_args['product'] ) : 0;
 		$dry_run = ! empty( $assoc_args['dry-run'] );
 
-		if ( $all === ( $product > 0 ) ) {
+		if ( ( $product > 0 ) === $all ) {
 			\WP_CLI::error( 'Give exactly one of --product=<id> or --all.' );
 			return;
 		}

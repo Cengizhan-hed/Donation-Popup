@@ -67,7 +67,7 @@ final class Preview {
 		Settings::set_preview( true );
 
 		if ( ! defined( 'DONOTCACHEPAGE' ) ) {
-			define( 'DONOTCACHEPAGE', true );
+			define( 'DONOTCACHEPAGE', true ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedConstantFound -- önbellek eklentilerinin standart sabiti.
 		}
 		add_action( 'send_headers', 'nocache_headers' );
 		add_action( 'admin_bar_menu', array( __CLASS__, 'admin_bar_node' ), 100 );
