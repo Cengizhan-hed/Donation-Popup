@@ -76,55 +76,60 @@ class WDP_Lazy_Modal {
 	 * @return void
 	 */
 	public static function ajax_render() {
+		// Güvenlik kapıları try dışında: kendi yanıtını gönderip çıkar.
+		if ( ! WDP_Security::validate_request_origin() ) {
+			wp_send_json_error( array( 'message' => __( 'Invalid request origin', 'woo-donation-popup' ) ), 403 );
+		}
+		// Nonce (Faz 8): tam sayfa önbelleğinde süresi geçen nonce 403 + `code: nonce` döner; istemci
+		// (assets/js/src/lazy-modal.js) yeni nonce alıp bir kez yeniden dener. Nonce'suz, önbellek dostu
+		// okuma için REST GET /donation-panel/v1/modal vardır. Süzgeç yalnız geriye dönük uyum içindir.
+		if ( (bool) apply_filters( 'wdp_render_modal_require_nonce', true ) && ! check_ajax_referer( 'wdp_render_modal', 'security', false ) ) {
+			wp_send_json_error(
+				array(
+					'message' => __( 'Security check failed. Please refresh and try again.', 'woo-donation-popup' ),
+					'code'    => 'nonce',
+				),
+				403
+			);
+		}
+		if ( ! WDP_Security::check_action_rate_limit( 'render_modal', 60, 60, true ) ) {
+			if ( ! headers_sent() ) {
+				header( 'Retry-After: 60', true );
+			}
+			wp_send_json_error(
+				array(
+					'message'     => __( 'Too many requests were sent. Please try again shortly.', 'woo-donation-popup' ),
+					'code'        => 'rate_limit',
+					'retry_after' => 60,
+				),
+				429
+			);
+		}
+
+		$product_id = isset( $_REQUEST['product_id'] ) ? absint( wp_unslash( $_REQUEST['product_id'] ) ) : 0;
+		$mode       = isset( $_REQUEST['mode'] ) ? sanitize_key( wp_unslash( $_REQUEST['mode'] ) ) : 'popup';
+
 		try {
-			if ( ! WDP_Security::validate_request_origin() ) {
-				wp_send_json_error( array( 'message' => __( 'Invalid request origin', 'woo-donation-popup' ) ), 403 );
-			}
-			// Nonce (Faz 8): tam sayfa önbelleğinde süresi geçen nonce 403 + `code: nonce` döner; istemci
-			// (assets/js/src/lazy-modal.js) yeni nonce alıp bir kez yeniden dener. Nonce'suz, önbellek dostu
-			// okuma için REST GET /donation-panel/v1/modal vardır. Süzgeç yalnız geriye dönük uyum içindir.
-			if ( (bool) apply_filters( 'wdp_render_modal_require_nonce', true ) && ! check_ajax_referer( 'wdp_render_modal', 'security', false ) ) {
-				wp_send_json_error(
-					array(
-						'message' => __( 'Security check failed. Please refresh and try again.', 'woo-donation-popup' ),
-						'code'    => 'nonce',
-					),
-					403
-				);
-			}
-			if ( ! WDP_Security::check_action_rate_limit( 'render_modal', 60, 60, true ) ) {
-				if ( ! headers_sent() ) {
-					header( 'Retry-After: 60', true );
-				}
-				wp_send_json_error(
-					array(
-						'message'     => __( 'Too many requests were sent. Please try again shortly.', 'woo-donation-popup' ),
-						'code'        => 'rate_limit',
-						'retry_after' => 60,
-					),
-					429
-				);
-			}
-
-			$product_id = isset( $_REQUEST['product_id'] ) ? absint( wp_unslash( $_REQUEST['product_id'] ) ) : 0;
-			$mode       = isset( $_REQUEST['mode'] ) ? sanitize_key( wp_unslash( $_REQUEST['mode'] ) ) : 'popup';
-
 			$result = self::build( $product_id, $mode );
-			if ( isset( $result['html'] ) ) {
-				wp_send_json_success(
-					array(
-						'html'       => $result['html'],
-						'product_id' => $product_id,
-						'mode'       => 'side_panel' === $mode ? 'side_panel' : 'popup',
-					)
-				);
-			}
-			wp_send_json_error( array( 'message' => (string) $result['message'] ), (int) $result['status'] );
 		} catch ( \Throwable $e ) {
 			if ( function_exists( 'wdp_debug_log' ) ) {
 				wdp_debug_log( 'WDP lazy modal: ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine() );
 			}
-			wp_send_json_error( array( 'message' => __( 'The donation form cannot be shown right now.', 'woo-donation-popup' ) ), 500 );
+			$result = array(
+				'message' => __( 'The donation form cannot be shown right now.', 'woo-donation-popup' ),
+				'status'  => 500,
+			);
 		}
+
+		if ( isset( $result['html'] ) ) {
+			wp_send_json_success(
+				array(
+					'html'       => $result['html'],
+					'product_id' => $product_id,
+					'mode'       => 'side_panel' === $mode ? 'side_panel' : 'popup',
+				)
+			);
+		}
+		wp_send_json_error( array( 'message' => (string) $result['message'] ), (int) $result['status'] );
 	}
 }
