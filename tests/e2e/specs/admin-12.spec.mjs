@@ -137,11 +137,11 @@ test('modül anahtarı REST ile kaydedilir ve kalıcıdır', async ({ page }) =>
 
 test('Formlar: kaydet; Türkçe bozulmaz; eski seçenek yansıtılır; geçersiz tutar reddedilir', async ({ page }) => {
   await page.goto(P('donation-panel-forms'));
-  await page.locator('#dpa-c-display-mode-popup').check({ force: true });
-  await page.locator('#dpa-f-form-presets_enabled').check({ force: true });
+  await page.locator('#dpa-c-display-mode-popup').check();
+  await page.locator('#dpa-f-form-presets_enabled').check();
   await page.fill('#dpa-f-form-presets', '25, 50, 100');
   await page.fill('#dpa-f-design-button_text', TURKISH);
-  await page.locator('#dpa-f-form-dedication').check({ force: true });
+  await page.locator('#dpa-f-form-dedication').check();
   await page.click('[data-dpa-save]');
   await expect(page.locator('[data-dpa-msg]')).toHaveText(/Saved|Kaydedildi/);
   const st = await state(page);
@@ -174,7 +174,7 @@ test('Formlar: eski seçenekte kayıtlı değer yeni ekranda görünür (kayıp 
 test('Araçlar: veri silme anahtarı onay ister ve kaydedilir', async ({ page }) => {
   await page.goto(P('donation-panel-tools'));
   page.once('dialog', (d) => d.accept());
-  await page.locator('#dpa-f-general-delete_data_on_uninstall').check({ force: true });
+  await page.locator('#dpa-f-general-delete_data_on_uninstall').check();
   await page.click('[data-dpa-save]');
   await expect(page.locator('[data-dpa-msg]')).toHaveText(/Saved|Kaydedildi/);
   const st = await state(page);
@@ -188,7 +188,7 @@ test('sihirbaz: adımlar kaydedilir, ilerleme kalıcı, bitirince tamamlandı ya
   await page.click('[data-dpa-next]');
   await expect(page.locator('[data-dpa-wstep="2"]')).toBeVisible();
   await shot(page, info, 'AdminSihirbaz');
-  await page.locator('#dpa-c-display-mode-inline').check({ force: true });
+  await page.locator('#dpa-c-display-mode-inline').check();
   await page.click('[data-dpa-next]');
   await expect(page.locator('[data-dpa-wstep="3"]')).toBeVisible();
   let st = await state(page);
@@ -198,7 +198,7 @@ test('sihirbaz: adımlar kaydedilir, ilerleme kalıcı, bitirince tamamlandı ya
   await expect(page.locator('[data-dpa-wstep="3"]')).toBeVisible();
   await page.click('[data-dpa-next]');
   await expect(page.locator('[data-dpa-wstep="4"]')).toBeVisible();
-  await page.locator('#dpa-mod-thanks').check({ force: true });
+  await page.locator('#dpa-mod-thanks').check();
   await page.click('[data-dpa-next]');
   await expect(page.locator('[data-dpa-wstep="5"]')).toBeVisible();
   expect(await axe(page)).toEqual([]);

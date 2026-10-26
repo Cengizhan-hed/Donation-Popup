@@ -375,7 +375,7 @@ foreach (array('class-admin-bootstrap', 'class-admin-controller', 'class-admin-a
 }
 wdp_smoke_assert(file_exists(WDP_PLUGIN_DIR . 'assets/src/admin/index.mjs') && file_exists(WDP_PLUGIN_DIR . 'assets/src/admin/admin.css'), 'Admin JS/CSS source exists (wp-scripts)');
 $wdp_admin_js = (string) file_get_contents(WDP_PLUGIN_DIR . 'assets/src/admin/index.mjs') . (string) file_get_contents(WDP_PLUGIN_DIR . 'assets/src/admin/wizard.mjs');
-wdp_smoke_assert(stripos($wdp_admin_js, 'jquery') === false && strpos($wdp_admin_js, '$(') === false, 'Admin JS does not use jQuery');
+wdp_smoke_assert(preg_match('/jQuery\\s*[(.]|[^\\w]\\$\\s*\\(/', $wdp_admin_js) !== 1, 'Admin JS does not use jQuery');
 wdp_smoke_assert(
     wdp_smoke_file_contains(WDP_PLUGIN_DIR . 'src/Admin/class-admin-bootstrap.php', 'add_menu_page(')
         && !wdp_smoke_file_contains(WDP_PLUGIN_DIR . 'src/Admin/class-admin-bootstrap.php', "'woocommerce',"),

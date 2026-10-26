@@ -694,6 +694,11 @@
 	border-color: var(--dpa-ok-bg);
 	color: var(--dpa-ok);
 }
+.dpa .dpa-step__title,
+.dpa .dpa-progress__text h2,
+.dpa .dpa-card__title {
+	line-height: 1.25;
+}
 .dpa-wizard__card {
 	display: grid;
 	grid-template-columns: 1fr 340px;
@@ -834,6 +839,12 @@
 	}
 	.dpa-progress {
 		flex-wrap: wrap;
+	}
+	.dpa-progress__text {
+		flex: 1 1 180px;
+	}
+	.dpa-progress .dpa-btn {
+		inline-size: 100%;
 	}
 	.dpa-grid,
 	.dpa-wizard__card {
