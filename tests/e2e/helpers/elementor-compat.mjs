@@ -160,6 +160,28 @@ export function bothPanelsOpen(open) {
 }
 
 /**
+ * Sayfadaki sonlu CSS geçişleri/animasyonları bitene kadar (en çok `timeout` ms) örnekler; zaman aşımında sessizce döner.
+ * (Kapanmakta olan örtülerin geçici üst katman sayılmaması için; sabit bekleme değil.)
+ *
+ * @param {import('@playwright/test').Page} page Sayfa.
+ * @param {number} timeout Üst sınır (ms).
+ * @return {Promise<void>}
+ */
+export async function waitForTransitionsDone(page, timeout) {
+  const deadline = Date.now() + timeout;
+  for (;;) {
+    const busy = await page.evaluate(
+      () =>
+        document
+          .getAnimations()
+          .filter((a) => a.playState === 'running' && Number.isFinite(a.effect && a.effect.getComputedTiming().endTime)).length
+    );
+    if (!busy || Date.now() >= deadline) return;
+    await new Promise((r) => setTimeout(r, 100));
+  }
+}
+
+/**
  * Bir öğenin merkez noktasında en üstteki öğe kabuğun içinde mi? (tıklanabilirlik / z-index)
  *
  * @param {import('@playwright/test').Locator} locator Kabuk içeriği.
@@ -173,7 +195,13 @@ export async function isTopmostAtCenter(locator) {
     const top = document.elementFromPoint(x, y);
     const wrapper = el.closest('.hdf-donation-modal-wrapper, .wdp-modal') || el;
     const ok = !!top && (wrapper.contains(top) || el.contains(top));
-    return { ok, top: top ? `${top.tagName.toLowerCase()}.${String(top.className || '').slice(0, 50)}` : 'yok' };
+    let why = '';
+    if (top && !ok) {
+      const ov = top.closest('[class*="overlay"], [class*="modal"]') || top;
+      const cs = getComputedStyle(ov);
+      why = ` [${ov.tagName.toLowerCase()}.${String(ov.className || '').slice(0, 40)} vis=${cs.visibility} op=${cs.opacity} z=${cs.zIndex} open=${ov.classList.contains('is-open')}]`;
+    }
+    return { ok, top: top ? `${top.tagName.toLowerCase()}.${String(top.className || '').slice(0, 50)}${why}` : 'yok' };
   });
 }
 
@@ -313,6 +341,7 @@ async function scenarioProductTemplate(page, ctx) {
   if (overlap && overlap.ok === false) throw new Error(`POPUP-OVERLAP: ${overlap.reason || 'form alanı örtülü'}`);
   const content = shell.locator('.wdp-modal-content, form').first();
   const target = (await content.count()) > 0 ? content : shell;
+  await waitForTransitionsDone(page, ctx.timeouts.settle);
   const top = await isTopmostAtCenter(target);
   if (!top.ok) throw new Error(`kabuk Elementor katmanlarının altında kaldı (üstteki: ${top.top})`);
   const picked = await resolveDonationFillAmount(shell, ctx.profile.currency);
@@ -461,6 +490,7 @@ async function scenarioDonorAccountPopup(page, ctx) {
     return h === 'hidden' || b === 'hidden' || document.documentElement.classList.contains('dp-ac-lock');
   });
   if (!locked) throw new Error('pencere açıkken sayfa kaydırması kilitlenmedi');
+  await waitForTransitionsDone(page, ctx.timeouts.settle);
   const top = await isTopmostAtCenter(overlay);
   if (!top.ok) throw new Error(`pencere Elementor katmanlarının altında (üstteki: ${top.top})`);
   // Odak tuzağı: Tab ile 12 adım dolaş, odak pencerenin dışına çıkmamalı.
