@@ -20,8 +20,10 @@ if ( ! function_exists( 'get_option' ) ) {
  * @param array<string,mixed> $out Cikti.
  * @return void
  */
-function wdp_ps_done( $out ) {
-	echo wp_json_encode( $out ) . "\n";
+if ( ! function_exists( 'wdp_ps_done' ) ) {
+	function wdp_ps_done( $out ) {
+		echo wp_json_encode( $out ) . "\n";
+	}
 }
 
 /**
@@ -29,9 +31,11 @@ function wdp_ps_done( $out ) {
  * @param array<string,mixed> $extra Ek.
  * @return void
  */
-function wdp_ps_fail( $error, $extra = array() ) {
-	wdp_ps_done( array_merge( array( 'ok' => false, 'error' => $error ), $extra ) );
-	exit( 1 );
+if ( ! function_exists( 'wdp_ps_fail' ) ) {
+	function wdp_ps_fail( $error, $extra = array() ) {
+		wdp_ps_done( array_merge( array( 'ok' => false, 'error' => $error ), $extra ) );
+		exit( 1 );
+	}
 }
 
 if ( ! class_exists( '\DonationPanel\Core\Settings' ) ) {
@@ -67,39 +71,41 @@ foreach ( array_keys( $wdp_ps_allow ) as $path ) {
  *
  * @param string $path  Yol.
  * @param mixed  $value Ham deger.
+ * @param array<string,string> $wdp_ps_allow Izinli yol => tur (global DEGIL: wp eval-file fonksiyon kapsaminda calisir).
  * @return array{0:bool,1:mixed,2:string}
  */
-function wdp_ps_validate( $path, $value ) {
-	global $wdp_ps_allow;
-	if ( ! isset( $wdp_ps_allow[ $path ] ) ) {
-		return array( false, null, 'path-not-allowed' );
-	}
-	$type = $wdp_ps_allow[ $path ];
-	if ( 'bool' === $type ) {
-		if ( is_bool( $value ) ) {
-			return array( true, $value, '' );
+if ( ! function_exists( 'wdp_ps_validate' ) ) {
+	function wdp_ps_validate( $path, $value, $wdp_ps_allow ) {
+		if ( ! isset( $wdp_ps_allow[ $path ] ) ) {
+			return array( false, null, 'path-not-allowed' );
 		}
-		if ( in_array( $value, array( 1, '1', 'true', 'on', 'yes' ), true ) ) {
-			return array( true, true, '' );
+		$type = $wdp_ps_allow[ $path ];
+		if ( 'bool' === $type ) {
+			if ( is_bool( $value ) ) {
+				return array( true, $value, '' );
+			}
+			if ( in_array( $value, array( 1, '1', 'true', 'on', 'yes' ), true ) ) {
+				return array( true, true, '' );
+			}
+			if ( in_array( $value, array( 0, '0', 'false', 'off', 'no' ), true ) ) {
+				return array( true, false, '' );
+			}
+			return array( false, null, 'bad-bool' );
 		}
-		if ( in_array( $value, array( 0, '0', 'false', 'off', 'no' ), true ) ) {
-			return array( true, false, '' );
+		if ( 0 === strpos( $type, 'enum:' ) ) {
+			$list = 'enum:engine' === $type ? \DonationPanel\Core\Settings::ENGINES : \DonationPanel\Core\Settings::ADMIN_UIS;
+			return is_string( $value ) && in_array( $value, $list, true ) ? array( true, $value, '' ) : array( false, null, 'bad-enum' );
 		}
-		return array( false, null, 'bad-bool' );
+		if ( ! is_string( $value ) || strlen( $value ) > 2000 ) {
+			return array( false, null, 'bad-string' );
+		}
+		$parts = explode( '.', $path, 2 );
+		$norm  = \DonationPanel\Core\Settings::normalize( array( $parts[0] => array( $parts[1] => $value ) ) );
+		if ( $norm[ $parts[0] ][ $parts[1] ] !== $value ) {
+			return array( false, null, 'sanitize-changed-value' );
+		}
+		return array( true, $value, '' );
 	}
-	if ( 0 === strpos( $type, 'enum:' ) ) {
-		$list = 'enum:engine' === $type ? \DonationPanel\Core\Settings::ENGINES : \DonationPanel\Core\Settings::ADMIN_UIS;
-		return is_string( $value ) && in_array( $value, $list, true ) ? array( true, $value, '' ) : array( false, null, 'bad-enum' );
-	}
-	if ( ! is_string( $value ) || strlen( $value ) > 2000 ) {
-		return array( false, null, 'bad-string' );
-	}
-	$parts = explode( '.', $path, 2 );
-	$norm  = \DonationPanel\Core\Settings::normalize( array( $parts[0] => array( $parts[1] => $value ) ) );
-	if ( $norm[ $parts[0] ][ $parts[1] ] !== $value ) {
-		return array( false, null, 'sanitize-changed-value' );
-	}
-	return array( true, $value, '' );
 }
 
 /**
@@ -109,12 +115,14 @@ function wdp_ps_validate( $path, $value ) {
  * @param string $path   Yol.
  * @return array{present:bool,value:mixed}
  */
-function wdp_ps_read( $stored, $path ) {
-	$parts = explode( '.', $path, 2 );
-	if ( is_array( $stored ) && isset( $stored[ $parts[0] ] ) && is_array( $stored[ $parts[0] ] ) && array_key_exists( $parts[1], $stored[ $parts[0] ] ) ) {
-		return array( 'present' => true, 'value' => $stored[ $parts[0] ][ $parts[1] ] );
+if ( ! function_exists( 'wdp_ps_read' ) ) {
+	function wdp_ps_read( $stored, $path ) {
+		$parts = explode( '.', $path, 2 );
+		if ( is_array( $stored ) && isset( $stored[ $parts[0] ] ) && is_array( $stored[ $parts[0] ] ) && array_key_exists( $parts[1], $stored[ $parts[0] ] ) ) {
+			return array( 'present' => true, 'value' => $stored[ $parts[0] ][ $parts[1] ] );
+		}
+		return array( 'present' => false, 'value' => null );
 	}
-	return array( 'present' => false, 'value' => null );
 }
 
 $payload_file = (string) getenv( 'WDP_E2E_PS_PAYLOAD_FILE' );
@@ -147,7 +155,7 @@ if ( 'set' === $op ) {
 		wdp_ps_fail( 'no-values' );
 	}
 	foreach ( $payload['values'] as $path => $value ) {
-		list( $ok, $cast, $err ) = wdp_ps_validate( (string) $path, $value );
+		list( $ok, $cast, $err ) = wdp_ps_validate( (string) $path, $value, $wdp_ps_allow );
 		if ( ! $ok ) {
 			wdp_ps_fail( $err, array( 'path' => (string) $path ) );
 		}
@@ -168,7 +176,7 @@ if ( 'set' === $op ) {
 			$targets[ (string) $path ] = array( 'present' => false, 'value' => null );
 			continue;
 		}
-		list( $ok, $cast, $err ) = wdp_ps_validate( (string) $path, $entry['value'] ?? null );
+		list( $ok, $cast, $err ) = wdp_ps_validate( (string) $path, $entry['value'] ?? null, $wdp_ps_allow );
 		if ( ! $ok ) {
 			wdp_ps_fail( $err, array( 'path' => (string) $path ) );
 		}

@@ -219,3 +219,53 @@ describe('plugin-settings: yerel WP kanıtı', { skip: !WP_LOADED }, () => {
     }
   });
 });
+
+// WP-CLI `eval-file` betiği bir FONKSİYON kapsamında çalıştırır (dosya düzeyi değişkenler global değildir);
+// tests/local-wp/eval-file.php ise dosya düzeyinde require eder. Burada gerçek WP-CLI kapsamı taklit edilir.
+describe('plugin-settings: eval-file fonksiyon kapsamı (WP-CLI davranışı)', { skip: !WP_LOADED }, () => {
+  const wpDir = process.env.WDP_LOCAL_WP_DIR || path.join(ROOT, 'build/local-wp/wordpress');
+  const helper = path.join(ROOT, 'tests/e2e/helpers/plugin-settings.php');
+  const driver = `<?php
+$_SERVER['HTTP_HOST'] = '127.0.0.1'; $_SERVER['SERVER_NAME'] = '127.0.0.1'; $_SERVER['REQUEST_URI'] = '/';
+require ${JSON.stringify(path.join(wpDir, 'wp-load.php'))};
+function wdp_test_eval_file_scope( $file ) { include $file; }
+wdp_test_eval_file_scope( ${JSON.stringify(helper)} );
+wdp_test_eval_file_scope( ${JSON.stringify(helper)} ); // ikinci çağrı: fatal olmamalı
+`;
+  const evalScoped = (payload) => {
+    const dir = fs.mkdtempSync(path.join(fs.realpathSync(process.env.TMPDIR || '/tmp'), 'wdp-ps-'));
+    try {
+      const pf = path.join(dir, 'payload.json');
+      const df = path.join(dir, 'driver.php');
+      fs.writeFileSync(pf, JSON.stringify(payload));
+      fs.writeFileSync(df, driver);
+      const r = spawnSync('php', [df], { encoding: 'utf8', env: { ...process.env, WDP_E2E_PS_PAYLOAD_FILE: pf } });
+      const lines = r.stdout.split('\n').filter((l) => l.startsWith('{'));
+      return { r, outs: lines.map((l) => JSON.parse(l)) };
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  };
+
+  it('show: allowlist fonksiyon kapsamında dolu, iki kez çağrı fatal vermez', () => {
+    const { r, outs } = evalScoped({ op: 'show' });
+    assert.equal(r.status, 0, r.stderr + r.stdout);
+    assert.equal(outs.length, 2);
+    assert.equal(outs[0].ok, true);
+    assert.ok('modules.side_cart' in outs[0].previous);
+  });
+
+  it('set --dry-run: izinli yol path-not-allowed vermez, hiçbir şey yazılmaz', () => {
+    const { r, outs } = evalScoped({ op: 'set', dry: true, values: { 'modules.side_cart': true } });
+    assert.equal(r.status, 0, r.stderr + r.stdout);
+    assert.equal(outs[0].ok, true, JSON.stringify(outs[0]));
+    assert.equal(outs[0].dry, true);
+    assert.equal(outs[0].written, false);
+  });
+
+  it('izinsiz yol hâlâ reddedilir', () => {
+    const { outs } = evalScoped({ op: 'set', dry: true, values: { blogname: 'x' } });
+    assert.equal(outs[0].ok, false);
+    assert.equal(outs[0].error, 'path-not-allowed');
+  });
+});
