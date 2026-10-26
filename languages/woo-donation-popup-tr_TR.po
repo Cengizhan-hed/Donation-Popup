@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: woo-donation-popup\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-26 04:37:02+0000\n"
-"PO-Revision-Date: 2026-10-26 04:37:02+0000\n"
+"POT-Creation-Date: 2026-10-26 15:51:34+0000\n"
+"PO-Revision-Date: 2026-10-26 15:51:34+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: tr_TR\n"
@@ -542,6 +542,10 @@ msgstr "Girişe dön"
 msgid "Back to settings"
 msgstr "Ayarlara dön"
 
+#: src/Admin/class-ui-switch.php
+msgid "Back to the classic screen"
+msgstr "Klasik ekrana dön"
+
 #: includes/class-admin-product-data-tab.php:876
 msgid "Background color"
 msgstr "Arka plan rengi"
@@ -862,9 +866,17 @@ msgstr "Klasik form (varsayılan)"
 msgid "Classic form (will be removed in a future version)"
 msgstr "Klasik form (bir sonraki sürümde kaldırılacak)"
 
+#: src/Admin/class-settings-page.php
+msgid "Classic form engine (will be removed in 12.0)"
+msgstr "Klasik form motoru (12.0 sürümünde kaldırılacak)"
+
 #: src/Admin/
 msgid "Classic screen"
 msgstr "Klasik ekran"
+
+#: src/Admin/class-settings-page.php
+msgid "Classic screen (will be removed in 12.0)"
+msgstr "Klasik ekran (12.0 sürümünde kaldırılacak)"
 
 #: src/Admin/class-settings-page.php:410
 msgid "Classic screen (will be removed in a future version)"
@@ -1263,6 +1275,10 @@ msgstr "Masaüstü Modal Genişlik Ayarları"
 #: includes/elementor/class-widget-donations-list.php:92
 msgid "Direction"
 msgstr "Yön"
+
+#: src/Admin/class-ui-switch.php
+msgid "Dismiss"
+msgstr "Kapat"
 
 #: includes/elementor/class-widget-donation-form.php:113
 #: includes/elementor/class-widget-donations-list.php:95
@@ -2778,9 +2794,17 @@ msgstr "Hollanda"
 msgid "New donation"
 msgstr "Yeni Bağış"
 
+#: src/Admin/class-ui-switch.php
+msgid "New Donation Panel experience"
+msgstr "Yeni Bağış Paneli deneyimi"
+
 #: src/Admin/
 msgid "New form"
 msgstr "Yeni form"
+
+#: src/Admin/class-settings-page.php
+msgid "New form engine"
+msgstr "Yeni form motoru"
 
 #: src/Admin/
 msgid "New here? Quick setup takes about two minutes."
@@ -3019,6 +3043,10 @@ msgstr "Form test sayfasını aç"
 #: src/Admin/
 msgid "Open the full guide"
 msgstr "Rehberin tamamını aç"
+
+#: src/Admin/class-ui-switch.php
+msgid "Open the new admin screen"
+msgstr "Yeni yönetici ekranını aç"
 
 #: src/Modules/DonorAccount/
 #, php-format
@@ -3877,6 +3905,10 @@ msgstr "Ekran genişliğinin yüzdesi olarak ayarlanır; min/max değerler taşm
 msgid "Set the donation amount on this tab. The WooCommerce General price field is not required for these types and may be left empty; the plugin does not change the General price by itself."
 msgstr "Bağış tutarını bu sekmeden belirleyin. WooCommerce Genel fiyat alanı bu türlerde zorunlu değildir ve boş bırakılabilir; eklenti Genel fiyatı kendiliğinden değiştirmez."
 
+#: src/Admin/class-ui-switch.php
+msgid "Settings"
+msgstr "Ayarlar"
+
 #: includes/class-migrations.php:994
 msgid "Settings → Product page and list"
 msgstr "Ayarlar → Ürün sayfası ve liste"
@@ -4504,6 +4536,10 @@ msgstr "Sepet öğesi kaldırılamadı."
 msgid "The classic form is the safe default. The new form adds donation types and a calmer, mobile-first layout. On phones the form always opens as a bottom sheet."
 msgstr "Klasik form güvenli varsayılandır. Yeni form bağış türleri ve daha sakin, mobil öncelikli bir düzen ekler. Telefonlarda form her zaman alttan panel olarak açılır."
 
+#: src/Admin/class-ui-switch.php
+msgid "The classic screen keeps all your settings and will be removed in 12.0."
+msgstr "Klasik ekran tüm ayarlarınızı korur ve 12.0 sürümünde kaldırılacaktır."
+
 #: includes/class-admin-product-data-tab.php:601
 msgid "The donation amount is the product price: %s. You can change the price on the \"General\" tab."
 msgstr "Bağış tutarı ürün fiyatıdır: %s. Fiyatı \"Genel\" sekmesinden değiştirebilirsiniz."
@@ -4592,6 +4628,10 @@ msgstr "Bağışçının yazabileceği en düşük tutar. Tek kaynak bu alandır
 #: includes/class-product-settings-service.php:362
 msgid "The maximum number of shares can be 50."
 msgstr "En fazla hisse 50 olabilir."
+
+#: src/Admin/class-ui-switch.php
+msgid "The new Donation Panel experience is ready"
+msgstr "Yeni Bağış Paneli deneyimi hazır"
 
 #: src/Admin/class-settings-page.php:287
 msgid "The new form adds donation types and a calmer, mobile-first layout, and is the default. The classic form will be removed in a future version. On phones the form always opens as a bottom sheet."
@@ -4843,6 +4883,10 @@ msgstr "Tekrar dene"
 #: src/Admin/
 msgid "Try the new donation form"
 msgstr "Yeni bağış formunu dene"
+
+#: src/Admin/class-ui-switch.php
+msgid "Try the new simple admin screen. Your settings and orders are kept, and you can switch back to this classic screen at any time."
+msgstr "Yeni sade yönetici ekranını deneyin. Ayarlarınız ve siparişleriniz korunur; istediğiniz an bu klasik ekrana dönebilirsiniz."
 
 #: includes/class-phone-field.php:127
 msgid "Tunisia"

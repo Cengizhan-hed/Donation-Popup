@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: woo-donation-popup 10.35.2\n"
+"Project-Id-Version: woo-donation-popup 11.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-26 07:37+0300\n"
+"POT-Creation-Date: 2026-10-26 18:51+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -32,7 +32,7 @@ msgstr ""
 #: includes/traits/trait-wdp-assets-inline-styles.php:41
 #: includes/traits/trait-wdp-assets-inline-styles.php:49
 #: includes/traits/trait-wdp-assets-inline-styles.php:331
-#: src/Admin/class-settings-page.php:450
+#: src/Admin/class-settings-page.php:451
 #: src/Modules/EntryPoints/class-shortcodes.php:366
 #: src/Modules/Experiences/class-form-renderer.php:69
 #: templates/donation-panel/experiences/form.php:31
@@ -305,7 +305,7 @@ msgstr ""
 #: includes/class-admin-design-studio-renderer.php:198
 #: includes/class-admin-design-studio-renderer.php:231
 #: includes/class-admin-form-tabs-renderer.php:163
-#: includes/class-admin-page-renderer.php:55
+#: includes/class-admin-page-renderer.php:58
 msgid "Normal"
 msgstr ""
 
@@ -805,7 +805,7 @@ msgstr ""
 #: includes/class-admin-form-tabs-renderer.php:432
 #: includes/class-admin-layout-tabs-renderer.php:101
 #: includes/class-admin-layout-tabs-renderer.php:179
-#: includes/class-admin-page-renderer.php:149
+#: includes/class-admin-page-renderer.php:152
 msgid "What can you do on this tab?"
 msgstr ""
 
@@ -952,7 +952,7 @@ msgstr ""
 #: includes/class-donation-product-context-service.php:88
 #: includes/class-utils.php:198
 #: includes/templates/class-form-fields-renderer.php:403
-#: includes/traits/trait-wdp-assets-registry.php:382
+#: includes/traits/trait-wdp-assets-registry.php:390
 #: templates/donation-panel/experiences/form.php:121
 msgid "Add add-on donation"
 msgstr ""
@@ -1080,7 +1080,7 @@ msgstr ""
 
 #: includes/class-admin-form-tabs-renderer.php:399
 #: includes/templates/class-form-fields-renderer.php:196
-#: includes/traits/trait-wdp-assets-registry.php:381
+#: includes/traits/trait-wdp-assets-registry.php:389
 #: templates/donation-panel/experiences/form.php:82
 #: templates/donation-panel/experiences/form.php:96
 msgid "Donation amount"
@@ -1572,7 +1572,7 @@ msgid "12–28 px. 16–20 is recommended for a more readable bar."
 msgstr ""
 
 #: includes/class-admin-layout-tabs-renderer.php:171
-#: includes/class-admin-page-renderer.php:54
+#: includes/class-admin-page-renderer.php:57
 #: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:210
 #: blocks/donations/index.js:166
 msgid "Popup"
@@ -1703,130 +1703,130 @@ msgstr ""
 msgid "Mobile popup inner spacing (padding) settings"
 msgstr ""
 
-#: includes/class-admin-page-renderer.php:33
+#: includes/class-admin-page-renderer.php:36
 msgid "Donation Popup"
 msgstr ""
 
-#: includes/class-admin-page-renderer.php:34
+#: includes/class-admin-page-renderer.php:37
 #: includes/class-woo-donation-popup-admin.php:50
 #: includes/class-woo-donation-popup-admin.php:51
 msgid "Donation Popup settings"
 msgstr ""
 
-#: includes/class-admin-page-renderer.php:35
+#: includes/class-admin-page-renderer.php:38
 msgid ""
 "Manage product behavior, form look, and the success screen in one place — "
 "changes show up instantly in the live preview."
 msgstr ""
 
-#: includes/class-admin-page-renderer.php:38
+#: includes/class-admin-page-renderer.php:41
 msgid "Plugin version"
 msgstr ""
 
-#: includes/class-admin-page-renderer.php:39
+#: includes/class-admin-page-renderer.php:42
 #, php-format
 msgid "v%s"
 msgstr ""
 
-#: includes/class-admin-page-renderer.php:47
+#: includes/class-admin-page-renderer.php:50
 msgid "Donation popup settings tabs"
 msgstr ""
 
-#: includes/class-admin-page-renderer.php:48
+#: includes/class-admin-page-renderer.php:51
 msgid "Setup"
 msgstr ""
 
-#: includes/class-admin-page-renderer.php:49
+#: includes/class-admin-page-renderer.php:52
 msgid "Products"
 msgstr ""
 
-#: includes/class-admin-page-renderer.php:50
+#: includes/class-admin-page-renderer.php:53
 #: includes/class-admin-placement-tab-renderer.php:27
 msgid "Product page and list"
 msgstr ""
 
-#: includes/class-admin-page-renderer.php:51
+#: includes/class-admin-page-renderer.php:54
 msgid "Design"
 msgstr ""
 
-#: includes/class-admin-page-renderer.php:53
+#: includes/class-admin-page-renderer.php:56
 msgid "Forms"
 msgstr ""
 
-#: includes/class-admin-page-renderer.php:56
+#: includes/class-admin-page-renderer.php:59
 #: includes/class-donation-type.php:72 includes/class-form-matrix.php:118
 msgid "Share-based"
 msgstr ""
 
-#: includes/class-admin-page-renderer.php:57
+#: includes/class-admin-page-renderer.php:60
 #: src/Admin/class-setup-wizard.php:164
 #: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:278
 #: blocks/donations/index.js:180
 msgid "Progress"
 msgstr ""
 
-#: includes/class-admin-page-renderer.php:58
-#: includes/traits/trait-wdp-assets-registry.php:372
+#: includes/class-admin-page-renderer.php:61
+#: includes/traits/trait-wdp-assets-registry.php:380
 msgid "Success"
 msgstr ""
 
-#: includes/class-admin-page-renderer.php:60
+#: includes/class-admin-page-renderer.php:63
 msgid "More"
 msgstr ""
 
-#: includes/class-admin-page-renderer.php:61
+#: includes/class-admin-page-renderer.php:64
 #: src/Admin/class-settings-page.php:196
 msgid "Advanced"
 msgstr ""
 
-#: includes/class-admin-page-renderer.php:117
+#: includes/class-admin-page-renderer.php:120
 msgid "Data and removal"
 msgstr ""
 
-#: includes/class-admin-page-renderer.php:118
+#: includes/class-admin-page-renderer.php:121
 msgid ""
 "Personal data export and erase requests (Tools → Export / erase personal "
 "data) include donor and shareholder fields on orders; on erase, values are "
 "anonymized as “[deleted]”."
 msgstr ""
 
-#: includes/class-admin-page-renderer.php:123
+#: includes/class-admin-page-renderer.php:126
 msgid "Delete data when the plugin is removed"
 msgstr ""
 
-#: includes/class-admin-page-renderer.php:125
+#: includes/class-admin-page-renderer.php:128
 msgid "Enabled"
 msgstr ""
 
-#: includes/class-admin-page-renderer.php:126
+#: includes/class-admin-page-renderer.php:129
 msgid ""
 "All product settings and plugin options are deleted. Orders and order "
 "records are not touched. This cannot be undone."
 msgstr ""
 
-#: includes/class-admin-page-renderer.php:130
+#: includes/class-admin-page-renderer.php:133
 msgid "Save advanced settings"
 msgstr ""
 
-#: includes/class-admin-page-renderer.php:150
+#: includes/class-admin-page-renderer.php:153
 msgid ""
 "See each product’s donation type, shortcode, and the amount raised on goal "
 "campaigns at a glance."
 msgstr ""
 
-#: includes/class-admin-page-renderer.php:151
+#: includes/class-admin-page-renderer.php:154
 msgid ""
 "Click “Edit” to change settings; the “Donation” tab on the product edit "
 "screen opens and is saved with the product."
 msgstr ""
 
-#: includes/class-admin-page-renderer.php:152
+#: includes/class-admin-page-renderer.php:155
 msgid ""
 "The button shortcode opens a centered popup, the side panel shortcode opens "
 "a panel from the right, and the form shortcode shows an inline form."
 msgstr ""
 
-#: includes/class-admin-page-renderer.php:157
+#: includes/class-admin-page-renderer.php:160
 msgid "Search products"
 msgstr ""
 
@@ -2793,7 +2793,8 @@ msgstr ""
 
 #: includes/class-admin-request.php:25
 #: includes/class-woo-donation-popup-admin.php:373
-#: src/Admin/class-setup-wizard.php:74
+#: src/Admin/class-setup-wizard.php:74 src/Admin/class-ui-switch.php:91
+#: src/Admin/class-ui-switch.php:121
 msgid "You do not have permission to do this."
 msgstr ""
 
@@ -2930,7 +2931,7 @@ msgstr ""
 
 #: includes/class-donation-optional-fields.php:101
 #: includes/i18n/class-wdp-js-i18n.php:84
-#: includes/traits/trait-wdp-assets-registry.php:390
+#: includes/traits/trait-wdp-assets-registry.php:398
 #: src/Modules/Experiences/class-field-validator.php:241
 #: assets/js/src/form/messages.js:122 assets/js/src/form/validate.js:652
 msgid "Please enter a valid email address."
@@ -3724,8 +3725,8 @@ msgstr ""
 msgid "South Africa"
 msgstr ""
 
-#: includes/class-phone-field.php:1226 includes/i18n/class-wdp-js-i18n.php:96
-#: assets/js/src/phone-input.js:686
+#: includes/class-phone-field.php:1228 includes/i18n/class-wdp-js-i18n.php:96
+#: assets/js/src/phone-input.js:698
 msgid "Select country code"
 msgstr ""
 
@@ -3880,7 +3881,7 @@ msgstr ""
 
 #: includes/class-utils.php:323 includes/class-utils.php:333
 #: includes/traits/trait-wdp-ajax-cart-add.php:461
-#: includes/traits/trait-wdp-assets-registry.php:384
+#: includes/traits/trait-wdp-assets-registry.php:392
 #: src/Modules/Experiences/class-field-validator.php:276
 #: templates/donation-panel/experiences/form.php:31
 msgid "Please enter a valid add-on donation amount."
@@ -4043,7 +4044,7 @@ msgid "Add a donation to continue to checkout."
 msgstr ""
 
 #: includes/i18n/class-wdp-js-i18n.php:35
-#: includes/traits/trait-wdp-assets-registry.php:371
+#: includes/traits/trait-wdp-assets-registry.php:379
 #: assets/js/src/product.js:189
 msgid "An error occurred"
 msgstr ""
@@ -4133,7 +4134,7 @@ msgid "full name is missing"
 msgstr ""
 
 #: includes/i18n/class-wdp-js-i18n.php:58
-#: includes/traits/trait-wdp-assets-registry.php:389
+#: includes/traits/trait-wdp-assets-registry.php:397
 #: assets/js/src/form/messages.js:18 assets/js/src/form/validate.js:110
 #: assets/js/src/form.js:327
 msgid "Full name is required."
@@ -4251,7 +4252,7 @@ msgstr ""
 
 #. translators: %s: example amount in store format
 #: includes/i18n/class-wdp-js-i18n.php:86
-#: includes/traits/trait-wdp-assets-registry.php:377
+#: includes/traits/trait-wdp-assets-registry.php:385
 #: includes/traits/trait-wdp-utils-price.php:242
 #: assets/js/src/core/utils.js:250
 #, javascript-format, php-format
@@ -4259,7 +4260,7 @@ msgid "Please enter the amount in this format, e.g. %s"
 msgstr ""
 
 #: includes/i18n/class-wdp-js-i18n.php:87
-#: includes/traits/trait-wdp-assets-registry.php:388
+#: includes/traits/trait-wdp-assets-registry.php:396
 #: assets/js/src/form/messages.js:56 assets/js/src/form/validate.js:138
 #: assets/js/src/form.js:467
 msgid "Please enter your complete phone number."
@@ -4323,7 +4324,7 @@ msgid "Shareholder form %d is incomplete."
 msgstr ""
 
 #: includes/i18n/class-wdp-js-i18n.php:103
-#: includes/traits/trait-wdp-assets-registry.php:391
+#: includes/traits/trait-wdp-assets-registry.php:399
 #: assets/js/src/form/messages.js:27 assets/js/src/form/validate.js:117
 #: assets/js/src/form.js:335
 msgid "Shareholder name is required."
@@ -4348,7 +4349,7 @@ msgid "The form is not ready yet. Please wait a few seconds and try again."
 msgstr ""
 
 #: includes/i18n/class-wdp-js-i18n.php:108
-#: includes/traits/trait-wdp-assets-registry.php:373
+#: includes/traits/trait-wdp-assets-registry.php:381
 #: assets/js/src/form/messages.js:36 assets/js/src/form/validate.js:124
 #: assets/js/src/form/wizard.js:221 assets/js/src/form.js:343
 msgid "This field is required"
@@ -4445,6 +4446,12 @@ msgstr ""
 msgid "Decrease"
 msgstr ""
 
+#: includes/templates/class-form-fields-renderer.php:292
+#: src/Modules/SideCart/class-side-cart-renderer.php:123
+#: templates/donation-panel/experiences/form.php:68
+msgid "Quantity"
+msgstr ""
+
 #: includes/templates/class-form-fields-renderer.php:293
 #: includes/templates/class-form-fields-renderer.php:699
 #: templates/donation-panel/experiences/form.php:71
@@ -4466,7 +4473,7 @@ msgstr ""
 #: includes/templates/class-form-fields-renderer.php:410
 #: includes/templates/class-form-fields-renderer.php:411
 #: includes/templates/class-form-fields-renderer.php:440
-#: includes/traits/trait-wdp-assets-registry.php:383
+#: includes/traits/trait-wdp-assets-registry.php:391
 msgid "Add-on donation amount"
 msgstr ""
 
@@ -4475,6 +4482,7 @@ msgid "Donor contact details"
 msgstr ""
 
 #: includes/templates/class-form-fields-renderer.php:695
+#: includes/templates/class-form-fields-renderer.php:698
 #: includes/traits/trait-wdp-ajax-cart-query.php:186
 #: templates/donation-panel/experiences/form.php:64
 #: templates/donation-panel/experiences/form.php:68
@@ -4538,7 +4546,7 @@ msgid "Maximum number of shares exceeded"
 msgstr ""
 
 #: includes/traits/trait-wdp-ajax-cart-add.php:232
-#: includes/traits/trait-wdp-assets-registry.php:378
+#: includes/traits/trait-wdp-assets-registry.php:386
 msgid "Minimum price: "
 msgstr ""
 
@@ -4625,55 +4633,55 @@ msgstr ""
 msgid "Shareholder form status"
 msgstr ""
 
-#: includes/traits/trait-wdp-assets-registry.php:370
+#: includes/traits/trait-wdp-assets-registry.php:378
 msgid "Loading..."
 msgstr ""
 
-#: includes/traits/trait-wdp-assets-registry.php:374
+#: includes/traits/trait-wdp-assets-registry.php:382
 msgid "Invalid price"
 msgstr ""
 
 #. translators: %s: example whole amount in store format
-#: includes/traits/trait-wdp-assets-registry.php:375
-#: includes/traits/trait-wdp-assets-registry.php:376
+#: includes/traits/trait-wdp-assets-registry.php:383
+#: includes/traits/trait-wdp-assets-registry.php:384
 #: includes/traits/trait-wdp-utils-price.php:220
 #, php-format
 msgid "This site does not accept amounts with decimals, e.g. %s"
 msgstr ""
 
-#: includes/traits/trait-wdp-assets-registry.php:379
+#: includes/traits/trait-wdp-assets-registry.php:387
 msgid "Maximum number of shares: "
 msgstr ""
 
-#: includes/traits/trait-wdp-assets-registry.php:380
+#: includes/traits/trait-wdp-assets-registry.php:388
 msgid "Donation amount *"
 msgstr ""
 
-#: includes/traits/trait-wdp-assets-registry.php:385
+#: includes/traits/trait-wdp-assets-registry.php:393
 msgid "Minimum add-on donation amount: "
 msgstr ""
 
-#: includes/traits/trait-wdp-assets-registry.php:386
+#: includes/traits/trait-wdp-assets-registry.php:394
 msgid "Please enter a valid phone number."
 msgstr ""
 
-#: includes/traits/trait-wdp-assets-registry.php:387
+#: includes/traits/trait-wdp-assets-registry.php:395
 msgid "Phone number is missing."
 msgstr ""
 
-#: includes/traits/trait-wdp-assets-registry.php:392
+#: includes/traits/trait-wdp-assets-registry.php:400
 msgid "full name field is missing"
 msgstr ""
 
-#: includes/traits/trait-wdp-assets-registry.php:393
+#: includes/traits/trait-wdp-assets-registry.php:401
 msgid "please enter your complete phone number"
 msgstr ""
 
-#: includes/traits/trait-wdp-assets-registry.php:394
+#: includes/traits/trait-wdp-assets-registry.php:402
 msgid "Search"
 msgstr ""
 
-#: includes/traits/trait-wdp-assets-registry.php:395
+#: includes/traits/trait-wdp-assets-registry.php:403
 msgid "Your donation was added to the cart"
 msgstr ""
 
@@ -4690,7 +4698,7 @@ msgstr ""
 
 #: src/Admin/class-admin-bootstrap.php:164
 #: src/Admin/class-admin-bootstrap.php:165
-#: src/Admin/class-settings-page.php:417 src/Admin/class-setup-wizard.php:161
+#: src/Admin/class-settings-page.php:418 src/Admin/class-setup-wizard.php:161
 msgid "Quick setup"
 msgstr ""
 
@@ -4824,7 +4832,7 @@ msgid ""
 "Shows the goal, the amount raised and the number of donors for a campaign."
 msgstr ""
 
-#: src/Admin/class-settings-page.php:81 src/Admin/class-settings-page.php:364
+#: src/Admin/class-settings-page.php:81 src/Admin/class-settings-page.php:365
 msgid "Impact phrases"
 msgstr ""
 
@@ -4893,240 +4901,240 @@ msgstr ""
 msgid "A few clear settings. Every setting says what it does underneath."
 msgstr ""
 
-#: src/Admin/class-settings-page.php:222
+#: src/Admin/class-settings-page.php:223
 msgid "Settings sections"
 msgstr ""
 
-#: src/Admin/class-settings-page.php:238 src/Admin/class-settings-page.php:443
+#: src/Admin/class-settings-page.php:239 src/Admin/class-settings-page.php:444
 msgid "Preview"
 msgstr ""
 
-#: src/Admin/class-settings-page.php:242
+#: src/Admin/class-settings-page.php:243
 msgid "You have unsaved changes"
 msgstr ""
 
-#: src/Admin/class-settings-page.php:243
+#: src/Admin/class-settings-page.php:244
 msgid "Save changes"
 msgstr ""
 
-#: src/Admin/class-settings-page.php:256
+#: src/Admin/class-settings-page.php:257
 msgid "New here? Quick setup takes about two minutes."
 msgstr ""
 
-#: src/Admin/class-settings-page.php:256
+#: src/Admin/class-settings-page.php:257
 msgid ""
 "It picks sensible defaults for what you want to achieve. Nothing is created "
 "and you can change everything later."
 msgstr ""
 
-#: src/Admin/class-settings-page.php:257
+#: src/Admin/class-settings-page.php:258
 msgid "Start quick setup"
 msgstr ""
 
-#: src/Admin/class-settings-page.php:260
+#: src/Admin/class-settings-page.php:261
 msgid "Skip"
 msgstr ""
 
-#: src/Admin/class-settings-page.php:284
+#: src/Admin/class-settings-page.php:285
 msgid "Donation form experience"
 msgstr ""
 
-#: src/Admin/class-settings-page.php:285
+#: src/Admin/class-settings-page.php:286
 msgid ""
 "The new form adds donation types and a calmer, mobile-first layout, and is "
 "the default. The classic form will be removed in a future version. On phones "
 "the form always opens as a bottom sheet."
 msgstr ""
 
-#: src/Admin/class-settings-page.php:290
-msgid "Classic form (will be removed in a future version)"
-msgstr ""
-
 #: src/Admin/class-settings-page.php:291
-msgid "New form"
+msgid "Classic form engine (will be removed in 12.0)"
 msgstr ""
 
-#: src/Admin/class-settings-page.php:298
-msgid "Where the donate button appears"
+#: src/Admin/class-settings-page.php:292
+msgid "New form engine"
 msgstr ""
 
 #: src/Admin/class-settings-page.php:299
+msgid "Where the donate button appears"
+msgstr ""
+
+#: src/Admin/class-settings-page.php:300
 msgid ""
 "Automatic placement uses the standard WooCommerce spots on product pages. A "
 "shortcode and a block always work anywhere. Nothing to set up here."
 msgstr ""
 
-#: src/Admin/class-settings-page.php:300
+#: src/Admin/class-settings-page.php:301
 msgid "Automatic, shortcode and block"
 msgstr ""
 
-#: src/Admin/class-settings-page.php:300
+#: src/Admin/class-settings-page.php:301
 msgid "Read the guide"
 msgstr ""
 
-#: src/Admin/class-settings-page.php:305 src/Admin/class-setup-wizard.php:123
+#: src/Admin/class-settings-page.php:306 src/Admin/class-setup-wizard.php:123
 msgid "Currency"
 msgstr ""
 
-#: src/Admin/class-settings-page.php:306
+#: src/Admin/class-settings-page.php:307
 msgid ""
 "Amounts, decimals and separators come from WooCommerce. If you use a multi-"
 "currency plugin, an adapter snippet converts amounts; the guide explains how."
 msgstr ""
 
-#: src/Admin/class-settings-page.php:307
+#: src/Admin/class-settings-page.php:308
 msgid "Currency adapter active"
 msgstr ""
 
-#: src/Admin/class-settings-page.php:307
+#: src/Admin/class-settings-page.php:308
 msgid "WooCommerce active currency only"
 msgstr ""
 
-#: src/Admin/class-settings-page.php:311
+#: src/Admin/class-settings-page.php:312
 msgid "Design and form fields"
 msgstr ""
 
-#: src/Admin/class-settings-page.php:312
+#: src/Admin/class-settings-page.php:313
 msgid ""
 "Colors, form fields, product placement and the product list stay in the "
 "classic settings screen. Nothing was removed."
 msgstr ""
 
-#: src/Admin/class-settings-page.php:313
+#: src/Admin/class-settings-page.php:314
 msgid "Open classic settings"
 msgstr ""
 
-#: src/Admin/class-settings-page.php:324
+#: src/Admin/class-settings-page.php:325
 msgid "Modules that are off load nothing, so they never slow your site down."
 msgstr ""
 
-#: src/Admin/class-settings-page.php:344
+#: src/Admin/class-settings-page.php:345
 msgid ""
 "Leave a field empty to use the built-in wording. The built-in wording is "
 "translated for you."
 msgstr ""
 
-#: src/Admin/class-settings-page.php:346
+#: src/Admin/class-settings-page.php:347
 msgid "Thank-you message"
 msgstr ""
 
-#: src/Admin/class-settings-page.php:347
+#: src/Admin/class-settings-page.php:348
 msgid "Shown on the thank-you screen after a donation."
 msgstr ""
 
-#: src/Admin/class-settings-page.php:352
+#: src/Admin/class-settings-page.php:353
 msgid "Celebration animation"
 msgstr ""
 
-#: src/Admin/class-settings-page.php:353
+#: src/Admin/class-settings-page.php:354
 msgid ""
 "A short, gentle animation. It switches off by itself for visitors who prefer "
 "reduced motion."
 msgstr ""
 
-#: src/Admin/class-settings-page.php:358
+#: src/Admin/class-settings-page.php:359
 msgid "Share button"
 msgstr ""
 
-#: src/Admin/class-settings-page.php:359
+#: src/Admin/class-settings-page.php:360
 msgid "Lets donors share the campaign after giving."
 msgstr ""
 
-#: src/Admin/class-settings-page.php:365
+#: src/Admin/class-settings-page.php:366
 msgid ""
 "One per line: amount = phrase. Add \"singular|plural\" for two forms. "
 "Example: 25 = 1 food parcel|food parcels"
 msgstr ""
 
-#: src/Admin/class-settings-page.php:370
+#: src/Admin/class-settings-page.php:371
 msgid "Tax relief: step title"
 msgstr ""
 
-#: src/Admin/class-settings-page.php:371
+#: src/Admin/class-settings-page.php:372
 msgid "Short label for the step."
 msgstr ""
 
-#: src/Admin/class-settings-page.php:376
+#: src/Admin/class-settings-page.php:377
 msgid "Tax relief: heading"
 msgstr ""
 
-#: src/Admin/class-settings-page.php:377
+#: src/Admin/class-settings-page.php:378
 msgid "The question heading the donor sees."
 msgstr ""
 
-#: src/Admin/class-settings-page.php:382
+#: src/Admin/class-settings-page.php:383
 msgid "Tax relief: explanation"
 msgstr ""
 
-#: src/Admin/class-settings-page.php:383
+#: src/Admin/class-settings-page.php:384
 msgid ""
 "A sentence or two explaining the declaration. Link to your privacy page from "
 "your site, not here."
 msgstr ""
 
-#: src/Admin/class-settings-page.php:388
+#: src/Admin/class-settings-page.php:389
 msgid "Tax relief: checkbox wording"
 msgstr ""
 
-#: src/Admin/class-settings-page.php:389
+#: src/Admin/class-settings-page.php:390
 msgid "The sentence next to the tick box. It is never ticked in advance."
 msgstr ""
 
-#: src/Admin/class-settings-page.php:403
+#: src/Admin/class-settings-page.php:404
 msgid "Settings screen"
 msgstr ""
 
-#: src/Admin/class-settings-page.php:404
+#: src/Admin/class-settings-page.php:405
 msgid ""
 "Switch back to the classic settings screen at any time. Your settings are "
 "kept either way."
 msgstr ""
 
-#: src/Admin/class-settings-page.php:409
+#: src/Admin/class-settings-page.php:410
 msgid "This simple screen"
 msgstr ""
 
-#: src/Admin/class-settings-page.php:410
-msgid "Classic screen (will be removed in a future version)"
-msgstr ""
-
-#: src/Admin/class-settings-page.php:418
-msgid "Run the short setup again. It only changes the options you confirm."
+#: src/Admin/class-settings-page.php:411
+msgid "Classic screen (will be removed in 12.0)"
 msgstr ""
 
 #: src/Admin/class-settings-page.php:419
+msgid "Run the short setup again. It only changes the options you confirm."
+msgstr ""
+
+#: src/Admin/class-settings-page.php:420
 msgid "Open quick setup"
 msgstr ""
 
-#: src/Admin/class-settings-page.php:422
+#: src/Admin/class-settings-page.php:423
 msgid "Delete data when the plugin is deleted"
 msgstr ""
 
-#: src/Admin/class-settings-page.php:423
+#: src/Admin/class-settings-page.php:424
 msgid "When off, your orders and donation records are always kept."
 msgstr ""
 
-#: src/Admin/class-settings-page.php:445
+#: src/Admin/class-settings-page.php:446
 msgid "Goal, amount raised and donors"
 msgstr ""
 
-#: src/Admin/class-settings-page.php:447
+#: src/Admin/class-settings-page.php:448
 msgid "Your gift provides 2 food parcels"
 msgstr ""
 
-#: src/Admin/class-settings-page.php:448
+#: src/Admin/class-settings-page.php:449
 msgid "I would like to make a tax relief declaration"
 msgstr ""
 
-#: src/Admin/class-settings-page.php:449
+#: src/Admin/class-settings-page.php:450
 msgid "Sign in to see My donations"
 msgstr ""
 
-#: src/Admin/class-settings-page.php:451
+#: src/Admin/class-settings-page.php:452
 msgid "Totals from real donations"
 msgstr ""
 
-#: src/Admin/class-settings-page.php:452
+#: src/Admin/class-settings-page.php:453
 msgid ""
 "A simplified sketch. Colors and fonts come from your theme. Mobile always "
 "uses a bottom sheet."
@@ -5267,6 +5275,40 @@ msgstr ""
 
 #: src/Admin/class-setup-wizard.php:218
 msgid "Skip for now"
+msgstr ""
+
+#: src/Admin/class-ui-switch.php:62
+msgid "Settings"
+msgstr ""
+
+#: src/Admin/class-ui-switch.php:152
+msgid "New Donation Panel experience"
+msgstr ""
+
+#: src/Admin/class-ui-switch.php:153
+msgid "The new Donation Panel experience is ready"
+msgstr ""
+
+#: src/Admin/class-ui-switch.php:154
+msgid ""
+"Try the new simple admin screen. Your settings and orders are kept, and you "
+"can switch back to this classic screen at any time."
+msgstr ""
+
+#: src/Admin/class-ui-switch.php:160
+msgid "Open the new admin screen"
+msgstr ""
+
+#: src/Admin/class-ui-switch.php:165
+msgid "Dismiss"
+msgstr ""
+
+#: src/Admin/class-ui-switch.php:180
+msgid "Back to the classic screen"
+msgstr ""
+
+#: src/Admin/class-ui-switch.php:181
+msgid "The classic screen keeps all your settings and will be removed in 12.0."
 msgstr ""
 
 #. translators: %s: formatted goal amount
@@ -5888,11 +5930,6 @@ msgstr ""
 #: src/Modules/SideCart/class-side-cart-renderer.php:118
 #, php-format
 msgid "On behalf of: %s"
-msgstr ""
-
-#: src/Modules/SideCart/class-side-cart-renderer.php:123
-#: templates/donation-panel/experiences/form.php:68
-msgid "Quantity"
 msgstr ""
 
 #: src/Modules/SideCart/class-side-cart-renderer.php:124

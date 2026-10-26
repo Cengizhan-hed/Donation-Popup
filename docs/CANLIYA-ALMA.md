@@ -66,13 +66,15 @@ Eski EUR/USD siparişleri kur meta'sı olmadan kaydedilmiş olabilir; toplam bu 
 - [ ] Eski `wdp_vid` çerezi artık yazılmıyor (tarayıcıda yeni çerez oluşmuyor).
 
 ### A10. Yeni deneyimi açma (isteğe bağlı, A5–A9 geçince)
-- Ayarlar › Deneyim: "yeni motor" ve "yeni yönetici ekranı". Bir bağış ürününde mobil + masaüstü kontrol et. Modülleri (kampanya kartı, yan sepet, teşekkür ekranı, sosyal kanıt) tek tek aç.
-- Sorun olursa "eski deneyime dön" (bir sürüm boyunca durur, sonraki sürümde kaldırılır).
+Yükseltilen kurulumda eski deneyim kalır; yeni deneyim iki adımda açılır:
+1. **Yeni yönetici ekranı:** WooCommerce › "Bağış Popup Ayarları" ekranının üstündeki mavi kutuda "Yeni Bağış Paneli deneyimi hazır" → "Yeni yönetici ekranını aç" düğmesi. Yeni ekran: WooCommerce › "Bağış Paneli" (sekmeler: Genel, Modüller, Metinler, Gelişmiş; ayrıca "Bağış Paneli rehberi"). Kutuyu "Kapat" ile gizleyebilirsiniz.
+2. **Yeni form motoru:** Bağış Paneli › Genel › "Bağış formu deneyimi" listesinden "Yeni form motoru" seçilir (eski: "Klasik form motoru (12.0'da kaldırılacak)"). Bir bağış ürününde mobil + masaüstü kontrol edin. Modüller (kampanya kartı, yan sepet, teşekkür ekranı, sosyal kanıt, bağışçı hesabı, vergi indirimi beyanı) Modüller sekmesinden tek tek açılır.
+- Sorun olursa: yeni ekranın üstündeki "Klasik ekrana dön" düğmesi ve Genel sekmesinde form motorunu "Klasik"e alın. Ayarlar silinmez.
 
 ## G. Geri dönüş planı
 | Belirti | Adım | Süre |
 |---|---|---|
-| Yeni deneyimde görsel/işlev sorunu | Ayarlar › "eski deneyime dön" | 1 dk |
+| Yeni deneyimde görsel/işlev sorunu | Bağış Paneli › Genel › form motorunu "Klasik"e al + "Klasik ekrana dön" | 1 dk |
 | Eklenti sonrası genel sorun | Eklentiyi devre dışı bırak (ayarlar silinmez); `[hd_panel_buton]` snippet'ini etkin tut | 2 dk |
 | Eklenti dosyası bozuk / fatal | FTP ya da barındırma dosya yöneticisinden klasörü eski 10.3.1 kopyasıyla değiştir | 5 dk |
 | Veri sorunu (toplam yanlış) | Yedekten eklenti seçeneklerini geri yükle; `recalc-totals` yalnız ürün meta'sını yazdığı için siparişler zaten etkilenmez | 10 dk |
@@ -101,7 +103,7 @@ Ikram (ikramaid.uk): Blocksy + Elementor, GBP, şu an "coming soon" açık. Test
 - [ ] Gizlilik: politika sayfasında eklenti öneri metni yerleştirildi; dışa aktar/sil aracı denendi (A9 ile aynı).
 
 ### B3. Geri dönüş
-- Yeni deneyim: Ayarlar › "eski deneyime dön". Yayın: "coming soon" yeniden aç. Eklenti: devre dışı bırak (ayarlar silinmez).
+- Yeni deneyim: Bağış Paneli › Genel › form motoru "Klasik" ve "Klasik ekrana dön". Yayın: "coming soon" yeniden aç. Eklenti: devre dışı bırak (ayarlar silinmez).
 
 ## Kayıt tablosu (kullanıcı doldurur)
 | Adım | Tarih/saat | Yapan | Not |
@@ -120,4 +122,4 @@ Ikram (ikramaid.uk): Blocksy + Elementor, GBP, şu an "coming soon" açık. Test
 - **Ürün düzenleme:** Ürün verisi kutusunda "Bağış" sekmesi (bağış ürünü ayarları).
 - **Gizlilik:** Ayarlar › Gizlilik › "Gizlilik ilkesi rehberi" sayfasında eklenti bölümü var. Araçlar › "Kişisel verileri dışa aktar" ve "Kişisel verileri sil".
 - **WooCommerce:** Ayarlar › sekmeler: Genel, Ürünler, Gönderim, Ödemeler, Hesaplar ve gizlilik, E-postalar, Entegrasyon, Site görünürlüğü ("Çok yakında" / "Yayında"), Satış Noktası, Gelişmiş. Hesaplar ve gizlilik: "Misafir ödemesini etkinleştir", "Ödeme sırasında oturum açmayı etkinleştir", "Müşterilerin bir hesap oluşturmasına izin verin" bölümü.
-- Yeni "Donation Panel" ekranları (`page=donation-panel`, rehber, sihirbaz) staging30'da HTTP 403: yükseltilen kurulumda `admin.ui=legacy` olduğu için kayıtlı değil (beklenen). Yeni deneyime geçiş yolu: E8Q ile eklenen düğme (eski ekranın üstündeki kutu).
+- Yeni "Donation Panel" ekranları (`page=donation-panel`, rehber, sihirbaz) staging30'da HTTP 403: yükseltilen kurulumda `admin.ui=legacy` olduğu için kayıtlı değil (beklenen). Yeni deneyime geçiş yolu: eski ekranın üstündeki "Yeni yönetici ekranını aç" düğmesi (A10).
