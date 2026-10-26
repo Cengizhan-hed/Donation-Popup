@@ -170,7 +170,7 @@ class Builder_Detect {
 				'limit'   => 12,
 				'orderby' => 'modified',
 				'order'   => 'DESC',
-				'type'    => class_exists( 'DonationPanel\\Domain\\Donation_Scope' ) ? Donation_Scope::supported_types() : array( 'simple' ),
+				'type'    => Donation_Scope::supported_types(),
 				'return'  => 'objects',
 			)
 		);
@@ -178,7 +178,7 @@ class Builder_Detect {
 			return null;
 		}
 		foreach ( $products as $product ) {
-			if ( class_exists( 'DonationPanel\\Domain\\Donation_Scope' ) && Donation_Scope::is_donation_product( $product ) ) {
+			if ( Donation_Scope::is_donation_product( $product ) ) {
 				return $product;
 			}
 		}

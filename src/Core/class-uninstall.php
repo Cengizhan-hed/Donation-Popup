@@ -151,6 +151,7 @@ class Uninstall {
 			'_addon_',
 			'_sadaka_',
 			'_theme_',
+			'_donation_panel_',
 		);
 	}
 
@@ -177,6 +178,19 @@ class Uninstall {
 	}
 
 	/**
+	 * "Kaldırınca verileri sil" açık mı: yeni ayar (`donation_panel_settings`) varsa o, yoksa eski seçenek.
+	 *
+	 * @return bool
+	 */
+	private static function deletion_enabled() {
+		$settings = get_option( 'donation_panel_settings', array() );
+		if ( is_array( $settings ) && isset( $settings['general'] ) && is_array( $settings['general'] ) && array_key_exists( 'delete_data_on_uninstall', $settings['general'] ) ) {
+			return (bool) $settings['general']['delete_data_on_uninstall'];
+		}
+		return '1' === (string) get_option( 'wdp_delete_data_on_uninstall', '0' );
+	}
+
+	/**
 	 * Remove plugin data for the current site when the uninstall flag is on.
 	 *
 	 * @return void
@@ -184,7 +198,7 @@ class Uninstall {
 	public static function cleanup_site() {
 		global $wpdb;
 
-		if ( '1' !== (string) get_option( 'wdp_delete_data_on_uninstall', '0' ) ) {
+		if ( ! self::deletion_enabled() ) {
 			return;
 		}
 
@@ -193,6 +207,9 @@ class Uninstall {
 		}
 
 		self::delete_options_like( $wpdb, 'wdp_' );
+		self::delete_options_like( $wpdb, 'donation_panel_' );
+		self::delete_options_like( $wpdb, '_transient_dp_' );
+		self::delete_options_like( $wpdb, '_transient_timeout_dp_' );
 		self::delete_options_like( $wpdb, '_transient_wdp_' );
 		self::delete_options_like( $wpdb, '_transient_timeout_wdp_' );
 		self::delete_options_like( $wpdb, '_site_transient_wdp_' );
@@ -212,7 +229,7 @@ class Uninstall {
 	}
 
 	/**
-	 * @param wpdb   $wpdb  Database.
+	 * @param \wpdb   $wpdb  Database.
 	 * @param string $prefix Option name prefix (no wildcard).
 	 * @return void
 	 */
@@ -229,7 +246,7 @@ class Uninstall {
 	/**
 	 * Delete plugin product meta (never orders / order items / HPOS).
 	 *
-	 * @param wpdb $wpdb Database.
+	 * @param \wpdb $wpdb Database.
 	 * @return void
 	 */
 	private static function delete_product_meta( $wpdb ) {

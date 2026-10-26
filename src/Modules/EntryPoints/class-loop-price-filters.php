@@ -72,26 +72,17 @@ class Loop_Price_Filters {
 		if ( 'off' === $mode ) {
 			return $html;
 		}
-		\WDP_Assets::force_enqueue();
+		// Liste/arşiv kartlarında düğme ürün sayfasına götürür; form ürün sayfasında açılır (kartlarda ağır form basılmaz).
 		$url         = method_exists( $product, 'get_permalink' ) ? $product->get_permalink() : get_permalink( $product->get_id() );
 		$text        = Shortcodes::resolve_button_text( '' );
-		$id          = (int) $product->get_id();
 		$cls         = 'button wdp-loop-donate';
-		$goal_closed = class_exists( 'DonationPanel\\Domain\\Campaign_Goal' ) && Campaign_Goal::should_block_new_donations( $product );
+		$goal_closed = Campaign_Goal::should_block_new_donations( $product );
 		if ( $goal_closed ) {
 			$cls .= ' is-disabled wdp-goal-closed-trigger';
 		}
-		if ( 'popup' === $mode || 'panel' === $mode ) {
-			$cls_extra = 'panel' === $mode ? ' wdp-open-modal wdp-open-side-panel' : ' wdp-open-modal';
-			$attrs     = ' type="button" class="' . esc_attr( $cls . $cls_extra ) . '" data-product-id="' . esc_attr( (string) $id ) . '" data-wdp-lazy="1" data-wdp-mode="' . esc_attr( 'panel' === $mode ? 'side_panel' : 'popup' ) . '"';
-			if ( $goal_closed ) {
-				$attrs .= ' aria-disabled="true" data-wdp-goal-closed="1" data-wdp-goal-message="' . esc_attr( Campaign_Goal::resolve_message( $product ) ) . '"';
-			}
-			return '<button' . $attrs . '>' . esc_html( $text ) . '</button>';
-		}
 		$attrs = ' href="' . esc_url( $url ) . '" class="' . esc_attr( $cls ) . '"';
 		if ( $goal_closed ) {
-			$attrs .= ' aria-disabled="true" data-wdp-goal-closed="1" data-wdp-goal-message="' . esc_attr( Campaign_Goal::resolve_message( $product ) ) . '"';
+			$attrs .= ' aria-disabled="true" title="' . esc_attr( Campaign_Goal::resolve_message( $product ) ) . '"';
 		}
 		return '<a' . $attrs . '>' . esc_html( $text ) . '</a>';
 	}

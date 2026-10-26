@@ -2,7 +2,7 @@
 /**
  * Ürün sayfası görünüm çözümleyicisi + native cart CSS kapsamı.
  *
- * @package WooCommerce\Donation_Popup
+ * @package DonationPanel
  */
 
 declare(strict_types=1);
@@ -12,12 +12,12 @@ use PHPUnit\Framework\TestCase;
 final class ProductPageDisplayTest extends TestCase {
 	protected function setUp(): void {
 		WDP_Test_State::reset();
-		WDP_Test_State::$options[ WDP_Placement_Settings::OPTION ] = array(
+		WDP_Test_State::$options[ \DonationPanel\Domain\Placement_Settings::OPTION ] = array(
 			'auto_place'     => 'yes',
 			'display'        => 'button_panel',
 			'donation_scope' => 'all',
 		);
-		WDP_Placement_Settings::flush();
+		\DonationPanel\Domain\Placement_Settings::flush();
 	}
 
 	private function product(int $id): WC_Product {
@@ -47,15 +47,15 @@ final class ProductPageDisplayTest extends TestCase {
 	public function test_shortcode_popup_button(): void {
 		$p                     = $this->product(34);
 		$p->short_description  = '[wdp_donation_button id="34"]';
-		WDP_Test_State::$options[ WDP_Placement_Settings::OPTION ]['display'] = 'inline';
-		WDP_Placement_Settings::flush();
+		WDP_Test_State::$options[ \DonationPanel\Domain\Placement_Settings::OPTION ]['display'] = 'inline';
+		\DonationPanel\Domain\Placement_Settings::flush();
 		$this->assertSame('button_popup', \DonationPanel\Modules\EntryPoints\Auto_Placement::resolve_product_page_display($p));
 	}
 
 	public function test_auto_place_off_without_shortcode_is_empty(): void {
 		$p = $this->product(35);
 		$p->update_meta_data('_wdp_auto_place', 'no');
-		WDP_Donation_Scope::flush();
+		\DonationPanel\Domain\Donation_Scope::flush();
 		$this->assertSame('', \DonationPanel\Modules\EntryPoints\Auto_Placement::resolve_product_page_display($p));
 	}
 
@@ -109,7 +109,7 @@ final class ProductPageDisplayTest extends TestCase {
 	public function test_unhook_runs_when_auto_place_meta_off(): void {
 		$p = $this->product(42);
 		$p->update_meta_data('_wdp_auto_place', 'no');
-		WDP_Donation_Scope::flush(42);
+		\DonationPanel\Domain\Donation_Scope::flush(42);
 		WDP_Test_State::$queried_id = 42;
 		WDP_Test_State::$is_product = true;
 		$GLOBALS['product']         = $p;
@@ -125,7 +125,7 @@ final class ProductPageDisplayTest extends TestCase {
 		WDP_Test_State::$queried_id  = 36;
 		WDP_Test_State::$is_product  = true;
 		$GLOBALS['product']          = $p;
-		WDP_Render_Registry::reset();
+		\DonationPanel\Modules\EntryPoints\Render_Registry::reset();
 		$html                        = \DonationPanel\Modules\EntryPoints\Auto_Placement::placed_markup();
 		$this->assertStringContainsString('data-wdp-display="button_panel"', $html);
 		$this->assertStringContainsString('wdp-open-side-panel', $html);

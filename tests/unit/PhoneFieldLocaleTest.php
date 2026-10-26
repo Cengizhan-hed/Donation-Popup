@@ -2,7 +2,7 @@
 /**
  * Telefon alanı: varsayılan ülke ve sıra WooCommerce mağaza ülkesinden; sabit Türkiye varsayımı yok.
  *
- * @package WooCommerce\Donation_Popup
+ * @package DonationPanel
  */
 
 declare(strict_types=1);

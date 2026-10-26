@@ -21,11 +21,6 @@ class Settings {
 	const SCHEMA_VERSION = 1;
 
 	/**
-	 * Form deneyimi motoru değerleri: eski motor (varsayılan) ya da yeni nesil.
-	 */
-	const ENGINES = array( 'legacy', 'new' );
-
-	/**
 	 * Yönetici ekranı değerleri: eski ekran (varsayılan) ya da yeni sade ekran (E7).
 	 */
 	const ADMIN_UIS = array( 'legacy', 'new' );
@@ -34,13 +29,6 @@ class Settings {
 	 * Kurulum sihirbazı durumları: boş = henüz yapılmadı.
 	 */
 	const WIZARD_STATES = array( '', 'done', 'skipped' );
-
-	/**
-	 * "Yükseltilen kurulum için yeni deneyime geç" bayrağı (seçenek adı; varsayılan KAPALI).
-	 * Açıkken, motor/ekran seçimi hiç kaydedilmemiş (yükseltilmiş) kurulumlar yeni deneyime geçer;
-	 * açıkça kaydedilmiş seçim (ör. "Eski deneyime dön") her zaman korunur.
-	 */
-	const UPGRADE_FLAG_OPTION = 'wdp_upgrade_new_default';
 
 	/**
 	 * Önizleme açık mı (`?dp_preview=1`, yalnız yetkili yönetici; yalnız o istek; ayar YAZILMAZ).
@@ -105,12 +93,6 @@ class Settings {
 				'checkbox_label' => array(
 					'type'    => 'string',
 					'default' => '',
-				),
-			),
-			'experiences' => array(
-				'engine' => array(
-					'type'    => 'string',
-					'default' => 'legacy',
 				),
 			),
 			'admin'       => array(
@@ -237,17 +219,6 @@ class Settings {
 				}
 			}
 		}
-		if ( self::upgrade_new_default() ) {
-			if ( ! isset( $stored['experiences']['engine'] ) ) {
-				$out['experiences']['engine'] = 'new';
-			}
-			if ( ! isset( $stored['admin']['ui'] ) ) {
-				$out['admin']['ui'] = 'new';
-			}
-		}
-		if ( ! in_array( $out['experiences']['engine'], self::ENGINES, true ) ) {
-			$out['experiences']['engine'] = 'legacy';
-		}
 		if ( ! in_array( $out['admin']['ui'], self::ADMIN_UIS, true ) ) {
 			$out['admin']['ui'] = 'legacy';
 		}
@@ -277,24 +248,7 @@ class Settings {
 	}
 
 	/**
-	 * "Yükseltilen kurulum için yeni deneyime geç" bayrağı açık mı (`wdp_upgrade_new_default` seçeneği;
-	 * `donation_panel_upgrade_new_default` filtresiyle geçersiz kılınabilir). Varsayılan: kapalı.
-	 *
-	 * @return bool
-	 */
-	public static function upgrade_new_default() {
-		$on = in_array( get_option( self::UPGRADE_FLAG_OPTION, '' ), array( true, 1, '1', 'yes', 'true', 'on' ), true );
-
-		/**
-		 * Yükseltilen kurulumların yeni deneyime geçişini açar/kapatır.
-		 *
-		 * @param bool $on Bayrak açık mı.
-		 */
-		return (bool) apply_filters( 'donation_panel_upgrade_new_default', $on );
-	}
-
-	/**
-	 * Yeni kurulumda (hiç ayar ve eski sürüm izi yok) yeni deneyimi varsayılan yazar; mevcut kurulumda hiçbir şey yapmaz.
+	 * Yeni kurulumda (hiç ayar ve eski sürüm izi yok) yeni yönetici ekranını varsayılan yazar; mevcut kurulumda hiçbir şey yapmaz.
 	 * İdempotent: ayar bir kez varsa bir daha dokunmaz. Etkinleştirmede çağrılır.
 	 *
 	 * @return bool Yazıldıysa true.
@@ -308,25 +262,10 @@ class Settings {
 		}
 		$seed = self::normalize(
 			array(
-				'experiences' => array( 'engine' => 'new' ),
 				'admin'       => array( 'ui' => 'new' ),
 			)
 		);
 		return (bool) update_option( self::OPTION_NAME, $seed, false );
-	}
-
-	/**
-	 * Yeni nesil form motoru seçili mi (örnek gerektirmez; `experiences` modülünün varsayılan durumu).
-	 *
-	 * @return bool
-	 */
-	public static function engine_is_new() {
-		if ( self::$preview ) {
-			return true;
-		}
-		$stored = get_option( self::OPTION_NAME, array() );
-		$all    = self::normalize( is_array( $stored ) ? $stored : array() );
-		return 'new' === $all['experiences']['engine'];
 	}
 
 	/**

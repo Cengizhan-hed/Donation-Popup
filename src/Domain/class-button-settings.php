@@ -1,26 +1,38 @@
 <?php
 /**
- * Düğme ayarları (`wdp_button_settings`) okuma ve normalleştirme.
+ * Düğme ayarları (`wdp_button_settings` seçeneği): okuma ve eski anahtarları yeni şemaya taşıyarak normalleştirme.
  *
  * @package DonationPanel
  */
 
 namespace DonationPanel\Domain;
 
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
-}
+defined( 'ABSPATH' ) || exit;
 
 /**
- * Class Button_Settings
+ * Button_Settings.
  */
-class Button_Settings {
+final class Button_Settings {
 
-/**
-	 * Eski kurulumlar: sadece button_text_donate kayıtlıysa popup buton metnine yansıtır.
+	/**
+	 * Seçenek adı (veri sözleşmesi; değişmez).
+	 */
+	const OPTION = 'wdp_button_settings';
+
+	/**
+	 * Normalleştirilmiş düğme ayarları.
 	 *
-	 * @param mixed $settings get_option('wdp_button_settings') ham değeri (bozuk kayıtta dizi olmayabilir).
-	 * @return array
+	 * @return array<string, mixed>
+	 */
+	public static function get() {
+		return self::normalize_legacy_popup_button_text( get_option( self::OPTION, array() ) );
+	}
+
+	/**
+	 * Eski kurulumlar: yalnız `button_text_donate` kayıtlıysa popup düğme metnine yansıtır.
+	 *
+	 * @param mixed $settings `get_option( 'wdp_button_settings' )` ham değeri (bozuk kayıtta dizi olmayabilir).
+	 * @return array<string, mixed>
 	 */
 	public static function normalize_legacy_popup_button_text( $settings ) {
 		if ( ! is_array( $settings ) ) {

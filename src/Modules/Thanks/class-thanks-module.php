@@ -118,7 +118,7 @@ final class Thanks_Module implements Module_Interface {
 	 * @return string
 	 */
 	private function impact_text( array $summary, Settings $settings ) {
-		if ( 1 !== count( $summary['lines'] ) || ! $settings->module_enabled( 'impact', Settings::engine_is_new() ) ) {
+		if ( 1 !== count( $summary['lines'] ) || ! $settings->module_enabled( 'impact', true ) ) {
 			return '';
 		}
 		$store_currency = function_exists( 'get_woocommerce_currency' ) ? (string) get_woocommerce_currency() : '';

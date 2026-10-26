@@ -2,7 +2,7 @@
 /**
  * i18n altyapısı — Domain Path, textdomain, JS sözlük.
  *
- * @package WooCommerce\Donation_Popup
+ * @package DonationPanel
  */
 
 declare(strict_types=1);

@@ -158,11 +158,6 @@ final class Settings_Page {
 			$current['modules'][ $slug ] = ! empty( $input['modules'][ $slug ] );
 		}
 
-		$engine = isset( $input['experiences']['engine'] ) ? sanitize_key( (string) $input['experiences']['engine'] ) : '';
-		if ( in_array( $engine, Settings::ENGINES, true ) ) {
-			$current['experiences']['engine'] = $engine;
-		}
-
 		$ui = isset( $input['admin']['ui'] ) ? sanitize_key( (string) $input['admin']['ui'] ) : '';
 		if ( in_array( $ui, Settings::ADMIN_UIS, true ) ) {
 			$current['admin']['ui'] = $ui;
@@ -279,22 +274,7 @@ final class Settings_Page {
 	 * @return string
 	 */
 	private function panel_general() {
-		$engine = (string) $this->settings->get( 'experiences.engine', 'legacy' );
-
-		$html  = Admin_View::row(
-			__( 'Donation form experience', 'woo-donation-popup' ),
-			__( 'The new form adds donation types and a calmer, mobile-first layout, and is the default. The classic form will be removed in a future version. On phones the form always opens as a bottom sheet.', 'woo-donation-popup' ),
-			Admin_View::select(
-				self::field( 'experiences', 'engine' ),
-				'dpa-engine',
-				array(
-					'legacy' => __( 'Classic form engine (will be removed in 12.0)', 'woo-donation-popup' ),
-					'new'    => __( 'New form engine', 'woo-donation-popup' ),
-				),
-				$engine
-			),
-			'dpa-engine'
-		);
+		$html = '';
 		$html .= Admin_View::row(
 			__( 'Where the donate button appears', 'woo-donation-popup' ),
 			__( 'Automatic placement uses the standard WooCommerce spots on product pages. A shortcode and a block always work anywhere. Nothing to set up here.', 'woo-donation-popup' ),

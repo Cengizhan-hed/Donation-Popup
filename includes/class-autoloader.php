@@ -1,8 +1,10 @@
 <?php
 /**
- * WDP_* sınıf adlarını includes/ ve traits/ dosyalarına eşleyen SPL autoloader.
+ * Yönetici köprüsü yükleyicisi (GEÇİCİ): `includes/` altında kalan yönetici sınıflarının (WDP_*) bulduğu eski sınıf
+ * adlarını, taşınan ad alanlı sınıflara takma adla (`class_alias`) bağlar ve kalan dosyaları yükler.
+ * Yönetici dosyaları kaldırıldığında bu dizinle birlikte silinir (Bootstrap dosya yoksa köprüyü atlar).
  *
- * @package WooCommerce\Donation_Popup
+ * @package DonationPanel
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -15,7 +17,23 @@ if ( ! defined( 'ABSPATH' ) ) {
 class WDP_Autoloader {
 
 	/**
-	 * Register autoloader.
+	 * Eski ad => yeni sınıf (tam ad).
+	 */
+	const MOVED = array(
+		'WDP_Donation_Scope'                   => 'DonationPanel\\Domain\\Donation_Scope',
+		'WDP_Donation_Type'                    => 'DonationPanel\\Domain\\Donation_Type',
+		'WDP_Campaign_Goal'                    => 'DonationPanel\\Domain\\Campaign_Goal',
+		'WDP_Placement_Settings'               => 'DonationPanel\\Domain\\Placement_Settings',
+		'WDP_Progress_Currency'                => 'DonationPanel\\Domain\\Progress_Currency',
+		'WDP_Donation_Product_Context_Service' => 'DonationPanel\\Domain\\Product_Context',
+		'WDP_Addon_Product_Visibility'         => 'DonationPanel\\Domain\\Addon_Product_Visibility',
+		'WDP_Order_Meta_Keys'                  => 'DonationPanel\\WooCommerce\\Order_Meta_Keys',
+		'WDP_Donations_List'                   => 'DonationPanel\\Modules\\EntryPoints\\Donations_List',
+		'WDP_Security'                         => 'DonationPanel\\Support\\Security',
+	);
+
+	/**
+	 * Yükleyiciyi kaydeder.
 	 *
 	 * @return void
 	 */
@@ -24,75 +42,23 @@ class WDP_Autoloader {
 	}
 
 	/**
-	 * Convert WDP class name to class-{kebab}.php filename.
+	 * Sınıfı yükler.
 	 *
-	 * @param string $class_name Full class name.
-	 * @return string
-	 */
-	private static function class_name_to_file_name( $class_name ) {
-		$suffix = str_replace( 'WDP_', '', $class_name );
-		return 'class-' . strtolower( str_replace( '_', '-', $suffix ) ) . '.php';
-	}
-
-	/**
-	 * Try require_once if file exists.
-	 *
-	 * @param string $file_path Absolute path.
-	 * @return bool
-	 */
-	private static function require_if_exists( $file_path ) {
-		if ( $file_path && file_exists( $file_path ) ) {
-			require_once $file_path;
-			return true;
-		}
-		return false;
-	}
-
-	/**
-	 * Autoload classes.
-	 *
-	 * @param string $class_name Class name to load.
+	 * @param string $class_name Sınıf adı.
 	 * @return void
 	 */
 	public static function autoload( $class_name ) {
-		if ( strpos( $class_name, 'WDP_' ) !== 0 ) {
+		if ( 0 !== strpos( $class_name, 'WDP_' ) ) {
 			return;
 		}
-
-		$exception_classes = array(
-			'WDP_Exception',
-			'WDP_Product_Not_Found_Exception',
-			'WDP_Validation_Exception',
-			'WDP_Security_Exception',
-			'WDP_Cart_Exception',
-		);
-		if ( in_array( $class_name, $exception_classes, true ) ) {
-			self::require_if_exists( WDP_PLUGIN_DIR . 'includes/class-exceptions.php' );
+		if ( isset( self::MOVED[ $class_name ] ) ) {
+			class_alias( self::MOVED[ $class_name ], $class_name );
 			return;
 		}
-
-		$file_name = self::class_name_to_file_name( $class_name );
-		$root      = WDP_PLUGIN_DIR . 'includes/';
-
-		if ( self::require_if_exists( $root . $file_name ) ) {
-			return;
+		$file = __DIR__ . '/class-' . strtolower( str_replace( '_', '-', substr( $class_name, 4 ) ) ) . '.php';
+		if ( is_file( $file ) ) {
+			require_once $file;
 		}
-
-		if ( 'WDP_Js_I18n' === $class_name ) {
-			self::require_if_exists( $root . 'i18n/class-wdp-js-i18n.php' );
-			return;
-		}
-		if ( self::require_if_exists( $root . 'i18n/' . $file_name ) ) {
-			return;
-		}
-
-		// Phase 2: template renderers live under includes/templates/.
-		if ( self::require_if_exists( $root . 'templates/' . $file_name ) ) {
-			return;
-		}
-
-		// Third-party compatibility code (builder detection) lives only under includes/compat/.
-		self::require_if_exists( $root . 'compat/' . $file_name );
 	}
 }
 

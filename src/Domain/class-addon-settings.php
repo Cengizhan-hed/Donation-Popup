@@ -21,7 +21,7 @@ class Addon_Settings {
 /**
 	 * Alt bağış satırı için ürün meta'sındaki WooCommerce ürün ID'si.
 	 *
-	 * @param int|WC_Product $parent_product Ana bağış ürünü.
+	 * @param int|\WC_Product $parent_product Ana bağış ürünü.
 	 * @return int Geçerli WC ürün ID veya 0.
 	 */
 	public static function resolve_addon_wc_product_id( $parent_product ) {
@@ -92,7 +92,7 @@ class Addon_Settings {
 /**
 	 * Alt bağış aç/kapa buton metni (ürün meta → genel ayar → varsayılan).
 	 *
-	 * @param WC_Product|int|null $parent_product Ana bağış ürünü.
+	 * @param \WC_Product|int|null $parent_product Ana bağış ürünü.
 	 * @return string
 	 */
 	public static function get_addon_toggle_label( $parent_product = null ) {
@@ -120,7 +120,7 @@ class Addon_Settings {
 /**
 	 * Ürün meta veya genel ayar alt bağış WC ürün ID'si.
 	 *
-	 * @param WC_Product|int $parent_product Ana bağış ürünü.
+	 * @param \WC_Product|int $parent_product Ana bağış ürünü.
 	 * @return int
 	 */
 	public static function get_configured_addon_wc_product_id( $parent_product ) {
@@ -140,7 +140,7 @@ class Addon_Settings {
 /**
 	 * Alt bağış sabit fiyatı (ürün meta). 0 = özel tutar modu.
 	 *
-	 * @param WC_Product|int $parent_product Ana bağış ürünü.
+	 * @param \WC_Product|int $parent_product Ana bağış ürünü.
 	 * @return float
 	 */
 	public static function get_addon_fixed_price( $parent_product ) {
@@ -255,9 +255,7 @@ class Addon_Settings {
 
 		$min = (float) $min_price;
 		if ( $min > 0 && $amount + 0.0001 < $min ) {
-			$formatted = class_exists( 'DonationPanel\\WooCommerce\\Cart_Hooks' )
-				? Cart_Hooks::format_amount_for_message( $min, true )
-				: (string) $min;
+			$formatted = Cart_Hooks::format_amount_for_message( $min, true );
 			return array(
 				'ok'      => false,
 				'amount'  => $amount,

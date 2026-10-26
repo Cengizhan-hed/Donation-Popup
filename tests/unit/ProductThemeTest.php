@@ -2,7 +2,7 @@
 /**
  * 10.32.0 — Bu ürüne özel görünüm: renk önceliği, hex, türevler, köşe, yoğunluk, aydınlatma.
  *
- * @package WooCommerce\Donation_Popup
+ * @package DonationPanel
  */
 
 declare(strict_types=1);
@@ -175,7 +175,7 @@ final class ProductThemeTest extends TestCase {
 		$p->type = 'simple';
 		WDP_Test_State::$products[17] = $p;
 		WDP_Test_State::$post_meta[17] = array( '_theme_preset_id' => 'ocean' );
-		$ctx = WDP_Donation_Product_Context_Service::build_form_context($p);
+		$ctx = \DonationPanel\Domain\Product_Context::build_form_context($p);
 		$this->assertArrayNotHasKey('theme_preset_id', $ctx);
 	}
 
@@ -203,18 +203,18 @@ final class ProductThemeTest extends TestCase {
 		$this->assertStringContainsString($label, $html);
 		$this->assertStringNotContainsString('yurt dışındaki saha', $html);
 
-		$this->assertArrayHasKey('10.32.0', WDP_Migrations::steps());
+		$this->assertArrayHasKey('10.32.0', \DonationPanel\Core\Version_Migrations::steps());
 		WDP_Test_State::$options['wdp_button_settings'] = array(
 			'privacy_notice_text' => 'Kişisel verileriniz Aydınlatma Metni kapsamında işlenir.',
 		);
 		unset(WDP_Test_State::$options['wdp_migrated_10_32_0']);
-		$summary = WDP_Migrations::step_10_32_0(false);
+		$summary = \DonationPanel\Core\Version_Migrations::step_10_32_0(false);
 		$this->assertStringContainsString('cleared_legacy_default', $summary);
 		$this->assertSame('', WDP_Test_State::$options['wdp_button_settings']['privacy_notice_text']);
 
 		WDP_Test_State::$options['wdp_button_settings']['privacy_notice_text'] = 'Özel KVKK cümlem';
 		unset(WDP_Test_State::$options['wdp_migrated_10_32_0']);
-		WDP_Migrations::step_10_32_0(false);
+		\DonationPanel\Core\Version_Migrations::step_10_32_0(false);
 		$this->assertSame('Özel KVKK cümlem', WDP_Test_State::$options['wdp_button_settings']['privacy_notice_text']);
 	}
 

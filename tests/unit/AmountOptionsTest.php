@@ -2,7 +2,7 @@
 /**
  * 10.29.x Tutar seçenekleri: katı kayıt doğrulaması, önerilen tutar (ürün), işlem ücreti, geçiş.
  *
- * @package WooCommerce\Donation_Popup
+ * @package DonationPanel
  */
 
 declare(strict_types=1);
@@ -193,9 +193,9 @@ final class AmountOptionsTest extends TestCase {
 	}
 
 	public function test_steps_include_10_29_0_and_10_29_1(): void {
-		$this->assertArrayHasKey('10.29.0', WDP_Migrations::steps());
-		$this->assertArrayHasKey('10.29.1', WDP_Migrations::steps());
-		$this->assertArrayHasKey('10.30.0', WDP_Migrations::steps());
+		$this->assertArrayHasKey('10.29.0', \DonationPanel\Core\Version_Migrations::steps());
+		$this->assertArrayHasKey('10.29.1', \DonationPanel\Core\Version_Migrations::steps());
+		$this->assertArrayHasKey('10.30.0', \DonationPanel\Core\Version_Migrations::steps());
 	}
 
 	public function test_migration_10_29_0_repairs_and_is_idempotent(): void {
@@ -205,7 +205,7 @@ final class AmountOptionsTest extends TestCase {
 		WDP_Test_State::$post_meta[24] = array('_cover_fee_percent' => '');
 		WDP_Test_State::$options['wdp_button_settings'] = array('amount_presets' => '100, 200, 300, 400, 500, 600, 700, 800');
 
-		$summary = WDP_Migrations::step_10_29_0(false);
+		$summary = \DonationPanel\Core\Version_Migrations::step_10_29_0(false);
 		$this->assertStringContainsString('cover_fee_fixed:2', $summary);
 		$this->assertSame('15', WDP_Test_State::$post_meta[21]['_cover_fee_percent']);
 		$this->assertSame('0.5', WDP_Test_State::$post_meta[22]['_cover_fee_percent']);
@@ -213,7 +213,7 @@ final class AmountOptionsTest extends TestCase {
 		$this->assertSame('', WDP_Test_State::$post_meta[24]['_cover_fee_percent']);
 		$this->assertSame('100, 200, 300, 400, 500, 600', WDP_Test_State::$options['wdp_button_settings']['amount_presets']);
 
-		$again = WDP_Migrations::step_10_29_0(false);
+		$again = \DonationPanel\Core\Version_Migrations::step_10_29_0(false);
 		$this->assertStringContainsString('cover_fee_fixed:0', $again);
 		$this->assertStringContainsString('global_presets_trimmed:no', $again);
 	}
@@ -225,18 +225,18 @@ final class AmountOptionsTest extends TestCase {
 		);
 		WDP_Test_State::$post_meta[55] = array('_amount_preset_recommended' => '500');
 
-		$summary = WDP_Migrations::step_10_29_1(false);
+		$summary = \DonationPanel\Core\Version_Migrations::step_10_29_1(false);
 		$this->assertStringContainsString('global_recommended_removed:yes', $summary);
 		$this->assertArrayNotHasKey('amount_preset_recommended', WDP_Test_State::$options['wdp_button_settings']);
 		$this->assertSame('500', WDP_Test_State::$post_meta[55]['_amount_preset_recommended'], 'ürün meta korunur');
 
-		$again = WDP_Migrations::step_10_29_1(false);
+		$again = \DonationPanel\Core\Version_Migrations::step_10_29_1(false);
 		$this->assertStringContainsString('global_recommended_removed:no', $again);
 	}
 
 	public function test_migration_10_29_0_skips_fresh_install(): void {
 		WDP_Test_State::$post_meta[21] = array('_cover_fee_percent' => '50');
-		$this->assertStringContainsString('fresh', WDP_Migrations::step_10_29_0(true));
+		$this->assertStringContainsString('fresh', \DonationPanel\Core\Version_Migrations::step_10_29_0(true));
 		$this->assertSame('50', WDP_Test_State::$post_meta[21]['_cover_fee_percent']);
 	}
 

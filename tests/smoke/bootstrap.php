@@ -22,7 +22,6 @@ if (!defined('WDP_VERSION')) {
 	define('WDP_VERSION', '11.0.0');
 }
 
-require_once WDP_PLUGIN_DIR . 'includes/class-exceptions.php';
 require_once WDP_PLUGIN_DIR . 'includes/class-autoloader.php';
 WDP_Autoloader::register();
 require_once WDP_PLUGIN_DIR . 'src/Core/class-autoloader.php';

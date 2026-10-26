@@ -2,7 +2,7 @@
 /**
  * E2A: Form_Renderer + dört kap + tema geçersiz kılma.
  *
- * @package WooCommerce\Donation_Popup
+ * @package DonationPanel
  */
 
 declare(strict_types=1);

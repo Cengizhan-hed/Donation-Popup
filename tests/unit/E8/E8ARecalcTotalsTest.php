@@ -4,7 +4,7 @@
  *
  * wc_get_orders çiftini bu dosya tanımlar; diğer testlerle çakışmaması için her test ayrı süreçte koşar.
  *
- * @package WooCommerce\Donation_Popup
+ * @package DonationPanel
  */
 
 declare(strict_types=1);

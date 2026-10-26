@@ -51,7 +51,7 @@ final class Field_Validator {
 	 * @return float
 	 */
 	private static function to_store_currency( $amount ) {
-		return class_exists( 'DonationPanel\\WooCommerce\\Cart_Hooks' ) ? (float) Cart_Hooks::amount_to_store_currency( $amount ) : (float) $amount;
+		return (float) Cart_Hooks::amount_to_store_currency( $amount );
 	}
 
 	/**
@@ -61,7 +61,7 @@ final class Field_Validator {
 	 * @return float
 	 */
 	private static function from_store_currency( $amount ) {
-		return class_exists( 'DonationPanel\\WooCommerce\\Cart_Hooks' ) ? (float) Cart_Hooks::amount_from_store_currency( $amount ) : (float) $amount;
+		return (float) Cart_Hooks::amount_from_store_currency( $amount );
 	}
 
 	/**

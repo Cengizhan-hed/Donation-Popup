@@ -21,7 +21,7 @@ class Product_Context {
 	 * Resolve product by ID safely.
 	 *
 	 * @param int $product_id Product ID.
-	 * @return WC_Product|false
+	 * @return \WC_Product|false
 	 */
 	public static function get_product( $product_id ) {
 		$product_id = absint( $product_id );
@@ -40,7 +40,7 @@ class Product_Context {
 	/**
 	 * Build normalized form context.
 	 *
-	 * @param WC_Product $product Product.
+	 * @param \WC_Product $product Product.
 	 * @return array
 	 */
 	public static function build_form_context( $product ) {
@@ -86,10 +86,8 @@ class Product_Context {
 		$addon_fixed_price    = (string) Addon_Product_Visibility::get_meta( $product, '_addon_fixed_price' );
 		$addon_fixed_float    = ( $addon_fixed_price !== '' ) ? (float) wc_format_decimal( $addon_fixed_price ) : 0.0;
 		$addon_is_fixed_price = $addon_fixed_float > 0;
-		$addon_wc_product_id  = class_exists( 'WDP_Utils' )
-			? (string) Addon_Settings::get_configured_addon_wc_product_id( $product )
-			: (string) absint( Addon_Product_Visibility::get_meta( $product, '_addon_wc_product_id' ) );
-		$addon_toggle_label   = class_exists( 'WDP_Utils' ) ? Addon_Settings::get_addon_toggle_label( $product ) : __( 'Add add-on donation', 'woo-donation-popup' );
+		$addon_wc_product_id  = (string) Addon_Settings::get_configured_addon_wc_product_id( $product );
+		$addon_toggle_label   = Addon_Settings::get_addon_toggle_label( $product );
 
 		$context = array(
 			'product_id'                => $product_id,
@@ -150,19 +148,11 @@ class Product_Context {
 			'enable_social_proof'       => $product->get_meta( '_enable_social_proof' ) === 'yes',
 			'social_proof_text'         => trim( (string) $product->get_meta( '_social_proof_text' ) ),
 			'enable_cover_fee'          => $product->get_meta( '_enable_cover_fee' ) === 'yes',
-			'cover_fee_percent'         => WDP_Form_Modules::clamp_cover_fee_percent_for_runtime( $product->get_meta( '_cover_fee_percent' ) ),
-			'goal_reached_action'       => class_exists( 'DonationPanel\\Domain\\Campaign_Goal' )
-				? Campaign_Goal::resolve_action( $product )
-				: 'message',
-			'goal_reached_message'      => class_exists( 'DonationPanel\\Domain\\Campaign_Goal' )
-				? Campaign_Goal::resolve_message( $product )
-				: '',
-			'goal_reached'              => class_exists( 'DonationPanel\\Domain\\Campaign_Goal' )
-				? Campaign_Goal::is_goal_reached( $product_id, array( 'include_pending' => false ) )
-				: false,
-			'goal_closed'               => class_exists( 'DonationPanel\\Domain\\Campaign_Goal' )
-				? Campaign_Goal::should_block_new_donations( $product )
-				: false,
+			'cover_fee_percent'         => Cover_Fee::clamp_percent( $product->get_meta( '_cover_fee_percent' ) ),
+			'goal_reached_action'       => Campaign_Goal::resolve_action( $product ),
+			'goal_reached_message'      => Campaign_Goal::resolve_message( $product ),
+			'goal_reached'              => Campaign_Goal::is_goal_reached( $product_id, array( 'include_pending' => false ) ),
+			'goal_closed'               => Campaign_Goal::should_block_new_donations( $product ),
 		);
 
 		return apply_filters( 'wdp_form_context', $context, $product );
@@ -171,7 +161,7 @@ class Product_Context {
 	/**
 	 * Post meta yes/no with empty → yes.
 	 *
-	 * @param WC_Product $product Product.
+	 * @param \WC_Product $product Product.
 	 * @param string     $key     Meta key.
 	 * @return bool
 	 */
@@ -186,7 +176,7 @@ class Product_Context {
 	/**
 	 * yes/no meta with empty → global button setting.
 	 *
-	 * @param WC_Product $product     Product.
+	 * @param \WC_Product $product     Product.
 	 * @param string     $meta_key    Meta key.
 	 * @param string     $global_key  Key in wdp_button_settings.
 	 * @return bool
@@ -198,7 +188,7 @@ class Product_Context {
 	/**
 	 * Public resolver: yes/no meta with empty → global button setting.
 	 *
-	 * @param WC_Product $product     Product.
+	 * @param \WC_Product $product     Product.
 	 * @param string     $meta_key    Meta key.
 	 * @param string     $global_key  Key in wdp_button_settings.
 	 * @return bool

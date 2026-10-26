@@ -2,7 +2,7 @@
 /**
  * Yönetici CSS/JS yalnız eklentinin kendi ekranlarında yüklenir (Y6).
  *
- * @package WooCommerce\Donation_Popup
+ * @package DonationPanel
  */
 
 declare(strict_types=1);

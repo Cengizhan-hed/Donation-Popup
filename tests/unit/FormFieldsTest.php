@@ -2,7 +2,7 @@
 /**
  * 10.30.0 Form alanları: sunucu yok sayma, e-posta doğrulama, sınırlar, anonim maske, üçlü, aydınlatma.
  *
- * @package WooCommerce\Donation_Popup
+ * @package DonationPanel
  */
 
 declare(strict_types=1);
@@ -62,7 +62,7 @@ final class FormFieldsTest extends TestCase {
 			'donation_dedication' => 'İthaf',
 			'donation_anonymous'  => '1',
 		);
-		$out = WDP_Cart::add_donation_item_data(array(), 102, 0);
+		$out = \DonationPanel\WooCommerce\Cart_Hooks::add_donation_item_data(array(), 102, 0);
 		$this->assertArrayHasKey('donation_data', $out);
 		$this->assertArrayNotHasKey('email', $out['donation_data']);
 		$this->assertArrayNotHasKey('dedication', $out['donation_data']);
@@ -100,7 +100,7 @@ final class FormFieldsTest extends TestCase {
 
 	public function test_invalid_email_throws_validation(): void {
 		$p = $this->product(104, array('_enable_email' => 'yes'));
-		$this->expectException(WDP_Validation_Exception::class);
+		$this->expectException(\DonationPanel\Support\Validation_Exception::class);
 		$data = array();
 		try {
 			WDP_Donation_Optional_Fields::apply_from_request(
@@ -108,7 +108,7 @@ final class FormFieldsTest extends TestCase {
 				array('donation_email' => 'not-an-email'),
 				$data
 			);
-		} catch (WDP_Validation_Exception $e) {
+		} catch (\DonationPanel\Support\Validation_Exception $e) {
 			$this->assertTrue(in_array('donation_email', $e->getErrors(), true));
 			throw $e;
 		}
@@ -140,7 +140,7 @@ final class FormFieldsTest extends TestCase {
 
 	public function test_security_sanitize_text_char_based(): void {
 		$s = str_repeat('İ', 105);
-		$o = WDP_Security::sanitize_text($s, 100);
+		$o = \DonationPanel\Support\Security::sanitize_text($s, 100);
 		$this->assertSame(100, mb_strlen($o));
 	}
 
@@ -167,27 +167,27 @@ final class FormFieldsTest extends TestCase {
 	public function test_wizard_tristate_resolution(): void {
 		WDP_Test_State::$options['wdp_button_settings'] = array('enable_multi_step' => '1');
 		$empty = $this->product(201, array());
-		$ctx   = WDP_Donation_Product_Context_Service::build_form_context($empty);
+		$ctx   = \DonationPanel\Domain\Product_Context::build_form_context($empty);
 		$this->assertTrue($ctx['enable_wizard'], 'boş meta → genel açık');
 
 		$off = $this->product(202, array('_enable_wizard' => 'no'));
-		$ctx = WDP_Donation_Product_Context_Service::build_form_context($off);
+		$ctx = \DonationPanel\Domain\Product_Context::build_form_context($off);
 		$this->assertFalse($ctx['enable_wizard'], 'ürün Kapalı genel açığı ezer');
 
 		$on = $this->product(203, array('_enable_wizard' => 'yes'));
 		WDP_Test_State::$options['wdp_button_settings'] = array('enable_multi_step' => '0');
-		$ctx = WDP_Donation_Product_Context_Service::build_form_context($on);
+		$ctx = \DonationPanel\Domain\Product_Context::build_form_context($on);
 		$this->assertTrue($ctx['enable_wizard'], 'ürün Açık genel kapalıyı ezer');
 	}
 
 	public function test_field_icons_tristate_resolution(): void {
 		WDP_Test_State::$options['wdp_button_settings'] = array('enable_field_icons' => '0');
 		$empty = $this->product(211, array());
-		$ctx   = WDP_Donation_Product_Context_Service::build_form_context($empty);
+		$ctx   = \DonationPanel\Domain\Product_Context::build_form_context($empty);
 		$this->assertFalse($ctx['enable_field_icons'], 'boş → genel kapalı');
 
 		$on = $this->product(212, array('_enable_field_icons' => 'yes'));
-		$ctx = WDP_Donation_Product_Context_Service::build_form_context($on);
+		$ctx = \DonationPanel\Domain\Product_Context::build_form_context($on);
 		$this->assertTrue($ctx['enable_field_icons']);
 	}
 
@@ -228,14 +228,14 @@ final class FormFieldsTest extends TestCase {
 	}
 
 	public function test_migration_10_30_0_idempotent(): void {
-		$this->assertArrayHasKey('10.30.0', WDP_Migrations::steps());
+		$this->assertArrayHasKey('10.30.0', \DonationPanel\Core\Version_Migrations::steps());
 		WDP_Test_State::$options['wdp_button_settings'] = array('enable_donor_email' => '1');
-		$summary = WDP_Migrations::step_10_30_0(false);
+		$summary = \DonationPanel\Core\Version_Migrations::step_10_30_0(false);
 		$this->assertStringContainsString('privacy_keys:', $summary);
 		$this->assertSame('0', WDP_Test_State::$options['wdp_button_settings']['enable_privacy_notice']);
-		$again = WDP_Migrations::step_10_30_0(false);
+		$again = \DonationPanel\Core\Version_Migrations::step_10_30_0(false);
 		$this->assertStringContainsString('none', $again);
-		$this->assertStringContainsString('fresh', WDP_Migrations::step_10_30_0(true));
+		$this->assertStringContainsString('fresh', \DonationPanel\Core\Version_Migrations::step_10_30_0(true));
 	}
 
 	public function test_legacy_cart_path_still_reachable_without_ajax_flow(): void {
@@ -248,13 +248,13 @@ final class FormFieldsTest extends TestCase {
 			'donation_email'      => 'ok@example.com',
 			'donation_dedication' => 'Annem',
 		);
-		$out = WDP_Cart::add_donation_item_data(array(), 120, 0);
+		$out = \DonationPanel\WooCommerce\Cart_Hooks::add_donation_item_data(array(), 120, 0);
 		$this->assertSame('ok@example.com', $out['donation_data']['email']);
 		$this->assertSame('Annem', $out['donation_data']['dedication']);
 
 		$_POST['wdp_ajax_flow'] = '1';
 		$_POST['action']        = 'wdp_ajax_add_to_cart';
-		$skip                   = WDP_Cart::add_donation_item_data(array('keep' => 1), 120, 0);
+		$skip                   = \DonationPanel\WooCommerce\Cart_Hooks::add_donation_item_data(array('keep' => 1), 120, 0);
 		$this->assertSame(array('keep' => 1), $skip, 'AJAX akışında legacy yol atlanır');
 		unset($_POST);
 	}

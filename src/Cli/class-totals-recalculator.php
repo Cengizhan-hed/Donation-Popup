@@ -50,7 +50,7 @@ final class Totals_Recalculator {
 				continue;
 			}
 			$has_total = '' !== get_post_meta( $id, self::META_TOTAL, true );
-			if ( $has_total || ( class_exists( 'DonationPanel\\Domain\\Donation_Scope' ) && Donation_Scope::is_donation_product( $id ) ) ) {
+			if ( $has_total || ( Donation_Scope::is_donation_product( $id ) ) ) {
 				$ids[] = $id;
 			}
 		}

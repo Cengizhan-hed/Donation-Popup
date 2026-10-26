@@ -3,13 +3,12 @@
  * E5: bağışçı hesabı — belirteç (süre, tek kullanım, karma), Bağışlarım (yalnız kendi siparişleri, eski anahtarlar),
  * REST (nonce, hız sınırı, enumeration yok, yetki), misafir bağlama, çıktı kaçışı, modül kaydı.
  *
- * @package WooCommerce\Donation_Popup
+ * @package DonationPanel
  */
 
 declare(strict_types=1);
 
 require_once dirname( __DIR__, 2 ) . '/support/e0-stubs.php';
-require_once dirname( __DIR__, 3 ) . '/includes/class-order-meta-keys.php';
 
 use DonationPanel\Core\Module_Registry;
 use DonationPanel\Core\Plugin;

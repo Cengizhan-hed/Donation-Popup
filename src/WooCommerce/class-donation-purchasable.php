@@ -34,7 +34,7 @@ class Donation_Purchasable {
 	 * Status, existence and catalog rules still apply (we only relax the empty-price gate).
 	 *
 	 * @param bool       $purchasable WC result.
-	 * @param WC_Product $product     Product.
+	 * @param \WC_Product $product     Product.
 	 * @return bool
 	 */
 	public static function filter_is_purchasable( $purchasable, $product ) {
@@ -44,11 +44,11 @@ class Donation_Purchasable {
 		if ( ! is_object( $product ) || ! method_exists( $product, 'get_id' ) ) {
 			return $purchasable;
 		}
-		if ( class_exists( 'DonationPanel\\Domain\\Donation_Scope' ) && ! Donation_Scope::is_donation_product( $product ) ) {
+		if ( ! Donation_Scope::is_donation_product( $product ) ) {
 			return $purchasable;
 		}
 		$id   = (int) $product->get_id();
-		$type = class_exists( 'DonationPanel\\Domain\\Donation_Type' ) ? Donation_Type::for_product( $id ) : '';
+		$type = Donation_Type::for_product( $id );
 		if ( ! in_array( $type, array( Donation_Type::CUSTOM, Donation_Type::CAMPAIGN ), true ) ) {
 			return $purchasable;
 		}

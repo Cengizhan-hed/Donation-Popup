@@ -193,7 +193,7 @@ final class Cart {
 			$extra['wdp_base_unit_price'] = Cart_Data::with_fee( (float) $model['unit_price'], $fee_percent, $decimals );
 		}
 		$item = Cart_Data::cart_item_data( $donation_data, $custom, $product_id, $submission, $type, $extra );
-		if ( isset( $item['custom_price'] ) && class_exists( 'DonationPanel\\Domain\\Progress_Currency' ) ) {
+		if ( isset( $item['custom_price'] ) ) {
 			// Yazılan tutarın birimi: sepet fiyatı ana birime çevrilir, gösterim bu birimde kalır (Cart_Hooks::apply_custom_price_to_cart).
 			$active = Progress_Currency::get_active_currency();
 			if ( '' !== $active ) {
@@ -252,17 +252,15 @@ final class Cart {
 			'message' => '',
 			'errors'  => array(),
 		);
-		if ( class_exists( 'DonationPanel\\Domain\\Campaign_Goal' ) ) {
-			try {
-				Campaign_Goal::assert_accepts_donation( $product );
-			} catch ( \Exception $e ) {
-				return array(
-					'message' => $e->getMessage(),
-					'errors'  => array(),
-				);
-			}
+		try {
+			Campaign_Goal::assert_accepts_donation( $product );
+		} catch ( \Exception $e ) {
+			return array(
+				'message' => $e->getMessage(),
+				'errors'  => array(),
+			);
 		}
-		if ( ! empty( $model['allow_custom'] ) && class_exists( 'DonationPanel\\WooCommerce\\Cart_Hooks' ) ) {
+		if ( ! empty( $model['allow_custom'] ) ) {
 			$min   = method_exists( $product, 'get_meta' ) ? $product->get_meta( '_min_custom_price' ) : '';
 			$error = (string) Cart_Hooks::get_donation_amount_error( $amount, $min, (int) $product->get_id(), true );
 			if ( '' !== $error ) {
@@ -283,9 +281,7 @@ final class Cart {
 	 * @return mixed
 	 */
 	private function with_plugin_flow( $callback ) {
-		if ( class_exists( 'DonationPanel\\WooCommerce\\Cart_Hooks' ) && method_exists( 'DonationPanel\\WooCommerce\\Cart_Hooks', 'run_in_plugin_flow' ) ) {
-			return Cart_Hooks::run_in_plugin_flow( $callback );
-		}
+		return Cart_Hooks::run_in_plugin_flow( $callback );
 		return call_user_func( $callback );
 	}
 

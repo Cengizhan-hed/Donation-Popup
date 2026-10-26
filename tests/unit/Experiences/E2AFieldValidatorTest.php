@@ -2,7 +2,7 @@
 /**
  * E2A: alan doğrulama (tutar ayrıştırma, e-posta, telefon, Türkçe karakter uzunluğu).
  *
- * @package WooCommerce\Donation_Popup
+ * @package DonationPanel
  */
 
 declare(strict_types=1);

@@ -10,7 +10,7 @@ declare(strict_types=1);
 use PHPUnit\Framework\TestCase;
 
 /**
- * @covers WDP_Security
+ * @covers Security
  */
 final class ClientIpTest extends TestCase {
 
@@ -22,7 +22,7 @@ final class ClientIpTest extends TestCase {
 		$_SERVER['REMOTE_ADDR']          = '203.0.113.10';
 		$_SERVER['HTTP_X_FORWARDED_FOR'] = '198.51.100.20';
 
-		$this->assertSame( '203.0.113.10', WDP_Security::get_client_ip() );
+		$this->assertSame( '203.0.113.10', \DonationPanel\Support\Security::get_client_ip() );
 	}
 
 	public function test_uses_forwarded_for_when_proxy_trusted(): void {
@@ -35,10 +35,10 @@ final class ClientIpTest extends TestCase {
 			}
 		);
 
-		$this->assertSame( '198.51.100.20', WDP_Security::get_client_ip() );
+		$this->assertSame( '198.51.100.20', \DonationPanel\Support\Security::get_client_ip() );
 	}
 
 	public function test_returns_zero_when_no_valid_ip(): void {
-		$this->assertSame( '0.0.0.0', WDP_Security::get_client_ip() );
+		$this->assertSame( '0.0.0.0', \DonationPanel\Support\Security::get_client_ip() );
 	}
 }

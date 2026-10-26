@@ -32,10 +32,10 @@ class Order_Hooks {
 	/**
 	 * Add donation meta to order item
 	 *
-	 * @param WC_Order_Item_Product $item         Order item.
+	 * @param \WC_Order_Item_Product $item         Order item.
 	 * @param string                $cart_item_key Cart item key.
 	 * @param array                 $values       Cart item values.
-	 * @param WC_Order              $order        Order.
+	 * @param \WC_Order              $order        Order.
 	 */
 	public static function add_donation_meta_to_order( $item, $cart_item_key, $values, $order ) {
 		// Özel fiyat varsa order item meta'ya ekle (progress bar için gerekli)

@@ -38,7 +38,7 @@ final class Thanks_Summary {
 		if ( method_exists( $item, 'get_meta' ) && '' !== (string) $item->get_meta( '_custom_price', true ) ) {
 			return true;
 		}
-		if ( class_exists( 'DonationPanel\\Domain\\Donation_Scope' ) && method_exists( $item, 'get_product' ) ) {
+		if ( method_exists( $item, 'get_product' ) ) {
 			$product = $item->get_product();
 			return $product && Donation_Scope::is_donation_product( $product );
 		}

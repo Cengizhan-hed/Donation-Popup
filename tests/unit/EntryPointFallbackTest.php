@@ -2,7 +2,7 @@
 /**
  * Otomatik giriş noktası yedeği: giriş yoksa çiz, varsa çizme, çift giriş yok, ID'siz çözüm.
  *
- * @package WooCommerce\Donation_Popup
+ * @package DonationPanel
  */
 
 declare(strict_types=1);
@@ -12,23 +12,23 @@ use PHPUnit\Framework\TestCase;
 final class EntryPointFallbackTest extends TestCase {
 	protected function setUp(): void {
 		WDP_Test_State::reset();
-		WDP_Render_Registry::reset();
+		\DonationPanel\Modules\EntryPoints\Render_Registry::reset();
 		\DonationPanel\Modules\EntryPoints\Auto_Placement::reset_request_flags();
-		WDP_Placement_Settings::flush();
+		\DonationPanel\Domain\Placement_Settings::flush();
 		$this->settings(array());
 		unset($GLOBALS['product'], $GLOBALS['post']);
 	}
 
 	protected function tearDown(): void {
 		unset($GLOBALS['product'], $GLOBALS['post']);
-		WDP_Render_Registry::reset();
+		\DonationPanel\Modules\EntryPoints\Render_Registry::reset();
 	}
 
 	/**
 	 * @param array<string, string> $extra Placement overrides.
 	 */
 	private function settings(array $extra): void {
-		WDP_Test_State::$options[ WDP_Placement_Settings::OPTION ] = array_merge(
+		WDP_Test_State::$options[ \DonationPanel\Domain\Placement_Settings::OPTION ] = array_merge(
 			array(
 				'auto_place'     => 'yes',
 				'display'        => 'button_panel',
@@ -36,7 +36,7 @@ final class EntryPointFallbackTest extends TestCase {
 			),
 			$extra
 		);
-		WDP_Placement_Settings::flush();
+		\DonationPanel\Domain\Placement_Settings::flush();
 	}
 
 	private function product(int $id): WC_Product {
@@ -60,8 +60,8 @@ final class EntryPointFallbackTest extends TestCase {
 		$this->product(30);
 		$html = $this->fallback_html();
 		$this->assertStringContainsString('wdp-donate-button', $html);
-		$this->assertTrue(WDP_Render_Registry::has_product_ui(30));
-		$this->assertTrue(WDP_Render_Registry::has_auto(30));
+		$this->assertTrue(\DonationPanel\Modules\EntryPoints\Render_Registry::has_product_ui(30));
+		$this->assertTrue(\DonationPanel\Modules\EntryPoints\Render_Registry::has_auto(30));
 	}
 
 	public function test_fallback_runs_once_even_if_hooked_twice(): void {
@@ -82,7 +82,7 @@ final class EntryPointFallbackTest extends TestCase {
 
 	public function test_inline_form_entry_counts(): void {
 		$this->product(33);
-		WDP_Render_Registry::claim_form(33);
+		\DonationPanel\Modules\EntryPoints\Render_Registry::claim_form(33);
 		$this->assertSame('', $this->fallback_html());
 	}
 
@@ -112,7 +112,7 @@ final class EntryPointFallbackTest extends TestCase {
 		$this->product(37);
 		WDP_Test_State::$queried_id = 36;
 		$GLOBALS['product']         = WDP_Test_State::$products[36];
-		WDP_Render_Registry::mark_trigger(37);
+		\DonationPanel\Modules\EntryPoints\Render_Registry::mark_trigger(37);
 		$this->assertStringContainsString('wdp-donate-button', $this->fallback_html());
 	}
 
@@ -120,7 +120,7 @@ final class EntryPointFallbackTest extends TestCase {
 		$this->settings(array('auto_place' => 'no'));
 		$this->product(38);
 		$this->assertSame('', $this->fallback_html());
-		$this->assertFalse(WDP_Render_Registry::has_product_ui(38));
+		$this->assertFalse(\DonationPanel\Modules\EntryPoints\Render_Registry::has_product_ui(38));
 	}
 
 	public function test_product_override_off_draws_nothing(): void {
@@ -159,7 +159,7 @@ final class EntryPointFallbackTest extends TestCase {
 
 	public function test_block_add_to_cart_drops_native_content_when_other_entry_exists(): void {
 		$this->product(46);
-		WDP_Render_Registry::mark_trigger(46);
+		\DonationPanel\Modules\EntryPoints\Render_Registry::mark_trigger(46);
 		$out = \DonationPanel\Modules\EntryPoints\Auto_Placement::filter_block_add_to_cart('<form class="cart">native</form>', array(), null);
 		$this->assertStringNotContainsString('native', $out);
 	}

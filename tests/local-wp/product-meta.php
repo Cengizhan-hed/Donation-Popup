@@ -32,7 +32,7 @@ function wdp_local_product_id($raw) {
 
 function wdp_local_invalidate($id) {
 	if (class_exists('WDP_Utils') && method_exists('WDP_Utils', 'invalidate_product_donation_caches')) {
-		WDP_Utils::invalidate_product_donation_caches($id);
+		\DonationPanel\Domain\Campaign_Totals::invalidate_product_donation_caches($id);
 	}
 	if (function_exists('wc_delete_product_transients')) {
 		wc_delete_product_transients($id);
@@ -177,12 +177,12 @@ try {
 			'upsell'  => array_values(array_filter($upsell)),
 		);
 	} elseif ($cmd === 'bump-list') {
-		if (class_exists('WDP_Donations_List')) {
-			if (method_exists('WDP_Donations_List', 'reset_bump_guard')) {
-				WDP_Donations_List::reset_bump_guard();
+		if (class_exists('DonationPanel\\Modules\\EntryPoints\\Donations_List')) {
+			if (method_exists('DonationPanel\\Modules\\EntryPoints\\Donations_List', 'reset_bump_guard')) {
+				\DonationPanel\Modules\EntryPoints\Donations_List::reset_bump_guard();
 			}
-			if (method_exists('WDP_Donations_List', 'bump_cache')) {
-				WDP_Donations_List::bump_cache();
+			if (method_exists('DonationPanel\\Modules\\EntryPoints\\Donations_List', 'bump_cache')) {
+				\DonationPanel\Modules\EntryPoints\Donations_List::bump_cache();
 			}
 		}
 		$result = array( 'ok' => true );

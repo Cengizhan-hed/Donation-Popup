@@ -34,7 +34,7 @@ final class Progress_Data {
 	 */
 	public static function for_product( $product_id ) {
 		$product_id = absint( $product_id );
-		if ( $product_id < 1 || ! class_exists( 'DonationPanel\\Domain\\Campaign_Goal' ) || ! Campaign_Goal::is_campaign_product( $product_id ) ) {
+		if ( $product_id < 1 || ! Campaign_Goal::is_campaign_product( $product_id ) ) {
 			return null;
 		}
 		$goal = Campaign_Goal::resolve_goal_amount( $product_id );
@@ -42,7 +42,7 @@ final class Progress_Data {
 			return null;
 		}
 
-		$currency  = class_exists( 'DonationPanel\\Domain\\Progress_Currency' ) ? Progress_Currency::get_active_currency() : '';
+		$currency  = Progress_Currency::get_active_currency();
 		$cache_key = 'dp_progress_' . $product_id . '_' . $currency;
 		$cached    = get_transient( $cache_key );
 		if ( is_array( $cached ) ) {
@@ -50,7 +50,7 @@ final class Progress_Data {
 		}
 
 		$raised = Campaign_Goal::get_confirmed_total( $product_id );
-		$donors = class_exists( 'WDP_Utils' ) ? (int) Campaign_Totals::get_donor_count( $product_id ) : 0;
+		$donors = (int) Campaign_Totals::get_donor_count( $product_id );
 		$data   = self::build(
 			array(
 				'product_id' => $product_id,
@@ -104,9 +104,7 @@ final class Progress_Data {
 	 * @return float
 	 */
 	private static function display_amount( $amount ) {
-		if ( class_exists( 'DonationPanel\\Domain\\Progress_Currency' ) ) {
-			return (float) Progress_Currency::from_store_amount( $amount );
-		}
+		return (float) Progress_Currency::from_store_amount( $amount );
 		return (float) $amount;
 	}
 }

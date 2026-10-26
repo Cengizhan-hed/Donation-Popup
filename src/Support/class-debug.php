@@ -26,20 +26,15 @@ class Debug {
 	 * @return void
 	 */
 	public static function log( $message ) {
-		if ( ! self::$debug_enabled ) {
-			return;
-		}
-
-		if ( function_exists( 'wdp_debug_log' ) ) {
-			wdp_debug_log( $message );
+		if ( ! defined( 'WP_DEBUG' ) || true !== WP_DEBUG ) {
 			return;
 		}
 
 		if ( is_array( $message ) || is_object( $message ) ) {
-			error_log( print_r( $message, true ) );
+			error_log( print_r( $message, true ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions -- yalnız WP_DEBUG açıkken geliştirici günlüğü.
 			return;
 		}
 
-		error_log( (string) $message );
+		error_log( (string) $message ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- yalnız WP_DEBUG açıkken geliştirici günlüğü.
 	}
 }

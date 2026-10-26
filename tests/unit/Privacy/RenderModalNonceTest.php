@@ -2,7 +2,7 @@
 /**
  * wdp_render_modal: nonce zorunlu (403 + code nonce), süzgeçle kapatılabilir; ortak üretici ürün hatalarını döndürür.
  *
- * @package WooCommerce\Donation_Popup
+ * @package DonationPanel
  */
 
 declare(strict_types=1);

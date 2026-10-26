@@ -10,6 +10,7 @@
 
 namespace DonationPanel\Modules\Experiences;
 
+use DonationPanel\Domain\Amount_Presets;
 use DonationPanel\Domain\Product_Context;
 
 defined( 'ABSPATH' ) || exit;
@@ -31,9 +32,7 @@ final class Form_Context {
 		}
 
 		$legacy = array();
-		if ( class_exists( 'DonationPanel\\Domain\\Product_Context' ) ) {
-			$legacy = Product_Context::build_form_context( $product );
-		}
+		$legacy = Product_Context::build_form_context( $product );
 		return self::from_legacy( is_array( $legacy ) ? $legacy : array(), $product );
 	}
 
@@ -300,8 +299,8 @@ final class Form_Context {
 	 */
 	public static function parse_presets( $csv ) {
 		$csv = trim( (string) $csv );
-		if ( '' === $csv && class_exists( 'WDP_Form_Modules' ) ) {
-			$csv = (string) \WDP_Form_Modules::default_amount_presets_csv();
+		if ( '' === $csv ) {
+			$csv = Amount_Presets::default_csv();
 		}
 		$out   = array();
 		$parts = preg_split( '/[\s,;]+/', $csv );

@@ -2,7 +2,7 @@
 /**
  * wdp_get_product_info: 400 + yayımlı ürün success (katalog gizliliği düşürmez).
  *
- * @package WooCommerce\Donation_Popup
+ * @package DonationPanel
  */
 
 declare(strict_types=1);
@@ -48,7 +48,7 @@ final class ProductInfoAjaxTest extends TestCase {
 		$this->assertInstanceOf(WC_Product::class, $out);
 		$this->assertSame(31, $out->get_id());
 		// E8M: eski AJAX/lazy-modal yolu da katalogda gizli ama yayında ürünü kabul eder.
-		$this->assertTrue(WDP_Security::validate_product_id(31));
+		$this->assertTrue(\DonationPanel\Support\Security::validate_product_id(31));
 	}
 
 	public function test_validate_product_id_still_rejects_draft_private_pending_password(): void {
@@ -56,14 +56,14 @@ final class ProductInfoAjaxTest extends TestCase {
 			$p         = new WC_Product(40 + $i);
 			$p->status = $status;
 			WDP_Test_State::$products[40 + $i] = $p;
-			$this->assertFalse(WDP_Security::validate_product_id(40 + $i), $status);
+			$this->assertFalse(\DonationPanel\Support\Security::validate_product_id(40 + $i), $status);
 		}
 		$pw                = new WC_Product(50);
 		$pw->status        = 'publish';
 		$pw->post_password = 'x';
 		WDP_Test_State::$products[50] = $pw;
-		$this->assertFalse(WDP_Security::validate_product_id(50));
-		$this->assertFalse(WDP_Security::validate_product_id(9999));
+		$this->assertFalse(\DonationPanel\Support\Security::validate_product_id(50));
+		$this->assertFalse(\DonationPanel\Support\Security::validate_product_id(9999));
 	}
 
 	public function test_draft_and_missing_do_not_resolve(): void {

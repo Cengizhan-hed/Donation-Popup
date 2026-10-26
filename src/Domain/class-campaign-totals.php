@@ -7,6 +7,8 @@
 
 namespace DonationPanel\Domain;
 
+use DonationPanel\Core\Uninstall;
+use DonationPanel\Support\Debug;
 use DonationPanel\Modules\EntryPoints\Donations_List;
 use DonationPanel\WooCommerce\Order_Meta_Keys;
 
@@ -18,6 +20,57 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Class Campaign_Totals
  */
 class Campaign_Totals {
+
+	/**
+	 * WooCommerce ürün kayıt kancası bir kez eklendi mi.
+	 *
+	 * @var bool
+	 */
+	private static $wc_product_cache_invalidation_hook_registered = false;
+
+	/**
+	 * Toplam yeniden hesabı sırasında yazma kapalı mı (WP-CLI `--dry-run`).
+	 *
+	 * @var bool
+	 */
+	private static $progress_dry_run = false;
+
+	/**
+	 * Kuru çalıştırmada dönüştürülemeyen siparişler (ürün => sipariş kimlikleri); hiçbir yere yazılmaz.
+	 *
+	 * @var array<int, int[]>
+	 */
+	private static $progress_dry_skips = array();
+
+	/**
+	 * Kancaları bağlar: sipariş durumu/iade/silme/çöp ile artımlı toplam, ürün değişince önbellek temizliği.
+	 *
+	 * @return void
+	 */
+	public static function init() {
+		// Ödenmiş durumlar (wdp_progress_paid_statuses) sayılır; ödenmemişe düşünce / silme / çöpte düşülür.
+		add_action( 'woocommerce_order_status_changed', array( __CLASS__, 'sync_order_donation_totals_on_status_change' ), 20, 4 );
+		add_action( 'woocommerce_order_refunded', array( __CLASS__, 'sync_order_donation_totals_on_refund' ), 20, 2 );
+		add_action( 'before_delete_post', array( __CLASS__, 'uncount_order_progress_on_delete' ), 5, 2 );
+		add_action( 'wp_trash_post', array( __CLASS__, 'uncount_order_progress_on_trash' ), 5, 1 );
+		add_action( 'untrashed_post', array( __CLASS__, 'recount_order_progress_on_untrash' ), 10, 1 );
+		add_action( 'wdp_recalculate_product_donation_total', array( __CLASS__, 'cron_recalculate_product_donation_total' ), 10, 1 ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- geriye dönük uyumluluk: zamanlanmış görev adı değişmez.
+
+		// Ürün ya da bağışa ilişkin ürün meta'sı değişince toplam/bağışçı sayısı önbelleğini tek merkezden temizle.
+		add_action( 'updated_post_meta', array( __CLASS__, 'maybe_invalidate_product_donation_caches_on_meta' ), 10, 4 );
+		add_action( 'added_post_meta', array( __CLASS__, 'maybe_invalidate_product_donation_caches_on_meta' ), 10, 4 );
+		add_action( 'deleted_post_meta', array( __CLASS__, 'maybe_invalidate_product_donation_caches_on_meta' ), 10, 4 );
+		add_action( 'save_post_product', array( __CLASS__, 'invalidate_product_donation_caches_on_product_save' ), 10, 3 );
+		if ( did_action( 'woocommerce_loaded' ) ) {
+			self::register_wc_product_cache_invalidation_hook();
+		} else {
+			add_action( 'woocommerce_loaded', array( __CLASS__, 'register_wc_product_cache_invalidation_hook' ), 1 );
+		}
+
+		// Ürün çöpe gider veya kalıcı silinirken önbellekte yetim anahtar kalmasın (object cache / Redis).
+		add_action( 'before_delete_post', array( __CLASS__, 'purge_product_donation_caches_on_delete' ), 10, 2 );
+		add_action( 'wp_trash_post', array( __CLASS__, 'purge_product_donation_caches_on_trash' ), 10, 1 );
+	}
 
 /**
 	 * Gösterilen toplam = siparişlerden hesaplanan toplam + elle eklenen tutar (`_wdp_manual_total`).
@@ -137,7 +190,7 @@ class Campaign_Totals {
 /**
 	 * Sipariş/iade bayrak meta değerini okur (HPOS + post_meta yedek).
 	 *
-	 * @param int|WC_Abstract_Order $order_or_id Sipariş veya ID.
+	 * @param int|\WC_Abstract_Order $order_or_id Sipariş veya ID.
 	 * @param string                $meta_key    Meta anahtarı.
 	 * @return string
 	 */
@@ -161,7 +214,7 @@ class Campaign_Totals {
 /**
 	 * Sipariş/iade bayrak meta değerini yazar (HPOS + post_meta yedek).
 	 *
-	 * @param int|WC_Abstract_Order $order_or_id Sipariş veya ID.
+	 * @param int|\WC_Abstract_Order $order_or_id Sipariş veya ID.
 	 * @param string                $meta_key    Meta anahtarı.
 	 * @param string                $value       Değer.
 	 */
@@ -226,7 +279,7 @@ class Campaign_Totals {
 	 * @param int           $order_id Order ID.
 	 * @param string        $from     Old status.
 	 * @param string        $to       New status.
-	 * @param WC_Order|null $order    Order object.
+	 * @param \WC_Order|null $order    Order object.
 	 * @return void
 	 */
 	public static function sync_order_donation_totals_on_status_change( $order_id, $from = '', $to = '', $order = null ) {
@@ -254,7 +307,7 @@ class Campaign_Totals {
 	 * Sipariş kalıcı silinmeden / çöpe gitmeden önce progress toplamından düş.
 	 *
 	 * @param int          $post_id Post ID.
-	 * @param WP_Post|null $post    Post.
+	 * @param \WP_Post|null $post    Post.
 	 * @return void
 	 */
 	public static function uncount_order_progress_on_delete( $post_id, $post = null ) {
@@ -341,7 +394,7 @@ class Campaign_Totals {
 /**
 	 * Sipariş progress toplamlarına daha önce eklendi mi? (yeni bayrak veya eski _wdp_donation_totals_applied)
 	 *
-	 * @param WC_Abstract_Order $order Order.
+	 * @param \WC_Abstract_Order $order Order.
 	 * @return bool
 	 */
 	public static function is_order_counted_in_progress( $order ) {
@@ -352,7 +405,7 @@ class Campaign_Totals {
 /**
 	 * Siparişi ürün toplamlarına ekle (bir kez).
 	 *
-	 * @param WC_Abstract_Order $order Order.
+	 * @param \WC_Abstract_Order $order Order.
 	 * @return bool True if totals changed.
 	 */
 	public static function count_order_in_progress_totals( $order ) {
@@ -387,7 +440,7 @@ class Campaign_Totals {
 /**
 	 * Sayılmış siparişi ürün toplamlarından düş ve bayrağı kaldır.
 	 *
-	 * @param WC_Abstract_Order $order Order.
+	 * @param \WC_Abstract_Order $order Order.
 	 * @return bool True if totals changed.
 	 */
 	public static function uncount_order_from_progress_totals( $order ) {
@@ -452,8 +505,8 @@ class Campaign_Totals {
 	 *
 	 * Tam iadede durum önce "refunded" olur ve sipariş zaten geri alınmıştır; bu durumda bir şey yapılmaz.
 	 *
-	 * @param WC_Abstract_Order $order  Parent order.
-	 * @param WC_Abstract_Order $refund Refund.
+	 * @param \WC_Abstract_Order $order  Parent order.
+	 * @param \WC_Abstract_Order $refund Refund.
 	 * @return float Total deducted.
 	 */
 	public static function apply_refund_to_progress_totals( $order, $refund ) {
@@ -509,7 +562,7 @@ class Campaign_Totals {
 /**
 	 * Ürün → sayılan tutar (iade edilen satır tutarları düşülmüş; kampanya dönemi dışındaki sipariş sayılmaz).
 	 *
-	 * @param WC_Abstract_Order $order Order.
+	 * @param \WC_Abstract_Order $order Order.
 	 * @return array<int,float>
 	 */
 	public static function compute_order_progress_amounts( $order ) {
@@ -528,7 +581,7 @@ class Campaign_Totals {
 	 * `$refunds` kapalıysa iade düşülmez, `$period` kapalıysa kampanya dönemi denetlenmez; `$log` kapalıysa
 	 * dönüştürülemeyen satır günlüğe/ürün metasına yazılmaz (kuru çalıştırma çözümlemesi için).
 	 *
-	 * @param WC_Abstract_Order $order   Order.
+	 * @param \WC_Abstract_Order $order   Order.
 	 * @param bool              $refunds İade tutarı düşülsün mü.
 	 * @param bool              $period  Kampanya dönemi uygulansın mı.
 	 * @param bool              $log     Dönüştürülemeyen satır kaydedilsin mi.
@@ -540,9 +593,7 @@ class Campaign_Totals {
 			return $lines;
 		}
 
-		$currency = class_exists( 'DonationPanel\\Domain\\Progress_Currency' )
-			? Progress_Currency::get_order_currency( $order )
-			: ( method_exists( $order, 'get_currency' ) ? strtoupper( (string) $order->get_currency() ) : '' );
+		$currency = Progress_Currency::get_order_currency( $order );
 
 		foreach ( $order->get_items() as $item_id => $item ) {
 			$product_id = absint( $item->get_product_id() );
@@ -565,23 +616,21 @@ class Campaign_Totals {
 
 			$foreign     = false;
 			$unconverted = false;
-			if ( class_exists( 'DonationPanel\\Domain\\Progress_Currency' ) ) {
-				$line_currency = self::resolve_donation_line_currency( $item, $currency );
-				$foreign       = '' !== $line_currency && Progress_Currency::get_base_currency() !== $line_currency;
-				$converted     = Progress_Currency::convert_to_base( $line_total, $line_currency, $order );
-				if ( empty( $converted['ok'] ) ) {
-					if ( $log ) {
-						self::log_progress_conversion_skip( $order, $product_id, isset( $converted['reason'] ) ? (string) $converted['reason'] : 'unknown' );
-					}
-					$lines[ $product_id ] = array(
-						'amount'      => isset( $lines[ $product_id ] ) ? $lines[ $product_id ]['amount'] : 0.0,
-						'foreign'     => true,
-						'unconverted' => true,
-					);
-					continue;
+			$line_currency = self::resolve_donation_line_currency( $item, $currency );
+			$foreign       = '' !== $line_currency && Progress_Currency::get_base_currency() !== $line_currency;
+			$converted     = Progress_Currency::convert_to_base( $line_total, $line_currency, $order );
+			if ( empty( $converted['ok'] ) ) {
+				if ( $log ) {
+					self::log_progress_conversion_skip( $order, $product_id, isset( $converted['reason'] ) ? (string) $converted['reason'] : 'unknown' );
 				}
-				$line_total = (float) $converted['amount'];
+				$lines[ $product_id ] = array(
+					'amount'      => isset( $lines[ $product_id ] ) ? $lines[ $product_id ]['amount'] : 0.0,
+					'foreign'     => true,
+					'unconverted' => true,
+				);
+				continue;
 			}
+			$line_total = (float) $converted['amount'];
 
 			$prev                 = isset( $lines[ $product_id ] ) ? $lines[ $product_id ] : array(
 				'amount'      => 0.0,
@@ -644,7 +693,7 @@ class Campaign_Totals {
 	 * Tarih olarak oluşturma tarihi seçildi: ödeme tarihi çevrimdışı yöntemlerde (havale/çek) boştur; oluşturma
 	 * tarihi her siparişte vardır ve bağışçının bağış yaptığı anı gösterir.
 	 *
-	 * @param WC_Abstract_Order $order      Order.
+	 * @param \WC_Abstract_Order $order      Order.
 	 * @param int               $product_id Product ID.
 	 * @return bool
 	 */
@@ -727,7 +776,7 @@ class Campaign_Totals {
 			return $line;
 		}
 
-		$fee_raw = $item->get_meta( class_exists( 'DonationPanel\\WooCommerce\\Order_Meta_Keys' ) ? Order_Meta_Keys::COVER_FEE : 'wdp_cover_fee' );
+		$fee_raw = $item->get_meta( Order_Meta_Keys::COVER_FEE);
 		$pct     = 0.0;
 		if ( $fee_raw !== '' && $fee_raw !== null && is_numeric( $fee_raw ) ) {
 			$pct = (float) $fee_raw;
@@ -785,7 +834,7 @@ class Campaign_Totals {
 	}
 
 /**
-	 * Clear transient/object caches used for product donation info and WC product objects (WDP_Ajax).
+	 * Ürünün toplam/bağışçı sayısı önbelleklerini, bağış listesi önbelleğini ve kapsam önbelleğini temizler.
 	 *
 	 * @param int $product_id Product ID.
 	 * @return void
@@ -795,26 +844,18 @@ class Campaign_Totals {
 		if ( ! $product_id ) {
 			return;
 		}
-		$key = 'wdp_product_info_' . $product_id;
-		delete_transient( $key );
-		wp_cache_delete( $key, 'wdp_product_info' );
-		wp_cache_delete( 'wdp_product_object_' . $product_id, 'wdp_products' );
 		// Progress sayaçları (meta wp-cli ile değişince de düşsün).
 		wp_cache_delete( 'wdp_total_donation_' . $product_id, 'wdp_donations' );
 		wp_cache_delete( 'wdp_donor_count_' . $product_id, 'wdp_donations' );
-		if ( class_exists( 'DonationPanel\\Modules\\EntryPoints\\Donations_List' ) ) {
-			Donations_List::bump_cache();
-		}
-		if ( class_exists( 'DonationPanel\\Domain\\Donation_Scope' ) ) {
-			Donation_Scope::flush( $product_id );
-		}
+		Donations_List::bump_cache();
+		Donation_Scope::flush( $product_id );
 	}
 
 /**
 	 * Kalıcı silmeden hemen önce (ürün yazı tipi).
 	 *
 	 * @param int          $post_id Post ID.
-	 * @param WP_Post|null $post    Post object.
+	 * @param \WP_Post|null $post    Post object.
 	 * @return void
 	 */
 	public static function purge_product_donation_caches_on_delete( $post_id, $post = null ) {
@@ -853,7 +894,7 @@ class Campaign_Totals {
 	 * Invalidate caches when a product post is saved (price, title, stock, etc.).
 	 *
 	 * @param int     $post_id Post ID.
-	 * @param WP_Post $post    Post object.
+	 * @param \WP_Post $post    Post object.
 	 * @param bool    $update  Whether this is an update.
 	 * @return void
 	 */
@@ -948,7 +989,7 @@ class Campaign_Totals {
 /**
 	 * Dönüşülemeyen satır: kişisel veri yok, günlük + ürün sayacı.
 	 *
-	 * @param WC_Abstract_Order $order      Order.
+	 * @param \WC_Abstract_Order $order      Order.
 	 * @param int               $product_id Product.
 	 * @param string            $reason     Reason code.
 	 * @return void
@@ -960,7 +1001,7 @@ class Campaign_Totals {
 			self::$progress_dry_skips[ absint( $product_id ) ][] = $order_id;
 			return;
 		}
-		self::log(
+		Debug::log(
 			sprintf(
 				'progress convert skip order=%d product=%d reason=%s',
 				$order_id,
@@ -983,7 +1024,7 @@ class Campaign_Totals {
 /**
 	 * Siparişte saklanan sayılmış tutarlar (eski siparişte hesaplanır).
 	 *
-	 * @param WC_Abstract_Order $order Order.
+	 * @param \WC_Abstract_Order $order Order.
 	 * @return array<int,float>
 	 */
 	private static function get_order_progress_amounts( $order ) {
@@ -1012,7 +1053,7 @@ class Campaign_Totals {
 /**
 	 * Bayrak + tutarları siparişe yaz (_wdp_progress_counted = yes).
 	 *
-	 * @param WC_Abstract_Order $order   Order.
+	 * @param \WC_Abstract_Order $order   Order.
 	 * @param array             $amounts Product → amount.
 	 * @return void
 	 */
@@ -1139,7 +1180,7 @@ class Campaign_Totals {
 	 * Satır tutarının para birimi: `_custom_price` bağışçının yazdığı birimdedir (`_wdp_input_currency`; sepette
 	 * ödemeden önce para birimi değiştirilmiş olabilir). Damga yoksa ya da tutar satır toplamından geliyorsa sipariş birimi.
 	 *
-	 * @param WC_Order_Item_Product $item           Order line item.
+	 * @param \WC_Order_Item_Product $item           Order line item.
 	 * @param string                $order_currency Sipariş para birimi.
 	 * @return string
 	 */
@@ -1155,7 +1196,7 @@ class Campaign_Totals {
 /**
 	 * Resolve effective donation total for an order line.
 	 *
-	 * @param WC_Order_Item_Product $item Order line item.
+	 * @param \WC_Order_Item_Product $item Order line item.
 	 * @return float
 	 */
 	private static function resolve_donation_line_total( $item ) {
@@ -1225,20 +1266,16 @@ class Campaign_Totals {
 	}
 
 /**
-	 * Whether this meta key is part of WDP product donation settings (see WDP_Product_Settings_Service).
+	 * Anahtar eklentinin ürün meta envanterinde mi (bkz. Uninstall::product_meta_keys).
 	 *
 	 * @param string $meta_key Meta key.
 	 * @return bool
 	 */
 	private static function is_donation_popup_product_info_meta_key( $meta_key ) {
-		if ( ! class_exists( 'WDP_Product_Settings_Service' ) ) {
-			return false;
-		}
-
 		static $lookup = null;
 
 		if ( null === $lookup ) {
-			$lookup = array_fill_keys( WDP_Product_Settings_Service::get_settings_meta_keys(), true );
+			$lookup = array_fill_keys( Uninstall::product_meta_keys(), true );
 		}
 
 		return isset( $lookup[ $meta_key ] );

@@ -140,7 +140,7 @@ final class Donation_Feed {
 	 */
 	public static function stats( $product_id ) {
 		$product_id = absint( $product_id );
-		$currency   = class_exists( 'DonationPanel\\Domain\\Progress_Currency' ) ? Progress_Currency::get_active_currency() : '';
+		$currency   = Progress_Currency::get_active_currency();
 		$cache_key  = 'dp_social_stats_' . $product_id . '_' . $currency;
 		$cached     = get_transient( $cache_key );
 		if ( is_array( $cached ) ) {
@@ -148,8 +148,8 @@ final class Donation_Feed {
 		}
 
 		if ( $product_id > 0 ) {
-			$donors = class_exists( 'WDP_Utils' ) ? (int) Campaign_Totals::get_donor_count( $product_id ) : 0;
-			$raised = class_exists( 'DonationPanel\\Domain\\Campaign_Goal' ) ? Campaign_Goal::get_confirmed_total( $product_id ) : 0.0;
+			$donors = (int) Campaign_Totals::get_donor_count( $product_id );
+			$raised = Campaign_Goal::get_confirmed_total( $product_id );
 		} else {
 			$donors = 0;
 			$raised = 0.0;
@@ -172,7 +172,7 @@ final class Donation_Feed {
 			}
 		}
 
-		$raised_display = class_exists( 'DonationPanel\\Domain\\Progress_Currency' ) ? (float) Progress_Currency::from_store_amount( $raised ) : (float) $raised;
+		$raised_display = (float) Progress_Currency::from_store_amount( $raised );
 		$stats          = array(
 			'donors' => (int) $donors,
 			'today'  => $today,
@@ -189,7 +189,7 @@ final class Donation_Feed {
 	 * @return array<string, mixed>
 	 */
 	public static function format_entry( array $entry ) {
-		$display = class_exists( 'DonationPanel\\Domain\\Progress_Currency' ) ? (float) Progress_Currency::from_store_amount( $entry['amount'] ) : (float) $entry['amount'];
+		$display = (float) Progress_Currency::from_store_amount( $entry['amount'] );
 		$ago     = '';
 		if ( $entry['timestamp'] > 0 && function_exists( 'human_time_diff' ) ) {
 			/* translators: %s: time span, e.g. "3 hours" */
@@ -227,14 +227,12 @@ final class Donation_Feed {
 			if ( 'yes' === (string) $item->get_meta( self::CONSENT_KEY ) ) {
 				$consent = true;
 			}
-			if ( class_exists( 'DonationPanel\\WooCommerce\\Order_Meta_Keys' ) ) {
-				$data = Order_Meta_Keys::get_item_donation_data( $item );
-				if ( isset( $data[ Order_Meta_Keys::ANONYMOUS ] ) && 'yes' === (string) $data[ Order_Meta_Keys::ANONYMOUS ]['value'] ) {
-					$anonymous = true;
-				}
-				if ( '' === $full_name && isset( $data[ Order_Meta_Keys::DONOR_NAME ] ) ) {
-					$full_name = (string) $data[ Order_Meta_Keys::DONOR_NAME ]['value'];
-				}
+			$data = Order_Meta_Keys::get_item_donation_data( $item );
+			if ( isset( $data[ Order_Meta_Keys::ANONYMOUS ] ) && 'yes' === (string) $data[ Order_Meta_Keys::ANONYMOUS ]['value'] ) {
+				$anonymous = true;
+			}
+			if ( '' === $full_name && isset( $data[ Order_Meta_Keys::DONOR_NAME ] ) ) {
+				$full_name = (string) $data[ Order_Meta_Keys::DONOR_NAME ]['value'];
 			}
 		}
 		if ( $consent && '' === $full_name && method_exists( $order, 'get_billing_first_name' ) ) {
@@ -270,9 +268,6 @@ final class Donation_Feed {
 	 * @return float
 	 */
 	private static function order_amount( $order, $product_id ) {
-		if ( ! class_exists( 'WDP_Utils' ) ) {
-			return 0.0;
-		}
 		$amounts = (array) Campaign_Totals::compute_order_progress_amounts( $order );
 		if ( $product_id > 0 ) {
 			return isset( $amounts[ $product_id ] ) ? (float) $amounts[ $product_id ] : 0.0;
@@ -291,7 +286,7 @@ final class Donation_Feed {
 	 * @return \Generator<int, object>
 	 */
 	private static function paid_orders( $limit ) {
-		if ( ! function_exists( 'wc_get_orders' ) || ! class_exists( 'WDP_Utils' ) ) {
+		if ( ! function_exists( 'wc_get_orders' ) ) {
 			return;
 		}
 		$statuses = array();

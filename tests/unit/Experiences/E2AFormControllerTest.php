@@ -2,7 +2,7 @@
 /**
  * E2A: REST donation-panel/v1 form + validate.
  *
- * @package WooCommerce\Donation_Popup
+ * @package DonationPanel
  */
 
 declare(strict_types=1);

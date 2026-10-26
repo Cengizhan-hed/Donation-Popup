@@ -206,7 +206,7 @@ class Order_Privacy {
 	/**
 	 * Anonymize the requester's donation fields on one order item.
 	 *
-	 * @param WC_Order_Item $item          Order item.
+	 * @param \WC_Order_Item $item          Order item.
 	 * @param string        $email         Requester e-mail.
 	 * @param bool          $billing_match Order billing e-mail is the requester.
 	 * @return bool True when something changed.
@@ -235,7 +235,7 @@ class Order_Privacy {
 	 *
 	 * Donor fields: billing e-mail or donor e-mail matches. Shareholder N: billing e-mail or that shareholder's e-mail matches.
 	 *
-	 * @param WC_Order_Item $item          Order item.
+	 * @param \WC_Order_Item $item          Order item.
 	 * @param string        $email         Requester e-mail.
 	 * @param bool          $billing_match Order billing e-mail matches.
 	 * @return array<string,array{key:string,value:mixed}>
@@ -434,7 +434,7 @@ class Order_Privacy {
 	/**
 	 * Order belongs to the requester: billing e-mail matches, or the e-mail is empty and the phone matches.
 	 *
-	 * @param WC_Order $order  Order.
+	 * @param \WC_Order $order  Order.
 	 * @param string   $email  Requester e-mail.
 	 * @param string[] $phones Requester phones.
 	 * @return bool

@@ -2,7 +2,7 @@
 /**
  * E3: ara hedefler, ilerleme verisi, etki ifadeleri, sosyal kanıt gizliliği, modül anahtarları.
  *
- * @package WooCommerce\Donation_Popup
+ * @package DonationPanel
  */
 
 declare(strict_types=1);

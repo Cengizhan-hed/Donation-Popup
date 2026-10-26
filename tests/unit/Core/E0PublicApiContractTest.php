@@ -4,7 +4,7 @@
  *
  * Yeni mimari bu adların hiçbirini değiştirmez; kaldırma/yeniden adlandırma bu testi kırar.
  *
- * @package WooCommerce\Donation_Popup
+ * @package DonationPanel
  */
 
 declare(strict_types=1);

@@ -9,6 +9,7 @@ namespace DonationPanel\Core;
 
 use DonationPanel\Domain\Addon_Product_Visibility;
 use DonationPanel\Domain\Addon_Settings;
+use DonationPanel\Domain\Amount_Presets;
 use DonationPanel\Domain\Campaign_Totals;
 use DonationPanel\Domain\Placement_Settings;
 use DonationPanel\Modules\EntryPoints\Donations_List;
@@ -355,10 +356,8 @@ class Version_Migrations {
 					if ( ! $pid ) {
 						continue;
 					}
-					if ( class_exists( 'WDP_Utils' ) && method_exists( 'WDP_Utils', 'schedule_product_donation_total_recalc' ) ) {
-						Campaign_Totals::schedule_product_donation_total_recalc( $pid );
-						++$scheduled;
-					}
+					Campaign_Totals::schedule_product_donation_total_recalc( $pid );
+					++$scheduled;
 				}
 			}
 		}
@@ -472,7 +471,7 @@ class Version_Migrations {
 	 * @return string Summary for the log.
 	 */
 	public static function step_10_35_2( $is_fresh ) {
-		$map    = class_exists( 'DonationPanel\\Domain\\Addon_Product_Visibility' ) ? Addon_Product_Visibility::LEGACY_META : array();
+		$map    = Addon_Product_Visibility::LEGACY_META;
 		$copied = 0;
 		if ( ! $is_fresh && $map ) {
 			$ids = array();
@@ -503,9 +502,7 @@ class Version_Migrations {
 			}
 		}
 		delete_transient( 'wdp_sadaka_line_ids' );
-		if ( class_exists( 'DonationPanel\\Domain\\Addon_Product_Visibility' ) ) {
-			Addon_Product_Visibility::flush();
-		}
+		Addon_Product_Visibility::flush();
 		return 'addon meta copied:' . $copied;
 	}
 
@@ -576,7 +573,7 @@ class Version_Migrations {
 		if ( is_array( $button ) && isset( $button['amount_presets'] ) && is_string( $button['amount_presets'] ) ) {
 			$tokens = preg_split( '/[\s,;]+/', trim( $button['amount_presets'] ), -1, PREG_SPLIT_NO_EMPTY );
 			if ( is_array( $tokens ) && count( $tokens ) > 6 ) {
-				$kept = WDP_Form_Modules::parse_amount_presets_csv( $button['amount_presets'] );
+				$kept = Amount_Presets::parse_csv( $button['amount_presets'] );
 				if ( ! empty( $kept ) ) {
 					$button['amount_presets'] = implode( ', ', array_map( 'intval', $kept ) );
 					update_option( 'wdp_button_settings', $button, false );
@@ -654,7 +651,7 @@ class Version_Migrations {
 
 		$bumped = false;
 		if ( get_option( $flag, false ) === false ) {
-			if ( class_exists( 'DonationPanel\\Modules\\EntryPoints\\Donations_List' ) && method_exists( 'DonationPanel\\Modules\\EntryPoints\\Donations_List', 'bump_cache' ) ) {
+			if ( method_exists( 'DonationPanel\\Modules\\EntryPoints\\Donations_List', 'bump_cache' ) ) {
 				Donations_List::bump_cache();
 			} else {
 				update_option( 'wdp_list_cache_version', $before + 1, false );
@@ -687,9 +684,7 @@ class Version_Migrations {
 		$rows    = isset( $audit['rows'] ) && is_array( $audit['rows'] ) ? $audit['rows'] : array();
 
 		update_option(
-			class_exists( 'DonationPanel\\Domain\\Addon_Product_Visibility' )
-				? Addon_Product_Visibility::AUDIT_OPTION
-				: 'wdp_addon_links_audit',
+			Addon_Product_Visibility::AUDIT_OPTION,
 			array(
 				'time'    => time(),
 				'fresh'   => $is_fresh ? 1 : 0,
@@ -700,9 +695,7 @@ class Version_Migrations {
 			false
 		);
 
-		if ( class_exists( 'DonationPanel\\Domain\\Addon_Product_Visibility' ) ) {
-			Addon_Product_Visibility::flush();
-		}
+		Addon_Product_Visibility::flush();
 
 		$reasons = array();
 		foreach ( $rows as $row ) {
@@ -744,26 +737,20 @@ class Version_Migrations {
 				continue;
 			}
 
-			$enabled = class_exists( 'DonationPanel\\Domain\\Addon_Product_Visibility' )
-				? Addon_Product_Visibility::parent_has_addon_enabled( $parent_id )
-				: ( strtolower( (string) Addon_Product_Visibility::get_meta( $parent_id, '_enable_addon_donation' ) ) === 'yes' );
+			$enabled = Addon_Product_Visibility::parent_has_addon_enabled( $parent_id );
 
 			$reason = '';
 			if ( $raw_id === $parent_id ) {
 				$reason = 'self_ref';
 			} elseif ( ! $enabled ) {
 				$reason = 'enable_off';
-			} elseif ( ! class_exists( 'WDP_Utils' ) || ! Addon_Settings::is_valid_addon_wc_product( $raw_id ) ) {
+			} elseif ( ! Addon_Settings::is_valid_addon_wc_product( $raw_id ) ) {
 				$product = function_exists( 'wc_get_product' ) ? wc_get_product( $raw_id ) : null;
 				$reason  = $product ? 'not_simple_or_status' : 'missing';
 			}
 
-			$parent_label = class_exists( 'DonationPanel\\Domain\\Addon_Product_Visibility' )
-				? Addon_Product_Visibility::product_label( $parent_id )
-				: '#' . $parent_id;
-			$addon_label  = class_exists( 'DonationPanel\\Domain\\Addon_Product_Visibility' )
-				? Addon_Product_Visibility::product_label( $raw_id )
-				: '#' . $raw_id;
+			$parent_label = Addon_Product_Visibility::product_label( $parent_id );
+			$addon_label  = Addon_Product_Visibility::product_label( $raw_id );
 
 			if ( $reason !== '' ) {
 				delete_post_meta( $parent_id, '_addon_wc_product_id' );
@@ -792,16 +779,14 @@ class Version_Migrations {
 		}
 
 		// Genel varsayılanı da tabloya ekle (silinmez; yalnızca görünürlük).
-		$default = class_exists( 'WDP_Utils' ) ? (int) Addon_Settings::get_default_addon_wc_product_id() : 0;
+		$default = (int) Addon_Settings::get_default_addon_wc_product_id();
 		if ( $default > 0 ) {
-			$ok     = class_exists( 'WDP_Utils' ) && Addon_Settings::is_valid_addon_wc_product( $default );
+			$ok     = Addon_Settings::is_valid_addon_wc_product( $default );
 			$rows[] = array(
 				'parent_id'    => 0,
 				'parent_label' => __( 'General default (Success tab)', 'woo-donation-popup' ),
 				'sadaka_id'    => $default,
-				'sadaka_label' => class_exists( 'DonationPanel\\Domain\\Addon_Product_Visibility' )
-					? Addon_Product_Visibility::product_label( $default )
-					: '#' . $default,
+				'sadaka_label' => Addon_Product_Visibility::product_label( $default ),
 				'status'       => $ok ? 'valid' : 'invalid_default',
 				'reason'       => $ok ? '' : 'missing_or_invalid',
 			);

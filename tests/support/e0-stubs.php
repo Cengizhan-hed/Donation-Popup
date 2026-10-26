@@ -2,7 +2,7 @@
 /**
  * E0 testleri için WordPress REST/Error saplamaları (yalnız test).
  *
- * @package WooCommerce\Donation_Popup
+ * @package DonationPanel
  */
 
 declare(strict_types=1);

@@ -117,9 +117,7 @@ class Placement_Settings {
 		}
 		update_option( self::OPTION, $clean, false );
 		self::flush();
-		if ( class_exists( 'DonationPanel\\Modules\\EntryPoints\\Donations_List' ) ) {
-			Donations_List::bump_cache();
-		}
+		Donations_List::bump_cache();
 		return $clean;
 	}
 
@@ -128,9 +126,7 @@ class Placement_Settings {
 	 */
 	public static function flush() {
 		self::$cache = null;
-		if ( class_exists( 'DonationPanel\\Domain\\Donation_Scope' ) ) {
-			Donation_Scope::flush();
-		}
+		Donation_Scope::flush();
 	}
 
 	/**

@@ -7,7 +7,6 @@
 
 namespace DonationPanel\Domain;
 
-use DonationPanel\Support\Validation_Exception;
 use DonationPanel\WooCommerce\Cart_Hooks;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -52,7 +51,7 @@ class Campaign_Goal {
 	}
 
 	/**
-	 * @param int|WC_Product $product Product.
+	 * @param int|\WC_Product $product Product.
 	 * @return string
 	 */
 	public static function resolve_action( $product ) {
@@ -81,7 +80,7 @@ class Campaign_Goal {
 	}
 
 	/**
-	 * @param int|WC_Product $product Product.
+	 * @param int|\WC_Product $product Product.
 	 * @return string
 	 */
 	public static function resolve_message( $product ) {
@@ -96,7 +95,7 @@ class Campaign_Goal {
 	}
 
 	/**
-	 * @param int|WC_Product $product Product.
+	 * @param int|\WC_Product $product Product.
 	 * @return float
 	 */
 	public static function resolve_goal_amount( $product ) {
@@ -120,9 +119,7 @@ class Campaign_Goal {
 	 * @return float
 	 */
 	public static function get_confirmed_total( $product_id ) {
-		return class_exists( 'WDP_Utils' )
-			? (float) Campaign_Totals::get_total_donation_amount( absint( $product_id ) )
-			: 0.0;
+		return (float) Campaign_Totals::get_total_donation_amount( absint( $product_id ) );
 	}
 
 	/**
@@ -135,7 +132,7 @@ class Campaign_Goal {
 	public static function get_effective_total( $product_id, $include_pending = false ) {
 		$product_id = absint( $product_id );
 		$total      = self::get_confirmed_total( $product_id );
-		if ( $include_pending && class_exists( 'DonationPanel\\WooCommerce\\Cart_Hooks' ) && method_exists( 'DonationPanel\\WooCommerce\\Cart_Hooks', 'sum_cart_pending_for_product' ) ) {
+		if ( $include_pending ) {
 			$total += (float) Cart_Hooks::sum_cart_pending_for_product( $product_id );
 		}
 		return max( 0.0, $total );
@@ -177,7 +174,7 @@ class Campaign_Goal {
 		$include_pending = ! empty( $args['include_pending'] );
 		if ( isset( $args['confirmed'] ) ) {
 			$total = (float) $args['confirmed'];
-			if ( $include_pending && class_exists( 'DonationPanel\\WooCommerce\\Cart_Hooks' ) && method_exists( 'DonationPanel\\WooCommerce\\Cart_Hooks', 'sum_cart_pending_for_product' ) ) {
+			if ( $include_pending ) {
 				$total += (float) Cart_Hooks::sum_cart_pending_for_product( $product_id );
 			}
 		} else {
@@ -189,7 +186,7 @@ class Campaign_Goal {
 	/**
 	 * Progress bar açık mı?
 	 *
-	 * @param int|WC_Product $product Product.
+	 * @param int|\WC_Product $product Product.
 	 * @return bool
 	 */
 	public static function is_campaign_product( $product ) {
@@ -202,7 +199,7 @@ class Campaign_Goal {
 	/**
 	 * Close modunda yeni bağış reddedilmeli mi?
 	 *
-	 * @param int|WC_Product $product Product.
+	 * @param int|\WC_Product $product Product.
 	 * @return bool
 	 */
 	public static function should_block_new_donations( $product ) {
@@ -219,7 +216,7 @@ class Campaign_Goal {
 	/**
 	 * Mesaj gösterilmeli mi? (message veya close; continue hayır).
 	 *
-	 * @param int|WC_Product $product Product.
+	 * @param int|\WC_Product $product Product.
 	 * @return bool
 	 */
 	public static function should_show_reached_message( $product ) {
@@ -238,7 +235,7 @@ class Campaign_Goal {
 	/**
 	 * Formda bağıştan önce gösterilen mesaj HTML.
 	 *
-	 * @param int|WC_Product $product Product.
+	 * @param int|\WC_Product $product Product.
 	 * @param bool           $closed  Close modunda alanlar pasif.
 	 * @return string
 	 */
@@ -257,28 +254,25 @@ class Campaign_Goal {
 	}
 
 	/**
-	 * Close kapısı: Validation_Exception fırlatır.
+	 * Close kapısı: hedef kapalıysa istisna fırlatır (ileti kullanıcıya gösterilir).
 	 *
-	 * @param int|WC_Product $product Product.
+	 * @param int|\WC_Product $product Product.
 	 * @return void
-	 * @throws Validation_Exception When closed.
+	 * @throws \RuntimeException Hedef kapalıysa.
 	 */
 	public static function assert_accepts_donation( $product ) {
 		if ( ! self::should_block_new_donations( $product ) ) {
 			return;
 		}
 		$message = self::resolve_message( $product );
-		if ( class_exists( 'DonationPanel\\Support\\Validation_Exception' ) ) {
-			throw new Validation_Exception( $message );
-		}
-		throw new \Exception( $message ); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- message is sanitized text.
+		throw new \RuntimeException( $message ); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- ileti temizlenmiş metindir.
 	}
 
 	/**
 	 * woocommerce_add_to_cart_validation için: false + notice.
 	 *
 	 * @param bool           $passed     Current.
-	 * @param int|WC_Product $product_id Product.
+	 * @param int|\WC_Product $product_id Product.
 	 * @return bool
 	 */
 	public static function filter_add_to_cart_validation( $passed, $product_id ) {

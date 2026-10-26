@@ -14,9 +14,9 @@
  * Text Domain: woo-donation-popup
  * Domain Path: /languages
  *
- * Dosya: WordPress eklenti giriş dosyası; sabitleri tanımlar ve bootstrap sınıfını başlatır.
+ * Dosya: WordPress eklenti giriş dosyası; sabitleri tanımlar, ad alanlı sınıf yükleyiciyi kaydeder ve başlatır.
  *
- * @package WooCommerce\Donation_Popup
+ * @package DonationPanel
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -29,29 +29,10 @@ define( 'WDP_PLUGIN_DIR', plugin_dir_path( WDP_PLUGIN_FILE ) );
 define( 'WDP_PLUGIN_URL', plugin_dir_url( WDP_PLUGIN_FILE ) );
 define( 'WDP_ASSET_VERSION', get_option( 'wdp_cache_version', WDP_VERSION ) );
 
-if ( ! function_exists( 'wdp_debug_log' ) ) {
-	/**
-	 * Plugin scoped logger helper.
-	 *
-	 * @param mixed $message Message payload.
-	 * @return void
-	 */
-	function wdp_debug_log( $message ) {
-		if ( ! defined( 'WP_DEBUG' ) || WP_DEBUG !== true ) {
-			return;
-		}
-		if ( is_array( $message ) || is_object( $message ) ) {
-			error_log( print_r( $message, true ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_print_r
-			return;
-		}
-		error_log( (string) $message ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
-	}
-}
+require_once WDP_PLUGIN_DIR . 'src/Core/class-autoloader.php';
+\DonationPanel\Core\Autoloader::register( WDP_PLUGIN_DIR . 'src' );
 
-register_activation_hook( __FILE__, array( 'Woo_Donation_Popup', 'activate' ) );
-register_deactivation_hook( __FILE__, array( 'Woo_Donation_Popup', 'deactivate' ) );
+register_activation_hook( __FILE__, array( \DonationPanel\Core\Bootstrap::class, 'activate' ) );
+register_deactivation_hook( __FILE__, array( \DonationPanel\Core\Bootstrap::class, 'deactivate' ) );
 
-require_once WDP_PLUGIN_DIR . 'includes/class-woo-donation-popup.php';
-require_once WDP_PLUGIN_DIR . 'includes/bootstrap/class-plugin-bootstrap.php';
-
-WDP_Plugin_Bootstrap::run();
+\DonationPanel\Core\Bootstrap::run();

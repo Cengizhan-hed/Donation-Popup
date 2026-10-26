@@ -9,13 +9,13 @@ namespace DonationPanel\WooCommerce;
 
 use DonationPanel\Domain\Addon_Settings;
 use DonationPanel\Domain\Campaign_Goal;
+use DonationPanel\Domain\Cover_Fee;
 use DonationPanel\Domain\Donation_Scope;
 use DonationPanel\Domain\Donation_Type;
 use DonationPanel\Domain\Placement_Settings;
 use DonationPanel\Domain\Progress_Currency;
 use DonationPanel\Support\Price;
 use DonationPanel\Support\Security;
-use DonationPanel\Support\Validation_Exception;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -161,7 +161,7 @@ class Cart_Hooks {
 	 */
 	public static function should_reject_native_add_to_cart( $product_id ) {
 		$product_id = absint( $product_id );
-		if ( $product_id <= 0 || ! class_exists( 'DonationPanel\\Domain\\Donation_Scope' ) ) {
+		if ( $product_id <= 0 ) {
 			return false;
 		}
 		if ( ! Donation_Scope::is_donation_product( $product_id ) ) {
@@ -172,14 +172,14 @@ class Cart_Hooks {
 		if ( $flag === 'yes' ) {
 			return true;
 		}
-		return class_exists( 'DonationPanel\\Domain\\Placement_Settings' ) && Placement_Settings::value( 'auto_place' ) === 'yes';
+		return Placement_Settings::value( 'auto_place' ) === 'yes';
 	}
 
 	/**
 	 * Cover-fee percent for a product. ALWAYS read from product meta (never from the client);
 	 * 0 when the product has the fee disabled. Runtime-clamped to 0.5–15.
 	 *
-	 * @param WC_Product|int $product Product or ID.
+	 * @param \WC_Product|int $product Product or ID.
 	 * @return float
 	 */
 	public static function get_product_cover_fee_percent( $product ) {
@@ -192,7 +192,7 @@ class Cart_Hooks {
 		if ( 'yes' !== $product->get_meta( '_enable_cover_fee' ) ) {
 			return 0.0;
 		}
-		return WDP_Form_Modules::clamp_cover_fee_percent_for_runtime( $product->get_meta( '_cover_fee_percent' ) );
+		return Cover_Fee::clamp_percent( $product->get_meta( '_cover_fee_percent' ) );
 	}
 
 	/**
@@ -215,7 +215,7 @@ class Cart_Hooks {
 	/**
 	 * Whether the product form has the quantity selector (fixed type only; default on).
 	 *
-	 * @param WC_Product $product Product.
+	 * @param \WC_Product $product Product.
 	 * @return bool
 	 */
 	public static function product_allows_quantity( $product ) {
@@ -339,7 +339,7 @@ class Cart_Hooks {
 	/**
 	 * Apply custom price to cart items
 	 *
-	 * @param WC_Cart $cart Cart object.
+	 * @param \WC_Cart $cart Cart object.
 	 */
 	public static function apply_custom_price_to_cart( $cart ) {
 		if ( ! $cart || ! is_a( $cart, 'WC_Cart' ) ) {
@@ -484,9 +484,6 @@ class Cart_Hooks {
 	 * @return float
 	 */
 	public static function amount_to_store_currency( $amount, $input_currency = '' ) {
-		if ( ! class_exists( 'DonationPanel\\Domain\\Progress_Currency' ) ) {
-			return (float) $amount;
-		}
 		$from = '' !== (string) $input_currency ? (string) $input_currency : Progress_Currency::get_active_currency();
 		return Progress_Currency::to_store_amount( (float) $amount, $from );
 	}
@@ -499,9 +496,6 @@ class Cart_Hooks {
 	 * @return float
 	 */
 	public static function amount_from_store_currency( $amount, $input_currency = '' ) {
-		if ( ! class_exists( 'DonationPanel\\Domain\\Progress_Currency' ) ) {
-			return (float) $amount;
-		}
 		return Progress_Currency::from_store_amount( (float) $amount, (string) $input_currency );
 	}
 
@@ -513,11 +507,9 @@ class Cart_Hooks {
 	 * @return string
 	 */
 	public static function format_amount_for_message( $amount, $plain_text = true ) {
-		if ( class_exists( 'WDP_Utils' ) ) {
-			$formatted = $plain_text ? Price::format_price_plain( $amount ) : Price::format_price_html( $amount );
-			if ( '' !== $formatted ) {
-				return $formatted;
-			}
+		$formatted = $plain_text ? Price::format_price_plain( $amount ) : Price::format_price_html( $amount );
+		if ( '' !== $formatted ) {
+			return $formatted;
 		}
 
 		$symbol = function_exists( 'get_woocommerce_currency_symbol' ) ? get_woocommerce_currency_symbol() : '';
@@ -545,7 +537,7 @@ class Cart_Hooks {
 			? (int) $cart_item['wdp_parent_product_id']
 			: 0;
 
-		if ( $parent_id > 0 && class_exists( 'WDP_Utils' ) ) {
+		if ( $parent_id > 0 ) {
 			$resolved = (int) Addon_Settings::resolve_addon_wc_product_id( $parent_id );
 			if ( $resolved > 0 ) {
 				return $resolved;
@@ -558,7 +550,7 @@ class Cart_Hooks {
 	/**
 	 * Sepet satırını bağlı Addon WC ürününe hizala (görsel + ürün adı).
 	 *
-	 * @param WC_Cart $cart          Cart.
+	 * @param \WC_Cart $cart          Cart.
 	 * @param string  $cart_item_key Key.
 	 * @param array   $cart_item     Row.
 	 * @return array
@@ -651,7 +643,7 @@ class Cart_Hooks {
 	 */
 	private static function resolve_cart_line_unit_price( array $cart_item ) {
 		$raw = self::resolve_cart_line_raw_price( $cart_item );
-		if ( null === $raw || ! class_exists( 'DonationPanel\\Domain\\Progress_Currency' ) ) {
+		if ( null === $raw ) {
 			return $raw;
 		}
 		if ( isset( $cart_item['custom_price'] ) ) {
@@ -672,7 +664,7 @@ class Cart_Hooks {
 	 */
 	private static function resolve_cart_line_store_price( array $cart_item ) {
 		$raw = self::resolve_cart_line_raw_price( $cart_item );
-		if ( null === $raw || ! class_exists( 'DonationPanel\\Domain\\Progress_Currency' ) || ! isset( $cart_item['custom_price'] ) ) {
+		if ( null === $raw || ! isset( $cart_item['custom_price'] ) ) {
 			return $raw;
 		}
 		$input = isset( $cart_item['wdp_input_currency'] ) ? (string) $cart_item['wdp_input_currency'] : '';
@@ -686,7 +678,7 @@ class Cart_Hooks {
 	 * @return array
 	 */
 	public static function stamp_input_currency( $cart_item_data ) {
-		if ( isset( $cart_item_data['custom_price'] ) && empty( $cart_item_data['wdp_input_currency'] ) && class_exists( 'DonationPanel\\Domain\\Progress_Currency' ) ) {
+		if ( isset( $cart_item_data['custom_price'] ) && empty( $cart_item_data['wdp_input_currency'] ) ) {
 			$active = Progress_Currency::get_active_currency();
 			if ( '' !== $active ) {
 				$cart_item_data['wdp_input_currency'] = $active;
@@ -833,13 +825,6 @@ class Cart_Hooks {
 	 * @return float|null
 	 */
 	private static function sanitize_custom_price( $value ) {
-		if ( ! class_exists( 'DonationPanel\\Support\\Security' ) ) {
-			$numeric = is_numeric( $value ) ? (float) $value : null;
-			if ( null === $numeric || $numeric < 0 || $numeric > 999999 ) {
-				return null;
-			}
-			return $numeric;
-		}
 
 		return Security::sanitize_numeric( $value, 0, 999999 );
 	}

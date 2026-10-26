@@ -2,9 +2,9 @@
 /**
  * 10.27.0'da kaldırılan form içi modülün artık kaydedilmediği, sıralamada yer almadığı ve çıktıya girmediği testleri.
  *
- * Kaldırılan anahtarlar tek kaynaktan (WDP_Migrations sabitleri) okunur.
+ * Kaldırılan anahtarlar tek kaynaktan (Version_Migrations sabitleri) okunur.
  *
- * @package WooCommerce\Donation_Popup
+ * @package DonationPanel
  */
 
 declare(strict_types=1);
@@ -26,14 +26,14 @@ final class RemovedFormModuleTest extends TestCase {
 			static function ($key) {
 				return ltrim($key, '_');
 			},
-			WDP_Migrations::REMOVED_PRODUCT_META
+			\DonationPanel\Core\Version_Migrations::REMOVED_PRODUCT_META
 		);
 	}
 
 	private function removed_payload(): array {
 		$payload = array();
 		foreach ($this->removed_fields() as $field) {
-			$payload[ $field ] = $field === 'enable_' . WDP_Migrations::REMOVED_MODULE_IDS[0]
+			$payload[ $field ] = $field === 'enable_' . \DonationPanel\Core\Version_Migrations::REMOVED_MODULE_IDS[0]
 				? 'yes'
 				: '[{"q":"Soru","a":"Cevap"}]';
 		}
@@ -43,31 +43,31 @@ final class RemovedFormModuleTest extends TestCase {
 	public function test_product_panel_no_longer_saves_removed_meta(): void {
 		$meta = WDP_Product_Settings_Service::from_product_panel($this->removed_payload());
 
-		foreach (WDP_Migrations::REMOVED_PRODUCT_META as $key) {
+		foreach (\DonationPanel\Core\Version_Migrations::REMOVED_PRODUCT_META as $key) {
 			$this->assertArrayNotHasKey($key, $meta);
 		}
 		foreach (WDP_Product_Settings_Service::get_settings_meta_keys() as $key) {
-			$this->assertNotContains($key, WDP_Migrations::REMOVED_PRODUCT_META);
+			$this->assertNotContains($key, \DonationPanel\Core\Version_Migrations::REMOVED_PRODUCT_META);
 		}
 	}
 
 	public function test_legacy_ajax_request_no_longer_saves_removed_meta(): void {
 		$meta = WDP_Product_Settings_Service::from_request($this->removed_payload());
 
-		foreach (WDP_Migrations::REMOVED_PRODUCT_META as $key) {
+		foreach (\DonationPanel\Core\Version_Migrations::REMOVED_PRODUCT_META as $key) {
 			$this->assertArrayNotHasKey($key, $meta);
 		}
 	}
 
 	public function test_removed_module_is_not_an_orderable_module(): void {
-		foreach (WDP_Migrations::REMOVED_MODULE_IDS as $id) {
+		foreach (\DonationPanel\Core\Version_Migrations::REMOVED_MODULE_IDS as $id) {
 			$this->assertNotContains($id, WDP_Form_Modules::allowed_ids());
 			$this->assertNotContains($id, WDP_Form_Modules::sanitize_order($id . ',media,trust'));
 		}
 	}
 
 	public function test_stored_order_is_ignored_and_default_order_is_fixed(): void {
-		$removed = WDP_Migrations::REMOVED_MODULE_IDS[0];
+		$removed = \DonationPanel\Core\Version_Migrations::REMOVED_MODULE_IDS[0];
 		WDP_Test_State::$post_meta[42]['_wdp_module_order'] = $removed . ',urgency,media';
 		WDP_Test_State::$options['wdp_button_settings']     = array('module_order' => 'progress,media');
 
@@ -82,7 +82,7 @@ final class RemovedFormModuleTest extends TestCase {
 	 * The 10.26.0 crash: the context carried the removed module data as a JSON string.
 	 */
 	public function test_header_modules_ignore_stale_context_and_render_no_removed_markup(): void {
-		$removed = WDP_Migrations::REMOVED_MODULE_IDS[0];
+		$removed = \DonationPanel\Core\Version_Migrations::REMOVED_MODULE_IDS[0];
 		WDP_Test_State::$post_meta[42]['_wdp_module_order'] = $removed . ',urgency,social_proof';
 		WDP_Test_State::$post_meta[42]['_impact_line_text']  = 'Bir aileye ulaşır';
 

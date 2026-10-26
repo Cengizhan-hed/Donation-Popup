@@ -45,7 +45,7 @@ class Donation_Scope {
 	}
 
 	/**
-	 * @param mixed $product WC_Product or ID.
+	 * @param mixed $product \WC_Product or ID.
 	 * @return bool
 	 */
 	public static function is_supported_type( $product ) {
@@ -54,7 +54,7 @@ class Donation_Scope {
 	}
 
 	/**
-	 * @param mixed $product WC_Product or ID.
+	 * @param mixed $product \WC_Product or ID.
 	 * @return bool
 	 */
 	public static function is_donation_product( $product ) {
@@ -77,7 +77,7 @@ class Donation_Scope {
 	/**
 	 * Unfiltered decision.
 	 *
-	 * @param object $product WC_Product.
+	 * @param object $product \WC_Product.
 	 * @return bool
 	 */
 	public static function evaluate( $product ) {
@@ -97,7 +97,7 @@ class Donation_Scope {
 	/**
 	 * Product's own choice: '' (follow global), 'yes', 'no'.
 	 *
-	 * @param object $product WC_Product.
+	 * @param object $product \WC_Product.
 	 * @return string
 	 */
 	public static function product_flag( $product ) {
@@ -109,7 +109,7 @@ class Donation_Scope {
 	/**
 	 * What the global scope decides for this product (ignores the product flag).
 	 *
-	 * @param object $product WC_Product.
+	 * @param object $product \WC_Product.
 	 * @return bool
 	 */
 	public static function matches_global_scope( $product ) {
@@ -127,7 +127,7 @@ class Donation_Scope {
 	/**
 	 * Product is in one of the categories or in one of their children.
 	 *
-	 * @param object $product  WC_Product.
+	 * @param object $product  \WC_Product.
 	 * @param int[]  $selected Term IDs.
 	 * @return bool
 	 */
@@ -206,7 +206,7 @@ class Donation_Scope {
 	}
 
 	/**
-	 * @param mixed $product WC_Product or ID.
+	 * @param mixed $product \WC_Product or ID.
 	 * @return object|null
 	 */
 	private static function to_product( $product ) {

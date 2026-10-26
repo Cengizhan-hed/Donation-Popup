@@ -2,7 +2,7 @@
 /**
  * E0: şemalı ayar deposu + eski wdp_* seçeneklerinin idempotent göçü.
  *
- * @package WooCommerce\Donation_Popup
+ * @package DonationPanel
  */
 
 declare(strict_types=1);

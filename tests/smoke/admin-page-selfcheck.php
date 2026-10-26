@@ -2,7 +2,7 @@
 /**
  * Ayar sayfası sekmelerinin PHP hatası vermeden çıktı üretmesi ve DOM bütünlüğü.
  *
- * @package WooCommerce\Donation_Popup
+ * @package DonationPanel
  */
 
 declare(strict_types=1);
@@ -155,7 +155,7 @@ WDP_Test_State::$options['wdp_success_settings']         = array();
 WDP_Test_State::$options['wdp_shareholder_settings']     = array();
 WDP_Test_State::$options['wdp_progress_bar_settings']    = array();
 WDP_Test_State::$options['wdp_modal_layout_settings']    = array();
-WDP_Test_State::$options[ WDP_Placement_Settings::OPTION ] = WDP_Placement_Settings::defaults();
+WDP_Test_State::$options[ \DonationPanel\Domain\Placement_Settings::OPTION ] = \DonationPanel\Domain\Placement_Settings::defaults();
 
 $renderers = array(
 	'placement'        => array('WDP_Admin_Placement_Tab_Renderer', 'render_tab'),

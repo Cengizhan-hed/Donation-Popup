@@ -2,7 +2,7 @@
 /**
  * E0: gömülü autoloader (ad alanı -> WPCS dosya adı).
  *
- * @package WooCommerce\Donation_Popup
+ * @package DonationPanel
  */
 
 declare(strict_types=1);
@@ -22,7 +22,7 @@ final class E0AutoloaderTest extends TestCase {
 	}
 
 	public function test_foreign_namespaces_are_ignored(): void {
-		$this->assertSame('', Autoloader::file_for_class('WDP_Security', '/x/src'));
+		$this->assertSame('', Autoloader::file_for_class('DonationPanel\\Support\\Security', '/x/src'));
 		$this->assertSame('', Autoloader::file_for_class('Other\\Core\\Thing', '/x/src'));
 		$this->assertSame('', Autoloader::file_for_class('DonationPanel\\', '/x/src'));
 	}

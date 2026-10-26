@@ -85,7 +85,7 @@ class Progress_Currency {
 	/**
 	 * Sipariş para birimi.
 	 *
-	 * @param WC_Abstract_Order|null $order Order.
+	 * @param \WC_Abstract_Order|null $order Order.
 	 * @return string
 	 */
 	public static function get_order_currency( $order ) {
@@ -102,7 +102,7 @@ class Progress_Currency {
 	 * Siparişe kaydedilmiş kur (1 birim ana para → X sipariş para birimi).
 	 * Kaynak: `wdp_order_exchange_rate` filtresi (standart Woo verisinde kur yoktur).
 	 *
-	 * @param WC_Abstract_Order|null $order    Order.
+	 * @param \WC_Abstract_Order|null $order    Order.
 	 * @param string                 $currency Order currency.
 	 * @return float|null Rate or null if unknown.
 	 */
@@ -121,7 +121,7 @@ class Progress_Currency {
 		 * Çoklu para birimi eklentisi kullanan siteler bu filtreye site koduyla bağlanır (docs/site-snippets/).
 		 *
 		 * @param float|null        $rate     Rate or null when unknown.
-		 * @param WC_Abstract_Order $order    Order.
+		 * @param \WC_Abstract_Order $order    Order.
 		 * @param string            $currency Order currency.
 		 * @param string            $base     Store base currency.
 		 */
@@ -202,7 +202,7 @@ class Progress_Currency {
 	 *
 	 * @param float                  $amount   Amount in order currency.
 	 * @param string                 $currency Order currency.
-	 * @param WC_Abstract_Order|null $order    Optional order (for stored rate).
+	 * @param \WC_Abstract_Order|null $order    Optional order (for stored rate).
 	 * @return array{ok:bool,amount:float,reason:string}
 	 */
 	public static function convert_to_base( $amount, $currency, $order = null ) {
@@ -224,7 +224,7 @@ class Progress_Currency {
 			 * @param float                  $amount   Original.
 			 * @param string                 $currency From.
 			 * @param string                 $base     To.
-			 * @param WC_Abstract_Order|null $order    Order.
+			 * @param \WC_Abstract_Order|null $order    Order.
 			 */
 			return apply_filters( 'wdp_progress_convert_amount', $result, $amount, $currency, $base, $order );
 		}

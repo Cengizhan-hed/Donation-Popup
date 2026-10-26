@@ -300,7 +300,7 @@ class Order_Meta_Keys {
 	/**
 	 * Read donation fields from an order item, merging fixed and legacy keys.
 	 *
-	 * @param WC_Order_Item $item Order item.
+	 * @param \WC_Order_Item $item Order item.
 	 * @return array<string,array{key:string,value:mixed}> fixed key => stored key + value.
 	 */
 	public static function get_item_donation_data( $item ) {

@@ -2,7 +2,7 @@
 /**
  * Mağaza döngüsü Bağış Yap butonu.
  *
- * @package WooCommerce\Donation_Popup
+ * @package DonationPanel
  */
 
 declare(strict_types=1);
@@ -12,7 +12,7 @@ use PHPUnit\Framework\TestCase;
 final class LoopButtonTest extends TestCase {
 	protected function setUp(): void {
 		WDP_Test_State::reset();
-		WDP_Test_State::$options[ WDP_Placement_Settings::OPTION ] = array(
+		WDP_Test_State::$options[ \DonationPanel\Domain\Placement_Settings::OPTION ] = array(
 			'auto_place'     => 'yes',
 			'loop_button'    => 'panel',
 			'donation_scope' => 'all',
@@ -20,7 +20,7 @@ final class LoopButtonTest extends TestCase {
 		WDP_Test_State::$options['wdp_button_settings'] = array(
 			'popup_button_text' => 'Bağış Yap',
 		);
-		WDP_Placement_Settings::flush();
+		\DonationPanel\Domain\Placement_Settings::flush();
 	}
 
 	private function product(int $id): WC_Product {
@@ -45,7 +45,7 @@ final class LoopButtonTest extends TestCase {
 	public function test_non_donation_untouched(): void {
 		$p       = $this->product(21);
 		$p->type = 'variable';
-		WDP_Donation_Scope::flush(21);
+		\DonationPanel\Domain\Donation_Scope::flush(21);
 		$orig = '<a class="button">Sepete ekle</a>';
 		$this->assertSame($orig, \DonationPanel\Modules\EntryPoints\Loop_Price_Filters::loop_button_html($orig, $p));
 	}

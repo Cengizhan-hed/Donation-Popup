@@ -186,7 +186,7 @@ class Donation_Type {
 	}
 
 	/**
-	 * WP_Query meta_query selecting products of a type (same priority as infer_from_flags()).
+	 * \WP_Query meta_query selecting products of a type (same priority as infer_from_flags()).
 	 *
 	 * @param string $type Type id.
 	 * @return array

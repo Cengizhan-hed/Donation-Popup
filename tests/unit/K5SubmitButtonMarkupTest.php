@@ -3,7 +3,7 @@
  * K5: WooCommerce 8.0–8.4 AddToCartForm, formdaki TÜM `<button type="submit"` düğmelerini ilk eşleşmeyle
  * değiştirir. Bağış düğmeleri bu kalıpla başlamamalı (`type` öznitelik sırasında sonda).
  *
- * @package WooCommerce\Donation_Popup
+ * @package DonationPanel
  */
 
 declare(strict_types=1);

@@ -2,7 +2,7 @@
 /**
  * 10.3.1 biçimli tohum: yükseltmede özelleştirilmiş radius/layout korunur (idempotent).
  *
- * @package WooCommerce\Donation_Popup
+ * @package DonationPanel
  */
 
 declare(strict_types=1);
@@ -87,21 +87,21 @@ final class Migration1031SettingsPreserveTest extends TestCase {
 
 	public function test_upgrade_from_1031_seed_preserves_values_and_is_idempotent(): void {
 		$seed = $this->seed_1031_custom_settings();
-		$this->assertTrue(WDP_Migrations::run());
+		$this->assertTrue(\DonationPanel\Core\Version_Migrations::run());
 		$this->assert_custom_values_kept($seed['button'], $seed['layout']);
 
 		$after_first = WDP_Test_State::$options;
-		unset($after_first[ WDP_Migrations::LOG_OPTION ]);
+		unset($after_first[ \DonationPanel\Core\Version_Migrations::LOG_OPTION ]);
 
-		WDP_Test_State::$options[ WDP_Migrations::OPTION ] = '10.26.0';
+		WDP_Test_State::$options[ \DonationPanel\Core\Version_Migrations::OPTION ] = '10.26.0';
 		foreach (array_keys(WDP_Test_State::$options) as $key) {
 			if (strpos((string) $key, 'wdp_migrated_') === 0) {
 				unset(WDP_Test_State::$options[ $key ]);
 			}
 		}
-		$this->assertTrue(WDP_Migrations::run());
+		$this->assertTrue(\DonationPanel\Core\Version_Migrations::run());
 		$after_second = WDP_Test_State::$options;
-		unset($after_second[ WDP_Migrations::LOG_OPTION ]);
+		unset($after_second[ \DonationPanel\Core\Version_Migrations::LOG_OPTION ]);
 		$this->assertSame($after_first['wdp_button_settings'], $after_second['wdp_button_settings']);
 		$this->assertSame($after_first['wdp_modal_layout_settings'], $after_second['wdp_modal_layout_settings']);
 		$this->assert_custom_values_kept($seed['button'], $seed['layout']);
@@ -172,21 +172,21 @@ final class Migration1031SettingsPreserveTest extends TestCase {
 		}
 		WDP_Test_State::$options['wdp_version']         = '10.3.1';
 		WDP_Test_State::$options['wdp_button_settings'] = $button;
-		$this->assertTrue( WDP_Migrations::run() );
+		$this->assertTrue( \DonationPanel\Core\Version_Migrations::run() );
 		$after_first = WDP_Test_State::$options['wdp_button_settings'];
 		$this->assertSame( 0, (int) $after_first['ui_border_radius'] );
 		foreach ( $this->radius_keys() as $key ) {
 			$this->assertSame( 0, (int) $after_first[ $key ], $key );
 		}
 
-		unset( WDP_Test_State::$options[ WDP_Migrations::LOG_OPTION ] );
-		WDP_Test_State::$options[ WDP_Migrations::OPTION ] = '10.26.0';
+		unset( WDP_Test_State::$options[ \DonationPanel\Core\Version_Migrations::LOG_OPTION ] );
+		WDP_Test_State::$options[ \DonationPanel\Core\Version_Migrations::OPTION ] = '10.26.0';
 		foreach ( array_keys( WDP_Test_State::$options ) as $key ) {
 			if ( strpos( (string) $key, 'wdp_migrated_' ) === 0 ) {
 				unset( WDP_Test_State::$options[ $key ] );
 			}
 		}
-		$this->assertTrue( WDP_Migrations::run() );
+		$this->assertTrue( \DonationPanel\Core\Version_Migrations::run() );
 		$this->assertSame( $after_first, WDP_Test_State::$options['wdp_button_settings'] );
 		$this->assertSame( 0, (int) WDP_Test_State::$options['wdp_button_settings']['ui_border_radius'] );
 	}

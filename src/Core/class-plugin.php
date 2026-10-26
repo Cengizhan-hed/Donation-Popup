@@ -1,23 +1,27 @@
 <?php
 /**
- * Yeni mimarinin tek girişi: kabı kurar, kancaları bağlar, modülleri açar.
+ * Eklentinin tek girişi: kabı kurar, kancaları bağlar, modülleri açar.
  *
- * Mevcut `includes/` bootstrap'ı çalışmaya devam eder; `boot()` oradan çağrılır.
+ * `boot()` `Bootstrap::run()` içinden çağrılır.
  *
  * @package DonationPanel
  */
 
 namespace DonationPanel\Core;
 
+use DonationPanel\Compat\Public_Contract;
+use DonationPanel\Domain\Addon_Product_Visibility;
+use DonationPanel\Domain\Campaign_Totals;
 use DonationPanel\Frontend\Assets;
 use DonationPanel\Frontend\Template_Loader;
 use DonationPanel\Http\Rate_Limiter;
 use DonationPanel\Http\Rest\Ping_Controller;
-use DonationPanel\Modules\EntryPoints\Blocks;
-use DonationPanel\Modules\EntryPoints\Elementor\Elementor_Compat;
+use DonationPanel\Modules\EntryPoints\Donations_List;
 use DonationPanel\Modules\EntryPoints\Entry_Points_Module;
-use DonationPanel\Modules\EntryPoints\Shortcodes;
 use DonationPanel\Support\Logger;
+use DonationPanel\WooCommerce\Cart_Hooks;
+use DonationPanel\WooCommerce\Donation_Purchasable;
+use DonationPanel\WooCommerce\Order_Hooks;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -194,6 +198,13 @@ final class Plugin {
 						$importer->import();
 					}
 				);
+				$migrations->add_step(
+					'release_12_upgrade',
+					2,
+					static function () {
+						( new Release_12_Upgrade() )->run();
+					}
+				);
 				return $migrations;
 			}
 		);
@@ -207,12 +218,12 @@ final class Plugin {
 	 */
 	public static function register_modules( Module_Registry $registry ) {
 		$registry->add( Entry_Points_Module::SLUG, Entry_Points_Module::class, true );
-		// Sınıf adı metin olarak verilir: `engine` = `legacy` iken dosya hiç yüklenmez.
-		$registry->add( 'experiences', 'DonationPanel\\Modules\\Experiences\\Experiences_Module', Settings::engine_is_new() );
+		// Sınıf adı metin olarak verilir: modül kapalıyken dosyası hiç yüklenmez.
+		$registry->add( 'experiences', 'DonationPanel\\Modules\\Experiences\\Experiences_Module', true );
 		$registry->add( 'side_cart', 'DonationPanel\\Modules\\SideCart\\Side_Cart_Module', false );
 
 		$registry->add( 'campaign', 'DonationPanel\\Modules\\Campaign\\Campaign_Module', true );
-		$registry->add( 'impact', 'DonationPanel\\Modules\\Impact\\Impact_Module', Settings::engine_is_new() );
+		$registry->add( 'impact', 'DonationPanel\\Modules\\Impact\\Impact_Module', true );
 		$registry->add( 'social_proof', 'DonationPanel\\Modules\\SocialProof\\Social_Proof_Module', false );
 		$registry->add( 'thanks', 'DonationPanel\\Modules\\Thanks\\Thanks_Module', false );
 		$registry->add( 'tax_relief', 'DonationPanel\\Modules\\TaxRelief\\Tax_Relief_Module', false );
@@ -228,7 +239,8 @@ final class Plugin {
 	public function on_plugins_loaded() {
 		$this->container->get( Migrations::class )->run();
 
-		$this->register_entry_contract();
+		$this->register_core_hooks();
+		Public_Contract::register();
 
 		$registry = $this->container->get( Module_Registry::class );
 		$registry->boot( $this->container );
@@ -252,18 +264,20 @@ final class Plugin {
 	}
 
 	/**
-	 * Dışa açık giriş sözleşmesi: kısa kodlar, bloklar ve Elementor ince katmanı her zaman kayıtlıdır
-	 * (modül ayarından bağımsız; WooCommerce yoksa kaydolmaz).
+	 * WooCommerce kancalarını bağlar: sepet/sipariş/toplam/gizlilik. WooCommerce yoksa hiçbir şey bağlanmaz.
 	 *
 	 * @return void
 	 */
-	private function register_entry_contract() {
+	private function register_core_hooks() {
 		if ( ! class_exists( 'WooCommerce' ) ) {
 			return;
 		}
-		Shortcodes::init();
-		Blocks::init();
-		Elementor_Compat::init();
+		Campaign_Totals::init();
+		Cart_Hooks::init();
+		Order_Hooks::init();
+		Addon_Product_Visibility::init();
+		Donation_Purchasable::init();
+		Donations_List::init();
 	}
 
 	/**

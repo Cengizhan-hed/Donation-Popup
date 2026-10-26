@@ -71,7 +71,7 @@ class Price {
 /**
 	 * Kart / form birim fiyatı: WooCommerce "vergi dahil/hariç göster" ayarına uyar.
 	 *
-	 * @param WC_Product $product Product.
+	 * @param \WC_Product $product Product.
 	 * @return string HTML (or '').
 	 */
 	public static function format_product_display_price( $product ) {

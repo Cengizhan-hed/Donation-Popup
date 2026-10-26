@@ -146,8 +146,8 @@ foreach ($required_traits as $trait_file) {
 wdp_smoke_assert(class_exists('WDP_Ajax'), 'WDP_Ajax loads');
 wdp_smoke_assert(class_exists('\DonationPanel\Modules\EntryPoints\Shortcodes'), '\DonationPanel\Modules\EntryPoints\Shortcodes loads');
 wdp_smoke_assert(class_exists('WDP_Progress_Form'), 'WDP_Progress_Form loads');
-wdp_smoke_assert(class_exists('WDP_Order_Meta_Keys'), 'WDP_Order_Meta_Keys loads');
-wdp_smoke_assert(class_exists('WDP_Privacy'), 'WDP_Privacy loads');
+wdp_smoke_assert(class_exists('DonationPanel\\WooCommerce\\Order_Meta_Keys'), 'WDP_Order_Meta_Keys loads');
+wdp_smoke_assert(class_exists('DonationPanel\\Privacy\\Order_Privacy'), 'WDP_Privacy loads');
 wdp_smoke_assert(
     wdp_smoke_file_contains(WDP_PLUGIN_DIR . 'uninstall.php', 'WP_UNINSTALL_PLUGIN')
         && wdp_smoke_file_contains(WDP_PLUGIN_DIR . 'uninstall.php', 'wdp_delete_data_on_uninstall'),
@@ -258,7 +258,7 @@ wdp_smoke_assert(
 );
 
 // Admin: product "Bağış" tab + Settings → Ürünler table.
-wdp_smoke_assert(class_exists('WDP_Donation_Type'), 'WDP_Donation_Type loads');
+wdp_smoke_assert(class_exists('DonationPanel\\Domain\\Donation_Type'), 'WDP_Donation_Type loads');
 wdp_smoke_assert(class_exists('WDP_Admin_Product_Data_Tab'), 'WDP_Admin_Product_Data_Tab loads');
 wdp_smoke_assert(
     wdp_smoke_file_contains(WDP_PLUGIN_DIR . 'includes/class-admin-products-list-table.php', 'extends WP_List_Table'),
@@ -287,14 +287,14 @@ wdp_smoke_assert(
 );
 
 // 10.27.0: render guard, migrations, removed in-form module.
-wdp_smoke_assert(class_exists('WDP_Render_Guard'), 'WDP_Render_Guard loads');
-wdp_smoke_assert(class_exists('WDP_Migrations'), 'WDP_Migrations loads');
+wdp_smoke_assert(class_exists('DonationPanel\\Modules\\EntryPoints\\Render_Guard'), 'WDP_Render_Guard loads');
+wdp_smoke_assert(class_exists('DonationPanel\\Core\\Version_Migrations'), 'WDP_Migrations loads');
 wdp_smoke_assert(
-    wdp_smoke_file_contains(WDP_PLUGIN_DIR . 'includes/class-templates.php', 'WDP_Render_Guard::html')
-        && wdp_smoke_file_contains(WDP_PLUGIN_DIR . 'src/Modules/EntryPoints/class-shortcodes.php', 'WDP_Render_Guard::html'),
+    wdp_smoke_file_contains(WDP_PLUGIN_DIR . 'includes/class-templates.php', 'DonationPanel\\Modules\\EntryPoints\\Render_Guard::html')
+        && wdp_smoke_file_contains(WDP_PLUGIN_DIR . 'src/Modules/EntryPoints/class-shortcodes.php', 'DonationPanel\\Modules\\EntryPoints\\Render_Guard::html'),
     'Templates and shortcodes render through WDP_Render_Guard'
 );
-$wdp_removed_module_css = 'wdp-' . WDP_Migrations::REMOVED_MODULE_IDS[0];
+$wdp_removed_module_css = 'wdp-' . \DonationPanel\Core\Version_Migrations::REMOVED_MODULE_IDS[0];
 wdp_smoke_assert(
     !wdp_smoke_file_contains(WDP_PLUGIN_DIR . 'assets/css/src/components/campaign-modules.css', $wdp_removed_module_css)
         && !wdp_smoke_file_contains(WDP_PLUGIN_DIR . 'assets/css/' . ltrim((string) ($css['file'] ?? ''), '/'), $wdp_removed_module_css),
@@ -303,14 +303,14 @@ wdp_smoke_assert(
 
 // 10.27.0: placement, list, blocks, lazy modal.
 foreach (array(
-    'WDP_Donation_Scope',
-    'WDP_Addon_Product_Visibility',
+    'DonationPanel\\Domain\\Donation_Scope',
+    'DonationPanel\\Domain\\Addon_Product_Visibility',
     '\DonationPanel\Modules\EntryPoints\Product_Resolver',
-    'WDP_Render_Registry',
+    'DonationPanel\\Modules\\EntryPoints\\Render_Registry',
     '\DonationPanel\Modules\EntryPoints\Auto_Placement',
-    'WDP_Donations_List',
+    'DonationPanel\\Modules\\EntryPoints\\Donations_List',
     'WDP_Lazy_Modal',
-    'WDP_Placement_Settings',
+    'DonationPanel\\Domain\\Placement_Settings',
     '\DonationPanel\Modules\EntryPoints\Blocks',
     '\DonationPanel\Modules\EntryPoints\Elementor\Elementor_Compat',
     'WDP_Form_Matrix',

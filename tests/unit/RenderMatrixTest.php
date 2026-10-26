@@ -2,7 +2,7 @@
 /**
  * Tip × kritik aç/kapa kombinasyonlarında bağlam üretimi uyarı üretmez.
  *
- * @package WooCommerce\Donation_Popup
+ * @package DonationPanel
  */
 
 declare(strict_types=1);
@@ -12,7 +12,7 @@ use PHPUnit\Framework\TestCase;
 final class RenderMatrixTest extends TestCase {
 	protected function setUp(): void {
 		WDP_Test_State::reset();
-		WDP_Test_State::$options[ WDP_Placement_Settings::OPTION ] = array('donation_scope' => 'all');
+		WDP_Test_State::$options[ \DonationPanel\Domain\Placement_Settings::OPTION ] = array('donation_scope' => 'all');
 		WDP_Test_State::$options['wdp_button_settings']            = array();
 	}
 
@@ -37,16 +37,16 @@ final class RenderMatrixTest extends TestCase {
 
 	public function test_all_types_and_flag_sets_build_context(): void {
 		$id = 20;
-		foreach (WDP_Donation_Type::ids() as $type) {
+		foreach (\DonationPanel\Domain\Donation_Type::ids() as $type) {
 			foreach ($this->flag_sets() as $extra) {
 				$id++;
 				$p        = new WC_Product($id);
-				$p->price = $type === WDP_Donation_Type::FIXED ? '25' : '0';
+				$p->price = $type === \DonationPanel\Domain\Donation_Type::FIXED ? '25' : '0';
 				$p->type  = 'simple';
 				$p->name  = 'Kampanya ' . $id;
 				WDP_Test_State::$products[ $id ] = $p;
-				WDP_Test_State::$post_meta[ $id ] = array_merge(WDP_Donation_Type::to_meta($type), $extra);
-				$context = WDP_Donation_Product_Context_Service::build_form_context($p);
+				WDP_Test_State::$post_meta[ $id ] = array_merge(\DonationPanel\Domain\Donation_Type::to_meta($type), $extra);
+				$context = \DonationPanel\Domain\Product_Context::build_form_context($p);
 				$this->assertSame($id, $context['product_id']);
 				$this->assertArrayHasKey('allow_custom_price', $context);
 				$this->assertArrayNotHasKey('module_order', $context);
@@ -59,7 +59,7 @@ final class RenderMatrixTest extends TestCase {
 		$p = new WC_Product(50);
 		$p->type = 'simple';
 		WDP_Test_State::$products[50] = $p;
-		WDP_Test_State::$post_meta[50] = WDP_Donation_Type::to_meta(WDP_Donation_Type::FIXED);
+		WDP_Test_State::$post_meta[50] = \DonationPanel\Domain\Donation_Type::to_meta(\DonationPanel\Domain\Donation_Type::FIXED);
 		add_filter(
 			'wdp_form_context',
 			static function ($context) {
@@ -67,7 +67,7 @@ final class RenderMatrixTest extends TestCase {
 				return $context;
 			}
 		);
-		$context = WDP_Donation_Product_Context_Service::build_form_context($p);
+		$context = \DonationPanel\Domain\Product_Context::build_form_context($p);
 		$this->assertTrue($context['allow_custom_price']);
 	}
 }

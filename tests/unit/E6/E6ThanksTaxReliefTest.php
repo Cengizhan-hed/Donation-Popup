@@ -2,7 +2,7 @@
 /**
  * E6: teşekkür özeti (kişi bilgisi yok), vergi indirimi beyanı (hash, sipariş meta, ek adım), modül varsayılanları.
  *
- * @package WooCommerce\Donation_Popup
+ * @package DonationPanel
  */
 
 declare(strict_types=1);

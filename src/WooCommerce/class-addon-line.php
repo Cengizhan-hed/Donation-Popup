@@ -94,9 +94,6 @@ final class Addon_Line {
 	 * @return string Boşsa başarılı; doluysa hata iletisi.
 	 */
 	public static function add( $cart, $product, array $main_data, $amount, $submission, $parent_key ) {
-		if ( ! class_exists( 'WDP_Utils' ) ) {
-			return __( 'The add-on donation could not be added to the cart.', 'woo-donation-popup' );
-		}
 		$parent_id = (int) $product->get_id();
 		$addon_id  = (int) Addon_Settings::resolve_addon_wc_product_id( $product );
 		if ( $addon_id <= 0 ) {
@@ -110,12 +107,10 @@ final class Addon_Line {
 		}
 
 		$item = self::cart_item_data( $parent_id, $addon_id, $main_data, $amount, $submission, $parent_key );
-		if ( class_exists( 'DonationPanel\\Domain\\Progress_Currency' ) ) {
-			// Ek satırın tutarı da bağışçının yazdığı birimdedir (etkin birim); ana satırla aynı damga.
-			$active = Progress_Currency::get_active_currency();
-			if ( '' !== $active ) {
-				$item['wdp_input_currency'] = $active;
-			}
+		// Ek satırın tutarı da bağışçının yazdığı birimdedir (etkin birim); ana satırla aynı damga.
+		$active = Progress_Currency::get_active_currency();
+		if ( '' !== $active ) {
+			$item['wdp_input_currency'] = $active;
 		}
 		$allow = static function ( $purchasable, $check ) use ( $addon_id ) {
 			return ( ! $purchasable && is_object( $check ) && method_exists( $check, 'get_id' ) && (int) $check->get_id() === $addon_id ) ? true : $purchasable;

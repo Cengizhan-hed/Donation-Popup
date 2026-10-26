@@ -130,7 +130,7 @@ class Security {
 	 * Validate product ID
 	 *
 	 * @param int             $product_id Product ID.
-	 * @param WC_Product|null $product_out Optional product output reference.
+	 * @param \WC_Product|null $product_out Optional product output reference.
 	 * @return bool
 	 */
 	public static function validate_product_id( $product_id, &$product_out = null ) {

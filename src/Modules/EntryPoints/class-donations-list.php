@@ -7,6 +7,7 @@
 
 namespace DonationPanel\Modules\EntryPoints;
 
+use DonationPanel\Core\Uninstall;
 use DonationPanel\Domain\Campaign_Totals;
 use DonationPanel\Domain\Donation_Scope;
 use DonationPanel\Domain\Donation_Type;
@@ -280,7 +281,7 @@ class Donations_List {
 
 	/**
 	 * @param int     $post_id Post ID.
-	 * @param WP_Post $post    Post.
+	 * @param \WP_Post $post    Post.
 	 * @param bool    $update  Update.
 	 * @return void
 	 */
@@ -308,7 +309,7 @@ class Donations_List {
 	/**
 	 * @param string  $new  New status.
 	 * @param string  $old  Old status.
-	 * @param WP_Post $post Post.
+	 * @param \WP_Post $post Post.
 	 * @return void
 	 */
 	public static function on_transition_post_status( $new, $old, $post ) {
@@ -335,8 +336,8 @@ class Donations_List {
 		$key   = (string) $meta_key;
 		$keys  = array( '_price', '_regular_price', '_sale_price', '_wdp_total_donation_amount', '_wdp_manual_total', '_wdp_donor_count' );
 		$watch = in_array( $key, $keys, true );
-		if ( ! $watch && class_exists( 'WDP_Product_Settings_Service' ) && method_exists( 'WDP_Product_Settings_Service', 'get_settings_meta_keys' ) ) {
-			$watch = in_array( $key, WDP_Product_Settings_Service::get_settings_meta_keys(), true );
+		if ( ! $watch ) {
+			$watch = in_array( $key, Uninstall::product_meta_keys(), true );
 		}
 		if ( ! $watch ) {
 			return;
@@ -383,10 +384,6 @@ class Donations_List {
 		wp_enqueue_style( self::STYLE_HANDLE, $css, array(), WDP_ASSET_VERSION );
 		wp_enqueue_script( self::SCRIPT_HANDLE, $js, array(), WDP_ASSET_VERSION, true );
 		wp_script_add_data( self::SCRIPT_HANDLE, 'strategy', 'defer' );
-		WDP_Assets::force_enqueue();
-		if ( did_action( 'wp_enqueue_scripts' ) ) {
-			WDP_Assets::enqueue_assets_now();
-		}
 	}
 
 	/**
@@ -463,7 +460,7 @@ class Donations_List {
 
 	/**
 	 * @param array $atts Sanitized atts.
-	 * @return WC_Product[]
+	 * @return \WC_Product[]
 	 */
 	public static function query_products( $atts ) {
 		$tax_query  = array();
@@ -545,7 +542,7 @@ class Donations_List {
 		}
 
 		/**
-		 * @param array $args WP_Query args.
+		 * @param array $args \WP_Query args.
 		 * @param array $atts Sanitized attributes.
 		 */
 		$args = apply_filters( 'wdp_donations_query_args', $args, $atts );
@@ -588,7 +585,7 @@ class Donations_List {
 	}
 
 	/**
-	 * @param WC_Product[] $products Products.
+	 * @param \WC_Product[] $products Products.
 	 * @return array<int, array{id:int,slug:string,name:string,parent:int}>
 	 */
 	private static function build_tabs( $products ) {
@@ -668,7 +665,7 @@ class Donations_List {
 	}
 
 	/**
-	 * @param WC_Product $product Product.
+	 * @param \WC_Product $product Product.
 	 * @param array      $atts    Atts.
 	 * @param array      $totals  Totals.
 	 * @param int        $index   1-based index.
@@ -700,14 +697,9 @@ class Donations_List {
 		if ( $atts['button_full'] === 'yes' ) {
 			$cta_class .= ' wdp-card__cta--full';
 		}
+		// Kart düğmesi ürün sayfasına götürür; form ürün sayfasında açılır (kartlarda ağır form basılmaz).
 		$cta_tag   = 'a';
 		$cta_attrs = ' href="' . esc_url( $url ) . '" class="' . esc_attr( $cta_class ) . '"';
-		if ( $atts['button'] !== 'link' ) {
-			$mode       = $atts['button'] === 'panel' ? 'side_panel' : 'popup';
-			$cta_class .= ' wdp-open-modal' . ( $mode === 'side_panel' ? ' wdp-open-side-panel' : '' );
-			$cta_tag    = 'button';
-			$cta_attrs  = ' type="button" class="' . esc_attr( $cta_class ) . '" data-product-id="' . esc_attr( (string) $id ) . '" data-wdp-mode="' . esc_attr( $mode ) . '" data-wdp-lazy="1"';
-		}
 
 		$type       = Donation_Type::for_product( $id );
 		$price_html = '';
@@ -821,7 +813,7 @@ class Donations_List {
 
 		/**
 		 * @param string     $html    Card HTML.
-		 * @param WC_Product $product Product.
+		 * @param \WC_Product $product Product.
 		 * @param array      $atts    Sanitized atts.
 		 */
 		return (string) apply_filters( 'wdp_donations_card_html', $html, $product, $atts );

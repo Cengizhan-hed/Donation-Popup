@@ -2,7 +2,7 @@
 /**
  * E2A: form modeli (eski bağlamdan türetme, alan sözleşmesi).
  *
- * @package WooCommerce\Donation_Popup
+ * @package DonationPanel
  */
 
 declare(strict_types=1);

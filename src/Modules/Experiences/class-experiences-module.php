@@ -2,7 +2,7 @@
 /**
  * Yeni nesil form deneyimi modülü: tek form çekirdeği + 4 kap, REST ve tembel varlıklar.
  *
- * Ayar `experiences.engine` = `legacy` (varsayılan; bu modül yüklenmez) | `new`.
+ * Tek form deneyimi: modül varsayılan açıktır (`modules.experiences` ya da `donation_panel_module_enabled` ile kapanır).
  *
  * @package DonationPanel
  */

@@ -3,7 +3,7 @@
  * Faz 8 gizlilik araçları: sipariş verisi dışa aktarma/silme (e-posta + telefon, sayfalama, yalnız WC API),
  * hesap bağlama kaydı, politika önerisi, eski wdp_vid çerezi.
  *
- * @package WooCommerce\Donation_Popup
+ * @package DonationPanel
  */
 
 declare(strict_types=1);
@@ -172,7 +172,7 @@ final class PrivacyToolsTest extends TestCase {
 	public function test_export_finds_orders_by_email(): void {
 		$this->add_order(1, 'ayse@example.com', '+90 532 111 22 33', array('wdp_donor_name' => 'Ayşe Çelik', 'wdp_dedication' => 'Şükrü için'));
 
-		$result = WDP_Privacy::export_personal_data('ayse@example.com', 1);
+		$result = \DonationPanel\Privacy\Order_Privacy::export_personal_data('ayse@example.com', 1);
 
 		$this->assertTrue($result['done']);
 		$this->assertCount(1, $result['data']);
@@ -187,10 +187,10 @@ final class PrivacyToolsTest extends TestCase {
 		$this->add_order(2, '', '905321112233', array('wdp_donor_name' => 'Ayşe (telefonla)', 'wdp_donor_phone' => '905321112233'), '');
 		WDP_Privacy_Registry::$by_phone['+90 532 111 22 33'][] = 2;
 
-		$ids = WDP_Privacy::find_order_ids('ayse@example.com');
+		$ids = \DonationPanel\Privacy\Order_Privacy::find_order_ids('ayse@example.com');
 
 		$this->assertSame(array(1, 2), $ids);
-		$export = WDP_Privacy::export_personal_data('ayse@example.com', 1);
+		$export = \DonationPanel\Privacy\Order_Privacy::export_personal_data('ayse@example.com', 1);
 		$this->assertCount(2, $export['data']);
 	}
 
@@ -199,13 +199,13 @@ final class PrivacyToolsTest extends TestCase {
 		$this->add_order(2, 'baska@example.com', '+90 532 111 22 33', array('wdp_donor_name' => 'Başka Kişi'));
 		WDP_Privacy_Registry::$by_phone['+90 532 111 22 33'] = array(1, 2);
 
-		$this->assertSame(array(1), WDP_Privacy::find_order_ids('ayse@example.com'));
+		$this->assertSame(array(1), \DonationPanel\Privacy\Order_Privacy::find_order_ids('ayse@example.com'));
 	}
 
 	public function test_erase_anonymizes_meta_keeps_order_total_and_reports_retained(): void {
 		$order = $this->add_order(1, 'ayse@example.com', '+90 532 111 22 33', array('wdp_donor_name' => 'Ayşe', 'wdp_donor_phone' => '+90 532 111 22 33', 'wdp_anonymous' => 'yes', '_custom_price' => 250));
 
-		$response = WDP_Privacy::erase_personal_data('ayse@example.com', 1);
+		$response = \DonationPanel\Privacy\Order_Privacy::erase_personal_data('ayse@example.com', 1);
 
 		$items = array_values($order->get_items());
 		$this->assertTrue($response['items_removed']);
@@ -223,11 +223,11 @@ final class PrivacyToolsTest extends TestCase {
 			$this->add_order($i, 'toplu@example.com', '', array('wdp_donor_name' => 'Toplu ' . $i));
 		}
 
-		$p1 = WDP_Privacy::export_personal_data('toplu@example.com', 1);
-		$p2 = WDP_Privacy::export_personal_data('toplu@example.com', 2);
-		$p3 = WDP_Privacy::export_personal_data('toplu@example.com', 3);
+		$p1 = \DonationPanel\Privacy\Order_Privacy::export_personal_data('toplu@example.com', 1);
+		$p2 = \DonationPanel\Privacy\Order_Privacy::export_personal_data('toplu@example.com', 2);
+		$p3 = \DonationPanel\Privacy\Order_Privacy::export_personal_data('toplu@example.com', 3);
 
-		$this->assertSame(50, WDP_Privacy::BATCH_SIZE);
+		$this->assertSame(50, \DonationPanel\Privacy\Order_Privacy::BATCH_SIZE);
 		$this->assertCount(50, $p1['data']);
 		$this->assertFalse($p1['done']);
 		$this->assertCount(50, $p2['data']);
@@ -239,8 +239,8 @@ final class PrivacyToolsTest extends TestCase {
 	public function test_only_wc_api_and_itemmeta_table_are_queried_hpos_agnostic(): void {
 		$this->add_order(1, 'ayse@example.com', '+90 532 111 22 33', array('wdp_donor_name' => 'Ayşe'));
 
-		WDP_Privacy::export_personal_data('ayse@example.com', 1);
-		WDP_Privacy::erase_personal_data('ayse@example.com', 1);
+		\DonationPanel\Privacy\Order_Privacy::export_personal_data('ayse@example.com', 1);
+		\DonationPanel\Privacy\Order_Privacy::erase_personal_data('ayse@example.com', 1);
 
 		foreach ($GLOBALS['wpdb']->sql as $sql) {
 			$this->assertStringNotContainsString('postmeta', $sql);
@@ -269,8 +269,8 @@ final class PrivacyToolsTest extends TestCase {
 	public function test_registers_exporters_and_erasers(): void {
 		$this->assertArrayHasKey('donation-panel-account', Privacy_Tools::register_exporter(array()));
 		$this->assertArrayHasKey('donation-panel-account', Privacy_Tools::register_eraser(array()));
-		$this->assertArrayHasKey('woo-donation-popup', WDP_Privacy::register_exporter(array()));
-		$this->assertArrayHasKey('woo-donation-popup', WDP_Privacy::register_eraser(array()));
+		$this->assertArrayHasKey('woo-donation-popup', \DonationPanel\Privacy\Order_Privacy::register_exporter(array()));
+		$this->assertArrayHasKey('woo-donation-popup', \DonationPanel\Privacy\Order_Privacy::register_eraser(array()));
 	}
 
 	public function test_policy_content_is_added_and_mentions_no_own_cookie(): void {

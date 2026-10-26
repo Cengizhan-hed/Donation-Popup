@@ -3,7 +3,7 @@
  * Salt okunur E2E katalog: mağaza / sepet / ödeme / liste + bağış ürünleri.
  * Siteye özel slug yok. Yazma yok. WP-CLI eval-file veya yerel eval-file.php.
  *
- * @package WooCommerce\Donation_Popup
+ * @package DonationPanel
  */
 
 if (!function_exists('wdp_e2e_catalog_plugin_needles')) {
@@ -71,14 +71,14 @@ if (!function_exists('wdp_e2e_catalog_plugin_needles')) {
 	}
 
 	/**
-	 * WDP_Donation_Type::infer_from_meta — sınıf yoksa aynı öncelik yedek.
+	 * Donation_Type::infer_from_meta — sınıf yoksa aynı öncelik yedek.
 	 *
 	 * @param array<string,string> $meta Meta map.
 	 * @return string
 	 */
 	function wdp_e2e_catalog_infer_type(array $meta) {
-		if (class_exists('WDP_Donation_Type')) {
-			return WDP_Donation_Type::infer_from_meta($meta);
+		if (class_exists('DonationPanel\\Domain\\Donation_Type')) {
+			return \DonationPanel\Domain\Donation_Type::infer_from_meta($meta);
 		}
 		$yes = static function ($key) use ($meta) {
 			return isset($meta[ $key ]) && $meta[ $key ] === 'yes';
@@ -104,8 +104,8 @@ if (!function_exists('wdp_e2e_catalog_plugin_needles')) {
 	 */
 	function wdp_e2e_catalog_detect_type($product_id, array $meta) {
 		$id = (int) $product_id;
-		if ($id > 0 && class_exists('WDP_Donation_Type') && method_exists('WDP_Donation_Type', 'for_product')) {
-			return WDP_Donation_Type::for_product($id);
+		if ($id > 0 && class_exists('DonationPanel\\Domain\\Donation_Type') && method_exists('DonationPanel\\Domain\\Donation_Type', 'for_product')) {
+			return \DonationPanel\Domain\Donation_Type::for_product($id);
 		}
 		return wdp_e2e_catalog_infer_type($meta);
 	}
@@ -201,8 +201,8 @@ if (!function_exists('wdp_e2e_catalog_type_meta')) {
 	 * @return bool
 	 */
 	function wdp_e2e_catalog_is_donation($product) {
-		if (class_exists('WDP_Donation_Scope')) {
-			return (bool) WDP_Donation_Scope::is_donation_product($product);
+		if (class_exists('DonationPanel\\Domain\\Donation_Scope')) {
+			return (bool) \DonationPanel\Domain\Donation_Scope::is_donation_product($product);
 		}
 		return method_exists($product, 'get_meta') && $product->get_meta('_wdp_donation_product') === 'yes';
 	}
@@ -248,8 +248,8 @@ if (!function_exists('wdp_e2e_catalog_type_meta')) {
 		if (class_exists('\DonationPanel\Modules\EntryPoints\Auto_Placement') && method_exists('\DonationPanel\Modules\EntryPoints\Auto_Placement', 'resolve_product_page_display')) {
 			return (string) \DonationPanel\Modules\EntryPoints\Auto_Placement::resolve_product_page_display($product);
 		}
-		if (class_exists('WDP_Placement_Settings')) {
-			return (string) WDP_Placement_Settings::value('display', 'button_panel');
+		if (class_exists('DonationPanel\\Domain\\Placement_Settings')) {
+			return (string) \DonationPanel\Domain\Placement_Settings::value('display', 'button_panel');
 		}
 		return '';
 	}
@@ -306,7 +306,7 @@ if (!function_exists('wdp_e2e_catalog_type_meta')) {
 			$cached = $out;
 			return $out;
 		}
-		$resolver = class_exists('WDP_Donation_Type') ? 'WDP_Donation_Type::for_product' : 'yedek infer_from_meta';
+		$resolver = class_exists('DonationPanel\\Domain\\Donation_Type') ? 'DonationPanel\\Domain\\Donation_Type::for_product' : 'yedek infer_from_meta';
 		foreach ($ids as $id) {
 			$id = (int) $id;
 			if ($id <= 0) {
@@ -367,8 +367,8 @@ if (!function_exists('wdp_e2e_catalog_type_meta')) {
 		}
 		return array(
 			'explain'        => true,
-			'resolver'       => class_exists('WDP_Donation_Type') ? 'WDP_Donation_Type::for_product' : 'yedek infer_from_meta',
-			'plugin_loaded'  => class_exists('WDP_Donation_Type'),
+			'resolver'       => class_exists('DonationPanel\\Domain\\Donation_Type') ? 'DonationPanel\\Domain\\Donation_Type::for_product' : 'yedek infer_from_meta',
+			'plugin_loaded'  => class_exists('DonationPanel\\Domain\\Donation_Type'),
 			'shop'           => $catalog['shop'],
 			'cart'           => $catalog['cart'],
 			'checkout'       => $catalog['checkout'],

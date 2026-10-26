@@ -67,7 +67,7 @@ final class Donation_Order_Meta {
 	 * @return string
 	 */
 	public static function display_value( $display_value, $meta = null ) {
-		if ( is_object( $meta ) && isset( $meta->key, $meta->value ) && self::KEY_TYPE === (string) $meta->key && class_exists( 'DonationPanel\\Domain\\Donation_Type' ) ) {
+		if ( is_object( $meta ) && isset( $meta->key, $meta->value ) && self::KEY_TYPE === (string) $meta->key ) {
 			return esc_html( Donation_Type::get_label( (string) $meta->value ) );
 		}
 		return $display_value;
@@ -126,7 +126,7 @@ final class Donation_Order_Meta {
 	 * @return array<string, mixed>
 	 */
 	public static function meta_for( array $donation_data ) {
-		return class_exists( 'DonationPanel\\WooCommerce\\Order_Meta_Keys' ) ? Order_Meta_Keys::build_item_meta( $donation_data ) : array();
+		return Order_Meta_Keys::build_item_meta( $donation_data );
 	}
 
 	/**

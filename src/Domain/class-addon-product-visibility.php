@@ -44,7 +44,7 @@ class Addon_Product_Visibility {
 	/**
 	 * Ürün metasını okur: yeni anahtar varsa o, yoksa eski anahtar (geriye uyum).
 	 *
-	 * @param object|int $product WC_Product benzeri nesne ya da ürün ID.
+	 * @param object|int $product \WC_Product benzeri nesne ya da ürün ID.
 	 * @param string     $key     Yeni ad.
 	 * @return mixed
 	 */
@@ -120,11 +120,9 @@ class Addon_Product_Visibility {
 	private static function collect_ids_uncached() {
 		$ids = array();
 
-		if ( class_exists( 'WDP_Utils' ) ) {
-			$default = (int) Addon_Settings::get_default_addon_wc_product_id();
-			if ( $default > 0 ) {
-				$ids[] = $default;
-			}
+		$default = (int) Addon_Settings::get_default_addon_wc_product_id();
+		if ( $default > 0 ) {
+			$ids[] = $default;
 		}
 
 		foreach ( self::collect_enabled_parent_links() as $link ) {
@@ -192,11 +190,9 @@ class Addon_Product_Visibility {
 		}
 
 		$labels = array();
-		if ( class_exists( 'WDP_Utils' ) ) {
-			$default = (int) Addon_Settings::get_default_addon_wc_product_id();
-			if ( $default === $addon_id ) {
-				$labels[] = __( 'General default (Success tab)', 'woo-donation-popup' );
-			}
+		$default = (int) Addon_Settings::get_default_addon_wc_product_id();
+		if ( $default === $addon_id ) {
+			$labels[] = __( 'General default (Success tab)', 'woo-donation-popup' );
 		}
 
 		foreach ( self::collect_enabled_parent_links() as $link ) {
@@ -323,7 +319,7 @@ class Addon_Product_Visibility {
 	 */
 	public static function clear_visibility_caches() {
 		self::flush();
-		if ( class_exists( 'DonationPanel\\Modules\\EntryPoints\\Donations_List' ) && method_exists( 'DonationPanel\\Modules\\EntryPoints\\Donations_List', 'bump_cache' ) ) {
+		if ( method_exists( 'DonationPanel\\Modules\\EntryPoints\\Donations_List', 'bump_cache' ) ) {
 			Donations_List::bump_cache();
 		} else {
 			$current = (int) get_option( 'wdp_list_cache_version', 1 );
@@ -481,7 +477,7 @@ class Addon_Product_Visibility {
 				'error' => __( 'The add-on donation product cannot be the main product itself.', 'woo-donation-popup' ),
 			);
 		}
-		if ( ! class_exists( 'WDP_Utils' ) || ! Addon_Settings::is_valid_addon_wc_product( $addon_id ) ) {
+		if ( ! Addon_Settings::is_valid_addon_wc_product( $addon_id ) ) {
 			return array(
 				'ok'    => false,
 				'id'    => 0,

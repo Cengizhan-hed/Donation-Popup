@@ -2,7 +2,7 @@
 /**
  * \DonationPanel\Modules\EntryPoints\Product_Resolver çözüm sırası ve açık ürün nitelikleri.
  *
- * @package WooCommerce\Donation_Popup
+ * @package DonationPanel
  */
 
 declare(strict_types=1);

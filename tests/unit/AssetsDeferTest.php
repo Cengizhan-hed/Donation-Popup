@@ -2,7 +2,7 @@
 /**
  * Ön yüz paketi erteleme: script etiketi yeniden yazımı.
  *
- * @package WooCommerce\Donation_Popup
+ * @package DonationPanel
  */
 
 declare(strict_types=1);

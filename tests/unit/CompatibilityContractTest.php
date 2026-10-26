@@ -3,7 +3,7 @@
  * 6-C uyumluluk sözleşmesi: kısa kodlar + öznitelikleri, kanca adları, eski meta/seçenek anahtarları
  * "sadaka" -> "addon" iç adlandırmasından sonra da eskisi gibi çalışır.
  *
- * @package WooCommerce\Donation_Popup
+ * @package DonationPanel
  */
 
 declare(strict_types=1);
@@ -58,8 +58,8 @@ final class CompatibilityContractTest extends TestCase {
 			$ids[] = 777;
 			return $ids;
 		};
-		WDP_Addon_Product_Visibility::flush();
-		$this->assertContains(777, WDP_Addon_Product_Visibility::get_all_ids());
+		\DonationPanel\Domain\Addon_Product_Visibility::flush();
+		$this->assertContains(777, \DonationPanel\Domain\Addon_Product_Visibility::get_all_ids());
 	}
 
 	public function test_legacy_product_meta_and_option_keys_readable(): void {
@@ -67,11 +67,11 @@ final class CompatibilityContractTest extends TestCase {
 			'_enable_sadaka_donation' => 'yes',
 			'_sadaka_min_price'       => '3',
 		);
-		$this->assertSame('yes', WDP_Addon_Product_Visibility::get_meta(5, '_enable_addon_donation'));
-		$this->assertSame('3', (string) WDP_Addon_Product_Visibility::get_meta(5, '_addon_min_price'));
-		$this->assertTrue(WDP_Addon_Product_Visibility::parent_has_addon_enabled(5));
+		$this->assertSame('yes', \DonationPanel\Domain\Addon_Product_Visibility::get_meta(5, '_enable_addon_donation'));
+		$this->assertSame('3', (string) \DonationPanel\Domain\Addon_Product_Visibility::get_meta(5, '_addon_min_price'));
+		$this->assertTrue(\DonationPanel\Domain\Addon_Product_Visibility::parent_has_addon_enabled(5));
 		WDP_Test_State::$options['wdp_sadaka_links_audit'] = array( 'rows' => array() );
-		WDP_Migrations::step_10_35_2(false);
+		\DonationPanel\Core\Version_Migrations::step_10_35_2(false);
 		$this->assertArrayHasKey('wdp_sadaka_links_audit', WDP_Test_State::$options);
 		$this->assertArrayHasKey('wdp_addon_links_audit', WDP_Test_State::$options);
 	}
