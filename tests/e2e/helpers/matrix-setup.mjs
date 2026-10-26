@@ -630,7 +630,8 @@ function ensureWcPlaceholderUploads(wpDir) {
           [
             '-r',
             'if(!function_exists("imagecreatefromwebp"))exit(2);$i=imagecreatefromwebp($argv[1]);if(!$i)exit(3);' +
-              '$o=imagescale($i,(int)$argv[3],(int)$argv[3],IMG_BICUBIC);imagewebp($o,$argv[2],82);',
+              '$n=(int)$argv[3];$o=imagecreatetruecolor($n,$n);imagealphablending($o,false);imagesavealpha($o,true);' +
+              'if(!imagecopyresampled($o,$i,0,0,0,0,$n,$n,imagesx($i),imagesy($i)))exit(4);if(!imagewebp($o,$argv[2],82))exit(5);',
             src,
             dest,
             String(px),

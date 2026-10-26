@@ -237,6 +237,11 @@ html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stac
   box-shadow: inset 2px 0 0 var(--wdp-error, #c62828);
 }
 
+/* Odaktaki hatalı satır hata tonunu korur (odak arka planı hata tonunu ezmez). */
+html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack__row:has(.wdp-error):focus-within:not(:has(:-webkit-autofill)):not(:has(:autofill)) {
+  background: color-mix(in srgb, var(--wdp-error, #c62828) 5%, #ffffff);
+}
+
 html body :is(.wdp-modal, .wdp-donation-form) .wdp-modal-content .wdp-field-stack:has(.wdp-error):focus-within {
   border-color: var(--wdp-error, #c62828);
   box-shadow: none;
