@@ -143,3 +143,10 @@ Sipariş kalemi meta (yeni): `wdp_donation_type` (`fixed|custom|shares|campaign`
 - **REST (`/wp-json/donation-panel/v1/account/...`):** `GET session` `{logged_in, registration, nonce}`; `POST login` `{email, password, remember}` → `{ok, nonce}`; `POST register` `{email, password}` → `{ok}` (e-posta var/yok için aynı); `POST reset` `{email}` → `{ok}` (her durumda aynı); `GET donations?page&per_page` (oturum) → `{rows, html, total, pages, page}`; `POST link-guest` (oturum) → `{ok}`; `POST link-guest/confirm` `{token}` (oturum) → `{linked}`. Yazma uçları `X-WP-Nonce` (wp_rest) ister; yanıtlar `no-store, private`. Hata kodları: `donation_panel_bad_nonce` 403, `donation_panel_rate_limited` 429, `donation_panel_login_failed` 401, `donation_panel_invalid_email|weak_password` 400, `donation_panel_registration_disabled` 403, `donation_panel_link_invalid` 400.
 - **WooCommerce kancaları (standart):** `woocommerce_get_query_vars`, `woocommerce_account_menu_items`, `woocommerce_endpoint_{endpoint}_title`, `woocommerce_account_{endpoint}_endpoint`, `woocommerce_before_checkout_registration_form`, `woocommerce_reset_password_notification` (tetiklenir).
 - **DOM işaretleri (kararlı):** `[data-dp-acc-open]` (tetikleyici), `[data-dp-acc]` (pencere), `[data-dp-acc-form="login|register|reset"]`, `[data-dp-acc-page]`, `[data-dp-acc-card]`, `[data-dp-acc-link]`, `.dp-ac__*` sınıfları.
+
+## E8D — modal nonce ve REST
+
+| Ad | Tür | Açıklama |
+|---|---|---|
+| `wdp_render_modal_require_nonce` | filtre (bool, varsayılan `true`) | `wdp_render_modal` AJAX isteğinde nonce zorunluluğu. İstemci 403 (`code: nonce`) alınca yeni nonce ile bir kez yeniden dener. |
+| `GET donation-panel/v1/modal` | REST (herkese açık, salt okunur) | Nonce'suz modal içeriği; yalnız görünür ürün, istek sınırı ve girdi temizleme ile korunur. |

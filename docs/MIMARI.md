@@ -249,9 +249,9 @@ Eski çevrilmiş etiket anahtarları `normalize_key` ile okunur (`includes/class
 | `wdp_css_version_*` / `wdp_js_version_*` | transient+cache | assets |
 | WC session `get_customer_id()` | session | rate-limit / cart cache suffix (`includes/traits/trait-wdp-ajax-base.php:113-114`) |
 | Para birimi/dil sinyali (istemci) | `wdp_ajax.context` (sunucu; `wdp_client_context` filtresi) | lazy-modal çerez adı/seçici/olayları buradan okur; çekirdek eklenti/çerez adı bilmez (varsayılan listeler boş; K8), site snippet'i ekler (`assets/js/src/lazy-modal.js`) |
-| `wdp_vid` | HttpOnly, SameSite=Lax, 12 saat, HMAC | Misafir salt-okunur kova ayırıcı (`includes/class-security.php:18-24,300-378`). Sayfa HTML’sinde Set-Cookie yok (önbellek); AJAX `get_product_info` / `render_modal` sırasında yoksa basılır. |
+| `wdp_vid` | KALDIRILDI (Faz 8, E8D) | Eski çerez gelirse yok sayılır ve silinir (`src/Privacy/class-privacy-tools.php`, `expire_legacy_cookie`). Salt okunur kovalar IP+UA(+Woo oturumu) karmasıdır. Bkz. docs/PRIVACY.md. |
 
-Eklenti `setcookie` yalnız `wdp_vid` (10.34.10). JS çerez yazmaz.
+Eklenti artık çerez YAZMAZ (yalnız eski `wdp_vid`'i siler). JS çerez yazmaz.
 
 ---
 
@@ -1034,3 +1034,10 @@ Etkiler: plugins_loaded 10-19 arasında çalışan bir snippet/eklenti kısa kod
 - **Önizleme** (`src/Modules/Preview/class-preview.php`): `?dp_preview=1`, yalnız oturumu açık + `manage_woocommerce` yetkili kullanıcı için; diğer herkes için etkisiz. `WDP_Plugin_Bootstrap::run` parametre varken sınıfı yükler (yoksa dosya yüklenmez); yetki `plugins_loaded` 1'de denetlenir (modül kaydı 20'den önce). Açıkken `Settings::set_preview(true)` bellekte tüm modülleri ve `engine_is_new()`'ü açar (ayar YAZILMAZ); yanıta `nocache_headers` + `DONOTCACHEPAGE`; yönetici çubuğunda "çık" bağlantısı. Salt okunur görünüm: REST uçları önizleme dışında normal kurallarla kayıtlı olduğundan gönderim önizlemede çalışmaz. Bağlantı biçimi: `<sayfa adresi>?dp_preview=1` (`Preview::link_for`).
 - **Varsayılan geçişi** (`Settings`): yeni kurulum (etkinleştirmede, `donation_panel_settings` ve `wdp_version`/`wdp_cache_version` yok) `Settings::seed_fresh_install()` ile `experiences.engine=new` + `admin.ui=new` yazar; mevcut kurulumda hiçbir şey yazılmaz (idempotent). `wdp_upgrade_new_default` seçeneği (varsayılan KAPALI; `donation_panel_upgrade_new_default` filtresi) açılırsa motor/ekran seçimi hiç kaydedilmemiş kurulumlar yeni deneyime geçer; açık kayıt ("eski deneyime dön") her zaman kazanır.
 - **`wp donation-panel recalc-totals [--product=ID|--all] [--dry-run]`** (`src/Cli/`, yalnız `WP_CLI` varken kaydolur): `WDP_Utils::recalculate_product_donation_totals()` tek sipariş taramasıyla çok ürünü hesaplar (`$dry_run` iken ürün meta, sipariş bayrağı, uyarı listesi, günlük YAZILMAZ). Uygulamada yalnız farklı çıkan ürünler yazılır; sipariş içeriği değişmez, yalnız eklentinin `_wdp_progress_*` sayım bayrakları (çift sayımı önler). Döviz kuru bulunamayan sipariş satırı toplama katılmaz, uyarı olarak sayılır.
+
+
+## E8D: Gizlilik araçları, wdp_vid, render_modal nonce (Faz 8)
+
+- **Gizlilik:** `WDP_Privacy` (`includes/class-privacy.php`) sipariş kalemi verisini dışa aktarır/anonimleştirir (sayfa 50; telefon eşleşmesi; "tutulan" mesajı). `DonationPanel\Privacy\Privacy_Tools` (`src/Privacy/`) hesap bağlama kaydı için dışa aktarıcı/silici, `wp_add_privacy_policy_content` önerisi (yalnız `admin_init`) ve eski çerez temizliğini yapar; `WDP_Privacy::init` içinden her zaman yüklenir (modül ayarından bağımsız). Envanter: `docs/PRIVACY.md`.
+- **wdp_vid:** kaldırıldı (gerekçe PRIVACY.md). `WDP_Security::get_visitor_id/mint/parse` silindi; `get_rate_limit_key($a, $use_visitor_token)` imzası korunur (parametre artık yok sayılır), okuma uçlarında yalnız IP katmanı (`READ_IP_RATE_LIMIT`) eklenir.
+- **wdp_render_modal:** AJAX artık nonce ister (`wdp_render_modal`; süzgeç `wdp_render_modal_require_nonce`, varsayılan true). Başarısızlık HTTP 403 + `code: nonce`; istemci (`assets/js/src/lazy-modal.js`) yeni nonce alıp bir kez yeniden dener (değişmedi). Önbellek dostu nonce'suz yol: `GET /wp-json/donation-panel/v1/modal?product_id=&mode=` (`src/Http/Rest/class-modal-controller.php`; herkese açık, salt okunur, 60/dk, `no-store`); `WDP_Lazy_Modal::build()` ortak üretici. Denetleyici `donation_panel_rest_controllers` süzgeciyle eklenir.
