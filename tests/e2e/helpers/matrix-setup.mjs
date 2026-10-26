@@ -601,5 +601,26 @@ export function materializeWorker(configId, port, snapshotFile, opts = {}) {
   }
   // Yerel profil dili (varsayılan tr_TR = Hedef eşdeğeri): çeviri paketi yok, yalnız eklenti metinleri; mu-plugin kilidi.
   writeLocaleLock(destWp, opts.locale || process.env.WDP_LOCAL_WP_LOCALE || 'tr_TR');
+  ensureWcPlaceholderUploads(destWp);
   return destWp;
+}
+
+/**
+ * WooCommerce 11 ürün yer tutucu görselini uploads altında üretilmiş dosya olarak bekler; taze (worktree) WP'de bu
+ * dosyalar yok → kırık görsel, sayfa yüksekliği ve ekran farkı. Eklenti dosyasından deterministik kopya (görsel fixture).
+ * @param {string} wpDir
+ */
+function ensureWcPlaceholderUploads(wpDir) {
+  const imgDir = path.join(wpDir, 'wp-content/plugins/woocommerce/assets/images');
+  const src = ['placeholder.webp', 'placeholder.png']
+    .map((n) => path.join(imgDir, n))
+    .find((f) => fs.existsSync(f));
+  if (!src) return;
+  const ext = path.extname(src);
+  const uploads = path.join(wpDir, 'wp-content/uploads');
+  fs.mkdirSync(uploads, { recursive: true });
+  for (const suffix of ['', '-1024x1024', '-768x768', '-300x300', '-150x150']) {
+    const dest = path.join(uploads, `woocommerce-placeholder${suffix}${ext}`);
+    if (!fs.existsSync(dest)) fs.copyFileSync(src, dest);
+  }
 }
