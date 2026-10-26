@@ -263,7 +263,8 @@ final class Shortcodes1033Test extends TestCase {
 		$this->assertFalse(WDP_Security::validate_product_id(20));
 		$this->assertFalse(WDP_Security::validate_product_id(21));
 		$this->assertFalse(WDP_Security::validate_product_id(22));
-		$this->assertFalse(WDP_Security::validate_product_id(23));
+		// E8M: katalogda gizli ama yayında ürün satın alınabilir; sızıntı sayılmaz (REST ile aynı kural).
+		$this->assertTrue(WDP_Security::validate_product_id(23));
 		$this->assertTrue(WDP_Security::validate_product_id(24));
 	}
 
