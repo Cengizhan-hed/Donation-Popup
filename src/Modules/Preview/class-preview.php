@@ -6,7 +6,7 @@
  *
  * - Salt okunur görünüm: ayar YAZILMAZ; yalnız o istek için bellekte açılır (`Settings::set_preview`).
  * - Diğer herkes için etkisizdir; önbellek dostu: önizleme yanıtına no-cache başlıkları ve `DONOTCACHEPAGE` eklenir.
- * - Bu dosya yalnız istekte `dp_preview` varken yüklenir (bkz. `WDP_Plugin_Bootstrap::run`).
+ * - Bu dosya yalnız istekte `dp_preview` varken yüklenir (bkz. `Bootstrap::run`).
  *
  * @package DonationPanel
  */

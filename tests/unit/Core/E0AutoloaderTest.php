@@ -22,7 +22,7 @@ final class E0AutoloaderTest extends TestCase {
 	}
 
 	public function test_foreign_namespaces_are_ignored(): void {
-		$this->assertSame('', Autoloader::file_for_class('DonationPanel\\Support\\Security', '/x/src'));
+		$this->assertSame('', Autoloader::file_for_class('Other\\Support\\Security', '/x/src'));
 		$this->assertSame('', Autoloader::file_for_class('Other\\Core\\Thing', '/x/src'));
 		$this->assertSame('', Autoloader::file_for_class('DonationPanel\\', '/x/src'));
 	}
@@ -37,10 +37,10 @@ final class E0AutoloaderTest extends TestCase {
 				continue;
 			}
 			$source = (string) file_get_contents($path);
-			if (!preg_match('/^namespace\s+([^;]+);/m', $source, $ns) || !preg_match('/^(?:final\s+|abstract\s+)?(class|interface|trait)\s+(\w+)/m', $source, $decl)) {
+			if (!preg_match('/^namespace\s+([^;{]+)[;{]/m', $source, $ns) || !preg_match('/^(?:final\s+|abstract\s+)?(class|interface|trait)\s+(\w+)/m', $source, $decl)) {
 				$this->fail('Ad alani/sinif bulunamadi: ' . $path);
 			}
-			$fqcn = $ns[1] . '\\' . $decl[2];
+			$fqcn = trim($ns[1]) . '\\' . $decl[2];
 			$this->assertSame($path, Autoloader::file_for_class($fqcn, $root), $fqcn);
 			$this->assertTrue(class_exists($fqcn) || interface_exists($fqcn) || trait_exists($fqcn), $fqcn . ' yuklenemedi');
 			++$checked;

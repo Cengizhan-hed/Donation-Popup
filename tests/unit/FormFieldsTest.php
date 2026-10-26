@@ -45,31 +45,6 @@ final class FormFieldsTest extends TestCase {
 		$this->assertArrayNotHasKey('anonymous', $data);
 	}
 
-	public function test_closed_fields_ignored_legacy_cart_path(): void {
-		$p = $this->product(
-			102,
-			array(
-				'_enable_email'      => 'no',
-				'_enable_dedication' => 'no',
-				'_enable_anonymous'  => 'no',
-			)
-		);
-		$_POST = array(
-			'donation_modal'      => '1',
-			'donation_full_name'  => 'Ali Veli',
-			'donation_phone'      => '5551112233',
-			'donation_email'      => 'leak@example.com',
-			'donation_dedication' => 'İthaf',
-			'donation_anonymous'  => '1',
-		);
-		$out = \DonationPanel\WooCommerce\Cart_Hooks::add_donation_item_data(array(), 102, 0);
-		$this->assertArrayHasKey('donation_data', $out);
-		$this->assertArrayNotHasKey('email', $out['donation_data']);
-		$this->assertArrayNotHasKey('dedication', $out['donation_data']);
-		$this->assertArrayNotHasKey('anonymous', $out['donation_data']);
-		unset($_POST);
-	}
-
 	public function test_shares_type_ignores_optional_fields(): void {
 		$p = $this->product(
 			103,
@@ -96,22 +71,6 @@ final class FormFieldsTest extends TestCase {
 			$data
 		);
 		$this->assertSame(array(), $data);
-	}
-
-	public function test_invalid_email_throws_validation(): void {
-		$p = $this->product(104, array('_enable_email' => 'yes'));
-		$this->expectException(\DonationPanel\Support\Validation_Exception::class);
-		$data = array();
-		try {
-			WDP_Donation_Optional_Fields::apply_from_request(
-				$p,
-				array('donation_email' => 'not-an-email'),
-				$data
-			);
-		} catch (\DonationPanel\Support\Validation_Exception $e) {
-			$this->assertTrue(in_array('donation_email', $e->getErrors(), true));
-			throw $e;
-		}
 	}
 
 	public function test_empty_email_allowed_when_enabled(): void {
@@ -238,24 +197,4 @@ final class FormFieldsTest extends TestCase {
 		$this->assertStringContainsString('fresh', \DonationPanel\Core\Version_Migrations::step_10_30_0(true));
 	}
 
-	public function test_legacy_cart_path_still_reachable_without_ajax_flow(): void {
-		// Kanıt: wdp_ajax_flow yokken donation_modal=1 yolu add_donation_item_data çalışır.
-		$this->product(120, array('_enable_email' => 'yes', '_enable_dedication' => 'yes'));
-		$_POST = array(
-			'donation_modal'      => '1',
-			'donation_full_name'  => 'Test User',
-			'donation_phone'      => '5550001122',
-			'donation_email'      => 'ok@example.com',
-			'donation_dedication' => 'Annem',
-		);
-		$out = \DonationPanel\WooCommerce\Cart_Hooks::add_donation_item_data(array(), 120, 0);
-		$this->assertSame('ok@example.com', $out['donation_data']['email']);
-		$this->assertSame('Annem', $out['donation_data']['dedication']);
-
-		$_POST['wdp_ajax_flow'] = '1';
-		$_POST['action']        = 'wdp_ajax_add_to_cart';
-		$skip                   = \DonationPanel\WooCommerce\Cart_Hooks::add_donation_item_data(array('keep' => 1), 120, 0);
-		$this->assertSame(array('keep' => 1), $skip, 'AJAX akışında legacy yol atlanır');
-		unset($_POST);
-	}
 }

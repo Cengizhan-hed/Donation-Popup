@@ -31,14 +31,15 @@ final class LoopButtonTest extends TestCase {
 		return $p;
 	}
 
-	public function test_loop_link_becomes_donate_with_lazy_panel(): void {
+	public function test_loop_button_links_to_the_product_page_in_every_mode(): void {
 		$p    = $this->product(20);
 		$html = \DonationPanel\Modules\EntryPoints\Loop_Price_Filters::loop_button_html('<a class="button">Sepete ekle</a>', $p);
 		$this->assertStringContainsString('Bağış Yap', $html);
-		$this->assertStringContainsString('wdp-open-modal', $html);
-		$this->assertStringContainsString('data-wdp-lazy="1"', $html);
-		$this->assertStringContainsString('data-wdp-mode="side_panel"', $html);
-		$this->assertStringContainsString('data-product-id="20"', $html);
+		$this->assertStringContainsString('<a href="', $html);
+		$this->assertStringContainsString('bagis-20', $html);
+		$this->assertStringContainsString('wdp-loop-donate', $html);
+		$this->assertStringNotContainsString('wdp-open-modal', $html);
+		$this->assertStringNotContainsString('data-wdp-lazy', $html);
 		$this->assertStringNotContainsString('Sepete ekle', $html);
 	}
 

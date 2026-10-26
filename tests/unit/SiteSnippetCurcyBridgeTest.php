@@ -33,15 +33,6 @@ final class SiteSnippetCurcyBridgeTest extends TestCase {
 		$this->assertSame('missing_rate', $r['reason']);
 	}
 
-	public function test_core_client_context_default_has_no_plugin_or_cookie_names(): void {
-		$ref = new ReflectionMethod('WDP_Assets', 'client_context');
-		$ref->setAccessible(true);
-		$ctx = $ref->invoke(null, 'TRY');
-		$this->assertSame(array(), $ctx['currency_cookies']);
-		$this->assertSame(array(), $ctx['lang_cookies']);
-		$this->assertSame(array(), $ctx['change_events']);
-	}
-
 	public function test_convert_amount_filter_is_used_when_rate_missing(): void {
 		WDP_Test_State::$filters['wdp_convert_amount'] = static function ($amount, $from, $to) {
 			return 'EUR' === $from && 'TRY' === $to ? $amount * 40 : $amount;

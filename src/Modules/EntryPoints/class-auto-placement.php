@@ -330,12 +330,12 @@ class Auto_Placement {
 			. ':not(.wdp-list form.cart):not(.wdp-donations form.cart)'
 			. ':not(.wp-block-woocommerce-related-products form.cart)'
 			. ':not(.wp-block-woocommerce-product-collection form.cart)';
-		$form      = 'body.single-product form.cart:not(.wdp-form):not(.wdp-donation-form-fields)' . $loop_form;
+		$form      = 'body.single-product form.cart' . $loop_form;
 		$loop_btn  = ':not(.related .single_add_to_cart_button):not(.upsells .single_add_to_cart_button)'
 			. ':not(ul.products .single_add_to_cart_button)'
 			. ':not(.wp-block-woocommerce-related-products .single_add_to_cart_button)'
 			. ':not(.wp-block-woocommerce-product-collection .single_add_to_cart_button)';
-		$btn       = 'body.single-product .single_add_to_cart_button:not(.wdp-donate-button):not(.wdp-open-modal):not(.wdp-loop-donate)' . $loop_btn;
+		$btn       = 'body.single-product .single_add_to_cart_button:not(.wdp-loop-donate)' . $loop_btn;
 		$sticky    = 'body.single-product [class*="sticky-add-to-cart"],body.single-product [class*="sticky"][class*="add-to-cart"]';
 		return $form . ',' . $btn . ',' . $sticky . '{display:none!important}';
 	}
@@ -480,8 +480,7 @@ class Auto_Placement {
 		if ( '' === $html || $product_id <= 0 ) {
 			return false;
 		}
-		return false !== strpos( $html, 'id="wdp-modal-' . $product_id . '-direct"' )
-			|| ( false !== strpos( $html, 'wdp-donate-button' ) && false !== strpos( $html, 'data-product-id="' . $product_id . '"' ) );
+		return false !== strpos( $html, 'data-dp-exp' ) && false !== strpos( $html, 'data-dp-product="' . $product_id . '"' );
 	}
 
 	/**

@@ -154,7 +154,7 @@ class Version_Migrations {
 	}
 
 	/**
-	 * Record the version stored before WDP_Plugin_Bootstrap::update_version() overwrites it.
+	 * Record the version stored before Bootstrap::update_version() overwrites it.
 	 *
 	 * @param mixed $previous Previous wdp_version value (false when absent).
 	 * @return void
@@ -994,7 +994,7 @@ class Version_Migrations {
 		if ( ! class_exists( 'WDP_Admin_Settings_Normalizer' ) ) {
 			return 0;
 		}
-		return (int) WDP_Admin_Settings_Normalizer::rewrite_stored_options();
+		return (int) \WDP_Admin_Settings_Normalizer::rewrite_stored_options();
 	}
 
 	/**

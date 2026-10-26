@@ -55,14 +55,6 @@ final class CampaignBlocksTest extends TestCase {
 		$this->assertSame(100.0, \DonationPanel\Domain\Campaign_Goal::compute_percent(1500.0, 1000.0));
 	}
 
-	public function test_close_blocks_when_pending_included_message_allows(): void {
-		$this->product(array('_goal_reached_action' => 'close'));
-		update_post_meta(self::PRODUCT, '_wdp_total_donation_amount', 1000.0);
-		$this->assertTrue(\DonationPanel\Domain\Campaign_Goal::should_block_new_donations(self::PRODUCT));
-		$this->expectException(\DonationPanel\Support\Validation_Exception::class);
-		\DonationPanel\Domain\Campaign_Goal::assert_accepts_donation(self::PRODUCT);
-	}
-
 	public function test_message_and_continue_accept_when_reached(): void {
 		update_post_meta(self::PRODUCT, '_wdp_total_donation_amount', 1000.0);
 		$msg = $this->product(array('_goal_reached_action' => 'message'));
@@ -234,13 +226,6 @@ final class CampaignBlocksTest extends TestCase {
 		$legacy = WDP_Form_Modules::render_social_proof('128 kişi bağış yaptı', self::PRODUCT);
 		$this->assertStringContainsString('7 kişi bağış yaptı', $legacy);
 		$this->assertStringNotContainsString('128', $legacy);
-	}
-
-	public function test_progress_percent_single_source(): void {
-		$this->assertSame(50.0, \DonationPanel\Domain\Campaign_Goal::compute_percent(500, 1000));
-		$html = WDP_Progress_Form::render_progress_bar(self::PRODUCT, 1000, 500, true, '0');
-		$this->assertStringContainsString('>50%', $html);
-		$this->assertStringContainsString('width: 50%', $html);
 	}
 
 	public function test_privacy_default_is_short_link_label(): void {

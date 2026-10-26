@@ -61,7 +61,7 @@ final class ProductPageDisplayTest extends TestCase {
 
 	public function test_hide_cart_css_spares_loop_forms(): void {
 		$css = \DonationPanel\Modules\EntryPoints\Auto_Placement::hide_native_cart_css();
-		$this->assertStringContainsString('form.cart:not(.wdp-form)', $css);
+		$this->assertStringContainsString('body.single-product form.cart', $css);
 		$this->assertStringContainsString('.related form.cart', $css);
 		$this->assertStringContainsString('.upsells form.cart', $css);
 		$this->assertStringContainsString('ul.products form.cart', $css);
@@ -120,14 +120,16 @@ final class ProductPageDisplayTest extends TestCase {
 		$this->assertNotContains(array(\DonationPanel\Modules\EntryPoints\Fallback_Button::class, 'render_fallback_placed_form'), $summary);
 	}
 
-	public function test_placed_markup_panel_contains_display_attr(): void {
+	public function test_placed_markup_panel_draws_side_panel_experience(): void {
 		$p                           = $this->product(36);
 		WDP_Test_State::$queried_id  = 36;
 		WDP_Test_State::$is_product  = true;
 		$GLOBALS['product']          = $p;
 		\DonationPanel\Modules\EntryPoints\Render_Registry::reset();
+		WDP_Test_State::$filters['donation_panel_experience_html'] = static function ($html, $product_id, $kind) {
+			return '<div data-dp-exp data-dp-product="' . (int) $product_id . '" data-dp-kind="' . $kind . '"></div>';
+		};
 		$html                        = \DonationPanel\Modules\EntryPoints\Auto_Placement::placed_markup();
-		$this->assertStringContainsString('data-wdp-display="button_panel"', $html);
-		$this->assertStringContainsString('wdp-open-side-panel', $html);
+		$this->assertStringContainsString('data-dp-kind="side_panel"', $html);
 	}
 }

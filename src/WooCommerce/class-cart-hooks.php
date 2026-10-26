@@ -78,6 +78,15 @@ class Cart_Hooks {
 	}
 
 	/**
+	 * Eklentinin kendi sepete ekleme akışı içinde miyiz (`run_in_plugin_flow` süresince true).
+	 *
+	 * @return bool
+	 */
+	public static function in_plugin_flow() {
+		return self::$plugin_flow_depth > 0;
+	}
+
+	/**
 	 * Sepete ekleme öncesi doğrulama: hedefi dolan kampanyayı ve bağış formu dışından eklemeyi reddeder.
 	 *
 	 * @param bool $passed     Doğrulama sonucu.
@@ -94,7 +103,7 @@ class Cart_Hooks {
 		}
 
 		// Eklentinin kendi akışı (REST /cart/add) doğrulamayı kendisi yapar.
-		if ( self::$plugin_flow_depth > 0 ) {
+		if ( self::in_plugin_flow() ) {
 			return $passed;
 		}
 
@@ -119,7 +128,7 @@ class Cart_Hooks {
 	 */
 	public static function validate_store_api_add_to_cart( $product, $request = null ) {
 		unset( $request );
-		if ( self::$plugin_flow_depth > 0 ) {
+		if ( self::in_plugin_flow() ) {
 			return;
 		}
 		$id = 0;

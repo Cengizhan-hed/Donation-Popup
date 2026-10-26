@@ -50,24 +50,26 @@ final class CartNativeAddToCartTest extends TestCase {
 		$this->assertArrayNotHasKey('__wc_notices', WDP_Test_State::$options);
 	}
 
-	public function test_donation_form_post_still_validates_fields(): void {
+	public function test_plugin_flow_add_is_not_blocked(): void {
 		$this->donation_product(42);
-		$_POST = array(
-			'donation_modal'     => '1',
-			'wdp_nonce'          => 'test-nonce',
-			'donation_full_name' => 'Ali Veli',
-			'donation_phone'     => '5551112233',
+		$_POST = array();
+		$passed = \DonationPanel\WooCommerce\Cart_Hooks::run_in_plugin_flow(
+			static function () {
+				return \DonationPanel\WooCommerce\Cart_Hooks::validate_donation_fields(true, 42, 1);
+			}
 		);
-		$this->assertTrue(\DonationPanel\WooCommerce\Cart_Hooks::validate_donation_fields(true, 42, 1));
+		$this->assertTrue($passed);
+		$this->assertFalse(\DonationPanel\WooCommerce\Cart_Hooks::validate_donation_fields(true, 42, 1), 'akış dışında yerel ekleme reddedilir');
 	}
 
-	public function test_plugin_ajax_flow_not_blocked_here(): void {
-		$this->donation_product(43);
-		$_POST = array(
-			'action'        => 'wdp_ajax_add_to_cart',
-			'wdp_ajax_flow' => '1',
+	public function test_plugin_flow_store_api_add_is_not_blocked(): void {
+		$p = $this->donation_product(43);
+		\DonationPanel\WooCommerce\Cart_Hooks::run_in_plugin_flow(
+			static function () use ($p) {
+				\DonationPanel\WooCommerce\Cart_Hooks::validate_store_api_add_to_cart($p);
+			}
 		);
-		$this->assertTrue(\DonationPanel\WooCommerce\Cart_Hooks::validate_donation_fields(true, 43, 1));
+		$this->assertTrue(true);
 	}
 
 	public function test_explicit_flag_rejects_even_if_auto_place_off(): void {

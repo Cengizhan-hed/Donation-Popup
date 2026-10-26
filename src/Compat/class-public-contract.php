@@ -13,7 +13,7 @@
  * @package DonationPanel
  */
 
-namespace DonationPanel\Compat;
+namespace DonationPanel\Compat {
 
 use DonationPanel\Modules\EntryPoints\Blocks;
 use DonationPanel\Modules\EntryPoints\Donations_List;
@@ -58,6 +58,10 @@ final class Public_Contract {
 		'wdp_is_donation_product',
 		'wdp_min_donation_amount',
 		'wdp_order_exchange_rate',
+		'wdp_phone_countries',
+		'wdp_phone_default_country',
+		'wdp_phone_excluded_countries',
+		'wdp_phone_national_length_rules',
 		'wdp_progress_convert_amount',
 		'wdp_progress_live_rate',
 		'wdp_progress_paid_statuses',
@@ -89,16 +93,27 @@ final class Public_Contract {
 		'wdp_lazy_idle_prefetch',
 		'wdp_modal_product_thumb_alt',
 		'wdp_modal_product_thumb_url',
-		'wdp_phone_countries',
-		'wdp_phone_default_country',
-		'wdp_phone_excluded_countries',
-		'wdp_phone_national_length_rules',
 		'wdp_reload_after_add_to_cart',
 		'wdp_sadaka_price_label',
 		'wdp_should_enqueue_assets',
 		'wdp_show_amount_presets',
 		'wdp_split_client_data',
 		'wdp_use_js_bundle',
+	);
+
+	/**
+	 * Kaldırılan ön yüz AJAX eylemleri (eski modal/form arayüzünün uçları; artık kayıtlı değil, yerine REST `donation-panel/v1`).
+	 */
+	const RETIRED_AJAX_ACTIONS = array(
+		'wdp_ajax_add_to_cart',
+		'wdp_get_cart_contents',
+		'wdp_get_cart_count',
+		'wdp_get_fresh_nonces',
+		'wdp_get_product_info',
+		'wdp_get_product_name',
+		'wdp_remove_cart_item',
+		'wdp_render_modal',
+		'wdp_verify_submission_in_cart',
 	);
 
 	/**
@@ -112,38 +127,14 @@ final class Public_Contract {
 	);
 
 	/**
-	 * PHP yardımcı işlevlerini tanımlar (erken yüklenir; yalnız yoksa).
+	 * PHP yardımcı işlevlerini erken yükler: bu dosya yüklenince (dosyanın altındaki küresel ad alanı bloğu)
+	 * `wdp_render_donation_button()` ve `wdp_render_donation_form()` tanımlanır; `plugins_loaded` 10'da çağrılsa da
+	 * fatal vermez (WooCommerce henüz yoksa uyarı metni döner).
 	 *
 	 * @return void
 	 */
 	public static function declare_functions() {
-		// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound -- geriye dönük uyumluluk: eski dışa açık işlev adları değişmez.
-		if ( ! function_exists( 'wdp_render_donation_button' ) ) {
-			/**
-			 * Bağış düğmesini (açılır form) çizer.
-			 *
-			 * @param int    $product_id  Ürün kimliği.
-			 * @param string $button_text Düğme metni.
-			 * @return string
-			 */
-			function wdp_render_donation_button( $product_id, $button_text = '' ) {
-				return Public_Contract::render_for_product( 'wdp_donation_button', (int) $product_id, array( 'text' => (string) $button_text ) );
-			}
-		}
-
-		if ( ! function_exists( 'wdp_render_donation_form' ) ) {
-			/**
-			 * Sayfa içi bağış formunu çizer.
-			 *
-			 * @param int                  $product_id Ürün kimliği.
-			 * @param array<string, mixed> $args       Öznitelikler (`class`, `title`, `show_title`).
-			 * @return string
-			 */
-			function wdp_render_donation_form( $product_id, $args = array() ) {
-				return Public_Contract::render_for_product( 'wdp_donation_form', (int) $product_id, is_array( $args ) ? $args : array() );
-			}
-		}
-		// phpcs:enable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound
+		// Boş gövde bilerek: sınıfı yüklemek işlevlerin tanımlanmasını sağlar.
 	}
 
 	/**
@@ -234,4 +225,39 @@ final class Public_Contract {
 		}
 		return $model;
 	}
+}
+
+}
+
+namespace {
+
+	// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound -- geriye dönük uyumluluk: eski dışa açık işlev adları değişmez.
+
+	if ( ! function_exists( 'wdp_render_donation_button' ) ) {
+		/**
+		 * Bağış düğmesini (açılır form) çizer.
+		 *
+		 * @param int    $product_id  Ürün kimliği.
+		 * @param string $button_text Düğme metni.
+		 * @return string
+		 */
+		function wdp_render_donation_button( $product_id, $button_text = '' ) {
+			return \DonationPanel\Compat\Public_Contract::render_for_product( 'wdp_donation_button', (int) $product_id, array( 'text' => (string) $button_text ) );
+		}
+	}
+
+	if ( ! function_exists( 'wdp_render_donation_form' ) ) {
+		/**
+		 * Sayfa içi bağış formunu çizer.
+		 *
+		 * @param int                  $product_id Ürün kimliği.
+		 * @param array<string, mixed> $args       Öznitelikler (`class`, `title`, `show_title`).
+		 * @return string
+		 */
+		function wdp_render_donation_form( $product_id, $args = array() ) {
+			return \DonationPanel\Compat\Public_Contract::render_for_product( 'wdp_donation_form', (int) $product_id, is_array( $args ) ? $args : array() );
+		}
+	}
+
+	// phpcs:enable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound
 }

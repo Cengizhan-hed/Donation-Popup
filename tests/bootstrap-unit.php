@@ -134,7 +134,11 @@ final class WDP_Test_State {
 	/** @var int */
 	public static $json_status = 0;
 
+	/** @var array<string, callable> Registered shortcodes (tag => callback). */
+	public static $shortcodes = array();
+
 	public static function reset(): void {
+		self::$shortcodes    = array();
 		self::$options       = array();
 		self::$post_meta     = array();
 		self::$filters       = array();
@@ -509,6 +513,11 @@ if (!function_exists('apply_filters')) {
 			return call_user_func_array(WDP_Test_State::$filters[ $hook ], $args);
 		}
 		return $value;
+	}
+}
+if (!function_exists('add_shortcode')) {
+	function add_shortcode($tag, $callback) {
+		WDP_Test_State::$shortcodes[ $tag ] = $callback;
 	}
 }
 if (!function_exists('add_filter')) {

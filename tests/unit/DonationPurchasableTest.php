@@ -78,31 +78,6 @@ final class DonationPurchasableTest extends TestCase {
 		$this->assertSame(0.0, \DonationPanel\Domain\Campaign_Goal::resolve_goal_amount($p));
 	}
 
-	public function test_js_currency_settings_shape(): void {
-		$c = \WDP_Utils::get_js_currency_settings();
-		$this->assertArrayHasKey('code', $c);
-		$this->assertArrayHasKey('symbol', $c);
-		$this->assertArrayHasKey('decimals', $c);
-		$this->assertArrayHasKey('thousandSeparator', $c);
-		$this->assertArrayHasKey('decimalSeparator', $c);
-		$this->assertArrayHasKey('symbolPosition', $c);
-		$this->assertSame('TRY', $c['code']);
-	}
-
-	public function test_card_custom_shows_min_not_fixed_price(): void {
-		$p = $this->product(46, 'custom');
-		$p->price = '40';
-		WDP_Test_State::$post_meta[46]['_min_custom_price'] = '5';
-		$p->meta['_min_custom_price'] = '5';
-		$html = $this->cardHtml($p, array('show_price' => 'yes', 'button' => 'popup'));
-		$this->assertStringContainsString('min.', $html);
-		$this->assertStringNotContainsString('Dilediğin tutar', $html);
-		$this->assertDoesNotMatchRegularExpression('/<article[^>]*>\\s*<a /', $html);
-		$this->assertStringContainsString('<button type="button" class="wdp-card__cta', $html);
-		$this->assertStringContainsString('wdp-card__title"><a href=', $html);
-		$this->assertStringContainsString('data-wdp-lazy="1"', $html);
-	}
-
 	public function test_card_campaign_hides_bar_without_goal(): void {
 		$p = $this->product(47, 'campaign');
 		WDP_Test_State::$post_meta[47]['_progress_bar_limit'] = '';
@@ -119,30 +94,6 @@ final class DonationPurchasableTest extends TestCase {
 		$html = $this->cardHtml($p, array('show_price' => 'yes', 'show_progress' => 'yes'), array(48 => 0.0));
 		$this->assertStringContainsString('wdp-card__progress', $html);
 		$this->assertStringContainsString('wdp-card__price', $html);
-	}
-
-	public function test_progress_amount_block_has_visible_label(): void {
-		$html = WDP_Form_Fields_Renderer::render_progress_amount_block('5');
-		$this->assertStringContainsString('wdp-custom-price-row__label', $html);
-		$this->assertStringContainsString('Bağış Tutarı', $html);
-		$this->assertStringContainsString('aria-labelledby', $html);
-	}
-
-	public function test_custom_price_row_has_visible_label(): void {
-		$html = WDP_Form_Fields_Renderer::render_custom_price_amount_row('10', '', '₺');
-		$this->assertStringContainsString('wdp-custom-price-row__label', $html);
-		$this->assertStringContainsString('Bağış Tutarı', $html);
-		$this->assertStringContainsString('name="custom_price"', $html);
-	}
-
-	public function test_fixed_price_row_has_no_amount_label(): void {
-		$html = WDP_Form_Fields_Renderer::render_fixed_price_quantity_row('6000');
-		$this->assertStringNotContainsString('wdp-custom-price-row__label', $html);
-		$this->assertStringNotContainsString('Bağış Tutarı', $html);
-		$this->assertStringContainsString('wdp-fixed-price-counter-row', $html);
-		$this->assertStringContainsString('wdp-line-total-display', $html);
-		$this->assertStringContainsString('wdp-quantity-counter', $html);
-		$this->assertStringContainsString('screen-reader-text', $html);
 	}
 
 	public function test_tabs_skip_uncategorized_and_empty_ancestors(): void {

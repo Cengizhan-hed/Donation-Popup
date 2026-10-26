@@ -31,7 +31,6 @@ final class PriceFormatTest extends TestCase {
 		$this->assertSame('10,00', \DonationPanel\Support\Price::format_localized_amount(10));
 		$this->assertSame('min: 10,00', \DonationPanel\Support\Price::format_min_placeholder(10));
 		$this->assertSame('right_space', \DonationPanel\Support\Price::currency_position());
-		$this->assertSame('wdp-currency-pos-right_space', \WDP_Utils::currency_position_class());
 	}
 
 	public function test_try_zero_decimals(): void {
@@ -41,6 +40,5 @@ final class PriceFormatTest extends TestCase {
 		WDP_Test_State::$options['woocommerce_currency_pos'] = 'left';
 		$this->assertSame('1.234', \DonationPanel\Support\Price::format_localized_amount(1234));
 		$this->assertSame('min: 1.234', \DonationPanel\Support\Price::format_min_placeholder(1234));
-		$this->assertSame('wdp-currency-pos-left', \WDP_Utils::currency_position_class());
 	}
 }

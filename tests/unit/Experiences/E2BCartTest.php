@@ -42,9 +42,7 @@ final class E2B_Fake_Cart {
 
 	public function add_to_cart( $product_id, $quantity, $variation_id, $variation, $data ) {
 		$this->post_during_add = $_POST;
-		$method                = new ReflectionMethod( 'DonationPanel\\WooCommerce\\Cart_Hooks', 'is_ajax_add_to_cart_flow' );
-		$method->setAccessible( true );
-		$this->flow_during_add = (bool) $method->invoke( null, array() );
+		$this->flow_during_add = \DonationPanel\WooCommerce\Cart_Hooks::in_plugin_flow();
 		if ( $this->fail ) {
 			return false;
 		}
@@ -125,9 +123,7 @@ final class E2BCartTest extends TestCase {
 		$this->assertArrayNotHasKey( 'action', $cart->post_during_add );
 		$this->assertArrayNotHasKey( 'wdp_ajax_flow', $cart->post_during_add );
 
-		$method = new ReflectionMethod( 'DonationPanel\\WooCommerce\\Cart_Hooks', 'is_ajax_add_to_cart_flow' );
-		$method->setAccessible( true );
-		$this->assertFalse( (bool) $method->invoke( null, array() ), 'Bayrak add_to_cart sonrası kapanmalı.' );
+		$this->assertFalse( \DonationPanel\WooCommerce\Cart_Hooks::in_plugin_flow(), 'Bayrak add_to_cart sonrası kapanmalı.' );
 
 		$_POST['action'] = 'keep-me';
 		( new Cart() )->add_item( new E2B_Fake_Cart(), $this->product(), $this->model(), $this->input() );
@@ -145,9 +141,7 @@ final class E2BCartTest extends TestCase {
 		} catch ( RuntimeException $e ) {
 			unset( $e );
 		}
-		$method = new ReflectionMethod( 'DonationPanel\\WooCommerce\\Cart_Hooks', 'is_ajax_add_to_cart_flow' );
-		$method->setAccessible( true );
-		$this->assertFalse( (bool) $method->invoke( null, array() ) );
+		$this->assertFalse( \DonationPanel\WooCommerce\Cart_Hooks::in_plugin_flow() );
 	}
 
 	private function fake_rates( array $rates ): void {

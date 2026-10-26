@@ -147,7 +147,7 @@ final class E3CampaignTest extends TestCase {
 		Plugin::register_modules( $registry );
 		$this->assertContains( 'campaign', $registry->slugs() );
 		$this->assertTrue( $registry->is_enabled( 'campaign' ) );
-		$this->assertFalse( $registry->is_enabled( 'impact' ) );
+		$this->assertTrue( $registry->is_enabled( 'impact' ) );
 		$this->assertFalse( $registry->is_enabled( 'social_proof' ) );
 
 		( new Settings() )->update( array( 'modules' => array( 'social_proof' => true, 'campaign' => false ) ) );
@@ -162,7 +162,7 @@ final class E3CampaignTest extends TestCase {
 	 * @preserveGlobalState disabled
 	 */
 	public function test_disabled_modules_load_no_files(): void {
-		( new Settings() )->update( array( 'modules' => array( 'campaign' => false ) ) );
+		( new Settings() )->update( array( 'modules' => array( 'campaign' => false, 'experiences' => false, 'impact' => false ) ) );
 		$registry = new Module_Registry( new Settings() );
 		Plugin::register_modules( $registry );
 		$registry->boot( new Container() );

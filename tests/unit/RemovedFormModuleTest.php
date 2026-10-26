@@ -78,26 +78,4 @@ final class RemovedFormModuleTest extends TestCase {
 		$this->assertSame(array('media', 'impact'), array_slice($order, 0, 2));
 	}
 
-	/**
-	 * The 10.26.0 crash: the context carried the removed module data as a JSON string.
-	 */
-	public function test_header_modules_ignore_stale_context_and_render_no_removed_markup(): void {
-		$removed = \DonationPanel\Core\Version_Migrations::REMOVED_MODULE_IDS[0];
-		WDP_Test_State::$post_meta[42]['_wdp_module_order'] = $removed . ',urgency,social_proof';
-		WDP_Test_State::$post_meta[42]['_impact_line_text']  = 'Bir aileye ulaşır';
-
-		$context = $this->removed_payload() + array(
-			'enable_urgency'      => true,
-			'urgency_text'        => 'Son gün',
-			'enable_social_proof' => true,
-			'social_proof_text'   => '120 kişi bağış yaptı',
-		);
-		$context[ 'enable_' . $removed ] = true;
-
-		$html = WDP_Campaign_Header_Renderer::render_header_modules(42, $context);
-
-		$this->assertStringContainsString('wdp-impact-line', $html);
-		$this->assertStringNotContainsString('wdp-' . $removed, $html);
-		$this->assertStringNotContainsString('<details', $html);
-	}
 }

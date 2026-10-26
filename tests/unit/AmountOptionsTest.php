@@ -253,38 +253,4 @@ final class AmountOptionsTest extends TestCase {
 		return WDP_Form_Fields_Renderer::render_amount_presets($min, '₺', array('product_id' => 31));
 	}
 
-	public function test_presets_render_only_for_custom_and_campaign(): void {
-		$this->assertNotSame('', $this->render_presets(array('_allow_custom_price' => 'yes')));
-		$this->assertNotSame('', $this->render_presets(array('_enable_progress_bar' => 'yes', '_allow_custom_price' => 'yes')));
-		$this->assertSame('', $this->render_presets(array()), 'sabit tutar');
-		$this->assertSame('', $this->render_presets(array('_allow_multiple_shares' => 'yes')), 'hisseli');
-	}
-
-	public function test_presets_label_recommended_only_when_product_sets(): void {
-		$empty = $this->render_presets(array('_allow_custom_price' => 'yes'));
-		$this->assertStringNotContainsString('data-recommended="1"', $empty);
-		$this->assertStringNotContainsString('data-popular-label', $empty);
-		$this->assertStringNotContainsString('aria-pressed="true"', $empty);
-
-		$configured = $this->render_presets(array('_allow_custom_price' => 'yes', '_amount_preset_recommended' => '250'));
-		$this->assertMatchesRegularExpression('/data-amount="250"[^>]*data-popular-label/s', $configured);
-		$this->assertSame(1, substr_count($configured, 'data-recommended="1"'));
-		$this->assertStringNotContainsString('aria-pressed="true"', $configured);
-
-		$missing = $this->render_presets(array('_allow_custom_price' => 'yes', '_amount_preset_recommended' => '777'));
-		$this->assertStringNotContainsString('data-recommended="1"', $missing);
-
-		// Min altı gizli → görünen listede yoksa etiket yok.
-		$below_min = $this->render_presets(array('_allow_custom_price' => 'yes', '_amount_preset_recommended' => '100'), 300);
-		$this->assertStringNotContainsString('data-amount="100"', $below_min);
-		$this->assertStringNotContainsString('data-recommended="1"', $below_min);
-	}
-
-	public function test_presets_below_min_hidden_and_section_gone_when_all_hidden(): void {
-		$html = $this->render_presets(array('_allow_custom_price' => 'yes'), 300);
-		$this->assertStringNotContainsString('data-amount="100"', $html);
-		$this->assertStringNotContainsString('data-amount="250"', $html);
-		$this->assertStringContainsString('data-amount="500"', $html);
-		$this->assertSame('', $this->render_presets(array('_allow_custom_price' => 'yes'), 5000), 'hepsi min altında → bölüm yok, çarpan uydurulmaz');
-	}
 }

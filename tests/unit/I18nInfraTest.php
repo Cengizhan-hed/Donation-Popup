@@ -1,6 +1,6 @@
 <?php
 /**
- * i18n altyapısı — Domain Path, textdomain, JS sözlük.
+ * i18n altyapısı — Domain Path, textdomain.
  *
  * @package DonationPanel
  */
@@ -21,33 +21,18 @@ final class I18nInfraTest extends TestCase {
 	}
 
 	public function test_load_textdomain_uses_languages_dir(): void {
-		require_once WDP_PLUGIN_DIR . 'includes/bootstrap/class-plugin-bootstrap.php';
-		WDP_Plugin_Bootstrap::load_textdomain();
+		\DonationPanel\Core\Bootstrap::load_textdomain();
 		$td = WDP_Test_State::$options['__textdomain'] ?? array();
 		$this->assertSame('woo-donation-popup', $td['domain'] ?? '');
 		$this->assertStringEndsWith('/languages', (string) ($td['plugin_rel_path'] ?? ''));
 	}
 
-	public function test_js_dictionary_is_generated_string_map(): void {
-		$this->assertTrue(class_exists('WDP_Js_I18n'));
-		$dict = WDP_Js_I18n::dictionary();
-		$this->assertIsArray($dict);
-		$this->assertNotEmpty($dict);
-		foreach ($dict as $key => $value) {
-			$this->assertIsString($key);
-			$this->assertIsString($value);
-		}
-		$this->assertArrayHasKey('Goal reached', $dict);
-		$this->assertArrayHasKey("wizard step\x04Amount", $dict);
-	}
-
 	public function test_textdomain_hooked_on_init(): void {
-		require_once WDP_PLUGIN_DIR . 'includes/bootstrap/class-plugin-bootstrap.php';
-		WDP_Plugin_Bootstrap::run();
+		\DonationPanel\Core\Bootstrap::run();
 		$this->assertNotEmpty(WDP_Test_State::$actions['init'] ?? array());
 		$found = false;
 		foreach (WDP_Test_State::$actions['init'] as $cb) {
-			if ($cb === array('WDP_Plugin_Bootstrap', 'load_textdomain')) {
+			if ($cb === array(\DonationPanel\Core\Bootstrap::class, 'load_textdomain')) {
 				$found = true;
 				break;
 			}

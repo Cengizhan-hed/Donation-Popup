@@ -276,7 +276,7 @@ final class E6ThanksTaxReliefTest extends TestCase {
 	 * @preserveGlobalState disabled
 	 */
 	public function test_disabled_modules_load_no_files(): void {
-		( new Settings() )->update( array( 'modules' => array( 'campaign' => false ) ) );
+		( new Settings() )->update( array( 'modules' => array( 'campaign' => false, 'experiences' => false, 'impact' => false ) ) );
 		$registry = new Module_Registry( new Settings() );
 		Plugin::register_modules( $registry );
 		$registry->boot( new Container() );

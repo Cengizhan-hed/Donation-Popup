@@ -17,6 +17,10 @@ final class Shortcodes1033Test extends TestCase {
 		WDP_Test_State::$options[ \DonationPanel\Domain\Placement_Settings::OPTION ] = array(
 			'donation_scope' => 'all',
 		);
+		// Gerçek deneyim modülü yok: giriş noktası köprüsü sahte işaretleme alır.
+		WDP_Test_State::$filters['donation_panel_experience_html'] = static function ($html, $product_id, $kind, $text) {
+			return '<div data-dp-exp data-dp-product="' . (int) $product_id . '">' . $text . '</div>';
+		};
 	}
 
 	public function test_bump_event_table_before_and_after(): void {
@@ -276,11 +280,10 @@ final class Shortcodes1033Test extends TestCase {
 	}
 
 	public function test_legacy_ajax_action_removed(): void {
-		require_once WDP_PLUGIN_DIR . 'includes/bootstrap/class-legacy-frontend.php';
+		\DonationPanel\Compat\Public_Contract::declare_functions();
 		$this->assertTrue(function_exists('wdp_render_donation_button'));
 		$this->assertFalse(function_exists('wdp_ajax_render_donation_button'));
-		$src = (string) file_get_contents(WDP_PLUGIN_DIR . 'includes/bootstrap/class-legacy-frontend.php');
-		$this->assertStringNotContainsString("add_action('wp_ajax_nopriv_wdp_render_donation_button'", $src);
+		$this->assertArrayNotHasKey('wp_ajax_nopriv_wdp_render_donation_button', WDP_Test_State::$actions);
 	}
 
 	public function test_responsive_columns_pass_through(): void {
