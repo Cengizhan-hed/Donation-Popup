@@ -23,6 +23,15 @@ final class WDP_Plugin_Bootstrap {
 		self::load_dependencies();
 		WDP_Migrations::init();
 		WDP_Compat_Loader::init();
+		// Önizleme (`?dp_preview=1`): sınıf yalnız istekte parametre varken yüklenir; yetki `plugins_loaded` 1'de denetlenir.
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- yalnız varlık denetimi; salt okunur görünüm.
+		if ( isset( $_GET['dp_preview'] ) ) {
+			\DonationPanel\Modules\Preview\Preview::init();
+		}
+		// WP-CLI komutu: yalnız WP_CLI tanımlıyken yüklenir.
+		if ( defined( 'WP_CLI' ) && WP_CLI ) {
+			\DonationPanel\Cli\Cli_Command::register();
+		}
 		\DonationPanel\Core\Plugin::boot();
 
 		add_action( 'init', array( __CLASS__, 'load_textdomain' ) );

@@ -36,6 +36,20 @@ class Settings {
 	const WIZARD_STATES = array( '', 'done', 'skipped' );
 
 	/**
+	 * "Yükseltilen kurulum için yeni deneyime geç" bayrağı (seçenek adı; varsayılan KAPALI).
+	 * Açıkken, motor/ekran seçimi hiç kaydedilmemiş (yükseltilmiş) kurulumlar yeni deneyime geçer;
+	 * açıkça kaydedilmiş seçim (ör. "Eski deneyime dön") her zaman korunur.
+	 */
+	const UPGRADE_FLAG_OPTION = 'wdp_upgrade_new_default';
+
+	/**
+	 * Önizleme açık mı (`?dp_preview=1`, yalnız yetkili yönetici; yalnız o istek; ayar YAZILMAZ).
+	 *
+	 * @var bool
+	 */
+	private static $preview = false;
+
+	/**
 	 * Bellekteki önbellek.
 	 *
 	 * @var array<string, mixed>|null
@@ -169,6 +183,9 @@ class Settings {
 	 * @return bool
 	 */
 	public function module_enabled( $slug, $default_state = false ) {
+		if ( self::$preview ) {
+			return true;
+		}
 		$modules = $this->all()['modules'];
 		return isset( $modules[ $slug ] ) ? (bool) $modules[ $slug ] : (bool) $default_state;
 	}
@@ -220,6 +237,14 @@ class Settings {
 				}
 			}
 		}
+		if ( self::upgrade_new_default() ) {
+			if ( ! isset( $stored['experiences']['engine'] ) ) {
+				$out['experiences']['engine'] = 'new';
+			}
+			if ( ! isset( $stored['admin']['ui'] ) ) {
+				$out['admin']['ui'] = 'new';
+			}
+		}
 		if ( ! in_array( $out['experiences']['engine'], self::ENGINES, true ) ) {
 			$out['experiences']['engine'] = 'legacy';
 		}
@@ -233,11 +258,72 @@ class Settings {
 	}
 
 	/**
+	 * Önizlemeyi açar/kapatır (yalnız Preview modülü çağırır; bellekte, ayar yazılmaz).
+	 *
+	 * @param bool $on Açık mı.
+	 * @return void
+	 */
+	public static function set_preview( $on ) {
+		self::$preview = (bool) $on;
+	}
+
+	/**
+	 * Bu istekte önizleme açık mı.
+	 *
+	 * @return bool
+	 */
+	public static function is_preview() {
+		return self::$preview;
+	}
+
+	/**
+	 * "Yükseltilen kurulum için yeni deneyime geç" bayrağı açık mı (`wdp_upgrade_new_default` seçeneği;
+	 * `donation_panel_upgrade_new_default` filtresiyle geçersiz kılınabilir). Varsayılan: kapalı.
+	 *
+	 * @return bool
+	 */
+	public static function upgrade_new_default() {
+		$on = in_array( get_option( self::UPGRADE_FLAG_OPTION, '' ), array( true, 1, '1', 'yes', 'true', 'on' ), true );
+
+		/**
+		 * Yükseltilen kurulumların yeni deneyime geçişini açar/kapatır.
+		 *
+		 * @param bool $on Bayrak açık mı.
+		 */
+		return (bool) apply_filters( 'donation_panel_upgrade_new_default', $on );
+	}
+
+	/**
+	 * Yeni kurulumda (hiç ayar ve eski sürüm izi yok) yeni deneyimi varsayılan yazar; mevcut kurulumda hiçbir şey yapmaz.
+	 * İdempotent: ayar bir kez varsa bir daha dokunmaz. Etkinleştirmede çağrılır.
+	 *
+	 * @return bool Yazıldıysa true.
+	 */
+	public static function seed_fresh_install() {
+		if ( false !== get_option( self::OPTION_NAME, false ) ) {
+			return false;
+		}
+		if ( false !== get_option( 'wdp_version', false ) || false !== get_option( 'wdp_cache_version', false ) ) {
+			return false;
+		}
+		$seed = self::normalize(
+			array(
+				'experiences' => array( 'engine' => 'new' ),
+				'admin'       => array( 'ui' => 'new' ),
+			)
+		);
+		return (bool) update_option( self::OPTION_NAME, $seed, false );
+	}
+
+	/**
 	 * Yeni nesil form motoru seçili mi (örnek gerektirmez; `experiences` modülünün varsayılan durumu).
 	 *
 	 * @return bool
 	 */
 	public static function engine_is_new() {
+		if ( self::$preview ) {
+			return true;
+		}
 		$stored = get_option( self::OPTION_NAME, array() );
 		$all    = self::normalize( is_array( $stored ) ? $stored : array() );
 		return 'new' === $all['experiences']['engine'];

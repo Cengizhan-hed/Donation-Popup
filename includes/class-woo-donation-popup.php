@@ -14,6 +14,11 @@ class Woo_Donation_Popup {
 		* Eklenti etkinleştirildiğinde çalışacak fonksiyon
 	 */
 	public static function activate() {
+		// Yeni kurulumda yeni deneyim varsayılan (mevcut kurulumlara dokunmaz; önbellek sürümünden ÖNCE).
+		if ( class_exists( '\\DonationPanel\\Core\\Settings' ) ) {
+			\DonationPanel\Core\Settings::seed_fresh_install();
+		}
+
 		// Önbellek versiyonunu güncelle
 		update_option( 'wdp_cache_version', time() );
 
