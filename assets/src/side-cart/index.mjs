@@ -196,7 +196,7 @@ function mount(root) {
     busy = true;
     control.disabled = true;
     body.setAttribute('aria-busy', 'true');
-    let ok = false;
+    let ok;
     try {
       let wpNonce = '';
       if (nonceUrl) {

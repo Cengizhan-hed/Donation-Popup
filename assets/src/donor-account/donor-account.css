@@ -68,9 +68,8 @@ html.dp-ac-lock { overflow: hidden; }
 .dp-ac__stat { display: flex; flex-direction: column; gap: 2px; min-inline-size: 0; padding: 10px 12px; border-radius: var(--dpx-r-field); background: rgb(255 255 255 / .12); }
 .dp-ac__stat span { font-size: .72rem; opacity: .8; }
 .dp-ac__stat b { font-size: 1.0625rem; font-weight: 800; overflow-wrap: anywhere; }
-.dp-ac--page > .dp-ac__link-box, .dp-ac--page > .dp-ac__heading, .dp-ac--page > .dp-ac__list, .dp-ac--page > .dp-ac__more { margin-inline: 20px; }
-.dp-ac .dp-ac__heading { margin-block: 4px 0; font-size: 1.125rem; font-weight: 800; }
-.dp-ac__list { display: flex; flex-direction: column; gap: 12px; }
+.dp-ac .dp-ac__heading { margin-block: 4px 0; margin-inline: 20px; font-size: 1.125rem; font-weight: 800; }
+.dp-ac__list { display: flex; flex-direction: column; gap: 12px; margin-inline: 20px; }
 .dp-ac__card { display: flex; flex-direction: column; gap: 12px; padding: 14px; border-radius: 18px; background: var(--dpx-card); }
 .dp-ac__card-main { display: flex; align-items: center; gap: 12px; }
 .dp-ac__thumb { flex: none; inline-size: 52px; block-size: 52px; border-radius: 12px; object-fit: cover; background: var(--dpx-track); }
@@ -91,11 +90,11 @@ html.dp-ac-lock { overflow: hidden; }
 .dp-ac__track { block-size: 8px; border-radius: 4px; }
 .dp-ac__card-actions { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 8px; }
 .dp-ac__card-actions .dpx-btn { padding: 0 8px; white-space: nowrap; }
-.dp-ac__more { align-self: stretch; margin-block-end: 20px; }
+.dp-ac__more { align-self: stretch; margin-block-end: 20px; margin-inline: 20px; }
 .dp-ac__empty { padding: 32px 16px; text-align: center; border: 1px dashed var(--dpx-line-strong); border-radius: 18px; background: var(--dpx-card); }
 .dp-ac__empty h3 { margin: 0 0 6px; font-size: 1rem; font-weight: 800; }
 .dp-ac__empty p { margin: 0; color: var(--dpx-muted); font-size: .875rem; }
-.dp-ac__link-box { padding: 14px; border-radius: 18px; background: var(--dpx-card); }
+.dp-ac__link-box { margin-inline: 20px; padding: 14px; border-radius: 18px; background: var(--dpx-card); }
 .dp-ac .dp-ac__link-box h3 { margin: 0 0 6px; font-size: .9375rem; font-weight: 800; }
 .dp-ac__link-box p { margin: 0 0 12px; font-size: .8125rem; color: var(--dp-color-text-muted); }
 .dp-ac__link-msg { margin: 12px 0 0 !important; font-weight: 650; }
