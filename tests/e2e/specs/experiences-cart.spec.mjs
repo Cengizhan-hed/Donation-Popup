@@ -176,12 +176,3 @@ test.describe('sepet köprüsü (yeni motor)', () => {
     expect(String(meta.wdp_donor_phone).replace(/\D/g, '')).toBe(DONOR.phone.replace(/\D/g, ''));
   });
 });
-
-test.describe('eski motor (engine=legacy)', () => {
-  test('yeni REST uçları kayıtlı değil', async ({ page }) => {
-    const response = await page.request.get('/?rest_route=/donation-panel/v1/nonce&dp_engine=legacy');
-    expect(response.status()).toBe(404);
-    const post = await page.request.post('/?rest_route=/donation-panel/v1/cart/add&dp_engine=legacy', { data: { product_id: Number(PRODUCT) } });
-    expect(post.status()).toBe(404);
-  });
-});

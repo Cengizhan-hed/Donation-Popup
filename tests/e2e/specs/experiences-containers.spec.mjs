@@ -193,14 +193,3 @@ test.describe('form çekirdeği (yeni motor)', () => {
     expect(box.x).toBeLessThan(5);
   });
 });
-
-test.describe('eski motor (engine=legacy)', () => {
-  test('yeni kısa kod, varlık ve işaretleme yüklenmez', async ({ page }) => {
-    const requests = [];
-    page.on('request', (r) => requests.push(r.url()));
-    await page.goto(url('popup', '&dp_engine=legacy'));
-    await expect(page.locator('[data-dp-exp]')).toHaveCount(0);
-    expect(requests.filter((u) => u.includes('assets/build/experiences'))).toEqual([]);
-    expect(await page.content()).not.toContain('dp-overlay');
-  });
-});

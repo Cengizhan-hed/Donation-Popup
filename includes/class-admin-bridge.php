@@ -10,3 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 require_once __DIR__ . '/class-autoloader.php';
+
+if ( is_file( __DIR__ . '/class-woo-donation-popup-admin.php' ) ) {
+	require_once __DIR__ . '/class-woo-donation-popup-admin.php';
+}

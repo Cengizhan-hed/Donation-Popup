@@ -63,6 +63,7 @@ foreach (array(
     wdp_smoke_assert(!file_exists(WDP_PLUGIN_DIR . $wdp_gone), 'Eski çekirdek kaldırıldı: ' . $wdp_gone);
 }
 
+wdp_smoke_assert(class_exists('Woo_Donation_Popup_Admin'), 'Woo_Donation_Popup_Admin loads through the admin bridge');
 foreach (array(
     'DonationPanel\\Core\\Bootstrap',
     'DonationPanel\\Core\\Plugin',
