@@ -69,12 +69,13 @@ design/
 /assets/src/
 .gitkeep
 
+# E8P: kok-sabitli; assets/css/build, assets/js/build, assets/build (derleme ciktilari) pakete GIRER.
 # E8M: gelistirme/test ciktilari (Plugin Check hidden_files: test-results/.last-run.json).
-test-results/
-playwright-report/
-blob-report/
-coverage/
-build/
+/test-results/
+/playwright-report/
+/blob-report/
+/coverage/
+/build/
 .cursor*
 .claude*
 .last-run.json

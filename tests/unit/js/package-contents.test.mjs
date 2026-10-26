@@ -29,6 +29,8 @@ function buildZip() {
   fs.mkdirSync(PLANT_DIR, { recursive: true });
   if (plantedFile) fs.writeFileSync(PLANT, '{}');
   try {
+    // E8P: `npm run pack` ile ayni sira — once derleme (assets/css|js/build, assets/build), sonra paket.
+    execFileSync('npm', ['run', 'build'], { cwd: ROOT, stdio: 'ignore' });
     execFileSync('sh', ['scripts/package-wp-plugin.sh'], { cwd: ROOT, stdio: 'ignore' });
   } finally {
     if (plantedFile) fs.rmSync(PLANT, { force: true });
@@ -51,7 +53,7 @@ function checkEntries(entries) {
     if (!TOP_ALLOWED.has(parts[0])) bad.push(`izinsiz kok: ${f}`);
     const ext = path.extname(f).slice(1).toLowerCase();
     if (parts.length > 1 && !EXT_ALLOWED.has(ext)) bad.push(`izinsiz uzanti: ${f}`);
-    if (/(^|\/)(test-results|playwright-report|blob-report|node_modules|vendor|vendor-dev|tests|tools|scripts|docs|build|coverage|research|design)\//.test(f)) {
+    if (/(^|\/)(test-results|playwright-report|blob-report|node_modules|vendor|vendor-dev|tests|tools|scripts|docs|coverage|research|design)\//.test(f) || /^build\//.test(f)) {
       bad.push(`gelistirme klasoru: ${f}`);
     }
     if (/(package(-lock)?\.json|composer\.(json|lock)|phpunit|phpcs|phpstan|eslint|\.zip$|\.log$)/i.test(path.basename(f))) {
@@ -65,6 +67,35 @@ function checkEntries(entries) {
 
 test('paket: yalniz izinli desenler, gizli/gelistirme dosyasi yok', () => {
   checkEntries(buildZip());
+});
+
+// E8P: calisma zamaninin yukledigi derleme ciktilari pakette VAR olmali (.distignore `build/` hatasi).
+test('paket: derlenmis on yuz paketleri + manifestler zip icinde (E8P)', () => {
+  const files = new Set(checkEntries(buildZip()));
+  for (const dir of ['assets/css/build', 'assets/js/build']) {
+    assert.ok(files.has(`${dir}/manifest.json`), `${dir}/manifest.json zip'te yok`);
+    const man = JSON.parse(execFileSync('unzip', ['-p', ZIP, `woo-donation-popup/${dir}/manifest.json`], { encoding: 'utf8' }));
+    assert.ok(man.file, `${dir}/manifest.json 'file' anahtari yok`);
+    const rel = String(man.file).replace(/^build\//, '');
+    assert.ok(files.has(`${dir}/${rel}`), `manifest dosyasi zip'te yok: ${dir}/${rel}`);
+  }
+  // PHP'nin assets/build/... ile kaydettigi her varlik.
+  const wanted = new Set();
+  const walk = (d) => {
+    for (const e of fs.readdirSync(d, { withFileTypes: true })) {
+      const f = path.join(d, e.name);
+      if (e.isDirectory()) walk(f);
+      else if (e.name.endsWith('.php')) {
+        for (const m of fs.readFileSync(f, 'utf8').matchAll(/['"](assets\/build\/[A-Za-z0-9_\-./]+\.(?:js|css))['"]/g)) wanted.add(m[1]);
+      }
+    }
+  };
+  for (const d of ['src', 'includes']) if (fs.existsSync(path.join(ROOT, d))) walk(path.join(ROOT, d));
+  assert.ok(wanted.size > 0, 'PHP kaynaginda assets/build yolu bulunamadi');
+  for (const w of wanted) assert.ok(files.has(w), `PHP'nin yukledigi derlenmis varlik zip'te yok: ${w}`);
+  // katmanli kaynaklar yedek olarak pakette kalir
+  assert.ok([...files].some((f) => f.startsWith('assets/css/src/')));
+  assert.ok([...files].some((f) => f.startsWith('assets/js/src/')));
 });
 
 test('paket: boyut makul (< 5 MB)', () => {
