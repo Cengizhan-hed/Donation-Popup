@@ -162,6 +162,11 @@ test.describe('yükleme', () => {
     const shopHtml = await (await page.request.get('/shop/')).text();
     const shopCritical = (shopHtml.match(/<style id="wdp-critical-bundle">([\s\S]*?)<\/style>/) || [, ''])[1];
     expect(shopCritical.length, 'mağaza kritik stili (K7: ayrı küme)').toBeLessThan(20000);
+    if (IDS.campaignPath) {
+      const campHtml = await (await page.request.get(IDS.campaignPath)).text();
+      const campCritical = (campHtml.match(/<style id="wdp-critical-bundle">([\s\S]*?)<\/style>/) || [, ''])[1];
+      expect(campCritical.length, 'kampanya ürünü kendi (daha geniş) kritik kümesini alır').toBeGreaterThan(critical.length);
+    }
     const targets = [IDS.fixedPath, IDS.customPath, IDS.sharesPath, IDS.campaignPath, '/shop/'].filter(Boolean);
     const shoot = async (url, withFull) => {
       const p = await page.context().newPage();
