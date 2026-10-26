@@ -61,6 +61,7 @@ class WDP_Assets {
 		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'enqueue_assets' ) );
 		add_action( 'wp_footer', array( __CLASS__, 'maybe_enqueue_in_footer' ), 1 );
 		self::register_optimizer_exclusions();
+		WDP_Assets_Defer::init();
 		add_filter( 'style_loader_tag', array( __CLASS__, 'style_loader_tag_add_no_optimize' ), 10, 4 );
 	}
 
