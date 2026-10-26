@@ -70,7 +70,7 @@ class WDP_Assets_Defer {
 			$css = self::small_local_css( (string) $href );
 			return '' === $css ? $html : '<style id="' . esc_attr( $handle ) . '-css">' . $css . "</style>\n";
 		}
-		$critical = WDP_Assets::get_critical_bundle_css();
+		$critical = WDP_Assets::get_critical_bundle_css( self::critical_page_type() );
 		if ( '' === $critical ) {
 			return $html; // Kritik alt küme yok: bölme yok, özgün engelleyici bağlantı.
 		}
@@ -80,6 +80,31 @@ class WDP_Assets_Defer {
 		}
 		$placeholder = '<meta name="wdp-deferred-style" data-id="' . esc_attr( $handle . '-css' ) . '" data-href="' . esc_url( $href ) . '">';
 		return '<style id="wdp-critical-bundle">' . $critical . "</style>\n" . $placeholder . "\n" . $loader . '<noscript>' . $html . "</noscript>\n";
+	}
+
+	/**
+	 * K7: bu istekteki sayfa türü (kritik CSS kümesi seçimi). Tanınmayan sayfa '' döner → tüm türlerin birleşimi.
+	 *
+	 * Ürün sayfası: ürünün bağış türü (`fixed|custom|shares|campaign`); mağaza/ürün arşivi: `shop`.
+	 *
+	 * @return string
+	 */
+	private static function critical_page_type() {
+		$type = '';
+		if ( function_exists( 'is_product' ) && is_product() && class_exists( 'WDP_Donation_Type' ) ) {
+			$id = (int) get_queried_object_id();
+			if ( $id > 0 ) {
+				$type = 'product-' . WDP_Donation_Type::for_product( $id );
+			}
+		} elseif ( ( function_exists( 'is_shop' ) && is_shop() ) || ( function_exists( 'is_product_taxonomy' ) && is_product_taxonomy() ) ) {
+			$type = 'shop';
+		}
+		/**
+		 * Kritik CSS sayfa türü (K7). Boş dize tüm türlerin birleşimini kullandırır.
+		 *
+		 * @param string $type Tür (`product-fixed`, `product-custom`, `product-shares`, `product-campaign`, `shop` ya da '').
+		 */
+		return (string) apply_filters( 'wdp_critical_css_page_type', $type ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- wdp_ öneki eklentiye ait.
 	}
 
 	/**

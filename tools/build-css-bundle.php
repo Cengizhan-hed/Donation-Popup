@@ -136,6 +136,8 @@ $criticalName = null;
 foreach (glob($outDir . '/critical.*.css') ?: array() as $oldCritical) {
     @unlink($oldCritical);
 }
+// K7: sayfa türüne göre ayrı kritik kümeler (critical.tmp.<tür>.css → critical.<tür>.<hash>.css).
+$criticalSets = array();
 $criticalTmp  = $outDir . '/critical.tmp.css';
 $criticalCmd  = 'node ' . escapeshellarg($root . '/tools/css-critical/build-critical.mjs') . ' ' . escapeshellarg($outPath) . ' ' . escapeshellarg($criticalTmp) . ' 2>&1';
 $criticalOut  = array();
@@ -146,7 +148,21 @@ if ($criticalExit === 0 && is_file($criticalTmp) && filesize($criticalTmp) > 0) 
     $criticalName = 'critical.' . substr(sha1($criticalCss), 0, 12) . '.css';
     rename($criticalTmp, $outDir . '/' . $criticalName);
     fwrite(STDOUT, implode("\n", $criticalOut) . "\n");
+    foreach (glob($outDir . '/critical.tmp.*.css') ?: array() as $typedTmp) {
+        $type = substr(basename($typedTmp), strlen('critical.tmp.'), -4);
+        $typedCss = (string) file_get_contents($typedTmp);
+        if (preg_match('/^[a-z0-9-]+$/', $type) === 1 && $typedCss !== '') {
+            $typedName = 'critical.' . $type . '.' . substr(sha1($typedCss), 0, 12) . '.css';
+            rename($typedTmp, $outDir . '/' . $typedName);
+            $criticalSets[$type] = 'build/' . $typedName;
+        } else {
+            @unlink($typedTmp);
+        }
+    }
 } else {
+    foreach (glob($outDir . '/critical.tmp*.css') ?: array() as $typedTmp) {
+        @unlink($typedTmp);
+    }
     @unlink($criticalTmp);
     fwrite(STDERR, 'Kritik CSS üretilmedi (bölme yok, tek paket): ' . implode(' ', $criticalOut) . "\n");
 }
@@ -158,6 +174,9 @@ $manifest = array(
 );
 if ($criticalName !== null) {
     $manifest['critical'] = 'build/' . $criticalName;
+    if ($criticalSets) {
+        $manifest['critical_sets'] = $criticalSets;
+    }
 }
 $manifestJson = json_encode($manifest, JSON_UNESCAPED_SLASHES) . "\n";
 

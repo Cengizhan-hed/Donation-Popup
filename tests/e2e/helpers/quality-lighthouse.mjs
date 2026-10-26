@@ -65,6 +65,17 @@ export async function runLighthouse(w, qcfg, opts = {}) {
         perf: Math.round(med((l) => l.categories.performance.score || 0) * 100),
         a11y: Math.round(med((l) => l.categories.accessibility.score || 0) * 100),
         lcp: Math.round(med((l) => l.audits['largest-contentful-paint'].numericValue)),
+        fcp: Math.round(med((l) => l.audits['first-contentful-paint'].numericValue)),
+        fcpRuns: runs.map((l) => Math.round(l.audits['first-contentful-paint'].numericValue)),
+        lcpEl: [
+          ...new Set(
+            runs.map((l) => {
+              const items = ((l.audits['largest-contentful-paint-element'] || {}).details || {}).items;
+              const node = items && items[0] && items[0].items && items[0].items[0] && items[0].items[0].node;
+              return node ? String(node.selector || node.snippet || '').slice(0, 90) : '-';
+            })
+          ),
+        ],
         tbt: Math.round(med((l) => l.audits['total-blocking-time'].numericValue)),
         cls: +med((l) => l.audits['cumulative-layout-shift'].numericValue || 0).toFixed(3),
         ttfb: Math.round(med((l) => (l.audits['server-response-time'] || { numericValue: 0 }).numericValue)),
@@ -110,6 +121,11 @@ export async function runLighthouse(w, qcfg, opts = {}) {
         controlPerformance: control.perf,
         accessibility: m.a11y,
         lcpMs: m.lcp,
+        fcpMs: m.fcp,
+        fcpRuns: m.fcpRuns,
+        controlFcpMs: control.fcp,
+        controlFcpRuns: control.fcpRuns,
+        lcpElement: m.lcpEl,
         controlLcpMs: control.lcp,
         tbtMs: m.tbt,
         cls: m.cls,

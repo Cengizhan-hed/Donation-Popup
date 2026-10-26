@@ -158,7 +158,15 @@ test.describe('yükleme', () => {
     expect(html.replace(/<noscript>[\s\S]*?<\/noscript>/g, ''), 'tam paket <link> yalnız noscript içinde').not.toMatch(/<link[^>]+donation-modal\.[0-9a-f]+\.css/);
     expect(html, 'betiksiz yedek').toMatch(/<noscript><link[^>]+donation-modal\.[0-9a-f]+\.css/);
     const critical = (html.match(/<style id="wdp-critical-bundle">([\s\S]*?)<\/style>/) || [, ''])[1];
-    expect(critical.length, 'kritik stil boyutu (ham bayt)').toBeLessThan(120000);
+    expect(critical.length, 'kritik stil boyutu (ham bayt; K7: sabit tutarlı ürün kümesi)').toBeLessThan(70000);
+    const shopHtml = await (await page.request.get('/shop/')).text();
+    const shopCritical = (shopHtml.match(/<style id="wdp-critical-bundle">([\s\S]*?)<\/style>/) || [, ''])[1];
+    expect(shopCritical.length, 'mağaza kritik stili (K7: ayrı küme)').toBeLessThan(20000);
+    if (IDS.campaignPath) {
+      const campHtml = await (await page.request.get(IDS.campaignPath)).text();
+      const campCritical = (campHtml.match(/<style id="wdp-critical-bundle">([\s\S]*?)<\/style>/) || [, ''])[1];
+      expect(campCritical.length, 'kampanya ürünü kendi (daha geniş) kritik kümesini alır').toBeGreaterThan(critical.length);
+    }
     const targets = [IDS.fixedPath, IDS.customPath, IDS.sharesPath, IDS.campaignPath, '/shop/'].filter(Boolean);
     const shoot = async (url, withFull) => {
       const p = await page.context().newPage();

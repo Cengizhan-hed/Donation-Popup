@@ -148,35 +148,64 @@ trait WDP_Assets_Registry_Trait {
 			}
 		}
 
+		// K7: sayfa türüne göre ayrı kritik kümeler (tür => göreli dosya); geçersiz girişler atılır.
+		$critical_sets = array();
+		if ( ! empty( $manifest['critical_sets'] ) && is_array( $manifest['critical_sets'] ) ) {
+			foreach ( $manifest['critical_sets'] as $type => $set_rel ) {
+				if ( ! is_string( $type ) || ! is_string( $set_rel ) || 1 !== preg_match( '/^[a-z0-9-]+$/', $type ) ) {
+					continue;
+				}
+				$set_rel = ltrim( $set_rel, '/' );
+				if ( 0 === strpos( $set_rel, 'build/critical.' ) && '.css' === substr( $set_rel, -4 ) && false === strpos( $set_rel, '..' ) && file_exists( $plugin_dir . 'assets/css/' . $set_rel ) ) {
+					$critical_sets[ $type ] = $set_rel;
+				}
+			}
+		}
+
 		return array(
-			'file'     => $rel_file,
-			'hash'     => isset( $manifest['hash'] ) && is_string( $manifest['hash'] ) ? $manifest['hash'] : '',
-			'critical' => $critical,
+			'file'          => $rel_file,
+			'hash'          => isset( $manifest['hash'] ) && is_string( $manifest['hash'] ) ? $manifest['hash'] : '',
+			'critical'      => $critical,
+			'critical_sets' => $critical_sets,
 		);
 	}
 
 	/**
-	 * K3: ilk görünüm kritik CSS'i (derleme çıktısı; tam paketin alt kümesi). Yoksa boş (bölme yapılmaz).
+	 * K3/K7: ilk görünüm kritik CSS'i (derleme çıktısı; tam paketin alt kümesi). Yoksa boş (bölme yapılmaz).
 	 *
+	 * `$type` sayfa türüdür (örn. `product-fixed`, `shop`); o tür için ayrı küme yoksa ya da tür boşsa tüm türlerin birleşimi
+	 * (güvenli varsayılan) döner.
+	 *
+	 * @param string $type Sayfa türü ('' = birleşim).
 	 * @return string
 	 */
-	public static function get_critical_bundle_css() {
-		static $css = null;
-		if ( null !== $css ) {
-			return $css;
+	public static function get_critical_bundle_css( $type = '' ) {
+		static $cache = array();
+		if ( isset( $cache[ $type ] ) ) {
+			return $cache[ $type ];
 		}
-		$css        = '';
-		$plugin_dir = defined( 'WDP_PLUGIN_DIR' ) ? WDP_PLUGIN_DIR : plugin_dir_path( dirname( __DIR__ ) );
-		$manifest   = self::get_built_css_manifest( $plugin_dir );
-		if ( is_array( $manifest ) && ! empty( $manifest['critical'] ) ) {
-			$raw = file_get_contents( $plugin_dir . 'assets/css/' . $manifest['critical'] ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- yerel eklenti dosyası.
+		$cache[ $type ] = '';
+		$plugin_dir     = defined( 'WDP_PLUGIN_DIR' ) ? WDP_PLUGIN_DIR : plugin_dir_path( dirname( __DIR__ ) );
+		$manifest       = self::get_built_css_manifest( $plugin_dir );
+		if ( ! is_array( $manifest ) ) {
+			return '';
+		}
+		$rel = '';
+		if ( '' !== $type && isset( $manifest['critical_sets'][ $type ] ) ) {
+			$rel = (string) $manifest['critical_sets'][ $type ];
+		} elseif ( ! empty( $manifest['critical'] ) ) {
+			$rel = (string) $manifest['critical'];
+		}
+		if ( '' !== $rel ) {
+			$raw = file_get_contents( $plugin_dir . 'assets/css/' . $rel ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- yerel eklenti dosyası.
 			if ( is_string( $raw ) ) {
 				// Bir <style> bloğunu erken kapatamasın.
-				$css = trim( str_ireplace( '</style', '<\/style', $raw ) );
+				$cache[ $type ] = trim( str_ireplace( '</style', '<\/style', $raw ) );
 			}
 		}
-		return $css;
+		return $cache[ $type ];
 	}
+
 	private static function maybe_refresh_asset_revision_from_files( $plugin_dir ) {
 		static $checked = false;
 		if ( $checked ) {

@@ -68,6 +68,9 @@ const selectors = [...selectorSet];
 
 const browser = await chromium.launch();
 const matched = new Set();
+// K7: sayfa türü başına ayrı eşleşme kümesi (örnek adı "<bağlam>-<tür>.html" → tür; ör. bt-product-fixed → product-fixed, sf-shop → shop).
+const typeOf = (f) => f.replace(/\.html$/, '').replace(/^[a-z]+-/, '');
+const matchedByType = new Map();
 try {
   const modes = process.env.CRITICAL_MODE === 'rtl' ? [true] : process.env.CRITICAL_MODE === 'ltr' ? [false] : [false, true];
   for (const rtl of modes) {
@@ -93,7 +96,12 @@ try {
         },
         { list: selectors, rtlMode: rtl }
       );
-      hits.forEach((h) => matched.add(h));
+      const type = typeOf(f);
+      if (!matchedByType.has(type)) matchedByType.set(type, new Set());
+      hits.forEach((h) => {
+        matched.add(h);
+        matchedByType.get(type).add(h);
+      });
       await page.close();
     }
   }
@@ -101,6 +109,75 @@ try {
   await browser.close();
 }
 
+const projectRoot = path.resolve(here, '..', '..');
+let externalVarRefs = null;
+
+/**
+ * CSS dışındaki kaynaklarda (PHP, şablon, JS, blok) adı geçen özel özellikler: satır içi stil/JS ile kullanılabilir, budanmaz.
+ * @return {Set<string>} Özel özellik adları.
+ */
+function externalVars() {
+  if (externalVarRefs) return externalVarRefs;
+  externalVarRefs = new Set();
+  const skip = new Set(['node_modules', 'vendor', 'vendor-dev', 'build', 'tests', 'languages', '.git']);
+  const walk = (dir) => {
+    for (const ent of fs.readdirSync(dir, { withFileTypes: true })) {
+      if (ent.isSymbolicLink() || skip.has(ent.name)) continue;
+      const full = path.join(dir, ent.name);
+      if (ent.isDirectory()) walk(full);
+      else if (/\.(php|js|json|html)$/.test(ent.name) && !/\.min\.js$/.test(ent.name)) {
+        const txt = fs.readFileSync(full, 'utf8');
+        for (const m of txt.matchAll(/--[a-z][a-z0-9-]*/gi)) externalVarRefs.add(m[0]);
+      }
+    }
+  };
+  for (const d of ['includes', 'templates', 'assets/js', 'blocks', 'src']) {
+    const full = path.join(projectRoot, d);
+    if (fs.existsSync(full)) walk(full);
+  }
+  return externalVarRefs;
+}
+
+/**
+ * K7: kritik çıktıdaki `:root` özel özelliklerinden, kritik kurallarda (var() zinciriyle) ya da CSS dışı kaynaklarda
+ * kullanılmayanları atar; tam paket sonradan hepsini getirir (basamak sırası ve kapsam aynı, yalnız kullanılmayan değişken).
+ * @param {object} out Kritik kök düğüm.
+ */
+function pruneRootVars(out) {
+  if (process.env.CRITICAL_NO_PRUNE === '1') return;
+  const need = new Set(externalVars());
+  const refs = (v) => [...v.matchAll(/var\(\s*(--[\w-]+)/g)].map((m) => m[1]);
+  out.walkDecls((d) => {
+    if (d.parent.type === 'rule' && d.parent.selector.trim() === ':root' && d.prop.startsWith('--')) return;
+    refs(d.value).forEach((n) => need.add(n));
+  });
+  const defs = new Map();
+  out.walkRules((r) => {
+    if (r.selector.trim() !== ':root') return;
+    r.walkDecls((d) => {
+      if (d.prop.startsWith('--')) defs.set(d.prop, (defs.get(d.prop) || []).concat(d.value));
+    });
+  });
+  const queue = [...need];
+  while (queue.length) {
+    const n = queue.pop();
+    for (const v of defs.get(n) || []) for (const r of refs(v)) if (!need.has(r)) { need.add(r); queue.push(r); }
+  }
+  out.walkRules((r) => {
+    if (r.selector.trim() !== ':root') return;
+    r.walkDecls((d) => {
+      if (d.prop.startsWith('--') && !need.has(d.prop)) d.remove();
+    });
+    if (!r.nodes.length) r.remove();
+  });
+}
+
+/**
+ * Eşleşme kümesine göre kritik CSS'i üretir.
+ * @param {Set<string>} set Eşleşen sadeleşmiş seçiciler.
+ * @return {string} CSS.
+ */
+function buildFor(set) {
 const keyframesUsed = new Set();
 const out = postcss.root();
 
@@ -113,7 +190,7 @@ function filterContainer(container, target) {
   container.each((node) => {
     if (node.type === 'rule') {
       if (node.parent && node.parent.type === 'atrule' && /keyframes$/i.test(node.parent.name)) return;
-      const keep = node.selectors.filter((raw) => matched.has(simplify(raw)));
+      const keep = node.selectors.filter((raw) => set.has(simplify(raw)));
       if (keep.length) {
         const copy = node.clone();
         copy.selectors = keep; // eşleşmeyen seçiciler ilk görünümde etkisizdir; tam paket sonradan hepsini getirir
@@ -144,7 +221,19 @@ root.walkAtRules(/keyframes$/i, (node) => {
   if (keyframesUsed.has(node.params.trim())) out.append(node.clone());
 });
 
-const result = out.toString();
+pruneRootVars(out);
+return out.toString();
+}
+
+const result = buildFor(matched);
 fs.writeFileSync(outFile, `${result.trim()}\n`);
 const raw = fs.statSync(inFile).size;
-console.log(`kritik CSS: ${result.length} bayt (tam paket ${raw}; %${Math.round((result.length / raw) * 100)}); örnek ${fixtures.length} x LTR/RTL; eşleşen seçici ${matched.size}/${selectors.length}`);
+const sizes = [];
+if (process.env.CRITICAL_NO_TYPES !== '1') {
+  for (const [type, set] of matchedByType) {
+    const typed = buildFor(set);
+    fs.writeFileSync(outFile.replace(/\.css$/, `.${type}.css`), `${typed.trim()}\n`);
+    sizes.push(`${type}=${typed.length}`);
+  }
+}
+console.log(`kritik CSS: ${result.length} bayt (tam paket ${raw}; %${Math.round((result.length / raw) * 100)}); örnek ${fixtures.length} x LTR/RTL; eşleşen seçici ${matched.size}/${selectors.length}; türler: ${sizes.join(' ')}`);
