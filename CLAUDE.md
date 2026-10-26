@@ -216,3 +216,10 @@ Faz 1 güvenli bağlantı ✅ → Faz 2 göç provası ✅ → Faz 3 bekleyen i�
 - Skill'ler kullanıcı düzeyinde (`~/.claude/skills`, proje `.claude/` değil). Kurulum öncesi dosyalar okunur: yalnız talimat/kaynak olmalı; çalıştırılabilir betik, ağ çağrısı ya da izin değiştiren içerik varsa KURULMAZ, raporlanır. `frontend-design` (anthropics/skills; yalnız SKILL.md + LICENSE) kuruldu. `ui-ux-pro-max-skill` çalıştırılabilir Python betikleri içerdiği için KURULMADI (kullanıcı kararı bekliyor).
 - Kapsam: tüm bağışçı ekranları (popup, sağ panel, sayfa içi form, alttan panel, yan sepet, kampanya kartı/ilerleme çubukları, teşekkür, bağışçı hesabı) + yönetici ekranı; hedef premium, özenli görünüm. Global ilke, mobil öncelik, erişilebilirlik (axe 0), performans bütçesi aynen geçerli.
 - İyileştirmeler parça parça; her parçadan sonra önce/sonra görüntüleri `design/showcase/cilasi/` altına, rapora eklenir.
+
+## 22. ARAÇ DEĞERLENDİRMESİ (2026-10-26; mevcut işi bölmeden, sıradaki uygun noktada; yalnız geliştirme, pakete/sitelere girmez)
+1) WordPress Playground (`@wp-playground/cli`): tema/Woo matrisini (TT5, Storefront, para birimleri, blok/klasik ödeme, HPOS) Playground blueprint'leriyle dene; süre+disk ölçümü rapora; daha hızlı ve az diskliyse build/local-wp yerine geçilir. Avada/Blocksy uzak testleri aynen kalır.
+2) Kontrol et/yoksa kur, verify'a bağla: szepeviktor/phpstan-wordpress, php-stubs/woocommerce-stubs, Lighthouse CI, @axe-core/playwright.
+3) Faz 8: Psalm taint analizi (yalnız güvenlik akışları) + Semgrep PHP güvenlik kuralları; bulgular Faz 8 listesine, yeni kodda 0.
+4) Faz 9: sürüm zip'i `wp dist-archive` ile; zip yalnız eklenti dosyalarını içerir (testle kanıt).
+Her araçta kurmadan önce: resmi kaynak mı, son sürüm ≥2 haftalık mı, kurulum betiği dışarı veri gönderiyor mu; şüpheliyse kurma, raporla.
