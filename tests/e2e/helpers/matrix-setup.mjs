@@ -619,8 +619,25 @@ function ensureWcPlaceholderUploads(wpDir) {
   const ext = path.extname(src);
   const uploads = path.join(wpDir, 'wp-content/uploads');
   fs.mkdirSync(uploads, { recursive: true });
-  for (const suffix of ['', '-1024x1024', '-768x768', '-300x300', '-150x150']) {
+  // WC üretilmiş dosyaları kare ve bu boyutlarda: 1200 (orijinal), 1024, 768, 300, 150. PHP GD ile ölçekle (yoksa kopya).
+  const sizes = { '': 1200, '-1024x1024': 1024, '-768x768': 768, '-300x300': 300, '-150x150': 150 };
+  for (const [suffix, px] of Object.entries(sizes)) {
     const dest = path.join(uploads, `woocommerce-placeholder${suffix}${ext}`);
-    if (!fs.existsSync(dest)) fs.copyFileSync(src, dest);
+    if (fs.existsSync(dest)) continue;
+    const gd = ext === '.webp'
+      ? spawnSync(
+          'php',
+          [
+            '-r',
+            'if(!function_exists("imagecreatefromwebp"))exit(2);$i=imagecreatefromwebp($argv[1]);if(!$i)exit(3);' +
+              '$o=imagescale($i,(int)$argv[3],(int)$argv[3],IMG_BICUBIC);imagewebp($o,$argv[2],82);',
+            src,
+            dest,
+            String(px),
+          ],
+          { encoding: 'utf8' }
+        )
+      : { status: 1 };
+    if (gd.status !== 0 || !fs.existsSync(dest)) fs.copyFileSync(src, dest);
   }
 }
