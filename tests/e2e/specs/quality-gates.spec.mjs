@@ -119,6 +119,44 @@ test.describe('yükleme', () => {
     await expect(cta).toBeEnabled();
     expect(errors).toEqual([]);
   });
+
+  test('yükleme: ürün sayfasına ülke listesi ve çeviri sözlüğü gömülmez; paketten önce ayrı betikle gelir ve telefon alanı çalışır', async ({ page }) => {
+    const errors = trackErrors(page);
+    const res = await page.goto(IDS.fixedPath, { waitUntil: 'load' });
+    const html = await (res ? res.text() : Promise.resolve(''));
+    const inline = (html.match(/var wdp_ajax = (\{[\s\S]*?\});\n/) || [])[1] || '';
+    expect(inline.length, 'satır içi wdp_ajax küçük çekirdek (<= 10 KB)').toBeGreaterThan(0);
+    expect(inline.length).toBeLessThan(10 * 1024);
+    expect(inline).not.toContain('"countries"');
+    expect(inline).not.toContain('"i18n_dict"');
+    expect(html, 'ayrı veri betiği ertelenmiş etiketle').toMatch(/data-wdp-src="[^"]*wdp_client_data=/);
+    await page.waitForFunction(() => window.WDPDefer && window.WDPDefer.isReady(), null, { timeout: 8000 });
+    const state = await page.evaluate(() => ({
+      countries: ((window.wdp_ajax.phone || {}).countries || []).length,
+      def: (window.wdp_ajax.phone || {}).default_country || '',
+      dict: Object.keys(window.wdp_ajax.i18n_dict || {}).length,
+    }));
+    expect(state.countries, 'ülke listesi yüklendi').toBeGreaterThan(100);
+    expect(state.dict, 'sözlük yüklendi').toBeGreaterThan(50);
+    expect(state.def).toMatch(/^[a-z]{2}$/i);
+    const phone = page.locator('.wdp-phone-field').first();
+    if (await phone.count()) {
+      await phone.locator('button').first().click();
+      expect(await page.locator('#wdp-phone-country-panel [role="option"]').count(), 'ülke listesi çizildi').toBeGreaterThan(50);
+    }
+    expect(errors).toEqual([]);
+  });
+
+  test('yükleme: istemci veri betiği herkese açık, önbelleğe alınabilir ve yalnız geçerli yerel ayarı kabul eder', async ({ page, request }) => {
+    const ok = await request.get('/?wdp_client_data=en_US&ver=t');
+    expect(ok.status()).toBe(200);
+    expect(ok.headers()['content-type']).toContain('javascript');
+    expect(ok.headers()['cache-control']).toContain('public');
+    expect(await ok.text()).toContain('a.phone.countries=');
+    const bad = await request.get('/?wdp_client_data=..%2Fx');
+    expect(bad.status()).toBe(400);
+    expect(page).toBeTruthy();
+  });
 });
 
 test.describe('axe', () => {

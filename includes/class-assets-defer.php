@@ -36,7 +36,7 @@ class WDP_Assets_Defer {
 	 * @return string[]
 	 */
 	private static function deferred_handles() {
-		return array( WDP_Assets::FRONTEND_JS_HANDLE, 'wdp-form-cta-ready-js' );
+		return array( WDP_Assets::FRONTEND_JS_HANDLE, 'wdp-form-cta-ready-js', WDP_Client_Data::HANDLE );
 	}
 
 	/**
