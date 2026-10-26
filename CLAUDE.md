@@ -223,3 +223,4 @@ Faz 1 güvenli bağlantı ✅ → Faz 2 göç provası ✅ → Faz 3 bekleyen i�
 3) Faz 8: Psalm taint analizi (yalnız güvenlik akışları) + Semgrep PHP güvenlik kuralları; bulgular Faz 8 listesine, yeni kodda 0.
 4) Faz 9: sürüm zip'i `wp dist-archive` ile; zip yalnız eklenti dosyalarını içerir (testle kanıt).
 Her araçta kurmadan önce: resmi kaynak mı, son sürüm ≥2 haftalık mı, kurulum betiği dışarı veri gönderiyor mu; şüpheliyse kurma, raporla.
+- **Karar (2026-10-26):** ui-ux-pro-max KURULMAYACAK; frontend-design + `design/` sözleşmesiyle devam. **Soru sorma kuralı:** bir koşul açıkça sağlanmıyorsa ve net bir öneri varsa kullanıcıya SORULMAZ; öneri uygulanır, rapora yazılır.
