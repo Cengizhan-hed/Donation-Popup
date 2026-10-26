@@ -448,6 +448,11 @@ trait WDP_Utils_Order_Meta_Trait {
 	 */
 	private static function log_progress_conversion_skip( $order, $product_id, $reason ) {
 		$order_id = ( is_object( $order ) && method_exists( $order, 'get_id' ) ) ? absint( $order->get_id() ) : 0;
+		if ( self::$progress_dry_run ) {
+			// Kuru çalıştırma: yalnız bellekte say; meta/günlük yazılmaz.
+			self::$progress_dry_skips[ absint( $product_id ) ][] = $order_id;
+			return;
+		}
 		self::log(
 			sprintf(
 				'progress convert skip order=%d product=%d reason=%s',
@@ -511,36 +516,104 @@ trait WDP_Utils_Order_Meta_Trait {
 	}
 
 	/**
-	 * Ürün toplamını ödenmiş siparişleri tarayarak baştan hesapla ve yaz.
+	 * Toplam yeniden hesabı sırasında yazma kapalı mı (WP-CLI `--dry-run`).
 	 *
-	 * Sayılmamış ödenmiş siparişler sayılmış olarak işaretlenir; sonraki durum değişikliklerinde çift sayım olmaz.
-	 *
-	 * @param int $product_id Product ID.
-	 * @return array{total:float,donors:int,orders:int}
+	 * @var bool
 	 */
-	public static function recalculate_product_donation_total( $product_id ) {
-		$product_id = absint( $product_id );
-		$result     = array(
+	private static $progress_dry_run = false;
+
+	/**
+	 * Kuru çalıştırmada dönüştürülemeyen siparişler (ürün => sipariş kimlikleri); hiçbir yere yazılmaz.
+	 *
+	 * @var array<int, int[]>
+	 */
+	private static $progress_dry_skips = array();
+
+	/**
+	 * Boş yeniden hesap sonucu.
+	 *
+	 * @return array{total:float,donors:int,orders:int,unconverted:int}
+	 */
+	private static function empty_recalc_result() {
+		return array(
 			'total'       => 0.0,
 			'donors'      => 0,
 			'orders'      => 0,
 			'unconverted' => 0,
 		);
-		if ( ! $product_id || ! function_exists( 'wc_get_orders' ) ) {
-			return $result;
+	}
+
+	/**
+	 * Ürün toplamını ödenmiş siparişleri tarayarak baştan hesapla ve yaz.
+	 *
+	 * Sayılmamış ödenmiş siparişler sayılmış olarak işaretlenir; sonraki durum değişikliklerinde çift sayım olmaz.
+	 *
+	 * @param int $product_id Product ID.
+	 * @return array{total:float,donors:int,orders:int,unconverted:int}
+	 */
+	public static function recalculate_product_donation_total( $product_id ) {
+		$product_id = absint( $product_id );
+		$results    = self::recalculate_product_donation_totals( array( $product_id ), false );
+		return isset( $results[ $product_id ] ) ? $results[ $product_id ] : self::empty_recalc_result();
+	}
+
+	/**
+	 * Birden çok ürünün toplamını tek sipariş taramasıyla hesaplar; `$dry_run` iken hiçbir şey yazmaz
+	 * (ürün meta, sipariş bayrağı, dönüştürülemeyen sipariş listesi ve günlük dahil).
+	 *
+	 * @param int[] $product_ids Ürün kimlikleri.
+	 * @param bool  $dry_run     True ise yalnız hesaplar.
+	 * @return array<int, array{total:float,donors:int,orders:int,unconverted:int}> Ürün kimliği => sonuç.
+	 */
+	public static function recalculate_product_donation_totals( array $product_ids, $dry_run = false ) {
+		$ids     = array_values( array_unique( array_filter( array_map( 'absint', $product_ids ) ) ) );
+		$results = array();
+		foreach ( $ids as $id ) {
+			$results[ $id ] = self::empty_recalc_result();
+		}
+		if ( ! $ids || ! function_exists( 'wc_get_orders' ) ) {
+			return $results;
 		}
 
-		// Yeniden hesap başında dönüşüm uyarı listesini sıfırla; compute sırasında yeniden dolar.
-		delete_post_meta( $product_id, '_wdp_progress_unconverted_orders' );
+		self::$progress_dry_run   = (bool) $dry_run;
+		self::$progress_dry_skips = array();
+		try {
+			self::scan_orders_for_totals( $results, (bool) $dry_run );
+		} finally {
+			self::$progress_dry_run = false;
+		}
+		self::$progress_dry_skips = array();
+
+		return $results;
+	}
+
+	/**
+	 * Ödenmiş siparişleri tarar, sonuçları doldurur (yazma yalnız `$dry_run` kapalıyken).
+	 *
+	 * @param array<int, array{total:float,donors:int,orders:int,unconverted:int}> $results Ürün kimliği => sonuç (referansla doldurulur).
+	 * @param bool                                                                   $dry_run True ise yazma yok.
+	 * @return void
+	 */
+	private static function scan_orders_for_totals( array &$results, $dry_run ) {
+		if ( ! $dry_run ) {
+			// Yeniden hesap başında dönüşüm uyarı listesini sıfırla; compute sırasında yeniden dolar.
+			foreach ( array_keys( $results ) as $id ) {
+				delete_post_meta( $id, '_wdp_progress_unconverted_orders' );
+			}
+		}
 
 		$statuses = array();
 		foreach ( self::get_progress_paid_statuses() as $status ) {
 			$statuses[] = 'wc-' . $status;
 		}
 		if ( empty( $statuses ) ) {
-			self::update_product_donation_total( $product_id, 0.0, true );
-			self::set_product_donor_count( $product_id, 0 );
-			return $result;
+			if ( ! $dry_run ) {
+				foreach ( array_keys( $results ) as $id ) {
+					self::update_product_donation_total( $id, 0.0, true );
+					self::set_product_donor_count( $id, 0 );
+				}
+			}
+			return;
 		}
 
 		// Büyük mağazalarda memory/CPU maliyetini azaltmak için siparişleri sayfalar halinde işle.
@@ -569,37 +642,48 @@ trait WDP_Utils_Order_Meta_Trait {
 				}
 
 				$amounts = self::compute_order_progress_amounts( $order );
-				if ( ! isset( $amounts[ $product_id ] ) ) {
+				$hits    = array_intersect_key( $amounts, $results );
+				if ( ! $hits ) {
 					continue;
 				}
 
-				// Diğer ürünlerin toplamlarını da tutarlı tut; bu ürünün toplamı aşağıda mutlak yazılır.
-				if ( ! self::is_order_counted_in_progress( $order ) ) {
-					self::count_order_in_progress_totals( $order );
-				} else {
-					$stored                = $order->get_meta( '_wdp_progress_amounts', true );
-					$stored                = is_array( $stored ) ? self::sanitize_progress_amounts( $stored ) : $amounts;
-					$stored[ $product_id ] = $amounts[ $product_id ];
-					self::store_order_progress_state( $order, $stored );
+				if ( ! $dry_run ) {
+					// Diğer ürünlerin toplamlarını da tutarlı tut; bu ürünlerin toplamı aşağıda mutlak yazılır.
+					if ( ! self::is_order_counted_in_progress( $order ) ) {
+						self::count_order_in_progress_totals( $order );
+					} else {
+						$stored = $order->get_meta( '_wdp_progress_amounts', true );
+						$stored = is_array( $stored ) ? self::sanitize_progress_amounts( $stored ) : $amounts;
+						foreach ( $hits as $hit_id => $hit_amount ) {
+							$stored[ $hit_id ] = $hit_amount;
+						}
+						self::store_order_progress_state( $order, $stored );
+					}
 				}
 
-				++$result['orders'];
-				if ( $amounts[ $product_id ] > 0 ) {
-					$result['total'] += $amounts[ $product_id ];
-					++$result['donors'];
+				foreach ( $hits as $hit_id => $hit_amount ) {
+					++$results[ $hit_id ]['orders'];
+					if ( $hit_amount > 0 ) {
+						$results[ $hit_id ]['total'] += $hit_amount;
+						++$results[ $hit_id ]['donors'];
+					}
 				}
 			}
 
 			++$page;
 		} while ( $page <= (int) $order_query->max_num_pages );
 
-		$skipped               = get_post_meta( $product_id, '_wdp_progress_unconverted_orders', true );
-		$result['unconverted'] = is_array( $skipped ) ? count( $skipped ) : 0;
+		foreach ( array_keys( $results ) as $id ) {
+			if ( $dry_run ) {
+				$results[ $id ]['unconverted'] = isset( self::$progress_dry_skips[ $id ] ) ? count( array_unique( self::$progress_dry_skips[ $id ] ) ) : 0;
+				continue;
+			}
+			$skipped                       = get_post_meta( $id, '_wdp_progress_unconverted_orders', true );
+			$results[ $id ]['unconverted'] = is_array( $skipped ) ? count( $skipped ) : 0;
 
-		self::update_product_donation_total( $product_id, $result['total'], true );
-		self::set_product_donor_count( $product_id, $result['donors'] );
-
-		return $result;
+			self::update_product_donation_total( $id, $results[ $id ]['total'], true );
+			self::set_product_donor_count( $id, $results[ $id ]['donors'] );
+		}
 	}
 
 	/**
