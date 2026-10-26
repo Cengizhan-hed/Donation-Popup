@@ -2,7 +2,7 @@
 /**
  * verify:plugin-check — WordPress Plugin Check çalıştırır; baseline'da OLMAYAN yeni bulgu → kırmızı.
  * Baseline: tools/lint-baseline/baseline-plugin-check.json (dosya|kaynak|ileti başına SAYI; satır numarası yok,
- * böylece satır kayması yanlış alarm üretmez). Yerel WP / ağ yoksa plugin-check atlar → uyarı, yeşil.
+ * böylece satır kayması yanlış alarm üretmez). Plugin Check ZORUNLU: wp-cli/yerel WP yoksa ya da çalışmazsa kırmızı (atlama yok).
  *   node scripts/plugin-check-gate.mjs                  kapı
  *   node scripts/plugin-check-gate.mjs --write-baseline mevcut bulguları taban yap
  *   node scripts/plugin-check-gate.mjs --no-run         build/lint/plugin-check.json'u yeniden çalıştırmadan kullan
@@ -27,9 +27,10 @@ if (!args.has('--no-run')) {
 }
 
 const report = JSON.parse(fs.readFileSync(REPORT, 'utf8'));
-if (report.skipped) {
-  console.log(`verify:plugin-check atlandı (uyarı): ${report.reason}`);
-  process.exit(0);
+if (report.skipped || report.failed) {
+  console.error(`verify:plugin-check KIRMIZI: Plugin Check çalışmadı (zorunlu): ${report.reason}`);
+  console.error('Kurulum: node scripts/install-lint-tools.mjs');
+  process.exit(1);
 }
 
 const norm = (s) => String(s).replace(/\s+/g, ' ').trim();

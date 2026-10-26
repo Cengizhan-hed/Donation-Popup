@@ -1,11 +1,7 @@
 {
  "tool": "plugin-check",
- "total": 384,
+ "total": 383,
  "entries": [
-  {
-   "key": ".cursorignore|hidden_files|Hidden files are not permitted.",
-   "count": 1
-  },
   {
    "key": "includes/bootstrap/class-legacy-frontend.php|WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound|Functions declared in the global namespace by a theme/plugin should start with the theme/plugin prefix. Found: &quot;wdp_render_donation_form&quot;.",
    "count": 1
@@ -815,7 +811,7 @@
    "count": 1
   },
   {
-   "key": "languages/.gitkeep|hidden_files|Hidden files are not permitted.",
+   "key": "src/Modules/EntryPoints/Elementor/class-donations-list-widget.php|WordPressVIPMinimum.Performance.WPQueryParams.PostNotIn_exclude|Using exclusionary parameters, like exclude, in calls to get_posts() should be done with caution, see https://docs.wpvip.com/databases/optimize-queries/using-post__not_in/ for more information.",
    "count": 1
   },
   {
@@ -836,10 +832,6 @@
   },
   {
    "key": "woo-donation-popup.php|WordPress.PHP.DevelopmentFunctions.error_log_error_log|error_log() found. Debug code should not normally be used in production.",
-   "count": 1
-  },
-  {
-   "key": "src/Modules/EntryPoints/Elementor/class-donations-list-widget.php|WordPressVIPMinimum.Performance.WPQueryParams.PostNotIn_exclude|Using exclusionary parameters, like exclude, in calls to get_posts() should be done with caution, see https://docs.wpvip.com/databases/optimize-queries/using-post__not_in/ for more information.",
    "count": 1
   }
  ]

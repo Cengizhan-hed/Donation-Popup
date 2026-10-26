@@ -601,5 +601,43 @@ export function materializeWorker(configId, port, snapshotFile, opts = {}) {
   }
   // Yerel profil dili (varsayılan tr_TR = Hedef eşdeğeri): çeviri paketi yok, yalnız eklenti metinleri; mu-plugin kilidi.
   writeLocaleLock(destWp, opts.locale || process.env.WDP_LOCAL_WP_LOCALE || 'tr_TR');
+  ensureWcPlaceholderUploads(destWp);
   return destWp;
+}
+
+/**
+ * WooCommerce 11 ürün yer tutucu görselini uploads altında üretilmiş dosya olarak bekler; taze (worktree) WP'de bu
+ * dosyalar yok → kırık görsel, sayfa yüksekliği ve ekran farkı. Eklenti dosyasından deterministik kopya (görsel fixture).
+ * @param {string} wpDir
+ */
+function ensureWcPlaceholderUploads(wpDir) {
+  const imgDir = path.join(wpDir, 'wp-content/plugins/woocommerce/assets/images');
+  const src = ['placeholder.webp', 'placeholder.png']
+    .map((n) => path.join(imgDir, n))
+    .find((f) => fs.existsSync(f));
+  if (!src) return;
+  const ext = path.extname(src);
+  const uploads = path.join(wpDir, 'wp-content/uploads');
+  fs.mkdirSync(uploads, { recursive: true });
+  // WC üretilmiş dosyaları kare ve bu boyutlarda: 1200 (orijinal), 1024, 768, 300, 150. PHP GD ile ölçekle (yoksa kopya).
+  const sizes = { '': 1200, '-1024x1024': 1024, '-768x768': 768, '-300x300': 300, '-150x150': 150 };
+  for (const [suffix, px] of Object.entries(sizes)) {
+    const dest = path.join(uploads, `woocommerce-placeholder${suffix}${ext}`);
+    if (fs.existsSync(dest)) continue;
+    const gd = ext === '.webp'
+      ? spawnSync(
+          'php',
+          [
+            '-r',
+            'if(!function_exists("imagecreatefromwebp"))exit(2);$i=imagecreatefromwebp($argv[1]);if(!$i)exit(3);' +
+              '$o=imagescale($i,(int)$argv[3],(int)$argv[3],IMG_BICUBIC);imagewebp($o,$argv[2],82);',
+            src,
+            dest,
+            String(px),
+          ],
+          { encoding: 'utf8' }
+        )
+      : { status: 1 };
+    if (gd.status !== 0 || !fs.existsSync(dest)) fs.copyFileSync(src, dest);
+  }
 }
