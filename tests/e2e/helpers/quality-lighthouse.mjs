@@ -34,12 +34,20 @@ export async function runLighthouse(w, qcfg, opts = {}) {
   try {
     const page = ctx.pages()[0] || (await ctx.newPage());
     const cdp = await ctx.newCDPSession(page);
-    await page.request.get(`${base}/?dp_q_add=${qcfg.ids.custom}&amount=${qcfg.store.amount || 50}`);
+    // E8W: ürün ve mağaza ilk ziyaretçi gibi BOŞ sepetle ölçülür. Sepet doluyken ürün sayfasında WooCommerce mini-sepet
+    // blok varlıkları (~1 MB) yüklenir; eklentisiz kontrolde de sepet kalamaz (bağış ürünü eklenti pasifken geçersiz sayılıp
+    // sepetten düşer), bu yüzden karşılaştırma yanıltır. Sepetli ürün sayfası ve ödeme bağış sepetiyle ayrıca ölçülür;
+    // sepetli ürün için kontrol: eklentinin tüm varlıkları çıkarılmış aynı sayfa.
+    const addToCart = () => page.request.get(`${base}/?dp_q_add=${qcfg.ids.custom}&amount=${qcfg.store.amount || 50}`);
+    // Ödeme de sepetli: eklentisiz kontrol sepeti boşaltacağından kontrol de eklenti varlıkları çıkarılmış sayfadır.
+    const only = (process.env.WDP_Q_PAGES || '').split(',').filter(Boolean);
     const targets = [
       { page: 'urun', path: qcfg.ids.fixedPath },
-      { page: 'odeme', path: new URL(qcfg.checkoutUrl).pathname },
       { page: 'magaza', path: '/shop/' },
-    ];
+      { page: 'urun-sepetli', path: qcfg.ids.fixedPath, cart: true, controlQuery: 'dp_q_strip=all' },
+      { page: 'odeme', path: new URL(qcfg.checkoutUrl).pathname, cart: true, controlQuery: 'dp_q_strip=all' },
+    ].filter((t) => !only.length || only.includes(t.page));
+    let cartAdded = false;
     const RUNS = Number(process.env.WDP_Q_LH_RUNS || 3) || 3;
     const median = (arr) => [...arr].sort((x, y) => x - y)[Math.floor(arr.length / 2)];
     /** Her sayfa RUNS kez ölçülür; skorlar/metrikler medyan (Lighthouse koşular arası oynaklığı yüksek). */
@@ -83,8 +91,12 @@ export async function runLighthouse(w, qcfg, opts = {}) {
       };
     };
     for (const t of targets) {
+      if (t.cart && !cartAdded) {
+        await addToCart();
+        cartAdded = true;
+      }
       const m = await measure(t.path);
-      const control = await measure(`${t.path}${t.path.includes('?') ? '&' : '?'}dp_q_off=1`);
+      const control = await measure(`${t.path}${t.path.includes('?') ? '&' : '?'}${t.controlQuery || 'dp_q_off=1'}`);
       const meetsAbs = m.perf >= LH_MIN.performance;
       // Ortam sınırı: eklentisiz aynı sayfa da eşiğin altındaysa ve eklenti kaynaklı kayıp (taban - ölçüm) <= 3 puansa ortam sınırlı sayılır.
       const envLimited = !meetsAbs && control.perf < LH_MIN.performance && control.perf - m.perf <= 3;

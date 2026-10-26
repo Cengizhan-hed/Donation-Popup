@@ -21,6 +21,11 @@ if ( ! empty( $wdp_q_state['nodefer'] ) ) {
 	add_filter( 'wdp_defer_frontend_assets', '__return_false' );
 }
 
+// E8W: "nosplit": true -> istemci verisi (ülke listesi + sözlük) satır içi (önce/sonra ölçümü için eski davranış).
+if ( ! empty( $wdp_q_state['nosplit'] ) ) {
+	add_filter( 'wdp_split_client_data', '__return_false' );
+}
+
 if ( ! array_key_exists( 'override', $wdp_q_state ) || $wdp_q_state['override'] ) {
 	add_filter(
 		'pre_option_donation_panel_settings',
@@ -73,7 +78,7 @@ if ( isset( $_GET['dp_q_strip'] ) ) { // phpcs:ignore
 					if ( ! $ours ) {
 						continue;
 					}
-					if ( ( 'css' === $what && $is_css ) || ( 'js' === $what && ! $is_css ) || ( 'side' === $what && false !== strpos( $h, 'side' ) ) ) {
+					if ( ( in_array( $what, array( 'css', 'all' ), true ) && $is_css ) || ( in_array( $what, array( 'js', 'all' ), true ) && ! $is_css ) || ( 'side' === $what && false !== strpos( $h, 'side' ) ) ) {
 						wp_dequeue_style( $h );
 						wp_dequeue_script( $h );
 					}
@@ -81,6 +86,31 @@ if ( isset( $_GET['dp_q_strip'] ) ) { // phpcs:ignore
 			}
 		},
 		99999
+	);
+}
+
+// Teşhis (E8W, yalnız yerel ölçüm): `?dp_q_html=json|form|css|all` yanıt HTML'inden eklentinin satır içi parçasını çıkarır (HTML yükü maliyeti ölçümü).
+if ( isset( $_GET['dp_q_html'] ) ) { // phpcs:ignore
+	add_action(
+		'template_redirect',
+		static function () {
+			$what = sanitize_key( (string) $_GET['dp_q_html'] ); // phpcs:ignore
+			ob_start(
+				static function ( $html ) use ( $what ) {
+					if ( in_array( $what, array( 'json', 'all' ), true ) ) {
+						$html = preg_replace( '#<script[^>]*>[^<]*var wdp_ajax = .*?</script>#s', '', $html );
+					}
+					if ( in_array( $what, array( 'form', 'all' ), true ) ) {
+						$html = preg_replace( '#<div class="wdp-product-page-entry">.*?</form>\s*</div>\s*</div>#s', '', $html );
+					}
+					if ( in_array( $what, array( 'css', 'all' ), true ) ) {
+						$html = preg_replace( '#<style[^>]*>\s*:root, \.hdf-donation-modal-wrapper.*?</style>#s', '', $html );
+					}
+					return $html;
+				}
+			);
+		},
+		0
 	);
 }
 

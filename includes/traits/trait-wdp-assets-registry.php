@@ -191,6 +191,11 @@ trait WDP_Assets_Registry_Trait {
 				self::register_cta_ready_script( $plugin_url, $js_module_version );
 				$bundle_deps   = is_array( $dependencies ) ? $dependencies : array( 'jquery' );
 				$bundle_deps[] = 'wdp-form-cta-ready-js';
+				// E8W: telefon ülke listesi + çeviri sözlüğü sayfa HTML'ine gömülmez; paketten önce çalışan ayrı betik.
+				if ( class_exists( 'WDP_Client_Data' ) && WDP_Client_Data::is_enabled() ) {
+					wp_register_script( WDP_Client_Data::HANDLE, WDP_Client_Data::url(), array( 'wdp-form-cta-ready-js' ), null, true ); // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion -- sürüm adresin içinde (ver=).
+					$bundle_deps[] = WDP_Client_Data::HANDLE;
+				}
 				wp_register_script(
 					self::FRONTEND_JS_HANDLE,
 					$plugin_url . 'assets/js/' . $built_js['file'],
@@ -332,93 +337,101 @@ trait WDP_Assets_Registry_Trait {
 				'symbolPosition'    => function_exists( 'get_option' ) ? (string) get_option( 'woocommerce_currency_pos', 'left' ) : 'left',
 			);
 
-		$localize_handle = 'wdp-utils-js';
+		$localize_handle   = 'wdp-utils-js';
+		$split_client_data = false;
 		if ( wp_script_is( self::FRONTEND_JS_HANDLE, 'registered' ) ) {
 			$localize_handle = self::FRONTEND_JS_HANDLE;
+			// E8W: ayrı istemci verisi betiği varsa `wdp_ajax` ondan ÖNCE (cta-ready'nin satır içi verisi olarak) tanımlanır.
+			if ( class_exists( 'WDP_Client_Data' ) && wp_script_is( WDP_Client_Data::HANDLE, 'registered' ) ) {
+				$localize_handle   = 'wdp-form-cta-ready-js';
+				$split_client_data = true;
+			}
 		}
 
 		// @phpstan-ignore nullCoalesce.offset (settings array may be filtered)
 		$client_context = self::client_context( (string) ( $currency_settings['code'] ?? '' ) );
 
-		wp_localize_script(
-			$localize_handle,
-			'wdp_ajax',
-			array(
-				'ajax_url'          => admin_url( 'admin-ajax.php' ),
-				'nonces'            => array(
-					'ajax_add_to_cart'  => wp_create_nonce( 'wdp_ajax_add_to_cart' ),
-					'get_product_info'  => wp_create_nonce( 'wdp_get_product_info' ),
-					// Deprecated: use get_product_info. Kept for third-party callers.
-					'get_product_name'  => wp_create_nonce( 'wdp_get_product_name' ),
-					'get_cart_count'    => wp_create_nonce( 'wdp_get_cart_count' ),
-					'get_cart_contents' => wp_create_nonce( 'wdp_get_cart_contents' ),
-					'remove_cart_item'  => wp_create_nonce( 'wdp_remove_cart_item' ),
-					'render_modal'      => wp_create_nonce( 'wdp_render_modal' ),
-				),
-				'nonce'             => wp_create_nonce( 'wdp_ajax_add_to_cart' ),
-				'checkout_url'      => function_exists( 'wc_get_checkout_url' ) ? wc_get_checkout_url() : '',
-				'cart_url'          => function_exists( 'wc_get_cart_url' ) ? wc_get_cart_url() : '',
-				'version'           => WDP_VERSION,
-				'debug'             => defined( 'WP_DEBUG' ) && WP_DEBUG,
-				'currency'          => $currency_settings,
-				'context'           => $client_context,
-				// Lazy modal: boşta ön yükleme üst sınırı (görünür ilk N; eşzamanlı 1). 0 = kapalı.
-				'lazy'              => array(
-					'idle_prefetch' => max( 0, min( 12, (int) apply_filters( 'wdp_lazy_idle_prefetch', 3 ) ) ),
-				),
-				'strings'           => array(
-					'loading'                        => __( 'Loading...', 'woo-donation-popup' ),
-					'error'                          => __( 'An error occurred', 'woo-donation-popup' ),
-					'success'                        => __( 'Success', 'woo-donation-popup' ),
-					'required_field'                 => __( 'This field is required', 'woo-donation-popup' ),
-					'invalid_price'                  => __( 'Invalid price', 'woo-donation-popup' ),
-					'amount_ambiguous_integer'       => __( 'This site does not accept amounts with decimals, e.g. %s', 'woo-donation-popup' ),
-					'amount_no_fraction'             => __( 'This site does not accept amounts with decimals, e.g. %s', 'woo-donation-popup' ),
-					'amount_ambiguous_format'        => __( 'Please enter the amount in this format, e.g. %s', 'woo-donation-popup' ),
-					'min_price_error'                => __( 'Minimum price: ', 'woo-donation-popup' ),
-					'max_shares_error'               => __( 'Maximum number of shares: ', 'woo-donation-popup' ),
-					'custom_price_placeholder_empty' => __( 'Donation amount *', 'woo-donation-popup' ),
-					'custom_price_label'             => __( 'Donation amount', 'woo-donation-popup' ),
-					'sadaka_toggle_label'            => class_exists( 'WDP_Utils' ) ? WDP_Utils::get_addon_toggle_label() : __( 'Add add-on donation', 'woo-donation-popup' ),
-					'sadaka_price_label'             => __( 'Add-on donation amount', 'woo-donation-popup' ),
-					'sadaka_invalid'                 => __( 'Please enter a valid add-on donation amount.', 'woo-donation-popup' ),
-					'sadaka_min_error'               => __( 'Minimum add-on donation amount: ', 'woo-donation-popup' ),
-					'phone_invalid'                  => __( 'Please enter a valid phone number.', 'woo-donation-popup' ),
-					'phone_required'                 => __( 'Phone number is missing.', 'woo-donation-popup' ),
-					'phone_incomplete'               => __( 'Please enter your complete phone number.', 'woo-donation-popup' ),
-					'donor_name_required'            => __( 'Full name is required.', 'woo-donation-popup' ),
-					'invalid_email'                  => __( 'Please enter a valid email address.', 'woo-donation-popup' ),
-					'shareholder_name_required'      => __( 'Shareholder name is required.', 'woo-donation-popup' ),
-					'shareholder_issue_name'         => __( 'full name field is missing', 'woo-donation-popup' ),
-					'shareholder_issue_phone'        => __( 'please enter your complete phone number', 'woo-donation-popup' ),
-					'phone_search_placeholder'       => __( 'Search', 'woo-donation-popup' ),
-					'added_to_cart'                  => __( 'Your donation was added to the cart', 'woo-donation-popup' ),
-				),
-				'phone'             => array(
+		$ajax_data = array(
+			'ajax_url'          => admin_url( 'admin-ajax.php' ),
+			'nonces'            => array(
+				'ajax_add_to_cart'  => wp_create_nonce( 'wdp_ajax_add_to_cart' ),
+				'get_product_info'  => wp_create_nonce( 'wdp_get_product_info' ),
+				// Deprecated: use get_product_info. Kept for third-party callers.
+				'get_product_name'  => wp_create_nonce( 'wdp_get_product_name' ),
+				'get_cart_count'    => wp_create_nonce( 'wdp_get_cart_count' ),
+				'get_cart_contents' => wp_create_nonce( 'wdp_get_cart_contents' ),
+				'remove_cart_item'  => wp_create_nonce( 'wdp_remove_cart_item' ),
+				'render_modal'      => wp_create_nonce( 'wdp_render_modal' ),
+			),
+			'nonce'             => wp_create_nonce( 'wdp_ajax_add_to_cart' ),
+			'checkout_url'      => function_exists( 'wc_get_checkout_url' ) ? wc_get_checkout_url() : '',
+			'cart_url'          => function_exists( 'wc_get_cart_url' ) ? wc_get_cart_url() : '',
+			'version'           => WDP_VERSION,
+			'debug'             => defined( 'WP_DEBUG' ) && WP_DEBUG,
+			'currency'          => $currency_settings,
+			'context'           => $client_context,
+			// Lazy modal: boşta ön yükleme üst sınırı (görünür ilk N; eşzamanlı 1). 0 = kapalı.
+			'lazy'              => array(
+				'idle_prefetch' => max( 0, min( 12, (int) apply_filters( 'wdp_lazy_idle_prefetch', 3 ) ) ),
+			),
+			'strings'           => array(
+				'loading'                        => __( 'Loading...', 'woo-donation-popup' ),
+				'error'                          => __( 'An error occurred', 'woo-donation-popup' ),
+				'success'                        => __( 'Success', 'woo-donation-popup' ),
+				'required_field'                 => __( 'This field is required', 'woo-donation-popup' ),
+				'invalid_price'                  => __( 'Invalid price', 'woo-donation-popup' ),
+				'amount_ambiguous_integer'       => __( 'This site does not accept amounts with decimals, e.g. %s', 'woo-donation-popup' ),
+				'amount_no_fraction'             => __( 'This site does not accept amounts with decimals, e.g. %s', 'woo-donation-popup' ),
+				'amount_ambiguous_format'        => __( 'Please enter the amount in this format, e.g. %s', 'woo-donation-popup' ),
+				'min_price_error'                => __( 'Minimum price: ', 'woo-donation-popup' ),
+				'max_shares_error'               => __( 'Maximum number of shares: ', 'woo-donation-popup' ),
+				'custom_price_placeholder_empty' => __( 'Donation amount *', 'woo-donation-popup' ),
+				'custom_price_label'             => __( 'Donation amount', 'woo-donation-popup' ),
+				'sadaka_toggle_label'            => class_exists( 'WDP_Utils' ) ? WDP_Utils::get_addon_toggle_label() : __( 'Add add-on donation', 'woo-donation-popup' ),
+				'sadaka_price_label'             => __( 'Add-on donation amount', 'woo-donation-popup' ),
+				'sadaka_invalid'                 => __( 'Please enter a valid add-on donation amount.', 'woo-donation-popup' ),
+				'sadaka_min_error'               => __( 'Minimum add-on donation amount: ', 'woo-donation-popup' ),
+				'phone_invalid'                  => __( 'Please enter a valid phone number.', 'woo-donation-popup' ),
+				'phone_required'                 => __( 'Phone number is missing.', 'woo-donation-popup' ),
+				'phone_incomplete'               => __( 'Please enter your complete phone number.', 'woo-donation-popup' ),
+				'donor_name_required'            => __( 'Full name is required.', 'woo-donation-popup' ),
+				'invalid_email'                  => __( 'Please enter a valid email address.', 'woo-donation-popup' ),
+				'shareholder_name_required'      => __( 'Shareholder name is required.', 'woo-donation-popup' ),
+				'shareholder_issue_name'         => __( 'full name field is missing', 'woo-donation-popup' ),
+				'shareholder_issue_phone'        => __( 'please enter your complete phone number', 'woo-donation-popup' ),
+				'phone_search_placeholder'       => __( 'Search', 'woo-donation-popup' ),
+				'added_to_cart'                  => __( 'Your donation was added to the cart', 'woo-donation-popup' ),
+			),
+			'phone'             => $split_client_data
+				? array( 'default_country' => class_exists( 'WDP_Phone_Field' ) ? WDP_Phone_Field::get_default_country_iso() : '' )
+				: array(
 					'default_country' => class_exists( 'WDP_Phone_Field' ) ? WDP_Phone_Field::get_default_country_iso() : '',
 					'countries'       => class_exists( 'WDP_Phone_Field' ) ? WDP_Phone_Field::get_countries_for_js() : array(),
 				),
-				'button_texts'      => self::get_button_texts(),
-				'button_icons'      => self::get_button_icons(),
-				'shareholder_texts' => self::get_shareholder_texts(),
-				'flags'             => array(
-					// Disabled by default to avoid theme-wide side cart visibility overrides.
-					'side_cart_recovery'       => (bool) apply_filters( 'wdp_enable_side_cart_recovery', false ),
-					// Sepete ekleme sonrası location.reload yok (fragment başarısız olsa da).
-					'reload_after_add_to_cart' => (bool) apply_filters( 'wdp_reload_after_add_to_cart', false ),
-					'multi_step'               => ( function () {
-						$bs = get_option( 'wdp_button_settings', array() );
-						return ! empty( $bs['enable_multi_step'] ) && (string) $bs['enable_multi_step'] === '1';
-					} )(),
-				),
-				'i18n_dict'         => class_exists( 'WDP_Js_I18n' ) ? WDP_Js_I18n::dictionary() : array(),
-				'validation'        => array(
-					'phone_min_digits'            => 10,
-					'shareholder_name_min_length' => 2,
-					'donor_name_min_length'       => 2,
-				),
-			)
+			'button_texts'      => self::get_button_texts(),
+			'button_icons'      => self::get_button_icons(),
+			'shareholder_texts' => self::get_shareholder_texts(),
+			'flags'             => array(
+				// Disabled by default to avoid theme-wide side cart visibility overrides.
+				'side_cart_recovery'       => (bool) apply_filters( 'wdp_enable_side_cart_recovery', false ),
+				// Sepete ekleme sonrası location.reload yok (fragment başarısız olsa da).
+				'reload_after_add_to_cart' => (bool) apply_filters( 'wdp_reload_after_add_to_cart', false ),
+				'multi_step'               => ( function () {
+					$bs = get_option( 'wdp_button_settings', array() );
+					return ! empty( $bs['enable_multi_step'] ) && (string) $bs['enable_multi_step'] === '1';
+				} )(),
+			),
+			'i18n_dict'         => ( ! $split_client_data && class_exists( 'WDP_Js_I18n' ) ) ? WDP_Js_I18n::dictionary() : array(),
+			'validation'        => array(
+				'phone_min_digits'            => 10,
+				'shareholder_name_min_length' => 2,
+				'donor_name_min_length'       => 2,
+			),
 		);
+		if ( $split_client_data ) {
+			unset( $ajax_data['i18n_dict'] ); // Sözlük ayrı betikle (WDP_Client_Data) gelir.
+		}
+		wp_localize_script( $localize_handle, 'wdp_ajax', $ajax_data );
 		self::$frontend_data_localized = true;
 	}
 	/**
