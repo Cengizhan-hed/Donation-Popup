@@ -78,6 +78,8 @@ design/
 /build/
 .cursor*
 .claude*
+# E8X: changelog readme.txt icinde; CHANGELOG.md pakete girmez.
+CHANGELOG.md
 .last-run.json
 .env*
 .phpunit.cache/

@@ -60,6 +60,7 @@ function checkEntries(entries) {
       bad.push(`gelistirme dosyasi: ${f}`);
     }
     if (f.startsWith('assets/src/')) bad.push(`kaynak: ${f}`);
+    if (/(^|\/)CHANGELOG\.md$/i.test(f)) bad.push(`changelog (readme.txt yeterli): ${f}`);
   }
   assert.deepEqual(bad, []);
   return files;

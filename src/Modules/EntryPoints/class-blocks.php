@@ -22,7 +22,7 @@ class Blocks {
 			return;
 		}
 		$version = isset( $GLOBALS['wp_version'] ) ? (string) $GLOBALS['wp_version'] : '0';
-		if ( '0' !== $version && version_compare( $version, '5.8', '<' ) ) {
+		if ( '0' !== $version && version_compare( $version, '6.3', '<' ) ) {
 			return;
 		}
 		add_action( 'init', array( __CLASS__, 'register' ) );
