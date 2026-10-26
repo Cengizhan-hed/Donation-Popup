@@ -36,6 +36,7 @@ RSYNC_ARGS=(-a)
 DEFAULT_EXCLUDES=(
   "node_modules/"
   ".git/"
+  ".git"
   ".claude/"
   "CLAUDE.md"
   ".cursor/"

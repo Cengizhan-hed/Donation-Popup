@@ -3,6 +3,10 @@
 
 node_modules/
 .git/
+.git
+.cursorignore
+phpstan-src.neon
+phpcs-src.xml.dist
 .claude/
 CLAUDE.md
 .cursor/
@@ -62,3 +66,4 @@ design/
 
 # Faz 7: modern JS kaynagi pakete girmez; derleme ciktisi assets/build/ girer.
 /assets/src/
+.gitkeep
