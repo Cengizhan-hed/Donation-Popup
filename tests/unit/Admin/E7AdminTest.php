@@ -118,7 +118,9 @@ final class E7AdminTest extends TestCase {
 	public function test_legacy_ui_loads_no_admin_file(): void {
 		WDP_Test_State::$is_admin = true;
 		Plugin::boot()->on_plugins_loaded();
-		$this->assertSame(array(), self::admin_files_loaded());
+		// E8Q: yalniz kucuk gecis sinifi yuklenir; yeni ekran dosyalari yuklenmez.
+		$loaded = array_map('basename', self::admin_files_loaded());
+		$this->assertSame(array( 'class-ui-switch.php' ), $loaded);
 		$this->assertArrayNotHasKey('admin_menu', WDP_Test_State::$actions);
 	}
 

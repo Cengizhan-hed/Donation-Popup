@@ -256,6 +256,61 @@ test('yetki ve nonce: abone erişemez, nonce yoksa yazılmaz', async ({ page }) 
   expect((await state(page)).settings).toEqual(before.settings);
 });
 
+const CLASSIC = '/wp-admin/admin.php?page=wdp-popup-settings';
+
+test('E8Q geçiş: eski ekranda kutu → "yeni ekranı aç" (POST) → yeni ekran → "klasik ekrana dön" → eski ekran; yalnız admin.ui değişir; axe 0', async ({ page }) => {
+  await reset(page, 'legacy');
+  await page.goto(CLASSIC); // ilk yönetim isteği (eklenti göçleri) bitsin; karşılaştırma bundan sonra.
+  const before = await state(page);
+  await page.goto(CLASSIC);
+  const box = page.locator('.wdp-ui-switch');
+  await expect(box).toBeVisible();
+  await expect(box).toContainText(/Donation Panel|Bağış Paneli/);
+  expect(await box.locator('a').count(), 'geçiş GET bağlantısı olmamalı').toBe(0);
+  expect(await axe(page, '.wdp-ui-switch')).toEqual([]);
+  await noOverflow(page);
+
+  await box.locator('button.button-primary').click();
+  await page.waitForURL(/page=donation-panel/);
+  await expect(page.locator('#dpa-settings')).toBeVisible();
+  const mid = await state(page);
+  expect(mid.settings.admin.ui).toBe('new');
+  expect(mid.legacy, 'eski ayarlar değişmez').toEqual(before.legacy);
+  await expect(page.locator('#dpa-back-classic')).toBeVisible();
+  expect(await axe(page)).toEqual([]);
+  await noOverflow(page);
+
+  await page.locator('#dpa-back-classic').click();
+  await page.waitForURL(/page=wdp-popup-settings/);
+  await expect(page.locator('.wdp-ui-switch')).toBeVisible();
+  const end = await state(page);
+  expect(end.settings.admin.ui).toBe('legacy');
+  expect(end.legacy).toEqual(before.legacy);
+  expect(end.products).toBe(before.products);
+});
+
+test('E8Q geçiş: kutu kapatılır (kullanıcı başına), yenilemede dönmez; nonce yoksa ekran değişmez; eklentiler listesi bağlantısı etkin ekrana gider', async ({ page }) => {
+  await reset(page, 'legacy');
+  await page.goto(CLASSIC);
+  await page.locator('.wdp-ui-switch button:not(.button-primary)').click();
+  await page.waitForURL(/page=wdp-popup-settings/);
+  await expect(page.locator('.wdp-ui-switch')).toHaveCount(0);
+  await page.reload();
+  await expect(page.locator('.wdp-ui-switch')).toHaveCount(0);
+  expect((await state(page)).settings.admin.ui).toBe('legacy');
+
+  const nonceless = await page.request.post('/wp-admin/admin-post.php', { form: { action: 'donation_panel_switch_ui', ui: 'new' }, maxRedirects: 0 });
+  expect([403, 400]).toContain(nonceless.status());
+  expect((await state(page)).settings.admin.ui).toBe('legacy');
+
+  await page.goto('/wp-admin/plugins.php');
+  const legacyLink = page.locator('tr[data-plugin$="woo-donation-popup.php"] .settings a[href*="page=wdp-popup-settings"]');
+  await expect(legacyLink).toHaveCount(1);
+  await reset(page, 'new');
+  await page.goto('/wp-admin/plugins.php');
+  await expect(page.locator('tr[data-plugin$="woo-donation-popup.php"] .settings a[href*="page=donation-panel"]')).toHaveCount(1);
+});
+
 test('erişilebilirlik (axe WCAG 2.2 AA): her sekme', async ({ page }) => {
   await page.goto(SETTINGS);
   for (const id of ['general', 'modules', 'details', 'advanced']) {

@@ -26,6 +26,9 @@ class WDP_Admin_Page_Renderer {
 	 */
 	public static function render_settings_page( $render_modal_layout_tab, $render_normal_form_tab, $render_shareholder_tab, $render_progress_bar_tab, $render_success_screen_tab, $render_design_studio_tab = null ) {
 		echo '<div class="wrap wdp-admin-wrap">';
+		if ( class_exists( '\\DonationPanel\\Admin\\Ui_Switch' ) ) {
+			\DonationPanel\Admin\Ui_Switch::render_legacy_notice();
+		}
 		echo '<header class="wdp-admin-hero">';
 		echo '<div class="wdp-admin-hero__accent" aria-hidden="true"></div>';
 		echo '<div class="wdp-admin-title-row">';

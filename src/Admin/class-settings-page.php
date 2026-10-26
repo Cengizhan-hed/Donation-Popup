@@ -213,6 +213,7 @@ final class Settings_Page {
 		echo '<p class="dpa-sub">' . esc_html__( 'A few clear settings. Every setting says what it does underneath.', 'woo-donation-popup' ) . '</p>';
 		settings_errors();
 		$this->render_wizard_prompt();
+		echo '<div class="dpa-card dpa-switchback">' . Ui_Switch::render_back_to_classic() . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Ui_Switch kaçışlı HTML döndürür.
 
 		echo '<form method="post" action="' . esc_url( admin_url( 'options.php' ) ) . '" class="dpa-form" data-dpa-form>';
 		settings_fields( self::OPTION_GROUP );
@@ -287,8 +288,8 @@ final class Settings_Page {
 				self::field( 'experiences', 'engine' ),
 				'dpa-engine',
 				array(
-					'legacy' => __( 'Classic form (will be removed in a future version)', 'woo-donation-popup' ),
-					'new'    => __( 'New form', 'woo-donation-popup' ),
+					'legacy' => __( 'Classic form engine (will be removed in 12.0)', 'woo-donation-popup' ),
+					'new'    => __( 'New form engine', 'woo-donation-popup' ),
 				),
 				$engine
 			),
@@ -407,7 +408,7 @@ final class Settings_Page {
 				'dpa-ui',
 				array(
 					'new'    => __( 'This simple screen', 'woo-donation-popup' ),
-					'legacy' => __( 'Classic screen (will be removed in a future version)', 'woo-donation-popup' ),
+					'legacy' => __( 'Classic screen (will be removed in 12.0)', 'woo-donation-popup' ),
 				),
 				'new'
 			),

@@ -61,6 +61,16 @@ if (!function_exists('wp_create_nonce')) {
 		return 'test-nonce';
 	}
 }
+if (!function_exists('get_user_meta')) {
+	function get_user_meta($user_id, $key = '', $single = false) {
+		return '';
+	}
+}
+if (!function_exists('get_current_user_id')) {
+	function get_current_user_id() {
+		return 1;
+	}
+}
 if (!function_exists('disabled')) {
 	function disabled($disabled, $current = true, $echo = true) {
 		$result = ((string) $disabled === (string) $current) ? ' disabled="disabled"' : '';
