@@ -225,3 +225,13 @@ Faz 1 güvenli bağlantı ✅ → Faz 2 göç provası ✅ → Faz 3 bekleyen i�
 Her araçta kurmadan önce: resmi kaynak mı, son sürüm ≥2 haftalık mı, kurulum betiği dışarı veri gönderiyor mu; şüpheliyse kurma, raporla.
 - **Karar (2026-10-26):** ui-ux-pro-max KURULMAYACAK; frontend-design + `design/` sözleşmesiyle devam. **Soru sorma kuralı:** bir koşul açıkça sağlanmıyorsa ve net bir öneri varsa kullanıcıya SORULMAZ; öneri uygulanır, rapora yazılır.
 - **Karar (2026-10-26, 11.0.0):** yükseltilen kurulumlarda yeni motor/yönetici varsayılanı 11.0.0'da AÇILMAZ (`wdp_upgrade_new_default` kapalı); eski deneyim kalır, yeni deneyim ayardan denenir. Gerekçe: Lighthouse ürün sayfası performansı ≥90 sağlanmadı (sayfa HTML'i/`wdp_ajax` yükü), Hedef canlıda gerçek bağış var; canlı doğrulama sonrası 11.1'de varsayılan yapılır. Yeni kurulumda yeni deneyim varsayılan. Eski motor 12.0'da kaldırılır. Vergi indirimi beyanı yalnız yeni motorda (eski modalda yok; eski motor kaldırılacağı için eklenmeyecek).
+
+## 23. HIZ — KALİTEDEN ÖDÜN VERMEDEN (2026-10-26; kalıcı; kalite kapıları, test kapsamı, merge kriterleri aynen kalır; §18'deki "4 ajan" bu bölümle 6 olur)
+1. Worktree hazırlığı: node_modules, vendor, vendor-dev ve gerekli gitignore'lu test dosyaları (`__baseline__` dahil) APFS klon kopyasıyla (`cp -c -R`; klon desteklenmiyorsa normal kopya); npm/composer kurulumu yalnız lock dosyası değiştiyse. Sembolik bağ yok. Kazanılan süre ölçülür.
+2. Etkilenen testler: değişen dosyalardan etkilenen PHPUnit/JS/e2e testlerini bulan betik (Graphify bağımlılık haritası + dosya-test eşlemesi). Ajanlar çalışırken yalnız bunları koşar; tam paket ve tam matris merge kapısında aynen koşar.
+3. Test kuyruğu: kod yazma paralel (≤6 ajan), ama Playwright koşuları tek kuyruktan: aynı anda ≤1 Playwright süreci, kendi içinde worker paralelliği (bellek izin verdiği kadar; takas yükselirse worker otomatik düşer).
+4. WordPress Playground: E8T'de denendi ve reddedildi (aynı hücre: mevcut yöntem 40 sn 11/11 geçti; Playground 97–118 sn, 0–2/11; PHP 8.4'te sunucu açılmadı, 8.3/8.2'de Store API isteğinde süreç çıktı; 594 MB). Playground yeni sürümlerinde yeniden denenir (sürüm ≥2 hafta).
+5. Bekleme: bitiş bildirimine tepki; yoklama aralığı ≤1 dk; boşta kalınmaz: sıradaki parça tarifi hazırlanır ya da biten parça incelenir.
+6. Dosya sahipliği: her görev tarifi paralel ajanın dokunabileceği dosyaları listeler; paylaşılan dosyalar (languages, modül kaydı, package.json, docs) yalnız birleştirmede betikle güncellenir.
+7. Paralellik ≤6 ajan; her ajan başlamadan önce boş disk ≥20 GB ve boş bellek kontrolü (`npm run resource:gate`); yetersizse yeni ajan bekler.
+8. Ölçüm: her AŞAMA ÖZETİ'nde duvar saati dağılımı (kod, test, birleştirme, bekleme) ve önceki aşamaya göre değişim.
