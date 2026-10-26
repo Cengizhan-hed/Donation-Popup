@@ -105,6 +105,5 @@ final class Progress_Data {
 	 */
 	private static function display_amount( $amount ) {
 		return (float) Progress_Currency::from_store_amount( $amount );
-		return (float) $amount;
 	}
 }

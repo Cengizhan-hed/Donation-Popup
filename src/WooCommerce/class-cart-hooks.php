@@ -178,7 +178,7 @@ class Cart_Hooks {
 		}
 		$product = function_exists( 'wc_get_product' ) ? wc_get_product( $product_id ) : null;
 		$flag    = ( $product && is_object( $product ) ) ? Donation_Scope::product_flag( $product ) : '';
-		if ( $flag === 'yes' ) {
+		if ( 'yes' === $flag ) {
 			return true;
 		}
 		return Placement_Settings::value( 'auto_place' ) === 'yes';
@@ -267,6 +267,7 @@ class Cart_Hooks {
 					foreach ( $donation_data['shareholders'] as $key => $shareholder ) {
 						if ( ! empty( $shareholder['name'] ) ) {
 							$item_data[] = array(
+								/* translators: %d: shareholder number. */
 								'key'   => sprintf( __( 'Shareholder %d', 'woo-donation-popup' ), $key ),
 								'value' => $shareholder['name'] . ( ! empty( $shareholder['phone'] ) ? ' (' . $shareholder['phone'] . ')' : '' ),
 							);
@@ -274,13 +275,15 @@ class Cart_Hooks {
 
 						if ( ! empty( $shareholder['email'] ) ) {
 							$item_data[] = array(
+								/* translators: %d: shareholder number. */
 								'key'   => sprintf( __( 'Shareholder %d email', 'woo-donation-popup' ), $key ),
 								'value' => $shareholder['email'],
 							);
 						}
 
-						if ( isset( $shareholder['note'] ) && $shareholder['note'] !== '' ) {
+						if ( isset( $shareholder['note'] ) && '' !== $shareholder['note'] ) {
 							$item_data[] = array(
+								/* translators: %d: shareholder number. */
 								'key'   => sprintf( __( 'Shareholder %d note', 'woo-donation-popup' ), $key ),
 								'value' => $shareholder['note'],
 							);
@@ -317,7 +320,7 @@ class Cart_Hooks {
 					);
 				}
 
-				if ( isset( $donation_data['note'] ) && $donation_data['note'] !== '' ) {
+				if ( isset( $donation_data['note'] ) && '' !== $donation_data['note'] ) {
 					$item_data[] = array(
 						'key'   => __( 'Donation note', 'woo-donation-popup' ),
 						'value' => $donation_data['note'],
@@ -441,7 +444,7 @@ class Cart_Hooks {
 		 * @param float $min        Default 1.
 		 * @param int   $product_id Product ID.
 		 */
-		$global_min = (float) apply_filters( 'wdp_min_donation_amount', 1.0, absint( $product_id ) );
+		$global_min = (float) apply_filters( 'wdp_min_donation_amount', 1.0, absint( $product_id ) ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- geriye dönük uyumluluk sözleşmesi: eski wdp_ kanca adı değişmez.
 		if ( ! is_finite( $global_min ) || $global_min < 0 ) {
 			$global_min = 0.0;
 		}
@@ -742,17 +745,17 @@ class Cart_Hooks {
 	/**
 	 * CSS class for addon rows on cart/checkout tables.
 	 *
-	 * @param string $class        Classes.
+	 * @param string $classes      Classes.
 	 * @param array  $cart_item    Cart item.
 	 * @param string $cart_item_key Key.
 	 * @return string
 	 */
-	public static function filter_cart_item_css_class( $class, $cart_item, $cart_item_key ) {
+	public static function filter_cart_item_css_class( $classes, $cart_item, $cart_item_key ) {
 		unset( $cart_item_key );
 		if ( ! empty( $cart_item['wdp_sadaka_donation'] ) ) {
-			$class .= ' wdp-cart-line--addon';
+			$classes .= ' wdp-cart-line--addon';
 		}
-		return trim( $class );
+		return trim( $classes );
 	}
 
 	/**
@@ -818,7 +821,7 @@ class Cart_Hooks {
 		}
 
 		$image = $display_product->get_image(
-			apply_filters( 'wdp_sadaka_cart_thumbnail_size', 'woocommerce_thumbnail' ),
+			apply_filters( 'wdp_sadaka_cart_thumbnail_size', 'woocommerce_thumbnail' ), // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- geriye dönük uyumluluk sözleşmesi: eski wdp_ kanca adı değişmez.
 			array(
 				'class' => 'wdp-sadaka-cart-thumb',
 			)
@@ -901,6 +904,7 @@ class Cart_Hooks {
 	 * @return bool
 	 */
 	public static function prevent_share_items_quantity_update( $passed, $cart_item_key, $values, $quantity ) {
+		unset( $cart_item_key, $quantity );
 		if ( isset( $values['donation_data']['share_count'] ) && $values['donation_data']['share_count'] > 0 ) {
 			return false; // Prevent quantity update
 		}

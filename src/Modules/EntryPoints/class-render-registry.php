@@ -145,7 +145,7 @@ class Render_Registry {
 	 */
 	public static function claim_modal( $modal_id ) {
 		$modal_id = sanitize_html_class( (string) $modal_id );
-		if ( $modal_id === '' ) {
+		if ( '' === $modal_id ) {
 			return false;
 		}
 		if ( isset( self::$modals[ $modal_id ] ) ) {
@@ -164,7 +164,7 @@ class Render_Registry {
 	 */
 	public static function modal_id( $product_id, $mode = 'popup' ) {
 		$product_id = absint( $product_id );
-		return $mode === 'side_panel' ? ( 'wdp-side-panel-' . $product_id ) : ( 'wdp-modal-' . $product_id );
+		return 'side_panel' === $mode ? ( 'wdp-side-panel-' . $product_id ) : ( 'wdp-modal-' . $product_id );
 	}
 
 	/**

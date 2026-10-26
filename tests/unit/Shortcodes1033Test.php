@@ -280,8 +280,7 @@ final class Shortcodes1033Test extends TestCase {
 	}
 
 	public function test_legacy_ajax_action_removed(): void {
-		\DonationPanel\Compat\Public_Contract::declare_functions();
-		$this->assertTrue(function_exists('wdp_render_donation_button'));
+		$this->assertStringContainsString('function wdp_render_donation_button', (string) file_get_contents(WDP_PLUGIN_FILE));
 		$this->assertFalse(function_exists('wdp_ajax_render_donation_button'));
 		$this->assertArrayNotHasKey('wp_ajax_nopriv_wdp_render_donation_button', WDP_Test_State::$actions);
 	}

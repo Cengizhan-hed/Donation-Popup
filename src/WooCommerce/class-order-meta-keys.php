@@ -86,9 +86,13 @@ class Order_Meta_Keys {
 	 */
 	public static function shareholder_label_formats() {
 		return array(
+			/* translators: %d: shareholder number. */
 			'name'  => __( 'Shareholder %d name', 'woo-donation-popup' ),
+			/* translators: %d: shareholder number. */
 			'phone' => __( 'Shareholder %d phone', 'woo-donation-popup' ),
+			/* translators: %d: shareholder number. */
 			'email' => __( 'Shareholder %d email', 'woo-donation-popup' ),
+			/* translators: %d: shareholder number. */
 			'note'  => __( 'Shareholder %d note', 'woo-donation-popup' ),
 		);
 	}
@@ -100,7 +104,7 @@ class Order_Meta_Keys {
 	 * @return bool
 	 */
 	public static function is_fixed_key( $key ) {
-		if ( ! is_string( $key ) || $key === '' ) {
+		if ( ! is_string( $key ) || '' === $key ) {
 			return false;
 		}
 		$labels = self::labels();
@@ -135,7 +139,7 @@ class Order_Meta_Keys {
 	 * @return string|null Fixed key or null when unknown.
 	 */
 	public static function legacy_to_fixed_key( $legacy_key ) {
-		if ( ! is_string( $legacy_key ) || $legacy_key === '' ) {
+		if ( ! is_string( $legacy_key ) || '' === $legacy_key ) {
 			return null;
 		}
 		$legacy_key = trim( $legacy_key );
@@ -239,7 +243,7 @@ class Order_Meta_Keys {
 							$meta[ self::shareholder_key( $index, $field ) ] = $shareholder[ $field ];
 						}
 					}
-					if ( isset( $shareholder['note'] ) && $shareholder['note'] !== '' ) {
+					if ( isset( $shareholder['note'] ) && '' !== $shareholder['note'] ) {
 						$meta[ self::shareholder_key( $index, 'note' ) ] = $shareholder['note'];
 					}
 				}
@@ -254,7 +258,7 @@ class Order_Meta_Keys {
 		if ( ! empty( $donation_data['phone'] ) ) {
 			$meta[ self::DONOR_PHONE ] = $donation_data['phone'];
 		}
-		if ( isset( $donation_data['note'] ) && $donation_data['note'] !== '' ) {
+		if ( isset( $donation_data['note'] ) && '' !== $donation_data['note'] ) {
 			$meta[ self::DONATION_NOTE ] = $donation_data['note'];
 		}
 		if ( ! empty( $donation_data['email'] ) ) {

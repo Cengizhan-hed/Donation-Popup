@@ -163,7 +163,7 @@ class Uninstall {
 	 */
 	public static function should_delete_product_meta_key( $key ) {
 		$key = is_scalar( $key ) ? (string) $key : '';
-		if ( $key === '' || in_array( $key, self::protected_core_meta_keys(), true ) ) {
+		if ( '' === $key || in_array( $key, self::protected_core_meta_keys(), true ) ) {
 			return false;
 		}
 		if ( in_array( $key, self::product_meta_keys(), true ) ) {
@@ -257,7 +257,7 @@ class Uninstall {
 				INNER JOIN {$wpdb->posts} p ON p.ID = pm.post_id
 				WHERE p.post_type IN ('product', 'product_variation')
 				AND pm.meta_key IN ({$placeholders})";
-			$wpdb->query( $wpdb->prepare( $sql, $keys ) );
+			$wpdb->query( $wpdb->prepare( $sql, $keys ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- yer tutucu sayısı anahtar listesi uzunluğundan üretilir.
 		}
 
 		foreach ( self::product_meta_prefixes() as $prefix ) {

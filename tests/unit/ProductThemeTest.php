@@ -189,7 +189,7 @@ final class ProductThemeTest extends TestCase {
 	}
 
 	public function test_privacy_default_label_and_migration(): void {
-		$label = WDP_Donation_Optional_Fields::default_privacy_link_label();
+		$label = \DonationPanel\Domain\Privacy_Notice::default_link_label();
 		$this->assertSame('Kişisel verilerin işlenmesine ilişkin aydınlatma metni', $label);
 
 		WDP_Test_State::$options['wdp_button_settings'] = array(
@@ -197,9 +197,9 @@ final class ProductThemeTest extends TestCase {
 			'privacy_notice_text'   => '',
 			'privacy_notice_url'    => 'https://example.test/p',
 		);
-		$n = WDP_Donation_Optional_Fields::resolve_privacy_notice(array( 'has_email' => true ));
+		$n = \DonationPanel\Domain\Privacy_Notice::resolve(array( 'has_email' => true ));
 		$this->assertSame($label, $n['link_label']);
-		$html = WDP_Donation_Optional_Fields::render_privacy_notice_html(array( 'has_email' => true ));
+		$html = \DonationPanel\Domain\Privacy_Notice::render_html(array( 'has_email' => true ));
 		$this->assertStringContainsString($label, $html);
 		$this->assertStringNotContainsString('yurt dışındaki saha', $html);
 

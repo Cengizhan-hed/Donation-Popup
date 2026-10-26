@@ -56,7 +56,7 @@ class Donation_Purchasable {
 			return false;
 		}
 		$status = method_exists( $product, 'get_status' ) ? (string) $product->get_status() : 'publish';
-		if ( $status === 'publish' ) {
+		if ( 'publish' === $status ) {
 			return true;
 		}
 		if ( function_exists( 'current_user_can' ) && current_user_can( 'edit_post', $id ) ) {

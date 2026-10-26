@@ -1,7 +1,7 @@
 {
   "generated_at": "2026-10-24T12:28:59+00:00",
-  "call_count": 1107,
-  "file_count": 87,
+  "call_count": 996,
+  "file_count": 46,
   "functions": {
     "esc_html_e": 2,
     "__": 774,
@@ -6811,107 +6811,6 @@
     },
     {
       "function": "__",
-      "msgid": "Güvenlik doğrulaması başarısız oldu. Lütfen sayfayı yenileyip tekrar deneyin.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-cart.php",
-      "line": 204,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Maksimum hisse sayısı: %d",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-cart.php",
-      "line": 216,
-      "arg_count": 2,
-      "placeholders": [
-        "%d"
-      ]
-    },
-    {
-      "function": "__",
-      "msgid": "Lütfen tüm zorunlu alanları doldurun: ",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-cart.php",
-      "line": 235,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Lütfen Ad Soyad bilginizi giriniz.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-cart.php",
-      "line": 241,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Lütfen Telefon bilginizi giriniz.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-cart.php",
-      "line": 246,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Lütfen bağış miktarını giriniz.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-cart.php",
-      "line": 273,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Geçersiz bağış miktarı girdiniz.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-cart.php",
-      "line": 279,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Geçersiz bağış miktarı girdiniz.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-cart.php",
-      "line": 283,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Geçersiz bağış miktarı girdiniz.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-cart.php",
-      "line": 289,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
       "msgid": "Lütfen bağış formunu kullanarak sepete ekleyin. Bağışçı bilgileri gereklidir.",
       "plural": null,
       "context": null,
@@ -7006,17 +6905,6 @@
     },
     {
       "function": "__",
-      "msgid": "İsmim gizli kalsın",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-cart.php",
-      "line": 539,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
       "msgid": "Evet",
       "plural": null,
       "context": null,
@@ -7096,32 +6984,6 @@
     },
     {
       "function": "__",
-      "msgid": "%d. Hissedar Adı",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-cart.php",
-      "line": 1057,
-      "arg_count": 2,
-      "placeholders": [
-        "%d"
-      ]
-    },
-    {
-      "function": "__",
-      "msgid": "%d. Hissedar Telefonu",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-cart.php",
-      "line": 1061,
-      "arg_count": 2,
-      "placeholders": [
-        "%d"
-      ]
-    },
-    {
-      "function": "__",
       "msgid": "Lütfen geçerli bir e-posta adresi giriniz.",
       "plural": null,
       "context": null,
@@ -7166,34 +7028,12 @@
     },
     {
       "function": "__",
-      "msgid": "Alt Bağış Ekle",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-donation-product-context-service.php",
-      "line": 88,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
       "msgid": "Alt bağış tutarı",
       "plural": null,
       "context": null,
       "domain": "woo-donation-popup",
       "file": "includes/class-donation-product-context-service.php",
       "line": 120,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Sabit tutar",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-donation-type.php",
-      "line": 62,
       "arg_count": 2,
       "placeholders": []
     },
@@ -7232,34 +7072,12 @@
     },
     {
       "function": "__",
-      "msgid": "Hisseli",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-donation-type.php",
-      "line": 72,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
       "msgid": "Bağışçı hisse adedi seçer ve her hisse için ayrı isim girer.",
       "plural": null,
       "context": null,
       "domain": "woo-donation-popup",
       "file": "includes/class-donation-type.php",
       "line": 73,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Hedefli kampanya",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-donation-type.php",
-      "line": 77,
       "arg_count": 2,
       "placeholders": []
     },
@@ -7418,107 +7236,6 @@
     },
     {
       "function": "__",
-      "msgid": "Ürün bulunamadı. ID: %d",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-exceptions.php",
-      "line": 45,
-      "arg_count": 2,
-      "placeholders": [
-        "%d"
-      ]
-    },
-    {
-      "function": "__",
-      "msgid": "Güvenlik doğrulaması başarısız oldu. Lütfen sayfayı yenileyip tekrar deneyin.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-exceptions.php",
-      "line": 111,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "esc_html__",
-      "msgid": "Bu sayfayı görüntüleme yetkiniz yok.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-form-matrix.php",
-      "line": 32,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "esc_html__",
-      "msgid": "Geçersiz bağlantı.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-form-matrix.php",
-      "line": 36,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "esc_html__",
-      "msgid": "Form test sayfası çizilemedi. Ayrıntı hata günlüğünde.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-form-matrix.php",
-      "line": 48,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "esc_html__",
-      "msgid": "Test için yayımlanmış bir ürün bulunamadı.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-form-matrix.php",
-      "line": 67,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "esc_html__",
-      "msgid": "Form test sayfası",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-form-matrix.php",
-      "line": 82,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "esc_html__",
-      "msgid": "Kapsayıcı genişliği",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-form-matrix.php",
-      "line": 95,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Tam",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-form-matrix.php",
-      "line": 96,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
       "msgid": "Sabit tutar",
       "plural": null,
       "context": null,
@@ -7558,39 +7275,6 @@
       "domain": "woo-donation-popup",
       "file": "includes/class-form-matrix.php",
       "line": 106,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "esc_html__",
-      "msgid": "Popup aç",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-form-matrix.php",
-      "line": 143,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "esc_html__",
-      "msgid": "Panel aç",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-form-matrix.php",
-      "line": 144,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Test sayfası — sepete ekleme kapalı.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-form-matrix.php",
-      "line": 153,
       "arg_count": 2,
       "placeholders": []
     },
@@ -7900,72 +7584,6 @@
       "domain": "woo-donation-popup",
       "file": "includes/class-icon-library.php",
       "line": 63,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Geçersiz istek kaynağı",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-lazy-modal.php",
-      "line": 31,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Çok fazla istek gönderildi. Lütfen kısa süre sonra tekrar deneyin.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-lazy-modal.php",
-      "line": 42,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Ürün bulunamadı veya görüntülenemiyor.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-lazy-modal.php",
-      "line": 53,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Bu ürün bağış ürünü olarak işaretli değil.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-lazy-modal.php",
-      "line": 56,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Bağış formu şu anda gösterilemiyor.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-lazy-modal.php",
-      "line": 61,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Bağış formu şu anda gösterilemiyor.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-lazy-modal.php",
-      "line": 69,
       "arg_count": 2,
       "placeholders": []
     },
@@ -9518,17 +9136,6 @@
       "placeholders": []
     },
     {
-      "function": "esc_attr__",
-      "msgid": "Ülke kodu seç",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-phone-field.php",
-      "line": 427,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
       "function": "__",
       "msgid": "Bağış bilgileri (Donation Popup)",
       "plural": null,
@@ -9816,43 +9423,6 @@
         "%2$s",
         "%3$s"
       ]
-    },
-    {
-      "function": "_n",
-      "msgid": "%d kişi",
-      "plural": "%d kişi",
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-progress-form.php",
-      "line": 62,
-      "arg_count": 4,
-      "placeholders": [
-        "%d"
-      ]
-    },
-    {
-      "function": "__",
-      "msgid": "%s kaldı",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-progress-form.php",
-      "line": 73,
-      "arg_count": 2,
-      "placeholders": [
-        "%s"
-      ]
-    },
-    {
-      "function": "esc_attr__",
-      "msgid": "Bağış ilerleme durumu",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-progress-form.php",
-      "line": 89,
-      "arg_count": 2,
-      "placeholders": []
     },
     {
       "function": "esc_html__",
@@ -11031,50 +10601,6 @@
       "placeholders": []
     },
     {
-      "function": "esc_html__",
-      "msgid": "Devamını Gör",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/templates/class-campaign-header-renderer.php",
-      "line": 59,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "esc_html__",
-      "msgid": "Daha Az Göster",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/templates/class-campaign-header-renderer.php",
-      "line": 60,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Hızlı tutar seç",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/templates/class-form-fields-renderer.php",
-      "line": 154,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Önerilen",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/templates/class-form-fields-renderer.php",
-      "line": 155,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
       "function": "__",
       "msgid": "Bağış Tutarı",
       "plural": null,
@@ -11082,39 +10608,6 @@
       "domain": "woo-donation-popup",
       "file": "includes/templates/class-form-fields-renderer.php",
       "line": 196,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Satır tutarı",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/templates/class-form-fields-renderer.php",
-      "line": 282,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "esc_attr__",
-      "msgid": "Azalt",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/templates/class-form-fields-renderer.php",
-      "line": 291,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "esc_attr__",
-      "msgid": "Arttır",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/templates/class-form-fields-renderer.php",
-      "line": 293,
       "arg_count": 2,
       "placeholders": []
     },
@@ -11131,67 +10624,12 @@
     },
     {
       "function": "__",
-      "msgid": "Alt bağış (sadaka) için geçerli bir WooCommerce ürünü tanımlı değil. Ayarlar → Başarı & Mini Sepet veya ürün Bağış sekmesinden alt bağış ürünü seçin.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/templates/class-form-fields-renderer.php",
-      "line": 392,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
       "msgid": "Alt Bağış Ekle",
       "plural": null,
       "context": null,
       "domain": "woo-donation-popup",
       "file": "includes/templates/class-form-fields-renderer.php",
       "line": 403,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Alt Bağış Tutarı",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/templates/class-form-fields-renderer.php",
-      "line": 410,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Alt Bağış Tutarı",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/templates/class-form-fields-renderer.php",
-      "line": 411,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Alt Bağış Tutarı",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/templates/class-form-fields-renderer.php",
-      "line": 440,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "esc_attr__",
-      "msgid": "Bağışçı iletişim bilgileri",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/templates/class-form-fields-renderer.php",
-      "line": 517,
       "arg_count": 2,
       "placeholders": []
     },
@@ -11229,17 +10667,6 @@
       "placeholders": []
     },
     {
-      "function": "__",
-      "msgid": "Kimin adına? (isteğe bağlı)",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/templates/class-form-fields-renderer.php",
-      "line": 568,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
       "function": "esc_html__",
       "msgid": "İsmim gizli kalsın",
       "plural": null,
@@ -11273,17 +10700,6 @@
       "placeholders": []
     },
     {
-      "function": "esc_html__",
-      "msgid": "Toplam Tutar",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/templates/class-modal-shell-renderer.php",
-      "line": 26,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
       "function": "__",
       "msgid": "Sepete Ekle",
       "plural": null,
@@ -11304,32 +10720,6 @@
       "line": 160,
       "arg_count": 2,
       "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Bağış formu: #%d numaralı ürün bulunamadı. Kısa koddaki ürün ID'sini kontrol edin.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/templates/class-modal-shell-renderer.php",
-      "line": 198,
-      "arg_count": 2,
-      "placeholders": [
-        "%d"
-      ]
-    },
-    {
-      "function": "__",
-      "msgid": "Bu ürünün fiyatı yok; bağış formu gösterilmiyor (ürün #%d). Fiyatı ürünün \"Genel\" sekmesinden girin veya bağış tipini \"Bağışçı belirler\" yapın.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/templates/class-modal-shell-renderer.php",
-      "line": 225,
-      "arg_count": 2,
-      "placeholders": [
-        "%d"
-      ]
     },
     {
       "function": "__",
@@ -11355,113 +10745,12 @@
     },
     {
       "function": "__",
-      "msgid": "%s için bağış formu",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/templates/class-modal-shell-renderer.php",
-      "line": 374,
-      "arg_count": 2,
-      "placeholders": [
-        "%s"
-      ]
-    },
-    {
-      "function": "__",
       "msgid": "Bağış Yap",
       "plural": null,
       "context": null,
       "domain": "woo-donation-popup",
       "file": "includes/templates/class-modal-shell-renderer.php",
       "line": 438,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Çok fazla istek gönderildi. Lütfen bir süre bekleyip tekrar deneyin.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/traits/trait-wdp-ajax-base.php",
-      "line": 36,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Yetkiniz bulunmuyor",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/traits/trait-wdp-ajax-base.php",
-      "line": 51,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Geçersiz istek kaynağı",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/traits/trait-wdp-ajax-base.php",
-      "line": 69,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Geçersiz istek metodu",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/traits/trait-wdp-ajax-base.php",
-      "line": 81,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Geçersiz ürün ID.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/traits/trait-wdp-ajax-cart-add.php",
-      "line": 56,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "WooCommerce sepet nesnesi bulunamadı.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/traits/trait-wdp-ajax-cart-add.php",
-      "line": 61,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Maksimum hisse sayısı aşıldı",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/traits/trait-wdp-ajax-cart-add.php",
-      "line": 87,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Lütfen tüm zorunlu alanları doldurun: ",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/traits/trait-wdp-ajax-cart-add.php",
-      "line": 101,
       "arg_count": 2,
       "placeholders": []
     },
@@ -11489,102 +10778,12 @@
     },
     {
       "function": "__",
-      "msgid": "Lütfen bağış miktarını giriniz.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/traits/trait-wdp-ajax-cart-add.php",
-      "line": 193,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Geçersiz fiyat değeri.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/traits/trait-wdp-ajax-cart-add.php",
-      "line": 198,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Geçersiz fiyat değeri.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/traits/trait-wdp-ajax-cart-add.php",
-      "line": 202,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Geçersiz fiyat değeri.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/traits/trait-wdp-ajax-cart-add.php",
-      "line": 208,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Minimum fiyat: ",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/traits/trait-wdp-ajax-cart-add.php",
-      "line": 225,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Maksimum fiyat: %s",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/traits/trait-wdp-ajax-cart-add.php",
-      "line": 233,
-      "arg_count": 2,
-      "placeholders": [
-        "%s"
-      ]
-    },
-    {
-      "function": "__",
-      "msgid": "Ürün zaten sepete eklenmiş",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/traits/trait-wdp-ajax-cart-add.php",
-      "line": 253,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
       "msgid": "Ürün sepete eklenirken bir hata oluştu.",
       "plural": null,
       "context": null,
       "domain": "woo-donation-popup",
       "file": "includes/traits/trait-wdp-ajax-cart-add.php",
       "line": 312,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Ürün sepete eklendi.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/traits/trait-wdp-ajax-cart-add.php",
-      "line": 335,
       "arg_count": 2,
       "placeholders": []
     },
@@ -11625,61 +10824,6 @@
     },
     {
       "function": "__",
-      "msgid": "WooCommerce sepet nesnesi bulunamadı.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/traits/trait-wdp-ajax-cart-query.php",
-      "line": 58,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "WooCommerce sepet nesnesi bulunamadı.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/traits/trait-wdp-ajax-cart-query.php",
-      "line": 85,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Sadaka Bağışı",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/traits/trait-wdp-ajax-cart-query.php",
-      "line": 144,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Sadaka Bağışı",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/traits/trait-wdp-ajax-cart-query.php",
-      "line": 146,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Ad Soyad",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/traits/trait-wdp-ajax-cart-query.php",
-      "line": 176,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
       "msgid": "Hisse Adedi",
       "plural": null,
       "context": null,
@@ -11701,160 +10845,6 @@
       "placeholders": [
         "%d"
       ]
-    },
-    {
-      "function": "__",
-      "msgid": "WooCommerce sepet nesnesi bulunamadı.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/traits/trait-wdp-ajax-cart-query.php",
-      "line": 223,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Sepet öğesi anahtarı bulunamadı.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/traits/trait-wdp-ajax-cart-query.php",
-      "line": 232,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Sepet öğesi kaldırılamadı.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/traits/trait-wdp-ajax-cart-query.php",
-      "line": 237,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Sepet öğesi kaldırılamadı.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/traits/trait-wdp-ajax-cart-query.php",
-      "line": 254,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Sepet öğesi kaldırıldı.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/traits/trait-wdp-ajax-cart-query.php",
-      "line": 274,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Beklenmeyen bir hata oluştu.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/traits/trait-wdp-ajax-cart-query.php",
-      "line": 288,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Geçersiz istek kaynağı",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/traits/trait-wdp-ajax-cart-session.php",
-      "line": 21,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Geçerli sepet oturumu bulunamadı",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/traits/trait-wdp-ajax-cart-session.php",
-      "line": 29,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Ürün sepete eklendi.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/traits/trait-wdp-ajax-cart-session.php",
-      "line": 75,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Geçersiz ürün ID",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/traits/trait-wdp-ajax-product.php",
-      "line": 71,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Geçersiz ürün ID",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/traits/trait-wdp-ajax-product.php",
-      "line": 79,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Geçersiz ürün ID",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/traits/trait-wdp-ajax-product.php",
-      "line": 205,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Geçersiz ürün ID",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/traits/trait-wdp-ajax-product.php",
-      "line": 211,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Ürün bulunamadı",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/traits/trait-wdp-ajax-product.php",
-      "line": 215,
-      "arg_count": 2,
-      "placeholders": []
     },
     {
       "function": "__",
@@ -12001,74 +10991,6 @@
     },
     {
       "function": "__",
-      "msgid": "Yükleniyor...",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/traits/trait-wdp-assets-registry.php",
-      "line": 345,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Bir hata oluştu",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/traits/trait-wdp-assets-registry.php",
-      "line": 346,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Başarılı",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/traits/trait-wdp-assets-registry.php",
-      "line": 347,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Bu alan zorunludur",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/traits/trait-wdp-assets-registry.php",
-      "line": 348,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Geçersiz fiyat",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/traits/trait-wdp-assets-registry.php",
-      "line": 349,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Bu sitede kuruşlu tutar girilemez, örn. %s",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/traits/trait-wdp-assets-registry.php",
-      "line": 350,
-      "arg_count": 2,
-      "placeholders": [
-        "%s"
-      ]
-    },
-    {
-      "function": "__",
       "msgid": "Bu sitede kuruşlu tutar girilemez, örn. %s",
       "plural": null,
       "context": null,
@@ -12079,52 +11001,6 @@
       "placeholders": [
         "%s"
       ]
-    },
-    {
-      "function": "__",
-      "msgid": "Lütfen tutarı şu biçimde yazın, örn. %s",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/traits/trait-wdp-assets-registry.php",
-      "line": 352,
-      "arg_count": 2,
-      "placeholders": [
-        "%s"
-      ]
-    },
-    {
-      "function": "__",
-      "msgid": "Minimum fiyat: ",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/traits/trait-wdp-assets-registry.php",
-      "line": 353,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Maksimum hisse sayısı: ",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/traits/trait-wdp-assets-registry.php",
-      "line": 354,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Bağış tutarı *",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/traits/trait-wdp-assets-registry.php",
-      "line": 355,
-      "arg_count": 2,
-      "placeholders": []
     },
     {
       "function": "__",
@@ -12150,17 +11026,6 @@
     },
     {
       "function": "__",
-      "msgid": "Alt Bağış Tutarı",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/traits/trait-wdp-assets-registry.php",
-      "line": 358,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
       "msgid": "Geçerli bir alt bağış tutarı giriniz.",
       "plural": null,
       "context": null,
@@ -12172,122 +11037,12 @@
     },
     {
       "function": "__",
-      "msgid": "Alt bağış için minimum tutar: ",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/traits/trait-wdp-assets-registry.php",
-      "line": 360,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Geçerli bir telefon numarası giriniz.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/traits/trait-wdp-assets-registry.php",
-      "line": 361,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Telefon numarası eksik.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/traits/trait-wdp-assets-registry.php",
-      "line": 362,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Telefon numaranızı eksiksiz giriniz.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/traits/trait-wdp-assets-registry.php",
-      "line": 363,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Ad Soyad zorunludur.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/traits/trait-wdp-assets-registry.php",
-      "line": 364,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
       "msgid": "Lütfen geçerli bir e-posta adresi giriniz.",
       "plural": null,
       "context": null,
       "domain": "woo-donation-popup",
       "file": "includes/traits/trait-wdp-assets-registry.php",
       "line": 365,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Hissedar adı zorunludur.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/traits/trait-wdp-assets-registry.php",
-      "line": 366,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "ad soyad alanı eksik",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/traits/trait-wdp-assets-registry.php",
-      "line": 367,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "telefon numaranızı eksiksiz giriniz",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/traits/trait-wdp-assets-registry.php",
-      "line": 368,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Ara",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/traits/trait-wdp-assets-registry.php",
-      "line": 369,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Bağışınız sepete eklendi",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/traits/trait-wdp-assets-registry.php",
-      "line": 370,
       "arg_count": 2,
       "placeholders": []
     },

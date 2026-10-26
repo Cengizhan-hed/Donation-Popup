@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class Debug {
 
-/**
+	/**
 	 * Log debug message.
 	 *
 	 * Only logs if WP_DEBUG is enabled. Supports arrays, objects, and strings.

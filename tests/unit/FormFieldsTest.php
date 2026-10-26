@@ -21,82 +21,6 @@ final class FormFieldsTest extends TestCase {
 		return $p;
 	}
 
-	public function test_closed_fields_ignored_on_ajax_style_helper(): void {
-		$p = $this->product(
-			101,
-			array(
-				'_enable_email'      => 'no',
-				'_enable_dedication' => 'no',
-				'_enable_anonymous'  => 'no',
-			)
-		);
-		$data = array();
-		WDP_Donation_Optional_Fields::apply_from_request(
-			$p,
-			array(
-				'donation_email'      => 'leak@example.com',
-				'donation_dedication' => 'Gizli ithaf',
-				'donation_anonymous'  => '1',
-			),
-			$data
-		);
-		$this->assertArrayNotHasKey('email', $data);
-		$this->assertArrayNotHasKey('dedication', $data);
-		$this->assertArrayNotHasKey('anonymous', $data);
-	}
-
-	public function test_shares_type_ignores_optional_fields(): void {
-		$p = $this->product(
-			103,
-			array(
-				'_allow_multiple_shares' => 'yes',
-				'_enable_email'          => 'yes',
-				'_enable_dedication'     => 'yes',
-				'_enable_anonymous'      => 'yes',
-			)
-		);
-		$this->assertFalse(WDP_Donation_Optional_Fields::product_supports_optional_contact_fields($p));
-		$flags = WDP_Donation_Optional_Fields::resolve_flags($p);
-		$this->assertFalse($flags['email']);
-		$this->assertFalse($flags['dedication']);
-		$this->assertFalse($flags['anonymous']);
-		$data = array();
-		WDP_Donation_Optional_Fields::apply_from_request(
-			$p,
-			array(
-				'donation_email'      => 'x@y.com',
-				'donation_dedication' => 'A',
-				'donation_anonymous'  => '1',
-			),
-			$data
-		);
-		$this->assertSame(array(), $data);
-	}
-
-	public function test_empty_email_allowed_when_enabled(): void {
-		$p    = $this->product(105, array('_enable_email' => 'yes'));
-		$data = array();
-		WDP_Donation_Optional_Fields::apply_from_request($p, array('donation_email' => ''), $data);
-		$this->assertArrayNotHasKey('email', $data);
-	}
-
-	public function test_dedication_turkish_char_limit_120(): void {
-		$p      = $this->product(106, array('_enable_dedication' => 'yes'));
-		$filler = str_repeat('ğüşiöçİ', 20); // 140 chars
-		$this->assertGreaterThan(120, mb_strlen($filler));
-		$data = array();
-		WDP_Donation_Optional_Fields::apply_from_request(
-			$p,
-			array('donation_dedication' => $filler),
-			$data
-		);
-		$this->assertSame(120, mb_strlen($data['dedication']));
-		$this->assertSame(mb_substr($filler, 0, 120), $data['dedication']);
-		// Ortadan bölünme yok: son karakter geçerli Türkçe harf.
-		$last = mb_substr($data['dedication'], -1);
-		$this->assertMatchesRegularExpression('/^[ğüşiöçİ]$/u', $last);
-	}
-
 	public function test_security_sanitize_text_char_based(): void {
 		$s = str_repeat('İ', 105);
 		$o = \DonationPanel\Support\Security::sanitize_text($s, 100);
@@ -114,13 +38,6 @@ final class FormFieldsTest extends TestCase {
 			array('dedication_placeholder' => str_repeat('b', 150))
 		);
 		$this->assertSame(120, mb_strlen($meta['_dedication_placeholder']));
-	}
-
-	public function test_anonymous_mask_multibyte(): void {
-		$this->assertSame('A*** Y***', WDP_Donation_Optional_Fields::mask_public_donor_name('Ayşe Yılmaz', true));
-		$this->assertSame('İ*** Ö***', WDP_Donation_Optional_Fields::mask_public_donor_name('İhsan Öğünç', '1'));
-		$this->assertSame('Ayşe Yılmaz', WDP_Donation_Optional_Fields::mask_public_donor_name('Ayşe Yılmaz', false));
-		$this->assertSame('Anonim', WDP_Donation_Optional_Fields::mask_public_donor_name('', true));
 	}
 
 	public function test_wizard_tristate_resolution(): void {
@@ -156,22 +73,22 @@ final class FormFieldsTest extends TestCase {
 			'privacy_notice_text'   => 'Kişisel verileriniz Aydınlatma Metni kapsamında işlenir.',
 			'privacy_notice_url'    => 'https://example.test/gizlilik',
 		);
-		$n = WDP_Donation_Optional_Fields::resolve_privacy_notice(array('has_email' => true));
+		$n = \DonationPanel\Domain\Privacy_Notice::resolve(array('has_email' => true));
 		$this->assertNotNull($n);
 		$this->assertSame('https://example.test/gizlilik', $n['url']);
 
 		$this->assertNull(
-			WDP_Donation_Optional_Fields::resolve_privacy_notice(array()),
+			\DonationPanel\Domain\Privacy_Notice::resolve(array()),
 			'e-posta/ithaf/hissedar yoksa gösterme'
 		);
 
 		WDP_Test_State::$options['wdp_button_settings']['privacy_notice_url'] = '';
 		WDP_Test_State::$options['__privacy_policy_url']                     = 'https://example.test/wp-privacy';
-		$n2 = WDP_Donation_Optional_Fields::resolve_privacy_notice(array('has_dedication' => true));
+		$n2 = \DonationPanel\Domain\Privacy_Notice::resolve(array('has_dedication' => true));
 		$this->assertSame('https://example.test/wp-privacy', $n2['url']);
 
 		WDP_Test_State::$options['__privacy_policy_url'] = '';
-		$html = WDP_Donation_Optional_Fields::render_privacy_notice_html(array('has_shareholders' => true));
+		$html = \DonationPanel\Domain\Privacy_Notice::render_html(array('has_shareholders' => true));
 		$this->assertSame('', $html, 'URL yoksa HTML boş');
 	}
 

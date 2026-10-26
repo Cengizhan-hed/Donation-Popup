@@ -36,8 +36,8 @@ class Donation_Scope {
 	 * @return string[]
 	 */
 	public static function supported_types() {
-		if ( self::$types === null ) {
-			$types       = apply_filters( 'wdp_supported_product_types', array( 'simple' ) );
+		if ( null === self::$types ) {
+			$types       = apply_filters( 'wdp_supported_product_types', array( 'simple' ) ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- geriye dönük uyumluluk sözleşmesi: eski wdp_ kanca adı değişmez.
 			$types       = is_array( $types ) ? $types : array( 'simple' );
 			self::$types = array_values( array_unique( array_filter( array_map( 'sanitize_key', array_filter( $types, 'is_scalar' ) ) ) ) );
 		}
@@ -50,7 +50,7 @@ class Donation_Scope {
 	 */
 	public static function is_supported_type( $product ) {
 		$product = self::to_product( $product );
-		return $product !== null && in_array( (string) $product->get_type(), self::supported_types(), true );
+		return null !== $product && in_array( (string) $product->get_type(), self::supported_types(), true );
 	}
 
 	/**
@@ -59,7 +59,7 @@ class Donation_Scope {
 	 */
 	public static function is_donation_product( $product ) {
 		$product = self::to_product( $product );
-		if ( $product === null ) {
+		if ( null === $product ) {
 			return false;
 		}
 		$id = (int) $product->get_id();
@@ -67,7 +67,7 @@ class Donation_Scope {
 			return self::$cache[ $id ];
 		}
 
-		$result = (bool) apply_filters( 'wdp_is_donation_product', self::evaluate( $product ), $product );
+		$result = (bool) apply_filters( 'wdp_is_donation_product', self::evaluate( $product ), $product ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- geriye dönük uyumluluk sözleşmesi: eski wdp_ kanca adı değişmez.
 		if ( $id > 0 ) {
 			self::$cache[ $id ] = $result;
 		}
@@ -85,10 +85,10 @@ class Donation_Scope {
 			return false;
 		}
 		$flag = self::product_flag( $product );
-		if ( $flag === 'yes' ) {
+		if ( 'yes' === $flag ) {
 			return true;
 		}
-		if ( $flag === 'no' ) {
+		if ( 'no' === $flag ) {
 			return false;
 		}
 		return self::matches_global_scope( $product );
@@ -114,10 +114,10 @@ class Donation_Scope {
 	 */
 	public static function matches_global_scope( $product ) {
 		$scope = (string) Placement_Settings::value( 'donation_scope', 'all' );
-		if ( $scope === 'all' ) {
+		if ( 'all' === $scope ) {
 			return true;
 		}
-		if ( $scope === 'categories' ) {
+		if ( 'categories' === $scope ) {
 			$selected = (array) Placement_Settings::value( 'donation_categories', array() );
 			return ! empty( $selected ) && self::in_categories( $product, $selected );
 		}
@@ -171,7 +171,7 @@ class Donation_Scope {
 			array(
 				'post_type'              => 'product',
 				'post_status'            => 'publish',
-				'numberposts'            => 500,
+				'numberposts'            => 500, // phpcs:ignore WordPress.WP.PostsPerPage.posts_per_page_numberposts -- yalnız yönetici sayımı; kimlik listesi, ilk 500 ürün.
 				'fields'                 => 'ids',
 				'suppress_filters'       => true,
 				'no_found_rows'          => true,

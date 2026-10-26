@@ -123,7 +123,7 @@ class Donation_Type {
 	 */
 	public static function infer_from_meta( array $meta ) {
 		$is_yes = static function ( $key ) use ( $meta ) {
-			return isset( $meta[ $key ] ) && $meta[ $key ] === 'yes';
+			return isset( $meta[ $key ] ) && 'yes' === $meta[ $key ];
 		};
 
 		return self::infer_from_flags(
@@ -164,8 +164,8 @@ class Donation_Type {
 
 		return array(
 			'allow_custom_price'    => in_array( $type, array( self::CUSTOM, self::CAMPAIGN ), true ),
-			'allow_multiple_shares' => $type === self::SHARES,
-			'enable_progress_bar'   => $type === self::CAMPAIGN,
+			'allow_multiple_shares' => self::SHARES === $type,
+			'enable_progress_bar'   => self::CAMPAIGN === $type,
 		);
 	}
 
@@ -193,7 +193,7 @@ class Donation_Type {
 	 */
 	public static function get_meta_query( $type ) {
 		$type = self::sanitize( $type, '' );
-		if ( $type === '' ) {
+		if ( '' === $type ) {
 			return array();
 		}
 

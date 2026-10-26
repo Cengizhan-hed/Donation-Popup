@@ -72,7 +72,7 @@ class Order_Privacy {
 	 */
 	public static function export_personal_data( $email_address, $page = 1 ) {
 		$email = sanitize_email( (string) $email_address );
-		if ( $email === '' || ! is_email( $email ) ) {
+		if ( '' === $email || ! is_email( $email ) ) {
 			return array(
 				'data' => array(),
 				'done' => true,
@@ -100,7 +100,7 @@ class Order_Privacy {
 
 				$personal_rows = array();
 				foreach ( $fields as $fixed_key => $field ) {
-					if ( (string) $field['value'] === Order_Meta_Keys::ERASED_VALUE ) {
+					if ( Order_Meta_Keys::ERASED_VALUE === (string) $field['value'] ) {
 						continue;
 					}
 					$label           = Order_Meta_Keys::get_label( $fixed_key );
@@ -163,7 +163,7 @@ class Order_Privacy {
 		);
 
 		$email = sanitize_email( (string) $email_address );
-		if ( $email === '' || ! is_email( $email ) ) {
+		if ( '' === $email || ! is_email( $email ) ) {
 			return $response;
 		}
 
@@ -216,7 +216,7 @@ class Order_Privacy {
 		$changed = false;
 
 		foreach ( $fields as $field ) {
-			if ( (string) $field['value'] === Order_Meta_Keys::ERASED_VALUE ) {
+			if ( Order_Meta_Keys::ERASED_VALUE === (string) $field['value'] ) {
 				continue;
 			}
 			$item->update_meta_data( $field['key'], Order_Meta_Keys::ERASED_VALUE );
@@ -479,6 +479,6 @@ class Order_Privacy {
 	private static function emails_match( $a, $b ) {
 		$a = strtolower( trim( (string) $a ) );
 		$b = strtolower( trim( (string) $b ) );
-		return $a !== '' && $a === $b;
+		return '' !== $a && $a === $b;
 	}
 }

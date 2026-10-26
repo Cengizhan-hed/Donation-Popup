@@ -35,4 +35,34 @@ require_once WDP_PLUGIN_DIR . 'src/Core/class-autoloader.php';
 register_activation_hook( __FILE__, array( \DonationPanel\Core\Bootstrap::class, 'activate' ) );
 register_deactivation_hook( __FILE__, array( \DonationPanel\Core\Bootstrap::class, 'deactivate' ) );
 
+// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound -- geriye dönük uyumluluk: eski dışa açık işlev adları değişmez (sözleşme: src/Compat/class-public-contract.php).
+
+if ( ! function_exists( 'wdp_render_donation_button' ) ) {
+	/**
+	 * Bağış düğmesini (açılır form) çizer.
+	 *
+	 * @param int    $product_id  Ürün kimliği.
+	 * @param string $button_text Düğme metni.
+	 * @return string
+	 */
+	function wdp_render_donation_button( $product_id, $button_text = '' ) {
+		return \DonationPanel\Compat\Public_Contract::render_for_product( 'wdp_donation_button', (int) $product_id, array( 'text' => (string) $button_text ) );
+	}
+}
+
+if ( ! function_exists( 'wdp_render_donation_form' ) ) {
+	/**
+	 * Sayfa içi bağış formunu çizer.
+	 *
+	 * @param int                  $product_id Ürün kimliği.
+	 * @param array<string, mixed> $args       Öznitelikler (`class`, `title`, `show_title`).
+	 * @return string
+	 */
+	function wdp_render_donation_form( $product_id, $args = array() ) {
+		return \DonationPanel\Compat\Public_Contract::render_for_product( 'wdp_donation_form', (int) $product_id, is_array( $args ) ? $args : array() );
+	}
+}
+
+// phpcs:enable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound
+
 \DonationPanel\Core\Bootstrap::run();

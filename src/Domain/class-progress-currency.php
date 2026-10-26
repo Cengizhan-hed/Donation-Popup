@@ -91,7 +91,7 @@ class Progress_Currency {
 	public static function get_order_currency( $order ) {
 		if ( is_object( $order ) && method_exists( $order, 'get_currency' ) ) {
 			$c = strtoupper( (string) $order->get_currency() );
-			if ( $c !== '' ) {
+			if ( '' !== $c ) {
 				return $c;
 			}
 		}
@@ -107,9 +107,9 @@ class Progress_Currency {
 	 * @return float|null Rate or null if unknown.
 	 */
 	public static function get_order_rate( $order, $currency = '' ) {
-		$currency = strtoupper( $currency !== '' ? $currency : self::get_order_currency( $order ) );
+		$currency = strtoupper( '' !== $currency ? $currency : self::get_order_currency( $order ) );
 		$base     = self::get_base_currency();
-		if ( $currency === '' || $currency === $base ) {
+		if ( '' === $currency || $currency === $base ) {
 			return 1.0;
 		}
 		if ( ! is_object( $order ) || ! method_exists( $order, 'get_meta' ) ) {
@@ -125,8 +125,8 @@ class Progress_Currency {
 		 * @param string            $currency Order currency.
 		 * @param string            $base     Store base currency.
 		 */
-		$stored = apply_filters( 'wdp_order_exchange_rate', null, $order, $currency, $base );
-		if ( $stored !== null && is_numeric( $stored ) && (float) $stored > 0 ) { // @phpstan-ignore function.alreadyNarrowedType
+		$stored = apply_filters( 'wdp_order_exchange_rate', null, $order, $currency, $base ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- geriye dönük uyumluluk sözleşmesi: eski wdp_ kanca adı değişmez.
+		if ( null !== $stored && is_numeric( $stored ) && (float) $stored > 0 ) { // @phpstan-ignore function.alreadyNarrowedType
 			return (float) $stored;
 		}
 
@@ -142,7 +142,7 @@ class Progress_Currency {
 	public static function get_live_rate( $currency ) {
 		$currency = strtoupper( (string) $currency );
 		$base     = self::get_base_currency();
-		if ( $currency === '' || $currency === $base ) {
+		if ( '' === $currency || $currency === $base ) {
 			return 1.0;
 		}
 
@@ -153,8 +153,8 @@ class Progress_Currency {
 		 * @param string     $currency Order currency.
 		 * @param string     $base     Base currency.
 		 */
-		$filtered = apply_filters( 'wdp_progress_live_rate', null, $currency, $base );
-		if ( $filtered !== null && is_numeric( $filtered ) && (float) $filtered > 0 ) { // @phpstan-ignore function.alreadyNarrowedType
+		$filtered = apply_filters( 'wdp_progress_live_rate', null, $currency, $base ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- geriye dönük uyumluluk sözleşmesi: eski wdp_ kanca adı değişmez.
+		if ( null !== $filtered && is_numeric( $filtered ) && (float) $filtered > 0 ) { // @phpstan-ignore function.alreadyNarrowedType
 			return (float) $filtered;
 		}
 
@@ -175,7 +175,7 @@ class Progress_Currency {
 		$amount = (float) $amount;
 		$from   = strtoupper( (string) $from );
 		$to     = strtoupper( (string) $to );
-		if ( $from === $to || $from === '' || $to === '' ) {
+		if ( $from === $to || '' === $from || '' === $to ) {
 			return $amount;
 		}
 
@@ -192,7 +192,7 @@ class Progress_Currency {
 		$filtered = is_numeric( $filtered ) ? (float) $filtered : $amount; // @phpstan-ignore function.alreadyNarrowedType
 
 		// Eski ad (geriye dönük uyum; mevcut site snippet'leri).
-		$legacy = apply_filters( 'wdp_convert_amount', $filtered, $from, $to, $context );
+		$legacy = apply_filters( 'wdp_convert_amount', $filtered, $from, $to, $context ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- geriye dönük uyumluluk sözleşmesi: eski wdp_ kanca adı değişmez.
 		return is_numeric( $legacy ) ? (float) $legacy : $filtered; // @phpstan-ignore function.alreadyNarrowedType
 	}
 
@@ -216,7 +216,7 @@ class Progress_Currency {
 			'reason' => '',
 		);
 
-		if ( $amount == 0.0 || $currency === '' || $currency === $base ) {
+		if ( 0.0 === (float) $amount || '' === $currency || $currency === $base ) {
 			/**
 			 * Progress tutar dönüşümü (filtrelenebilir).
 			 *
@@ -226,24 +226,24 @@ class Progress_Currency {
 			 * @param string                 $base     To.
 			 * @param \WC_Abstract_Order|null $order    Order.
 			 */
-			return apply_filters( 'wdp_progress_convert_amount', $result, $amount, $currency, $base, $order );
+			return apply_filters( 'wdp_progress_convert_amount', $result, $amount, $currency, $base, $order ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- geriye dönük uyumluluk sözleşmesi: eski wdp_ kanca adı değişmez.
 		}
 
 		$rate = self::get_order_rate( $order, $currency );
-		if ( $rate === null || $rate <= 0 ) {
+		if ( null === $rate || $rate <= 0 ) {
 			// Kur yok: genel dönüşüm filtresi (varsayılan: tutar aynen döner = dönüşüm yok → eksik kur sayılır).
 			$converted = self::convert_amount( $amount, $currency, $base, array( 'order' => $order ) );
 			if ( abs( $converted - $amount ) > 0.0000001 ) {
 				$result['amount'] = $converted;
-				return apply_filters( 'wdp_progress_convert_amount', $result, $amount, $currency, $base, $order );
+				return apply_filters( 'wdp_progress_convert_amount', $result, $amount, $currency, $base, $order ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- geriye dönük uyumluluk sözleşmesi: eski wdp_ kanca adı değişmez.
 			}
 			$result['ok']     = false;
 			$result['amount'] = 0.0;
 			$result['reason'] = 'missing_rate';
-			return apply_filters( 'wdp_progress_convert_amount', $result, $amount, $currency, $base, $order );
+			return apply_filters( 'wdp_progress_convert_amount', $result, $amount, $currency, $base, $order ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- geriye dönük uyumluluk sözleşmesi: eski wdp_ kanca adı değişmez.
 		}
 
 		$result['amount'] = $amount / $rate;
-		return apply_filters( 'wdp_progress_convert_amount', $result, $amount, $currency, $base, $order );
+		return apply_filters( 'wdp_progress_convert_amount', $result, $amount, $currency, $base, $order ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- geriye dönük uyumluluk sözleşmesi: eski wdp_ kanca adı değişmez.
 	}
 }

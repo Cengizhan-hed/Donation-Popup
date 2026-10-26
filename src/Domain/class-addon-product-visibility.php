@@ -52,7 +52,7 @@ class Addon_Product_Visibility {
 		$legacy = self::LEGACY_META[ $key ] ?? '';
 		if ( is_object( $product ) && method_exists( $product, 'get_meta' ) ) {
 			$value = $product->get_meta( $key );
-			if ( $legacy === '' ) {
+			if ( '' === $legacy ) {
 				return $value;
 			}
 			$has_new = method_exists( $product, 'meta_exists' ) ? $product->meta_exists( $key ) : ( '' !== $value && null !== $value );
@@ -60,7 +60,7 @@ class Addon_Product_Visibility {
 		}
 		$id    = absint( $product );
 		$value = get_post_meta( $id, $key, true );
-		if ( $legacy === '' ) {
+		if ( '' === $legacy ) {
 			return $value;
 		}
 		$has_new = ! empty( get_post_meta( $id, $key, false ) );
@@ -92,7 +92,7 @@ class Addon_Product_Visibility {
 	 * @return int[]
 	 */
 	public static function get_all_ids() {
-		if ( self::$ids !== null ) {
+		if ( null !== self::$ids ) {
 			return self::$ids;
 		}
 
@@ -108,7 +108,7 @@ class Addon_Product_Visibility {
 		 *
 		 * @param int[] $ids Product IDs.
 		 */
-		$ids       = array_values( array_unique( array_filter( array_map( 'absint', (array) apply_filters( 'wdp_sadaka_line_product_ids', $ids ) ) ) ) );
+		$ids       = array_values( array_unique( array_filter( array_map( 'absint', (array) apply_filters( 'wdp_sadaka_line_product_ids', $ids ) ) ) ) ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- geriye dönük uyumluluk sözleşmesi: eski wdp_ kanca adı değişmez.
 		self::$ids = $ids;
 		set_transient( self::TRANSIENT, $ids, DAY_IN_SECONDS );
 		return self::$ids;
@@ -189,7 +189,7 @@ class Addon_Product_Visibility {
 			return array();
 		}
 
-		$labels = array();
+		$labels  = array();
 		$default = (int) Addon_Settings::get_default_addon_wc_product_id();
 		if ( $default === $addon_id ) {
 			$labels[] = __( 'General default (Success tab)', 'woo-donation-popup' );
@@ -215,7 +215,7 @@ class Addon_Product_Visibility {
 			return '';
 		}
 		$title = function_exists( 'get_the_title' ) ? get_the_title( $product_id ) : '';
-		if ( is_string( $title ) && $title !== '' ) {
+		if ( is_string( $title ) && '' !== $title ) {
 			return $title . ' (#' . $product_id . ')';
 		}
 		return '#' . $product_id;
@@ -232,7 +232,7 @@ class Addon_Product_Visibility {
 			array(
 				'post_type'              => 'product',
 				'post_status'            => 'any',
-				'numberposts'            => 500,
+				'numberposts'            => 500, // phpcs:ignore WordPress.WP.PostsPerPage.posts_per_page_numberposts -- yalnız kimlik listesi, önbelleğe alınır.
 				'fields'                 => 'ids',
 				'suppress_filters'       => true,
 				'no_found_rows'          => true,
@@ -336,7 +336,7 @@ class Addon_Product_Visibility {
 	 * @return void
 	 */
 	public static function maybe_flush_on_option( $option ) {
-		if ( $option === 'wdp_success_settings' || $option === self::AUDIT_OPTION ) {
+		if ( 'wdp_success_settings' === $option || self::AUDIT_OPTION === $option ) {
 			self::flush();
 		}
 	}
@@ -350,10 +350,10 @@ class Addon_Product_Visibility {
 	public static function maybe_flush_on_meta( $_meta_id, $object_id, $meta_key ) {
 		unset( $_meta_id, $object_id );
 		if (
-			$meta_key === '_addon_wc_product_id'
-			|| $meta_key === '_enable_addon_donation'
-			|| $meta_key === '_sadaka_wc_product_id'
-			|| $meta_key === '_enable_sadaka_donation'
+		'_addon_wc_product_id' === $meta_key
+			|| '_enable_addon_donation' === $meta_key
+			|| '_sadaka_wc_product_id' === $meta_key
+			|| '_enable_sadaka_donation' === $meta_key
 		) {
 			self::flush();
 		}
@@ -426,7 +426,7 @@ class Addon_Product_Visibility {
 					),
 				)
 			);
-			if ( $error !== '' ) {
+			if ( '' !== $error ) {
 				echo '<p class="wdp-pp-field-error" style="color:#b32d2e;margin:4px 0 0;">' . esc_html( $error ) . '</p>';
 			}
 			return;
@@ -438,16 +438,16 @@ class Addon_Product_Visibility {
 		echo ' data-placeholder="' . esc_attr__( 'Search by product name…', 'woo-donation-popup' ) . '"';
 		echo ' data-action="woocommerce_json_search_products_and_variations" data-allow_clear="true" style="width:100%;max-width:400px;">';
 		foreach ( $options as $opt_id => $opt_label ) {
-			if ( (string) $opt_id === '' ) {
+			if ( '' === (string) $opt_id ) {
 				continue;
 			}
 			echo '<option value="' . esc_attr( (string) $opt_id ) . '" selected="selected">' . esc_html( $opt_label ) . '</option>';
 		}
 		echo '</select>';
-		if ( $description !== '' ) {
+		if ( '' !== $description ) {
 			echo '<span class="description">' . esc_html( $description ) . '</span>';
 		}
-		if ( $error !== '' ) {
+		if ( '' !== $error ) {
 			echo '<span class="wdp-pp-field-error" style="display:block;color:#b32d2e;margin-top:4px;">' . esc_html( $error ) . '</span>';
 		}
 		echo '</p>';

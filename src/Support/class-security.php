@@ -156,7 +156,7 @@ class Security {
 			if ( method_exists( $product, 'get_post_password' ) ) {
 				$password = (string) $product->get_post_password();
 			}
-			if ( $password !== '' ) {
+			if ( '' !== $password ) {
 				return false;
 			}
 			// Katalogda gizli (mağaza/arama listesinden gizli) ama yayında ürün satın alınabilir; bağış ürünleri
@@ -177,7 +177,7 @@ class Security {
 	 */
 	public static function check_rate_limit( $key, $limit = 10, $period = 60 ) {
 		$key = (string) $key;
-		if ( $key === '' ) {
+		if ( '' === $key ) {
 			$key = 'anonymous';
 		}
 		$transient_key = 'wdp_rate_limit_' . md5( $key );
@@ -254,7 +254,7 @@ class Security {
 			return false;
 		}
 		if ( $use_visitor_token && ! is_user_logged_in() ) {
-			$ip_limit = (int) apply_filters( 'wdp_rate_limit_ip_max', self::READ_IP_RATE_LIMIT, $action );
+			$ip_limit = (int) apply_filters( 'wdp_rate_limit_ip_max', self::READ_IP_RATE_LIMIT, $action ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- geriye dönük uyumluluk sözleşmesi: eski wdp_ kanca adı değişmez.
 			if ( $ip_limit > 0 && ! self::check_rate_limit( self::get_rate_limit_ip_key( $action ), $ip_limit, $period ) ) {
 				return false;
 			}
@@ -272,13 +272,13 @@ class Security {
 		// Prefer REMOTE_ADDR first. Only trust X-Forwarded-For (etc.) when
 		// apply_filters( 'wdp_trust_proxy_headers', false ) is true for known proxies.
 		$remote = isset( $_SERVER['REMOTE_ADDR'] ) ? trim( (string) $_SERVER['REMOTE_ADDR'] ) : '';
-		if ( $remote !== '' && filter_var( $remote, FILTER_VALIDATE_IP ) !== false ) {
-			if ( ! (bool) apply_filters( 'wdp_trust_proxy_headers', false ) ) {
+		if ( '' !== $remote && false !== filter_var( $remote, FILTER_VALIDATE_IP ) ) {
+			if ( ! (bool) apply_filters( 'wdp_trust_proxy_headers', false ) ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- geriye dönük uyumluluk sözleşmesi: eski wdp_ kanca adı değişmez.
 				return $remote;
 			}
 		}
 
-		if ( (bool) apply_filters( 'wdp_trust_proxy_headers', false ) ) {
+		if ( (bool) apply_filters( 'wdp_trust_proxy_headers', false ) ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- geriye dönük uyumluluk sözleşmesi: eski wdp_ kanca adı değişmez.
 			$proxy_keys = array(
 				'HTTP_CLIENT_IP',
 				'HTTP_X_FORWARDED_FOR',
@@ -300,7 +300,7 @@ class Security {
 			}
 		}
 
-		if ( $remote !== '' && filter_var( $remote, FILTER_VALIDATE_IP ) !== false ) {
+		if ( '' !== $remote && false !== filter_var( $remote, FILTER_VALIDATE_IP ) ) {
 			return $remote;
 		}
 

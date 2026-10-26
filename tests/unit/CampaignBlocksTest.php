@@ -234,10 +234,10 @@ final class CampaignBlocksTest extends TestCase {
 			'privacy_notice_text'   => '',
 			'privacy_notice_url'    => 'https://example.test/p',
 		);
-		$n = WDP_Donation_Optional_Fields::resolve_privacy_notice(array( 'has_email' => true ));
+		$n = \DonationPanel\Domain\Privacy_Notice::resolve(array( 'has_email' => true ));
 		$this->assertNotNull($n);
 		$this->assertSame(
-			WDP_Donation_Optional_Fields::default_privacy_link_label(),
+			\DonationPanel\Domain\Privacy_Notice::default_link_label(),
 			$n['link_label']
 		);
 		$this->assertStringNotContainsString('yurt dışındaki saha', $n['text']);

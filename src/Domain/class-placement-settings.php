@@ -83,7 +83,7 @@ class Placement_Settings {
 	 * @return array<string, mixed>
 	 */
 	public static function get() {
-		if ( self::$cache !== null ) {
+		if ( null !== self::$cache ) {
 			return self::$cache;
 		}
 		$stored = get_option( self::OPTION, false );
@@ -96,12 +96,12 @@ class Placement_Settings {
 
 	/**
 	 * @param string $key     Setting key.
-	 * @param mixed  $default Fallback for unknown keys.
+	 * @param mixed  $default_value Fallback for unknown keys.
 	 * @return mixed
 	 */
-	public static function value( $key, $default = null ) {
+	public static function value( $key, $default_value = null ) {
 		$settings = self::get();
-		return array_key_exists( $key, $settings ) ? $settings[ $key ] : $default;
+		return array_key_exists( $key, $settings ) ? $settings[ $key ] : $default_value;
 	}
 
 	/**
@@ -132,12 +132,12 @@ class Placement_Settings {
 	/**
 	 * @param array  $raw     Raw settings.
 	 * @param string $key     Key.
-	 * @param string $default yes|no.
+	 * @param string $default_value yes|no.
 	 * @return string
 	 */
-	private static function yes_no( array $raw, $key, $default ) {
+	private static function yes_no( array $raw, $key, $default_value ) {
 		if ( ! array_key_exists( $key, $raw ) ) {
-			return $default;
+			return $default_value;
 		}
 		$value = $raw[ $key ];
 		if ( is_bool( $value ) ) {
@@ -150,18 +150,18 @@ class Placement_Settings {
 		if ( in_array( $value, array( 'no', '0', 'false', 'off', '' ), true ) ) {
 			return 'no';
 		}
-		return $default;
+		return $default_value;
 	}
 
 	/**
 	 * @param array    $raw     Raw settings.
 	 * @param string   $key     Key.
 	 * @param string[] $allowed Allowed values.
-	 * @param string   $default Default.
+	 * @param string   $default_value Default.
 	 * @return string
 	 */
-	private static function choice( array $raw, $key, array $allowed, $default ) {
+	private static function choice( array $raw, $key, array $allowed, $default_value ) {
 		$value = isset( $raw[ $key ] ) && is_scalar( $raw[ $key ] ) ? sanitize_key( (string) $raw[ $key ] ) : '';
-		return in_array( $value, $allowed, true ) ? $value : $default;
+		return in_array( $value, $allowed, true ) ? $value : $default_value;
 	}
 }

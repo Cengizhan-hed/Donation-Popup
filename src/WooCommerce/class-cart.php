@@ -282,7 +282,6 @@ final class Cart {
 	 */
 	private function with_plugin_flow( $callback ) {
 		return Cart_Hooks::run_in_plugin_flow( $callback );
-		return call_user_func( $callback );
 	}
 
 	/**

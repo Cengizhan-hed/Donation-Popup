@@ -120,7 +120,7 @@ class Version_Migrations {
 	 */
 	public static function needs_run() {
 		$stored = get_option( self::OPTION, false );
-		return $stored === false || version_compare( (string) $stored, self::target_version(), '<' );
+		return false === $stored || version_compare( (string) $stored, self::target_version(), '<' );
 	}
 
 	/**
@@ -148,7 +148,7 @@ class Version_Migrations {
 		}
 		$basename = function_exists( 'plugin_basename' ) ? plugin_basename( WDP_PLUGIN_FILE ) : '';
 		$plugins  = isset( $options['plugins'] ) ? (array) $options['plugins'] : ( isset( $options['plugin'] ) ? array( $options['plugin'] ) : array() );
-		if ( $basename !== '' && in_array( $basename, $plugins, true ) ) {
+		if ( '' !== $basename && in_array( $basename, $plugins, true ) ) {
 			self::maybe_run();
 		}
 	}
@@ -160,7 +160,7 @@ class Version_Migrations {
 	 * @return void
 	 */
 	public static function remember_previous_version( $previous ) {
-		if ( $previous === false || $previous === '' || get_option( self::OPTION, false ) !== false ) {
+		if ( false === $previous || '' === $previous || false !== get_option( self::OPTION, false ) ) {
 			return;
 		}
 		if ( get_option( self::PREVIOUS_OPTION, false ) === false ) {
@@ -183,7 +183,7 @@ class Version_Migrations {
 		try {
 			$stored   = get_option( self::OPTION, false );
 			$is_fresh = self::is_fresh_install();
-			$current  = $stored === false ? '0' : (string) $stored;
+			$current  = false === $stored ? '0' : (string) $stored;
 			$target   = self::target_version();
 
 			foreach ( self::steps() as $version => $callback ) {
@@ -220,7 +220,7 @@ class Version_Migrations {
 			return false;
 		}
 		$version = get_option( 'wdp_version', false );
-		if ( $version !== false && (string) $version !== self::target_version() ) {
+		if ( false !== $version && self::target_version() !== (string) $version ) {
 			return false;
 		}
 		foreach ( self::SETTINGS_OPTIONS as $option ) {
@@ -341,7 +341,7 @@ class Version_Migrations {
 				array(
 					'post_type'              => 'product',
 					'post_status'            => 'any',
-					'posts_per_page'         => 200,
+					'posts_per_page'         => 200, // phpcs:ignore WordPress.WP.PostsPerPage.posts_per_page_posts_per_page -- tek seferlik göç; yalnız kimlik listesi, sayfalı çalışır.
 					'fields'                 => 'ids',
 					'no_found_rows'          => true,
 					'update_post_meta_cache' => false,
@@ -406,7 +406,7 @@ class Version_Migrations {
 		$button = get_option( 'wdp_button_settings', false );
 		if ( is_array( $button ) && array_key_exists( 'privacy_notice_text', $button ) ) {
 			$current = trim( (string) $button['privacy_notice_text'] );
-			if ( $current !== '' && in_array( $current, $legacy_defaults, true ) ) {
+			if ( '' !== $current && in_array( $current, $legacy_defaults, true ) ) {
 				$button['privacy_notice_text'] = '';
 				update_option( 'wdp_button_settings', $button, false );
 				$action = 'cleared_legacy_default';
@@ -497,7 +497,7 @@ class Version_Migrations {
 		// Denetim seçeneği: yeni ad yoksa eskiden kopyala (eski silinmez).
 		if ( get_option( 'wdp_addon_links_audit', false ) === false ) {
 			$old_audit = get_option( 'wdp_sadaka_links_audit', false );
-			if ( $old_audit !== false ) {
+			if ( false !== $old_audit ) {
 				update_option( 'wdp_addon_links_audit', $old_audit, false );
 			}
 		}
@@ -554,7 +554,7 @@ class Version_Migrations {
 		$fee_fixed = 0;
 		foreach ( self::find_products_with_meta_key( '_cover_fee_percent' ) as $product_id ) {
 			$raw = get_post_meta( $product_id, '_cover_fee_percent', true );
-			if ( $raw === '' || $raw === null || ! is_numeric( $raw ) ) {
+			if ( '' === $raw || null === $raw || ! is_numeric( $raw ) ) {
 				continue;
 			}
 			$value = (float) $raw;
@@ -616,7 +616,8 @@ class Version_Migrations {
 					$after = max( $after, $post_id );
 					$out[] = $post_id;
 				}
-			} while ( count( $ids ) === self::BATCH );
+				$batch_full = ( count( $ids ) === self::BATCH );
+			} while ( $batch_full );
 			return $out;
 		}
 
@@ -752,7 +753,7 @@ class Version_Migrations {
 			$parent_label = Addon_Product_Visibility::product_label( $parent_id );
 			$addon_label  = Addon_Product_Visibility::product_label( $raw_id );
 
-			if ( $reason !== '' ) {
+			if ( '' !== $reason ) {
 				delete_post_meta( $parent_id, '_addon_wc_product_id' );
 				delete_post_meta( $parent_id, '_sadaka_wc_product_id' );
 				++$cleaned;
@@ -855,14 +856,14 @@ class Version_Migrations {
 		}
 
 		$backup = get_option( self::BACKUP_OPTION, false );
-		if ( ! is_array( $backup ) || $backup === array() ) {
+		if ( ! is_array( $backup ) || array() === $backup ) {
 			return 'skipped';
 		}
 
 		$options_restored = 0;
 		foreach ( $backup as $key => $value ) {
 			$key = (string) $key;
-			if ( $key === 'product_meta' || $key === '' ) {
+			if ( 'product_meta' === $key || '' === $key ) {
 				continue;
 			}
 			update_option( $key, $value, false );
@@ -887,7 +888,7 @@ class Version_Migrations {
 				$kept_keys = array();
 				foreach ( $metas as $meta_key => $meta_value ) {
 					$meta_key = (string) $meta_key;
-					if ( $meta_key === '' ) {
+					if ( '' === $meta_key ) {
 						continue;
 					}
 					update_post_meta( $post_id, $meta_key, $meta_value );
@@ -1005,7 +1006,7 @@ class Version_Migrations {
 			return;
 		}
 		$nonce = isset( $_GET['_wpnonce'] ) ? sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		if ( $nonce === '' || ! wp_verify_nonce( $nonce, 'wdp_dismiss_placement' ) ) {
+		if ( '' === $nonce || ! wp_verify_nonce( $nonce, 'wdp_dismiss_placement' ) ) {
 			return;
 		}
 		delete_option( self::NOTICE_OPTION );
@@ -1025,11 +1026,11 @@ class Version_Migrations {
 		$ok     = false;
 		if ( $screen && isset( $screen->id ) ) {
 			$id = (string) $screen->id;
-			if ( $id === 'plugins' || $id === 'plugins-network' || strpos( $id, 'wdp-popup-settings' ) !== false ) {
+			if ( 'plugins' === $id || 'plugins-network' === $id || false !== strpos( $id, 'wdp-popup-settings' ) ) {
 				$ok = true;
 			}
 		}
-		if ( ! $ok && isset( $_GET['page'] ) && (string) $_GET['page'] === 'wdp-popup-settings' ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( ! $ok && isset( $_GET['page'] ) && 'wdp-popup-settings' === (string) $_GET['page'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			$ok = true;
 		}
 		if ( ! $ok ) {
@@ -1090,7 +1091,8 @@ class Version_Migrations {
 						++$updated;
 					}
 				}
-			} while ( count( $ids ) === self::BATCH );
+				$batch_full = ( count( $ids ) === self::BATCH );
+			} while ( $batch_full );
 		}
 		return $updated;
 	}

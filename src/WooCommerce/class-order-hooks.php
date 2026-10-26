@@ -38,6 +38,7 @@ class Order_Hooks {
 	 * @param \WC_Order              $order        Order.
 	 */
 	public static function add_donation_meta_to_order( $item, $cart_item_key, $values, $order ) {
+		unset( $cart_item_key, $order );
 		// Özel fiyat varsa order item meta'ya ekle (progress bar için gerekli)
 		if ( isset( $values['custom_price'] ) && $values['custom_price'] > 0 ) {
 			$item->add_meta_data( '_custom_price', floatval( $values['custom_price'] ) );
@@ -54,5 +55,3 @@ class Order_Hooks {
 		}
 	}
 }
-
-// Note: init() is called by Woo_Donation_Popup::__construct()

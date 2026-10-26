@@ -500,7 +500,7 @@ class Phone_Countries {
 		 *
 		 * @param string[] $excluded Çıkarılacak ISO2 kodları.
 		 */
-		$excluded = apply_filters( 'wdp_phone_excluded_countries', array() );
+		$excluded = apply_filters( 'wdp_phone_excluded_countries', array() ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- geriye dönük uyumluluk sözleşmesi: eski wdp_ kanca adı değişmez.
 		if ( is_array( $excluded ) ) { // @phpstan-ignore function.alreadyNarrowedType
 			foreach ( $excluded as $code ) {
 				unset( $countries[ strtolower( (string) $code ) ] );
@@ -514,7 +514,7 @@ class Phone_Countries {
 		 *
 		 * @param array<string, array{name:string,dial:string}> $countries Countries.
 		 */
-		return apply_filters( 'wdp_phone_countries', $countries );
+		return apply_filters( 'wdp_phone_countries', $countries ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- geriye dönük uyumluluk sözleşmesi: eski wdp_ kanca adı değişmez.
 	}
 
 	/**
@@ -566,7 +566,7 @@ class Phone_Countries {
 		}
 		foreach ( $names as $code => $name ) {
 			$iso = strtolower( (string) $code );
-			if ( strlen( $iso ) !== 2 || ! is_string( $name ) || $name === '' ) {
+			if ( 2 !== strlen( $iso ) || ! is_string( $name ) || '' === $name ) {
 				continue;
 			}
 			if ( isset( $countries[ $iso ] ) ) {
@@ -581,7 +581,7 @@ class Phone_Countries {
 				}
 				$dial = preg_replace( '/\D+/', '', (string) $calling );
 			}
-			if ( $dial === '' ) {
+			if ( '' === $dial ) {
 				continue;
 			}
 			$countries[ $iso ] = array(
@@ -607,7 +607,7 @@ class Phone_Countries {
 			if ( class_exists( 'Collator' ) ) {
 				static $collators = array();
 				if ( ! isset( $collators[ $locale ] ) ) {
-					$collators[ $locale ] = new \Collator( $locale !== '' ? $locale : 'en_US' );
+					$collators[ $locale ] = new \Collator( '' !== $locale ? $locale : 'en_US' );
 				}
 				if ( $collators[ $locale ] instanceof \Collator ) {
 					return $collators[ $locale ]->compare( $an, $bn );
@@ -617,7 +617,7 @@ class Phone_Countries {
 		};
 
 		$first = strtolower( (string) $first );
-		if ( $first === '' || ! isset( $countries[ $first ] ) ) {
+		if ( '' === $first || ! isset( $countries[ $first ] ) ) {
 			uasort( $countries, $compare );
 			return $countries;
 		}
@@ -637,12 +637,12 @@ class Phone_Countries {
 	public static function get_default_country_iso() {
 		$countries = self::get_countries();
 		$store     = self::get_store_country_iso();
-		$raw       = apply_filters( 'wdp_phone_default_country', $store );
+		$raw       = apply_filters( 'wdp_phone_default_country', $store ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- geriye dönük uyumluluk sözleşmesi: eski wdp_ kanca adı değişmez.
 		$iso       = is_string( $raw ) ? strtolower( $raw ) : '';
 		if ( strlen( $iso ) === 2 && isset( $countries[ $iso ] ) ) {
 			return $iso;
 		}
-		if ( $store !== '' && isset( $countries[ $store ] ) ) {
+		if ( '' !== $store && isset( $countries[ $store ] ) ) {
 			return $store;
 		}
 		$keys = array_keys( $countries );
@@ -1131,7 +1131,7 @@ class Phone_Countries {
 		 *
 		 * @param array<string, array{min:int,max:int}> $rules Rules.
 		 */
-		return apply_filters( 'wdp_phone_national_length_rules', $rules );
+		return apply_filters( 'wdp_phone_national_length_rules', $rules ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- geriye dönük uyumluluk sözleşmesi: eski wdp_ kanca adı değişmez.
 	}
 
 	/**
@@ -1180,5 +1180,4 @@ class Phone_Countries {
 		}
 		return $out;
 	}
-
 }

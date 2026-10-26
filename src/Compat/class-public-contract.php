@@ -5,7 +5,8 @@
  *
  * - Kısa kodlar: `[wdp_donation_button]`, `[wdp_donation_button_panel]` (`id`), `[wdp_donation_form]`, `[wdp_donations]`.
  *   Adları ve öznitelikleri (`id, slug, sku, text, button_text, class, title, show_title`) değişmez.
- * - PHP yardımcı işlevleri: `wdp_render_donation_button()`, `wdp_render_donation_form()`.
+ * - PHP yardımcı işlevleri: `wdp_render_donation_button()`, `wdp_render_donation_form()` (giriş dosyasında tanımlı ince sarmalayıcılar;
+ *   işi `render_for_product()` yapar).
  * - Kanca adları (docs/HOOKS.md "Eski sözleşme"): etkin olanlar kodda çalışmaya devam eder; arayüzü kaldırılanlar
  *   `RETIRED_HOOKS` altında listelenir (ekleyen kodu bozmaz, ancak artık çağrılmaz).
  * - Veri anahtarları: sipariş kalemi / ürün / sepet / seçenek anahtarları (`DATA_KEYS`); göç ve testler bunlara bakar.
@@ -13,7 +14,7 @@
  * @package DonationPanel
  */
 
-namespace DonationPanel\Compat {
+namespace DonationPanel\Compat;
 
 use DonationPanel\Modules\EntryPoints\Blocks;
 use DonationPanel\Modules\EntryPoints\Donations_List;
@@ -120,22 +121,11 @@ final class Public_Contract {
 	 * Veri sözleşmesi: sipariş kalemi, ürün, sepet ve seçenek anahtarları (adları değişmez).
 	 */
 	const DATA_KEYS = array(
-		'order_item'  => array( 'wdp_donor_name', 'wdp_donor_phone', 'wdp_donor_email', 'wdp_donation_note', 'wdp_dedication', 'wdp_anonymous', 'wdp_cover_fee', 'wdp_share_count' ),
-		'product'     => array( '_enable_addon_donation', '_addon_min_price', '_enable_sadaka_donation', '_sadaka_min_price', '_wdp_total_donation_amount', '_wdp_manual_total', '_wdp_donor_count', '_wdp_donation_product' ),
-		'cart'        => array( 'donation_data', 'custom_price', 'wdp_sadaka_donation', 'wdp_sadaka_linked_wc_product', 'wdp_input_currency', 'wdp_base_unit_price', 'unique_submission_key' ),
-		'options'     => array( 'wdp_button_settings', 'wdp_success_settings', 'wdp_shareholder_settings', 'wdp_progress_bar_settings', 'wdp_modal_layout_settings', 'wdp_placement_settings', 'wdp_version', 'wdp_cache_version' ),
+		'order_item' => array( 'wdp_donor_name', 'wdp_donor_phone', 'wdp_donor_email', 'wdp_donation_note', 'wdp_dedication', 'wdp_anonymous', 'wdp_cover_fee', 'wdp_share_count' ),
+		'product'    => array( '_enable_addon_donation', '_addon_min_price', '_enable_sadaka_donation', '_sadaka_min_price', '_wdp_total_donation_amount', '_wdp_manual_total', '_wdp_donor_count', '_wdp_donation_product' ),
+		'cart'       => array( 'donation_data', 'custom_price', 'wdp_sadaka_donation', 'wdp_sadaka_linked_wc_product', 'wdp_input_currency', 'wdp_base_unit_price', 'unique_submission_key' ),
+		'options'    => array( 'wdp_button_settings', 'wdp_success_settings', 'wdp_shareholder_settings', 'wdp_progress_bar_settings', 'wdp_modal_layout_settings', 'wdp_placement_settings', 'wdp_version', 'wdp_cache_version' ),
 	);
-
-	/**
-	 * PHP yardımcı işlevlerini erken yükler: bu dosya yüklenince (dosyanın altındaki küresel ad alanı bloğu)
-	 * `wdp_render_donation_button()` ve `wdp_render_donation_form()` tanımlanır; `plugins_loaded` 10'da çağrılsa da
-	 * fatal vermez (WooCommerce henüz yoksa uyarı metni döner).
-	 *
-	 * @return void
-	 */
-	public static function declare_functions() {
-		// Boş gövde bilerek: sınıfı yüklemek işlevlerin tanımlanmasını sağlar.
-	}
 
 	/**
 	 * Kısa kodları, blokları ve Elementor ince katmanını kaydeder (WooCommerce yüklüyken).
@@ -225,39 +215,4 @@ final class Public_Contract {
 		}
 		return $model;
 	}
-}
-
-}
-
-namespace {
-
-	// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound -- geriye dönük uyumluluk: eski dışa açık işlev adları değişmez.
-
-	if ( ! function_exists( 'wdp_render_donation_button' ) ) {
-		/**
-		 * Bağış düğmesini (açılır form) çizer.
-		 *
-		 * @param int    $product_id  Ürün kimliği.
-		 * @param string $button_text Düğme metni.
-		 * @return string
-		 */
-		function wdp_render_donation_button( $product_id, $button_text = '' ) {
-			return \DonationPanel\Compat\Public_Contract::render_for_product( 'wdp_donation_button', (int) $product_id, array( 'text' => (string) $button_text ) );
-		}
-	}
-
-	if ( ! function_exists( 'wdp_render_donation_form' ) ) {
-		/**
-		 * Sayfa içi bağış formunu çizer.
-		 *
-		 * @param int                  $product_id Ürün kimliği.
-		 * @param array<string, mixed> $args       Öznitelikler (`class`, `title`, `show_title`).
-		 * @return string
-		 */
-		function wdp_render_donation_form( $product_id, $args = array() ) {
-			return \DonationPanel\Compat\Public_Contract::render_for_product( 'wdp_donation_form', (int) $product_id, is_array( $args ) ? $args : array() );
-		}
-	}
-
-	// phpcs:enable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound
 }

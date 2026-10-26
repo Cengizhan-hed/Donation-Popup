@@ -110,9 +110,9 @@ class Donations_List {
 
 	public static function sanitize_atts( $atts ) {
 		$atts  = is_array( $atts ) ? $atts : array();
-		$yesno = static function ( $value, $default ) {
-			if ( $value === null || $value === '' ) {
-				return $default;
+		$yesno = static function ( $value, $default_value ) {
+			if ( null === $value || '' === $value ) {
+				return $default_value;
 			}
 			$raw = strtolower( trim( (string) $value ) );
 			if ( in_array( $raw, array( 'yes', '1', 'true', 'on' ), true ) ) {
@@ -121,15 +121,15 @@ class Donations_List {
 			if ( in_array( $raw, array( 'no', '0', 'false', 'off' ), true ) ) {
 				return 'no';
 			}
-			return $default;
+			return $default_value;
 		};
-		$int   = static function ( $value, $min, $max, $default ) {
-			if ( $value === null || $value === '' ) {
-				return $default;
+		$int   = static function ( $value, $min, $max, $default_value ) {
+			if ( null === $value || '' === $value ) {
+				return $default_value;
 			}
 			$n = (int) $value;
 			if ( $n < $min || $n > $max ) {
-				return $default;
+				return $default_value;
 			}
 			return $n;
 		};
@@ -139,14 +139,14 @@ class Donations_List {
 			$orderby = 'menu_order';
 		}
 		$order = isset( $atts['order'] ) ? strtoupper( sanitize_key( (string) $atts['order'] ) ) : 'ASC';
-		$order = $order === 'DESC' ? 'DESC' : 'ASC';
+		$order = 'DESC' === $order ? 'DESC' : 'ASC';
 
 		$image_ratio = isset( $atts['image_ratio'] ) ? (string) $atts['image_ratio'] : '4:3';
 		if ( ! in_array( $image_ratio, array( '1:1', '4:3', '3:2', '16:9', 'original' ), true ) ) {
 			$image_ratio = '4:3';
 		}
 		$align  = isset( $atts['align'] ) ? sanitize_key( (string) $atts['align'] ) : 'center';
-		$align  = $align === 'left' ? 'left' : 'center';
+		$align  = 'left' === $align ? 'left' : 'center';
 		$button = isset( $atts['button'] ) ? sanitize_key( (string) $atts['button'] ) : 'panel';
 		if ( ! in_array( $button, array( 'panel', 'popup', 'link' ), true ) ) {
 			$button = 'panel';
@@ -160,7 +160,7 @@ class Donations_List {
 		if ( ! empty( $atts['type'] ) ) {
 			foreach ( preg_split( '/[\s,]+/', (string) $atts['type'] ) as $type ) {
 				$type = Donation_Type::sanitize( $type, '' );
-				if ( $type !== '' && ! in_array( $type, $types, true ) ) {
+				if ( '' !== $type && ! in_array( $type, $types, true ) ) {
 					$types[] = $type;
 				}
 			}
@@ -213,16 +213,16 @@ class Donations_List {
 		$atts = self::sanitize_atts( $atts );
 		self::enqueue_assets();
 
-		$use_cache = $atts['orderby'] !== 'random';
+		$use_cache = 'random' !== $atts['orderby'];
 		$html      = '';
 		if ( $use_cache ) {
 			$cache_key = self::cache_key( $atts );
 			$cached    = get_transient( $cache_key );
-			if ( is_string( $cached ) && $cached !== '' ) {
+			if ( is_string( $cached ) && '' !== $cached ) {
 				$html = $cached;
 			}
 		}
-		if ( $html === '' ) {
+		if ( '' === $html ) {
 			$built = self::build_html( $atts );
 			$html  = $built['html'];
 			if ( $use_cache ) {
@@ -307,17 +307,17 @@ class Donations_List {
 	}
 
 	/**
-	 * @param string  $new  New status.
-	 * @param string  $old  Old status.
-	 * @param \WP_Post $post Post.
+	 * @param string   $new_status Yeni durum.
+	 * @param string   $old_status Eski durum.
+	 * @param \WP_Post $post       Yazı.
 	 * @return void
 	 */
-	public static function on_transition_post_status( $new, $old, $post ) {
-		if ( $new === $old || ! is_object( $post ) ) {
+	public static function on_transition_post_status( $new_status, $old_status, $post ) {
+		if ( $new_status === $old_status || ! is_object( $post ) ) {
 			return;
 		}
 		$type = isset( $post->post_type ) ? (string) $post->post_type : '';
-		if ( $type === 'product' || $type === 'product_variation' ) {
+		if ( 'product' === $type || 'product_variation' === $type ) {
 			self::bump_cache();
 		}
 	}
@@ -357,7 +357,7 @@ class Donations_List {
 			return false;
 		}
 		$type = function_exists( 'get_post_type' ) ? get_post_type( $post_id ) : '';
-		return $type === 'product' || $type === 'product_variation';
+		return 'product' === $type || 'product_variation' === $type;
 	}
 
 	/**
@@ -370,7 +370,8 @@ class Donations_List {
 	 * @return void
 	 */
 	public static function on_set_object_terms( $object_id, $terms, $tt_ids, $taxonomy, $append = false, $old_tt_ids = array() ) {
-		if ( $taxonomy === 'product_cat' ) {
+		unset( $object_id, $terms, $tt_ids, $append, $old_tt_ids );
+		if ( 'product_cat' === $taxonomy ) {
 			self::bump_cache();
 		}
 	}
@@ -407,7 +408,7 @@ class Donations_List {
 		$products = self::query_products( $atts );
 		if ( empty( $products ) ) {
 			$msg   = '<p class="wdp-list__empty">' . esc_html__( 'There are no donations to show right now.', 'woo-donation-popup' ) . '</p>';
-			$class = 'wdp-list-wrap' . ( $atts['class'] !== '' ? ' ' . esc_attr( $atts['class'] ) : '' );
+			$class = 'wdp-list-wrap' . ( '' !== $atts['class'] ? ' ' . esc_attr( $atts['class'] ) : '' );
 			return array(
 				'html'  => '<div class="' . $class . '" data-wdp-list-id="' . esc_attr( self::UID_PLACEHOLDER ) . '">' . $msg . '</div>',
 				'empty' => true,
@@ -419,19 +420,19 @@ class Donations_List {
 			$ids[] = (int) $product->get_id();
 		}
 		$totals = Campaign_Totals::get_totals_for_products( $ids );
-		$tabs   = ( $atts['tabs'] === 'yes' ) ? self::build_tabs( $products ) : array();
+		$tabs   = ( 'yes' === $atts['tabs'] ) ? self::build_tabs( $products ) : array();
 
 		$style = '--wdp-cols:' . (int) $atts['columns']
 			. ';--wdp-cols-t:' . (int) $atts['columns_tablet']
 			. ';--wdp-cols-m:' . (int) $atts['columns_mobile']
 			. ';--wdp-gap:' . (int) $atts['gap'] . 'px';
 		$ratio = self::ratio_css( $atts['image_ratio'] );
-		if ( $ratio !== '' ) {
+		if ( '' !== $ratio ) {
 			$style .= ';--wdp-ratio:' . $ratio;
 		}
 
 		$wrap_class = 'wdp-list-wrap wdp-list-wrap--' . $atts['align'];
-		if ( $atts['class'] !== '' ) {
+		if ( '' !== $atts['class'] ) {
 			$wrap_class .= ' ' . $atts['class'];
 		}
 
@@ -441,7 +442,7 @@ class Donations_List {
 		echo '<div class="' . esc_attr( $wrap_class ) . '" style="' . esc_attr( $style ) . '" data-wdp-list-id="' . esc_attr( $uid ) . '">';
 		if ( ! empty( $tabs ) ) {
 			echo self::tabs_html( $tabs, $atts, $uid, $panel_id ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-			$labelled = ( $atts['tab_all'] === 'yes' ) ? ( $uid . '-all' ) : ( $uid . '-' . $tabs[0]['slug'] );
+			$labelled = ( 'yes' === $atts['tab_all'] ) ? ( $uid . '-all' ) : ( $uid . '-' . $tabs[0]['slug'] );
 			echo '<ul class="wdp-list" role="tabpanel" id="' . esc_attr( $panel_id ) . '" aria-labelledby="' . esc_attr( $labelled ) . '">';
 		} else {
 			echo '<ul class="wdp-list" role="list">';
@@ -516,13 +517,13 @@ class Donations_List {
 		if ( ! empty( $atts['ids'] ) ) {
 			$args['post__in'] = $atts['ids'];
 			$args['orderby']  = 'post__in';
-		} elseif ( $orderby === 'random' ) {
+		} elseif ( 'random' === $orderby ) {
 			$args['orderby'] = 'rand';
-		} elseif ( $orderby === 'title' ) {
+		} elseif ( 'title' === $orderby ) {
 			$args['orderby'] = 'title';
-		} elseif ( $orderby === 'date' ) {
+		} elseif ( 'date' === $orderby ) {
 			$args['orderby'] = 'date';
-		} elseif ( $orderby === 'popularity' ) {
+		} elseif ( 'popularity' === $orderby ) {
 			$args['orderby']  = 'meta_value_num';
 			$args['meta_key'] = 'total_sales'; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
 		} else {
@@ -545,11 +546,12 @@ class Donations_List {
 		 * @param array $args \WP_Query args.
 		 * @param array $atts Sanitized attributes.
 		 */
-		$args = apply_filters( 'wdp_donations_query_args', $args, $atts );
-		$out  = array();
-		$page = 1;
-		$max  = 20;
-		while ( count( $out ) < $limit && $page <= $max ) {
+		$args  = apply_filters( 'wdp_donations_query_args', $args, $atts ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- geriye dönük uyumluluk sözleşmesi: eski wdp_ kanca adı değişmez.
+		$out   = array();
+		$page  = 1;
+		$max   = 20;
+		$found = 0;
+		while ( $found < $limit && $page <= $max ) {
 			$args['paged'] = $page;
 			$query         = new \WP_Query( $args );
 			$posts         = is_object( $query ) && isset( $query->posts ) ? $query->posts : array();
@@ -568,7 +570,8 @@ class Donations_List {
 					continue;
 				}
 				$out[] = $product;
-				if ( count( $out ) >= $limit ) {
+				++$found;
+				if ( $found >= $limit ) {
 					break;
 				}
 			}
@@ -618,7 +621,7 @@ class Donations_List {
 				continue;
 			}
 			$slug = sanitize_title( $term->slug );
-			if ( $slug === 'uncategorized' ) {
+			if ( 'uncategorized' === $slug ) {
 				continue;
 			}
 			$out[] = array(
@@ -649,11 +652,11 @@ class Donations_List {
 	 * @return string
 	 */
 	private static function tabs_html( array $tabs, array $atts, $uid = '', $panel_id = '' ) {
-		$uid      = $uid !== '' ? $uid : self::UID_PLACEHOLDER;
-		$panel_id = $panel_id !== '' ? $panel_id : self::PANEL_PLACEHOLDER;
+		$uid      = '' !== $uid ? $uid : self::UID_PLACEHOLDER;
+		$panel_id = '' !== $panel_id ? $panel_id : self::PANEL_PLACEHOLDER;
 		ob_start();
 		echo '<div class="wdp-list__tabs" role="tablist" aria-label="' . esc_attr__( 'Donation categories', 'woo-donation-popup' ) . '" data-wdp-tabs data-wdp-tabs-id="' . esc_attr( $uid ) . '">';
-		if ( $atts['tab_all'] === 'yes' ) {
+		if ( 'yes' === $atts['tab_all'] ) {
 			echo '<button type="button" class="wdp-list__tab is-active" role="tab" id="' . esc_attr( $uid . '-all' ) . '" aria-selected="true" aria-controls="' . esc_attr( $panel_id ) . '" tabindex="0" data-wdp-tab="all">' . esc_html( $atts['tab_all_label'] ) . '</button>';
 		}
 		foreach ( $tabs as $tab ) {
@@ -692,9 +695,9 @@ class Donations_List {
 		}
 		$slugs = array_values( array_unique( $slugs ) );
 
-		$button_text = $atts['button_text'] !== '' ? $atts['button_text'] : Shortcodes::resolve_button_text( '' );
+		$button_text = '' !== $atts['button_text'] ? $atts['button_text'] : Shortcodes::resolve_button_text( '' );
 		$cta_class   = 'wdp-card__cta';
-		if ( $atts['button_full'] === 'yes' ) {
+		if ( 'yes' === $atts['button_full'] ) {
 			$cta_class .= ' wdp-card__cta--full';
 		}
 		// Kart düğmesi ürün sayfasına götürür; form ürün sayfasında açılır (kartlarda ağır form basılmaz).
@@ -703,8 +706,8 @@ class Donations_List {
 
 		$type       = Donation_Type::for_product( $id );
 		$price_html = '';
-		if ( $atts['show_price'] === 'yes' ) {
-			if ( $type === Donation_Type::SHARES ) {
+		if ( 'yes' === $atts['show_price'] ) {
+			if ( Donation_Type::SHARES === $type ) {
 				$share_price = Price::format_product_display_price( $product );
 				$price_html  = esc_html(
 					sprintf(
@@ -713,7 +716,7 @@ class Donations_List {
 						wp_strip_all_tags( $share_price )
 					)
 				);
-			} elseif ( $type === Donation_Type::CUSTOM ) {
+			} elseif ( Donation_Type::CUSTOM === $type ) {
 				$min = (float) $product->get_meta( '_min_custom_price', true );
 				if ( $min > 0 ) {
 					$price_html = esc_html(
@@ -724,7 +727,7 @@ class Donations_List {
 						)
 					);
 				}
-			} elseif ( $type === Donation_Type::CAMPAIGN ) {
+			} elseif ( Donation_Type::CAMPAIGN === $type ) {
 				$goal  = (float) $product->get_meta( '_progress_bar_limit', true );
 				$total = isset( $totals[ $id ] ) ? (float) $totals[ $id ] : 0.0;
 				if ( $goal > 0 ) {
@@ -743,7 +746,7 @@ class Donations_List {
 		}
 
 		$progress = '';
-		if ( $atts['show_progress'] === 'yes' && $type === Donation_Type::CAMPAIGN ) {
+		if ( 'yes' === $atts['show_progress'] && Donation_Type::CAMPAIGN === $type ) {
 			$goal = (float) $product->get_meta( '_progress_bar_limit', true );
 			if ( $goal > 0 ) {
 				$total = isset( $totals[ $id ] ) ? (float) $totals[ $id ] : 0.0;
@@ -759,13 +762,13 @@ class Donations_List {
 		}
 
 		$excerpt = '';
-		if ( $atts['show_excerpt'] === 'yes' && (int) $atts['excerpt_words'] > 0 ) {
+		if ( 'yes' === $atts['show_excerpt'] && (int) $atts['excerpt_words'] > 0 ) {
 			$raw     = $product->get_short_description();
 			$excerpt = wp_trim_words( wp_strip_all_tags( strip_shortcodes( (string) $raw ) ), (int) $atts['excerpt_words'] );
 		}
 
 		$image = '';
-		if ( $atts['show_image'] === 'yes' ) {
+		if ( 'yes' === $atts['show_image'] ) {
 			$thumb_id = $product->get_image_id();
 			$alt      = $name;
 			$attrs    = array(
@@ -773,20 +776,20 @@ class Donations_List {
 				'class'   => 'wdp-card__img',
 				'loading' => $index <= 3 ? 'eager' : 'lazy',
 			);
-			if ( $index === 1 ) {
+			if ( 1 === $index ) {
 				$attrs['fetchpriority'] = 'high';
 			}
 			if ( $thumb_id && function_exists( 'wp_get_attachment_image' ) ) {
 				$image = wp_get_attachment_image( $thumb_id, $atts['image_size'], false, $attrs );
 			}
-			if ( $image === '' && function_exists( 'wc_placeholder_img' ) ) {
+			if ( '' === $image && function_exists( 'wc_placeholder_img' ) ) {
 				$image = wc_placeholder_img( $atts['image_size'] );
 			}
 		}
 
 		$heading  = $atts['heading_tag'];
 		$cat_html = '';
-		if ( $atts['show_category'] === 'yes' && ! empty( $slugs ) ) {
+		if ( 'yes' === $atts['show_category'] && ! empty( $slugs ) ) {
 			$term = get_term( $cat_ids[0], 'product_cat' );
 			if ( $term && ! is_wp_error( $term ) ) {
 				$cat_html = '<p class="wdp-card__cat">' . esc_html( $term->name ) . '</p>';
@@ -795,16 +798,16 @@ class Donations_List {
 
 		$html  = '<li class="wdp-list__item" data-wdp-cats="' . esc_attr( implode( ' ', $slugs ) ) . '">';
 		$html .= '<article class="wdp-card">';
-		if ( $image !== '' ) {
+		if ( '' !== $image ) {
 			$html .= '<a class="wdp-card__media" href="' . esc_url( $url ) . '" aria-hidden="true" tabindex="-1">' . $image . '</a>';
 		}
 		$html .= '<div class="wdp-card__body">';
 		$html .= $cat_html;
 		$html .= '<' . $heading . ' class="wdp-card__title"><a href="' . esc_url( $url ) . '">' . esc_html( $name ) . '</a></' . $heading . '>';
-		if ( $excerpt !== '' ) {
+		if ( '' !== $excerpt ) {
 			$html .= '<p class="wdp-card__excerpt">' . esc_html( $excerpt ) . '</p>';
 		}
-		if ( $price_html !== '' ) {
+		if ( '' !== $price_html ) {
 			$html .= '<p class="wdp-card__price">' . $price_html . '</p>';
 		}
 		$html .= $progress;
@@ -816,7 +819,7 @@ class Donations_List {
 		 * @param \WC_Product $product Product.
 		 * @param array      $atts    Sanitized atts.
 		 */
-		return (string) apply_filters( 'wdp_donations_card_html', $html, $product, $atts );
+		return (string) apply_filters( 'wdp_donations_card_html', $html, $product, $atts ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- geriye dönük uyumluluk sözleşmesi: eski wdp_ kanca adı değişmez.
 	}
 
 	/**
@@ -856,7 +859,7 @@ class Donations_List {
 		$out = array();
 		foreach ( preg_split( '/[\s,]+/', (string) $raw ) as $part ) {
 			$slug = sanitize_title( $part );
-			if ( $slug !== '' ) {
+			if ( '' !== $slug ) {
 				$out[] = $slug;
 			}
 		}

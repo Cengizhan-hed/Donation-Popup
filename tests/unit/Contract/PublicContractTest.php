@@ -106,13 +106,14 @@ final class PublicContractTest extends TestCase {
 		}
 	}
 
-	public function test_php_helper_functions_exist_and_answer_without_woocommerce_loaded_yet(): void {
+	public function test_php_helper_functions_are_declared_by_the_entry_file_and_answer_without_a_product(): void {
+		$entry = (string) file_get_contents( WDP_PLUGIN_FILE );
+		$this->assertMatchesRegularExpression( '/function wdp_render_donation_button\( \$product_id, \$button_text = \'\' \)/', $entry );
+		$this->assertMatchesRegularExpression( '/function wdp_render_donation_form\( \$product_id, \$args = array\(\) \)/', $entry );
+
 		$GLOBALS['wdp_test_locale'] = 'en_US';
-		Public_Contract::declare_functions();
-		$this->assertTrue( function_exists( 'wdp_render_donation_button' ) );
-		$this->assertTrue( function_exists( 'wdp_render_donation_form' ) );
-		$this->assertStringContainsString( 'Product not found (ID: 99)', wdp_render_donation_button( 99 ) );
-		$this->assertStringContainsString( 'Product not found (ID: 98)', wdp_render_donation_form( 98, array( 'class' => 'x' ) ) );
+		$this->assertStringContainsString( 'Product not found (ID: 99)', Public_Contract::render_for_product( 'wdp_donation_button', 99, array( 'text' => 'x' ) ) );
+		$this->assertStringContainsString( 'Product not found (ID: 98)', Public_Contract::render_for_product( 'wdp_donation_form', 98, array( 'class' => 'x' ) ) );
 	}
 
 	public function test_data_keys_remain_in_source(): void {

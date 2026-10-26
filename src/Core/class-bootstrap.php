@@ -9,7 +9,6 @@
 
 namespace DonationPanel\Core;
 
-use DonationPanel\Compat\Public_Contract;
 use DonationPanel\Modules\Preview\Preview;
 
 defined( 'ABSPATH' ) || exit;
@@ -20,6 +19,13 @@ defined( 'ABSPATH' ) || exit;
 final class Bootstrap {
 
 	/**
+	 * Eski yönetici katmanı örneği (köprü; yönetici dosyaları kaldırılınca yoktur).
+	 *
+	 * @var object|null
+	 */
+	private static $legacy_admin = null;
+
+	/**
 	 * Eklentiyi başlatır (giriş dosyası yüklenirken bir kez).
 	 *
 	 * @return void
@@ -28,7 +34,6 @@ final class Bootstrap {
 		self::register_hpos_compatibility();
 		self::load_admin_bridge();
 		Version_Migrations::init();
-		Public_Contract::declare_functions();
 
 		// Önizleme (`?dp_preview=1`): sınıf yalnız istekte parametre varken yüklenir; yetki `plugins_loaded` 1'de denetlenir.
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- yalnız varlık denetimi; salt okunur görünüm.
@@ -91,7 +96,7 @@ final class Bootstrap {
 		}
 
 		if ( is_admin() && class_exists( '\Woo_Donation_Popup_Admin' ) ) {
-			$GLOBALS['woo_donation_popup_admin'] = new \Woo_Donation_Popup_Admin();
+			self::$legacy_admin = new \Woo_Donation_Popup_Admin();
 		}
 	}
 

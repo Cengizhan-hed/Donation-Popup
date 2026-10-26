@@ -72,7 +72,7 @@ class Campaign_Totals {
 		add_action( 'wp_trash_post', array( __CLASS__, 'purge_product_donation_caches_on_trash' ), 10, 1 );
 	}
 
-/**
+	/**
 	 * Gösterilen toplam = siparişlerden hesaplanan toplam + elle eklenen tutar (`_wdp_manual_total`).
 	 *
 	 * İlerleme çubuğu, kampanya kartı, ürün bilgisi ve sepet/REST yanıtları toplamı yalnız buradan okur.
@@ -89,7 +89,7 @@ class Campaign_Totals {
 		return self::get_calculated_total_donation_amount( $product_id ) + self::get_manual_total( $product_id );
 	}
 
-/**
+	/**
 	 * Elle eklenen tutar (ana para birimi; sitede sipariş olmayan bağışlar: elden, havale vb.). Hiçbir komut ya da
 	 * göç bu değeri silmez veya azaltmaz.
 	 *
@@ -105,7 +105,7 @@ class Campaign_Totals {
 		return ( '' !== $raw && is_numeric( $raw ) ) ? max( 0.0, (float) $raw ) : 0.0;
 	}
 
-/**
+	/**
 	 * Siparişlerden hesaplanan toplam (elle eklenen hariç): ödenmiş siparişler (wdp_progress_paid_statuses).
 	 *
 	 * ÖNEMLİ: Bu fonksiyon SADECE belirtilen ürün ID'si için yapılan bağışları sayar.
@@ -132,7 +132,7 @@ class Campaign_Totals {
 		}
 
 		$meta_total = get_post_meta( $product_id, '_wdp_total_donation_amount', true );
-		if ( $meta_total !== '' && is_numeric( $meta_total ) ) {
+		if ( '' !== $meta_total && is_numeric( $meta_total ) ) {
 			$meta_total = max( 0.0, floatval( $meta_total ) );
 			wp_cache_set( $cache_key, $meta_total, 'wdp_donations', HOUR_IN_SECONDS );
 			return $meta_total;
@@ -145,7 +145,7 @@ class Campaign_Totals {
 		return 0.0;
 	}
 
-/**
+	/**
 	 * Ürün için tamamlanmış bağışçı sayısı.
 	 *
 	 * @param int $product_id Product ID.
@@ -162,12 +162,12 @@ class Campaign_Totals {
 			return max( 0, (int) $cached );
 		}
 		$meta  = get_post_meta( $product_id, '_wdp_donor_count', true );
-		$count = ( $meta !== '' && is_numeric( $meta ) ) ? max( 0, (int) $meta ) : 0;
+		$count = ( '' !== $meta && is_numeric( $meta ) ) ? max( 0, (int) $meta ) : 0;
 		wp_cache_set( $cache_key, $count, 'wdp_donations', HOUR_IN_SECONDS );
 		return $count;
 	}
 
-/**
+	/**
 	 * Bulk displayed totals (cached _wdp_total_donation_amount + manual amount; empty meta = 0, no N+1 recalculation).
 	 *
 	 * @param int[] $product_ids Product IDs.
@@ -187,7 +187,7 @@ class Campaign_Totals {
 		return $out;
 	}
 
-/**
+	/**
 	 * Sipariş/iade bayrak meta değerini okur (HPOS + post_meta yedek).
 	 *
 	 * @param int|\WC_Abstract_Order $order_or_id Sipariş veya ID.
@@ -198,7 +198,7 @@ class Campaign_Totals {
 		$order = is_object( $order_or_id ) ? $order_or_id : wc_get_order( $order_or_id );
 		if ( $order && is_a( $order, 'WC_Abstract_Order' ) ) {
 			$value = $order->get_meta( $meta_key, true );
-			if ( $value !== '' && $value !== null ) {
+			if ( '' !== $value && null !== $value ) {
 				return (string) $value;
 			}
 		}
@@ -211,7 +211,7 @@ class Campaign_Totals {
 		return '';
 	}
 
-/**
+	/**
 	 * Sipariş/iade bayrak meta değerini yazar (HPOS + post_meta yedek).
 	 *
 	 * @param int|\WC_Abstract_Order $order_or_id Sipariş veya ID.
@@ -232,7 +232,7 @@ class Campaign_Totals {
 		}
 	}
 
-/**
+	/**
 	 * Ödemesi alınmış sayılan sipariş durumları (progress bar toplamı için).
 	 *
 	 * @return string[] Durum slug'ları ("wc-" öneki olmadan).
@@ -243,7 +243,7 @@ class Campaign_Totals {
 		 *
 		 * @param string[] $statuses Varsayılan: processing, completed.
 		 */
-		$statuses = apply_filters( 'wdp_progress_paid_statuses', array( 'processing', 'completed' ) );
+		$statuses = apply_filters( 'wdp_progress_paid_statuses', array( 'processing', 'completed' ) ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- geriye dönük uyumluluk sözleşmesi: eski wdp_ kanca adı değişmez.
 		if ( ! is_array( $statuses ) ) {
 			$statuses = array( 'processing', 'completed' );
 		}
@@ -251,7 +251,7 @@ class Campaign_Totals {
 		$out = array();
 		foreach ( $statuses as $status ) {
 			$status = self::normalize_order_status_slug( $status );
-			if ( $status !== '' ) {
+			if ( '' !== $status ) {
 				$out[] = $status;
 			}
 		}
@@ -259,7 +259,7 @@ class Campaign_Totals {
 		return array_values( array_unique( $out ) );
 	}
 
-/**
+	/**
 	 * Geriye dönük uyumluluk: eski "completed" kancası (dış kod çağırabilir).
 	 *
 	 * @param int $order_id WooCommerce order id.
@@ -273,7 +273,7 @@ class Campaign_Totals {
 		}
 	}
 
-/**
+	/**
 	 * woocommerce_order_status_changed: ödenmiş duruma geçince say, iade/iptal/başarısızda geri al.
 	 *
 	 * @param int           $order_id Order ID.
@@ -303,7 +303,7 @@ class Campaign_Totals {
 		}
 	}
 
-/**
+	/**
 	 * Sipariş kalıcı silinmeden / çöpe gitmeden önce progress toplamından düş.
 	 *
 	 * @param int          $post_id Post ID.
@@ -316,7 +316,7 @@ class Campaign_Totals {
 			return;
 		}
 		$type = ( $post instanceof \WP_Post ) ? $post->post_type : get_post_type( $post_id );
-		if ( $type !== 'shop_order' ) {
+		if ( 'shop_order' !== $type ) {
 			// HPOS: post_type boş olabilir; sipariş nesnesi dene.
 			if ( ! function_exists( 'wc_get_order' ) ) {
 				return;
@@ -329,7 +329,7 @@ class Campaign_Totals {
 		self::uncount_order_from_progress_totals( $order );
 	}
 
-/**
+	/**
 	 * Sipariş çöpe taşındığında.
 	 *
 	 * @param int $post_id Post ID.
@@ -339,7 +339,7 @@ class Campaign_Totals {
 		self::uncount_order_progress_on_delete( $post_id, null );
 	}
 
-/**
+	/**
 	 * Sipariş çöpten çıkınca, hâlâ ödenmiş durumdaysa yeniden say.
 	 *
 	 * @param int $post_id Post ID.
@@ -362,7 +362,7 @@ class Campaign_Totals {
 		}
 	}
 
-/**
+	/**
 	 * Arka plan toplam yeniden hesap (wp-cron).
 	 *
 	 * @param int $product_id Product ID.
@@ -372,7 +372,7 @@ class Campaign_Totals {
 		self::recalculate_product_donation_total( absint( $product_id ) );
 	}
 
-/**
+	/**
 	 * Tek seferlik yeniden hesap planla (ziyaretçi isteğinde ağır tarama yok).
 	 *
 	 * @param int $product_id Product ID.
@@ -391,7 +391,7 @@ class Campaign_Totals {
 		wp_schedule_single_event( time() + 15, $hook, $args );
 	}
 
-/**
+	/**
 	 * Sipariş progress toplamlarına daha önce eklendi mi? (yeni bayrak veya eski _wdp_donation_totals_applied)
 	 *
 	 * @param \WC_Abstract_Order $order Order.
@@ -402,7 +402,7 @@ class Campaign_Totals {
 			|| self::get_order_flag_meta( $order, '_wdp_donation_totals_applied' ) === 'yes';
 	}
 
-/**
+	/**
 	 * Siparişi ürün toplamlarına ekle (bir kez).
 	 *
 	 * @param \WC_Abstract_Order $order Order.
@@ -437,7 +437,7 @@ class Campaign_Totals {
 		return true;
 	}
 
-/**
+	/**
 	 * Sayılmış siparişi ürün toplamlarından düş ve bayrağı kaldır.
 	 *
 	 * @param \WC_Abstract_Order $order Order.
@@ -474,7 +474,7 @@ class Campaign_Totals {
 		return true;
 	}
 
-/**
+	/**
 	 * Kısmi/tam iade (woocommerce_order_refunded): iade edilen satır tutarını ürün toplamından düş.
 	 *
 	 * @param int $order_id  Parent order id.
@@ -500,7 +500,7 @@ class Campaign_Totals {
 		self::apply_refund_to_progress_totals( $order, $refund );
 	}
 
-/**
+	/**
 	 * Refund satırlarını sayılmış sipariş tutarlarından düş.
 	 *
 	 * Tam iadede durum önce "refunded" olur ve sipariş zaten geri alınmıştır; bu durumda bir şey yapılmaz.
@@ -559,7 +559,7 @@ class Campaign_Totals {
 		return $deducted;
 	}
 
-/**
+	/**
 	 * Ürün → sayılan tutar (iade edilen satır tutarları düşülmüş; kampanya dönemi dışındaki sipariş sayılmaz).
 	 *
 	 * @param \WC_Abstract_Order $order Order.
@@ -575,7 +575,7 @@ class Campaign_Totals {
 		return $amounts;
 	}
 
-/**
+	/**
 	 * Sipariş satırlarını ürün bazında ana para birimine çevirir (salt okunur çözümleme çekirdeği).
 	 *
 	 * `$refunds` kapalıysa iade düşülmez, `$period` kapalıysa kampanya dönemi denetlenmez; `$log` kapalıysa
@@ -614,8 +614,8 @@ class Campaign_Totals {
 				continue;
 			}
 
-			$foreign     = false;
-			$unconverted = false;
+			$foreign       = false;
+			$unconverted   = false;
 			$line_currency = self::resolve_donation_line_currency( $item, $currency );
 			$foreign       = '' !== $line_currency && Progress_Currency::get_base_currency() !== $line_currency;
 			$converted     = Progress_Currency::convert_to_base( $line_total, $line_currency, $order );
@@ -647,7 +647,7 @@ class Campaign_Totals {
 		return $lines;
 	}
 
-/**
+	/**
 	 * Ürünün kampanya dönemi (varsa): `_wdp_campaign_starts_at` / `_wdp_campaign_ends_at` (Y-m-d, site saat dilimi,
 	 * bitiş günün sonuna dahil) ve `donation_panel_campaign_period` süzgeci. Dönem tanımlı değilse null (tüm zamanlar).
 	 *
@@ -687,7 +687,7 @@ class Campaign_Totals {
 			: null;
 	}
 
-/**
+	/**
 	 * Sipariş (oluşturma tarihi) ürünün kampanya döneminde mi? Dönem yoksa ya da tarih okunamazsa true.
 	 *
 	 * Tarih olarak oluşturma tarihi seçildi: ödeme tarihi çevrimdışı yöntemlerde (havale/çek) boştur; oluşturma
@@ -716,7 +716,7 @@ class Campaign_Totals {
 		return true;
 	}
 
-/**
+	/**
 	 * Ürün toplamını ödenmiş siparişleri tarayarak baştan hesapla ve yaz.
 	 *
 	 * Sayılmamış ödenmiş siparişler sayılmış olarak işaretlenir; sonraki durum değişikliklerinde çift sayım olmaz.
@@ -730,7 +730,7 @@ class Campaign_Totals {
 		return isset( $results[ $product_id ] ) ? $results[ $product_id ] : self::empty_recalc_result();
 	}
 
-/**
+	/**
 	 * Birden çok ürünün toplamını tek sipariş taramasıyla hesaplar; `$dry_run` iken hiçbir şey yazmaz
 	 * (ürün meta, sipariş bayrağı, dönüştürülemeyen sipariş listesi ve günlük dahil).
 	 *
@@ -760,7 +760,7 @@ class Campaign_Totals {
 		return $results;
 	}
 
-/**
+	/**
 	 * İşlem ücreti toplanana girmez: satırdaki wdp_cover_fee yüzdesinden bağış kısmını ayır.
 	 *
 	 * Kayıt: cover_fee işaretliyken sipariş satır meta `wdp_cover_fee` = yüzde string (veya eski 'yes').
@@ -776,11 +776,11 @@ class Campaign_Totals {
 			return $line;
 		}
 
-		$fee_raw = $item->get_meta( Order_Meta_Keys::COVER_FEE);
+		$fee_raw = $item->get_meta( Order_Meta_Keys::COVER_FEE );
 		$pct     = 0.0;
-		if ( $fee_raw !== '' && $fee_raw !== null && is_numeric( $fee_raw ) ) {
+		if ( '' !== $fee_raw && null !== $fee_raw && is_numeric( $fee_raw ) ) {
 			$pct = (float) $fee_raw;
-		} elseif ( (string) $fee_raw === 'yes' && method_exists( $item, 'get_product_id' ) ) {
+		} elseif ( 'yes' === (string) $fee_raw && method_exists( $item, 'get_product_id' ) ) {
 			$product = function_exists( 'wc_get_product' ) ? wc_get_product( absint( $item->get_product_id() ) ) : null;
 			if ( $product && method_exists( $product, 'get_meta' ) ) {
 				$pct = (float) $product->get_meta( '_cover_fee_percent' );
@@ -796,7 +796,7 @@ class Campaign_Totals {
 		return max( 0.0, round( $net, $decimals ) );
 	}
 
-/**
+	/**
 	 * Tek yazım noktası: _wdp_total_donation_amount (delta veya mutlak), negatif olmaz, önbellekler temizlenir.
 	 *
 	 * Delta modunda toplam henüz hiç hesaplanmamışsa ('' meta) yazılmaz; ilk okumada tam tarama yapılır.
@@ -816,11 +816,11 @@ class Campaign_Totals {
 		if ( $absolute ) {
 			$next_total = max( 0.0, $amount );
 		} else {
-			if ( $amount == 0.0 ) {
+			if ( 0.0 === (float) $amount ) {
 				return null;
 			}
 			$current = get_post_meta( $product_id, '_wdp_total_donation_amount', true );
-			if ( $current === '' || ! is_numeric( $current ) ) {
+			if ( '' === $current || ! is_numeric( $current ) ) {
 				self::clear_product_donation_total_caches( $product_id );
 				return null;
 			}
@@ -833,7 +833,7 @@ class Campaign_Totals {
 		return $next_total;
 	}
 
-/**
+	/**
 	 * Ürünün toplam/bağışçı sayısı önbelleklerini, bağış listesi önbelleğini ve kapsam önbelleğini temizler.
 	 *
 	 * @param int $product_id Product ID.
@@ -851,7 +851,7 @@ class Campaign_Totals {
 		Donation_Scope::flush( $product_id );
 	}
 
-/**
+	/**
 	 * Kalıcı silmeden hemen önce (ürün yazı tipi).
 	 *
 	 * @param int          $post_id Post ID.
@@ -865,7 +865,7 @@ class Campaign_Totals {
 		}
 
 		if ( $post instanceof \WP_Post ) {
-			if ( $post->post_type !== 'product' ) {
+			if ( 'product' !== $post->post_type ) {
 				return;
 			}
 		} elseif ( get_post_type( $post_id ) !== 'product' ) {
@@ -875,7 +875,7 @@ class Campaign_Totals {
 		self::purge_product_donation_caches_for_removal( $post_id );
 	}
 
-/**
+	/**
 	 * Ürün çöpe taşındığında.
 	 *
 	 * @param int $post_id Post ID.
@@ -890,7 +890,7 @@ class Campaign_Totals {
 		self::purge_product_donation_caches_for_removal( $post_id );
 	}
 
-/**
+	/**
 	 * Invalidate caches when a product post is saved (price, title, stock, etc.).
 	 *
 	 * @param int     $post_id Post ID.
@@ -916,7 +916,7 @@ class Campaign_Totals {
 		self::invalidate_product_donation_caches( (int) $post_id );
 	}
 
-/**
+	/**
 	 * Invalidate caches after WooCommerce persists a product (CRUD / admin / REST).
 	 *
 	 * @param int $product_id Product ID.
@@ -926,7 +926,7 @@ class Campaign_Totals {
 		self::invalidate_product_donation_caches( absint( $product_id ) );
 	}
 
-/**
+	/**
 	 * Invalidate caches when donation-related product meta is added or updated.
 	 *
 	 * @param int    $meta_id    Meta row ID (unused).
@@ -939,7 +939,7 @@ class Campaign_Totals {
 		unset( $meta_id, $meta_value );
 
 		$object_id = absint( $object_id );
-		if ( $object_id <= 0 || $meta_key === '' ) {
+		if ( $object_id <= 0 || '' === $meta_key ) {
 			return;
 		}
 
@@ -962,7 +962,7 @@ class Campaign_Totals {
 		self::invalidate_product_donation_caches( $object_id );
 	}
 
-/**
+	/**
 	 * Register WC product save hook once (safe if called early or after woocommerce_loaded).
 	 *
 	 * @return void
@@ -975,7 +975,7 @@ class Campaign_Totals {
 		add_action( 'woocommerce_update_product', array( __CLASS__, 'invalidate_product_donation_caches_on_wc_product' ), 10, 1 );
 	}
 
-/**
+	/**
 	 * "wc-completed" → "completed".
 	 *
 	 * @param mixed $status Raw status.
@@ -986,7 +986,7 @@ class Campaign_Totals {
 		return strpos( $status, 'wc-' ) === 0 ? substr( $status, 3 ) : $status;
 	}
 
-/**
+	/**
 	 * Dönüşülemeyen satır: kişisel veri yok, günlük + ürün sayacı.
 	 *
 	 * @param \WC_Abstract_Order $order      Order.
@@ -1021,7 +1021,7 @@ class Campaign_Totals {
 		}
 	}
 
-/**
+	/**
 	 * Siparişte saklanan sayılmış tutarlar (eski siparişte hesaplanır).
 	 *
 	 * @param \WC_Abstract_Order $order Order.
@@ -1035,7 +1035,7 @@ class Campaign_Totals {
 		return self::compute_order_progress_amounts( $order );
 	}
 
-/**
+	/**
 	 * @param array $amounts Raw amounts.
 	 * @return array<int,float>
 	 */
@@ -1050,7 +1050,7 @@ class Campaign_Totals {
 		return $out;
 	}
 
-/**
+	/**
 	 * Bayrak + tutarları siparişe yaz (_wdp_progress_counted = yes).
 	 *
 	 * @param \WC_Abstract_Order $order   Order.
@@ -1063,7 +1063,7 @@ class Campaign_Totals {
 		$order->save_meta_data();
 	}
 
-/**
+	/**
 	 * Boş yeniden hesap sonucu.
 	 *
 	 * @return array{total:float,donors:int,orders:int,unconverted:int}
@@ -1077,7 +1077,7 @@ class Campaign_Totals {
 		);
 	}
 
-/**
+	/**
 	 * Ödenmiş siparişleri tarar, sonuçları doldurur (yazma yalnız `$dry_run` kapalıyken).
 	 *
 	 * @param array<int, array{total:float,donors:int,orders:int,unconverted:int}> $results Ürün kimliği => sonuç (referansla doldurulur).
@@ -1176,7 +1176,7 @@ class Campaign_Totals {
 		}
 	}
 
-/**
+	/**
 	 * Satır tutarının para birimi: `_custom_price` bağışçının yazdığı birimdedir (`_wdp_input_currency`; sepette
 	 * ödemeden önce para birimi değiştirilmiş olabilir). Damga yoksa ya da tutar satır toplamından geliyorsa sipariş birimi.
 	 *
@@ -1186,14 +1186,14 @@ class Campaign_Totals {
 	 */
 	private static function resolve_donation_line_currency( $item, $order_currency ) {
 		$custom_price = $item->get_meta( '_custom_price' );
-		if ( $custom_price === '' || ! is_numeric( $custom_price ) || floatval( $custom_price ) <= 0 ) {
+		if ( '' === $custom_price || ! is_numeric( $custom_price ) || floatval( $custom_price ) <= 0 ) {
 			return $order_currency;
 		}
 		$input = strtoupper( trim( (string) $item->get_meta( '_wdp_input_currency' ) ) );
 		return '' !== $input ? $input : $order_currency;
 	}
 
-/**
+	/**
 	 * Resolve effective donation total for an order line.
 	 *
 	 * @param \WC_Order_Item_Product $item Order line item.
@@ -1201,7 +1201,7 @@ class Campaign_Totals {
 	 */
 	private static function resolve_donation_line_total( $item ) {
 		$custom_price = $item->get_meta( '_custom_price' );
-		if ( $custom_price !== '' && is_numeric( $custom_price ) && floatval( $custom_price ) > 0 ) {
+		if ( '' !== $custom_price && is_numeric( $custom_price ) && floatval( $custom_price ) > 0 ) {
 			$line = floatval( $custom_price ) * max( 1, intval( $item->get_quantity() ) );
 		} else {
 			$line = max( 0.0, floatval( $item->get_total() ) );
@@ -1210,7 +1210,7 @@ class Campaign_Totals {
 		return self::strip_cover_fee_from_line_total( $item, $line );
 	}
 
-/**
+	/**
 	 * Progress toplamı ve ürün bilgisi önbellek anahtarlarını temizle.
 	 *
 	 * @param int $product_id Product ID.
@@ -1222,7 +1222,7 @@ class Campaign_Totals {
 		self::invalidate_product_donation_caches( $product_id );
 	}
 
-/**
+	/**
 	 * Bağışçı sayacını artır/azalt.
 	 *
 	 * @param int $product_id Product id.
@@ -1232,14 +1232,14 @@ class Campaign_Totals {
 	private static function bump_product_donor_count( $product_id, $delta ) {
 		$product_id = absint( $product_id );
 		$delta      = (int) $delta;
-		if ( ! $product_id || $delta === 0 ) {
+		if ( ! $product_id || 0 === $delta ) {
 			return;
 		}
 		$current = (int) get_post_meta( $product_id, '_wdp_donor_count', true );
 		self::set_product_donor_count( $product_id, $current + $delta );
 	}
 
-/**
+	/**
 	 * @param int $product_id Product id.
 	 * @param int $count      New count (clamped to >= 0).
 	 * @return void
@@ -1249,7 +1249,7 @@ class Campaign_Totals {
 		wp_cache_delete( 'wdp_donor_count_' . $product_id, 'wdp_donations' );
 	}
 
-/**
+	/**
 	 * Ürün kaldırıldığında / çöpe gittiğinde ürün + progress bar ile ilgili tüm WDP önbellek anahtarlarını sil.
 	 *
 	 * @param int $product_id Product ID.
@@ -1265,7 +1265,7 @@ class Campaign_Totals {
 		wp_cache_delete( 'wdp_total_donation_' . $product_id, 'wdp_donations' );
 	}
 
-/**
+	/**
 	 * Anahtar eklentinin ürün meta envanterinde mi (bkz. Uninstall::product_meta_keys).
 	 *
 	 * @param string $meta_key Meta key.

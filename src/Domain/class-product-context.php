@@ -56,12 +56,12 @@ class Product_Context {
 		}
 
 		$min_price = (string) $product->get_meta( '_min_custom_price' );
-		if ( $allow_custom_price && $min_price === '' ) {
+		if ( $allow_custom_price && '' === $min_price ) {
 			$min_price = '0';
 		}
 
 		$max_shares = (string) $product->get_meta( '_max_shares' );
-		if ( $allow_multiple_shares && $max_shares === '' ) {
+		if ( $allow_multiple_shares && '' === $max_shares ) {
 			$max_shares = '7';
 		}
 
@@ -70,7 +70,7 @@ class Product_Context {
 
 		$progress_min_price = $min_price;
 		if ( $enable_progress_bar ) {
-			$progress_min_price = ( $min_price !== '' && (float) $min_price > 0 ) ? $min_price : '0';
+			$progress_min_price = ( '' !== $min_price && (float) $min_price > 0 ) ? $min_price : '0';
 		}
 
 		$total_donation = 0.0;
@@ -79,12 +79,12 @@ class Product_Context {
 		}
 
 		$addon_min_price = (string) Addon_Product_Visibility::get_meta( $product, '_addon_min_price' );
-		if ( $addon_min_price === '' ) {
+		if ( '' === $addon_min_price ) {
 			$addon_min_price = '0';
 		}
 
 		$addon_fixed_price    = (string) Addon_Product_Visibility::get_meta( $product, '_addon_fixed_price' );
-		$addon_fixed_float    = ( $addon_fixed_price !== '' ) ? (float) wc_format_decimal( $addon_fixed_price ) : 0.0;
+		$addon_fixed_float    = ( '' !== $addon_fixed_price ) ? (float) wc_format_decimal( $addon_fixed_price ) : 0.0;
 		$addon_is_fixed_price = $addon_fixed_float > 0;
 		$addon_wc_product_id  = (string) Addon_Settings::get_configured_addon_wc_product_id( $product );
 		$addon_toggle_label   = Addon_Settings::get_addon_toggle_label( $product );
@@ -155,7 +155,7 @@ class Product_Context {
 			'goal_closed'               => Campaign_Goal::should_block_new_donations( $product ),
 		);
 
-		return apply_filters( 'wdp_form_context', $context, $product );
+		return apply_filters( 'wdp_form_context', $context, $product ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- geriye dönük uyumluluk sözleşmesi: eski wdp_ kanca adı değişmez.
 	}
 
 	/**
@@ -167,10 +167,10 @@ class Product_Context {
 	 */
 	private static function meta_flag_default_yes( $product, $key ) {
 		$raw = $product->get_meta( $key );
-		if ( $raw === '' || $raw === null ) {
+		if ( '' === $raw || null === $raw ) {
 			return true;
 		}
-		return $raw === 'yes';
+		return 'yes' === $raw;
 	}
 
 	/**
@@ -195,13 +195,13 @@ class Product_Context {
 	 */
 	public static function resolve_flag_or_global( $product, $meta_key, $global_key ) {
 		$raw = $product->get_meta( $meta_key );
-		if ( $raw === 'yes' ) {
+		if ( 'yes' === $raw ) {
 			return true;
 		}
-		if ( $raw === 'no' ) {
+		if ( 'no' === $raw ) {
 			return false;
 		}
 		$button = get_option( 'wdp_button_settings', array() );
-		return is_array( $button ) && ! empty( $button[ $global_key ] ) && (string) $button[ $global_key ] === '1';
+		return is_array( $button ) && ! empty( $button[ $global_key ] ) && '1' === (string) $button[ $global_key ];
 	}
 }

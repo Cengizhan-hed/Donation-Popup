@@ -18,7 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class Addon_Settings {
 
-/**
+	/**
 	 * Alt bağış satırı için ürün meta'sındaki WooCommerce ürün ID'si.
 	 *
 	 * @param int|\WC_Product $parent_product Ana bağış ürünü.
@@ -39,13 +39,13 @@ class Addon_Settings {
 		$parent_id  = $parent_product instanceof \WC_Product
 			? (int) $parent_product->get_id()
 			: absint( $parent_product );
-		$filtered   = apply_filters( 'wdp_sadaka_wc_product_id', $configured, $parent_id );
+		$filtered   = apply_filters( 'wdp_sadaka_wc_product_id', $configured, $parent_id ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- geriye dönük uyumluluk sözleşmesi: eski wdp_ kanca adı değişmez.
 		$product_id = absint( $filtered );
 
 		return self::is_valid_addon_wc_product( $product_id ) ? $product_id : 0;
 	}
 
-/**
+	/**
 	 * Addon sepet satırı için kullanılabilir WC ürünü (gizli/katalog ürünleri dahil).
 	 *
 	 * @param int $product_id Product ID.
@@ -66,7 +66,7 @@ class Addon_Settings {
 		}
 
 		$type = method_exists( $product, 'get_type' ) ? (string) $product->get_type() : '';
-		if ( $type !== '' && $type !== 'simple' ) {
+		if ( '' !== $type && 'simple' !== $type ) {
 			return false;
 		}
 
@@ -74,7 +74,7 @@ class Addon_Settings {
 		return in_array( $status, array( 'publish', 'private' ), true );
 	}
 
-/**
+	/**
 	 * Genel alt bağış WC ürün ID (Başarı & Mini Sepet).
 	 * 0 değeri, zorunlu yapılandırma eksik olduğunu ifade eder.
 	 *
@@ -89,18 +89,18 @@ class Addon_Settings {
 		return $id > 0 ? $id : 0;
 	}
 
-/**
+	/**
 	 * Alt bağış aç/kapa buton metni (ürün meta → genel ayar → varsayılan).
 	 *
 	 * @param \WC_Product|int|null $parent_product Ana bağış ürünü.
 	 * @return string
 	 */
 	public static function get_addon_toggle_label( $parent_product = null ) {
-		if ( $parent_product !== null ) {
+		if ( null !== $parent_product ) {
 			$parent = $parent_product instanceof \WC_Product ? $parent_product : wc_get_product( (int) $parent_product );
 			if ( $parent ) {
 				$per_product = trim( (string) Addon_Product_Visibility::get_meta( $parent, '_addon_toggle_label' ) );
-				if ( $per_product !== '' ) {
+				if ( '' !== $per_product ) {
 					return sanitize_text_field( $per_product );
 				}
 			}
@@ -109,7 +109,7 @@ class Addon_Settings {
 		$settings = get_option( 'wdp_success_settings', array() );
 		if ( is_array( $settings ) && ! empty( $settings['sadaka_toggle_label'] ) ) {
 			$label = sanitize_text_field( $settings['sadaka_toggle_label'] );
-			if ( $label !== '' ) {
+			if ( '' !== $label ) {
 				return $label;
 			}
 		}
@@ -117,7 +117,7 @@ class Addon_Settings {
 		return __( 'Add add-on donation', 'woo-donation-popup' );
 	}
 
-/**
+	/**
 	 * Ürün meta veya genel ayar alt bağış WC ürün ID'si.
 	 *
 	 * @param \WC_Product|int $parent_product Ana bağış ürünü.
@@ -137,7 +137,7 @@ class Addon_Settings {
 		return self::get_default_addon_wc_product_id();
 	}
 
-/**
+	/**
 	 * Alt bağış sabit fiyatı (ürün meta). 0 = özel tutar modu.
 	 *
 	 * @param \WC_Product|int $parent_product Ana bağış ürünü.
@@ -150,7 +150,7 @@ class Addon_Settings {
 		}
 
 		$raw = Addon_Product_Visibility::get_meta( $parent, '_addon_fixed_price' );
-		if ( $raw === '' || $raw === null ) {
+		if ( '' === $raw || null === $raw ) {
 			return 0.0;
 		}
 
@@ -158,14 +158,14 @@ class Addon_Settings {
 		return $value > 0 ? $value : 0.0;
 	}
 
-/**
+	/**
 	 * Yerel biçimli alt bağış tutarını sayıya çevirir (5.566 / 5,566 / 5566).
 	 *
 	 * @param mixed $raw Ham tutar.
 	 * @return float|null Geçerli sayı veya null.
 	 */
 	public static function parse_addon_amount( $raw ) {
-		if ( $raw === null || $raw === '' ) {
+		if ( null === $raw || '' === $raw ) {
 			return null;
 		}
 		if ( is_int( $raw ) || is_float( $raw ) ) {
@@ -173,7 +173,7 @@ class Addon_Settings {
 			return is_finite( $n ) ? $n : null;
 		}
 		$s = preg_replace( '/\s+/u', '', (string) $raw );
-		if ( $s === '' || $s === null ) {
+		if ( '' === $s || null === $s ) {
 			return null;
 		}
 		$has_comma = strpos( $s, ',' ) !== false;
@@ -214,7 +214,7 @@ class Addon_Settings {
 		return is_finite( $n ) ? $n : null;
 	}
 
-/**
+	/**
 	 * Açık alt bağış paneli için tutar doğrulaması.
 	 *
 	 * @param mixed $raw         Ham tutar (sabit fiyat yoksa).
@@ -234,7 +234,7 @@ class Addon_Settings {
 		}
 
 		$raw_str = is_string( $raw ) ? trim( $raw ) : (string) $raw;
-		if ( $raw_str === '' || $raw === null ) {
+		if ( '' === $raw_str || null === $raw ) {
 			return array(
 				'ok'      => false,
 				'amount'  => null,

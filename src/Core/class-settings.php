@@ -51,19 +51,19 @@ class Settings {
 	 */
 	public static function schema() {
 		return array(
-			'general'     => array(
+			'general'    => array(
 				'delete_data_on_uninstall' => array(
 					'type'    => 'bool',
 					'default' => false,
 				),
 			),
-			'impact'      => array(
+			'impact'     => array(
 				'map' => array(
 					'type'    => 'text',
 					'default' => '',
 				),
 			),
-			'thanks'      => array(
+			'thanks'     => array(
 				'celebrate' => array(
 					'type'    => 'bool',
 					'default' => true,
@@ -77,7 +77,7 @@ class Settings {
 					'default' => '',
 				),
 			),
-			'tax_relief'  => array(
+			'tax_relief' => array(
 				'step_label'     => array(
 					'type'    => 'string',
 					'default' => '',
@@ -95,7 +95,7 @@ class Settings {
 					'default' => '',
 				),
 			),
-			'admin'       => array(
+			'admin'      => array(
 				'ui'     => array(
 					'type'    => 'string',
 					'default' => 'legacy',
@@ -262,7 +262,7 @@ class Settings {
 		}
 		$seed = self::normalize(
 			array(
-				'admin'       => array( 'ui' => 'new' ),
+				'admin' => array( 'ui' => 'new' ),
 			)
 		);
 		return (bool) update_option( self::OPTION_NAME, $seed, false );

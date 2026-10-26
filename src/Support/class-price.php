@@ -16,39 +16,39 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class Price {
 
-/** HTML entity içeren metni düz metne çevirir (ör. &#8378; → ₺). */
+	/** HTML entity içeren metni düz metne çevirir (ör. &#8378; → ₺). */
 	public static function decode_text_entities( $text ) {
 		$text = (string) $text;
-		if ( $text === '' ) {
+		if ( '' === $text ) {
 			return '';
 		}
 
 		$charset = function_exists( 'get_bloginfo' ) ? (string) get_bloginfo( 'charset' ) : 'UTF-8';
-		if ( $charset === '' ) {
+		if ( '' === $charset ) {
 			$charset = 'UTF-8';
 		}
 
 		return html_entity_decode( $text, ENT_QUOTES | ENT_HTML5, $charset );
 	}
 
-/**
+	/**
 	 * Düz metin / esc_html için güvenli para birimi sembolü.
 	 *
 	 * @param string $symbol Boşsa WooCommerce varsayılanı kullanılır.
 	 * @return string
 	 */
 	public static function get_display_currency_symbol( $symbol = '' ) {
-		if ( $symbol === '' && function_exists( 'get_woocommerce_currency_symbol' ) ) {
+		if ( '' === $symbol && function_exists( 'get_woocommerce_currency_symbol' ) ) {
 			$symbol = get_woocommerce_currency_symbol();
 		}
-		if ( $symbol === '' ) {
+		if ( '' === $symbol ) {
 			$symbol = function_exists( 'get_woocommerce_currency' ) ? (string) get_woocommerce_currency() : '';
 		}
 
 		return self::decode_text_entities( $symbol );
 	}
 
-/**
+	/**
 	 * WooCommerce sayı/sembol ayarları (JS localize + biçimleme).
 	 *
 	 * @return array{code:string,symbol:string,decimals:int,thousandSeparator:string,decimalSeparator:string,symbolPosition:string}
@@ -68,7 +68,7 @@ class Price {
 		);
 	}
 
-/**
+	/**
 	 * Kart / form birim fiyatı: WooCommerce "vergi dahil/hariç göster" ayarına uyar.
 	 *
 	 * @param \WC_Product $product Product.
@@ -81,14 +81,14 @@ class Price {
 		$amount = function_exists( 'wc_get_price_to_display' )
 			? wc_get_price_to_display( $product )
 			: $product->get_price();
-		if ( $amount === '' || $amount === null ) {
+		if ( '' === $amount || null === $amount ) {
 			return '';
 		}
 		return self::format_price_html( $amount );
 	}
 
 	public static function format_price_html( $amount, array $args = array() ) {
-		if ( $amount === '' || $amount === null ) {
+		if ( '' === $amount || null === $amount ) {
 			return '';
 		}
 		if ( ! function_exists( 'wc_price' ) ) {
@@ -110,7 +110,7 @@ class Price {
 		return self::decode_text_entities( $html );
 	}
 
-/**
+	/**
 	 * Placeholder / düz metin için fiyat (HTML etiketleri yok).
 	 *
 	 * @param float|string $amount Ham tutar.
@@ -118,21 +118,21 @@ class Price {
 	 */
 	public static function format_price_plain( $amount ) {
 		$raw = wp_strip_all_tags( self::format_price_html( $amount ) );
-		if ( $raw === '' ) {
+		if ( '' === $raw ) {
 			return '';
 		}
 
 		// wc_price() bazı para birimi sembollerini HTML entity olarak döndürebilir (örn: &#8378;).
 		// Mini-cart tarafında düz metin beklediğimiz için entity'leri Unicode karaktere çözüyoruz.
 		$charset = function_exists( 'get_bloginfo' ) ? (string) get_bloginfo( 'charset' ) : 'UTF-8';
-		if ( $charset === '' ) {
+		if ( '' === $charset ) {
 			$charset = 'UTF-8';
 		}
 
 		return html_entity_decode( $raw, ENT_QUOTES | ENT_HTML5, $charset );
 	}
 
-/**
+	/**
 	 * WooCommerce sayı biçimi (sembol yok; ondalık kırpılmaz).
 	 * wc_price sayı kısmı / JS formatPrice ile aynı ayarlar.
 	 *
@@ -140,7 +140,7 @@ class Price {
 	 * @return string
 	 */
 	public static function format_localized_amount( $amount ) {
-		if ( $amount === '' || $amount === null ) {
+		if ( '' === $amount || null === $amount ) {
 			return '';
 		}
 		$numeric = floatval( $amount );
@@ -153,7 +153,7 @@ class Price {
 		return number_format( $numeric, $dp, $dec, $thousands );
 	}
 
-/**
+	/**
 	 * Tutar alanı yer tutucusu: "min: " + format_localized_amount (açık/hata/AJAX aynı metin).
 	 *
 	 * @param float|string $amount Ham tutar.
@@ -161,10 +161,10 @@ class Price {
 	 */
 	public static function format_min_placeholder( $amount ) {
 		$n = self::format_localized_amount( $amount );
-		return $n === '' ? '' : ( 'min: ' . $n );
+		return '' === $n ? '' : ( 'min: ' . $n );
 	}
 
-/**
+	/**
 	 * @param float|string $amount Ham tutar.
 	 * @return string
 	 */
@@ -172,7 +172,7 @@ class Price {
 		return self::format_localized_amount( $amount );
 	}
 
-/**
+	/**
 	 * Bağışçı tutarı (JS parseMoneyDetailed ile aynı kural).
 	 * Geçerli binlik gruplama (1–3 + her grup 3) → binlik; gruplamayan son
 	 * ayırıcı → ondalık adayı. 0 dp: kesir tümü sıfırsa tam sayı, değilse uyarı
@@ -189,7 +189,7 @@ class Price {
 			}
 			return self::donor_amount_result( true, (float) $raw, 'ok', '' );
 		}
-		if ( $raw === null ) {
+		if ( null === $raw ) {
 			return self::donor_amount_result( false, 0.0, 'invalid', '' );
 		}
 
@@ -197,10 +197,10 @@ class Price {
 		$thousand = $cfg['thousandSeparator'];
 		$decimal  = $cfg['decimalSeparator'];
 		$s        = self::normalize_amount_input( (string) $raw, $thousand, $decimal );
-		if ( $s === '' || $s === '-' || $s === $thousand || $s === $decimal || $s === '.' || $s === ',' ) {
+		if ( '' === $s || '-' === $s || $s === $thousand || $s === $decimal || '.' === $s || ',' === $s ) {
 			return self::donor_amount_result( false, 0.0, 'invalid', '' );
 		}
-		if ( isset( $s[0] ) && $s[0] === '-' ) {
+		if ( isset( $s[0] ) && '-' === $s[0] ) {
 			return self::donor_amount_result( false, 0.0, 'invalid', '' );
 		}
 		if ( strpos( $s, '-' ) !== false ) {
@@ -210,7 +210,7 @@ class Price {
 		return self::parse_grouped_amount( $s, $cfg );
 	}
 
-/**
+	/**
 	 * 0 dp mağazada kuruş girilemez (yerelleştirilebilir).
 	 *
 	 * @param array|null $settings Currency settings.
@@ -219,7 +219,7 @@ class Price {
 	public static function get_no_fraction_amount_message( $settings = null ) {
 		$cfg     = self::normalize_parse_currency_settings( $settings );
 		$example = self::format_localized_amount_with_settings( 10, $cfg );
-		if ( $example === '' ) {
+		if ( '' === $example ) {
 			$example = '10';
 		}
 		return sprintf(
@@ -229,7 +229,7 @@ class Price {
 		);
 	}
 
-/**
+	/**
 	 * Belirsiz tutar görünür mesajı (yerelleştirilebilir; örnek mağaza biçiminde).
 	 *
 	 * @param array|null $settings Currency settings.
@@ -241,7 +241,7 @@ class Price {
 			return self::get_no_fraction_amount_message( $cfg );
 		}
 		$example = self::format_localized_amount_with_settings( 10, $cfg );
-		if ( $example === '' ) {
+		if ( '' === $example ) {
 			$example = '10';
 		}
 		return sprintf(
@@ -251,7 +251,7 @@ class Price {
 		);
 	}
 
-/**
+	/**
 	 * @param array|null $settings Optional overrides.
 	 * @return array{decimals:int,thousandSeparator:string,decimalSeparator:string}
 	 */
@@ -275,7 +275,7 @@ class Price {
 		);
 	}
 
-/**
+	/**
 	 * Sembol/harf/boşluk temizliği (yapıştırma: "₺1.250", "1 250").
 	 *
 	 * @param string $raw      Raw.
@@ -285,7 +285,7 @@ class Price {
 	 */
 	public static function normalize_amount_input( $raw, $thousand = '.', $decimal = ',' ) {
 		$s = trim( (string) $raw );
-		if ( $s === '' ) {
+		if ( '' === $s ) {
 			return '';
 		}
 		$s = preg_replace( '/[\s\x{00A0}\x{202F}\x{2009}\x{2007}\x{2060}]+/u', '', $s );
@@ -297,13 +297,13 @@ class Price {
 		return is_string( $s ) ? $s : '';
 	}
 
-/**
+	/**
 	 * @param string $int_part Integer part still containing separators.
 	 * @param string $sep      Thousand separator.
 	 * @return bool
 	 */
 	private static function is_valid_thousand_grouping( $int_part, $sep ) {
-		if ( $sep === '' || strpos( $int_part, $sep ) === false ) {
+		if ( '' === $sep || false === strpos( $int_part, $sep ) ) {
 			return false;
 		}
 		$parts = explode( $sep, $int_part );
@@ -322,7 +322,7 @@ class Price {
 		return true;
 	}
 
-/**
+	/**
 	 * "." / "," gruplama + son ayırıcı ondalık adayı (mağaza ondalık sayısı).
 	 *
 	 * @param string $s   Normalized digits+sep.
@@ -335,7 +335,7 @@ class Price {
 		$len      = strlen( $s );
 		for ( $i = 0; $i < $len; $i++ ) {
 			$ch = $s[ $i ];
-			if ( $ch === '.' || $ch === ',' ) {
+			if ( '.' === $ch || ',' === $ch ) {
 				$seps[] = array(
 					'i'  => $i,
 					'ch' => $ch,
@@ -376,7 +376,7 @@ class Price {
 				++$last_count;
 			}
 		}
-		if ( $last_count !== 1 ) {
+		if ( 1 !== $last_count ) {
 			return self::donor_amount_result( false, 0.0, 'invalid', '' );
 		}
 		$other = $chars[0] === $last['ch'] ? $chars[1] : $chars[0];
@@ -389,7 +389,7 @@ class Price {
 		return self::apply_decimal_part( $before_last, $after_last, $decimals, $cfg );
 	}
 
-/**
+	/**
 	 * @param string $int_part Integer digits.
 	 * @param string $frac     Fraction digits.
 	 * @param int    $decimals Store decimals.
@@ -397,7 +397,7 @@ class Price {
 	 * @return array{ok:bool,amount:float,status:string,error:string}
 	 */
 	private static function apply_decimal_part( $int_part, $frac, $decimals, array $cfg ) {
-		if ( $int_part === '' || $frac === '' || ! preg_match( '/^\d+$/', $int_part ) || ! preg_match( '/^\d+$/', $frac ) ) {
+		if ( '' === $int_part || '' === $frac || ! preg_match( '/^\d+$/', $int_part ) || ! preg_match( '/^\d+$/', $frac ) ) {
 			return self::donor_amount_result( false, 0.0, 'invalid', '' );
 		}
 		if ( $decimals <= 0 ) {
@@ -412,7 +412,7 @@ class Price {
 		return self::donor_amount_result( true, (float) ( $int_part . '.' . $frac ), 'ok', '' );
 	}
 
-/**
+	/**
 	 * @param array $cfg Normalized settings.
 	 * @return array{ok:bool,amount:float,status:string,error:string}
 	 */
@@ -420,7 +420,7 @@ class Price {
 		return self::donor_amount_result( false, 0.0, 'ambiguous', self::get_ambiguous_amount_message( $cfg ) );
 	}
 
-/**
+	/**
 	 * @param bool   $ok     Ok.
 	 * @param float  $amount Amount.
 	 * @param string $status Status.
@@ -429,8 +429,8 @@ class Price {
 	 */
 	private static function donor_amount_result( $ok, $amount, $status, $error ) {
 		$msg = (string) $error;
-		if ( ! $ok && $msg === '' ) {
-			$msg = $status === 'ambiguous'
+		if ( ! $ok && '' === $msg ) {
+			$msg = 'ambiguous' === $status
 				? self::get_ambiguous_amount_message()
 				: __( 'Invalid price value.', 'woo-donation-popup' );
 		}
@@ -442,7 +442,7 @@ class Price {
 		);
 	}
 
-/**
+	/**
 	 * @param float|int $amount Amount.
 	 * @param array     $cfg    {decimals,thousandSeparator,decimalSeparator}.
 	 * @return string
@@ -458,7 +458,7 @@ class Price {
 		return number_format( $numeric, $dp, $dec, $thousands );
 	}
 
-/**
+	/**
 	 * WooCommerce sembol konumu: left|left_space|right|right_space.
 	 *
 	 * @return string
@@ -469,7 +469,7 @@ class Price {
 		return in_array( $pos, $allowed, true ) ? $pos : 'left';
 	}
 
-/**
+	/**
 	 * Tutar kabuğu CSS sınıfı (sembol konumu).
 	 *
 	 * @return string

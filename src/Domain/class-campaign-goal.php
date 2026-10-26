@@ -91,7 +91,7 @@ class Campaign_Goal {
 			$meta = (string) get_post_meta( absint( $product ), '_goal_reached_message', true );
 		}
 		$meta = self::sanitize_message( $meta );
-		return $meta !== '' ? $meta : self::default_message();
+		return '' !== $meta ? $meta : self::default_message();
 	}
 
 	/**
@@ -105,7 +105,7 @@ class Campaign_Goal {
 		} else {
 			$raw = (string) get_post_meta( absint( $product ), '_progress_bar_limit', true );
 		}
-		if ( $raw === '' || ! is_numeric( $raw ) ) {
+		if ( '' === $raw || ! is_numeric( $raw ) ) {
 			return 0.0;
 		}
 		$goal = (float) $raw;
@@ -224,7 +224,7 @@ class Campaign_Goal {
 			return false;
 		}
 		$action = self::resolve_action( $product );
-		if ( $action === self::ACTION_CONTINUE ) {
+		if ( self::ACTION_CONTINUE === $action ) {
 			return false;
 		}
 		$product_id = $product instanceof \WC_Product ? (int) $product->get_id() : absint( $product );

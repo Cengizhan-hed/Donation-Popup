@@ -18,7 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class Admin_Notice {
 
-/**
+	/**
 	 * Notice shown only to shop editors in place of a form that cannot be displayed.
 	 *
 	 * Visitors always get an empty string, so a misconfigured shortcode never shows them an error.
@@ -34,14 +34,14 @@ class Admin_Notice {
 			return '';
 		}
 		$message = trim( (string) $message );
-		if ( $message === '' ) {
+		if ( '' === $message ) {
 			return '';
 		}
 		self::enqueue_admin_notice_style();
 		return '<div class="wdp-admin-notice" role="note">' . esc_html( $message ) . '</div>';
 	}
 
-/**
+	/**
 	 * Tiny stylesheet for .wdp-admin-notice (printed in the footer when content is already rendering).
 	 *
 	 * @return void
