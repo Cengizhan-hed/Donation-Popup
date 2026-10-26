@@ -1097,3 +1097,9 @@ Etkiler: plugins_loaded 10-19 arasında çalışan bir snippet/eklenti kısa kod
 - **Bu betik ajan içi hızlandırıcıdır, merge kapısı DEĞİLDİR.** Merge öncesi `verify` + tam `test` + gerekli e2e kapıda yine koşar. Yeni modül/klasör eklenince `test-map.json` güncellenir.
 - **`npm run e2e:queue -- <komut…>`** (`scripts/e2e-queue.mjs`): tüm Playwright tabanlı e2e betikleri için tek kuyruk. `build/e2e/queue.lock` (`wx` özel oluşturma) + FIFO biletler (`build/e2e/queue/`); ölü süreç kilidi/bileti temizlenir; bekleme süresi yazdırılır. `WDP_E2E_WORKERS` değeri `scripts/resource-gate.mjs --workers` varsa ondan, yoksa boş bellek / 1,5 GB (en çok CPU çekirdeği; takas > 2 GB ise yarısı) ile türetilir; `tests/e2e/playwright.config.mjs` `workers` ayarını bu env'den okur (yoksa 1).
 - **Ajan kuralı:** e2e koşuları `npm run e2e:queue -- npm run e2e:<ad> -- --env local` ile başlatılır (paralel ajanlar Playwright'ı aynı anda koşmaz). Port yine ajana özeldir.
+
+## E8S — staging30 toplam yeniden hesap kuru çalıştırma (`npm run staging:recalc-dryrun`)
+
+- `scripts/staging-recalc-dryrun.mjs` + `scripts/lib/staging-recalc-dryrun.mjs`: sabit eval-file `tests/e2e/helpers/recalc-dryrun.php`, `Totals_Recalculator::run($ids, true)` ile ürün başına eski toplam -> hesaplanan toplam + "kur bulunamadı" uyarılarını JSON/`--md` üretir. Yalnız `staging-hedef` (Ikram ve canlı reddedilir), `CLAUDECODE=1`, `buildGuardedEvalFileCommand` (klasör kilidi, REMOTE_FREEZE).
+- Yazma yok iki katmanlı: çalıştırmadan önce PHP dosyası `WRITE_CALL_RE` + `dry_run=false` kalıbı için taranır; çalışma anında `WDP_DRY_RUN_ONLY` sabiti ile `dry_run !== true` çağrısı reddedilir. Çıktıda kişisel veri yok (ürün id/başlık, sayılar).
+- `-- --local`: aynı PHP yerel WP'de (`WDP_RECALC_DIGEST=1`) koşar, önce/sonra veritabanı özeti (`_wdp*` meta/seçenek + tablo satır sayıları, sha256) aynı değilse hata verir.

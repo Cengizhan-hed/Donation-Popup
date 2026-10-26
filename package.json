@@ -70,6 +70,7 @@
     "deploy:ikram:rollback": "node scripts/deploy-ikram.mjs --rollback",
     "ikram:wp": "node scripts/ikram-wp.mjs",
     "staging:wp": "node scripts/staging-wp.mjs",
+    "staging:recalc-dryrun": "node scripts/staging-recalc-dryrun.mjs",
     "e2e:canary": "node tests/e2e/run-canary.mjs",
     "e2e:remote-smoke": "node tests/e2e/run-remote-smoke.mjs",
     "e2e:conflicts": "node tests/e2e/run-conflicts.mjs",
