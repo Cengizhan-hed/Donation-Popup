@@ -51,7 +51,6 @@ final class E8ESecurityTest extends TestCase {
 			'draft'   => array( 'draft', 'visible' ),
 			'private' => array( 'private', 'visible' ),
 			'pending' => array( 'pending', 'visible' ),
-			'hidden'  => array( 'publish', 'hidden' ),
 		);
 	}
 
@@ -63,6 +62,8 @@ final class E8ESecurityTest extends TestCase {
 
 	public function test_published_and_missing_products_are_not_hidden(): void {
 		$this->product( 6 );
+		$this->product( 7, 'publish', 'hidden' ); // Katalogda gizli ama yayında: bağış akışı çalışmalı.
+		$this->assertFalse( Rest_Controller::is_hidden_product( 7 ) );
 		$this->assertFalse( Rest_Controller::is_hidden_product( 6 ) );
 		$this->assertFalse( Rest_Controller::is_hidden_product( 999 ) );
 		$this->assertFalse( Rest_Controller::is_hidden_product( 0 ) );

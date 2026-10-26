@@ -109,7 +109,7 @@ abstract class Rest_Controller {
 	}
 
 	/**
-	 * Ürün var ama herkese açık değil mi (taslak/özel/parolalı/gizli)? Düzenleme yetkisi olan kullanıcı için false.
+	 * Ürün var ama herkese açık değil mi (taslak/özel/bekleyen/parolalı)? Düzenleme yetkisi olan kullanıcı için false.
 	 * Ürün hiç yoksa false (çağıranın kendi "bulunamadı" yolu çalışır).
 	 *
 	 * @param int $product_id Ürün.
@@ -133,9 +133,8 @@ abstract class Rest_Controller {
 		if ( method_exists( $product, 'get_post_password' ) && '' !== (string) $product->get_post_password() ) {
 			return true;
 		}
-		if ( method_exists( $product, 'get_catalog_visibility' ) && 'hidden' === $product->get_catalog_visibility() ) {
-			return true;
-		}
+		// Katalog görünürlüğü "gizli" ürün (mağaza/arama listesinden gizli) yayındadır ve satın alınabilir;
+		// bağış ürünleri sık böyle kurulur, bu yüzden gizli sayılmaz.
 		return false;
 	}
 
