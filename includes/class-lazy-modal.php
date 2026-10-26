@@ -83,7 +83,7 @@ class WDP_Lazy_Modal {
 		// Nonce (Faz 8): tam sayfa önbelleğinde süresi geçen nonce 403 + `code: nonce` döner; istemci
 		// (assets/js/src/lazy-modal.js) yeni nonce alıp bir kez yeniden dener. Nonce'suz, önbellek dostu
 		// okuma için REST GET /donation-panel/v1/modal vardır. Süzgeç yalnız geriye dönük uyum içindir.
-		if ( (bool) apply_filters( 'wdp_render_modal_require_nonce', true ) && ! check_ajax_referer( 'wdp_render_modal', 'security', false ) ) {
+		if ( (bool) apply_filters( 'wdp_render_modal_require_nonce', true ) && ! check_ajax_referer( 'wdp_render_modal', 'security', false ) ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- geriye donuk uyumluluk sozlesmesi: yayimlanmis wdp_ kanca adi degismez.
 			wp_send_json_error(
 				array(
 					'message' => __( 'Security check failed. Please refresh and try again.', 'woo-donation-popup' ),

@@ -274,7 +274,18 @@ final class PrivacyToolsTest extends TestCase {
 	}
 
 	public function test_policy_content_is_added_and_mentions_no_own_cookie(): void {
-		Privacy_Tools::add_policy_content();
+		// Yerel ayardan bagimsiz: kaynak dil (Ingilizce) ile uret, sonra eski ayari geri yukle.
+		$previous = $GLOBALS['wdp_test_locale'] ?? null;
+		$GLOBALS['wdp_test_locale'] = 'en_US';
+		try {
+			Privacy_Tools::add_policy_content();
+		} finally {
+			if (null === $previous) {
+				unset($GLOBALS['wdp_test_locale']);
+			} else {
+				$GLOBALS['wdp_test_locale'] = $previous;
+			}
+		}
 
 		$this->assertCount(1, WDP_Privacy_Registry::$policy);
 		$text = (string) reset(WDP_Privacy_Registry::$policy);

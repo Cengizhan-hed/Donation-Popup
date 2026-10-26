@@ -39,7 +39,7 @@ final class Preview {
 	 */
 	public static function is_requested() {
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- salt okunur görünüm; yetki ayrıca denetlenir.
-		return isset( $_GET[ self::QUERY_ARG ] ) && '1' === (string) wp_unslash( $_GET[ self::QUERY_ARG ] );
+		return isset( $_GET[ self::QUERY_ARG ] ) && '1' === sanitize_text_field( wp_unslash( $_GET[ self::QUERY_ARG ] ) );
 	}
 
 	/**

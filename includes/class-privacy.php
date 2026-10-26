@@ -296,6 +296,7 @@ class WDP_Privacy {
 		}
 
 		if ( isset( $wpdb ) && is_object( $wpdb ) ) {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- siparis kalemi meta aramasi: WooCommerce'in bunun icin API'si yok; KVKK disa aktarma/silme istegi, onbellege alinmamali (taze veri).
 			$rows = $wpdb->get_results(
 				$wpdb->prepare(
 					"SELECT DISTINCT oi.order_id, im.meta_key
@@ -370,6 +371,7 @@ class WDP_Privacy {
 
 		if ( isset( $wpdb ) && is_object( $wpdb ) ) {
 			foreach ( $phones as $phone ) {
+				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- siparis kalemi meta aramasi: WooCommerce'in bunun icin API'si yok; KVKK disa aktarma/silme istegi, onbellege alinmamali (taze veri).
 				$rows = $wpdb->get_results(
 					$wpdb->prepare(
 						"SELECT DISTINCT oi.order_id, im.meta_key
