@@ -18,7 +18,7 @@ add_filter(
 				'tax_relief' => !$off,
 				'impact'     => true,
 			),
-			'experiences' => array( 'engine' => 'new' ),
+			'experiences' => array( 'engine' => isset($_COOKIE['dp_e6_legacy']) ? 'legacy' : 'new' ), // phpcs:ignore
 			'impact'      => array( 'map' => "25={count} food parcel|{count} food parcels\n100={count} water well|{count} water wells" ),
 			'tax_relief'  => array( 'text' => 'I declare e2e wording ğüşiöç.' ),
 		);
@@ -55,7 +55,11 @@ add_action(
 		echo '<!doctype html><html ' . get_language_attributes() . '><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>E6 e2e</title>';
 		wp_head();
 		echo '</head><body><main style="padding:16px"><h1>Test</h1>';
-		echo do_shortcode('[donation_panel_experience id="' . $id . '" kind="inline"]'); // phpcs:ignore
+		if ('legacy' === $mode) {
+			echo do_shortcode('[wdp_donation_button id="' . $id . '"]'); // phpcs:ignore
+		} else {
+			echo do_shortcode('[donation_panel_experience id="' . $id . '" kind="inline"]'); // phpcs:ignore
+		}
 		echo '</main>';
 		wp_footer();
 		echo '</body></html>';
