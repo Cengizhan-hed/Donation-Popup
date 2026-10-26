@@ -264,6 +264,7 @@ final class Plugin {
 		Shortcodes::init();
 		Blocks::init();
 		Elementor_Compat::init();
+		( new \DonationPanel\WooCommerce\Checkout\Checkout_Prefill() )->register();
 	}
 
 	/**
