@@ -318,3 +318,23 @@ test.describe('ödeme sayfası', () => {
     await expect(page.locator('#createaccount')).toBeAttached();
   });
 });
+
+test.describe('tasarım görüntüleri (yalnız WDP_UI2_SHOTS ile)', () => {
+  test('giriş penceresi ve Bağışlarım', async ({ page }, testInfo) => {
+    test.skip(!process.env.WDP_UI2_SHOTS, 'yalnız ekran görüntüsü toplama koşusunda');
+    const name = testInfo.project.name === 'desktop' ? 'masaustu' : 'mobil';
+    await load(page);
+    await page.locator('[data-dp-acc-open]').click();
+    await expect(page.locator('[data-dp-acc-overlay].is-open')).toBeVisible();
+    await page.waitForTimeout(900);
+    await page.screenshot({ path: path.join(process.env.WDP_UI2_SHOTS, 'Giris', `uygulama-${name}.png`) });
+    const email = unique('gorsel');
+    const info = await seed(page, email);
+    await page.keyboard.press('Escape');
+    await loginViaUi(page, email);
+    await page.goto(info.donations);
+    await expect(page.locator('[data-dp-acc-card]')).toHaveCount(1);
+    await page.waitForTimeout(500);
+    await page.screenshot({ path: path.join(process.env.WDP_UI2_SHOTS, 'Bagislarim', `uygulama-${name}.png`), fullPage: true });
+  });
+});

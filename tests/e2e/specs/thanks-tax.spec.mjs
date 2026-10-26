@@ -153,6 +153,10 @@ test.describe('teşekkür + vergi indirimi', () => {
     // Kutlama: konfeti oluşur ve süre sonunda silinir.
     await expect(page.locator('.dp-thanks-confetti i')).toHaveCount(26);
     await expect(page.locator('.dp-thanks-confetti')).toHaveCount(0, { timeout: 8000 });
+    if (process.env.WDP_UI2_SHOTS) {
+      // Yalnız ekran görüntüsü toplama koşusunda: ONCE-SONRA/Tesekkur/uygulama-<mobil|masaustu>.png
+      await thanks.screenshot({ path: path.join(process.env.WDP_UI2_SHOTS, 'Tesekkur', `uygulama-${desktop ? 'masaustu' : 'mobil'}.png`) });
+    }
 
     // Paylaşım: Web Share (mobil) ya da bağlantı kopyalama (masaüstü).
     const share = thanks.locator('[data-dp-share]');

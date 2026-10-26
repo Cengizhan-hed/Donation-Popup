@@ -203,3 +203,37 @@ test.describe('yan sepet: yeni motorun kendi ekleme yolu', () => {
     await expect(page.locator('.dp-sc__subtotal')).toContainText('125');
   });
 });
+
+test.describe('yan sepet: ek bağış önerisi ve tasarım görüntüsü (yeni tasarım)', () => {
+  test('öneri kartı: tek dokunuşla ek bağış eklenir, satır sayısı ve toplam güncellenir', async ({ page }) => {
+    const errors = [];
+    page.on('pageerror', (e) => errors.push(String(e)));
+    await page.goto('/?dp_sc_test=1');
+    await expect(page.locator('[data-dp-sc-open]')).toBeVisible({ timeout: 20000 });
+    const add = await page.request.get(`/?dp_sc_add=${PRODUCT}&amount=40`);
+    expect((await add.json()).ok).toBe(true);
+    await page.evaluate(() => document.dispatchEvent(new CustomEvent('wc-blocks_added_to_cart', { bubbles: true })));
+    await expect(page.locator('[data-dp-sc-overlay].is-open')).toBeVisible();
+    const suggest = page.locator('[data-dp-sc-suggest]');
+    await expect(suggest).toHaveCount(2);
+    expect(await suggest.first().evaluate((el) => el.getBoundingClientRect().height)).toBeGreaterThanOrEqual(43.5);
+    await suggest.first().click();
+    await expect(page.locator('[data-dp-sc-line]')).toHaveCount(2, { timeout: 15000 });
+    await expect(page.locator('[data-dp-sc-sub]')).toContainText(/2/);
+    await expect(page.locator('[data-dp-sc-suggest]')).toHaveCount(0);
+    expect(errors).toEqual([]);
+  });
+
+  test('tasarım görüntüsü (yalnız WDP_UI2_SHOTS ile)', async ({ page }, testInfo) => {
+    test.skip(!process.env.WDP_UI2_SHOTS, 'yalnız ekran görüntüsü toplama koşusunda');
+    await page.goto('/?dp_sc_test=1');
+    await expect(page.locator('[data-dp-sc-open]')).toBeVisible({ timeout: 20000 });
+    await page.request.get(`/?dp_sc_add=${PRODUCT}&amount=1000&shares=${encodeURIComponent('Ahmet Yılmaz,Ayşe Yılmaz')}`);
+    await page.request.get(`/?dp_sc_add=${PRODUCT}&amount=500&dedication=${encodeURIComponent('Anneannem için')}`);
+    await page.evaluate(() => document.dispatchEvent(new CustomEvent('wc-blocks_added_to_cart', { bubbles: true })));
+    await expect(page.locator('[data-dp-sc-overlay].is-open')).toBeVisible();
+    await page.waitForTimeout(900);
+    const name = testInfo.project.name === 'desktop' ? 'masaustu' : 'mobil';
+    await page.screenshot({ path: path.join(process.env.WDP_UI2_SHOTS, 'YanSepet', `uygulama-${name}.png`) });
+  });
+});
