@@ -39,12 +39,14 @@ export async function runLighthouse(w, qcfg, opts = {}) {
     // sepetten düşer), bu yüzden karşılaştırma yanıltır. Sepetli ürün sayfası ve ödeme bağış sepetiyle ayrıca ölçülür;
     // sepetli ürün için kontrol: eklentinin tüm varlıkları çıkarılmış aynı sayfa.
     const addToCart = () => page.request.get(`${base}/?dp_q_add=${qcfg.ids.custom}&amount=${qcfg.store.amount || 50}`);
+    // Ödeme de sepetli: eklentisiz kontrol sepeti boşaltacağından kontrol de eklenti varlıkları çıkarılmış sayfadır.
+    const only = (process.env.WDP_Q_PAGES || '').split(',').filter(Boolean);
     const targets = [
       { page: 'urun', path: qcfg.ids.fixedPath },
       { page: 'magaza', path: '/shop/' },
       { page: 'urun-sepetli', path: qcfg.ids.fixedPath, cart: true, controlQuery: 'dp_q_strip=all' },
-      { page: 'odeme', path: new URL(qcfg.checkoutUrl).pathname, cart: true },
-    ];
+      { page: 'odeme', path: new URL(qcfg.checkoutUrl).pathname, cart: true, controlQuery: 'dp_q_strip=all' },
+    ].filter((t) => !only.length || only.includes(t.page));
     let cartAdded = false;
     const RUNS = Number(process.env.WDP_Q_LH_RUNS || 3) || 3;
     const median = (arr) => [...arr].sort((x, y) => x - y)[Math.floor(arr.length / 2)];

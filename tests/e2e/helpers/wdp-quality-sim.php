@@ -21,6 +21,11 @@ if ( ! empty( $wdp_q_state['nodefer'] ) ) {
 	add_filter( 'wdp_defer_frontend_assets', '__return_false' );
 }
 
+// E8W: "nosplit": true -> istemci verisi (ülke listesi + sözlük) satır içi (önce/sonra ölçümü için eski davranış).
+if ( ! empty( $wdp_q_state['nosplit'] ) ) {
+	add_filter( 'wdp_split_client_data', '__return_false' );
+}
+
 if ( ! array_key_exists( 'override', $wdp_q_state ) || $wdp_q_state['override'] ) {
 	add_filter(
 		'pre_option_donation_panel_settings',
