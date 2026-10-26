@@ -67,3 +67,24 @@ design/
 # Faz 7: modern JS kaynagi pakete girmez; derleme ciktisi assets/build/ girer.
 /assets/src/
 .gitkeep
+
+# E8M: gelistirme/test ciktilari (Plugin Check hidden_files: test-results/.last-run.json).
+test-results/
+playwright-report/
+blob-report/
+coverage/
+build/
+.cursor*
+.claude*
+.last-run.json
+.env*
+.phpunit.cache/
+.phpcs.xml
+.eslintcache
+.stylelintcache
+.idea/
+*.map.bak
+*.orig
+*.rej
+*.swp
+phpstan-src.neon

@@ -1,0 +1,69 @@
+/**
+ * E8M: paketlenen zip yalniz izinli desenlere uyar (gelistirme/test ciktisi, gizli dosya yok).
+ * Yerel: scripts/package-wp-plugin.sh calistirilir; uzak komut yok.
+ */
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
+const ZIP = path.join(ROOT, 'build/woo-donation-popup.zip');
+const PLANT_DIR = path.join(ROOT, 'test-results');
+const PLANT = path.join(PLANT_DIR, '.last-run.json');
+
+const TOP_ALLOWED = new Set([
+  'woo-donation-popup.php', 'uninstall.php', 'readme.txt', 'README.md', 'LICENSE', 'license.txt',
+  'includes', 'src', 'assets', 'templates', 'blocks', 'languages',
+]);
+const EXT_ALLOWED = new Set([
+  'php', 'js', 'css', 'json', 'mo', 'po', 'pot', 'txt', 'md', 'svg', 'png', 'jpg', 'jpeg', 'gif', 'webp', 'woff', 'woff2', 'html', 'map',
+]);
+
+function buildZip() {
+  // Gelistirme ciktisi varmis gibi (Plugin Check hidden_files bulgusu) taklit edilir, sonra silinir.
+  const plantedDir = !fs.existsSync(PLANT_DIR);
+  const plantedFile = !fs.existsSync(PLANT);
+  fs.mkdirSync(PLANT_DIR, { recursive: true });
+  if (plantedFile) fs.writeFileSync(PLANT, '{}');
+  try {
+    execFileSync('sh', ['scripts/package-wp-plugin.sh'], { cwd: ROOT, stdio: 'ignore' });
+  } finally {
+    if (plantedFile) fs.rmSync(PLANT, { force: true });
+    if (plantedDir) fs.rmSync(PLANT_DIR, { recursive: true, force: true });
+  }
+  return execFileSync('unzip', ['-Z1', ZIP], { encoding: 'utf8' })
+    .split('\n').filter(Boolean);
+}
+
+test('paket: yalniz izinli desenler, gizli/gelistirme dosyasi yok', () => {
+  const entries = buildZip();
+  const files = entries.filter((e) => !e.endsWith('/')).map((e) => e.replace(/^woo-donation-popup\//, ''));
+  assert.ok(files.includes('woo-donation-popup.php'));
+  assert.ok(files.includes('readme.txt'));
+  assert.ok(files.includes('uninstall.php'));
+
+  const bad = [];
+  for (const f of files) {
+    const parts = f.split('/');
+    if (parts.some((p) => p.startsWith('.'))) bad.push(`gizli: ${f}`);
+    if (!TOP_ALLOWED.has(parts[0])) bad.push(`izinsiz kok: ${f}`);
+    const ext = path.extname(f).slice(1).toLowerCase();
+    if (parts.length > 1 && !EXT_ALLOWED.has(ext)) bad.push(`izinsiz uzanti: ${f}`);
+    if (/(^|\/)(test-results|playwright-report|blob-report|node_modules|vendor|vendor-dev|tests|tools|scripts|docs|build|coverage|research|design)\//.test(f)) {
+      bad.push(`gelistirme klasoru: ${f}`);
+    }
+    if (/(package(-lock)?\.json|composer\.(json|lock)|phpunit|phpcs|phpstan|eslint|\.zip$|\.log$)/i.test(path.basename(f))) {
+      bad.push(`gelistirme dosyasi: ${f}`);
+    }
+    if (f.startsWith('assets/src/')) bad.push(`kaynak: ${f}`);
+  }
+  assert.deepEqual(bad, []);
+});
+
+test('paket: boyut makul (< 5 MB)', () => {
+  const size = fs.statSync(ZIP).size;
+  assert.ok(size < 5 * 1024 * 1024, `zip ${size} bayt`);
+});
