@@ -275,7 +275,7 @@ export function acceptUserOptionChanges(baseline, current, diffs, acceptKeys) {
 
 /**
  * Site sahibi kendi eklediği içeriği (ör. elementor_library, attachment) kabul eder.
- * Yalnız verilen id'lerin `created` farkları ve bunların açıkladığı sayaç farkı
+ * Yalnız verilen id'lerin `created` ve `modified` farkları ve bunların açıkladığı sayaç farkı
  * (attachment_count/page_count/product_count) baseline'a işlenir; listedeki id'ler dışındaki
  * her fark (silme, durum, seçenek, açıklanamayan sayaç) reddedilir.
  * @param {object} baseline
@@ -294,12 +294,19 @@ export function acceptUserContentChanges(baseline, current, diffs, acceptIds) {
   const countKeyByType = { attachment: 'attachment_count', page: 'page_count', product: 'product_count' };
   const createdDiffs = list.filter((d) => d && d.change === 'created' && allow.has(Number(d.id)));
   const countDiffs = list.filter((d) => d && d.change === 'count');
-  const other = list.filter((d) => !createdDiffs.includes(d) && !countDiffs.includes(d));
+  const modifiedDiffs = list.filter((d) => d && d.change === 'modified' && allow.has(Number(d.id)));
+  const other = list.filter((d) => !createdDiffs.includes(d) && !countDiffs.includes(d) && !modifiedDiffs.includes(d));
   if (other.length) {
     return { ok: false, baseline, accepted: [], reason: `izinli id dışı fark: ${other.length}` };
   }
-  if (!createdDiffs.length) {
-    return { ok: false, baseline, accepted: [], reason: 'verilen id için yeni kayıt farkı yok' };
+  if (!createdDiffs.length && !modifiedDiffs.length) {
+    return { ok: false, baseline, accepted: [], reason: 'verilen id için yeni/değişen kayıt farkı yok' };
+  }
+  const baseMap = new Map(baseline.posts.map((p) => [Number(p.id), p]));
+  for (const d of modifiedDiffs) {
+    if (!baseMap.has(Number(d.id))) {
+      return { ok: false, baseline, accepted: [], reason: `id=${d.id} baseline'da yok (modified)` };
+    }
   }
   const currentMap = new Map(current.posts.map((p) => [Number(p.id), p]));
   const newPosts = [];
@@ -311,6 +318,9 @@ export function acceptUserContentChanges(baseline, current, diffs, acceptIds) {
     const ck = countKeyByType[String(post.type)];
     if (ck) perCount[ck] = (perCount[ck] || 0) + 1;
   }
+  for (const d of modifiedDiffs) {
+    if (!currentMap.has(Number(d.id))) return { ok: false, baseline, accepted: [], reason: `id=${d.id} anlık görüntüde yok` };
+  }
   const counts = {};
   for (const d of countDiffs) {
     const key = String(d.option);
@@ -320,10 +330,12 @@ export function acceptUserContentChanges(baseline, current, diffs, acceptIds) {
     }
     counts[key] = current[key];
   }
+  const modIds = new Set(modifiedDiffs.map((d) => Number(d.id)));
+  const posts = baseline.posts.map((p) => (modIds.has(Number(p.id)) ? currentMap.get(Number(p.id)) : p));
   return {
     ok: true,
-    baseline: { ...baseline, ...counts, posts: [...baseline.posts, ...newPosts] },
-    accepted: newPosts.map((p) => Number(p.id)),
+    baseline: { ...baseline, ...counts, posts: [...posts, ...newPosts] },
+    accepted: [...newPosts.map((p) => Number(p.id)), ...modifiedDiffs.map((d) => Number(d.id))],
   };
 }
 

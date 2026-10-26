@@ -675,3 +675,39 @@ it('acceptUserContentChanges: verilen id kabul; dış fark, boş liste, açıkla
   // verilen id için yeni kayıt farkı yok
   assert.equal(acceptUserContentChanges(baseline, current, [], [50]).ok, false);
 });
+
+it('acceptUserContentChanges: modified kabul, karışık, dış id ve baseline kaydı yok reddi', async () => {
+  const { acceptUserContentChanges } = await import('../../e2e/helpers/canary.mjs');
+  const baseline = {
+    posts: [
+      { id: 1, type: 'page', status: 'publish', modified: 'a' },
+      { id: 2, type: 'page', status: 'publish', modified: 'b' },
+    ],
+    attachment_count: 0, page_count: 2, options: {},
+  };
+  const current = {
+    posts: [
+      { id: 1, type: 'page', status: 'publish', modified: 'a2' },
+      { id: 2, type: 'page', status: 'publish', modified: 'b' },
+      { id: 60, type: 'attachment', status: 'inherit', modified: 'c' },
+    ],
+    attachment_count: 1, page_count: 2, options: {},
+  };
+  const mod = { id: 1, change: 'modified', type: 'page', from: 'a', to: 'a2' };
+  const ok = acceptUserContentChanges(baseline, current, [mod], [1]);
+  assert.equal(ok.ok, true);
+  assert.equal(ok.baseline.posts.find((p) => p.id === 1).modified, 'a2');
+  assert.equal(baseline.posts[0].modified, 'a', 'girdi değişmez');
+
+  const created = { id: 60, change: 'created', type: 'attachment', status: 'inherit' };
+  const cnt = { option: 'attachment_count', change: 'count', from: '0', to: '1' };
+  const mix = acceptUserContentChanges(baseline, current, [mod, created, cnt], [1, 60]);
+  assert.equal(mix.ok, true);
+  assert.deepEqual([...mix.accepted].sort((a, b) => a - b), [1, 60]);
+  assert.equal(mix.baseline.posts.length, 3);
+
+  const out = { id: 2, change: 'modified', type: 'page', from: 'b', to: 'b2' };
+  assert.equal(acceptUserContentChanges(baseline, current, [mod, out], [1]).ok, false);
+  const ghost = { id: 99, change: 'modified', type: 'page', from: 'x', to: 'y' };
+  assert.equal(acceptUserContentChanges(baseline, current, [ghost], [99]).ok, false);
+});
