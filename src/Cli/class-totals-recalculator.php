@@ -98,7 +98,7 @@ final class Totals_Recalculator {
 			}
 			$unconv += (int) $new['unconverted'];
 
-			$new_total = round( (float) $new['total'], 2 );
+			$new_total   = round( (float) $new['total'], 2 );
 			$rows[ $id ] = array(
 				'product_id'  => $id,
 				'old_total'   => $old_total,
@@ -192,9 +192,9 @@ final class Totals_Recalculator {
 					'dönem' => $period_sum,
 					'iade'  => $refund_sum,
 				) as $name => $cand ) {
-					$take          = min( max( 0.0, $cand ), $left );
+					$take           = min( max( 0.0, $cand ), $left );
 					$parts[ $name ] = round( $take, 2 );
-					$left          = round( $left - $take, 2 );
+					$left           = round( $left - $take, 2 );
 				}
 				$parts['elle giriş'] = max( 0.0, $left );
 				arsort( $parts );
@@ -305,7 +305,7 @@ final class Totals_Recalculator {
 							$out[ $pid ]['period_out'] += $net_amount;
 						}
 					} else {
-						$key = '' === $status ? 'other' : $status;
+						$key                             = '' === $status ? 'other' : $status;
 						$out[ $pid ]['statuses'][ $key ] = ( isset( $out[ $pid ]['statuses'][ $key ] ) ? $out[ $pid ]['statuses'][ $key ] : 0.0 ) + $line['amount'];
 					}
 				}

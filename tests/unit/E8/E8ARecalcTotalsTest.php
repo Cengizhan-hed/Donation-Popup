@@ -69,12 +69,12 @@ final class E8ARecalcTotalsTest extends TestCase {
 			$this->assertArrayNotHasKey('_wdp_progress_amounts', $order->meta);
 		}
 
-		$applied = $calc->run(array( self::P1 ), false);
+		$applied = $calc->run(array( self::P1 ), false, true);
 		$this->assertSame(1, $applied['written']);
 		$this->assertEquals(120.0, $this->total());
 		$this->assertSame(2, (int) get_post_meta(self::P1, '_wdp_donor_count', true));
 
-		$again = $calc->run(array( self::P1 ), false);
+		$again = $calc->run(array( self::P1 ), false, true);
 		$this->assertSame(0, $again['changed']);
 		$this->assertSame(0, $again['written']);
 		$this->assertEquals(120.0, $this->total());
@@ -92,7 +92,7 @@ final class E8ARecalcTotalsTest extends TestCase {
 		}, 10, 3);
 		self::$orders = array( $this->order(1, 100.0), $this->order(2, 30.0, 'EUR'), $this->order(3, 10.0, 'USD') );
 
-		$result = ( new Totals_Recalculator() )->run(array( self::P1 ), false);
+		$result = ( new Totals_Recalculator() )->run(array( self::P1 ), false, true);
 
 		// 100 TRY + 30 EUR / 0.03 (=1000) + 10 USD / 0.025 (=400).
 		$this->assertEqualsWithDelta(1500.0, $result['rows'][0]['new_total'], 0.001);
@@ -115,7 +115,7 @@ final class E8ARecalcTotalsTest extends TestCase {
 		$this->assertSame('', get_post_meta(self::P1, '_wdp_progress_unconverted_orders', true), 'kuru calistirma uyari listesi yazmaz');
 		$this->assertSame('', $this->total());
 
-		$calc->run(array( self::P1 ), false);
+		$calc->run(array( self::P1 ), false, true);
 		$this->assertEquals(40.0, $this->total());
 		$this->assertSame(array( 2 ), get_post_meta(self::P1, '_wdp_progress_unconverted_orders', true));
 	}
@@ -135,7 +135,7 @@ final class E8ARecalcTotalsTest extends TestCase {
 		sort($ids);
 		$this->assertSame(array( self::P1, self::P2 ), $ids);
 
-		$result = $calc->run($ids, false);
+		$result = $calc->run($ids, false, true);
 		$this->assertSame(1, $result['changed'], 'P1 ayni, P2 farkli');
 		$this->assertSame(1, $result['written']);
 		$this->assertEquals(50.0, $this->total(self::P1));

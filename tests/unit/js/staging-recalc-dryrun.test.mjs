@@ -7,7 +7,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { ALLOWED_DEPLOY_TARGETS, inspectRemoteCommand } from '../../../scripts/lib/deploy-guards.mjs';
 import { ROOT } from '../../../scripts/lib/staging-tools.mjs';
-import { RECALC_EVAL_FILE, assertDryRunSource, runRecalcDryRun, toMarkdown } from '../../../scripts/lib/staging-recalc-dryrun.mjs';
+import { RECALC_EVAL_FILE, assertDryRunSource, parseDetailArg, runRecalcDryRun, toMarkdown } from '../../../scripts/lib/staging-recalc-dryrun.mjs';
 
 const T = ALLOWED_DEPLOY_TARGETS.find((t) => t.id === 'staging-hedef');
 const I = ALLOWED_DEPLOY_TARGETS.find((t) => t.id === 'ikram-aid');
@@ -21,7 +21,7 @@ const OK_RESULT = {
   base_currency: 'TRY',
   differs: 1,
   unconverted: 2,
-  rows: [{ product_id: 7, title: 'A|B', old_total: 10, new_total: 12.5, delta: 2.5, old_donors: 1, new_donors: 2, orders: 2, unconverted: 2 }],
+  rows: [{ product_id: 7, title: 'A|B', old_total: 10, new_total: 12.5, delta: 2.5, old_donors: 1, new_donors: 2, orders: 2, unconverted: 2, diff: -2.5, suggested_manual: 0, display_after: 12.5, display_increases: true, reason: 'para birimi', breakdown: { durum: 0, iade: 0 } }],
 };
 
 function fakeRemote(result) {
@@ -78,8 +78,24 @@ describe('ortam koruması', () => {
 });
 
 describe('Markdown', () => {
-  it('tablo üretir, uyarı ve | kaçışı', () => {
+  it('yeni sütunlar, uyarı ve | kaçışı', () => {
     const md = toMarkdown(OK_RESULT);
-    assert.match(md, /\| 7 \| A\/B \| 10 \| 12.5 \| 2.5 \| 1 \/ 2 \| 2 \| kur bulunamadı \(2\) \|/);
+    assert.match(md, /Saklanan \| Yeni hesaplanan \| Fark \| Önerilen elle eklenen \| Göç sonrası gösterilecek \| Olası neden/);
+    assert.match(md, /\| 7 \| A\/B \| 10 \| 12.5 \| -2.5 \| 0 \| 12.5 \| para birimi \| 1 \/ 2 \| 2 \| kur bulunamadı \(2\); gösterilen toplam artar \|/);
+  });
+  it('--detail yalnız istenen ürünün ayrıntısını yazar', () => {
+    assert.doesNotMatch(toMarkdown(OK_RESULT), /ayrıştırma ayrıntısı/);
+    assert.match(toMarkdown(OK_RESULT, { detail: [7] }), /ürün 7: \{"durum":0,"iade":0\}/);
+    assert.doesNotMatch(toMarkdown(OK_RESULT, { detail: [8] }), /ürün 7:/);
+  });
+  it('parseDetailArg iki biçimi okur', () => {
+    assert.deepEqual(parseDetailArg(['--detail=1,2']), [1, 2]);
+    assert.deepEqual(parseDetailArg(['--detail', '3, x,4']), [3, 4]);
+    assert.deepEqual(parseDetailArg(['--md']), []);
+  });
+  it('betik yazma yolu içermez (--apply yok)', () => {
+    const src = fs.readFileSync(path.join(ROOT, 'scripts/staging-recalc-dryrun.mjs'), 'utf8');
+    assert.doesNotMatch(src, /--apply|i-understand/);
+    assert.doesNotMatch(PHP, /allow_write|--apply/);
   });
 });

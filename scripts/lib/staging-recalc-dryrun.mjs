@@ -41,18 +41,46 @@ export function runRecalcDryRun(env, deps) {
   return res;
 }
 
-/** @param {{ rows: any[], base_currency?: string, differs?: number, unconverted?: number }} res */
-export function toMarkdown(res) {
+/** @param {number|null|undefined} n */
+function num(n) {
+  return n === null || n === undefined ? '-' : String(n);
+}
+
+/**
+ * @param {{ rows: any[], base_currency?: string, differs?: number, unconverted?: number }} res
+ * @param {{ detail?: Array<number|string> }} [opts] detail: neden ayrıştırma bloğu istenen ürün kimlikleri.
+ */
+export function toMarkdown(res, opts = {}) {
   const lines = [
     `Para birimi (ana): ${res.base_currency || '-'} | ürün: ${res.rows.length} | farklı: ${res.differs} | dönüştürülemeyen satır: ${res.unconverted}`,
     '',
-    '| Ürün | Başlık | Eski toplam | Hesaplanan | Fark | Eski/yeni bağışçı | Sipariş | Uyarı |',
-    '|---|---|---|---|---|---|---|---|',
+    '| Ürün | Başlık | Saklanan | Yeni hesaplanan | Fark | Önerilen elle eklenen | Göç sonrası gösterilecek | Olası neden | Eski/yeni bağışçı | Sipariş | Uyarı |',
+    '|---|---|---|---|---|---|---|---|---|---|---|',
   ];
   for (const r of res.rows) {
     const title = String(r.title || '').replace(/\|/g, '/');
-    const warn = r.unconverted > 0 ? `kur bulunamadı (${r.unconverted})` : '';
-    lines.push(`| ${r.product_id} | ${title} | ${r.old_total ?? '-'} | ${r.new_total} | ${r.delta ?? '-'} | ${r.old_donors ?? '-'} / ${r.new_donors} | ${r.orders} | ${warn} |`);
+    const warn = [r.unconverted > 0 ? `kur bulunamadı (${r.unconverted})` : '', r.display_increases ? 'gösterilen toplam artar' : '']
+      .filter(Boolean)
+      .join('; ');
+    lines.push(
+      `| ${r.product_id} | ${title} | ${num(r.old_total)} | ${r.new_total} | ${num(r.diff)} | ${num(r.suggested_manual)} | ${num(r.display_after)} | ${r.reason ?? '-'} | ${r.old_donors ?? '-'} / ${r.new_donors} | ${r.orders} | ${warn} |`
+    );
+  }
+  const detail = new Set((opts.detail || []).map((x) => Number(x)).filter(Boolean));
+  if (detail.size) {
+    lines.push('', 'Neden ayrıştırma ayrıntısı (yalnız sayı):');
+    for (const r of res.rows) {
+      if (!detail.has(Number(r.product_id))) continue;
+      lines.push(`- ürün ${r.product_id}: ${JSON.stringify(r.breakdown ?? {})}`);
+    }
   }
   return lines.join('\n');
+}
+
+/** @param {string[]} argv */
+export function parseDetailArg(argv) {
+  const hit = argv.find((a) => a.startsWith('--detail='));
+  const idx = argv.indexOf('--detail');
+  const raw = hit ? hit.slice('--detail='.length) : idx >= 0 ? argv[idx + 1] || '' : '';
+  return raw.split(',').map((x) => Number(x.trim())).filter((x) => Number.isInteger(x) && x > 0);
 }
