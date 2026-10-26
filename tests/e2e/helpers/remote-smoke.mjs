@@ -135,7 +135,7 @@ function extraQuery(env, profile, extra = {}) {
 /**
  * @param {import('@playwright/test').Locator} shell
  */
-async function clickAddOrGo(page, shell, timeout) {
+export async function clickAddOrGo(page, shell, timeout) {
   const add = shell.locator(SEL.addToCart).first();
   const go = shell.locator(SEL.goCheckout).first();
   const gate = shell.locator('.wdp-cta-gate__hit').first();
