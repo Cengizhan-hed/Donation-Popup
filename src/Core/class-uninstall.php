@@ -235,7 +235,7 @@ class Uninstall {
 	 */
 	private static function delete_options_like( $wpdb, $prefix ) {
 		$like = $wpdb->esc_like( $prefix ) . '%';
-		$wpdb->query(
+		$wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- özel toplu işlem (göç/kaldırma); WordPress API toplu meta/seçenek silmeyi desteklemez.
 			$wpdb->prepare(
 				"DELETE FROM {$wpdb->options} WHERE option_name LIKE %s",
 				$like
@@ -257,12 +257,12 @@ class Uninstall {
 				INNER JOIN {$wpdb->posts} p ON p.ID = pm.post_id
 				WHERE p.post_type IN ('product', 'product_variation')
 				AND pm.meta_key IN ({$placeholders})";
-			$wpdb->query( $wpdb->prepare( $sql, $keys ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- yer tutucu sayısı anahtar listesi uzunluğundan üretilir.
+			$wpdb->query( $wpdb->prepare( $sql, $keys ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- yer tutucu sayısı anahtar listesi uzunluğundan üretilir; toplu kaldırma.
 		}
 
 		foreach ( self::product_meta_prefixes() as $prefix ) {
 			$like = $wpdb->esc_like( $prefix ) . '%';
-			$wpdb->query(
+			$wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- özel toplu işlem (göç/kaldırma); WordPress API toplu meta/seçenek silmeyi desteklemez.
 				$wpdb->prepare(
 					"DELETE pm FROM {$wpdb->postmeta} pm
 					INNER JOIN {$wpdb->posts} p ON p.ID = pm.post_id

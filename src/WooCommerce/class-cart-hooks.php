@@ -247,9 +247,9 @@ class Cart_Hooks {
 	/**
 	 * Display donation data in cart
 	 *
-	 * @param array $item_data Item data.
-	 * @param array $cart_item  Cart item.
-	 * @return array
+	 * @param array<string, mixed> $item_data Item data.
+	 * @param array<string, mixed> $cart_item  Cart item.
+	 * @return array<string, mixed>
 	 */
 	public static function display_donation_data_in_cart( $item_data, $cart_item ) {
 		if ( isset( $cart_item['donation_data'] ) ) {
@@ -398,7 +398,7 @@ class Cart_Hooks {
 	/**
 	 * Whether a cart row is a plugin donation line (main, share or addon).
 	 *
-	 * @param array $cart_item Cart row.
+	 * @param array<string, mixed> $cart_item Cart row.
 	 * @return bool
 	 */
 	public static function is_donation_cart_line( array $cart_item ) {
@@ -410,7 +410,7 @@ class Cart_Hooks {
 	/**
 	 * Donation line whose effective unit price is 0 (or not positive) — must not stay in the cart.
 	 *
-	 * @param array      $cart_item  Cart row.
+	 * @param array<string, mixed>      $cart_item  Cart row.
 	 * @param float|null $line_price Resolved unit price (null = falls back to product price).
 	 * @return bool
 	 */
@@ -532,7 +532,7 @@ class Cart_Hooks {
 	/**
 	 * Addon satırı için bağlı WC ürün ID'si (görsel / isim).
 	 *
-	 * @param array $cart_item Cart row.
+	 * @param array<string, mixed> $cart_item Cart row.
 	 * @return int
 	 */
 	public static function resolve_addon_line_wc_product_id( array $cart_item ) {
@@ -564,8 +564,8 @@ class Cart_Hooks {
 	 *
 	 * @param \WC_Cart $cart          Cart.
 	 * @param string  $cart_item_key Key.
-	 * @param array   $cart_item     Row.
-	 * @return array
+	 * @param array<string, mixed>   $cart_item     Row.
+	 * @return array<string, mixed>
 	 */
 	private static function sync_addon_line_wc_product( $cart, $cart_item_key, array $cart_item ) {
 		$target_id  = self::resolve_addon_line_wc_product_id( $cart_item );
@@ -602,7 +602,7 @@ class Cart_Hooks {
 	/**
 	 * Public accessor for cart line unit price (used by AJAX cart payload).
 	 *
-	 * @param array $cart_item Cart row.
+	 * @param array<string, mixed> $cart_item Cart row.
 	 * @return float|null
 	 */
 	public static function get_cart_line_unit_price( array $cart_item ) {
@@ -650,7 +650,7 @@ class Cart_Hooks {
 	 * Satırın gösterim birim fiyatı: ziyaretçinin gördüğü (etkin) para biriminde.
 	 * Bağışçının yazdığı tutar yazıldığı birimle aynıysa aynen döner; varsayılan (dönüşüm yok) davranış değişmez.
 	 *
-	 * @param array $cart_item Cart row.
+	 * @param array<string, mixed> $cart_item Cart row.
 	 * @return float|null
 	 */
 	private static function resolve_cart_line_unit_price( array $cart_item ) {
@@ -671,7 +671,7 @@ class Cart_Hooks {
 	/**
 	 * Satırın mağaza ana para birimindeki birim fiyatı (sepete konan ürün fiyatı).
 	 *
-	 * @param array $cart_item Cart row.
+	 * @param array<string, mixed> $cart_item Cart row.
 	 * @return float|null
 	 */
 	private static function resolve_cart_line_store_price( array $cart_item ) {
@@ -686,8 +686,8 @@ class Cart_Hooks {
 	/**
 	 * Sepet satırına, bağışçı tutarının yazıldığı para birimini işler (yalnız `custom_price` satırları).
 	 *
-	 * @param array $cart_item_data Cart item data.
-	 * @return array
+	 * @param array<string, mixed> $cart_item_data Cart item data.
+	 * @return array<string, mixed>
 	 */
 	public static function stamp_input_currency( $cart_item_data ) {
 		if ( isset( $cart_item_data['custom_price'] ) && empty( $cart_item_data['wdp_input_currency'] ) ) {
@@ -702,7 +702,7 @@ class Cart_Hooks {
 	/**
 	 * Satırın ham birim fiyatı: `custom_price` yazıldığı birimde, diğerleri mağaza ana biriminde.
 	 *
-	 * @param array $cart_item Cart row.
+	 * @param array<string, mixed> $cart_item Cart row.
 	 * @return float|null
 	 */
 	private static function resolve_cart_line_raw_price( array $cart_item ) {
@@ -746,7 +746,7 @@ class Cart_Hooks {
 	 * CSS class for addon rows on cart/checkout tables.
 	 *
 	 * @param string $classes      Classes.
-	 * @param array  $cart_item    Cart item.
+	 * @param array<string, mixed>  $cart_item    Cart item.
 	 * @param string $cart_item_key Key.
 	 * @return string
 	 */
@@ -762,7 +762,7 @@ class Cart_Hooks {
 	 * Display name suffix for addon cart lines.
 	 *
 	 * @param string $product_name Name HTML.
-	 * @param array  $cart_item    Cart item.
+	 * @param array<string, mixed>  $cart_item    Cart item.
 	 * @param string $cart_item_key Key.
 	 * @return string
 	 */
@@ -792,7 +792,7 @@ class Cart_Hooks {
 	 * Addon satırında WooCommerce ürün görseli (bağlı Addon ürünü).
 	 *
 	 * @param string $thumbnail     Default HTML.
-	 * @param array  $cart_item     Cart row.
+	 * @param array<string, mixed>  $cart_item     Cart row.
 	 * @param string $cart_item_key Key.
 	 * @return string
 	 */
@@ -845,7 +845,7 @@ class Cart_Hooks {
 	 * Custom cart item price display
 	 *
 	 * @param string $price     Price HTML.
-	 * @param array  $cart_item Cart item.
+	 * @param array<string, mixed>  $cart_item Cart item.
 	 * @param string $cart_item_key Cart item key.
 	 * @return string
 	 */
@@ -863,7 +863,7 @@ class Cart_Hooks {
 	 * Custom cart item subtotal display
 	 *
 	 * @param string $price     Subtotal HTML.
-	 * @param array  $cart_item Cart item.
+	 * @param array<string, mixed>  $cart_item Cart item.
 	 * @param string $cart_item_key Cart item key.
 	 * @return string
 	 */
@@ -883,7 +883,7 @@ class Cart_Hooks {
 	 *
 	 * @param string $product_quantity Product quantity HTML.
 	 * @param string $cart_item_key    Cart item key.
-	 * @param array  $cart_item        Cart item.
+	 * @param array<string, mixed>  $cart_item        Cart item.
 	 * @return string
 	 */
 	public static function disable_quantity_input_for_share_items( $product_quantity, $cart_item_key, $cart_item ) {
@@ -899,7 +899,7 @@ class Cart_Hooks {
 	 *
 	 * @param bool  $passed       Validation result.
 	 * @param string $cart_item_key Cart item key.
-	 * @param array $values        Values.
+	 * @param array<string, mixed> $values        Values.
 	 * @param int   $quantity      Quantity.
 	 * @return bool
 	 */

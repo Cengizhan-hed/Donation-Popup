@@ -40,8 +40,8 @@ class Order_Privacy {
 	}
 
 	/**
-	 * @param array $exporters Registered exporters.
-	 * @return array
+	 * @param array<int, mixed> $exporters Registered exporters.
+	 * @return array<string, mixed>
 	 */
 	public static function register_exporter( $exporters ) {
 		$exporters['woo-donation-popup'] = array(
@@ -52,8 +52,8 @@ class Order_Privacy {
 	}
 
 	/**
-	 * @param array $erasers Registered erasers.
-	 * @return array
+	 * @param array<int, mixed> $erasers Registered erasers.
+	 * @return array<string, mixed>
 	 */
 	public static function register_eraser( $erasers ) {
 		$erasers['woo-donation-popup'] = array(

@@ -170,7 +170,7 @@ class Donations_List {
 			'categories'         => self::csv_slugs( isset( $atts['categories'] ) ? $atts['categories'] : '' ),
 			'exclude_categories' => self::csv_slugs( isset( $atts['exclude_categories'] ) ? $atts['exclude_categories'] : '' ),
 			'ids'                => self::csv_ids( isset( $atts['ids'] ) ? $atts['ids'] : '' ),
-			'exclude'            => self::csv_ids( isset( $atts['exclude'] ) ? $atts['exclude'] : '' ),
+			'exclude'            => self::csv_ids( isset( $atts['exclude'] ) ? $atts['exclude'] : '' ), // phpcs:ignore WordPressVIPMinimum.Performance.WPQueryParams.PostNotIn_exclude -- kartlarda yinelenen ürünleri hariç tutmak için; sayfa başına küçük küme.
 			'type'               => $types,
 			'limit'              => $int( isset( $atts['limit'] ) ? $atts['limit'] : 48, 1, 100, 48 ),
 			'orderby'            => $orderby,
@@ -206,7 +206,7 @@ class Donations_List {
 	}
 
 	/**
-	 * @param array $atts Raw or sanitized attributes.
+	 * @param array<string, mixed> $atts Raw or sanitized attributes.
 	 * @return string
 	 */
 	public static function render( $atts ) {
@@ -362,11 +362,11 @@ class Donations_List {
 
 	/**
 	 * @param int    $object_id  Object ID.
-	 * @param array  $terms      Terms.
-	 * @param array  $tt_ids     Term taxonomy IDs.
+	 * @param array<int, mixed>  $terms      Terms.
+	 * @param array<int, mixed>  $tt_ids     Term taxonomy IDs.
 	 * @param string $taxonomy   Taxonomy.
 	 * @param bool   $append     Append.
-	 * @param array  $old_tt_ids Old term taxonomy IDs.
+	 * @param array<int, mixed>  $old_tt_ids Old term taxonomy IDs.
 	 * @return void
 	 */
 	public static function on_set_object_terms( $object_id, $terms, $tt_ids, $taxonomy, $append = false, $old_tt_ids = array() ) {
@@ -401,7 +401,7 @@ class Donations_List {
 	}
 
 	/**
-	 * @param array $atts Sanitized atts.
+	 * @param array<string, mixed> $atts Sanitized atts.
 	 * @return array{html:string,empty:bool}
 	 */
 	private static function build_html( $atts ) {
@@ -460,7 +460,7 @@ class Donations_List {
 	}
 
 	/**
-	 * @param array $atts Sanitized atts.
+	 * @param array<string, mixed> $atts Sanitized atts.
 	 * @return \WC_Product[]
 	 */
 	public static function query_products( $atts ) {
@@ -530,7 +530,7 @@ class Donations_List {
 			$args['orderby'] = 'menu_order title';
 		}
 		if ( ! empty( $atts['exclude'] ) ) {
-			$args['post__not_in'] = $atts['exclude'];
+			$args['post__not_in'] = $atts['exclude']; // phpcs:ignore WordPressVIPMinimum.Performance.WPQueryParams.PostNotIn_post__not_in -- kartlarda yinelenen ürünleri hariç tutmak için; sayfa başına küçük küme.
 		}
 		if ( ! empty( $tax_query ) ) {
 			if ( count( $tax_query ) > 1 ) {
@@ -645,8 +645,8 @@ class Donations_List {
 	}
 
 	/**
-	 * @param array  $tabs     Tabs.
-	 * @param array  $atts     Atts.
+	 * @param array<int, mixed>  $tabs     Tabs.
+	 * @param array<string, mixed>  $atts     Atts.
 	 * @param string $uid      Tablist unique id (placeholder allowed).
 	 * @param string $panel_id Panel element id (placeholder allowed).
 	 * @return string
@@ -669,8 +669,8 @@ class Donations_List {
 
 	/**
 	 * @param \WC_Product $product Product.
-	 * @param array      $atts    Atts.
-	 * @param array      $totals  Totals.
+	 * @param array<string, mixed>      $atts    Atts.
+	 * @param array<string, mixed>      $totals  Totals.
 	 * @param int        $index   1-based index.
 	 * @return string
 	 */
@@ -823,7 +823,7 @@ class Donations_List {
 	}
 
 	/**
-	 * @param array $atts Sanitized atts.
+	 * @param array<string, mixed> $atts Sanitized atts.
 	 * @return string
 	 */
 	private static function empty_reason( $atts ) {
@@ -840,7 +840,7 @@ class Donations_List {
 	}
 
 	/**
-	 * @param array $atts Sanitized atts.
+	 * @param array<string, mixed> $atts Sanitized atts.
 	 * @return string
 	 */
 	public static function cache_key( $atts ) {

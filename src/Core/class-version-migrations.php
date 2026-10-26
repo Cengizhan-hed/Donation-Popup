@@ -346,8 +346,8 @@ class Version_Migrations {
 					'no_found_rows'          => true,
 					'update_post_meta_cache' => false,
 					'update_post_term_cache' => false,
-					'meta_key'               => '_enable_progress_bar',
-					'meta_value'             => 'yes',
+					'meta_key'               => '_enable_progress_bar', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- meta sorgusu tek seferlik/yönetici işlemi; kimlik listesi, sayfalanır.
+					'meta_value'             => 'yes', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- meta sorgusu tek seferlik/yönetici işlemi; kimlik listesi, sayfalanır.
 				)
 			);
 			if ( is_array( $ids ) ) {
@@ -428,13 +428,8 @@ class Version_Migrations {
 		if ( get_option( $flag ) ) {
 			return 'already';
 		}
-		if ( class_exists( 'DonationPanel\\Modules\\EntryPoints\\Donations_List' ) ) {
-			Donations_List::reset_bump_guard();
-			Donations_List::bump_cache();
-		} else {
-			$cv = (int) get_option( 'wdp_list_cache_version', 1 );
-			update_option( 'wdp_list_cache_version', $cv + 1, false );
-		}
+		Donations_List::reset_bump_guard();
+		Donations_List::bump_cache();
 		update_option( $flag, '1', false );
 		return $is_fresh ? 'list cache initialized' : 'list cache bumped';
 	}
@@ -450,13 +445,8 @@ class Version_Migrations {
 		if ( get_option( $flag ) ) {
 			return 'already';
 		}
-		if ( class_exists( 'DonationPanel\\Modules\\EntryPoints\\Donations_List' ) ) {
-			Donations_List::reset_bump_guard();
-			Donations_List::bump_cache();
-		} else {
-			$cv = (int) get_option( 'wdp_list_cache_version', 1 );
-			update_option( 'wdp_list_cache_version', $cv + 1, false );
-		}
+		Donations_List::reset_bump_guard();
+		Donations_List::bump_cache();
 		update_option( $flag, '1', false );
 		return $is_fresh ? 'list cache initialized' : 'list cache bumped';
 	}
@@ -603,7 +593,7 @@ class Version_Migrations {
 			$out   = array();
 			$after = 0;
 			do {
-				$ids = $wpdb->get_col(
+				$ids = $wpdb->get_col( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- özel toplu işlem (göç/kaldırma); WordPress API toplu meta/seçenek silmeyi desteklemez.
 					$wpdb->prepare(
 						"SELECT post_id FROM {$wpdb->postmeta} WHERE meta_key = %s AND meta_value <> '' AND post_id > %d ORDER BY post_id ASC LIMIT %d",
 						$meta_key,
@@ -644,19 +634,11 @@ class Version_Migrations {
 		$before = (int) get_option( 'wdp_list_cache_version', 1 );
 
 		// Transient her zaman temizlenir; liste önbelleği yalnızca bir kez artırılır (idempotent).
-		if ( class_exists( 'DonationPanel\\Domain\\Addon_Product_Visibility' ) ) {
-			Addon_Product_Visibility::flush();
-		} else {
-			delete_transient( 'wdp_addon_line_ids' );
-		}
+		Addon_Product_Visibility::flush();
 
 		$bumped = false;
 		if ( get_option( $flag, false ) === false ) {
-			if ( method_exists( 'DonationPanel\\Modules\\EntryPoints\\Donations_List', 'bump_cache' ) ) {
-				Donations_List::bump_cache();
-			} else {
-				update_option( 'wdp_list_cache_version', $before + 1, false );
-			}
+			Donations_List::bump_cache();
 			update_option( $flag, '1', false );
 			$bumped = true;
 		}
@@ -811,7 +793,7 @@ class Version_Migrations {
 					'post_status'            => 'any',
 					'numberposts'            => self::BATCH,
 					'fields'                 => 'ids',
-					'suppress_filters'       => true,
+					'suppress_filters'       => true, // phpcs:ignore WordPressVIPMinimum.Performance.WPQueryParams.SuppressFilters_suppress_filters -- yalnız kimlik listesi; filtreler sonucu bozmasın.
 					'no_found_rows'          => true,
 					'update_post_meta_cache' => true,
 					'update_post_term_cache' => false,
@@ -1024,13 +1006,13 @@ class Version_Migrations {
 		// Only on plugin settings and the Plugins screens (not every admin page).
 		$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
 		$ok     = false;
-		if ( $screen && isset( $screen->id ) ) {
+		if ( $screen ) {
 			$id = (string) $screen->id;
 			if ( 'plugins' === $id || 'plugins-network' === $id || false !== strpos( $id, 'wdp-popup-settings' ) ) {
 				$ok = true;
 			}
 		}
-		if ( ! $ok && isset( $_GET['page'] ) && 'wdp-popup-settings' === (string) $_GET['page'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( ! $ok && isset( $_GET['page'] ) && 'wdp-popup-settings' === sanitize_key( wp_unslash( $_GET['page'] ) ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			$ok = true;
 		}
 		if ( ! $ok ) {
@@ -1072,7 +1054,7 @@ class Version_Migrations {
 		foreach ( self::REMOVED_MODULE_IDS as $module_id ) {
 			$after = 0;
 			do {
-				$ids = $wpdb->get_col(
+				$ids = $wpdb->get_col( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- özel toplu işlem (göç/kaldırma); WordPress API toplu meta/seçenek silmeyi desteklemez.
 					$wpdb->prepare(
 						"SELECT post_id FROM {$wpdb->postmeta} WHERE meta_key = %s AND meta_value LIKE %s AND post_id > %d ORDER BY post_id ASC LIMIT %d",
 						'_wdp_module_order',
@@ -1129,7 +1111,12 @@ class Version_Migrations {
 	 * @return string Same list without removed ids ('' when nothing is left).
 	 */
 	public static function strip_ids_from_csv( $csv ) {
-		$ids  = array_filter( array_map( 'trim', explode( ',', (string) $csv ) ), 'strlen' );
+		$ids  = array_filter(
+			array_map( 'trim', explode( ',', (string) $csv ) ),
+			static function ( $id ) {
+				return '' !== $id;
+			}
+		);
 		$kept = array_values( array_diff( $ids, self::REMOVED_MODULE_IDS ) );
 		if ( count( $kept ) === count( $ids ) ) {
 			return (string) $csv;

@@ -155,7 +155,7 @@ class Campaign_Goal {
 	 * Hedefe ulaşıldı mı? (görünüm ve sunucu aynı fonksiyon).
 	 *
 	 * @param int   $product_id Product ID.
-	 * @param array $args {
+	 * @param array<string, mixed> $args {
 	 *     @type bool  $include_pending Sepet bekleyenini dahil et (close kapısı).
 	 *     @type float $goal            Opsiyonel hedef override.
 	 *     @type float $confirmed       Opsiyonel onaylı toplam override.

@@ -118,7 +118,7 @@ class Donation_Type {
 	/**
 	 * Infer type from a meta map (only the strict `yes` value counts, like the front end).
 	 *
-	 * @param array $meta Meta key => value.
+	 * @param array<string, mixed> $meta Meta key => value.
 	 * @return string
 	 */
 	public static function infer_from_meta( array $meta ) {
@@ -189,7 +189,7 @@ class Donation_Type {
 	 * \WP_Query meta_query selecting products of a type (same priority as infer_from_flags()).
 	 *
 	 * @param string $type Type id.
-	 * @return array
+	 * @return array<string, mixed>
 	 */
 	public static function get_meta_query( $type ) {
 		$type = self::sanitize( $type, '' );

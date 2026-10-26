@@ -87,6 +87,11 @@ class Price {
 		return self::format_price_html( $amount );
 	}
 
+	/**
+	 * Format price html.
+	 *
+	 * @param array<string, mixed> $args args.
+	 */
 	public static function format_price_html( $amount, array $args = array() ) {
 		if ( '' === $amount || null === $amount ) {
 			return '';
@@ -179,7 +184,7 @@ class Price {
 	 * (yuvarlama/100× yok). N>0: kesir ≤ N kabul, > N uyarı.
 	 *
 	 * @param mixed $raw      Ham girdi (yapıştırma: sembol/boşluk temizlenir).
-	 * @param array $settings İsteğe bağlı {decimals,thousandSeparator,decimalSeparator}.
+	 * @param array<string, mixed> $settings İsteğe bağlı {decimals,thousandSeparator,decimalSeparator}.
 	 * @return array{ok:bool,amount:float,status:string,error:string}
 	 */
 	public static function parse_donor_amount( $raw, $settings = null ) {
@@ -213,7 +218,7 @@ class Price {
 	/**
 	 * 0 dp mağazada kuruş girilemez (yerelleştirilebilir).
 	 *
-	 * @param array|null $settings Currency settings.
+	 * @param array<string, mixed>|null $settings Currency settings.
 	 * @return string
 	 */
 	public static function get_no_fraction_amount_message( $settings = null ) {
@@ -232,7 +237,7 @@ class Price {
 	/**
 	 * Belirsiz tutar görünür mesajı (yerelleştirilebilir; örnek mağaza biçiminde).
 	 *
-	 * @param array|null $settings Currency settings.
+	 * @param array<string, mixed>|null $settings Currency settings.
 	 * @return string
 	 */
 	public static function get_ambiguous_amount_message( $settings = null ) {
@@ -252,7 +257,7 @@ class Price {
 	}
 
 	/**
-	 * @param array|null $settings Optional overrides.
+	 * @param array<string, mixed>|null $settings Optional overrides.
 	 * @return array{decimals:int,thousandSeparator:string,decimalSeparator:string}
 	 */
 	private static function normalize_parse_currency_settings( $settings ) {
@@ -326,7 +331,7 @@ class Price {
 	 * "." / "," gruplama + son ayırıcı ondalık adayı (mağaza ondalık sayısı).
 	 *
 	 * @param string $s   Normalized digits+sep.
-	 * @param array  $cfg Normalized settings.
+	 * @param array<string, mixed>  $cfg Normalized settings.
 	 * @return array{ok:bool,amount:float,status:string,error:string}
 	 */
 	private static function parse_grouped_amount( $s, array $cfg ) {
@@ -393,7 +398,7 @@ class Price {
 	 * @param string $int_part Integer digits.
 	 * @param string $frac     Fraction digits.
 	 * @param int    $decimals Store decimals.
-	 * @param array  $cfg      Normalized settings.
+	 * @param array<string, mixed>  $cfg      Normalized settings.
 	 * @return array{ok:bool,amount:float,status:string,error:string}
 	 */
 	private static function apply_decimal_part( $int_part, $frac, $decimals, array $cfg ) {
@@ -413,7 +418,7 @@ class Price {
 	}
 
 	/**
-	 * @param array $cfg Normalized settings.
+	 * @param array<string, mixed> $cfg Normalized settings.
 	 * @return array{ok:bool,amount:float,status:string,error:string}
 	 */
 	private static function donor_amount_ambiguous( array $cfg ) {
@@ -444,7 +449,7 @@ class Price {
 
 	/**
 	 * @param float|int $amount Amount.
-	 * @param array     $cfg    {decimals,thousandSeparator,decimalSeparator}.
+	 * @param array<string, mixed>     $cfg    {decimals,thousandSeparator,decimalSeparator}.
 	 * @return string
 	 */
 	private static function format_localized_amount_with_settings( $amount, array $cfg ) {

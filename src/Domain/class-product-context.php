@@ -41,7 +41,7 @@ class Product_Context {
 	 * Build normalized form context.
 	 *
 	 * @param \WC_Product $product Product.
-	 * @return array
+	 * @return array<string, mixed>
 	 */
 	public static function build_form_context( $product ) {
 		$product_id            = (int) $product->get_id();

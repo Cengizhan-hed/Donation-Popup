@@ -1036,7 +1036,7 @@ class Campaign_Totals {
 	}
 
 	/**
-	 * @param array $amounts Raw amounts.
+	 * @param array<string, mixed> $amounts Raw amounts.
 	 * @return array<int,float>
 	 */
 	private static function sanitize_progress_amounts( array $amounts ) {
@@ -1054,7 +1054,7 @@ class Campaign_Totals {
 	 * Bayrak + tutarları siparişe yaz (_wdp_progress_counted = yes).
 	 *
 	 * @param \WC_Abstract_Order $order   Order.
-	 * @param array             $amounts Product → amount.
+	 * @param array<string, mixed>             $amounts Product → amount.
 	 * @return void
 	 */
 	private static function store_order_progress_state( $order, array $amounts ) {

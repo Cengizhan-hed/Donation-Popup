@@ -33,7 +33,7 @@ export function parseCompareArgs(argv) {
     before: '',
     after: '',
     out: '',
-    migrations: path.join(ROOT, 'includes/class-migrations.php'),
+    migrations: path.join(ROOT, 'src/Core/class-version-migrations.php'),
     defaults: '',
     idempotent: false,
     title: '',

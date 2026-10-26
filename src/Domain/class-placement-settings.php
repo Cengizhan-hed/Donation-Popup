@@ -130,7 +130,7 @@ class Placement_Settings {
 	}
 
 	/**
-	 * @param array  $raw     Raw settings.
+	 * @param array<string, mixed>  $raw     Raw settings.
 	 * @param string $key     Key.
 	 * @param string $default_value yes|no.
 	 * @return string
@@ -154,7 +154,7 @@ class Placement_Settings {
 	}
 
 	/**
-	 * @param array    $raw     Raw settings.
+	 * @param array<string, mixed>    $raw     Raw settings.
 	 * @param string   $key     Key.
 	 * @param string[] $allowed Allowed values.
 	 * @param string   $default_value Default.

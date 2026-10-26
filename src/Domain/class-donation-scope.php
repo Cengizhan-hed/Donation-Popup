@@ -173,7 +173,7 @@ class Donation_Scope {
 				'post_status'            => 'publish',
 				'numberposts'            => 500, // phpcs:ignore WordPress.WP.PostsPerPage.posts_per_page_numberposts -- yalnız yönetici sayımı; kimlik listesi, ilk 500 ürün.
 				'fields'                 => 'ids',
-				'suppress_filters'       => true,
+				'suppress_filters'       => true, // phpcs:ignore WordPressVIPMinimum.Performance.WPQueryParams.SuppressFilters_suppress_filters -- yalnız kimlik listesi; filtreler sonucu bozmasın.
 				'no_found_rows'          => true,
 				'update_post_meta_cache' => false,
 				'update_post_term_cache' => false,

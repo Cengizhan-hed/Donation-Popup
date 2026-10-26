@@ -19,13 +19,6 @@ defined( 'ABSPATH' ) || exit;
 final class Bootstrap {
 
 	/**
-	 * Eski yönetici katmanı örneği (köprü; yönetici dosyaları kaldırılınca yoktur).
-	 *
-	 * @var object|null
-	 */
-	private static $legacy_admin = null;
-
-	/**
 	 * Eklentiyi başlatır (giriş dosyası yüklenirken bir kez).
 	 *
 	 * @return void
@@ -77,7 +70,7 @@ final class Bootstrap {
 	 * @return void
 	 */
 	public static function load_textdomain() {
-		load_plugin_textdomain(
+		load_plugin_textdomain( // phpcs:ignore PluginCheck.CodeAnalysis.DiscouragedFunctions.load_plugin_textdomainFound -- eklenti WordPress.org dışında dağıtılır; çeviriler languages/ klasöründedir.
 			'woo-donation-popup',
 			false,
 			dirname( plugin_basename( WDP_PLUGIN_FILE ) ) . '/languages'
@@ -96,7 +89,7 @@ final class Bootstrap {
 		}
 
 		if ( is_admin() && class_exists( '\Woo_Donation_Popup_Admin' ) ) {
-			self::$legacy_admin = new \Woo_Donation_Popup_Admin();
+			new \Woo_Donation_Popup_Admin(); // Kancalarını kendisi kaydeder; örnek tutulmaz.
 		}
 	}
 

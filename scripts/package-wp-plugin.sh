@@ -71,14 +71,6 @@ fi
 # Keep only README.md as markdown in distribution root.
 find "$DEST" -type f -name "*.md" ! -name "README.md" -delete
 
-if [[ ! -f "$DEST/assets/css/build/manifest.json" ]]; then
-  echo "note: assets/css/build/manifest.json not present — dev layered CSS will be used at runtime." >&2
-fi
-
-if [[ ! -f "$DEST/assets/js/build/manifest.json" ]]; then
-  echo "note: assets/js/build/manifest.json not present — modular JS will be used at runtime." >&2
-fi
-
 cd "$TMP"
 rm -f "$OUT_ZIP"
 zip -qr "$OUT_ZIP" "$ARCHIVE_DIR_NAME"

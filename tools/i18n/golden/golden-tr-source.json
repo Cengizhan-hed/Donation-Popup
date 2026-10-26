@@ -1,6 +1,6 @@
 {
   "generated_at": "2026-10-24T12:28:59+00:00",
-  "call_count": 996,
+  "call_count": 993,
   "file_count": 46,
   "functions": {
     "esc_html_e": 2,
@@ -7000,17 +7000,6 @@
       "context": null,
       "domain": "woo-donation-popup",
       "file": "includes/class-donation-optional-fields.php",
-      "line": 143,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Anonim",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-donation-optional-fields.php",
       "line": 147,
       "arg_count": 2,
       "placeholders": []
@@ -7738,17 +7727,6 @@
       "domain": "woo-donation-popup",
       "file": "includes/class-order-meta-keys.php",
       "line": 82,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Anonim",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-order-meta-keys.php",
-      "line": 83,
       "arg_count": 2,
       "placeholders": []
     },
@@ -11032,17 +11010,6 @@
       "domain": "woo-donation-popup",
       "file": "includes/traits/trait-wdp-assets-registry.php",
       "line": 359,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Lütfen geçerli bir e-posta adresi giriniz.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/traits/trait-wdp-assets-registry.php",
-      "line": 365,
       "arg_count": 2,
       "placeholders": []
     },

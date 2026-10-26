@@ -55,7 +55,7 @@ if ( ! function_exists( 'wdp_render_donation_form' ) ) {
 	 * Sayfa içi bağış formunu çizer.
 	 *
 	 * @param int                  $product_id Ürün kimliği.
-	 * @param array<string, mixed> $args       Öznitelikler (`class`, `title`, `show_title`).
+	 * @param mixed $args       Öznitelikler dizisi (`class`, `title`, `show_title`); dizi değilse yok sayılır.
 	 * @return string
 	 */
 	function wdp_render_donation_form( $product_id, $args = array() ) {

@@ -271,7 +271,7 @@ class Security {
 	public static function get_client_ip() {
 		// Prefer REMOTE_ADDR first. Only trust X-Forwarded-For (etc.) when
 		// apply_filters( 'wdp_trust_proxy_headers', false ) is true for known proxies.
-		$remote = isset( $_SERVER['REMOTE_ADDR'] ) ? trim( (string) $_SERVER['REMOTE_ADDR'] ) : '';
+		$remote = isset( $_SERVER['REMOTE_ADDR'] ) ? trim( sanitize_text_field( wp_unslash( (string) $_SERVER['REMOTE_ADDR'] ) ) ) : '';
 		if ( '' !== $remote && false !== filter_var( $remote, FILTER_VALIDATE_IP ) ) {
 			if ( ! (bool) apply_filters( 'wdp_trust_proxy_headers', false ) ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- geriye dönük uyumluluk sözleşmesi: eski wdp_ kanca adı değişmez.
 				return $remote;
@@ -291,7 +291,7 @@ class Security {
 				if ( empty( $_SERVER[ $key ] ) ) {
 					continue;
 				}
-				foreach ( explode( ',', (string) $_SERVER[ $key ] ) as $ip ) {
+				foreach ( explode( ',', sanitize_text_field( wp_unslash( (string) $_SERVER[ $key ] ) ) ) as $ip ) {
 					$ip = trim( $ip );
 					if ( filter_var( $ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE ) !== false ) {
 						return $ip;

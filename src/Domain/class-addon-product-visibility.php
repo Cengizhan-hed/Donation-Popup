@@ -234,7 +234,7 @@ class Addon_Product_Visibility {
 				'post_status'            => 'any',
 				'numberposts'            => 500, // phpcs:ignore WordPress.WP.PostsPerPage.posts_per_page_numberposts -- yalnız kimlik listesi, önbelleğe alınır.
 				'fields'                 => 'ids',
-				'suppress_filters'       => true,
+				'suppress_filters'       => true, // phpcs:ignore WordPressVIPMinimum.Performance.WPQueryParams.SuppressFilters_suppress_filters -- yalnız kimlik listesi; filtreler sonucu bozmasın.
 				'no_found_rows'          => true,
 				'update_post_meta_cache' => true,
 				'update_post_term_cache' => false,
@@ -319,12 +319,7 @@ class Addon_Product_Visibility {
 	 */
 	public static function clear_visibility_caches() {
 		self::flush();
-		if ( method_exists( 'DonationPanel\\Modules\\EntryPoints\\Donations_List', 'bump_cache' ) ) {
-			Donations_List::bump_cache();
-		} else {
-			$current = (int) get_option( 'wdp_list_cache_version', 1 );
-			update_option( 'wdp_list_cache_version', $current + 1, false );
-		}
+		Donations_List::bump_cache();
 		if ( function_exists( 'wp_cache_flush_group' ) ) {
 			// Best-effort; group may not exist.
 			wp_cache_flush_group( 'wdp_donations_list' );
@@ -388,7 +383,7 @@ class Addon_Product_Visibility {
 	/**
 	 * WooCommerce wc-product-search alanını yazdırır.
 	 *
-	 * @param array $args {
+	 * @param array<string, mixed> $args {
 	 *     @type string $id          HTML id.
 	 *     @type string $name        Input name.
 	 *     @type int    $value       Selected product ID.

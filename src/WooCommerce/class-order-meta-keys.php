@@ -224,7 +224,7 @@ class Order_Meta_Keys {
 	/**
 	 * Build order item meta (fixed key => value) from cart donation data.
 	 *
-	 * @param array $donation_data Cart item donation_data.
+	 * @param array<string, mixed> $donation_data Cart item donation_data.
 	 * @return array<string,mixed>
 	 */
 	public static function build_item_meta( array $donation_data ) {

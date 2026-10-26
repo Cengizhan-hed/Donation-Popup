@@ -81,7 +81,7 @@ final class Release_12_Upgrade {
 			return $count;
 		}
 		foreach ( array( 'wdp_deprecated_ajax_', '_transient_wdp_product_info_', '_transient_timeout_wdp_product_info_' ) as $prefix ) {
-			$deleted = $wpdb->query(
+			$deleted = $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- özel toplu işlem (göç/kaldırma); WordPress API toplu meta/seçenek silmeyi desteklemez.
 				$wpdb->prepare(
 					"DELETE FROM {$wpdb->options} WHERE option_name LIKE %s",
 					$wpdb->esc_like( $prefix ) . '%'
@@ -102,7 +102,7 @@ final class Release_12_Upgrade {
 		if ( ! isset( $wpdb ) || ! is_object( $wpdb ) ) {
 			return 0;
 		}
-		$rows = $wpdb->get_results(
+		$rows = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- özel toplu işlem (göç/kaldırma); WordPress API toplu meta/seçenek silmeyi desteklemez.
 			$wpdb->prepare(
 				"SELECT pm.post_id, pm.meta_value FROM {$wpdb->postmeta} pm
 				INNER JOIN {$wpdb->posts} p ON p.ID = pm.post_id

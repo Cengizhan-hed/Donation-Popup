@@ -239,7 +239,7 @@ export function runOneRehearsal(spec) {
   const after = takeSnapshot(wpDir, 'local', `after-${label}`, [ROOT, oldDir]);
 
   const remap = extractRemapTable(
-    fs.readFileSync(path.join(ROOT, 'includes/class-migrations.php'), 'utf8')
+    fs.readFileSync(path.join(ROOT, 'src/Core/class-version-migrations.php'), 'utf8')
   );
   const cmp1 = compareSnapshots(before.snap, after.snap, {
     remap,
