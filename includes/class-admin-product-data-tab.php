@@ -118,6 +118,7 @@ class WDP_Admin_Product_Data_Tab {
 		foreach ( WDP_Product_Settings_Service::from_product_panel( $posted, $existing, $product->get_id() ) as $meta_key => $meta_value ) {
 			$product->update_meta_data( $meta_key, $meta_value );
 		}
+		self::save_manual_total( $product, $posted );
 		WDP_Product_Settings_Service::flush_correction_notices();
 		if ( class_exists( 'WDP_Donation_Scope' ) ) {
 			WDP_Donation_Scope::flush( $product->get_id() );
@@ -168,6 +169,31 @@ class WDP_Admin_Product_Data_Tab {
 	}
 
 	/**
+	 * "Elle eklenen tutar": yalnız gönderilmişse ve geçerli bir sayıysa yazılır (boş = 0). Nonce ve yetki
+	 * `save_panel()` içinde denetlenir; değer wc_format_decimal ile temizlenir, negatif olamaz.
+	 *
+	 * @param WC_Product           $product Product being saved.
+	 * @param array<string, mixed> $posted  Posted panel fields (already unslashed array; sanitized here).
+	 * @return void
+	 */
+	private static function save_manual_total( $product, array $posted ) {
+		if ( ! array_key_exists( 'manual_total', $posted ) || ! is_scalar( $posted['manual_total'] ) ) {
+			return;
+		}
+		$raw = trim( sanitize_text_field( (string) $posted['manual_total'] ) );
+		if ( '' === $raw ) {
+			$value = 0.0;
+		} else {
+			$raw = function_exists( 'wc_format_decimal' ) ? (string) wc_format_decimal( $raw ) : $raw;
+			if ( ! is_numeric( $raw ) ) {
+				return;
+			}
+			$value = max( 0.0, (float) $raw );
+		}
+		$product->update_meta_data( '_wdp_manual_total', $value );
+	}
+
+	/**
 	 * Mini progress summary (collected / goal + recalc button), shared with the products table.
 	 *
 	 * @param int  $product_id Product ID.
@@ -179,8 +205,9 @@ class WDP_Admin_Product_Data_Tab {
 		$goal_raw   = (string) get_post_meta( $product_id, '_progress_bar_limit', true );
 		$goal       = (float) ( $goal_raw !== '' ? $goal_raw : WDP_Donation_Type::DEFAULT_GOAL );
 		$stored     = get_post_meta( $product_id, '_wdp_total_donation_amount', true );
-		$has_total  = ( $stored !== '' && is_numeric( $stored ) );
-		$total      = $has_total ? max( 0.0, (float) $stored ) : 0.0;
+		$manual     = WDP_Utils::get_manual_total( $product_id );
+		$has_total  = ( $stored !== '' && is_numeric( $stored ) ) || $manual > 0;
+		$total      = ( ( $stored !== '' && is_numeric( $stored ) ) ? max( 0.0, (float) $stored ) : 0.0 ) + $manual;
 		$percent    = $goal > 0 ? min( 100, (int) floor( ( $total / $goal ) * 100 ) ) : 0;
 
 		$total_text    = $has_total ? WDP_Utils::format_price_plain( $total ) : __( '0', 'woo-donation-popup' );
@@ -659,6 +686,21 @@ class WDP_Admin_Product_Data_Tab {
 		echo '<span class="description">' . esc_html__( 'Only orders with confirmed payment (processing/completed) are counted; processing fees and on-hold are not included. Amounts are converted to the store’s main currency. The refresh icon recalculates the total from scratch.', 'woo-donation-popup' ) . '</span>';
 		echo '</div>';
 		echo '</div>';
+		$manual_total = WDP_Utils::get_manual_total( $product->get_id() );
+		self::number(
+			'manual_total',
+			$manual_total > 0 ? (string) $manual_total : '',
+			sprintf(
+				/* translators: %s: currency symbol */
+				__( 'Manually added amount (%s)', 'woo-donation-popup' ),
+				$currency
+			),
+			__( 'Donations that have no order on the site, such as cash or bank transfer (in the store’s main currency). It is added to the total from orders and is never changed by recalculation.', 'woo-donation-popup' ),
+			array(
+				'step' => 'any',
+				'min'  => '0',
+			)
+		);
 		self::select(
 			'goal_reached_action',
 			isset( $values['goal_reached_action'] ) ? $values['goal_reached_action'] : 'message',

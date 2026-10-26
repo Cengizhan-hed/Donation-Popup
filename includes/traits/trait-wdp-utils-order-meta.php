@@ -393,15 +393,37 @@ trait WDP_Utils_Order_Meta_Trait {
 	}
 
 	/**
-	 * Ürün → sayılan tutar (iade edilen satır tutarları düşülmüş).
+	 * Ürün → sayılan tutar (iade edilen satır tutarları düşülmüş; kampanya dönemi dışındaki sipariş sayılmaz).
 	 *
 	 * @param WC_Abstract_Order $order Order.
 	 * @return array<int,float>
 	 */
 	public static function compute_order_progress_amounts( $order ) {
 		$amounts = array();
+		foreach ( self::compute_order_progress_lines( $order, true, true, true ) as $product_id => $line ) {
+			if ( $line['amount'] > 0 ) {
+				$amounts[ $product_id ] = $line['amount'];
+			}
+		}
+		return $amounts;
+	}
+
+	/**
+	 * Sipariş satırlarını ürün bazında ana para birimine çevirir (salt okunur çözümleme çekirdeği).
+	 *
+	 * `$refunds` kapalıysa iade düşülmez, `$period` kapalıysa kampanya dönemi denetlenmez; `$log` kapalıysa
+	 * dönüştürülemeyen satır günlüğe/ürün metasına yazılmaz (kuru çalıştırma çözümlemesi için).
+	 *
+	 * @param WC_Abstract_Order $order   Order.
+	 * @param bool              $refunds İade tutarı düşülsün mü.
+	 * @param bool              $period  Kampanya dönemi uygulansın mı.
+	 * @param bool              $log     Dönüştürülemeyen satır kaydedilsin mi.
+	 * @return array<int, array{amount:float, foreign:bool, unconverted:bool}>
+	 */
+	public static function compute_order_progress_lines( $order, $refunds = true, $period = true, $log = true ) {
+		$lines = array();
 		if ( ! is_object( $order ) || ! method_exists( $order, 'get_items' ) ) {
-			return $amounts;
+			return $lines;
 		}
 
 		$currency = class_exists( 'WDP_Progress_Currency' )
@@ -414,8 +436,12 @@ trait WDP_Utils_Order_Meta_Trait {
 				continue;
 			}
 
+			if ( $period && ! self::is_order_in_campaign_period( $order, $product_id ) ) {
+				continue;
+			}
+
 			$line_total = self::resolve_donation_line_total( $item );
-			if ( method_exists( $order, 'get_total_refunded_for_item' ) ) {
+			if ( $refunds && method_exists( $order, 'get_total_refunded_for_item' ) ) {
 				$line_total -= abs( floatval( $order->get_total_refunded_for_item( $item_id ) ) );
 			}
 			$line_total = max( 0.0, $line_total );
@@ -423,19 +449,108 @@ trait WDP_Utils_Order_Meta_Trait {
 				continue;
 			}
 
+			$foreign     = false;
+			$unconverted = false;
 			if ( class_exists( 'WDP_Progress_Currency' ) ) {
-				$converted = WDP_Progress_Currency::convert_to_base( $line_total, self::resolve_donation_line_currency( $item, $currency ), $order );
+				$line_currency = self::resolve_donation_line_currency( $item, $currency );
+				$foreign       = '' !== $line_currency && $line_currency !== WDP_Progress_Currency::get_base_currency();
+				$converted     = WDP_Progress_Currency::convert_to_base( $line_total, $line_currency, $order );
 				if ( empty( $converted['ok'] ) ) {
-					self::log_progress_conversion_skip( $order, $product_id, isset( $converted['reason'] ) ? (string) $converted['reason'] : 'unknown' );
+					if ( $log ) {
+						self::log_progress_conversion_skip( $order, $product_id, isset( $converted['reason'] ) ? (string) $converted['reason'] : 'unknown' );
+					}
+					$lines[ $product_id ] = array(
+						'amount'      => isset( $lines[ $product_id ] ) ? $lines[ $product_id ]['amount'] : 0.0,
+						'foreign'     => true,
+						'unconverted' => true,
+					);
 					continue;
 				}
 				$line_total = (float) $converted['amount'];
 			}
 
-			$amounts[ $product_id ] = ( isset( $amounts[ $product_id ] ) ? $amounts[ $product_id ] : 0.0 ) + max( 0.0, $line_total );
+			$prev                 = isset( $lines[ $product_id ] ) ? $lines[ $product_id ] : array(
+				'amount'      => 0.0,
+				'foreign'     => false,
+				'unconverted' => false,
+			);
+			$lines[ $product_id ] = array(
+				'amount'      => $prev['amount'] + max( 0.0, $line_total ),
+				'foreign'     => $prev['foreign'] || $foreign,
+				'unconverted' => $prev['unconverted'],
+			);
 		}
 
-		return $amounts;
+		return $lines;
+	}
+
+	/**
+	 * Ürünün kampanya dönemi (varsa): `_wdp_campaign_starts_at` / `_wdp_campaign_ends_at` (Y-m-d, site saat dilimi,
+	 * bitiş günün sonuna dahil) ve `wdp_campaign_period` süzgeci. Dönem tanımlı değilse null (tüm zamanlar).
+	 *
+	 * @param int $product_id Product ID.
+	 * @return array{start:int|null,end:int|null}|null Unix zaman damgaları.
+	 */
+	public static function get_campaign_period( $product_id ) {
+		$product_id = absint( $product_id );
+		$parse      = static function ( $value, $end_of_day ) {
+			$value = is_scalar( $value ) ? trim( (string) $value ) : '';
+			if ( '' === $value || ! preg_match( '/^\d{4}-\d{2}-\d{2}$/', $value ) ) {
+				return null;
+			}
+			$tz = function_exists( 'wp_timezone' ) ? wp_timezone() : new DateTimeZone( 'UTC' );
+			$dt = DateTimeImmutable::createFromFormat( 'Y-m-d H:i:s', $value . ( $end_of_day ? ' 23:59:59' : ' 00:00:00' ), $tz );
+			return $dt ? $dt->getTimestamp() : null;
+		};
+		$start      = $product_id ? $parse( get_post_meta( $product_id, '_wdp_campaign_starts_at', true ), false ) : null;
+		$end        = $product_id ? $parse( get_post_meta( $product_id, '_wdp_campaign_ends_at', true ), true ) : null;
+		$period     = ( null === $start && null === $end ) ? null : array(
+			'start' => $start,
+			'end'   => $end,
+		);
+
+		/**
+		 * Ürün toplamına yalnız bu aralıktaki siparişleri katar (sipariş oluşturma tarihi).
+		 *
+		 * @param array{start:int|null,end:int|null}|null $period     Dönem ya da null.
+		 * @param int                                     $product_id Ürün kimliği.
+		 */
+		$filtered = apply_filters( 'wdp_campaign_period', $period, $product_id );
+		return is_array( $filtered ) && ( isset( $filtered['start'] ) || isset( $filtered['end'] ) )
+			? array(
+				'start' => isset( $filtered['start'] ) ? (int) $filtered['start'] : null,
+				'end'   => isset( $filtered['end'] ) ? (int) $filtered['end'] : null,
+			)
+			: null;
+	}
+
+	/**
+	 * Sipariş (oluşturma tarihi) ürünün kampanya döneminde mi? Dönem yoksa ya da tarih okunamazsa true.
+	 *
+	 * Tarih olarak oluşturma tarihi seçildi: ödeme tarihi çevrimdışı yöntemlerde (havale/çek) boştur; oluşturma
+	 * tarihi her siparişte vardır ve bağışçının bağış yaptığı anı gösterir.
+	 *
+	 * @param WC_Abstract_Order $order      Order.
+	 * @param int               $product_id Product ID.
+	 * @return bool
+	 */
+	public static function is_order_in_campaign_period( $order, $product_id ) {
+		$period = self::get_campaign_period( $product_id );
+		if ( null === $period || ! is_object( $order ) || ! method_exists( $order, 'get_date_created' ) ) {
+			return true;
+		}
+		$created = $order->get_date_created();
+		$ts      = is_object( $created ) && method_exists( $created, 'getTimestamp' ) ? (int) $created->getTimestamp() : 0;
+		if ( $ts <= 0 ) {
+			return true;
+		}
+		if ( null !== $period['start'] && $ts < $period['start'] ) {
+			return false;
+		}
+		if ( null !== $period['end'] && $ts > $period['end'] ) {
+			return false;
+		}
+		return true;
 	}
 
 	/**
@@ -972,8 +1087,11 @@ trait WDP_Utils_Order_Meta_Trait {
 
 		$progress_keys = array(
 			'_wdp_total_donation_amount',
+			'_wdp_manual_total',
 			'_wdp_donor_count',
 			'_wdp_progress_unconverted_orders',
+			'_wdp_campaign_starts_at',
+			'_wdp_campaign_ends_at',
 		);
 		if ( ! self::is_donation_popup_product_info_meta_key( $meta_key ) && ! in_array( $meta_key, $progress_keys, true ) ) {
 			return;

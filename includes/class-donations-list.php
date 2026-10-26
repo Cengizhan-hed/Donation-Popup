@@ -324,7 +324,7 @@ class WDP_Donations_List {
 	public static function on_product_meta( $meta_id, $object_id, $meta_key, $meta_value = null ) {
 		unset( $meta_id, $meta_value );
 		$key   = (string) $meta_key;
-		$keys  = array( '_price', '_regular_price', '_sale_price', '_wdp_total_donation_amount', '_wdp_donor_count' );
+		$keys  = array( '_price', '_regular_price', '_sale_price', '_wdp_total_donation_amount', '_wdp_manual_total', '_wdp_donor_count' );
 		$watch = in_array( $key, $keys, true );
 		if ( ! $watch && class_exists( 'WDP_Product_Settings_Service' ) && method_exists( 'WDP_Product_Settings_Service', 'get_settings_meta_keys' ) ) {
 			$watch = in_array( $key, WDP_Product_Settings_Service::get_settings_meta_keys(), true );

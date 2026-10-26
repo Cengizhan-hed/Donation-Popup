@@ -31,9 +31,10 @@ final class Cli_Command {
 	/**
 	 * Ürün bağış toplamlarını ödenmiş siparişlerden baştan hesaplar (siparişleri değiştirmez).
 	 *
-	 * Para birimi dönüşümü, iade ve işlem ücreti ayrımı eklentinin mevcut mantığıyla yapılır. Kuru çalıştırma hiçbir
-	 * şey yazmaz; uygulamada yalnız farklı çıkan ürünler güncellenir. Döviz kuru bulunamayan siparişler toplama
-	 * katılmaz (olduğu gibi bırakılır) ve uyarı olarak listelenir.
+	 * Tanım: yalnız ödenmiş siparişler (varsayılan completed, processing), iade düşülmüş, sipariş anındaki kurla ana
+	 * para birimine çevrilmiş, varsa kampanya dönemiyle sınırlı. VARSAYILAN HER ZAMAN KURU ÇALIŞTIRMADIR: hiçbir şey
+	 * yazılmaz. Yazmak için `--apply --i-understand` birlikte verilmelidir; yazma elle eklenen tutara dokunmaz.
+	 * Döviz kuru bulunamayan siparişler toplama katılmaz ve uyarı olarak listelenir.
 	 *
 	 * ## OPTIONS
 	 *
@@ -44,12 +45,22 @@ final class Cli_Command {
 	 * : Tüm bağış ürünleri.
 	 *
 	 * [--dry-run]
-	 * : Yalnız ürün başına eski toplam -> hesaplanan toplam tablosunu göster; hiçbir şey yazma.
+	 * : Varsayılan davranış (açıkça yazmasanız da): hiçbir şey yazılmaz.
+	 *
+	 * [--apply]
+	 * : Hesaplanan toplamı yazar. Yalnız `--i-understand` ile birlikte çalışır.
+	 *
+	 * [--i-understand]
+	 * : `--apply` için açık onay bayrağı.
+	 *
+	 * [--detail=<ids>]
+	 * : Virgülle ayrılmış ürün kimlikleri için neden ayrıştırma ayrıntısını yazdırır.
 	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp donation-panel recalc-totals --all --dry-run
-	 *     wp donation-panel recalc-totals --product=123
+	 *     wp donation-panel recalc-totals --product=123 --detail=123
+	 *     wp donation-panel recalc-totals --product=123 --apply --i-understand
 	 *
 	 * @subcommand recalc-totals
 	 *
@@ -61,7 +72,12 @@ final class Cli_Command {
 		unset( $args );
 		$all     = ! empty( $assoc_args['all'] );
 		$product = isset( $assoc_args['product'] ) ? absint( $assoc_args['product'] ) : 0;
-		$dry_run = ! empty( $assoc_args['dry-run'] );
+		$apply   = ! empty( $assoc_args['apply'] ) && ! empty( $assoc_args['i-understand'] ) && empty( $assoc_args['dry-run'] );
+		$dry_run = ! $apply;
+		if ( ! empty( $assoc_args['apply'] ) && empty( $assoc_args['i-understand'] ) ) {
+			\WP_CLI::error( '--apply requires --i-understand; nothing was written.' );
+			return;
+		}
 
 		if ( ( $product > 0 ) === $all ) {
 			\WP_CLI::error( 'Give exactly one of --product=<id> or --all.' );
@@ -79,7 +95,7 @@ final class Cli_Command {
 			return;
 		}
 
-		$result = $calculator->run( $ids, $dry_run );
+		$result = $calculator->run( $ids, $dry_run, $apply );
 
 		$table = array();
 		foreach ( $result['rows'] as $row ) {
@@ -87,6 +103,10 @@ final class Cli_Command {
 				'product_id'  => $row['product_id'],
 				'old_total'   => null === $row['old_total'] ? '-' : (string) $row['old_total'],
 				'new_total'   => (string) $row['new_total'],
+				'diff'        => null === $row['diff'] ? '-' : (string) $row['diff'],
+				'manual_sug'  => (string) $row['suggested_manual'],
+				'shown_after' => (string) $row['display_after'],
+				'reason'      => (string) $row['reason'],
 				'old_donors'  => null === $row['old_donors'] ? '-' : (string) $row['old_donors'],
 				'new_donors'  => (string) $row['new_donors'],
 				'orders'      => (string) $row['orders'],
@@ -94,7 +114,14 @@ final class Cli_Command {
 				'status'      => $row['written'] ? 'updated' : ( $row['changed'] ? 'differs' : 'same' ),
 			);
 		}
-		\WP_CLI\Utils\format_items( 'table', $table, array( 'product_id', 'old_total', 'new_total', 'old_donors', 'new_donors', 'orders', 'unconverted', 'status' ) );
+		\WP_CLI\Utils\format_items( 'table', $table, array( 'product_id', 'old_total', 'new_total', 'diff', 'manual_sug', 'shown_after', 'reason', 'old_donors', 'new_donors', 'orders', 'unconverted', 'status' ) );
+
+		$detail = isset( $assoc_args['detail'] ) ? array_filter( array_map( 'absint', explode( ',', (string) $assoc_args['detail'] ) ) ) : array();
+		foreach ( $result['rows'] as $row ) {
+			if ( in_array( (int) $row['product_id'], $detail, true ) ) {
+				\WP_CLI::log( sprintf( 'product %d breakdown: %s', (int) $row['product_id'], (string) wp_json_encode( $row['breakdown'] ) ) );
+			}
+		}
 
 		if ( $result['unconverted'] > 0 ) {
 			\WP_CLI::warning( sprintf( '%d order line(s) had no usable exchange rate and were left out (not converted).', $result['unconverted'] ) );
