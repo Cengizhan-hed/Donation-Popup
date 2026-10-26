@@ -637,3 +637,41 @@ it('acceptUserOptionChanges: yalnız adı verilen seçenekler; yabancı fark red
 
   assert.equal(acceptUserOptionChanges(baseline, current, [], []).ok, false);
 });
+
+it('acceptUserContentChanges: verilen id kabul; dış fark, boş liste, açıklanamayan sayaç reddedilir', async () => {
+  const { acceptUserContentChanges } = await import('../../e2e/helpers/canary.mjs');
+  const baseline = { posts: [{ id: 1, type: 'page', status: 'publish' }], attachment_count: 4, page_count: 1, options: {} };
+  const current = {
+    posts: [
+      { id: 1, type: 'page', status: 'publish' },
+      { id: 50, type: 'elementor_library', status: 'publish' },
+      { id: 51, type: 'attachment', status: 'inherit' },
+    ],
+    attachment_count: 5,
+    page_count: 1,
+    options: {},
+  };
+  const diffs = [
+    { id: 50, change: 'created', type: 'elementor_library', status: 'publish' },
+    { id: 51, change: 'created', type: 'attachment', status: 'inherit' },
+    { option: 'attachment_count', change: 'count', from: '4', to: '5' },
+  ];
+  const ok = acceptUserContentChanges(baseline, current, diffs, [50, '51']);
+  assert.equal(ok.ok, true);
+  assert.deepEqual(ok.accepted, [50, 51]);
+  assert.equal(ok.baseline.attachment_count, 5);
+  assert.equal(ok.baseline.posts.length, 3);
+  assert.equal(baseline.posts.length, 1, 'girdi değişmez');
+
+  // listede olmayan id'nin yeni kaydı dış fark sayılır
+  assert.equal(acceptUserContentChanges(baseline, current, diffs, [50]).ok, false);
+  // silme gibi başka tür fark
+  const del = [...diffs, { id: 9, change: 'deleted', type: 'page', status: 'publish' }];
+  assert.equal(acceptUserContentChanges(baseline, current, del, [50, 51]).ok, false);
+  // boş liste
+  assert.equal(acceptUserContentChanges(baseline, current, diffs, []).ok, false);
+  // sayaç farkı yeni kayıt sayısıyla açıklanamıyor
+  assert.equal(acceptUserContentChanges(baseline, { ...current, attachment_count: 9 }, diffs, [50, 51]).ok, false);
+  // verilen id için yeni kayıt farkı yok
+  assert.equal(acceptUserContentChanges(baseline, current, [], [50]).ok, false);
+});

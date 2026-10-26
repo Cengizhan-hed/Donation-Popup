@@ -273,6 +273,60 @@ export function acceptUserOptionChanges(baseline, current, diffs, acceptKeys) {
   return { ok: true, baseline: { ...baseline, options }, accepted };
 }
 
+/**
+ * Site sahibi kendi eklediği içeriği (ör. elementor_library, attachment) kabul eder.
+ * Yalnız verilen id'lerin `created` farkları ve bunların açıkladığı sayaç farkı
+ * (attachment_count/page_count/product_count) baseline'a işlenir; listedeki id'ler dışındaki
+ * her fark (silme, durum, seçenek, açıklanamayan sayaç) reddedilir.
+ * @param {object} baseline
+ * @param {object} current
+ * @param {Array<object>} diffs
+ * @param {Array<number|string>} acceptIds
+ * @returns {{ ok: boolean, baseline: object, accepted: number[], reason?: string }}
+ */
+export function acceptUserContentChanges(baseline, current, diffs, acceptIds) {
+  const allow = new Set((acceptIds || []).map((n) => Number(n)).filter((n) => n > 0));
+  if (!allow.size) return { ok: false, baseline, accepted: [], reason: 'id yok' };
+  if (!baseline || !Array.isArray(baseline.posts) || !current || !Array.isArray(current.posts)) {
+    return { ok: false, baseline, accepted: [], reason: 'baseline/anlık görüntü eksik' };
+  }
+  const list = Array.isArray(diffs) ? diffs : [];
+  const countKeyByType = { attachment: 'attachment_count', page: 'page_count', product: 'product_count' };
+  const createdDiffs = list.filter((d) => d && d.change === 'created' && allow.has(Number(d.id)));
+  const countDiffs = list.filter((d) => d && d.change === 'count');
+  const other = list.filter((d) => !createdDiffs.includes(d) && !countDiffs.includes(d));
+  if (other.length) {
+    return { ok: false, baseline, accepted: [], reason: `izinli id dışı fark: ${other.length}` };
+  }
+  if (!createdDiffs.length) {
+    return { ok: false, baseline, accepted: [], reason: 'verilen id için yeni kayıt farkı yok' };
+  }
+  const currentMap = new Map(current.posts.map((p) => [Number(p.id), p]));
+  const newPosts = [];
+  const perCount = {};
+  for (const d of createdDiffs) {
+    const post = currentMap.get(Number(d.id));
+    if (!post) return { ok: false, baseline, accepted: [], reason: `id=${d.id} anlık görüntüde yok` };
+    newPosts.push(post);
+    const ck = countKeyByType[String(post.type)];
+    if (ck) perCount[ck] = (perCount[ck] || 0) + 1;
+  }
+  const counts = {};
+  for (const d of countDiffs) {
+    const key = String(d.option);
+    const delta = Number(current[key] ?? 0) - Number(baseline[key] ?? 0);
+    if (!Object.prototype.hasOwnProperty.call(perCount, key) || delta !== perCount[key]) {
+      return { ok: false, baseline, accepted: [], reason: `sayaç farkı açıklanamıyor: ${key}` };
+    }
+    counts[key] = current[key];
+  }
+  return {
+    ok: true,
+    baseline: { ...baseline, ...counts, posts: [...baseline.posts, ...newPosts] },
+    accepted: newPosts.map((p) => Number(p.id)),
+  };
+}
+
 export function formatCanaryStatusLine(beforeOk, afterOk, expectedNew = 0) {
   const b = beforeOk ? 'TEMİZ' : 'KIRMIZI';
   const a = afterOk ? 'TEMİZ' : 'KIRMIZI';

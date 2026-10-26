@@ -68,58 +68,6 @@ if command -v php >/dev/null 2>&1 && [[ -f "$PLUGIN_ROOT/tools/minify-admin-css.
   php "$PLUGIN_ROOT/tools/minify-admin-css.php" "$DEST/assets/css/admin-style.css" "$DEST/assets/css/admin/products.css" "$DEST/assets/css/list.css" || true
 fi
 
-# Production ZIP: bundle frontend CSS into a single file when PHP CLI is available.
-if command -v php >/dev/null 2>&1 && [[ -f "$DEST/tools/build-css-bundle.php" ]]; then
-  echo "Building frontend CSS bundle..."
-  (cd "$DEST" && php tools/build-css-bundle.php) || {
-    echo "warning: CSS bundle build failed; ZIP will use layered CSS handles." >&2
-  }
-fi
-
-if command -v php >/dev/null 2>&1 && [[ -f "$DEST/tools/build-js-bundle.php" ]]; then
-  echo "Building frontend JS bundle..."
-  (cd "$DEST" && php tools/build-js-bundle.php) || {
-    echo "warning: JS bundle build failed; ZIP will use modular JS handles." >&2
-  }
-fi
-
-# Prune development-only files from distribution archive.
-rm -rf \
-  "$DEST/tests" \
-  "$DEST/scripts" \
-  "$DEST/docs" \
-  "$DEST/.github" \
-  "$DEST/.claude" \
-  "$DEST/CLAUDE.md" \
-  "$DEST/.cursor" \
-  "$DEST/.vscode"
-rm -rf "$DEST/vendor"
-rm -rf "$DEST/vendor-dev"
-rm -f \
-  "$DEST/package.json" \
-  "$DEST/package-lock.json" \
-  "$DEST/yarn.lock" \
-  "$DEST/pnpm-lock.yaml" \
-  "$DEST/.gitignore" \
-  "$DEST/.distignore" \
-  "$DEST/composer.json" \
-  "$DEST/composer.lock" \
-  "$DEST/composer.phar" \
-  "$DEST/composer-setup.php" \
-  "$DEST/phpunit.xml" \
-  "$DEST/phpunit.xml.dist" \
-  "$DEST/.phpunit.result.cache" \
-  "$DEST/phpcs.xml.dist" \
-  "$DEST/phpcs-src.xml.dist" \
-  "$DEST/phpstan.neon" \
-  "$DEST/phpstan.verify.neon" \
-  "$DEST/phpstan.dead.neon" \
-  "$DEST/rector.php" \
-  "$DEST/eslint.config.mjs" \
-  "$DEST/.stylelintrc.json" \
-  "$DEST/.jscpd.json" \
-  "$DEST/.lintstagedrc.json"
-
 # Keep only README.md as markdown in distribution root.
 find "$DEST" -type f -name "*.md" ! -name "README.md" -delete
 
