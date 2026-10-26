@@ -453,7 +453,7 @@ trait WDP_Utils_Order_Meta_Trait {
 			$unconverted = false;
 			if ( class_exists( 'WDP_Progress_Currency' ) ) {
 				$line_currency = self::resolve_donation_line_currency( $item, $currency );
-				$foreign       = '' !== $line_currency && $line_currency !== WDP_Progress_Currency::get_base_currency();
+				$foreign       = '' !== $line_currency && WDP_Progress_Currency::get_base_currency() !== $line_currency;
 				$converted     = WDP_Progress_Currency::convert_to_base( $line_total, $line_currency, $order );
 				if ( empty( $converted['ok'] ) ) {
 					if ( $log ) {

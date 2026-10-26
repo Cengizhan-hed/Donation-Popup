@@ -665,7 +665,7 @@ class WDP_Utils {
 				continue;
 			}
 			$meta               = get_post_meta( $product_id, '_wdp_total_donation_amount', true );
-			$calculated         = ( $meta !== '' && is_numeric( $meta ) ) ? max( 0.0, (float) $meta ) : 0.0;
+			$calculated         = ( '' !== $meta && is_numeric( $meta ) ) ? max( 0.0, (float) $meta ) : 0.0;
 			$out[ $product_id ] = $calculated + self::get_manual_total( $product_id );
 		}
 		return $out;

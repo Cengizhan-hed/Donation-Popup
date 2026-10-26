@@ -206,8 +206,8 @@ class WDP_Admin_Product_Data_Tab {
 		$goal       = (float) ( $goal_raw !== '' ? $goal_raw : WDP_Donation_Type::DEFAULT_GOAL );
 		$stored     = get_post_meta( $product_id, '_wdp_total_donation_amount', true );
 		$manual     = WDP_Utils::get_manual_total( $product_id );
-		$has_total  = ( $stored !== '' && is_numeric( $stored ) ) || $manual > 0;
-		$total      = ( ( $stored !== '' && is_numeric( $stored ) ) ? max( 0.0, (float) $stored ) : 0.0 ) + $manual;
+		$has_total  = ( '' !== $stored && is_numeric( $stored ) ) || $manual > 0;
+		$total      = ( ( '' !== $stored && is_numeric( $stored ) ) ? max( 0.0, (float) $stored ) : 0.0 ) + $manual;
 		$percent    = $goal > 0 ? min( 100, (int) floor( ( $total / $goal ) * 100 ) ) : 0;
 
 		$total_text    = $has_total ? WDP_Utils::format_price_plain( $total ) : __( '0', 'woo-donation-popup' );
