@@ -1,6 +1,6 @@
 <?php
 /**
- * Yönetim CSS dosyalarını (admin-style.css ve admin/products.css) yerinde küçültür; yalnızca npm run pack ZIP kopyasında kullanılır.
+ * Yönetim CSS dosyalarını (admin/products.css ve list.css) yerinde küçültür; yalnızca npm run pack ZIP kopyasında kullanılır.
  *
  * Usage: php tools/minify-admin-css.php [file.css ...]
  * Without arguments the source files under assets/css are minified.
@@ -17,7 +17,6 @@ $paths = array_values(array_filter(array_slice($argv, 1), static function ($arg)
 }));
 if ($paths === array()) {
 	$paths = array(
-		$root . '/assets/css/admin-style.css',
 		$root . '/assets/css/admin/products.css',
 	);
 }

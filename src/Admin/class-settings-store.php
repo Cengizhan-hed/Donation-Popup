@@ -103,9 +103,9 @@ final class Settings_Store {
 	 * @return mixed
 	 */
 	public function get( $id ) {
-		$fields = Field_Registry::fields();
+		$fields              = Field_Registry::fields();
 		list( $group, $key ) = explode( '.', $id, 2 );
-		$stored = get_option( Settings::OPTION_NAME, array() );
+		$stored              = get_option( Settings::OPTION_NAME, array() );
 		if ( is_array( $stored ) && isset( $stored[ $group ] ) && is_array( $stored[ $group ] ) && array_key_exists( $key, $stored[ $group ] ) ) {
 			return $this->settings->get( $id );
 		}
@@ -208,7 +208,12 @@ final class Settings_Store {
 	 * @return string|\WP_Error
 	 */
 	private function sanitize_presets( $text ) {
-		$parts = array_filter( array_map( 'trim', explode( ',', $text ) ), 'strlen' );
+		$parts = array_filter(
+			array_map( 'trim', explode( ',', $text ) ),
+			static function ( $part ) {
+				return '' !== $part;
+			}
+		);
 		$out   = array();
 		foreach ( $parts as $part ) {
 			if ( ! preg_match( '/^\d+(?:[.]\d+)?$/', $part ) || (float) $part <= 0 ) {
@@ -237,7 +242,14 @@ final class Settings_Store {
 		foreach ( $fields as $id => $value ) {
 			$value = $this->sanitize_value( (string) $id, $value );
 			if ( is_wp_error( $value ) ) {
-				return new \WP_Error( $value->get_error_code(), $value->get_error_message(), array( 'field' => (string) $id, 'status' => 400 ) );
+				return new \WP_Error(
+					$value->get_error_code(),
+					$value->get_error_message(),
+					array(
+						'field'  => (string) $id,
+						'status' => 400,
+					)
+				);
 			}
 			list( $group, $key )     = explode( '.', (string) $id, 2 );
 			$patch[ $group ][ $key ] = $value;
@@ -303,7 +315,7 @@ final class Settings_Store {
 			}
 			if ( '' === $legacy['key'] ) {
 				if ( false === get_option( $legacy['option'], false ) ) {
-					add_option( $legacy['option'], $out, '', 'no' );
+					add_option( $legacy['option'], $out, '', false );
 				} else {
 					update_option( $legacy['option'], $out, false );
 				}
@@ -313,7 +325,7 @@ final class Settings_Store {
 			$option                   = is_array( $option ) ? $option : array();
 			$option[ $legacy['key'] ] = $out;
 			if ( false === get_option( $legacy['option'], false ) ) {
-				add_option( $legacy['option'], $option, '', 'no' );
+				add_option( $legacy['option'], $option, '', false );
 			} else {
 				update_option( $legacy['option'], $option, false );
 			}

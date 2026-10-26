@@ -146,6 +146,6 @@ describe('token-scan', () => {
     const data = JSON.parse(r.stdout);
     assert.ok(data.call_count > 0);
     assert.ok(Array.isArray(data.calls));
-    assert.ok(data.calls.some((c) => c.function === '__' && c.file.includes('class-admin-page-renderer.php')));
+    assert.ok(data.calls.some((c) => c.function === '__' && c.file.includes('class-pages.php')));
   });
 });

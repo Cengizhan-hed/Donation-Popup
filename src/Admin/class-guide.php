@@ -21,7 +21,7 @@ final class Guide {
 	 */
 	public static function sections() {
 		return array(
-			'placing'  => array(
+			'placing'    => array(
 				'title' => __( 'Placing the donate button', 'woo-donation-popup' ),
 				'body'  => array(
 					__( 'Automatic: on product pages the button appears in the standard WooCommerce spots. You do not need to do anything.', 'woo-donation-popup' ),
@@ -38,14 +38,14 @@ final class Guide {
 				),
 				'code'  => '[wdp_donation_button_panel id="123"]',
 			),
-			'hooks'    => array(
+			'hooks'      => array(
 				'title' => __( 'For developers: filters', 'woo-donation-popup' ),
 				'body'  => array(
 					__( 'donation_panel_convert_amount converts amounts for a multi-currency plugin. donation_panel_amount_presets changes the quick amounts. donation_panel_rest_controllers adds REST controllers. The full list with examples is in docs/HOOKS.md in the plugin folder.', 'woo-donation-popup' ),
 				),
 				'code'  => '',
 			),
-			'modules'  => array(
+			'modules'    => array(
 				'title' => __( 'What each module does', 'woo-donation-popup' ),
 				'body'  => array(
 					__( 'Campaign: goal, amount raised and donor count. Impact: short equivalents next to amounts. Social proof: totals only, never personal details.', 'woo-donation-popup' ),
@@ -54,7 +54,7 @@ final class Guide {
 				),
 				'code'  => '',
 			),
-			'trouble'  => array(
+			'trouble'    => array(
 				'title' => __( 'Troubleshooting: the button does not show', 'woo-donation-popup' ),
 				'body'  => array(
 					__( 'Check that the product is set up as a donation product (the Donation tab in the product data box) and that it is published.', 'woo-donation-popup' ),
@@ -63,7 +63,7 @@ final class Guide {
 				),
 				'code'  => '',
 			),
-			'currency' => array(
+			'currency'   => array(
 				'title' => __( 'Multi-currency stores', 'woo-donation-popup' ),
 				'body'  => array(
 					__( 'By default amounts are shown and charged in the active WooCommerce currency; nothing is converted.', 'woo-donation-popup' ),
@@ -71,7 +71,7 @@ final class Guide {
 				),
 				'code'  => '',
 			),
-			'privacy'  => array(
+			'privacy'    => array(
 				'title' => __( 'Privacy and data protection', 'woo-donation-popup' ),
 				'body'  => array(
 					__( 'Donor details (dedication, on-behalf-of name, phone, email) are saved on the order exactly as typed. Orders, exports and erasure are handled by WooCommerce and the WordPress privacy tools.', 'woo-donation-popup' ),

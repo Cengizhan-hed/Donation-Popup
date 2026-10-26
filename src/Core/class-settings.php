@@ -107,44 +107,48 @@ class Settings {
 					'default' => '',
 				),
 			),
-			'design' => array(
-				'colors' => array(
+			'design'      => array(
+				'colors'            => array(
 					'type'    => 'string',
 					'default' => 'theme',
 				),
-				'brand' => array(
+				'brand'             => array(
 					'type'    => 'string',
 					'default' => '',
 				),
-				'accent' => array(
+				'accent'            => array(
 					'type'    => 'string',
 					'default' => '',
 				),
-				'button_text' => array(
+				'button_text'       => array(
 					'type'    => 'string',
 					'default' => '',
+				),
+				'button_full_width' => array(
+					'type'    => 'bool',
+					'default' => false,
 				),
 			),
-			'display' => array(
+			'display'     => array(
 				'mode' => array(
 					'type'    => 'string',
 					'default' => 'panel',
 				),
 			),
-			'form' => array(
-				'presets_enabled' => array(
+			'form'        => array(
+				'presets_enabled'  => array(
 					'type'    => 'bool',
 					'default' => false,
 				),
-				'presets' => array(
+				'presets'          => array(
 					'type'    => 'string',
 					'default' => '',
 				),
-				'donor_email' => array(
+				'donor_email'      => array(
 					'type'    => 'bool',
 					'default' => false,
 				),
-				'dedication' => array(
+				'dedication'       => array(
 					'type'    => 'bool',
 					'default' => false,
 				),
@@ -152,36 +156,36 @@ class Settings {
 					'type'    => 'string',
 					'default' => '',
 				),
-				'anonymous' => array(
+				'anonymous'        => array(
 					'type'    => 'bool',
 					'default' => false,
 				),
-				'multi_step' => array(
+				'multi_step'       => array(
 					'type'    => 'bool',
 					'default' => false,
 				),
-				'trust_enabled' => array(
+				'trust_enabled'    => array(
 					'type'    => 'bool',
 					'default' => false,
 				),
-				'trust_text' => array(
+				'trust_text'       => array(
 					'type'    => 'string',
 					'default' => '',
 				),
-				'privacy_notice' => array(
+				'privacy_notice'   => array(
 					'type'    => 'bool',
 					'default' => false,
 				),
-				'privacy_text' => array(
+				'privacy_text'     => array(
 					'type'    => 'string',
 					'default' => '',
 				),
-				'privacy_url' => array(
+				'privacy_url'      => array(
 					'type'    => 'string',
 					'default' => '',
 				),
 			),
-			'shares' => array(
+			'shares'      => array(
 				'header_text' => array(
 					'type'    => 'string',
 					'default' => '',
@@ -190,25 +194,25 @@ class Settings {
 					'type'    => 'bool',
 					'default' => false,
 				),
-				'email' => array(
+				'email'       => array(
 					'type'    => 'bool',
 					'default' => false,
 				),
 			),
-			'placement' => array(
-				'auto_place' => array(
+			'placement'   => array(
+				'auto_place'  => array(
 					'type'    => 'bool',
 					'default' => true,
 				),
-				'position' => array(
+				'position'    => array(
 					'type'    => 'string',
 					'default' => 'replace_cart',
 				),
-				'hide_price' => array(
+				'hide_price'  => array(
 					'type'    => 'bool',
 					'default' => true,
 				),
-				'show_title' => array(
+				'show_title'  => array(
 					'type'    => 'bool',
 					'default' => false,
 				),
@@ -216,21 +220,21 @@ class Settings {
 					'type'    => 'string',
 					'default' => 'panel',
 				),
-				'scope' => array(
+				'scope'       => array(
 					'type'    => 'string',
 					'default' => 'all',
 				),
-				'categories' => array(
+				'categories'  => array(
 					'type'    => 'string',
 					'default' => '',
 				),
 			),
-			'checkout' => array(
+			'checkout'    => array(
 				'addon_product_id' => array(
 					'type'    => 'int',
 					'default' => 0,
 				),
-				'addon_label' => array(
+				'addon_label'      => array(
 					'type'    => 'string',
 					'default' => '',
 				),
@@ -242,11 +246,11 @@ class Settings {
 				),
 			),
 			'admin'       => array(
-				'ui'     => array(
+				'ui'          => array(
 					'type'    => 'string',
 					'default' => 'legacy',
 				),
-				'wizard' => array(
+				'wizard'      => array(
 					'type'    => 'string',
 					'default' => '',
 				),

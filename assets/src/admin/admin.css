@@ -38,7 +38,7 @@
 	gap: 16px;
 	margin-block-end: 20px;
 }
-.dpa-title {
+.dpa .dpa-title {
 	margin: 0;
 	padding: 0;
 	font-size: 26px;
@@ -46,7 +46,7 @@
 	line-height: 1.2;
 	color: var(--dpa-text);
 }
-.dpa-sub {
+.dpa .dpa-sub {
 	margin: 4px 0 0;
 	font-size: 14px;
 	color: var(--dpa-muted);
@@ -322,10 +322,10 @@
 	display: flex;
 	justify-content: flex-end;
 }
-.dpa-row__control .dpa-input {
+.dpa .dpa-row__control .dpa-input {
 	inline-size: 100%;
 }
-.dpa-input {
+.dpa .dpa-input {
 	min-block-size: 44px;
 	padding: 8px 12px;
 	border: 1.5px solid var(--dpa-border);
@@ -336,10 +336,10 @@
 	color: var(--dpa-text);
 	max-inline-size: 100%;
 }
-.dpa-input--short {
-	inline-size: 120px !important;
+.dpa .dpa-input.dpa-input--short {
+	inline-size: 120px;
 }
-.dpa-color {
+.dpa .dpa-color {
 	inline-size: 64px;
 	block-size: 44px;
 	padding: 2px;

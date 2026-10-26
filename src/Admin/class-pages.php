@@ -121,11 +121,11 @@ final class Pages {
 	 */
 	public function render_overview() {
 		$this->guard();
-		$steps    = $this->status->steps();
-		$done     = count( array_filter( array_column( $steps, 'ok' ) ) );
-		$total    = count( $steps );
-		$pct      = (int) round( $done / $total * 100 );
-		$todo     = array();
+		$steps = $this->status->steps();
+		$done  = count( array_filter( array_column( $steps, 'ok' ) ) );
+		$total = count( $steps );
+		$pct   = (int) round( $done / $total * 100 );
+		$todo  = array();
 		foreach ( $steps as $step ) {
 			if ( ! $step['ok'] ) {
 				$todo[] = $step['todo'];
@@ -278,8 +278,8 @@ final class Pages {
 		$tools   = '<ul class="dpa-statuses">';
 		$tools  .= Admin_View::status_row( $privacy, $privacy ? __( 'Privacy policy page is set in WordPress', 'woo-donation-popup' ) : __( 'Privacy policy page is not set in WordPress', 'woo-donation-popup' ), admin_url( 'options-privacy.php' ), __( 'Set it', 'woo-donation-popup' ) );
 		$tools  .= Admin_View::status_row( true, __( 'The plugin sets no cookie of its own', 'woo-donation-popup' ) );
-		$export  = has_filter( 'wp_privacy_personal_data_exporters' ) && $this->has_privacy_callbacks( 'wp_privacy_personal_data_exporters' );
-		$erase   = $this->has_privacy_callbacks( 'wp_privacy_personal_data_erasers' );
+		$export  = $this->has_privacy_callbacks( apply_filters( 'wp_privacy_personal_data_exporters', array() ) ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- WordPress çekirdek kancası.
+		$erase   = $this->has_privacy_callbacks( apply_filters( 'wp_privacy_personal_data_erasers', array() ) ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- WordPress çekirdek kancası.
 		$tools  .= Admin_View::status_row( $export, $export ? __( 'WordPress "Export personal data" includes donor details on orders', 'woo-donation-popup' ) : __( 'Donor details are not part of "Export personal data"', 'woo-donation-popup' ) );
 		$tools  .= Admin_View::status_row( $erase, $erase ? __( 'WordPress "Erase personal data" covers donor details on orders', 'woo-donation-popup' ) : __( 'Donor details are not part of "Erase personal data"', 'woo-donation-popup' ) );
 		$tools  .= '</ul><p><a class="dpa-btn dpa-btn--ghost" href="' . esc_url( admin_url( 'export-personal-data.php' ) ) . '">' . esc_html__( 'Export personal data', 'woo-donation-popup' ) . '</a> <a class="dpa-btn dpa-btn--ghost" href="' . esc_url( admin_url( 'erase-personal-data.php' ) ) . '">' . esc_html__( 'Erase personal data', 'woo-donation-popup' ) . '</a></p>';
@@ -292,13 +292,12 @@ final class Pages {
 	}
 
 	/**
-	 * Eklentimizin gizlilik dışa aktarıcı/silici kaydı var mı (kanca listesi çağrılmadan, kayıt kancası kontrolü).
+	 * Eklentimizin gizlilik dışa aktarıcı/silici kaydı var mı.
 	 *
-	 * @param string $hook Kanca.
+	 * @param mixed $registered WordPress'in kayıtlı dışa aktarıcı/silici listesi.
 	 * @return bool
 	 */
-	private function has_privacy_callbacks( $hook ) {
-		$registered = apply_filters( $hook, array() );
+	private function has_privacy_callbacks( $registered ) {
 		if ( ! is_array( $registered ) ) {
 			return false;
 		}
@@ -364,17 +363,17 @@ final class Pages {
 		}
 		$checkout = $this->status->checkout_page();
 		return array(
-			__( 'Plugin version', 'woo-donation-popup' )        => defined( 'WDP_VERSION' ) ? (string) WDP_VERSION : '',
-			__( 'WordPress', 'woo-donation-popup' )             => (string) $wp_version,
-			__( 'WooCommerce', 'woo-donation-popup' )           => defined( 'WC_VERSION' ) ? (string) WC_VERSION : '',
-			__( 'PHP', 'woo-donation-popup' )                   => PHP_VERSION,
-			__( 'Order storage', 'woo-donation-popup' )         => $hpos ? 'HPOS' : 'posts',
-			__( 'Checkout', 'woo-donation-popup' )              => $checkout['kind'],
-			__( 'Currency', 'woo-donation-popup' )              => function_exists( 'get_woocommerce_currency' ) ? (string) get_woocommerce_currency() : '',
-			__( 'Guest checkout', 'woo-donation-popup' )        => $this->status->guest_checkout_enabled() ? 'on' : 'off',
-			__( 'Donation products', 'woo-donation-popup' )     => (string) $this->status->donation_product_count(),
-			__( 'Modules on', 'woo-donation-popup' )            => implode( ', ', $active ),
-			__( 'REST API address', 'woo-donation-popup' )      => esc_url_raw( rest_url( 'donation-panel/v1/ping' ) ),
+			__( 'Plugin version', 'woo-donation-popup' )   => defined( 'WDP_VERSION' ) ? (string) WDP_VERSION : '',
+			__( 'WordPress', 'woo-donation-popup' )        => (string) $wp_version,
+			__( 'WooCommerce', 'woo-donation-popup' )      => defined( 'WC_VERSION' ) ? (string) WC_VERSION : '',
+			__( 'PHP', 'woo-donation-popup' )              => PHP_VERSION,
+			__( 'Order storage', 'woo-donation-popup' )    => $hpos ? 'HPOS' : 'posts',
+			__( 'Checkout', 'woo-donation-popup' )         => $checkout['kind'],
+			__( 'Currency', 'woo-donation-popup' )         => function_exists( 'get_woocommerce_currency' ) ? (string) get_woocommerce_currency() : '',
+			__( 'Guest checkout', 'woo-donation-popup' )   => $this->status->guest_checkout_enabled() ? 'on' : 'off',
+			__( 'Donation products', 'woo-donation-popup' ) => (string) $this->status->donation_product_count(),
+			__( 'Modules on', 'woo-donation-popup' )       => implode( ', ', $active ),
+			__( 'REST API address', 'woo-donation-popup' ) => esc_url_raw( rest_url( 'donation-panel/v1/ping' ) ),
 		);
 	}
 }

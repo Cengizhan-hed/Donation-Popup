@@ -281,9 +281,8 @@ wdp_smoke_assert(
     'Pack script minifies admin/products.css'
 );
 wdp_smoke_assert(
-    !wdp_smoke_file_contains(WDP_PLUGIN_DIR . 'assets/css/admin-style.css', '.wdp-product-card')
-        && !wdp_smoke_file_contains(WDP_PLUGIN_DIR . 'assets/js/admin-script.js', 'wdp-product-card'),
-    'Legacy product card CSS/JS removed'
+    !file_exists(WDP_PLUGIN_DIR . 'assets/css/admin-style.css') && !file_exists(WDP_PLUGIN_DIR . 'assets/js/admin-script.js'),
+    'Old admin settings CSS/JS removed (12.0.0 single menu)'
 );
 
 // 10.27.0: render guard, migrations, removed in-form module.
@@ -314,7 +313,6 @@ foreach (array(
     '\DonationPanel\Modules\EntryPoints\Blocks',
     '\DonationPanel\Modules\EntryPoints\Elementor\Elementor_Compat',
     'WDP_Form_Matrix',
-    'WDP_Admin_Placement_Tab_Renderer',
     'WDP_Admin_Bulk_Actions',
 ) as $wdp_2b_class) {
     wdp_smoke_assert(class_exists($wdp_2b_class), $wdp_2b_class . ' loads');
@@ -365,81 +363,23 @@ wdp_smoke_assert(
     '10.28.5 addon visibility caches cleared; no donation-scope hide filter'
 );
 
-// 10.27.1: admin tabs/forms stay in sync (no hardcoded TAB_KEYS).
-$admin_page_renderer = (string) file_get_contents(WDP_PLUGIN_DIR . 'includes/class-admin-page-renderer.php');
-$admin_script_js     = (string) file_get_contents(WDP_PLUGIN_DIR . 'assets/js/admin-script.js');
-$admin_assets_php    = (string) file_get_contents(WDP_PLUGIN_DIR . 'includes/class-admin-assets.php');
-$admin_hooks_php     = (string) file_get_contents(WDP_PLUGIN_DIR . 'includes/class-admin-hooks.php');
-
-preg_match_all('/data-tab="([a-z0-9\-]+)"/', $admin_page_renderer, $wdp_tab_matches);
-$wdp_tab_keys = array_values(array_unique($wdp_tab_matches[1] ?? array()));
-wdp_smoke_assert($wdp_tab_keys !== array(), 'Admin page renderer declares data-tab keys');
-foreach ($wdp_tab_keys as $wdp_tab_key) {
-    wdp_smoke_assert(
-        strpos($admin_page_renderer, 'id="wdp-' . $wdp_tab_key . '-tab"') !== false,
-        'Admin tab panel exists for data-tab=' . $wdp_tab_key
-    );
+// 12.0.0: tek yönetici menüsü (src/Admin); eski ayar ekranı ve eski yönetici varlıkları kaldırıldı.
+foreach (array('class-admin-page-renderer', 'class-admin-form-tabs-renderer', 'class-admin-layout-tabs-renderer', 'class-admin-placement-tab-renderer', 'class-admin-design-studio-renderer', 'class-admin-settings-normalizer', 'class-admin-renderer-helpers') as $wdp_removed_admin) {
+    wdp_smoke_assert(!file_exists(WDP_PLUGIN_DIR . 'includes/' . $wdp_removed_admin . '.php'), 'Old admin file removed: ' . $wdp_removed_admin);
 }
+foreach (array('src/Admin/class-ui-switch.php', 'src/Admin/class-settings-page.php') as $wdp_removed_rel) {
+    wdp_smoke_assert(!file_exists(WDP_PLUGIN_DIR . $wdp_removed_rel), 'Old admin file removed: ' . $wdp_removed_rel);
+}
+foreach (array('class-admin-bootstrap', 'class-admin-controller', 'class-admin-assets', 'class-admin-view', 'class-field-registry', 'class-settings-store', 'class-status', 'class-pages', 'class-setup-wizard', 'class-guide') as $wdp_admin_file) {
+    wdp_smoke_assert(file_exists(WDP_PLUGIN_DIR . 'src/Admin/' . $wdp_admin_file . '.php'), 'New admin file exists: ' . $wdp_admin_file);
+}
+wdp_smoke_assert(file_exists(WDP_PLUGIN_DIR . 'assets/src/admin/index.mjs') && file_exists(WDP_PLUGIN_DIR . 'assets/src/admin/admin.css'), 'Admin JS/CSS source exists (wp-scripts)');
+$wdp_admin_js = (string) file_get_contents(WDP_PLUGIN_DIR . 'assets/src/admin/index.mjs') . (string) file_get_contents(WDP_PLUGIN_DIR . 'assets/src/admin/wizard.mjs');
+wdp_smoke_assert(stripos($wdp_admin_js, 'jquery') === false && strpos($wdp_admin_js, '$(') === false, 'Admin JS does not use jQuery');
 wdp_smoke_assert(
-    strpos($admin_script_js, 'const TAB_KEYS') === false
-        && strpos($admin_script_js, 'var TAB_KEYS') === false
-        && strpos($admin_script_js, 'function getTabKeys') !== false,
-    'admin-script.js builds tab keys from DOM (no fixed TAB_KEYS)'
+    wdp_smoke_file_contains(WDP_PLUGIN_DIR . 'src/Admin/class-admin-bootstrap.php', 'add_menu_page(')
+        && !wdp_smoke_file_contains(WDP_PLUGIN_DIR . 'src/Admin/class-admin-bootstrap.php', "'woocommerce',"),
+    'Plugin menu is one top-level menu, not under WooCommerce'
 );
-wdp_smoke_assert(
-    strpos($admin_assets_php, 'var TAB_KEYS') === false
-        && strpos($admin_assets_php, 'function getTabKeys') !== false,
-    'Inline admin tabs script builds tab keys from DOM'
-);
-wdp_smoke_assert(
-    in_array('placement', $wdp_tab_keys, true)
-        && strpos($admin_page_renderer, 'id="wdp-placement-tab"') !== false,
-    'Placement tab and panel are registered'
-);
-
-$wdp_includes_php = '';
-foreach (glob(WDP_PLUGIN_DIR . 'includes/class-admin*.php') ?: array() as $wdp_admin_php_file) {
-    $wdp_includes_php .= (string) file_get_contents($wdp_admin_php_file) . "\n";
-}
-$wdp_includes_php .= (string) file_get_contents(WDP_PLUGIN_DIR . 'includes/class-admin-renderer-helpers.php') . "\n";
-preg_match_all('/id="(wdp-[a-z0-9\-]+-settings-form)"/', $wdp_includes_php, $wdp_form_matches);
-$wdp_form_ids = array_values(array_unique($wdp_form_matches[1] ?? array()));
-// Forms opened via open_form_container('…') without a literal id="…" attribute in the same file.
-preg_match_all("/open_form_container\(\s*'([^']+)'/", $wdp_includes_php, $wdp_open_form_matches);
-foreach ($wdp_open_form_matches[1] ?? array() as $wdp_open_form_id) {
-    if (preg_match('/^wdp-.+-settings-form$/', $wdp_open_form_id) && !in_array($wdp_open_form_id, $wdp_form_ids, true)) {
-        $wdp_form_ids[] = $wdp_open_form_id;
-    }
-}
-wdp_smoke_assert($wdp_form_ids !== array(), 'Admin settings form ids discovered');
-wdp_smoke_assert(
-    strpos($admin_script_js, 'function bindSettingsForm') !== false
-        && strpos($admin_script_js, 'function bindAllSettingsForms') !== false
-        && strpos($admin_script_js, 'data-wdp-ajax-action') !== false
-        && strpos($admin_script_js, 'bindAllSettingsForms()') !== false,
-    'admin-script.js binds settings forms via data-wdp-ajax-action'
-);
-foreach ($wdp_form_ids as $wdp_form_id) {
-    if (!preg_match('/^wdp-(.+)-settings-form$/', $wdp_form_id, $wdp_form_parts)) {
-        wdp_smoke_assert(false, 'Unexpected settings form id: ' . $wdp_form_id);
-        continue;
-    }
-    $wdp_ajax_action = 'wdp_save_' . str_replace('-', '_', $wdp_form_parts[1]) . '_settings';
-    wdp_smoke_assert(
-        strpos($wdp_includes_php, 'data-wdp-ajax-action="' . $wdp_ajax_action . '"') !== false
-            || preg_match('/open_form_container\\(\\s*\'' . preg_quote($wdp_form_id, '/') . '\'/', $wdp_includes_php) === 1,
-        'Settings form has AJAX action markup: ' . $wdp_form_id
-    );
-    wdp_smoke_assert(
-        strpos($admin_hooks_php, "wp_ajax_{$wdp_ajax_action}") !== false,
-        'wp_ajax_ registered for ' . $wdp_ajax_action
-    );
-}
-
-// 10.28.1: settings page self-check (each tab renderer + DOM shell).
-$admin_selfcheck = require __DIR__ . '/admin-page-selfcheck.php';
-if ((int) $admin_selfcheck > 0) {
-    $failures += (int) $admin_selfcheck;
-}
 
 exit($failures > 0 ? 1 : 0);

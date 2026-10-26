@@ -95,7 +95,7 @@
     "i18n:golden": "node tests/e2e/run-i18n-text.mjs",
     "i18n:verify": "node tools/i18n/verify.mjs",
     "i18n:scan-php": "php tools/i18n/scan-php-turkish.php",
-    "verify:i18n": "node tools/i18n/merge-po.mjs && node tools/i18n/verify.mjs && php tools/i18n/scan-php-turkish.php && node tools/i18n/verify-js.mjs --scan assets/js/src,assets/js/admin-script.js,assets/js/admin --map tools/i18n/golden/js-J1.json --po languages/woo-donation-popup-tr_TR.po && node tools/i18n/gen-js-strings.mjs --check",
+    "verify:i18n": "node tools/i18n/merge-po.mjs && node tools/i18n/verify.mjs && php tools/i18n/scan-php-turkish.php && node tools/i18n/verify-js.mjs --scan assets/js/src,assets/src,assets/js/admin --map tools/i18n/golden/js-J1.json --po languages/woo-donation-popup-tr_TR.po && node tools/i18n/gen-js-strings.mjs --check",
     "i18n:json": "node tools/i18n/make-json.mjs",
     "health:onoff": "node scripts/plugin-onoff-compare.mjs",
     "e2e:rtl": "node tests/e2e/run-rtl-layout.mjs",

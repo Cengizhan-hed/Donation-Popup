@@ -82,11 +82,11 @@ final class Field_Registry {
 		$f = array();
 
 		$f['impact.map'] = array(
-			'page'  => Admin_Bootstrap::SLUG_CAMPAIGNS,
+			'page'    => Admin_Bootstrap::SLUG_CAMPAIGNS,
 			'section' => 'impact',
-			'label' => __( 'Impact phrases', 'woo-donation-popup' ),
-			'help'  => __( 'One per line: amount = phrase. Add "singular|plural" for two forms. Example: 25 = 1 food parcel|food parcels', 'woo-donation-popup' ),
-			'type'  => 'textarea',
+			'label'   => __( 'Impact phrases', 'woo-donation-popup' ),
+			'help'    => __( 'One per line: amount = phrase. Add "singular|plural" for two forms. Example: 25 = 1 food parcel|food parcels', 'woo-donation-popup' ),
+			'type'    => 'textarea',
 		);
 
 		$f['display.mode'] = array(
@@ -112,7 +112,7 @@ final class Field_Registry {
 			),
 		);
 
-		$f['design.colors'] = array(
+		$f['design.colors']      = array(
 			'page'    => Admin_Bootstrap::SLUG_FORMS,
 			'section' => 'colors',
 			'label'   => __( 'Colors', 'woo-donation-popup' ),
@@ -123,7 +123,7 @@ final class Field_Registry {
 				'custom' => __( 'Choose my own colors', 'woo-donation-popup' ),
 			),
 		);
-		$f['design.brand'] = array(
+		$f['design.brand']       = array(
 			'page'      => Admin_Bootstrap::SLUG_FORMS,
 			'section'   => 'colors',
 			'label'     => __( 'Main color', 'woo-donation-popup' ),
@@ -136,7 +136,7 @@ final class Field_Registry {
 				'kind'   => 'raw',
 			),
 		);
-		$f['design.accent'] = array(
+		$f['design.accent']      = array(
 			'page'      => Admin_Bootstrap::SLUG_FORMS,
 			'section'   => 'colors',
 			'label'     => __( 'Button color', 'woo-donation-popup' ),
@@ -162,7 +162,19 @@ final class Field_Registry {
 			),
 		);
 
-		$f['form.presets_enabled'] = array(
+		$f['design.button_full_width'] = array(
+			'page'    => Admin_Bootstrap::SLUG_FORMS,
+			'section' => 'colors',
+			'label'   => __( 'Full-width donate button', 'woo-donation-popup' ),
+			'help'    => __( 'Makes the shortcode donate button as wide as its container. Handy on phones.', 'woo-donation-popup' ),
+			'type'    => 'switch',
+			'legacy'  => array(
+				'option' => 'wdp_button_settings',
+				'key'    => 'popup_button_full_width',
+				'kind'   => 'flag01',
+			),
+		);
+		$f['form.presets_enabled']     = array(
 			'page'    => Admin_Bootstrap::SLUG_FORMS,
 			'section' => 'amounts',
 			'label'   => __( 'Quick amount buttons', 'woo-donation-popup' ),
@@ -174,7 +186,7 @@ final class Field_Registry {
 				'kind'   => 'flag01',
 			),
 		);
-		$f['form.presets'] = array(
+		$f['form.presets']             = array(
 			'page'    => Admin_Bootstrap::SLUG_FORMS,
 			'section' => 'amounts',
 			'label'   => __( 'Amounts', 'woo-donation-popup' ),
@@ -188,11 +200,11 @@ final class Field_Registry {
 		);
 
 		$optional = array(
-			'form.donor_email'      => array( 'donor_email', 'enable_donor_email', __( 'Email field', 'woo-donation-popup' ), __( 'Asks for an email address so the donor can get a receipt.', 'woo-donation-popup' ) ),
-			'form.dedication'       => array( 'dedication', 'enable_dedication', __( 'On behalf of / dedication', 'woo-donation-popup' ), __( 'Lets donors give in someone\'s name or memory.', 'woo-donation-popup' ) ),
-			'form.anonymous'        => array( 'anonymous', 'enable_anonymous', __( 'Anonymous option', 'woo-donation-popup' ), __( 'Hides the donor name on public lists. The order keeps the real name.', 'woo-donation-popup' ) ),
-			'form.multi_step'       => array( 'multi_step', 'enable_multi_step', __( 'Two steps', 'woo-donation-popup' ), __( 'Splits the form into amount first, details second.', 'woo-donation-popup' ) ),
-			'form.trust_enabled'    => array( 'trust_enabled', 'trust_strip_enabled', __( 'Trust line', 'woo-donation-popup' ), __( 'A short reassurance line under the donate button.', 'woo-donation-popup' ) ),
+			'form.donor_email'   => array( 'donor_email', 'enable_donor_email', __( 'Email field', 'woo-donation-popup' ), __( 'Asks for an email address so the donor can get a receipt.', 'woo-donation-popup' ) ),
+			'form.dedication'    => array( 'dedication', 'enable_dedication', __( 'On behalf of / dedication', 'woo-donation-popup' ), __( 'Lets donors give in someone\'s name or memory.', 'woo-donation-popup' ) ),
+			'form.anonymous'     => array( 'anonymous', 'enable_anonymous', __( 'Anonymous option', 'woo-donation-popup' ), __( 'Hides the donor name on public lists. The order keeps the real name.', 'woo-donation-popup' ) ),
+			'form.multi_step'    => array( 'multi_step', 'enable_multi_step', __( 'Two steps', 'woo-donation-popup' ), __( 'Splits the form into amount first, details second.', 'woo-donation-popup' ) ),
+			'form.trust_enabled' => array( 'trust_enabled', 'trust_strip_enabled', __( 'Trust line', 'woo-donation-popup' ), __( 'A short reassurance line under the donate button.', 'woo-donation-popup' ) ),
 		);
 		foreach ( $optional as $id => $def ) {
 			$f[ $id ] = array(
@@ -220,7 +232,7 @@ final class Field_Registry {
 				'kind'   => 'raw',
 			),
 		);
-		$f['form.trust_text'] = array(
+		$f['form.trust_text']       = array(
 			'page'    => Admin_Bootstrap::SLUG_FORMS,
 			'section' => 'fields',
 			'label'   => __( 'Trust line wording', 'woo-donation-popup' ),
@@ -257,7 +269,7 @@ final class Field_Registry {
 				'kind'   => 'flag01',
 			),
 		);
-		$f['shares.email'] = array(
+		$f['shares.email']       = array(
 			'page'    => Admin_Bootstrap::SLUG_FORMS,
 			'section' => 'shares',
 			'label'   => __( 'Shareholder email', 'woo-donation-popup' ),
@@ -270,23 +282,29 @@ final class Field_Registry {
 			),
 		);
 
-		$yesno = array( 'kind' => 'yesno' );
-		$f['placement.auto_place'] = array(
+		$yesno                      = array( 'kind' => 'yesno' );
+		$f['placement.auto_place']  = array(
 			'page'    => Admin_Bootstrap::SLUG_FORMS,
 			'section' => 'placement',
 			'label'   => __( 'Replace "Add to cart" with the donate button', 'woo-donation-popup' ),
 			'help'    => __( 'Uses the standard WooCommerce spots on product pages. If your page layout has no such spot, a fallback button is drawn.', 'woo-donation-popup' ),
 			'type'    => 'switch',
-			'legacy'  => array_merge( array( 'option' => 'wdp_placement_settings', 'key' => 'auto_place' ), $yesno ),
+			'legacy'  => array_merge(
+				array(
+					'option' => 'wdp_placement_settings',
+					'key'    => 'auto_place',
+				),
+				$yesno
+			),
 		);
-		$f['placement.position'] = array(
+		$f['placement.position']    = array(
 			'page'    => Admin_Bootstrap::SLUG_FORMS,
 			'section' => 'placement',
 			'label'   => __( 'Position', 'woo-donation-popup' ),
 			'help'    => __( 'Where on the product page the donate button goes.', 'woo-donation-popup' ),
 			'type'    => 'select',
 			'options' => array(
-				'replace_cart' => __( 'Where the add-to-cart button was', 'woo-donation-popup' ),
+				'replace_cart'  => __( 'Where the add-to-cart button was', 'woo-donation-popup' ),
 				'after_excerpt' => __( 'After the short description', 'woo-donation-popup' ),
 				'below_summary' => __( 'Below the product summary', 'woo-donation-popup' ),
 			),
@@ -296,21 +314,33 @@ final class Field_Registry {
 				'kind'   => 'raw',
 			),
 		);
-		$f['placement.hide_price'] = array(
+		$f['placement.hide_price']  = array(
 			'page'    => Admin_Bootstrap::SLUG_FORMS,
 			'section' => 'placement',
 			'label'   => __( 'Hide the product price', 'woo-donation-popup' ),
 			'help'    => __( 'Donation products usually have no fixed price to show.', 'woo-donation-popup' ),
 			'type'    => 'switch',
-			'legacy'  => array_merge( array( 'option' => 'wdp_placement_settings', 'key' => 'hide_price' ), $yesno ),
+			'legacy'  => array_merge(
+				array(
+					'option' => 'wdp_placement_settings',
+					'key'    => 'hide_price',
+				),
+				$yesno
+			),
 		);
-		$f['placement.show_title'] = array(
+		$f['placement.show_title']  = array(
 			'page'    => Admin_Bootstrap::SLUG_FORMS,
 			'section' => 'placement',
 			'label'   => __( 'Show a title above the in-page form', 'woo-donation-popup' ),
 			'help'    => __( 'Only for the "In the page" style.', 'woo-donation-popup' ),
 			'type'    => 'switch',
-			'legacy'  => array_merge( array( 'option' => 'wdp_placement_settings', 'key' => 'show_form_title' ), $yesno ),
+			'legacy'  => array_merge(
+				array(
+					'option' => 'wdp_placement_settings',
+					'key'    => 'show_form_title',
+				),
+				$yesno
+			),
 		);
 		$f['placement.loop_button'] = array(
 			'page'    => Admin_Bootstrap::SLUG_FORMS,
@@ -330,7 +360,7 @@ final class Field_Registry {
 				'kind'   => 'raw',
 			),
 		);
-		$f['placement.scope'] = array(
+		$f['placement.scope']       = array(
 			'page'    => Admin_Bootstrap::SLUG_FORMS,
 			'section' => 'placement',
 			'label'   => __( 'Which products are donation products', 'woo-donation-popup' ),
@@ -347,7 +377,7 @@ final class Field_Registry {
 				'kind'   => 'raw',
 			),
 		);
-		$f['placement.categories'] = array(
+		$f['placement.categories']  = array(
 			'page'    => Admin_Bootstrap::SLUG_FORMS,
 			'section' => 'placement',
 			'label'   => __( 'Category IDs', 'woo-donation-popup' ),
@@ -372,7 +402,7 @@ final class Field_Registry {
 				'kind'   => 'raw',
 			),
 		);
-		$f['checkout.addon_label'] = array(
+		$f['checkout.addon_label']      = array(
 			'page'    => Admin_Bootstrap::SLUG_CHECKOUT,
 			'section' => 'cart',
 			'label'   => __( 'Add-on label', 'woo-donation-popup' ),
@@ -435,7 +465,7 @@ final class Field_Registry {
 				'kind'   => 'flag01',
 			),
 		);
-		$f['form.privacy_text'] = array(
+		$f['form.privacy_text']   = array(
 			'page'    => Admin_Bootstrap::SLUG_PRIVACY,
 			'section' => 'notice',
 			'label'   => __( 'Link text', 'woo-donation-popup' ),
@@ -447,7 +477,7 @@ final class Field_Registry {
 				'kind'   => 'raw',
 			),
 		);
-		$f['form.privacy_url'] = array(
+		$f['form.privacy_url']    = array(
 			'page'    => Admin_Bootstrap::SLUG_PRIVACY,
 			'section' => 'notice',
 			'label'   => __( 'Link address', 'woo-donation-popup' ),

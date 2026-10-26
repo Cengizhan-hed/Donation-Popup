@@ -47,14 +47,14 @@ final class Admin_View {
 	 *
 	 * @param string $title Başlık ('' = başlıksız).
 	 * @param string $body  Hazır HTML.
-	 * @param string $class Ek sınıf.
+	 * @param string $extra_class Ek sınıf.
 	 * @param string $intro Başlık altı kısa açıklama.
 	 * @return string
 	 */
-	public static function card( $title, $body, $class = '', $intro = '' ) {
+	public static function card( $title, $body, $extra_class = '', $intro = '' ) {
 		$head = '' !== $title ? '<h2 class="dpa-card__title">' . esc_html( $title ) . '</h2>' : '';
 		$note = '' !== $intro ? '<p class="dpa-card__intro">' . esc_html( $intro ) . '</p>' : '';
-		return '<section class="dpa-card ' . esc_attr( $class ) . '">' . $head . $note . $body . '</section>';
+		return '<section class="dpa-card ' . esc_attr( $extra_class ) . '">' . $head . $note . $body . '</section>';
 	}
 
 	/**
