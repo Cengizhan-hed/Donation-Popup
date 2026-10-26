@@ -249,9 +249,9 @@ Eski çevrilmiş etiket anahtarları `normalize_key` ile okunur (`includes/class
 | `wdp_css_version_*` / `wdp_js_version_*` | transient+cache | assets |
 | WC session `get_customer_id()` | session | rate-limit / cart cache suffix (`includes/traits/trait-wdp-ajax-base.php:113-114`) |
 | Para birimi/dil sinyali (istemci) | `wdp_ajax.context` (sunucu; `wdp_client_context` filtresi) | lazy-modal çerez adı/seçici/olayları buradan okur; çekirdek eklenti/çerez adı bilmez (varsayılan listeler boş; K8), site snippet'i ekler (`assets/js/src/lazy-modal.js`) |
-| `wdp_vid` | HttpOnly, SameSite=Lax, 12 saat, HMAC | Misafir salt-okunur kova ayırıcı (`includes/class-security.php:18-24,300-378`). Sayfa HTML’sinde Set-Cookie yok (önbellek); AJAX `get_product_info` / `render_modal` sırasında yoksa basılır. |
+| `wdp_vid` | KALDIRILDI (Faz 8, E8D) | Eski çerez gelirse yok sayılır ve silinir (`src/Privacy/class-privacy-tools.php`, `expire_legacy_cookie`). Salt okunur kovalar IP+UA(+Woo oturumu) karmasıdır. Bkz. docs/PRIVACY.md. |
 
-Eklenti `setcookie` yalnız `wdp_vid` (10.34.10). JS çerez yazmaz.
+Eklenti artık çerez YAZMAZ (yalnız eski `wdp_vid`'i siler). JS çerez yazmaz.
 
 ---
 
@@ -1029,3 +1029,10 @@ Etkiler: plugins_loaded 10-19 arasında çalışan bir snippet/eklenti kısa kod
 - **Ürün veri sekmesi (madde 4):** değişmedi; yeni ayarlarla çelişen yer bulunmadı (yeni ekran yalnız Core ayarına yazar, ürün meta anahtarları ayrı).
 - **Çeviri:** `languages/parts/E7.po` (126 msgid + 1 çoğul; mevcut "Copy/Back/Continue/Goal/Donate/Advanced/Social proof/Tax relief declaration/You do not have permission to do this." çevirileri yeniden kullanıldı).
 
+
+
+## E8D: Gizlilik araçları, wdp_vid, render_modal nonce (Faz 8)
+
+- **Gizlilik:** `WDP_Privacy` (`includes/class-privacy.php`) sipariş kalemi verisini dışa aktarır/anonimleştirir (sayfa 50; telefon eşleşmesi; "tutulan" mesajı). `DonationPanel\Privacy\Privacy_Tools` (`src/Privacy/`) hesap bağlama kaydı için dışa aktarıcı/silici, `wp_add_privacy_policy_content` önerisi (yalnız `admin_init`) ve eski çerez temizliğini yapar; `WDP_Privacy::init` içinden her zaman yüklenir (modül ayarından bağımsız). Envanter: `docs/PRIVACY.md`.
+- **wdp_vid:** kaldırıldı (gerekçe PRIVACY.md). `WDP_Security::get_visitor_id/mint/parse` silindi; `get_rate_limit_key($a, $use_visitor_token)` imzası korunur (parametre artık yok sayılır), okuma uçlarında yalnız IP katmanı (`READ_IP_RATE_LIMIT`) eklenir.
+- **wdp_render_modal:** AJAX artık nonce ister (`wdp_render_modal`; süzgeç `wdp_render_modal_require_nonce`, varsayılan true). Başarısızlık HTTP 403 + `code: nonce`; istemci (`assets/js/src/lazy-modal.js`) yeni nonce alıp bir kez yeniden dener (değişmedi). Önbellek dostu nonce'suz yol: `GET /wp-json/donation-panel/v1/modal?product_id=&mode=` (`src/Http/Rest/class-modal-controller.php`; herkese açık, salt okunur, 60/dk, `no-store`); `WDP_Lazy_Modal::build()` ortak üretici. Denetleyici `donation_panel_rest_controllers` süzgeciyle eklenir.
