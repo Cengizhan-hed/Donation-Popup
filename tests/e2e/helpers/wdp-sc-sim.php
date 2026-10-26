@@ -74,3 +74,32 @@ add_action(
 		exit;
 	}
 );
+
+/**
+ * Ek bağış önerisi (yalnız e2e): sepette olmayan ilk yayımlanmış ürün, 50 / 100 tutarlarıyla.
+ */
+add_filter(
+	'donation_panel_side_cart_suggestion',
+	static function () {
+		$in_cart = array();
+		if ( function_exists( 'WC' ) && WC() && WC()->cart ) {
+			foreach ( WC()->cart->get_cart() as $item ) {
+				$in_cart[] = (int) $item['product_id'];
+			}
+		}
+		$ids = get_posts(
+			array(
+				'post_type'      => 'product',
+				'post_status'    => 'publish',
+				'posts_per_page' => 1,
+				'fields'         => 'ids',
+				'post__not_in'   => $in_cart ? $in_cart : array( 0 ),
+			)
+		);
+		return $ids ? array(
+			'product_id' => (int) $ids[0],
+			'amounts'    => array( 50, 100 ),
+			'hint'       => 'Küçük bir katkı, büyük bir dua',
+		) : array();
+	}
+);
