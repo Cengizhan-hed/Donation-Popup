@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: woo-donation-popup\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-25 22:44:45+0000\n"
-"PO-Revision-Date: 2026-10-25 22:44:45+0000\n"
+"POT-Creation-Date: 2026-10-26 04:37:02+0000\n"
+"PO-Revision-Date: 2026-10-26 04:37:02+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: tr_TR\n"
@@ -206,6 +206,10 @@ msgstr "Gönlü güzel bir bağışçı"
 #: src/Admin/
 msgid "A module that is switched off loads no code and no styles."
 msgstr "Kapalı bir modül hiçbir kod ve stil yüklemez."
+
+#: src/Privacy/class-privacy-tools.php
+msgid "A pending request to link earlier guest donations to your account."
+msgstr "Önceki misafir bağışlarınızı hesabınıza bağlamak için bekleyen bir istek."
 
 #: includes/class-admin-product-data-tab.php:797
 msgid "A second, smaller donation row added to the form"
@@ -854,9 +858,17 @@ msgstr "Klasik"
 msgid "Classic form (default)"
 msgstr "Klasik form (varsayılan)"
 
+#: src/Admin/class-settings-page.php:290
+msgid "Classic form (will be removed in a future version)"
+msgstr "Klasik form (bir sonraki sürümde kaldırılacak)"
+
 #: src/Admin/
 msgid "Classic screen"
 msgstr "Klasik ekran"
+
+#: src/Admin/class-settings-page.php:410
+msgid "Classic screen (will be removed in a future version)"
+msgstr "Klasik ekran (bir sonraki sürümde kaldırılacak)"
 
 #: includes/class-admin-products-list-table.php:186
 msgid "Clear filters"
@@ -1014,6 +1026,10 @@ msgstr "Devam ikonu"
 #: src/Modules/SideCart/class-side-cart-renderer.php
 msgid "Continue to checkout"
 msgstr "Ödemeye geç"
+
+#: src/Privacy/class-privacy-tools.php
+msgid "Cookies and tracking"
+msgstr "Çerezler ve izleme"
 
 #: includes/class-admin-assets.php:120
 msgid "Copied"
@@ -1342,6 +1358,10 @@ msgstr "Bağış sıklığı"
 msgid "Donation note"
 msgstr "Bağış Notu"
 
+#: includes/class-privacy.php
+msgid "Donation orders and amounts are kept for accounting; only personal fields entered on the donation form were anonymized."
+msgstr "Bağış siparişleri ve tutarları muhasebe için saklanır; yalnızca bağış formuna yazılan kişisel alanlar anonimleştirildi."
+
 #: src/Admin/
 msgid "Donation Panel"
 msgstr "Bağış Paneli"
@@ -1361,6 +1381,10 @@ msgstr "Bağış Paneli rehberi"
 #: assets/js/src/modal.js:500
 msgid "Donation panel opened"
 msgstr "Bağış paneli açıldı"
+
+#: src/Modules/Preview/class-preview.php:90
+msgid "Donation Panel preview: exit"
+msgstr "Bağış Paneli önizlemesi: çık"
 
 #: src/Admin/
 msgid "Donation Panel reads your WooCommerce settings as they are. There is nothing for you to do."
@@ -1406,6 +1430,10 @@ msgstr "Bağış ayarları"
 msgid "Donation type"
 msgstr "Bağış tipi"
 
+#: src/Privacy/class-privacy-tools.php
+msgid "Donations"
+msgstr "Bağışlar"
+
 msgid "Donations list"
 msgstr "Bağış listesi"
 
@@ -1420,6 +1448,14 @@ msgstr "Bağışçı"
 #: src/Admin/
 msgid "Donor account"
 msgstr "Bağışçı hesabı"
+
+#: src/Privacy/class-privacy-tools.php
+msgid "Donor account link"
+msgstr "Bağışçı hesabı bağlantısı"
+
+#: src/Privacy/class-privacy-tools.php
+msgid "Donor account link data"
+msgstr "Bağışçı hesabı bağlantı verisi"
 
 #: includes/class-privacy.php:118
 msgid "Donor and shareholder details entered on the donation form."
@@ -1453,6 +1489,10 @@ msgstr "Bağışçı Telefonu"
 #: src/Modules/SocialProof/class-social-proof-renderer.php
 msgid "donors"
 msgstr "bağışçı"
+
+#: src/Privacy/class-privacy-tools.php
+msgid "E-mail to confirm"
+msgstr "Doğrulanacak e-posta"
 
 #: includes/class-admin-form-tabs-renderer.php:268
 msgid "e.g. 123"
@@ -2140,6 +2180,10 @@ msgstr "Ürün seçilmediyse mevcut ürün (otomatik) kullanılır. Ürün sayfa
 msgid "If off, you add the form to the product page yourself with a shortcode, block, or widget only."
 msgstr "Kapalıysa formu ürün sayfasına yalnızca kısa kod, blok veya widget ile siz eklersiniz."
 
+#: src/Privacy/class-privacy-tools.php
+msgid "If the donor account is enabled and you ask to link earlier guest donations, a short-lived confirmation request is stored with your user profile and is deleted as soon as it is used or expires."
+msgstr "Bağışçı hesabı açıksa ve önceki misafir bağışlarınızı bağlamak isterseniz, kısa ömürlü bir doğrulama isteği kullanıcı profilinizle birlikte saklanır; kullanıldığında ya da süresi dolduğunda hemen silinir."
+
 #: includes/class-admin-product-data-tab.php:774
 msgid "If the product list is filled, it replaces the general list (maximum %d). If left empty, the general badges are used."
 msgstr "Ürün listesi doluysa genel listenin yerine geçer (en fazla %d). Boş bırakırsanız genel rozetler kullanılır."
@@ -2444,6 +2488,10 @@ msgstr "Bağlantı"
 #: templates/donation-panel/thanks/summary.php
 msgid "Link copied"
 msgstr "Bağlantı kopyalandı"
+
+#: src/Privacy/class-privacy-tools.php
+msgid "Link expires"
+msgstr "Bağlantının bitiş zamanı"
 
 #: includes/class-admin-design-studio-renderer.php:280
 msgid "Link label"
@@ -3726,6 +3774,10 @@ msgstr "Güvenli ödeme · Anında onay"
 msgid "Secure payment · SSL-protected transaction"
 msgstr "Güvenli ödeme · SSL korumalı işlem"
 
+#: includes/class-lazy-modal.php
+msgid "Security check failed. Please refresh and try again."
+msgstr "Güvenlik doğrulaması başarısız. Lütfen sayfayı yenileyip tekrar deneyin."
+
 #: includes/class-cart.php:204 includes/class-exceptions.php:111
 msgid "Security verification failed. Please refresh the page and try again."
 msgstr "Güvenlik doğrulaması başarısız oldu. Lütfen sayfayı yenileyip tekrar deneyin."
@@ -4292,6 +4344,10 @@ msgstr "Önerilen tutar"
 msgid "Suggested light value: Y 8px / blur 20px."
 msgstr "Önerilen hafif değer: Y 8px / bulanık 20px."
 
+#: src/Privacy/class-privacy-tools.php
+msgid "Suggested text. Review it and adapt it to how your site uses the plugin."
+msgstr "Önerilen metin. Gözden geçirin ve sitenizin eklentiyi kullanma biçimine göre uyarlayın."
+
 #: includes/class-admin-design-studio-renderer.php:180
 msgid "Surface & typography"
 msgstr "Yüzey & tipografi"
@@ -4537,6 +4593,10 @@ msgstr "Bağışçının yazabileceği en düşük tutar. Tek kaynak bu alandır
 msgid "The maximum number of shares can be 50."
 msgstr "En fazla hisse 50 olabilir."
 
+#: src/Admin/class-settings-page.php:287
+msgid "The new form adds donation types and a calmer, mobile-first layout, and is the default. The classic form will be removed in a future version. On phones the form always opens as a bottom sheet."
+msgstr "Yeni form bağış türleri ve daha sakin, mobil öncelikli bir yerleşim sunar ve varsayılandır. Klasik form bir sonraki sürümde kaldırılacak. Telefonlarda form her zaman alttan panel olarak açılır."
+
 #: includes/class-admin-form-tabs-renderer.php:441
 msgid "The order below follows the flow the donor sees in the popup: heading and close first, then the box and fields, and finally the form buttons and the on-page trigger button."
 msgstr "Aşağıdaki sıra, popup’ta kullanıcının gördüğü akışa göredir: önce üst başlık ve kapat, sonra kutu ve alanlar, en sonda form butonları ve sayfadaki açan buton."
@@ -4548,6 +4608,10 @@ msgstr "Paket form alanlarına uygulandı. Kaydetmeyi unutmayın."
 #: includes/class-woo-donation-popup-admin.php:554
 msgid "The pack was imported and applied."
 msgstr "Paket içe aktarıldı ve uygulandı."
+
+#: src/Privacy/class-privacy-tools.php
+msgid "The plugin does not set its own cookies and does not use tracking or advertising services. Cart and checkout cookies are set by WooCommerce. Request limits use a one-way hash of the visitor address and are kept for a few minutes."
+msgstr "Eklenti kendi çerezlerini kullanmaz; izleme ya da reklam hizmeti kullanmaz. Sepet ve ödeme çerezlerini WooCommerce ayarlar. İstek sınırları ziyaretçi adresinin tek yönlü karmasını kullanır ve birkaç dakika saklanır."
 
 #: includes/class-admin-form-tabs-renderer.php:217
 msgid "The preview on the right shows colors and texts live."
@@ -5040,6 +5104,10 @@ msgstr "Kampanya hedefe ulaştığında bağış almaya devam edilsin mi, yoksa 
 #: includes/class-admin-product-data-tab.php:641
 msgid "When the goal is reached"
 msgstr "Hedefe ulaşınca"
+
+#: src/Privacy/class-privacy-tools.php
+msgid "When you donate, we store the details you enter on the donation form with the order: your name, e-mail and phone number, an optional dedication or note, the names and contact details of any shareholders you enter, and whether you asked to stay anonymous. This data is kept on the order for as long as the order itself is kept (accounting and legal obligations)."
+msgstr "Bağış yaptığınızda, bağış formuna yazdığınız bilgileri sipariş ile birlikte saklarız: adınız, e-posta ve telefon numaranız, isteğe bağlı ithaf ya da not, yazdığınız hissedarların adları ve iletişim bilgileri ve anonim kalmak isteyip istemediğiniz. Bu veri, sipariş saklandığı sürece (muhasebe ve yasal yükümlülükler) sipariş üzerinde tutulur."
 
 #: src/Admin/
 msgid "Where the donate button appears"

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: woo-donation-popup 10.35.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-26 01:44+0300\n"
+"POT-Creation-Date: 2026-10-26 07:37+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -56,7 +56,7 @@ msgstr ""
 msgid "Product not found (ID: %d). Please check the product ID."
 msgstr ""
 
-#: includes/bootstrap/class-plugin-bootstrap.php:72
+#: includes/bootstrap/class-plugin-bootstrap.php:81
 msgid ""
 "The WooCommerce Donation Modal Popup plugin requires WooCommerce to be "
 "installed and active."
@@ -2696,7 +2696,7 @@ msgid "The total could not be calculated. Details are in the error log."
 msgstr ""
 
 #: includes/class-admin-products-list-table.php:43
-#: includes/class-privacy.php:111 includes/i18n/class-wdp-js-i18n.php:92
+#: includes/class-privacy.php:119 includes/i18n/class-wdp-js-i18n.php:92
 #: src/Modules/EntryPoints/Elementor/class-donation-form-widget.php:101
 #: assets/js/src/cart/ui.js:190 blocks/donation-form/index.js:59
 #: blocks/donation-form/index.js:69
@@ -3197,26 +3197,30 @@ msgstr ""
 msgid "Lock"
 msgstr ""
 
-#: includes/class-lazy-modal.php:31 includes/traits/trait-wdp-ajax-base.php:70
-#: includes/traits/trait-wdp-ajax-cart-session.php:21
-msgid "Invalid request origin"
-msgstr ""
-
-#: includes/class-lazy-modal.php:44
-msgid "Too many requests were sent. Please try again shortly."
-msgstr ""
-
-#: includes/class-lazy-modal.php:60
+#: includes/class-lazy-modal.php:54
 msgid "Product not found or cannot be displayed."
 msgstr ""
 
-#: includes/class-lazy-modal.php:63
+#: includes/class-lazy-modal.php:60
 #: src/Modules/EntryPoints/class-shortcodes.php:271
 msgid "This product is not marked as a donation product."
 msgstr ""
 
-#: includes/class-lazy-modal.php:68 includes/class-lazy-modal.php:82
+#: includes/class-lazy-modal.php:68 includes/class-lazy-modal.php:119
 msgid "The donation form cannot be shown right now."
+msgstr ""
+
+#: includes/class-lazy-modal.php:81 includes/traits/trait-wdp-ajax-base.php:70
+#: includes/traits/trait-wdp-ajax-cart-session.php:21
+msgid "Invalid request origin"
+msgstr ""
+
+#: includes/class-lazy-modal.php:89
+msgid "Security check failed. Please refresh and try again."
+msgstr ""
+
+#: includes/class-lazy-modal.php:101
+msgid "Too many requests were sent. Please try again shortly."
 msgstr ""
 
 #: includes/class-migrations.php:272 includes/class-migrations.php:303
@@ -3725,20 +3729,26 @@ msgstr ""
 msgid "Select country code"
 msgstr ""
 
-#: includes/class-privacy.php:37 includes/class-privacy.php:49
+#: includes/class-privacy.php:44 includes/class-privacy.php:56
 msgid "Donation details (Donation Popup)"
 msgstr ""
 
-#: includes/class-privacy.php:107
+#: includes/class-privacy.php:115
 msgid "Order number"
 msgstr ""
 
-#: includes/class-privacy.php:120
+#: includes/class-privacy.php:128
 msgid "Donation details"
 msgstr ""
 
-#: includes/class-privacy.php:121
+#: includes/class-privacy.php:129
 msgid "Donor and shareholder details entered on the donation form."
+msgstr ""
+
+#: includes/class-privacy.php:196
+msgid ""
+"Donation orders and amounts are kept for accounting; only personal fields "
+"entered on the donation form were anonymized."
 msgstr ""
 
 #: includes/class-product-settings-service.php:353
@@ -4849,7 +4859,7 @@ msgid ""
 "saved on the order."
 msgstr ""
 
-#: src/Admin/class-settings-page.php:97
+#: src/Admin/class-settings-page.php:97 src/Privacy/class-privacy-tools.php:184
 msgid "Donor account"
 msgstr ""
 
@@ -4923,13 +4933,13 @@ msgstr ""
 
 #: src/Admin/class-settings-page.php:285
 msgid ""
-"The classic form is the safe default. The new form adds donation types and a "
-"calmer, mobile-first layout. On phones the form always opens as a bottom "
-"sheet."
+"The new form adds donation types and a calmer, mobile-first layout, and is "
+"the default. The classic form will be removed in a future version. On phones "
+"the form always opens as a bottom sheet."
 msgstr ""
 
 #: src/Admin/class-settings-page.php:290
-msgid "Classic form (default)"
+msgid "Classic form (will be removed in a future version)"
 msgstr ""
 
 #: src/Admin/class-settings-page.php:291
@@ -5077,7 +5087,7 @@ msgid "This simple screen"
 msgstr ""
 
 #: src/Admin/class-settings-page.php:410
-msgid "Classic screen"
+msgid "Classic screen (will be removed in a future version)"
 msgstr ""
 
 #: src/Admin/class-settings-page.php:418
@@ -5278,13 +5288,13 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %s: site name.
-#: src/Modules/DonorAccount/class-account-controller.php:311
+#: src/Modules/DonorAccount/class-account-controller.php:318
 #, php-format
 msgid "[%s] Confirm to link your earlier gifts"
 msgstr ""
 
 #. translators: 1: verification link, 2: validity in minutes.
-#: src/Modules/DonorAccount/class-account-controller.php:313
+#: src/Modules/DonorAccount/class-account-controller.php:320
 #, php-format
 msgid ""
 "Open this link while logged in to add the gifts you made as a guest with "
@@ -5829,6 +5839,10 @@ msgstr ""
 msgid "Please enter the shareholder’s phone number."
 msgstr ""
 
+#: src/Modules/Preview/class-preview.php:90
+msgid "Donation Panel preview: exit"
+msgstr ""
+
 #: src/Modules/SideCart/class-side-cart-module.php:167
 msgid "Removed from your basket."
 msgstr ""
@@ -5954,6 +5968,68 @@ msgstr ""
 #: src/Modules/Thanks/class-thanks-summary.php:93
 #, php-format
 msgid "I just donated to %s."
+msgstr ""
+
+#: src/Privacy/class-privacy-tools.php:53
+#: src/Privacy/class-privacy-tools.php:67
+msgid "Donor account link data"
+msgstr ""
+
+#: src/Privacy/class-privacy-tools.php:93
+msgid "Donor account link"
+msgstr ""
+
+#: src/Privacy/class-privacy-tools.php:94
+msgid "A pending request to link earlier guest donations to your account."
+msgstr ""
+
+#: src/Privacy/class-privacy-tools.php:98
+msgid "E-mail to confirm"
+msgstr ""
+
+#: src/Privacy/class-privacy-tools.php:102
+msgid "Link expires"
+msgstr ""
+
+#: src/Privacy/class-privacy-tools.php:170
+msgid "Donation Panel for WooCommerce"
+msgstr ""
+
+#: src/Privacy/class-privacy-tools.php:181
+msgid ""
+"Suggested text. Review it and adapt it to how your site uses the plugin."
+msgstr ""
+
+#: src/Privacy/class-privacy-tools.php:182
+msgid "Donations"
+msgstr ""
+
+#: src/Privacy/class-privacy-tools.php:183
+msgid ""
+"When you donate, we store the details you enter on the donation form with "
+"the order: your name, e-mail and phone number, an optional dedication or "
+"note, the names and contact details of any shareholders you enter, and "
+"whether you asked to stay anonymous. This data is kept on the order for as "
+"long as the order itself is kept (accounting and legal obligations)."
+msgstr ""
+
+#: src/Privacy/class-privacy-tools.php:185
+msgid ""
+"If the donor account is enabled and you ask to link earlier guest donations, "
+"a short-lived confirmation request is stored with your user profile and is "
+"deleted as soon as it is used or expires."
+msgstr ""
+
+#: src/Privacy/class-privacy-tools.php:186
+msgid "Cookies and tracking"
+msgstr ""
+
+#: src/Privacy/class-privacy-tools.php:187
+msgid ""
+"The plugin does not set its own cookies and does not use tracking or "
+"advertising services. Cart and checkout cookies are set by WooCommerce. "
+"Request limits use a one-way hash of the visitor address and are kept for a "
+"few minutes."
 msgstr ""
 
 #: src/WooCommerce/class-addon-line.php:95
