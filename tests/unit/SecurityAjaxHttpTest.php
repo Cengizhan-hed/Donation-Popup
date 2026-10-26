@@ -85,29 +85,25 @@ final class SecurityAjaxHttpTest extends TestCase {
 		$this->assertStringNotContainsString('v:', $key);
 	}
 
-	public function test_guest_read_keys_split_on_visitor_token(): void {
-		WDP_Test_State::$user_id     = 0;
-		$_SERVER['REMOTE_ADDR']      = '203.0.113.10';
-		$_SERVER['HTTP_USER_AGENT']  = 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X)';
+	public function test_guest_read_key_has_no_cookie_dependency(): void {
+		WDP_Test_State::$user_id    = 0;
+		$_SERVER['REMOTE_ADDR']     = '203.0.113.10';
+		$_SERVER['HTTP_USER_AGENT'] = 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X)';
 
-		$_COOKIE[ WDP_Security::VISITOR_COOKIE ] = WDP_Security::mint_visitor_token('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa');
-		$key_a                                   = WDP_Security::get_rate_limit_key('get_product_info', true);
+		$plain = WDP_Security::get_rate_limit_key('get_product_info', true);
+		// Eski wdp_vid çerezi gelse bile anahtar değişmez ve yeni çerez yazılmaz.
+		$_COOKIE['wdp_vid'] = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.9999999999.deadbeef';
+		$with_cookie        = WDP_Security::get_rate_limit_key('get_product_info', true);
 
-		$_COOKIE[ WDP_Security::VISITOR_COOKIE ] = WDP_Security::mint_visitor_token('bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb');
-		$key_b                                   = WDP_Security::get_rate_limit_key('get_product_info', true);
-
-		$this->assertStringStartsWith('v:', $key_a);
-		$this->assertStringStartsWith('v:', $key_b);
-		$this->assertNotSame($key_a, $key_b);
+		$this->assertStringStartsWith('g:', $plain);
+		$this->assertSame($plain, $with_cookie);
+		$this->assertSame('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.9999999999.deadbeef', $_COOKIE['wdp_vid']);
+		$this->assertFalse(method_exists('WDP_Security', 'get_visitor_id'));
+		$this->assertFalse(method_exists('WDP_Security', 'mint_visitor_token'));
 		$this->assertSame(
 			WDP_Security::get_rate_limit_ip_key('get_product_info'),
 			WDP_Security::get_rate_limit_ip_key('get_product_info')
 		);
-
-		$write_a = WDP_Security::get_rate_limit_key('add_to_cart', false);
-		$write_b = WDP_Security::get_rate_limit_key('add_to_cart', false);
-		$this->assertSame($write_a, $write_b);
-		$this->assertStringStartsWith('g:', $write_a);
 	}
 
 	public function test_guest_read_ip_layer_caps_shared_cgnat(): void {
@@ -119,29 +115,26 @@ final class SecurityAjaxHttpTest extends TestCase {
 		};
 
 		for ( $i = 0; $i < 3; $i++ ) {
-			$_COOKIE[ WDP_Security::VISITOR_COOKIE ] = WDP_Security::mint_visitor_token();
 			$this->assertTrue(
 				WDP_Security::check_action_rate_limit('get_product_info', 60, 60, true),
-				'visitor ' . ( $i + 1 )
+				'request ' . ( $i + 1 )
 			);
 		}
 
-		$_COOKIE[ WDP_Security::VISITOR_COOKIE ] = WDP_Security::mint_visitor_token();
 		$this->assertFalse(WDP_Security::check_action_rate_limit('get_product_info', 60, 60, true));
 	}
 
-	public function test_guest_read_distinct_tokens_are_separate_buckets(): void {
+	public function test_guest_read_different_ua_are_separate_buckets(): void {
 		WDP_Test_State::$user_id    = 0;
 		$_SERVER['REMOTE_ADDR']     = '192.0.2.40';
-		$_SERVER['HTTP_USER_AGENT'] = 'Mozilla/5.0 SameUA';
+		$_SERVER['HTTP_USER_AGENT'] = 'Mozilla/5.0 UA-One';
 
-		$_COOKIE[ WDP_Security::VISITOR_COOKIE ] = WDP_Security::mint_visitor_token('cccccccccccccccccccccccccccccccc');
 		for ( $i = 0; $i < 60; $i++ ) {
 			$this->assertTrue(WDP_Security::check_action_rate_limit('get_product_info', 60, 60, true), 'a' . $i);
 		}
 		$this->assertFalse(WDP_Security::check_action_rate_limit('get_product_info', 60, 60, true));
 
-		$_COOKIE[ WDP_Security::VISITOR_COOKIE ] = WDP_Security::mint_visitor_token('dddddddddddddddddddddddddddddddd');
+		$_SERVER['HTTP_USER_AGENT'] = 'Mozilla/5.0 UA-Two';
 		$this->assertTrue(WDP_Security::check_action_rate_limit('get_product_info', 60, 60, true));
 	}
 

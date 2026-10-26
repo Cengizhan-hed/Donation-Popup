@@ -14,8 +14,11 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class WDP_Privacy {
 
-	/** Orders handled per exporter page / eraser call. */
-	const BATCH_SIZE = 10;
+	/** Orders handled per exporter page / eraser call (WordPress önerisi: sayfa başına makul sınır). */
+	const BATCH_SIZE = 50;
+
+	/** Telefon eşleşmesi için en az rakam sayısı (çok kısa değerler yanlış eşleşme üretir). */
+	const MIN_PHONE_DIGITS = 7;
 
 	/**
 	 * Register privacy hooks.
@@ -26,6 +29,10 @@ class WDP_Privacy {
 		add_filter( 'wp_privacy_personal_data_exporters', array( __CLASS__, 'register_exporter' ), 10 );
 		// Before WooCommerce's order eraser, which may anonymize the billing e-mail we match on.
 		add_filter( 'wp_privacy_personal_data_erasers', array( __CLASS__, 'register_eraser' ), 5 );
+		// Hesap verisi, politika önerisi ve eski çerez temizliği (modül ayarından bağımsız).
+		if ( class_exists( '\\DonationPanel\\Privacy\\Privacy_Tools' ) ) {
+			\DonationPanel\Privacy\Privacy_Tools::init();
+		}
 	}
 
 	/**
@@ -70,6 +77,7 @@ class WDP_Privacy {
 
 		$page      = max( 1, (int) $page );
 		$order_ids = self::find_order_ids( $email );
+		$phones    = self::requester_phones( $email, $order_ids );
 		$slice     = array_slice( $order_ids, ( $page - 1 ) * self::BATCH_SIZE, self::BATCH_SIZE );
 		$export    = array();
 
@@ -78,7 +86,7 @@ class WDP_Privacy {
 			if ( ! $order ) {
 				continue;
 			}
-			$billing_match = self::emails_match( $order->get_billing_email(), $email );
+			$billing_match = self::order_matches_requester( $order, $email, $phones );
 
 			foreach ( $order->get_items( 'line_item' ) as $item_id => $item ) {
 				$fields = self::collect_requester_fields( $item, $email, $billing_match );
@@ -156,12 +164,14 @@ class WDP_Privacy {
 		}
 
 		$changed_orders = 0;
-		foreach ( self::find_order_ids( $email ) as $order_id ) {
+		$order_ids      = self::find_order_ids( $email );
+		$phones         = self::requester_phones( $email, $order_ids );
+		foreach ( $order_ids as $order_id ) {
 			$order = wc_get_order( $order_id );
 			if ( ! $order ) {
 				continue;
 			}
-			$billing_match = self::emails_match( $order->get_billing_email(), $email );
+			$billing_match = self::order_matches_requester( $order, $email, $phones );
 			$order_changed = false;
 
 			foreach ( $order->get_items( 'line_item' ) as $item ) {
@@ -178,6 +188,12 @@ class WDP_Privacy {
 					break;
 				}
 			}
+		}
+
+		if ( $response['items_removed'] || ! empty( $order_ids ) ) {
+			// Sipariş kaydı ve tutarı muhasebe için tutulur; yalnız kişisel alanlar anonimleştirilir.
+			$response['items_retained'] = true;
+			$response['messages'][]     = __( 'Donation orders and amounts are kept for accounting; only personal fields entered on the donation form were anonymized.', 'woo-donation-popup' );
 		}
 
 		return $response;
@@ -299,10 +315,152 @@ class WDP_Privacy {
 			}
 		}
 
-		$ids = array_values( array_unique( array_filter( $ids ) ) );
+		$ids    = array_values( array_unique( array_filter( $ids ) ) );
+		$phones = self::requester_phones( $email, $ids );
+		$ids    = array_values( array_unique( array_merge( $ids, self::find_order_ids_by_phone( $email, $phones ) ) ) );
 		sort( $ids, SORT_NUMERIC );
 
 		return $ids;
+	}
+
+	/**
+	 * Requester phone numbers: billing phone of orders they own and donor/shareholder phones entered by them.
+	 *
+	 * @param string $email     Sanitized e-mail.
+	 * @param int[]  $order_ids Orders already linked by e-mail.
+	 * @return string[] Unique raw values.
+	 */
+	public static function requester_phones( $email, array $order_ids ) {
+		$phones = array();
+		foreach ( $order_ids as $order_id ) {
+			$order = wc_get_order( $order_id );
+			if ( ! $order ) {
+				continue;
+			}
+			$billing_match = self::emails_match( $order->get_billing_email(), $email );
+			if ( $billing_match && self::phone_digits( $order->get_billing_phone() ) !== '' ) {
+				$phones[] = trim( (string) $order->get_billing_phone() );
+			}
+			foreach ( $order->get_items( 'line_item' ) as $item ) {
+				foreach ( self::collect_requester_fields( $item, $email, $billing_match ) as $fixed_key => $field ) {
+					if ( '_phone' === substr( (string) $fixed_key, -6 ) && self::phone_digits( $field['value'] ) !== '' ) {
+						$phones[] = trim( (string) $field['value'] );
+					}
+				}
+			}
+		}
+		return array_values( array_unique( $phones ) );
+	}
+
+	/**
+	 * Orders linked by a requester phone: item donor/shareholder phone meta or billing phone (WC order API).
+	 * Yalnız sipariş e-postası boş ya da istek sahibinin e-postasıysa eşleşir (başkasının verisi sızmaz).
+	 *
+	 * @param string   $email  Sanitized e-mail.
+	 * @param string[] $phones Raw phone values from the requester's own orders.
+	 * @return int[]
+	 */
+	public static function find_order_ids_by_phone( $email, array $phones ) {
+		global $wpdb;
+
+		$ids = array();
+		if ( empty( $phones ) ) {
+			return $ids;
+		}
+
+		if ( isset( $wpdb ) && is_object( $wpdb ) ) {
+			foreach ( $phones as $phone ) {
+				$rows = $wpdb->get_results(
+					$wpdb->prepare(
+						"SELECT DISTINCT oi.order_id, im.meta_key
+						FROM {$wpdb->prefix}woocommerce_order_itemmeta im
+						INNER JOIN {$wpdb->prefix}woocommerce_order_items oi ON oi.order_item_id = im.order_item_id
+						WHERE im.meta_value = %s",
+						$phone
+					)
+				);
+				if ( is_array( $rows ) ) {
+					foreach ( $rows as $row ) {
+						$fixed = WDP_Order_Meta_Keys::normalize_key( (string) $row->meta_key );
+						if ( null !== $fixed && '_phone' === substr( $fixed, -6 ) ) {
+							$ids[] = absint( $row->order_id );
+						}
+					}
+				}
+			}
+		}
+
+		if ( function_exists( 'wc_get_orders' ) ) {
+			foreach ( $phones as $phone ) {
+				$found = wc_get_orders(
+					array(
+						'type'        => 'shop_order',
+						'field_query' => array(
+							array(
+								'field' => 'billing_phone',
+								'value' => $phone,
+							),
+						),
+						'limit'       => -1,
+						'return'      => 'ids',
+					)
+				);
+				if ( is_array( $found ) ) {
+					$ids = array_merge( $ids, array_map( 'absint', $found ) );
+				}
+			}
+		}
+
+		$safe = array();
+		foreach ( array_unique( array_filter( $ids ) ) as $order_id ) {
+			$order = wc_get_order( $order_id );
+			if ( ! $order ) {
+				continue;
+			}
+			$billing_email = trim( (string) $order->get_billing_email() );
+			if ( '' === $billing_email || self::emails_match( $billing_email, $email ) ) {
+				$safe[] = (int) $order_id;
+			}
+		}
+		return $safe;
+	}
+
+	/**
+	 * Order belongs to the requester: billing e-mail matches, or the e-mail is empty and the phone matches.
+	 *
+	 * @param WC_Order $order  Order.
+	 * @param string   $email  Requester e-mail.
+	 * @param string[] $phones Requester phones.
+	 * @return bool
+	 */
+	public static function order_matches_requester( $order, $email, array $phones ) {
+		if ( self::emails_match( $order->get_billing_email(), $email ) ) {
+			return true;
+		}
+		if ( '' !== trim( (string) $order->get_billing_email() ) ) {
+			return false;
+		}
+		$digits = self::phone_digits( $order->get_billing_phone() );
+		if ( '' === $digits ) {
+			return false;
+		}
+		foreach ( $phones as $phone ) {
+			if ( self::phone_digits( $phone ) === $digits ) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Phone reduced to digits; too-short values return ''.
+	 *
+	 * @param mixed $value Raw phone.
+	 * @return string
+	 */
+	public static function phone_digits( $value ) {
+		$digits = preg_replace( '/\D+/', '', (string) $value );
+		return ( is_string( $digits ) && strlen( $digits ) >= self::MIN_PHONE_DIGITS ) ? $digits : '';
 	}
 
 	/**
