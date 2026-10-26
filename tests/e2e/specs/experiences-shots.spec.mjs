@@ -17,7 +17,7 @@ test.skip(!DIR, 'WDP_SHOTS_DIR yok');
  * @param {number|string} id Ürün.
  */
 async function open(page, kind, id) {
-  await page.goto(`/?dp_exp_test=${kind}&dp_product=${id}`);
+  await page.goto(`/?dp_exp_test=${kind}&dp_product=${id}&dp_demo=1`);
   await expect(page.locator('[data-dp-exp][data-dp-mounted="1"]')).toBeVisible({ timeout: 20000 });
   await page.locator('[data-dp-open]').click();
   await expect(page.locator('[data-dp-overlay]')).toHaveClass(/is-open/);

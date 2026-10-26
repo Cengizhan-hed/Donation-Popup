@@ -97,7 +97,7 @@
 
 /* Otomatik okunabilir düğme yazısı: göreli renk sözdizimi destekleniyorsa. */
 @supports (color: oklch(from red l c h)) {
-  :root, .dp { --dp-color-on-primary: oklch(from var(--dp-color-primary) clamp(0, (0.66 - l) * 1000, 1) 0 0); --dp-color-accent-solid: oklch(from var(--dp-color-accent) min(l, 0.52) c h); }
+  :root, .dp { --dp-color-on-primary: oklch(from var(--dp-color-primary) clamp(0, (0.66 - l) * 1000, 1) 0 0); --dp-color-accent-solid: oklch(from var(--dp-color-accent) min(l, 0.52) c h); --dp-color-primary-strong: oklch(from var(--dp-color-primary) min(l, 0.48) c h); }
 }
 
 /* ---------- Koyu mod ---------- */
@@ -416,7 +416,8 @@ html.dp-lock { overflow: hidden; }
 .dp-qtybox__sum { display: flex; flex-direction: column; min-inline-size: 0; }
 .dp-qtybox__sum small { font-size: 13px; color: var(--dp-color-text-muted); }
 .dp-qtybox__sum strong { font-size: 22px; font-weight: 800; }
-.dp-holder { padding-block-start: 4px; }
+.dp-holder { display: flex; flex-direction: column; gap: 14px; padding-block-start: 4px; }
+.dp-holder > .dp-legend { margin-block-end: 0; }
 
 /* Sabit alt bölüm */
 .dp-actionbar { flex: none; display: flex; flex-direction: column; gap: 10px; padding: 14px var(--dp-gutter) max(22px, env(safe-area-inset-bottom)); background: var(--dp-color-surface); border-block-start: 1px solid var(--dp-hair); }

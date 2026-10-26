@@ -179,7 +179,7 @@ export function createForm(root, hooks = {}) {
       submitLock.hidden = !last;
     }
     if (submitArrow) {
-      submitArrow.hidden = last;
+      submitArrow.toggleAttribute('hidden', last);
     }
     if (addCart) {
       addCart.hidden = !last;

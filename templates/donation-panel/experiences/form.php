@@ -48,13 +48,16 @@ foreach ( $donation_panel_fields as $donation_panel_probe ) {
 $donation_panel_dedi_switch = $donation_panel_dedi_def && ! $donation_panel_single;
 $donation_panel_privacy     = isset( $donation_panel_model['privacy_url'] ) ? (string) $donation_panel_model['privacy_url'] : '';
 $donation_panel_style       = '';
-foreach ( array( 'brand' => '--dp-color-primary', 'accent' => '--dp-accent' ) as $donation_panel_slot => $donation_panel_var ) {
+foreach ( array(
+	'brand'  => '--dp-color-primary',
+	'accent' => '--dp-accent',
+) as $donation_panel_slot => $donation_panel_var ) {
 	$donation_panel_hex = isset( $donation_panel_model[ $donation_panel_slot ] ) ? (string) $donation_panel_model[ $donation_panel_slot ] : '';
 	if ( 1 === preg_match( '/^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i', $donation_panel_hex ) ) {
 		$donation_panel_style .= $donation_panel_var . ':' . $donation_panel_hex . ';';
 	}
 }
-$donation_panel_lock_icon   = '<svg class="dp-ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
+$donation_panel_lock_icon = '<svg class="dp-ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
 
 /**
  * Telefon alanı: ülke ön eki seçici + ulusal numara (ön ek mağaza ülkesinden).

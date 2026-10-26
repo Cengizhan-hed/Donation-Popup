@@ -193,6 +193,23 @@ test.describe('form çekirdeği (yeni motor)', () => {
     const box = await page.locator('[data-dp-surface]').boundingBox();
     expect(box.x).toBeLessThan(5);
   });
+
+  test('RTL: bilgiler adımında geri düğmesi sağda, kapat solda; yatay taşma yok', async ({ page }) => {
+    await load(page, 'popup');
+    await page.evaluate(() => {
+      document.documentElement.dir = 'rtl';
+    });
+    await openIfLayer(page, 'popup');
+    await page.locator('[data-dp-preset]').first().click();
+    await page.locator('[data-dp-submit]').click();
+    await expect(page.locator('[data-dp-step="details"]')).toBeVisible();
+    await page.waitForTimeout(500);
+    const back = await page.locator('[data-dp-back]').boundingBox();
+    const close = await page.locator('[data-dp-close]').boundingBox();
+    expect(back.x).toBeGreaterThan(close.x);
+    const overflow = await page.locator('[data-dp-surface]').evaluate((el) => el.scrollWidth - el.clientWidth);
+    expect(overflow).toBeLessThanOrEqual(1);
+  });
 });
 
 test.describe('eski motor (engine=legacy)', () => {
