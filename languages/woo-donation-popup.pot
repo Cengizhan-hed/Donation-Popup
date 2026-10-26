@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: woo-donation-popup 11.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-26 18:51+0300\n"
+"POT-Creation-Date: 2026-10-26 19:44+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -444,7 +444,7 @@ msgstr ""
 
 #: includes/class-admin-design-studio-renderer.php:263
 #: includes/class-admin-form-tabs-renderer.php:164
-#: includes/class-admin-product-data-tab.php:746
+#: includes/class-admin-product-data-tab.php:788
 msgid "Email field"
 msgstr ""
 
@@ -460,7 +460,7 @@ msgid ""
 msgstr ""
 
 #: includes/class-admin-design-studio-renderer.php:265
-#: includes/class-admin-product-data-tab.php:747
+#: includes/class-admin-product-data-tab.php:789
 msgid "Dedication field"
 msgstr ""
 
@@ -472,20 +472,20 @@ msgid ""
 msgstr ""
 
 #: includes/class-admin-design-studio-renderer.php:267
-#: includes/class-admin-product-data-tab.php:749
+#: includes/class-admin-product-data-tab.php:791
 #: src/Modules/Experiences/class-form-context.php:407
 msgid "Anonymous donation"
 msgstr ""
 
 #: includes/class-admin-design-studio-renderer.php:268
-#: includes/class-admin-product-data-tab.php:749
+#: includes/class-admin-product-data-tab.php:791
 msgid ""
 "If checked, the donor name is hidden on public lists; it remains visible on "
 "order records."
 msgstr ""
 
 #: includes/class-admin-design-studio-renderer.php:269
-#: includes/class-admin-product-data-tab.php:748
+#: includes/class-admin-product-data-tab.php:790
 msgid "Dedication placeholder"
 msgstr ""
 
@@ -564,7 +564,7 @@ msgid ""
 msgstr ""
 
 #: includes/class-admin-design-studio-renderer.php:314
-#: includes/class-admin-product-data-tab.php:764
+#: includes/class-admin-product-data-tab.php:806
 msgid "Field icons"
 msgstr ""
 
@@ -1139,7 +1139,7 @@ msgstr ""
 
 #: includes/class-admin-form-tabs-renderer.php:433
 #: includes/class-admin-form-tabs-renderer.php:471
-#: includes/class-admin-product-data-tab.php:763
+#: includes/class-admin-product-data-tab.php:805
 msgid "Multi-step form"
 msgstr ""
 
@@ -1266,7 +1266,7 @@ msgstr ""
 
 #: includes/class-admin-form-tabs-renderer.php:479
 #: includes/class-admin-form-tabs-renderer.php:486
-#: includes/class-admin-product-data-tab.php:698
+#: includes/class-admin-product-data-tab.php:740
 msgid "Quick amount buttons"
 msgstr ""
 
@@ -1474,7 +1474,7 @@ msgid ""
 msgstr ""
 
 #: includes/class-admin-layout-tabs-renderer.php:114
-#: includes/class-admin-product-data-tab.php:656
+#: includes/class-admin-product-data-tab.php:683
 msgid "Raised"
 msgstr ""
 
@@ -1891,15 +1891,15 @@ msgid ""
 msgstr ""
 
 #: includes/class-admin-placement-tab-renderer.php:71
-#: includes/class-admin-product-data-tab.php:481
-#: includes/class-admin-product-data-tab.php:535
+#: includes/class-admin-product-data-tab.php:508
+#: includes/class-admin-product-data-tab.php:562
 msgid "On"
 msgstr ""
 
 #: includes/class-admin-placement-tab-renderer.php:72
-#: includes/class-admin-product-data-tab.php:482
-#: includes/class-admin-product-data-tab.php:535
-#: includes/class-admin-product-data-tab.php:558
+#: includes/class-admin-product-data-tab.php:509
+#: includes/class-admin-product-data-tab.php:562
+#: includes/class-admin-product-data-tab.php:585
 msgid "Off"
 msgstr ""
 
@@ -1908,7 +1908,7 @@ msgid "Display on the product page"
 msgstr ""
 
 #: includes/class-admin-placement-tab-renderer.php:81
-#: includes/class-admin-product-data-tab.php:1133
+#: includes/class-admin-product-data-tab.php:1175
 #: src/Modules/EntryPoints/Elementor/class-donation-form-widget.php:125
 #: blocks/donation-form/index.js:105
 msgid "Inline form"
@@ -1935,7 +1935,7 @@ msgid "Centered popup"
 msgstr ""
 
 #: includes/class-admin-placement-tab-renderer.php:94
-#: includes/class-admin-product-data-tab.php:1129
+#: includes/class-admin-product-data-tab.php:1171
 #: src/Modules/EntryPoints/Elementor/class-donation-form-widget.php:127
 #: blocks/donation-form/index.js:107
 msgid "Side panel"
@@ -2033,7 +2033,7 @@ msgid "Save placement settings"
 msgstr ""
 
 #: includes/class-admin-placement-tab-renderer.php:174
-#: includes/class-admin-product-data-tab.php:1111
+#: includes/class-admin-product-data-tab.php:1153
 #: includes/class-admin-products-list-table.php:305
 #: src/Admin/class-admin-view.php:112
 msgid "Copy"
@@ -2044,48 +2044,48 @@ msgstr ""
 msgid "Donation"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:186
+#: includes/class-admin-product-data-tab.php:213
 msgid "0"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:197
+#: includes/class-admin-product-data-tab.php:224
 msgid "Progress toward goal"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:201
+#: includes/class-admin-product-data-tab.php:228
 msgid "Recalculate total"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:201
+#: includes/class-admin-product-data-tab.php:228
 msgid "Scans paid orders and recalculates the total."
 msgstr ""
 
 #. translators: %d: number of orders
-#: includes/class-admin-product-data-tab.php:210
+#: includes/class-admin-product-data-tab.php:237
 #, php-format
 msgid "%d order could not be converted"
 msgid_plural "%d orders could not be converted"
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/class-admin-product-data-tab.php:480
+#: includes/class-admin-product-data-tab.php:507
 msgid "Use general setting"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:534
-#: includes/class-admin-product-data-tab.php:541
-#: includes/class-admin-product-data-tab.php:546
+#: includes/class-admin-product-data-tab.php:561
+#: includes/class-admin-product-data-tab.php:568
+#: includes/class-admin-product-data-tab.php:573
 #: includes/class-admin-products-list-table.php:229
 msgid "Donation product"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:534
-#: includes/class-admin-product-data-tab.php:547
+#: includes/class-admin-product-data-tab.php:561
+#: includes/class-admin-product-data-tab.php:574
 #: includes/class-admin-products-list-table.php:232
 msgid "Regular product"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:542
+#: includes/class-admin-product-data-tab.php:569
 msgid ""
 "On donation products the donation form is used instead of the WooCommerce "
 "add-to-cart field, and the product appears in donation lists."
@@ -2093,23 +2093,23 @@ msgstr ""
 
 #. translators: %s: what the global setting currently decides
 #. translators: %s: On / Off
-#: includes/class-admin-product-data-tab.php:545
-#: includes/class-admin-product-data-tab.php:557
+#: includes/class-admin-product-data-tab.php:572
+#: includes/class-admin-product-data-tab.php:584
 #, php-format
 msgid "General setting (currently: %s)"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:553
+#: includes/class-admin-product-data-tab.php:580
 msgid "Automatic placement"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:554
+#: includes/class-admin-product-data-tab.php:581
 msgid ""
 "If off, you add the form to the product page yourself with a shortcode, "
 "block, or widget only."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:570
+#: includes/class-admin-product-data-tab.php:597
 #: includes/class-admin-products-list-table.php:45
 #: src/WooCommerce/class-donation-order-meta.php:52
 #: templates/donation-panel/experiences/form.php:49
@@ -2117,38 +2117,38 @@ msgstr ""
 msgid "Donation type"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:571
+#: includes/class-admin-product-data-tab.php:598
 msgid ""
 "Choose how this product’s donation form works; only the selected type’s "
 "settings appear below."
 msgstr ""
 
 #. translators: %s: formatted product price
-#: includes/class-admin-product-data-tab.php:607
+#: includes/class-admin-product-data-tab.php:634
 #, php-format
 msgid ""
 "The donation amount is the product price: %s. You can change the price on "
 "the \"General\" tab."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:610
+#: includes/class-admin-product-data-tab.php:637
 msgid ""
 "This product has no price; enter a regular price on the \"General\" tab for "
 "a fixed amount."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:619
+#: includes/class-admin-product-data-tab.php:646
 #, php-format
 msgid "Goal amount (%s)"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:620
+#: includes/class-admin-product-data-tab.php:647
 msgid ""
 "Campaign goal at which the progress bar is 100% (in the store’s main "
 "currency). Empty or zero cannot be saved."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:629
+#: includes/class-admin-product-data-tab.php:656
 msgid ""
 "Set the donation amount on this tab. The WooCommerce General price field is "
 "not required for these types and may be left empty; the plugin does not "
@@ -2156,523 +2156,536 @@ msgid ""
 msgstr ""
 
 #. translators: %s: currency symbol
-#: includes/class-admin-product-data-tab.php:634
-#: includes/class-admin-product-data-tab.php:918
+#: includes/class-admin-product-data-tab.php:661
+#: includes/class-admin-product-data-tab.php:960
 #, php-format
 msgid "Minimum amount (%s)"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:635
+#: includes/class-admin-product-data-tab.php:662
 msgid ""
 "The lowest amount the donor can enter. This field is the single source (the "
 "WooCommerce General price is for fallback/compatibility; the minimum is not "
 "calculated from it)."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:644
+#: includes/class-admin-product-data-tab.php:671
 #: includes/class-product-settings-service.php:356
 msgid "Maximum shares"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:645
+#: includes/class-admin-product-data-tab.php:672
 msgid "The highest number of shares the donor can select at once (maximum 50)."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:659
+#: includes/class-admin-product-data-tab.php:686
 msgid ""
 "Only orders with confirmed payment (processing/completed) are counted; "
 "processing fees and on-hold are not included. Amounts are converted to the "
 "store’s main currency. The refresh icon recalculates the total from scratch."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:665
+#. translators: %s: currency symbol
+#: includes/class-admin-product-data-tab.php:695
+#, php-format
+msgid "Manually added amount (%s)"
+msgstr ""
+
+#: includes/class-admin-product-data-tab.php:698
+msgid ""
+"Donations that have no order on the site, such as cash or bank transfer (in "
+"the store’s main currency). It is added to the total from orders and is "
+"never changed by recalculation."
+msgstr ""
+
+#: includes/class-admin-product-data-tab.php:707
 msgid "When the goal is reached"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:666
+#: includes/class-admin-product-data-tab.php:708
 msgid ""
 "When the campaign reaches its goal, should donations keep being accepted, or "
 "should they be closed?"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:668
+#: includes/class-admin-product-data-tab.php:710
 msgid "Keep accepting donations (no message)"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:669
+#: includes/class-admin-product-data-tab.php:711
 msgid "Accept donations + show a thank-you message"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:670
+#: includes/class-admin-product-data-tab.php:712
 msgid "Close new donations + show a message"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:676
+#: includes/class-admin-product-data-tab.php:718
 msgid "Message when the goal is reached"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:677
+#: includes/class-admin-product-data-tab.php:719
 msgid ""
 "If left empty, the default thank-you text is used (maximum 300 characters)."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:694
+#: includes/class-admin-product-data-tab.php:736
 msgid "Amount options"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:694
+#: includes/class-admin-product-data-tab.php:736
 msgid "Quick amount buttons, quantity, and processing fee"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:698
+#: includes/class-admin-product-data-tab.php:740
 msgid ""
 "Shows one-click amount buttons above the amount field. If the general "
 "setting (Settings → Regular) is off, the buttons stay hidden even if this "
 "box is checked."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:699
+#: includes/class-admin-product-data-tab.php:741
 msgid "Amounts"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:699
+#: includes/class-admin-product-data-tab.php:741
 msgid ""
 "Whole numbers only; separate with commas, spaces, or semicolons (maximum 6). "
 "If left empty, the amounts from the general setting are used. Buttons below "
 "the minimum amount are not shown."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:703
+#: includes/class-admin-product-data-tab.php:745
 msgid "Suggested amount"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:704
+#: includes/class-admin-product-data-tab.php:746
 msgid ""
 "If left empty, no amount shows a Suggested label. If filled, the label "
 "appears only on that listed amount; the amount is not pre-selected. A value "
 "that is not on the list or is not a whole number blocks saving."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:714
+#: includes/class-admin-product-data-tab.php:756
 msgid "Quantity selector"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:714
+#: includes/class-admin-product-data-tab.php:756
 msgid ""
 "Shows quantity plus/minus buttons on a fixed-amount form. If off, the "
 "quantity is always 1."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:718
+#: includes/class-admin-product-data-tab.php:760
 msgid "Cover processing fee"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:718
+#: includes/class-admin-product-data-tab.php:760
 msgid ""
 "Offers the donor the option to also cover the payment processing cost (on "
 "all donation types)."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:722
+#: includes/class-admin-product-data-tab.php:764
 msgid "Processing fee (%)"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:723
+#: includes/class-admin-product-data-tab.php:765
 msgid ""
 "0 = off; otherwise a percentage between 0.5 and 15. A value outside the "
 "range is not saved."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:739
+#: includes/class-admin-product-data-tab.php:781
 msgid "Form fields"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:739
+#: includes/class-admin-product-data-tab.php:781
 msgid "Email, dedication, anonymous donation, and note"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:746
+#: includes/class-admin-product-data-tab.php:788
 msgid ""
 "Asks the donor for an email address; \"Use general setting\" applies the "
 "choice on the Design tab."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:747
+#: includes/class-admin-product-data-tab.php:789
 msgid "Shows a field to write who the donation is on behalf of."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:748
+#: includes/class-admin-product-data-tab.php:790
 msgid "Sample text shown inside the dedication field when it is empty."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:752
+#: includes/class-admin-product-data-tab.php:794
 msgid "Product note"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:752
+#: includes/class-admin-product-data-tab.php:794
 msgid ""
 "This is not a note written by the donor; it is an info text shown at the top "
 "of the form."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:756
+#: includes/class-admin-product-data-tab.php:798
 msgid "Note text"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:757
+#: includes/class-admin-product-data-tab.php:799
 msgid "Short info shown to the donor (maximum 400 characters)."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:760
+#: includes/class-admin-product-data-tab.php:802
 msgid "E.g.: A video is delivered within 24 hours."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:763
+#: includes/class-admin-product-data-tab.php:805
 msgid ""
 "Shows the form step by step as donor info and amount. \"Use general "
 "setting\" applies the choice on the Regular tab."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:764
+#: includes/class-admin-product-data-tab.php:806
 msgid ""
 "Icons on the name, note, and email rows. \"Use general setting\" applies the "
 "choice on the Design tab."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:774
+#: includes/class-admin-product-data-tab.php:816
 msgid "Campaign blocks"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:774
+#: includes/class-admin-product-data-tab.php:816
 msgid "Impact line, urgency, social proof, trust badges, and order"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:776
+#: includes/class-admin-product-data-tab.php:818
 #: includes/config/form-modules.php:28
 msgid "Impact line"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:776
+#: includes/class-admin-product-data-tab.php:818
 msgid ""
 "Shows a short sentence under the title that describes the donation’s impact."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:780
+#: includes/class-admin-product-data-tab.php:822
 msgid "Impact text"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:781
+#: includes/class-admin-product-data-tab.php:823
 msgid "If left empty, the line is hidden."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:783
+#: includes/class-admin-product-data-tab.php:825
 msgid "E.g.: Your donation warms a family."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:788
+#: includes/class-admin-product-data-tab.php:830
 msgid ""
 "Impact line is on but the text is empty; the line will not appear on the "
 "form."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:791
+#: includes/class-admin-product-data-tab.php:833
 #: includes/config/form-modules.php:29
 msgid "Urgency strip"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:791
+#: includes/class-admin-product-data-tab.php:833
 msgid ""
 "Shows a strip that highlights that the campaign is time-limited. The end "
 "date only removes the strip; it does not close the campaign."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:792
+#: includes/class-admin-product-data-tab.php:834
 msgid "Urgency text"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:792
+#: includes/class-admin-product-data-tab.php:834
 msgid "Text that will appear on the strip."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:796
+#: includes/class-admin-product-data-tab.php:838
 msgid "End date"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:797
+#: includes/class-admin-product-data-tab.php:839
 msgid ""
 "The strip is shown until the end of this day (23:59:59) in the site time "
 "zone (Y-m-d). An invalid date is not saved."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:807
+#: includes/class-admin-product-data-tab.php:849
 msgid ""
 "The saved end date is invalid; the strip appears with no time limit. Enter a "
 "valid Y-m-d."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:811
+#: includes/class-admin-product-data-tab.php:853
 #: includes/config/form-modules.php:30 src/Admin/class-settings-page.php:85
 msgid "Social proof"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:811
+#: includes/class-admin-product-data-tab.php:853
 msgid ""
 "Shows a line with the real donor count. If the number is 0, the line is "
 "hidden."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:815
+#: includes/class-admin-product-data-tab.php:857
 msgid "Social proof text"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:816
+#: includes/class-admin-product-data-tab.php:858
 msgid ""
 "The {donors} placeholder in the text is replaced with the real donor count. "
 "If left empty, the default is: “{donors} people donated”."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:817
+#: includes/class-admin-product-data-tab.php:859
 #: includes/class-form-modules.php:717
 msgid "{donors} people donated"
 msgstr ""
 
 #. translators: %s: old free-text
-#: includes/class-admin-product-data-tab.php:824
+#: includes/class-admin-product-data-tab.php:866
 #, php-format
 msgid "Old text: %s — no longer used; the real number is used."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:830
+#: includes/class-admin-product-data-tab.php:872
 #: includes/config/form-modules.php:37
 msgid "Trust badges"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:830
+#: includes/class-admin-product-data-tab.php:872
 msgid ""
 "Shows trust messages under the form. If the general setting is off, they are "
 "not shown even if this product is on."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:833
+#: includes/class-admin-product-data-tab.php:875
 msgid "Badges"
 msgstr ""
 
 #. translators: %d: max rows
-#: includes/class-admin-product-data-tab.php:835
+#: includes/class-admin-product-data-tab.php:877
 #, php-format
 msgid ""
 "If the product list is filled, it replaces the general list (maximum %d). If "
 "left empty, the general badges are used."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:840
+#: includes/class-admin-product-data-tab.php:882
 msgid "Icon"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:844
+#: includes/class-admin-product-data-tab.php:886
 msgid "Text"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:862
+#: includes/class-admin-product-data-tab.php:904
 msgid "Extra donation (sadaqah)"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:862
+#: includes/class-admin-product-data-tab.php:904
 msgid "A second, smaller donation row added to the form"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:864
+#: includes/class-admin-product-data-tab.php:906
 msgid ""
 "On a goal campaign the extra donation is not shown on the form; the settings "
 "are used if you switch to other types."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:866
+#: includes/class-admin-product-data-tab.php:908
 msgid "Add an extra donation"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:866
+#: includes/class-admin-product-data-tab.php:908
 msgid "Lets the donor add a small extra donation on top of the main donation."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:870
+#: includes/class-admin-product-data-tab.php:912
 msgctxt "product data tab"
 msgid "Button text"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:871
+#: includes/class-admin-product-data-tab.php:913
 msgid "Text of the button that opens the extra donation."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:873
+#: includes/class-admin-product-data-tab.php:915
 msgid "Add extra donation"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:893
+#: includes/class-admin-product-data-tab.php:935
 msgid "Extra donation product"
 msgstr ""
 
 #. translators: %d: default product ID
-#: includes/class-admin-product-data-tab.php:897
+#: includes/class-admin-product-data-tab.php:939
 #, php-format
 msgid ""
 "WooCommerce product to add to the cart; if empty, the general default (#%d) "
 "is used."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:900
-#: includes/class-admin-product-data-tab.php:909
+#: includes/class-admin-product-data-tab.php:942
+#: includes/class-admin-product-data-tab.php:951
 msgid ""
 "WooCommerce product to add to the cart; if empty, the general default is "
 "used, and if that is also missing the row is not added."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:908
+#: includes/class-admin-product-data-tab.php:950
 msgid "Extra donation product ID"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:918
+#: includes/class-admin-product-data-tab.php:960
 msgid "Lower limit applied when the donor types the amount themselves."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:923
+#: includes/class-admin-product-data-tab.php:965
 #, php-format
 msgid "Fixed amount (%s)"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:924
+#: includes/class-admin-product-data-tab.php:966
 msgid ""
 "If filled, the extra donation is added at this amount and the minimum amount "
 "is ignored."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:933
+#: includes/class-admin-product-data-tab.php:975
 msgid "Extra donation note"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:934
+#: includes/class-admin-product-data-tab.php:976
 msgid "Description shown next to the extra donation row."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:948
+#: includes/class-admin-product-data-tab.php:990
 msgid "Appearance for this product"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:948
+#: includes/class-admin-product-data-tab.php:990
 msgid "Layout, colors, corner radius, and media"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:952
+#: includes/class-admin-product-data-tab.php:994
 msgid "Layout"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:953
+#: includes/class-admin-product-data-tab.php:995
 msgid ""
 "Overall form layout; \"Story\" shows the image and form side by side. Cannot "
 "be left empty; default is Classic (there is no general layout setting)."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:955
+#: includes/class-admin-product-data-tab.php:997
 msgid "Classic"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:956
+#: includes/class-admin-product-data-tab.php:998
 msgid "Campaign"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:957
+#: includes/class-admin-product-data-tab.php:999
 msgid "Story (side by side)"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:960
+#: includes/class-admin-product-data-tab.php:1002
 msgid "Show product image"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:960
+#: includes/class-admin-product-data-tab.php:1002
 msgid ""
 "Uses the product’s featured image as the campaign image at the top of the "
 "form."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:963
+#: includes/class-admin-product-data-tab.php:1005
 msgid "This product has no featured image; the image cannot be shown."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:976
+#: includes/class-admin-product-data-tab.php:1018
 #: includes/class-product-settings-service.php:379
 #: includes/class-product-settings-service.php:399
 msgid "Primary color"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:977
+#: includes/class-admin-product-data-tab.php:1019
 msgid ""
 "Button and accent color. If left empty, the category color is used, and if "
 "that is also missing the general color is used."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:980
+#: includes/class-admin-product-data-tab.php:1022
 #: includes/class-product-settings-service.php:384
 msgid "Primary color (hover)"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:980
+#: includes/class-admin-product-data-tab.php:1022
 msgid ""
 "Color used when the mouse is over the button; if empty, it is derived from "
 "the primary color."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:981
+#: includes/class-admin-product-data-tab.php:1023
 #: includes/class-product-settings-service.php:389
 #: includes/class-product-settings-service.php:411
 msgid "Background color"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:981
+#: includes/class-admin-product-data-tab.php:1023
 msgid "Background of the form window; if empty, the general setting is used."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:987
+#: includes/class-admin-product-data-tab.php:1029
 msgid "Corner radius (px)"
 msgstr ""
 
 #. translators: 1: min px, 2: max px
-#: includes/class-admin-product-data-tab.php:990
+#: includes/class-admin-product-data-tab.php:1032
 #, php-format
 msgid ""
 "For button and field corners, %1$s–%2$s px; if empty, the general setting is "
 "used."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:1029
+#: includes/class-admin-product-data-tab.php:1071
 msgid "Add row"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:1063
+#: includes/class-admin-product-data-tab.php:1105
 msgid "Delete row"
 msgstr ""
 
 #. translators: %d: attachment ID
-#: includes/class-admin-product-data-tab.php:1082
+#: includes/class-admin-product-data-tab.php:1124
 #, php-format
 msgid "Uploaded image (#%d)"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:1101
-#: includes/class-admin-product-data-tab.php:1110
+#: includes/class-admin-product-data-tab.php:1143
+#: includes/class-admin-product-data-tab.php:1152
 #: includes/class-admin-products-list-table.php:46
 msgid "Shortcode"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:1102
+#: includes/class-admin-product-data-tab.php:1144
 msgid "Choose a view, copy the shortcode, and paste it into a page or post."
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:1104
+#: includes/class-admin-product-data-tab.php:1146
 #: includes/class-admin-products-list-table.php:260
 msgid "View"
 msgstr ""
 
-#: includes/class-admin-product-data-tab.php:1125
+#: includes/class-admin-product-data-tab.php:1167
 msgid "Button (opens in the center)"
 msgstr ""
 
@@ -2686,12 +2699,12 @@ msgid "Product not found."
 msgstr ""
 
 #. translators: 1: product name, 2: formatted total, 3: order count
-#: includes/class-admin-product-settings-ajax.php:45
+#: includes/class-admin-product-settings-ajax.php:46
 #, php-format
 msgid "Recalculated the total for \"%1$s\": %2$s (%3$d orders)."
 msgstr ""
 
-#: includes/class-admin-product-settings-ajax.php:61
+#: includes/class-admin-product-settings-ajax.php:62
 msgid "The total could not be calculated. Details are in the error log."
 msgstr ""
 

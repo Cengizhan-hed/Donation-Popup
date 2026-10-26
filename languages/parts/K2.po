@@ -1,0 +1,8 @@
+#: includes/class-admin-product-data-tab.php
+#. translators: %s: currency symbol
+msgid "Manually added amount (%s)"
+msgstr "Elle eklenen tutar (%s)"
+
+#: includes/class-admin-product-data-tab.php
+msgid "Donations that have no order on the site, such as cash or bank transfer (in the store’s main currency). It is added to the total from orders and is never changed by recalculation."
+msgstr "Sitede siparişi olmayan bağışlar (elden, havale gibi; mağazanın ana para biriminde). Siparişlerden gelen toplama eklenir, yeniden hesaplamayla asla değişmez."
