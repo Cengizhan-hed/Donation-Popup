@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<!-- Taint kanaryası yapılandırması: yalnız canary.php; stub'lar psalm-taint.xml ile aynı. Pakete girmez. -->
+<psalm
+    errorLevel="8"
+    resolveFromConfigFile="true"
+    findUnusedBaselineEntry="false"
+    findUnusedCode="false"
+    cacheDirectory="../../../build/lint/psalm-canary-cache"
+    phpVersion="8.2"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="https://getpsalm.org/schema/config"
+    xsi:schemaLocation="https://getpsalm.org/schema/config ../../../vendor-dev/vimeo/psalm/config.xsd"
+>
+    <projectFiles>
+        <directory name="." />
+    </projectFiles>
+    <stubs>
+        <file name="../../../vendor-dev/php-stubs/wordpress-stubs/wordpress-stubs.php" />
+        <file name="../../../vendor-dev/php-stubs/woocommerce-stubs/woocommerce-stubs.php" />
+        <file name="../../../tools/psalm/wp-taint-stubs.php" />
+    </stubs>
+    <globals>
+        <var name="wpdb" type="wpdb" />
+    </globals>
+
+    <issueHandlers>
+        <UndefinedFunction errorLevel="suppress" />
+        <UndefinedClass errorLevel="suppress" />
+        <UndefinedConstant errorLevel="suppress" />
+        <UndefinedGlobalVariable errorLevel="suppress" />
+        <UndefinedMethod errorLevel="suppress" />
+    </issueHandlers>
+</psalm>
