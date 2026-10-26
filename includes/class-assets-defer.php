@@ -68,7 +68,7 @@ class WDP_Assets_Defer {
 	 * @return string
 	 */
 	public static function filter_script_tag( $tag, $handle, $src ) {
-		if ( ! in_array( $handle, self::deferred_handles(), true ) || ! is_string( $tag ) || '' === $src ) {
+		if ( ! in_array( $handle, self::deferred_handles(), true ) || '' === $src ) {
 			return $tag;
 		}
 		if ( ! self::is_active() ) {
