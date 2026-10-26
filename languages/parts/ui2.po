@@ -1,0 +1,109 @@
+# Turkish translations — 12.0.0 ui2 (teşekkür, yan sepet, giriş, Bağışlarım yeni tasarımı).
+# Copyright (C) Donation Panel for WooCommerce
+msgid ""
+msgstr ""
+"Project-Id-Version: woo-donation-popup\n"
+"Language: tr_TR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Domain: woo-donation-popup\n"
+
+#: templates/donation-panel/thanks/summary.php
+msgid "Donation no."
+msgstr "Bağış no"
+
+#: templates/donation-panel/thanks/summary.php
+msgid "Your tax relief declaration has been recorded with this donation."
+msgstr "Vergi indirimi beyanınız bu bağışla birlikte kaydedildi."
+
+#: templates/donation-panel/thanks/summary.php
+msgid "Your contribution to the campaign"
+msgstr "Kampanyaya katkınız"
+
+#. translators: 1: percentage before this gift, 2: percentage after this gift.
+#: templates/donation-panel/thanks/summary.php
+msgid "Campaign progress rose from %1$s to %2$s"
+msgstr "Kampanya ilerlemesi %1$s değerinden %2$s değerine yükseldi"
+
+#. translators: %s: percentage number, for example 62.
+#: templates/donation-panel/thanks/summary.php
+#: src/Modules/DonorAccount/class-account-renderer.php
+msgid "%s%%"
+msgstr "%%%s"
+
+#: templates/donation-panel/thanks/summary.php
+msgid "Follow your donations"
+msgstr "Bağışlarınızı takip edin"
+
+#: templates/donation-panel/thanks/summary.php
+msgid "See every donation and receipt in one place."
+msgstr "Tüm bağışlarınızı ve makbuzlarınızı tek yerde görün."
+
+#: templates/donation-panel/thanks/summary.php
+msgid "Open an account in one tap; all your donations in one place."
+msgstr "Tek dokunuşla hesap açın, tüm bağışlarınız bir yerde."
+
+#: templates/donation-panel/thanks/summary.php
+msgid "Share the campaign"
+msgstr "Kampanyayı paylaş"
+
+#: src/Modules/SideCart/class-side-cart-renderer.php
+msgid "Your donation basket"
+msgstr "Bağış sepetiniz"
+
+#: src/Modules/SideCart/class-side-cart-renderer.php
+msgid "Would you like to add to your donation?"
+msgstr "Bağışınıza eklemek ister misiniz?"
+
+#. translators: 1: suggested donation name, 2: amount with currency.
+#: src/Modules/SideCart/class-side-cart-renderer.php
+msgid "Add %1$s %2$s to your basket"
+msgstr "%1$s için %2$s sepetinize ekleyin"
+
+#: src/Modules/SideCart/class-side-cart-renderer.php
+msgid "Add another donation"
+msgstr "Başka bağış ekle"
+
+#: src/Modules/DonorAccount/class-account-renderer.php
+msgid "Show password"
+msgstr "Şifreyi göster"
+
+#: src/Modules/DonorAccount/class-account-renderer.php
+msgid "Hide password"
+msgstr "Şifreyi gizle"
+
+#: src/Modules/DonorAccount/class-account-renderer.php
+#: src/Modules/DonorAccount/class-donor-account-module.php
+msgid "Welcome"
+msgstr "Hoş geldiniz"
+
+#: src/Modules/DonorAccount/class-account-renderer.php
+msgid "Remember me"
+msgstr "Beni hatırla"
+
+#: src/Modules/DonorAccount/class-account-renderer.php
+msgid "Gifts you made earlier with this email are added to your account automatically once you verify your email."
+msgstr "Daha önce bu e-postayla yaptığınız bağışlar, e-postanızı doğruladığınızda hesabınıza otomatik eklenir."
+
+#: src/Modules/DonorAccount/class-donor-account-module.php
+msgid "Log in to see your donations, receipts and videos in one place."
+msgstr "Giriş yapın; bağışlarınızı, makbuzlarınızı ve videolarınızı tek yerden görün."
+
+#: src/Modules/DonorAccount/class-account-renderer.php
+msgid "Campaign progress"
+msgstr "Kampanya ilerlemesi"
+
+#. translators: %s: percentage, for example 62%.
+#: src/Modules/DonorAccount/class-account-renderer.php
+msgid "Campaign progress: %s"
+msgstr "Kampanya ilerlemesi: %s"
+
+#: src/Modules/DonorAccount/class-account-renderer.php
+msgid "Video"
+msgstr "Video"
+
+#: src/Modules/DonorAccount/class-account-renderer.php
+msgid "This year"
+msgstr "Bu yıl"
