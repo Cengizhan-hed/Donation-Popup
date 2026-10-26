@@ -108,6 +108,7 @@ final class Side_Cart_Lines {
 				$described,
 				array(
 					'key'          => (string) $key,
+					'product_id'   => isset( $item['product_id'] ) ? (int) $item['product_id'] : 0,
 					'name'         => method_exists( $product, 'get_name' ) ? (string) $product->get_name() : '',
 					'quantity'     => $qty,
 					'image'        => $image,

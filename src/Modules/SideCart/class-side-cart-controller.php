@@ -64,7 +64,8 @@ class Side_Cart_Controller extends Rest_Controller {
 			array(
 				'count'    => count( $lines ),
 				'subtotal' => $subtotal,
-				'html'     => Side_Cart_Renderer::body( $lines, $subtotal, function_exists( 'wc_get_checkout_url' ) ? wc_get_checkout_url() : '' ),
+				'sub'      => $lines ? Side_Cart_Renderer::count_text( count( $lines ) ) : '',
+				'html'     => Side_Cart_Renderer::body( $lines, $subtotal, function_exists( 'wc_get_checkout_url' ) ? wc_get_checkout_url() : '', Side_Cart_Suggestion::current( $lines ) ),
 			)
 		);
 		$response->header( 'Cache-Control', 'no-store, private' );

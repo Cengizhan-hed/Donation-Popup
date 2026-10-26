@@ -4,6 +4,8 @@
  * Tetikleyiciler: [data-dp-sc-open] düğmeleri; olaylar: wc-blocks_added_to_cart, added_to_cart (jQuery varsa),
  * donation-panel:cart-added. Tema/oluşturucuya özel kod yok.
  */
+import '../campaign/base.css';
+import '../ui2-shared/tokens.css';
 import './side-cart.css';
 import { nextFocusIndex, nextQuantity, readNonce, shouldDismissOnDrag, toCount } from './logic.mjs';
 
@@ -28,6 +30,9 @@ function mount(root) {
   const restUrl = root.dataset.dpScRest || '';
   const storeUrl = root.dataset.dpScStore || '';
   const failedMessage = root.dataset.dpScFailed || '';
+  const addUrl = root.dataset.dpScAdd || '';
+  const nonceUrl = root.dataset.dpScNonce || '';
+  const sub = root.querySelector('[data-dp-sc-sub]');
   let nonce = '';
   let opened = false;
   let lastFocus = null;
@@ -87,6 +92,9 @@ function mount(root) {
       }
       if (data && typeof data.html === 'string') {
         body.innerHTML = data.html;
+        if (sub && typeof data.sub === 'string') {
+          sub.textContent = data.sub;
+        }
         setCount(data.count);
         document.dispatchEvent(new CustomEvent('donation-panel:cart-updated', { detail: { count: toCount(data.count) } }));
         return true;
@@ -176,6 +184,48 @@ function mount(root) {
     target.focus();
   }
 
+  /**
+   * Ek bağış önerisini sepete ekler (formun kullandığı sunucu ucu: cart/add; sunucuda doğrulanır).
+   *
+   * @param {HTMLElement} control Tıklanan tutar düğmesi.
+   */
+  async function addSuggestion(control) {
+    if (busy || !addUrl) {
+      return;
+    }
+    busy = true;
+    control.disabled = true;
+    body.setAttribute('aria-busy', 'true');
+    let ok = false;
+    try {
+      let wpNonce = '';
+      if (nonceUrl) {
+        const fresh = await window.fetch(nonceUrl, { credentials: 'same-origin', cache: 'no-store' });
+        wpNonce = fresh.ok ? (await fresh.json()).nonce || '' : '';
+      }
+      const response = await window.fetch(addUrl, {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json', ...(wpNonce ? { 'X-WP-Nonce': wpNonce } : {}) },
+        body: JSON.stringify({
+          product_id: Number.parseInt(control.dataset.product || '0', 10),
+          amount: control.dataset.amount || '',
+          submission_key: `sc-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        }),
+      });
+      ok = response.ok;
+    } catch {
+      ok = false;
+    }
+    const redrawn = ok ? await refresh() : false;
+    busy = false;
+    body.removeAttribute('aria-busy');
+    if (!ok || !redrawn) {
+      control.disabled = false;
+      showError();
+    }
+  }
+
   function open(opener) {
     if (opened) {
       return;
@@ -240,6 +290,11 @@ function mount(root) {
     }
     if (el === overlay || el.closest('[data-dp-sc-close]')) {
       close();
+      return;
+    }
+    const suggest = el.closest('[data-dp-sc-suggest]');
+    if (suggest) {
+      addSuggestion(suggest);
       return;
     }
     const remove = el.closest('[data-dp-sc-remove]');

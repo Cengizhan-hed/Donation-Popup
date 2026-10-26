@@ -66,28 +66,51 @@ final class Side_Cart_Renderer {
 	}
 
 	/**
-	 * Çekmece gövdesi (REST ve ilk çıktıda aynı): satırlar + sabit alt çubuk ya da boş durum.
+	 * Çekmece gövdesi (REST ve ilk çıktıda aynı): satırlar + ek bağış önerisi + sabit alt çubuk ya da boş durum.
+	 * Kalem sayısı metni başlıkta (`count_text`) durur.
 	 *
 	 * @param array<int, array<string, mixed>> $lines         Satırlar (Side_Cart_Lines).
-	 * @param string                           $subtotal_html Ara toplam (WooCommerce).
+	 * @param string                           $subtotal_html Toplam (WooCommerce).
 	 * @param string                           $checkout_url  Ödeme sayfası.
+	 * @param array<string, mixed>             $suggestion    Ek bağış önerisi (Side_Cart_Suggestion::current).
 	 * @return string
 	 */
-	public static function body( array $lines, $subtotal_html, $checkout_url ) {
+	public static function body( array $lines, $subtotal_html, $checkout_url, array $suggestion = array() ) {
 		if ( empty( $lines ) ) {
-			return '<div class="dp-sc__empty"><div class="dp-sc__empty-art">' . self::cart_icon() . '</div><h3>' . esc_html__( 'Your basket is empty', 'woo-donation-popup' ) . '</h3><p>' . esc_html__( 'Add a gift and it will be summarised here.', 'woo-donation-popup' ) . '</p><button type="button" class="dp-sc__btn dp-sc__btn--secondary" data-dp-sc-close>' . esc_html__( 'Continue giving', 'woo-donation-popup' ) . '</button></div>';
+			return '<div class="dp-sc__empty"><div class="dp-sc__empty-art">' . self::cart_icon() . '</div><h3>' . esc_html__( 'Your basket is empty', 'woo-donation-popup' ) . '</h3><p>' . esc_html__( 'Add a gift and it will be summarised here.', 'woo-donation-popup' ) . '</p><button type="button" class="dpx-btn dpx-btn--outline" data-dp-sc-close>' . esc_html__( 'Continue giving', 'woo-donation-popup' ) . '</button></div>';
 		}
 
-		$html  = '<div class="dp-sc__scroll"><ul class="dp-sc__list">';
-		$count = count( $lines );
+		$html = '<div class="dp-sc__scroll"><ul class="dp-sc__list">';
 		foreach ( $lines as $line ) {
 			$html .= self::line( $line );
 		}
-		$html .= '</ul></div>';
-		$html .= '<div class="dp-sc__bar"><div class="dp-sc__subtotal"><span>' . esc_html__( 'Subtotal', 'woo-donation-popup' ) . '</span><strong class="dp-sc__num">' . wp_kses_post( $subtotal_html ) . '</strong></div>'
-			. '<p class="dp-sc__hint">' . esc_html__( 'Payment method and any taxes are shown at checkout.', 'woo-donation-popup' ) . '</p>'
-			. '<a class="dp-sc__btn dp-sc__btn--primary" data-dp-sc-go href="' . esc_url( $checkout_url ) . '">' . esc_html__( 'Continue to checkout', 'woo-donation-popup' ) . '</a></div>';
-		return '<p class="dp-sc__sub" data-dp-sc-sub>' . esc_html( self::count_text( $count ) ) . '</p>' . $html;
+		$html .= '</ul>' . self::suggestion( $suggestion ) . '</div>';
+		$html .= '<div class="dp-sc__bar"><div class="dp-sc__subtotal"><span>' . esc_html__( 'Total', 'woo-donation-popup' ) . '</span><strong class="dp-sc__num">' . wp_kses_post( $subtotal_html ) . '</strong></div>'
+			. '<a class="dpx-btn dpx-btn--primary" data-dp-sc-go href="' . esc_url( $checkout_url ) . '">' . esc_html__( 'Complete donation', 'woo-donation-popup' ) . '</a>'
+			. '<button type="button" class="dpx-btn dpx-btn--link" data-dp-sc-close>' . esc_html__( 'Add another donation', 'woo-donation-popup' ) . '</button>'
+			. '<p class="dp-sc__hint">' . esc_html__( 'Payment method and any taxes are shown at checkout.', 'woo-donation-popup' ) . '</p></div>';
+		return $html;
+	}
+
+	/**
+	 * "Bağışınıza eklemek ister misiniz?" kartı: küçük tutar düğmeleri (tek dokunuşla eklenir).
+	 *
+	 * @param array<string, mixed> $suggestion Öneri (Side_Cart_Suggestion).
+	 * @return string
+	 */
+	private static function suggestion( array $suggestion ) {
+		if ( empty( $suggestion['product_id'] ) || empty( $suggestion['amounts'] ) ) {
+			return '';
+		}
+		$buttons = '';
+		foreach ( (array) $suggestion['amounts'] as $amount ) {
+			$label    = function_exists( 'wc_price' ) ? html_entity_decode( wp_strip_all_tags( (string) wc_price( (float) $amount ) ), ENT_QUOTES, 'UTF-8' ) : (string) $amount;
+			$buttons .= '<button type="button" class="dpx-btn dpx-btn--outline dp-sc__suggest-btn" data-dp-sc-suggest data-product="' . esc_attr( (string) (int) $suggestion['product_id'] ) . '" data-amount="' . esc_attr( (string) $amount ) . '" aria-label="' . esc_attr( sprintf( /* translators: 1: suggested donation name, 2: amount with currency. */ __( 'Add %1$s %2$s to your basket', 'woo-donation-popup' ), (string) $suggestion['title'], $label ) ) . '">+ ' . esc_html( $label ) . '</button>';
+		}
+		$hint = '' !== (string) $suggestion['hint'] ? '<span class="dp-sc__suggest-hint">' . esc_html( (string) $suggestion['hint'] ) . '</span>' : '';
+		return '<section class="dp-sc__suggest" aria-labelledby="dp-sc-suggest-title"><b class="dp-sc__suggest-title" id="dp-sc-suggest-title">' . esc_html__( 'Would you like to add to your donation?', 'woo-donation-popup' ) . '</b>'
+			. '<div class="dp-sc__suggest-row"><span class="dp-sc__suggest-text"><span class="dp-sc__suggest-name">' . esc_html( (string) $suggestion['title'] ) . '</span>' . $hint . '</span>'
+			. '<span class="dp-sc__suggest-actions">' . $buttons . '</span></div></section>';
 	}
 
 	/**
@@ -127,7 +150,7 @@ final class Side_Cart_Renderer {
 		}
 
 		$thumb = ! empty( $line['image'] )
-			? '<img class="dp-sc__thumb" src="' . esc_url( (string) $line['image'] ) . '" alt="" loading="lazy" width="52" height="52">'
+			? '<img class="dp-sc__thumb" src="' . esc_url( (string) $line['image'] ) . '" alt="" loading="lazy" width="56" height="56">'
 			: '<span class="dp-sc__thumb dp-sc__thumb--ph" aria-hidden="true">' . self::cart_icon() . '</span>';
 
 		return '<li class="dp-sc__row" data-dp-sc-line="' . esc_attr( $key ) . '" data-qty="' . esc_attr( (string) $qty ) . '">' . $thumb
@@ -153,9 +176,10 @@ final class Side_Cart_Renderer {
 	 *
 	 * @param string                $body_html  `body()` çıktısı.
 	 * @param array<string, string> $attributes Veri öznitelikleri (rest, store, checkout, nonce, mesajlar).
+	 * @param string                $sub        Başlık altı kalem sayısı metni.
 	 * @return string
 	 */
-	public static function drawer( $body_html, array $attributes ) {
+	public static function drawer( $body_html, array $attributes, $sub = '' ) {
 		$data = '';
 		foreach ( $attributes as $name => $value ) {
 			$data .= ' data-dp-sc-' . sanitize_key( (string) $name ) . '="' . esc_attr( (string) $value ) . '"';
@@ -164,7 +188,8 @@ final class Side_Cart_Renderer {
 			. '<div class="dp-sc__overlay" data-dp-sc-overlay>'
 			. '<div class="dp-sc__surface" id="' . esc_attr( self::DRAWER_ID ) . '" role="dialog" aria-modal="true" aria-labelledby="' . esc_attr( self::DRAWER_ID ) . '-title" tabindex="-1" data-dp-sc-surface>'
 			. '<div class="dp-sc__handle" aria-hidden="true"></div>'
-			. '<div class="dp-sc__head"><h2 class="dp-sc__title" id="' . esc_attr( self::DRAWER_ID ) . '-title">' . esc_html__( 'Donation basket', 'woo-donation-popup' ) . '</h2>'
+			. '<div class="dp-sc__head"><div class="dp-sc__headtext"><h2 class="dp-sc__title" id="' . esc_attr( self::DRAWER_ID ) . '-title">' . esc_html__( 'Your donation basket', 'woo-donation-popup' ) . '</h2>'
+			. '<span class="dp-sc__sub" data-dp-sc-sub>' . esc_html( $sub ) . '</span></div>'
 			. '<button type="button" class="dp-sc__close" data-dp-sc-close aria-label="' . esc_attr__( 'Close basket', 'woo-donation-popup' ) . '"><svg class="dp-sc__ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>'
 			. '<div class="dp-sc__body" data-dp-sc-body aria-live="polite">' . $body_html . '</div>'
 			. '</div></div></div>';

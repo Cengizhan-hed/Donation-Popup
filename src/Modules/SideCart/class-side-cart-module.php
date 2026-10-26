@@ -155,7 +155,7 @@ final class Side_Cart_Module implements Module_Interface {
 			$subtotal = (string) $cart->get_cart_subtotal();
 		}
 		$checkout = function_exists( 'wc_get_checkout_url' ) ? wc_get_checkout_url() : '';
-		$body     = Side_Cart_Renderer::body( $lines, $subtotal, $checkout );
+		$body     = Side_Cart_Renderer::body( $lines, $subtotal, $checkout, Side_Cart_Suggestion::current( $lines ) );
 
 		$html = Side_Cart_Renderer::drawer(
 			$body,
@@ -163,9 +163,12 @@ final class Side_Cart_Module implements Module_Interface {
 				'rest'     => esc_url_raw( rest_url( 'donation-panel/v1/side-cart' ) ),
 				'store'    => esc_url_raw( rest_url( 'wc/store/v1/' ) ),
 				'checkout' => $checkout,
+				'add'      => esc_url_raw( rest_url( 'donation-panel/v1/cart/add' ) ),
+				'nonce'    => esc_url_raw( rest_url( 'donation-panel/v1/nonce' ) ),
 				'failed'   => __( 'Something went wrong. Please try again.', 'woo-donation-popup' ),
 				'removed'  => __( 'Removed from your basket.', 'woo-donation-popup' ),
-			)
+			),
+			$lines ? Side_Cart_Renderer::count_text( count( $lines ) ) : ''
 		);
 		echo $html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Side_Cart_Renderer tüm değerleri kaçışlar.
 	}
