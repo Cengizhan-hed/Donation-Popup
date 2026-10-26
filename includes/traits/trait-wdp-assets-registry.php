@@ -181,7 +181,6 @@ trait WDP_Assets_Registry_Trait {
 	 */
 	public static function get_critical_bundle_css( $type = '' ) {
 		static $cache = array();
-		$type = is_string( $type ) ? $type : '';
 		if ( isset( $cache[ $type ] ) ) {
 			return $cache[ $type ];
 		}
