@@ -47,7 +47,23 @@ final class ProductInfoAjaxTest extends TestCase {
 		$this->assertTrue(WDP_Ajax::resolve_product_for_info(31, $out));
 		$this->assertInstanceOf(WC_Product::class, $out);
 		$this->assertSame(31, $out->get_id());
-		$this->assertFalse(WDP_Security::validate_product_id(31));
+		// E8M: eski AJAX/lazy-modal yolu da katalogda gizli ama yayında ürünü kabul eder.
+		$this->assertTrue(WDP_Security::validate_product_id(31));
+	}
+
+	public function test_validate_product_id_still_rejects_draft_private_pending_password(): void {
+		foreach (array('draft', 'private', 'pending') as $i => $status) {
+			$p         = new WC_Product(40 + $i);
+			$p->status = $status;
+			WDP_Test_State::$products[40 + $i] = $p;
+			$this->assertFalse(WDP_Security::validate_product_id(40 + $i), $status);
+		}
+		$pw                = new WC_Product(50);
+		$pw->status        = 'publish';
+		$pw->post_password = 'x';
+		WDP_Test_State::$products[50] = $pw;
+		$this->assertFalse(WDP_Security::validate_product_id(50));
+		$this->assertFalse(WDP_Security::validate_product_id(9999));
 	}
 
 	public function test_draft_and_missing_do_not_resolve(): void {

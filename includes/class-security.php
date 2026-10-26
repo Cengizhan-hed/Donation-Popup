@@ -157,12 +157,8 @@ class WDP_Security {
 			if ( $password !== '' ) {
 				return false;
 			}
-			if ( method_exists( $product, 'is_visible' ) && ! $product->is_visible() ) {
-				return false;
-			}
-			if ( method_exists( $product, 'get_catalog_visibility' ) && $product->get_catalog_visibility() === 'hidden' ) {
-				return false;
-			}
+			// Katalogda gizli (mağaza/arama listesinden gizli) ama yayında ürün satın alınabilir; bağış ürünleri
+			// sık böyle kurulur. Bu yüzden is_visible()/katalog görünürlüğü kontrolü yoktur (REST ile aynı kural).
 		}
 
 		$product_out = $product;
