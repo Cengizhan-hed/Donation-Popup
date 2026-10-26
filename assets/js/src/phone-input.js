@@ -683,7 +683,6 @@
     codeBtn.className = 'wdp-phone-field__code-btn';
     codeBtn.setAttribute('aria-haspopup', 'listbox');
     codeBtn.setAttribute('aria-expanded', 'false');
-    codeBtn.setAttribute('aria-label', WDPApp.i18n.__('Select country code', 'woo-donation-popup'));
 
     const codeLabel = document.createElement('span');
     codeLabel.className = 'wdp-phone-field__code-label';
@@ -693,7 +692,13 @@
     chevron.className = 'wdp-phone-field__chevron';
     chevron.setAttribute('aria-hidden', 'true');
 
+    // Erişilebilir ad görünür metni ("+90") içermeli (WCAG 2.5.3): gizli metin aria-label yerine.
+    const codeHint = document.createElement('span');
+    codeHint.className = 'wdp-screen-reader-text';
+    codeHint.textContent = WDPApp.i18n.__('Select country code', 'woo-donation-popup');
+
     codeBtn.appendChild(codeLabel);
+    codeBtn.appendChild(codeHint);
     codeBtn.appendChild(chevron);
     codeWrap.appendChild(codeBtn);
 

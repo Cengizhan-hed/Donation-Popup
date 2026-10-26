@@ -1223,8 +1223,9 @@ class WDP_Phone_Field {
 		<div class="wdp-phone-field" data-wdp-phone-field data-default-country="<?php echo esc_attr( $default_iso ); ?>" data-dial-code="<?php echo esc_attr( $dial ); ?>">
 			<div class="wdp-phone-field__inner">
 				<div class="wdp-phone-field__code-wrap">
-					<button type="button" class="wdp-phone-field__code-btn" aria-haspopup="listbox" aria-expanded="false" aria-label="<?php echo esc_attr__( 'Select country code', 'woo-donation-popup' ); ?>">
+					<button type="button" class="wdp-phone-field__code-btn" aria-haspopup="listbox" aria-expanded="false">
 						<span class="wdp-phone-field__code-label">+<?php echo esc_html( $dial ); ?></span>
+						<span class="wdp-screen-reader-text"><?php echo esc_html__( 'Select country code', 'woo-donation-popup' ); ?></span>
 						<span class="wdp-phone-field__chevron" aria-hidden="true"></span>
 					</button>
 				</div>

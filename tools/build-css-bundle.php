@@ -20,18 +20,21 @@ $outDir = $cssRoot . '/build';
  * @return string
  */
 function wdp_minify_css_bundle($root, $css) {
-    $tmpIn = tempnam(sys_get_temp_dir(), 'wdp_css_in_');
-    if (!is_string($tmpIn) || $tmpIn === '') {
+    $tmpBase = tempnam(sys_get_temp_dir(), 'wdp_css_in_');
+    if (!is_string($tmpBase) || $tmpBase === '') {
         return $css;
     }
-    $tmpOut = $tmpIn . '.min.css';
+    // esbuild yükleyiciyi dosya uzantısından seçer: uzantısız geçici dosyada hata verip özgün CSS'e düşüyordu (küçültme hiç çalışmıyordu).
+    $tmpIn  = $tmpBase . '.css';
+    $tmpOut = $tmpBase . '.min.css';
+    @rename($tmpBase, $tmpIn);
 
     try {
         if (file_put_contents($tmpIn, $css) === false) {
             return $css;
         }
 
-        $cmd = 'npx --yes esbuild ' . escapeshellarg($tmpIn) . ' --loader=css --minify --legal-comments=none --outfile=' . escapeshellarg($tmpOut) . ' 2>/dev/null';
+        $cmd = 'npx --yes esbuild ' . escapeshellarg($tmpIn) . ' --minify --legal-comments=none --outfile=' . escapeshellarg($tmpOut) . ' 2>/dev/null';
         $cwd = getcwd();
         @chdir($root);
         $exit = 1;
@@ -61,12 +64,14 @@ function wdp_minify_css_bundle($root, $css) {
             }
         }
 
-        if (strpos($css, '@layer') !== false && strpos($min, '@layer') === false) {
+        // Yalnız gerçek @layer kuralı (yorum satırındaki söz değil) küçültmede korunmalı.
+        if (preg_match('/^\s*@layer\b/m', $css) === 1 && strpos($min, '@layer') === false) {
             return $css;
         }
 
         return $min . "\n";
     } finally {
+        @unlink($tmpBase);
         @unlink($tmpIn);
         @unlink($tmpOut);
     }

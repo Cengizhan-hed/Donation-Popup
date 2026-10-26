@@ -289,7 +289,7 @@ class WDP_Form_Fields_Renderer {
 			</div>
 			<div class="wdp-quantity-counter">
 				<button type="button" class="wdp-product-quantity-btn wdp-product-quantity-decrease" aria-label="<?php echo esc_attr__( 'Decrease', 'woo-donation-popup' ); ?>"><?php echo WDP_Svg_Icons::get_counter_icon_minus_svg(); ?></button>
-				<input type="number" name="quantity" value="1" min="1" max="99" readonly>
+				<input type="number" name="quantity" value="1" min="1" max="99" readonly aria-label="<?php echo esc_attr__( 'Quantity', 'woo-donation-popup' ); ?>">
 				<button type="button" class="wdp-product-quantity-btn wdp-product-quantity-increase" aria-label="<?php echo esc_attr__( 'Increase', 'woo-donation-popup' ); ?>"><?php echo WDP_Svg_Icons::get_counter_icon_plus_svg(); ?></button>
 			</div>
 		</div>
@@ -695,7 +695,7 @@ class WDP_Form_Fields_Renderer {
 					<label><?php echo esc_html__( 'Number of shares', 'woo-donation-popup' ); ?>:</label>
 					<div class="wdp-share-counter">
 						<button type="button" class="wdp-share-btn wdp-share-btn-decrease" aria-label="<?php echo esc_attr__( 'Decrease', 'woo-donation-popup' ); ?>"><?php echo WDP_Svg_Icons::get_counter_icon_minus_svg(); ?></button>
-						<input type="number" name="share_count" value="1" min="1" max="<?php echo esc_attr( $max_shares ); ?>" readonly>
+						<input type="number" name="share_count" value="1" min="1" max="<?php echo esc_attr( $max_shares ); ?>" readonly aria-label="<?php echo esc_attr__( 'Number of shares', 'woo-donation-popup' ); ?>">
 						<button type="button" class="wdp-share-btn wdp-share-btn-increase" aria-label="<?php echo esc_attr__( 'Increase', 'woo-donation-popup' ); ?>"><?php echo WDP_Svg_Icons::get_counter_icon_plus_svg(); ?></button>
 					</div>
 				</div>
