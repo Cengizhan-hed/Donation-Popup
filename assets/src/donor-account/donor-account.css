@@ -58,7 +58,7 @@ html.dp-ac-lock { overflow: hidden; }
 .dp-ac__field { margin-block-end: 14px; }
 .dp-ac__field label { display: block; margin-block-end: 6px; font-weight: 650; font-size: .9375rem; }
 .dp-ac__input { display: block; inline-size: 100%; min-block-size: 48px; padding: 10px 14px; border: 1.5px solid var(--ac-border-strong); border-radius: var(--ac-radius); background: var(--ac-surface); color: var(--ac-text); font: inherit; font-size: 1rem; }
-.dp-ac__input:focus { border-color: var(--ac-strong); box-shadow: var(--ac-ring); }
+.dp-ac__input:focus, .dp-ac__input:focus-visible { border-color: var(--ac-strong); box-shadow: 0 0 0 3px color-mix(in oklab, var(--ac-strong) 28%, transparent); }
 .dp-ac__input[aria-invalid="true"] { border-color: var(--ac-danger); }
 .dp-ac__fielderr { margin: 6px 0 0; color: var(--ac-danger); font-size: .875rem; }
 .dp-ac__error { margin-block-end: 14px; padding: 12px 14px; border-radius: var(--ac-radius); background: color-mix(in oklab, var(--ac-danger) 10%, var(--ac-surface)); color: var(--ac-danger); font-weight: 600; font-size: .9375rem; }
@@ -82,7 +82,7 @@ html.dp-ac-lock { overflow: hidden; }
 .dp-ac__card { display: grid; gap: 8px; padding: 16px; border: 1px solid var(--ac-border); border-radius: calc(var(--ac-radius) * 1.2); background: var(--ac-surface); }
 .dp-ac__card-main { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
 .dp-ac__card-title { margin: 0; font-size: 1.0625rem; font-weight: 700; line-height: 1.35; }
-.dp-ac__card-amt { font-weight: 800; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.dp-ac__card-amt { font-size: 1.125rem; font-weight: 800; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .dp-ac__card-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0; }
 .dp-ac__tag { padding: 3px 10px; border-radius: 99px; background: var(--ac-soft); color: var(--ac-strong); font-size: .8125rem; font-weight: 650; }
 .dp-ac__tag--status { background: var(--ac-surface-2); color: var(--ac-text); }
@@ -91,7 +91,7 @@ html.dp-ac-lock { overflow: hidden; }
 .dp-ac__date { color: var(--ac-muted); font-size: .875rem; margin-inline-start: auto; }
 .dp-ac__detail { color: var(--ac-muted); }
 .dp-ac__card-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-block-start: 4px; }
-.dp-ac__card-actions .dp-ac__btn { flex: 1 1 140px; }
+.dp-ac__card-actions .dp-ac__btn { flex: 1 1 150px; white-space: nowrap; }
 .dp-ac__more { margin-block-start: 16px; inline-size: 100%; }
 .dp-ac__empty { padding: 32px 16px; text-align: center; border: 1px dashed var(--ac-border-strong); border-radius: calc(var(--ac-radius) * 1.2); }
 .dp-ac__empty h3 { margin: 0 0 6px; }

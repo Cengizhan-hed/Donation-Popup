@@ -11,7 +11,7 @@
 .dp-thanks__row + .dp-thanks__row { margin-block-start: var(--dp-space-3); }
 .dp-thanks__row--total { padding-block-start: var(--dp-space-3); border-block-start: 1px solid var(--dp-color-border); }
 .dp-thanks__project { min-inline-size: 0; overflow-wrap: anywhere; }
-.dp-thanks__amount { font-size: var(--dp-fs-lg); white-space: nowrap; }
+.dp-thanks__amount { font-size: var(--dp-fs-xl, var(--dp-fs-lg)); font-weight: var(--dp-fw-bold); letter-spacing: -.02em; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .dp-thanks .dp-impact { margin-block-start: var(--dp-space-4); }
 .dp-thanks .dp-thanks__order { margin-block-start: var(--dp-space-3); font-size: var(--dp-fs-sm); }
 .dp-thanks__actions { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--dp-space-3); }
