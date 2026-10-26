@@ -492,6 +492,8 @@ Kaynak rehber: `docs/AYARLAR.md`. Teknik varsayılanlar normalizer / placement /
 | `npm run ship:staging` | güvenli zincir + `e2e:quick --open-report` | `scripts/ship-staging.mjs` |
 | Rsync dışlama | `.distignore` tek kaynak (`pack-excludes.mjs`) | `scripts/lib/pack-excludes.mjs` |
 
+E8M paket içeriği: `.distignore` ayrıca `test-results/`, `playwright-report/`, `blob-report/`, `coverage/`, `build/`, `.cursor*`, `.claude*`, `.env*`, `.last-run.json` dışlar (Plugin Check hidden_files bulgusu). Kanıt: `npm run test:package` (`tests/unit/js/package-contents.test.mjs`; zip'i üretir, sahte `test-results/.last-run.json` koyup izinli kök/uzantı listesine, gizli/geliştirme dosyası yokluğuna ve < 5 MB'a bakar); `verify`'a bağlı. Çıktı `build/woo-donation-popup.zip`. `docs/` WordPress.org paketine girmez (yalnız readme.txt + README.md); belgeler depoda kalır.
+
 ### Kod kalitesi araçları
 
 Yalnız geliştirme bağımlılığı. Dağıtım ZIP’ine ve hiçbir siteye girmez (`.distignore` + `package-wp-plugin.sh` prune; birim test `tests/unit/js/lint-pack.test.mjs`).
@@ -701,7 +703,7 @@ Eklenti `checkout_url` / `cart_url` PHP: `wc_get_checkout_url()` / `wc_get_cart_
 | 3 | Misafir için `WDP_Security::check_capability('read')` her zaman true (`includes/class-security.php:240-244`); `run_secured_ajax` varsayılan `$capability='read'` (`includes/traits/trait-wdp-ajax-base.php:90-96`) — uç listesi aşağıda | `includes/class-security.php:240-244` |
 | 4 | `wdp_render_modal` sunucu maliyeti / nonce’suz → CLAUDE durum notuyla uyumlu gözlem | `includes/class-lazy-modal.php`, `includes/traits/trait-wdp-assets-registry.php` |
 | 5 | Uninstall 10.33.0’da açık ürün meta listesi + önek; sipariş/HPOS hâlâ dokunulmaz (bilinçli) | `includes/class-uninstall.php` |
-| 6 | Deprecated `wdp_get_product_name` hâlâ kayıtlı; taslak/özel/şifreli/gizli ürün `validate_product_id` ile kapatıldı | `includes/class-ajax.php:53-55`, `includes/class-security.php:131-167` |
+| 6 | Deprecated `wdp_get_product_name` hâlâ kayıtlı; taslak/özel/bekleyen/şifreli ürün `validate_product_id` ile kapatıldı; katalogda gizli ama yayında ürün kabul edilir (E8M, REST ile aynı kural; `tests/e2e/specs/experiences-legacy-hidden.spec.mjs`) | `includes/class-ajax.php:53-55`, `includes/class-security.php:131-167` |
 | 7 | Legacy nopriv `wdp_render_donation_button` 10.33.0’da kaldırıldı; PHP `wdp_render_donation_button()` yardımcısı duruyor | `includes/bootstrap/class-legacy-frontend.php` |
 | 8 | `pack` script DEST’te `tools/` yokken yeniden build denemesi → uyarıya düşebilir; asıl bundle `npm run build` ile gelir | `scripts/package-wp-plugin.sh:66-78` + `.distignore:37` |
 | 9 | Boş / noop catch ve `.catch(() => {})` envanteri (düzeltme yok) — alt tablo | grep `includes/`, `templates/`, `blocks/`, `assets/js/src/` |
