@@ -552,7 +552,11 @@ export function listWdpAjaxFromIncludes(includesDir) {
   };
 }
 
-export const ALLOWED_WDP_NOPRIV_AJAX = new Set(listWdpAjaxFromIncludes().nopriv);
+/**
+ * 12.0.0: ön yüz AJAX uçları kaldırıldı (includes/ artık `wp_ajax_nopriv_wdp_*` içermez). Liste donmuş sözleşme olarak kalır
+ * (emekli adlar; sunucuda uç yok, izin vermek zararsız); yeni ziyaretçi uçları REST `donation-panel/v1` altındadır.
+ */
+export const ALLOWED_WDP_NOPRIV_AJAX = new Set(EXPECTED_WDP_NOPRIV_AJAX);
 
 /**
  * Profil `remoteReadOnlyPostActions` — yalnız eklenebilir; kod kuralı değişmez.

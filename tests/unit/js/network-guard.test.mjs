@@ -376,9 +376,9 @@ describe('uzak POST varsayılan-red', () => {
     assert.equal(key.includes('?'), false);
   });
 
-  it('includes/ nopriv listesi tam ve yönetici uçları uzakta RED', () => {
+  it('12.0.0: includes/ artık ziyaretçi (nopriv) AJAX içermez; emekli liste donmuş, yönetici uçları uzakta RED', () => {
     const { nopriv, adminOnly } = listWdpAjaxFromIncludes(path.join(ROOT, 'includes'));
-    assert.deepEqual(nopriv, [...EXPECTED_WDP_NOPRIV_AJAX]);
+    assert.deepEqual(nopriv, []);
     for (const n of EXPECTED_WDP_NOPRIV_AJAX) {
       assert.equal(isWdpAjaxAction(n), true, n);
       assert.equal(

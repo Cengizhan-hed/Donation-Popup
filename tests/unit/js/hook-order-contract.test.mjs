@@ -60,7 +60,7 @@ describe('kanca sırası sözleşmesi (yerel WP)', { skip: !HAVE && 'yerel WP yo
     assert.equal(e.filters.wdp_convert_amount, 100);
     assert.equal(e.filters.module_enabled, true);
     assert.equal(e.classes.plugin, true);
-    assert.equal(e.legacy_launched, false, 'eski çekirdek 20 öncesi başlamamalı');
+    assert.equal(e.legacy_launched, false, 'modüller 20 öncesi başlamamalı');
   });
 
   it('(a2) plugins_loaded 15: eski çekirdek henüz başlamadı (kanca sırası 20), fatal yok', () => {

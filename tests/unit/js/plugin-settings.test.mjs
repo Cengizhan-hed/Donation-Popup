@@ -38,10 +38,10 @@ function fakeEval(log, prev = PREV) {
 
 describe('plugin-settings: allowlist ve değerler', () => {
   it('geçerli çiftleri ayrıştırır ve tiplendirir', () => {
-    assert.deepEqual(parseSetSpec('modules.side_cart=1,modules.campaign=off,experiences.engine=new,admin.ui=legacy'), {
+    assert.deepEqual(parseSetSpec('modules.side_cart=1,modules.campaign=off,modules.impact=on,admin.ui=legacy'), {
       'modules.side_cart': true,
       'modules.campaign': false,
-      'experiences.engine': 'new',
+      'modules.impact': true,
       'admin.ui': 'legacy',
     });
   });
@@ -59,7 +59,7 @@ describe('plugin-settings: allowlist ve değerler', () => {
   });
 
   it('geçersiz değerler reddedilir', () => {
-    assert.throws(() => normalizeValue('experiences.engine', 'x'), /geçersiz/);
+    assert.throws(() => normalizeValue('admin.ui', 'x'), /geçersiz/);
     assert.throws(() => normalizeValue('modules.thanks', 'belki'), /geçersiz/);
     assert.throws(() => normalizeValue('thanks.message', 'a\u0000b'), /denetim/);
     assert.throws(() => parseSetSpec('modules.thanks'), /Geçersiz çift/);
@@ -135,7 +135,7 @@ describe('plugin-settings: dry-run, yedek, restore', () => {
     const res = runPluginSettings({
       envId: 'ikram-aid',
       op: 'set',
-      values: { 'modules.side_cart': '1', 'experiences.engine': 'new' },
+      values: { 'modules.side_cart': '1', 'modules.impact': '1' },
       runEval: (p) => { if (p.op === 'set') order += 'set;'; return fakeEval(log)(p); },
       writeFile: (p, d) => { order += 'backup;'; files[p] = JSON.parse(d); },
       now: new Date('2026-10-26T09:30:00Z'),
@@ -148,7 +148,7 @@ describe('plugin-settings: dry-run, yedek, restore', () => {
     assert.equal(b.option_name, 'donation_panel_settings');
     assert.equal(b.env, 'ikram-aid');
     assert.deepEqual(Object.keys(b.previous).sort(), Object.keys(ALLOWLIST).sort());
-    assert.deepEqual(b.requested, { 'modules.side_cart': true, 'experiences.engine': 'new' });
+    assert.deepEqual(b.requested, { 'modules.side_cart': true, 'modules.impact': true });
     assert.ok(res.table.some((l) => l.startsWith('modules.side_cart') && l.includes('DEĞİŞTİ')));
   });
 
@@ -193,7 +193,7 @@ describe('plugin-settings: yerel WP kanıtı', { skip: !WP_LOADED }, () => {
 
   it('gerçek değişiklik + geri yükleme; yasak/bilinmeyen anahtar yazmaz', () => {
     const before = show();
-    const dry = run('--set', 'modules.side_cart=1,experiences.engine=new', '--dry-run');
+    const dry = run('--set', 'modules.side_cart=1,modules.impact=1', '--dry-run');
     assert.equal(dry.status, 0, dry.stderr);
     assert.deepEqual(show(), before, 'dry-run yazmamalı');
 
@@ -201,7 +201,7 @@ describe('plugin-settings: yerel WP kanıtı', { skip: !WP_LOADED }, () => {
     assert.notEqual(bad.status, 0);
     assert.deepEqual(show(), before);
 
-    const set = run('--set', 'modules.side_cart=1,modules.thanks=1,experiences.engine=new,admin.ui=new,tax_relief.title=Test Baslik');
+    const set = run('--set', 'modules.side_cart=1,modules.thanks=1,modules.impact=1,admin.ui=new,tax_relief.title=Test Baslik');
     assert.equal(set.status, 0, set.stderr);
     const backupLine = set.stdout.split('\n').find((l) => l.startsWith('Yedek: '));
     assert.ok(backupLine, 'yedek yolu yazılmalı');
@@ -209,7 +209,7 @@ describe('plugin-settings: yerel WP kanıtı', { skip: !WP_LOADED }, () => {
     try {
       const after = show();
       assert.deepEqual(after['modules.side_cart'], { present: true, value: true });
-      assert.deepEqual(after['experiences.engine'], { present: true, value: 'new' });
+      assert.deepEqual(after['modules.impact'], { present: true, value: true });
       assert.deepEqual(after['tax_relief.title'], { present: true, value: 'Test Baslik' });
       const rest = run('--restore', backupFile);
       assert.equal(rest.status, 0, rest.stderr);

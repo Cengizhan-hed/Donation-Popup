@@ -41,7 +41,6 @@ describe('test:affected örnek diff', () => {
     const r = computeAffected(['src/Privacy/class-privacy-tools.php'], ctx);
     assert.ok(r.e2e.has('e2e:experiences'));
     assert.ok(r.phpunit.files.has('tests/unit/Privacy/PrivacyToolsTest.php'));
-    assert.ok(r.phpunit.files.has('tests/unit/Privacy/RenderModalNonceTest.php'));
     assert.equal(r.phpunit.all, false);
   });
 
