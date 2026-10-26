@@ -434,6 +434,55 @@ final class E5DonorAccountTest extends TestCase {
 		$this->assertStringContainsString( 'dp-ac__empty', Account_Renderer::donations( array() ) );
 	}
 
+	public function test_status_tone_and_video_url_filtering(): void {
+		$this->assertSame( 'ok', Donation_History::tone( 'completed' ) );
+		$this->assertSame( 'ok', Donation_History::tone( 'processing' ) );
+		$this->assertSame( 'wait', Donation_History::tone( 'on-hold' ) );
+		$this->assertSame( 'bad', Donation_History::tone( 'cancelled' ) );
+		$order = new E5Order( 1, 7, 'a@example.test', array() );
+		$this->assertSame( '', Donation_History::video_url( $order ), 'meta yoksa video yok' );
+	}
+
+	public function test_card_shows_pill_progress_and_instant_repeat_only_when_possible(): void {
+		$row  = array(
+			'order_id'    => 1,
+			'project'     => 'Su Kuyusu',
+			'amount_html' => '1.000',
+			'status'      => 'completed',
+			'status_text' => 'Tamamlandı',
+			'tone'        => 'ok',
+			'receipt_url' => 'https://example.test/r/1/',
+			'repeat_url'  => 'https://example.test/?p=12',
+			'video_url'   => 'https://example.test/v/1',
+			'campaign'    => 62.0,
+			'product_id'  => 12,
+			'amount'      => 1000.0,
+			'can_repeat'  => true,
+			'date'        => '2 Ekim',
+		);
+		$html = Account_Renderer::donations( array( $row ) );
+		$this->assertStringContainsString( 'dp-ac__pill--ok', $html );
+		$this->assertStringContainsString( 'dp-ac__progress', $html );
+		$this->assertStringContainsString( 'data-dp-acc-video', $html );
+		$this->assertStringContainsString( 'data-product="12" data-amount="1000"', $html );
+		$row['can_repeat'] = false;
+		$row['video_url']  = '';
+		$row['campaign']   = null;
+		$plain             = Account_Renderer::donations( array( $row ) );
+		$this->assertStringNotContainsString( 'data-product=', $plain, 'para birimi farklıysa anında tekrar yok; bağlantı ürün sayfasına gider' );
+		$this->assertStringNotContainsString( 'data-dp-acc-video', $plain );
+		$this->assertStringNotContainsString( 'dp-ac__progress', $plain );
+	}
+
+	public function test_dialog_has_accessible_tabs_password_toggle_and_remember(): void {
+		$html = Account_Renderer::dialog( array( 'rest' => 'https://e.test/' ), true );
+		$this->assertStringContainsString( 'role="tablist"', $html );
+		$this->assertStringContainsString( 'aria-selected="true"', $html );
+		$this->assertStringContainsString( 'data-dp-acc-reveal', $html );
+		$this->assertStringContainsString( 'data-dp-acc-remember', $html );
+		$this->assertStringContainsString( 'id="dp-ac-password"', $html );
+	}
+
 	// ---- REST ----
 
 	public function test_write_endpoints_reject_missing_nonce(): void {
