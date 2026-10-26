@@ -38,8 +38,7 @@ function buildZip() {
     .split('\n').filter(Boolean);
 }
 
-test('paket: yalniz izinli desenler, gizli/gelistirme dosyasi yok', () => {
-  const entries = buildZip();
+function checkEntries(entries) {
   const files = entries.filter((e) => !e.endsWith('/')).map((e) => e.replace(/^woo-donation-popup\//, ''));
   assert.ok(files.includes('woo-donation-popup.php'));
   assert.ok(files.includes('readme.txt'));
@@ -61,9 +60,37 @@ test('paket: yalniz izinli desenler, gizli/gelistirme dosyasi yok', () => {
     if (f.startsWith('assets/src/')) bad.push(`kaynak: ${f}`);
   }
   assert.deepEqual(bad, []);
+  return files;
+}
+
+test('paket: yalniz izinli desenler, gizli/gelistirme dosyasi yok', () => {
+  checkEntries(buildZip());
 });
 
 test('paket: boyut makul (< 5 MB)', () => {
   const size = fs.statSync(ZIP).size;
   assert.ok(size < 5 * 1024 * 1024, `zip ${size} bayt`);
+});
+
+// --- E8T: `wp dist-archive` (npm run pack:dist) ciktisi icin ayni kurallar. Arac kurulu degilse atlanir.
+const DIST_ZIP = path.join(ROOT, 'build/dist/woo-donation-popup.zip');
+const DIST_READY = fs.existsSync(path.join(ROOT, 'build/wpcli-packages/vendor/wp-cli/dist-archive-command'));
+
+function buildDistZip() {
+  execFileSync('node', ['scripts/pack-dist.mjs'], { cwd: ROOT, stdio: 'ignore' });
+  return execFileSync('unzip', ['-Z1', DIST_ZIP], { encoding: 'utf8' }).split('\n').filter(Boolean);
+}
+
+test('dist-archive paketi: yalniz izinli desenler, gizli/gelistirme dosyasi yok', { skip: !DIST_READY && 'dist-archive-command kurulu degil (node scripts/pack-dist.mjs --install)' }, () => {
+  const files = checkEntries(buildDistZip());
+  assert.ok(files.includes('woo-donation-popup.php'));
+  assert.ok(fs.statSync(DIST_ZIP).size < 5 * 1024 * 1024);
+});
+
+// Bilinen fark (RAPOR-E8T): dist-archive `/assets/src/` desenini sabitlemez, assets/css/src ve assets/js/src'yi de dislar.
+// Pakette `build/` deseni bundle'lari da dislar -> katmanli on yuz kaynaklari pakette kalmaz. Duzelince todo kalkar.
+test('dist-archive paketi: assets/css/src + assets/js/src katmanli kaynaklari var', { todo: 'dist-archive .distignore eslesmesi', skip: !DIST_READY && 'arac yok' }, () => {
+  const files = buildDistZip().map((e) => e.replace(/^woo-donation-popup\//, ''));
+  assert.ok(files.some((f) => f.startsWith('assets/css/src/')));
+  assert.ok(files.some((f) => f.startsWith('assets/js/src/')));
 });

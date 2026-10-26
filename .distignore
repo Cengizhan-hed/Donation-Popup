@@ -43,6 +43,7 @@ phpcs-src.xml.dist
 phpstan.neon
 phpstan.verify.neon
 phpstan.dead.neon
+psalm-taint.xml
 rector.php
 eslint.config.mjs
 .stylelintrc.json

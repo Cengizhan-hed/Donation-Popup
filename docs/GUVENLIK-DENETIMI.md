@@ -32,3 +32,20 @@ Risk: Y yüksek, O orta, D düşük. Durum: Düzeltildi (test var), Kabul (gerek
 
 ## Eklenen testler (`tests/unit/E8/E8ESecurityTest.php`, 14 test)
 Gizli ürün tespiti (taslak/özel/bekleyen/gizli; yönetici hariç; yok ürün), varsayılan sağlayıcılar, progress/impact/donations/stats 404, e-posta başına sınır (6 farklı IP, 3 gönderim, aynı yanıt), IP sınırı 429, nonce'suz yazan uç 403 + üye ucu girişsiz, `cart/add` 415, kaynakta `__return_true` yok + her rotada `permission_callback`, yönetici AJAX işleyicilerinin hepsi koruma çağırıyor.
+
+## Statik analiz (Psalm taint + Semgrep) — E8T, 2026-10-26
+Araçlar yalnız geliştirme (pakete/siteye girmez). `npm run analyse:security` iki aracı koşar, bulguları `tools/security-baseline/baseline-security.json` tabanıyla (satır numarasından bağımsız parmak izi) karşılaştırır; **taban dışı yeni bulgu → çıkış 1**. `verify` zincirine bağlı. Tabanı yeniden yazma: `npm run analyse:security -- --write-baseline` (yalnız yanlış pozitif gerekçesi bu bölüme yazıldıktan sonra). Kurulum: Psalm `npm run test:install` (composer), Semgrep `npm run security:install` (proje içi `build/semgrep-venv`).
+
+**Psalm 6.19.2, yalnız taint** (`psalm-taint.xml`, kapsam `src/` + `includes/`; genel Psalm hataları sessiz). WordPress için kendi taint stub'larımız `tools/psalm/wp-taint-stubs.php`: `esc_*`, `wp_kses*`, `sanitize_*`, `absint`, `wc_clean` temizleyici; `$wpdb->prepare` SQL temizleyici, `$wpdb->query/get_*` SQL çıkışı; `WP_REST_Request::get_param/get_*params/get_body/get_header` kaynak; `wp_redirect` header çıkışı. `$_GET/_POST/_REQUEST/_COOKIE/_SERVER` Psalm'ın kendi kaynağı. **Kanarya** (`tests/security/psalm-canary/`): bilinen 4 kötü örnek (HTML, SQL, REST, yönlendirme) bulunmazsa ya da temiz örnekte bulgu çıkarsa betik kırmızı olur; yani stub'lar sessizce bozulamaz.
+Sınırlar: Psalm yalnız doğrudan akışları izler (görünmeyen sınıf özellikleri, `apply_filters` ve saklı veri/`get_post_meta` kaynak sayılmaz); `include` ile şablonlara geçen değişkenler izlenmez (şablonlar Semgrep + elle okuma kapsamında).
+
+**Semgrep 1.179.0** (resmi PyPI, 2026-10-02), `--metrics=off --disable-version-check`, kurallar yerel dosya: `tools/security-baseline/semgrep-rules/p-php.yaml` (24 kural) + `p-security-audit.yaml` (225 kural), kaynak `semgrep.dev/c/p/php` ve `p/security-audit` (2026-10-26 indirildi; Semgrep Rules License v1.0, yalnız dahili kullanım). Kapsam: `src includes templates blocks assets/js woo-donation-popup.php uninstall.php` (209 dosya). Hesap/giriş yok. Not: ağır JS kuralları yük altında ara sıra zaman aşımı uyarısı verebilir (bulguyu gizlemez, uyarı olarak yazılır).
+
+| # | Araç | Kural | Dosya:satır | Değerlendirme |
+|---|---|---|---|---|
+| 1 | Psalm | TaintedHtml | `includes/class-utils.php:382` (`error_log( print_r( $message, true ) )`; kaynak `Exception::getTraceAsString`) | **Yanlış pozitif**: Psalm `error_log` çıktısını HTML çıkışı sayar; günlük satırı tarayıcıya yazılmaz, yalnız sunucu günlüğüne. Taban |
+| 2 | Semgrep | echoed-request | `includes/class-form-matrix.php:110` (`add_query_arg(...)` bağlantısı) | **Yanlış pozitif**: değerler `esc_url`/`esc_html` ile kaçışlı, yalnız yönetici ekranı. Taban |
+| 3 | Semgrep | echoed-request | `includes/class-form-matrix.php:128` (`esc_attr( $style )`, `$style` tam sayıdan türer) | **Yanlış pozitif**. Taban |
+| 4 | Semgrep | echoed-request | `src/Modules/DonorAccount/class-donor-account-module.php:277` (`echo $html`) | **Yanlış pozitif**: HTML `Account_Renderer`'da kaçışlanır (satırda `phpcs:ignore` gerekçesi var). Taban (not: `echo $html` desenli bir sarmalayıcı `wp_kses_post` ile daha kanıtlanabilir olur, Faz 8 sonrası iyileştirme önerisi) |
+
+Sonuç: **gerçek bulgu 0**, 4 yanlış pozitif tabanda. Yeni kodda her yeni bulgu kırmızı. Doğrulama: boş tabanla koşunca 4 bulgu "YENİ" görünür ve çıkış kodu 1 olur (kırmızı yol kanıtlı).

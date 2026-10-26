@@ -1,0 +1,48 @@
+<?xml version="1.0"?>
+<!--
+  Psalm: YALNIZ taint (güvenlik akışı) analizi. Genel Psalm hataları bu yapılandırmada yok sayılır.
+  Çalıştırma: npm run analyse:security  (psalm taint modu)
+  Yalnız geliştirme; pakete girmez.
+-->
+<psalm
+    errorLevel="8"
+    resolveFromConfigFile="true"
+    findUnusedBaselineEntry="false"
+    findUnusedCode="false"
+    findUnusedPsalmSuppress="false"
+    cacheDirectory="build/lint/psalm-cache"
+    phpVersion="8.2"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="https://getpsalm.org/schema/config"
+    xsi:schemaLocation="https://getpsalm.org/schema/config vendor-dev/vimeo/psalm/config.xsd"
+>
+    <projectFiles>
+        <directory name="src" />
+        <directory name="includes" />
+        <ignoreFiles allowMissingFiles="true">
+            <directory name="vendor-dev" />
+            <directory name="vendor" />
+        </ignoreFiles>
+    </projectFiles>
+
+    <stubs>
+        <file name="vendor-dev/php-stubs/wordpress-stubs/wordpress-stubs.php" />
+        <file name="vendor-dev/php-stubs/woocommerce-stubs/woocommerce-stubs.php" />
+        <file name="tools/psalm/wp-taint-stubs.php" />
+    </stubs>
+
+    <globals>
+        <var name="wpdb" type="wpdb" />
+    </globals>
+
+    <issueHandlers>
+        <!-- Taint dışı her şey sessiz; yalnız Tainted* türleri görünür. -->
+        <UndefinedFunction errorLevel="suppress" />
+        <UndefinedClass errorLevel="suppress" />
+        <UndefinedConstant errorLevel="suppress" />
+        <UndefinedGlobalVariable errorLevel="suppress" />
+        <UndefinedMethod errorLevel="suppress" />
+        <UndefinedInterfaceMethod errorLevel="suppress" />
+        <MissingFile errorLevel="suppress" />
+    </issueHandlers>
+</psalm>

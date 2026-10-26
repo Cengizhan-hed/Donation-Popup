@@ -1,0 +1,29 @@
+{
+ "generated": "2026-10-26",
+ "entries": [
+  {
+   "tool": "psalm",
+   "rule": "TaintedHtml",
+   "file": "includes/class-utils.php",
+   "fp": "psalm|TaintedHtml|includes/class-utils.php|418fa0d3110a"
+  },
+  {
+   "tool": "semgrep",
+   "rule": "echoed-request",
+   "file": "includes/class-form-matrix.php",
+   "fp": "semgrep|echoed-request|includes/class-form-matrix.php|427d2991a17b"
+  },
+  {
+   "tool": "semgrep",
+   "rule": "echoed-request",
+   "file": "includes/class-form-matrix.php",
+   "fp": "semgrep|echoed-request|includes/class-form-matrix.php|56eeea398ad9"
+  },
+  {
+   "tool": "semgrep",
+   "rule": "echoed-request",
+   "file": "src/Modules/DonorAccount/class-donor-account-module.php",
+   "fp": "semgrep|echoed-request|src/Modules/DonorAccount/class-donor-account-module.php|32e2e39fe3cd"
+  }
+ ]
+}
