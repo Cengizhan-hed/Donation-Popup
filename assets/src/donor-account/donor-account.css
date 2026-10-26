@@ -57,7 +57,7 @@ html.dp-ac-lock { overflow: hidden; }
 .dp-ac__guard .dp-ac__ico { inline-size: 22px; block-size: 22px; margin-block-start: 1px; color: var(--dp-color-primary-strong); }
 
 /* Bağışlarım paneli */
-.dp-ac--page { display: flex; flex-direction: column; gap: 14px; margin-block: 8px; padding: 0; background: var(--dpx-warm); border-radius: var(--dpx-r-card); overflow: hidden; }
+.dp-ac--page { display: flex; flex-direction: column; gap: 14px; margin-block: 8px; padding: 0 0 20px; background: var(--dpx-warm); border-radius: var(--dpx-r-card); overflow: hidden; }
 .dp-ac__hero { display: flex; flex-direction: column; gap: 16px; padding: 22px 20px 26px; background: var(--dp-color-primary); color: var(--dp-color-on-primary, #fff); }
 .dp-ac__hero-user { display: flex; align-items: center; gap: 12px; }
 .dp-ac__avatar { display: grid; place-items: center; inline-size: 48px; block-size: 48px; border-radius: 50%; background: rgb(255 255 255 / .16); font-size: 1.0625rem; font-weight: 800; }
