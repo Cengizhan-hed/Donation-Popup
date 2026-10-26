@@ -107,6 +107,134 @@ class Settings {
 					'default' => '',
 				),
 			),
+			'design' => array(
+				'colors' => array(
+					'type'    => 'string',
+					'default' => 'theme',
+				),
+				'brand' => array(
+					'type'    => 'string',
+					'default' => '',
+				),
+				'accent' => array(
+					'type'    => 'string',
+					'default' => '',
+				),
+				'button_text' => array(
+					'type'    => 'string',
+					'default' => '',
+				),
+			),
+			'display' => array(
+				'mode' => array(
+					'type'    => 'string',
+					'default' => 'panel',
+				),
+			),
+			'form' => array(
+				'presets_enabled' => array(
+					'type'    => 'bool',
+					'default' => false,
+				),
+				'presets' => array(
+					'type'    => 'string',
+					'default' => '',
+				),
+				'donor_email' => array(
+					'type'    => 'bool',
+					'default' => false,
+				),
+				'dedication' => array(
+					'type'    => 'bool',
+					'default' => false,
+				),
+				'dedication_label' => array(
+					'type'    => 'string',
+					'default' => '',
+				),
+				'anonymous' => array(
+					'type'    => 'bool',
+					'default' => false,
+				),
+				'multi_step' => array(
+					'type'    => 'bool',
+					'default' => false,
+				),
+				'trust_enabled' => array(
+					'type'    => 'bool',
+					'default' => false,
+				),
+				'trust_text' => array(
+					'type'    => 'string',
+					'default' => '',
+				),
+				'privacy_notice' => array(
+					'type'    => 'bool',
+					'default' => false,
+				),
+				'privacy_text' => array(
+					'type'    => 'string',
+					'default' => '',
+				),
+				'privacy_url' => array(
+					'type'    => 'string',
+					'default' => '',
+				),
+			),
+			'shares' => array(
+				'header_text' => array(
+					'type'    => 'string',
+					'default' => '',
+				),
+				'copy_button' => array(
+					'type'    => 'bool',
+					'default' => false,
+				),
+				'email' => array(
+					'type'    => 'bool',
+					'default' => false,
+				),
+			),
+			'placement' => array(
+				'auto_place' => array(
+					'type'    => 'bool',
+					'default' => true,
+				),
+				'position' => array(
+					'type'    => 'string',
+					'default' => 'replace_cart',
+				),
+				'hide_price' => array(
+					'type'    => 'bool',
+					'default' => true,
+				),
+				'show_title' => array(
+					'type'    => 'bool',
+					'default' => false,
+				),
+				'loop_button' => array(
+					'type'    => 'string',
+					'default' => 'panel',
+				),
+				'scope' => array(
+					'type'    => 'string',
+					'default' => 'all',
+				),
+				'categories' => array(
+					'type'    => 'string',
+					'default' => '',
+				),
+			),
+			'checkout' => array(
+				'addon_product_id' => array(
+					'type'    => 'int',
+					'default' => 0,
+				),
+				'addon_label' => array(
+					'type'    => 'string',
+					'default' => '',
+				),
+			),
 			'experiences' => array(
 				'engine' => array(
 					'type'    => 'string',
@@ -121,6 +249,10 @@ class Settings {
 				'wizard' => array(
 					'type'    => 'string',
 					'default' => '',
+				),
+				'wizard_step' => array(
+					'type'    => 'int',
+					'default' => 1,
 				),
 			),
 		);

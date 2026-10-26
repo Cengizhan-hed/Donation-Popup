@@ -233,13 +233,9 @@ final class Plugin {
 		$registry = $this->container->get( Module_Registry::class );
 		$registry->boot( $this->container );
 
-		// Ekran geçişi (E8Q): küçük sınıf, yalnız yönetim alanında; admin.ui değerinden bağımsız.
-		if ( is_admin() ) {
-			\DonationPanel\Admin\Ui_Switch::init();
-		}
-
-		// Yeni yönetici ekranı (E7): yalnız yönetim alanında ve `admin.ui = new` iken sınıf yüklenir.
-		if ( is_admin() && Settings::admin_ui_is_new() ) {
+		// Tek yönetici menüsü + yönetici REST uçları: yalnız yönetim alanında ya da yönetici REST isteğinde yüklenir.
+		$uri = isset( $_SERVER['REQUEST_URI'] ) ? rawurldecode( (string) wp_unslash( $_SERVER['REQUEST_URI'] ) ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- yalnız alt dize karşılaştırması.
+		if ( is_admin() || false !== strpos( $uri, 'donation-panel/v1/admin' ) ) {
 			\DonationPanel\Admin\Admin_Bootstrap::init( $this->container, $this->plugin_dir, $this->plugin_url );
 		}
 
