@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Bağış Paneli genel bakış</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#12305A}a:hover{color:#0B1F3B}
+</style>
+</helmet>
+<div style="width: 1280px; height: 800px; overflow: hidden; display: flex; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; color: #14213D; background: #F3F4F6">
+<nav aria-label="Yönetim menüsü" style="width: 200px; background: #1D2327; color: #F0F0F1; display: flex; flex-direction: column; padding-top: 12px; font-size: 13.5px; flex: none">
+<a href="#" style="padding: 9px 14px; color: #C3C4C7; text-decoration: none">Başlangıç</a>
+<a href="#" style="padding: 9px 14px; color: #C3C4C7; text-decoration: none">Yazılar</a>
+<a href="#" style="padding: 9px 14px; color: #C3C4C7; text-decoration: none">Sayfalar</a>
+<a href="#" style="padding: 9px 14px; color: #C3C4C7; text-decoration: none">WooCommerce</a>
+<a href="#" style="padding: 9px 14px; color: #C3C4C7; text-decoration: none">Ürünler</a>
+<a href="#" style="padding: 10px 14px; background: {{brand}}; color: #FFFFFF; font-weight: 700; text-decoration: none; display: flex; align-items: center; gap: 8px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"></path></svg>Bağış Paneli</a>
+<div style="background: #2C3338; display: flex; flex-direction: column; padding: 6px 0">
+<a href="#" style="padding: 7px 14px 7px 38px; color: #FFFFFF; font-weight: 700; text-decoration: none">Genel Bakış</a>
+<a href="#" style="padding: 7px 14px 7px 38px; color: #C3C4C7; text-decoration: none">Kampanyalar</a>
+<a href="#" style="padding: 7px 14px 7px 38px; color: #C3C4C7; text-decoration: none">Formlar ve Görünüm</a>
+<a href="#" style="padding: 7px 14px 7px 38px; color: #C3C4C7; text-decoration: none">Sepet ve Ödeme</a>
+<a href="#" style="padding: 7px 14px 7px 38px; color: #C3C4C7; text-decoration: none">Bağışçı Hesabı</a>
+<a href="#" style="padding: 7px 14px 7px 38px; color: #C3C4C7; text-decoration: none">Gizlilik</a>
+<a href="#" style="padding: 7px 14px 7px 38px; color: #C3C4C7; text-decoration: none">Araçlar</a>
+<a href="#" style="padding: 7px 14px 7px 38px; color: #C3C4C7; text-decoration: none">Rehber</a>
+</div>
+<a href="#" style="padding: 9px 14px; color: #C3C4C7; text-decoration: none">Görünüm</a>
+<a href="#" style="padding: 9px 14px; color: #C3C4C7; text-decoration: none">Eklentiler</a>
+<a href="#" style="padding: 9px 14px; color: #C3C4C7; text-decoration: none">Ayarlar</a>
+</nav>
+<main style="flex: 1; padding: 28px 36px; display: flex; flex-direction: column; gap: 20px; overflow: hidden">
+<div style="display: flex; align-items: center; justify-content: space-between">
+<div style="display: flex; flex-direction: column; gap: 4px"><h1 style="margin: 0; font-size: 26px; font-weight: 800">Bağış Paneli</h1><span style="font-size: 14px; color: #50575E">Bağış deneyiminizin tamamı tek yerde.</span></div>
+<a href="#" style="height: 44px; padding: 0 16px; border-radius: 12px; border: 1.5px solid #C3C4C7; background: #FFFFFF; display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; color: #14213D; text-decoration: none"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#14213D" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6V14M12 17h.01"></path></svg>Rehber</a>
+</div>
+<div style="background: #FFFFFF; border-radius: 18px; padding: 20px 22px; display: flex; align-items: center; gap: 22px; box-shadow: 0 1px 2px rgba(0,0,0,0.05)">
+<div style="width: 64px; height: 64px; border-radius: 32px; background: conic-gradient({{brand}} 0 67%, #E6E9EE 67% 100%); display: flex; align-items: center; justify-content: center; flex: none"><span style="width: 50px; height: 50px; border-radius: 25px; background: #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 800">4/6</span></div>
+<div style="flex: 1; display: flex; flex-direction: column; gap: 4px"><span style="font-size: 16px; font-weight: 800">Kurulum neredeyse tamam</span><span style="font-size: 13.5px; color: #50575E">Kalan adımlar: gizlilik sayfasını bağla, ilk kampanyanı oluştur.</span></div>
+<a href="#" style="height: 46px; padding: 0 18px; border-radius: 12px; background: {{accent}}; color: #FFFFFF; display: flex; align-items: center; font-size: 14px; font-weight: 700; text-decoration: none">Sihirbaza devam et</a>
+</div>
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px; flex: 1; min-height: 0">
+<section style="background: #FFFFFF; border-radius: 18px; padding: 20px 22px; display: flex; flex-direction: column; gap: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.05)">
+<h2 style="margin: 0 0 8px; font-size: 16px; font-weight: 800">Modüller</h2>
+<label style="display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 10px 0; border-bottom: 1px solid #F0F0F1"><span style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 14px; font-weight: 700">Kampanya ve ilerleme çubukları</span><span style="font-size: 12.5px; color: #50575E">Hedef, toplanan tutar ve kalan gün</span></span><span style="width: 44px; height: 26px; border-radius: 13px; background: {{brand}}; position: relative; display: block; flex: none"><span style="position: absolute; top: 3px; right: 3px; width: 20px; height: 20px; border-radius: 10px; background: #FFFFFF; display: block"></span></span></label>
+<label style="display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 10px 0; border-bottom: 1px solid #F0F0F1"><span style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 14px; font-weight: 700">Etki ifadeleri</span><span style="font-size: 12.5px; color: #50575E">Tutarların ne işe yarayacağını gösterir</span></span><span style="width: 44px; height: 26px; border-radius: 13px; background: {{brand}}; position: relative; display: block; flex: none"><span style="position: absolute; top: 3px; right: 3px; width: 20px; height: 20px; border-radius: 10px; background: #FFFFFF; display: block"></span></span></label>
+<label style="display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 10px 0; border-bottom: 1px solid #F0F0F1"><span style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 14px; font-weight: 700">Yan sepet</span><span style="font-size: 12.5px; color: #50575E">Birden fazla bağışı tek seferde tamamlama</span></span><span style="width: 44px; height: 26px; border-radius: 13px; background: {{brand}}; position: relative; display: block; flex: none"><span style="position: absolute; top: 3px; right: 3px; width: 20px; height: 20px; border-radius: 10px; background: #FFFFFF; display: block"></span></span></label>
+<label style="display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 10px 0; border-bottom: 1px solid #F0F0F1"><span style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 14px; font-weight: 700">Bağışçı hesabı</span><span style="font-size: 12.5px; color: #50575E">Giriş, kayıt ve Bağışlarım paneli</span></span><span style="width: 44px; height: 26px; border-radius: 13px; background: #C3C4C7; position: relative; display: block; flex: none"><span style="position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 10px; background: #FFFFFF; display: block"></span></span></label>
+<label style="display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 10px 0"><span style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 14px; font-weight: 700">Sosyal kanıt</span><span style="font-size: 12.5px; color: #50575E">Gerçek bağışçı sayısı, kişi bilgisi olmadan</span></span><span style="width: 44px; height: 26px; border-radius: 13px; background: #C3C4C7; position: relative; display: block; flex: none"><span style="position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 10px; background: #FFFFFF; display: block"></span></span></label>
+</section>
+<section style="background: #FFFFFF; border-radius: 18px; padding: 20px 22px; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.05)">
+<h2 style="margin: 0; font-size: 16px; font-weight: 800">Durum</h2>
+<div style="display: flex; gap: 10px; align-items: center; font-size: 13.5px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1E6B45" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>Ödeme sayfası hazır</div>
+<div style="display: flex; gap: 10px; align-items: center; font-size: 13.5px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1E6B45" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>Para birimi: Türk lirası (₺)</div>
+<div style="display: flex; gap: 10px; align-items: center; font-size: 13.5px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1E6B45" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>12 bağış ürünü yayında</div>
+<div style="display: flex; gap: 10px; align-items: flex-start; font-size: 13.5px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9A4A00" stroke-width="2.2" stroke-linecap="round" aria-hidden="true" style="flex: none"><path d="M12 8v5M12 16.5h.01"></path><circle cx="12" cy="12" r="9"></circle></svg><span>Gizlilik sayfası bağlı değil · <a href="#" style="font-weight: 600">Bağla</a></span></div>
+</section>
+</div>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#C2511C"},"brand":{"editor":"color","default":"#12305A"},"$preview":{"width":1280,"height":800}}'>
+class Component extends DCLogic {
+renderVals() {
+return { accent: this.props.accent ?? '#C2511C', brand: this.props.brand ?? '#12305A' };
+}
+}
+</script>
+</body>
+</html>

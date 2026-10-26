@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Tutar seçimi</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#12305A}a:hover{color:#0B1F3B}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; position: relative; overflow: hidden; background: #2A3142; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; color: #14213D">
+<div style="position: absolute; top: 0; left: 0; right: 0; height: 120px; padding: 20px 20px 0; box-sizing: border-box; color: #C9CFDB; font-size: 13px">Ürün sayfası (arka plan, karartılmış)</div>
+<div style="position: absolute; top: 52px; left: 0; right: 0; bottom: 0; background: #FFFFFF; border-radius: 28px 28px 0 0; display: flex; flex-direction: column; box-shadow: 0 -12px 40px rgba(10,20,40,0.25)">
+<div style="display: flex; justify-content: center; padding-top: 10px"><span style="width: 44px; height: 5px; border-radius: 3px; background: #D5D9E0; display: block"></span></div>
+<div style="padding: 10px 20px 0; display: flex; align-items: center; justify-content: space-between; gap: 12px">
+<div style="display: flex; flex-direction: column; gap: 2px">
+<span style="font-size: 12px; font-weight: 600; color: #5B6475; letter-spacing: 0.04em">ADIM 1 / 2</span>
+<h1 style="margin: 0; font-size: 21px; font-weight: 800; line-height: 1.2">Su Kuyusu Kampanyası</h1>
+</div>
+<button aria-label="Kapat" style="width: 44px; height: 44px; border-radius: 22px; border: 0; background: #F1F3F6; display: flex; align-items: center; justify-content: center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#14213D" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+</div>
+<div style="padding: 0 20px; flex: 1; overflow: hidden; display: flex; flex-direction: column; gap: 16px; margin-top: 14px">
+<div style="height: 112px; border-radius: 18px; background: #E9E2D8; display: flex; align-items: flex-end; padding: 12px; box-sizing: border-box">
+<span style="font-size: 12px; font-weight: 600; color: #5A4E3E; background: rgba(255,255,255,0.85); padding: 4px 10px; border-radius: 999px">Kampanya görseli</span>
+</div>
+<div style="display: flex; flex-direction: column; gap: 8px">
+<div style="display: flex; align-items: baseline; justify-content: space-between">
+<span style="font-size: 20px; font-weight: 800; font-variant-numeric: tabular-nums">₺184.500 <span style="font-size: 13px; font-weight: 500; color: #5B6475">toplandı</span></span>
+<span style="font-size: 14px; font-weight: 700; color: #12305A">%62</span>
+</div>
+<div style="height: 10px; border-radius: 5px; background: #EDE7DF; overflow: hidden"><div style="width: 62%; height: 100%; border-radius: 5px; background: {{brand}}"></div></div>
+<div style="display: flex; gap: 14px; font-size: 12.5px; color: #5B6475"><span>Hedef ₺300.000</span><span>412 bağışçı</span><span>18 gün kaldı</span></div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 10px">
+<span style="font-size: 14px; font-weight: 700">Bağış tutarı</span>
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px">
+<button style="text-align: left; min-height: 68px; padding: 12px 14px; border-radius: 16px; border: 1.5px solid #DDE1E7; background: #FFFFFF; font-family: inherit; color: #14213D; display: flex; flex-direction: column; gap: 3px"><span style="font-size: 18px; font-weight: 800">₺250</span><span style="font-size: 12px; color: #5B6475">1 aileye 1 ay su</span></button>
+<button style="text-align: left; min-height: 68px; padding: 12px 14px; border-radius: 16px; border: 1.5px solid #DDE1E7; background: #FFFFFF; font-family: inherit; color: #14213D; display: flex; flex-direction: column; gap: 3px"><span style="font-size: 18px; font-weight: 800">₺500</span><span style="font-size: 12px; color: #5B6475">5 kişiye 6 ay su</span></button>
+<button style="text-align: left; min-height: 68px; padding: 12px 14px; border-radius: 16px; border: 2px solid {{brand}}; background: #EEF3FA; font-family: inherit; color: #14213D; display: flex; flex-direction: column; gap: 3px; position: relative"><span style="position: absolute; top: -9px; right: 10px; font-size: 10.5px; font-weight: 700; color: #FFFFFF; background: {{brand}}; padding: 2px 8px; border-radius: 999px">EN ÇOK SEÇİLEN</span><span style="font-size: 18px; font-weight: 800">₺1.000</span><span style="font-size: 12px; color: #3E4A5E">Bir ailenin yıllık suyu</span></button>
+<button style="text-align: left; min-height: 68px; padding: 12px 14px; border-radius: 16px; border: 1.5px solid #DDE1E7; background: #FFFFFF; font-family: inherit; color: #14213D; display: flex; flex-direction: column; gap: 3px"><span style="font-size: 18px; font-weight: 800">₺2.500</span><span style="font-size: 12px; color: #5B6475">Kuyuya büyük katkı</span></button>
+</div>
+<label style="display: flex; align-items: center; gap: 10px; min-height: 50px; padding: 0 14px; border-radius: 14px; border: 1.5px dashed #C8CED8; font-size: 14px; color: #5B6475">
+<span style="font-weight: 700; color: #14213D">₺</span>
+<input type="text" inputmode="numeric" placeholder="Başka bir tutar yazın" style="border: 0; outline: none; font-family: inherit; font-size: 15px; flex: 1; background: transparent; color: #14213D">
+</label>
+</div>
+<label style="display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 48px; font-size: 14px">
+<span style="display: flex; flex-direction: column"><span style="font-weight: 600">Birinin adına bağışla</span><span style="font-size: 12px; color: #5B6475">İthaf notu ekleyin</span></span>
+<span style="width: 46px; height: 28px; border-radius: 14px; background: #DDE1E7; position: relative; display: block"><span style="position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 11px; background: #FFFFFF; box-shadow: 0 1px 3px rgba(0,0,0,0.2); display: block"></span></span>
+</label>
+</div>
+<div style="padding: 14px 20px 22px; border-top: 1px solid #EEF0F3; display: flex; flex-direction: column; gap: 10px; background: #FFFFFF">
+<div style="display: flex; justify-content: space-between; font-size: 14px"><span style="color: #5B6475">Toplam</span><span style="font-weight: 800; font-size: 16px">₺1.000</span></div>
+<button style="height: 56px; border-radius: 16px; border: 0; background: {{accent}}; color: #FFFFFF; font-family: inherit; font-size: 16px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px">Devam et<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></button>
+<div style="display: flex; justify-content: center; align-items: center; gap: 6px; font-size: 12px; color: #5B6475"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5B6475" stroke-width="2" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3"></path></svg>Güvenli ödeme · Bilgileriniz şifrelenir</div>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#C2511C"},"brand":{"editor":"color","default":"#12305A"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return { accent: this.props.accent ?? '#C2511C', brand: this.props.brand ?? '#12305A' };
+}
+}
+</script>
+</body>
+</html>

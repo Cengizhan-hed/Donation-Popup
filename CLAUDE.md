@@ -2,6 +2,12 @@
 
 Her oturumun başında oku. Kullanıcıyla **Türkçe** konuş. Bu dosya tek kaynaktır; ayrıntı docs/MIMARI.md (kod/altyapı) ve docs/AYAR-TURU-NOTLARI.md (kararlar/notlar).
 
+## -1. YENİ YÖN (2026-10-26; SÜRÜM 12.0.0; bu bölüm §22'deki "11.1/12.0 aşamalı geçiş" ve "eski deneyim bir sürüm kalır" kararlarını İPTAL eder; her şeyin üstündedir)
+- **Test sitelerinde (staging30, Ikram) yalnız yeni olan çalışır; eski olan her şey kaldırılır.** Eski motor, eski yönetici ekranı, "klasik ekrana dön"/"yeni deneyimi aç" geçişleri, `includes/` altındaki eski kod/şablon/varlık tamamen silinir. Yeni deneyim her kurulumda (yeni ve güncellenen) tek deneyimdir. Hedef: eski koddan kalan satır 0.
+- **Canlı Hedef'e kurulumu kullanıcı zip'ten yapar.** Veri göçü (idempotent, kayıp 0) ve dışa açık kısa kod/kanca/meta anahtarı sözleşmesi korunur (tek uyumluluk dosyası, sözleşme testleri); eski kod, eski ekran, eski motor korunmaz.
+- **Tek menü:** üst düzey "Bağış Paneli"; WooCommerce altında eklenti girişi yok. **Onaylı tasarım bağlayıcıdır:** `dev/design/approved/` (10 ekran + TASARIM-SPEC.md) birebir uygulanır; eski görünümü koruyan baseline'lar silinir, yenileri uygulama tasarımla karşılaştırılıp onaylanınca üretilir.
+- **Kampanya toplamları:** göçte bağışçının gördüğü hiçbir toplam değişmez (saklanan toplam = "devreden tutar"); yeniden hesaplama yalnız ürün bazında, önizlemeli, yönetici onayıyla; toplu/otomatik yok.
+
 ## 0. GLOBAL İLKE (en üst kural; 2026-10-25) — tüm kuralların üstündedir
 - **Eklenti hiçbir temayı, sayfa oluşturucuyu ya da eklentiyi tanımaz.** Elementor'a, Avada'ya, Divi'ye ya da başka bir tema/eklentiye özel kod, element, widget, CSS ya da tespit yazılmaz. Her şey WordPress ve WooCommerce standartlarıyla yapılır.
 - **Giriş yolları yalnız:** kısa kod (her sayfa oluşturucu çalıştırır), blok (WP standardı), WooCommerce standart kancalarıyla otomatik yerleşim, kancalar çalışmazsa eklentinin kendi yedek düğmesi. Kısa kod ve blok `id` verilmezse bulunduğu ürünü kendisi bulur.

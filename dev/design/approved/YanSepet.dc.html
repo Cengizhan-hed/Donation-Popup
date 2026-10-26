@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Yan sepet</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#12305A}a:hover{color:#0B1F3B}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; position: relative; overflow: hidden; background: #2A3142; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; color: #14213D">
+<aside aria-label="Bağış sepeti" style="position: absolute; top: 0; bottom: 0; right: 0; width: 356px; background: #FFFFFF; display: flex; flex-direction: column; box-shadow: -12px 0 40px rgba(10,20,40,0.3)">
+<div style="padding: 20px 18px 14px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #EEF0F3">
+<div style="display: flex; flex-direction: column; gap: 2px"><h2 style="margin: 0; font-size: 20px; font-weight: 800">Bağış sepetiniz</h2><span style="font-size: 12.5px; color: #5B6475">3 bağış</span></div>
+<button aria-label="Kapat" style="width: 44px; height: 44px; border-radius: 22px; border: 0; background: #F1F3F6; display: flex; align-items: center; justify-content: center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#14213D" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+</div>
+<div style="padding: 14px 18px; display: flex; flex-direction: column; gap: 12px; flex: 1">
+<div style="display: flex; gap: 12px; align-items: center">
+<div style="width: 56px; height: 56px; border-radius: 14px; background: #E9E2D8; flex: none"></div>
+<div style="flex: 1; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 14px; font-weight: 700">Adak Kurbanı</span><span style="font-size: 12px; color: #5B6475">2 hisse · Ahmet Yılmaz adına</span></div>
+<span style="font-size: 15px; font-weight: 800">₺12.000</span>
+</div>
+<div style="display: flex; gap: 12px; align-items: center">
+<div style="width: 56px; height: 56px; border-radius: 14px; background: #DCE3EC; flex: none"></div>
+<div style="flex: 1; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 14px; font-weight: 700">Su Kuyusu Kampanyası</span><span style="font-size: 12px; color: #5B6475">Tek seferlik</span></div>
+<span style="font-size: 15px; font-weight: 800">₺1.000</span>
+</div>
+<div style="display: flex; gap: 12px; align-items: center">
+<div style="width: 56px; height: 56px; border-radius: 14px; background: #E5E8DA; flex: none"></div>
+<div style="flex: 1; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 14px; font-weight: 700">Genel Bağış</span><span style="font-size: 12px; color: #5B6475">İhtiyaç olan yere</span></div>
+<span style="font-size: 15px; font-weight: 800">₺500</span>
+</div>
+<div style="margin-top: 6px; padding: 14px; border-radius: 16px; background: #F6F2EC; display: flex; flex-direction: column; gap: 10px">
+<span style="font-size: 13px; font-weight: 700">Bağışınıza eklemek ister misiniz?</span>
+<div style="display: flex; align-items: center; gap: 10px">
+<div style="flex: 1; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 14px; font-weight: 600">Sadaka</span><span style="font-size: 12px; color: #5B6475">Küçük bir katkı, büyük bir dua</span></div>
+<button style="height: 44px; padding: 0 14px; border-radius: 12px; border: 1.5px solid {{brand}}; background: #FFFFFF; color: {{brand}}; font-family: inherit; font-size: 14px; font-weight: 700">+ ₺50</button>
+</div>
+</div>
+</div>
+<div style="padding: 16px 18px 24px; border-top: 1px solid #EEF0F3; display: flex; flex-direction: column; gap: 10px">
+<div style="display: flex; justify-content: space-between; align-items: baseline"><span style="font-size: 14px; color: #5B6475">Toplam</span><span style="font-size: 22px; font-weight: 800">₺13.500</span></div>
+<button style="height: 56px; border-radius: 16px; border: 0; background: {{accent}}; color: #FFFFFF; font-family: inherit; font-size: 16px; font-weight: 700">Bağışı tamamla</button>
+<button style="height: 44px; border: 0; background: transparent; color: #14213D; font-family: inherit; font-size: 14px; font-weight: 600; text-decoration: underline">Başka bağış ekle</button>
+</div>
+</aside>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#C2511C"},"brand":{"editor":"color","default":"#12305A"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return { accent: this.props.accent ?? '#C2511C', brand: this.props.brand ?? '#12305A' };
+}
+}
+</script>
+</body>
+</html>
