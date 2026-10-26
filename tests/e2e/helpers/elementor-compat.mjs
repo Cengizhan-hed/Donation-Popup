@@ -346,6 +346,8 @@ async function scenarioCartWidget(page, ctx) {
 
 /** 3) Checkout widget sayfası — alan doldurma/gönderme YOK. */
 async function scenarioCheckoutWidget(page, ctx) {
+  // Boş sepetle ödeme sayfası sepete yönlenir: önce sepette bağış olmalı.
+  await ensureDonationInCart(page, ctx);
   const resp = await visit(page, ctx, ctx.paths.checkout);
   if (await page.evaluate(() => !!document.querySelector('.woocommerce-coming-soon, [class*="coming-soon"], [id*="coming-soon"]'))) {
     throw new ScenarioSkip('Ödeme sayfası coming soon engelinde: site yayına açılınca koşar');
@@ -353,7 +355,7 @@ async function scenarioCheckoutWidget(page, ctx) {
   if (!(await hasMarker(page, ELEMENTOR_MARKERS.checkout))) {
     throw new ScenarioSkip(missingTemplateMessage('Checkout (ödeme)') + (resp ? ` (HTTP ${resp.status()})` : ''));
   }
-  const amount = await ensureDonationInCart(page, ctx);
+  const amount = ctx.state.amount;
   ctx.errors.reset();
   await visit(page, ctx, ctx.paths.checkout);
   await page

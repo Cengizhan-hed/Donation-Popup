@@ -11,48 +11,65 @@
  * Taklit edilenler: ürün şablonu sarmalayıcısı, Cart/Checkout/My Account widget sarmalayıcıları, Menu Cart widget'ı
  * (aç/kapa, sayaç, `woocommerce_add_to_cart_fragments` parçası). Başlıkta eklentinin kısa kodları da yer alır.
  */
+/**
+ * Sayfa türüne göre Elementor işaret sınıfları (taklit).
+ *
+ * @return array{0:string,1:string} Tür ve sınıflar.
+ */
+function wdp_elsim_markers() {
+	$type = 'wp-page';
+	$cls  = 'elementor';
+	if ( function_exists( 'is_product' ) && is_product() ) {
+		$type = 'product';
+		$cls .= ' elementor-location-single';
+	} elseif ( function_exists( 'is_cart' ) && is_cart() ) {
+		$cls .= ' elementor-widget-woocommerce-cart';
+	} elseif ( function_exists( 'is_checkout' ) && is_checkout() ) {
+		$cls .= ' elementor-widget-woocommerce-checkout-page';
+	} elseif ( function_exists( 'is_account_page' ) && is_account_page() ) {
+		$cls .= ' elementor-widget-woocommerce-my-account';
+	}
+	return array( $type, $cls );
+}
+
+/**
+ * Simülasyon bu istekte açık mı?
+ *
+ * @return bool
+ */
+function wdp_elsim_active() {
+	// phpcs:ignore WordPress.Security.NonceVerification
+	if ( isset( $_GET['dp_elsim'] ) && '0' === $_GET['dp_elsim'] ) {
+		return false;
+	}
+	return ! is_admin() && ! wp_doing_ajax() && ! ( defined( 'REST_REQUEST' ) && REST_REQUEST );
+}
+
+// Başlık (kısa kodlar wp_footer'dan ÖNCE çalışsın ki betik/pencere doğru yazılsın) + sarmalayıcı açılışı.
 add_action(
-	'template_redirect',
+	'wp_body_open',
 	static function () {
-		// phpcs:disable WordPress.Security.NonceVerification
-		if ( isset( $_GET['dp_elsim'] ) && '0' === $_GET['dp_elsim'] ) {
+		if ( ! wdp_elsim_active() ) {
 			return;
 		}
-		if ( wp_doing_ajax() || ( defined( 'REST_REQUEST' ) && REST_REQUEST ) || isset( $_GET['wc-ajax'] ) || isset( $_GET['dp_sc_add'] ) || isset( $_GET['dp_da_seed'] ) ) {
-			return;
-		}
-		// phpcs:enable
-		ob_start(
-			static function ( $html ) {
-				if ( false === stripos( (string) $html, '<body' ) ) {
-					return $html;
-				}
-				$type = 'wp-page';
-				$cls  = 'elementor';
-				if ( function_exists( 'is_product' ) && is_product() ) {
-					$type = 'product';
-					$cls .= ' elementor-location-single';
-				} elseif ( function_exists( 'is_cart' ) && is_cart() ) {
-					$cls .= ' elementor-widget-woocommerce-cart';
-				} elseif ( function_exists( 'is_checkout' ) && is_checkout() ) {
-					$cls .= ' elementor-widget-woocommerce-checkout-page';
-				} elseif ( function_exists( 'is_account_page' ) && is_account_page() ) {
-					$cls .= ' elementor-widget-woocommerce-my-account';
-				}
-				$count  = ( function_exists( 'WC' ) && WC()->cart ) ? (int) WC()->cart->get_cart_contents_count() : 0;
-				$header = '<header style="display:flex;justify-content:space-between;align-items:center;padding:8px 16px;gap:8px">'
-					. '<b>Site</b>'
-					. do_shortcode( '[donation_panel_side_cart]' )
-					. do_shortcode( '[donation_panel_account]' )
-					. wdp_elsim_menu_cart( $count )
-					. '</header>';
-				$open   = '<div data-elementor-type="' . esc_attr( $type ) . '" class="' . esc_attr( $cls ) . '">';
-				$html   = preg_replace( '/(<body[^>]*>)/i', '$1' . str_replace( '$', '\\$', $header . $open ), (string) $html, 1 );
-				return preg_replace( '#</body>#i', '</div></body>', (string) $html, 1 );
-			}
-		);
+		list( $type, $cls ) = wdp_elsim_markers();
+		$count              = ( function_exists( 'WC' ) && WC()->cart ) ? (int) WC()->cart->get_cart_contents_count() : 0;
+		echo '<header style="display:flex;justify-content:space-between;align-items:center;padding:8px 16px;gap:8px"><b>Site</b>'; // phpcs:ignore
+		echo do_shortcode( '[donation_panel_side_cart]' ); // phpcs:ignore
+		echo do_shortcode( '[donation_panel_account]' ); // phpcs:ignore
+		echo wdp_elsim_menu_cart( $count ); // phpcs:ignore
+		echo '</header><div data-elementor-type="' . esc_attr( $type ) . '" class="' . esc_attr( $cls ) . '">'; // phpcs:ignore
 	},
-	0
+	1
+);
+add_action(
+	'wp_footer',
+	static function () {
+		if ( wdp_elsim_active() ) {
+			echo '</div>';
+		}
+	},
+	99999
 );
 
 /**
