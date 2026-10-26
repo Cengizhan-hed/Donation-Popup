@@ -11,6 +11,9 @@
 
 namespace DonationPanel\WooCommerce;
 
+use DonationPanel\Domain\Addon_Settings;
+use DonationPanel\Domain\Progress_Currency;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -95,7 +98,7 @@ final class Addon_Line {
 			return __( 'The add-on donation could not be added to the cart.', 'woo-donation-popup' );
 		}
 		$parent_id = (int) $product->get_id();
-		$addon_id  = (int) \WDP_Utils::resolve_addon_wc_product_id( $product );
+		$addon_id  = (int) Addon_Settings::resolve_addon_wc_product_id( $product );
 		if ( $addon_id <= 0 ) {
 			return __( 'Add-on donation WooCommerce product was not found. Enter a valid product ID in Success & Mini Cart or the product settings.', 'woo-donation-popup' );
 		}
@@ -107,9 +110,9 @@ final class Addon_Line {
 		}
 
 		$item = self::cart_item_data( $parent_id, $addon_id, $main_data, $amount, $submission, $parent_key );
-		if ( class_exists( 'WDP_Progress_Currency' ) ) {
+		if ( class_exists( 'DonationPanel\\Domain\\Progress_Currency' ) ) {
 			// Ek satırın tutarı da bağışçının yazdığı birimdedir (etkin birim); ana satırla aynı damga.
-			$active = \WDP_Progress_Currency::get_active_currency();
+			$active = Progress_Currency::get_active_currency();
 			if ( '' !== $active ) {
 				$item['wdp_input_currency'] = $active;
 			}

@@ -10,6 +10,8 @@
 
 namespace DonationPanel\Modules\Experiences;
 
+use DonationPanel\Domain\Product_Context;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -29,8 +31,8 @@ final class Form_Context {
 		}
 
 		$legacy = array();
-		if ( class_exists( 'WDP_Donation_Product_Context_Service' ) ) {
-			$legacy = \WDP_Donation_Product_Context_Service::build_form_context( $product );
+		if ( class_exists( 'DonationPanel\\Domain\\Product_Context' ) ) {
+			$legacy = Product_Context::build_form_context( $product );
 		}
 		return self::from_legacy( is_array( $legacy ) ? $legacy : array(), $product );
 	}
@@ -127,7 +129,7 @@ final class Form_Context {
 
 	/**
 	 * Bağış türü: hisseli > hedefli kampanya > bağışçı belirler (serbest tutar) > sabit tutar.
-	 * Eski ürün bayraklarından türetilir (`WDP_Donation_Type::infer_from_flags` ile aynı öncelik).
+	 * Eski ürün bayraklarından türetilir (`Donation_Type::infer_from_flags` ile aynı öncelik).
 	 *
 	 * @param array<string, mixed> $legacy       Eski bağlam.
 	 * @param bool                 $allow_custom Serbest tutar mı.

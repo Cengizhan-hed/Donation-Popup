@@ -10,6 +10,10 @@
 
 namespace DonationPanel\Modules\Campaign;
 
+use DonationPanel\Domain\Campaign_Goal;
+use DonationPanel\Domain\Campaign_Totals;
+use DonationPanel\Domain\Progress_Currency;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -30,23 +34,23 @@ final class Progress_Data {
 	 */
 	public static function for_product( $product_id ) {
 		$product_id = absint( $product_id );
-		if ( $product_id < 1 || ! class_exists( 'WDP_Campaign_Goal' ) || ! \WDP_Campaign_Goal::is_campaign_product( $product_id ) ) {
+		if ( $product_id < 1 || ! class_exists( 'DonationPanel\\Domain\\Campaign_Goal' ) || ! Campaign_Goal::is_campaign_product( $product_id ) ) {
 			return null;
 		}
-		$goal = \WDP_Campaign_Goal::resolve_goal_amount( $product_id );
+		$goal = Campaign_Goal::resolve_goal_amount( $product_id );
 		if ( $goal <= 0 ) {
 			return null;
 		}
 
-		$currency  = class_exists( 'WDP_Progress_Currency' ) ? \WDP_Progress_Currency::get_active_currency() : '';
+		$currency  = class_exists( 'DonationPanel\\Domain\\Progress_Currency' ) ? Progress_Currency::get_active_currency() : '';
 		$cache_key = 'dp_progress_' . $product_id . '_' . $currency;
 		$cached    = get_transient( $cache_key );
 		if ( is_array( $cached ) ) {
 			return $cached;
 		}
 
-		$raised = \WDP_Campaign_Goal::get_confirmed_total( $product_id );
-		$donors = class_exists( 'WDP_Utils' ) ? (int) \WDP_Utils::get_donor_count( $product_id ) : 0;
+		$raised = Campaign_Goal::get_confirmed_total( $product_id );
+		$donors = class_exists( 'WDP_Utils' ) ? (int) Campaign_Totals::get_donor_count( $product_id ) : 0;
 		$data   = self::build(
 			array(
 				'product_id' => $product_id,
@@ -54,7 +58,7 @@ final class Progress_Data {
 				'goal'       => $goal,
 				'donors'     => $donors,
 				'milestones' => Milestones::for_product( $product_id ),
-				'reached'    => \WDP_Campaign_Goal::is_goal_reached( $product_id ),
+				'reached'    => Campaign_Goal::is_goal_reached( $product_id ),
 				'decimals'   => function_exists( 'wc_get_price_decimals' ) ? (int) wc_get_price_decimals() : 2,
 				'symbol'     => function_exists( 'get_woocommerce_currency_symbol' ) ? html_entity_decode( (string) get_woocommerce_currency_symbol(), ENT_QUOTES, 'UTF-8' ) : '',
 				'currency'   => $currency,
@@ -100,8 +104,8 @@ final class Progress_Data {
 	 * @return float
 	 */
 	private static function display_amount( $amount ) {
-		if ( class_exists( 'WDP_Progress_Currency' ) ) {
-			return (float) \WDP_Progress_Currency::from_store_amount( $amount );
+		if ( class_exists( 'DonationPanel\\Domain\\Progress_Currency' ) ) {
+			return (float) Progress_Currency::from_store_amount( $amount );
 		}
 		return (float) $amount;
 	}

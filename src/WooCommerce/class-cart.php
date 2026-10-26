@@ -13,6 +13,8 @@
 
 namespace DonationPanel\WooCommerce;
 
+use DonationPanel\Domain\Campaign_Goal;
+use DonationPanel\Domain\Progress_Currency;
 use DonationPanel\Modules\Experiences\Field_Validator;
 
 defined( 'ABSPATH' ) || exit;
@@ -191,9 +193,9 @@ final class Cart {
 			$extra['wdp_base_unit_price'] = Cart_Data::with_fee( (float) $model['unit_price'], $fee_percent, $decimals );
 		}
 		$item = Cart_Data::cart_item_data( $donation_data, $custom, $product_id, $submission, $type, $extra );
-		if ( isset( $item['custom_price'] ) && class_exists( 'WDP_Progress_Currency' ) ) {
-			// Yazılan tutarın birimi: sepet fiyatı ana birime çevrilir, gösterim bu birimde kalır (WDP_Cart::apply_custom_price_to_cart).
-			$active = \WDP_Progress_Currency::get_active_currency();
+		if ( isset( $item['custom_price'] ) && class_exists( 'DonationPanel\\Domain\\Progress_Currency' ) ) {
+			// Yazılan tutarın birimi: sepet fiyatı ana birime çevrilir, gösterim bu birimde kalır (Cart_Hooks::apply_custom_price_to_cart).
+			$active = Progress_Currency::get_active_currency();
 			if ( '' !== $active ) {
 				$item['wdp_input_currency'] = $active;
 			}
@@ -250,9 +252,9 @@ final class Cart {
 			'message' => '',
 			'errors'  => array(),
 		);
-		if ( class_exists( 'WDP_Campaign_Goal' ) ) {
+		if ( class_exists( 'DonationPanel\\Domain\\Campaign_Goal' ) ) {
 			try {
-				\WDP_Campaign_Goal::assert_accepts_donation( $product );
+				Campaign_Goal::assert_accepts_donation( $product );
 			} catch ( \Exception $e ) {
 				return array(
 					'message' => $e->getMessage(),
@@ -260,9 +262,9 @@ final class Cart {
 				);
 			}
 		}
-		if ( ! empty( $model['allow_custom'] ) && class_exists( 'WDP_Cart' ) ) {
+		if ( ! empty( $model['allow_custom'] ) && class_exists( 'DonationPanel\\WooCommerce\\Cart_Hooks' ) ) {
 			$min   = method_exists( $product, 'get_meta' ) ? $product->get_meta( '_min_custom_price' ) : '';
-			$error = (string) \WDP_Cart::get_donation_amount_error( $amount, $min, (int) $product->get_id(), true );
+			$error = (string) Cart_Hooks::get_donation_amount_error( $amount, $min, (int) $product->get_id(), true );
 			if ( '' !== $error ) {
 				return array(
 					'message' => $error,
@@ -274,15 +276,15 @@ final class Cart {
 	}
 
 	/**
-	 * Eski sepet doğrulamaları "eklentinin kendi akışı" bayrağını okur (`WDP_Cart::is_ajax_add_to_cart_flow`);
-	 * bayrak `WDP_Cart::run_in_plugin_flow` ile yalnız `add_to_cart` süresince açılır (`$_POST` değiştirilmez).
+	 * Eski sepet doğrulamaları "eklentinin kendi akışı" bayrağını okur (`Cart_Hooks::is_ajax_add_to_cart_flow`);
+	 * bayrak `Cart_Hooks::run_in_plugin_flow` ile yalnız `add_to_cart` süresince açılır (`$_POST` değiştirilmez).
 	 *
 	 * @param callable $callback Sepete ekleme çağrısı.
 	 * @return mixed
 	 */
 	private function with_plugin_flow( $callback ) {
-		if ( class_exists( 'WDP_Cart' ) && method_exists( 'WDP_Cart', 'run_in_plugin_flow' ) ) {
-			return \WDP_Cart::run_in_plugin_flow( $callback );
+		if ( class_exists( 'DonationPanel\\WooCommerce\\Cart_Hooks' ) && method_exists( 'DonationPanel\\WooCommerce\\Cart_Hooks', 'run_in_plugin_flow' ) ) {
+			return Cart_Hooks::run_in_plugin_flow( $callback );
 		}
 		return call_user_func( $callback );
 	}

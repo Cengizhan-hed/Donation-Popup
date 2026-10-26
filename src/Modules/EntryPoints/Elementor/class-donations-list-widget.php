@@ -7,6 +7,8 @@
 
 namespace DonationPanel\Modules\EntryPoints\Elementor;
 
+use DonationPanel\Modules\EntryPoints\Donations_List;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -408,6 +410,6 @@ class Donations_List_Widget extends \Elementor\Widget_Base {
 	 * @return void
 	 */
 	protected function render() {
-		echo \WDP_Donations_List::shortcode( self::atts_from_settings( $this->get_settings_for_display() ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		echo Donations_List::shortcode( self::atts_from_settings( $this->get_settings_for_display() ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	}
 }

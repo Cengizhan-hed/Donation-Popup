@@ -7,6 +7,8 @@
 
 namespace DonationPanel\Modules\EntryPoints;
 
+use DonationPanel\Domain\Donation_Scope;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -32,10 +34,10 @@ class Fallback_Button {
 			return;
 		}
 		$product = Product_Resolver::current_product();
-		if ( ! $product || ! \WDP_Donation_Scope::is_donation_product( $product ) ) {
+		if ( ! $product || ! Donation_Scope::is_donation_product( $product ) ) {
 			return;
 		}
-		if ( \WDP_Render_Registry::has_product_ui( (int) $product->get_id() ) ) {
+		if ( Render_Registry::has_product_ui( (int) $product->get_id() ) ) {
 			return;
 		}
 		if ( ! Auto_Placement::should_auto_place( $product ) ) {
@@ -59,9 +61,9 @@ class Fallback_Button {
 		if ( ! $product ) {
 			return;
 		}
-		if ( \WDP_Render_Registry::has_product_ui( (int) $product->get_id() ) ) {
+		if ( Render_Registry::has_product_ui( (int) $product->get_id() ) ) {
 			if ( function_exists( 'current_user_can' ) && current_user_can( 'edit_products' ) ) {
-				echo \WDP_Render_Registry::duplicate_ui_notice( (int) $product->get_id() ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+				echo Render_Registry::duplicate_ui_notice( (int) $product->get_id() ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			}
 			return;
 		}
@@ -73,7 +75,7 @@ class Fallback_Button {
 	 */
 	public static function render_placed_form() {
 		echo '<div class="wdp-product-page-entry">'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-		echo \WDP_Render_Guard::html( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		echo Render_Guard::html( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			static function () {
 				return Auto_Placement::placed_markup();
 			},

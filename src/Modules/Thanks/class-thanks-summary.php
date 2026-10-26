@@ -9,6 +9,8 @@
 
 namespace DonationPanel\Modules\Thanks;
 
+use DonationPanel\Domain\Donation_Scope;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -36,9 +38,9 @@ final class Thanks_Summary {
 		if ( method_exists( $item, 'get_meta' ) && '' !== (string) $item->get_meta( '_custom_price', true ) ) {
 			return true;
 		}
-		if ( class_exists( 'WDP_Donation_Scope' ) && method_exists( $item, 'get_product' ) ) {
+		if ( class_exists( 'DonationPanel\\Domain\\Donation_Scope' ) && method_exists( $item, 'get_product' ) ) {
 			$product = $item->get_product();
-			return $product && \WDP_Donation_Scope::is_donation_product( $product );
+			return $product && Donation_Scope::is_donation_product( $product );
 		}
 		return false;
 	}

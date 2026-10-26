@@ -7,6 +7,11 @@
 
 namespace DonationPanel\Modules\EntryPoints;
 
+use DonationPanel\Domain\Button_Settings;
+use DonationPanel\Domain\Campaign_Goal;
+use DonationPanel\Domain\Donation_Scope;
+use DonationPanel\Support\Admin_Notice;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -23,7 +28,7 @@ class Shortcodes {
 		add_shortcode( 'wdp_donation_button', array( __CLASS__, 'donation_button_shortcode' ) );
 		add_shortcode( 'wdp_donation_button_panel', array( __CLASS__, 'donation_button_panel_shortcode' ) );
 		add_shortcode( 'wdp_donation_form', array( __CLASS__, 'donation_form_shortcode' ) );
-		add_shortcode( 'wdp_donations', array( 'WDP_Donations_List', 'shortcode' ) );
+		add_shortcode( 'wdp_donations', array( 'DonationPanel\\Modules\\EntryPoints\\Donations_List', 'shortcode' ) );
 	}
 
 	/**
@@ -33,7 +38,7 @@ class Shortcodes {
 	 * @return string
 	 */
 	public static function donation_button_shortcode( $atts ) {
-		return \WDP_Render_Guard::html(
+		return Render_Guard::html(
 			static function () use ( $atts ) {
 				return self::render_button( $atts, 'wdp_donation_button', 'popup' );
 			},
@@ -49,7 +54,7 @@ class Shortcodes {
 	 * @return string
 	 */
 	public static function donation_button_panel_shortcode( $atts ) {
-		return \WDP_Render_Guard::html(
+		return Render_Guard::html(
 			static function () use ( $atts ) {
 				return self::render_button( $atts, 'wdp_donation_button_panel', 'side_panel' );
 			},
@@ -65,7 +70,7 @@ class Shortcodes {
 	 * @return string
 	 */
 	public static function donation_form_shortcode( $atts ) {
-		return \WDP_Render_Guard::html(
+		return Render_Guard::html(
 			static function () use ( $atts ) {
 				return self::render_form( $atts );
 			},
@@ -123,12 +128,12 @@ class Shortcodes {
 
 		self::enqueue_front();
 
-		$button_settings = \WDP_Utils::normalize_legacy_popup_button_text(
+		$button_settings = Button_Settings::normalize_legacy_popup_button_text(
 			get_option( 'wdp_button_settings', array() )
 		);
 		$is_full_width   = isset( $button_settings['popup_button_full_width'] ) && '1' === $button_settings['popup_button_full_width'];
 		$is_side_panel   = ( 'side_panel' === $display_mode );
-		$modal_id        = \WDP_Render_Registry::modal_id( $product_id, $display_mode );
+		$modal_id        = Render_Registry::modal_id( $product_id, $display_mode );
 
 		$open_class     = $is_side_panel ? 'wdp-open-modal wdp-open-side-panel' : 'wdp-open-modal';
 		$button_classes = 'wdp-donate-button ' . $open_class . ' wdp-shortcode-trigger';
@@ -138,7 +143,7 @@ class Shortcodes {
 		if ( '' !== $custom_class ) {
 			$button_classes .= ' ' . $custom_class;
 		}
-		$goal_closed = class_exists( 'WDP_Campaign_Goal' ) && \WDP_Campaign_Goal::should_block_new_donations( $product_id );
+		$goal_closed = class_exists( 'DonationPanel\\Domain\\Campaign_Goal' ) && Campaign_Goal::should_block_new_donations( $product_id );
 		if ( $goal_closed ) {
 			$button_classes .= ' is-disabled wdp-goal-closed-trigger';
 		}
@@ -153,7 +158,7 @@ class Shortcodes {
 				<?php
 				if ( $goal_closed ) :
 					?>
-					aria-disabled="true" data-wdp-goal-closed="1" data-wdp-goal-message="<?php echo esc_attr( \WDP_Campaign_Goal::resolve_message( $product_id ) ); ?>"<?php endif; ?>
+					aria-disabled="true" data-wdp-goal-closed="1" data-wdp-goal-message="<?php echo esc_attr( Campaign_Goal::resolve_message( $product_id ) ); ?>"<?php endif; ?>
 				<?php
 				if ( $is_side_panel ) :
 					?>
@@ -165,8 +170,8 @@ class Shortcodes {
 			<?php echo esc_html( $button_text ); ?>
 		</button>
 		<?php
-		\WDP_Render_Registry::mark_trigger( $product_id );
-		if ( ! $lazy && \WDP_Render_Registry::claim_modal( $modal_id ) ) {
+		Render_Registry::mark_trigger( $product_id );
+		if ( ! $lazy && Render_Registry::claim_modal( $modal_id ) ) {
 			echo \WDP_Templates::render_donation_modal( $product_id, $button_text, $custom_class, '', $display_mode ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		}
 		return (string) ob_get_clean();
@@ -215,8 +220,8 @@ class Shortcodes {
 			return '';
 		}
 
-		if ( ! \WDP_Render_Registry::claim_form( $product_id ) ) {
-			return \WDP_Render_Registry::duplicate_form_notice( $product_id );
+		if ( ! Render_Registry::claim_form( $product_id ) ) {
+			return Render_Registry::duplicate_form_notice( $product_id );
 		}
 
 		self::enqueue_front();
@@ -231,7 +236,7 @@ class Shortcodes {
 	 * @return bool
 	 */
 	private static function auto_entry_already_drawn( $product_id ) {
-		if ( ! \WDP_Render_Registry::has_auto( $product_id ) || ( Builder_Detect::is_builder_preview() ) ) {
+		if ( ! Render_Registry::has_auto( $product_id ) || ( Builder_Detect::is_builder_preview() ) ) {
 			return false;
 		}
 		/**
@@ -262,13 +267,13 @@ class Shortcodes {
 		}
 
 		if ( ! $product ) {
-			return \WDP_Utils::admin_notice_html(
+			return Admin_Notice::admin_notice_html(
 				__( 'Donation form: product not found (no id/slug/sku was given, or this is not a product page).', 'woo-donation-popup' )
 			);
 		}
 
-		if ( ! $explicit && class_exists( 'WDP_Donation_Scope' ) && ! \WDP_Donation_Scope::is_donation_product( $product ) ) {
-			return \WDP_Utils::admin_notice_html( __( 'This product is not marked as a donation product.', 'woo-donation-popup' ) );
+		if ( ! $explicit && class_exists( 'DonationPanel\\Domain\\Donation_Scope' ) && ! Donation_Scope::is_donation_product( $product ) ) {
+			return Admin_Notice::admin_notice_html( __( 'This product is not marked as a donation product.', 'woo-donation-popup' ) );
 		}
 
 		return array(
@@ -326,7 +331,7 @@ class Shortcodes {
 		}
 		$product_id = (int) $product->get_id();
 		if ( method_exists( $product, 'is_purchasable' ) && ! $product->is_purchasable() ) {
-			return \WDP_Utils::admin_notice_html(
+			return Admin_Notice::admin_notice_html(
 				sprintf(
 					/* translators: %d: product ID */
 					__( 'This product cannot be purchased (ID: %d).', 'woo-donation-popup' ),
@@ -335,7 +340,7 @@ class Shortcodes {
 			);
 		}
 		if ( method_exists( $product, 'is_in_stock' ) && ! $product->is_in_stock() ) {
-			return \WDP_Utils::admin_notice_html(
+			return Admin_Notice::admin_notice_html(
 				sprintf(
 					/* translators: %d: product ID */
 					__( 'This product is out of stock (ID: %d).', 'woo-donation-popup' ),
@@ -357,7 +362,7 @@ class Shortcodes {
 		if ( '' !== $text ) {
 			return $text;
 		}
-		$button_settings = \WDP_Utils::normalize_legacy_popup_button_text(
+		$button_settings = Button_Settings::normalize_legacy_popup_button_text(
 			get_option( 'wdp_button_settings', array() )
 		);
 		if ( ! empty( $button_settings['popup_button_text'] ) ) {

@@ -7,6 +7,9 @@
 
 namespace DonationPanel\Modules\EntryPoints;
 
+use DonationPanel\Domain\Donation_Scope;
+use DonationPanel\Support\Admin_Notice;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -90,7 +93,7 @@ class Builder_Detect {
 		}
 		$name = $product->get_name();
 		/* translators: %s: sample product name */
-		return \WDP_Utils::admin_notice_html( sprintf( __( 'Preview: «%s» is shown. That product’s form appears on the product page.', 'woo-donation-popup' ), $name ) );
+		return Admin_Notice::admin_notice_html( sprintf( __( 'Preview: «%s» is shown. That product’s form appears on the product page.', 'woo-donation-popup' ), $name ) );
 	}
 
 	/**
@@ -167,7 +170,7 @@ class Builder_Detect {
 				'limit'   => 12,
 				'orderby' => 'modified',
 				'order'   => 'DESC',
-				'type'    => class_exists( 'WDP_Donation_Scope' ) ? \WDP_Donation_Scope::supported_types() : array( 'simple' ),
+				'type'    => class_exists( 'DonationPanel\\Domain\\Donation_Scope' ) ? Donation_Scope::supported_types() : array( 'simple' ),
 				'return'  => 'objects',
 			)
 		);
@@ -175,7 +178,7 @@ class Builder_Detect {
 			return null;
 		}
 		foreach ( $products as $product ) {
-			if ( class_exists( 'WDP_Donation_Scope' ) && \WDP_Donation_Scope::is_donation_product( $product ) ) {
+			if ( class_exists( 'DonationPanel\\Domain\\Donation_Scope' ) && Donation_Scope::is_donation_product( $product ) ) {
 				return $product;
 			}
 		}

@@ -3,13 +3,15 @@
  * Bağışlarım veri modeli: bir kullanıcının siparişlerinden bağış satırları (yalnız kendi siparişleri).
  *
  * - Sipariş okuma WooCommerce API'siyle (HPOS uyumlu: `wc_get_orders`, doğrudan SQL yok).
- * - Bağış alanları eski ve yeni meta anahtarlarıyla `WDP_Order_Meta_Keys` üzerinden okunur.
+ * - Bağış alanları eski ve yeni meta anahtarlarıyla `Order_Meta_Keys` üzerinden okunur.
  * - Makbuz = WooCommerce sipariş görüntüleme bağlantısı; tekrar bağış = ürün sayfası.
  *
  * @package DonationPanel
  */
 
 namespace DonationPanel\Modules\DonorAccount;
+
+use DonationPanel\WooCommerce\Order_Meta_Keys;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -101,7 +103,7 @@ final class Donation_History {
 	public static function rows_for_order( $order ) {
 		$rows = array();
 		foreach ( (array) $order->get_items() as $item ) {
-			$data       = \WDP_Order_Meta_Keys::get_item_donation_data( $item );
+			$data       = Order_Meta_Keys::get_item_donation_data( $item );
 			$custom     = method_exists( $item, 'get_meta' ) ? $item->get_meta( '_custom_price', true ) : '';
 			$has_amount = '' !== (string) $custom && null !== $custom;
 			if ( empty( $data ) && ! $has_amount ) {
@@ -118,7 +120,7 @@ final class Donation_History {
 				'amount_html' => function_exists( 'wc_price' ) ? (string) wc_price( (float) $item->get_total(), array( 'currency' => (string) $order->get_currency() ) ) : (string) $item->get_total(),
 				'status'      => $status,
 				'status_text' => self::status_text( $status ),
-				'dedication'  => isset( $data[ \WDP_Order_Meta_Keys::DEDICATION ]['value'] ) ? (string) $data[ \WDP_Order_Meta_Keys::DEDICATION ]['value'] : '',
+				'dedication'  => isset( $data[ Order_Meta_Keys::DEDICATION ]['value'] ) ? (string) $data[ Order_Meta_Keys::DEDICATION ]['value'] : '',
 				'receipt_url' => (string) $order->get_view_order_url(),
 				'repeat_url'  => self::repeat_url( $product_id ),
 			);

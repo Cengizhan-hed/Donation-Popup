@@ -2,7 +2,7 @@
 /**
  * Sürüm kapılı, idempotent göç çalıştırıcısı (src/ tarafı).
  *
- * Eski WDP_Migrations sınıfına dokunmaz; yan yana çalışır. Her adım kimlik + sürüm + geri çağrı
+ * Eski Version_Migrations sınıfına dokunmaz; yan yana çalışır. Her adım kimlik + sürüm + geri çağrı
  * ile kaydolur; tamamlanan adım `donation_panel_migrations` seçeneğine yazılır ve bir daha çalışmaz.
  *
  * @package DonationPanel
