@@ -50,8 +50,8 @@ final class Side_Cart_Renderer {
 		if ( '' === $label ) {
 			$label = __( 'Donation basket', 'woo-donation-popup' );
 		}
-		return '<button type="button" class="dp dp-sc__trigger" data-dp-sc-open aria-haspopup="dialog" aria-expanded="false" aria-controls="' . esc_attr( self::DRAWER_ID ) . '" aria-label="' . esc_attr( $label ) . '">'
-			. self::cart_icon() . self::count_badge( $count ) . '</button>';
+		return '<button type="button" class="dp dp-sc__trigger" data-dp-sc-open aria-haspopup="dialog" aria-expanded="false" aria-controls="' . esc_attr( self::DRAWER_ID ) . '">'
+			. self::cart_icon() . '<span class="dp-sc__sr">' . esc_html( $label ) . '</span>' . self::count_badge( $count ) . '</button>';
 	}
 
 	/**
