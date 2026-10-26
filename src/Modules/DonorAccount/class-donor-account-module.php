@@ -239,7 +239,10 @@ final class Donor_Account_Module implements Module_Interface {
 				'msg-rate'       => __( 'Too many attempts. Please wait a moment and try again.', 'woo-donation-popup' ),
 				'msg-email'      => __( 'Enter a valid email address.', 'woo-donation-popup' ),
 				'msg-pass'       => __( 'Password must be at least 8 characters.', 'woo-donation-popup' ),
-				'title-login'    => __( 'Log in to your account', 'woo-donation-popup' ),
+				'title-login'    => __( 'Welcome', 'woo-donation-popup' ),
+				'lead-login'     => __( 'Log in to see your donations, receipts and videos in one place.', 'woo-donation-popup' ),
+				'lead-register'  => __( 'Make your next gift even quicker.', 'woo-donation-popup' ),
+				'lead-reset'     => __( 'Enter your email and we will send a link.', 'woo-donation-popup' ),
 				'title-register' => __( 'Create an account', 'woo-donation-popup' ),
 				'title-reset'    => __( 'Reset password', 'woo-donation-popup' ),
 				'title-sent'     => __( 'Check your email', 'woo-donation-popup' ),
@@ -265,6 +268,8 @@ final class Donor_Account_Module implements Module_Interface {
 			$page['pages'],
 			array(
 				'rest'     => $this->rest_base(),
+				'cart-add' => esc_url_raw( rest_url( 'donation-panel/v1/cart/add' ) ),
+				'checkout' => function_exists( 'wc_get_checkout_url' ) ? esc_url_raw( wc_get_checkout_url() ) : '',
 				'msg-fail' => __( 'Something went wrong. Please try again.', 'woo-donation-popup' ),
 				'msg-sent' => __( 'We sent a verification link to your account email.', 'woo-donation-popup' ),
 				'msg-rate' => __( 'Too many attempts. Please wait a moment and try again.', 'woo-donation-popup' ),
@@ -272,9 +277,42 @@ final class Donor_Account_Module implements Module_Interface {
 				'msg-done' => __( 'Your earlier gifts were added to your account.', 'woo-donation-popup' ),
 				'msg-none' => __( 'No earlier guest gifts were found for this email.', 'woo-donation-popup' ),
 			),
-			$link_ui
+			$link_ui,
+			$this->summary_header()
 		);
 		echo $html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Account_Renderer tüm değerleri kaçışlar.
+	}
+
+	/**
+	 * Bağışlarım üst paneli verisi (ad, baş harfler, toplam / bağış sayısı / bu yıl).
+	 *
+	 * @return array<string, string>
+	 */
+	private function summary_header() {
+		$user = wp_get_current_user();
+		if ( ! $user || ! $user->exists() ) {
+			return array();
+		}
+		$name = trim( (string) $user->display_name );
+		if ( '' === $name ) {
+			return array();
+		}
+		$words    = preg_split( '/\s+/u', $name );
+		$initials = '';
+		foreach ( array_slice( is_array( $words ) ? $words : array(), 0, 2 ) as $word ) {
+			$initials .= function_exists( 'mb_substr' ) ? mb_strtoupper( mb_substr( $word, 0, 1 ) ) : strtoupper( substr( $word, 0, 1 ) );
+		}
+		$stats = Donation_History::summary( (int) $user->ID );
+		$money = static function ( $amount ) {
+			return function_exists( 'wc_price' ) ? (string) wc_price( (float) $amount ) : (string) $amount;
+		};
+		return array(
+			'name'       => $name,
+			'initials'   => $initials,
+			'total_html' => $money( $stats['total'] ),
+			'count'      => number_format_i18n( (int) $stats['count'] ),
+			'year_html'  => $money( $stats['year'] ),
+		);
 	}
 
 	/**

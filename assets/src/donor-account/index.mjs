@@ -3,6 +3,8 @@
  * Bağışlarım sayfası (daha fazla yükle) ve misafir bağış bağlama. Kimlik doğrulama sunucuda
  * WordPress/WooCommerce ile; burada yalnız REST çağrıları. jQuery yok; tema/oluşturucuya özel kod yok.
  */
+import '../campaign/base.css';
+import '../ui2-shared/tokens.css';
 import './donor-account.css';
 import { endpoint, errorKey, isEmail, isStrongEnough, nextFocusIndex, shouldDismissOnDrag } from './logic.mjs';
 
@@ -59,6 +61,9 @@ function mountDialog(root) {
   }
   const base = root.dataset.dpAccRest || '';
   const msg = (k) => root.dataset[`dpAccMsg${k[0].toUpperCase()}${k.slice(1)}`] || '';
+  const lead = root.querySelector('[data-dp-acc-lead]');
+  const guard = root.querySelector('[data-dp-acc-guard]');
+  const leadFor = (v) => root.dataset[`dpAccLead${v[0].toUpperCase()}${v.slice(1)}`] || '';
   const titleFor = (v) => root.dataset[`dpAccTitle${v[0].toUpperCase()}${v.slice(1)}`] || title.textContent;
   let lastFocus = null;
 
@@ -74,8 +79,17 @@ function mountDialog(root) {
       el.hidden = el.dataset.dpAccView !== name;
     });
     title.textContent = titleFor(name);
+    if (lead) {
+      lead.textContent = leadFor(name);
+      lead.hidden = leadFor(name) === '';
+    }
+    if (guard) {
+      guard.hidden = name !== 'login' && name !== 'register';
+    }
     root.querySelectorAll('.dp-ac__tab').forEach((tab) => {
-      tab.setAttribute('aria-pressed', String(tab.dataset.dpAccViewBtn === name));
+      const selected = tab.dataset.dpAccViewBtn === name;
+      tab.setAttribute('aria-selected', String(selected));
+      tab.tabIndex = selected ? 0 : -1;
     });
     const tabs = root.querySelector('.dp-ac__tabs');
     if (tabs) {
@@ -137,6 +151,11 @@ function mountDialog(root) {
     return call(base, path, { method: 'POST', nonce, body });
   }
 
+  const rememberMe = (form) => {
+    const box = form.querySelector('[data-dp-acc-remember]');
+    return box ? box.checked : true;
+  };
+
   async function submit(form) {
     const kind = form.dataset.dpAccForm;
     const emailInput = form.querySelector('input[type="email"]');
@@ -180,7 +199,7 @@ function mountDialog(root) {
         }
         nonce = await freshNonce(base);
       }
-      const r = await post('login', { email: emailInput.value.trim(), password: passInput.value, remember: true }, nonce);
+      const r = await post('login', { email: emailInput.value.trim(), password: passInput.value, remember: kind === 'login' ? rememberMe(form) : true }, nonce);
       if (r.ok) {
         window.location.reload();
         return;
@@ -250,6 +269,17 @@ function mountDialog(root) {
     const btn = e.target.closest('[data-dp-acc-view-btn]');
     if (btn) {
       setView(btn.dataset.dpAccViewBtn);
+      return;
+    }
+    const reveal = e.target.closest('[data-dp-acc-reveal]');
+    if (reveal) {
+      const input = root.querySelector(`#${reveal.getAttribute('aria-controls')}`);
+      if (input) {
+        const show = input.type === 'password';
+        input.type = show ? 'text' : 'password';
+        reveal.setAttribute('aria-pressed', String(show));
+        reveal.setAttribute('aria-label', (show ? reveal.dataset.labelHide : reveal.dataset.labelShow) || '');
+      }
     }
   });
   root.addEventListener('submit', (e) => {
@@ -300,6 +330,38 @@ function mountPage(root) {
   const text = (k) => root.dataset[`dpAccMsg${k[0].toUpperCase()}${k.slice(1)}`] || '';
   const list = root.querySelector('[data-dp-acc-list]');
   const more = root.querySelector('[data-dp-acc-more]');
+
+  // "Tekrarla": aynı tutarla bağışı sepete ekler (formun kullandığı cart/add ucu; sunucuda doğrulanır) ve ödemeye gider.
+  // Eklenemezse (zorunlu alan vb.) bağlantı olduğu gibi ürün sayfasına götürür.
+  root.addEventListener('click', async (e) => {
+    const repeat = e.target.closest('[data-dp-acc-repeat][data-product][data-amount]');
+    const addUrl = root.dataset.dpAccCartAdd || '';
+    if (!repeat || !addUrl || e.metaKey || e.ctrlKey || e.shiftKey) {
+      return;
+    }
+    e.preventDefault();
+    repeat.setAttribute('aria-busy', 'true');
+    try {
+      const nonce = await freshNonce(base);
+      const response = await window.fetch(addUrl, {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json', ...(nonce ? { 'X-WP-Nonce': nonce } : {}) },
+        body: JSON.stringify({
+          product_id: Number.parseInt(repeat.dataset.product, 10),
+          amount: repeat.dataset.amount,
+          submission_key: `again-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        }),
+      });
+      if (response.ok && root.dataset.dpAccCheckout) {
+        window.location.assign(root.dataset.dpAccCheckout);
+        return;
+      }
+    } catch {
+      // Ağ hatası: aşağıda bağlantı izlenir.
+    }
+    window.location.assign(repeat.href);
+  });
 
   if (more && list) {
     more.addEventListener('click', async () => {
