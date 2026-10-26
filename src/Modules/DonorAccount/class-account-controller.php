@@ -220,6 +220,9 @@ class Account_Controller extends Rest_Controller {
 		if ( strlen( $password ) < self::MIN_PASSWORD ) {
 			return $this->error( 'donation_panel_weak_password', 'Password must be at least 8 characters.', 400 );
 		}
+		if ( ! $this->allow_target( 'account_register', $email, 3, 900 ) ) {
+			return $this->respond( array( 'ok' => true ) );
+		}
 		if ( function_exists( 'wc_create_new_customer' ) && ! email_exists( $email ) ) {
 			// Hata (var olan e-posta, eklenti reddi) bilerek yutulur: yanıt değişmez. Sonuç giriş denemesiyle anlaşılır.
 			wc_create_new_customer( $email, $email, $password );
@@ -245,6 +248,10 @@ class Account_Controller extends Rest_Controller {
 		$email = sanitize_email( $this->text( $request, 'email' ) );
 		if ( '' === $email || ! is_email( $email ) ) {
 			return $this->error( 'donation_panel_invalid_email', 'Enter a valid email address.', 400 );
+		}
+		// Aynı adrese e-posta yağdırmayı önler (dağıtık IP'lerle de); aşımda yanıt değişmez, e-posta gitmez.
+		if ( ! $this->allow_target( 'account_reset', $email, 3, 900 ) ) {
+			return $this->respond( array( 'ok' => true ) );
 		}
 		$user = get_user_by( 'email', $email );
 		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- WordPress çekirdek süzgeci.

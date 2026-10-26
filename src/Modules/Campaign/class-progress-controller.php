@@ -44,7 +44,8 @@ class Progress_Controller extends Rest_Controller {
 		if ( is_wp_error( $throttled ) ) {
 			return $throttled;
 		}
-		$data = Progress_Data::for_product( absint( $request->get_param( 'id' ) ) );
+		$product_id = absint( $request->get_param( 'id' ) );
+		$data       = self::is_hidden_product( $product_id ) ? null : Progress_Data::for_product( $product_id );
 		if ( null === $data ) {
 			return $this->error( 'donation_panel_no_campaign', 'No campaign found for this product.', 404 );
 		}

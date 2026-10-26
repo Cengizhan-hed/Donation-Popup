@@ -96,6 +96,50 @@ abstract class Rest_Controller {
 	}
 
 	/**
+	 * Hedef başına hız sınırı (ör. aynı e-postaya art arda e-posta gönderimini önler).
+	 *
+	 * @param string $bucket Uç adı.
+	 * @param string $target Hedef.
+	 * @param int    $limit  Pencere başına üst sınır.
+	 * @param int    $period Pencere (sn).
+	 * @return bool true: izinli.
+	 */
+	protected function allow_target( $bucket, $target, $limit, $period = 600 ) {
+		return $this->limiter->hit_target( $bucket, $target, $limit, $period );
+	}
+
+	/**
+	 * Ürün var ama herkese açık değil mi (taslak/özel/parolalı/gizli)? Düzenleme yetkisi olan kullanıcı için false.
+	 * Ürün hiç yoksa false (çağıranın kendi "bulunamadı" yolu çalışır).
+	 *
+	 * @param int $product_id Ürün.
+	 * @return bool
+	 */
+	public static function is_hidden_product( $product_id ) {
+		$product_id = absint( $product_id );
+		if ( $product_id < 1 || ! function_exists( 'wc_get_product' ) ) {
+			return false;
+		}
+		$product = wc_get_product( $product_id );
+		if ( ! is_object( $product ) ) {
+			return false;
+		}
+		if ( function_exists( 'current_user_can' ) && current_user_can( 'edit_post', $product_id ) ) {
+			return false;
+		}
+		if ( method_exists( $product, 'get_status' ) && 'publish' !== $product->get_status() ) {
+			return true;
+		}
+		if ( method_exists( $product, 'get_post_password' ) && '' !== (string) $product->get_post_password() ) {
+			return true;
+		}
+		if ( method_exists( $product, 'get_catalog_visibility' ) && 'hidden' === $product->get_catalog_visibility() ) {
+			return true;
+		}
+		return false;
+	}
+
+	/**
 	 * Tek tip hata.
 	 *
 	 * @param string               $code    Makine kodu (donation_panel_ önekli).

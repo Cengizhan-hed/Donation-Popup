@@ -67,7 +67,7 @@ class Impact_Controller extends Rest_Controller {
 		}
 		$product_id = absint( $request->get_param( 'id' ) );
 		$tiers      = Impact_Map::tiers_for_product( $product_id, (string) $this->settings->get( 'impact.map', '' ) );
-		if ( $product_id < 1 || ! $tiers ) {
+		if ( $product_id < 1 || ! $tiers || self::is_hidden_product( $product_id ) ) {
 			return $this->error( 'donation_panel_no_impact', 'No impact phrases for this product.', 404 );
 		}
 

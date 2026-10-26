@@ -282,12 +282,12 @@ final class Settings_Page {
 
 		$html  = Admin_View::row(
 			__( 'Donation form experience', 'woo-donation-popup' ),
-			__( 'The classic form is the safe default. The new form adds donation types and a calmer, mobile-first layout. On phones the form always opens as a bottom sheet.', 'woo-donation-popup' ),
+			__( 'The new form adds donation types and a calmer, mobile-first layout, and is the default. The classic form will be removed in a future version. On phones the form always opens as a bottom sheet.', 'woo-donation-popup' ),
 			Admin_View::select(
 				self::field( 'experiences', 'engine' ),
 				'dpa-engine',
 				array(
-					'legacy' => __( 'Classic form (default)', 'woo-donation-popup' ),
+					'legacy' => __( 'Classic form (will be removed in a future version)', 'woo-donation-popup' ),
 					'new'    => __( 'New form', 'woo-donation-popup' ),
 				),
 				$engine
@@ -407,7 +407,7 @@ final class Settings_Page {
 				'dpa-ui',
 				array(
 					'new'    => __( 'This simple screen', 'woo-donation-popup' ),
-					'legacy' => __( 'Classic screen', 'woo-donation-popup' ),
+					'legacy' => __( 'Classic screen (will be removed in a future version)', 'woo-donation-popup' ),
 				),
 				'new'
 			),

@@ -163,6 +163,9 @@ class Form_Controller extends Rest_Controller {
 		if ( ! function_exists( 'wc_get_product' ) ) {
 			return array();
 		}
+		if ( self::is_hidden_product( (int) $product_id ) ) {
+			return array();
+		}
 		$product = wc_get_product( (int) $product_id );
 		return $product ? Form_Context::for_product( $product ) : array();
 	}

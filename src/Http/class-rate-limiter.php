@@ -49,6 +49,26 @@ class Rate_Limiter {
 	}
 
 	/**
+	 * Hedef başına sayar (istemciden bağımsız); dağıtık istekle tek hedefe (ör. bir e-posta) yağdırmayı sınırlar.
+	 * Hedef yalnız karma olarak saklanır.
+	 *
+	 * @param string $bucket Uç/eylem adı.
+	 * @param string $target Hedef (ör. küçük harfli e-posta); saklanmadan önce karmalanır.
+	 * @param int    $limit  Pencere başına üst sınır.
+	 * @param int    $period Pencere süresi (sn).
+	 * @return bool true: izinli.
+	 */
+	public function hit_target( $bucket, $target, $limit, $period = 60 ) {
+		$key   = 'donation_panel_rt_' . md5( $bucket . '|' . strtolower( trim( (string) $target ) ) );
+		$count = (int) get_transient( $key );
+		if ( $count >= (int) $limit ) {
+			return false;
+		}
+		set_transient( $key, $count + 1, (int) $period );
+		return true;
+	}
+
+	/**
 	 * İstemci kimliği (kişisel veri saklanmaz; yalnız karma anahtarın parçası olur).
 	 *
 	 * @return string

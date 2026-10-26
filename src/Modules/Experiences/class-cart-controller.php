@@ -218,7 +218,10 @@ class Cart_Controller extends Rest_Controller {
 	 * @return object|null
 	 */
 	public static function product_for_id( $product_id ) {
-		return function_exists( 'wc_get_product' ) ? wc_get_product( (int) $product_id ) : null;
+		if ( ! function_exists( 'wc_get_product' ) || self::is_hidden_product( (int) $product_id ) ) {
+			return null;
+		}
+		return wc_get_product( (int) $product_id );
 	}
 
 	/**

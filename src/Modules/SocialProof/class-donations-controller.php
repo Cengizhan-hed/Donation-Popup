@@ -55,6 +55,9 @@ class Donations_Controller extends Rest_Controller {
 		if ( is_wp_error( $throttled ) ) {
 			return $throttled;
 		}
+		if ( self::is_hidden_product( absint( $request->get_param( 'product_id' ) ) ) ) {
+			return $this->error( 'donation_panel_product_not_found', 'Product not found.', 404 );
+		}
 		return $this->cached(
 			rest_ensure_response(
 				Donation_Feed::page(
@@ -76,6 +79,9 @@ class Donations_Controller extends Rest_Controller {
 		$throttled = $this->throttle( 'social_stats', 60 );
 		if ( is_wp_error( $throttled ) ) {
 			return $throttled;
+		}
+		if ( self::is_hidden_product( absint( $request->get_param( 'product_id' ) ) ) ) {
+			return $this->error( 'donation_panel_product_not_found', 'Product not found.', 404 );
 		}
 		return $this->cached( rest_ensure_response( Donation_Feed::stats( absint( $request->get_param( 'product_id' ) ) ) ) );
 	}

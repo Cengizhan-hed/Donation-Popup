@@ -1,0 +1,23 @@
+# Turkish translations — E8E (yönetici etiketleri: kaldırılacak klasik seçenekler).
+# Copyright (C) Donation Panel for WooCommerce
+msgid ""
+msgstr ""
+"Project-Id-Version: woo-donation-popup\n"
+"Language: tr_TR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Domain: woo-donation-popup\n"
+
+#: src/Admin/class-settings-page.php:290
+msgid "Classic form (will be removed in a future version)"
+msgstr "Klasik form (bir sonraki sürümde kaldırılacak)"
+
+#: src/Admin/class-settings-page.php:410
+msgid "Classic screen (will be removed in a future version)"
+msgstr "Klasik ekran (bir sonraki sürümde kaldırılacak)"
+
+#: src/Admin/class-settings-page.php:287
+msgid "The new form adds donation types and a calmer, mobile-first layout, and is the default. The classic form will be removed in a future version. On phones the form always opens as a bottom sheet."
+msgstr "Yeni form bağış türleri ve daha sakin, mobil öncelikli bir yerleşim sunar ve varsayılandır. Klasik form bir sonraki sürümde kaldırılacak. Telefonlarda form her zaman alttan panel olarak açılır."
