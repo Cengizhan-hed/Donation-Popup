@@ -24,7 +24,7 @@ Bu belge plandır; hiçbir adım bu oturumda canlıda çalıştırılmadı. Canl
 1. `npm run pack` ile üretilen zip (`build/`) Eklentiler › Eklenti ekle › Eklenti yükle düğmesi ile yüklenir; WordPress "mevcut sürümü değiştir" önerir, onayla.
 2. Eklentiyi devre dışı bırakmadan değiştir (ayarlar bellekte kalır; etkinleştirme göçü idempotent çalışır).
 3. Hemen sonra: Bağış Paneli ayar ekranı açılıyor mu, ürün veri sekmesi geliyor mu, ön yüzde bir bağış ürünü açılıyor mu bak. Hata varsa **G (geri dönüş)** bölümüne geç.
-4. Mevcut kurulum olduğu için yeni motor/yeni yönetici ekranı kendiliğinden AÇILMAZ (varsayılan eski deneyim). Önce A5–A7 doğrulanır; sonra Ayarlar'dan "yeni deneyim" seçilir. Sorun çıkarsa aynı ekrandan "eski deneyime dön".
+4. Mevcut kurulum olduğu için yeni motor/yeni yönetici ekranı kendiliğinden AÇILMAZ (varsayılan eski deneyim). Önce A5–A7 doğrulanır; sonra A10'daki adımlarla "yeni deneyim" açılır. Sorun çıkarsa A10'daki geri dönüş.
 
 ### A4. `[hd_panel_buton]` snippet'i → eklentinin kısa kodu
 - Şu an canlıda `[hd_panel_buton]` bir Code Snippets parçasıdır ve yalnız `do_shortcode('[wdp_donation_button_panel id="ID"]')` döndürür. Eklenti kısa kodları HİÇ değişmedi (`[wdp_donation_button_panel]`, `id` dahil).
