@@ -105,10 +105,16 @@ class WDP_Fake_Order extends WC_Abstract_Order {
 	public $currency = 'TRY';
 	/** @var string */
 	public $status = 'processing';
+	/** @var int|null Oluşturma zamanı (Unix); null = tarih yok. */
+	public $created_ts = null;
 
 	public function __construct(int $id, array $items = array()) {
 		$this->id    = $id;
 		$this->items = $items;
+	}
+
+	public function get_date_created() {
+		return null === $this->created_ts ? null : (new DateTimeImmutable('@' . $this->created_ts));
 	}
 
 	public function get_id(): int {

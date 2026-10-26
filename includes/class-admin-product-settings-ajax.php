@@ -37,7 +37,8 @@ class WDP_Admin_Product_Settings_Ajax {
 			}
 
 			$result     = WDP_Utils::recalculate_product_donation_total( $product_id );
-			$total_text = WDP_Utils::format_price_plain( $result['total'] );
+			$shown      = (float) $result['total'] + WDP_Utils::get_manual_total( $product_id );
+			$total_text = WDP_Utils::format_price_plain( $shown );
 
 			WDP_Admin_Request::json_success(
 				sprintf(
@@ -48,7 +49,7 @@ class WDP_Admin_Product_Settings_Ajax {
 					(int) $result['orders']
 				),
 				array(
-					'total'      => (float) $result['total'],
+					'total'      => $shown,
 					'total_text' => $total_text,
 					'donors'     => (int) $result['donors'],
 					'orders'     => (int) $result['orders'],

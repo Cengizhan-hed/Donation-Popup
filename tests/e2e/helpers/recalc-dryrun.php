@@ -80,6 +80,14 @@ try {
 			'orders'      => $row['orders'],
 			'unconverted' => $row['unconverted'],
 			'differs'     => (bool) $row['changed'],
+			// K2: gocu onerisi (uygulanmaz) + neden ayristirma; yalniz sayi/etiket.
+			'diff'              => $row['diff'],
+			'manual_existing'   => $row['manual_existing'],
+			'suggested_manual'  => $row['suggested_manual'],
+			'display_after'     => $row['display_after'],
+			'display_increases' => (bool) $row['display_increases'],
+			'reason'            => (string) $row['reason'],
+			'breakdown'         => $row['breakdown'],
 		);
 		if ( $row['unconverted'] > 0 ) {
 			$warnings[] = array(

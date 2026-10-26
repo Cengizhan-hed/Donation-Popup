@@ -557,16 +557,49 @@ class WDP_Utils {
 	}
 
 	/**
-	 * Get total donation amount for a product from paid orders (wdp_progress_paid_statuses).
+	 * Gösterilen toplam = siparişlerden hesaplanan toplam + elle eklenen tutar (`_wdp_manual_total`).
+	 *
+	 * İlerleme çubuğu, kampanya kartı, ürün bilgisi ve sepet/REST yanıtları toplamı yalnız buradan okur.
+	 *
+	 * @since 10.2.0
+	 * @param int $product_id Product ID. Sadece bu ürün için yapılan bağışlar sayılır.
+	 * @return float Displayed total for this specific product only.
+	 */
+	public static function get_total_donation_amount( $product_id ) {
+		$product_id = absint( $product_id );
+		if ( ! $product_id ) {
+			return 0.0;
+		}
+		return self::get_calculated_total_donation_amount( $product_id ) + self::get_manual_total( $product_id );
+	}
+
+	/**
+	 * Elle eklenen tutar (ana para birimi; sitede sipariş olmayan bağışlar: elden, havale vb.). Hiçbir komut ya da
+	 * göç bu değeri silmez veya azaltmaz.
+	 *
+	 * @param int $product_id Product ID.
+	 * @return float
+	 */
+	public static function get_manual_total( $product_id ) {
+		$product_id = absint( $product_id );
+		if ( ! $product_id ) {
+			return 0.0;
+		}
+		$raw = get_post_meta( $product_id, '_wdp_manual_total', true );
+		return ( '' !== $raw && is_numeric( $raw ) ) ? max( 0.0, (float) $raw ) : 0.0;
+	}
+
+	/**
+	 * Siparişlerden hesaplanan toplam (elle eklenen hariç): ödenmiş siparişler (wdp_progress_paid_statuses).
 	 *
 	 * ÖNEMLİ: Bu fonksiyon SADECE belirtilen ürün ID'si için yapılan bağışları sayar.
 	 * Her ürün için ayrı progress bar olduğundan, ürünler birbirine karışmaz.
 	 *
-	 * @since 10.2.0
-	 * @param int $product_id Product ID. Sadece bu ürün için yapılan bağışlar sayılır.
-	 * @return float Total donation amount for this specific product only.
+	 * @since 11.0.0
+	 * @param int $product_id Product ID.
+	 * @return float
 	 */
-	public static function get_total_donation_amount( $product_id ) {
+	public static function get_calculated_total_donation_amount( $product_id ) {
 		$product_id = absint( $product_id );
 
 		if ( ! $product_id ) {
@@ -619,7 +652,7 @@ class WDP_Utils {
 	}
 
 	/**
-	 * Bulk progress totals (uses cached _wdp_total_donation_amount; empty meta = 0, no N+1 recalculation).
+	 * Bulk displayed totals (cached _wdp_total_donation_amount + manual amount; empty meta = 0, no N+1 recalculation).
 	 *
 	 * @param int[] $product_ids Product IDs.
 	 * @return array<int, float>
@@ -632,7 +665,8 @@ class WDP_Utils {
 				continue;
 			}
 			$meta               = get_post_meta( $product_id, '_wdp_total_donation_amount', true );
-			$out[ $product_id ] = ( $meta !== '' && is_numeric( $meta ) ) ? max( 0.0, (float) $meta ) : 0.0;
+			$calculated         = ( '' !== $meta && is_numeric( $meta ) ) ? max( 0.0, (float) $meta ) : 0.0;
+			$out[ $product_id ] = $calculated + self::get_manual_total( $product_id );
 		}
 		return $out;
 	}
