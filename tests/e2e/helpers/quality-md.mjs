@@ -33,9 +33,9 @@ export function qualityMarkdown(s) {
   for (const r of s.lighthouse || []) {
     out.push(`| ${r.theme} | ${r.engine} | ${r.page} | ${r.performance} | ${r.controlPerformance} | ${r.accessibility} | ${r.lcpMs} (${r.controlLcpMs}) | ${r.cls} | ${r.perfStatus}${r.a11yFails.length ? ' · ' + r.a11yFails.join(',') : ''} |`);
   }
-  out.push('', '## Boyut bütçesi (gzip KB; ilk yük yolu: bütçe JS ≤ 60, CSS ≤ 30; ertelenen JS etkileşim/boşta yüklenir)', '', '| tema | sayfa | modüller | JS | ertelenen JS | CSS | durum |', '|---|---|---|---|---|---|---|');
+  out.push('', '## Boyut bütçesi (gzip KB; ilk yük yolu: bütçe JS ≤ 60, CSS ≤ 30; ertelenen JS/CSS etkileşim/boşta yüklenir; CSS = satır içi kritik + engelleyici bağlantılar)', '', '| tema | sayfa | modüller | JS | ertelenen JS | CSS | ertelenen CSS | durum |', '|---|---|---|---|---|---|---|---|');
   for (const r of s.budget || []) {
-    out.push(`| ${r.theme} | ${r.page} | ${r.modules} | ${r.jsGzipKb} | ${r.jsDeferredGzipKb ?? 0} | ${r.cssGzipKb} | ${r.ok ? 'tamam' : 'AŞIM'}${r.moduleOffenders.length ? ' · kapalı modül varlığı: ' + r.moduleOffenders.join(',') : ''} |`);
+    out.push(`| ${r.theme} | ${r.page} | ${r.modules} | ${r.jsGzipKb} | ${r.jsDeferredGzipKb ?? 0} | ${r.cssGzipKb} | ${r.cssDeferredGzipKb ?? 0} | ${r.ok ? 'tamam' : 'AŞIM'}${r.moduleOffenders.length ? ' · kapalı modül varlığı: ' + r.moduleOffenders.join(',') : ''} |`);
   }
   return `${out.join('\n')}\n`;
 }

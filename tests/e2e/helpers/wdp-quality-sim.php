@@ -26,6 +26,11 @@ if ( ! empty( $wdp_q_state['nosplit'] ) ) {
 	add_filter( 'wdp_split_client_data', '__return_false' );
 }
 
+// K3: "nostyledefer": true -> tam stil paketi engelleyici bağlantı (önce/sonra ölçümü için eski davranış).
+if ( ! empty( $wdp_q_state['nostyledefer'] ) ) {
+	add_filter( 'wdp_defer_frontend_styles', '__return_false' );
+}
+
 if ( ! array_key_exists( 'override', $wdp_q_state ) || $wdp_q_state['override'] ) {
 	add_filter(
 		'pre_option_donation_panel_settings',

@@ -7,6 +7,8 @@ import { test, expect } from '@playwright/test';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { PNG } from 'pngjs';
+import pixelmatch from 'pixelmatch';
 import { recordResult } from '../helpers/quality-env.mjs';
 import { formatMoney } from '../helpers/currency.mjs';
 import { completeLocalCheckout, detectCheckoutKind, DEDICATION } from '../helpers/place-order.mjs';
@@ -145,6 +147,49 @@ test.describe('yükleme', () => {
       expect(await page.locator('#wdp-phone-country-panel [role="option"]').count(), 'ülke listesi çizildi').toBeGreaterThan(50);
     }
     expect(errors).toEqual([]);
+  });
+
+  // K3: tam stil paketi (~34 KB gzip) ilk boyamayı engellemez; ilk görünümdeki kurallar satır içi "kritik" alt kümeden gelir.
+  test('yükleme: tam stil paketi ilk boyamayı engellemez; kritik alt küme tek başına ilk ekranı tam paketle aynı çizer', async ({ page }) => {
+    const res = await page.request.get(IDS.fixedPath);
+    const html = await res.text();
+    expect(html, 'satır içi kritik stil').toContain('id="wdp-critical-bundle"');
+    expect(html, 'tam paket yerine yer tutucu (ilk yükte istek yok)').toMatch(/<meta name="wdp-deferred-style" data-id="wdp-donation-modal-css-css" data-href="[^"]+donation-modal\.[0-9a-f]+\.css/);
+    expect(html.replace(/<noscript>[\s\S]*?<\/noscript>/g, ''), 'tam paket <link> yalnız noscript içinde').not.toMatch(/<link[^>]+donation-modal\.[0-9a-f]+\.css/);
+    expect(html, 'betiksiz yedek').toMatch(/<noscript><link[^>]+donation-modal\.[0-9a-f]+\.css/);
+    const critical = (html.match(/<style id="wdp-critical-bundle">([\s\S]*?)<\/style>/) || [, ''])[1];
+    expect(critical.length, 'kritik stil boyutu (ham bayt)').toBeLessThan(120000);
+    const targets = [IDS.fixedPath, IDS.customPath, IDS.sharesPath, IDS.campaignPath, '/shop/'].filter(Boolean);
+    const shoot = async (url, withFull) => {
+      const p = await page.context().newPage();
+      await p.emulateMedia({ reducedMotion: 'reduce' });
+      // Yalnız statik ilk boyama karşılaştırılır: paket betiği iki durumda da yok (JS sınıfları tam paketsiz stilsiz kalırdı).
+      await p.route(/donation-modal\.[0-9a-f]+\.js|wdp_client_data|wdp-form-cta-ready|cta-ready\.js/, (r) => r.abort());
+      if (!withFull) await p.route(/donation-modal\.[0-9a-f]+\.css/, (r) => r.abort());
+      await p.goto(url, { waitUntil: 'load' });
+      if (withFull) await p.waitForFunction(() => window.WDPStyles && window.WDPStyles.isReady());
+      else await p.waitForFunction(() => window.WDPStyles && window.WDPStyles.isReady()); // paket isteği düşer; yükleyici bitirir
+      // WooCommerce "ilgili/yukarı satış" ürünleri her yüklemede rastgele seçilir: ilk boyama karşılaştırmasında yok sayılır.
+      await p.addStyleTag({ content: 'section.related,.related.products,.up-sells,.upsells,.wp-block-woocommerce-related-products{display:none!important}' });
+      await p.waitForTimeout(400);
+      const png = await p.screenshot({ fullPage: true });
+      await p.close();
+      return PNG.sync.read(png);
+    };
+    const failures = [];
+    for (const url of targets) {
+      const a = await shoot(url, true);
+      const b = await shoot(url, false);
+      if (a.width !== b.width || Math.abs(a.height - b.height) > 16) {
+        failures.push(`${url}: boyut farkı ${a.width}x${a.height} / ${b.width}x${b.height}`);
+        continue;
+      }
+      const h = Math.min(a.height, b.height);
+      const diff = pixelmatch(a.data.subarray(0, a.width * h * 4), b.data.subarray(0, b.width * h * 4), null, a.width, h, { threshold: 0.1 });
+      const ratio = diff / (a.width * h);
+      if (ratio > 0.0005) failures.push(`${url}: ilk boyama farkı %${(ratio * 100).toFixed(2)} (${diff} px)`);
+    }
+    expect(failures, failures.join(' | ')).toEqual([]);
   });
 
   test('yükleme: istemci veri betiği herkese açık, önbelleğe alınabilir ve yalnız geçerli yerel ayarı kabul eder', async ({ page, request }) => {

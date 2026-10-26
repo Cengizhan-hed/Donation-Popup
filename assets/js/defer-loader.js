@@ -74,6 +74,17 @@
     });
   }
 
+  // K3: tam stil paketi ilk boyamayı engellemeden, sayfa yüklendikten sonra gelir (assets/js/style-defer-loader.js;
+  // PHP: WDP_Assets_Defer::filter_style_tag). Açılır pencere/panel/teşekkür stilleri bu pakette; paket işlevi başlamadan
+  // hazır olmalı (stilsiz yanıp sönme olmasın): yoksa şimdi yüklenir, 4 sn içinde gelmezse işlev yine de başlar.
+  function whenStyles(done) {
+    if (!w.WDPStyles || typeof w.WDPStyles.load !== 'function') {
+      done();
+      return;
+    }
+    w.WDPStyles.load(done);
+  }
+
   function load() {
     if (state !== 'idle') {
       return;
@@ -82,12 +93,12 @@
     w.clearTimeout(timer);
     var nodes = Array.prototype.slice.call(pending());
     if (!nodes.length) {
-      afterReady();
+      whenStyles(afterReady);
       return;
     }
     (function next(i) {
       if (i >= nodes.length) {
-        afterReady();
+        whenStyles(afterReady);
         return;
       }
       var node = nodes[i];
