@@ -26,15 +26,17 @@ async function measure(base, html) {
     const type = /\.css$/i.test(key) ? 'css' : /\.js$/i.test(key) ? 'js' : '';
     if (!type) continue;
     const buf = Buffer.from(await (await fetch(url)).arrayBuffer());
-    files.push({ file: key.split('/woo-donation-popup/')[1], type, raw: buf.length, gzip: gz(buf) });
+    // E8J: type="text/wdp-deferred" data-wdp-src → ilk yük yolunda değil, etkileşim/boşta anında yüklenir.
+    files.push({ file: key.split('/woo-donation-popup/')[1], type, raw: buf.length, gzip: gz(buf), deferred: /\bdata-wdp-src=/.test(m[0]) });
   }
   const inlineGzip = { js: 0, css: 0 };
   for (const m of html.matchAll(/<(style|script)\b[^>]*\bid=["'](wdp-|donation-panel|dp-)[^"']*["'][^>]*>([\s\S]*?)<\/\1>/gi)) {
     inlineGzip[m[1].toLowerCase() === 'style' ? 'css' : 'js'] += gz(Buffer.from(m[3]));
   }
-  const js = files.filter((f) => f.type === 'js').reduce((a, f) => a + f.gzip, 0) + inlineGzip.js;
+  const js = files.filter((f) => f.type === 'js' && !f.deferred).reduce((a, f) => a + f.gzip, 0) + inlineGzip.js;
+  const jsDeferred = files.filter((f) => f.type === 'js' && f.deferred).reduce((a, f) => a + f.gzip, 0);
   const css = files.filter((f) => f.type === 'css').reduce((a, f) => a + f.gzip, 0) + inlineGzip.css;
-  return { files, inlineGzip, js, css };
+  return { files, inlineGzip, js, jsDeferred, css };
 }
 
 /**
@@ -67,6 +69,7 @@ export async function runBudget(w, qcfg) {
         page: p.type,
         modules,
         jsGzipKb: +(m.js / 1024).toFixed(1),
+        jsDeferredGzipKb: +(m.jsDeferred / 1024).toFixed(1),
         cssGzipKb: +(m.css / 1024).toFixed(1),
         files: handles,
         moduleOffenders: offenders,

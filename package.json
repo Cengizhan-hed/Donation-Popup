@@ -4,6 +4,7 @@
   "description": "Donation Panel for WooCommerce — WordPress plugin.",
   "private": true,
   "scripts": {
+    "e2e:quality": "node tests/e2e/run-quality.mjs",
     "build:css": "php tools/build-css-bundle.php",
     "build:js": "php tools/build-js-bundle.php",
     "build": "npm run build:css && npm run build:js && npm run build:modules",
@@ -98,11 +99,13 @@
   "license": "ISC",
   "type": "commonjs",
   "devDependencies": {
+    "@axe-core/playwright": "^4.10.0",
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.55.0",
     "@wordpress/scripts": "^35.0.0",
     "dotenv": "^16.6.1",
     "esbuild": "^0.25.5",
+    "lighthouse": "13.5.0",
     "eslint": "^10.13.0",
     "globals": "^17.13.0",
     "jscpd": "^5.4.2",

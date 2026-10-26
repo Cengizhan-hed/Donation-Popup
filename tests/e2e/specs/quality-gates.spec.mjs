@@ -18,7 +18,7 @@ const CFG = JSON.parse(process.env.WDP_Q_CFG || '{}');
 const IDS = CFG.ids || {};
 const STORE = CFG.store || {};
 
-const GATE = (title) => (/^axe/.test(title) ? 'axe' : /^akış/.test(title) ? 'akis-odeme-hpos' : /^para/.test(title) ? 'para-birimi' : /^rtl/.test(title) ? 'rtl' : 'diger');
+const GATE = (title) => (/^axe/.test(title) ? 'axe' : /^akış/.test(title) ? 'akis-odeme-hpos' : /^para/.test(title) ? 'para-birimi' : /^rtl/.test(title) ? 'rtl' : /^yükleme/.test(title) ? 'yukleme' : 'diger');
 
 test.afterEach(async ({}, info) => {
   recordResult({
@@ -77,6 +77,49 @@ function trackErrors(page) {
 }
 
 const kit = `/?dp_q_test=kit&dp_product=${IDS.custom}&dp_campaign=${IDS.campaign}`;
+
+test.describe('yükleme', () => {
+  test('yükleme: mağazada paket etkileşime kadar yüklenmez; üzerine gelince yüklenir ve panel açılır', async ({ page }) => {
+    const errors = trackErrors(page);
+    const bundleRequests = [];
+    page.on('request', (r) => {
+      if (/donation-modal\.[0-9a-f]+\.js/.test(r.url())) bundleRequests.push(r.url());
+    });
+    await page.goto('/shop/', { waitUntil: 'load' });
+    expect(await page.locator('script[type="text/wdp-deferred"]').count(), 'ertelenmiş paket etiketi').toBeGreaterThan(0);
+    expect(bundleRequests, 'etkileşimden önce paket isteği yok').toEqual([]);
+    expect(await page.evaluate(() => typeof window.WDPApp)).toBe('undefined');
+    const btn = page.locator('.wdp-loop-donate').first();
+    await btn.scrollIntoViewIfNeeded();
+    await btn.hover();
+    await page.waitForFunction(() => window.WDPDefer && window.WDPDefer.isReady());
+    expect(bundleRequests.length, 'hover sonrası paket yüklendi').toBe(1);
+    await btn.click();
+    await expect(page.locator('.hdf-donation-modal-wrapper.wdp-modal.show').first()).toBeVisible();
+    expect(errors).toEqual([]);
+  });
+
+  test('yükleme: paket yokken yapılan ilk tıklama kaybolmaz (yükleme sonrası yeniden gönderilir)', async ({ page }) => {
+    const errors = trackErrors(page);
+    await page.goto('/shop/', { waitUntil: 'load' });
+    const btn = page.locator('.wdp-loop-donate').first();
+    await btn.scrollIntoViewIfNeeded();
+    // Fare hareketi yok: yalnız doğrudan tıklama olayı (paket henüz yok).
+    await btn.evaluate((el) => el.click());
+    await expect(page.locator('.hdf-donation-modal-wrapper.wdp-modal.show').first()).toBeVisible();
+    expect(errors).toEqual([]);
+  });
+
+  test('yükleme: ürün sayfasında satır içi form etkileşimsiz de boşta hazır olur (gönder düğmesi açılır)', async ({ page }) => {
+    const errors = trackErrors(page);
+    await page.goto(IDS.fixedPath, { waitUntil: 'load' });
+    const cta = page.locator('button[name="donation_add_to_cart"]').first();
+    if (!(await cta.count())) return;
+    await page.waitForFunction(() => window.WDPDefer && window.WDPDefer.isReady(), null, { timeout: 8000 });
+    await expect(cta).toBeEnabled();
+    expect(errors).toEqual([]);
+  });
+});
 
 test.describe('axe', () => {
   test('axe: ürün sayfası bağış formu (eski kabuk) + popup + yan panel', async ({ page }) => {

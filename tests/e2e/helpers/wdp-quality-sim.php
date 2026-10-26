@@ -16,6 +16,11 @@ $wdp_q_state      = is_readable( $wdp_q_state_file ) ? json_decode( (string) fil
 $wdp_q_state      = is_array( $wdp_q_state ) ? $wdp_q_state : array();
 $GLOBALS['wdp_q_state'] = $wdp_q_state;
 
+// E8J: "nodefer": true -> ön yüz paketi ertelemesi kapalı (önce/sonra ölçümü için kontrol; varsayılan: gerçek davranış).
+if ( ! empty( $wdp_q_state['nodefer'] ) ) {
+	add_filter( 'wdp_defer_frontend_assets', '__return_false' );
+}
+
 if ( ! array_key_exists( 'override', $wdp_q_state ) || $wdp_q_state['override'] ) {
 	add_filter(
 		'pre_option_donation_panel_settings',
