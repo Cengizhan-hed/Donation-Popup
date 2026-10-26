@@ -12,7 +12,8 @@ export default defineConfig({
   fullyParallel: false,
   forbidOnly: !!process.env.CI,
   retries: 0,
-  workers: 1,
+  // E8Z: e2e:queue kaynak durumundan WDP_E2E_WORKERS türetir; yoksa 1.
+  workers: Math.max(1, Number.parseInt(process.env.WDP_E2E_WORKERS || '', 10) || 1),
   // Yönetici oturumu: ensureAuth kilit dosyası; işçiler storageState paylaşır, kendileri giriş yapmaz.
   reporter: 'list',
   use: {
