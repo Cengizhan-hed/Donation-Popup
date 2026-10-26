@@ -190,7 +190,7 @@ class WDP_Admin_Product_Data_Tab {
 			}
 			$value = max( 0.0, (float) $raw );
 		}
-		$product->update_meta_data( '_wdp_manual_total', $value );
+		$product->update_meta_data( '_wdp_manual_total', (string) $value );
 	}
 
 	/**

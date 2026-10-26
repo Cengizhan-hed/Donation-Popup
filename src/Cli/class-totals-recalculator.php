@@ -174,36 +174,36 @@ final class Totals_Recalculator {
 		$foreign    = (int) ( isset( $breakdown['foreign_lines'] ) ? $breakdown['foreign_lines'] : 0 );
 
 		$parts = array(
-			'durum'      => 0.0,
-			'dönem'      => 0.0,
-			'iade'       => 0.0,
-			'elle giriş' => 0.0,
+			'status' => 0.0,
+			'period' => 0.0,
+			'refund' => 0.0,
+			'manual' => 0.0,
 		);
 		$diff  = null;
 		$label = '-';
 		if ( null === $old_total ) {
-			$label = 'veri yok';
+			$label = 'no_data';
 		} else {
 			$diff = round( $old_total - $new_total, 2 );
 			if ( $diff > self::EPSILON ) {
 				$left = $diff;
 				foreach ( array(
-					'durum' => $status_sum,
-					'dönem' => $period_sum,
-					'iade'  => $refund_sum,
+					'status' => $status_sum,
+					'period' => $period_sum,
+					'refund' => $refund_sum,
 				) as $name => $cand ) {
 					$take           = min( max( 0.0, $cand ), $left );
 					$parts[ $name ] = round( $take, 2 );
 					$left           = round( $left - $take, 2 );
 				}
-				$parts['elle giriş'] = max( 0.0, $left );
+				$parts['manual'] = max( 0.0, $left );
 				arsort( $parts );
 				$label = (string) key( $parts );
-				if ( $unconverted > 0 && 'elle giriş' === $label ) {
-					$label = 'para birimi';
+				if ( $unconverted > 0 && 'manual' === $label ) {
+					$label = 'currency';
 				}
 			} elseif ( $diff < -self::EPSILON ) {
-				$label = ( $foreign > 0 || $unconverted > 0 ) ? 'para birimi' : 'veri yok';
+				$label = ( $foreign > 0 || $unconverted > 0 ) ? 'currency' : 'no_data';
 			} else {
 				$diff = 0.0;
 			}
@@ -220,18 +220,18 @@ final class Totals_Recalculator {
 			'display_increases' => $after > $old_shown + self::EPSILON && null !== $old_total,
 			'reason'            => $label,
 			'breakdown'         => array(
-				'durum'         => round( $status_sum, 2 ),
-				'durum_ayrinti' => array_map(
+				'status'            => round( $status_sum, 2 ),
+				'status_detail'     => array_map(
 					static function ( $v ) {
 						return round( (float) $v, 2 );
 					},
 					$statuses
 				),
-				'dönem_dışı'    => round( $period_sum, 2 ),
-				'iade'          => round( $refund_sum, 2 ),
-				'yabancı_satır' => $foreign,
-				'kursuz_satır'  => (int) $unconverted,
-				'atanan'        => array_map(
+				'period_out'        => round( $period_sum, 2 ),
+				'refund'            => round( $refund_sum, 2 ),
+				'foreign_lines'     => $foreign,
+				'unconverted_lines' => (int) $unconverted,
+				'assigned'          => array_map(
 					static function ( $v ) {
 						return round( (float) $v, 2 );
 					},

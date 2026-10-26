@@ -486,7 +486,7 @@ trait WDP_Utils_Order_Meta_Trait {
 
 	/**
 	 * Ürünün kampanya dönemi (varsa): `_wdp_campaign_starts_at` / `_wdp_campaign_ends_at` (Y-m-d, site saat dilimi,
-	 * bitiş günün sonuna dahil) ve `wdp_campaign_period` süzgeci. Dönem tanımlı değilse null (tüm zamanlar).
+	 * bitiş günün sonuna dahil) ve `donation_panel_campaign_period` süzgeci. Dönem tanımlı değilse null (tüm zamanlar).
 	 *
 	 * @param int $product_id Product ID.
 	 * @return array{start:int|null,end:int|null}|null Unix zaman damgaları.
@@ -515,7 +515,7 @@ trait WDP_Utils_Order_Meta_Trait {
 		 * @param array{start:int|null,end:int|null}|null $period     Dönem ya da null.
 		 * @param int                                     $product_id Ürün kimliği.
 		 */
-		$filtered = apply_filters( 'wdp_campaign_period', $period, $product_id );
+		$filtered = apply_filters( 'donation_panel_campaign_period', $period, $product_id );
 		return is_array( $filtered ) && ( isset( $filtered['start'] ) || isset( $filtered['end'] ) )
 			? array(
 				'start' => isset( $filtered['start'] ) ? (int) $filtered['start'] : null,

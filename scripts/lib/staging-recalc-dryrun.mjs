@@ -41,6 +41,14 @@ export function runRecalcDryRun(env, deps) {
   return res;
 }
 
+/** Makine etiketi -> Türkçe rapor etiketi. */
+const REASON_TR = { status: 'durum', period: 'dönem', refund: 'iade', manual: 'elle giriş', currency: 'para birimi', no_data: 'veri yok' };
+
+/** @param {string|undefined} r */
+function reasonLabel(r) {
+  return r ? REASON_TR[r] || r : '-';
+}
+
 /** @param {number|null|undefined} n */
 function num(n) {
   return n === null || n === undefined ? '-' : String(n);
@@ -63,7 +71,7 @@ export function toMarkdown(res, opts = {}) {
       .filter(Boolean)
       .join('; ');
     lines.push(
-      `| ${r.product_id} | ${title} | ${num(r.old_total)} | ${r.new_total} | ${num(r.diff)} | ${num(r.suggested_manual)} | ${num(r.display_after)} | ${r.reason ?? '-'} | ${r.old_donors ?? '-'} / ${r.new_donors} | ${r.orders} | ${warn} |`
+      `| ${r.product_id} | ${title} | ${num(r.old_total)} | ${r.new_total} | ${num(r.diff)} | ${num(r.suggested_manual)} | ${num(r.display_after)} | ${reasonLabel(r.reason)} | ${r.old_donors ?? '-'} / ${r.new_donors} | ${r.orders} | ${warn} |`
     );
   }
   const detail = new Set((opts.detail || []).map((x) => Number(x)).filter(Boolean));
