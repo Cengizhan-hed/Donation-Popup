@@ -21,7 +21,7 @@ const OK_RESULT = {
   base_currency: 'TRY',
   differs: 1,
   unconverted: 2,
-  rows: [{ product_id: 7, title: 'A|B', old_total: 10, new_total: 12.5, delta: 2.5, old_donors: 1, new_donors: 2, orders: 2, unconverted: 2, diff: -2.5, suggested_manual: 0, display_after: 12.5, display_increases: true, reason: 'para birimi', breakdown: { durum: 0, iade: 0 } }],
+  rows: [{ product_id: 7, title: 'A|B', old_total: 10, new_total: 12.5, delta: 2.5, old_donors: 1, new_donors: 2, orders: 2, unconverted: 2, diff: -2.5, suggested_manual: 0, display_after: 12.5, display_increases: true, reason: 'currency', breakdown: { durum: 0, iade: 0 } }],
 };
 
 function fakeRemote(result) {

@@ -132,16 +132,16 @@ final class K2CampaignTotalsTest extends TestCase {
 
 		$row = ( new Totals_Recalculator() )->run( array( self::P1 ) )['rows'][0];
 		$this->assertEqualsWithDelta( 685.0, $row['diff'], 0.001 );
-		$this->assertEqualsWithDelta( 65.0, $row['breakdown']['durum'], 0.001 );
-		$this->assertEqualsWithDelta( 40.0, $row['breakdown']['dönem_dışı'], 0.001 );
-		$this->assertEqualsWithDelta( 80.0, $row['breakdown']['iade'], 0.001 );
-		$this->assertEqualsWithDelta( 500.0, $row['breakdown']['atanan']['elle giriş'], 0.001 );
-		$this->assertSame( 'elle giriş', $row['reason'] );
+		$this->assertEqualsWithDelta( 65.0, $row['breakdown']['status'], 0.001 );
+		$this->assertEqualsWithDelta( 40.0, $row['breakdown']['period_out'], 0.001 );
+		$this->assertEqualsWithDelta( 80.0, $row['breakdown']['refund'], 0.001 );
+		$this->assertEqualsWithDelta( 500.0, $row['breakdown']['assigned']['manual'], 0.001 );
+		$this->assertSame( 'manual', $row['reason'] );
 		$this->assertEqualsWithDelta( 685.0, $row['suggested_manual'], 0.001 );
 		$this->assertEqualsWithDelta( 1955.0, $row['display_after'], 0.001, 'bagiscinin gordugu sayi degismez' );
 		$this->assertFalse( $row['display_increases'] );
-		$this->assertEqualsWithDelta( 30.0, $row['breakdown']['durum_ayrinti']['cancelled'], 0.001 );
-		$this->assertEqualsWithDelta( 5.0, $row['breakdown']['durum_ayrinti']['failed'], 0.001 );
+		$this->assertEqualsWithDelta( 30.0, $row['breakdown']['status_detail']['cancelled'], 0.001 );
+		$this->assertEqualsWithDelta( 5.0, $row['breakdown']['status_detail']['failed'], 0.001 );
 	}
 
 	/**
@@ -156,7 +156,7 @@ final class K2CampaignTotalsTest extends TestCase {
 		$row = ( new Totals_Recalculator() )->run( array( self::P1 ) )['rows'][0];
 		$this->assertEqualsWithDelta( -270.0, $row['diff'], 0.001 );
 		$this->assertSame( 0.0, $row['suggested_manual'] );
-		$this->assertSame( 'para birimi', $row['reason'], 'yabanci birimli satir var' );
+		$this->assertSame( 'currency', $row['reason'], 'yabanci birimli satir var' );
 		$this->assertEqualsWithDelta( 1270.0, $row['display_after'], 0.001 );
 		$this->assertTrue( $row['display_increases'] );
 	}
@@ -169,7 +169,7 @@ final class K2CampaignTotalsTest extends TestCase {
 		$this->seed();
 		$row = ( new Totals_Recalculator() )->run( array( self::P1 ) )['rows'][0];
 		$this->assertNull( $row['diff'] );
-		$this->assertSame( 'veri yok', $row['reason'] );
+		$this->assertSame( 'no_data', $row['reason'] );
 		$this->assertSame( 0.0, $row['suggested_manual'] );
 	}
 
