@@ -37,7 +37,7 @@
 .dp-sc__count { position: absolute; inset-block-start: 2px; inset-inline-end: 0; min-inline-size: 20px; block-size: 20px; padding: 0 5px; display: grid; place-items: center; border-radius: 99px; background: var(--sc-primary); color: var(--sc-on-primary); font-size: 12px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
 
 /* Katman */
-.dp-sc__overlay { position: fixed; inset: 0; z-index: 99990; display: grid; justify-items: end; background: color-mix(in oklab, #0b1220 52%, transparent); opacity: 0; visibility: hidden; transition: opacity var(--sc-dur) var(--sc-ease), visibility 0s linear var(--sc-dur); }
+.dp-sc__overlay { position: fixed; inset: 0; z-index: 99990; display: grid; justify-items: end; background: color-mix(in oklab, #0b1220 52%, transparent); opacity: 0; visibility: hidden; transition: opacity var(--sc-dur) var(--sc-ease), visibility 0s linear var(--sc-dur); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); }
 .dp-sc__overlay.is-open { opacity: 1; visibility: visible; transition-delay: 0s; }
 .dp-sc__surface { position: relative; display: flex; flex-direction: column; inline-size: min(100%, 440px); block-size: 100%; max-block-size: 100%; overflow: hidden; background: var(--sc-surface); color: var(--sc-text); border-start-start-radius: calc(var(--sc-radius) * 1.9); border-end-start-radius: calc(var(--sc-radius) * 1.9); box-shadow: 0 4px 10px rgb(16 24 40 / .06), 0 24px 56px -12px rgb(16 24 40 / .28); transform: translateX(calc(100% * var(--sc-dir, 1))); transition: transform calc(var(--sc-dur) * 1.8) var(--sc-spring); outline: none; }
 [dir="rtl"] .dp-sc__surface { --sc-dir: -1; }
@@ -74,12 +74,14 @@
 .dp-sc__step:hover:not([disabled]) { background: var(--sc-soft); }
 .dp-sc__step[disabled] { opacity: .4; cursor: not-allowed; }
 .dp-sc__remove { min-block-size: 44px; padding: 0 12px; border: 0; background: transparent; color: var(--sc-text); text-decoration: underline; text-underline-offset: 3px; font: inherit; font-weight: 650; cursor: pointer; border-radius: calc(var(--sc-radius) * .65); }
+.dp-sc__actions > .dp-sc__remove:first-child { margin-inline-start: -12px; }
 .dp-sc__remove:hover:not([disabled]) { background: var(--sc-soft); }
 .dp-sc__remove[disabled] { opacity: .5; cursor: not-allowed; }
 
 /* Sabit alt çubuk: başparmak bölgesi + güvenli alan */
-.dp-sc__bar { flex: none; display: grid; gap: 10px; padding: 12px var(--sc-gutter) max(16px, env(safe-area-inset-bottom)); background: color-mix(in oklab, var(--sc-surface) 94%, transparent); border-block-start: 1px solid var(--sc-border); }
+.dp-sc__bar { flex: none; display: grid; gap: 10px; padding: 12px var(--sc-gutter) max(16px, env(safe-area-inset-bottom)); background: color-mix(in oklab, var(--sc-surface) 94%, transparent); border-block-start: 1px solid var(--sc-border); box-shadow: 0 -10px 24px -16px rgb(16 24 40 / .16); }
 .dp-sc__subtotal { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; font-weight: 650; }
+.dp-sc__subtotal > span { color: var(--sc-muted); font-weight: 500; }
 .dp-sc__subtotal strong { font-size: 1.375rem; font-weight: 750; }
 .dp-sc__hint { margin: 0; color: var(--sc-muted); font-size: .75rem; }
 .dp-sc__btn { display: inline-flex; align-items: center; justify-content: center; min-block-size: 56px; padding: 0 24px; border: 0; border-radius: calc(var(--sc-radius) * 1.6); font: inherit; font-size: 1.125rem; font-weight: 650; text-decoration: none; cursor: pointer; transition: transform 160ms var(--sc-spring), filter 160ms; }
@@ -100,11 +102,12 @@
   .dp-sc__surface { inline-size: 100%; block-size: auto; max-block-size: 94dvh; border-radius: calc(var(--sc-radius) * 1.9) calc(var(--sc-radius) * 1.9) 0 0; box-shadow: 0 -6px 30px rgb(16 24 40 / .18); transform: translateY(100%); }
   .dp-sc__overlay.is-open .dp-sc__surface { transform: translateY(var(--dp-sc-drag, 0px)); }
   .dp-sc__handle { display: block; }
+  .dp-sc__head { padding-block-start: 8px; }
 }
 html.dp-sc-lock { overflow: hidden; }
 
 /* Koyu mod (en sonda: özgüllük sırası) */
 @media (prefers-color-scheme: dark) {
-  :root:not([data-dp-scheme="light"]) .dp-sc, :root:not([data-dp-scheme="light"]) .dp-sc__trigger { --sc-surface: #14181f; --sc-text: #eef1f5; --sc-primary: color-mix(in oklab, var(--dp-bridge-primary, #0f766e) 78%, #fff); --sc-danger: #ff8f86; }
+  :root:not([data-dp-scheme="light"]) .dp-sc, :root:not([data-dp-scheme="light"]) .dp-sc__trigger { --sc-surface: #14181f; --sc-text: #eef1f5; --sc-primary: color-mix(in oklab, var(--dp-bridge-primary, var(--wp--preset--color--primary, var(--wp--preset--color--accent-1, #0f766e))) 78%, #fff); --sc-danger: #ff8f86; }
 }
-:root[data-dp-scheme="dark"] .dp-sc, :root[data-dp-scheme="dark"] .dp-sc__trigger { --sc-surface: #14181f; --sc-text: #eef1f5; --sc-primary: color-mix(in oklab, var(--dp-bridge-primary, #0f766e) 78%, #fff); --sc-danger: #ff8f86; }
+:root[data-dp-scheme="dark"] .dp-sc, :root[data-dp-scheme="dark"] .dp-sc__trigger { --sc-surface: #14181f; --sc-text: #eef1f5; --sc-primary: color-mix(in oklab, var(--dp-bridge-primary, var(--wp--preset--color--primary, var(--wp--preset--color--accent-1, #0f766e))) 78%, #fff); --sc-danger: #ff8f86; }
