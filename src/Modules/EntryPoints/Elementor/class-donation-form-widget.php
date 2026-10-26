@@ -7,7 +7,7 @@
 
 namespace DonationPanel\Modules\EntryPoints\Elementor;
 
-use DonationPanel\Modules\EntryPoints\Shortcodes;
+use DonationPanel\Compat\Public_Contract;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -198,13 +198,7 @@ class Donation_Form_Widget extends \Elementor\Widget_Base {
 	 */
 	protected function render() {
 		list($tag, $atts) = self::shortcode_from_settings( $this->get_settings_for_display() );
-		if ( 'wdp_donation_button' === $tag ) {
-			$html = Shortcodes::donation_button_shortcode( $atts );
-		} elseif ( 'wdp_donation_button_panel' === $tag ) {
-			$html = Shortcodes::donation_button_panel_shortcode( $atts );
-		} else {
-			$html = Shortcodes::donation_form_shortcode( $atts );
-		}
+		$html             = Public_Contract::render( $tag, $atts );
 		echo $html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	}
 }

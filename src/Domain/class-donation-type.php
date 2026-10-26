@@ -189,7 +189,7 @@ class Donation_Type {
 	 * \WP_Query meta_query selecting products of a type (same priority as infer_from_flags()).
 	 *
 	 * @param string $type Type id.
-	 * @return array<string, mixed>
+	 * @return array<int|string, mixed>
 	 */
 	public static function get_meta_query( $type ) {
 		$type = self::sanitize( $type, '' );

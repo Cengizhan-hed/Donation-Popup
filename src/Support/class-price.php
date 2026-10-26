@@ -16,7 +16,12 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class Price {
 
-	/** HTML entity içeren metni düz metne çevirir (ör. &#8378; → ₺). */
+	/**
+	 * HTML entity içeren metni düz metne çevirir (ör. &#8378; → ₺).
+	 *
+	 * @param mixed $text Ham metin.
+	 * @return string
+	 */
 	public static function decode_text_entities( $text ) {
 		$text = (string) $text;
 		if ( '' === $text ) {
@@ -88,9 +93,11 @@ class Price {
 	}
 
 	/**
-	 * Format price html.
+	 * WooCommerce fiyat HTML'i; gereksiz sondaki ondalıkları kaldırır (ör. tam sayılarda ",00" yok).
 	 *
-	 * @param array<string, mixed> $args args.
+	 * @param float|int|string|null $amount Ham tutar.
+	 * @param array<string, mixed>  $args   `wc_price()` için ek argümanlar.
+	 * @return string Güvenli HTML.
 	 */
 	public static function format_price_html( $amount, array $args = array() ) {
 		if ( '' === $amount || null === $amount ) {

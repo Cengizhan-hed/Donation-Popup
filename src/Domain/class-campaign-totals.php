@@ -217,6 +217,7 @@ class Campaign_Totals {
 	 * @param int|\WC_Abstract_Order $order_or_id Sipariş veya ID.
 	 * @param string                $meta_key    Meta anahtarı.
 	 * @param string                $value       Değer.
+	 * @return void
 	 */
 	public static function set_order_flag_meta( $order_or_id, $meta_key, $value ) {
 		$order = is_object( $order_or_id ) ? $order_or_id : wc_get_order( $order_or_id );
@@ -527,6 +528,9 @@ class Campaign_Totals {
 
 		$deducted = 0.0;
 		foreach ( $refund->get_items() as $item ) {
+			if ( ! $item instanceof \WC_Order_Item_Product ) {
+				continue;
+			}
 			$product_id = absint( $item->get_product_id() );
 			if ( ! $product_id ) {
 				continue;
@@ -596,6 +600,9 @@ class Campaign_Totals {
 		$currency = Progress_Currency::get_order_currency( $order );
 
 		foreach ( $order->get_items() as $item_id => $item ) {
+			if ( ! $item instanceof \WC_Order_Item_Product ) {
+				continue;
+			}
 			$product_id = absint( $item->get_product_id() );
 			if ( ! $product_id ) {
 				continue;
@@ -1036,7 +1043,7 @@ class Campaign_Totals {
 	}
 
 	/**
-	 * @param array<string, mixed> $amounts Raw amounts.
+	 * @param array<int|string, mixed> $amounts Raw amounts.
 	 * @return array<int,float>
 	 */
 	private static function sanitize_progress_amounts( array $amounts ) {
@@ -1054,7 +1061,7 @@ class Campaign_Totals {
 	 * Bayrak + tutarları siparişe yaz (_wdp_progress_counted = yes).
 	 *
 	 * @param \WC_Abstract_Order $order   Order.
-	 * @param array<string, mixed>             $amounts Product → amount.
+	 * @param array<int, float> $amounts Ürün kimliği => tutar.
 	 * @return void
 	 */
 	private static function store_order_progress_state( $order, array $amounts ) {
@@ -1080,8 +1087,8 @@ class Campaign_Totals {
 	/**
 	 * Ödenmiş siparişleri tarar, sonuçları doldurur (yazma yalnız `$dry_run` kapalıyken).
 	 *
-	 * @param array<int, array{total:float,donors:int,orders:int,unconverted:int}> $results Ürün kimliği => sonuç (referansla doldurulur).
-	 * @param bool                                                                   $dry_run True ise yazma yok.
+	 * @param array<int, array<string, int|float>> $results Ürün kimliği => sonuç (total, donors, orders, unconverted; referansla doldurulur).
+	 * @param bool                                 $dry_run True ise yazma yok.
 	 * @return void
 	 */
 	private static function scan_orders_for_totals( array &$results, $dry_run ) {

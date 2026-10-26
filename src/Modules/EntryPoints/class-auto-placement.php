@@ -54,7 +54,7 @@ class Auto_Placement {
 		add_filter( 'woocommerce_locate_template', array( __CLASS__, 'filter_locate_template' ), 20, 2 );
 
 		add_filter( 'woocommerce_get_price_html', array( Loop_Price_Filters::class, 'filter_price_html' ), 20, 2 );
-		add_filter( 'woocommerce_loop_add_to_cart_link', array( Loop_Price_Filters::class, 'filter_loop_add_to_cart' ), 10, 3 );
+		add_filter( 'woocommerce_loop_add_to_cart_link', array( Loop_Price_Filters::class, 'filter_loop_add_to_cart' ), 10, 2 );
 		add_filter( 'woocommerce_product_add_to_cart_text', array( Loop_Price_Filters::class, 'filter_add_to_cart_text' ), 20, 2 );
 		add_filter( 'woocommerce_product_add_to_cart_url', array( Loop_Price_Filters::class, 'filter_add_to_cart_url' ), 20, 2 );
 		add_filter( 'woocommerce_product_supports', array( Loop_Price_Filters::class, 'filter_product_supports' ), 20, 3 );

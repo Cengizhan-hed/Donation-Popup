@@ -192,8 +192,8 @@ final class ElementorI18nTest extends TestCase {
 			}
 		}
 		$src = (string) file_get_contents(WDP_PLUGIN_DIR . 'src/Modules/EntryPoints/Elementor/class-donation-form-widget.php');
-		$this->assertStringContainsString('Shortcodes::donation_form_shortcode', $src);
-		$this->assertStringContainsString('Shortcodes::donation_button_panel_shortcode', $src);
+		$this->assertStringContainsString('Public_Contract::render', $src, 'Elementor ince katmanı yalnız uyumluluk sözleşmesi üzerinden çizer');
+		$this->assertStringNotContainsString('Shortcodes::', $src);
 	}
 
 	public function test_list_widget_maps_to_shortcode_attributes(): void {

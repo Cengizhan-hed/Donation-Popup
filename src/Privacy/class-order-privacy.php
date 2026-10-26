@@ -68,7 +68,7 @@ class Order_Privacy {
 	 *
 	 * @param string $email_address Requester e-mail.
 	 * @param int    $page          1-based page.
-	 * @return array{data:array,done:bool}
+	 * @return array{data: array<int, array<string, mixed>>, done: bool}
 	 */
 	public static function export_personal_data( $email_address, $page = 1 ) {
 		$email = sanitize_email( (string) $email_address );
@@ -150,7 +150,7 @@ class Order_Privacy {
 	 *
 	 * @param string $email_address Requester e-mail.
 	 * @param int    $page          Page (unused, see above).
-	 * @return array{items_removed:bool,items_retained:bool,messages:array,done:bool}
+	 * @return array{items_removed: bool, items_retained: bool, messages: array<int, string>, done: bool}
 	 */
 	public static function erase_personal_data( $email_address, $page = 1 ) {
 		unset( $page );

@@ -463,7 +463,7 @@ class Version_Migrations {
 	public static function step_10_35_2( $is_fresh ) {
 		$map    = Addon_Product_Visibility::LEGACY_META;
 		$copied = 0;
-		if ( ! $is_fresh && $map ) {
+		if ( ! $is_fresh ) {
 			$ids = array();
 			if ( class_exists( 'WDP_Test_State' ) ) {
 				$ids = array_keys( (array) \WDP_Test_State::$post_meta );

@@ -51,7 +51,13 @@ final class Preview {
 		if ( ! self::is_requested() ) {
 			return;
 		}
-		add_action( 'plugins_loaded', array( __CLASS__, 'activate' ), 1 );
+		add_action(
+			'plugins_loaded',
+			static function () {
+				self::activate();
+			},
+			1
+		);
 	}
 
 	/**

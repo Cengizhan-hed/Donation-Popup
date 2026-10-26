@@ -218,7 +218,7 @@ class Security {
 		unset( $use_visitor_token );
 
 		$session_id = '';
-		if ( function_exists( 'WC' ) && isset( WC()->session ) ) {
+		if ( function_exists( 'WC' ) && WC()->session ) {
 			$session_id = (string) WC()->session->get_customer_id();
 		}
 

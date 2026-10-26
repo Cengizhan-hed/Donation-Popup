@@ -27,7 +27,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Cart_Hooks {
 
 	/**
-	 * Initialize cart hooks
+	 * Sepet kancalarını bağlar.
+	 *
+	 * @return void
 	 */
 	public static function init() {
 		// Bağış satırına yazılan tutarın para birimi damgası.
@@ -352,6 +354,7 @@ class Cart_Hooks {
 	 * Apply custom price to cart items
 	 *
 	 * @param \WC_Cart $cart Cart object.
+	 * @return void
 	 */
 	public static function apply_custom_price_to_cart( $cart ) {
 		if ( ! $cart || ! is_a( $cart, 'WC_Cart' ) ) {

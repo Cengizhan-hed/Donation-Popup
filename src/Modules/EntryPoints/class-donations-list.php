@@ -108,6 +108,12 @@ class Donations_List {
 		);
 	}
 
+	/**
+	 * Kısa kod özniteliklerini temizler ve varsayılanlarla tamamlar.
+	 *
+	 * @param mixed $atts Ham öznitelikler.
+	 * @return array<string, mixed>
+	 */
 	public static function sanitize_atts( $atts ) {
 		$atts  = is_array( $atts ) ? $atts : array();
 		$yesno = static function ( $value, $default_value ) {
@@ -316,7 +322,7 @@ class Donations_List {
 		if ( $new_status === $old_status || ! is_object( $post ) ) {
 			return;
 		}
-		$type = isset( $post->post_type ) ? (string) $post->post_type : '';
+		$type = property_exists( $post, 'post_type' ) ? (string) $post->post_type : '';
 		if ( 'product' === $type || 'product_variation' === $type ) {
 			self::bump_cache();
 		}
@@ -554,7 +560,7 @@ class Donations_List {
 		while ( $found < $limit && $page <= $max ) {
 			$args['paged'] = $page;
 			$query         = new \WP_Query( $args );
-			$posts         = is_object( $query ) && isset( $query->posts ) ? $query->posts : array();
+			$posts         = (array) $query->posts;
 			if ( empty( $posts ) ) {
 				break;
 			}
@@ -668,10 +674,10 @@ class Donations_List {
 	}
 
 	/**
-	 * @param \WC_Product $product Product.
-	 * @param array<string, mixed>      $atts    Atts.
-	 * @param array<string, mixed>      $totals  Totals.
-	 * @param int        $index   1-based index.
+	 * @param \WC_Product         $product Product.
+	 * @param array<string, mixed> $atts    Atts.
+	 * @param array<int, float>    $totals  Ürün kimliği => toplam.
+	 * @param int                  $index   1-based index.
 	 * @return string
 	 */
 	private static function card_html( $product, array $atts, array $totals, $index ) {
@@ -780,7 +786,7 @@ class Donations_List {
 				$attrs['fetchpriority'] = 'high';
 			}
 			if ( $thumb_id && function_exists( 'wp_get_attachment_image' ) ) {
-				$image = wp_get_attachment_image( $thumb_id, $atts['image_size'], false, $attrs );
+				$image = wp_get_attachment_image( (int) $thumb_id, $atts['image_size'], false, $attrs );
 			}
 			if ( '' === $image && function_exists( 'wc_placeholder_img' ) ) {
 				$image = wc_placeholder_img( $atts['image_size'] );

@@ -10,6 +10,10 @@ declare(strict_types=1);
 if (!class_exists('WC_Abstract_Order')) {
 	abstract class WC_Abstract_Order {}
 }
+if (!class_exists('WC_Order_Item_Product')) {
+	/** Order line item base (production code only handles product lines). */
+	class WC_Order_Item_Product {}
+}
 
 /**
  * Meta row like WC_Meta_Data.
@@ -33,7 +37,7 @@ final class WDP_Fake_Meta {
 /**
  * Order line item double.
  */
-final class WDP_Fake_Order_Item {
+final class WDP_Fake_Order_Item extends WC_Order_Item_Product {
 	/** @var int */
 	private $product_id;
 	/** @var int */

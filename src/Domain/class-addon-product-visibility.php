@@ -358,7 +358,7 @@ class Addon_Product_Visibility {
 	 * wc-product-search seçenekleri (mevcut ID korunur).
 	 *
 	 * @param int $product_id Selected product ID.
-	 * @return array<string,string> id => label
+	 * @return array<int|string, string> id => label
 	 */
 	public static function product_search_options( $product_id ) {
 		$product_id = absint( $product_id );

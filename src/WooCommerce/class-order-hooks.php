@@ -19,7 +19,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Order_Hooks {
 
 	/**
-	 * Initialize order hooks
+	 * Sipariş kancalarını bağlar.
+	 *
+	 * @return void
 	 */
 	public static function init() {
 		// Sipariş oluşturulurken, bağış verilerini sipariş öğe metalarına ekle
@@ -36,6 +38,7 @@ class Order_Hooks {
 	 * @param string                $cart_item_key Cart item key.
 	 * @param array<string, mixed>                 $values       Cart item values.
 	 * @param \WC_Order              $order        Order.
+	 * @return void
 	 */
 	public static function add_donation_meta_to_order( $item, $cart_item_key, $values, $order ) {
 		unset( $cart_item_key, $order );

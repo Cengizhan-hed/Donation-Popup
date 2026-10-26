@@ -25,7 +25,7 @@ class Placement_Settings {
 	const LOOP_BUTTONS = array( 'link', 'popup', 'panel', 'off' );
 	const SCOPES       = array( 'all', 'categories', 'marked' );
 
-	/** @var array|null */
+	/** @var array<string, mixed>|null */
 	private static $cache = null;
 
 	/**
