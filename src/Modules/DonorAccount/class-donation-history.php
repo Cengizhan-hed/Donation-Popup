@@ -79,7 +79,7 @@ final class Donation_History {
 			$created = method_exists( $order, 'get_date_created' ) ? $order->get_date_created() : null;
 			$in_year = $created && method_exists( $created, 'format' ) && (int) $created->format( 'Y' ) === (int) $year;
 			foreach ( self::rows_for_order( $order ) as $row ) {
-				$out['count']++;
+				++$out['count'];
 				if ( (string) $order->get_currency() !== (string) $store_currency ) {
 					continue;
 				}
@@ -117,7 +117,7 @@ final class Donation_History {
 				'status'      => array( 'wc-completed', 'wc-processing' ),
 			)
 		);
-		$store = function_exists( 'get_woocommerce_currency' ) ? (string) get_woocommerce_currency() : '';
+		$store  = function_exists( 'get_woocommerce_currency' ) ? (string) get_woocommerce_currency() : '';
 		return self::aggregate( array_filter( (array) $orders, 'is_object' ), $store, (int) gmdate( 'Y' ) );
 	}
 
@@ -224,8 +224,8 @@ final class Donation_History {
 				}
 			}
 			$store_currency = function_exists( 'get_woocommerce_currency' ) ? (string) get_woocommerce_currency() : '';
-			$created    = method_exists( $order, 'get_date_created' ) ? $order->get_date_created() : null;
-			$rows[]     = array(
+			$created        = method_exists( $order, 'get_date_created' ) ? $order->get_date_created() : null;
+			$rows[]         = array(
 				'order_id'    => (int) $order->get_id(),
 				'product_id'  => $product_id,
 				'image'       => $image,

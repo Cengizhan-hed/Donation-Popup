@@ -160,7 +160,7 @@ final class Account_Renderer {
 		$thumb = ! empty( $row['image'] )
 			? '<img class="dp-ac__thumb" src="' . esc_url( (string) $row['image'] ) . '" alt="" loading="lazy" width="52" height="52">'
 			: '<span class="dp-ac__thumb dp-ac__thumb--ph" aria-hidden="true"><svg class="dp-ac__ico" viewBox="0 0 24 24" focusable="false"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg></span>';
-		$pill = '<span class="dp-ac__pill dp-ac__pill--' . esc_attr( $tone ) . ' dp-ac__tag--' . esc_attr( $status ) . '"><span class="dp-ac__dot" aria-hidden="true"></span>' . esc_html( (string) ( isset( $row['status_text'] ) ? $row['status_text'] : '' ) ) . '</span>';
+		$pill  = '<span class="dp-ac__pill dp-ac__pill--' . esc_attr( $tone ) . ' dp-ac__tag--' . esc_attr( $status ) . '"><span class="dp-ac__dot" aria-hidden="true"></span>' . esc_html( (string) ( isset( $row['status_text'] ) ? $row['status_text'] : '' ) ) . '</span>';
 
 		$progress = '';
 		if ( isset( $row['campaign'] ) && is_numeric( $row['campaign'] ) ) {
