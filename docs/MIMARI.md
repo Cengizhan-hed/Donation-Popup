@@ -1054,9 +1054,17 @@ Etkiler: plugins_loaded 10-19 arasında çalışan bir snippet/eklenti kısa kod
 ## Worktree hazırlama (`npm run wt:prepare`)
 - `npm run wt:prepare -- <worktree> [--dry-run] [--force] [--skip-install]`: yeni git worktree'yi tek komutla koşuya hazırlar (`scripts/wt-prepare.mjs`, Node fs; kabuk cp/tar yok, sembolik bağ yok).
 - Hedef `git worktree list`te kayıtlı olmalı; ana klasör ya da başka yol reddedilir. Boş disk < 10 GB ise reddedilir.
-- Ana depodan kopyalanır: tests/e2e/__baseline__ (+__baseline_prev__), vendor, vendor-dev, tools/bin/*.phar, build/local-wp (WP + zip'ler), build/migration/cache. Var olan dosyaya dokunulmaz (`--force` yazar); build/e2e/matrix, evidence, node_modules kopyalanmaz.
-- Kara liste (birim testli): `.env*`, `.auth`, `*.pem`, `*.key`, `.ssh`, node_modules, .git.
-- Sonra worktree'de `npm install --no-package-lock --legacy-peer-deps` ve `ajv@8 --no-save` çalışır (`--skip-install` ile atlanır).
+- Ana depodan kopyalanır: tests/e2e/__baseline__ (+__baseline_prev__), vendor, vendor-dev, tools/bin/*.phar, build/local-wp (WP + zip'ler), build/migration/cache. Var olan dosyaya dokunulmaz (`--force` yazar); build/e2e/matrix, evidence kopyalanmaz.
+- **APFS klonu (E8Y):** dosyalar `fs.copyFileSync(..., COPYFILE_FICLONE)`, `node_modules` dizin olarak `cp -c -R` (Linux `--reflink=auto`) ile copy-on-write klonlanır; klon olmazsa normal kopya. Çıktıda `klon: evet/hayır`. Sembolik bağ yok (§14 korunur); klon yazılana dek disk tutmaz. node_modules içindeki `.env*`, `*.pem`, `*.key`, `.auth`, `.ssh` kopyadan silinir.
+- Kara liste (birim testli): `.env*`, `.auth`, `*.pem`, `*.key`, `.ssh`, node_modules (dosya planında), .git.
+- `npm install --no-package-lock --legacy-peer-deps` yalnız `package.json` + `node_modules/.package-lock.json` sha256 özeti ana depodakinden farklıysa çalışır (ana depoda package-lock.json senkron değil; lock yerine bu özet kullanılır); `ajv@8 --no-save` yalnız kopyada ajv major 8 değilse. `composer.lock` farklıysa uyarı yazılır. `--skip-install` kurulumu atlar.
+- Ölçüm (27 bin dosya + node_modules, 3 koşu): eski yöntem (normal kopya + npm install) 38–96 sn; yeni (klon) 31–43 sn, npm install atlanır; ayrıntı RAPOR-E8Y.md.
+
+## Kaynak kapısı (`node scripts/resource-gate.mjs`)
+- Yeni (ağır) ajan başlamadan önce: boş disk (`df -k`), kullanılabilir bellek (`vm_stat`: free+inactive+speculative sayfa), takas (`sysctl vm.swapusage`). Çıkış 0 = başla, 1 = bekle (neden satırı).
+- Varsayılan eşikler: disk ≥ 20 GB, bellek ≥ 4 GB, takas < 2 GB; `--min-disk-gb`, `--min-free-mem-gb`, `--max-swap-gb`, `--json` ya da `WDP_GATE_MIN_DISK_GB`/`WDP_GATE_MIN_FREE_MEM_GB`/`WDP_GATE_MAX_SWAP_GB`.
+- Playwright `--workers` önerisi: min(4, CPU/2, bellek/1,5 GB); takas ≥ 1 GB ise −1, ≥ 2 GB ise 1.
+- Bağımlılıksız; ayrıştırıcılar sahte çıktıyla birim testli (`tests/unit/js/resource-gate.test.mjs`). package.json'a `resource:gate` E8Z'de eklenir.
 
 ## E8J — Ön yüz paketi erteleme (ürün/mağaza performansı)
 - **Sorun (E8B):** eski motor paketi (`donation-modal.*.js` 68 KB gzip) ürün/mağaza sayfasında sayfa yüklenirken çalışıyor; Lighthouse mobil tt5 ürün 59–73 (eklentisiz 92).

@@ -1,11 +1,13 @@
 #!/usr/bin/env node
 /**
  * Yeni git worktree'yi koşuya hazırlar: .gitignore'daki gerekli dosyaları ana depodan
- * kopyalar (var olana dokunmaz), sonra npm bağımlılıklarını worktree'de kurar.
+ * APFS klonuyla (copy-on-write; olmazsa normal kopya) kopyalar (var olana dokunmaz),
+ * node_modules'u da klonlar; npm kurulumu yalnız bağımlılık özeti farklıysa çalışır.
  * Kullanım: npm run wt:prepare -- <worktree-klasörü> [--dry-run] [--force] [--skip-install]
  * Sembolik bağ kurulmaz; .env*, .auth, *.pem, *.key, ~/.ssh asla kopyalanmaz.
  */
 import fs from 'node:fs';
+import crypto from 'node:crypto';
 import path from 'node:path';
 import { execFileSync, spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
@@ -96,8 +98,66 @@ export function applyPlan(root, dest, plan) {
   for (const f of plan.copy) {
     const to = path.join(dest, f.rel);
     fs.mkdirSync(path.dirname(to), { recursive: true });
-    fs.copyFileSync(path.join(root, f.rel), to);
+    fs.copyFileSync(path.join(root, f.rel), to, fs.constants.COPYFILE_FICLONE);
   }
+}
+
+/** Dizin ağacını klonla (macOS cp -c, Linux --reflink=auto); olmazsa normal kopya. Var olan dosyaların üzerine yazar. */
+export function cloneTree(src, dst) {
+  fs.mkdirSync(dst, { recursive: true });
+  const attempts = [];
+  if (process.platform === 'darwin') attempts.push({ clone: true, args: ['-c', '-R', src + path.sep + '.', dst] });
+  else if (process.platform === 'linux') attempts.push({ clone: true, args: ['--reflink=auto', '-R', src + path.sep + '.', dst] });
+  attempts.push({ clone: false, args: ['-R', src + path.sep + '.', dst] });
+  for (const a of attempts) {
+    const r = spawnSync('cp', a.args, { stdio: 'ignore' });
+    if (r.status === 0) return { clone: a.clone };
+  }
+  throw new Error('kopyalama başarısız: ' + src);
+}
+
+/** Klon desteği yoklaması: hedef volume'de küçük dosyayı `cp -c` ile kopyalar. */
+export function probeClone(dir) {
+  if (process.platform !== 'darwin') return false;
+  const a = fs.mkdtempSync(path.join(dir, '.wdp-clone-probe-'));
+  try {
+    fs.writeFileSync(path.join(a, 'a'), 'x');
+    return spawnSync('cp', ['-c', path.join(a, 'a'), path.join(a, 'b')], { stdio: 'ignore' }).status === 0;
+  } finally {
+    fs.rmSync(a, { recursive: true, force: true });
+  }
+}
+
+/** Kopya içindeki kara listedeki öğeleri (.env*, *.pem, *.key, .auth, .ssh) siler; sayıyı döner. */
+export function scrubDenied(dir) {
+  let n = 0;
+  const walkDir = (abs) => {
+    for (const e of fs.readdirSync(abs, { withFileTypes: true })) {
+      const p = path.join(abs, e.name);
+      const bad = e.name.startsWith('.env') || /\.(pem|key)$/i.test(e.name) || e.name === '.auth' || e.name === '.ssh';
+      if (bad) { fs.rmSync(p, { recursive: true, force: true }); n++; continue; }
+      if (e.isDirectory()) walkDir(p);
+    }
+  };
+  if (fs.existsSync(dir)) walkDir(dir);
+  return n;
+}
+
+const sha = (f) => (fs.existsSync(f) ? crypto.createHash('sha256').update(fs.readFileSync(f)).digest('hex') : null);
+
+/** Bağımlılık özeti: package.json + node_modules/.package-lock.json. */
+export function npmDigest(dir) {
+  return [sha(path.join(dir, 'package.json')), sha(path.join(dir, 'node_modules', '.package-lock.json'))].join(':');
+}
+
+/** npm kurulumu gerekli mi? Özet farklıysa ya da node_modules yoksa evet. */
+export function needsInstall(root, dest) {
+  if (!fs.existsSync(path.join(dest, 'node_modules', '.package-lock.json'))) return true;
+  return npmDigest(root) !== npmDigest(dest);
+}
+
+export function ajvMajor(dir) {
+  try { return Number(JSON.parse(fs.readFileSync(path.join(dir, 'node_modules/ajv/package.json'), 'utf8')).version.split('.')[0]); } catch { return 0; }
 }
 
 export function freeBytes(p) {
@@ -134,17 +194,31 @@ function main() {
     console.log('DRY-RUN — kopyalanacak:');
     for (const [k, g] of groups) console.log(`  ${k}  ${g.n} dosya  ${mb(g.size)}`);
     console.log(`Toplam: ${plan.copy.length} dosya, ${mb(total)}; atlanan: ${plan.skipped.length}`);
-    console.log('Kurulum: ' + (flags.has('--skip-install') ? 'atlanır' : 'npm install --no-package-lock --legacy-peer-deps; npm install ajv@8 --no-save --legacy-peer-deps'));
+    console.log('node_modules: APFS klonu (cp -c); npm install yalnız bağımlılık özeti farklıysa; ajv@8 yoksa --no-save kurulur' + (flags.has('--skip-install') ? ' (--skip-install: atlanır)' : ''));
     return;
   }
+  const clone = probeClone(v.path);
+  const t0 = Date.now();
   applyPlan(ROOT, v.path, plan);
   const byWhy = plan.skipped.reduce((m, s) => ((m[s.why] = (m[s.why] || 0) + 1), m), {});
   console.log(`Kopyalanan: ${plan.copy.length} dosya, ${mb(total)}; atlanan: ${JSON.stringify(byWhy)}`);
+  if (fs.existsSync(path.join(ROOT, 'node_modules'))) {
+    const r = cloneTree(path.join(ROOT, 'node_modules'), path.join(v.path, 'node_modules'));
+    const removed = scrubDenied(path.join(v.path, 'node_modules'));
+    console.log(`node_modules ${r.clone ? 'klonlandı' : 'kopyalandı'} (kara liste temizliği: ${removed} öğe)`);
+  }
+  console.log(`klon: ${clone ? 'evet' : 'hayır'} (${((Date.now() - t0) / 1000).toFixed(1)} sn)`);
+  if (sha(path.join(ROOT, 'composer.lock')) !== sha(path.join(v.path, 'composer.lock'))) {
+    console.warn('UYARI: composer.lock ana depodan farklı; vendor kopyası eski olabilir (composer install gerekebilir).');
+  }
   if (!flags.has('--skip-install')) {
-    for (const a of [['install', '--no-package-lock', '--legacy-peer-deps'], ['install', 'ajv@8', '--no-save', '--no-package-lock', '--legacy-peer-deps']]) {
+    const run = (a) => {
       const r = spawnSync('npm', a, { cwd: v.path, stdio: 'inherit' });
       if (r.status !== 0) { console.error('npm ' + a.join(' ') + ' başarısız'); process.exit(r.status || 1); }
-    }
+    };
+    if (needsInstall(ROOT, v.path)) run(['install', '--no-package-lock', '--legacy-peer-deps']);
+    else console.log('npm install atlandı (bağımlılık özeti aynı)');
+    if (ajvMajor(v.path) !== 8) run(['install', 'ajv@8', '--no-save', '--no-package-lock', '--legacy-peer-deps']);
   }
   console.log('Hazır: ' + v.path);
 }

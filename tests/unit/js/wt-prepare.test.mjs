@@ -8,7 +8,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { isDenied, validateWorktree, buildPlan, applyPlan, expandEntry } from '../../../scripts/wt-prepare.mjs';
+import { isDenied, validateWorktree, buildPlan, applyPlan, expandEntry, cloneTree, scrubDenied, needsInstall, ajvMajor } from '../../../scripts/wt-prepare.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const script = path.resolve(here, '../../../scripts/wt-prepare.mjs');
@@ -70,6 +70,42 @@ test('expandEntry: joker yoksa boş, sembolik bağ kopyalanmaz', () => {
   fs.symlinkSync(path.join(root, 'vendor/real.php'), path.join(root, 'vendor/link.php'));
   const plan = buildPlan(root, tmp(), { entries: ['vendor'] });
   assert.deepEqual(plan.copy.map((f) => f.rel), ['vendor/real.php']);
+});
+
+test('cloneTree: ağacı kopyalar; scrubDenied kara listeyi siler', () => {
+  const src = tmp();
+  const dst = path.join(tmp(), 'nm');
+  put(src, 'a/index.js', 'yeni');
+  put(src, 'a/.env', 'x');
+  put(src, 'b/cert.pem', 'x');
+  put(dst, 'a/index.js', 'eski');
+  const r = cloneTree(src, dst);
+  assert.equal(typeof r.clone, 'boolean');
+  assert.equal(fs.readFileSync(path.join(dst, 'a/index.js'), 'utf8'), 'yeni');
+  assert.equal(scrubDenied(dst), 2);
+  assert.equal(fs.existsSync(path.join(dst, 'a/.env')), false);
+  assert.equal(fs.existsSync(path.join(dst, 'b/cert.pem')), false);
+  assert.equal(fs.existsSync(path.join(dst, 'a/index.js')), true);
+});
+
+test('needsInstall: özet aynıysa atlar, farklıysa ya da node_modules yoksa kurar', () => {
+  const root = tmp();
+  const dest = tmp();
+  put(root, 'package.json', '{"a":1}');
+  put(root, 'node_modules/.package-lock.json', 'L1');
+  assert.equal(needsInstall(root, dest), true);
+  put(dest, 'package.json', '{"a":1}');
+  put(dest, 'node_modules/.package-lock.json', 'L1');
+  assert.equal(needsInstall(root, dest), false);
+  put(dest, 'node_modules/.package-lock.json', 'L2');
+  assert.equal(needsInstall(root, dest), true);
+});
+
+test('ajvMajor: sürümü okur, yoksa 0', () => {
+  const d = tmp();
+  assert.equal(ajvMajor(d), 0);
+  put(d, 'node_modules/ajv/package.json', '{"version":"8.17.1"}');
+  assert.equal(ajvMajor(d), 8);
 });
 
 test('CLI: hedefsiz ve ana klasör hedefi reddedilir; dry-run kopyalamaz', () => {
