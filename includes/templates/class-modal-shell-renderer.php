@@ -101,7 +101,7 @@ class WDP_Modal_Shell_Renderer {
 		if ( $disabled ) {
 			$extra = ' disabled aria-disabled="true" class="' . esc_attr( $class . ' is-disabled' ) . '"';
 			return sprintf(
-				'<button type="submit"%1$s name="%2$s"><span class="wdp-btn__inner">%3$s<span class="wdp-btn__label">%4$s</span></span></button>',
+				'<button%1$s name="%2$s" type="submit"><span class="wdp-btn__inner">%3$s<span class="wdp-btn__label">%4$s</span></span></button>',
 				$extra,
 				esc_attr( $name ),
 				$icon,
@@ -112,7 +112,7 @@ class WDP_Modal_Shell_Renderer {
 		// Native disabled: form POST yok. Kaplama erken dokunuşu yakalar (disabled tık yutmaz).
 		$extra = ' disabled aria-disabled="true" data-wdp-await-js="1" class="' . esc_attr( $class . ' wdp-cta-await-js wdp-loading' ) . '"';
 		$btn   = sprintf(
-			'<button type="submit"%1$s name="%2$s"><span class="wdp-btn__inner">%3$s<span class="wdp-btn__label">%4$s</span></span></button>',
+			'<button%1$s name="%2$s" type="submit"><span class="wdp-btn__inner">%3$s<span class="wdp-btn__label">%4$s</span></span></button>',
 			$extra,
 			esc_attr( $name ),
 			$icon,

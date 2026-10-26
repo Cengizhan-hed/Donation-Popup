@@ -1133,3 +1133,7 @@ Etkiler: plugins_loaded 10-19 arasında çalışan bir snippet/eklenti kısa kod
 - Yalnız yerel: `build/min-versions/<kimlik>/` altında belirli WP + WooCommerce sürümüyle SQLite WP kurar (zip'ler yalnız wordpress.org / downloads.wordpress.org; indirilenler çalıştırılmaz), mevcut matris senaryolarını (`matrix-scenarios.mjs`, iPhone) koşar, `php-errors.log` içinde `plugins/woo-donation-popup` satırlarını sayar, `sonuc.json` yazar.
 - Makinede yalnız PHP 8.4 var; PHP 7.4 için gerçek koşu yapılmadı. Statik kanıt: `phpcs --standard=PHPCompatibilityWP --runtime-set testVersion 7.4-` eklenti kodunda 0 sorun.
 - Bulgu: WooCommerce 8.0–8.4 `AddToCartForm.php` (`add_is_descendent_of_single_product_block_hidden_input_to_product_form`) `preg_replace` ile `<button type="submit"…>` kalıbının TÜM eşleşmelerini ilk düğmeyle değiştirir; blok tema ürün şablonunda formda iki submit düğmesi varsa "ödemeye git" düğmesi kaybolur. Ayrıntı ve çözüm önerisi: build/handoff/RAPOR-K4.md.
+
+## K5 — WC 8.0–8.4 AddToCartForm düğme kalıbı
+
+WooCommerce 8.0–8.4 `AddToCartForm` `preg_replace` ile formdaki tüm `<button type="submit"` kalıplarını ilk eşleşmeyle değiştirir. Bağış düğmeleri (`includes/templates/class-modal-shell-renderer.php` `render_form_action_button`, `templates/donation-panel/experiences/form.php`) `type="submit"` özniteliğini SONA yazar (`<button%1$s name="..." type="submit">`); davranış/erişilebilirlik değişmez. Test: `tests/unit/K5SubmitButtonMarkupTest.php` (render + kaynak taraması).

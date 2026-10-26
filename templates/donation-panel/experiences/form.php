@@ -218,7 +218,7 @@ $donation_panel_fee_text = rtrim( rtrim( number_format( $donation_panel_fee, 2, 
 				<small><?php esc_html_e( 'Total', 'woo-donation-popup' ); ?></small>
 				<strong class="dp-num" data-dp-total data-symbol="<?php echo esc_attr( $donation_panel_symbol ); ?>"><?php echo esc_html( $donation_panel_symbol . '0' ); ?></strong>
 			</div>
-			<button type="submit" class="dp-btn dp-btn--lg" data-dp-submit><?php esc_html_e( 'Continue', 'woo-donation-popup' ); ?></button>
+			<button class="dp-btn dp-btn--lg" data-dp-submit type="submit"><?php esc_html_e( 'Continue', 'woo-donation-popup' ); ?></button>
 		</div>
 	<?php endif; ?>
 </form>
