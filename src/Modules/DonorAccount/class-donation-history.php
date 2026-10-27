@@ -235,7 +235,7 @@ final class Donation_History {
 				'tone'        => self::tone( $status ),
 				'video_url'   => self::video_url( $order ),
 				'campaign'    => $campaign,
-				'can_repeat'  => '' !== $store_currency && $store_currency === (string) $order->get_currency(),
+				'can_repeat'  => '' !== $store_currency && $store_currency === (string) $order->get_currency() && Account_Controller::repeat_status_allowed( (string) $order->get_status() ),
 				'date'        => ( $created && function_exists( 'wc_format_datetime' ) ) ? (string) wc_format_datetime( $created ) : '',
 				'project'     => (string) $item->get_name(),
 				'type'        => self::type_label( $product_id ),

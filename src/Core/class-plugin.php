@@ -232,6 +232,23 @@ final class Plugin {
 	}
 
 	/**
+	 * Bu istek eklentinin yönetici REST uçlarına mı gidiyor? (güzel bağlantı, alt dizin, kodlanmış `/`, `?rest_route=`).
+	 *
+	 * @param string $request_uri REQUEST_URI.
+	 * @param string $rest_route  `rest_route` sorgu değişkeni.
+	 * @return bool
+	 */
+	public static function is_admin_rest_request( $request_uri, $rest_route ) {
+		foreach ( array( (string) $request_uri, (string) $rest_route ) as $candidate ) {
+			$decoded = rawurldecode( rawurldecode( $candidate ) );
+			if ( false !== strpos( $decoded, 'donation-panel/v1/admin' ) ) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
 	 * Göçleri çalıştırır, modülleri açar.
 	 *
 	 * @return void
@@ -246,8 +263,9 @@ final class Plugin {
 		$registry->boot( $this->container );
 
 		// Tek yönetici menüsü + yönetici REST uçları: yalnız yönetim alanında ya da yönetici REST isteğinde yüklenir.
-		$uri = isset( $_SERVER['REQUEST_URI'] ) ? rawurldecode( (string) wp_unslash( $_SERVER['REQUEST_URI'] ) ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- yalnız alt dize karşılaştırması.
-		if ( is_admin() || false !== strpos( $uri, 'donation-panel/v1/admin' ) ) {
+		$uri        = isset( $_SERVER['REQUEST_URI'] ) ? (string) wp_unslash( $_SERVER['REQUEST_URI'] ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- yalnız alt dize karşılaştırması.
+		$rest_route = isset( $_GET['rest_route'] ) ? (string) wp_unslash( $_GET['rest_route'] ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- yalnız alt dize karşılaştırması; işlem yapmaz.
+		if ( is_admin() || self::is_admin_rest_request( $uri, $rest_route ) ) {
 			\DonationPanel\Admin\Admin_Bootstrap::init( $this->container, $this->plugin_dir, $this->plugin_url );
 		}
 

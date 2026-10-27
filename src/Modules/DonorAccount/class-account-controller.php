@@ -303,6 +303,59 @@ class Account_Controller extends Rest_Controller {
 	}
 
 	/**
+	 * Sipariş durumu tekrar bağışa izin verir mi (ödenmiş sayılan durumlar).
+	 *
+	 * @param string $status Durum (`wc-` öneki olabilir).
+	 * @return bool
+	 */
+	public static function repeat_status_allowed( $status ) {
+		$status = preg_replace( '/^wc-/', '', strtolower( trim( (string) $status ) ) );
+		return '' !== $status && in_array( $status, \DonationPanel\Domain\Campaign_Totals::get_progress_paid_statuses(), true );
+	}
+
+	/**
+	 * Sipariş kalemi verisinden tekrar bağış girdisi (saf; test edilebilir).
+	 *
+	 * @param array<string, array<string, mixed>> $data      `Order_Meta_Keys::get_item_donation_data` çıktısı.
+	 * @param float                               $total     Kalem toplamı (işlem ücreti dahil olabilir).
+	 * @param string                              $frequency Düzenli bağış seçeneği (boş olabilir).
+	 * @param int                                 $decimals  Fiyat ondalık hanesi.
+	 * @return array<string, mixed>
+	 */
+	public static function repeat_input( array $data, $total, $frequency, $decimals ) {
+		$pick   = static function ( $key ) use ( $data ) {
+			return isset( $data[ $key ]['value'] ) && is_scalar( $data[ $key ]['value'] ) ? (string) $data[ $key ]['value'] : '';
+		};
+		$keys   = '\\DonationPanel\\WooCommerce\\Order_Meta_Keys';
+		$amount = (float) $total;
+		$fee    = $pick( constant( $keys . '::COVER_FEE' ) );
+		$input  = array();
+		if ( is_numeric( $fee ) && (float) $fee > 0 ) {
+			// İşlem ücreti siparişte tutara eklenmiştir; ücretsiz birim tutar geri bulunur ve ücret yeniden uygulanır.
+			$amount                      = round( $amount / ( 1 + ( (float) $fee / 100 ) ), max( 0, (int) $decimals ) );
+			$input['donation_cover_fee'] = '1';
+		}
+		$input['amount']              = $amount;
+		$input['donation_full_name']  = $pick( constant( $keys . '::DONOR_NAME' ) );
+		$input['donation_phone']      = $pick( constant( $keys . '::DONOR_PHONE' ) );
+		$input['donation_email']      = $pick( constant( $keys . '::DONOR_EMAIL' ) );
+		$input['donation_dedication'] = $pick( constant( $keys . '::DEDICATION' ) );
+		$input['donation_note']       = $pick( constant( $keys . '::DONATION_NOTE' ) );
+		if ( 'yes' === $pick( constant( $keys . '::ANONYMOUS' ) ) ) {
+			$input['donation_anonymous'] = '1';
+		}
+		if ( '' !== trim( (string) $frequency ) ) {
+			$input['donation_type'] = sanitize_key( (string) $frequency );
+		}
+		return array_filter(
+			$input,
+			static function ( $v ) {
+				return '' !== (string) $v;
+			}
+		);
+	}
+
+	/**
 	 * Geçmiş bir bağışı aynı tutarla sepete ekler (yalnız kendi siparişi; bağışçı bilgisi o siparişten devralınır).
 	 *
 	 * @param \WP_REST_Request $request Istek (`order_id`, `product_id`).
@@ -322,6 +375,10 @@ class Account_Controller extends Rest_Controller {
 		if ( ! $order || (int) $order->get_customer_id() !== get_current_user_id() || $product_id < 1 ) {
 			return $this->error( 'donation_panel_repeat_not_found', 'Donation not found.', 404 );
 		}
+		// İptal/başarısız/bekleyen/iade siparişler tekrarlanmaz: yalnız ödenmiş sayılan durumlar.
+		if ( ! self::repeat_status_allowed( (string) $order->get_status() ) ) {
+			return $this->error( 'donation_panel_repeat_unavailable', 'This donation cannot be repeated here.', 422 );
+		}
 		$store = function_exists( 'get_woocommerce_currency' ) ? (string) get_woocommerce_currency() : '';
 		if ( '' === $store || $store !== (string) $order->get_currency() ) {
 			return $this->error( 'donation_panel_repeat_currency', 'Please give again from the donation page.', 422 );
@@ -331,18 +388,13 @@ class Account_Controller extends Rest_Controller {
 			if ( ! $item instanceof \WC_Order_Item_Product || (int) $item->get_product_id() !== $product_id ) {
 				continue;
 			}
-			$data  = \DonationPanel\WooCommerce\Order_Meta_Keys::get_item_donation_data( $item );
-			$pick  = static function ( $key ) use ( $data ) {
-				return isset( $data[ $key ]['value'] ) && is_scalar( $data[ $key ]['value'] ) ? (string) $data[ $key ]['value'] : '';
-			};
-			$input = array(
-				'amount'              => (float) $item->get_total(),
-				'donation_full_name'  => $pick( \DonationPanel\WooCommerce\Order_Meta_Keys::DONOR_NAME ),
-				'donation_phone'      => $pick( \DonationPanel\WooCommerce\Order_Meta_Keys::DONOR_PHONE ),
-				'donation_email'      => $pick( \DonationPanel\WooCommerce\Order_Meta_Keys::DONOR_EMAIL ),
-				'donation_dedication' => $pick( \DonationPanel\WooCommerce\Order_Meta_Keys::DEDICATION ),
-				'submission_key'      => 'again-' . wp_generate_password( 12, false ),
+			$input                   = self::repeat_input(
+				\DonationPanel\WooCommerce\Order_Meta_Keys::get_item_donation_data( $item ),
+				(float) $item->get_total(),
+				(string) $item->get_meta( \DonationPanel\WooCommerce\Donation_Order_Meta::KEY_FREQUENCY, true ),
+				function_exists( 'wc_get_price_decimals' ) ? (int) wc_get_price_decimals() : 2
 			);
+			$input['submission_key'] = 'again-' . wp_generate_password( 12, false );
 			break;
 		}
 		$model   = Form_Controller::model_for_id( $product_id );
