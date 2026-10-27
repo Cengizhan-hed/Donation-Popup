@@ -5,7 +5,7 @@ Risk: Y yüksek, O orta, D düşük. Durum: Düzeltildi (test var), Kabul (gerek
 
 | Uç / yer | Bulgu | Risk | Durum |
 |---|---|---|---|
-| REST `form/{id}`, `form/validate`, `cart/add` (varsayılan sağlayıcılar) | Taslak/özel/parolalı/gizli ürün kimliğiyle form modeli (başlık, görsel, ön ayarlar) okunabiliyor, taslak ürün sepete eklenebilirdi (eski AJAX yolu `validate_product_id` ile kapalıydı, yeni REST yolunda yoktu) | O | Düzeltildi: `Rest_Controller::is_hidden_product()`; testler `E8ESecurityTest` |
+| REST `form/{id}`, `form/validate`, `cart/add` (varsayılan sağlayıcılar) | Taslak/özel/parolalı/gizli ürün kimliğiyle form modeli (başlık, görsel, ön ayarlar) okunabiliyor, taslak ürün sepete eklenebilirdi (eski AJAX yolu `validate_product_id` ile kapalıydı, yeni REST yolunda yoktu) | O | Düzeltildi: `Rest_Controller::is_hidden_product()`; testler `RestSecurityTest` |
 | REST `progress/{id}`, `impact/{id}`, `donations`, `stats` | Aynı ürün görünürlük açığı (kampanya toplamı, bağış akışı) | O | Düzeltildi (404), test var |
 | REST `account/reset`, `account/register` | IP başına sınır var, ama dağıtık IP ile tek e-postaya yağdırma (e-posta bombası) mümkündü | O | Düzeltildi: hedef (e-posta) başına 3 / 15 dk; aşımda yanıt değişmez (numaralandırma yok), e-posta gitmez; test var |
 | Tüm `register_rest_route` (10 rota) | `permission_callback` hepsinde var; `__return_true` yok. Herkese açık olanlar salt okunur ya da nonce + sınırlı | - | Temiz; sözleşme testi `test_no_route_uses_return_true...` |
@@ -30,7 +30,7 @@ Risk: Y yüksek, O orta, D düşük. Durum: Düzeltildi (test var), Kabul (gerek
 | Şifre sıfırlama zamanlaması | Var olan hesapta e-posta üretimi daha uzun sürer (ölçülebilir zaman farkı) | D | Liste (asenkron gönderim Faz 9) |
 | Bağımlılıklar | `npm audit --omit=dev`: 0 açık. `composer.lock`: üretim paketi 0 (yalnız geliştirme paketleri); `composer audit` çalıştırılacak araç bu makinede yok, üretim bağımlılığı olmadığından etkisiz | - | Temiz |
 
-## Eklenen testler (`tests/unit/E8/E8ESecurityTest.php`, 14 test)
+## Eklenen testler (`tests/unit/E8/RestSecurityTest.php`, 14 test)
 Gizli ürün tespiti (taslak/özel/bekleyen/gizli; yönetici hariç; yok ürün), varsayılan sağlayıcılar, progress/impact/donations/stats 404, e-posta başına sınır (6 farklı IP, 3 gönderim, aynı yanıt), IP sınırı 429, nonce'suz yazan uç 403 + üye ucu girişsiz, `cart/add` 415, kaynakta `__return_true` yok + her rotada `permission_callback`, yönetici AJAX işleyicilerinin hepsi koruma çağırıyor.
 
 ## Statik analiz (Psalm taint + Semgrep) — E8T, 2026-10-26

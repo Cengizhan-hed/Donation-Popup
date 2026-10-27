@@ -42,6 +42,24 @@ class Admin_Notice {
 	}
 
 	/**
+	 * Mağaza yöneticisine (`manage_woocommerce`) ön yüzde de görünen ipucu; ziyaretçiye her zaman boş döner.
+	 *
+	 * Kısa kod/blok yanlış yapılandırıldığında (ör. bağış kapsamı dışı ürün) yönetici nedenini görsün,
+	 * ziyaretçi hata görmesin diye kullanılır.
+	 *
+	 * @param string $message Düz metin ileti.
+	 * @return string Güvenli HTML (ya da '').
+	 */
+	public static function manager_notice_html( $message ) {
+		$message = trim( (string) $message );
+		if ( '' === $message || ! function_exists( 'current_user_can' ) || ! current_user_can( 'manage_woocommerce' ) ) {
+			return '';
+		}
+		self::enqueue_admin_notice_style();
+		return '<div class="wdp-admin-notice" role="note">' . esc_html( $message ) . '</div>';
+	}
+
+	/**
 	 * Tiny stylesheet for .wdp-admin-notice (printed in the footer when content is already rendering).
 	 *
 	 * @return void

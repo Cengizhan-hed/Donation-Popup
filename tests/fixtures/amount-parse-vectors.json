@@ -1,6 +1,6 @@
 {
-  "version": 2,
-  "notes": "Tek ayırıcı + tam 3 basamak her zaman binlik (1.250=1250, 1,250=1250, 10,505=10505). 0dp: ondalık tümü sıfırsa tam sayı kabul; değilse uyarı (yuvarlama/100× yok).",
+  "version": 3,
+  "notes": "Ondalık sayısı <3 olan mağazada tek ayırıcı + tam 3 basamak binliktir (1.250=1250, 1,250=1250). Ondalık sayısı >=3 (KWD/BHD) mağazada tek ayırıcı + 3 basamak: ayırıcı mağazanın ondalık ayırıcısıysa ondalık, binlik ayırıcısıysa binlik, ikisi de değilse belirsiz (istemci net biçim ister). 0 dp: ondalık tümü sıfırsa tam sayı; değilse uyarı (yuvarlama/100x yok).",
   "stores": {
     "try": {
       "code": "TRY",
@@ -31,43 +31,358 @@
       "decimals": 2,
       "thousandSeparator": ",",
       "decimalSeparator": "."
+    },
+    "kwd": {
+      "code": "KWD",
+      "decimals": 3,
+      "thousandSeparator": ",",
+      "decimalSeparator": "."
+    },
+    "kwd_de": {
+      "code": "BHD",
+      "decimals": 3,
+      "thousandSeparator": ".",
+      "decimalSeparator": ","
+    },
+    "kwd_space": {
+      "code": "KWD",
+      "decimals": 3,
+      "thousandSeparator": " ",
+      "decimalSeparator": ","
     }
   },
   "vectors": [
-    { "store": "try", "input": "10", "status": "ok", "amount": 10 },
-    { "store": "try", "input": "1.000", "status": "ok", "amount": 1000 },
-    { "store": "try", "input": "10.00", "status": "ok", "amount": 10, "note": "0dp sıfır kesir → tam sayı" },
-    { "store": "try", "input": "50,00", "status": "ok", "amount": 50, "note": "TR yaygın yazım" },
-    { "store": "try", "input": "10,0", "status": "ok", "amount": 10 },
-    { "store": "try", "input": "10,50", "status": "ambiguous", "note": "0dp sıfır olmayan kesir → kuruş uyarısı" },
-    { "store": "try", "input": "1.5", "status": "ambiguous" },
-    { "store": "try", "input": "12,5", "status": "ambiguous" },
-    { "store": "try", "input": "1.250", "status": "ok", "amount": 1250, "note": "3 basamak her zaman binlik" },
-    { "store": "try", "input": "1.250,00", "status": "ok", "amount": 1250 },
-    { "store": "try", "input": "12.345.678", "status": "ok", "amount": 12345678 },
-    { "store": "try", "input": "₺1.250", "status": "ok", "amount": 1250 },
-    { "store": "try", "input": "1 250", "status": "ok", "amount": 1250 },
-    { "store": "try", "input": "1,000", "status": "ok", "amount": 1000, "note": "geçerli gruplama; mağaza binliği farklı olsa da binlik" },
-    { "store": "staging30", "input": "10", "status": "ok", "amount": 10 },
-    { "store": "staging30", "input": "1.000", "status": "ok", "amount": 1000 },
-    { "store": "staging30", "input": "10.00", "status": "ok", "amount": 10, "note": "binlik=ondalık '.' ; 2 basamak sıfır → 10" },
-    { "store": "staging30", "input": "1.5", "status": "ambiguous" },
-    { "store": "staging30", "input": "12.345.678", "status": "ok", "amount": 12345678 },
-    { "store": "eur", "input": "10,50", "status": "ok", "amount": 10.5 },
-    { "store": "eur", "input": "10.50", "status": "ok", "amount": 10.5, "note": "tek ayırıcı, 2 basamak → ondalık" },
-    { "store": "eur", "input": "10.00", "status": "ok", "amount": 10 },
-    { "store": "eur", "input": "1.234,56", "status": "ok", "amount": 1234.56 },
-    { "store": "eur", "input": "12,5", "status": "ok", "amount": 12.5 },
-    { "store": "eur", "input": "10,505", "status": "ok", "amount": 10505, "note": "3 basamak → binlik 10505 (ondalık değil)" },
-    { "store": "usd", "input": "10.00", "status": "ok", "amount": 10 },
-    { "store": "usd", "input": "10,00", "status": "ok", "amount": 10 },
-    { "store": "usd", "input": "1,000", "status": "ok", "amount": 1000 },
-    { "store": "usd", "input": "1,000.50", "status": "ok", "amount": 1000.5 },
-    { "store": "usd", "input": "1,00", "status": "ok", "amount": 1 },
-    { "store": "usd", "input": "1,250.50", "status": "ok", "amount": 1250.5 },
-    { "store": "gbp", "input": "10.00", "status": "ok", "amount": 10 },
-    { "store": "gbp", "input": "1,000", "status": "ok", "amount": 1000 },
-    { "store": "gbp", "input": "1,00", "status": "ok", "amount": 1 },
-    { "store": "gbp", "input": "12.50", "status": "ok", "amount": 12.5 }
+    {
+      "store": "try",
+      "input": "10",
+      "status": "ok",
+      "amount": 10
+    },
+    {
+      "store": "try",
+      "input": "1.000",
+      "status": "ok",
+      "amount": 1000
+    },
+    {
+      "store": "try",
+      "input": "10.00",
+      "status": "ok",
+      "amount": 10,
+      "note": "0dp sıfır kesir → tam sayı"
+    },
+    {
+      "store": "try",
+      "input": "50,00",
+      "status": "ok",
+      "amount": 50,
+      "note": "TR yaygın yazım"
+    },
+    {
+      "store": "try",
+      "input": "10,0",
+      "status": "ok",
+      "amount": 10
+    },
+    {
+      "store": "try",
+      "input": "10,50",
+      "status": "ambiguous",
+      "note": "0dp sıfır olmayan kesir → kuruş uyarısı"
+    },
+    {
+      "store": "try",
+      "input": "1.5",
+      "status": "ambiguous"
+    },
+    {
+      "store": "try",
+      "input": "12,5",
+      "status": "ambiguous"
+    },
+    {
+      "store": "try",
+      "input": "1.250",
+      "status": "ok",
+      "amount": 1250,
+      "note": "3 basamak her zaman binlik"
+    },
+    {
+      "store": "try",
+      "input": "1.250,00",
+      "status": "ok",
+      "amount": 1250
+    },
+    {
+      "store": "try",
+      "input": "12.345.678",
+      "status": "ok",
+      "amount": 12345678
+    },
+    {
+      "store": "try",
+      "input": "₺1.250",
+      "status": "ok",
+      "amount": 1250
+    },
+    {
+      "store": "try",
+      "input": "1 250",
+      "status": "ok",
+      "amount": 1250
+    },
+    {
+      "store": "try",
+      "input": "1,000",
+      "status": "ok",
+      "amount": 1000,
+      "note": "geçerli gruplama; mağaza binliği farklı olsa da binlik"
+    },
+    {
+      "store": "staging30",
+      "input": "10",
+      "status": "ok",
+      "amount": 10
+    },
+    {
+      "store": "staging30",
+      "input": "1.000",
+      "status": "ok",
+      "amount": 1000
+    },
+    {
+      "store": "staging30",
+      "input": "10.00",
+      "status": "ok",
+      "amount": 10,
+      "note": "binlik=ondalık '.' ; 2 basamak sıfır → 10"
+    },
+    {
+      "store": "staging30",
+      "input": "1.5",
+      "status": "ambiguous"
+    },
+    {
+      "store": "staging30",
+      "input": "12.345.678",
+      "status": "ok",
+      "amount": 12345678
+    },
+    {
+      "store": "eur",
+      "input": "10,50",
+      "status": "ok",
+      "amount": 10.5
+    },
+    {
+      "store": "eur",
+      "input": "10.50",
+      "status": "ok",
+      "amount": 10.5,
+      "note": "tek ayırıcı, 2 basamak → ondalık"
+    },
+    {
+      "store": "eur",
+      "input": "10.00",
+      "status": "ok",
+      "amount": 10
+    },
+    {
+      "store": "eur",
+      "input": "1.234,56",
+      "status": "ok",
+      "amount": 1234.56
+    },
+    {
+      "store": "eur",
+      "input": "12,5",
+      "status": "ok",
+      "amount": 12.5
+    },
+    {
+      "store": "eur",
+      "input": "10,505",
+      "status": "ok",
+      "amount": 10505,
+      "note": "3 basamak → binlik 10505 (ondalık değil)"
+    },
+    {
+      "store": "usd",
+      "input": "10.00",
+      "status": "ok",
+      "amount": 10
+    },
+    {
+      "store": "usd",
+      "input": "10,00",
+      "status": "ok",
+      "amount": 10
+    },
+    {
+      "store": "usd",
+      "input": "1,000",
+      "status": "ok",
+      "amount": 1000
+    },
+    {
+      "store": "usd",
+      "input": "1,000.50",
+      "status": "ok",
+      "amount": 1000.5
+    },
+    {
+      "store": "usd",
+      "input": "1,00",
+      "status": "ok",
+      "amount": 1
+    },
+    {
+      "store": "usd",
+      "input": "1,250.50",
+      "status": "ok",
+      "amount": 1250.5
+    },
+    {
+      "store": "gbp",
+      "input": "10.00",
+      "status": "ok",
+      "amount": 10
+    },
+    {
+      "store": "gbp",
+      "input": "1,000",
+      "status": "ok",
+      "amount": 1000
+    },
+    {
+      "store": "gbp",
+      "input": "1,00",
+      "status": "ok",
+      "amount": 1
+    },
+    {
+      "store": "gbp",
+      "input": "12.50",
+      "status": "ok",
+      "amount": 12.5
+    },
+    {
+      "store": "kwd",
+      "input": "10",
+      "status": "ok",
+      "amount": 10
+    },
+    {
+      "store": "kwd",
+      "input": "1.250",
+      "status": "ok",
+      "amount": 1.25,
+      "note": "3 basamak, ayırıcı = mağaza ondalığı"
+    },
+    {
+      "store": "kwd",
+      "input": "1,250",
+      "status": "ok",
+      "amount": 1250,
+      "note": "3 basamak, ayırıcı = mağaza binliği"
+    },
+    {
+      "store": "kwd",
+      "input": "1,250.500",
+      "status": "ok",
+      "amount": 1250.5
+    },
+    {
+      "store": "kwd",
+      "input": "12.5",
+      "status": "ok",
+      "amount": 12.5
+    },
+    {
+      "store": "kwd",
+      "input": "12.5000",
+      "status": "ambiguous",
+      "note": "kesir > 3 hane"
+    },
+    {
+      "store": "kwd",
+      "input": "1.250.000",
+      "status": "ok",
+      "amount": 1250000
+    },
+    {
+      "store": "kwd",
+      "input": "1 250",
+      "status": "ok",
+      "amount": 1250
+    },
+    {
+      "store": "kwd_de",
+      "input": "1,250",
+      "status": "ok",
+      "amount": 1.25
+    },
+    {
+      "store": "kwd_de",
+      "input": "1.250",
+      "status": "ok",
+      "amount": 1250
+    },
+    {
+      "store": "kwd_de",
+      "input": "1.250,500",
+      "status": "ok",
+      "amount": 1250.5
+    },
+    {
+      "store": "kwd_de",
+      "input": "0,500",
+      "status": "ok",
+      "amount": 0.5
+    },
+    {
+      "store": "kwd_space",
+      "input": "1.250",
+      "status": "ambiguous",
+      "note": "ayırıcı mağaza ayırıcılarından biri değil → net onay iste"
+    },
+    {
+      "store": "kwd_space",
+      "input": "1,250",
+      "status": "ok",
+      "amount": 1.25
+    },
+    {
+      "store": "kwd_space",
+      "input": "1,5",
+      "status": "ok",
+      "amount": 1.5
+    },
+    {
+      "store": "eur",
+      "input": "1,250.50",
+      "status": "ok",
+      "amount": 1250.5,
+      "note": "İngiliz biçimi Alman mağazada yine okunur"
+    },
+    {
+      "store": "eur",
+      "input": "1.250",
+      "status": "ok",
+      "amount": 1250
+    },
+    {
+      "store": "gbp",
+      "input": "1.250,50",
+      "status": "ok",
+      "amount": 1250.5,
+      "note": "Alman biçimi GBP mağazada yine okunur"
+    },
+    {
+      "store": "try",
+      "input": "1.250,5",
+      "status": "ambiguous",
+      "note": "0dp kuruşlu"
+    }
   ]
 }

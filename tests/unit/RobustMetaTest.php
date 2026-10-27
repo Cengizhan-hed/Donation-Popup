@@ -66,7 +66,7 @@ final class RobustMetaTest extends TestCase {
 	}
 
 	public function test_broken_addon_product_id_is_numeric(): void {
-		$meta = Product_Settings::normalize(array('sadaka_wc_product_id' => 'abc'))['meta'];
+		$meta = Product_Settings::normalize(array('addon_wc_product_id' => 'abc'))['meta'];
 		$this->assertSame('', $meta['_addon_wc_product_id']);
 	}
 }

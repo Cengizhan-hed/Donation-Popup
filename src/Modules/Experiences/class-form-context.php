@@ -216,15 +216,15 @@ final class Form_Context {
 	 * @return array{label: string, message: string, fixed: float, min: float}|null
 	 */
 	private static function addon( array $legacy ) {
-		$product_id = isset( $legacy['sadaka_wc_product_id'] ) ? (int) $legacy['sadaka_wc_product_id'] : 0;
-		if ( empty( $legacy['enable_sadaka_donation'] ) || $product_id < 1 ) {
+		$product_id = isset( $legacy['addon_wc_product_id'] ) ? (int) $legacy['addon_wc_product_id'] : 0;
+		if ( empty( $legacy['enable_addon_donation'] ) || $product_id < 1 ) {
 			return null;
 		}
-		$fixed = ! empty( $legacy['sadaka_is_fixed_price'] ) && isset( $legacy['sadaka_fixed_price'] ) && is_numeric( $legacy['sadaka_fixed_price'] ) ? (float) $legacy['sadaka_fixed_price'] : 0.0;
-		$min   = isset( $legacy['sadaka_min_price'] ) && is_numeric( $legacy['sadaka_min_price'] ) ? max( 0.0, (float) $legacy['sadaka_min_price'] ) : 0.0;
+		$fixed = ! empty( $legacy['addon_is_fixed_price'] ) && isset( $legacy['addon_fixed_price'] ) && is_numeric( $legacy['addon_fixed_price'] ) ? (float) $legacy['addon_fixed_price'] : 0.0;
+		$min   = isset( $legacy['addon_min_price'] ) && is_numeric( $legacy['addon_min_price'] ) ? max( 0.0, (float) $legacy['addon_min_price'] ) : 0.0;
 		return array(
-			'label'   => isset( $legacy['sadaka_toggle_label'] ) ? (string) $legacy['sadaka_toggle_label'] : '',
-			'message' => isset( $legacy['sadaka_donation_message'] ) ? (string) $legacy['sadaka_donation_message'] : '',
+			'label'   => isset( $legacy['addon_toggle_label'] ) ? (string) $legacy['addon_toggle_label'] : '',
+			'message' => isset( $legacy['addon_donation_message'] ) ? (string) $legacy['addon_donation_message'] : '',
 			'fixed'   => $fixed,
 			'min'     => $min,
 		);

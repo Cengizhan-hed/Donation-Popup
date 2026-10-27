@@ -831,7 +831,8 @@ class Cart_Hooks {
 		$image = $display_product->get_image(
 			apply_filters( 'wdp_sadaka_cart_thumbnail_size', 'woocommerce_thumbnail' ), // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- geriye dönük uyumluluk sözleşmesi: eski wdp_ kanca adı değişmez.
 			array(
-				'class' => 'wdp-sadaka-cart-thumb',
+				// Eski sınıf adı, temaların mevcut CSS'i bozulmasın diye yeni adın yanında kalır.
+				'class' => 'wdp-addon-cart-thumb wdp-sadaka-cart-thumb',
 			)
 		);
 

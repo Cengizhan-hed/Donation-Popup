@@ -354,7 +354,7 @@ Aşağıdaki her alan için: ekran adı, ne işe yarar, hangi tipte görünür /
 
 Ürün Bağış sekmesinde üç kod kopyalanır: buton, panel, form (hepsi `id="…"` ile; `id` verilmezse kod bulunduğu ürünü kendisi bulur). Gutenberg blokları ve Elementor widget’ları aynı render fonksiyonlarını kullanır. 12.0.0'da `title/show_title` yeni formda kullanılmaz; `class` bir `<div class="dp-entry ...">` sarmalayıcıya gider.
 
-**Kapsam atlama:** `id`, `slug` veya `sku` ile ürün açıkça verilirse bağış kapsamı kontrolü uygulanmaz (ürün kapsam dışında da çalışır). Kimlik verilmezse (mevcut ürün sayfası) kapsam dışındaki ürün boş döner; uyarı yalnız `edit_products` yetkilisine görünür.
+**Kapsam:** `id`, `slug` veya `sku` ile açıkça verilen ürün de bağış kapsamında olmalıdır (12-fix: kapsam dışı ürün sepete bağış olarak giremez, REST reddeder). Kapsam “yalnızca işaretli”/“kategoriler” iken ürünü işaretleyin ya da kategoriye alın. Kapsam dışı ürün için ziyaretçi boş çıktı görür; `manage_woocommerce` yetkisi olan kullanıcı sayfada nedenini söyleyen bir ipucu görür.
 
 **`style`:** `[wdp_donation_button]` ve panel için kaldırıldı; verilirse yok sayılır (eski içerik bozulmaz).
 

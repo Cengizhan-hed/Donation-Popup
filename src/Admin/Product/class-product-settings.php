@@ -238,7 +238,7 @@ final class Product_Settings {
 		}
 
 		// Ek bağış ürünü: geçersizse temizlenir ve uyarı verilir.
-		$addon_id     = absint( $raw( 'sadaka_wc_product_id' ) );
+		$addon_id     = absint( $raw( 'addon_wc_product_id' ) );
 		$addon_stored = '';
 		if ( $addon_id > 0 ) {
 			$check = Addon_Product_Visibility::validate_addon_product_id( $addon_id, (int) $parent_id );
@@ -255,8 +255,8 @@ final class Product_Settings {
 			$addon_stored = (string) $addon_id;
 		}
 
-		$addon_min   = self::parse_money( '' === $raw( 'sadaka_min_price' ) ? '0' : $raw( 'sadaka_min_price' ) );
-		$addon_fixed = self::parse_money( $raw( 'sadaka_fixed_price' ) );
+		$addon_min   = self::parse_money( '' === $raw( 'addon_min_price' ) ? '0' : $raw( 'addon_min_price' ) );
+		$addon_fixed = self::parse_money( $raw( 'addon_fixed_price' ) );
 
 		$meta = array(
 			'_wdp_donation_product'      => self::parse_tristate_flag( isset( $posted['donation_product'] ) ? $posted['donation_product'] : null ),
@@ -279,12 +279,12 @@ final class Product_Settings {
 			'_enable_dedication'         => self::parse_tristate_flag( isset( $posted['enable_dedication'] ) ? $posted['enable_dedication'] : null ),
 			'_dedication_placeholder'    => $text( 'dedication_placeholder', 120 ),
 			'_enable_anonymous'          => self::parse_tristate_flag( isset( $posted['enable_anonymous'] ) ? $posted['enable_anonymous'] : null ),
-			'_enable_addon_donation'     => $flag( 'enable_sadaka_donation' ) ? 'yes' : 'no',
-			'_addon_toggle_label'        => $text( 'sadaka_toggle_label', 80 ),
+			'_enable_addon_donation'     => $flag( 'enable_addon_donation' ) ? 'yes' : 'no',
+			'_addon_toggle_label'        => $text( 'addon_toggle_label', 80 ),
 			'_addon_wc_product_id'       => $addon_stored,
 			'_addon_min_price'           => $addon_min['ok'] && $addon_min['amount'] > 0 ? wc_format_decimal( $addon_min['amount'] ) : '0',
 			'_addon_fixed_price'         => $addon_fixed['ok'] && $addon_fixed['amount'] > 0 ? wc_format_decimal( $addon_fixed['amount'] ) : '',
-			'_addon_donation_message'    => $area( 'sadaka_donation_message', 500 ),
+			'_addon_donation_message'    => $area( 'addon_donation_message', 500 ),
 		);
 
 		// Reddedilen giriş kayıtlı veriyi ASLA ezmez.

@@ -1769,18 +1769,18 @@ export async function readProductAddonAdminConfig(authed, env, productSlug, opts
     }
     await page.locator(SEL.productDonationTab).first().click().catch(() => {});
     await page
-      .locator('#wdp_enable_sadaka_donation, #wdp_sadaka_wc_product_id')
+      .locator('#wdp_enable_addon_donation, #wdp_addon_wc_product_id')
       .first()
       .waitFor({ state: 'attached', timeout: getActiveTimeouts().expect })
       .catch(() => {});
 
     const enabled = await page
-      .locator('#wdp_enable_sadaka_donation')
+      .locator('#wdp_enable_addon_donation')
       .isChecked()
       .catch(() => false);
 
     let productWcId = 0;
-    const productSelect = page.locator('#wdp_sadaka_wc_product_id');
+    const productSelect = page.locator('#wdp_addon_wc_product_id');
     if ((await productSelect.count()) > 0) {
       const val = await productSelect.inputValue().catch(() => '');
       productWcId = Number.parseInt(String(val || ''), 10) || 0;

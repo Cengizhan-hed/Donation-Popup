@@ -206,12 +206,12 @@ final class Product_Data_Tab {
 			'enable_dedication'         => $tristate( '_enable_dedication' ),
 			'dedication_placeholder'    => $meta( '_dedication_placeholder' ),
 			'enable_anonymous'          => $tristate( '_enable_anonymous' ),
-			'enable_sadaka_donation'    => $flag( '_enable_addon_donation' ),
-			'sadaka_toggle_label'       => $meta( '_addon_toggle_label' ),
-			'sadaka_wc_product_id'      => ( '' !== $addon_id && '0' !== $addon_id ) ? $addon_id : '',
-			'sadaka_min_price'          => '' !== $meta( '_addon_min_price' ) ? $meta( '_addon_min_price' ) : '0',
-			'sadaka_fixed_price'        => ( (float) $addon_fix > 0 ) ? $addon_fix : '',
-			'sadaka_donation_message'   => $meta( '_addon_donation_message' ),
+			'enable_addon_donation'     => $flag( '_enable_addon_donation' ),
+			'addon_toggle_label'        => $meta( '_addon_toggle_label' ),
+			'addon_wc_product_id'       => ( '' !== $addon_id && '0' !== $addon_id ) ? $addon_id : '',
+			'addon_min_price'           => '' !== $meta( '_addon_min_price' ) ? $meta( '_addon_min_price' ) : '0',
+			'addon_fixed_price'         => ( (float) $addon_fix > 0 ) ? $addon_fix : '',
+			'addon_donation_message'    => $meta( '_addon_donation_message' ),
 		);
 	}
 
@@ -710,10 +710,10 @@ final class Product_Data_Tab {
 		self::open_type_scope( array( Donation_Type::CAMPAIGN ), $values['donation_type'] );
 		echo '<p class="dp-ptab__note">' . esc_html__( 'On a goal campaign the extra donation is not shown on the form; the settings are used if you switch to other types.', 'woo-donation-popup' ) . '</p>';
 		echo '</div>';
-		self::checkbox( 'enable_sadaka_donation', $values['enable_sadaka_donation'], __( 'Add an extra donation', 'woo-donation-popup' ), __( 'Lets the donor add a small extra donation on top of the main donation.', 'woo-donation-popup' ) );
+		self::checkbox( 'enable_addon_donation', $values['enable_addon_donation'], __( 'Add an extra donation', 'woo-donation-popup' ), __( 'Lets the donor add a small extra donation on top of the main donation.', 'woo-donation-popup' ) );
 		self::text(
-			'sadaka_toggle_label',
-			$values['sadaka_toggle_label'],
+			'addon_toggle_label',
+			$values['addon_toggle_label'],
 			_x( 'Button text', 'product data tab', 'woo-donation-popup' ),
 			__( 'Text of the button that opens the extra donation.', 'woo-donation-popup' ),
 			array(
@@ -722,7 +722,7 @@ final class Product_Data_Tab {
 			)
 		);
 
-		$addon_id = ( '' !== $values['sadaka_wc_product_id'] ) ? absint( $values['sadaka_wc_product_id'] ) : 0;
+		$addon_id = ( '' !== $values['addon_wc_product_id'] ) ? absint( $values['addon_wc_product_id'] ) : 0;
 		$error    = '';
 		if ( $addon_id > 0 ) {
 			$check = Addon_Product_Visibility::validate_addon_product_id( $addon_id, (int) $parent_product_id );
@@ -732,8 +732,8 @@ final class Product_Data_Tab {
 		}
 		Addon_Product_Visibility::render_product_search_field(
 			array(
-				'id'          => self::id( 'sadaka_wc_product_id' ),
-				'name'        => self::name( 'sadaka_wc_product_id' ),
+				'id'          => self::id( 'addon_wc_product_id' ),
+				'name'        => self::name( 'addon_wc_product_id' ),
 				'value'       => $addon_id,
 				'label'       => __( 'Extra donation product', 'woo-donation-popup' ),
 				'description' => $default_id
@@ -747,16 +747,16 @@ final class Product_Data_Tab {
 			)
 		);
 		self::number(
-			'sadaka_min_price',
-			$values['sadaka_min_price'],
+			'addon_min_price',
+			$values['addon_min_price'],
 			/* translators: %s: currency symbol */
 			sprintf( __( 'Minimum amount (%s)', 'woo-donation-popup' ), $currency ),
 			__( 'Lower limit applied when the donor types the amount themselves.', 'woo-donation-popup' ),
 			array( 'step' => '1' )
 		);
 		self::number(
-			'sadaka_fixed_price',
-			$values['sadaka_fixed_price'],
+			'addon_fixed_price',
+			$values['addon_fixed_price'],
 			/* translators: %s: currency symbol */
 			sprintf( __( 'Fixed amount (%s)', 'woo-donation-popup' ), $currency ),
 			__( 'If filled, the extra donation is added at this amount and the minimum amount is ignored.', 'woo-donation-popup' ),
@@ -766,8 +766,8 @@ final class Product_Data_Tab {
 			)
 		);
 		self::textarea(
-			'sadaka_donation_message',
-			$values['sadaka_donation_message'],
+			'addon_donation_message',
+			$values['addon_donation_message'],
 			__( 'Extra donation note', 'woo-donation-popup' ),
 			__( 'Description shown next to the extra donation row.', 'woo-donation-popup' ),
 			array( 'maxlength' => '300' )

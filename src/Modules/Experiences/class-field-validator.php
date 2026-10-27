@@ -10,6 +10,7 @@
 namespace DonationPanel\Modules\Experiences;
 
 use DonationPanel\Domain\Amount_Limits;
+use DonationPanel\Support\Price;
 use DonationPanel\WooCommerce\Cart_Hooks;
 
 defined( 'ABSPATH' ) || exit;
@@ -20,29 +21,38 @@ defined( 'ABSPATH' ) || exit;
 final class Field_Validator {
 
 	/**
-	 * Tutar metnini sayıya çevirir (boşluk, ₺/£ gibi simge ve binlik ayırıcı toleranslı; geçersizse null).
+	 * Tutar metnini WooCommerce ondalık sayısı ve ayırıcı ayarlarına göre sonuç dizisine çevirir.
 	 *
-	 * Tek ayırıcı ve ardında 1-2 hane varsa ondalık, aksi halde binlik sayılır.
+	 * Kural JS `assets/src/experiences/amount.mjs` ile aynıdır (ortak vektörler: tests/fixtures/amount-parse-vectors.json).
 	 *
-	 * @param mixed $raw Ham metin.
+	 * @param mixed                      $raw      Ham metin.
+	 * @param array<string, mixed>|null  $settings İsteğe bağlı {decimals, thousandSeparator, decimalSeparator}.
+	 * @return array{ok:bool,amount:float,status:string,error:string}
+	 */
+	public static function parse_amount_result( $raw, $settings = null ) {
+		return Price::parse_donor_amount( $raw, $settings );
+	}
+
+	/**
+	 * Tutar metnini sayıya çevirir (simge/boşluk toleranslı; geçersiz ya da belirsizse null).
+	 *
+	 * @param mixed                      $raw      Ham metin.
+	 * @param array<string, mixed>|null  $settings İsteğe bağlı para birimi ayarı.
 	 * @return float|null
 	 */
-	public static function parse_amount( $raw ) {
-		$text = preg_replace( '/[^\d.,]/u', '', trim( (string) $raw ) );
-		if ( null === $text || '' === $text || ! preg_match( '/\d/', $text ) ) {
-			return null;
-		}
+	public static function parse_amount( $raw, $settings = null ) {
+		$result = self::parse_amount_result( $raw, $settings );
+		return $result['ok'] ? $result['amount'] : null;
+	}
 
-		$last = max( (int) strrpos( $text, '.' ), (int) strrpos( $text, ',' ) );
-		if ( $last > 0 && preg_match( '/^\d{1,2}$/', substr( $text, $last + 1 ) ) ) {
-			$integer  = preg_replace( '/\D/', '', substr( $text, 0, $last ) );
-			$fraction = substr( $text, $last + 1 );
-			$number   = $integer . '.' . $fraction;
-		} else {
-			$number = preg_replace( '/\D/', '', $text );
-		}
-
-		return is_numeric( $number ) ? (float) $number : null;
+	/**
+	 * Ayrıştırma için para birimi ayarı: Woo ayırıcıları + modelin ondalık sayısı.
+	 *
+	 * @param array<string, mixed> $model Model.
+	 * @return array<string, mixed>
+	 */
+	private static function currency_settings( array $model ) {
+		return isset( $model['decimals'] ) ? array( 'decimals' => max( 0, (int) $model['decimals'] ) ) : array();
 	}
 
 	/**
@@ -167,7 +177,13 @@ final class Field_Validator {
 	 * @return float|null
 	 */
 	private static function typed_amount( array $model, array $input, array &$errors ) {
-		$amount = self::parse_amount( isset( $input['amount'] ) ? $input['amount'] : '' );
+		$parsed = self::parse_amount_result( isset( $input['amount'] ) ? $input['amount'] : '', self::currency_settings( $model ) );
+		if ( 'ambiguous' === $parsed['status'] ) {
+			// Belirsiz biçim (ör. KWD'de "1,250"): tahmin etmek yerine net biçim istenir.
+			$errors['amount'] = $parsed['error'];
+			return null;
+		}
+		$amount = $parsed['ok'] ? $parsed['amount'] : null;
 		$min    = isset( $model['min'] ) ? (float) $model['min'] : 0.0;
 		$limit  = max( $min, 0.01 );
 		if ( null === $amount || $amount <= 0 ) {
@@ -274,7 +290,7 @@ final class Field_Validator {
 				'amount' => $fixed,
 			);
 		}
-		$amount = self::parse_amount( isset( $input['addon_amount'] ) ? $input['addon_amount'] : '' );
+		$amount = self::parse_amount( isset( $input['addon_amount'] ) ? $input['addon_amount'] : '', self::currency_settings( $model ) );
 		$min    = isset( $config['min'] ) ? (float) $config['min'] : 0.0;
 		if ( null === $amount || $amount <= 0 || $amount > Amount_Limits::max() ) {
 			$errors['addon_amount'] = __( 'Please enter a valid add-on donation amount.', 'woo-donation-popup' );

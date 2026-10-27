@@ -3,7 +3,7 @@
  * Ek bağış satırı (AddOn): ana bağışın yanına, ayrı ürünle ve ayrı tutarla eklenen sepet satırı.
  *
  * Sepet öğesi sözleşmesi eski motorla birebir aynıdır (`wdp_sadaka_donation`, `wdp_parent_product_id`,
- * `wdp_parent_cart_item_key`, `wdp_sadaka_linked_wc_product`, `donation_data.is_sadaka`); sepet, ödeme ve
+ * `wdp_parent_cart_item_key`, `wdp_sadaka_linked_wc_product`, `donation_data.is_addon`; eski oturumlardaki `is_sadaka` işareti `Legacy_Context::is_addon_data()` ile okunur); sepet, ödeme ve
  * sipariş kodu bu anahtarlara bakar. Tutar doğrulaması `Field_Validator` içinde yapılır; burada yalnız satır eklenir.
  *
  * @package DonationPanel
@@ -28,7 +28,7 @@ final class Addon_Line {
 	 * @return array<string, mixed>
 	 */
 	public static function donation_data( array $main ) {
-		$data = array( 'is_sadaka' => true );
+		$data = array( 'is_addon' => true );
 
 		if ( ! empty( $main['share_count'] ) && ! empty( $main['shareholders'] ) && is_array( $main['shareholders'] ) ) {
 			$first = reset( $main['shareholders'] );
@@ -71,13 +71,13 @@ final class Addon_Line {
 			'wdp_sadaka_donation'          => true,
 			'wdp_parent_product_id'        => (int) $parent_product_id,
 			'wdp_sadaka_linked_wc_product' => true,
-			'unique_key'                   => md5( implode( '|', array( (int) $parent_product_id, (int) $addon_product_id, 'sadaka', microtime( true ), function_exists( 'wp_rand' ) ? wp_rand() : random_int( 0, PHP_INT_MAX ) ) ) ),
+			'unique_key'                   => md5( implode( '|', array( (int) $parent_product_id, (int) $addon_product_id, 'addon', microtime( true ), function_exists( 'wp_rand' ) ? wp_rand() : random_int( 0, PHP_INT_MAX ) ) ) ),
 		);
 		if ( '' !== $parent_key ) {
 			$data['wdp_parent_cart_item_key'] = $parent_key;
 		}
 		if ( '' !== $submission ) {
-			$data['unique_submission_key'] = $submission . '-sadaka';
+			$data['unique_submission_key'] = $submission . '-addon';
 		}
 		return $data;
 	}

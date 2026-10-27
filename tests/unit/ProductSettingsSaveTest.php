@@ -78,8 +78,8 @@ final class ProductSettingsSaveTest extends TestCase {
 		$meta = Product_Settings::normalize(
 			array(
 				'dedication_placeholder'  => 'Anısına: Şükrü Çağlayan ğüöı',
-				'sadaka_toggle_label'     => 'Ek bağış ekle',
-				'sadaka_donation_message' => "İyilik gizlice ulaşır;\nniyetiniz umut olur.",
+				'addon_toggle_label'     => 'Ek bağış ekle',
+				'addon_donation_message' => "İyilik gizlice ulaşır;\nniyetiniz umut olur.",
 			)
 		)['meta'];
 		$this->assertSame('Anısına: Şükrü Çağlayan ğüöı', $meta['_dedication_placeholder']);
@@ -121,7 +121,7 @@ final class ProductSettingsSaveTest extends TestCase {
 	}
 
 	public function test_addon_prices_are_cleaned(): void {
-		$meta = Product_Settings::normalize(array('sadaka_min_price' => '-3', 'sadaka_fixed_price' => '25'))['meta'];
+		$meta = Product_Settings::normalize(array('addon_min_price' => '-3', 'addon_fixed_price' => '25'))['meta'];
 		$this->assertSame('0', $meta['_addon_min_price']);
 		$this->assertSame('25', $meta['_addon_fixed_price']);
 	}

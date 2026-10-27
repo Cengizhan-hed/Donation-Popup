@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: woo-donation-popup 12.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-27 09:02+0300\n"
+"POT-Creation-Date: 2026-10-27 11:52+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -32,7 +32,7 @@ msgstr ""
 #: src/Admin/Product/class-product-data-tab.php:75
 #: src/Admin/Product/class-product-list.php:65
 #: src/Admin/Product/class-product-list.php:69
-#: templates/donation-panel/experiences/form.php:366
+#: templates/donation-panel/experiences/form.php:367
 #: templates/donation-panel/thanks/summary.php:39
 msgid "Donation"
 msgstr ""
@@ -90,8 +90,8 @@ msgstr ""
 
 #: src/Admin/Product/class-product-data-tab.php:473
 #: src/WooCommerce/class-donation-order-meta.php:54
-#: templates/donation-panel/experiences/form.php:173
 #: templates/donation-panel/experiences/form.php:174
+#: templates/donation-panel/experiences/form.php:175
 msgid "Donation type"
 msgstr ""
 
@@ -744,8 +744,8 @@ msgid ""
 msgstr ""
 
 #: src/Admin/class-field-registry.php:59
-#: src/WooCommerce/class-cart-hooks.php:791
-#: templates/donation-panel/experiences/form.php:368
+#: src/WooCommerce/class-cart-hooks.php:796
+#: templates/donation-panel/experiences/form.php:369
 msgid "Add-on donation"
 msgstr ""
 
@@ -763,9 +763,9 @@ msgid ""
 msgstr ""
 
 #: src/Admin/class-field-registry.php:61 src/Admin/class-settings-store.php:80
-#: src/Modules/TaxRelief/class-tax-relief-declaration.php:60
-#: src/Modules/TaxRelief/class-tax-relief-module.php:161
-#: src/Modules/TaxRelief/class-tax-relief-module.php:203
+#: src/Modules/TaxRelief/class-tax-relief-declaration.php:75
+#: src/Modules/TaxRelief/class-tax-relief-module.php:190
+#: src/Modules/TaxRelief/class-tax-relief-module.php:232
 msgid "Tax relief declaration"
 msgstr ""
 
@@ -1886,7 +1886,7 @@ msgid "Setup progress"
 msgstr ""
 
 #: src/Admin/class-setup-wizard.php:151
-#: templates/donation-panel/experiences/form.php:140
+#: templates/donation-panel/experiences/form.php:141
 msgid "Back"
 msgstr ""
 
@@ -1895,8 +1895,8 @@ msgid "Skip for now"
 msgstr ""
 
 #: src/Admin/class-setup-wizard.php:153
-#: templates/donation-panel/experiences/form.php:138
-#: templates/donation-panel/experiences/form.php:394
+#: templates/donation-panel/experiences/form.php:139
+#: templates/donation-panel/experiences/form.php:395
 msgid "Continue"
 msgstr ""
 
@@ -2000,64 +2000,72 @@ msgid ""
 "installed and active."
 msgstr ""
 
-#: src/Core/class-version-migrations.php:280
-#: src/Core/class-version-migrations.php:311
-#: src/Core/class-version-migrations.php:369
+#. translators: %s: technical error detail
+#: src/Core/class-migrations.php:189
+#, php-format
+msgid ""
+"Donation Panel could not finish an update step and will retry on the next "
+"request. Detail: %s"
+msgstr ""
+
+#: src/Core/class-version-migrations.php:293
+#: src/Core/class-version-migrations.php:324
+#: src/Core/class-version-migrations.php:382
 msgid "Your personal data is processed under the privacy notice."
 msgstr ""
 
-#: src/Core/class-version-migrations.php:313
-#: src/Core/class-version-migrations.php:371
+#: src/Core/class-version-migrations.php:326
+#: src/Core/class-version-migrations.php:384
 msgid ""
 "Your personal data is processed to complete your donation and is shared with "
 "our field teams abroad. See the privacy notice for details."
 msgstr ""
 
-#: src/Core/class-version-migrations.php:745
-#: src/Domain/class-addon-product-visibility.php:195
+#: src/Core/class-version-migrations.php:758
+#: src/Domain/class-addon-product-visibility.php:193
 msgid "General default (Success tab)"
 msgstr ""
 
-#: src/Core/class-version-migrations.php:996
+#: src/Core/class-version-migrations.php:1009
 msgid ""
 "On WooCommerce product and shop pages, “Donate” can be used instead of “Add "
 "to cart”."
 msgstr ""
 
-#: src/Core/class-version-migrations.php:997
+#: src/Core/class-version-migrations.php:1010
 msgid "Settings → Product page and list"
 msgstr ""
 
-#: src/Core/class-version-migrations.php:998
+#: src/Core/class-version-migrations.php:1011
 msgid "Hide"
 msgstr ""
 
-#: src/Domain/class-addon-product-visibility.php:400
+#: src/Domain/class-addon-product-visibility.php:398
 msgid "Add-on donation product"
 msgstr ""
 
-#: src/Domain/class-addon-product-visibility.php:417
-#: src/Domain/class-addon-product-visibility.php:433
+#: src/Domain/class-addon-product-visibility.php:415
+#: src/Domain/class-addon-product-visibility.php:431
 msgid "Search by product name…"
 msgstr ""
 
-#: src/Domain/class-addon-product-visibility.php:472
+#: src/Domain/class-addon-product-visibility.php:470
 msgid "The add-on donation product cannot be the main product itself."
 msgstr ""
 
-#: src/Domain/class-addon-product-visibility.php:479
+#: src/Domain/class-addon-product-visibility.php:477
 msgid "Select a valid simple WooCommerce product (published or private)."
 msgstr ""
 
 #: src/Domain/class-addon-settings.php:117
-#: templates/donation-panel/experiences/form.php:114
+#: templates/donation-panel/experiences/form.php:115
 msgid "Add add-on donation"
 msgstr ""
 
 #: src/Domain/class-addon-settings.php:242
 #: src/Domain/class-addon-settings.php:252
-#: src/Modules/Experiences/class-field-validator.php:278
-#: templates/donation-panel/experiences/form.php:138
+#: src/Modules/Experiences/class-field-validator.php:296
+#: templates/donation-panel/experiences/form.php:139
 msgid "Please enter a valid add-on donation amount."
 msgstr ""
 
@@ -2067,7 +2075,7 @@ msgstr ""
 msgid "Please enter %s or more for the add-on donation."
 msgstr ""
 
-#: src/Domain/class-campaign-goal.php:35
+#: src/Domain/class-campaign-goal.php:33
 msgid ""
 "We have reached our goal, thank you for your support. Extra donations to "
 "this campaign are used in similar projects."
@@ -2112,8 +2120,8 @@ msgstr ""
 msgid "Privacy notice on the processing of personal data"
 msgstr ""
 
-#: src/Domain/class-product-context.php:122
-#: templates/donation-panel/experiences/form.php:125
+#: src/Domain/class-product-context.php:123
+#: templates/donation-panel/experiences/form.php:126
 msgid "Add-on amount"
 msgstr ""
 
@@ -2124,7 +2132,7 @@ msgid "of %s goal"
 msgstr ""
 
 #: src/Modules/Campaign/class-progress-renderer.php:62
-#: templates/donation-panel/experiences/form.php:195
+#: templates/donation-panel/experiences/form.php:196
 msgid "Goal completion rate"
 msgstr ""
 
@@ -2135,7 +2143,7 @@ msgstr ""
 #. translators: %s: number of donors, already formatted
 #. translators: %s: number of donors.
 #: src/Modules/Campaign/class-progress-renderer.php:79
-#: templates/donation-panel/experiences/form.php:199
+#: templates/donation-panel/experiences/form.php:200
 #, php-format
 msgid "%s supporter"
 msgid_plural "%s supporters"
@@ -2148,13 +2156,13 @@ msgid "Goal reached"
 msgstr ""
 
 #. translators: %s: site name.
-#: src/Modules/DonorAccount/class-account-controller.php:389
+#: src/Modules/DonorAccount/class-account-controller.php:447
 #, php-format
 msgid "[%s] Confirm to link your earlier gifts"
 msgstr ""
 
 #. translators: 1: verification link, 2: validity in minutes.
-#: src/Modules/DonorAccount/class-account-controller.php:391
+#: src/Modules/DonorAccount/class-account-controller.php:449
 #, php-format
 msgid ""
 "Open this link while logged in to add the gifts you made as a guest with "
@@ -2209,7 +2217,7 @@ msgstr ""
 #: src/Modules/DonorAccount/class-account-renderer.php:86
 #: src/Modules/DonorAccount/class-account-renderer.php:96
 #: src/Modules/DonorAccount/class-account-renderer.php:103
-#: src/WooCommerce/class-cart-hooks.php:306
+#: src/WooCommerce/class-cart-hooks.php:317
 msgid "Email"
 msgstr ""
 
@@ -2313,9 +2321,9 @@ msgstr ""
 
 #: src/Modules/DonorAccount/class-account-renderer.php:211
 #: src/Modules/SideCart/class-side-cart-renderer.php:88
-#: templates/donation-panel/experiences/form.php:365
-#: templates/donation-panel/experiences/form.php:369
-#: templates/donation-panel/experiences/form.php:389
+#: templates/donation-panel/experiences/form.php:366
+#: templates/donation-panel/experiences/form.php:370
+#: templates/donation-panel/experiences/form.php:390
 #: templates/donation-panel/thanks/summary.php:49
 msgid "Total"
 msgstr ""
@@ -2382,6 +2390,10 @@ msgstr ""
 
 #: src/Modules/DonorAccount/class-donor-account-module.php:239
 #: src/Modules/DonorAccount/class-donor-account-module.php:274
+#: templates/donation-panel/experiences/bottom-sheet.php:16
+#: templates/donation-panel/experiences/inline.php:16
+#: templates/donation-panel/experiences/popup.php:16
+#: templates/donation-panel/experiences/side-panel.php:16
 msgid "Too many attempts. Please wait a moment and try again."
 msgstr ""
 
@@ -2494,11 +2506,11 @@ msgid "Show heading"
 msgstr ""
 
 #: src/Modules/EntryPoints/Elementor/class-donation-form-widget.php:137
-#: src/Modules/TaxRelief/class-tax-relief-module.php:162
-#: src/Modules/TaxRelief/class-tax-relief-module.php:203
-#: src/WooCommerce/class-cart-hooks.php:321
-#: src/WooCommerce/class-order-meta-keys.php:291
-#: src/WooCommerce/class-order-meta-keys.php:295 blocks/donations/index.js:25
+#: src/Modules/TaxRelief/class-tax-relief-module.php:191
+#: src/Modules/TaxRelief/class-tax-relief-module.php:232
+#: src/WooCommerce/class-cart-hooks.php:332
+#: src/WooCommerce/class-order-meta-keys.php:336
+#: src/WooCommerce/class-order-meta-keys.php:340 blocks/donations/index.js:25
 msgid "Yes"
 msgstr ""
 
@@ -2678,7 +2690,7 @@ msgid "All tab label"
 msgstr ""
 
 #: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:263
-#: src/Modules/EntryPoints/class-donations-list.php:196
+#: src/Modules/EntryPoints/class-donations-list.php:198
 msgid "All"
 msgstr ""
 
@@ -2732,40 +2744,40 @@ msgid ""
 "Preview: «%s» is shown. That product’s form appears on the product page."
 msgstr ""
 
-#: src/Modules/EntryPoints/class-donations-list.php:431
+#: src/Modules/EntryPoints/class-donations-list.php:433
 msgid "There are no donations to show right now."
 msgstr ""
 
-#: src/Modules/EntryPoints/class-donations-list.php:690
+#: src/Modules/EntryPoints/class-donations-list.php:692
 msgid "Donation categories"
 msgstr ""
 
 #. translators: 1: button text (e.g. Donate), 2: donation product name
-#: src/Modules/EntryPoints/class-donations-list.php:746
+#: src/Modules/EntryPoints/class-donations-list.php:748
 #, php-format
 msgid "%1$s: %2$s"
 msgstr ""
 
-#: src/Modules/EntryPoints/class-donations-list.php:775
+#: src/Modules/EntryPoints/class-donations-list.php:777
 msgid "Per share"
 msgstr ""
 
-#: src/Modules/EntryPoints/class-donations-list.php:850
+#: src/Modules/EntryPoints/class-donations-list.php:852
 msgid "Donate now"
 msgstr ""
 
-#: src/Modules/EntryPoints/class-donations-list.php:850
-#: src/Modules/EntryPoints/class-shortcodes.php:302
+#: src/Modules/EntryPoints/class-donations-list.php:852
+#: src/Modules/EntryPoints/class-shortcodes.php:314
 #: src/Modules/Experiences/class-form-renderer.php:72
 msgid "Donate"
 msgstr ""
 
-#: src/Modules/EntryPoints/class-donations-list.php:861
+#: src/Modules/EntryPoints/class-donations-list.php:863
 msgid "Campaign"
 msgstr ""
 
 #. translators: %d: days left in the campaign
-#: src/Modules/EntryPoints/class-donations-list.php:870
+#: src/Modules/EntryPoints/class-donations-list.php:872
 #, php-format
 msgid "Campaign · %d day"
 msgid_plural "Campaign · %d days"
@@ -2773,42 +2785,42 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. translators: 1: collected, 2: goal
-#: src/Modules/EntryPoints/class-donations-list.php:899
+#: src/Modules/EntryPoints/class-donations-list.php:901
 #, php-format
 msgid "%1$s / %2$s raised"
 msgstr ""
 
 #. translators: %s: number of donors (formatted)
-#: src/Modules/EntryPoints/class-donations-list.php:911
+#: src/Modules/EntryPoints/class-donations-list.php:913
 #, php-format
 msgid "%s donor"
 msgid_plural "%s donors"
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/Modules/EntryPoints/class-donations-list.php:929
+#: src/Modules/EntryPoints/class-donations-list.php:931
 msgid "Any amount"
 msgstr ""
 
-#: src/Modules/EntryPoints/class-donations-list.php:944
+#: src/Modules/EntryPoints/class-donations-list.php:946
 msgid ""
 "Query returned no results: the given product IDs are not a published "
 "donation product or are out of scope."
 msgstr ""
 
-#: src/Modules/EntryPoints/class-donations-list.php:947
+#: src/Modules/EntryPoints/class-donations-list.php:949
 msgid ""
 "Query returned no results: no published, in-stock, purchasable donation "
 "product in the selected categories."
 msgstr ""
 
-#: src/Modules/EntryPoints/class-donations-list.php:950
+#: src/Modules/EntryPoints/class-donations-list.php:952
 msgid ""
 "Query returned no results: scope is “flagged products only”; flag products "
 "on the Donation tab."
 msgstr ""
 
-#: src/Modules/EntryPoints/class-donations-list.php:952
+#: src/Modules/EntryPoints/class-donations-list.php:954
 msgid ""
 "Query returned no results: no published, catalog-visible, in-stock donation "
 "product."
@@ -2837,65 +2849,79 @@ msgid "This product is not marked as a donation product."
 msgstr ""
 
 #. translators: %d: product ID
-#: src/Modules/EntryPoints/class-shortcodes.php:270
+#: src/Modules/EntryPoints/class-shortcodes.php:218
+#, php-format
+msgid ""
+"Donation form hidden: product #%d is outside the donation scope. Mark it as "
+"a donation product (Donation Panel settings, \"Which products are donation "
+"products\") or change the scope."
+msgstr ""
+
+#. translators: %d: product ID
+#: src/Modules/EntryPoints/class-shortcodes.php:282
 #, php-format
 msgid "This product cannot be purchased (ID: %d)."
 msgstr ""
 
 #. translators: %d: product ID
-#: src/Modules/EntryPoints/class-shortcodes.php:279
+#: src/Modules/EntryPoints/class-shortcodes.php:291
 #, php-format
 msgid "This product is out of stock (ID: %d)."
 msgstr ""
 
-#: src/Modules/Experiences/class-field-validator.php:111
+#: src/Modules/Experiences/class-field-validator.php:122
 msgid "Please choose a donation type."
 msgstr ""
 
 #. translators: %d: maximum quantity or share count.
-#: src/Modules/Experiences/class-field-validator.php:147
+#: src/Modules/Experiences/class-field-validator.php:158
 #, php-format
 msgid "Please choose a number between 1 and %d."
 msgstr ""
 
-#: src/Modules/Experiences/class-field-validator.php:154
-#: src/Modules/Experiences/class-field-validator.php:173
-#: src/Modules/Experiences/class-field-validator.php:181
-#: templates/donation-panel/experiences/form.php:138
+#: src/Modules/Experiences/class-field-validator.php:165
+#: src/Modules/Experiences/class-field-validator.php:190
+#: templates/donation-panel/experiences/form.php:139
 msgid "Please enter a donation amount."
 msgstr ""
 
 #. translators: %s: minimum amount.
-#: src/Modules/Experiences/class-field-validator.php:179
-#: src/Modules/Experiences/class-field-validator.php:283
-#: templates/donation-panel/experiences/form.php:138
+#: src/Modules/Experiences/class-field-validator.php:196
+#: src/Modules/Experiences/class-field-validator.php:302
+#: templates/donation-panel/experiences/form.php:139
 #, php-format
 msgid "Minimum amount is %s."
 msgstr ""
 
+#. translators: %s: maximum amount.
+#: src/Modules/Experiences/class-field-validator.php:199
+#, php-format
+msgid "The maximum amount is %s."
+msgstr ""
+
 #. translators: %s: example whole amount.
-#: src/Modules/Experiences/class-field-validator.php:186
+#: src/Modules/Experiences/class-field-validator.php:204
 #, php-format
 msgid "Fractional amounts are not allowed on this site, e.g. %s"
 msgstr ""
 
-#: src/Modules/Experiences/class-field-validator.php:234
-#: templates/donation-panel/experiences/form.php:350
-#: templates/donation-panel/experiences/form.php:357
+#: src/Modules/Experiences/class-field-validator.php:252
+#: templates/donation-panel/experiences/form.php:351
+#: templates/donation-panel/experiences/form.php:358
 msgid "This field is required."
 msgstr ""
 
 #. translators: %d: maximum characters.
-#: src/Modules/Experiences/class-field-validator.php:240
+#: src/Modules/Experiences/class-field-validator.php:258
 #, php-format
 msgid "Please use at most %d characters."
 msgstr ""
 
-#: src/Modules/Experiences/class-field-validator.php:243
+#: src/Modules/Experiences/class-field-validator.php:261
 msgid "Please enter a valid email address."
 msgstr ""
 
-#: src/Modules/Experiences/class-field-validator.php:246
+#: src/Modules/Experiences/class-field-validator.php:264
 msgid "Please check the phone number."
 msgstr ""
 
@@ -2949,7 +2975,7 @@ msgid "Please enter your phone number."
 msgstr ""
 
 #: src/Modules/Experiences/class-form-context.php:480
-#: src/WooCommerce/class-cart-hooks.php:313
+#: src/WooCommerce/class-cart-hooks.php:324
 #: src/WooCommerce/class-order-meta-keys.php:75
 msgid "Dedication"
 msgstr ""
@@ -3015,7 +3041,7 @@ msgid "On behalf of: %s"
 msgstr ""
 
 #: src/Modules/SideCart/class-side-cart-renderer.php:146
-#: templates/donation-panel/experiences/form.php:266
+#: templates/donation-panel/experiences/form.php:267
 msgid "Quantity"
 msgstr ""
 
@@ -3046,7 +3072,7 @@ msgid "Close basket"
 msgstr ""
 
 #. translators: %s: time span, e.g. "3 hours"
-#: src/Modules/SocialProof/class-donation-feed.php:196
+#: src/Modules/SocialProof/class-donation-feed.php:199
 #, php-format
 msgid "%s ago"
 msgstr ""
@@ -3074,7 +3100,7 @@ msgid "today"
 msgstr ""
 
 #: src/Modules/SocialProof/class-social-proof-renderer.php:106
-#: templates/donation-panel/experiences/form.php:192
+#: templates/donation-panel/experiences/form.php:193
 msgid "raised"
 msgstr ""
 
@@ -3083,17 +3109,17 @@ msgstr ""
 msgid "A kind donor"
 msgstr ""
 
-#: src/Modules/TaxRelief/class-tax-relief-declaration.php:59
+#: src/Modules/TaxRelief/class-tax-relief-declaration.php:74
 msgid "Tax relief"
 msgstr ""
 
-#: src/Modules/TaxRelief/class-tax-relief-declaration.php:61
+#: src/Modules/TaxRelief/class-tax-relief-declaration.php:76
 msgid ""
 "I confirm that I am eligible, and ask that this donation be treated as "
 "eligible for tax relief where my tax authority allows it."
 msgstr ""
 
-#: src/Modules/TaxRelief/class-tax-relief-declaration.php:62
+#: src/Modules/TaxRelief/class-tax-relief-declaration.php:77
 msgid "Yes, I make this declaration"
 msgstr ""
 
@@ -3660,7 +3686,7 @@ msgstr ""
 msgid "Please enter the amount in this format, e.g. %s"
 msgstr ""
 
-#: src/Support/class-price.php:447
+#: src/Support/class-price.php:456
 msgid "Invalid price value."
 msgstr ""
 
@@ -3678,76 +3704,76 @@ msgid ""
 "the product is published."
 msgstr ""
 
-#: src/WooCommerce/class-cart-hooks.php:162
+#: src/WooCommerce/class-cart-hooks.php:173
 msgid "Please add to cart using the donation form. Donor details are required."
 msgstr ""
 
-#: src/WooCommerce/class-cart-hooks.php:263
+#: src/WooCommerce/class-cart-hooks.php:274
 #: src/WooCommerce/class-order-meta-keys.php:78
 msgid "Share count"
 msgstr ""
 
 #. translators: %d: shareholder number.
-#: src/WooCommerce/class-cart-hooks.php:273
-#: templates/donation-panel/experiences/form.php:300
+#: src/WooCommerce/class-cart-hooks.php:284
+#: templates/donation-panel/experiences/form.php:301
 #, php-format
 msgid "Shareholder %d"
 msgstr ""
 
 #. translators: %d: shareholder number.
-#: src/WooCommerce/class-cart-hooks.php:281
+#: src/WooCommerce/class-cart-hooks.php:292
 #: src/WooCommerce/class-order-meta-keys.php:94
 #, php-format
 msgid "Shareholder %d email"
 msgstr ""
 
 #. translators: %d: shareholder number.
-#: src/WooCommerce/class-cart-hooks.php:289
+#: src/WooCommerce/class-cart-hooks.php:300
 #: src/WooCommerce/class-order-meta-keys.php:96
 #, php-format
 msgid "Shareholder %d note"
 msgstr ""
 
-#: src/WooCommerce/class-cart-hooks.php:299
+#: src/WooCommerce/class-cart-hooks.php:310
 msgid "Donor"
 msgstr ""
 
-#: src/WooCommerce/class-cart-hooks.php:320
+#: src/WooCommerce/class-cart-hooks.php:331
 msgid "Keep my name private"
 msgstr ""
 
-#: src/WooCommerce/class-cart-hooks.php:327
+#: src/WooCommerce/class-cart-hooks.php:338
 #: src/WooCommerce/class-order-meta-keys.php:74
 msgid "Donation note"
 msgstr ""
 
-#: src/WooCommerce/class-cart-hooks.php:345
+#: src/WooCommerce/class-cart-hooks.php:356
 #: src/WooCommerce/class-order-meta-keys.php:77
-#: templates/donation-panel/experiences/form.php:367
+#: templates/donation-panel/experiences/form.php:368
 msgid "Processing fee"
 msgstr ""
 
-#: src/WooCommerce/class-cart-hooks.php:394
+#: src/WooCommerce/class-cart-hooks.php:405
 msgid ""
 "The donation line with amount 0 was removed from the cart. Please enter a "
 "valid donation amount."
 msgstr ""
 
-#: src/WooCommerce/class-cart-hooks.php:483
+#: src/WooCommerce/class-cart-hooks.php:494
 msgid "Please enter a donation amount greater than 0."
 msgstr ""
 
 #. translators: %s: formatted minimum amount with currency
-#: src/WooCommerce/class-cart-hooks.php:488
+#: src/WooCommerce/class-cart-hooks.php:499
 #, php-format
 msgid "Please enter %s or more."
 msgstr ""
 
-#: src/WooCommerce/class-cart.php:143
+#: src/WooCommerce/class-cart.php:149
 msgid "This campaign is no longer accepting donations."
 msgstr ""
 
-#: src/WooCommerce/class-cart.php:149
+#: src/WooCommerce/class-cart.php:155
 #: templates/donation-panel/experiences/bottom-sheet.php:16
 #: templates/donation-panel/experiences/inline.php:16
 #: templates/donation-panel/experiences/popup.php:16
@@ -3755,7 +3781,7 @@ msgstr ""
 msgid "Please check the highlighted fields."
 msgstr ""
 
-#: src/WooCommerce/class-cart.php:223
+#: src/WooCommerce/class-cart.php:229
 msgid "An error occurred while adding the product to the cart."
 msgstr ""
 
@@ -3791,133 +3817,133 @@ msgstr ""
 msgid "Shareholder %d phone"
 msgstr ""
 
-#: templates/donation-panel/experiences/form.php:53
+#: templates/donation-panel/experiences/form.php:54
 msgid "privacy notice"
 msgstr ""
 
-#: templates/donation-panel/experiences/form.php:85
+#: templates/donation-panel/experiences/form.php:86
 msgid "Country code"
 msgstr ""
 
 #. translators: %s: fee percent.
-#: templates/donation-panel/experiences/form.php:105
+#: templates/donation-panel/experiences/form.php:106
 #, php-format
 msgid "Cover processing costs (+%%%s)"
 msgstr ""
 
 #. translators: 1: current step, 2: number of steps.
-#: templates/donation-panel/experiences/form.php:138
+#: templates/donation-panel/experiences/form.php:139
 #, php-format
 msgid "Step %1$d of %2$d"
 msgstr ""
 
 #. translators: %s: formatted total amount.
-#: templates/donation-panel/experiences/form.php:138
+#: templates/donation-panel/experiences/form.php:139
 #, php-format
 msgid "Donate %s"
 msgstr ""
 
-#: templates/donation-panel/experiences/form.php:138
+#: templates/donation-panel/experiences/form.php:139
 msgid "Added to your cart."
 msgstr ""
 
-#: templates/donation-panel/experiences/form.php:151
+#: templates/donation-panel/experiences/form.php:152
 msgid "Close popup"
 msgstr ""
 
-#: templates/donation-panel/experiences/form.php:163
+#: templates/donation-panel/experiences/form.php:164
 msgid "Donation form closed"
 msgstr ""
 
 #. translators: %d: percent of goal reached.
-#: templates/donation-panel/experiences/form.php:193
+#: templates/donation-panel/experiences/form.php:194
 #, php-format
 msgid "%d%%"
 msgstr ""
 
 #. translators: %s: goal amount.
-#: templates/donation-panel/experiences/form.php:197
+#: templates/donation-panel/experiences/form.php:198
 #, php-format
 msgid "Goal %s"
 msgstr ""
 
 #. translators: %s: number of days left.
-#: templates/donation-panel/experiences/form.php:202
+#: templates/donation-panel/experiences/form.php:203
 #, php-format
 msgid "%s day left"
 msgid_plural "%s days left"
 msgstr[0] ""
 msgstr[1] ""
 
-#: templates/donation-panel/experiences/form.php:209
-#: templates/donation-panel/experiences/form.php:233
+#: templates/donation-panel/experiences/form.php:210
+#: templates/donation-panel/experiences/form.php:234
 msgid "Donation amount"
 msgstr ""
 
-#: templates/donation-panel/experiences/form.php:219
+#: templates/donation-panel/experiences/form.php:220
 msgid "Most popular"
 msgstr ""
 
-#: templates/donation-panel/experiences/form.php:233
+#: templates/donation-panel/experiences/form.php:234
 msgid "Other amount"
 msgstr ""
 
-#: templates/donation-panel/experiences/form.php:234
+#: templates/donation-panel/experiences/form.php:235
 msgid "Enter another amount"
 msgstr ""
 
-#: templates/donation-panel/experiences/form.php:234
+#: templates/donation-panel/experiences/form.php:235
 msgid "Enter an amount"
 msgstr ""
 
-#: templates/donation-panel/experiences/form.php:250
+#: templates/donation-panel/experiences/form.php:251
 msgid "Donate on behalf of someone"
 msgstr ""
 
-#: templates/donation-panel/experiences/form.php:250
+#: templates/donation-panel/experiences/form.php:251
 msgid "Add a dedication note"
 msgstr ""
 
-#: templates/donation-panel/experiences/form.php:266
+#: templates/donation-panel/experiences/form.php:267
 msgid "Number of shares"
 msgstr ""
 
-#: templates/donation-panel/experiences/form.php:270
+#: templates/donation-panel/experiences/form.php:271
 msgid "Decrease"
 msgstr ""
 
-#: templates/donation-panel/experiences/form.php:272
+#: templates/donation-panel/experiences/form.php:273
 msgid "Increase"
 msgstr ""
 
 #. translators: %s: price of one share.
-#: templates/donation-panel/experiences/form.php:276
+#: templates/donation-panel/experiences/form.php:277
 #, php-format
 msgid "%s per share"
 msgstr ""
 
-#: templates/donation-panel/experiences/form.php:338
+#: templates/donation-panel/experiences/form.php:339
 msgid "Add a note (optional)"
 msgstr ""
 
-#: templates/donation-panel/experiences/form.php:353
+#: templates/donation-panel/experiences/form.php:354
 msgid "We use this number to keep you updated about your donation."
 msgstr ""
 
-#: templates/donation-panel/experiences/form.php:397
+#: templates/donation-panel/experiences/form.php:398
 msgid "Add to cart"
 msgstr ""
 
-#: templates/donation-panel/experiences/form.php:397
+#: templates/donation-panel/experiences/form.php:398
 msgid "Add to cart, choose another"
 msgstr ""
 
-#: templates/donation-panel/experiences/form.php:398
+#: templates/donation-panel/experiences/form.php:399
 msgid "Secure payment · Your details are encrypted"
 msgstr ""
 
 #. translators: %s: link to the privacy policy.
-#: templates/donation-panel/experiences/form.php:405
+#: templates/donation-panel/experiences/form.php:406
 #, php-format
 msgid "By continuing you confirm you have read the %s."
 msgstr ""

@@ -81,7 +81,7 @@ test.describe('REST', () => {
     expect(missing.status()).toBe(404);
   });
 
-  test('donations: kişi verisi yok; yalnız izinli ad', async ({ page, request }) => {
+  test('donations: kişi verisi yok; ad hiç dönmez', async ({ page, request }) => {
     await page.goto(URL); // örnek siparişleri oluşturur
     const res = await request.get(`/?rest_route=/donation-panel/v1/donations&product_id=${PRODUCT}&per_page=20`);
     expect(res.status()).toBe(200);
@@ -89,8 +89,10 @@ test.describe('REST', () => {
     expect(text).not.toMatch(/example\.test|gizli@|ayse@|Gizli|Kişi/i);
     const body = JSON.parse(text);
     const names = body.items.map((i) => i.name);
-    expect(names).toContain('Ayşe Y.');
-    expect(names.filter((n) => n === '').length).toBeGreaterThanOrEqual(1);
+    // K3: kişi bilgisi yok; izin meta'sı olsa bile ad hiç dönmez.
+    expect(names.length).toBeGreaterThanOrEqual(1);
+    expect(names.every((n) => n === '')).toBe(true);
+    expect(text).not.toMatch(/Ayşe/);
     for (const item of body.items) {
       expect(Object.keys(item).sort()).toEqual(['ago', 'amount', 'date', 'label', 'name']);
     }
@@ -109,7 +111,7 @@ test.describe('sosyal kanıt', () => {
     await expect(feed.locator('.dp-list__row')).toHaveCount(1);
     await feed.locator('[data-dp-feed-more]').click();
     await expect(feed.locator('.dp-list__row')).toHaveCount(2);
-    await expect(feed).toContainText('Ayşe Y.');
+    await expect(feed).not.toContainText('Ayşe');
     await expect(feed).not.toContainText('example.test');
     expect(await axeViolations(page, '#social-feed')).toEqual([]);
     expect(await axeViolations(page, '#social-counters')).toEqual([]);

@@ -1,0 +1,17 @@
+# Turkish translations — 12-fix2 (kod incelemesi kalanları).
+# Copyright (C) Donation Panel for WooCommerce
+msgid ""
+msgstr ""
+"Project-Id-Version: woo-donation-popup 12.0.0\n"
+"Language: tr_TR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Domain: woo-donation-popup\n"
+
+#: src/Modules/EntryPoints/class-shortcodes.php
+#. translators: %d: product ID
+#, php-format
+msgid "Donation form hidden: product #%d is outside the donation scope. Mark it as a donation product (Donation Panel settings, \"Which products are donation products\") or change the scope."
+msgstr "Bağış formu gizlendi: #%d numaralı ürün bağış kapsamı dışında. Ürünü bağış ürünü olarak işaretleyin (Donation Panel ayarları, \"Hangi ürünler bağış ürünü\") ya da kapsamı değiştirin."

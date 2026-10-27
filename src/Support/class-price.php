@@ -372,6 +372,15 @@ class Price {
 		if ( count( $chars ) === 1 ) {
 			$ch = $chars[0];
 			if ( self::is_valid_thousand_grouping( $s, $ch ) ) {
+				// 3 ondalıklı para birimleri (KWD/BHD): tek ayırıcı + 3 basamak mağaza ayarına göre yorumlanır.
+				if ( $decimals >= 3 && 1 === count( $seps ) ) {
+					if ( $ch === $cfg['decimalSeparator'] && $ch !== $cfg['thousandSeparator'] ) {
+						return self::apply_decimal_part( $before_last, $after_last, $decimals, $cfg );
+					}
+					if ( $ch !== $cfg['thousandSeparator'] ) {
+						return self::donor_amount_ambiguous( $cfg );
+					}
+				}
 				return self::donor_amount_result( true, (float) str_replace( $ch, '', $s ), 'ok', '' );
 			}
 			if ( count( $seps ) === 1 ) {

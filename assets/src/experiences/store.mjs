@@ -2,31 +2,21 @@
  * Form deneyimi durum makinesi (saf işlevler; DOM yok, birim test edilebilir).
  */
 
+import { parseAmountDetailed } from './amount.mjs';
+
 /** Katman sunumları: mobilde popup ve yan panel alttan panele döner. */
 export const NARROW_QUERY = '(max-width: 639.98px)';
 
 /**
- * Tutar metnini sayıya çevirir (sunucudaki Field_Validator::parse_amount ile aynı kural).
+ * Tutar metnini sayıya çevirir (sunucudaki Price::parse_donor_amount ile aynı kural; bkz. amount.mjs).
  *
- * @param {unknown} raw Ham metin.
- * @return {number|null} Geçersizse null.
+ * @param {unknown} raw      Ham metin.
+ * @param {object}  currency Woo {decimals, thousandSeparator, decimalSeparator}; verilmezse 2 ondalık, "," binlik, "." ondalık.
+ * @return {number|null} Geçersiz ya da belirsizse null.
  */
-export function parseAmount(raw) {
-  const text = String(raw ?? '')
-    .trim()
-    .replace(/[^\d.,]/g, '');
-  if (!/\d/.test(text)) {
-    return null;
-  }
-  const last = Math.max(text.lastIndexOf('.'), text.lastIndexOf(','));
-  let number;
-  if (last > 0 && /^\d{1,2}$/.test(text.slice(last + 1))) {
-    number = `${text.slice(0, last).replace(/\D/g, '')}.${text.slice(last + 1)}`;
-  } else {
-    number = text.replace(/\D/g, '');
-  }
-  const value = Number(number);
-  return Number.isFinite(value) ? value : null;
+export function parseAmount(raw, currency) {
+  const result = parseAmountDetailed(raw, currency);
+  return result.ok ? result.amount : null;
 }
 
 /**
@@ -177,15 +167,17 @@ export function reducer(state, action) {
         preset: action.value,
         focusPreset: action.value,
         custom: '',
+        amountStatus: 'ok',
         errors: omit(state.errors, 'amount'),
       };
     case 'setCustom': {
-      const parsed = parseAmount(action.value);
+      const detail = parseAmountDetailed(action.value, action.currency);
       return {
         ...state,
         custom: String(action.value),
         preset: null,
-        amount: parsed,
+        amount: detail.ok ? detail.amount : null,
+        amountStatus: detail.status,
         errors: omit(state.errors, 'amount'),
       };
     }

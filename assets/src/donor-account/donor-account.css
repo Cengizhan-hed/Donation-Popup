@@ -45,7 +45,12 @@ html.dp-ac-lock { overflow: hidden; }
 .dp-ac__error { padding: 12px 14px; border-radius: var(--dpx-r-field); background: var(--dpx-bad-bg); color: var(--dpx-bad); font-weight: 600; font-size: .875rem; }
 .dp-ac__row { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; font-size: .8125rem; }
 .dp-ac__check { display: inline-flex; align-items: center; gap: 8px; min-block-size: 44px; color: var(--dp-color-text); }
-.dp-ac__check input { inline-size: 18px; block-size: 18px; margin: 0; accent-color: var(--dp-color-primary); }
+/* Onay kutusu: görünür kutu 18 px; dokunma/tıklama hedefi 44x44 px (WCAG 2.2 target size). */
+.dp-ac__check input { appearance: none; -webkit-appearance: none; position: relative; flex: none; inline-size: 44px; block-size: 44px; margin: 0; margin-inline: -13px -5px; border: 0; border-radius: 12px; background: transparent; cursor: pointer; }
+.dp-ac__check input::before { content: ""; position: absolute; inset: 13px; border: 1.5px solid var(--dpx-muted, #6b7280); border-radius: 5px; background: var(--dp-color-surface, #fff); transition: background 120ms, border-color 120ms; }
+.dp-ac__check input:checked::before { background: var(--dp-color-primary); border-color: var(--dp-color-primary); }
+.dp-ac__check input:checked::after { content: ""; position: absolute; inset-inline-start: 18px; inset-block-start: 15px; inline-size: 6px; block-size: 11px; border: solid #fff; border-width: 0 2px 2px 0; transform: rotate(45deg); }
+.dp-ac__check input:focus-visible { outline: 2px solid var(--dp-color-primary); outline-offset: -2px; }
 .dp-ac__links { margin: 0; }
 .dp-ac__link { min-block-size: 44px; padding: 0; border: 0; background: transparent; color: var(--dp-color-primary-strong); font: inherit; font-size: .8125rem; font-weight: 600; text-decoration: none; cursor: pointer; }
 .dp-ac__link:hover { text-decoration: underline; text-underline-offset: 3px; }

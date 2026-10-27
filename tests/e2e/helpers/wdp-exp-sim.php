@@ -17,7 +17,7 @@ add_filter(
 );
 
 // Yerel e2e tüm cihazları tek IP'den (127.0.0.1) koşar: hız sınırı sayaçları her REST isteğinden önce sıfırlanır.
-// Sınırlayıcının kendisi birim testlerle kanıtlıdır (tests/unit/Core/E0RestTest.php).
+// Sınırlayıcının kendisi birim testlerle kanıtlıdır (tests/unit/Core/RestFoundationTest.php).
 add_filter(
 	'rest_pre_dispatch',
 	static function ($result, $server, $request) {
