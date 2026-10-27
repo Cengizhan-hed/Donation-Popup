@@ -139,18 +139,14 @@ export async function openMutationProductShell(page, opts) {
   if (!productPath) {
     throw new Error('fixture ürün adresi yok');
   }
-  await page.goto(withCacheBust(baseUrl, productPath, { hdf_no_side_cart: '1' }), {
+  await page.goto(withCacheBust(baseUrl, productPath, {}), {
     waitUntil: 'domcontentloaded',
     timeout,
   });
-  const visibleForm = page.locator(SEL.donationForm).filter({ visible: true }).first();
+  // Satır içi (gömülü) görünüm: form sayfada görünür; kök döndürülür.
+  const visibleForm = page.locator(SEL.inlineDonationForm).filter({ visible: true }).first();
   if ((await visibleForm.count()) > 0) {
-    const wrap = page
-      .locator('.hdf-donation-modal-wrapper, .wdp-donation-form')
-      .filter({ has: page.locator(SEL.donationForm) })
-      .first();
-    if ((await wrap.count()) > 0) return wrap;
-    return visibleForm;
+    return page.locator('[data-dp-exp][data-dp-kind="inline"]').first();
   }
   let trigger = shellTriggerLocator(page, 'panel', { productId });
   if ((await trigger.count()) === 0) {

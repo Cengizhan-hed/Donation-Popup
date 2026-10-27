@@ -45,7 +45,6 @@ import {
   collectVisiblePluginEntry,
 } from './helpers/product-page-ui.mjs';
 import {
-  clickAddToCartWithRetry,
   clickShellTrigger,
   emptyCart,
   gotoWooCart,
@@ -53,6 +52,7 @@ import {
   visibleValidationErrors,
 } from './helpers/checks.mjs';
 import { fillDonationShell } from './helpers/donation-flow.mjs';
+import { clickAddOrGo } from './helpers/remote-smoke.mjs';
 import { checkoutPathFromUrl } from './helpers/checkout-setup.mjs';
 import { SEL } from './helpers/selectors.mjs';
 import { attachNativeSubmitReloadGuard } from './helpers/native-submit-guard.mjs';
@@ -132,25 +132,17 @@ async function openShell(page, timeouts) {
   }
   const shell =
     kind.kind === 'form'
-      ? page.locator(`${SEL.inlineDonationForm}, ${SEL.donationForm}`).first()
+      ? page.locator(SEL.inlineRoot).first()
       : openShellLocator(page, kind.kind === 'panel' ? 'panel' : 'popup');
   await shell.waitFor({ state: 'visible', timeout: timeouts.expect });
   return shell;
-}
-
-async function clickAddOrGo(page, shell, timeout) {
-  const add = shell.locator(SEL.addToCart).first();
-  const go = shell.locator(SEL.goCheckout).first();
-  if ((await add.count()) > 0) return clickAddToCartWithRetry(page, add, { timeout });
-  if ((await go.count()) > 0) return go.click({ timeout, noWaitAfter: true });
-  throw new Error('sepete ekle / ödeme CTA yok');
 }
 
 /**
  * @returns {Promise<object>} tek kod için ölçüm satırı
  */
 async function measureCode({ page, env, profile, product, timeouts, code, param, typed, extraBase }) {
-  const extra = { hdf_no_side_cart: '1', ...extraBase, [param]: code };
+  const extra = { ...extraBase, [param]: code };
   const row = { code, typed, cart: null, cartDom: [], checkoutDom: [], note: '' };
   const guard = attachNativeSubmitReloadGuard(page);
   try {

@@ -99,7 +99,7 @@ describe('classifyNativeCartVisibility', () => {
 describe('native selectors', () => {
   it('tema sınıfı yok, döngü hariç', () => {
     assert.match(NATIVE_CART_FORM_SEL, /form\.cart/);
-    assert.match(NATIVE_CART_FORM_SEL, /wdp-form/);
+    assert.match(NATIVE_CART_FORM_SEL, /data-dp-form/);
     assert.doesNotMatch(NATIVE_CART_FORM_SEL, /storefront/);
     assert.match(STICKY_ATC_SEL, /sticky-add-to-cart/);
     assert.doesNotMatch(STICKY_ATC_SEL, /storefront/);

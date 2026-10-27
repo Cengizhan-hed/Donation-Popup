@@ -5,6 +5,7 @@
 import path from 'node:path';
 import { withCacheBust } from './env.mjs';
 import { SEL } from './selectors.mjs';
+import { clickSubmit, formOf } from './dp-form.mjs';
 import {
   applyTimeoutsToPage,
   isRemoteProfile,
@@ -129,29 +130,15 @@ async function writeSmokeDebug(page, check, payload) {
 }
 
 function extraQuery(env, profile, extra = {}) {
-  return { hdf_no_side_cart: '1', ...comingSoonQuery(env, profile), ...extra };
+  return { ...comingSoonQuery(env, profile), ...extra };
 }
 
 /**
  * @param {import('@playwright/test').Locator} shell
  */
 export async function clickAddOrGo(page, shell, timeout) {
-  const add = shell.locator(SEL.addToCart).first();
-  const go = shell.locator(SEL.goCheckout).first();
-  const gate = shell.locator('.wdp-cta-gate__hit').first();
-  if ((await add.count()) > 0) {
-    await clickAddToCartWithRetry(page, add, { timeout });
-    return;
-  }
-  if ((await go.count()) > 0) {
-    await go.click({ timeout, noWaitAfter: true });
-    return;
-  }
-  if ((await gate.count()) > 0) {
-    await gate.click({ timeout, force: true, noWaitAfter: true });
-    return;
-  }
-  throw new Error('sepete ekle / ödeme CTA yok');
+  void page;
+  await clickSubmit(shell, timeout);
 }
 
 function attachAddToCartProbe(page) {
@@ -174,13 +161,13 @@ function attachAddToCartProbe(page) {
 
 async function readPageCurrency(page) {
   return page.evaluate(() => {
-    const cur = (window.wdp_ajax && window.wdp_ajax.currency) || {};
+    const form = document.querySelector('[data-dp-form]');
     return {
-      code: String(cur.code || ''),
-      decimals: Number(cur.decimals),
-      thousandSeparator: cur.thousandSeparator,
-      decimalSeparator: cur.decimalSeparator,
-      symbol: cur.symbol,
+      code: '',
+      decimals: form ? Number(form.getAttribute('data-decimals')) : NaN,
+      thousandSeparator: form ? form.getAttribute('data-thousand-sep') : undefined,
+      decimalSeparator: form ? form.getAttribute('data-decimal-sep') : undefined,
+      symbol: '',
     };
   });
 }
@@ -279,14 +266,15 @@ export async function runRemoteSmokeChecks(ctx) {
       waitUntil: 'domcontentloaded',
       timeout: timeouts.navigation,
     });
-    await page.waitForFunction(() => document.readyState === 'complete' || window.wdp_ajax, {
+    await page.waitForFunction(() => document.readyState === 'complete', {
       timeout: timeouts.expect,
     });
     const runtime = await collectPluginRuntime(page);
-    const scriptsOk = !!(runtime.main_bundle || runtime.has_wdp_app || runtime.possibly_combined);
+    // Yeni nesil: form paketi (donation-panel-experiences-js) yüklü VE en az bir kök bağlanmış (data-dp-mounted).
+    const scriptsOk = !!(runtime.main_bundle || runtime.has_wdp_app);
     if (!scriptsOk) {
       throw new Error(
-        `eklenti betiği yok main=${runtime.main_bundle} app=${runtime.has_wdp_app} combined=${runtime.possibly_combined}`
+        `eklenti betiği yok bundle=${runtime.main_bundle} bağlı_kök=${runtime.has_wdp_app}`
       );
     }
     // Tema/sayfa oluşturucu girişi geç çizebilir: örnekle (sabit bekleme değil), süre sınırı profilden.
@@ -314,7 +302,7 @@ export async function runRemoteSmokeChecks(ctx) {
               opacity: st.opacity,
               w: Math.round(r.width),
               h: Math.round(r.height),
-              inLoop: !!el.closest('.wdp-loop-donate,[class*="related"],[class*="upsells"],ul.products'),
+              inLoop: !!el.closest('.wdp-loop-donate,.wdp-form-host,[class*="related"],[class*="upsells"],ul.products'),
               parent: (el.parentElement && el.parentElement.className ? String(el.parentElement.className) : '').slice(0, 60),
             };
           };
@@ -355,7 +343,7 @@ export async function runRemoteSmokeChecks(ctx) {
     }
     const shell =
       classified.kind === 'form'
-        ? page.locator(`${SEL.inlineDonationForm}, ${SEL.donationForm}`).first()
+        ? page.locator(SEL.inlineRoot).first()
         : openShellLocator(page, classified.kind === 'panel' ? 'panel' : classified.kind === 'popup' ? 'popup' : '');
     await shell.waitFor({ state: 'visible', timeout: timeouts.expect });
     const overlap = await waitAndAssertShellOverlap(page, timeouts.settle);
@@ -364,11 +352,20 @@ export async function runRemoteSmokeChecks(ctx) {
     }
     reloadGuard.clearHits();
     reloadGuard.arm();
-    const price = shell.locator(SEL.customPrice).first();
-    if ((await price.count()) > 0) await price.fill('');
-    const name = shell.locator(SEL.donorName).first();
-    if ((await name.count()) > 0) await name.fill('');
+    // İlk adım boşken ana düğme: tutar adımı varsa tutar, yoksa bilgi adımı alanları doğrulanır.
+    const price = formOf(shell).locator(SEL.customPrice).first();
+    if ((await price.count()) > 0 && (await price.isVisible())) await price.fill('');
+    const name = formOf(shell).locator(SEL.donorName).first();
+    if ((await name.count()) > 0 && (await name.isVisible())) await name.fill('');
     await clickAddOrGo(page, shell, timeouts.action);
+    await formOf(shell)
+      .locator('[data-dp-error]')
+      .filter({ hasText: /\S/ })
+      .first()
+      .waitFor({ state: 'visible', timeout: timeouts.expect })
+      .catch((e) => {
+        throw new Error('boş gönderimde görünür doğrulama mesajı yok: ' + String(e.message || e).split('\n')[0]);
+      });
     const errs = await visibleValidationErrors(page);
     if (!errs.length) {
       throw new Error('boş gönderimde görünür doğrulama mesajı yok');
@@ -399,7 +396,7 @@ export async function runRemoteSmokeChecks(ctx) {
     }
     const shell =
       classAdd.kind === 'form'
-        ? page.locator(`${SEL.inlineDonationForm}, ${SEL.donationForm}`).first()
+        ? page.locator(SEL.inlineRoot).first()
         : openShellLocator(page, classAdd.kind === 'panel' ? 'panel' : classAdd.kind === 'popup' ? 'popup' : '');
     await shell.waitFor({ state: 'visible', timeout: timeouts.expect });
     const picked = await resolveDonationFillAmount(shell, profile.currency);
@@ -410,6 +407,8 @@ export async function runRemoteSmokeChecks(ctx) {
     await clickAddOrGo(page, shell, timeouts.action);
     reloadGuard.assertClear('add-to-cart');
     reloadGuard.disarm();
+    // Başarılı eklemede form ödeme sayfasına yönlendirir (REST cart/add yanıtındaki checkout_url).
+    await page.waitForURL(/checkout|odeme|ödeme|order/i, { timeout: timeouts.navigation });
     const store = await cartStoreSnapshot(page, env.E2E_BASE_URL);
     if (!store.items_count) {
       throw new Error(`Store API sepet boş items=${store.items_count}`);
@@ -521,7 +520,7 @@ export async function runRemoteSmokeChecks(ctx) {
     }
     const shell =
       classAmb.kind === 'form'
-        ? page.locator(`${SEL.inlineDonationForm}, ${SEL.donationForm}`).first()
+        ? page.locator(SEL.inlineRoot).first()
         : openShellLocator(page, classAmb.kind === 'panel' ? 'panel' : classAmb.kind === 'popup' ? 'popup' : '');
     await shell.waitFor({ state: 'visible', timeout: timeouts.expect });
     const pageCur = await readPageCurrency(page);
@@ -529,7 +528,7 @@ export async function runRemoteSmokeChecks(ctx) {
     if (!(Number.isFinite(decimals) && decimals <= 0)) {
       skipWp('amount-ambiguous', SKIP_REASONS.SETTING_OFF, `decimals=${decimals}`);
     } else {
-      const price = shell.locator(SEL.customPrice).first();
+      const price = formOf(shell).locator(SEL.customPrice).first();
       await price.waitFor({ state: 'visible', timeout: timeouts.expect });
       await price.fill('10,50');
       reloadGuard.clearHits();
@@ -537,10 +536,11 @@ export async function runRemoteSmokeChecks(ctx) {
       const probe = attachAddToCartProbe(page);
       try {
         await clickAddOrGo(page, shell, timeouts.action);
-        await page.waitForFunction(() => {
-          const nodes = Array.from(document.querySelectorAll('.wdp-input-error, .wdp-form-error'));
-          return nodes.some((el) => /kuruşlu|tam sayı|biçiminde|Lütfen tutarı/i.test(String(el.textContent || '')));
-        }, { timeout: timeouts.expect });
+        await formOf(shell)
+          .locator('[data-dp-error="amount"]')
+          .filter({ hasText: /\S/ })
+          .first()
+          .waitFor({ state: 'visible', timeout: timeouts.expect });
         if (probe.ajax.length) {
           throw new Error(`10,50 sepete eklendi (${probe.ajax.length} istek)`);
         }

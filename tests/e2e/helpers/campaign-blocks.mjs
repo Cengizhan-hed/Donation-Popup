@@ -355,7 +355,7 @@ export async function runCampaignBlocksChecks({
       await setProductMeta(campaignId, '_wdp_donor_count', '3');
       metaTouched = true;
       // product_info / donor cache düşsün (invalidate meta sonrası).
-      await page.goto(withCacheBust(baseUrl, listPath, { hdf_no_side_cart: '1', _: String(Date.now()) }), {
+      await page.goto(withCacheBust(baseUrl, listPath, { _: String(Date.now()) }), {
         waitUntil: 'domcontentloaded',
       });
       const shell = await open();

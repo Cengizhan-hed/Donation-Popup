@@ -68,7 +68,7 @@ function parseArgs(argv) {
 }
 
 function extraQuery() {
-  return { hdf_no_side_cart: '1' };
+  return {};
 }
 
 async function gotoPath(page, baseUrl, pathName) {

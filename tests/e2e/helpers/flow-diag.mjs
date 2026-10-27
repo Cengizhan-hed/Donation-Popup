@@ -166,22 +166,15 @@ export function sanitizeShellDom(raw) {
  */
 export async function collectCtaReadyState(shell) {
   return shell.evaluate(() => {
-    const form =
-      document.querySelector('.wdp-modal.show form') ||
-      document.querySelector('.wdp-donation-form form') ||
-      document.querySelector('form.wdp-donation-form');
-    const go = form
-      ? form.querySelector('button[name="donation_go_checkout"]')
-      : document.querySelector('button[name="donation_go_checkout"]');
-    const gate = form
-      ? form.querySelector('.wdp-cta-gate__hit')
-      : document.querySelector('.wdp-cta-gate__hit');
+    const form = document.querySelector('[data-dp-overlay].is-open [data-dp-form]') || document.querySelector('[data-dp-form]');
+    const root = form ? form.closest('[data-dp-exp]') : null;
+    const submit = form ? form.querySelector('[data-dp-submit]') : null;
     return {
-      form_ready: !!(form && (form._wdpSubmitHandler || (form.dataset && form.dataset.wdpFormReady === '1'))),
-      await_js: go ? go.getAttribute('data-wdp-await-js') : null,
-      disabled: go ? !!go.disabled : null,
-      has_gate: !!gate,
-      queued: !!(form && form._wdpQueuedSubmitter),
+      form_ready: !!(root && root.getAttribute('data-dp-mounted') === '1'),
+      await_js: null,
+      disabled: submit ? !!submit.disabled : null,
+      has_gate: false,
+      queued: !!(submit && submit.getAttribute('aria-busy') === 'true'),
     };
   });
 }
@@ -196,7 +189,7 @@ export async function collectPluginRuntime(page) {
     document.querySelectorAll('script[src], script[id]').forEach((el) => {
       const id = el.id || '';
       const src = el.getAttribute('src') || '';
-      if (!/wdp|woo-donation-popup|fusion-scripts|avada|combined/i.test(`${id} ${src}`)) return;
+      if (!/donation-panel|woo-donation-popup|wdp/i.test(`${id} ${src}`)) return;
       let pathname = '';
       let ver = '';
       if (src) {
@@ -208,42 +201,27 @@ export async function collectPluginRuntime(page) {
           pathname = src.split('?')[0];
         }
       }
-      scripts.push({
-        id,
-        pathname,
-        ver,
-        defer: !!el.defer,
-        async: !!el.async,
-      });
+      scripts.push({ id, pathname, ver, defer: !!el.defer, async: !!el.async });
     });
-    const form =
-      document.querySelector('.wdp-modal.show form') ||
-      document.querySelector('form.wdp-donation-form');
-    const go = form && form.querySelector('button[name="donation_go_checkout"]');
-    const hasCtaTag = scripts.some(
-      (s) => s.id === 'wdp-form-cta-ready-js' || /cta-ready/i.test(s.pathname + s.id)
-    );
-    const hasMain = scripts.some(
-      (s) =>
-        s.id === 'wdp-donation-modal-js' ||
-        /woo-donation-popup\/assets\/js\//i.test(s.pathname) ||
-        /wdp-donation-modal/i.test(s.id + s.pathname)
-    );
-    const hasWdpApp = !!window.WDPApp;
+    // Yeni nesil: form paketi (handle donation-panel-experiences-js) ve bağlanmış kök.
+    const hasBundle = scripts.some((s) => /donation-panel-experiences/i.test(s.id + s.pathname));
+    const mounted = document.querySelectorAll('[data-dp-exp][data-dp-mounted="1"]').length;
+    const form = document.querySelector('[data-dp-overlay].is-open [data-dp-form]') || document.querySelector('[data-dp-form]');
+    const submit = form && form.querySelector('[data-dp-submit]');
     return {
       scripts,
-      cta_ready_script: hasCtaTag,
-      main_bundle: hasMain,
-      possibly_combined: !hasCtaTag && !hasMain && hasWdpApp,
-      has_wdp_app: hasWdpApp,
-      has_submit_handler: !!(form && form._wdpSubmitHandler),
-      cta_data: go
+      cta_ready_script: false,
+      main_bundle: hasBundle,
+      possibly_combined: !hasBundle && mounted > 0,
+      has_wdp_app: mounted > 0,
+      has_submit_handler: !!submit,
+      cta_data: submit
         ? {
-            form_ready: !!(form && (form._wdpSubmitHandler || form.dataset.wdpFormReady === '1')),
-            await_js: go.getAttribute('data-wdp-await-js'),
-            disabled: !!go.disabled,
-            has_gate: !!form.querySelector('.wdp-cta-gate__hit'),
-            queued: !!form._wdpQueuedSubmitter,
+            form_ready: mounted > 0,
+            await_js: null,
+            disabled: !!submit.disabled,
+            has_gate: false,
+            queued: submit.getAttribute('aria-busy') === 'true',
           }
         : null,
     };
@@ -299,8 +277,8 @@ export async function collectClickTarget(page, locator) {
         .slice(0, 80),
       visible,
       disabled: !!el.disabled || el.getAttribute('aria-disabled') === 'true',
-      loading: el.classList.contains('wdp-loading') || el.getAttribute('data-wdp-await-js') === '1',
-      is_go_checkout: el.getAttribute('name') === 'donation_go_checkout',
+      loading: el.getAttribute('aria-busy') === 'true' || el.classList.contains('is-loading'),
+      is_go_checkout: el.hasAttribute('data-dp-submit'),
       overlay,
     };
   }, box ? { x: box.x + box.width / 2, y: box.y + box.height / 2 } : null);
@@ -313,12 +291,13 @@ export async function collectClickTarget(page, locator) {
  */
 export async function collectShellDomState(page) {
   const raw = await page.evaluate(() => {
-    const open = document.querySelectorAll('.hdf-donation-modal-wrapper.wdp-modal.show');
+    const open = document.querySelectorAll('[data-dp-overlay].is-open');
     const first = open[0];
+    const kind = first && first.closest('[data-dp-exp]') ? first.closest('[data-dp-exp]').getAttribute('data-dp-kind') : '';
     return {
       open_count: open.length,
-      side_panel: !!(first && first.classList.contains('wdp-side-panel')),
-      centered: !!(first && !first.classList.contains('wdp-side-panel')),
+      side_panel: kind === 'side_panel',
+      centered: !!first && kind !== 'side_panel',
       className: first ? String(first.className || '') : '',
     };
   });
@@ -436,11 +415,12 @@ export async function collectStorefrontPageState(page, productId = 0) {
     const body = document.body;
     const cls = body ? String(body.className || '') : '';
     const idEl =
+      document.querySelector('[data-dp-product]') ||
       document.querySelector('[data-product-id]') ||
       document.querySelector('input[name="product_id"]') ||
       document.querySelector('button[data-product-id]');
     const idAttr = idEl
-      ? idEl.getAttribute('data-product-id') || idEl.value || ''
+      ? idEl.getAttribute('data-dp-product') || idEl.getAttribute('data-product-id') || idEl.value || ''
       : '';
     let pathname = '';
     try {

@@ -392,7 +392,7 @@ export async function runFormFieldsChecks({
       }
       const cartInfo = await assertWooCartPagePublished();
       const dest = cartInfo.url || cartInfo.path || '/cart/';
-      await page.goto(withCacheBust(baseUrl, dest, { hdf_no_side_cart: '1' }), {
+      await page.goto(withCacheBust(baseUrl, dest, {}), {
         waitUntil: 'domcontentloaded',
         timeout: 20000,
       });

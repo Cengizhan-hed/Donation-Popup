@@ -4,6 +4,7 @@
  * Ikram: gerçek fiyata dokunulmaz; private + _wdp_e2e_test işaretli geçici ürün; asAdmin; kalıcı sil (silme hatası fail).
  */
 import { SEL } from './selectors.mjs';
+import { fillDonationForm } from './dp-form.mjs';
 import { withCacheBust } from './env.mjs';
 import { getActiveProfile } from './profile.mjs';
 import { requireFixtureRole, mutationBrowserContext, isPrivateFixtureProductId } from './fixtures.mjs';
@@ -37,7 +38,7 @@ const CHECK_MS = 20000;
  */
 async function openShell(page, mode, opts) {
   const openPath = mode === 'popup' ? opts.listPath : opts.productPath;
-  await page.goto(withCacheBust(opts.baseUrl, openPath, { hdf_no_side_cart: '1' }), {
+  await page.goto(withCacheBust(opts.baseUrl, openPath, {}), {
     waitUntil: 'domcontentloaded',
   });
   if (mode === 'popup') {
@@ -79,16 +80,16 @@ async function openIkramPrivateProductForm(page, baseUrl, created) {
   let lastUrl = '';
   let lastDiag = '';
   for (const cand of unique) {
-    const dest = withCacheBust(baseUrl, cand, { hdf_no_side_cart: '1' });
+    const dest = withCacheBust(baseUrl, cand, {});
     lastUrl = dest;
     await page.goto(dest, { waitUntil: 'domcontentloaded' });
     const form = page.locator(SEL.donationForm).first();
     if ((await form.count()) > 0 && (await form.isVisible())) {
-      return form;
+      return form.locator('xpath=ancestor::*[@data-dp-exp][1]');
     }
     let trigger = shellTriggerLocator(page, 'panel', { productId: id });
     if ((await trigger.count()) === 0) {
-      trigger = page.locator(`${SEL.sidePanelTrigger}, ${SEL.centeredPopupTrigger}, .wdp-open-modal`).first();
+      trigger = page.locator(`${SEL.sidePanelTrigger}, ${SEL.centeredPopupTrigger}`).first();
     }
     if ((await trigger.count()) > 0) {
       await clickShellTrigger(trigger, CHECK_MS);
@@ -110,15 +111,14 @@ async function openIkramPrivateProductForm(page, baseUrl, created) {
  * @param {string} phone
  */
 async function fillMinimalDonor(shell, amount, phone) {
-  const name = shell.locator(SEL.donorName).first();
-  if (await name.count()) await name.fill('E2E Empty Price');
-  const phoneLoc = shell.locator(SEL.donorPhone).first();
-  if (await phoneLoc.count()) await phoneLoc.fill(phone);
   const price = shell.locator(SEL.customPrice).first();
   if ((await price.count()) === 0) {
-    throw new Error('custom_price alanı yok');
+    throw new Error('tutar alanı (input[name=amount]) yok');
   }
-  await price.fill(String(amount));
+  // Ürünün en düşük tutarı (form `data-min`) profildeki örnekten büyükse ona uyulur: bu test minimum kuralını değil sepeti sınar.
+  const min = Number(await shell.locator('[data-dp-form]').first().getAttribute('data-min')) || 0;
+  const fill = String(Math.max(Number(amount) || 0, min));
+  await fillDonationForm(shell, { kind: 'custom', fill, donor: { name: 'E2E Empty Price', phone } });
 }
 
 /**
@@ -259,23 +259,23 @@ async function runHedefEmptyPrice({
       const fixturePrivate = isPrivateFixtureProductId(t.id, env);
       if (t.list && listPageOnly && !fixturePrivate) {
         try {
-          await page.goto(withCacheBust(baseUrl, listPageOnly, { hdf_no_side_cart: '1' }), {
+          await page.goto(withCacheBust(baseUrl, listPageOnly, {}), {
             waitUntil: 'domcontentloaded',
           });
           await revealListProductTrigger(page, t.id);
-          const cta = page.locator(`[data-product-id="${t.id}"]`).first();
+          const cta = page.locator(`[data-wdp-form="${t.id}"]`).first();
           if ((await cta.count()) === 0) {
-            throw new Error(`Listede data-product-id=${t.id} yok (fiyatsız ürün gizlenmiş olabilir)`);
+            throw new Error(`Listede data-wdp-form=${t.id} yok (fiyatsız ürün gizlenmiş olabilir)`);
           }
-          const card = page.locator(`.wdp-list__item:has([data-product-id="${t.id}"])`).first();
+          const card = page.locator(`.wdp-list__item:has([data-wdp-form="${t.id}"])`).first();
           const cardHtml = (await card.innerHTML().catch(() => '')) || '';
-          const cardText = (await card.innerText().catch(() => '')) || '';
           if (/<p class="wdp-card__price">\s*<\/p>/.test(cardHtml) || /undefined|NaN|&nbsp;\s*&nbsp;/.test(cardHtml)) {
             throw new Error('Kart fiyat HTML bozuk/boş etiket');
           }
           if (t.role === 'custom') {
-            if (/wdp-card__price/.test(cardHtml) && !/min\./i.test(cardText)) {
-              throw new Error('Custom kartta min. yok; sabit fiyat sızmış olabilir');
+            // Serbest tutarlı kartta sabit fiyat sızmamalı: eklenti `wdp-card__price--any` ("Any amount") işaretini basar.
+            if (/wdp-card__price/.test(cardHtml) && !/wdp-card__price--any/.test(cardHtml)) {
+              throw new Error('Custom kartta serbest tutar işareti yok; sabit fiyat sızmış olabilir');
             }
           }
           pass(`empty-price-${t.role}-list-visible`);

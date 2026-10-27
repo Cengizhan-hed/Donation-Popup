@@ -269,7 +269,7 @@ export async function openPluginEntry(page, ctx) {
   }
   const shell =
     classified.kind === 'form'
-      ? page.locator(`${SEL.inlineDonationForm}, ${SEL.donationForm}`).first()
+      ? page.locator(SEL.inlineRoot).first()
       : openShellLocator(page, classified.kind === 'panel' ? 'panel' : 'popup');
   await shell.waitFor({ state: 'visible', timeout: ctx.timeouts.expect });
   return { shell, kind: classified.kind };

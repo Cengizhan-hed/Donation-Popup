@@ -86,7 +86,7 @@ function fail(msg, code = 1) {
 }
 
 function extraQuery(env) {
-  const q = { hdf_no_side_cart: '1' };
+  const q = {};
   const profile = env?._profile;
   if (profile?.comingSoon) Object.assign(q, comingSoonQuery(env, profile));
   return q;
