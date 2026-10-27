@@ -300,14 +300,15 @@ class Order_Privacy {
 		}
 
 		if ( isset( $wpdb ) && is_object( $wpdb ) ) {
+			list( $key_sql, $key_args ) = self::key_filter( 'email' );
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- siparis kalemi meta aramasi: WooCommerce'in bunun icin API'si yok; KVKK disa aktarma/silme istegi, onbellege alinmamali (taze veri).
 			$rows = $wpdb->get_results(
 				$wpdb->prepare(
 					"SELECT DISTINCT oi.order_id, im.meta_key
 					FROM {$wpdb->prefix}woocommerce_order_itemmeta im
 					INNER JOIN {$wpdb->prefix}woocommerce_order_items oi ON oi.order_item_id = im.order_item_id
-					WHERE im.meta_value = %s",
-					$email
+					WHERE im.meta_value = %s AND " . $key_sql,
+					...array_merge( array( $email ), $key_args )
 				)
 			);
 			if ( is_array( $rows ) ) {
@@ -326,6 +327,29 @@ class Order_Privacy {
 		sort( $ids, SORT_NUMERIC );
 
 		return $ids;
+	}
+
+	/**
+	 * `meta_key` daraltma koşulu ve bağlı değerleri (indeksli sütun; tüm tabloyu `meta_value` ile taramaz).
+	 *
+	 * @param string $field 'email' | 'phone'.
+	 * @return array{0: string, 1: string[]} SQL parçası ve değerler.
+	 */
+	private static function key_filter( $field ) {
+		global $wpdb;
+		$patterns = Order_Meta_Keys::lookup_key_patterns( $field );
+		$parts    = array();
+		$args     = array();
+		if ( $patterns['exact'] ) {
+			$parts[] = 'im.meta_key IN (' . implode( ',', array_fill( 0, count( $patterns['exact'] ), '%s' ) ) . ')';
+			$args    = array_merge( $args, $patterns['exact'] );
+		}
+		foreach ( $patterns['like'] as $like ) {
+			$parts[] = 'im.meta_key LIKE %s';
+			$args[]  = $like;
+		}
+		unset( $wpdb );
+		return array( '(' . implode( ' OR ', $parts ) . ')', $args );
 	}
 
 	/**
@@ -374,6 +398,7 @@ class Order_Privacy {
 		}
 
 		if ( isset( $wpdb ) && is_object( $wpdb ) ) {
+			list( $key_sql, $key_args ) = self::key_filter( 'phone' );
 			foreach ( $phones as $phone ) {
 				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- siparis kalemi meta aramasi: WooCommerce'in bunun icin API'si yok; KVKK disa aktarma/silme istegi, onbellege alinmamali (taze veri).
 				$rows = $wpdb->get_results(
@@ -381,8 +406,8 @@ class Order_Privacy {
 						"SELECT DISTINCT oi.order_id, im.meta_key
 						FROM {$wpdb->prefix}woocommerce_order_itemmeta im
 						INNER JOIN {$wpdb->prefix}woocommerce_order_items oi ON oi.order_item_id = im.order_item_id
-						WHERE im.meta_value = %s",
-						$phone
+						WHERE im.meta_value = %s AND " . $key_sql,
+						...array_merge( array( $phone ), $key_args )
 					)
 				);
 				if ( is_array( $rows ) ) {
