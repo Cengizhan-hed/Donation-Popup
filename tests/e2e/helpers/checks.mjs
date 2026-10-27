@@ -447,6 +447,8 @@ export function isDonationAddToCartRequest(req) {
   if (!req || typeof req.method !== 'function' || req.method() !== 'POST') return false;
   const url = req.url();
   const post = req.postData() || '';
+  // Yeni nesil form: REST `donation-panel/v1/cart/add` (rest_route sorgusu kodlanmış olabilir).
+  if (/donation-panel(?:\/|%2F)v1(?:\/|%2F)cart(?:\/|%2F)add/i.test(url)) return true;
   const isAdminAjax = /admin-ajax\.php/i.test(url);
   const isWcAjax = /[?&]wc-ajax=/i.test(url) || /\/wc-ajax\//i.test(url);
   if (!isAdminAjax && !isWcAjax) return false;
