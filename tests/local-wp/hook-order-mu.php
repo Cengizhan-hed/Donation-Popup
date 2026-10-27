@@ -22,9 +22,10 @@ $wdp_e2x_collect = static function () {
 		);
 		$r['classes'] = array(
 			'plugin' => class_exists('DonationPanel\\Core\\Plugin'),
-			'legacy' => class_exists('WDP_Plugin_Bootstrap'),
+			'legacy' => class_exists('DonationPanel\\Core\\Bootstrap'),
 		);
-		$r['legacy_launched'] = isset($GLOBALS['woo_donation_popup']);
+		// 12.0.0: "başladı" = modüller başlatıldı (`donation_panel_modules_booted`, plugins_loaded 20).
+		$r['legacy_launched'] = did_action('donation_panel_modules_booted') > 0;
 		$r['stray_output']    = ob_get_clean();
 	} catch (\Throwable $e) {
 		$r['fatal'] = get_class($e) . ': ' . $e->getMessage();

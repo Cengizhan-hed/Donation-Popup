@@ -2,7 +2,7 @@
 /**
  * E4: yan sepet satır modeli + çıktı (kaçış, Türkçe karakter, boş durum, miktar kuralı) + modül kaydı.
  *
- * @package WooCommerce\Donation_Popup
+ * @package DonationPanel
  */
 
 declare(strict_types=1);

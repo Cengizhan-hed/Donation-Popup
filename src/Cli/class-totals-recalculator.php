@@ -11,6 +11,9 @@
 
 namespace DonationPanel\Cli;
 
+use DonationPanel\Domain\Campaign_Totals;
+use DonationPanel\Domain\Donation_Scope;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -47,7 +50,7 @@ final class Totals_Recalculator {
 				continue;
 			}
 			$has_total = '' !== get_post_meta( $id, self::META_TOTAL, true );
-			if ( $has_total || ( class_exists( 'WDP_Donation_Scope' ) && \WDP_Donation_Scope::is_donation_product( $id ) ) ) {
+			if ( $has_total || ( Donation_Scope::is_donation_product( $id ) ) ) {
 				$ids[] = $id;
 			}
 		}
@@ -71,7 +74,7 @@ final class Totals_Recalculator {
 			throw new \RuntimeException( 'recalc-totals: write mode is disabled; pass the explicit write permission (--apply --i-understand).' );
 		}
 		$ids      = array_values( array_unique( array_filter( array_map( 'absint', $product_ids ) ) ) );
-		$computed = \WDP_Utils::recalculate_product_donation_totals( $ids, true );
+		$computed = Campaign_Totals::recalculate_product_donation_totals( $ids, true );
 		$analysis = $this->analyze( $ids );
 
 		$rows    = array();
@@ -109,12 +112,12 @@ final class Totals_Recalculator {
 				'unconverted' => (int) $new['unconverted'],
 				'changed'     => $differs,
 				'written'     => false,
-			) + self::migration_suggestion( $old_total, $new_total, \WDP_Utils::get_manual_total( $id ), isset( $analysis[ $id ] ) ? $analysis[ $id ] : self::empty_breakdown(), (int) $new['unconverted'] );
+			) + self::migration_suggestion( $old_total, $new_total, Campaign_Totals::get_manual_total( $id ), isset( $analysis[ $id ] ) ? $analysis[ $id ] : self::empty_breakdown(), (int) $new['unconverted'] );
 		}
 
 		$written = 0;
 		if ( ! $dry_run && $changed ) {
-			\WDP_Utils::recalculate_product_donation_totals( $changed, false );
+			Campaign_Totals::recalculate_product_donation_totals( $changed, false );
 			foreach ( $changed as $id ) {
 				$rows[ $id ]['written'] = true;
 				++$written;
@@ -256,7 +259,7 @@ final class Totals_Recalculator {
 		if ( ! $ids || ! function_exists( 'wc_get_orders' ) ) {
 			return $out;
 		}
-		$paid = \WDP_Utils::get_progress_paid_statuses();
+		$paid = Campaign_Totals::get_progress_paid_statuses();
 		$all  = function_exists( 'wc_get_order_statuses' ) ? array_keys( (array) wc_get_order_statuses() ) : array();
 		if ( ! $all ) {
 			$all = array( 'wc-completed', 'wc-processing', 'wc-on-hold', 'wc-pending', 'wc-cancelled', 'wc-failed', 'wc-refunded' );
@@ -281,12 +284,12 @@ final class Totals_Recalculator {
 				if ( ! is_object( $order ) ) {
 					continue;
 				}
-				$full = \WDP_Utils::compute_order_progress_lines( $order, false, false, false );
+				$full = Campaign_Totals::compute_order_progress_lines( $order, false, false, false );
 				$hits = array_intersect_key( $full, $out );
 				if ( ! $hits ) {
 					continue;
 				}
-				$net    = \WDP_Utils::compute_order_progress_lines( $order, true, false, false );
+				$net    = Campaign_Totals::compute_order_progress_lines( $order, true, false, false );
 				$status = method_exists( $order, 'get_status' ) ? sanitize_key( (string) $order->get_status() ) : '';
 				$status = 0 === strpos( $status, 'wc-' ) ? substr( $status, 3 ) : $status;
 				foreach ( $hits as $pid => $line ) {
@@ -298,7 +301,7 @@ final class Totals_Recalculator {
 					}
 					if ( in_array( $status, $paid, true ) ) {
 						$net_amount = isset( $net[ $pid ] ) ? $net[ $pid ]['amount'] : 0.0;
-						if ( \WDP_Utils::is_order_in_campaign_period( $order, $pid ) ) {
+						if ( Campaign_Totals::is_order_in_campaign_period( $order, $pid ) ) {
 							$out[ $pid ]['counted'] += $net_amount;
 							$out[ $pid ]['refunds'] += max( 0.0, $line['amount'] - $net_amount );
 						} else {

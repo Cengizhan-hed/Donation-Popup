@@ -7,6 +7,9 @@
 
 namespace DonationPanel\Modules\EntryPoints;
 
+use DonationPanel\Domain\Donation_Scope;
+use DonationPanel\Domain\Placement_Settings;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -36,7 +39,7 @@ class Auto_Placement {
 			return;
 		}
 
-		if ( \WDP_Placement_Settings::value( 'auto_place' ) !== 'yes' ) {
+		if ( Placement_Settings::value( 'auto_place' ) !== 'yes' ) {
 			return;
 		}
 
@@ -51,7 +54,7 @@ class Auto_Placement {
 		add_filter( 'woocommerce_locate_template', array( __CLASS__, 'filter_locate_template' ), 20, 2 );
 
 		add_filter( 'woocommerce_get_price_html', array( Loop_Price_Filters::class, 'filter_price_html' ), 20, 2 );
-		add_filter( 'woocommerce_loop_add_to_cart_link', array( Loop_Price_Filters::class, 'filter_loop_add_to_cart' ), 10, 3 );
+		add_filter( 'woocommerce_loop_add_to_cart_link', array( Loop_Price_Filters::class, 'filter_loop_add_to_cart' ), 10, 2 );
 		add_filter( 'woocommerce_product_add_to_cart_text', array( Loop_Price_Filters::class, 'filter_add_to_cart_text' ), 20, 2 );
 		add_filter( 'woocommerce_product_add_to_cart_url', array( Loop_Price_Filters::class, 'filter_add_to_cart_url' ), 20, 2 );
 		add_filter( 'woocommerce_product_supports', array( Loop_Price_Filters::class, 'filter_product_supports' ), 20, 3 );
@@ -90,7 +93,7 @@ class Auto_Placement {
 			return;
 		}
 		$product = Product_Resolver::current_product();
-		if ( ! $product || ! \WDP_Donation_Scope::is_donation_product( $product ) ) {
+		if ( ! $product || ! Donation_Scope::is_donation_product( $product ) ) {
 			return;
 		}
 
@@ -101,7 +104,7 @@ class Auto_Placement {
 		}
 
 		// Backup only: if the template filter never runs, still try summary hooks.
-		$position = (string) \WDP_Placement_Settings::value( 'position', 'replace_cart' );
+		$position = (string) Placement_Settings::value( 'position', 'replace_cart' );
 		if ( 'below_summary' === $position ) {
 			add_action( 'woocommerce_after_single_product_summary', array( Fallback_Button::class, 'render_fallback_placed_form' ), 5 );
 			return;
@@ -172,7 +175,7 @@ class Auto_Placement {
 	 * @return void
 	 */
 	public static function render_template_override() {
-		echo \WDP_Render_Guard::html( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		echo Render_Guard::html( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			static function () {
 				return self::template_override_markup();
 			},
@@ -186,12 +189,12 @@ class Auto_Placement {
 	 */
 	public static function template_override_markup() {
 		$product = Product_Resolver::current_product();
-		if ( ! $product || ! \WDP_Donation_Scope::is_donation_product( $product ) ) {
+		if ( ! $product || ! Donation_Scope::is_donation_product( $product ) ) {
 			return '';
 		}
 		$id = (int) $product->get_id();
-		if ( \WDP_Render_Registry::has_product_ui( $id ) ) {
-			return \WDP_Render_Registry::duplicate_ui_notice( $id );
+		if ( Render_Registry::has_product_ui( $id ) ) {
+			return Render_Registry::duplicate_ui_notice( $id );
 		}
 		if ( ! self::should_auto_place( $product ) ) {
 			return '';
@@ -207,7 +210,7 @@ class Auto_Placement {
 		$classes = is_array( $classes ) ? $classes : array();
 		if ( function_exists( 'is_product' ) && is_product() ) {
 			$product = Product_Resolver::current_product();
-			if ( $product && \WDP_Donation_Scope::is_donation_product( $product ) ) {
+			if ( $product && Donation_Scope::is_donation_product( $product ) ) {
 				$classes[] = 'wdp-donation-product';
 			}
 		}
@@ -226,7 +229,7 @@ class Auto_Placement {
 		if ( $post_id <= 0 ) {
 			return $classes;
 		}
-		if ( \WDP_Donation_Scope::is_donation_product( $post_id ) ) {
+		if ( Donation_Scope::is_donation_product( $post_id ) ) {
 			$classes[] = 'wdp-donation-product';
 		}
 		return $classes;
@@ -309,7 +312,7 @@ class Auto_Placement {
 			return;
 		}
 		$product = Product_Resolver::current_product();
-		if ( ! $product || ! \WDP_Donation_Scope::is_donation_product( $product ) ) {
+		if ( ! $product || ! Donation_Scope::is_donation_product( $product ) ) {
 			return;
 		}
 		self::$css_printed = true;
@@ -327,12 +330,12 @@ class Auto_Placement {
 			. ':not(.wdp-list form.cart):not(.wdp-donations form.cart)'
 			. ':not(.wp-block-woocommerce-related-products form.cart)'
 			. ':not(.wp-block-woocommerce-product-collection form.cart)';
-		$form      = 'body.single-product form.cart:not(.wdp-form):not(.wdp-donation-form-fields)' . $loop_form;
+		$form      = 'body.single-product form.cart' . $loop_form;
 		$loop_btn  = ':not(.related .single_add_to_cart_button):not(.upsells .single_add_to_cart_button)'
 			. ':not(ul.products .single_add_to_cart_button)'
 			. ':not(.wp-block-woocommerce-related-products .single_add_to_cart_button)'
 			. ':not(.wp-block-woocommerce-product-collection .single_add_to_cart_button)';
-		$btn       = 'body.single-product .single_add_to_cart_button:not(.wdp-donate-button):not(.wdp-open-modal):not(.wdp-loop-donate)' . $loop_btn;
+		$btn       = 'body.single-product .single_add_to_cart_button:not(.wdp-loop-donate)' . $loop_btn;
 		$sticky    = 'body.single-product [class*="sticky-add-to-cart"],body.single-product [class*="sticky"][class*="add-to-cart"]';
 		return $form . ',' . $btn . ',' . $sticky . '{display:none!important}';
 	}
@@ -342,7 +345,7 @@ class Auto_Placement {
 	 */
 	public static function placed_markup() {
 		$product = Product_Resolver::current_product();
-		if ( ! $product || ! \WDP_Donation_Scope::is_donation_product( $product ) ) {
+		if ( ! $product || ! Donation_Scope::is_donation_product( $product ) ) {
 			return '';
 		}
 		if ( self::content_already_has_shortcode( $product ) ) {
@@ -350,7 +353,7 @@ class Auto_Placement {
 		}
 		$display = self::resolve_product_page_display( $product );
 		$atts    = array(
-			'show_title' => \WDP_Placement_Settings::value( 'show_form_title' ) === 'yes' ? 'yes' : 'no',
+			'show_title' => Placement_Settings::value( 'show_form_title' ) === 'yes' ? 'yes' : 'no',
 		);
 		$html    = '';
 		if ( 'button_popup' === $display ) {
@@ -360,9 +363,9 @@ class Auto_Placement {
 		} elseif ( 'inline' === $display ) {
 			$html = Shortcodes::render_form( $atts );
 		}
-		if ( '' !== $html && \WDP_Render_Registry::has_product_ui( (int) $product->get_id() ) ) {
+		if ( '' !== $html && Render_Registry::has_product_ui( (int) $product->get_id() ) ) {
 			// Drawn by auto-placement: a later explicit entry for the same product is skipped (one entry per page).
-			\WDP_Render_Registry::mark_auto( (int) $product->get_id() );
+			Render_Registry::mark_auto( (int) $product->get_id() );
 		}
 		return $html;
 	}
@@ -374,7 +377,7 @@ class Auto_Placement {
 	 * @return string inline|button_popup|button_panel|''
 	 */
 	public static function resolve_product_page_display( $product ) {
-		if ( ! Product_Resolver::is_wc_product( $product ) || ! \WDP_Donation_Scope::is_donation_product( $product ) ) {
+		if ( ! Product_Resolver::is_wc_product( $product ) || ! Donation_Scope::is_donation_product( $product ) ) {
 			return '';
 		}
 		$text = (string) $product->get_short_description() . "\n" . (string) $product->get_description();
@@ -390,8 +393,8 @@ class Auto_Placement {
 		if ( ! self::should_auto_place( $product ) ) {
 			return '';
 		}
-		$display = (string) \WDP_Placement_Settings::value( 'display', 'button_panel' );
-		return in_array( $display, \WDP_Placement_Settings::DISPLAYS, true ) ? $display : 'button_panel';
+		$display = (string) Placement_Settings::value( 'display', 'button_panel' );
+		return in_array( $display, Placement_Settings::DISPLAYS, true ) ? $display : 'button_panel';
 	}
 
 	/**
@@ -415,18 +418,18 @@ class Auto_Placement {
 	 * @return string
 	 */
 	public static function filter_block_add_to_cart( $content, $block, $instance = null ) {
-		return \WDP_Render_Guard::value(
+		return Render_Guard::value(
 			static function () use ( $content, $instance ) {
 				$product = Product_Resolver::product_from_block( $instance );
-				if ( ! $product || ! \WDP_Donation_Scope::is_donation_product( $product ) || ! self::should_auto_place( $product ) ) {
+				if ( ! $product || ! Donation_Scope::is_donation_product( $product ) || ! self::should_auto_place( $product ) ) {
 					return $content;
 				}
-				if ( self::content_already_has_shortcode( $product ) || \WDP_Render_Registry::has_product_ui( $product->get_id() ) ) {
+				if ( self::content_already_has_shortcode( $product ) || Render_Registry::has_product_ui( $product->get_id() ) ) {
 					// The block's own render already printed our entry through the template override: keep it.
 					if ( ! self::content_already_has_shortcode( $product ) && self::html_has_entry( (string) $content, (int) $product->get_id() ) ) {
 						return $content;
 					}
-					return \WDP_Render_Registry::duplicate_ui_notice( (int) $product->get_id() );
+					return Render_Registry::duplicate_ui_notice( (int) $product->get_id() );
 				}
 				return self::placed_markup();
 			},
@@ -442,14 +445,14 @@ class Auto_Placement {
 	 * @return bool
 	 */
 	public static function should_auto_place( $product ) {
-		if ( ! Product_Resolver::is_wc_product( $product ) || ! \WDP_Donation_Scope::is_donation_product( $product ) ) {
+		if ( ! Product_Resolver::is_wc_product( $product ) || ! Donation_Scope::is_donation_product( $product ) ) {
 			return false;
 		}
 		$override = $product->get_meta( '_wdp_auto_place', true );
 		if ( 'no' === $override ) {
 			return false;
 		}
-		if ( \WDP_Placement_Settings::value( 'auto_place' ) !== 'yes' ) {
+		if ( Placement_Settings::value( 'auto_place' ) !== 'yes' ) {
 			return false;
 		}
 		return ! self::content_already_has_shortcode( $product );
@@ -477,8 +480,7 @@ class Auto_Placement {
 		if ( '' === $html || $product_id <= 0 ) {
 			return false;
 		}
-		return false !== strpos( $html, 'id="wdp-modal-' . $product_id . '-direct"' )
-			|| ( false !== strpos( $html, 'wdp-donate-button' ) && false !== strpos( $html, 'data-product-id="' . $product_id . '"' ) );
+		return false !== strpos( $html, 'data-dp-exp' ) && false !== strpos( $html, 'data-dp-product="' . $product_id . '"' );
 	}
 
 	/**
@@ -499,14 +501,14 @@ class Auto_Placement {
 	 */
 	private static function should_override_current_product() {
 		$product = Product_Resolver::current_product();
-		if ( ! $product || ! \WDP_Donation_Scope::is_donation_product( $product ) ) {
+		if ( ! $product || ! Donation_Scope::is_donation_product( $product ) ) {
 			return false;
 		}
 		$override = $product->get_meta( '_wdp_auto_place', true );
 		if ( 'no' === $override ) {
 			return false;
 		}
-		return \WDP_Placement_Settings::value( 'auto_place' ) === 'yes';
+		return Placement_Settings::value( 'auto_place' ) === 'yes';
 	}
 
 	/**

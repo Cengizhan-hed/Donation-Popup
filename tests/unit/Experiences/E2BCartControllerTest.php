@@ -2,7 +2,7 @@
 /**
  * E2B: REST cart/add + nonce — JSON zorunlu, hata biçimi, bayat nonce tazeleme ucu, no-store, hız sınırı.
  *
- * @package WooCommerce\Donation_Popup
+ * @package DonationPanel
  */
 
 declare(strict_types=1);

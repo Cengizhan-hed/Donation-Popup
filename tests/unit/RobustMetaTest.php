@@ -2,7 +2,7 @@
 /**
  * Bozuk / sınır dışı meta kayıttan sonra güvenli varsayılanlar.
  *
- * @package WooCommerce\Donation_Popup
+ * @package DonationPanel
  */
 
 declare(strict_types=1);
@@ -57,7 +57,7 @@ final class RobustMetaTest extends TestCase {
 		$p->type = 'simple';
 		WDP_Test_State::$products[8] = $p;
 		WDP_Test_State::$post_meta[8] = array('_layout_mode' => '???', '_cover_fee_percent' => '50');
-		$context = WDP_Donation_Product_Context_Service::build_form_context($p);
+		$context = \DonationPanel\Domain\Product_Context::build_form_context($p);
 		$this->assertSame('classic', $context['layout_mode']);
 		// 10.29.0: çalışma anı üst sınırı 15 (önceki 20).
 		$this->assertEquals(15, $context['cover_fee_percent']);

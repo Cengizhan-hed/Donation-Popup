@@ -3,7 +3,7 @@
  * Eklentinin KENDİ ayarını (donation_panel_settings; yalnız allowlist yollar) güvenle değiştirir.
  *
  *   node scripts/plugin-settings.mjs --env ikram-aid|staging-hedef|local --show
- *   node scripts/plugin-settings.mjs --env ikram-aid --set modules.side_cart=1,experiences.engine=new [--dry-run]
+ *   node scripts/plugin-settings.mjs --env ikram-aid --set modules.side_cart=1,modules.impact=1 [--dry-run]
  *   node scripts/plugin-settings.mjs --env ikram-aid --restore build/e2e/plugin-settings-backup/<yedek>.json [--dry-run]
  *
  * Uzak ortamlarda yalnız Claude (CLAUDECODE=1); merkezi uzak koruma + klasör kilidi + REMOTE_FREEZE + ortam kilidi

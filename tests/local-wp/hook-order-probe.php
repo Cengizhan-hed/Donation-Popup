@@ -62,6 +62,6 @@ echo json_encode(array(
 	'registered_after' => $late_registered,
 	'after_output_is_literal' => trim((string) $out) === '[wdp_donation_button_panel id="' . $pid . '"]',
 	'after_output_len' => strlen((string) $out),
-	'plugin_class'    => class_exists('Woo_Donation_Popup'),
-	'launched'        => isset($GLOBALS['woo_donation_popup']),
+	'plugin_class'    => class_exists('DonationPanel\\Core\\Bootstrap'),
+	'launched'        => did_action('donation_panel_modules_booted') > 0,
 ));

@@ -3,7 +3,7 @@
  * Taint kanaryası: stub'ların çalıştığını kanıtlar (analyse:security her koşuda doğrular).
  * Beklenen: bad_* işlevlerinde Tainted* bulgusu VAR; good_* işlevlerinde YOK. Pakete girmez.
  *
- * @package WooCommerce\Donation_Popup
+ * @package DonationPanel
  */
 
 function canary_bad_html() {

@@ -1,8 +1,8 @@
 <?php
 /**
- * WDP_Migrations 10.28.4: geçersiz alt bağış bağlantılarının temizlenmesi.
+ * Version_Migrations 10.28.4: geçersiz alt bağış bağlantılarının temizlenmesi.
  *
- * @package WooCommerce\Donation_Popup
+ * @package DonationPanel
  */
 
 declare(strict_types=1);
@@ -37,7 +37,7 @@ final class Migration10284AddonLinksTest extends TestCase {
 		WDP_Test_State::$post_meta[40]['_addon_wc_product_id']   = 20; // valid
 		$this->product(40);
 
-		$summary = WDP_Migrations::step_10_28_4(false);
+		$summary = \DonationPanel\Core\Version_Migrations::step_10_28_4(false);
 		$this->assertStringContainsString('cleaned:3', $summary);
 		$this->assertStringContainsString('valid:1', $summary);
 
@@ -46,7 +46,7 @@ final class Migration10284AddonLinksTest extends TestCase {
 		$this->assertArrayNotHasKey('_addon_wc_product_id', WDP_Test_State::$post_meta[30]);
 		$this->assertSame(20, (int) WDP_Test_State::$post_meta[40]['_addon_wc_product_id']);
 
-		$audit = WDP_Test_State::$options[ WDP_Addon_Product_Visibility::AUDIT_OPTION ];
+		$audit = WDP_Test_State::$options[ \DonationPanel\Domain\Addon_Product_Visibility::AUDIT_OPTION ];
 		$this->assertIsArray($audit);
 		$this->assertSame(3, (int) $audit['cleaned']);
 		$this->assertSame(1, (int) $audit['valid']);
@@ -58,9 +58,9 @@ final class Migration10284AddonLinksTest extends TestCase {
 		WDP_Test_State::$post_meta[10]['_enable_addon_donation'] = 'yes';
 		WDP_Test_State::$post_meta[10]['_addon_wc_product_id']   = 20;
 
-		WDP_Migrations::step_10_28_4(false);
+		\DonationPanel\Core\Version_Migrations::step_10_28_4(false);
 		$meta_after = WDP_Test_State::$post_meta;
-		WDP_Migrations::step_10_28_4(false);
+		\DonationPanel\Core\Version_Migrations::step_10_28_4(false);
 		$this->assertSame(20, (int) WDP_Test_State::$post_meta[10]['_addon_wc_product_id']);
 		$this->assertSame($meta_after[10], WDP_Test_State::$post_meta[10]);
 	}

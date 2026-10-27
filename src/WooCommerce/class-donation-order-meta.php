@@ -3,7 +3,7 @@
  * `DonationOrderMeta`: sepet öğesindeki bağış verisini sipariş kalemi meta alanlarına yazar.
  *
  * - Yalnız WooCommerce sipariş kalemi API'si kullanılır (HPOS ile uyumlu; doğrudan postmeta yok).
- * - ESKİ meta anahtarları birebir korunur (`WDP_Order_Meta_Keys::build_item_meta`, `_custom_price`).
+ * - ESKİ meta anahtarları birebir korunur (`Order_Meta_Keys::build_item_meta`, `_custom_price`).
  * - Yeni anahtarlar: `wdp_donation_type` (bağış türü), `wdp_donation_frequency` (düzenli bağış seçeneği).
  * - Bağışçının yazdığı hiçbir alan silinmez/maskelenmez; anonim yalnız `wdp_anonymous = yes` bayrağıdır.
  * - Klasik ve blok ödeme aynı `woocommerce_checkout_create_order_line_item` kancasından geçer.
@@ -12,6 +12,8 @@
  */
 
 namespace DonationPanel\WooCommerce;
+
+use DonationPanel\Domain\Donation_Type;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -65,19 +67,19 @@ final class Donation_Order_Meta {
 	 * @return string
 	 */
 	public static function display_value( $display_value, $meta = null ) {
-		if ( is_object( $meta ) && isset( $meta->key, $meta->value ) && self::KEY_TYPE === (string) $meta->key && class_exists( 'WDP_Donation_Type' ) ) {
-			return esc_html( \WDP_Donation_Type::get_label( (string) $meta->value ) );
+		if ( is_object( $meta ) && isset( $meta->key, $meta->value ) && self::KEY_TYPE === (string) $meta->key ) {
+			return esc_html( Donation_Type::get_label( (string) $meta->value ) );
 		}
 		return $display_value;
 	}
 
 	/**
-	 * Eski `WDP_Order` yazıcısını kaldırıp kendini bağlar.
+	 * Eski `Order_Hooks` yazıcısını kaldırıp kendini bağlar.
 	 *
 	 * @return void
 	 */
 	public function take_over() {
-		remove_action( self::HOOK, array( 'WDP_Order', 'add_donation_meta_to_order' ), 10 );
+		remove_action( self::HOOK, array( 'DonationPanel\\WooCommerce\\Order_Hooks', 'add_donation_meta_to_order' ), 10 );
 		add_action( self::HOOK, array( $this, 'write_item' ), 10, 4 );
 	}
 
@@ -124,7 +126,7 @@ final class Donation_Order_Meta {
 	 * @return array<string, mixed>
 	 */
 	public static function meta_for( array $donation_data ) {
-		return class_exists( 'WDP_Order_Meta_Keys' ) ? \WDP_Order_Meta_Keys::build_item_meta( $donation_data ) : array();
+		return Order_Meta_Keys::build_item_meta( $donation_data );
 	}
 
 	/**

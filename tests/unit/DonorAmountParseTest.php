@@ -37,7 +37,7 @@ final class DonorAmountParseTest extends TestCase {
 	public function test_vectors_match_php_parser(): void {
 		foreach (self::$vectors as $row) {
 			$store = self::$stores[ $row['store'] ];
-			$got   = WDP_Utils::parse_donor_amount($row['input'], $store);
+			$got   = \DonationPanel\Support\Price::parse_donor_amount($row['input'], $store);
 			$this->assertSame(
 				$row['status'],
 				$got['status'],
@@ -62,23 +62,23 @@ final class DonorAmountParseTest extends TestCase {
 			'thousandSeparator' => '.',
 			'decimalSeparator'  => ',',
 		);
-		$ok = WDP_Utils::parse_donor_amount('50,00', $cfg);
+		$ok = \DonationPanel\Support\Price::parse_donor_amount('50,00', $cfg);
 		$this->assertSame('ok', $ok['status']);
 		$this->assertEqualsWithDelta(50.0, $ok['amount'], 0.0001);
-		$dot = WDP_Utils::parse_donor_amount('10.00', $cfg);
+		$dot = \DonationPanel\Support\Price::parse_donor_amount('10.00', $cfg);
 		$this->assertSame('ok', $dot['status']);
 		$this->assertEqualsWithDelta(10.0, $dot['amount'], 0.0001);
-		$got = WDP_Utils::parse_donor_amount('10,50', $cfg);
+		$got = \DonationPanel\Support\Price::parse_donor_amount('10,50', $cfg);
 		$this->assertSame('ambiguous', $got['status']);
 		$this->assertStringContainsString('kuruşlu', $got['error']);
 		$this->assertStringContainsString('10', $got['error']);
-		$thou = WDP_Utils::parse_donor_amount('1.250', $cfg);
+		$thou = \DonationPanel\Support\Price::parse_donor_amount('1.250', $cfg);
 		$this->assertSame('ok', $thou['status']);
 		$this->assertEqualsWithDelta(1250.0, $thou['amount'], 0.0001);
 	}
 
 	public function test_normalize_paste_strips_symbol_and_space(): void {
-		$this->assertSame('1.250', WDP_Utils::normalize_amount_input('₺1.250', '.', ','));
-		$this->assertSame('1250', WDP_Utils::normalize_amount_input('1 250', '.', ','));
+		$this->assertSame('1.250', \DonationPanel\Support\Price::normalize_amount_input('₺1.250', '.', ','));
+		$this->assertSame('1250', \DonationPanel\Support\Price::normalize_amount_input('1 250', '.', ','));
 	}
 }

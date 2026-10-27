@@ -71,15 +71,8 @@ test('paket: yalniz izinli desenler, gizli/gelistirme dosyasi yok', () => {
 });
 
 // E8P: calisma zamaninin yukledigi derleme ciktilari pakette VAR olmali (.distignore `build/` hatasi).
-test('paket: derlenmis on yuz paketleri + manifestler zip icinde (E8P)', () => {
+test('paket: derlenmis modul paketleri zip icinde, eski on yuz yok (E8P)', () => {
   const files = new Set(checkEntries(buildZip()));
-  for (const dir of ['assets/css/build', 'assets/js/build']) {
-    assert.ok(files.has(`${dir}/manifest.json`), `${dir}/manifest.json zip'te yok`);
-    const man = JSON.parse(execFileSync('unzip', ['-p', ZIP, `woo-donation-popup/${dir}/manifest.json`], { encoding: 'utf8' }));
-    assert.ok(man.file, `${dir}/manifest.json 'file' anahtari yok`);
-    const rel = String(man.file).replace(/^build\//, '');
-    assert.ok(files.has(`${dir}/${rel}`), `manifest dosyasi zip'te yok: ${dir}/${rel}`);
-  }
   // PHP'nin assets/build/... ile kaydettigi her varlik.
   const wanted = new Set();
   const walk = (d) => {
@@ -94,9 +87,8 @@ test('paket: derlenmis on yuz paketleri + manifestler zip icinde (E8P)', () => {
   for (const d of ['src', 'includes']) if (fs.existsSync(path.join(ROOT, d))) walk(path.join(ROOT, d));
   assert.ok(wanted.size > 0, 'PHP kaynaginda assets/build yolu bulunamadi');
   for (const w of wanted) assert.ok(files.has(w), `PHP'nin yukledigi derlenmis varlik zip'te yok: ${w}`);
-  // katmanli kaynaklar yedek olarak pakette kalir
-  assert.ok([...files].some((f) => f.startsWith('assets/css/src/')));
-  assert.ok([...files].some((f) => f.startsWith('assets/js/src/')));
+  // eski katmanli on yuz kaynaklari/paketleri (12.0.0'da kaldirildi) pakette yok
+  assert.ok(![...files].some((f) => f.startsWith('assets/css/src/') || f.startsWith('assets/js/src/') || f.startsWith('assets/css/build/') || f.startsWith('assets/js/build/')));
 });
 
 test('paket: boyut makul (< 5 MB)', () => {
@@ -119,10 +111,3 @@ test('dist-archive paketi: yalniz izinli desenler, gizli/gelistirme dosyasi yok'
   assert.ok(fs.statSync(DIST_ZIP).size < 5 * 1024 * 1024);
 });
 
-// Bilinen fark (RAPOR-E8T): dist-archive `/assets/src/` desenini sabitlemez, assets/css/src ve assets/js/src'yi de dislar.
-// Pakette `build/` deseni bundle'lari da dislar -> katmanli on yuz kaynaklari pakette kalmaz. Duzelince todo kalkar.
-test('dist-archive paketi: assets/css/src + assets/js/src katmanli kaynaklari var', { todo: 'dist-archive .distignore eslesmesi', skip: !DIST_READY && 'arac yok' }, () => {
-  const files = buildDistZip().map((e) => e.replace(/^woo-donation-popup\//, ''));
-  assert.ok(files.some((f) => f.startsWith('assets/css/src/')));
-  assert.ok(files.some((f) => f.startsWith('assets/js/src/')));
-});

@@ -2,7 +2,7 @@
 /**
  * E2C: bağış türleri (sabit, serbest, hisseli, kampanya), adet/hisse, işlem ücreti, ek bağış, adımlar, sipariş türü metası.
  *
- * @package WooCommerce\Donation_Popup
+ * @package DonationPanel
  */
 
 declare(strict_types=1);

@@ -102,9 +102,7 @@ final class Setup_Wizard {
 
 			$patch['admin']['wizard'] = 'done';
 			$patch['modules']         = $goals[ $goal ];
-			if ( $try_new_form ) {
-				$patch['experiences'] = array( 'engine' => 'new' );
-			}
+			unset( $try_new_form );
 		}
 
 		$this->settings->update( $patch );

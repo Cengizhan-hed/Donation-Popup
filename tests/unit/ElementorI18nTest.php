@@ -2,7 +2,7 @@
 /**
  * Elementor widget titles / keywords / controls are translatable English sources.
  *
- * @package WooCommerce\Donation_Popup
+ * @package DonationPanel
  */
 
 declare(strict_types=1);
@@ -192,8 +192,8 @@ final class ElementorI18nTest extends TestCase {
 			}
 		}
 		$src = (string) file_get_contents(WDP_PLUGIN_DIR . 'src/Modules/EntryPoints/Elementor/class-donation-form-widget.php');
-		$this->assertStringContainsString('Shortcodes::donation_form_shortcode', $src);
-		$this->assertStringContainsString('Shortcodes::donation_button_panel_shortcode', $src);
+		$this->assertStringContainsString('Public_Contract::render', $src, 'Elementor ince katmanı yalnız uyumluluk sözleşmesi üzerinden çizer');
+		$this->assertStringNotContainsString('Shortcodes::', $src);
 	}
 
 	public function test_list_widget_maps_to_shortcode_attributes(): void {
@@ -202,7 +202,7 @@ final class ElementorI18nTest extends TestCase {
 		$this->assertSame(3, (int) $atts['columns_tablet']);
 		$this->assertSame(1, (int) $atts['columns_mobile']);
 		$this->assertSame('medium', $atts['image_size']);
-		$san = WDP_Donations_List::sanitize_atts($atts);
+		$san = \DonationPanel\Modules\EntryPoints\Donations_List::sanitize_atts($atts);
 		$this->assertSame(4, $san['columns']);
 		$this->assertSame('medium', $san['image_size']);
 	}

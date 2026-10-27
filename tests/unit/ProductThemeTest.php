@@ -2,7 +2,7 @@
 /**
  * 10.32.0 — Bu ürüne özel görünüm: renk önceliği, hex, türevler, köşe, yoğunluk, aydınlatma.
  *
- * @package WooCommerce\Donation_Popup
+ * @package DonationPanel
  */
 
 declare(strict_types=1);
@@ -175,7 +175,7 @@ final class ProductThemeTest extends TestCase {
 		$p->type = 'simple';
 		WDP_Test_State::$products[17] = $p;
 		WDP_Test_State::$post_meta[17] = array( '_theme_preset_id' => 'ocean' );
-		$ctx = WDP_Donation_Product_Context_Service::build_form_context($p);
+		$ctx = \DonationPanel\Domain\Product_Context::build_form_context($p);
 		$this->assertArrayNotHasKey('theme_preset_id', $ctx);
 	}
 
@@ -189,7 +189,7 @@ final class ProductThemeTest extends TestCase {
 	}
 
 	public function test_privacy_default_label_and_migration(): void {
-		$label = WDP_Donation_Optional_Fields::default_privacy_link_label();
+		$label = \DonationPanel\Domain\Privacy_Notice::default_link_label();
 		$this->assertSame('Kişisel verilerin işlenmesine ilişkin aydınlatma metni', $label);
 
 		WDP_Test_State::$options['wdp_button_settings'] = array(
@@ -197,24 +197,24 @@ final class ProductThemeTest extends TestCase {
 			'privacy_notice_text'   => '',
 			'privacy_notice_url'    => 'https://example.test/p',
 		);
-		$n = WDP_Donation_Optional_Fields::resolve_privacy_notice(array( 'has_email' => true ));
+		$n = \DonationPanel\Domain\Privacy_Notice::resolve(array( 'has_email' => true ));
 		$this->assertSame($label, $n['link_label']);
-		$html = WDP_Donation_Optional_Fields::render_privacy_notice_html(array( 'has_email' => true ));
+		$html = \DonationPanel\Domain\Privacy_Notice::render_html(array( 'has_email' => true ));
 		$this->assertStringContainsString($label, $html);
 		$this->assertStringNotContainsString('yurt dışındaki saha', $html);
 
-		$this->assertArrayHasKey('10.32.0', WDP_Migrations::steps());
+		$this->assertArrayHasKey('10.32.0', \DonationPanel\Core\Version_Migrations::steps());
 		WDP_Test_State::$options['wdp_button_settings'] = array(
 			'privacy_notice_text' => 'Kişisel verileriniz Aydınlatma Metni kapsamında işlenir.',
 		);
 		unset(WDP_Test_State::$options['wdp_migrated_10_32_0']);
-		$summary = WDP_Migrations::step_10_32_0(false);
+		$summary = \DonationPanel\Core\Version_Migrations::step_10_32_0(false);
 		$this->assertStringContainsString('cleared_legacy_default', $summary);
 		$this->assertSame('', WDP_Test_State::$options['wdp_button_settings']['privacy_notice_text']);
 
 		WDP_Test_State::$options['wdp_button_settings']['privacy_notice_text'] = 'Özel KVKK cümlem';
 		unset(WDP_Test_State::$options['wdp_migrated_10_32_0']);
-		WDP_Migrations::step_10_32_0(false);
+		\DonationPanel\Core\Version_Migrations::step_10_32_0(false);
 		$this->assertSame('Özel KVKK cümlem', WDP_Test_State::$options['wdp_button_settings']['privacy_notice_text']);
 	}
 

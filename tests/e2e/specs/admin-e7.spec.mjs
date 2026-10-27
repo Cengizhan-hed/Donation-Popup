@@ -117,7 +117,6 @@ test('ayarlar kaydedilir ve kalıcıdır; Türkçe karakter bozulmaz; eski ayarl
   await page.locator('#dpa-mod-social_proof').check();
   await page.locator('#dpa-mod-impact').check();
   await page.locator('#dpa-tab-general').click();
-  await page.selectOption('#dpa-engine', 'new');
   await page.locator('#dpa-tab-details').click();
   await page.fill('#dpa-thanks-message', TURKISH);
   await page.fill('#dpa-impact-map', '25 = 1 gıda kolisi|gıda kolisi');
@@ -127,7 +126,7 @@ test('ayarlar kaydedilir ve kalıcıdır; Türkçe karakter bozulmaz; eski ayarl
   const after = await state(page);
   expect(after.settings.modules.social_proof).toBe(true);
   expect(after.settings.modules.impact).toBe(true);
-  expect(after.settings.experiences.engine).toBe('new');
+  expect(after.settings.experiences).toBeUndefined();
   expect(after.settings.thanks.message).toBe(TURKISH);
   expect(after.settings.impact.map).toContain('gıda kolisi');
   expect(after.settings.admin.ui).toBe('new');
@@ -206,7 +205,7 @@ test('sihirbaz: amaç → varsayılan → ürün (oluşturmaz) → bitir; ayarla
   expect(after.settings.modules.campaign).toBe(true);
   expect(after.settings.modules.impact).toBe(true);
   expect(after.settings.modules.donor_account).toBe(false);
-  expect(after.settings.experiences.engine).toBe('legacy');
+  expect(after.settings.experiences).toBeUndefined();
   expect(after.products, 'sihirbaz ürün oluşturmamalı').toBe(before.products);
   expect(after.legacy).toEqual(before.legacy);
   await expect(page.locator('.dpa-prompt')).toHaveCount(0);

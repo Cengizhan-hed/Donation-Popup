@@ -51,8 +51,7 @@ $wdp_ps_allow = array();
 foreach ( $wdp_ps_modules as $slug ) {
 	$wdp_ps_allow[ 'modules.' . $slug ] = 'bool';
 }
-$wdp_ps_allow['experiences.engine'] = 'enum:engine';
-$wdp_ps_allow['admin.ui']           = 'enum:admin_ui';
+$wdp_ps_allow['admin.ui'] = 'enum:admin_ui';
 foreach ( array( 'thanks', 'tax_relief' ) as $group ) {
 	foreach ( $wdp_ps_schema[ $group ] as $key => $spec ) {
 		$wdp_ps_allow[ $group . '.' . $key ] = $spec['type'];
@@ -93,7 +92,7 @@ if ( ! function_exists( 'wdp_ps_validate' ) ) {
 			return array( false, null, 'bad-bool' );
 		}
 		if ( 0 === strpos( $type, 'enum:' ) ) {
-			$list = 'enum:engine' === $type ? \DonationPanel\Core\Settings::ENGINES : \DonationPanel\Core\Settings::ADMIN_UIS;
+			$list = \DonationPanel\Core\Settings::ADMIN_UIS;
 			return is_string( $value ) && in_array( $value, $list, true ) ? array( true, $value, '' ) : array( false, null, 'bad-enum' );
 		}
 		if ( ! is_string( $value ) || strlen( $value ) > 2000 ) {

@@ -2,7 +2,7 @@
 /**
  * E0: modül kayıt defteri; KAPALI modülün dosyası yüklenmez.
  *
- * @package WooCommerce\Donation_Popup
+ * @package DonationPanel
  */
 
 declare(strict_types=1);

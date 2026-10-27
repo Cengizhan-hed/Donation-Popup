@@ -2,7 +2,7 @@
 /**
  * E7: yeni yönetici deneyimi (ayar ekranı, sihirbaz, rehber, varlık kapsamı, strangler anahtarı).
  *
- * @package WooCommerce\Donation_Popup
+ * @package DonationPanel
  */
 
 declare(strict_types=1);
@@ -198,7 +198,6 @@ final class E7AdminTest extends TestCase {
 			array(
 				'_form'       => '1',
 				'modules'     => array( 'impact' => '1', 'donor_account' => '1', 'not_a_module' => '1' ),
-				'experiences' => array( 'engine' => 'new' ),
 				'admin'       => array( 'ui' => 'new' ),
 			)
 		);
@@ -208,15 +207,13 @@ final class E7AdminTest extends TestCase {
 		$this->assertFalse($out['modules']['campaign']);
 		$this->assertTrue($out['modules']['entry_points'], 'Anahtarda olmayan modul bayragi korunmali');
 		$this->assertArrayNotHasKey('not_a_module', $out['modules']);
-		$this->assertSame('new', $out['experiences']['engine']);
 		$this->assertSame('new', $out['admin']['ui']);
 		$this->assertFalse($out['general']['delete_data_on_uninstall']);
 	}
 
 	public function test_sanitize_rejects_bad_enum_values(): void {
 		$page = $this->page();
-		$out  = $page->sanitize(array( '_form' => '1', 'experiences' => array( 'engine' => 'evil' ), 'admin' => array( 'ui' => '<script>' ) ));
-		$this->assertSame('legacy', $out['experiences']['engine']);
+		$out  = $page->sanitize(array( '_form' => '1', 'admin' => array( 'ui' => '<script>' ) ));
 		$this->assertSame('legacy', $out['admin']['ui']);
 	}
 
@@ -240,9 +237,8 @@ final class E7AdminTest extends TestCase {
 
 	public function test_sanitize_without_form_marker_only_normalizes(): void {
 		$page = $this->page();
-		$out  = $page->sanitize(array( 'modules' => array( 'thanks' => true ), 'experiences' => array( 'engine' => 'bogus' ) ));
+		$out  = $page->sanitize(array( 'modules' => array( 'thanks' => true ) ));
 		$this->assertTrue($out['modules']['thanks']);
-		$this->assertSame('legacy', $out['experiences']['engine']);
 		$this->assertSame(Settings::SCHEMA_VERSION, $out['version']);
 	}
 
@@ -274,7 +270,7 @@ final class E7AdminTest extends TestCase {
 		}
 		$this->assertStringContainsString('name="option_page" value="donation_panel"', $html);
 		$this->assertStringContainsString('name="donation_panel_settings[_form]"', $html);
-		$this->assertStringContainsString('donation_panel_settings[experiences][engine]', $html);
+		$this->assertStringNotContainsString('[experiences][engine]', $html);
 		$this->assertStringContainsString('role="tablist"', $html);
 		$this->assertStringContainsString('options.php', $html);
 	}
@@ -301,14 +297,14 @@ final class E7AdminTest extends TestCase {
 		$this->assertTrue($settings->module_enabled('impact'));
 		$this->assertFalse($settings->module_enabled('donor_account', true));
 		$this->assertSame('done', $settings->get('admin.wizard'));
-		$this->assertSame('legacy', $settings->get('experiences.engine'), 'Yeni form yalniz acikca isteyince');
+		$this->assertNull($settings->get('experiences.engine'), 'Motor secimi yok (tek deneyim)');
 	}
 
 	public function test_wizard_try_new_form_and_unknown_goal(): void {
 		$wizard = new Setup_Wizard(new Settings());
 		$wizard->apply('done', 'nonsense', true);
 		$settings = new Settings();
-		$this->assertSame('new', $settings->get('experiences.engine'));
+		$this->assertNull($settings->get('experiences.engine'));
 		$this->assertFalse($settings->module_enabled('campaign', true), 'Bilinmeyen amac = sade');
 	}
 
@@ -319,7 +315,7 @@ final class E7AdminTest extends TestCase {
 		$settings = new Settings();
 		$this->assertSame('skipped', $settings->get('admin.wizard'));
 		$this->assertTrue($settings->module_enabled('thanks'));
-		$this->assertSame('legacy', $settings->get('experiences.engine'));
+		$this->assertNull($settings->get('experiences.engine'));
 	}
 
 	public function test_wizard_handle_requires_capability(): void {

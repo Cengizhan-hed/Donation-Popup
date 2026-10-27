@@ -3,7 +3,7 @@
  * Salt okunur alt bağış (addon) yapılandırması. Tarayıcı yok.
  * Arg 0: ürün ID. Müşteri/sipariş yok; meta değerleri yalnız sayı/bayrak.
  *
- * @package WooCommerce\Donation_Popup
+ * @package DonationPanel
  */
 
 if (!function_exists('get_post_meta')) {
@@ -20,14 +20,14 @@ $global_wc    = 0;
 $resolved_wc  = 0;
 
 if (class_exists('WDP_Utils')) {
-	$global_wc = (int) WDP_Utils::get_default_addon_wc_product_id();
+	$global_wc = (int) \DonationPanel\Domain\Addon_Settings::get_default_addon_wc_product_id();
 	if ($product_id > 0) {
-		$product_wc = (int) WDP_Utils::get_configured_addon_wc_product_id($product_id);
+		$product_wc = (int) \DonationPanel\Domain\Addon_Settings::get_configured_addon_wc_product_id($product_id);
 		if ($product_wc === $global_wc) {
 			$per = 0;
 			$p   = function_exists('wc_get_product') ? wc_get_product($product_id) : null;
 			if ($p && method_exists($p, 'get_meta')) {
-				$per = absint(WDP_Addon_Product_Visibility::get_meta($p, '_addon_wc_product_id'));
+				$per = absint(\DonationPanel\Domain\Addon_Product_Visibility::get_meta($p, '_addon_wc_product_id'));
 			}
 			$product_wc = $per;
 		}
@@ -38,12 +38,12 @@ if (class_exists('WDP_Utils')) {
 		? absint($settings['sadaka_wc_product_id'])
 		: 0;
 	if ($product_id > 0) {
-		$product_wc = absint(WDP_Addon_Product_Visibility::get_meta($product_id, '_addon_wc_product_id'));
+		$product_wc = absint(\DonationPanel\Domain\Addon_Product_Visibility::get_meta($product_id, '_addon_wc_product_id'));
 	}
 }
 
 if ($product_id > 0) {
-	$flag    = strtolower((string) WDP_Addon_Product_Visibility::get_meta($product_id, '_enable_addon_donation'));
+	$flag    = strtolower((string) \DonationPanel\Domain\Addon_Product_Visibility::get_meta($product_id, '_enable_addon_donation'));
 	$enabled = ($flag === 'yes' || $flag === '1');
 }
 

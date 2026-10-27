@@ -2,7 +2,7 @@
 /**
  * PHPStan bootstrap — eklenti sabitleri. WordPress çekirdeği yüklenmez.
  *
- * @package WooCommerce\Donation_Popup
+ * @package DonationPanel
  */
 
 if (!defined('ABSPATH')) {
@@ -22,4 +22,14 @@ if (!defined('WDP_PLUGIN_URL')) {
 }
 if (!defined('WDP_ASSET_VERSION')) {
 	define('WDP_ASSET_VERSION', '11.0.0');
+}
+
+// Yönetici köprüsü: eski küresel sınıf adları taşınan ad alanlı sınıflara takma ad olur (statik analiz için).
+require_once dirname(__DIR__) . '/src/Core/class-autoloader.php';
+\DonationPanel\Core\Autoloader::register(dirname(__DIR__) . '/src');
+if (is_file(dirname(__DIR__) . '/includes/class-autoloader.php')) {
+	require_once dirname(__DIR__) . '/includes/class-autoloader.php';
+	foreach (array_keys(WDP_Autoloader::MOVED) as $wdp_old_class) {
+		class_exists($wdp_old_class);
+	}
 }

@@ -4,7 +4,7 @@
  *
  * Her test ayrı süreçte koşar (wc_get_orders çifti bu dosyada tanımlı).
  *
- * @package WooCommerce\Donation_Popup
+ * @package DonationPanel
  */
 
 declare(strict_types=1);
@@ -179,12 +179,12 @@ final class K2CampaignTotalsTest extends TestCase {
 	 */
 	public function test_period_end_is_inclusive_and_no_period_counts_everything(): void {
 		$this->seed();
-		$this->assertTrue( WDP_Utils::is_order_in_campaign_period( self::$orders[2], self::P1 ), 'bitis gunu 23:59:59 dahil' );
-		$this->assertFalse( WDP_Utils::is_order_in_campaign_period( self::$orders[8], self::P1 ) );
+		$this->assertTrue( \DonationPanel\Domain\Campaign_Totals::is_order_in_campaign_period( self::$orders[2], self::P1 ), 'bitis gunu 23:59:59 dahil' );
+		$this->assertFalse( \DonationPanel\Domain\Campaign_Totals::is_order_in_campaign_period( self::$orders[8], self::P1 ) );
 		delete_post_meta( self::P1, '_wdp_campaign_starts_at' );
 		delete_post_meta( self::P1, '_wdp_campaign_ends_at' );
-		$this->assertNull( WDP_Utils::get_campaign_period( self::P1 ) );
-		$this->assertTrue( WDP_Utils::is_order_in_campaign_period( self::$orders[8], self::P1 ) );
+		$this->assertNull( \DonationPanel\Domain\Campaign_Totals::get_campaign_period( self::P1 ) );
+		$this->assertTrue( \DonationPanel\Domain\Campaign_Totals::is_order_in_campaign_period( self::$orders[8], self::P1 ) );
 	}
 
 	/**
@@ -201,10 +201,10 @@ final class K2CampaignTotalsTest extends TestCase {
 		$this->assertEquals( 300.0, get_post_meta( self::P1, '_wdp_manual_total', true ) );
 		$this->assertEqualsWithDelta( 1270.0, (float) get_post_meta( self::P1, '_wdp_total_donation_amount', true ), 0.001 );
 
-		$this->assertEqualsWithDelta( 1570.0, WDP_Utils::get_total_donation_amount( self::P1 ), 0.001 );
-		$this->assertEqualsWithDelta( 1270.0, WDP_Utils::get_calculated_total_donation_amount( self::P1 ), 0.001 );
-		$this->assertEqualsWithDelta( 300.0, WDP_Utils::get_manual_total( self::P1 ), 0.001 );
-		$this->assertEqualsWithDelta( 1570.0, WDP_Utils::get_totals_for_products( array( self::P1 ) )[ self::P1 ], 0.001 );
+		$this->assertEqualsWithDelta( 1570.0, \DonationPanel\Domain\Campaign_Totals::get_total_donation_amount( self::P1 ), 0.001 );
+		$this->assertEqualsWithDelta( 1270.0, \DonationPanel\Domain\Campaign_Totals::get_calculated_total_donation_amount( self::P1 ), 0.001 );
+		$this->assertEqualsWithDelta( 300.0, \DonationPanel\Domain\Campaign_Totals::get_manual_total( self::P1 ), 0.001 );
+		$this->assertEqualsWithDelta( 1570.0, \DonationPanel\Domain\Campaign_Totals::get_totals_for_products( array( self::P1 ) )[ self::P1 ], 0.001 );
 	}
 
 	/**
@@ -216,8 +216,8 @@ final class K2CampaignTotalsTest extends TestCase {
 		update_post_meta( self::P1, '_wdp_total_donation_amount', 100.0 );
 		$order = $this->order( 1, 50.0, 'completed' );
 
-		WDP_Utils::sync_order_donation_totals_on_status_change( 1, 'pending', 'completed', $order );
-		WDP_Utils::sync_order_donation_totals_on_status_change( 1, 'completed', 'cancelled', $order );
+		\DonationPanel\Domain\Campaign_Totals::sync_order_donation_totals_on_status_change( 1, 'pending', 'completed', $order );
+		\DonationPanel\Domain\Campaign_Totals::sync_order_donation_totals_on_status_change( 1, 'completed', 'cancelled', $order );
 
 		$this->assertEquals( 300.0, get_post_meta( self::P1, '_wdp_manual_total', true ) );
 		$this->assertEqualsWithDelta( 100.0, (float) get_post_meta( self::P1, '_wdp_total_donation_amount', true ), 0.001 );

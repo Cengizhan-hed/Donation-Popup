@@ -2,7 +2,7 @@
 /**
  * Ürün "Bağış" paneli ve eski AJAX kaydının meta normalizasyonu testleri.
  *
- * @package WooCommerce\Donation_Popup
+ * @package DonationPanel
  */
 
 declare(strict_types=1);
@@ -37,7 +37,7 @@ final class ProductSettingsSaveTest extends TestCase {
 		);
 
 		$this->assertSame('yes', $meta['_allow_multiple_shares']);
-		$this->assertSame(WDP_Donation_Type::SHARES, WDP_Donation_Type::infer_from_meta($meta));
+		$this->assertSame(\DonationPanel\Domain\Donation_Type::SHARES, \DonationPanel\Domain\Donation_Type::infer_from_meta($meta));
 	}
 
 	public function test_legacy_flag_exclusivity_is_unchanged(): void {
@@ -55,9 +55,9 @@ final class ProductSettingsSaveTest extends TestCase {
 	}
 
 	public function test_every_type_saves_and_infers_back(): void {
-		foreach (WDP_Donation_Type::ids() as $type) {
+		foreach (\DonationPanel\Domain\Donation_Type::ids() as $type) {
 			$meta = WDP_Product_Settings_Service::from_product_panel(array('donation_type' => $type));
-			$this->assertSame($type, WDP_Donation_Type::infer_from_meta($meta), $type);
+			$this->assertSame($type, \DonationPanel\Domain\Donation_Type::infer_from_meta($meta), $type);
 		}
 	}
 

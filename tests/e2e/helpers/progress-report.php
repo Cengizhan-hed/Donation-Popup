@@ -14,7 +14,7 @@ if ( ! function_exists( 'get_option' ) ) {
 $report = array(
 	'report'          => 'wdp-progress-report',
 	'wc_active'       => function_exists( 'wc_get_orders' ),
-	'plugin_active'   => class_exists( 'WDP_Progress_Currency' ),
+	'plugin_active'   => class_exists( 'DonationPanel\\Domain\\Progress_Currency' ),
 	'convert_filters' => array(
 		'wdp_convert_amount'        => (bool) has_filter( 'wdp_convert_amount' ),
 		'wdp_order_exchange_rate'   => (bool) has_filter( 'wdp_order_exchange_rate' ),
@@ -27,7 +27,7 @@ if ( ! $report['wc_active'] || ! $report['plugin_active'] ) {
 	return;
 }
 
-$report['base_currency'] = WDP_Progress_Currency::get_base_currency();
+$report['base_currency'] = \DonationPanel\Domain\Progress_Currency::get_base_currency();
 
 // Kampanya/ilerleme urunleri: toplam meta anahtari dolu olanlar.
 $product_ids = get_posts(
@@ -97,7 +97,7 @@ do {
 	);
 	foreach ( $orders as $order ) {
 		++$orders_seen;
-		$currency     = WDP_Progress_Currency::get_order_currency( $order );
+		$currency     = \DonationPanel\Domain\Progress_Currency::get_order_currency( $order );
 		$order_counts       = false;
 		$order_counted_meta = false;
 		foreach ( $order->get_items() as $item ) {
@@ -174,7 +174,7 @@ do {
 					$by_currency[ $currency ]['rate_max'] = ( null === $cur_max || $rate > $cur_max ) ? $rate : $cur_max;
 				}
 			}
-			$conv = WDP_Progress_Currency::convert_to_base( $line, $currency, $order );
+			$conv = \DonationPanel\Domain\Progress_Currency::convert_to_base( $line, $currency, $order );
 			if ( ! empty( $conv['ok'] ) ) {
 				++$by_currency[ $currency ]['ok'];
 				$by_currency[ $currency ]['converted_sum'] += (float) $conv['amount'];

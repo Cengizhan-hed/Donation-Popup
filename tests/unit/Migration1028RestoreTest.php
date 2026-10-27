@@ -1,8 +1,8 @@
 <?php
 /**
- * WDP_Migrations 10.28.1: 10.28.0 yedeğinden geri yükleme ve idempotentlik.
+ * Version_Migrations 10.28.1: 10.28.0 yedeğinden geri yükleme ve idempotentlik.
  *
- * @package WooCommerce\Donation_Popup
+ * @package DonationPanel
  */
 
 declare(strict_types=1);
@@ -41,7 +41,7 @@ final class Migration1028RestoreTest extends TestCase {
 			'_theme_primary_hover' => '#abc',
 		);
 
-		WDP_Test_State::$options[ WDP_Migrations::BACKUP_OPTION ] = array(
+		WDP_Test_State::$options[ \DonationPanel\Core\Version_Migrations::BACKUP_OPTION ] = array(
 			'wdp_button_settings' => array(
 				'button_primary_color' => '#0f608b',
 				'primary_color'        => '#ff0000',
@@ -72,7 +72,7 @@ final class Migration1028RestoreTest extends TestCase {
 	public function test_full_restore_from_post_10280_state(): void {
 		$this->seed_post_10280_with_backup();
 
-		$summary = WDP_Migrations::step_10_28_1(false);
+		$summary = \DonationPanel\Core\Version_Migrations::step_10_28_1(false);
 		$this->assertStringContainsString('restore:ok', $summary);
 
 		$button = WDP_Test_State::$options['wdp_button_settings'];
@@ -89,11 +89,11 @@ final class Migration1028RestoreTest extends TestCase {
 		$this->assertSame('#0f608b', WDP_Test_State::$post_meta[42]['_theme_primary_hover']);
 		$this->assertArrayNotHasKey('_theme_density', WDP_Test_State::$post_meta[42]);
 
-		$this->assertArrayNotHasKey(WDP_Migrations::BACKUP_OPTION, WDP_Test_State::$options);
-		$this->assertIsArray(WDP_Test_State::$options[ WDP_Migrations::BACKUP_RESTORED_OPTION ]);
+		$this->assertArrayNotHasKey(\DonationPanel\Core\Version_Migrations::BACKUP_OPTION, WDP_Test_State::$options);
+		$this->assertIsArray(WDP_Test_State::$options[ \DonationPanel\Core\Version_Migrations::BACKUP_RESTORED_OPTION ]);
 
 		// Placement remapped to 10.28.1 WooCommerce defaults after restore.
-		$placement = WDP_Test_State::$options[ WDP_Placement_Settings::OPTION ];
+		$placement = WDP_Test_State::$options[ \DonationPanel\Domain\Placement_Settings::OPTION ];
 		$this->assertSame('yes', $placement['auto_place']);
 		$this->assertSame('button_panel', $placement['display']);
 		$this->assertSame('panel', $placement['loop_button']);
@@ -103,27 +103,27 @@ final class Migration1028RestoreTest extends TestCase {
 		WDP_Test_State::$options['wdp_button_settings'] = array('primary_color' => '#112233');
 		WDP_Test_State::$options['wdp_db_version']      = '10.27.1';
 
-		$summary = WDP_Migrations::step_10_28_1(false);
+		$summary = \DonationPanel\Core\Version_Migrations::step_10_28_1(false);
 		$this->assertStringContainsString('restore:skipped', $summary);
 		$this->assertSame('#112233', WDP_Test_State::$options['wdp_button_settings']['primary_color']);
-		$this->assertArrayNotHasKey(WDP_Migrations::BACKUP_RESTORED_OPTION, WDP_Test_State::$options);
+		$this->assertArrayNotHasKey(\DonationPanel\Core\Version_Migrations::BACKUP_RESTORED_OPTION, WDP_Test_State::$options);
 
-		$placement = WDP_Test_State::$options[ WDP_Placement_Settings::OPTION ];
+		$placement = WDP_Test_State::$options[ \DonationPanel\Domain\Placement_Settings::OPTION ];
 		$this->assertSame('yes', $placement['auto_place']);
 	}
 
 	public function test_running_restore_twice_is_idempotent(): void {
 		$this->seed_post_10280_with_backup();
-		WDP_Migrations::step_10_28_1(false);
+		\DonationPanel\Core\Version_Migrations::step_10_28_1(false);
 		$after_first = WDP_Test_State::$options;
-		unset($after_first[ WDP_Migrations::LOG_OPTION ]);
+		unset($after_first[ \DonationPanel\Core\Version_Migrations::LOG_OPTION ]);
 		$meta_first = WDP_Test_State::$post_meta;
 
-		$summary = WDP_Migrations::step_10_28_1(false);
+		$summary = \DonationPanel\Core\Version_Migrations::step_10_28_1(false);
 		$this->assertStringContainsString('restore:already', $summary);
 
 		$after_second = WDP_Test_State::$options;
-		unset($after_second[ WDP_Migrations::LOG_OPTION ]);
+		unset($after_second[ \DonationPanel\Core\Version_Migrations::LOG_OPTION ]);
 		$this->assertSame($after_first, $after_second);
 		$this->assertSame($meta_first, WDP_Test_State::$post_meta);
 	}

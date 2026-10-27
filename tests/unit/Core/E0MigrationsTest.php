@@ -2,7 +2,7 @@
 /**
  * E0: sürüm kapılı göç çalıştırıcısı.
  *
- * @package WooCommerce\Donation_Popup
+ * @package DonationPanel
  */
 
 declare(strict_types=1);

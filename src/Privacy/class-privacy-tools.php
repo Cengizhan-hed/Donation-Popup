@@ -2,7 +2,7 @@
 /**
  * Gizlilik araçları: hesap verisi için WordPress dışa aktarma/silme, gizlilik politikası önerisi, eski çerez temizliği.
  *
- * Sipariş kalemi verisi (ithaf, bağışçı/hissedar alanları) eski `WDP_Privacy` sınıfında kalır (aynı kayıtçı hedefleri).
+ * Sipariş kalemi verisi (ithaf, bağışçı/hissedar alanları) eski `Order_Privacy` sınıfında kalır (aynı kayıtçı hedefleri).
  * Bu sınıf modül ayarından bağımsız HER ZAMAN yüklenir; yalnız ilgili isteklerde iş yapar.
  *
  * @package DonationPanel

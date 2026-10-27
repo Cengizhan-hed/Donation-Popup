@@ -2,7 +2,7 @@
 /**
  * K8: çekirdek para birimi eklentisi tanımaz (filtre yokken tutar değişmez); Curcy snippet'i filtrelerle eski davranışı verir.
  *
- * @package WooCommerce\Donation_Popup
+ * @package DonationPanel
  */
 
 declare(strict_types=1);
@@ -25,29 +25,20 @@ final class SiteSnippetCurcyBridgeTest extends TestCase {
 	}
 
 	public function test_core_without_filters_leaves_amount_unchanged(): void {
-		$this->assertSame(12.5, WDP_Progress_Currency::convert_amount(12.5, 'EUR', 'TRY'));
-		$this->assertSame(12.5, WDP_Progress_Currency::convert_amount(12.5, 'TRY', 'TRY'));
-		$this->assertNull(WDP_Progress_Currency::get_order_rate(self::order(array()), 'EUR'));
-		$r = WDP_Progress_Currency::convert_to_base(10.0, 'EUR', self::order(array()));
+		$this->assertSame(12.5, \DonationPanel\Domain\Progress_Currency::convert_amount(12.5, 'EUR', 'TRY'));
+		$this->assertSame(12.5, \DonationPanel\Domain\Progress_Currency::convert_amount(12.5, 'TRY', 'TRY'));
+		$this->assertNull(\DonationPanel\Domain\Progress_Currency::get_order_rate(self::order(array()), 'EUR'));
+		$r = \DonationPanel\Domain\Progress_Currency::convert_to_base(10.0, 'EUR', self::order(array()));
 		$this->assertFalse($r['ok']);
 		$this->assertSame('missing_rate', $r['reason']);
-	}
-
-	public function test_core_client_context_default_has_no_plugin_or_cookie_names(): void {
-		$ref = new ReflectionMethod('WDP_Assets', 'client_context');
-		$ref->setAccessible(true);
-		$ctx = $ref->invoke(null, 'TRY');
-		$this->assertSame(array(), $ctx['currency_cookies']);
-		$this->assertSame(array(), $ctx['lang_cookies']);
-		$this->assertSame(array(), $ctx['change_events']);
 	}
 
 	public function test_convert_amount_filter_is_used_when_rate_missing(): void {
 		WDP_Test_State::$filters['wdp_convert_amount'] = static function ($amount, $from, $to) {
 			return 'EUR' === $from && 'TRY' === $to ? $amount * 40 : $amount;
 		};
-		$this->assertSame(400.0, WDP_Progress_Currency::convert_amount(10.0, 'EUR', 'TRY'));
-		$r = WDP_Progress_Currency::convert_to_base(10.0, 'EUR', self::order(array()));
+		$this->assertSame(400.0, \DonationPanel\Domain\Progress_Currency::convert_amount(10.0, 'EUR', 'TRY'));
+		$r = \DonationPanel\Domain\Progress_Currency::convert_to_base(10.0, 'EUR', self::order(array()));
 		$this->assertTrue($r['ok']);
 		$this->assertSame(400.0, $r['amount']);
 	}
@@ -62,8 +53,8 @@ final class SiteSnippetCurcyBridgeTest extends TestCase {
 	public function test_snippet_reads_curcy_order_info_rate_via_core(): void {
 		WDP_Site_Curcy_Bridge::init();
 		$order = self::order(array('wmc_order_info' => array('EUR' => array('rate' => '0.025'))));
-		$this->assertSame(0.025, WDP_Progress_Currency::get_order_rate($order, 'EUR'));
-		$r = WDP_Progress_Currency::convert_to_base(25.0, 'EUR', $order);
+		$this->assertSame(0.025, \DonationPanel\Domain\Progress_Currency::get_order_rate($order, 'EUR'));
+		$r = \DonationPanel\Domain\Progress_Currency::convert_to_base(25.0, 'EUR', $order);
 		$this->assertEqualsWithDelta(1000.0, $r['amount'], 0.01);
 	}
 
@@ -95,12 +86,12 @@ final class SiteSnippetCurcyBridgeTest extends TestCase {
 			'USD' => array('rate' => 0.03),
 		);
 		WDP_Site_Curcy_Bridge::init();
-		$this->assertSame(0.025, WDP_Progress_Currency::get_live_rate('EUR'));
+		$this->assertSame(0.025, \DonationPanel\Domain\Progress_Currency::get_live_rate('EUR'));
 		// 25 EUR -> 1000 TRY (ana birim) ; EUR -> USD: 25/0.025*0.03 = 30.
-		$this->assertEqualsWithDelta(1000.0, WDP_Progress_Currency::convert_amount(25.0, 'EUR', 'TRY'), 0.001);
-		$this->assertEqualsWithDelta(30.0, WDP_Progress_Currency::convert_amount(25.0, 'EUR', 'USD'), 0.001);
+		$this->assertEqualsWithDelta(1000.0, \DonationPanel\Domain\Progress_Currency::convert_amount(25.0, 'EUR', 'TRY'), 0.001);
+		$this->assertEqualsWithDelta(30.0, \DonationPanel\Domain\Progress_Currency::convert_amount(25.0, 'EUR', 'USD'), 0.001);
 		// Siparişte kur yok: canlı kurla ilerleme çubuğu dönüşümü.
-		$r = WDP_Progress_Currency::convert_to_base(25.0, 'EUR', self::order(array()));
+		$r = \DonationPanel\Domain\Progress_Currency::convert_to_base(25.0, 'EUR', self::order(array()));
 		$this->assertTrue($r['ok']);
 		$this->assertEqualsWithDelta(1000.0, $r['amount'], 0.01);
 		WDP_Test_Curcy_Data::$list = array();

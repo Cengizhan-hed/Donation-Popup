@@ -2,7 +2,7 @@
 /**
  * E2B: Donation_Order_Meta — eski anahtarlar birebir, Türkçe karakter, anonim veriyi silmez, çift yazım yok.
  *
- * @package WooCommerce\Donation_Popup
+ * @package DonationPanel
  */
 
 declare(strict_types=1);
@@ -46,13 +46,13 @@ final class E2BOrderMetaTest extends TestCase {
 		( new Donation_Order_Meta() )->write_item( $new, 'k1', $values, null );
 
 		$old = new E2B_Fake_Order_Item();
-		WDP_Order::add_donation_meta_to_order( $old, 'k1', $values, null );
+		\DonationPanel\WooCommerce\Order_Hooks::add_donation_meta_to_order( $old, 'k1', $values, null );
 
 		$this->assertSame( $old->meta, $new->meta );
-		$this->assertSame( 'Çağlar Şükrü Öztürk İğdır', $new->meta[ WDP_Order_Meta_Keys::DONOR_NAME ] );
-		$this->assertSame( 'wdp_donor_name', WDP_Order_Meta_Keys::DONOR_NAME );
+		$this->assertSame( 'Çağlar Şükrü Öztürk İğdır', $new->meta[ \DonationPanel\WooCommerce\Order_Meta_Keys::DONOR_NAME ] );
+		$this->assertSame( 'wdp_donor_name', \DonationPanel\WooCommerce\Order_Meta_Keys::DONOR_NAME );
 		$this->assertSame( 150.0, $new->meta['_custom_price'] );
-		$this->assertSame( 'Annem Şükriye için', $new->meta[ WDP_Order_Meta_Keys::DEDICATION ] );
+		$this->assertSame( 'Annem Şükriye için', $new->meta[ \DonationPanel\WooCommerce\Order_Meta_Keys::DEDICATION ] );
 	}
 
 	public function test_anonymous_keeps_every_donor_field(): void {
@@ -71,18 +71,18 @@ final class E2BOrderMetaTest extends TestCase {
 			),
 			null
 		);
-		$this->assertSame( 'yes', $item->meta[ WDP_Order_Meta_Keys::ANONYMOUS ] );
-		$this->assertSame( 'Ayşe Yılmaz', $item->meta[ WDP_Order_Meta_Keys::DONOR_NAME ] );
-		$this->assertSame( '0555 000 00 00', $item->meta[ WDP_Order_Meta_Keys::DONOR_PHONE ] );
-		$this->assertSame( 'ayse@ornek.org', $item->meta[ WDP_Order_Meta_Keys::DONOR_EMAIL ] );
-		$this->assertSame( 'Babam için', $item->meta[ WDP_Order_Meta_Keys::DEDICATION ] );
+		$this->assertSame( 'yes', $item->meta[ \DonationPanel\WooCommerce\Order_Meta_Keys::ANONYMOUS ] );
+		$this->assertSame( 'Ayşe Yılmaz', $item->meta[ \DonationPanel\WooCommerce\Order_Meta_Keys::DONOR_NAME ] );
+		$this->assertSame( '0555 000 00 00', $item->meta[ \DonationPanel\WooCommerce\Order_Meta_Keys::DONOR_PHONE ] );
+		$this->assertSame( 'ayse@ornek.org', $item->meta[ \DonationPanel\WooCommerce\Order_Meta_Keys::DONOR_EMAIL ] );
+		$this->assertSame( 'Babam için', $item->meta[ \DonationPanel\WooCommerce\Order_Meta_Keys::DEDICATION ] );
 	}
 
 	public function test_does_not_overwrite_or_duplicate_existing_keys(): void {
 		$item = new E2B_Fake_Order_Item();
-		$item->meta[ WDP_Order_Meta_Keys::DONOR_NAME ] = 'İlk';
+		$item->meta[ \DonationPanel\WooCommerce\Order_Meta_Keys::DONOR_NAME ] = 'İlk';
 		( new Donation_Order_Meta() )->write_item( $item, 'k', array( 'donation_data' => array( 'full_name' => 'İkinci' ) ), null );
-		$this->assertSame( 'İlk', $item->meta[ WDP_Order_Meta_Keys::DONOR_NAME ] );
+		$this->assertSame( 'İlk', $item->meta[ \DonationPanel\WooCommerce\Order_Meta_Keys::DONOR_NAME ] );
 	}
 
 	public function test_ignores_lines_without_donation_data(): void {
@@ -93,13 +93,13 @@ final class E2BOrderMetaTest extends TestCase {
 
 	public function test_take_over_replaces_legacy_hook(): void {
 		WDP_Test_State::$actions = array();
-		add_action( Donation_Order_Meta::HOOK, array( 'WDP_Order', 'add_donation_meta_to_order' ), 10, 4 );
+		add_action( Donation_Order_Meta::HOOK, array( 'DonationPanel\\WooCommerce\\Order_Hooks', 'add_donation_meta_to_order' ), 10, 4 );
 		( new Donation_Order_Meta() )->take_over();
 		$callbacks = isset( WDP_Test_State::$actions[ Donation_Order_Meta::HOOK ] ) ? WDP_Test_State::$actions[ Donation_Order_Meta::HOOK ] : array();
 		$legacy    = array_filter(
 			$callbacks,
 			static function ( $cb ) {
-				return is_array( $cb ) && 'WDP_Order' === $cb[0];
+				return is_array( $cb ) && 'DonationPanel\\WooCommerce\\Order_Hooks' === $cb[0];
 			}
 		);
 		$this->assertCount( 0, $legacy );
@@ -114,7 +114,7 @@ final class E2BOrderMetaTest extends TestCase {
 		$new    = new E2B_Fake_Order_Item();
 		( new Donation_Order_Meta() )->write_item( $new, 'k1', $values, null );
 		$old = new E2B_Fake_Order_Item();
-		WDP_Order::add_donation_meta_to_order( $old, 'k1', $values, null );
+		\DonationPanel\WooCommerce\Order_Hooks::add_donation_meta_to_order( $old, 'k1', $values, null );
 		$this->assertSame( $old->meta, $new->meta );
 		$this->assertSame( 'EUR', $new->meta['_wdp_input_currency'] );
 	}

@@ -2,7 +2,7 @@
 /**
  * [wdp_donations] nitelik sanitizasyonu.
  *
- * @package WooCommerce\Donation_Popup
+ * @package DonationPanel
  */
 
 declare(strict_types=1);
@@ -11,7 +11,7 @@ use PHPUnit\Framework\TestCase;
 
 final class DonationsListAttsTest extends TestCase {
 	public function test_defaults_and_unknown_values(): void {
-		$atts = WDP_Donations_List::sanitize_atts(array('orderby' => 'hack', 'columns' => 99, 'button' => 'magic', 'tabs' => 'maybe'));
+		$atts = \DonationPanel\Modules\EntryPoints\Donations_List::sanitize_atts(array('orderby' => 'hack', 'columns' => 99, 'button' => 'magic', 'tabs' => 'maybe'));
 		$this->assertSame('menu_order', $atts['orderby']);
 		$this->assertSame(3, $atts['columns']);
 		$this->assertSame('panel', $atts['button']);
@@ -20,7 +20,7 @@ final class DonationsListAttsTest extends TestCase {
 	}
 
 	public function test_lists_and_bounds(): void {
-		$atts = WDP_Donations_List::sanitize_atts(
+		$atts = \DonationPanel\Modules\EntryPoints\Donations_List::sanitize_atts(
 			array(
 				'categories'    => 'kurban, su',
 				'ids'           => '1,2,2,abc',

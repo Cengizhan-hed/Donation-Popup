@@ -2,7 +2,7 @@
 /**
  * E0: REST tabanı (nonce, hız sınırı, hata biçimi) + donation-panel/v1/ping.
  *
- * @package WooCommerce\Donation_Popup
+ * @package DonationPanel
  */
 
 declare(strict_types=1);

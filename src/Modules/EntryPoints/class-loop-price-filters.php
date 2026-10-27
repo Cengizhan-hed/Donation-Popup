@@ -7,6 +7,11 @@
 
 namespace DonationPanel\Modules\EntryPoints;
 
+use DonationPanel\Domain\Campaign_Goal;
+use DonationPanel\Domain\Donation_Scope;
+use DonationPanel\Domain\Donation_Type;
+use DonationPanel\Domain\Placement_Settings;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -23,17 +28,17 @@ class Loop_Price_Filters {
 	 * @return string
 	 */
 	public static function filter_price_html( $html, $product ) {
-		if ( \WDP_Placement_Settings::value( 'hide_price' ) !== 'yes' ) {
+		if ( Placement_Settings::value( 'hide_price' ) !== 'yes' ) {
 			return $html;
 		}
 		if ( self::should_preserve_price_html_context() ) {
 			return $html;
 		}
-		if ( ! Product_Resolver::is_wc_product( $product ) || ! \WDP_Donation_Scope::is_donation_product( $product ) ) {
+		if ( ! Product_Resolver::is_wc_product( $product ) || ! Donation_Scope::is_donation_product( $product ) ) {
 			return $html;
 		}
-		$type = \WDP_Donation_Type::for_product( $product->get_id() );
-		if ( in_array( $type, array( \WDP_Donation_Type::CUSTOM, \WDP_Donation_Type::CAMPAIGN ), true ) ) {
+		$type = Donation_Type::for_product( $product->get_id() );
+		if ( in_array( $type, array( Donation_Type::CUSTOM, Donation_Type::CAMPAIGN ), true ) ) {
 			return '';
 		}
 		return $html;
@@ -45,7 +50,7 @@ class Loop_Price_Filters {
 	 * @return string
 	 */
 	public static function filter_loop_add_to_cart( $html, $product ) {
-		return \WDP_Render_Guard::value(
+		return Render_Guard::value(
 			static function () use ( $html, $product ) {
 				return self::loop_button_html( $html, $product );
 			},
@@ -60,33 +65,24 @@ class Loop_Price_Filters {
 	 * @return string
 	 */
 	public static function loop_button_html( $html, $product ) {
-		if ( ! Product_Resolver::is_wc_product( $product ) || ! \WDP_Donation_Scope::is_donation_product( $product ) ) {
+		if ( ! Product_Resolver::is_wc_product( $product ) || ! Donation_Scope::is_donation_product( $product ) ) {
 			return $html;
 		}
-		$mode = (string) \WDP_Placement_Settings::value( 'loop_button', 'panel' );
+		$mode = (string) Placement_Settings::value( 'loop_button', 'panel' );
 		if ( 'off' === $mode ) {
 			return $html;
 		}
-		\WDP_Assets::force_enqueue();
+		// Liste/arşiv kartlarında düğme ürün sayfasına götürür; form ürün sayfasında açılır (kartlarda ağır form basılmaz).
 		$url         = method_exists( $product, 'get_permalink' ) ? $product->get_permalink() : get_permalink( $product->get_id() );
 		$text        = Shortcodes::resolve_button_text( '' );
-		$id          = (int) $product->get_id();
 		$cls         = 'button wdp-loop-donate';
-		$goal_closed = class_exists( 'WDP_Campaign_Goal' ) && \WDP_Campaign_Goal::should_block_new_donations( $product );
+		$goal_closed = Campaign_Goal::should_block_new_donations( $product );
 		if ( $goal_closed ) {
 			$cls .= ' is-disabled wdp-goal-closed-trigger';
 		}
-		if ( 'popup' === $mode || 'panel' === $mode ) {
-			$cls_extra = 'panel' === $mode ? ' wdp-open-modal wdp-open-side-panel' : ' wdp-open-modal';
-			$attrs     = ' type="button" class="' . esc_attr( $cls . $cls_extra ) . '" data-product-id="' . esc_attr( (string) $id ) . '" data-wdp-lazy="1" data-wdp-mode="' . esc_attr( 'panel' === $mode ? 'side_panel' : 'popup' ) . '"';
-			if ( $goal_closed ) {
-				$attrs .= ' aria-disabled="true" data-wdp-goal-closed="1" data-wdp-goal-message="' . esc_attr( \WDP_Campaign_Goal::resolve_message( $product ) ) . '"';
-			}
-			return '<button' . $attrs . '>' . esc_html( $text ) . '</button>';
-		}
 		$attrs = ' href="' . esc_url( $url ) . '" class="' . esc_attr( $cls ) . '"';
 		if ( $goal_closed ) {
-			$attrs .= ' aria-disabled="true" data-wdp-goal-closed="1" data-wdp-goal-message="' . esc_attr( \WDP_Campaign_Goal::resolve_message( $product ) ) . '"';
+			$attrs .= ' aria-disabled="true" title="' . esc_attr( Campaign_Goal::resolve_message( $product ) ) . '"';
 		}
 		return '<a' . $attrs . '>' . esc_html( $text ) . '</a>';
 	}
@@ -99,10 +95,10 @@ class Loop_Price_Filters {
 	 * @return string
 	 */
 	public static function filter_add_to_cart_text( $text, $product = null ) {
-		if ( ! Product_Resolver::is_wc_product( $product ) || ! \WDP_Donation_Scope::is_donation_product( $product ) ) {
+		if ( ! Product_Resolver::is_wc_product( $product ) || ! Donation_Scope::is_donation_product( $product ) ) {
 			return $text;
 		}
-		if ( (string) \WDP_Placement_Settings::value( 'loop_button', 'panel' ) === 'off' ) {
+		if ( (string) Placement_Settings::value( 'loop_button', 'panel' ) === 'off' ) {
 			return $text;
 		}
 		return Shortcodes::resolve_button_text( '' );
@@ -116,10 +112,10 @@ class Loop_Price_Filters {
 	 * @return string
 	 */
 	public static function filter_add_to_cart_url( $url, $product = null ) {
-		if ( ! Product_Resolver::is_wc_product( $product ) || ! \WDP_Donation_Scope::is_donation_product( $product ) ) {
+		if ( ! Product_Resolver::is_wc_product( $product ) || ! Donation_Scope::is_donation_product( $product ) ) {
 			return $url;
 		}
-		if ( (string) \WDP_Placement_Settings::value( 'loop_button', 'panel' ) === 'off' ) {
+		if ( (string) Placement_Settings::value( 'loop_button', 'panel' ) === 'off' ) {
 			return $url;
 		}
 		$permalink = method_exists( $product, 'get_permalink' ) ? $product->get_permalink() : get_permalink( $product->get_id() );
@@ -138,7 +134,7 @@ class Loop_Price_Filters {
 		if ( 'ajax_add_to_cart' !== (string) $feature ) {
 			return $supports;
 		}
-		if ( ! Product_Resolver::is_wc_product( $product ) || ! \WDP_Donation_Scope::is_donation_product( $product ) ) {
+		if ( ! Product_Resolver::is_wc_product( $product ) || ! Donation_Scope::is_donation_product( $product ) ) {
 			return $supports;
 		}
 		return false;
@@ -151,18 +147,18 @@ class Loop_Price_Filters {
 	 * @return string
 	 */
 	public static function filter_block_price( $content, $block, $instance = null ) {
-		if ( \WDP_Placement_Settings::value( 'hide_price' ) !== 'yes' ) {
+		if ( Placement_Settings::value( 'hide_price' ) !== 'yes' ) {
 			return $content;
 		}
 		if ( self::should_preserve_price_html_context() ) {
 			return $content;
 		}
 		$product = Product_Resolver::product_from_block( $instance );
-		if ( ! $product || ! \WDP_Donation_Scope::is_donation_product( $product ) ) {
+		if ( ! $product || ! Donation_Scope::is_donation_product( $product ) ) {
 			return $content;
 		}
-		$type = \WDP_Donation_Type::for_product( $product->get_id() );
-		if ( ! in_array( $type, array( \WDP_Donation_Type::CUSTOM, \WDP_Donation_Type::CAMPAIGN ), true ) ) {
+		$type = Donation_Type::for_product( $product->get_id() );
+		if ( ! in_array( $type, array( Donation_Type::CUSTOM, Donation_Type::CAMPAIGN ), true ) ) {
 			return $content;
 		}
 		return '';
@@ -175,7 +171,7 @@ class Loop_Price_Filters {
 	 * @return string
 	 */
 	public static function filter_block_product_button( $content, $block, $instance = null ) {
-		return \WDP_Render_Guard::value(
+		return Render_Guard::value(
 			static function () use ( $content, $instance ) {
 				$product = Product_Resolver::product_from_block( $instance );
 				if ( ! $product ) {

@@ -1177,8 +1177,8 @@ function wdp_matrix_base() {
 	wdp_matrix_permalinks();
 	wdp_matrix_enable_cheque();
 	wdp_matrix_wdp_settings();
-	if (class_exists('WDP_Migrations') && method_exists('WDP_Migrations', 'needs_run') && WDP_Migrations::needs_run()) {
-		WDP_Migrations::run();
+	if (class_exists('DonationPanel\\Core\\Version_Migrations') && method_exists('DonationPanel\\Core\\Version_Migrations', 'needs_run') && \DonationPanel\Core\Version_Migrations::needs_run()) {
+		\DonationPanel\Core\Version_Migrations::run();
 	}
 	wdp_matrix_checkpoint();
 	return array(

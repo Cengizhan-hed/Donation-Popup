@@ -2,7 +2,7 @@
 /**
  * woocommerce_get_price_html gizleme bağlamları.
  *
- * @package WooCommerce\Donation_Popup
+ * @package DonationPanel
  */
 
 declare(strict_types=1);
@@ -12,12 +12,12 @@ use PHPUnit\Framework\TestCase;
 final class PriceHtmlContextTest extends TestCase {
 	protected function setUp(): void {
 		WDP_Test_State::reset();
-		WDP_Test_State::$options[ WDP_Placement_Settings::OPTION ] = array(
+		WDP_Test_State::$options[ \DonationPanel\Domain\Placement_Settings::OPTION ] = array(
 			'auto_place'     => 'yes',
 			'hide_price'     => 'yes',
 			'donation_scope' => 'all',
 		);
-		WDP_Placement_Settings::flush();
+		\DonationPanel\Domain\Placement_Settings::flush();
 	}
 
 	private function product(int $id, string $donation_type = 'custom'): WC_Product {

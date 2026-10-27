@@ -9,6 +9,8 @@
 
 namespace DonationPanel\Modules\Experiences;
 
+use DonationPanel\WooCommerce\Cart_Hooks;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -49,7 +51,7 @@ final class Field_Validator {
 	 * @return float
 	 */
 	private static function to_store_currency( $amount ) {
-		return class_exists( 'WDP_Cart' ) ? (float) \WDP_Cart::amount_to_store_currency( $amount ) : (float) $amount;
+		return (float) Cart_Hooks::amount_to_store_currency( $amount );
 	}
 
 	/**
@@ -59,7 +61,7 @@ final class Field_Validator {
 	 * @return float
 	 */
 	private static function from_store_currency( $amount ) {
-		return class_exists( 'WDP_Cart' ) ? (float) \WDP_Cart::amount_from_store_currency( $amount ) : (float) $amount;
+		return (float) Cart_Hooks::amount_from_store_currency( $amount );
 	}
 
 	/**

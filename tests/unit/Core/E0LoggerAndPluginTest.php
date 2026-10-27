@@ -2,7 +2,7 @@
 /**
  * E0: Logger (kişisel veri yazmaz), Assets kaydı, Plugin tek girişi.
  *
- * @package WooCommerce\Donation_Popup
+ * @package DonationPanel
  */
 
 declare(strict_types=1);
@@ -66,7 +66,7 @@ final class E0LoggerAndPluginTest extends TestCase {
 		$this->assertSame($container->get(Module_Registry::class), $container->get(Module_Registry::class));
 		// Yeni modüller (side_cart, ...) listeye eklenebilir: çekirdek ikisi her zaman kayıtlı.
 		$this->assertSame(array('entry_points', 'experiences'), array_slice($container->get(Module_Registry::class)->slugs(), 0, 2));
-		$this->assertFalse($container->get(Module_Registry::class)->is_enabled('experiences'), 'Varsayilan motor legacy: experiences kapali.');
+		$this->assertTrue($container->get(Module_Registry::class)->is_enabled('experiences'), 'Tek deneyim: experiences varsayilan acik.');
 	}
 
 	public function test_plugins_loaded_runs_migrations_and_import_once(): void {

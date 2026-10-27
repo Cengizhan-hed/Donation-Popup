@@ -16,9 +16,9 @@ const DEDICATION = 'Anneannem Şükriye İğdır için';
 const SHARES = 'Çağlar Öztürk,Ayşe Yılmaz';
 const NARROW = 639.98;
 
-for (const engine of ['new', 'legacy']) {
-  const q = (extra = '') => `/?dp_sc_test=1${engine === 'legacy' ? '&dp_engine=legacy' : ''}${extra}`;
-  const addUrl = (extra = '') => `/?dp_sc_add=${PRODUCT}${engine === 'legacy' ? '&dp_engine=legacy' : ''}${extra}`;
+for (const engine of ['new']) {
+  const q = (extra = '') => `/?dp_sc_test=1${extra}`;
+  const addUrl = (extra = '') => `/?dp_sc_add=${PRODUCT}${extra}`;
 
   /**
    * @param {import('@playwright/test').Page} page Sayfa.

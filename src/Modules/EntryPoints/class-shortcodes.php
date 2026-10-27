@@ -1,11 +1,16 @@
 <?php
 /**
- * wdp_donation_button, panel, form ve wdp_donations kısa kod kayıt ve render işlemleri.
+ * Düğme / panel / sayfa içi form girişlerinin ortak çizimi: kısa kod, blok, Elementor ince katmanı ve otomatik yerleşim
+ * aynı yöntemleri kullanır; çıktıyı yeni form deneyimi (`experiences`) üretir.
  *
  * @package DonationPanel
  */
 
 namespace DonationPanel\Modules\EntryPoints;
+
+use DonationPanel\Domain\Button_Settings;
+use DonationPanel\Domain\Donation_Scope;
+use DonationPanel\Support\Admin_Notice;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -15,25 +20,13 @@ defined( 'ABSPATH' ) || exit;
 class Shortcodes {
 
 	/**
-	 * Kısa kodları kaydeder.
-	 *
-	 * @return void
-	 */
-	public static function init() {
-		add_shortcode( 'wdp_donation_button', array( __CLASS__, 'donation_button_shortcode' ) );
-		add_shortcode( 'wdp_donation_button_panel', array( __CLASS__, 'donation_button_panel_shortcode' ) );
-		add_shortcode( 'wdp_donation_form', array( __CLASS__, 'donation_form_shortcode' ) );
-		add_shortcode( 'wdp_donations', array( 'WDP_Donations_List', 'shortcode' ) );
-	}
-
-	/**
 	 * Donation button shortcode (center popup).
 	 *
 	 * @param array<string, mixed> $atts Shortcode attributes.
 	 * @return string
 	 */
 	public static function donation_button_shortcode( $atts ) {
-		return \WDP_Render_Guard::html(
+		return Render_Guard::html(
 			static function () use ( $atts ) {
 				return self::render_button( $atts, 'wdp_donation_button', 'popup' );
 			},
@@ -49,7 +42,7 @@ class Shortcodes {
 	 * @return string
 	 */
 	public static function donation_button_panel_shortcode( $atts ) {
-		return \WDP_Render_Guard::html(
+		return Render_Guard::html(
 			static function () use ( $atts ) {
 				return self::render_button( $atts, 'wdp_donation_button_panel', 'side_panel' );
 			},
@@ -65,7 +58,7 @@ class Shortcodes {
 	 * @return string
 	 */
 	public static function donation_form_shortcode( $atts ) {
-		return \WDP_Render_Guard::html(
+		return Render_Guard::html(
 			static function () use ( $atts ) {
 				return self::render_form( $atts );
 			},
@@ -75,16 +68,15 @@ class Shortcodes {
 	}
 
 	/**
-	 * Shared button + modal renderer used by shortcodes, blocks, widgets and auto-placement.
+	 * Ortak düğme çizici (kısa kod, blok, Elementor ince katmanı ve otomatik yerleşim): yeni form deneyimini çizer.
 	 *
-	 * @param array<string, mixed>  $atts          Attributes.
-	 * @param string $shortcode_tag Tag name (for shortcode_atts).
-	 * @param string $display_mode  popup|side_panel.
-	 * @param array<string, mixed>  $context       Block context.
-	 * @param bool   $lazy          When true, skip modal HTML (AJAX later).
+	 * @param array<string, mixed> $atts          Öznitelikler (`id`, `slug`, `sku`, `text`, `button_text`, `class`).
+	 * @param string               $shortcode_tag Kısa kod adı (shortcode_atts için).
+	 * @param string               $display_mode  popup|side_panel.
+	 * @param array<string, mixed> $context       Blok bağlamı.
 	 * @return string
 	 */
-	public static function render_button( $atts, $shortcode_tag, $display_mode, $context = array(), $lazy = false ) {
+	public static function render_button( $atts, $shortcode_tag, $display_mode, $context = array() ) {
 		$raw_atts = is_array( $atts ) ? $atts : array();
 		$atts     = shortcode_atts(
 			array(
@@ -98,7 +90,6 @@ class Shortcodes {
 			$raw_atts,
 			$shortcode_tag
 		);
-		unset( $raw_atts['style'] );
 
 		$resolved = self::resolve_for_output( $atts, $context );
 		if ( is_string( $resolved ) ) {
@@ -106,7 +97,6 @@ class Shortcodes {
 		}
 		$product    = $resolved['product'];
 		$product_id = (int) $product->get_id();
-		$notice     = $resolved['notice'];
 
 		if ( self::product_is_unavailable( $product ) ) {
 			return self::unavailable_product_notice( $product );
@@ -116,72 +106,25 @@ class Shortcodes {
 			return '';
 		}
 
-		$custom_class = self::sanitize_class_list( $atts['class'] );
-		$button_text  = self::resolve_button_text(
-			'' !== $atts['text'] ? $atts['text'] : $atts['button_text']
-		);
-
-		self::enqueue_front();
-
-		$button_settings = \WDP_Utils::normalize_legacy_popup_button_text(
-			get_option( 'wdp_button_settings', array() )
-		);
-		$is_full_width   = isset( $button_settings['popup_button_full_width'] ) && '1' === $button_settings['popup_button_full_width'];
-		$is_side_panel   = ( 'side_panel' === $display_mode );
-		$modal_id        = \WDP_Render_Registry::modal_id( $product_id, $display_mode );
-
-		$open_class     = $is_side_panel ? 'wdp-open-modal wdp-open-side-panel' : 'wdp-open-modal';
-		$button_classes = 'wdp-donate-button ' . $open_class . ' wdp-shortcode-trigger';
-		if ( $is_full_width ) {
-			$button_classes .= ' wdp-donate-button-full-width';
+		$button_text = self::resolve_button_text( '' !== $atts['text'] ? $atts['text'] : $atts['button_text'] );
+		$kind        = 'side_panel' === $display_mode ? 'side_panel' : 'popup';
+		$html        = Experience_Renderer::render( $product_id, $kind, $button_text, self::sanitize_class_list( $atts['class'] ) );
+		if ( '' !== $html ) {
+			Render_Registry::mark_trigger( $product_id );
 		}
-		if ( '' !== $custom_class ) {
-			$button_classes .= ' ' . $custom_class;
-		}
-		$goal_closed = class_exists( 'WDP_Campaign_Goal' ) && \WDP_Campaign_Goal::should_block_new_donations( $product_id );
-		if ( $goal_closed ) {
-			$button_classes .= ' is-disabled wdp-goal-closed-trigger';
-		}
-
-		ob_start();
-		echo $notice; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- admin_notice_html is escaped
-		?>
-		<button type="button" class="<?php echo esc_attr( $button_classes ); ?>"
-				data-product-id="<?php echo esc_attr( (string) $product_id ); ?>"
-				data-wdp-display="<?php echo esc_attr( $is_side_panel ? 'button_panel' : 'button_popup' ); ?>"
-				data-wdp-mode="<?php echo esc_attr( $is_side_panel ? 'side_panel' : 'popup' ); ?>"
-				<?php
-				if ( $goal_closed ) :
-					?>
-					aria-disabled="true" data-wdp-goal-closed="1" data-wdp-goal-message="<?php echo esc_attr( \WDP_Campaign_Goal::resolve_message( $product_id ) ); ?>"<?php endif; ?>
-				<?php
-				if ( $is_side_panel ) :
-					?>
-					data-wdp-modal-id="<?php echo esc_attr( $modal_id ); ?>" <?php endif; ?>
-				<?php
-				if ( $lazy ) :
-					?>
-					data-wdp-lazy="1"<?php endif; ?>>
-			<?php echo esc_html( $button_text ); ?>
-		</button>
-		<?php
-		\WDP_Render_Registry::mark_trigger( $product_id );
-		if ( ! $lazy && \WDP_Render_Registry::claim_modal( $modal_id ) ) {
-			echo \WDP_Templates::render_donation_modal( $product_id, $button_text, $custom_class, '', $display_mode ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-		}
-		return (string) ob_get_clean();
+		return $resolved['notice'] . $html;
 	}
 
 	/**
-	 * Shared inline form renderer.
+	 * Ortak sayfa içi form çizici.
 	 *
-	 * @param array<string, mixed> $atts    Attributes.
-	 * @param array<string, mixed> $context Block context.
+	 * @param array<string, mixed> $atts    Öznitelikler (`id`, `slug`, `sku`, `title`, `show_title`, `class`).
+	 * @param array<string, mixed> $context Blok bağlamı.
 	 * @return string
 	 */
 	public static function render_form( $atts, $context = array() ) {
-		$raw           = is_array( $atts ) ? $atts : array();
-		$atts          = shortcode_atts(
+		$raw  = is_array( $atts ) ? $atts : array();
+		$atts = shortcode_atts(
 			array(
 				'id'          => 0,
 				'slug'        => '',
@@ -195,9 +138,6 @@ class Shortcodes {
 			$raw,
 			'wdp_donation_form'
 		);
-		$atts['class'] = self::sanitize_class_list( $atts['class'] );
-		// Inline form ignores button_text/text (Sepete Ekle / Ödemeye Git genel ayardan gelir).
-		unset( $atts['button_text'], $atts['text'] );
 
 		$resolved = self::resolve_for_output( $atts, $context );
 		if ( is_string( $resolved ) ) {
@@ -205,7 +145,6 @@ class Shortcodes {
 		}
 		$product    = $resolved['product'];
 		$product_id = (int) $product->get_id();
-		$notice     = $resolved['notice'];
 
 		if ( self::product_is_unavailable( $product ) ) {
 			return self::unavailable_product_notice( $product );
@@ -215,12 +154,11 @@ class Shortcodes {
 			return '';
 		}
 
-		if ( ! \WDP_Render_Registry::claim_form( $product_id ) ) {
-			return \WDP_Render_Registry::duplicate_form_notice( $product_id );
+		if ( ! Render_Registry::claim_form( $product_id ) ) {
+			return Render_Registry::duplicate_form_notice( $product_id );
 		}
 
-		self::enqueue_front();
-		return $notice . \WDP_Templates::render_donation_form( $product_id, $atts );
+		return $resolved['notice'] . Experience_Renderer::render( $product_id, 'inline', '', self::sanitize_class_list( $atts['class'] ) );
 	}
 
 	/**
@@ -231,7 +169,7 @@ class Shortcodes {
 	 * @return bool
 	 */
 	private static function auto_entry_already_drawn( $product_id ) {
-		if ( ! \WDP_Render_Registry::has_auto( $product_id ) || ( Builder_Detect::is_builder_preview() ) ) {
+		if ( ! Render_Registry::has_auto( $product_id ) || ( Builder_Detect::is_builder_preview() ) ) {
 			return false;
 		}
 		/**
@@ -262,13 +200,13 @@ class Shortcodes {
 		}
 
 		if ( ! $product ) {
-			return \WDP_Utils::admin_notice_html(
+			return Admin_Notice::admin_notice_html(
 				__( 'Donation form: product not found (no id/slug/sku was given, or this is not a product page).', 'woo-donation-popup' )
 			);
 		}
 
-		if ( ! $explicit && class_exists( 'WDP_Donation_Scope' ) && ! \WDP_Donation_Scope::is_donation_product( $product ) ) {
-			return \WDP_Utils::admin_notice_html( __( 'This product is not marked as a donation product.', 'woo-donation-popup' ) );
+		if ( ! $explicit && ! Donation_Scope::is_donation_product( $product ) ) {
+			return Admin_Notice::admin_notice_html( __( 'This product is not marked as a donation product.', 'woo-donation-popup' ) );
 		}
 
 		return array(
@@ -326,7 +264,7 @@ class Shortcodes {
 		}
 		$product_id = (int) $product->get_id();
 		if ( method_exists( $product, 'is_purchasable' ) && ! $product->is_purchasable() ) {
-			return \WDP_Utils::admin_notice_html(
+			return Admin_Notice::admin_notice_html(
 				sprintf(
 					/* translators: %d: product ID */
 					__( 'This product cannot be purchased (ID: %d).', 'woo-donation-popup' ),
@@ -335,7 +273,7 @@ class Shortcodes {
 			);
 		}
 		if ( method_exists( $product, 'is_in_stock' ) && ! $product->is_in_stock() ) {
-			return \WDP_Utils::admin_notice_html(
+			return Admin_Notice::admin_notice_html(
 				sprintf(
 					/* translators: %d: product ID */
 					__( 'This product is out of stock (ID: %d).', 'woo-donation-popup' ),
@@ -357,23 +295,11 @@ class Shortcodes {
 		if ( '' !== $text ) {
 			return $text;
 		}
-		$button_settings = \WDP_Utils::normalize_legacy_popup_button_text(
-			get_option( 'wdp_button_settings', array() )
-		);
+		$button_settings = Button_Settings::get();
 		if ( ! empty( $button_settings['popup_button_text'] ) ) {
 			return sanitize_text_field( (string) $button_settings['popup_button_text'] );
 		}
 		return __( 'Donate', 'woo-donation-popup' );
-	}
-
-	/**
-	 * @return void
-	 */
-	public static function enqueue_front() {
-		\WDP_Assets::force_enqueue();
-		if ( did_action( 'wp_enqueue_scripts' ) && class_exists( 'WDP_Assets' ) ) {
-			\WDP_Assets::enqueue_assets_now();
-		}
 	}
 
 	/**

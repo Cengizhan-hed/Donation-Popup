@@ -2,7 +2,7 @@
 /**
  * Sayfa oluşturucu önizlemesi yalnızca edit_products yetkisiyle.
  *
- * @package WooCommerce\Donation_Popup
+ * @package DonationPanel
  */
 
 declare(strict_types=1);

@@ -2,7 +2,7 @@
 /**
  * PHPUnit bootstrap — WordPress stubs + plugin autoloader.
  *
- * @package WooCommerce\Donation_Popup
+ * @package DonationPanel
  */
 
 declare(strict_types=1);
@@ -134,7 +134,11 @@ final class WDP_Test_State {
 	/** @var int */
 	public static $json_status = 0;
 
+	/** @var array<string, callable> Registered shortcodes (tag => callback). */
+	public static $shortcodes = array();
+
 	public static function reset(): void {
+		self::$shortcodes    = array();
 		self::$options       = array();
 		self::$post_meta     = array();
 		self::$filters       = array();
@@ -166,8 +170,8 @@ final class WDP_Test_State {
 		self::$last_json     = null;
 		self::$json_status   = 0;
 		$GLOBALS['wpdb']     = new WDP_Fake_Wpdb();
-		if (class_exists('WDP_Donations_List') && method_exists('WDP_Donations_List', 'reset_for_tests')) {
-			WDP_Donations_List::reset_for_tests();
+		if (class_exists('DonationPanel\\Modules\\EntryPoints\\Donations_List') && method_exists('DonationPanel\\Modules\\EntryPoints\\Donations_List', 'reset_for_tests')) {
+			\DonationPanel\Modules\EntryPoints\Donations_List::reset_for_tests();
 		}
 		unset($GLOBALS['product']);
 		$_SERVER  = array();
@@ -175,17 +179,17 @@ final class WDP_Test_State {
 		$_POST    = array();
 		$_REQUEST = array();
 		$_COOKIE  = array();
-		if (class_exists('WDP_Donation_Scope')) {
-			WDP_Donation_Scope::flush();
+		if (class_exists('DonationPanel\\Domain\\Donation_Scope')) {
+			\DonationPanel\Domain\Donation_Scope::flush();
 		}
-		if (class_exists('WDP_Addon_Product_Visibility')) {
-			WDP_Addon_Product_Visibility::flush();
+		if (class_exists('DonationPanel\\Domain\\Addon_Product_Visibility')) {
+			\DonationPanel\Domain\Addon_Product_Visibility::flush();
 		}
-		if (class_exists('WDP_Placement_Settings')) {
-			WDP_Placement_Settings::flush();
+		if (class_exists('DonationPanel\\Domain\\Placement_Settings')) {
+			\DonationPanel\Domain\Placement_Settings::flush();
 		}
-		if (class_exists('WDP_Render_Registry')) {
-			WDP_Render_Registry::reset();
+		if (class_exists('DonationPanel\\Modules\\EntryPoints\\Render_Registry')) {
+			\DonationPanel\Modules\EntryPoints\Render_Registry::reset();
 		}
 		if (class_exists('\DonationPanel\Modules\EntryPoints\Builder_Detect')) {
 			\DonationPanel\Modules\EntryPoints\Builder_Detect::reset();
@@ -509,6 +513,11 @@ if (!function_exists('apply_filters')) {
 			return call_user_func_array(WDP_Test_State::$filters[ $hook ], $args);
 		}
 		return $value;
+	}
+}
+if (!function_exists('add_shortcode')) {
+	function add_shortcode($tag, $callback) {
+		WDP_Test_State::$shortcodes[ $tag ] = $callback;
 	}
 }
 if (!function_exists('add_filter')) {
@@ -1167,7 +1176,6 @@ if (!function_exists('get_terms')) {
 require_once __DIR__ . '/support/fakes.php';
 $GLOBALS['wpdb'] = new WDP_Fake_Wpdb();
 
-require_once WDP_PLUGIN_DIR . 'includes/class-exceptions.php';
 require_once WDP_PLUGIN_DIR . 'includes/class-autoloader.php';
 WDP_Autoloader::register();
 require_once WDP_PLUGIN_DIR . 'src/Core/class-autoloader.php';

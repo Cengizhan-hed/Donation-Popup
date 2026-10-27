@@ -2,7 +2,7 @@
 /**
  * E2B: sepet köprüsü (Cart, Cart_Data) — eski sepet öğesi sözleşmesi, doğrulama, Türkçe karakter, çift gönderim.
  *
- * @package WooCommerce\Donation_Popup
+ * @package DonationPanel
  */
 
 declare(strict_types=1);
@@ -42,9 +42,7 @@ final class E2B_Fake_Cart {
 
 	public function add_to_cart( $product_id, $quantity, $variation_id, $variation, $data ) {
 		$this->post_during_add = $_POST;
-		$method                = new ReflectionMethod( 'WDP_Cart', 'is_ajax_add_to_cart_flow' );
-		$method->setAccessible( true );
-		$this->flow_during_add = (bool) $method->invoke( null, array() );
+		$this->flow_during_add = \DonationPanel\WooCommerce\Cart_Hooks::in_plugin_flow();
 		if ( $this->fail ) {
 			return false;
 		}
@@ -125,9 +123,7 @@ final class E2BCartTest extends TestCase {
 		$this->assertArrayNotHasKey( 'action', $cart->post_during_add );
 		$this->assertArrayNotHasKey( 'wdp_ajax_flow', $cart->post_during_add );
 
-		$method = new ReflectionMethod( 'WDP_Cart', 'is_ajax_add_to_cart_flow' );
-		$method->setAccessible( true );
-		$this->assertFalse( (bool) $method->invoke( null, array() ), 'Bayrak add_to_cart sonrası kapanmalı.' );
+		$this->assertFalse( \DonationPanel\WooCommerce\Cart_Hooks::in_plugin_flow(), 'Bayrak add_to_cart sonrası kapanmalı.' );
 
 		$_POST['action'] = 'keep-me';
 		( new Cart() )->add_item( new E2B_Fake_Cart(), $this->product(), $this->model(), $this->input() );
@@ -137,7 +133,7 @@ final class E2BCartTest extends TestCase {
 
 	public function test_plugin_flow_flag_resets_even_when_add_throws(): void {
 		try {
-			WDP_Cart::run_in_plugin_flow(
+			\DonationPanel\WooCommerce\Cart_Hooks::run_in_plugin_flow(
 				static function () {
 					throw new RuntimeException( 'x' );
 				}
@@ -145,9 +141,7 @@ final class E2BCartTest extends TestCase {
 		} catch ( RuntimeException $e ) {
 			unset( $e );
 		}
-		$method = new ReflectionMethod( 'WDP_Cart', 'is_ajax_add_to_cart_flow' );
-		$method->setAccessible( true );
-		$this->assertFalse( (bool) $method->invoke( null, array() ) );
+		$this->assertFalse( \DonationPanel\WooCommerce\Cart_Hooks::in_plugin_flow() );
 	}
 
 	private function fake_rates( array $rates ): void {
@@ -166,7 +160,7 @@ final class E2BCartTest extends TestCase {
 	}
 
 	private function store_price( array $item ): float {
-		$m = new ReflectionMethod( 'WDP_Cart', 'resolve_cart_line_store_price' );
+		$m = new ReflectionMethod( 'DonationPanel\\WooCommerce\\Cart_Hooks', 'resolve_cart_line_store_price' );
 		$m->setAccessible( true );
 		return (float) $m->invoke( null, $item );
 	}
@@ -196,12 +190,12 @@ final class E2BCartTest extends TestCase {
 		$this->assertSame( $code, $new['wdp_input_currency'] );
 
 		// Eski motor: aynı yazılan tutar `custom_price` + woocommerce_add_cart_item_data damgası.
-		$legacy = WDP_Cart::stamp_input_currency( array( 'custom_price' => $typed ) );
+		$legacy = \DonationPanel\WooCommerce\Cart_Hooks::stamp_input_currency( array( 'custom_price' => $typed ) );
 		$this->assertSame( $legacy['wdp_input_currency'], $new['wdp_input_currency'] );
 		$this->assertEqualsWithDelta( $this->store_price( $legacy ), $this->store_price( $new ), 0.00000001 );
 		$this->assertEqualsWithDelta( $typed / $rate, $this->store_price( $new ), 0.0001 );
 		// Gösterim: yazıldığı birimde aynen.
-		$this->assertEqualsWithDelta( $typed, (float) WDP_Cart::get_cart_line_unit_price( $new ), 0.0000001 );
+		$this->assertEqualsWithDelta( $typed, (float) \DonationPanel\WooCommerce\Cart_Hooks::get_cart_line_unit_price( $new ), 0.0000001 );
 	}
 
 	public function test_new_cart_minimum_is_compared_in_store_currency(): void {

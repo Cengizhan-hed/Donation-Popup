@@ -2,7 +2,7 @@
 /**
  * WP-CLI: `wp donation-panel recalc-totals [--product=<id>|--all] [--dry-run]`.
  *
- * Yalnız `WP_CLI` tanımlıyken kaydedilir (bkz. `WDP_Plugin_Bootstrap::run`).
+ * Yalnız `WP_CLI` tanımlıyken kaydedilir (bkz. `Bootstrap::run`).
  *
  * @package DonationPanel
  */

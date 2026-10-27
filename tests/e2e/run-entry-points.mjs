@@ -48,8 +48,9 @@ export const SCENARIOS = [
  * @param {number} id
  */
 export function countEntries(html, id) {
-  const buttons = (html.match(new RegExp(`<button\\b[^>]*\\bwdp-donate-button\\b[^>]*data-product-id="${id}"`, 'g')) || []).length;
-  const forms = (html.match(new RegExp(`id="wdp-modal-${id}-direct"`, 'g')) || []).length;
+  const roots = html.match(new RegExp(`<div\\b[^>]*\\bdata-dp-exp\\b[^>]*\\bdata-dp-product="${id}"[^>]*>`, 'g')) || [];
+  const forms = roots.filter((tag) => /data-dp-kind="inline"/.test(tag)).length;
+  const buttons = roots.length - forms;
   return { buttons, forms, total: buttons + forms };
 }
 
@@ -59,7 +60,7 @@ export function countEntries(html, id) {
  * @param {string} cls
  */
 function entryInside(html, id, cls) {
-  const re = new RegExp(`class="[^"]*\\b${cls}\\b[^"]*"[^>]*>(?:(?!</div>|</span>)[\\s\\S])*?data-product-id="${id}"`);
+  const re = new RegExp(`class="[^"]*\\b${cls}\\b[^"]*"[^>]*>(?:(?!</div>|</span>)[\\s\\S])*?data-dp-product="${id}"`);
   return re.test(html);
 }
 

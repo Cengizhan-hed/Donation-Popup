@@ -3,7 +3,7 @@
  * E8E: güvenlik denetimi düzeltmeleri — gizli/taslak ürün REST uçlarında görünmez, hedef başına hız sınırı,
  * route'larda permission_callback zorunlu, yetkisiz/nonce'suz/sınır aşımı yanıtları.
  *
- * @package WooCommerce\Donation_Popup
+ * @package DonationPanel
  */
 
 declare(strict_types=1);

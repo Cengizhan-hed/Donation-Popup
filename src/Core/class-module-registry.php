@@ -125,6 +125,17 @@ class Module_Registry {
 	}
 
 	/**
+	 * Etkin modülün örneği (kapalı ya da bilinmeyen modül için null).
+	 *
+	 * @param string $slug Modül slug'ı.
+	 * @return Module_Interface|null
+	 */
+	public function get( $slug ) {
+		$slug = sanitize_key( $slug );
+		return isset( $this->active[ $slug ] ) ? $this->active[ $slug ] : null;
+	}
+
+	/**
 	 * Başlatılmış modül slug'ları.
 	 *
 	 * @return string[]

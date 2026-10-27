@@ -2,7 +2,7 @@
 /**
  * E2E katalog işaretleri + tip çıkarımı (WP sorgusu yok).
  *
- * @package WooCommerce\Donation_Popup
+ * @package DonationPanel
  */
 
 declare(strict_types=1);
@@ -31,7 +31,7 @@ final class CatalogResolveTest extends TestCase {
 		$this->assertSame('custom', wdp_e2e_catalog_infer_type(array('_allow_custom_price' => 'yes')));
 		$this->assertSame('fixed', wdp_e2e_catalog_infer_type(array()));
 		$this->assertSame(
-			WDP_Donation_Type::infer_from_meta(array('_allow_custom_price' => 'yes', '_enable_progress_bar' => 'yes')),
+			\DonationPanel\Domain\Donation_Type::infer_from_meta(array('_allow_custom_price' => 'yes', '_enable_progress_bar' => 'yes')),
 			wdp_e2e_catalog_infer_type(array('_allow_custom_price' => 'yes', '_enable_progress_bar' => 'yes'))
 		);
 	}
@@ -42,7 +42,7 @@ final class CatalogResolveTest extends TestCase {
 			'shares',
 			wdp_e2e_catalog_detect_type(42, array('_allow_custom_price' => 'yes'))
 		);
-		$this->assertSame(WDP_Donation_Type::for_product(42), wdp_e2e_catalog_detect_type(42, array()));
+		$this->assertSame(\DonationPanel\Domain\Donation_Type::for_product(42), wdp_e2e_catalog_detect_type(42, array()));
 	}
 
 	public function test_explain_flag_and_why_have_no_raw_values(): void {
@@ -60,8 +60,8 @@ final class CatalogResolveTest extends TestCase {
 		$states = wdp_e2e_catalog_flag_states(array('_allow_multiple_shares' => 'yes', '_enable_progress_bar' => 'no'));
 		$this->assertSame('açık', $states['_allow_multiple_shares']);
 		$this->assertSame('kapalı', $states['_enable_progress_bar']);
-		$why = wdp_e2e_catalog_type_why('shares', $states, 'WDP_Donation_Type::for_product');
-		$this->assertStringContainsString('WDP_Donation_Type::for_product', $why);
+		$why = wdp_e2e_catalog_type_why('shares', $states, 'DonationPanel\\Domain\\Donation_Type::for_product');
+		$this->assertStringContainsString('DonationPanel\\Domain\\Donation_Type::for_product', $why);
 		$this->assertStringContainsString('_allow_multiple_shares=açık', $why);
 		$this->assertStringNotContainsString('yes', $why);
 		$this->assertStringNotContainsString('@', $why);
@@ -101,12 +101,12 @@ final class CatalogResolveTest extends TestCase {
 	}
 
 	public function test_catalog_display_uses_plugin_resolver(): void {
-		WDP_Test_State::$options[ WDP_Placement_Settings::OPTION ] = array(
+		WDP_Test_State::$options[ \DonationPanel\Domain\Placement_Settings::OPTION ] = array(
 			'auto_place'     => 'yes',
 			'display'        => 'button_panel',
 			'donation_scope' => 'all',
 		);
-		WDP_Placement_Settings::flush();
+		\DonationPanel\Domain\Placement_Settings::flush();
 		$p       = new WC_Product(41);
 		$p->type = 'simple';
 		WDP_Test_State::$products[41] = $p;

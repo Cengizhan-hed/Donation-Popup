@@ -72,7 +72,7 @@ class Blocks {
 	 * @return string
 	 */
 	public static function render_form( $atts, $content = '', $block = null ) {
-		return \WDP_Render_Guard::html(
+		return Render_Guard::html(
 			static function () use ( $atts, $block ) {
 				$atts    = is_array( $atts ) ? $atts : array();
 				$context = ( is_object( $block ) && ! empty( $block->context ) ) ? (array) $block->context : array();
@@ -104,6 +104,6 @@ class Blocks {
 	 * @return string
 	 */
 	public static function render_list( $atts ) {
-		return \WDP_Donations_List::shortcode( is_array( $atts ) ? $atts : array() );
+		return Donations_List::shortcode( is_array( $atts ) ? $atts : array() );
 	}
 }
