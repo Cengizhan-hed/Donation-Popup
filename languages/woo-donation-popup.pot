@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: woo-donation-popup 12.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-27 08:20+0300\n"
+"POT-Creation-Date: 2026-10-27 08:27+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -192,17 +192,18 @@ msgid "Progress toward goal"
 msgstr ""
 
 #: src/Admin/Product/class-product-data-tab.php:602
-#: src/Admin/class-pages.php:188 src/Admin/class-pages.php:202
+#: src/Admin/class-pages.php:190 src/Admin/class-pages.php:209
 msgid "Carried over"
 msgstr ""
 
 #: src/Admin/Product/class-product-data-tab.php:603
+#: src/Admin/class-pages.php:195 src/Admin/class-pages.php:209
 msgid "Added by hand"
 msgstr ""
 
 #: src/Admin/Product/class-product-data-tab.php:604
-#: src/Admin/class-pages.php:194 src/Admin/class-pages.php:202
-#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:280
+#: src/Admin/class-pages.php:201 src/Admin/class-pages.php:209
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:287
 #: blocks/donations/index.js:181
 msgid "Progress"
 msgstr ""
@@ -611,6 +612,10 @@ msgid "The carried-over amount was saved."
 msgstr ""
 
 #: src/Admin/class-admin-assets.php:128
+msgid "The amount added by hand was saved."
+msgstr ""
+
+#: src/Admin/class-admin-assets.php:129
 #: src/Admin/class-admin-controller.php:199
 msgid "The file does not look like a Donation Panel settings export."
 msgstr ""
@@ -655,25 +660,25 @@ msgstr ""
 msgid "Campaigns"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:30 src/Admin/class-pages.php:264
+#: src/Admin/class-field-registry.php:30 src/Admin/class-pages.php:271
 msgid "Forms and appearance"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:31 src/Admin/class-pages.php:283
+#: src/Admin/class-field-registry.php:31 src/Admin/class-pages.php:290
 msgid "Cart and checkout"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:32 src/Admin/class-pages.php:305
-#: src/Admin/class-pages.php:306 src/Admin/class-settings-store.php:68
+#: src/Admin/class-field-registry.php:32 src/Admin/class-pages.php:312
+#: src/Admin/class-pages.php:313 src/Admin/class-settings-store.php:68
 #: src/Privacy/class-privacy-tools.php:184
 msgid "Donor account"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:33 src/Admin/class-pages.php:329
+#: src/Admin/class-field-registry.php:33 src/Admin/class-pages.php:336
 msgid "Privacy"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:34 src/Admin/class-pages.php:361
+#: src/Admin/class-field-registry.php:34 src/Admin/class-pages.php:368
 msgid "Tools"
 msgstr ""
 
@@ -1371,13 +1376,13 @@ msgstr ""
 msgid "Continue the quick setup"
 msgstr ""
 
-#: src/Admin/class-pages.php:154 src/Admin/class-pages.php:206
-#: src/Admin/class-pages.php:285 src/Admin/class-setup-wizard.php:58
+#: src/Admin/class-pages.php:154 src/Admin/class-pages.php:213
+#: src/Admin/class-pages.php:292 src/Admin/class-setup-wizard.php:58
 msgid "Modules"
 msgstr ""
 
-#: src/Admin/class-pages.php:160 src/Admin/class-pages.php:195
-#: src/Admin/class-pages.php:202
+#: src/Admin/class-pages.php:160 src/Admin/class-pages.php:202
+#: src/Admin/class-pages.php:209
 msgid "Status"
 msgstr ""
 
@@ -1393,329 +1398,339 @@ msgstr ""
 msgid "The beginning"
 msgstr ""
 
-#: src/Admin/class-pages.php:186 src/Admin/class-pages.php:202
+#: src/Admin/class-pages.php:187 src/Admin/class-pages.php:209
 msgid "Goal"
 msgstr ""
 
-#: src/Admin/class-pages.php:187 src/Admin/class-pages.php:202
+#: src/Admin/class-pages.php:188 src/Admin/class-pages.php:209
 msgid "Raised"
 msgstr ""
 
-#. translators: %s: product name.
 #: src/Admin/class-pages.php:189
+msgid "Total not calculated yet. Recalculate to count the earlier donations."
+msgstr ""
+
+#. translators: %s: product name.
+#: src/Admin/class-pages.php:191
 #, php-format
 msgid "Carried-over amount for %s"
 msgstr ""
 
-#: src/Admin/class-pages.php:192
+#: src/Admin/class-pages.php:194 src/Admin/class-pages.php:199
 msgid "Save"
 msgstr ""
 
-#: src/Admin/class-pages.php:193 src/Admin/class-pages.php:202
+#. translators: %s: product name.
+#: src/Admin/class-pages.php:196
+#, php-format
+msgid "Amount added by hand for %s"
+msgstr ""
+
+#: src/Admin/class-pages.php:200 src/Admin/class-pages.php:209
 msgid "Counting since"
 msgstr ""
 
 #. translators: %d: percent.
-#: src/Admin/class-pages.php:194
+#: src/Admin/class-pages.php:201
 #, php-format
 msgid "%d percent of the goal"
 msgstr ""
 
-#: src/Admin/class-pages.php:196
+#: src/Admin/class-pages.php:203
 msgid "Recalculate"
 msgstr ""
 
-#: src/Admin/class-pages.php:200
+#: src/Admin/class-pages.php:207
 msgid ""
 "No campaigns yet. Open a product, choose the Donation tab and set a goal "
 "amount."
 msgstr ""
 
-#: src/Admin/class-pages.php:202
+#: src/Admin/class-pages.php:209
 #: src/Modules/EntryPoints/Elementor/class-donation-form-widget.php:101
 #: src/Privacy/class-order-privacy.php:123 blocks/donation-form/index.js:59
 #: blocks/donation-form/index.js:69
 msgid "Product"
 msgstr ""
 
-#: src/Admin/class-pages.php:204
+#: src/Admin/class-pages.php:211
 msgid "Add a product"
 msgstr ""
 
-#: src/Admin/class-pages.php:205
+#: src/Admin/class-pages.php:212
 msgid "Campaign products"
 msgstr ""
 
-#: src/Admin/class-pages.php:205
+#: src/Admin/class-pages.php:212
 msgid ""
 "Raised = carried-over amount + paid donations since the campaign started + "
-"any amount you added by hand on the product. Recalculating shows a preview "
-"first and changes nothing until you approve it."
+"the amount added by hand in this table. Recalculating shows a preview first "
+"and changes nothing until you approve it."
 msgstr ""
 
 #. translators: %s: product name.
-#: src/Admin/class-pages.php:223
+#: src/Admin/class-pages.php:230
 #, php-format
 msgid ""
 "Recalculate \"%s\": carried-over amount plus paid donations in the dates you "
 "choose. Nothing changes until you approve the preview."
 msgstr ""
 
-#: src/Admin/class-pages.php:225
+#: src/Admin/class-pages.php:232
 msgid "Count donations from"
 msgstr ""
 
-#: src/Admin/class-pages.php:226
+#: src/Admin/class-pages.php:233
 msgid "Until (optional)"
 msgstr ""
 
-#: src/Admin/class-pages.php:227 src/Admin/class-pages.php:364
+#: src/Admin/class-pages.php:234 src/Admin/class-pages.php:371
 msgid "Preview"
 msgstr ""
 
-#: src/Admin/class-pages.php:231
+#: src/Admin/class-pages.php:238
 msgid "Stored total"
 msgstr ""
 
-#: src/Admin/class-pages.php:232
+#: src/Admin/class-pages.php:239
 msgid "Calculated total"
 msgstr ""
 
-#: src/Admin/class-pages.php:233
+#: src/Admin/class-pages.php:240
 msgid "Difference"
 msgstr ""
 
-#: src/Admin/class-pages.php:234
+#: src/Admin/class-pages.php:241
 msgid "Orders counted"
 msgstr ""
 
-#: src/Admin/class-pages.php:237
+#: src/Admin/class-pages.php:244
 msgid "Apply this total"
 msgstr ""
 
-#: src/Admin/class-pages.php:249
+#: src/Admin/class-pages.php:256
 msgid "Live"
 msgstr ""
 
-#: src/Admin/class-pages.php:250
+#: src/Admin/class-pages.php:257
 msgid "Draft"
 msgstr ""
 
-#: src/Admin/class-pages.php:251
+#: src/Admin/class-pages.php:258
 msgid "Private"
 msgstr ""
 
-#: src/Admin/class-pages.php:252
+#: src/Admin/class-pages.php:259
 msgid "Pending review"
 msgstr ""
 
-#: src/Admin/class-pages.php:264
+#: src/Admin/class-pages.php:271
 msgid "How the donation form looks and where the donate button appears."
 msgstr ""
 
-#: src/Admin/class-pages.php:278 src/Admin/class-status.php:161
+#: src/Admin/class-pages.php:285 src/Admin/class-status.php:161
 msgid "Fix"
 msgstr ""
 
-#: src/Admin/class-pages.php:280
+#: src/Admin/class-pages.php:287
 msgid "Guest checkout is on"
 msgstr ""
 
-#: src/Admin/class-pages.php:280
+#: src/Admin/class-pages.php:287
 msgid "Guest checkout is off: donors must create an account to give"
 msgstr ""
 
-#: src/Admin/class-pages.php:280 src/Admin/class-pages.php:300
-#: src/Admin/class-pages.php:302 src/Admin/class-status.php:195
+#: src/Admin/class-pages.php:287 src/Admin/class-pages.php:307
+#: src/Admin/class-pages.php:309 src/Admin/class-status.php:195
 msgid "Open WooCommerce settings"
 msgstr ""
 
-#: src/Admin/class-pages.php:281
+#: src/Admin/class-pages.php:288
 msgid ""
 "Payment methods, taxes and currency are set in WooCommerce. Donation Panel "
 "works with both the block and the classic checkout."
 msgstr ""
 
-#: src/Admin/class-pages.php:283
+#: src/Admin/class-pages.php:290
 msgid "What donors see after they choose an amount."
 msgstr ""
 
-#: src/Admin/class-pages.php:284 src/Admin/class-pages.php:413
+#: src/Admin/class-pages.php:291 src/Admin/class-pages.php:420
 msgid "Checkout"
 msgstr ""
 
-#: src/Admin/class-pages.php:300
+#: src/Admin/class-pages.php:307
 msgid "Guest checkout is on: donors can give without an account"
 msgstr ""
 
-#: src/Admin/class-pages.php:300
+#: src/Admin/class-pages.php:307
 msgid "Guest checkout is off: every donor must create an account"
 msgstr ""
 
-#: src/Admin/class-pages.php:302
+#: src/Admin/class-pages.php:309
 msgid "Registration on My Account is on"
 msgstr ""
 
-#: src/Admin/class-pages.php:302
+#: src/Admin/class-pages.php:309
 msgid ""
 "Registration on My Account is off: donors cannot create an account themselves"
 msgstr ""
 
-#: src/Admin/class-pages.php:303
+#: src/Admin/class-pages.php:310
 msgid ""
 "Sign-in, registration and password reset use WordPress and WooCommerce. The "
 "plugin never stores passwords. Account options are set in WooCommerce."
 msgstr ""
 
-#: src/Admin/class-pages.php:305
+#: src/Admin/class-pages.php:312
 msgid "Optional. Off by default; donors can always give as guests."
 msgstr ""
 
-#: src/Admin/class-pages.php:306
+#: src/Admin/class-pages.php:313
 msgid ""
 "Adds a sign-in icon, a sign-in and register panel, and a \"My donations\" "
 "tab in My Account with receipts and a quick way to give again."
 msgstr ""
 
-#: src/Admin/class-pages.php:307
+#: src/Admin/class-pages.php:314
 msgid "WooCommerce account settings"
 msgstr ""
 
-#: src/Admin/class-pages.php:321
+#: src/Admin/class-pages.php:328
 msgid "Privacy policy page is set in WordPress"
 msgstr ""
 
-#: src/Admin/class-pages.php:321
+#: src/Admin/class-pages.php:328
 msgid "Privacy policy page is not set in WordPress"
 msgstr ""
 
-#: src/Admin/class-pages.php:321 src/Admin/class-status.php:185
+#: src/Admin/class-pages.php:328 src/Admin/class-status.php:185
 msgid "Set it"
 msgstr ""
 
-#: src/Admin/class-pages.php:322
+#: src/Admin/class-pages.php:329
 msgid "The plugin sets no cookie of its own"
 msgstr ""
 
-#: src/Admin/class-pages.php:325
+#: src/Admin/class-pages.php:332
 msgid "WordPress \"Export personal data\" includes donor details on orders"
 msgstr ""
 
-#: src/Admin/class-pages.php:325
+#: src/Admin/class-pages.php:332
 msgid "Donor details are not part of \"Export personal data\""
 msgstr ""
 
-#: src/Admin/class-pages.php:326
+#: src/Admin/class-pages.php:333
 msgid "WordPress \"Erase personal data\" covers donor details on orders"
 msgstr ""
 
-#: src/Admin/class-pages.php:326
+#: src/Admin/class-pages.php:333
 msgid "Donor details are not part of \"Erase personal data\""
 msgstr ""
 
-#: src/Admin/class-pages.php:327
+#: src/Admin/class-pages.php:334
 msgid "Export personal data"
 msgstr ""
 
-#: src/Admin/class-pages.php:327
+#: src/Admin/class-pages.php:334
 msgid "Erase personal data"
 msgstr ""
 
-#: src/Admin/class-pages.php:329
+#: src/Admin/class-pages.php:336
 msgid "Donor details are handled with the WordPress privacy tools."
 msgstr ""
 
-#: src/Admin/class-pages.php:330
+#: src/Admin/class-pages.php:337
 msgid "WordPress privacy tools"
 msgstr ""
 
-#: src/Admin/class-pages.php:330
+#: src/Admin/class-pages.php:337
 msgid ""
 "Donor name, dedication, phone and email are saved on the order exactly as "
 "typed. Write your privacy text on your own site."
 msgstr ""
 
-#: src/Admin/class-pages.php:361
+#: src/Admin/class-pages.php:368
 msgid "Preview, move your settings, and check that everything is working."
 msgstr ""
 
-#: src/Admin/class-pages.php:363
+#: src/Admin/class-pages.php:370
 msgid ""
 "See every module on your site as visitors would, without changing any "
 "setting. Only you can see it, and it never saves anything."
 msgstr ""
 
-#: src/Admin/class-pages.php:363
+#: src/Admin/class-pages.php:370
 msgid "Open preview"
 msgstr ""
 
-#: src/Admin/class-pages.php:366
+#: src/Admin/class-pages.php:373
 msgid ""
 "Export downloads your plugin settings as a file. Import reads such a file. "
 "Orders, donors and products are not included."
 msgstr ""
 
-#: src/Admin/class-pages.php:367
+#: src/Admin/class-pages.php:374
 msgid "Export settings"
 msgstr ""
 
-#: src/Admin/class-pages.php:368
+#: src/Admin/class-pages.php:375
 msgid "Import settings"
 msgstr ""
 
-#: src/Admin/class-pages.php:369
+#: src/Admin/class-pages.php:376
 msgid "Export and import"
 msgstr ""
 
-#: src/Admin/class-pages.php:382
+#: src/Admin/class-pages.php:389
 msgid "Copy for support"
 msgstr ""
 
-#: src/Admin/class-pages.php:383
+#: src/Admin/class-pages.php:390
 msgid "Diagnostics"
 msgstr ""
 
-#: src/Admin/class-pages.php:383
+#: src/Admin/class-pages.php:390
 msgid "No personal or order data is included."
 msgstr ""
 
-#: src/Admin/class-pages.php:408
+#: src/Admin/class-pages.php:415
 msgid "Plugin version"
 msgstr ""
 
-#: src/Admin/class-pages.php:409
+#: src/Admin/class-pages.php:416
 msgid "WordPress"
 msgstr ""
 
-#: src/Admin/class-pages.php:410
+#: src/Admin/class-pages.php:417
 msgid "WooCommerce"
 msgstr ""
 
-#: src/Admin/class-pages.php:411
+#: src/Admin/class-pages.php:418
 msgid "PHP"
 msgstr ""
 
-#: src/Admin/class-pages.php:412
+#: src/Admin/class-pages.php:419
 msgid "Order storage"
 msgstr ""
 
-#: src/Admin/class-pages.php:414
+#: src/Admin/class-pages.php:421
 msgid "Currency"
 msgstr ""
 
-#: src/Admin/class-pages.php:415
+#: src/Admin/class-pages.php:422
 msgid "Guest checkout"
 msgstr ""
 
-#: src/Admin/class-pages.php:416
+#: src/Admin/class-pages.php:423
 msgid "Donation products"
 msgstr ""
 
-#: src/Admin/class-pages.php:417
+#: src/Admin/class-pages.php:424
 msgid "Modules on"
 msgstr ""
 
-#: src/Admin/class-pages.php:418
+#: src/Admin/class-pages.php:425
 msgid "REST API address"
 msgstr ""
 
@@ -2462,7 +2477,7 @@ msgid "Product ID or slug"
 msgstr ""
 
 #: src/Modules/EntryPoints/Elementor/class-donation-form-widget.php:121
-#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:154
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:161
 #: blocks/donation-form/index.js:102 blocks/donations/index.js:99
 msgid "Display"
 msgstr ""
@@ -2493,7 +2508,7 @@ msgid "No"
 msgstr ""
 
 #: src/Modules/EntryPoints/Elementor/class-donation-form-widget.php:147
-#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:229
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:236
 msgctxt "Elementor widget"
 msgid "Button text"
 msgstr ""
@@ -2524,183 +2539,184 @@ msgid "Query"
 msgstr ""
 
 #: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:82
-msgid "Categories (slugs, comma-separated)"
-msgstr ""
-
-#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:89
-#: blocks/donations/index.js:58
-msgid "Exclude categories"
-msgstr ""
-
-#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:96
-#: blocks/donations/index.js:59
-msgid "IDs only"
-msgstr ""
-
-#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:103
-#: blocks/donations/index.js:60
-msgid "Exclude IDs"
-msgstr ""
-
-#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:110
-msgid "Type"
-msgstr ""
-
-#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:118
-#: blocks/donations/index.js:63
-msgid "Count"
-msgstr ""
-
-#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:128
-#: blocks/donations/index.js:72
-msgid "Order by"
-msgstr ""
-
-#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:132
-#: blocks/donations/index.js:75
-msgid "Menu order"
-msgstr ""
-
-#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:133
-#: blocks/donations/index.js:76
-msgid "Date"
-msgstr ""
-
-#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:134
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:141
 #: blocks/donations/index.js:77
 msgid "Title"
 msgstr ""
 
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:89
+msgid "Categories (slugs, comma-separated)"
+msgstr ""
+
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:96
+#: blocks/donations/index.js:58
+msgid "Exclude categories"
+msgstr ""
+
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:103
+#: blocks/donations/index.js:59
+msgid "IDs only"
+msgstr ""
+
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:110
+#: blocks/donations/index.js:60
+msgid "Exclude IDs"
+msgstr ""
+
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:117
+msgid "Type"
+msgstr ""
+
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:125
+#: blocks/donations/index.js:63
+msgid "Count"
+msgstr ""
+
 #: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:135
+#: blocks/donations/index.js:72
+msgid "Order by"
+msgstr ""
+
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:139
+#: blocks/donations/index.js:75
+msgid "Menu order"
+msgstr ""
+
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:140
+#: blocks/donations/index.js:76
+msgid "Date"
+msgstr ""
+
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:142
 #: blocks/donations/index.js:78
 msgid "Popularity"
 msgstr ""
 
-#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:136
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:143
 #: blocks/donations/index.js:79
 msgid "Random"
 msgstr ""
 
-#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:143
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:150
 #: blocks/donations/index.js:86
 msgid "Direction"
 msgstr ""
 
-#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:158
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:165
 #: blocks/donations/index.js:101
 msgid "Columns"
 msgstr ""
 
-#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:170
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:177
 #: blocks/donations/index.js:128
 msgid "Gap (px)"
 msgstr ""
 
-#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:180
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:187
 #: blocks/donations/index.js:137
 msgid "Image ratio"
 msgstr ""
 
-#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:188
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:195
 #: blocks/donations/index.js:144
 msgid "Original"
 msgstr ""
 
-#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:195
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:202
 #: blocks/donations/index.js:151
 msgid "Alignment"
 msgstr ""
 
-#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:199
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:206
 #: blocks/donations/index.js:154
 msgid "Center"
 msgstr ""
 
-#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:200
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:207
 #: blocks/donations/index.js:155
 msgid "Left"
 msgstr ""
 
-#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:207
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:214
 #: blocks/donations/index.js:162
 msgid "Button"
 msgstr ""
 
-#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:211
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:218
 #: blocks/donations/index.js:165
 msgid "Panel"
 msgstr ""
 
-#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:212
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:219
 #: blocks/donations/index.js:166
 msgid "Popup"
 msgstr ""
 
-#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:213
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:220
 #: blocks/donations/index.js:167
 msgid "Link"
 msgstr ""
 
-#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:220
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:227
 #: blocks/donations/index.js:173
 msgid "Full-width button"
 msgstr ""
 
-#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:236
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:243
 #: blocks/donations/index.js:175
 msgid "Tabs"
 msgstr ""
 
-#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:245
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:252
 #: blocks/donations/index.js:176
 msgid "“All” tab"
 msgstr ""
 
-#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:254
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:261
 #: blocks/donations/index.js:178
 msgid "All tab label"
 msgstr ""
 
-#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:256
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:263
 #: src/Modules/EntryPoints/class-donations-list.php:196
 msgid "All"
 msgstr ""
 
-#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:262
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:269
 #: blocks/donations/index.js:179
 msgid "Image"
 msgstr ""
 
-#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:271
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:278
 #: blocks/donations/index.js:180
 msgid "Excerpt"
 msgstr ""
 
-#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:289
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:296
 #: blocks/donations/index.js:182
 msgid "Price"
 msgstr ""
 
-#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:298
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:305
 #: blocks/donations/index.js:183
 msgid "Category"
 msgstr ""
 
-#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:307
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:314
 #: blocks/donations/index.js:185
 msgid "Excerpt words"
 msgstr ""
 
-#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:317
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:324
 msgid "Image size"
 msgstr ""
 
-#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:326
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:333
 #: blocks/donations/index.js:194
 msgid "Heading tag"
 msgstr ""
 
-#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:339
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:346
 #: blocks/donations/index.js:205
 msgid "CSS class"
 msgstr ""

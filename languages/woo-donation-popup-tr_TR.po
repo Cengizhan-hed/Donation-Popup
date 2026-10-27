@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: woo-donation-popup\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-27 05:21:01+0000\n"
-"PO-Revision-Date: 2026-10-27 05:21:01+0000\n"
+"POT-Creation-Date: 2026-10-27 05:29:12+0000\n"
+"PO-Revision-Date: 2026-10-27 05:29:12+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: tr_TR\n"
@@ -547,6 +547,11 @@ msgstr "Tutar"
 #. YENI-SARMA
 msgid "Amount / quantity"
 msgstr "Tutar / adet"
+
+#. translators: %s: product name.
+#: src/Admin/class-pages.php
+msgid "Amount added by hand for %s"
+msgstr "%s için elle eklenen tutar"
 
 #: includes/class-admin-layout-tabs-renderer.php:140
 msgid "Amount confirmed after payment."
@@ -4476,6 +4481,10 @@ msgstr "Toplanan"
 msgid "Raised = carried-over amount + paid donations since the campaign started + any amount you added by hand on the product. Recalculating shows a preview first and changes nothing until you approve it."
 msgstr "Toplanan = devreden tutar + kampanya başladığından beri ödenmiş bağışlar + üründe elle eklediğiniz tutar. Yeniden hesap önce önizleme gösterir; onaylamadan hiçbir şey değişmez."
 
+#: src/Admin/class-pages.php
+msgid "Raised = carried-over amount + paid donations since the campaign started + the amount added by hand in this table. Recalculating shows a preview first and changes nothing until you approve it."
+msgstr "Toplanan = devreden tutar + kampanya başladığından beri ödenmiş bağışlar + bu tabloda elle eklenen tutar. Yeniden hesap önce önizleme gösterir; onaylamadan hiçbir şey değişmez."
+
 #: src/Admin/Product/
 msgid "Raised so far"
 msgstr "Şimdiye kadar toplanan"
@@ -5564,6 +5573,10 @@ msgstr "Ek bağış sepete eklenemedi."
 msgid "The add-on donation product cannot be the main product itself."
 msgstr "Alt bağış ürünü ana ürünün kendisi olamaz."
 
+#: src/Admin/class-admin-assets.php
+msgid "The amount added by hand was saved."
+msgstr "Elle eklenen tutar kaydedildi."
+
 msgid "The beginning"
 msgstr "Baştan"
 
@@ -5954,6 +5967,10 @@ msgstr "Toplam"
 #: includes/templates/class-modal-shell-renderer.php:26
 msgid "Total amount"
 msgstr "Toplam Tutar"
+
+#: src/Admin/class-pages.php
+msgid "Total not calculated yet. Recalculate to count the earlier donations."
+msgstr "Toplam henüz hesaplanmadı. Önceki bağışları saymak için yeniden hesaplayın."
 
 #: src/Admin/
 msgid "Totals from real donations"

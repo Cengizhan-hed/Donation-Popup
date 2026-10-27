@@ -748,7 +748,7 @@ class Donations_List {
 				$name
 			)
 		) . '"';
-		$cta        = '<a' . $cta_attrs . '>' . esc_html( $button_text ) . '</a>';
+		$cta = '<a' . $cta_attrs . '>' . esc_html( $button_text ) . '</a>';
 
 		$image = '';
 		if ( 'yes' === $atts['show_image'] ) {
