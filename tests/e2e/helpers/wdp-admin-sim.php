@@ -5,6 +5,7 @@
  *
  *   /?dp_ad_login=1&role=administrator|subscriber  -> test kullanıcısı olarak oturum açar (JSON)
  *   /?dp_ad_state=1                                 -> Core ayarları + eski `wdp_*` seçeneklerinin özeti + ürün sayısı (JSON)
+ *   /?dp_ad_meta=<ürün>&keys=a,b                    -> bir ürünün `_enable_*`/`_wdp_*` vb. meta değerleri (yalnız okur; JSON)
  *   /?dp_ad_reset=1&ui=new|legacy                   -> Core ayar kaydını sıfırlar (admin.ui verilen değer)
  *   çerez dp_ad_rtl=1                               -> yönetim arayüzü RTL
  */
@@ -92,6 +93,19 @@ add_action(
 				update_option( $name, null === $dec ? $raw : $dec );
 			}
 			wp_send_json( array( 'ok' => true, 'value' => get_option( $name, null ) ) );
+		}
+		if ( isset( $_GET['dp_ad_meta'] ) ) {
+			// Yalnız okur: ürün sekmesinin yazdığı meta anahtarları (kayıt doğrulaması için).
+			nocache_headers();
+			$pid  = absint( $_GET['dp_ad_meta'] );
+			$keys = isset( $_GET['keys'] ) ? array_filter( array_map( 'trim', explode( ',', wp_unslash( (string) $_GET['keys'] ) ) ) ) : array();
+			$out  = array();
+			foreach ( $keys as $key ) {
+				if ( preg_match( '/^_(wdp_|enable_|allow_|min_|max_|progress_|goal_|amount_|cover_|dedication_|addon_|theme_|trust_|layout_)[a-z_]*$/', $key ) ) {
+					$out[ $key ] = get_post_meta( $pid, $key, true );
+				}
+			}
+			wp_send_json( $out );
 		}
 		if ( isset( $_GET['dp_ad_state'] ) ) {
 			nocache_headers();
