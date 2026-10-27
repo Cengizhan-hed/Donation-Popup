@@ -13,6 +13,38 @@ import { qsa } from './dom.mjs';
 export function initCampaigns(root, api, notify, t) {
   const base = (id) => 'admin/campaigns/' + id;
 
+  const showRaised = (id, res) => {
+    const stored = root.querySelector('[data-dpa-stored="' + id + '"]');
+    if (stored) {
+      stored.textContent = res.raised_text || res.computed_text || res.stored_text;
+    }
+    const pending = root.querySelector('[data-dpa-pending="' + id + '"]');
+    if (pending) {
+      pending.hidden = !res.pending;
+    }
+  };
+
+  qsa(root, '[data-dpa-manual-save]').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const id = btn.getAttribute('data-dpa-manual-save');
+      const input = root.querySelector('[data-dpa-manual="' + id + '"]');
+      if (!input) {
+        return;
+      }
+      btn.disabled = true;
+      try {
+        const res = await api.post(base(id) + '/manual', { amount: input.value === '' ? 0 : Number(input.value) });
+        input.value = String(res.manual);
+        showRaised(id, res);
+        notify(root, t('manualSaved', 'The amount added by hand was saved.'), false);
+      } catch (e) {
+        notify(root, e.message || t('error', 'Something went wrong.'), true);
+      } finally {
+        btn.disabled = false;
+      }
+    });
+  });
+
   qsa(root, '[data-dpa-carried-save]').forEach((btn) => {
     btn.addEventListener('click', async () => {
       const id = btn.getAttribute('data-dpa-carried-save');
@@ -24,10 +56,7 @@ export function initCampaigns(root, api, notify, t) {
       try {
         const res = await api.post(base(id) + '/carried', { amount: input.value === '' ? 0 : Number(input.value) });
         input.value = String(res.carried);
-        const stored = root.querySelector('[data-dpa-stored="' + id + '"]');
-        if (stored) {
-          stored.textContent = res.stored_text;
-        }
+        showRaised(id, res);
         notify(root, t('carriedSaved', 'The carried-over amount was saved.'), false);
       } catch (e) {
         notify(root, e.message || t('error', 'Something went wrong.'), true);
@@ -106,10 +135,7 @@ export function initCampaigns(root, api, notify, t) {
       notify(root, t('rcApplying', 'Applying...'), false);
       try {
         const res = await api.post(base(id) + '/recalc', { ...range(), expected });
-        const stored = root.querySelector('[data-dpa-stored="' + id + '"]');
-        if (stored) {
-          stored.textContent = res.computed_text;
-        }
+        showRaised(id, res);
         show(res);
         notify(root, t('rcApplied', 'The total was updated.'), false);
       } catch (e) {

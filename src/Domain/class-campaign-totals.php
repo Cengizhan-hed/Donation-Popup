@@ -386,7 +386,9 @@ class Campaign_Totals {
 			if ( $amount <= 0 ) {
 				continue;
 			}
-			self::update_product_donation_total( $product_id, $amount );
+			if ( null === self::update_product_donation_total( $product_id, $amount, false, (int) $order->get_id() ) ) {
+				continue;
+			}
 			self::bump_product_donor_count( $product_id, 1 );
 		}
 
@@ -745,9 +747,10 @@ class Campaign_Totals {
 	 * @param int   $product_id Product id.
 	 * @param float $amount     Delta (positive/negative) or absolute total.
 	 * @param bool  $absolute   True to set the total instead of adding.
+	 * @param int   $order_id   Delta'yı doğuran sipariş (yazılmamış toplamda "başka ödenmiş sipariş var mı" denetiminde hariç tutulur).
 	 * @return float|null New total, or null when nothing was written.
 	 */
-	public static function update_product_donation_total( $product_id, $amount, $absolute = false ) {
+	public static function update_product_donation_total( $product_id, $amount, $absolute = false, $order_id = 0 ) {
 		$product_id = absint( $product_id );
 		if ( ! $product_id || ! is_numeric( $amount ) ) {
 			return null;
@@ -762,7 +765,21 @@ class Campaign_Totals {
 			}
 			$current = get_post_meta( $product_id, '_wdp_total_donation_amount', true );
 			if ( '' === $current || ! is_numeric( $current ) ) {
-				// Toplam hiç yazılmamış: formülün başlangıç değeri devreden tutardır (varsayılan 0).
+				// Toplam hiç yazılmamış. Ürünün daha önce ödenmiş siparişleri varsa artımlı yazım toplamı YANLIŞ başlatır:
+				// yazma, ürünü "hesap bekliyor" işaretle; yönetici Kampanyalar'da onaylı hesabı yapar.
+				if ( $amount < 0 && ! Campaign_Formula::$applying ) {
+					// Yazılmamış toplamdan düşüm anlamsızdır (sipariş toplama hiç girmedi); hesap onayını bekler.
+					return null;
+				}
+				if ( ! Campaign_Formula::$applying ) {
+					if ( 'yes' === (string) get_post_meta( $product_id, Campaign_Formula::META_PENDING, true )
+						|| Campaign_Formula::has_other_paid_orders( $product_id, (int) $order_id ) ) {
+						update_post_meta( $product_id, Campaign_Formula::META_PENDING, 'yes' );
+						self::clear_product_donation_total_caches( $product_id );
+						return null;
+					}
+				}
+				// Önceki sipariş yok: formülün başlangıç değeri devreden tutardır (varsayılan 0).
 				$current = Campaign_Formula::get_carried( $product_id );
 			}
 			$next_total = max( 0.0, floatval( $current ) + $amount );

@@ -382,4 +382,62 @@ final class E12CampaignFormulaTest extends TestCase {
 		$this->assertStringNotContainsString("assoc_args['apply']", str_replace("isset( \$assoc_args['apply'] )", '', $src), 'CLI yazma yolu yok');
 		$this->assertStringNotContainsString('recalculate_product_donation_total', (string) file_get_contents(dirname(__DIR__, 3) . '/src/Domain/class-campaign-totals.php'), 'eski toplu yazim kalkti');
 	}
+
+	/**
+	 * @runInSeparateProcess
+	 * @preserveGlobalState disabled
+	 */
+	public function test_unwritten_total_with_earlier_paid_orders_is_not_started_by_the_first_new_order(): void {
+		// Toplamı hiç yazılmamış eski ürün; sistemde ödenmiş eski sipariş var.
+		$old          = $this->order(31, 600.0, 'completed', self::T0 - 5 * self::ONE_DAY);
+		$new          = $this->order(32, 40.0, 'processing', self::T0 + 10);
+		self::$orders = array( $old, $new );
+
+		Campaign_Totals::count_order_in_progress_totals($new);
+
+		$this->assertSame('', get_post_meta(self::P, '_wdp_total_donation_amount', true), 'artimli yazim yok');
+		$this->assertSame('yes', get_post_meta(self::P, Campaign_Formula::META_PENDING, true));
+		$this->assertTrue(Campaign_Formula::is_pending(self::P));
+		$this->assertSame('', get_post_meta(self::P, '_wdp_donor_count', true), 'bagisci sayisi da yazilmaz');
+		// Sonraki siparis de yazmaz (yeniden tarama olmadan bekleme isaretiyle).
+		$next = $this->order(33, 5.0, 'processing', self::T0 + 20);
+		Campaign_Totals::count_order_in_progress_totals($next);
+		$this->assertSame('', get_post_meta(self::P, '_wdp_total_donation_amount', true));
+
+		// Yonetici onayli hesapla yazar ve bekleme isareti kalkar.
+		self::$orders = array( $old, $new, $next );
+		$p            = Campaign_Formula::preview(self::P);
+		$res          = Campaign_Formula::apply(self::P, null, null, (float) $p['computed'], 7);
+		$this->assertTrue($res['ok']);
+		$this->assertEqualsWithDelta(645.0, $this->stored(), 0.001);
+		$this->assertFalse(Campaign_Formula::is_pending(self::P));
+	}
+
+	/**
+	 * @runInSeparateProcess
+	 * @preserveGlobalState disabled
+	 */
+	public function test_unwritten_total_without_earlier_orders_starts_normally(): void {
+		$first        = $this->order(34, 25.0, 'processing', self::T0 + 10);
+		self::$orders = array( $first );
+
+		Campaign_Totals::count_order_in_progress_totals($first);
+
+		$this->assertEqualsWithDelta(25.0, $this->stored(), 0.001);
+		$this->assertFalse(Campaign_Formula::is_pending(self::P));
+	}
+
+	/**
+	 * @runInSeparateProcess
+	 * @preserveGlobalState disabled
+	 */
+	public function test_manual_total_is_logged_and_added_to_the_shown_total(): void {
+		$this->migrated();
+		$res = Campaign_Formula::set_manual(self::P, 120.5, 7);
+		$this->assertEqualsWithDelta(50.0, $res['old'], 0.001);
+		$this->assertEqualsWithDelta(170.5 + 1000.0 - 50.0, $this->shown(), 0.001);
+		$log = Campaign_Formula::get_log(self::P);
+		$this->assertSame('manual', end($log)['type']);
+		$this->assertEqualsWithDelta(1000.0, $this->stored(), 0.001, 'saklanan toplam degismez');
+	}
 }
