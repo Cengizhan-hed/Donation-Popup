@@ -12,6 +12,7 @@ import {
   buildGuardedEvalFileCommand,
   wpPathFlag,
   shellQuoteWpPath,
+  CACHE_BUMP_EVAL_PHP,
 } from '../../../scripts/lib/deploy-guards.mjs';
 import { assertRemoteAllowed, spawnGuarded } from '../../../scripts/lib/remote-guard.mjs';
 import { peekActiveProfile, isRemoteProfile, resolveAllowedRemoteTarget } from './profile.mjs';
@@ -185,6 +186,6 @@ export function purgeCaches(env) {
   const flag = wpCliPath(loaded.env);
   remote(
     loaded.env,
-    `(wp sg purge ${flag} 2>/dev/null || true; wp cache flush ${flag} 2>/dev/null || true; wp eval 'if (function_exists("wp_cache_flush")) { wp_cache_flush(); } if (class_exists("WDP_Donations_List")) { WDP_Donations_List::reset_bump_guard(); WDP_Donations_List::bump_cache(); }' ${flag} 2>/dev/null || true)`
+    `(wp sg purge ${flag} 2>/dev/null || true; wp cache flush ${flag} 2>/dev/null || true; wp eval 'if (function_exists("wp_cache_flush")) { wp_cache_flush(); } ${CACHE_BUMP_EVAL_PHP}' ${flag} 2>/dev/null || true)`
   );
 }

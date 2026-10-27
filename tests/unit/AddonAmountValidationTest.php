@@ -9,10 +9,6 @@ declare(strict_types=1);
 
 use PHPUnit\Framework\TestCase;
 
-/**
- * @covers WDP_Utils::parse_addon_amount
- * @covers WDP_Utils::validate_addon_amount
- */
 final class AddonAmountValidationTest extends TestCase {
 
 	protected function setUp(): void {

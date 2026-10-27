@@ -9,9 +9,6 @@ declare(strict_types=1);
 
 use PHPUnit\Framework\TestCase;
 
-/**
- * @covers WDP_Utils
- */
 final class DonorAmountParseTest extends TestCase {
 
 	/** @var array<string,array> */

@@ -53,7 +53,7 @@ foreach ($meta as $key => $value) {
 if (function_exists('wc_delete_product_transients')) {
 	wc_delete_product_transients($host);
 }
-if (class_exists('WDP_Utils') && method_exists('WDP_Utils', 'invalidate_product_donation_caches')) {
+if (class_exists('\\DonationPanel\\Domain\\Campaign_Totals')) {
 	\DonationPanel\Domain\Campaign_Totals::invalidate_product_donation_caches($host);
 }
 echo wp_json_encode(array( 'ok' => true, 'id' => $host ));

@@ -9,7 +9,7 @@
  *    onun kullandığı yardımcılar (Form_Modules, Product_Settings_Service, Color_Palette, Icon_Library, Style_Presets,
  *    ayar yapılandırmaları). `adm` dalgası kaldırır.
  *  - köprü             : includes/class-autoloader.php + class-admin-bridge.php + küçük yönlendirme sınıfları
- *    (WDP_Utils, WDP_Assets, WDP_Templates, WDP_Donation_Optional_Fields). Yönetici dosyalarıyla birlikte silinir.
+ *    (eski WDP_* sınıfları). Yönetici dosyalarıyla birlikte silinir.
  *  - eski-ön-yüz       : eski modal/form JS-CSS kaynakları, paket betikleri (hedef: 0).
  *  - diğer-includes    : yukarıdakilere girmeyen includes/ dosyası (hedef: 0).
  * Hedef: sahip olunan yollarda (köprü hariç) yönetici-bekleyen dışında 0.
