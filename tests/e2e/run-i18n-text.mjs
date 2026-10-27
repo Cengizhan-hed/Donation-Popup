@@ -150,7 +150,7 @@ async function loginAdmin(page, baseUrl) {
 async function captureAdmin(page, baseUrl, locale, configId, probe) {
   const out = [];
   await loginAdmin(page, baseUrl);
-  await gotoPath(page, baseUrl, '/wp-admin/admin.php?page=wdp-popup-settings');
+  await gotoPath(page, baseUrl, '/wp-admin/admin.php?page=donation-panel');
   await page.waitForSelector('.wdp-admin-wrap', { timeout: CHECK_MS });
   for (const tab of ADMIN_TABS) {
     const link = page.locator(`.wdp-nav-tab-wrapper a.nav-tab[data-tab="${tab}"]`).first();

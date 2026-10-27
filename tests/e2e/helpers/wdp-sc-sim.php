@@ -1,7 +1,7 @@
 <?php
 /**
  * Yalnız yerel e2e (E4 yan sepet): `side_cart` modülünü açar, tetikleyici + içerik sayfası ve test amaçlı ekleme ucu sunar.
- * `wdp-exp-sim.php` ile birlikte yüklenir (motor: `?dp_engine=legacy`). Tema/sayfa oluşturucu adı yok.
+ * `wdp-exp-sim.php` ile birlikte yüklenir. Tema/sayfa oluşturucu adı yok.
  *
  *   /?dp_sc_test=1                 -> kısa kodlu test sayfası
  *   /?dp_sc_add=ID&amount=75&dedication=..&shares=Ad1,Ad2 -> sepete bağış ekler (eski sepet öğesi sözleşmesi), JSON döner

@@ -33,7 +33,7 @@ async function login(page, role = 'administrator') {
   expect(r.status(), await r.text()).toBe(200);
 }
 async function reset(page) {
-  expect((await page.request.get('/?dp_ad_reset=1&ui=new')).status()).toBe(200);
+  expect((await page.request.get('/?dp_ad_reset=1')).status()).toBe(200);
   for (const name of ['wdp_button_settings', 'wdp_placement_settings', 'wdp_delete_data_on_uninstall']) {
     await page.request.get(`/?dp_ad_opt=${name}&del=1`);
   }

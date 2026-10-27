@@ -60,7 +60,7 @@ export async function runBudget(w, qcfg) {
     { type: 'yalniz-kisa-kod', path: `/?dp_q_test=shortcode&dp_product=${ids.custom}` },
   ];
   for (const modules of ['all', 'none']) {
-    setQualityState(w.wpDir, { engine: 'new', modules, override: true });
+    setQualityState(w.wpDir, { modules, override: true });
     for (const p of pages) {
       const res = await fetch(`${w.base}${p.path}`, { headers: p.cookie ? { cookie: p.cookie } : {} });
       const html = await res.text();
@@ -82,6 +82,6 @@ export async function runBudget(w, qcfg) {
       });
     }
   }
-  setQualityState(w.wpDir, { engine: 'new', modules: 'all', override: true });
+  setQualityState(w.wpDir, { modules: 'all', override: true });
   return rows;
 }

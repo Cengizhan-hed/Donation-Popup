@@ -1665,7 +1665,7 @@ export async function readGlobalAddonWcId(authed, env) {
   const page = await authed.newPage();
   try {
     await page.goto(
-      withCacheBust(env.E2E_BASE_URL, '/wp-admin/admin.php?page=wdp-popup-settings'),
+      withCacheBust(env.E2E_BASE_URL, '/wp-admin/admin.php?page=donation-panel'),
       { waitUntil: 'domcontentloaded' }
     );
     const admin = await waitForWpAdminPage(page, 20000);
@@ -1793,7 +1793,7 @@ export async function readProductAddonAdminConfig(authed, env, productSlug, opts
         : 0;
     if (opts.globalWcId === undefined) {
       await page.goto(
-        withCacheBust(env.E2E_BASE_URL, '/wp-admin/admin.php?page=wdp-popup-settings'),
+        withCacheBust(env.E2E_BASE_URL, '/wp-admin/admin.php?page=donation-panel'),
         { waitUntil: 'domcontentloaded' }
       );
       const successTab = page.locator('[data-tab="success-screen"]').first();
@@ -4452,7 +4452,7 @@ export async function captureAll({
     const tAdmin = Date.now();
     const admin = await authed.newPage();
     const adminErrors = attachConsoleErrorCollector(admin);
-    await admin.goto(withCacheBust(env.E2E_BASE_URL, '/wp-admin/admin.php?page=wdp-popup-settings'), {
+    await admin.goto(withCacheBust(env.E2E_BASE_URL, '/wp-admin/admin.php?page=donation-panel'), {
       waitUntil: 'domcontentloaded',
     });
     await assertNoCriticalError(admin).catch((e) =>

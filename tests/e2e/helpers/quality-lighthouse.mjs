@@ -16,12 +16,11 @@ const LH_PORT = Number(process.env.WDP_Q_LH_PORT || 9422) || 9422;
 /**
  * @param {{base:string, wpDir:string}} w İşçi.
  * @param {object} qcfg Yapılandırma.
- * @param {{engine?:string}} [opts] Seçenekler.
+ * @param {object} [opts] Seçenekler (şimdilik yok).
  * @return {Promise<object[]>} Satırlar.
  */
 export async function runLighthouse(w, qcfg, opts = {}) {
-  const engine = opts.engine || 'new';
-  setQualityState(w.wpDir, { engine, modules: 'all', override: true });
+  setQualityState(w.wpDir, { modules: 'all', override: true });
   const profile = fs.mkdtempSync(path.join(os.tmpdir(), 'wdp-lh-'));
   const ctx = await chromium.launchPersistentContext(profile, {
     headless: true,
@@ -114,7 +113,6 @@ export async function runLighthouse(w, qcfg, opts = {}) {
       rows.push({
         config: qcfg.id,
         theme: qcfg.theme,
-        engine,
         page: t.page,
         performance: m.perf,
         perfRuns: m.perfRuns,

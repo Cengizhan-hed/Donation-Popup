@@ -217,7 +217,7 @@ async function runLocaleDevice({ resolved, locale, deviceId, port, shotDir, save
     if (!preset.isMobile) {
       await run('admin', async () => {
         await loginAdmin(page, server.url.replace(/\/$/, ''));
-        await gotoPath(page, server.url.replace(/\/$/, ''), '/wp-admin/admin.php?page=wdp-popup-settings');
+        await gotoPath(page, server.url.replace(/\/$/, ''), '/wp-admin/admin.php?page=donation-panel');
         await page.waitForSelector('.wdp-admin-wrap', { timeout: CHECK_MS });
         const tabNames = { products: 'admin-products', placement: 'admin-placement', 'design-studio': 'admin-design-studio' };
         for (const tab of ADMIN_TABS) {
