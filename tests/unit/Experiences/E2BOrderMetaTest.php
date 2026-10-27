@@ -91,20 +91,6 @@ final class E2BOrderMetaTest extends TestCase {
 		$this->assertSame( array(), $item->meta );
 	}
 
-	public function test_take_over_replaces_legacy_hook(): void {
-		WDP_Test_State::$actions = array();
-		add_action( Donation_Order_Meta::HOOK, array( 'DonationPanel\\WooCommerce\\Order_Hooks', 'add_donation_meta_to_order' ), 10, 4 );
-		( new Donation_Order_Meta() )->take_over();
-		$callbacks = isset( WDP_Test_State::$actions[ Donation_Order_Meta::HOOK ] ) ? WDP_Test_State::$actions[ Donation_Order_Meta::HOOK ] : array();
-		$legacy    = array_filter(
-			$callbacks,
-			static function ( $cb ) {
-				return is_array( $cb ) && 'DonationPanel\\WooCommerce\\Order_Hooks' === $cb[0];
-			}
-		);
-		$this->assertCount( 0, $legacy );
-		$this->assertCount( 1, $callbacks );
-	}
 
 	public function test_input_currency_stamp_is_written_identically_by_both_engines(): void {
 		$values = array(

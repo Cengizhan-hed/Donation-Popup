@@ -7,8 +7,6 @@
 
 namespace DonationPanel\Domain;
 
-use DonationPanel\Modules\EntryPoints\Donations_List;
-
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -319,7 +317,7 @@ class Addon_Product_Visibility {
 	 */
 	public static function clear_visibility_caches() {
 		self::flush();
-		Donations_List::bump_cache();
+		do_action( 'donation_panel_totals_changed' );
 		if ( function_exists( 'wp_cache_flush_group' ) ) {
 			// Best-effort; group may not exist.
 			wp_cache_flush_group( 'wdp_donations_list' );

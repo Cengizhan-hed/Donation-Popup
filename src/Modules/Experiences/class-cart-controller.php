@@ -221,7 +221,8 @@ class Cart_Controller extends Rest_Controller {
 		if ( ! function_exists( 'wc_get_product' ) || self::is_hidden_product( (int) $product_id ) ) {
 			return null;
 		}
-		return wc_get_product( (int) $product_id );
+		$product = wc_get_product( (int) $product_id );
+		return is_object( $product ) && Form_Controller::is_open_donation_product( $product ) ? $product : null;
 	}
 
 	/**

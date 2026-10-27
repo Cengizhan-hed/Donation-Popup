@@ -32,6 +32,17 @@ class Cart_Hooks {
 	 * @return void
 	 */
 	public static function init() {
+		// Domain katmanı sepet bekleyen tutarını bu süzgeçten okur (Domain, WooCommerce katmanını tanımaz).
+		add_filter(
+			'donation_panel_cart_pending_total',
+			static function ( $pending, $product_id ) {
+				unset( $pending );
+				return self::sum_cart_pending_for_product( $product_id );
+			},
+			10,
+			2
+		);
+
 		// Bağış satırına yazılan tutarın para birimi damgası.
 		add_filter( 'woocommerce_add_cart_item_data', array( __CLASS__, 'stamp_input_currency' ), 99, 1 );
 
@@ -522,14 +533,7 @@ class Cart_Hooks {
 	 * @return string
 	 */
 	public static function format_amount_for_message( $amount, $plain_text = true ) {
-		$formatted = $plain_text ? Price::format_price_plain( $amount ) : Price::format_price_html( $amount );
-		if ( '' !== $formatted ) {
-			return $formatted;
-		}
-
-		$symbol = function_exists( 'get_woocommerce_currency_symbol' ) ? get_woocommerce_currency_symbol() : '';
-		$number = function_exists( 'wc_format_decimal' ) ? wc_format_decimal( $amount ) : (string) $amount;
-		return trim( $number . ' ' . html_entity_decode( (string) $symbol, ENT_QUOTES, 'UTF-8' ) );
+		return Price::format_for_message( $amount, $plain_text );
 	}
 
 	/**
@@ -737,9 +741,10 @@ class Cart_Hooks {
 			return null;
 		}
 
-		$base = (float) $catalog->get_regular_price( 'edit' );
+		// Tek kural: formda gösterilen fiyatla aynı kaynak (geçerli/indirimli `get_price`); yoksa normal fiyat.
+		$base = (float) $catalog->get_price( 'edit' );
 		if ( $base <= 0 ) {
-			$base = (float) $catalog->get_price( 'edit' );
+			$base = (float) $catalog->get_regular_price( 'edit' );
 		}
 
 		return $base > 0 ? $base : null;
@@ -841,7 +846,7 @@ class Cart_Hooks {
 	 */
 	private static function sanitize_custom_price( $value ) {
 
-		return Security::sanitize_numeric( $value, 0, 999999 );
+		return Security::sanitize_numeric( $value, 0, \DonationPanel\Domain\Amount_Limits::max() );
 	}
 
 	/**

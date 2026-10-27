@@ -9,7 +9,6 @@ namespace DonationPanel\Domain;
 
 use DonationPanel\Core\Uninstall;
 use DonationPanel\Support\Debug;
-use DonationPanel\Modules\EntryPoints\Donations_List;
 use DonationPanel\WooCommerce\Order_Meta_Keys;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -40,6 +39,10 @@ class Campaign_Totals {
 		add_action( 'before_delete_post', array( __CLASS__, 'uncount_order_progress_on_delete' ), 5, 2 );
 		add_action( 'wp_trash_post', array( __CLASS__, 'uncount_order_progress_on_trash' ), 5, 1 );
 		add_action( 'untrashed_post', array( __CLASS__, 'recount_order_progress_on_untrash' ), 10, 1 );
+		// HPOS: sipariş silme/çöp/geri alma `*_post` kancalarını tetiklemez.
+		add_action( 'woocommerce_before_delete_order', array( __CLASS__, 'uncount_order_progress_on_hpos_removal' ), 5, 2 );
+		add_action( 'woocommerce_before_trash_order', array( __CLASS__, 'uncount_order_progress_on_hpos_removal' ), 5, 2 );
+		add_action( 'woocommerce_untrash_order', array( __CLASS__, 'recount_order_progress_on_untrash' ), 10, 1 );
 
 		// Ürün ya da bağışa ilişkin ürün meta'sı değişince toplam/bağışçı sayısı önbelleğini tek merkezden temizle.
 		add_action( 'updated_post_meta', array( __CLASS__, 'maybe_invalidate_product_donation_caches_on_meta' ), 10, 4 );
@@ -173,6 +176,16 @@ class Campaign_Totals {
 	}
 
 	/**
+	 * Siparişler HPOS (özel tablo) üzerinde mi tutuluyor?
+	 *
+	 * @return bool
+	 */
+	private static function uses_hpos() {
+		return class_exists( '\\Automattic\\WooCommerce\\Utilities\\OrderUtil' )
+			&& \Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled();
+	}
+
+	/**
 	 * Sipariş/iade bayrak meta değerini okur (HPOS + post_meta yedek).
 	 *
 	 * @param int|\WC_Abstract_Order $order_or_id Sipariş veya ID.
@@ -188,8 +201,9 @@ class Campaign_Totals {
 			}
 		}
 
+		// HPOS'ta sipariş kimliği başka bir yazıyla (post) çakışabilir: yedek post-meta okunmaz.
 		$order_id = $order ? $order->get_id() : absint( $order_or_id );
-		if ( $order_id ) {
+		if ( $order_id && ! self::uses_hpos() ) {
 			return (string) get_post_meta( $order_id, $meta_key, true );
 		}
 
@@ -213,7 +227,7 @@ class Campaign_Totals {
 		}
 
 		$order_id = absint( $order_or_id );
-		if ( $order_id ) {
+		if ( $order_id && ! self::uses_hpos() ) {
 			update_post_meta( $order_id, $meta_key, $value );
 		}
 	}
@@ -316,6 +330,27 @@ class Campaign_Totals {
 	}
 
 	/**
+	 * HPOS: sipariş kalıcı silinmeden / çöpe gitmeden önce toplamdan düş (post kancalarıyla birlikte güvenle çalışır; idempotent).
+	 *
+	 * @param int                    $order_id Sipariş.
+	 * @param \WC_Abstract_Order|null $order    Sipariş nesnesi.
+	 * @return void
+	 */
+	public static function uncount_order_progress_on_hpos_removal( $order_id, $order = null ) {
+		$order_id = absint( $order_id );
+		if ( $order_id <= 0 ) {
+			return;
+		}
+		if ( ! is_object( $order ) && function_exists( 'wc_get_order' ) ) {
+			$order = wc_get_order( $order_id );
+		}
+		if ( ! is_object( $order ) || is_a( $order, 'WC_Order_Refund' ) ) {
+			return;
+		}
+		self::uncount_order_from_progress_totals( $order );
+	}
+
+	/**
 	 * Sipariş çöpe taşındığında.
 	 *
 	 * @param int $post_id Post ID.
@@ -369,31 +404,41 @@ class Campaign_Totals {
 		if ( ! is_object( $order ) ) {
 			return false;
 		}
+		$order_id = method_exists( $order, 'get_id' ) ? absint( $order->get_id() ) : 0;
 
-		if ( self::get_order_flag_meta( $order, '_wdp_progress_counted' ) === 'yes' ) {
-			return false;
-		}
+		// Aynı sipariş için eşzamanlı iki durum geçişi (webhook + yönetici) çift saymasın.
+		return (bool) Named_Lock::run(
+			'order_' . $order_id,
+			static function () use ( $order, $order_id ) {
+				// Bayrağı kilit içinde TAZE kayıttan oku (bu isteğin nesnesi bayat kalmış olabilir).
+				$fresh = ( $order_id > 0 && function_exists( 'wc_get_order' ) ) ? wc_get_order( $order_id ) : null;
+				$check = is_object( $fresh ) && ! is_a( $fresh, 'WC_Order_Refund' ) ? $fresh : $order;
+				if ( self::get_order_flag_meta( $check, '_wdp_progress_counted' ) === 'yes' ) {
+					return false;
+				}
 
-		$amounts = self::compute_order_progress_amounts( $order );
+				$amounts = self::compute_order_progress_amounts( $order );
 
-		// Eski sürüm (yalnızca "completed") zaten saymış: toplamlara dokunmadan yeni bayrağa taşı.
-		if ( self::get_order_flag_meta( $order, '_wdp_donation_totals_applied' ) === 'yes' ) {
-			self::store_order_progress_state( $order, $amounts );
-			return false;
-		}
+				// Eski sürüm (yalnızca "completed") zaten saymış: toplamlara dokunmadan yeni bayrağa taşı.
+				if ( self::get_order_flag_meta( $check, '_wdp_donation_totals_applied' ) === 'yes' ) {
+					self::store_order_progress_state( $order, $amounts );
+					return false;
+				}
 
-		foreach ( $amounts as $product_id => $amount ) {
-			if ( $amount <= 0 ) {
-				continue;
+				// Bayrak ÖNCE yazılır (toplam yazımı sırasında çökme olursa çift sayım yerine eksik sayım; yönetici yeniden hesaplar).
+				self::store_order_progress_state( $order, $amounts );
+				foreach ( $amounts as $product_id => $amount ) {
+					if ( $amount <= 0 ) {
+						continue;
+					}
+					if ( null === self::update_product_donation_total( $product_id, $amount, false, $order_id ) ) {
+						continue;
+					}
+					self::bump_product_donor_count( $product_id, 1 );
+				}
+				return true;
 			}
-			if ( null === self::update_product_donation_total( $product_id, $amount, false, (int) $order->get_id() ) ) {
-				continue;
-			}
-			self::bump_product_donor_count( $product_id, 1 );
-		}
-
-		self::store_order_progress_state( $order, $amounts );
-		return true;
+		);
 	}
 
 	/**
@@ -428,7 +473,7 @@ class Campaign_Totals {
 
 		// get_order_flag_meta() post_meta yedeğine de bakar; eski kopyalar bayrağı geri getirmesin.
 		$order_id = method_exists( $order, 'get_id' ) ? absint( $order->get_id() ) : 0;
-		if ( $order_id ) {
+		if ( $order_id && ! self::uses_hpos() ) {
 			foreach ( $flag_keys as $flag_key ) {
 				delete_post_meta( $order_id, $flag_key );
 			}
@@ -763,27 +808,50 @@ class Campaign_Totals {
 			if ( 0.0 === (float) $amount ) {
 				return null;
 			}
+			return Named_Lock::run(
+				'product_' . $product_id,
+				static function () use ( $product_id, $amount, $order_id ) {
+					return self::apply_total_delta( $product_id, $amount, $order_id );
+				}
+			);
+		}
+
+		update_post_meta( $product_id, '_wdp_total_donation_amount', $next_total );
+		self::clear_product_donation_total_caches( $product_id );
+
+		return $next_total;
+	}
+
+	/**
+	 * Artımlı toplam yazımı (kilit altında çağrılır; değeri DB'den taze okur).
+	 *
+	 * @param int   $product_id Ürün.
+	 * @param float $amount     Delta.
+	 * @param int   $order_id   Sipariş.
+	 * @return float|null
+	 */
+	private static function apply_total_delta( $product_id, $amount, $order_id ) {
+		wp_cache_delete( $product_id, 'post_meta' );
 			$current = get_post_meta( $product_id, '_wdp_total_donation_amount', true );
-			if ( '' === $current || ! is_numeric( $current ) ) {
-				// Toplam hiç yazılmamış. Ürünün daha önce ödenmiş siparişleri varsa artımlı yazım toplamı YANLIŞ başlatır:
-				// yazma, ürünü "hesap bekliyor" işaretle; yönetici Kampanyalar'da onaylı hesabı yapar.
-				if ( $amount < 0 && ! Campaign_Formula::$applying ) {
-					// Yazılmamış toplamdan düşüm anlamsızdır (sipariş toplama hiç girmedi); hesap onayını bekler.
+		if ( '' === $current || ! is_numeric( $current ) ) {
+			// Toplam hiç yazılmamış. Ürünün daha önce ödenmiş siparişleri varsa artımlı yazım toplamı YANLIŞ başlatır:
+			// yazma, ürünü "hesap bekliyor" işaretle; yönetici Kampanyalar'da onaylı hesabı yapar.
+			if ( $amount < 0 && ! Campaign_Formula::$applying ) {
+				// Yazılmamış toplamdan düşüm anlamsızdır (sipariş toplama hiç girmedi); hesap onayını bekler.
+				return null;
+			}
+			if ( ! Campaign_Formula::$applying ) {
+				if ( 'yes' === (string) get_post_meta( $product_id, Campaign_Formula::META_PENDING, true )
+					|| Campaign_Formula::has_other_paid_orders( $product_id, (int) $order_id ) ) {
+					update_post_meta( $product_id, Campaign_Formula::META_PENDING, 'yes' );
+					self::clear_product_donation_total_caches( $product_id );
 					return null;
 				}
-				if ( ! Campaign_Formula::$applying ) {
-					if ( 'yes' === (string) get_post_meta( $product_id, Campaign_Formula::META_PENDING, true )
-						|| Campaign_Formula::has_other_paid_orders( $product_id, (int) $order_id ) ) {
-						update_post_meta( $product_id, Campaign_Formula::META_PENDING, 'yes' );
-						self::clear_product_donation_total_caches( $product_id );
-						return null;
-					}
-				}
-				// Önceki sipariş yok: formülün başlangıç değeri devreden tutardır (varsayılan 0).
-				$current = Campaign_Formula::get_carried( $product_id );
 			}
-			$next_total = max( 0.0, floatval( $current ) + $amount );
+			// Önceki sipariş yok: formülün başlangıç değeri devreden tutardır (varsayılan 0).
+			$current = Campaign_Formula::get_carried( $product_id );
 		}
+			$next_total = max( 0.0, floatval( $current ) + $amount );
 
 		update_post_meta( $product_id, '_wdp_total_donation_amount', $next_total );
 		self::clear_product_donation_total_caches( $product_id );
@@ -805,7 +873,7 @@ class Campaign_Totals {
 		// Progress sayaçları (meta wp-cli ile değişince de düşsün).
 		wp_cache_delete( 'wdp_total_donation_' . $product_id, 'wdp_donations' );
 		wp_cache_delete( 'wdp_donor_count_' . $product_id, 'wdp_donations' );
-		Donations_List::bump_cache();
+		do_action( 'donation_panel_totals_changed' );
 		Donation_Scope::flush( $product_id );
 	}
 
@@ -1075,8 +1143,14 @@ class Campaign_Totals {
 		if ( ! $product_id || 0 === $delta ) {
 			return;
 		}
-		$current = (int) get_post_meta( $product_id, '_wdp_donor_count', true );
-		self::set_product_donor_count( $product_id, $current + $delta );
+		Named_Lock::run(
+			'donors_' . $product_id,
+			static function () use ( $product_id, $delta ) {
+				wp_cache_delete( $product_id, 'post_meta' );
+				$current = (int) get_post_meta( $product_id, '_wdp_donor_count', true );
+				self::set_product_donor_count( $product_id, $current + $delta );
+			}
+		);
 	}
 
 	/**

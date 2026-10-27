@@ -2,6 +2,9 @@
  * Katman davranışı: aç/kapa, odak tuzağı, Esc, kaydırma kilidi, sürükleyerek kapatma, klavye uyumu.
  */
 import { NARROW_QUERY, presentedAs, shouldDismissOnDrag } from './store.mjs';
+import { isTopmost, lockPage, unlockPage } from '../ui2-shared/scroll-lock.mjs';
+
+let layerSeq = 0;
 
 const FOCUSABLE =
   'a[href],button:not([disabled]),input:not([disabled]):not([type="hidden"]),textarea:not([disabled]),select:not([disabled]),[tabindex]:not([tabindex="-1"])';
@@ -32,6 +35,7 @@ export function createLayer(root) {
   const media = window.matchMedia(NARROW_QUERY);
   const handle = root.querySelector('[data-dp-handle]');
   const cleanups = [];
+  const ownerId = `layer-${++layerSeq}`;
   let opened = false;
 
   const present = () => {
@@ -56,7 +60,8 @@ export function createLayer(root) {
   };
 
   const onKeydown = (event) => {
-    if (!opened) {
+    // Üst üste açık katmanlarda yalnız en üstteki klavye olaylarını işler.
+    if (!opened || !isTopmost(ownerId)) {
       return;
     }
     if (event.key === 'Escape') {
@@ -86,7 +91,7 @@ export function createLayer(root) {
 
   // Odak yüzeyin dışına kaçarsa (ör. Tab sırasını farklı yöneten tarayıcılar) geri alınır.
   const onFocusIn = (event) => {
-    if (opened && !surface.contains(event.target)) {
+    if (opened && isTopmost(ownerId) && !surface.contains(event.target)) {
       const items = focusables(surface);
       (items[0] || surface).focus({ preventScroll: true });
     }
@@ -100,7 +105,7 @@ export function createLayer(root) {
     present();
     overlay.classList.add('is-open');
     trigger.setAttribute('aria-expanded', 'true');
-    document.documentElement.classList.add('dp-lock');
+    lockPage(ownerId, root, 'dp-lock');
     document.addEventListener('keydown', onKeydown, true);
     document.addEventListener('focusin', onFocusIn);
     if (viewport) {
@@ -121,7 +126,7 @@ export function createLayer(root) {
     overlay.classList.remove('is-open');
     surface.style.removeProperty('--dp-drag');
     trigger.setAttribute('aria-expanded', 'false');
-    document.documentElement.classList.remove('dp-lock');
+    unlockPage(ownerId);
     document.removeEventListener('keydown', onKeydown, true);
     document.removeEventListener('focusin', onFocusIn);
     if (viewport) {

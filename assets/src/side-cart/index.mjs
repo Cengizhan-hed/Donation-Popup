@@ -6,6 +6,7 @@
  */
 import '../campaign/base.css';
 import '../ui2-shared/tokens.css';
+import { isTopmost, lockPage, unlockPage } from '../ui2-shared/scroll-lock.mjs';
 import './side-cart.css';
 import { nextFocusIndex, nextQuantity, readNonce, shouldDismissOnDrag, toCount } from './logic.mjs';
 
@@ -230,7 +231,7 @@ function mount(root) {
     // WebKit düğmeye tıklayınca odak vermez: odak dönüşü için tıklanan öğe açıkça saklanır.
     lastFocus = opener || document.activeElement;
     overlay.classList.add('is-open');
-    document.documentElement.classList.add('dp-sc-lock');
+    lockPage('side-cart', root, 'dp-sc-lock');
     triggers().forEach((t) => t.setAttribute('aria-expanded', 'true'));
     const first = visibleFocusables()[0];
     (first || surface).focus();
@@ -243,7 +244,7 @@ function mount(root) {
     }
     opened = false;
     overlay.classList.remove('is-open');
-    document.documentElement.classList.remove('dp-sc-lock');
+    unlockPage('side-cart');
     triggers().forEach((t) => t.setAttribute('aria-expanded', 'false'));
     surface.style.removeProperty('--dp-sc-drag');
     if (lastFocus && typeof lastFocus.focus === 'function' && lastFocus.isConnected) {
@@ -253,7 +254,7 @@ function mount(root) {
   }
 
   document.addEventListener('keydown', (event) => {
-    if (!opened) {
+    if (!opened || !isTopmost('side-cart')) {
       return;
     }
     if (event.key === 'Escape') {

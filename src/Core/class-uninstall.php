@@ -139,19 +139,67 @@ class Uninstall {
 	}
 
 	/**
-	 * Safe LIKE prefixes (plugin-owned only). Applied only on product / product_variation rows.
+	 * Safe LIKE prefixes (plugin-owned only; unique to this plugin). Applied only on product / product_variation rows.
+	 * Generic prefixes such as `_enable_`, `_theme_`, `_addon_` are NOT here: those keys are matched exactly by
+	 * product_meta_keys() so other plugins' meta is never touched.
 	 *
 	 * @return string[]
 	 */
 	public static function product_meta_prefixes() {
 		return array(
-			'wdp_',
 			'_wdp_',
-			'_enable_',
-			'_addon_',
 			'_sadaka_',
-			'_theme_',
 			'_donation_panel_',
+		);
+	}
+
+	/**
+	 * Exact option names owned by this plugin (current and legacy).
+	 *
+	 * @return string[]
+	 */
+	public static function option_names() {
+		return array(
+			'donation_panel_settings',
+			'donation_panel_migrations',
+			'donation_panel_migrations_lock',
+			'donation_panel_migrations_error',
+			'wdp_version',
+			'wdp_db_version',
+			'wdp_previous_version',
+			'wdp_migration_log',
+			'wdp_migration_lock',
+			'wdp_notice_placement_intro',
+			'wdp_settings_backup_10_27',
+			'wdp_settings_backup_10_27_restored',
+			'wdp_success_settings',
+			'wdp_button_settings',
+			'wdp_cache_version',
+			'wdp_list_cache_version',
+			'wdp_delete_data_on_uninstall',
+			'wdp_legacy_render_count',
+			'wdp_addon_links_audit',
+			'wdp_sadaka_links_audit',
+			'wdp_upgrade_new_default',
+		);
+	}
+
+	/**
+	 * Transient name prefixes owned by this plugin (without the `_transient_` part).
+	 *
+	 * @return string[]
+	 */
+	public static function transient_prefixes() {
+		return array(
+			'donation_panel_rl_',
+			'donation_panel_rt_',
+			'dp_progress_',
+			'dp_social_stats_',
+			'dp_social_page_',
+			'wdp_list_',
+			'wdp_addon_line_ids',
+			'wdp_sadaka_line_ids',
+			'wdp_donor_count_',
 		);
 	}
 
@@ -206,14 +254,15 @@ class Uninstall {
 			return;
 		}
 
-		self::delete_options_like( $wpdb, 'wdp_' );
-		self::delete_options_like( $wpdb, 'donation_panel_' );
-		self::delete_options_like( $wpdb, '_transient_dp_' );
-		self::delete_options_like( $wpdb, '_transient_timeout_dp_' );
-		self::delete_options_like( $wpdb, '_transient_wdp_' );
-		self::delete_options_like( $wpdb, '_transient_timeout_wdp_' );
-		self::delete_options_like( $wpdb, '_site_transient_wdp_' );
-		self::delete_options_like( $wpdb, '_site_transient_timeout_wdp_' );
+		foreach ( self::option_names() as $option_name ) {
+			delete_option( $option_name );
+		}
+		foreach ( self::transient_prefixes() as $prefix ) {
+			self::delete_options_like( $wpdb, '_transient_' . $prefix );
+			self::delete_options_like( $wpdb, '_transient_timeout_' . $prefix );
+			self::delete_options_like( $wpdb, '_site_transient_' . $prefix );
+			self::delete_options_like( $wpdb, '_site_transient_timeout_' . $prefix );
+		}
 
 		self::delete_product_meta( $wpdb );
 

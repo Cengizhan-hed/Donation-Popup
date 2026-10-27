@@ -16,7 +16,6 @@ use DonationPanel\Frontend\Template_Loader;
 use DonationPanel\Http\Rate_Limiter;
 use DonationPanel\Modules\EntryPoints\Product_Resolver;
 use DonationPanel\WooCommerce\Cart;
-use DonationPanel\WooCommerce\Donation_Order_Meta;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -69,7 +68,6 @@ final class Experiences_Module implements Module_Interface {
 
 		$this->cart = new Cart();
 		$this->cart->register();
-		( new Donation_Order_Meta() )->register();
 
 		add_filter( 'donation_panel_rest_controllers', array( $this, 'add_rest_controller' ) );
 		add_action( 'init', array( $this, 'register_shortcode' ) );
@@ -131,8 +129,6 @@ final class Experiences_Module implements Module_Interface {
 		$args = array(
 			'rest_url'     => esc_url_raw( rest_url( 'donation-panel/v1/' ) ),
 			'nonce'        => wp_create_nonce( 'wp_rest' ),
-			'ajax_url'     => admin_url( 'admin-ajax.php' ),
-			'cart_nonce'   => wp_create_nonce( 'wdp_ajax_add_to_cart' ),
 			'checkout_url' => function_exists( 'wc_get_checkout_url' ) ? wc_get_checkout_url() : '',
 		);
 		if ( '' !== trim( (string) $atts['button_text'] ) ) {

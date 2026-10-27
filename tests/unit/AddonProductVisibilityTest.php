@@ -136,6 +136,8 @@ final class AddonProductVisibilityTest extends TestCase {
 
 	public function test_clear_visibility_caches_bumps_list_cache(): void {
 		WDP_Test_State::$options['wdp_list_cache_version'] = 3;
+		\DonationPanel\Modules\EntryPoints\Donations_List::reset_bump_guard();
+		\DonationPanel\Modules\EntryPoints\Donations_List::init(); // Domain, liste önbelleğini 'donation_panel_totals_changed' eylemiyle sıfırlatır.
 		WDP_Test_State::$transients[ \DonationPanel\Domain\Addon_Product_Visibility::TRANSIENT ] = array(1, 2);
 		\DonationPanel\Domain\Addon_Product_Visibility::clear_visibility_caches();
 		$this->assertArrayNotHasKey(\DonationPanel\Domain\Addon_Product_Visibility::TRANSIENT, WDP_Test_State::$transients);

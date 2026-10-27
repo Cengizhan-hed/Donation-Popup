@@ -182,6 +182,51 @@ class Order_Meta_Keys {
 	}
 
 	/**
+	 * Gizlilik aramaları için sipariş kalemi meta anahtarı kalıpları (indeksli `meta_key` ile daraltma).
+	 *
+	 * Sabit anahtar, eski (çevrilmiş) etiket anahtarları ve hissedar anahtarları (`%` indeks yerine) kapsanır.
+	 *
+	 * @param string $field 'email' | 'phone'.
+	 * @return array{exact: string[], like: string[]} `exact`: tam anahtarlar; `like`: LIKE kalıpları (kaçışlı).
+	 */
+	public static function lookup_key_patterns( $field ) {
+		$field  = 'phone' === $field ? 'phone' : 'email';
+		$fixed  = 'phone' === $field ? self::DONOR_PHONE : self::DONOR_EMAIL;
+		$exact  = array( $fixed, 'phone' === $field ? 'Bağışçı Telefonu' : 'Bağışçı E-posta' );
+		$labels = self::labels();
+		if ( isset( $labels[ $fixed ] ) ) {
+			$exact[] = $labels[ $fixed ];
+		}
+
+		$like    = array();
+		$formats = array( 'phone' === $field ? '%d. Hissedar Telefonu' : '%d. Hissedar E-postası' );
+		$trans   = self::shareholder_label_formats();
+		if ( isset( $trans[ $field ] ) ) {
+			$formats[] = $trans[ $field ];
+		}
+		foreach ( array_unique( $formats ) as $format ) {
+			$parts  = explode( '%d', $format );
+			$like[] = implode( '%', array_map( array( __CLASS__, 'esc_like' ), $parts ) );
+		}
+		$like[] = self::esc_like( 'wdp_shareholder_' ) . '%' . self::esc_like( '_' . $field );
+
+		return array(
+			'exact' => array_values( array_unique( array_filter( $exact ) ) ),
+			'like'  => array_values( array_unique( $like ) ),
+		);
+	}
+
+	/**
+	 * LIKE kaçışı (`_`, `%`, `\\`).
+	 *
+	 * @param string $text Metin.
+	 * @return string
+	 */
+	private static function esc_like( $text ) {
+		return addcslashes( (string) $text, '_%\\' );
+	}
+
+	/**
 	 * Resolve any stored key (fixed or legacy) to a fixed key.
 	 *
 	 * @param string $key Stored meta key.

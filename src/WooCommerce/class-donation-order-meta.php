@@ -31,12 +31,12 @@ final class Donation_Order_Meta {
 	const KEY_FREQUENCY = 'wdp_donation_frequency';
 
 	/**
-	 * Kancaları kaydeder: eski yazıcının yerini alır (çift kayıt olmaz).
+	 * Kancaları kaydeder: sipariş kalemi için TEK yazıcı (çekirdekten, modülden bağımsız).
 	 *
 	 * @return void
 	 */
 	public function register() {
-		add_action( 'init', array( $this, 'take_over' ), 99 );
+		add_action( self::HOOK, array( $this, 'write_item' ), 10, 4 );
 		add_filter( 'woocommerce_order_item_display_meta_key', array( __CLASS__, 'display_key' ), 10, 2 );
 		add_filter( 'woocommerce_order_item_display_meta_value', array( __CLASS__, 'display_value' ), 10, 2 );
 	}
@@ -71,16 +71,6 @@ final class Donation_Order_Meta {
 			return esc_html( Donation_Type::get_label( (string) $meta->value ) );
 		}
 		return $display_value;
-	}
-
-	/**
-	 * Eski `Order_Hooks` yazıcısını kaldırıp kendini bağlar.
-	 *
-	 * @return void
-	 */
-	public function take_over() {
-		remove_action( self::HOOK, array( 'DonationPanel\\WooCommerce\\Order_Hooks', 'add_donation_meta_to_order' ), 10 );
-		add_action( self::HOOK, array( $this, 'write_item' ), 10, 4 );
 	}
 
 	/**

@@ -77,7 +77,7 @@ class Version_Migrations {
 			return;
 		}
 		self::$hooked = true;
-		add_action( 'admin_init', array( __CLASS__, 'maybe_run' ), 5 );
+		add_action( 'admin_init', array( __CLASS__, 'maybe_run_for_admin' ), 5 );
 		add_action( 'admin_init', array( __CLASS__, 'maybe_dismiss_notice' ), 20 );
 		add_action( 'admin_notices', array( __CLASS__, 'maybe_admin_notice' ) );
 		add_action( 'upgrader_process_complete', array( __CLASS__, 'on_upgrader_complete' ), 10, 2 );
@@ -123,7 +123,20 @@ class Version_Migrations {
 	}
 
 	/**
-	 * admin_init / activation entry point.
+	 * admin_init entry point: only for a user who can manage options.
+	 *
+	 * @return void
+	 */
+	public static function maybe_run_for_admin() {
+		// admin-ajax/admin-post ziyaretçi istekleri de admin_init tetikler; göç yalnız yetkili yönetici isteğinde.
+		if ( ! function_exists( 'current_user_can' ) || ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
+		self::maybe_run();
+	}
+
+	/**
+	 * Run pending steps when the stored schema version is behind.
 	 *
 	 * @return void
 	 */

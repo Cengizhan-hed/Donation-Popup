@@ -7,8 +7,6 @@
 
 namespace DonationPanel\Domain;
 
-use DonationPanel\Modules\EntryPoints\Donations_List;
-
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -117,7 +115,7 @@ class Placement_Settings {
 		}
 		update_option( self::OPTION, $clean, false );
 		self::flush();
-		Donations_List::bump_cache();
+		do_action( 'donation_panel_totals_changed' );
 		return $clean;
 	}
 

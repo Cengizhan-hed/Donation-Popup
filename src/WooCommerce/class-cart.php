@@ -104,6 +104,12 @@ final class Cart {
 				'context'     => array( 'view', 'edit' ),
 				'readonly'    => true,
 			),
+			'kind'           => array(
+				'description' => 'Donation form kind (fixed, custom, shares, campaign).',
+				'type'        => 'string',
+				'context'     => array( 'view', 'edit' ),
+				'readonly'    => true,
+			),
 		);
 	}
 

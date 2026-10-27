@@ -9,6 +9,8 @@
 
 namespace DonationPanel\Modules\Experiences;
 
+use DonationPanel\Domain\Donation_Scope;
+use DonationPanel\Domain\Product_Context;
 use DonationPanel\Http\Rate_Limiter;
 use DonationPanel\Http\Rest_Controller;
 
@@ -167,6 +169,27 @@ class Form_Controller extends Rest_Controller {
 			return array();
 		}
 		$product = wc_get_product( (int) $product_id );
-		return $product ? Form_Context::for_product( $product ) : array();
+		if ( ! $product || ! self::is_open_donation_product( $product ) ) {
+			return array();
+		}
+		return Form_Context::for_product( $product );
+	}
+
+	/**
+	 * Ürün bağış hattı mı ve tutarı belirlenebilir mi?
+	 *
+	 * Bağış ürünü değilse (kapsam/işaret/tip) ya da fiyatı 0/boş olup "bağışçı belirler"
+	 * (serbest tutar, kampanya) türünde değilse form çizilmez ve sepete eklenmez.
+	 *
+	 * @param object $product \WC_Product.
+	 * @return bool
+	 */
+	public static function is_open_donation_product( $product ) {
+		if ( ! Donation_Scope::is_donation_product( $product ) ) {
+			return false;
+		}
+		$context = Product_Context::build_form_context( $product );
+		$price   = isset( $context['product_price'] ) && is_numeric( $context['product_price'] ) ? (float) $context['product_price'] : 0.0;
+		return $price > 0 || ! empty( $context['allow_custom_price'] );
 	}
 }

@@ -5,6 +5,7 @@
  */
 import '../campaign/base.css';
 import '../ui2-shared/tokens.css';
+import { isTopmost, lockPage, unlockPage } from '../ui2-shared/scroll-lock.mjs';
 import './donor-account.css';
 import { endpoint, errorKey, isEmail, isStrongEnough, nextFocusIndex, shouldDismissOnDrag } from './logic.mjs';
 
@@ -107,14 +108,14 @@ function mountDialog(root) {
     // Safari düğmeye tıklayınca odak vermez: odak dönüşü için tıklanan düğme açıkça saklanır.
     lastFocus = opener || document.activeElement;
     overlay.classList.add('is-open');
-    document.documentElement.classList.add('dp-ac-lock');
+    lockPage('donor-account', root, 'dp-ac-lock');
     triggers().forEach((t) => t.setAttribute('aria-expanded', 'true'));
     setView('login');
   }
 
   function close() {
     overlay.classList.remove('is-open');
-    document.documentElement.classList.remove('dp-ac-lock');
+    unlockPage('donor-account');
     triggers().forEach((t) => t.setAttribute('aria-expanded', 'false'));
     if (lastFocus && typeof lastFocus.focus === 'function') {
       lastFocus.focus();
@@ -290,7 +291,7 @@ function mountDialog(root) {
     }
   });
   document.addEventListener('keydown', (e) => {
-    if (!overlay.classList.contains('is-open')) {
+    if (!overlay.classList.contains('is-open') || !isTopmost('donor-account')) {
       return;
     }
     if (e.key === 'Escape') {
@@ -307,7 +308,7 @@ function mountDialog(root) {
 
   // Odak pencerenin dışına kaçarsa (tarayıcı Tab ile düğmeleri atlasa bile) geri alınır.
   document.addEventListener('focusin', (e) => {
-    if (overlay.classList.contains('is-open') && !surface.contains(e.target)) {
+    if (overlay.classList.contains('is-open') && isTopmost('donor-account') && !surface.contains(e.target)) {
       const list = focusables();
       if (list.length) {
         list[0].focus();

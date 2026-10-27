@@ -98,8 +98,6 @@ class Experience_Controller extends Rest_Controller {
 			array(
 				'rest_url'     => esc_url_raw( rest_url( 'donation-panel/v1/' ) ),
 				'nonce'        => wp_create_nonce( 'wp_rest' ),
-				'ajax_url'     => admin_url( 'admin-ajax.php' ),
-				'cart_nonce'   => wp_create_nonce( 'wdp_ajax_add_to_cart' ),
 				'checkout_url' => function_exists( 'wc_get_checkout_url' ) ? wc_get_checkout_url() : '',
 			)
 		);

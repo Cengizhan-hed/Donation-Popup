@@ -49,6 +49,13 @@ final class Tax_Relief_Module implements Module_Interface {
 	private $pending = false;
 
 	/**
+	 * Aynı istekteki ek bağış satırı için beyan anı bilgisi (hash + zaman); istek başında sıfırlanır.
+	 *
+	 * @var array{hash: string, time: int}|null
+	 */
+	private $snapshot = null;
+
+	/**
 	 * Kancaları kaydeder.
 	 *
 	 * @param Container $container Bağımlılık kabı.
@@ -127,7 +134,8 @@ final class Tax_Relief_Module implements Module_Interface {
 	 */
 	public function capture_request( $response, $handler = null, $request = null ) {
 		unset( $handler );
-		$this->pending = false;
+		$this->pending  = false;
+		$this->snapshot = null;
 		if ( is_object( $request ) && method_exists( $request, 'get_route' ) && self::CART_ROUTE === $request->get_route() ) {
 			$this->pending = Tax_Relief_Declaration::is_ticked( $request->get_param( Tax_Relief_Declaration::FIELD ) );
 		}
@@ -142,10 +150,31 @@ final class Tax_Relief_Module implements Module_Interface {
 	 */
 	public function add_cart_item_data( $cart_item_data ) {
 		if ( $this->pending && is_array( $cart_item_data ) ) {
+			// Bağışçının beyan anında GÖRDÜĞÜ metnin özeti ve zamanı sepete yazılır (sipariş anındaki metin değil).
+			$this->snapshot                                     = array(
+				'hash' => Tax_Relief_Declaration::hash( $this->texts()['text'] ),
+				'time' => time(),
+			);
 			$cart_item_data[ Tax_Relief_Declaration::CART_KEY ] = '1';
+			$cart_item_data[ Tax_Relief_Declaration::CART_HASH_KEY ] = $this->snapshot['hash'];
+			$cart_item_data[ Tax_Relief_Declaration::CART_TIME_KEY ] = $this->snapshot['time'];
+		} elseif ( null !== $this->snapshot && is_array( $cart_item_data ) && ! empty( $cart_item_data['wdp_sadaka_donation'] ) ) {
+			// Aynı istekte eklenen ek bağış satırı da aynı beyanı taşır.
+			$cart_item_data[ Tax_Relief_Declaration::CART_KEY ]      = '1';
+			$cart_item_data[ Tax_Relief_Declaration::CART_HASH_KEY ] = $this->snapshot['hash'];
+			$cart_item_data[ Tax_Relief_Declaration::CART_TIME_KEY ] = $this->snapshot['time'];
 		}
 		$this->pending = false;
 		return $cart_item_data;
+	}
+
+	/**
+	 * Bağışçıya gösterilen geçerli beyan metni.
+	 *
+	 * @return string
+	 */
+	public function declaration_text() {
+		return (string) $this->texts()['text'];
 	}
 
 	/**

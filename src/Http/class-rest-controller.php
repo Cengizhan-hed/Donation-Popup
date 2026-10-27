@@ -9,6 +9,8 @@
 
 namespace DonationPanel\Http;
 
+use DonationPanel\Domain\Donation_Scope;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -136,6 +138,30 @@ abstract class Rest_Controller {
 		// Katalog görünürlüğü "gizli" ürün (mağaza/arama listesinden gizli) yayındadır ve satın alınabilir;
 		// bağış ürünleri sık böyle kurulur, bu yüzden gizli sayılmaz.
 		return false;
+	}
+
+	/**
+	 * Uç bu ürünü sunmamalı mı: gizli/taslak, bağış hattı dışı ya da (istenirse) hiç yok.
+	 *
+	 * Bağış ürünü olmayan bir ürünün kampanya/etki/akış verisi herkese açık uçlardan sızmaz.
+	 *
+	 * @param int  $product_id       Ürün.
+	 * @param bool $require_existing true: ürün yoksa da sunulmaz (sınırsız önbellek anahtarı üretilmesin).
+	 * @return bool
+	 */
+	public static function is_unavailable_product( $product_id, $require_existing = false ) {
+		$product_id = absint( $product_id );
+		if ( self::is_hidden_product( $product_id ) ) {
+			return true;
+		}
+		if ( $product_id < 1 || ! function_exists( 'wc_get_product' ) ) {
+			return false;
+		}
+		$product = wc_get_product( $product_id );
+		if ( ! is_object( $product ) ) {
+			return (bool) $require_existing;
+		}
+		return ! Donation_Scope::is_donation_product( $product );
 	}
 
 	/**

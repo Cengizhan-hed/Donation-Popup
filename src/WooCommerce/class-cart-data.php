@@ -188,7 +188,14 @@ final class Cart_Data {
 		if ( ! empty( $a['is_sadaka'] ) || ! empty( $b['is_sadaka'] ) || isset( $a['share_count'] ) || isset( $b['share_count'] ) ) {
 			return false;
 		}
-		foreach ( array( 'full_name', 'phone' ) as $key ) {
+		// Kimliği belirleyen alan yoksa (ad/telefon alanları kapalı) "aynı bağışçı" denemez: hiçbir satır ezilmez.
+		if ( ( ! isset( $a['full_name'] ) || '' === $a['full_name'] ) && ( ! isset( $a['phone'] ) || '' === $a['phone'] ) ) {
+			return false;
+		}
+		// Yalnız TÜM bağışçı alanları (ad, telefon, e-posta, ithaf, not, anonim, ücret) aynıysa aynı bağış sayılır;
+		// biri bile farklıysa ikinci bağış ayrı satırdır (veri kaybı yok).
+		$keys = array_unique( array_merge( array_keys( $a ), array_keys( $b ) ) );
+		foreach ( $keys as $key ) {
 			if ( ( isset( $a[ $key ] ) ? $a[ $key ] : '' ) !== ( isset( $b[ $key ] ) ? $b[ $key ] : '' ) ) {
 				return false;
 			}

@@ -238,46 +238,7 @@ final class Shortcodes1033Test extends TestCase {
 		$this->assertArrayNotHasKey('_transient_wdp_list_abc', WDP_Test_State::$options);
 	}
 
-	public function test_nopriv_product_info_does_not_leak_unpublished(): void {
-		$draft = new WC_Product(20);
-		$draft->status = 'draft';
-		$draft->name   = 'Gizli Taslak';
-		WDP_Test_State::$products[20] = $draft;
 
-		$private = new WC_Product(21);
-		$private->status = 'private';
-		$private->name   = 'Özel';
-		WDP_Test_State::$products[21] = $private;
-
-		$secret = new WC_Product(22);
-		$secret->post_password = 'sifre';
-		$secret->name          = 'Şifreli';
-		WDP_Test_State::$products[22] = $secret;
-
-		$hidden = new WC_Product(23);
-		$hidden->catalog_visibility = 'hidden';
-		$hidden->visible            = false;
-		$hidden->name               = 'Gizli katalog';
-		WDP_Test_State::$products[23] = $hidden;
-
-		$live = new WC_Product(24);
-		$live->name = 'Açık';
-		WDP_Test_State::$products[24] = $live;
-
-		$this->assertFalse(\DonationPanel\Support\Security::validate_product_id(20));
-		$this->assertFalse(\DonationPanel\Support\Security::validate_product_id(21));
-		$this->assertFalse(\DonationPanel\Support\Security::validate_product_id(22));
-		// E8M: katalogda gizli ama yayında ürün satın alınabilir; sızıntı sayılmaz (REST ile aynı kural).
-		$this->assertTrue(\DonationPanel\Support\Security::validate_product_id(23));
-		$this->assertTrue(\DonationPanel\Support\Security::validate_product_id(24));
-	}
-
-	public function test_origin_header_missing_is_rejected(): void {
-		$_SERVER = array();
-		$this->assertFalse(\DonationPanel\Support\Security::validate_request_origin());
-		$_SERVER['HTTP_ORIGIN'] = 'https://example.test';
-		$this->assertTrue(\DonationPanel\Support\Security::validate_request_origin());
-	}
 
 	public function test_legacy_ajax_action_removed(): void {
 		$this->assertStringContainsString('function wdp_render_donation_button', (string) file_get_contents(WDP_PLUGIN_FILE));

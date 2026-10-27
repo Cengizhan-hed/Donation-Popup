@@ -489,4 +489,22 @@ class Price {
 	public static function currency_position_class() {
 		return 'wdp-currency-pos-' . self::currency_position();
 	}
+
+	/**
+	 * Para birimine duyarlı kullanıcı iletisi tutarı (WooCommerce biçimi; yoksa sayı + simge).
+	 *
+	 * @param float $amount     Tutar.
+	 * @param bool  $plain_text HTML'siz.
+	 * @return string
+	 */
+	public static function format_for_message( $amount, $plain_text = true ) {
+		$formatted = $plain_text ? self::format_price_plain( $amount ) : self::format_price_html( $amount );
+		if ( '' !== $formatted ) {
+			return $formatted;
+		}
+
+		$symbol = function_exists( 'get_woocommerce_currency_symbol' ) ? get_woocommerce_currency_symbol() : '';
+		$number = function_exists( 'wc_format_decimal' ) ? wc_format_decimal( $amount ) : (string) $amount;
+		return trim( $number . ' ' . html_entity_decode( (string) $symbol, ENT_QUOTES, 'UTF-8' ) );
+	}
 }
