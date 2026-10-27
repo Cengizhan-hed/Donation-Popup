@@ -164,5 +164,40 @@ export async function fillDonationForm(shell, spec) {
  * @param {number} [timeout]
  */
 export async function clickSubmit(shell, timeout = CHECK_MS) {
-  await formOf(shell).locator(DP_SEL.submit).first().click({ timeout, noWaitAfter: true });
+  const form = formOf(shell);
+  await advanceToFinalStep(form, timeout);
+  await form.locator(DP_SEL.submit).first().click({ timeout, noWaitAfter: true });
+}
+
+/**
+ * Son adıma kadar "Devam"a basar. Adım sayısı ayara/ürüne göre 2 ya da 3 olabilir (ör. ek bilgi/özet adımı);
+ * son adımda "sepete ekle" düğmesi (`[data-dp-addcart]`) görünür olur. Doğrulama hatası adımı ilerletmezse döngü
+ * durur (çağıran taraf hatayı kendi kontrolüyle görür).
+ * @param {import('@playwright/test').Locator} form
+ * @param {number} [timeout]
+ */
+export async function advanceToFinalStep(form, timeout = CHECK_MS) {
+  const signature = () =>
+    form.evaluate((f) => {
+      const add = f.querySelector('[data-dp-addcart]');
+      return {
+        last: Boolean(add) && !add.hidden,
+        sig: Array.from(f.querySelectorAll('[data-dp-step]'))
+          .map((s) => (s.hidden ? '0' : '1'))
+          .join(''),
+      };
+    });
+  for (let i = 0; i < 5; i += 1) {
+    const before = await signature();
+    if (before.last) return;
+    await form.locator(DP_SEL.submit).first().click({ timeout, noWaitAfter: true });
+    const deadline = Date.now() + 4000;
+    let after = before;
+    while (Date.now() < deadline) {
+      after = await signature();
+      if (after.last || after.sig !== before.sig) break;
+      await form.page().waitForTimeout(100);
+    }
+    if (!after.last && after.sig === before.sig) return;
+  }
 }
