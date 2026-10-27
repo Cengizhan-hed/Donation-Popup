@@ -260,7 +260,7 @@ export function inspectEnvPageProductKeys(parsed, fileName) {
 }
 
 /**
- * WDP_Donation_Type::infer_from_meta ile aynı öncelik (shares → campaign → custom → fixed).
+ * DonationPanel\Domain\Donation_Type::infer_from_meta ile aynı öncelik (shares → campaign → custom → fixed).
  * Yalnız sıkı `yes`.
  * @param {Record<string, string>|null|undefined} meta
  */

@@ -42,7 +42,7 @@ export function mergeFillCurrency(profileCurrency, pageCurrency) {
   return out;
 }
 
-/** PHP WDP_Utils::format_min_placeholder / JS formatMinPlaceholder ile aynı. */
+/** PHP Domain\Amount_Presets (min tutar yer tutucusu) / JS formatMinPlaceholder ile aynı. */
 export function formatMinPlaceholder(amount, currency) {
   const num = formatMoney(amount, { ...(currency || {}), symbol: '' });
   if (!num) return '';

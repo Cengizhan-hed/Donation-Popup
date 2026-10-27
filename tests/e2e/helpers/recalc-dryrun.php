@@ -51,7 +51,7 @@ function wdp_recalc_digest() {
 
 $out = array( 'ok' => false );
 try {
-	if ( ! class_exists( '\\DonationPanel\\Cli\\Totals_Recalculator' ) || ! class_exists( '\\WDP_Utils' ) ) {
+	if ( ! class_exists( '\\DonationPanel\\Cli\\Totals_Recalculator' ) ) {
 		throw new RuntimeException( 'Totals_Recalculator yok (eklenti surumu E8A oncesi olabilir)' );
 	}
 	$digest_on = '1' === (string) getenv( 'WDP_RECALC_DIGEST' );

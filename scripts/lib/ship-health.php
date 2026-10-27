@@ -13,10 +13,17 @@ if (!function_exists('is_plugin_active')) {
 $active = is_plugin_active('woo-donation-popup/woo-donation-popup.php') ? 1 : 0;
 $ver    = defined('WDP_VERSION') ? (string) WDP_VERSION : '';
 $needs  = 1;
-if (class_exists('WDP_Migrations') && method_exists('WDP_Migrations', 'needs_run')) {
-	$needs = WDP_Migrations::needs_run() ? 1 : 0;
-} elseif (!$active) {
-	$needs = 1;
+// 12.0.0+: DonationPanel\Core\Version_Migrations (wdp_db_version) + Core\Migrations (donation_panel_migrations,
+// Release_12_Upgrade dâhil). Sınıf yoksa (eklenti kapalı/eski sürüm) pasif: needs_run=1.
+$wdp_vm = 'DonationPanel\\Core\\Version_Migrations';
+$wdp_pl = 'DonationPanel\\Core\\Plugin';
+$wdp_mg = 'DonationPanel\\Core\\Migrations';
+if (class_exists($wdp_vm) && method_exists($wdp_vm, 'needs_run')) {
+	$needs = $wdp_vm::needs_run() ? 1 : 0;
+	if (0 === $needs && class_exists($wdp_pl) && $wdp_pl::instance() && class_exists($wdp_mg)) {
+		$wdp_pending = $wdp_pl::instance()->container()->get($wdp_mg)->pending();
+		$needs       = empty($wdp_pending) ? 0 : 1;
+	}
 }
 
 /**

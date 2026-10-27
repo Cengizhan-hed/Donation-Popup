@@ -171,6 +171,24 @@ describe('ship-core yardımcılar', () => {
     assert.ok(bad.reasons.includes('needs_run'));
   });
 
+  it('kurulum sonrası göç komutu 12.0.0 sınıflarını çağırır ve yazma komutu sayılır', () => {
+    const cmd = buildActivateMigrateCommand(STAGING.wpPath);
+    assert.match(cmd, /wp plugin activate/);
+    assert.match(cmd, /DonationPanel\\\\Core\\\\Version_Migrations/);
+    assert.match(cmd, /DonationPanel\\\\Core\\\\Migrations/);
+    assert.match(cmd, /::maybe_run\(\)/);
+    assert.ok(isRemoteWriteCommand(cmd.split('\n').pop()), 'göç wp eval yazma komutu olarak tanınmalı');
+    const flush = buildCacheFlushCommand(STAGING.wpPath);
+    assert.match(flush, /DonationPanel\\\\Modules\\\\EntryPoints\\\\Donations_List/);
+    assert.doesNotMatch(flush, /WDP_Donations_List/);
+  });
+
+  it('evaluatePhpHealth yeni payload: göç tamam (needs_run=0) yeşil, bekleyen göç kırmızı', () => {
+    const p = { php_ok: 1, active: 1, version: VERSION, needs_run: 1, log_lines: [] };
+    assert.equal(evaluatePhpHealth(p, VERSION).ok, false);
+    assert.equal(evaluatePhpHealth({ ...p, needs_run: 0 }, VERSION).ok, true);
+  });
+
   it('evaluateHttpPage fatal ve wdp- işaret', () => {
     assert.equal(evaluateHttpPage('home', { status: 200, text: '<p>ok</p>' }).ok, true);
     assert.equal(

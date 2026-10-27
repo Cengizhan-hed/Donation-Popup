@@ -19,7 +19,7 @@ $product_wc   = 0;
 $global_wc    = 0;
 $resolved_wc  = 0;
 
-if (class_exists('WDP_Utils')) {
+if (class_exists('\\DonationPanel\\Domain\\Addon_Settings')) {
 	$global_wc = (int) \DonationPanel\Domain\Addon_Settings::get_default_addon_wc_product_id();
 	if ($product_id > 0) {
 		$product_wc = (int) \DonationPanel\Domain\Addon_Settings::get_configured_addon_wc_product_id($product_id);

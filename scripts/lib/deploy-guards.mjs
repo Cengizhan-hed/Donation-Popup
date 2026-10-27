@@ -14,6 +14,16 @@
 import { gzipSync } from 'node:zlib';
 
 /** Ikram Aid yayına alınmadan önce bu izin KALDIRILACAK. */
+/**
+ * Kurulum sonrası göç adımı (wp eval gövdesi, tek tırnak içine güvenle girer).
+ * 12.0.0+: DonationPanel\\Core\\Version_Migrations (wdp_db_version) + Core\\Migrations (donation_panel_migrations,
+ * Release_12_Upgrade dâhil). Yeni sınıf yoksa (12 öncesi sürüm) eski WDP_Migrations'a düşer; ikisi de yoksa sessizce geçer.
+ */
+export const MIGRATE_EVAL_PHP = String.raw`$vm="DonationPanel\\Core\\Version_Migrations"; $pl="DonationPanel\\Core\\Plugin"; $mg="DonationPanel\\Core\\Migrations"; if (class_exists($vm)) { $vm::maybe_run(); } elseif (class_exists("WDP_Migrations")) { WDP_Migrations::maybe_run(); } if (class_exists($pl) && $pl::instance() && class_exists($mg)) { $pl::instance()->container()->get($mg)->run(); }`;
+
+/** Bağış listesi önbelleği (yeni sınıf: DonationPanel\\Modules\\EntryPoints\\Donations_List). */
+export const CACHE_BUMP_EVAL_PHP = String.raw`$dl="DonationPanel\\Modules\\EntryPoints\\Donations_List"; if (class_exists($dl)) { $dl::reset_bump_guard(); $dl::bump_cache(); }`;
+
 export const IKRAM_ALLOW_REMOVAL_NOTE =
   'ikramaid.uk izni Ikram Aid yayına alınmadan önce KALDIRILACAK';
 
@@ -583,8 +593,8 @@ export function plannedRemoteCommands(target) {
       `echo -n "file_count="`,
       `if [ -d "$DIR" ]; then find "$DIR" -type f | wc -l | tr -d ' '; else echo 0; fi`,
     ].join('\n'),
-    `wp eval 'if (class_exists("WDP_Migrations")) { WDP_Migrations::maybe_run(); }' ${flag}`,
-    `(wp sg purge ${flag} 2>/dev/null || true; wp cache flush ${flag} 2>/dev/null || true; wp eval 'if (function_exists("wp_cache_flush")) { wp_cache_flush(); } if (class_exists("WDP_Donations_List")) { WDP_Donations_List::reset_bump_guard(); WDP_Donations_List::bump_cache(); }' ${flag})`,
+    `wp eval '${MIGRATE_EVAL_PHP}' ${flag}`,
+    `(wp sg purge ${flag} 2>/dev/null || true; wp cache flush ${flag} 2>/dev/null || true; wp eval 'if (function_exists("wp_cache_flush")) { wp_cache_flush(); } ${CACHE_BUMP_EVAL_PHP}' ${flag})`,
     `wp plugin install ${qZip} --force --activate ${flag}`,
     `rm -f ${qZip}`,
   ];

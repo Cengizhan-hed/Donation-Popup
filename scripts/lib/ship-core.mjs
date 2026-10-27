@@ -21,6 +21,8 @@ import {
   shellQuoteWpPath,
   buildGuardedEvalFileCommand,
   IKRAM_ALLOW_REMOVAL_NOTE,
+  MIGRATE_EVAL_PHP,
+  CACHE_BUMP_EVAL_PHP,
 } from './deploy-guards.mjs';
 import { assertRemoteAllowed, spawnGuarded, isRemoteRsync } from './remote-guard.mjs';
 import { rsyncExcludeArgs } from './pack-excludes.mjs';
@@ -136,7 +138,7 @@ export function isRemoteWriteCommand(cmd) {
   if (/\bplugin\s+(install|activate|deactivate|update)\b/.test(s)) return true;
   if (/\boption\s+(update|delete|add|patch)\b/.test(s)) return true;
   if (/ship-restore-options|ship-backup-options/.test(s)) return true;
-  if (/WDP_Migrations::maybe_run/.test(s)) return true;
+  if (/WDP_Migrations::maybe_run|Version_Migrations|\$vm::maybe_run/.test(s)) return true;
   if (/\bsg purge\b|\bcache flush\b/.test(s)) return true;
   if (/file_put_contents|update_option/.test(s)) return true;
   return false;
@@ -387,7 +389,7 @@ export function buildRestoreOptionsCommand(wpPath, optionsJsonPath) {
  */
 export function buildCacheFlushCommand(wpPath) {
   const flag = wpPathFlag(wpPath);
-  return `# wdp-ship:cache-flush\n(wp sg purge ${flag} 2>/dev/null || true; wp cache flush ${flag} 2>/dev/null || true; wp eval 'if (function_exists("wp_cache_flush")) { wp_cache_flush(); } if (class_exists("WDP_Donations_List")) { WDP_Donations_List::reset_bump_guard(); WDP_Donations_List::bump_cache(); }' ${flag})`;
+  return `# wdp-ship:cache-flush\n(wp sg purge ${flag} 2>/dev/null || true; wp cache flush ${flag} 2>/dev/null || true; wp eval 'if (function_exists("wp_cache_flush")) { wp_cache_flush(); } ${CACHE_BUMP_EVAL_PHP}' ${flag})`;
 }
 
 /**
@@ -398,7 +400,7 @@ export function buildActivateMigrateCommand(wpPath) {
   return [
     `# wdp-ship:activate-migrate`,
     `wp plugin activate ${PLUGIN_SLUG} ${flag}`,
-    `wp eval 'if (class_exists("WDP_Migrations")) { WDP_Migrations::maybe_run(); }' ${flag}`,
+    `wp eval '${MIGRATE_EVAL_PHP}' ${flag}`,
   ].join('\n');
 }
 
