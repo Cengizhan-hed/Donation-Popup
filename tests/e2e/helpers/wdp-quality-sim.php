@@ -81,7 +81,7 @@ if ( isset( $_GET['dp_q_strip'] ) ) { // phpcs:ignore
 					if ( ! $ours ) {
 						continue;
 					}
-					if ( ( in_array( $what, array( 'css', 'all' ), true ) && $is_css ) || ( in_array( $what, array( 'js', 'all' ), true ) && ! $is_css ) || ( 'side' === $what && false !== strpos( $h, 'side' ) ) ) {
+					if ( ( in_array( $what, array( 'css', 'all' ), true ) && $is_css ) || ( in_array( $what, array( 'js', 'all' ), true ) && ! $is_css ) || ( 'side' === $what && false !== strpos( $h, 'side' ) ) || ( ! in_array( $what, array( 'css', 'js', 'all', 'side' ), true ) && false !== strpos( $h, $what ) ) ) {
 						wp_dequeue_style( $h );
 						wp_dequeue_script( $h );
 					}

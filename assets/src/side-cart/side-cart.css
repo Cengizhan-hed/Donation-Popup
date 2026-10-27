@@ -15,6 +15,8 @@
 /* Katman */
 .dp-sc__overlay { position: fixed; inset: 0; z-index: var(--dp-z-overlay, 99990); display: grid; justify-items: end; background: var(--dp-color-scrim); opacity: 0; visibility: hidden; transition: opacity 260ms var(--dp-ease-out), visibility 0s linear 260ms; }
 .dp-sc__overlay.is-open { opacity: 1; visibility: visible; transition-delay: 0s; }
+/* Kapalıyken içerik hiç yerleşmez: tarayıcı gizli çekmecenin yazı tipi dosyalarını (ör. kalın başlık) boşuna indirmez, sayfa LCP'si gecikmez. */
+.dp-sc__overlay:not(.is-open) .dp-sc__surface { content-visibility: hidden; contain-intrinsic-size: auto 1px; transition: transform 420ms var(--dp-ease-out), content-visibility 420ms allow-discrete; }
 .dp-sc__surface { position: relative; display: flex; flex-direction: column; inline-size: min(100%, 356px); block-size: 100%; max-block-size: 100%; overflow: hidden; background: var(--dpx-card); color: var(--dp-color-text); box-shadow: -12px 0 40px rgb(10 20 40 / .3); transform: translateX(calc(100% * var(--sc-dir, 1))); transition: transform 420ms var(--dp-ease-out); outline: none; }
 [dir="rtl"] .dp-sc__surface { --sc-dir: -1; box-shadow: 12px 0 40px rgb(10 20 40 / .3); }
 .dp-sc__overlay.is-open .dp-sc__surface { transform: none; }

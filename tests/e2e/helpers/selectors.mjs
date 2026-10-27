@@ -151,3 +151,25 @@ export const FREEZE_MOTION_CSS = `
   scroll-behavior: auto !important;
 }
 `;
+
+/**
+ * Yeni nesil form (src/Modules/Experiences, templates/donation-panel/experiences/*.php,
+ * assets/src/experiences/*.mjs) seçicileri. Tema/oluşturucu adı yok; yalnız eklentinin kendi öznitelikleri.
+ */
+export const DP_SEL = {
+  root: '[data-dp-exp]',
+  form: '[data-dp-form]',
+  open: '[data-dp-open]',
+  overlay: '[data-dp-overlay]',
+  surface: '[data-dp-surface]',
+  close: '[data-dp-close]',
+  submit: '[data-dp-submit]',
+  amount: 'input.dp-custom__in[name="amount"]',
+  preset: 'button.dp-amount',
+  detailsStep: '[data-dp-step="details"]',
+  dediToggle: '[data-dp-dedi-toggle]',
+  inlineRoot: '[data-dp-exp][data-dp-kind="inline"]',
+  panelOpen: '[data-dp-exp][data-dp-kind="side_panel"] [data-dp-open]',
+  popupOpen: '[data-dp-exp]:is([data-dp-kind="popup"], [data-dp-kind="bottom_sheet"]) [data-dp-open]',
+  error: (name) => `[data-dp-error="${name}"]`,
+};

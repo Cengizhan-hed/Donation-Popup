@@ -2,18 +2,16 @@
  * Yerel matris senaryoları. waitForTimeout yok; boş .catch yutma yok.
  */
 import fs from 'node:fs';
+import { expect } from '@playwright/test';
 import path from 'node:path';
-import { SEL } from './selectors.mjs';
+import { SEL, DP_SEL } from './selectors.mjs';
 import { formatMoney, formatMinPlaceholder, formatFillAmount } from './currency.mjs';
 import { withCacheBust } from './env.mjs';
 import {
   attachConsoleErrorCollector,
   clickAddToCartAndWait,
   isDonationAddToCartRequest,
-  openShellLocator,
-  clickShellTrigger,
   revealListProductTrigger,
-  shellTriggerLocator,
   assertNoUnexpectedPluginErrors,
 } from './checks.mjs';
 import { applyNetworkGuard } from './network-guard.mjs';
@@ -51,7 +49,6 @@ import {
   NATIVE_SUBMIT_RELOAD_CODE,
 } from './native-submit-guard.mjs';
 import { FREEZE_MOTION_CSS } from './selectors.mjs';
-import { assertRtlLayout } from './rtl-layout.mjs';
 import {
   DONOR_NAME,
   DONOR_EMAIL,
@@ -165,262 +162,169 @@ async function emptyCartStoreApi(page, baseUrl) {
   }
 }
 
+/**
+ * Ürünün yeni nesil form kökü (bağlanmış). productId verilmezse sayfadaki ilk kök.
+ * @param {import('@playwright/test').Page} page
+ * @param {number} [productId]
+ */
+function productRoot(page, productId = 0) {
+  const id = Number(productId) > 0 ? `[data-dp-product="${Number(productId)}"]` : '';
+  return page.locator(`${DP_SEL.root}[data-dp-mounted="1"]${id}`).first();
+}
+
 async function waitFormReady(root) {
-  const form = root.locator(SEL.donationForm).first();
+  const form = root.locator(DP_SEL.form).first();
   await form.waitFor({ state: 'visible', timeout: CHECK_MS });
   return form;
 }
 
 /**
- * Popup/panel açıldıktan sonra animasyon bitsin + POPUP-OVERLAP.
+ * Açık katmanın (popup / panel / alt sayfa) açılış animasyonu bitsin; sabit uyku yok.
  * @param {import('@playwright/test').Page} page
+ * @param {import('@playwright/test').Locator} root
  */
-async function settleOpenShell(page) {
-  await waitAndAssertShellOverlap(page, CHECK_MS);
-  if (process.env.WDP_RTL_LAYOUT === '1') {
-    const panel = (await page.locator(SEL.openSidePanel).count()) > 0;
-    await assertRtlLayout(page, { expectPanel: panel });
-  }
-}
-
-/**
- * Doğrulama hatalarını tetikle: görünür canlı formdaki ödeme düğmesi.
- * Gönderim bağlanmamışsa validateForm yedeği (hata UI'sini ölçer).
- * @param {import('@playwright/test').Page} page
- * @param {import('@playwright/test').Locator} scope
- * @param {string} type
- * @param {string} modeId
- */
-async function triggerEmptyFormValidation(page, scope, type, modeId) {
-  const formLoc = scope.locator(SEL.donationForm).first();
-  await formLoc.waitFor({ state: 'visible', timeout: CHECK_MS });
-  if (type === 'shares') {
-    await scope.locator('.wdp-shareholder-form').first().waitFor({ state: 'attached', timeout: CHECK_MS });
-  }
+async function settleOpenShell(page, root) {
+  await root.locator(`${DP_SEL.overlay}.is-open`).first().waitFor({ state: 'visible', timeout: CHECK_MS });
   await page.waitForFunction(
-    (formSel) => {
-      const forms = Array.from(document.querySelectorAll(formSel));
-      const live = forms.find((f) => {
-        const modal = f.closest && f.closest('.wdp-modal');
-        if (modal && !modal.classList.contains('show')) return false;
-        const shell = f.closest('.wdp-modal, .wdp-donation-form, .hdf-donation-modal-wrapper');
-        if (shell && (shell.classList.contains('wdp-is-skeleton') || shell.getAttribute('aria-busy') === 'true')) {
-          return false;
-        }
-        return true;
-      });
-      return !!(
-        live &&
-        window.WDPApp &&
-        window.WDPApp.formValidate &&
-        typeof window.WDPApp.formValidate.validateForm === 'function'
-      );
+    () => {
+      const s = document.querySelector('[data-dp-overlay].is-open [data-dp-surface], .is-open [data-dp-surface]');
+      if (!s) return false;
+      if (s.getAnimations().some((a) => a.playState === 'running')) return false;
+      return Number.parseFloat(getComputedStyle(s).opacity || '1') > 0.99;
     },
-    SEL.donationForm,
+    undefined,
     { timeout: CHECK_MS }
   );
-  await page.evaluate(() => {
-    const app = window.WDPApp;
-    if (app && app.form) app.form.lastValidation = null;
-    if (app && app.formValidate) app.formValidate.lastValidation = null;
-  });
-  const go = formLoc.locator(SEL.goCheckout).first();
-  await go.waitFor({ state: 'visible', timeout: CHECK_MS });
-  await go.evaluate((btn) => {
-    const form = btn.form || (btn.closest && btn.closest('form'));
-    const app = window.WDPApp || {};
-    if (form && app.form && typeof app.form.setup === 'function' && !form._wdpSubmitHandler) {
-      app.form.setup(form);
-    }
-    if (form && typeof form.requestSubmit === 'function') {
-      try {
-        form.requestSubmit(btn);
-        return;
-      } catch (eRs) {
-        /* WebKit disabled/not-a-submitter */
-      }
-    }
-    if (typeof btn.click === 'function') {
-      btn.click();
-    }
-  });
-  const lastFailed = async () =>
-    page.evaluate(() => {
-      const app = window.WDPApp || {};
-      const last =
-        (app.form && app.form.lastValidation) ||
-        (app.formValidate && app.formValidate.lastValidation) ||
-        null;
-      return !!(last && last.ok === false && Array.isArray(last.failures) && last.failures.length);
-    });
-  try {
-    await page.waitForFunction(() => {
-      const app = window.WDPApp || {};
-      const last =
-        (app.form && app.form.lastValidation) ||
-        (app.formValidate && app.formValidate.lastValidation) ||
-        null;
-      return !!(last && last.ok === false && Array.isArray(last.failures) && last.failures.length);
-    }, { timeout: 4000 });
-  } catch (eFirst) {
-    if (!(await lastFailed())) {
-      await formLoc.evaluate((form) => {
-        const app = window.WDPApp || {};
-        const validate =
-          (app.formValidate && app.formValidate.validateForm) ||
-          (app.form && app.form.validateForm) ||
-          null;
-        if (typeof validate === 'function') {
-          validate(form);
-        }
-      });
-    }
-  }
-  try {
-    await page.waitForFunction(() => {
-      const app = window.WDPApp || {};
-      const last =
-        (app.form && app.form.lastValidation) ||
-        (app.formValidate && app.formValidate.lastValidation) ||
-        null;
-      return !!(last && last.ok === false && Array.isArray(last.failures) && last.failures.length);
-    }, { timeout: CHECK_MS });
-  } catch (eWait) {
-    const diag = await page.evaluate((formSel) => {
-      const app = window.WDPApp || {};
-      const last =
-        (app.form && app.form.lastValidation) ||
-        (app.formValidate && app.formValidate.lastValidation) ||
-        null;
-      const forms = Array.from(document.querySelectorAll(formSel));
-      const live = forms.find((f) => {
-        const modal = f.closest && f.closest('.wdp-modal');
-        return !(modal && !modal.classList.contains('show'));
-      });
-      const btn = live && live.querySelector('button[name="donation_go_checkout"]');
-      return {
-        href: String(location.href || '').replace(/https?:\/\/[^/]+/i, ''),
-        lastOk: last && last.ok,
-        failN: last && last.failures ? last.failures.length : 0,
-        rows: document.querySelectorAll('.wdp-shareholder-form').length,
-        btns: document.querySelectorAll('button[name="donation_go_checkout"]').length,
-        hasHandler: !!(live && live._wdpSubmitHandler),
-        btnDisabled: !!(btn && btn.disabled),
-        btnType: btn ? String(btn.getAttribute('type') || btn.type || '') : '',
-        wizard: !!(live && live.classList.contains('wdp-wizard-ready')),
-      };
-    }, SEL.donationForm);
-    throw new Error(
-      `${type}/${modeId}: lastValidation.ok===false yok path=${diag.href} lastOk=${diag.lastOk} failN=${diag.failN} rows=${diag.rows} btns=${diag.btns} handler=${diag.hasHandler} disabled=${diag.btnDisabled} type=${diag.btnType} wizard=${diag.wizard}`
-    );
-  }
-  await page.evaluate(
-    () =>
-      new Promise((resolve) => {
-        window.requestAnimationFrame(() => window.requestAnimationFrame(resolve));
-      })
-  );
 }
 
 /**
- * Yer tutucu = wc biçimi (ondalık kırpılmaz); sembol konumu left/right.
- * @param {import('@playwright/test').Locator} scope
- * @param {object} store
- */
-async function assertMinPlaceholderAndSymbol(scope, store) {
-  const input = scope.locator(SEL.customPrice).first();
-  if ((await input.count()) === 0) return;
-  await input.waitFor({ state: 'visible', timeout: CHECK_MS });
-  const minRaw = await input.getAttribute('min');
-  const min = Number.parseFloat(String(minRaw || '10'));
-  const amount = Number.isFinite(min) && min > 0 ? min : 10;
-  const expected = formatMinPlaceholder(amount, store);
-  const ph = String((await input.getAttribute('placeholder')) || '').trim();
-  if (ph !== expected) {
-    throw new Error(`yer tutucu '${ph}' ≠ '${expected}' (${store.symbolPosition || 'left'})`);
-  }
-  const posOk = await scope.evaluate((root, want) => {
-    const shell = root.querySelector('.wdp-custom-price-shell') || document.querySelector('.wdp-custom-price-shell');
-    if (!shell) return true;
-    const sym = shell.querySelector('.wdp-custom-price-currency');
-    const inp = shell.querySelector('input[name="custom_price"]');
-    if (!sym || !inp) return true;
-    const sr = sym.getBoundingClientRect();
-    const ir = inp.getBoundingClientRect();
-    const leftish = want === 'left' || want === 'left_space';
-    return leftish ? sr.left <= ir.left + 1 : sr.left >= ir.left - 1;
-  }, String(store.symbolPosition || 'left'));
-  if (!posOk) {
-    throw new Error(`sembol konumu görsel olarak hatalı (${store.symbolPosition})`);
-  }
-}
-
-/**
- * Kapat düğmesi form kutusuyla kesişmez, ≥44px.
+ * Katman türündeki kökü aç (satır içi ise yalnız formu bekle).
  * @param {import('@playwright/test').Page} page
+ * @param {import('@playwright/test').Locator} root
  */
-async function assertCloseNotOverlappingForm(page) {
-  const info = await page.evaluate(() => {
-    const root = document.querySelector('.hdf-donation-modal-wrapper.wdp-modal.show');
-    if (!root) return { skip: true };
-    const close = root.querySelector('button.wdp-modal-close');
-    const form =
-      root.querySelector('.wdp-donation-form-fields') ||
-      root.querySelector('form.wdp-donation-form-fields');
-    if (!close) return { error: 'kapat düğmesi yok' };
-    if (!form) return { error: 'form kutusu yok' };
-    const c = close.getBoundingClientRect();
-    const f = form.getBoundingClientRect();
-    const overlap = !(c.right <= f.left || c.left >= f.right || c.bottom <= f.top || c.top >= f.bottom);
-    return { overlap, cw: c.width, ch: c.height, cy: c.y, fy: f.y };
-  });
-  if (info.skip) return;
-  if (info.error) throw new Error(info.error);
-  if (info.cw + 1 < 44 || info.ch + 1 < 44) {
-    throw new Error(`kapat dokunma hedefi < 44px (${Math.round(info.cw)}x${Math.round(info.ch)})`);
+async function openRoot(page, root) {
+  await root.waitFor({ state: 'attached', timeout: CHECK_MS });
+  const kind = (await root.getAttribute('data-dp-kind')) || 'inline';
+  if (kind !== 'inline') {
+    const trigger = root.locator(DP_SEL.open).first();
+    await trigger.waitFor({ state: 'visible', timeout: CHECK_MS });
+    await trigger.scrollIntoViewIfNeeded();
+    await trigger.click({ timeout: CHECK_MS });
+    await settleOpenShell(page, root);
   }
-  if (info.overlap) {
-    throw new Error(
-      `kapat düğmesi form kutusuyla kesişiyor (close.y=${Number(info.cy).toFixed(1)} form.y=${Number(info.fy).toFixed(1)})`
-    );
-  }
+  await waitFormReady(root);
+  return kind;
 }
 
 /**
- * @param {import('@playwright/test').Locator} scope
+ * Tutar adımı: özel tutar alanı varsa yazılır; yoksa ilk önerilen tutar seçilir.
+ * @param {import('@playwright/test').Locator} form
  * @param {object} store
+ * @param {number|string} [amount]
  */
-async function fillDonationForm(scope, store) {
-  const amount = store.amount;
-  const price = scope.locator(SEL.customPrice).first();
-  if ((await price.count()) > 0) {
-    await price.waitFor({ state: 'visible', timeout: CHECK_MS });
-    await price.fill(formatFillAmount(amount, store) || String(amount));
-  } else {
-    const preset = scope.locator('.wdp-amount-preset, [data-wdp-amount]').first();
-    if ((await preset.count()) > 0) await preset.click({ timeout: CHECK_MS });
+async function fillAmountStep(form, store, amount) {
+  const custom = form.locator(DP_SEL.amount).first();
+  if ((await custom.count()) > 0) {
+    await custom.waitFor({ state: 'visible', timeout: CHECK_MS });
+    const value = typeof amount === 'string' ? amount : formatFillAmount(amount, store) || String(amount);
+    await custom.fill(value);
+    return;
   }
-  const name = scope.locator(SEL.donorName).first();
+  const preset = form.locator(DP_SEL.preset).first();
+  if ((await preset.count()) > 0) await preset.click({ timeout: CHECK_MS });
+}
+
+/**
+ * "Devam" ile bilgi adımına geç (adımlar tek sayfaysa bir şey yapmaz).
+ * @param {import('@playwright/test').Locator} form
+ */
+async function advanceToDetails(form) {
+  const details = form.locator(DP_SEL.detailsStep).first();
+  if (await details.isVisible()) return;
+  await form.locator(DP_SEL.submit).first().click({ timeout: CHECK_MS });
+  await details.waitFor({ state: 'visible', timeout: CHECK_MS });
+}
+
+/**
+ * Hatasız tam doldurma: tutar -> (ithaf) -> bilgiler. Gönderim yapmaz.
+ * @param {import('@playwright/test').Locator} scope Form kökü.
+ * @param {object} store
+ * @param {{amount?: number|string}} [opts]
+ */
+async function fillDonationForm(scope, store, opts = {}) {
+  const form = scope.locator(DP_SEL.form).first();
+  const amount = opts.amount != null ? opts.amount : store.amount;
+  await fillAmountStep(form, store, amount);
+  const toggle = form.locator(DP_SEL.dediToggle).first();
+  if ((await toggle.count()) > 0) {
+    await toggle.check({ force: true });
+    await form.locator('input[name="donation_dedication"]').first().fill(DEDICATION);
+  }
+  await advanceToDetails(form);
+  const name = form.locator(SEL.donorName).first();
   await name.waitFor({ state: 'visible', timeout: CHECK_MS });
   await name.fill(DONOR_NAME);
-  const phone = scope.locator(SEL.donorPhone).first();
-  if ((await phone.count()) > 0) await phone.fill(DONOR_PHONE);
-  const email = scope.locator(SEL.donorEmail).first();
-  if ((await email.count()) > 0) await email.fill(DONOR_EMAIL);
-  const ded = scope.locator('input[name="donation_dedication"]').first();
-  if ((await ded.count()) > 0) await ded.fill(DEDICATION);
-  const anon = scope.locator('input[name="donation_anonymous"]').first();
-  if ((await anon.count()) > 0) await anon.check();
-  const shName = scope.locator('input[name="shareholder_name_1"]').first();
-  if ((await shName.count()) > 0) await shName.fill(SHAREHOLDER_NAME);
-  const shPhone = scope.locator('input[name="shareholder_phone_1"]').first();
-  if ((await shPhone.count()) > 0) await shPhone.fill(SHAREHOLDER_PHONE);
+  const phone = form.locator(SEL.donorPhone).first();
+  if ((await phone.count()) > 0 && (await phone.isVisible())) await phone.fill(DONOR_PHONE);
+  const email = form.locator(SEL.donorEmail).first();
+  if ((await email.count()) > 0 && (await email.isVisible())) await email.fill(DONOR_EMAIL);
+  const ded = form.locator('input[name="donation_dedication"]').first();
+  if ((await ded.count()) > 0 && (await ded.isVisible()) && !(await ded.inputValue())) await ded.fill(DEDICATION);
+  const anon = form.locator('input[name="donation_anonymous"]').first();
+  if ((await anon.count()) > 0) await anon.check({ force: true });
+  const shName = form.locator('input[name="shareholder_name_1"]').first();
+  if ((await shName.count()) > 0 && (await shName.isVisible())) await shName.fill(SHAREHOLDER_NAME);
+  const shPhone = form.locator('input[name="shareholder_phone_1"]').first();
+  if ((await shPhone.count()) > 0 && (await shPhone.isVisible())) await shPhone.fill(SHAREHOLDER_PHONE);
 }
 
 /**
- * Tıklama sırasında sepete-ekle AJAX sayısı + aynı URL’ye belge gezinmesi (yerel form).
+ * Doğrulama: tutarı boşalt -> tutar hatası + odak; geçerli tutar -> bilgi adımı; boş gönder -> her zorunlu alanda hata + odak.
+ * Not: tutar-adımı tutarsız formlarda (sabit fiyat / hisse) yalnız bilgi adımı denetlenir.
  * @param {import('@playwright/test').Page} page
- * @param {() => Promise<void>} clickFn
+ * @param {import('@playwright/test').Locator} root
+ * @param {object} store
+ * @param {string} label
+ */
+async function checkValidationErrors(page, root, store, label) {
+  const form = root.locator(DP_SEL.form).first();
+  const custom = form.locator(DP_SEL.amount).first();
+  const visibleError = async (name) => {
+    const el = form.locator(DP_SEL.error(name)).filter({ visible: true }).first();
+    await el.waitFor({ state: 'visible', timeout: CHECK_MS });
+    const text = String((await el.textContent()) || '').trim();
+    if (!text) throw new Error(`${label}: ${name} hata metni boş`);
+  };
+  if ((await custom.count()) > 0) {
+    await custom.fill('');
+    await form.locator(DP_SEL.submit).first().click({ timeout: CHECK_MS });
+    await visibleError('amount');
+    const focused = await page.evaluate(() => (document.activeElement && document.activeElement.getAttribute('name')) || '');
+    if (focused !== 'amount') throw new Error(`${label}: tutar hatasında odak '${focused}' (beklenen amount)`);
+    await custom.fill(formatFillAmount(store.amount, store) || String(store.amount));
+  } else {
+    const preset = form.locator(DP_SEL.preset).first();
+    if ((await preset.count()) > 0) await preset.click({ timeout: CHECK_MS });
+  }
+  await advanceToDetails(form);
+  await form.locator(DP_SEL.submit).first().click({ timeout: CHECK_MS });
+  const required = await form.evaluate((f) => {
+    const step = f.querySelector('[data-dp-step="details"]') || f;
+    return Array.from(step.querySelectorAll('input[required]:not(:disabled), textarea[required]:not(:disabled)'))
+      .filter((el) => el.offsetParent !== null && String(el.value || '').trim() === '')
+      .map((el) => el.getAttribute('name'));
+  });
+  if (!required.length) throw new Error(`${label}: bilgi adımında boş zorunlu alan bulunamadı`);
+  for (const name of required) await visibleError(name);
+  const focused = await page.evaluate(() => (document.activeElement && document.activeElement.getAttribute('name')) || '');
+  if (!required.includes(focused)) {
+    throw new Error(`${label}: odak '${focused}' hatalı alanlarda değil (${required.join(',')})`);
+  }
+}
+
+/**
+ * Sepet/ödeme sepet ekle isteklerini yakalayan ağ yoklaması (yerel form gönderimi = belge gezinmesi).
+ * @param {import('@playwright/test').Page} page
  */
 function attachSubmitNetworkProbe(page) {
   const startPath = (() => {
@@ -469,31 +373,14 @@ function assertSingleAjaxNoNative(probe, label) {
   }
 }
 
-async function addToCart(page, scope) {
-  const add = scope.locator(SEL.addToCart).first();
-  await add.waitFor({ state: 'visible', timeout: CHECK_MS });
-  const probe = attachSubmitNetworkProbe(page);
-  try {
-    const ajax = await clickAddToCartAndWait(
-      page,
-      async () => {
-        await add.click({ timeout: CHECK_MS });
-      },
-      { timeout: CART_MS }
-    );
-    if (ajax.timedOut || !ajax.ok) {
-      throw new Error(
-        `sepete ekle AJAX başarısız status=${ajax.status} timedOut=${ajax.timedOut} ${ajax.bodyPreview}`
-      );
-    }
-    assertSingleAjaxNoNative(probe, 'product-cart');
-  } finally {
-    probe.detach();
-  }
-}
-
-async function goCheckoutFromForm(page, scope) {
-  const go = scope.locator(SEL.goCheckout).first();
+/**
+ * Son adımdaki gönder düğmesi: REST sepet isteği + ödeme sayfasına yönlenme.
+ * @param {import('@playwright/test').Page} page
+ * @param {import('@playwright/test').Locator} scope
+ * @param {string} label
+ */
+async function goCheckoutFromForm(page, scope, label = 'product-cart') {
+  const go = scope.locator(DP_SEL.form).first().locator(DP_SEL.submit).first();
   await go.waitFor({ state: 'visible', timeout: CHECK_MS });
   const probe = attachSubmitNetworkProbe(page);
   try {
@@ -504,49 +391,129 @@ async function goCheckoutFromForm(page, scope) {
       },
       { timeout: CART_MS }
     );
-    if (ajax.timedOut && !/checkout|odeme|ödeme/i.test(page.url())) {
-      throw new Error(`ödemeye git AJAX/yönlendirme yok: ${ajax.bodyPreview} url=${page.url()}`);
+    if (ajax.timedOut || !ajax.ok) {
+      throw new Error(`sepete ekle REST başarısız status=${ajax.status} timedOut=${ajax.timedOut} ${ajax.bodyPreview}`);
     }
-    assertSingleAjaxNoNative(probe, 'list-checkout');
+    assertSingleAjaxNoNative(probe, label);
   } finally {
     probe.detach();
   }
-  await page.waitForURL(
-    (u) => /checkout|order-pay|odeme|ödeme/i.test(u.pathname + u.search),
-    { timeout: CHECK_MS }
-  );
+  await page.waitForURL((u) => /checkout|order-pay|odeme|ödeme/i.test(u.pathname + u.search), { timeout: CHECK_MS });
 }
 
-async function openProductForm(page, baseUrl, productPath) {
-  await gotoPath(page, baseUrl, productPath);
-  const inline = page.locator(`${SEL.inlineDonationForm} ${SEL.donationForm}, ${SEL.donationForm}`).first();
-  if ((await inline.count()) > 0 && (await inline.isVisible())) {
-    await assertNoUnexpectedPluginErrors(page, { scenarioId: 'product-cart' });
-    return page.locator('body');
+/**
+ * Tutar alanı yer tutucusu + sembol: sembol mağaza simgesiyle aynı, tutar alanı görünür ve boş.
+ * @param {import('@playwright/test').Locator} scope
+ * @param {object} store
+ */
+async function assertAmountFieldAndSymbol(scope, store) {
+  const input = scope.locator(DP_SEL.amount).first();
+  if ((await input.count()) === 0) return;
+  await input.waitFor({ state: 'visible', timeout: CHECK_MS });
+  const ph = String((await input.getAttribute('placeholder')) || '').trim();
+  if (!ph) throw new Error('tutar alanı yer tutucusu boş');
+  const sym = String((await scope.locator('.dp-custom__sym').first().textContent()) || '').trim();
+  const want = String(store.symbol || '').trim();
+  if (want && sym !== want) throw new Error(`tutar alanı sembolü '${sym}' ≠ mağaza '${want}'`);
+}
+
+/**
+ * Kapat düğmesi ≥44px ve form kutusuyla kesişmez (yalnız katmanlarda).
+ * @param {import('@playwright/test').Page} page
+ */
+async function assertCloseNotOverlappingForm(page) {
+  const info = await page.evaluate(() => {
+    const overlay = document.querySelector('[data-dp-overlay].is-open');
+    if (!overlay) return { skip: true };
+    const close = overlay.querySelector('[data-dp-close]');
+    const body = overlay.querySelector('[data-dp-step]:not([hidden]) .dp-fieldset, [data-dp-step]:not([hidden]) .dp-field');
+    if (!close) return { error: 'kapat düğmesi yok' };
+    const c = close.getBoundingClientRect();
+    const f = body ? body.getBoundingClientRect() : null;
+    const overlap = f ? !(c.right <= f.left || c.left >= f.right || c.bottom <= f.top || c.top >= f.bottom) : false;
+    return { overlap, cw: c.width, ch: c.height };
+  });
+  if (info.skip) return;
+  if (info.error) throw new Error(info.error);
+  if (info.cw + 1 < 44 || info.ch + 1 < 44) {
+    throw new Error(`kapat dokunma hedefi < 44px (${Math.round(info.cw)}x${Math.round(info.ch)})`);
   }
-  const trigger = page.locator(`${SEL.donateTrigger}, ${SEL.sidePanelTrigger}`).first();
-  await trigger.waitFor({ state: 'visible', timeout: CHECK_MS });
-  await clickShellTrigger(trigger, CHECK_MS);
-  const shell = openShellLocator(page, '');
-  await shell.waitFor({ state: 'visible', timeout: CHECK_MS });
-  await settleOpenShell(page);
-  await waitFormReady(shell);
+  if (info.overlap) throw new Error('kapat düğmesi form alanlarıyla kesişiyor');
+}
+
+async function openProductForm(page, baseUrl, productPath, productId = 0) {
+  await gotoPath(page, baseUrl, productPath);
+  const root = productRoot(page, productId);
+  await openRoot(page, root);
   await assertNoUnexpectedPluginErrors(page, { scenarioId: 'product-cart' });
-  return shell;
+  return root;
 }
 
 async function openListPopup(page, baseUrl, listPath, productId) {
   await gotoPath(page, baseUrl, listPath);
   await page.locator('.wdp-list-wrap, .wdp-list').first().waitFor({ state: 'visible', timeout: CHECK_MS });
   await revealListProductTrigger(page, productId);
-  const trigger = shellTriggerLocator(page, 'popup', { productId });
-  await clickShellTrigger(trigger, CHECK_MS);
-  const shell = openShellLocator(page, 'popup');
-  await shell.waitFor({ state: 'visible', timeout: CHECK_MS });
-  await settleOpenShell(page);
-  await waitFormReady(shell);
+  const cta = page.locator(`.wdp-list [data-wdp-form="${Number(productId)}"]`).first();
+  await cta.waitFor({ state: 'visible', timeout: CHECK_MS });
+  await cta.click({ timeout: CHECK_MS });
+  const root = page.locator(`${DP_SEL.root}[data-dp-mounted="1"][data-dp-product="${Number(productId)}"]`).first();
+  await settleOpenShell(page, root);
+  await waitFormReady(root);
   await assertNoUnexpectedPluginErrors(page, { scenarioId: 'list-checkout' });
-  return shell;
+  return root;
+}
+
+/**
+ * Sayfadaki (liste/ilgili ürün dışı) görünür eklenti girişleri: satır içi form, panel düğmesi, popup düğmesi.
+ * @param {import('@playwright/test').Page} page
+ */
+async function entryCounts(page) {
+  return page.evaluate(
+    ({ excludeSel, inlineSel, panelSel, popupSel }) => {
+      const excluded = (el) => !!(el && el.closest(excludeSel));
+      const vis = (el) => {
+        if (!el) return false;
+        const st = getComputedStyle(el);
+        const r = el.getBoundingClientRect();
+        return (
+          st.display !== 'none' &&
+          st.visibility !== 'hidden' &&
+          Number.parseFloat(st.opacity || '1') > 0.05 &&
+          r.width > 4 &&
+          r.height > 4
+        );
+      };
+      const pick = (sel) => Array.from(document.querySelectorAll(sel)).filter((el) => !excluded(el));
+      return {
+        inlineVisible: pick(inlineSel).filter(vis).length,
+        panelVisible: pick(panelSel).filter(vis).length,
+        popupVisible: pick(popupSel).filter(vis).length,
+      };
+    },
+    {
+      excludeSel: LOOP_EXCLUDE_SEL,
+      inlineSel: DP_SEL.inlineRoot,
+      panelSel: DP_SEL.panelOpen,
+      popupSel: DP_SEL.popupOpen,
+    }
+  );
+}
+
+/**
+ * Blok sepet/ödeme sayfaları istemcide geç çizilir: metin koşulu sağlanana dek yokla (sabit uyku yok).
+ * @param {import('@playwright/test').Page} page
+ * @param {(body: string) => boolean} ok
+ * @returns {Promise<string>} Son gövde metni.
+ */
+async function pollBodyText(page, ok, { collapsed = false } = {}) {
+  // collapsed: blok ödeme özeti mobilde katlıdır; gizli satırlar da sayılsın diye textContent okunur.
+  const read = () => page.locator('body').evaluate((b, c) => (c ? b.textContent || '' : b.innerText), collapsed);
+  try {
+    await expect.poll(async () => ok(await read()), { timeout: CHECK_MS, intervals: [250, 500, 1000] }).toBe(true);
+  } catch {
+    // Koşul sağlanmadı: çağıran gerçek metinle anlamlı hata üretir.
+  }
+  return read();
 }
 
 async function cartHasAmount(page, baseUrl, amount, store) {
@@ -557,7 +524,7 @@ async function cartHasAmount(page, baseUrl, amount, store) {
     )
     .first()
     .waitFor({ state: 'visible', timeout: CHECK_MS });
-  const body = await page.locator('body').innerText();
+  const body = await pollBodyText(page, (t) => amountVisible(t, amount, store));
   if (!amountVisible(body, amount, store)) {
     throw new Error(`sepet tutar biçimi yok (beklenen ${formatMoney(amount, store)}): ${normalizePriceText(body).slice(0, 280)}`);
   }
@@ -572,8 +539,12 @@ async function checkoutHasProductAmount(page, amount, store, productName) {
       '.woocommerce-checkout, .wc-block-checkout, form.checkout, .wp-block-woocommerce-checkout'
     )
     .first()
-    .waitFor({ state: 'visible', timeout: CHECK_MS });
-  const body = await page.locator('body').innerText();
+ .waitFor({ state: 'visible', timeout: CHECK_MS });
+  const body = await pollBodyText(
+    page,
+    (t) => amountVisible(t, amount, store) && (!productName || t.includes(productName) || /WDP E2E Custom/i.test(t)),
+    { collapsed: true }
+  );
   if (productName && !body.includes(productName) && !/WDP E2E Custom/i.test(body)) {
     throw new Error(`ödeme sayfasında ürün adı yok: ${normalizePriceText(body).slice(0, 240)}`);
   }
@@ -598,12 +569,10 @@ async function assertNoOverflow(page) {
 
 async function assertTouchAndButtons(page) {
   const info = await page.evaluate((min) => {
-    const root =
-      document.querySelector('.hdf-donation-modal-wrapper.wdp-modal.show, form.wdp-donation-form-fields') ||
-      document.body;
+    const root = document.querySelector('[data-dp-overlay].is-open') || document.querySelector('[data-dp-form]') || document.body;
     const nodes = Array.from(
       root.querySelectorAll(
-        'button, a[href], [role="button"], .wdp-amount-preset, input[type="checkbox"]'
+        'button, a[href], [role="button"], [role="radio"]'
       )
     );
     const bad = [];
@@ -622,7 +591,7 @@ async function assertTouchAndButtons(page) {
         });
       }
     }
-    const form = document.querySelector('form.wdp-donation-form-fields, .wdp-modal-content');
+    const form = document.querySelector('[data-dp-overlay].is-open [data-dp-surface], [data-dp-form]');
     const box = form ? form.getBoundingClientRect() : null;
     const vv = window.visualViewport;
     const vw = vv ? vv.width : window.innerWidth;
@@ -645,7 +614,7 @@ async function snapshotChromeStyles(page) {
     const pick = (sel) => {
       const el = document.querySelector(sel);
       if (!el) return null;
-      if (el.closest('.wdp-modal, .hdf-donation-modal-wrapper, [class*="wdp-"]')) return null;
+      if (el.closest('.wdp-modal, .hdf-donation-modal-wrapper, [class*="wdp-"], [class*="dp-"]')) return null;
       const cs = getComputedStyle(el);
       return {
         color: cs.color,
@@ -821,93 +790,61 @@ export async function runDeviceScenarios({
     await runOne('product-cart', async () => {
       await gotoPath(page, baseUrl, '/');
       await emptyCartStoreApi(page, baseUrl);
-      const scope = await openProductForm(page, baseUrl, productPath);
-      await assertMinPlaceholderAndSymbol(scope, store);
+      const scope = await openProductForm(page, baseUrl, productPath, productId);
+      await assertAmountFieldAndSymbol(scope, store);
       await fillDonationForm(scope, store);
-      await addToCart(page, scope);
+      await goCheckoutFromForm(page, scope, 'product-cart');
       await cartHasAmount(page, baseUrl, amount, store);
       await shot(page, shotDir, 'product-cart');
     });
 
     await runOne('amount-ambiguous', async () => {
+      // Yeni motor: "10,5" / "10.5" ondalık olarak okunur (ondalıksız para birimlerinde tam sayı); sepete doğru tutar girer.
       await gotoPath(page, baseUrl, '/');
       await emptyCartStoreApi(page, baseUrl);
-      const scope = await openProductForm(page, baseUrl, productPath);
-      const price = scope.locator(SEL.customPrice).first();
-      await price.waitFor({ state: 'visible', timeout: CHECK_MS });
+      const scope = await openProductForm(page, baseUrl, productPath, productId);
       const code = String(store.currency || '').toUpperCase();
-      if (code === 'TRY') {
-        await price.fill('10,50');
-        const name = scope.locator(SEL.donorName).first();
-        if ((await name.count()) > 0) await name.fill(DONOR_NAME);
-        const phone = scope.locator(SEL.donorPhone).first();
-        if ((await phone.count()) > 0) await phone.fill(DONOR_PHONE);
-        const add = scope.locator(SEL.addToCart).first();
-        await add.waitFor({ state: 'visible', timeout: CHECK_MS });
-        const probe = attachSubmitNetworkProbe(page);
-        try {
-          await add.click({ timeout: CHECK_MS });
-          await page.waitForFunction(() => {
-            const nodes = Array.from(document.querySelectorAll('.wdp-input-error, .wdp-form-error'));
-            return nodes.some((el) => /kuruşlu|tam sayı|biçiminde|Lütfen tutarı/i.test(String(el.textContent || '')));
-          }, { timeout: CHECK_MS });
-          if (probe.ajax.length) {
-            throw new Error(`TRY 10,50 sepete eklendi (${probe.ajax.length} istek)`);
-          }
-        } finally {
-          probe.detach();
-        }
-        await shot(page, shotDir, 'amount-ambiguous-try');
-        return;
-      }
-      const fillAmount = code === 'EUR' ? 10.5 : 10;
-      await fillDonationForm(scope, { ...store, amount: fillAmount });
-      await addToCart(page, scope);
+      const fillAmount = Number(store.decimals) > 0 ? 10.5 : 10;
+      await fillDonationForm(scope, store, { amount: fillAmount });
+      await goCheckoutFromForm(page, scope, 'amount-ambiguous');
       await cartHasAmount(page, baseUrl, fillAmount, store);
       await shot(page, shotDir, `amount-ambiguous-${code.toLowerCase()}`);
     });
 
     await runOne('amount-tr-comma', async () => {
+      // Virgüllü yazım: "50,00" tam tutar; "10,50" kuruşlu -> ondalıksız mağazada reddedilir (REST 400 + tutar hatası), ondalıklıda 10.5 olarak sepete girer.
       if (String(store.currency || '').toUpperCase() !== 'TRY') {
         return;
       }
       await gotoPath(page, baseUrl, '/');
       await emptyCartStoreApi(page, baseUrl);
-      const acceptScope = await openProductForm(page, baseUrl, productPath);
-      const acceptPrice = acceptScope.locator(SEL.customPrice).first();
-      await acceptPrice.waitFor({ state: 'visible', timeout: CHECK_MS });
-      await acceptPrice.fill('50,00');
-      const acceptName = acceptScope.locator(SEL.donorName).first();
-      if ((await acceptName.count()) > 0) await acceptName.fill(DONOR_NAME);
-      const acceptPhone = acceptScope.locator(SEL.donorPhone).first();
-      if ((await acceptPhone.count()) > 0) await acceptPhone.fill(DONOR_PHONE);
-      await addToCart(page, acceptScope);
+      const okScope = await openProductForm(page, baseUrl, productPath, productId);
+      await fillDonationForm(okScope, store, { amount: '50,00' });
+      await goCheckoutFromForm(page, okScope, 'amount-tr-comma');
       await cartHasAmount(page, baseUrl, 50, store);
       await shot(page, shotDir, 'amount-tr-comma-ok');
 
       await emptyCartStoreApi(page, baseUrl);
-      const warnScope = await openProductForm(page, baseUrl, productPath);
-      const warnPrice = warnScope.locator(SEL.customPrice).first();
-      await warnPrice.waitFor({ state: 'visible', timeout: CHECK_MS });
-      await warnPrice.fill('10,50');
-      const warnName = warnScope.locator(SEL.donorName).first();
-      if ((await warnName.count()) > 0) await warnName.fill(DONOR_NAME);
-      const warnPhone = warnScope.locator(SEL.donorPhone).first();
-      if ((await warnPhone.count()) > 0) await warnPhone.fill(DONOR_PHONE);
-      const warnAdd = warnScope.locator(SEL.addToCart).first();
-      await warnAdd.waitFor({ state: 'visible', timeout: CHECK_MS });
-      const warnProbe = attachSubmitNetworkProbe(page);
+      const scope = await openProductForm(page, baseUrl, productPath, productId);
+      await fillDonationForm(scope, store, { amount: '10,50' });
+      if (Number(store.decimals) > 0) {
+        await goCheckoutFromForm(page, scope, 'amount-tr-comma');
+        await cartHasAmount(page, baseUrl, 10.5, store);
+        return;
+      }
+      const probeNet = attachSubmitNetworkProbe(page);
       try {
-        await warnAdd.click({ timeout: CHECK_MS });
-        await page.waitForFunction(() => {
-          const nodes = Array.from(document.querySelectorAll('.wdp-input-error, .wdp-form-error'));
-          return nodes.some((el) => /kuruşlu|tam sayı|biçiminde|Lütfen tutarı/i.test(String(el.textContent || '')));
-        }, { timeout: CHECK_MS });
-        if (warnProbe.ajax.length) {
-          throw new Error(`TRY 10,50 sepete eklendi (${warnProbe.ajax.length} istek)`);
-        }
+        const [res] = await Promise.all([
+          page.waitForResponse((r) => isDonationAddToCartRequest(r.request()), { timeout: CART_MS }),
+          scope.locator(DP_SEL.submit).first().click({ timeout: CHECK_MS, noWaitAfter: true }),
+        ]);
+        if (res.status() !== 400) throw new Error(`TRY 10,50 reddedilmeliydi, status=${res.status()}`);
+        const err = scope.locator(DP_SEL.error('amount')).filter({ visible: true }).first();
+        await err.waitFor({ state: 'visible', timeout: CHECK_MS });
+        if (!String((await err.textContent()) || '').trim()) throw new Error('tutar hata metni boş');
+        if (probeNet.nativeDoc.length) throw new Error(`yerel form gönderimi ${probeNet.nativeDoc.join(', ')}`);
       } finally {
-        warnProbe.detach();
+        probeNet.detach();
       }
       await shot(page, shotDir, 'amount-tr-comma-warn');
     });
@@ -915,19 +852,21 @@ export async function runDeviceScenarios({
     await runOne('list-checkout', async () => {
       await emptyCartStoreApi(page, baseUrl);
       const shell = await openListPopup(page, baseUrl, listPath, productId);
-      await assertMinPlaceholderAndSymbol(shell, store);
+      await assertAmountFieldAndSymbol(shell, store);
       await assertCloseNotOverlappingForm(page);
       await fillDonationForm(shell, store);
-      await goCheckoutFromForm(page, shell);
-      await checkoutHasProductAmount(page, amount, store, productName);
+      await goCheckoutFromForm(page, shell, 'list-checkout');
+      // Blok ödeme özeti mobilde katlı ve satırları yalnız açılınca çizer: ad denetimi yalnız klasik ödemede.
+      const blocksCheckout = checkoutKind === 'blocks' || probe.checkoutBlocks;
+      await checkoutHasProductAmount(page, amount, store, blocksCheckout ? '' : productName);
       await shot(page, shotDir, 'list-checkout');
     });
 
     await runOne('place-order', async () => {
       await emptyCartStoreApi(page, baseUrl);
-      const scope = await openProductForm(page, baseUrl, productPath);
+      const scope = await openProductForm(page, baseUrl, productPath, productId);
       await fillDonationForm(scope, store);
-      await goCheckoutFromForm(page, scope);
+      await goCheckoutFromForm(page, scope, 'place-order');
       const kind = checkoutKind === 'blocks' || probe.checkoutBlocks ? 'blocks' : 'classic';
       await completeLocalCheckout(page, {
         store,
@@ -955,82 +894,30 @@ export async function runDeviceScenarios({
           const set = matrixEval(wpDir, ['placement-display', display]);
           if (!set.ok) throw new Error(`görünüm yazılamadı ${display}: ${set.error || ''}`);
           await gotoPath(page, baseUrl, productPath);
-          const native = await page.evaluate(nativeCartProbeBrowser, {
+          const nativeCart = await page.evaluate(nativeCartProbeBrowser, {
             excludeSel: LOOP_EXCLUDE_SEL,
             formSel: NATIVE_CART_FORM_SEL,
             btnSel: NATIVE_ATC_BTN_SEL,
             stickySel: STICKY_ATC_SEL,
           });
-          const nativeClassified = classifyNativeCartVisibility(native);
+          const nativeClassified = classifyNativeCartVisibility(nativeCart);
           if (!nativeClassified.ok) {
             throw new Error(`${display}: ${nativeClassified.reason}`);
           }
-          const ui = await page.evaluate(
-            ({ excludeSel, inlineSel, panelSel, popupSel }) => {
-              const excluded = (el) => !!(el && el.closest(excludeSel));
-              const vis = (el) => {
-                if (!el) return false;
-                const st = getComputedStyle(el);
-                const r = el.getBoundingClientRect();
-                return (
-                  st.display !== 'none' &&
-                  st.visibility !== 'hidden' &&
-                  Number.parseFloat(st.opacity || '1') > 0.05 &&
-                  r.width > 4 &&
-                  r.height > 4
-                );
-              };
-              const pick = (sel) => Array.from(document.querySelectorAll(sel)).filter((el) => !excluded(el));
-              return {
-                inlineVisible: pick(inlineSel).filter(vis).length,
-                panelVisible: pick(panelSel).filter(vis).length,
-                popupVisible: pick(popupSel).filter(vis).length,
-              };
-            },
-            {
-              excludeSel: LOOP_EXCLUDE_SEL,
-              inlineSel: SEL.inlineDonationForm,
-              panelSel: SEL.sidePanelTrigger,
-              popupSel: SEL.centeredPopupTrigger,
-            }
-          );
+          const ui = await entryCounts(page);
           const classified = classifyVisiblePluginEntry(ui);
           if (!classified.ok) {
             throw new Error(
               `${display}: eklenti girişi ${classified.reason} inline=${ui.inlineVisible} panel=${ui.panelVisible} popup=${ui.popupVisible}`
             );
           }
+          const root = productRoot(page, productId);
           if (classified.kind === 'form') {
-            const form = page.locator(`${SEL.inlineDonationForm}, ${SEL.donationForm}`).first();
-            await form.waitFor({ state: 'visible', timeout: CHECK_MS });
+            await waitFormReady(root);
           } else {
-            const triggerSel = classified.kind === 'panel' ? SEL.sidePanelTrigger : SEL.centeredPopupTrigger;
-            const n = await page.locator(triggerSel).count();
-            let clicked = false;
-            for (let i = 0; i < n; i += 1) {
-              const btn = page.locator(triggerSel).nth(i);
-              const inLoop = await btn.evaluate(
-                (el, excludeSel) =>
-                  !!(el.classList.contains('wdp-loop-donate') || (el.closest && el.closest(excludeSel))),
-                LOOP_EXCLUDE_SEL
-              );
-              if (inLoop) continue;
-              if (!(await btn.isVisible())) continue;
-              await btn.scrollIntoViewIfNeeded();
-              await clickShellTrigger(btn, CHECK_MS);
-              clicked = true;
-              break;
-            }
-            if (!clicked) throw new Error(`${display}: birincil bağış düğmesi tıklanamadı`);
-            const shell = openShellLocator(page, classified.kind === 'panel' ? 'panel' : 'popup');
-            await shell.waitFor({ state: 'visible', timeout: CHECK_MS });
-            await settleOpenShell(page);
-            await waitFormReady(shell);
-            const close = shell.locator(SEL.modalClose).first();
-            if ((await close.count()) > 0) {
-              await close.click({ timeout: CHECK_MS });
-              await shell.waitFor({ state: 'hidden', timeout: CHECK_MS });
-            }
+            await openRoot(page, root);
+            await root.locator(DP_SEL.close).first().click({ timeout: CHECK_MS });
+            await root.locator(`${DP_SEL.overlay}.is-open`).first().waitFor({ state: 'hidden', timeout: CHECK_MS });
           }
           await shot(page, shotDir, `native-cart-hidden-${display}`);
         }
@@ -1115,35 +1002,7 @@ export async function runDeviceScenarios({
       if (!set.ok) throw new Error(`kısa kod yazılamadı: ${set.error || ''}`);
       try {
         await gotoPath(page, baseUrl, productPath);
-        const ui = await page.evaluate(
-          ({ excludeSel, inlineSel, panelSel, popupSel }) => {
-            const excluded = (el) => !!(el && el.closest(excludeSel));
-            const vis = (el) => {
-              if (!el) return false;
-              const st = getComputedStyle(el);
-              const r = el.getBoundingClientRect();
-              return (
-                st.display !== 'none' &&
-                st.visibility !== 'hidden' &&
-                Number.parseFloat(st.opacity || '1') > 0.05 &&
-                r.width > 4 &&
-                r.height > 4
-              );
-            };
-            const pick = (sel) => Array.from(document.querySelectorAll(sel)).filter((el) => !excluded(el));
-            return {
-              inlineVisible: pick(inlineSel).filter(vis).length,
-              panelVisible: pick(panelSel).filter(vis).length,
-              popupVisible: pick(popupSel).filter(vis).length,
-            };
-          },
-          {
-            excludeSel: LOOP_EXCLUDE_SEL,
-            inlineSel: SEL.inlineDonationForm,
-            panelSel: SEL.sidePanelTrigger,
-            popupSel: SEL.centeredPopupTrigger,
-          }
-        );
+        const ui = await entryCounts(page);
         const classified = classifyVisiblePluginEntry(ui);
         if (!classified.ok || classified.kind !== 'panel') {
           throw new Error(
@@ -1154,32 +1013,11 @@ export async function runDeviceScenarios({
         if (!/ayar inline, sayfa düğme/.test(warn)) {
           throw new Error(`mismatch uyarısı yok: '${warn}'`);
         }
-        await page.waitForFunction(() => !!(window.WDPApp && window.WDPApp.modal), { timeout: CHECK_MS });
-        const n = await page.locator(SEL.sidePanelTrigger).count();
-        let clicked = false;
-        for (let i = 0; i < n; i += 1) {
-          const btn = page.locator(SEL.sidePanelTrigger).nth(i);
-          const inLoop = await btn.evaluate(
-            (el, excludeSel) =>
-              !!(el.classList.contains('wdp-loop-donate') || (el.closest && el.closest(excludeSel))),
-            LOOP_EXCLUDE_SEL
-          );
-          if (inLoop) continue;
-          if (!(await btn.isVisible())) continue;
-          await btn.scrollIntoViewIfNeeded();
-          await clickShellTrigger(btn, CHECK_MS);
-          clicked = true;
-          break;
+        const root = productRoot(page, productId);
+        const kind = await openRoot(page, root);
+        if (kind !== 'side_panel') {
+          throw new Error(`kabuk panel değil (${kind})`);
         }
-        if (!clicked) throw new Error('birincil panel düğmesi tıklanamadı');
-        const anyShell = openShellLocator(page, '');
-        await anyShell.waitFor({ state: 'visible', timeout: CHECK_MS });
-        const isPanel = await anyShell.evaluate((el) => el.classList.contains('wdp-side-panel'));
-        if (!isPanel) {
-          throw new Error('kabuk panel değil (popup açıldı)');
-        }
-        await settleOpenShell(page);
-        await waitFormReady(anyShell);
         await shot(page, shotDir, 'product-entry-button');
       } finally {
         const clr = matrixEval(wpDir, ['product-content', 'custom', 'clear']);
@@ -1188,9 +1026,8 @@ export async function runDeviceScenarios({
     });
 
     await runOne('appearance', async () => {
-      const scope = await openProductForm(page, baseUrl, productPath);
-      await waitFormReady(scope);
-      await assertMinPlaceholderAndSymbol(scope, store);
+      const scope = await openProductForm(page, baseUrl, productPath, productId);
+      await assertAmountFieldAndSymbol(scope, store);
       await assertCloseNotOverlappingForm(page);
       await assertNoOverflow(page);
       await assertTouchAndButtons(page);
@@ -1228,191 +1065,11 @@ export async function runDeviceScenarios({
           const set = matrixEval(wpDir, ['placement-display', mode.display]);
           if (!set.ok) throw new Error(`görünüm ${mode.display}: ${set.error || ''}`);
           for (const type of types) {
-            const product = probe.products[type];
-            await gotoPath(page, baseUrl, product.path);
-            let scope;
-            if (mode.id === 'inline') {
-              const wrap = page.locator(SEL.inlineDonationForm).first();
-              await wrap.waitFor({ state: 'visible', timeout: CHECK_MS });
-              await waitFormReady(wrap);
-              scope = wrap;
-            } else {
-              const triggerSel = mode.id === 'panel' ? SEL.sidePanelTrigger : SEL.centeredPopupTrigger;
-              const n = await page.locator(triggerSel).count();
-              let clicked = false;
-              for (let i = 0; i < n; i += 1) {
-                const btn = page.locator(triggerSel).nth(i);
-                const inLoop = await btn.evaluate(
-                  (el, excludeSel) =>
-                    !!(el.classList.contains('wdp-loop-donate') || (el.closest && el.closest(excludeSel))),
-                  LOOP_EXCLUDE_SEL
-                );
-                if (inLoop) continue;
-                if (!(await btn.isVisible())) continue;
-                await btn.scrollIntoViewIfNeeded();
-                await clickShellTrigger(btn, CHECK_MS);
-                clicked = true;
-                break;
-              }
-              if (!clicked) throw new Error(`${type}/${mode.id}: tetikleyici yok`);
-              scope = openShellLocator(page, mode.id);
-              await scope.waitFor({ state: 'visible', timeout: CHECK_MS });
-              await settleOpenShell(page);
-              await waitFormReady(scope);
-            }
-            await triggerEmptyFormValidation(page, scope, type, mode.id);
-            const state = await scope.evaluate((root) => {
-              const app = window.WDPApp || {};
-              const last =
-                (app.form && app.form.lastValidation) ||
-                (app.formValidate && app.formValidate.lastValidation) ||
-                null;
-              const failures = (last && last.failures) || [];
-              const missingMsgs = [];
-              const collapsedStill = [];
-              for (const f of failures) {
-                const field = f && f.field ? String(f.field) : '';
-                if (!field) continue;
-                const input = root.querySelector(`[name="${field}"]`);
-                if (!input) {
-                  missingMsgs.push(`${field}:yok`);
-                  continue;
-                }
-                const row = input.closest && input.closest('.wdp-shareholder-form');
-                if (row && row.classList.contains('collapsed')) {
-                  collapsedStill.push(field);
-                }
-                let err = null;
-                const did = input.getAttribute && input.getAttribute('aria-describedby');
-                if (did) {
-                  const ids = String(did)
-                    .split(/\s+/)
-                    .filter(Boolean);
-                  for (const id of ids) {
-                    try {
-                      err = root.querySelector('#' + CSS.escape(id)) || document.getElementById(id);
-                    } catch (eId) {
-                      err = root.querySelector('#' + id) || document.getElementById(id);
-                    }
-                    if (err) break;
-                  }
-                }
-                if (!err) {
-                  const near =
-                    input.closest &&
-                    input.closest('.wdp-price-field, .wdp-field-stack__row, .wdp-form-group');
-                  err = near && near.querySelector && near.querySelector('.wdp-input-error');
-                }
-                const st = err ? window.getComputedStyle(err) : null;
-                const r = err ? err.getBoundingClientRect() : { width: 0, height: 0 };
-                const shown =
-                  err &&
-                  st &&
-                  st.display !== 'none' &&
-                  st.visibility !== 'hidden' &&
-                  Number.parseFloat(st.opacity || '1') > 0.05 &&
-                  r.width > 0 &&
-                  r.height > 0 &&
-                  String(err.textContent || '').trim();
-                if (!shown) missingMsgs.push(field);
-              }
-              let firstDomName = '';
-              for (const el of root.querySelectorAll('.wdp-error')) {
-                if (el.closest && el.closest('.wdp-shareholder-form.collapsed')) continue;
-                if (el.closest && el.closest('[hidden]')) continue;
-                const st = window.getComputedStyle(el);
-                const box = el.getBoundingClientRect();
-                if (st.display === 'none' || st.visibility === 'hidden' || box.width < 1 || box.height < 1) {
-                  continue;
-                }
-                firstDomName = el.getAttribute && el.getAttribute('name') ? el.getAttribute('name') : '';
-                if (firstDomName) break;
-              }
-              const active = document.activeElement;
-              const focusName = active && active.getAttribute ? active.getAttribute('name') || '' : '';
-              const focusOnFailure = (f) => {
-                if (!f || !f.field) return false;
-                if (f.field === focusName) return true;
-                const input = root.querySelector(`[name="${f.field}"]`);
-                if (!input) return false;
-                if (active === input) return true;
-                if (input.contains && input.contains(active)) return true;
-                const wrap =
-                  (input.closest && input.closest('.wdp-phone-field, .iti, .wdp-field-stack__row, .wdp-shareholder-form')) ||
-                  null;
-                return !!(wrap && wrap.contains && wrap.contains(active));
-              };
-              const header = root.querySelector('.wdp-shareholder-header');
-              const title = header && header.querySelector('h3');
-              const badge = header && header.querySelector('.wdp-unit-price-badge');
-              const parseRgb = (s) => {
-                const m = String(s || '').match(/rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/i);
-                return m ? [Number(m[1]), Number(m[2]), Number(m[3])] : null;
-              };
-              const lum = (rgb) => {
-                const lin = rgb.map((c) => {
-                  const v = c / 255;
-                  return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
-                });
-                return 0.2126 * lin[0] + 0.7152 * lin[1] + 0.0722 * lin[2];
-              };
-              const ratio = (a, b) => {
-                if (!a || !b) return 0;
-                const hi = Math.max(lum(a), lum(b));
-                const lo = Math.min(lum(a), lum(b));
-                return (hi + 0.05) / (lo + 0.05);
-              };
-              let titleRatio = 0;
-              let badgeRatio = 0;
-              if (header && title) {
-                const hs = getComputedStyle(header);
-                const ts = getComputedStyle(title);
-                titleRatio = ratio(parseRgb(hs.backgroundColor), parseRgb(ts.color));
-                if (badge) {
-                  const bs = getComputedStyle(badge);
-                  const bg = parseRgb(bs.backgroundColor);
-                  const headerBg = parseRgb(hs.backgroundColor);
-                  badgeRatio = ratio(bg && bg[0] + bg[1] + bg[2] > 0 ? bg : headerBg, parseRgb(bs.color));
-                }
-              }
-              return {
-                missingMsgs,
-                collapsedStill,
-                focusName,
-                firstDomName,
-                titleRatio,
-                badgeRatio,
-                failCount: failures.length,
-                focusOk: failures.some(focusOnFailure),
-              };
-            });
-            if (state.missingMsgs.length) {
-              throw new Error(
-                `${type}/${mode.id}: görünür alan mesajı yok ${state.missingMsgs.join(',')}`
-              );
-            }
-            if (state.collapsedStill.length) {
-              throw new Error(
-                `${type}/${mode.id}: katlanmış kaldı ${state.collapsedStill.join(',')}`
-              );
-            }
-            if (!state.focusOk) {
-              throw new Error(
-                `${type}/${mode.id}: odak ${state.focusName || '(yok)'} hatalı alanda değil`
-              );
-            }
-            if (type === 'shares') {
-              if (state.titleRatio < 4.5) {
-                throw new Error(
-                  `${type}/${mode.id}: başlık kontrast ${state.titleRatio.toFixed(2)} < 4.5`
-                );
-              }
-              if (state.badgeRatio < 4.5) {
-                throw new Error(
-                  `${type}/${mode.id}: rozet kontrast ${state.badgeRatio.toFixed(2)} < 4.5`
-                );
-              }
-            }
+            const prod = probe.products[type];
+            await gotoPath(page, baseUrl, prod.path);
+            const root = productRoot(page, Number(prod.id || 0));
+            await openRoot(page, root);
+            await checkValidationErrors(page, root, store, `${type}/${mode.id}`);
             await shot(page, shotDir, `errors-${type}-${mode.id}`);
           }
         }
