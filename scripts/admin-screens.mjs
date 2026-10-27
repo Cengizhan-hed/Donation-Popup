@@ -7,7 +7,7 @@
  *   node scripts/admin-screens.mjs --env local
  *   CLAUDECODE=1 npm run admin:screens -- --env staging-hedef --check-doc docs/CANLIYA-ALMA.md   (yalnız Claude)
  *
- * Bayraklar: --env local|staging-hedef|ikram-aid, --ui new|legacy (yalnız yerel), --check-doc <md>, --out-dir <klasör>, --strict
+ * Bayraklar: --env local|staging-hedef|ikram-aid, --check-doc <md>, --out-dir <klasör>, --strict
  * (belgede bulunamayan yol varsa çıkış kodu 3), --no-shots (yerelde ekran görüntüsünü kapatır).
  * Çıktı: build/handoff/admin-screens-<env>.json + .md. Ekran görüntüsü YALNIZ yerelde.
  */
@@ -175,7 +175,7 @@ async function main() {
   const remote = isRemoteProfile(profile);
   const docArg = arg(argv, '--check-doc');
   const outDir = path.resolve(ROOT, arg(argv, '--out-dir', 'build/handoff'));
-  const tag = envId + (!remote && arg(argv, '--ui') ? `-ui-${arg(argv, '--ui')}` : '');
+  const tag = envId;
   const wantShots = !remote && !argv.includes('--no-shots');
 
   if (remote) {
@@ -197,16 +197,6 @@ async function main() {
       const { prepareLocalFullStack } = await import('../tests/e2e/helpers/matrix-setup.mjs');
       const stack = await prepareLocalFullStack(port);
       localServer = stack.server;
-      const ui = arg(argv, '--ui');
-      if (ui) {
-        if (!/^(new|legacy)$/.test(ui)) fail('--ui yalnız new|legacy olabilir.', 2);
-        // Yalnız yerel işçi: yönetici ekranı kipini yerel seçenekte ayarlar (uzakta bu yol yok).
-        const mu = path.join(stack.wpDir, 'wp-content/mu-plugins');
-        fs.mkdirSync(mu, { recursive: true });
-        fs.copyFileSync(path.join(ROOT, 'tests/e2e/helpers/wdp-admin-sim.php'), path.join(mu, 'wdp-admin-sim.php'));
-        const r = await fetch(`http://127.0.0.1:${port}/?dp_ad_reset=1&ui=${ui}`);
-        if (!r.ok) fail(`--ui ${ui}: sıfırlama yanıtı ${r.status}`);
-      }
       env = loadE2EEnv({
         envId: 'local',
         parsed: { E2E_USER: 'admin', E2E_PASS: 'admin', E2E_BASE_URL: `http://127.0.0.1:${port}` },

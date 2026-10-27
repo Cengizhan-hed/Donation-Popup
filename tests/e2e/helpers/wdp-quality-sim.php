@@ -3,7 +3,7 @@
  * Yalnız yerel e2e (E8B kalite kapıları): tüm modülleri açar/kapatır, motoru seçer, hız sınırlarını gevşetir, test sayfaları ve
  * sepet/sipariş yardımcı uçları sunar. Yalnız geçici yerel WP işçisine kopyalanır; uzak ortamda KULLANILMAZ. Tema adı yok.
  *
- * Durum dosyası `wp-content/wdp-quality-state.json`: {"engine":"new|legacy","modules":"all|none|default","override":true|false}
+ * Durum dosyası `wp-content/wdp-quality-state.json`: {"modules":"all|none|default","override":true|false}
  * (her istekte okunur; koşucu kapıdan kapıya değiştirir).
  *
  *   /?dp_q_test=kit&dp_product=ID&dp_campaign=ID   -> her deneyim + kampanya + sosyal kanıt + hesap + yan sepet (kısa kodlar)
@@ -36,7 +36,6 @@ if ( ! array_key_exists( 'override', $wdp_q_state ) || $wdp_q_state['override'] 
 		'pre_option_donation_panel_settings',
 		static function () {
 			$st      = $GLOBALS['wdp_q_state'];
-			$legacy  = isset( $st['engine'] ) && 'legacy' === $st['engine'];
 			$only    = isset( $st['modules'] ) && is_array( $st['modules'] ) ? $st['modules'] : null; // Tek tek modül listesi (ikili arama için).
 			$mods    = isset( $st['modules'] ) && is_string( $st['modules'] ) ? $st['modules'] : 'all';
 			$all     = array( 'campaign', 'impact', 'social_proof', 'thanks', 'tax_relief', 'side_cart', 'donor_account' );
@@ -49,7 +48,6 @@ if ( ! array_key_exists( 'override', $wdp_q_state ) || $wdp_q_state['override'] 
 			return array(
 				'version'     => 1,
 				'modules'     => $modules,
-				'experiences' => array( 'engine' => $legacy ? 'legacy' : 'new' ),
 				'impact'      => array( 'map' => "25={count} food parcel|{count} food parcels\n250={count} water well|{count} water wells" ),
 			);
 		}

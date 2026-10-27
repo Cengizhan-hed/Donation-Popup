@@ -100,11 +100,10 @@ test('belge karşılaştırma: bulunan / bulunamayan', () => {
   assert.equal(r.missing[0].line, 3);
 });
 
-test('menü kipi: yeni / eski / ikisi / yok', () => {
+test('menü kipi: yeni / yok', () => {
   const mk = (...slugs) => [{ label: 'WooCommerce', subs: slugs.map((s) => ({ label: s, slug: s })) }];
   assert.equal(detectUiMode(mk('donation-panel', 'donation-panel-guide')).uiMode, 'new');
-  assert.equal(detectUiMode(mk('wdp-popup-settings')).uiMode, 'legacy');
-  assert.equal(detectUiMode(mk('donation-panel', 'wdp-popup-settings')).uiMode, 'both');
+  assert.equal(detectUiMode(mk('wdp-popup-settings')).uiMode, 'none');
   assert.equal(detectUiMode(mk('wc-settings')).uiMode, 'none');
 });
 

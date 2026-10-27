@@ -71,7 +71,6 @@ async function main() {
       if (only.includes('budget')) summary.budget.push(...(await runBudget(w, qcfg)));
       if (only.includes('lighthouse')) {
         summary.lighthouse.push(...(await runLighthouse(w, qcfg)));
-        if (cfg.theme === 'twentytwentyfive') summary.lighthouse.push(...(await runLighthouse(w, qcfg, { engine: 'legacy' })));
       }
     } finally {
       await w.server.stop();

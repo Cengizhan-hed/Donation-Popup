@@ -113,13 +113,10 @@ function installPluginFromSource(wpDir, source) {
 
 function installCurrentPlugin(wpDir) {
   const dest = pluginDir(wpDir);
-  const cssBundle = path.join(ROOT, 'assets/css/donation-modal.css');
-  const jsBundle = path.join(ROOT, 'assets/js/donation-modal.js');
-  if (!fs.existsSync(cssBundle) || !fs.existsSync(jsBundle)) {
+  if (!fs.existsSync(path.join(ROOT, 'assets/build'))) {
     run('npm', ['run', 'build']);
   }
   const parts = [
-    'includes',
     'src',
     'assets',
     'templates',
@@ -128,7 +125,6 @@ function installCurrentPlugin(wpDir) {
     'woo-donation-popup.php',
     'uninstall.php',
     'readme.txt',
-    'index.php',
   ];
   fs.rmSync(dest, { recursive: true, force: true });
   fs.mkdirSync(dest, { recursive: true });
