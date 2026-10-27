@@ -7,7 +7,7 @@
 
 namespace DonationPanel\Domain;
 
-use DonationPanel\WooCommerce\Cart_Hooks;
+use DonationPanel\Support\Price;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -255,7 +255,7 @@ class Addon_Settings {
 
 		$min = (float) $min_price;
 		if ( $min > 0 && $amount + 0.0001 < $min ) {
-			$formatted = Cart_Hooks::format_amount_for_message( $min, true );
+			$formatted = Price::format_for_message( $min, true );
 			return array(
 				'ok'      => false,
 				'amount'  => $amount,

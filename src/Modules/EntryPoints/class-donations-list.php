@@ -77,6 +77,8 @@ class Donations_List {
 	 * @return void
 	 */
 	public static function init() {
+		// Domain katmanı değişiklikleri bu eylemle bildirir (Domain, Modules katmanını tanımaz).
+		add_action( 'donation_panel_totals_changed', array( __CLASS__, 'bump_cache' ) );
 		if ( self::$invalidation_hooked ) {
 			return;
 		}

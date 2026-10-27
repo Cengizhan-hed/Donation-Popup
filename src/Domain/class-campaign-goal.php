@@ -7,8 +7,6 @@
 
 namespace DonationPanel\Domain;
 
-use DonationPanel\WooCommerce\Cart_Hooks;
-
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -123,6 +121,22 @@ class Campaign_Goal {
 	}
 
 	/**
+	 * Sepetteki bekleyen (henüz ödenmemiş) bağış tutarı; sepet bilgisi WooCommerce katmanından süzgeçle gelir.
+	 *
+	 * @param int $product_id Ürün.
+	 * @return float
+	 */
+	private static function cart_pending( $product_id ) {
+		/**
+		 * Ürün için sepetteki bekleyen bağış tutarı.
+		 *
+		 * @param float $pending    Varsayılan 0.
+		 * @param int   $product_id Ürün.
+		 */
+		return (float) apply_filters( 'donation_panel_cart_pending_total', 0.0, absint( $product_id ) );
+	}
+
+	/**
 	 * Kapı / close kontrolü için etkili toplam (onaylı + sepette bekleyen).
 	 *
 	 * @param int  $product_id      Product ID.
@@ -133,7 +147,7 @@ class Campaign_Goal {
 		$product_id = absint( $product_id );
 		$total      = self::get_confirmed_total( $product_id );
 		if ( $include_pending ) {
-			$total += (float) Cart_Hooks::sum_cart_pending_for_product( $product_id );
+			$total += self::cart_pending( $product_id );
 		}
 		return max( 0.0, $total );
 	}
@@ -175,7 +189,7 @@ class Campaign_Goal {
 		if ( isset( $args['confirmed'] ) ) {
 			$total = (float) $args['confirmed'];
 			if ( $include_pending ) {
-				$total += (float) Cart_Hooks::sum_cart_pending_for_product( $product_id );
+				$total += self::cart_pending( $product_id );
 			}
 		} else {
 			$total = self::get_effective_total( $product_id, $include_pending );

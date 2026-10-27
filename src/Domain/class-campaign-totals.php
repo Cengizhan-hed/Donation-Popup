@@ -9,7 +9,6 @@ namespace DonationPanel\Domain;
 
 use DonationPanel\Core\Uninstall;
 use DonationPanel\Support\Debug;
-use DonationPanel\Modules\EntryPoints\Donations_List;
 use DonationPanel\WooCommerce\Order_Meta_Keys;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -874,7 +873,7 @@ class Campaign_Totals {
 		// Progress sayaçları (meta wp-cli ile değişince de düşsün).
 		wp_cache_delete( 'wdp_total_donation_' . $product_id, 'wdp_donations' );
 		wp_cache_delete( 'wdp_donor_count_' . $product_id, 'wdp_donations' );
-		Donations_List::bump_cache();
+		do_action( 'donation_panel_totals_changed' );
 		Donation_Scope::flush( $product_id );
 	}
 
