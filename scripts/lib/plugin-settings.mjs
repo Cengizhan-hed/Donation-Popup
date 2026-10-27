@@ -19,7 +19,6 @@ export const MODULE_SLUGS = ['side_cart', 'campaign', 'impact', 'social_proof', 
 /** Yol → tür. PHP tarafındaki allowlist ile birebir (PHP yetkili; burası erken red + tablo için). */
 export const ALLOWLIST = Object.freeze({
   ...Object.fromEntries(MODULE_SLUGS.map((s) => [`modules.${s}`, { type: 'bool' }])),
-  'admin.ui': { type: 'enum', values: ['legacy', 'new'] },
   'thanks.celebrate': { type: 'bool' },
   'thanks.share': { type: 'bool' },
   'thanks.message': { type: 'string' },

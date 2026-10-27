@@ -38,11 +38,11 @@ function fakeEval(log, prev = PREV) {
 
 describe('plugin-settings: allowlist ve değerler', () => {
   it('geçerli çiftleri ayrıştırır ve tiplendirir', () => {
-    assert.deepEqual(parseSetSpec('modules.side_cart=1,modules.campaign=off,modules.impact=on,admin.ui=legacy'), {
+    assert.deepEqual(parseSetSpec('modules.side_cart=1,modules.campaign=off,modules.impact=on,thanks.celebrate=0'), {
       'modules.side_cart': true,
       'modules.campaign': false,
       'modules.impact': true,
-      'admin.ui': 'legacy',
+      'thanks.celebrate': false,
     });
   });
 
@@ -59,7 +59,8 @@ describe('plugin-settings: allowlist ve değerler', () => {
   });
 
   it('geçersiz değerler reddedilir', () => {
-    assert.throws(() => normalizeValue('admin.ui', 'x'), /geçersiz/);
+    assert.throws(() => normalizeValue('admin.ui', 'x'), /izinsiz|geçersiz/);
+    assert.throws(() => normalizeValue('thanks.celebrate', 'x'), /geçersiz/);
     assert.throws(() => normalizeValue('modules.thanks', 'belki'), /geçersiz/);
     assert.throws(() => normalizeValue('thanks.message', 'a\u0000b'), /denetim/);
     assert.throws(() => parseSetSpec('modules.thanks'), /Geçersiz çift/);
@@ -201,7 +202,7 @@ describe('plugin-settings: yerel WP kanıtı', { skip: !WP_LOADED }, () => {
     assert.notEqual(bad.status, 0);
     assert.deepEqual(show(), before);
 
-    const set = run('--set', 'modules.side_cart=1,modules.thanks=1,modules.impact=1,admin.ui=new,tax_relief.title=Test Baslik');
+    const set = run('--set', 'modules.side_cart=1,modules.thanks=1,modules.impact=1,tax_relief.title=Test Baslik');
     assert.equal(set.status, 0, set.stderr);
     const backupLine = set.stdout.split('\n').find((l) => l.startsWith('Yedek: '));
     assert.ok(backupLine, 'yedek yolu yazılmalı');

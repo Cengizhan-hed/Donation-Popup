@@ -51,7 +51,6 @@ $wdp_ps_allow = array();
 foreach ( $wdp_ps_modules as $slug ) {
 	$wdp_ps_allow[ 'modules.' . $slug ] = 'bool';
 }
-$wdp_ps_allow['admin.ui'] = 'enum:admin_ui';
 foreach ( array( 'thanks', 'tax_relief' ) as $group ) {
 	foreach ( $wdp_ps_schema[ $group ] as $key => $spec ) {
 		$wdp_ps_allow[ $group . '.' . $key ] = $spec['type'];
