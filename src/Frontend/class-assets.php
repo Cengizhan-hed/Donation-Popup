@@ -41,6 +41,13 @@ class Assets {
 	private $definitions = array();
 
 	/**
+	 * `wp_enqueue_scripts` öncesi istenen, kayıttan sonra kuyruğa alınacak slug'lar.
+	 *
+	 * @var array<string, bool>
+	 */
+	private $deferred = array();
+
+	/**
 	 * Kurucu.
 	 *
 	 * @param string $plugin_dir Eklenti kök dizini.
@@ -116,6 +123,21 @@ class Assets {
 	 */
 	public function enqueue( $slug ) {
 		$handle = self::handle( $slug );
+		// Blok temalarında içerik, `wp_enqueue_scripts` çalışmadan ÖNCE çizilir: varlıklar henüz kayıtlı değildir;
+		// kayıttan sonra (öncelik 20) kuyruğa alınır. Aynı slug tek kez ertelenir.
+		if ( ! did_action( 'wp_enqueue_scripts' ) ) {
+			if ( empty( $this->deferred[ $slug ] ) ) {
+				$this->deferred[ $slug ] = true;
+				add_action(
+					'wp_enqueue_scripts',
+					function () use ( $slug ) {
+						$this->enqueue( $slug );
+					},
+					20
+				);
+			}
+			return;
+		}
 		if ( wp_script_is( $handle, 'registered' ) ) {
 			wp_enqueue_script( $handle );
 		}

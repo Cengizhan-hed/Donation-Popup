@@ -87,4 +87,27 @@ final class LoggerAndPluginTest extends TestCase {
 		$assets->register_all();
 		$this->assertTrue(true);
 	}
+
+	public function test_enqueue_before_wp_enqueue_scripts_is_deferred_without_duplicates(): void {
+		$dir = sys_get_temp_dir() . '/wdp-assets-' . uniqid();
+		mkdir($dir . '/assets/build/blk', 0777, true);
+		file_put_contents($dir . '/assets/build/blk/index.js', '//');
+		$assets = new Assets($dir, 'https://example.test/p');
+		$assets->define('blk', 'assets/build/blk/index.js', '');
+		add_action('wp_enqueue_scripts', array( $assets, 'register_all' ), 5);
+
+		$assets->enqueue('blk');
+		$assets->enqueue('blk');
+		$this->assertArrayNotHasKey('__enqueued_scripts', WDP_Test_State::$options);
+
+		WDP_Test_State::$did_actions['wp_enqueue_scripts'] = 1;
+		do_action('wp_enqueue_scripts');
+		$this->assertSame(array( 'donation-panel-blk' ), WDP_Test_State::$options['__enqueued_scripts']);
+
+		unlink($dir . '/assets/build/blk/index.js');
+		rmdir($dir . '/assets/build/blk');
+		rmdir($dir . '/assets/build');
+		rmdir($dir . '/assets');
+		rmdir($dir);
+	}
 }
