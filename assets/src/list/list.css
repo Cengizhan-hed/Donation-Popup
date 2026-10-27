@@ -86,13 +86,12 @@
   padding: 0;
   list-style: none;
 }
-.wdp-list__item { min-inline-size: 0; margin: 0; padding: 0; }
+.wdp-list__item { min-inline-size: 0; margin: 0; padding: 0; align-self: start; }
 .wdp-list__item[hidden] { display: none; }
 
 /* Kart ortak */
 .wdp-card {
   display: flex;
-  block-size: 100%;
   overflow: hidden;
   border-radius: var(--wdp-card-radius);
   background: var(--_surface);
@@ -107,9 +106,13 @@
 }
 .wdp-card__media img,
 .wdp-card__img {
+  position: absolute;
+  inset: 0;
   display: block;
   inline-size: 100%;
   block-size: 100%;
+  max-inline-size: none;
+  margin: 0;
   object-fit: cover;
 }
 .wdp-card__body { display: flex; flex-direction: column; min-inline-size: 0; }

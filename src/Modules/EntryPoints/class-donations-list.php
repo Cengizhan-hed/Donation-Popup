@@ -765,9 +765,6 @@ class Donations_List {
 			if ( $thumb_id && function_exists( 'wp_get_attachment_image' ) ) {
 				$image = wp_get_attachment_image( (int) $thumb_id, $atts['image_size'], false, $attrs );
 			}
-			if ( '' === $image && function_exists( 'wc_placeholder_img' ) ) {
-				$image = wc_placeholder_img( $atts['image_size'] );
-			}
 		}
 
 		$subtitle = '';
@@ -792,11 +789,10 @@ class Donations_List {
 		$html     = '<li class="wdp-list__item" data-wdp-cats="' . esc_attr( implode( ' ', $slugs ) ) . '">';
 		$html    .= '<article class="wdp-card wdp-card--' . $modifier . ' wdp-card--' . esc_attr( $type ) . '">';
 		$media    = '';
-		if ( '' !== $image ) {
+		if ( 'yes' === $atts['show_image'] ) {
+			// Görsel yoksa yer tutucu simge çizilmez: yalnız sakin bir zemin (tasarımdaki gibi).
 			$badge = $is_campaign ? self::campaign_badge( $id ) : '';
 			$media = '<a class="wdp-card__media" href="' . esc_url( $url ) . '" aria-hidden="true" tabindex="-1">' . $image . $badge . '</a>';
-		} elseif ( $is_campaign ) {
-			$media = '';
 		}
 
 		if ( $is_campaign ) {
@@ -864,15 +860,16 @@ class Donations_List {
 	private static function campaign_badge( $product_id, $overlay = true ) {
 		$label  = __( 'Campaign', 'woo-donation-popup' );
 		$period = Campaign_Totals::get_campaign_period( $product_id );
-		if ( is_array( $period ) && ! empty( $period['end'] ) ) {
-			$days = (int) ceil( ( (int) $period['end'] - time() ) / DAY_IN_SECONDS );
-			if ( $days > 0 ) {
-				$label = sprintf(
-					/* translators: %d: days left in the campaign */
-					_n( 'Campaign · %d day', 'Campaign · %d days', $days, 'woo-donation-popup' ),
-					$days
-				);
-			}
+		$days   = ( is_array( $period ) && ! empty( $period['end'] ) ) ? (int) ceil( ( (int) $period['end'] - time() ) / DAY_IN_SECONDS ) : null;
+		// Form üstündeki ilerleme özetiyle aynı süzgeç (kalan gün); varsayılan: kampanya bitiş tarihinden.
+		$filtered = apply_filters( 'donation_panel_campaign_days_left', $days, $product_id );
+		$days     = is_numeric( $filtered ) ? (int) $filtered : null;
+		if ( null !== $days && $days > 0 ) {
+			$label = sprintf(
+				/* translators: %d: days left in the campaign */
+				_n( 'Campaign · %d day', 'Campaign · %d days', $days, 'woo-donation-popup' ),
+				$days
+			);
 		}
 		return '<span class="wdp-card__badge' . ( $overlay ? '' : ' wdp-card__badge--inline' ) . '">' . esc_html( $label ) . '</span>';
 	}
@@ -929,7 +926,7 @@ class Donations_List {
 	 */
 	private static function row_price_html( $product, $type ) {
 		if ( Donation_Type::CUSTOM === $type ) {
-			return '<span class="wdp-card__price wdp-card__price--any">' . esc_html__( 'Amount of your choice', 'woo-donation-popup' ) . '</span>';
+			return '<span class="wdp-card__price wdp-card__price--any">' . esc_html__( 'Any amount', 'woo-donation-popup' ) . '</span>';
 		}
 		$price = Price::format_product_display_price( $product );
 		if ( '' === $price ) {
